@@ -423,8 +423,9 @@ def sec_d(br, base, C, days, picks, ids):
     time.sleep(4)
     info = pg.info()
     check("d. the hub opens: one island per city, a miniature of each, no 3D error", info["mode"] == "hub" and info["islands"] == len(C) and info["slots"] >= 24 and not info["errors"], info)
-    p.wait_for_function(f"window.__cities.info().live >= {len(C) - 3}", timeout=120000)
-    check("d. the islands turn LIVE as the real files arrive (all but the two private feeds + the vault)", pg.info()["live"] >= len(C) - 3, pg.info()["live"])
+    private = sum(1 for c in C if c["dataset"] in ("kalshi", "notes"))
+    p.wait_for_function(f"window.__cities.info().live >= {len(C) - private}", timeout=240000)
+    check("d. the islands turn LIVE as the real files arrive (all but the Kalshi feed and the vault: %d of %d)" % (len(C) - private, len(C)), pg.info()["live"] >= len(C) - private, pg.info()["live"])
     lay = p.evaluate(LAYOUT_JS)
     check("d. hub layout: no sideways scroll, the orb's corner free, one top bar / one sheet / one dock, 44 px targets, nothing off screen",
           not lay["sideways"] and not lay["inOrb"] and lay["counts"] == {"top": 1, "sheet": 1, "dock": 1} and not lay["small"] and not lay["off"], lay)
@@ -592,7 +593,124 @@ def sec_f(br, base, C, days, picks, ids):
     check("f. no WebGL: the page lists every city in plain text instead of a blank screen", all(c["name"] in txt for c in C), txt[:200])
     ctx.close()
 
-SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f}
+SFX_STUB = """(() => { window.OLYMPUS_SFX = { calls: [], play(n) { this.calls.push('play:' + n); }, stop(n) { this.calls.push('stop:' + n); }, mute() {}, setVolume() {}, unlock() {}, state() { return {}; }, names: [] }; })()"""
+
+
+def sec_g(br, base, C, days, picks, ids):
+    """the 2026-11-04 night pass: continents, favourites, visited, random seeds, report, compare, photo, share, scenery, fireworks, sound, the tour"""
+    pg = Page(br, base, q="low", init=SFX_STUB).open()
+    p = pg.p
+    time.sleep(3)
+    cont = p.evaluate("window.__cities.conts()")
+    labels = p.evaluate("[...document.querySelectorAll('#labels i.cont')].filter(e => e.style.display !== 'none').map(e => e.textContent)")
+    check("g. the world map has six continents with their cities (%s), drawn as labels when zoomed out (%d visible)" % (", ".join(f"{c['name']} {c['count']}" for c in cont), len(labels)),
+          [c["key"] for c in cont] == ["trading", "research", "money", "kalshi", "life", "obsidian"] and sum(c["count"] for c in cont) == len(C) and len(labels) >= 2, (cont, labels))
+    d0 = p.evaluate("window.__cities.rig().dist")
+    p.evaluate("window.__cities.contTap('kalshi')")
+    p.wait_for_function(f"window.__cities.rig().dist < {d0 * 0.75}", timeout=240000)
+    cap = p.evaluate("document.querySelector('#caption').textContent")
+    check("g. tap a continent: the camera flies to it and says what is there", "KALSHI" in cap.upper() and "cities" in cap, cap)
+    # favourites + visited, persisted
+    p.evaluate("window.__cities.select(4)")
+    p.wait_for_function("window.__cities.info().sheet === 'island'", timeout=60000)
+    sid = p.evaluate("window.__cities.specs()[4]")
+    card = p.evaluate("({ say: (document.querySelector('.sheet .say') || {}).textContent || '', pills: [...document.querySelectorAll('.sheet .pill')].map(e => e.textContent) })")
+    check("g. an island card shows what the city says in one sentence, Save, Compare and Share", len(card["say"]) > 20 and any("Save" in x for x in card["pills"]) and "Compare" in card["pills"] and "Share" in card["pills"], card)
+    p.evaluate("[...document.querySelectorAll('.sheet .pill')].find(e => /Save/.test(e.textContent)).click()")
+    favs = p.evaluate("window.__cities.favs()")
+    pg.enter("plans-city", settle=1.0)
+    pg.back()
+    check("g. Save puts the city in favourites and entering one marks it visited", favs == [sid] and p.evaluate("window.__cities.visited()") == ["plans-city"], (favs, p.evaluate("window.__cities.visited()")))
+    p.reload()
+    p.wait_for_function("document.body.dataset.ready === 'true'", timeout=120000)
+    check("g. favourites and visited survive a reload (localStorage, per viewer)", p.evaluate("window.__cities.favs()") == [sid] and p.evaluate("window.__cities.visited()") == ["plans-city"])
+    p.evaluate("document.querySelector('#findB').click()")
+    p.evaluate("[...document.querySelectorAll('.sheet .seg button')].find(e => /Saved/.test(e.textContent)).click()")
+    n_saved = p.evaluate("document.querySelectorAll('.sheet .list li:not(.count)').length")
+    p.evaluate("[...document.querySelectorAll('.sheet .seg button')].find(e => /Not visited/.test(e.textContent)).click()")
+    cnt = p.evaluate("document.querySelector('.sheet .list li.count').textContent")
+    p.evaluate("[...document.querySelectorAll('.sheet .seg button')].find(e => e.textContent === 'Everything').click()")
+    p.evaluate("[...document.querySelectorAll('.sheet .seg button')].find(e => e.textContent === 'Trading').click()")
+    regs = p.evaluate("[...document.querySelectorAll('.sheet .seg')].filter(e => e.style.display !== 'none').map(e => e.children.length)")
+    check("g. Find: continents, regions, Saved and Not visited filters (1 saved, %d not visited, regions appear under a continent)" % (len(C) - 1), n_saved == 1 and f"{len(C) - 1} of {len(C)}" in cnt and max(regs) >= 6, (n_saved, cnt, regs))
+    chips = p.evaluate("[...document.querySelectorAll('.chip')].map(e => e.textContent.replace(/\\s/g, '')).join('|')")
+    check("g. the hub chips count what you saved and visited", "saved1" in chips and "visited1" in chips, chips)
+    p.evaluate("document.querySelector('#sheetX').click()")
+    # random city: the dice, the seed link
+    p.evaluate("document.querySelector('#diceB').click()")
+    p.wait_for_function("window.__cities.info().mode === 'city'", timeout=180000)
+    ri = pg.info()
+    check("g. the dice build a random city (a seeded one, id r-<seed>, in the address bar)", ri["id"].startswith("r-") and ri["n"] > 0 and p.evaluate("location.hash") == "#" + ri["id"], ri)
+    link = p.evaluate(f"window.__cities.shareLink('{ri['id']}')")
+    check("g. share link: a random city is ?seed=<seed>, a made city is ?city=<id>", f"?seed={ri['id'][2:]}" in link and "?city=trades-city" in p.evaluate("window.__cities.shareLink('trades-city')"), link)
+    pg.back()
+    pg.close()
+    hashes = []
+    for _ in range(2):
+        pg2 = Page(br, base, q="low", extra="&seed=abc123", init=SFX_STUB)
+        pg2.p.goto(pg2.url)
+        pg2.p.wait_for_function("window.__cities && window.__cities.info().id === 'r-abc123' && window.__cities.info().mode === 'city'", timeout=240000)
+        hashes.append(pg2.info()["hash"])
+        pg2.close()
+    check("g. ?seed=abc123 opens the same random city every time (same hash on two loads: a shareable seed)", hashes[0] == hashes[1] and len(hashes[0]) == 8, hashes)
+
+    pg = Page(br, base, q="low", init=SFX_STUB).open()
+    p = pg.p
+    # the three scenery kinds, report, compare, photo, fireworks, sound
+    by = {}
+    for c in C:
+        by.setdefault(c["scenery"], []).append(c)
+    small = {"plans", "workshop", "feeds", "gods"}
+    scen = {}
+    for kind in ("river", "harbor", "rail"):
+        cand = next((c for c in by[kind] if c["dataset"] in small), by[kind][0])
+        pg.enter(cand["id"], settle=1.5)
+        st = p.evaluate("window.__cities.stats()")
+        sc = p.evaluate("window.__cities.scenery()")
+        scen[kind] = (cand["id"], sc, st["calls"], st["budget"]["calls"])
+        pg.back()
+    check("g. scenery: a river with bridges, a harbor with piers and ships, a railway with a train, each inside the draw-call budget",
+          all(v[1] and v[1]["kind"] == k and v[1]["props"] >= 3 and v[2] <= v[3] for k, v in scen.items()), scen)
+    pad = next(c for c in C if c["sound"] == "pad" or c["weather"] in ("snow", "fog", "fireflies", "dust"))
+    pg.enter(pad["id"], settle=3.5)
+    calls = p.evaluate("window.OLYMPUS_SFX.calls")
+    rec = pg.info()["records"]
+    check("g. fireworks on the record building: it went off by itself after entering (the kit's sparkleBurst + toast + the scene's sparks)", rec >= 1 and p.evaluate("typeof OLYMPUS_FX === 'object' && typeof OLYMPUS_FX.sparkleBurst === 'function'"), (rec, calls))
+    check("g. ambient sound: a calm city starts the OLYMPUS_SFX pad", "play:pad" in calls, calls)
+    p.evaluate("window.__cities.report()")
+    rep_ = p.evaluate("({ say: (document.querySelector('.sheet .say') || {}).textContent || '', bars: document.querySelectorAll('.sheet .barrow').length, h: document.querySelector('#sheetTitle').textContent })")
+    lay = p.evaluate(LAYOUT_JS)
+    check("g. city report: its sentence, a bar per district, the numbers, how to read it; the sheet fits the phone", rep_["h"] == "City report" and rep_["say"].startswith(pad["name"] + ":") and rep_["bars"] >= 1
+          and not lay["overlaps"] and not lay["inOrb"] and not lay["sideways"] and not lay["off"], (rep_, lay))
+    shot(p, "g_report.png")
+    p.evaluate("document.querySelector('#sheetX').click()")
+    pg.back()
+    check("g. leaving the city stops the ambient pad", "stop:pad" in p.evaluate("window.OLYMPUS_SFX.calls"))
+    p.evaluate("window.__cities.compare('trades-city', 'canyon')")
+    p.wait_for_function("document.querySelectorAll('.sheet .cmp canvas').length === 2", timeout=120000)
+    cmpx = p.evaluate("({ cols: document.querySelectorAll('.sheet .cmpcol').length, says: [...document.querySelectorAll('.sheet .cmpcol .say')].map(e => e.textContent.slice(0, 20)), title: document.querySelector('#sheetTitle').textContent })")
+    lay = p.evaluate(LAYOUT_JS)
+    check("g. compare two cities side by side: two columns, each with its picture, sentence and numbers; the sheet fits", cmpx["cols"] == 2 and all(cmpx["says"]) and not lay["overlaps"] and not lay["sideways"] and not lay["off"], (cmpx, lay))
+    shot(p, "g_compare.png")
+    p.evaluate("document.querySelector('#sheetX').click()")
+    pg.enter("trades-city", settle=2.0)
+    p.evaluate("window.__cities.photoMode(true)")
+    hid = p.evaluate("({ photo: document.body.classList.contains('photo'), top: getComputedStyle(document.querySelector('.top')).display, bar: getComputedStyle(document.querySelector('#photoBar')).display })")
+    size = p.evaluate("window.__cities.photo()")
+    check("g. photo mode: the screen clears (top bar, dock, minimap hidden), a Take photo bar, and the picture is a real JPEG (%d bytes)" % size, hid["photo"] and hid["top"] == "none" and hid["bar"] != "none" and size > 3000, (hid, size))
+    p.evaluate("document.querySelector('#photoDone').click()")
+    check("g. photo mode ends with Done", p.evaluate("!document.body.classList.contains('photo')"))
+    pg.back()
+    p.evaluate("window.__cities.tour()")
+    time.sleep(2)
+    ti = pg.info()
+    check("g. the tour flies across all six continents (stops in each), then touch takes over", ti["tour"] and ti["tourConts"] == 6, ti)
+    p.evaluate("window.__cities.tour()")
+    check("g. no console errors in the new features", not pg.errs, pg.errs[:5])
+    pg.close()
+
+
+SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f, "g": sec_g}
 
 def run_browser(C, days, picks):
     from playwright.sync_api import sync_playwright

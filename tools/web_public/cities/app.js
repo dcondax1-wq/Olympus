@@ -164,6 +164,11 @@ async function prefetch() {
 function pickIsland(x, y) {
   const w = canvas.clientWidth, h = canvas.clientHeight, ray = S.stage.ray(x, y, w, h);
   let best = -1, bt = Infinity;
+  if (farHub()) {                  // zoomed out an island is a few pixels: the nearest one to the finger wins
+    let bd = 26;
+    for (const is of S.islands) { const p = S.stage.project(is.x, is.y + is.R * 0.3, is.z, w, h); if (!p.on) continue; const d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = is.i; } }
+    return best;
+  }
   for (const is of S.islands) {
     const cx = is.x - ray.o.x, cy = is.y + is.R * 0.35 - ray.o.y, cz = is.z - ray.o.z, r = is.R * 1.2;
     const tca = cx * ray.d.x + cy * ray.d.y + cz * ray.d.z;
@@ -1006,7 +1011,7 @@ window.__cities = {
   exit: () => leaveCity(),
   select: (i) => selectIsland(i),
   info: () => ({ mode: S.mode, id: S.cur && S.cur.spec.id, n: S.cur && S.cur.city.n, total: S.cur && S.cur.city.total, hash: S.cur && S.cur.city.hash, districts: S.cur && S.cur.city.districts.length,
-    demo: S.cur && S.cur.ds.demo, islands: S.islands.length, slots: S.slots, hubSel: S.hubSel, sheet: S.sheet, cam: S.cam, tour: S.tour, live: S.live.filter(Boolean).length, errors: S.errors, sel: S.cur && S.cur.sel,
+    demo: S.cur && S.cur.ds.demo, records: S.records || 0, tourConts: S.tourStops ? new Set(S.tourStops.map((t) => t.cont.key)).size : 0, islands: S.islands.length, slots: S.slots, hubSel: S.hubSel, sheet: S.sheet, cam: S.cam, tour: S.tour, live: S.live.filter(Boolean).length, errors: S.errors, sel: S.cur && S.cur.sel,
     tier: S.stage && S.stage.tier(), camPos: S.stage && [S.stage.camera.position.x, S.stage.camera.position.y, S.stage.camera.position.z] }),
   stats: () => { S.stage.frame(); return { ...S.stage.stats(), budget: BUDGETS[S.stage.tier()], caps: S.stage.caps() }; },
   frame: () => S.stage.frame(),
