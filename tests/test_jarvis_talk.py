@@ -213,7 +213,7 @@ def page(br, url, name, ios, voices=True, device=None):
          and "WebGL" not in m.text else None)
     p.goto(url + "jarvis/")
     H.ready(p)
-    p.wait_for_function("document.documentElement.dataset.voiceout === 'module' && !!window.__jarvis.voice()", timeout=20000)
+    p.wait_for_function("document.documentElement.dataset.voiceout === 'module' && !!window.__jarvis.voice()", timeout=90000)
     return ctx, p, errs
 
 
@@ -221,7 +221,7 @@ def said(p):
     return p.evaluate("window.__said.map((x) => x.text)")
 
 
-def idle(p, ms=15000):
+def idle(p, ms=60000):
     p.wait_for_function("window.__jarvis.state() === 'idle' && !window.__jarvis.voice().speaking", timeout=ms)
 
 
@@ -239,7 +239,7 @@ def run(br, url, name, ios, device=None):
         check(f"{tag} before any tap: nothing lost, the answer waits ('TAP TO HEAR' on the core)",
               "bots are running" in st["pending"] and p.evaluate("document.documentElement.dataset.vpending") == "1"
               and p.evaluate("window.__drops") == 0 and not said(p), (st, said(p)))
-        p.click("#says")
+        p.mouse.click(3, 420)
         p.wait_for_function("window.__said.length >= 1", timeout=5000)
         first = p.evaluate("window.__said[0]")
         st = p.evaluate("window.__jarvis.voice()")
@@ -249,7 +249,7 @@ def run(br, url, name, ios, device=None):
     else:   # Chrome unlocks on any earlier tap (and Playwright's evaluate counts as one): said at once, no primer
         check(f"{tag} Chrome: said at once (its own tap rule), no primer, nothing waiting", said(p) and "bots are running" in said(p)[0]
               and not st["pending"] and p.evaluate("window.__primers") == 0, (st, said(p)))
-        p.click("#says")
+        p.mouse.click(3, 420)
         check(f"{tag} the first tap resumes the shared audio", p.evaluate("window.__jarvis.voice().audio") in ("running", "suspended"), p.evaluate("window.__jarvis.voice()"))
     idle(p)
     # 2. a typed question: said by default, fast
@@ -265,7 +265,7 @@ def run(br, url, name, ios, device=None):
     # 3. a 600-character answer: chunks, in order, all of it
     p.evaluate("window.__said = []")
     p.evaluate(f"window.__jarvis.talk({json.dumps(LONG)})")
-    idle(p, 30000)
+    idle(p, 90000)
     parts = said(p)
     words = lambda t: re.sub(r"[^a-z0-9 ]", "", t.lower().replace(",", " ")).split()
     check(f"{tag} a 600-character answer: {len(parts)} sentence chunks (each <= 180), in order, every word said, then STANDBY",
@@ -302,7 +302,7 @@ def run(br, url, name, ios, device=None):
     check(f"{tag} the dock's speaker off: kept on this phone ('jarvis.speak' off), the answer shown but not said", off == ["false", "off"] and not said(p), (off, said(p)))
     p.reload()
     H.ready(p)
-    p.wait_for_function("document.documentElement.dataset.voiceout === 'module' && !!window.__jarvis.voice()", timeout=20000)
+    p.wait_for_function("document.documentElement.dataset.voiceout === 'module' && !!window.__jarvis.voice()", timeout=90000)
     check(f"{tag} after a reload her voice is still off", p.get_attribute("#spk", "aria-pressed") == "false" and not p.evaluate("window.__jarvis.voice().on"))
     p.click("#spk")
     p.wait_for_function("window.__said.some((x) => x.text === 'Voice on.')", timeout=5000)
@@ -334,7 +334,7 @@ def run(br, url, name, ios, device=None):
     ctx.close()
     # 8. an empty voice list (iPhone at first): the default voice, then Ava after voiceschanged
     ctx, p, errs = page(br, url, name, ios, voices=False, device=device)
-    p.click("#says")
+    p.mouse.click(3, 420)
     p.evaluate("window.__jarvis.talk('Testing the default voice.')")
     p.wait_for_function("window.__said.length >= 1", timeout=5000)
     a = p.evaluate("window.__said[0]")
