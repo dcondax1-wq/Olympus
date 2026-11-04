@@ -31,3 +31,14 @@ Write `handoff/inbox/<task-id>/QUESTION.md` with the exact question and what you
 ## Never
 Touch `engine/`, `live_model*.json`, `.github/`, `sw.js`, `tools/build_web_dashboard.py`, `jarvis/apps.js`, `olympus/olympus.js` APPS table,
 `data/`, secrets, or anything that arms, routes or places orders. Never push to `main` or to a `claude/...` branch.
+
+## PARALLEL MODE (many agents at once: this overrides the single-agent steps where they differ)
+The owner runs many ChatGPT / Codex agents at the same time. They must never collide.
+- You are told "agent N of M" in your first message. Your order: first `handoff/QUEUE.md` tasks whose position is N, N+M, N+2M... (count unchecked tasks from the top),
+  then `handoff/QUEUE_BULK.md` (it has ~420 small tasks: pick the app x kind that has no branch yet, starting at position N and stepping by M).
+- CLAIM before you work: `git ls-remote --heads origin chatgpt/<task-id>`. A branch exists = taken: skip it. Otherwise create the branch from the latest `main` and push it at once (a tiny commit is fine) so nobody else takes it.
+- Never edit `QUEUE.md` / `QUEUE_BULK.md` (parallel edits conflict). When a task is done add ONE new file `handoff/done/<task-id>.md` in your PR.
+- One app per PR, small PRs (< 400 lines), merged by the owner one tap each. Always branch from the newest `main`; if `main` moved, merge it into your branch before you ask for a merge.
+- After EVERY pull request: take the next task immediately. Push early and often: a pushed draft PR beats a finished idea in a chat.
+- Blocked >20 minutes: write `handoff/inbox/<task-id>/QUESTION.md`, open a draft PR, move on.
+- Never wait for the owner. Never stop while tasks remain. If you run out of tasks, invent good ones inside your app's folder (graphics, states, tests, copy) and do them.
