@@ -27,10 +27,6 @@ const FOG = `
   float fogOf(vec4 mv) { float d = -mv.z; return 1.0 - exp(-uFog * uFog * d * d); }`;
 
 
-// Render tier policy (one copy per app): ?q=ultra|high|low|off forces a tier (tests, screenshots, perf probes, like render-lab);
-// a software GL renderer (SwiftShader, llvmpipe: no GPU) is held to LITE, 4x MSAA + bloom would be a slideshow there; otherwise the kit's level.
-const forcedTier = () => { const q = new URLSearchParams(location.search).get('q'); return ['ultra', 'high', 'low', 'off'].indexOf(q) >= 0 ? q : null; };
-const softwareGL = (gl) => { try { const e = gl.getExtension('WEBGL_debug_renderer_info'); return !!e && /swiftshader|llvmpipe|software/i.test(String(gl.getParameter(e.UNMASKED_RENDERER_WEBGL))); } catch (_) { return false; } };
 
 function label(text, color, h = 0.32) {
   const c = document.createElement('canvas');
@@ -62,7 +58,7 @@ export function createScene(canvas, opt = {}) {
   } catch (e) { return null; }
   const R = rc.renderer;
   R.setClearColor(BG, 1);
-  const baseTier = () => forcedTier() || (softwareGL(R.getContext()) ? 'low' : null);
+  const baseTier = () => rc.forced || (rc.software ? 'low' : null);
   const tierFor = (v) => baseTier() || (v ? 'low' : ['ultra', 'high'].indexOf(rc.quality()) >= 0 ? rc.quality() : 'high');
   if (opt.lite || baseTier()) rc.setQuality(tierFor(!!opt.lite));
   const G = {};

@@ -60,6 +60,17 @@ the loading veil lifts on the first frame and `OLYMPUS.stats()` keeps working.
 threshold, tint })` (live, no rebuild; a per-frame `tint` is cheap: the reactor tints its glow with the state's colour),
 `addPass(pass)` (runs after bloom, before the finish), `start(cb)` / `stop()`, `stats()` and `dispose()`.
 
+## Tier policy: `?q=`, software GL
+
+| Rule | What it does |
+|---|---|
+| `?q=ultra\|high\|low\|off` in the page address | forces that tier over the kit (tests, screenshots, perf probes); `rc.forced` holds it. `render-lab.html` and every app that uses `createRenderer` honour it |
+| software GL (SwiftShader, llvmpipe: no GPU) | held to LITE when the tier comes from the kit (4x MSAA + bloom is a slideshow there); `rc.software` says so. `?gpu=1` lifts the cap (tests that need the kit's HD tier) |
+| `quality:` option | an app's own forced tier, as before (nothing capped) |
+
+Apps that switch tiers themselves (a LITE toggle) use `rc.forced || (rc.software ? 'low' : ...)`. `forcedTier()` and
+`softwareGL(gl)` are exported for pages without a core. Oracle, Odeon and Fates use it; the other apps are unchanged.
+
 ## The tiers
 
 | Tier | Passes per frame | Anti-aliasing | Bloom | Grade | Pixel ratio |

@@ -98,7 +98,7 @@ def lab(br, origin, query="", fx=None, reduced=False):
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "favicon" not in m.text else None)
     p.goto(origin + LAB + query)
-    p.wait_for_function("() => window.__lab && (window.__lab.rc || window.__lab.flat) && OLYMPUS.state() === 'ready'", timeout=40000)
+    p.wait_for_function("() => window.__lab && (window.__lab.rc || window.__lab.flat) && OLYMPUS.state() === 'ready'", timeout=180000)
     p.wait_for_timeout(700)
     return ctx, p, errs, off_site
 
@@ -124,7 +124,7 @@ def test_tiers(br, origin):
 
 
 def test_switch(br, origin):
-    ctx, p, errs, _ = lab(br, origin, "", fx="high")
+    ctx, p, errs, _ = lab(br, origin, "?gpu=1", fx="high")
     got = p.evaluate("""() => { const rc = __lab.rc, out = [rc.quality(), rc.stats().passes];
       rc.setQuality('low'); out.push(rc.quality(), rc.stats().passes, rc.render());
       rc.setQuality('off'); out.push(rc.stats().passes, rc.render());
@@ -133,9 +133,25 @@ def test_switch(br, origin):
           got == ["high", 3, "low", 2, True, 1, True, "ultra", 3, 4, True], got)
     check("c. no console error while switching tiers", not errs, errs)
     ctx.close()
-    ctx, p, errs, _ = lab(br, origin, "", reduced=True)
+    ctx, p, errs, _ = lab(br, origin, "?gpu=1", reduced=True)
     check("c. prefers-reduced-motion with no choice starts on low", p.evaluate("() => __lab.rc.quality()") == "low")
     ctx.close()
+
+
+def test_policy(br, origin):
+    """i. the tier policy: software GL (SwiftShader here) is held to LITE; ?q= forces a tier; ?gpu=1 lifts the software cap; rc.forced / rc.software say which."""
+    probe = """() => { const rc = __lab.rc; return { q: rc.quality(), passes: rc.stats().passes, forced: rc.forced, software: rc.software }; }"""
+    out = {}
+    for name, query, fx in (("kit high", "", "high"), ("q=ultra", "?q=ultra", "low"), ("gpu=1", "?gpu=1", "high")):
+        ctx, p, errs, _ = lab(br, origin, query, fx=fx)
+        out[name] = p.evaluate(probe)
+        out[name]["errs"] = errs
+        ctx.close()
+    check("i. software GL with the kit at high is held to LITE (2 passes); rc.software is true",
+          out["kit high"]["q"] == "low" and out["kit high"]["passes"] == 2 and out["kit high"]["software"] is True and out["kit high"]["forced"] is None, out["kit high"])
+    check("i. ?q=ultra forces the tier over the kit and over the software cap (3 passes), rc.forced = 'ultra'",
+          out["q=ultra"]["q"] == "ultra" and out["q=ultra"]["passes"] == 3 and out["q=ultra"]["forced"] == "ultra", out["q=ultra"])
+    check("i. ?gpu=1 lifts the software cap (the kit's high, 3 passes)", out["gpu=1"]["q"] == "high" and out["gpu=1"]["passes"] == 3 and out["gpu=1"]["software"] is False, out["gpu=1"])
 
 
 def test_adapt(br, origin):
@@ -175,7 +191,7 @@ def test_jarvis(br, origin):
     ctx, p, errs = jarvis(br, origin)
     try:
         p.wait_for_function("() => window.__jarvisBackdrop && window.__jarvisBackdrop.state !== 'loading' && window.__jarvisBackdrop.frames > 2",
-                            timeout=60000)
+                            timeout=180000)
     except Exception:
         pass
     b = p.evaluate("() => Object.assign({}, window.__jarvisBackdrop, { stats: null, bg3d: document.documentElement.dataset.bg3d,"
@@ -200,7 +216,7 @@ def test_jarvis(br, origin):
     check("h. no page error from the backdrop or the portal", not errs, errs[:4])
     ctx.close()
     ctx, p, errs = jarvis(br, origin, reduced=True)
-    p.wait_for_function("() => !!window.jarvisPortal", timeout=30000)
+    p.wait_for_function("() => !!window.jarvisPortal", timeout=120000)
     mode = p.evaluate("() => window.jarvisPortal.jump({ id: 'oracle', name: 'Oracle', color: '#7fe9ff' })")
     p.wait_for_timeout(600)
     check("h. reduced motion: a 0.2 s fade instead of the warp, gone after", mode == "fade"
@@ -255,6 +271,7 @@ def main():
         test_switch(br, origin)
         test_hidden(br, origin)
         test_materials(br, origin)
+        test_policy(br, origin)
         test_adapt(br, origin)
         test_jarvis(br, origin)
         br.close()

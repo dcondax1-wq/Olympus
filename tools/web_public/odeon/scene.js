@@ -17,10 +17,6 @@ const COL = {
   win: new THREE.Color('#46d79a'), loss: new THREE.Color('#ff4d6d'), bev: new THREE.Color('#b18cff'), bolt: new THREE.Color('#cfe3ff'),
 };
 
-// Render tier policy (one copy per app): ?q=ultra|high|low|off forces a tier (tests, screenshots, perf probes, like render-lab);
-// a software GL renderer (SwiftShader, llvmpipe: no GPU) is held to LITE, 4x MSAA + bloom would be a slideshow there; otherwise the kit's level.
-const forcedTier = () => { const q = new URLSearchParams(location.search).get('q'); return ['ultra', 'high', 'low', 'off'].indexOf(q) >= 0 ? q : null; };
-const softwareGL = (gl) => { try { const e = gl.getExtension('WEBGL_debug_renderer_info'); return !!e && /swiftshader|llvmpipe|software/i.test(String(gl.getParameter(e.UNMASKED_RENDERER_WEBGL))); } catch (_) { return false; } };
 const LOCAL = 2.6;    // world height of a typical 30-bar stretch of tape (the pillars' vertical scale)
 const DEPTH = 5;      // depth of the light planes
 const FOG = new THREE.Color('#06050b');
@@ -345,7 +341,7 @@ export class Theater {
 
   setLite(on) {
     this.lite = !!on;
-    this.rc.setQuality(forcedTier() || (softwareGL(this.renderer.getContext()) ? 'low' : this.lite ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
+    this.rc.setQuality(this.rc.forced || (this.rc.software ? 'low' : this.lite ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
     if (this.arena) this.arena.setLite(this.lite);
     this.mirror.visible = !this.lite;
     this.shafts.visible = !this.lite;

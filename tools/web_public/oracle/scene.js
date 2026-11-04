@@ -9,10 +9,6 @@ import { newSweeps } from './data.js';
 
 const EL = [-0.12, 0.95];
 
-// Render tier policy (one copy per app): ?q=ultra|high|low|off forces a tier (tests, screenshots, perf probes, like render-lab);
-// a software GL renderer (SwiftShader, llvmpipe: no GPU) is held to LITE, 4x MSAA + bloom would be a slideshow there; otherwise the kit's level.
-const forcedTier = () => { const q = new URLSearchParams(location.search).get('q'); return ['ultra', 'high', 'low', 'off'].indexOf(q) >= 0 ? q : null; };
-const softwareGL = (gl) => { try { const e = gl.getExtension('WEBGL_debug_renderer_info'); return !!e && /swiftshader|llvmpipe|software/i.test(String(gl.getParameter(e.UNMASKED_RENDERER_WEBGL))); } catch (_) { return false; } };
 
 
 /** The visible half range in points: the nearest levels each side, the open position, at least 4 ATR. */
@@ -62,7 +58,7 @@ export class Scene {
 
   setQuality(q) {
     this.quality = q;
-    this.rc.setQuality(forcedTier() || (softwareGL(this.renderer.getContext()) ? 'low' : q === 'low' ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
+    this.rc.setQuality(this.rc.forced || (this.rc.software ? 'low' : q === 'low' ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
     this.arena.setQuality(q);
     if (this.sky.lite !== (q === 'low')) { this.sky.setQuality(q); this.market.setQuality(q); }
     this.resize();

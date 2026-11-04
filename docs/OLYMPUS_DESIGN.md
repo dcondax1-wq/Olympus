@@ -149,6 +149,9 @@ changed HUD text, never a forced one in the loop.
 | prometheus | yes | 84 | 784 | 8 | 4 | 8 | 2 | 7.1 | 0.05 | 9.5 |
 | tyche | yes | 158 | 22338 | 42 | 6 | 15 | 2 | 7.6 | 0.67 | 4.5 |
 
+Update 2026-11-04 (apps on the render core, HD tier, 390 x 700, pixel ratio 1; the table above is the pre-core measure): odeon 41 draw
+calls / 11.9k triangles, fates 47 / 7.2k (34 on LITE), oracle 77 / 9.9k. The post passes add about 15 calls. Budgets now: odeon 60 / 60k, fates 64 / 40k, oracle 170 / 10k.
+
 Budgets (`tests/test_olympus_kit.py` `BUDGET`): draw calls / triangles per frame per app at about 1.25 × the measured
 value, the JS heap ≤ 40 MB, layouts per frame ≤ 1.1. Headless fps is SwiftShader (software GL) and only shows relative
 cost; an iPhone runs all nine at 60 fps on HD.
