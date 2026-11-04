@@ -321,12 +321,14 @@ export function createSpeaker(opts) {
     cancel();
     const c = cb && typeof cb === 'object' ? cb : {};
     const pr = pro();
-    let text = cleanSpeech(input);
-    if (pr && typeof pr.prepare === 'function') text = safe(() => pr.prepare(text), text) || text;
+    const shown = cleanSpeech(input);                 // what a caption shows (and what speak() returns); the natural layer may say it in other words ("5 PM" -> "five P M")
+    let text = shown;
+    if (pr && typeof pr.prepare === 'function') text = safe(() => pr.prepare(shown), shown) || shown;
     if (text && !/[.!?]$/.test(text)) text += '.';
+    const toShown = (i) => (text === shown || !text.length ? i : Math.max(0, Math.min(shown.length, Math.round((+i || 0) * shown.length / text.length))));     // a spoken-text offset -> the caption's
     let items = pr && typeof pr.plan === 'function' ? safe(() => pr.plan(text, { max: 180, phrases: false }), null) : null;
     if (!items || !items.length) items = speechChunks(text).map((x) => ({ text: x }));
-    const h = { done: false, onstart: c.onstart, onboundary: c.onboundary, onstall: c.onstall, onengine: c.onengine, audio: null, ctl: null, signal: null, parts: null, played: 0,
+    const h = { done: false, onstart: c.onstart, onboundary: typeof c.onboundary === 'function' ? (i) => c.onboundary(toShown(i)) : null, onstall: c.onstall, onengine: c.onengine, audio: null, ctl: null, signal: null, parts: null, played: 0,
       finish() { if (h.done) return; h.done = true; clearTimeout(h.timer); clearTimeout(h.wd); if (cur === h) cur = null; if (!h.stalled && typeof c.onend === 'function') c.onend(); } };
     h.cancelP = new Promise((ok) => { h.wake = ok; });
     if (typeof AbortController !== 'undefined') { h.ctl = new AbortController(); h.signal = h.ctl.signal; }
@@ -340,7 +342,7 @@ export function createSpeaker(opts) {
       if (synth) hardCancel();
     };
     cur = h;
-    if (!items.length) { setTimeout(() => h.finish(), 0); return { text, cancel: h.cancel }; }
+    if (!items.length) { setTimeout(() => h.finish(), 0); return { text: shown, cancel: h.cancel }; }
     const cc = cloudCfg({ len: text.length }), id = cc && (cc.id || 'groq');
     const usePhone = (rest) => { if (h.done) return; if (synth && typeof SpeechSynthesisUtterance !== 'undefined') { try { phone(text, rest || items, h); } catch (_) { h.finish(); } } else h.finish(); };
     if (cc && cc.key && !(parked[id] > Date.now())) {
@@ -355,7 +357,7 @@ export function createSpeaker(opts) {
         }
       });
     } else usePhone();
-    return { text, cancel: h.cancel };
+    return { text: shown, cancel: h.cancel };
   }
   function cancel() { if (cur) cur.cancel(); cur = null; }
   return { speak, cancel, get speaking() { return !!cur; }, prime: () => primeSpeech(synth), voice: () => bestVoice(voices(), cfg().voice || savedVoiceName(o.storage)),
