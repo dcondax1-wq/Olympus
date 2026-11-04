@@ -24,10 +24,16 @@ const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&':
 const hm = (t) => new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false, weekday: 'short' }).format(new Date(t * 1000)) + ' ET';
 
 // ------------------------------------------------------------------------------------------------ data (read only, with a copy for offline)
-async function getJson(url, ms = 6000) {
+// An optional file that answered 404 is not asked again for 6 hours: a browser logs every 404 as a console error, this keeps it to one per phone.
+const GONE_KEY = 'opt404.', GONE_MS = 6 * 3600e3;
+const wasGone = (u) => { try { const t = +localStorage.getItem(GONE_KEY + u); return !!t && Date.now() - t < GONE_MS; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem(GONE_KEY + u, String(Date.now())); } catch (_) { /* private mode */ } };
+async function getJson(url, ms = 6000, optional = false) {
+  if (optional && wasGone(url)) return null;
   try {
     const ac = typeof AbortController === 'function' ? new AbortController() : null; const tm = ac ? setTimeout(() => ac.abort(), ms) : 0;
     const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); clearTimeout(tm);
+    if (!r.ok && optional && r.status === 404) markGone(url);
     return r.ok ? await r.json() : null;
   } catch (_) { return null; }
 }
@@ -45,9 +51,11 @@ function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'
 
 async function fetchAll() {
   let home = await getJson('../home.json'); if (!home || !home.board) { const d = await getJson('../data.json'); home = d || home; }
-  const cronos = await getJson('../cronos/status.json');
   const got = await Promise.all(APPS.map(([id]) => getJson(`../${id}/jarvis.json`, 5000)));
   const cards = {}; APPS.forEach(([id], i) => { cards[id] = got[i]; });
+  // cronos/status.json is optional (not always published): the cards CRONOS stamps say the same, so it is only asked for when no card is stamped
+  const stamped = got.some((c) => c && typeof c === 'object' && c.cronos && c.cronos.state);
+  const cronos = stamped ? null : await getJson('../cronos/status.json', 6000, true);
   if (home && typeof home === 'object') {
     const snap = { saved: nowS(), home: slim(home), cronos: cronos, cards };
     save(snap);
