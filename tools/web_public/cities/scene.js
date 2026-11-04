@@ -20,7 +20,7 @@ export const TIERS = {
 };
 /** Draw-call and triangle budgets per tier (the tests hold the scene to them; the post passes are included). */
 export const BUDGETS = {
-  ultra: { calls: 70, tris: 560000 }, high: { calls: 70, tris: 340000 }, low: { calls: 40, tris: 100000 }, off: { calls: 30, tris: 40000 },
+  ultra: { calls: 70, tris: 560000, hubTris: 300000 }, high: { calls: 70, tris: 340000, hubTris: 220000 }, low: { calls: 40, tris: 100000, hubTris: 100000 }, off: { calls: 30, tris: 40000, hubTris: 60000 },
 };
 const SKY_KIND = { night: 0, dusk: 1, dawn: 2, day: 3, storm: 4, void: 5, aurora: 6, ember: 7 };
 const DAYF = { day: 1, dawn: 0.55, dusk: 0.22 };
@@ -54,9 +54,10 @@ function unitBox5() {
 }
 
 /** The island slab: a lathe of a flat top and a rocky cone underneath (radius 1, top at y 0). */
-function slabGeo() {
+const SLAB_SEG = { ultra: 28, high: 24, low: 14, off: 10 };
+function slabGeo(seg = 28) {
   const pts = [[0, 0], [0.5, 0], [1, 0], [1, -0.04], [0.93, -0.16], [0.78, -0.36], [0.55, -0.62], [0.28, -0.9], [0, -1.05]];
-  const g = new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 28);
+  const g = new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg);
   return g;
 }
 
@@ -91,7 +92,7 @@ export class Stage {
       uTime: { value: 0 }, uFog: { value: new THREE.Color(0x070a1c) }, uFogD: { value: 0.002 }, uDay: { value: 0 }, uGrow: { value: 1 }, uBobAmp: { value: 0 },
       uWinTint: { value: new THREE.Color(1, 0.84, 0.55) }, uAccent: { value: new THREE.Color(0x3fd8ff) }, uPR: { value: 1 }, uSel: { value: 0 },
       uTop: { value: new THREE.Color(0x02030a) }, uMid: { value: new THREE.Color(0x0a1430) }, uLow: { value: new THREE.Color(0x1c3566) }, uStars: { value: 0.9 },
-      uKind: { value: 0 }, uSun: { value: v3(-0.4, 0.55, -0.5) }, uFlash: { value: 0 }, uGround: { value: new THREE.Color(0x06101a) }, uCam: { value: v3(0, 0, 0) },
+      uKind: { value: 0 }, uSun: { value: v3(-0.4, 0.55, -0.5) }, uFlash: { value: 0 }, uGround: { value: new THREE.Color(0x06101a) }, uCam: { value: v3(0, 0, 0) }, uPbr: { value: 1 },
     };
     const pick = (...n) => Object.fromEntries(n.map((k) => [k, this.U[k]]));
     this.pick = pick;
@@ -109,6 +110,8 @@ export class Stage {
     this.scene.add(this.hubG, this.cityG);
     this.cityG.visible = false;
     this._weather();
+    this._fireworks();
+    this.onFlash = null; this.flashPeriod = -1;
     this.sel = null; this.cityRec = null; this.hubRec = null;
     this.flashOn = false;
     this.tier = () => this.rc.quality();
@@ -139,6 +142,66 @@ export class Stage {
     this.wxU.uBox.value.set(...w.box); this.wxU.uVel.value.set(...w.vel); this.wxU.uSize.value = w.size; this.wxU.uKind.value = w.k; this.wxU.uTint.value.setRGB(...w.tint);
   }
 
+  // ------------------------------------------------------------------ fireworks (a record was set): ONE Points draw, all motion in the shader
+  _fireworks() {
+    const B = 4, M = 90, N = B * M, g = new THREE.BufferGeometry();
+    this.fw = { B, M, i: 0, o: new Float32Array(N * 3), d: new Float32Array(N * 4), c: new Float32Array(N * 3), t: new Float32Array(N).fill(-99) };
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+    g.setAttribute('aOrigin', new THREE.BufferAttribute(this.fw.o, 3)); g.setAttribute('aDir', new THREE.BufferAttribute(this.fw.d, 4));
+    g.setAttribute('aColor', new THREE.BufferAttribute(this.fw.c, 3)); g.setAttribute('aT0', new THREE.BufferAttribute(this.fw.t, 1));
+    this.fwPoints = new THREE.Points(g, new THREE.ShaderMaterial({ vertexShader: SH.FW_VS, fragmentShader: SH.FW_FS, uniforms: this.pick('uTime', 'uPR'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    this.fwPoints.frustumCulled = false; this.fwPoints.renderOrder = 7;
+    this.scene.add(this.fwPoints);
+  }
+
+  /** a burst of sparks at a world point (a record building): off / reduced tier draws none */
+  fireworks(x, y, z, hex) {
+    if (this.rc.quality() === 'off' || !this.fw) return false;
+    const F = this.fw, k = F.i++ % F.B, r = rng((Date.now() & 0xffff) + k * 977), c = col3(hex || '#ffd95a'), w = col3(0xffffff).lerp(c, 0.45);
+    const now = this.U.uTime.value;
+    for (let j = 0; j < F.M; j++) {
+      const n = k * F.M + j, a = r() * Math.PI * 2, e = Math.acos(2 * r() - 1), sp = 14 + r() * 26;
+      F.o.set([x, y, z], n * 3); F.d.set([Math.sin(e) * Math.cos(a), Math.cos(e) * 0.8 + 0.25, Math.sin(e) * Math.sin(a), sp], n * 4);
+      const m = r() < 0.5 ? c : w; F.c.set([m.r, m.g, m.b], n * 3); F.t[n] = now + (j % 3) * 0.04;
+    }
+    for (const a of ['aOrigin', 'aDir', 'aColor', 'aT0']) this.fwPoints.geometry.getAttribute(a).needsUpdate = true;
+    return true;
+  }
+
+  // ------------------------------------------------------------------ scenery: a river with bridges, a harbor with piers and ships, or a railway with a train
+  _scenery(spec, city, dispose) {
+    const kind = spec.scenery;
+    if (!kind) return null;
+    const b = city.bounds, r = rng(hash32('scenery:' + spec.id)), P = spec.palette, zc = (b.minz + b.maxz) / 2, props = [], pad = city.pitch * 3 + 30;
+    const add = (x, z, w, d, h, y0, color, glow = 0.3) => props.push([x, z, w, d, h, y0, rgb(color), glow]);
+    let water = null, train = null;
+    const wmat = () => new THREE.ShaderMaterial({ vertexShader: SH.WATER_VS, fragmentShader: SH.WATER_FS, transparent: true, depthWrite: false,
+      uniforms: { ...this.pick('uCam', 'uTop', 'uLow', 'uAccent', 'uFog', 'uFogD', 'uTime', 'uSun'), uBend: { value: kind === 'river' ? 16 : 0 } } });
+    if (kind === 'river') {
+      const L = b.maxz - b.minz + 700, g = new THREE.PlaneGeometry(36, L, 1, 1);
+      water = new THREE.Mesh(g, wmat()); water.rotation.x = -Math.PI / 2; water.position.set(b.maxx + pad + 20, 0.14, zc);
+      for (let i = 0; i < 3; i++) { const z = zc + (i - 1) * (b.maxz - b.minz) * 0.32; add(b.maxx + pad + 20 + Math.sin(-(z - zc) * 0.012 + 1) * 16, z, 62, 6, 2.2, 3.4, P.districts[1], 0.5); }
+    } else if (kind === 'harbor') {
+      const g = new THREE.PlaneGeometry((b.maxx - b.minx) + 420, 190, 1, 1);
+      water = new THREE.Mesh(g, wmat()); water.rotation.x = -Math.PI / 2; water.position.set(0, 0.14, b.minz - pad - 95);
+      for (let i = 0; i < 7; i++) add(b.minx + ((i + 0.5) / 7) * (b.maxx - b.minx), b.minz - pad - 8, 6, 44, 2.4, 0.4, P.districts[2], 0.35);
+      for (let i = 0; i < 5; i++) { const x = b.minx + r() * (b.maxx - b.minx), z = b.minz - pad - 60 - r() * 110; add(x, z, 15, 38, 5, 0.5, P.districts[i % 4], 0.5); add(x, z + 4, 8, 9, 6, 5.2, '#e8ecf6', 0.2); }
+    } else {
+      const z = b.minz - pad - 12, len = (b.maxx - b.minx) + 520;
+      add(0, z, len, 8, 0.5, 0.1, '#15161c', 0.05); add(0, z - 2.2, len, 0.7, 0.5, 0.6, P.accent, 0.9); add(0, z + 2.2, len, 0.7, 0.5, 0.6, P.accent, 0.9);
+      for (let i = 0; i < 7; i++) add(0, z, 10, 4.6, 4.2, 1.2, i === 0 ? P.accent : P.districts[i % 5], 0.8);
+      train = { z, len, x0: b.minx - 260, n: 7 };
+    }
+    const n = props.length, g = instanced(this.box5, n), ps = new Float32Array(n * 4), hy = new Float32Array(n * 4), cl = new Float32Array(n * 3), sd = new Float32Array(n), bob = new Float32Array(n);
+    props.forEach((p, i) => { ps.set([p[0], p[1], p[2], p[3]], i * 4); hy.set([p[4], p[5], p[7], 0.5], i * 4); cl.set(p[6], i * 3); sd[i] = r(); });
+    g.setAttribute('aPosSize', attr(ps, 4)); g.setAttribute('aHY', attr(hy, 4)); g.setAttribute('aColor', attr(cl, 3)); g.setAttribute('aState', attr(new Float32Array(n * 2), 2)); g.setAttribute('aSeed', attr(sd, 1)); g.setAttribute('aBob', attr(bob, 1));
+    const m = this.buildMat(), mesh = new THREE.Mesh(g, m); mesh.frustumCulled = false; mesh.renderOrder = 2;
+    this.cityG.add(mesh); dispose.push(g, m);
+    if (water) { water.renderOrder = 1; water.frustumCulled = false; this.cityG.add(water); dispose.push(water.geometry, water.material); }
+    if (train) { train.attr = g.getAttribute('aPosSize'); train.first = n - train.n; }
+    return { kind, mesh, water, train, props: n };
+  }
+
   // ------------------------------------------------------------------ the look of a city (or of the hub when spec is null)
   look(spec, hubPal) {
     const U = this.U;
@@ -153,6 +216,7 @@ export class Stage {
     U.uWinTint.value.setRGB(1, 0.84, 0.55).lerp(col3(pal.accent), 0.22);
     this.rc.setBloom({ strength: sk.kind === 'day' ? 0.32 : 0.6, tint: 0xffffff });
     this.setWeather(spec ? spec.weather : 'fog');
+    U.uPbr.value = { ultra: 1, high: 0.9, low: 0.55, off: 0 }[this.rc.quality()] ?? 0.8;
     this.lights[0].intensity = sk.kind === 'day' ? 1.5 : 0.9;
     this.lights[1].color.set(sk.kind === 'day' ? 0xfff3d6 : 0xb9c4ff);
     this.lights[1].intensity = sk.kind === 'day' ? 2.0 : 1.2;
@@ -166,10 +230,10 @@ export class Stage {
   }
 
   /** islands: [{ x, y, z, R, top: '#', rim: '#', seed }]; slots = miniature instances per island */
-  buildHub(islands, slots) {
+  buildHub(islands, slots, links) {
     this.clearHub();
     const n = islands.length, dispose = [];
-    const sg = instanced(slabGeo(), n), pos = new Float32Array(n * 4), top = new Float32Array(n * 3), rim = new Float32Array(n * 3), seed = new Float32Array(n), dim = new Float32Array(n);
+    const sg = instanced(slabGeo(SLAB_SEG[this.rc.quality()] || 24), n), pos = new Float32Array(n * 4), top = new Float32Array(n * 3), rim = new Float32Array(n * 3), seed = new Float32Array(n), dim = new Float32Array(n);
     islands.forEach((is, i) => {
       pos.set([is.x, is.y, is.z, is.R], i * 4); top.set(rgb(is.top), i * 3); rim.set(rgb(is.rim), i * 3); seed[i] = is.seed;
     });
@@ -187,8 +251,7 @@ export class Stage {
     minis.frustumCulled = false;
     // routes between neighbouring islands, auras
     const rp = [];
-    for (let i = 0; i < n - 1; i++) rp.push(islands[i].x, islands[i].y, islands[i].z, islands[i + 1].x, islands[i + 1].y, islands[i + 1].z);
-    for (let i = 0; i < n - 3; i += 1) if (i % 3 === 0) rp.push(islands[i].x, islands[i].y, islands[i].z, islands[i + 3].x, islands[i + 3].y, islands[i + 3].z);
+    for (const [a, b] of links || []) rp.push(islands[a].x, islands[a].y, islands[a].z, islands[b].x, islands[b].y, islands[b].z);
     const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
     const routes = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: 0x7a6cff, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
     routes.frustumCulled = false;
@@ -210,7 +273,7 @@ export class Stage {
   }
 
   buildMat() {
-    return new THREE.ShaderMaterial({ vertexShader: SH.BUILD_VS, fragmentShader: SH.BUILD_FS, uniforms: this.pick('uTime', 'uFog', 'uFogD', 'uDay', 'uGrow', 'uBobAmp', 'uWinTint', 'uSel') });
+    return new THREE.ShaderMaterial({ vertexShader: SH.BUILD_VS, fragmentShader: SH.BUILD_FS, uniforms: this.pick('uTime', 'uFog', 'uFogD', 'uDay', 'uGrow', 'uBobAmp', 'uWinTint', 'uSel', 'uCam', 'uTop', 'uLow', 'uSun', 'uPbr') });
   }
 
   /** write one island's miniature (a generated city) into its slots; city null clears them */
@@ -300,6 +363,7 @@ export class Stage {
     const lm = buildLandmark(spec.landmark.kind, spec.palette.accent, city.site.scale);
     lm.position.set(city.site.x, 0, city.site.z);
     this.cityG.add(lm);
+    const scenery = this._scenery(spec, city, dispose);
     // selection: a beam + ring on the chosen building
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0xffd95a, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, side: THREE.DoubleSide }));
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.05, 8, 40), new THREE.MeshBasicMaterial({ color: 0xffd95a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
@@ -307,7 +371,7 @@ export class Stage {
     beam.visible = ring.visible = false; beam.frustumCulled = ring.frustumCulled = false;
     this.cityG.add(beam, ring);
     dispose.push(beam.geometry, beam.material, ring.geometry, ring.material);
-    this.cityRec = { spec, city, mesh, stA, landmark: lm, beam, ring, dispose, t0: 0 };
+    this.cityRec = { spec, city, mesh, stA, landmark: lm, beam, ring, dispose, scenery, t0: 0 };
     this.U.uGrow.value = 0;
     return this.cityRec;
   }
@@ -354,10 +418,20 @@ export class Stage {
     this.sky.position.copy(this.camera.position);
     if (this.mode === 'city' && U.uGrow.value < 1) U.uGrow.value = Math.min(1, U.uGrow.value + dt * 0.55);
     if (this.mode === 'hub') { U.uBobAmp.value = 1.2; U.uGrow.value = 1; }
-    if (this.cityRec) spinLandmark(this.cityRec.landmark, dt);
+    if (this.cityRec) {
+      spinLandmark(this.cityRec.landmark, dt);
+      const tr = this.cityRec.scenery && this.cityRec.scenery.train;
+      if (tr) {
+        const a = tr.attr.array;
+        for (let i = 0; i < tr.n; i++) { const x = tr.x0 + (((t * 22 - i * 11.5) % tr.len) + tr.len) % tr.len; a[(tr.first + i) * 4] = x; }
+        tr.attr.needsUpdate = true;
+      }
+    }
     if (this.wxKind === 'storm') {
       const p = t % 3.7, hit = hash32('storm' + Math.floor(t / 3.7)) % 100 > 55;
       U.uFlash.value = hit ? Math.max(0, 1 - p / 0.35) * (p < 0.12 || (p > 0.2 && p < 0.3) ? 1 : 0.4) : 0;
+      const per = Math.floor(t / 3.7);
+      if (hit && p < 0.3 && per !== this.flashPeriod) { this.flashPeriod = per; if (this.onFlash) this.onFlash(); }
     } else U.uFlash.value = 0;
   }
 

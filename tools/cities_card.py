@@ -34,6 +34,25 @@ def city_of_day(date: str, ids: list[str]) -> str | None:
     return ids[hash32("cities:" + date) % len(ids)] if ids else None
 
 
+SEED_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"
+CONTINENTS = {"trading": "Trading", "research": "Research", "money": "Money", "kalshi": "Kalshi", "life": "Life", "obsidian": "Obsidian"}
+
+
+def seed_of_day(date: str) -> str:
+    """The random city of the day: a 6-letter seed from the date (util.js seedOfDay does the same)."""
+    h, s = hash32("seed:" + date), ""
+    for _ in range(6):
+        s += SEED_ALPHABET[h % len(SEED_ALPHABET)]
+        h = h // len(SEED_ALPHABET) + hash32(s + date) % 7
+    return s
+
+
+def next_day(date: str) -> str:
+    from datetime import date as _d, timedelta
+    y, m, d = (int(x) for x in date.split("-"))
+    return (_d(y, m, d) + timedelta(days=1)).isoformat()
+
+
 def load_specs(path: str | None = None) -> list[dict]:
     with open(path or os.path.join(PAGE, "cities.json"), encoding="utf-8") as fh:
         return json.load(fh)["cities"]
@@ -53,7 +72,9 @@ def build(date: str | None = None, now: int | None = None, specs: list[dict] | N
     by = {s["id"]: s for s in specs}
     cid = city_of_day(date, [s["id"] for s in specs])
     c = by[cid]
-    sources = len({s["dataset"] for s in specs})
+    tomorrow = by[city_of_day(next_day(date), [s["id"] for s in specs])]
+    seed = seed_of_day(date)
+    cont = CONTINENTS.get(c.get("group", ""), c.get("group", ""))
     return {
         "v": 1,
         "name": "Cities",
@@ -61,9 +82,9 @@ def build(date: str | None = None, now: int | None = None, specs: list[dict] | N
         "kpis": [
             {"label": "Cities", "value": str(len(specs))},
             {"label": "City of the day", "value": c["name"][:24]},
-            {"label": "Datasets", "value": str(sources)},
+            {"label": "Random seed", "value": seed},
         ],
-        "lines": [c["motto"][:120], f"Landmark: {c['landmark']['label']}. Tap to fly in."[:120]],
+        "lines": [c["motto"][:120], f"{cont} / {c.get('region', '')}. Tomorrow: {tomorrow['name']}."[:120], f"Landmark: {c['landmark']['label']}. Tap to fly in; the seed makes a new city."[:120]],
         "t": int(time.time() if now is None else now),
         "open": "#" + cid,
         "theme": "#07050f",

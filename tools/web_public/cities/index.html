@@ -16,6 +16,8 @@
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="cities"></script>
 <script src="../olympus/sfx.js?v=s1" async></script>
+<script src="../olympus/fx-core.js?v=f1"></script>
+<script src="../olympus/fx-burst.js?v=f1"></script>
 <style>
 :root{--bg:#07050f;--panel:rgba(12,10,28,.88);--line:rgba(255,255,255,.11);--text:#f4f4f8;--sub:#b0b3c8;--gold:#ffc94a;--green:#39e59a;--red:#ff6b7f;--cyan:#3fd8ff;
 --accent:var(--oly-accent,#a68bff);--st:env(safe-area-inset-top,0px);--sr:env(safe-area-inset-right,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);
@@ -124,6 +126,18 @@ background:radial-gradient(90% 70% at 50% 45%,rgba(24,14,52,.94),#05030c);transi
 .loading{position:fixed;inset:0;display:grid;place-items:center;color:var(--sub);font:600 13px var(--oly-display,inherit);letter-spacing:.2em;z-index:2;pointer-events:none}
 .err{position:fixed;left:16px;right:16px;top:30%;z-index:9;text-align:center;color:var(--sub)}
 .fallback{position:fixed;inset:calc(var(--top-h) + 20px + var(--st)) 12px calc(110px + var(--sb)) 12px;overflow:auto;z-index:3;touch-action:pan-y}
+.oly-fx-toasts{top:calc(var(--top-h) + 16px + var(--st))!important}
+.badge.seen{background:#2c4b3b;color:#c8f5dc}
+.say{font:600 14.5px/1.4 var(--oly-ui,inherit);color:#fff;margin:8px 0 4px;padding:8px 10px;border-left:3px solid var(--gold);background:rgba(255,201,74,.07);border-radius:0 10px 10px 0}
+.bars{margin:4px 0}.barrow{display:grid;grid-template-columns:minmax(0,92px) minmax(0,1fr) auto;gap:8px;align-items:center;padding:5px 0;font-size:12.5px}
+.barrow span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sub)}.barrow .track{height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}.barrow .track i{display:block;height:100%;border-radius:4px}
+.cmp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cmpcol h3{margin:6px 0 4px;font-size:12px}.cmpcol canvas{width:100%;aspect-ratio:1;border-radius:10px;border:1px solid var(--line);display:block}
+.cmpcol .say{font-size:12px}.cmpcol .grid4{grid-template-columns:1fr}.cmpcol .pill{width:100%}
+#labels i.cont{font-size:13px;letter-spacing:.16em;padding:6px 12px;background:rgba(7,5,15,.7);border-width:1.5px}
+.photobar{position:fixed;left:calc(10px + var(--sl));bottom:calc(14px + var(--sb));right:calc(104px + var(--sr));z-index:6;display:none;gap:8px}
+body.photo .photobar{display:flex}
+body.photo .top,body.photo .dock,body.photo .mini,body.photo .cams,body.photo .sheet,body.photo #labels,body.photo .tag{display:none!important}
+body.photo .photobar .pill{flex:1}
 @media (prefers-reduced-motion:reduce){.sheet.on{animation:none}.veil,.caption{transition:none}}
 </style>
 </head>
@@ -135,6 +149,7 @@ background:radial-gradient(90% 70% at 50% 45%,rgba(24,14,52,.94),#05030c);transi
   <div class="row">
     <button class="ic" id="backB" aria-label="Back to the world map" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
     <h1 id="title">Cities</h1>
+    <button class="ic" id="photoB" aria-label="Photo mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
     <button class="ic" id="qB" aria-label="Quality">HD</button>
     <button class="ic" id="readB" aria-label="How to read this"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button>
   </div>
@@ -152,6 +167,7 @@ background:radial-gradient(90% 70% at 50% 45%,rgba(24,14,52,.94),#05030c);transi
   <button data-cam="grand" aria-label="Grand tour of the landmarks">GRAND</button>
 </div>
 <div class="tag" id="tag" aria-hidden="true"></div>
+<div class="photobar" id="photoBar"><button class="pill go" id="photoTake">Take photo</button><button class="pill" id="photoDone">Done</button></div>
 <nav class="dock" id="dock" aria-label="Views"></nav>
 <div class="caption" id="caption" aria-live="polite"></div>
 <div class="toast" id="toast" role="status"></div>

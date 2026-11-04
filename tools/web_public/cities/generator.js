@@ -18,7 +18,8 @@ export const ENUMS = {
   sky: ['night', 'dusk', 'dawn', 'day', 'storm', 'void', 'aurora', 'ember'],
   weather: ['clear', 'rain', 'snow', 'embers', 'fireflies', 'dust', 'fog', 'storm', 'stars'],
   sound: ['tick', 'tap', 'portal', 'thunder', 'rankup', 'pad'],
-  group: ['trading', 'research', 'markets', 'life', 'money'],
+  group: ['trading', 'research', 'money', 'kalshi', 'life', 'obsidian'],
+  scenery: ['river', 'harbor', 'rail'],
   arrange: ['grid', 'peak'],
   order: ['key', 'size', 'first'],
   at: ['center', 'front', 'best'],
@@ -35,7 +36,7 @@ export const parseExpr = (expr) => {
 export function validateSpec(spec, registry) {
   const e = [], need = (k, t) => { if (typeof spec[k] !== t) e.push(`${k}: ${t} required`); };
   ['id', 'name', 'motto', 'dataset', 'layout', 'district_by', 'height_by', 'glow_by', 'window_by', 'color_by'].forEach((k) => need(k, 'string'));
-  if (!/^[a-z0-9-]{2,24}$/.test(spec.id || '')) e.push('id: 2-24 chars a-z 0-9 -');
+  if (!/^[a-z0-9-]{2,40}$/.test(spec.id || '')) e.push('id: 2-40 chars a-z 0-9 -');
   if ((spec.name || '').length < 3 || (spec.name || '').length > 28) e.push('name: 3-28 chars');
   if ((spec.motto || '').length < 8 || (spec.motto || '').length > 90) e.push('motto: 8-90 chars');
   const ds = registry[spec.dataset];
@@ -76,6 +77,8 @@ export function validateSpec(spec, registry) {
   if (!ENUMS.weather.includes(spec.weather)) e.push('weather: ' + spec.weather);
   if (!ENUMS.sound.includes(spec.sound)) e.push('sound: ' + spec.sound);
   if (!ENUMS.group.includes(spec.group)) e.push('group: ' + spec.group);
+  if (spec.scenery !== undefined && !ENUMS.scenery.includes(spec.scenery)) e.push('scenery: ' + spec.scenery);
+  if (spec.region !== undefined && (typeof spec.region !== 'string' || spec.region.length < 2 || spec.region.length > 28)) e.push('region: 2-28 chars');
   if (spec.arrange && !ENUMS.arrange.includes(spec.arrange)) e.push('arrange: ' + spec.arrange);
   if (spec.district_order && !ENUMS.order.includes(spec.district_order)) e.push('district_order: ' + spec.district_order);
   const hr = spec.height_range;
