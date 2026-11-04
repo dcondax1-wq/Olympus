@@ -41,6 +41,15 @@ def read(*p, mode="r"):
         return fh.read()
 
 
+def _ntiles():
+    import re as _re
+    t = open(os.path.join(ROOT, "tools", "web_public", "olympus", "apps-list.js"), encoding="utf-8").read()
+    return len(set(_re.findall(r'"id":\s*"([a-z0-9]+)"', t)) - {"zenith"})
+
+
+NTILES = _ntiles()
+
+
 def test_static():
     import apps_list_build as A
     rows = A.build()
@@ -139,9 +148,9 @@ def test_phone(br, origin):
     tap(p, "#olyLauncherBtn"); p.wait_for_timeout(500)
     S = p.evaluate("OLYMPUS_LAUNCHER.state()")
     j = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-jv'); return { href: a.getAttribute('href'), target: a.target, text: a.textContent }; })()")
-    check("c. phone: the sheet opens with the big 'Open Olympus (Jarvis)' button (jarvis/, this tab) and 27 app tiles", S["open"] and not S["pc"] and S["tiles"] == 27 and j["href"] == "jarvis/" and not j["target"] and "Open Olympus (Jarvis)" in j["text"], (S, j))
+    check("c. phone: the sheet opens with the big 'Open Olympus (Jarvis)' button (jarvis/, this tab) and all app tiles", S["open"] and not S["pc"] and S["tiles"] == NTILES and j["href"] == "jarvis/" and not j["target"] and "Open Olympus (Jarvis)" in j["text"], (S, j))
     g = p.evaluate("[...document.querySelectorAll('.oly-l section')].map((s) => [s.dataset.group, s.querySelectorAll('.oly-tile').length])")
-    check("c. phone: three groups (Trading, Life, Money) with their apps; Zenith itself is not in it", [x[0] for x in g] == ["trading", "life", "money"] and sum(x[1] for x in g) == 27 and p.locator('.oly-l .oly-tile[data-app=zenith]').count() == 0, g)
+    check("c. phone: three groups (Trading, Life, Money) with their apps; Zenith itself is not in it", [x[0] for x in g] == ["trading", "life", "money"] and sum(x[1] for x in g) == NTILES and p.locator('.oly-l .oly-tile[data-app=zenith]').count() == 0, g)
     t = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-tile[data-app=oracle]'); return { href: a.getAttribute('href'), name: a.querySelector('b').textContent, purpose: a.querySelector('small').textContent, glyph: a.querySelector('.oly-g').textContent, c: a.style.getPropertyValue('--c') }; })()")
     check("c. phone: a tile = its glyph in its colour, its name and one plain line, and opens <app>/ in this tab", t["href"] == "oracle/" and t["name"] == "Oracle" and t["c"] == "#7fe9ff" and len(t["purpose"]) > 8, t)
     p.wait_for_timeout(4000)
@@ -175,7 +184,7 @@ def test_phone(br, origin):
         tap(p, "#olyLauncherBtn"); p.wait_for_timeout(300)
         calm = p.evaluate("document.querySelector('.oly-l').classList.contains('calm')")
         anim = p.evaluate("getComputedStyle(document.querySelector('.oly-l .oly-pn')).animationName")
-        check(f"c. phone {label}: the sheet is calm (no entrance animation) and still complete (27 tiles)", calm and anim == "none" and p.evaluate("OLYMPUS_LAUNCHER.state().tiles") == 27, (calm, anim))
+        check(f"c. phone {label}: the sheet is calm (no entrance animation) and still complete (all tiles)", calm and anim == "none" and p.evaluate("OLYMPUS_LAUNCHER.state().tiles") == NTILES, (calm, anim))
         ctx.close()
     # never blank: the list missing
     ctx, p, errs = page(br, origin)
@@ -197,7 +206,7 @@ def test_pc(br, origin):
     j = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-jv'); return [a.href, a.target, a.rel]; })()")
     t = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-tile[data-app=oracle]'); return [a.href, a.target, a.rel]; })()")
     check("c. PC: the button is in the top bar; the sheet's links go to the public site (https://demetrades2000-coder.github.io/nq-dashboard/<app>/) in a new tab",
-          inbar and S["pc"] and S["tiles"] == 27 and j[0] == "https://demetrades2000-coder.github.io/nq-dashboard/jarvis/" and j[1] == "_blank" and "noopener" in j[2]
+          inbar and S["pc"] and S["tiles"] == NTILES and j[0] == "https://demetrades2000-coder.github.io/nq-dashboard/jarvis/" and j[1] == "_blank" and "noopener" in j[2]
           and t[0] == "https://demetrades2000-coder.github.io/nq-dashboard/oracle/" and t[1] == "_blank", (inbar, S, j, t))
     p.wait_for_timeout(4000)
     dots = p.evaluate("[...document.querySelectorAll('.oly-l .oly-tile')].map((t) => t.dataset.status).filter(Boolean)")
