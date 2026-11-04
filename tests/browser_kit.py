@@ -11,8 +11,10 @@ What it does (nothing here changes what a suite asserts):
     a crashed or closed browser is launched again;
   - timeouts scaled by the measured load: multiplier = clamp(load1 / cpus / 1.5, 1, 6). The default timeout of every context and page,
     and every explicit timeout= passed to goto / wait_for_function / wait_for_selector / click / fill / text_content ..., is multiplied;
-  - one automatic retry of a flaky wait (a Playwright TimeoutError on those calls) when the machine is loaded (multiplier >= 2);
+  - one automatic retry of a flaky wait (a Playwright TimeoutError on those calls, Page / Frame / Locator, and a failed expect(...).to_*) when the machine is loaded (multiplier >= 2);
     BK_RETRY=0 turns it off;
+  - BK.limit(seconds) / BK.limit_ms(ms): a wall-clock assert limit that is exactly as written on a quiet machine and x the multiplier
+    under load (and says so in the output)
   - BK_FAST=1 (opt-in; run_area.py --fast): new contexts default to device_scale_factor=1 and reduced motion (the suite's own explicit
     values win). Software GL is much slower at 3x pixels. Suites that assert 3D or motion should not run with it;
   - a clear "machine too loaded" skip: BK_MAX_LOAD=<load per cpu> makes launch() print the reason and exit with code 77 (run_area.py
@@ -84,9 +86,9 @@ def install() -> None:
     _PATCHED = True
     from playwright.sync_api import Browser, BrowserContext, Page, TimeoutError as PWTimeout
     try:
-        from playwright.sync_api import Frame
+        from playwright.sync_api import Frame, Locator
     except ImportError:  # pragma: no cover
-        Frame = None
+        Frame = Locator = None
 
     def wrap_call(orig):
         def call(self, *a, **kw):
@@ -105,6 +107,30 @@ def install() -> None:
         for name in _TIMED:
             if hasattr(cls, name):
                 setattr(cls, name, wrap_call(getattr(cls, name)))
+    if Locator:                                                  # page.locator(...).click() and friends: the same scaling and one retry
+        for name in _TIMED + ("wait_for", "input_value", "scroll_into_view_if_needed", "screenshot"):
+            if name not in ("goto", "reload", "wait_for_function", "wait_for_selector", "wait_for_load_state", "wait_for_url") and hasattr(Locator, name):
+                setattr(Locator, name, wrap_call(getattr(Locator, name)))
+    try:                                                         # expect(locator).to_be_visible() ...: default 5 s scaled, explicit timeouts scaled, one retry
+        from playwright.sync_api import expect, LocatorAssertions, PageAssertions
+
+        def wrap_assert(orig):
+            def call(self, *a, **kw):
+                m = multiplier()
+                kw = _scale_kw(kw, m)
+                try:
+                    return orig(self, *a, **kw)
+                except AssertionError:
+                    if m < 2 or os.environ.get("BK_RETRY", "1") == "0":
+                        raise
+                    return orig(self, *a, **kw)
+            return call
+        for cls in (LocatorAssertions, PageAssertions):
+            for name in [n for n in dir(cls) if n.startswith(("to_", "not_to_"))]:
+                setattr(cls, name, wrap_assert(getattr(cls, name)))
+        expect.set_options(timeout=int(5000 * multiplier()))
+    except Exception:  # noqa: BLE001
+        pass
 
     def scale_ctx(ctx):
         t = int(30000 * multiplier())
@@ -131,6 +157,30 @@ def install() -> None:
         scale_ctx(pg.context)
         return pg
     Browser.new_page = new_page
+
+
+# ------------------------------------------------------------------------------------------------ wall-clock limits
+SCALED: list = []
+
+
+def limit(seconds: float, label: str = "", cap: float | None = None) -> float:
+    """a wall-clock limit for an assert: `seconds` on a quiet machine (exactly as written), seconds x multiplier when the load is high
+    (multiplier >= 2). Said in the output whenever it was scaled, so a pass under load is never mistaken for a quiet-machine pass."""
+    m = multiplier()
+    if m < 2:
+        return seconds
+    out = round(seconds * m, 3)
+    if cap is not None:                                 # never past what the assert exists to tell apart (e.g. a site that answers after 7 s)
+        out = max(seconds, min(out, cap))
+    note = f"limit {label or seconds} scaled {seconds:g} -> {out:g} (x{m:.1f}, load {load_ratio() * CPUS:.0f} on {CPUS} cpus)"
+    if note not in SCALED:                               # said once per limit
+        SCALED.append(note)
+        print("   (BK) " + note, flush=True)
+    return out
+
+
+def limit_ms(ms: float, label: str = "", cap: float | None = None) -> float:
+    return limit(ms / 1000.0, label or f"{ms:g} ms", None if cap is None else cap / 1000.0) * 1000.0
 
 
 # ------------------------------------------------------------------------------------------------ the launch

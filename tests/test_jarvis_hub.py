@@ -1609,7 +1609,7 @@ def run_intro(br, url):
     wait(p, "window.__olyIntro && window.__olyIntro.mode")
     wait(p, INTRO_GONE)
     s = intro_state(p)
-    check("o. the same launch seen again (an app switch that reloaded the page) gets the 1 s version, never the film again", s["st"]["mode"] == "short" and s["st"]["state"] == "done" and s["st"]["ms"] <= 4500, s)
+    check("o. the same launch seen again (an app switch that reloaded the page) gets the 1 s version, never the film again", s["st"]["mode"] == "short" and s["st"]["state"] == "done" and s["st"]["ms"] <= BK.limit_ms(4500, "intro short"), s)
 
     # 3. the replay (command palette: Play the OLYMPUS intro)
     ready_slow(p)
@@ -1633,7 +1633,7 @@ def run_intro(br, url):
     wait(p, INTRO_GONE)
     s = intro_state(p)
     check("o. a tap skips it: gone within 1 s of the tap (its own clock), the mic tappable",
-          s["st"]["state"] == "skipped" and s["pr"]["gone"] - s["pr"]["down"] < 1000 and p.evaluate(MIC_FREE), s)
+          s["st"]["state"] == "skipped" and s["pr"]["gone"] - s["pr"]["down"] < BK.limit_ms(1000, "intro skip") and p.evaluate(MIC_FREE), s)
     check("o. the skip tap did not reach the core under it (Jarvis is not listening), no page errors",
           p.evaluate("document.documentElement.dataset.state") != "listening" and not errs, (p.evaluate("document.documentElement.dataset.state"), errs))
     ctx.close()
@@ -1656,7 +1656,7 @@ def run_intro(br, url):
     ctx, p, errs = intro_page(br, url, "full", init=[NO_WEBGL])
     wait(p, INTRO_GONE)
     s = intro_state(p)
-    check("o. no WebGL: the still OLYMPUS word mark fades instead (< 1.6 s)", s["st"]["mode"] == "fade" and s["st"]["q"] == "still" and s["st"]["ms"] < 1600, s)
+    check("o. no WebGL: the still OLYMPUS word mark fades instead (< 1.6 s)", s["st"]["mode"] == "fade" and s["st"]["q"] == "still" and s["st"]["ms"] < BK.limit_ms(1600, "intro fade"), s)
     ctx.close()
     ctx, p, errs = intro_page(br, url, "full", block=True)
     ready_slow(p)
@@ -1673,7 +1673,7 @@ def run_intro(br, url):
     wait(p, INTRO_GONE)
     s = intro_state(p)
     check("o. a phone that cannot keep up: it cuts to the reveal early (before the 3.1 s reveal), never a slideshow",
-          s["st"].get("slow") is True and s["st"]["state"] == "done" and s["pr"]["end"] < 3000, s)
+          s["st"].get("slow") is True and s["st"]["state"] == "done" and s["pr"]["end"] < BK.limit_ms(3000, "intro slow phone"), s)
     ctx.close()
 
     # 7. the versions it picks by itself

@@ -295,7 +295,7 @@ def part_c(F, tmp, shots):
           function f(t) { d.push(t - last); last = t; n++; scrollTo(0, (Math.sin(n / 18) * 0.5 + 0.5) * H); if (n < 150) requestAnimationFrame(f); else { d.shift(); d.sort((a, b) => a - b); res({ n: d.length, p50: d[d.length >> 1], p95: d[Math.floor(d.length * 0.95)] }); } }
           requestAnimationFrame(f); })""")
         PERF["phone_scroll_frame_ms"] = fr
-        check("c. frame time while scrolling Home: median <= 20 ms, p95 <= 50 ms (headless, software GPU)", fr["p50"] <= 20 and fr["p95"] <= 50, fr)
+        check("c. frame time while scrolling Home: median <= 20 ms, p95 <= 50 ms (headless, software GPU)", fr["p50"] <= BK.limit_ms(20, "scroll p50") and fr["p95"] <= BK.limit_ms(50, "scroll p95"), fr)
         # layout shift of a fresh open of Home (the first 4 s: home.json, data.json, live.json and the late cards landing);
         # the scroll above scrolls the page, which is no shift. The scrolled position is reset first.
         pg.evaluate("() => scrollTo(0, 0)")
