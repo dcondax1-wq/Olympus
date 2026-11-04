@@ -4,6 +4,7 @@
   b. Find an app: more than 20 apps -> a "Find an app" box above the grid; typing filters by name / what it does / id and keeps the group
      headings of what matches; no match says so; clearing brings every tile back
   c. Settings sheet: "All settings" at the top opens the Settings app (the sheet closes)
+  e. the quick ring (hold the orb) with every app on the site stays at 6 apps + 'All apps', on screen, none on another
   d. first open: the tour is offered once (a toast with TAKE THE TOUR, 'jarvis.tour.seen' kept), opens the Settings app at ?tour=1; a second
      open on the same phone does not offer it again; a phone that has opened Jarvis before is never offered it
     python -X utf8 -m tests.test_jarvis_polish      (Chromium; ~1-3 min on a calm machine)
@@ -121,6 +122,18 @@ def main() -> int:
             check("c. Settings sheet: 'All settings' is the first control and opens the Settings app (the sheet closes)", "setMore" in str(first) or first[1] == "DIV", first)
             check("c. ... the sheet is closed and the Settings app is in a frame", p.evaluate("document.getElementById('settings').hidden") is True and p.evaluate("!!document.querySelector('#v-settings iframe')"))
             check("c. no page errors", not errs, errs)
+            ctx.close()
+
+            # e. the quick ring with every app on the site: capped (6 + "All apps"), on screen, none on another
+            ctx, p, errs = page(br, origin)
+            c = p.evaluate("(() => { const r = document.getElementById('nxOrb').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
+            p.mouse.move(c[0], c[1]); p.mouse.down(); p.wait_for_timeout(900)
+            ring = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, more: b.classList.contains('more') }; })")
+            p.mouse.up()
+            n_apps = p.evaluate("window.__jarvis.facts().apps.length")
+            check("e. the quick ring with %d apps on the site: at most 6 apps and 'All apps', each 44 px+, on screen, none on another" % n_apps,
+                  n_apps > 20 and 2 <= len(ring) <= 7 and any(b["more"] for b in ring) and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
+                  and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:]), (n_apps, ring))
             ctx.close()
 
             # d. the tour
