@@ -34,6 +34,7 @@ def needed():
             src = strip(open(os.path.join(JV, f), encoding="utf-8").read())
             for a, b in re.findall(r"""(?:^|\s)import\s[^'"\n]*?from\s*['"](\.[^'"]+)['"]|import\(['"](\.[^'"]+)['"]""", src, flags=re.M):
                 need.add(a or b)
+    need = {("./" + n) if re.match(r"^[\w-]+\.(?:js|css)", n) else n for n in need}      # a bare name in the page is the same folder
     return {n for n in need if not n.startswith("http")}
 
 
