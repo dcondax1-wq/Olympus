@@ -98,7 +98,7 @@ const setChips = (list) => {
 };
 
 // ------------------------------------------------------------------ the hub
-const hubSlots = () => clamp(Math.floor(S.stage.caps().mini / Math.max(1, S.specs.length)), 24, 260);
+const hubSlots = () => clamp(Math.floor(S.stage.caps().mini / Math.max(1, S.specs.length)), 8, 260);
 
 /** The world map: one continent per group (Trading, Research, Money, Kalshi, Life, Obsidian) on a ring; inside a continent the
  *  islands spiral out from its centre ordered by region, so a region is a band. Any number of cities fits: the spacing is fixed. */
@@ -223,12 +223,12 @@ function showIsland(i) {
     const say = el('p', 'say', '');
     try { say.textContent = insightOf(spec, ds).sentence; } catch (e) { say.textContent = ''; }
     b.append(say);
+    const go = el('button', 'pill go', 'Enter ' + spec.name);
+    go.addEventListener('click', () => enterCity(spec.id));
+    b.append(cityActions(spec, [go]));                  // the buttons first: always in view, never scrolled under the orb's corner
     b.append(grid([['Buildings', plain(sm.n)], ['Districts', plain(sm.districts)], ['Tallest', sm.top.slice(0, 34)], ['Its height', sm.topVal]]));
     if (ds.demo) b.append(el('p', 'note', ds.note || 'A small sample stands in until the live file answers.'));
     b.append(el('p', 'note', `Data: ${ds.title} (${ds.source}). Landmark: ${spec.landmark.label}.`));
-    const go = el('button', 'pill go', 'Enter ' + spec.name);
-    go.addEventListener('click', () => enterCity(spec.id));
-    b.append(cityActions(spec, [go]));
   });
 }
 

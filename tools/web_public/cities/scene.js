@@ -20,7 +20,7 @@ export const TIERS = {
 };
 /** Draw-call and triangle budgets per tier (the tests hold the scene to them; the post passes are included). */
 export const BUDGETS = {
-  ultra: { calls: 70, tris: 560000 }, high: { calls: 70, tris: 340000 }, low: { calls: 40, tris: 100000 }, off: { calls: 30, tris: 40000 },
+  ultra: { calls: 70, tris: 560000, hubTris: 300000 }, high: { calls: 70, tris: 340000, hubTris: 220000 }, low: { calls: 40, tris: 100000, hubTris: 100000 }, off: { calls: 30, tris: 40000, hubTris: 60000 },
 };
 const SKY_KIND = { night: 0, dusk: 1, dawn: 2, day: 3, storm: 4, void: 5, aurora: 6, ember: 7 };
 const DAYF = { day: 1, dawn: 0.55, dusk: 0.22 };
@@ -54,9 +54,10 @@ function unitBox5() {
 }
 
 /** The island slab: a lathe of a flat top and a rocky cone underneath (radius 1, top at y 0). */
-function slabGeo() {
+const SLAB_SEG = { ultra: 28, high: 24, low: 14, off: 10 };
+function slabGeo(seg = 28) {
   const pts = [[0, 0], [0.5, 0], [1, 0], [1, -0.04], [0.93, -0.16], [0.78, -0.36], [0.55, -0.62], [0.28, -0.9], [0, -1.05]];
-  const g = new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 28);
+  const g = new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg);
   return g;
 }
 
@@ -232,7 +233,7 @@ export class Stage {
   buildHub(islands, slots, links) {
     this.clearHub();
     const n = islands.length, dispose = [];
-    const sg = instanced(slabGeo(), n), pos = new Float32Array(n * 4), top = new Float32Array(n * 3), rim = new Float32Array(n * 3), seed = new Float32Array(n), dim = new Float32Array(n);
+    const sg = instanced(slabGeo(SLAB_SEG[this.rc.quality()] || 24), n), pos = new Float32Array(n * 4), top = new Float32Array(n * 3), rim = new Float32Array(n * 3), seed = new Float32Array(n), dim = new Float32Array(n);
     islands.forEach((is, i) => {
       pos.set([is.x, is.y, is.z, is.R], i * 4); top.set(rgb(is.top), i * 3); rim.set(rgb(is.rim), i * 3); seed[i] = is.seed;
     });

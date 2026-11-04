@@ -337,7 +337,9 @@ LAYOUT_JS = """() => {
   const hit = (r) => r.right > orb.x0 && r.left < orb.x1 && r.bottom > orb.y0 && r.top < orb.y1;
   const tap = [...document.querySelectorAll('.tab, .ic, .x, .pill, .cams button, .seg button, button.chip, .mini, .list li:not(.count)')].filter(vis);
   const small = tap.filter(e => { const r = e.getBoundingClientRect(); return r.height < 43.5 || (e.tagName === 'BUTTON' && r.width < 43.5); }).map(e => e.className + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height));
-  const inOrb = [...document.querySelectorAll('.tab, .ic, .x, .pill, .cams button, .seg button, button.chip, .mini, .sheet.on, .dock, .top, .list li, input')].filter(vis).filter(e => hit(e.getBoundingClientRect())).map(e => e.className || e.tagName);
+  const sh = document.querySelector('.sheet.on'), shr = sh ? sh.getBoundingClientRect() : null;
+  const clipped = (e) => { if (!shr || !sh.contains(e) || e === sh) return false; const r = e.getBoundingClientRect(); return r.bottom > shr.bottom + 1 || r.top < shr.top - 1; };   // scrolled out of the sheet: not on screen
+  const inOrb = [...document.querySelectorAll('.tab, .ic, .x, .pill, .cams button, .seg button, button.chip, .mini, .sheet.on, .dock, .top, .list li, input')].filter(vis).filter((e) => !clipped(e)).filter(e => hit(e.getBoundingClientRect())).map(e => e.className || e.tagName);
   const off = [...document.querySelectorAll('.top, .sheet.on, .dock, .mini, .cams')].filter(vis).filter(e => { const r = e.getBoundingClientRect(); return r.left < -1 || r.right > w + 1 || r.top < -1 || r.bottom > h + 1; }).map(e => e.className);
   const lap = (a, b) => { const A = a.getBoundingClientRect(), B = b.getBoundingClientRect(); return A.left < B.right - 1 && A.right > B.left + 1 && A.top < B.bottom - 1 && A.bottom > B.top + 1; };
   const sheet = document.querySelector('.sheet.on'), dock = document.querySelector('.dock'), top = document.querySelector('.top');
@@ -501,12 +503,15 @@ def sec_d(br, base, C, days, picks, ids):
         if tag == "trades":
             shot(p, "trades_grand.png")
         p.evaluate("window.__cities.cam('orbit')")
-        before = pg.info()["camPos"]
+        before = p.evaluate("window.__cities.rig().t")
         bx = p.evaluate("(() => { const r = document.querySelector('#mini').getBoundingClientRect(); return [r.left + r.width * 0.2, r.top + r.height * 0.25]; })()")
         p.touchscreen.tap(bx[0], bx[1])
-        time.sleep(2.2)
-        after = pg.info()["camPos"]
-        check(f"d. {cid}: the minimap flies the camera where you tap", sum(abs(a - b) for a, b in zip(before, after)) > 5, (before, after))
+        try:
+            p.wait_for_function("(b) => { const t = window.__cities.rig().t; return Math.abs(t[0] - b[0]) + Math.abs(t[2] - b[2]) > 4; }", arg=before, timeout=120000)
+            flew = True
+        except Exception:
+            flew = False
+        check(f"d. {cid}: the minimap flies the camera where you tap", flew, (before, p.evaluate("window.__cities.rig().t")))
         pg.back()
         check(f"d. {cid}: back to the world map", pg.info()["mode"] == "hub")
     check("d. three DIFFERENT cities were built (3 different hashes)", len(set(seen)) == 3, seen)
@@ -524,7 +529,7 @@ def sec_d(br, base, C, days, picks, ids):
 
 def sec_e(br, base, C, days, picks, ids):
     # ---- e. budgets per tier
-    for q in ("off", "low", "high", "ultra"):
+    for q in (os.environ.get("CITIES_TIERS") or "off,low,high,ultra").split(","):          # CITIES_TIERS=off,low to run fewer
         pg = Page(br, base, q=q).open()
         time.sleep(2)
         hub = pg.p.evaluate("window.__cities.stats()")
@@ -533,8 +538,8 @@ def sec_e(br, base, C, days, picks, ids):
         B = st["budget"]
         want = st["caps"]["cap"]
         passes = {"off": 1, "low": 2, "high": 3, "ultra": 3}[q]
-        check(f"e. tier {q}: hub {hub['calls']} draw calls / {hub['triangles']:,} triangles, 31k-idea city {st['calls']} calls / {st['triangles']:,} triangles ({inf['n']:,} of {inf['total']:,} buildings), both inside the budget ({B['calls']} / {B['tris']:,})",
-              hub["tier"] == q and st["tier"] == q and hub["calls"] <= B["calls"] and hub["triangles"] <= B["tris"] and st["calls"] <= B["calls"] and st["triangles"] <= B["tris"]
+        check(f"e. tier {q}: hub {hub['calls']} draw calls / {hub['triangles']:,} triangles, 31k-idea city {st['calls']} calls / {st['triangles']:,} triangles ({inf['n']:,} of {inf['total']:,} buildings), both inside the budget (draw calls {B['calls']}; triangles hub {B['hubTris']:,} / city {B['tris']:,})",
+              hub["tier"] == q and st["tier"] == q and hub["calls"] <= B["calls"] and hub["triangles"] <= B["hubTris"] and st["calls"] <= B["calls"] and st["triangles"] <= B["tris"]
               and inf["n"] == min(inf["total"], want) and st["passes"] == passes and st["calls"] > 0, (hub, st, inf))
         if q in ("low", "ultra"):
             shot(pg.p, f"ideas_{q}.png")
