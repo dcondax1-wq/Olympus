@@ -1128,6 +1128,9 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   how often (4 like it make 2 a week; 30 live trades take N months to prove), and the losing run ("4 stop-outs in a row = -$1,128: Drawdown left $872 of $2,000 max loss",
   the odds of it and of the 8 that end the account in the next 40 trades). The TOP RULES tab shows the verdict, $ a month with R and $ a trade with R. `tree3d.js`: pollen
   (dust) and a contact shadow at the trunk. Test `python -X utf8 -m tests.test_oly_job47`; run `tests.test_arena` and `tests.test_strategytree` too.
+- **Money wording guard (2026-11-04):** `python -X utf8 -m tests.test_money_wording` scans every app's JS/HTML (comments and vendor code left out) for "day N of 10" / "session N of 10"
+  eval counts, "room to the floor" on a line with no dollars, a progress bar / meter for eval days, and an R headline figure with no $ on the line. Mark a line that is right on
+  purpose with `money-wording-ok` in a comment. Say it as "Drawdown left $X of $max loss".
 - **FATES + LABYRINTH + HEPHAESTUS overhaul (2026-11-04, overnight JOB 4+5; owner: the apps look Play-Doh):** shared kit `tools/web_public/olympus/fx-atmos.js`
   (dust, embers, light shafts, contact shadows, polished floor, bronze, forged iron, thread glow; one draw call each, tiers in `QUALITY`; doc
   section in `docs/OLYMPUS_RENDER.md`). Fates (`fates-lab.js`, bottom bar **Lab**): fan chart with percentiles, pass odds by day, size what-if (1 / 1.25 /
