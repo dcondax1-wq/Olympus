@@ -1107,6 +1107,17 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     the base). test_holo_ui's "replay advances" failed on the base and here while the shared machine was at load 40-60
     (4 cores) and passes 62/62 at a lower load: a timing flake, the Holodeck code is unchanged.
   - Test `python -X utf8 -m tests.test_zenith_shell` (23).
+- **ARES + PLUTUS + FORUM + ARGUS quality pass (2026-11-04, overnight; same kit, `olympus/fx-atmos.js`):** every scene gets shafts / dust / embers / contact
+  shadows (Ares: polished floor + torch embers; Plutus: studio environment, vault shadow, gold embers; Forum: sun shafts, torch embers, column shadows; Argus:
+  scanner beam, data dust); the atmosphere joins 0.9 s after the first paint (cheap first frame; `?noatmos=1` on Ares is a perf probe). fx-atmos additive
+  light now keeps the alpha channel (no dark halos on a transparent canvas). New money features, each from a pure core function (tests call them):
+  Ares `aresplus.js` (`oddsPlan` what a win is worth in $ and R and the win rate it needs, `stopLadder` wide stop = fewer micros, `streakTable` "Drawdown left $X
+  of $2,000 max loss" after each stop-out, `passPace`, `dayBudget`, `payoutCheck`); Plutus `plutusplus.js` (`rankPlans` best plan per $ of fees, `buyPlan` evals to
+  buy for a funded account, `payoutRace`, `cashCushion`); Forum `forumplus.js` ("Money today": drawdown left, pace per session, size at four stop widths, the
+  news rule; "The trading day" bar with a countdown; a recorded eval fills it when the site has none); Argus `argusplus.js` (Money tab: can the bot trade
+  today = six gates + countdown to 02:00 ET, both evals in money words and the 7-day clock, what red lights cost; `?demo=1` / "See it with demo data" fills an
+  empty page, never saved over the real copy; the tabs are a 2 x 2 grid). All taps >= 44 px (Forum's dots wrap to two rows above the arrows). Test
+  `python -X utf8 -m tests.test_oly_job46`. The apps' tests wait up to 150 s for the page (`tests/olympus_money_kit.py`): SwiftShader on a loaded machine.
 - **FATES + LABYRINTH + HEPHAESTUS overhaul (2026-11-04, overnight JOB 4+5; owner: the apps look Play-Doh):** shared kit `tools/web_public/olympus/fx-atmos.js`
   (dust, embers, light shafts, contact shadows, polished floor, bronze, forged iron, thread glow; one draw call each, tiers in `QUALITY`; doc
   section in `docs/OLYMPUS_RENDER.md`). Fates (`fates-lab.js`, bottom bar **Lab**): fan chart with percentiles, pass odds by day, size what-if (1 / 1.25 /

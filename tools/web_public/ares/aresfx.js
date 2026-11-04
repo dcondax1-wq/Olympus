@@ -4,8 +4,10 @@
 // low / off tiers) drop the fire, the hologram and the shafts and keep the bronze. Never needed: any failure leaves the room as it was.
 import * as THREE from '../jarvis/three.module.min.js';
 import { RoomEnvironment } from '../olympus/three-addons/RoomEnvironment.js';
+import * as AT from '../olympus/fx-atmos.js';        // JOB 4+5 follow-up: a reflective floor under the platform, contact shadows, rising embers
 
 const FX = () => window.OLYMPUS_FX || null;
+const RM_STILL = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 const H = 4;
 const bronze = () => new THREE.MeshPhysicalMaterial({ color: 0xb87333, metalness: 1, roughness: 0.38, clearcoat: 0.3, clearcoatRoughness: 0.35, envMapIntensity: 1.15 });
 const steel = () => new THREE.MeshPhysicalMaterial({ color: 0xaab2bd, metalness: 1, roughness: 0.28, clearcoat: 0.2, envMapIntensity: 1.1 });
@@ -54,6 +56,17 @@ export function dressRoom(room) {
     const ban = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 2.0, 1, lite ? 6 : 14), mat); ban.position.set(x + Math.cos(a) * 0.02, 4.0, z); ban.rotation.y = -a + Math.PI / 2; ban.translateZ(0.2); S.add(ban);
     extra.mats.push(mat);
   }
+  // the room's floor and shadows (fx-atmos): a polished stone floor that reflects the torches, a soft shadow under the platform and each pillar, embers off the torches
+  setTimeout(() => { try {                                                                  // the atmosphere joins 0.9 s after the room: the first paint (and the shader compile on a slow GPU) is the room itself
+    if (/[?&]noatmos=1/.test(location.search)) throw new Error('atmosphere off');          // a perf probe: the room without the atmosphere kit
+    const list = [];
+    const fl = AT.polishedFloor({ size: 70, color: '#150a0b', y: -0.37, roughness: 0.28, metalness: 0.5, env: 0.55 }); S.add(fl.object); list.push(fl);
+    const ap = AT.contactAO({ radius: 4.7, depth: 4.7, strength: 0.85 }); ap.object.position.set(0, -0.36, 0); S.add(ap.object); list.push(ap);
+    for (let i = 0; i < 4; i++) { const a = Math.PI / 4 + (i * Math.PI) / 2, ao = AT.contactAO({ radius: 0.6, strength: 0.7 }); ao.object.position.set(Math.cos(a) * 4.5, -0.355, Math.sin(a) * 4.5); S.add(ao.object); list.push(ao); }
+    const em = AT.embers({ count: 90, origin: [torches[0][0], torches[0][1] + 0.05, torches[0][2]], spread: [0.2, 0, 0.2], rise: 2.4, colors: ['#fff0c0', '#ff9a3a', '#c2300f'], size: 5, wind: 0.2, seed: 5 }); S.add(em.object); list.push(em);
+    const em2 = AT.embers({ count: 90, origin: [torches[1][0], torches[1][1] + 0.05, torches[1][2]], spread: [0.2, 0, 0.2], rise: 2.4, colors: ['#fff0c0', '#ff9a3a', '#c2300f'], size: 5, wind: -0.2, seed: 9 }); S.add(em2.object); list.push(em2);
+    extra.at = list; AT.setQuality(list, lite ? 'low' : 'high'); room.dirty = true;
+  } catch (e) { /* the plain room */ } }, 900);
   const fx = FX();
   if (fx && !lite) {
     Promise.all(['fx-sky.js', 'fx-weather.js', 'fx-surface.js'].map((f) => import('../olympus/' + f + '?v=f1'))).then(() => {
@@ -69,6 +82,6 @@ export function dressRoom(room) {
   } else {                                                      // LITE: static flame glows, no fire
     torches.forEach(([x, y, z]) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: room.glow, color: 0xff9a40, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.85 })); s.scale.set(0.9, 0.9, 1); s.position.set(x, y + 0.15, z); S.add(s); });
   }
-  extra.update = (dt, t) => { extra.mats.forEach((m) => { m.uniforms.uTime.value = t; }); };
+  extra.update = (dt, t) => { extra.mats.forEach((m) => { m.uniforms.uTime.value = t; }); if (extra.at) AT.update(extra.at, RM_STILL ? 0 : t, R.getPixelRatio()); };
   return extra;
 }
