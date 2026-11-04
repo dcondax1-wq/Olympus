@@ -13,7 +13,12 @@ import path from 'node:path';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..', '..', '..');
 const out = path.join(here, '..', 'fx.js');
-await build({ entryPoints: [path.join(here, 'src', 'index.js')], bundle: true, format: 'esm', minify: true, target: ['es2020', 'safari15'],
+// OLYMPUS render core (olympus/render.js, materials.js, three-addons/): they import ../jarvis/three.module.min.js (three r160, the
+// same release as this bundle's three 0.160.0); alias it to the bundle's own three so fx.js carries a single three.js
+const oneThree = { name: 'one-three', setup(b) {
+  b.onResolve({ filter: /jarvis\/three\.module\.min\.js$/ }, (a) => b.resolve('three', { kind: a.kind, resolveDir: here }));
+} };
+await build({ plugins: [oneThree], entryPoints: [path.join(here, 'src', 'index.js')], bundle: true, format: 'esm', minify: true, target: ['es2020', 'safari15'],
   outfile: out, legalComments: 'none', logLevel: 'warning' });
 copyFileSync(out, path.join(root, 'web_next', 'js', 'fx.js'));
 // the LIT panels (plain ES module, not bundled): one source for both dashboards

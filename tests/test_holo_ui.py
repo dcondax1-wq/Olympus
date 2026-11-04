@@ -86,8 +86,8 @@ def main() -> int:
                  ("tools/web_public/fx.js", "web_next/js/fx.js")):
         check(f"static: {a} == {b}", rd(*a.split("/")) == rd(*b.split("/")))
     src, idx = rd("tools", "web_public", "fx", "src", "holo.js"), rd("tools", "web_public", "fx", "src", "index.js")
-    check("static: fx.js exports FX.holo (holo.js: instanced candles, bloom on Max, the mirrored floor, own loop)",
-          "export function holo(" in idx and "InstancedMesh" in src and "UnrealBloomPass" in src and "running() { return false; }" in src)
+    check("static: fx.js exports FX.holo (holo.js: instanced candles, bloom on Max via the OLYMPUS render core, the mirrored floor, own loop)",
+          "export function holo(" in idx and "InstancedMesh" in src and "rcore.js" in src and "running() { return false; }" in src)
     bundle = rd("tools", "web_public", "fx.js")
     check("static: the bundle carries the Holodeck scene", "hd-labs" in bundle and "Inducement" in bundle and "le-holo" not in idx)
     pidx = rd("tools", "web_public", "index.html")

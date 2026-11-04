@@ -3,6 +3,7 @@
 // Every view renders only while it is on screen, the tab is visible and effects are on, so a phone does not burn
 // battery on things nobody is looking at.
 import * as THREE from 'three';
+import { makeCore, sizeCore, tierFor } from './rcore.js';
 
 export { THREE };
 
@@ -14,7 +15,7 @@ export function setLevel(level) {
   Q.level = level;
   Q.fps = level === 'lite' ? 30 : 60;
   Q.dprScale = level === 'lite' ? 0.75 : 1;
-  for (const v of views) v.resize?.();
+  for (const v of views) { v.rc?.setQuality(tierFor(v.rc.cap)); v.resize?.(); }
 }
 export const count = (max, lite) => Q.level === 'lite' ? lite : max;
 
@@ -112,7 +113,9 @@ function tick(now) {
     acc += dt; frames++;
     if (dt > 1.6 / fps || cost > 22) slow++;
     if (acc > 3) {
-      if (slow / frames > 0.5 && Q.dprScale > 0.55) { Q.dprScale = Math.max(0.55, Q.dprScale - 0.2); for (const v of views) v.resize?.(); }
+      // slow frames: first drop the heavy passes (bloom + MSAA -> FXAA, the biggest win), then the resolution
+      if (slow / frames > 0.5 && !Q.tierCap && Q.level !== 'lite') { Q.tierCap = 'low'; for (const v of views) { v.rc?.setQuality(tierFor(v.rc.cap)); v.resize?.(); } }
+      else if (slow / frames > 0.5 && Q.dprScale > 0.55) { Q.dprScale = Math.max(0.55, Q.dprScale - 0.2); for (const v of views) v.resize?.(); }
       acc = frames = slow = 0;
     }
   }
@@ -129,12 +132,12 @@ export class View {
     this.opts = opts;
     this.canvas = document.createElement('canvas');
     this.canvas.className = 'fx-canvas';
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, alpha: !!opts.alpha, antialias: opts.antialias !== false, powerPreference: 'high-performance' });
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.NoToneMapping;
-    if (!opts.alpha) this.renderer.setClearColor(theme.page, 1); else this.renderer.setClearColor(0x000000, 0);
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(opts.fov || 40, 1, 0.05, 400);
+    // the OLYMPUS render core (rcore.js): tone mapping, MSAA / FXAA, bloom, film finish; opts.env 'night' = reflections for solids
+    this.rc = makeCore(this, { cap: opts.tierCap, env: opts.env, bloom: opts.coreBloom, grade: opts.coreGrade });
+    this.renderer = this.rc.renderer;
+    if (!opts.alpha) this.renderer.setClearColor(theme.page, 1); else this.renderer.setClearColor(0x000000, 0);
     this.visible = false; this.attached = false; this.el = null; this.w = 1; this.h = 1;
     const o = opts.orbit || {};
     this.orbit = { yaw: o.yaw || 0, pitch: o.pitch || 0.25, vyaw: 0, vpitch: 0, auto: o.auto ?? 0.12, dragging: false, last: 0,
@@ -159,8 +162,7 @@ export class View {
     if (!this.el) return;
     const r = this.el.getBoundingClientRect(), w = Math.max(10, Math.round(r.width)), h = Math.max(10, Math.round(r.height));
     this.w = w; this.h = h;
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, (this.opts.dprMax || 2)) * Q.dprScale);
-    this.renderer.setSize(w, h, false);
+    sizeCore(this.rc, w, h);
     this.canvas.style.width = w + 'px'; this.canvas.style.height = h + 'px';
     this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
     this.onResize?.(w, h);
@@ -199,11 +201,11 @@ export class View {
     };
     c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up); c.addEventListener('pointerleave', up);
   }
-  frame(t, dt) { this.update?.(t, dt); this.renderer.render(this.scene, this.camera); }
+  frame(t, dt) { this.update?.(t, dt); this.rc.render(); }
   dispose() {
     this.detach(); views.delete(this);
     this.scene.traverse((o) => { o.geometry?.dispose?.(); const m = o.material; (Array.isArray(m) ? m : m ? [m] : []).forEach(x => x.dispose?.()); });
-    this.renderer.dispose(); try { this.renderer.forceContextLoss(); } catch { }
+    this.rc.dispose(); this.renderer.dispose(); try { this.renderer.forceContextLoss(); } catch { }
   }
 }
 

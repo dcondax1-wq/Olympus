@@ -8,6 +8,7 @@
 //   Drag to orbit (slow ping-pong orbit when idle), tap a star -> page opts.onPick(row), mouse hover shows the tooltip.
 //   First data: stars spiral in from the centre in time order; new data: survivors glide, newcomers grow, leavers shrink.
 // Draw calls ~16 whatever the row count; particles: 1 star + 2 flow sparks (1 lite) per trade + 1500 dust (450 lite).
+import { metal } from '../../olympus/materials.js';
 import { THREE, View, Q, theme, glowTexture, rng, count } from './core.js';
 
 const STOP_MIN = 10, STOP_MAX = 60, R_TOP = 5.6, R_BOT = -1.3, DEPTH = 3.4;
@@ -237,7 +238,7 @@ function attrs(n, spec, geo = new THREE.BufferGeometry(), Attr = THREE.BufferAtt
 // ------------------------------------------------------------------ the view
 export class Galaxy extends View {
   constructor(opts = {}) {
-    super({ fov: 38, dprMax: 2, ...opts,
+    super({ fov: 38, dprMax: 2, env: 'night', ...opts,
       orbit: { yaw: -0.34, pitch: 0.34, auto: 0.05, min: -0.7, max: 0.7, pitchMin: 0.1, pitchMax: 0.7, ...(opts.orbit || {}) } });
     this.canvas.classList.add('fx-galaxy'); this.canvas.style.display = 'block'; // inline canvases leave a baseline gap that can grow auto-height cards
     this.lt = 0; this.W = 7; this.ys = 0.78; this.L = 13; this.T = new THREE.Vector3();
@@ -537,6 +538,17 @@ export class Galaxy extends View {
   frameLayout() {
     const W = this.W, ys = this.ys, hx = W / 2 + 0.6, hz = DEPTH / 2 + 0.6, zb = -DEPTH / 2 - 0.42, xa = -W / 2 - 0.35;
     this.pU.uHalf.value.set(hx, hz); this.plane.scale.set(hx, hz, 1);
+    {   // OLYMPUS materials: a chrome rail round the plane + gold posts (2 draws, env reflections)
+      if (!this.rail) {
+        this.rail = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), metal({ kind: 'chrome', envMapIntensity: 3 }), 4);
+        this.posts = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 18), metal({ kind: 'gold', brushed: false, roughness: 0.2, envMapIntensity: 3 }), 4);
+        this.rail.frustumCulled = this.posts.frustumCulled = false; this.scene.add(this.rail, this.posts); this._railO = new THREE.Object3D();
+      }
+      const o = this._railO, y = this.plane.position.y, X = hx + 0.02, Z = hz + 0.02;
+      [[0, -Z, 2 * X, 0.05, 0.05], [0, Z, 2 * X, 0.05, 0.05], [-X, 0, 0.05, 0.05, 2 * Z], [X, 0, 0.05, 0.05, 2 * Z]].forEach((b, i) => { o.position.set(b[0], y, b[1]); o.scale.set(b[2], b[3], b[4]); o.updateMatrix(); this.rail.setMatrixAt(i, o.matrix); });
+      [[-X, -Z], [X, -Z], [-X, Z], [X, Z]].forEach((c, i) => { o.position.set(c[0], y + 0.1, c[1]); o.scale.set(0.16, 0.26, 0.16); o.updateMatrix(); this.posts.setMatrixAt(i, o.matrix); });
+      this.rail.instanceMatrix.needsUpdate = this.posts.instanceMatrix.needsUpdate = true;
+    }
     this.dust.scale.set(W / 7, ys / 0.78, 1);
     const v = [], a = [], uu = [];
     const seg = (x0, y0, z0, x1, y1, z1, al, dash) => { v.push(x0, y0, z0, x1, y1, z1); a.push(al, al); uu.push(dash ? x0 * 4 : -1, dash ? x1 * 4 : -1); };
