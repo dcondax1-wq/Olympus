@@ -20,8 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
 RES = []
 # apps another agent owns right now: gaps are listed, not fixed here (the lead removes a name when its owner has fixed it)
-PENDING = {"arena", "ares", "chronos", "cities", "datacity", "fates", "forum", "hephaestus", "hermes", "kalshi", "labyrinth", "nemesis", "odeon", "oracle", "pantheon",
-           "plutus", "prometheus", "pc", "tyche"}
+PENDING = set()
 NOT_AN_APP = {"pc"}                              # plain files, not an app (the PC helper downloads): never needs icons
 
 
