@@ -416,6 +416,7 @@ def page(br, url, keys, device=None, voices=True):
     if keys:
         ctx.add_init_script("try { localStorage.setItem('jarvis.smart', JSON.stringify({ v: 2, on: false, provider: 'groq', keys: %s })); } catch (e) {}" % json.dumps(keys))
     ctx.add_init_script(f"window.__iosRule = {json.dumps(bool(device))}; window.__voicesEmpty = {json.dumps(not voices)};")
+    ctx.add_init_script("try { localStorage.setItem('jarvis.bots.set', JSON.stringify({ on: true, plan: false, recap: false, rituals: false })); } catch (e) {}")     # (the bots' 01:45 / 09:15 / 15:55 / 16:05 cards would be spoken first in their hour)
     ctx.add_init_script(T.MOCK)
     ctx.add_init_script(MEDIA)
     net = {"gemini": [], "groq": [], "other": []}
