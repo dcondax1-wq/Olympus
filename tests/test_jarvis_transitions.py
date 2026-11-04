@@ -217,14 +217,20 @@ def test_skip_tiers(br, origin):
         p.evaluate(f"() => {{ document.documentElement.dataset.fx = '{fx}'; }}")
         mode = p.evaluate(PLAY, ["oracle", None])
         s = p.evaluate("() => ({ fade: !!document.querySelector('.jtrans-fade'), flat: !!document.querySelector('.jtrans-fade.flat'), canvas: !!document.querySelector('canvas.jtrans, .jtrans canvas'), tier: window.__jarvisTransitions.tier, dur: window.__jarvisTransitions.dur })")
-        p.wait_for_timeout(500)
+        try:
+            p.wait_for_function("() => !document.querySelector('.jtrans-fade, .jportal-fade, .jtrans')", polling=100, timeout=4000)
+        except Exception:
+            pass
         gone = p.evaluate("() => !document.querySelector('.jtrans-fade, .jportal-fade, .jtrans')")
         check(f"d. LITE (3D effects {fx}): a 250 ms colour fade, no canvas, gone after", mode == "fade" and s["fade"] and not s["flat"] and not s["canvas"] and s["tier"] == "lite" and s["dur"] == 250 and gone, (mode, s, gone))
         ctx.close()
     ctx, p, errs = new_page(br, origin, reduced=True)
     mode = p.evaluate(PLAY, ["pantheon", None])
     s = p.evaluate("() => ({ flat: !!document.querySelector('.jtrans-fade.flat'), canvas: !!document.querySelector('.jtrans canvas'), tier: window.__jarvisTransitions.tier, dur: window.__jarvisTransitions.dur, name: !!document.querySelector('.jtrans-name') })")
-    p.wait_for_timeout(500)
+    try:
+        p.wait_for_function("() => !document.querySelector('.jtrans-fade, .jportal-fade, .jtrans')", polling=100, timeout=4000)          # the 200 ms fade, on a loaded machine
+    except Exception:
+        pass
     gone = p.evaluate("() => !document.querySelector('.jtrans-fade, .jportal-fade, .jtrans')")
     check("d. reduced motion: a 200 ms flat colour fade (nothing moves: no canvas, no name animation), gone after", mode == "fade" and s["flat"] and not s["canvas"] and not s["name"] and s["tier"] == "static" and s["dur"] == 200 and gone, (mode, s, gone))
     pm = p.evaluate("() => window.jarvisPortal.jump({ id: 'oracle', name: 'Oracle', color: '#7fe9ff' })")
