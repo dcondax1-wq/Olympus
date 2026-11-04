@@ -354,7 +354,7 @@ h1, h2, p, ol { margin: 0; }
 .hist i { display: block; width: 100%; border-radius: 3px 3px 0 0; } .hist .up i { background: var(--green); } .hist .dn i { background: var(--red); }
 .hist b { font-size: 10px; color: var(--ink); } .hist span { font-size: 7.5px; color: var(--dim); white-space: nowrap; }
 .shareview { position: absolute; z-index: 9; inset: 0; display: grid; grid-template-rows: 1fr auto auto; justify-items: center; gap: 8px; padding: calc(var(--st) + 12px) 12px calc(var(--sb) + 12px); background: rgba(0, 4, 2, .94); }
-.shareview img { max-width: 100%; max-height: 100%; min-height: 0; object-fit: contain; border-radius: 8px; border: 1px solid var(--line); -webkit-touch-callout: default; user-select: auto; }
+.shareview img { max-width: 100%; max-height: 100%; min-height: 0; object-fit: contain; border-radius: 8px; border: 1px solid var(--line); -webkit-touch-callout: default; -webkit-user-select: auto; user-select: auto; }
 .shareview p { margin: 0; font-size: 11px; color: var(--dim); text-align: center; }
 .toast-d { position: absolute; z-index: 10; left: 50%; transform: translateX(-50%); bottom: calc(var(--sb) + 180px); padding: 8px 14px; border-radius: 99px; background: rgba(4, 14, 9, .96); border: 1px solid var(--line); color: var(--ink); font-size: 11px; max-width: calc(100% - 24px); }
 #app[data-season="spring"] .verdict, #app[data-season="autumn"] .verdict { text-shadow: none; }
