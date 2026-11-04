@@ -178,7 +178,7 @@
       side: SIDES.indexOf(u.side) >= 0 ? u.side : 'all',
     },
     preview: false, jf: 'all', jn: '', q: '', kf: 0, calc: { p: '', c: '' }, trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [], fresh: false, alerts: null,
-    city: false, eqv: '', raceOff: new Set(), heatSel: '', bm: 'wr', bs: 1,
+    gpx: '', city: false, eqv: '', raceOff: new Set(), heatSel: '', bm: 'wr', bs: 1,
   };
   const saveUi = () => LS.set('kalshi.ui', S.ui);
   const cached = LS.get('kalshi.last', null);
@@ -1077,6 +1077,109 @@
       + '</section>';
   }
 
+
+  // ================================================================== 2026-11-04 the guard: "Do not take this bet" (suggestions only)
+  // The top card. It checks every open bet (and, with nothing open, any bet you pick below) against what the research found
+  // (research/writeups/2026-11-04_kalshi_edges.md): the price band that loses, the fee against the edge, the size against a
+  // wipe-out, a coin that loses, bets that settle together. Green = nothing breaks a rule, amber = close to the line, red = do not
+  // take it, each with the dollar reason. It reads only the numbers the bot sends; it never places, changes or cancels a bet.
+  const GUARD_BAND = { lo: 0.9, hi: 0.95, pnl: -248.3, n: 581, st: 5343.43 };   // the research's leak, used only when the feed has no price bands
+  const GLV = { red: ['DO NOT TAKE', 'red'], amber: ['CAREFUL', 'amber'], green: ['OK', 'green'] };
+  const glRank = { green: 0, amber: 1, red: 2 };
+  const feeOf = (n, p) => Math.round(0.07 * n * p * (1 - p) * 100) / 100;            // Kalshi's taker fee, to the cent (the bot's own P&L matches it)
+  const medianOf = (a) => { const b = a.filter((x) => x != null).sort((x, y) => x - y); return b.length ? b[Math.floor(b.length / 2)] : null; };
+
+  function guardCtx(k, v) {
+    const rows = bucketRows(k, v).rows.filter((r) => r.lo != null && r.hi != null);
+    // a band is only called a leak on 100+ bets; when the feed has no such band over 90-95c, the research's own leak stands in for it
+    const strong = rows.filter((r) => r.n >= 100 && r.pnl != null && r.st > 0);
+    const bad = strong.filter((r) => r.pnl < -0.5 && r.pnl / r.st < -0.01).concat(strong.some((r) => r.lo < 0.95 && r.hi > 0.9) ? [] : [GUARD_BAND]);
+    const strat = new Map();
+    v.strat.forEach((x) => { const w = num(x.wins), l = num(x.losses); if (w != null && l != null && w + l >= 30) strat.set(String(x.name || '').toLowerCase(), w / (w + l)); });
+    const st = isObj(k.stats) ? k.stats : null, sw = st ? num(st.wins) : null, sl = st ? num(st.losses) : null;
+    return { bal: num(k.balance), rows, bad, strat, all: sw != null && sl != null && sw + sl >= 30 ? sw / (sw + sl) : null, cats: arr(k.categories).filter(isObj),
+      typical: medianOf(v.tr.map((t) => num(t.contracts))) || 6 };
+  }
+
+  /** one bet against the rules: { level, reasons: [{ lv, html }] }; b = { n, p, strategy, cat, asset } (p in dollars) */
+  function guardBet(g, b) {
+    const p1 = (x) => (x * 100).toFixed(1) + '%', R = [], c = (x) => Math.round(x * 100), p = b.p, n = b.n, cost = n * p;
+    // 1) the price band
+    const leak = g.bad.filter((r) => p >= r.lo - 1e-9 && p < r.hi - 1e-9)[0], band = g.rows.filter((r) => p >= r.lo - 1e-9 && p < r.hi - 1e-9)[0];
+    if (leak) R.push({ lv: 'red', html: `The <b>${esc(cRange(leak.lo, leak.hi))}</b> price band has lost <b class="down">${esc(usd(leak.pnl, true))}</b> on ${esc(fmtN(leak.n || 0))} bets${leak.st ? ` (${esc(pct(leak.pnl / leak.st, true))} of what was bet)` : ''}. This one is at ${c(p)}¢.` });
+    else if (p >= 0.99) R.push({ lv: 'amber', html: `At <b>${c(p)}¢</b> one loss wipes out about <b>${Math.round(p / (1 - p))} wins</b> and the fee alone needs ${esc(p1(p + 0.07 * p * (1 - p)))} wins.` });
+    else if (p < 0.9) R.push({ lv: 'amber', html: `Under <b>90¢</b> the bot has no proven edge${band && band.n >= 100 && band.pnl != null ? `: this band is <b class="${cls(band.pnl)}">${esc(usd(band.pnl, true))}</b> on ${esc(fmtN(band.n || 0))} bets` : ''}.` });
+    else if (band && band.n >= 100 && band.pnl != null && band.pnl > 0.5) R.push({ lv: 'green', html: `The <b>${esc(cRange(band.lo, band.hi))}</b> band has made <b class="up">${esc(usd(band.pnl, true))}</b> after fees.` });
+    else R.push({ lv: 'green', html: 'No loss-making price band here (95¢ and up is the band that has paid after fees).' });
+    // 2) the fee against the edge: the win rate this band (else this strategy, else all bets) has had, against the line at this price
+    const fee = feeOf(n, p), be = p + 0.07 * p * (1 - p);
+    const bw = band && band.w != null && band.l != null && band.w + band.l >= 100 ? band.w / (band.w + band.l) : null;
+    const sw = b.strategy ? g.strat.get(String(b.strategy).toLowerCase()) : null;
+    const wr = bw != null ? bw : sw != null ? sw : g.all, src = bw != null ? 'bets in this band' : sw != null ? b.strategy : 'all bets';
+    if (wr != null) {
+      const gap = wr - be, ev = n * gap;
+      R.push({ lv: gap < -0.005 ? 'red' : gap <= 0.005 ? 'amber' : 'green', html: `Needs <b>${esc(p1(be))}</b> wins to break even after the <b>${esc(usd(fee))}</b> fee; ${esc(src)} win <b>${esc(p1(wr))}</b>: expect <b class="${cls(ev)}">${esc(usd(ev, true))}</b> on this bet.` });
+    } else R.push({ lv: 'amber', html: `The fee is <b>${esc(usd(fee))}</b> and needs <b>${esc(p1(be))}</b> wins to break even; there is not enough history to say if that is met.` });
+    // 3) the size against a wipe-out
+    if (g.bal != null && g.bal > 0) {
+      const sh = cost / g.bal;
+      R.push({ lv: sh >= 0.25 ? 'red' : sh >= 0.1 ? 'amber' : 'green', html: `One loss costs <b class="${sh >= 0.1 ? 'down' : ''}">${esc(usd(cost))}</b>, <b>${esc(pct(sh))}</b> of your ${esc(usd(g.bal))}${sh >= 0.25 ? ': three of these would end the account' : sh >= 0.1 ? ': keep it under 10% (the research: 2% to 5%)' : ''}.` });
+    }
+    // 4) a coin that has lost
+    const cat = g.cats.filter((x) => { const nm = String(x.name || '').toLowerCase(); return nm && (nm === String(b.cat || '').toLowerCase() || nm === String(b.asset || '').toLowerCase()); })[0];
+    if (cat && num(cat.staked) > 0 && num(cat.trades) >= 30 && num(cat.pnl) / num(cat.staked) < -0.03) {
+      R.push({ lv: 'red', html: `<b>${esc(String(cat.name))}</b> bets have lost <b class="down">${esc(usd(num(cat.pnl), true))}</b> on ${esc(usd(num(cat.staked)))} bet (${esc(pct(num(cat.pnl) / num(cat.staked), true))}).` });
+    }
+    const level = R.reduce((m, r) => (glRank[r.lv] > glRank[m] ? r.lv : m), 'green');
+    return { level, reasons: R, cost, ev: wr != null ? n * (wr - be) : null };
+  }
+
+  function guardModel(k, v) {
+    const g = guardCtx(k, v), ps = v.pos.map(posModel).filter((m) => m.n != null && (m.avg != null || m.px != null));
+    const bets = ps.map((m) => ({ m, ...guardBet(g, { n: Math.abs(m.n), p: m.avg != null ? m.avg : m.px, strategy: m.p.strategy, cat: m.p.category, asset: m.asset }) }));
+    // bets that settle within 90 s of each other move together: one bad coin move takes them all
+    bets.forEach((b) => {
+      const same = bets.filter((o) => b.m.closes != null && o.m.closes != null && Math.abs(o.m.closes - b.m.closes) <= 90);
+      if (same.length >= 2) {
+        const tot = sum(same.map((o) => o.cost));
+        b.reasons.push({ lv: 'amber', html: `<b>${same.length} bets</b> settle together (${esc(usd(tot))} at risk): coins move as one, so a bad move can lose them all.` });
+        if (b.level === 'green') b.level = 'amber';
+      }
+    });
+    const worst = bets.reduce((mm, b) => (glRank[b.level] > glRank[mm] ? b.level : mm), 'green');
+    return { g, bets, worst, red: bets.filter((b) => b.level === 'red').length, amber: bets.filter((b) => b.level === 'amber').length,
+      atRisk: sum(bets.filter((b) => b.level === 'red').map((b) => b.cost)) };
+  }
+
+  const GPX = [0.91, 0.94, 0.96, 0.98];
+  function guardHtml(k, v) {
+    const gm = guardModel(k, v), n = gm.bets.length;
+    const chk = (() => {
+      const p = S.gpx ? +S.gpx : null, bal = gm.g.bal;
+      const r = p ? guardBet(gm.g, { n: gm.g.typical, p, strategy: null, cat: '', asset: '' }) : null;
+      return `<div class="gd-chk"><p class="lab">Check a bet before it opens · ${esc(fmtN(gm.g.typical))} contracts, the bot's usual size</p>`
+        + `<div class="gd-px" role="group" aria-label="Price of the bet to check">${GPX.map((x) => `<button type="button" data-act="gpx" data-v="${x}" aria-pressed="${p === x}">${Math.round(x * 100)}¢</button>`).join('')}</div>`
+        + (r ? `<div class="gd-b ${GLV[r.level][1]}"><span class="gd-v ${GLV[r.level][1]}">${GLV[r.level][0]}</span><span class="gd-t">${gm.g.typical} × ${Math.round(p * 100)}¢ = ${esc(usd(r.cost))}${bal ? ` · ${esc(pct(r.cost / bal))} of your balance` : ''}</span>`
+          + `<ul class="gd-r">${r.reasons.filter((x) => r.level === 'green' || x.lv !== 'green').map((x) => `<li class="${x.lv}">${x.html}</li>`).join('')}</ul></div>` : '<p class="muted">Tap a price to see the verdict for a bet at that price.</p>')
+        + '</div>';
+    })();
+    const light = n ? gm.worst : 'idle';
+    const head = !n ? (S.gpx ? '' : 'No open bets: nothing to stop right now')
+      : gm.red ? `Do not take ${gm.red === n ? (n === 1 ? 'this bet' : `any of these ${n} bets`) : `${gm.red} of these ${n} bets`}`
+        : gm.amber ? `Careful: ${gm.amber} of ${n} open bets ${gm.amber === 1 ? 'is' : 'are'} near the line` : `OK: nothing open breaks the research rules`;
+    const sub = !n ? 'Below is the check for the bot\'s next bet. Nothing is at risk while it is paused.'
+      : gm.red ? `${esc(usd(gm.atRisk))} is at risk in the red ${gm.red === 1 ? 'one' : 'ones'}. Suggestions only: this page never places, changes or cancels a bet.`
+        : 'Suggestions only: this page never places, changes or cancels a bet.';
+    const rows = gm.bets.slice().sort((a, b) => glRank[b.level] - glRank[a.level]).slice(0, 5).map((b) => {
+      const lv = GLV[b.level];
+      return `<div class="gd-b ${lv[1]}"><span class="gd-v ${lv[1]}">${lv[0]}</span><span class="gd-t">${esc(b.m.title.slice(0, 60))} · ${esc(fmtN(b.m.n))} × ${Math.round((b.m.avg != null ? b.m.avg : b.m.px) * 100)}¢ = ${esc(usd(b.cost))}</span>`
+        + `<ul class="gd-r">${b.reasons.filter((x) => b.level === 'green' || x.lv !== 'green').map((x) => `<li class="${x.lv}">${x.html}</li>`).join('')}</ul></div>`;
+    }).join('');
+    const more = n > 5 ? `<p class="muted">and ${n - 5} more, all in the list below.</p>` : '';
+    return `<section class="card guard ${light}" id="sec-guard" aria-label="Do not take this bet: the guard"><div class="gd-top"><span class="gd-light ${light}" aria-hidden="true"></span>`
+      + `<div class="gd-h"><span class="lab">The guard · ${n ? n + ' open bet' + (n === 1 ? '' : 's') : 'no open bets'}</span><h3>${esc(head || 'Check a bet')}</h3></div></div><p class="gd-s">${sub}</p>${rows}${more}${chk}</section>`;
+  }
+
   // ---- when nothing is open (a paused bot, a quiet hour): never a blank card, the history stays and the page says what comes back
   function restHtml(k, v) {
     if (v.pos.length) return '';
@@ -1508,7 +1611,7 @@
       // one clean hierarchy (owner 2026-11-03 "more organized"): Today -> Edge -> Performance -> Alerts
       const eq = safe('equity', () => eqHtml(v));              // first: the stats read its series (max drawdown)
       html = (pv ? previewBar() : notesHtml(k))
-        + groupHtml('today', 'Today', todaySum(k), [safe('verdict', () => verdictHtml(k, v)), safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v)), safe('rest', () => restHtml(k, v))])
+        + groupHtml('today', 'Today', todaySum(k), [safe('guard', () => guardHtml(k, v)), safe('verdict', () => verdictHtml(k, v)), safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v)), safe('rest', () => restHtml(k, v))])
         + groupHtml('edge', 'Edge', edgeSum(v), [safe('edge wait', () => edgeWaitHtml(k, v)), safe('live edge', () => edgeHtml(k, v)), safe('edge map', () => edgeMapHtml(k, v)), safe('sizing', () => kellyHtml(k, v)), safe('risk of ruin', () => ruinHtml(k, v))])
         + groupHtml('perf', 'Performance', perfSum(k), [eq, safe('race', () => raceHtml(v)), safe('heat map', () => heatHtml(v)), safe('calendar', () => calHtml(v)), safe('daily P&L', () => barsHtml(v)), safe('stats', () => statsHtml(v, k)),
           safe('battle', () => battleHtml(k, v)), safe('strategies', () => stratHtml(v)), safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('markets', () => catHtml(k, v)), safe('journal', () => journalHtml(v))])
@@ -1603,6 +1706,7 @@
       if (r && S.v) r.innerHTML = calRead(new Map(S.v.days));
     } else if (a === 'jf') { S.jf = ['all', 'win', 'loss'].indexOf(val) >= 0 ? val : 'all'; if (S.v) swap('sec-journal', journalHtml(S.v)); }
     else if (a === 'jnote') { S.jn = S.jn === val ? '' : val; if (S.v) swap('sec-journal', journalHtml(S.v)); const ta = $('#jnote'); if (ta) ta.focus({ preventScroll: true }); }
+    else if (a === 'gpx') { S.gpx = S.gpx === val ? '' : val; const k = previewing() ? sample() : S.k; if (S.v && k) { swap('sec-guard', guardHtml(k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-guard [data-act="gpx"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
     else if (a === 'jump') jump(val);
     else if (a === 'race') { if (S.raceOff.has(val)) S.raceOff.delete(val); else S.raceOff.add(val); if (S.v) { swap('sec-race', raceHtml(S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-race .rchip'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
     else if (a === 'bm') { S.bm = val; if (S.v && S.k) { swap('sec-battle', battleHtml(S.k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-battle [data-act="bm"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }

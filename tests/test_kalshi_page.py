@@ -445,6 +445,10 @@ def run_browser(url, tmp):
     with sync_playwright() as pw:
         exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
         br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+        if "--only=guard" in sys.argv:                  # just the guard card (2026-11-04), for a quick run
+            part_guard(br, url, tmp)
+            br.close()
+            return
         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
         ctx.route("https://raw.githubusercontent.com/**", feed)
         ctx.route("https://api.github.com/**", feed)
@@ -1132,6 +1136,7 @@ def run_browser(url, tmp):
         part_k(br, url, tmp)
         part_kit(br, url, tmp)
         part_v4(br, url, tmp)
+        part_guard(br, url, tmp)
         br.close()
 
 
@@ -1387,7 +1392,7 @@ def part_v4(br, url, tmp):
           p.locator("#pill.warn").inner_text().upper() == "PAUSED" and "LIVE" in p.inner_text("#mode").upper())
     vd = p.inner_text("#sec-verdict")
     check("v4. verdict banner first in Today, plain words: wins 94% but loses money, here is why",
-          p.evaluate("document.querySelector('#g-today > .card').id") == "sec-verdict" and "You win 94% of bets but lose money: here is why" in vd
+          p.evaluate("[...document.querySelectorAll('#g-today > .card')].slice(0, 2).map((c) => c.id)") == ["sec-guard", "sec-verdict"] and "You win 94% of bets but lose money: here is why" in vd
           and "−$81.77" in vd and "1,735W 101L" in vd and "paused: nothing is at risk right now." in vd.lower(), vd[:300])
     check("v4. verdict reasons from the numbers: one loss wipes out ~15 wins (6¢ on 94¢), break-even 93.9% vs 94.5%, fee drag, the 90–95¢ leak −$248.30, strategy vs strategy",
           "One loss wipes out about 15 wins" in vd and "6¢" in vd and "93.9%" in vd and "94.5%" in vd and "0.6 points above" in vd and "Fees and slips cost about" in vd
@@ -1398,7 +1403,7 @@ def part_v4(br, url, tmp):
     p.click("#sec-verdict .vd-i >> nth=1")
     flashed = p.evaluate("document.getElementById('sec-cb').classList.contains('flash')")
     try:
-        p.wait_for_function("window.scrollY > 300", timeout=8000)
+        p.wait_for_function("window.scrollY > 300", timeout=30000)
     except Exception:
         pass
     check("v4. tapping a verdict line glides to its card and flashes it", p.evaluate("window.scrollY") > 300 and flashed, (flashed, p.evaluate("window.scrollY")))
@@ -1575,6 +1580,124 @@ def part_v4(br, url, tmp):
     ids = {s_: p.locator(s_).count() for s_ in ("#sec-verdict", "#sec-heat", "#sec-race", "#sec-battle", "#sec-tl", "#sec-ruin")}
     check("v4. the sample preview carries the new views too (verdict, heat map, race, battle, timeline)", all(ids[k_] == 1 for k_ in ("#sec-verdict", "#sec-heat", "#sec-battle", "#sec-tl")), ids)
     check("v4. no page errors in any of it", not errs, errs[:3])
+    ctx.close()
+
+
+def guard_bot(now):
+    """The paused bot's feed (buckets, categories, strategies from the research) with four open bets: an XRP 15-minute bet at 93c (the 90-95c leak,
+    a losing coin, 28% of the balance), a Late favourite at 96c (clean), a DOGE bet at 96c (14% of the balance) settling with the XRP bet."""
+    raw = paused_bot(now)
+    t1, t2 = int(now) + 600, int(now) + 4000
+    raw["running"], raw["status"] = True, "Trading · 3 live strategies · 3 open bets"
+    raw["positions"] = [
+        {"ticker": "KXXRP15M-26NOV021000-00", "title": "XRP up or down · 15 min", "side": "no", "contracts": 17, "avg_price": 0.93, "asset": "XRP", "strategy": "15-min favourites",
+         "category": "XRP", "closes": iso(t1)},
+        {"ticker": "KXBTCD-26NOV0211-T77399.99", "title": "Bitcoin above $77,400 at 11 AM ET", "side": "yes", "contracts": 5, "avg_price": 0.96, "asset": "BTC",
+         "strategy": "Late favourite (BTC hourly)", "category": "Bitcoin", "closes": iso(t2)},
+        {"ticker": "KXDOGE15M-26NOV021000-00", "title": "DOGE up or down · 15 min", "side": "no", "contracts": 8, "avg_price": 0.96, "asset": "DOGE", "strategy": "15-min favourites",
+         "category": "Dogecoin", "closes": iso(t1 + 20)},
+    ]
+    return raw
+
+
+def part_guard(br, url, tmp):
+    """The guard (2026-11-04): the top card of Today, "Do not take this bet", green / amber / red with the dollar reason, never blank,
+    suggestions only (no order is ever placed from it), every tap >= 44 px."""
+    page_url = url + "kalshi/"
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
+    ctx.route("https://raw.githubusercontent.com/**", feed)
+    ctx.route("https://api.github.com/**", feed)
+    p = ctx.new_page()
+    p.set_default_timeout(120000)
+    errs, posts = [], []
+    p.on("pageerror", lambda e: errs.append(str(e)))
+    p.on("console", lambda m: errs.append(m.text) if m.type == "error" and not re.search(r"Failed to load resource|net::ERR", m.text) else None)
+    p.on("request", lambda r: posts.append(r.method + " " + r.url) if r.method not in ("GET", "HEAD") else None)
+
+    def open_(j):
+        FEED["mode"], FEED["j"] = "ok", j
+        p.goto(page_url)
+        p.evaluate("localStorage.clear()")
+        p.goto(page_url)
+        ready(p, 20000)
+        p.wait_for_selector("#sec-guard")
+
+    now = time.time()
+    # ---- with open bets
+    open_(guard_bot(now))
+    g = p.inner_text("#sec-guard")
+    rows = p.eval_on_selector_all("#sec-guard > .gd-b", "els => els.map(e => [e.className, e.querySelector('.gd-v').textContent, e.innerText])")
+    first = p.evaluate("[...document.querySelectorAll('#g-today > .card')].slice(0, 2).map((c) => c.id)")
+    check("g1. the guard is the top card of Today (the verdict follows it)", first == ["sec-guard", "sec-verdict"], first)
+    check("g1. red headline in plain words with the dollars at risk: 'Do not take 1 of these 3 bets' and the $ in the red one, suggestions only",
+          p.get_attribute("#sec-guard", "class").split()[-1] == "red" and "Do not take 1 of these 3 bets" in g and "$15.81 is at risk" in g and "never places, changes or cancels a bet" in g, g[:300])
+    check("g1. the XRP bet is red (sorted first) with the three dollar reasons: the 90–95¢ band −$248.30 on 581 bets, needs 93.3% wins vs the band's 92.2%, and 28% of the balance",
+          rows[0][1] == "DO NOT TAKE" and "90–95¢" in rows[0][2] and "−$248.30" in rows[0][2] and "581 bets" in rows[0][2] and "Needs 93.5% wins" in rows[0][2] and "92.3%" in rows[0][2]
+          and "$15.81" in rows[0][2] and "28%" in rows[0][2] and "XRP" in rows[0][2] and "−$106.63" in rows[0][2], rows[0])
+    check("g1. the DOGE bet at 96¢ is amber (13.8% of the balance, settles with the XRP bet), the Late favourite at 96¢ is OK; amber / green lines carry their own reasons",
+          rows[1][1] == "CAREFUL" and "DOGE" in rows[1][2] and "settle together" in rows[1][2] and "14%" in rows[1][2]
+          and rows[2][1] == "OK" and "Bitcoin above" in rows[2][2] and "+$136.98" in rows[2][2], [r[1] for r in rows])
+    check("g1. nothing on the card places an order: no form, no POST, no link to Kalshi's trading", p.locator("#sec-guard form").count() == 0 and not posts
+          and p.locator("#sec-guard a").count() == 0, posts[:3])
+    # ---- the check-a-bet chips work with bets open, tap size, keyboard
+    box = p.evaluate("[...document.querySelectorAll('#sec-guard [data-act=gpx]')].map((b) => { const r = b.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })")
+    check("g2. four price chips (91 / 94 / 96 / 98¢), each at least 44 x 44 px", len(box) == 4 and all(w >= 44 and h >= 44 for w, h in box), box)
+    p.click("#sec-guard [data-act=gpx][data-v='0.94']")
+    r94 = p.inner_text("#sec-guard .gd-chk")
+    check("g2. 94¢ is red: the band that lost $248.30, the fee needs 94.4% wins against the band's 92.3%", "DO NOT TAKE" in r94 and "−$248.30" in r94 and "94.4%" in r94 and p.get_attribute("#sec-guard [data-v='0.94']", "aria-pressed") == "true", r94)
+    p.click("#sec-guard [data-act=gpx][data-v='0.96']")
+    r96 = p.inner_text("#sec-guard .gd-chk")
+    check("g2. 96¢ at the bot's usual 9 contracts is CAREFUL only for its size (15% of the balance), the band and the fee pass", "CAREFUL" in r96 and "15%" in r96 and "keep it under 10%" in r96 and "DO NOT TAKE" not in r96, r96)
+    p.click("#sec-guard [data-act=gpx][data-v='0.98']")
+    r98 = p.inner_text("#sec-guard .gd-chk")
+    check("g2. 98¢ is CAREFUL, not OK: the fee line needs 98.1% wins and the band wins 98.6%, 0.5 points of room", "CAREFUL" in r98 and "98.1%" in r98 and "DO NOT TAKE" not in r98, r98)
+    p.click("#sec-guard [data-act=gpx][data-v='0.98']")
+    check("g2. tapping the chip again clears it", "Tap a price" in p.inner_text("#sec-guard .gd-chk"))
+    # ---- paused bot, nothing open: never blank
+    open_(paused_bot(now))
+    g0 = p.inner_text("#sec-guard")
+    check("g3. nothing open (the paused bot): the guard still shows, says nothing is at risk, and offers the check", "No open bets: nothing to stop right now" in g0
+          and "Nothing is at risk while it is paused" in g0 and p.locator("#sec-guard [data-act=gpx]").count() == 4 and p.get_attribute("#sec-guard", "class").split()[-1] == "idle", g0[:200])
+    p.click("#sec-guard [data-act=gpx][data-v='0.91']")
+    check("g3. with nothing open, a 91¢ check is red and names the dollars", "DO NOT TAKE" in p.inner_text("#sec-guard .gd-chk") and "−$248.30" in p.inner_text("#sec-guard .gd-chk"))
+    # ---- a feed with no buckets or categories: the research's own leak is used, nothing crashes
+    j = paused_bot(now)
+    for k_ in ("buckets", "categories", "calibration", "stats"):
+        j.pop(k_, None)
+    j["positions"] = guard_bot(now)["positions"]
+    open_(j)
+    rows2 = p.eval_on_selector_all("#sec-guard > .gd-b .gd-v", "els => els.map(e => e.textContent)")
+    check("g4. no buckets in the feed: the research's 90–95¢ leak still flags the 93¢ bet (red), the Late favourite is not red (the 15-min bets can be: their own win rate is under the line)", rows2[0] == "DO NOT TAKE" and rows2.count("DO NOT TAKE") >= 1 and rows2[-1] != "DO NOT TAKE"
+          and "−$248.30" in p.inner_text("#sec-guard"), rows2)
+    # ---- the sample preview and escaping
+    FEED["mode"], FEED["j"] = "404", None
+    p.goto(page_url)
+    p.evaluate("localStorage.clear()")
+    p.goto(page_url)
+    p.wait_for_selector("[data-act=preview]")
+    p.click("[data-act=preview]")
+    p.wait_for_selector("#sec-guard")
+    check("g5. the sample preview carries the guard too (never blank)", p.locator("#sec-guard .gd-top").count() == 1 and p.locator("#sec-guard .gd-v, #sec-guard [data-act=gpx]").count() >= 1)
+    evil = guard_bot(now)
+    evil["positions"][0]["title"] = "<img src=x onerror=window.__pwned=1>"
+    open_(evil)
+    check("g5. a hostile title is text, never markup", p.evaluate("!window.__pwned") and p.locator("#sec-guard img").count() == 0)
+    # ---- small phone: no sideways scroll, nothing cut
+    ctx2 = br.new_context(viewport={"width": 375, "height": 667}, device_scale_factor=1)
+    ctx2.route("https://raw.githubusercontent.com/**", feed)
+    ctx2.route("https://api.github.com/**", feed)
+    q = ctx2.new_page()
+    q.set_default_timeout(120000)
+    FEED["mode"], FEED["j"] = "ok", guard_bot(now)
+    q.goto(page_url)
+    q.evaluate("localStorage.clear()")
+    q.goto(page_url)
+    ready(q, 20000)
+    q.wait_for_selector("#sec-guard")
+    sw = q.evaluate("[document.documentElement.scrollWidth, innerWidth, Math.max(...[...document.querySelectorAll('#sec-guard *')].map((e) => e.getBoundingClientRect().right))]")
+    check("g6. 375 x 667: the guard fits (no sideways scroll, nothing past the right edge)", sw[0] <= sw[1] and sw[2] <= sw[1] + 0.5, sw)
+    ctx2.close()
+    check("g7. no page errors and no failed section on the guard", not errs and "could not be shown" not in p.inner_text("#body"), errs[:3])
     ctx.close()
 
 
