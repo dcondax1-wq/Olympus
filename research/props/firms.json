@@ -431,7 +431,7 @@
       {"plan": "fn_rapid_daily_50k", "when": "once two accounts are funded or by month 2", "cash": 169.99, "why": "bots allowed in the terms, no consistency rule even at payout, daily payouts (first money sooner)", "h2_per_month": 561},
       {"plan": "mffu_rapid_eod_50k", "when": "only after MFFU answers in writing (caps shared? copy allowed? news rule detail)", "cash": 94.2, "why": "adds about $660 a month (H2) next to Lucid + FundedNext, but the eval takes about 2 months", "h2_per_month": 659}
     ],
-    "combo": "MFFU Builder 50K + LucidPro 50K + FundedNext Rapid Daily 50K: $1,754 a month on Jul-Oct trades over 6 months net of fees ($2,373 in months 4-6), $377 up front; 2021-25 reference: -$92 a month (LIT has no edge there). Adding 1 Rapid EOD: $2,413 a month.",
+    "combo": "MFFU Builder 50K + LucidPro 50K + FundedNext Rapid Daily 50K: $2,147 a month on Jul-Oct trades over 6 months net of fees ($2,792 in months 4-6; $2,655 and $3,292 on Jan-Jun), $377 up front; 2021-25 reference: -$92 a month (LIT has no edge there). Adding 1 Rapid EOD: about $660 a month more (H2).",
     "source": "research/writeups/lit-funded-firms.md, lit-mffu-rapid-stack.md, lit-builder-25k.md"
   }
 }
