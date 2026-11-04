@@ -93,7 +93,12 @@ export function mountCore(el, opts) {
     if (r3) r3.size(w, Math.min(d, tier > 1 ? 2 : tier ? 1.5 : 1));
   }
   const live = () => !dead && !still && !document.hidden && onScreen;
+  // off-screen (an app open over Jarvis): the render core releases its buffers (MSAA scene buffer, bloom chain), not just the loop
   function kick() {
+    if (r3) {
+      if (!onScreen && !dead) r3.sleep();
+      else if (onScreen && r3.asleep()) { r3.wake(); if (still) snap(); }
+    }
     if (live()) { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } }
     else if (raf) { cancelAnimationFrame(raf); raf = 0; }
   }
@@ -823,6 +828,9 @@ function makeReactor(T, RC, canvas, context, attrs, design0, tier0, theme0) {
     quality,
     /** the render core's stats (passes, bloom, MSAA / FXAA), or null when it is missing */
     post: () => (rc ? rc.stats() : null),
+    sleep: () => { if (rc) rc.suspend(); },
+    wake: () => { if (rc) rc.resume(); },
+    asleep: () => !!(rc && rc.asleep()),
     burst(i) { if (i === 4) bAcc = 3; },
     theme(th) { colours(th); envMap(); },
     design(name) { build(name); },

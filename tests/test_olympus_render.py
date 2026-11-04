@@ -224,6 +224,90 @@ def test_jarvis(br, origin):
     ctx.close()
 
 
+# live GPU buffers of the page's own WebGL2 contexts: framebuffers, multisampled renderbuffers, textures (net of deletes)
+GPU_COUNT = """(() => {
+  if (window.top !== window) return;
+  const P = WebGL2RenderingContext.prototype, live = { fb: new Set(), msaa: new Set(), tex: new Set() };
+  window.__gpu = () => ({ fb: live.fb.size, msaa: live.msaa.size, tex: live.tex.size });
+  const wrap = (name, fn) => { const f = P[name]; P[name] = function () { const r = f.apply(this, arguments); fn.call(this, r, arguments); return r; }; };
+  wrap('createFramebuffer', (r) => live.fb.add(r)); wrap('deleteFramebuffer', (_, a) => live.fb.delete(a[0]));
+  wrap('createTexture', (r) => live.tex.add(r)); wrap('deleteTexture', (_, a) => live.tex.delete(a[0]));
+  wrap('renderbufferStorageMultisample', function (_, a) { const rb = this.getParameter(this.RENDERBUFFER_BINDING); if (a[1] > 0 && rb) live.msaa.add(rb); });
+  wrap('deleteRenderbuffer', (_, a) => live.msaa.delete(a[0]));
+})();"""
+GPU = "() => window.__gpu()"
+CLICK = "(id) => document.querySelector('[data-app=\"' + id + '\"]').click()"
+
+
+def jarvis_gpu(br, origin, fx):
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=3, is_mobile=True, has_touch=True)
+    ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
+    ctx.add_init_script(GPU_COUNT + f"try {{ localStorage.setItem('jfx', '{fx}'); }} catch (e) {{}}")
+    p = ctx.new_page()
+    errs: list = []
+    p.on("pageerror", lambda e: errs.append(str(e)))
+    p.goto(origin + "/jarvis/")
+    p.wait_for_function("() => window.__jarvisBackdrop && __jarvisBackdrop.frames > 3", timeout=240000)
+    p.wait_for_timeout(2500)
+    return ctx, p, errs
+
+
+def settle(p, msaa):
+    """back on the home: wait (the machine may be slow) until the core's multisampled buffers are back, then let the loop run"""
+    try:
+        p.wait_for_function("(n) => window.__gpu().msaa >= n", arg=msaa, timeout=60000)
+    except Exception:
+        pass
+    p.wait_for_timeout(1500)
+
+
+def test_gpu(br, origin):
+    """Memory on iPhone terms: home -> open an app -> back. The covered home releases its render targets (not only its loop),
+    coming back restores them, and one MSAA composer is alive at a time."""
+    ctx, p, errs = jarvis_gpu(br, origin, "high")
+    home = p.evaluate(GPU)
+    bd = p.evaluate("() => __jarvisBackdrop.stats()")
+    check("i. home at high: ONE multisampled composer (the core's: 2 MSAA buffers), the backdrop has none (FXAA instead)",
+          bd["samples"] == 0 and bd["fxaa"] and home["msaa"] == 2, (bd, home))
+    p.evaluate(CLICK, "oracle")
+    p.wait_for_timeout(2500)
+    app = p.evaluate(GPU)
+    asleep = p.evaluate("() => __jarvisBackdrop.asleep")
+    check("i. app open: the home's backdrop and core release their buffers (0 MSAA, fewer framebuffers and textures than at home)",
+          asleep is True and app["msaa"] == 0 and app["fb"] < home["fb"] and app["tex"] < home["tex"], (home, app, asleep))
+    f0 = p.evaluate("() => __jarvisBackdrop.frames")
+    p.wait_for_timeout(800)
+    check("i. app open: no home frame is drawn", p.evaluate("() => __jarvisBackdrop.frames") == f0)
+    p.evaluate(CLICK, "home")
+    settle(p, home["msaa"])
+    back = p.evaluate(GPU)
+    f1 = p.evaluate("() => __jarvisBackdrop.frames")
+    p.wait_for_timeout(800)
+    f2 = p.evaluate("() => __jarvisBackdrop.frames")
+    check("i. back home: the same buffers are restored (framebuffers, MSAA, textures as before) and it draws again",
+          back["msaa"] == home["msaa"] and back["fb"] == home["fb"] and abs(back["tex"] - home["tex"]) <= 2 and f2 > f1
+          and p.evaluate("() => __jarvisBackdrop.asleep") is False, (home, back, f1, f2))
+    for _ in range(3):                                 # three more round trips: still no growth
+        p.evaluate(CLICK, "oracle")
+        p.wait_for_timeout(1200)
+        p.evaluate(CLICK, "home")
+        settle(p, home["msaa"])
+    p.wait_for_timeout(1500)
+    again = p.evaluate(GPU)
+    print("   live GPU buffers (framebuffers / MSAA renderbuffers / textures): home", home, "| app open", app, "| back", back,
+          "| after 4 trips", again, flush=True)
+    check("i. four round trips: live buffers do not grow", again["fb"] == home["fb"] and again["msaa"] == home["msaa"]
+          and again["tex"] <= home["tex"] + 2, (home, again))
+    check("i. no page error through the trips", not errs, errs[:3])
+    ctx.close()
+    ctx, p, errs = jarvis_gpu(br, origin, "low")
+    bd = p.evaluate("() => __jarvisBackdrop.stats()")
+    g = p.evaluate(GPU)
+    check("i. low: no bloom (2 passes), no MSAA anywhere, backdrop pixel ratio <= 1.25",
+          bd["names"] == ["scene", "finish"] and not bd["bloom"] and bd["dpr"] <= 1.25 and g["msaa"] == 0, (bd, g))
+    ctx.close()
+
+
 def test_hidden(br, origin):
     ctx, p, errs, _ = lab(br, origin, "?q=high")
     p.evaluate(HIDE, True)
@@ -274,6 +358,7 @@ def main():
         test_policy(br, origin)
         test_adapt(br, origin)
         test_jarvis(br, origin)
+        test_gpu(br, origin)
         br.close()
     srv.shutdown()
 

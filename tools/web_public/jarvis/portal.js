@@ -108,6 +108,7 @@ function finish() {
   state.active = false;
   if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
   wrap = null;
+  if (canvas) { canvas.width = canvas.height = 1; }      // the full-screen backing store goes back; the program stays for the next jump
 }
 const skip = (e) => { if (e) e.preventDefault(); if (state.active) endT = 0; finish(); };
 
