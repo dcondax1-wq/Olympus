@@ -317,7 +317,7 @@ export function createVault(opts) {
       const add = (s, w) => { for (const t of tokens(s)) tf.set(t, (tf.get(t) || 0) + w); };
       add(n.title, 3); add(n.headings.join(' '), 2); add(n.tags.join(' '), 2); add(n.text, 1);
       let len = 0; for (const v of tf.values()) len += v;
-      return { n, tf, len };
+      return { n, tf, len, tt: new Set(tokens(n.title)), tg: new Set(tokens(n.tags.join(' ') + ' ' + n.headings.join(' '))), low: (n.title + ' ' + n.text).toLowerCase() };
     });
     const df = new Map();
     for (const d of docs) for (const t of d.tf.keys()) df.set(t, (df.get(t) || 0) + 1);
@@ -330,15 +330,27 @@ export function createVault(opts) {
     const qt = [...new Set(tokens(q))];
     if (!qt.length) return [];
     const k1 = 1.4, b = 0.75, out = [];
+    // ranking beyond BM25 (2026-11-04): the words in the TITLE or a heading / tag count extra, a note that holds every word beats one that
+    // holds a few, the exact phrase wins, a recent daily note edges ahead of an old one, and Jarvis's own inbox / log pages rank
+    // below the notes the owner wrote himself
+    const phrase = String(q || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const today = Date.parse(ymdOf(nowMs()) + 'T12:00:00Z');
     for (const d of stats.docs) {
-      let s = 0;
+      let s = 0, hit = 0, inTitle = 0, inTag = 0;
       for (const t of qt) {
         const f = d.tf.get(t);
         if (!f) continue;
+        hit++; if (d.tt.has(t)) inTitle++; if (d.tg.has(t)) inTag++;
         const idf = Math.log(1 + (stats.N - stats.df.get(t) + 0.5) / (stats.df.get(t) + 0.5));
         s += idf * (f * (k1 + 1)) / (f + k1 * (1 - b + (b * d.len) / stats.avg));
       }
-      if (s > 0) out.push({ path: d.n.path, title: d.n.title, score: Math.round(s * 1000) / 1000, snippet: snippetOf(d.n, qt), local: !!d.n.local });
+      if (s <= 0) continue;
+      s *= 1 + 0.5 * (inTitle / qt.length) + 0.2 * (inTag / qt.length);
+      s *= 0.55 + 0.45 * (hit / qt.length);
+      if (qt.length > 1 && phrase.length > 4 && d.low.includes(phrase)) s *= 1.25;
+      if (d.n.daily) { const age = (today - Date.parse(d.n.daily + 'T12:00:00Z')) / 864e5; if (age >= 0 && age < 30) s *= 1 + 0.12 * (1 - age / 30); }
+      if (/^OLYMPUS\/(Inbox|Logs)\//.test(d.n.path)) s *= 0.8;
+      out.push({ path: d.n.path, title: d.n.title, score: Math.round(s * 1000) / 1000, snippet: snippetOf(d.n, qt), local: !!d.n.local, terms: hit, daily: d.n.daily || null });
     }
     return out.sort((x, y) => y.score - x.score).slice(0, n || 5);
   }
