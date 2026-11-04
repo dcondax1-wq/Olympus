@@ -403,6 +403,7 @@ def page(br, url, keys, device=None, voices=True):
     ctx = br.new_context(**kw)
     H.feeds(ctx, H.kalshi_feed())
     ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off'); } catch (e) {}")
+    ctx.add_init_script("try { localStorage.setItem('jarvis.voiceEngine', JSON.stringify({ timeoutMs: 240000 })); } catch (e) {}")     # (the 10 s cloud timeout would hand a slow, loaded test machine to the phone voice)
     if keys:
         ctx.add_init_script("try { localStorage.setItem('jarvis.smart', JSON.stringify({ v: 2, on: false, provider: 'groq', keys: %s })); } catch (e) {}" % json.dumps(keys))
     ctx.add_init_script(f"window.__iosRule = {json.dumps(bool(device))}; window.__voicesEmpty = {json.dumps(not voices)};")
@@ -470,8 +471,8 @@ def part_page(br, url, name, device=None):
     plays = p.evaluate("window.__plays")
     said = [x for x in p.evaluate("window.__said") if x["text"].strip()]
     check(f"{tag} the clip plays through the shared element (volume 1) and the phone voice stays silent", plays and plays[0]["vol"] == 1 and not said and p.evaluate("window.__jarvis.voice().speaking") is False, (plays, said))
-    # barge-in: a tap on the core while a clip plays (the mocked clip lasts 6 s)
-    p.evaluate("window.__clipMs = 6000; window.__plays = []")
+    # barge-in: a tap on the core while a clip plays (the mocked clip lasts 90 s, so a slow machine cannot end it before the tap)
+    p.evaluate("window.__clipMs = 90000; window.__plays = []")
     p.evaluate("window.__jarvis.talk('This is a reply that will be stopped by a tap on the core.')")
     p.wait_for_function("window.__plays.length >= 1 && window.__jarvis.voice().speaking === true", timeout=15000)
     p.wait_for_timeout(700)

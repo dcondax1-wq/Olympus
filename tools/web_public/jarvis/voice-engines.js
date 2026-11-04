@@ -31,7 +31,7 @@ export const GEMINI = { base: 'https://generativelanguage.googleapis.com/v1beta/
   voices: { Kore: 'Kore (firm)', Aoede: 'Aoede (breezy)', Leda: 'Leda (youthful)', Sulafat: 'Sulafat (warm)', Achernar: 'Achernar (soft)', Zephyr: 'Zephyr (bright)', Vindemiatrix: 'Vindemiatrix (gentle)' } };
 export const DEVICE_VOICES = { af_heart: 'Heart (warm)', af_bella: 'Bella (expressive)', af_nicole: 'Nicole (soft)', bf_emma: 'Emma (British)' };
 export const AUTO_CLOUD_MAX = 420;                         // Auto uses a cloud voice for replies up to this long (the free plans are small)
-const DEFAULTS = { mode: 'auto', brand: '', gvoice: 'Kore', hvoice: 'hannah', kvoice: 'af_heart', prosody: true, conv: true, numbers: true };
+const DEFAULTS = { mode: 'auto', brand: '', gvoice: 'Kore', hvoice: 'hannah', kvoice: 'af_heart', timeoutMs: 10000, prosody: true, conv: true, numbers: true };
 const MODES = ['auto', 'cloud', 'device', 'phone'];
 const KOKORO_FLAG = 'jarvis.kokoro.ready';                 // kokoro-engine.js sets it after a checked download
 const safe = (f, d) => { try { return f(); } catch (_) { return d; } };
@@ -220,6 +220,7 @@ export function createVoiceEngines(opts) {
     if (!GEMINI.voices[s.gvoice]) s.gvoice = DEFAULTS.gvoice;
     if (!GROQ.voices[s.hvoice]) s.hvoice = GROQ.voices[old.voice] ? old.voice : DEFAULTS.hvoice;
     if (!DEVICE_VOICES[s.kvoice]) s.kvoice = DEFAULTS.kvoice;
+    s.timeoutMs = Number.isFinite(+s.timeoutMs) ? Math.max(3000, Math.min(300000, +s.timeoutMs)) : DEFAULTS.timeoutMs;     // how long a cloud voice may take before the phone says the reply
     s.cloudOk = old.cloud !== false;                         // the older switch ("cloud voice off") still stops Auto from using a key
     return s;
   }
@@ -272,10 +273,10 @@ export function createVoiceEngines(opts) {
       const key = typeof k[id] === 'string' ? k[id].trim() : '';
       if (!key || parked(id)) continue;
       if (id === 'gemini') {
-        return { id, key: 'x', voice: st.gvoice, maxChars: GEMINI.max, label: 'Gemini voice', timeoutMs: 9000,
+        return { id, key: 'x', voice: st.gvoice, maxChars: GEMINI.max, label: 'Gemini voice', timeoutMs: st.timeoutMs,
           synth: wrap('gemini', st.gvoice, (t, so) => geminiSynth(t, { fetch: F, key, voice: st.gvoice, signal: so.signal, model: safe(() => store.getItem('jarvis.tts.gmodel'), '') || '', onModel: (m) => safe(() => store.setItem('jarvis.tts.gmodel', m)) })) };
       }
-      return { id, key: 'x', voice: st.hvoice, maxChars: GROQ.max, label: 'Groq voice', timeoutMs: 9000, synth: wrap('groq', st.hvoice, (t, so) => groqSynth(t, { fetch: F, key, voice: st.hvoice, signal: so.signal })) };
+      return { id, key: 'x', voice: st.hvoice, maxChars: GROQ.max, label: 'Groq voice', timeoutMs: st.timeoutMs, synth: wrap('groq', st.hvoice, (t, so) => groqSynth(t, { fetch: F, key, voice: st.hvoice, signal: so.signal })) };
     }
     return null;
   }
@@ -294,7 +295,7 @@ export function createVoiceEngines(opts) {
   }
   function buildDevice(st) {
     if (!deviceReady() || !deviceSupported() || parked('kokoro')) return null;
-    return { id: 'kokoro', key: 'x', voice: st.kvoice, maxChars: 220, label: 'On-device voice', timeoutMs: 30000,
+    return { id: 'kokoro', key: 'x', voice: st.kvoice, maxChars: 220, label: 'On-device voice', timeoutMs: Math.max(30000, st.timeoutMs),
       synth: wrap('kokoro', st.kvoice, async (t, so) => { const k = await loadKokoro(); return k.synth(t, { voice: st.kvoice, speed: 1, signal: so.signal }); }) };
   }
   // the tts.js `cloud()` hook: a descriptor, or null = the phone's voice
