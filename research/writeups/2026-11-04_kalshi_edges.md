@@ -159,3 +159,14 @@ rules above against the numbers the bot publishes: the price band that loses (a 
 careful, 25% = do not take), a coin that has lost (3%+ of what was bet, 30+ bets) and bets that settle together. Green / amber / red, each with its dollar
 reason. With nothing open it still shows, and four price chips (91 / 94 / 96 / 98c) check a bet of the bot's usual size before it exists. Suggestions only:
 the page has no form, no link to Kalshi and sends nothing. Test: `python -X utf8 -m tests.test_kalshi_page` (checks g1 to g7; `--only=guard` for just those).
+
+## In the app: "Why am I losing" and "If you change the bot" (2026-11-04)
+- **Why am I losing** is the first card of the Kalshi page: one sentence with the top two dollar leaks of different kinds (a price band, a coin, a strategy,
+  the fees), from the feed's own totals. On the 2026-11-04 feed: "You are down $81.77 mostly because 90–95¢ bets lost $248.30 on 581 bets and XRP bets lost
+  $106.63 on 192 bets. These overlap, so do not add them up." Under 100 settled bets it says "not enough settled bets yet".
+- **If you change the bot** (first card of Edge) replays the past bets under three simple rule sets and shows net $ after fees, the typical worst dip and the
+  chance of ruin next to the bot as it is. A: skip the 90–95¢ band (+$185.48 on the past bets, ruin about 0%, against -$62.82 and 13% as it is). B: only 95¢ and up,
+  every bet capped at 2% of today's balance ($1.12): +$16.46, ruin 0%. C: skip 90–95¢ and cap the rest at 2%: +$5.67, ruin 0%. Net is the past bets replayed (exact);
+  dip and ruin come from 400 seeded runs of the next 200 bets drawn from the same price bands at the bot's usual bet. One line says what the data supports (a set
+  whose net beats the bot's with ruin under 5%), or "keep the bot as it is", or "not enough bets" under 100. It is a backtest of past bets, picked after looking:
+  suggestions only, try it on paper first. The same maths is `tools/kalshi_whatif.py` (writes `kalshicity/whatif.json`); a test holds the two equal.
