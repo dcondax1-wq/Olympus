@@ -164,7 +164,9 @@ export function makeEnvironment(renderer, kind, pal) {
   let src = null, tex = null;
   try {
     src = kind === 'room' ? new RoomEnvironment(renderer) : nightScene(pal || palette());
-    tex = pm.fromScene(src, kind === 'room' ? 0.04 : 0.02).texture;
+    const rt = pm.fromScene(src, kind === 'room' ? 0.04 : 0.02);
+    tex = rt.texture;
+    tex.dispose = () => rt.dispose();                 // a texture's dispose() frees no framebuffer: free the PMREM target itself
   } finally {
     pm.dispose();
     if (src) src.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
