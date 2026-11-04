@@ -2,7 +2,7 @@
    Jarvis's orb owns the bottom-right 80 x 160 px: the dock stops 96 px from the right, and the sheet sits at least 176 px above the
    bottom so its edge never reaches the orb's corner. Safe areas on every edge; no sideways scroll at 390 px; inputs are 16 px. */
 :root {
-  --n-bg: #07040c; --n-acc: #8a6bff; --n-acc-rgb: 138, 107, 255; --n-plan: #ff9a3c; --n-soft: #ffd34a; --n-break: #ff2e63; --n-ok: #46d79a; --dock-h: 96px;
+  --n-bg: #07040c; --n-acc: #8a6bff; --n-acc-rgb: 138, 107, 255; --n-plan: #ff9a3c; --n-soft: #ffd34a; --n-break: #ff2e63; --n-ok: #46d79a; --dock-h: 100px;
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
   --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px));
   --vh: var(--oly-vh, 100vh);
@@ -40,7 +40,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2a0f1
 .verdict .live[hidden] { display: none; }
 
 .pills { display: flex; gap: 6px; }
-.pills button { min-height: 36px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--oly-line); background: rgba(12, 6, 18, .74); font: 700 12px/1 var(--oly-ui); letter-spacing: .04em;
+.pills button { min-height: 44px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--oly-line); background: rgba(12, 6, 18, .74); font: 700 12px/1 var(--oly-ui); letter-spacing: .04em;
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .pills button[aria-pressed="true"] { border-color: rgba(var(--n-acc-rgb), .8); box-shadow: 0 0 14px rgba(var(--n-acc-rgb), .28) inset; color: var(--n-acc); }
 
@@ -48,9 +48,9 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2a0f1
   display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-radius: var(--oly-r-card, 16px); border: 1px solid var(--oly-line); background: rgba(12, 6, 18, .82);
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .dock .row { display: flex; align-items: center; gap: 6px; }
-.dock .wk button { flex: none; min-width: 40px; min-height: 40px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .05); font: 800 20px/1 var(--oly-ui); }
+.dock .wk button { flex: none; min-width: 44px; min-height: 44px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .05); font: 800 20px/1 var(--oly-ui); }
 .dock .wk button:disabled { opacity: .35; cursor: default; }
-.dock .wk .all { min-width: 0; padding: 0 10px; font: 700 12px/1 var(--oly-ui); letter-spacing: .06em; }
+.dock .wk .all { min-width: 44px; padding: 0 10px; font: 700 12px/1 var(--oly-ui); letter-spacing: .06em; }
 .dock .wk .all[aria-pressed="true"] { border-color: rgba(var(--n-acc-rgb), .8); color: var(--n-acc); }
 .dock .wl { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .dock .wl b { font: 700 13px/1.1 var(--oly-display, sans-serif); letter-spacing: .04em; white-space: nowrap; }
@@ -71,7 +71,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2a0f1
 .sheet p { margin: 6px 0; font-size: 12.5px; color: var(--oly-dim); overflow-wrap: anywhere; }
 .sheet p.strong { color: var(--oly-text); font-size: 13px; }
 .btnrow { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 2px; }
-.btn { min-height: 40px; padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(var(--n-acc-rgb), .6); background: rgba(var(--n-acc-rgb), .14); font: 700 13px/1 var(--oly-ui); letter-spacing: .03em; color: #e7e0ff; }
+.btn { min-height: 44px; padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(var(--n-acc-rgb), .6); background: rgba(var(--n-acc-rgb), .14); font: 700 13px/1 var(--oly-ui); letter-spacing: .03em; color: #e7e0ff; }
 .btn.ghost { border-color: var(--oly-line); background: rgba(255, 255, 255, .05); color: var(--oly-text); }
 .btn[disabled] { opacity: .4; cursor: default; }
 
@@ -107,7 +107,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2a0f1
 .leaklist .bar { height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .08); margin: 6px 0 4px; overflow: hidden; }
 .leaklist .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--n-acc), var(--n-break)); }
 .leaklist .sub { margin: 0; font-size: 11.5px; color: var(--oly-dim); }
-.leaklist .mini { margin-top: 6px; min-height: 34px; padding: 4px 10px; font-size: 12px; }
+.leaklist .mini { margin-top: 6px; min-height: 44px; padding: 4px 10px; font-size: 12px; }
 
 .vowbox { margin: 8px 0; padding: 12px; border-radius: 14px; border: 1px solid rgba(var(--n-acc-rgb), .55); background: rgba(var(--n-acc-rgb), .1); }
 .vowbox p { margin: 0; color: var(--oly-text); font-size: 14px; }
@@ -121,7 +121,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2a0f1
 .note { font-size: 11.5px; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-@media (max-height: 740px) { .dock .help { display: none; } :root { --dock-h: 70px; } .tile b { font-size: 18px; } .sheet { min-height: 150px; } }
+@media (max-height: 740px) { .dock .help { display: none; } :root { --dock-h: 74px; } .tile b { font-size: 18px; } .sheet { min-height: 150px; } }
 
 /* ---- 2026-11-04 (JOB 10+11): the deeper reads under Autopsy, Leaks and Vow */
 .rec { margin-top: 14px; padding: 12px; border-radius: 14px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); }

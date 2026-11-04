@@ -8,7 +8,7 @@ const KEY = 'ledger.v1';
 const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
 const $ = (id) => document.getElementById(id);
 const SVGNS = 'http://www.w3.org/2000/svg';
-const S = { st: C.emptyState(), home: null, rules: null, feed: null, fixture: null, demo: false, tab: 'over', model: null, scene: null, prev: null, editing: null, filter: 'all', calMonth: null, saveOk: true, ready: false, error: null, undoTimer: 0, today: C.todayET(), clearArmed: 0 };
+const S = { st: C.emptyState(), home: null, rules: null, feed: null, fixture: null, roadmap: null, demo: false, tab: 'over', model: null, scene: null, prev: null, editing: null, filter: 'all', calMonth: null, saveOk: true, ready: false, error: null, undoTimer: 0, today: C.todayET(), clearArmed: 0 };
 const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
 const kids = (el, ...c) => { el.replaceChildren(...c.flat().filter(Boolean)); return el; };
@@ -55,6 +55,17 @@ function recalc() {
 const acctName = (id) => { const k = S.model.known.find((a) => a.id === id); return k ? k.name : NAMES[id] || id; };
 
 // ------------------------------------------------------------------------------------------------ the hero
+/** the Money plan lines inside the break-even tracker: expected cash so far (conservative first, Jan-Jun second) against the cash that really moved */
+function planCheck(rv) {
+  const demo = S.demo, id = 'planCheck';
+  const rows = kv([['Expected so far, conservative (Jul-Oct)', C.money(rv.expected, 0), ''], ['Expected so far, Jan-Jun', C.money(rv.expectedJanJun, 0), 'dim'],
+    demo ? ['Actual cash so far', 'add your first entry', 'dim'] : ['Actual cash so far (payouts received less eval fees and resets)', C.moneyS(rv.actual, 0), sign(rv.actual)]]);
+  rows.id = id;
+  const msg = h('p', demo || rv.state === 'before' ? '' : 'strong', demo ? 'These are example numbers, so the plan check waits for your own entries.' : rv.verdict);
+  msg.id = 'planCheckMsg';
+  const head = h('p', 'strong', `Expected vs actual cash so far this year (the Money plan starts ${rv.start})`); head.id = 'planCheckHead';
+  return [head, rows, msg];
+}
 function beText(be) {
   if (be.state === 'nocost') return 'No costs yet';
   if (be.state === 'paid') return 'Paid back';
@@ -96,8 +107,9 @@ function overView() {
   else if (be.state === 'on_track') lines.push(`At the pace of your last ${Math.min(3, be.monthsOfData)} full month${be.monthsOfData === 1 ? '' : 's'} (${C.moneyS(be.rate)} a month) you are ${be.months} month${be.months === 1 ? '' : 's'} from paying back the ${C.money(be.deficit)} still open.`);
   else if (be.state === 'stalled') lines.push(`You still need ${C.money(be.deficit)}, and at the pace of your recent months (${C.moneyS(be.rate)} a month) you do not get there.`);
   else lines.push(`${C.money(be.deficit == null ? 0 : be.deficit)} still to pay back. There are not enough full months yet to give a pace.`);
+  const rv = S.roadmap ? C.roadmapVsActual(m.list, S.roadmap, m.today) : null, planLines = rv ? planCheck(rv) : [];
   out.push(card('Break-even tracker', h('p', 'strong', `${C.money(t.income + Math.max(0, t.kalshiAll))} back of ${C.money(t.costs)} spent (${pct0(paid)})`), bar, ...lines.map((x) => h('p', '', x)),
-    h('p', 'warn', be.early ? `Only ${be.monthsOfData} full month${be.monthsOfData === 1 ? '' : 's'} of data: treat this as a rough guess, not a forecast.` : 'A pace from the recent past, not a promise. Payouts come in lumps; one month can swing it.')));
+    h('p', 'warn', be.early ? `Only ${be.monthsOfData} full month${be.monthsOfData === 1 ? '' : 's'} of data: treat this as a rough guess, not a forecast.` : 'A pace from the recent past, not a promise. Payouts come in lumps; one month can swing it.'), ...planLines));
   const mo = t.month;
   out.push(card('This month', kv([['Income', C.money(mo.income), 'pos'], ['Costs', C.money(-mo.costs), 'neg'], k.basis !== 'none' ? ['Kalshi (bot days)', C.moneyS(mo.kalshi), sign(mo.kalshi)] : null, ['Net', C.moneyS(mo.net), sign(mo.net), 'tot'],
     m.burn > 0 ? ['Repeating costs a month', C.money(-m.burn), 'neg'] : null])));
@@ -427,7 +439,8 @@ async function main() {
   const p = new URLSearchParams(location.search), t = p.get('today');
   if (t && C.isDate(t)) S.today = t;
   S.st = store.read();
-  const [home, rules, feed, fixture] = await Promise.all([getJSON('../home.json'), getJSON('rules.json'), getJSON(RAW, 7000), getJSON('fixture.json')]);
+  const [home, rules, feed, fixture, roadmap] = await Promise.all([getJSON('../home.json'), getJSON('rules.json'), getJSON(RAW, 7000), getJSON('fixture.json'), getJSON('../plutus/roadmap.json')]);
+  S.roadmap = C.roadmapOk(roadmap) ? roadmap : null;       // the Money plan (read only); without it the tracker is as before
   S.home = home && typeof home === 'object' ? home : null; S.rules = rules && rules.plans ? rules : null; S.fixture = fixture && Array.isArray(fixture.entries) ? fixture : null;
   S.feed = feed && feed.kind === 'kalshi' ? feed : null;
   const route = wire();

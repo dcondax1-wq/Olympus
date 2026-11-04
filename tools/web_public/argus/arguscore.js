@@ -130,7 +130,7 @@ function pipeEyes(home, cronos, now, cards) {
     // cronos/status.json is not published on the site: the cards CRONOS stamps (card.cronos.state) say the same thing
     const st = Object.entries(obj(cards)).filter(([, c]) => isObj(c) && isObj(c.cronos) && c.cronos.state);
     const late = st.filter(([, c]) => c.cronos.state !== 'fresh').map(([id]) => id);
-    if (!st.length) out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'idle', 'no data', 'No CRONOS status on the site yet.', '', 40));
+    if (!st.length) out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'idle', 'not published yet', 'Not published yet: the nightly CRONOS status file is not on the site, and no app card carries its stamp.', '', 40));
     else if (late.length) out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'warn', `${late[0]} late`, `Not refreshed on time: ${late.join(', ')}.`, 'Ask Claude to check the CRONOS nightly workflow.', 40));
     else out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'ok', 'refreshed', `All ${st.length} nightly cards say fresh (newest check ${ageText(now - Math.max(...st.map(([, c]) => num(c.cronos.checked_t) || 0)))} ago).`, '', 40));
   }

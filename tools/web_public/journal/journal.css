@@ -77,7 +77,7 @@ html.framed #app { padding-top: 12px; }
 .streak b { font: 800 34px/1 var(--oly-display, sans-serif); color: var(--j-acc); text-shadow: 0 0 20px rgba(var(--j-rgb), .55); }
 .streak span { color: var(--oly-dim, #b7aec4); }
 .area { display: grid; gap: 6px; font-size: 13px; color: var(--oly-dim, #b7aec4); }
-.area textarea { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--oly-line, rgba(255,255,255,.14)); background: rgba(0,0,0,.3); font: 13px/1.4 ui-monospace, Menlo, monospace; resize: vertical; min-height: 96px; }
+.area textarea { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--oly-line, rgba(255,255,255,.14)); background: rgba(0,0,0,.3); font: 16px/1.4 ui-monospace, Menlo, monospace; resize: vertical; min-height: 96px; }
 .status { margin: 0; min-height: 20px; font-size: 14px; color: var(--warn); }
 .foot { text-align: center; color: var(--oly-dim, #b7aec4); font-size: 13px; margin: 4px 0 0; }
 /* the pre-trade check: a sheet over the page; it ends 176 px above the bottom so Jarvis's orb stays free */

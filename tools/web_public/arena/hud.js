@@ -38,7 +38,7 @@ export function renderStreaks(sc) {
   kids($('streaks'), Object.values(sc.streaks).map((s) => {
     const c = h('span', 'oly-chip streak' + (s.cur ? ' on' : ''));
     c.title = `${s.name}: ${s.cur} ${s.unit} now, best ${s.best}`;
-    c.append(h('span', 'k', short[s.id] || s.name), h('b', '', s.cur), h('span', 'u', s.unit === 'trades' ? '' : s.unit === 'market days' ? 'md' : 'd'));
+    c.append(h('span', 'k', short[s.id] || s.name), h('b', '', s.cur), h('span', 'u', s.unit === 'trades' ? '' : s.unit === 'market days' ? 'weekdays' : 'days'));   // plain words: 'md' meant market days (Mon-Fri, holidays skipped)
     return c;
   }));
 }

@@ -53,4 +53,10 @@
   .ticks { top: 0; bottom: auto; height: 18px; }
   .tick { top: 2px; }
   .tick::after { width: 30px; height: 18px; }
+  /* 2026-11-04 (tap-target crawl): the entry and exit marks are real 44 x 44 px targets, the dot drawn exactly as before; entry sits above exit above the rest so a click on its dot always lands on it */
+  .tick.k-entry, .tick.k-exit { width: 44px; height: 44px; margin-left: -22px; top: -13px; z-index: 2; }
+  .tick.k-entry { z-index: 3; }
+  .tick.k-entry::before, .tick.k-exit::before { left: 50%; top: 50%; margin: -3px 0 0 -3px; }
+  .tick.k-entry::before { margin: -4px 0 0 -4px; }
+  .tick.k-entry::after, .tick.k-exit::after { display: none; }
 }

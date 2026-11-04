@@ -290,3 +290,37 @@ export function toCSV(list) {
   }
   return rows.map((r) => r.map(csvCell).join(',')).join('\n') + '\n';
 }
+
+// ------------------------------------------------------------------ expected vs actual cash against the Money plan (../plutus/roadmap.json, read only)
+/** a roadmap file that has what this needs: 12 monthly rows with dates and running totals, for the conservative (H2) and the Jan-Jun (H1) version */
+export const roadmapOk = (rm) => !!(rm && isObj(rm.versions) && ['H2', 'H1'].every((k) => rm.versions[k] && Array.isArray(rm.versions[k].months) && rm.versions[k].months.length > 0
+  && rm.versions[k].months.every((m) => isDate(m.from) && isDate(m.to) && num(m.cum) != null)) && isDate(rm.first_session));
+/** the plan's running total (average, and the 1-in-10 worst and best) on a given day: a month's total is spread evenly over its days */
+export function planAt(months, today) {
+  const z = { cum: 0, lo: 0, hi: 0 };
+  if (!months.length || today < months[0].from) return z;
+  const last = months[months.length - 1];
+  if (today > last.to) return { cum: last.cum, lo: last.lo, hi: last.hi };
+  let i = months.findIndex((m) => today >= m.from && today <= m.to);
+  if (i < 0) i = months.findIndex((m) => m.from > today) - 1;                          // a weekend gap between two months: the earlier month is still running
+  const m = months[i], prev = i > 0 ? months[i - 1] : z, span = Math.max(1, daysBetween(m.from, m.to) + 1), f = Math.min(1, (daysBetween(m.from, today) + 1) / span);
+  const at = (k) => r2((prev[k] || 0) + ((m[k] == null ? m.cum : m[k]) - (prev[k] || 0)) * f);
+  return { cum: at('cum'), lo: at('lo'), hi: at('hi') };
+}
+/** what the plan expected so far against the cash that really moved since the plan started: payouts received minus eval fees, resets and activation (expenses are not in the plan) */
+export function roadmapVsActual(list, rm, today) {
+  if (!roadmapOk(rm)) return null;
+  const start = rm.first_session, v2 = rm.versions.H2.months, v1 = rm.versions.H1.months;
+  const state = today < start ? 'before' : today > v2[v2.length - 1].to ? 'after' : 'running';
+  const inWin = list.filter((e) => e.date >= start && e.date <= today);
+  const got = r2(inWin.filter((e) => e.kind === 'payout_in').reduce((s, e) => s + e.amount, 0));
+  const spent = r2(inWin.filter((e) => e.kind === 'fee' || e.kind === 'reset' || e.kind === 'activation').reduce((s, e) => s + e.amount, 0));
+  const actual = r2(got - spent), e2 = planAt(v2, today), e1 = planAt(v1, today);
+  let verdict;
+  if (state === 'before') verdict = `The plan starts ${start}; nothing is expected yet.`;
+  else if (actual >= e1.cum) verdict = 'You are at or above the Jan-Jun plan.';
+  else if (actual >= e2.cum) verdict = 'You are at or above the conservative plan.';
+  else if (actual >= e2.lo) verdict = 'You are behind the conservative plan but inside its normal range (the worst 1 in 10 is lower).';
+  else verdict = 'You are below the worst 1 in 10 of the plan. Look at the Drawdown left on each account and at any reset.';
+  return { state, start, actual, payouts: got, fees: spent, expected: e2.cum, expectedJanJun: e1.cum, worst: e2.lo, best: e2.hi, gap: r2(actual - e2.cum), verdict };
+}

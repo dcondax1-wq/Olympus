@@ -7,7 +7,8 @@ study's account: eval -> 2 sessions paperwork -> funded -> payouts at the 80% sp
 fee and every payout with its session, so each month shows cash in, cash out, net, and the whole thing reconciles to the cent.
 
     python -X utf8 tools/money_roadmap.py            # full run (3,000 paths a half) -> research/props/roadmap.json
-    python -X utf8 tools/money_roadmap.py report     # roadmap.json -> research/writeups/2026-11-04_money_roadmap.md (plain words)
+    python -X utf8 tools/money_roadmap.py report     # roadmap.json -> research/writeups/2026-11-04_money_roadmap.md (plain words) and the small
+                                                     # published tools/web_public/plutus/roadmap.json (+ roadmapfallback.js) for Plutus and Ledger
     python -X utf8 tools/money_roadmap.py check      # reconciliation self-check of a small fresh run AND of the stored roadmap.json
 Inputs: research/second/sn_daily.npz (python -X utf8 tools/second_night.py corr): 2026 daily LIT $, ATLAS R, BLITZ R.
 Every number is shown for Jan-Jun 2026 (H1, the pick half) and Jul-Oct 2026 (H2, the check half). H2 is the CONSERVATIVE one.
@@ -632,9 +633,98 @@ def report(path=OUT_P, md_path=MD_P):
     w("")
     w("1. Run LIT, ATLAS and BLITZ together now; nothing to buy until an account has been paid 5 times.")
     w("2. When an account is paid its 5th payout, buy the next ATLAS 25K eval ($43) first.")
+    w("")
+    w("Where it shows: Plutus, Plan tab, 'Money plan' card (`tools/web_public/plutus/roadmap.json`, made by `report`); Ledger, Break-even tracker, 'Expected vs actual cash so far this year'.")
+    w("")
     w("3. Re-run `python -X utf8 tools/money_roadmap.py` after the 2026 data grows; check with `python -X utf8 -m tests.test_money_roadmap`.")
     open(md_path, "w", encoding="utf-8").write("\n".join(L) + "\n")
     print("wrote", md_path)
+    write_compact(d)
+
+
+PUB_P = os.path.join(ROOT, "tools", "web_public", "plutus", "roadmap.json")
+PUB_JS = os.path.join(ROOT, "tools", "web_public", "plutus", "roadmapfallback.js")
+SHORT_ID = {"L50": "lit50", "A25": "atlas25", "B25": "blitz25"}
+SHORT_NAME = {"L50": "LIT on the 50K", "A25": "ATLAS on a 25K", "B25": "BLITZ on a 25K"}
+CAVEATS = [
+    "These are study numbers from 2026 paper results. They are not promises.",
+    "The Jul-Oct version is the conservative one. Look at it first; Jan-Jun is the better half.",
+    "Check the MFFU rules before copying a strategy to a second account. This plan did not check whether the firm allows it.",
+    "After the 5th payout an account moves to a live account. Its later payouts are not counted here, so the money fades after month 6.",
+    "MFFU publishes no reset price for these plans, so a failed eval is priced as a new eval at your real price ($91.80, $63 or $43).",
+    "The $198 for the three evals now running is already paid. Months show cash from today.",
+    "LIT pays later here than in the engine study, because this plan's eval model passes LIT more slowly. ATLAS fails more evals here than in the engine study.",
+    "The worst case is 1 path in 10, not the floor. Drawdown left on each account decides whether an eval survives; a breach costs a new eval.",
+]
+
+
+def compact(d):
+    """The small published file for the Plutus 'Money plan' card and the Ledger's expected-vs-actual line (< 25 KB): the verdict sentence,
+    12 monthly rows for Jul-Oct (conservative) and Jan-Jun, first-payout ranges, payback months, the order of buying, a sentence for each month
+    and the caveats in plain words. Everything is read from the stored roadmap.json, so it can never disagree with it."""
+    S, V = d["scenarios"], d["verdict"]
+    sk = S["H2"]["trio"]["total"]["sunk_already_paid"]
+    ver = {}
+    for h, lab in (("H2", "Jul-Oct (conservative)"), ("H1", "Jan-Jun")):
+        sc = S[h]["trio"]
+        t = sc["total"]
+        ver[h] = {"label": lab, "mid": round(t["median"] - sk), "lo": round(t["worst_p10"] - sk), "hi": round(t["best_p90"] - sk), "avg": round(t["net"] - sk),
+                  "in": round(t["cash_in"]), "out": round(t["cash_out"]), "worst_path": round(t["worst_path"] - sk),
+                  "months": [{"m": r["m"], "from": r["from"], "to": r["to"], "in": round(r["cash_in"]), "out": round(r["cash_out"]), "net": round(r["net"]),
+                              "cum": round(r["cum"]), "lo": round(r["cum_p10"]), "hi": round(r["cum_p90"])} for r in sc["months"]]}
+    accts = []
+    for name in ("A25", "L50", "B25"):
+        row = {"id": SHORT_ID[name], "label": SHORT_NAME[name], "price": PRICE[name]}
+        for h in ("H2", "H1"):
+            a = next(x for x in S[h]["trio"]["accounts"] if x["name"] == name)
+            p = a["payouts"]
+            row[h] = {"net12": round(a["total"]["net"]), "first": [p.get("first_payout_date_p10"), p.get("first_payout_date_med"), p.get("first_payout_date_p90")],
+                      "by_m3": p.get("payout_by_m3_pct"), "payback": a["payback"]["payback_month_median"], "paid_back_m3": a["payback"]["paid_back_by_m3_pct"]}
+        accts.append(row)
+    order = {"best": "Buy all three on day 1.", "rebuy": V["rebuy_adds"], "wait_cost": {}, "if_waiting": {}, "second_25k": {}}
+    for h in ("H2", "H1"):
+        rows = d["order"][h]
+        allnow = next(r for r in rows if r["order"].startswith("all three"))
+        others = [r for r in rows if r is not allnow]
+        order["wait_cost"][h] = [round(allnow["net12"] - others[0]["net12"]), round(allnow["net12"] - others[-1]["net12"])]
+        order["if_waiting"][h] = others[0]["order"].split(" (")[0]
+        order["second_25k"][h] = [{"slot": r["slot"], "net12": round(r["net12"]), "alone": round(r["slot_net12"])} for r in d["slot"][h]]
+    a_h2 = accts[0]["H2"]
+    fp = S["H2"]["trio"]["first_payout_any"]
+    fp1 = S["H1"]["trio"]["first_payout_any"]
+    k = lambda x: ("-" if x < 0 else "") + f"${abs(x):,.0f}"
+    headline = (f"Run ATLAS first, then LIT, all three accounts now. First payout about {fp['date_med']} (conservative) or {fp1['date_med']} (Jan-Jun). "
+                f"By month 12: {k(ver['H2']['mid'])} in the conservative version (worst {k(ver['H2']['lo'])}, best {k(ver['H2']['hi'])}), {k(ver['H1']['mid'])} in Jan-Jun.")
+    todo = []
+    first_txt = f"{a_h2['first'][0]} to {a_h2['first'][2]}"
+    for m in range(1, MONTHS + 1):
+        if m == 1:
+            todo.append(f"Run LIT, ATLAS and BLITZ together. Nothing to buy. The first ATLAS payout is expected {first_txt}.")
+        elif m == 2:
+            todo.append(f"Keep all three trading. Request the first ATLAS payout once it reaches its payout floor ({first_txt} is the range). A failed eval costs a new one.")
+        elif m <= 6:
+            todo.append("Request payouts as each account reaches its floor. When an account has had its 5th payout, buy the next ATLAS 25K eval ($43) first.")
+        else:
+            todo.append("Payouts fade as accounts finish their 5. Re-buy ATLAS 25K first, then LIT 50K, then BLITZ 25K, as each one finishes.")
+    return {"v": 1, "title": "Money plan", "updated": d["updated"], "source": "research/props/roadmap.json (tools/money_roadmap.py)", "conservative": "H2",
+            "first_session": d["first_session"], "paid_already": round(sk, 2), "headline": headline, "verdict": {x: V[x] for x in ("do_first", "then", "first_payout", "month12", "with_recycle", "caps")},
+            "versions": ver, "accounts": accts, "order": order, "todo": todo, "caveats": CAVEATS,
+            "eval_2w": {x["account"]: [x["published_pass_2w"], x["published_fail_2w"]] for x in d["eval_pass"]["H2"][:3]}}
+
+
+def write_compact(d):
+    c = compact(d)
+    os.makedirs(os.path.dirname(PUB_P), exist_ok=True)
+    txt = json.dumps(c, separators=(",", ":"), ensure_ascii=True)
+    open(PUB_P, "w", encoding="utf-8").write(txt + "\n")
+    open(PUB_JS, "w", encoding="utf-8").write(
+        "// GENERATED by python -X utf8 tools/money_roadmap.py (do not edit): the offline copy of roadmap.json, shown with an OFFLINE COPY tag when the file cannot be read.\n"
+        "export const FALLBACK = " + txt + ";\n")
+    size = os.path.getsize(PUB_P)
+    if size >= 25_000:
+        raise SystemExit(f"compact roadmap.json too big: {size} bytes")
+    print("wrote", PUB_P, size, "bytes and", PUB_JS)
+    return c
 
 
 def check(n_paths=150):

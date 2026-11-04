@@ -57,6 +57,13 @@ def main():
            and all(k in d["verdict"] for k in ("do_first", "then", "first_payout", "month12")))
         ok("stored file: 12 months for the base trio", len(d["scenarios"]["H2"]["trio"]["months"]) == 12)
         ok("stored file is small (< 200 KB)", os.path.getsize(path) < 200_000, str(os.path.getsize(path)))
+    pub = MR.PUB_P
+    ok("published compact file exists and is under 25 KB (Plutus + Ledger read it)", os.path.exists(pub) and os.path.getsize(pub) < 25_000)
+    if os.path.exists(pub) and os.path.exists(path):
+        ok("published compact file is a fresh build of roadmap.json", json.load(open(pub)) == MR.compact(json.load(open(path))))
+        c = json.load(open(pub))
+        ok("compact: 12 rows each, cash in - fees = net each month, conservative first", all(len(v["months"]) == 12 for v in c["versions"].values())
+           and all(abs(r["in"] - r["out"] - r["net"]) <= 1 for v in c["versions"].values() for r in v["months"]) and list(c["versions"])[0] == "H2")
     n, p = len(RESULTS), sum(RESULTS)
     print(f"money roadmap: {p}/{n} {'ALL PASS' if p == n else 'FAILURES'}")
     sys.exit(0 if p == n else 1)

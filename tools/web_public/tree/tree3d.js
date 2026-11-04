@@ -13,6 +13,7 @@
 // weather from the OLYMPUS effects (olympus/fx-*.js: godRays, petals, laurelFall, snow), each one optional.
 import * as THREE from '../jarvis/three.module.min.js';
 import * as C from './core.js?v=d3';
+import * as AT from '../olympus/fx-atmos.js';        // JOB 47: pollen drifting through the light and a soft shadow at the foot of the trunk
 
 const H = 7, SIDES = 5, SEG = 3, MAX_LEAVES = 1600, FLIES = 70;
 const hash = C.hash01;
@@ -118,7 +119,7 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
   const target = new THREE.Vector3(0, H * 0.36, 0);
   let bark = null, glow = null, leaves = null, flies = null, ground = null, trunk = null, hemi = null, keyLight = null, ringMesh = null;
   const wind = { uTime: { value: 0 }, uGust: { value: 1 } };
-  let leafKind = [], leafBase = [], leafQuat = [], curSeason = '', fx = [], fxNames = [], weather = null, FX = null;
+  let atm = [], leafKind = [], leafBase = [], leafQuat = [], curSeason = '', fx = [], fxNames = [], weather = null, FX = null;
   let edgeAppear = [], edgeIdx = [], glowAppear = [], glowIdx = [], leafAppear = [], nodePos = new Map(), leafNodes = [], tipNodes = [];
   try {
     rc = mod.createRenderer({ canvas: glCanvas, scene, camera, env: 'night', exposure: 1.1, maxDpr: 2, fitCamera: false,
@@ -235,6 +236,15 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
     setWeather(curSeason || 'summer');
   }
   fxStart();
+  // the atmosphere (fx-atmos, a draw call each) joins 0.9 s after the first paint; ?noatmos=1 is the perf probe
+  setTimeout(() => {
+    if (dead || /[?&]noatmos=1/.test(location.search)) return;
+    try {
+      const ao = AT.contactAO({ radius: 2.6, strength: 0.8 }); ao.object.position.y = 0.012; scene.add(ao.object);
+      const pollen = AT.dust({ count: 120, box: [13, 9, 13], color: '#d8ffb8', size: 4.5, drift: 0.4, seed: 47 }); pollen.object.position.y = 0.4; scene.add(pollen.object);
+      atm = [ao, pollen]; AT.setQuality(atm, rc.quality() === 'ultra' ? 'ultra' : 'high');
+    } catch (_) { atm = []; }
+  }, 900);
 
   const count = (arr, t) => { let lo = 0, hi = arr.length; while (lo < hi) { const m = (lo + hi) >> 1; if (arr[m] <= t) lo = m + 1; else hi = m; } return lo; };
   const tmp = new THREE.Vector3(), wPos = new THREE.Vector3(), wS = new THREE.Vector3(), wQ = new THREE.Quaternion(), wEul = new THREE.Euler(), wM = new THREE.Matrix4();
@@ -311,8 +321,9 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
       }
       flies.geometry.attributes.position.needsUpdate = true; flies.geometry.attributes.aA.needsUpdate = true;
       flies.material.uniforms.uPx.value = rc.renderer.getPixelRatio();
+      if (atm.length) AT.update(atm, reduced ? 0 : secs, rc.renderer.getPixelRatio());
       return rc.render();
     },
-    dispose() { dead = true; on = false; glCanvas.hidden = true; for (const e of [weather, ...fx]) { try { e && e.stop(); } catch (_) { /* gone */ } } disposeMeshes(); rc.dispose(); },
+    dispose() { dead = true; on = false; atm.forEach((a) => { try { scene.remove(a.object); a.object.geometry.dispose(); a.material.dispose(); } catch (_) { /* gone */ } }); glCanvas.hidden = true; for (const e of [weather, ...fx]) { try { e && e.stop(); } catch (_) { /* gone */ } } disposeMeshes(); rc.dispose(); },
   };
 }

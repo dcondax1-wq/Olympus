@@ -121,7 +121,7 @@ input[type=search]{width:100%;font-size:16px;padding:10px 12px;border-radius:12p
 .lift .lv{text-align:right;font-weight:700}.lift .lp{text-align:right;color:var(--sub);font-size:11px}
 /* --- camera modes (fly-through) and the tap tag */
 .cams{position:fixed;left:calc(10px + var(--sl));top:calc(var(--top-h) + 20px + var(--st));z-index:3;display:flex;flex-direction:column;gap:6px}
-.cams button{width:56px;min-height:40px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font:700 10px/1 var(--oly-display,inherit);
+.cams button{width:56px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font:700 10px/1 var(--oly-display,inherit);
 letter-spacing:.14em;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);touch-action:manipulation}
 .cams button.on{color:var(--gold);border-color:rgba(255,201,74,.45);background:rgba(255,201,74,.10)}
 body.cine .cams{opacity:.18;transition:opacity .6s}
@@ -223,5 +223,6 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
 <div class="caption" id="caption" aria-live="polite"></div>
 <div class="toast" id="toast" role="status"></div>
 <script type="module" src="./city.js"></script>
+<script type="module" src="glossary.js"></script>
 </body>
 </html>

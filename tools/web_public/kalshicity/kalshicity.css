@@ -2,7 +2,7 @@
    Jarvis's orb owns the bottom-right 80 x 160 px: the dock stops 96 px from the right; the sheet sits above the dock. Safe areas on every
    edge; no sideways scroll at 390 px; 16 px gutters; inputs are 16 px (no iPhone zoom). */
 :root {
-  --k-bg: #050b0d; --k-mint: #2ef2d0; --k-mint-rgb: 46, 242, 208; --k-good: #35f0b0; --k-bad: #ff4d57; --k-warn: #ff9a3c; --k-gold: #ffd86a; --k-dim2: #8f9bff; --dock-h: 116px;
+  --k-bg: #050b0d; --k-mint: #2ef2d0; --k-mint-rgb: 46, 242, 208; --k-good: #35f0b0; --k-bad: #ff4d57; --k-warn: #ff9a3c; --k-gold: #ffd86a; --k-dim2: #8f9bff; --dock-h: 120px;
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
   --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px));
   --vh: var(--oly-vh, 100vh);
@@ -76,7 +76,7 @@ body.sheeted .pair, body.sheeted .ticker { display: none; }
 .dock .row { display: flex; align-items: center; gap: 6px; }
 .dock button { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 4px 2px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .04); font: 700 12px/1 var(--oly-ui); white-space: nowrap; }
 .dock .pills button { font-size: 11px; letter-spacing: 0; }
-.dock .cams button { min-height: 40px; font-weight: 600; font-size: 11.5px; }
+.dock .cams button { min-height: 44px; font-weight: 600; font-size: 11.5px; }
 .dock button[aria-pressed="true"] { border-color: rgba(var(--k-mint-rgb), .8); color: var(--k-mint); box-shadow: 0 0 12px rgba(var(--k-mint-rgb), .2) inset; }
 
 .sheet { position: fixed; z-index: 6; left: calc(var(--sl) + 16px); right: calc(var(--sr) + 16px); bottom: calc(var(--sb) + var(--dock-h) + 52px);
@@ -117,7 +117,7 @@ body.sheeted .pair, body.sheeted .ticker { display: none; }
 .legend .sw { width: 14px; height: 14px; border-radius: 4px; margin-top: 2px; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-@media (max-height: 740px) { :root { --dock-h: 116px; } .odd b { font-size: 19px; } .verdict .v { -webkit-line-clamp: 2; } }
+@media (max-height: 740px) { :root { --dock-h: 120px; } .odd b { font-size: 19px; } .verdict .v { -webkit-line-clamp: 2; } }
 
 .ask { margin: 8px 0; padding: 10px; border-radius: 12px; border: 1px solid rgba(var(--k-mint-rgb), .45); background: rgba(var(--k-mint-rgb), .07); }
 .ask pre { margin: 6px 0 0; padding: 8px; border-radius: 8px; background: rgba(0, 0, 0, .35); font: 500 11.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--oly-text); user-select: all; -webkit-user-select: all; }

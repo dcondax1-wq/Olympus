@@ -13,7 +13,7 @@ part yourself or fold it into a script.**
 ## One chat: where each thing lives and how it ships (owner 2026-11-01)
 
 **The system's name is OLYMPUS (owner 2026-11-03; NEXUS was dropped).** Shown on Jarvis's header (`.hpanel::after`),
-the orb switcher's title (switcher.js) and the System section (current workers: `jarvis/sw.js` jarvis-v24, `kalshi/sw.js` kalshi-k18, root `sw.js` le-public-v59).
+the orb switcher's title (switcher.js) and the System section (current workers: `jarvis/sw.js` jarvis-v24, `kalshi/sw.js` kalshi-k19, root `sw.js` le-public-v59).
 The owner: "I want this chat to be the one I make all changes to, for anything. It's gonna save me time and usage." Every
 project is changed from this repo; this map saves the search. Ship = PR on the session branch, squash-merge to main.
 
@@ -717,6 +717,11 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   adopted; the page is a research lens, paper only.
 
 ## Key commands (run from the repo root)
+- **Numbers audit (2026-11-04):** `python tools/numbers_audit.py` (`--check` exits 1 on any 'wrong'; `--all` shows skipped history; `--json`; test `tests.test_numbers_audit`).
+  Read-only. Builds the facts from CLAUDE.md, `research/lit/mffu_rules.json`, `research/props/roadmap.json`, `research/lit/funded_firms.json`, `plutus/plans.json`, then scans
+  every published file (tools/web_public, web_next, handoff, owner docs, hub snapshot, STRATEGY.md) for list prices, old funded figures (the trio: $2,147 a month on Jul-Oct,
+  $2,655 Jan-Jun), the old headline, old 2-week pass / fail, "7 of 10 days", wrong job / app counts, wrong Builder limits. Run it before every publish; fix the SOURCE of a generated file
+  (writeup summary, `build_web_dashboard.py` strings), then rebuild athena / obsidian pack / hub.
 - **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
   Start page's **Start trading**, `go.step_auto`; Infrastructure, "Start & Accounts page"). `START_BOT.bat` -> `engine/go.py`
   stays for the console: the update (`autoupdate.pull`, bot stopped), names asked once (`data/start_bot.json`,
@@ -1123,6 +1128,19 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   today = six gates + countdown to 02:00 ET, both evals in money words and the 7-day clock, what red lights cost; `?demo=1` / "See it with demo data" fills an
   empty page, never saved over the real copy; the tabs are a 2 x 2 grid). All taps >= 44 px (Forum's dots wrap to two rows above the arrows). Test
   `python -X utf8 -m tests.test_oly_job46`. The apps' tests wait up to 150 s for the page (`tests/olympus_money_kit.py`): SwiftShader on a loaded machine.
+- **ARENA + DAPHNE quality pass (2026-11-04, overnight JOB 47; the Arena crowd cut belongs to agent a7eeb8e, not here):** `fx-atmos.js` `embers({ points })` takes several
+  sources. Arena `dress.js`: sparks off the 14 braziers, added 0.9 s after the first paint, skipped on LITE, `?noatmos=1` probe. Arena Bosses tab gets the **Trading
+  desk** (`arena/rhythm.js`, pure functions + textContent renderer; Arena never sees dollars, so it counts trades, days and rule breaks): the weekly rhythm of the main account
+  against the 2-4 plan (8 bars, "need N more in M days" / "the plan is full"), the quiet clock (days left of the 7 without a trade, per account, `lapsed`), the discipline rate
+  (30 days / all time / clean in a row) with the broken rules by name, and the money path (first trade, eval passed, first payout, days between). Daphne (`tree/`):
+  `tree/gate.js` adds to the TOP 10 sheet a sort bar (rank, 2026 $/mo, test $/mo, trades a week, only holds) and a gate card per rule: the owner's four checks
+  (holds out of sample, 2026 and test make money at bot size, 10+ trades in 2026) -> candidate / watch / reject, $ beside R at the bot's size (1R = `meta.bot_risk_usd`),
+  how often (4 like it make 2 a week; 30 live trades take N months to prove), and the losing run ("4 stop-outs in a row = -$1,128: Drawdown left $872 of $2,000 max loss",
+  the odds of it and of the 8 that end the account in the next 40 trades). The TOP RULES tab shows the verdict, $ a month with R and $ a trade with R. `tree3d.js`: pollen
+  (dust) and a contact shadow at the trunk. Test `python -X utf8 -m tests.test_oly_job47`; run `tests.test_arena` and `tests.test_strategytree` too.
+- **Money wording guard (2026-11-04):** `python -X utf8 -m tests.test_money_wording` scans every app's JS/HTML (comments and vendor code left out) for "day N of 10" / "session N of 10"
+  eval counts, "room to the floor" on a line with no dollars, a progress bar / meter for eval days, and an R headline figure with no $ on the line. Mark a line that is right on
+  purpose with `money-wording-ok` in a comment. Say it as "Drawdown left $X of $max loss".
 - **FATES + LABYRINTH + HEPHAESTUS overhaul (2026-11-04, overnight JOB 4+5; owner: the apps look Play-Doh):** shared kit `tools/web_public/olympus/fx-atmos.js`
   (dust, embers, light shafts, contact shadows, polished floor, bronze, forged iron, thread glow; one draw call each, tiers in `QUALITY`; doc
   section in `docs/OLYMPUS_RENDER.md`). Fates (`fates-lab.js`, bottom bar **Lab**): fan chart with percentiles, pass odds by day, size what-if (1 / 1.25 /
@@ -1872,6 +1890,12 @@ The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" 
   `test_zenith_shell` (Home order).
   **PC status strip** (same core, `MoneyNow.line`; mount `strip()` in `polish.js`, `#nxLine` under the top bar of EVERY PC page, sticky, >= 44 px, links Home):
   "Bot running · last check-in X · Armed: Zlarior, ATLAS" (red when stopped, amber when quiet, "not published yet" when missing).
+- **Today's session** (2026-11-04, `tools/web_public/sessioncore.js` = `window.SessionDay`; phone mount `sessionday.js`, loaded after `moneynow.js`): the card of Zenith
+  Home right under Money now. The day's windows in ET with the bot's rule in plain words (01:45 game plan, 02:00-15:30 entry window, 15:55 flat, 16:05 recap), what the bot
+  is doing now (from `MissionUI.accounts` + the PC check-in), flags (high-impact news from `M.news`, the calendar the page already carries; US/CME holidays from rules in
+  the core, no early-close times claimed), ONE sentence "what to do now" ("Nothing: the bot is waiting for a sweep", "You are flat, session over, review in Mnemosyne.")
+  and the exact H:MM:SS to the next window (ticks every second). Over a weekend it shows Monday. Read-only; wiring: add the two files to the root `sw.js` SHELL.
+  Tests: `test_ui_polish` (a static, b node: modes, DST, countdowns, sentences, news, holidays, c phone: order, 44 px taps, ticking, tap opens Zlarior).
 - **Release safety net** (`python tools/release_manifest.py [--base origin/main] [--json]`, `test_release_manifest`): run it before the 5 AM publish. It lists (a) every
   `?v=` asset tag in an app `index.html` whose file changed since the base but whose tag did not, and (b) every service worker (`tools/web_public/sw.js`,
   `web_next/sw.js`, `jarvis/sw.js`, `kalshi/sw.js`) whose cache name did not change although a file in its SHELL / ASSETS list (or the list) changed. Exit 0 =
@@ -1930,6 +1954,7 @@ The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" 
   and `tests/gate_static.py` are the parts the gate and the Jarvis hub test share.
 - **Site self-check** (`tools/site_selfcheck.py`, a read-only workflow step, `test_site_selfcheck`): after `build_web_dashboard.py` it checks the built `site/` folder (every app folder's files, read from the build's own list) and says LOUDLY when one is missing; the step is `continue-on-error`, it never changes what is published.
 - Safari: `docs/OLYMPUS_SAFARI.md`; `python -X utf8 -m tests.test_safari_smoke --lint` is the fast lint (ES5 rules, no lookbehind / `?.` / `??` in shared files).
+  The real-WebKit walk of every app (iPhone 13, offline reload, back-to-Olympus, first-tap audio) is `python -X utf8 -m tests.test_safari_smoke --webkit` (needs `playwright install webkit` in a scratch dir; gate suite `safari_webkit`, SKIP when WebKit is absent).
 
 ### Wiring checklist for a new app (the lead; an agent only lists these in its report)
 The app folder `tools/web_public/<id>/` (index.html, jarvis.json, manifest, icon.svg, optional `<id>core.js`) is the agent's. The lead then does, in this order:
@@ -1941,7 +1966,7 @@ The app folder `tools/web_public/<id>/` (index.html, jarvis.json, manifest, icon
    `tests/test_zenith_mode.py` (~line 66 holds the full OTHER_APPS string), `tests/test_jarvis_hub.py` (~273 prefix; the Jarvis worker name `jarvis-v24`
    and its OLD list at ~248 / ~816 only when `jarvis/sw.js` is bumped too: bump it when `apps.js` changes the shell files), `tests/test_zenith_shell.py`
    (OTHER_APPS subset, version >= 52), `tests/test_phone_e2e.py` (~1090: every app folder must be in OTHER_APPS), `tests/test_kalshi_page.py` (Kalshi
-   worker `kalshi-k18` and kit / step pins, only if `kalshi/` files change).
+   worker `kalshi-k19` and kit / step pins, only if `kalshi/` files change).
 5. `python tools/apps_list_build.py`, then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js` (the launcher tile and its status dot
    appear on their own; the launcher tile count is read from the list, not typed in a test).
 6. Shared lines: `jarvis/transitions.js` `REGISTRY` (`test_jarvis_transitions` fails without it), `olympus/intro-app.js` `FLAVOUR` + the intro script tag in the

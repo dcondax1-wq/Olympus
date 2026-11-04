@@ -80,7 +80,7 @@ const hbAge = (h, t, min) => { const x = s(t) - min * 60; h.board.data_t = x; h.
 const slim = (j) => { const b = j.board || {}; return { lit: b.lit || null, atlas: b.atlas || null, blitz: null, verdict: j.pc_verdict || null, running: b.running, t: j.t,
   trades: (b.trades || []).slice(-8).map((x) => ({ acct: x.acct, side: x.side, qty: x.qty, exit: x.exit, usd: x.usd, r: x.r, entry_t: x.entry_t, exit_t: x.exit_t, open: !!x.open, day: x.day })),
   health: ((b.health || {}).items || []).slice(0, 8), lines: [], level: b.level || null, price: j.price, last_signal: null, pc_health: null, progress: b.progress || null, money: null, mind: null, learn: null }; };
-const asLive = (h) => ({ v: 1, kind: 'le-live', t: h.board.t, pc_verdict: h.live.pc_verdict, board: h.board, pc: h.live.pc, price: h.board.map && h.board.map.price });
+const asLive = (h) => ({ v: 1, kind: 'le-live', t: h.board.t, pc_verdict: h.live.pc_verdict, board: h.board, pc: h.live.pc, price: h.board.map && h.board.map.price, levels: (h.live || {}).levels, lit: (h.live || {}).lit });
 const shell = (h, extra) => ({ ...slim(asLive(h)), raw: asLive(h), err: null, ...(extra || {}) });
 const sn = (h, t = NOW) => B.snapshot(h, t);
 const evs = (a, b, t = NOW) => B.diff(a ? sn(a, t) : null, sn(b, t), t).map((e) => ({ kind: e.kind, bot: e.bot, level: e.level, p: e.p, key: e.key, text: e.text, say: e.say }));
@@ -293,6 +293,59 @@ PN.armedLights = B.lightsOf(sn(armed(waiting()))).map((l) => [l.id, l.level, l.w
 PN.tradeLights = B.lightsOf(sn(inTrade(waiting(), NOW, true))).map((l) => [l.id, l.level, l.word, l.active]);
 PN.thin = B.lightsOf(sn(cases.room30(waiting()))).map((l) => [l.id, l.level, l.hint]);
 out.panel = PN;
+// ---------------------------------------------------------------- j. the owner rituals (9:15 pre-market, 15:55 end of session, the revenge nudge)
+{
+  const RT = {}, T = (d, h, mi) => ms(2026, 11, d, h, mi);
+  const sentences = (x) => (String(x).match(/[^.!?]+[.!?]+(?=\s|$)/g) || [String(x)]).length;
+  const o = stepper(); const go = (t, f) => { o.now = t; return o.bots.tick(shell(f ? f(t) : waiting(t)), t); };
+  go(T(4, 9, 0)); const early = o.cards.filter((c) => c.kind === 'pre').length;
+  go(T(4, 9, 20)); const pre = o.cards.filter((c) => c.kind === 'pre'); const spoken = o.spoken.map((x) => x.t);
+  go(T(4, 9, 40)); const again = o.cards.filter((c) => c.kind === 'pre').length;
+  const oL = stepper(); oL.now = T(4, 10, 30); oL.bots.tick(shell(waiting(oL.now)), oL.now);
+  const oS = stepper(); oS.now = T(7, 9, 20); oS.bots.tick(shell(waiting(oS.now)), oS.now);
+  const oF = stepper(); oF.bots.set({ rituals: false }); oF.now = T(4, 9, 20); oF.bots.tick(shell(waiting(oF.now)), oF.now);
+  const card = pre[0] || null;
+  RT.pre = { early, n: pre.length, again, late: oL.cards.filter((c) => c.kind === 'pre').length, sat: oS.cards.filter((c) => c.kind === 'pre').length, off: oF.cards.filter((c) => c.kind === 'pre').length, spokenN: spoken.filter((x) => /^Pre-market/.test(x)).length,
+    lines: card && card.lines, say: card && card.say, sentences: card && sentences(card.say), id: card && card.id, kind: card && card.kind };
+  // the watch: the PC silent, a thin room, the inactivity clock, calm
+  const wOf = (f) => { const h = f(waiting(T(4, 9, 20))); const c = B.premarketCard(sn(h, T(4, 9, 20)), T(4, 9, 20)); return c && c.say; };
+  RT.watch = { calm: wOf((h) => h), silent: wOf((h) => hbAge(h, T(4, 9, 20), 40)), room: wOf((h) => cases.room30(h)), quiet: wOf((h) => cases.q5(h)) };
+  RT.nolevels = (() => { const h = waiting(T(4, 9, 20)); h.live.levels = []; h.live.lit = null; h.board.map.levels = []; const c = B.premarketCard(sn(h, T(4, 9, 20)), T(4, 9, 20)); return c && c.lines; })();
+  // the end of session: up, down, near the daily loss, window still open, window closed
+  const endOf = (f, t = T(3, 15, 56)) => { const h = f(waiting(t), t); const c = B.endCard(sn(h, t), t); return c && { rule: c.rule, say: c.say, lines: c.lines, n: sentences(c.say) }; };
+  RT.end = {
+    up: endOf((h, t) => exited(h, t, 212)),
+    down: endOf((h) => { h.board.lit.today_pnl = -300; h.board.lit.done_today = true; return h; }),
+    dll: endOf((h) => { h.board.lit.today_pnl = 10; h.board.lit.dll = 1000; h.board.lit.dll_used = 700; return h; }),
+    open: endOf((h, t) => { h.board.lit.windows = [{ open_t: s(t) - 3600, close_t: s(t) + 600, label: 'x' }]; return h; }),
+    closed: endOf((h) => h),
+    flat: endOf((h) => { h.board.lit.today_pnl = 0; return h; }),
+    none: (() => { const h = waiting(T(3, 15, 56)); h.board.lit.today_pnl = null; h.board.atlas.today_pnl = null; return B.endCard(sn(h, T(3, 15, 56)), T(3, 15, 56)); })(),
+  };
+  const e1 = stepper(); const goE = (t, f) => { e1.now = t; return e1.bots.tick(shell(f(t)), t); };
+  goE(T(3, 15, 40), (t) => waiting(t)); const e0 = e1.cards.filter((c) => c.kind === 'end').length;
+  goE(T(3, 15, 56), (t) => exited(waiting(t), t, 212)); const e2 = e1.cards.filter((c) => c.kind === 'end').length, eSay = e1.spoken.map((x) => x.t).filter((x) => /rule says/i.test(x)).length;
+  goE(T(3, 16, 8), (t) => exited(waiting(t), t, 212)); const e3 = { end: e1.cards.filter((c) => c.kind === 'end').length, recap: e1.cards.filter((c) => c.kind === 'recap').length };
+  const e4 = stepper(); e4.now = T(3, 16, 30); e4.bots.tick(shell(exited(waiting(e4.now), e4.now, 212)), e4.now);
+  RT.endTick = { before: e0, at: e2, spoken: eSay, after: e3, late: e4.cards.filter((c) => c.kind === 'end').length };
+  // the revenge nudge: a second loss closes (the first is already known), a first look, too old, wins, offline, said once
+  const loss = (t, k, usdv = -150) => ({ acct: 'lit', src: 'live', key: 'lit', day: '2026-11-03', entry_t: s(t) - 4000 - k * 900, exit_t: s(t) - 60 - k * 600, side: 'LONG', qty: 3, entry: 28300, exit: 'STOP', usd: usdv, r: -1, open: false });
+  const withTrades = (h, t, list) => { h.board.trades = list.map((u, k) => loss(t, k, u)); return h; };
+  const one = withTrades(waiting(NOW), NOW, [-150]), two = withTrades(waiting(NOW), NOW, [-150, -120]), wins = withTrades(waiting(NOW), NOW, [150, 120]), mix = withTrades(waiting(NOW), NOW, [-150, 120]);
+  const kinds = (a, b, t = NOW) => evs(a, b, t).filter((e) => e.kind === 'revenge');
+  const old = (() => { const h = waiting(NOW); h.board.trades = [loss(NOW, 0), loss(NOW, 1)].map((x) => ({ ...x, exit_t: s(NOW) - 5 * 3600 })); return h; })();
+  const offlineSh = { ...slim(asLive(two)), cached: true, raw: null, err: 'Failed to fetch' };
+  const rv = kinds(one, two);
+  const st = stepper(); st.tick(0, () => one); const f1 = st.tick(60e3, () => two); const f2 = st.tick(60e3, () => two); const f3 = st.tick(60e3, () => two);
+  const st2 = stepper(); st2.bots.set({ rituals: false }); st2.tick(0, () => one); const g1 = st2.tick(60e3, () => two);
+  RT.rv = { second: rv.map((e) => ({ kind: e.kind, level: e.level, p: e.p, key: e.key, text: e.text, say: e.say, n: sentences(e.say) })), first: kinds(null, two).length, old: kinds(null, old).length, one: kinds(null, one).length, wins: kinds(null, wins).length, mix: kinds(null, mix).length,
+    offline: B.diff(sn(one), B.snapshot(offlineSh, NOW), NOW).filter((e) => e.kind === 'revenge').length, twice: kinds(two, two).length,
+    tick: { a: f1.events.filter((e) => e.kind === 'revenge').length, b: f2.events.filter((e) => e.kind === 'revenge').length, c: f3.events.filter((e) => e.kind === 'revenge').length, spoken: st.spoken.filter((x) => /revenge/i.test(x.t)).length }, off: g1.events.filter((e) => e.kind === 'revenge').length };
+  // asks through the brain (the real board at 16:31 on Tuesday)
+  const a = await askAll(['pre-market', 'should I stop', 'am I done for the day', 'rule check'], at(TUE), TUE);
+  RT.ask = Object.fromEntries(Object.entries(a.R).map(([k, v]) => [k, { intent: v.intent, text: v.text, say: v.say, n: sentences(v.say || '') }]));
+  out.rit = RT;
+}
 out.exports = Object.keys(B).sort();
 console.log(JSON.stringify(out));
 """
@@ -455,6 +508,32 @@ def checks(O):
     check("h. a silent PC turns the panel red and the bot light 'PC silent'; an open trade shows in the P&L and pulses (active); a setup armed pulses; break-even says so",
           P["silent"]["state"] == "bad" and any(l[0] == "lit" and l[2] == "PC silent" for l in [[x["id"], x["level"], x["word"]] for x in P["silent"]["lights"]]) and "open -$6" in P["live"]["pnl"]["line"] and P["live"]["pnl"]["today"] == 94
           and ["lit", "ok", "setup armed", True] in P["armedLights"] and any(l[0] == "lit" and "break-even" in l[2] and l[3] for l in P["tradeLights"]) and ["lit", "warn", "room"] in P["thin"], P)
+    R = O["rit"]
+    pr, ps = R["pre"], R["pre"]["lines"] or []
+    check("j. pre-market: nothing at 09:00, ONE card at 09:20 (once a day), spoken, not after 10:00, not on a weekend, not when rituals are off",
+          pr["early"] == 0 and pr["n"] == 1 and pr["again"] == 1 and pr["spokenN"] == 1 and pr["late"] == 0 and pr["sat"] == 0 and pr["off"] == 0 and pr["kind"] == "pre" and pr["id"] == "pre:2026-11-04", pr)
+    check("j. pre-market line: the nearest LIT levels above and below, the VIX-band targets, the room left in $, the one thing to watch; two spoken sentences, no symbols",
+          len(ps) == 2 and "above" in ps[0] and "below" in ps[0] and "VIX band targets" in ps[0] and "$" in ps[1] and "Watch:" in ps[1] and pr["sentences"] == 2 and "$" not in pr["say"] and "Pre-market" in pr["say"], pr)
+    w = R["watch"]
+    check("j. the one thing to watch: a silent PC first, then a thin room, the inactivity clock; calm = a level or the window",
+          "PC" in w["silent"] and "room" in w["room"] and "under half" in w["room"] and "inactivity clock, day 5" in w["quiet"] and ("sweep" in w["calm"] or "window" in w["calm"]), w)
+    check("j. no levels in the feed: said plainly, never invented", R["nolevels"] and "no LIT levels" in R["nolevels"][0], R["nolevels"])
+    e = R["end"]
+    check("j. end of session, up: 'you're up 212 dollars', the rule says stop (the bot's trade is done); two sentences", e["up"]["rule"] == "stop" and "up 212 dollars" in e["up"]["say"] and "done" in e["up"]["say"] and e["up"]["n"] == 2 and "$" not in e["up"]["say"], e["up"])
+    check("j. end of session, down: 'you're down 300 dollars', stop, no manual trades to win it back", e["down"]["rule"] == "stop" and "down 300 dollars" in e["down"]["say"] and "win it back" in e["down"]["say"] and e["down"]["n"] == 2, e["down"])
+    check("j. end of session: near the daily loss limit = stop; window still open = continue; nothing more today = continue; flat says flat; no P&L = no card",
+          e["dll"]["rule"] == "stop" and "daily loss" in e["dll"]["say"] and e["open"]["rule"] == "continue" and "window is still open" in e["open"]["say"] and e["closed"]["rule"] == "continue" and "flat" in e["flat"]["say"] and e["none"] is None, e)
+    et = R["endTick"]
+    check("j. the end line comes once at 15:55-16:05 ET (spoken), then the 16:05 recap takes over; never late", et["before"] == 0 and et["at"] == 1 and et["spoken"] == 1 and et["after"] == {"end": 1, "recap": 1} and et["late"] == 0, et)
+    rv = R["rv"]
+    s0 = rv["second"][0] if rv["second"] else {}
+    check("j. the revenge nudge: when the SECOND loss of the day closes (once), a warning, plain words, two sentences, 'Suggestion only', no order of any kind",
+          len(rv["second"]) == 1 and s0["level"] == "warn" and s0["key"] == "revenge:2026-11-03" and "two losses" in s0["text"] and "revenge trade" in s0["text"] and "Suggestion only" in s0["text"] and s0["n"] == 2 and 2.7 < s0["p"] < 3.5, rv)
+    check("j. the nudge: also on a first look at two fresh losses; not for old ones, one loss, two wins, a win and a loss, an unchanged board or an offline copy; said once ever; off with rituals off",
+          rv["first"] == 1 and rv["old"] == 0 and rv["one"] == 0 and rv["wins"] == 0 and rv["mix"] == 0 and rv["twice"] == 0 and rv["offline"] == 0 and rv["tick"] == {"a": 1, "b": 0, "c": 0, "spoken": 1} and rv["off"] == 0, rv)
+    ak = R["ask"]
+    check("j. asks through the brain: 'pre-market' reads the levels, 'should I stop' / 'am I done for the day' / 'rule check' read the end line; every reply is two spoken sentences (the brain adds its own 'Your call, sir.' to a should-I question)",
+          ak["pre-market"]["intent"] == "bots_pre" and all(ak[q]["intent"] == "bots_end" for q in ("should I stop", "am I done for the day", "rule check")) and ak["pre-market"]["n"] == 2 and ak["am I done for the day"]["n"] == 2 and ak["rule check"]["n"] == 2 and ak["should I stop"]["n"] <= 3 and "rule says" in ak["should I stop"]["say"], ak)
     ex = O["exports"]
     check("h. the module exports no verb that acts (no arm / order / trade / place / send / stop)", not [e for e in ex if re.search(r"^(arm|order|place|send|trade|buy|sell|cancel|flatten|move|set(?!tings))", e)], ex)
 
@@ -507,6 +586,9 @@ def part_browser():
             ctx.route("https://api.github.com/**", feed)
             ctx.route("https://raw.githubusercontent.com/**", feed)
             ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off'); localStorage.setItem('jarvis.mode', 'trading'); localStorage.setItem('jarvis.bots.set', JSON.stringify({ on: true, plan: false, recap: false })); } catch (e) {}")
+            # the scheduled cards (01:45 plan, 09:15 pre-market, 15:55 end, 16:05 recap) are spoken first when the test happens to run in their hour and would
+            # hold the fill's line behind them: they are switched off here (their own checks are f. and j.); the alerts stay on, as by default
+            ctx.add_init_script("try { localStorage.setItem('jarvis.bots.set', JSON.stringify({ on: true, plan: false, recap: false, rituals: false })); } catch (e) {}")
             ctx.add_init_script(H.FAKE_VOICE)
             p = ctx.new_page()
             errs = []
@@ -536,7 +618,7 @@ def part_browser():
             p.wait_for_function("window.__said && window.__said.some((s) => /Zlarior is in/.test(s[0]))", timeout=90000, polling=200)
             said = p.evaluate("window.__said.map((s) => s[0])")
             toast = p.evaluate("(document.getElementById('toast') || {}).textContent || ''")
-            check("i. a fill on the next poll is said out loud ('Zlarior is in ... about 408 dollars at risk') and toasted", any("Zlarior is in" in s and "408 dollars" in s for s in said) and "Zlarior is in" in toast, (said, toast))
+            check("i. a fill on the next poll is said out loud ('Zlarior is in ... about 408 dollars at risk', the number in words since the natural-speech layer) and toasted", any("Zlarior is in" in s and ("408 dollars" in s or "four hundred eight dollars" in s) for s in said) and "Zlarior is in" in toast, (said, toast))
             p.wait_for_timeout(500)
             lit = p.evaluate("document.querySelector('#botsPanel li[data-id=lit]').dataset.active + ':' + document.querySelector('#botsPanel li[data-id=lit] em').textContent")
             check("i. the Zlarior light pulses 'in a long' while the trade is open", lit.startswith("true:in a long"), lit)

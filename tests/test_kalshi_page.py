@@ -445,8 +445,8 @@ def run_browser(url, tmp):
     with sync_playwright() as pw:
         exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
         br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
-        if "--only=guard" in sys.argv or "--only=whatif" in sys.argv:        # just the guard / the what-if cards (2026-11-04), for a quick run
-            (part_guard if "--only=guard" in sys.argv else part_whatif)(br, url, tmp)
+        if "--only=guard" in sys.argv or "--only=whatif" in sys.argv or "--only=scan" in sys.argv:        # just the guard / what-if / scan cards (2026-11-04), for a quick run
+            (part_guard if "--only=guard" in sys.argv else part_scan if "--only=scan" in sys.argv else part_whatif)(br, url, tmp)
             br.close()
             return
         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
@@ -1138,6 +1138,7 @@ def run_browser(url, tmp):
         part_v4(br, url, tmp)
         part_guard(br, url, tmp)
         part_whatif(br, url, tmp)
+        part_scan(br, url, tmp)
         br.close()
 
 
@@ -1866,6 +1867,121 @@ def part_whatif(br, url, tmp):
     ctx2.close()
     check("w7. no page errors and no failed section", not errs and "could not be shown" not in p.inner_text("#body"), errs[:3])
     ctx.close()
+
+
+def part_scan(br, url, tmp):
+    """'Where the money is' (Edge, under the what-if card): tools/kalshi_scan.py's scan.json when the site has it, else the same maths on the feed's price bands,
+    else a dated sample; looking back, not proven; never blank; every tap >= 44 px; text only."""
+    page_url = url + "kalshi/"
+    sys.path.insert(0, ROOT)
+    from tools import kalshi_scan as KS
+    snap = json.load(open(os.path.join(ROOT, "research", "kalshi", "feed_snapshot_2026-11-04.json"), encoding="utf-8"))
+    scan = KS.scan(snap)
+    kdir = os.path.join(tmp, "nq-dashboard", "kalshicity")
+    os.makedirs(kdir, exist_ok=True)
+    spath = os.path.join(kdir, "scan.json")
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
+    ctx.route("https://raw.githubusercontent.com/**", feed)
+    ctx.route("https://api.github.com/**", feed)
+    p = ctx.new_page()
+    p.set_default_timeout(120000)
+    errs, posts = [], []
+    p.on("pageerror", lambda e: errs.append(str(e)))
+    p.on("console", lambda m: errs.append(m.text) if m.type == "error" and not re.search(r"Failed to load resource|net::ERR", m.text) else None)
+    p.on("request", lambda r: posts.append(r.method) if r.method not in ("GET", "HEAD") else None)
+    j = dict(snap)
+    j["running"], j["t"], j["pub_t"] = False, int(time.time()) - 20, int(time.time()) - 18
+
+    def open_(feed_j, wait_text=None):
+        FEED["mode"], FEED["j"] = "ok", feed_j
+        p.goto(page_url)
+        p.evaluate("localStorage.clear()")
+        p.goto(page_url)
+        ready(p, 20000)
+        p.wait_for_selector("#sec-scan")
+        if wait_text:
+            p.wait_for_function(f"document.querySelector('#sec-scan').textContent.indexOf({json.dumps(wait_text)}) >= 0", timeout=60000)
+    try:
+        with open(spath, "w", encoding="utf-8") as fh:
+            json.dump(scan, fh)
+        open_(j, "Worth a paper test")
+        p.wait_for_function("document.querySelector('#sec-scan .sc-l').textContent.indexOf('Looking back') >= 0", timeout=60000)
+        order = p.evaluate("[...document.querySelectorAll('#g-edge > .card')].slice(0, 2).map((c) => c.id)")
+        t = p.inner_text("#sec-scan")
+        check("s1. with scan.json on the site: the card follows the what-if card in Edge, says 'looking back, not proven, suggestions only', two groups (worth a paper test / avoid)",
+              order == ["sec-whatif", "sec-scan"] and "looking back" in t.lower() and "not proven" in t.lower() and "suggestions only" in t.lower() and "worth a paper test" in t.lower() and "avoid" in t.lower(), (order, t[:200]))
+        rows = p.eval_on_selector_all("#sec-scan .sc-h", "els => els.map(e => [e.querySelector('.sc-n').textContent.trim(), e.querySelector('b').textContent, Math.round(e.getBoundingClientRect().height)])")
+        check("s1. five rows to paper-test and five to avoid, each a >= 44 px tap with its cents per $1 (95–97¢ +1.5¢; 90–95¢ −1.1¢)",
+              len(rows) == len(scan["test"]) + len(scan["avoid"]) == 10 and min(h for _, _, h in rows) >= 44 and rows[0][0].startswith("95–97¢") and rows[0][1] == "+1.5¢"
+              and any(n_.startswith("90–95¢") and c_ == "−1.1¢" for n_, c_, _ in rows), rows)
+        p.click("#sec-scan .sc-i.avoid .sc-h >> nth=0")
+        d = p.inner_text("#sec-scan .sc-i.avoid.open .sc-d")
+        check("s2. tapping a row opens its sentence from scan.json: the 90–95¢ band, 92.2% won against 92.8% priced, −1.1¢ on every $1, lost $248 on $5,343 bet, fees about $27, 'not proven'",
+              d == scan["avoid"][0]["text"] and "$248" in d and "$5,343" in d and "92.2%" in d and "not proven" in d, d)
+        p.click("#sec-scan .sc-i.avoid .sc-h >> nth=0")
+        check("s2. tapping it again closes it", p.locator("#sec-scan .sc-d").count() == 0)
+        check("s2. nothing on the card places an order (no form, no link, no POST)", p.locator("#sec-scan form, #sec-scan a").count() == 0 and not posts)
+        # a scan with hostile names is text, never markup
+        evil = json.loads(json.dumps(scan))
+        evil["test"][0]["name"] = "<img src=x onerror=window.__pwned=1>"
+        evil["test"][0]["text"] = "<b onmouseover=window.__pwned=1>x</b>"
+        with open(spath, "w", encoding="utf-8") as fh:
+            json.dump(evil, fh)
+        open_(j, "Worth a paper test")
+        p.wait_for_function("document.querySelector('#sec-scan .sc-n').textContent.indexOf('<img') >= 0", timeout=60000)
+        p.click("#sec-scan .sc-h >> nth=0")
+        check("s3. hostile names and sentences in scan.json are text, never markup", p.evaluate("!window.__pwned") and p.locator("#sec-scan img, #sec-scan .sc-d b").count() == 0)
+        # a broken scan.json is ignored: the feed's own bands
+        with open(spath, "w", encoding="utf-8") as fh:
+            fh.write("<html>not json")
+        open_(j)
+        time.sleep(1.5)
+        tb = p.inner_text("#sec-scan")
+        check("s4. a broken scan.json is ignored: the same maths on this feed's price bands ('From this feed's price bands only'), the 90–95¢ band still on the avoid list with −1.1¢ and the dollars",
+              "price bands only" in tb and p.locator("#sec-scan .sc-i.avoid").count() >= 1 and "−1.1¢" in tb and p.locator("#sec-scan .sc-i.test").count() >= 1, tb[:300])
+        p.click("#sec-scan .sc-i.avoid .sc-h >> nth=0")
+        check("s4. and its sentence carries the dollars", "−$248" in p.inner_text("#sec-scan .sc-d") or "$248" in p.inner_text("#sec-scan .sc-d"), p.inner_text("#sec-scan .sc-d"))
+        os.remove(spath)
+        open_(j)
+        check("s5. no scan.json on the site at all: the card is still there (never blank), from the bands", "price bands only" in p.inner_text("#sec-scan") and p.locator("#sec-scan .sc-h").count() >= 2)
+        # a feed with no price bands and no scan.json: the dated sample, labelled
+        open_(sample(time.time()))
+        ts_ = p.inner_text("#sec-scan")
+        check("s5. a feed with no bands and no scan.json: a dated sample from the 2026-11-04 research, labelled 'not your live numbers', 2 + 2 rows",
+              "2026-11-04 research" in ts_ and "not your live numbers" in ts_ and p.locator("#sec-scan .sc-h").count() == 4, ts_[:200])
+        FEED["mode"], FEED["j"] = "404", None
+        p.goto(page_url)
+        p.evaluate("localStorage.clear()")
+        p.goto(page_url)
+        p.wait_for_selector("[data-act=preview]")
+        p.click("[data-act=preview]")
+        p.wait_for_selector("#sec-scan")
+        check("s5. the sample preview carries the card too", p.locator("#sec-scan .sc-h").count() >= 2)
+        ctx2 = br.new_context(viewport={"width": 375, "height": 667}, device_scale_factor=1)
+        ctx2.route("https://raw.githubusercontent.com/**", feed)
+        ctx2.route("https://api.github.com/**", feed)
+        q = ctx2.new_page()
+        q.set_default_timeout(120000)
+        with open(spath, "w", encoding="utf-8") as fh:
+            json.dump(scan, fh)
+        FEED["mode"], FEED["j"] = "ok", j
+        q.goto(page_url)
+        q.evaluate("localStorage.clear()")
+        q.goto(page_url)
+        ready(q, 20000)
+        q.wait_for_selector("#sec-scan")
+        q.wait_for_function("document.querySelector('#sec-scan .sc-l').textContent.indexOf('Looking back') >= 0", timeout=60000)
+        q.click("#sec-scan .sc-h >> nth=0")
+        sw = q.evaluate("[document.documentElement.scrollWidth, innerWidth, Math.max(...[...document.querySelectorAll('#sec-scan *')].map((e) => e.getBoundingClientRect().right))]")
+        check("s6. 375 x 667: the card (rows open) fits, no sideways scroll, nothing past the right edge", sw[0] <= sw[1] and sw[2] <= sw[1] + 0.5, sw)
+        ctx2.close()
+        check("s7. no page errors and no failed section", not errs and "could not be shown" not in p.inner_text("#body"), errs[:3])
+    finally:
+        if os.path.exists(spath):
+            os.remove(spath)
+        if os.path.isdir(kdir) and not os.listdir(kdir):
+            os.rmdir(kdir)
+        ctx.close()
 
 
 def KW_usd(x):

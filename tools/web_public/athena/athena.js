@@ -19,6 +19,8 @@ const PANES = ['lib', 'entry', 'quiz', 'ask', 'today', 'cards', 'rules', 'saved'
 const TABS = ['lib', 'ask', 'today', 'cards', 'rules', 'saved', 'train', 'quiz'];            // the Saved page opens from the star at the top right
 
 const tagOf = (id) => S.lib.tags.find((t) => t.id === id);
+// a [[link]] in a one-line summary is a plain word there (the full entry makes it a button)
+const plainShort = (t) => String(t).replace(/\[\[([a-z0-9-]+)\]\]/g, (m, id) => (S.byId && S.byId[id] ? S.byId[id].title.replace(/ \(.*\)$/, '') : id));
 const colorOf = (e) => (tagOf(e.kind) || S.lib.tags[0]).color;
 
 // ------------------------------------------------------------------------------------------------ the list
@@ -32,7 +34,7 @@ function renderList() {
   const r = results();
   const tg = S.tag ? tagOf(S.tag) : null;
   $('count').textContent = (S.q ? `${r.length} for "${S.q}"` : `${r.length} entries`) + (tg ? ` on the ${tg.name} shelf` : '') + (tg && tg.blurb ? `. ${tg.blurb}.` : '.');
-  $('list').innerHTML = r.length ? r.map((e) => `<button type="button" class="item" data-open="${esc(e.id)}" style="--c:${esc(colorOf(e))}"><strong>${esc(e.title)}</strong><span>${esc(e.short)}</span></button>`).join('')
+  $('list').innerHTML = r.length ? r.map((e) => `<button type="button" class="item" data-open="${esc(e.id)}" style="--c:${esc(colorOf(e))}"><strong>${esc(e.title)}</strong><span>${esc(plainShort(e.short))}</span></button>`).join('')
     : `<p class="empty">Nothing found. Try one word, like "stop" or "payout", or clear the shelf.</p>`;
 }
 function renderEntry() {
@@ -58,7 +60,7 @@ function renderQuiz() {
   if (k.i >= k.qs.length) {
     $('quiz').innerHTML = `<p class="qn">Done</p><div class="score">${k.score} / ${k.qs.length}</div>`
       + `<p class="note">${k.score === k.qs.length ? 'Perfect. You know your system.' : k.score >= 3 ? 'Good. Read the ones you missed below.' : 'Worth a re-read. Open the ones you missed.'} Nothing here is saved or sent anywhere.</p>`
-      + k.missed.map((id) => `<button type="button" class="item" data-open="${esc(id)}" data-from="quiz" style="--c:${esc(colorOf(S.byId[id]))}"><strong>${esc(S.byId[id].title)}</strong><span>${esc(S.byId[id].short)}</span></button>`).join('')
+      + k.missed.map((id) => `<button type="button" class="item" data-open="${esc(id)}" data-from="quiz" style="--c:${esc(colorOf(S.byId[id]))}"><strong>${esc(S.byId[id].title)}</strong><span>${esc(plainShort(S.byId[id].short))}</span></button>`).join('')
       + `<button type="button" class="wide" id="again">Quiz me again</button><button type="button" class="wide" id="toLib">Back to the library</button>`;
     return;
   }

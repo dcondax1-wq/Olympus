@@ -48,6 +48,8 @@ WORKERS = [
     {"path": "tools/web_public/kalshi/sw.js", "re": r"(const CACHE = ')(kalshi-)([A-Za-z]+\d+)(';)", "style": "tag", "old_list": False, "label": "Kalshi"},
 ]
 ROOT_WORKER = "tools/web_public/sw.js"
+# tests whose "pins" are synthetic fixtures of a release tool (a mini-site inside the test): never rewritten
+SKIP_PIN_FILES = {"tests/test_bump_versions.py", "tests/test_add_kit_tags.py", "tests/test_release_manifest.py"}
 
 
 def bump_tag(tag: str) -> str | None:
@@ -203,10 +205,18 @@ def make_plan(repo, changed=None):
     # ---- 1. the ?v= queries
     edits: dict[str, list[tuple[int, int, str]]] = {}
     bumped: dict[str, tuple[str, str]] = {}                       # target -> (old, new)
-    for c in in_site:
+    queue, seen_q = list(in_site), set(in_site)                      # a script this tool edits (a ?v= inside it) has changed too: it is bumped as well (a fixed point)
+    while queue:
+        c = queue.pop(0)
         if c.endswith("/sw.js") or c not in by_target:
             continue
         rs = by_target[c]
+        if repo.base_text(c) is None:                                  # created since the base: no phone has a copy, nothing can be stale
+            plan.warnings.append(f"{c}: new since {repo.base} (no tag bump needed)")
+            continue
+        if all(repo.base_text(r.file) is None for r in rs):             # only pages created since the base point at it: no evidence of the old tag
+            plan.warnings.append(f"{c}: referenced only by files new since {repo.base} (not bumped: bump by hand if its tag was already used)")
+            continue
         if already_bumped(repo, rs):
             plan.warnings.append(f"{c}: already bumped since {repo.base} (left alone)")
             continue
@@ -219,6 +229,9 @@ def make_plan(repo, changed=None):
         for r in rs:
             edits.setdefault(r.file, []).append((r.start, r.end, new))
             plan.add("query", r.file, f"{r.literal}?v={r.tag} -> ?v={new}")
+            if r.file not in seen_q and r.file in by_target and repo.base_text(r.file) is not None:
+                seen_q.add(r.file)
+                queue.append(r.file)
     edited_files = set(edits)
 
     # ---- 2. the workers
@@ -294,10 +307,12 @@ def make_plan(repo, changed=None):
     pins = {}
     if os.path.isdir(repo.p(tests_dir)):
         for fn in sorted(os.listdir(repo.p(tests_dir))):
-            if fn.endswith(".py"):
+            if fn.endswith(".py") and f"{tests_dir}/{fn}" not in SKIP_PIN_FILES:
                 pins[f"{tests_dir}/{fn}"] = repo.text(f"{tests_dir}/{fn}") or ""
     all_by_key: dict[tuple[str, str], set[str]] = {}
     for r in refs:
+        if r.file == r.target:                                       # a file naming itself (a doc comment, a stray copy of the kit) is not a second owner of the pin
+            continue
         all_by_key.setdefault((posixpath.basename(r.literal), r.tag), set()).add(r.target)
     new_pins = dict(pins)
     for tgt, (old, new) in sorted(bumped.items()):

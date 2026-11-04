@@ -358,3 +358,36 @@ h1, h2, p, ol { margin: 0; }
 .shareview p { margin: 0; font-size: 11px; color: var(--dim); text-align: center; }
 .toast-d { position: absolute; z-index: 10; left: 50%; transform: translateX(-50%); bottom: calc(var(--sb) + 180px); padding: 8px 14px; border-radius: 99px; background: rgba(4, 14, 9, .96); border: 1px solid var(--line); color: var(--ink); font-size: 11px; max-width: calc(100% - 24px); }
 #app[data-season="spring"] .verdict, #app[data-season="autumn"] .verdict { text-shadow: none; }
+
+/* ---------------------------------------------------------------- JOB 47: the gate (gate.js): sort bar, adoption checks, R beside $ */
+.topbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+.topbar button { flex: 1 1 auto; min-height: 44px; min-width: 44px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; background: rgba(0, 0, 0, .35);
+  color: var(--dim); font: inherit; font-size: 10px; letter-spacing: .12em; cursor: pointer; }
+.topbar button[aria-pressed="true"] { color: var(--green); border-color: rgba(70, 255, 154, .6); box-shadow: 0 0 10px rgba(70, 255, 154, .18) inset; }
+.topbar button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.toplist li.none { cursor: default; color: var(--dim); font-size: 10px; letter-spacing: .08em; line-height: 1.6; padding: 18px 0; }
+.nums small.rr { display: block; font-size: 8px; color: var(--dim); }
+.rules .nm small.gn { color: var(--dim); letter-spacing: .04em; white-space: normal; }
+.rules .nm small.gn.candidate { color: var(--green); }
+.rules .nm small.gn.watch { color: #ffd479; }
+.rules .nm small.gn.reject { color: var(--red); }
+.gate { margin-top: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255, 255, 255, .025); font-size: 10px; line-height: 1.55; }
+.gate.g-candidate { border-color: rgba(70, 255, 154, .5); background: rgba(70, 255, 154, .05); }
+.gate.g-watch { border-color: rgba(255, 212, 121, .45); }
+.gate.g-reject { border-color: rgba(255, 107, 127, .35); }
+.gate .gv { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 6px; letter-spacing: .12em; }
+.gate .gv b { color: var(--ink); }
+.gate.g-candidate .gv b { color: var(--green); } .gate.g-watch .gv b { color: #ffd479; } .gate.g-reject .gv b { color: var(--red); }
+.gate .gv span { color: var(--dim); }
+.gate .gc { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 2px; }
+.gate .gc li { padding-left: 16px; position: relative; letter-spacing: .06em; }
+.gate .gc li::before { content: '✓'; position: absolute; left: 0; color: var(--green); }
+.gate .gc li.no { color: var(--dim); } .gate .gc li.no::before { content: '✕'; color: var(--red); }
+.gate .gm { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+.gate .gm > div { display: grid; gap: 1px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; }
+.gate .gm small { color: var(--dim); font-size: 8px; letter-spacing: .12em; }
+.gate .gm b { font-size: 11px; } .gate .gm b.pos { color: var(--green); } .gate .gm b.neg { color: var(--red); }
+.gate .gl { margin: 4px 0 0; color: var(--ink); }
+.gate .gl b { color: var(--green); letter-spacing: .1em; font-weight: 600; margin-right: 4px; }
+.gate .gl.dim { color: var(--dim); font-size: 9px; }
+@media (prefers-reduced-motion: reduce) { .topbar button { transition: none; } }

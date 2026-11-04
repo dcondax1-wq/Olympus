@@ -53,7 +53,7 @@ KNOBS: tuple[Knob, ...] = (
     Knob("min_rr", ("lit", "min_rr"), 1.0, 2.5, 0.1, "Minimum target distance", "R"),
     Knob("disp", ("lit", "disp"), 0.5, 1.2, 0.05, "Displacement body at least", "ATR"),
     Knob("win_end", ("lit", "window", 0, 1), 600, 945, 15, "Last entry (ET)", "min", integer=True),
-    Knob("room_f", ("lit_sizing", "two_week", "room_f"), 0.4, 1.0, 0.05, "Eval size: share of the room to the floor", "x"),
+    Knob("room_f", ("lit_sizing", "two_week", "room_f"), 0.4, 1.0, 0.05, "Eval size: share of the drawdown left", "x"),
 )
 KEYS = tuple(k.key for k in KNOBS)
 

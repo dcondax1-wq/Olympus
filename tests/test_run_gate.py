@@ -36,6 +36,10 @@ def main():
     need = ["jarvis_shell", "apps_list", "safari_lint", "olympus_a11y", "olympus_sfx", "olympus_kit", "olympus_themes", "olympus_render", "jarvis_assistant", "jarvis_tools", "jarvis_modes",
             "jarvis_brain", "jarvis_obsidian", "jarvis_talk", "jarvis_voice", "jarvis_engines", "phone_e2e", "zenith_mode", "zenith_shell", "zenith_pro", "zenith_pages", "kalshi_page"]
     check("the named suites are all there (those whose files exist)", all(n in names for n in need if os.path.isfile(os.path.join(ROOT, "tests", "test_" + {"safari_lint": "safari_smoke"}.get(n, n) + ".py"))), [n for n in need if n not in names])
+    wk = [s for s in S if s["name"] == "safari_webkit"]
+    r = G.run_suite(fake("import sys; print('SKIP: WebKit is not installed here'); sys.exit(77)"), False, 1.0, True)
+    check("the optional WebKit walk is in the plan (--webkit, not run by --fast) and exit 77 (WebKit not installed) is a SKIP, never a FAIL",
+          wk and wk[0]["argv"][-1] == "--webkit" and wk[0]["fast"] is None and r["state"] == "SKIP", (wk, r))
     hub = [n for n in names if n.startswith("jarvis_hub:")]
     check("the Jarvis hub runs BY PARTS (static, a, b, missing, c, look, switcher, olympus, system, intro), each its own suite with its own budget",
           [h.split(":")[1] for h in hub] == [p for p, _ in G.HUB] and all(s["budget"] > 0 for s in S), hub)

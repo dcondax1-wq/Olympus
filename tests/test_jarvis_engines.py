@@ -367,6 +367,15 @@ const mkPlayer = () => { const p = { played: [], stops: 0, play: (b) => { p.play
   const idx = await (await import('node:fs/promises')).readFile(dir + '/index.html', 'utf8');
   ck('b. the shell calls deviceDownload from exactly one place, the Download button\'s click', (idx.match(/deviceDownload\(/g) || []).length === 1 && /\$\('#vDevDl'\)\.addEventListener\('click'[\s\S]{0,400}deviceDownload\(/.test(idx));
 }
+{ // captions: speak() returns the CLEANED text, the highlight positions (words) are mapped back onto it
+  const said = [], { e } = mkEng({});
+  const sp = T.createSpeaker({ synth: phoneSynth(said), cfg: () => ({}), cloud: () => null, prosody: () => e.prosody });
+  const marks = []; const src = 'Next halt today 5 PM Eastern, back at 6 PM. The NQ market is open.';
+  const r = sp.speak(src, { onboundary: (i) => marks.push(i) }); await wait(1200);
+  const mono = marks.every((m, i) => i === 0 || m >= marks[i - 1]);
+  ck('b. captions: speak() returns the cleaned text (5 PM stays 5 PM) while the voice says it in words; highlight positions stay inside it, in order, and reach the last sentence',
+    r.text === T.cleanSpeech(src) && /five P M/.test(said.map((s) => s.text).join(' ')) && marks.length >= 1 && mono && marks.every((m) => m >= 0 && m <= r.text.length) && marks[marks.length - 1] > r.text.length * 0.5, [r.text, marks, said.map((s) => s.text)]);
+}
 realLog(JSON.stringify(out));
 """
 
@@ -407,6 +416,7 @@ def page(br, url, keys, device=None, voices=True):
     if keys:
         ctx.add_init_script("try { localStorage.setItem('jarvis.smart', JSON.stringify({ v: 2, on: false, provider: 'groq', keys: %s })); } catch (e) {}" % json.dumps(keys))
     ctx.add_init_script(f"window.__iosRule = {json.dumps(bool(device))}; window.__voicesEmpty = {json.dumps(not voices)};")
+    ctx.add_init_script("try { localStorage.setItem('jarvis.bots.set', JSON.stringify({ on: true, plan: false, recap: false, rituals: false })); } catch (e) {}")     # (the bots' 01:45 / 09:15 / 15:55 / 16:05 cards would be spoken first in their hour)
     ctx.add_init_script(T.MOCK)
     ctx.add_init_script(MEDIA)
     net = {"gemini": [], "groq": [], "other": []}

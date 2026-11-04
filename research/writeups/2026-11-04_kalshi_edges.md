@@ -179,3 +179,13 @@ band is still flagged as picked after the fact. It keeps a running net $, wins /
 and names a leader only after that. The feed carries only its last 40 bets, so if more than that settle between two runs the tally is flagged "may be incomplete".
 Files (new, in kalshicity/): `forward.json` (the Kalshi page's "Forward test" strip reads it; absent = "collecting: 0 bets so far"), `forward_state.json`, `forward_card.json`.
 Feed unreachable, or no new bets: nothing is rewritten. Test: `python -X utf8 -m tests.test_kalshi_forward` (23 checks) and `tests.test_kalshi_page --only=whatif`.
+
+## Where the money is: the scan (2026-11-04)
+`tools/kalshi_scan.py` works out, for every slice of the bot's bets with 30+ bets, the fee-adjusted expected value per $1 risked, (win rate - price - fee) / price with the
+research's own fee function (`tools/kalshi_research.fee_pc`), with a 95% Wilson range, and writes `kalshicity/scan.json` (under 30 KB): the top 5 slices worth a paper test and the
+top 5 to avoid, in plain words with the dollars. Slices from the feed's totals over every settled bet: price band, coin, strategy. Slices from bets seen one by one (the city's ledger
+plus the feed's last 40): the time of day (ET: Asia, London, NY morning, NY afternoon) and its crossings with band and coin. A coin's or a strategy's price is not in the totals, so
+its recent mean price is assumed and a positive result on an assumed price is always flagged fragile (so are cells under 100 bets and ranges that include zero). On the 2026-11-04
+feed: avoid the 90-95c band (-1.1c per $1, lost $248 on $5,343) and XRP (-3.7c, lost $107); paper-test 95-97c (+1.5c, made $137). Looking back, not proven: 18 overlapping
+slices were looked at, so the best are partly luck. The Kalshi page's "Where the money is" card (Edge, under the what-if card) reads scan.json when the site has it, else the same
+maths on the feed's price bands, else a dated sample. Tests: `python -X utf8 -m tests.test_kalshi_scan` (27) and `tests.test_kalshi_page --only=scan` (s1-s7).

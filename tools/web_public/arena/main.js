@@ -7,6 +7,7 @@ import * as HUD from './hud.js';
 import { evaluateWeek, history as bossHistory, bossEvents, bossStats, weekStart, featured } from './bosses.js';
 import { trophies as makeTrophies } from './trophies.js';
 import * as X from './extras.js';
+import { desk } from './rhythm.js';
 
 const O = window.OLYMPUS || null;
 const JARVIS_ORIGIN = 'https://demetrades2000-coder.github.io';
@@ -92,7 +93,7 @@ const flat = (...a) => a.flat(3).filter(Boolean);
 function build(tab) {
   if (tab === 'quests') return flat(HUD.renderQuests(S.quests, S.results, S.R), more(() => X.weekBoard(S.bosses, S.R)));
   if (tab === 'labours') return HUD.renderLabours(S.sc, openLabour);
-  if (tab === 'bosses') return HUD.renderBosses(S.bosses, S.R, openBoss);
+  if (tab === 'bosses') return flat(HUD.renderBosses(S.bosses, S.R, openBoss), more(() => desk(S.ledger.events(), S.R, S.today)));
   if (tab === 'trophies') return flat(more(() => X.shelf(S.trophies)), HUD.renderTrophies(S.trophies, openTrophy));
   if (tab === 'ranks') return HUD.renderLadder(S.sc, S.R);
   const ev = S.ledger.events();

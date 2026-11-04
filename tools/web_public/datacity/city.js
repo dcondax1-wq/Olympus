@@ -44,8 +44,10 @@ const P = new URLSearchParams(location.search);
 const state = window.__city = { ready: false, mode: null, buildings: 0, quality: null, fps: 0, found: 0, errors: [], today: { on: false, lit: 0 },
                                 tour: { on: false, step: -1, steps: 0, caption: '' }, cam: { mode: 'orbit', on: false }, landmark: null, sky: null, weather: null, frames: 0 };
 
-async function getJSON(url) {
-  const r = await fetch(url, { cache: 'no-cache' });
+async function getJSON(url, ms = 0) {
+  const ac = ms && typeof AbortController === 'function' ? new AbortController() : null, tm = ac ? setTimeout(() => ac.abort(), ms) : 0;
+  let r;
+  try { r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); } finally { clearTimeout(tm); }
   if (!r.ok) throw new Error(`${url}: ${r.status}`);
   return r.json();
 }
@@ -53,11 +55,12 @@ async function getJSON(url) {
 /** The live city, else the demo fixture. */
 async function loadCity() {
   if (P.has('demo')) return { data: await getJSON('./fixture.json'), demo: true };     // ?demo=1: the fixtures only (offline, tests)
+  let why = 'none';
   try {
-    const d = await getJSON('./city.json');
+    const d = await getJSON('./city.json', 8000);                  // no answer in 8 s (offline, a dead link): the demo city, never a "loading" that does not end
     if (Array.isArray(d?.buildings) && d.buildings.length) return { data: d, demo: !!d.demo };
-  } catch (e) { /* not published yet: the demo city */ }
-  return { data: await getJSON('./fixture.json'), demo: true };
+  } catch (e) { why = 'offline'; /* not published yet, or no connection: the demo city */ }
+  return { data: await getJSON('./fixture.json'), demo: true, why };
 }
 
 function billboards(model) {
@@ -907,7 +910,7 @@ async function postCard() {
 }
 
 async function main() {
-  const { data, demo } = await loadCity();
+  const { data, demo, why } = await loadCity();
   const plugins = await loadPlugins(data, getJSON);
   const synth = Math.max(0, Math.min(60000, parseInt(P.get('synth') || '0', 10) || 0));
   const model = decode(data, plugins, synth);
@@ -916,6 +919,10 @@ async function main() {
   $('#loading').remove();
   app.start();
   state.ready = true;
+  if (why) {                                                        // plain words: why this is the demo city
+    const note = why === 'offline' ? 'Offline: showing the demo city. The live city comes back with your connection.' : 'The live city is not published yet: showing the demo city.';
+    state.notice = note; setTimeout(() => UI.toast(note), 600);
+  }
   postCard();
 }
 
