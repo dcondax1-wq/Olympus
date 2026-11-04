@@ -462,6 +462,8 @@ let last = performance.now(), win = { t: 0, frames: 0, slow: 0 }, labelTick = 0;
 function frame(now) {
   requestAnimationFrame(frame);
   if (!brain || (O ? O.hidden() : document.hidden) || !state.graph) return;     // hidden tab: no frame (the battery)
+  const gap = O && O.frameGap ? O.frameGap() : 0;                           // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+  if (gap && now - last < gap - 3) return;
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   if (state.lapse) stepLapse(now);
@@ -469,7 +471,7 @@ function frame(now) {
   needsDraw = false;
   brain.frame(dt, now / 1000, rig);
   if (labelTick++ % 2 === 0) labels();
-  meter(dt);
+  if (gap) win.t = win.frames = 0; else meter(dt);                          // a deliberate cap is not a slow phone
 }
 requestAnimationFrame(frame);
 

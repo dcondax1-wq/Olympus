@@ -447,7 +447,8 @@ function loop(now) {
   if (!(O ? O.hidden() : document.hidden)) {                    // hidden tab: no frame (the battery)
     const t0 = performance.now(), t = frozenAt !== null ? frozenAt : S.hold !== null ? S.hold : now - S.t0;
     syncScrub(t);
-    if (S.quality < 2 && frozenAt === null && now - lastFrame < 30) { requestAnimationFrame(loop); return; }   // LITE / low: 30 fps
+    const gap = Math.max(O && O.frameGap ? O.frameGap() : 0, S.quality < 2 ? 30 : 0);                     // LITE 30 fps; idle / battery saver / 3D Off: the kit's gap (docs/OLYMPUS_PERF.md)
+    if (gap && frozenAt === null && now - lastFrame < gap - 3) { requestAnimationFrame(loop); return; }
     lastFrame = now;
     if (is3d()) glow.frame(now, t);                                       // the 3D laurel replaces the 2D drawing while it is on
     else {

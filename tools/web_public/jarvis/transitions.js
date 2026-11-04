@@ -27,6 +27,8 @@ export const REGISTRY = {
   odeon:      { kind: 'curtain',       ms: 1000, cues: [[0.34, 'tick']] },
   fates:      { kind: 'threads',       ms: 960,  cues: [[0.5, 'tick']] },
   datacity:   { kind: 'skyline',       ms: 900 },
+  cities:     { kind: 'skyline',       ms: 880 },
+  kalshicity: { kind: 'chart',         ms: 880 },
   tree:       { kind: 'laurel',        ms: 1000 },
   prometheus: { kind: 'forge',         ms: 960 },
   pantheon:   { kind: 'columns',       ms: 1000, n: 7 },

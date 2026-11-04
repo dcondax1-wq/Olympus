@@ -175,7 +175,12 @@ class Hall {
     const geo = { back: new THREE.BoxGeometry(4.5, 3.4, 0.18), plank: new THREE.BoxGeometry(4.5, 0.1, 0.62), post: new THREE.BoxGeometry(0.14, 3.5, 0.66), book: new THREE.BoxGeometry(1, 1, 1), scroll: new THREE.CylinderGeometry(0.11, 0.11, 0.5, 14), cap: new THREE.CylinderGeometry(0.125, 0.125, 0.04, 14), strip: new THREE.BoxGeometry(1, 1, 1) };
     const c = counts(S.lib);
     const leathers = ['#5b1f1f', '#1f3a5b', '#24543a', '#5b3d1f', '#3b2457', '#1f4a52'].map((h, n) => leatherTex(h, 40 + n));
-    const bookMats = leathers.map((map, n) => (col) => { const m = new THREE.MeshPhysicalMaterial({ map, color: new THREE.Color(col).lerp(new THREE.Color('#ffffff'), 0.55), roughness: 0.5, metalness: 0.1, clearcoat: 0.4 }); return m; });
+    // the books, scrolls, glowing spines and caps of a shelf are INSTANCED (2026-11-04, docs/OLYMPUS_PERF.md: ~35 meshes a shelf became ~11):
+    // one leather material per shelf (the six leathers rotate across shelves; each book keeps its own tint through instanceColor)
+    const bookMats = leathers.map((map) => new THREE.MeshPhysicalMaterial({ map, color: 0xffffff, roughness: 0.5, metalness: 0.1, clearcoat: 0.4 }));
+    const dummy = new THREE.Object3D();
+    const inst = (g, geometry, material, count) => { const m = new THREE.InstancedMesh(geometry, material, Math.max(1, count)); m.count = count; g.add(m); return m; };
+    const put = (m, i, x, y, z, rx, ry, rz, sx, sy, sz) => { dummy.position.set(x, y, z); dummy.rotation.set(rx, ry, rz); dummy.scale.set(sx, sy, sz); dummy.updateMatrix(); m.setMatrixAt(i, dummy.matrix); };
     S.lib.tags.forEach((t, i) => {
       const g = new THREE.Group(), a = i * (Math.PI * 2) / S.lib.tags.length;
       g.position.set(Math.sin(a) * R, 0, -Math.cos(a) * R); g.userData = { tag: t.id, a }; g.lookAt(0, 0, 0);
@@ -189,19 +194,24 @@ class Hall {
       for (const y of planks.slice(1)) { const p = new THREE.Mesh(geo.plank, slab); p.position.set(0, y, 0); g.add(p); }
       let seed = 11 + i * 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
       const cols = [new THREE.Color(t.color).multiplyScalar(0.55), new THREE.Color(t.color).lerp(new THREE.Color('#1b2238'), 0.55), new THREE.Color('#2a3558')];
+      const nScroll = Math.floor(n / 3), nBook = n - nScroll;           // k % 3 === 2 are scrolls
+      const books = inst(g, geo.book, bookMats[i % bookMats.length], nBook), strips = inst(g, geo.strip, mat, nBook);
+      const scrolls = inst(g, geo.scroll, parch, nScroll), caps = inst(g, geo.cap, mat, nScroll * 2);
+      let ib = 0, isc = 0;
       for (let k = 0; k < n; k++) {
         const row = Math.floor(k / 6), col = k % 6, y0 = planks[row] + 0.05, x = -1.85 + col * 0.74 + (rnd() - 0.5) * 0.05;
         if (k % 3 === 2) {                                            // a scroll lying down, glowing caps
-          const s = new THREE.Mesh(geo.scroll, parch);
-          s.rotation.z = Math.PI / 2; s.position.set(x, y0 + 0.13, 0.05); s.scale.set(1, 1.35, 1); g.add(s);
-          for (const sx of [-1, 1]) { const cp = new THREE.Mesh(geo.cap, mat); cp.rotation.z = Math.PI / 2; cp.position.set(x + sx * 0.35, y0 + 0.13, 0.05); g.add(cp); }
+          put(scrolls, isc, x, y0 + 0.13, 0.05, 0, 0, Math.PI / 2, 1, 1.35, 1);
+          put(caps, isc * 2, x - 0.35, y0 + 0.13, 0.05, 0, 0, Math.PI / 2, 1, 1, 1); put(caps, isc * 2 + 1, x + 0.35, y0 + 0.13, 0.05, 0, 0, Math.PI / 2, 1, 1, 1);
+          isc++;
         } else {                                                       // a book standing up, a glowing spine strip
-          const h = 0.62 + rnd() * 0.3, w = 0.17 + rnd() * 0.07;
-          const b = new THREE.Mesh(geo.book, bookMats[(k + i) % bookMats.length](cols[k % 3]));
-          b.scale.set(w, h, 0.38); b.position.set(x, y0 + h / 2, 0.04); b.rotation.z = (k % 5 === 4) ? 0.12 : 0; g.add(b);
-          const st = new THREE.Mesh(geo.strip, mat); st.scale.set(w * 1.04, 0.05, 0.4); st.position.set(x, y0 + h * 0.7, 0.04); st.rotation.z = b.rotation.z; g.add(st);
+          const h = 0.62 + rnd() * 0.3, w = 0.17 + rnd() * 0.07, rz = (k % 5 === 4) ? 0.12 : 0;
+          put(books, ib, x, y0 + h / 2, 0.04, 0, 0, rz, w, h, 0.38); books.setColorAt(ib, cols[k % 3].clone().lerp(new THREE.Color('#ffffff'), 0.55));
+          put(strips, ib, x, y0 + h * 0.7, 0.04, 0, 0, rz, w * 1.04, 0.05, 0.4);
+          ib++;
         }
       }
+      for (const m of [books, strips, scrolls, caps]) { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
       const glow = new THREE.PointLight(new THREE.Color(t.color), this.lite ? 0 : 6, 7, 1.6); glow.position.set(0, 1.9, 1.6); g.add(glow);
       const lab = labelSprite(t.name.toUpperCase() + '  ' + (c[t.id] || 0), t.color); lab.position.set(0, 4.05, 0.1); g.add(lab);
       g.userData.mat = mat; g.userData.light = glow; g.userData.lab = lab;
@@ -280,10 +290,11 @@ function labelSprite(text, color) {
   s.scale.set(3.6, 0.675, 1); return s;
 }
 
-let last = performance.now(), T = 0;
+let last = performance.now(), T = 0, lastTick = 0;
 function loop(now) {
   const dt = Math.min(0.25, (now - last) / 1000); last = now; T += dt;
-  if (S.hall && !(O ? O.hidden() : document.hidden)) S.hall.tick(dt, T);
+  const gap = O && O.frameGap ? O.frameGap() : 0;                         // idle 30 / 15 fps, battery saver, 3D Off: 2 fps (docs/OLYMPUS_PERF.md)
+  if (S.hall && !(O ? O.hidden() : document.hidden) && !(gap && now - lastTick < gap - 3)) { S.hall.tick(lastTick ? Math.min(0.25, (now - lastTick) / 1000) : dt, T); lastTick = now; }
   requestAnimationFrame(loop);
 }
 

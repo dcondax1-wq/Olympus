@@ -458,7 +458,9 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
   // ---- the loop
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (stopped) return;
+    if (stopped || (window.OLYMPUS && window.OLYMPUS.hidden())) return;                       // hidden / covered: no JS, no frame
+    const gap = (window.OLYMPUS && window.OLYMPUS.frameGap ? window.OLYMPUS.frameGap() : 0);                   // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+    if (gap && now / 1000 - last < (gap - 3) / 1000) return;
     const t = now / 1000, dt = Math.min(0.05, Math.max(0, t - last)); last = t;
     const still = reduced();
     if (t - hourAt > 1) { hour = etHour(Date.now()); hourAt = t; if (still) dirty = true; }
