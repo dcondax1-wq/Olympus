@@ -69,8 +69,8 @@ def part_a():
           and "new THREE.WebGLRenderer" not in sc and "rc.dispose()" in sc and "InstancedMesh" in sc and "godRays" in sc)
     check("a. no innerHTML / insertAdjacentHTML / document.write: the data only ever goes in as text", not any(re.search(r"innerHTML|insertAdjacentHTML|document\.write", s) for s in js.values()))
     fetched = {x.strip() for x in re.findall(r"getJSON\(([^,)]+)", js["ledger.js"])} - {"url"}
-    check("a. the page reads only home.json, rules.json, the public Kalshi feed and its fixture (GET); no WebSocket / beacon / XHR / EventSource, no POST, no custom header, nothing sent",
-          fetched == {"'../home.json'", "'rules.json'", "RAW", "'fixture.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
+    check("a. the page reads only home.json, rules.json, the public Kalshi feed, its fixture and the Money plan's ../plutus/roadmap.json (GET); no WebSocket / beacon / XHR / EventSource, no POST, no custom header, nothing sent",
+          fetched == {"'../home.json'", "'rules.json'", "RAW", "'fixture.json'", "'../plutus/roadmap.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
           and not re.search(r"method\s*:|'POST'|headers\s*:|body\s*:", js["ledger.js"]), fetched)
     ls = re.findall(r"localStorage\.(\w+)Item\(([^,)]+)", " ".join(js.values()))
     check("a. storage only under the one key 'ledger.v1' (read, write); no cookies, no IndexedDB, no other keys", ls and all(k == "KEY" for _, k in ls) and "const KEY = 'ledger.v1'" in js["ledger.js"]
@@ -517,11 +517,146 @@ def run_browser():
     check("c. nothing left the phone: no request to any origin but the public Kalshi feed address (a read, answered locally here), and no POST anywhere", not outside and raw_hits and all(u.endswith("/main/kalshi.json") for u in raw_hits), (outside[:3], raw_hits[:2]))
 
 
+# ------------------------------------------------------------------------------------------------ r. the Money plan check (2026-11-04): expected vs actual cash from ../plutus/roadmap.json
+def plan_at(months, today):
+    """an independent Python version of ledgercore.planAt, to check the page's numbers against"""
+    if today < months[0]["from"]:
+        return {"cum": 0.0, "lo": 0.0, "hi": 0.0}
+    if today > months[-1]["to"]:
+        return {k: months[-1][k] for k in ("cum", "lo", "hi")}
+    import datetime as dt
+    d = lambda s: dt.date.fromisoformat(s)  # noqa: E731
+    i = next((j for j, m in enumerate(months) if m["from"] <= today <= m["to"]), None)
+    if i is None:
+        i = next(j for j, m in enumerate(months) if m["from"] > today) - 1
+    m = months[i]
+    prev = months[i - 1] if i else {"cum": 0, "lo": 0, "hi": 0}
+    span = max(1, (d(m["to"]) - d(m["from"])).days + 1)
+    f = min(1.0, ((d(today) - d(m["from"])).days + 1) / span)
+    return {k: round(prev[k] + (m[k] - prev[k]) * f, 2) for k in ("cum", "lo", "hi")}
+
+
+def part_roadmap_maths(rm):
+    js = node(r"""const C = await import(url + '/ledgercore.js');
+      const mk = (cum) => cum.map((c, i) => ({ m: i + 1, from: `2026-${String(11 + i > 12 ? 11 + i - 12 : 11 + i).padStart(2, '0')}-01`, to: `2026-${String(11 + i > 12 ? 11 + i - 12 : 11 + i).padStart(2, '0')}-28`, cum: c, lo: c - 100, hi: c + 100 }));
+      const rm = { first_session: '2026-11-01', versions: { H2: { months: mk([100, 300]) }, H1: { months: mk([200, 600]) } } };
+      const E = (kind, amount, date) => C.cleanEntry({ kind, amount, date, acct: 'general', note: '', id: kind + date });
+      const L = [E('payout_in', 500, '2026-11-12'), E('fee', 43, '2026-11-10'), E('payout_in', 999, '2026-10-15'), E('expense', 50, '2026-11-12')];
+      const mid = C.roadmapVsActual(L, rm, '2026-11-14'), before = C.roadmapVsActual(L, rm, '2026-10-31'), after = C.roadmapVsActual(L, rm, '2027-03-01');
+      const below = C.roadmapVsActual([], rm, '2026-12-28'), at2 = C.roadmapVsActual([E('payout_in', 300, '2026-12-01')], rm, '2026-12-28'), above = C.roadmapVsActual([E('payout_in', 700, '2026-12-01')], rm, '2026-12-28');
+      out({ ok: C.roadmapOk(rm), bad: [null, {}, { versions: {} }, { first_session: 'x', versions: rm.versions }, { first_session: '2026-11-01', versions: { H2: { months: [] }, H1: rm.versions.H1 } }].map(C.roadmapOk),
+        mid, before, after, below: below.verdict, at2: at2.verdict, above: above.verdict, none: C.roadmapVsActual(L, null, '2026-11-14'),
+        p0: C.planAt(rm.versions.H2.months, '2026-11-01'), p1: C.planAt(rm.versions.H2.months, '2026-11-28'), p2: C.planAt(rm.versions.H2.months, '2026-12-28'), pend: C.planAt(rm.versions.H2.months, '2030-01-01') }); """)
+    check("r. the maths runs in node", "error" not in js, js)
+    if "error" in js:
+        return
+    check("r. a good file is accepted; a missing, empty, half-made or date-less one is refused (null: the tracker stays as before)", js["ok"] is True and js["bad"] == [False] * 5 and js["none"] is None, js["bad"])
+    m = js["mid"]
+    check("r. only cash since the plan started counts: payouts 500 less the 43 fee = 457 (the 999 payout from October and the 50 expense are not in it)", m["actual"] == 457 and m["payouts"] == 500 and m["fees"] == 43, m)
+    check("r. the plan's total is spread over the days of the month: 14 of 28 days of month 1 = half of its 100 (conservative) and half of 200 (Jan-Jun)",
+          js["mid"]["expected"] == 50.0 or abs(js["mid"]["expected"] - 100 * 14 / 28) < 0.5, m)
+    check("r. before the start nothing is expected; after the end the 12-month total stays", js["before"]["state"] == "before" and js["before"]["expected"] == 0 and js["after"]["state"] == "after" and js["after"]["expected"] == 300, (js["before"], js["after"]))
+    check("r. the sentence: below the worst 1 in 10 / at the conservative plan / at the Jan-Jun plan",
+          "below the worst 1 in 10" in js["below"] and "at or above the conservative plan" in js["at2"] and "at or above the Jan-Jun plan" in js["above"] and "Drawdown left" in js["below"], (js["below"], js["at2"], js["above"]))
+    check("r. planAt: the first day of month 1 is a 28th of it; the last day is the month's total; a day after the end is the last total",
+          abs(js["p0"]["cum"] - 100 / 28) < 0.02 and js["p1"]["cum"] == 100 and js["p2"]["cum"] == 300 and js["pend"]["cum"] == 300, (js["p0"], js["p1"], js["p2"], js["pend"]))
+    # the real file: the page's interpolation equals the independent Python one on every day of the first two months and the last
+    days = ["2026-11-05", "2026-11-17", "2026-12-04", "2026-12-10", "2027-01-20", rm["versions"]["H2"]["months"][-1]["to"], "2028-01-01"]
+    js2 = node(r"""const C = await import(url + '/ledgercore.js'); const rm = JSON.parse(fs.readFileSync(%s, 'utf8')); const days = %s;
+      out(days.map((d) => ({ h2: C.planAt(rm.versions.H2.months, d), h1: C.planAt(rm.versions.H1.months, d) }))); """ % (json.dumps(os.path.join(WEB, "plutus", "roadmap.json")), json.dumps(days)))
+    if isinstance(js2, list):
+        ok = all(abs(a["h2"][k] - plan_at(rm["versions"]["H2"]["months"], d)[k]) < 0.011 and abs(a["h1"][k] - plan_at(rm["versions"]["H1"]["months"], d)[k]) < 0.011
+                 for a, d in zip(js2, days) for k in ("cum", "lo", "hi"))
+        check("r. on the real roadmap.json the page's expected cash equals an independent Python version on %d chosen days" % len(days), ok, js2[:2])
+    else:
+        check("r. real-file check ran", False, js2)
+
+
+def part_roadmap_browser(rm):
+    from playwright.sync_api import sync_playwright
+    tmp = tempfile.mkdtemp(prefix="le_ledger_rm_")
+    site = os.path.join(tmp, "nq-dashboard")
+
+    def build(with_plan):
+        shutil.rmtree(site, ignore_errors=True)
+        shutil.copytree(PAGE, os.path.join(site, "ledger"))
+        for d in ("jarvis", "olympus"):
+            shutil.copytree(os.path.join(WEB, d), os.path.join(site, d))
+        if with_plan:
+            os.makedirs(os.path.join(site, "plutus"))
+            shutil.copy(os.path.join(WEB, "plutus", "roadmap.json"), os.path.join(site, "plutus", "roadmap.json"))
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=tmp))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{srv.server_address[1]}/nq-dashboard/ledger/"
+    try:
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}), args=["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader"])
+
+            def open_(qs, seed):
+                ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, has_touch=True, reduced_motion="reduce")
+                ctx.add_init_script("try { if (!localStorage.getItem('jfx')) localStorage.setItem('jfx', 'low'); } catch (e) {}")
+
+                def guard(route):
+                    u = route.request.url
+                    if u.startswith(RAW_PREFIX):
+                        return route.abort()
+                    return route.continue_() if u.startswith(f"http://127.0.0.1:{srv.server_address[1]}") or u.startswith(("data:", "blob:")) else route.abort()
+                ctx.route("**/*", guard)
+                p = ctx.new_page()
+                p.set_default_timeout(40000)
+                p.errs = []
+                p.on("pageerror", lambda e: p.errs.append(str(e)))
+                p.on("console", lambda m: m.type == "error" and "Failed to load resource" not in m.text and p.errs.append(m.text))
+                p.goto(base + qs)
+                p.wait_for_function("document.body.dataset.ready === '1' && window.LG && LG.state().scene && LG.state().scene.drawn > 0", timeout=240000)
+                for e in seed:
+                    p.evaluate("(e) => LG.add(e)", e)
+                p.wait_for_timeout(300)
+                return ctx, p
+
+            today = "2026-12-10"
+            seed = [{"kind": "payout_in", "amount": 480, "date": "2026-12-08", "acct": "general", "cat": "Payouts"},
+                    {"kind": "fee", "amount": 63, "date": "2026-11-25", "acct": "general", "cat": "Eval fees"}]
+            build(True)
+            ctx, p = open_(f"?today={today}", seed)
+            exp2, exp1 = plan_at(rm["versions"]["H2"]["months"], today)["cum"], plan_at(rm["versions"]["H1"]["months"], today)["cum"]
+            money = lambda x: ("-$" if x < 0 else "$") + f"{abs(x):,.0f}"  # noqa: E731
+            txt = p.inner_text("#planCheck") if p.locator("#planCheck").count() else ""
+            check("r. with the Money plan file: the break-even tracker shows 'Expected vs actual cash so far this year', conservative first, Jan-Jun second, then the actual",
+                  p.locator("#planCheckHead").count() == 1 and "so far this year" in p.inner_text("#planCheckHead") and rm["first_session"] in p.inner_text("#planCheckHead")
+                  and txt.index("conservative") < txt.index("Jan-Jun") < txt.index("Actual") and money(exp2) in txt and money(exp1) in txt and "+$417" in txt, txt)
+            check("r. ... and a plain sentence about where he stands (the page says one of the four sentences)", any(s in p.inner_text("#planCheckMsg") for s in (
+                "at or above the Jan-Jun plan", "at or above the conservative plan", "inside its normal range", "below the worst 1 in 10")), p.inner_text("#planCheckMsg"))
+            check("r. ... inside the Break-even tracker card, no errors", p.evaluate("!!document.querySelector('#planCheckHead').closest('article.card') && document.querySelector('#planCheckHead').closest('article.card').querySelector('h2').textContent") == "Break-even tracker" and not p.errs, p.errs[:3])
+            check("r. no sideways scroll with the extra lines", p.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+            ctx.close()
+            ctx, p = open_("?today=2026-10-20", seed)
+            check("r. before the plan's first day: the tracker says the plan starts on its date and expects $0", "starts " + rm["first_session"] in p.inner_text("#planCheckMsg") and "$0" in p.inner_text("#planCheck"), p.inner_text("#planCheckMsg"))
+            ctx.close()
+            ctx, p = open_(f"?today={today}", [])
+            check("r. DEMO (no entries): the expected lines show, the actual says to add the first entry, nothing is compared", p.evaluate("LG.state().demo") and "add your first entry" in p.inner_text("#planCheck") and "example numbers" in p.inner_text("#planCheckMsg"), p.inner_text("#planCheck"))
+            ctx.close()
+            build(False)
+            ctx, p = open_(f"?today={today}", seed)
+            check("r. no plutus/roadmap.json: the tracker is exactly as before (no plan lines), no errors, the page is not blank",
+                  p.locator("#planCheckHead").count() == 0 and "back of" in p.inner_text("#p-over") and not p.errs, p.errs[:3])
+            ctx.close()
+            br.close()
+    finally:
+        srv.shutdown()
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main():
     part_a()
     part_b()
+    with open(os.path.join(WEB, "plutus", "roadmap.json"), encoding="utf-8") as fh:
+        rm = json.load(fh)
+    part_roadmap_maths(rm)
     if os.environ.get("LG_NO_BROWSER") != "1":
         run_browser()
+        part_roadmap_browser(rm)
     print(f"\n{sum(RES)}/{len(RES)} passed")
     return 0 if all(RES) else 1
 

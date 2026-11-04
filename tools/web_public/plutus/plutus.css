@@ -130,3 +130,20 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .rb .n { color: var(--text); } .rb .v { text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; }
 .rb .bar { height: 10px; border-radius: 6px; background: rgba(255, 255, 255, .08); overflow: hidden; } .rb .bar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--lime), var(--gold)); }
 @media (prefers-reduced-motion: reduce) { .pd summary::after { transition: none; } }
+
+/* ---- Money plan card (plutusroadmap.js, 2026-11-04) */
+.mplan .tag { margin-left: 6px; vertical-align: middle; }
+.mplan p.plain { margin: 4px 0 8px; font-size: 13.5px; line-height: 1.4; }
+.mplan .mp-head { font-weight: 700; color: var(--text); }
+.mplan .mp-now { padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--lime); background: rgba(155, 232, 74, .08); }
+.mp-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0 10px; }
+.mp-cell { padding: 8px 10px; border-radius: 12px; border: 1px solid rgba(155, 232, 74, .22); background: rgba(0, 0, 0, .25); }
+.mp-cell.first { border-color: var(--lime); box-shadow: 0 0 14px rgba(155, 232, 74, .18); }
+.mp-cell span { display: block; font-size: 11px; color: var(--dim); letter-spacing: .04em; }
+.mp-cell b { display: block; font: 800 20px/1.2 var(--oly-display, 'Orbitron', sans-serif); color: var(--lime); font-variant-numeric: tabular-nums; }
+.mp-cell small { display: block; font-size: 11px; color: var(--dim); }
+.mplan .pd { margin-top: 8px; }
+.mp-cav { margin: 4px 0 0; padding-left: 18px; font-size: 12.5px; line-height: 1.4; color: var(--text); }
+.mp-cav li { margin: 0 0 6px; }
+.mp-months td, .mp-months th { white-space: nowrap; }
+@media (max-width: 360px) { .mp-two { grid-template-columns: 1fr; } }
