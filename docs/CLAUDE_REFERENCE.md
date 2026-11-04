@@ -1084,6 +1084,19 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     the base). test_holo_ui's "replay advances" failed on the base and here while the shared machine was at load 40-60
     (4 cores) and passes 62/62 at a lower load: a timing flake, the Holodeck code is unchanged.
   - Test `python -X utf8 -m tests.test_zenith_shell` (23).
+- **Zenith pages / every-tab visual pass (2026-11-04, overnight JOB 28; owner: "every dashboard page top quality, no blank-looking pages"):**
+  `tools/web_public/zenpagescore.js` = `web_next/js/next/zenpagescore.js` (byte-identical, `window.ZenithPages`): a page with nothing to
+  show yet gets one glass card "what you will see here" (the page's own description, four sample tiles, a sample equity curve with the
+  drawdown floor / gradient bars / ghost rows / calendar, always marked "Sample, not your data", when it fills in, links to Home /
+  Zlarior today / Money now), a loading page gets ghost cards, key figures roll up once per page (`ZenithFX.count`, nothing when motion
+  is off). Glue: phone `zenith_pages.js` (loaded after zenith_money.js; sample card only after the page was quiet and thin for 1.3 s),
+  PC `web_next/js/next/zenith_pages_pc.js`. Look: `zenith.css` (v6; end of file) = aurora drifting behind the glass (High / Ultra only),
+  specular top edge on cards, gradient bars, ring icon on every empty state, press feel, hero chip text wraps (a countdown was cut), PC
+  copy `web_next/css/zenith_pc.css` (same rules under `.nx .page`). Bridge (`bridge/index.html`) and `pc/index.html` got the glass /
+  aurora / shine pass (content unchanged). goals.js: no more "goal undefined-undefined" / "Built 1/1/1970". Test `python -X utf8 -m
+  tests.test_zenith_pages` (27). Wiring still needed (files that were off limits): bump the phone worker (`sw.js` le-public-v57+, add
+  `zenpagescore.js`, `zenith_pages.js` to ASSETS) and the PC worker (`web_next/sw.js` le-shell-next-v33+, ASSETS `/css/zenith_pc.css?v=1`,
+  `/js/next/zenpagescore.js?v=1`, `/js/next/zenith_pages_pc.js?v=1`).
 - **Zenith Scorecard (2026-11-03, night quest "the best trading dashboard there is"; `docs/ZENITH_COMPARISON.md`):** one renderer
   `tools/web_public/procore.js` = `web_next/js/next/procore.js` (byte-identical, `window.ProUI`), phone glue `pro.js` (`#/pro/<part>`:
   Zlarior > Results first chip, More > Insight, a Home card under the quick tiles), PC glue `web_next/js/next/pro.js` (sidebar
