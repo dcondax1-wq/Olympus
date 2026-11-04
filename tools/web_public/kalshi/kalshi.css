@@ -487,7 +487,7 @@ html.framed .secnav { top: 0; }
 .jd-h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .jd-h b { font: 700 14px var(--fh); letter-spacing: .04em; }
 .jd-h span { font: 700 14px var(--fh); } .jd-h small { color: var(--mut); }
-.jn-b { margin-left: auto; min-height: 36px; padding: 0 12px; border: 1px solid var(--dim2); background: transparent; color: var(--mut); border-radius: 999px; font: 600 12px var(--fb); }
+.jn-b { margin-left: auto; min-height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--dim2); background: transparent; color: var(--mut); border-radius: 999px; font: 600 12px var(--fb); }
 .jn-b[aria-expanded="true"] { color: var(--c); border-color: var(--c); }
 .jn-t { margin: 6px 0 0; padding: 6px 8px; border-left: 2px solid var(--c); color: var(--tint); font-size: 14px; overflow-wrap: anywhere; }
 textarea.jn { width: 100%; margin: 8px 0 0; padding: 8px; font-size: 16px; line-height: 1.35; resize: vertical; background: rgba(0, 0, 0, .35); border: 1px solid var(--dim2); color: var(--txt); border-radius: 8px; }

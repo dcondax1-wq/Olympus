@@ -1012,6 +1012,7 @@ def run_browser(url, tmp):
         check("x. the section bar: shown with data, 44 px taps, the alerts count (red when one needs you)",
               nav[0] is False and all(h >= 44 for h in nav[1]) and nav[2] == "3" and nav[3] == "bad", nav)
         p.click("#secnav [data-go=perf]")
+        p.wait_for_function("(() => { const t = document.getElementById('g-perf').getBoundingClientRect().top, b = document.getElementById('secnav').getBoundingClientRect().bottom; return t <= b + 40; })()", timeout=20000)
         p.wait_for_timeout(1200)
         top = p.evaluate("[document.getElementById('g-perf').getBoundingClientRect().top, document.getElementById('secnav').getBoundingClientRect().bottom]")
         check("x. tapping Performance glides there, its heading just under the bar", top[1] - 2 <= top[0] <= top[1] + 40, top)

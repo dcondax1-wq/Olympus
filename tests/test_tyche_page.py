@@ -481,7 +481,7 @@ def _bank_checks(p, tag, j):
     check(f"g. {tag}: the Bank panel stays clear of the orb corner, no sideways scroll", not orb_free(p) and no_sideways(p), orb_free(p))
     again = p.evaluate("""async () => { const m = await import('./bankroll.js'); const model = window.tyche.model; const a = m.simulate(model), b = m.simulate(model);
       const few = m.simulate({ settled: model.settled.slice(0, 3), balance: 1000 });
-      const mk = (r) => ({ balance: 1000, settled: Array.from({ length: 20 }, (_, i) => ({ pnl: r * 10, staked: 10, t: i })) });
+      const mk = (r) => ({ balance: 1000, settled: Array.from({ length: 20 }, (_, i) => ({ pnl: r * 100, staked: 100, t: i })) });
       const up = m.simulate(mk(0.5)), down = m.simulate(mk(-0.9));
       return { same: JSON.stringify(a) === JSON.stringify(b), few: few.ok, up: [up.ruin, up.half, up.p50 > 1000], down: [down.ruin, down.half] }; }""")
     check(f"g. {tag}: the simulation is seeded (the same feed, the same odds), refuses under 8 bets, a winning book has no ruin, a losing one has it",

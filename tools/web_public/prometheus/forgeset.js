@@ -18,7 +18,7 @@ export function buildForgeSet(THREE, scene, o) {
   const lite = !!o.lite;
 
   // ---- sky dome: near black, an ember-red glow at the horizon (no fog, no depth)
-  const dome = new THREE.Mesh(new THREE.SphereGeometry(90, 24, 12), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(90, 16, 8), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: U, vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: `uniform float uT; varying vec3 vD;
       void main(){ float h = clamp(vD.y, -0.2, 1.0);
@@ -28,7 +28,7 @@ export function buildForgeSet(THREE, scene, o) {
 
   // ---- floor: polished obsidian
   const floorMat = o.metal({ kind: 'gunmetal', color: '#1b0f0b', roughness: 0.46, clearcoat: 0.6, envMapIntensity: 0.9 });
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(R + 2.9, lite ? 48 : 96), floorMat);
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(R + 2.9, lite ? 40 : 64), floorMat);
   floor.rotation.x = -Math.PI / 2; scene.add(floor);
 
   // ---- lava cracks: voronoi edges baked ONCE into a small texture on the CPU (R = crack, G = glow, B = the cell's own phase),
@@ -65,7 +65,7 @@ export function buildForgeSet(THREE, scene, o) {
 
   // ---- molten gold ring (flowing noise, HDR) inside a brushed gold band
   const ringR = R + 2.45;
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(ringR, 0.2, 14, lite ? 90 : 180), new THREE.ShaderMaterial({ uniforms: U, fog: false,
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(ringR, 0.2, 8, lite ? 72 : 120), new THREE.ShaderMaterial({ uniforms: U, fog: false,
     vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: `uniform float uT; varying vec2 vU;
       ${NOISE}
@@ -77,20 +77,20 @@ export function buildForgeSet(THREE, scene, o) {
   ring.rotation.x = Math.PI / 2; ring.position.y = 0.18; scene.add(ring);
   const bandMat = o.metal({ kind: 'gold', roughness: 0.28 });
   for (const [r, y] of [[R + 2.78, 0.2], [R + 2.12, 0.16]]) {
-    const band = new THREE.Mesh(new THREE.TorusGeometry(r, 0.11, 10, lite ? 90 : 180), bandMat);
+    const band = new THREE.Mesh(new THREE.TorusGeometry(r, 0.11, 6, lite ? 72 : 120), bandMat);
     band.rotation.x = Math.PI / 2; band.position.y = y; scene.add(band);
   }
 
   // ---- braziers: gold lathe bowls on short stems with coals that glow
   const prof = [[0.0, 0.0], [0.3, 0.0], [0.34, 0.06], [0.12, 0.32], [0.1, 0.62], [0.2, 0.78], [0.46, 1.02], [0.52, 1.1], [0.46, 1.1], [0.38, 0.98], [0.0, 0.9]].map(([x, y]) => new THREE.Vector2(x, y));
-  const bowl = new THREE.LatheGeometry(prof, lite ? 12 : 24);
+  const bowl = new THREE.LatheGeometry(prof, lite ? 10 : 16);
   const goldMat = o.metal({ kind: 'gold', roughness: 0.22 });
   const coalMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.36, 0.08).multiplyScalar(3.2), fog: false });
   const coals = [];
   for (let i = 0; i < 6; i++) {
     const a = i / 6 * Math.PI * 2 + 0.26, x = Math.cos(a) * (R + 3.55), z = Math.sin(a) * (R + 3.55);
     const b = new THREE.Mesh(bowl, goldMat); b.position.set(x, 0, z); b.scale.setScalar(1.15); scene.add(b);
-    const c = new THREE.Mesh(new THREE.SphereGeometry(0.4, 10, 6), coalMat); c.position.set(x, 1.12, z); c.scale.y = 0.35; scene.add(c);
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 4), coalMat); c.position.set(x, 1.12, z); c.scale.y = 0.35; scene.add(c);
     coals.push(c);
   }
 

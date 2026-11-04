@@ -339,7 +339,10 @@ def _page_checks(br, url, url_nodata):
     p.screenshot(path=os.path.join(SHOTS, "04_verdict.png"))
     p.click("#truthX")
     p.click("#play")
-    p.wait_for_timeout(4200)
+    try:
+        p.wait_for_function("window.__forge.gen >= 1", timeout=90000)     # software GL on a busy box: a step needs a few slow frames
+    except Exception:
+        pass
     g_after = p.evaluate("window.__forge.gen")
     check("e. Play runs the time-lapse (generations advance)", g_after >= 1, g_after)
     p.screenshot(path=os.path.join(SHOTS, "05_timelapse.png"))
