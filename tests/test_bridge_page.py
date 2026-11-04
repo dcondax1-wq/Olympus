@@ -109,7 +109,7 @@ def part_olympus():
     check("c. build_web_dashboard.py publishes status.json inside try/except (a failure never stops the publish)",
           "from tools import bridge_sync as _bridge" in bd and "_bridge.publish(out)" in bd and bd.rfind("try:", 0, i) > bd.rfind("\n    for app in", 0, i) and "except Exception" in bd[i:i + 400])
     check("c. workers: root le-public-v56, Jarvis jarvis-v22 (v21 kept in OLD); 'bridge/' is cached", "const CACHE = 'le-public-v56'" in sw and "'bridge/'" in sw
-          and "const CACHE = 'jarvis-v22'" in jsw and "'jarvis-v21'" in jsw.split("const OLD")[1].split("\n")[0])
+          and "const CACHE = 'jarvis-v24'" in jsw and "'jarvis-v21'" in jsw.split("const OLD")[1].split("\n")[0])
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
