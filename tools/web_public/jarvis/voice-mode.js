@@ -164,7 +164,7 @@ export function createVoiceMode(deps) {
   const loadVoices = () => { voices = synth ? safe(() => synth.getVoices() || [], []) : []; renderVoice(); };
   if (synth) safe(() => synth.addEventListener('voiceschanged', loadVoices));
   const voice = () => bestVoice(voices, savedVoiceName());
-  const speaker = synth ? createSpeaker({ synth, voices: () => voices, cfg: () => Object.assign({}, DEFAULTS, call('voiceCfg') || {}, { voice: savedVoiceName() }), cloud: () => call('cloudVoice') }) : null;
+  const speaker = synth ? createSpeaker({ synth, voices: () => voices, cfg: () => Object.assign({}, DEFAULTS, call('voiceCfg') || {}, { voice: savedVoiceName() }), cloud: (c) => call('cloudVoice', c), prosody: () => call('prosody'), player: () => call('player') }) : null;
   function renderVoice() { const b = $('#vmVoice'), v = voice(); if (b) b.textContent = 'VOICE · ' + (v ? v.name.replace(/\s*\(.*\)$/, '').toUpperCase() : 'AUTO'); }
   function nextVoice() {
     loadVoices();

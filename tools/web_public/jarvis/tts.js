@@ -10,8 +10,8 @@
 //   cleanSpeech(text)          what is said: no markdown, emojis, links or symbols; money, %, k / M, /mo said in words
 //   speechChunks(text, max?)   natural sentence chunks (<= max chars, split at . ! ? then ; : , then a space), commas added
 //                              before "but / so / because" in long sentences
-//   createSpeaker({ synth, voices(), cfg(), cloud() , fetch, Audio })
-//     .speak(text, { onstart, onend, onboundary(charIndex in the cleaned text), onstall(rest) }) -> { text (cleaned), cancel() }
+//   createSpeaker({ synth, voices(), cfg(), cloud() , fetch, Audio, prosody, player })
+//     .speak(text, { onstart, onend, onboundary(charIndex in the cleaned text), onstall(rest), onfallback(error, voiceId), onengine(id) }) -> { text (said), cancel() }
 //     .cancel() · .speaking · .prime() (a silent utterance: call it inside a tap, the iPhone's unlock)
 //   One utterance per chunk, each started when the last one ends, with a 140 ms breath between sentences (shorter chunks also
 //   keep Chrome from cutting long utterances off).
@@ -27,6 +27,14 @@
 // The optional cloud voice (Groq's Orpheus text-to-speech on the owner's own free Groq key): only when he turns it on AND has
 // a Groq key (the smart-mode one). The key is sent only to api.groq.com. Any failure (no key, the model's terms not accepted,
 // a rate limit, offline, the audio blocked) falls back to the phone's voice for that reply; a 429 parks it until tomorrow.
+//
+// 2026-11-04 (owner: "Jarvis sounds like a bot"): the voice engines. Everything new is passed IN, so this file stays import-free and
+// is still the fallback: `prosody` ({ prepare(text), plan(text, { max }), merge(items, max), enabled() }: prosody.js) turns numbers into
+// words, adds contractions, breaths, pauses and a rate / pitch nudge per phrase; `cloud()` may return { key, id, voice, maxChars,
+// synth(text, { signal, voice }) -> Promise<Blob> } (voice-engines.js: Gemini, Groq, the on-device Kokoro) instead of the plain Groq
+// call below; `player` ({ play(blob) -> Promise, stop(), unlock() }) is the one audio element the iPhone unlocks with the first tap.
+// A tap (cancel) also aborts the request in flight. A failure parks only that voice (429: its retry-after, else until tomorrow;
+// bad key 10 min) and the rest of the reply, never what was already said again, goes on in the phone's voice.
 // iPhone Safari 16: plain ES2020, no regex lookbehind.
 
 export const CFG_KEY = 'jarvis.voiceCfg';           // { voice, rate, pitch } (the shell's Voice sheet)
@@ -180,46 +188,63 @@ export function primeSpeech(synth) {
 }
 
 // ------------------------------------------------------------------------------------------------ the speaker
+const midnightMs = () => { const d = new Date(); d.setHours(24, 0, 5, 0); return Math.max(60000, d.getTime() - Date.now()); };
+// how long a cloud voice rests after a failure: a 429 with a short retry-after only that long, else until tomorrow; a bad key / terms 10 min
+function parkMs(e) {
+  if (!e) return 0;
+  if (Number.isFinite(+e.parkMs) && +e.parkMs > 0) return +e.parkMs;
+  if (e.status === 429) return Number.isFinite(+e.retryAfter) && +e.retryAfter > 0 && +e.retryAfter <= 300 ? (+e.retryAfter + 2) * 1000 : midnightMs();
+  if (e.status === 401 || e.status === 403) return 600000;
+  return 0;
+}
 export function createSpeaker(opts) {
   const o = opts && typeof opts === 'object' ? opts : {};
   const synth = o.synth !== undefined ? o.synth : (typeof speechSynthesis !== 'undefined' ? speechSynthesis : null);
   const own = () => safe(() => (synth ? synth.getVoices() || [] : []), []);
   const voices = () => { const l = typeof o.voices === 'function' ? safe(() => o.voices() || [], []) : []; return l.length ? l : own(); };   // the caller's list, else ask again
   const cfg = () => { try { return Object.assign({}, DEFAULTS, typeof o.cfg === 'function' ? o.cfg() || {} : voiceCfg()); } catch (_) { return Object.assign({}, DEFAULTS); } };
-  const cloudCfg = () => { try { return typeof o.cloud === 'function' ? o.cloud() : null; } catch (_) { return null; } };   // { key, voice } | null
+  // { key, voice, id?, maxChars?, synth?(text, { signal, voice }) -> Promise<Blob> } | null.  Without synth: Groq's Orpheus with the key.
+  const cloudCfg = (ctx) => { try { return typeof o.cloud === 'function' ? o.cloud(ctx) : null; } catch (_) { return null; } };
+  const pro = () => { try { const p = typeof o.prosody === 'function' ? o.prosody() : o.prosody; return p && typeof p === 'object' && (typeof p.enabled !== 'function' || p.enabled()) ? p : null; } catch (_) { return null; } };
+  const player = () => { try { const p = typeof o.player === 'function' ? o.player() : o.player; return p && typeof p.play === 'function' ? p : null; } catch (_) { return null; } };
   const doFetch = (...a) => (typeof o.fetch === 'function' ? o.fetch : fetch)(...a);
-  let cur = null, parkedDay = '', cancelT = 0;
+  const mult = (m, k) => (m && Number.isFinite(+m[k]) && +m[k] > 0 ? +m[k] : 1);
+  let cur = null, cancelT = 0;
+  const parked = {};                                  // cloud voice id -> time it may be tried again
   const live = [];                                    // the utterances being said, referenced until they end
   const drop = (u) => { const j = live.indexOf(u); if (j >= 0) live.splice(j, 1); };
   const hardCancel = () => { safe(() => synth.cancel()); cancelT = Date.now(); live.length = 0; };
 
-  // one utterance per chunk, each started when the last one ends, with a short breath between them (PAUSE_MS)
-  function phone(text, chunks, h) {
+  // one utterance per chunk, each started when the last one ends, with a short breath between them (the chunk's pause)
+  function phone(text, items, h) {
     const c = cfg(), rate = num(c.rate, 0.5, 2, 1), pitch = num(c.pitch, 0.5, 2, 1);
+    const chunks = items.map((x) => x.text);
     let at = 0, i = 0;
     const busy = !!safe(() => synth.speaking || synth.pending, false);
     if (busy) hardCancel();
+    if (typeof h.onengine === 'function') safe(() => h.onengine('phone'));
     const offs = chunks.map((chunk) => { const b = text.indexOf(chunk.slice(0, 12), at), off = b < 0 ? at : b; at = off + chunk.length; return off; });
     const next = () => {
       if (h.done) return;
       if (i >= chunks.length) { h.finish(); return; }
-      const k = i++, u = new SpeechSynthesisUtterance(chunks[k]), off = offs[k];
+      const k = i++, u = new SpeechSynthesisUtterance(chunks[k]), off = offs[k], it = items[k];
       const v = bestVoice(voices(), c.voice || savedVoiceName(o.storage));     // read each time: the iPhone's list comes late
       if (v) { u.voice = v; u.lang = v.lang || 'en-US'; } else u.lang = 'en-US';    // no list yet: the phone's default voice
-      u.rate = rate; u.pitch = pitch; u.volume = 1;
+      u.rate = num(rate * mult(it, 'rate'), 0.5, 2, rate); u.pitch = num(pitch * mult(it, 'pitch'), 0.5, 2, pitch); u.volume = 1;
+      const rateK = u.rate;
       let ended = false, started = false;
       const end = () => {
         if (ended || h.done) return;
         ended = true; clearTimeout(h.wd); drop(u);
         if (h.onboundary && k + 1 < chunks.length) h.onboundary(offs[k + 1]);
         if (k + 1 >= chunks.length) { h.finish(); return; }                    // the last one: done at once
-        h.timer = setTimeout(next, /[.!?]$/.test(chunks[k]) ? PAUSE_MS : PAUSE_MS / 2);
+        h.timer = setTimeout(next, Number.isFinite(+it.pause) ? +it.pause : /[.!?]$/.test(chunks[k]) ? PAUSE_MS : PAUSE_MS / 2);
       };
       const begin = () => {
         if (started || ended) return;
         started = true; clearTimeout(h.wd);
         if (k === 0 && !h.done && h.onstart) h.onstart();
-        h.wd = setTimeout(end, 2500 + (chunks[k].length * 95) / rate);         // its end never came (iPhone): move on
+        h.wd = setTimeout(end, 2500 + (chunks[k].length * 95) / rateK);        // its end never came (iPhone): move on
       };
       u.onstart = begin;
       u.onboundary = (e) => { begin(); if (h.done || (e && e.name && e.name !== 'word')) return; if (h.onboundary) h.onboundary(off + (+(e && e.charIndex) || 0)); };
@@ -240,49 +265,97 @@ export function createSpeaker(opts) {
     };
     if (busy || Date.now() - cancelT < AFTER_CANCEL_MS) h.timer = setTimeout(next, AFTER_CANCEL_MS); else next();
   }
-  async function cloud(text, chunks, h, cc) {
+  // one blob played to its end: the shared player (iPhone: one unlocked element), else a new Audio; settles at the end or an error
+  function playBlob(blob, h) {
+    const pl = player();
+    if (pl) return Promise.resolve(pl.play(blob));
     const audio = typeof o.Audio === 'function' ? o.Audio : (typeof Audio !== 'undefined' ? Audio : null);
-    if (!audio || typeof URL === 'undefined' || !URL.createObjectURL) throw new Error('no audio');
-    const parts = [];
-    for (const c of chunks) { let s = c; while (s.length > CLOUD.max) { let i = s.lastIndexOf(' ', CLOUD.max); if (i < 20) i = CLOUD.max; parts.push(s.slice(0, i)); s = s.slice(i).trim(); } if (s) parts.push(s); }
-    const fetchOne = (input) => doFetch(CLOUD.url, { method: 'POST', headers: { Authorization: 'Bearer ' + cc.key, 'content-type': 'application/json' },
+    if (!audio || typeof URL === 'undefined' || !URL.createObjectURL) return Promise.reject(new Error('no audio'));
+    const url = URL.createObjectURL(blob), a = new audio(url);
+    h.audio = a;
+    return new Promise((ok, bad) => {
+      a.onended = ok; a.onerror = () => bad(new Error('audio'));
+      const p = a.play(); if (p && typeof p.catch === 'function') p.catch(bad);
+    }).finally(() => { try { URL.revokeObjectURL(url); } catch (_) { /* gone */ } });
+  }
+  async function cloud(text, items, h, cc) {
+    const maxc = Math.max(60, +cc.maxChars || CLOUD.max), pr = pro();
+    let parts = pr && typeof pr.merge === 'function' ? safe(() => pr.merge(items, maxc), null) : null;
+    if (!parts || !parts.length) parts = items.map((x) => ({ text: x.text, pause: x.pause }));
+    const sized = [];                                 // a piece over the voice's limit is cut at a space
+    for (const pt of parts) { let s = pt.text; while (s.length > maxc) { let i = s.lastIndexOf(' ', maxc); if (i < 20) i = maxc; sized.push({ text: s.slice(0, i), pause: 0 }); s = s.slice(i).trim(); } if (s) sized.push({ text: s, pause: pt.pause }); }
+    parts = sized;
+    const fetchOne = (input) => doFetch(CLOUD.url, { method: 'POST', headers: { Authorization: 'Bearer ' + cc.key, 'content-type': 'application/json' }, signal: h.signal || undefined,
       body: JSON.stringify({ model: CLOUD.model, voice: CLOUD.voices.includes(cc.voice) ? cc.voice : CLOUD.voices[0], input, response_format: 'wav' }) })
-      .then(async (r) => { if (!r || !r.ok) { const e = new Error('HTTP ' + (r ? r.status : '?')); e.status = r ? r.status : 0; throw e; } return r.blob(); });
-    let next = fetchOne(parts[0]), at = 0;
+      .then(async (r) => {
+        if (!r || !r.ok) { const e = new Error('HTTP ' + (r ? r.status : '?')); e.status = r ? r.status : 0; e.retryAfter = r && r.headers && typeof r.headers.get === 'function' ? +r.headers.get('retry-after') || 0 : 0; throw e; }
+        return r.blob();
+      });
+    const one = (t) => (typeof cc.synth === 'function' ? Promise.resolve(cc.synth(t, { signal: h.signal || undefined, voice: cc.voice })) : fetchOne(t));
+    const guard = (p) => { p.catch(() => null); return p; };                 // an abandoned request never becomes an unhandled rejection
+    h.parts = parts; h.played = 0;
+    let next = guard(one(parts[0].text)), at = 0;
     for (let i = 0; i < parts.length; i++) {
-      const blob = await next;
+      const blob = await Promise.race([next, h.cancelP]);
       if (h.done) return;
-      if (i + 1 < parts.length) next = fetchOne(parts[i + 1]);     // the next piece downloads while this one plays
-      const url = URL.createObjectURL(blob), a = new audio(url), off = text.indexOf(parts[i].slice(0, 12), at);
-      at = (off < 0 ? at : off) + parts[i].length;
-      h.audio = a;
-      await new Promise((ok, bad) => {
-        a.onended = ok; a.onerror = () => bad(new Error('audio'));
-        const p = a.play(); if (p && typeof p.catch === 'function') p.catch(bad);
-        if (i === 0 && h.onstart) h.onstart();
-        if (h.onboundary) h.onboundary(off < 0 ? 0 : off);
-      }).finally(() => { try { URL.revokeObjectURL(url); } catch (_) { /* gone */ } });
+      if (i + 1 < parts.length) next = guard(one(parts[i + 1].text));       // the next piece downloads while this one plays
+      const off = text.indexOf(parts[i].text.slice(0, 12), at);
+      at = (off < 0 ? at : off) + parts[i].text.length;
+      if (i === 0 && h.onengine) safe(() => h.onengine(cc.id || 'groq'));
+      if (i === 0 && h.onstart) h.onstart();
+      if (h.onboundary) h.onboundary(off < 0 ? 0 : off);
+      await Promise.race([playBlob(blob, h), h.cancelP]);
       if (h.done) return;
+      h.played = i + 1;
+      if (i + 1 < parts.length) {                                          // a breath between two parts
+        const gap = Number.isFinite(+parts[i].pause) ? Math.round(+parts[i].pause * 0.5) : Math.round(PAUSE_MS / 2);
+        if (gap > 0) await Promise.race([new Promise((ok) => setTimeout(ok, gap)), h.cancelP]);
+        if (h.done) return;
+      }
     }
     h.finish();
   }
   function speak(input, cb) {
     cancel();
     const c = cb && typeof cb === 'object' ? cb : {};
-    const text = cleanSpeech(input), chunks = speechChunks(text);
-    const h = { done: false, onstart: c.onstart, onboundary: c.onboundary, onstall: c.onstall, audio: null,
+    const pr = pro();
+    let text = cleanSpeech(input);
+    if (pr && typeof pr.prepare === 'function') text = safe(() => pr.prepare(text), text) || text;
+    if (text && !/[.!?]$/.test(text)) text += '.';
+    let items = pr && typeof pr.plan === 'function' ? safe(() => pr.plan(text, { max: 180 }), null) : null;
+    if (!items || !items.length) items = speechChunks(text).map((x) => ({ text: x }));
+    const h = { done: false, onstart: c.onstart, onboundary: c.onboundary, onstall: c.onstall, onengine: c.onengine, audio: null, ctl: null, signal: null, parts: null, played: 0,
       finish() { if (h.done) return; h.done = true; clearTimeout(h.timer); clearTimeout(h.wd); if (cur === h) cur = null; if (!h.stalled && typeof c.onend === 'function') c.onend(); } };
-    h.cancel = () => { if (h.done) return; h.done = true; clearTimeout(h.timer); clearTimeout(h.wd); if (cur === h) cur = null; if (h.audio) try { h.audio.pause(); } catch (_) { /* stopped */ } if (synth) hardCancel(); };
+    h.cancelP = new Promise((ok) => { h.wake = ok; });
+    if (typeof AbortController !== 'undefined') { h.ctl = new AbortController(); h.signal = h.ctl.signal; }
+    h.cancel = () => {                                // barge-in: a tap stops the voice, the request in flight and the player at once
+      if (h.done) return;
+      h.done = true; clearTimeout(h.timer); clearTimeout(h.wd); if (cur === h) cur = null;
+      if (h.audio) try { h.audio.pause(); } catch (_) { /* stopped */ }
+      const pl = player(); if (pl && typeof pl.stop === 'function') safe(() => pl.stop());
+      if (h.ctl) safe(() => h.ctl.abort());
+      h.wake();
+      if (synth) hardCancel();
+    };
     cur = h;
-    if (!chunks.length) { setTimeout(() => h.finish(), 0); return { text, cancel: h.cancel }; }
-    const cc = cloudCfg(), today = new Date().toDateString();
-    const usePhone = () => { if (h.done) return; if (synth && typeof SpeechSynthesisUtterance !== 'undefined') { try { phone(text, chunks, h); } catch (_) { h.finish(); } } else h.finish(); };
-    if (cc && cc.key && parkedDay !== today) {
-      cloud(text, chunks, h, cc).catch((e) => { if (e && e.status === 429) parkedDay = today; if (!h.done) { if (typeof c.onfallback === 'function') c.onfallback(e); usePhone(); } });
+    if (!items.length) { setTimeout(() => h.finish(), 0); return { text, cancel: h.cancel }; }
+    const cc = cloudCfg({ len: text.length }), id = cc && (cc.id || 'groq');
+    const usePhone = (rest) => { if (h.done) return; if (synth && typeof SpeechSynthesisUtterance !== 'undefined') { try { phone(text, rest || items, h); } catch (_) { h.finish(); } } else h.finish(); };
+    if (cc && cc.key && !(parked[id] > Date.now())) {
+      cloud(text, items, h, cc).catch((e) => {
+        const ms = parkMs(e);
+        if (ms) parked[id] = Date.now() + ms;
+        if (!h.done) {
+          if (typeof c.onfallback === 'function') c.onfallback(e, id);
+          const rest = h.parts && h.played > 0 && h.played < h.parts.length ? h.parts.slice(h.played) : null;   // what the cloud already said is not said again
+          usePhone(rest);
+        }
+      });
     } else usePhone();
     return { text, cancel: h.cancel };
   }
   function cancel() { if (cur) cur.cancel(); cur = null; }
-  return { speak, cancel, get speaking() { return !!cur; }, prime: () => primeSpeech(synth), voice: () => bestVoice(voices(), cfg().voice || savedVoiceName(o.storage)) };
+  return { speak, cancel, get speaking() { return !!cur; }, prime: () => primeSpeech(synth), voice: () => bestVoice(voices(), cfg().voice || savedVoiceName(o.storage)),
+    parked: (id) => Math.max(0, (parked[id || 'groq'] || 0) - Date.now()), unpark: (id) => { delete parked[id || 'groq']; } };
 }
 export default createSpeaker;

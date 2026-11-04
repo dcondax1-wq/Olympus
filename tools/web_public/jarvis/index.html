@@ -1077,7 +1077,27 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <p class="note" id="vNote"></p>
     <!-- assistant (2026-11-03): her talk style, the optional free cloud voice, the one-time Ava tip (tts.js, assistant.js) -->
     <label>Talk style<select id="vStyle"><option value="short">Short: straight to the point</option><option value="chatty">Chatty: like a friend</option></select></label>
-    <label class="row-t"><span>Natural cloud voice<small id="vCloudNote">Groq's free voice on your own Groq key (⋯ → AI key); the phone's voice when it can't</small></span><input type="checkbox" id="vCloud"></label>
+    <label class="row-t"><span>Natural cloud voice<small id="vCloudNote">Uses your own free Gemini or Groq key (⋯ → AI key) when Auto or Natural cloud picks it. The text of a reply is sent to that service to be turned into sound; the on-device and phone voices keep it on this phone. The phone's voice takes over when the cloud can't</small></span><input type="checkbox" id="vCloud"></label>
+    <!-- voice engines (2026-11-04, voice-engines.js): Auto / Natural cloud / On-device neural / Phone voice -->
+    <div class="vengine" id="vEngBox" hidden style="display:grid;gap:10px">
+      <label>Voice engine<select id="vEngine"><option value="auto">Auto: the best one available</option><option value="cloud">Natural cloud (free key)</option><option value="device">On-device neural (download once)</option><option value="phone">Phone voice</option></select></label>
+      <p class="note" id="vEngNote"></p>
+      <label id="vBrandRow">Cloud voice from<select id="vBrand"><option value="">Automatic (Gemini first, then Groq)</option><option value="gemini">Gemini</option><option value="groq">Groq</option></select></label>
+      <label id="vCVoiceRow">Cloud voice name<select id="vCVoice"></select></label>
+      <div id="vDevBox" style="display:grid;gap:8px">
+        <label id="vDVoiceRow">On-device voice name<select id="vDVoice"></select></label>
+        <p class="note" id="vDevNote"></p>
+        <progress id="vDevProg" max="1" value="0" hidden style="width:100%"></progress>
+        <div class="sheet-row"><button class="btn ghost" type="button" id="vDevDl">Download (about 115 MB, on Wi-Fi)</button><button class="btn ghost" type="button" id="vDevRm" hidden>Remove</button></div>
+      </div>
+      <div class="sheet-row" id="vSamples"><button class="btn ghost" type="button" data-sample="0">Sample: money</button><button class="btn ghost" type="button" data-sample="1">Sample: trade</button><button class="btn ghost" type="button" data-sample="2">Sample: chat</button></div>
+      <p class="note" id="vUsed"></p>
+      <label class="row-t"><span>Natural speech<small>Numbers and tickers said in words, contractions, short pauses</small></span><input type="checkbox" id="vProsody"></label>
+      <details id="vPremium"><summary>Get the iPhone's most natural voice (free)</summary>
+        <ol class="note" style="margin:6px 0 0;padding-left:20px"><li>Open the iPhone's <b>Settings</b> app.</li><li><b>Accessibility → Spoken Content → Voices → English</b> (on iOS 26 it may be called <b>Read &amp; Speak</b>).</li><li>Tap <b>Ava</b> (or Zoe), then <b>Ava (Premium)</b> → download (about 400 MB, free).</li><li>Come back, tap the button below, and close and reopen Jarvis if it does not show.</li></ol>
+        <div class="sheet-row"><button class="btn ghost" type="button" id="vPremCheck">I did it: check again</button></div>
+        <p class="note" id="vPremNote"></p></details>
+    </div>
     <div class="note" id="vTip" hidden><b>Free upgrade: the iPhone's most natural voice.</b> Settings → Accessibility → Spoken Content → Voices → English → Ava → <b>Ava (Premium)</b> → download (about 400 MB, free). Then pick Ava here. <button class="btn ghost" type="button" id="vTipX">Got it</button></div>
     <div class="sheet-row"><button class="btn ghost" type="button" id="vTest">Test voice</button><button class="btn solid" type="button" id="vX">Done</button></div>
   </div>
@@ -1223,8 +1243,23 @@ ready.assist = load('assist', './assist-ui.js', (m) => typeof m.mountObsidianShe
 let tts = null, assistant = null;
 ready.tts = load('tts', './tts.js', (m) => typeof m.createSpeaker === 'function').then((m) => { tts = m; return m; });
 // her voice on the Jarvis screen (voice-out.js, 2026-11-03 evening): loaded at the start, so the first tap unlocks the iPhone's voice
+// the voice engines (voice-engines.js, 2026-11-04): Auto / Natural cloud (Gemini, Groq) / On-device neural / Phone voice, the natural-speech
+// layer and the one unlocked audio element. Optional: absent = the phone's voice and the old Groq switch, exactly as before.
+let engines = null;
+ready.engines = load('engines', './voice-engines.js', (m) => typeof m.createVoiceEngines === 'function').then((m) => {
+  if (m) engines = safe(() => m.createVoiceEngines({ keys: smartKeys, phoneVoice: () => pickVoice() }), null);
+  return engines;
+});
+let lastVoiceToast = 0;
+function voiceFellBack(e, id) {                          // a cloud / on-device voice said no: one plain toast per 10 minutes
+  if (Date.now() - lastVoiceToast < 600000) return;
+  lastVoiceToast = Date.now();
+  toast(engines ? engines.explain(e, id) : 'The cloud voice is not answering. Using the phone voice.', 'VOICE');
+}
 ready.voiceout = load('voiceout', './voice-out.js', (m) => typeof m.createVoiceOut === 'function').then((m) => {
   if (m) vo = safe(() => m.createVoiceOut({ cfg: S.vcfg, cloud: cloudVoice, micBusy: () => !!rec || !!(vm && vm.isOpen()),
+    prosody: () => (engines ? engines.prosody : null), player: () => (engines ? engines.player : null), unlock: () => { if (engines) engines.player.unlock(); },
+    onFallback: voiceFellBack, onEngine: (id) => { if (engines) engines.noteUsed(id); safe(renderUsed); },
     onSpeaking: onVoice, onWord: () => { wordKick = 1; }, onPending: (t) => { root.dataset.vpending = t ? '1' : ''; } }), null);
   renderSpk();
   return vo;
@@ -1312,8 +1347,10 @@ function openKeySetup(provider) {
   if (!keyUI && assist && typeof assist.mountKeySetup === 'function') keyUI = safe(() => assist.mountKeySetup({ brain: () => brain, toast, onSaved: () => { renderBrainPanel(); renderMore(); } }), null);
   if (keyUI) keyUI.open(provider); else openSettings();
 }
-const cloudVoice = () => {                              // Groq's free voice: on, and a Groq key from the AI key settings
-  const c = D.LS.get('jarvis.tts', {}) || {}, sm = D.LS.get('jarvis.smart', {}) || {}, k = sm && sm.keys && typeof sm.keys.groq === 'string' ? sm.keys.groq : '';
+const smartKeys = () => { const sm = D.LS.get('jarvis.smart', {}) || {}; return (sm && sm.keys && typeof sm.keys === 'object' ? sm.keys : {}); };
+const cloudVoice = (ctx) => {                           // the voice engines' pick (Auto / cloud / on-device), else Groq's free voice with the saved Groq key
+  if (engines) return safe(() => engines.pick(ctx), null);
+  const c = D.LS.get('jarvis.tts', {}) || {}, k = typeof smartKeys().groq === 'string' ? smartKeys().groq : '';
   return c.cloud && k ? { key: k, voice: c.voice || 'hannah' } : null;
 };
 // voice mode (voice-mode.js, 2026-11-03): the full-screen conversation. Loaded after the start (never part of it), or at first use.
@@ -2420,6 +2457,7 @@ function vmDeps() {
     },
     verdict: vmVerdict, greeting: () => D.greeting(), fx: () => root.dataset.fx, reduced: reducedMotion,
     voiceCfg: () => D.LS.get('jarvis.voiceCfg', null), muted: S.muted, cloudVoice,
+    prosody: () => (engines ? engines.prosody : null), player: () => (engines ? engines.player : null),
     onOpen: () => {                                     // one core at a time on the phone: the Jarvis screen's waits behind
       stopListening(); if (handsFree) setHandsFree(false); hush(); setState('idle'); if (vo) vo.session('auto');
       vmHadCore = !!core;
@@ -2700,7 +2738,8 @@ function openVoice() {
   const lab = (v) => (tts ? tts.voiceLabel(v) : `${v.name} · ${v.lang}`);
   $('#vVoice').innerHTML = `<option value="">Automatic${cur ? ' (' + esc(lab(cur)) + ')' : ''}</option>` + en.map((v) => `<option value="${esc(v.name)}"${cfg.voice === v.name ? ' selected' : ''}>${esc(lab(v))}</option>`).join('');
   $('#vStyle').value = assistant ? assistant.settings().style : 'short';
-  $('#vCloud').checked = !!(D.LS.get('jarvis.tts', {}) || {}).cloud;
+  $('#vCloud').checked = engines ? (D.LS.get('jarvis.tts', {}) || {}).cloud !== false : !!(D.LS.get('jarvis.tts', {}) || {}).cloud;
+  renderEngine();
   $('#vTip').hidden = !!raw('jarvis.tip.ava') || (!!cur && /premium/i.test(cur.name + ' ' + (cur.voiceURI || '')));
   $('#vRate').value = String(cfg.rate); $('#vPitch').value = String(cfg.pitch);
   $('#vRateV').textContent = (+cfg.rate).toFixed(2); $('#vPitchV').textContent = (+cfg.pitch).toFixed(2);
@@ -2721,7 +2760,73 @@ $('#vStyle').addEventListener('change', () => { if (assistant) assistant.setSett
 $('#vCloud').addEventListener('change', () => {
   const on = $('#vCloud').checked, c = D.LS.get('jarvis.tts', {}) || {};
   D.LS.set('jarvis.tts', Object.assign({}, c, { cloud: on }));
-  if (on && !cloudVoice()) toast('The cloud voice needs your free Groq key: ⋯ → AI key. Until then she uses the phone\'s voice.', 'VOICE');
+  if (on && !cloudVoice()) toast('The cloud voice needs your free Gemini or Groq key: ⋯ → AI key. Until then she uses the phone\'s voice.', 'VOICE');
+  renderEngine();
+});
+// ---- the voice engine chooser (voice-engines.js): Auto / Natural cloud / On-device neural / Phone voice, samples, the Premium guide
+let devMsg = '';                                         // the last on-device download problem, kept until the next try
+function renderUsed() {
+  const el = $('#vUsed'); if (!el) return;
+  const u = engines ? engines.status().used : '';
+  el.textContent = u ? 'Last spoken with: ' + ({ gemini: 'Gemini voice', groq: 'Groq voice', kokoro: 'on-device voice', phone: 'the phone voice' }[u] || u) + '.' : '';
+}
+function renderEngine() {
+  const box = $('#vEngBox'); if (!box) return;
+  box.hidden = !engines; if (!engines) return;
+  const st = engines.settings(), s = engines.status(), d = engines.describe();
+  $('#vEngine').value = st.mode;
+  $('#vEngNote').textContent = d.note;
+  const effBrand = st.brand || (s.keys.gemini ? 'gemini' : 'groq');
+  const showCloud = (st.mode === 'auto' || st.mode === 'cloud') && (s.keys.gemini || s.keys.groq);
+  $('#vBrandRow').hidden = !showCloud || !(s.keys.gemini && s.keys.groq); $('#vBrand').value = st.brand;
+  $('#vCVoiceRow').hidden = !showCloud;
+  const G = effBrand === 'gemini' ? { Kore: 'Kore (firm)', Aoede: 'Aoede (breezy)', Leda: 'Leda (youthful)', Sulafat: 'Sulafat (warm)', Achernar: 'Achernar (soft)', Zephyr: 'Zephyr (bright)', Vindemiatrix: 'Vindemiatrix (gentle)' } : { hannah: 'Hannah (warm)', diana: 'Diana (clear)', autumn: 'Autumn (soft)' };
+  const cur = effBrand === 'gemini' ? st.gvoice : st.hvoice;
+  $('#vCVoice').innerHTML = Object.keys(G).map((k) => `<option value="${esc(k)}"${k === cur ? ' selected' : ''}>${esc(G[k])}</option>`).join('');
+  const dv = { af_heart: 'Heart (warm)', af_bella: 'Bella (expressive)', af_nicole: 'Nicole (soft)', bf_emma: 'Emma (British)' };
+  $('#vDVoice').innerHTML = Object.keys(dv).map((k) => `<option value="${k}"${k === st.kvoice ? ' selected' : ''}>${esc(dv[k])}</option>`).join('');
+  $('#vDVoiceRow').hidden = !s.device.ready;
+  $('#vDevNote').textContent = devMsg ? devMsg : !s.device.supported ? 'This browser cannot run the on-device voice (it needs an iPhone on iOS 16.4 or newer).'
+    : s.device.ready ? 'Downloaded (about ' + s.device.mb + ' MB on this phone). It runs offline with no key, but it is slower than the cloud: the first words take a few seconds.'
+    : 'Free, no key, works offline. A 115 MB one-time download, kept on this phone. Slower than the cloud voices.';
+  $('#vDevDl').hidden = !s.device.supported || s.device.ready; $('#vDevRm').hidden = !s.device.ready;
+  $('#vProsody').checked = !!st.prosody;
+  const ph = s.phone;
+  $('#vPremNote').textContent = ph.tier === 'premium' ? 'Found it: Jarvis is using ' + ph.label + '.' : ph.name ? 'Right now the phone voice is ' + ph.label + '.' : 'The phone has not shown its voice list yet.';
+  renderUsed();
+}
+$('#vEngine').addEventListener('change', () => { if (engines) { engines.setSettings({ mode: $('#vEngine').value }); renderEngine(); } });
+$('#vBrand').addEventListener('change', () => { if (engines) { engines.setSettings({ brand: $('#vBrand').value }); renderEngine(); } });
+$('#vCVoice').addEventListener('change', () => {
+  if (!engines) return;
+  const st = engines.settings(), k = engines.status().keys, eff = st.brand || (k.gemini ? 'gemini' : 'groq');
+  engines.setSettings(eff === 'gemini' ? { gvoice: $('#vCVoice').value } : { hvoice: $('#vCVoice').value });
+});
+$('#vDVoice').addEventListener('change', () => { if (engines) engines.setSettings({ kvoice: $('#vDVoice').value }); });
+$('#vProsody').addEventListener('change', () => { if (engines) engines.setSettings({ prosody: $('#vProsody').checked }); });
+$('#vDevDl').addEventListener('click', async () => {
+  if (!engines) return;
+  const b = $('#vDevDl'), pr = $('#vDevProg'), note = $('#vDevNote');
+  b.disabled = true; pr.hidden = false; pr.value = 0; devMsg = '';
+  try {
+    await engines.deviceDownload((p) => { pr.value = Math.min(1, p.done / p.total); note.textContent = 'Downloading ' + (p.label || '') + ' · ' + Math.round(100 * p.done / p.total) + '%. Keep Jarvis open.'; });
+    engines.setSettings({ mode: 'device' });
+    toast('The on-device voice is ready. Tap a sample to hear it.', 'VOICE');
+  } catch (e) {
+    devMsg = 'The download did not finish: ' + String((e && e.message) || e).slice(0, 140) + ' You can try again.';
+  }
+  b.disabled = false; pr.hidden = true; renderEngine();
+});
+$('#vDevRm').addEventListener('click', async () => { if (engines) { await safe(() => engines.deviceRemove()); engines.setSettings({ mode: 'auto' }); renderEngine(); } });
+$('#vSamples').addEventListener('click', (e) => {          // three sample lines, said with the chosen engine (inside the tap: the iPhone's unlock)
+  const b = e.target.closest('[data-sample]'); if (!b || !engines) return;
+  if (!S.speakOn()) { setVoiceOn(true); $('#vAll').checked = true; }
+  speak(engines.samples[+b.dataset.sample].text, false);
+});
+$('#vPremCheck').addEventListener('click', () => {
+  if (vo && typeof vo.reload === 'function') vo.reload();
+  safe(() => speechSynthesis.getVoices());
+  setTimeout(() => { openVoice(); $('#vPremium').open = true; }, 400);
 });
 $('#vTipX').addEventListener('click', () => { rawSet('jarvis.tip.ava', '1'); $('#vTip').hidden = true; });
 // Test voice: one natural sentence, inside the tap (testing her voice turns it on)
