@@ -119,7 +119,26 @@ dress; the calls are fine, the triangles are 3 instanced meshes of capsules / sp
 the crowd to about a third: a change in the shared `scenery.js`, not made here). Budgets: nemesis 49 / 30,000, chronos 59 / 19,500, labyrinth 43 / 8,700,
 hephaestus 32 / 5,500, arena 160 / 178,000.
 
-### Still open: oracle, datacity, odeon, prometheus, argus (other agents own them) (apply the snippet below; nothing was edited there)
+### Own-loop pass 3 (2026-11-04): oracle, odeon, prometheus, argus (datacity already had it) + the crowd LOD
+
+Same gate in each loop (`OLYMPUS.hidden()` + `frameGap()`; oracle and odeon gate the draw / the dt, prometheus and argus the shared `tick()`). Oracle and odeon had the
+fates problem (`rc.software ? 'low'` overriding Off): 3D Off is now the core's `off` tier (pixel ratio 1.5 -> **1**). Off, same machine: argus 0 draws (still),
+oracle < 1 render/s (idle cap 2 fps), odeon / prometheus / datacity capped at 2 fps idle.
+
+**Arena crowd (shared `olympus/scenery.js` `crowd()`)**: `detail: 'low'` is the new default (tapered 5-sided torso, 4 x 2 head, 3-sided arms = **40 triangles a
+spectator, was 216**; `detail: 'full'` keeps the capsules) and `density` thins the seats evenly (the Arena asks for 60% on a phone). A spectator is a few pixels
+tall at the bowl's camera distances; checked in a 390 x 844 screenshot. The arcade, cornice, rings, steps and laurel leaves lost segments too (arches 256 -> 64
+triangles each ...). Arena, phone HD (`?gpu=1`, jfx high), same code path as the budget table:
+
+| | calls | triangles |
+|---|---|---|
+| before (capsule crowd, 896 spectators) | 127 | ~258,000 (142,000 LITE) |
+| after (541 spectators, low-poly, trimmed arcade) | 123 | **60,064** (crowd 21k + scene 39k) |
+
+Only the Arena builds a `crowd()`; no other app uses it. Budget in `PERF`: arena 150 calls / 75,000 triangles. `tests.test_scenes_overhaul` (Arena dressed, >= 450 spectators
+on a phone): 52/52.
+
+### Still open: datacity (the gap is in; Off still a 2 fps redraw, not a still frame) (apply the snippet below; nothing was edited there)
 
 | App | What to apply |
 |---|---|
