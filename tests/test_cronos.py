@@ -92,7 +92,7 @@ def test_registry():
     kc = registry.get("kalshicity")
     check("a. kalshicity: every 6 hours in its own workflow, the three site files come from the kalshicity branch into kalshicity/ (ledger.json stays on the branch), not run by CRONOS",
           kc.runner == "workflow" and kc.cadence == "frequent" and kc.every == "every 6 hours" and kc.branch == "kalshicity" and kc.max_age_h == 36 and os.path.exists(os.path.join(ROOT, kc.workflow))
-          and registry.site_files(kc) == [("edges.json", "kalshicity/edges.json"), ("learning_log.json", "kalshicity/learning_log.json"), ("jarvis.json", "kalshicity/jarvis.json")]
+          and registry.site_files(kc) == [("edges.json", "kalshicity/edges.json"), ("learning_log.json", "kalshicity/learning_log.json"), ("hypotheses.json", "kalshicity/hypotheses.json"), ("jarvis.json", "kalshicity/jarvis.json")]
           and "kalshicity" not in registry.GROUPS["all"] and "kalshicity" in site.BRANCHES, kc)
     try:
         registry.get("nope")

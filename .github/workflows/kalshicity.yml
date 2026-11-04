@@ -34,9 +34,11 @@ jobs:
             /tools/__init__.py
             /tools/kalshi_edges.py
             /tools/kalshi_whatif.py
+            /tools/kalshi_hypotheses.py
             /tools/web_public/kalshicity/edges.json
             /tools/web_public/kalshicity/ledger.json
             /tools/web_public/kalshicity/learning_log.json
+            /tools/web_public/kalshicity/hypotheses.json
             /tools/web_public/kalshicity/jarvis.json
             /tools/web_public/kalshicity/whatif.json
 
@@ -44,7 +46,7 @@ jobs:
         run: |
           mkdir -p state prev
           if git fetch -q --depth 1 origin kalshicity 2>/dev/null; then
-            for f in edges.json ledger.json learning_log.json jarvis.json whatif.json; do
+            for f in edges.json ledger.json learning_log.json hypotheses.json jarvis.json whatif.json; do
               git show "FETCH_HEAD:$f" > "state/$f" 2>/dev/null || rm -f "state/$f"
             done
             cp -f state/*.json prev/ 2>/dev/null || true

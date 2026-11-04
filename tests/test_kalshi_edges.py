@@ -493,6 +493,122 @@ def part_f():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+# ------------------------------------------------------------------------------------------------ g. the research ideas (tools/kalshi_hypotheses.py): a paper score for each
+LOW = ["<20c", "20-40c", "40-60c", "60-80c", "80-90c", "90-95c"]
+
+
+def m_z(rows):
+    """z of a set of (n, wins, p) rows: (wins - sum n p) / sqrt(sum n p (1 - p)), written out, not the engine's z_test."""
+    w = sum(r[1] for r in rows)
+    mu = sum(r[0] * r[2] for r in rows)
+    var = sum(r[0] * r[2] * (1 - r[2]) for r in rows)
+    return (w - mu) / math.sqrt(var)
+
+
+def part_g():
+    kh = __import__("tools.kalshi_hypotheses", fromlist=["x"])
+    hy = ke.read_json(os.path.join(PAGE, "hypotheses.json"), None)
+    edges = ke.read_json(os.path.join(PAGE, "edges.json"), None)
+    led = ke.read_json(os.path.join(PAGE, "ledger.json"), None)
+    check("g. the shipped hypotheses.json exists, parses, holds the 8 research ideas with their verdicts, a pair in dollars and an append-only dated log", bool(hy) and len(hy["hyps"]) == 8 and hy["pair"]["best"] and hy["pair"]["worst"]
+          and all(x.get("d") and x.get("text") and x.get("ek") for x in hy["log"]) and len({x["ek"] for x in hy["log"]}) == len(hy["log"]))
+    if not hy:
+        return
+    by = {h["id"]: h for h in hy["hyps"]}
+    snap = led["snaps"][-1]
+    pband = {e["dims"][3]: e["p"] for e in edges["edges"] if e["size"] == 1 and e["dims"][3] != "*"}
+    pmark = {e["dims"][1]: e["p"] for e in edges["edges"] if e["size"] == 1 and e["dims"][1] != "*"}
+    # the 95c floor and the 90-95c leak: recounted from the feed's band totals (n, wins, pnl, staked) by hand
+    for hid, names in (("floor95", LOW), ("leak9095", ["90-95c"])):
+        rows = [snap["band"][b] for b in names if b in snap["band"]]
+        n, wins, pnl = sum(r[0] for r in rows), sum(r[1] for r in rows), sum(r[2] for r in rows)
+        z = m_z([(snap["band"][b][0], snap["band"][b][1], pband[b]) for b in names if b in snap["band"]])
+        b = by[hid]["back"]
+        check(f"g. {hid}: the bets it would skip are {n}, they made ${pnl:.2f}, so the rule adds ${-pnl:.2f} looking back; z {z:.3f} (a hand recount of the feed's price-band totals)",
+              b["n_skip"] == n and close(b["pnl_skip"], pnl, 1e-4) and close(b["gain"], -pnl, 1e-4) and abs(b["z"] - z) < 2e-3 and b["n_all"] == edges["book"]["bets_total"], (b, n, pnl, z))
+    r = snap["market"]["XRP"]
+    zx = m_z([(r[0], r[1], pmark["XRP"])])
+    bx = by["xrp"]["back"]
+    check("g. xrp: 192 bets it would skip, -$106.63, so +$106.63 looking back; the loss is beyond luck (z <= -1.645) but the rule was picked after seeing it, so the verdict is PROMISING, never WORKS",
+          bx["n_skip"] == r[0] and close(bx["gain"], -r[2], 1e-4) and abs(bx["z"] - zx) < 2e-3 and bx["sig"] == "-" and by["xrp"]["word"] == "PROMISING" and not by["xrp"]["judged_live"], (bx, zx))
+    # the maker idea: fees = 0.07 x staked x (1 - p) per band (= 0.07 x C x P x (1 - P)); the maker fee is a quarter of it, so 3/4 would be saved
+    fees = sum(0.07 * snap["band"][b][3] * (1 - pband[b]) for b in snap["band"])
+    with open(os.path.join(ROOT, "research", "kalshi", "edge_tables.json"), encoding="utf-8") as fh:
+        tables = json.load(fh)
+    bm = by["maker"]["back"]
+    check("g. maker orders: the fee bill recounted by hand ($%.2f, the research says $%.2f), a quarter of it would remain, so up to $%.2f could be saved if every resting order filled; the verdict is NEEDS DATA (no bid / ask logged)"
+          % (fees, tables["fees"]["drag"]["fees_est_total"], 0.75 * fees),
+          abs(bm["fees"] - fees) < 0.01 and abs(bm["saved"] - 0.75 * fees) < 0.01 and abs(fees - tables["fees"]["drag"]["fees_est_total"]) < 0.05 and by["maker"]["word"] == "NEEDS DATA", (bm, fees))
+    # the ledger-based ideas, brute force
+    trs = led["trades"]
+    keep = {}
+    for t in trs:
+        keep.setdefault(t["k"].split("-")[1], []).append(t)
+    skip_w = []
+    for g in keep.values():
+        if len(g) > 1:
+            best = sorted(g, key=lambda t: (-t["p"], t["t"], t["k"]))[0]
+            skip_w += [t for t in g if t is not best]
+    skip_h = [t for t in trs if datetime.fromtimestamp(t["t"], NY).hour < 8]
+    for hid, sk in (("window1", skip_w), ("hours", skip_h)):
+        b = by[hid]["back"]
+        check(f"g. {hid}: {len(sk)} of the {len(trs)} bets the engine read one by one would be skipped, they made ${sum(t['pnl'] for t in sk):.2f}; fewer than 30, so the verdict is COLLECTING (honest about small samples)",
+              b["n_skip"] == len(sk) and close(b["pnl_skip"], sum(t["pnl"] for t in sk), 1e-4) and b["n_all"] == len(trs) and by[hid]["word"] == "COLLECTING", (b, len(sk)))
+    # the size idea: same bets, never more than 5% of the bankroll
+    bk = edges["book"]
+    scale = min(1.0, 0.05 / bk["stake_frac"])
+    bs = by["small"]["back"]
+    check("g. small bets: scale = 5%% / %.1f%% = %.3f, so %s becomes %s (+$%.2f), the worst day %s becomes %s; the chance of losing half (%.3f) matches an independent root solver"
+          % (bk["stake_frac"] * 100, scale, bk["total"], round(bk["total"] * scale, 2), bk["total"] * (scale - 1), bk["worst_day"], round(bk["worst_day"] * scale, 2), bs["ruin_after"]),
+          close(bs["scale"], scale, 1e-3) and abs(bs["gain"] - bk["total"] * (scale - 1)) < 0.01 and abs(bs["worst_day_after"] - bk["worst_day"] * scale) < 0.01 and abs(bs["ruin_after"] - m_ruin_newton(bk["w"], bk["p"], 0.05)) < 2e-3, (bs, scale))
+    real = [e for e in edges["edges"] if e["size"] == 1 and not e["small"]]
+    b0, w0 = max(real, key=lambda e: e["pnl"]), min(real, key=lambda e: e["pnl"])
+    check("g. Best edge so far and Worst leak are the biggest winner and loser among the 30+ bet single slices (%s %+.2f, %s %+.2f), the leak points at the idea that plugs it"
+          % (hy["pair"]["best"]["label"], b0["pnl"], hy["pair"]["worst"]["label"], w0["pnl"]), hy["pair"]["best"]["id"] == b0["id"] and hy["pair"]["worst"]["id"] == w0["id"] and close(hy["pair"]["best"]["pnl"], b0["pnl"], 1e-4)
+          and close(hy["pair"]["worst"]["pnl"], w0["pnl"], 1e-4) and hy["pair"]["worst"]["fix"] == "leak9095")
+    # live tracking in a scratch folder: register on one run, then 30 losing 90-95c bets and 3 night bets arrive
+    tmp = tempfile.mkdtemp(prefix="kc_hyp_")
+    try:
+        t0 = int(datetime(2026, 11, 2, 21, 0, tzinfo=NY).timestamp())
+
+        def feed_at(t, extra):
+            """mini_feed plus the whole-life totals the bot publishes: every bet is 10 contracts at 0.90 (a $9 stake), 38 wins and the rest losses."""
+            f = mini_feed(t0, extra, ft=t)
+            n, w = 40 + len(extra), 38
+            pnl = round(0.9 * w - 9.0 * (n - w), 2)
+            f["buckets"] = [{"lo": 0.9, "hi": 0.95, "trades": n, "wins": w, "losses": n - w, "pnl": pnl, "staked": 9.0 * n}]
+            f["calibration"] = [{"p": 0.9, "n": n, "hit": round(w / n, 4)}]
+            f["categories"] = [{"name": "Bitcoin", "group": "Crypto", "trades": n, "wins": w, "losses": n - w, "pnl": pnl, "staked": 9.0 * n}]
+            f["stats"].update({"trades": n, "wins": w, "losses": n - w, "staked": 9.0 * n, "pnl": pnl})
+            return f
+        ke.run(feed_at(t0, []), tmp, now=t0)
+        h1 = ke.read_json(os.path.join(tmp, "hypotheses.json"), None)
+        log1 = open(os.path.join(tmp, "hypotheses.json"), "rb").read()
+        b1 = {h["id"]: h for h in h1["hyps"]}
+        check("g. the first run registers every idea (today's date, nothing live yet): live skipped bets 0, looking back counts the 40 bets, no WORKS, one 'Started testing' line per idea",
+              len(h1["hyps"]) == 8 and all(h["live"]["n_skip"] == 0 for h in h1["hyps"]) and b1["leak9095"]["back"]["n_skip"] == 40 and b1["leak9095"]["reg"]["day"] == ke.et_date(t0) and all(h["word"] != "WORKS" for h in h1["hyps"])
+              and sum(1 for x in h1["log"] if x["kind"] == "started") == 8, [(h["id"], h["word"]) for h in h1["hyps"]])
+        ke.run(feed_at(t0, []), tmp, now=t0)
+        check("g. a rerun on the same feed learns nothing new: the ideas file is byte for byte the same", open(os.path.join(tmp, "hypotheses.json"), "rb").read() == log1)
+        extra = [{"t": t0 + 600 + i * 60, "ticker": f"KXL-{i}", "title": "x", "side": "yes", "action": "buy", "contracts": 10.0, "price": 0.9, "pnl": -9.0, "asset": "BTC", "strategy": "S1", "category": "Bitcoin"} for i in range(30)]
+        night = int(datetime(2026, 11, 3, 2, 0, tzinfo=NY).timestamp())
+        extra += [{"t": night + i * 60, "ticker": f"KXN-{i}", "title": "x", "side": "yes", "action": "buy", "contracts": 10.0, "price": 0.9, "pnl": -9.0, "asset": "BTC", "strategy": "S1", "category": "Bitcoin"} for i in range(3)]
+        ke.run(feed_at(t0 + 7200, extra), tmp, now=t0 + 7200)
+        h2 = ke.read_json(os.path.join(tmp, "hypotheses.json"), None)
+        b2 = {h["id"]: h for h in h2["hyps"]}
+        lk = b2["leak9095"]
+        check("g. 33 losing 90-95c bets arrive: the leak idea's LIVE window is exactly those 33 (the feed's totals minus the registration snapshot), -$297 for the bets, +$297 for the rule; 30+ live bets that lose beyond luck read WORKS, judged live",
+              lk["live"]["n_skip"] == 33 and close(lk["live"]["pnl_skip"], -297.0, 1e-6) and close(lk["live"]["gain"], 297.0, 1e-6) and lk["live"]["sig"] == "-" and lk["word"] == "WORKS" and lk["judged_live"] is True and lk["back"]["n_skip"] == 73, lk["live"])
+        check("g. the ledger-based ideas count only bets after the registration: 3 night bets (02:00 ET) are the 'night filter' idea's live window (-$27 for the bets, +$27 for the rule); fewer than 30 is COLLECTING",
+              b2["hours"]["live"]["n_skip"] == 3 and close(b2["hours"]["live"]["gain"], 27.0, 1e-6) and b2["hours"]["word"] == "COLLECTING", b2["hours"]["live"])
+        check("g. the registration never moves, the history grows one point per day, the log is append-only (the first file's lines are all still there, in order) and gains the verdict change as a plain-words line",
+              all(b2[i]["reg"] == b1[i]["reg"] for i in b2) and all(len(b2[i]["hist"]) == 1 for i in b2) and h2["log"][: len(h1["log"])] == h1["log"] and any(x["ek"].startswith("leak9095|word|WORKS") and "paper bets" in x["text"] for x in h2["log"][len(h1["log"]):]), None)
+        check("g. junk in, safe out: no ledger, no edges, no bets still gives 8 ideas (COLLECTING / NEEDS DATA), never a crash, and a pair of nothing",
+              (lambda d: len(d["hyps"]) == 8 and d["pair"] == {"best": None, "worst": None} and all(h["word"] in ("COLLECTING", "NEEDS DATA", "PROMISING", "SAFER") for h in d["hyps"]))(kh.track({"trades": [], "snaps": []}, [], {}, t0)))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main():
     part_a()
     part_bc()
@@ -500,6 +616,7 @@ def main():
     part_e()
     part_e2()
     part_f()
+    part_g()
     print(f"\n{sum(RES)}/{len(RES)} passed")
     return 0 if all(RES) else 1
 
