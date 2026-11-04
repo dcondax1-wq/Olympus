@@ -113,7 +113,7 @@ export class FogLayers {
     this.setQuality(quality);
   }
 
-  setQuality(q) { this.planes.forEach((p, k) => { p.visible = q === 'hq' || k === 0; }); }
+  setQuality(q, caps) { const n = caps?.fog ?? (q === 'hq' ? 3 : 1); this.planes.forEach((p, k) => { p.visible = k < n; }); }
 
   setHaze(h) { this.planes.forEach((p, k) => { p.material.uniforms.uAlpha.value = [0.16, 0.11, 0.08][k] * (0.6 + h * 1.4); }); }
 }
@@ -142,10 +142,10 @@ export class Rain {
     this.rain = rain;
     this.U.uRain.value = rain;
     this.lines.visible = rain > 0.01 && !this.calm;
-    this.lines.geometry.setDrawRange(0, DROPS[this.quality] * 2);
+    this.lines.geometry.setDrawRange(0, (this.drops ?? DROPS[this.quality]) * 2);
   }
 
-  setQuality(q) { this.quality = q; this.set(this.rain); }
+  setQuality(q, caps) { this.quality = q; this.drops = caps?.drops ?? DROPS[q]; this.set(this.rain); }
 
   update(camera) { this.U.uCam.value.copy(camera.position); }
 }
@@ -194,7 +194,7 @@ export class Traffic {
     this.setQuality(quality);
   }
 
-  setQuality(q) { this.points.geometry.setDrawRange(0, CARS[q] * 3); }
+  setQuality(q, caps) { this.points.geometry.setDrawRange(0, (caps?.oldCars ?? CARS[q]) * 3); }
 }
 
 export class Beam {

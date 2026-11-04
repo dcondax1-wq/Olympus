@@ -61,6 +61,10 @@ MORE = {
     "pantheon": ("?demo=1", 135, 31_500), "arena": ("?demo=1", 127, 80_000), "forum": ("?demo=1", 118, 9_000), "plutus": ("?demo=1", 24, 6_000),
     "tree": ("?demo=1", 68, 8_500), "ares": ("?demo=1", 17, 3_700), "hermes": ("?demo=1", 0, 0), "kalshi": ("?demo=1", 0, 0),
 }
+# Data City by tier (2026-11-04, datacity/caps.js, docs/OLYMPUS_PERF.md): the page forces the tier with ?q= and the device hint with ?phone=; (calls, triangles) at the far
+# overview and at the close-up of the densest district, measured at 390 x 844 / dpr 3 under SwiftShader + ~20% headroom. "phone-high" = a phone at the high tier (the
+# phone-safe preset), "ultra" = a PC at ultra (the full city). The heap budget is HEAP_MB for phone-high.
+DATACITY_TIERS = {"phone-high": ("?q=high&phone=1", 95, 250_000), "ultra": ("?q=ultra&phone=0", 130, 700_000)}
 HEAP_MB, LAYOUTS_PER_FRAME = 40, 1.25   # 1.25: room for the day-sprint HUDs (Odeon 1.11 under load)
 
 COUNT_DRAWS = """
@@ -414,6 +418,29 @@ def test_mind_labels(br, origin):
     ctx.close()
 
 
+def test_datacity_tiers(br, origin):
+    """the Data City's budget per tier: phone-high (the phone-safe preset: <= 95 calls / 250k tris, heap <= 40 MB) and ultra (the full city)"""
+    for name, (q, calls, tris) in DATACITY_TIERS.items():
+        ctx, p, errs = page(br, origin, fx="high")
+        p.goto(f"{origin}/datacity/{q}&nolite=1")
+        p.wait_for_function("window.__city && window.__city.ready", timeout=180000)
+        cdp = ctx.new_cdp_session(p)
+        cdp.send("Performance.enable")
+        worst = {"calls": 0, "triangles": 0}
+        for focus in (None, "(() => { const d = window.__app.L.districts.slice().sort((a, b) => b.n - a.n)[0]; window.__app.orbit.focus(d.cx, 0, d.cz, 45, 1.2); })()"):
+            if focus:
+                p.evaluate(focus)
+            f0 = p.evaluate("window.__city.frames")
+            p.wait_for_function(f"window.__city.frames >= {f0 + 8}", timeout=180000)
+            s = p.evaluate("window.__city.stats()")
+            worst = {"calls": max(worst["calls"], s["calls"]), "triangles": max(worst["triangles"], s["triangles"])}
+        heap = metrics(cdp).get("JSHeapUsedSize", 0) / 1e6
+        prof = p.evaluate("window.__app.city.profile")
+        ok = worst["calls"] <= calls and worst["triangles"] <= tris and (name != "phone-high" or heap <= HEAP_MB)
+        check(f"e. datacity {name} ({prof}): {worst['calls']} calls / {calls}, {worst['triangles']} tris / {tris}, {round(heap, 1)} MB heap (budget {HEAP_MB} on phone-high)", ok, (worst, heap, errs[:2]))
+        ctx.close()
+
+
 def main():
     table: list = []
     test_static()
@@ -426,13 +453,15 @@ def main():
     with sync_playwright() as pw:
         br = launch(pw)
         args = [a for a in sys.argv[1:] if not a.startswith("--")]
-        only = [a for a in args if a in APPS] or ([] if any(a in MORE or a in ("power", "more") for a in args) else list(APPS))
+        only = [a for a in args if a in APPS] or ([] if any(a in MORE or a in ("power", "more", "tiers") for a in args) else list(APPS))
         for app in only:
             test_app(br, origin, app, table)
         if "mind" in only:
             test_mind_labels(br, origin)
         if not args or "power" in args:
             test_power(br, origin)
+        if not args or "tiers" in args:
+            test_datacity_tiers(br, origin)
         for app in [a for a in args if a in MORE] or (list(MORE) if not args or "more" in args else []):
             test_more(br, origin, app)
         br.close()

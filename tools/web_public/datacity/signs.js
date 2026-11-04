@@ -49,7 +49,7 @@ function drawRow(g, y, text, color) {
 
 export class Signs {
   /** L: layout(); U: the scene uniforms. Two boards per district (plaza side, outer side) at its edge. */
-  constructor(L, U) {
+  constructor(L, U, caps) {
     const ds = L.districts, rows = ds.length + 1;
     this.canvas = document.createElement('canvas');
     this.canvas.width = ROW_W; this.canvas.height = ROW_H * rows;
@@ -68,7 +68,7 @@ export class Signs {
       const out = d.kind === 'harbor' ? [d.cx, d.cz + d.half + 3] : [d.cx + ux * edge, d.cz + uz * edge];       // the outer side
       const faceIn = Math.atan2(-uz, -ux), faceOut = Math.atan2(uz, ux);
       boards.push({ x: base[0], y, z: base[1], ry: d.kind === 'harbor' ? Math.PI / 2 : -faceIn + Math.PI / 2, w, h, row: i, seed: (i * 0.37) % 1 });
-      boards.push({ x: out[0], y, z: out[1], ry: d.kind === 'harbor' ? -Math.PI / 2 : -faceOut + Math.PI / 2, w, h, row: i, seed: (i * 0.61 + 0.3) % 1 });
+      if ((caps?.signs ?? 2) >= 2) boards.push({ x: out[0], y, z: out[1], ry: d.kind === 'harbor' ? -Math.PI / 2 : -faceOut + Math.PI / 2, w, h, row: i, seed: (i * 0.61 + 0.3) % 1 });
     });
     const n = boards.length, rect = new Float32Array(n * 4), tint = new Float32Array(n * 4);
     const geo = new THREE.PlaneGeometry(1, 1), inst = new THREE.InstancedBufferGeometry();

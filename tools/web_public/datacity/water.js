@@ -164,7 +164,10 @@ export class Ships {
     this.setQuality(quality);
   }
 
-  setQuality(q) { if (this.geo) { this.geo.instanceCount = Math.min(this.total, SHIPS[q] ?? SHIPS.hq); this.count = this.geo.instanceCount; } }
+  setQuality(q, caps) {
+    if (this.geo) { this.geo.instanceCount = Math.min(this.total, caps?.ships ?? SHIPS[q] ?? SHIPS.hq); this.count = this.geo.instanceCount; }
+    if (this.cranes) this.cranes.count = this.craneLights.count = caps?.cranes ?? 8;
+  }
   update(flow) { if (this.lane) this.lane.w = flow; }
 }
 

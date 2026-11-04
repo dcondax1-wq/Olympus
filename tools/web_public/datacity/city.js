@@ -51,6 +51,7 @@ async function getJSON(url) {
 
 /** The live city, else the demo fixture. */
 async function loadCity() {
+  if (P.has('demo')) return { data: await getJSON('./fixture.json'), demo: true };     // ?demo=1: the fixtures only (offline, tests)
   try {
     const d = await getJSON('./city.json');
     if (Array.isArray(d?.buildings) && d.buildings.length) return { data: d, demo: !!d.demo };
@@ -79,7 +80,8 @@ class App {
     this.city = new CityScene($('#c'), this.L, { quality: this.quality, winRate: Math.max(0.3, Math.min(0.7, winRate)), billboards: billboards(model), calm: this.calm,
       onTier: (q) => this.onTier(q) });
     this.quality = this.city.quality;     // the render core's tier decides (OLYMPUS.fx())
-    O?.onTheme(() => this.applyDay());   // OLYMPUS theme: the sky / fog follow it (scene.js setDay)
+    O?.onTheme(() => this.applyDay());
+    O?.onPower?.(() => this.city._tier(this.city.rc.quality()));   // the battery saver switched: the phone-safe caps follow   // OLYMPUS theme: the sky / fog follow it (scene.js setDay)
     O?.mode(this.quality === 'lq');
     this.orbit = new Orbit(this.city.camera, $('#c'), {
       calm: this.calm, radius: Math.max(150, Math.min(460, (this.L.bounds.x1 - this.L.bounds.x0) * 0.5)),
@@ -828,6 +830,8 @@ class App {
     const frame = (now) => {
       requestAnimationFrame(frame);
       if (O ? O.hidden() : document.hidden) { last = now; return; }          // hidden tab: no frame at all
+      const gap = O?.frameGap ? O.frameGap() : 0;                            // the kit's idle cap (30 fps idle on high, 15 on low, 2 on off; 30 in battery saver)
+      if (gap && now - last < gap - 3) return;
       if (this.quality === 'lq' && now - last < 28) return;                  // LITE draws at 30 fps (half the work, half the heat)
       const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
       last = now;
