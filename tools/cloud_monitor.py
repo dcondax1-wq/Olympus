@@ -475,6 +475,29 @@ def lit_eval_state(before, start, day):
     return st
 
 
+def real_eval(pc):
+    """The real MFFU 50K for DISPLAY text only (owner 2026-11-03): balance, floor and drawdown left = the numbers MFFU shows,
+    from the PC heartbeat (NinjaTrader's real balance when fresh, else the bot's anchored account). None when the PC has
+    not sent them; the paper ledger's own room is then used as before. Never feeds sizing or any decision."""
+    try:
+        P = pc if isinstance(pc, dict) else {}
+        bk = ((P.get("launch") or {}).get("facts") or {}).get("broker") or {}
+        sz = ((P.get("brain") or {}).get("sizing") or {}).get("eval") or {}
+        room = bk.get("room") if bk.get("fresh") and bk.get("room") is not None else sz.get("room")
+        if room is None:
+            return None
+        out = {"room": round(float(room), 2), "mll": 2000.0, "src": "PC bot (MFFU anchor)"}
+        if bk.get("fresh") and bk.get("cash") is not None:
+            out["balance"] = round(float(bk["cash"]), 2)
+            out["floor"] = bk.get("floor")
+            out["to_target"] = round(max(0.0, 53000.0 - out["balance"]), 2)
+        elif sz.get("to_target") is not None:
+            out["to_target"] = sz["to_target"]
+        return out
+    except Exception:
+        return None
+
+
 def eval_life(ledger, lm, now):
     """State key eval_life (engine/eval_life.view) of the cloud paper eval: open / passed / failed, the minimum-days trade
     and the eval weekly loss stop (off / armed / tripped). Display only: the pass / fail / weekly-stop pushes come from
@@ -811,6 +834,17 @@ def run(out):
     # ---- the always-on PC's heartbeat (engine/heartbeat.py): alert when it went silent in a session
     if pc is None:
         pc = heartbeat.read(cwd=ROOT, now=now)
+    # the real MFFU numbers for the eval TEXT (owner 2026-11-03): drawdown left $X of $2,000 as MFFU shows it, not the paper
+    # ledger's own room. Display only: state["eval_life"] keeps its keys, only its sentence changes.
+    real_ev = real_eval(pc) if lm["model"] == "lit" else None
+    if real_ev:
+        state["eval_real"] = real_ev
+        el_ = state.get("eval_life")
+        if isinstance(el_, dict) and el_.get("status") == "open":
+            to_go = real_ev.get("to_target")
+            el_["text"] = (f"Eval open: " + (f"${max(0.0, float(to_go)):,.0f} to go, " if to_go is not None else "")
+                           + f"drawdown left ${real_ev['room']:,.0f} of ${real_ev['mll']:,.0f}; "
+                           + str((el_.get("wk_stop") or {}).get("text") or "weekly loss stop: off"))
     pc_alert_at = st.get("pc_alert_at")
     other_notices = []
     # loud, once per outage (engine/push.pc_outage): heartbeat older than 30 min inside 01:30-16:00 ET on a weekday ->
@@ -980,7 +1014,7 @@ def run(out):
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
                  "lit_rules": state.get("lit_rules"), "lit_sizing": (lm.get("lit_sizing") or {}).get("mode") if lm["model"] == "lit" else None,
-                 "health": health, "eval": ev_track, "eval_2wk": state.get("eval_2wk"), "eval_life": state.get("eval_life"), "model_state": state.get("model_state"), "position": pos,
+                 "health": health, "eval": ev_track, "eval_2wk": state.get("eval_2wk"), "eval_life": state.get("eval_life"), "eval_real": state.get("eval_real"), "model_state": state.get("model_state"), "position": pos,
                  "strategy": lm.get("label"), "params": lm.get("lit") if lm["model"] == "lit" else lm.get("params"),
                  "equity_filter": state.get("equity_filter"),
                  "eval_timing": state.get("eval_timing"), "price": state.get("price"), "today": today,
@@ -1041,7 +1075,7 @@ def run(out):
     _uptime.cloud_hook(new_state, st, pc, now)
     try:                    # LIT day analyst (engine/lit_brief.py): morning briefing, intraday log, recap -> state "brief" + README
         from engine import lit_brief
-        lit_brief.cloud_hook(out, new_state, st, res, df_all, now, lm)
+        lit_brief.cloud_hook(out, new_state, st, res, df_all, now, lm, real=state.get("eval_real"))
     except Exception as e:  # never fails the run; no notifications
         print("brief failed:", e.__class__.__name__, e)
     try:                    # Bot Brain (engine/brain.py, read-only): the cloud paper bot's thoughts (the phone shows the PC's first)
@@ -1423,8 +1457,13 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     L += ["| Entry | Side | Grade | Trigger | Exit | R | $ |", "|---|---|---|---|---|---:|---:|"] + \
          [f"| {v['entry']} | {v['side']} | {v['grade']} | {v['trigger']} | {v['exit']} {v['exit_t'] or ''} | {v['R']:+.2f} | {usd_cell(v)} |" for v in tt] \
         if tt else ["No paper trades today."]
+    rv = state.get("eval_real")
+    if rv:
+        L += ["", "## Eval (the real MFFU 50K, from the PC bot)",
+              "| Drawdown left | Of max loss | To $3k target |", "|---:|---:|---:|",
+              f"| ${rv['room']:,.2f} | ${rv['mll']:,.0f} | {('$' + format(float(rv['to_target']), ',.2f')) if rv.get('to_target') is not None else '-'} |"]
     L += ["", f"## Eval tracker (MFFU 50K rules, cloud paper ledger{', since ' + ev_track['start'] if ev_track.get('start') else ''})",
-          "| Balance | Profit | To $3k target | Trailing max loss | Cushion |",
+          "| Balance | Profit | To $3k target | Trailing max loss | Drawdown left (paper) |",
           "|---:|---:|---:|---:|---:|",
           f"| ${ev_track['balance']:,.2f} | {money(ev_track['profit'])} | ${ev_track['to_target']:,.2f} | ${ev_track['trailing_mll']:,.2f} | ${ev_track['cushion']:,.2f} |"]
     allv = sorted(ledger.values(), key=lambda v: v["entry"], reverse=True)[:20]
@@ -1450,7 +1489,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
               f"| Cold-streak filter | {(shadow.get('equity_filter') or {}).get('reason', 'off')} |",
               f"| Open position | {json.dumps(shadow.get('position')) if shadow.get('position') else 'flat'} |",
               f"| Paper ledger | {len(sl)} trades, {money(sum(v['usd'] for v in sl))} since {et(shadow.get('first_run') or now):%b %d} |",
-              f"| Eval tracker | balance ${se.get('balance', 0):,.2f}, profit {money(se.get('profit', 0))}, cushion ${se.get('cushion', 0):,.2f} |"]
+              f"| Eval tracker | balance ${se.get('balance', 0):,.2f}, profit {money(se.get('profit', 0))}, drawdown left ${se.get('cushion', 0):,.2f} |"]
         if shadow.get("error"):
             L.append(f"| Error | {shadow['error']} |")
         lit_since = [v for k, v in (shadow.get("ledger") or {}).items() if int(k) >= first_run - SECS]

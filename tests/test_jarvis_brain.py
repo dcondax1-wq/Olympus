@@ -508,7 +508,7 @@ def part_node(O):
           and oc[1]["list"] == [] and oc[2]["list"] == [], oc)
     mi = [t("more_intents", i) for i in range(6)]
     check("e. the NQ price from the bot's feed, with its age", mi[0].startswith("NQ 25,123.50 (the bot's last price, 2 min ago)"), mi[0])
-    check("e. the daily loss limit and what is used of it", "Zlarior: daily loss limit $1,000, used $212; $1,106 of room to the floor" in mi[1], mi[1])
+    check("e. the daily loss limit and what is used of it", "Zlarior: daily loss limit $1,000, used $212; drawdown left $1,106" in mi[1], mi[1])
     check("e. 'is the pc on': the one fix first (none), its last check-in and the verdict", mi[2].startswith("The PC looks healthy: nothing to fix.") and "checked in 2 min ago" in mi[2] and "RUNNING: bot trading" in mi[2], mi[2])
     check("e. 'is nq open' is a market question, not 'open Zenith'", mi[3].startswith("NQ market open · regular session") and not g("more_intents")[3].get("open"), mi[3])
     check("e. trades today per bot (with the daily maximum)", "Zlarior: 1 trade today (max 1 a day)" in mi[4] and "BLITZ: 2 trades today" in mi[4], mi[4])

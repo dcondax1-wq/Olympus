@@ -401,7 +401,7 @@ def _anchor_problems(bot, c) -> list:
             out.append("no eval anchor set (startup_require_anchor): python -m engine.eval_life --anchor ...")
         room = bot.eval_room()
         if room is None or float(room) <= 0:
-            out.append(f"eval room {room} <= 0: the eval looks failed; check the MFFU dashboard")
+            out.append(f"eval drawdown left {room} <= 0: the eval looks failed; check the MFFU dashboard")
     except Exception as e:
         out.append(f"eval state could not be computed ({e.__class__.__name__}: {e})")
     return out

@@ -220,7 +220,7 @@ def bot_checks(tmp):
     f = LC.broker_fact(b1, NAME, clock.t, path=csv)
     items = {i["key"]: i for i in LC.checklist({"broker": f}, {}, True, clock.t)["items"]}
     check("launch checklist: 'Real balance from NinjaTrader' green when fresh, with floor / room",
-          items["broker"]["state"] == "good" and "49,650.00" in items["broker"]["detail"] and "room" in items["broker"]["detail"],
+          items["broker"]["state"] == "good" and "49,650.00" in items["broker"]["detail"] and "drawdown left" in items["broker"]["detail"],
           items["broker"])
     f2 = LC.broker_fact(b1, NAME, clock.t + 3600, path=csv)
     i2 = {i["key"]: i for i in LC.checklist({"broker": f2}, {}, True, clock.t)["items"]}["broker"]

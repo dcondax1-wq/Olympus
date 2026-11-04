@@ -429,7 +429,7 @@ def t_readiness():
     check("line: version + self-test", L[0].startswith("Version abc1234 · self-test all 30 green in 74.0 s"), L[0])
     check("line: Run switch is ON (bot running)", L[1] == "Run switch is ON (bot running)", L[1])
     check("lines: both accounts' room to the floor and eval day N of 10, BLITZ off",
-          L[2] == "Zlarior 50K: $1,640 room to the floor, eval day 3 of 10" and L[3] == "ATLAS 25K: $1,000 room to the floor, eval day 1 of 10"
+          L[2].startswith("Zlarior 50K: drawdown left $1,640") and "eval day" not in L[2] and L[3].startswith("ATLAS 25K: drawdown left $1,000") and "eval day" not in L[3]
           and L[4] == "BLITZ 25K: off (paper shadow only)", L[2:5])
     check("news: high-impact USD events Mon-Fri only, time-ordered (medium / EUR / Saturday left out)",
           L[5] == "News: Wed 14:00 FOMC Statement; Fri 08:30 Non-Farm Employment Change", L[5])
@@ -461,8 +461,8 @@ def t_readiness():
           and "not armed" in R.blitz_line({"on": True, "name": "MFFUEVBLDR3"}) and R.blitz_line({"on": True, "armed": True, "name": "MFFUEVBLDR3"})
           == "BLITZ 25K: ARMED on MFFUEVBLDR3")
     check("accounts: funded day, eval passed, not set up", R.account_line("Zlarior 50K", {"room": 2100, "session": 4, "sessions": None})
-          == "Zlarior 50K: $2,100 room to the floor, funded day 4" and R.account_line("ATLAS 25K", {"status": "passed", "room": 900})
-          == "ATLAS 25K: eval PASSED ($900 room)" and R.account_line("ATLAS 25K", {"status": "not set up"}) == "ATLAS 25K: not set up")
+          == "Zlarior 50K: drawdown left $2,100, funded" and R.account_line("ATLAS 25K", {"status": "passed", "room": 900})
+          == "ATLAS 25K: eval PASSED (drawdown left $900)" and R.account_line("ATLAS 25K", {"status": "not set up"}) == "ATLAS 25K: not set up")
     old = R.build({**GOOD, "selftest": {**GOOD["selftest"], "t": int(now - 9 * 86400)}}, now)
     check("a self-test older than 8 days is a problem ('no self-test this week')", "no self-test this week" in old["problems"], old["problems"])
     f = R.gather(None, now, news_fn=lambda n: [])

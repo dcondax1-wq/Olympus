@@ -738,7 +738,7 @@ class AccountC:
                                                                    f"funded, or {FUNDED_CMD}. The bot never switches by itself."),
                "failed": (f"{self.label} EVAL FAILED", f"balance ${ev['balance']:,.0f} reached the max-loss floor ${ev['floor']:,.0f}: no new "
                                                       "trade on this account"),
-               "stuck": (f"{self.label} stuck: room ${ev['room']:,.0f}", f"the room to the max-loss floor is under ${float(self.spec['min_room']):,.0f} "
+               "stuck": (f"{self.label} stuck: drawdown left ${ev['room']:,.0f}", f"the drawdown left is under ${float(self.spec['min_room']):,.0f} "
                                                                        "(2 x BLITZ's median stop-out): the bot stops trading this account; buy a new one")}[stt]
         self.log("risk", f"{txt[0]}: {txt[1]}")
         self._push_text(txt[0], txt[1], key)

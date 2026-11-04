@@ -44,7 +44,7 @@ KINDS = {   # kind: (label for the app, what it covers, critical = repeats until
     "feed_stale": ("FEED STALE", "NinjaTrader bars missing / stale in an entry window: new entries blocked", True),
     "unprotected": ("Position mismatch", "NinjaTrader position vs the bot's ledger, reconcile flatten", True),
     "kill": ("Kill switch fired", "the bot flattened and stopped", True),
-    "eval_floor": ("Eval near the floor", "room to the trailing max-loss floor below $400", True),
+    "eval_floor": ("Drawdown getting low", "drawdown left below $400", True),
     "clock": ("Clock drift", "PC clock off: entries blocked", True),
     "hedge": ("HEDGE BLOCKED", "account B's opposite close not confirmed: LIT's entry held back / skipped", True),
     "update": ("Update failed", "bot auto-update failed or rolled back", True),
@@ -431,8 +431,8 @@ def pc_conditions(bot, now=None) -> list:
             room = float(bot.eval_room())
             if 0 < room < ROOM_FLOOR_USD:
                 start = bot.eval_start() if callable(getattr(bot, "eval_start", None)) else ""
-                out.append({"id": f"eval_floor:{start or '-'}", "kind": "eval_floor", "title": f"Eval near the floor: ${room:,.0f} left",
-                            "body": f"${room:,.0f} to the trailing max-loss floor. One stop-out can end the eval; check the size."})
+                out.append({"id": f"eval_floor:{start or '-'}", "kind": "eval_floor", "title": f"Drawdown left ${room:,.0f}",
+                            "body": f"Drawdown left ${room:,.0f} before MFFU closes the eval. One stop-out can end the eval; check the size."})
         for cid, c in (getattr(bot, "_hedge_crit", None) or {}).items():      # LIT skipped: account B's close unconfirmed
             if isinstance(c, dict) and c.get("day") == day:
                 out.append({"id": cid, "kind": "hedge", "title": c.get("title"), "body": c.get("body")})

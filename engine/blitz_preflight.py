@@ -420,8 +420,8 @@ def lines(f: dict) -> dict:
         except Exception:
             pass
         items.append(_item("eval", "25K eval clock", "good" if s else "wait",
-                           (f"session {s} of 10 (first session {when}): balance ${float(ev.get('balance') or 0):,.2f}, room "
-                            f"${float(ev.get('room') or 0):,.2f} to the floor, ${float(ev.get('to_target') or 0):,.0f} to the pass")
+                           (f"first session {when}: balance ${float(ev.get('balance') or 0):,.2f}, drawdown left "
+                            f"${float(ev.get('room') or 0):,.2f} of $1,000, ${float(ev.get('to_target') or 0):,.0f} to the pass")
                            if s else f"first session {when}"))
     # the next trade's size
     sz = f.get("size") or {}
