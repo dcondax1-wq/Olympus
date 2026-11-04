@@ -44,3 +44,13 @@
 .cmp-table tr { border-top: 1px solid rgba(255, 255, 255, 0.06); }
 .cmp-table td.win { color: #46d79a; text-shadow: 0 0 10px rgba(70, 215, 154, 0.5); }
 @media (prefers-reduced-motion: reduce) { .compare { animation: none; } }
+
+/* touch targets (bug hunt 2026-11-04): the trade strip's arrows are 44 px wide; the scrubber's tick marks sit in their own row ABOVE the bar,
+   so a finger on the bar never lands on a tick (the ticks stay tappable for a jump, in their row only) */
+.strip button { width: 44px; }
+@media (min-height: 501px) {
+  .scrub-wrap { height: 62px; align-items: flex-end; }
+  .ticks { top: 0; bottom: auto; height: 18px; }
+  .tick { top: 2px; }
+  .tick::after { width: 30px; height: 18px; }
+}

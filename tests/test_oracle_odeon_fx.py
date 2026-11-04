@@ -179,6 +179,11 @@ def oracle_part(br, base, pj):
           "where the post passes are counted too)", 0 < on - off <= 14 and on <= 260, (on, off))
     p.evaluate("window.oracle.camera(-0.3, 0.45, 1.5)")
     time.sleep(2)
+    g = p.evaluate("""async () => { const m = await import('/oracle/heat.js');
+      return [m.glossOf({ key: 'sweep', label: 'Sweep and inducement' }), m.glossOf({ key: 'cisd5', label: '5m CISD' }), m.glossOf(null),
+        document.querySelector('#stage-gloss').textContent, document.querySelector('#stage').title]; }""")
+    check("b. the headline's stage is explained in plain words: a line under it and the same sentence as a tooltip ('Sweep and inducement' included)",
+          "poked through" in g[0] and "turn" in g[1] and g[2] == "" and g[3] != "" and g[3] == g[4], g)
     check("b. no console errors (sheet, temple, camera)", not errs, errs[:5])
     ctx.close()
 
@@ -278,6 +283,19 @@ def odeon_part(br, base, tj):
     calls = p.evaluate("window.__odeon.look().stats.calls")
     check("c. the stage fx keep the Odeon frame under its draw-call budget (60 on the scene; the LITE frame with the post pass under 90)", 0 < calls <= 90, calls)
     check("c. no console errors (library, queues, compare, share, stage fx)", not errs, errs[:5])
+    ctx.close()
+    # small phone (375 x 667): the trade strip's arrows are >= 44 px wide, the scrubber's ticks sit above the bar and never over it
+    ctx = br.new_context(viewport={"width": 375, "height": 667}, device_scale_factor=1, has_touch=True)
+    q = ctx.new_page()
+    q.goto(base + "odeon/?autoplay=0&flat=1")
+    q.wait_for_function("document.body.dataset.ready === 'true'", timeout=90000)
+    m = q.evaluate("""() => { const r = (s) => { const e = document.querySelector(s); const b = e && e.getBoundingClientRect(); return b && [b.left, b.top, b.right, b.bottom]; };
+      const ticks = [...document.querySelectorAll('.tick')].map((e) => e.getBoundingClientRect());
+      const sc = r('#scrub');
+      return { prev: r('.st-prev'), next: r('.st-next'), scrub: sc, ticks: ticks.length, over: ticks.filter((b) => b.bottom > sc[1] + 0.5).length,
+        thumb: getComputedStyle(document.querySelector('.tick')).pointerEvents }; }""")
+    check("c. 375 x 667: the strip's arrows are >= 44 px wide and tall, and no tick mark sits over the scrubber (they are in their own row above it)",
+          m["prev"][2] - m["prev"][0] >= 44 and m["next"][2] - m["next"][0] >= 44 and m["prev"][3] - m["prev"][1] >= 44 and m["ticks"] >= 2 and m["over"] == 0, m)
     ctx.close()
 
 
