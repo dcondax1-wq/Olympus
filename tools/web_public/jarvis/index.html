@@ -1247,6 +1247,38 @@ ready.modes = load('modes', './modes.js', (m) => typeof m.createModes === 'funct
   if (modesI) brainDeps.modes = modesI;
   return modesI;
 });
+// Jarvis x the bots (bots.js + bots-ui.js, 2026-11-04): she knows Zlarior and ATLAS from the live feed (the asks, the spoken alerts, the
+// 01:45 plan and 16:05 recap, the Bots panel in Trading mode). Optional (absent = the brain as before). Read only: nothing arms or orders.
+// Spoken alerts go through speak() above, only while she is idle (never over the mic, voice mode or another answer).
+let botsI = null, botsUI = null;
+ready.bots = load('bots', './bots.js', (m) => typeof m.createBots === 'function').then((m) => {
+  if (m) botsI = safe(() => m.createBots({ speak: (t) => speak(t, false), hidden: () => S.hideMoney(),
+    busy: () => state !== 'idle' || listening || speaking || !!rec || !!(vm && vm.isOpen()),
+    onEvent: (e) => toast(e.text, e.kind === 'plan' || e.kind === 'recap' ? e.kind.toUpperCase() : 'BOT ALERT'),
+    onCard: (c) => toast(c.lines[0] || c.title, c.title.toUpperCase()) }), null);
+  if (botsI) brainDeps.bots = botsI;
+  return botsI;
+});
+ready.botsui = load('botsui', './bots-ui.js', (m) => typeof m.mountBots === 'function');
+function botsTick() {
+  if (!botsI) return;
+  const f = safe(() => D.getFacts(), null);
+  if (f && f.live) safe(() => botsI.tick(f.live));
+  if (botsUI) safe(() => botsUI.render());
+  botsHeld();
+}
+// an alert held back (she was busy, or 30 s since the last one) is tried again every 7 s until it is said or too old (5 min)
+let botsRetry = 0;
+function botsHeld() {
+  if (botsRetry || !botsI || !safe(() => botsI.queued().length, 0)) return;
+  botsRetry = setTimeout(() => { botsRetry = 0; safe(() => botsI.flush()); botsHeld(); }, 7000);
+}
+let botsMounting = false;
+function mountBotsUI() {
+  if (botsUI || botsMounting || !botsI || !modesI) return;
+  botsMounting = true;
+  ready.botsui.then((m) => { botsMounting = false; if (m && !botsUI) { botsUI = safe(() => m.mountBots({ bots: () => botsI, live: () => safe(() => D.getFacts().live, null), modes: () => modesI, anchor: $('#planBox') || $('#sugs'), onAsk: (t) => ask(t) }), null); if (botsUI) safe(() => botsUI.render()); } });
+}
 // a one-tap action from "Here's what I'd do": ask Jarvis, open an app, a mode, or a control (the key setup). Never a trade.
 function modeAction(a) {
   if (!a || typeof a !== 'object') return;
@@ -2079,7 +2111,7 @@ function fallbackBrain({ getFacts }) {
 const brainDeps = { getFacts: D.getFacts, open: (id, route) => openSoon(route ? { id, route } : id), now: () => new Date(), autoOpen: false };
 const builtinBrain = fallbackBrain(brainDeps);
 let brain = builtinBrain;
-Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000), within(ready.tools, 4000), within(ready.modes, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
+Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000), within(ready.tools, 4000), within(ready.modes, 4000), within(ready.bots, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
   if (!m) return;
   try { const b = m.createBrain(brainDeps); if (!b || typeof b.ask !== 'function') throw new Error('no ask'); brain = b; root.dataset.brain = 'module'; }
   catch (_) { brain = builtinBrain; root.dataset.brain = 'fallback'; }
@@ -2087,10 +2119,12 @@ Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 400
   if (idle && !$('#talk').children.length) $('#says').textContent = idle;        // the old Jarvis's line until the first question
   if (typeof brain.hidden === 'boolean' && brain.hidden !== S.hideMoney()) setHide(brain.hidden, false);
   renderSugs(); renderBrainPanel(); renderMore();
-  ready.assist.then(() => { mountModesUI(); setTimeout(() => thinkSlot(true), 4000); });
+  ready.assist.then(() => { mountModesUI(); mountBotsUI(); setTimeout(() => thinkSlot(true), 4000); });
+  ready.bots.then(() => { mountBotsUI(); setTimeout(botsTick, 3000); });
   ready.assist.then((a) => { if (a && !proUI) { proUI = safe(() => a.mountProactive({ brain: () => brain, anchor: $('#sugs'), onAsk: (t) => ask(t) }), null); if (proUI) safe(() => proUI.render()); } });
 });
-D.onChange(() => { if (proUI) safe(() => proUI.render()); if (modesUI) safe(() => modesUI.render()); });
+D.onChange(({ source }) => { if (proUI) safe(() => proUI.render()); if (modesUI) safe(() => modesUI.render()); if (source === 'live') botsTick(); });
+setInterval(botsTick, 60e3);                          // the bots' alerts follow the data (countdowns and silent-PC timers need the clock)
 setInterval(() => { safe(() => thinkSlot(false)); }, 60e3);                // the proactive line follows the data
 function renderSugs() {
   let s = safe(() => brain.suggestions());
@@ -2183,7 +2217,7 @@ async function answer(t, voice) {
   // nothing loaded yet for what is asked: fetch it first (an answer from data that is still loading would be wrong)
   const F = safe(() => D.getFacts(), {}) || {};
   if (/\bkalshi\b/i.test(t) && !F.kalshi) await D.refreshKalshi();
-  else if (/\b(bot|bots|room|target|p&l|pnl|profit|status|zlarior|atlas|blitz)\b/i.test(t) && !(F.live && !F.live.cached)) await within(D.refreshLive(), 9000);
+  else if (/\b(bot|bots|room|target|p&l|pnl|profit|status|zlarior|atlas|blitz|armed|recap|game ?plan|traded)\b/i.test(t) && !(F.live && !F.live.cached)) await within(D.refreshLive(), 9000);
   else if (/\b(bitcoin|btc|ethereum|eth|solana|crypto)\b/i.test(t) && !(F.extras && F.extras.crypto)) await within(D.refreshCrypto(), 6000);
   else await new Promise((ok) => setTimeout(ok, 220));
   const r = await think(t, voice);

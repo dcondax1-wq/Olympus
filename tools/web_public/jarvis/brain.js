@@ -500,6 +500,9 @@ export function createBrain(opts) {
   const tools = isObj(o.tools) && typeof o.tools.run === 'function' ? o.tools : null;
   // the modes (modes.js, optional, 2026-11-03): Trading / Research / Business / Life / Auto, and "think for me"
   const modes = isObj(o.modes) && typeof o.modes.think === 'function' ? o.modes : null;
+  // the bots (bots.js, optional, 2026-11-04): Jarvis x the two live bots. answer() = armed / did we trade today / yesterday / the game
+  // plan / the recap / the alert switches (null = not its question); items() = the bot items of "think for me". Read only.
+  const bots = isObj(o.bots) && typeof o.bots.answer === 'function' ? o.bots : null;
   let curMode = 'auto';     // the mode of the question being answered (auto = picked from its words): the prompt and the tools' order
   const openDelay = num(o.openDelay) != null ? Math.max(0, num(o.openDelay)) : 0;     // the shell's open() waits 450 ms itself
   const store = () => { if (o.storage) return o.storage; try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch (_) { return null; } };
@@ -2050,6 +2053,7 @@ export function createBrain(opts) {
       mind: m ? { regime: isObj(m.regime) ? str(m.regime.label, 80) : '', proposals: arr(m.proposals).filter(isObj).slice(0, 4).map((x) => ({ idea: str(x.idea, 160), status: str(x.status, 20) })), plan: plan ? str(plan.headline, 200) : '' } : null,
       money: V.nq && isObj(V.nq.money) ? { next: isObj(V.nq.money.next) ? str(V.nq.money.next.text, 200) : '', goals: arr(V.nq.money.goals).filter(isObj).slice(0, 3).map((g) => str(g.sentence || g.title, 160)) } : null,
       bridge: bridgeState(),
+      bots: bots && typeof bots.items === 'function' ? { items: arr(safeCall(() => bots.items(V.f && V.f.live, V.now))) } : null,
       apps: V.apps.map((a) => ({ id: a.id, name: a.name })), smart: smartOn(), vault: !!(memory && memory.connected),
     };
   }
@@ -2104,6 +2108,7 @@ export function createBrain(opts) {
         const fb = { text: mr0.text, speak: mr0.speak, intent: mr0.intent };
         r = mr0.model && smartOn() ? await smartAnswer(raw, V, fb, voice) : fb;
       }
+      else if (bots && (mr0 = safeCall(() => bots.answer(raw, q, V.f && V.f.live, V.now)))) r = { text: mr0.text, speak: mr0.speak, intent: mr0.intent, cards: mr0.cards };     // the bots' own asks (bots.js)
       else if (SETUP_RX.test(q)) r = { text: smartOn() ? `Smart mode is on (${PROVIDERS[S.provider].name}). Opening the key setup in case you want another one.` : 'Opening the free smart mode setup: three steps, about a minute, no card.', speak: 'Opening the smart mode setup.', control: 'ai_setup', intent: 'control' };
       else {
         // order: a "yes" / "no" to a pending save (memory.js) -> the assistant (facts, reminders, to-dos, notes, recall, maths) ->
