@@ -131,7 +131,7 @@ export function renderDesk(root, d, o = {}) {
   s3.append(cap('Has the Council mattered for NQ?'), H('p', 'dline ' + (em.noise ? 'ok' : 'warn'), em.line));
   em.rows.forEach((r) => {
     const sc = Math.max(0.12, r.band * 1.6, Math.abs(r.corr) * 1.2), X = (v) => 50 + (v / sc) * 46;
-    const row = H('div', 'meter'); row.append(H('b', '', `${r.period}: ${r.n} sessions`));
+    const row = H('div', 'meter'); row.append(H('b', '', `${r.period}: ${r.n} market days compared`));
     const bar = H('div', 'mbar'); bar.setAttribute('role', 'img'); bar.setAttribute('aria-label', `Correlation ${r.corr.toFixed(3)} against a noise band of plus or minus ${r.band.toFixed(3)}`);
     const nb = H('i', 'noise'); nb.style.left = X(-r.band) + '%'; nb.style.width = (X(r.band) - X(-r.band)) + '%';
     const dot = H('i', 'dot ' + (r.inside ? 'in' : 'out')); dot.style.left = X(r.corr) + '%'; bar.append(nb, dot);
