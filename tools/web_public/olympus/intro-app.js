@@ -37,7 +37,7 @@
     chronos: ['rings', 'Time, measured', 'tick'], hephaestus: ['embers', 'Built in the forge', 'portal'], bridge: ['streaks', 'Cross over', 'portal'],
     cities: ['skyline', 'Every number, a city', 'portal'], kalshicity: ['skyline', 'Odds, rising', 'portal'], settings: ['rings', 'Make it yours', 'tick'],
     inbox: ['streaks', 'Everything that arrived', 'tick'], ledger: ['coins', 'Every dollar, counted', 'tap'],
-    journal: ['neurons', 'Remember every trade', 'tick']
+    journal: ['neurons', 'Remember every trade', 'tick'], observatory: ['rings', 'Evidence comes into focus', 'tick']
   };
   var FL = FLAVOUR[O.app] || ['stars', 'Welcome to Olympus', 'portal'];
   st.scene = FL[0];
