@@ -1,1 +1,1 @@
-{"v":1,"name":"Atlas","status":{"level":"ok","label":"Your dashboards in one place"},"kpis":[{"label":"Mode","value":"Read only"}],"lines":["Search every arena, save favorites, and open recent dashboards."],"t":1793836800,"theme":"#efc979"}
+{"v":1,"name":"Atlas","status":{"level":"ok","label":"Your dashboards in one place"},"kpis":[{"label":"Mode","value":"Read only"}],"lines":["Search every arena, save favorites, and open recent dashboards."],"t":1793836800,"theme":"#efc979","stale_after":1209600}
