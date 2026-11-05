@@ -80,10 +80,10 @@ const svg = (path) => { const n = 'http://www.w3.org/2000/svg', s = document.cre
 const SHORT = { 'Surprise me': 'Wow', 'World map': 'World', 'Random city': 'Dice' };
 const tab = (id, label, icon, fn) => { const b = el('button', 'tab'); b.id = id; b.setAttribute('aria-label', label); b.append(svg(icon), document.createTextNode(SHORT[label] || label)); b.addEventListener('click', fn); return b; };
 const grid = (rows) => { const g = el('div', 'grid4'); for (const [k, v] of rows) { const d = el('div'); d.append(el('small', null, k), el('b', null, v)); g.append(d); } return g; };
-const closeSheet = () => { sheet.classList.remove('on'); const was = S.sheet; S.sheet = null; document.querySelectorAll('.tab').forEach((t) => t.classList.remove('on')); if (S.mode === 'city' && was === 'building') { S.stage.setSelected(-1); tagEl.style.display = 'none'; S.cur.sel = -1; } if (S.mode === 'hub' && was === 'find') hubFilter(null);
+const closeSheet = () => { $('#atlas').classList.remove('behind'); sheet.classList.remove('on'); const was = S.sheet; S.sheet = null; document.querySelectorAll('.tab').forEach((t) => t.classList.remove('on')); if (S.mode === 'city' && was === 'building') { S.stage.setSelected(-1); tagEl.style.display = 'none'; S.cur.sel = -1; } if (S.mode === 'hub' && was === 'find') hubFilter(null);
   if (S.mode === 'city' && S.cur && S.cur.match) { S.stage.setDim(null); S.cur.match = null; } };
 function openSheet(view, title, build) {
-  sheet.dataset.view = view; $('#sheetTitle').textContent = title; sheetBody.replaceChildren(); build(sheetBody); sheet.classList.add('on'); sheet.scrollTop = 0; S.sheet = view;
+  $('#atlas').classList.add('behind'); sheet.dataset.view = view; $('#sheetTitle').textContent = title; sheetBody.replaceChildren(); build(sheetBody); sheet.classList.add('on'); sheet.scrollTop = 0; S.sheet = view;
   document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('on', t.dataset.view === view));
 }
 $('#sheetX').addEventListener('click', closeSheet);
@@ -971,6 +971,7 @@ async function boot() {
   S.rig.limits = { min: 50, max: S.hubR * 3.4, pmin: 0.08, pmax: 1.5 };
   S.rig.t.set(0, 0, 0); S.rig.dist = S.hubR * 1.9 + 200; S.rig.pitch = 0.95; S.rig.yaw = 0.3; S.rig.auto = 0.03; S.rig.apply();
   setDock(); refreshChips(); $('#qB').textContent = qLabel();
+  $('#atlasCount').textContent = `${S.specs.length} cities · ${S.conts.length} worlds`;
   stage.start(loop);
   $('#loading').remove();
   document.body.dataset.ready = 'true';
@@ -1050,6 +1051,13 @@ window.__cities = {
   TIERS, BUDGETS,
 };
 
+$('#atlas').addEventListener('click', (event) => {
+  const button = event.target.closest('button');
+  if (!button) return;
+  if (button.dataset.city && S.ready) enterCity(button.dataset.city);
+  else if (button.dataset.atlas === 'tour' && S.ready) startTour();
+  else if (button.dataset.atlas === 'find' && S.ready) openFind();
+});
 boot().catch((e) => {
   console.error('cities boot failed', e);
   S.errors.push(String(e && e.stack || e));
