@@ -993,13 +993,18 @@ async function main() {
   const plugins = await loadPlugins(data, getJSON);
   const synth = Math.max(0, Math.min(60000, parseInt(P.get('synth') || '0', 10) || 0));
   const model = decode(data, plugins, synth);
-  let app;
-  try { app = new App(model, demo); }
-  catch (e) { readableFallback(model, demo, e); postCard(); return; }
-  window.__app = app;
-  $('#loading').remove();
-  app.start();
-  state.ready = true;
+  try {
+    const app = new App(model, demo);
+    window.__app = app;
+    $('#loading').remove();
+    app.start();
+    state.ready = true;
+  } catch (e) {
+    window.__app = null;
+    readableFallback(model, demo, e);
+    postCard();
+    return;
+  }
   if (why) {                                                        // plain words: why this is the demo city
     const note = why === 'offline' ? 'Offline: showing the demo city. The live city comes back with your connection.' : 'The live city is not published yet: showing the demo city.';
     state.notice = note; setTimeout(() => UI.toast(note), 600);
