@@ -82,7 +82,7 @@
 
   // ------------------------------------------------------------------ the overlay
   var el = null, cv = null, c = null, raf = 0, killT = 0, t0 = 0, done = false, skipping = false, holdUp = false;
-  var VW = 0, VH = 0, DPR = 1, scene = null, parts = null, glyphPx = 0, cx = 0, cy = 0, soundsAt = {};
+  var VW = 0, VH = 0, DPR = 1, scene = null, parts = null, glyphPx = 0, cx = 0, cy = 0, soundsAt = {}, motionQuery = null, motionListener = null;
   function addCss() {
     var s = d.createElement('style');
     s.textContent = '.oly-intro{position:fixed;left:0;top:0;right:0;bottom:0;z-index:70;background:#04050c;overflow:hidden;touch-action:none;' +
@@ -106,6 +106,10 @@
       root.removeAttribute('data-oly-intro');
       d.removeEventListener('keydown', onKey, true); d.removeEventListener('visibilitychange', onVis);
       W.removeEventListener('pointerup', up, true); W.removeEventListener('pointercancel', up, true); W.removeEventListener('resize', onSize);
+      if (motionQuery && motionListener) {
+        if (motionQuery.removeEventListener) motionQuery.removeEventListener('change', motionListener);
+        else if (motionQuery.removeListener) motionQuery.removeListener(motionListener);
+      }
     } catch (e) { /* */ }
     scene = null; parts = null; c = null; cv = null; el = null;
     try { W.dispatchEvent(new Event('oly:app-intro-end')); } catch (e) { /* old browser */ }
@@ -516,6 +520,16 @@
     W.addEventListener('pointerup', up, true); W.addEventListener('pointercancel', up, true); W.addEventListener('resize', onSize);
     d.addEventListener('keydown', onKey, true);
     d.addEventListener('visibilitychange', onVis);
+    // A motion preference changed while the canvas runs must remove its invisible overlay and key capture.
+    try {
+      motionQuery = W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)');
+      if (motionQuery) {
+        motionListener = function () { if (motionQuery.matches) finish('reduced motion'); };
+        if (motionQuery.addEventListener) motionQuery.addEventListener('change', motionListener);
+        else if (motionQuery.addListener) motionQuery.addListener(motionListener);
+      }
+    } catch (x) { /* motion preference observation is optional */ }
+    if (O.reduced()) { finish('reduced motion'); return; }
     if (d.visibilityState && d.visibilityState !== 'visible') { finish('hidden'); return; }
     raf = requestAnimationFrame(frame);
   }
