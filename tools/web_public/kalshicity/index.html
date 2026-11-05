@@ -25,7 +25,7 @@
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#2ef2d0'); r.setProperty('--oly-accent-rgb', '46, 242, 208'); })();</script>
-<link rel="stylesheet" href="kalshicity.css?v=k2">
+<link rel="stylesheet" href="kalshicity.css?v=k3">
 </head>
 <body>
 <canvas id="city" aria-label="A night city: one district per market, one building per edge of the Kalshi bot, roads with traffic, weather for the market mood" role="img"></canvas>
@@ -67,6 +67,7 @@
     <button type="button" data-cam="map" aria-pressed="false">Map</button>
   </div>
   <nav class="row pills" id="pills" aria-label="Views">
+    <button type="button" data-view="worlds" aria-pressed="false">Worlds</button>
     <button type="button" data-view="learn" aria-pressed="false">Log</button>
     <button type="button" data-view="board" aria-pressed="false">Board</button>
     <button type="button" data-view="moves" aria-pressed="false">Moves</button>
@@ -74,7 +75,7 @@
     <button type="button" data-view="lessons" aria-pressed="false">Lessons</button>
   </nav>
 </section>
-<script type="module" src="kalshicity.js?v=k2"></script>
+<script type="module" src="kalshicity.js?v=k3"></script>
 <script type="module" src="glossary.js"></script>
 </body>
 </html>

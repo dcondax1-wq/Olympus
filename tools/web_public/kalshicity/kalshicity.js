@@ -80,7 +80,7 @@ function renderClock() {
 }
 
 // ------------------------------------------------------------------------------------------------ sheets
-const TITLES = { lab: 'The Lab: ideas being tested', learn: 'What the city learned', board: 'Leaderboard: the best edges', moves: 'Do more · Stop doing', risk: 'Risk and sizing', guide: 'How to read the city', lessons: 'What we learned', history: 'Ask for the full history', card: '' };
+const TITLES = { worlds: 'Worlds: city atlas', lab: 'The Lab: ideas being tested', learn: 'What the city learned', board: 'Leaderboard: the best edges', moves: 'Do more · Stop doing', risk: 'Risk and sizing', guide: 'How to read the city', lessons: 'What we learned', history: 'Ask for the full history', card: '' };
 
 function edgeRow(e, i, extra) {
   const b = h('button', `row-btn${e.small ? ' grey' : ''}`); b.type = 'button'; b.dataset.id = e.id;
@@ -139,6 +139,46 @@ function learnView() {
   const out = [h('p', 'strong', 'Every time the engine re-measures the bets, what it learned is written here with the date. Old lines are never rewritten.'), log.length ? ul : h('p', '', 'Nothing learned yet.')];
   if (log.length > S.logMore) { const b = h('button', 'more', `Show ${Math.min(40, log.length - S.logMore)} more`); b.type = 'button'; b.addEventListener('click', () => { S.logMore += 40; openSheet('learn'); }); out.push(b); }
   return out;
+}
+/** A navigable atlas of the market cities and the independent paper strategy labs. */
+function worldsView() {
+  const L = S.L, H = S.model.hyp, wrap = h('div', 'worlds');
+  wrap.append(h('p', 'strong', 'Fly between market cities and the research outposts. Each market city holds the edges observed there. The outer ring tests ideas on later bets before it trusts them.'));
+  const pulse = h('div', 'world-pulse');
+  pulse.append(h('span', 'pulse-light'), h('span', '', S.demo ? 'DEMO DATA' : S.model.book.running === true ? 'BOT RUNNING' : S.model.book.running === false ? 'BOT PAUSED' : 'BOT STATUS UNKNOWN'), h('span', 'pulse-meta', `${L.districts.length} market cities · ${L.labs.length} research outposts`));
+  wrap.append(pulse, h('h3', '', 'Market cities'));
+  const grid = h('div', 'world-grid');
+  L.districts.forEach((d, i) => {
+    const candidates = d.list.filter(e => !e.small && e.ev != null).sort((a,b) => b.ev - a.ev);
+    const best = candidates[0], c = h('button', 'world-card');
+    c.type = 'button'; c.style.setProperty('--world-color', d.color);
+    const glyph = h('span', 'world-glyph', i === 0 ? '◆' : String(i).padStart(2,'0'));
+    const top = h('span', 'world-top'); top.append(glyph, h('span','world-count', `${d.count} edges`));
+    const name = h('strong','',d.name === 'Downtown' ? 'Strategy Core' : d.name);
+    const detail = h('small','',best ? `Strongest observed: ${best.label} · ${evf(best.ev)} per $1` : 'Collecting bets; no tested edge yet');
+    c.append(top,name,detail,h('span','world-action','OPEN CITY  ↗'));
+    c.addEventListener('click', () => {
+      if (best) selectEdge(best.id,true);
+      else if (d.list.length) selectEdge(d.list[0].id,true);
+      else { closeSheet(); if (S.scene) S.scene.setMode('map'); }
+    });
+    grid.append(c);
+  });
+  wrap.append(grid, h('h3', '', 'Research outposts'));
+  if (!H || !H.hyps.length) wrap.append(h('p','', 'No research ideas have been recorded yet. They appear when the next learning run publishes them.'));
+  else {
+    const labs = h('div','world-labs');
+    H.hyps.forEach((idea,i) => {
+      const b = h('button','world-lab'); b.type = 'button';
+      b.style.setProperty('--world-color',L.labs[i]?.color || '#7cf0ff');
+      b.append(h('span','lab-number',String(i+1).padStart(2,'0')), h('span','lab-description',idea.name),
+        h('span','lab-verdict',`${HYP_WORD[idea.word] || 'Collecting'} · ${idea.nLive || 0} later bets`));
+      b.addEventListener('click',() => selectEdge(`hyp:${idea.id}:live`,true)); labs.append(b);
+    });
+    wrap.append(labs);
+  }
+  wrap.append(h('p','world-note','Market slices overlap, so their bet counts and profits cannot be added together. Ideas are paper tests; no city changes the bot or places an order.'));
+  return [wrap];
 }
 function boardView() {
   const m = S.model;
@@ -231,7 +271,7 @@ function openSheet(view) {
   S.view = view;
   const hx = view === 'card' ? hypOf(S.model, S.sel) : null, e = view === 'card' && !hx ? S.model.byId.get(S.sel) : null;
   $('sheetTitle').textContent = view === 'card' ? (hx ? hx.h.name : e ? e.label : '') : TITLES[view];
-  kids($('sheetBody'), view === 'lab' ? labView() : view === 'learn' ? learnView() : view === 'board' ? boardView() : view === 'moves' ? movesView() : view === 'risk' ? riskView() : view === 'guide' ? guideView() : view === 'lessons' ? lessonsView(S.learned, () => openSheet('history')) : view === 'history' ? historyView(S) : cardView());
+  kids($('sheetBody'), view === 'worlds' ? worldsView() : view === 'lab' ? labView() : view === 'learn' ? learnView() : view === 'board' ? boardView() : view === 'moves' ? movesView() : view === 'risk' ? riskView() : view === 'guide' ? guideView() : view === 'lessons' ? lessonsView(S.learned, () => openSheet('history')) : view === 'history' ? historyView(S) : cardView());
   $('sheet').hidden = false; document.body.classList.add('sheeted');      // a sheet open: the pair and the ticker step aside so the sheet never covers the chips
   $('sheetBody').scrollTop = 0;
   document.querySelectorAll('#pills button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
@@ -312,6 +352,7 @@ async function startScene() {
   } catch (e) {
     S.error = 'scene: ' + ((e && e.message) || e);
     document.documentElement.dataset.noscene = '1';
+    openSheet('worlds'); // accessible map and data remain usable when WebGL is unavailable
     if (O) O.ready();
   }
 }

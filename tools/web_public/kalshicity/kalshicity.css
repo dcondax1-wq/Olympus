@@ -126,3 +126,30 @@ body.sheeted .pair, body.sheeted .ticker { display: none; }
 .find b { display: block; font: 700 12.5px/1.3 var(--oly-ui); color: var(--oly-text); margin-bottom: 3px; }
 .find.good { border-color: rgba(53, 240, 176, .4); } .find.bad { border-color: rgba(255, 77, 87, .4); } .find.warn { border-color: rgba(255, 154, 60, .4); }
 .find p { margin: 3px 0; }
+
+/* The Worlds atlas: each card is an entrance to a place in the existing 3D scene. */
+.worlds { padding-bottom: 5px; }
+.world-pulse { display:flex; align-items:center; gap:7px; padding:8px 10px; margin:8px 0 14px; border:1px solid rgba(46,242,208,.25); border-radius:10px; background:linear-gradient(95deg,rgba(46,242,208,.13),rgba(8,18,24,.5)); font:800 10px/1.3 var(--oly-display,sans-serif); letter-spacing:.08em; }
+.pulse-light { width:7px; height:7px; border-radius:50%; background:#ff9a3c; box-shadow:0 0 12px #ff9a3c; }
+.world-pulse .pulse-meta { margin-left:auto; font:600 10px/1.3 var(--oly-ui,sans-serif); letter-spacing:0; color:var(--oly-dim); text-align:right; }
+.world-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.world-card { position:relative; display:flex; flex-direction:column; align-items:stretch; min-height:146px; padding:10px; border-radius:14px; border:1px solid color-mix(in srgb,var(--world-color),transparent 58%); text-align:left; overflow:hidden;
+ background:radial-gradient(ellipse at 72% 0%,color-mix(in srgb,var(--world-color),transparent 75%),transparent 60%),linear-gradient(140deg,#142027,#071018 75%); box-shadow:inset 0 1px rgba(255,255,255,.1),0 12px 25px rgba(0,0,0,.25); }
+.world-card::before { content:''; position:absolute; right:-12px; top:41px; width:98px; height:60px; opacity:.28; transform:skewY(-16deg); background:repeating-linear-gradient(90deg,transparent 0 8px,var(--world-color) 9px 11px,transparent 12px 17px); clip-path:polygon(0 100%,0 42%,15% 42%,15% 18%,31% 18%,31% 68%,43% 68%,43% 0,57% 0,57% 55%,70% 55%,70% 28%,84% 28%,84% 70%,100% 70%,100% 100%); pointer-events:none; }
+.world-top { display:flex; justify-content:space-between; align-items:center; color:var(--world-color); font:800 11px/1 var(--oly-display,sans-serif); }
+.world-glyph { font-size:17px; }
+.world-count { color:#b8c6c8; font:600 10px/1 var(--oly-ui,sans-serif); }
+.world-card strong { position:relative; margin-top:11px; font:800 14px/1.1 var(--oly-display,sans-serif); letter-spacing:.04em; }
+.world-card small { position:relative; margin-top:6px; color:#b8c6c8; font-size:10px; line-height:1.3; }
+.world-action { position:relative; margin-top:auto; padding-top:10px; color:var(--world-color); font:800 10px/1 var(--oly-display,sans-serif); letter-spacing:.08em; }
+.world-labs { display:flex; flex-direction:column; gap:7px; }
+.world-lab { display:grid; grid-template-columns:28px minmax(0,1fr); gap:2px 7px; align-items:center; min-height:55px; padding:8px; border-radius:10px; border:1px solid color-mix(in srgb,var(--world-color),transparent 65%); background:linear-gradient(90deg,color-mix(in srgb,var(--world-color),transparent 86%),rgba(8,18,24,.85)); text-align:left; }
+.lab-number { grid-row:span 2; color:var(--world-color); font:800 17px/1 var(--oly-display,sans-serif); }
+.lab-description { overflow-wrap:anywhere; font-weight:700; font-size:12px; }
+.lab-verdict { color:var(--oly-dim); font-size:11px; }
+.sheet p.world-note { margin:14px 1px 0; line-height:1.4; }
+@media (max-width:350px) { .world-grid { grid-template-columns:1fr; } }
+@media (prefers-reduced-motion:no-preference) { .world-card:hover,.world-card:focus-visible { transform:translateY(-2px); box-shadow:0 15px 32px rgba(0,0,0,.4),0 0 16px color-mix(in srgb,var(--world-color),transparent 82%); } }
+
+html[data-noscene] .cams { display:none; }
+html[data-noscene] .sheet { max-height:calc(100vh - 300px); }
