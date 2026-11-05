@@ -241,8 +241,11 @@
   }
 
   const stateOf = (k) => {
-    const t = parseT(k.t), fresh = t && nowS() - t < STALE_S;
-    return k.running === false ? (/\bpaus/i.test(String(k.status == null ? '' : k.status)) ? ['warn', 'Paused'] : ['bad', 'Stopped']) : fresh ? ['ok', 'Running'] : ['warn', 'Not updating'];
+    const t = parseT(k.t), age = t == null ? Infinity : nowS() - t;
+    // An old snapshot cannot establish whether a bot is running, paused, or stopped now.
+    if (age < -300 || age >= STALE_S) return ['warn', 'Not updating'];
+    if (k.running === false) return /\bpaus/i.test(String(k.status == null ? '' : k.status)) ? ['warn', 'Paused'] : ['bad', 'Stopped'];
+    return k.running === true ? ['ok', 'Running'] : ['warn', 'Status unverified'];
   };
   const safe = (name, fn) => {
     try { return fn(); } catch (e) {
