@@ -99,6 +99,37 @@ addEventListener('hashchange', () => setView(location.hash.slice(1)));
 
 // ------------------------------------------------------------------ the data in
 /** A feed (or the demo) on screen. Unchanged JSON = nothing redrawn (open sheets, coins in flight stay). */
+
+// An honest, usable market board when WebGL fails. It reads exactly the same normalized feed as the 3D scene.
+function renderFallback(model) {
+  if (scene || !model) return;
+  const host = document.getElementById('nogl-list');
+  if (!host) return;
+  host.replaceChildren();
+  const items = model.open.slice().sort((a, b) => (a.closes ?? Infinity) - (b.closes ?? Infinity)).slice(0, 5);
+  const label = document.createElement('h2'); label.textContent = 'Open bets'; host.append(label);
+  if (!items.length) {
+    const empty = document.createElement('p'); empty.textContent = 'No open bets in this feed. The Bank, Fortune and Cash tabs still work below.'; host.append(empty);
+    return;
+  }
+  for (const p of items) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'nogl-market';
+    const title = document.createElement('strong'); title.textContent = p.title;
+    const sub = document.createElement('span');
+    sub.textContent = [p.side ? p.side.toUpperCase() : '', p.cost == null ? '' : 'Cost ' + usd(p.cost),
+      p.pnl == null ? '' : 'Change ' + usd(p.pnl, true)].filter(Boolean).join(' · ');
+    button.append(title, sub);
+    button.addEventListener('click', () => select(p.key));
+    host.append(button);
+  }
+  if (model.open.length > items.length) {
+    const more = document.createElement('p');
+    more.textContent = `Showing the next ${items.length} of ${model.open.length} open bets. Kalshi shows the full list.`;
+    host.append(more);
+  }
+}
+
 function show(raw, mode) {
   const key = JSON.stringify(raw);
   const same = key === state.raw;
@@ -111,6 +142,7 @@ function show(raw, mode) {
     state.model = m;
     state.colors = categoryColors(m.order);
     hud.render(m, state.colors);
+    renderFallback(m);
     if (scene) scene.setModel(m, state.colors);
     fortune.setModel(m);
     cash.setModel(m);
