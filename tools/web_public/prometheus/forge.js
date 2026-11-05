@@ -595,6 +595,7 @@ function setGen(g, step = false) {
   if (STATE.arena) STATE.arena.show(g, isStep);
   else renderNoGl(g);
   renderChips();
+  measureBars();
   if (STATE.panel === 'lineage' && !$('truth').hidden) openLineage();
 }
 
@@ -628,10 +629,18 @@ function tick(now) {
 
 function renderNoGl(g) {
   const F = STATE.forge, box = $('nogl');
+  const gen = F.gen(g), best = F.best(g), hud = F.hud(g), v = F.verdict();
+  const line = F.lineageUpTo(g).slice(-5), fire = heatRgb(F.heat(best.f));
+  const node = (c, cls = '') => `<button type="button" class="flat-node ${cls}${c.id === F.d.champion.id ? ' champion' : ''}" data-id="${c.id}" style="--node-fire:${heatRgb(F.heat(c.f))}" aria-label="Open creature ${c.id}, fitness ${FMT.num(c.f)}">#${c.id}</button>`;
+  box.style.setProperty('--flat-fire', fire);
   box.hidden = false;
-  box.innerHTML = `<p>3D is not available here. Generation ${g + 1}, fittest first:</p>`
-    + F.gen(g).slice(0, 8).map((c) => `<button type="button" data-id="${c.id}">#${c.id} · ${FMT.num(c.f)}</button>`).join('')
-    + '<button type="button" data-id="live">live</button>';
+  box.innerHTML = `<div class="flat-vault" aria-hidden="true"><i class="flat-core"></i></div>
+    <div class="flat-anvil" aria-hidden="true"><i class="flat-ingot"></i></div>
+    <div class="flat-summary"><span>Generation ${g + 1} of ${F.nGens} · read-only research</span>
+      <b>${v.liveBest ? 'Keep live LIT · no proven replacement' : 'Candidate found · owner review required'}</b>
+      <small>Leader #${best.id}: H1 ${FMT.usd(hud.h1pm)}/mo → H2 ${FMT.usd(hud.h2pm)}/mo · fitness ${FMT.num(best.f)}</small></div>
+    <div class="flat-lineage" role="list" aria-label="Champion lineage through this generation">${line.length ? line.map((c) => node(c, 'lineage ')).join('') : '<p class="flat-empty">The champion lineage has not started yet.</p>'}</div>
+    <div class="flat-pop" role="list" aria-label="Fittest creatures in this generation">${gen.slice(0, 4).map((c) => node(c)).join('')}<button type="button" class="flat-node live" data-id="live" aria-label="Open live LIT reference">LIVE</button></div>`;
   box.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => openCard(b.dataset.id === 'live' ? 'live' : Number(b.dataset.id))));
 }
 
@@ -648,7 +657,8 @@ function route() {
   else if (location.hash === '#hall') openHall();
 }
 
-// the bottom sheet sits between the top bar and the bottom bar: their heights, measured on resize only (never per frame)
+// The forge vista sits between the top and bottom bars. Re-measure on resize and
+// after a generation render because wrapped HUD copy can change height on phones.
 function measureBars() {
   const r = document.documentElement.style;
   r.setProperty('--hud-b', Math.round($('hud').getBoundingClientRect().bottom) + 'px');
