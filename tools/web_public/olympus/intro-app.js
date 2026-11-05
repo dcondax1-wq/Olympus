@@ -128,7 +128,11 @@
   }
   function onKey(e) {
     if (e.key !== 'Escape' && e.key !== 'Enter' && e.key !== ' ') return;
-    // The focused app is already underneath: do not activate its button with the skip key.
+    // The film is aria-hidden: a screen-reader or keyboard user may already be on an app control.
+    // Their Enter/Space is meant for that control, so end the film before its default action.
+    if (e.key !== 'Escape' && e.target && e.target !== d && e.target !== root && e.target !== d.body && e.target !== el) {
+      finish('skipped'); return;
+    }
     e.preventDefault(); e.stopPropagation(); skip(e);
   }
   function onVis() { if (d.visibilityState !== 'visible') finish('hidden'); }
