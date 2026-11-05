@@ -25,6 +25,8 @@
   var W = window, d = document, root = d.documentElement, O = W.OLYMPUS;
   if (!O || W.__olyAppIntro) return;
   var st = W.__olyAppIntro = { app: O.app || '', mode: 'none', state: 'idle', frames: 0, ms: 0, err: '', why: '', scene: '', len: 0 };
+  // Do not play over the kit's failed-load Retry UI.
+  if (O.state && O.state() === 'failed') { st.state = 'off'; st.why = 'app failed'; return; }
 
   // ------------------------------------------------------------------ the per-app flavour: [scene, tagline, first sound]
   var FLAVOUR = {
@@ -443,6 +445,7 @@
     raf = 0;
     if (done || skipping || !c) return;
     try {
+      if (O.state && O.state() === 'failed') { finish('app failed'); return; }
       var tn = now(), t = (tn - t0) / 1000, tt = tt0 + t * ttK, i, p, e, k, x, y, a;
       st.frames++;
       el.style.opacity = String(1 - sm(ramp(tt, 2.1, 2.6)));
