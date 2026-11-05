@@ -16,7 +16,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <!-- INBOX (OLYMPUS, 2026-11-04): inboxcore.js = the pure part (the items from every source, read / pin / mute); inbox.js = the page. It reads
      this phone's own keys (jarvis.bots.log.v1, argus.hist.v1, jarvis.vault.learned, jarvis.brief.v1, arena.v1) and the site's own files (bridge/status.json,
-     kalshicity/learning_log.json, each app's jarvis.json, live.json), plus the Kalshi feed's status the way the Kalshi page reads it. It keeps only
+     kalshicity/learning_log.json, each app's jarvis.json), plus the Kalshi feed's status the way the Kalshi page reads it. It keeps only
      'inbox.*' keys, caches the last fetch (opens offline) and never writes to anything it reads. The unread card is kept in 'inbox.card.v1'. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
@@ -47,6 +47,6 @@
   <section class="card" id="mutes" data-oly-fx="glassSpecular"><h2>Sources</h2><p class="hint">Mute a source to stop its items from counting. Nothing is deleted.</p><div class="chips" id="muteChips"></div></section>
   <p class="foot" id="foot">Read-only: the Inbox never changes the things it reads.</p>
 </main>
-<script type="module" src="inbox.js?v=i1"></script>
+<script type="module" src="inbox.js?v=i2"></script>
 </body>
 </html>

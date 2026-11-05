@@ -27,14 +27,14 @@ const lite = () => (O && O.lite ? O.lite() : false) || mq('(prefers-reduced-moti
 
 // ------------------------------------------------------------------------------------------------ gather
 async function gather() {
-  const names = ['bridge', 'learning', 'live'], urls = { bridge: '../bridge/status.json', learning: '../kalshicity/learning_log.json', live: '../live.json' };
+  const names = ['bridge', 'learning'], urls = { bridge: '../bridge/status.json', learning: '../kalshicity/learning_log.json' };
   const got = await Promise.all([...names.map((n) => getJSON(urls[n])), getJSON(KALSHI_RAW), ...CARD_APPS.map((a) => getJSON('../' + a + '/jarvis.json', 4000))]);
   const feeds = {}; let ok = 0;
   names.forEach((n, i) => { if (got[i]) { feeds[n] = got[i]; ok++; } else if (S.feeds[n]) feeds[n] = S.feeds[n]; });
   const cards = {};
-  CARD_APPS.forEach((a, i) => { const c = got[4 + i]; if (c && typeof c === 'object') { cards[a] = c; ok++; } else if (S.feeds.cards && S.feeds.cards[a]) cards[a] = S.feeds.cards[a]; });
+  CARD_APPS.forEach((a, i) => { const c = got[3 + i]; if (c && typeof c === 'object') { cards[a] = c; ok++; } else if (S.feeds.cards && S.feeds.cards[a]) cards[a] = S.feeds.cards[a]; });
   feeds.cards = cards;
-  const kj = got[3];
+  const kj = got[2];
   if (kj && typeof kj === 'object') { ok++; kalshiStatus(kj); }
   S.offline = ok === 0 && typeof navigator !== 'undefined' && navigator.onLine === false;
   S.feeds = feeds;
@@ -53,7 +53,7 @@ function sources(feeds) {
   const bots = jget('jarvis.bots.log.v1', null), old = jget('jarvis.bots.log', []);
   const ar = jget('arena.v1', null);
   return { bots: Array.isArray(bots) && bots.length ? bots : (Array.isArray(old) ? old : []), argus: jget('argus.hist.v1', {}), kalshiLog: (jget(K.KALSHI_KEY, { log: [] }).log) || [], learning: feeds.learning || null,
-    bridge: feeds.bridge || null, learned: jget('jarvis.vault.learned', []), brief: jget('jarvis.brief.v1', {}), arena: ar && Array.isArray(ar.events) ? ar.events : [], cards: feeds.cards || {}, live: feeds.live || null };
+    bridge: feeds.bridge || null, learned: jget('jarvis.vault.learned', []), brief: jget('jarvis.brief.v1', {}), arena: ar && Array.isArray(ar.events) ? ar.events : [], cards: feeds.cards || {}, live: null };
 }
 
 // ------------------------------------------------------------------------------------------------ draw

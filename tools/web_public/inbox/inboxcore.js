@@ -83,7 +83,7 @@ export function collect(S, now) {
   }
   const qn = num(isObj(b.counts) ? b.counts.question : null);
   if (qn && qn > 0 && !Object.keys(isObj(b.jobs) ? b.jobs : {}).length) add(item('bridge', 'qn:' + qn, secs(b.t), `${qn} ChatGPT question${qn === 1 ? '' : 's'} waiting for you`, { level: 'warn', ongoing: true }));
-  for (const c of arr(b.commits).filter(isObj).slice(0, 3)) add(item('bridge', 'commit:' + clean(c.sha, 12), dayT(c.date), pre('Delivered: ', c.subject, 120)));
+  // Git merge commits are repository bookkeeping, not a ChatGPT delivery. Only Bridge jobs marked done are Inbox items.
   // (e) what Jarvis learned (the Obsidian vault notes it saved) and the daily brief
   for (const l of arr(S.learned).filter(isObj).slice(0, 30)) add(item('mind', 'learn:' + l.t, secs(l.t), pre('Jarvis learned: ', l.text)));
   const br = isObj(S.brief) ? S.brief : {};

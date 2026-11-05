@@ -80,7 +80,7 @@ def part_b():
           { key: 'k3', bot: 'lit', text: 'token: ghp_abcdef123456 leaked', t: now - 10 }],
         argus: { open: { pc: { label: 'PC heartbeat', since: now - 7200 } }, reds: [{ id: 'nt', label: 'NinjaTrader feed', from: now - 90000, to: now - 86400 }] },
         kalshiLog: [{ t: now - 600, text: 'Kalshi bot: Paused' }], learning: { entries: [{ t: now - 4000, text: 'Learned: the 90-95c band loses' }] },
-        bridge: { t: now - 100, jobs: { j1: { title: 'Name the bots', status: 'question' }, j2: { title: 'Pine port', status: 'done' } }, counts: { question: 1 }, commits: [{ sha: 'abc1234', date: '2026-11-03', subject: 'Bridge sync' }] },
+        bridge: { t: now - 100, jobs: { j1: { title: 'Name the bots', status: 'question' }, j2: { title: 'Pine port', status: 'done' } }, counts: { question: 1 }, commits: [{ sha: 'abc1234', date: '2026-11-03', subject: 'Merge pull request #119 from branch' }] },
         learned: [{ t: now - 20000, text: 'You prefer London', note: 'x.md' }], brief: { day: '2026-11-04', shown: now - 3000 },
         arena: [{ id: 'e1', day: '2026-11-04', kind: 'labour', note: 'The Steady Hand' }, { id: 'e2', day: '2026-11-03', kind: 'boss', note: 'Boss beaten' }],
         cards: { forum: { name: 'Forum', t: now - 5 * 86400, stale_after: 86400, status: { label: 'Live' } }, labyrinth: { name: 'Labyrinth', t: now - 100, stale_after: 86400 }, demo: { name: 'Demo', t: 1, stale_after: 5, status: { label: 'Demo data' } } },
@@ -104,9 +104,9 @@ def part_b():
         return
     check("b. bot events: 'LIT: took a long trade', 'ATLAS: hit its daily loss limit'; an event that looks like a secret is dropped", r["bots"] == ["LIT: took a long trade", "ATLAS: hit its daily loss limit"], r["bots"])
     check("b. Argus: a red light that is still open (with how long) and an incident that was fixed", r["argus"][0] == "Still red: PC heartbeat, for 2 h" and "NinjaTrader feed was red for 1 h and is fixed" in r["argus"], r["argus"])
-    check("b. Kalshi: its learning log and the bot's status change; Bridge: a question, a finished job, a delivery; Jarvis learned + the brief; Arena: achievement + boss",
+    check("b. Kalshi: its learning log and the bot's status change; Bridge: a question and a finished job but no merge-commit noise; Jarvis learned + the brief; Arena: achievement + boss",
           "Kalshi learned: Learned: the 90-95c band loses" in r["kalshi"] and "Kalshi bot: Paused" in r["kalshi"] and "ChatGPT has a question for you: Name the bots" in r["bridge"] and "ChatGPT finished: Pine port" in r["bridge"]
-          and "Delivered: Bridge sync" in r["bridge"] and "Jarvis learned: You prefer London" in r["mind"] and "Your morning briefing for 2026-11-04 is ready" in r["mind"]
+          and not any(x.startswith("Delivered:") for x in r["bridge"]) and "Jarvis learned: You prefer London" in r["mind"] and "Your morning briefing for 2026-11-04 is ready" in r["mind"]
           and "Achievement: The Steady Hand" in r["arena"] and "Boss result: Boss beaten" in r["arena"], r)
     check("b. system: a stale app ('Forum has not refreshed for 5 d (it should every 1 d)'), the PC's red line; a fresh app and a demo card say nothing",
           r["system"] == ["PC Disk: Only 3 GB free", "Forum has not refreshed for 5 d (it should every 1 d)"] or sorted(r["system"]) == sorted(["PC Disk: Only 3 GB free", "Forum has not refreshed for 5 d (it should every 1 d)"]), r["system"])
