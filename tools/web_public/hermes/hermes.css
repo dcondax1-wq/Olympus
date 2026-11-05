@@ -4,7 +4,7 @@
 @font-face { font-family: "Orbitron"; src: url("../jarvis/orbitron.woff2") format("woff2"); font-weight: 500 800; font-display: swap; }
 
 :root {
-  --bg: #12081f; --text: #ffffff; --text2: rgba(255, 255, 255, .74); --line: rgba(255, 255, 255, .16);
+  --bg: #12081f; --text: #ffffff; --text2: rgba(255, 255, 255, .86); --line: rgba(255, 255, 255, .16);
   --up: #5ef2a8; --down: #ff7a8a; --gold: #f7c948; --flat: #f4f4f6;
   --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px);
   --gut: 16px; --top: calc(var(--st) + 100px); --bot: calc(var(--sb) + 160px);
@@ -18,10 +18,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
 body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 #bg, #fx { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #bg { background: var(--bg); }
-#fx { pointer-events: none; z-index: 2; }
+#fx { pointer-events: none; z-index: 2; -webkit-mask-image: radial-gradient(ellipse 68% 48% at 50% 45%, transparent 0%, rgba(0,0,0,.2) 54%, #000 100%); mask-image: radial-gradient(ellipse 68% 48% at 50% 45%, transparent 0%, rgba(0,0,0,.2) 54%, #000 100%); }
 /* a soft scrim under the text: the background stays loud at the edges, calm where you read */
 .stage::before { content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, rgba(0, 0, 0, .38) 0%, rgba(0, 0, 0, .18) 30%, rgba(0, 0, 0, .22) 70%, rgba(0, 0, 0, .5) 100%); }
+  background: radial-gradient(ellipse 85% 55% at 50% 45%, rgba(5, 6, 20, .78), rgba(5, 6, 20, .48) 58%, transparent 100%), linear-gradient(180deg, rgba(0, 0, 0, .38) 0%, rgba(0, 0, 0, .18) 30%, rgba(0, 0, 0, .22) 70%, rgba(0, 0, 0, .5) 100%); }
 
 /* ---------------------------------------------------------------- top: progress, brand, periods */
 .top { position: fixed; z-index: 5; top: 0; left: 0; right: 0; padding: calc(var(--st) + 8px) calc(var(--sr) + 12px) 0 calc(var(--sl) + 12px); }
@@ -30,7 +30,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .prog span { flex: 1; height: 3px; background: rgba(255, 255, 255, .22); border-radius: 2px; overflow: hidden; }
 .prog i { display: block; height: 100%; background: linear-gradient(90deg, #fff, var(--gold)); transform-origin: 0 50%; transform: scaleX(0); box-shadow: 0 0 8px rgba(255, 255, 255, .6); }
 .bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; min-height: 48px; padding: 2px 2px 2px 14px; border-radius: 999px;
-  background: rgba(8, 4, 16, .42); border: 1px solid var(--line); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%);
+  background: rgba(8, 4, 16, .78); border: 1px solid var(--line); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%);
   box-shadow: 0 10px 30px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .06); }
 .brand { display: inline-flex; align-items: center; gap: 6px; font: 800 13px/1 var(--num); letter-spacing: .22em; }
 @media (max-width: 400px) { .brand { font-size: 0; gap: 0; } .bar { padding-left: 10px; gap: 6px; } }   /* SE / mini: the wordmark gives way, the logo stays: the periods fit */
@@ -65,7 +65,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 @keyframes pulse { 50% { opacity: .45; transform: scale(.97); } }
 
 .kicker { margin: 0 0 10px; font: 700 12px/1.3 var(--font); letter-spacing: .14em; text-transform: uppercase; color: var(--text2); }
-.title { margin: 0 0 14px; font: 900 clamp(32px, 9.6vw, 50px)/1.02 var(--font); letter-spacing: -.025em; overflow-wrap: anywhere; }
+.title { margin: 0 0 14px; text-shadow: 0 2px 18px rgba(0,0,0,.8); font: 900 clamp(32px, 9.6vw, 50px)/1.02 var(--font); letter-spacing: -.025em; overflow-wrap: anywhere; }
 .title.goal { font-size: clamp(36px, 11vw, 58px); }
 /* gradient words: the gradient sits on each word (a word in its own 3D slot is not clipped by its title's background) */
 .title.goal .w > span { background: linear-gradient(100deg, #fff 10%, #ffd1f4 50%, #f7c948 90%); -webkit-background-clip: text; background-clip: text; color: transparent; }
