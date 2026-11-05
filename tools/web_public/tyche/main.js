@@ -119,7 +119,7 @@ function renderFallback(model) {
     const title = document.createElement('strong'); title.textContent = p.title;
     const sub = document.createElement('span');
     sub.textContent = [p.side ? p.side.toUpperCase() : '', p.cost == null ? '' : 'Cost ' + usd(p.cost),
-      p.pnl == null ? '' : 'Change ' + usd(p.pnl, true)].filter(Boolean).join(' · ');
+      p.pnl == null ? '' : 'Open P&L ' + usd(p.pnl, true)].filter(Boolean).join(' · ');
     button.append(title, sub);
     button.addEventListener('click', () => select(p.key));
     host.append(button);
