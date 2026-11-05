@@ -122,7 +122,11 @@
       tick();
     }, 70);
   }
-  function onKey(e) { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') skip(e); }
+  function onKey(e) {
+    if (e.key !== 'Escape' && e.key !== 'Enter' && e.key !== ' ') return;
+    // The focused app is already underneath: do not activate its button with the skip key.
+    e.preventDefault(); e.stopPropagation(); skip(e);
+  }
   function onVis() { if (d.visibilityState !== 'visible') finish('hidden'); }
   function up() { if (holdUp) setTimeout(function () { holdUp = false; }, 60); }
   function onSize() { try { fit(); } catch (e) { fail(e); } }
