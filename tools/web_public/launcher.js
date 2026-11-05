@@ -20,6 +20,9 @@
   var PUBLIC = 'https://demetrades2000-coder.github.io/nq-dashboard/';
   var RECENT_KEY = 'oly.launcher.recent', STATUS_KEY = 'oly.launcher.status', RECENT_MAX = 4, STATUS_TTL = 5 * 60 * 1000, STALE_S = 30 * 60, FETCH_MS = 5000, PARALLEL = 4;
   var GROUPS = [['trading', 'Trading'], ['life', 'Life'], ['money', 'Money']];
+  // Every app keeps its registry glyph and receives a small visual signature. These names are presentation only:
+  // routes, status, order and the generated app list remain the existing sources of truth.
+  var GLYPH_MOTION = { oracle:'scan', odeon:'curtain', fates:'thread', datacity:'rise', tree:'leaf', prometheus:'flame', pantheon:'lightning', ares:'shield', forum:'banner', labyrinth:'maze', argus:'blink', nemesis:'scale', chronos:'tick', hephaestus:'forge', cities:'flight', kalshicity:'flow', journal:'ripple', ledger:'vault', inbox:'letter', settings:'control', bridge:'portal', planner:'calendar', mind:'neuron', arena:'laurel', athena:'owl', kalshi:'market', tyche:'coin', hermes:'wing', plutus:'treasure', atlas:'cartography', observatory:'lens' };
   var isPC = false, base = '';                                  // decided at mount (the PC dashboard's own top bar is there, or port 8766)
   var st = { open: false, q: '', apps: [], tiles: {}, status: {}, fetching: false, lastFetch: 0, built: false };
   var els = {}, lastFocus = null;
@@ -117,9 +120,14 @@
     '.oly-lbtn.float{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));z-index:8000;background:rgba(10,12,22,.82)}',
     '.oly-l{position:fixed;left:0;top:0;right:0;bottom:0;z-index:9000;display:flex;align-items:flex-end;justify-content:center;font-family:var(--font,Inter,system-ui,sans-serif)}',
     '.oly-l[hidden]{display:none}.oly-l .oly-bd{position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(3,4,10,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}',
-    '.oly-l .oly-pn{position:relative;width:100%;max-width:640px;max-height:90vh;max-height:90dvh;display:flex;flex-direction:column;border-radius:22px 22px 0 0;overflow:hidden;color:#eef1f8;',
+    '.oly-l .oly-pn{position:relative;isolation:isolate;width:100%;max-width:640px;max-height:90vh;max-height:90dvh;display:flex;flex-direction:column;border-radius:22px 22px 0 0;overflow:hidden;color:#eef1f8;',
     'background:linear-gradient(165deg,rgba(26,18,52,.94),rgba(9,11,22,.96) 55%);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgba(168,85,247,.38);border-bottom:0;',
     'box-shadow:0 -18px 60px rgba(0,0,0,.55),0 0 50px rgba(168,85,247,.18),inset 0 1px 0 rgba(255,255,255,.08)}',
+    '.oly-l .oly-pn::before,.oly-l .oly-pn::after{content:"";position:absolute;inset:-12%;z-index:-1;pointer-events:none;background-repeat:repeat}',
+    '.oly-l .oly-pn::before{opacity:.62;background-image:radial-gradient(circle,#fff 0 1px,transparent 1.4px),radial-gradient(circle,#a98cff 0 1.2px,transparent 1.7px),radial-gradient(circle,#6be7ff 0 .8px,transparent 1.3px);background-size:83px 79px,131px 127px,57px 61px;background-position:11px 17px,42px 9px,3px 33px;filter:drop-shadow(0 0 4px rgba(184,160,255,.7))}',
+    '.oly-l .oly-pn::after{inset:0;opacity:.7;background:radial-gradient(ellipse at 18% 24%,rgba(91,51,190,.25),transparent 28%),radial-gradient(ellipse at 82% 46%,rgba(34,190,230,.16),transparent 32%),linear-gradient(140deg,transparent 20%,rgba(169,128,255,.07) 48%,transparent 72%)}',
+    '.oly-l:not(.calm) .oly-pn::before{animation:olyStars 18s linear infinite}.oly-l:not(.calm) .oly-pn::after{animation:olyNebula 9s ease-in-out infinite alternate}@keyframes olyStars{to{transform:translate3d(-34px,28px,0)}}@keyframes olyNebula{to{opacity:.9;transform:scale(1.05) translate3d(1.5%,-1%,0)}}',
+    '.oly-l .oly-hd,.oly-l .oly-sc{position:relative;z-index:1}',
     '.oly-l.pc{align-items:center}.oly-l.pc .oly-pn{border-radius:22px;border-bottom:1px solid rgba(168,85,247,.38);max-height:84vh;max-width:760px}',
     '.oly-l:not(.calm) .oly-pn{animation:olyUp .34s cubic-bezier(.2,.8,.2,1)}.oly-l:not(.calm) .oly-bd{animation:olyFade .25s ease}',
     '@keyframes olyUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}@keyframes olyFade{from{opacity:0}to{opacity:1}}',
@@ -144,7 +152,18 @@
     'background:linear-gradient(160deg,rgba(var(--cr),.13),rgba(255,255,255,.035));border:1px solid rgba(var(--cr),.34);transition:transform .16s,box-shadow .2s,border-color .2s}',
     '.oly-l .oly-tile:hover,.oly-l .oly-tile:focus-visible{border-color:var(--c);box-shadow:0 0 22px rgba(var(--cr),.35);transform:translateY(-1px);outline:0}.oly-l .oly-tile:active{transform:scale(.98)}',
     '.oly-l:not(.calm) .oly-tile{animation:olyUp .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*18ms)}',
-    '.oly-l .oly-tile .oly-g{flex:none;width:40px;height:40px;font:700 18px/1 var(--display,Oxanium,sans-serif)}',
+    '.oly-l .oly-tile .oly-g{position:relative;flex:none;width:40px;height:40px;font:700 18px/1 var(--display,Oxanium,sans-serif);transform-origin:50% 50%;will-change:transform,filter}',
+    '.oly-l .oly-tile .oly-g::after,.oly-l .oly-chip i::after{content:"";position:absolute;inset:-5px;border:1px solid rgba(var(--cr),.28);border-radius:inherit;opacity:.55}',
+    '.oly-l:not(.calm) [data-motion="scan"] .oly-g,.oly-l:not(.calm) [data-motion="blink"] .oly-g,.oly-l:not(.calm) [data-motion="owl"] .oly-g,.oly-l:not(.calm) [data-motion="lens"] .oly-g{animation:olyGlyphScan 2.8s ease-in-out infinite var(--phase)}',
+    '.oly-l:not(.calm) [data-motion="curtain"] .oly-g,.oly-l:not(.calm) [data-motion="banner"] .oly-g,.oly-l:not(.calm) [data-motion="wing"] .oly-g{animation:olyGlyphSway 3.4s ease-in-out infinite alternate var(--phase)}',
+    '.oly-l:not(.calm) [data-motion="thread"] .oly-g,.oly-l:not(.calm) [data-motion="flow"] .oly-g,.oly-l:not(.calm) [data-motion="ripple"] .oly-g,.oly-l:not(.calm) [data-motion="neuron"] .oly-g{animation:olyGlyphPulse 2.7s ease-in-out infinite var(--phase)}',
+    '.oly-l:not(.calm) [data-motion="rise"] .oly-g,.oly-l:not(.calm) [data-motion="flame"] .oly-g,.oly-l:not(.calm) [data-motion="forge"] .oly-g,.oly-l:not(.calm) [data-motion="treasure"] .oly-g{animation:olyGlyphRise 3.1s ease-in-out infinite var(--phase)}',
+    '.oly-l:not(.calm) [data-motion="leaf"] .oly-g,.oly-l:not(.calm) [data-motion="flight"] .oly-g,.oly-l:not(.calm) [data-motion="laurel"] .oly-g{animation:olyGlyphFloat 3.8s ease-in-out infinite alternate var(--phase)}',
+    '.oly-l:not(.calm) [data-motion="lightning"] .oly-g,.oly-l:not(.calm) [data-motion="shield"] .oly-g,.oly-l:not(.calm) [data-motion="market"] .oly-g{animation:olyGlyphCharge 3s ease-in-out infinite var(--phase)}',
+    '.oly-l:not(.calm) [data-motion="scale"] .oly-g,.oly-l:not(.calm) [data-motion="tick"] .oly-g,.oly-l:not(.calm) [data-motion="coin"] .oly-g,.oly-l:not(.calm) [data-motion="control"] .oly-g{animation:olyGlyphTurn 5.2s ease-in-out infinite var(--phase)}',
+    '.oly-l:not(.calm) [data-motion="maze"] .oly-g,.oly-l:not(.calm) [data-motion="vault"] .oly-g,.oly-l:not(.calm) [data-motion="letter"] .oly-g,.oly-l:not(.calm) [data-motion="portal"] .oly-g,.oly-l:not(.calm) [data-motion="calendar"] .oly-g,.oly-l:not(.calm) [data-motion="cartography"] .oly-g{animation:olyGlyphGate 3.6s ease-in-out infinite var(--phase)}',
+    '@keyframes olyGlyphScan{0%,100%{filter:drop-shadow(0 0 4px var(--c));transform:scale(.96)}50%{filter:drop-shadow(0 0 13px var(--c));transform:scale(1.08)}}@keyframes olyGlyphSway{to{transform:perspective(70px) rotateY(14deg) rotate(-3deg)}}@keyframes olyGlyphPulse{50%{transform:scale(1.1);box-shadow:0 0 22px rgba(var(--cr),.62)}}@keyframes olyGlyphRise{0%,100%{transform:translateY(2px)}50%{transform:translateY(-3px) scale(1.06);filter:drop-shadow(0 4px 9px var(--c))}}',
+    '@keyframes olyGlyphFloat{to{transform:translate3d(2px,-3px,0) rotate(4deg)}}@keyframes olyGlyphCharge{0%,72%,100%{filter:drop-shadow(0 0 3px var(--c))}76%{filter:drop-shadow(0 0 15px #fff);transform:scale(1.1)}80%{transform:scale(.96)}}@keyframes olyGlyphTurn{50%{transform:rotate(12deg) scale(1.05)}}@keyframes olyGlyphGate{50%{transform:perspective(80px) rotateY(-16deg) scale(1.04);box-shadow:0 0 18px rgba(var(--cr),.55)}}',
     '.oly-l .oly-tile .oly-tx{min-width:0;display:flex;flex-direction:column;gap:2px}.oly-l .oly-tile b{font:700 14px/1.15 var(--font,Inter,sans-serif);overflow-wrap:anywhere}',
     '.oly-l .oly-tile small{font-size:11.5px;line-height:1.25;color:#a9b1c3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}',
     '.oly-dot{position:absolute;top:9px;right:9px;width:9px;height:9px;border-radius:50%;background:transparent;border:1px solid rgba(255,255,255,.25)}',
@@ -192,7 +211,8 @@
 
   function tile(a, i, chip) {
     var t = el('a', chip ? 'oly-chip' : 'oly-tile'); t.href = url(a.path); t.setAttribute('data-app', a.id);
-    t.style.setProperty('--c', a.colour); t.style.setProperty('--cr', rgb(a.colour)); t.style.setProperty('--i', String(i));
+    t.style.setProperty('--c', a.colour); t.style.setProperty('--cr', rgb(a.colour)); t.style.setProperty('--i', String(i)); t.style.setProperty('--phase', (-((i * 37) % 29) / 10) + 's');
+    t.setAttribute('data-motion', GLYPH_MOTION[a.id] || 'portal');
     if (isPC) { t.target = '_blank'; t.rel = 'noopener'; }
     var g = el(chip ? 'i' : 'span', chip ? '' : 'oly-g', a.glyph); g.setAttribute('aria-hidden', 'true');
     if (chip) { t.appendChild(g); t.appendChild(d.createTextNode(a.name)); }
