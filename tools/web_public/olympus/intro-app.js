@@ -244,19 +244,54 @@
       for (i = 0; i < s.n.length; i++) { f = lit(s.n[i]); if (f > 0) { glow(s.n[i][0] * VW, s.n[i][1] * VH, 14 + 8 * f, COL, 0.55 * f * a); c.fillStyle = rgba(WHITE, 0.9 * f * a); c.fillRect(s.n[i][0] * VW - 1.5, s.n[i][1] * VH - 1.5, 3, 3); } }
     }
   };
-  SC.skyline = {                                                // Data City: towers rise, windows light up
-    init: function () { var s = this, x = -10; s.b = []; while (x < VW) { var w = 18 + rnd() * 30; s.b.push([x, w, VH * (0.1 + rnd() * 0.28), 0.1 + rnd() * 0.8, rnd()]); x += w - 2; } },
+  SC.skyline = {                                                // Cities: a camera flight through a layered, perspective city
+    init: function () {
+      var s = this, row, side, i;
+      s.b = [];
+      for (row = 0; row < 5; row++) for (side = -1; side <= 1; side += 2) for (i = 0; i < 3; i++) {
+        s.b.push({ z: 0.55 + row * 0.55 + i * 0.12, side: side, lane: 0.55 + i * 0.5,
+          w: 30 + rnd() * 28, h: 85 + rnd() * 155, lit: rnd(), roof: rnd() });
+      }
+    },
     draw: function (t, a) {
-      var s = this, i, b, h, y, g, wx, wy;
-      for (i = 0; i < s.b.length; i++) {
-        b = s.b[i]; h = b[2] * ease(ramp(t, b[3], b[3] + 0.9)); if (h < 2) continue; y = VH - h;
-        g = c.createLinearGradient(0, y, 0, VH); g.addColorStop(0, rgba(COL, 0.34 * a)); g.addColorStop(1, rgba([6, 8, 20], 0.9 * a));
-        c.fillStyle = g; c.fillRect(b[0], y, b[1], h);
-        c.fillStyle = rgba(mixc(COL, WHITE, 0.4), 0.9 * a); c.fillRect(b[0], y, b[1], 1.5);
-        for (wy = y + 8; wy < VH - 4; wy += 8) for (wx = b[0] + 4; wx < b[0] + b[1] - 3; wx += 7) {
-          if (((wx * 7 + wy * 13 + i * 3) % 5) < 2 && Math.sin(t * 3 + wx + wy) > -0.2) { c.fillStyle = rgba(mixc(COL, WHITE, 0.6), 0.75 * a * ramp(t, b[3] + 0.5, b[3] + 0.9)); c.fillRect(wx, wy, 2.4, 3); }
+      var s = this, i, b, z, sc, horizon = VH * 0.49, by, x, w, h, cap, shift, face, roof, lane, wx, wy, alpha;
+      var reveal = ease(ramp(t, 0.05, 0.85)), travel = Math.max(0, t - 0.15) * 0.16;
+      // A receding road and converging light rails give the city a readable vanishing point.
+      c.fillStyle = rgba(COL, 0.08 * a * reveal);
+      c.beginPath(); c.moveTo(cx, horizon); c.lineTo(VW * 0.68, VH); c.lineTo(VW * 0.32, VH); c.closePath(); c.fill();
+      c.strokeStyle = rgba(mixc(COL, WHITE, 0.55), 0.34 * a * reveal); c.lineWidth = 1.5;
+      c.beginPath(); c.moveTo(cx, horizon); c.lineTo(VW * 0.32, VH); c.moveTo(cx, horizon); c.lineTo(VW * 0.68, VH); c.stroke();
+      // Far towers first. Their roof planes and side faces move at different speeds as the camera advances.
+      for (i = s.b.length - 1; i >= 0; i--) {
+        b = s.b[i]; z = b.z - travel; if (z < 0.25) z += 2.75;
+        sc = 1 / (z + 0.55); by = horizon + 245 * sc;
+        lane = b.side * (118 + b.lane * 75);
+        x = cx + lane * sc; w = b.w * sc; h = b.h * sc * ease(ramp(t, 0.08 + b.z * 0.08, 0.72 + b.z * 0.08));
+        if (h < 2 || x + w < -80 || x - w > VW + 80) continue;
+        shift = b.side * 10 * sc; cap = Math.max(3, 9 * sc);
+        alpha = a * reveal * Math.min(1, 0.34 + sc);
+        face = mixc([8, 13, 29], COL, 0.18 + b.lit * 0.12);
+        c.fillStyle = rgba(face, 0.88 * alpha); c.fillRect(x - w / 2, by - h, w, h);
+        c.fillStyle = rgba(mixc(face, COL, 0.45), 0.75 * alpha);
+        c.beginPath(); c.moveTo(x + (b.side < 0 ? -w / 2 : w / 2), by - h);
+        c.lineTo(x + (b.side < 0 ? -w / 2 : w / 2) + shift, by - h - cap);
+        c.lineTo(x + (b.side < 0 ? -w / 2 : w / 2) + shift, by - cap);
+        c.lineTo(x + (b.side < 0 ? -w / 2 : w / 2), by); c.closePath(); c.fill();
+        roof = mixc(COL, WHITE, 0.5);
+        c.fillStyle = rgba(roof, 0.66 * alpha);
+        c.beginPath(); c.moveTo(x - w / 2, by - h); c.lineTo(x - w / 2 + shift, by - h - cap);
+        c.lineTo(x + w / 2 + shift, by - h - cap); c.lineTo(x + w / 2, by - h); c.closePath(); c.fill();
+        for (wy = by - h + 8 * sc; wy < by - 4 * sc; wy += Math.max(5, 12 * sc)) {
+          for (wx = x - w / 2 + 5 * sc; wx < x + w / 2 - 2 * sc; wx += Math.max(5, 10 * sc)) {
+            if (((Math.floor(wx * 3 + wy * 7 + i * 19)) % 5 + 5) % 5 < 2) {
+              c.fillStyle = rgba(mixc(COL, WHITE, 0.65), 0.68 * alpha * ramp(t, 0.55, 1.3));
+              c.fillRect(wx, wy, Math.max(1, 2.2 * sc), Math.max(1, 3 * sc));
+            }
+          }
         }
       }
+      // The last glint arrives just as the city name resolves.
+      glow(cx, horizon, VW * 0.42, COL, 0.23 * a * sm(ramp(t, 0.55, 1.3)));
     }
   };
   SC.torches = {                                                // Arena: two torches, a crowd that roars
