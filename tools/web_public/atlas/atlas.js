@@ -32,11 +32,16 @@
       const purpose = document.createElement('p'); purpose.textContent = a.purpose || 'Open dashboard';
       body.append(group,name,purpose);
       const go = document.createElement('a'); go.className = 'go'; go.href = link(a); go.setAttribute('aria-label','Open ' + a.name); go.addEventListener('click', () => { saved.recent = [a.id, ...saved.recent.filter((id) => id !== a.id)].slice(0,5); store(); });
-      const star = document.createElement('button'); star.type = 'button'; star.className = 'star'; star.textContent = saved.stars.includes(a.id) ? '★' : '☆'; star.setAttribute('aria-pressed',String(saved.stars.includes(a.id))); star.setAttribute('aria-label',(saved.stars.includes(a.id) ? 'Remove ' : 'Favorite ') + a.name + (saved.stars.includes(a.id) ? ' from favorites' : ''));
-      star.addEventListener('click', () => { saved.stars = saved.stars.includes(a.id) ? saved.stars.filter((id) => id !== a.id) : [...saved.stars,a.id]; store(); render(); });
+      const star = document.createElement('button'); star.type = 'button'; star.className = 'star'; star.dataset.id = a.id; star.textContent = saved.stars.includes(a.id) ? '★' : '☆'; star.setAttribute('aria-pressed',String(saved.stars.includes(a.id))); star.setAttribute('aria-label',(saved.stars.includes(a.id) ? 'Remove ' : 'Favorite ') + a.name + (saved.stars.includes(a.id) ? ' from favorites' : ''));
+      star.addEventListener('click', () => {
+        saved.stars = saved.stars.includes(a.id) ? saved.stars.filter((id) => id !== a.id) : [...saved.stars,a.id]; store(); render();
+        // render replaces the button; return keyboard focus to the same action, or the Favorites filter if that card disappeared.
+        const next = [...document.querySelectorAll('.star')].find((b) => b.dataset.id === a.id) || document.querySelector('[data-filter="favorites"]');
+        if (next) next.focus({ preventScroll: true });
+      });
       card.append(sigil,body,go,star); host.append(card);
     }
-    $('#count').textContent = shown.length + ' destinations'; $('#empty').hidden = shown.length > 0;
+    $('#count').textContent = rows.length ? shown.length + ' destinations' : shown.length + ' destinations · limited map (catalog unavailable)'; $('#empty').hidden = shown.length > 0;
     const recent = $('#recent'); recent.replaceChildren(); recent.hidden = !saved.recent.length || !!q || filter !== 'all';
     if (!recent.hidden) {
       const label = document.createElement('span'); label.textContent = 'RECENT  '; recent.append(label);
