@@ -49,7 +49,8 @@
       if (!data || typeof data !== 'object') throw new Error('The source did not return an object');
       const t = numericTime(data);
       const demo = data.demo === true || data.mode === 'demo';
-      const hash = fingerprint(data);
+      // The status card's checked_t and age_h change on every publish; compare its underlying research snapshot instead.
+      const hash = fingerprint(source.id === 'datacity' && data.cronos && data.cronos.orig ? data.cronos.orig : data);
       const old = previous(source.id);
       const ageHours = t ? Math.max(0, (now() - t) / 3600000) : null;
       // Static sources without a timestamp are not called stale.
