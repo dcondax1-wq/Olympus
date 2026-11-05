@@ -55,6 +55,7 @@ try {
 } catch (e) {
   console.warn('tyche: 3D unavailable', e && e.message);
   document.getElementById('nogl').hidden = false;
+  document.body.classList.add('no-webgl');
   O?.ready();                                  // the numbers above still update: the page is up
 }
 O?.mode(state.quality === 'low');
