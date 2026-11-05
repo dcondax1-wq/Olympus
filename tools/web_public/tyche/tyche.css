@@ -131,7 +131,19 @@ h1 { margin: 0; font: 700 16px Orbitron, sans-serif; letter-spacing: .26em; colo
 .lb.tower b { display: block; font: 700 11px Orbitron, sans-serif; }
 .lb.tower.win b { color: var(--mint); } .lb.tower.loss b { color: var(--rose); }
 
-.nogl { position: fixed; inset: 45% 16px auto; text-align: center; color: var(--dim); }
+.nogl { position: fixed; z-index: 2; left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
+  top: 36%; bottom: 27%; overflow: auto; padding: 10px 12px; border: 1px solid rgba(232,190,116,.25);
+  border-radius: 18px; background: rgba(13,11,19,.94); color: #f0e5cf; box-shadow: 0 16px 44px rgba(0,0,0,.35); }
+.nogl-note { margin: 0 0 8px; color: #c9bdac; font-size: 12px; }
+.nogl-list h2 { margin: 0 0 7px; font: 700 14px Rajdhani,sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.nogl-list p { color: #c9bdac; font-size: 12px; line-height: 1.4; }
+.nogl-market { display: flex; flex-direction: column; align-items: start; justify-content: center; gap: 3px;
+  width: 100%; min-height: 48px; margin: 0 0 7px; padding: 8px 10px; text-align: left; border: 1px solid rgba(255,207,90,.22);
+  border-radius: 10px; background: #201b27; color: #fff2dc; cursor: pointer; }
+.nogl-market strong { font-size: 13px; line-height: 1.25; }
+.nogl-market span { font-size: 11px; color: #c9bdac; }
+.nogl-market:focus-visible { outline: 2px solid #ffcf5a; outline-offset: 2px; }
+@media (orientation: landscape) and (max-height: 500px) { .nogl { left: 320px; top: 10%; bottom: 10%; } }
 @keyframes blink { 50% { opacity: .35; } }
 
 /* ---------------------------------------------------------------- landscape on a phone: one column on the left */
