@@ -5,6 +5,7 @@ import { createRenderer } from '../olympus/render.js';
 import { Market, Y_MAX } from './layers.js';
 import { Arena } from './arena.js';
 import { Temple } from './temple.js';
+import { Polis } from './polis.js?v=oracle-night-20261105-4';
 import { Sky, weatherOf, fitPoints } from './sky.js';
 import { newSweeps } from './data.js';
 
@@ -31,7 +32,7 @@ export class Scene {
     this.reduced = reduced;
     this.quality = quality;
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x02030a, 0.0085);
+    this.scene.fog = new THREE.FogExp2(0x02030a, 0.0046);
     this.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 800);
     // the OLYMPUS render core (docs/OLYMPUS_RENDER.md): ACES + sRGB, the environment light, bloom, 4x MSAA on HD, FXAA on LITE. 'display'
     // space: the glow shaders keep the colours they were tuned in. The pixel size comes from resize() (the band logic below).
@@ -45,6 +46,7 @@ export class Scene {
     this.map = { center: null, half: 60, y: (p) => ((p - this.map.center) / this.map.half) * Y_MAX };
     this.sky = new Sky(THREE, this.scene, { quality, reduced });
     this.arena = new Arena(THREE, this.scene, { quality, reduced });
+    try { this.polis = new Polis(THREE, this.scene, { quality, reduced }); } catch (_) { this.polis = null; }
     try { this.temple = new Temple(THREE, this.scene, { quality, reduced }); } catch (e) { this.temple = null; }   // braziers, incense, fog, shafts: optional
     this.market = new Market(THREE, this.scene, { quality, reduced });
     this.fitPts = fitPoints(THREE);
@@ -62,9 +64,18 @@ export class Scene {
     this.quality = q;
     this.rc.setQuality(this.rc.forced || (window.OLYMPUS && window.OLYMPUS.fx() === 'off' ? 'off' : this.rc.software ? 'low' : q === 'low' ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
     this.arena.setQuality(q);
+    this.syncCityQuality();
     if (this.temple) this.temple.setQuality(q);
     if (this.sky.lite !== (q === 'low')) { this.sky.setQuality(q); this.market.setQuality(q); }
     this.resize();
+  }
+
+  // The shared render kit can change its tier outside Oracle's HD/LITE button
+  // (including global 3D Off and software rendering). Keep the skyline's draw
+  // count and conduits in the effective tier rather than the button's label.
+  syncCityQuality() {
+    const tier = this.rc.quality();
+    if (this.polis && this.polis.quality !== tier) this.polis.setQuality(tier);
   }
 
   /** The free part of the screen between the HUD panels ({x0, y0, x1, y1} in CSS px): the scene is centred and fitted there. */
@@ -109,6 +120,7 @@ export class Scene {
     this.world = w;
     this.market.setWorld(w);
     this.arena.setWorld(w);
+    if (this.polis) this.polis.setWorld(w);
     this.sky.setStages(w.stages);
     this.sky.setWeather(weatherOf(w));
     this.goal = { center: w.price, half: halfRange(w) };
@@ -132,7 +144,7 @@ export class Scene {
   /** A theme's colours (OLYMPUS themes): the column and the comet take the accent, the sky the background. */
   applyTheme(accent, bg) {
     const T = this.renderer && this.market.T;
-    if (accent) { this.market.colMats[0].uniforms.uC.value.set(accent); this.market.comet.children[0].material.color.set(accent); this.arena.applyTheme(accent); if (this.temple) this.temple.applyTheme(accent); }
+    if (accent) { this.market.colMats[0].uniforms.uC.value.set(accent); this.market.comet.children[0].material.color.set(accent); this.arena.applyTheme(accent); if (this.polis) this.polis.applyTheme(accent); if (this.temple) this.temple.applyTheme(accent); }
     if (bg && T) { this.renderer.setClearColor(new T.Color(bg), 1); this.scene.fog.color.set(bg); }
   }
 
@@ -173,6 +185,7 @@ export class Scene {
   }
 
   frame(nowT, dt) {
+    this.syncCityQuality();
     const r = this.rig;
     dt = Math.min(0.1, Math.max(0, dt));
     this.t += dt;
@@ -197,7 +210,9 @@ export class Scene {
     if (this.map.center != null) this.market.frame(this.t, dt, this.map, this.cam);
     this.sky.frame(this.t, dt, nowT, this.cam);
     this.arena.frame(this.t, this.market.cometWorld(), this.renderer.getPixelRatio());
+    if (this.polis) this.polis.frame(this.t);
     if (this.temple) this.temple.frame(this.t, dt, this.renderer.getPixelRatio());
     this.rc.render();
   }
 }
+

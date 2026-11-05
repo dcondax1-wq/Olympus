@@ -8,7 +8,8 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { fetchLive, fetchSite, normalize, loadProphecy, FRESH_S } from './data.js';
 import { loadDemo, docAt, span, todayFx } from './demo.js';
-import { Scene } from './scene.js';
+import { Scene } from './scene.js?v=oracle-night-20261105-4';
+import { FallbackCity } from './fallback.js?v=oracle-night-20261105-4';
 import { Hud, usd } from './hud.js';
 import { Ladder } from './ladder.js';
 import { Ribbon, ribbonOf } from './events.js';
@@ -41,13 +42,23 @@ const ribbon = new Ribbon(document.getElementById('events'), document.getElement
 let prophecy = null;                                   // prophecy.json (tools/oracle_prophecy_stats.py): the bot's own stats per level family
 const sheet = new OracleSheet(() => startToday());
 loadProphecy().then((s) => { prophecy = s; if (state.world) sheet.render(state.world, prophecy); });
-let scene = null;
+let scene = null, fallback = null;
 try {
   scene = new Scene(THREE, document.getElementById('gl'), { quality: state.quality, reduced });
   O?.track(scene.renderer);
   O?.themeScene?.({ scene: scene.scene, renderer: scene.renderer });   // OLYMPUS theme: fog + clear colour follow it
 } catch (e) {
   hud.noGL();
+  try {
+    fallback = new FallbackCity(document.getElementById('fallback'), reduced);
+  } catch (_) {
+    // If Canvas2D is unavailable as well, leave the market HUD and replay usable.
+    const note = document.createElement('p');
+    note.textContent = 'Visuals are unavailable on this device. The market numbers and replay still work.';
+    note.setAttribute('role', 'status');
+    note.style.cssText = 'position:absolute;top:42%;left:16px;right:16px;text-align:center;color:#d8e6f2;font:600 14px/1.5 system-ui,sans-serif';
+    document.getElementById('nogl').append(note);
+  }
   O?.ready();                                  // the numbers still update: the page is up
 }
 O?.mode(state.quality === 'low');
@@ -78,6 +89,7 @@ scrub.addEventListener('pointerup', () => { state.dragging = false; });
 function fit() {
   const r = hud.freeRect();
   if (scene) scene.setBand(r);
+  if (fallback) fallback.resize();
   ladder.setBand({ y0: r.ly0, y1: r.ly1 });
   const L = document.getElementById('ladder');
   L.style.setProperty('--ladder-y0', Math.round(r.ly0) + 'px');
@@ -93,6 +105,7 @@ function show(w, mode) {
   state.world = w;
   state.mode = mode;
   if (scene) scene.setWorld(w, { strikes: !first });
+  if (fallback) fallback.setWorld(w);
   hud.render(w);
   sheet.render(w, prophecy);
   ribbon.render(ribbonOf(w.log, w.t));
@@ -263,7 +276,8 @@ function frame(ts) {
   if (state.mode === 'demo' && state.demo) demoAdvance(dt);
   if (ts - lastTick > 1000) { lastTick = ts; hud.tick(nowS()); if (state.mode !== 'demo') chip(); }
   const gap = O && O.frameGap ? O.frameGap() : 0;                           // idle 30 / 15 fps, battery saver, 3D Off 2 fps (docs/OLYMPUS_PERF.md)
-  if (!scene || (reduced && ts - lastDraw < 100) || (gap && ts - lastDraw < gap - 3)) return;
+  if (!scene) { if (fallback) fallback.frame(ts); return; }
+  if ((reduced && ts - lastDraw < 100) || (gap && ts - lastDraw < gap - 3)) return;
   scene.frame(nowS(), (ts - lastDraw) / 1000);
   ladder.frame((p) => scene.screenY(p), ...scene.range(), state.world);
   lastDraw = ts;

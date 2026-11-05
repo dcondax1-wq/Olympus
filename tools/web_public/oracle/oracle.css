@@ -175,7 +175,8 @@ h1 { margin: 0; font: 700 14px var(--display); letter-spacing: .24em; }
 .lv.now .lv-d, .lv.now .lv-usd { color: var(--dim); font-weight: 600; }
 @media (max-width: 420px) { .lv { grid-template-columns: 8px minmax(0, 1fr) 62px 44px; } .lv-px { display: none; } }
 
-.nogl { position: fixed; inset: 40% 16px auto; text-align: center; color: var(--dim); z-index: 1; }
+.nogl { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+#fallback { display: block; width: 100%; height: 100%; }
 
 /* ---------------------------------------------------------------- landscape phone: the bar at the left, the sheet at the right */
 @media (orientation: landscape) and (max-height: 500px) {
