@@ -6,7 +6,7 @@
     { id: 'arena', label: 'Arena', url: '../arena/events.json', type: 'events', detail: 'Verified activity events' },
     { id: 'oracle', label: 'Oracle', url: '../oracle/prophecy.json', type: 'forecast', detail: 'Published forecast state' },
     { id: 'kalshi', label: 'Kalshi City', url: '../kalshicity/scan.json', type: 'market', detail: 'Published market scan' },
-    { id: 'learning', label: 'Learning', url: '../kalshicity/learning_log.json', type: 'lessons', detail: 'Published Kalshi City lesson log' }
+    { id: 'learning', label: 'Learning', url: '../kalshicity/learning_log.json', type: 'lessons', detail: 'Append-only Kalshi City lessons; lesson dates do not show when the publisher last ran' }
   ];
   const $ = (id) => document.getElementById(id);
   const key = 'olympus.observatory.scans.v1';
@@ -17,8 +17,8 @@
   const now = () => Date.now();
   const stamp = (t) => new Date(t).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
   function numericTime(data) {
-    const lastEntry = data && Array.isArray(data.entries) && data.entries.length ? data.entries[data.entries.length - 1] : null;
-    const candidates = [data && data.cronos && data.cronos.data_t, data && data.t, data && data.generated_at, data && data.updated_at, data && data.built, lastEntry && lastEntry.t];
+    // An append-only lesson's event time is not a publisher timestamp.
+    const candidates = [data && data.cronos && data.cronos.data_t, data && data.t, data && data.generated_at, data && data.updated_at, data && data.built];
     for (const value of candidates) {
       if (typeof value === 'number' && value > 1000000000) return value < 100000000000 ? value * 1000 : value;
       if (typeof value === 'string') { const parsed = Date.parse(value); if (Number.isFinite(parsed)) return parsed; }
@@ -48,6 +48,11 @@
       const data = await response.json();
       if (!data || typeof data !== 'object') throw new Error('The source did not return an object');
       const t = numericTime(data);
+      const entries = source.id === 'learning' && Array.isArray(data.entries) ? data.entries : [];
+      // The append-only log also records publisher run events. A run is not a
+      // newly learned lesson, even when it is the latest line in the file.
+      const lessons = entries.filter((entry) => entry && entry.kind === 'learned');
+      const lastLesson = lessons.length ? numericTime({ t: lessons[lessons.length - 1].t }) : null;
       const demo = data.demo === true || data.mode === 'demo';
       // The status card's checked_t and age_h change on every publish; compare its underlying research snapshot instead.
       const hash = fingerprint(source.id === 'datacity' && data.cronos && data.cronos.orig ? data.cronos.orig : data);
@@ -56,9 +61,9 @@
       // Static sources without a timestamp are not called stale.
       const reported = data.status && data.status.level;
       const cronos = data.cronos && data.cronos.state;
-      const healthIssue = reported === 'warn' || reported === 'bad' ? 'The source status is ' + reported + '.' : cronos && cronos !== 'fresh' ? 'The source publisher reports ' + cronos + '.' : '';
+      const healthIssue = reported === 'warn' || reported === 'bad' ? 'The source status is ' + reported + '.' : cronos && cronos !== 'fresh' ? 'The source publisher reports ' + cronos + '.' : source.id === 'learning' && !t ? 'The lesson log has no publisher timestamp; its last event is not a refresh check.' : '';
       const status = demo || healthIssue || ageHours != null && ageHours > 48 ? 'warn' : 'good';
-      return { ...source, ok: true, status, hash, t, ageHours, demo, healthIssue, changed: !!old && old.hash !== hash, bytes: JSON.stringify(data).length };
+      return { ...source, ok: true, status, hash, t, lastLesson, ageHours, demo, healthIssue, changed: !!old && old.hash !== hash, bytes: JSON.stringify(data).length };
     } catch (error) {
       return { ...source, ok: false, status: 'bad', error: error.name === 'AbortError' ? 'Timed out after 10 seconds' : String(error.message || error) };
     } finally { clearTimeout(timer); }
@@ -66,7 +71,7 @@
   function insight(source) {
     if (!source.ok) return { title: source.label + ' feed is unavailable', evidence: source.error, action: 'Open the source and check its publisher or path.' };
     if (source.demo) return { title: source.label + ' is marked demo', evidence: 'Published JSON contains demo=true or mode=demo.', action: 'Keep demo labels visible and check whether live data is expected.' };
-    if (source.healthIssue) return { title: source.label + ' needs review', evidence: source.healthIssue, action: 'Open the source status card and check its latest publisher run.' };
+    if (source.healthIssue) return { title: source.label + ' needs review', evidence: source.healthIssue, action: source.id === 'learning' ? 'Check the timestamped Kalshi City scan and its publisher workflow.' : 'Open the source status card and check its latest publisher run.' };
     if (source.ageHours != null && source.ageHours > 48) return { title: source.label + ' may be stale', evidence: 'Published timestamp is ' + Math.floor(source.ageHours) + ' hours old (' + stamp(source.t) + ').', action: 'Check the source schedule and its latest successful publish.' };
     if (source.changed) return { title: source.label + ' changed since your last scan', evidence: 'Content marker differs from the last available copy on this device.', action: 'Review the change in the source app before proposing a dashboard adjustment.' };
     return null;
@@ -105,9 +110,10 @@
       'Source: ' + source.url,
       source.ok ? 'Content marker: ' + source.hash + (source.changed ? ' · changed locally' : '') : 'Error: ' + source.error,
       source.t ? 'Published: ' + stamp(source.t) : 'Published time: not provided by this source',
+      source.id === 'learning' && source.ok ? (source.lastLesson ? 'Last lesson event: ' + stamp(source.lastLesson) + ' · not a publisher check' : 'No dated lesson event yet; publisher time is unknown') : null,
       source.ok ? 'Size: ' + source.bytes.toLocaleString() + ' characters' : 'No data received'
     ];
-    rows.forEach((row) => detail.append(node('div', 'item', row)));
+    rows.filter(Boolean).forEach((row) => detail.append(node('div', 'item', row)));
   }
   async function scan() {
     const button = $('refresh'); button.disabled = true; button.textContent = 'Scanning…';

@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const source = await readFile(new URL('../tools/web_public/observatory/app.js', import.meta.url),'utf8');
+const from = source.indexOf('  function numericTime(data) {');
+const to = source.indexOf('  function fingerprint(data) {',from);
+assert.ok(from >= 0 && to > from);
+const numericTime = new Function(source.slice(from,to)+'; return numericTime;')();
+const oldLesson = Date.parse('2026-11-03T02:39:03Z')/1000;
+assert.equal(numericTime({entries:[{t:oldLesson}]}),null,
+  'an append-only lesson event cannot establish publisher freshness');
+assert.equal(numericTime({t:oldLesson,entries:[{t:oldLesson-100}]}),oldLesson*1000);
+assert.equal(numericTime({cronos:{data_t:oldLesson-200},t:oldLesson}), (oldLesson-200)*1000);
+assert.equal(numericTime({built:'2026-11-05T04:30:00Z'}),Date.parse('2026-11-05T04:30:00Z'));
+const loadFrom = source.indexOf('  async function load(source) {');
+const loadTo = source.indexOf('  function insight(source) {',loadFrom);
+assert.ok(loadFrom >= 0 && loadTo > loadFrom);
+let payload = { entries:[{t:oldLesson,kind:'learned'}, {t:oldLesson+3600,kind:'run'}] };
+const now = () => Date.parse('2026-11-05T09:30:00Z');
+const fetch = async () => ({ok:true,json:async()=>payload});
+const load = new Function('numericTime','fingerprint','previous','now','fetch',
+  source.slice(loadFrom,loadTo)+'; return load;')(numericTime,()=> 'abc123',()=>null,now,fetch);
+const learning = {id:'learning',label:'Learning',url:'../kalshicity/learning_log.json'};
+let result = await load(learning);
+assert.equal(result.t,null);
+assert.equal(result.lastLesson,oldLesson*1000);
+assert.equal(result.status,'warn');
+assert.match(result.healthIssue,/no publisher timestamp/);
+payload = { entries:[{t:oldLesson+7200,kind:'run'}] };
+result = await load(learning);
+assert.equal(result.lastLesson,null,'a publisher run alone is not a learned lesson');
+payload = {t:Date.parse('2026-11-05T09:00:00Z')/1000,entries:[{t:oldLesson,kind:'learned'}]};
+result = await load(learning);
+assert.equal(result.status,'good');
+assert.equal(result.lastLesson,oldLesson*1000);
+console.log('Observatory publisher versus lesson clock cases passed');
