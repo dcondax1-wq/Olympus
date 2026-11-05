@@ -40,7 +40,10 @@ function renderTop() {
   const led = m.ledger;
   const seen = led && led.n ? ` · learned from ${led.n}${led.bets_total ? ` of ${led.bets_total.toLocaleString('en-US')}` : ''} bets read one by one, the rest from the bot's totals` : '';
   const age = m.age > 3 * 86400 ? ` · learning is ${Math.floor(m.age / 86400)} days old` : '';
-  $('bot').textContent = `${bot}${seen}${age}`;
+  const botAge = !bk.statusFresh ? (bk.feedAge == null ? ' · no timestamped bot report' :
+    ` · last bot report ${bk.feedAge < 3600 ? Math.floor(bk.feedAge / 60) + ' min' : Math.floor(bk.feedAge / 3600) + ' h'} ago${bk.lastStatus ? ' (' + bk.lastStatus + ')' : ''}`) : '';
+  $('bot').textContent = `${bot}${botAge}${seen}${age}`;
+  $('bot').dataset.feed = bk.statusFresh ? 'fresh' : 'unverified';
   $('bot').hidden = false;
   const wx = $('wx'), r = m.regime;
   wx.textContent = `${{ clear: 'Clear', overcast: 'Overcast', rain: 'Rain', storm: 'Storm' }[r.state]}${r.paused ? ' · fog' : ''}`;
