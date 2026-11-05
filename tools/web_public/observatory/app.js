@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const SOURCES = [
-    { id: 'datacity', label: 'Data City', url: '../datacity/city.json', type: 'research', detail: 'Research districts and evidence map' },
+    { id: 'datacity', label: 'Data City', url: '../datacity/jarvis.json', type: 'research', detail: 'Research status and the underlying data freshness' },
     { id: 'cities', label: 'Cities', url: '../cities/cities.json', type: 'map', detail: 'City atlas and routing' },
     { id: 'arena', label: 'Arena', url: '../arena/events.json', type: 'events', detail: 'Verified activity events' },
     { id: 'oracle', label: 'Oracle', url: '../oracle/prophecy.json', type: 'forecast', detail: 'Published forecast state' },
@@ -18,7 +18,7 @@
   const stamp = (t) => new Date(t).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
   function numericTime(data) {
     const lastEntry = data && Array.isArray(data.entries) && data.entries.length ? data.entries[data.entries.length - 1] : null;
-    const candidates = [data && data.t, data && data.generated_at, data && data.updated_at, data && data.built, lastEntry && lastEntry.t];
+    const candidates = [data && data.cronos && data.cronos.data_t, data && data.t, data && data.generated_at, data && data.updated_at, data && data.built, lastEntry && lastEntry.t];
     for (const value of candidates) {
       if (typeof value === 'number' && value > 1000000000) return value < 100000000000 ? value * 1000 : value;
       if (typeof value === 'string') { const parsed = Date.parse(value); if (Number.isFinite(parsed)) return parsed; }
@@ -53,7 +53,9 @@
       const old = previous(source.id);
       const ageHours = t ? Math.max(0, (now() - t) / 3600000) : null;
       // Static sources without a timestamp are not called stale.
-      const status = demo ? 'warn' : ageHours != null && ageHours > 48 ? 'warn' : 'good';
+      const reported = data.status && data.status.level;
+      const cronos = data.cronos && data.cronos.state;
+      const status = demo || reported === 'warn' || reported === 'bad' || (cronos && cronos !== 'fresh') || ageHours != null && ageHours > 48 ? 'warn' : 'good';
       return { ...source, ok: true, status, hash, t, ageHours, demo, changed: !!old && old.hash !== hash, bytes: JSON.stringify(data).length };
     } catch (error) {
       return { ...source, ok: false, status: 'bad', error: error.name === 'AbortError' ? 'Timed out after 10 seconds' : String(error.message || error) };
