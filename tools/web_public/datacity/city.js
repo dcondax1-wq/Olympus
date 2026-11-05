@@ -909,12 +909,93 @@ async function postCard() {
   } catch (e) { /* no card: Jarvis reads jarvis.json itself */ }
 }
 
+/** A usable, read-only data view when WebGL or the render core cannot start. */
+function readableFallback(model, demo, reason) {
+  $('#loading')?.remove();
+  document.body.classList.add('data-fallback');
+  const css = document.createElement('style');
+  css.textContent = `
+    body.data-fallback{height:auto;min-height:100%;overflow:auto;touch-action:pan-y;background:#080c1b;color:#f5f4fb}
+    .data-fallback #c,.data-fallback .top,.data-fallback .dock,.data-fallback .mini,.data-fallback .sheet,
+    .data-fallback .cams,.data-fallback .caption,.data-fallback .toast{display:none!important}
+    .readable-city{max-width:760px;margin:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 18px calc(48px + env(safe-area-inset-bottom,0px));font:500 15px/1.5 system-ui,sans-serif}
+    .readable-city h1{font-size:clamp(28px,7vw,46px);line-height:1.08;margin:9px 0 12px;color:#f9e7b4}
+    .readable-city h2{font-size:20px;margin:28px 0 8px;color:#f9e7b4}
+    .readable-city p{color:#c8ccdc;max-width:60ch}
+    .readable-city .eyebrow{letter-spacing:.17em;text-transform:uppercase;color:#b69aff;font-size:12px;font-weight:800}
+    .readable-city .facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0}
+    .readable-city .fact,.readable-city .idea,.readable-city .district{border:1px solid #3b4262;background:#141b31;border-radius:14px;padding:12px}
+    .readable-city .fact b{display:block;font-size:22px;color:#fff}.readable-city .fact small{color:#c8ccdc}
+    .readable-city .districts{display:flex;flex-wrap:wrap;gap:8px}
+    .readable-city button{min-height:44px;color:#f9f7ff;background:#242c4e;border:1px solid #646b93;border-radius:12px;padding:8px 12px;font:700 13px system-ui;cursor:pointer}
+    .readable-city button.on{background:#d4b775;color:#181627;border-color:#d4b775}
+    .readable-city input{display:block;width:100%;min-height:48px;border-radius:12px;border:1px solid #646b93;background:#11172a;color:#fff;padding:10px 12px;font:16px system-ui}
+    .readable-city .idea{margin:9px 0}.readable-city .idea strong{display:block;overflow-wrap:anywhere}.readable-city .idea small{color:#bec5d8}
+    .readable-city .idea b{color:#e9ce8d}
+    .readable-city .badge{display:inline-block;padding:2px 8px;border-radius:8px;background:#2c365a;color:#fff;font-size:11px;text-transform:uppercase}
+    .readable-city .empty{padding:18px;border:1px dashed #66708d;border-radius:14px}
+  `;
+  document.head.append(css);
+  const root = el('main', 'readable-city');
+  const add = (parent, tag, content, cls) => { const node = el(tag, cls || '', String(content)); parent.append(node); return node; };
+  add(root, 'div', 'OLYMPUS · DATA CITY', 'eyebrow');
+  add(root, 'h1', 'The research is still here');
+  add(root, 'p', 'The 3D city could not start on this device. Explore the same read-only research below. No trading controls are available here.');
+  add(root, 'p', demo ? 'Showing sample data. Connect for the published research.' : 'Showing the published research data.');
+  const facts = el('div', 'facts');
+  for (const [n, label] of [[model.buildings.length.toLocaleString(), 'tested ideas and records'], [model.sections.length, 'research districts']]) {
+    const f = el('div', 'fact'); add(f, 'b', n); add(f, 'small', label); facts.append(f);
+  }
+  root.append(facts);
+  add(root, 'h2', 'Browse the districts');
+  const controls = el('div', 'districts'), results = el('div');
+  root.append(controls);
+  add(root, 'h2', 'Explore ideas');
+  const search = el('input'); search.type = 'search'; search.placeholder = 'Search an idea or district'; search.setAttribute('aria-label', 'Search research ideas');
+  root.append(search, results);
+  let chosen = '';
+  const sections = model.sections.filter((s) => s.items.length);
+  for (const sec of sections) {
+    const btn = el('button', 'district', sec.name + ' · ' + sec.items.length.toLocaleString());
+    btn.addEventListener('click', () => { chosen = chosen === sec.key ? '' : sec.key; controls.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === btn && !!chosen)); draw(); });
+    controls.append(btn);
+  }
+  function draw() {
+    const term = search.value.trim().toLowerCase();
+    results.replaceChildren();
+    const pool = chosen ? sections.find((x) => x.key === chosen)?.items || [] : model.buildings;
+    const matches = [];
+    for (const b of pool) {
+      if (term && !((b.lab || labelOf(b, model.D)) + ' ' + b.d).toLowerCase().includes(term)) continue;
+      matches.push(b);
+      if (matches.length >= 60 && term) break;
+    }
+    if (!term) matches.sort((a, b) => (b.cls === 'gold') - (a.cls === 'gold') || (b.e || 0) - (a.e || 0));
+    add(results, 'p', term ? 'Matching ideas, first 60 shown.' : 'Top ideas by research grade and historical dollars per trade. These are past tests, not live signals.');
+    if (!matches.length) add(results, 'p', 'No matching ideas in this district. Try another search.', 'empty');
+    for (const b of matches.slice(0, 30)) {
+      const row = el('article', 'idea');
+      add(row, 'span', b.cls || 'research', 'badge');
+      add(row, 'strong', labelOf(b, model.D));
+      add(row, 'small', (b.d || 'Research') + ' · ' + (Number.isFinite(b.n) ? b.n.toLocaleString() + ' samples' : 'Record'));
+      if (Number.isFinite(b.e) && !b.plugin) add(row, 'b', money(b.e) + ' per trade per micro (historical)');
+      results.append(row);
+    }
+  }
+  search.addEventListener('input', draw);
+  draw();
+  document.body.append(root);
+  Object.assign(state, { ready: true, mode: demo ? 'demo-fallback' : 'live-fallback', fallback: true, buildings: model.buildings.length, fallbackReason: String(reason?.message || reason) });
+}
+
 async function main() {
   const { data, demo, why } = await loadCity();
   const plugins = await loadPlugins(data, getJSON);
   const synth = Math.max(0, Math.min(60000, parseInt(P.get('synth') || '0', 10) || 0));
   const model = decode(data, plugins, synth);
-  const app = new App(model, demo);
+  let app;
+  try { app = new App(model, demo); }
+  catch (e) { readableFallback(model, demo, e); postCard(); return; }
   window.__app = app;
   $('#loading').remove();
   app.start();
