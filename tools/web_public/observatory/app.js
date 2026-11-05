@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const SOURCES = [
-    { id: 'datacity', label: 'Data City', url: '../datacity/city.json', type: 'research', detail: 'Research districts and evidence map' },
+    { id: 'datacity', label: 'Data City', url: '../datacity/jarvis.json', type: 'research', detail: 'Research status and the underlying data freshness' },
     { id: 'cities', label: 'Cities', url: '../cities/cities.json', type: 'map', detail: 'City atlas and routing' },
     { id: 'arena', label: 'Arena', url: '../arena/events.json', type: 'events', detail: 'Verified activity events' },
     { id: 'oracle', label: 'Oracle', url: '../oracle/prophecy.json', type: 'forecast', detail: 'Published forecast state' },
@@ -18,7 +18,7 @@
   const stamp = (t) => new Date(t).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
   function numericTime(data) {
     const lastEntry = data && Array.isArray(data.entries) && data.entries.length ? data.entries[data.entries.length - 1] : null;
-    const candidates = [data && data.t, data && data.generated_at, data && data.updated_at, data && data.built, lastEntry && lastEntry.t];
+    const candidates = [data && data.cronos && data.cronos.data_t, data && data.t, data && data.generated_at, data && data.updated_at, data && data.built, lastEntry && lastEntry.t];
     for (const value of candidates) {
       if (typeof value === 'number' && value > 1000000000) return value < 100000000000 ? value * 1000 : value;
       if (typeof value === 'string') { const parsed = Date.parse(value); if (Number.isFinite(parsed)) return parsed; }
@@ -49,12 +49,16 @@
       if (!data || typeof data !== 'object') throw new Error('The source did not return an object');
       const t = numericTime(data);
       const demo = data.demo === true || data.mode === 'demo';
-      const hash = fingerprint(data);
+      // The status card's checked_t and age_h change on every publish; compare its underlying research snapshot instead.
+      const hash = fingerprint(source.id === 'datacity' && data.cronos && data.cronos.orig ? data.cronos.orig : data);
       const old = previous(source.id);
       const ageHours = t ? Math.max(0, (now() - t) / 3600000) : null;
       // Static sources without a timestamp are not called stale.
-      const status = demo ? 'warn' : ageHours != null && ageHours > 48 ? 'warn' : 'good';
-      return { ...source, ok: true, status, hash, t, ageHours, demo, changed: !!old && old.hash !== hash, bytes: JSON.stringify(data).length };
+      const reported = data.status && data.status.level;
+      const cronos = data.cronos && data.cronos.state;
+      const healthIssue = reported === 'warn' || reported === 'bad' ? 'The source status is ' + reported + '.' : cronos && cronos !== 'fresh' ? 'The source publisher reports ' + cronos + '.' : '';
+      const status = demo || healthIssue || ageHours != null && ageHours > 48 ? 'warn' : 'good';
+      return { ...source, ok: true, status, hash, t, ageHours, demo, healthIssue, changed: !!old && old.hash !== hash, bytes: JSON.stringify(data).length };
     } catch (error) {
       return { ...source, ok: false, status: 'bad', error: error.name === 'AbortError' ? 'Timed out after 10 seconds' : String(error.message || error) };
     } finally { clearTimeout(timer); }
@@ -62,6 +66,7 @@
   function insight(source) {
     if (!source.ok) return { title: source.label + ' feed is unavailable', evidence: source.error, action: 'Open the source and check its publisher or path.' };
     if (source.demo) return { title: source.label + ' is marked demo', evidence: 'Published JSON contains demo=true or mode=demo.', action: 'Keep demo labels visible and check whether live data is expected.' };
+    if (source.healthIssue) return { title: source.label + ' needs review', evidence: source.healthIssue, action: 'Open the source status card and check its latest publisher run.' };
     if (source.ageHours != null && source.ageHours > 48) return { title: source.label + ' may be stale', evidence: 'Published timestamp is ' + Math.floor(source.ageHours) + ' hours old (' + stamp(source.t) + ').', action: 'Check the source schedule and its latest successful publish.' };
     if (source.changed) return { title: source.label + ' changed since your last scan', evidence: 'Content marker differs from the last available copy on this device.', action: 'Review the change in the source app before proposing a dashboard adjustment.' };
     return null;
