@@ -26,7 +26,8 @@ assert.ok(WORLDS.filter(w => w[3] > 400).every(w => w[3] <= 510),'right hub skyl
 assert.match(map.attrs['aria-label'],/decorative navigation routes/);
 const [app, recovery, html] = await Promise.all(['app.js','atlas-entry.js','index.html'].map(n => readFile(new URL(n,dir),'utf8')));
 assert.ok(app.includes("./world.js?v=w2") && recovery.includes("./world.js?v=w2"), 'both entry paths request the updated map');
-assert.ok(html.includes("./app.js?v=o12") && html.includes("./atlas-entry.js?v=a2") && html.includes("./world.css?v=w2"), 'entry caches refresh with the map and hub panel');
+assert.ok(html.includes("./app.js?v=o13") && html.includes("./atlas-entry.js?v=a4") && html.includes("./world.css?v=w2"), 'entry caches refresh with the map and hub panel');
+assert.ok(app.includes("./datasets.js?v=atlas1") && recovery.includes("./datasets.js?v=atlas1"), 'app and GPU-free recovery share source-backed ATLAS adapters');
 const scene = await readFile(new URL('scene.js',dir),'utf8');
 assert.ok(app.includes("./scene.js?v=w4") && scene.includes("./shaders.js?v=s3") && scene.includes("./metropolis.js?v=m2"), 'night city modules refresh through the entry chain');
 const worldCss = await readFile(new URL('world.css',dir),'utf8');

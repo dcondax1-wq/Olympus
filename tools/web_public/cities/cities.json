@@ -10612,6 +10612,180 @@
     3,
     70
    ]
+  },
+  {
+   "id": "atlas-ema-city",
+   "name": "ATLAS EMA City",
+   "motto": "Historical EMA backtest trades only. Each source row becomes one tower.",
+   "group": "trading",
+   "dataset": "atlas_ema",
+   "layout": "districts",
+   "district_by": "weekday",
+   "height_by": "abs:usd",
+   "glow_by": "pos:usd",
+   "window_by": "rank:r",
+   "color_by": "sign:usd",
+   "sort_by": "t",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#178279",
+    "mid": "#123756",
+    "high": "#90ddff",
+    "accent": "#71b5ff",
+    "ground": "#070f12",
+    "fog": "#09151b",
+    "districts": [
+     "#71b5ff",
+     "#123756",
+     "#90ddff",
+     "#e76da9",
+     "#65d4d2",
+     "#ffd372",
+     "#739efa",
+     "#a8f07f"
+    ]
+   },
+   "landmark": {
+    "kind": "beacon",
+    "at": "front",
+    "label": "The Trend Spire"
+   },
+   "sky": {
+    "kind": "night",
+    "top": "#03090c",
+    "mid": "#0b1e28",
+    "low": "#123756",
+    "stars": 0.9
+   },
+   "weather": "dust",
+   "sound": "tick",
+   "card": [
+    "day",
+    "strat",
+    "src",
+    "usd",
+    "r",
+    "side"
+   ],
+   "region": "ATLAS backtest",
+   "scenery": "river"
+  },
+  {
+   "id": "atlas-macd-city",
+   "name": "ATLAS MACD City",
+   "motto": "Historical MACD backtest trades only. Each source row becomes one tower.",
+   "group": "trading",
+   "dataset": "atlas_macd",
+   "layout": "clock",
+   "district_by": "hour",
+   "height_by": "abs:r",
+   "glow_by": "pos:usd",
+   "window_by": "rank:r",
+   "color_by": "sign:usd",
+   "sort_by": "t",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#178279",
+    "mid": "#2a1b58",
+    "high": "#d4a5ff",
+    "accent": "#c29aff",
+    "ground": "#070f12",
+    "fog": "#09151b",
+    "districts": [
+     "#c29aff",
+     "#2a1b58",
+     "#d4a5ff",
+     "#e76da9",
+     "#65d4d2",
+     "#ffd372",
+     "#739efa",
+     "#a8f07f"
+    ]
+   },
+   "landmark": {
+    "kind": "dome",
+    "at": "front",
+    "label": "The Divergence Dome"
+   },
+   "sky": {
+    "kind": "night",
+    "top": "#03090c",
+    "mid": "#0b1e28",
+    "low": "#2a1b58",
+    "stars": 0.9
+   },
+   "weather": "dust",
+   "sound": "tick",
+   "card": [
+    "day",
+    "strat",
+    "src",
+    "usd",
+    "r",
+    "side"
+   ],
+   "region": "ATLAS backtest",
+   "scenery": "rail"
+  },
+  {
+   "id": "atlas-sr-city",
+   "name": "ATLAS S/R City",
+   "motto": "Historical S/R backtest trades only. Each source row becomes one tower.",
+   "group": "trading",
+   "dataset": "atlas_sr",
+   "layout": "spiral",
+   "district_by": "side",
+   "height_by": "abs:usd",
+   "glow_by": "pos:usd",
+   "window_by": "rank:r",
+   "color_by": "sign:usd",
+   "sort_by": "t",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#178279",
+    "mid": "#552a1b",
+    "high": "#ffd39b",
+    "accent": "#ffbb85",
+    "ground": "#070f12",
+    "fog": "#09151b",
+    "districts": [
+     "#ffbb85",
+     "#552a1b",
+     "#ffd39b",
+     "#e76da9",
+     "#65d4d2",
+     "#ffd372",
+     "#739efa",
+     "#a8f07f"
+    ]
+   },
+   "landmark": {
+    "kind": "gate",
+    "at": "front",
+    "label": "The Reclaim Gate"
+   },
+   "sky": {
+    "kind": "night",
+    "top": "#03090c",
+    "mid": "#0b1e28",
+    "low": "#552a1b",
+    "stars": 0.9
+   },
+   "weather": "dust",
+   "sound": "tick",
+   "card": [
+    "day",
+    "strat",
+    "src",
+    "usd",
+    "r",
+    "side"
+   ],
+   "region": "ATLAS backtest",
+   "scenery": "harbor"
   }
  ]
 }

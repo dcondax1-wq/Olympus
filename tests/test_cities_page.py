@@ -101,8 +101,20 @@ def part_a():
           and len({c["layout"] for c in C}) >= 5 and len({c["group"] for c in C}) >= 6 and len({c["dataset"] for c in C}) >= 20,
           (len({c["landmark"]["kind"] for c in C}), len({c["sky"]["kind"] for c in C}), len({c["weather"] for c in C}), len({c["layout"] for c in C}), len({c["dataset"] for c in C})))
     fx = json.loads(read(os.path.join(PAGE, "fixture.json")))
+    odeon = json.loads(read(os.path.join(PAGE, "..", "odeon", "trades.json")))
+    atlas_backtests = {"atlas_ema": "EMA", "atlas_macd": "MACD", "atlas_sr": "S/R"}
+    def fixture_has_source_rows(dataset):
+        if dataset not in fx:
+            return False
+        items = fx[dataset]["items"]
+        if dataset not in atlas_backtests:
+            return len(items) >= 8
+        strategy = atlas_backtests[dataset]
+        source_count = sum(t.get("bot") == "ATLAS" and t.get("strat") == strategy and t.get("src") == "backtest" for t in odeon["trades"])
+        return source_count > 0 and len(items) == min(44, source_count) and all(
+            row["f"].get("bot") == "ATLAS" and row["f"].get("strat") == strategy and row["f"].get("src") == "backtest" for row in items)
     check("a. fixture.json: a sample for every dataset the cities use, each with rows, <= 250 KB",
-          all(c["dataset"] in fx and len(fx[c["dataset"]]["items"]) >= 8 for c in C) and os.path.getsize(os.path.join(PAGE, "fixture.json")) <= 250_000)
+          all(fixture_has_source_rows(c["dataset"]) for c in C) and os.path.getsize(os.path.join(PAGE, "fixture.json")) <= 250_000)
     node = shutil.which("node")
     if node:
         before = {n: open(os.path.join(PAGE, n), "rb").read() for n in ("cities.json", "fixture.json")}
@@ -315,7 +327,9 @@ def run_unit(p, days, picks):
           all(r["finite"] and r["inb"] and r["hin"] and r["col"] and r["w0"] and r["site"] for r in R), [(r["id"], r["finite"], r["inb"], r["hin"], r["col"]) for r in R if not (r["finite"] and r["inb"] and r["hin"] and r["col"])])
     check("c. district counts add up to the buildings; no overlapping footprints in block layouts", all(r["dsum"] == r["n"] for r in R) and all(r["overlaps"] == 0 for r in R),
           [(r["id"], r["dsum"], r["n"], r["overlaps"]) for r in R if r["dsum"] != r["n"] or r["overlaps"]])
-    check("c. the sample fixture builds every city too (the page never shows an empty city)", all(r["fxN"] > 5 for r in R), [r["id"] for r in R if r["fxN"] <= 5])
+    atlas_setups = {"atlas-ema-city": "atlas_ema", "atlas-macd-city": "atlas_macd", "atlas-sr-city": "atlas_sr"}
+    sample_ok = lambda r: (r["fxN"] == min(44, b[atlas_setups[r["id"]]]["n"]) if r["id"] in atlas_setups else r["fxN"] > 5)
+    check("c. the sample fixture builds each city from source rows, including small ATLAS backtests", all(sample_ok(r) for r in R), [r["id"] for r in R if not sample_ok(r)])
     check("c. the 31k-idea city generates in under 2 s here", max(r["ms"] for r in R) < 2000, max(r["ms"] for r in R))
     d = p.evaluate(UNIT_D)
     cr = d["capRes"]

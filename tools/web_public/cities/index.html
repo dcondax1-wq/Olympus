@@ -120,6 +120,7 @@ font:600 12px/1.25 var(--oly-ui,inherit);color:var(--text);white-space:nowrap;ma
 text-align:center;font:600 15px/1.35 var(--oly-ui,inherit);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.9);transition:opacity .4s}
 .caption small{display:block;font:700 10px/1 var(--oly-display,inherit);letter-spacing:.2em;color:var(--gold);margin-bottom:6px}
 .caption.on{opacity:1}
+body[data-mode=city] .caption.on{padding:10px 14px;border:1px solid rgba(255,201,74,.27);border-radius:15px;background:linear-gradient(150deg,rgba(5,9,22,.92),rgba(9,14,31,.84));box-shadow:0 12px 30px rgba(0,0,0,.46);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 body[data-mode=hub] .caption{bottom:calc(252px + var(--sb));font-size:12px;max-width:350px}
 .toast{position:fixed;left:50%;top:calc(var(--top-h) + 18px + var(--st));transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);padding:8px 12px;
 border-radius:12px;font-size:12.5px;color:var(--sub);z-index:6;display:none;max-width:calc(100% - 140px);text-align:center}
@@ -245,7 +246,7 @@ async function recover() {
   window.__citiesImportAbandoned = true;
   const loading = document.querySelector('#loading');
   if (loading) { loading.style.pointerEvents = 'auto'; loading.textContent = 'Opening the city atlas…'; }
-  try { const recovery = await import('./atlas-entry.js?v=a2'); await recovery.recoverAtlas(); }
+  try { const recovery = await import('./atlas-entry.js?v=a4'); await recovery.recoverAtlas(); }
   catch (_) {
     if (loading) { loading.textContent = 'City files could not load. Check your connection and reload Cities.'; const retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Reload Cities'; retry.style.cssText = 'display:block;min-height:48px;padding:12px;margin:16px auto;font:inherit'; retry.onclick = () => location.reload(); loading.append(retry); }
     window.OLYMPUS?.ready?.();
@@ -253,7 +254,7 @@ async function recover() {
 }
 // Module import settles before its asynchronous boot does. Watch readiness itself.
 setTimeout(recover, 18000);
-import('./app.js?v=o12').catch(recover);
+import('./app.js?v=o14').catch(recover);
 </script>
 </body>
 </html>

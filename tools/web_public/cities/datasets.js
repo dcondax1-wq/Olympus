@@ -58,7 +58,7 @@ export const DATASETS = {
     fields: [...TRADE_FIELDS, F('risk_pts', 'Stop distance', 'pts'), F('risk_usd', 'Money at risk', 'usd'), F('qty', 'Micros', 'int'),
       F('stopb', 'Stop size', 'txt'), F('qtyb', 'Size group', 'txt'), F('acct', 'Account', 'txt'), F('bot', 'Bot', 'txt'), F('src', 'Source', 'txt'),
       F('held_min', 'Minutes in trade', 'int'), F('mfe_r', 'Best move', 'r'), F('mae_r', 'Worst move', 'r'), F('plan_rr', 'Planned reward', 'num'),
-      F('nlev', 'Levels swept', 'int'), F('t', 'Entry time', 'int')],
+      F('nlev', 'Levels swept', 'int'), F('t', 'Entry time', 'int'), F('strat', 'Strategy', 'txt')],
     build(raw) {
       const T = (raw && raw.trades) || [];
       const out = T.map((t) => {
@@ -70,12 +70,23 @@ export const DATASETS = {
           usd: num(t.usd), r: num(t.r), exit: str(t.exit && t.exit.kind, 'END').replace('_', ' '), side: str(t.side).toLowerCase(),
           risk_pts: rp, risk_usd: num(t.risk_usd), qty: q, stopb: rp < 15 ? 'under 15 pts' : rp < 30 ? '15-30 pts' : rp < 50 ? '30-50 pts' : '50+ pts',
           qtyb: q === 1 ? '1 micro' : q <= 3 ? '2-3 micros' : q <= 6 ? '4-6 micros' : '7+ micros', acct: `${str(t.bot)} · ${str(t.src)}`,
-          bot: str(t.bot), src: str(t.src), held_min: num(t.held_min), mfe_r: num(t.mfe_r), mae_r: num(t.mae_r), plan_rr: num(t.plan_rr),
+          bot: str(t.bot), strat: str(t.strat), src: str(t.src), held_min: num(t.held_min), mfe_r: num(t.mfe_r), mae_r: num(t.mae_r), plan_rr: num(t.plan_rr),
           nlev: (t.levels || []).length } };
       });
       return series(out);
     },
   },
+
+  // ATLAS member Cities are separate historical backtest slices of the published
+  // Odeon rows. Recompute the curve on each slice; never carry mixed-bot equity.
+  ...Object.fromEntries([['atlas_ema', 'EMA'], ['atlas_macd', 'MACD'], ['atlas_sr', 'S/R']].map(([id, strategy]) => [id, {
+    title: `ATLAS ${strategy} historical backtest`, source: `odeon/trades.json (ATLAS ${strategy} backtest rows)`, from: 'trades', historical: true, emptyIsValid: true,
+    fields: [...TRADE_FIELDS.map(f => f.key === 'cum' ? F('cum', 'Strategy backtest cumulative', 'usd') : f.key === 'dd' ? F('dd', 'Strategy backtest drawdown', 'usd') : f), F('strat', 'Strategy', 'txt'), F('src', 'Source mode', 'txt'), F('bot', 'Bot', 'txt'), F('qty', 'Micros', 'int'), F('risk_pts', 'Stop distance', 'pts'), F('t', 'Entry time', 'int')],
+    derive(base) {
+      return series(base.filter(it => it.f.bot === 'ATLAS' && it.f.strat === strategy && it.f.src === 'backtest')
+        .map(it => ({ ...it, label: `ATLAS ${strategy} backtest · ${it.f.day}`, f: { ...it.f } })));
+    },
+  }])),
 
   // ---- the 631 LIT replay trades of the Data City's harbor (2021 -> now)
   harbor: {
@@ -403,7 +414,7 @@ DATASETS.vix.fields = DATASETS.combos.fields;
 export const DATASET_IDS = Object.keys(DATASETS);
 /** each dataset's continent and region on the world map (the catalogue script and the random cities use the same table) */
 export const DATASET_GROUP = Object.fromEntries(Object.entries({
-  trades: ['trading', 'Odeon reels'], harbor: ['trading', 'LIT replay'], sessions: ['trading', 'Trading days'], months: ['trading', 'Calendar'], streaks: ['trading', 'Streaks'], levels: ['trading', 'Liquidity levels'],
+  trades: ['trading', 'Odeon reels'], atlas_ema: ['trading', 'ATLAS backtest'], atlas_macd: ['trading', 'ATLAS backtest'], atlas_sr: ['trading', 'ATLAS backtest'], harbor: ['trading', 'LIT replay'], sessions: ['trading', 'Trading days'], months: ['trading', 'Calendar'], streaks: ['trading', 'Streaks'], levels: ['trading', 'Liquidity levels'],
   combos: ['research', 'Tested ideas'], vix: ['research', 'Volatility'], tree: ['research', 'Daphne'], forge: ['research', 'Forge'], workshop: ['research', 'Workshop'], gods: ['research', 'Pantheon'], feeds: ['research', 'Data feeds'],
   evals: ['money', 'Simulated evals'], evalspeed: ['money', 'Simulated evals'], plans: ['money', 'Prop firms'], kalshi: ['kalshi', 'Kalshi bot'], arena: ['life', 'Arena'], library: ['life', 'Library'], notes: ['obsidian', 'The vault'],
 }).map(([k, [group, region]]) => [k, { group, region }]));
@@ -415,7 +426,7 @@ export const fieldMap = (ds) => Object.fromEntries((ds.fields || []).map((f) => 
 
 const wrap = (id, items, extra) => {
   const d = DATASETS[id];
-  return { id, title: d.title, source: d.source, fields: d.fields, items, demo: false, note: '', label: items.lab || ((it) => it.label || it.id), ...extra };
+  return { id, title: d.title, source: d.source, fields: d.fields, items, demo: false, historical: !!d.historical, note: '', label: items.lab || ((it) => it.label || it.id), ...extra };
 };
 
 /**
@@ -432,7 +443,8 @@ export async function loadDataset(id, env, cache) {
     try {
       if (D.from && !D.raw) {
         const base = await loadDataset(D.from, env, memo);
-        if (!base.demo) { items = D.derive(base.items); real = items.length > 0; }
+        if (!base.demo) { items = D.derive(base.items); real = items.length > 0 || !!D.emptyIsValid; }
+        else if (D.emptyIsValid) return wrap(id, [], { demo: true, note: 'No verified ATLAS historical backtest rows are available; no source towers are shown.' });
       } else if (D.vault) {
         raw = env.vault ? await env.vault() : null;
         items = D.build(raw); real = items.length > 0;

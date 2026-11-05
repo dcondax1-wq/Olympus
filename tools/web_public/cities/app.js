@@ -6,7 +6,7 @@
 //   city   tap a building for its card, Find (search), Top 10, Surprise me, ORBIT / SKIM / DRONE / GRAND cameras, the minimap.
 // Read-only: every number is data the site already publishes; nothing here writes, trades or sends anything.
 import { $, el, store, clamp, lerp, hash32, rng, cityOfDay, todayStr, seedOfDay, fmtField, plain } from './util.js';
-import { DATASETS, loadDataset, fieldMap } from './datasets.js';
+import { DATASETS, loadDataset, fieldMap } from './datasets.js?v=atlas1';
 import { generate, validateSpec, Picker, evalExpr, parseExpr } from './generator.js';
 import { mountWorld } from './world.js?v=w2';
 import { cityRoutes } from './routes.js?v=r1';
@@ -187,7 +187,7 @@ function pickIsland(x, y) {
   return best;
 }
 
-function dataTag(ds) { return ds.demo ? ['SAMPLE', 'demo'] : ['LIVE DATA', 'live']; }
+function dataTag(ds) { return ds.historical ? (ds.items.length ? ['BACKTEST', 'demo'] : ['NO SOURCE ROWS', 'demo']) : ds.demo ? ['SAMPLE', 'demo'] : ['LIVE DATA', 'live']; }
 
 const insightOf = (spec, ds) => {
   const key = spec.id + '|' + (ds.demo ? 's' : 'l') + ds.items.length;
@@ -421,7 +421,8 @@ function buildCityView(spec, ds) {
   const picker = new Picker(city);
   S.cur = { spec, ds, city, picker, f: fieldMap(ds), sel: -1, match: null, base: null };
   S.mode = 'city'; document.body.dataset.mode = 'city';
-  $('#title').textContent = spec.name; $('#backB').hidden = false; $('#readB').hidden = true;
+  $('#title').textContent = canvas.clientWidth < 600 && /^atlas-(ema|macd|sr)-city$/.test(spec.id) ? spec.name.replace(/^ATLAS /, '') : spec.name;
+  $('#title').setAttribute('aria-label', spec.name); $('#backB').hidden = false; $('#readB').hidden = true;
   S.rig.limits = { min: 10, max: city.bounds.r * 4 + 260, pmin: 0.05, pmax: 1.52 };
   S.rig.auto = 0.05;
   const far = city.bounds.r * 1.7 + 70;
@@ -876,6 +877,7 @@ function placeLabel(e, p, w, h, above = false) {
 }
 function updateLabels(frame) {
   if (frame % 3) return;
+  if (S.mode === 'city' && typeof capEl !== 'undefined' && capEl.classList.contains('on')) { labelEls.forEach(e => { e.style.display = 'none'; }); return; }
   const w = canvas.clientWidth, h = canvas.clientHeight, st = S.stage, cand = [];
   const far = farHub();
   contEls.forEach((e, i) => {
