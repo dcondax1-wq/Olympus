@@ -2,8 +2,9 @@
 // kalshi-feed), shapes them (cityfeed.js), lays the city out (citylayout.js), draws it (cityscene.js) and writes the words. Text only through
 // textContent (no data ever becomes HTML). Read only: nothing here writes anywhere. window.KC is the test hook.
 import { RAW, shape, shapeHyps, cardOf, headlineOf, usd, pct, evf, pts, STATUS_COLOR, STATUS_WORD, ADVICE, etHour, clockLabel, phaseWord, MIN_N,
-  hypOf, hypCardOf, pairOf, tickerLines, changesOf, HYP_COLOR, HYP_WORD } from './cityfeed.js';
-import { layout } from './citylayout.js';
+  hypOf, hypCardOf, pairOf, tickerLines, changesOf, HYP_COLOR, HYP_WORD } from './cityfeed.js?v=bot15';
+import { layout } from './citylayout.js?v=night3';
+import { cityAtlas, edgeCountLabel } from './cityatlas.js?v=skyline5';
 import { lessonsView, historyView, ASK_MESSAGE } from './lessons.js';
 
 const O = window.OLYMPUS || null;
@@ -13,7 +14,7 @@ const store = {
   read() { try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && typeof v === 'object' ? v : {}; } catch (_) { return {}; } },
   write(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (_) { /* private mode */ } },
 };
-const S = { learned: null, sound: false, copied: false, model: null, L: null, demo: true, scene: null, view: '', ready: false, error: null, sel: null, logMore: 40, liveFailed: false, preview: null,
+const S = { learned: null, sound: false, copied: false, model: null, L: null, demo: true, scene: null, atlas: null, view: '', ready: false, error: null, sel: null, logMore: 40, liveFailed: false, preview: null,
   prevHyp: null, changes: [], tk: { lines: [], i: 0 } };
 /** the dollars of every idea tower, stored on the phone so the next visit can show what grew or shrank in between */
 const hypSnap = (m) => { const o = {}; if (m.hyp && !m.hyp.demo) m.hyp.hyps.forEach((h) => { o[`${h.id}:back`] = h.back.gain; o[`${h.id}:live`] = h.live.gain; o[`${h.id}:prog`] = h.nLive; }); return o; };
@@ -80,6 +81,24 @@ function renderClock() {
   c.textContent = `${clockLabel(hr)} · ${phaseWord(hr)}`;
   c.title = `New York time${S.preview != null ? ' (a preview: tap for the next hour)' : ''}`;
   c.classList.toggle('preview', S.preview != null);
+}
+
+function renderMiniMap() {
+  const svg = $('miniSvg'), places = [...S.L.districts, ...(S.L.labs || [])].filter((d) => Number.isFinite(d.cx) && Number.isFinite(d.cz));
+  const core = S.L.districts.find((d) => d.key === 'Downtown') || places[0];
+  const edge = Math.max(1, ...places.flatMap((d) => [Math.abs(d.cx), Math.abs(d.cz)]));
+  const at = (d) => [50 + d.cx / edge * 40, 50 + d.cz / edge * 40];
+  const node = (tag, attrs) => { const el = document.createElementNS('http://www.w3.org/2000/svg', tag); Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, String(v))); return el; };
+  const elements = [];
+  if (core) {
+    const [x,y] = at(core);
+    places.forEach((d) => { if (d === core) return; const [dx,dy] = at(d);
+      elements.push(node('path', { d:`M ${x} ${y} Q ${(x+dx)/2} ${Math.min(y,dy)-8} ${dx} ${dy}` })); });
+  }
+  places.forEach((d) => { const [cx,cy] = at(d);
+    elements.push(node('circle', { cx, cy, r:d===core ? 4 : d.lab ? 2.1 : 3, fill:d.color || (d.lab ? '#a998ff' : '#ffb552') })); });
+  svg.replaceChildren(...elements);
+  $('miniCount').textContent = `${S.L.districts.length} cities · ${(S.L.labs || []).length} labs`;
 }
 
 // ------------------------------------------------------------------------------------------------ sheets
@@ -156,7 +175,7 @@ function worldsView() {
     const best = candidates[0], c = h('button', 'world-card');
     c.type = 'button'; c.style.setProperty('--world-color', d.color);
     const glyph = h('span', 'world-glyph', i === 0 ? '◆' : String(i).padStart(2,'0'));
-    const top = h('span', 'world-top'); top.append(glyph, h('span','world-count', `${d.count} edges`));
+    const top = h('span', 'world-top'); top.append(glyph, h('span','world-count', edgeCountLabel(d.count)));
     const name = h('strong','',d.name === 'Downtown' ? 'Strategy Core' : d.name);
     const detail = h('small','',best ? `Strongest observed: ${best.label} · ${evf(best.ev)} per $1` : 'Collecting bets; no tested edge yet');
     c.append(top,name,detail,h('span','world-action','OPEN CITY  ↗'));
@@ -232,7 +251,7 @@ function guideView() {
     lg('#ffe08a', 'The gold beam marks the best proven edge. The red/green lighthouse shows the risk of ruin.'),
     lg('#7cf0ff', 'The Lab, on the outer ring: one small district per idea that might fix the bot, three towers each. Left: what the rule would have added looking back (it was picked after seeing the bets, so this proves nothing). Middle: what it adds on live bets since it was registered. Right, with a crane: how many live bets are collected. Taller means more dollars; a loss is a low stub. Tap the LAB strip for the list.'),
     lg('#ffe08a', 'Best edge so far and Worst leak are the biggest winner and loser (30+ bets), in dollars after fees. A gold beam marks the winner, a red beam the leak. A tower that moved since your last visit grows or shrinks when you open the city.'),
-    h('p', 'warnbox', 'The dark towers far away are scenery: they carry no data. Only buildings inside a district are real edges.'),
+    h('p', 'warnbox', 'The glowing low-rise blocks between districts and the distant skyline are scenery: neither carries edge data. Only buildings inside a district are real edges.'),
     S.startedDemo ? null : demoButton(),
     h('p', '', `The engine re-measures every edge each time it runs: win rate against the market's odds, profit per $1, a 95% range, a luck test (z), the last 7 and 30 days, and a Kelly stake. Anything under ${MIN_N} bets stays grey. Read only: it never places or changes an order.`)];
 }
@@ -311,8 +330,14 @@ function postCard() {
 function sfx(name) { try { if (S.sound && O && O.sfx) O.sfx(name); } catch (_) { /* the sound is never needed */ } }
 function renderSound() { const b = $('sound'); b.setAttribute('aria-pressed', String(S.sound)); b.setAttribute('aria-label', `Sound: ${S.sound ? 'on' : 'off'}`); b.title = `Sound ${S.sound ? 'on' : 'off'}: ambience, thunder, ticks`; }
 function toast(text) { const FXL = window.OLYMPUS_FX; if (!FXL || !FXL.load) return; FXL.load('burst').then(() => { try { FXL.toast(document.body, { text, kind: 'ok', seconds: 3.6 }); } catch (_) { /* skip */ } }); }
-/** what the engine learned today (the log lines of the model's day that name a building) */
-function newLessons() { const m = S.model; return m.log.filter((x) => x.d === m.day && (x.kind === 'learned' || x.kind === 'changed') && x.id && m.byId.has(x.id)); }
+/** Only announce lessons from the actual New York calendar day. A published snapshot can be days old. */
+function newLessons() {
+  const m = S.model, parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' })
+    .formatToParts(new Date()).reduce((acc, p) => (acc[p.type] = p.value, acc), {});
+  const today = `${parts.year}-${parts.month}-${parts.day}`;
+  if (m.day !== today) return [];
+  return m.log.filter((x) => x.d === today && (x.kind === 'learned' || x.kind === 'changed') && x.id && m.byId.has(x.id));
+}
 function runScan(announce) {
   const L = newLessons(), ids = [...new Set(L.map((x) => x.id))].slice(0, 12), more = [...new Set(L.filter((x) => x.advice === 'do_more').map((x) => x.id))].slice(0, 3);
   S.fw = more; S.fwLeft = 3;
@@ -336,7 +361,7 @@ async function refresh() {                                               // ever
   const newer = m.log.length > old.log.length, changed = m.t !== old.t || (m.hyp && old.hyp && m.hyp.t !== old.hyp.t);
   S.model = m;
   S.changes = changesOf(m, before);
-  if (changed) { S.L = layout(m, S.hypDemo ? null : before); if (S.scene) S.scene.rebuild(m, S.L); }
+  if (changed) { S.L = layout(m, S.hypDemo ? null : before); renderMiniMap(); if (S.scene) S.scene.rebuild(m, S.L); if (S.atlas) { const p = pairOf(m); S.atlas.update(S.L, { bestId: p.best?.id, worstId: p.worst?.id }); } }
   else S.scene?.setBook(m);
   if (!S.hypDemo) store.write({ ...store.read(), hh: hypSnap(m) });
   renderTop();
@@ -349,7 +374,8 @@ async function refresh() {                                               // ever
 // ------------------------------------------------------------------------------------------------ start
 async function startScene() {
   try {
-    const { createCity } = await import('./cityscene.js');
+    if (new URLSearchParams(location.search).get('view') === 'atlas') throw new Error('Atlas requested');
+    const { createCity } = await import('./cityscene.js?v=night3');
     S.scene = createCity($('city'), { O, model: S.model, layout: S.L, sound: () => S.sound });
     $('lite').hidden = !S.scene.lite();
     S.scene.onQuality(() => { $('lite').hidden = !S.scene.lite(); });
@@ -357,8 +383,14 @@ async function startScene() {
     S.scene.onMode((k) => document.querySelectorAll('#cams button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.cam === k))));
   } catch (e) {
     S.error = 'scene: ' + ((e && e.message) || e);
-    document.documentElement.dataset.noscene = '1';
-    openSheet('worlds'); // accessible map and data remain usable when WebGL is unavailable
+    // The 2D fallback has no orbiting viewport to clear; keep all evidence controls visible.
+    $('verdict').classList.add('expanded'); $('cityInsights').setAttribute('aria-expanded', 'true');
+    const p = pairOf(S.model);
+    S.atlas = cityAtlas($('city'), S.L, (id) => selectEdge(id, false), e.message === 'Atlas requested' ? 'Atlas view' : '3D unavailable on this device', { bestId: p.best?.id, worstId: p.worst?.id });
+    const measure = () => document.documentElement.style.setProperty('--kc-atlas-top', `${$('ui').getBoundingClientRect().bottom + 12}px`);
+    addEventListener('resize', measure);
+    if (typeof ResizeObserver === 'function') new ResizeObserver(measure).observe($('ui'));
+    measure();
     if (O) O.ready();
   }
 }
@@ -377,6 +409,9 @@ function wire() {
   });
   document.addEventListener('pointerdown', () => { if (S.sound && !S.padOn && O && O.sfx) { S.padOn = true; O.sfx('pad'); } }, { once: true });
   $('scan').addEventListener('click', () => { runScan(true); });
+  $('cityMini').addEventListener('click', () => { if (S.scene) S.scene.setMode('map'); else openSheet('worlds'); });
+  $('cityInsights').addEventListener('click', () => { const open = $('verdict').classList.toggle('expanded');
+    $('cityInsights').setAttribute('aria-expanded', String(open)); $('cityInsights').firstChild.textContent = open ? 'Close insights ' : 'Open insights '; });
   $('clock').addEventListener('click', () => {                          // live -> 06:00 -> 12:00 -> 18:00 -> 00:00 -> live
     const seq = [null, 6, 12, 18, 0], i = seq.indexOf(S.preview);
     S.preview = seq[(i + 1) % seq.length];
@@ -410,7 +445,7 @@ async function main() {
   S.changes = changesOf(model, S.prevHyp);
   S.model = model; S.L = layout(model, S.prevHyp); S.startedDemo = S.demo;
   if (!S.hypDemo) store.write({ ...store.read(), hh: hypSnap(model) });
-  renderTop(); renderClock(); renderSound(); wire();
+  renderTop(); renderClock(); renderMiniMap(); renderSound(); wire();
   await startScene();
   document.body.dataset.ready = '1';
   setInterval(renderClock, 15000);
@@ -436,3 +471,5 @@ window.KC = {
   hour: (v) => { S.preview = v; if (S.scene) S.scene.setHour(v); renderClock(); }, mode: (k) => { if (S.scene) S.scene.setMode(k); }, card,
 };
 main();
+
+

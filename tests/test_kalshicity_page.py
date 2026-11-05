@@ -137,8 +137,8 @@ def part_b():
     check("b. height follows EV: the best edge is a tall tower, a losing edge a low stub, heights rise with EV for proven edges, grey (n < 30) edges stay low, dead ones that are not crumbling are rubble",
           js["bestH"] > 15 and js["worstH"] < 6 and js["monotone"] and js["smallMax"] <= 7 and js["deadStatic"] and js["provAvg"] > 10, (js["bestH"], js["worstH"], js["smallMax"], js["provAvg"]))
     check("b. going up and crumbling: the demo's new Gold rule is going up and the XRP edges crumble; the real data (first run) has none", js["modes"]["up"] and any("Gold" in i for i in js["modes"]["up"]) and js["modes"]["crumble"] and all("XRP" in i for i in js["modes"]["crumble"]), js["modes"])
-    check("b. glow stays 0.04 to 1 (the recent win rate); the far skyline is 4,200 deterministic towers outside every district, taller with distance",
-          js["glowRange"][0] >= 0.04 and js["glowRange"][1] <= 1 and js["scn"][0] == 4200 and js["scn"][1] and js["scn"][2] == 0 and int(js["scn"][3]) > 40, (js["glowRange"], js["scn"]))
+    check("b. glow stays 0.04 to 1; the 4,200 deterministic scenic buildings include warm low-rise infill and a taller outer skyline",
+          js["glowRange"][0] >= 0.04 and js["glowRange"][1] <= 1 and js["scn"][0] == 4200 and js["scn"][1] and js["scn"][2] > 400 and int(js["scn"][3]) > 40, (js["glowRange"], js["scn"]))
     check("b. the live merge: a fresher feed wins (balance, open positions become orders in their district, fog follows running); an older feed is ignored", js["fresh"][:4] == [77.77, True, 1, "Bitcoin"] and js["fresh"][4] is False and js["stale"] == [js["fresh"][0] if False else js["stale"][0], False] and js["stale"][0] != 11.11, (js["fresh"], js["stale"]))
     check("b. junk in, safe out: bad rows dropped, unknown status becomes NEW, unknown advice COLLECT, list ids that do not exist dropped, null / {} / bad edges give null",
           js["junk"] == [1, "NEW", "collect", 1, 0] and js["nullish"] == [None, None, None], (js["junk"], js["nullish"]))

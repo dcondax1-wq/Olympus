@@ -4,7 +4,7 @@
 
 export const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
 export const MIN_N = 30;
-export const BOT_FEED_MAX_AGE_S = 30 * 60; // past this, a saved running/paused bit cannot describe the bot now
+export const BOT_FEED_MAX_AGE_S = 15 * 60; // match the Kalshi feed page: old running/paused bits cannot describe the bot now
 export const STATUS = ['NEW', 'GROWING', 'HOLDING', 'DECAYING', 'DEAD'];
 export const STATUS_COLOR = { NEW: '#8f9bff', GROWING: '#35f0b0', HOLDING: '#ffd86a', DECAYING: '#ff9a3c', DEAD: '#ff4d57' };
 export const STATUS_WORD = {

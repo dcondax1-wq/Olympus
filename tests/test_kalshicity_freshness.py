@@ -32,7 +32,7 @@ console.log(JSON.stringify({ max: BOT_FEED_MAX_AGE_S,
         proc = subprocess.run(["node", "--input-type=module", "-e", script, MODULE],
                               capture_output=True, text=True, timeout=20, check=True)
         result = json.loads(proc.stdout.strip())
-        self.assertEqual(result["max"], 1800)
+        self.assertEqual(result["max"], 900)
         self.assertEqual(result["fresh"], [True, True, "Running"])
         self.assertEqual(result["staleRun"], [False, None, "Status unverified", "Running"])
         self.assertEqual(result["stalePause"], [False, None, False, "Paused"])

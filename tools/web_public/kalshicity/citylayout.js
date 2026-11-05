@@ -147,14 +147,45 @@ export function hypBuilding(h, part, maxG, prev) {
   return { e, w: size, d: size * 0.9, h: hh, fullH: hh, mode, from, glow, lit: clamp01(Math.log10(1 + n) / 3.3), loss: Math.min(0.6, Math.max(0.02, 1 - w)) };
 }
 
-/** The scenery: dark towers with no data (the far skyline), as many as the biggest tier needs, in a fixed random order. */
+/** Decorative low-rise night blocks between the real districts, then the outer skyline.
+ * These carry no edge data. Roads, market pads, research pads and the promenade stay clear. */
 export function scenery(L, count = 4200) {
-  const r = rng(36), out = [], R0 = L.extent * 0.98, R1 = R0 + 250;
-  let guard = 0;
-  while (out.length < count && guard++ < count * 4) {
+  const r = rng(36), blocks = rng(51), out = [], R0 = L.extent * 0.98, R1 = R0 + 250;
+  const grid = [], step = 5.6, span = Math.ceil((L.extent + 55) / step);
+  const pads = [...(L.districts || []), ...(L.labs || [])];
+  const clear = (x, z) => {
+    const rad = Math.hypot(x, z);
+    if (rad < (L.downHalf || 8) + 5 || rad > L.extent + 55 || Math.abs(rad - (L.extent + 36)) < 6) return false;
+    if (pads.some((d) => { const dx = x - d.cx, dz = z - d.cz;
+      return Math.abs(dx * d.ex[0] + dz * d.ex[1]) < d.half + 4 && Math.abs(dx * d.ez[0] + dz * d.ez[1]) < d.half + 4; })) return false;
+    return !(L.roads || []).some((rd) => { const vx = rd.x1 - rd.x0, vz = rd.z1 - rd.z0;
+      const t = Math.max(0, Math.min(1, ((x - rd.x0) * vx + (z - rd.z0) * vz) / Math.max(0.01, vx * vx + vz * vz)));
+      return Math.hypot(x - rd.x0 - vx * t, z - rd.z0 - vz * t) < rd.w * 0.5 + 3.1; });
+  };
+  for (let ix = -span; ix <= span; ix++) for (let iz = -span; iz <= span; iz++) {
+    const x = (ix + 0.5) * step, z = (iz + 0.5) * step;
+    if (clear(x, z)) grid.push([x, z]);
+  }
+  // Shuffle once: the LITE prefix retains the same streets and windows as HIGH.
+  for (let i = grid.length - 1; i > 0; i--) { const j = Math.floor(blocks() * (i + 1)); [grid[i], grid[j]] = [grid[j], grid[i]]; }
+  // Keep the first scenery tier close to the data districts so LITE still reads as a city.
+  // The existing shuffle breaks ties and keeps the same deterministic order across tiers.
+  grid.sort((a, b) => Math.hypot(a[0], a[1]) - Math.hypot(b[0], b[1]));
+  let next = 0, guard = 0;
+  while (out.length < count && guard++ < count * 8) {
+    if (out.length % 3 !== 2 && next < grid.length) {
+      const [x,z] = grid[next++], seed = blocks() * 0.93;
+      out.push({ x, z, w:3.6 + blocks() * 1.0, d:3.6 + blocks() * 1.0, h:2.8 + blocks() * 6.5, yaw:0,
+        seed, lit:0.76 + blocks() * 0.18, kind:'infill' });
+      continue;
+    }
     const a = r() * Math.PI * 2, rad = R0 + (R1 - R0) * Math.sqrt(r());
+    if (Math.abs(rad - (L.extent + 36)) < 5) continue; // clear the civic promenade
     const far = (rad - R0) / (R1 - R0);                                     // the skyline rises with distance, like a bowl round the city
-    out.push({ x: Math.cos(a) * rad, z: Math.sin(a) * rad, w: 2 + r() * 5, d: 2 + r() * 5, h: 4 + Math.pow(r(), 2.0) * (14 + 80 * far), yaw: r() * Math.PI, seed: r(), lit: 0.1 + r() * 0.5 });
+    const peak = Math.pow(0.5 + 0.5 * Math.cos(a * 6 + 0.4), 7), seed = r();
+    // Six concentrated skylines, wide podiums, and a crown tier make a city silhouette rather than a random wall.
+    out.push({ x: Math.cos(a) * rad, z: Math.sin(a) * rad, w: 2 + r() * 5 + peak * 3, d: 2 + r() * 5, h: 5 + (16 + 92 * peak) * (0.4 + far * 0.6) + seed * 22, yaw: Math.round(a * 2 / Math.PI) * Math.PI / 2, seed, lit: 0.3 + r() * 0.55 });
   }
   return out;
 }
+

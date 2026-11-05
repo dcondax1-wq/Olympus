@@ -25,7 +25,7 @@
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#2ef2d0'); r.setProperty('--oly-accent-rgb', '46, 242, 208'); })();</script>
-<link rel="stylesheet" href="kalshicity.css?v=k3">
+<link rel="stylesheet" href="kalshicity.css?v=k7">
 </head>
 <body>
 <canvas id="city" aria-label="A night city: one district per market, one building per edge of the Kalshi bot, roads with traffic, weather for the market mood" role="img"></canvas>
@@ -39,8 +39,10 @@
     <div class="odds">
       <div class="odd good"><span class="k">Do more</span><b id="oMore">-</b></div>
       <div class="odd bad"><span class="k">Stop</span><b id="oStop">-</b></div>
-      <div class="odd warn"><span class="k">Ruin risk</span><b id="oRuin">-</b></div>
+      <div class="odd warn"><span class="k" title="Upper bound for ever losing half the bankroll at this bet size, not a fixed-period forecast">Lose-half bound</span><b id="oRuin">-</b></div>
     </div>
+    <button type="button" id="cityInsights" class="city-insights" aria-expanded="false" aria-controls="pair ticker">Open insights <span aria-hidden="true">⌄</span></button>
+    <p class="risk-definition">Risk is a lifetime upper bound. Open Risk for the assumptions.</p>
     <div class="pair" id="pair" role="group" aria-label="Best edge so far and worst leak, in dollars">
       <button type="button" class="pcard good" id="pBest"><span class="k">Best edge so far</span><b id="pBestV">-</b><small id="pBestS">Reading...</small></button>
       <button type="button" class="pcard bad" id="pWorst"><span class="k">Worst leak</span><b id="pWorstV">-</b><small id="pWorstS">Reading...</small></button>
@@ -54,6 +56,10 @@
     <button type="button" id="sound" class="chip ico" aria-pressed="false" aria-label="Sound: off">&#9834;</button>
     <button type="button" id="scan" class="chip ico" aria-label="Scan the city for what the engine learned">&#9678;</button>
   </div>
+  <button type="button" class="city-mini" id="cityMini" aria-label="View the city map">
+    <span class="mini-title">NIGHT CITY NETWORK</span><svg id="miniSvg" viewBox="0 0 100 100" aria-hidden="true"></svg>
+    <span class="mini-count" id="miniCount">Reading markets...</span>
+  </button>
 </main>
 <section class="sheet" id="sheet" hidden aria-labelledby="sheetTitle">
   <header><h2 id="sheetTitle"></h2><button type="button" class="oly-close" id="close" aria-label="Close">×</button></header>
@@ -75,7 +81,9 @@
     <button type="button" data-view="lessons" aria-pressed="false">Lessons</button>
   </nav>
 </section>
-<script type="module" src="kalshicity.js?v=k4"></script>
+<script type="module" src="kalshicity.js?v=k13"></script>
 <script type="module" src="glossary.js"></script>
 </body>
 </html>
+
+

@@ -80,11 +80,11 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
           void main() { float across = 1.0 - abs(vUv.x - 0.5) * 2.0; float along = pow(1.0 - vUv.y, 1.6);
             float rip = 0.78 + 0.22 * sin(vUv.y * 38.0 - uTime * 2.4 + vUv.x * 6.0);
             float a = pow(max(across, 0.0), 1.4) * along * rip * uWet * (0.3 + 0.7 * uNight);
-            gl_FragColor = vec4(vC * a * 0.9, 1.0); }` }, ADD));
+            gl_FragColor = vec4(vC * a * 0.34, 1.0); }` }, ADD));
       wet = new THREE.InstancedMesh(geo, mat, real.length); wet.frustumCulled = false; wet.renderOrder = 1;
       const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), c = new THREE.Color();
       real.forEach((b, i) => {
-        const r = Math.hypot(b.x, b.z) || 1, rx = b.x / r, rz = b.z / r, len = 4 + b.fullH * 0.55, wd = b.w * 1.5 + 1;
+        const r = Math.hypot(b.x, b.z) || 1, rx = b.x / r, rz = b.z / r, len = 2 + b.fullH * 0.22, wd = b.w * 0.85 + 0.7;
         q.setFromAxisAngle(up, Math.atan2(-rx, -rz)); p.set(b.x + rx * (len / 2 + b.d * 0.4), 0.36, b.z + rz * (len / 2 + b.d * 0.4)); s.set(wd, 1, len);
         m4.compose(p, q, s); wet.setMatrixAt(i, m4);
         c.set(STATUS_COLOR[b.e.status]).multiplyScalar(0.6 + 1.1 * b.glow); wet.setColorAt(i, c);
@@ -180,10 +180,10 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
       onFlash: (f) => { if (f > 0.5 && lastF <= 0.5) { counts.strikes++; setTimeout(() => sfx('thunder'), 380); } lastF = f; } });
     else if (!st.stormy) stopFx('lightning');
     // aurora over the Vault, at night, not in a storm
-    if (st.night > 0.7 && st.weather !== 'storm' && !live.aurora) startFx('aurora', { position: [10, 62, -70], width: 95, height: 30, intensity: 0.85, colors: ['#ffd86a', '#35f0b0', '#8f9bff'] });
+    if (st.night > 0.7 && st.weather !== 'storm' && !live.aurora) startFx('aurora', { position: [10, 62, -70], width: 95, height: 30, intensity: 0.12, colors: ['#ffd86a', '#4a97d1', '#8f9bff'] });
     else if (st.night < 0.4 || st.weather === 'storm') stopFx('aurora');
     // lens flares: the Exchange's spire at night; the sun or the moon, moved to where it is now
-    if (st.night > 0.6 && !live.spire) { if (FXL.has('lensFlare')) { try { live.spire = FXL.lensFlare({ scene, camera }, { position: [0, 46, 0], color: '#7ff5e2' }); } catch (_) { /* skip */ } } }
+    if (st.night > 0.6 && !live.spire) { /* the tower itself glows: screen-space flare covered the foreground blocks */ }
     else if (st.night < 0.3) stopFx('spire');
     const key = `${Math.round(st.hour * 2)}|${st.night > 0.5 ? 'n' : 'd'}|${st.stormy ? 1 : 0}`;
     if (key !== flareKey) {
