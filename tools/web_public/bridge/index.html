@@ -144,6 +144,25 @@ pre { border: 1px solid rgba(192, 132, 252, .12); }
 .home { justify-self: start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: rgba(124, 58, 237, .18);
   color: var(--ink); text-decoration: none; font: 700 13px Orbitron, sans-serif; letter-spacing: .12em; }
 .framed .home { display: none; }
+.courier { position:relative; overflow:hidden; min-height:300px; display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr); gap:12px; align-items:center; padding:16px; border:1px solid rgba(245,201,106,.3); border-radius:20px; background:radial-gradient(circle at 25% 55%,rgba(168,85,247,.22),transparent 42%),linear-gradient(145deg,rgba(52,211,153,.08),transparent 50%),var(--card); box-shadow:inset 0 1px rgba(255,255,255,.12),0 20px 44px -30px #000; }
+.courier::before { content:""; position:absolute; inset:0; opacity:.38; pointer-events:none; background-image:radial-gradient(circle,rgba(255,255,255,.8) 0 1px,transparent 1.4px); background-size:43px 39px; -webkit-mask-image:linear-gradient(#000,transparent 80%); mask-image:linear-gradient(#000,transparent 80%); }
+.portal-scene,.courier-copy { position:relative; z-index:1; }.portal-scene{height:248px;min-width:0}.courier-copy{display:grid;gap:8px}.courier-copy h2{margin:0;font:800 20px/1.25 Orbitron,sans-serif;letter-spacing:.04em}.courier-copy p{margin:0;color:var(--mut);font-size:16px}.courier-copy .e{font-size:9.5px}
+.arch { position:absolute; left:50%; top:50%; width:170px; height:190px; transform:translate(-50%,-50%); border:3px solid transparent; border-top-color:var(--gold); border-left-color:rgba(192,132,252,.75); border-right-color:rgba(52,211,153,.72); border-radius:90px 90px 18px 18px; box-shadow:inset 0 0 28px rgba(168,85,247,.14),0 0 24px rgba(168,85,247,.25); }
+.arch::before,.arch::after{content:"";position:absolute;bottom:-11px;width:28px;height:28px;border:1px solid rgba(245,201,106,.45);background:linear-gradient(180deg,#21123d,#090611);transform:rotate(45deg);box-shadow:0 0 18px rgba(245,201,106,.18)}.arch::before{left:-15px}.arch::after{right:-15px}
+.gate { position:absolute; inset:17px 17px 14px; overflow:hidden; border-radius:70px 70px 12px 12px; background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.18),rgba(168,85,247,.25) 30%,rgba(6,4,13,.9) 70%); }
+.gate i{position:absolute;inset:50% auto auto 50%;width:112px;height:48px;border:1px solid rgba(216,180,254,.38);border-radius:50%;transform:translate(-50%,-50%) rotate(-10deg)}.gate i:nth-child(2){width:72px;height:102px;transform:translate(-50%,-50%) rotate(24deg);border-color:rgba(52,211,153,.3)}
+.bridge-line { position:absolute; left:4%; right:4%; top:54%; height:2px; background:linear-gradient(90deg,transparent,#c084fc 17%,#fff 50%,#34d399 83%,transparent); box-shadow:0 0 14px rgba(192,132,252,.7); }.bridge-line::before,.bridge-line::after{content:"";position:absolute;top:-10px;width:3px;height:22px;background:var(--gold);box-shadow:0 0 9px var(--gold)}.bridge-line::before{left:14%}.bridge-line::after{right:14%}
+.packet { position:absolute; left:12%; top:calc(54% - 6px); width:13px; height:13px; border-radius:3px; transform:rotate(45deg); background:#fff2bf; border:1px solid var(--gold); box-shadow:0 0 14px var(--gold); }
+.city-a,.city-b { position:absolute; bottom:5px; display:flex;align-items:end;gap:4px;height:58px }.city-a{left:0}.city-b{right:0;transform:scaleX(-1)}.city-a i,.city-b i{display:block;width:10px;height:var(--h);background:linear-gradient(180deg,rgba(192,132,252,.75),rgba(35,18,61,.6));border:1px solid rgba(216,180,254,.3);box-shadow:0 0 10px rgba(168,85,247,.25)}.city-b i{background:linear-gradient(180deg,rgba(52,211,153,.7),rgba(10,52,43,.55));border-color:rgba(52,211,153,.3)}
+.safe { display:flex;flex-wrap:wrap;gap:6px }.safe span{min-height:30px;display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid var(--line);border-radius:999px;color:var(--mut);font:700 10px/1.1 Orbitron,sans-serif;letter-spacing:.05em}.safe i{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.glossary { border:1px solid rgba(245,201,106,.24); border-radius:12px; background:rgba(245,201,106,.055); padding:0 10px; }.glossary summary{min-height:44px;display:flex;align-items:center;color:var(--gold);font-weight:700}.glossary p{margin:0 0 10px;color:var(--ink);font-size:14px}.glossary b{color:var(--gold)}
+.chips button { min-height:44px; }
+details summary { min-height:44px; display:flex; align-items:center; }
+@media(max-width:560px){.courier{grid-template-columns:1fr;min-height:0;padding:14px}.portal-scene{height:218px}.courier-copy h2{font-size:18px}.arch{width:148px;height:166px}.w{padding-left:12px;padding-right:12px}.tabs{gap:3px}.tabs button{font-size:11.5px}.stages button{font-size:12.5px}.safe span{flex:1 1 120px;justify-content:center}.top{align-items:flex-start}.t{font-size:14px;overflow-wrap:anywhere}.tag{font-size:9px}}
+@media(prefers-reduced-motion:no-preference){.packet{animation:courierRun 4.2s ease-in-out infinite}.gate i:first-child{animation:portalSpin 10s linear infinite}.gate i:nth-child(2){animation:portalSpin2 13s linear infinite reverse}.arch{animation:archGlow 3s ease-in-out infinite alternate}}
+@keyframes courierRun{0%,8%{left:12%;opacity:0}18%{opacity:1}82%{opacity:1}92%,100%{left:84%;opacity:0}}
+@keyframes portalSpin{to{transform:translate(-50%,-50%) rotate(350deg)}}@keyframes portalSpin2{to{transform:translate(-50%,-50%) rotate(384deg)}}@keyframes archGlow{to{filter:drop-shadow(0 0 10px rgba(245,201,106,.42))}}
+@media(prefers-reduced-motion:reduce){.packet,.gate i,.arch{animation:none!important}}
 </style>
 <script>(function () { try { if (window.top !== window) document.documentElement.classList.add('framed'); } catch (e) { document.documentElement.classList.add('framed'); } })();</script>
 </head>
@@ -151,6 +170,16 @@ pre { border: 1px solid rgba(192, 132, 252, .12); }
 <div class="w">
   <a class="home" href="../jarvis/" id="homeLink">&#927; Back to Olympus</a>
   <div><div class="e">OLYMPUS · CLAUDE × CHATGPT</div><h1>BRIDGE</h1></div>
+  <section class="courier" aria-labelledby="courierH">
+    <div class="portal-scene" aria-hidden="true">
+      <div class="city-a"><i style="--h:28px"></i><i style="--h:46px"></i><i style="--h:34px"></i></div><div class="city-b"><i style="--h:26px"></i><i style="--h:50px"></i><i style="--h:37px"></i></div>
+      <div class="arch"><div class="gate"><i></i><i></i></div></div><div class="bridge-line"></div><div class="packet"></div>
+    </div>
+    <div class="courier-copy"><div class="e">COURIER PORTAL</div><h2 id="courierH">Move an idea into a checked delivery.</h2><p>Connect once. Pick a ready job. ChatGPT carries the result back through GitHub for Claude to use.</p>
+      <div class="safe" aria-label="Bridge safety"><span><i></i>No passwords</span><span><i></i>No live orders</span><span><i></i>Files checked</span></div>
+      <details class="glossary"><summary>Plain word: liquidity</summary><p><b>Liquidity</b> means how much money is available and moving in a market. More liquidity usually makes buying and selling easier. Bridge only mentions it inside the Pantheon story-writing job.</p></details>
+    </div>
+  </section>
   <nav class="stages" id="stages" aria-label="Where you are">
     <button type="button" data-stage="connect" aria-pressed="true"><b>1</b> Connect</button>
     <button type="button" data-stage="test" aria-pressed="false"><b>2</b> Test</button>
