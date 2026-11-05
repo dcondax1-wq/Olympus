@@ -1,0 +1,125 @@
+(function () {
+  'use strict';
+  const SOURCES = [
+    { id: 'datacity', label: 'Data City', url: '../datacity/city.json', type: 'research', detail: 'Research districts and evidence map' },
+    { id: 'cities', label: 'Cities', url: '../cities/cities.json', type: 'map', detail: 'City atlas and routing' },
+    { id: 'arena', label: 'Arena', url: '../arena/events.json', type: 'events', detail: 'Verified activity events' },
+    { id: 'oracle', label: 'Oracle', url: '../oracle/prophecy.json', type: 'forecast', detail: 'Published forecast state' },
+    { id: 'kalshi', label: 'Kalshi City', url: '../kalshicity/scan.json', type: 'market', detail: 'Published market scan' },
+    { id: 'learning', label: 'Learning', url: '../kalshicity/learning_log.json', type: 'lessons', detail: 'Published Kalshi City lesson log' }
+  ];
+  const $ = (id) => document.getElementById(id);
+  const key = 'olympus.observatory.scans.v1';
+  let selected = SOURCES[0].id;
+  let latest = [];
+  let history = [];
+  try { const h = JSON.parse(localStorage.getItem(key) || '[]'); if (Array.isArray(h)) history = h.slice(-30); } catch (_) { /* storage unavailable */ }
+  const now = () => Date.now();
+  const stamp = (t) => new Date(t).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  function numericTime(data) {
+    const lastEntry = data && Array.isArray(data.entries) && data.entries.length ? data.entries[data.entries.length - 1] : null;
+    const candidates = [data && data.t, data && data.generated_at, data && data.updated_at, data && data.built, lastEntry && lastEntry.t];
+    for (const value of candidates) {
+      if (typeof value === 'number' && value > 1000000000) return value < 100000000000 ? value * 1000 : value;
+      if (typeof value === 'string') { const parsed = Date.parse(value); if (Number.isFinite(parsed)) return parsed; }
+    }
+    return null;
+  }
+  function fingerprint(data) {
+    const value = JSON.stringify(data);
+    let hash = 2166136261;
+    // FNV-1a is a local change marker, not a security hash.
+    for (let i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
+    return (hash >>> 0).toString(16).padStart(8, '0');
+  }
+  function previous(id) {
+    for (let i = history.length - 1; i >= 0; i--) {
+      const source = history[i].sources.find((s) => s.id === id && s.ok);
+      if (source) return source;
+    }
+    return null;
+  }
+  async function load(source) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await fetch(source.url + '?observed=' + Math.floor(now() / 300000), { signal: controller.signal, cache: 'no-store' });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const data = await response.json();
+      if (!data || typeof data !== 'object') throw new Error('The source did not return an object');
+      const t = numericTime(data);
+      const demo = data.demo === true || data.mode === 'demo';
+      const hash = fingerprint(data);
+      const old = previous(source.id);
+      const ageHours = t ? Math.max(0, (now() - t) / 3600000) : null;
+      // Static sources without a timestamp are not called stale.
+      const status = demo ? 'warn' : ageHours != null && ageHours > 48 ? 'warn' : 'good';
+      return { ...source, ok: true, status, hash, t, ageHours, demo, changed: !!old && old.hash !== hash, bytes: JSON.stringify(data).length };
+    } catch (error) {
+      return { ...source, ok: false, status: 'bad', error: error.name === 'AbortError' ? 'Timed out after 10 seconds' : String(error.message || error) };
+    } finally { clearTimeout(timer); }
+  }
+  function insight(source) {
+    if (!source.ok) return { title: source.label + ' feed is unavailable', evidence: source.error, action: 'Open the source and check its publisher or path.' };
+    if (source.demo) return { title: source.label + ' is marked demo', evidence: 'Published JSON contains demo=true or mode=demo.', action: 'Keep demo labels visible and check whether live data is expected.' };
+    if (source.ageHours != null && source.ageHours > 48) return { title: source.label + ' may be stale', evidence: 'Published timestamp is ' + Math.floor(source.ageHours) + ' hours old (' + stamp(source.t) + ').', action: 'Check the source schedule and its latest successful publish.' };
+    if (source.changed) return { title: source.label + ' changed since your last scan', evidence: 'Content marker differs from the last available copy on this device.', action: 'Review the change in the source app before proposing a dashboard adjustment.' };
+    return null;
+  }
+  function node(tag, className, text) { const el = document.createElement(tag); if (className) el.className = className; if (text != null) el.textContent = text; return el; }
+  function render() {
+    const towers = $('towers'); towers.replaceChildren();
+    latest.forEach((source, index) => {
+      const tower = node('button', 'tower ' + (source.status === 'good' ? '' : source.status), null);
+      tower.type = 'button'; tower.style.setProperty('--height', (125 + (index * 41) % 130) + 'px');
+      tower.setAttribute('aria-label', source.label + ': ' + (source.ok ? source.status === 'good' ? 'available' : 'needs review' : 'unavailable'));
+      tower.setAttribute('aria-pressed', String(source.id === selected));
+      tower.append(node('span', '', source.label));
+      tower.addEventListener('click', () => { selected = source.id; renderDetail(); towers.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === tower))); });
+      towers.append(tower);
+    });
+    $('healthy').textContent = String(latest.filter((s) => s.ok).length);
+    $('attention').textContent = String(latest.filter((s) => insight(s)).length);
+    $('history').textContent = String(history.length);
+    renderDetail();
+    const reviews = $('reviews'); reviews.replaceChildren();
+    const findings = latest.map(insight).filter(Boolean);
+    if (!findings.length) reviews.append(node('p', '', 'No source needs review in this scan. This is a health check, not proof of trading performance.'));
+    findings.forEach((finding) => {
+      const card = node('article', 'item'); const title = node('b', '', finding.title);
+      title.append(node('span', 'pill', 'REVIEW'));
+      card.append(title, node('small', '', 'Evidence: ' + finding.evidence), node('small', '', 'Next: ' + finding.action)); reviews.append(card);
+    });
+  }
+  function renderDetail() {
+    const source = latest.find((s) => s.id === selected); if (!source) return;
+    $('detail-title').textContent = source.label;
+    const detail = $('detail'); detail.replaceChildren(node('p', '', source.detail));
+    const rows = [
+      'Status: ' + (source.ok ? source.status === 'good' ? 'Available' : 'Available · review' : 'Unavailable'),
+      'Source: ' + source.url,
+      source.ok ? 'Content marker: ' + source.hash + (source.changed ? ' · changed locally' : '') : 'Error: ' + source.error,
+      source.t ? 'Published: ' + stamp(source.t) : 'Published time: not provided by this source',
+      source.ok ? 'Size: ' + source.bytes.toLocaleString() + ' characters' : 'No data received'
+    ];
+    rows.forEach((row) => detail.append(node('div', 'item', row)));
+  }
+  async function scan() {
+    const button = $('refresh'); button.disabled = true; button.textContent = 'Scanning…';
+    $('updated').textContent = 'Checking six published sources…';
+    latest = await Promise.all(SOURCES.map(load));
+    history.push({ at: now(), sources: latest.map(({ id, ok, status, hash, t, demo, error }) => ({ id, ok, status, hash, t, demo, error })) });
+    history = history.slice(-30);
+    try { localStorage.setItem(key, JSON.stringify(history)); } catch (_) { /* storage quota or privacy mode */ }
+    render(); $('updated').textContent = 'Last scan ' + stamp(now()) + ' · refreshes while open every five minutes';
+    button.disabled = false; button.textContent = 'Scan sources';
+    if (window.OLYMPUS && window.OLYMPUS.ready) window.OLYMPUS.ready();
+  }
+  function exportReview() {
+    const report = { title: 'OLYMPUS Observatory review', generated: new Date().toISOString(), method: 'Read-only published JSON scan; change markers stored on this device; no code or trading change applied', sources: latest, findings: latest.map(insight).filter(Boolean), scansSaved: history.length };
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob); const link = node('a'); link.href = url; link.download = 'olympus-observatory-review.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  $('refresh').addEventListener('click', scan); $('export').addEventListener('click', exportReview);
+  scan(); setInterval(() => { if (!document.hidden) scan(); }, 300000);
+})();
