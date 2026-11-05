@@ -15,11 +15,11 @@ float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
 
 export const BUILD_VS = `
 attribute vec4 aPosSize; attribute vec4 aHY; attribute vec3 aColor; attribute vec2 aState; attribute float aSeed; attribute float aBob;
-uniform float uGrow; uniform float uTime; uniform float uBobAmp;
+uniform float uGrow; uniform float uTime; uniform float uBobAmp; uniform float uScenery;
 varying vec3 vColor; varying vec4 vHY; varying vec2 vState; varying vec3 vLocal; varying vec3 vN; varying float vFD; varying float vSeed; varying float vWy; varying vec3 vW;
 void main(){
   vColor = aColor; vHY = aHY; vState = aState; vLocal = position; vSeed = aSeed;
-  float gr = clamp(uGrow * 1.8 - length(aPosSize.xy) / 700.0 - aSeed * 0.2, 0.0, 1.0); gr = gr*gr*(3.0-2.0*gr);
+  float gr = clamp(uGrow * 1.8 - length(aPosSize.xy) / 700.0 - aSeed * 0.2, 0.0, 1.0); gr = mix(gr*gr*(3.0-2.0*gr),1.0,uScenery);
   float hh = aHY.x * max(gr, 0.001);
   vec3 wp = vec3(aPosSize.x + position.x * aPosSize.z, aHY.y + position.y * hh, aPosSize.y + position.z * aPosSize.w);
   wp.y += uBobAmp * sin(uTime * 0.5 + aBob * 40.0);
@@ -155,10 +155,17 @@ varying vec3 vW;
 ${HASH}
 void main(){
   vec2 p = vW.xz;
-  vec2 g = abs(fract(p / 20.0 - 0.5) - 0.5) / fwidth(p / 20.0);
+  vec2 block = p / 20.0;
+  vec2 g = abs(fract(block - 0.5) - 0.5) / fwidth(block);
   float line = 1.0 - min(min(g.x, g.y), 1.0);
+  vec2 junctionDistance = min(fract(block), 1.0 - fract(block)) / fwidth(block);
+  float junction = 1.0 - min(max(junctionDistance.x, junctionDistance.y), 1.0);
   float d = length(vW - uCam);
-  vec3 col = uGround * (0.7 + 0.5 * noise(p * 0.05)) + uAccent * line * 0.07 * (1.0 - smoothstep(200.0, 900.0, d));
+  float nearRoad = 1.0 - smoothstep(180.0, 900.0, d);
+  vec3 street = mix(vec3(1.0, 0.43, 0.10), uAccent, 0.38);
+  vec3 col = uGround * (0.7 + 0.5 * noise(p * 0.05));
+  // The glowing grid is a street surface cue; towers still come only from source records.
+  col += (uAccent * line * 0.09 + street * (line * 0.16 + junction * 0.34) * (1.0 - uDay)) * nearRoad;
   col += uAccent * 0.035 * smoothstep(0.0, 400.0, 400.0 - length(p));
   col = mix(col, uFog, clamp(1.0 - exp(-uFogD*uFogD*d*d), 0.0, 1.0));
   gl_FragColor = vec4(col, 1.0);

@@ -7,9 +7,10 @@
 // Draw calls stay flat whatever the data: 40k buildings are still one draw (the tier's cap keeps the triangles in budget).
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
-import * as SH from './shaders.js';
+import * as SH from './shaders.js?v=s3';
 import { buildLandmark, spinLandmark, disposeGroup } from './landmarks.js';
 import { rgb, clamp, rng, hash32 } from './util.js';
+import { buildMetropolis } from './metropolis.js?v=m2';
 
 /** What each render-core tier may draw: buildings per city, hub miniature instances in all, weather and roof-glow points. */
 export const TIERS = {
@@ -38,7 +39,7 @@ const WX = {   // kind id, box, velocity (box units per second), sprite size, ti
 const col3 = (hex) => new THREE.Color(hex);
 
 /** A unit box without its bottom: x, z in -0.5..0.5, y in 0..1 (10 triangles). */
-function unitBox5() {
+export function unitBox5() {
   const P = [], N = [], I = [];
   const face = (n, a, b, c, d) => { const o = P.length / 3; for (const v of [a, b, c, d]) { P.push(...v); N.push(...n); } I.push(o, o + 1, o + 2, o, o + 2, o + 3); };
   face([1, 0, 0], [0.5, 0, 0.5], [0.5, 0, -0.5], [0.5, 1, -0.5], [0.5, 1, 0.5]);
@@ -77,7 +78,7 @@ export class Stage {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(56, 1, 0.5, 5000);
     this.scene.fog = new THREE.FogExp2(0x05060f, 0.0012);
-    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, space: 'display', env: 'night', maxDpr: 1.75, adapt: true,
+    this.rc = createRenderer({ canvas, context: opts.context, scene: this.scene, camera: this.camera, space: 'display', env: 'night', maxDpr: 1.75, adapt: true,
       bloom: { strength: 0.6, radius: 0.5, threshold: 0.8 }, grade: { grain: 0.03, vignette: 0.26, aberration: 0.002, saturation: 1.05 },
       onQuality: (lv) => { this.onTier(lv); } });
     this.renderer = this.rc.renderer;
@@ -203,9 +204,9 @@ export class Stage {
   }
 
   // ------------------------------------------------------------------ the look of a city (or of the hub when spec is null)
-  look(spec, hubPal) {
+  look(spec, hubPal, night = false) {
     const U = this.U;
-    const sk = spec ? spec.sky : { kind: 'night', top: '#05030f', mid: '#140a30', low: '#3a2468', stars: 0.95 };
+    const sk = spec && !night ? spec.sky : { kind: 'night', top: '#020410', mid: '#0c1235', low: '#302055', stars: 0.98 };
     const pal = spec ? spec.palette : hubPal || { accent: '#a68bff', ground: '#080614', fog: '#0a0820' };
     U.uTop.value.set(sk.top); U.uMid.value.set(sk.mid); U.uLow.value.set(sk.low); U.uStars.value = sk.stars; U.uKind.value = SKY_KIND[sk.kind] ?? 0;
     U.uSun.value.set(...(SUN[sk.kind] || SUN.night));
@@ -230,7 +231,7 @@ export class Stage {
   }
 
   /** islands: [{ x, y, z, R, top: '#', rim: '#', seed }]; slots = miniature instances per island */
-  buildHub(islands, slots, links) {
+  buildHub(islands, slots, network) {
     this.clearHub();
     const n = islands.length, dispose = [];
     const sg = instanced(slabGeo(SLAB_SEG[this.rc.quality()] || 24), n), pos = new Float32Array(n * 4), top = new Float32Array(n * 3), rim = new Float32Array(n * 3), seed = new Float32Array(n), dim = new Float32Array(n);
@@ -249,12 +250,26 @@ export class Stage {
     mg.setAttribute('aSeed', attr(A.sd, 1)); mg.setAttribute('aBob', attr(A.bob, 1));
     const minis = new THREE.Mesh(mg, this.buildMat());
     minis.frustumCulled = false;
-    // routes between neighbouring islands, auras
-    const rp = [];
-    for (const [a, b] of links || []) rp.push(islands[a].x, islands[a].y, islands[a].z, islands[b].x, islands[b].y, islands[b].z);
-    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
-    const routes = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: 0x7a6cff, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+    // Elevated lightways make the world connected; all arcs remain ONE draw call.
+    const links = Array.isArray(network) ? network : network?.links || [];
+    const bridges = new Set((network?.bridges || []).map(([a,b]) => `${a}:${b}`));
+    const rp = [], rcol = [], steps = ['low','off'].includes(this.rc.quality()) ? 5 : 12;
+    const point = (a,b,t) => [a.x+(b.x-a.x)*t, a.y+(b.y-a.y)*t+Math.sin(t*Math.PI)*Math.hypot(a.x-b.x,a.z-b.z)*.16, a.z+(b.z-a.z)*t];
+    for (const [ai, bi] of links) {
+      const a=islands[ai], b=islands[bi], ca=col3(a.rim), cb=col3(b.rim);
+      const bridge = bridges.has(`${ai}:${bi}`);
+      for(let j=0;j<steps;j++) for(const u of [j/steps,(j+1)/steps]) { rp.push(...point(a,b,u));const c=ca.clone().lerp(cb,u).multiplyScalar(bridge ? 1.55 : 1.2);rcol.push(c.r,c.g,c.b); }
+    }
+    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));lg.setAttribute('color',new THREE.Float32BufferAttribute(rcol,3));
+    const routes = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors:true, transparent: true, opacity: 0.88, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
     routes.frustumCulled = false;
+    // Tiny aircraft lights share a single Points draw; no traffic in LITE or reduced motion.
+    const still = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const flightPaths = !still && ['high','ultra'].includes(this.rc.quality()) ? links.filter((_,i)=>i%5===0).slice(0,36).map(([a,b])=>[islands[a],islands[b]]) : [];
+    const fg=new THREE.BufferGeometry(), fp=new Float32Array(flightPaths.length*9);
+    fg.setAttribute('position',new THREE.BufferAttribute(fp,3));
+    const flights=new THREE.Points(fg,new THREE.PointsMaterial({color:0xdaf6ff,size:5,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
+    flights.visible=!!flightPaths.length;flights.frustumCulled=false;
     const ap = new Float32Array(n * 3), ac = new Float32Array(n * 3), asz = new Float32Array(n), asd = new Float32Array(n);
     islands.forEach((is, i) => { ap.set([is.x, is.y + is.R * 0.05, is.z], i * 3); ac.set(rgb(is.rim), i * 3); asz[i] = is.R * 0.55; asd[i] = is.seed; });
     const gg = new THREE.BufferGeometry();
@@ -267,20 +282,20 @@ export class Stage {
     ring.rotation.x = Math.PI / 2; ring.visible = false; ring.frustumCulled = false;
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.5, 1, 14, 1, true), new THREE.MeshBasicMaterial({ color: 0xffd95a, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, side: THREE.DoubleSide }));
     beam.visible = false; beam.frustumCulled = false;
-    this.hubG.add(slab, minis, routes, aura, ring, beam);
-    dispose.push(sg, slab.material, mg, minis.material, lg, routes.material, gg, aura.material, ring.geometry, ring.material, beam.geometry, beam.material);
-    this.hubRec = { n, slots, islands, A, minis, slab, dimA, ring, beam, dispose };
+    this.hubG.add(slab, minis, routes, flights, aura, ring, beam);
+    dispose.push(sg, slab.material, mg, minis.material, lg, routes.material, fg, flights.material, gg, aura.material, ring.geometry, ring.material, beam.geometry, beam.material);
+    this.hubRec = { n, slots, islands, A, minis, slab, dimA, ring, beam, dispose, flights, flightPaths, point };
   }
 
-  buildMat() {
-    return new THREE.ShaderMaterial({ vertexShader: SH.BUILD_VS, fragmentShader: SH.BUILD_FS, uniforms: this.pick('uTime', 'uFog', 'uFogD', 'uDay', 'uGrow', 'uBobAmp', 'uWinTint', 'uSel', 'uCam', 'uTop', 'uLow', 'uSun', 'uPbr') });
+  buildMat(scenery = false) {
+    return new THREE.ShaderMaterial({ vertexShader: SH.BUILD_VS, fragmentShader: SH.BUILD_FS, uniforms: { ...this.pick('uTime', 'uFog', 'uFogD', 'uDay', 'uGrow', 'uBobAmp', 'uWinTint', 'uSel', 'uCam', 'uTop', 'uLow', 'uSun', 'uPbr'), uScenery: { value: scenery ? 1 : 0 } } });
   }
 
   /** write one island's miniature (a generated city) into its slots; city null clears them */
   setMini(i, city) {
     const R = this.hubRec; if (!R) return;
     const { A, slots, islands } = R, is = islands[i], o = i * slots;
-    const s = city ? (is.R * 0.8) / city.bounds.r : 0, hk = s * 1.7, hcap = is.R * 1.25;
+    const s = city ? (is.R * 0.8) / city.bounds.r : 0, hk = s * 2.3, hcap = is.R * 1.7;
     for (let k = 0; k < slots; k++) {
       const j = o + k;
       if (!city || k >= city.n) { A.ps.fill(0, j * 4, j * 4 + 4); A.hy.fill(0, j * 4, j * 4 + 4); continue; }
@@ -319,6 +334,7 @@ export class Stage {
     if (!this.cityRec) return;
     this.cityG.clear();
     this.cityRec.dispose.forEach((o) => o.dispose());
+    this.cityRec.metropolis?.dispose();
     disposeGroup(this.cityRec.landmark);
     this.cityRec = null;
   }
@@ -364,6 +380,9 @@ export class Stage {
     lm.position.set(city.site.x, 0, city.site.z);
     this.cityG.add(lm);
     const scenery = this._scenery(spec, city, dispose);
+    const still = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const metropolis = buildMetropolis(city, spec, this.box5, this.buildMat(true), this.tier(), still);
+    this.cityG.add(metropolis.group);
     // selection: a beam + ring on the chosen building
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0xffd95a, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, side: THREE.DoubleSide }));
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.05, 8, 40), new THREE.MeshBasicMaterial({ color: 0xffd95a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
@@ -371,7 +390,7 @@ export class Stage {
     beam.visible = ring.visible = false; beam.frustumCulled = ring.frustumCulled = false;
     this.cityG.add(beam, ring);
     dispose.push(beam.geometry, beam.material, ring.geometry, ring.material);
-    this.cityRec = { spec, city, mesh, stA, landmark: lm, beam, ring, dispose, scenery, t0: 0 };
+    this.cityRec = { spec, city, mesh, stA, landmark: lm, beam, ring, dispose, scenery, metropolis, t0: 0 };
     this.U.uGrow.value = 0;
     return this.cityRec;
   }
@@ -418,7 +437,13 @@ export class Stage {
     this.sky.position.copy(this.camera.position);
     if (this.mode === 'city' && U.uGrow.value < 1) U.uGrow.value = Math.min(1, U.uGrow.value + dt * 0.55);
     if (this.mode === 'hub') { U.uBobAmp.value = 1.2; U.uGrow.value = 1; }
+    if(this.mode==='hub' && this.hubRec?.flightPaths.length){
+      const H=this.hubRec, a=H.flights.geometry.getAttribute('position');
+      H.flightPaths.forEach(([p,q],i)=>{for(let j=0;j<3;j++){const u=((t*.045+i*.173-j*.014)%1+1)%1;a.array.set(H.point(p,q,u),(i*3+j)*3);}});
+      a.needsUpdate=true;
+    }
     if (this.cityRec) {
+      this.cityRec.metropolis?.update(t);
       spinLandmark(this.cityRec.landmark, dt);
       const tr = this.cityRec.scenery && this.cityRec.scenery.train;
       if (tr) {
@@ -455,3 +480,4 @@ export class Stage {
   start(cb) { this.rc.start(cb); }
   dispose() { this.rc.dispose(); }
 }
+

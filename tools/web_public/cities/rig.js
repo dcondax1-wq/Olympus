@@ -20,7 +20,7 @@ export class Rig {
     // Ignore typing in search boxes and clear keys if the tab loses focus.
     this.keys = new Set();
     const flightKeys = new Set(['w', 'a', 's', 'd', 'q', 'e', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'shift']);
-    window.addEventListener('keydown', (e) => {
+    if (typeof window !== 'undefined') window.addEventListener('keydown', (e) => {
       const target = e.target;
       if (e.altKey || e.ctrlKey || e.metaKey || (target && (target.closest('input,textarea,select,[contenteditable="true"]')))) return;
       const key = e.key.toLowerCase();
@@ -28,8 +28,8 @@ export class Rig {
       this.keys.add(key);
       if (key !== 'shift') { e.preventDefault(); this._touched(); }
     });
-    window.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
-    window.addEventListener('blur', () => this.keys.clear());
+    if (typeof window !== 'undefined') window.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
+    if (typeof window !== 'undefined') window.addEventListener('blur', () => this.keys.clear());
     dom.addEventListener('pointerdown', (e) => this._down(e));
     dom.addEventListener('pointermove', (e) => this._move(e));
     for (const ev of ['pointerup', 'pointercancel']) dom.addEventListener(ev, (e) => this._up(e));
@@ -166,3 +166,35 @@ export function makePath(pos, look, closed = true) {
   const L = new THREE.CatmullRomCurve3(look.map((p) => new THREE.Vector3(...p)), closed, 'centripetal');
   return { pos: P, look: L, length: Math.max(1, P.getLength()) };
 }
+
+// A cached roof-height grid keeps guided flights out of measured buildings.
+// The precomputed climb envelope rises before a tower, rather than jumping at it.
+const flightFloors = new WeakMap();
+export function safeFlight(path, city) {
+  let floor = flightFloors.get(city);
+  if (!floor) {
+    const cell = Math.max(6, city.pitch), heights = new Map();
+    for (let k = 0; k < city.n; k++) {
+      const x0 = Math.floor((city.x[k] - city.w[k] / 2 - 3) / cell), x1 = Math.floor((city.x[k] + city.w[k] / 2 + 3) / cell);
+      const z0 = Math.floor((city.z[k] - city.d[k] / 2 - 3) / cell), z1 = Math.floor((city.z[k] + city.d[k] / 2 + 3) / cell);
+      const height = city.y0[k] + city.h[k];
+      for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++) { const key = `${x}:${z}`; heights.set(key, Math.max(heights.get(key) || 0, height)); }
+    }
+    floor = (x, z) => heights.get(`${Math.floor(x / cell)}:${Math.floor(z / cell)}`) || 0;
+    flightFloors.set(city, floor);
+  }
+  const count = clamp(Math.ceil(path.length / 2), 256, 8192), step = path.length / count, profile = new Float32Array(count);
+  for (let i = 0; i < count; i++) { const p = path.pos.getPointAt(i / count); profile[i] = Math.max(p.y, floor(p.x, p.z) + 8); }
+  // Circular forward/backward sweeps bound the climb to ~19 degrees.
+  for (let pass = 0; pass < 2; pass++) {
+    for (let j = 0; j < count * 2; j++) { const i = j % count, previous = (i + count - 1) % count; profile[i] = Math.max(profile[i], profile[previous] - step * .35); }
+    for (let j = count * 2 - 1; j >= 0; j--) { const i = j % count, next = (i + 1) % count; profile[i] = Math.max(profile[i], profile[next] - step * .35); }
+  }
+  const source = path.pos;
+  return { ...path, pos: { getPointAt(u) {
+    const p = source.getPointAt(u), phase = ((u % 1) + 1) % 1 * count, i = Math.floor(phase), mix = phase - i;
+    p.y = Math.max(p.y, profile[i] * (1 - mix) + profile[(i + 1) % count] * mix, floor(p.x, p.z) + 6);
+    return p;
+  } }, clearanceSamples: count };
+}
+

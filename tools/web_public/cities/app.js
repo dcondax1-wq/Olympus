@@ -8,10 +8,13 @@
 import { $, el, store, clamp, lerp, hash32, rng, cityOfDay, todayStr, seedOfDay, fmtField, plain } from './util.js';
 import { DATASETS, loadDataset, fieldMap } from './datasets.js';
 import { generate, validateSpec, Picker, evalExpr, parseExpr } from './generator.js';
-import { Stage, TIERS, BUDGETS } from './scene.js';
-import { Rig, makePath } from './rig.js';
+import { mountWorld } from './world.js?v=w2';
+import { cityRoutes } from './routes.js?v=r1';
+import { openDistrictWorld } from './district-world.js?v=d2';
 import { insight } from './insight.js';
 import { randomSpec, seedDataset, newSeed, cleanSeed } from './procedural.js';
+// Do not load/compile the 3D pipeline until this device has a usable context.
+let Stage, TIERS, BUDGETS, Rig, makePath, safeFlight;
 
 const GROUPS = { trading: ['Trading', '#4f8cff'], research: ['Research', '#a68bff'], money: ['Money', '#ff9f43'], kalshi: ['Kalshi', '#ff6b9a'], life: ['Life', '#39e59a'], obsidian: ['Obsidian', '#9d8cff'] };
 const GROUP_ORDER = Object.keys(GROUPS);
@@ -29,6 +32,7 @@ const saveSet = (k, set) => store.set(k, JSON.stringify([...set].slice(-400)));
 const specOf = (id) => S.byId.get(id) || S.randoms.get(id);
 const q = new URLSearchParams(location.search);
 S.demo = q.get('demo') === '1';
+S.night = q.get('night') === '0' ? false : q.get('night') === '1' || store.get('cities.night', '1') === '1';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const O = () => window.OLYMPUS || null;
@@ -76,6 +80,7 @@ const sheet = $('#sheet'), sheetBody = $('#sheetBody'), chips = $('#chips'), doc
 let toastT = 0, capT = 0;
 const toast = (msg, ms = 3200) => { toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), ms); };
 const caption = (small, text, ms = 4200) => { capEl.replaceChildren(el('small', null, small), document.createTextNode(text)); capEl.classList.add('on'); clearTimeout(capT); capT = setTimeout(() => capEl.classList.remove('on'), ms); };
+const clearCaption = () => { clearTimeout(capT); capEl.classList.remove('on'); };
 const svg = (path) => { const n = 'http://www.w3.org/2000/svg', s = document.createElementNS(n, 'svg'), p = document.createElementNS(n, 'path'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2'); p.setAttribute('d', path); s.appendChild(p); return s; };
 const SHORT = { 'Surprise me': 'Wow', 'World map': 'World', 'Random city': 'Dice' };
 const tab = (id, label, icon, fn) => { const b = el('button', 'tab'); b.id = id; b.setAttribute('aria-label', label); b.append(svg(icon), document.createTextNode(SHORT[label] || label)); b.addEventListener('click', fn); return b; };
@@ -103,7 +108,7 @@ const hubSlots = () => clamp(Math.floor(S.stage.caps().mini / Math.max(1, S.spec
 /** The world map: one continent per group (Trading, Research, Money, Kalshi, Life, Obsidian) on a ring; inside a continent the
  *  islands spiral out from its centre ordered by region, so a region is a band. Any number of cities fits: the spacing is fixed. */
 function layoutIslands() {
-  const C = 48, by = new Map(GROUP_ORDER.map((g) => [g, []]));
+  const C = 40, by = new Map(GROUP_ORDER.map((g) => [g, []]));
   S.specs.forEach((sp, i) => { (by.get(sp.group) || by.set(sp.group, []).get(sp.group)).push(i); });
   const K = [...by.entries()].filter((e) => e[1].length);
   for (const [, idx] of K) idx.sort((a, b) => (S.specs[a].region || '') < (S.specs[b].region || '') ? -1 : (S.specs[a].region || '') > (S.specs[b].region || '') ? 1 : a - b);
@@ -116,7 +121,7 @@ function layoutIslands() {
     const ang = (ci / K.length) * Math.PI * 2 - Math.PI / 2, cx = Math.cos(ang) * ring, cz = Math.sin(ang) * ring, gp = GROUPS[g] || [g, '#a68bff'];
     idx.forEach((si, j) => {
       const a = j * 2.399963, r = C * Math.sqrt(j + 1.5), sp = S.specs[si], seed = (hash32(sp.id) % 1000) / 1000;
-      out[si] = { spec: sp, i: si, cont: g, x: cx + Math.cos(a) * r, z: cz + Math.sin(a) * r, y: Math.sin(j * 1.7) * 14 + (j % 3) * 4, R: 22 + seed * 6, seed, top: sp.palette.ground, rim: sp.palette.accent };
+      out[si] = { spec: sp, i: si, cont: g, x: cx + Math.cos(a) * r, z: cz + Math.sin(a) * r, y: Math.sin(j * 1.7) * 14 + (j % 3) * 4, R: 24 + seed * 6, seed, top: sp.palette.ground, rim: sp.palette.accent };
     });
     S.conts.push({ key: g, name: gp[0], color: gp[1], x: cx, z: cz, r: radii[ci], count: idx.length, regions: [...new Set(idx.map((si) => S.specs[si].region).filter(Boolean))] });
   });
@@ -126,9 +131,8 @@ function layoutIslands() {
 function buildHub() {
   const st = S.stage, slots = hubSlots();
   S.islands = layoutIslands();
-  const links = [];
-  for (const c of S.conts) { const mine = S.islands.filter((is) => is.cont === c.key); mine.forEach((is, j) => { if (j) links.push([mine[j - 1].i, is.i]); if (j > 2 && j % 3 === 0) links.push([mine[j - 3].i, is.i]); }); }
-  st.buildHub(S.islands.map((s) => ({ x: s.x, y: s.y, z: s.z, R: s.R, top: s.top, rim: s.rim, seed: s.seed })), slots, links);
+  const routes = cityRoutes(S.islands, S.conts);
+  st.buildHub(S.islands.map((s) => ({ x: s.x, y: s.y, z: s.z, R: s.R, top: s.top, rim: s.rim, seed: s.seed })), slots, routes);
   S.slots = slots;
   S.islands.forEach((isl) => miniOf(isl));
   S.hubR = Math.max(...S.islands.map((i) => Math.hypot(i.x, i.z))) + 90;
@@ -148,7 +152,9 @@ async function prefetch() {
   ids.sort((a, b) => rank(a) - rank(b));
   for (const id of ids) {
     await sleep(60);
+    if (document.body.dataset.ready === 'fallback') return;
     const ds = await realDs(id);
+    if (document.body.dataset.ready === 'fallback') return;
     if (ds.demo) continue;
     let n = 0;
     for (const isl of S.islands) {
@@ -210,6 +216,16 @@ function cityActions(spec, extra) {
   return a;
 }
 
+async function openNestedCity(id) {
+  const resolveCity = async (key) => {
+    const spec=specOf(key);if(!spec)return null;
+    // Only already-normalized published data or the shipped sample. No private-vault lookup.
+    const dataset=dsNow(spec.dataset)||await sampleDs(spec.dataset);
+    return {spec,dataset};
+  };
+  const got=await resolveCity(id);if(got)openDistrictWorld({...got,cities:S.specs,resolveCity});
+}
+
 function showIsland(i) {
   const isl = S.islands[i], spec = isl.spec, ds = dsNow(spec.dataset);
   if (!ds) return;
@@ -225,7 +241,8 @@ function showIsland(i) {
     b.append(say);
     const go = el('button', 'pill go', 'Enter ' + spec.name);
     go.addEventListener('click', () => enterCity(spec.id));
-    b.append(cityActions(spec, [go]));                  // the buttons first: always in view, never scrolled under the orb's corner
+    const explore=el('button','pill','Explore districts');explore.addEventListener('click',()=>openNestedCity(spec.id));
+    b.append(cityActions(spec, [go,explore]));           // the buttons first: always in view, never scrolled under the orb's corner
     b.append(grid([['Buildings', plain(sm.n)], ['Districts', plain(sm.districts)], ['Tallest', sm.top.slice(0, 34)], ['Its height', sm.topVal]]));
     if (ds.demo) b.append(el('p', 'note', ds.note || 'A small sample stands in until the live file answers.'));
     b.append(el('p', 'note', `Data: ${ds.title} (${ds.source}). Landmark: ${spec.landmark.label}.`));
@@ -363,7 +380,7 @@ function showVeil(on, name, sub) {
   veil.classList.toggle('on', on);
 }
 
-async function enterCity(id) {
+async function enterCity(id, arrival = false) {
   const spec = specOf(id);
   if (!spec || S.busy) return;
   S.busy = true;
@@ -374,11 +391,11 @@ async function enterCity(id) {
     if (S.photo) setPhoto(false);
     if (S.mode === 'hub') {
       S.hubPose = { x: S.rig.t.x, y: S.rig.t.y, z: S.rig.t.z, dist: S.rig.dist, pitch: S.rig.pitch, yaw: S.rig.yaw };
-      if (isl && !reduced()) await Promise.race([S.rig.flyTo({ x: isl.x, y: isl.y + 6, z: isl.z, dist: isl.R * 1.6, pitch: 0.28 }, 0.8), sleep(1400)]);
+      if (isl && !reduced() && !arrival) await Promise.race([S.rig.flyTo({ x: isl.x, y: isl.y + 6, z: isl.z, dist: isl.R * 1.6, pitch: 0.28 }, 0.8), sleep(1400)]);
     }
     showVeil(true, spec.name, spec.motto);
     sfx(spec.sound === 'tick' || spec.sound === 'tap' ? 'portal' : spec.sound);
-    await sleep(reduced() ? 20 : 380);
+    await sleep(reduced() || arrival ? 20 : 380);
     const ds = await realDs(spec.dataset);
     S.fxDs.set(spec.dataset, S.fxDs.get(spec.dataset) || ds);
     buildCityView(spec, ds);
@@ -400,7 +417,7 @@ function buildCityView(spec, ds) {
   const st = S.stage, tier = st.caps();
   const city = generate(spec, ds, { cap: tier.cap });
   st.buildCity(spec, city);
-  st.look(spec); st.setFogRadius(city.bounds.r); st.show('city');
+  st.look(spec, null, S.night); st.setFogRadius(city.bounds.r); st.show('city');
   const picker = new Picker(city);
   S.cur = { spec, ds, city, picker, f: fieldMap(ds), sel: -1, match: null, base: null };
   S.mode = 'city'; document.body.dataset.mode = 'city';
@@ -409,7 +426,7 @@ function buildCityView(spec, ds) {
   S.rig.auto = 0.05;
   const far = city.bounds.r * 1.7 + 70;
   S.rig.t.set(0, city.maxH * 0.28, 0);
-  const p0 = spec.cam_pitch || (city.layout === 'terrain' ? 0.62 : 0.42);
+  const p0 = Math.max(canvas.clientWidth < 600 ? 0.64 : 0, spec.cam_pitch || (city.layout === 'terrain' ? 0.62 : 0.42));
   S.rig.dist = far; S.rig.pitch = p0 - 0.06; S.rig.yaw = 0; S.rig.fly = null; S.rig.path = null; S.rig.apply();
   S.rig.flyTo({ dist: far * 0.82, pitch: p0, yaw: 0.25 }, reduced() ? 0.01 : 2.4);
   setCam('orbit', true);
@@ -418,7 +435,7 @@ function buildCityView(spec, ds) {
   refreshChips();
   location.hash = spec.id;
   dock.querySelectorAll('.tab').forEach((t) => t.classList.remove('on'));
-  caption(spec.landmark.label.toUpperCase(), spec.motto, 4200);
+  caption(spec.landmark.label.toUpperCase(), spec.motto + ' Outer skyline and roads are scenery; central towers are source records.', 6500);
   const keep = city.best;
   setTimeout(() => { if (S.cur && S.cur.city === city) celebrate(keep, true); }, reduced() ? 400 : 2600);
 }
@@ -426,15 +443,16 @@ function buildCityView(spec, ds) {
 async function leaveCity() {
   if (S.mode !== 'city' || S.busy) return;
   S.busy = true;
+  clearCaption();
   closeSheet(); tagEl.style.display = 'none';
   showVeil(true, S.cur.spec.name, '');
   await sleep(reduced() ? 20 : 300);
-  stopAmbient(); S.stage.clearCity(); S.stage.look(null); S.stage.setFogRadius(S.hubR * 2.8); S.stage.show('hub');
+  stopAmbient(); S.stage.clearCity(); S.stage.look(null, null, S.night); S.stage.setFogRadius(S.hubR * 2.8); S.stage.show('hub');
   S.mode = 'hub'; document.body.dataset.mode = 'hub'; S.cur = null;
   $('#title').textContent = 'Cities'; $('#backB').hidden = true; $('#readB').hidden = false;
   S.rig.limits = { min: 50, max: S.hubR * 3.4, pmin: 0.08, pmax: 1.5 };
   S.rig.stopPath();
-  const p = S.hubPose || { x: 0, y: 0, z: 0, dist: S.hubR * 1.9 + 200, pitch: 0.95, yaw: 0.3 };
+  const p = S.hubPose || hubStartPose();
   Object.assign(S.rig, { dist: p.dist, pitch: p.pitch, yaw: p.yaw }); S.rig.t.set(p.x, p.y, p.z); S.rig.apply();
   S.cam = 'orbit';
   setDock(); refreshChips();
@@ -684,6 +702,10 @@ async function takePhoto(noShare) {
   return blob.size;
 }
 $('#photoB').addEventListener('click', () => setPhoto(!S.photo));
+const nightButton = $('#nightB');
+function syncNightButton() { nightButton.classList.toggle('on', S.night); nightButton.setAttribute('aria-pressed', String(S.night)); nightButton.setAttribute('aria-label', S.night ? 'Night view on; switch to original sky' : 'Night view off; switch to night'); }
+syncNightButton();
+nightButton.addEventListener('click', () => { S.night = !S.night; store.set('cities.night', S.night ? '1' : '0'); syncNightButton(); S.stage?.look(S.cur ? S.cur.spec : null, null, S.night); });
 $('#photoTake').addEventListener('click', () => takePhoto());
 $('#photoDone').addEventListener('click', () => setPhoto(false));
 
@@ -744,7 +766,7 @@ function setCam(mode, quiet) {
     speed = 34 * spd;
   }
   if (pos.length < 3) return;
-  S.rig.follow(makePath(pos, look, true), speed, true, mode);
+  S.rig.follow(safeFlight(makePath(pos, look, true), city), speed, true, mode);
   if (!quiet) caption(mode.toUpperCase(), 'Touch to take the camera back.', 2600);
 }
 
@@ -757,7 +779,7 @@ function refreshChips() {
   } else if (S.cur) {
     const C = S.cur, [tag, cls] = dataTag(C.ds);
     setChips([{ label: tag, cls }, { label: 'buildings', b: plain(C.city.n) + (C.city.capped ? ' of ' + plain(C.city.total) : '') }, { label: 'districts', b: String(C.city.districts.length) },
-      { label: GROUPS[C.spec.group] ? GROUPS[C.spec.group][0] : C.spec.group }, ...(C.spec.region ? [{ label: C.spec.region }] : [])]);
+      { label: GROUPS[C.spec.group] ? GROUPS[C.spec.group][0] : C.spec.group }, ...(C.spec.region ? [{ label: C.spec.region }] : []), { label: 'Outer skyline: scenery' }]);
   }
 }
 function setDock() {
@@ -838,6 +860,20 @@ mini.addEventListener('click', (e) => {
 const labelEls = Array.from({ length: 8 }, () => { const i = el('i'); $('#labels').append(i); return i; });
 const contEls = Array.from({ length: 8 }, () => { const i = el('i'); i.className = 'cont'; $('#labels').append(i); return i; });
 const farHub = () => S.mode === 'hub' && S.rig.dist > S.hubR * 0.7;
+// Measure the actual label before clamping: long names never disappear off either edge.
+function placeLabel(e, p, w, h, above = false) {
+  const half = Math.min(w / 2 - 12, e.offsetWidth / 2 + 4);
+  const hub = S.mode === 'hub', low = hub ? Math.min(300, h * .38) : 118;
+  const x = clamp(p.x, half + 8, w - half - 8);
+  let y = clamp(p.y, low, Math.max(low, h - (hub ? 280 : 140)));
+  if (!hub) {
+    const map = mini.getBoundingClientRect(), top = y - (above ? e.offsetHeight : e.offsetHeight / 2);
+    if (x + half > map.left - 4 && x - half < map.right + 4 && top < map.bottom + 4 && y > map.top - 4)
+      y = Math.min(h - 130, map.bottom + e.offsetHeight + 8);
+  }
+  e.style.transform = `translate(${Math.round(x)}px,${Math.round(y)}px) translate(-50%,${above ? '-100%' : '-50%'})`;
+  return { x, y };
+}
 function updateLabels(frame) {
   if (frame % 3) return;
   const w = canvas.clientWidth, h = canvas.clientHeight, st = S.stage, cand = [];
@@ -848,11 +884,10 @@ function updateLabels(frame) {
     const p = st.project(c.x, 40, c.z, w, h);
     if (!p.on || p.x < -60 || p.x > w + 60 || p.y < 80 || p.y > h - 110) { e.style.display = 'none'; return; }
     e.style.display = 'block'; e.textContent = `${c.name} \u00b7 ${c.count}`; e.style.color = c.color; e.style.borderColor = c.color;
-    e.style.transform = `translate(${Math.round(p.x)}px,${Math.round(p.y)}px) translate(-50%,-50%)`;
+    placeLabel(e, p, w, h);
   });
   if (S.mode === 'hub') {
     for (const is of S.islands) {
-      if (far && is.i !== S.hubSel) continue;
       const p = st.project(is.x, is.y + is.R * 1.5, is.z, w, h);
       if (!p.on || p.x < -20 || p.x > w + 20 || p.y < 90 || p.y > h - 120) continue;
       const dist = Math.hypot(p.x - w / 2, (p.y - h / 2) * 1.2) + (is.i === S.hubSel ? -9999 : 0);
@@ -866,11 +901,17 @@ function updateLabels(frame) {
     }
   }
   cand.sort((a, b) => a.dist - b.dist);
+  const occupied = [];
   labelEls.forEach((e, i) => {
-    const c = cand[i];
+    const c = (far && i >= 3) ? null : cand[i];
     if (!c) { e.style.display = 'none'; return; }
     e.style.display = 'block'; e.textContent = c.text; e.classList.toggle('sel', c.sel);
-    e.style.transform = `translate(${Math.round(c.p.x)}px,${Math.round(c.p.y)}px) translate(-50%,-100%)`;
+    const p = placeLabel(e, c.p, w, h, true);
+    const box = { left: p.x - e.offsetWidth / 2 - 5, right: p.x + e.offsetWidth / 2 + 5,
+      top: p.y - e.offsetHeight - 5, bottom: p.y + 5 };
+    if (occupied.some(q => box.left < q.right && box.right > q.left && box.top < q.bottom && box.bottom > q.top))
+      e.style.display = 'none';
+    else occupied.push(box);
   });
 }
 function updateTag() {
@@ -934,55 +975,110 @@ function loop(dt, t) {
 }
 
 // ------------------------------------------------------------------ boot
+function hubStartPose() {
+  // A portrait first visit lands near Trading: 170 islands at once are inevitably tiny.
+  // The labelled district controls and World map still expose the whole catalogue.
+  const c = S.conts.find((v) => v.key === 'trading') || S.conts[0];
+  return canvas.clientWidth < 600 && c
+    ? { x: c.x, y: 12, z: c.z, dist: c.r * 3.1, pitch: .78, yaw: .22 }
+    : { x: 0, y: 0, z: 0, dist: S.hubR * 1.55 + 120, pitch: .95, yaw: .3 };
+}
 function fallbackList(why) {
-  $('#loading').remove();
-  const box = el('div', 'fallback');
-  box.append(el('p', 'note', why + ' The 3D world needs WebGL. The cities are still here:'));
-  for (const s of S.specs) { const p = el('p', 'note'); p.append(el('b', null, s.name + ': '), document.createTextNode(s.motto)); box.append(p); }
-  document.body.append(box);
+  // A renderer may fail after a city or sheet is already open. Make the atlas
+  // visible and interactive before mounting its independent, GPU-free lobby.
+  S.mode = 'hub'; S.cur = null; S.sheet = null; S.photo = false; S.tour = false;
+  document.body.dataset.mode = 'hub'; document.body.classList.remove('photo');
+  sheet.classList.remove('on'); $('#atlas').classList.remove('behind');
+  $('#backB').hidden = true; $('#readB').hidden = true; $('#title').textContent = 'Cities';
+  tagEl.style.display = 'none';
+  $('#loading')?.remove();
+  $('#qB').textContent = 'ATLAS'; $('#qB').disabled = true; $('#photoB').hidden = true; nightButton.hidden = true;
+  mountWorld(S.specs, { fallback: true, onExplore:openNestedCity, describe: (s) => {
+    const ds = dsNow(s.dataset); if (!ds) return { line: 'This dataset is not available yet.', note: why };
+    const sm = summary(s, ds);
+    return { demo: ds.demo, line: `${plain(sm.n)} records across ${plain(sm.districts)} districts. Tallest: ${sm.top} · ${sm.topVal}.`, note: `${ds.demo ? 'Sample data' : 'Published data'} · ${ds.title}. ${ds.note || ''}` };
+  } });
   document.body.dataset.ready = 'fallback';
+  S.ready = true;
+  O()?.ready?.();
+  // Rendering failure must not stop the data: records upgrade from sample to published
+  // files as they arrive. No remote feed or private vault is requested by the atlas.
+  Promise.allSettled([...new Set(S.specs.map(s=>s.dataset))]
+    .filter(id=>!DATASETS[id].remote&&!DATASETS[id].vault).map(id=>realDs(id)));
 }
 
 async function boot() {
+  if (window.__citiesImportAbandoned) return;
   let cfg, fx;
   // a build that takes long says so in plain words (the cities use their sample data whenever live data cannot be reached)
   const slow = setTimeout(() => { const l = $('#loading'); if (l) l.textContent = 'STILL BUILDING THE WORLD… WITHOUT A CONNECTION THE SAMPLE CITIES SHOW.'; }, 8000);
   try { [cfg, fx] = await Promise.all([getJson('./cities.json'), getJson('./fixture.json')]); } catch (e) {
+    if (window.__citiesImportAbandoned) { clearTimeout(slow); return; }
     clearTimeout(slow); const l = $('#loading');
     if (l) { l.style.pointerEvents = 'auto'; l.replaceChildren(el('div', null, 'Could not load the city list. Check your connection, then try again.')); const b = el('button', 'btn', 'Try again'); b.type = 'button'; b.style.cssText = 'min-height:44px;padding:0 18px;margin-top:14px;border-radius:12px'; b.onclick = () => location.reload(); l.firstChild.append(document.createElement('br'), b); }
     throw e; }
   clearTimeout(slow);
+  if (window.__citiesImportAbandoned) return;
   for (const s of cfg.cities) {
     const errs = validateSpec(s, DATASETS);
     if (errs.length) { console.warn('city skipped', s.id, errs); continue; }
     S.specs.push(s); S.byId.set(s.id, s);
   }
   env.fixture = fx; fxEnv.fixture = fx;
+  await Promise.all([...new Set(S.specs.map((s) => s.dataset))].map(async (id) => { S.fxDs.set(id, await sampleDs(id)); }));
+  if (window.__citiesImportAbandoned) return;
+  if (q.get('q') === 'off' || O()?.fx?.() === 'off') { fallbackList('3D effects are off.'); return; }
+  let context = null;
+  try { context = canvas.getContext('webgl2', { alpha: false, antialias: false, powerPreference: 'high-performance' }) || canvas.getContext('webgl', { alpha: false, antialias: false, powerPreference: 'high-performance' }); } catch (_) { /* unsupported context */ }
+  if (!context) { fallbackList('3D is not available here.'); return; }
+  let importTimer;
+  try {
+    const modules = await Promise.race([
+      Promise.all([import('./scene.js?v=w4'), import('./rig.js?v=r2')]),
+      new Promise((_, reject) => { importTimer = setTimeout(() => reject(Error('3D startup timed out')), 8000); }),
+    ]);
+    ({ Stage, TIERS, BUDGETS } = modules[0]); ({ Rig, makePath, safeFlight } = modules[1]);
+  } catch (_) { context.getExtension('WEBGL_lose_context')?.loseContext(); if (!window.__citiesImportAbandoned) fallbackList('The 3D files could not start.'); return; }
+  finally { clearTimeout(importTimer); }
+  if (window.__citiesImportAbandoned) return;
   let stage;
-  try { stage = new Stage(canvas, { onTier: (lv) => retier(lv) }); } catch (e) { fallbackList('3D is not available here.'); return; }
+  try { stage = new Stage(canvas, { context, onTier: (lv) => retier(lv) }); } catch (e) { fallbackList('3D is not available here.'); return; }
   S.stage = stage;
   S.rig = new Rig(stage.camera, canvas, { onTap, onFreed: () => { if (S.tour) { S.tour = false; $('#tourB') && $('#tourB').classList.remove('on'); } if (S.mode === 'city') setCam('orbit', true); } });
-  await Promise.all([...new Set(S.specs.map((s) => s.dataset))].map(async (id) => { S.fxDs.set(id, await sampleDs(id)); }));
   S.live = S.specs.map(() => false);
-  stage.look(null);
+  stage.look(null, null, S.night);
   buildHub();
   stage.setFogRadius(S.hubR * 2.8);
   stage.show('hub');
   S.rig.limits = { min: 50, max: S.hubR * 3.4, pmin: 0.08, pmax: 1.5 };
-  S.rig.t.set(0, 0, 0); S.rig.dist = S.hubR * 1.9 + 200; S.rig.pitch = 0.95; S.rig.yaw = 0.3; S.rig.auto = 0.03; S.rig.apply();
+  const pose = hubStartPose(); S.rig.t.set(pose.x, pose.y, pose.z); S.rig.dist = pose.dist; S.rig.pitch = pose.pitch; S.rig.yaw = pose.yaw; S.rig.auto = 0.018; S.rig.apply();
+  mountWorld(S.specs, { onCity:enterCity, onDistrict: (id) => { const c=S.conts.find(v=>v.key===id);if(c)flyToContinent(c); } });
   setDock(); refreshChips(); $('#qB').textContent = qLabel();
   $('#atlasCount').textContent = `${S.specs.length} cities · ${S.conts.length} worlds`;
-  stage.start(loop);
+  stage.start((dt, t) => {
+    if (document.body.dataset.ready === 'fallback') return;
+    try { loop(dt, t); }
+    catch (e) {
+      console.error('cities render failed', e);
+      try { stage.dispose(); } catch (_) { /* keep the atlas available */ }
+      fallbackList('The 3D renderer stopped.');
+    }
+  });
   $('#loading').remove();
   document.body.dataset.ready = 'true';
   S.ready = true;
-  window.addEventListener('olympus:theme', () => stage.look(S.cur ? S.cur.spec : null));
+  window.addEventListener('olympus:theme', () => stage.look(S.cur ? S.cur.spec : null, null, S.night));
   stage.onFlash = () => sfx('thunder');
   const seedQ = cleanSeed(q.get('seed') || (/^r-/.test(location.hash.slice(1)) ? location.hash.slice(3) : ''));
   const want = q.get('city') || location.hash.slice(1);
   if (seedQ) { enterRandom(seedQ); setTimeout(prefetch, 3000); }
   else if (want && S.byId.has(want)) { enterCity(want); setTimeout(prefetch, 2500); }
-  else prefetch();
+  else if (!q.has('world')) {
+    // The normal entrance is a real NQ trading skyline. World remains one tap away.
+    const landing = S.byId.get('trades-city') || S.specs.find(s => s.group === 'trading');
+    if (landing) enterCity(landing.id, true);
+    setTimeout(prefetch, 2500);
+  } else prefetch();
 }
 
 let retierT = 0;
@@ -1000,7 +1096,7 @@ function retier(lv) {
       const C = S.cur;
       C.city = generate(C.spec, C.ds, { cap: S.stage.caps().cap });
       S.stage.buildCity(C.spec, C.city);
-      S.stage.look(C.spec); S.stage.setFogRadius(C.city.bounds.r);
+      S.stage.look(C.spec, null, S.night); S.stage.setFogRadius(C.city.bounds.r);
       C.picker = new Picker(C.city); C.sel = -1; C.match = null;
       drawMiniBase(); refreshChips();
       if (keep) { const k = Array.from({ length: C.city.n }, (_, j) => j).find((j) => C.ds.items[C.city.item[j]].id === keep); if (k !== undefined) selectBuilding(k, false); }
@@ -1059,10 +1155,18 @@ $('#atlas').addEventListener('click', (event) => {
   else if (button.dataset.atlas === 'find' && S.ready) openFind();
 });
 boot().catch((e) => {
+  if (window.__citiesImportAbandoned) return;
   console.error('cities boot failed', e);
   S.errors.push(String(e && e.stack || e));
+  if (S.specs.length) {
+    try { S.stage?.dispose(); } catch (_) { /* keep the atlas available */ }
+    fallbackList('The 3D world could not finish loading.');
+    return;
+  }
   if (O() && O().fail) O().fail('The cities could not start: ' + (e && e.message ? e.message : e));
 });
 
 // keep the unused import honest for tooling
 void lerp; void store;
+
+

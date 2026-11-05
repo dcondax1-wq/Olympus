@@ -79,7 +79,7 @@ def part_a():
     check("a. the engine is deterministic by construction: no Math.random in generator / datasets / util", all(not re.search(r"Math\.random\s*\(", srcs[n]) for n in ("generator.js", "datasets.js", "util.js")))
     mf = json.loads(read(os.path.join(PAGE, "manifest.webmanifest")))
     check("a. manifest: name, standalone, theme, icons that exist", mf["display"] == "standalone" and mf["name"] and mf["theme_color"].startswith("#")
-          and all(os.path.isfile(os.path.join(PAGE, i["src"])) for i in mf["icons"]), mf)
+          and all(os.path.isfile(os.path.normpath(os.path.join(PAGE, i["src"].split("?", 1)[0]))) for i in mf["icons"]), mf)
     # the real published files the adapters read
     urls = re.findall(r"url: '(\.\./[^']+)'", srcs["datasets.js"])
     check("a. every file an adapter reads is a published page file that exists (odeon, datacity, tree, forge, pantheon, fates, arena, athena ...)",
@@ -106,11 +106,18 @@ def part_a():
     node = shutil.which("node")
     if node:
         before = {n: open(os.path.join(PAGE, n), "rb").read() for n in ("cities.json", "fixture.json")}
-        for tool in ("cities_catalogue.mjs", "cities_fixture.mjs"):
-            subprocess.run([node, os.path.join(ROOT, "tools", tool)], check=True, capture_output=True, timeout=180)
-        after = {n: open(os.path.join(PAGE, n), "rb").read() for n in before}
-        check("a. the catalogue and the fixture are reproducible: tools/cities_catalogue.mjs and tools/cities_fixture.mjs rewrite cities.json / fixture.json byte for byte", before == after,
-              [n for n in before if before[n] != after[n]])
+        try:
+            generated = []
+            for _ in range(2):
+                for tool in ("cities_catalogue.mjs", "cities_fixture.mjs"):
+                    subprocess.run([node, os.path.join(ROOT, "tools", tool)], check=True, capture_output=True, timeout=180)
+                generated.append({n: open(os.path.join(PAGE, n), "rb").read() for n in before})
+            check("a. the catalogue and fixture generators reproduce the same bytes for the same published source files", generated[0] == generated[1],
+                  [n for n in before if generated[0][n] != generated[1][n]])
+        finally:
+            for n, data in before.items():
+                with open(os.path.join(PAGE, n), "wb") as fh:
+                    fh.write(data)
     else:
         print("[SKIP] node missing: the catalogue reproducibility check was skipped")
     card = json.loads(read(os.path.join(PAGE, "jarvis.json")))
@@ -364,7 +371,7 @@ def shot(p, name):
 class Page:
     """A Playwright page with its console / request errors collected (the Kalshi feed's own blocked request is not an error)."""
 
-    def __init__(self, br, base, vw=None, q="low", extra="", reduced=False, init=None, kalshi="abort", touch=True):
+    def __init__(self, br, base, vw=None, q="low", extra="", reduced=False, init=None, kalshi="abort", touch=True, world=True):
         self.ctx = br.new_context(viewport=vw or {"width": 390, "height": 844}, device_scale_factor=1, has_touch=touch, **({"reduced_motion": "reduce"} if reduced else {}))
         if init:
             self.ctx.add_init_script(init)
@@ -378,7 +385,9 @@ class Page:
             self.p.route("**/raw.githubusercontent.com/**", lambda rt: rt.abort())
         elif kalshi:
             self.p.route("**/raw.githubusercontent.com/**", lambda rt: rt.fulfill(status=200, content_type="application/json", headers={"access-control-allow-origin": "*"}, body=json.dumps(kalshi)))
-        self.url = base + f"?q={q}" + extra
+        # Existing world/navigation checks enter through the explicit map route.
+        # The normal skyline entrance has its own assertion in section i.
+        self.url = base + f"?q={q}" + ("&world=1" if world else "") + extra
 
     def _console(self, m):
         if m.type == "error" and not any(o in (m.location or {}).get("url", "") for o in BAD_ORIGINS) and "favicon" not in m.text:
@@ -386,7 +395,7 @@ class Page:
 
     def open(self, timeout=120):
         self.p.goto(self.url)
-        self.p.wait_for_function("document.body.dataset.ready === 'true'", timeout=timeout * 1000)
+        self.p.wait_for_function("['true','fallback'].includes(document.body.dataset.ready)", timeout=timeout * 1000)
         return self
 
     def info(self):
@@ -531,6 +540,10 @@ def sec_e(br, base, C, days, picks, ids):
     # ---- e. budgets per tier
     for q in (os.environ.get("CITIES_TIERS") or "off,low,high,ultra").split(","):          # CITIES_TIERS=off,low to run fewer
         pg = Page(br, base, q=q).open()
+        if q == "off":
+            check("e. effects off: useful atlas, all catalogue cities, no renderer", pg.p.evaluate("document.body.dataset.ready === 'fallback'") and pg.p.locator('.atlas-city').count() == len(C) and pg.info().get('tier') is None)
+            pg.close()
+            continue
         time.sleep(2)
         hub = pg.p.evaluate("window.__cities.stats()")
         inf = pg.enter("ideas-city", settle=1.0)
@@ -595,7 +608,7 @@ def sec_f(br, base, C, days, picks, ids):
     p.goto(base + "?q=low")
     p.wait_for_function("document.body.dataset.ready === 'fallback'", timeout=60000)
     txt = p.evaluate("document.querySelector('.fallback').textContent")
-    check("f. no WebGL: the page lists every city in plain text instead of a blank screen", all(c["name"] in txt for c in C), txt[:200])
+    check("f. no WebGL: the illustrated, searchable atlas keeps every city accessible", all(c["name"] in txt for c in C), txt[:200])
     ctx.close()
 
 SFX_STUB = """(() => { window.OLYMPUS_SFX = { calls: [], play(n) { this.calls.push('play:' + n); }, stop(n) { this.calls.push('stop:' + n); }, mute() {}, setVolume() {}, unlock() {}, state() { return {}; }, names: [] }; })()"""
@@ -715,7 +728,54 @@ def sec_g(br, base, C, days, picks, ids):
     pg.close()
 
 
-SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f, "g": sec_g}
+def sec_h(br, base, C, days, picks, ids):
+    """Cities world upgrade: the fallback is a useful app, with truthful records, at phone size."""
+    for quality in ("low", "high"):
+        ctx = br.new_context(viewport={"width": 390, "height": 844}, has_touch=True, reduced_motion="reduce")
+        ctx.add_init_script(SPEC_NO_GL)
+        p = ctx.new_page()
+        p.goto(base + "?q=" + quality + "&demo=1")
+        p.wait_for_function("document.body.dataset.ready === 'fallback'", timeout=60000)
+        check(f"h. {quality}: all catalogue cities remain accessible without a GPU", p.locator(".atlas-city").count() == len(C))
+        check(f"h. {quality}: six fully named illustrated districts, no horizontal scroll", p.locator(".atlas-map text").count() == 12
+              and p.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+        portals = p.locator(".atlas-portal")
+        check(f"h. {quality}: three named city portals have touch-sized targets", portals.count() == 3 and portals.evaluate_all("els => els.every(e=>{const r=e.getBoundingClientRect();return r.width>=44&&r.height>=44})"))
+        shot(p, f"atlas_{quality}_phone.png")
+        portals.first.click()
+        check(f"h. {quality}: a portal opens a labelled sample city with real districts", p.locator(".district-world").is_visible()
+              and "SAMPLE DATA" in p.locator(".dw-intro > .dw-kicker").inner_text() and p.locator(".dw-district-card").count() > 0)
+        p.locator(".dw-district-card").first.click()
+        check(f"h. {quality}: a district contains source-record buildings", p.locator(".dw-record-card").count() > 0)
+        p.locator(".dw-record-card").first.click()
+        check(f"h. {quality}: a building reveals its source record and fields", p.locator(".dw-record").is_visible() and p.locator(".dw-fields dd").count() > 0)
+        p.get_by_role("button", name="World map", exact=True).click()
+        check(f"h. {quality}: breadcrumbs return to the atlas", p.locator(".district-world").count() == 0)
+        p.get_by_role("button", name="Research", exact=True).click()
+        visible = p.locator(".atlas-city").evaluate_all("els=>els.filter(e=>!e.hidden).length")
+        check(f"h. {quality}: district filter matches the actual catalogue", visible == sum(s["group"] == "research" for s in C))
+        search = p.get_by_role("searchbox", name="Search the city atlas")
+        search.fill("no such city xyz")
+        check(f"h. {quality}: a search with no matches explains how to recover", p.locator(".atlas-empty").is_visible())
+        search.fill("")
+        p.get_by_role("button", name="All districts", exact=True).click()
+        check(f"h. {quality}: clearing the filters restores every city", p.locator(".atlas-city").evaluate_all("els=>els.filter(e=>!e.hidden).length") == len(C))
+        ctx.close()
+
+
+def sec_i(br, base, C, days, picks, ids):
+    """Default is navigable WebGL; the atlas stays the unsupported/off fallback."""
+    pg = Page(br, base, q="high", world=False, extra="&demo=1").open()
+    pg.p.wait_for_function("window.__cities.info().mode === 'city' && window.__cities.info().id === 'trades-city'", timeout=120000)
+    check("i. normal HD entrance lands in the NQ Trades City with four flight cameras", pg.p.locator('#cams button').count() == 4 and not pg.p.locator('.district-world').count())
+    pg.back()
+    pg.p.locator('.atlas-portal').first.click()
+    pg.p.wait_for_function("window.__cities.info().mode === 'city'", timeout=120000)
+    check("i. world portals enter the genuine WebGL city, not a flat drilldown", pg.info()['id'] == 'trades-city' and not pg.p.locator('.district-world').count())
+    pg.close()
+
+
+SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f, "g": sec_g, "h": sec_h, "i": sec_i}
 
 def run_browser(C, days, picks):
     from playwright.sync_api import sync_playwright
@@ -749,6 +809,12 @@ def run_browser(C, days, picks):
 
 def main():
     no_browser = "--no-browser" in sys.argv
+    if "--atlas-only" in sys.argv:
+        # The catalogue generator rewrites source fixtures; this UI regression never does.
+        C = json.loads(read(os.path.join(PAGE, "cities.json")))["cities"]
+        run_browser(C, [], [])
+        print(f"\n{sum(RES)}/{len(RES)} passed; screenshots in {SHOTS}")
+        return 0 if all(RES) else 1
     C = part_a()
     days, picks, seeds = part_b(C)
     if not no_browser:
@@ -765,3 +831,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+

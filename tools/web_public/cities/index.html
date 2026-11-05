@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>OLYMPUS Cities</title>
 <meta name="description" content="A world of floating city islands, one per dataset: fly between them and walk into any city built from the site's own numbers.">
-<meta name="theme-color" content="#07050f">
+<meta name="theme-color" content="#050814">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cities">
 <meta name="color-scheme" content="dark">
@@ -23,7 +23,7 @@
 <script src="../olympus/fx-core.js?v=f1"></script>
 <script src="../olympus/fx-burst.js?v=f1"></script>
 <style>
-:root{--bg:#07050f;--panel:rgba(12,10,28,.88);--line:rgba(255,255,255,.11);--text:#f4f4f8;--sub:#b0b3c8;--gold:#ffc94a;--green:#39e59a;--red:#ff6b7f;--cyan:#3fd8ff;
+:root{--bg:#050814;--panel:rgba(9,13,30,.9);--line:rgba(170,182,224,.2);--text:#f4f4f8;--sub:#b0b3c8;--gold:#ffc94a;--green:#39e59a;--red:#ff6b7f;--cyan:#3fd8ff;
 --accent:var(--oly-accent,#a68bff);--st:env(safe-area-inset-top,0px);--sr:env(safe-area-inset-right,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);
 --top-h:92px;--dock-h:44px;--sheet-bottom:168px;-webkit-text-size-adjust:100%}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -41,7 +41,8 @@ letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(90deg,#f
 font:700 11px/1 var(--oly-ui,inherit);padding:0;pointer-events:auto;flex:0 0 auto}
 .ic svg{width:20px;height:20px}
 .ic.on{color:var(--gold);border-color:rgba(255,201,74,.35);background:rgba(255,201,74,.08)}
-#backB[hidden]{display:none}
+#nightB[hidden]{display:none}
+#backB[hidden],#readB[hidden]{display:none}
 .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;pointer-events:auto;touch-action:pan-x;padding-top:2px}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;font-size:12px;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--sub);white-space:nowrap}
@@ -108,6 +109,7 @@ body[data-mode=city] .cams{display:flex}
 .cams button{width:56px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font:700 10px/1 var(--oly-display,inherit);letter-spacing:.12em;cursor:pointer;touch-action:manipulation}
 .cams button.on{color:var(--gold);border-color:rgba(255,201,74,.45);background:rgba(255,201,74,.10)}
 #labels{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+body[data-mode=hub] #labels{display:none}
 #labels i{position:absolute;left:0;top:0;font:700 11.5px/1.2 var(--oly-display,inherit);letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:8px;background:rgba(7,5,15,.62);
 border:1px solid rgba(255,255,255,.18);color:#fff;white-space:nowrap;display:none;text-shadow:0 1px 6px #000;font-style:normal;will-change:transform}
 #labels i.sel{border-color:var(--gold);color:var(--gold)}
@@ -118,6 +120,7 @@ font:600 12px/1.25 var(--oly-ui,inherit);color:var(--text);white-space:nowrap;ma
 text-align:center;font:600 15px/1.35 var(--oly-ui,inherit);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.9);transition:opacity .4s}
 .caption small{display:block;font:700 10px/1 var(--oly-display,inherit);letter-spacing:.2em;color:var(--gold);margin-bottom:6px}
 .caption.on{opacity:1}
+body[data-mode=hub] .caption{bottom:calc(252px + var(--sb));font-size:12px;max-width:350px}
 .toast{position:fixed;left:50%;top:calc(var(--top-h) + 18px + var(--st));transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);padding:8px 12px;
 border-radius:12px;font-size:12.5px;color:var(--sub);z-index:6;display:none;max-width:calc(100% - 140px);text-align:center}
 .toast.on{display:block}
@@ -148,7 +151,8 @@ body.photo .photobar .pill{flex:1}
 .atlas{position:fixed;z-index:4;left:calc(10px + var(--sl));right:calc(10px + var(--sr));bottom:calc(74px + var(--sb));max-width:620px;
   padding:12px;border:1px solid rgba(180,157,255,.3);border-radius:20px;background:linear-gradient(145deg,rgba(19,17,43,.94),rgba(7,10,27,.91));
   box-shadow:0 18px 55px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.1);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-body[data-mode=city] .atlas,.atlas.behind{display:none}
+/* The mounted world lobby owns hub navigation; do not stack this early boot atlas over its portals. */
+body[data-mode=hub][data-ready=true] .atlas,body[data-mode=city] .atlas,body[data-ready=fallback] .atlas,.atlas.behind{display:none}
 .atlas-kicker{display:flex;align-items:center;gap:7px;color:#dac9ff;font:800 10px/1.2 var(--oly-display,inherit);letter-spacing:.18em;text-transform:uppercase}
 .atlas-kicker:before{content:"";height:7px;width:7px;border-radius:50%;background:#9cffd6;box-shadow:0 0 13px #51e7be}
 .atlas-head{display:flex;align-items:center;gap:10px;margin:4px 0 9px}
@@ -170,10 +174,29 @@ body[data-mode=city] .atlas,.atlas.behind{display:none}
 @media (min-width:720px){.atlas{left:24px;bottom:24px;width:440px;right:auto}}
 @media (max-height:650px){.atlas{bottom:calc(63px + var(--sb));padding:8px}.atlas-card{min-height:58px;padding:8px}.atlas-card small{display:none}.atlas-head{margin:2px 0 5px}}
 @media (prefers-reduced-motion:reduce){.atlas-card{transition:none}}
+/* Night observatory chrome: the data skyline remains the focal point. */
+body[data-mode=city] .top{background:linear-gradient(145deg,rgba(7,10,26,.94),rgba(13,17,39,.86));
+  border-color:rgba(167,179,223,.27);box-shadow:0 16px 40px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.08)}
+body[data-mode=city] .top h1{background:linear-gradient(90deg,#fff 5%,#e4e9ff 52%,#f4c867);
+  -webkit-background-clip:text;background-clip:text;letter-spacing:.15em}
+body[data-mode=city] .top .row{min-height:48px}
+body[data-mode=city] .chip{background:rgba(92,106,148,.14);border-color:rgba(175,187,225,.18)}
+body[data-mode=city] .chip:first-child{border-color:rgba(255,201,74,.44);color:#ffe3a1}
+body[data-mode=city] .mini{width:112px;height:112px;border-color:rgba(103,184,249,.35);
+  background:rgba(3,9,24,.82);box-shadow:0 12px 36px rgba(0,0,0,.62),0 0 22px rgba(39,166,245,.14),inset 0 0 0 5px rgba(5,9,24,.45)}
+body[data-mode=city] .cams button{width:62px;min-height:46px;border-radius:13px;background:rgba(9,13,30,.9);
+  box-shadow:0 9px 22px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.05);letter-spacing:.1em}
+body[data-mode=city] .cams button.on{background:linear-gradient(150deg,rgba(255,199,78,.2),rgba(39,38,64,.88));
+  border-color:rgba(255,201,74,.7);box-shadow:0 0 20px rgba(255,180,53,.18),inset 0 1px rgba(255,241,194,.18)}
+body[data-mode=city] .tab{background:rgba(9,13,30,.92);border-color:rgba(166,180,228,.25);
+  box-shadow:0 8px 20px rgba(0,0,0,.46),inset 0 1px rgba(255,255,255,.07)}
+body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.2),rgba(9,13,30,.94))}
+@media (max-width:360px){body[data-mode=city] .mini{width:96px;height:96px}}
 </style>
+<link rel="stylesheet" href="./world.css?v=w2">
 </head>
 <body data-mode="hub" data-ready="false">
-<canvas id="c" aria-label="Olympus Cities: a world of floating city islands, one per dataset. Drag to look, pinch to zoom, tap an island."></canvas>
+<canvas id="c" aria-label="Olympus Cities: a 3D NQ trading skyline and a world of cities. Drag to look, pinch to zoom, use the camera buttons to fly, and tap a measured tower for its source record."></canvas>
 <div id="labels" aria-hidden="true"></div>
 <aside class="atlas" id="atlas" aria-label="City atlas">
   <div class="atlas-kicker">Olympus world atlas</div>
@@ -191,6 +214,7 @@ body[data-mode=city] .atlas,.atlas.behind{display:none}
     <button class="ic" id="backB" aria-label="Back to the world map" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
     <h1 id="title">Cities</h1>
     <button class="ic" id="photoB" aria-label="Photo mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+    <button class="ic on" id="nightB" aria-label="Night view on; switch to original sky" aria-pressed="true" title="Night view">☾</button>
     <button class="ic" id="qB" aria-label="Quality">HD</button>
     <button class="ic" id="readB" aria-label="How to read this"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button>
   </div>
@@ -213,6 +237,25 @@ body[data-mode=city] .atlas,.atlas.behind{display:none}
 <div class="caption" id="caption" aria-live="polite"></div>
 <div class="toast" id="toast" role="status"></div>
 <div class="veil" id="veil" aria-hidden="true"><b id="veilName"></b><small id="veilSub"></small></div>
-<script type="module" src="./app.js?v=o3"></script>
+<script type="module">
+let recovering = false;
+async function recover() {
+  if (recovering || document.body.dataset.ready) return;
+  recovering = true;
+  window.__citiesImportAbandoned = true;
+  const loading = document.querySelector('#loading');
+  if (loading) { loading.style.pointerEvents = 'auto'; loading.textContent = 'Opening the city atlas…'; }
+  try { const recovery = await import('./atlas-entry.js?v=a2'); await recovery.recoverAtlas(); }
+  catch (_) {
+    if (loading) { loading.textContent = 'City files could not load. Check your connection and reload Cities.'; const retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Reload Cities'; retry.style.cssText = 'display:block;min-height:48px;padding:12px;margin:16px auto;font:inherit'; retry.onclick = () => location.reload(); loading.append(retry); }
+    window.OLYMPUS?.ready?.();
+  }
+}
+// Module import settles before its asynchronous boot does. Watch readiness itself.
+setTimeout(recover, 18000);
+import('./app.js?v=o12').catch(recover);
+</script>
 </body>
 </html>
+
+
