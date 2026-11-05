@@ -15,6 +15,7 @@ test('Delphi skyline follows the effective render tier across global Off, LITE, 
   const city = Object.create(Polis.prototype);
   city.towers = { count: 720 }; city.roofs = { count: 720, visible: true };
   city.parcels = { count: 720, visible: true };
+  city.nightBlocks = { count: 960, visible: true }; city.nightRoofs = { count: 960, visible: true };
   city.windows = { count: 2160 }; city.paths = { visible: true };
   city.skyways = Array.from({ length: 3 }, () => ({ visible: true }));
   city.terraces = Array.from({ length: 3 }, () => ({ visible: true }));
@@ -27,6 +28,8 @@ test('Delphi skyline follows the effective render tier across global Off, LITE, 
   assert.equal(city.towers.count, 240);
   assert.equal(city.parcels.count, 240);
   assert.equal(city.parcels.visible, false);
+  assert.equal(city.nightBlocks.count, 320);
+  assert.equal(city.nightRoofs.visible, false);
   assert.equal(city.windows.count, 720);
   assert.equal(city.roofs.visible, false);
   assert.deepEqual(city.skyways.map(loop => loop.visible), [false, false, false]);
@@ -36,6 +39,8 @@ test('Delphi skyline follows the effective render tier across global Off, LITE, 
   assert.equal(city.towers.count, 240);
   assert.equal(city.parcels.count, 240);
   assert.equal(city.parcels.visible, true);
+  assert.equal(city.nightBlocks.count, 320);
+  assert.equal(city.nightRoofs.visible, true);
   assert.equal(city.windows.count, 720);
   assert.deepEqual(city.skyways.map(loop => loop.visible), [true, false, false]);
   assert.deepEqual(city.beacons.map((b) => b.pad.visible), [true, true, true, false, false, false]);
@@ -43,6 +48,8 @@ test('Delphi skyline follows the effective render tier across global Off, LITE, 
   rc.tier = 'high'; Scene.prototype.syncCityQuality.call(scene);
   assert.equal(city.towers.count, 720);
   assert.equal(city.parcels.count, 720);
+  assert.equal(city.nightBlocks.count, 960);
+  assert.equal(city.nightRoofs.count, 960);
   assert.equal(city.windows.count, 2160);
   assert.equal(city.roofs.visible, true);
   assert.deepEqual(city.skyways.map(loop => loop.visible), [true, true, true]);

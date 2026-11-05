@@ -160,7 +160,8 @@ export class Sky {
       const u = a.material.uniforms;
       u.uA.value.setHex(wx.a);
       u.uB.value.setHex(wx.b);
-      u.uI.value = wx.intensity;
+      // Keep the VIX hue and movement while giving the city and radar room to read.
+      u.uI.value = wx.intensity * 0.62;
       u.uFlow.value = wx.flow;
     }
     if (this.dome) this.dome.material.uniforms.uHor.value.setHex(wx.b).multiplyScalar(0.09).add(new this.T.Color(0x050818));

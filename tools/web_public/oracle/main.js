@@ -8,8 +8,8 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { fetchLive, fetchSite, normalize, loadProphecy, FRESH_S } from './data.js';
 import { loadDemo, docAt, span, todayFx } from './demo.js';
-import { Scene } from './scene.js?v=oracle-night-20261105-4';
-import { FallbackCity } from './fallback.js?v=oracle-night-20261105-4';
+import { Scene } from './scene.js?v=oracle-night-foreground-1';
+import { FallbackCity } from './fallback.js?v=oracle-night-foreground-1';
 import { Hud, usd } from './hud.js';
 import { Ladder } from './ladder.js';
 import { Ribbon, ribbonOf } from './events.js';

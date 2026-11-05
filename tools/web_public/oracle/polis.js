@@ -3,6 +3,7 @@
 import * as M from '../olympus/materials.js';
 
 const FLOOR = -11.7, COUNT = 720, LITE_COUNT = 240, WINDOWS = 3, BEACONS = 6;
+const NIGHT_BLOCKS = 960, LITE_BLOCKS = 320;
 // The radar/clock fits inside about 9 world units. Keep the city in that camera
 // composition: its authored 71–158-unit rings become an 8.5–19-unit horizon.
 const CITY_SCALE = 0.12;
@@ -40,7 +41,31 @@ export class Polis {
     // They are fixed street lighting, never a market heatmap.
     this.parcels = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1),
       M.neon({ color: '#ffffff', intensity: 1.25, fog: true }), COUNT);
+    // Fixed low-rise neighborhood between the authored skyline and the camera.
+    // Its lights are decorative and never encode a market row, level, or signal.
+    this.nightBlocks = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), stone, NIGHT_BLOCKS);
+    this.nightRoofs = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1),
+      M.neon({ color: '#ffffff', intensity: 1.65, fog: true }), NIGHT_BLOCKS);
     const o = new T.Object3D(), col = new T.Color();
+    for (let i = 0; i < NIGHT_BLOCKS; i++) {
+      const side = i % 4, k = Math.floor(i / 4), row = Math.floor(k / 26), slot = k % 26;
+      const angle = side * Math.PI / 2, lane = (slot - 12.5) * 7.8;
+      const radius = 72 + row * 7.8, jitter = (hash(i + 811) - 0.5) * 1.3;
+      const x = lane * Math.cos(angle) - (radius + jitter) * Math.sin(angle);
+      const z = lane * Math.sin(angle) + (radius + jitter) * Math.cos(angle);
+      const w = 4.0 + hash(i + 101) * 1.2, d = 4.1 + hash(i + 203) * 1.2;
+      const h = 3.5 + hash(i + 307) * 5.5;
+      o.rotation.set(0, angle, 0); o.position.set(x, FLOOR + h / 2, z);
+      o.scale.set(w, h, d); o.updateMatrix(); this.nightBlocks.setMatrixAt(i, o.matrix);
+      o.position.y = FLOOR + h + 0.12; o.scale.set(w * 1.03, 0.24, d * 1.03);
+      o.updateMatrix(); this.nightRoofs.setMatrixAt(i, o.matrix);
+      const lit = hash(i + 401) < 0.22 ? '#28bb6d' : hash(i + 403) < 0.05 ? '#3b98c3' : '#e77c26';
+      this.nightRoofs.setColorAt(i, new T.Color(lit));
+    }
+    this.nightBlocks.instanceMatrix.needsUpdate = this.nightRoofs.instanceMatrix.needsUpdate = true;
+    this.nightRoofs.instanceColor.needsUpdate = true;
+    this.nightBlocks.frustumCulled = this.nightRoofs.frustumCulled = false;
+    this.group.add(this.nightBlocks, this.nightRoofs);
     for (let i = 0; i < COUNT; i++) {
       const district = Math.floor(i / LITE_COUNT), k = i % LITE_COUNT;
       const row = Math.floor(k / 80), slot = k % 80;
@@ -130,6 +155,8 @@ export class Polis {
     this.towers.count = this.roofs.count = lite ? LITE_COUNT : COUNT;
     this.parcels.count = this.towers.count;
     this.parcels.visible = q !== 'off';
+    this.nightBlocks.count = this.nightRoofs.count = lite ? LITE_BLOCKS : NIGHT_BLOCKS;
+    this.nightRoofs.visible = q !== 'off';
     this.windows.count = this.towers.count * WINDOWS;
     this.roofs.visible = q !== 'off';
     this.paths.visible = q !== 'off';

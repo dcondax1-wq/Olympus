@@ -5,8 +5,8 @@ import { createRenderer } from '../olympus/render.js';
 import { Market, Y_MAX } from './layers.js';
 import { Arena } from './arena.js';
 import { Temple } from './temple.js';
-import { Polis } from './polis.js?v=oracle-night-20261105-4';
-import { Sky, weatherOf, fitPoints } from './sky.js';
+import { Polis } from './polis.js?v=oracle-night-foreground-1';
+import { Sky, weatherOf, fitPoints } from './sky.js?v=oracle-night-foreground-1';
 import { newSweeps } from './data.js';
 
 const EL = [-0.12, 0.95];
