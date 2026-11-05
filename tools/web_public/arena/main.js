@@ -8,10 +8,12 @@ import { evaluateWeek, history as bossHistory, bossEvents, bossStats, weekStart,
 import { trophies as makeTrophies } from './trophies.js';
 import * as X from './extras.js';
 import { desk } from './rhythm.js';
+import { illustratedColosseum } from './illustration.js?v=c1';
 
 const O = window.OLYMPUS || null;
 const JARVIS_ORIGIN = 'https://demetrades2000-coder.github.io';
 const REFRESH_MS = 60000;
+document.getElementById('arena-illustration').innerHTML = illustratedColosseum(); // static local artwork only; no event/user data
 // the demo's phone: what a linked Planner, vault and Kalshi feed would show on Friday 2026-10-30 at 17:00 ET
 const DEMO_FACTS = { planner: true, habits: true, vault: true, kalshi: true, tasksToday: 4, doneToday: 3, habitToday: true, noteToday: false,
   tomorrowTasks: 2, kalshiToday: true, beatToday: true, hour: 17 };
@@ -78,6 +80,9 @@ function render() {
   HUD.renderLabours(sc, openLabour);
   HUD.renderBosses(S.bosses, S.R, openBoss);
   HUD.renderTrophies(S.trophies, openTrophy);
+  const done = S.results.filter((x) => x.done).length;
+  document.getElementById('campaignState').textContent = `${done} / ${S.quests.length} quests complete`;
+  document.getElementById('campaignDetail').textContent = `${sc.earned} of 12 labours · ${S.trophies.filter((t) => t.earned).length} of ${S.trophies.length} trophies earned`;
   if (HUD.sheetTab()) HUD.openSheet(HUD.sheetTab(), build);
   if (S.scene) {
     const fb = S.bosses.cur.find((b) => b.id === S.bosses.featured) || S.bosses.cur[0];
@@ -164,15 +169,24 @@ async function refreshPhone() {
 }
 
 async function startScene() {
+  const off = /[?&]q=off(?:&|$)/.test(location.search) || (!/[?&]q=(?:ultra|high|low)(?:&|$)/.test(location.search) && O && O.fx() === 'off');
+  if (off) {
+    document.documentElement.dataset.noscene = '1';
+    document.getElementById('worldMode').textContent = 'Illustrated arena · effects off';
+    if (O) O.ready();
+    return;
+  }
   try {
-    const { createScene } = await import('./scene.js');
+    const { createScene } = await import('./scene.js?v=a5');
     S.scene = createScene(document.getElementById('scene'), { O });
     S.scene.onPick(picked);
     HUD.setTags({ demo: S.demo, lite: S.scene.lite() });
     S.scene.onQuality(() => HUD.setTags({ demo: S.demo, lite: S.scene.lite() }));
+    document.getElementById('worldMode').textContent = 'Drag to explore · tap a monument';
   } catch (e) {                                              // no WebGL: the HUD still works
     S.error = 'scene: ' + ((e && e.message) || e);
     document.documentElement.dataset.noscene = '1';
+    document.getElementById('worldMode').textContent = 'Illustrated arena';
     if (O) O.ready();
   }
 }
@@ -239,3 +253,4 @@ window.ARENA = {
 };
 
 main().catch((e) => { S.error = String((e && e.message) || e); if (O) O.fail(S.error); });
+

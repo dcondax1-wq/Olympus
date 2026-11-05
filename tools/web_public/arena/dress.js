@@ -5,7 +5,8 @@
 // dress(ctx) -> { update(t, dt, still) -> true while it animates, setLite(b), cheer(ms), bossFight(), stats(), dispose() }
 // ctx = { scene, camera, rc, boss (the Group), bossLight (PointLight) }. Everything is optional: any failure leaves the plain scene.
 import * as S from '../olympus/scenery.js';
-import * as AT from '../olympus/fx-atmos.js';        // JOB 47: sparks rising off the fourteen braziers
+import * as AT from '../olympus/fx-atmos.js';
+import { createCitadel } from './citadel.js?v=c2';  // bounded night districts and skybridges
 
 const { THREE } = S;
 const TAU = Math.PI * 2;
@@ -35,7 +36,7 @@ function moonSprite(scene) {
 
 export function dress(ctx) {
   const { scene, camera, rc } = ctx, out = { ok: false, parts: [] }, sub = [];
-  let atm = [], crowd = null, banners = null, torches = [], moon = null, sand = null, lite = !!ctx.lite, fxs = [], fight = null, stopped = false, extra = 0;
+  let atm = [], crowd = null, banners = null, torches = [], moon = null, sand = null, citadel = null, lite = !!ctx.lite, fxs = [], fight = null, stopped = false, extra = 0;
   const guard = (name, fn) => { try { const v = fn(); out.parts.push(name); return v; } catch (e) { out['err_' + name] = String((e && e.message) || e); return null; } };
 
   // the bowl: four tiers of spectators, two rows each, on the seats (the tier radius and height come from scene.js: R = 16.2 + 2.2 k, h = 1.5)
@@ -68,6 +69,7 @@ export function dress(ctx) {
     const em = AT.embers({ count: 170, points: pts, spread: [0.35, 0, 0.35], rise: 3.2, colors: ['#fff0c0', '#ff9a3a', '#c2300f'], size: 6, wind: 0.3, seed: 14 });
     scene.add(em.object); atm.push(em); AT.setQuality(atm, 'high');
   }), 900);
+  citadel = guard('citadel', () => createCitadel(scene, lite));
   moon = guard('moon', () => moonSprite(scene));
   sand = guard('sand', () => sandMaterial());
 
@@ -108,19 +110,22 @@ export function dress(ctx) {
       lite = !!b;
       atm.forEach((a) => { a.object.visible = !lite; });
       if (crowd) crowd.setLite(lite);
+      if (citadel) citadel.setLite(lite);
     },
     cheer(ms) { if (crowd) crowd.pulse(ms || 3200); },
     bossFight,
-    stats: () => ({ ok: out.ok, parts: out.parts.slice(), spectators: crowd ? crowd.count : 0, banners: banners ? 8 : 0, torches: torches.length, fx: fxs.length, embers: atm.length, fight: !!fight, errors: Object.keys(out).filter((k) => k.startsWith('err_')) }),
+    stats: () => ({ ok: out.ok, parts: out.parts.slice(), spectators: crowd ? crowd.count : 0, banners: banners ? 8 : 0, citadel: citadel ? citadel.stats() : null, torches: torches.length, fx: fxs.length, embers: atm.length, fight: !!fight, errors: Object.keys(out).filter((k) => k.startsWith('err_')) }),
     dispose() {
       stopped = true;
       sub.forEach((f) => { try { f.stop(); } catch (e) { /* */ } });
       atm.forEach((a) => { try { scene.remove(a.object); a.object.geometry.dispose(); a.material.dispose(); } catch (e) { /* */ } });
       fxs.forEach((f) => { try { f.stop(); } catch (e) { /* */ } });
       torches.forEach((t) => { try { t.stop(); } catch (e) { /* */ } });
+      if (citadel) citadel.dispose();
       if (crowd) crowd.dispose();
       if (banners) banners.dispose();
       if (moon) { scene.remove(moon); moon.material.dispose(); }
     },
   };
 }
+

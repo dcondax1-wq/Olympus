@@ -24,10 +24,23 @@
 <script src="../olympus/intro-app.js?v=i1" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#ffb547'); r.setProperty('--oly-accent-rgb', '255, 181, 71'); })();</script>
-<link rel="stylesheet" href="arena.css?v=a3">
+<link rel="stylesheet" href="arena.css?v=a4">
 </head>
 <body>
 <canvas id="scene" aria-hidden="true"></canvas>
+<div id="arena-illustration" aria-hidden="true"></div>
+<div class="arena-vignette" aria-hidden="true"></div>
+<aside class="world-caption" aria-label="Arena setting">
+  <span class="world-eyebrow">OLYMPUS · REALM OF DISCIPLINE</span>
+  <h2>THE COLOSSEUM</h2>
+  <p>Every habit leaves a mark.</p>
+  <span class="world-mode"><i></i><span id="worldMode">Explore the arena</span></span>
+</aside>
+<aside class="campaign" aria-label="Campaign progress">
+  <span>YOUR CAMPAIGN</span>
+  <b id="campaignState">Loading your progress</b>
+  <p id="campaignDetail">Quests, labours and trophies from your records.</p>
+</aside>
 <div id="flash" aria-hidden="true"></div>
 <main id="ui">
   <header class="top">
@@ -76,6 +89,7 @@
   <button type="button" class="oly-close" id="popClose" aria-label="Close">×</button>
 </div>
 <div class="banner" id="banner" hidden role="status" aria-live="assertive"></div>
-<script type="module" src="main.js?v=a4"></script>
+<script type="module" src="main.js?v=a6"></script>
 </body>
 </html>
+

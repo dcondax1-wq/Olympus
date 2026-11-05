@@ -18,6 +18,7 @@ import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
 import * as SC from '../olympus/scenery.js';
 import { dress } from './dress.js';
+import { citadel } from './colosseum.js?v=c1';
 
 const TAU = Math.PI * 2;
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
@@ -49,13 +50,14 @@ export function createScene(canvas, { O = null } = {}) {
   const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#06040c');
-  scene.fog = new THREE.FogExp2(0x0b0818, 0.013);
+  scene.fog = new THREE.FogExp2(0x100d22, 0.01);
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
   let lite = false, dirty = true, qcb = null, dr = null;
-  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#ffb547', exposure: 0.8, maxDpr: 1.75,
+  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#ffb547', exposure: 0.95, maxDpr: 1.75,
     bloom: { strength: 0.7, radius: 0.6, threshold: 1.0 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; applyLite(); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
+  const cit = citadel(scene, { lite });
   const glow = glowTexture();
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e3 = new THREE.Euler(), s3 = new THREE.Vector3(1, 1, 1), p3 = new THREE.Vector3();
 
@@ -365,7 +367,7 @@ export function createScene(canvas, { O = null } = {}) {
   }
 
   // ---- camera: a slow orbit (none under reduced motion), drag to turn, tap a statue / cup / the boss
-  const cam = { theta: 0.35, phi: 0.72, dist: 30, zoom: 1, lift: 0, drag: null, shake: 0 };
+  const cam = { theta: 0.35, phi: 0.6, dist: 30, zoom: 1, lift: 0, drag: null, shake: 0 };
   function placeCamera() {
     const r = cam.dist * cam.zoom, ph = Math.max(0.2, cam.phi - cam.lift * 0.35);
     camera.position.set(Math.sin(cam.theta) * Math.cos(ph) * r, 1.8 + Math.sin(ph) * r, Math.cos(cam.theta) * Math.cos(ph) * r);
@@ -404,6 +406,7 @@ export function createScene(canvas, { O = null } = {}) {
     motes.geometry.setDrawRange(0, lite ? 50 : NM);
     flames.forEach((f, i) => { f.visible = !lite || i % 2 === 0; });
     if (dr) dr.setLite(lite);
+    if (typeof cit !== 'undefined') cit.setLite(lite);
   }
   applyLite();
   try { dr = dress({ scene, camera, rc, boss, bossLight, lite }); if (dr.sand) sand.material = dr.sand; } catch (e) { dr = null; /* the plain colosseum */ }
@@ -508,7 +511,8 @@ export function createScene(canvas, { O = null } = {}) {
     quality: () => rc.quality(),
     stats: () => ({ levelups, lite, quality: rc.quality(), passes: rc.passes().length, bolts: fx.bolts.length, burst: !!fx.burst, rings: fx.rings.length, ceremony: fx.on && fx.rank,
       frames, drawn: drew, statues: statues.filter((s) => s.earned).length, trophies: st.trophies.filter((t) => t.earned).length, steps: st.rank + 1,
-      boss: st.boss ? st.boss.state : null, dress: dr ? dr.stats() : null }),
-    dispose() { stopped = true; cancelAnimationFrame(raf); clearFx(); if (dr) dr.dispose(); rc.dispose(); },
+      boss: st.boss ? st.boss.state : null, dress: dr ? dr.stats() : null, citadel: cit.stats() }),
+    dispose() { stopped = true; cancelAnimationFrame(raf); clearFx(); if (dr) dr.dispose(); cit.dispose(); rc.dispose(); },
   };
 }
+
