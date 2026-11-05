@@ -34,7 +34,7 @@
   }
   function previous(id) {
     for (let i = history.length - 1; i >= 0; i--) {
-      const source = history[i].sources.find((s) => s.id === id && s.ok);
+      const source = history[i].sources.find((s) => s && s.id === id && s.ok);
       if (source) return source;
     }
     return null;
