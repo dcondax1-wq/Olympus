@@ -85,7 +85,7 @@ export class Rig {
       this.limits.phi = [0.1, 0.9];
     } else if (key === 'fly' || key === 'street') this._ride(key);
     if (key !== 'map') this.limits.phi = [0.12, 1.5];
-    if (!quiet) this.opts.onMode && this.opts.onMode(key);
+    if (!quiet) this.opts.onMode && this.opts.onMode(this.mode);
     this.opts.onChange && this.opts.onChange();
   }
 
@@ -98,7 +98,7 @@ export class Rig {
 
   _ride(key) {
     const L = this.L;
-    if (!L || L.districts.length < 2) { this.mode = 'orbit'; return; }
+    if (!L || L.districts.length < 2) { this.mode = 'orbit'; this._sync(); return; }
     const ds = L.districts.slice(1), pts = [];
     if (key === 'fly') {
       ds.forEach((d, i) => {
