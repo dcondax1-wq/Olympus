@@ -918,7 +918,7 @@ function readableFallback(model, demo, reason) {
     body.data-fallback{height:auto;min-height:100%;overflow:auto;touch-action:pan-y;background:#080c1b;color:#f5f4fb}
     .data-fallback #c,.data-fallback .top,.data-fallback .dock,.data-fallback .mini,.data-fallback .sheet,
     .data-fallback .cams,.data-fallback .caption,.data-fallback .toast{display:none!important}
-    .readable-city{max-width:760px;margin:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 18px calc(48px + env(safe-area-inset-bottom,0px));font:500 15px/1.5 system-ui,sans-serif}
+    .readable-city{position:relative;z-index:2;max-width:760px;margin:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 18px calc(48px + env(safe-area-inset-bottom,0px));font:500 15px/1.5 system-ui,sans-serif}
     .readable-city h1{font-size:clamp(28px,7vw,46px);line-height:1.08;margin:9px 0 12px;color:#f9e7b4}
     .readable-city h2{font-size:20px;margin:28px 0 8px;color:#f9e7b4}
     .readable-city p{color:#c8ccdc;max-width:60ch}
