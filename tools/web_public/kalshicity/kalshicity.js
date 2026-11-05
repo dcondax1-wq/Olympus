@@ -324,7 +324,7 @@ function greetNew() {                                                    // once
   store.write({ ...st, seen: Math.max(st.seen || 0, newest) });
 }
 async function refresh() {                                               // every 5 minutes: the engine's files and the bot's numbers again; something new = scan
-  if (document.hidden || S.startedDemo || S.showingDemo || !S.scene) return;
+  if (document.hidden || S.startedDemo || S.showingDemo) return;
   const [edges, log, live, hyp] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getJSON(RAW, 8000), getJSON('hypotheses.json')]);
   const m = shape(edges, log, live, Date.now() / 1000, hyp, false);
   if (!m || m.edges.length < 3) return;
@@ -333,9 +333,12 @@ async function refresh() {                                               // ever
   const newer = m.log.length > old.log.length, changed = m.t !== old.t || (m.hyp && old.hyp && m.hyp.t !== old.hyp.t);
   S.model = m;
   S.changes = changesOf(m, before);
-  if (changed) { S.L = layout(m, S.hypDemo ? null : before); S.scene.rebuild(m, S.L); } else S.scene.setBook(m);
+  if (changed) { S.L = layout(m, S.hypDemo ? null : before); if (S.scene) S.scene.rebuild(m, S.L); }
+  else S.scene?.setBook(m);
   if (!S.hypDemo) store.write({ ...store.read(), hh: hypSnap(m) });
   renderTop();
+  // The text atlas remains live even on devices where WebGL could not start.
+  if (!S.scene && S.view && S.view !== 'card') openSheet(S.view);
   if (S.changes.length) toast(S.changes[0]);
   if (newer) runScan(true);
 }
@@ -412,7 +415,10 @@ async function main() {
   if (S.changes.length) setTimeout(() => toast(S.changes[0]), 2500);
   if (S.scene) setInterval(() => { if (S.preview == null) renderClock(); }, 5000);
   postCard();
-  if (S.scene && !S.startedDemo) { greetNew(); setInterval(refresh, 5 * 60 * 1000); setInterval(() => { if (!document.hidden && S.fw && S.fw.length && S.fwLeft-- > 0 && S.scene) S.scene.fireworks(S.fw); }, 22000); }
+  if (!S.startedDemo) {
+    greetNew(); setInterval(refresh, 5 * 60 * 1000);
+    if (S.scene) setInterval(() => { if (!document.hidden && S.fw && S.fw.length && S.fwLeft-- > 0 && S.scene) S.scene.fireworks(S.fw); }, 22000);
+  }
   if (O && S.scene) O.ready();
   S.ready = true;
 }
