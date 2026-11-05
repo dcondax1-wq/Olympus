@@ -13,7 +13,7 @@
   let selected = SOURCES[0].id;
   let latest = [];
   let history = [];
-  try { const h = JSON.parse(localStorage.getItem(key) || '[]'); if (Array.isArray(h)) history = h.slice(-30); } catch (_) { /* storage unavailable */ }
+  try { const h = JSON.parse(localStorage.getItem(key) || '[]'); if (Array.isArray(h)) history = h.slice(-30).filter((record) => record && Array.isArray(record.sources)); } catch (_) { /* storage unavailable */ }
   const now = () => Date.now();
   const stamp = (t) => new Date(t).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
   function numericTime(data) {
@@ -34,7 +34,7 @@
   }
   function previous(id) {
     for (let i = history.length - 1; i >= 0; i--) {
-      const source = history[i].sources.find((s) => s.id === id && s.ok);
+      const source = history[i].sources.find((s) => s && s.id === id && s.ok);
       if (source) return source;
     }
     return null;
