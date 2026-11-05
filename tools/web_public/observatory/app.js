@@ -55,8 +55,9 @@
       // Static sources without a timestamp are not called stale.
       const reported = data.status && data.status.level;
       const cronos = data.cronos && data.cronos.state;
-      const status = demo || reported === 'warn' || reported === 'bad' || (cronos && cronos !== 'fresh') || ageHours != null && ageHours > 48 ? 'warn' : 'good';
-      return { ...source, ok: true, status, hash, t, ageHours, demo, changed: !!old && old.hash !== hash, bytes: JSON.stringify(data).length };
+      const healthIssue = reported === 'warn' || reported === 'bad' ? 'The source status is ' + reported + '.' : cronos && cronos !== 'fresh' ? 'The source publisher reports ' + cronos + '.' : '';
+      const status = demo || healthIssue || ageHours != null && ageHours > 48 ? 'warn' : 'good';
+      return { ...source, ok: true, status, hash, t, ageHours, demo, healthIssue, changed: !!old && old.hash !== hash, bytes: JSON.stringify(data).length };
     } catch (error) {
       return { ...source, ok: false, status: 'bad', error: error.name === 'AbortError' ? 'Timed out after 10 seconds' : String(error.message || error) };
     } finally { clearTimeout(timer); }
@@ -64,6 +65,7 @@
   function insight(source) {
     if (!source.ok) return { title: source.label + ' feed is unavailable', evidence: source.error, action: 'Open the source and check its publisher or path.' };
     if (source.demo) return { title: source.label + ' is marked demo', evidence: 'Published JSON contains demo=true or mode=demo.', action: 'Keep demo labels visible and check whether live data is expected.' };
+    if (source.healthIssue) return { title: source.label + ' needs review', evidence: source.healthIssue, action: 'Open the source status card and check its latest publisher run.' };
     if (source.ageHours != null && source.ageHours > 48) return { title: source.label + ' may be stale', evidence: 'Published timestamp is ' + Math.floor(source.ageHours) + ' hours old (' + stamp(source.t) + ').', action: 'Check the source schedule and its latest successful publish.' };
     if (source.changed) return { title: source.label + ' changed since your last scan', evidence: 'Content marker differs from the last available copy on this device.', action: 'Review the change in the source app before proposing a dashboard adjustment.' };
     return null;
