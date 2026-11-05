@@ -16,6 +16,20 @@ export class Rig {
     this.ptr = new Map(); this.tapStart = null; this.last = null;
     this.mode = 'orbit';
     this.reduced = reducedMotion();
+    // Desktop flight uses the same bounded camera target as touch panning.
+    // Ignore typing in search boxes and clear keys if the tab loses focus.
+    this.keys = new Set();
+    const flightKeys = new Set(['w', 'a', 's', 'd', 'q', 'e', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'shift']);
+    window.addEventListener('keydown', (e) => {
+      const target = e.target;
+      if (e.altKey || e.ctrlKey || e.metaKey || (target && (target.closest('input,textarea,select,[contenteditable="true"]')))) return;
+      const key = e.key.toLowerCase();
+      if (!flightKeys.has(key)) return;
+      this.keys.add(key);
+      if (key !== 'shift') { e.preventDefault(); this._touched(); }
+    });
+    window.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
+    window.addEventListener('blur', () => this.keys.clear());
     dom.addEventListener('pointerdown', (e) => this._down(e));
     dom.addEventListener('pointermove', (e) => this._move(e));
     for (const ev of ['pointerup', 'pointercancel']) dom.addEventListener(ev, (e) => this._up(e));
@@ -125,7 +139,22 @@ export class Rig {
       this.dist = clamp(d.length(), this.limits.min, this.limits.max); this.pitch = clamp(Math.asin(clamp(d.y / Math.max(1e-3, d.length()), -1, 1)), this.limits.pmin, this.limits.pmax); this.yaw = Math.atan2(d.x, d.z);
       return;
     }
-    this.idle += dt;
+    // W/S move toward/away from the scene; A/D strafe; Q/E descend/ascend.
+    // Arrows mirror W/A/S/D. Shift speeds up a flight. Clamp frame time so a
+    // backgrounded tab cannot jump across the world when it resumes.
+    const k = this.keys, axis = (pos, neg) => +(k.has(pos)) - +(k.has(neg));
+    const forward = axis('w', 's') + axis('arrowup', 'arrowdown');
+    const right = axis('d', 'a') + axis('arrowright', 'arrowleft');
+    const rise = axis('e', 'q');
+    if (forward || right || rise) {
+      const speed = Math.min(280, Math.max(25, this.dist * 0.45)) * (k.has('shift') ? 2.4 : 1);
+      const step = Math.min(0.05, Math.max(0, dt)) * speed / Math.max(1, Math.hypot(forward, right, rise));
+      this.t.x += (Math.sin(this.yaw) * forward + Math.cos(this.yaw) * right) * step;
+      this.t.z += (Math.cos(this.yaw) * forward - Math.sin(this.yaw) * right) * step;
+      this.t.y = Math.max(0, this.t.y + rise * step);
+      if (this.hooks.clampTarget) this.hooks.clampTarget(this.t);
+      this.idle = 0;
+    } else this.idle += dt;
     if (!this.reduced && this.idle > 5 && this.ptr.size === 0 && this.auto) this.yaw += dt * this.auto;
     this.apply();
   }
