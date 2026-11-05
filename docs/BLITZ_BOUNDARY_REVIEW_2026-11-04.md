@@ -6,7 +6,7 @@
 
 `AccountC._enter` checks signal age against the time captured at the start of the poll. A slow guard can advance the clock before `AccountC.route` sends the order. On the shipped path, a signal checked at 49 seconds and routed at 51 seconds, or checked at 32 seconds and routed at 63 seconds, still reaches the adapter. The rule says an entry first sent more than 50 seconds after the opening minute must not be chased.
 
-PR #180 adds a second check inside **account C's** `route`, immediately before `adapter.send`. For a buy/sell entry older than 50 seconds it returns `ok: false, not_sent: true`. The existing `_enter → never_placed → _drop_unplaced` path must clear the provisional open state, mark the row not placed, book $0, and avoid an entry notice. Position exits and stop changes are excluded from the age limit.
+PR #180 adds a second check inside **account C's** `route`, immediately before `adapter.send`. For a buy/sell entry older than 50 seconds it returns `ok: false, not_sent: true`. Account C treats this explicit pre-adapter refusal as definitely not placed, then `_enter → never_placed → _drop_unplaced` clears the provisional open state, marks the row not placed, books $0, and avoids an entry notice. This local decision matters when an unrelated broker position would make the shared unknown-fill helper conservatively return uncertain. Position exits and stop changes are excluded from the age limit.
 
 The preflight display currently calls `AccountC.qty` without the signal's break number. With later-break sizing on, it previews 3 micros in the documented fixture while the actual first break routes 1. PR #180 passes `brk_n=1` for the first-break scenario, displays `brk_n=2` separately, and puts both labels at the beginning of the capped preflight detail.
 
@@ -17,6 +17,7 @@ The preflight display currently calls `AccountC.qty` without the signal's break 
 | Entry at 49 and 50 seconds | Adapter receives one entry | Added as mocked regression in PR #180; not run here |
 | Buy checked at 49, sent at 51 | No adapter call; no booking or entry notice | Added as mocked regression; not run here |
 | Sell checked at 32, sent at 63 | Same refusal and cleanup | Added as mocked regression; not run here |
+| An unrelated broker position appears when account C says `not_sent` | Account C still clears its own unsent provisional entry | Added as mocked regression; not run here |
 | Entry already 51 seconds old when polled | Refused before route | Added as mocked regression; not run here |
 | Old position exit and stop change | Still sent to adapter | Added as mocked regression; not run here |
 | Eval first/later break at 60-point stop | Preview equals `AccountC.qty(..., brk_n=1/2)`; labels both | Added as mocked regression; not run here |
