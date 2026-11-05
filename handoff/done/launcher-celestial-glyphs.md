@@ -1,0 +1,9 @@
+# launcher-celestial-glyphs — 2026-11-04
+
+The Zenith OLYMPUS launcher now opens over a layered celestial sheet: three star depths drift behind two quiet nebula fields, while the glass and text remain above them. Each of the 31 destination tiles keeps its generated registry glyph and route but receives a named visual signature suited to the app (Oracle scan, Fates thread, Prometheus flame, Cities flight, Chronos tick, Tyche coin, Hermes wing, and so on). Staggered phases prevent the grid from moving in lockstep.
+
+The motion is presentation only. Tile `href` values still come directly from each existing `a.path`; the Jarvis destination remains `jarvis/`; order, groups, status dots, recent apps, search, PC/public behavior, and navigation targets are unchanged. No app registry or APPS table was edited.
+
+The phone and PC launcher copies remain byte-identical. The existing `calm` gate disables all new star and glyph animations for LITE and reduced motion; `prefers-reduced-motion` remains an explicit final fallback. The starfield remains as a still lightweight CSS background. No canvas, WebGL, image download, or runtime library was added.
+
+Checks: Node syntax for both launcher copies; `node tests/test_launcher_celestial_glyphs.mjs`; chatgpt guard; apps-list consistency; Jarvis shell; money wording; numbers audit. CUA at a real 360 CSS viewport verified a 360 px panel/document with no sideways overflow, all 31 tiles, all 31 distinct motion names, intact first routes (`oracle/`, `odeon/`, `fates/`, `datacity/`), controls inside the screen and at least 44 px high, and the celestial background/glyphs visible. Searching `oracle` left exactly the Oracle tile with `href="oracle/"` and motion `scan`. This is CSS viewport QA, not real iPhone Safari. The root page owns the current `launcher.js?v=l1` script tag and is intentionally outside this PR's allowed scope, so its cache tag/worker must be bumped by the owner/Claude when this PR is merged.
