@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b17"><meta name="color-scheme" content="dark">
+<title>Atlas · Olympus</title>
+<meta name="description" content="A fast visual map of the Olympus dashboards.">
+<link rel="stylesheet" href="atlas.css?v=1">
+<script src="../olympus/apps-list.js?v=o3" defer></script>
+<script src="atlas.js?v=1" defer></script>
+</head>
+<body>
+<a class="skip" href="#results">Skip to dashboards</a>
+<div class="sky" aria-hidden="true"><canvas id="world"></canvas><div class="vignette"></div></div>
+<header class="top">
+  <a class="home" href="../jarvis/" aria-label="Jarvis home">◈ <span>OLYMPUS</span></a>
+  <span class="edition">ATLAS / 01</span>
+  <button id="motion" class="round" type="button" aria-label="Pause city animation" aria-pressed="false">Ⅱ</button>
+</header>
+<main>
+  <section class="hero" aria-labelledby="title">
+    <p class="eyebrow">YOUR WORLD, ONE GATEWAY</p>
+    <h1 id="title">Every arena.<br><em>One horizon.</em></h1>
+    <p class="lead">Find the right room for what matters now. Your favorites stay on this device.</p>
+    <div class="hero-actions"><a class="primary" href="../jarvis/">Enter Jarvis <span aria-hidden="true">↗</span></a><a class="secondary" href="../cities/">Explore Cities <span aria-hidden="true">↗</span></a></div>
+  </section>
+  <section class="deck" aria-labelledby="deckTitle">
+    <div class="deck-head"><div><p class="eyebrow">THE COMMAND DECK</p><h2 id="deckTitle">Choose your destination</h2></div><span id="count" class="count" aria-live="polite"></span></div>
+    <label class="search"><span aria-hidden="true">⌕</span><span class="sr">Search dashboards by name or purpose</span><input id="query" type="search" autocomplete="off" placeholder="Search arenas, tools, and missions"><kbd>/</kbd></label>
+    <div class="filters" role="group" aria-label="Dashboard categories">
+      <button data-filter="all" aria-pressed="true">All</button><button data-filter="favorites" aria-pressed="false">★ Favorites</button><button data-filter="trading" aria-pressed="false">Trading</button><button data-filter="money" aria-pressed="false">Money</button><button data-filter="life" aria-pressed="false">Life</button>
+    </div>
+    <div id="recent" class="recent" hidden></div>
+    <div id="results" class="results" tabindex="-1"></div>
+    <p id="empty" class="empty" hidden>No dashboards match this search. Try another name or category.</p>
+  </section>
+</main>
+<footer>OLYMPUS ATLAS <span>·</span> Your map is saved on this device.</footer>
+</body>
+</html>
