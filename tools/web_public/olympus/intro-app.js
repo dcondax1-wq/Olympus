@@ -97,6 +97,8 @@
   function finish(how) {                                       // removes everything; safe to call any number of times
     if (done) return;
     done = true; st.state = how || 'done'; st.ms = Math.round(now() - t0);
+    // A hidden tab or a failed canvas never counts as a watched intro.
+    if (mode === 'full' && (st.state === 'done' || st.state === 'skipped')) ss(seenKey, '1');
     try { cancelAnimationFrame(raf); } catch (e) { /* */ }
     clearTimeout(killT);
     try { if (el && el.parentNode) el.parentNode.removeChild(el); } catch (e) { /* */ }
@@ -501,7 +503,6 @@
     fit();
     d.body.appendChild(el);
     root.setAttribute('data-oly-intro', mode);
-    ss(seenKey, '1');
     try { if (d.fonts && d.fonts.load) d.fonts.load('700 30px Orbitron'); } catch (e) { /* the fallback font draws */ }
     if (mode !== 'lite') { var S = SC[st.scene] || SC.stars; scene = Object.create(S); scene.init(); }
     if (mode !== 'lite') parts = makeParts();
