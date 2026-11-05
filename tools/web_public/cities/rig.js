@@ -149,8 +149,8 @@ export class Rig {
     if (forward || right || rise) {
       const speed = Math.min(280, Math.max(25, this.dist * 0.45)) * (k.has('shift') ? 2.4 : 1);
       const step = Math.min(0.05, Math.max(0, dt)) * speed / Math.max(1, Math.hypot(forward, right, rise));
-      this.t.x += (Math.sin(this.yaw) * forward + Math.cos(this.yaw) * right) * step;
-      this.t.z += (Math.cos(this.yaw) * forward - Math.sin(this.yaw) * right) * step;
+      this.t.x += (-Math.sin(this.yaw) * forward + Math.cos(this.yaw) * right) * step;
+      this.t.z += (-Math.cos(this.yaw) * forward - Math.sin(this.yaw) * right) * step;
       this.t.y = Math.max(0, this.t.y + rise * step);
       if (this.hooks.clampTarget) this.hooks.clampTarget(this.t);
       this.idle = 0;
