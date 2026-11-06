@@ -926,9 +926,20 @@ function readableFallback(model, demo, reason) {
     .readable-city .facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0}
     .readable-city .fact,.readable-city .idea,.readable-city .district{border:1px solid #3b4262;background:#141b31;border-radius:14px;padding:12px}
     .readable-city .fact b{display:block;font-size:22px;color:#fff}.readable-city .fact small{color:#c8ccdc}
-    .readable-city .districts{display:flex;flex-wrap:wrap;gap:8px}
+    .readable-city .city-map{position:relative;isolation:isolate;overflow:hidden;margin:18px 0 12px;padding:14px 9px 11px;border:1px solid #475775;border-radius:19px;background:radial-gradient(ellipse at 50% 90%,#183553 0%,#101c35 40%,#090e20 82%);box-shadow:0 20px 50px #02071199,inset 0 0 36px #6a9eff12}
+    .readable-city .city-map:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 8% 18%,#b5dfff 1px,transparent 2px),radial-gradient(circle at 82% 12%,#ffe6a7 1px,transparent 2px),radial-gradient(circle at 46% 27%,#d1dfff 1px,transparent 2px),linear-gradient(145deg,transparent 46%,#69c4ff20 47%,transparent 49%,transparent 62%,#e2bc7324 63%,transparent 65%);background-size:auto,auto,auto,100% 100%}
+    .readable-city .map-head{position:relative;display:flex;justify-content:space-between;gap:8px;align-items:center;margin:0 7px 9px}.readable-city .map-count{color:#d9cfad;font:700 11px system-ui}
+    .readable-city .districts{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
     .readable-city button{min-height:44px;color:#f9f7ff;background:#242c4e;border:1px solid #646b93;border-radius:12px;padding:8px 12px;font:700 13px system-ui;cursor:pointer}
-    .readable-city button.on{background:#d4b775;color:#181627;border-color:#d4b775}
+    .readable-city .district{min-width:0;min-height:108px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;padding:7px 4px 5px;background:linear-gradient(180deg,#24365742,#172748a8);border-color:#60789b66;box-shadow:inset 0 -8px 14px #0b172c;color:#f5f2eb}
+    .readable-city .district-tower{position:relative;display:block;width:42px;height:var(--tower-h);flex:none;transform:skewY(-8deg);background:repeating-linear-gradient(90deg,transparent 0 6px,#ffe3a43d 6px 8px,transparent 8px 11px),repeating-linear-gradient(0deg,transparent 0 9px,#77d7ff63 9px 11px),linear-gradient(125deg,#15445e,#32748a 55%,#14233d);border:1px solid #70ccdb95;box-shadow:0 0 14px #52bde36a,inset 5px 0 12px #9fdafc35}
+    .readable-city .district-tower:after{content:"";position:absolute;left:6px;right:6px;top:-7px;height:7px;transform:skewX(42deg);background:#4c9cb0;border:1px solid #a5eff0a3}
+    .readable-city .district-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:800 10px/1.2 system-ui;letter-spacing:.02em;text-transform:uppercase}
+    .readable-city .district-count{display:block;color:#bdc9d7;font:600 10px/1.2 system-ui}
+    .readable-city .district.on{border-color:#f0d185;background:#3e3a46;color:#fff;box-shadow:0 0 20px #e0b76b70}.readable-city .district.on .district-tower{border-color:#ffe6a0;box-shadow:0 0 20px #f8ca76a9}
+    .readable-city button:focus-visible{outline:3px solid #ffe6a0;outline-offset:2px}
+    @media(max-width:350px){.readable-city .districts{gap:4px}.readable-city .district-label{font-size:9px}}
+    @media(prefers-reduced-motion:reduce){.readable-city .district{scroll-behavior:auto}}
     .readable-city input{display:block;width:100%;min-height:48px;border-radius:12px;border:1px solid #646b93;background:#11172a;color:#fff;padding:10px 12px;font:16px system-ui}
     .readable-city .idea{margin:9px 0}.readable-city .idea strong{display:block;overflow-wrap:anywhere}.readable-city .idea small{color:#bec5d8}
     .readable-city .idea b{color:#e9ce8d}
@@ -939,24 +950,38 @@ function readableFallback(model, demo, reason) {
   const root = el('main', 'readable-city');
   const add = (parent, tag, content, cls) => { const node = el(tag, cls || '', String(content)); parent.append(node); return node; };
   add(root, 'div', 'OLYMPUS · DATA CITY', 'eyebrow');
-  add(root, 'h1', 'The research is still here');
-  add(root, 'p', 'The 3D city could not start on this device. Explore the same read-only research below. No trading controls are available here.');
+  add(root, 'h1', 'The city is still here');
+  add(root, 'p', 'The 3D city could not start on this device. Explore its read-only district map and research below. No trading controls are available here.');
   add(root, 'p', demo ? 'Showing sample data. Connect for the published research.' : 'Showing the published research data.');
+  const map = el('section', 'city-map');
+  map.setAttribute('aria-label', 'Research district city map');
+  const mapHead = el('div', 'map-head');
+  add(mapHead, 'span', 'EXPLORE THE DISTRICTS', 'eyebrow');
+  add(mapHead, 'span', model.sections.filter((s) => s.items.length).length + ' districts', 'map-count');
+  map.append(mapHead);
+  const controls = el('div', 'districts');
+  map.append(controls);
+  root.append(map);
   const facts = el('div', 'facts');
   for (const [n, label] of [[model.buildings.length.toLocaleString(), 'tested ideas and records'], [model.sections.length, 'research districts']]) {
     const f = el('div', 'fact'); add(f, 'b', n); add(f, 'small', label); facts.append(f);
   }
   root.append(facts);
-  add(root, 'h2', 'Browse the districts');
-  const controls = el('div', 'districts'), results = el('div');
-  root.append(controls);
+  const results = el('div');
   add(root, 'h2', 'Explore ideas');
   const search = el('input'); search.type = 'search'; search.placeholder = 'Search an idea or district'; search.setAttribute('aria-label', 'Search research ideas');
   root.append(search, results);
   let chosen = '';
   const sections = model.sections.filter((s) => s.items.length);
+  const biggest = Math.max(1, ...sections.map((s) => s.items.length));
   for (const sec of sections) {
-    const btn = el('button', 'district', sec.name + ' · ' + sec.items.length.toLocaleString());
+    const btn = el('button', 'district');
+    btn.type = 'button';
+    btn.style.setProperty('--tower-h', (23 + Math.round(Math.sqrt(sec.items.length / biggest) * 35)) + 'px');
+    btn.setAttribute('aria-label', sec.name + ' district, ' + sec.items.length.toLocaleString() + ' ideas');
+    const tower = el('span', 'district-tower');
+    tower.setAttribute('aria-hidden', 'true');
+    btn.append(tower, el('span', 'district-label', sec.name), el('small', 'district-count', sec.items.length.toLocaleString() + ' ideas'));
     btn.addEventListener('click', () => { chosen = chosen === sec.key ? '' : sec.key; controls.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === btn && !!chosen)); draw(); });
     controls.append(btn);
   }

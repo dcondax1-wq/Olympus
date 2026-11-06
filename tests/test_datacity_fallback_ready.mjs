@@ -15,7 +15,7 @@ const fallbackSource = source.slice(start, end);
 function fixture(body = fallbackSource, kitPresent = true) {
   const events = [];
   const node = (tag, cls = '', text = '') => ({
-    tag, cls, text, children: [], value: '', classList: { add(name) { events.push('class:' + name); }, toggle() {} },
+    tag, cls, text, children: [], value: '', style: { setProperty() {} }, classList: { add(name) { events.push('class:' + name); }, toggle() {} },
     append(...children) { this.children.push(...children); if (this === document.body) events.push('append:body'); },
     replaceChildren(...children) { this.children = children; },
     addEventListener() {}, setAttribute() {}, querySelectorAll() { return []; }, remove() { events.push('remove:loading'); },
@@ -49,7 +49,13 @@ test('3D failure reveals the research immediately after the fallback enters the 
   assert.equal(result.state.buildings, 1);
   assert.match(result.state.fallbackReason, /WebGL unavailable/);
   const main = result.document.body.children.find((n) => n.cls === 'readable-city');
-  assert.ok(main.children.some((n) => n.tag === 'h1' && n.text === 'The research is still here'));
+  assert.ok(main.children.some((n) => n.tag === 'h1' && n.text === 'The city is still here'));
+  const map = main.children.find((n) => n.cls === 'city-map');
+  assert.ok(map, 'city map is visible before the idea list');
+  const districts = map.children.find((n) => n.cls === 'districts');
+  assert.equal(districts.children.length, 1);
+  assert.ok(districts.children[0].children.some((n) => n.cls === 'district-tower'));
+  assert.match(result.document.head.children[0].textContent, /district-tower/);
 });
 
 test('the regression check detects a fallback that leaves the veil up', () => {
