@@ -241,7 +241,7 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
 <script type="module">
 let recovering = false;
 async function recover() {
-  if (recovering || document.body.dataset.ready) return;
+  if (recovering || document.body.dataset.ready === 'true' || document.body.dataset.ready === 'fallback') return;
   recovering = true;
   window.__citiesImportAbandoned = true;
   const loading = document.querySelector('#loading');
