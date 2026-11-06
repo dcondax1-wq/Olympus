@@ -338,7 +338,13 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     haptic();
     fadeOut(60, 'skipped');
   }
-  function onKey(e) { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') skip(e); }
+  function onKey(e) {
+    if (st.done || (e.key !== 'Escape' && e.key !== 'Enter' && e.key !== ' ')) return;
+    // The visible entrance covers the app; a skip key must not also activate a focused control behind it.
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    skip(e);
+  }
   function onVis() { if (doc.visibilityState !== 'visible') finish('hidden'); }
   var up = function () { if (holdUp) setTimeout(function () { holdUp = false; }, 80); };
 
