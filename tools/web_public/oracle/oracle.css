@@ -61,7 +61,7 @@ h1 { margin: 0; font: 700 14px var(--display); letter-spacing: .24em; }
 .stage { margin-top: 4px; }
 .st { display: flex; align-items: baseline; gap: 8px; font: 700 15px var(--ui); color: var(--gold); }
 #stage-n { font: 700 11px var(--display); color: var(--bg); background: var(--gold); border-radius: 6px; padding: 2px 6px; }
-#waiting { margin-top: 2px; font-size: 12.5px; color: var(--dim); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+#waiting { margin-top: 2px; font-size: 12.5px; color: var(--dim); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* ---------------------------------------------------------------- what the bot is waiting for (heat.js waitingOf) */
 .wait { margin-top: 5px; }
@@ -152,7 +152,7 @@ h1 { margin: 0; font: 700 14px var(--display); letter-spacing: .24em; }
 #window i { width: 7px; height: 7px; border-radius: 50%; background: #55607a; flex: none; }
 #window[data-open="true"] { color: var(--gold); } #window[data-open="true"] i { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
 #session { white-space: nowrap; }
-.wx { grid-column: 1 / -1; display: flex; gap: 4px; overflow: hidden; min-height: 18px; }
+.wx { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px; min-height: 18px; }
 .chip { font: 600 11px var(--ui); letter-spacing: .05em; padding: 1px 7px; border-radius: 9px; border: 1px solid var(--line); color: var(--dim); }
 
 .levels { border-top: 1px solid var(--line); }
@@ -191,4 +191,18 @@ h1 { margin: 0; font: 700 14px var(--display); letter-spacing: .24em; }
 @keyframes blink { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Narrow phones: the replay control and conditions stay readable instead of being cut off. */
+@media (max-width: 420px) {
+  .bar { flex-wrap: wrap; }
+  .bar #replay:not([hidden]) { order: 10; flex: 1 0 100%; text-align: left; }
+  .ev-row { flex-wrap: wrap; }
+  .ev-row #today:not([hidden]) { order: 10; flex: 1 0 100%; text-align: left; }
+  #dock { max-height: min(58vh, 58dvh); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; pointer-events: auto; }
+  .cond { grid-template-columns: minmax(0, 1fr); white-space: normal; }
+  #window, #win-text { overflow: visible; white-space: normal; }
+  #session { white-space: normal; }
+  .chip { white-space: normal; line-height: 1.15; }
+  #lv-meta { text-align: right; }
 }
