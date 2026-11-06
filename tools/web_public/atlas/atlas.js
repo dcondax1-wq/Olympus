@@ -19,9 +19,16 @@
   const zoneOf = (a) => zones.find((zone) => zone.ids.includes(a.id)) || zones.find((zone) => zone.id === (a.group === 'money' ? 'risk' : a.group === 'life' ? 'life' : 'market'));
   const key = 'olympus.atlas.v1';
   let saved = { stars: [], recent: [] };
-  try { const v = JSON.parse(localStorage.getItem(key)); if (v && typeof v === 'object') saved = { stars: Array.isArray(v.stars) ? v.stars : [], recent: Array.isArray(v.recent) ? v.recent : [] }; } catch (_) { /* private browsing */ }
-  saved.stars = saved.stars.filter((id) => apps.some((a) => a.id === id)).slice(0, 30);
-  saved.recent = saved.recent.filter((id) => apps.some((a) => a.id === id)).slice(0, 5);
+  function restoreSaved() {
+    try {
+      const v = JSON.parse(localStorage.getItem(key));
+      saved = {
+        stars: (Array.isArray(v && v.stars) ? v.stars : []).filter((id) => apps.some((a) => a.id === id)).slice(0, 30),
+        recent: (Array.isArray(v && v.recent) ? v.recent : []).filter((id) => apps.some((a) => a.id === id)).slice(0, 5)
+      };
+    } catch (_) { /* keep this page's preferences if storage is unavailable */ }
+  }
+  restoreSaved();
   let storageReady = false;
   try {
     const probe = key + '.probe';
@@ -123,6 +130,12 @@
   document.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => { filter = b.dataset.filter; document.querySelectorAll('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); render(); }));
   document.addEventListener('keydown', (e) => { if (e.key === '/' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) { e.preventDefault(); $('#query').focus(); } else if (e.key === 'Escape' && document.activeElement === $('#query')) { $('#query').value = ''; render(); $('#query').blur(); } });
   render();
+  // Back/forward cache restores the old DOM without rerunning this script.
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    restoreSaved();
+    render();
+  });
 
   // A projected city, not a video. One low-cost canvas, capped pixels, no network assets or extra WebGL context.
   const canvas = $('#world'), ctx = canvas.getContext('2d'); if (!ctx) return;
