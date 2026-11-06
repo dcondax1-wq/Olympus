@@ -162,7 +162,10 @@ html[data-fx="low"] .flat-vault::before,html[data-fx="low"] .flat-vault::after,h
 
 /* ---------------- 2026-11-04: the Tools panel (overfitting meter, breeding, verdicts, survivors, compare, search), share card */
 .tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.plus .ptabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 2px 40px 8px 0; }
+.plus .ptabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 2px 0 0; overscroll-behavior-inline: contain; }
+.plus .ptabs-hint { margin: 2px 0 8px; font: 700 11px/1.2 'Rajdhani', sans-serif; letter-spacing: .14em; color: var(--dim); }
+.plus .ptabs-hint span { color: var(--gold); font-size: 14px; }
+@media (min-width: 800px) { .plus .ptabs-hint { display: none; } .plus .ptabs { margin-bottom: 8px; } }
 .plus .ptabs::-webkit-scrollbar { display: none; }
 .plus .ptabs button { flex: none; min-height: 44px; padding: 0 12px; font-size: 12px; letter-spacing: .1em; color: var(--dim); }
 .plus .ptabs button[aria-selected="true"] { color: #1a0a04; background: linear-gradient(180deg, #ffe08a, var(--gold)); border-color: var(--gold); }

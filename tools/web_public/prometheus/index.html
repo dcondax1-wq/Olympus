@@ -24,7 +24,7 @@
 <script src="../olympus/olympus.js?v=o3" data-app="prometheus"></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
-<link rel="stylesheet" href="forge.css?v=f6">
+<link rel="stylesheet" href="forge.css?v=f7">
 <script src="../olympus/fx-core.js?v=f1"></script>
 </head>
 <body>
@@ -86,11 +86,12 @@
 <section class="card plus" id="plus" hidden role="dialog" aria-modal="false" aria-labelledby="plus-h">
   <button type="button" class="x" id="plusX" data-pclose aria-label="Close">✕</button>
   <h2 id="plus-h">Tools · the forge's own numbers</h2>
-  <nav class="ptabs" role="tablist" aria-label="Tools">
+  <nav class="ptabs" role="tablist" aria-label="Tools; swipe horizontally for more tabs">
     <button type="button" role="tab" data-ptab="meter" aria-selected="true">METER</button><button type="button" role="tab" data-ptab="breed" aria-selected="false">BREEDING</button>
     <button type="button" role="tab" data-ptab="verdicts" aria-selected="false">VERDICTS</button><button type="button" role="tab" data-ptab="survivors" aria-selected="false">SURVIVORS</button>
     <button type="button" role="tab" data-ptab="compare" aria-selected="false">COMPARE</button><button type="button" role="tab" data-ptab="search" aria-selected="false">SEARCH</button>
   </nav>
+  <p class="ptabs-hint" aria-hidden="true">SWIPE FOR MORE TOOLS <span>→</span></p>
   <div id="plus-b" class="plus-b"></div>
 </section>
 <div class="fshare" id="fshare" hidden role="dialog" aria-label="Share card"><img alt=""><p>Press and hold the picture to save or share it.</p><button type="button" id="fshareX">CLOSE</button></div>
