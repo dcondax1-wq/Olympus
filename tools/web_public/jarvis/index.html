@@ -348,7 +348,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   var FS_BG = [
     '#ifdef GL_FRAGMENT_PRECISION_HIGH', 'precision highp float;', '#else', 'precision mediump float;', '#endif',
     'uniform vec2 uRes,uO,uPo,uShock;uniform vec4 uX,uY,uZ;',
-    'uniform float uT,uS,uZoom,uFly,uCam,uHeart,uStorm,uStrike,uFlash,uRidge,uCols,uBg,uGlow,uRing,uFlare,uAsm,uTemple,uForm,uShine,uSub,uPush,uRR,uHasLogo,uHasTxt;',
+    'uniform float uT,uS,uZoom,uFly,uCam,uHeart,uStorm,uStrike,uFlash,uRidge,uCols,uBg,uGlow,uRing,uFlare,uAsm,uTemple,uForm,uShine,uSub,uPush,uRR,uHasLogo,uHasTxt,uCity;',
     'uniform vec4 uTxt;uniform vec2 uBolt[14];uniform vec2 uBr[6];uniform sampler2D uLogo,uTxtT;',
     'const vec2 RC=vec2(.4928,.597);const vec2 QC=vec2(.0075,.139);const float QS=1.04;const float RR0=.251;',
     'float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}',
@@ -419,6 +419,40 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     '   vec3 m=vec3(.8,.76,.88)*cyl*fl*(.8+.38*vn(vec2(u*3.,yy*3.)))*lg*(1.-fz*.16);',
     '   m+=gold*smoothstep(.45,1.,-u)*.8*uGlow*cyl+vio*smoothstep(.6,1.,u)*.12*lg;m+=gold*band*.18*uGlow;',
     '   col=mix(col,m,uCols);}}}',
+    // A night market metropolis rises below the Olympus skyline. Buildings are drawn in two depth layers,
+    // with stable window occupancy and a few emerald data districts. The scene stays procedural and offline.
+    ' if(uCity>.001){vec2 cp=q;float floorLine=-.36;',
+    '  float ground=step(cp.y,floorLine)*smoothstep(-1.15,floorLine-.02,cp.y);',
+    '  float gx=exp(-abs(fract(cp.x*31.)-.5)*18.),gy=exp(-abs(fract((cp.y-floorLine)*45.)-.5)*19.);',
+    '  col=mix(col,vec3(.006,.017,.035)+org*(gx+gy)*.13,ground*uCity*.9);',
+    '  for(int li=0;li<2;li++){float z=float(li),cw=.031+z*.018,xx=(cp.x+uCam*(.045+z*.035))/cw;',
+    '   float id=floor(xx),fx=fract(xx),seed=h21(vec2(id,13.+z*29.));',
+    '   float roof=floorLine+z*.065,high=(.04+.17*seed*seed)*(1.-z*.2);',
+    '   float face=step(.07,fx)*step(fx,.94)*step(roof,cp.y)*step(cp.y,roof+high);',
+    '   float wx=fract(fx*7.),wy=fract((cp.y-roof)*145.),pane=step(.19,wx)*step(wx,.74)*step(.22,wy)*step(wy,.67);',
+    '   float lit=step(.36,h21(vec2(id*11.+floor(fx*7.),floor((cp.y-roof)*145.)+z*47.)));',
+    '   vec3 lamp=mix(vec3(1.,.43,.09),vec3(.08,.88,.48),step(.76,h21(vec2(id,7.+z*13.))));',
+    '   float edge=exp(-abs(fx-.08)*36.)*.08+exp(-abs(fx-.93)*36.)*.06;',
+    '   vec3 tower=vec3(.008,.019,.033)+lamp*(edge+pane*lit*(.24+.32*seed));',
+    '   col=mix(col,tower,face*uCity);',
+    '   col+=lamp*exp(-abs(cp.y-roof-high)*250.)*face*uCity*.045;',
+    '  }',
+    // Larger foreground blocks give the city actual depth on a tall phone. The near rows move faster on the camera rise.
+    '  for(int row=0;row<2;row++){float rz=float(row),cw=.067+rz*.084,yb=-.52-rz*.21;',
+    '   float xx=(cp.x+uCam*(.08+rz*.07))/cw,id=floor(xx),fx=fract(xx);',
+    '   float h=h21(vec2(id,81.+rz*27.)),hh=(.065+.13*h)*(1.+rz*.27);',
+    '   float wall=step(.06,fx)*step(fx,.92)*step(yb,cp.y)*step(cp.y,yb+hh);',
+    '   float wx=fract(fx*9.),wy=fract((cp.y-yb)*(86.-rz*24.));',
+    '   float pane=step(.19,wx)*step(wx,.73)*step(.18,wy)*step(wy,.68);',
+    '   float occupancy=step(.3,h21(vec2(id*13.+floor(fx*9.),floor((cp.y-yb)*(86.-rz*24.))+rz*59.)));',
+    '   vec3 light=mix(vec3(1.,.42,.08),vec3(.08,.8,.45),step(.73,h21(vec2(id,49.+rz*3.))));',
+    '   vec3 facade=vec3(.012,.024,.036)+light*(pane*occupancy*(.28+.32*h)+.025);',
+    '   col=mix(col,facade,wall*uCity);',
+    '   col+=light*exp(-abs(cp.y-yb-hh)*290.)*wall*uCity*.05;',
+    '  }',
+    '  float a=length(vec2(cp.x*.77,(cp.y+.46)*.7));float arc=exp(-abs(a-.34)*260.)*step(-.23,cp.y)*step(cp.y,.04);',
+    '  col+=mix(org,vec3(.09,.75,.46),step(0.,cp.x))*arc*uCity*.4;',
+    ' }',
     ' col*=uBg;',
     // 4. the logo: the eclipse ring lights round from the top, the peaks slide in from outside and below, the temple flares
     ' vec2 lu=(q-QC)/QS+.5;vec2 rd=lu-RC;float rr=length(rd);',
@@ -562,7 +596,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       pulse(t, 3.45, 1.2) + pulse(t, 3.58, 0.6) + pulse(t, 8.7, 0.3);
     s.ridge = sm(ramp(t, 1.7, 2.4)) * (1 - sm(ramp(t, 4.4, 5.2)));
     s.cam = sm(ramp(t, 2.1, 6.0));
-    s.cols = sm(ramp(t, 3.2, 4.1)) * (1 - sm(ramp(t, 5.2, 5.9)));
+    s.cols = sm(ramp(t, 3.2, 4.1)) * (1 - sm(ramp(t, 5.2, 5.9))) * 0.19;
+    s.city = sm(ramp(t, 2.7, 3.6)) * (1 - sm(ramp(t, 5.65, 6.25)));
     s.glow = sm(ramp(t, 3.0, 5.5));
     s.bg = 1 - 0.92 * sm(ramp(t, 5.5, 6.4));
     s.spk = sm(ramp(t, 3.3, 4.2));
@@ -595,7 +630,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   }
   function envShort(t) {                                   // a launch seen again: the finished logo, a flare, the portal
     var s = envFull(7.6 + t * 0.2);
-    s.heart = 0; s.shockA = 0; s.storm = 0; s.strike = 0; s.flash = pulse(t, 0.02, 0.5); s.ridge = 0; s.cols = 0; s.glow = 0; s.spk = 0;
+    s.heart = 0; s.shockA = 0; s.storm = 0; s.strike = 0; s.flash = pulse(t, 0.02, 0.5); s.ridge = 0; s.cols = 0; s.city = 0; s.glow = 0; s.spk = 0;
     s.bg = 0.08; s.ring = 1; s.asm = 1; s.temple = 0.14 + 0.5 * Math.exp(-t * 6); s.form = 1; s.shine = ramp(t, 0.05, 0.4); s.sub = 1;
     s.flare = (t < 0.02 ? 0 : Math.exp(-t * 5) * 0.9) + (t < 0.3 ? 0 : Math.exp(-(t - 0.3) * 5) * 1.0);
     s.push = ramp(t, 0.3, 0.9); s.reveal = 0.82; s.cues = [[0.02, 'rankup'], [0.3, 'portal']];
@@ -659,7 +694,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     size();
     var FS = FS_BG.replace(/OCT/g, lite ? '2' : '4').replace(/NCOL/g, lite ? '3' : '5').replace(/NTEMP/g, lite ? '1' : '2').replace(/#ifdef HI/g, lite ? '#if 0' : '#if 1');
     var pb = prog(VS_BG, FS), pp = prog(VS_PT, FS_PT);
-    var ub = locs(pb, ['uRes', 'uT', 'uS', 'uZoom', 'uFly', 'uCam', 'uHeart', 'uStorm', 'uStrike', 'uFlash', 'uRidge', 'uCols', 'uBg', 'uGlow', 'uRing', 'uFlare', 'uAsm', 'uTemple', 'uForm', 'uShine', 'uSub', 'uPush', 'uRR', 'uHasLogo', 'uHasTxt',
+    var ub = locs(pb, ['uRes', 'uT', 'uS', 'uZoom', 'uFly', 'uCam', 'uHeart', 'uStorm', 'uStrike', 'uFlash', 'uRidge', 'uCols', 'uCity', 'uBg', 'uGlow', 'uRing', 'uFlare', 'uAsm', 'uTemple', 'uForm', 'uShine', 'uSub', 'uPush', 'uRR', 'uHasLogo', 'uHasTxt',
       'uO', 'uPo', 'uShock', 'uTxt', 'uBolt', 'uBr', 'uLogo', 'uTxtT', 'uX', 'uY', 'uZ']);
     var up_ = locs(pp, ['uRes', 'uO', 'uPo', 'uT', 'uS', 'uZoom', 'uForm', 'uPush', 'uSpk', 'uPx', 'uMode', 'uEmb', 'uHT', 'uH1', 'uH2', 'uH3']);
     var quad = gl.createBuffer();
@@ -767,7 +802,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         gl.enableVertexAttribArray(aBg); gl.vertexAttribPointer(aBg, 2, gl.FLOAT, false, 0, 0);
         var f1 = function (n, v) { gl.uniform1f(ub[n], v); };
         gl.uniform2f(ub.uRes, cv.width, cv.height); f1('uT', t); f1('uS', S); f1('uZoom', zoom); f1('uFly', e.fly || 0); f1('uCam', e.cam || 0);
-        f1('uHeart', e.heart); f1('uStorm', e.storm); f1('uStrike', e.strike); f1('uFlash', e.flash); f1('uRidge', e.ridge); f1('uCols', e.cols);
+        f1('uHeart', e.heart); f1('uStorm', e.storm); f1('uStrike', e.strike); f1('uFlash', e.flash); f1('uRidge', e.ridge); f1('uCols', e.cols); f1('uCity', e.city || 0);
         f1('uBg', e.bg); f1('uGlow', e.glow); f1('uRing', e.ring); f1('uFlare', e.flare); f1('uAsm', e.asm); f1('uTemple', e.temple);
         f1('uForm', e.form); f1('uShine', e.shine); f1('uSub', e.sub); f1('uPush', e.push); f1('uRR', RR * S * zoom);
         f1('uHasLogo', logoTex ? 1 : 0); f1('uHasTxt', tex ? 1 : 0);
