@@ -58,12 +58,14 @@
       const hash = fingerprint(source.id === 'datacity' && data.cronos && data.cronos.orig ? data.cronos.orig : data);
       const old = previous(source.id);
       const ageHours = t ? Math.max(0, (now() - t) / 3600000) : null;
+      // Allow small device/publisher clock skew; a later timestamp cannot prove a feed is fresh.
+      const futureMinutes = t && t > now() + 300000 ? Math.ceil((t - now()) / 60000) : null;
       // Static sources without a timestamp are not called stale.
       const reported = data.status && data.status.level;
       const cronos = data.cronos && data.cronos.state;
       const healthIssue = reported === 'warn' || reported === 'bad' ? 'The source status is ' + reported + '.' : cronos && cronos !== 'fresh' ? 'The source publisher reports ' + cronos + '.' : source.id === 'learning' && !t ? 'The lesson log has no publisher timestamp; its last event is not a refresh check.' : '';
-      const status = demo || healthIssue || ageHours != null && ageHours > 48 ? 'warn' : 'good';
-      return { ...source, ok: true, status, hash, t, lastLesson, ageHours, demo, healthIssue, changed: !!old && old.hash !== hash, bytes: JSON.stringify(data).length };
+      const status = demo || healthIssue || futureMinutes != null || ageHours != null && ageHours > 48 ? 'warn' : 'good';
+      return { ...source, ok: true, status, hash, t, lastLesson, ageHours, futureMinutes, demo, healthIssue, changed: !!old && old.hash !== hash, bytes: JSON.stringify(data).length };
     } catch (error) {
       return { ...source, ok: false, status: 'bad', error: error.name === 'AbortError' ? 'Timed out after 10 seconds' : String(error.message || error) };
     } finally { clearTimeout(timer); }
@@ -71,6 +73,7 @@
   function insight(source) {
     if (!source.ok) return { title: source.label + ' feed is unavailable', evidence: source.error, action: 'Open the source and check its publisher or path.' };
     if (source.demo) return { title: source.label + ' is marked demo', evidence: 'Published JSON contains demo=true or mode=demo.', action: 'Keep demo labels visible and check whether live data is expected.' };
+    if (source.futureMinutes != null) return { title: source.label + ' has a future timestamp', evidence: 'Published time is ' + stamp(source.t) + ', about ' + source.futureMinutes + ' minutes ahead of this device.', action: 'Check the publisher and device clocks before treating this feed as current.' };
     if (source.healthIssue) return { title: source.label + ' needs review', evidence: source.healthIssue, action: source.id === 'learning' ? 'Check the timestamped Kalshi City scan and its publisher workflow.' : 'Open the source status card and check its latest publisher run.' };
     if (source.ageHours != null && source.ageHours > 48) return { title: source.label + ' may be stale', evidence: 'Published timestamp is ' + Math.floor(source.ageHours) + ' hours old (' + stamp(source.t) + ').', action: 'Check the source schedule and its latest successful publish.' };
     if (source.changed) return { title: source.label + ' changed since your last scan', evidence: 'Content marker differs from the last available copy on this device.', action: 'Review the change in the source app before proposing a dashboard adjustment.' };
@@ -109,7 +112,7 @@
       'Status: ' + (source.ok ? source.status === 'good' ? 'Available' : 'Available · review' : 'Unavailable'),
       'Source: ' + source.url,
       source.ok ? 'Content marker: ' + source.hash + (source.changed ? ' · changed locally' : '') : 'Error: ' + source.error,
-      source.t ? 'Published: ' + stamp(source.t) : 'Published time: not provided by this source',
+      source.t ? 'Published: ' + stamp(source.t) + (source.futureMinutes != null ? ' · future time, review' : '') : 'Published time: not provided by this source',
       source.id === 'learning' && source.ok ? (source.lastLesson ? 'Last lesson event: ' + stamp(source.lastLesson) + ' · not a publisher check' : 'No dated lesson event yet; publisher time is unknown') : null,
       source.ok ? 'Size: ' + source.bytes.toLocaleString() + ' characters' : 'No data received'
     ];

@@ -32,4 +32,15 @@ payload = {t:Date.parse('2026-11-05T09:00:00Z')/1000,entries:[{t:oldLesson,kind:
 result = await load(learning);
 assert.equal(result.status,'good');
 assert.equal(result.lastLesson,oldLesson*1000);
-console.log('Observatory publisher versus lesson clock cases passed');
+payload = {t:Date.parse('2026-11-05T10:30:00Z')/1000};
+result = await load({id:'oracle',label:'Oracle',url:'../oracle/prophecy.json'});
+assert.equal(result.status,'warn','a future source time cannot be called fresh');
+assert.equal(result.futureMinutes,60);
+const insightFrom = source.indexOf('  function insight(source) {');
+const insightTo = source.indexOf('  function node(tag,', insightFrom);
+const insight = new Function('stamp', source.slice(insightFrom, insightTo) + '; return insight;')((t) => new Date(t).toISOString());
+assert.match(insight(result).title, /future timestamp/);
+payload = {t:Date.parse('2026-11-05T09:34:00Z')/1000};
+result = await load({id:'oracle',label:'Oracle',url:'../oracle/prophecy.json'});
+assert.equal(result.status,'good','minor clock skew is tolerated');
+console.log('Observatory publisher, lesson and future clock cases passed');
