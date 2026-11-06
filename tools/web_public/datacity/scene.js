@@ -16,7 +16,7 @@ import { River, Ships } from './water.js';
 import { Signs } from './signs.js';
 import { Fireworks } from './fireworks.js';
 import { KitFx } from './kitfx.js';
-import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcphone1';
+import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcultra1';
 import { Link } from './links.js';
 
 const FOG = { night: 0x070a1c, day: 0x9fbbe2, dusk: 0x4a2a4a, storm: 0x2a3140 };

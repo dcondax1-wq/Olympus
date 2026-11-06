@@ -1,12 +1,12 @@
 // The ONE table of the Data City's density caps (no DOM, no three.js). Three profiles:
-//   full   a PC at the ultra / high tier: everything on (about 100-110 draw calls, 350-480k triangles)
-//   phone  a phone (small viewport, a coarse pointer or iOS) at the high tier, or the battery saver: about 60 calls / 220k triangles, no
+//   full   a desktop at the ultra / high tier: everything on (about 100-110 draw calls, 350-480k triangles)
+//   phone  a phone (small viewport, a coarse pointer or iOS) at high / ultra, or desktop high with battery saver: about 60 calls / 220k triangles, no
 //          airships, 2 trains of 4 cars, one reflected tile, one neon board per district, thinner fireworks, no lens flare / aurora /
 //          fireflies, a pixel ratio of at most 1.5
 //          (farAlt: above this camera height the small details nobody can see from the overview are not drawn: heralds, billboards, rail pylons,
 //          sign poles, cranes; lmLod: the temple and the Pharos beyond this distance)
 //   lite   the LITE tier (OLYMPUS low / off), exactly what it always was
-// profileOf(level, phone, saver): low/off = lite, ultra = full; at high, phones and battery saver get the still-3D phone budget. ?phone=0 forces full.
+// profileOf(level, phone, saver): low/off = lite; phones at high/ultra use the still-3D phone budget; desktop ultra stays full. ?phone=0 forces full.
 export const PROFILES = {
   full: { cars: 520, flyers: 90, airships: 3, trains: [3, 6], ships: 9, cranes: 8, signs: 2, boards: 4, mirrors: 4, mirrorNear: 100, maxFull: 22, lod: 170, rich: 70,
           outskirts: 2600, pulses: 34, drops: 7000, flow: 1600, stars: 1800, oldCars: 1500, fog: 3, shells: 8, spark: 1, lmLod: 0, farAlt: 0, dpr: 1.75,
@@ -33,10 +33,12 @@ export function phoneHint() {
 
 export function profileOf(level, phone, saver) {
   if (level === 'low' || level === 'off') return 'lite';
-  // Keep ultra as the explicit full-detail choice. High on a phone stays 3D with the measured phone budget.
-  if (level === 'ultra') return 'full';
+  // A phone stays 3D at high and ultra inside its measured rendering budget.
+  // The URL override remains available for intentional full-detail inspection.
   const forced = (() => { try { return new URLSearchParams(location.search).get('phone'); } catch (e) { return null; } })();
   if (forced === '0') return 'full';
   if (forced === '1') return 'phone';
-  return phone || saver ? 'phone' : 'full';
+  if (phone) return 'phone';
+  if (level === 'ultra') return 'full';
+  return saver ? 'phone' : 'full';
 }

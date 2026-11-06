@@ -21,12 +21,16 @@ test('phone high keeps a 3D phone profile', () => {
   assert.equal(choose({ width: 1363, coarse: true }).profile, 'phone');
   assert.equal(choose({ width: 1363, ua: 'iPhone' }).profile, 'phone');
 });
-test('desktop high and phone ultra retain full detail', () => {
+test('phone ultra keeps the phone 3D budget; desktop ultra retains full detail', () => {
   assert.equal(choose().profile, 'full');
-  assert.equal(choose({ width: 390, level: 'ultra' }).profile, 'full');
+  assert.equal(choose({ width: 390, level: 'ultra' }).profile, 'phone');
+  assert.equal(choose({ coarse: true, level: 'ultra' }).profile, 'phone');
+  assert.equal(choose({ level: 'ultra' }).profile, 'full');
+  assert.equal(choose({ level: 'ultra', saver: true }).profile, 'full');
 });
 test('explicit phone=0 opts a phone into full; phone=1 previews smaller 3D profile', () => {
   assert.deepEqual(choose({ search: '?phone=0', width: 390 }), { phone: false, profile: 'full' });
+  assert.deepEqual(choose({ search: '?phone=0', width: 390, level: 'ultra' }), { phone: false, profile: 'full' });
   assert.deepEqual(choose({ search: '?phone=1' }), { phone: true, profile: 'phone' });
 });
 test('battery saver reduces high and low/off remain LITE', () => {
@@ -39,7 +43,7 @@ test('versioned module chain brings the phone profile to cached clients', () => 
   const index = fs.readFileSync('tools/web_public/datacity/index.html', 'utf8');
   const city = fs.readFileSync('tools/web_public/datacity/city.js', 'utf8');
   const scene = fs.readFileSync('tools/web_public/datacity/scene.js', 'utf8');
-  assert.match(index, /city\\.js\\?v=dcphone1/);
-  assert.match(city, /scene\\.js\\?v=dcphone1/);
-  assert.match(scene, /caps\\.js\\?v=dcphone1/);
+  assert.match(index, /city\\.js\\?v=dcultra1/);
+  assert.match(city, /scene\\.js\\?v=dcultra1/);
+  assert.match(scene, /caps\\.js\\?v=dcultra1/);
 });

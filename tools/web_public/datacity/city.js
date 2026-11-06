@@ -25,7 +25,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { $, el, clsRank, settings, money, num, pct } from './util.js';
 import { decode, loadPlugins, labelOf } from './data.js';
 import { layout } from './layout.js';
-import { CityScene } from './scene.js?v=dcphone1';
+import { CityScene } from './scene.js?v=dcultra1';
 import { Orbit } from './controls.js';
 import { Tour, shots } from './tour.js';
 import { MODES, flight } from './fly.js';
