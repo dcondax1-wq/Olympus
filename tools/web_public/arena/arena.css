@@ -161,7 +161,7 @@ html[data-fx="off"] #flash.go { animation: none; }
   background: linear-gradient(160deg, color-mix(in srgb, var(--bc) 14%, transparent), rgba(255, 255, 255, .02)); }
 .boss.big { box-shadow: 0 0 22px color-mix(in srgb, var(--bc) 25%, transparent); }
 .boss.slain { border-color: rgba(var(--a-gold-rgb), .7); background: linear-gradient(160deg, rgba(var(--a-gold-rgb), .18), rgba(var(--a-gold-rgb), .03)); }
-.boss.escaped, .boss.locked { opacity: .72; }
+.boss.escaped, .boss.locked { background: rgba(24, 20, 30, .96); }
 .boss .bh { display: flex; align-items: center; gap: 10px; }
 .boss .glyph { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--bc);
   font: 800 12px/1 var(--oly-display, sans-serif); letter-spacing: .04em; color: var(--bc); box-shadow: 0 0 14px color-mix(in srgb, var(--bc) 50%, transparent) inset; }
