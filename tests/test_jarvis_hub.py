@@ -1084,6 +1084,8 @@ def run_look(br, url):
     ctx.close()
     # What's new: once per release, as the old Jarvis's popup; "what's new" shows it again
     ctx, p, errs, _ = new_page(br, news=True)
+    # Keep the first-card assertion independent of scheduled bot cards in ET clock windows.
+    ctx.add_init_script("try { localStorage.setItem('jarvis.bots.set', JSON.stringify({ on: true, plan: false, recap: false, rituals: false })); } catch (e) {}")
     p.goto(url + "jarvis/")
     ready(p)
     p.wait_for_function("(() => { const t = document.getElementById('toast'); return !!t && !t.hidden; })()", timeout=12000)
