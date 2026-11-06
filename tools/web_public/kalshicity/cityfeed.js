@@ -5,6 +5,16 @@
 export const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
 export const MIN_N = 30;
 export const BOT_FEED_MAX_AGE_S = 15 * 60; // match the Kalshi feed page: old running/paused bits cannot describe the bot now
+
+/** A fresh published bot state only; a stopped bot is not a paused bot. */
+export function worldBotLabel(book, demo = false) {
+  if (demo) return 'DEMO DATA';
+  if (!book || !book.statusFresh) return 'BOT STATUS UNKNOWN';
+  if (book.running === true) return 'BOT RUNNING';
+  if (book.running === false && /paus/i.test(book.status)) return 'BOT PAUSED';
+  if (book.running === false && /stopp|off/i.test(book.status)) return 'BOT STOPPED';
+  return book.running === false ? 'BOT NOT RUNNING' : 'BOT STATUS UNKNOWN';
+}
 export const STATUS = ['NEW', 'GROWING', 'HOLDING', 'DECAYING', 'DEAD'];
 export const STATUS_COLOR = { NEW: '#8f9bff', GROWING: '#35f0b0', HOLDING: '#ffd86a', DECAYING: '#ff9a3c', DEAD: '#ff4d57' };
 export const STATUS_WORD = {

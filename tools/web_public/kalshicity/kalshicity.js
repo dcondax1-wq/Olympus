@@ -2,7 +2,7 @@
 // kalshi-feed), shapes them (cityfeed.js), lays the city out (citylayout.js), draws it (cityscene.js) and writes the words. Text only through
 // textContent (no data ever becomes HTML). Read only: nothing here writes anywhere. window.KC is the test hook.
 import { RAW, shape, shapeHyps, cardOf, headlineOf, usd, pct, evf, pts, STATUS_COLOR, STATUS_WORD, ADVICE, etHour, clockLabel, phaseWord, MIN_N,
-  hypOf, hypCardOf, pairOf, tickerLines, changesOf, HYP_COLOR, HYP_WORD } from './cityfeed.js?v=bot15';
+  hypOf, hypCardOf, pairOf, tickerLines, changesOf, HYP_COLOR, HYP_WORD, worldBotLabel } from './cityfeed.js?v=bot16';
 import { layout } from './citylayout.js?v=night3';
 import { cityAtlas, edgeCountLabel } from './cityatlas.js?v=skyline5';
 import { lessonsView, historyView, ASK_MESSAGE } from './lessons.js';
@@ -167,7 +167,8 @@ function worldsView() {
   const L = S.L, H = S.model.hyp, wrap = h('div', 'worlds');
   wrap.append(h('p', 'strong', 'Fly between market cities and the research outposts. Each market city holds the edges observed there. The outer ring tests ideas on later bets before it trusts them.'));
   const pulse = h('div', 'world-pulse');
-  pulse.append(h('span', 'pulse-light'), h('span', '', S.demo ? 'DEMO DATA' : S.model.book.running === true ? 'BOT RUNNING' : S.model.book.running === false ? 'BOT PAUSED' : 'BOT STATUS UNKNOWN'), h('span', 'pulse-meta', `${L.districts.length} market cities · ${L.labs.length} research outposts`));
+  pulse.append(h('span', 'pulse-light'), h('span', 'pulse-state', worldBotLabel(S.model.book, S.demo)), h('span', 'pulse-meta', `${L.districts.length} market cities · ${L.labs.length} research outposts`));
+  pulse.querySelector('.pulse-state').setAttribute('aria-live', 'polite');
   wrap.append(pulse, h('h3', '', 'Market cities'));
   const grid = h('div', 'world-grid');
   L.districts.forEach((d, i) => {
@@ -365,6 +366,8 @@ async function refresh() {                                               // ever
   else S.scene?.setBook(m);
   if (!S.hypDemo) store.write({ ...store.read(), hh: hypSnap(m) });
   renderTop();
+  const pulseState = document.querySelector('#sheet:not([hidden]) .world-pulse .pulse-state');
+  if (pulseState) pulseState.textContent = worldBotLabel(m.book, S.demo);
   // The text atlas remains live even on devices where WebGL could not start.
   if (!S.scene && S.view && S.view !== 'card') openSheet(S.view);
   if (S.changes.length) toast(S.changes[0]);
