@@ -6,7 +6,7 @@
 //          (farAlt: above this camera height the small details nobody can see from the overview are not drawn: heralds, billboards, rail pylons,
 //          sign poles, cranes; lmLod: the temple and the Pharos beyond this distance)
 //   lite   the LITE tier (OLYMPUS low / off), exactly what it always was
-// profileOf(level, phone, saver): 'low' / 'off' = lite; (phone or saver) below ultra = phone; else full. ?phone=1 / ?phone=0 forces the hint.
+// profileOf(level, phone, saver): low/off = lite, ultra = full; at high, phones and battery saver get the still-3D phone budget. ?phone=0 forces full.
 export const PROFILES = {
   full: { cars: 520, flyers: 90, airships: 3, trains: [3, 6], ships: 9, cranes: 8, signs: 2, boards: 4, mirrors: 4, mirrorNear: 100, maxFull: 22, lod: 170, rich: 70,
           outskirts: 2600, pulses: 34, drops: 7000, flow: 1600, stars: 1800, oldCars: 1500, fog: 3, shells: 8, spark: 1, lmLod: 0, farAlt: 0, dpr: 1.75,
@@ -33,8 +33,10 @@ export function phoneHint() {
 
 export function profileOf(level, phone, saver) {
   if (level === 'low' || level === 'off') return 'lite';
-  // 2026-11-04: phones keep the FULL look (owner: the phone cuts made it look worse); the thin 'phone' profile is only for the battery saver
-  // or an explicit ?phone=1 (phoneHint() still answers true for ?phone=1, so a test or the owner can ask for it)
-  const forced = (() => { try { return new URLSearchParams(location.search).get('phone') === '1'; } catch (e) { return false; } })();
-  return (saver || forced) && level !== 'ultra' ? 'phone' : 'full';
+  // Keep ultra as the explicit full-detail choice. High on a phone stays 3D with the measured phone budget.
+  if (level === 'ultra') return 'full';
+  const forced = (() => { try { return new URLSearchParams(location.search).get('phone'); } catch (e) { return null; } })();
+  if (forced === '0') return 'full';
+  if (forced === '1') return 'phone';
+  return phone || saver ? 'phone' : 'full';
 }
