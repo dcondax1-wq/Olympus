@@ -710,7 +710,7 @@ nightButton.addEventListener('click', () => { S.night = !S.night; store.set('cit
 $('#photoTake').addEventListener('click', () => takePhoto());
 $('#photoDone').addEventListener('click', () => setPhoto(false));
 
-// a record building (the tallest): sparks in the scene, the kit's sparkle burst and a toast
+// a record building (the tallest): sparks in the scene and the kit's sparkle burst
 function celebrate(k, auto) {
   const C = S.cur; if (!C || k === undefined || k < 0 || k >= C.city.n) return;
   const c = C.city, x = c.x[k], y = c.h[k] + 6, z = c.z[k];
@@ -720,7 +720,6 @@ function celebrate(k, auto) {
     const F = window.OLYMPUS_FX, p = S.stage.project(x, y, z, canvas.clientWidth, canvas.clientHeight);
     if (F && !reduced()) {
       if (F.sparkleBurst && p.on) F.sparkleBurst(canvas, { x: p.x, y: p.y });
-      if (auto && F.toast) F.toast(document.body, { text: `Record: ${String(C.ds.label(C.ds.items[c.item[k]])).slice(0, 40)}`, kind: 'ok', seconds: 2.6 });
     }
   } catch (e) { /* the kit's effects are optional */ }
   if (!auto) sfx('rankup');
