@@ -126,8 +126,9 @@ input[type=search]{width:100%;font-size:16px;padding:10px 12px;border-radius:12p
 .lift .lv{text-align:right;font-weight:700}.lift .lp{text-align:right;color:var(--sub);font-size:11px}
 /* --- camera modes (fly-through) and the tap tag */
 .cams{position:fixed;left:calc(10px + var(--sl));top:calc(var(--top-h) + 20px + var(--st));z-index:3;display:flex;flex-direction:column;gap:6px}
-.cams button{width:56px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font:700 10px/1 var(--oly-display,inherit);
+.cams button,.cams a{width:56px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font:700 10px/1 var(--oly-display,inherit);
 letter-spacing:.14em;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);touch-action:manipulation}
+.cams a{display:grid;place-items:center;text-decoration:none;border-color:rgba(255,201,74,.55);color:var(--gold)}
 .cams button.on{color:var(--gold);border-color:rgba(255,201,74,.45);background:rgba(255,201,74,.10)}
 body.cine .cams{opacity:.18;transition:opacity .6s}
 @media (orientation:landscape) and (max-height:520px){.sheet.on ~ .cams{display:none}}
@@ -215,6 +216,7 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
   <button data-cam="skim" aria-label="Fly low through the districts">SKIM</button>
   <button data-cam="drone" aria-label="Drone loop over the city">DRONE</button>
   <button data-cam="grand" aria-label="Grand tour of the landmarks">GRAND</button>
+  <a href="./map.html" aria-label="Map view without 3D">MAP</a>
 </div>
 <div class="tag" id="tag" aria-hidden="true"></div>
 <div class="sr" id="sr" role="status" aria-live="polite"></div>
