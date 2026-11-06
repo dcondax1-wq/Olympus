@@ -1362,6 +1362,8 @@ ready.botsui = load('botsui', './bots-ui.js', (m) => typeof m.mountBots === 'fun
 // first open: one toast offers the Settings app's one-minute tour (once per phone: 'jarvis.tour.seen'; never when the tour was done there already)
 function tourHint(n = 0) {
   if (!FIRST_RUN || raw('jarvis.tour.seen') || raw('olympus.tour.done') || active !== 'home' || !visible() || n > 8) return;
+  // The tour invitation must never cover the cinematic opening or its skip target.
+  if (root.hasAttribute('data-intro')) { setTimeout(() => tourHint(n + 1), 4000); return; }
   const t = document.getElementById('toast');
   if (t && !t.hidden) { setTimeout(() => tourHint(n + 1), 4000); return; }        // the what's-new toast first
   const a = byId('settings');
@@ -3348,7 +3350,15 @@ document.addEventListener('visibilitychange', () => { if (!visible()) { finishSt
 window.addEventListener('pagehide', swTakeOver);
 // once per release the What's new card, else the morning briefing card (5:00 to 11:59 ET, once a day), as the old Jarvis showed them
 (() => {
-  if (D.LS.get('jarvis.seen', '') !== WN_VER) { setTimeout(() => { D.LS.set('jarvis.seen', WN_VER); toast('Welcome to OLYMPUS. Every app is its own dashboard: tap the orb to switch.', "WHAT'S NEW", ['Show me', whatsNew]); }, 2200); return; }
+  if (D.LS.get('jarvis.seen', '') !== WN_VER) {
+    D.LS.set('jarvis.seen', WN_VER);
+    // A first-run film is the welcome. Keep the gateway clear when it lands; What's new remains in the command palette.
+    const film = window.__olyIntro;
+    if (!film || !film.mode || film.mode === 'off' || film.mode === 'fade') {
+      setTimeout(() => toast('Welcome to OLYMPUS. Every app is its own dashboard: tap the orb to switch.', "WHAT'S NEW", ['Show me', whatsNew]), 2200);
+    }
+    return;
+  }
   const h = D.etParts().h;
   // briefing.js (2026-11-04) owns the morning briefing: the 7 AM ET card that is read out, and the first open of each day. This
   // old toast stays only for a copy where that file did not load (it sets window.__jarvisBrief)
