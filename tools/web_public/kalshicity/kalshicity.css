@@ -203,3 +203,17 @@ html[data-noscene] .sheet { max-height:calc(100vh - 300px); }
 }
 html[data-noscene] .city-insights { display:none; }
 
+
+/* On tall phones the 2D atlas caption must clear the fixed six-view dock. */
+@media (max-width: 520px) and (min-height: 720px) {
+  html[data-noscene=atlas] .kc-atlas-caption {
+    position: fixed; z-index: 4;
+    left: calc(var(--sl) + 16px); right: calc(var(--sr) + 16px);
+    bottom: calc(var(--sb) + var(--dock-h) + 22px);
+    margin: 0; padding: 8px 10px;
+    max-height: min(27dvh, 170px); overflow-y: auto;
+    border: 1px solid #3b646d; border-radius: 12px;
+    background: rgba(5, 16, 22, .92);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  }
+}
