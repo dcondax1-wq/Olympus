@@ -985,6 +985,7 @@ function readableFallback(model, demo, reason) {
   search.addEventListener('input', draw);
   draw();
   document.body.append(root);
+  O?.ready(); // the readable 2D fallback is on screen; release the loading veil now
   Object.assign(state, { ready: true, mode: demo ? 'demo-fallback' : 'live-fallback', fallback: true, buildings: model.buildings.length, fallbackReason: String(reason?.message || reason) });
 }
 
