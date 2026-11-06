@@ -60,12 +60,15 @@ export class Captions {
     const E = this.tr ? this.tr.events : [];
     let n = 0;
     while (n < E.length && E[n].t <= T) n++;
-    if (n === this.n) return [];
+    if (n === this.n) {
+      if (forward === false && n) { this._show(E[n - 1], true); this._hush(); }
+      return [];
+    }
     if (n < this.n || !forward) {
       this.list.textContent = '';
       for (let i = 0; i < n; i++) this._append(E[i]);
       this.n = n;
-      this._show(n ? E[n - 1] : null);
+      this._show(n ? E[n - 1] : null, true); // a scrub must show the destination now, not replay the word reveal
       this._hush();
       return [];
     }
@@ -88,17 +91,16 @@ export class Captions {
     return this.narrate;
   }
 
-  _show(e) {
+  _show(e, instant = false) {
     const off = this.tr ? this.tr.off : 0;
     this.line.dataset.k = e ? e.k : '';
     this.line.classList.toggle('on', !!e);
     const time = this.line.querySelector('.cc-time'), text = this.line.querySelector('.cc-text');
     time.textContent = e ? hhmm(e.t, off) + ' ET' : '';
-    typeset(text, e ? e.text : '', this.reduced);
-    // restart the reveal animation for each new line
+    typeset(text, e ? e.text : '', this.reduced || instant);
+    // A new forward moment pops in; scrubbing shows the chosen moment immediately.
     this.line.classList.remove('pop');
-    void this.line.offsetWidth;
-    if (e) this.line.classList.add('pop');
+    if (e && !instant) { void this.line.offsetWidth; this.line.classList.add('pop'); }
   }
 
   _append(e) {

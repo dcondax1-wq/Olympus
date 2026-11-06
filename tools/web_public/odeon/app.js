@@ -14,7 +14,7 @@
 // trades, the trade's numbers on the stage, a share card (PNG). ?lite=1|0. applyTheme(tokens) takes an OLYMPUS theme (window.OLYMPUS.theme() / onTheme, when the kit has them).
 import { loadReels, demoBundle, fmtUsd, fmtR, fmtPx, dayLabel, hhmm } from './data.js';
 import { phase, openPnl, stopAt } from './timeline.js';
-import { Captions, Callouts } from './captions.js';
+import { Captions, Callouts } from './captions.js?v=odescrub1';
 import { Reels, Transport, SPEEDS, fillStats, sortReels, StageStats } from './ui.js';
 import { TradeStrip } from './strip.js';
 import { Compare } from './compare.js';
