@@ -860,43 +860,44 @@ class App {
     const frame = (now) => {
       if (this.contextLost) return; // one queued callback may remain after WebGL goes away
       requestAnimationFrame(frame);
-      if (O ? O.hidden() : document.hidden) { last = now; return; }          // hidden tab: no frame at all
-      const gap = O?.frameGap ? O.frameGap() : 0;                            // the kit's idle cap (30 fps idle on high, 15 on low, 2 on off; 30 in battery saver)
-      if (gap && now - last < gap - 3) return;
-      if (this.quality === 'lq' && now - last < 28) return;                  // LITE draws at 30 fps (half the work, half the heat)
-      const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
-      last = now;
-      this.orbit.update(dt);
-      this.stepFlashes(dt);
-      this.stepTimeline(dt);
-      if (!this.calm && this.quality === 'hq' && !this.tour && !document.body.classList.contains('photo')) {          // now and then a shell over the temple
-        this.ambient -= dt;
-        if (this.ambient <= 0) {
-          this.ambient = 55;
-          const g = this.minimap.gold, p = g.length ? g[Math.floor(Math.random() * g.length)] : null;
-          if (p) this.city.fireworks.launch(p[0], 70 + Math.random() * 30, p[1], 0xffc94a);
+      try {
+        if (O ? O.hidden() : document.hidden) { last = now; return; }          // hidden tab: no frame at all
+        const gap = O?.frameGap ? O.frameGap() : 0;                            // the kit's idle cap (30 fps idle on high, 15 on low, 2 on off; 30 in battery saver)
+        if (gap && now - last < gap - 3) return;
+        if (this.quality === 'lq' && now - last < 28) return;                  // LITE draws at 30 fps (half the work, half the heat)
+        const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
+        last = now;
+        this.orbit.update(dt);
+        this.stepFlashes(dt);
+        this.stepTimeline(dt);
+        if (!this.calm && this.quality === 'hq' && !this.tour && !document.body.classList.contains('photo')) {          // now and then a shell over the temple
+          this.ambient -= dt;
+          if (this.ambient <= 0) {
+            this.ambient = 55;
+            const g = this.minimap.gold, p = g.length ? g[Math.floor(Math.random() * g.length)] : null;
+            if (p) this.city.fireworks.launch(p[0], 70 + Math.random() * 30, p[1], 0xffc94a);
+          }
         }
-      }
-      skyT += dt;
-      if (skyT > (this.tour ? 0.05 : 1)) { skyT = 0; this.applySky(); }
-      this.updateCam();
-      try { this.city.render(dt); }
-      catch (error) { this.onRenderFailure?.(error); return; }
-      this.firstFrame = true;
-      this.updateTag();
-      const info = this.city.renderer.info.render;
-      this.lastCalls = info.calls; this.lastTris = info.triangles;
-      this.minimap.draw(this.city.camera, this.tour || this.cam ? this.orbit.at : this.orbit.view.target, dt);
-      if (this.tour) state.tour = { ...state.tour, ...this.tour.info };
-      state.beam = !!this.city.beam.at;
-      state.frames++;
-      frames++; acc += dt;
-      if (acc >= 1) {
-        state.fps = Math.round(frames / acc);
-        frames = 0; acc = 0;
-        slow = this.quality === 'hq' && state.fps < LQ_FPS ? slow + 1 : 0;
-        if (slow >= 3 && (O ? !O.chosen() : settings.get('dc.q', null) === null) && !P.has('nolite')) this.setQuality('lq', true);
-      }
+        skyT += dt;
+        if (skyT > (this.tour ? 0.05 : 1)) { skyT = 0; this.applySky(); }
+        this.updateCam();
+        this.city.render(dt);
+        this.firstFrame = true;
+        this.updateTag();
+        const info = this.city.renderer.info.render;
+        this.lastCalls = info.calls; this.lastTris = info.triangles;
+        this.minimap.draw(this.city.camera, this.tour || this.cam ? this.orbit.at : this.orbit.view.target, dt);
+        if (this.tour) state.tour = { ...state.tour, ...this.tour.info };
+        state.beam = !!this.city.beam.at;
+        state.frames++;
+        frames++; acc += dt;
+        if (acc >= 1) {
+          state.fps = Math.round(frames / acc);
+          frames = 0; acc = 0;
+          slow = this.quality === 'hq' && state.fps < LQ_FPS ? slow + 1 : 0;
+          if (slow >= 3 && (O ? !O.chosen() : settings.get('dc.q', null) === null) && !P.has('nolite')) this.setQuality('lq', true);
+        }
+      } catch (error) { this.onRenderFailure?.(error); }
     };
     requestAnimationFrame(frame);
     this.route();

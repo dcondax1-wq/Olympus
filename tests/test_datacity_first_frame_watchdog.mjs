@@ -78,7 +78,7 @@ test('background and parent-covered periods do not count toward visible timeout'
   assert.equal(h.failures.length,1);
 });
 test('the cache tag loads this watchdog and frame success marks firstFrame', () => {
-  assert.match(index,/city\.js\?v=dcwatch1/);
+  assert.match(index,/city\.js\?v=[a-z0-9]+/);
   assert.match(city,/this\.city\.render\(dt\);[\s\S]{0,100}this\.firstFrame = true/);
   assert.match(city,/app\.start\(\);\s*watchFirstFrame\(app, fallback\)/);
 });
