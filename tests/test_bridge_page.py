@@ -63,7 +63,7 @@ def part_static():
           len(re.findall(r"<input\b", PAGE)) == 4 and PAGE.count('type="checkbox"') == 3 and PAGE.count('type="text"') == 1 and 'id="linkIn"' in PAGE and 'type="password"' not in PAGE
           and "never give anyone a password or a key" in PAGE and not re.search(r"ghp_[A-Za-z0-9]{20}|github_pat_[A-Za-z0-9]", PAGE))
     check("a. status.json uses the snapshot-aware helper and a Tell Claude button ('Bridge: <id> done')",
-          "status.json" in PAGE and 'src="status-line.js?v=1"' in PAGE and PAGE.count("window.BRIDGE_STATUS_LINE(st)") == 2 and "Tell Claude" in PAGE and "'Bridge: ' + j.id" in PAGE)
+          "status.json" in PAGE and 'src="status-line.js?v=1"' in PAGE and "Job status display unavailable" in PAGE and PAGE.count("window.BRIDGE_STATUS_LINE(st)") == 2 and "Tell Claude" in PAGE and "'Bridge: ' + j.id" in PAGE)
     check("a. the job cards are still there (icons ... codex-portal)", all(f"id: '{i}'" in PAGE for i in ("icons", "skies", "textures", "me", "persona", "labours", "lore", "deals", "obsidian", "ascend", "codex-portal")))
     # JOB 24: library, deliveries, ask next
     check("a. four tabs (Jobs, Library, Deliveries, Ask next) as buttons; the wizard is still above them and still exactly 3 steps",

@@ -281,6 +281,11 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
 <script src="../olympus/sfx.js?v=s2" defer></script>
 <script src="status-line.js?v=1"></script>
 <script>
+if (!window.BRIDGE_STATUS_LINE) window.BRIDGE_STATUS_LINE = function () {
+  return { className: 'live q', text: 'Job status display unavailable · refresh to retry' };
+};
+</script>
+<script>
 (function () {
   var REPO = 'demetrades2000-coder/nq-liquidity-engine';
   var CTX = 'Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme, violet #a855f7 + gold #f5c96a on near-black). ';
