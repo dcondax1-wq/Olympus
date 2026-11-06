@@ -23,9 +23,43 @@
   saved.stars = saved.stars.filter((id) => apps.some((a) => a.id === id)).slice(0, 30);
   saved.recent = saved.recent.filter((id) => apps.some((a) => a.id === id)).slice(0, 5);
   const store = () => { try { localStorage.setItem(key, JSON.stringify(saved)); } catch (_) { /* private browsing */ } };
+  const recordRecent = (id) => { saved.recent = [id, ...saved.recent.filter((x) => x !== id)].slice(0, 5); store(); };
   const link = (a) => '../' + (/^(?:[a-z0-9-]+\/)?$/.test(a.path || '') ? a.path : (a.id + '/'));
   let filter = 'all';
+  // Keep the four visible gates useful after a visit without adding another panel to the phone screen.
+  const spotlight = $('.spotlight');
+  const featured = [...spotlight.children];
+  ['oracle', 'datacity', 'cities', 'kalshicity'].forEach((id, index) => {
+    featured[index]?.addEventListener('click', () => recordRecent(id));
+  });
+  let spotlightKey = '';
+  function renderSpotlight() {
+    const personalized = saved.stars.length || saved.recent.length;
+    const preferred = [...saved.stars.slice(0, 2), ...saved.recent.slice(0, 2),
+      ...saved.stars, ...saved.recent, 'oracle', 'datacity', 'cities', 'kalshicity'];
+    const selected = [...new Set(preferred)].map((id) => apps.find((a) => a.id === id)).filter(Boolean).slice(0, 4);
+    const key = personalized ? selected.map((a) => a.id + (saved.stars.includes(a.id) ? '*' : '')).join('|') : 'featured';
+    if (key === spotlightKey) return;
+    spotlightKey = key;
+    if (!personalized || !selected.length) {
+      spotlight.setAttribute('aria-label', 'Featured destinations');
+      spotlight.replaceChildren(...featured);
+      return;
+    }
+    spotlight.setAttribute('aria-label', 'Quick launch: favorites and recent dashboards');
+    spotlight.replaceChildren();
+    for (const a of selected) {
+      const gate = document.createElement('a'); gate.href = link(a);
+      const label = document.createElement('span');
+      label.textContent = saved.stars.includes(a.id) ? '★ FAVORITE' : saved.recent.includes(a.id) ? '↺ RECENT' : zoneOf(a).title.toUpperCase();
+      const name = document.createElement('strong'); name.textContent = a.name;
+      const purpose = document.createElement('small'); purpose.textContent = (a.purpose || 'Open dashboard') + ' ↗';
+      gate.append(label, name, purpose); spotlight.append(gate);
+      gate.addEventListener('click', () => recordRecent(a.id));
+    }
+  }
   function render() {
+    renderSpotlight();
     const q = $('#query').value.toLocaleLowerCase().trim();
     const shown = apps.filter((a) => (filter === 'all' || (filter === 'favorites' ? saved.stars.includes(a.id) : zoneOf(a).id === filter)) &&
       (!q || (a.name + ' ' + a.purpose + ' ' + a.group + ' ' + zoneOf(a).title).toLocaleLowerCase().includes(q)));
@@ -48,7 +82,7 @@
       const name = document.createElement('h3'); name.textContent = a.name;
       const purpose = document.createElement('p'); purpose.textContent = a.purpose || 'Open dashboard';
       body.append(group,name,purpose);
-      const go = document.createElement('a'); go.className = 'go'; go.href = link(a); go.setAttribute('aria-label','Open ' + a.name); go.addEventListener('click', () => { saved.recent = [a.id, ...saved.recent.filter((id) => id !== a.id)].slice(0,5); store(); });
+      const go = document.createElement('a'); go.className = 'go'; go.href = link(a); go.setAttribute('aria-label','Open ' + a.name); go.addEventListener('click', () => recordRecent(a.id));
       const star = document.createElement('button'); star.type = 'button'; star.className = 'star'; star.dataset.id = a.id; star.textContent = saved.stars.includes(a.id) ? '★' : '☆'; star.setAttribute('aria-pressed',String(saved.stars.includes(a.id))); star.setAttribute('aria-label',(saved.stars.includes(a.id) ? 'Remove ' : 'Favorite ') + a.name + (saved.stars.includes(a.id) ? ' from favorites' : ''));
       star.addEventListener('click', () => {
         saved.stars = saved.stars.includes(a.id) ? saved.stars.filter((id) => id !== a.id) : [...saved.stars,a.id]; store(); render();
@@ -64,7 +98,7 @@
     const recent = $('#recent'); recent.replaceChildren(); recent.hidden = !saved.recent.length || !!q || filter !== 'all';
     if (!recent.hidden) {
       const label = document.createElement('span'); label.textContent = 'RECENT  '; recent.append(label);
-      for (const id of saved.recent) { const a = apps.find((x) => x.id === id); if (!a) continue; const el = document.createElement('a'); el.href = link(a); el.textContent = a.name + ' ↗'; recent.append(el); }
+      for (const id of saved.recent) { const a = apps.find((x) => x.id === id); if (!a) continue; const el = document.createElement('a'); el.href = link(a); el.textContent = a.name + ' ↗'; el.addEventListener('click', () => recordRecent(a.id)); recent.append(el); }
     }
   }
   $('#query').addEventListener('input',render);
