@@ -2860,14 +2860,17 @@ function renderLook() {
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
   $('#setSound').checked = S.sound(); $('#setTilt').checked = S.tilt(); $('#setCalm').checked = S.calm();
   $('#setIntro').checked = raw('jarvis.intro') !== 'off'; $('#setHaptic').checked = hapticOn();
-  safe(() => { const k = window.OLYMPUS_SFX, s = k && k.state(); $('#setOlySfx').checked = !!s && !s.muted; $('#setOlySfx').disabled = $('#setOlyVol').disabled = !k; if (s) $('#setOlyVol').value = String(Math.round(s.volume * 100));
+  safe(() => { const k = window.OLYMPUS_SFX, s = k && k.state(), available = !!(k && k.sound && k.play && k.unlock); $('#setOlySfx').checked = !!s && !s.muted; $('#setOlySfx').disabled = $('#setOlyVol').disabled = !available; if (s) $('#setOlyVol').value = String(Math.round(s.volume * 100));
     const am = k && k.ambientState && k.ambientState(); $('#setOlyAmb').disabled = !am; $('#setOlyAmb').checked = !!am && (am.setting === null ? !am.saver : am.setting);
-    const sm = k && k.ambientState ? k.ambientState().sound : null; for (const b of $('#setOlySound').children) b.setAttribute('aria-pressed', String(b.dataset.snd === (sm === true ? 'on' : sm === false ? 'off' : 'auto'))); $('#setOlySound').dataset.off = k && k.sound ? '' : '1';
+    const sm = k && k.ambientState ? k.ambientState().sound : null; for (const b of $('#setOlySound').children) { b.disabled = !available; b.setAttribute('aria-pressed', String(b.dataset.snd === (sm === true ? 'on' : sm === false ? 'off' : 'auto'))); } $('#setOlySoundTest').disabled = !available; $('#setOlySound').dataset.off = available ? '' : '1';
+    if (!available) $('#setOlySoundNote').textContent = 'Audio controls are unavailable. Reload when connected.';
+    else if ($('#setOlySoundNote').textContent.startsWith('Audio controls are unavailable.')) $('#setOlySoundNote').textContent = sm === false ? 'Sound is Off: the test cue will be silent' : sm === true ? 'Sound is On: tap Play a test sound to check it' : 'Auto: app cues are quiet in LITE, reduced motion and battery saver. Jarvis preview may still play';
     $('#setOlySaver').checked = (() => { try { return localStorage.getItem('olympus.saver') === 'on'; } catch (_) { return false; } })(); });
   $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default. Low keeps the glass and stops the motion; Off is fully static.';
 }
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
 $('#lookX').addEventListener('click', () => { $('#look').hidden = true; });
+$('#olySfxJs').addEventListener('load', renderLook); // if the owner opens Look while the async sound kit is still loading
 $('#themes').addEventListener('click', (e) => { const b = e.target.closest('[data-theme-k]'); if (b) setTheme(b.dataset.themeK); });
 $('#olyThemes').addEventListener('click', (e) => { const b = e.target.closest('[data-oly-k]'); if (b) setOlyTheme(b.dataset.olyK); });
 $('#setGrain').addEventListener('change', () => { if (TH()) TH().grain($('#setGrain').checked); });
