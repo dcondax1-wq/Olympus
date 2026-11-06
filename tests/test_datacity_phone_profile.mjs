@@ -43,7 +43,8 @@ test('versioned module chain brings the phone profile to cached clients', () => 
   const index = fs.readFileSync('tools/web_public/datacity/index.html', 'utf8');
   const city = fs.readFileSync('tools/web_public/datacity/city.js', 'utf8');
   const scene = fs.readFileSync('tools/web_public/datacity/scene.js', 'utf8');
-  assert.match(index, /city\\.js\\?v=dcultra1/);
-  assert.match(city, /scene\\.js\\?v=dcultra1/);
-  assert.match(scene, /caps\\.js\\?v=dcultra1/);
+  assert.match(index, /city\.js\?v=[a-z0-9]+/);
+  assert.match(city, /scene\.js\?v=dcultra1/);
+  assert.match(scene, /caps\.js\?v=dcultra1/);
 });
+

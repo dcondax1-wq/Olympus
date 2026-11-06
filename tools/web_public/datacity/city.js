@@ -948,6 +948,7 @@ function readableFallback(model, demo, reason) {
     .readable-city .map-head{position:relative;display:flex;justify-content:space-between;gap:8px;align-items:center;margin:0 7px 9px}.readable-city .map-count{color:#d9cfad;font:700 11px system-ui}
     .readable-city .districts{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
     .readable-city button{min-height:44px;color:#f9f7ff;background:#242c4e;border:1px solid #646b93;border-radius:12px;padding:8px 12px;font:700 13px system-ui;cursor:pointer}
+    .readable-city .map-link{display:inline-flex;min-height:44px;align-items:center;justify-content:center;margin:10px 0;padding:9px 15px;border:1px solid #e7bb69;border-radius:12px;background:#34304c;color:#ffdfa0;text-decoration:none;font:800 13px system-ui}
     .readable-city .district{min-width:0;min-height:108px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;padding:7px 4px 5px;background:linear-gradient(180deg,#24365742,#172748a8);border-color:#60789b66;box-shadow:inset 0 -8px 14px #0b172c;color:#f5f2eb}
     .readable-city .district-tower{position:relative;display:block;width:42px;height:var(--tower-h);flex:none;transform:skewY(-8deg);background:repeating-linear-gradient(90deg,transparent 0 6px,#ffe3a43d 6px 8px,transparent 8px 11px),repeating-linear-gradient(0deg,transparent 0 9px,#77d7ff63 9px 11px),linear-gradient(125deg,#15445e,#32748a 55%,#14233d);border:1px solid #70ccdb95;box-shadow:0 0 14px #52bde36a,inset 5px 0 12px #9fdafc35}
     .readable-city .district-tower:after{content:"";position:absolute;left:6px;right:6px;top:-7px;height:7px;transform:skewX(42deg);background:#4c9cb0;border:1px solid #a5eff0a3}
@@ -970,6 +971,8 @@ function readableFallback(model, demo, reason) {
   add(root, 'h1', 'The city is still here');
   add(root, 'p', 'The 3D city could not start on this device. Explore its read-only district map and research below. No trading controls are available here.');
   add(root, 'p', demo ? 'Showing sample data. Connect for the published research.' : 'Showing the published research data.');
+  const mapLink = add(root, 'a', 'Open the 2D map', 'map-link');
+  mapLink.href = demo ? './map.html?demo=1' : './map.html';
   const map = el('section', 'city-map');
   map.setAttribute('aria-label', 'Research district city map');
   const mapHead = el('div', 'map-head');

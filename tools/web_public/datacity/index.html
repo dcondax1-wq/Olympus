@@ -151,7 +151,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;bac
 body::after{content:"";position:fixed;left:0;right:0;top:0;bottom:0;pointer-events:none;z-index:2;border-top:0 solid #000;border-bottom:0 solid #000;transition:border-width .6s ease}
 body.cine::after{border-top-width:9vh;border-bottom-width:9vh}
 body.cine .top,body.cine .mini,body.cine .dock .tab:not(#tourB){opacity:.18;transition:opacity .6s}
-.loading{position:fixed;inset:0;display:grid;place-items:center;color:var(--sub);font:600 13px var(--oly-display,inherit);letter-spacing:.2em;z-index:2;pointer-events:none}
+.loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--sub);font:600 13px var(--oly-display,inherit);letter-spacing:.2em;z-index:2;pointer-events:none}
+.loading a{pointer-events:auto;display:inline-flex;min-height:44px;align-items:center;padding:8px 14px;border:1px solid var(--gold);border-radius:12px;background:#242139;color:#ffe0a0;text-decoration:none;font:800 13px var(--oly-ui,inherit);letter-spacing:0}
 .err{position:fixed;left:16px;right:16px;top:40%;text-align:center;color:var(--sub);z-index:9}
 @media (prefers-reduced-motion:reduce){.sheet.on,.caption.on{animation:none;opacity:1}}
 /* --- v3: the City menu, report, council, compare, timeline, switches, photo mode */
@@ -192,7 +193,7 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
 </head>
 <body>
 <canvas id="c" aria-label="Olympus Data City, a 3D city of NQ research results"></canvas>
-<div class="loading" id="loading">BUILDING THE CITY…</div>
+<div class="loading" id="loading"><span>BUILDING THE CITY…</span><a href="./map.html">Open 2D map</a></div>
 <header class="top" id="top">
   <div class="row">
     <h1>Data City</h1>
@@ -229,7 +230,7 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
 </nav>
 <div class="caption" id="caption" aria-live="polite"></div>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="./city.js?v=dccontext1"></script>
+<script type="module" src="./city.js?v=dcmaprescue1"></script>
 <script type="module" src="glossary.js"></script>
 </body>
 </html>

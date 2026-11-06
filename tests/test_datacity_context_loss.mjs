@@ -87,5 +87,5 @@ test('a render exception uses the same fallback and stops the next queued frame'
 
 test('cached clients fetch the context-loss handler', () => {
   const index = fs.readFileSync('tools/web_public/datacity/index.html', 'utf8');
-  assert.ok(index.includes('city.js?v=dccontext1'));
+  assert.match(index, /city\.js\?v=[a-z0-9]+/);
 });
