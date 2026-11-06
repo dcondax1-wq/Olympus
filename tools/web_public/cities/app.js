@@ -1008,6 +1008,17 @@ function fallbackList(why) {
     .filter(id=>!DATASETS[id].remote&&!DATASETS[id].vault).map(id=>realDs(id)));
 }
 
+
+/** A WebGL context can be lost after startup without throwing from the frame loop.
+ * Keep the independent atlas usable instead of leaving a dark canvas on phones.
+ */
+function recoverLostContext(stage, event) {
+  event?.preventDefault?.();
+  if (document.body.dataset.ready === 'fallback') return;
+  try { stage?.dispose(); } catch (_) { /* the atlas does not need WebGL */ }
+  fallbackList('The 3D graphics stopped on this device.');
+}
+
 async function boot() {
   if (window.__citiesImportAbandoned) return;
   let cfg, fx;
@@ -1045,6 +1056,7 @@ async function boot() {
   let stage;
   try { stage = new Stage(canvas, { context, onTier: (lv) => retier(lv) }); } catch (e) { fallbackList('3D is not available here.'); return; }
   S.stage = stage;
+  canvas.addEventListener('webglcontextlost', (event) => recoverLostContext(stage, event), { once: true });
   S.rig = new Rig(stage.camera, canvas, { onTap, onFreed: () => { if (S.tour) { S.tour = false; $('#tourB') && $('#tourB').classList.remove('on'); } if (S.mode === 'city') setCam('orbit', true); } });
   S.live = S.specs.map(() => false);
   stage.look(null, null, S.night);
