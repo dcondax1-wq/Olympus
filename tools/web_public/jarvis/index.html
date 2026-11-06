@@ -94,7 +94,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j13">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j14">
 <link rel="stylesheet" id="jhome" href="home3d.css?v=h1">
 <script src="../olympus/themes.js?v=o3" id="olyThemesJs" async></script>
 <script src="../olympus/sfx.js?v=s2" id="olySfxJs" async></script>
@@ -919,6 +919,18 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         <button class="sysbar" type="button" id="sysbar" aria-controls="p-system" title="Every system at a glance"><i class="sdot off" id="sysdot"></i><b id="sysv">CHECKING</b><span id="syst">Every system at a glance</span><span class="sysdots" id="sysdots" aria-hidden="true"></span></button>
       </div>
 
+      <section class="hub-gate" aria-labelledby="hub-gate-title">
+        <div class="hub-gate-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><span></span></div>
+        <p class="hub-gate-kicker">OLYMPUS / COMMAND HUB <span aria-hidden="true">✦</span></p>
+        <h2 id="hub-gate-title">Find your arena.</h2>
+        <p class="hub-gate-copy">One map for every dashboard. Search, filter, and return to your favorites.</p>
+        <button class="hub-gate-primary" type="button" data-app="atlas" data-open="../atlas/?hub=j14" aria-label="Open Atlas, the Olympus arena hub">OPEN ATLAS <span aria-hidden="true">↗</span></button>
+        <div class="hub-gate-doors" role="group" aria-label="Explore featured arenas">
+          <button type="button" data-app="cities">CITIES <span aria-hidden="true">↗</span></button>
+          <button type="button" data-app="observatory">OBSERVATORY <span aria-hidden="true">↗</span></button>
+        </div>
+      </section>
+
       <div class="stagebox">
       <div class="stage" id="stage" role="button" tabindex="0" aria-label="Talk to Jarvis">
         <div class="pad" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -968,9 +980,11 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
       <div class="qa" id="qa" role="group" aria-label="Quick actions"></div>
-      <p class="sec-t">OLYMPUS · apps</p>
-      <div class="og-find" id="ogFindBox" hidden><input id="ogFind" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Find an app" aria-label="Find an app" aria-controls="olyApps"></div>
-      <div class="og" id="olyApps" role="group" aria-label="OLYMPUS: every app"></div>
+      <details class="hub-directory">
+        <summary>ALL ARENAS <span>Browse the complete directory</span></summary>
+        <div class="og-find" id="ogFindBox" hidden><input id="ogFind" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Find an app" aria-label="Find an app" aria-controls="olyApps"></div>
+        <div class="og" id="olyApps" role="group" aria-label="OLYMPUS: every app"></div>
+      </details>
       <p class="sec-t">Today · timeline</p>
       <section class="panel tl" id="p-today" aria-label="Today: the trading day and your plan"></section>
 

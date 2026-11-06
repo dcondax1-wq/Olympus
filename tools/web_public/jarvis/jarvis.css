@@ -614,6 +614,42 @@ html[data-fx="high"] .sat i, html[data-fx="ultra"] .sat i { animation: satSpin 9
   html:not([data-fx-set]) .sats, html:not([data-fx-set]) .sat i, html:not([data-fx-set]) .qa-t, html:not([data-fx-set]) .tl-row .tl-dot, .cpulse, .kbox span.tick { animation: none !important; }
 }
 
+/* The first decision on Jarvis home: enter the map, then choose a city. The skyline is decorative CSS, never a live-data indicator. */
+.hub-gate { position: relative; isolation: isolate; overflow: hidden; min-height: 218px; margin: 16px 0 20px; padding: 20px 19px 17px; border: 1px solid rgba(239,201,121,.53); border-radius: 20px;
+  background: radial-gradient(ellipse at 72% 77%, rgba(169,98,42,.25), transparent 46%), linear-gradient(155deg, #101326, #090b1b 65%, #17101e); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 50px rgba(0,0,0,.23); }
+.hub-gate::before { content: ''; position: absolute; inset: 0; z-index: -1; opacity: .7; pointer-events: none;
+  background-image: radial-gradient(circle, #f3c77f 1px, transparent 1.5px), radial-gradient(circle, #95a0ef 1px, transparent 1.5px);
+  background-size: 67px 71px, 93px 109px; background-position: 16px 27px, 58px 9px; }
+.hub-gate::after { content: ''; position: absolute; right: -25%; bottom: -110px; width: 75%; height: 190px; z-index: -1; border: 1px solid rgba(244,176,89,.5); border-radius: 50%; transform: rotate(-15deg); box-shadow: 0 -10px 35px rgba(239,158,67,.14); pointer-events: none; }
+.hub-gate-kicker { position: relative; margin: 0 0 12px; font: 700 10px/1.2 var(--fh); letter-spacing: .22em; color: #f1ce83; }
+.hub-gate-kicker span { margin-left: 5px; color: #fff2bf; }
+.hub-gate h2 { position: relative; max-width: 75%; margin: 0 0 5px; color: #fff8e9; font: 700 clamp(24px, 7vw, 34px)/1.05 var(--fh); letter-spacing: -.035em; }
+.hub-gate-copy { position: relative; max-width: 72%; margin: 0 0 17px; color: #ccd1e6; font: 500 12px/1.45 var(--fb); }
+.hub-gate button { position: relative; cursor: pointer; font-family: var(--fh); font-weight: 700; -webkit-tap-highlight-color: transparent; }
+.hub-gate-primary { display: inline-flex; align-items: center; justify-content: space-between; gap: 15px; min-height: 42px; padding: 0 13px; border: 1px solid #f8d591; border-radius: 10px; color: #171119; background: linear-gradient(135deg, #ffe4a5, #d99b4e); font-size: 11px; letter-spacing: .15em; box-shadow: 0 6px 25px rgba(227,153,72,.27); }
+.hub-gate-primary span, .hub-gate-doors span { font-size: 17px; font-weight: 400; }
+.hub-gate-doors { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.hub-gate-doors button { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 10px; border: 1px solid rgba(240,195,118,.38); border-radius: 9px; color: #f3dba9; background: rgba(16,17,32,.82); font-size: 9px; letter-spacing: .1em; }
+.hub-gate button:hover, .hub-gate button:focus-visible { outline: 2px solid #fff1c6; outline-offset: 3px; }
+.hub-gate button:active { transform: scale(.97); }
+.hub-gate-sky { position: absolute; right: 3%; bottom: 26px; width: 44%; height: 72%; z-index: -1; pointer-events: none; transform: perspective(210px) rotateX(7deg); }
+.hub-gate-sky i { position: absolute; bottom: 0; width: 16%; height: 44%; border: 1px solid rgba(255,196,98,.55); border-bottom: 0; background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,186,86,.68) 6px 7px, transparent 7px 11px), repeating-linear-gradient(90deg, #11182e 0 5px, #27334a 5px 7px); box-shadow: 2px -3px 0 #43415b, 0 0 14px rgba(238,150,64,.3); transform: skewY(-7deg); }
+.hub-gate-sky i:nth-child(1) { left: 4%; height: 31%; } .hub-gate-sky i:nth-child(2) { left: 21%; height: 65%; }
+.hub-gate-sky i:nth-child(3) { left: 39%; height: 43%; } .hub-gate-sky i:nth-child(4) { left: 56%; height: 85%; }
+.hub-gate-sky i:nth-child(5) { left: 73%; height: 58%; } .hub-gate-sky i:nth-child(6) { left: 90%; height: 37%; }
+.hub-gate-sky span { position: absolute; left: -4%; bottom: -5%; width: 115%; height: 16%; border-top: 1px solid rgba(250,200,114,.7); transform: skewY(-8deg); background: repeating-linear-gradient(90deg, rgba(255,167,69,.7) 0 2px, transparent 2px 8px); box-shadow: 0 0 17px rgba(255,164,54,.36); }
+.hub-directory { margin: 17px 0 5px; }
+.hub-directory summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 50px; padding: 0 14px; border: 1px solid rgba(var(--cr),.34); border-radius: 12px; background: rgba(var(--pr),.67); color: var(--txt); cursor: pointer; list-style: none; font: 700 11px/1.3 var(--fh); letter-spacing: .17em; }
+.hub-directory summary::-webkit-details-marker { display: none; }
+.hub-directory summary span { color: var(--mut); font: 500 11px/1.3 var(--fb); letter-spacing: 0; text-align: right; }
+.hub-directory summary::after { content: '+'; color: var(--c); font-size: 20px; line-height: 1; }
+.hub-directory[open] summary::after { content: '−'; }
+.hub-directory summary:focus-visible { outline: 2px solid var(--c); outline-offset: 3px; }
+.hub-directory .og-find { margin-top: 14px; }
+.hub-directory .og { margin-top: 12px; }
+html[data-fx="off"] .hub-gate, html[data-fx="off"] .hub-gate-primary, html[data-fx="off"] .hub-gate-sky i, html[data-fx="off"] .hub-gate-sky span { box-shadow: none; }
+@media (max-width: 360px) { .hub-gate-copy, .hub-gate h2 { max-width: 84%; } .hub-gate-sky { opacity: .6; } .hub-directory summary span { display: none; } }
+
 /* ---------------------------------------------------------------- the OLYMPUS apps grid (2026-11-03): a pantheon of glowing tiles,
    one per app in its own colour (--ac / --acr, from apps.js), grouped TRADING / LIFE / MONEY. Light: no blur, no 3D, only opacity
    and transform; the stagger plays once (index.html renderGrid: .pre until the grid is in view, then .go) at High / Ultra only */
