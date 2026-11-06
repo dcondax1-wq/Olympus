@@ -118,16 +118,25 @@
     ];
     rows.filter(Boolean).forEach((row) => detail.append(node('div', 'item', row)));
   }
+  let scanning = false;
   async function scan() {
+    if (scanning) return;
+    scanning = true;
     const button = $('refresh'); button.disabled = true; button.textContent = 'Scanning…';
     $('updated').textContent = 'Checking six published sources…';
-    latest = await Promise.all(SOURCES.map(load));
-    history.push({ at: now(), sources: latest.map(({ id, ok, status, hash, t, demo, error }) => ({ id, ok, status, hash, t, demo, error })) });
-    history = history.slice(-30);
-    try { localStorage.setItem(key, JSON.stringify(history)); } catch (_) { /* storage quota or privacy mode */ }
-    render(); $('updated').textContent = 'Last scan ' + stamp(now()) + ' · refreshes while open every five minutes';
-    button.disabled = false; button.textContent = 'Scan sources';
-    if (window.OLYMPUS && window.OLYMPUS.ready) window.OLYMPUS.ready();
+    try {
+      latest = await Promise.all(SOURCES.map(load));
+      history.push({ at: now(), sources: latest.map(({ id, ok, status, hash, t, demo, error }) => ({ id, ok, status, hash, t, demo, error })) });
+      history = history.slice(-30);
+      try { localStorage.setItem(key, JSON.stringify(history)); } catch (_) { /* storage quota or privacy mode */ }
+      render(); $('updated').textContent = 'Last scan ' + stamp(now()) + ' · refreshes while open every five minutes';
+      if (window.OLYMPUS && window.OLYMPUS.ready) window.OLYMPUS.ready();
+    } catch (_) {
+      $('updated').textContent = 'Scan failed. Check your connection and try again.';
+    } finally {
+      scanning = false;
+      button.disabled = false; button.textContent = 'Scan sources';
+    }
   }
   function exportReview() {
     const report = { title: 'OLYMPUS Observatory review', generated: new Date().toISOString(), method: 'Read-only published JSON scan; change markers stored on this device; no code or trading change applied', sources: latest, findings: latest.map(insight).filter(Boolean), scansSaved: history.length };
