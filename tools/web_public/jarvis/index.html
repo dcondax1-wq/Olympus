@@ -119,9 +119,31 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 .oly .oly-w canvas.oly-l{width:min(78vw,52vh,400px);height:min(78vw,52vh,400px);margin-bottom:-4px}
 .oly .oly-w small{font:600 11px/1 Orbitron,-apple-system,system-ui,sans-serif;letter-spacing:.5em;padding-left:.5em;color:rgba(222,190,255,.6)}
 .oly .oly-skip{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;font:600 10px/1 -apple-system,system-ui,sans-serif;letter-spacing:.32em;color:rgba(236,233,242,.34);pointer-events:none}</style>
+<style id="olyLaunchUI">
+.oly-launch-ui{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:space-between;padding:calc(16px + env(safe-area-inset-top,0px)) 18px calc(18px + env(safe-area-inset-bottom,0px));pointer-events:none;color:#eef5ff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.oly-launch-bar{display:flex;align-items:center;gap:10px;min-height:46px;padding:7px 12px;border:1px solid rgba(161,191,228,.2);border-radius:15px;background:linear-gradient(120deg,rgba(5,12,25,.82),rgba(9,18,33,.62));backdrop-filter:blur(16px);box-shadow:0 12px 40px #0008}
+.oly-launch-bar img{width:122px;height:61px;object-fit:contain;filter:brightness(1.25) contrast(1.2) saturate(1.2) drop-shadow(0 1px 0 #fff9) drop-shadow(0 0 15px #f4b84acc) drop-shadow(0 7px 10px #000);mix-blend-mode:screen}
+.oly-launch-bar span{font-size:9px;font-weight:800;letter-spacing:.16em;color:#d6e2f2}.oly-launch-bar i{color:#52d6ad;font-style:normal}.oly-launch-bar b{margin-left:auto;font:600 10px ui-monospace,monospace;color:#8ea3bb}
+.oly-launch-ui:before{content:"";position:absolute;z-index:0;left:-42%;right:-42%;bottom:-18%;height:75%;transform-origin:center bottom;transform:perspective(520px) rotateX(38deg) rotateZ(5deg) scaleX(1.25);background:repeating-conic-gradient(from 0deg at 50% 0%,transparent 0deg 8deg,rgba(70,201,169,.32) 8.2deg 8.35deg,transparent 8.55deg 16deg),repeating-linear-gradient(0deg,transparent 0 28px,rgba(245,165,75,.28) 29px,transparent 30px),radial-gradient(ellipse at 50% 0%,rgba(73,213,169,.34),transparent 68%);mask-image:linear-gradient(to bottom,transparent,#000 17%);animation:olyGridDrift 5s ease-in-out infinite alternate;pointer-events:none}
+.oly-depth-front{position:absolute;z-index:0;inset:0;pointer-events:none;overflow:hidden}
+.oly-depth-front i{position:absolute;bottom:19%;width:27%;height:43%;border:1px solid rgba(77,206,178,.52);background:linear-gradient(110deg,rgba(11,22,35,.82) 0 70%,rgba(4,11,20,.98) 70%),repeating-linear-gradient(0deg,transparent 0 8px,rgba(240,157,68,.7) 9px,transparent 11px),repeating-linear-gradient(90deg,rgba(8,17,27,.95) 0 7px,rgba(236,158,69,.8) 8px,rgba(8,17,27,.95) 9px);box-shadow:0 0 36px rgba(33,223,166,.14),inset 0 0 22px rgba(11,220,156,.08);opacity:.86}
+.oly-depth-front i:first-child{left:-7%;height:34%;transform:perspective(300px) rotateY(28deg) skewY(-4deg);clip-path:polygon(0 18%,72% 0,100% 100%,0 100%)}
+.oly-depth-front i:last-child{right:-8%;height:42%;transform:perspective(300px) rotateY(-28deg) skewY(4deg);clip-path:polygon(0 0,100% 18%,100% 100%,0 100%)}
+@keyframes olyGridDrift{from{transform:perspective(520px) rotateX(38deg) rotateZ(4deg) scaleX(1.25) translateY(0)}to{transform:perspective(520px) rotateX(35deg) rotateZ(6deg) scaleX(1.25) translateY(9px)}}
+.oly-launch-bar,.oly-launch-copy,.oly-enter{position:relative;z-index:1}
+.oly-launch-copy{margin:auto 0 22px 3px;text-align:left;text-shadow:0 4px 26px #000}
+.oly-launch-copy small{display:block;margin-bottom:11px;color:#77e5bc;font:700 9px ui-monospace,monospace;letter-spacing:.2em}
+.oly-launch-copy strong{display:block;font-size:clamp(35px,10vw,48px);line-height:.96;letter-spacing:-.055em;font-weight:650}
+.oly-launch-copy span{display:block;margin-top:10px;color:#bac9d9;font-size:12px;letter-spacing:.03em}
+.oly-enter{display:flex;align-items:center;justify-content:space-between;min-height:54px;padding:0 18px;border:1px solid rgba(135,222,196,.55);border-radius:14px;background:linear-gradient(110deg,rgba(12,37,44,.96),rgba(9,22,39,.96));color:#eafff7;box-shadow:0 0 34px rgba(31,221,163,.16),inset 0 1px #ffffff1c;font:750 11px ui-monospace,monospace;letter-spacing:.13em;pointer-events:auto}
+.oly-enter b{color:#71edc0;font-size:18px}
+.oly canvas{z-index:1}.oly .oly-skip{z-index:6;text-align:right;right:22px;bottom:calc(92px + env(safe-area-inset-bottom,0px));color:#d4deec;font-size:9px}
+@media(min-width:700px){.oly-launch-ui{padding:24px 28px}.oly-launch-bar{max-width:520px}.oly-launch-copy strong{font-size:clamp(48px,6vw,76px)}.oly-enter{max-width:360px}}
+@media(prefers-reduced-motion:reduce){.oly-launch-ui:before,.oly-launch-ui *{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-<div class="oly" id="olyIntro" aria-hidden="true"></div>
+<div class="oly" id="olyIntro" aria-hidden="true"><div class="oly-launch-ui" aria-hidden="true"><div class="oly-depth-front" aria-hidden="true"><i></i><i></i></div><div class="oly-launch-bar"><img src="intro-logo.webp" alt=""><span>OLYMPUS <i>/</i> COMMAND DECK</span><b>01</b></div><div class="oly-launch-copy"><small>CONNECTED WORLDS</small><strong>Enter your<br>night city.</strong><span>One map. Every arena.</span></div><button class="oly-enter" type="button" tabindex="-1">ENTER OLYMPUS <b>↗</b></button></div></div>
 <script id="olympus-intro">
 /* OLYMPUS intro (2026-11-03, owner: "INSANE, about 10 seconds, ending on my logo"). It plays over Jarvis while Jarvis starts
  * underneath and never holds Jarvis up. One WebGL1 full-screen shader (procedural storm, ridge, marble columns) plus one
@@ -163,7 +185,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   'use strict';
   var W = window, doc = document, root = doc.documentElement;
   var st = W.__olyIntro = { mode: '', q: '', state: 'idle', frames: 0, ms: 0, err: '', done: false, scale: 0, n: 0, fps: 0, phase: '', cues: [], logo: false };
-  var LEN = { full: 10, lite: 5, short: 1.0, calm: 3.5, fade: 0.8, off: 0.5 };
+  var LEN = { full: 3.6, lite: 2.8, short: 1.8, calm: 1.8, fade: 0.8, off: 0.5 };
   var RATE = { full: 1, lite: 2, short: 1 };                // the film's clock runs at this multiple of the wall clock
   var ls = function (k, v) {
     try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ }
@@ -421,13 +443,13 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     '   col=mix(col,m,uCols);}}}',
     // A night market metropolis rises below the Olympus skyline. Buildings are drawn in two depth layers,
     // with stable window occupancy and a few emerald data districts. The scene stays procedural and offline.
-    ' if(uCity>.001){vec2 cp=q;float floorLine=-.36;',
+    ' if(uCity>.001){vec2 cp=q;float floorLine=.06;',
     '  float ground=step(cp.y,floorLine)*smoothstep(-1.15,floorLine-.02,cp.y);',
     '  float gx=exp(-abs(fract(cp.x*31.)-.5)*18.),gy=exp(-abs(fract((cp.y-floorLine)*45.)-.5)*19.);',
     '  col=mix(col,vec3(.006,.017,.035)+org*(gx+gy)*.13,ground*uCity*.9);',
     '  for(int li=0;li<2;li++){float z=float(li),cw=.031+z*.018,xx=(cp.x+uCam*(.045+z*.035))/cw;',
     '   float id=floor(xx),fx=fract(xx),seed=h21(vec2(id,13.+z*29.));',
-    '   float roof=floorLine+z*.065,high=(.04+.17*seed*seed)*(1.-z*.2);',
+    '   float roof=floorLine+z*.04,high=(.10+.25*seed*seed)*(1.-z*.12);',
     '   float face=step(.07,fx)*step(fx,.94)*step(roof,cp.y)*step(cp.y,roof+high);',
     '   float wx=fract(fx*7.),wy=fract((cp.y-roof)*145.),pane=step(.19,wx)*step(wx,.74)*step(.22,wy)*step(wy,.67);',
     '   float lit=step(.36,h21(vec2(id*11.+floor(fx*7.),floor((cp.y-roof)*145.)+z*47.)));',
@@ -438,9 +460,9 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     '   col+=lamp*exp(-abs(cp.y-roof-high)*250.)*face*uCity*.045;',
     '  }',
     // Larger foreground blocks give the city actual depth on a tall phone. The near rows move faster on the camera rise.
-    '  for(int row=0;row<2;row++){float rz=float(row),cw=.067+rz*.084,yb=-.52-rz*.21;',
+    '  for(int row=0;row<2;row++){float rz=float(row),cw=.067+rz*.084,yb=-.34-rz*.23;',
     '   float xx=(cp.x+uCam*(.08+rz*.07))/cw,id=floor(xx),fx=fract(xx);',
-    '   float h=h21(vec2(id,81.+rz*27.)),hh=(.065+.13*h)*(1.+rz*.27);',
+    '   float h=h21(vec2(id,81.+rz*27.)),hh=(.15+.27*h)*(1.+rz*.24);',
     '   float wall=step(.06,fx)*step(fx,.92)*step(yb,cp.y)*step(cp.y,yb+hh);',
     '   float wx=fract(fx*9.),wy=fract((cp.y-yb)*(86.-rz*24.));',
     '   float pane=step(.19,wx)*step(wx,.73)*step(.18,wy)*step(wy,.68);',
@@ -451,7 +473,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     '   col+=light*exp(-abs(cp.y-yb-hh)*290.)*wall*uCity*.05;',
     '  }',
     '  float a=length(vec2(cp.x*.77,(cp.y+.46)*.7));float arc=exp(-abs(a-.34)*260.)*step(-.23,cp.y)*step(cp.y,.04);',
-    '  col+=mix(org,vec3(.09,.75,.46),step(0.,cp.x))*arc*uCity*.4;',
+    '  col+=mix(org,vec3(.09,.75,.46),step(0.,cp.x))*arc*uCity*.025;',
     ' }',
     ' col*=uBg;',
     // 4. the logo: the eclipse ring lights round from the top, the peaks slide in from outside and below, the temple flares
@@ -585,58 +607,26 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   var HITS = [[6.8, -0.211, 0.129], [6.97, 0.195, 0.118], [7.14, 0.0075, 0.285]];
   var hp = function (t, a, peak) { var d = t - a; return d < 0 ? 0 : peak * Math.exp(-d * 6.5); };
   function envFull(t) {
-    var lub = t < 0.98 ? 0.28 : 0.98, s = {};
-    s.heart = pulse(t, 0.28, 0.9) + pulse(t, 0.58, 0.55) + pulse(t, 0.98, 1.1) + pulse(t, 1.28, 0.65);
-    s.shockR = Math.max(0, t - lub); s.shockA = t < 0.28 ? 0 : Math.exp(-(t - lub) * 3.2) * (lub > 0.5 ? 1 : 0.7);
-    s.storm = sm(ramp(t, 0.95, 2.0));
-    var f = Math.max(0, t - 0.9); s.fly = f * 0.9 + f * f * 0.35;
-    s.strike = Math.max(strike(t, 1.75) * 0.6, strike(t, 2.35), strike(t, 2.92), strike(t, 3.45));
-    s.bolt = t < 2.2 ? 0 : t < 2.8 ? 1 : t < 3.3 ? 2 : 3;
-    s.flash = pulse(t, 0.95, 0.14) + pulse(t, 1.75, 0.5) + pulse(t, 2.35, 1) + pulse(t, 2.47, 0.6) + pulse(t, 2.92, 0.9) + pulse(t, 3.03, 0.5) +
-      pulse(t, 3.45, 1.2) + pulse(t, 3.58, 0.6) + pulse(t, 8.7, 0.3);
-    s.ridge = sm(ramp(t, 1.7, 2.4)) * (1 - sm(ramp(t, 4.4, 5.2)));
-    s.cam = sm(ramp(t, 2.1, 6.0));
-    s.cols = sm(ramp(t, 3.2, 4.1)) * (1 - sm(ramp(t, 5.2, 5.9))) * 0.19;
-    s.city = sm(ramp(t, 2.7, 3.6)) * (1 - sm(ramp(t, 5.65, 6.25)));
-    s.glow = sm(ramp(t, 3.0, 5.5));
-    s.bg = 1 - 0.92 * sm(ramp(t, 5.5, 6.4));
-    s.spk = sm(ramp(t, 3.3, 4.2));
-    s.ring = ease(ramp(t, 5.55, 6.5));
-    s.flare = (t < 5.55 ? 0 : Math.exp(-(t - 5.55) * 2.6) * 1.4) + (t < 8.7 ? 0 : Math.exp(-(t - 8.7) * 5) * 1.1);
-    s.asm = ramp(t, 6.1, 7.3);
-    s.temple = t < 6.95 ? 0 : t < 7.15 ? (t - 6.95) / 0.2 : 0.14 + 0.86 * Math.exp(-(t - 7.15) * 2.4);
-    s.form = sm(ramp(t, 7.05, 8.0));
-    s.shine = ramp(t, 7.9, 8.55);
-    s.sub = ramp(t, 8.0, 8.65);
-    s.push = ramp(t, 8.7, 9.95);
-    s.reveal = 9.82; s.cues = CUES;
-    // JOB 33b: the camera (a slow roll, a dolly in through the storm that eases back for the ring), the god-rays, the far temples, the embers,
-    // the forge (heat + shake), the lens flare of the ring, the grain
-    var cam = sm(ramp(t, 0.8, 1.8)) * (1 - sm(ramp(t, 4.5, 5.5)));
-    s.roll = (0.05 * Math.sin(t * 0.85 + 0.6) + 0.026 * Math.sin(t * 2.3)) * cam;
-    s.dolly = 1 + 0.2 * sm(ramp(t, 0.9, 4.6)) - 0.2 * sm(ramp(t, 4.6, 5.6));
-    s.rays = sm(ramp(t, 1.3, 2.4)) * (0.3 + 0.22 * s.flash) + sm(ramp(t, 3.0, 4.5)) * 0.95;
-    s.rays *= 1 - sm(ramp(t, 5.3, 5.95));
-    s.temples = sm(ramp(t, 2.7, 3.5)) * (1 - sm(ramp(t, 4.6, 5.4)));
-    s.emb = sm(ramp(t, 1.0, 2.2)) * (1 - sm(ramp(t, 5.3, 6.0))) * 0.85;
-    s.hot = 0; s.hx = HITS[0][1]; s.hy = HITS[0][2];
-    for (var hi = 0; hi < HITS.length; hi++) if (t >= HITS[hi][0]) { s.hot = hp(t, HITS[hi][0], hi === 2 ? 1.25 : 1); s.hx = HITS[hi][1]; s.hy = HITS[hi][2]; }
-    s.sparks = t > 6.7 && t < 8.5 ? 1 : 0;
-    s.ignite = t < 5.55 ? 0 : 1.1 * Math.exp(-(t - 5.55) * 8);
-    s.lens = t < 5.55 ? 0 : (1 - Math.exp(-(t - 5.55) * 14)) * Math.exp(-(t - 5.55) * 2.1) * 1.5 + (t < 8.7 ? 0 : Math.exp(-(t - 8.7) * 4.5) * 0.9);
-    var shk = (t < 4.4 ? Math.min(1, s.flash * 0.7) : 0) + hp(t, 5.55, 0.8) + hp(t, HITS[0][0], 0.7) + hp(t, HITS[1][0], 0.7) + hp(t, HITS[2][0], 1);
-    s.shx = Math.sin(t * 61.7) * shk * 0.0055; s.shy = Math.cos(t * 77.3) * shk * 0.0055;
+    // A concise city-first launch: the city is present immediately; the existing Olympus mark
+    // assembles above it as a product identity, not a long theatrical title sequence.
+    var s = {};
+    s.heart = 0; s.shockR = 0; s.shockA = 0; s.storm = 0; s.fly = sm(ramp(t, 0, 2.6)) * .12;
+    s.strike = 0; s.bolt = 0; s.flash = 0; s.ridge = 0; s.cam = sm(ramp(t, 0, 2.8));
+    s.cols = 0; s.city = 1; s.glow = .24 + .12 * sm(ramp(t, .4, 2.6)); s.bg = 1; s.spk = 0;
+    s.ring = 0; s.flare = 0;
+    s.asm = 0; s.temple = 0; s.form = 0;
+    s.shine = 0; s.sub = 0; s.push = 0;
+    s.reveal = 3.52; s.cues = [];
+    s.roll = .004 * Math.sin(t * .8) * (1 - sm(ramp(t, 2.7, 3.6)));
+    s.dolly = 1 + .055 * sm(ramp(t, .2, 2.6));
+    s.rays = 0; s.temples = 0; s.emb = .12; s.hot = 0; s.hx = 0; s.hy = 0;
+    s.sparks = 0; s.ignite = .16 * Math.exp(-t * 2); s.lens = 0;
+    s.shx = 0; s.shy = 0;
     return s;
   }
-  function envShort(t) {                                   // a launch seen again: the finished logo, a flare, the portal
-    var s = envFull(7.6 + t * 0.2);
-    s.heart = 0; s.shockA = 0; s.storm = 0; s.strike = 0; s.flash = pulse(t, 0.02, 0.5); s.ridge = 0; s.cols = 0; s.city = 0; s.glow = 0; s.spk = 0;
-    s.bg = 0.08; s.ring = 1; s.asm = 1; s.temple = 0.14 + 0.5 * Math.exp(-t * 6); s.form = 1; s.shine = ramp(t, 0.05, 0.4); s.sub = 1;
-    s.flare = (t < 0.02 ? 0 : Math.exp(-t * 5) * 0.9) + (t < 0.3 ? 0 : Math.exp(-(t - 0.3) * 5) * 1.0);
-    s.push = ramp(t, 0.3, 0.9); s.reveal = 0.82; s.cues = [[0.02, 'rankup'], [0.3, 'portal']];
-    s.roll = 0; s.dolly = 1; s.rays = 0; s.temples = 0; s.emb = 0; s.hot = 0; s.hx = 0; s.hy = 0; s.sparks = 0; s.ignite = 0; s.shx = 0; s.shy = 0;
-    s.lens = (t < 0.3 ? 0 : Math.exp(-(t - 0.3) * 4.5) * 0.7);
-    return s;
+  function envShort(t) {
+    // Returning visits use the same city-first composition and quick mark reveal.
+    return envFull(Math.min(3.4, t * 1.9));
   }
 
   function bolt(seed) {                                    // a jagged bolt from above the screen to the peak
@@ -681,7 +671,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     if (!gl) { cv.parentNode.removeChild(cv); cv = null; return false; }
     cv.addEventListener('webglcontextlost', function (e) { try { e.preventDefault(); } catch (_) { /* */ } finish('lost'); });
     var dpr = W.devicePixelRatio || 1;
-    var scale = lite ? Math.min(dpr, 1) : Math.min(dpr, root.getAttribute('data-fx') === 'ultra' ? 2 : 1.5);
+    var scale = lite ? Math.min(dpr, 0.7) : Math.min(dpr, root.getAttribute('data-fx') === 'ultra' ? 1.5 : 1.25);
     // tests in a software-rendered browser: a lower render scale ('jarvis.intro.scale', under automation only)
     var forced = navigator.webdriver ? parseFloat(ls('jarvis.intro.scale')) : NaN;
     if (forced > 0 && forced <= 3) scale = forced;
