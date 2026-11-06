@@ -21,7 +21,7 @@ test('readable fallback keeps its own map link visible when the camera rail is h
 test('the map remains reachable if the 3D module never loads', () => {
   assert.match(index, /id="loading"[^>]*><span>BUILDING THE CITY[^<]*<\/span><a href="\.\/map\.html">Open 2D map<\/a>/);
   assert.match(index, /\.loading a\{pointer-events:auto;display:inline-flex;min-height:44px/);
-  assert.match(index, /city\.js\?v=dcmaprescue1/);
+  assert.match(index, /city\.js\?v=[a-z0-9]+/);
 });
 
 test('the standalone page identifies 2D mode and has a clear return', () => {

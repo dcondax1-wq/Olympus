@@ -882,6 +882,7 @@ class App {
       this.updateCam();
       try { this.city.render(dt); }
       catch (error) { this.onRenderFailure?.(error); return; }
+      this.firstFrame = true;
       this.updateTag();
       const info = this.city.renderer.info.render;
       this.lastCalls = info.calls; this.lastTris = info.triangles;
@@ -916,6 +917,45 @@ function failCity(app, fallback, reason) {
   if (app.contextLost) return;
   app.contextLost = true;
   fallback(reason);
+}
+
+/** Give a visible, uncovered page five seconds for its first 3D frame, then use the map. */
+function watchFirstFrame(app, fallback, {
+  doc = document, clock = () => performance.now(), schedule = setTimeout, cancel = clearTimeout,
+  covered = () => O?.covered?.() === true,
+} = {}) {
+  let visibleSince = null, timer = null, done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    if (timer !== null) cancel(timer);
+    doc.removeEventListener('visibilitychange', check);
+  };
+  const check = () => {
+    if (done) return;
+    if (app.contextLost || app.firstFrame) { finish(); return; }
+    if (timer !== null) { cancel(timer); timer = null; }
+    if (doc.hidden === true || doc.visibilityState === 'hidden') {
+      visibleSince = null; // wait for the browser's visibilitychange; no background timer
+      return;
+    }
+    if (covered()) {
+      visibleSince = null; // the parent may uncover without a visibilitychange event
+      timer = schedule(check, 500);
+      return;
+    }
+    const now = clock();
+    if (visibleSince === null) visibleSince = now;
+    const remaining = 5000 - (now - visibleSince);
+    if (remaining <= 0) {
+      finish();
+      failCity(app, fallback, new Error('The 3D city did not draw its first frame'));
+      return;
+    }
+    timer = schedule(check, Math.min(500, remaining));
+  };
+  doc.addEventListener('visibilitychange', check);
+  check();
 }
 
 /** After a lost GPU context, render stops and the data remains explorable. */
@@ -1047,6 +1087,7 @@ async function main() {
     window.__app = app;
     $('#loading').remove();
     app.start();
+    watchFirstFrame(app, fallback);
     state.ready = true;
   } catch (e) {
     window.__app = null;
