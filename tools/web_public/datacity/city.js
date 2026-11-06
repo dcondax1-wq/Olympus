@@ -858,6 +858,7 @@ class App {
   start() {
     let last = performance.now(), frames = 0, acc = 0, slow = 0, skyT = 0;
     const frame = (now) => {
+      if (this.contextLost) return; // one queued callback may remain after WebGL goes away
       requestAnimationFrame(frame);
       if (O ? O.hidden() : document.hidden) { last = now; return; }          // hidden tab: no frame at all
       const gap = O?.frameGap ? O.frameGap() : 0;                            // the kit's idle cap (30 fps idle on high, 15 on low, 2 on off; 30 in battery saver)
@@ -879,7 +880,8 @@ class App {
       skyT += dt;
       if (skyT > (this.tour ? 0.05 : 1)) { skyT = 0; this.applySky(); }
       this.updateCam();
-      this.city.render(dt);
+      try { this.city.render(dt); }
+      catch (error) { this.onRenderFailure?.(error); return; }
       this.updateTag();
       const info = this.city.renderer.info.render;
       this.lastCalls = info.calls; this.lastTris = info.triangles;
@@ -907,6 +909,21 @@ async function postCard() {
   try {
     window.parent.postMessage({ jarvis: 1, href: location.href, card: await getJSON('./jarvis.json') }, location.origin);
   } catch (e) { /* no card: Jarvis reads jarvis.json itself */ }
+}
+
+/** One exit from a failed 3D renderer to the readable research view. */
+function failCity(app, fallback, reason) {
+  if (app.contextLost) return;
+  app.contextLost = true;
+  fallback(reason);
+}
+
+/** After a lost GPU context, render stops and the data remains explorable. */
+function watchContextLoss(canvas, app, fallback) {
+  canvas.addEventListener('webglcontextlost', (event) => {
+    event.preventDefault();
+    failCity(app, fallback, new Error('WebGL context lost'));
+  });
 }
 
 /** A usable, read-only data view when WebGL or the render core cannot start. */
@@ -1021,6 +1038,9 @@ async function main() {
   const model = decode(data, plugins, synth);
   try {
     const app = new App(model, demo);
+    const fallback = (reason) => readableFallback(model, demo, reason);
+    app.onRenderFailure = (reason) => failCity(app, fallback, reason);
+    watchContextLoss($('#c'), app, fallback);
     window.__app = app;
     $('#loading').remove();
     app.start();
