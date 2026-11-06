@@ -279,6 +279,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
   </div>
 </div>
 <script src="../olympus/sfx.js?v=s2" defer></script>
+<script src="status-line.js?v=1"></script>
 <script>
 (function () {
   var REPO = 'demetrades2000-coder/nq-liquidity-engine';
@@ -336,9 +337,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
       c.appendChild(el('div', 'why', j.why));
       var st = STATUS && STATUS.jobs && STATUS.jobs[j.id], lv = el('div', 'live w', 'Waiting for ChatGPT');
       if (st) {
-        if (st.state === 'done') { lv.className = 'live'; lv.textContent = 'ChatGPT delivered ' + st.files + ' file' + (st.files === 1 ? '' : 's'); }
-        else if (st.state === 'question') { lv.className = 'live q'; lv.textContent = 'ChatGPT has a question'; }
-        else { lv.className = 'live w'; lv.textContent = 'ChatGPT is working (' + st.files + ' file' + (st.files === 1 ? '' : 's') + ')'; }
+        var line = window.BRIDGE_STATUS_LINE(st); lv.className = line.className; lv.textContent = line.text;
       }
       c.appendChild(lv);
       var d = el('details'); d.appendChild(el('summary', '', 'Show the words I paste')); d.appendChild(el('pre', '', j.p)); c.appendChild(d);
@@ -484,9 +483,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
   function liveLine(id) {
     var st = stateOf(id), lv = el('div', 'live w', 'Waiting for ChatGPT');
     if (st) {
-      if (st.state === 'done') { lv.className = 'live'; lv.textContent = 'ChatGPT delivered ' + st.files + ' file' + (st.files === 1 ? '' : 's'); }
-      else if (st.state === 'question') { lv.className = 'live q'; lv.textContent = 'ChatGPT has a question'; }
-      else { lv.className = 'live w'; lv.textContent = 'ChatGPT is working (' + st.files + ' file' + (st.files === 1 ? '' : 's') + ')'; }
+      var line = window.BRIDGE_STATUS_LINE(st); lv.className = line.className; lv.textContent = line.text;
     }
     return lv;
   }

@@ -62,8 +62,8 @@ def part_static():
     check("a. never asks for a token, password or key (the only inputs are the 3 tick boxes and the one-line link-test box; ChatGPT does the GitHub login)",
           len(re.findall(r"<input\b", PAGE)) == 4 and PAGE.count('type="checkbox"') == 3 and PAGE.count('type="text"') == 1 and 'id="linkIn"' in PAGE and 'type="password"' not in PAGE
           and "never give anyone a password or a key" in PAGE and not re.search(r"ghp_[A-Za-z0-9]{20}|github_pat_[A-Za-z0-9]", PAGE))
-    check("a. the page reads status.json and shows 'ChatGPT delivered', 'ChatGPT has a question' and a Tell Claude button ('Bridge: <id> done')",
-          "status.json" in PAGE and "ChatGPT delivered" in PAGE and "ChatGPT has a question" in PAGE and "Tell Claude" in PAGE and "'Bridge: ' + j.id" in PAGE)
+    check("a. status.json uses the snapshot-aware helper and a Tell Claude button ('Bridge: <id> done')",
+          "status.json" in PAGE and 'src="status-line.js?v=1"' in PAGE and PAGE.count("window.BRIDGE_STATUS_LINE(st)") == 2 and "Tell Claude" in PAGE and "'Bridge: ' + j.id" in PAGE)
     check("a. the job cards are still there (icons ... codex-portal)", all(f"id: '{i}'" in PAGE for i in ("icons", "skies", "textures", "me", "persona", "labours", "lore", "deals", "obsidian", "ascend", "codex-portal")))
     # JOB 24: library, deliveries, ask next
     check("a. four tabs (Jobs, Library, Deliveries, Ask next) as buttons; the wizard is still above them and still exactly 3 steps",
@@ -210,8 +210,8 @@ def part_browser():
             p2.goto(url)
             p2.wait_for_function("document.querySelector('#job-icons .live') && document.querySelector('#job-icons .live').textContent.indexOf('delivered') > -1")
             t = lambda i: p2.inner_text(f"#job-{i} .live")  # noqa: E731
-            check("d. live cards: 'ChatGPT delivered 3 files', 'ChatGPT has a question', 'ChatGPT is working (1 file)', else 'Waiting for ChatGPT'",
-                  t("icons") == "ChatGPT delivered 3 files" and t("skies") == "ChatGPT has a question" and t("textures") == "ChatGPT is working (1 file)" and t("me") == "Waiting for ChatGPT", [t(i) for i in ("icons", "skies", "textures", "me")])
+            check("d. published cards say last reported delivered, question, in progress; an absent job waits",
+                  t("icons") == "Last reported: 3 files delivered" and t("skies") == "Last reported: question waiting" and t("textures") == "Last reported: in progress (1 file)" and t("me") == "Waiting for ChatGPT", [t(i) for i in ("icons", "skies", "textures", "me")])
             p2.click("#job-icons button[data-say]")
             check("d. 'Tell Claude' copies 'Bridge: icons done'; a question copies 'Bridge: skies question'; a card still waiting has the button too ('Bridge: me done'), so the owner never waits for the page to refresh",
                   p2.evaluate("navigator.clipboard.readText()") == "Bridge: icons done" and p2.get_attribute("#job-skies button[data-say]", "data-say") == "Bridge: skies question"
