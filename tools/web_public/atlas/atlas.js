@@ -10,6 +10,13 @@
     { id:'jarvis',name:'Jarvis',glyph:'J',colour:'#e5be83',group:'life',purpose:'Your assistant',path:'jarvis/' }
   ];
   const apps = rows.length ? rows : fallback;
+  const zones = [
+    { id:'market', title:'Market & trading', note:'Read the tape, context, and live-facing dashboards.', ids:['zenith','oracle','ares','forum','chronos','cities','odeon','bridge'] },
+    { id:'research', title:'Strategies & research', note:'Explore ideas, signals, and your research trail.', ids:['datacity','observatory','tree','prometheus','pantheon','argus','nemesis','hephaestus','athena','journal'] },
+    { id:'risk', title:'Money & risk', note:'Review decisions, balances, and prediction markets.', ids:['fates','labyrinth','ledger','kalshi','kalshicity','tyche','hermes','plutus'] },
+    { id:'life', title:'Life & command', note:'Plan, reflect, and manage your workspace.', ids:['inbox','settings','planner','mind','arena','atlas'] }
+  ];
+  const zoneOf = (a) => zones.find((zone) => zone.ids.includes(a.id)) || zones.find((zone) => zone.id === (a.group === 'money' ? 'risk' : a.group === 'life' ? 'life' : 'market'));
   const key = 'olympus.atlas.v1';
   let saved = { stars: [], recent: [] };
   try { const v = JSON.parse(localStorage.getItem(key)); if (v && typeof v === 'object') saved = { stars: Array.isArray(v.stars) ? v.stars : [], recent: Array.isArray(v.recent) ? v.recent : [] }; } catch (_) { /* private browsing */ }
@@ -20,14 +27,24 @@
   let filter = 'all';
   function render() {
     const q = $('#query').value.toLocaleLowerCase().trim();
-    const shown = apps.filter((a) => (filter === 'all' || (filter === 'favorites' ? saved.stars.includes(a.id) : a.group === filter)) &&
-      (!q || (a.name + ' ' + a.purpose + ' ' + a.group).toLocaleLowerCase().includes(q)));
+    const shown = apps.filter((a) => (filter === 'all' || (filter === 'favorites' ? saved.stars.includes(a.id) : zoneOf(a).id === filter)) &&
+      (!q || (a.name + ' ' + a.purpose + ' ' + a.group + ' ' + zoneOf(a).title).toLocaleLowerCase().includes(q)));
     const host = $('#results'); host.replaceChildren();
-    for (const a of shown) {
+    for (const zone of zones) {
+      const zoneApps = shown.filter((a) => zoneOf(a).id === zone.id);
+      if (!zoneApps.length) continue;
+      const section = document.createElement('section'); section.className = 'zone'; section.setAttribute('aria-label', zone.title);
+      const heading = document.createElement('div'); heading.className = 'zone-head';
+      const title = document.createElement('h3'); title.textContent = zone.title;
+      const note = document.createElement('p'); note.textContent = zone.note;
+      const tally = document.createElement('span'); tally.textContent = zoneApps.length + ' destinations';
+      heading.append(title,note,tally); section.append(heading);
+      const grid = document.createElement('div'); grid.className = 'zone-grid'; section.append(grid);
+      for (const a of zoneApps) {
       const card = document.createElement('article'); card.className = 'card'; card.style.setProperty('--accent', /^#[0-9a-f]{6}$/i.test(a.colour) ? a.colour : '#e5be83');
       const sigil = document.createElement('span'); sigil.className = 'sigil'; sigil.textContent = a.glyph || a.name.charAt(0); sigil.setAttribute('aria-hidden','true');
       const body = document.createElement('div'); body.className = 'card-body';
-      const group = document.createElement('small'); group.textContent = a.group;
+      const group = document.createElement('small'); group.textContent = zone.title;
       const name = document.createElement('h3'); name.textContent = a.name;
       const purpose = document.createElement('p'); purpose.textContent = a.purpose || 'Open dashboard';
       body.append(group,name,purpose);
@@ -39,7 +56,9 @@
         const next = [...document.querySelectorAll('.star')].find((b) => b.dataset.id === a.id) || document.querySelector('[data-filter="favorites"]');
         if (next) next.focus({ preventScroll: true });
       });
-      card.append(sigil,body,go,star); host.append(card);
+      card.append(sigil,body,go,star); grid.append(card);
+      }
+      host.append(section);
     }
     $('#count').textContent = rows.length ? shown.length + ' destinations' : shown.length + ' destinations · limited map (catalog unavailable)'; $('#empty').hidden = shown.length > 0;
     const recent = $('#recent'); recent.replaceChildren(); recent.hidden = !saved.recent.length || !!q || filter !== 'all';
@@ -58,7 +77,7 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let paused = reduced || document.visibilityState === 'hidden', frame = 0, raf = 0, W = 0, H = 0, pixel = 1;
   const rand = (n) => { const x = Math.sin(n * 129.471 + 17.23) * 43857.545; return x - Math.floor(x); };
-  const buildings = Array.from({length:180},(_,i) => ({x:(i%18-8.5)*1.42,z:Math.floor(i/18)*1.38+1.3,h:1.2+rand(i)*5.1,w:.45+rand(i+310)*.43,glow:rand(i+910)}));
+  const buildings = Array.from({length:420},(_,i) => ({x:(i%28-13.5)*1.08,z:Math.floor(i/28)*1.12+1.3,h:1.2+rand(i)*5.1,w:.45+rand(i+310)*.43,glow:rand(i+910)})).sort((a,b)=>b.z-a.z);
   function resize() { pixel = Math.min(devicePixelRatio || 1, 1.5); W = canvas.clientWidth; H = canvas.clientHeight; canvas.width = Math.round(W*pixel); canvas.height = Math.round(H*pixel); ctx.setTransform(pixel,0,0,pixel,0,0); draw(); }
   const project = (x,y,z) => { const scale = Math.min(W*.078,58) / (1 + z*.15), center = W < 600 ? W*.69 : W*.71; return [center + (x+z*.22)*scale, H*.76-(y+z*.19)*scale,scale]; };
   function cube(b,t) {
@@ -76,7 +95,7 @@
     const glow=ctx.createRadialGradient(W*.78,H*.39,2,W*.78,H*.39,Math.min(W*.4,230));glow.addColorStop(0,'rgba(239,192,104,.24)');glow.addColorStop(1,'rgba(239,192,104,0)');ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
     ctx.strokeStyle='rgba(120,164,232,.18)';ctx.lineWidth=1;for(let z=0;z<20;z+=2){let a=project(-13,0,z),b=project(13,0,z);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
     for(let x=-12;x<=12;x+=3){let a=project(x,0,0),b=project(x,0,20);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
-    [...buildings].sort((a,b)=>b.z-a.z).forEach((b)=>cube(b,t));
+    buildings.forEach((b)=>cube(b,t));
     const cx=project(0,0,2);ctx.strokeStyle='rgba(237,202,127,.42)';ctx.beginPath();ctx.ellipse(cx[0],cx[1]+8,Math.min(W*.28,240),25,0,0,Math.PI*2);ctx.stroke();
   }
   function tick(t){frame=t;draw();if(!paused)raf=requestAnimationFrame(tick);}

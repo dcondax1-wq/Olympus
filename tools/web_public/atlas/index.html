@@ -5,9 +5,9 @@
 <meta name="theme-color" content="#080b17"><meta name="color-scheme" content="dark">
 <title>Atlas · Olympus</title>
 <meta name="description" content="A fast visual map of the Olympus dashboards.">
-<link rel="stylesheet" href="atlas.css?v=1">
+<link rel="stylesheet" href="atlas.css?v=2">
 <script src="../olympus/apps-list.js?v=o3" defer></script>
-<script src="atlas.js?v=2" defer></script>
+<script src="atlas.js?v=3" defer></script>
 </head>
 <body>
 <a class="skip" href="#results">Skip to dashboards</a>
@@ -20,15 +20,16 @@
 <main>
   <section class="hero" aria-labelledby="title">
     <p class="eyebrow">YOUR WORLD, ONE GATEWAY</p>
-    <h1 id="title">Every arena.<br><em>One horizon.</em></h1>
-    <p class="lead">Find the right room for what matters now. Your favorites stay on this device.</p>
-    <div class="hero-actions"><a class="primary" href="../jarvis/">Enter Jarvis <span aria-hidden="true">↗</span></a><a class="secondary" href="../cities/">Explore Cities <span aria-hidden="true">↗</span></a></div>
+    <h1 id="title">One world.<br><em>Every arena.</em></h1>
+    <p class="lead">Find your mission across four connected districts. Search your arenas, pin favorites, and return to recent rooms.</p>
+    <div class="hero-actions"><a class="primary" href="#deckTitle">Explore the map <span aria-hidden="true">↓</span></a><a class="secondary" href="../jarvis/">Jarvis <span aria-hidden="true">↗</span></a></div>
+    <nav class="spotlight" aria-label="Featured destinations"><a href="../oracle/"><span>01 · MARKET</span><strong>Oracle</strong><small>Market radar ↗</small></a><a href="../datacity/"><span>02 · RESEARCH</span><strong>Data City</strong><small>Explore the data ↗</small></a><a href="../cities/"><span>03 · WORLDS</span><strong>Cities</strong><small>Enter the city map ↗</small></a><a href="../kalshicity/"><span>04 · MONEY</span><strong>Kalshi City</strong><small>Prediction markets ↗</small></a></nav>
   </section>
   <section class="deck" aria-labelledby="deckTitle">
     <div class="deck-head"><div><p class="eyebrow">THE COMMAND DECK</p><h2 id="deckTitle">Choose your destination</h2></div><span id="count" class="count" aria-live="polite"></span></div>
     <label class="search"><span aria-hidden="true">⌕</span><span class="sr">Search dashboards by name or purpose</span><input id="query" type="search" autocomplete="off" placeholder="Search arenas, tools, and missions"><kbd>/</kbd></label>
     <div class="filters" role="group" aria-label="Dashboard categories">
-      <button data-filter="all" aria-pressed="true">All</button><button data-filter="favorites" aria-pressed="false">★ Favorites</button><button data-filter="trading" aria-pressed="false">Trading</button><button data-filter="money" aria-pressed="false">Money</button><button data-filter="life" aria-pressed="false">Life</button>
+      <button data-filter="all" aria-pressed="true">All</button><button data-filter="favorites" aria-pressed="false">★ Favorites</button><button data-filter="market" aria-pressed="false">Market</button><button data-filter="research" aria-pressed="false">Research</button><button data-filter="risk" aria-pressed="false">Money &amp; risk</button><button data-filter="life" aria-pressed="false">Life &amp; command</button>
     </div>
     <div id="recent" class="recent" hidden></div>
     <div id="results" class="results" tabindex="-1"></div>
