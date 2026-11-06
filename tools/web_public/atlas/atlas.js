@@ -22,7 +22,24 @@
   try { const v = JSON.parse(localStorage.getItem(key)); if (v && typeof v === 'object') saved = { stars: Array.isArray(v.stars) ? v.stars : [], recent: Array.isArray(v.recent) ? v.recent : [] }; } catch (_) { /* private browsing */ }
   saved.stars = saved.stars.filter((id) => apps.some((a) => a.id === id)).slice(0, 30);
   saved.recent = saved.recent.filter((id) => apps.some((a) => a.id === id)).slice(0, 5);
-  const store = () => { try { localStorage.setItem(key, JSON.stringify(saved)); } catch (_) { /* private browsing */ } };
+  let storageReady = false;
+  try {
+    const probe = key + '.probe';
+    localStorage.setItem(probe, '1');
+    localStorage.removeItem(probe);
+    storageReady = true;
+  } catch (_) { /* private browsing or full storage */ }
+  function updateSaveStatus() {
+    const status = $('#saveStatus');
+    status.textContent = storageReady ? 'Your map is saved on this device.' : 'This browser cannot save favorites or recent rooms.';
+    status.dataset.saveState = storageReady ? 'on' : 'off';
+  }
+  const store = () => {
+    try { localStorage.setItem(key, JSON.stringify(saved)); storageReady = true; }
+    catch (_) { storageReady = false; }
+    updateSaveStatus();
+  };
+  updateSaveStatus();
   const recordRecent = (id) => { saved.recent = [id, ...saved.recent.filter((x) => x !== id)].slice(0, 5); store(); };
   const link = (a) => '../' + (/^(?:[a-z0-9-]+\/)?$/.test(a.path || '') ? a.path : (a.id + '/'));
   let filter = 'all';

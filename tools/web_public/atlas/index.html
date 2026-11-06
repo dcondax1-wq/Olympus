@@ -7,7 +7,7 @@
 <meta name="description" content="A fast visual map of the Olympus dashboards.">
 <link rel="stylesheet" href="atlas.css?v=3">
 <script src="../olympus/apps-list.js?v=o3" defer></script>
-<script src="atlas.js?v=4" defer></script>
+<script src="atlas.js?v=5" defer></script>
 </head>
 <body>
 <a class="skip" href="#results">Skip to dashboards</a>
@@ -36,6 +36,6 @@
     <p id="empty" class="empty" hidden>No dashboards match this search. Try another name or category.</p>
   </section>
 </main>
-<footer>OLYMPUS ATLAS <span>·</span> Your map is saved on this device.</footer>
+<footer>OLYMPUS ATLAS <span>·</span> <output id="saveStatus" role="status" aria-live="polite">Checking device storage…</output></footer>
 </body>
 </html>
