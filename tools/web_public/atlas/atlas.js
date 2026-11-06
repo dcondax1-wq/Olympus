@@ -94,7 +94,8 @@
       }
       host.append(section);
     }
-    $('#count').textContent = rows.length ? shown.length + ' destinations' : shown.length + ' destinations · limited map (catalog unavailable)'; $('#empty').hidden = shown.length > 0;
+    const resultLabel = shown.length + (shown.length === 1 ? ' destination' : ' destinations');
+    $('#count').textContent = rows.length ? resultLabel : resultLabel + ' · limited map (catalog unavailable)'; $('#empty').hidden = shown.length > 0;
     const recent = $('#recent'); recent.replaceChildren(); recent.hidden = !saved.recent.length || !!q || filter !== 'all';
     if (!recent.hidden) {
       const label = document.createElement('span'); label.textContent = 'RECENT  '; recent.append(label);
