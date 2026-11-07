@@ -15,7 +15,7 @@ test('standalone Atlas presents one Olympus command center', () => {
   assert.match(html, /Every arena\.<br><em>One command center\.<\/em>/);
   assert.match(html, /FULL OLYMPUS DIRECTORY/);
   assert.match(html, /hub\.js\?v=1/);
-  assert.match(html, /atlas\.css\?v=5/);
+  assert.match(html, /atlas\.css\?v=6/);
   assert.equal((html.match(/data-jump-filter=/g) || []).length, 4);
   assert.equal((html.match(/class="command-glass"/g) || []).length, 1);
 });
