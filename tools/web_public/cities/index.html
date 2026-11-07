@@ -286,9 +286,10 @@ async function recover() {
 }
 // Module import settles before its asynchronous boot does. Watch readiness itself.
 setTimeout(recover, 18000);
-import('./app.js?v=o18').catch(recover);
+import('./app.js?v=o19').catch(recover);
 </script>
 </body>
 </html>
+
 
 

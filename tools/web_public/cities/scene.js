@@ -7,10 +7,10 @@
 // Draw calls stay flat whatever the data: 40k buildings are still one draw (the tier's cap keeps the triangles in budget).
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
-import * as SH from './shaders.js?v=s3';
+import * as SH from './shaders.js?v=s4';
 import { buildLandmark, spinLandmark, disposeGroup } from './landmarks.js';
 import { rgb, clamp, rng, hash32 } from './util.js';
-import { buildMetropolis } from './metropolis.js?v=m2';
+import { buildMetropolis } from './metropolis.js?v=m3';
 
 /** What each render-core tier may draw: buildings per city, hub miniature instances in all, weather and roof-glow points. */
 export const TIERS = {
@@ -480,4 +480,6 @@ export class Stage {
   start(cb) { this.rc.start(cb); }
   dispose() { this.rc.dispose(); }
 }
+
+
 

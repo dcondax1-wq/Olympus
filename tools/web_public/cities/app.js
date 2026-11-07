@@ -1088,7 +1088,7 @@ async function boot() {
   let importTimer;
   try {
     const modules = await Promise.race([
-      Promise.all([import('./scene.js?v=w4'), import('./rig.js?v=r2')]),
+      Promise.all([import('./scene.js?v=w5'), import('./rig.js?v=r2')]),
       new Promise((_, reject) => { importTimer = setTimeout(() => reject(Error('3D startup timed out')), 8000); }),
     ]);
     ({ Stage, TIERS, BUDGETS } = modules[0]); ({ Rig, makePath, safeFlight } = modules[1]);
@@ -1219,5 +1219,6 @@ boot().catch((e) => {
 
 // keep the unused import honest for tooling
 void lerp; void store;
+
 
 

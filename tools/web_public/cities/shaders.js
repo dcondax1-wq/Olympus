@@ -21,7 +21,15 @@ void main(){
   vColor = aColor; vHY = aHY; vState = aState; vLocal = position; vSeed = aSeed;
   float gr = clamp(uGrow * 1.8 - length(aPosSize.xy) / 700.0 - aSeed * 0.2, 0.0, 1.0); gr = mix(gr*gr*(3.0-2.0*gr),1.0,uScenery);
   float hh = aHY.x * max(gr, 0.001);
-  vec3 wp = vec3(aPosSize.x + position.x * aPosSize.z, aHY.y + position.y * hh, aPosSize.y + position.z * aPosSize.w);
+  float style = floor(fract(aSeed * 31.713) * 4.0);
+  float taper = 1.0;
+  if(style < 1.0) taper = 1.0 - position.y * 0.24;
+  else if(style < 2.0) taper = 1.0 - step(0.54,position.y)*0.13 - step(0.81,position.y)*0.16;
+  else if(style < 3.0) taper = 1.0 - position.y * 0.34;
+  else taper = 1.0 - step(0.54,position.y)*0.08 - step(0.81,position.y)*0.24;
+  float measuredTaper = 1.0 - position.y * (0.06 + fract(aSeed * 13.17) * 0.10);
+  taper = mix(measuredTaper, taper, step(0.5,uScenery));
+  vec3 wp = vec3(aPosSize.x + position.x * aPosSize.z * taper, aHY.y + position.y * hh, aPosSize.y + position.z * aPosSize.w * taper);
   wp.y += uBobAmp * sin(uTime * 0.5 + aBob * 40.0);
   vWy = wp.y; vW = wp;
   vN = normal;
@@ -30,7 +38,7 @@ void main(){
   gl_Position = projectionMatrix * mv;
 }`;
 export const BUILD_FS = `
-uniform float uTime; uniform float uDay; uniform vec3 uWinTint; uniform float uSel; uniform vec3 uCam; uniform vec3 uTop; uniform vec3 uLow; uniform vec3 uSun; uniform float uPbr;
+uniform float uTime; uniform float uDay; uniform vec3 uWinTint; uniform float uSel; uniform vec3 uCam; uniform vec3 uTop; uniform vec3 uLow; uniform vec3 uSun; uniform float uPbr; uniform float uScenery;
 varying vec3 vColor; varying vec4 vHY; varying vec2 vState; varying vec3 vLocal; varying vec3 vN; varying float vFD; varying float vSeed; varying float vWy; varying vec3 vW;
 ${FOG}
 float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)) + vSeed*17.0)*43758.5453); }
@@ -39,9 +47,12 @@ void main(){
   float side = 1.0 - step(0.5, n.y);
   vec2 uv = n.x > 0.5 ? vec2(vLocal.z, vLocal.y) : vec2(vLocal.x, vLocal.y);
   float H = vHY.x;
-  vec2 g = vec2((uv.x + 0.5) * 3.0, uv.y * H * 0.9);
+  float cols = 2.0 + floor(h2(vec2(vSeed*19.3,1.7))*5.0);
+  float rows = 0.58 + h2(vec2(vSeed*7.1,9.4))*0.54;
+  vec2 g = vec2((uv.x + 0.5) * cols, uv.y * H * rows);
   vec2 cell = floor(g); vec2 f = fract(g);
-  float win = step(0.2,f.x)*step(f.x,0.8)*step(0.28,f.y)*step(f.y,0.74);
+  float inset = 0.14 + h2(vec2(vSeed*5.7,4.2))*0.13;
+  float win = step(inset,f.x)*step(f.x,1.0-inset)*step(0.22,f.y)*step(f.y,0.78);
   float rnd = h2(cell + n.xz*3.1);
   // the windows blink with the data: a busy building (high glow_by) flickers fast, a quiet one barely
   float rate = 0.25 + vHY.z * 2.2;
@@ -57,7 +68,8 @@ void main(){
   vec3 body = mix(vColor*0.14, vColor*0.55 + 0.05, uDay) * diff * (0.7 + 0.45*vLocal.y) * groove;
   float spec = pow(max(dot(R, L), 0.0), 38.0) * (0.25 + 0.75 * (1.0 - win));
   body += (env * (0.10 + 0.5 * fres) + vec3(1.0, 0.95, 0.85) * spec * 0.55) * uPbr * (0.4 + 0.6 * side);
-  vec3 warm = mix(uWinTint, vColor, 0.35 + 0.3*step(0.5, h2(cell*1.7)));
+  vec3 warm = mix(uWinTint, vColor, 0.26 + 0.36*step(0.5, h2(cell*1.7)));
+  warm = mix(warm, vec3(1.0,0.57,0.25), 0.18*step(0.72,h2(cell+9.3)));
   vec3 col = body + side*win*lit*warm*mix(1.4, 0.45, uDay);
   // glass: dark panes reflect the sky at a grazing angle, sparkle in the sun
   col += side * win * (1.0 - lit) * (env * (0.18 + 0.9 * fres) + vec3(1.0) * spec * 0.9) * uPbr;
@@ -65,13 +77,17 @@ void main(){
   float edge = smoothstep(0.44, 0.5, abs(uv.x)) * side;
   float crown = smoothstep(0.93, 1.0, vLocal.y) * side;
   float neon = mix(1.0, 0.5, uDay);
-  col += vColor * (edge*0.8*tall + crown*(0.5 + vHY.z*1.6)) * neon;
+  col += vColor * (edge*0.62*tall + crown*(0.5 + vHY.z*1.6)) * neon;
+  float mullion = (1.0-smoothstep(0.0,0.045,abs(fract((uv.x+0.5)*6.0)-0.5))) * side;
+  col += mix(vColor,vec3(1.0,.58,.25),.45) * mullion * .12 * (1.0-uDay);
   col += vColor * step(0.975, fract(vLocal.y*H*0.05 - uTime*0.25 + vSeed)) * side * tall * 0.8 * neon;
-  col += vColor * (1.0 - side) * (0.45 + vHY.z * 1.1);
+  float roofEdge = smoothstep(0.22,0.5,max(abs(vLocal.x),abs(vLocal.z)));
+  col += vColor * (1.0 - side) * (0.16 + roofEdge*0.36 + vHY.z * 0.72);
   col += vColor * vHY.z * (0.5 + 0.5*sin(uTime*2.6 + vSeed*6.0)) * 0.35 * step(0.5, vHY.z);
   col += vec3(1.0,0.88,0.45) * step(0.5, vState.y) * (crown*2.6 + edge*1.0 + 0.18 + (1.0 - side)*0.7);
   col *= mix(1.0, 0.13, vState.x);
-  col = mix(col, uFog, fogAmount(vFD));
+  float fog = clamp(fogAmount(vFD) * (1.0 + uScenery*0.34),0.0,1.0);
+  col = mix(col, uFog, fog);
   gl_FragColor = vec4(col, 1.0);
 }`;
 
@@ -269,3 +285,4 @@ void main(){
 }`;
 export const FW_FS = `varying vec3 vColor; varying float vA;
 void main(){ vec2 q = gl_PointCoord - 0.5; float a = pow(max(1.0 - length(q) * 2.0, 0.0), 1.8) * vA; gl_FragColor = vec4(vColor * a * 2.2, a); }`;
+

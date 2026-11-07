@@ -15,7 +15,11 @@ globalThis.matchMedia=()=>({matches:false});
 const box=unitBox5();assert.equal(box.index.count/3,10);
 const geometryStats=group=>{let calls=0,triangles=0;const walk=o=>{if(!o.visible)return;if(o.geometry){calls++;if(o.isMesh){const base=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;triangles+=base*(o.isInstancedMesh?o.count:o.geometry.isInstancedBufferGeometry?o.geometry.instanceCount:1);}}for(const c of o.children)walk(c);};walk(group);return{calls,triangles};};
 const table=[];
-const app=await readFile(new URL('app.js',dir),'utf8'), cameraSource=app.slice(app.indexOf('function setCam(mode, quiet) {'),app.indexOf('// ------------------------------------------------------------------ chips, dock, quality'));
+const app=await readFile(new URL('app.js',dir),'utf8'), sceneSource=await readFile(new URL('scene.js',dir),'utf8'), shaderSource=await readFile(new URL('shaders.js',dir),'utf8'), indexSource=await readFile(new URL('index.html',dir),'utf8'), metropolisSource=await readFile(new URL('metropolis.js',dir),'utf8'), cameraSource=app.slice(app.indexOf('function setCam(mode, quiet) {'),app.indexOf('// ------------------------------------------------------------------ chips, dock, quality'));
+assert.match(metropolisSource,/architecturalGeometry/);assert.match(metropolisSource,/spirePositions/);assert.match(metropolisSource,/lampPositions/);
+assert.match(shaderSource,/measuredTaper/);assert.match(shaderSource,/roofEdge/);assert.match(shaderSource,/float cols/);assert.match(shaderSource,/uScenery\*0\.34/);
+assert.match(sceneSource,/shaders\.js\?v=s4/);assert.match(sceneSource,/metropolis\.js\?v=m3/);
+assert.match(app,/scene\.js\?v=w5/);assert.match(indexSource,/app\.js\?v=o19/);
 const labelSource=app.slice(app.indexOf('function placeLabel(e, p, w, h, above = false) {'),app.indexOf('function updateLabels(frame) {'));
 const label={offsetWidth:92,offsetHeight:24,style:{}}, mini={getBoundingClientRect:()=>({left:266,right:378,top:106,bottom:218})};
 const labelInCity=new Function('S','clamp','mini',labelSource+';return placeLabel;')({mode:'city'},clamp,mini);
@@ -38,6 +42,9 @@ for(const id of ['trades-city','ideas-city','canyon','months-city']){
     const city=generate(spec,dataset,{cap:TIERS[tier].cap}), before=city.x.slice();
     const canonical=metropolisPlan(city,spec), again=metropolisPlan(city,spec);
     assert.deepEqual(canonical,again,'scenery is deterministic');
+    assert.equal(canonical.filter(b=>b.hq).length,1,'one civic HQ anchors each city');
+    assert.ok(new Set(canonical.filter(b=>!b.infill&&!b.hq).slice(0,400).map(b=>Math.round(b.w/b.d*10))).size>=6,'districts vary tower footprints');
+    assert.ok(new Set(canonical.filter(b=>Number.isInteger(b.cluster)).map(b=>b.cluster)).size>=7,'multiple neighborhoods surround the capital');
     assert.ok(canonical.every(b=>[b.x,b.z,b.w,b.d,b.h,b.seed].every(Number.isFinite)));
     assert.ok(canonical.some(b=>b.infill),'unused ground cells receive decorative low rises');
     assert.ok(canonical.every(b=>{
@@ -48,12 +55,14 @@ for(const id of ['trades-city','ideas-city','canyon','months-city']){
     stage.pick=(...names)=>Object.fromEntries(names.map(n=>[n,{value:1}]));
     stage.buildCity(spec,city);
     const civic=stage.cityRec.metropolis, stats=geometryStats(stage.cityG);
-    assert.equal(civic.count,METROPOLIS_CAPS[tier]);assert.ok(civic.calls<=3);
-    assert.equal(civic.triangles,civic.count*10);
+    assert.equal(civic.count,METROPOLIS_CAPS[tier]);assert.ok(civic.calls<=5);
+    const shellTriangles=civic.group.children[0].geometry.index.count/3;
+    assert.equal(shellTriangles,42,'architectural shell keeps six sides and three visible setback levels');
+    assert.equal(civic.triangles,civic.count*shellTriangles);
     assert.ok(stats.triangles<BUDGETS[tier].tris,`${id}/${tier}: geometry exceeds scene budget`);
     assert.ok(stats.calls+20<BUDGETS[tier].calls,`${id}/${tier}: no postprocessing call headroom`);
     assert.deepEqual(city.x,before,'data geometry preserved');
-    civic.update(12);const aircraft=civic.group.children[2];assert.equal(aircraft.material.uniforms.uTime.value,tier==='low'?0:12);
+    civic.update(12);const aircraft=civic.aircraft;assert.equal(aircraft.material.uniforms.uTime.value,tier==='low'?0:12);
     assert.equal(aircraft.visible,tier!=='low');
     table.push({id,tier,data:city.n,scenery:civic.count,geometryCalls:stats.calls,geometryTriangles:stats.triangles});stage.clearCity();
     if(tier==='high'&&['trades-city','ideas-city'].includes(id)){
@@ -73,7 +82,7 @@ for(const id of ['trades-city','ideas-city','canyon','months-city']){
 const sample=generate(cfg.cities[0],await loadDataset(cfg.cities[0].dataset,env,cache),{cap:300});
 for(const tier of ['high','low','off']){
   const civic=buildMetropolis(sample,cfg.cities[0],box,new THREE.MeshBasicMaterial(),tier,true);
-  assert.equal(civic.calls,tier==='off'?0:2);if(tier!=='off')assert.equal(civic.group.children[2].visible,false);civic.dispose();
+  assert.equal(civic.calls,tier==='off'?0:4);if(tier!=='off')assert.equal(civic.aircraft.visible,false);civic.dispose();
 }
 // The same real orbit/glide/path rig the page uses: finite motion, ground floor,
 // manual takeover and shortest-way yaw. Neither a canvas nor a renderer is made.
@@ -88,3 +97,4 @@ for(const mode of ['skim','drone','grand']){
 }
 rig.reduced=true;const still=camera.position.clone();rig.auto=1;rig.update(30);assert.ok(camera.position.toArray().every(Number.isFinite));const second=camera.position.clone();rig.update(30);assert.ok(camera.position.distanceTo(second)<1e-8,'reduced motion disables idle orbit');
 console.table(table);console.log(`PASS: real city geometry fits static triangle budgets; ${clearanceCases} actual page flight paths clear measured towers; scenery tiers, motion gates and camera mathematics. GPU rendering and actual postprocessing calls remain unverified.`);
+
