@@ -6,6 +6,7 @@
 //   live orders     the bot's open positions: bright magenta cars driving out to their district
 //   the weather     the market regime of the last days: clear / overcast / rain / storm; fog when the bot is paused
 //   day and night   the New York clock
+//   satellite wards low-rise neighborhoods and connecting local roads: scenery only (the guide says so)
 //   far skyline     dark towers that carry NO data: scenery only (the guide says so)
 // One InstancedMesh holds every building (real edges first, then scenery; tiers cut the scenery), one for the cars, one for the roads.
 // createCity(canvas, { O, model, layout }) -> { setBook(model), setHour(h|null), select(id|null), setMode(key), focus(id), pick(x, y), where(id), state(), onPick(cb),
@@ -13,12 +14,13 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
-import { scenery, rng } from './citylayout.js?v=night3';
+import { scenery, rng } from './citylayout.js?v=night4';
 import { STATUS_COLOR, dayFactor, etHour, pairOf } from './cityfeed.js';
 import { Rig } from './cityrig.js?v=night3';
 import { createCityFx } from './cityfx.js?v=night3';
 import { skylinePorts } from './skylineports.js?v=night3';
 import { cityLinks, LINK_SEGMENTS } from './citylinks.js';
+import { districtCamera } from './citynav.js?v=nav1';
 
 const TIERS = {
   ultra: { scn: 4200, cars: 420, rain: 3400, embers: 40, links: 12, labels: true },
@@ -162,7 +164,8 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     sc.forEach((s, j) => {
       const i = realN + j;
       q4.setFromAxisAngle(up, s.yaw); p3.set(s.x, 0, s.z); s3.set(s.w, s.h, s.d); m4.compose(p3, q4, s3); bMesh.setMatrixAt(i, m4);
-      if (s.kind === 'infill') tint.setHSL(0.065 + s.seed * 0.025, 0.48, 0.055 + s.seed * 0.035);
+      if (s.kind === 'ward') tint.setHSL(s.seed > 0.78 ? 0.34 : 0.075 + s.seed * 0.025, 0.72, 0.075 + s.seed * 0.035);
+      else if (s.kind === 'infill') tint.setHSL(0.065 + s.seed * 0.025, 0.48, 0.055 + s.seed * 0.035);
       else tint.setHSL(0.6 + s.seed * 0.08, 0.25, 0.045 + s.seed * 0.05);
       bMesh.setColorAt(i, tint);
       aInfo.set([0, s.lit, 0, s.seed], i * 4);
@@ -177,7 +180,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
       const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(d.half * 2, 0.32, d.half * 2)), new THREE.LineBasicMaterial({ color: hdr(d.color, 1.5), fog: true }));
       edge.position.copy(pad.position); edge.rotation.copy(pad.rotation);
       world.add(pad, edge);
-      const lab = labelSprite(d.name, d.color), lw = Math.max(13, Math.min(34, d.half * 1.5)), top = d.list.reduce((m, e, i) => Math.max(m, (L.buildings.find((b) => b.id === e.id) || { fullH: 0 }).fullH), 0);
+      const lab = labelSprite(d.key === 'Downtown' ? 'MARKET HQ' : d.name, d.color), lw = Math.max(13, Math.min(34, d.half * 1.5)), top = d.list.reduce((m, e, i) => Math.max(m, (L.buildings.find((b) => b.id === e.id) || { fullH: 0 }).fullH), 0);
       lab.scale.set(lw, lw / 4, 1); lab.position.set(d.cx, Math.max(12, top + 5) + (d.key === 'Downtown' ? 34 : 0), d.cz); lab.userData.district = d.key; world.add(lab); labels.push(lab);
     }
 
@@ -192,7 +195,8 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
       q4.setFromAxisAngle(up, yaw); p3.set((rd.x0 + rd.x1) / 2, 0.2, (rd.z0 + rd.z1) / 2); s3.set(len + 0.1, 0.1, rd.w); m4.compose(p3, q4, s3); roadsMesh.setMatrixAt(i, m4);
       p3.y = 0.27; s3.set(len, 0.03, 0.12); m4.compose(p3, q4, s3); lanes.setMatrixAt(i, m4);
       const dc = L.districts.find((d) => d.key === rd.district);
-      lanes.setColorAt(i, col.set(rd.kind === 'labring' ? '#061020' : dc ? dc.color : '#596b91').multiplyScalar(rd.kind === 'labring' ? 0.15 : dc ? 0.75 : 0.4));
+      const wardRoad = rd.kind.startsWith('ward-');
+      lanes.setColorAt(i, col.set(rd.kind === 'labring' ? '#061020' : wardRoad ? '#63bac2' : dc ? dc.color : '#596b91').multiplyScalar(rd.kind === 'labring' ? 0.15 : wardRoad ? 0.42 : dc ? 0.75 : 0.4));
     });
     roadsMesh.frustumCulled = false; lanes.frustumCulled = false; world.add(roadsMesh, lanes);
     buildLinks();
@@ -584,12 +588,13 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     hour: () => (hourOverride != null ? hourOverride : hour), live: () => hourOverride == null,
     select: setSel, selected: () => selected, setMode(k) { rig.setMode(k, L); }, mode: () => rig.mode, onMode(cb) { modeCb = typeof cb === 'function' ? cb : null; },
     focus(id) { const i = bIndex.get(id); if (i == null) return; const b = L.buildings[i]; rig.focus(b.x, Math.min(b.fullH, 30) * 0.5, b.z, 34 + b.fullH * 0.9, 0.95); },
+    focusDistrict(key) { const d = L.districts.find((item) => item.key === key); if (!d) return false; setSel(null); const f = districtCamera(d); rig.focus(f.x, f.y, f.z, f.radius, f.phi); return true; },
     fireworks: (ids) => fxl.fireworks(ids), scan: (ids) => { const ok = fxl.scan(ids, { highlight }); dirty = true; return ok; }, strike: () => fxl.strike(), fxStats: () => fxl.stats(),
     labVisible(on) { labObjs.forEach((o) => { if (o) o.visible = !!on; }); dirty = true; },       // the budget breakdown: the Lab's own draws (pads, outlines, names, the leak beam)
     pick, where, onPick(cb) { pickCb = typeof cb === 'function' ? cb : null; }, onQuality(cb) { qcb = typeof cb === 'function' ? cb : null; },
     lite: () => lite, quality: () => rc.quality(), render: () => { dirty = true; },
     stats: () => ({ frames, drawn, quality: rc.quality(), passes: rc.passes().length, real: realN, edges: L.edgeCount, lab: (L.labs || []).length, scenery: bMesh ? bMesh.count - realN : 0, cars: cars ? cars.count : 0, orders, buildingsTotal: bMesh ? bMesh.count : 0,
-      rain: rain ? rain.visible : false, weather: M0.regime.state, paused: M0.regime.paused, hour: hourOverride != null ? hourOverride : hour, mode: rig.mode, selected, roads: L.roads.length, links: linksMesh?.visible ? Math.min(linkCount, tier.links) : 0, districts: L.districts.length,
+      rain: rain ? rain.visible : false, weather: M0.regime.state, paused: M0.regime.paused, hour: hourOverride != null ? hourOverride : hour, mode: rig.mode, selected, roads: L.roads.length, links: linksMesh?.visible ? Math.min(linkCount, tier.links) : 0, districts: L.districts.length, wards: (L.neighborhoods || []).length,
       fx: fxl.stats(), resizing: L.buildings.filter((b) => b.mode === 3).length, constructing: L.buildings.filter((b) => b.mode === 1).length, crumbling: L.buildings.filter((b) => b.mode === 2).length, draw: rc.stats ? rc.stats() : null }),
     dispose() { stopped = true; cancelAnimationFrame(raf); fxl.dispose(); disposeWorld(); rc.dispose(); },
   };

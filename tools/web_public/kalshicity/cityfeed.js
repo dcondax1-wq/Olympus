@@ -5,6 +5,39 @@
 export const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
 export const MIN_N = 30;
 export const BOT_FEED_MAX_AGE_S = 15 * 60; // match the Kalshi feed page: old running/paused bits cannot describe the bot now
+/**
+ * Jarvis freshness follows the older of the published edge snapshot and the bot report.
+ * Missing or stale bot verification stays warning-level and never gets a fresh page-time stamp.
+ */
+export function cardFreshness(model, demo = false, now = Date.now() / 1000) {
+  const book = model && model.book ? model.book : {};
+  const valid = (t) => Number.isFinite(t) && t > 0 && t <= now + 300;
+  const edgeT = valid(model && model.t) ? model.t : null;
+  const feedT = valid(book.feedT) ? book.feedT : null;
+  const sourceT = edgeT != null && feedT != null ? Math.min(edgeT, feedT) : null;
+  const age = sourceT == null ? Infinity : Math.max(0, now - sourceT);
+  const fresh = !demo && book.statusFresh === true && sourceT != null && age <= BOT_FEED_MAX_AGE_S;
+  const regime = model && model.regime ? model.regime.state : '';
+  const warning = regime === 'rain' || regime === 'storm';
+  const counts = model && model.counts ? model.counts : {};
+  const label = demo ? 'Demo data' : !fresh ? 'Source unverified' : `${counts.doMore || 0} do more · ${counts.stop || 0} stop`;
+  return {
+    status: { level: demo ? 'off' : (!fresh || warning ? 'warn' : 'ok'), label },
+    t: demo || sourceT == null ? 0 : Math.floor(Math.min(now, sourceT)),
+    stale_after: BOT_FEED_MAX_AGE_S,
+    sourceVerified: fresh,
+  };
+}
+
+/** Mention bot state only as a dated/verified report, never as an unqualified live claim. */
+export function cardBotStatus(book, sourceVerified, demo = false) {
+  if (demo) return 'Demo fixture; no current bot status';
+  const reported = book && (book.lastStatus || (book.status && book.status !== 'Status unverified' ? book.status : '') || book.mode);
+  const status = reported || 'unavailable';
+  return sourceVerified
+    ? `Latest verified bot status report: ${status}`
+    : `Last reported bot status: ${status} (current state not confirmed by this snapshot)`;
+}
 
 /** A fresh published bot state only; a stopped bot is not a paused bot. */
 export function worldBotLabel(book, demo = false) {

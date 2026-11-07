@@ -92,12 +92,41 @@ export function layout(model, prev = null) {
     const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
     roads.push({ kind: 'ring', district: 'Downtown', x0: Math.cos(a0) * rr, z0: Math.sin(a0) * rr, x1: Math.cos(a1) * rr, z1: Math.sin(a1) * rr, w: 2.6 });
   }
+  // A single capital city has many small scenic wards beyond its published market districts.
+  // Wards and their links are visual scenery only; they never add, duplicate, or imply market data.
+  const WARDS_PER_RING = 20;
+  const innerWardRadius = Math.max(down.half + 22, ring + maxHalf + 20);
+  const outerWardRadius = innerWardRadius + Math.max(28, maxHalf * 1.6 + 10);
+  const wardRings = [
+    Array.from({ length: WARDS_PER_RING }, (_, i) => {
+      const ang = -Math.PI / 2 + ((i + 0.5) / WARDS_PER_RING) * Math.PI * 2;
+      const radius = innerWardRadius, cx = Math.cos(ang) * radius, cz = Math.sin(ang) * radius;
+      return { key: `ward-inner-${String(i + 1).padStart(2, '0')}`, name: `Inner Ward ${String(i + 1).padStart(2, '0')}`, cx, cz, radius, ang, ex: [-Math.sin(ang), Math.cos(ang)], ez: [Math.cos(ang), Math.sin(ang)], kind: 'scenery' };
+    }),
+    Array.from({ length: WARDS_PER_RING }, (_, i) => {
+      const ang = -Math.PI / 2 + ((i + 0.5) / WARDS_PER_RING) * Math.PI * 2;
+      const radius = outerWardRadius, cx = Math.cos(ang) * radius, cz = Math.sin(ang) * radius;
+      return { key: `ward-outer-${String(i + 1).padStart(2, '0')}`, name: `Outer Ward ${String(i + 1).padStart(2, '0')}`, cx, cz, radius, ang, ex: [-Math.sin(ang), Math.cos(ang)], ez: [Math.cos(ang), Math.sin(ang)], kind: 'scenery' };
+    }),
+  ];
+  const neighborhoods = wardRings.flat();
+  const wardSpokes = wardRings[0].filter((_, i) => i % 4 === 0);
+  wardSpokes.forEach((d) => roads.push({ kind: 'ward-spoke', district: 'Neighborhoods', x0: 0, z0: 0, x1: d.cx, z1: d.cz, w: 1.0 }));
+  wardRings.forEach((nodes) => nodes.forEach((d, i) => {
+    const next = nodes[(i + 1) % nodes.length];
+    roads.push({ kind: 'ward-ring', district: 'Neighborhoods', x0: d.cx, z0: d.cz, x1: next.cx, z1: next.cz, w: 0.8 });
+  }));
+  wardRings[0].filter((_, i) => i % 4 === 0).forEach((d, i) => {
+    const sourceIndex = i * 4;
+    const outer = wardRings[1][sourceIndex];
+    roads.push({ kind: 'ward-link', district: 'Neighborhoods', x0: d.cx, z0: d.cz, x1: outer.cx, z1: outer.cz, w: 0.75 });
+  });
   // the Lab: one small district per research idea on an outer ring, three towers each (looking back, live, live bets collected)
   const labs = [];
   let labR = 0;
   const H = model.hyp;
   if (H && H.hyps.length) {
-    const n = H.hyps.length, R = (m ? ring + maxHalf : 30) + LAB_HALF + 18, parts = ['back', 'live', 'prog'];
+    const n = H.hyps.length, R = Math.max((m ? ring + maxHalf : 30) + LAB_HALF + 18, outerWardRadius + LAB_HALF + 30), parts = ['back', 'live', 'prog'];
     const maxG = Math.max(5, ...H.hyps.flatMap((h) => [Math.abs(h.back.gain), Math.abs(h.live.gain)]));
     labR = R;
     H.hyps.forEach((h, i) => {
@@ -116,8 +145,8 @@ export function layout(model, prev = null) {
     }
     labs.forEach((d) => roads.push({ kind: 'labspur', district: 'Lab', x0: d.cx - d.ez[0] * (LAB_HALF - 1), z0: d.cz - d.ez[1] * (LAB_HALF - 1), x1: -d.ez[0] * Rr, z1: -d.ez[1] * Rr, w: 2.0 }));
   }
-  const extent = (labs.length ? labR + LAB_HALF + 4 : ring + maxHalf) + 30;
-  return { districts, buildings, roads, ring, extent, ringRoad: rr, downHalf: down.half, reserve: RESERVE, labs, labRing: labR, edgeCount: buildings.length - labs.length * 3 };
+  const extent = (labs.length ? labR + LAB_HALF + 4 : Math.max(ring + maxHalf, outerWardRadius + 12)) + 30;
+  return { districts, neighborhoods, buildings, roads, ring, extent, ringRoad: rr, downHalf: down.half, reserve: RESERVE, labs, labRing: labR, edgeCount: buildings.length - labs.length * 3 };
 }
 
 // ------------------------------------------------------------------ the Lab (one district per research idea)
@@ -147,7 +176,7 @@ export function hypBuilding(h, part, maxG, prev) {
   return { e, w: size, d: size * 0.9, h: hh, fullH: hh, mode, from, glow, lit: clamp01(Math.log10(1 + n) / 3.3), loss: Math.min(0.6, Math.max(0.02, 1 - w)) };
 }
 
-/** Decorative low-rise night blocks between the real districts, then the outer skyline.
+/** Decorative satellite wards and low-rise night blocks around the real districts, then the outer skyline.
  * These carry no edge data. Roads, market pads, research pads and the promenade stay clear. */
 export function scenery(L, count = 4200) {
   const r = rng(36), blocks = rng(51), out = [], R0 = L.extent * 0.98, R1 = R0 + 250;
@@ -158,10 +187,23 @@ export function scenery(L, count = 4200) {
     if (rad < (L.downHalf || 8) + 5 || rad > L.extent + 55 || Math.abs(rad - (L.extent + 36)) < 6) return false;
     if (pads.some((d) => { const dx = x - d.cx, dz = z - d.cz;
       return Math.abs(dx * d.ex[0] + dz * d.ex[1]) < d.half + 4 && Math.abs(dx * d.ez[0] + dz * d.ez[1]) < d.half + 4; })) return false;
-    return !(L.roads || []).some((rd) => { const vx = rd.x1 - rd.x0, vz = rd.z1 - rd.z0;
+    return !(L.roads || []).some((rd) => {
+      const vx = rd.x1 - rd.x0, vz = rd.z1 - rd.z0;
       const t = Math.max(0, Math.min(1, ((x - rd.x0) * vx + (z - rd.z0) * vz) / Math.max(0.01, vx * vx + vz * vz)));
-      return Math.hypot(x - rd.x0 - vx * t, z - rd.z0 - vz * t) < rd.w * 0.5 + 3.1; });
+      const margin = rd.kind.startsWith('ward-') ? 1.25 : 3.1;
+      return Math.hypot(x - rd.x0 - vx * t, z - rd.z0 - vz * t) < rd.w * 0.5 + margin; });
   };
+  const wardOffsets = [[-4, -5], [0, -5], [4, -5], [-4, 5], [0, 5], [4, 5]];
+  (L.neighborhoods || []).forEach((ward, wi) => {
+    const yaw = Math.atan2(-ward.ex[1], ward.ex[0]);
+    wardOffsets.forEach(([tangent, radial], bi) => {
+      const x = ward.cx + tangent * ward.ex[0] + radial * ward.ez[0], z = ward.cz + tangent * ward.ex[1] + radial * ward.ez[1];
+      if (!clear(x, z)) return;
+      const seed = ((wi * 29 + bi * 37) % 100) / 100;
+      out.push({ x, z, w: 2.35 + (bi % 3) * 0.18, d: 2.35 + ((bi + 1) % 3) * 0.16, h: 4.5 + ((wi * 7 + bi * 11) % 9), yaw, seed, lit: 0.78 + (bi % 3) * 0.06, kind: 'ward', ward: ward.key });
+    });
+  });
+  if (out.length >= count) return out.slice(0, count);
   for (let ix = -span; ix <= span; ix++) for (let iz = -span; iz <= span; iz++) {
     const x = (ix + 0.5) * step, z = (iz + 0.5) * step;
     if (clear(x, z)) grid.push([x, z]);

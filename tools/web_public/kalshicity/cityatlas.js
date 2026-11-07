@@ -1,22 +1,32 @@
 // GPU-free city chart. Existing cards, Board, Risk, Lab and lessons stay usable.
 import { STATUS_COLOR } from './cityfeed.js';
 import { cityLinks } from './citylinks.js';
+import { districtTitle } from './citynav.js?v=nav1';
 
 export const edgeCountLabel = (n, prefix = '') => `${n} ${prefix}edge${n === 1 ? '' : 's'}`;
 
-export function cityAtlas(oldCanvas, L, select, reason, highlights = {}) {
-  const canvas = document.createElement('canvas'); canvas.id = 'city'; canvas.setAttribute('aria-label', '2D city atlas of published Kalshi edges; use the district buttons or Board to open an edge'); oldCanvas.replaceWith(canvas);
+/** Copy for the 2D fallback must preserve whether its model is published or demo fixture data. */
+export function atlasProvenance(demo = false) {
+  return demo
+    ? { badge: 'DEMO · INVENTED SAMPLE', edgeLabel: 'invented demo/sample edges', linkLabel: 'demo/sample analysis links (not published data)', countPrefix: 'demo sample ' }
+    : { badge: 'PUBLISHED DATA', edgeLabel: 'published edges', linkLabel: 'published analysis links', countPrefix: 'published ' };
+}
+
+export function cityAtlas(oldCanvas, L, select, reason, highlights = {}, demo = false) {
+  const copy = atlasProvenance(demo);
+  const canvas = document.createElement('canvas'); canvas.id = 'city'; canvas.setAttribute('aria-label', `2D city atlas of ${copy.edgeLabel} Kalshi edges; use the district buttons or Board to open an edge`); oldCanvas.replaceWith(canvas);
   document.documentElement.dataset.noscene = 'atlas';
   const caption = document.createElement('div'); caption.className = 'kc-atlas-caption';
-  const message = document.createElement('p'); message.textContent = `${reason} · 2D city atlas. Inner towers are published edges; outer skyline is scenery. Light arcs show published analysis links, not live orders.`; caption.append(message);
+  const badge = document.createElement('strong'); badge.className = `kc-atlas-source${demo ? ' demo' : ''}`; badge.textContent = copy.badge; caption.append(badge);
+  const message = document.createElement('p'); message.textContent = `${reason} · 2D city atlas. Inner towers are ${copy.edgeLabel}; outer skyline is scenery. Light arcs show ${copy.linkLabel}, not live orders.`; caption.append(message);
   const districts = document.createElement('nav'); districts.setAttribute('aria-label', 'City atlas districts');
   function openDistrict(d) {
     document.querySelector('.kc-atlas-district')?.remove();
-    const dialog = document.createElement('dialog'); dialog.className = 'kc-atlas-district'; dialog.setAttribute('aria-label', `${d.name} district edges`);
-    const head = document.createElement('header'), title = document.createElement('h2'); title.textContent = d.name;
+    const titleText = districtTitle(d), dialog = document.createElement('dialog'); dialog.className = 'kc-atlas-district'; dialog.setAttribute('aria-label', `${titleText} district edges`);
+    const head = document.createElement('header'), title = document.createElement('h2'); title.textContent = titleText;
     const close = document.createElement('button'); close.type = 'button'; close.textContent = 'Close district'; close.onclick = () => { dialog.close(); dialog.remove(); };
     head.append(title, close);
-    const note = document.createElement('p'); note.textContent = `${edgeCountLabel(d.list.length, 'published ')}. Choose any tower to open its existing evidence card. Slices may overlap; their results are not added together.`;
+    const note = document.createElement('p'); note.textContent = `${edgeCountLabel(d.list.length, copy.countPrefix)}${demo ? ' (invented fixture examples)' : ''}. Choose any tower to open its existing evidence card. Slices may overlap; their results are not added together.`;
     const input = document.createElement('input'); input.type = 'search'; input.placeholder = 'Find an edge'; input.setAttribute('aria-label', `Search ${d.name} edges`);
     const list = document.createElement('div'); list.className = 'kc-atlas-edges';
     function render() {
@@ -35,7 +45,7 @@ export function cityAtlas(oldCanvas, L, select, reason, highlights = {}) {
   function buildDistricts() {
     districts.replaceChildren();
     for (const d of L.districts) {
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = `${d.name} · ${d.count}`; b.disabled = !d.list.length; b.onclick = () => openDistrict(d); districts.append(b);
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = `${districtTitle(d)} · ${d.count}`; b.disabled = !d.list.length; b.onclick = () => openDistrict(d); districts.append(b);
     }
   }
   buildDistricts();
@@ -104,7 +114,7 @@ export function cityAtlas(oldCanvas, L, select, reason, highlights = {}) {
   window.addEventListener('resize', draw);
   if (typeof ResizeObserver === 'function') new ResizeObserver(draw).observe(canvas);
   draw();
-  return { draw, update(nextLayout, nextHighlights = focus) {
+  return { draw, focusDistrict(key) { const d = L.districts.find((item) => item.key === key); if (!d) return false; openDistrict(d); return true; }, update(nextLayout, nextHighlights = focus) {
     L = nextLayout; focus = nextHighlights;
     document.querySelector('.kc-atlas-district')?.remove();
     buildDistricts(); draw();

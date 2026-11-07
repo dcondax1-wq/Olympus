@@ -1,10 +1,11 @@
 // KALSHI CITY page (ES module): loads edges.json + learning_log.json (the learning engine, tools/kalshi_edges.py) and the bot's live numbers (the public
 // kalshi-feed), shapes them (cityfeed.js), lays the city out (citylayout.js), draws it (cityscene.js) and writes the words. Text only through
 // textContent (no data ever becomes HTML). Read only: nothing here writes anywhere. window.KC is the test hook.
-import { RAW, shape, shapeHyps, cardOf, headlineOf, usd, pct, evf, pts, STATUS_COLOR, STATUS_WORD, ADVICE, etHour, clockLabel, phaseWord, MIN_N,
-  hypOf, hypCardOf, pairOf, tickerLines, changesOf, HYP_COLOR, HYP_WORD, worldBotLabel } from './cityfeed.js?v=bot16';
-import { layout } from './citylayout.js?v=night3';
-import { cityAtlas, edgeCountLabel } from './cityatlas.js?v=skyline5';
+import { RAW, shape, shapeHyps, cardFreshness, cardBotStatus, cardOf, headlineOf, usd, pct, evf, pts, STATUS_COLOR, STATUS_WORD, ADVICE, etHour, clockLabel, phaseWord, MIN_N,
+  hypOf, hypCardOf, pairOf, tickerLines, changesOf, HYP_COLOR, HYP_WORD, worldBotLabel } from './cityfeed.js?v=bot18';
+import { layout } from './citylayout.js?v=night4';
+import { cityAtlas, edgeCountLabel } from './cityatlas.js?v=skyline7';
+import { districtOptionLabel, districtTitle } from './citynav.js?v=nav1';
 import { lessonsView, historyView, ASK_MESSAGE } from './lessons.js';
 
 const O = window.OLYMPUS || null;
@@ -15,7 +16,7 @@ const store = {
   write(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (_) { /* private mode */ } },
 };
 const S = { learned: null, sound: false, copied: false, model: null, L: null, demo: true, scene: null, atlas: null, view: '', ready: false, error: null, sel: null, logMore: 40, liveFailed: false, preview: null,
-  prevHyp: null, changes: [], tk: { lines: [], i: 0 } };
+  prevHyp: null, changes: [], districtKey: 'Downtown', tk: { lines: [], i: 0 } };
 /** the dollars of every idea tower, stored on the phone so the next visit can show what grew or shrank in between */
 const hypSnap = (m) => { const o = {}; if (m.hyp && !m.hyp.demo) m.hyp.hyps.forEach((h) => { o[`${h.id}:back`] = h.back.gain; o[`${h.id}:live`] = h.live.gain; o[`${h.id}:prog`] = h.nLive; }); return o; };
 const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
@@ -84,21 +85,69 @@ function renderClock() {
 }
 
 function renderMiniMap() {
-  const svg = $('miniSvg'), places = [...S.L.districts, ...(S.L.labs || [])].filter((d) => Number.isFinite(d.cx) && Number.isFinite(d.cz));
+  const wards = S.L.neighborhoods || [];
+  const svg = $('miniSvg'), places = [...S.L.districts, ...(S.L.labs || []), ...wards.map((d) => ({ ...d, ward: true, color: '#54cfc2' }))].filter((d) => Number.isFinite(d.cx) && Number.isFinite(d.cz));
   const core = S.L.districts.find((d) => d.key === 'Downtown') || places[0];
   const edge = Math.max(1, ...places.flatMap((d) => [Math.abs(d.cx), Math.abs(d.cz)]));
-  const at = (d) => [50 + d.cx / edge * 40, 50 + d.cz / edge * 40];
+  const at = (x, z) => [50 + x / edge * 40, 50 + z / edge * 40];
   const node = (tag, attrs) => { const el = document.createElementNS('http://www.w3.org/2000/svg', tag); Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, String(v))); return el; };
   const elements = [];
   if (core) {
-    const [x,y] = at(core);
-    places.forEach((d) => { if (d === core) return; const [dx,dy] = at(d);
+    const [x,y] = at(core.cx, core.cz);
+    places.forEach((d) => { if (d === core || d.ward) return; const [dx,dy] = at(d.cx, d.cz);
       elements.push(node('path', { d:`M ${x} ${y} Q ${(x+dx)/2} ${Math.min(y,dy)-8} ${dx} ${dy}` })); });
   }
-  places.forEach((d) => { const [cx,cy] = at(d);
-    elements.push(node('circle', { cx, cy, r:d===core ? 4 : d.lab ? 2.1 : 3, fill:d.color || (d.lab ? '#a998ff' : '#ffb552') })); });
+  (S.L.roads || []).filter((road) => road.kind.startsWith('ward-')).forEach((road) => {
+    const [x0,y0] = at(road.x0, road.z0), [x1,y1] = at(road.x1, road.z1);
+    elements.push(node('path', { d:`M ${x0} ${y0} L ${x1} ${y1}`, 'data-kind':road.kind, opacity:0.44 }));
+  });
+  places.forEach((d) => { const [cx,cy] = at(d.cx, d.cz);
+    elements.push(node('circle', { cx, cy, r:d===core ? 4 : d.ward ? 1.15 : d.lab ? 2.1 : 3, fill:d.color || (d.lab ? '#a998ff' : '#ffb552'), opacity:d.ward ? 0.58 : 1 })); });
   svg.replaceChildren(...elements);
-  $('miniCount').textContent = `${S.L.districts.length} cities · ${(S.L.labs || []).length} labs`;
+  const marketCount = Math.max(0, S.L.districts.length - 1);
+  $('miniCount').textContent = `${marketCount} market districts · ${wards.length} scene wards`;
+  $('miniCount').title = 'Scene wards are decorative blocks, not extra market data.';
+}
+
+function renderDistrictSwitch() {
+  const select = $('districtSelect');
+  if (!select || !S.L) return;
+  const districts = S.L.districts || [];
+  if (!districts.some((d) => d.key === S.districtKey)) S.districtKey = districts[0]?.key || 'Downtown';
+  const options = districts.map((d) => {
+    const option = document.createElement('option');
+    option.value = d.key;
+    option.textContent = districtOptionLabel(d, S.demo);
+    return option;
+  });
+  select.replaceChildren(...options);
+  select.value = S.districtKey;
+  const d = districts.find((item) => item.key === S.districtKey);
+  if (d) {
+    const count = Number.isFinite(d.count) ? d.count : 0;
+    const source = S.demo ? 'demo' : 'published';
+    $('districtStatus').textContent = `${districtTitle(d)} · ${count} ${source} ${count === 1 ? 'edge' : 'edges'} · 3D moves camera · map opens edge list`;
+    $('districtStatus').title = 'In 3D, this selector moves the camera. If WebGL is unavailable, it opens the selected market’s edge list. Scenic wards are not market data; this selector never controls the bot.';
+  }
+}
+
+function switchDistrict(key) {
+  const d = S.L && S.L.districts.find((item) => item.key === key);
+  if (!d) return false;
+  S.districtKey = d.key;
+  $('districtSelect').value = d.key;
+  renderDistrictSwitch();
+  if (S.view) closeSheet();
+  S.sel = null;
+  if (S.scene) { S.scene.select(null); S.scene.focusDistrict(d.key); }
+  else if (S.atlas) S.atlas.focusDistrict(d.key);
+  return true;
+}
+
+function setNetworkPanel(open) {
+  const panel = $('networkPanel'), toggle = $('networkToggle');
+  panel.hidden = !open;
+  toggle.setAttribute('aria-expanded', String(open));
 }
 
 // ------------------------------------------------------------------------------------------------ sheets
@@ -165,11 +214,11 @@ function learnView() {
 /** A navigable atlas of the market cities and the independent paper strategy labs. */
 function worldsView() {
   const L = S.L, H = S.model.hyp, wrap = h('div', 'worlds');
-  wrap.append(h('p', 'strong', 'Fly between market cities and the research outposts. Each market city holds the edges observed there. The outer ring tests ideas on later bets before it trusts them.'));
+  wrap.append(h('p', 'strong', 'One connected night city, with a market district for each market in the published data. Choose a district to fly there. Outer research outposts are separate paper tests.'));
   const pulse = h('div', 'world-pulse');
-  pulse.append(h('span', 'pulse-light'), h('span', 'pulse-state', worldBotLabel(S.model.book, S.demo)), h('span', 'pulse-meta', `${L.districts.length} market cities · ${L.labs.length} research outposts`));
+  pulse.append(h('span', 'pulse-light'), h('span', 'pulse-state', worldBotLabel(S.model.book, S.demo)), h('span', 'pulse-meta', `${L.districts.length} market districts · ${L.labs.length} research outposts`));
   pulse.querySelector('.pulse-state').setAttribute('aria-live', 'polite');
-  wrap.append(pulse, h('h3', '', 'Market cities'));
+  wrap.append(pulse, h('h3', '', 'City districts'));
   const grid = h('div', 'world-grid');
   L.districts.forEach((d, i) => {
     const candidates = d.list.filter(e => !e.small && e.ev != null).sort((a,b) => b.ev - a.ev);
@@ -177,13 +226,14 @@ function worldsView() {
     c.type = 'button'; c.style.setProperty('--world-color', d.color);
     const glyph = h('span', 'world-glyph', i === 0 ? '◆' : String(i).padStart(2,'0'));
     const top = h('span', 'world-top'); top.append(glyph, h('span','world-count', edgeCountLabel(d.count)));
-    const name = h('strong','',d.name === 'Downtown' ? 'Strategy Core' : d.name);
+    const name = h('strong','',districtTitle(d));
     const detail = h('small','',best ? `Strongest observed: ${best.label} · ${evf(best.ev)} per $1` : 'Collecting bets; no tested edge yet');
-    c.append(top,name,detail,h('span','world-action','OPEN CITY  ↗'));
+    c.append(top,name,detail,h('span','world-action','FLY TO DISTRICT  ↗'));
     c.addEventListener('click', () => {
+      switchDistrict(d.key);
       if (best) selectEdge(best.id,true);
       else if (d.list.length) selectEdge(d.list[0].id,true);
-      else { closeSheet(); if (S.scene) S.scene.setMode('map'); }
+      else closeSheet();
     });
     grid.append(c);
   });
@@ -200,7 +250,7 @@ function worldsView() {
     });
     wrap.append(labs);
   }
-  wrap.append(h('p','world-note','Market slices overlap, so their bet counts and profits cannot be added together. Ideas are paper tests; no city changes the bot or places an order.'));
+  wrap.append(h('p','world-note','Market districts use only published edge records. Scenery has no market data; slices overlap, so their bet counts and profits cannot be added together. Ideas are paper tests; nothing here changes the bot or places an order.'));
   return [wrap];
 }
 function boardView() {
@@ -252,7 +302,7 @@ function guideView() {
     lg('#ffe08a', 'The gold beam marks the best proven edge. The red/green lighthouse shows the risk of ruin.'),
     lg('#7cf0ff', 'The Lab, on the outer ring: one small district per idea that might fix the bot, three towers each. Left: what the rule would have added looking back (it was picked after seeing the bets, so this proves nothing). Middle: what it adds on live bets since it was registered. Right, with a crane: how many live bets are collected. Taller means more dollars; a loss is a low stub. Tap the LAB strip for the list.'),
     lg('#ffe08a', 'Best edge so far and Worst leak are the biggest winner and loser (30+ bets), in dollars after fees. A gold beam marks the winner, a red beam the leak. A tower that moved since your last visit grows or shrinks when you open the city.'),
-    h('p', 'warnbox', 'The glowing low-rise blocks between districts and the distant skyline are scenery: neither carries edge data. Only buildings inside a district are real edges.'),
+    h('p', 'warnbox', 'Market HQ anchors the connected city. SWITCH DISTRICT moves the camera to a published market; the 40 glowing low-rise satellite wards beyond those districts and the distant skyline are scenery only. Only buildings inside a market district carry edge data.'),
     S.startedDemo ? null : demoButton(),
     h('p', '', `The engine re-measures every edge each time it runs: win rate against the market's odds, profit per $1, a 95% range, a luck test (z), the last 7 and 30 days, and a Kelly stake. Anything under ${MIN_N} bets stays grey. Read only: it never places or changes an order.`)];
 }
@@ -268,7 +318,8 @@ async function showDemo(on) {
     S.real = S.model; S.model = shape(S.fx.edges, { entries: S.fx.log }, null, Date.now() / 1000, S.fx.hyps, true);
   } else if (S.real) S.model = S.real;
   S.showingDemo = !!on; S.demo = S.startedDemo || !!on; S.sel = null; S.L = layout(S.model, on || S.hypDemo ? null : S.prevHyp);
-  if (S.scene) { S.scene.select(null); S.scene.rebuild(S.model, S.L); }
+  renderDistrictSwitch();
+  if (S.scene) { S.scene.select(null); S.scene.rebuild(S.model, S.L); if (S.districtKey !== 'Downtown') S.scene.focusDistrict(S.districtKey); }
   renderTop(); openSheet('guide');
 }
 function hypCardView(x) {
@@ -315,12 +366,12 @@ function selectEdge(id, fly) {
 
 // ------------------------------------------------------------------------------------------------ Jarvis card
 function card() {
-  const m = S.model, bk = m.book;
-  return { v: 1, name: 'Kalshi City', status: { level: S.demo ? 'off' : (m.regime.state === 'rain' || m.regime.state === 'storm' ? 'warn' : 'ok'), label: S.demo ? 'Demo data' : `${m.counts.doMore} do more · ${m.counts.stop} stop` },
+  const m = S.model, bk = m.book, freshness = cardFreshness(m, S.demo), statusLine = cardBotStatus(bk, freshness.sourceVerified, S.demo);
+  return { v: 1, name: 'Kalshi City', status: freshness.status,
     kpis: [{ label: 'Do more', value: String(m.counts.doMore) }, { label: 'Stop', value: String(m.counts.stop) }, { label: 'Ruin risk', value: bk.ruinNow == null ? '-' : pct(bk.ruinNow, 0) }],
-    lines: [headlineOf(m).slice(0, 120), `Bot ${bk.status || bk.mode}: bankroll ${bk.balance == null ? '-' : dollars(bk.balance)}. Weather: ${m.regime.state}.`.slice(0, 120),
+    lines: [headlineOf(m).slice(0, 120), `${statusLine}. Bankroll ${bk.balance == null ? '-' : dollars(bk.balance)}. Weather: ${m.regime.state}.`.slice(0, 120),
       (({ best, worst }) => `Best ${best ? `${smoney(best.pnl)} ${best.label}` : 'none yet'}; worst leak ${worst ? `${smoney(worst.pnl)} ${worst.label}` : 'none yet'}`.slice(0, 120))(pairOf(m))],
-    t: Math.floor(Date.now() / 1000), open: '#learn', theme: '#06100f', stale_after: 259200 };
+    t: freshness.t, open: '#learn', theme: '#06100f', stale_after: freshness.stale_after };
 }
 function postCard() {
   if (S.demo || !O || !O.framed) return;
@@ -362,7 +413,7 @@ async function refresh() {                                               // ever
   const newer = m.log.length > old.log.length, changed = m.t !== old.t || (m.hyp && old.hyp && m.hyp.t !== old.hyp.t);
   S.model = m;
   S.changes = changesOf(m, before);
-  if (changed) { S.L = layout(m, S.hypDemo ? null : before); renderMiniMap(); if (S.scene) S.scene.rebuild(m, S.L); if (S.atlas) { const p = pairOf(m); S.atlas.update(S.L, { bestId: p.best?.id, worstId: p.worst?.id }); } }
+  if (changed) { S.L = layout(m, S.hypDemo ? null : before); renderMiniMap(); renderDistrictSwitch(); if (S.scene) { S.scene.rebuild(m, S.L); if (S.districtKey !== 'Downtown') S.scene.focusDistrict(S.districtKey); } if (S.atlas) { const p = pairOf(m); S.atlas.update(S.L, { bestId: p.best?.id, worstId: p.worst?.id }); } }
   else S.scene?.setBook(m);
   if (!S.hypDemo) store.write({ ...store.read(), hh: hypSnap(m) });
   renderTop();
@@ -378,18 +429,20 @@ async function refresh() {                                               // ever
 async function startScene() {
   try {
     if (new URLSearchParams(location.search).get('view') === 'atlas') throw new Error('Atlas requested');
-    const { createCity } = await import('./cityscene.js?v=night3');
+    const { createCity } = await import('./cityscene.js?v=night4');
     S.scene = createCity($('city'), { O, model: S.model, layout: S.L, sound: () => S.sound });
     $('lite').hidden = !S.scene.lite();
     S.scene.onQuality(() => { $('lite').hidden = !S.scene.lite(); });
     S.scene.onPick((id) => { if (id) selectEdge(id, false); else if (S.view === 'card') closeSheet(); });
     S.scene.onMode((k) => document.querySelectorAll('#cams button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.cam === k))));
+    if (S.districtKey !== 'Downtown') S.scene.focusDistrict(S.districtKey);
   } catch (e) {
     S.error = 'scene: ' + ((e && e.message) || e);
     // The 2D fallback has no orbiting viewport to clear; keep all evidence controls visible.
     $('verdict').classList.add('expanded'); $('cityInsights').setAttribute('aria-expanded', 'true');
     const p = pairOf(S.model);
-    S.atlas = cityAtlas($('city'), S.L, (id) => selectEdge(id, false), e.message === 'Atlas requested' ? 'Atlas view' : '3D unavailable on this device', { bestId: p.best?.id, worstId: p.worst?.id });
+    S.atlas = cityAtlas($('city'), S.L, (id) => selectEdge(id, false), e.message === 'Atlas requested' ? 'Atlas view' : '3D unavailable on this device', { bestId: p.best?.id, worstId: p.worst?.id }, S.demo);
+    if (S.districtKey !== 'Downtown') S.atlas.focusDistrict(S.districtKey);
     const measure = () => document.documentElement.style.setProperty('--kc-atlas-top', `${$('ui').getBoundingClientRect().bottom + 12}px`);
     addEventListener('resize', measure);
     if (typeof ResizeObserver === 'function') new ResizeObserver(measure).observe($('ui'));
@@ -406,6 +459,12 @@ function wire() {
   $('pWorst').addEventListener('click', () => pairPick('worst'));
   $('guideBtn').addEventListener('click', () => (S.view === 'guide' ? closeSheet() : openSheet('guide')));
   $('close').addEventListener('click', closeSheet);
+  $('networkToggle').addEventListener('click', () => setNetworkPanel($('networkPanel').hidden));
+  $('networkClose').addEventListener('click', () => setNetworkPanel(false));
+  document.addEventListener('pointerdown', (e) => {
+    if (!$('networkPanel').hidden && !$('networkPanel').contains(e.target) && e.target !== $('networkToggle')) setNetworkPanel(false);
+  });
+  $('districtSelect').addEventListener('change', (e) => switchDistrict(e.currentTarget.value));
   $('sound').addEventListener('click', () => {
     S.sound = !S.sound; store.write({ ...store.read(), sound: S.sound }); renderSound();
     if (S.sound && O && O.sfx) { O.sfx('tap'); setTimeout(() => O.sfx('pad'), 700); } else if (window.OLYMPUS_SFX) { try { window.OLYMPUS_SFX.stop('pad'); } catch (_) { /* nothing playing */ } }
@@ -421,7 +480,7 @@ function wire() {
     if (S.scene) S.scene.setHour(S.preview);
     renderClock();
   });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { setNetworkPanel(false); closeSheet(); } });
   const route = () => { const t = location.hash.slice(1); if (TITLES[t] && t !== 'card') openSheet(t); };
   addEventListener('hashchange', route); route();
   const fit = () => document.documentElement.style.setProperty('--dock-h', Math.ceil($('dock').getBoundingClientRect().height) + 'px');
@@ -448,7 +507,7 @@ async function main() {
   S.changes = changesOf(model, S.prevHyp);
   S.model = model; S.L = layout(model, S.prevHyp); S.startedDemo = S.demo;
   if (!S.hypDemo) store.write({ ...store.read(), hh: hypSnap(model) });
-  renderTop(); renderClock(); renderMiniMap(); renderSound(); wire();
+  renderTop(); renderClock(); renderMiniMap(); renderDistrictSwitch(); renderSound(); wire();
   await startScene();
   document.body.dataset.ready = '1';
   setInterval(renderClock, 15000);
@@ -466,10 +525,10 @@ async function main() {
 
 window.KC = {
   state: () => ({ demo: S.demo, ready: S.ready, error: S.error, view: S.view, sel: S.sel, liveUsed: !!(S.model && S.model.liveUsed), n: S.model ? S.model.edges.length : 0, counts: S.model && S.model.counts,
-    regime: S.model && S.model.regime, districts: S.L ? S.L.districts.map((d) => d.key) : [], buildings: S.L ? S.L.buildings.length : 0, edgeBuildings: S.L ? S.L.edgeCount : 0,
+    regime: S.model && S.model.regime, districts: S.L ? S.L.districts.map((d) => d.key) : [], district: S.districtKey, buildings: S.L ? S.L.buildings.length : 0, edgeBuildings: S.L ? S.L.edgeCount : 0,
     labs: S.L ? S.L.labs.map((d) => d.key) : [], hypDemo: !!S.hypDemo, ticker: S.tk.lines.length, scene: S.scene ? S.scene.stats() : null, preview: S.preview }),
   model: () => S.model, layout: () => S.L, scene: () => S.scene, hyp: () => (S.model ? S.model.hyp : null), pair: () => (S.model ? pairOf(S.model) : null), ticker: () => S.tk.lines.slice(), tickNext, changes: () => S.changes.slice(),
-  open: openSheet, close: closeSheet, select: (id) => selectEdge(id, true), where: (id) => (S.scene ? S.scene.where(id) : null), pick: (x, y) => (S.scene ? S.scene.pick(x, y) : null),
+  open: openSheet, close: closeSheet, select: (id) => selectEdge(id, true), district: switchDistrict, where: (id) => (S.scene ? S.scene.where(id) : null), pick: (x, y) => (S.scene ? S.scene.pick(x, y) : null),
   scan: runScan, sound: (on) => { S.sound = !!on; renderSound(); }, fx: () => (S.scene ? S.scene.fxStats() : null), ask: ASK_MESSAGE, learned: () => S.learned, refresh,
   hour: (v) => { S.preview = v; if (S.scene) S.scene.setHour(v); renderClock(); }, mode: (k) => { if (S.scene) S.scene.setMode(k); }, card,
 };
