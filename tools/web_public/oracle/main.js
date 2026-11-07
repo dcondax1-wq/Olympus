@@ -8,7 +8,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { fetchLive, fetchSite, normalize, loadProphecy, FRESH_S } from './data.js?v=ofst1';
 import { loadDemo, docAt, span, todayFx } from './demo.js';
-import { Scene } from './scene.js?v=oracle-night-foreground-1';
+import { Scene } from './scene.js?v=phone-horizon-2';
 import { FallbackCity } from './fallback.js?v=oracle-fallback-honesty-1';
 import { Hud, usd } from './hud.js';
 import { Ladder } from './ladder.js';
@@ -354,7 +354,7 @@ window.oracle = {
   get prophecy() { return prophecyRows(state.world, prophecy); },
   get ticks() { return [...document.querySelectorAll('#scrub-ticks i')].map((e) => e.className); },
   get insights() { const w = state.world; return { day: dayTypeOf(w), sweeps: sweepCount(w), heat: heatHistory(w), alerts: alertsOf(w), stats: !!prophecy }; },
-  get arena() { return scene ? { blips: scene.arena.blips, passes: scene.rc.passes(), quality: scene.rc.quality(), stats: scene.rc.stats() } : null; },
+  get arena() { return scene ? { blips: scene.arena.blips, passes: scene.rc.passes(), quality: scene.rc.quality(), stats: scene.rc.stats(), crown: scene.arena.entab.visible } : null; },
   refresh: () => refresh(true),
   applyTheme,
   today: () => startToday(),

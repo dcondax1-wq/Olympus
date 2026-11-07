@@ -318,7 +318,7 @@ def static_checks():
     check("a. every export is imported by another module (no dead exports)", not unused, unused)
     imports = re.findall(r"^import .* from '([^']+)';", "".join(src.values()), re.M)
     check("a. modules import only each other, ../jarvis/three.module.min.js (once, in main.js) and the OLYMPUS render core (render.js in scene.js, materials.js in arena.js)",
-          all(re.fullmatch(r"\./\w+\.js", i) or i in ("../jarvis/three.module.min.js", "../olympus/render.js", "../olympus/materials.js") for i in imports)
+          all(re.fullmatch(r"\./\w+\.js(?:\?v=[a-zA-Z0-9-]+)?", i) or i in ("../jarvis/three.module.min.js", "../olympus/render.js", "../olympus/materials.js") for i in imports)
           and "../olympus/render.js" in src["scene.js"] and "../olympus/materials.js" in src["arena.js"]
           and "".join(src.values()).count("three.module.min.js") == 1 and "../jarvis/three.module.min.js" in src["main.js"], imports)
     urls = set(re.findall(r"https?://[^\s'\"`)]+", "".join(src.values()) + html + css))
@@ -700,7 +700,12 @@ def arena_checks(br, origin):
         "[...document.querySelectorAll('#ladder .tag')].some((t) => t.style.visibility === 'visible' && t.style.getPropertyValue('--heat') !== '')"), rows)
     ar = p.evaluate("oracle.arena")
     check("h. the arena: the radar has a blip per open level; the render core runs (LITE tier on software GL: scene + finish)",
-          ar and ar["blips"] == len([l for l in w["levels"] if not l["taken"] and l["dist"] is not None]) and ar["passes"][-1] == "finish", ar)
+          ar and ar["blips"] == len([l for l in w["levels"] if not l["taken"] and l["dist"] is not None]) and ar["passes"][-1] == "finish" and ar["crown"] is False, ar)
+    p.set_viewport_size({"width": 844, "height": 844})
+    p.wait_for_function("oracle.arena.crown === true")
+    p.set_viewport_size({"width": 390, "height": 844})
+    p.wait_for_function("oracle.arena.crown === false")
+    check("h. mobile crown: hides horizon glare at 390px, restores on wide view, then hides again", p.evaluate("oracle.arena.crown") is False)
     mats = p.evaluate("""() => { const out = {}; window.oracle.sceneObjects().forEach((m) => { out[m] = (out[m] || 0) + 1; }); return out; }""")
     check("h. the temple: marble + gold on physical materials, the colonnade and the omphalos in the scene, a lamp on the comet",
           mats.get("physical", 0) >= 5 and mats.get("instanced", 0) >= 2 and mats.get("light", 0) >= 2, mats)
@@ -718,7 +723,7 @@ def arena_checks(br, origin):
     q.wait_for_function("document.body.dataset.ready === '1' && window.oracle && window.oracle.arena && window.oracle.arena.stats.calls > 0", timeout=120000)
     st = q.evaluate("oracle.arena")
     check("h. HD tier: scene + bloom + finish with 4x MSAA on a transparent-free HDR buffer, the arena in the same frame, no page error",
-          st["passes"] == ["scene", "bloom", "finish"] and st["stats"]["samples"] == 4 and st["stats"]["bloom"] and not errs, [st, errs])
+          st["passes"] == ["scene", "bloom", "finish"] and st["stats"]["samples"] == 4 and st["stats"]["bloom"] and st["crown"] is False and not errs, [st, errs])
     q.screenshot(path=os.path.join(SHOTS or "/tmp", "arena_hd_390.jpg"), type="jpeg", quality=80) if SHOTS else None
     ctx.close()
 

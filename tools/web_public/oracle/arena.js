@@ -119,6 +119,9 @@ export class Arena {
 
   /** the lamp follows the comet; the radar arm sweeps once every 6 seconds */
   frame(t, cometPos, px) {
+    // On narrow screens the distant crown projects as a bright stripe over price levels.
+    // Keep the columns, and reveal the crown again on wider viewports.
+    this.entab.visible = window.innerWidth > 600;
     this.radarU.uSweep.value = this.reduced ? 1.2 : (t * (Math.PI * 2) / 6) % (Math.PI * 2);
     this.blipU.uPx.value = px || 1;
     if (cometPos) this.lamp.position.set(cometPos.x * 1.6, cometPos.y, cometPos.z * 1.6);
