@@ -1,5 +1,5 @@
 /* The atlas is a front door, not an empty loading screen. No external assets. */
-.world-lobby{position:fixed;inset:128px 18px 78px;z-index:3;display:flex;flex-direction:column;pointer-events:none;gap:16px;color:#f3f3ff}
+.world-lobby{position:fixed;inset:156px 18px 78px;z-index:3;display:flex;flex-direction:column;pointer-events:none;gap:16px;color:#f3f3ff}
 .atlas-hero{max-width:600px;text-shadow:0 2px 20px #03040b}
 .atlas-kicker{font-size:10px;letter-spacing:.22em;color:#c4b4ff;font-weight:800;margin:0 0 8px}
 .atlas-hero h2{font:800 clamp(25px,4vw,42px)/1.05 var(--oly-display,sans-serif);letter-spacing:-.04em;margin:0 0 10px;max-width:540px}
@@ -15,7 +15,7 @@
 .atlas-portal small{font-size:9px;letter-spacing:.16em;color:var(--district);margin:66px 0 5px}
 .atlas-portal strong{font:800 16px/1.2 var(--oly-display,sans-serif)}.atlas-portal span{font-size:11px;line-height:1.45;color:#c8cce0;margin:6px 0 10px}.atlas-portal em{color:var(--district);font-size:11px;font-style:normal;font-weight:800}
 body[data-mode=city] .world-lobby,body.photo .world-lobby,.sheet.on~.world-lobby{visibility:hidden;pointer-events:none}
-.world-lobby.fallback{inset:116px 14px 84px;overflow:auto;touch-action:pan-y;pointer-events:auto;padding:10px 12px 40px;border-radius:22px;background:radial-gradient(ellipse at 50% 15%,#20204480,transparent 50%),linear-gradient(180deg,#0b0c19e8,#070a14fa);border:1px solid #999bff24;display:block}
+.world-lobby.fallback{inset:156px 14px 84px;overflow:auto;touch-action:pan-y;pointer-events:auto;padding:10px 12px 40px;border-radius:22px;background:radial-gradient(ellipse at 50% 15%,#20204480,transparent 50%),linear-gradient(180deg,#0b0c19e8,#070a14fa);border:1px solid #999bff24;display:block}
 .fallback .atlas-hero{padding:10px 8px 0}.fallback .atlas-hero h2{max-width:none}.atlas-map{display:block;width:min(100%,780px);height:auto;max-height:400px;margin:-4px auto -12px;overflow:visible}
 .atlas-flight{animation:atlas-flight 10s linear infinite}.atlas-flight:nth-of-type(2n){animation-direction:reverse;animation-duration:14s}
 @keyframes atlas-flight{to{stroke-dashoffset:-310}}
@@ -26,7 +26,7 @@ body[data-mode=city] .world-lobby,body.photo .world-lobby,.sheet.on~.world-lobby
 .atlas-city-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.atlas-city{min-height:120px;min-width:0;text-align:left;padding:16px;color:#f3f3ff;border:1px solid #99a4d229;border-left:3px solid var(--district);border-radius:14px;background:linear-gradient(120deg,#1c254099,#0d1324);cursor:pointer}.atlas-city:hover{border-color:var(--district)}
 .atlas-city strong,.atlas-city span,.atlas-city small{display:block;overflow-wrap:anywhere}.atlas-city strong{font-size:14px;line-height:1.4}.atlas-city span{color:#c5cee0;font-size:12px;line-height:1.5;margin:6px 0 10px}.atlas-city small{color:var(--district);font-size:10px;letter-spacing:.04em}.atlas-empty{padding:20px;color:#c6cce3}.atlas-city[hidden],.atlas-detail[hidden],.atlas-empty[hidden]{display:none}
 .world-lobby button:focus-visible,.world-lobby input:focus-visible{outline:3px solid #fff;outline-offset:3px}
-@media(max-width:600px){.world-lobby{inset:126px 12px 76px;gap:12px}.atlas-hero h2{font-size:26px;max-width:330px}.atlas-hero .atlas-lead{font-size:12px;max-width:315px}.atlas-stats{margin-top:9px}.atlas-featured{gap:6px}.atlas-portal{border-radius:13px;padding:10px;min-height:168px}.atlas-portal .atlas-skyline{width:115px;height:74px;right:-7px;top:-2px}.atlas-portal small{margin-top:51px;font-size:8px;letter-spacing:.08em}.atlas-portal strong{font-size:12px}.atlas-portal span{font-size:10px;margin-bottom:7px}.atlas-portal em{font-size:10px}.world-lobby.fallback{inset:116px 10px 84px;padding:8px 6px 32px}.fallback .atlas-hero{padding:10px}.atlas-map{margin:0 auto 4px;max-height:270px}.fallback .atlas-featured{margin-bottom:16px}.atlas-city-list{grid-template-columns:1fr}.atlas-city{min-height:100px}.atlas-detail{padding:16px}.atlas-catalog{padding:0 6px}.atlas-filter{padding:10px 12px}}
+@media(max-width:600px){.world-lobby{inset:156px 12px 76px;gap:12px}.atlas-hero h2{font-size:26px;max-width:330px}.atlas-hero .atlas-lead{font-size:12px;max-width:315px}.atlas-stats{margin-top:9px}.atlas-featured{gap:6px}.atlas-portal{border-radius:13px;padding:10px;min-height:168px}.atlas-portal .atlas-skyline{width:115px;height:74px;right:-7px;top:-2px}.atlas-portal small{margin-top:51px;font-size:8px;letter-spacing:.08em}.atlas-portal strong{font-size:12px}.atlas-portal span{font-size:10px;margin-bottom:7px}.atlas-portal em{font-size:10px}.world-lobby.fallback{inset:156px 10px 84px;padding:8px 6px 32px}.fallback .atlas-hero{padding:10px}.atlas-map{margin:0 auto 4px;max-height:270px}.fallback .atlas-featured{margin-bottom:16px}.atlas-city-list{grid-template-columns:1fr}.atlas-city{min-height:100px}.atlas-detail{padding:16px}.atlas-catalog{padding:0 6px}.atlas-filter{padding:10px 12px}}
 @media(max-height:600px) and (orientation:landscape){.world-lobby:not(.fallback){inset:84px 18px 76px}.world-lobby:not(.fallback) .atlas-hero{display:none}.world-lobby:not(.fallback) .atlas-featured{max-width:620px}.atlas-portal{min-height:126px}.atlas-portal small{margin-top:25px}.atlas-portal .atlas-skyline{width:100px;height:65px}}
 @media(prefers-reduced-motion:reduce){.atlas-flight{animation:none}.atlas-portal{transition:none}.atlas-portal:hover{transform:none}}
 @media(max-width:600px){.atlas-map text{font-size:24px;letter-spacing:.5px}.atlas-map text:nth-of-type(2){font-size:19px}}
@@ -36,3 +36,7 @@ body[data-mode=city] .world-lobby,body.photo .world-lobby,.sheet.on~.world-lobby
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 }
 html[data-fx=low] .atlas-flight,html[data-fx=off] .atlas-flight,html[data-oly-lite="1"] .atlas-flight,body.oly-lite .atlas-flight{animation:none}
+
+/* The single-city fallback map stays dense at phone width; route labels remain legible without six oversized island names. */
+.atlas-map text.network-label{font-size:13px;letter-spacing:.04em}
+.atlas-map text.hq-label{font-size:15px}

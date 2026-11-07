@@ -8,8 +8,9 @@
 import { $, el, store, clamp, lerp, hash32, rng, cityOfDay, todayStr, seedOfDay, fmtField, plain } from './util.js';
 import { DATASETS, loadDataset, fieldMap } from './datasets.js?v=atlas1';
 import { generate, validateSpec, Picker, evalExpr, parseExpr } from './generator.js';
-import { mountWorld } from './world.js?v=w2';
-import { cityRoutes } from './routes.js?v=r1';
+import { mountWorld } from './world.js?v=w3';
+import { cityRoutes } from './routes.js?v=r3';
+import { cityResultPage, planCityNetwork } from './network-layout.js?v=n1';
 import { openDistrictWorld } from './district-world.js?v=d2';
 import { insight } from './insight.js';
 import { randomSpec, seedDataset, newSeed, cleanSeed } from './procedural.js';
@@ -105,37 +106,23 @@ const setChips = (list) => {
 // ------------------------------------------------------------------ the hub
 const hubSlots = () => clamp(Math.floor(S.stage.caps().mini / Math.max(1, S.specs.length)), 8, 260);
 
-/** The world map: one continent per group (Trading, Research, Money, Kalshi, Life, Obsidian) on a ring; inside a continent the
- *  islands spiral out from its centre ordered by region, so a region is a band. Any number of cities fits: the spacing is fixed. */
+/** One actual NQ trading city anchors a single metro; six neighborhoods radiate from the capital. */
 function layoutIslands() {
-  const C = 40, by = new Map(GROUP_ORDER.map((g) => [g, []]));
-  S.specs.forEach((sp, i) => { (by.get(sp.group) || by.set(sp.group, []).get(sp.group)).push(i); });
-  const K = [...by.entries()].filter((e) => e[1].length);
-  for (const [, idx] of K) idx.sort((a, b) => (S.specs[a].region || '') < (S.specs[b].region || '') ? -1 : (S.specs[a].region || '') > (S.specs[b].region || '') ? 1 : a - b);
-  const radii = K.map(([, idx]) => C * Math.sqrt(idx.length + 1.5) + 70);
-  let ring = 0;
-  if (K.length > 1) for (let i = 0; i < K.length; i++) ring = Math.max(ring, (radii[i] + radii[(i + 1) % K.length] + 90) / (2 * Math.sin(Math.PI / K.length)));
-  const out = new Array(S.specs.length);
-  S.conts = [];
-  K.forEach(([g, idx], ci) => {
-    const ang = (ci / K.length) * Math.PI * 2 - Math.PI / 2, cx = Math.cos(ang) * ring, cz = Math.sin(ang) * ring, gp = GROUPS[g] || [g, '#a68bff'];
-    idx.forEach((si, j) => {
-      const a = j * 2.399963, r = C * Math.sqrt(j + 1.5), sp = S.specs[si], seed = (hash32(sp.id) % 1000) / 1000;
-      out[si] = { spec: sp, i: si, cont: g, x: cx + Math.cos(a) * r, z: cz + Math.sin(a) * r, y: Math.sin(j * 1.7) * 14 + (j % 3) * 4, R: 24 + seed * 6, seed, top: sp.palette.ground, rim: sp.palette.accent };
-    });
-    S.conts.push({ key: g, name: gp[0], color: gp[1], x: cx, z: cz, r: radii[ci], count: idx.length, regions: [...new Set(idx.map((si) => S.specs[si].region).filter(Boolean))] });
-  });
-  return out;
+  const network = planCityNetwork(S.specs, GROUPS);
+  S.conts = network.districts;
+  S.hqIndex = network.hqIndex;
+  S.hqGroup = network.hqGroup;
+  S.hubR = network.radius;
+  return network.islands;
 }
 
 function buildHub() {
   const st = S.stage, slots = hubSlots();
   S.islands = layoutIslands();
-  const routes = cityRoutes(S.islands, S.conts);
-  st.buildHub(S.islands.map((s) => ({ x: s.x, y: s.y, z: s.z, R: s.R, top: s.top, rim: s.rim, seed: s.seed })), slots, routes);
+  const routes = cityRoutes(S.islands.map((s) => ({ i: s.i, cont: s.cont, hq: s.hq, capital: s.capital, x: s.x, z: s.z })), S.conts);
+  st.buildHub(S.islands.map((s) => ({ x: s.x, y: s.y, z: s.z, R: s.R, top: s.top, rim: s.rim, seed: s.seed, hq: s.hq, capital: s.capital })), slots, routes);
   S.slots = slots;
   S.islands.forEach((isl) => miniOf(isl));
-  S.hubR = Math.max(...S.islands.map((i) => Math.hypot(i.x, i.z))) + 90;
 }
 function miniOf(isl) {
   const ds = dsNow(isl.spec.dataset);
@@ -253,6 +240,7 @@ async function selectIsland(i, fly = true) {
   if (S.tour) stopTour();
   S.hubSel = i; S.stage.selectIsland(i);
   const isl = S.islands[i];
+  S.activeDistrict = isl.cont; syncNetwork();
   if (fly) S.rig.flyTo({ x: isl.x, y: isl.y + isl.R * 0.35, z: isl.z, dist: isl.R * 4.4, pitch: 0.5 }, 1.0);
   sfx('tick');
   showIsland(i);
@@ -269,18 +257,18 @@ function hubFilter(match) {          // match(spec) -> bool; null clears
   S.stage.setHubDim(S.hubDim);
 }
 
-function openFind() {
+function openFind(initialGroup = '') {
   openSheet('find', 'Find a city', (b) => {
     const inp = el('input'); inp.type = 'search'; inp.placeholder = `Search ${S.specs.length} cities, data, landmarks`; inp.setAttribute('aria-label', 'Search cities');
     const seg = el('div', 'seg'), seg2 = el('div', 'seg'), list = el('ul', 'list');
-    let grp = '', reg = '', only = '';
+    let grp = initialGroup, reg = '', only = '', shown = 60;
     const drawRegions = () => {
       seg2.replaceChildren();
       const regs = [...new Set(S.specs.filter((s) => !grp || s.group === grp).map((s) => s.region).filter(Boolean))];
       seg2.style.display = grp && regs.length > 1 ? '' : 'none';
       for (const r of ['', ...regs]) {
         const bt = el('button', r === reg ? 'on' : '', r || 'All regions');
-        bt.addEventListener('click', () => { reg = r; draw(); drawRegions(); });
+        bt.addEventListener('click', () => { reg = r; shown = 60; draw(); drawRegions(); });
         seg2.append(bt);
       }
     };
@@ -289,29 +277,39 @@ function openFind() {
       const hit = S.specs.filter((s) => (!grp || s.group === grp) && (!reg || s.region === reg) && (only !== 'fav' || isFav(s.id)) && (only !== 'seen' || isSeen(s.id)) && (only !== 'new' || !isSeen(s.id))
         && (!t || `${s.name} ${s.motto} ${s.dataset} ${s.landmark.label} ${s.group} ${s.region || ''}`.toLowerCase().includes(t)));
       list.replaceChildren();
-      list.append(el('li', 'count', `${hit.length} of ${S.specs.length} cities`));
-      for (const s of hit.slice(0, 60)) {
+      list.append(el('li', 'count', `${Math.min(shown, hit.length)} shown · ${hit.length} matching · ${S.specs.length} total`));
+      for (const s of cityResultPage(hit, 0, shown)) {
         const li = el('li'), k = el('span', 'k'), t2 = el('span', 't'), isl = S.islands[S.specs.indexOf(s)], ds = dsNow(s.dataset);
         k.style.background = s.palette.accent;
         t2.append(document.createTextNode((isFav(s.id) ? '\u2605 ' : '') + s.name + (isSeen(s.id) ? ' \u2713' : '')), el('small', null, `${s.region || ''} \u00b7 ${s.motto}`));
         li.append(k, t2, el('span', 'm', ds ? plain(ds.items.length) : ''));
-        li.addEventListener('click', () => selectIsland(isl.i));
+        li.addEventListener('click', () => {
+          if (S.mode === 'city') enterCity(s.id);
+          else if (S.stage) selectIsland(isl.i);
+          else openNestedCity(s.id);
+        });
         list.append(li);
       }
-      hubFilter(t || grp || reg || only ? (s) => hit.includes(s) : null);
+      if (hit.length > shown) {
+        const row = el('li', 'more'), more = el('button', 'pill', `Show ${Math.min(60, hit.length - shown)} more cities`);
+        more.type = 'button'; more.setAttribute('aria-label', `Show more of ${hit.length} matching cities`);
+        more.addEventListener('click', () => { shown = Math.min(hit.length, shown + 60); draw(); (list.querySelector('.more button') || inp).focus(); });
+        row.append(more); list.append(row);
+      }
+      if (S.mode === 'hub' && S.stage) hubFilter(t || grp || reg || only ? (s) => hit.includes(s) : null);
     };
     for (const [id, label] of [['', 'All'], ...GROUP_ORDER.map((g) => [g, GROUPS[g][0]])]) {
-      const bt = el('button', id === '' ? 'on' : '', label);
-      bt.addEventListener('click', () => { grp = id; reg = ''; seg.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === bt)); draw(); drawRegions(); });
+      const bt = el('button', id === grp ? 'on' : '', label);
+      bt.addEventListener('click', () => { grp = id; reg = ''; shown = 60; seg.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === bt)); draw(); drawRegions(); });
       seg.append(bt);
     }
     const seg3 = el('div', 'seg');
     for (const [id, label] of [['', 'Everything'], ['fav', '\u2605 Saved'], ['seen', '\u2713 Visited'], ['new', 'Not visited']]) {
       const bt = el('button', id === '' ? 'on' : '', label);
-      bt.addEventListener('click', () => { only = id; seg3.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === bt)); draw(); });
+      bt.addEventListener('click', () => { only = id; shown = 60; seg3.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === bt)); draw(); });
       seg3.append(bt);
     }
-    inp.addEventListener('input', draw);
+    inp.addEventListener('input', () => { shown = 60; draw(); });
     b.append(inp, seg, seg2, seg3, list); draw(); drawRegions();
     if (!matchMedia('(pointer:coarse)').matches) inp.focus();
   });
@@ -421,6 +419,7 @@ function buildCityView(spec, ds) {
   const picker = new Picker(city);
   S.cur = { spec, ds, city, picker, f: fieldMap(ds), sel: -1, match: null, base: null };
   S.mode = 'city'; document.body.dataset.mode = 'city';
+  syncNetwork();
   $('#title').textContent = canvas.clientWidth < 600 && /^atlas-(ema|macd|sr)-city$/.test(spec.id) ? spec.name.replace(/^ATLAS /, '') : spec.name;
   $('#title').setAttribute('aria-label', spec.name); $('#backB').hidden = false; $('#readB').hidden = true;
   S.rig.limits = { min: 10, max: city.bounds.r * 4 + 260, pmin: 0.05, pmax: 1.52 };
@@ -449,8 +448,9 @@ async function leaveCity() {
   showVeil(true, S.cur.spec.name, '');
   await sleep(reduced() ? 20 : 300);
   stopAmbient(); S.stage.clearCity(); S.stage.look(null, null, S.night); S.stage.setFogRadius(S.hubR * 2.8); S.stage.show('hub');
-  S.mode = 'hub'; document.body.dataset.mode = 'hub'; S.cur = null;
-  $('#title').textContent = 'Cities'; $('#backB').hidden = true; $('#readB').hidden = false;
+  S.mode = 'hub'; document.body.dataset.mode = 'hub';
+  S.activeDistrict = S.cur.spec.group; S.cur = null; syncNetwork();
+  $('#title').textContent = 'OLYMPUS HQ'; $('#backB').hidden = true; $('#readB').hidden = false;
   S.rig.limits = { min: 50, max: S.hubR * 3.4, pmin: 0.08, pmax: 1.5 };
   S.rig.stopPath();
   const p = S.hubPose || hubStartPose();
@@ -799,7 +799,7 @@ function setDock() {
     T('creadB', 'Report', ICON.report, openReport, 'report');
   }
 }
-function qLabel() { const fx = O() ? O().fx() : 'high'; return fx === 'low' || fx === 'off' ? 'LITE' : 'HD'; }
+function qLabel() { const fx = S.stage?.tier?.() || (O() ? O().fx() : 'high'); return fx === 'low' || fx === 'off' ? 'LITE' : 'HD'; }
 $('#qB').addEventListener('click', () => {
   const o = O(); if (!o || !o.setFx) return;
   o.setFx(qLabel() === 'HD' ? 'low' : 'high');
@@ -807,6 +807,16 @@ $('#qB').addEventListener('click', () => {
 });
 $('#readB').addEventListener('click', openRead);
 $('#backB').addEventListener('click', leaveCity);
+$('#networkHQ').addEventListener('click', flyToHQ);
+$('#networkApps').addEventListener('click', openNetworkApps);
+document.querySelectorAll('[data-network-district]').forEach((button) => button.addEventListener('click', () => {
+  const id = button.dataset.networkDistrict;
+  if (S.mode === 'hub' && S.stage) {
+    const district = S.conts.find((entry) => entry.key === id);
+    if (district) flyToContinent(district);
+  }
+  openFind(id);
+}));
 document.querySelectorAll('#cams button').forEach((b) => b.addEventListener('click', () => setCam(b.dataset.cam)));
 window.addEventListener('hashchange', () => {
   const id = location.hash.slice(1);
@@ -933,11 +943,45 @@ function pickContinent(x, y) {
 }
 function flyToContinent(c) {
   if (S.tour) stopTour();
+  S.activeDistrict = c.key; syncNetwork();
   closeSheet();
   S.rig.flyTo({ x: c.x, y: 0, z: c.z, dist: c.r * 2.2 + 140, pitch: 0.8 }, 1.3);
   caption(c.name.toUpperCase(), `${c.count} cities: ${c.regions.slice(0, 5).join(', ')}${c.regions.length > 5 ? '\u2026' : ''}`, 3400);
   sfx('tick');
 }
+
+async function flyToHQ() {
+  if (!S.stage || !S.rig) { openFind('trading'); return; }
+  if (S.mode === 'city') await leaveCity();
+  if (S.mode !== 'hub' || S.busy) return;
+  closeSheet();
+  S.activeDistrict = 'hq'; syncNetwork();
+  S.hubSel = S.hqIndex ?? 0; S.stage.selectIsland(S.hubSel);
+  S.rig.flyTo({ x: 0, y: 8, z: 0, dist: canvas.clientWidth < 600 ? 540 : Math.max(740, S.hubR * 1.15), pitch: 0.86, yaw: 0.24 }, 1.2);
+  caption('OLYMPUS HQ', 'The capital sits at the center of six connected city districts.', 3600);
+}
+
+function openNetworkApps() {
+  openSheet('network', 'Connected city apps', (b) => {
+    b.append(el('p', 'note', 'Jump to the city dashboards, or choose any of the 173 catalogue cities without leaving this atlas.'));
+    const actions = el('div', 'actions');
+    for (const [label, href] of [['Open Data City', '../datacity/'], ['Open Kalshi City', '../kalshicity/']]) {
+      const link = el('a', 'pill go', label); link.href = href; link.setAttribute('aria-label', label); actions.append(link);
+    }
+    const all = el('button', 'pill', `Browse all ${S.specs.length} cities`); all.type = 'button'; all.addEventListener('click', () => openFind());
+    b.append(actions, all);
+  });
+}
+
+function syncNetwork() {
+  const active = S.mode === 'city' ? S.cur?.spec.group : (S.activeDistrict || 'hq');
+  const hq = $('#networkHQ');
+  if (hq) hq.setAttribute('aria-pressed', String(S.mode === 'hub' && active === 'hq'));
+  document.querySelectorAll('[data-network-district]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(active === button.dataset.networkDistrict));
+  });
+}
+
 function onTap(x, y) {
   if (S.busy) return;
   if (S.mode === 'hub') {
@@ -977,12 +1021,10 @@ function loop(dt, t) {
 
 // ------------------------------------------------------------------ boot
 function hubStartPose() {
-  // A portrait first visit lands near Trading: 170 islands at once are inevitably tiny.
-  // The labelled district controls and World map still expose the whole catalogue.
-  const c = S.conts.find((v) => v.key === 'trading') || S.conts[0];
-  return canvas.clientWidth < 600 && c
-    ? { x: c.x, y: 12, z: c.z, dist: c.r * 3.1, pitch: .78, yaw: .22 }
-    : { x: 0, y: 0, z: 0, dist: S.hubR * 1.55 + 120, pitch: .95, yaw: .3 };
+  // Start at the real trading capital; the in-world rail reaches every district.
+  return canvas.clientWidth < 600
+    ? { x: 0, y: 8, z: 0, dist: 540, pitch: .86, yaw: .24 }
+    : { x: 0, y: 0, z: 0, dist: Math.max(740, S.hubR * 1.15), pitch: .92, yaw: .28 };
 }
 function fallbackList(why) {
   // A renderer may fail after a city or sheet is already open. Make the atlas
@@ -990,7 +1032,7 @@ function fallbackList(why) {
   S.mode = 'hub'; S.cur = null; S.sheet = null; S.photo = false; S.tour = false;
   document.body.dataset.mode = 'hub'; document.body.classList.remove('photo');
   sheet.classList.remove('on'); $('#atlas').classList.remove('behind');
-  $('#backB').hidden = true; $('#readB').hidden = true; $('#title').textContent = 'Cities';
+  $('#backB').hidden = true; $('#readB').hidden = true; $('#title').textContent = 'OLYMPUS HQ';
   tagEl.style.display = 'none';
   $('#loading')?.remove();
   $('#qB').textContent = 'ATLAS'; $('#qB').disabled = true; $('#photoB').hidden = true; nightButton.hidden = true;
@@ -1065,9 +1107,10 @@ async function boot() {
   stage.show('hub');
   S.rig.limits = { min: 50, max: S.hubR * 3.4, pmin: 0.08, pmax: 1.5 };
   const pose = hubStartPose(); S.rig.t.set(pose.x, pose.y, pose.z); S.rig.dist = pose.dist; S.rig.pitch = pose.pitch; S.rig.yaw = pose.yaw; S.rig.auto = 0.018; S.rig.apply();
-  mountWorld(S.specs, { onCity:enterCity, onDistrict: (id) => { const c=S.conts.find(v=>v.key===id);if(c)flyToContinent(c); } });
+  S.activeDistrict = 'hq'; syncNetwork();
+  $('#title').textContent = 'OLYMPUS HQ';
   setDock(); refreshChips(); $('#qB').textContent = qLabel();
-  $('#atlasCount').textContent = `${S.specs.length} cities · ${S.conts.length} worlds`;
+  $('#atlasCount').textContent = `${S.specs.length} cities · 1 connected network · ${S.conts.length} districts`;
   stage.start((dt, t) => {
     if (document.body.dataset.ready === 'fallback') return;
     try { loop(dt, t); }
@@ -1086,12 +1129,7 @@ async function boot() {
   const want = q.get('city') || location.hash.slice(1);
   if (seedQ) { enterRandom(seedQ); setTimeout(prefetch, 3000); }
   else if (want && S.byId.has(want)) { enterCity(want); setTimeout(prefetch, 2500); }
-  else if (!q.has('world')) {
-    // The normal entrance is a real NQ trading skyline. World remains one tap away.
-    const landing = S.byId.get('trades-city') || S.specs.find(s => s.group === 'trading');
-    if (landing) enterCity(landing.id, true);
-    setTimeout(prefetch, 2500);
-  } else prefetch();
+  else setTimeout(prefetch, 1000);
 }
 
 let retierT = 0;

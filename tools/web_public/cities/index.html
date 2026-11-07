@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>OLYMPUS Cities</title>
-<meta name="description" content="A world of floating city islands, one per dataset: fly between them and walk into any city built from the site's own numbers.">
+<meta name="description" content="One connected night metropolis: orbit from Olympus HQ through six data-rich city districts and all 173 cities.">
 <meta name="theme-color" content="#050814">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cities">
@@ -50,8 +50,26 @@ font:700 11px/1 var(--oly-ui,inherit);padding:0;pointer-events:auto;flex:0 0 aut
 .chip.demo{color:#111;background:#ff9f43;border-color:transparent;font-weight:700}
 .chip.live{color:#02210f;background:var(--green);border-color:transparent;font-weight:700}
 button.chip{cursor:pointer;min-height:30px}
+/* The district/app rail keeps the same city reachable while users are inside any district. */
+.network-bar{position:fixed;left:calc(10px + var(--sl));right:calc(10px + var(--sr));top:calc(var(--top-h) + 8px + var(--st));z-index:4;
+  display:none;align-items:center;gap:5px;min-width:0;height:48px;padding:3px 5px;border:1px solid rgba(170,182,224,.22);border-radius:15px;
+  background:linear-gradient(180deg,rgba(8,10,25,.94),rgba(7,9,22,.82));box-shadow:0 9px 28px rgba(0,0,0,.38);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:auto}
+.network-key,.network-apps,.network-strip button{flex:0 0 auto;min-height:44px;border:1px solid rgba(176,187,226,.19);border-radius:12px;
+  color:#d4d8e8;background:rgba(255,255,255,.035);font:800 9px/1 var(--oly-display,sans-serif);letter-spacing:.09em;cursor:pointer;touch-action:manipulation}
+.network-key{width:44px;color:#ffe1a1;border-color:rgba(255,201,74,.45);background:linear-gradient(145deg,rgba(255,201,74,.17),rgba(255,201,74,.04))}
+.network-apps{width:54px;color:#a9eaff}
+.network-strip{display:flex;align-items:center;gap:4px;min-width:0;flex:1;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;touch-action:pan-x}
+.network-strip::-webkit-scrollbar{display:none}
+.network-strip button{min-width:44px;padding:0 11px}
+.network-bar button[aria-pressed=true]{color:#fff;border-color:rgba(255,201,74,.65);background:linear-gradient(145deg,rgba(255,201,74,.16),rgba(35,38,60,.62));box-shadow:0 0 14px rgba(255,190,75,.1)}
+.network-bar button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.actions a{display:inline-flex;align-items:center;text-decoration:none}
+@media(max-width:600px){.network-bar{left:calc(8px + var(--sl));right:calc(8px + var(--sr));gap:4px;height:50px;padding:2px 4px;border-radius:14px}
+  .network-key{width:44px}.network-apps{width:50px}.network-strip{gap:3px}.network-strip button{padding:0 9px;font-size:8px;letter-spacing:.06em}}
+@media(prefers-reduced-motion:reduce){.network-bar{scroll-behavior:auto}}
 /* --- the minimap (a city only) */
-.mini{position:fixed;right:calc(12px + var(--sr));top:calc(var(--top-h) + 14px + var(--st));z-index:3;width:108px;height:108px;border-radius:14px;border:1px solid var(--line);
+.mini{position:fixed;right:calc(12px + var(--sr));top:calc(var(--top-h) + 62px + var(--st));z-index:3;width:108px;height:108px;border-radius:14px;border:1px solid var(--line);
 background:rgba(8,6,18,.6);box-shadow:0 6px 24px rgba(0,0,0,.4);cursor:pointer;touch-action:manipulation;display:none}
 body[data-mode=city] .mini{display:block}
 /* --- the one bottom sheet */
@@ -90,6 +108,7 @@ display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(10px);-webki
 .list{list-style:none;margin:4px 0 0;padding:0}
 .list li{display:flex;gap:10px;align-items:center;padding:8px 2px;border-bottom:1px solid var(--line);cursor:pointer;min-height:44px}
 .list li.count{cursor:default;color:var(--sub);font-size:12px;min-height:0}
+.list li.more{display:block;padding:8px 0;border-bottom:0}.list li.more .pill{width:100%}
 .list li .k{flex:0 0 auto;width:22px;height:22px;border-radius:6px;font-size:11px;font-weight:800;display:grid;place-items:center;color:#111}
 .list li .t{flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis}
 .list li .t small{display:block;color:var(--sub);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -104,7 +123,7 @@ input[type=search]{width:100%;font-size:16px;padding:10px 12px;border-radius:12p
 .seg button{flex:0 0 auto;font-size:12px;padding:7px 11px;min-height:44px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--sub);cursor:pointer}
 .seg button.on{color:#111;background:var(--gold);border-color:transparent;font-weight:700}
 /* --- cameras (a city), labels, tag, caption, toast, veil */
-.cams{position:fixed;left:calc(10px + var(--sl));top:calc(var(--top-h) + 20px + var(--st));z-index:3;display:none;flex-direction:column;gap:6px}
+.cams{position:fixed;left:calc(10px + var(--sl));top:calc(var(--top-h) + 62px + var(--st));z-index:3;display:none;flex-direction:column;gap:6px}
 body[data-mode=city] .cams{display:flex}
 .cams button{width:56px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font:700 10px/1 var(--oly-display,inherit);letter-spacing:.12em;cursor:pointer;touch-action:manipulation}
 .cams button.on{color:var(--gold);border-color:rgba(255,201,74,.45);background:rgba(255,201,74,.10)}
@@ -144,7 +163,8 @@ background:radial-gradient(90% 70% at 50% 45%,rgba(24,14,52,.94),#05030c);transi
 #labels i.cont{font-size:13px;letter-spacing:.16em;padding:6px 12px;background:rgba(7,5,15,.7);border-width:1.5px}
 .photobar{position:fixed;left:calc(10px + var(--sl));bottom:calc(14px + var(--sb));right:calc(104px + var(--sr));z-index:6;display:none;gap:8px}
 body.photo .photobar{display:flex}
-body.photo .top,body.photo .dock,body.photo .mini,body.photo .cams,body.photo .sheet,body.photo #labels,body.photo .tag{display:none!important}
+body[data-ready=true] .network-bar,body[data-ready=fallback] .network-bar{display:flex}
+body.photo .top,body.photo .dock,body.photo .mini,body.photo .cams,body.photo .sheet,body.photo #labels,body.photo .tag,body.photo .network-bar{display:none!important}
 body.photo .photobar .pill{flex:1}
 @media (prefers-reduced-motion:reduce){.sheet.on{animation:none}.veil,.caption{transition:none}}
 
@@ -197,11 +217,11 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
 <link rel="stylesheet" href="./world.css?v=w2">
 </head>
 <body data-mode="hub" data-ready="false">
-<canvas id="c" aria-label="Olympus Cities: a 3D NQ trading skyline and a world of cities. Drag to look, pinch to zoom, use the camera buttons to fly, and tap a measured tower for its source record."></canvas>
+<canvas id="c" aria-label="Olympus Cities: one connected night metropolis centered on Olympus HQ with six navigable city districts. Browse 173 source-backed city records, or open Data City and Kalshi City."></canvas>
 <div id="labels" aria-hidden="true"></div>
 <aside class="atlas" id="atlas" aria-label="City atlas">
   <div class="atlas-kicker">Olympus world atlas</div>
-  <div class="atlas-head"><strong>Explore the living data</strong><span id="atlasCount">170 cities · 6 worlds</span></div>
+  <div class="atlas-head"><strong>Explore the living data</strong><span id="atlasCount">173 cities · 1 network · 6 districts</span></div>
   <div class="atlas-rail">
     <button class="atlas-card" style="--city:#69aaff" data-city="trades-city"><b>Trades City</b><small>Each trade becomes a tower</small></button>
     <button class="atlas-card" style="--city:#c7a5ff" data-city="sessions-city"><b>Sessions City</b><small>Fly through trading days</small></button>
@@ -213,7 +233,7 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
 <header class="top" id="top">
   <div class="row">
     <button class="ic" id="backB" aria-label="Back to the world map" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <h1 id="title">Cities</h1>
+    <h1 id="title">OLYMPUS HQ</h1>
     <button class="ic" id="photoB" aria-label="Photo mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
     <button class="ic on" id="nightB" aria-label="Night view on; switch to original sky" aria-pressed="true" title="Night view">☾</button>
     <button class="ic" id="qB" aria-label="Quality">HD</button>
@@ -221,6 +241,18 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
   </div>
   <div class="chips" id="chips"></div>
 </header>
+<nav class="network-bar" id="cityNetwork" aria-label="City network">
+  <button class="network-key" id="networkHQ" type="button" aria-label="Fly to the Olympus headquarters capital" aria-pressed="true">HQ</button>
+  <div class="network-strip" role="group" aria-label="Choose a city district">
+    <button type="button" data-network-district="trading" aria-pressed="false">TRADE</button>
+    <button type="button" data-network-district="research" aria-pressed="false">RESEARCH</button>
+    <button type="button" data-network-district="money" aria-pressed="false">MONEY</button>
+    <button type="button" data-network-district="kalshi" aria-pressed="false">KALSHI</button>
+    <button type="button" data-network-district="life" aria-pressed="false">LIFE</button>
+    <button type="button" data-network-district="obsidian" aria-pressed="false">OBSIDIAN</button>
+  </div>
+  <button class="network-apps" id="networkApps" type="button" aria-label="Open connected city dashboards" aria-haspopup="dialog">APPS</button>
+</nav>
 <canvas class="mini" id="mini" width="216" height="216" aria-label="Minimap: tap to fly there"></canvas>
 <section class="sheet" id="sheet" role="dialog" aria-labelledby="sheetTitle">
   <header><h2 id="sheetTitle"></h2><button class="x" id="sheetX" aria-label="Close">×</button></header>
@@ -254,7 +286,7 @@ async function recover() {
 }
 // Module import settles before its asynchronous boot does. Watch readiness itself.
 setTimeout(recover, 18000);
-import('./app.js?v=o16').catch(recover);
+import('./app.js?v=o18').catch(recover);
 </script>
 </body>
 </html>
