@@ -5,6 +5,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import * as SH from './shaders.js';
 import { towerGeo, archUniforms } from './skyline.js';
 import { PROFILES } from './caps.js';
+import { boulevardPlan, skylineForm } from './districtform.js';
 
 const COUNT = { hq: 2600, lq: 900 };
 const PALETTE = [0x3a5fb5, 0x4f8cff, 0x7fe9ff, 0xa68bff, 0x6a7bd8, 0xc9b8ff, 0xffc94a];
@@ -16,18 +17,20 @@ export class Outskirts {
     const rnd = mulberry(23), ds = L.districts.filter((d) => d.kind !== 'harbor');
     const R0 = Math.max(120, ...ds.map((d) => Math.hypot(Math.abs(d.cx) + d.half, Math.abs(d.cz) + d.half))) + 26, R1 = R0 + 210;
     const hb = L.harbor, cell = 3.6, seen = new Set(), list = [];
+    const blocked = (x, z, pad = 0) => (hb && x > hb.x0 - 24 - pad && x < hb.x1 + 24 + pad && z > hb.z0 - 24 - pad && z < hb.z1 + 30 + pad)
+      || avoid.some((p) => Math.hypot(x - p.x, z - p.z) < p.r + pad);
     const want = Math.min(COUNT.hq, caps.outskirts);
     for (let tries = 0; tries < want * 4 && list.length < want; tries++) {
       const a = rnd() * Math.PI * 2, r = R0 + (R1 - R0) * Math.pow(rnd(), 0.8);
       const x = Math.round((Math.cos(a) * r) / cell) * cell, z = Math.round((Math.sin(a) * r) / cell) * cell, key = x + ',' + z;
       if (seen.has(key)) continue;
-      if (hb && x > hb.x0 - 24 && x < hb.x1 + 24 && z > hb.z0 - 24 && z < hb.z1 + 30) continue;
-      if (avoid.some((p) => Math.hypot(x - p.x, z - p.z) < p.r)) continue;
+      if (blocked(x, z)) continue;
       if (ds.some((d) => Math.abs(x - d.cx) < d.half + 14 && Math.abs(z - d.cz) < d.half + 14)) continue;
       seen.add(key);
-      const t = (Math.hypot(x, z) - R0) / (R1 - R0), spire = rnd() < 0.05;
-      const h = (spire ? 34 + rnd() * 34 : 3.5 + Math.pow(rnd(), 2.2) * 24) * (1 - t * 0.45), w = 1.4 + rnd() * 1.6;
-      list.push({ x, z, h, w, color: spire && rnd() < 0.5 ? 0xffc94a : PALETTE[Math.floor(rnd() * 6)], lit: 0.45 + rnd() * 0.5, seed: rnd() });
+      const t = (Math.hypot(x, z) - R0) / (R1 - R0), seed = rnd(), form = skylineForm(a, t, seed);
+      const h = form.height, w = form.width;
+      list.push({ x, z, h, w, color: form.crown && rnd() < 0.62 ? 0xffc94a : PALETTE[Math.floor(rnd() * 6)],
+        lit: 0.5 + rnd() * 0.46, seed, crown: form.crown });
     }
     const n = list.length;
     const aColor = new Float32Array(n * 3), aData = new Float32Array(n * 4), aState = new Float32Array(n * 4), aSeed = new Float32Array(n), aLook = new Float32Array(n * 4);
@@ -41,9 +44,9 @@ export class Outskirts {
       m4.makeScale(b.w, b.h, b.w).setPosition(b.x, 0, b.z);
       this.mesh.setMatrixAt(i, m4);
       c.setHex(b.color); aColor.set([c.r, c.g, c.b], i * 3);
-      aData.set([b.h, b.lit, b.h > 34 ? 1 : 0, 0], i * 4);
+      aData.set([b.h, b.lit, b.crown ? 1 : 0, 0], i * 4);
       aState[i * 4 + 2] = 1;
-      aLook.set([b.h > 34 ? 1 : Math.floor(b.seed * 9.99) % 10, 0.45 + b.seed * 0.3, 0, 0], i * 4);       // scenery: all the building types, mid-steady windows
+      aLook.set([b.crown ? 1 : Math.floor(b.seed * 9.99) % 10, 0.45 + b.seed * 0.3, 0, 0], i * 4);       // scenery: all the building types, mid-steady windows
       aSeed[i] = b.seed;
     });
     g.setAttribute('aColor', new THREE.InstancedBufferAttribute(aColor, 3));
@@ -58,8 +61,32 @@ export class Outskirts {
     this.radius = [R0, R1];
     this.group = new THREE.Group();
     this.group.add(this.mesh);
+    // Two elevated, glowing orbital boulevards visually connect the outer clusters.
+    // They are scenery only and deliberately skip harbor / landmark clearance zones.
+    this.boulevards = [R0 + 48, R0 + 124].map((radius, ring) => {
+      const plan = boulevardPlan(radius, (x, z) => blocked(x, z, 5));
+      const deck = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.06, ring ? 0.52 : 0.68), new THREE.MeshBasicMaterial({
+        color: ring ? 0xff8b45 : 0x54dcff, transparent: true, opacity: ring ? 0.42 : 0.58,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      }), plan.length);
+      plan.forEach((s, i) => {
+        m4.makeRotationY(s.angle);
+        m4.scale(new THREE.Vector3(s.length, 1, 1));
+        m4.setPosition(s.x, 0.22 + ring * 0.05, s.z);
+        deck.setMatrixAt(i, m4);
+      });
+      deck.instanceMatrix.needsUpdate = true;
+      deck.renderOrder = 3;
+      deck.frustumCulled = false;
+      deck.userData.decor = true;
+      this.group.add(deck);
+      return deck;
+    });
     this.setQuality(quality);
   }
 
-  setQuality(q, caps) { this.mesh.count = Math.min(this.total, caps?.outskirts ?? COUNT[q] ?? COUNT.hq); }
+  setQuality(q, caps) {
+    this.mesh.count = Math.min(this.total, caps?.outskirts ?? COUNT[q] ?? COUNT.hq);
+    if (this.boulevards) this.boulevards[1].visible = q === 'hq';
+  }
 }

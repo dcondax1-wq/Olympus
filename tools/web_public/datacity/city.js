@@ -25,7 +25,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { $, el, clsRank, settings, money, num, pct } from './util.js';
 import { decode, loadPlugins, labelOf } from './data.js';
 import { layout } from './layout.js?v=dcgfx1';
-import { CityScene } from './scene.js?v=dcgfx1';
+import { CityScene } from './scene.js?v=dcgfx2';
 import { Orbit } from './controls.js';
 import { Tour, shots } from './tour.js';
 import { MODES, flight } from './fly.js';
@@ -992,6 +992,13 @@ function readableFallback(model, demo, reason) {
     .readable-city .city-map{position:relative;isolation:isolate;overflow:hidden;margin:18px 0 12px;padding:14px 9px 11px;border:1px solid #475775;border-radius:19px;background:radial-gradient(ellipse at 50% 90%,#183553 0%,#101c35 40%,#090e20 82%);box-shadow:0 20px 50px #02071199,inset 0 0 36px #6a9eff12}
     .readable-city .city-map:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 8% 18%,#b5dfff 1px,transparent 2px),radial-gradient(circle at 82% 12%,#ffe6a7 1px,transparent 2px),radial-gradient(circle at 46% 27%,#d1dfff 1px,transparent 2px),linear-gradient(145deg,transparent 46%,#69c4ff20 47%,transparent 49%,transparent 62%,#e2bc7324 63%,transparent 65%);background-size:auto,auto,auto,100% 100%}
     .readable-city .map-head{position:relative;display:flex;justify-content:space-between;gap:8px;align-items:center;margin:0 7px 9px}.readable-city .map-count{color:#d9cfad;font:700 11px system-ui}
+    .readable-city .fallback-metropolis{position:relative;height:220px;margin:0 0 11px;overflow:hidden;border-radius:13px;background:radial-gradient(circle at 50% 78%,#ff8d3630 0 11%,transparent 34%),radial-gradient(ellipse at 50% 100%,#153f63 0 18%,#08152b 57%,#050817 85%);box-shadow:inset 0 -25px 45px #020611}
+    .readable-city .fallback-metropolis:before{content:"";position:absolute;left:5%;right:5%;bottom:19%;height:48%;border:1px solid #58dcff8c;border-left-color:transparent;border-right-color:transparent;border-radius:50%;transform:rotate(-6deg);box-shadow:0 0 13px #48d8ff80,inset 0 0 18px #4ad8ff24}
+    .readable-city .fallback-metropolis:after{content:"";position:absolute;left:12%;right:12%;bottom:12%;height:56%;border:1px solid #ff914b8c;border-top-color:transparent;border-radius:50%;transform:rotate(10deg);box-shadow:0 0 12px #ff75496b}
+    .readable-city .fallback-town{position:absolute;z-index:2;width:10px;height:22px;transform:translate(-50%,-50%);border:1px solid #ffd17a;background:repeating-linear-gradient(0deg,#ff8d3e 0 2px,#3a1b2c 2px 4px);box-shadow:-7px 4px 0 -2px #cf632e,7px 5px 0 -2px #ffb34d,0 0 8px #ff713b}
+    .readable-city .fallback-hq{position:absolute;z-index:4;left:50%;bottom:21px;width:48px;height:134px;transform:translateX(-50%);clip-path:polygon(30% 0,70% 0,100% 92%,78% 100%,22% 100%,0 92%);border:1px solid #a4f7ff;background:repeating-linear-gradient(0deg,transparent 0 7px,#8df4ff9c 7px 9px),linear-gradient(90deg,#132843,#398ca0 50%,#132843);box-shadow:0 0 24px #55e8ff,inset 0 0 16px #ffd26855}
+    .readable-city .fallback-hq:before{content:"DATA HQ";position:absolute;left:50%;top:8px;transform:translateX(-50%);width:90px;color:#fff8d8;text-align:center;font:900 9px system-ui;letter-spacing:.12em;text-shadow:0 0 8px #6ef0ff}
+    .readable-city .fallback-hq:after{content:"";position:absolute;left:-22px;top:55%;width:88px;height:17px;border:2px solid #ffd16e;border-radius:50%;box-shadow:0 0 14px #ffbd44;transform:rotateX(62deg)}
     .readable-city .districts{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
     .readable-city button{min-height:44px;color:#f9f7ff;background:#242c4e;border:1px solid #646b93;border-radius:12px;padding:8px 12px;font:700 13px system-ui;cursor:pointer}
     .readable-city .map-link{display:inline-flex;min-height:44px;align-items:center;justify-content:center;margin:10px 0;padding:9px 15px;border:1px solid #e7bb69;border-radius:12px;background:#34304c;color:#ffdfa0;text-decoration:none;font:800 13px system-ui}
@@ -1033,6 +1040,17 @@ function readableFallback(model, demo, reason) {
   add(mapHead, 'span', 'EXPLORE THE DISTRICTS', 'eyebrow');
   add(mapHead, 'span', model.sections.filter((s) => s.items.length).length + ' districts', 'map-count');
   map.append(mapHead);
+  const metropolis = el('div', 'fallback-metropolis');
+  metropolis.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 28; i++) {
+    const angle = (i / 28) * Math.PI * 2, town = el('span', 'fallback-town');
+    town.style.left = (50 + Math.cos(angle) * (40 + (i % 3) * 2.5)) + '%';
+    town.style.top = (61 + Math.sin(angle) * (27 + (i % 4) * 1.5)) + '%';
+    town.style.opacity = String(0.6 + (i % 4) * 0.1);
+    metropolis.append(town);
+  }
+  metropolis.append(el('span', 'fallback-hq'));
+  map.append(metropolis);
   const controls = el('div', 'districts');
   map.append(controls);
   root.append(map);

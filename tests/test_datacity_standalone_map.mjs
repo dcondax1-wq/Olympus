@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const html = fs.readFileSync('tools/web_public/datacity/map.html', 'utf8');
-const index = fs.readFileSync('tools/web_public/datacity/index.html', 'utf8');
-const city = fs.readFileSync('tools/web_public/datacity/city.js', 'utf8');
+const root = fs.existsSync('tools/web_public/datacity') ? 'tools/web_public/datacity' : 'datacity';
+const html = fs.readFileSync(root + '/map.html', 'utf8');
+const index = fs.readFileSync(root + '/index.html', 'utf8');
+const city = fs.readFileSync(root + '/city.js', 'utf8');
 const code = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(code, 'standalone map has its own classic script');
 const context = vm.createContext({ URLSearchParams, URL, location: { search: '', href: 'https://example.test/datacity/map.html' } });
@@ -28,7 +29,7 @@ test('all city network routes stay under the GitHub Pages project base', () => {
     assert.ok(html.includes('href="' + route + '"'), '2D map missing ' + route);
     assert.ok(city.includes("'" + route + "'"), 'no-WebGL fallback missing ' + route);
   }
-  assert.match(index, /city\.js\?v=dcgfx2/, 'updated fallback script cache key');
+  assert.match(index, /city\.js\?v=dcgfx3/, 'updated fallback script cache key');
   assert.doesNotMatch(index + html, /href="\/(?:cities|datacity|kalshicity)\//, 'no domain-root city links');
 });
 
@@ -53,7 +54,7 @@ test('search covers rich cards and compact skyline records', () => {
   assert.equal(compact[0].n, 60);
 });
 test('bundled fixture supplies all nine districts and searchable skyline records', () => {
-  context.fixture = JSON.parse(fs.readFileSync('tools/web_public/datacity/fixture.json', 'utf8'));
+  context.fixture = JSON.parse(fs.readFileSync(root + '/fixture.json', 'utf8'));
   assert.equal(vm.runInContext('districtView(fixture).length', context), 9);
   assert.ok(vm.runInContext("results(fixture, 'times', 'Asia').length", context) > 0);
   assert.ok(vm.runInContext("results(fixture, 'week', 'Thursday').length", context) > 0);
