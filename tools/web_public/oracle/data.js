@@ -13,6 +13,7 @@ export const STAGES = [
 ];
 const USD_PT = 2;                       // MNQ: $2 a point a micro
 export const FRESH_S = 20 * 60;                // older than this: LAST SEEN (live.js's own rule)
+const FUTURE_S = 5 * 60;                 // tolerate small clock skew; a farther-ahead source is not current data
 
 const num = (v) => (v == null || v === '' || !Number.isFinite(+v) ? null : +v);
 const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
@@ -165,6 +166,9 @@ export function normalize(doc, now = Date.now() / 1000) {
   const vx = obj(map.vix).open18 != null ? obj(map.vix) : obj(obj(brain.guards).vix);
   const reg = obj(obj(pc.mind).regime);
   const t = num(doc.t) || 0;
+  // A future-dated publisher must not outrank a valid source or stay "live" until its clock catches up.
+  // Historical/sample replay documents are intentionally exempt: their time is the replay clock.
+  if (!doc.demo && t > now + FUTURE_S) return null;
   const position = positionOf(lit, brain, price);
   const booked = num(lit.today_pnl) ?? num(doc.day_pnl) ?? num(brain.day_pnl);    // booked today (the open trade apart)
   return {
