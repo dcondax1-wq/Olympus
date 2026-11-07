@@ -122,15 +122,16 @@ function beamGeometry(n) {
 class Hall {
   constructor(canvas, d) {
     this.d = d;
-    this.lite = Q.get('lite') === '1' || !!(O && O.lite());
-    this.chosen = Q.get('lite') === '1' || Q.get('full') === '1' || !!(O && O.chosen());
+    const quality = Q.get('q');
+    this.lite = Q.get('lite') === '1' || quality === 'low' || quality === 'off' || !!(O && O.lite());
+    this.chosen = Q.get('lite') === '1' || Q.get('full') === '1' || ['ultra', 'high', 'low', 'off'].includes(quality) || !!(O && O.chosen());
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(0x0b0a18, 0.035);
     this.camera = new THREE.PerspectiveCamera(56, 1, 0.1, 200);
     this.rc = null;
     if (CORE) {
       try {
-        this.rc = CORE.createRenderer({ canvas, scene: this.scene, camera: this.camera, alpha: true, env: 'night', quality: ['ultra', 'high', 'low', 'off'].includes(Q.get('q')) ? Q.get('q') : undefined, exposure: 1.05, autoSize: false,
+        this.rc = CORE.createRenderer({ canvas, scene: this.scene, camera: this.camera, alpha: true, env: 'night', quality: ['ultra', 'high', 'low', 'off'].includes(quality) ? quality : undefined, exposure: 1.05, autoSize: false,
           maxDpr: this.lite ? 1.5 : 2, bloom: { strength: 0.7, radius: 0.6, threshold: 0.9 }, onQuality: (l) => { this.lite = l === 'low' || l === 'off'; this.resize(); } });
         this.renderer = this.rc.renderer;
       } catch (_) { this.rc = null; }
@@ -622,10 +623,28 @@ function flipBanner(f) {
   STATE.hall?.celebrate(f.to);
 }
 
+function recoverHall(reason, event) {
+  event?.preventDefault?.();
+  if (!STATE.hall || !STATE.d) return; // a second loss must not mount the no-GPU controls twice
+  STATE.errors.push(String(reason?.message || reason));
+  STATE.hall = null; // stop the next frame before presenting the independent data view
+  renderNoGl(STATE.d);
+  O?.ready();
+}
+
+function watchHallCanvas(hall) {
+  const canvas = hall?.renderer?.domElement;
+  canvas?.addEventListener('webglcontextlost', (event) => recoverHall('The 3D hall stopped on this device.', event));
+  return canvas || null;
+}
 let gapAt = 0;
 function tick(now) {
   const gap = O && O.frameGap ? O.frameGap() : 0;                         // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
-  if (STATE.hall && !(O ? O.hidden() : document.hidden) && !(gap && now - gapAt < gap - 3)) { gapAt = now; STATE.hall.frame(now); }   // hidden tab: no frame (the battery)
+  if (STATE.hall && !(O ? O.hidden() : document.hidden) && !(gap && now - gapAt < gap - 3)) {
+    gapAt = now;
+    try { STATE.hall.frame(now); }
+    catch (error) { recoverHall(error); }
+  }
   requestAnimationFrame(tick);
 }
 
@@ -645,6 +664,7 @@ async function main() {
   addEventListener('hashchange', route);
   try {
     STATE.hall = new Hall($('hall'), d);
+    watchHallCanvas(STATE.hall);
   } catch (e) {
     STATE.hall = null;
     renderNoGl(d);
