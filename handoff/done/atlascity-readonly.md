@@ -1,0 +1,5 @@
+# ATLAS Strategy City
+
+A separate read-only CSS 3D city for the three ATLAS NQ setups: London EMA, MACD sweep, and NY reclaim. Drag/keyboard orbit, a LITE/reduced-motion tier, and a source timestamp guard keep the scene usable without WebGL. Data reads only published `../home.json`; freshness comes from `board.data_t`, not the independently refreshed page build timestamp. Missing, old, or implausibly future source timestamps suppress account KPIs and show an old/unknown label. Three unrelated LIT/Asia research setups are displayed below as clearly labeled paper outposts, never as ATLAS routed districts. No order, arming, engine, or account-setting code is present.
+
+Local focused test: `python tests/test_atlascity_page.py` (includes the Node source-freshness regression). Required before merge: 390×844 high/LITE visual and keyboard/touch tests; confirm the paper outposts and stale states in a browser. The new app needs lead wiring in `jarvis/apps.js`, `olympus/olympus.js` APPS, `tools/build_web_dashboard.py`, generated apps lists, and relevant workers. It must remain draft until wiring and publish parity pass.
