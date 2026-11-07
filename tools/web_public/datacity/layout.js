@@ -9,6 +9,7 @@
 // green, amber, grey: the noise is the outskirts) so every district has a skyline.
 import { COLORS, clsRank } from './util.js';
 import { archIndex, familyOf, litOf, steadiness } from './kinds.js';
+import { satellitePlan } from './satellites.js?v=dcgfx1';
 
 export const LOT = 2.2;              // one lot (world units)
 export const BLOCK = 6;              // lots a block side
@@ -142,7 +143,9 @@ export function layout(model) {
     districts.push({ key: 'harbor', name: 'HARBOR', blurb: model.harbor.note || '', color: 0x3fd8ff, css: '#3fd8ff', cx: (x0 + x1) / 2, cz: harbor.cz,
                      half: Math.min((x1 - x0) / 2, harbor.depth / 2 + 6), n: harbor.ships.length, kind: 'harbor', wide: true, w: x1 - x0 });
   }
-  return { items, districts, tiles, blocks, streets, harbor, plazaR: PLAZA_R, bounds: { x0, z0, x1, z1 } };
+  const satellites = satellitePlan(districts, PLAZA_R);
+  streets.push(...satellites.streets);
+  return { items, districts, tiles, blocks, streets, harbor, satellites, worldRadius: satellites.worldRadius, plazaR: PLAZA_R, bounds: { x0, z0, x1, z1 } };
 }
 
 /** The Harbor: one ship per trade of the live bot (oldest at the far pier), along a waterfront south of the city. */

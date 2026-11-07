@@ -24,12 +24,12 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { $, el, clsRank, settings, money, num, pct } from './util.js';
 import { decode, loadPlugins, labelOf } from './data.js';
-import { layout } from './layout.js';
-import { CityScene } from './scene.js?v=dcultra1';
+import { layout } from './layout.js?v=dcgfx1';
+import { CityScene } from './scene.js?v=dcgfx1';
 import { Orbit } from './controls.js';
 import { Tour, shots } from './tour.js';
 import { MODES, flight } from './fly.js';
-import { Minimap } from './minimap.js';
+import { Minimap } from './minimap.js?v=dcgfx1';
 import { etClock, sunOf, weatherOf } from './sky.js';
 import { applyTheme, watchTheme } from './theme.js';
 import * as UI from './ui.js';
@@ -88,7 +88,7 @@ class App {
     O?.onPower?.(() => this.city._tier(this.city.rc.quality()));   // the battery saver switched: the phone-safe caps follow   // OLYMPUS theme: the sky / fog follow it (scene.js setDay)
     O?.mode(this.quality === 'lq');
     this.orbit = new Orbit(this.city.camera, $('#c'), {
-      calm: this.calm, radius: Math.max(150, Math.min(460, (this.L.bounds.x1 - this.L.bounds.x0) * 0.5)),
+      calm: this.calm, radius: Math.max(150, Math.min(560, Math.max((this.L.bounds.x1 - this.L.bounds.x0) * 0.5, (this.L.worldRadius || 0) * 0.88))),
       onTap: (x, y) => this.tap(x, y), onFlyEnd: () => { this.endTour(); this.endCam(); },
     });
     this.index = new Map();
@@ -977,6 +977,11 @@ function readableFallback(model, demo, reason) {
     .data-fallback #c,.data-fallback .top,.data-fallback .dock,.data-fallback .mini,.data-fallback .sheet,
     .data-fallback .cams,.data-fallback .caption,.data-fallback .toast{display:none!important}
     .readable-city{position:relative;z-index:2;max-width:760px;margin:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 18px calc(48px + env(safe-area-inset-bottom,0px));font:500 15px/1.5 system-ui,sans-serif}
+    .readable-city .city-network{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 18px;padding:9px;border:1px solid #354267;border-radius:16px;background:linear-gradient(130deg,#10152a,#101b2f 55%,#1c192c);box-shadow:0 8px 28px #02040b80}
+    .readable-city .city-network-label{grid-column:1/-1;color:#9da9c7;font:800 10px/1.2 system-ui;letter-spacing:.16em;text-transform:uppercase}
+    .readable-city .city-network a{display:grid;place-items:center;min-height:44px;padding:4px;border:1px solid #3b4666;border-radius:11px;background:#0d1221;color:#c5c9d9;text-decoration:none;font:800 10px/1.2 system-ui;letter-spacing:.1em}
+    .readable-city .city-network a[aria-current=page]{border-color:#7d6a44;background:linear-gradient(145deg,#29253a,#1b2233);color:#ffd36b;box-shadow:inset 0 0 18px #ffcc5415,0 0 16px #ffcc5411}
+    .readable-city .city-network a:focus-visible{outline:2px solid #ffe6a0;outline-offset:2px}
     .readable-city h1{font-size:clamp(28px,7vw,46px);line-height:1.08;margin:9px 0 12px;color:#f9e7b4}
     .readable-city h2{font-size:20px;margin:28px 0 8px;color:#f9e7b4}
     .readable-city p{color:#c8ccdc;max-width:60ch}
@@ -1008,6 +1013,14 @@ function readableFallback(model, demo, reason) {
   document.head.append(css);
   const root = el('main', 'readable-city');
   const add = (parent, tag, content, cls) => { const node = el(tag, cls || '', String(content)); parent.append(node); return node; };
+  const network = add(root, 'nav', '', 'city-network');
+  network.setAttribute('aria-label', 'City network');
+  add(network, 'span', 'City network', 'city-network-label');
+  for (const [label, href, current] of [['ARENA', '/cities/', false], ['DATA CITY', '/datacity/', true], ['KALSHI CITY', '/kalshicity/', false]]) {
+    const link = add(network, 'a', label, '');
+    link.href = href;
+    if (current) link.setAttribute('aria-current', 'page');
+  }
   add(root, 'div', 'OLYMPUS · DATA CITY', 'eyebrow');
   add(root, 'h1', 'The city is still here');
   add(root, 'p', 'The 3D city could not start on this device. Explore its read-only district map and research below. No trading controls are available here.');
@@ -1038,7 +1051,7 @@ function readableFallback(model, demo, reason) {
   for (const sec of sections) {
     const btn = el('button', 'district');
     btn.type = 'button';
-    btn.style.setProperty('--tower-h', (23 + Math.round(Math.sqrt(sec.items.length / biggest) * 35)) + 'px');
+    btn.style?.setProperty?.('--tower-h', (23 + Math.round(Math.sqrt(sec.items.length / biggest) * 35)) + 'px');
     btn.setAttribute('aria-label', sec.name + ' district, ' + sec.items.length.toLocaleString() + ' ideas');
     const tower = el('span', 'district-tower');
     tower.setAttribute('aria-hidden', 'true');

@@ -13,8 +13,9 @@ export class Minimap {
     this.g = canvas.getContext('2d');
     this.g.scale(dpr, dpr);
     const b = L.bounds, pad = 12;
-    this.span = Math.max(b.x1 - b.x0, b.z1 - b.z0) + pad * 2;
-    this.cx = (b.x0 + b.x1) / 2; this.cz = (b.z0 + b.z1) / 2;
+    this.span = Math.max(b.x1 - b.x0, b.z1 - b.z0, (L.worldRadius || 0) * 2) + pad * 2;
+    // The LIT tower is the capital and the center of the city network.
+    this.cx = 0; this.cz = 0;
     this.pins = [];
     this.gold = [];          // [x, z] of the gold ideas
     this.hits = [];          // [x, z] of the search matches
@@ -56,6 +57,26 @@ export class Minimap {
       g.fillRect(x - hw, y - hh, hw * 2, hh * 2);
       g.strokeRect(x - hw, y - hh, hw * 2, hh * 2);
     }
+    if (this.L.satellites) {
+      g.lineWidth = 0.7;
+      g.strokeStyle = 'rgba(62,216,255,.30)';
+      for (const link of this.L.satellites.links) {
+        if (link.kind !== 'district') continue;
+        const [x0, y0] = this.toMap(...link.from), [x1, y1] = this.toMap(...link.to);
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+      }
+      g.strokeStyle = 'rgba(62,216,255,.62)'; g.lineWidth = 1;
+      for (const link of this.L.satellites.links) {
+        if (link.kind !== 'ring') continue;
+        const [x0, y0] = this.toMap(...link.from), [x1, y1] = this.toMap(...link.to);
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+      }
+      for (const town of this.L.satellites.towns) {
+        const [x, y] = this.toMap(town.x, town.z);
+        g.fillStyle = town.accent ? '#45e9a3' : '#ffad4d';
+        g.beginPath(); g.arc(x, y, town.accent ? 1.7 : 1.15, 0, Math.PI * 2); g.fill();
+      }
+    }
     if (this.R) {
       g.strokeStyle = 'rgba(63,170,255,.75)'; g.lineWidth = 2.2; g.lineJoin = 'round';
       g.beginPath();
@@ -69,8 +90,10 @@ export class Minimap {
       for (const st of this.R.stations) { const [a, b] = this.toMap(st.x, st.z); g.fillRect(a - 1.2, b - 1.2, 2.4, 2.4); }
     }
     const [px, py] = this.toMap(0, 0);
-    g.fillStyle = '#3fd8ff';
-    g.beginPath(); g.arc(px, py, Math.max(2, this.L.plazaR * s * 0.5), 0, Math.PI * 2); g.fill();
+    g.strokeStyle = 'rgba(63,216,255,.75)'; g.lineWidth = 1;
+    g.beginPath(); g.arc(px, py, Math.max(2, this.L.plazaR * s * 0.5), 0, Math.PI * 2); g.stroke();
+    g.fillStyle = '#fff0b2';
+    g.beginPath(); g.arc(px, py, 2.2, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#ffc94a';
     for (const [x, z] of this.gold) { const [a, b] = this.toMap(x, z); g.beginPath(); g.arc(a, b, 2.2, 0, Math.PI * 2); g.fill(); }
     g.fillStyle = '#3fd8ff';

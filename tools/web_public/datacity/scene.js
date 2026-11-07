@@ -9,14 +9,15 @@ import { Rays, SunRays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.
 import { createRenderer } from '../olympus/render.js';          // the OLYMPUS render core: ACES, MSAA, bloom, the film finish, tiers
 import { Landmarks } from './landmarks.js';
 import { Outskirts } from './outskirts.js';
-import { Streams } from './streams.js';
+import { SatelliteTowns } from './towns.js?v=dcgfx1';
+import { Streams } from './streams.js?v=dcgfx1';
 import { routes } from './routes.js';
 import { Cars, Flyers, Airships, Monorail } from './vehicles.js';
 import { River, Ships } from './water.js';
 import { Signs } from './signs.js';
 import { Fireworks } from './fireworks.js';
 import { KitFx } from './kitfx.js';
-import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcultra1';
+import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcgfx1';
 import { Link } from './links.js';
 
 const FOG = { night: 0x070a1c, day: 0x9fbbe2, dusk: 0x4a2a4a, storm: 0x2a3140 };
@@ -85,6 +86,8 @@ export class CityScene {
     this._ground();
     this.skyline = new Skyline(L, this.U, this.quality, this.caps);
     this.scene.add(this.skyline.group);
+    this.towns = new SatelliteTowns(L, this.U, this.quality, this.caps);
+    this.scene.add(this.towns.group);
     this._glow();
     this._streets(opts.winRate);
     this._tower();
@@ -210,20 +213,36 @@ export class CityScene {
   _tower() {
     this.tower = new THREE.Group();
     const tm = new THREE.ShaderMaterial({ vertexShader: SH.TOWER_VS, fragmentShader: SH.TOWER_FS, uniforms: pick(this.U, 'uTime', 'uDay', 'uAccent') });
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 3.4, 40, 8, 1), tm);
-    shaft.position.y = 20;
-    const spire = new THREE.Mesh(new THREE.ConeGeometry(1.5, 9, 8), tm);
-    spire.position.y = 44.5;
-    this.tower.add(shaft, spire);
-    const ringGeo = [[12, 5.5], [26, 4.4], [38, 3.3]].map(([y, r]) => { const g = new THREE.TorusGeometry(r, 0.09, 6, 64); g.rotateX(Math.PI / 2); g.translate(0, y, 0); return g; });
+    const plinth = new THREE.Mesh(new THREE.CylinderGeometry(12, 16, 1.4, 16), new THREE.MeshBasicMaterial({ color: 0x162d4e }));
+    plinth.position.y = 0.2;
+    const crownDeck = new THREE.Mesh(new THREE.CylinderGeometry(7.8, 10.5, 1.2, 12), new THREE.MeshBasicMaterial({ color: 0x244c68, emissive: 0x123346 }));
+    crownDeck.position.y = 1.3;
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(1.9, 4.2, 54, 10, 1), tm);
+    shaft.position.y = 28;
+    const spire = new THREE.Mesh(new THREE.ConeGeometry(1.7, 16, 10), tm);
+    spire.position.y = 63;
+    this.tower.add(plinth, crownDeck, shaft, spire);
+    // Eight crown pylons make the data center read as the city's civic core without inventing metrics.
+    const pylons = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.32, 0.52, 11, 5), tm, 8), pm = new THREE.Matrix4();
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4, x = Math.cos(a) * 8.3, z = Math.sin(a) * 8.3;
+      pm.makeScale(1, 1, 1).setPosition(x, 6.5, z); pylons.setMatrixAt(i, pm);
+    }
+    pylons.userData.decor = true;
+    this.tower.add(pylons);
+    const ringGeo = [[11, 6.6], [28, 5.4], [46, 4.2], [57, 3.5]].map(([y, r]) => { const g = new THREE.TorusGeometry(r, 0.1, 6, 64); g.rotateX(Math.PI / 2); g.translate(0, y, 0); return g; });
     const merged = mergeSimple(ringGeo);
     this.tower.add(new THREE.Mesh(merged, new THREE.MeshBasicMaterial({ color: COLORS.lit, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })));
-    const name = textSprite('LIT · ZLARIOR', '#7fe9ff', 0.9);
+    const name = textSprite('LIT · ZLARIOR', '#7fe9ff', 1.0);
     this.towerName = name;
-    name.position.set(0, 53, 0);
+    name.position.set(0, 77, 0);
     this.tower.add(name);
+    const title = textSprite('CITY CAPITAL', '#ffd36b', 0.86);
+    title.position.set(0, 85, 0);
+    this.towerTitle = title;
+    this.tower.add(title);
     this.scene.add(this.tower);
-    const beacon = points({ position: [new Float32Array([0, 49, 0]), 3], aColor: [new Float32Array([0.25, 0.85, 1.0]), 3], aSize: [new Float32Array([26]), 1],
+    const beacon = points({ position: [new Float32Array([0, 70, 0]), 3], aColor: [new Float32Array([0.25, 0.85, 1.0]), 3], aSize: [new Float32Array([32]), 1],
                             aPulse: [new Float32Array([1]), 1], aSeed: [new Float32Array([0.2]), 1], aToday: [new Float32Array([0]), 1] }, this.glowMat);
     beacon.renderOrder = 3;
     this.scene.add(beacon);
@@ -342,6 +361,7 @@ export class CityScene {
     this.flow.geometry.setDrawRange(0, C.flow);
     this.stars.geometry.setDrawRange(0, C.stars);
     this.skyline.setQuality(q, C);
+    this.towns.setQuality(q, C);
     this.fog.setQuality(q, C);
     this.rain.setQuality(q, C);
     this.traffic.setQuality(q, C);
@@ -380,6 +400,7 @@ export class CityScene {
   refreshText() {
     for (const s of this.nameSprites) s.userData.redraw?.();
     this.towerName?.userData.redraw?.();
+    this.towerTitle?.userData.redraw?.();
     this.signs.refresh();
     this.boards.redrawAll();
   }

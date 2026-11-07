@@ -43,8 +43,17 @@ test('versioned module chain brings the phone profile to cached clients', () => 
   const index = fs.readFileSync('tools/web_public/datacity/index.html', 'utf8');
   const city = fs.readFileSync('tools/web_public/datacity/city.js', 'utf8');
   const scene = fs.readFileSync('tools/web_public/datacity/scene.js', 'utf8');
-  assert.match(index, /city\.js\?v=[a-z0-9]+/);
-  assert.match(city, /scene\.js\?v=dcultra1/);
-  assert.match(scene, /caps\.js\?v=dcultra1/);
+  const layout = fs.readFileSync('tools/web_public/datacity/layout.js', 'utf8');
+  const towns = fs.readFileSync('tools/web_public/datacity/towns.js', 'utf8');
+  assert.match(index, /city\.js\?v=dcgfx1/);
+  assert.match(city, /scene\.js\?v=dcgfx1/);
+  assert.match(city, /layout\.js\?v=dcgfx1/);
+  assert.match(city, /minimap\.js\?v=dcgfx1/);
+  assert.match(scene, /caps\.js\?v=dcgfx1/);
+  assert.match(scene, /towns\.js\?v=dcgfx1/);
+  assert.match(scene, /streams\.js\?v=dcgfx1/);
+  assert.match(layout, /satellites\.js\?v=dcgfx1/);
+  assert.match(towns, /caps\.js\?v=dcgfx1/);
+  assert.match(towns, /satellites\.js\?v=dcgfx1/);
 });
 

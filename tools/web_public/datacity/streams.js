@@ -42,6 +42,12 @@ export class Streams {
     });
     const hb = L.districts.find((d) => d.kind === 'harbor');
     if (hb) arcs.push({ a: tower, c: V(hb.cx * 0.5, 80, hb.cz * 0.5), b: V(hb.cx, 6, hb.cz), col: 0x39e59a, speed: 1.2, dir: 1, big: 1 });
+    // A few bright trunk lines bring the satellite-town ring back to the central capital.
+    // These are scenery-only routes; all research connections above stay data-derived.
+    for (const town of (L.satellites?.towns || []).filter((_, i) => i % 6 === 0)) {
+      const col = town.accent ? 0x39e59a : 0x3fd8ff;
+      arcs.push({ a: V(town.x, 7, town.z), c: V(town.x * 0.46, 84 + (town.id % 3) * 7, town.z * 0.46), b: tower, col, speed: 0.72 + (town.id % 4) * 0.12, dir: 1, big: 1 });
+    }
     const tp = lm.spots.temple;
     if (tp) arcs.push({ a: V(tp.x, tp.h, tp.z), c: V(tp.x * 0.5, 120, tp.z * 0.5), b: tower, col: 0xffc94a, speed: 0.9, dir: 1, big: 1 });
     this.arcs = arcs;

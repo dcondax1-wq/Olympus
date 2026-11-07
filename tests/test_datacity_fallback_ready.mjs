@@ -50,6 +50,7 @@ test('3D failure reveals the research immediately after the fallback enters the 
   assert.match(result.state.fallbackReason, /WebGL unavailable/);
   const main = result.document.body.children.find((n) => n.cls === 'readable-city');
   assert.ok(main.children.some((n) => n.tag === 'h1' && n.text === 'The city is still here'));
+  assert.ok(main.children.some((n) => n.tag === 'nav' && n.cls === 'city-network'));
   const map = main.children.find((n) => n.cls === 'city-map');
   assert.ok(map, 'city map is visible before the idea list');
   const districts = map.children.find((n) => n.cls === 'districts');
