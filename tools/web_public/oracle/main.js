@@ -6,10 +6,10 @@
 // switched on once by itself when frames run slow; prefers-reduced-motion stops the motion. applyTheme(tokens) takes an
 // OLYMPUS theme (window.OLYMPUS.theme() / onTheme, when the kit has them).
 import * as THREE from '../jarvis/three.module.min.js';
-import { fetchLive, fetchSite, normalize, loadProphecy, FRESH_S } from './data.js';
+import { fetchLive, fetchSite, normalize, loadProphecy, FRESH_S } from './data.js?v=ofst1';
 import { loadDemo, docAt, span, todayFx } from './demo.js';
 import { Scene } from './scene.js?v=oracle-night-foreground-1';
-import { FallbackCity } from './fallback.js?v=oracle-night-foreground-1';
+import { FallbackCity } from './fallback.js?v=oracle-fallback-honesty-1';
 import { Hud, usd } from './hud.js';
 import { Ladder } from './ladder.js';
 import { Ribbon, ribbonOf } from './events.js';
@@ -49,6 +49,9 @@ try {
   O?.themeScene?.({ scene: scene.scene, renderer: scene.renderer });   // OLYMPUS theme: fog + clear colour follow it
 } catch (e) {
   hud.noGL();
+  const canvas = document.getElementById('gl');
+  canvas.hidden = true;
+  canvas.setAttribute('aria-hidden', 'true');
   try {
     fallback = new FallbackCity(document.getElementById('fallback'), reduced);
   } catch (_) {
@@ -105,7 +108,7 @@ function show(w, mode) {
   state.world = w;
   state.mode = mode;
   if (scene) scene.setWorld(w, { strikes: !first });
-  if (fallback) fallback.setWorld(w);
+  if (fallback) fallback.setWorld(w, mode);
   hud.render(w);
   sheet.render(w, prophecy);
   ribbon.render(ribbonOf(w.log, w.t));

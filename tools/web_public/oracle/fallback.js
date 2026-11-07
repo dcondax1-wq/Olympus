@@ -2,6 +2,7 @@
 // and keeps Oracle's HUD and replay working on software-only browsers.
 const fract = (x) => x - Math.floor(x);
 const rand = (n) => fract(Math.sin(n * 127.1 + 53.7) * 43758.5453);
+export const beaconLevels = (world, mode) => mode === 'stale' ? [] : (world?.levels || []).filter((l) => !l.taken).slice(0, 4);
 
 export class FallbackCity {
   constructor(canvas, reduced) {
@@ -26,7 +27,14 @@ export class FallbackCity {
     this.resize();
   }
 
-  setWorld(w) { this.world = w; this.last = -Infinity; }
+  setWorld(w, mode = 'live') {
+    this.world = w; this.mode = mode; this.last = -Infinity;
+    this.canvas.setAttribute('role', 'img');
+    this.canvas.setAttribute('aria-label', mode === 'stale'
+      ? 'Illustrated Delphi city from a last-seen snapshot. Beacons are hidden because the levels are not current; see the timestamp and numbers in the panels.'
+      : mode === 'demo' ? 'Illustrated sample replay city. The numbers and levels are historical.'
+      : 'Illustrated Delphi city showing open published levels as beacons. Market numbers are in the panels.');
+  }
   resize() {
     const dpr = Math.min(1.5, devicePixelRatio || 1);
     this.w = this.canvas.clientWidth || innerWidth;
@@ -115,7 +123,7 @@ export class FallbackCity {
     c.beginPath(); c.ellipse(core.x, core.y, scale * 1.6, scale * .55, 0, 0, Math.PI * 2); c.stroke();
     c.strokeStyle = '#7ee6ff'; c.lineWidth = 3;
     c.beginPath(); c.moveTo(core.x, core.y); c.lineTo(core.x, core.y - scale * 6); c.stroke();
-    const levels = (this.world && this.world.levels || []).filter(l => !l.taken).slice(0, 4);
+    const levels = beaconLevels(this.world, this.mode);
     levels.forEach((l, i) => {
       const p = project(3 + i * 3, 2 + (i % 2) * 7);
       const lift = 16 + i * 7;
@@ -133,7 +141,7 @@ export class FallbackCity {
     c.fillStyle = 'rgba(170,222,247,.85)';
     c.font = '600 11px Rajdhani, sans-serif';
     c.textAlign = 'center';
-    c.fillText('ORACLE · DELPHI', core.x, core.y - scale * 7);
+    c.fillText(this.mode === 'stale' ? 'ORACLE · LAST SEEN' : this.mode === 'demo' ? 'ORACLE · REPLAY' : 'ORACLE · DELPHI', core.x, core.y - scale * 7);
   }
 }
 
