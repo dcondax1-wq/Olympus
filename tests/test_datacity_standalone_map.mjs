@@ -5,6 +5,7 @@ import vm from 'node:vm';
 
 const html = fs.readFileSync('tools/web_public/datacity/map.html', 'utf8');
 const index = fs.readFileSync('tools/web_public/datacity/index.html', 'utf8');
+const city = fs.readFileSync('tools/web_public/datacity/city.js', 'utf8');
 const code = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(code, 'standalone map has its own classic script');
 const context = vm.createContext({ URLSearchParams, URL, location: { search: '', href: 'https://example.test/datacity/map.html' } });
@@ -17,6 +18,19 @@ const sample = {
   dict: { trigs:[['sweep','prior low sweep',1]], wins:['asia'], win_lab:['Asia'], districts:nine, fams:[], any:'Any time' },
   skyline: { cols:['t','w','k1','k2','d','cls','e','n'], rows:[[0,0,-1,-1,1,0,7,60]] },
 };
+
+test('all city network routes stay under the GitHub Pages project base', () => {
+  const routes = ['../cities/', './', '../kalshicity/'];
+  const base = new URL('https://example.github.io/nq-dashboard/datacity/');
+  for (const route of routes) {
+    assert.ok(new URL(route, base).pathname.startsWith('/nq-dashboard/'), route + ' escapes the project base');
+    assert.ok(index.includes('href="' + route + '"'), '3D page missing ' + route);
+    assert.ok(html.includes('href="' + route + '"'), '2D map missing ' + route);
+    assert.ok(city.includes("'" + route + "'"), 'no-WebGL fallback missing ' + route);
+  }
+  assert.match(index, /city\.js\?v=dcgfx2/, 'updated fallback script cache key');
+  assert.doesNotMatch(index + html, /href="\/(?:cities|datacity|kalshicity)\//, 'no domain-root city links');
+});
 
 test('standalone route has no WebGL, module, or Three dependency', () => {
   assert.doesNotMatch(html, /type=["']module|three\.js|three\.module|WebGLRenderingContext|import\s+.*from/);

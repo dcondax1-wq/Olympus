@@ -1016,7 +1016,7 @@ function readableFallback(model, demo, reason) {
   const network = add(root, 'nav', '', 'city-network');
   network.setAttribute('aria-label', 'City network');
   add(network, 'span', 'City network', 'city-network-label');
-  for (const [label, href, current] of [['ARENA', '/cities/', false], ['DATA CITY', '/datacity/', true], ['KALSHI CITY', '/kalshicity/', false]]) {
+  for (const [label, href, current] of [['ARENA', '../cities/', false], ['DATA CITY', './', true], ['KALSHI CITY', '../kalshicity/', false]]) {
     const link = add(network, 'a', label, '');
     link.href = href;
     if (current) link.setAttribute('aria-current', 'page');
