@@ -65,8 +65,16 @@ button.chip{cursor:pointer;min-height:30px}
 .network-bar button[aria-pressed=true]{color:#fff;border-color:rgba(255,201,74,.65);background:linear-gradient(145deg,rgba(255,201,74,.16),rgba(35,38,60,.62));box-shadow:0 0 14px rgba(255,190,75,.1)}
 .network-bar button:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .actions a{display:inline-flex;align-items:center;text-decoration:none}
+.city-network-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 12px}
+.city-network-destination{display:flex;min-width:0;min-height:64px;flex-direction:column;justify-content:center;gap:3px;padding:10px 11px;border:1px solid rgba(168,184,230,.22);border-radius:13px;
+  color:#f2f5ff;text-decoration:none;background:linear-gradient(145deg,rgba(61,75,120,.23),rgba(8,11,26,.72));touch-action:manipulation}
+.city-network-destination b{font:800 11px/1.1 var(--oly-display,sans-serif);letter-spacing:.08em;text-transform:uppercase}
+.city-network-destination small{color:#aeb8d2;font:600 11px/1.2 var(--oly-ui,sans-serif)}
+.city-network-destination[aria-current=page]{border-color:rgba(255,201,74,.58);box-shadow:inset 0 0 20px rgba(255,201,74,.07)}
+.city-network-destination:focus-visible{outline:2px solid #fff;outline-offset:2px}
 @media(max-width:600px){.network-bar{left:calc(8px + var(--sl));right:calc(8px + var(--sr));gap:4px;height:50px;padding:2px 4px;border-radius:14px}
   .network-key{width:44px}.network-apps{width:50px}.network-strip{gap:3px}.network-strip button{padding:0 9px;font-size:8px;letter-spacing:.06em}}
+@media(max-width:350px){.city-network-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.network-bar{scroll-behavior:auto}}
 /* --- the minimap (a city only) */
 .mini{position:fixed;right:calc(12px + var(--sr));top:calc(var(--top-h) + 62px + var(--st));z-index:3;width:108px;height:108px;border-radius:14px;border:1px solid var(--line);
@@ -251,7 +259,7 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
     <button type="button" data-network-district="life" aria-pressed="false">LIFE</button>
     <button type="button" data-network-district="obsidian" aria-pressed="false">OBSIDIAN</button>
   </div>
-  <button class="network-apps" id="networkApps" type="button" aria-label="Open connected city dashboards" aria-haspopup="dialog">APPS</button>
+  <button class="network-apps" id="networkApps" type="button" aria-label="Open City Network" aria-haspopup="dialog">CITY</button>
 </nav>
 <canvas class="mini" id="mini" width="216" height="216" aria-label="Minimap: tap to fly there"></canvas>
 <section class="sheet" id="sheet" role="dialog" aria-labelledby="sheetTitle">
@@ -286,7 +294,7 @@ async function recover() {
 }
 // Module import settles before its asynchronous boot does. Watch readiness itself.
 setTimeout(recover, 18000);
-import('./app.js?v=o19').catch(recover);
+import('./app.js?v=o20').catch(recover);
 </script>
 </body>
 </html>

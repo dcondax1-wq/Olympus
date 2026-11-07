@@ -19,7 +19,7 @@ const app=await readFile(new URL('app.js',dir),'utf8'), sceneSource=await readFi
 assert.match(metropolisSource,/architecturalGeometry/);assert.match(metropolisSource,/spirePositions/);assert.match(metropolisSource,/lampPositions/);
 assert.match(shaderSource,/measuredTaper/);assert.match(shaderSource,/roofEdge/);assert.match(shaderSource,/float cols/);assert.match(shaderSource,/uScenery\*0\.34/);
 assert.match(sceneSource,/shaders\.js\?v=s4/);assert.match(sceneSource,/metropolis\.js\?v=m3/);
-assert.match(app,/scene\.js\?v=w5/);assert.match(indexSource,/app\.js\?v=o19/);
+assert.match(app,/scene\.js\?v=w5/);assert.match(indexSource,/app\.js\?v=o20/);
 const labelSource=app.slice(app.indexOf('function placeLabel(e, p, w, h, above = false) {'),app.indexOf('function updateLabels(frame) {'));
 const label={offsetWidth:92,offsetHeight:24,style:{}}, mini={getBoundingClientRect:()=>({left:266,right:378,top:106,bottom:218})};
 const labelInCity=new Function('S','clamp','mini',labelSource+';return placeLabel;')({mode:'city'},clamp,mini);

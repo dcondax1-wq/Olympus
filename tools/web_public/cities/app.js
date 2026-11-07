@@ -962,11 +962,20 @@ async function flyToHQ() {
 }
 
 function openNetworkApps() {
-  openSheet('network', 'Connected city apps', (b) => {
-    b.append(el('p', 'note', 'Jump to the city dashboards, or choose any of the 173 catalogue cities without leaving this atlas.'));
-    const actions = el('div', 'actions');
-    for (const [label, href] of [['Open Data City', '../datacity/'], ['Open Kalshi City', '../kalshicity/']]) {
-      const link = el('a', 'pill go', label); link.href = href; link.setAttribute('aria-label', label); actions.append(link);
+  openSheet('network', 'City Network', (b) => {
+    b.append(el('p', 'note', 'Jump between the verified city destinations. Every link stays inside this Olympus project.'));
+    const actions = el('nav', 'city-network-grid'); actions.setAttribute('aria-label', 'Verified city destinations');
+    const destinations = [
+      ['Cities', '173-city living atlas', './', true],
+      ['Data City', 'Market data capital', '../datacity/'],
+      ['Kalshi City', 'Read-only edge metropolis', '../kalshicity/'],
+      ['Oracle', 'Forecast and scenario arena', '../oracle/'],
+      ['Atlas Hub', 'All verified arenas', '../atlas/'],
+    ];
+    for (const [label, detail, href, current] of destinations) {
+      const link = el('a', 'city-network-destination'); link.href = href; link.setAttribute('aria-label', `Open ${label}`);
+      if (current) link.setAttribute('aria-current', 'page');
+      link.append(el('b', '', label), el('small', '', detail)); actions.append(link);
     }
     const all = el('button', 'pill', `Browse all ${S.specs.length} cities`); all.type = 'button'; all.addEventListener('click', () => openFind());
     b.append(actions, all);
