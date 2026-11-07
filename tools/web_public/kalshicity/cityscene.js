@@ -14,11 +14,11 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
-import { scenery, rng } from './citylayout.js?v=night4';
+import { scenery, rng } from './citylayout.js?v=night7';
 import { STATUS_COLOR, dayFactor, etHour, pairOf } from './cityfeed.js';
-import { Rig } from './cityrig.js?v=night3';
+import { Rig } from './cityrig.js?v=night4';
 import { createCityFx } from './cityfx.js?v=night3';
-import { skylinePorts } from './skylineports.js?v=night3';
+import { skylinePorts } from './skylineports.js?v=night4';
 import { cityLinks, LINK_SEGMENTS } from './citylinks.js';
 import { districtCamera } from './citynav.js?v=nav1';
 
@@ -40,12 +40,12 @@ const SKY = { nTop: C('#02040c'), nMid: C('#07112a'), nHor: C('#10204a'), dTop: 
 const U = { uTime: { value: 0 }, uAnimT: { value: 0 }, uNight: { value: 1 }, uWinGain: { value: 1.7 }, uRoofGain: { value: 2.4 } };
 function buildingMaterial() {
   const m = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.55, roughness: 0.36, envMapIntensity: 0.85 });
-  m.customProgramCacheKey = () => 'kcbuilding1';
+  m.customProgramCacheKey = () => 'kcbuilding2';
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, U);
     sh.vertexShader = sh.vertexShader
-      .replace('void main() {', `attribute vec4 aInfo; attribute vec4 aAnim; attribute vec3 aStat; uniform float uAnimT;
-        varying vec4 vInfo; varying vec3 vStat; varying vec2 vWin; varying float vKind; varying float vTop; varying float vHgt; varying float vRoof;
+      .replace('void main() {', `attribute vec4 aInfo; attribute vec4 aAnim; attribute vec3 aStat; attribute vec4 aArch; uniform float uAnimT;
+        varying vec4 vInfo; varying vec3 vStat; varying vec4 vArch; varying vec2 vWin; varying float vKind; varying float vTop; varying float vHgt; varying float vRoof;
         void main() {`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>
         vec3 sc = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));
@@ -55,30 +55,41 @@ function buildingMaterial() {
           transformed.xz += vec2(sin(uAnimT * 37.0 + position.y * 11.0), cos(uAnimT * 29.0 + position.y * 7.0)) * 0.06 * sin(q * 3.14159); }
         else if (aAnim.x > 2.5) { float q = clamp((uAnimT - aAnim.y) / 2.4, 0.0, 1.0); prog = mix(aAnim.w, 1.0, q * q * (3.0 - 2.0 * q)); }      // an idea whose dollars moved since the last visit: grows or shrinks from where it stood
         transformed.y *= max(prog, 0.02);
+        // Scenic architecture gets stepped/tapered silhouettes without adding a draw call.
+        // Edge towers use only a restrained taper; height remains the published metric.
+        float upper = smoothstep(0.46, 1.0, position.y);
+        transformed.xz *= 1.0 - aArch.x * upper;
         float hh = sc.y * max(prog, 0.02);
-        vInfo = aInfo; vStat = aStat; vKind = aAnim.z; vHgt = hh; vRoof = position.y; vTop = step(0.5, abs(normal.y));
+        vInfo = aInfo; vStat = aStat; vArch = aArch; vKind = aAnim.z; vHgt = hh; vRoof = position.y; vTop = step(0.5, abs(normal.y));
         float fw = abs(normal.x) > 0.5 ? sc.z : sc.x;
         float hz = abs(normal.x) > 0.5 ? position.z * sc.z : position.x * sc.x;
         vWin = vec2(hz + 0.5 * fw, position.y * hh);`);
     sh.fragmentShader = sh.fragmentShader
       .replace('void main() {', `uniform float uTime; uniform float uNight; uniform float uWinGain; uniform float uRoofGain;
-        varying vec4 vInfo; varying vec3 vStat; varying vec2 vWin; varying float vKind; varying float vTop; varying float vHgt; varying float vRoof;
+        varying vec4 vInfo; varying vec3 vStat; varying vec4 vArch; varying vec2 vWin; varying float vKind; varying float vTop; varying float vHgt; varying float vRoof;
         float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
         void main() {`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         float real = step(0.5, vKind);
-        vec2 cu = vWin / vec2(0.62, 0.92); vec2 cid = floor(cu); vec2 cf = fract(cu);
+        vec2 scenicCell = mix(vec2(1.08, 1.42), vec2(0.82, 1.72), vArch.y);
+        vec2 cell = mix(scenicCell, vec2(0.62, 0.92), real);
+        vec2 cu = vWin / cell; vec2 cid = floor(cu); vec2 cf = fract(cu);
         float inWin = step(0.2, cf.x) * step(cf.x, 0.8) * step(0.26, cf.y) * step(cf.y, 0.74) * (1.0 - vTop) * step(0.9, vWin.y) * step(vWin.y, vHgt - 0.5);
         float hs = h21(cid + vInfo.w * 31.7);
         float lit = step(hs, vInfo.y);
         float isLoss = step(h21(cid * 1.37 + vInfo.w * 9.1), vInfo.z) * real;
+        float band = (1.0 - real) * step(0.94, fract(vWin.y / mix(5.2, 8.0, vArch.y))) * (1.0 - vTop);
+        float rib = (1.0 - real) * step(0.97, fract(vWin.x / mix(3.8, 5.8, vArch.z))) * (1.0 - vTop);
         diffuseColor.rgb *= 1.0 - 0.5 * inWin;
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.025, 0.045, 0.075), max(band, rib) * 0.72);
         diffuseColor.rgb = mix(diffuseColor.rgb, vStat * 0.45, 0.16 * vInfo.x * real);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = mix(roughnessFactor, 0.07, inWin);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        vec3 winc = mix(mix(vec3(1.0, 0.58, 0.12), vec3(0.2, 0.88, 0.4), step(0.76, vInfo.w)), mix(vec3(1.0, 0.78, 0.42), vec3(1.0, 0.18, 0.14), isLoss), real);
-        totalEmissiveRadiance += winc * inWin * lit * uWinGain * mix(0.55, 1.0, hs) * mix(0.35, 1.0, uNight);
+        vec3 civic = mix(vec3(1.0, 0.48, 0.12), vec3(0.18, 0.72, 1.0), step(0.42, vArch.z));
+        civic = mix(civic, vec3(0.42, 1.0, 0.72), step(0.78, vArch.z));
+        vec3 winc = mix(civic, mix(vec3(1.0, 0.78, 0.42), vec3(1.0, 0.18, 0.14), isLoss), real);
+        totalEmissiveRadiance += winc * inWin * lit * uWinGain * mix(0.48, 0.92, hs) * mix(0.35, 1.0, uNight) * mix(0.42, 1.0, real);
         float roof = vTop * 0.45 + (1.0 - vTop) * smoothstep(0.94, 1.0, vRoof);
         totalEmissiveRadiance += vStat * (roof * uRoofGain + 0.1) * vInfo.x * real;
         if (vKind > 1.5) totalEmissiveRadiance += vStat * (0.5 + 0.5 * sin(uTime * 5.0)) * 0.9;`);
@@ -144,8 +155,8 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     bIndex = new Map(); carState = [];
     const sc = scenery(L, MAX_SCN), real = L.buildings, total = real.length + sc.length;
     geoB = new THREE.BoxGeometry(1, 1, 1); geoB.translate(0, 0.5, 0);
-    const aInfo = new Float32Array(total * 4), aAnim = new Float32Array(total * 4), aStat = new Float32Array(total * 3);
-    geoB.setAttribute('aInfo', new THREE.InstancedBufferAttribute(aInfo, 4)); geoB.setAttribute('aAnim', new THREE.InstancedBufferAttribute(aAnim, 4)); geoB.setAttribute('aStat', new THREE.InstancedBufferAttribute(aStat, 3));
+    const aInfo = new Float32Array(total * 4), aAnim = new Float32Array(total * 4), aStat = new Float32Array(total * 3), aArch = new Float32Array(total * 4);
+    geoB.setAttribute('aInfo', new THREE.InstancedBufferAttribute(aInfo, 4)); geoB.setAttribute('aAnim', new THREE.InstancedBufferAttribute(aAnim, 4)); geoB.setAttribute('aStat', new THREE.InstancedBufferAttribute(aStat, 3)); geoB.setAttribute('aArch', new THREE.InstancedBufferAttribute(aArch, 4));
     matB = matB || buildingMaterial();
     bMesh = new THREE.InstancedMesh(geoB, matB, total); bMesh.frustumCulled = false;
     const r = rng(7), tint = new THREE.Color();
@@ -158,17 +169,24 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
       col.set(st); aStat.set([col.r, col.g, col.b], i * 3);
       aInfo.set([b.glow, b.lit, b.loss, r()], i * 4);
       aAnim.set([b.mode, 1.0 + r() * 1.4, 1, b.from || 0], i * 4);
+      aArch.set([0.03 + r() * 0.09, r(), 0, 0], i * 4);
       bIndex.set(b.id, i);
     });
     realN = real.length;
     sc.forEach((s, j) => {
       const i = realN + j;
       q4.setFromAxisAngle(up, s.yaw); p3.set(s.x, 0, s.z); s3.set(s.w, s.h, s.d); m4.compose(p3, q4, s3); bMesh.setMatrixAt(i, m4);
-      if (s.kind === 'ward') tint.setHSL(s.seed > 0.78 ? 0.34 : 0.075 + s.seed * 0.025, 0.72, 0.075 + s.seed * 0.035);
-      else if (s.kind === 'infill') tint.setHSL(0.065 + s.seed * 0.025, 0.48, 0.055 + s.seed * 0.035);
-      else tint.setHSL(0.6 + s.seed * 0.08, 0.25, 0.045 + s.seed * 0.05);
+      if (s.kind === 'ward') tint.setHSL(0.075 + s.seed * 0.018, 0.52, 0.04 + s.seed * 0.025);
+      else if (s.kind === 'infill') tint.setHSL(0.065 + s.seed * 0.018, 0.36, 0.03 + s.seed * 0.022);
+      else tint.setHSL(0.6 + s.seed * 0.06, 0.2, 0.025 + s.seed * 0.035);
       bMesh.setColorAt(i, tint);
       aInfo.set([0, s.lit, 0, s.seed], i * 4);
+      const tall = Math.min(1, s.h / 55), taper = s.kind === 'ward' ? 0.06 + s.seed * 0.1 : 0.08 + tall * 0.24;
+      const angle = (Math.atan2(s.z, s.x) + Math.PI) / (Math.PI * 2), sector = Math.floor(angle * 8) % 8;
+      // Amber owns most of the metropolis. One teal and one green sector echo the HQ
+      // without turning the entire skyline into random multi-colour sparkle.
+      const palette = sector === 2 ? 0.6 : sector === 5 ? 0.9 : 0.15;
+      aArch.set([taper, (s.seed * 1.73) % 1, palette, tall], i * 4);
     });
     bMesh.instanceMatrix.needsUpdate = true; bMesh.instanceColor.needsUpdate = true;
     world.add(bMesh);
@@ -195,8 +213,8 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
       q4.setFromAxisAngle(up, yaw); p3.set((rd.x0 + rd.x1) / 2, 0.2, (rd.z0 + rd.z1) / 2); s3.set(len + 0.1, 0.1, rd.w); m4.compose(p3, q4, s3); roadsMesh.setMatrixAt(i, m4);
       p3.y = 0.27; s3.set(len, 0.03, 0.12); m4.compose(p3, q4, s3); lanes.setMatrixAt(i, m4);
       const dc = L.districts.find((d) => d.key === rd.district);
-      const wardRoad = rd.kind.startsWith('ward-');
-      lanes.setColorAt(i, col.set(rd.kind === 'labring' ? '#061020' : wardRoad ? '#63bac2' : dc ? dc.color : '#596b91').multiplyScalar(rd.kind === 'labring' ? 0.15 : wardRoad ? 0.42 : dc ? 0.75 : 0.4));
+      const wardRoad = rd.kind.startsWith('ward-'), localRoad = rd.kind === 'ward-local';
+      lanes.setColorAt(i, col.set(rd.kind === 'labring' ? '#061020' : localRoad ? '#ff9d42' : wardRoad ? '#578994' : dc ? dc.color : '#596b91').multiplyScalar(rd.kind === 'labring' ? 0.15 : localRoad ? 0.48 : wardRoad ? 0.32 : dc ? 0.75 : 0.4));
     });
     roadsMesh.frustumCulled = false; lanes.frustumCulled = false; world.add(roadsMesh, lanes);
     buildLinks();

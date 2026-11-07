@@ -20,7 +20,9 @@ export class Rig {
   constructor(camera, dom, opts) {
     this.camera = camera; this.opts = opts; this.mode = 'orbit';
     const R = Math.max(150, Math.min(520, opts.extent * 1.1));
-    this.home = { theta: -0.8, phi: 0.82, radius: R * 0.78, target: V(0, 4, 0) };
+    // A lower opening angle keeps the skyline layered against the horizon instead of
+    // flattening thousands of roofs into a speckled overhead map.
+    this.home = { theta: -0.8, phi: 1.04, radius: R * 0.72, target: V(0, 10, 0) };
     this.goal = { ...this.home, target: this.home.target.clone() };
     this.view = opts.calm ? { ...this.goal, target: this.goal.target.clone() } : { theta: this.goal.theta - 1.1, phi: 0.5, radius: this.goal.radius * 2.1, target: this.goal.target.clone() };
     this.lastInput = performance.now(); this.ptrs = new Map(); this.gesture = null; this.focusTo = null; this.driver = null; this.curve = null;

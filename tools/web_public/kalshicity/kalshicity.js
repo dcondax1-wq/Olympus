@@ -3,7 +3,7 @@
 // textContent (no data ever becomes HTML). Read only: nothing here writes anywhere. window.KC is the test hook.
 import { RAW, shape, shapeHyps, cardFreshness, cardBotStatus, cardOf, headlineOf, usd, pct, evf, pts, STATUS_COLOR, STATUS_WORD, ADVICE, etHour, clockLabel, phaseWord, MIN_N,
   hypOf, hypCardOf, pairOf, tickerLines, changesOf, HYP_COLOR, HYP_WORD, worldBotLabel } from './cityfeed.js?v=bot18';
-import { layout } from './citylayout.js?v=night4';
+import { layout } from './citylayout.js?v=night7';
 import { cityAtlas, edgeCountLabel } from './cityatlas.js?v=skyline7';
 import { districtOptionLabel, districtTitle } from './citynav.js?v=nav1';
 import { lessonsView, historyView, ASK_MESSAGE } from './lessons.js';
@@ -429,7 +429,7 @@ async function refresh() {                                               // ever
 async function startScene() {
   try {
     if (new URLSearchParams(location.search).get('view') === 'atlas') throw new Error('Atlas requested');
-    const { createCity } = await import('./cityscene.js?v=night4');
+    const { createCity } = await import('./cityscene.js?v=night7');
     S.scene = createCity($('city'), { O, model: S.model, layout: S.L, sound: () => S.sound });
     $('lite').hidden = !S.scene.lite();
     S.scene.onQuality(() => { $('lite').hidden = !S.scene.lite(); });

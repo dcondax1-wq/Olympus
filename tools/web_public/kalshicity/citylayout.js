@@ -121,6 +121,17 @@ export function layout(model, prev = null) {
     const outer = wardRings[1][sourceIndex];
     roads.push({ kind: 'ward-link', district: 'Neighborhoods', x0: d.cx, z0: d.cz, x1: outer.cx, z1: outer.cz, w: 0.75 });
   });
+  // Give every scenic ward a readable block structure. These streets frame the six
+  // decorative towers; they do not represent bets, markets or live orders.
+  neighborhoods.forEach((d) => {
+    const P = (t, r) => ({ x: d.cx + t * d.ex[0] + r * d.ez[0], z: d.cz + t * d.ex[1] + r * d.ez[1] });
+    const a = P(-7.2, 0), b = P(7.2, 0);
+    roads.push({ kind: 'ward-local', district: 'Neighborhoods', x0: a.x, z0: a.z, x1: b.x, z1: b.z, w: 1.25 });
+    for (const t of [-6.6, 6.6]) {
+      const c = P(t, -7.3), e = P(t, 7.3);
+      roads.push({ kind: 'ward-local', district: 'Neighborhoods', x0: c.x, z0: c.z, x1: e.x, z1: e.z, w: 0.95 });
+    }
+  });
   // the Lab: one small district per research idea on an outer ring, three towers each (looking back, live, live bets collected)
   const labs = [];
   let labR = 0;
@@ -200,7 +211,12 @@ export function scenery(L, count = 4200) {
       const x = ward.cx + tangent * ward.ex[0] + radial * ward.ez[0], z = ward.cz + tangent * ward.ex[1] + radial * ward.ez[1];
       if (!clear(x, z)) return;
       const seed = ((wi * 29 + bi * 37) % 100) / 100;
-      out.push({ x, z, w: 2.35 + (bi % 3) * 0.18, d: 2.35 + ((bi + 1) % 3) * 0.16, h: 4.5 + ((wi * 7 + bi * 11) % 9), yaw, seed, lit: 0.78 + (bi % 3) * 0.06, kind: 'ward', ward: ward.key });
+      // Every scenic ward reads as a small city, not six identical boxes. The two centre
+      // lots carry a taller civic tower; the values remain scenery and never imply edges.
+      const civic = bi === 1 || bi === 4;
+      out.push({ x, z, w: 3.25 + (bi % 3) * 0.22, d: 3.2 + ((bi + 1) % 3) * 0.2,
+        h: 6.5 + ((wi * 7 + bi * 11) % 12) + (civic ? 9 + (wi % 5) * 1.6 : 0), yaw,
+        seed, lit: 0.24 + (bi % 3) * 0.07, kind: 'ward', ward: ward.key });
     });
   });
   if (out.length >= count) return out.slice(0, count);
@@ -217,8 +233,12 @@ export function scenery(L, count = 4200) {
   while (out.length < count && guard++ < count * 8) {
     if (out.length % 3 !== 2 && next < grid.length) {
       const [x,z] = grid[next++], seed = blocks() * 0.93;
-      out.push({ x, z, w:3.6 + blocks() * 1.0, d:3.6 + blocks() * 1.0, h:2.8 + blocks() * 6.5, yaw:0,
-        seed, lit:0.76 + blocks() * 0.18, kind:'infill' });
+      const landmark = seed > 0.87, rad = Math.hypot(x, z), innerLift = Math.max(0, 1 - rad / Math.max(1, L.extent + 55));
+      // Nearly full grid-cell footprints create continuous city blocks with narrow alleys.
+      // Height varies by block and distance so the foreground, middle and skyline layer cleanly.
+      out.push({ x, z, w:4.45 + blocks() * 0.65, d:4.35 + blocks() * 0.72,
+        h:8 + blocks() * 17 + innerLift * 8 + (landmark ? 12 + blocks() * 16 : 0), yaw:seed > 0.5 ? Math.PI * 0.5 : 0,
+        seed, lit:0.2 + blocks() * 0.22, kind:'infill' });
       continue;
     }
     const a = r() * Math.PI * 2, rad = R0 + (R1 - R0) * Math.sqrt(r());
@@ -226,7 +246,9 @@ export function scenery(L, count = 4200) {
     const far = (rad - R0) / (R1 - R0);                                     // the skyline rises with distance, like a bowl round the city
     const peak = Math.pow(0.5 + 0.5 * Math.cos(a * 6 + 0.4), 7), seed = r();
     // Six concentrated skylines, wide podiums, and a crown tier make a city silhouette rather than a random wall.
-    out.push({ x: Math.cos(a) * rad, z: Math.sin(a) * rad, w: 2 + r() * 5 + peak * 3, d: 2 + r() * 5, h: 5 + (16 + 92 * peak) * (0.4 + far * 0.6) + seed * 22, yaw: Math.round(a * 2 / Math.PI) * Math.PI / 2, seed, lit: 0.3 + r() * 0.55 });
+    out.push({ x: Math.cos(a) * rad, z: Math.sin(a) * rad, w: 2 + r() * 5 + peak * 3, d: 2 + r() * 5,
+      h: 7 + (20 + 106 * peak) * (0.4 + far * 0.6) + seed * 25,
+      yaw: Math.round(a * 2 / Math.PI) * Math.PI / 2, seed, lit: 0.2 + r() * 0.28, kind: 'skyline' });
   }
   return out;
 }
