@@ -25,11 +25,11 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { $, el, clsRank, settings, money, num, pct } from './util.js';
 import { decode, loadPlugins, labelOf } from './data.js';
 import { layout } from './layout.js?v=dcgfx1';
-import { CityScene } from './scene.js?v=dcgfx2';
+import { CityScene } from './scene.js?v=dcgfx4';
 import { Orbit } from './controls.js';
 import { Tour, shots } from './tour.js';
 import { MODES, flight } from './fly.js';
-import { Minimap } from './minimap.js?v=dcgfx1';
+import { Minimap } from './minimap.js?v=dcgfx2';
 import { etClock, sunOf, weatherOf } from './sky.js';
 import { applyTheme, watchTheme } from './theme.js';
 import * as UI from './ui.js';
@@ -67,7 +67,7 @@ function billboards(model) {
   return (model.discoveries || []).slice(0, 12).map((d, i) => {
     const b = model.byId.get(d.id) || {};
     return { title: `DISCOVERY ${i + 1} / ${Math.min(12, model.discoveries.length)}${d.new ? ' · NEW' : ''}`, lines: [labelOf(b, model.D) || d.text],
-             big: `${money(b.e)}/trade · ${b.cls || ''}${b.fdr ? ' · FDR' : ''}`, color: b.cls === 'gold' ? '#ffd36b' : b.cls === 'green' ? '#39e59a' : '#7fe9ff' };
+             big: `${money(b.e)}/trade · ${b.cls || ''}${b.fdr ? ' · FDR' : ''}`, color: b.cls === 'gold' ? '#d79e64' : b.cls === 'green' ? '#9bab62' : '#daa56f' };
   });
 }
 
@@ -202,7 +202,7 @@ class App {
 
   openLit() {
     UI.showLit(this.model.lit);
-    this.city.beam.show(0, 0, 50, 0x3fd8ff);
+    this.city.beam.show(0, 0, 50, 0xd39556);
     this.orbit.focus(0, 16, 0, 90);
   }
 
@@ -470,7 +470,7 @@ class App {
     state.v3.celebrations++;
     this.flashes.push({ i, t: -delay });
     if (this.calm) return;
-    const colors = [0xffc94a, 0xffffff, 0x3fd8ff, 0xff7ad9];
+    const colors = [0xd39556, 0xffffff, 0xd39556, 0xd1904d];
     for (let k = 0; k < shells; k++) {
       this.city.fireworks.launch(it.x + (k - 1) * 11, it.h + 34 + k * 7, it.z + (k % 2 ? 9 : -9), colors[k % colors.length], delay + k * 0.55);
     }
@@ -596,9 +596,9 @@ class App {
     const fs = Math.max(12, Math.round(band * 0.36)), gd = this.model.guard || {};
     g.textBaseline = 'alphabetic';
     g.font = `800 ${fs}px Orbitron, Rajdhani, -apple-system, system-ui, sans-serif`;
-    g.fillStyle = '#ffe08a'; g.fillText('OLYMPUS DATA CITY', Math.round(w * 0.04), h - band * 0.62);
+    g.fillStyle = '#ddac7b'; g.fillText('OLYMPUS DATA CITY', Math.round(w * 0.04), h - band * 0.62);
     g.font = `600 ${Math.round(fs * 0.78)}px Rajdhani, -apple-system, system-ui, sans-serif`;
-    g.fillStyle = '#e9f6ff';
+    g.fillStyle = '#b2cadc';
     g.fillText(`${(gd.tried || 0).toLocaleString()} ideas tried · ${(gd.tested || 0).toLocaleString()} tested · ${gd.fdr_pos ?? '–'} survive · ${this.cou ? this.L.items.filter((it) => it.kind === 'b' && it.b.cls === 'gold').length : 0} gold · paper only`,
                Math.round(w * 0.04), h - band * 0.2);
     const blob = await new Promise((res) => out.toBlob(res, 'image/jpeg', 0.9));
@@ -875,7 +875,7 @@ class App {
           if (this.ambient <= 0) {
             this.ambient = 55;
             const g = this.minimap.gold, p = g.length ? g[Math.floor(Math.random() * g.length)] : null;
-            if (p) this.city.fireworks.launch(p[0], 70 + Math.random() * 30, p[1], 0xffc94a);
+            if (p) this.city.fireworks.launch(p[0], 70 + Math.random() * 30, p[1], 0xd39556);
           }
         }
         skyT += dt;
@@ -973,47 +973,47 @@ function readableFallback(model, demo, reason) {
   document.body.classList.add('data-fallback');
   const css = document.createElement('style');
   css.textContent = `
-    body.data-fallback{height:auto;min-height:100%;overflow:auto;touch-action:pan-y;background:#080c1b;color:#f5f4fb}
+    body.data-fallback{height:auto;min-height:100%;overflow:auto;touch-action:pan-y;background:#080c1b;color:#b2cadc}
     .data-fallback #c,.data-fallback .top,.data-fallback .dock,.data-fallback .mini,.data-fallback .sheet,
     .data-fallback .cams,.data-fallback .caption,.data-fallback .toast{display:none!important}
     .readable-city{position:relative;z-index:2;max-width:760px;margin:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 18px calc(48px + env(safe-area-inset-bottom,0px));font:500 15px/1.5 system-ui,sans-serif}
     .readable-city .city-network{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 18px;padding:9px;border:1px solid #354267;border-radius:16px;background:linear-gradient(130deg,#10152a,#101b2f 55%,#1c192c);box-shadow:0 8px 28px #02040b80}
     .readable-city .city-network-label{grid-column:1/-1;color:#9da9c7;font:800 10px/1.2 system-ui;letter-spacing:.16em;text-transform:uppercase}
     .readable-city .city-network a{display:grid;place-items:center;min-height:44px;padding:4px;border:1px solid #3b4666;border-radius:11px;background:#0d1221;color:#c5c9d9;text-decoration:none;font:800 10px/1.2 system-ui;letter-spacing:.1em}
-    .readable-city .city-network a[aria-current=page]{border-color:#7d6a44;background:linear-gradient(145deg,#29253a,#1b2233);color:#ffd36b;box-shadow:inset 0 0 18px #ffcc5415,0 0 16px #ffcc5411}
-    .readable-city .city-network a:focus-visible{outline:2px solid #ffe6a0;outline-offset:2px}
-    .readable-city h1{font-size:clamp(28px,7vw,46px);line-height:1.08;margin:9px 0 12px;color:#f9e7b4}
-    .readable-city h2{font-size:20px;margin:28px 0 8px;color:#f9e7b4}
+    .readable-city .city-network a[aria-current=page]{border-color:#7d6a44;background:linear-gradient(145deg,#29253a,#1b2233);color:#d79e64;box-shadow:inset 0 0 18px #ffcc5415,0 0 16px #ffcc5411}
+    .readable-city .city-network a:focus-visible{outline:2px solid #deb081;outline-offset:2px}
+    .readable-city h1{font-size:clamp(28px,7vw,46px);line-height:1.08;margin:9px 0 12px;color:#e0b386}
+    .readable-city h2{font-size:20px;margin:28px 0 8px;color:#e0b386}
     .readable-city p{color:#c8ccdc;max-width:60ch}
-    .readable-city .eyebrow{letter-spacing:.17em;text-transform:uppercase;color:#b69aff;font-size:12px;font-weight:800}
+    .readable-city .eyebrow{letter-spacing:.17em;text-transform:uppercase;color:#9cbad2;font-size:12px;font-weight:800}
     .readable-city .facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0}
     .readable-city .fact,.readable-city .idea,.readable-city .district{border:1px solid #3b4262;background:#141b31;border-radius:14px;padding:12px}
     .readable-city .fact b{display:block;font-size:22px;color:#fff}.readable-city .fact small{color:#c8ccdc}
-    .readable-city .city-map{position:relative;isolation:isolate;overflow:hidden;margin:18px 0 12px;padding:14px 9px 11px;border:1px solid #475775;border-radius:19px;background:radial-gradient(ellipse at 50% 90%,#183553 0%,#101c35 40%,#090e20 82%);box-shadow:0 20px 50px #02071199,inset 0 0 36px #6a9eff12}
-    .readable-city .city-map:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 8% 18%,#b5dfff 1px,transparent 2px),radial-gradient(circle at 82% 12%,#ffe6a7 1px,transparent 2px),radial-gradient(circle at 46% 27%,#d1dfff 1px,transparent 2px),linear-gradient(145deg,transparent 46%,#69c4ff20 47%,transparent 49%,transparent 62%,#e2bc7324 63%,transparent 65%);background-size:auto,auto,auto,100% 100%}
+    .readable-city .city-map{position:relative;isolation:isolate;overflow:hidden;margin:18px 0 12px;padding:14px 9px 11px;border:1px solid #475775;border-radius:19px;background:radial-gradient(ellipse at 50% 90%,#447193 0%,#101c35 40%,#090e20 82%);box-shadow:0 20px 50px #02071199,inset 0 0 36px #6a9eff12}
+    .readable-city .city-map:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 8% 18%,#a6c1d6 1px,transparent 2px),radial-gradient(circle at 82% 12%,#dfb284 1px,transparent 2px),radial-gradient(circle at 46% 27%,#afc8da 1px,transparent 2px),linear-gradient(145deg,transparent 46%,#69c4ff20 47%,transparent 49%,transparent 62%,#e2bc7324 63%,transparent 65%);background-size:auto,auto,auto,100% 100%}
     .readable-city .map-head{position:relative;display:flex;justify-content:space-between;gap:8px;align-items:center;margin:0 7px 9px}.readable-city .map-count{color:#d9cfad;font:700 11px system-ui}
-    .readable-city .fallback-metropolis{position:relative;height:220px;margin:0 0 11px;overflow:hidden;border-radius:13px;background:radial-gradient(circle at 50% 78%,#ff8d3630 0 11%,transparent 34%),radial-gradient(ellipse at 50% 100%,#153f63 0 18%,#08152b 57%,#050817 85%);box-shadow:inset 0 -25px 45px #020611}
+    .readable-city .fallback-metropolis{position:relative;height:220px;margin:0 0 11px;overflow:hidden;border-radius:13px;background:radial-gradient(circle at 50% 78%,#ff8d3630 0 11%,transparent 34%),radial-gradient(ellipse at 50% 100%,#467498 0 18%,#08152b 57%,#050817 85%);box-shadow:inset 0 -25px 45px #020611}
     .readable-city .fallback-metropolis:before{content:"";position:absolute;left:5%;right:5%;bottom:19%;height:48%;border:1px solid #58dcff8c;border-left-color:transparent;border-right-color:transparent;border-radius:50%;transform:rotate(-6deg);box-shadow:0 0 13px #48d8ff80,inset 0 0 18px #4ad8ff24}
     .readable-city .fallback-metropolis:after{content:"";position:absolute;left:12%;right:12%;bottom:12%;height:56%;border:1px solid #ff914b8c;border-top-color:transparent;border-radius:50%;transform:rotate(10deg);box-shadow:0 0 12px #ff75496b}
-    .readable-city .fallback-town{position:absolute;z-index:2;width:10px;height:22px;transform:translate(-50%,-50%);border:1px solid #ffd17a;background:repeating-linear-gradient(0deg,#ff8d3e 0 2px,#3a1b2c 2px 4px);box-shadow:-7px 4px 0 -2px #cf632e,7px 5px 0 -2px #ffb34d,0 0 8px #ff713b}
-    .readable-city .fallback-hq{position:absolute;z-index:4;left:50%;bottom:21px;width:48px;height:134px;transform:translateX(-50%);clip-path:polygon(30% 0,70% 0,100% 92%,78% 100%,22% 100%,0 92%);border:1px solid #a4f7ff;background:repeating-linear-gradient(0deg,transparent 0 7px,#8df4ff9c 7px 9px),linear-gradient(90deg,#132843,#398ca0 50%,#132843);box-shadow:0 0 24px #55e8ff,inset 0 0 16px #ffd26855}
-    .readable-city .fallback-hq:before{content:"DATA HQ";position:absolute;left:50%;top:8px;transform:translateX(-50%);width:90px;color:#fff8d8;text-align:center;font:900 9px system-ui;letter-spacing:.12em;text-shadow:0 0 8px #6ef0ff}
-    .readable-city .fallback-hq:after{content:"";position:absolute;left:-22px;top:55%;width:88px;height:17px;border:2px solid #ffd16e;border-radius:50%;box-shadow:0 0 14px #ffbd44;transform:rotateX(62deg)}
+    .readable-city .fallback-town{position:absolute;z-index:2;width:10px;height:22px;transform:translate(-50%,-50%);border:1px solid #daa672;background:repeating-linear-gradient(0deg,#d4975a 0 2px,#3a1b2c 2px 4px);box-shadow:-7px 4px 0 -2px #cd8841,7px 5px 0 -2px #d69b60,0 0 8px #d49759}
+    .readable-city .fallback-hq{position:absolute;z-index:4;left:50%;bottom:21px;width:48px;height:134px;transform:translateX(-50%);clip-path:polygon(30% 0,70% 0,100% 92%,78% 100%,22% 100%,0 92%);border:1px solid #a0bdd3;background:repeating-linear-gradient(0deg,transparent 0 7px,#8df4ff9c 7px 9px),linear-gradient(90deg,#416b8c,#5b8db3 50%,#416b8c);box-shadow:0 0 24px #85aac7,inset 0 0 16px #ffd26855}
+    .readable-city .fallback-hq:before{content:"DATA HQ";position:absolute;left:50%;top:8px;transform:translateX(-50%);width:90px;color:#e8d19d;text-align:center;font:900 9px system-ui;letter-spacing:.12em;text-shadow:0 0 8px #8db0cb}
+    .readable-city .fallback-hq:after{content:"";position:absolute;left:-22px;top:55%;width:88px;height:17px;border:2px solid #d9a36d;border-radius:50%;box-shadow:0 0 14px #d5995c;transform:rotateX(62deg)}
     .readable-city .districts{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-    .readable-city button{min-height:44px;color:#f9f7ff;background:#242c4e;border:1px solid #646b93;border-radius:12px;padding:8px 12px;font:700 13px system-ui;cursor:pointer}
-    .readable-city .map-link{display:inline-flex;min-height:44px;align-items:center;justify-content:center;margin:10px 0;padding:9px 15px;border:1px solid #e7bb69;border-radius:12px;background:#34304c;color:#ffdfa0;text-decoration:none;font:800 13px system-ui}
+    .readable-city button{min-height:44px;color:#b2cadc;background:#242c4e;border:1px solid #646b93;border-radius:12px;padding:8px 12px;font:700 13px system-ui;cursor:pointer}
+    .readable-city .map-link{display:inline-flex;min-height:44px;align-items:center;justify-content:center;margin:10px 0;padding:9px 15px;border:1px solid #d69c61;border-radius:12px;background:#34304c;color:#deb081;text-decoration:none;font:800 13px system-ui}
     .readable-city .district{min-width:0;min-height:108px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;padding:7px 4px 5px;background:linear-gradient(180deg,#24365742,#172748a8);border-color:#60789b66;box-shadow:inset 0 -8px 14px #0b172c;color:#f5f2eb}
-    .readable-city .district-tower{position:relative;display:block;width:42px;height:var(--tower-h);flex:none;transform:skewY(-8deg);background:repeating-linear-gradient(90deg,transparent 0 6px,#ffe3a43d 6px 8px,transparent 8px 11px),repeating-linear-gradient(0deg,transparent 0 9px,#77d7ff63 9px 11px),linear-gradient(125deg,#15445e,#32748a 55%,#14233d);border:1px solid #70ccdb95;box-shadow:0 0 14px #52bde36a,inset 5px 0 12px #9fdafc35}
-    .readable-city .district-tower:after{content:"";position:absolute;left:6px;right:6px;top:-7px;height:7px;transform:skewX(42deg);background:#4c9cb0;border:1px solid #a5eff0a3}
+    .readable-city .district-tower{position:relative;display:block;width:42px;height:var(--tower-h);flex:none;transform:skewY(-8deg);background:repeating-linear-gradient(90deg,transparent 0 6px,#ffe3a43d 6px 8px,transparent 8px 11px),repeating-linear-gradient(0deg,transparent 0 9px,#77d7ff63 9px 11px),linear-gradient(125deg,#457396,#5186af 55%,#406a8a);border:1px solid #70ccdb95;box-shadow:0 0 14px #52bde36a,inset 5px 0 12px #9fdafc35}
+    .readable-city .district-tower:after{content:"";position:absolute;left:6px;right:6px;top:-7px;height:7px;transform:skewX(42deg);background:#6795b9;border:1px solid #a5eff0a3}
     .readable-city .district-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:800 10px/1.2 system-ui;letter-spacing:.02em;text-transform:uppercase}
     .readable-city .district-count{display:block;color:#bdc9d7;font:600 10px/1.2 system-ui}
-    .readable-city .district.on{border-color:#f0d185;background:#3e3a46;color:#fff;box-shadow:0 0 20px #e0b76b70}.readable-city .district.on .district-tower{border-color:#ffe6a0;box-shadow:0 0 20px #f8ca76a9}
-    .readable-city button:focus-visible{outline:3px solid #ffe6a0;outline-offset:2px}
+    .readable-city .district.on{border-color:#daa570;background:#3e3a46;color:#fff;box-shadow:0 0 20px #e0b76b70}.readable-city .district.on .district-tower{border-color:#deb081;box-shadow:0 0 20px #f8ca76a9}
+    .readable-city button:focus-visible{outline:3px solid #deb081;outline-offset:2px}
     @media(max-width:350px){.readable-city .districts{gap:4px}.readable-city .district-label{font-size:9px}}
     @media(prefers-reduced-motion:reduce){.readable-city .district{scroll-behavior:auto}}
     .readable-city input{display:block;width:100%;min-height:48px;border-radius:12px;border:1px solid #646b93;background:#11172a;color:#fff;padding:10px 12px;font:16px system-ui}
     .readable-city .idea{margin:9px 0}.readable-city .idea strong{display:block;overflow-wrap:anywhere}.readable-city .idea small{color:#bec5d8}
-    .readable-city .idea b{color:#e9ce8d}
+    .readable-city .idea b{color:#daa671}
     .readable-city .badge{display:inline-block;padding:2px 8px;border-radius:8px;background:#2c365a;color:#fff;font-size:11px;text-transform:uppercase}
     .readable-city .empty{padding:18px;border:1px dashed #66708d;border-radius:14px}
   `;

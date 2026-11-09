@@ -16,8 +16,8 @@ const cache = new Map();
 
 /** brushed gold with a warm self-glow, so it reads as gold even in the dark (the night environment is dim) */
 function gold() {
-  const m = metal({ kind: 'gold', color: '#ffd98a', envMapIntensity: 3.4, roughness: 0.24 });
-  m.emissive = new THREE.Color('#8a5410'); m.emissiveIntensity = 0.55;
+  const m = metal({ kind: 'gold', color: '#dcaa78', envMapIntensity: 3.4, roughness: 0.24 });
+  m.emissive = new THREE.Color('#af6f2d'); m.emissiveIntensity = 0.55;
   return m;
 }
 
@@ -130,10 +130,10 @@ export class Landmarks {
 
   _lights() {
     const g = this.group;
-    this.lights.sun = new THREE.DirectionalLight(0xfff0d8, 0);
-    this.lights.moon = new THREE.DirectionalLight(0x8fa8ff, 0.5);
-    this.lights.hemi = new THREE.HemisphereLight(0x9bb4ff, 0x20182e, 0.5);
-    this.lights.hearth = new THREE.PointLight(0xffc36a, 40, 90, 1.6);             // the temple's inner fire
+    this.lights.sun = new THREE.DirectionalLight(0xe4be97, 0);
+    this.lights.moon = new THREE.DirectionalLight(0x99b8d0, 0.5);
+    this.lights.hemi = new THREE.HemisphereLight(0x9dbbd2, 0x20182e, 0.5);
+    this.lights.hearth = new THREE.PointLight(0xd9a26b, 40, 90, 1.6);             // the temple's inner fire
     g.add(this.lights.sun, this.lights.moon, this.lights.hemi, this.lights.hearth);
     g.add(this.lights.sun.target, this.lights.moon.target);
   }
@@ -150,7 +150,7 @@ export class Landmarks {
     g.position.set(x, 0, z);
     g.rotation.y = Math.atan2(-x, -z) * 0 + 0.55;                      // the front turns toward the city's middle
     const rock = new THREE.MeshStandardMaterial({ color: 0x4a4468, roughness: 0.9, metalness: 0.05, envMapIntensity: 0.6 });
-    fresnelRim(rock, { color: '#8a6bff', strength: 0.35, power: 3 });
+    fresnelRim(rock, { color: '#8cafca', strength: 0.35, power: 3 });
     const terr = [[64, 76, 9, 0], [50, 62, 8, 9], [40, 50, 8, 17]];      // [top r, bottom r, height, y]
     for (const [rt, rb, h, y] of terr) {
       const m = new THREE.Mesh(geo(`terr${rt}`, () => new THREE.CylinderGeometry(rt, rb, h, 40, 1)), rock);
@@ -175,7 +175,7 @@ export class Landmarks {
     // the cella (the inner hall) with a glowing doorway and window strips
     const cella = new THREE.Mesh(geo('cella', () => new THREE.BoxGeometry(38, CH - 1, 15)), stone);
     cella.position.y = Yb + (CH - 1) / 2; g.add(cella);
-    const warm = this._neon('#ffc36a', 1.15);
+    const warm = this._neon('#d9a26b', 1.15);
     for (const sx of [-1, 1]) {
       const d = new THREE.Mesh(geo('door', () => new THREE.BoxGeometry(0.25, 8, 5)), warm);
       d.position.set(sx * 19.1, Yb + 4.2, 0); g.add(d);
@@ -195,7 +195,7 @@ export class Landmarks {
     });
     for (const s of [-1, 1]) {
       const p = new THREE.Mesh(tri, pale); p.position.set(0, Yb + CH + 3.3 + 0.4, s * 14.6); g.add(p);
-      const inl = new THREE.Mesh(geo('inlay', () => new THREE.ShapeGeometry((() => { const sh = new THREE.Shape(); sh.moveTo(-23, 0.4); sh.lineTo(23, 0.4); sh.lineTo(0, 5.6); sh.closePath(); return sh; })())), this._neon('#7fe9ff', 1.1));
+      const inl = new THREE.Mesh(geo('inlay', () => new THREE.ShapeGeometry((() => { const sh = new THREE.Shape(); sh.moveTo(-23, 0.4); sh.lineTo(23, 0.4); sh.lineTo(0, 5.6); sh.closePath(); return sh; })())), this._neon('#daa56f', 1.1));
       inl.position.set(0, Yb + CH + 3.3 + 0.4, s * 15.5); if (s < 0) inl.rotation.y = Math.PI; g.add(inl);
     }
     const roof = new THREE.Mesh(geo('roof', () => { const e = new THREE.CylinderGeometry(0.1, 1, 1, 4, 1); return e; }), pale);
@@ -203,16 +203,16 @@ export class Landmarks {
     const slab = new THREE.Mesh(geo('slab', () => new THREE.BoxGeometry(50, 0.8, 26)), goldM);
     slab.position.y = Yb + CH + 3.7 + 0.4 + 3.4; slab.rotation.z = 0; g.add(slab);
     // the oracle: a hologram prism over the roof, gold rings that turn, a beam into the sky
-    const holo = new THREE.Mesh(geo('oracle', () => new THREE.OctahedronGeometry(5.2, 0)), glass({ rim: '#7fe9ff', opacity: 0.35 }));
+    const holo = new THREE.Mesh(geo('oracle', () => new THREE.OctahedronGeometry(5.2, 0)), glass({ rim: '#daa56f', opacity: 0.35 }));
     holo.scale.y = 1.9; holo.position.y = Yb + CH + 22; g.add(holo);
     const ringGeo = geo('oring', () => new THREE.TorusGeometry(1, 0.07, 8, 64));
     this.rings = [];
     [[9, 0], [12.5, 1.1], [16, 2.2]].forEach(([r, ph], i) => {
-      const m = new THREE.Mesh(ringGeo, i === 1 ? this._neon('#ffd36b', 1.2) : goldM);
+      const m = new THREE.Mesh(ringGeo, i === 1 ? this._neon('#d79e64', 1.2) : goldM);
       m.scale.set(r, r, r); m.position.y = Yb + CH + 22; m.rotation.x = Math.PI / 2 + ph * 0.2; m.userData.ph = ph; g.add(m); this.rings.push(m);
     });
     const beamG = geo('tbeam', () => { const c = new THREE.CylinderGeometry(1.4, 6, 420, 16, 1, true); c.translate(0, 210, 0); return c; });
-    this.beamMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd98a').multiplyScalar(1.0), transparent: true, opacity: 0.2,
+    this.beamMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#dcaa78').multiplyScalar(1.0), transparent: true, opacity: 0.2,
       blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
     const beam = new THREE.Mesh(beamG, this.beamMat); beam.position.y = Yb + CH + 10; g.add(beam);
     this.oracle = holo;
@@ -245,14 +245,14 @@ export class Landmarks {
     // a gold entablature ring, a neon band under it, a pale floor ring
     const ring = new THREE.Mesh(geo('fring', () => { const t = new THREE.TorusGeometry(R, 0.55, 8, 96); t.rotateX(Math.PI / 2); return t; }), gold());
     ring.position.y = CH + 1.35; this.group.add(ring);
-    const band = new THREE.Mesh(geo('fband', () => { const t = new THREE.TorusGeometry(R, 0.12, 6, 96); t.rotateX(Math.PI / 2); return t; }), this._neon('#7fe9ff', 1.2));
+    const band = new THREE.Mesh(geo('fband', () => { const t = new THREE.TorusGeometry(R, 0.12, 6, 96); t.rotateX(Math.PI / 2); return t; }), this._neon('#daa56f', 1.2));
     band.position.y = CH + 0.7; this.group.add(band);
     const floor = new THREE.Mesh(geo('ffloor', () => { const t = new THREE.RingGeometry(R - 1.6, R + 1.6, 96, 1); t.rotateX(-Math.PI / 2); return t; }), pale);
     floor.position.y = 0.06; this.group.add(floor);
     // the heralds: four gold pylons with a slow lantern, at the compass points inside the colonnade
     const lamp = geo('lamp', () => new THREE.OctahedronGeometry(0.9, 0));
     const hmat = metal({ kind: 'chrome' }), pyl = geo('pyl', () => { const c = new THREE.CylinderGeometry(0.28, 0.6, 5.4, 8, 1); c.translate(0, 2.7, 0); return c; });
-    const lm = this._neon('#ffd36b', 1.3);
+    const lm = this._neon('#d79e64', 1.3);
     this.lamps = [];
     for (let i = 0; i < 4; i++) {
       const a = (i / 4) * TAU + Math.PI / 4, x = Math.cos(a) * 24, z = Math.sin(a) * 24;
@@ -282,19 +282,19 @@ export class Landmarks {
       c.position.y = y + ht + 0.1; g.add(c);
     }
     const base = new THREE.Mesh(geo('phb', () => new THREE.BoxGeometry(16, 3, 16)), pale); base.position.y = 1.5; g.add(base);
-    const lantern = new THREE.Mesh(geo('lan', () => new THREE.CylinderGeometry(2.1, 2.1, 5, 12)), glass({ rim: '#ffd98a', opacity: 0.5 }));
+    const lantern = new THREE.Mesh(geo('lan', () => new THREE.CylinderGeometry(2.1, 2.1, 5, 12)), glass({ rim: '#dcaa78', opacity: 0.5 }));
     lantern.position.y = 54.6; g.add(lantern);
-    const core = new THREE.Mesh(geo('core', () => new THREE.SphereGeometry(1.25, 14, 10)), this._neon('#fff0c0', 1.5));
+    const core = new THREE.Mesh(geo('core', () => new THREE.SphereGeometry(1.25, 14, 10)), this._neon('#e5cd93', 1.5));
     core.position.y = 54.6; g.add(core);
     const roof = new THREE.Mesh(geo('lroof', () => new THREE.ConeGeometry(2.8, 3.4, 12)), goldM); roof.position.y = 58.8; g.add(roof);
     this.sweep = new THREE.Group(); this.sweep.position.y = 54.6; g.add(this.sweep);
-    this.sweepMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffe2a0').multiplyScalar(1.0), transparent: true, opacity: 0.35,
+    this.sweepMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#deb081').multiplyScalar(1.0), transparent: true, opacity: 0.35,
       blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
     const sg = geo('sweep', () => { const c = new THREE.ConeGeometry(7, 190, 14, 1, true); c.rotateZ(-Math.PI / 2); c.translate(95, 0, 0); return c; });
     for (const a of [0, Math.PI]) { const b = new THREE.Mesh(sg, this.sweepMat); b.rotation.y = a; this.sweep.add(b); }
     this.pharosG = g;
     this.group.add(g);
-    this.lights.pharos = new THREE.PointLight(0xffd98a, 30, 70, 1.6);
+    this.lights.pharos = new THREE.PointLight(0xdcaa78, 30, 70, 1.6);
     this.lights.pharos.position.set(px, 54.6, pz);
     this.group.add(this.lights.pharos);
     this.spots.pharos = { x: px, z: pz, r: 70, h: 60, name: 'Pharos' };
@@ -307,7 +307,7 @@ export class Landmarks {
     const pylon = geo('pyl2', () => { const c = new THREE.CylinderGeometry(1.6, 2.1, 22, 12, 1); c.translate(0, 11, 0); return c; });
     for (const s of [-1, 1]) { const p = new THREE.Mesh(pylon, stone); p.position.x = s * 9; gg.add(p); }
     const lin = new THREE.Mesh(geo('lin2', () => new THREE.BoxGeometry(22, 2.2, 3.2)), goldM); lin.position.y = 23; gg.add(lin);
-    this.vixMat = neon({ color: '#7fe9ff', intensity: 1.2 });
+    this.vixMat = neon({ color: '#daa56f', intensity: 1.2 });
     const arch = new THREE.Mesh(geo('arch2', () => { const t = new THREE.TorusGeometry(7.2, 0.28, 8, 40, Math.PI); return t; }), this.vixMat);
     arch.position.y = 21.8; gg.add(arch);
     const tri = new THREE.Group();

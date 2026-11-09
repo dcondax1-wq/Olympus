@@ -132,7 +132,7 @@ export class Ships {
     this.total = 0;
     if (!h) return;
     const n = SHIPS.hq, att = new Float32Array(n * 4), col = new Float32Array(n * 3), c = new THREE.Color();
-    const pal = [0xff4d6d, 0x3fd8ff, 0xffc94a, 0xa68bff, 0x39e59a, 0xff9f43];
+    const pal = [0xce8841, 0xd39556, 0xd39556, 0x9d8aae, 0x9bab62, 0xd1904e];
     for (let i = 0; i < n; i++) {
       att.set([(i % 3) - 1, (i * 0.37) % 1, (6 + (i % 4) * 2.2) * (i % 2 ? 1 : -1), 2.6 + (i % 3) * 0.9], i * 4);
       c.setHex(pal[i % pal.length]); col.set([c.r, c.g, c.b], i * 3);
@@ -171,7 +171,7 @@ export class Ships {
 
 function craneGeo() {
   const boxes = [[0.5, 14, 0.5, -1.5, 7, 0.9, 0x232a45], [0.5, 14, 0.5, 1.5, 7, 0.9, 0x232a45], [0.5, 14, 0.5, -1.5, 7, -0.9, 0x232a45], [0.5, 14, 0.5, 1.5, 7, -0.9, 0x232a45],
-                 [16, 0.7, 1.6, 4.5, 14.5, 0, 0x232a45], [3.4, 0.6, 2.2, 0, 12, 0, 0x232a45], [0.9, 0.9, 0.9, 6, 15.5, 0, 0xff3344]];
+                 [16, 0.7, 1.6, 4.5, 14.5, 0, 0x232a45], [3.4, 0.6, 2.2, 0, 12, 0, 0x232a45], [0.9, 0.9, 0.9, 6, 15.5, 0, 0xc67052]];
   const pos = [], nor = [], col = [], idx = [], c = new THREE.Color();
   for (const [sx, sy, sz, ox, oy, oz, hex] of boxes) {
     const b = new THREE.BoxGeometry(sx, sy, sz), base = pos.length / 3;

@@ -1,7 +1,7 @@
 /* Cities in the AGORA look (docs/DESIGN_AGORA.md): warm marble panels, bronze lines, serif headings, no neon, no glow, no spaced capitals.
    Loaded after the page's own style, so it only has to say what is different. */
 :root{--bg:#14110e;--panel:rgba(29,25,20,.95);--line:#3a3228;--text:#f3ece0;--sub:#cfc4b2;--gold:#c8a24a;--green:#9bab62;--red:#d0714f;--cyan:#6fa0c0;
---oly-accent:#c8a24a;--oly-display:var(--ag-serif);--oly-ui:var(--ag-sans);--oly-r-card:16px;--oly-r-btn:12px;--sheet-bottom:152px}
+--oly-accent:#c8a24a;--oly-display:var(--ag-serif);--oly-ui:var(--ag-sans);--oly-r-card:16px;--oly-r-btn:12px;--sheet-bottom:168px}
 html,body{background:#14110e;font-family:var(--ag-sans)}
 body::before{background:radial-gradient(130% 100% at 50% 50%,transparent 64%,rgba(10,7,4,.42))}
 #amap{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;z-index:0}

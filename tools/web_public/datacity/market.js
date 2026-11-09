@@ -46,9 +46,9 @@ export function litMatch(side, lit) {
 }
 
 const DEMO_ROWS = [
-  { key: 'volatility', name: 'VOLATILITY', color: '#ffd36b', fired: 12, paying: 5, best: { label: 'NY AM (09:30-11:30) short after a bearish displacement while the VIX is rising', e: 63, side: 'short' } },
-  { key: 'gaps', name: 'GAPS', color: '#7fe9ff', fired: 9, paying: 3, best: { label: 'any time long after a VWAP reclaim while gap up', e: 41, side: 'long' } },
-  { key: 'orange', name: 'OPENING RANGE', color: '#ff9f43', fired: 6, paying: 2, best: { label: 'London (02:00-07:00) long after a bullish IFVG while with VWAP', e: 28, side: 'long' } }];
+  { key: 'volatility', name: 'VOLATILITY', color: '#d79e64', fired: 12, paying: 5, best: { label: 'NY AM (09:30-11:30) short after a bearish displacement while the VIX is rising', e: 63, side: 'short' } },
+  { key: 'gaps', name: 'GAPS', color: '#daa56f', fired: 9, paying: 3, best: { label: 'any time long after a VWAP reclaim while gap up', e: 41, side: 'long' } },
+  { key: 'orange', name: 'OPENING RANGE', color: '#d1904e', fired: 6, paying: 2, best: { label: 'London (02:00-07:00) long after a bullish IFVG while with VWAP', e: 28, side: 'long' } }];
 
 /** model: data.js decode(); lit: parseLit() | null; opts: { demo, label(b) } -> { rows (always 3), day, vix, sky, fallback, demo, lit, text } */
 export function marketNow(model, lit, opts = {}) {
@@ -73,7 +73,7 @@ export function marketNow(model, lit, opts = {}) {
   for (const b of fired) firedBy.set(b.d, (firedBy.get(b.d) || 0) + 1);
   let rows = [...by.values()].sort((a, c) => c.score - a.score).slice(0, 3).map((r) => {
     const s = secs.get(r.key), text = label(r.best), side = sideOf(text);
-    return { key: r.key, name: s?.name || String(r.key).toUpperCase(), color: s?.color || '#e9ecf6', fired: firedBy.get(r.key) || r.fired, paying: r.paying, id: r.best.id,
+    return { key: r.key, name: s?.name || String(r.key).toUpperCase(), color: s?.color || '#b2cadc', fired: firedBy.get(r.key) || r.fired, paying: r.paying, id: r.best.id,
              best: { label: text, e: r.best.e || 0, side }, mnq: Math.round(r.best.e || 0), nq: Math.round((r.best.e || 0) * 10), score: Math.round(r.score) };
   });
   const sample = !rows.length;

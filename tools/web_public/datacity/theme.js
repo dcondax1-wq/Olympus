@@ -1,7 +1,7 @@
 // Themes of the Data City. ONE entry point: applyTheme(tokens) sets the page's CSS tokens and the scene's accent (plaza
 // glow, water, tower tint, the sky's city glow). When the OLYMPUS kit has themes (Olympus.theme() / Olympus.onTheme(cb)),
 // watchTheme() follows them; until then the city keeps its own night palette and the kit's per-app accent.
-//   tokens: { accent: '#4f8cff', bg: '#05060f', panel: 'rgba(..)', text: '#f4f4f6', sub: '#aeb3c6', line: 'rgba(..)' }
+//   tokens: { accent: '#78a1c1', bg: '#05060f', panel: 'rgba(..)', text: '#f4f4f6', sub: '#aeb3c6', line: 'rgba(..)' }
 const CSS = { accent: '--accent', bg: '--bg', panel: '--panel', text: '--text', sub: '--sub', line: '--line' };
 const SAFE = /^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\))$/i;
 

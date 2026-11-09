@@ -70,7 +70,7 @@ export class Fireworks {
   }
 
   /** a shell bursting at (x, y, z) in a colour (a hex number); delay seconds from now */
-  launch(x, y, z, color = 0xffc94a, delay = 0) {
+  launch(x, y, z, color = 0xd39556, delay = 0) {
     this.pending.push({ at: this.t + delay, x, y, z, color });
     this.launched++;
     this.pump();
