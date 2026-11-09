@@ -58,8 +58,9 @@ function renderHud() {
     el.querySelector('.s').textContent = t.sub;
   }
   $('sub').textContent = h.title;
+  renderStory(h);
   // the caption: the legend + the one caveat that matters (the live strip already says where the eval stands)
-  $('cap').innerHTML = '<span class="k g">gold</span> pass · <span class="k r">red</span> fail · <span class="k v">violet</span> open · tap a thread' +
+  $('cap').innerHTML = '<span class="k g">gold</span> pass · <span class="k r">red</span> fail · <span class="k v">stone</span> still open · tap a thread' +
     (h.note ? `<br>${esc(h.note)}` : '');
   $('weak').hidden = !h.weak;
   $('acctsRow').hidden = S.route.scen !== 'money';
@@ -75,6 +76,25 @@ function renderHud() {
   renderLive();
 }
 // the honest line: the same eval on all three samples, side by side, so 2026 is never read alone
+
+// the money story (plain words, money first) and the p10-p90 range bar under the monthly tile
+function renderStory(h) {
+  const el = $('story'); if (!el) return;
+  const m = h.tiles.find((t) => t.id === 'money'), rng = $('rng');
+  if (m && rng && m.p90 != null && m.p10 != null) {
+    const lo = Math.min(0, m.p10), hi = Math.max(1, m.p90), x = (v) => Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100));
+    const u = rng.querySelector('u'), k = rng.querySelector('s');
+    u.style.left = x(m.p10) + '%'; u.style.width = Math.max(2, x(m.p90) - x(m.p10)) + '%'; k.style.left = x(m.p50) + '%';
+    rng.hidden = false;
+  } else if (rng) rng.hidden = true;
+  let t = '';
+  if (h.mode === 'eval') {
+    const cp = C.costPerPass(scen());
+    t = cp && cp.perPass != null ? `An eval costs ${C.fmtUsd(cp.price)}. At this pass rate you pay about ${C.fmtUsd(cp.perPass)} for each pass` + (m && m.p50 != null ? `, then a typical funded month pays ${C.fmtUsd(m.p50)}.` : '.') : '';
+  } else if (m && m.p50 != null) t = `A typical month pays ${C.fmtUsd(m.p50)} after every eval fee; a bad one (1 in 10) ${C.fmtUsd(m.p10)}, a good one ${C.fmtUsd(m.p90)}.`;
+  el.textContent = t; el.hidden = !t;
+}
+
 function renderVerdict() {
   const el = $('verdict'), sc0 = S.data.scenarios, r = S.route;
   if (r.scen === 'money') {
@@ -329,7 +349,7 @@ S.probe = () => (sc ? sc.probe() : { k: null, calls: 0 });
 // 0 in the default theme: nothing changes; missing: the token as given). The scene re-tints its clear colour, fog, gate,
 // motes and spindle. With the kit's themes (olympus.js theme / onTheme / themeScene) the kit paints the CSS tokens itself
 // and themeScene keeps the scene's fog, clear colour and accent in step; without themeScene, theme() / onTheme feed this.
-const OWN = { bg: '#07050f', accent: '#ffcf5a' };
+const OWN = { bg: '#14110e', accent: '#ffcf5a' };
 const THEME_VARS = { text: '--txt', dim: '--mut', glass: '--panel', panel: '--panel', line: '--line' };
 // '#rrggbb' a -> b by t (0 = a untouched); anything else: b when t > 0 (the OLYMPUS themes' own mix rule, kept local)
 function mixHex(a, b, t) {

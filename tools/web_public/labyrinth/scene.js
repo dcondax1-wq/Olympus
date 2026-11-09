@@ -15,7 +15,7 @@ import * as M from '../olympus/materials.js';
 import * as FX from '../olympus/fx-atmos.js';
 
 const W = 22, H = 8.5, XL = -W / 2;
-const RED = '#ff4d57', GOLD = '#ffcf5a', CYAN = '#7fe9ff';
+const RED = '#c0603f', GOLD = '#d4b05a', CYAN = '#efe0bd';   // AGORA: terracotta floor wall, gold gate, a warm ivory trail
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
 
 function mazeCells(cols, rows, seed) {                    // a seeded depth-first maze: the walls that remain
@@ -47,28 +47,28 @@ function mazeCells(cols, rows, seed) {                    // a seeded depth-firs
 export function createMaze(canvas, { O = null } = {}) {
   const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#06030a');
-  scene.fog = new THREE.FogExp2(0x0a0510, 0.016);
+  scene.background = new THREE.Color('#2b1f17');
+  scene.fog = new THREE.FogExp2(0x3a2a20, 0.017);
   const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 300);
   let fxList = [], lite = false, dirty = true, qcb = null, drawn = 0, frames = 0, stopped = false, raf = 0;
-  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: RED, exposure: 0.85, maxDpr: 1.75, bloom: { strength: 0.75, radius: 0.55, threshold: 0.95 },
+  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: GOLD, theme: { sky: '#4a3626', fog: '#2a1d14', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, exposure: 1.0, maxDpr: 1.75, bloom: { strength: 0.2, radius: 0.5, threshold: 0.96 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; dirty = true; FX.setQuality(fxList, l); if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
 
-  scene.add(new THREE.HemisphereLight('#7a6cff', '#150a0a', 0.5));
-  const key = new THREE.DirectionalLight('#ffd9c9', 0.9); key.position.set(-8, 14, 10); scene.add(key);
-  const rimLight = new THREE.DirectionalLight('#8f7bff', 1.1); rimLight.position.set(10, 6, -14); scene.add(rimLight);          // a cool rim from behind: bronze edges read against the dark
-  const warmFill = new THREE.PointLight('#ffb36b', 26, 36, 1.7); warmFill.position.set(-8, 5, 6); scene.add(warmFill);
-  const redLight = new THREE.PointLight(RED, 40, 40, 1.6); redLight.position.set(0, 1, 2); scene.add(redLight);
+  scene.add(new THREE.HemisphereLight('#e8c89a', '#3a281a', 0.85));
+  const key = new THREE.DirectionalLight('#ffd9a8', 1.2); key.position.set(-8, 14, 10); scene.add(key);
+  const rimLight = new THREE.DirectionalLight('#f0c890', 0.6); rimLight.position.set(10, 6, -14); scene.add(rimLight);          // a cool rim from behind: bronze edges read against the dark
+  const warmFill = new THREE.PointLight('#ffb36b', 30, 36, 1.7); warmFill.position.set(-8, 5, 6); scene.add(warmFill);
+  const redLight = new THREE.PointLight(RED, 26, 40, 1.6); redLight.position.set(0, 1, 2); scene.add(redLight);
   const gate = new THREE.PointLight(GOLD, 28, 30, 1.6); gate.position.set(W / 2, 7, 0); scene.add(gate);
 
   // ---- sky and the labyrinth underneath (built once)
-  const stars = M.starfield({ count: 1100, radius: 150, size: 2 }); scene.add(stars);
-  const neb = M.nebula({ colors: ['#ff4d57', '#7a4cff', '#3a1a5f'], count: 7, radius: 80, size: 90, opacity: 0.14 }); neb.position.y = 15; scene.add(neb);
-  const floorFx = FX.polishedFloor({ size: 220, color: '#0e0a16', y: -1.6, roughness: 0.14 }); scene.add(floorFx.object);
+  const stars = { update() {} };           // no stars: a warm dusk
+  const neb = { update() {} };
+  const floorFx = FX.polishedFloor({ size: 220, color: '#4a382a', y: -1.6, roughness: 0.4 }); scene.add(floorFx.object);
   // the room's light: shafts falling through the haze onto the maze, dust in them, a bronze-lit rim
-  const shaftFx = FX.shafts({ count: 5, from: [-3, 22, 8], to: [0, -1.6, 0], width: 7, spread: [16, 0, 10], color: '#c9a8ff', strength: 0.13 });
-  const dustFx = FX.dust({ count: 260, box: [34, 14, 26], color: '#e6d2ff', size: 4.5, strength: 0.9 });
+  const shaftFx = FX.shafts({ count: 5, from: [-3, 22, 8], to: [0, -1.6, 0], width: 7, spread: [16, 0, 10], color: '#ffd9a8', strength: 0.1 });
+  const dustFx = FX.dust({ count: 260, box: [34, 14, 26], color: '#ffe6c0', size: 4.5, strength: 0.9 });
   dustFx.object.position.set(0, -1.2, 0);
   const gateEmb = FX.embers({ count: 120, origin: [W / 2 + 0.2, 0, 0], spread: [1.4, 0, 2.8], rise: 6, colors: ['#fff1b8', '#ffc247', '#ff7a1f'], size: 6, wind: -0.2 });
   const bustEmb = FX.embers({ count: 90, origin: [0, 0, 0], spread: [0.6, 0, 0.6], rise: 4.5, colors: ['#ffd0c8', '#ff4d57', '#7a1020'], size: 6, seed: 21 });
@@ -79,7 +79,7 @@ export function createMaze(canvas, { O = null } = {}) {
   const CELL = 2.2, COLS = 13, ROWS = 8, walls = mazeCells(COLS, ROWS, 41);
   const wallGeo = new THREE.BoxGeometry(1, 1, 1);
   const wm = new THREE.InstancedMesh(wallGeo, FX.bronze({ color: '#a2714a', roughness: 0.36 }), walls.length);
-  const em = new THREE.InstancedMesh(wallGeo, M.neon({ color: '#b43cff', intensity: 1.7, fog: true }), walls.length);
+  const em = new THREE.InstancedMesh(wallGeo, new THREE.MeshBasicMaterial({ color: hdr('#b9895a', 0.9) }), walls.length);
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), p3 = new THREE.Vector3(), s3 = new THREE.Vector3();
   walls.forEach(([x, z, , horiz], i) => {
     const wx = (x - COLS / 2) * CELL, wz = (z - ROWS / 2) * CELL - 1;
@@ -92,8 +92,8 @@ export function createMaze(canvas, { O = null } = {}) {
   const yOf = { v: (b) => 0, ymin: 0, ymax: 1 };
   const yScale = (b) => ((b - yOf.ymin) / (yOf.ymax - yOf.ymin)) * H;
   const xAt = (i, L) => XL + (W * i) / L;
-  const startLine = new THREE.Mesh(new THREE.BoxGeometry(W, 0.025, 0.025), M.neon({ color: CYAN, intensity: 1.2, fog: true })); scene.add(startLine);
-  const targetLine = new THREE.Mesh(new THREE.BoxGeometry(W, 0.06, 0.06), M.neon({ color: GOLD, intensity: 3.2, fog: true })); scene.add(targetLine);
+  const startLine = new THREE.Mesh(new THREE.BoxGeometry(W, 0.025, 0.025), new THREE.MeshBasicMaterial({ color: hdr('#e8d9b8', 0.8) })); scene.add(startLine);
+  const targetLine = new THREE.Mesh(new THREE.BoxGeometry(W, 0.06, 0.06), new THREE.MeshBasicMaterial({ color: hdr(GOLD, 1.3) })); scene.add(targetLine);
   const targetSheet = new THREE.Mesh(new THREE.PlaneGeometry(W, 1.6), new THREE.MeshBasicMaterial({ color: hdr(GOLD, 0.6), transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false }));
   scene.add(targetSheet);
   const gateGroup = new THREE.Group(); scene.add(gateGroup);
@@ -105,14 +105,14 @@ export function createMaze(canvas, { O = null } = {}) {
 
   // ---- the floor wall: blocks under the floor line, a red neon edge
   const MAXL = 40;
-  const blockMat = M.metal({ kind: 'gunmetal', color: '#16121f', roughness: 0.3, clearcoat: 1 });
+  const blockMat = M.marble({ color: '#c9bba5', gold: false, scale: 0.6, roughness: 0.55 });
   const blocks = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 2.6), blockMat, MAXL + 1);
-  const edges = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 0.16), new THREE.MeshBasicMaterial({ color: hdr(RED, 2.6) }), MAXL + 1);
+  const edges = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 0.16), new THREE.MeshBasicMaterial({ color: hdr(RED, 1.35) }), MAXL + 1);
   blocks.count = edges.count = 0; scene.add(blocks, edges);
   let floorTube = null, pathTube = null, pathGlow = null, ghostLines = null;
-  const threadFx = FX.threadGlow({ color: CYAN, strength: 1.5, speed: 0.5 });          // fibre light around the runner's trail: a fresnel halo with a pulse running along it
-  const floorMat = new THREE.MeshBasicMaterial({ color: hdr(RED, 3) }), pathMat = new THREE.MeshBasicMaterial({ color: hdr(CYAN, 3.2) });
-  const runner = new THREE.Mesh(new THREE.SphereGeometry(0.28, 20, 14), new THREE.MeshBasicMaterial({ color: hdr(CYAN, 5) }));
+  const threadFx = FX.threadGlow({ color: CYAN, strength: 0.6, speed: 0.5 });          // fibre light around the runner's trail: a fresnel halo with a pulse running along it
+  const floorMat = new THREE.MeshBasicMaterial({ color: hdr(RED, 1.4) }), pathMat = new THREE.MeshBasicMaterial({ color: hdr(CYAN, 1.2) });
+  const runner = new THREE.Mesh(new THREE.SphereGeometry(0.28, 20, 14), new THREE.MeshBasicMaterial({ color: hdr(CYAN, 1.6) }));
   const runnerGlow = new THREE.Sprite(new THREE.SpriteMaterial({ color: hdr(CYAN, 1.4), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
     map: (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
       r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.3, 'rgba(255,255,255,.5)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64);
@@ -154,7 +154,7 @@ export function createMaze(canvas, { O = null } = {}) {
     // ghosts: line segments, gold when that run passes, red when it busts
     const gs = r.ghosts || [], pos = [], col = [];
     gs.forEach((g) => {
-      const c = new THREE.Color(g.outcome === 'pass' ? GOLD : g.outcome === 'bust' ? RED : '#c9c3e6').multiplyScalar(0.9);
+      const c = new THREE.Color(g.outcome === 'pass' ? GOLD : g.outcome === 'bust' ? RED : '#d8c9a8').multiplyScalar(0.9);
       for (let i = 0; i < g.bal.length - 1; i++) {
         pos.push(xAt(i, L), yScale(g.bal[i]), -0.4, xAt(i + 1, L), yScale(g.bal[i + 1]), -0.4); col.push(c.r, c.g, c.b, c.r, c.g, c.b);
       }
@@ -177,12 +177,12 @@ export function createMaze(canvas, { O = null } = {}) {
     if (!walkSt.on && pathTube) pathTube.geometry.setDrawRange(0, Infinity);
     // the runner and the colours of the ending
     const last = pp[pp.length - 1], tint = r.outcome === 'pass' ? GOLD : r.outcome === 'bust' ? RED : CYAN;
-    runner.position.copy(last); runner.material.color.copy(hdr(tint, 5)); runnerGlow.material.color.copy(hdr(tint, 1.4));
-    pathMat.color.copy(hdr(tint, 3.2)); threadFx.material.uniforms.uColor.value.copy(hdr(tint, 1.5));
+    runner.position.copy(last); runner.material.color.copy(hdr(tint, 1.6)); runnerGlow.material.color.copy(hdr(tint, 1.4));
+    pathMat.color.copy(hdr(tint, 1.3)); threadFx.material.uniforms.uColor.value.copy(hdr(tint, 1.1));
     bustEmb.object.visible = r.outcome === 'bust' && FX.QUALITY[rc.quality()].particles > 0; bustEmb.object.position.set(last.x, last.y, 0);
     gateEmb.object.visible = FX.QUALITY[rc.quality()].particles > 0 && r.outcome !== 'bust';
     const room = steps[n - 1].bal - steps[n - 1].floor;
-    redLight.intensity = 20 + 40 * Math.max(0, 1 - room / (rules.mll || 2000));        // the nearer the floor, the redder the corridor
+    redLight.intensity = 12 + 24 * Math.max(0, 1 - room / (rules.mll || 2000));        // the nearer the floor, the redder the corridor
     dirty = true;
   }
 

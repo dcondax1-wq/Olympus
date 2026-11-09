@@ -329,7 +329,7 @@ def _page_checks(br, url, url_nodata):
     lp = p.evaluate("window.__forge.screenOf('live')")
     p.mouse.click(lp["x"], lp["y"])
     p.wait_for_timeout(300)
-    check("e. the live reference flame opens the LIVE LIT card", p.is_visible("#card") and "LIVE LIT" in p.inner_text("#card-h"),
+    check("e. the live reference flame opens the LIVE LIT card", p.is_visible("#card") and "LIVE LIT" in p.inner_text("#card-h").upper(),
           p.inner_text("#card-h") if p.is_visible("#card") else "")
     p.click("#truthBtn")
     p.wait_for_timeout(300)
@@ -413,7 +413,7 @@ def _filter_checks(p, d):
     w = p.evaluate("(id) => { window.__forge.openCard(id); return document.getElementById('chg').className + '|' + document.getElementById('chg').innerText; }", d["champion"]["id"])
     real = bool(d["verdict"]["real_margin"])
     check("g. the champion's verdict follows forge.json (no real H2 margin -> 'NO, LIVE STAYS')",
-          ("chg-box no" in w and "LIVE STAYS" in w) == (not real), w[:160])
+          ("chg-box no" in w and "LIVE STAYS" in w.upper()) == (not real), w[:160])
     p.click("#cardX")
 
 
@@ -496,7 +496,7 @@ out.search = { id: P.search(F, '#' + champ.id)[0].id, champ: P.search(F, 'champi
   knob: P.search(F, 'be_r').length > 0, h2: P.search(F, 'pass h2').every((h) => F.halfPass(h.k).h2), nothing: P.search(F, 'zzqxv').length, blank: P.search(F, '  ').length, cap: P.search(F, 'child').length <= 25 };
 const c = P.compare(F, champ.id, 'live'); out.cmp = { rows: c.rows.length, text: c.text.length > 10, same: P.compare(F, 'live', 'live').aWins, bad: P.compare(F, 99999, 'live'), h2: c.h2Winner };
 const sl = P.shareLines(F, champ.id); out.share = { title: sl.title, level: sl.level, bars: sl.bars.length, foot: sl.foot, demo: sl.demo };
-const demo = new Core.Forge(Core.demoData(7)); const dd = P.overfit(demo, demo.d.champion.k); out.demo = [dd.meter >= 0, P.breeding(demo).length, P.verdictHistory(demo).rows.length, P.survivors(demo, 5).length >= 0, P.shareLines(demo, demo.d.champion.id).demo, P.shareLines(demo, demo.d.champion.id).foot.includes('DEMO')];
+const demo = new Core.Forge(Core.demoData(7)); const dd = P.overfit(demo, demo.d.champion.k); out.demo = [dd.meter >= 0, P.breeding(demo).length, P.verdictHistory(demo).rows.length, P.survivors(demo, 5).length >= 0, P.shareLines(demo, demo.d.champion.id).demo, P.shareLines(demo, demo.d.champion.id).foot.toUpperCase().includes('DEMO')];
 console.log(JSON.stringify(out));
 """
 
@@ -524,8 +524,8 @@ def part_h():
     lost = max(0, min(150, round(100 * (g1 - g2) / g1))) if g1 > 0 else (0 if g2 >= 0 else 100)
     ov = o["over"]
     check(f"h. the overfitting meter is the champion's own numbers: H1 gain {g1:+.0f} $/mo over live, H2 gain {g2:+.0f}, {lost}% of the H1 gain lost -> {ov['label']}",
-          ov["g1"] == g1 and ov["g2"] == g2 and ov["lost"] == lost and ov["meter"] == min(100, lost) and ov["h1"] == G["h1"]["pm"] and ov["h2"] == G["h2"]["pm"] and ov["label"] in ("HEALTHY", "WARM", "OVERFIT", "BURNT", "NO GAIN")
-          and (ov["label"] != "HEALTHY" if lost >= 20 else True) and o["liveOver"] == "NO GAIN", ov)
+          ov["g1"] == g1 and ov["g2"] == g2 and ov["lost"] == lost and ov["meter"] == min(100, lost) and ov["h1"] == G["h1"]["pm"] and ov["h2"] == G["h2"]["pm"] and ov["label"].upper() in ("HEALTHY", "WARM", "OVERFIT", "BURNT", "NO GAIN")
+          and (ov["label"].upper() != "HEALTHY" if lost >= 20 else True) and o["liveOver"].upper() == "NO GAIN", ov)
     P = o["pop"]
     live_k = d["live"]["k"]
     keys = [k for k in d["genomes"] if k != live_k]
@@ -546,7 +546,7 @@ def part_h():
     c = o["cmp"]
     check("h. compare: nine rows with a winner each, a plain verdict, a creature against itself is a tie, an unknown id is null", c["rows"] == 9 and c["text"] and c["same"] == 0 and c["bad"] is None, c)
     sh = o["share"]
-    check("h. the share card says what it is: the title, the verdict, three bars (creature against live) and the 'not advice' footer", sh["title"].startswith("CHAMPION #") and sh["level"] in ("yes", "maybe", "no") and sh["bars"] == 3 and "not advice" in sh["foot"] and sh["demo"] is False, sh)
+    check("h. the share card says what it is: the title, the verdict, three bars (creature against live) and the 'not advice' footer", sh["title"].upper().startswith("CHAMPION #") and sh["level"] in ("yes", "maybe", "no") and sh["bars"] == 3 and "not advice" in sh["foot"] and sh["demo"] is False, sh)
     check("h. the demo fixture works everywhere (never blank) and the share card says DEMO", all(x for x in o["demo"][:1]) and o["demo"][1] == 20 and o["demo"][2] == 20 and o["demo"][4] is True and o["demo"][5] is True, o["demo"])
 
 
@@ -560,7 +560,7 @@ def _plus_checks(br, url):
     p.click("#plusBtn")
     p.wait_for_function("!document.getElementById('plus').hidden && document.getElementById('plus-b').innerText.length > 100")
     t = p.inner_text("#plus-b")
-    check("i. Tools opens on the overfitting METER: the champion, a dial, the in-sample / new-data numbers, the whole run, a share button", "Champion #" in t and "H1: the data the forge trained on" in t and "THE WHOLE RUN" in t and p.query_selector("#plus-b .dial") is not None and p.query_selector("[data-share]") is not None, t[:120])
+    check("i. Tools opens on the overfitting METER: the champion, a dial, the in-sample / new-data numbers, the whole run, a share button", "Champion #" in t and "H1: the data the forge trained on" in t and "THE WHOLE RUN" in t.upper() and p.query_selector("#plus-b .dial") is not None and p.query_selector("[data-share]") is not None, t[:120])
     check("i. the Tools panel keeps the orb corner free and does not scroll the page sideways", not _orb_free(p) and p.evaluate("document.documentElement.scrollWidth <= innerWidth"), _orb_free(p))
     p.click('[data-ptab="breed"]')
     rows = p.evaluate("document.querySelectorAll('#plus-b .gens li').length")
@@ -569,10 +569,10 @@ def _plus_checks(br, url):
     check("i. BREEDING: a row per generation (20); tapping one puts the arena on that generation", rows == d["gens_n"] and p.evaluate("window.__forge.gen") == 6, (rows, p.evaluate("window.__forge.gen")))
     p.click('[data-ptab="verdicts"]')
     cells = p.evaluate("document.querySelectorAll('#plus-b .vgrid button').length")
-    check("i. VERDICTS: one dot per generation and a list, 'No, live stays' for this run", cells == d["gens_n"] and "NO, LIVE STAYS" in p.inner_text("#plus-b"), cells)
+    check("i. VERDICTS: one dot per generation and a list, 'No, live stays' for this run", cells == d["gens_n"] and "NO, LIVE STAYS" in p.inner_text("#plus-b").upper(), cells)
     p.click("#plus-b .vlist li:first-child button")
     p.wait_for_selector("#card:not([hidden])")
-    check("i. a verdict row opens that creature's card: with the overfitting strip (a meter, its word, SHARE, COMPARE)", p.query_selector("#ofit .om") is not None and p.inner_text("#ofit b") in ("HEALTHY", "WARM", "OVERFIT", "BURNT", "NO GAIN") and p.query_selector("#cardShare") is not None and p.is_hidden("#plus"))
+    check("i. a verdict row opens that creature's card: with the overfitting strip (a meter, its word, SHARE, COMPARE)", p.query_selector("#ofit .om") is not None and p.inner_text("#ofit b").upper() in ("HEALTHY", "WARM", "OVERFIT", "BURNT", "NO GAIN") and p.query_selector("#cardShare") is not None and p.is_hidden("#plus"))
     p.click("#cardX")
     p.click("#plusBtn")
     p.click('[data-ptab="search"]')

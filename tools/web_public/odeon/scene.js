@@ -11,15 +11,15 @@ import { Arena } from './arena.js';
 import { barsAt, formingBar, priceAt, stopAt, eventsUpTo } from './timeline.js';
 
 const COL = {
-  up: new THREE.Color('#46d79a'), down: new THREE.Color('#ff6b7f'), level: new THREE.Color('#7fb4ff'),
-  spent: new THREE.Color('#9a8cff'), stop: new THREE.Color('#ff3b5c'), be: new THREE.Color('#b18cff'),
-  gold: new THREE.Color('#ffc65a'), entry: new THREE.Color('#e8f3ff'), limit: new THREE.Color('#5ee7ff'),
-  win: new THREE.Color('#46d79a'), loss: new THREE.Color('#ff4d6d'), bev: new THREE.Color('#b18cff'), bolt: new THREE.Color('#cfe3ff'),
+  up: new THREE.Color('#8a9a5a'), down: new THREE.Color('#d06a48'), level: new THREE.Color('#6fa3c4'),
+  spent: new THREE.Color('#b8a07c'), stop: new THREE.Color('#c0603f'), be: new THREE.Color('#d9c9a8'),
+  gold: new THREE.Color('#d4b05a'), entry: new THREE.Color('#f3ece0'), limit: new THREE.Color('#6fa3c4'),
+  win: new THREE.Color('#8a9a5a'), loss: new THREE.Color('#d06a48'), bev: new THREE.Color('#d9c9a8'), bolt: new THREE.Color('#f0dcb0'),
 };
 
 const LOCAL = 2.6;    // world height of a typical 30-bar stretch of tape (the pillars' vertical scale)
 const DEPTH = 5;      // depth of the light planes
-const FOG = new THREE.Color('#06050b');
+const FOG = new THREE.Color('#2a1d14');
 
 // ---------------------------------------------------------------- shaders
 const PILLAR_VS = `
@@ -109,7 +109,7 @@ void main() {
   float line = 1.0 - smoothstep(0.0, 0.035, min(g.x, g.y));
   float d = length(vec2((vW.x - uHeadX) * 0.22, vW.z * 0.32));
   float pool = exp(-d * d * 1.4);
-  vec3 col = uBase + vec3(0.30, 0.38, 0.7) * line * 0.10 + uTint * pool * 0.20 + uTint * uFlash * 0.25;
+  vec3 col = uBase + vec3(0.62, 0.5, 0.34) * line * 0.10 + uTint * pool * 0.20 + uTint * uFlash * 0.25;
   gl_FragColor = vec4(col, uAlpha - pool * 0.22);
 #include <fog_fragment>
 #include <colorspace_fragment>
@@ -128,10 +128,10 @@ uniform float uTime; varying vec2 vUv; varying vec3 vW;
 void main() {
   vec2 p = vUv - vec2(0.5, 0.42);
   float r = length(p * vec2(1.0, 1.8));
-  vec3 a = vec3(0.06, 0.03, 0.13) * exp(-r * r * 6.0);
-  vec3 b = vec3(0.01, 0.07, 0.10) * exp(-pow(length(p - vec2(0.22, 0.05)) * 2.4, 2.0));
+  vec3 a = vec3(0.14, 0.09, 0.05) * exp(-r * r * 6.0);
+  vec3 b = vec3(0.08, 0.05, 0.02) * exp(-pow(length(p - vec2(0.22, 0.05)) * 2.4, 2.0));
   float hz = exp(-pow((vUv.y - 0.36) * 9.0, 2.0)) * 0.10;
-  gl_FragColor = vec4(a + b + vec3(0.25, 0.18, 0.5) * hz, 1.0);
+  gl_FragColor = vec4(a + b + vec3(0.45, 0.30, 0.15) * hz, 1.0);
 }`;
 
 // the dust in the beam as bokeh: a point grows and softens with its distance from the focus plane (the director's shot
@@ -256,13 +256,13 @@ export class Theater {
     // the OLYMPUS render core (docs/OLYMPUS_RENDER.md): ACES + sRGB, the environment light, bloom, 4x MSAA on HD, FXAA on LITE. 'display'
     // space keeps the glass pillars' colours; the camera is the app's (it lives in app.js), the size comes from resize().
     this.rc = createRenderer({ canvas, scene: this.scene, camera: o.camera || new THREE.PerspectiveCamera(42, 1, 0.1, 1500), space: 'display', env: 'night',
-      tint: '#7fb4ff', autoSize: false, fitCamera: false, adapt: false, maxDpr: 1.75, bloom: { strength: 0.7, radius: 0.6, threshold: 0.8 },
+      tint: '#c8a24a', theme: { sky: '#4a3626', fog: '#2a1d14', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, autoSize: false, fitCamera: false, adapt: false, maxDpr: 1.75, bloom: { strength: 0.22, radius: 0.5, threshold: 0.9 },
       grade: { vignette: 0.3, grain: 0.03 } });
     this.renderer = this.rc.renderer;
     this.renderer.setClearColor(FOG, 1);
     this.glow = glowTexture();
     this.flash = 0;          // global flash 0..1 (decays)
-    this.flashTint = new THREE.Color('#ffffff');
+    this.flashTint = new THREE.Color('#f3ece0');
     this.fx = [];            // live one-off effects {update(dt) -> alive}
     this.mirrors = [];       // [source, reflection] pairs kept in step every frame
     this.time = 0;
@@ -280,7 +280,7 @@ export class Theater {
   _buildRoom() {
     const fogU = THREE.UniformsLib.fog;
     this.floorMat = new THREE.ShaderMaterial({
-      uniforms: THREE.UniformsUtils.merge([fogU, { uBase: { value: new THREE.Color('#07060d') }, uTint: { value: new THREE.Color('#5a7bff') },
+      uniforms: THREE.UniformsUtils.merge([fogU, { uBase: { value: new THREE.Color('#2a1d14') }, uTint: { value: new THREE.Color('#c8924a') },
         uHeadX: { value: 0 }, uFlash: { value: 0 }, uAlpha: { value: 0.8 } }]),
       vertexShader: PLANE_VS, fragmentShader: FLOOR_FS, transparent: true, depthWrite: false, fog: true,
     });
@@ -298,7 +298,7 @@ export class Theater {
     this.sky.renderOrder = -2;
     this.scene.add(this.sky);
     this.shafts = new THREE.Group();
-    const shaftMat = new THREE.ShaderMaterial({ uniforms: { uColor: { value: new THREE.Color('#6d7cff') }, uI: { value: 0.1 }, uTime: { value: 0 } },
+    const shaftMat = new THREE.ShaderMaterial({ uniforms: { uColor: { value: new THREE.Color('#ffd9a0') }, uI: { value: 0.08 }, uTime: { value: 0 } },
       vertexShader: PLANE_VS.replace('#include <fog_pars_vertex>', '').replace('#include <fog_vertex>', ''),
       fragmentShader: SHAFT_FS, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
     this.shaftMat = shaftMat;
@@ -319,7 +319,7 @@ export class Theater {
     const dg = new THREE.BufferGeometry();
     dg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     this.dustMat = new THREE.ShaderMaterial({ uniforms: { uSize: { value: 0.07 }, uH: { value: 800 }, uFocus: { value: 12 },
-      uColor: { value: new THREE.Color('#9fb4ff') } }, vertexShader: BOKEH_VS, fragmentShader: BOKEH_FS, transparent: true,
+      uColor: { value: new THREE.Color('#ffe0b0') } }, vertexShader: BOKEH_VS, fragmentShader: BOKEH_FS, transparent: true,
       depthWrite: false, blending: THREE.AdditiveBlending });
     this.dust = new THREE.Points(dg, this.dustMat);
     this.dust.renderOrder = 8;
@@ -329,7 +329,7 @@ export class Theater {
     const cg = new THREE.PlaneGeometry(DEPTH, 1);
     cg.rotateY(Math.PI / 2);
     cg.translate(0, 0.5, 0);
-    this.curtainMat = new THREE.ShaderMaterial({ uniforms: { uColor: { value: new THREE.Color('#8fb0ff') }, uI: { value: 0.22 }, uTime: { value: 0 } },
+    this.curtainMat = new THREE.ShaderMaterial({ uniforms: { uColor: { value: new THREE.Color('#e0b878') }, uI: { value: 0.16 }, uTime: { value: 0 } },
       vertexShader: PLANE_VS.replace('#include <fog_pars_vertex>', '').replace('#include <fog_vertex>', ''),
       fragmentShader: SHAFT_FS.replace('float along = smoothstep(0.0, 0.25, vUv.y) * (1.0 - vUv.y * 0.6);', 'float along = 0.35 + 0.65 * vUv.y;'),
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
@@ -459,7 +459,7 @@ export class Theater {
       const known = lv.t == null ? B.t[0] : Math.max(B.t[0], lv.t + 300);
       const sw = sweeps.find((e) => (e.levels || []).indexOf(lv.k) >= 0);
       m.position.set(this.xAt(known), this.Y(lv.px), 0);
-      const label = textSprite((lv.name || lv.label || '').toUpperCase(), '#a9c8ff', this._px(lv.px));
+      const label = textSprite((lv.name || lv.label || '').toUpperCase(), '#d9c9a8', this._px(lv.px));
       label.position.set(this.xAt(known) + 0.15, this.Y(lv.px) + 0.08, 0.2);
       this.tg.add(m, label);
       this._mirror(m); this._mirror(label);
@@ -478,9 +478,9 @@ export class Theater {
     this.stopPlane = planeMesh(1, COL.stop);
     this.targetPlane = planeMesh(2, COL.gold);
     for (const m of [this.entryPlane, this.stopPlane, this.targetPlane]) { this.tg.add(m); this._mirror(m); }
-    this.stopLabel = textSprite('STOP ' + this._px(tr.stop), '#ff8a9c');
-    this.targetLabel = textSprite('TARGET ' + this._px(tr.target), '#ffd88a');
-    this.entryLabel = textSprite((tr.side === 'SHORT' ? 'SHORT ' : 'LONG ') + this._px(tr.entry.px), '#e8f3ff');
+    this.stopLabel = textSprite('STOP ' + this._px(tr.stop), '#d98a6e');
+    this.targetLabel = textSprite('TARGET ' + this._px(tr.target), '#e0b878');
+    this.entryLabel = textSprite((tr.side === 'SHORT' ? 'SHORT ' : 'LONG ') + this._px(tr.entry.px), '#f3ece0');
     this.tg.add(this.stopLabel, this.targetLabel, this.entryLabel);
     // the R ruler beside the entry: -1R (the stop) and every whole R up to the target, each with its $ for this size (risk_pts x $2 x micros)
     this.rungs = [];
@@ -491,7 +491,7 @@ export class Theater {
       for (const n of ns) {
         const usd = n * risk * 2 * (tr.qty || 1);
         const s = textSprite(`${n > 0 ? '+' : '−'}${Math.abs(n)}R · ${n > 0 ? '+' : '−'}$${Math.round(Math.abs(usd)).toLocaleString('en-US')}`,
-          n < 0 ? '#ff8a9c' : n === Math.round(tR) && tR - n < 0.5 ? '#ffd88a' : '#8fe9c0');
+          n < 0 ? '#d98a6e' : n === Math.round(tR) && tR - n < 0.5 ? '#e0b878' : '#b5c07a');
         s.center.set(1, 0.5);
         s.position.set(this.xAt(tr.entry.t) - 0.5, this.Y(tr.entry.px + tr.d * n * risk), 0.25);
         s.visible = false;
@@ -659,7 +659,7 @@ export class Theater {
     this.pnlTag.visible = inPlay;
     if (inPlay) {
       const usd = pnl * 2 * (tr.qty || 1);
-      this.pnlTag.userData.set(`${rr >= 0 ? '+' : '−'}${Math.abs(rr).toFixed(1)}R · ${usd >= 0 ? '+' : '−'}$${Math.round(Math.abs(usd)).toLocaleString('en-US')}`, rr >= 0 ? '#46f0a0' : '#ff6b7f');
+      this.pnlTag.userData.set(`${rr >= 0 ? '+' : '−'}${Math.abs(rr).toFixed(1)}R · ${usd >= 0 ? '+' : '−'}$${Math.round(Math.abs(usd)).toLocaleString('en-US')}`, rr >= 0 ? '#a3b36a' : '#ff6b7f');
       this.pnlTag.position.set(done ? xEnd + 0.25 : hx + 0.5, (done ? this.Y(tr.exit.px) : hy) + 0.55, 0.4);
     }
     // the room follows the action

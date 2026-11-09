@@ -439,12 +439,12 @@ function postCard() {
   const t = S.trades[0];
   const card = { v: 1, name: 'ODEON', status: { level: S.demo ? 'warn' : 'ok', label: S.demo ? 'Demo reel only' : `${S.trades.length} reels ready` },
     kpis: [{ label: 'Reels', value: String(S.trades.length) }, { label: 'Latest', value: dayLabel(t.day) }, { label: 'Last reel', value: fmtR(t.r), delta: fmtUsd(t.usd) }],
-    lines: [`${t.bot} ${t.side.toLowerCase()} ${dayLabel(t.day)}: ${fmtUsd(t.usd)}`], t: Math.floor(Date.now() / 1000), open: '#reels', theme: '#07060c' };
+    lines: [`${t.bot} ${t.side.toLowerCase()} ${dayLabel(t.day)}: ${fmtUsd(t.usd)}`], t: Math.floor(Date.now() / 1000), open: '#reels', theme: '#14110e' };
   try { window.parent.postMessage({ jarvis: 1, href: location.href, card }, 'https://demetrades2000-coder.github.io'); } catch (e) { /* not in Jarvis */ }
 }
 
 // ---------------------------------------------------------------- themes (OLYMPUS)
-const OWN_ACCENT = '#7fb4ff';
+const OWN_ACCENT = '#c8a24a';
 const hexOk = (c) => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
 /** '#rrggbb' a blended toward b by t (0 = a untouched): the kit's own mix when it is there. */
 function blend(a, b, t) {

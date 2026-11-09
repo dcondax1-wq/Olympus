@@ -129,7 +129,7 @@ export function halfPass(G, L) {
 export function wouldChange(G, L, isChamp, d) {
   const why = [], dm2 = G.h2.pm - L.h2.pm, dm1 = G.h1.pm - L.h1.pm, margin = L.h2.pm ? dm2 / L.h2.pm : 0;
   const p = halfPass(G, L), boot = isChamp && d && d.verdict && d.verdict.boot;
-  if (G === L) return { level: 'no', title: 'IT IS LIVE', why: ['This is the live strategy: nothing to change.'], margin: 0 };
+  if (G === L) return { level: 'no', title: 'It is live', why: ['This is the live strategy: nothing to change.'], margin: 0 };
   why.push(`${dm1 >= 0 ? 'Better' : 'Worse'} than live on H1 by ${Math.abs(Math.round(dm1)).toLocaleString('en-US')} $/mo.`);
   why.push(`${dm2 >= 0 ? 'Better' : 'Worse'} than live on the H2 check by ${Math.abs(Math.round(dm2)).toLocaleString('en-US')} $/mo (${(margin * 100).toFixed(0)}%).`);
   if (!p.d2.speed) why.push('The eval gets slower on H2.');
@@ -137,9 +137,9 @@ export function wouldChange(G, L, isChamp, d) {
   if (G.y && L.y && G.y.pm < L.y.pm - 50) why.push('Worse on 2021-25 (a reference line, not a gate).');
   if (boot) why.push(boot.p_le0 > 0.05 ? `The bootstrap says ${(boot.p_le0 * 100).toFixed(0)}% odds the H2 gain is zero or less: too noisy.` : 'The bootstrap agrees the H2 gain is real.');
   const solid = p.d2.pm && margin >= 0.1 && p.d2.speed && p.d2.freq && (!boot || boot.p_le0 <= 0.05);
-  if (solid && p.h1) return { level: 'yes', title: 'YES, TAKE IT TO THE OWNER', why, margin };
-  if (p.d2.pm && p.d2.speed && p.d2.freq) return { level: 'maybe', title: 'NOT YET: TOO CLOSE TO CALL', why, margin };
-  return { level: 'no', title: 'NO, LIVE STAYS', why, margin };
+  if (solid && p.h1) return { level: 'yes', title: 'Yes, take it to the owner', why, margin };
+  if (p.d2.pm && p.d2.speed && p.d2.freq) return { level: 'maybe', title: 'Not yet: too close to call', why, margin };
+  return { level: 'no', title: 'No, live stays', why, margin };
 }
 
 export class Forge {
@@ -252,7 +252,7 @@ export class Forge {
     const d = this.d, V = d.verdict, H = d.honesty || {}, L = this.live, seeds = d.seeds || [];
     const real = seeds.filter((s) => s.real).length;
     return {
-      liveBest: !d.proposal, title: d.proposal ? 'A CANDIDATE TO REVIEW' : 'LIVE LIT STILL BEST',
+      liveBest: !d.proposal, title: d.proposal ? 'A candidate to review' : 'Live LIT is still best',
       h1: V.h1_gain_pm, h2: V.h2_gain_pm, kept: V.survive_pct, liveH2: L.h2.pm, liveH1: L.h1.pm, real, seeds: seeds.length,
       checked: H.genomes_checked, beatBoth: H.beat_live_both_pm, lo5: V.boot && V.boot.lo5, hi95: V.boot && V.boot.hi95,
     };

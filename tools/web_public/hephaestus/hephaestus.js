@@ -1,7 +1,7 @@
 // HEPHAESTUS page (ES module): loads data.json (the stored backtest runs, cut by tools/hephaestus_build.py), or the recorded fixture.json (DEMO),
 // draws the forge (scene.js) and lets you turn dials. Text only through textContent. Reads only: nothing is sent anywhere, nothing is written
 // to the bot. window.HEPH is the test hook.
-import { find, byId, tested, anyTested, verdict, table, summary, usd, dec, KIND_COLOR, HALVES, ROWS, presets, compare, pushHistory, cardModel } from './hephaestuscore.js';
+import { find, byId, tested, anyTested, verdict, table, summary, usd, dec, pct, KIND_COLOR, HALVES, ROWS, presets, compare, pushHistory, cardModel } from './hephaestuscore.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -86,6 +86,7 @@ function render(strike) {
   $('verdict').dataset.kind = v.kind; $('verdict').style.setProperty('--vk', col);
   document.documentElement.dataset.kind = v.kind;
   const live = byId(S.data, S.data.live_id);
+  renderHero(sc, live);
   $('src').textContent = sc ? `Stored run: ${sc.run}${sc.base_confirm ? ` (1m confirm window ${sc.base_confirm})` : ''}. ${sc.label}.` : 'No stored run for this mix of dials.';
   $('ref2125').textContent = sc && sc.ref2125 && sc.ref2125.net != null ? `2021-25 for reference only (never a gate): ${usd(sc.ref2125.net)}, PF ${dec(sc.ref2125.pf)}, ${dec(sc.ref2125.tpw)} trades a week.` : '';
   if (S.scene) {
@@ -93,6 +94,25 @@ function render(strike) {
     S.scene.setState({ color: col, scale: sc ? ratio : 0.5, kind: v.kind });
     if (strike) S.scene.strike();
   }
+}
+
+// ------------------------------------------------------------------------------------------------ the money hero (what this setting pays, plainly)
+function renderHero(sc, live) {
+  const big = $('heroBig'), dl = $('heroDelta'), facts = $('heroFacts'); if (!big) return;
+  facts.replaceChildren();
+  if (!sc || !sc.h2) { big.textContent = '-'; dl.textContent = 'No stored run has this mix of dials, so there is no number to show.'; dl.className = 'delta'; $('barThis').style.width = '0%'; $('barLive').style.width = '0%'; return; }
+  const a = sc.h2.per_month, b = live && live.h2 ? live.h2.per_month : null;
+  big.textContent = usd(a);
+  const d = typeof a === 'number' && typeof b === 'number' ? a - b : null;
+  dl.className = 'delta ' + (d == null || Math.abs(d) < 1 ? '' : d > 0 ? 'up' : 'down');
+  dl.textContent = sc.id === S.data.live_id ? 'This is what the bot does today.' : d == null ? '' : Math.abs(d) < 1 ? 'The same as live.' : `${usd(d, true)} a month ${d > 0 ? 'more' : 'less'} than live (${usd(b)}).`;
+  const top = Math.max(1, a || 0, b || 0);
+  $('barThis').style.width = Math.max(2, Math.round(100 * Math.max(0, a || 0) / top)) + '%';
+  $('barLive').style.width = Math.max(2, Math.round(100 * Math.max(0, b || 0) / top)) + '%';
+  const f = (k, v) => { const li = h('li'); li.append(h('b', 'ag-num', v), h('span', '', k)); facts.append(li); };
+  f('Worst dip (eval allows $2,000)', usd(Math.abs(sc.h2.dd || 0)));
+  f('Evals passed in 2 weeks', pct(sc.h2.p10));
+  f('Evals failed in 2 weeks', pct(sc.h2.f10));
 }
 const saveAll = () => store.write({ dials: S.dials, hist: S.hist.slice(0, 12), pin: S.pin });
 
@@ -133,7 +153,7 @@ function renderHistory() {
   if (!S.hist.length) { ol.append(h('li', 'none', 'Nothing yet: turn a dial.')); return; }
   S.hist.forEach((e, i) => {
     const li = h('li', i === 0 ? 'now' : ''), b = h('button'); b.type = 'button'; b.dataset.id = e.id;
-    b.append(h('b', '', e.label || e.id), h('span', '', Object.values(e.dials || {}).join(' · ')), h('em', '', i === 0 ? 'NOW' : (e.head || '').split(' ').slice(0, 2).join(' ')));
+    b.append(h('b', '', e.label || e.id), h('span', '', Object.values(e.dials || {}).join(' · ')), h('em', '', i === 0 ? 'Now' : (e.head || '').split(' ').slice(0, 2).join(' ')));
     b.addEventListener('click', () => useScenario(byId(S.data, e.id)));
     li.append(b); ol.append(li);
   });
@@ -148,29 +168,29 @@ function wrap(g, t, x, y, max, lh, lines) {
   if (line && n < lines) g.fillText(line, x, y + n * lh);
 }
 function drawCard(cv, m) {
-  const g = cv.getContext('2d'), W = cv.width, H = cv.height, col = KIND_COLOR[m.kind] || '#ffb547';
-  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#1a0c10'); bg.addColorStop(0.5, '#0d0709'); bg.addColorStop(1, '#170a08'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, col = KIND_COLOR[m.kind] || '#c8a24a';
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#2a2118'); bg.addColorStop(0.5, '#14110e'); bg.addColorStop(1, '#1d1914'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
   const glow = g.createRadialGradient(W * 0.5, 330, 20, W * 0.5, 330, 620); glow.addColorStop(0, col + '55'); glow.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = glow; g.fillRect(0, 0, W, H);
-  for (let i = 0; i < 90; i++) { const x = (i * 197) % W, y = (i * 311) % H; g.fillStyle = `rgba(255,${170 + (i % 60)},90,${0.05 + (i % 7) * 0.02})`; g.fillRect(x, y, 3, 3); }   // embers
-  const fr = g.createLinearGradient(0, 0, W, H); fr.addColorStop(0, '#f6d58a'); fr.addColorStop(0.5, '#8a5a1c'); fr.addColorStop(1, '#f6d58a');
+  for (let i = 0; i < 90; i++) { const x = (i * 197) % W, y = (i * 311) % H; g.fillStyle = `rgba(224,176,96,${0.04 + (i % 7) * 0.015})`; g.fillRect(x, y, 3, 3); }   // embers
+  const fr = g.createLinearGradient(0, 0, W, H); fr.addColorStop(0, '#d4b05a'); fr.addColorStop(0.5, '#9c6b3c'); fr.addColorStop(1, '#d4b05a');
   g.lineWidth = 6; g.strokeStyle = fr; rr(g, 30, 30, W - 60, H - 60, 36); g.stroke();
   g.lineWidth = 1.5; g.strokeStyle = 'rgba(255,255,255,.18)'; rr(g, 44, 44, W - 88, H - 88, 28); g.stroke();
-  const font = (w, px) => `${w} ${px}px Orbitron, Rajdhani, system-ui, sans-serif`;
-  g.textAlign = 'center'; g.fillStyle = '#d96bff'; g.font = font(700, 34); g.fillText(m.title, W / 2, 120);
-  g.fillStyle = '#f3f5fb'; g.font = font(800, 54); g.fillText(clip(g, m.name, W - 160), W / 2, 215);
+  const font = (w, px) => `${w} ${px}px 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif`;
+  g.textAlign = 'center'; g.fillStyle = '#c8a24a'; g.font = font(700, 34); g.fillText(m.title, W / 2, 120);
+  g.fillStyle = '#f3ece0'; g.font = font(700, 54); g.fillText(clip(g, m.name, W - 160), W / 2, 215);
   rr(g, 120, 262, W - 240, 92, 46); g.fillStyle = col + '30'; g.fill(); g.lineWidth = 3; g.strokeStyle = col; g.stroke();
   g.fillStyle = col; g.font = font(800, 38); g.fillText(clip(g, m.head, W - 300), W / 2, 322);
-  g.fillStyle = 'rgba(243,245,251,.72)'; g.font = font(500, 28); wrap(g, m.plain, W / 2, 410, W - 220, 38, 3);
+  g.fillStyle = 'rgba(243,236,224,.72)'; g.font = font(500, 28); wrap(g, m.plain, W / 2, 410, W - 220, 38, 3);
   m.big.forEach((b, i) => {                                           // four big numbers
-    const x = 90 + (i % 2) * 450, y = 560 + Math.floor(i / 2) * 150; rr(g, x, y, 420, 128, 22); g.fillStyle = 'rgba(255,255,255,.05)'; g.fill(); g.strokeStyle = 'rgba(255,255,255,.14)'; g.lineWidth = 2; g.stroke();
-    g.textAlign = 'left'; g.fillStyle = 'rgba(243,245,251,.6)'; g.font = font(600, 24); g.fillText(b[0].toUpperCase(), x + 24, y + 44); g.fillStyle = '#fff'; g.font = font(800, 54); g.fillText(b[1], x + 24, y + 104);
+    const x = 90 + (i % 2) * 450, y = 560 + Math.floor(i / 2) * 150; rr(g, x, y, 420, 128, 22); g.fillStyle = 'rgba(243,236,224,.05)'; g.fill(); g.strokeStyle = 'rgba(255,255,255,.14)'; g.lineWidth = 2; g.stroke();
+    g.textAlign = 'left'; g.fillStyle = 'rgba(243,236,224,.6)'; g.font = font(600, 24); g.fillText(b[0], x + 24, y + 44); g.fillStyle = '#fff'; g.font = font(800, 54); g.fillText(b[1], x + 24, y + 104);
   });
-  g.textAlign = 'right'; g.fillStyle = 'rgba(243,245,251,.6)'; g.font = font(700, 24); g.fillText('JAN-JUN', 760, 905); g.fillText('JUL-OCT', 990, 905);
+  g.textAlign = 'right'; g.fillStyle = 'rgba(243,236,224,.6)'; g.font = font(700, 24); g.fillText('Jan-Jun', 760, 905); g.fillText('Jul-Oct', 990, 905);
   m.rows.forEach((r, i) => {
-    const y = 960 + i * 62; g.textAlign = 'left'; g.fillStyle = 'rgba(243,245,251,.78)'; g.font = font(500, 28); g.fillText(r[0], 100, y);
+    const y = 960 + i * 62; g.textAlign = 'left'; g.fillStyle = 'rgba(243,236,224,.78)'; g.font = font(500, 28); g.fillText(r[0], 100, y);
     g.textAlign = 'right'; g.fillStyle = '#fff'; g.font = font(700, 30); g.fillText(r[1], 760, y); g.fillText(r[2], 990, y); g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(100, y + 18, W - 200, 1);
   });
-  g.textAlign = 'center'; g.fillStyle = 'rgba(243,245,251,.5)'; g.font = font(500, 22); g.fillText(clip(g, m.foot, W - 140), W / 2, H - 78);
+  g.textAlign = 'center'; g.fillStyle = 'rgba(243,236,224,.5)'; g.font = font(500, 22); g.fillText(clip(g, m.foot, W - 140), W / 2, H - 78);
 }
 let cardUrl = '';
 function forgeCard() {
@@ -199,7 +219,7 @@ function card() {
   const live = S.data ? byId(S.data, S.data.live_id) : null, y = (live && live.y26) || {}, h2 = (live && live.h2) || {};
   return { v: 1, name: 'Hephaestus', status: { level: S.demo ? 'off' : 'ok', label: S.demo ? 'Demo data' : 'Read-only workshop' },
     kpis: [{ label: '2026 net (live)', value: usd(y.net) }, { label: 'Jul-Oct PF', value: dec(h2.pf) }, { label: 'Trades / week', value: dec(y.tpw) }],
-    lines: ['Turn a dial: stored 2026 results, Jan-Jun against Jul-Oct.', 'It changes nothing in the bot.'], t: Math.floor(Date.now() / 1000), open: '#dials', theme: '#0b0608', stale_after: 2592000 };
+    lines: ['Turn a dial: stored 2026 results, Jan-Jun against Jul-Oct.', 'It changes nothing in the bot.'], t: Math.floor(Date.now() / 1000), open: '#dials', theme: '#14110e', stale_after: 2592000 };
 }
 function postCard() {
   if (S.demo || !O || !O.framed) return;

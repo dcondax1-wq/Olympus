@@ -149,8 +149,8 @@ export function buildWorks(THREE, scene, o) {
     const m = world(new THREE.Vector3(0, 1.6, -2.4)), a = world(new THREE.Vector3(0.1, 1.4, 0.4));
     add('embers', scene, { center: [m.x, m.y, m.z], count: lite ? 80 : 220 });
     add('heatShimmer', scene, { position: [m.x, 0.2, m.z], height: 4 });
-    add('volumetricFog', scene, { size: R * 2.6, density: 0.35 });
-    add('godRays', scene, { position: [px * 0.3, 14, pz * 0.3], intensity: 0.45 });
+    add('volumetricFog', scene, { size: R * 2.6, density: 0.3, color: '#7a5a3a' });
+    add('godRays', scene, { position: [px * 0.3, 14, pz * 0.3], intensity: 0.4, color: '#ffd9a0' });
     void a;
     return fxNames;
   }

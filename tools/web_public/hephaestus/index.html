@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hephaestus</title>
 <meta name="description" content="HEPHAESTUS: the strategy workshop. Turn safe dials on the LIT strategy (target, break-even, 15-minute cut, entry window, trades a day, size mode) and see the 2026 result from the stored backtest runs, Jan-Jun against Jul-Oct, with a plain verdict against the live setting. Read-only: it changes nothing in the bot.">
-<meta name="theme-color" content="#0b0608">
+<meta name="theme-color" content="#14110e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Hephaestus">
@@ -25,16 +25,23 @@
 <script src="../olympus/olympus.js?v=o3" data-app="hephaestus"></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
-<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#d96bff'); r.setProperty('--oly-accent-rgb', '217, 107, 255'); })();</script>
-<link rel="stylesheet" href="hephaestus.css?v=h3">
+<link rel="stylesheet" href="../olympus/agora.css?v=a1">
+<link rel="stylesheet" href="hephaestus.css?v=h4">
 </head>
 <body>
 <canvas id="view" aria-label="A forge: an anvil with a glowing ingot that is the setting you are testing, a hammer that strikes when you turn a dial, a furnace behind" role="img"></canvas>
 <header class="top">
-  <div class="brand"><h1>HEPHAESTUS</h1><p class="sub">Strategy workshop · read-only</p></div>
+  <div class="brand"><h1>Hephaestus</h1><p class="sub">The strategy workshop. Read-only.</p></div>
   <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
 </header>
 <section class="sheet" id="sheet" aria-label="Dials and numbers">
+  <div class="hero" id="hero" aria-live="polite">
+    <p class="eyebrow" id="heroLab">This setting, Jul-Oct check</p>
+    <p class="big"><span id="heroBig" class="ag-num">-</span><small> a month</small></p>
+    <p class="delta" id="heroDelta"></p>
+    <div class="bars" aria-hidden="true"><div class="bar"><span>This</span><i id="barThis"></i></div><div class="bar"><span>Live</span><i id="barLive"></i></div></div>
+    <ul class="facts" id="heroFacts"></ul>
+  </div>
   <p class="honest" id="honest">This page changes nothing in the bot. It only reads test runs that were already stored.</p>
   <h2>Recipes <span class="hint">one tap, every one a stored run</span></h2>
   <div class="recipes" id="recipes" role="group" aria-label="Recipes"></div>
@@ -67,7 +74,7 @@
 </section>
 <footer class="dock" id="dock" aria-live="polite">
   <div class="verdict" id="verdict" data-kind="live">
-    <b class="vh" id="vh">THIS IS THE LIVE SETTING</b>
+    <b class="vh" id="vh">This is the live setting</b>
     <span class="vp" id="vp"></span>
     <span class="vs" id="vs"></span>
   </div>

@@ -42,29 +42,29 @@ function anvilGeometry() {
 export function createForge(canvas, { O = null } = {}) {
   const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#0b0608');
-  scene.fog = new THREE.FogExp2(0x1a0a0c, 0.045);
+  scene.background = new THREE.Color('#1a130e');
+  scene.fog = new THREE.FogExp2(0x2a1d14, 0.04);
   const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
   let fxList = [], lastT = 0, lite = false, dirty = true, qcb = null, drawn = 0, frames = 0, stopped = false, raf = 0, strikes = 0;
-  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#d96bff', exposure: 0.95, maxDpr: 1.75, bloom: { strength: 0.8, radius: 0.55, threshold: 0.9 },
+  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#c8a24a', theme: { sky: '#4a3626', fog: '#2a1d14', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, exposure: 1.0, maxDpr: 1.75, bloom: { strength: 0.22, radius: 0.5, threshold: 0.95 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; setCounts(); FX.setQuality(fxList, l); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
   const glow = glowTexture();
 
   // ---- light
-  scene.add(new THREE.HemisphereLight('#8a7aa8', '#1a0c0a', 0.55));
-  const key = new THREE.DirectionalLight('#ffe2c4', 1.1); key.position.set(3, 6, 5); scene.add(key);
-  const rim = new THREE.DirectionalLight('#9fb4ff', 0.9); rim.position.set(-4, 3, -5); scene.add(rim);
+  scene.add(new THREE.HemisphereLight('#d9b98a', '#2a1a10', 0.7));
+  const key = new THREE.DirectionalLight('#ffd9a8', 1.15); key.position.set(3, 6, 5); scene.add(key);
+  const rim = new THREE.DirectionalLight('#e8c58f', 0.5); rim.position.set(-4, 3, -5); scene.add(rim);
   const fire = new THREE.PointLight('#ff7a30', 26, 14, 1.5); fire.position.set(-3.2, 1.6, -1.6); scene.add(fire);
   const ingotLight = new THREE.PointLight('#ffb547', 6, 6, 1.6);   ingotLight.position.set(0, 2.3, 0.4); scene.add(ingotLight);
   const bounce = new THREE.PointLight('#ff9a5a', 10, 9, 1.8); bounce.position.set(0, 0.35, 1.6); scene.add(bounce);          // the glow of the ingot thrown back on the floor
 
   // ---- floor: a round stone dais
-  const dais = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 4.8, 0.3, 48), M.marble({ color: '#3a3238', gold: false, scale: 0.5, roughness: 0.5 }));
+  const dais = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 4.8, 0.3, 48), M.marble({ color: '#b9ac98', gold: false, scale: 0.5, roughness: 0.55 }));
   dais.position.y = -0.15; scene.add(dais);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.04, 8, 96), M.neon({ color: '#d96bff', intensity: 2.2, fog: true }));
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.04, 8, 96), FX.bronze({ color: '#9c6b3c', roughness: 0.4 }));
   ring.rotation.x = Math.PI / 2; ring.position.y = 0.02; scene.add(ring);
-  const floorFx = FX.polishedFloor({ size: 80, color: '#120a0c', y: -0.32, roughness: 0.3, metalness: 0.4, env: 0.5 }); scene.add(floorFx.object);
+  const floorFx = FX.polishedFloor({ size: 80, color: '#2a2018', y: -0.32, roughness: 0.3, metalness: 0.4, env: 0.5 }); scene.add(floorFx.object);
   const shaftFx = FX.shafts({ count: 4, from: [-2, 11, -3], to: [0.5, 0, 0.5], width: 5, spread: [6, 0, 4], color: "#ffc58a", strength: 0.075, seed: 8 }); scene.add(shaftFx.object);
   const dustFx = FX.dust({ count: 200, box: [16, 7, 14], color: '#ffd9b0', size: 4, strength: 0.8, seed: 12 }); dustFx.object.position.set(0, -0.2, -1); scene.add(dustFx.object);
   const emberFx = FX.embers({ count: 150, origin: [-3.4, 0.9, -1.6], spread: [1.5, 0, 1.0], rise: 5.2, colors: ['#fff0b0', '#ff9a3a', '#c2300f'], size: 6.5, wind: 0.5, seed: 31 }); scene.add(emberFx.object);
@@ -74,18 +74,18 @@ export function createForge(canvas, { O = null } = {}) {
   fxList = [floorFx, shaftFx, dustFx, emberFx, aoAnvil, aoFurn, aoBarrel];
 
   // ---- the anvil
-  const steel = M.metal({ kind: 'gunmetal', color: '#3c3a48', roughness: 0.38 }), chrome = M.metal({ kind: 'chrome', roughness: 0.18 });
+  const steel = M.metal({ kind: 'gunmetal', color: '#4a3a2c', roughness: 0.45 }), chrome = FX.bronze({ color: '#8a6a44', roughness: 0.35 });
   const anvil = new THREE.Group(); scene.add(anvil);
   const part = (geo, mat, x, y, z, rz = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.z = rz; anvil.add(m); return m; };
-  part(anvilGeometry(), M.metal({ kind: 'chrome', color: '#a9a6bb', roughness: 0.24 }), -0.3, 0, 0);      // forged steel: the night environment's light strips run along its face and horn
+  part(anvilGeometry(), M.metal({ kind: 'gunmetal', color: '#6b5a48', roughness: 0.36 }), -0.3, 0, 0);      // forged steel: the night environment's light strips run along its face and horn
 
   // ---- the ingot (this setting) and its ghost (live)
   const iMat = new THREE.MeshStandardMaterial({ color: '#ffb547', emissive: new THREE.Color('#ffb547'), emissiveIntensity: 1.0, roughness: 0.4, metalness: 0.2 });
   const ingot = new THREE.Mesh(bevelBox(1.0, 0.3, 0.5, 0.035, 0.16), iMat);
   const ingotG = new THREE.Group(); ingotG.position.set(0, 1.64, 0); ingotG.add(ingot); ingot.position.y = 0.15 - 0.15; scene.add(ingotG);
-  const ghost = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.0, 0.3, 0.5)), new THREE.LineBasicMaterial({ color: hdr('#cfd6ff', 1.4), transparent: true, opacity: 0.55 }));
+  const ghost = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.0, 0.3, 0.5)), new THREE.LineBasicMaterial({ color: hdr('#e8d9b8', 1.1), transparent: true, opacity: 0.55 }));
   ghost.position.set(0, 1.64, 0); scene.add(ghost);
-  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#ffb547', 1.8), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#ffb547', 1.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
   halo.scale.set(3.2, 2.0, 1); halo.position.set(0, 1.8, 0); scene.add(halo);
 
   // ---- the hammer (pivot at the right of the anvil)
@@ -98,21 +98,21 @@ export function createForge(canvas, { O = null } = {}) {
 
   // ---- the furnace behind-left
   const furnace = new THREE.Group(); furnace.position.set(-3.4, 0, -2.2); furnace.rotation.y = 0.5; scene.add(furnace);
-  const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.2, 1.5), M.marble({ color: '#4a3a38', gold: false, scale: 0.9, roughness: 0.8 }));
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.2, 1.5), M.marble({ color: '#a89a86', gold: false, scale: 0.9, roughness: 0.8 }));
   body.position.y = 1.1; furnace.add(body);
-  const mouth = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.85), new THREE.MeshBasicMaterial({ color: hdr('#ff6a1a', 2.6) }));
+  const mouth = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.85), new THREE.MeshBasicMaterial({ color: hdr('#ff8a3a', 1.7) }));
   mouth.position.set(0, 0.95, 0.76); furnace.add(mouth);
   const arch = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.07, 8, 24, Math.PI), steel); arch.position.set(0, 1.35, 0.77); furnace.add(arch);
   const chimney = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.6, 0.7), steel); chimney.position.set(0.4, 3.0, -0.2); furnace.add(chimney);
-  const fGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#ff7a30', 2.4), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+  const fGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#ff9a4a', 1.5), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
   fGlow.scale.set(3.4, 2.6, 1); fGlow.position.set(0, 1.0, 1.1); furnace.add(fGlow);
 
   // ---- the quench barrel (right-back)
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 1.0, 20), M.metal({ kind: 'gunmetal', color: '#2c3548', roughness: 0.5 }));
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 1.0, 20), M.metal({ kind: 'gunmetal', color: '#6a4a36', roughness: 0.55 }));
   barrel.position.set(3.3, 0.5, -1.4); scene.add(barrel);
   const bronzeMat = FX.bronze({ color: '#9c6a3a', roughness: 0.32 });
   for (const y of [0.18, 0.82]) { const hoop = new THREE.Mesh(new THREE.TorusGeometry(0.585, 0.035, 8, 40), bronzeMat); hoop.rotation.x = Math.PI / 2; hoop.position.set(3.3, y, -1.4); scene.add(hoop); }
-  const water = new THREE.Mesh(new THREE.CircleGeometry(0.5, 24), new THREE.MeshBasicMaterial({ color: hdr('#4aa8ff', 1.1) }));
+  const water = new THREE.Mesh(new THREE.CircleGeometry(0.5, 24), new THREE.MeshBasicMaterial({ color: hdr('#4b7a99', 0.7) }));
   water.rotation.x = -Math.PI / 2; water.position.set(3.3, 0.96, -1.4); scene.add(water);
 
   // ---- sparks (a strike) and drifting embers

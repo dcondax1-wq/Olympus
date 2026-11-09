@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FATES</title>
 <meta name="description" content="FATES: a Monte Carlo of the bots' MFFU evals and money, drawn as threads of fate. Paper only.">
-<meta name="theme-color" content="#07050f">
+<meta name="theme-color" content="#14110e">
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png?v=j4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -22,14 +22,15 @@
 <script src="../olympus/olympus.js?v=o3" data-app="fates"></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
-<link rel="stylesheet" href="fates.css?v=f7">
+<link rel="stylesheet" href="../olympus/agora.css?v=a1">
+<link rel="stylesheet" href="fates.css?v=f8">
 </head>
 <body>
 <canvas id="scene" aria-hidden="true"></canvas>
 <main id="ui">
   <header class="bar" id="bar">
     <div class="brand">
-      <h1>FATES</h1>
+      <h1>Fates</h1>
       <p class="sub" id="sub">the threads of your evals</p>
       <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
       <div class="seg small" id="period" role="tablist" aria-label="Sample">
@@ -53,12 +54,13 @@
     </div>
   </header>
   <p class="verdict" id="verdict" aria-live="polite"></p>
+  <p class="story" id="story" aria-live="polite" hidden></p>
   <p class="weak" id="weak" hidden>2021-25: the older market (LIT was tuned on 2026 only). A much weaker edge: read it as the bad-market case.</p>
   <section class="hud" id="hud" aria-live="polite">
     <div class="tile gold" data-id="pass"><span class="l"></span><b class="v"></b><span class="s"></span></div>
     <div class="tile red" data-id="fail"><span class="l"></span><b class="v"></b><span class="s"></span></div>
     <div class="tile" data-id="days"><span class="l"></span><b class="v"></b><span class="s"></span></div>
-    <div class="tile wide" data-id="money"><span class="l"></span><b class="v"></b><span class="s"></span>
+    <div class="tile wide" data-id="money"><span class="l"></span><b class="v"></b><span class="s"></span><i class="rng" id="rng" aria-hidden="true" hidden><u></u><s></s></i>
       <div class="span seg tiny" id="span"><button type="button" data-span="6m">6M</button><button type="button" data-span="12m">12M</button></div></div>
     <div class="tile" data-id="pay30"><span class="l"></span><b class="v"></b><span class="s"></span></div>
   </section>
@@ -85,7 +87,7 @@
   </section>
   <p class="nogl" id="nogl" hidden>3D is off on this device: the numbers above are the full result.</p>
 </main>
-<script type="module" src="fates.js?v=f7"></script>
+<script type="module" src="fates.js?v=f8"></script>
 <script type="module" src="glossary.js"></script>
 </body>
 </html>

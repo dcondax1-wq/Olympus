@@ -70,8 +70,8 @@ export class FlameField {
           float body = (1.0 - smoothstep(0.2, 1.0, abs(xx))) * smoothstep(-0.14, 0.06, p.y);
           body *= smoothstep(0.0, 0.32, n + 0.62 - y * (0.95 - 0.25 * heat));                 // torn edge, tongues at the top
           float core = (1.0 - smoothstep(0.0, 0.55, abs(xx))) * (1.0 - smoothstep(0.05, 0.8, y)) * smoothstep(-0.06, 0.1, p.y);
-          vec3 deep = mix(vec3(0.55, 0.06, 0.02), vec3(0.1, 0.35, 0.65), ice);
-          vec3 white = mix(vec3(1.0, 0.95, 0.78), vec3(0.85, 0.97, 1.0), ice);
+          vec3 deep = mix(vec3(0.55, 0.06, 0.02), vec3(0.5, 0.42, 0.3), ice);
+          vec3 white = mix(vec3(1.0, 0.95, 0.78), vec3(1.0, 0.97, 0.9), ice);
           vec3 c = mix(deep, vCol, smoothstep(0.05, 0.55, body * (1.1 - 0.5 * y))) * body
                  + white * core * (0.35 + 0.85 * heat) + vCol * halo;
           gl_FragColor = vec4(lin(max(c, vec3(0.0)) * vMix.y * win), 1.0);

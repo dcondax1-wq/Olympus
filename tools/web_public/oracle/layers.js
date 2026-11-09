@@ -8,7 +8,7 @@ import { kindOf, COLOR, additive, glowSprite, labelSprite, setLabel, ringLine, l
 
 export const Y_MAX = 7.5;                           // half height of the column's scale (world units)
 const TRAIL_BARS = 36;                           // 3 hours of 5m closes behind the comet
-const SAT_COLOR = { off: 0x56607a, waiting: 0x3fd8ff, armed: 0xffb547, in_trade: 0x46f0a0, done: 0x9b7bff, error: 0xff4f7a };
+const SAT_COLOR = { off: 0x7a6f56, waiting: 0xebbf59, armed: 0xeba741, in_trade: 0xd5eb6a, done: 0xebc671, error: 0xeb7450 };
 const fmtPx = (p) => p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /** A jagged path from a to b: n segments, sideways jitter `jag` that shrinks towards the strike point. */
@@ -83,7 +83,7 @@ export class Market {
           float pulse = 0.75 + 0.25 * sin(vUv.y * 60.0 - uT * 2.4);
           gl_FragColor = vec4(uC * uA * e * pulse, 1.0); }`,
     });
-    this.colMats = [mat(0x7fe9ff, 0.95), mat(0x2a8cff, 0.07)];
+    this.colMats = [mat(0xebc775, 0.95), mat(0xebbf59, 0.07)];
     this.g.add(new T.Mesh(new T.CylinderGeometry(0.045, 0.045, h, 8, 1, true), this.colMats[0]));
     this.g.add(new T.Mesh(new T.CylinderGeometry(0.42, 0.42, h, 24, 1, true), this.colMats[1]));
   }
@@ -92,9 +92,9 @@ export class Market {
   buildComet() {
     const T = this.T;
     this.comet = new T.Group();
-    this.comet.add(glowSprite(T, COLOR.comet, 2.4, 0.9), glowSprite(T, 0xffffff, 0.6, 1));
-    this.pxRing = ringLine(T, 1.3, 0xd8f6ff, 0.85);
-    this.pxDisc = lightDisc(T, 1.6, 0x7fe9ff, 0.35);
+    this.comet.add(glowSprite(T, COLOR.comet, 2.4, 0.9), glowSprite(T, 0xf3ece0, 0.6, 1));
+    this.pxRing = ringLine(T, 1.3, 0xebe0c7, 0.85);
+    this.pxDisc = lightDisc(T, 1.6, 0xebc775, 0.35);
     this.g.add(this.comet, this.pxRing, this.pxDisc);            // the price itself is on the ladder (ladder.js)
   }
 
@@ -208,9 +208,9 @@ export class Market {
     ms.forEach((m, i) => {
       let s = this.sats.get(m.key);
       if (!s) {
-        const g = new T.Group(), orbit = ringLine(T, 6.3, 0x3a4a7a, 0.28, 128);
-        const body = new T.Group(), halo = glowSprite(T, 0xffffff, 1.4, 0.8), core = glowSprite(T, 0xffffff, 0.42, 1);
-        const label = labelSprite(T, m.short, '#cfe0ff', 0.48);
+        const g = new T.Group(), orbit = ringLine(T, 6.3, 0x7a673a, 0.28, 128);
+        const body = new T.Group(), halo = glowSprite(T, 0xf3ece0, 1.4, 0.8), core = glowSprite(T, 0xf3ece0, 0.42, 1);
+        const label = labelSprite(T, m.short, '#ebddbe', 0.48);
         label.position.y = 0.55;
         body.add(halo, core, label);
         g.add(orbit, body);
@@ -223,7 +223,7 @@ export class Market {
       s.orbit.material.opacity = m.open ? 0.5 : 0.16;               // a member inside its entry hours lights its orbit
       const c = SAT_COLOR[m.stage] ?? SAT_COLOR.waiting;
       s.halo.material.color.setHex(c);
-      s.core.material.color.setHex(m.stage === 'off' ? 0x8090b0 : 0xffffff);
+      s.core.material.color.setHex(m.stage === 'off' ? 0xb0a280 : 0xf3ece0);
       setLabel(s.label, `${m.short}${m.stage === 'off' ? '' : ' · ' + m.stage.replace('_', ' ')}`, hex(c));
     });
   }
@@ -232,7 +232,7 @@ export class Market {
       afterglow on the ring (o.glow) that fades over ~6 s. */
   strike(lv, map, cam) {
     const T = this.T, o = this.levels.get(lv.id), r = o ? o.k.r : 3, y = map.y(lv.price);
-    const color = new T.Color(o ? o.k.color : 0x9fd8ff);
+    const color = new T.Color(o ? o.k.color : 0xebd092);
     if (o) { o.flash = 1; o.glow = 1; }
     this.strikes++;
     const a = Math.atan2(cam.right.z, cam.right.x) + (Math.random() - 0.5) * 1.6;
@@ -255,13 +255,13 @@ export class Market {
     const view = cam.dir.clone().setY(0.25).normalize();
     const mat = () => new T.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false,
       side: T.DoubleSide, opacity: 1 });
-    const core = new T.Mesh(ribbons(T, segs, view, 1, new T.Color(0xffffff)), mat());
+    const core = new T.Mesh(ribbons(T, segs, view, 1, new T.Color(0xf3ece0)), mat());
     const halo = new T.Mesh(ribbons(T, segs, view, 4.5, color), mat());
     core.frustumCulled = halo.frustumCulled = false;
     const g = new T.Group();
     const flash = glowSprite(T, color.getHex(), 5, 1);
     flash.position.copy(end);
-    const ripple = ringLine(T, r, 0xffffff, 1, 96);
+    const ripple = ringLine(T, r, 0xf3ece0, 1, 96);
     ripple.position.y = y;
     g.add(halo, core, flash);
     this.g.add(g, ripple);

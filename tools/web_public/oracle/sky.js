@@ -7,13 +7,13 @@ import { glowTexture, glowSprite, labelSprite, setLabel, hex } from './glow.js';
 import { Y_MAX } from './layers.js';
 
 const CLOCK_Y = -Y_MAX - 2, CLOCK_R = [7.4, 8.3];
-const STAR = { done: 0x9ff3ff, now: 0xffd36b, todo: 0x3a4766, skip: 0x6a3a4a };
+const STAR = { done: 0xebd092, now: 0xebc262, todo: 0x66593a, skip: 0x6a453a };
 
 /** The weather's colours: calm teal at a low VIX, violet in between, magenta / red when fear is high. */
 export function weatherOf(w) {
   const vix = w && w.vix && w.vix.vix, reg = (w && w.regime) || {};
-  const pal = vix == null ? [0x2bffc0, 0x5a6bff] : vix < 15 ? [0x2bffc0, 0x2f8cff] : vix < 21 ? [0x3dff9a, 0x8a5bff]
-    : vix < 28 ? [0xb45bff, 0xff4fb0] : [0xff3b6b, 0xff9a3b];
+  const pal = vix == null ? [0xc8a24a, 0xe0b060] : vix < 15 ? [0x9aaa62, 0xc8a24a] : vix < 21 ? [0xc8a24a, 0xe0b060]
+    : vix < 28 ? [0xe0a060, 0xc0603f] : [0xc0603f, 0x8a3a2a];
   const vol = reg.vol || (w && w.atr != null ? 'normal' : 'quiet');
   return { a: pal[0], b: pal[1], intensity: vol === 'high' ? 1.0 : vol === 'quiet' ? 0.45 : 0.72,
     flow: reg.trend === 'up' ? 1 : reg.trend === 'down' ? -1 : 0, trend: reg.trend || 'range', vol };
@@ -105,7 +105,7 @@ export class Sky {
     const T = this.T;
     this.dome = new T.Mesh(new T.SphereGeometry(300, 32, 16), new T.ShaderMaterial({
       side: T.BackSide, depthWrite: false, fog: false,
-      uniforms: { uTop: { value: new T.Color(0x01020a) }, uHor: { value: new T.Color(0x0a1030) } },
+      uniforms: { uTop: { value: new T.Color(0x2b2436) }, uHor: { value: new T.Color(0x6a4a30) } },
       vertexShader: 'varying float vY; void main(){ vY = normalize(position).y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
       fragmentShader: 'uniform vec3 uTop; uniform vec3 uHor; varying float vY; void main(){ gl_FragColor = vec4(mix(uHor, uTop, smoothstep(-0.15, 0.6, vY)), 1.0); }',
     }));
@@ -164,7 +164,7 @@ export class Sky {
       u.uI.value = wx.intensity * 0.62;
       u.uFlow.value = wx.flow;
     }
-    if (this.dome) this.dome.material.uniforms.uHor.value.setHex(wx.b).multiplyScalar(0.09).add(new this.T.Color(0x050818));
+    if (this.dome) this.dome.material.uniforms.uHor.value.setHex(wx.b).multiplyScalar(0.25).add(new this.T.Color(0x3a2a1c));
   }
 
   // ---------------------------------------------------------------- the session clock
@@ -194,11 +194,11 @@ export class Sky {
       this.dial.add(l);
     }
     for (const [m, txt] of [[120, '02:00'], [570, '09:30'], [930, '15:30']]) {
-      const [x, z] = at(m, CLOCK_R[0] - 0.7), l = labelSprite(T, txt, '#ffe2a0', 0.46);
+      const [x, z] = at(m, CLOCK_R[0] - 0.7), l = labelSprite(T, txt, '#ebd093', 0.46);
       l.position.set(x, 0.15, -z);
       this.dial.add(l);
     }
-    this.clock.add(this.dial, glowSprite(T, 0x2a5cff, 7, 0.25));
+    this.clock.add(this.dial, glowSprite(T, 0xebbf59, 7, 0.25));
     this.g.add(this.clock);
   }
 
@@ -211,10 +211,10 @@ export class Sky {
       return new T.Vector3(u * 5.6, 0.9 * (1 - u * u) + (i % 2 ? 0.35 : -0.15), 0);
     });
     STAGES.forEach(([, label], i) => {
-      const s = glowSprite(T, STAR.todo, 0.8, 1), core = glowSprite(T, 0xffffff, 0.22, 0.5);
+      const s = glowSprite(T, STAR.todo, 0.8, 1), core = glowSprite(T, 0xf3ece0, 0.22, 0.5);
       s.position.copy(pts[i]);
       core.position.copy(pts[i]);
-      const l = labelSprite(T, label, '#8fa0c8', 0.44);
+      const l = labelSprite(T, label, '#c8b78f', 0.44);
       l.position.copy(pts[i]).add(new T.Vector3(0, i % 2 ? 0.62 : -0.62, 0));
       g.add(s, core, l);
       stars.push({ s, core, ignite: 0 });
@@ -227,7 +227,7 @@ export class Sky {
     lg.setAttribute('color', new T.BufferAttribute(new Float32Array(lp.length), 3));
     const lines = new T.LineSegments(lg, new T.LineBasicMaterial({ vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false }));
     g.add(lines);
-    this.spark = glowSprite(T, 0xfff2c0, 1.1, 0);
+    this.spark = glowSprite(T, 0xebdfb1, 1.1, 0);
     g.add(this.spark);
     this.g.add(g);
     this.stars3 = { g, stars, labels, lines, pts, states: STAGES.map(() => 'todo'), sparkT: 1, sparkFrom: 0, sparkTo: 0 };
@@ -254,11 +254,11 @@ export class Sky {
     S.states.forEach((st, i) => {
       S.stars[i].s.material.color.setHex(STAR[st] ?? STAR.todo);
       S.stars[i].core.material.opacity = st === 'todo' || st === 'skip' ? 0.15 : 0.95;
-      setLabel(S.labels[i], S.labels[i].userData.label.text, st === 'now' ? '#ffe39a' : st === 'done' ? '#bff6ff' : '#5d6a8c');
+      setLabel(S.labels[i], S.labels[i].userData.label.text, st === 'now' ? '#ebd18e' : st === 'done' ? '#ebd9b0' : '#8c7e5d');
       S.labels[i].visible = !this.lite || st === 'now';
       if (i < S.states.length - 1) {
         const on = (st === 'done' || st === 'now') && (S.states[i + 1] === 'done' || S.states[i + 1] === 'now');
-        tmp.setHex(on ? 0x9ff3ff : 0x1c2440);
+        tmp.setHex(on ? 0xebd092 : 0x403723);
         C.setXYZ(i * 2, tmp.r, tmp.g, tmp.b);
         C.setXYZ(i * 2 + 1, tmp.r, tmp.g, tmp.b);
       }

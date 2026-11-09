@@ -45,7 +45,7 @@ export class Arena {
     const lite = quality === 'low';
 
     // the floor: polished dark marble, reflecting the night environment
-    this.floor = new T.Mesh(new T.CircleGeometry(R_COL + 8, lite ? 48 : 96), M.marble({ color: '#1b1a26', vein: '#4b4690', gold: true, scale: 0.09, roughness: 0.2, clearcoat: 1, envMapIntensity: 0.9 }));
+    this.floor = new T.Mesh(new T.CircleGeometry(R_COL + 8, lite ? 48 : 96), M.marble({ color: '#262115', vein: '#907a46', gold: true, scale: 0.09, roughness: 0.2, clearcoat: 1, envMapIntensity: 0.9 }));
     this.floor.rotation.x = -Math.PI / 2; this.floor.position.y = FLOOR_Y;
     g.add(this.floor);
 
@@ -67,17 +67,17 @@ export class Arena {
     g.add(this.blipPts);
 
     // the omphalos: the navel stone the column stands on, with a gold ring
-    const stone = M.marble({ color: '#d9d4e4', vein: '#5b5470', gold: true, scale: 0.9, roughness: 0.25 });
+    const stone = M.marble({ color: '#e4ded4', vein: '#706854', gold: true, scale: 0.9, roughness: 0.25 });
     const dome = new T.Mesh(new T.SphereGeometry(2.6, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.42, 1), stone);
     dome.position.y = FLOOR_Y;
     const step = new T.Mesh(new T.CylinderGeometry(3.6, 3.9, 0.5, 48), stone);
     step.position.y = FLOOR_Y + 0.25;
-    this.ring = new T.Mesh(new T.TorusGeometry(3.3, 0.07, 10, 96), M.neon({ color: '#ffc65a', intensity: 3.2, fog: true }));
+    this.ring = new T.Mesh(new T.TorusGeometry(3.3, 0.07, 10, 96), M.neon({ color: '#ebb653', intensity: 3.2, fog: true }));
     this.ring.rotation.x = Math.PI / 2; this.ring.position.y = FLOOR_Y + 0.58;
     g.add(step, dome, this.ring);
 
     // the colonnade: marble shafts with gold capitals and bases, and a gold entablature ring
-    const H = 24, shaftMat = M.marble({ color: '#e8e4ee', vein: '#4a3d78', gold: true, scale: 0.18, roughness: 0.26 });
+    const H = 24, shaftMat = M.marble({ color: '#eee7dd', vein: '#78663d', gold: true, scale: 0.18, roughness: 0.26 });
     this.shafts = new T.InstancedMesh(new T.CylinderGeometry(1.35, 1.6, H, lite ? 12 : 24, 1), shaftMat, N_COL);
     this.caps = new T.InstancedMesh(new T.BoxGeometry(4.2, 0.9, 4.2), M.metal({ kind: 'gold', roughness: 0.3 }), N_COL * 2);
     const at = new T.Object3D();
@@ -87,13 +87,13 @@ export class Arena {
       at.position.set(x, FLOOR_Y + H + 0.45, z); at.updateMatrix(); this.caps.setMatrixAt(i * 2, at.matrix);
       at.position.set(x, FLOOR_Y + 0.45, z); at.updateMatrix(); this.caps.setMatrixAt(i * 2 + 1, at.matrix);
     }
-    this.entab = new T.Mesh(new T.TorusGeometry(R_COL, 0.22, 8, 160), M.neon({ color: '#ffc65a', intensity: 2.0, fog: true }));
+    this.entab = new T.Mesh(new T.TorusGeometry(R_COL, 0.22, 8, 160), M.neon({ color: '#ebb653', intensity: 2.0, fog: true }));
     this.entab.rotation.x = Math.PI / 2; this.entab.position.y = FLOOR_Y + H + 1.1;
     g.add(this.shafts, this.caps, this.entab);
 
     // lights for the physical materials: a warm key (the temple's), and the price lamp (a point light on the comet)
-    this.key = new T.DirectionalLight(0xffe6c0, 2.6); this.key.position.set(-18, 30, 22);
-    this.lamp = new T.PointLight(0x7fe9ff, 90, 70, 2); this.lamp.position.set(0, 0, 0);
+    this.key = new T.DirectionalLight(0xebd4b1, 2.6); this.key.position.set(-18, 30, 22);
+    this.lamp = new T.PointLight(0xebc775, 90, 70, 2); this.lamp.position.set(0, 0, 0);
     g.add(this.key, this.lamp);
   }
 

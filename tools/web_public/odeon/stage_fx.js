@@ -93,7 +93,7 @@ export class StageFx {
     this.nS = CENSERS.length * 40;
     const sp = new Float32Array(this.nS * 3);
     for (let i = 0; i < this.nS; i++) { const [x, z] = CENSERS[i % CENSERS.length]; sp[i * 3] = x; sp[i * 3 + 1] = 1.5; sp[i * 3 + 2] = z; }
-    this.smoke = pts(sp, this.nS, SMOKE_VS, SMOKE_FS, { uTime: this.uTime, uPx: this.uPx, uCol: { value: new THREE.Color('#d3c8ea') } }, THREE.NormalBlending);
+    this.smoke = pts(sp, this.nS, SMOKE_VS, SMOKE_FS, { uTime: this.uTime, uPx: this.uPx, uCol: { value: new THREE.Color('#d8cdb8') } }, THREE.NormalBlending);
     this.smoke.renderOrder = 8;
     const bronze = M.metal({ kind: 'gold', color: '#b0703a', roughness: 0.38, clearcoat: 0.35 });
     bronze.fog = false; bronze.side = THREE.DoubleSide;
@@ -104,7 +104,7 @@ export class StageFx {
     this.censers.frustumCulled = this.feet.frustumCulled = false;
     // the mist over the stone
     this.mist = new THREE.Mesh(new THREE.PlaneGeometry(220, 120).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
-      uniforms: { uCol: { value: new THREE.Color('#6a78c8') }, uI: { value: 0.5 }, uTime: this.uTime }, vertexShader: MIST_VS, fragmentShader: MIST_FS,
+      uniforms: { uCol: { value: new THREE.Color('#b08a5a') }, uI: { value: 0.35 }, uTime: this.uTime }, vertexShader: MIST_VS, fragmentShader: MIST_FS,
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
     this.mist.position.set(0, 0.45, -12); this.mist.frustumCulled = false; this.mist.renderOrder = 3;
     // baked contact shadows under the colonnade, the torches and the censers

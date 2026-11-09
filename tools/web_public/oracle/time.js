@@ -15,10 +15,10 @@ const WD = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
 export const LIT_WINDOW = [120, 930];            // 02:00-15:30 ET (engine/live_board.py LIT_WINDOW)
 // The clock ring's blocks (ET minutes; Asia wraps past midnight) and their killzones (the lit-up parts).
 export const SESSIONS = [
-  { key: 'asia', label: 'ASIA', from: 1080, to: 120, kz: [1200, 1440], color: 0x8a6bff },
-  { key: 'london', label: 'LONDON', from: 120, to: 480, kz: [120, 300], color: 0x3fd8ff },
-  { key: 'ny', label: 'NEW YORK', from: 480, to: 960, kz: [510, 660], kz2: [810, 960], color: 0xffb547 },
-  { key: 'closed', label: 'CLOSED', from: 960, to: 1080, color: 0x3a4152 },
+  { key: 'asia', label: 'ASIA', from: 1080, to: 120, kz: [1200, 1440], color: 0xebc262 },
+  { key: 'london', label: 'LONDON', from: 120, to: 480, kz: [120, 300], color: 0xebbf59 },
+  { key: 'ny', label: 'NEW YORK', from: 480, to: 960, kz: [510, 660], kz2: [810, 960], color: 0xeba741 },
+  { key: 'closed', label: 'CLOSED', from: 960, to: 1080, color: 0x524b3a },
 ];
 
 export function etParts(t) {

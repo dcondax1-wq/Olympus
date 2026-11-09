@@ -11,17 +11,17 @@
 //   createPlus({F, open, setGen, toast, getGen}) -> {open(tab), close(), state}
 import { FMT } from './forgecore.js';
 
-const GOOD = '#46d79a', BAD = '#ff6b7f', GOLD = '#ffc24a', ICE = '#8fdcff';
+const GOOD = '#7f8a52', BAD = '#c0603f', GOLD = '#c8a24a', ICE = '#d9c9a8';
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const BANDS = [[20, 'HEALTHY', GOOD, 'Most of the H1 gain is still there on new data.'], [50, 'WARM', GOLD, 'About a third to a half of the H1 gain did not carry over.'],
-  [80, 'OVERFIT', '#ff9a4a', 'Most of the H1 gain is gone on new data: it mostly fitted the past.'], [1e9, 'BURNT', BAD, 'The H1 gain is gone or reversed on new data. Do not trust it.']];
+const BANDS = [[20, 'Healthy', GOOD, 'Most of the H1 gain is still there on new data.'], [50, 'Warm', GOLD, 'About a third to a half of the H1 gain did not carry over.'],
+  [80, 'Overfit', '#c98a4a', 'Most of the H1 gain is gone on new data: it mostly fitted the past.'], [1e9, 'Burnt', BAD, 'The H1 gain is gone or reversed on new data. Do not trust it.']];
 
 /** the meter: shrink = how much of the in-sample (H1) $/month is missing on new data (H2), 0 = none, 100 = all (or worse). Against live, not zero. */
 export function overfit(F, k) {
   const G = F.genome(k), L = F.live, g1 = G.h1.pm - L.h1.pm, g2 = G.h2.pm - L.h2.pm;
   const gain = g1 > 0 ? Math.max(0, Math.min(150, Math.round((100 * (g1 - g2)) / g1))) : (g2 >= 0 ? 0 : 100);
   const band = BANDS.find((b) => gain < b[0]);
-  return { k, h1: G.h1.pm, h2: G.h2.pm, y: G.y.pm, liveH1: L.h1.pm, liveH2: L.h2.pm, gainH1: g1, gainH2: g2, lost: gain, meter: Math.min(100, gain), label: g1 <= 0 ? 'NO GAIN' : band[1], colour: g1 <= 0 ? ICE : band[2],
+  return { k, h1: G.h1.pm, h2: G.h2.pm, y: G.y.pm, liveH1: L.h1.pm, liveH2: L.h2.pm, gainH1: g1, gainH2: g2, lost: gain, meter: Math.min(100, gain), label: g1 <= 0 ? 'No gain' : band[1], colour: g1 <= 0 ? ICE : band[2],
     words: g1 <= 0 ? 'It does not beat live on H1, so there is nothing to overfit.' : band[3], isLive: k === F.d.live.k };
 }
 
@@ -110,7 +110,7 @@ export function compare(F, a, b) {
   const rows = ROWS.map(([label, f, show, hi]) => { const x = f(A.G), y = f(B.G); return { label, a: show(x, A.G), b: show(y, B.G), win: x == null || y == null || x === y ? '' : (x > y) === (hi > 0) ? 'a' : 'b' }; });
   rows.unshift({ label: 'Fitness (H1 only)', a: FMT.num(A.f, 3), b: FMT.num(B.f, 3), win: A.f === B.f ? '' : A.f > B.f ? 'a' : 'b' });
   const aw = rows.filter((r) => r.win === 'a').length, bw = rows.filter((r) => r.win === 'b').length;
-  const name = (x) => (x.id === 'live' ? 'LIVE LIT' : `#${x.id}`);
+  const name = (x) => (x.id === 'live' ? 'Live LIT' : `#${x.id}`);
   const dk = F.diffRows(A.k).map((r, i) => ({ knob: r.knob, a: r.val, b: F.diffRows(B.k)[i].val })).filter((r) => r.a !== r.b);
   const o = { a: overfit(F, A.k), b: overfit(F, B.k) };
   const h2win = A.G.h2.pm === B.G.h2.pm ? '' : A.G.h2.pm > B.G.h2.pm ? 'a' : 'b';
@@ -121,25 +121,25 @@ export function compare(F, a, b) {
 export function shareLines(F, id) {
   const live = id === 'live', c = live ? null : F.creature(id), k = live ? F.d.live.k : c.k, G = F.genome(k), o = overfit(F, k), w = live ? null : F.wouldChange(id);
   const champ = !live && id === F.d.champion.id;
-  return { title: live ? 'LIVE LIT' : `${champ ? 'CHAMPION ' : 'CREATURE '}#${id}`, sub: live ? 'the strategy trading today' : `generation ${c.gen + 1} of ${F.nGens} · fitness ${FMT.num(c.f, 3)} (live 1.000)`,
-    verdict: live ? 'THE REFERENCE' : w.title, level: live ? 'no' : w.level, bars: [['H1 (PICK)', G.h1.pm, F.live.h1.pm], ['H2 (NEW)', G.h2.pm, F.live.h2.pm], ['2021-25', G.y.pm, F.live.y.pm]],
-    meter: o, demo: F.demo, foot: 'PROMETHEUS · the forge · paper research, not advice' + (F.demo ? ' · DEMO DATA' : '') };
+  return { title: live ? 'Live LIT' : `${champ ? 'Champion ' : 'Creature '}#${id}`, sub: live ? 'the strategy trading today' : `generation ${c.gen + 1} of ${F.nGens} · fitness ${FMT.num(c.f, 3)} (live 1.000)`,
+    verdict: live ? 'The reference' : w.title, level: live ? 'no' : w.level, bars: [['H1 (pick)', G.h1.pm, F.live.h1.pm], ['H2 (new)', G.h2.pm, F.live.h2.pm], ['2021-25', G.y.pm, F.live.y.pm]],
+    meter: o, demo: F.demo, foot: 'Prometheus · the forge · paper research, not advice' + (F.demo ? ' · demo data' : '') };
 }
 
 export async function makeShareImage(F, id) {
   const L = shareLines(F, id), W = 1080, H = 1350, c = document.createElement('canvas');
   c.width = W; c.height = H;
-  const x = c.getContext('2d'), mono = 'ui-monospace, "SF Mono", Menlo, monospace';
-  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1a0a05'); g.addColorStop(1, '#070302'); x.fillStyle = g; x.fillRect(0, 0, W, H);
-  const rg = x.createRadialGradient(W / 2, 360, 20, W / 2, 360, 680); rg.addColorStop(0, 'rgba(255,122,26,.30)'); rg.addColorStop(1, 'rgba(255,122,26,0)'); x.fillStyle = rg; x.fillRect(0, 0, W, H);
-  x.strokeStyle = 'rgba(255,194,74,.4)'; x.lineWidth = 3; x.strokeRect(36, 36, W - 72, H - 72);
-  x.fillStyle = GOLD; x.font = `700 40px ${mono}`; x.fillText('THE FORGE', 84, 120);
-  x.fillStyle = 'rgba(255,220,190,.6)'; x.font = `500 26px ${mono}`; x.fillText('PROMETHEUS · LIT EVOLUTION', 84, 160);
+  const x = c.getContext('2d'), mono = "'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif";
+  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2a2118'); g.addColorStop(1, '#14110e'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const rg = x.createRadialGradient(W / 2, 360, 20, W / 2, 360, 680); rg.addColorStop(0, 'rgba(200,162,74,.18)'); rg.addColorStop(1, 'rgba(200,162,74,0)'); x.fillStyle = rg; x.fillRect(0, 0, W, H);
+  x.strokeStyle = 'rgba(200,162,74,.5)'; x.lineWidth = 3; x.strokeRect(36, 36, W - 72, H - 72);
+  x.fillStyle = GOLD; x.font = `700 40px ${mono}`; x.fillText('The Forge', 84, 120);
+  x.fillStyle = 'rgba(243,236,224,.6)'; x.font = `500 26px ${mono}`; x.fillText('Prometheus: LIT evolution', 84, 160);
   x.fillStyle = '#fff'; x.font = `800 82px ${mono}`; x.fillText(L.title, 84, 290);
-  x.fillStyle = 'rgba(255,220,190,.85)'; x.font = `500 30px ${mono}`; x.fillText(L.sub.toUpperCase(), 84, 342);
+  x.fillStyle = 'rgba(243,236,224,.85)'; x.font = `500 30px ${mono}`; x.fillText(L.sub, 84, 342);
   const pc = { yes: GOOD, maybe: GOLD, no: BAD }[L.level] || ICE;
   x.fillStyle = pc; x.globalAlpha = 0.16; x.fillRect(84, 380, 912, 80); x.globalAlpha = 1; x.strokeStyle = pc; x.lineWidth = 2; x.strokeRect(84, 380, 912, 80);
-  x.fillStyle = pc; x.font = `800 36px ${mono}`; x.fillText('WOULD THIS CHANGE LIVE? ' + L.verdict, 108, 432);
+  x.fillStyle = pc; x.font = `800 36px ${mono}`; x.fillText('Would this change live? ' + L.verdict, 108, 432);
   const hi = Math.max(500, ...L.bars.flatMap(([, v, l]) => [Math.abs(v), Math.abs(l)])), base = 880;
   x.strokeStyle = 'rgba(255,255,255,.25)'; x.lineWidth = 2; x.beginPath(); x.moveTo(84, base); x.lineTo(W - 84, base); x.stroke();
   L.bars.forEach(([name, v, live], i) => {
@@ -147,46 +147,46 @@ export async function makeShareImage(F, id) {
     const ty = bar(v, 0, v >= live ? GOOD : BAD); bar(live, 100, ICE);
     x.fillStyle = '#fff'; x.font = `800 34px ${mono}`; x.textAlign = 'center'; x.fillText(FMT.usd(v), bx + 45, Math.min(ty, base) - 16);
     x.fillStyle = ICE; x.font = `600 24px ${mono}`; x.fillText(FMT.usd(live), bx + 145, base + 54);
-    x.fillStyle = 'rgba(255,220,190,.7)'; x.font = `600 28px ${mono}`; x.fillText(name, bx + 95, base + 100); x.textAlign = 'left';
+    x.fillStyle = 'rgba(243,236,224,.7)'; x.font = `600 28px ${mono}`; x.fillText(name, bx + 95, base + 100); x.textAlign = 'left';
   });
-  x.fillStyle = 'rgba(255,220,190,.6)'; x.font = `500 24px ${mono}`; x.fillText('$ A MONTH · FIRE = THIS CREATURE · BLUE = LIVE LIT', 84, 1010);
+  x.fillStyle = 'rgba(243,236,224,.6)'; x.font = `500 24px ${mono}`; x.fillText('$ a month · gold = this creature · ivory = live LIT', 84, 1010);
   // the overfitting meter
   const m = L.meter;
   x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(84, 1064, 912, 26);
   const mg = x.createLinearGradient(84, 0, 996, 0); mg.addColorStop(0, GOOD); mg.addColorStop(0.5, GOLD); mg.addColorStop(1, BAD); x.fillStyle = mg; x.fillRect(84, 1064, 912 * (m.meter / 100), 26);
-  x.fillStyle = m.colour; x.font = `800 36px ${mono}`; x.fillText(`OVERFITTING: ${m.label} (${m.lost}% OF THE H1 GAIN LOST)`, 84, 1146);
-  x.fillStyle = '#e8d8cc'; x.font = `500 28px ${mono}`;
+  x.fillStyle = m.colour; x.font = `800 36px ${mono}`; x.fillText(`Overfitting: ${m.label} (${m.lost}% of the H1 gain lost)`, 84, 1146);
+  x.fillStyle = '#e8dccb'; x.font = `500 28px ${mono}`;
   const words = m.words.split(' '); let line = '', y = 1196;
   for (const w of words) { const t = line ? line + ' ' + w : w; if (x.measureText(t).width > W - 168 && line) { x.fillText(line, 84, y); line = w; y += 40; } else line = t; }
   x.fillText(line, 84, y);
-  x.fillStyle = 'rgba(255,220,190,.45)'; x.font = `500 24px ${mono}`; x.fillText(L.foot, 84, H - 72);
+  x.fillStyle = 'rgba(243,236,224,.45)'; x.font = `500 24px ${mono}`; x.fillText(L.foot, 84, H - 72);
   return await new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('no image'))), 'image/png'));
 }
 
 // ------------------------------------------------------------------------------------------------ the panel
 const $ = (id) => document.getElementById(id);
-const TABS = [['meter', 'METER'], ['breed', 'BREEDING'], ['verdicts', 'VERDICTS'], ['survivors', 'SURVIVORS'], ['compare', 'COMPARE'], ['search', 'SEARCH']];
+const TABS = [['meter', 'Meter'], ['breed', 'Breeding'], ['verdicts', 'Verdicts'], ['survivors', 'Survivors'], ['compare', 'Compare'], ['search', 'Search']];
 
 export function createPlus({ F, open, setGen, toast, getGen }) {
   const U = { tab: 'meter', a: null, b: null, q: '', sel: null };
   try { const s = JSON.parse(localStorage.getItem('forge.compare') || 'null'); if (s) { U.a = s.a === 'live' || F.creature(s.a) ? s.a : null; U.b = s.b === 'live' || F.creature(s.b) ? s.b : null; } } catch (_) { /* not kept */ }
   const keep = () => { try { localStorage.setItem('forge.compare', JSON.stringify({ a: U.a, b: U.b })); } catch (_) { /* private mode */ } };
   const root = $('plus'), body = $('plus-b');
-  const name = (id) => (id === 'live' ? 'LIVE LIT' : `#${id}`);
+  const name = (id) => (id === 'live' ? 'Live LIT' : `#${id}`);
   const meterBar = (m) => `<div class="meter" role="img" aria-label="Overfitting meter: ${m.meter} out of 100, ${m.label}"><i style="width:${100 - Math.max(2, m.meter)}%"></i><b style="left:${Math.max(2, Math.min(98, m.meter))}%"></b></div><div class="meterl"><span>0 · carries over</span><span>100 · all gone</span></div>`;
 
   function paintMeter() {
     const id = U.sel ?? F.d.champion.id, c = id === 'live' ? null : F.creature(id), k = id === 'live' ? F.d.live.k : c.k, m = overfit(F, k), P = populationOverfit(F);
-    return `<p class="who">${id === 'live' ? 'LIVE LIT' : (id === F.d.champion.id ? 'Champion ' : 'Creature ') + '#' + id}<small> ${c ? 'gen ' + (c.gen + 1) : ''}</small></p>
+    return `<p class="who">${id === 'live' ? 'Live LIT' : (id === F.d.champion.id ? 'Champion ' : 'Creature ') + '#' + id}<small> ${c ? 'gen ' + (c.gen + 1) : ''}</small></p>
       <div class="dial" style="--c:${m.colour}"><b>${m.meter}</b><span>${esc(m.label)}</span></div>${meterBar(m)}
       <p class="words">${esc(m.words)}</p>
       <table class="kv" aria-label="In sample against new data"><tbody><tr><td>H1: the data the forge trained on</td><td>${esc(FMT.usd(m.h1))}/mo</td></tr><tr><td>H2: new data, never seen</td><td class="${m.h2 > m.liveH2 ? 'up' : 'down'}">${esc(FMT.usd(m.h2))}/mo</td></tr>
       <tr><td>Gain over live on H1 → on H2</td><td>${esc(FMT.dUsd(m.gainH1))} → <b class="${m.gainH2 > 0 ? 'up' : 'down'}">${esc(FMT.dUsd(m.gainH2))}</b></td></tr><tr><td>Share of the H1 gain lost</td><td>${m.lost}%</td></tr></tbody></table>
-      <h3>THE WHOLE RUN</h3><p class="words">${esc(P.words)}</p>
+      <h3>The whole run</h3><p class="words">${esc(P.words)}</p>
       <table class="kv"><tbody><tr><td>Variants bred</td><td>${P.variants}</td></tr><tr><td>Beat live on H1 / on both halves</td><td>${P.beatH1} / <b>${P.beatBoth}</b></td></tr><tr><td>Median share of the H1 gain lost</td><td>${P.medianLost}%</td></tr>
       <tr><td>Does H1 rank predict H2? (Spearman)</td><td>${P.spearman == null ? '-' : esc(String(P.spearman))}</td></tr></tbody></table>
       <p class="note">0 would mean H1 predicts H2 perfectly. A forge that picks on H1 always looks better on H1 than on new data: the question is how much. Numbers come from forge.json.</p>
-      <div class="acts"><button type="button" data-share="${esc(String(id))}">SHARE CARD</button>${id !== F.d.champion.id ? '<button type="button" data-sel="champ">CHAMPION</button>' : ''}</div>`;
+      <div class="acts"><button type="button" data-share="${esc(String(id))}">Share card</button>${id !== F.d.champion.id ? '<button type="button" data-sel="champ">Champion</button>' : ''}</div>`;
   }
 
   function paintBreed() {
@@ -221,7 +221,7 @@ export function createPlus({ F, open, setGen, toast, getGen }) {
     return `<div class="slots">${slot(U.a, 'a')}${slot(U.b, 'b')}</div>${quick}<p class="verdict-line" id="cmpv">${esc(c.text)}</p>
       <table class="cmp" aria-label="A against B"><thead><tr><th></th><th>A</th><th>B</th></tr></thead><tbody>${c.rows.map((r) => `<tr><td>${esc(r.label)}</td><td class="${r.win === 'a' ? 'w' : ''}">${esc(r.a)}</td><td class="${r.win === 'b' ? 'w' : ''}">${esc(r.b)}</td></tr>`).join('')}
       <tr><td>Overfitting</td><td style="color:${c.overfit.a.colour}">${esc(c.overfit.a.label)} ${c.overfit.a.meter}</td><td style="color:${c.overfit.b.colour}">${esc(c.overfit.b.label)} ${c.overfit.b.meter}</td></tr></tbody></table>
-      ${c.knobs.length ? `<h3>KNOBS THAT DIFFER</h3><table class="cmp"><tbody>${c.knobs.map((r) => `<tr><td>${esc(r.knob.label)}</td><td>${esc(FMT.knob(r.knob, r.a))}</td><td>${esc(FMT.knob(r.knob, r.b))}</td></tr>`).join('')}</tbody></table>` : '<p class="note">Same knobs.</p>'}`;
+      ${c.knobs.length ? `<h3>Knobs that differ</h3><table class="cmp"><tbody>${c.knobs.map((r) => `<tr><td>${esc(r.knob.label)}</td><td>${esc(FMT.knob(r.knob, r.a))}</td><td>${esc(FMT.knob(r.knob, r.b))}</td></tr>`).join('')}</tbody></table>` : '<p class="note">Same knobs.</p>'}`;
   }
 
   function paintSearch() {

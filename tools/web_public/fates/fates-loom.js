@@ -15,13 +15,13 @@ export function buildLoom({ lite = false, len = 34, y1 = 3 } = {}) {
   // lights: the key from above-left, the gate's own gold, a violet bounce under the spindle
   const key = new THREE.DirectionalLight(0xffe3b8, 2.2); key.position.set(-4, 9, 8);
   const gate = new THREE.PointLight(0xffc86a, 16, 20, 2); gate.position.set(0, y1, -5);
-  const under = new THREE.PointLight(0x9a7bff, 10, 14, 2); under.position.set(0, 0.4, 2);
+  const under = new THREE.PointLight(0xffb070, 8, 14, 2); under.position.set(0, 0.4, 2);
   group.add(key, gate, under);
   parts.lights = { key, gate, under };
 
   // the colonnade: marble shafts with gold capitals and bases, two rows running into the distance
   const per = lite ? 5 : 8, N = per * 2, H = y1 * 1.9;
-  const shaftMat = M.marble({ color: '#e9e4f2', vein: '#4a3d78', gold: true, scale: 0.8 });
+  const shaftMat = M.marble({ color: '#efe8da', vein: '#8a6f4a', gold: true, scale: 0.8 });
   const shafts = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.2, 0.25, H, lite ? 10 : 18, 1), shaftMat, N);
   const capMat = M.metal({ kind: 'gold', roughness: 0.28 });
   const caps = new THREE.InstancedMesh(new THREE.BoxGeometry(0.62, 0.16, 0.62), capMat, N * 2);
@@ -37,7 +37,7 @@ export function buildLoom({ lite = false, len = 34, y1 = 3 } = {}) {
   parts.shafts = shafts; parts.caps = caps;
 
   // the loom posts: two taller marble columns either side of the spindle, with a gold weaving beam across the top
-  const postMat = M.marble({ color: '#f1ede6', vein: '#5a4a8a', gold: true, scale: 0.9, roughness: 0.22 });
+  const postMat = M.marble({ color: '#f3ede2', vein: '#8a6f4a', gold: true, scale: 0.9, roughness: 0.22 });
   const posts = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.17, 0.2, 1, lite ? 12 : 24, 1), postMat, 2);
   const postCaps = new THREE.InstancedMesh(new THREE.BoxGeometry(0.46, 0.14, 0.46), capMat, 4);
   const beamTop = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1, 16).rotateZ(Math.PI / 2), M.metal({ kind: 'gold', roughness: 0.2 }));

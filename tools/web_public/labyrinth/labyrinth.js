@@ -59,6 +59,19 @@ function buildMazes() {
 }
 
 // ------------------------------------------------------------------------------------------------ the words
+
+// the three money lines: drawdown left, the worst single trade at this size, and the eval fees expected for one pass (the owner's real prices)
+const FEE = (R) => (R.start <= 25000 ? 63 : 91.8);
+function renderMoney(c, R) {
+  const floor = R.floor != null ? R.floor : R.start - R.mll, bal = R.balance != null ? R.balance : R.start, room = Math.max(0, bal - floor);
+  $('mRoom').textContent = usd(room); $('mRoomOf').textContent = `of ${usd(R.mll)} max loss`;
+  let worst = 0; for (const t of S.pool) worst = Math.min(worst, t.usd * Math.min(S.mult, S.cap > 0 ? S.cap / Math.max(1, t.risk) : Infinity));
+  $('mWorst').textContent = S.pool.length ? usd(worst) : '-'; $('mWorstOf').textContent = S.pool.length ? 'one bad trade at this size' : '';
+  const fee = FEE(R), tries = c && c.pass > 0.02 ? 1 / c.pass : null;
+  $('mFee').textContent = tries ? usd(fee * tries) : '-';
+  $('mFeeOf').textContent = tries ? `${usd(fee)} an eval, about ${tries < 1.5 ? '1' : Math.round(tries * 10) / 10} ${tries < 1.5 ? 'try' : 'tries'}` : 'too few passes to price';
+}
+
 function renderVerdict() {
   const c = S.cur, R = S.R;
   $('vText').textContent = S.pool.length ? plain(c, R, S.hor) : 'No trades to run yet.';
@@ -71,6 +84,7 @@ function renderVerdict() {
     live.textContent = `Your live eval now: balance ${usd(R.balance)}, floor ${usd(floor)}, room ${usd(R.balance - floor)}, ${usd(toT)} to the target${R.session ? `, session ${R.session}` : ''}.`;
     live.hidden = false;
   } else live.hidden = true;
+  renderMoney(c, R);
   $('multV').textContent = mx(S.mult);
   $('mult').value = String(S.mult);
   document.querySelectorAll('#presets button').forEach((b) => {
@@ -99,12 +113,12 @@ function svgEl(name, attrs) { const e = document.createElementNS('http://www.w3.
 function sizesView() {
   const W = 330, H = 132, L = 26, B = 18, T = 8, X = (m) => L + ((m - 0.25) / 1.75) * (W - L - 8), Y = (p) => H - B - p * (H - B - T);
   const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img', 'aria-label': 'Reach-the-target and hit-the-floor odds by size' });
-  [0, 0.5, 1].forEach((p) => { svg.append(svgEl('line', { x1: L, x2: W - 8, y1: Y(p), y2: Y(p), stroke: 'rgba(255,255,255,.12)' })); const t = svgEl('text', { x: 2, y: Y(p) + 3 }); t.textContent = pct(p); svg.append(t); });
+  [0, 0.5, 1].forEach((p) => { svg.append(svgEl('line', { x1: L, x2: W - 8, y1: Y(p), y2: Y(p), stroke: 'rgba(243,236,224,.14)' })); const t = svgEl('text', { x: 2, y: Y(p) + 3 }); t.textContent = pct(p); svg.append(t); });
   S.rows.forEach((r) => { const t = svgEl('text', { x: X(r.m) - 8, y: H - 4 }); t.textContent = mx(r.m).replace('.00', ''); svg.append(t); });
   const line = (key, color) => svg.append(svgEl('polyline', { points: S.rows.map((r) => `${X(r.m).toFixed(1)},${Y(r[key]).toFixed(1)}`).join(' '), fill: 'none', stroke: color, 'stroke-width': 2.4, 'stroke-linejoin': 'round' }));
-  line('pass', '#ffcf5a'); line('bust', '#ff4d57');
-  svg.append(svgEl('line', { x1: X(S.mult), x2: X(S.mult), y1: T, y2: H - B, stroke: '#fff', 'stroke-dasharray': '3 3', opacity: 0.7 }));
-  if (S.sweet) svg.append(svgEl('circle', { cx: X(S.sweet.m), cy: Y(S.sweet.pass), r: 4.5, fill: '#ffcf5a', stroke: '#000' }));
+  line('pass', '#c8a24a'); line('bust', '#c0603f');
+  svg.append(svgEl('line', { x1: X(S.mult), x2: X(S.mult), y1: T, y2: H - B, stroke: '#f3ece0', 'stroke-dasharray': '3 3', opacity: 0.7 }));
+  if (S.sweet) svg.append(svgEl('circle', { cx: X(S.sweet.m), cy: Y(S.sweet.pass), r: 4.5, fill: '#c8a24a', stroke: '#14110e' }));
   const tbl = h('table', 'tbl'), head = h('tr'); ['Size', 'Reach target', 'Hit floor', 'Median'].forEach((x) => head.append(h('th', '', x)));
   tbl.append(head);
   S.rows.forEach((r) => {
@@ -203,7 +217,7 @@ function card() {
   return { v: 1, name: 'Labyrinth', status: { level: S.demo ? 'off' : 'ok', label: S.demo ? 'Demo data' : `Sweet spot ${mx(sw.m)}` },
     kpis: [{ label: 'Pass odds', value: pct(c.pass) }, { label: 'Bust odds', value: pct(c.bust) }, { label: 'Sweet spot', value: mx(sw.m) }],
     lines: [plain(c, S.R, S.hor).slice(0, 120), `At ${mx(S.mult)} size, cap ${S.cap ? usd(S.cap) : 'off'}, ${S.hor} trades ahead. A what-if, not a forecast.`.slice(0, 120)],
-    t: Math.floor(Date.now() / 1000), open: '#sizes', theme: '#09050d', stale_after: 604800 };
+    t: Math.floor(Date.now() / 1000), open: '#sizes', theme: '#14110e', stale_after: 604800 };
 }
 function postCard() {
   if (S.demo || !O || !O.framed) return;

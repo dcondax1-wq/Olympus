@@ -43,24 +43,24 @@ const glowTex = () => canvasTex(64, 64, (x, w) => {
 const floorTex = () => canvasTex(512, 512, (x, w) => {
   const c = w / 2;
   const g = x.createRadialGradient(c, c, 0, c, c, c);
-  g.addColorStop(0, '#3a1406'); g.addColorStop(0.55, '#1c0905'); g.addColorStop(1, '#070302');
+  g.addColorStop(0, '#4a3626'); g.addColorStop(0.55, '#2a1d14'); g.addColorStop(1, '#14110e');
   x.fillStyle = g; x.fillRect(0, 0, w, w);
-  x.strokeStyle = 'rgba(255,140,60,.16)'; x.lineWidth = 1.5;
+  x.strokeStyle = 'rgba(200,162,74,.2)'; x.lineWidth = 1.5;
   for (let r = 0.2; r < 1; r += 0.2) { x.beginPath(); x.arc(c, c, c * r * 0.86, 0, Math.PI * 2); x.stroke(); }
-  x.strokeStyle = 'rgba(255,140,60,.08)';
+  x.strokeStyle = 'rgba(200,162,74,.1)';
   for (let a = 0; a < 20; a++) {
     const t = a / 20 * Math.PI * 2;
     x.beginPath(); x.moveTo(c + Math.cos(t) * c * 0.17, c + Math.sin(t) * c * 0.17); x.lineTo(c + Math.cos(t) * c * 0.86, c + Math.sin(t) * c * 0.86); x.stroke();
   }
 });
 const textTex = (txt, color) => canvasTex(256, 64, (x, w, h) => {
-  x.font = '700 30px Orbitron, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.shadowColor = color; x.shadowBlur = 14; x.fillStyle = color; x.fillText(txt, w / 2, h / 2);
+  x.font = "600 30px 'Iowan Old Style', Georgia, serif"; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillStyle = color; x.fillText(txt, w / 2, h / 2);
 });
 
 // ------------------------------------------------------------------------------------------------ colours
 const C_EMBER = new THREE.Color('#7a1206'), C_RED = new THREE.Color('#ff3d2e'), C_FIRE = new THREE.Color('#ff7a1a');
-const C_GOLD = new THREE.Color('#ffc24a'), C_WHITE = new THREE.Color('#fff4d6'), C_ICE = new THREE.Color('#8fdcff');
+const C_GOLD = new THREE.Color('#ffc24a'), C_WHITE = new THREE.Color('#fff4d6'), C_ICE = new THREE.Color('#efe3cc');
 function heatColor(h, out = new THREE.Color()) {
   if (h < 0.3) return out.copy(C_EMBER).lerp(C_RED, h / 0.3);
   if (h < 0.6) return out.copy(C_RED).lerp(C_FIRE, (h - 0.3) / 0.3);
@@ -172,16 +172,16 @@ class Arena {
     this.lite = Q.get('lite') === '1' || !!(O && O.lite());
     this.chosen = Q.get('lite') === '1' || !!(O && O.chosen());
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x120806, 0.028);
+    this.scene.fog = new THREE.FogExp2(0x2a1d14, 0.026);
     this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 200);
     // the render core owns the renderer, the frame passes and the quality tiers (OLYMPUS.fx(), stepped down on slow frames)
-    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, env: 'night', tint: '#ff7a1a', exposure: 0.95, maxDpr: 1.75,
-      quality: Q.get('lite') === '1' ? 'low' : undefined, adapt: true, bloom: { strength: 0.75, radius: 0.6, threshold: 0.9 },
-      grade: { vignette: 0.42, grain: 0.04, aberration: 0.003 },
+    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, env: 'night', tint: '#ff7a1a', theme: { sky: '#4a3626', fog: '#2a1d14', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, exposure: 1.0, maxDpr: 1.75,
+      quality: Q.get('lite') === '1' ? 'low' : undefined, adapt: true, bloom: { strength: 0.25, radius: 0.55, threshold: 0.92 },
+      grade: { vignette: 0.3, grain: 0.02, aberration: 0 },
       onQuality: (l) => { this.lite = l === 'low' || l === 'off'; this.field?.setLite(this.lite); this.embers?.setCap(this.lite ? 260 : 700); O?.mode(this.lite); } });
     this.renderer = this.rc.renderer;
     this.lite = this.rc.quality() === 'low' || this.rc.quality() === 'off';
-    this.scene.background = new THREE.Color(0x0a0403);
+    this.scene.background = new THREE.Color(0x2a1d14);
     O?.themeScene?.({ scene: this.scene, renderer: this.renderer });   // OLYMPUS theme: the fog follows it
     this.az = -0.6; this.el = 0.8; this.drag = null;
     this.tex = { glow: glowTex() };
@@ -200,7 +200,7 @@ class Arena {
     this.liveFlame.fixedColor = C_ICE; this.liveFlame.alive = true; this.liveFlame.id = 'live';
     const lp = this.posOf(forge.d.live.k, 0, 1);
     this.liveFlame.place(lp, 0.7);
-    this.liveLabel = new THREE.Sprite(new THREE.SpriteMaterial({ map: textTex('LIVE', '#8fdcff'), transparent: true, depthWrite: false }));
+    this.liveLabel = new THREE.Sprite(new THREE.SpriteMaterial({ map: textTex('Live LIT', '#efe3cc'), transparent: true, depthWrite: false }));
     this.liveLabel.scale.set(2.6, 0.65, 1); this.liveLabel.position.copy(lp).setY(3.2);
     this.scene.add(this.liveLabel);
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.6, 40), new THREE.MeshBasicMaterial({ color: C_ICE.clone().multiplyScalar(2.2), transparent: true,
@@ -223,7 +223,7 @@ class Arena {
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    this.dust = new THREE.Points(g, new THREE.PointsMaterial({ size: 0.09, map: this.tex.glow, color: 0xff8a3a, transparent: true,
+    this.dust = new THREE.Points(g, new THREE.PointsMaterial({ size: 0.09, map: this.tex.glow, color: 0xe0a060, transparent: true,
       opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending }));
     this.scene.add(this.dust);
   }
@@ -475,8 +475,8 @@ function openCard(id) {
     </tbody></table><p class="note">${nchg ? `${nchg} knob${nchg > 1 ? 's' : ''} differ from live (◆).` : 'Same knobs as live.'} Research only: nothing here changes the bot.</p>`;
   $('card-b').insertAdjacentHTML('afterbegin', `<div class="ofit" id="ofit"></div>`);
   const m = overfit(F, k);
-  $('ofit').innerHTML = `<span class="ol">OVERFITTING</span><span class="om" role="img" aria-label="Overfitting meter ${m.meter} of 100, ${m.label}"><i style="width:${100 - Math.max(2, m.meter)}%"></i></span><b style="color:${m.colour}">${esc(m.label)}</b>`
-    + `<button type="button" class="mini" id="cardShare">SHARE</button><button type="button" class="mini" id="cardCmp">COMPARE</button>`;
+  $('ofit').innerHTML = `<span class="ol">Overfitting</span><span class="om" role="img" aria-label="Overfitting meter ${m.meter} of 100, ${m.label}"><i style="width:${100 - Math.max(2, m.meter)}%"></i></span><b style="color:${m.colour}">${esc(m.label)}</b>`
+    + `<button type="button" class="mini" id="cardShare">Share</button><button type="button" class="mini" id="cardCmp">Compare</button>`;
   $('cardShare').addEventListener('click', () => plus && plus.share(id));
   $('cardCmp').addEventListener('click', () => { plus.select(id); plus.open('meter', id); closeCard(); showPlus(true); });
   plus && plus.select(id);
@@ -518,8 +518,9 @@ function renderBanner() {
   const v = STATE.forge.verdict(), el = $('banner');
   el.className = 'banner ' + (v.liveBest ? 'ok' : 'cand');
   $('bn-t').textContent = v.title;
-  $('bn-s').innerHTML = `best variant <b>${esc(FMT.dUsd(v.h1))}</b>/mo on H1 → <b class="${v.h2 > 0 ? 'up' : 'down'}">${esc(FMT.dUsd(v.h2))}</b>/mo on H2` +
-    ` · live H2 <b>${esc(FMT.usd(v.liveH2))}</b>/mo · ${v.real}/${v.seeds} seeds hold`;
+  const yr = typeof v.h2 === 'number' ? v.h2 * 12 : null;
+  $('bn-s').innerHTML = `On new data (Jul-Oct) the best variant earns <b class="${v.h2 > 0 ? 'up' : 'down'}">${esc(FMT.dUsd(v.h2))}</b> a month against live's <b>${esc(FMT.usd(v.liveH2))}</b>` +
+    (yr != null ? `: <b class="${yr > 0 ? 'up' : 'down'}">${esc(FMT.dUsd(yr))}</b> a year` : '') + `. On the data it trained on it showed <b>${esc(FMT.dUsd(v.h1))}</b> a month. ${v.real} of ${v.seeds} runs hold up.`;
 }
 
 function openTruth() {
@@ -670,7 +671,7 @@ function measureBars() {
 // names ('--x': value). bg blends into the forge's own ember dark by `mix`, the accent into its fire by `harmony` (0 in the
 // default theme: nothing changes; missing: as given); the arena's fog follows the background. With the kit's themes
 // (olympus.js theme / onTheme / themeScene) the kit paints the CSS tokens and themeScene keeps the fog in step.
-const OWN = { bg: '#120806', accent: '#ff7a1a' };
+const OWN = { bg: '#14110e', accent: '#c8a24a' };
 const THEME_VARS = { text: '--text', dim: '--dim', glass: '--panel', panel: '--panel', line: '--line' };
 // '#rrggbb' a -> b by t (0 = a untouched); anything else: b when t > 0 (the OLYMPUS themes' own mix rule, kept local)
 function mixHex(a, b, t) {
@@ -708,8 +709,8 @@ async function main() {
   const F = await loadForge('forge.json', Q.get('demo') === '1' ? 'demo' : undefined);
   STATE.forge = F;
   $('demo').hidden = !F.demo;
-  if (F.demo) $('sub').textContent = 'PROMETHEUS · demo data (forge.json not found)';
-  else $('sub').textContent = `PROMETHEUS · ${F.nGens} generations × ${F.d.pop} · fitness on 2026 H1 only`;
+  if (F.demo) $('sub').textContent = 'Prometheus: demo data (forge.json not found)';
+  else $('sub').textContent = `Prometheus: ${F.nGens} rounds of ${F.d.pop} · scored on Jan-Jun 2026 only`;
   const sl = $('gen');
   sl.max = String(F.nGens - 1);
   sl.addEventListener('input', () => { setPlaying(false); setGen(Number(sl.value)); });
