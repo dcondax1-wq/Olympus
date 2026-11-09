@@ -1003,12 +1003,12 @@ def run_look(br, url):
     tg = p.evaluate("""(() => { const t = document.getElementById('setSound'), cs = getComputedStyle(t);
         const segs = [...document.querySelectorAll('#look .seg3 button')].map((b) => [getComputedStyle(b).textTransform, b.getBoundingClientRect().height]);
         const over = [...document.querySelectorAll('#look .seg3 button, #look .th, #look h2, #look h3')].some((b) => b.scrollWidth > b.clientWidth + 0.5);
-        return [cs.appearance || cs.webkitAppearance, cs.width, cs.height, getComputedStyle(t, '::before').content, segs.every((x) => x[0] === 'uppercase' && x[1] >= 43.5) && !over]; })()""")
-    check("l. the sheets' switches are HUD pill toggles (46 x 26, a knob), the segment buttons upper case and 44 px", tg[0] == "none" and tg[1] == "46px" and tg[2] == "26px"
+        return [cs.appearance || cs.webkitAppearance, cs.width, cs.height, getComputedStyle(t, '::before').content, segs.every((x) => x[0] === 'none' && x[1] >= 43.5) && !over]; })()""")
+    check("l. the sheets' switches are pill toggles (46 x 26, a knob), the segment buttons in sentence case (AGORA: no upper case) and 44 px", tg[0] == "none" and tg[1] == "46px" and tg[2] == "26px"
           and tg[3] == '""' and tg[4], tg)
-    check("l. Theme opens the Look sheet: 12 themes (Reactor first, Eclipse ... Custom), effects levels, the core designs, sounds, calm motion (off), tilt",
-          p.locator("#look").is_visible() and p.locator("#themes .th").count() == 12 and p.locator('#fxSeg [aria-pressed="true"]').inner_text().upper() == "HIGH"
-          and p.locator("#coreSeg button").count() == 2 and p.get_attribute("#themes .th >> nth=0", "data-theme-k") == "reactor"
+    check("l. Theme opens the Look sheet: 13 themes (Agora first, then Reactor, Eclipse ... Custom), effects levels, the core designs, sounds, calm motion (off), tilt",
+          p.locator("#look").is_visible() and p.locator("#themes .th").count() == 13 and p.locator('#fxSeg [aria-pressed="true"]').inner_text().upper() == "HIGH"
+          and p.locator("#coreSeg button").count() == 2 and p.get_attribute("#themes .th >> nth=0", "data-theme-k") == "agora"
           and not p.locator("#setCalm").is_checked())
     p.click("#setCalm")
     calm = p.evaluate("localStorage.getItem('jarvis.calm')")
@@ -1114,9 +1114,9 @@ def run_look(br, url):
 
 
 # the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
-ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "journal", "bridge", "inbox", "settings", "planner", "mind", "arena", "athena", "kalshicity", "ledger", "kalshi", "tyche", "hermes", "plutus"]
+ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "observatory", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "journal", "bridge", "hestia", "demeter", "apollo", "clio", "inbox", "settings", "planner", "mind", "arena", "atlas", "athena", "kalshicity", "ledger", "hera", "dionysus", "kalshi", "tyche", "hermes", "plutus"]
 MONEY_FIRST = "kalshicity"          # the first MONEY app in apps.js: the group chip glides its card to the middle
-NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "journal", "bridge", "inbox", "settings", "mind", "arena", "athena", "kalshicity", "ledger", "tyche", "hermes", "plutus"]
+NOT_ON_SITE = ["oracle", "odeon", "fates", "observatory", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "journal", "bridge", "hestia", "demeter", "apollo", "clio", "inbox", "settings", "mind", "arena", "atlas", "athena", "kalshicity", "ledger", "hera", "dionysus", "tyche", "hermes", "plutus"]
 
 
 def run_olympus(br, url):
@@ -1353,7 +1353,7 @@ def run_switcher(br, url):
     check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS, PANTHEON, ARES, FORUM, LABYRINTH, ARGUS, NEMESIS, CHRONOS, HEPHAESTUS, CITIES, BRIDGE), LIFE (INBOX, SETTINGS, CALENDAR, MIND, ARENA, ATHENA), "
           "MONEY (KALSHI CITY, KALSHI, TYCHE, HERMES, PLUTUS) and + ADD, "
           "Jarvis's card marked NOW",
-          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "HEPHAESTUS", "CITIES", "MNEMOSYNE", "BRIDGE", "INBOX", "SETTINGS", "CALENDAR", "MIND", "ARENA", "ATHENA", "KALSHI CITY", "LEDGER", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
+          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "OBSERVATORY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "HEPHAESTUS", "CITIES", "MNEMOSYNE", "BRIDGE", "HESTIA", "DEMETER", "APOLLO", "CLIO", "INBOX", "SETTINGS", "CALENDAR", "MIND", "ARENA", "ATLAS", "ATHENA", "KALSHI CITY", "LEDGER", "HERA", "DIONYSUS", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
           and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
