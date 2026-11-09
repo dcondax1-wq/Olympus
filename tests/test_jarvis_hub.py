@@ -224,7 +224,7 @@ def part_a():
     m = json.load(open(os.path.join(JV, "manifest.webmanifest"), encoding="utf-8"))
     check("a. manifest: Jarvis, standalone, own scope, black like the old Jarvis, icons j2",
           m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "./"
-          and m["theme_color"] == "#000000" and all(i["src"].endswith("?v=j4") for i in m["icons"]), m)
+          and m["theme_color"] == "#14110e" and all(i["src"].endswith("?v=j4") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes jarvis/ and kalshi/ with every build (every top-level file: fonts and parts too)",
           'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal"):' in b and 'os.path.join(out, app, name)' in b)
