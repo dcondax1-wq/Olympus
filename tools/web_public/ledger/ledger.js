@@ -90,8 +90,22 @@ function renderHero() {
 }
 
 // ------------------------------------------------------------------------------------------------ the panels
+/** AGORA (2026-11-09): three plain money answers at the top: how many months of costs your profit covers, how much of each dollar earned you keep, the biggest cost. */
+function snapCard(m, t) {
+  const earned = t.income + Math.max(0, t.kalshiAll), keep = earned > 0 ? Math.max(-1, Math.min(1, (earned - t.costs) / earned)) : null;
+  const cover = m.burn > 0 && t.net > 0 ? t.net / m.burn : null;
+  let big = null; for (const [cat, v] of Object.entries(t.byCat || {})) if (v < 0 && (!big || v < big[1])) big = [cat, v];
+  const tile = (k, v, note, cls) => { const d = h('div', 'snapt'); d.append(h('span', 'ag-cap', k), h('b', 'ag-money ' + (cls || ''), v), h('small', 'ag-cap', note)); return d; };
+  const grid = h('div', 'snap');
+  grid.append(
+    tile('Costs covered', cover == null ? '-' : `${cover >= 10 ? Math.round(cover) : cover.toFixed(1)} mo`, cover == null ? (m.burn > 0 ? 'Earn a profit to cover your repeating costs.' : 'No repeating costs recorded.') : `of your ${C.money(m.burn, 0)} a month in repeating costs`, cover != null ? 'pos' : ''),
+    tile('You keep', keep == null ? '-' : `${Math.round(keep * 100)}c`, keep == null ? 'Add income to see this.' : 'of every $1 you earned, after costs', keep != null && keep < 0 ? 'neg' : 'pos'),
+    tile('Biggest cost', big ? C.money(-big[1], 0) : '-', big ? big[0] : 'No costs yet', big ? 'neg' : ''));
+  return card('Your money in three numbers', grid);
+}
 function overView() {
   const m = S.model, t = m.totals, k = t.kalshi, be = m.be, out = [];
+  out.push(snapCard(m, t));
   out.push(card('Where the money went', kv([
     ['Payouts received', C.money(t.byKind.payout_in || 0), 'pos'], ['Other income', C.money(t.byKind.income || 0), 'pos'],
     ['Eval fees', C.money(-(t.byKind.fee || 0)), 'neg'], ['Resets and activation', C.money(-((t.byKind.reset || 0) + (t.byKind.activation || 0))), 'neg'],

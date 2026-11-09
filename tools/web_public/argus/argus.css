@@ -120,7 +120,7 @@ code { display: block; padding: 8px 10px; border-radius: 8px; background: rgba(0
 :root { --dock-h: 214px; }
 .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
 .tabs button { flex: none; padding: 0 6px; min-height: 44px; white-space: nowrap; }
-.tag.demo { color: #e6b657; border-color: rgba(230, 182, 87, .5); }
+.tag.demo { color: #e0b060; border-color: rgba(224, 176, 96, .5); background: transparent; }
 .demobtn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; margin: 8px 0; border-radius: 12px; border: 1px solid rgba(250, 201, 95, .6); background: rgba(250, 201, 95, .12); color: #fac95f; font-weight: 700; text-decoration: none; }
 .rdy { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--rc, #d3a950); background: color-mix(in srgb, var(--rc, #d3a950) 10%, transparent); }
 .rdy.ok { --rc: #d3a950; } .rdy.warn { --rc: #e6b657; } .rdy.bad { --rc: #cc7156; }

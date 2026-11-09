@@ -201,7 +201,7 @@ class Vault {
       this.at = [];
       const ao = AT.contactAO({ radius: 5.6, depth: 1.9, strength: 0.8 }); ao.object.position.set(0, -0.21, 0); S3.add(ao.object); this.at.push(ao);
       const sh = AT.shafts({ count: 4, from: [-1, 11, 1], to: [0, 0, 0], width: 3.4, spread: [7, 0, 1.5], color: '#e6b657', strength: 0.1, seed: 12 }); S3.add(sh.object); this.at.push(sh);
-      const em = AT.embers({ count: 110, origin: [0, 0, 0.3], spread: [8, 0, 1.4], rise: 4.2, colors: ['#e6b657', '#e6b657', '#b89246'], size: 5, wind: 0, seed: 33 }); S3.add(em.object); this.at.push(em);
+      const em = AT.embers({ count: 40, origin: [0, 0, 0.3], spread: [8, 0, 1.4], rise: 4.2, colors: ['#e6b657', '#e6b657', '#b89246'], size: 3, wind: 0, seed: 33 }); S3.add(em.object); this.at.push(em);
       AT.setQuality(this.at, this.lite ? 'low' : 'high'); this.dirty = true;
     } catch (e) { this.at = []; } }, 900);
   }

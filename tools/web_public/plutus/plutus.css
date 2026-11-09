@@ -1,4 +1,4 @@
-/* PLUTUS: the vault. Deep green and gold; the type is the OLYMPUS kit's (Orbitron / Rajdhani, self-hosted in ../jarvis/). */
+/* PLUTUS: the vault, AGORA look (marble, bronze, gold; serif headings, system sans). */
 :root {
   --bg: #13100d; --bg2: #13100d; --panel: rgba(21, 18, 15, .9); --line: rgba(174, 184, 110, .2);
   --text: #f3ece0; --dim: #bfb6a8; --lime: #aeb86e; --gold: #e6b657; --bad: #cc7156; --ice: #fac95f;
@@ -17,10 +17,10 @@ body { background: radial-gradient(120% 60% at 50% 28%, #2c251f 0%, #15120f 50%,
 .hud { position: fixed; top: 0; left: 0; right: 0; padding: calc(10px + var(--st)) calc(16px + var(--sr)) 14px calc(16px + var(--sl)); pointer-events: none;
   background: linear-gradient(180deg, rgba(19, 16, 13, .92) 0%, rgba(19, 16, 13, .55) 70%, rgba(19, 16, 13, 0) 100%); }
 .title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-h1 { margin: 0; font: 800 22px/1.1 var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .01em; color: var(--lime);
+h1 { margin: 0; font: 800 22px/1.1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--lime);
    }
 .sub { margin: 3px 0 0; color: var(--dim); font-size: 13px; }
-.tag { font: 700 12px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .01em; padding: 2px 7px; border-radius: 6px; color: #15120f; background: var(--gold); }
+.tag { font: 700 12px var(--oly-display, sans-serif); letter-spacing: .01em; padding: 2px 7px; border-radius: 6px; color: #15120f; background: var(--gold); }
 .tag.live { background: var(--lime); }
 
 .sheet { position: fixed; left: calc(10px + var(--sl)); right: calc(10px + var(--sr)); top: clamp(238px, 35vh, 330px); bottom: calc(166px + var(--sb));
@@ -51,13 +51,13 @@ input[type="range"] { width: 100%; min-height: 44px; accent-color: var(--lime); 
 .warn { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--gold); background: rgba(230, 182, 87, .08); font-size: 13px; }
 
 table { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
-th { text-align: right; font: 600 12px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .01em; color: var(--dim); padding: 4px 4px; }
+th { text-align: right; font: 600 12px var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--dim); padding: 4px 4px; }
 th:first-child, td:first-child { text-align: left; }
 td { text-align: right; padding: 6px 4px; border-top: 1px solid rgba(255, 255, 255, .06); }
 td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .stat { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 0 0 10px; }
 .stat div { background: rgba(255, 255, 255, .05); border-radius: 10px; padding: 8px 10px; }
-.stat b { display: block; font: 700 18px var(--oly-display, 'Orbitron', sans-serif); }
+.stat b { display: block; font: 700 18px var(--oly-display, sans-serif); }
 .stat span { font-size: 12px; color: var(--dim); }
 .line { padding: 7px 0; border-bottom: 1px solid rgba(255, 255, 255, .06); font-size: 13.5px; }
 .line.bad { color: #cc7156; }
@@ -66,7 +66,7 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .dock { position: fixed; left: 0; right: 0; bottom: 0; height: calc(var(--dock-h) + var(--sb)); padding: 8px calc(88px + var(--sr)) calc(8px + var(--sb)) calc(10px + var(--sl));
   background: linear-gradient(0deg, rgba(19, 16, 13, .97) 0%, rgba(19, 16, 13, .85) 80%, rgba(19, 16, 13, 0) 100%); display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; }
 .headline { display: flex; align-items: baseline; gap: 10px; width: 100%; padding: 4px 12px; min-height: 48px; border-width: 2px; border-color: var(--lime); text-align: left; box-shadow: none; }
-.hk { font: 800 22px/1 var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .01em; color: var(--lime); }
+.hk { font: 800 22px/1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--lime); }
 .headline[data-neg="1"] { border-color: var(--bad); box-shadow: none; } .headline[data-neg="1"] .hk { color: var(--bad); }
 .hs { font: 700 13px var(--oly-ui, 'Rajdhani', sans-serif); color: var(--dim); margin-left: auto; text-align: right; }
 .vline { margin: 0; font-size: 12.5px; color: var(--dim); line-height: 1.25; max-height: 2.6em; overflow: hidden; }
@@ -75,10 +75,10 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 
 /* 2026-11-04: goal tracker, payout calendar, income waterfall, what-if (plutusfx.js; the effects come from ../olympus/fx-*.js) */
 .xbox { margin-top: 14px; padding: 10px 12px; border: 1px solid rgba(174, 184, 110, .22); border-radius: 14px; background: linear-gradient(160deg, rgba(174, 184, 110, .07), rgba(230, 182, 87, .04)); }
-.xbox h3 { margin: 0 0 8px; font: 700 12px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .01em; text-transform: none; color: var(--gold); }
+.xbox h3 { margin: 0 0 8px; font: 700 12px var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--gold); }
 .goalrow { display: flex; align-items: center; gap: 12px; }
 .ringhost { position: relative; flex: 0 0 84px; width: 84px; height: 84px; display: grid; place-items: center; }
-.ringhost b { font: 800 17px var(--oly-display, 'Orbitron', sans-serif); color: var(--lime); }
+.ringhost b { font: 800 17px var(--oly-display, sans-serif); color: var(--lime); }
 .goalrow .line { border: 0; padding: 0; flex: 1; }
 .miles { list-style: none; margin: 8px 0 0; padding: 0; }
 .miles li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(255, 255, 255, .06); font-size: 13px; color: var(--dim); }
@@ -88,7 +88,7 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; }
 .cal .cell { padding: 7px 8px; border-radius: 10px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .07); display: grid; gap: 2px; }
 .cal .cell.pay { border-color: rgba(230, 182, 87, .55); background: rgba(230, 182, 87, .08); }
-.cal .cell span { font-size: 12px; color: var(--dim); letter-spacing: .01em; text-transform: none; } .cal .cell b { font: 700 16px var(--oly-display, 'Orbitron', sans-serif); }
+.cal .cell span { font-size: 12px; color: var(--dim); letter-spacing: .01em; text-transform: none; } .cal .cell b { font: 700 16px var(--oly-display, sans-serif); }
 .cal .cell em { font-style: normal; font-size: 12px; color: var(--dim); } .cal .cell small { font-size: 12px; color: var(--gold); }
 .fall .wf { display: grid; grid-template-columns: 30px 1fr 74px 78px; gap: 6px; align-items: center; padding: 4px 0; font-size: 12.5px; font-variant-numeric: tabular-nums; }
 .fall .wk { color: var(--dim); } .fall .bars { display: grid; gap: 2px; } .fall .bars i { display: block; height: 6px; border-radius: 3px; transition: width .5s var(--oly-ease, ease); min-width: 2px; }
@@ -110,7 +110,7 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .pd { border: 1px solid rgba(174, 184, 110, .22); border-radius: 14px; background: linear-gradient(160deg, rgba(174, 184, 110, .07), rgba(230, 182, 87, .04)); overflow: hidden; }
 .pd summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 6px 12px; cursor: pointer; }
 .pd summary::-webkit-details-marker { display: none; }
-.pd summary b { font: 700 12px/1.2 var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .01em; text-transform: none; color: var(--lime); }
+.pd summary b { font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--lime); }
 .pd summary span { font-size: 12px; color: var(--dim); text-align: right; font-variant-numeric: tabular-nums; }
 .pd summary::after { content: ''; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--dim); border-bottom: 2px solid var(--dim); transform: rotate(45deg); transition: transform .2s; margin-left: 2px; }
 .pd[open] summary::after { transform: rotate(-135deg); }
@@ -141,10 +141,18 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .mp-cell { padding: 8px 10px; border-radius: 12px; border: 1px solid rgba(174, 184, 110, .22); background: rgba(0, 0, 0, .25); }
 .mp-cell.first { border-color: var(--lime); box-shadow: none; }
 .mp-cell span { display: block; font-size: 12px; color: var(--dim); letter-spacing: .01em; }
-.mp-cell b { display: block; font: 800 20px/1.2 var(--oly-display, 'Orbitron', sans-serif); color: var(--lime); font-variant-numeric: tabular-nums; }
+.mp-cell b { display: block; font: 800 20px/1.2 var(--oly-display, sans-serif); color: var(--lime); font-variant-numeric: tabular-nums; }
 .mp-cell small { display: block; font-size: 12px; color: var(--dim); }
 .mplan .pd { margin-top: 8px; }
 .mp-cav { margin: 4px 0 0; padding-left: 18px; font-size: 12.5px; line-height: 1.4; color: var(--text); }
 .mp-cav li { margin: 0 0 6px; }
 .mp-months td, .mp-months th { white-space: nowrap; }
 @media (max-width: 360px) { .mp-two { grid-template-columns: 1fr; } }
+
+/* AGORA: what you keep */
+.keepgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 8px; }
+.keepc { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; background: #1d1914; border: 1px solid var(--ag-line, #3a3228); }
+.keepc:first-child { grid-column: 1 / -1; }
+.keepc .ag-money { font-size: 30px; }
+.keepc small { font-size: 12px; }
+.rbars .rb { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 36px; font-size: 13px; }
