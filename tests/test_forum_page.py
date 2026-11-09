@@ -66,9 +66,9 @@ def part_a():
     check("a. no innerHTML / insertAdjacentHTML / document.write (the Pantheon's words only ever go in as text; the tablets are drawn on a canvas)",
           not any(re.search(r"innerHTML|insertAdjacentHTML|document\.write", s) for s in js.values()))
     fetched = set(re.findall(r"getJSON\('([^']+)'", js["forum.js"]))
-    check("a. the page fetches only the site's own files (pantheon/pantheon.json, home.json, its fixture), no WebSocket / beacon / XHR, storage only under 'forum.v1'",
+    check("a. the page fetches only the site's own files (pantheon/pantheon.json, home.json, its fixture), no WebSocket / beacon / XHR, storage only under 'forum.v1' (and forum.opt404.*)",
           fetched == {"../pantheon/pantheon.json", "../home.json", "fixture.json"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
-          and "const KEY = 'forum.v1'" in js["forum.js"] and set(re.findall(r"localStorage\.\w+Item\(([A-Za-z'\"\.]+)", js["forum.js"])) <= {"KEY"}, fetched)
+          and "const KEY = 'forum.v1'" in js["forum.js"] and set(re.findall(r"localStorage\.\w+Item\(([A-Za-z'\"\.]+)", js["forum.js"])) <= {"KEY", "'forum.opt"}, fetched)   # + the 30-minute "this optional file is not there" note (forum.opt404.<url>)
     check("a. the OLYMPUS effects library (fx-core, ui, text, burst ?v=f1) is linked after olympus.js; forumdesk.js draws the desk / shrine / ritual with textContent only and reads the Planner only through its own helper",
           all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o4") and "forumdesk.js" in js
           and not re.search(r"innerHTML", js["forumdesk.js"]) and "planner.v1" not in js["forum.js"] and "fxTarget" in js["scene.js"] and "id=\"desk\"" in html and "id=\"shrine\"" in html)
