@@ -9,7 +9,7 @@ export class Caustics {
     const T = THREE;
     this.T = T;
     this.u = { uT: { value: 0 }, uN: { value: 0 }, uC: { value: Array.from({ length: MAX }, () => new T.Vector4()) },
-      uK: { value: Array.from({ length: MAX }, () => new T.Vector3()) }, uGold: { value: new T.Color('#ffcf5a') } };
+      uK: { value: Array.from({ length: MAX }, () => new T.Vector3()) }, uGold: { value: new T.Color('#c8a24a') } };
     this.mesh = new T.Mesh(new T.CircleGeometry(radius, lite ? 40 : 72), new T.ShaderMaterial({ uniforms: this.u, transparent: true, depthWrite: false,
       blending: T.AdditiveBlending, fog: false,
       vertexShader: 'varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',

@@ -66,6 +66,15 @@ export class Hud {
     set('h-balance', usd(model.balance));
     set('h-today', usd(model.today, true), signOf(model.today));
     set('h-week', usd(model.week, true), signOf(model.week));
+    {   // money first: what this week means, in plain words (the pace is only a rate, never a promise)
+      const bal = model.balance, wk = model.week, el = document.getElementById('h-pace');
+      if (el) {
+        if (Number.isFinite(bal) && Number.isFinite(wk) && bal > 0 && wk !== 0) {
+          const pct = (wk / (bal - wk)) * 100, mo = wk * 4.33;
+          el.textContent = `This week is ${wk > 0 ? '+' : '-'}${Math.abs(pct).toFixed(1)}% of the bankroll. At this pace about ${usd(mo, true)} a month (a rate, not a promise).`;
+        } else el.textContent = 'No settled bets this week yet.';
+      }
+    }
     set('h-open', String(model.open.length));
     set('h-win', pct(model.stats.winRate));
     set('h-roi', pct(model.stats.roi, true), signOf(model.stats.roi));
@@ -200,7 +209,7 @@ export class Hud {
     this.setView(this.view);
     if (!o) return;
     set('s-title', o.title);
-    $('s-dot').style.color = this.colors.get(o.category) || '#ffcf5a';
+    $('s-dot').style.color = this.colors.get(o.category) || '#c8a24a';
     const side = $('s-side');
     side.textContent = (o.side || '—').toUpperCase();
     side.className = 'side' + (o.side === 'no' || o.side === 'down' ? ' no' : '');

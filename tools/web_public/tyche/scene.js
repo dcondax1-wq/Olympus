@@ -10,7 +10,7 @@ import { createRenderer } from '../olympus/render.js';   // the OLYMPUS render c
 
 const O = (typeof window !== 'undefined' && window.OLYMPUS) || null;
 
-export const BG = '#07060b';
+export const BG = '#2a2018';
 const INTRO_S = 2.6;                 // the intro camera move, seconds
 // each view: what the camera looks at, how much must fit (radius), its height angle and turn
 export const VIEWS = {
@@ -28,7 +28,7 @@ export class FortuneScene {
     this.reduced = !!opts.reduced;
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(BG);
-    this.scene.fog = new THREE.FogExp2(BG, 0.026);
+    this.scene.fog = new THREE.FogExp2(BG, 0.022);
     this.camera = new THREE.PerspectiveCamera(46, 1, 0.1, 140);
     this.rc = this.makeRenderer();
     this.renderer = this.rc.renderer;
@@ -52,7 +52,7 @@ export class FortuneScene {
    *  main.js's auto-LITE does that job. Tyche sizes the canvas itself (setBand's view offset), so the core only draws. */
   makeRenderer() {
     return createRenderer({ canvas: this.canvas, scene: this.scene, camera: this.camera, env: 'none', quality: this.tier(this.quality), adapt: false,
-      autoSize: false, fitCamera: false, space: 'display', exposure: 1.1, maxDpr: 2, bloom: { strength: 0.5, radius: 0.5, threshold: 0.84 },
+      autoSize: false, fitCamera: false, space: 'display', exposure: 1.1, maxDpr: 2, bloom: { strength: 0.22, radius: 0.5, threshold: 0.9 },
       grade: { vignette: 0.36, grain: 0.035, aberration: 0.002 } });
   }
 
@@ -60,17 +60,17 @@ export class FortuneScene {
 
   lights() {
     const T = this.T;
-    this.scene.add(new T.HemisphereLight('#fff1d0', '#120c1c', 1.5));
-    const key = new T.DirectionalLight('#ffe2a0', 2.4);
+    this.scene.add(new T.HemisphereLight('#f3ece0', '#19140f', 1.5));
+    const key = new T.DirectionalLight('#f0dca0', 2.4);
     key.position.set(4, 10, 8);
     this.scene.add(key);
-    const hub = new T.PointLight('#ffcf5a', 40, 16, 1.6);
+    const hub = new T.PointLight('#c8a24a', 40, 16, 1.6);
     hub.position.set(0, 1.2, 0);
     this.scene.add(hub);
-    const mint = new T.PointLight('#5ef2c0', 26, 18, 1.6);
+    const mint = new T.PointLight('#9bab63', 26, 18, 1.6);
     mint.position.set(-6, 2, 4);
     this.scene.add(mint);
-    const scl = new T.PointLight('#ffe7b0', 30, 16, 1.6);
+    const scl = new T.PointLight('#f0dca0', 30, 16, 1.6);
     scl.position.set(SCALES_X, 4, 4);
     this.scene.add(scl);
   }
@@ -79,19 +79,19 @@ export class FortuneScene {
   environment() {
     const T = this.T, room = new T.Scene(), box = new T.BoxGeometry(1, 1, 1);
     const panel = (c, x, y, z, s) => { const m = new T.Mesh(box, new T.MeshBasicMaterial({ color: c })); m.position.set(x, y, z); m.scale.set(...s); room.add(m); };
-    room.background = new T.Color('#0c0a10');
-    panel('#ffcf5a', 0, 6, 0, [10, 0.2, 10]);
-    panel('#fff3d8', -6, 1, -2, [0.2, 4, 6]);
-    panel('#5ef2c0', 6, 0, 2, [0.2, 3, 5]);
-    panel('#ffa53d', 0, -1, -6, [8, 2, 0.2]);
-    panel('#2a1c08', 0, -5, 0, [12, 0.2, 12]);
+    room.background = new T.Color('#100d0a');
+    panel('#c8a24a', 0, 6, 0, [10, 0.2, 10]);
+    panel('#f3ece0', -6, 1, -2, [0.2, 4, 6]);
+    panel('#9bab63', 6, 0, 2, [0.2, 3, 5]);
+    panel('#e0a060', 0, -1, -6, [8, 2, 0.2]);
+    panel('#201a12', 0, -5, 0, [12, 0.2, 12]);
     // a ring of eight warm softboxes overhead and two cool strips: the coins and the wheel's gold catch moving highlights
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
-      panel(i % 2 ? '#fff6e0' : '#ffd88a', Math.cos(a) * 4.2, 4.4, Math.sin(a) * 4.2, [1.4, 0.12, 0.5]);
+      panel(i % 2 ? '#f3ece0' : '#f0dca0', Math.cos(a) * 4.2, 4.4, Math.sin(a) * 4.2, [1.4, 0.12, 0.5]);
     }
-    panel('#9ff7dc', -4.5, 2.5, 4.5, [0.12, 0.35, 5]);
-    panel('#e8a8ff', 4.8, -0.5, -4, [0.12, 0.25, 4]);
+    panel('#9bab63', -4.5, 2.5, 4.5, [0.12, 0.35, 5]);
+    panel('#b08064', 4.8, -0.5, -4, [0.12, 0.25, 4]);
     const pm = new T.PMREMGenerator(this.renderer);
     this.scene.environment = pm.fromScene(room, 0.04).texture;
     pm.dispose();
@@ -110,7 +110,7 @@ export class FortuneScene {
     this.scene.add(floor);
     this.dust = g.points(lite ? 380 : 1100, lite ? 0.09 : 0.07, 0.8);
     const p = this.dust.geometry.attributes.position.array, c = this.dust.geometry.attributes.color.array;
-    const tones = ['#ffcf5a', '#5ef2c0', '#fff3cf', '#ffa53d'].map((x) => new T.Color(x));
+    const tones = ['#c8a24a', '#9bab63', '#f3ece0', '#e0a060'].map((x) => new T.Color(x));
     for (let i = 0; i < p.length / 3; i++) {
       p.set([-14 + Math.random() * 42, -8 + Math.random() * 17, -14 + Math.random() * 22], i * 3);
       const k = tones[i % 7 === 0 ? 1 : i % 5 === 0 ? 2 : i % 3 === 0 ? 3 : 0];

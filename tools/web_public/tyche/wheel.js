@@ -11,7 +11,7 @@ import { Sparks } from './sparks.js';
 export const HEIGHT_PER_EDGE = 22;
 const WHEEL_R = 3;
 const LANES = [3.75, 4.45, 5.15];
-const GOLD = '#ffcf5a', MINT = '#5ef2c0';
+const GOLD = '#c8a24a', MINT = '#9bab63';
 
 /** Spin (rad/s) from the seconds left: a blur in the last minutes, a slow turn for bets days away. */
 export const spinOf = (left) => (left == null ? 0.4 : left <= 0 ? 9 : 0.35 + 6 * Math.exp(-left / 2400) + 1.2 * Math.exp(-left / 43200));
@@ -83,7 +83,7 @@ export class Wheel {
       s.rotation.y = -a;
       w.add(s);
     }
-    const pegGeo = new T.SphereGeometry(0.075, 10, 8), pegMat = g.light('#fff1c4', 1);
+    const pegGeo = new T.SphereGeometry(0.075, 10, 8), pegMat = g.light('#f3ece0', 1);
     for (let i = 0; i < 24; i++) {
       const a = (i / 24) * Math.PI * 2, p = new T.Mesh(pegGeo, pegMat);
       p.position.set(Math.cos(a) * (WHEEL_R + 0.24), 0, Math.sin(a) * (WHEEL_R + 0.24));
@@ -91,7 +91,7 @@ export class Wheel {
     }
     const hub = new T.Mesh(new T.CylinderGeometry(0.55, 0.62, 0.28, 32), gold);
     w.add(hub);
-    const cap = new T.Mesh(new T.SphereGeometry(0.32, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), g.metal('#fff0c0', 0.8));
+    const cap = new T.Mesh(new T.SphereGeometry(0.32, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), g.metal('#f0dca0', 0.8));
     cap.position.y = 0.14;
     w.add(cap);
     const halo = g.sprite(GOLD, 3.4, 0.55);
@@ -121,7 +121,7 @@ export class Wheel {
         const mesh = new T.Mesh(this.coinGeo, [side, face, face]);
         mesh.add(core);
         const aura = g.sprite(color, 1, 0.5);
-        const halo = g.sprite('#fff4d6', 1, 0.75, g.ring);
+        const halo = g.sprite('#f3ece0', 1, 0.75, g.ring);
         const hit = new T.Mesh(this.hitGeo, this.hitMat);
         hit.userData.key = o.key;
         c = { key: o.key, core, mesh, aura, halo, hit, phase: i * 2.39996, angle: 0, spin: Math.random() * 6, y: 0 };
@@ -169,7 +169,7 @@ export class Wheel {
       // no edge -> a small dim red ring
       const ratio = k.stake > 0 ? Math.sqrt(k.stake / o.cost) : 0.3;
       c.halo.scale.setScalar(c.r * 2.2 * Math.max(0.35, Math.min(2.4, ratio)));
-      c.halo.material.color.set(k.stake > 0 ? '#fff4d6' : '#ff6b7f');
+      c.halo.material.color.set(k.stake > 0 ? '#f3ece0' : '#c0603f');
       c.halo.material.opacity = k.stake > 0 ? 0.7 : 0.4;
     });
   }
@@ -197,7 +197,7 @@ export class Wheel {
         while (n > 0 && (n >= 1 || Math.random() < n)) {
           n -= 1;
           const a = Math.random() * Math.PI * 2, R = WHEEL_R + 0.24;
-          this.sparks.fling({ x: Math.cos(a) * R, y: 0.06, z: Math.sin(a) * R }, -Math.sin(a), Math.cos(a), Math.random() < 0.3 ? '#fff1c4' : GOLD, 0.5 + w * 0.35, 0.7);
+          this.sparks.fling({ x: Math.cos(a) * R, y: 0.06, z: Math.sin(a) * R }, -Math.sin(a), Math.cos(a), Math.random() < 0.3 ? '#f3ece0' : GOLD, 0.5 + w * 0.35, 0.7);
         }
       }
       this.sparks.update(dt);
