@@ -5,7 +5,7 @@
 //   ring.place(centre {x, y, z}, radius)  ring.visible(bool)
 import { RING_NORMAL } from './layout.js';
 
-export const RING_COLOUR = 0x6ff6ff;
+export const RING_COLOUR = 0xe0b060;
 
 const MOTE_VS = `
 attribute float aAngle, aSeed;

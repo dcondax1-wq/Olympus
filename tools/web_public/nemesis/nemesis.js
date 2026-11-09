@@ -241,7 +241,7 @@ function card() {
   return { v: 1, name: 'Nemesis', status: { level: S.demo ? 'off' : 'ok', label: S.demo ? 'Demo data' : top ? `Leak: ${top.name}` : 'No leak' },
     kpis: [{ label: 'Fallen', value: String(list.length) }, { label: 'Lost', value: usd(-rk.lost) }, { label: 'Top leak', value: top ? top.name : 'None' }],
     lines: [`${weekLabel()}: ${plainWeek(list, rk)}`.slice(0, 120), 'Tap a fallen figure for its autopsy. Read-only.'],
-    t: Math.floor(Date.now() / 1000), open: '#fallen', theme: '#07040c', stale_after: 604800 };
+    t: Math.floor(Date.now() / 1000), open: '#fallen', theme: '#13100d', stale_after: 604800 };
 }
 function postCard() {
   if (S.demo || !O || !O.framed) return;

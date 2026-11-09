@@ -23,3 +23,6 @@ html * { text-shadow: none !important; }
 .ag-rulet { display: block; width: 56px; height: 2px; margin: 8px 0 0; background: linear-gradient(90deg, #c8a24a, transparent); border: 0; }
 .ag-meander { height: 10px; margin: 6px 0; opacity: .55; background: repeating-linear-gradient(90deg, #9c6b3c 0 2px, transparent 2px 6px, #9c6b3c 6px 8px, transparent 8px 10px) center/auto 2px no-repeat; }
 :root { --oly-t-micro: 12px; --oly-t-label: 13px; --oly-t-body: 15px; }
+/* no neon pulse, no moving sheen, no glow on the AGORA apps */
+.oly-fx-spec, [data-oly-fx~="shimmer"]::after, .oly-fx-shimmer::after { display: none !important; }
+[data-oly-fx~="glow"], .oly-fx-glow, .oly-fx-neon { animation: none !important; filter: none !important; box-shadow: none; }

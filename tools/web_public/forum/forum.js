@@ -18,7 +18,7 @@ async function getJSON(url, ms = 6000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
   try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
-const TONE = { calm: ['#7ef0b5', 'CALM'], watch: ['#ffcf5a', 'WATCH'], storm: ['#ff5a6e', 'CAUTION'], info: ['#9fb4ff', 'READ'] };
+const TONE = { calm: ['#aeb86e', 'CALM'], watch: ['#e6b657', 'WATCH'], storm: ['#cc7156', 'CAUTION'], info: ['#6da5c7', 'READ'] };
 const OATH = oath();
 
 // ------------------------------------------------------------------------------------------------ the clock
@@ -54,8 +54,8 @@ function show(step) {
     S.read.add(step);
     card.style.setProperty('--tone', col);
     $('sGlyph').textContent = it.glyph; $('sTitle').textContent = it.title; $('sStat').textContent = it.stat; $('sTone').textContent = word; $('sBody').textContent = it.line + ' ' + it.body;
-  } else if (step === S.items.length) card.style.setProperty('--tone', '#b8e04a');
-  else card.style.setProperty('--tone', '#9fb4ff');
+  } else if (step === S.items.length) card.style.setProperty('--tone', '#aeb86e');
+  else card.style.setProperty('--tone', '#6da5c7');
   if (S.scene) S.scene.focus(step === -1 ? -1 : step);
   const dots = $('dots');
   document.documentElement.dataset.walk = step === -1 ? '' : '1';          // the tablet card rises above the two-row nav (dots, then the arrows)
@@ -111,7 +111,7 @@ function card() {
   return { v: 1, name: 'Forum', status: { level: S.demo ? 'off' : sealedToday() ? 'ok' : 'warn', label: S.demo ? 'Demo data' : sealedToday() ? 'Oath sealed' : 'Briefing not read' },
     kpis: [{ label: 'Council', value: g('council').stat.slice(0, 18) }, { label: 'VIX', value: g('fear').stat.replace('VIX ', '').slice(0, 10) }, { label: 'Eval room', value: g('eval').stat.replace(' room', '').slice(0, 12) }],
     lines: [(g('calendar').stat ? `Next release: ${g('calendar').stat}` : '').slice(0, 120), `Forum streak: ${sk.cur} market day${sk.cur === 1 ? '' : 's'} (best ${sk.best})`.slice(0, 120)].filter(Boolean),
-    t: Math.floor(Date.now() / 1000), open: '#oath', theme: '#0a0812', stale_after: 86400 };
+    t: Math.floor(Date.now() / 1000), open: '#oath', theme: '#13100d', stale_after: 86400 };
 }
 function postCard() {
   if (S.demo || !O || !O.framed) return;

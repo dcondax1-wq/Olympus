@@ -10,13 +10,14 @@ import { renderMoney } from './argusplus.js';
 import * as AT from '../olympus/fx-atmos.js';        // JOB 4+5 follow-up: scanner shafts, drifting data dust and rising sparks around the sphere
 import * as SC from '../olympus/scenery.js';
 import { APPS, analyze, cardOf, histUpdate, histSummary, demoData } from './arguscore.js';
+const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#e0b060', bloom: '#e0b060', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
 const KEY = 'argus.v1';
 const N_EYES = 100;
-const COLOR = { ok: '#46d79a', warn: '#f5b84a', bad: '#ff4d5e', idle: '#6b7690' };
+const COLOR = { ok: '#d3a950', warn: '#e6b657', bad: '#cc7156', idle: '#4f7790' };
 const GROUPS = { bots: 'THE BOTS', pc: 'THE PC', feed: 'PRICES AND NINJATRADER', pipes: 'THE CLOUD', rules: 'MFFU RULES AND MONEY', apps: 'OLYMPUS APPS' };
 const S = { fixOpen: new Set(), hist: null, copied: null, R: null, tab: 'fix', sel: null, offline: false, asOf: null, errors: [], room: null, loaded: false, open: new Set() };
 
@@ -174,7 +175,7 @@ class Room {
     this.canvas = canvas;
     this.camera = new THREE.PerspectiveCamera(46, 1, 0.1, 200);
     this.scene = new THREE.Scene();
-    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, env: 'night', exposure: 1.05, maxDpr: 2 });   // quality follows OLYMPUS.fx()
+    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, env: 'night', theme: AG_THEME, grade: { aberration: 0, saturation: 0.92 }, exposure: 1.0, maxDpr: 2, bloom: { strength: 0.2, radius: 0.5, threshold: 0.95 } });   // quality follows OLYMPUS.fx()
     this.fx = O ? O.fx() : 'high';
     this.yaw = 0.5; this.pitch = 0.18; this.t = 0; this.last = performance.now(); this.dirty = true; this.frames = [];
     this.user = 0; this.target = null; this.lights = []; this.owner = new Int16Array(N_EYES); this.levels = new Array(N_EYES).fill('idle');
@@ -187,30 +188,30 @@ class Room {
   reduced() { return O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
   build() {
     const S3 = this.scene;
-    S3.add(new THREE.HemisphereLight(0x9fc8ff, 0x0a1022, 0.9));
-    const key = new THREE.DirectionalLight(0xbfe0ff, 2.2); key.position.set(3, 5, 6); S3.add(key);
-    this.stars = starfield({ count: 900, radius: 60 }); S3.add(this.stars);
+    S3.add(new THREE.HemisphereLight(0x6da5c7, 0x241e19, 0.9));
+    const key = new THREE.DirectionalLight(0x6da5c7, 2.2); key.position.set(3, 5, 6); S3.add(key);
+    this.stars = starfield({ count: 900, radius: 60, color: '#f0e2c4' }); S3.add(this.stars);
     this.orb = new THREE.Group(); S3.add(this.orb);
-    this.core = new THREE.Mesh(new THREE.SphereGeometry(R_SPHERE - 0.04, 48, 32), metal({ kind: 'gunmetal', color: '#222c44' }));
+    this.core = new THREE.Mesh(new THREE.SphereGeometry(R_SPHERE - 0.04, 48, 32), metal({ kind: 'gunmetal', color: '#473d32' }));
     this.orb.add(this.core);
-    this.shell = new THREE.Mesh(new THREE.SphereGeometry(R_SPHERE + 0.5, 40, 28), glass({ rim: '#3ad7ff', opacity: 0.035, rimStrength: 0.5 }));
+    this.shell = new THREE.Mesh(new THREE.SphereGeometry(R_SPHERE + 0.5, 40, 28), glass({ rim: '#fac95f', opacity: 0.035, rimStrength: 0.5 }));
     this.orb.add(this.shell);
-    this.ring = new THREE.Mesh(new THREE.TorusGeometry(R_SPHERE + 0.75, 0.02, 8, 120), neon({ color: '#ffffff', intensity: 2.2 }));
+    this.ring = new THREE.Mesh(new THREE.TorusGeometry(R_SPHERE + 0.75, 0.02, 8, 120), neon({ color: '#f3ece0', intensity: 2.2 }));
     this.ring.rotation.x = Math.PI / 2.3; S3.add(this.ring);
     // eyes: sclera (a glossy almond), iris (HDR so it blooms; the colour is per eye), pupil (a slit)
     const sc = new THREE.SphereGeometry(1, 20, 14), iris = new THREE.CircleGeometry(0.42, 28), pup = new THREE.CircleGeometry(0.16, 16);
-    let wm = new THREE.MeshPhysicalMaterial({ color: 0xf2f6ff, roughness: 0.22, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1 }), irisMat = neon({ color: '#ffffff', intensity: 4 }), cornea = null;
+    let wm = new THREE.MeshPhysicalMaterial({ color: 0xf3ece0, roughness: 0.22, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1 }), irisMat = neon({ color: '#f3ece0', intensity: 4 }), cornea = null;
     try { const P = SC.eyeParts(); wm = P.sclMat; irisMat = P.irisMat; irisMat.color.setScalar(3.4); cornea = P.cornea; } catch (_) { cornea = null; /* the plain eyes stay */ }
     this.sclera = new THREE.InstancedMesh(sc, wm, N_EYES);
     this.iris = new THREE.InstancedMesh(iris, irisMat, N_EYES);
-    this.pupil = new THREE.InstancedMesh(pup, new THREE.MeshBasicMaterial({ color: 0x02040a }), N_EYES);
+    this.pupil = new THREE.InstancedMesh(pup, new THREE.MeshBasicMaterial({ color: 0x13100d }), N_EYES);
     this.cornea = null;
     if (cornea) { const cg = new THREE.SphereGeometry(0.46, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2.6); cg.rotateX(Math.PI / 2); this.cornea = new THREE.InstancedMesh(cg, cornea, N_EYES); }
     for (const m of [this.sclera, this.iris, this.pupil, this.cornea]) { if (!m) continue; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.frustumCulled = false; this.orb.add(m); }
     // an armillary of aged bronze round the sphere: three tilted rings turning slowly (the watchtower's instrument)
     this.arm = null;
     try {
-      const bz = SC.bronze({ color: '#b58a46', patina: 0.45, rough: 0.4 }); this.arm = new THREE.Group();
+      const bz = SC.bronze({ color: '#b89246', patina: 0.45, rough: 0.4 }); this.arm = new THREE.Group();
       [[R_SPHERE + 0.6, 0.04, 0.3, 0], [R_SPHERE + 0.82, 0.035, 1.2, 0.8], [R_SPHERE + 0.94, 0.03, 0.65, 2.1]].forEach(([r, t, rx, rz]) => { const m = new THREE.Mesh(new THREE.TorusGeometry(r, t, 10, 120), bz); m.rotation.set(rx, 0, rz); this.arm.add(m); });
       S3.add(this.arm);
     } catch (_) { this.arm = null; }
@@ -228,9 +229,9 @@ class Room {
     this.blink = this.pos.map((p, i) => 2 + hash(i + 50) * 7);
     // the watchtower's air (fx-atmos): a cyan scanner beam behind the sphere, motes drifting through the dark, sparks rising off the eyes
     setTimeout(() => { try {         // 0.9 s after the first paint
-      this.at = [AT.shafts({ count: 3, from: [0, 7, -3], to: [0, -6, -2], width: 3.2, spread: [3, 0, 1], color: '#6fdcff', strength: 0.09, seed: 2 }),
-        AT.dust({ count: 200, box: [12, 8, 10], color: '#a9e7ff', size: 3.6, strength: 0.7, seed: 21 }),
-        AT.embers({ count: 90, origin: [0, -2.4, 0], spread: [2.6, 0, 2.6], rise: 5, colors: ['#e8fbff', '#3ad7ff', '#1a4f9c'], size: 4.5, wind: 0, seed: 17 })];
+      this.at = [AT.shafts({ count: 3, from: [0, 7, -3], to: [0, -6, -2], width: 3.2, spread: [3, 0, 1], color: '#fac95f', strength: 0.09, seed: 2 }),
+        AT.dust({ count: 200, box: [12, 8, 10], color: '#fac95f', size: 3.6, strength: 0.7, seed: 21 }),
+        AT.embers({ count: 90, origin: [0, -2.4, 0], spread: [2.6, 0, 2.6], rise: 5, colors: ['#f3ece0', '#fac95f', '#56819c'], size: 4.5, wind: 0, seed: 17 })];
       this.at[1].object.position.set(0, -3, -1);
       this.at.forEach((f) => S3.add(f.object)); AT.setQuality(this.at, this.rc.quality()); this.dirty = true;
     } catch (e) { this.at = []; } }, 900);

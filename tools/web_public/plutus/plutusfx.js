@@ -87,7 +87,7 @@ export async function vaultFx(vault) {
   try {
     await Promise.all(['fx-sky.js', 'fx-weather.js'].map((f) => import('../olympus/' + f + '?v=f1')));
     const t = { scene: vault.scene, camera: vault.camera, renderer: vault.renderer };
-    return [fx.dust(t, { color: '#ffe08a', box: [14, 6, 6], center: [0, 2.6, 0], count: 500 }), fx.godRays(t, { position: [0, 9.5, -2], color: '#ffd978', intensity: 0.45, length: 10, count: 6 }),
-      fx.fireflies(t, { color: '#ffd35a', color2: '#fff2b0', box: [10, 4, 5], center: [0, 2.2, 0], count: 40 })];
+    return [fx.dust(t, { color: '#e6b657', box: [14, 6, 6], center: [0, 2.6, 0], count: 500 }), fx.godRays(t, { position: [0, 9.5, -2], color: '#e6b657', intensity: 0.45, length: 10, count: 6 }),
+      fx.fireflies(t, { color: '#e6b657', color2: '#e6b657', box: [10, 4, 5], center: [0, 2.2, 0], count: 40 })];
   } catch (e) { return null; }
 }

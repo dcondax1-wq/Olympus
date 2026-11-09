@@ -13,35 +13,36 @@ import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
 import * as SC from '../olympus/scenery.js';
 import { dress } from './dress.js';
+const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#e0b060', bloom: '#e0b060', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
 
 const W = 9.6, H = 6.6, X0 = -W / 2, Y0 = 0.2, ZC = 0;
-const ACC = '#9d8cff', CYAN = '#7fe9ff', GREEN = '#46d79a', RED = '#ff5a66', GOLD = '#ffcf5a', VIOLET = '#b08cff';
-const KIND = { sweep: '#ff6b7f', idm: '#ffb547', disp: '#ffd88a', cisd5: CYAN, limit: VIOLET, tap: '#c9c3e6', cisd1: CYAN, entry: GREEN, be: '#ffffff', setup: '#ff9bd0', session: '#8aa0ff', level: VIOLET };
+const ACC = '#6da5c7', CYAN = '#fac95f', GREEN = '#d3a950', RED = '#cc7156', GOLD = '#e6b657', VIOLET = '#cc9362';
+const KIND = { sweep: '#cc7156', idm: '#e6b657', disp: '#e6b657', cisd5: CYAN, limit: VIOLET, tap: '#e6dbca', cisd1: CYAN, entry: GREEN, be: '#f3ece0', setup: '#cc9362', session: '#6da5c7', level: VIOLET };
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
 const ease = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
 
 export function createChronos(canvas, { O = null } = {}) {
   const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#05040c');
-  scene.fog = new THREE.FogExp2(0x0a0716, 0.018);
+  scene.background = new THREE.Color('#13100d');
+  scene.fog = new THREE.FogExp2(0x171410, 0.018);
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 300);
   let lite = false, dirty = true, qcb = null, dr = null, drawn = 0, frames = 0, stopped = false, raf = 0;
-  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: ACC, exposure: 0.9, maxDpr: 1.75, bloom: { strength: 0.8, radius: 0.55, threshold: 0.95 },
+  const rc = createRenderer({ canvas, scene, camera, env: 'night', theme: AG_THEME, grade: { aberration: 0, saturation: 0.92 }, tint: ACC, exposure: 0.9, maxDpr: 1.75, bloom: { strength: 0.22, radius: 0.55, threshold: 0.95 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; if (dr) dr.setLite(lite); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
 
-  scene.add(new THREE.HemisphereLight('#8a7cff', '#120a1a', 0.55));
-  const key = new THREE.DirectionalLight('#ffe9d2', 0.95); key.position.set(-6, 12, 10); scene.add(key);
+  scene.add(new THREE.HemisphereLight('#6da5c7', '#1b1713', 0.55));
+  const key = new THREE.DirectionalLight('#e6b657', 0.95); key.position.set(-6, 12, 10); scene.add(key);
   const glow = new THREE.PointLight(ACC, 60, 40, 1.6); glow.position.set(0, 4, 3); scene.add(glow);
   const faceLight = new THREE.PointLight(GOLD, 40, 30, 1.6); faceLight.position.set(0, 8.2, -6); scene.add(faceLight);
 
   // ---- the sky and the temple (built once)
-  const stars = M.starfield({ count: lite ? 500 : 1100, radius: 150, size: 2 }); scene.add(stars);
-  const neb = M.nebula({ colors: ['#9d8cff', '#3a1a8f', '#ff6ad5'], count: 6, radius: 80, size: 90, opacity: 0.13 }); neb.position.y = 14; scene.add(neb);
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), M.marble({ color: '#cfcad8', vein: '#5b5470', gold: '#e9b75a', scale: 0.5, roughness: 0.22 }));
+  const stars = M.starfield({ count: lite ? 500 : 1100, radius: 150, size: 2, color: '#f0e2c4' }); scene.add(stars);
+  const neb = M.nebula({ colors: ['#6da5c7', '#8f6745', '#cc9362'], count: 6, radius: 80, size: 90, opacity: 0.13 }); neb.position.y = 14; scene.add(neb);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), M.marble({ color: '#d8cfc1', vein: '#8c6543', gold: '#e6b657', scale: 0.5, roughness: 0.22 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -0.6; scene.add(floor);
-  const marble = M.marble({ color: '#ece8e0', vein: '#6d6878', scale: 1.1 }), goldM = M.metal({ kind: 'gold' });
+  const marble = M.marble({ color: '#ece3d7', vein: '#78726a', scale: 1.1 }), goldM = M.metal({ kind: 'gold' });
   // the tower: a stepped base, a shaft, the clock block, a pediment
   const TZ = -11;
   const tower = new THREE.Group(); tower.position.set(0, -0.6, TZ); scene.add(tower);
@@ -56,7 +57,7 @@ export function createChronos(canvas, { O = null } = {}) {
   const spire = new THREE.Mesh(new THREE.ConeGeometry(0.28, 2, 16), goldM); spire.position.y = 15.2; tower.add(spire);
   // the clock face on the +z side of the clock block
   const FZ = 1.36, FY = 9.65, face = new THREE.Group(); face.position.set(0, FY, FZ); tower.add(face);
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(1.45, 48), new THREE.MeshStandardMaterial({ color: '#0d0a18', roughness: 0.35, metalness: 0.2, emissive: '#1a1240', emissiveIntensity: 0.9 }));
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(1.45, 48), new THREE.MeshStandardMaterial({ color: '#191512', roughness: 0.35, metalness: 0.2, emissive: '#43392f', emissiveIntensity: 0.9 }));
   face.add(disc);
   const rim = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.1, 12, 56), goldM); face.add(rim);
   const tickGeo = new THREE.BoxGeometry(0.06, 0.26, 0.05), ticks = new THREE.InstancedMesh(tickGeo, M.neon({ color: GOLD, intensity: 2.2 }), 12), m4 = new THREE.Matrix4();
@@ -72,7 +73,7 @@ export function createChronos(canvas, { O = null } = {}) {
   // a ring of light that turns with the playhead, behind the tower
   const ring = new THREE.Mesh(new THREE.TorusGeometry(6.4, 0.05, 6, lite ? 64 : 140), M.neon({ color: ACC, intensity: 2, fog: true }));
   ring.position.set(0, 8, TZ - 2.5); scene.add(ring);
-  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(5.3, 0.03, 6, lite ? 56 : 120), M.neon({ color: '#ff6ad5', intensity: 1.4, fog: true }));
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(5.3, 0.03, 6, lite ? 56 : 120), M.neon({ color: '#cc9362', intensity: 1.4, fog: true }));
   ring2.position.copy(ring.position); scene.add(ring2);
   // colonnade: two rows of fluted columns going back
   const colGeo = new THREE.CylinderGeometry(0.34, 0.4, 7, lite ? 10 : 18), cols = new THREE.InstancedMesh(colGeo, marble, 12);
@@ -100,7 +101,7 @@ export function createChronos(canvas, { O = null } = {}) {
   headGlow.scale.set(2.2, 2.2, 1); head.add(headGlow); scene.add(head);
   const playhead = new THREE.Mesh(new THREE.PlaneGeometry(0.03, H + 1), new THREE.MeshBasicMaterial({ color: hdr(ACC, 1.6), transparent: true, opacity: 0.35, depthWrite: false }));
   playhead.position.z = -0.1; scene.add(playhead);
-  const pad = new THREE.Mesh(new THREE.BoxGeometry(W + 1.4, 0.12, 2.4), M.metal({ kind: 'gunmetal', color: '#16122a', roughness: 0.3, clearcoat: 1 }));
+  const pad = new THREE.Mesh(new THREE.BoxGeometry(W + 1.4, 0.12, 2.4), M.metal({ kind: 'gunmetal', color: '#2c251f', roughness: 0.3, clearcoat: 1 }));
   pad.position.set(0, Y0 - 0.1, -0.2); scene.add(pad);
 
   const T = { trade: null, L: null, pts: [], tubSeg: 1, radial: 6, ribbon: null, ghost: null, marks: [], lines: [], exitRing: null, tt: 0, u: 0, shown: 0 };

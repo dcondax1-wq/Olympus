@@ -170,9 +170,9 @@ export class Brain {
     this.canvas = canvas;
     this.reduced = reduced;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
-    this.renderer.setClearColor(0x03040a, 1);
+    this.renderer.setClearColor(0x14110e, 1);
     this.view = 'galaxy';
-    this.skyColours = ['#1d2f7a', '#4a1f86', '#0c5a7a'];
+    this.skyColours = ['#3a2c3e', '#5a3a2a', '#6b4a28'];
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(52, 1, 1, 12000);
     this.u = {
@@ -205,7 +205,7 @@ export class Brain {
       const o = {
         renderer: this.renderer, scene: this.scene, camera: this.camera, space: 'display', env: 'none', autoSize: false, adapt: false,
         maxDpr: this.quality === 'high' ? 2 : 1.25, onQuality: () => this.resize(),
-        bloom: { strength: 0.62, radius: 0.78, threshold: 0.42 }, grade: { grain: 0.03, vignette: 0.26, aberration: 0.0018, saturation: 1.06 },
+        bloom: { strength: 0.22, radius: 0.6, threshold: 0.6 }, grade: { grain: 0.02, vignette: 0.22, aberration: 0, saturation: 0.95 },
       };
       const forced = new URLSearchParams(location.search).get('q');                 // ?q=ultra|high|low|off: pin a tier (tests, software GPUs)
       if (['ultra', 'high', 'low', 'off'].includes(forced)) o.quality = forced;

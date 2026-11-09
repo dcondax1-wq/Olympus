@@ -32,7 +32,7 @@ const VIEW_KEY = 'mind.view';              // galaxy | stars (this phone only)
 // a theme's colour names -> this page's CSS custom properties (mind.css :root)
 const THEME_KEYS = { accent: '--cyan', primary: '--cyan', bg: '--bg', background: '--bg', glass: '--glass', panel: '--glass-hi',
   text: '--text', dim: '--dim', muted: '--mut', line: '--line', gold: '--gold' };
-const THEME = '#03040a';
+const THEME = '#14110e';
 const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canvas = document.getElementById('gl');
 
@@ -196,7 +196,7 @@ if (hasWebGL()) {
   try {
     brain = new Brain(THREE, canvas, { quality: state.quality, reduced });
     O?.track(brain.renderer);
-    O?.themeScene?.({ scene: brain.scene, renderer: brain.renderer, clear: 0x03040a, redraw: () => { needsDraw = true; } });   // OLYMPUS theme tints
+    O?.themeScene?.({ scene: brain.scene, renderer: brain.renderer, clear: 0x14110e, redraw: () => { needsDraw = true; } });   // OLYMPUS theme tints
     rig = new OrbitRig(brain.camera, canvas, {
       reduced,
       onTap(x, y) { const i = brain.pick(x, y); if (i >= 0) focus(state.graph.nodes[i].id, false); else if (state.focus >= 0) unfocus(); },

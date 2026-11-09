@@ -1,17 +1,17 @@
 // OLYMPUS Mind: the page's own looks (Look sheet). A skin is the UI accent, the page colour and the three colours of the nebula
 // sky behind the brain. 'auto' leaves everything to the OLYMPUS theme (Jarvis's Look sheet); any other skin is applied on top of it.
 //   SKINS: [{id, name, accent, bg, sky: [a, b, c]}]      skinById(id) -> the skin ('auto' when unknown)
-const DEFAULT_SKY = ['#1d2f7a', '#4a1f86', '#0c5a7a'];
+const DEFAULT_SKY = ['#3a2c3e', '#5a3a2a', '#6b4a28'];   // AGORA dusk: plum-indigo to amber
 
 export const SKINS = [
   { id: 'auto', name: 'Follow OLYMPUS', accent: null, bg: null, sky: DEFAULT_SKY },
-  { id: 'deep', name: 'Deep Space', accent: '#6ff6ff', bg: '#03040a', sky: DEFAULT_SKY },
-  { id: 'aurora', name: 'Aurora', accent: '#58ffb8', bg: '#02080a', sky: ['#0b6b55', '#2a1f86', '#127a6e'] },
-  { id: 'ember', name: 'Ember', accent: '#ff9a4d', bg: '#090402', sky: ['#7a2a0c', '#86201f', '#7a5a0c'] },
-  { id: 'sakura', name: 'Sakura', accent: '#ff7ac8', bg: '#080309', sky: ['#7a1f6b', '#5a1f86', '#862a4a'] },
-  { id: 'matrix', name: 'Matrix', accent: '#3dff7a', bg: '#010603', sky: ['#0b5a22', '#0c4a3a', '#1f6b0c'] },
-  { id: 'gold', name: 'Gold', accent: '#f5c451', bg: '#070502', sky: ['#7a5a0c', '#6b3a1f', '#86701f'] },
-  { id: 'ice', name: 'Ice', accent: '#a8dcff', bg: '#02060b', sky: ['#1f4a86', '#2a6b8a', '#3a3a86'] },
+  { id: 'deep', name: 'Marble night', accent: '#c8a24a', bg: '#14110e', sky: DEFAULT_SKY },
+  { id: 'aurora', name: 'Olive grove', accent: '#a3ad73', bg: '#12140e', sky: ['#3a4a2a', '#4a4a2a', '#5a4a2a'] },
+  { id: 'ember', name: 'Terracotta', accent: '#d9785a', bg: '#170f0b', sky: ['#5a2a1c', '#6a3a22', '#7a4a26'] },
+  { id: 'sakura', name: 'Rose clay', accent: '#c98f86', bg: '#16100f', sky: ['#4a2a30', '#5a3a36', '#6a4636'] },
+  { id: 'matrix', name: 'Laurel', accent: '#8a9a62', bg: '#11130d', sky: ['#2a3a26', '#34432a', '#44482a'] },
+  { id: 'gold', name: 'Gold leaf', accent: '#e0b060', bg: '#16120a', sky: ['#5a4420', '#6b5026', '#7a5a2a'] },
+  { id: 'ice', name: 'Aegean', accent: '#7fa6c0', bg: '#0f1316', sky: ['#243a4a', '#2a4a5a', '#34485a'] },
 ];
 
 export function skinById(id) {

@@ -187,7 +187,7 @@ function card() {
   return { v: 1, name: 'Chronos', status: { level: S.demo ? 'off' : 'ok', label: S.demo ? 'Demo data' : `${S.days.length} days to replay` },
     kpis: [{ label: 'Days', value: String(S.days.length) }, { label: 'Best day', value: b ? sgn(b.usd) : '-' }, { label: 'Worst day', value: w ? sgn(w.usd) : '-' }],
     lines: [`Replay any day the bot traded: ${S.days.length} days, ${S.days[0] ? S.days[0].day : '-'} to ${S.days.length ? S.days[S.days.length - 1].day : '-'}.`.slice(0, 120), 'The 1-minute path of each trade, the bot\'s steps and a plain verdict.'],
-    t: Math.floor(Date.now() / 1000), open: '', theme: '#07050e', stale_after: 604800 };
+    t: Math.floor(Date.now() / 1000), open: '', theme: '#13100d', stale_after: 604800 };
 }
 function postCard() {
   if (S.demo || !O || !O.framed) return;

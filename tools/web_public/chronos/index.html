@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chronos</title>
 <meta name="description" content="CHRONOS: the time machine. Pick a past day the bot traded and replay it: the price as a glowing ribbon in front of a Greek clock tower, the LIT levels, the bot's steps, entry, stop, target and exit appearing in time, and a plain verdict at the end. Read-only.">
-<meta name="theme-color" content="#07050e">
+<meta name="theme-color" content="#14110e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Chronos">
@@ -19,13 +19,14 @@
      render core, chronos.js = the page. Nothing here writes anywhere: no orders, no bot setting. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<link rel="stylesheet" href="../olympus/agora.css?v=g1"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g1">
 <script src="../olympus/themes.js?v=o3"></script>
 <script src="../olympus/olympus.js?v=o3" data-app="chronos"></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#d4a574'); r.setProperty('--oly-accent-rgb', '212, 165, 116'); })();</script>
-<link rel="stylesheet" href="chronos.css?v=c2">
+<link rel="stylesheet" href="chronos.css?v=c2g">
 </head>
 <body>
 <canvas id="tower" aria-label="A Greek clock tower with the day's price drawn as a glowing ribbon in front of it" role="img"></canvas>
@@ -78,6 +79,6 @@
   </div>
   <p class="help" id="help">Replays the trade's own 1-minute path, not the whole day.</p>
 </section>
-<script type="module" src="chronos.js?v=c2"></script>
+<script type="module" src="chronos.js?v=c2g"></script>
 </body>
 </html>
