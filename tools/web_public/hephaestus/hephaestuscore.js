@@ -45,8 +45,8 @@ function win(a, b) { return num(a.net) != null && num(b.net) != null && a.net > 
 
 /** the plain verdict of setting `sc` against what it is judged on. kind: live | beats | tradeoff | mixed | still */
 export function verdict(data, sc) {
-  if (!sc) return { kind: 'none', head: 'NOT TESTED', plain: 'No stored run has this exact mix of dials, so there is no number to show.', flags: [], ref: null, halves: {} };
-  if (sc.id === data.live_id) return { kind: 'live', head: 'THIS IS THE LIVE SETTING', plain: 'This is what the bot runs. Turn a dial to see what the stored tests say about a change.', flags: [], ref: sc, halves: {} };
+  if (!sc) return { kind: 'none', head: 'Not tested', plain: 'No stored run has this exact mix of dials, so there is no number to show.', flags: [], ref: null, halves: {} };
+  if (sc.id === data.live_id) return { kind: 'live', head: 'This is the live setting', plain: 'This is what the bot runs. Turn a dial to see what the stored tests say about a change.', flags: [], ref: sc, halves: {} };
   const ref = byId(data, sc.ref) || byId(data, data.live_id);
   const halves = {}, flags = [];
   for (const h of HALVES) {
@@ -59,11 +59,11 @@ export function verdict(data, sc) {
   if (HALVES.some((h) => (sc[h].f10 || 0) > (ref[h].f10 || 0) + 2)) flags.push('More evals fail inside 2 weeks.');
   if (sc.base_confirm && ref.id !== data.live_id) flags.push(`Judged against its own twin run (confirm window ${sc.base_confirm}), not today's.`);
   let kind, head, plain;
-  if (wins === 2 && tpwOk) { kind = 'beats'; head = 'THIS BEATS LIVE ON BOTH HALVES'; plain = 'More money and a better profit factor than live in Jan-Jun and in Jul-Oct. A lead to study, not a change: nothing here touches the bot.'; }
-  else if (wins === 2) { kind = 'mixed'; head = 'BEATS LIVE, BUT BREAKS THE RULES'; plain = 'Better numbers in both halves, but it does not keep 2 or more trades a week.'; }
-  else if (wins === 0 && netUp) { kind = 'tradeoff'; head = 'MORE MONEY, WEAKER EDGE'; plain = 'It makes more dollars than live in both halves but with a lower profit factor. Live keeps the better edge.'; }
-  else if (wins === 0) { kind = 'still'; head = 'LIVE SETTING IS STILL BEST'; plain = 'Not better than live in either half. Live stays.'; }
-  else { kind = 'mixed'; head = 'MIXED: WINS ONE HALF'; plain = `Better than live only in ${HALF_NAME[HALVES.find((h) => halves[h].win)]}. The rule: pick on Jan-Jun, it must hold in Jul-Oct. Live stays.`; }
+  if (wins === 2 && tpwOk) { kind = 'beats'; head = 'This beats live in both halves'; plain = 'More money and a better profit factor than live in Jan-Jun and in Jul-Oct. A lead to study, not a change: nothing here touches the bot.'; }
+  else if (wins === 2) { kind = 'mixed'; head = 'Beats live, but breaks the rules'; plain = 'Better numbers in both halves, but it does not keep 2 or more trades a week.'; }
+  else if (wins === 0 && netUp) { kind = 'tradeoff'; head = 'More money, weaker edge'; plain = 'It makes more dollars than live in both halves but with a lower profit factor. Live keeps the better edge.'; }
+  else if (wins === 0) { kind = 'still'; head = 'The live setting is still best'; plain = 'Not better than live in either half. Live stays.'; }
+  else { kind = 'mixed'; head = 'Mixed: wins one half'; plain = `Better than live only in ${HALF_NAME[HALVES.find((h) => halves[h].win)]}. The rule: pick on Jan-Jun, it must hold in Jul-Oct. Live stays.`; }
   return { kind, head, plain, flags, ref, halves };
 }
 
@@ -91,7 +91,7 @@ export function summary(data, sc) {
 }
 
 /** colour per verdict kind (the page and the scene share it) */
-export const KIND_COLOR = { live: '#ffb547', beats: '#5cf2a0', tradeoff: '#7fb4ff', mixed: '#ffd24a', still: '#9aa4bd', none: '#7a7f92' };
+export const KIND_COLOR = { live: '#c8a24a', beats: '#7f8a52', tradeoff: '#4b7a99', mixed: '#e0b060', still: '#9a8f7d', none: '#7a6f5f' };
 
 // ---------------------------------------------------------------------------------------------- JOB 4+5 (2026-11-04): recipes, compare,
 // history, the report card. Still pure and still only a reader: every recipe is one STORED run picked by a rule over its stored numbers;

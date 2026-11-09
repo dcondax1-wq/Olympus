@@ -250,7 +250,7 @@ def run_browser(tmp):
             check("d. the honest line is on the page: it changes nothing in the bot, it only reads stored runs", "changes nothing in the bot" in p.inner_text("#honest") and "only reads" in p.inner_text("#honest"))
             check("d. six dials with their options; today's value of each is marked live and pressed",
                   p.locator(".dial").count() == 6 and p.locator(".chip.live").count() == 6 and p.locator(".chip.live[aria-pressed=true]").count() == 6)
-            check("d. the live verdict is shown in the dock", "LIVE SETTING" in p.inner_text("#vh") and st(p)["verdict"]["kind"] == "live")
+            check("d. the live verdict is shown in the dock", "live setting" in p.inner_text("#vh").lower() and st(p)["verdict"]["kind"] == "live")
             L = sc["live"]
             check("d. the table shows the stored live run: Jan-Jun and Jul-Oct net, PF and trades a week equal data.json (and so the stored run)",
                   cell(p, "net", "h1") == f"${L['h1']['net']:,}" and cell(p, "net", "h2") == f"${L['h2']['net']:,}" and cell(p, "pf", "h1") == f"{L['h1']['pf']:.2f}" and cell(p, "pf", "h2") == f"{L['h2']['pf']:.2f}"
@@ -283,7 +283,7 @@ def run_browser(tmp):
                 p.screenshot(path=os.path.join(shots, "hephaestus-nocut.png"))
             tap(p, "#reset")
             p.wait_for_timeout(300)
-            check("d. 'Back to live' returns to the live setting", st(p)["scenario"] == "live" and "LIVE SETTING" in p.inner_text("#vh") and p.inner_text("#msg") == "")
+            check("d. 'Back to live' returns to the live setting", st(p)["scenario"] == "live" and "live setting" in p.inner_text("#vh").lower() and p.inner_text("#msg") == "")
             tap(p, ".chip[data-dial=size][data-v=uprisk]")
             p.wait_for_timeout(300)
             s = st(p)
