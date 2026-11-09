@@ -9,19 +9,19 @@
 // or folder that names a known topic (trading, goals, health, Kalshi, business), else its own tag or folder, else "Other".
 
 const TOPICS = [
-  ['trading', 'Trading', '#f5c451', /^(trad|nq|es$|lit|futures?|mffu|prop|eval|ifvg|cisd|liquidity|setup|risk|journal|market)/],
-  ['goals', 'Goals', '#a77bff', /^(goal|plan|vision|habit|routine|discipline|mindset|review)/],
-  ['health', 'Health', '#46d79a', /^(gym|health|fitness|workout|training|sleep|diet|food|nutrition|run|lift|body)/],
-  ['kalshi', 'Kalshi', '#ff6fae', /^(kalshi|prediction|polymarket|bets?$)/],
-  ['business', 'Business', '#ff8a4c', /^(business|biz|money|startup|side|brand|content|client|olympus|idea|work|project)/],
+  ['trading', 'Trading', '#c8a24a', /^(trad|nq|es$|lit|futures?|mffu|prop|eval|ifvg|cisd|liquidity|setup|risk|journal|market)/],
+  ['goals', 'Goals', '#b58aa0', /^(goal|plan|vision|habit|routine|discipline|mindset|review)/],
+  ['health', 'Health', '#8a9a62', /^(gym|health|fitness|workout|training|sleep|diet|food|nutrition|run|lift|body)/],
+  ['kalshi', 'Kalshi', '#c0603f', /^(kalshi|prediction|polymarket|bets?$)/],
+  ['business', 'Business', '#d08a3c', /^(business|biz|money|startup|side|brand|content|client|olympus|idea|work|project)/],
 ];
 const KIND_CLUSTERS = {
-  memory: ['memory', 'Jarvis memory', '#3fe0ff'],
-  daily: ['daily', 'Daily notes', '#8ea7ff'],
-  inbox: ['inbox', 'Inbox', '#ffd9a0'],
+  memory: ['memory', 'Jarvis memory', '#ece0c0'],
+  daily: ['daily', 'Daily notes', '#6a95b0'],
+  inbox: ['inbox', 'Inbox', '#e0b060'],
   me: ['me', 'Me', '#ffffff'],
 };
-const OTHER = ['other', 'Other', '#9aa3b8'];
+const OTHER = ['other', 'Other', '#9a8f7d'];
 const MAX_OWN = 8;                                    // own tag / folder clusters beyond the known topics
 const HOUR = 3600e3, WEEK = 7 * 24 * HOUR, PULSE_FOR = 72 * HOUR;
 
@@ -45,7 +45,7 @@ function clusterKey(n) {
 /** A soft colour for clusters the page does not know, spread around the wheel away from the known hues. */
 function ownColour(k) {
   const h = (200 + k * 137.508) % 360;
-  return `hsl(${h.toFixed(0)}, 72%, 68%)`;
+  return `hsl(${h.toFixed(0)}, 38%, 62%)`;
 }
 
 const learnedKey = (l) => l.t + '|' + l.text;

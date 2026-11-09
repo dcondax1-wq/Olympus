@@ -5,7 +5,7 @@
 
 const FX = () => window.OLYMPUS_FX || null;
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
-const TONE = { calm: '#7ef0b5', watch: '#ffcf5a', storm: '#ff5a6e', info: '#9fb4ff' };
+const TONE = { calm: '#aeb86e', watch: '#e0b060', storm: '#c0603f', info: '#4b7a99' };
 
 /** the Planner's tasks / events on this phone (read-only); null when there is none */
 export function readPlanner() {
@@ -45,9 +45,9 @@ export function ritual(kind, el, scene) {
   if (!fx || !el) return false;
   try {
     if (kind === 'pledge') { fx.sparkleBurst(el, { count: 14 }); return true; }
-    if (kind === 'candle') { fx.sparkleBurst(el, { count: 20, colors: ['#ffcf5a', '#fff3c4', '#ffffff'] }); return true; }
+    if (kind === 'candle') { fx.sparkleBurst(el, { count: 20, colors: ['#e0b060', '#e0b060', '#f3ece0'] }); return true; }
     if (kind === 'seal') {
-      fx.confetti(el, { count: 150, colors: ['#b8e04a', '#ffcf5a', '#fff3c4', '#ffffff', '#7ef0b5'] });
+      fx.confetti(el, { count: 150, colors: ['#aeb86e', '#e0b060', '#e0b060', '#f3ece0', '#aeb86e'] });
       if (scene && scene.fxTarget && !scene.lite()) sceneRitual(fx, scene.fxTarget());
       return true;
     }
@@ -58,7 +58,7 @@ async function sceneRitual(fx, target) {
   try {
     await Promise.all(['fx-weather.js', 'fx-surface.js'].map((f) => import('../olympus/' + f + '?v=f1')));
     sceneFx.forEach((x) => x && x.stop && x.stop()); sceneFx = [];
-    sceneFx.push(fx.shockwave(target, { position: [0, 0.2, 2], radius: 11, color: '#ffcf5a', seconds: 1.8 }), fx.laurelFall(target, { center: [0, 7, 2], box: [14, 10, 10], count: 90 }));
+    sceneFx.push(fx.shockwave(target, { position: [0, 0.2, 2], radius: 11, color: '#e0b060', seconds: 1.8 }), fx.laurelFall(target, { center: [0, 7, 2], box: [14, 10, 10], count: 90 }));
     setTimeout(() => { sceneFx.forEach((x) => x && x.stop && x.stop()); sceneFx = []; }, 6500);
   } catch (_) { /* no 3D effects here */ }
 }

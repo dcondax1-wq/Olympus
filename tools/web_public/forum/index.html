@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Forum</title>
 <meta name="description" content="FORUM: your morning briefing in a Roman forum at the real New York hour. The Council of the Gods, the VIX, the calendar, the eval and today's plan on six glowing tablets, then you seal the day's oath and the temple gates open. Read-only; never a signal, never an order.">
-<meta name="theme-color" content="#0a0812">
+<meta name="theme-color" content="#14110e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Forum">
@@ -20,13 +20,14 @@
      (localStorage 'forum.v1'). Nothing here is a signal and nothing writes to a bot. ?t=08:40 shows the forum at that New York time. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<link rel="stylesheet" href="../olympus/agora.css?v=g1"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g1">
 <script src="../olympus/themes.js?v=o3"></script>
 <script src="../olympus/olympus.js?v=o3" data-app="forum"></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#b8e04a'); r.setProperty('--oly-accent-rgb', '184, 224, 74'); })();</script>
-<link rel="stylesheet" href="forum.css?v=f2">
+<link rel="stylesheet" href="forum.css?v=f2g">
 </head>
 <body>
 <canvas id="view" aria-label="A Roman forum: an avenue of six pillars with glowing tablets leading to a temple, under the sky of the real New York hour" role="img"></canvas>
@@ -43,6 +44,7 @@
   </section>
 </main>
 <section class="card" id="card" aria-live="polite">
+  <div class="heroc" id="hero" aria-label="Drawdown left"></div>
   <div class="intro" id="intro">
     <h2>Good morning, trader.</h2>
     <p id="introText">Six tablets on the way to the temple. Read them, seal the oath, and the gates open.</p>
@@ -67,6 +69,6 @@
   <div class="dots" id="dots"></div>
   <button type="button" id="next" aria-label="Next tablet">›</button>
 </nav>
-<script type="module" src="forum.js?v=f2"></script>
+<script type="module" src="forum.js?v=f2g"></script>
 </body>
 </html>

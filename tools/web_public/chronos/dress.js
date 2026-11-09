@@ -13,8 +13,8 @@ export function dress({ scene, tower, face, rim, spire, FZ = 1.36, FY = 9.65, TZ
   let tt = 0, pend = null, stopped = false;
   const guard = (name, fn) => { try { const v = fn(); parts.push(name); return v; } catch (e) { return null; } };
 
-  const brass = guard('brass', () => S.bronze({ color: '#e0b25a', patina: 0.02, rough: 0.3 }));
-  const dark = new THREE.MeshStandardMaterial({ color: '#0b0814', roughness: 0.6, metalness: 0.2 });
+  const brass = guard('brass', () => S.bronze({ color: '#c8a24a', patina: 0.02, rough: 0.3 }));
+  const dark = new THREE.MeshStandardMaterial({ color: '#15120f', roughness: 0.6, metalness: 0.2 });
   disposables.push(dark);
   if (brass) { rim.material = brass; spire.material = brass; disposables.push(brass); }
 
@@ -34,14 +34,14 @@ export function dress({ scene, tower, face, rim, spire, FZ = 1.36, FY = 9.65, TZ
     const bob = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.05, 20), brass || dark); bob.rotation.x = Math.PI / 2; bob.position.y = -1.22; pivot.add(bob);
     pend = pivot;
     // the glass over it all
-    const glass = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 3.8), M.glass({ color: '#ffffff', rim: '#9d8cff', opacity: 0.1 }));
+    const glass = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 3.8), M.glass({ color: '#f3ece0', rim: '#4b7a99', opacity: 0.1 }));
     glass.position.z = 0.09; g.add(glass);
     disposables.push(panel.geometry, frame.geometry, rod.geometry, bob.geometry, glass.geometry, glass.material);
   });
 
   // a glass cover over the dial
   guard('dial glass', () => {
-    const glass = new THREE.Mesh(new THREE.CircleGeometry(1.46, 40), M.glass({ color: '#ffffff', rim: '#9d8cff', opacity: 0.08 }));
+    const glass = new THREE.Mesh(new THREE.CircleGeometry(1.46, 40), M.glass({ color: '#f3ece0', rim: '#4b7a99', opacity: 0.08 }));
     glass.position.z = 0.16; face.add(glass); disposables.push(glass.geometry, glass.material);
   });
 

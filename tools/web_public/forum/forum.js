@@ -2,7 +2,7 @@
 // (forumcore.js), draws the forum (scene.js) and walks you through it. Text only through textContent. window.FORUM is the test hook.
 import { etParts, parseClock, clockText, minsText, nextEvent, phase, brief, oath, streak, evalOf, desk } from './forumcore.js';
 import { readPlanner, renderDesk, renderShrine, ritual } from './forumdesk.js';
-import { renderMoney, renderDay } from './forumplus.js';
+import { renderMoney, renderDay, renderHero } from './forumplus.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -14,11 +14,14 @@ const store = {
   read() { try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && typeof v === 'object' ? v : {}; } catch (_) { return {}; } },
   write(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (_) { /* private mode */ } },
 };
+// an optional file that answered 404 is not asked again for 30 minutes (a browser logs every 404 as a console error): once per phone, not on every open
+const wasGone = (u) => { try { const t = +localStorage.getItem('forum.opt404.' + u); return !!t && Date.now() - t < 1800e3; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem('forum.opt404.' + u, String(Date.now())); } catch (_) { /* private mode */ } };
 async function getJSON(url, ms = 6000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
-  try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
+  try { if (wasGone(url)) return null; const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); if (r.status === 404) markGone(url); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
-const TONE = { calm: ['#7ef0b5', 'CALM'], watch: ['#ffcf5a', 'WATCH'], storm: ['#ff5a6e', 'CAUTION'], info: ['#9fb4ff', 'READ'] };
+const TONE = { calm: ['#aeb86e', 'CALM'], watch: ['#e0b060', 'WATCH'], storm: ['#c0603f', 'CAUTION'], info: ['#4b7a99', 'READ'] };
 const OATH = oath();
 
 // ------------------------------------------------------------------------------------------------ the clock
@@ -54,8 +57,8 @@ function show(step) {
     S.read.add(step);
     card.style.setProperty('--tone', col);
     $('sGlyph').textContent = it.glyph; $('sTitle').textContent = it.title; $('sStat').textContent = it.stat; $('sTone').textContent = word; $('sBody').textContent = it.line + ' ' + it.body;
-  } else if (step === S.items.length) card.style.setProperty('--tone', '#b8e04a');
-  else card.style.setProperty('--tone', '#9fb4ff');
+  } else if (step === S.items.length) card.style.setProperty('--tone', '#aeb86e');
+  else card.style.setProperty('--tone', '#4b7a99');
   if (S.scene) S.scene.focus(step === -1 ? -1 : step);
   const dots = $('dots');
   document.documentElement.dataset.walk = step === -1 ? '' : '1';          // the tablet card rises above the two-row nav (dots, then the arrows)
@@ -111,7 +114,7 @@ function card() {
   return { v: 1, name: 'Forum', status: { level: S.demo ? 'off' : sealedToday() ? 'ok' : 'warn', label: S.demo ? 'Demo data' : sealedToday() ? 'Oath sealed' : 'Briefing not read' },
     kpis: [{ label: 'Council', value: g('council').stat.slice(0, 18) }, { label: 'VIX', value: g('fear').stat.replace('VIX ', '').slice(0, 10) }, { label: 'Eval room', value: g('eval').stat.replace(' room', '').slice(0, 12) }],
     lines: [(g('calendar').stat ? `Next release: ${g('calendar').stat}` : '').slice(0, 120), `Forum streak: ${sk.cur} market day${sk.cur === 1 ? '' : 's'} (best ${sk.best})`.slice(0, 120)].filter(Boolean),
-    t: Math.floor(Date.now() / 1000), open: '#oath', theme: '#0a0812', stale_after: 86400 };
+    t: Math.floor(Date.now() / 1000), open: '#oath', theme: '#13100d', stale_after: 86400 };
 }
 function postCard() {
   if (S.demo || !O || !O.framed) return;
@@ -159,7 +162,7 @@ async function main() {
   S.p = now();
   S.items = brief(S.pan, S.home, S.p);
   S.desk = desk(S.home, readPlanner(), S.p); renderDesk($('desk'), S.desk);
-  try { renderMoney($('money'), S.home, S.pan); renderDay($('day'), S.p); } catch (e) { S.error = 'plus: ' + ((e && e.message) || e); }
+  try { renderHero($('hero'), S.home, S.p); renderMoney($('money'), S.home, S.pan); renderDay($('day'), S.p); } catch (e) { S.error = 'plus: ' + ((e && e.message) || e); }
   $('demo').hidden = !S.demo;
   if (S.scene) S.scene.setScrolls(S.items);
   const c = S.items[0];

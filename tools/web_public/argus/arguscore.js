@@ -315,7 +315,7 @@ export function cardOf(R, now) {
   return { v: 1, name: 'Argus', status: { level: v.level === 'idle' ? 'off' : v.level, label },
     kpis: [{ label: 'Red', value: String(c.bad) }, { label: 'Amber', value: String(c.warn) }, { label: 'Green', value: String(c.ok) }],
     lines: R.fix.slice(0, 3).map((e) => `${e.label}: ${e.step || e.detail}`.slice(0, 118)).concat(R.fix.length ? [] : ['Every light that matters is green.']),
-    t: Math.floor(now), open: '#fix', theme: '#050912', stale_after: 1800 };
+    t: Math.floor(now), open: '#fix', theme: '#13100d', stale_after: 1800 };
 }
 
 // ---------------------------------------------------------------------------------------------- JOB 4+5 follow-up (2026-11-04): money view

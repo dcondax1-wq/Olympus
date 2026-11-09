@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Plutus</title>
 <meta name="description" content="PLUTUS, the money plan: how many prop accounts, what they cost, when the payouts land and what a month is worth, from the bot's measured numbers. Sliders, no promises.">
-<meta name="theme-color" content="#06100a">
+<meta name="theme-color" content="#14110e">
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png?v=j4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -21,13 +21,14 @@
      Bump ?v= on all of them when one changes. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<link rel="stylesheet" href="../olympus/agora.css?v=g1"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g1">
 <script src="../olympus/themes.js?v=o3"></script>
 <script src="../olympus/olympus.js?v=o3" data-app="plutus"></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#9be84a'); r.setProperty('--oly-accent-rgb', '155, 232, 74'); })();</script>
-<link rel="stylesheet" href="plutus.css?v=m3">
+<link rel="stylesheet" href="plutus.css?v=m3g">
 </head>
 <body>
 <canvas id="vault" aria-label="The vault: one gold column per month, how much money the plan has made by then after fees; a blue ghost column is the bad case" role="img"></canvas>
@@ -39,6 +40,7 @@
 <section class="sheet" id="sheet">
   <div class="pane" id="p-plan" role="tabpanel" aria-label="Plan">
     <section class="xbox mplan" id="mplan" aria-label="Money plan"><h3>Money plan <span class="tag" id="mplanTag" hidden>OFFLINE COPY</span></h3><div id="mplanBody"><p class="plain">Run ATLAS first, then LIT, all three accounts now. Loading the 12-month plan, study numbers, not promises.</p></div></section>
+    <section class="xbox keep" id="keep" aria-label="What you keep"><h3>What you keep</h3><div id="keepBody"></div></section>
     <div class="row seg" id="spans" role="group" aria-label="Which months the bot is judged on"></div>
     <div id="accts"></div>
     <label class="slide">Months: <b id="monthsV">6</b><input id="months" type="range" min="3" max="12" step="1" value="6"></label>
@@ -74,6 +76,6 @@
     <button type="button" data-tab="risk" aria-pressed="false">Risk</button><button type="button" data-tab="notes" aria-pressed="false">Notes</button>
   </nav>
 </footer>
-<script type="module" src="plutus.js?v=m3"></script>
+<script type="module" src="plutus.js?v=m3g"></script>
 </body>
 </html>

@@ -9,13 +9,13 @@ export const CACHE_KEY = 'inbox.cache.v1';    // { t, feeds: { name: json } }: t
 
 // the sources: id, name, glyph, colour (the app's own), where "Open" goes
 export const SOURCES = [
-  { id: 'bots', name: 'Bots', icon: '◎', color: '#a855f7', href: '../' },
-  { id: 'argus', name: 'Argus', icon: 'Α', color: '#3ad7ff', href: '../argus/' },
-  { id: 'kalshi', name: 'Kalshi', icon: 'K', color: '#2ef2d0', href: '../kalshi/' },
-  { id: 'bridge', name: 'Bridge', icon: 'Β', color: '#34d399', href: '../bridge/' },
-  { id: 'mind', name: 'Jarvis learned', icon: 'Ω', color: '#5eead4', href: '../jarvis/' },
-  { id: 'arena', name: 'Arena', icon: 'Α', color: '#ffb547', href: '../arena/' },
-  { id: 'system', name: 'System', icon: '⚙', color: '#9aa4c0', href: '../argus/' },
+  { id: 'bots', name: 'Bots', icon: '◎', color: '#c8a24a', href: '../' },
+  { id: 'argus', name: 'Argus', icon: 'Α', color: '#4b7a99', href: '../argus/' },
+  { id: 'kalshi', name: 'Kalshi', icon: 'K', color: '#c0603f', href: '../kalshi/' },
+  { id: 'bridge', name: 'Bridge', icon: 'Β', color: '#7f8a52', href: '../bridge/' },
+  { id: 'mind', name: 'Jarvis learned', icon: 'Ω', color: '#e0b060', href: '../jarvis/' },
+  { id: 'arena', name: 'Arena', icon: 'Α', color: '#9c6b3c', href: '../arena/' },
+  { id: 'system', name: 'System', icon: '⚙', color: '#9a8f7d', href: '../argus/' },
 ];
 export const SRC = Object.fromEntries(SOURCES.map((s) => [s.id, s]));
 
@@ -133,6 +133,8 @@ export function view(items, st, filter) {
   const list = items.filter((it) => {
     if (f === 'pinned') return !!st.pins[it.id];
     if (f === 'unread') return !st.muted[it.src] && !isRead(it, st);
+    if (f === 'needs') return !st.muted[it.src] && !isRead(it, st) && (it.level === 'bad' || it.level === 'warn');   // AGORA: what needs you
+    if (f === 'money') return !st.muted[it.src] && /\$\s?\d/.test(it.text);                                              // AGORA: items that name dollars
     if (SRC[f]) return it.src === f;
     return !st.muted[it.src];
   });
@@ -149,5 +151,5 @@ export function card(items, st, now) {
   const n = unread(items, st), c = counts(items, st), top = items.filter((it) => !st.muted[it.src]).slice(0, 2).map((it) => clean(it.text, 100));
   const worst = items.some((it) => !st.muted[it.src] && !isRead(it, st) && it.level === 'bad') ? 'bad' : n ? 'warn' : 'ok';
   return { v: 1, name: 'Inbox', status: { level: worst, label: badge(n) }, kpis: [{ label: 'New', value: String(n) }, { label: 'Bots', value: String(c.bots) }, { label: 'System', value: String(c.system + c.argus) }],
-    lines: top.length ? top : ['All quiet: your bots are fine.'], t: Math.floor(now), open: '#inbox', theme: '#070a12', stale_after: 86400 };
+    lines: top.length ? top : ['All quiet: your bots are fine.'], t: Math.floor(now), open: '#inbox', theme: '#13100d', stale_after: 86400 };
 }

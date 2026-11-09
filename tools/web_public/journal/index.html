@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MNEMOSYNE</title>
 <meta name="description" content="OLYMPUS MNEMOSYNE: a 10-second trade journal. Rate each of the bot's trades (followed plan, hesitated, interfered), tag your mood, and see in dollars what your habits cost. Kept only on this phone.">
-<meta name="theme-color" content="#0b0710">
+<meta name="theme-color" content="#14110e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mnemosyne">
@@ -19,13 +19,14 @@
      page reads one published file (../odeon/trades.json, read-only) and falls back to fixture.json (DEMO, synthetic trades) when it is missing. Text only through textContent. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<link rel="stylesheet" href="../olympus/agora.css?v=g1"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g1">
 <script src="../olympus/themes.js?v=o3"></script>
 <script src="../olympus/olympus.js?v=o3" data-app="journal"></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/sfx.js?v=s2" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#f09bd8'); r.setProperty('--oly-accent-rgb', '240, 155, 216'); })();</script>
-<link rel="stylesheet" href="journal.css?v=j1">
+<link rel="stylesheet" href="journal.css?v=j1g">
 </head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -48,6 +49,7 @@
       <div class="tile good"><small>Followed plan</small><b id="tPlan">$0</b><span id="tPlanN">0 trades</span></div>
     </div>
     <p class="lead" id="lead">Rate your trades below.</p>
+    <p class="ifplan" id="ifplan" hidden></p>
     <svg id="bars" class="bars" viewBox="0 0 300 74" role="img" aria-label="Dollars by rating"></svg>
     <p class="hint" id="progress"></p>
   </section>
@@ -95,6 +97,6 @@
     <button type="button" class="mini" id="shReset" data-oly-cue="tap">Start again</button>
   </div>
 </div>
-<script type="module" src="journal.js?v=j1"></script>
+<script type="module" src="journal.js?v=j1g"></script>
 </body>
 </html>

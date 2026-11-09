@@ -14,7 +14,7 @@ export function dress({ scene, camera, lite }) {
   const start = () => {
     if (stopped || !F) return;
     crackMat = find();
-    guard('fog', () => fx.push(F.volumetricFog(scene, { size: 34, density: 0.55 })));
+    guard('fog', () => fx.push(F.volumetricFog(scene, { size: 34, density: 0.45, color: '#3a2a22' })));
     guard('embers', () => fx.push(F.embers(scene, { center: [0, 3.2, 0], count: lite ? 120 : 360 })));
     guard('haze', () => { if (!lite) fx.push(F.heatShimmer(scene, { position: [0, 0.2, 0], height: 3.2 })); });
     guard('braziers', () => { for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2 + 0.5; torches.push(S.torch(scene, { at: [Math.cos(a) * 13.4, 0, Math.sin(a) * 13.4], height: 2.1, light: 0 })); } });
@@ -24,10 +24,10 @@ export function dress({ scene, camera, lite }) {
   moon = guard('moon', () => {
     const c = document.createElement('canvas'); c.width = c.height = 128;
     const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 6, 64, 64, 64);
-    gr.addColorStop(0, 'rgba(255,170,120,1)'); gr.addColorStop(0.34, 'rgba(255,90,60,.95)'); gr.addColorStop(0.4, 'rgba(255,60,40,.3)'); gr.addColorStop(1, 'rgba(255,40,30,0)');
+    gr.addColorStop(0, 'rgba(224, 176, 96,1)'); gr.addColorStop(0.34, 'rgba(192, 96, 63,.95)'); gr.addColorStop(0.4, 'rgba(192, 96, 63,.3)'); gr.addColorStop(1, 'rgba(192, 96, 63,0)');
     g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, color: new THREE.Color('#ff7a5a').multiplyScalar(1.6), transparent: true, fog: false, depthWrite: false }));
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, color: new THREE.Color('#c0603f').multiplyScalar(1.6), transparent: true, fog: false, depthWrite: false }));
     m.scale.set(30, 30, 1); m.position.set(40, 34, -70); scene.add(m); return m;
   });
   return {

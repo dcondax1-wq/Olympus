@@ -19,9 +19,12 @@ const kv = (rows) => { const ul = h('ul', 'kv'); for (const r of rows) { if (!r)
 const pct0 = (x) => `${Math.round(x * 100)}%`;
 const NAMES = { kalshi: 'Kalshi bot (real money)', general: 'General (expenses, other income)' };
 
+// an optional file that answered 404 is not asked again for 30 minutes (a browser logs every 404 as a console error): once per phone, not on every open
+const wasGone = (u) => { try { const t = +localStorage.getItem('ledger.opt404.' + u); return !!t && Date.now() - t < 1800e3; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem('ledger.opt404.' + u, String(Date.now())); } catch (_) { /* private mode */ } };
 async function getJSON(url, ms = 6000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
-  try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
+  try { if (wasGone(url)) return null; const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); if (r.status === 404) markGone(url); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
 const store = {
   read() { try { return C.loadState(localStorage.getItem(KEY)); } catch (_) { return C.emptyState(); } },
@@ -90,8 +93,22 @@ function renderHero() {
 }
 
 // ------------------------------------------------------------------------------------------------ the panels
+/** AGORA (2026-11-09): three plain money answers at the top: how many months of costs your profit covers, how much of each dollar earned you keep, the biggest cost. */
+function snapCard(m, t) {
+  const earned = t.income + Math.max(0, t.kalshiAll), keep = earned > 0 ? Math.max(-1, Math.min(1, (earned - t.costs) / earned)) : null;
+  const cover = m.burn > 0 && t.net > 0 ? t.net / m.burn : null;
+  let big = null; for (const [cat, v] of Object.entries(t.byCat || {})) if (v < 0 && (!big || v < big[1])) big = [cat, v];
+  const tile = (k, v, note, cls) => { const d = h('div', 'snapt'); d.append(h('span', 'ag-cap', k), h('b', 'ag-money ' + (cls || ''), v), h('small', 'ag-cap', note)); return d; };
+  const grid = h('div', 'snap');
+  grid.append(
+    tile('Costs covered', cover == null ? '-' : `${cover >= 10 ? Math.round(cover) : cover.toFixed(1)} mo`, cover == null ? (m.burn > 0 ? 'Earn a profit to cover your repeating costs.' : 'No repeating costs recorded.') : `of your ${C.money(m.burn, 0)} a month in repeating costs`, cover != null ? 'pos' : ''),
+    tile('You keep', keep == null ? '-' : `${Math.round(keep * 100)}c`, keep == null ? 'Add income to see this.' : 'of every $1 you earned, after costs', keep != null && keep < 0 ? 'neg' : 'pos'),
+    tile('Biggest cost', big ? C.money(-big[1], 0) : '-', big ? big[0] : 'No costs yet', big ? 'neg' : ''));
+  return card('Your money in three numbers', grid);
+}
 function overView() {
   const m = S.model, t = m.totals, k = t.kalshi, be = m.be, out = [];
+  out.push(snapCard(m, t));
   out.push(card('Where the money went', kv([
     ['Payouts received', C.money(t.byKind.payout_in || 0), 'pos'], ['Other income', C.money(t.byKind.income || 0), 'pos'],
     ['Eval fees', C.money(-(t.byKind.fee || 0)), 'neg'], ['Resets and activation', C.money(-((t.byKind.reset || 0) + (t.byKind.activation || 0))), 'neg'],
@@ -161,12 +178,12 @@ function barsChart(rows) {
   svg.append(sv('line', { x1: padL, x2: W - padL, y1: sc(0), y2: sc(0), stroke: 'rgba(255,255,255,.25)', 'stroke-width': 1 }));
   rows.forEach((r, i) => {
     const x = padL + i * bw + bw * 0.18, w = bw * 0.64;
-    if (up[i] > 0) svg.append(sv('rect', { x, y: sc(up[i]), width: w / 2 - 1, height: Math.max(1, sc(0) - sc(up[i])), rx: 2, fill: '#5ee6a8' }, null));
-    if (dn[i] > 0) svg.append(sv('rect', { x: x + w / 2, y: sc(0), width: w / 2 - 1, height: Math.max(1, sc(-dn[i]) - sc(0)), rx: 2, fill: '#ff5a66' }));
+    if (up[i] > 0) svg.append(sv('rect', { x, y: sc(up[i]), width: w / 2 - 1, height: Math.max(1, sc(0) - sc(up[i])), rx: 2, fill: '#7f8a52' }, null));
+    if (dn[i] > 0) svg.append(sv('rect', { x: x + w / 2, y: sc(0), width: w / 2 - 1, height: Math.max(1, sc(-dn[i]) - sc(0)), rx: 2, fill: '#c0603f' }));
     svg.append(sv('text', { x: padL + i * bw + bw / 2, y: H - 6, 'text-anchor': 'middle' }, C.monthName(r.ym)));
   });
-  svg.append(sv('polyline', { points: rows.map((r, i) => `${padL + i * bw + bw / 2},${sc(r.cum)}`).join(' '), fill: 'none', stroke: '#ffcf5a', 'stroke-width': 2, 'stroke-linejoin': 'round' }));
-  rows.forEach((r, i) => svg.append(sv('circle', { cx: padL + i * bw + bw / 2, cy: sc(r.cum), r: 2.6, fill: '#ffcf5a' })));
+  svg.append(sv('polyline', { points: rows.map((r, i) => `${padL + i * bw + bw / 2},${sc(r.cum)}`).join(' '), fill: 'none', stroke: '#c8a24a', 'stroke-width': 2, 'stroke-linejoin': 'round' }));
+  rows.forEach((r, i) => svg.append(sv('circle', { cx: padL + i * bw + bw / 2, cy: sc(r.cum), r: 2.6, fill: '#c8a24a' })));
   return svg;
 }
 function heatChart(map, today) {
@@ -204,7 +221,7 @@ function calGrid(month, m) {
 }
 function cashView() {
   const m = S.model, t = m.totals, out = [];
-  const leg = h('div', 'legend'); [['#5ee6a8', 'money in'], ['#ff5a66', 'money out'], ['#ffcf5a', 'running total']].forEach(([c, l]) => { const s = h('span'); const i = h('i'); i.style.background = c; s.append(i, document.createTextNode(l)); leg.append(s); });
+  const leg = h('div', 'legend'); [['#7f8a52', 'money in'], ['#c0603f', 'money out'], ['#c8a24a', 'running total']].forEach(([c, l]) => { const s = h('span'); const i = h('i'); i.style.background = c; s.append(i, document.createTextNode(l)); leg.append(s); });
   out.push(card('Monthly waterfall', barsChart(m.months), leg, h('p', '', 'Each month: what came in, what went out, and the running total of your net profit. Kalshi counts by the bot\'s own daily results.')));
   const map = C.daily(m.list, m.feed, C.addDays(m.today, -98), m.today);
   out.push(card('Cash flow by day', heatChart(map, m.today), h('p', '', 'Green = more came in than went out that day, red = the opposite. Empty = nothing happened. Last 14 weeks.')));
@@ -213,7 +230,7 @@ function cashView() {
   const nav = h('div', 'mnav'), prev = h('button', 'btn sm', '‹'), next = h('button', 'btn sm', '›'), lab = h('b', '', `${C.monthName(cm).replace("'", '20')}`.replace(/(\w{3}) 20(\d\d)/, (a, b, c) => `${b} 20${c}`));
   prev.type = 'button'; prev.dataset.act = 'cal'; prev.dataset.d = '-1'; prev.setAttribute('aria-label', 'Previous month'); next.type = 'button'; next.dataset.act = 'cal'; next.dataset.d = '1'; next.setAttribute('aria-label', 'Next month'); nav.append(prev, lab, next);
   const pc = card('Payout calendar', nav, calGrid(cm, m), h('div', 'legend', null));
-  const lg2 = pc.lastChild; for (const [c, l] of [['rgba(255,179,71,.6)', 'requested'], ['rgba(94,230,168,.6)', 'received'], ['rgba(127,180,255,.8)', 'a repeating cost is due']]) { const s = h('span'); const i = h('i'); i.style.background = c; s.append(i, document.createTextNode(l)); lg2.append(s); }
+  const lg2 = pc.lastChild; for (const [c, l] of [['rgba(224, 176, 96,.6)', 'requested'], ['rgba(224, 176, 96,.6)', 'received'], ['rgba(75, 122, 153,.8)', 'a repeating cost is due']]) { const s = h('span'); const i = h('i'); i.style.background = c; s.append(i, document.createTextNode(l)); lg2.append(s); }
   if (pay.pending.length) pc.append(kv(pay.pending.map((p) => [`${acctName(p.acct)} · asked ${p.date}`, `${C.money(p.amount)} · waiting ${p.waiting} day${p.waiting === 1 ? '' : 's'}`, p.waiting > 7 ? 'neg' : ''])), h('p', '', 'MFFU\'s payout time is not in the rulebook, so Ledger only shows how long each request has waited. Check your MFFU dashboard if it feels long.'));
   else pc.append(h('p', '', pay.requested.length ? 'No payout is waiting: every request has a matching payout received.' : 'No payout requested yet.'));
   const plans = pay.plans;
@@ -379,7 +396,7 @@ function card2() {
   return { v: 1, name: 'Ledger', status: { level: S.demo ? 'off' : t.net >= 0 ? 'ok' : 'warn', label: S.demo ? 'Demo data' : `Net ${C.moneyS(t.net, 0)}` },
     kpis: [{ label: 'Net all time', value: C.moneyS(t.net, 0) }, { label: 'This month', value: C.moneyS(t.month.net, 0) }, { label: 'Break-even', value: beText(m.be) }],
     lines: [`Costs ${C.money(t.costs, 0)}, income ${C.money(t.income, 0)}${t.pending ? `, pending payouts ${C.money(t.pending, 0)}` : ''}.`.slice(0, 120), 'Your real money, kept on this phone. Not tax advice.'],
-    t: Math.floor(Date.now() / 1000), open: '#over', theme: '#0b0905', stale_after: 604800 };
+    t: Math.floor(Date.now() / 1000), open: '#over', theme: '#13100d', stale_after: 604800 };
 }
 function postCard() {
   if (S.demo || !O || !O.framed || !S.model) return;

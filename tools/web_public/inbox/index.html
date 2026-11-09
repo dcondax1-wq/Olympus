@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Inbox</title>
 <meta name="description" content="OLYMPUS INBOX: one place that collects what matters, newest first: bot events, Argus incidents, the Kalshi learning log and status, Bridge questions and deliveries, what Jarvis learned, Arena results and system notices. Filters, unread counts, pin, mute, mark read. Read-only on every source.">
-<meta name="theme-color" content="#070a12">
+<meta name="theme-color" content="#14110e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Inbox">
@@ -20,6 +20,7 @@
      'inbox.*' keys, caches the last fetch (opens offline) and never writes to anything it reads. The unread card is kept in 'inbox.card.v1'. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<link rel="stylesheet" href="../olympus/agora.css?v=g1"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g1">
 <script src="../olympus/themes.js?v=o3"></script>
 <script src="../olympus/olympus.js?v=o3" data-app="inbox"></script>
 <script src="../olympus/a11y.js" defer></script>
@@ -27,7 +28,7 @@
 <script src="../olympus/sfx.js?v=s2" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#7fd0ff'); r.setProperty('--oly-accent-rgb', '127, 208, 255'); })();</script>
-<link rel="stylesheet" href="inbox.css?v=i1">
+<link rel="stylesheet" href="inbox.css?v=i1g">
 </head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -47,6 +48,6 @@
   <section class="card" id="mutes" data-oly-fx="glassSpecular"><h2>Sources</h2><p class="hint">Mute a source to stop its items from counting. Nothing is deleted.</p><div class="chips" id="muteChips"></div></section>
   <p class="foot" id="foot">Read-only: the Inbox never changes the things it reads.</p>
 </main>
-<script type="module" src="inbox.js?v=i2"></script>
+<script type="module" src="inbox.js?v=i2g"></script>
 </body>
 </html>

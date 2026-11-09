@@ -192,19 +192,19 @@ export function reelText(d) {
 }
 export function posterCanvas(d) {
   const c = document.createElement('canvas'); c.width = 1080; c.height = 1350;
-  const g = c.getContext('2d'); g.fillStyle = '#07050e'; g.fillRect(0, 0, 1080, 1350);
-  const gr = g.createRadialGradient(540, 420, 40, 540, 420, 720); gr.addColorStop(0, 'rgba(157,140,255,.35)'); gr.addColorStop(1, 'rgba(7,5,14,0)'); g.fillStyle = gr; g.fillRect(0, 0, 1080, 1350);
-  g.textAlign = 'center'; g.fillStyle = '#d4a574'; g.font = '700 54px Orbitron, sans-serif'; g.fillText('CHRONOS', 540, 120);
-  g.fillStyle = '#f3f5fb'; g.font = '600 44px Rajdhani, sans-serif'; g.fillText(prettyDay(d.day), 540, 190);
-  g.fillStyle = d.usd >= 0 ? '#46d79a' : '#ff5a66'; g.font = '800 150px Orbitron, sans-serif'; g.fillText(sgn(d.usd), 540, 380);
-  g.fillStyle = '#b9bfd6'; g.font = '500 40px Rajdhani, sans-serif'; g.fillText(`${d.trades.length} trade${d.trades.length > 1 ? 's' : ''} · best possible ${usd(d.best)}`, 540, 450);
+  const g = c.getContext('2d'); g.fillStyle = '#13100d'; g.fillRect(0, 0, 1080, 1350);
+  const gr = g.createRadialGradient(540, 420, 40, 540, 420, 720); gr.addColorStop(0, 'rgba(75, 122, 153,.35)'); gr.addColorStop(1, 'rgba(19, 16, 13,0)'); g.fillStyle = gr; g.fillRect(0, 0, 1080, 1350);
+  g.textAlign = 'center'; g.fillStyle = '#c8a24a'; g.font = '700 54px "Iowan Old Style", Palatino, Georgia, serif'; g.fillText('CHRONOS', 540, 120);
+  g.fillStyle = '#f3ece0'; g.font = '600 44px system-ui, sans-serif'; g.fillText(prettyDay(d.day), 540, 190);
+  g.fillStyle = d.usd >= 0 ? '#c8a24a' : '#c0603f'; g.font = '800 150px "Iowan Old Style", Palatino, Georgia, serif'; g.fillText(sgn(d.usd), 540, 380);
+  g.fillStyle = '#d6ccbc'; g.font = '500 40px system-ui, sans-serif'; g.fillText(`${d.trades.length} trade${d.trades.length > 1 ? 's' : ''} · best possible ${usd(d.best)}`, 540, 450);
   const X0 = 90, X1 = 990, Y0 = 560, Y1 = 1160; g.strokeStyle = 'rgba(255,255,255,.12)'; g.lineWidth = 2; g.strokeRect(X0, Y0, X1 - X0, Y1 - Y0);
   let hi = 2, lo = -1.2; const paths = d.trades.map(rPath); for (const p of paths) for (const q of p) { hi = Math.max(hi, q[1]); lo = Math.min(lo, q[1]); } hi = Math.min(hi, 10);
   const X = (u) => X0 + u * (X1 - X0), Y = (r) => Y0 + (1 - (Math.min(hi, r) - lo) / (hi - lo)) * (Y1 - Y0);
-  g.setLineDash([14, 10]); g.strokeStyle = '#ff5a66'; g.beginPath(); g.moveTo(X0, Y(-1)); g.lineTo(X1, Y(-1)); g.stroke(); g.setLineDash([]);
-  const cols = ['#7fe9ff', '#ffcf5a', '#ff9bd0', '#b08cff'];
+  g.setLineDash([14, 10]); g.strokeStyle = '#c0603f'; g.beginPath(); g.moveTo(X0, Y(-1)); g.lineTo(X1, Y(-1)); g.stroke(); g.setLineDash([]);
+  const cols = ['#e0b060', '#e0b060', '#e0b060', '#e0b060'];
   paths.forEach((p, i) => { g.strokeStyle = cols[i % 4]; g.lineWidth = 6; g.lineJoin = 'round'; g.beginPath(); p.forEach((q, k) => (k ? g.lineTo(X(q[0]), Y(q[1])) : g.moveTo(X(q[0]), Y(q[1])))); g.stroke(); });
-  g.fillStyle = '#7d849c'; g.font = '500 32px Rajdhani, sans-serif'; g.fillText('Each line: one trade, entry to exit, in R. The red line is the stop.', 540, 1230);
+  g.fillStyle = '#4b7a99'; g.font = '500 32px system-ui, sans-serif'; g.fillText('Each line: one trade, entry to exit, in R. The red line is the stop.', 540, 1230);
   g.fillText('Replay from the bot\'s own 1-minute data. Paper / backtest. Not advice.', 540, 1280);
   return c;
 }

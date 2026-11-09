@@ -114,6 +114,14 @@ function homeView(h) {
         tile('notes', 'Notes', big(s.notes), `${s.tags} tags`), tile('links', 'Links', big(s.links), `${s.avgLinks} per note`),
         tile('topics', 'Galaxies', String(s.galaxies.length), 'topics'), tile('streak', 'Streak', `${s.streak.current}d`, `best ${s.streak.best}d`, 'var(--gold)'),
         tile('today', 'Learned today', String(s.today), `${s.learned} in all`), tile('orphans', 'Orphans', String(s.orphans), 'no links yet')]);
+      // AGORA (2026-11-09): money first. The trading galaxy in one line, and the lessons that name dollars.
+      const tg = s.galaxies.find((c) => c.key === 'trading'), lessons = learnedFeed(g).filter((x) => /\$\s?\d/.test(x.text)).slice(0, 3);
+      const money = el('div', { class: 'card2 moneycard' }, [
+        head('Money lessons', tg ? el('small', { text: `${fmt.format(tg.count)} trading notes` }) : null),
+        lessons.length ? el('div', { class: 'list' }, lessons.map((x) => el('button', { class: 'row learn', type: 'button', onclick: () => (x.i >= 0 ? h.fly(g.nodes[x.i].id) : h.open('learned')) },
+          [dot('var(--gold)'), el('span', { class: 'r-t', text: x.text }), el('small', { text: ago(x.t, now) })])))
+          : empty('No lesson names dollars yet. Tell Jarvis what a trade cost or earned and it lands here.', el('button', { class: 'cta', type: 'button', text: 'Teach Jarvis', onclick: () => h.open('teach') })),
+        tg ? el('button', { class: 'mini', type: 'button', text: 'Open the trading galaxy', onclick: () => h.cluster('trading') }) : null]);
       const chart = el('div', { class: 'card2' }, [
         head('Brain growth', el('small', { text: 'last 12 weeks' })),
         areaChart(s.growth.map((p) => p.total), { label: `Notes over the last 12 weeks, now ${s.notes}` }),
@@ -132,7 +140,7 @@ function homeView(h) {
       const topic = el('div', { class: 'card2' }, [head('Galaxies'), el('div', { class: 'gal' }, s.galaxies.filter((c) => c.key !== 'me').slice(0, 6).map((c) => el('button', {
         class: 'galrow', type: 'button', style: { '--c': c.colour, '--w': String(c.count / Math.max(1, s.galaxies[0].count)) }, onclick: () => h.cluster(c.key) },
       [dot(c.colour), el('span', { text: c.label }), el('i'), el('small', { text: fmt.format(c.count) })])))]);
-      const kids = [hero, tiles, actions, chart, learn, topic];
+      const kids = [hero, tiles, money, actions, learn, chart, topic];
       if (s.notes < 15 && ctx.mode !== 'demo') {
         kids.push(el('div', { class: 'card2 start' }, [head('Grow your brain'), el('ol', {}, [el('li', { text: 'Teach Jarvis a fact about you.' }), el('li', { text: 'Write a note and link it with [[double brackets]].' }), el('li', { text: 'Come back tomorrow to keep the streak.' })]), acts(h, ctx)]));
       } else if (ctx.preview) kids.push(el('div', { class: 'card2 start' }, [head('This is a demo brain'), el('p', { class: 'sub', text: 'Every galaxy, link and lesson here is made up so you can see what a grown brain feels like. Your own vault is untouched.' }), acts(h, ctx)]));

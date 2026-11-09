@@ -103,7 +103,7 @@ def part_a():
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app=argus) all at ?v=o2",
           all(s in html for s in ('../olympus/olympus.css?v=o3', '../olympus/themes.js?v=o3', '../olympus/olympus.js?v=o3" data-app="argus"')))
     check("a. title Argus, a description, theme-color = the page colour, the Jarvis icon like the siblings",
-          "<title>Argus</title>" in html and 'name="description"' in html and 'content="#050912"' in html and "../jarvis/icon-192.png" in html and "#050912" in rd("argus.css") + html)
+          "<title>Argus</title>" in html and 'name="description"' in html and 'content="#14110e"' in html and "../jarvis/icon-192.png" in html and "#14110e" in rd("argus.css") + html)
     srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
     check("a. only local files (no external script, font or stylesheet)", all(not s.startswith(("http:", "https:", "//")) for s in srcs), srcs)
     check("a. every local file the page links exists", all(os.path.exists(os.path.normpath(os.path.join(PAGE, s.split("?")[0]))) for s in srcs if not s.startswith("#")), srcs)
@@ -411,7 +411,7 @@ def part_c(tmp):
             errs = []
             ctx, p = open_page(br, ok_url + Q, errs, "__argus")
             check("c. loads at 390 x 844: the 3D sphere is up (WebGL), no OFFLINE tag, the verdict reads ALL CLEAR (green)",
-                  p.evaluate("window.__argus.ready3d") and p.is_hidden("#nogl") and p.is_hidden("#offtag") and p.inner_text("#vk") == "ALL CLEAR" and p.get_attribute("#verdict", "data-level") == "ok", p.inner_text("#vk"))
+                  p.evaluate("window.__argus.ready3d") and p.is_hidden("#nogl") and p.is_hidden("#offtag") and p.inner_text("#vk") == "All clear" and p.get_attribute("#verdict", "data-level") == "ok", p.inner_text("#vk"))
             check("c. a hundred eyes; every one of them green (all the lights are fine)", p.evaluate("window.__argus.eyes") == 100 and p.evaluate("window.__argus.levels.filter(l => l === 'ok').length") == 100, p.evaluate("window.__argus.levels.slice(0, 8)"))
             check("c. 'Fix this first' says there is nothing to fix; the count is 0", "Nothing to fix" in p.inner_text("#p-fix") and p.inner_text("#fixN") == "0")
             check("c. no sideways scroll", p.evaluate("document.documentElement.scrollWidth <= innerWidth"))
@@ -446,7 +446,7 @@ def part_c(tmp):
             errs = []
             ctx, p = open_page(br, bad_url + Q, errs, "__argus")
             check("c. a red drawdown, a 6-day inactivity clock and a stale feed: LOOK AT THIS (red), the dock says '3 red'",
-                  p.inner_text("#vk") == "LOOK AT THIS" and p.get_attribute("#verdict", "data-level") == "bad" and "3 red" in p.inner_text("#vs"), p.inner_text("#vs"))
+                  p.inner_text("#vk") == "Look at this" and p.get_attribute("#verdict", "data-level") == "bad" and "3 red" in p.inner_text("#vs"), p.inner_text("#vs"))
             check("c. the eyes follow: eight or more red, the rest mostly green, still exactly 100",
                   p.evaluate("window.__argus.levels.filter(l => l === 'bad').length") >= 8 and p.evaluate("window.__argus.levels.filter(l => l === 'ok').length") >= 60 and p.evaluate("window.__argus.levels.length") == 100)
             rows = p.evaluate("[...document.querySelectorAll('#p-fix .fixrow')].map(r => r.innerText)")
@@ -569,7 +569,7 @@ def part_c(tmp):
             p.goto(ok_url + "?now=2026-11-04T18:30:00-05:00")
             wait_ready(p)
             check("c. offline with a saved copy: the OFFLINE tag, 'as of' the time it was saved, and no false alarm from the old clock (still ALL CLEAR)",
-                  p.is_visible("#offtag") and "Offline" in p.inner_text("#sub") and "Offline, as of" in p.inner_text("#vline") and p.inner_text("#vk") == "ALL CLEAR" and p.evaluate("window.__argus.offline"), p.inner_text("#vline"))
+                  p.is_visible("#offtag") and "Offline" in p.inner_text("#sub") and "Offline, as of" in p.inner_text("#vline") and p.inner_text("#vk") == "All clear" and p.evaluate("window.__argus.offline"), p.inner_text("#vline"))
             ctx.close()
             bad = tidy_errors(errs)
             check("c. offline: no page errors", not bad, bad[:3])
@@ -578,7 +578,7 @@ def part_c(tmp):
             errs = []
             ctx, p = open_page(br, none_url + Q, errs, "__argus")
             check("c. nothing published at all: 'NO DATA YET' (never ALL CLEAR), grey eyes, a plain sentence",
-                  p.inner_text("#vk") == "NO DATA YET" and p.get_attribute("#verdict", "data-level") == "idle" and "Wi-Fi" in p.inner_text("#vline")
+                  p.inner_text("#vk") == "No data yet" and p.get_attribute("#verdict", "data-level") == "idle" and "Wi-Fi" in p.inner_text("#vline")
                   and p.evaluate("window.__argus.levels.every(l => l === 'idle')") and p.is_visible("#offtag"))
             tab(p, "all")
             check("c. ... and the lights tab lists the apps as 'no card'", "no card" in p.inner_text("#p-all"))
