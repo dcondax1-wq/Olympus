@@ -47,3 +47,17 @@ export function renderDay(box, p) {
   box.dataset.state = D.state;
   return D;
 }
+
+/** AGORA (2026-11-09): the first card's hero: the drawdown left in one big number, and where the bot's day is. */
+export function renderHero(box, home, p) {
+  if (!box) return;
+  const M = moneyToday(evalOf(home)), D = tradingDay(p);
+  box.replaceChildren();
+  box.append(h('span', 'ag-cap', M.has ? 'Drawdown left today' : 'Your eval'));
+  box.append(h('b', 'ag-money', M.has ? usd(M.room) : 'No eval published'));
+  if (M.has) {
+    const bar = h('span', 'mbar'), i = h('i'); i.style.width = `${Math.round(M.frac * 100)}%`; bar.append(i);
+    box.append(bar, h('small', 'ag-cap', M.room > M.mll ? `floor locked: more than the ${usd(M.mll)} max loss is still in reach` : `of ${usd(M.mll)} max loss`));
+  }
+  box.append(h('p', 'heroline', D.line));
+}

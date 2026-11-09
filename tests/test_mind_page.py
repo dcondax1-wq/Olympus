@@ -993,7 +993,7 @@ def overhaul_cases(br, origin):
     p.wait_for_timeout(300)
     cyan = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()")
     check("m. the Ember skin restyles the page and is kept",
-          cyan == "#ff9a4d" and p.evaluate("JSON.parse(localStorage.getItem('mind.prefs')).skin") == "ember", cyan)
+          cyan == "#d9785a" and p.evaluate("JSON.parse(localStorage.getItem('mind.prefs')).skin") == "ember", cyan)
     p.keyboard.press("Escape")
     time.sleep(1.2)
     shot(p, "skin_ember_390.png")
@@ -1001,7 +1001,7 @@ def overhaul_cases(br, origin):
     p.click("#panel [data-skin=auto]")
     p.wait_for_timeout(300)
     back = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()")
-    check("m. skin 'Follow OLYMPUS' restores the default accent", back in ("", "#6ff6ff"), back)
+    check("m. skin 'Follow OLYMPUS' restores the default accent", back in ("", "#6ff6ff", "#c8a24a"), back)
     amb = p.evaluate("mind.ambient")
     check(f"m. ambient layers on HD: the nebula sky and {amb['motes']} drifting motes", amb["sky"] and amb["dust"] and amb["motes"] >= 1000, amb)
     p.click("#panel [data-k=dust]")

@@ -146,3 +146,8 @@ html[data-fx="low"] .candle.lit .flame, html[data-fx="off"] .candle.lit .flame {
 .mcard .mnews { background: #26211b; border-radius: 12px; }
 .dbar .ds.go { background: #7f8a52; } .dbar .ds.warn { background: #c8a24a; } .dbar .ds.rest { background: #2b251d; }
 .pledge { border-radius: 12px; background: #26211b; font-size: 15px; min-height: 48px; }
+
+.heroc { display: grid; gap: 4px; padding: 14px 16px; margin: 0 0 14px; border-radius: 14px; background: #26211b; border: 1px solid #3a3228; border-left: 4px solid #c8a24a; }
+.heroc .ag-money { font-size: 44px; } .heroc .mbar { display: block; height: 8px; border-radius: 99px; background: #2b251d; overflow: hidden; margin: 4px 0; }
+.heroc .mbar i { display: block; height: 100%; background: linear-gradient(90deg, #9c6b3c, #c8a24a); }
+.heroc .heroline { margin: 6px 0 0 !important; font-size: 14px !important; color: #f3ece0 !important; }

@@ -142,3 +142,5 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #43392
 .pills button { font: 600 15px var(--ag-sans, system-ui); background: rgba(29, 25, 20, .94); border-color: #3a3228; }
 .pills button[aria-pressed="true"] { background: #c8a24a; color: #1b1610; border-color: #c8a24a; }
 .play { background: linear-gradient(180deg, #c8a24a, #c8a24a); color: #1b1610; border-color: #e0b060; font-weight: 700; }
+
+.dm-bar { display: block; height: 8px; margin: 8px 0; border-radius: 99px; background: #2b251d; overflow: hidden; } .dm-bar i { display: block; height: 100%; background: linear-gradient(90deg, #9c6b3c, #c8a24a); }

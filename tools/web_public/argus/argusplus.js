@@ -45,3 +45,17 @@ export function renderMoney(box, R, hist, now) {
   box.append(h('p', 'note', `${S.seen} day${S.seen === 1 ? '' : 's'} seen. The estimate counts the share of red time that falls inside the 13.5-hour entry window.`));
   return { Rd, M, B };
 }
+
+/** AGORA (2026-11-09): the first screen's hero: the one money fact (drawdown left on both evals) and what to do about it. */
+export function renderHero(host, R) {
+  if (!host || !R || !R.hasData) return;
+  const M = moneyLines(R), have = M.filter((m) => m.has), left = have.reduce((t, m) => t + m.room, 0), mll = have.reduce((t, m) => t + m.mll, 0);
+  const lvl = R.verdict.level, box = h('div', 'heroc ' + lvl);
+  box.append(h('span', 'ag-cap', have.length ? 'Drawdown left, both evals' : 'Drawdown'), h('b', 'ag-money', have.length ? '$' + Math.round(left).toLocaleString('en-US') : 'no balance yet'));
+  if (have.length) {
+    const bar = h('span', 'mbar'), i = h('i'); i.style.width = `${Math.round(Math.max(0, Math.min(1, left / mll)) * 100)}%`; bar.append(i);
+    box.append(bar, h('small', 'ag-cap', `of $${mll.toLocaleString('en-US')} max loss across ${have.length} eval${have.length === 1 ? '' : 's'}`));
+  }
+  box.append(h('p', 'heroline', R.verdict.line));
+  host.insertBefore(box, host.firstChild);
+}

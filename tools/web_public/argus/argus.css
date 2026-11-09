@@ -152,3 +152,11 @@ h1::after { content: ""; display: block; width: 56px; height: 2px; margin-top: 6
 .mh.total { grid-column: 1 / -1; padding-top: 10px; border-top: 1px solid #3a3228; } .mh.total .ag-money { font-size: 30px; }
 .rdy b { font-family: var(--ag-serif, Georgia, serif); font-size: 22px; }
 .vk { font-size: 21px; white-space: nowrap; } .vs { font-size: 14px; }
+
+.grp { text-transform: lowercase; } .grp::first-letter { text-transform: uppercase; }
+
+.heroc { display: grid; gap: 4px; padding: 16px 18px; margin: 0 0 12px; border-radius: 16px; background: #26211b; border: 1px solid #3a3228; border-left: 4px solid #4b7a99; }
+.heroc.ok { border-left-color: #7f8a52; } .heroc.warn { border-left-color: #e0b060; } .heroc.bad { border-left-color: #c0603f; }
+.heroc .ag-money { font-size: 46px; } .heroc .mbar { display: block; height: 8px; border-radius: 99px; background: #2b251d; overflow: hidden; margin: 4px 0; }
+.heroc .mbar i { display: block; height: 100%; background: linear-gradient(90deg, #9c6b3c, #c8a24a); }
+.heroline { margin: 6px 0 0; font-size: 15px; line-height: 1.4; color: #f3ece0; }

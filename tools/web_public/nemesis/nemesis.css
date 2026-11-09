@@ -177,3 +177,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 #ui:has(+ .sheet:not([hidden])) .tile.lost b { font-size: 30px; }
 #ui:has(+ .sheet:not([hidden])) .verdict { padding: 8px 16px; }
 .sheet p { font-size: 14px; } .sheet h2 { font: 600 17px var(--ag-serif, Georgia, serif); } .sheet h3 { font: 600 15px var(--ag-serif, Georgia, serif); color: #c8a24a; }
+
+.verdict .avbar { display: block; grid-column: 1 / -1; height: 8px; margin-top: 12px; border-radius: 99px; background: #2b251d; overflow: hidden; } .verdict .avbar[hidden] { display: none; }
+.verdict .avbar i { display: block; height: 100%; background: #e0b060; }
+#ui:has(+ .sheet:not([hidden])) .avbar { display: none; }

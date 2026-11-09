@@ -125,7 +125,8 @@ function dayMoney(d) {
   const R = d.trades.reduce((x, t) => x + (t.r || 0), 0), gap = Math.max(0, d.best - d.usd), mo = d.day.slice(0, 7), md = S.days.filter((x) => x.day.slice(0, 7) === mo), mt = md.reduce((x, y) => x + y.usd, 0), won = md.filter((x) => x.usd > 0).length;
   const big = h('b', 'dm-big ' + (d.usd >= 0 ? 'pos' : 'neg'), sgn(d.usd)), r = h('span', 'dm-r', `${R >= 0 ? '+' : '-'}${Math.abs(R).toFixed(2)}R`);
   const top = h('div', 'dm-top'); top.append(big, r);
-  box.replaceChildren(top, h('p', 'dm-line', gap > 0 ? `Best possible ${sgn(d.best)}: ${usd(gap)} was left on the table.` : `Best possible ${sgn(d.best)}: the bot got all of it.`),
+  const bar = h('span', 'dm-bar'), bi = h('i'); bi.style.width = d.best > 0 ? Math.max(2, Math.min(100, Math.round((Math.max(0, d.usd) / d.best) * 100))) + '%' : '0%'; bar.append(bi);
+  box.replaceChildren(top, bar, h('p', 'dm-line', gap > 0 ? `Best possible ${sgn(d.best)}: ${usd(gap)} was left on the table.` : `Best possible ${sgn(d.best)}: the bot got all of it.`),
     h('p', 'dm-line dim', `${mo} so far: ${sgn(mt)} over ${md.length} day${md.length === 1 ? '' : 's'}, ${won} won.`));
 }
 function updateNav() {

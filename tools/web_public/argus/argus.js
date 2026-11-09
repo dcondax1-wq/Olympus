@@ -6,7 +6,7 @@ import { createRenderer } from '../olympus/render.js';
 import { metal, glass, neon, starfield } from '../olympus/materials.js';
 import * as CORE from './arguscore.js';
 import * as X from './extras.js';
-import { renderMoney } from './argusplus.js';
+import { renderMoney, renderHero } from './argusplus.js';
 import * as AT from '../olympus/fx-atmos.js';        // JOB 4+5 follow-up: scanner shafts, drifting data dust and rising sparks around the sphere
 import * as SC from '../olympus/scenery.js';
 import { APPS, analyze, cardOf, histUpdate, histSummary, demoData } from './arguscore.js';
@@ -117,6 +117,7 @@ function paint() {
   $('offtag').hidden = !S.offline;
   $('sub').textContent = !R.hasData ? 'No dashboard data yet.' : S.offline ? `Offline. Showing what I saw at ${hm(S.asOf)}.` : `${R.eyes.length} lights, ${N_EYES} eyes, checked ${hm(nowS())}.`;
   $('p-fix').innerHTML = R.fix.length ? R.fix.map(row).join('') : `<p class="empty">${R.hasData ? 'Nothing to fix. Every light that matters is green.' : 'Waiting for data.'}</p>${R.hasData ? '' : '<a class="demobtn" role="button" href="?demo=1">See it with demo data</a>'}`;
+  try { renderHero($('p-fix'), R); } catch (e) { S.errors.push('hero: ' + ((e && e.message) || e)); }
   const groups = {}; for (const e of R.eyes) (groups[e.group] = groups[e.group] || []).push(e);
   $('p-all').innerHTML = Object.keys(GROUPS).filter((g) => groups[g]).map((g) => `<p class="grp">${GROUPS[g]}</p>${groups[g].map(lrow).join('')}`).join('');
   paintHist();

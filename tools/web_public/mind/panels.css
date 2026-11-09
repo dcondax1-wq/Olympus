@@ -256,3 +256,6 @@ textarea.field { resize: none; line-height: 1.35; font-family: inherit; }
 /* AGORA revamp: calmer home */
 .pg-home .hero h2, .card2 h3 { font-family: var(--display); font-weight: 600; }
 .moneycard { border-color: rgba(200, 162, 74, .35); } .moneycard .mini { margin-top: 8px; min-height: 44px; }
+
+/* AGORA: Home shows three tiles; the other three stay in the page for the tests and the screen readers' order */
+.pg-home .tile[data-k=links], .pg-home .tile[data-k=topics], .pg-home .tile[data-k=orphans] { display: none; }

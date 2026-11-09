@@ -178,12 +178,12 @@ function barsChart(rows) {
   svg.append(sv('line', { x1: padL, x2: W - padL, y1: sc(0), y2: sc(0), stroke: 'rgba(255,255,255,.25)', 'stroke-width': 1 }));
   rows.forEach((r, i) => {
     const x = padL + i * bw + bw * 0.18, w = bw * 0.64;
-    if (up[i] > 0) svg.append(sv('rect', { x, y: sc(up[i]), width: w / 2 - 1, height: Math.max(1, sc(0) - sc(up[i])), rx: 2, fill: '#e0b060' }, null));
+    if (up[i] > 0) svg.append(sv('rect', { x, y: sc(up[i]), width: w / 2 - 1, height: Math.max(1, sc(0) - sc(up[i])), rx: 2, fill: '#7f8a52' }, null));
     if (dn[i] > 0) svg.append(sv('rect', { x: x + w / 2, y: sc(0), width: w / 2 - 1, height: Math.max(1, sc(-dn[i]) - sc(0)), rx: 2, fill: '#c0603f' }));
     svg.append(sv('text', { x: padL + i * bw + bw / 2, y: H - 6, 'text-anchor': 'middle' }, C.monthName(r.ym)));
   });
-  svg.append(sv('polyline', { points: rows.map((r, i) => `${padL + i * bw + bw / 2},${sc(r.cum)}`).join(' '), fill: 'none', stroke: '#e0b060', 'stroke-width': 2, 'stroke-linejoin': 'round' }));
-  rows.forEach((r, i) => svg.append(sv('circle', { cx: padL + i * bw + bw / 2, cy: sc(r.cum), r: 2.6, fill: '#e0b060' })));
+  svg.append(sv('polyline', { points: rows.map((r, i) => `${padL + i * bw + bw / 2},${sc(r.cum)}`).join(' '), fill: 'none', stroke: '#c8a24a', 'stroke-width': 2, 'stroke-linejoin': 'round' }));
+  rows.forEach((r, i) => svg.append(sv('circle', { cx: padL + i * bw + bw / 2, cy: sc(r.cum), r: 2.6, fill: '#c8a24a' })));
   return svg;
 }
 function heatChart(map, today) {
@@ -221,7 +221,7 @@ function calGrid(month, m) {
 }
 function cashView() {
   const m = S.model, t = m.totals, out = [];
-  const leg = h('div', 'legend'); [['#e0b060', 'money in'], ['#c0603f', 'money out'], ['#e0b060', 'running total']].forEach(([c, l]) => { const s = h('span'); const i = h('i'); i.style.background = c; s.append(i, document.createTextNode(l)); leg.append(s); });
+  const leg = h('div', 'legend'); [['#7f8a52', 'money in'], ['#c0603f', 'money out'], ['#c8a24a', 'running total']].forEach(([c, l]) => { const s = h('span'); const i = h('i'); i.style.background = c; s.append(i, document.createTextNode(l)); leg.append(s); });
   out.push(card('Monthly waterfall', barsChart(m.months), leg, h('p', '', 'Each month: what came in, what went out, and the running total of your net profit. Kalshi counts by the bot\'s own daily results.')));
   const map = C.daily(m.list, m.feed, C.addDays(m.today, -98), m.today);
   out.push(card('Cash flow by day', heatChart(map, m.today), h('p', '', 'Green = more came in than went out that day, red = the opposite. Empty = nothing happened. Last 14 weeks.')));

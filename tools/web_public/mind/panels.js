@@ -111,8 +111,9 @@ function homeView(h) {
           demo ? el('span', { class: 'pill demo-pill', text: ctx.preview ? 'DEMO PREVIEW' : 'DEMO' }) : null]),
         ring(lv.progress, 'Lv ' + lv.level, lv.name)]);
       const tiles = el('div', { class: 'tiles' }, [
-        tile('notes', 'Notes', big(s.notes), `${s.links} links`), tile('streak', 'Streak', `${s.streak.current}d`, `best ${s.streak.best}d`, 'var(--gold)'),
-        tile('today', 'Learned today', String(s.today), `${s.learned} in all`)]);
+        tile('notes', 'Notes', big(s.notes), `${s.tags} tags`), tile('links', 'Links', big(s.links), `${s.avgLinks} per note`),
+        tile('topics', 'Galaxies', String(s.galaxies.length), 'topics'), tile('streak', 'Streak', `${s.streak.current}d`, `best ${s.streak.best}d`, 'var(--gold)'),
+        tile('today', 'Learned today', String(s.today), `${s.learned} in all`), tile('orphans', 'Orphans', String(s.orphans), 'no links yet')]);
       // AGORA (2026-11-09): money first. The trading galaxy in one line, and the lessons that name dollars.
       const tg = s.galaxies.find((c) => c.key === 'trading'), lessons = learnedFeed(g).filter((x) => /\$\s?\d/.test(x.text)).slice(0, 3);
       const money = el('div', { class: 'card2 moneycard' }, [

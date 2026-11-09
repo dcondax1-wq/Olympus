@@ -52,6 +52,8 @@ function renderSummary() {
   { let av = $('avoid');                                          // AGORA: how much of the loss was avoidable, in dollars
     if (!av) { av = document.createElement('p'); av.id = 'avoid'; av.className = 'avoid'; $('live').before(av); }
     av.hidden = !(rk.lost > 0);
+    { let bar = $('avbar'); if (!bar) { bar = document.createElement('span'); bar.id = 'avbar'; bar.className = 'avbar'; bar.append(document.createElement('i')); av.before(bar); }
+      bar.hidden = !(rk.lost > 0); bar.firstChild.style.width = rk.lost > 0 ? Math.max(2, Math.round((lc / rk.lost) * 100)) + '%' : '0%'; }
     if (rk.lost > 0) av.textContent = lc > 0 ? `${Math.round((lc / rk.lost) * 100)}% of the money lost was avoidable: ${usd(lc)} of ${usd(rk.lost)}. The rest was the plan working as designed, a normal loss.` : `None of the ${usd(rk.lost)} lost was a leak: every loss was the plan working as designed.`; }
   const live = $('live'), ev = S.home && S.home.eval;
   if (ev && ev.balance != null && ev.floor != null) {

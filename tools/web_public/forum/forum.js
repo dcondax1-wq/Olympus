@@ -2,7 +2,7 @@
 // (forumcore.js), draws the forum (scene.js) and walks you through it. Text only through textContent. window.FORUM is the test hook.
 import { etParts, parseClock, clockText, minsText, nextEvent, phase, brief, oath, streak, evalOf, desk } from './forumcore.js';
 import { readPlanner, renderDesk, renderShrine, ritual } from './forumdesk.js';
-import { renderMoney, renderDay } from './forumplus.js';
+import { renderMoney, renderDay, renderHero } from './forumplus.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -162,7 +162,7 @@ async function main() {
   S.p = now();
   S.items = brief(S.pan, S.home, S.p);
   S.desk = desk(S.home, readPlanner(), S.p); renderDesk($('desk'), S.desk);
-  try { renderMoney($('money'), S.home, S.pan); renderDay($('day'), S.p); } catch (e) { S.error = 'plus: ' + ((e && e.message) || e); }
+  try { renderHero($('hero'), S.home, S.p); renderMoney($('money'), S.home, S.pan); renderDay($('day'), S.p); } catch (e) { S.error = 'plus: ' + ((e && e.message) || e); }
   $('demo').hidden = !S.demo;
   if (S.scene) S.scene.setScrolls(S.items);
   const c = S.items[0];
