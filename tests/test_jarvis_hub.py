@@ -224,7 +224,7 @@ def part_a():
     m = json.load(open(os.path.join(JV, "manifest.webmanifest"), encoding="utf-8"))
     check("a. manifest: Jarvis, standalone, own scope, black like the old Jarvis, icons j2",
           m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "./"
-          and m["theme_color"] == "#000000" and all(i["src"].endswith("?v=j4") for i in m["icons"]), m)
+          and m["theme_color"] == "#14110e" and all(i["src"].endswith("?v=j4") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes jarvis/ and kalshi/ with every build (every top-level file: fonts and parts too)",
           'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal"):' in b and 'os.path.join(out, app, name)' in b)
@@ -292,15 +292,14 @@ def part_a():
           and "(?<=" not in src and "(?<!" not in src and "@property" not in css_nc and "&:" not in css_nc and "& " not in css_nc.replace("&amp;", "")
           and css_nc.count("-webkit-backdrop-filter") >= css_nc.count(" backdrop-filter") - css_nc.count("-webkit-backdrop-filter"), "")
     check("a. reduced motion respected, animations pause while hidden, dark before the stylesheet loads",
-          "prefers-reduced-motion" in css and ".paused" in css and "visibilitychange" in page and "html,body{background:#000" in page.replace(" ", ""))
-    check("a. the old Jarvis look: Reactor by default (a saved 'jtheme' wins), the Eclipse tokens (#000, #a855f7 / #7c3aed / #c084fc, #ece9f2 / #8a8499), the Reactor family and more",
-          "g('jtheme') || 'reactor'" in page and all(x in css for x in ("--bg: #000", "--c: #a855f7", "--c2: #7c3aed", "--c3: #c084fc", "--txt: #ece9f2", "--mut: #8a8499", "--c3: #22d3ee",
-                                 'data-theme="reactor"', 'data-theme="reactor-stark"', 'data-theme="reactor-ice"', 'data-theme="reactor-emerald"',
+          "prefers-reduced-motion" in css and ".paused" in css and "visibilitychange" in page and "html,body{background:#14110e" in page.replace(" ", ""))
+    check("a. the AGORA look: Agora by default (a saved 'jtheme' wins), its tokens (#14110e, gold #c8a24a / bronze #9c6b3c / #e0b060, ivory #f3ece0 / #9a8f7d), the old Reactor family kept as choices",
+          "g('jtheme') || 'agora'" in page and all(x in css for x in ("--bg: #14110e", "--c: #c8a24a", "--c2: #9c6b3c", "--c3: #e0b060", "--txt: #f3ece0", "--mut: #9a8f7d",
+                                 'data-theme="agora"', 'data-theme="reactor"', 'data-theme="reactor-stark"', 'data-theme="reactor-ice"', 'data-theme="reactor-emerald"',
                                  'data-theme="obsidian"', 'data-theme="tokyo"')) and "g('jtheme')" in page and "rawSet('jtheme', k)" in page)
-    check("a. Orbitron and Rajdhani self-hosted (woff2, font-display: swap, OFL.txt), scanlines, the 48px grid, clipped-corner panels with the tick",
-          all(f'url("{f}")' in css for f in FONTS) and css.count("font-display: swap") == 5 and "SIL Open Font License" in open(os.path.join(JV, "OFL.txt"), encoding="utf-8").read()
-          and "repeating-linear-gradient(0deg" in css and "background-size: 48px 48px" in css
-          and "clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))" in css)
+    check("a. no Orbitron / Rajdhani is loaded (the woff2 files stay on disk), a serif heading font, no clipped corners; the old fonts keep their licence file",
+          all(os.path.isfile(os.path.join(JV, f)) for f in FONTS) and "@font-face" not in css and "Iowan Old Style" in css and "clip-path: polygon(" not in css
+          and "SIL Open Font License" in open(os.path.join(JV, "OFL.txt"), encoding="utf-8").read())
     keys = re.findall(r"\['(\w+)', ", page[page.index("function moreKeys()"):page.index("function renderMore()")])
     check("a. PC-only features left out quietly: the ⋯ keys have no wake word, double clap, look-at-my-screen or Kill",
           len(keys) == 13 and "obsidian" in keys and not set(keys) & {"wake", "clap", "screen", "kill"}, keys)
@@ -849,7 +848,7 @@ def run_c(br, url):
     p.wait_for_timeout(300)
     lum, white = dominant(p.screenshot())
     check("j. offline: Jarvis opens from its saved copy (page, data.js, styles, fonts), dark, cards from the last numbers",
-          off_ok is True and lum < 70 and "$1,106" in p.text_content("#cards") and p.evaluate("document.fonts.check('700 16px Orbitron')"), (off_ok, lum))
+          off_ok is True and lum < 70 and "$1,106" in p.text_content("#cards"), (off_ok, lum))
     ctx.set_offline(False)
     check("j. no page errors as is", not errs, errs)
     ctx.close()
@@ -951,12 +950,12 @@ def run_look(br, url):
                  says: document.getElementById('says').textContent, ticks: document.querySelectorAll('#ticks .tk.on').length,
                  bars: document.querySelectorAll('#vbars i').length, fx: document.documentElement.dataset.fx };
     })()""")
-    check("l. Reactor by default (the violet reactor of the app icon: violet #a95cff, cyan #22d3ee); Orbitron and Rajdhani loaded (self-hosted); the title in Orbitron",
-          look["c"] == "#a95cff" and look["theme"] == "reactor" and look["orb"] and look["raj"] and look["tfont"].lstrip('"').startswith("Orbitron")
-          and look["title"] == "J.A.R.V.I.S.", look)
+    check("l. Agora by default (gold #c8a24a); the title OLYMPUS in the serif",
+          look["c"] == "#c8a24a" and look["theme"] == "agora" and look["tfont"].lstrip('"').startswith("Iowan")
+          and look["title"] == "OLYMPUS", look)
     check("l. the core's HUD ring: the clock and STANDBY along the bottom, the market / bots / Kalshi along the top, Zlarior's room as ticks; 32 voice bars",
-          re.match(r"\d\d:\d\d:\d\d · STANDBY$", look["hudBot"]) and "NQ" in look["hudTop"] and "KALSHI" in look["hudTop"] and look["ticks"] == 20
-          and look["state"] == "STANDBY" and look["bars"] == 32 and "Tap the core or type below to speak with me." in look["says"] and look["fx"] == "high", look)
+          re.match(r"\d\d:\d\d:\d\d · Standby$", look["hudBot"]) and "NQ" in look["hudTop"] and "KALSHI" in look["hudTop"] and look["ticks"] == 20
+          and look["state"] == "Standby" and look["bars"] == 32 and "Tap the core or type below to speak with me." in look["says"] and look["fx"] == "high", look)
     if p.evaluate("document.documentElement.dataset.brain") == "module":
         check("l. brain.js: the old Jarvis's line under the core until the first question ('Good day. Tap the core ...')", look["says"].startswith("Good day. Tap the core"), look["says"])
     if p.evaluate("document.documentElement.dataset.core") == "module":
@@ -1484,7 +1483,7 @@ def part_intro_files():
           all(x in page for x in ("im = again ? 'short' : (", "'lite' : 'full'", "im = 'calm'", "im = 'off'", "n > 0 || g('jarvis.intro.run')) im = 'fade'",
                                   "sessionStorage.getItem('jarvis.booted')", "20 * 60 * 1000", "(!navigator.webdriver || fo)", "g('jarvis.intro') !== 'off'")))
     check("o. the film: 10 s full / 5 s lite, six phases (heart, storm, rise, eclipse, word, portal), the sound cues, the logo texture, skip in 60 ms",
-          all(x in js for x in ("full: 10, lite: 5", "full: 1, lite: 2", "'heart'", "'storm'", "'rise'", "'eclipse'", "'word'", "'portal'", "[8.68, 'portal']", "[2.35, 'thunder']",
+          all(x in js for x in ("full: 10, lite: 5", "full: 1, lite: 2", "'heart'", "'storm'", "'rise'", "'eclipse'", "'word'", "'portal'", "[8.68, 'portal']", "[2.35, 'pad']",
                                 "[5.5, 'pad']", "[7.1, 'rankup']", "[0.28, 'tick']", "intro-logo.webp", "fadeOut(60, 'skipped')", "premultipliedAlpha: true")))
     sfxw = open(os.path.join(JV, "switcher.js"), encoding="utf-8").read()
     check("o. the OLYMPUS sound layer in Jarvis: sfx.js loaded async and in SHELL, ticks on taps (dock / cards / orb), the portal sound on an app open, a tap in the switcher, "

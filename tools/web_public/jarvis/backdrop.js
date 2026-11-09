@@ -1,8 +1,7 @@
 // Jarvis home backdrop (jarvis/backdrop.js, 2026-11-03; docs/OLYMPUS_RENDER.md): the 3D space behind the home screen, on the
-// OLYMPUS render core. A deep nebula and a twinkling starfield, the temple of OLYMPUS on the horizon (marble columns, gold
-// capitals, fading into the fog), a glossy obsidian floor that reflects the sky with a neon
-// grid fading into fog, a light shaft where the core floats, two slow halo rings in the sky and drifting glass shards that
-// catch the light. It replaces the flat 2D layers of .bgfx (stars canvas, SVG globe, CSS floor) once its first frame is drawn;
+// OLYMPUS render core. AGORA mood since 2026-11-09 (docs/DESIGN_AGORA.md): a dawn / dusk sky (indigo to amber), warm clouds and gold
+// dust, the temple of OLYMPUS on the horizon (marble columns, gold capitals, fading into a warm haze), a dark polished floor that reflects
+// the sky, a warm light shaft where the core floats and one faint gold halo in the sky. No neon grid, no glass shards, bloom <= 0.25. It replaces the flat 2D layers of .bgfx (stars canvas, SVG globe, CSS floor) once its first frame is drawn;
 // without WebGL or the render core, those stay exactly as they were.
 //   self-mounting: <script type="module" src="./backdrop.js"></script>; window.__jarvisBackdrop = its state (tests)
 // 2026-11-04: once its scene is built it hands the scene (the `ext` object below: three, the materials, the composer, the camera, the
@@ -27,7 +26,7 @@ function cssVar(name, fallback) {
   const v = getComputedStyle(root).getPropertyValue(name).trim();
   return /^#[0-9a-f]{3,8}$/i.test(v) ? v : fallback;
 }
-const colours = () => ({ c: cssVar('--c', '#a855f7'), c2: cssVar('--c2', '#7c3aed'), c3: cssVar('--c3', '#c084fc') });
+const colours = () => ({ c: cssVar('--c', '#c8a24a'), c2: cssVar('--c2', '#9c6b3c'), c3: cssVar('--c3', '#e0b060') });
 const level = () => (['ultra', 'high', 'low', 'off'].indexOf(root.dataset.fx) >= 0 ? root.dataset.fx : 'high');
 // the home screen is up and the backdrop layer is shown (the shell hides .bgfx outside Jarvis mode)
 const onHome = () => { const h = document.getElementById('home'), b = document.querySelector('.bgfx'); return !!h && !h.hidden && !!b && b.getClientRects().length > 0; };
@@ -44,17 +43,17 @@ async function mount() {
 
   const scene = new T.Scene(), camera = new T.PerspectiveCamera(58, 1, 0.1, 400);
   camera.position.set(0, 1.5, 10); camera.lookAt(0, 1.6, 0);
-  const fog = new T.FogExp2(0x0b0a24, 0.03); scene.fog = fog;      // a deep violet haze: far things fade into colour, not black
+  const fog = new T.FogExp2(0x2a2118, 0.03); scene.fog = fog;      // a warm umber haze: far things fade into colour, not black
   const K = colours();
-  const rc = RC.createRenderer({ canvas: probe, scene, camera, quality: level(), env: 'night', tint: K.c, maxDpr: 1.25, msaa: false, adapt: false, exposure: 0.8,
-    theme: null, bloom: { strength: 0.75, radius: 0.7, threshold: 0.82 }, grade: { vignette: 0.42, grain: 0.035, aberration: 0.003 } });
+  const rc = RC.createRenderer({ canvas: probe, scene, camera, quality: level(), env: 'night', tint: K.c, maxDpr: 1.25, msaa: false, adapt: false, exposure: 0.85,
+    theme: null, bloom: { strength: 0.22, radius: 0.6, threshold: 0.9 }, grade: { vignette: 0.35, grain: 0.015, aberration: 0 } });
 
   // sky: nebula + stars (both added light, no fog)
-  const nebula = M.nebula({ colors: [K.c, K.c2, K.c3, '#2b1a6b'], count: 10, radius: 70, size: 85, opacity: 0.17 }); nebula.position.y = 12; scene.add(nebula);
-  const stars = M.starfield({ count: level() === 'ultra' ? 2400 : level() === 'high' ? 1600 : 700, radius: 160, size: 2.4 }); scene.add(stars);
+  const nebula = M.nebula({ colors: [K.c, K.c2, K.c3, '#4b3a52'], count: 10, radius: 70, size: 85, opacity: 0.10 }); nebula.position.y = 12; scene.add(nebula);
+  const stars = M.starfield({ count: level() === 'ultra' ? 900 : level() === 'high' ? 600 : 300, radius: 160, size: 2.0, color: '#f0dcae' }); scene.add(stars);
 
   // the floor: polished obsidian (env reflections), a neon grid fading into the fog, a pool of light under the core
-  const floor = new T.Mesh(new T.PlaneGeometry(400, 400), M.metal({ kind: 'gunmetal', color: '#0c0b13', roughness: 0.3, clearcoat: 1, envMapIntensity: 0.5 }));
+  const floor = new T.Mesh(new T.PlaneGeometry(400, 400), M.metal({ kind: 'gunmetal', color: '#1a1511', roughness: 0.34, clearcoat: 1, envMapIntensity: 0.45 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -2.6; scene.add(floor);
   const gridU = { uC: { value: new T.Color(K.c).multiplyScalar(1.6) }, uT: { value: 0 } };
   const grid = new T.Mesh(new T.PlaneGeometry(400, 400), new T.ShaderMaterial({ uniforms: gridU, transparent: true, depthWrite: false,
@@ -64,7 +63,7 @@ async function mount() {
       void main(){ vec2 p = vW.xz / 2.4 + vec2(0.0, uT * 0.35); vec2 g = abs(fract(p - 0.5) - 0.5) / fwidth(p);
         float l = 1.0 - min(min(g.x, g.y), 1.0); float d = length(vW.xz);
         gl_FragColor = vec4(uC * l * 0.55 * exp(-d * 0.045) * smoothstep(1.5, 5.0, d), 1.0); }` }));
-  grid.rotation.x = -Math.PI / 2; grid.position.y = -2.59; scene.add(grid);
+  grid.rotation.x = -Math.PI / 2; grid.position.y = -2.59; grid.visible = false; scene.add(grid);       // AGORA: no neon grid (kept as an object for home3d.js)
   const pool = new T.Mesh(new T.CircleGeometry(16, 64), new T.ShaderMaterial({ uniforms: { uC: { value: new T.Color(K.c3).multiplyScalar(1.2) } },
     transparent: true, depthWrite: false, blending: T.AdditiveBlending,
     vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
@@ -73,16 +72,17 @@ async function mount() {
 
   // the light shaft from above, two halo rings in the sky, a horizon ring
   const shaft = M.energyBeam({ color: K.c3, length: 40, radius: 5, taper: 0.3, intensity: 0.12, speed: 0.25 }); shaft.position.set(0, -2.6, -30); scene.add(shaft);
-  const ringA = new T.Mesh(new T.TorusGeometry(9, 0.035, 8, 220), M.neon({ color: K.c, intensity: 3.5, fog: true }));
+  const haloMat = (c, o) => new T.MeshBasicMaterial({ color: c, transparent: true, opacity: o, fog: true, depthWrite: false });
+  const ringA = new T.Mesh(new T.TorusGeometry(9, 0.03, 8, 220), haloMat(K.c, 0.3));
   ringA.position.set(0, 7.5, -14); ringA.rotation.set(1.25, 0, 0.12); scene.add(ringA);
-  const ringB = new T.Mesh(new T.TorusGeometry(12.5, 0.02, 8, 260), M.neon({ color: K.c3, intensity: 2.2, fog: true }));
+  const ringB = new T.Mesh(new T.TorusGeometry(12.5, 0.02, 8, 260), haloMat(K.c3, 0.2)); ringB.visible = false;
   ringB.position.set(0, 7.5, -14); ringB.rotation.set(1.4, 0.2, -0.3); scene.add(ringB);
-  const horizon = new T.Mesh(new T.TorusGeometry(40, 0.08, 8, 320), M.neon({ color: K.c2, intensity: 2.5, fog: true }));
+  const horizon = new T.Mesh(new T.TorusGeometry(40, 0.08, 8, 320), haloMat(K.c2, 0.18)); horizon.visible = false;
   horizon.rotation.x = Math.PI / 2; horizon.position.y = -2.55; scene.add(horizon);
 
   // the temple of OLYMPUS on the horizon: an arc of polished marble columns with gold capitals, fading into the fog
   const N = 14, colGeo = new T.CylinderGeometry(0.55, 0.62, 10, 20, 1), capGeo = new T.BoxGeometry(1.5, 0.35, 1.5);
-  const columns = new T.InstancedMesh(colGeo, M.marble({ color: '#e8e4ee', vein: '#5b5470', gold: true, scale: 0.6 }), N);
+  const columns = new T.InstancedMesh(colGeo, M.marble({ color: '#efe6d4', vein: '#8a7a60', gold: true, scale: 0.6 }), N);
   const capitals = new T.InstancedMesh(capGeo, M.metal({ kind: 'gold', roughness: 0.25 }), N * 2);
   const at = new T.Object3D();
   for (let i = 0; i < N; i++) {
@@ -92,12 +92,12 @@ async function mount() {
     at.position.set(x, -2.4, z); at.updateMatrix(); capitals.setMatrixAt(i * 2 + 1, at.matrix);
   }
   scene.add(columns, capitals);
-  const moon = new T.DirectionalLight(0xe4dcff, 2.2); moon.position.set(4, 12, 10); scene.add(moon);   // the temple's key light
+  const moon = new T.DirectionalLight(0xffd9a0, 2.0); moon.position.set(4, 12, 10); scene.add(moon);   // the temple's key light: warm sun, about 3000 K
 
   // drifting glass shards (env reflections + iridescence: the light catches them as they turn)
-  const shardMat = M.glass({ color: '#e9ddff', rim: K.c3, opacity: 0.22 }), chromeMat = M.metal({ kind: 'chrome' });
+  const shardMat = M.glass({ color: '#f0e4c8', rim: K.c3, opacity: 0.22 }), chromeMat = M.metal({ kind: 'chrome' });
   const shards = [];
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 0; i++) {       // AGORA: no drifting glass shards
     const m = new T.Mesh(new T.OctahedronGeometry(0.22 + (i % 3) * 0.12, 0), i % 3 ? shardMat : chromeMat);
     const a = i / 9 * Math.PI * 2;
     m.position.set(Math.cos(a) * (6 + (i % 4) * 1.5), 0.2 + (i % 5) * 1.2, -7 - Math.sin(a) * 4);
@@ -118,12 +118,11 @@ async function mount() {
     gridU.uC.value.set(k.c).multiplyScalar(1.6);
     pool.material.uniforms.uC.value.set(k.c3).multiplyScalar(1.2);
     shaft.material.uniforms.uColor.value.set(k.c3);
-    ringA.material.color.set(k.c).multiplyScalar(3.5); ringB.material.color.set(k.c3).multiplyScalar(2.2);
-    horizon.material.color.set(k.c2).multiplyScalar(2.5);
+    ringA.material.color.set(k.c); ringB.material.color.set(k.c3); horizon.material.color.set(k.c2);
     lamp.color.set(k.c3);
-    nebula.children.forEach((s, i) => s.material.color.set([k.c, k.c2, k.c3, '#2b1a6b'][i % 4]));
+    nebula.children.forEach((s, i) => s.material.color.set([k.c, k.c2, k.c3, '#4b3a52'][i % 4]));
     if (shardMat.userData.rim) shardMat.userData.rim.uRim.value.set(k.c3).multiplyScalar(1.2);
-    rc.setTheme({ sky: '#0d0620', fog: '#04050c', emissive: k.c, bloom: k.c3, accent: k.c });
+    rc.setTheme({ sky: '#3a2a1c', fog: '#2a2118', emissive: k.c, bloom: k.c3, accent: k.c });
     for (const f of ext.onTheme) { try { f(); } catch (_) { /* an extra never stops the backdrop */ } }
   }
   theme();

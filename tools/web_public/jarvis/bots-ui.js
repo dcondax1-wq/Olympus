@@ -19,34 +19,34 @@ function style() {
   styled = true;
   const s = document.createElement('style');
   s.textContent = `
-.jx-bots{margin:8px auto 0;max-width:560px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);text-align:left;box-sizing:border-box;width:100%}
+.jx-bots{margin:8px auto 0;max-width:560px;padding:10px 12px;border-radius:14px;background:rgba(239,238,235,.05);border:1px solid rgba(239,238,235,.12);text-align:left;box-sizing:border-box;width:100%}
 .jx-bots[hidden]{display:none}
-.jx-bots[data-state=bad]{border-color:rgba(248,113,113,.55)}.jx-bots[data-state=warn]{border-color:rgba(251,191,36,.5)}
-.jx-bots .h{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.9;flex-wrap:wrap}
+.jx-bots[data-state=bad]{border-color:rgba(207,132,110,.55)}.jx-bots[data-state=warn]{border-color:rgba(213,174,74,.5)}
+.jx-bots .h{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:13px;letter-spacing: .02em;text-transform: none;opacity:.9;flex-wrap:wrap}
 .jx-bots .h span{flex:1;min-width:60px}
-.jx-bots .h button,.jx-bots .card button.x{font:inherit;font-size:12px;min-height:30px;padding:3px 10px;border-radius:999px;color:inherit;letter-spacing:.02em;text-transform:none;
+.jx-bots .h button,.jx-bots .card button.x{font:inherit;font-size:13px;min-height:30px;padding:3px 10px;border-radius:999px;color:inherit;letter-spacing:.02em;text-transform:none;
   background:rgba(var(--cr,125,211,252),.14);border:1px solid rgba(var(--cr,125,211,252),.45);cursor:pointer}
 .jx-bots .h button[aria-pressed=false]{opacity:.6}
 .jx-bots ul.lights{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
 .jx-bots ul.lights li{display:flex;align-items:center;gap:7px;min-width:0;font-size:13px;line-height:1.25}
 .jx-bots ul.lights b{font-weight:600;flex:0 0 auto}
 .jx-bots ul.lights em{font-style:normal;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.jx-bots .dot{flex:0 0 auto;width:11px;height:11px;border-radius:50%;background:#6b7280;box-shadow:0 0 0 2px rgba(255,255,255,.08)}
-.jx-bots li[data-level=ok] .dot{background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.65)}
-.jx-bots li[data-level=warn] .dot{background:#fbbf24;box-shadow:0 0 8px rgba(251,191,36,.65)}
-.jx-bots li[data-level=bad] .dot{background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.7)}
+.jx-bots .dot{flex:0 0 auto;width:11px;height:11px;border-radius:50%;background:#847867;box-shadow: 0 4px 14px rgba(0,0,0,.32)}
+.jx-bots li[data-level=ok] .dot{background:#a2ad5a;box-shadow: 0 4px 14px rgba(0,0,0,.32)}
+.jx-bots li[data-level=warn] .dot{background:#d5ae4a;box-shadow: 0 4px 14px rgba(0,0,0,.32)}
+.jx-bots li[data-level=bad] .dot{background:#cf846e;box-shadow: 0 4px 14px rgba(0,0,0,.32)}
 .jx-bots li[data-active=true] .dot{animation:jxbp 1.4s ease-in-out infinite}
 @keyframes jxbp{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
 @media (prefers-reduced-motion:reduce){.jx-bots li[data-active=true] .dot{animation:none}}
 .jx-bots .win,.jx-bots .pnl{margin:8px 0 0;font-size:14px;line-height:1.35}
 .jx-bots .pnl{font-weight:600}
-.jx-bots .card{margin:8px 0 0;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.06);font-size:13px;line-height:1.4}
+.jx-bots .card{margin:8px 0 0;padding:8px 10px;border-radius:12px;background:rgba(239,238,235,.06);font-size:13px;line-height:1.4}
 .jx-bots .card[hidden]{display:none}
-.jx-bots .card .ct{display:flex;align-items:center;gap:8px;margin:0 0 4px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.jx-bots .card .ct{display:flex;align-items:center;gap:8px;margin:0 0 4px;font-size:13px;letter-spacing: .02em;text-transform: none;opacity:.8}
 .jx-bots .card .ct span{flex:1}
 .jx-bots .card p{margin:3px 0}
-.jx-bots ol.ev{list-style:none;margin:8px 0 0;padding:0;font-size:12px;opacity:.85}
-.jx-bots ol.ev li{padding:3px 0;border-top:1px solid rgba(255,255,255,.07)}
+.jx-bots ol.ev{list-style:none;margin:8px 0 0;padding:0;font-size:13px;opacity:.85}
+.jx-bots ol.ev li{padding:3px 0;border-top:1px solid rgba(239,238,235,.07)}
 .jx-bots ol.ev li:first-child{border-top:0}
 .jx-bots ol.ev i{font-style:normal;opacity:.6;margin-right:6px}`;
   document.head.appendChild(s);

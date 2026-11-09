@@ -36,8 +36,9 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 KIT = os.path.join(WEB, "olympus")
 BASE = os.path.join(ROOT, "tests", "fixtures", "olympus_default_vars.json")
 RES: list = []
-IDS = ["olympus", "zeus", "poseidon", "hades", "athena", "apollo", "artemis"]
-NAMES = {"olympus": "Olympus", "zeus": "Zeus Storm", "poseidon": "Poseidon", "hades": "Hades", "athena": "Athena", "apollo": "Apollo"}
+IDS = ["agora", "olympus", "zeus", "poseidon", "hades", "athena", "apollo", "artemis"]
+DEFAULT_ID = "agora"                 # AGORA is the default since 2026-11-09 (docs/DESIGN_AGORA.md); "olympus" is the old violet look, selectable
+NAMES = {"agora": "Agora", "olympus": "Olympus Night", "zeus": "Zeus Storm", "poseidon": "Poseidon", "hades": "Hades", "athena": "Athena", "apollo": "Apollo"}
 APPS = {"datacity": "", "mind": "", "tree": "", "oracle": "?demo=1", "odeon": "?demo=1&autoplay=1", "fates": "",
         "hermes": "#week,demo", "prometheus": "?demo=1", "tyche": "?demo=1"}
 OWN_META = ("hermes", "datacity")                   # set their status-bar colour themselves (Hermes per story, Data City from its market-clock sky)
@@ -114,17 +115,17 @@ def test_static(data):
     js, css = read(KIT, "themes.js"), read(KIT, "olympus.css")
     bad = [p for p in (r"color-mix\(", r":has\(", r"\(\?<[=!]", r"\.at\(", r"\?\.", r"\?\?", r"=>", r"\blet\b", r"\bconst\b", r"`") if re.search(p, js)]
     check("a. themes.js is ES5 and Safari 16 safe (no arrows, let / const, template strings, ?. / ??, color-mix, :has)", not bad, bad)
-    check("a. one key on the shared origin: 'olympus.theme' (the default 'olympus'); the storage event repaints",
-          "KEY = 'olympus.theme', DEFAULT = 'olympus'" in js and "addEventListener('storage'" in js)
+    check("a. one key on the shared origin: 'olympus.theme' (the default 'agora'); the storage event repaints",
+          "KEY = 'olympus.theme', DEFAULT = 'agora'" in js and "addEventListener('storage'" in js)
     if data:
         ids = [t["id"] for t in data["list"]]
-        check("a. seven themes in picker order: Olympus (default), Zeus Storm, Poseidon, Hades, Athena, Apollo, + Artemis",
+        check("a. eight themes in picker order: Agora (default), Olympus Night, Zeus Storm, Poseidon, Hades, Athena, Apollo, + Artemis",
               ids == IDS and all(t["name"] == NAMES[t["id"]] for t in data["list"] if t["id"] in NAMES), ids)
         miss = {t["id"]: [k for k in data["TOKENS"] if k not in t["tokens"]] for t in data["list"]}
         miss = {k: v for k, v in miss.items() if v}
         check(f"a. every theme has every token ({len(data['TOKENS'])}: page, panels, lines, text, accents, glow, status, 3D fog / sky / emissive / bloom, theme-color, mix, harmony)",
               not miss, miss)
-        jmiss = {t["id"]: [k for k in data["JARVIS"] if k not in (t["jarvis"] or {})] for t in data["list"] if t["id"] != "olympus"}
+        jmiss = {t["id"]: [k for k in data["JARVIS"] if k not in (t["jarvis"] or {})] for t in data["list"] if t["id"] != DEFAULT_ID}
         jmiss = {k: v for k, v in jmiss.items() if v}
         check("a. every theme but the default carries Jarvis's whole palette (the default leaves Jarvis's own colour)",
               not jmiss and data["list"][0]["jarvis"] is None, jmiss)
@@ -134,7 +135,7 @@ def test_static(data):
         d0 = data["list"][0]["tokens"]
         kit = {k: re.search(rf"--oly-{k}: ([^;]+);", css).group(1).strip() for k in ("glass", "line", "text", "dim", "shadow")}
         check("a. the default theme's tokens are olympus.css's own values (glass, line, text, dim, shadow), mix 0 and harmony 0",
-              all(d0[k] == v for k, v in kit.items()) and d0["accent"] == "#a855f7" and d0["mix"] == 0 and d0["harmony"] == 0, (kit, d0))
+              all(d0[k] == v for k, v in kit.items()) and d0["accent"] == "#c8a24a" and d0["mix"] == 0 and d0["harmony"] == 0, (kit, d0))
         check("a. a 0 blend returns the colour untouched, same type (so the default theme leaves every scene and accent as it was)",
               data["mix0"] == "#7fe9ff" and data["mixN"] == 0x02030a and data["harm0"] == "#ffcf5a", data)
         light = [t for t in data["list"] if t["scheme"] == "light"]
@@ -286,14 +287,14 @@ def regen_baseline(br, origin):
 def test_default(br, origin):
     base = json.load(open(BASE, encoding="utf-8"))
     for name, want in base.items():
-        for theme in (None, "olympus"):
+        for theme in (None, DEFAULT_ID):
             ctx, p, errs = ctx_page(br, origin, theme)
             try:
                 p.goto(url_of(origin, name))
                 settle(p, name)
                 got = p.evaluate(DUMP, list(want))
                 diff = {k: (want[k], got[k]) for k in want if got[k] != want[k] and not k.startswith("--stack")}
-                check(f"c. {name}: {'no key' if theme is None else 'olympus.theme = olympus'} -> every computed CSS variable as before the themes ({len(want)})",
+                check(f"c. {name}: {'no key' if theme is None else 'olympus.theme = agora'} -> every computed CSS variable as before the themes ({len(want)})",
                       not diff, diff)
             except Exception as e:
                 check(f"c. {name}: default theme as before", False, e)
@@ -329,7 +330,7 @@ def test_jarvis(br, origin, shots=None):
     tiles = p.evaluate("""() => [...document.querySelectorAll('#olyThemes .oth')].map((b) => ({ k: b.dataset.olyK, on: b.getAttribute('aria-pressed'),
         anim: getComputedStyle(b.querySelector('.oth-sw .r')).animationName, h: b.getBoundingClientRect().height, w: b.getBoundingClientRect().width,
         over: b.scrollWidth > b.clientWidth + 1 }))""")
-    check("d. the Look sheet: seven OLYMPUS theme tiles (Olympus pressed), each a live mini scene (turning ring), 44 px+ targets, nothing spills",
+    check("d. the Look sheet: eight OLYMPUS theme tiles (Agora pressed), each a live mini scene (turning ring), 44 px+ targets, nothing spills",
           [t["k"] for t in tiles] == IDS and tiles[0]["on"] == "true" and all(t["anim"] == "oth-spin" and t["h"] >= 44 and not t["over"] for t in tiles), tiles)
     p.click('#olyThemes [data-oly-k="zeus"]')
     p.wait_for_timeout(250)
@@ -377,7 +378,7 @@ def test_jarvis(br, origin, shots=None):
     p.wait_for_timeout(200)
     back = p.evaluate("() => [localStorage.getItem('olympus.theme'), document.documentElement.dataset.olyTheme, getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), document.documentElement.style.getPropertyValue('--c'), localStorage.getItem('olympus.theme.paint')]")
     check("d. a Jarvis colour (Reactor Stark) goes back to the OLYMPUS default and shows its own colour (no inline paint left)",
-          back[0] == "olympus" and back[1] == "olympus" and back[2] == "#ffbe3d" and back[3] == "" and back[4] is None, back)
+          back[0] == "agora" and back[1] == "agora" and back[2] == "#ffbe3d" and back[3] == "" and back[4] is None, back)
     p.evaluate("window.__jarvis.setTheme('reactor')")
     check("d. Jarvis: no console error while theming", not real(errs), real(errs)[:3])
     ctx.close()
@@ -437,9 +438,9 @@ def test_app(br, origin, app):
     check(f"e. {app}: follows a live change (storage event): Poseidon's glass" + (", the scene hook re-tinted" if app in THREE_APPS else ""),
           live["id"] == "poseidon" and live["glass"] == "rgba(2, 20, 28, .74)"
           and (app not in THREE_APPS or live["last"] == "poseidon" or live["fog"] != got["fog"] or live["clear"] != got["clear"]), (live, got))
-    p2.evaluate("localStorage.setItem('olympus.theme', 'olympus')")
+    p2.evaluate("localStorage.setItem('olympus.theme', 'agora')")
     try:
-        p.wait_for_function("() => OLYMPUS.theme() && OLYMPUS.theme().id === 'olympus'", timeout=8000)
+        p.wait_for_function("() => OLYMPUS.theme() && OLYMPUS.theme().id === 'agora'", timeout=8000)
     except Exception:
         pass
     p.wait_for_timeout(300)
@@ -452,7 +453,7 @@ def test_app(br, origin, app):
 
 
 def test_zenith_kalshi(br, origin):
-    for name, var, own in (("zenith", "--page", "#07080c"), ("kalshi", "--bg", "#010a07")):
+    for name, var, own in (("zenith", "--page", "#14110e"), ("kalshi", "--bg", "#010a07")):
         ctx, p, errs = ctx_page(br, origin, "apollo")
         p.goto(url_of(origin, name))
         try:

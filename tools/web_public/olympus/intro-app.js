@@ -6,7 +6,7 @@
  *
  *   film     0.0  the app's own flavour scene starts (Oracle smoke + light shafts, Tyche coins + water, Prometheus embers igniting, Mind neurons
  *                 lighting, Data City skyline rising, Arena torches + crowd roar, ... see FLAVOUR) and the app's glyph forms from particles
- *            0.95 the name appears letter by letter in Orbitron with a light sweep across it, then a one-line tagline
+ *            0.95 the name appears letter by letter in "Iowan Old Style","Palatino Linotype",Palatino,Georgia with a light sweep across it, then a one-line tagline
  *            2.1  the whole overlay fades out onto the app (2.4 s in all: the same film, played 8% faster)
  *   once     the full film plays at most once per app per launch (sessionStorage 'oly.intro.<app>'); after that a 400 ms version (the
  *            formed glyph + name, a quick fade). LITE (3D Low) = no intro at all (2026-11-04: LITE and reduced motion play nothing).
@@ -75,19 +75,21 @@
   var sm = function (x) { return x * x * (3 - 2 * x); };
   var seed = 11;
   var rnd = function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-  var hex = function (h) { h = String(h || '#a855f7'); return [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16) || 0; }); };
+  var hex = function (h) { h = String(h || '#d3b579'); return [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16) || 0; }); };
   var rgba = function (c, a) { return 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + (a < 0 ? 0 : a > 1 ? 1 : a).toFixed(3) + ')'; };
   var mixc = function (a, b, k) { return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]; };
   var now = function () { return (W.performance && performance.now) ? performance.now() : Date.now(); };
   var COL = hex(O.color), WHITE = [255, 255, 255], GOLD = [255, 205, 100];
-  var DISPLAY = '"Orbitron", "Rajdhani", -apple-system, system-ui, sans-serif', UI = '"Rajdhani", -apple-system, system-ui, sans-serif';
+  // AGORA (2026-11-09): the app's colour leans toward gold, so no entrance is neon
+  COL = [Math.round(COL[0] * 0.45 + 200 * 0.55), Math.round(COL[1] * 0.45 + 162 * 0.55), Math.round(COL[2] * 0.45 + 74 * 0.55)];
+  var DISPLAY = '"Iowan Old Style","Palatino Linotype",Palatino,Georgia, -apple-system, system-ui, sans-serif', UI = '-apple-system, system-ui, sans-serif';
 
   // ------------------------------------------------------------------ the overlay
   var el = null, cv = null, c = null, raf = 0, killT = 0, t0 = 0, done = false, skipping = false, holdUp = false;
   var VW = 0, VH = 0, DPR = 1, scene = null, parts = null, glyphPx = 0, cx = 0, cy = 0, soundsAt = {}, motionQuery = null, motionListener = null;
   function addCss() {
     var s = d.createElement('style');
-    s.textContent = '.oly-intro{position:fixed;left:0;top:0;right:0;bottom:0;z-index:70;background:#04050c;overflow:hidden;touch-action:none;' +
+    s.textContent = '.oly-intro{position:fixed;left:0;top:0;right:0;bottom:0;z-index:70;background:#090807;overflow:hidden;touch-action:none;' +
       '-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}' +
       '.oly-intro canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block}' +
       '@media (prefers-reduced-motion:reduce){.oly-intro{display:none}}';
@@ -153,7 +155,7 @@
   function makeParts() {
     var n = O.fx() === 'ultra' ? 1100 : 760, S = 120, g = d.createElement('canvas'); g.width = S; g.height = S;
     var x = g.getContext('2d'); if (!x) return [];
-    x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#fff';
+    x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#efeeeb';
     x.font = '700 ' + Math.round(S * 0.78) + 'px ' + DISPLAY;
     x.fillText(O.glyph || 'Ο', S / 2, S / 2 + S * 0.04);
     var data = x.getImageData(0, 0, S, S).data, pts = [], i, j;
@@ -451,7 +453,7 @@
       el.style.opacity = String(1 - sm(ramp(tt, 2.1, 2.6)));
       c.setTransform(DPR, 0, 0, DPR, 0, 0);
       c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
-      c.fillStyle = '#04050c'; c.fillRect(0, 0, VW, VH);
+      c.fillStyle = '#090807'; c.fillRect(0, 0, VW, VH);
       glow(cx, cy, Math.max(VW, VH) * 0.7, COL, 0.2 * ramp(tt, 0, 0.9));
       if (mode !== 'lite' && scene) {
         c.save();
@@ -478,7 +480,7 @@
         c.fillText(O.glyph || 'Ο', cx, cy + glyphPx * 0.03);
         c.restore();
       }
-      // the name in Orbitron: letters in one by one, a light sweep across them
+      // the name in "Iowan Old Style","Palatino Linotype",Palatino,Georgia: letters in one by one, a light sweep across them
       var fs = Math.min(30, VW * 0.84 / ((O.name || '').length * 0.95 + (O.name || '').length * TRACK)), name = String(O.name || 'OLYMPUS').toUpperCase(), ny = cy + glyphPx * 0.5 + 44;
       c.font = '700 ' + fs + 'px ' + DISPLAY;
       var sweep = ramp(tt, 1.25, 1.95), sweepX;
@@ -496,10 +498,10 @@
       c.restore();
       // the tagline, and a small hint
       k = sm(ramp(tt, 1.45, 1.95));
-      if (k > 0.001) { c.save(); c.textAlign = 'center'; c.textBaseline = 'middle'; c.globalAlpha = k * 0.8; c.fillStyle = rgba([226, 230, 245], 1); c.font = '600 14px ' + UI; c.fillText(FL[1].toUpperCase().split('').join(' '), VW / 2, ny + fs * 1.3); c.restore(); }
+      if (k > 0.001) { c.save(); c.textAlign = 'center'; c.textBaseline = 'middle'; c.globalAlpha = k * 0.8; c.fillStyle = rgba([243, 236, 224], 1); c.font = '600 14px ' + UI; c.fillText(FL[1].toUpperCase().split('').join(' '), VW / 2, ny + fs * 1.3); c.restore(); }
       if (mode === 'full') {
         k = sm(ramp(tt, 0.7, 1.2)) * (1 - sm(ramp(tt, 1.9, 2.2)));
-        if (k > 0.001) { c.save(); c.textAlign = 'center'; c.globalAlpha = k * 0.3; c.fillStyle = '#ecf0ff'; c.font = '600 10px ' + UI; c.fillText('T A P   T O   S K I P', VW / 2, VH - 28); c.restore(); }
+        if (k > 0.001) { c.save(); c.textAlign = 'center'; c.globalAlpha = k * 0.3; c.fillStyle = '#faf7f1'; c.font = '600 10px ' + UI; c.fillText('T A P   T O   S K I P', VW / 2, VH - 28); c.restore(); }
       }
       if (tt > 0.95 && (mode !== 'full' || tt > 0.97)) cue('name', 'tick');
       if (t < LEN_S + 0.05) raf = requestAnimationFrame(frame); else finish('done');
@@ -518,7 +520,7 @@
     fit();
     d.body.appendChild(el);
     root.setAttribute('data-oly-intro', mode);
-    try { if (d.fonts && d.fonts.load) d.fonts.load('700 30px Orbitron'); } catch (e) { /* the fallback font draws */ }
+    try { if (d.fonts && d.fonts.load) d.fonts.load('700 30px "Iowan Old Style","Palatino Linotype",Palatino,Georgia'); } catch (e) { /* the fallback font draws */ }
     if (mode !== 'lite') { var S = SC[st.scene] || SC.stars; scene = Object.create(S); scene.init(); }
     if (mode !== 'lite') parts = makeParts();
     killT = setTimeout(function () { finish('deadline'); }, Math.round(LEN_S * 1000 + 900));

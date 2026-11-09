@@ -17,6 +17,7 @@
 
 const STATES = ['idle', 'listening', 'thinking', 'speaking', 'alert'];
 const WORD = ['STANDBY', 'LISTENING', 'THINKING', 'SPEAKING', 'ALERT'];
+const LETTERING = false;      // AGORA: the core has no HUD text ring, no projector dial, no grid floor, no hologram globe
 const SUB = ['CORE ONLINE', 'VOICE IN', 'PROCESSING', 'VOICE OUT', 'ATTENTION'];
 const EFFECTS = ['off', 'low', 'high', 'ultra'];
 const DESIGNS = ['reactor', 'singularity'];
@@ -305,9 +306,9 @@ export function mountCore(el, opts) {
     for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; g.moveTo(R * Math.cos(a - 0.05), R * Math.sin(a - 0.05)); g.arc(0, 0, R, a - 0.05, a + 0.05); }
     glow(c1, 0.7 * gb, 2);
 
-    // lettering ring: four gaps hold the curved labels
+    // lettering ring: four gaps hold the curved labels. AGORA (2026-11-09): no HUD lettering round the core (LETTERING = false)
     let k = 0; for (let i = 1; i < 5; i++) if (W[i] > W[k]) k = i;
-    if (tier > 0) {
+    if (LETTERING && tier > 0) {
       labels(R, k);
       g.beginPath();
       for (let i = 0; i < 8; i += 2) {
@@ -507,7 +508,7 @@ function makeReactor(T, RC, canvas, context, attrs, design0, tier0, theme0) {
   // effects tiers (the core's adapt() steps them) and its look (display space: its glows were tuned on screen colours);
   // a transparent canvas, so the bloom lights the page behind the core
   const rc = RC ? RC.createRenderer({ renderer: ren, scene, camera: cam, alpha: true, env: 'none', exposure: 0.95, space: 'display',
-    quality: EFFECTS[tier0], adapt: false, autoSize: false, fitCamera: false, bloom: { strength: 0.65, radius: 0.6, threshold: 0.85 },
+    quality: EFFECTS[tier0], adapt: false, autoSize: false, fitCamera: false, bloom: { strength: 0.25, radius: 0.5, threshold: 0.9 },
     grade: { vignette: 0, grain: 0.02, saturation: 1.1 } }) : null;
   const bloomTint = { tint: new T.Color() }, WHITE3 = new T.Color(1, 1, 1);
   // additive that keeps the canvas transparent (alpha untouched), so glows light the page behind instead of covering it
@@ -757,8 +758,9 @@ function makeReactor(T, RC, canvas, context, attrs, design0, tier0, theme0) {
     tier = q;
     if (rc) rc.setQuality(EFFECTS[q]);
     parts.forEach(([g, n]) => g.setDrawRange(0, q > 1 ? n : Math.ceil(n * 0.45)));
-    if (X.globe) X.globe.visible = q > 0;
-    if (X.grid) X.grid.visible = q > 1;               // the grid floor is a full-width layer: 'high' and up
+    if (X.globe) X.globe.visible = false;
+    if (X.grid) X.grid.visible = false;               // AGORA: no grid floor, no hologram globe
+    if (X.dial) X.dial.visible = false;
   }
   colours(theme0); envMap(); build(design0);
 

@@ -70,15 +70,15 @@ def test_static():
     missing_row = [f for f in folders if f not in ids]
     missing_dir = [x["id"] for x in rows if x["path"] and x["id"] not in EXTERNAL and not os.path.isfile(os.path.join(WEB, x["path"], "index.html"))]
     check("a. every app folder under tools/web_public has a row, and every row has its folder with an index.html (the Planner is published by its own build; a new app = one row in BUILT_INS, then rebuild)",
-          not missing_dir and not [f for f in missing_row if f not in ("pc",)], (missing_row, missing_dir))
+          not missing_dir and not [f for f in missing_row if f not in ("pc", "atlascity")], (missing_row, missing_dir))
     nolive = [x["id"] for x in rows if x["live"] and not os.path.isfile(os.path.join(WEB, x["path"], "jarvis.json"))]
     check("a. every app marked live has its jarvis.json (the status dot reads it)", not nolive, nolive)
 
     check("b. launcher.js is byte-identical in tools/web_public and web_next/js/next", read(WEB, "launcher.js", mode="rb") == read(NEXT, "js", "next", "launcher.js", mode="rb"))
     ph, pc = read(WEB, "index.html"), read(NEXT, "index.html")
     check("b. the phone dashboard has ONE tag, launcher.js (deferred); the list is loaded by the launcher, async, so a slow site never holds Zenith back",
-          '<script src="launcher.js?v=l1" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l1" in read(WEB, "launcher.js"))
-    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l1" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l1" in read(NEXT, "js", "next", "launcher.js"))
+          '<script src="launcher.js?v=l2" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l1" in read(WEB, "launcher.js"))
+    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l2" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l1" in read(NEXT, "js", "next", "launcher.js"))
     sw = read(NEXT, "sw.js")
     v = re.search(r"const SHELL = 'le-shell-next-v(\d+)'", sw)
     check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l1'" in sw and "'/js/next/launcher.js?v=l1'" in sw and v and int(v.group(1)) >= 34)

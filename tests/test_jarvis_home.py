@@ -235,7 +235,7 @@ def test_node():
     check("d. energy: calm when idle, up while she listens and thinks, follows her voice level when speaking, high on an alert; junk level = 0.3",
           r["idle"] < 0.1 and 0.35 < r["listen"] < 0.5 and r["think"] == 0.5 and r["s0"] == 0.3 and r["s1"] == 1 and r["alert"] > 0.8 and r["bad"] == 0.3, r)
     check("d. the mode's colour (trading teal) and the state's (listening red); auto and junk (even 'toString') have none",
-          O["tint"]["trading"] == "#2ee6d6" and O["tint"]["auto"] is None and O["tint"]["junk"] is None and O["tint"]["listening"] == "#ff5a6e" and O["tint"]["speaking"] is None, O["tint"])
+          O["tint"]["trading"] == "#4b7a99" and O["tint"]["auto"] is None and O["tint"]["junk"] is None and O["tint"]["listening"] == "#c0603f" and O["tint"]["speaking"] is None, O["tint"])
 
     b = O["brief"]
     check("e. the briefing: a title with the ET day, five lines in order (bots, drawdown, today, Kalshi, to-dos), one thing to do",
@@ -425,17 +425,17 @@ def session_a(br, GPU, GPU_COUNT):
         except Exception:
             pass
     p.evaluate("() => { document.documentElement.dataset.state = 'listening'; }")
-    until("() => __jarvisBackdrop.ext.state.home.energy > 0.3 && __jarvisBackdrop.ext.state.home.stateTint === '#ff5a6e'")
+    until("() => __jarvisBackdrop.ext.state.home.energy > 0.3 && __jarvisBackdrop.ext.state.home.stateTint === '#c0603f'")
     lis = p.evaluate(SNAP)
     p.evaluate("() => { document.documentElement.dataset.state = 'idle'; }")
     until("() => __jarvisBackdrop.ext.state.home.energy < 0.2 && __jarvisBackdrop.ext.state.home.stateTint === ''")
     idl = p.evaluate(SNAP)
     p.evaluate("() => { localStorage.setItem('jarvis.mode', 'trading'); }")
-    until("() => __jarvisBackdrop.ext.state.home.modeTint === '#2ee6d6'")
+    until("() => __jarvisBackdrop.ext.state.home.modeTint === '#4b7a99'")
     mode = p.evaluate(SNAP)
     mt = p.evaluate("() => window.__jarvisModeTint")
     check("i. the reactor: listening lifts the energy and turns the light red, idle calms it again, the mode's colour tints the world and the core (window.__jarvisModeTint)",
-          lis["energy"] > 0.3 and lis["stateTint"] == "#ff5a6e" and idl["energy"] < 0.2 and idl["stateTint"] == "" and mode["modeTint"] == "#2ee6d6" and mt == "#2ee6d6", (lis, idl, mode, mt))
+          lis["energy"] > 0.3 and lis["stateTint"] == "#c0603f" and idl["energy"] < 0.2 and idl["stateTint"] == "" and mode["modeTint"] == "#4b7a99" and mt == "#4b7a99", (lis, idl, mode, mt))
     check("i. no page error from any of it", not errs, errs[:3])
     # a flash of lightning in the storm
     p.wait_for_timeout(500)

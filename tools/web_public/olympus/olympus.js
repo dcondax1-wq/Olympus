@@ -57,7 +57,7 @@
     prometheus: { '--bg': 'bg', '--bg2': 'bg', '--panel': 'glass', '--line': 'line', '--text': 'text', '--dim': 'dim' },
     tyche: { '--bg': 'bg', '--glass': 'glass', '--line': 'line', '--text': 'text', '--dim': 'dim' },
   };
-  var id = (me && me.getAttribute('data-app')) || '', info = APPS[id] || [id || 'OLYMPUS', 'Ο', '#a855f7'];
+  var id = (me && me.getAttribute('data-app')) || '', info = APPS[id] || [id || 'OLYMPUS', 'Ο', '#c8a24a'];
   var TH = window.OLYMPUS_THEMES || null, own = info[2];
   var get = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var set = function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode: this visit only */ } };
@@ -72,9 +72,11 @@
   if (framed) root.classList.add('framed');
   var hexRgb = function (h) { return [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16); }).join(', '); };
   // the app's own page colour (its theme-color meta = its --bg): the base the theme's sky is blended into
-  var ownBg = (function () { var m = d.querySelector('meta[name="theme-color"]'); return (m && m.getAttribute('content')) || '#04050c'; })();
+  var ownBg = (function () { var m = d.querySelector('meta[name="theme-color"]'); return (m && m.getAttribute('content')) || '#14110e'; })();
   function accent(t) {
     info[2] = TH && t ? TH.harmonise(own, t.accent, t.harmony) : own;
+    // AGORA (the default): an app's identity colour is warmed toward gold so no kit-level accent is neon (the app's own CSS keeps its colour)
+    if (TH && TH.mix && (!t || t.id === TH.DEFAULT)) info[2] = TH.mix(info[2], '#c8a24a', .42);
     root.style.setProperty('--oly-accent', info[2]);
     root.style.setProperty('--oly-accent-rgb', hexRgb(info[2]));
   }
@@ -89,9 +91,9 @@
 
   function emit() { for (var i = 0; i < subs.length; i++) { try { subs[i](level); } catch (e) { /* one listener never stops the rest */ } } }
   var themeSubs = [], appSubs = [];
-  // the apps' own hooks (onTheme / theme()) never see the default theme: on 'olympus' every app keeps today's look exactly.
+  // the apps' own hooks (onTheme / theme()) never see the default theme: on the default (AGORA) every app keeps its own look.
   // Coming back to the default, the inline CSS variables an app painted are put back as they were before any theme.
-  var isDefault = function (t) { return !t || t.id === 'olympus'; };
+  var isDefault = function (t) { return !t || t.id === (TH && TH.DEFAULT ? TH.DEFAULT : 'agora'); };
   function restoreRoot() {
     var keep = {}, names = ['--oly-accent', '--oly-accent-rgb'];
     for (var i = 0; i < names.length; i++) keep[names[i]] = root.style.getPropertyValue(names[i]);
