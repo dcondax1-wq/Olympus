@@ -1,6 +1,8 @@
 // OLYMPUS arena-to-arena transitions (jarvis/transitions.js, 2026-11-04): the effect every time Jarvis goes from one app to another.
 // Every app has its own signature (Oracle = Zeus' lightning, Tyche = a sea surge, Prometheus = a fire sweep, Pantheon = marble
 // columns, Mind = a constellation, Daphne = laurel leaves, Plutus = golden coins ...), drawn in the app's colour and glyph.
+// AGORA (2026-11-09): every colour is warmed toward gold (no neon), the default is a MARBLE WIPE (two marble doors with a gold seam),
+// a drift of gold dust floats over every kind, and Zeus' lightning / the warp tunnel / the slash / the shatter are retired from the table.
 //
 //   * the app -> transition table is DATA (REGISTRY below: kind, duration, extra sound cues); the drawing code is a set of KINDS
 //     built from shared blocks (veil, soft iris, warp tunnel, marble columns, push-through frames, shockwave, glyph particles,
@@ -22,8 +24,8 @@ const STYLE_ID = 'jtrans-css', TAU = Math.PI * 2, FADE_LITE = 250, FADE_STATIC =
 // kind: which drawing; ms: 600..1100; cues: [[t 0..1, kit sound]] on top of the 'portal' whoosh that show() plays at the start;
 // label: false = the kind draws the glyph itself (no name card over it); n: a count the kind reads (columns, tiles ...)
 export const REGISTRY = {
-  zenith:     { kind: 'warp',          ms: 900 },
-  oracle:     { kind: 'lightning',     ms: 880,  cues: [[0.17, 'thunder']] },
+  zenith:     { kind: 'marble',        ms: 900 },
+  oracle:     { kind: 'sunburst',      ms: 880,  cues: [[0.17, 'rankup']] },
   odeon:      { kind: 'curtain',       ms: 1000, cues: [[0.34, 'tick']] },
   fates:      { kind: 'threads',       ms: 960,  cues: [[0.5, 'tick']] },
   datacity:   { kind: 'skyline',       ms: 900 },
@@ -43,17 +45,17 @@ export const REGISTRY = {
   tyche:      { kind: 'waves',         ms: 1000 },
   hermes:     { kind: 'dash',          ms: 700 },
   bridge:     { kind: 'span',          ms: 900 },
-  ares:       { kind: 'slash',         ms: 860,  cues: [[0.2, 'thunder']] },
+  ares:       { kind: 'columns',       ms: 860,  cues: [[0.2, 'tick']] },
   plutus:     { kind: 'coins',         ms: 1000, cues: [[0.4, 'rankup']] },
   athena:     { kind: 'assemble',      ms: 1000, label: false },
   forum:      { kind: 'pushthrough',   ms: 920 },
   labyrinth:  { kind: 'maze',          ms: 1000 },
   argus:      { kind: 'eyes',          ms: 1000, cues: [[0.3, 'tick']] },
-  nemesis:    { kind: 'shatter',       ms: 900,  cues: [[0.08, 'thunder']] },
+  nemesis:    { kind: 'marble',        ms: 900,  cues: [[0.08, 'tick']] },
   chronos:    { kind: 'clock',         ms: 1000, cues: [[0.52, 'tick']] },
-  hephaestus: { kind: 'anvil',         ms: 960,  cues: [[0.22, 'thunder']] },
+  hephaestus: { kind: 'anvil',         ms: 960,  cues: [[0.22, 'tick']] },
 };
-export const DEFAULT = { kind: 'warp', ms: 850 };
+export const DEFAULT = { kind: 'marble', ms: 850 };
 
 // ---------------------------------------------------------------------------------------------------------------- small maths
 const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
@@ -70,10 +72,14 @@ function seeded(str) {                                           // mulberry32: 
   let s = h >>> 0;
   return () => { s += 0x6D2B79F5; let t = Math.imul(s ^ (s >>> 15), 1 | s); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
+const GOLD = [200, 162, 74];
 const rgbOf = (h) => {
-  const n = parseInt(String(h || '#a855f7').replace('#', '').padEnd(6, '0').slice(0, 6), 16);
-  return isNaN(n) ? [168, 85, 247] : [n >> 16 & 255, n >> 8 & 255, n & 255];
+  const n = parseInt(String(h || '#c8a24a').replace('#', '').padEnd(6, '0').slice(0, 6), 16);
+  return isNaN(n) ? GOLD.slice() : [n >> 16 & 255, n >> 8 & 255, n & 255];
 };
+// AGORA: an app's colour leans toward gold, so no transition is neon
+const warmRgb = (c) => [0, 1, 2].map((i) => Math.round(c[i] * 0.4 + GOLD[i] * 0.6));
+const hexOf = (c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
 // colour c (0..255 x3) scaled by k, lifted toward white by l, alpha a
 const col = (c, a = 1, k = 1, l = 0) => {
   const f = (v) => Math.round(Math.min(255, v * k + (255 - v * k) * l));
@@ -88,7 +94,7 @@ function veil(E, a, k = 0.12) {
   const { g } = E;
   const gr = g.createRadialGradient(E.cx, E.cy, 0, E.cx, E.cy, E.R * 1.1);
   gr.addColorStop(0, col(E.rgb, 1, k * 1.7));
-  gr.addColorStop(1, E.from ? col(E.from, 1, 0.1) : 'rgb(3,3,10)');
+  gr.addColorStop(1, E.from ? col(E.from, 1, 0.1) : 'rgb(20,17,14)');
   g.globalAlpha = a; g.fillStyle = gr; g.fillRect(0, 0, E.W, E.H); g.globalAlpha = 1;
 }
 /** cut a soft-edged round hole in what is drawn so far (the app shows through) */
@@ -186,9 +192,52 @@ function glyphPoints(glyph, want, r) {
 }
 function ringPoints(n) { return Array.from({ length: n }, (_, i) => [Math.cos((i / n) * TAU) * 34, Math.sin((i / n) * TAU) * 34]); }
 
+/** AGORA: a slow drift of gold dust over every transition (a few dozen specks, no streaks, no flicker) */
+function dust(E, t) {
+  const { g } = E, n = Math.round(40 * E.q), a0 = bell(t, 0.45, 0.3);
+  if (a0 < 0.02) return;
+  add(E);
+  for (let i = 0; i < n; i++) {
+    const x = hash(i, 1) * E.W + Math.sin(t * 3 + i) * 6, y = ((hash(i, 2) * E.H - t * E.H * (0.1 + 0.28 * hash(i, 3))) % E.H + E.H) % E.H;
+    g.fillStyle = col(GOLD, a0 * (0.25 + 0.5 * hash(i, 4)), 1, 0.3);
+    g.beginPath(); g.arc(x, y, 0.8 + hash(i, 5) * 1.8, 0, TAU); g.fill();
+  }
+  norm(E);
+}
+
 // -------------------------------------------------------------------------------------------------------------- the signatures
 // Each kind: init(E) -> S (built once per play, seeded by the app id), draw(E, S, t) with t 0..1. Every kind ends fully clear.
 export const KINDS = {
+
+  // AGORA's default: two marble doors slide together over the screen, a gold seam, the app's glyph in a gold ring, then they part
+  marble: {
+    init: (E) => ({ veins: Array.from({ length: 9 }, () => ({ x: E.rnd(), y: E.rnd(), a: (E.rnd() - 0.5) * 1.6, l: 0.25 + E.rnd() * 0.6 })) }),
+    draw(E, S, t) {
+      const { g } = E, p = eo(t / 0.34) * (1 - ei((t - 0.54) / 0.38)), w = (E.W / 2 + 2) * p;
+      if (w > 1) {
+        for (const side of [0, 1]) {
+          g.save();
+          if (side) { g.translate(E.W, 0); g.scale(-1, 1); }
+          const gr = g.createLinearGradient(0, 0, w, 0);
+          gr.addColorStop(0, '#1b1712'); gr.addColorStop(0.7, '#2b251d'); gr.addColorStop(1, '#3a3228');
+          g.fillStyle = gr; g.fillRect(0, 0, w, E.H);
+          g.strokeStyle = 'rgba(200,162,74,.13)'; g.lineWidth = 1.2; g.beginPath();
+          for (const v of S.veins) { const x = v.x * w, y = v.y * E.H; g.moveTo(x, y); g.quadraticCurveTo(x + w * 0.2 * v.a, y + E.H * 0.08, x + w * v.l * Math.cos(v.a), y + E.H * 0.22 * v.l); }
+          g.stroke();
+          g.fillStyle = col(GOLD, 0.95); g.fillRect(w - 3, 0, 3, E.H);
+          g.fillStyle = col(GOLD, 0.35); g.fillRect(w - 9, 0, 2, E.H);
+          g.restore();
+        }
+      }
+      const m = ss(0.2, 0.38, t) * (1 - ss(0.5, 0.64, t));
+      if (m > 0.01) {
+        g.save(); g.globalAlpha = m; g.strokeStyle = col(GOLD, 1); g.lineWidth = 2;
+        g.beginPath(); g.arc(E.cx, E.cy, E.u * 0.17, 0, TAU); g.stroke();
+        g.beginPath(); g.arc(E.cx, E.cy, E.u * 0.15, 0, TAU); g.globalAlpha = m * 0.4; g.stroke(); g.globalAlpha = m;
+        g.restore();
+      }
+    },
+  },
 
   // the classic: a tunnel of streaks, a hot ring opening at the centre, the app revealed through it
   warp: {
@@ -799,11 +848,11 @@ const CSS = `
 .jtrans { position: fixed; inset: 0; z-index: 9000; pointer-events: auto; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .jtrans canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .jtrans-fade { position: fixed; inset: 0; z-index: 9000; pointer-events: none; opacity: .6; transition: opacity var(--jt-fade, .25s) ease-out;
-  background: radial-gradient(circle at 50% 46%, var(--jt-c) 0%, #02020a 62%); }
+  background: radial-gradient(circle at 50% 46%, var(--jt-c) 0%, #14110e 62%); }
 .jtrans-fade.flat { background: var(--jt-c); opacity: .45; }
 .jtrans-name { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; pointer-events: none; opacity: 0;
-  font: 600 13px/1.4 "Orbitron", "Rajdhani", system-ui, sans-serif; letter-spacing: .42em; color: #fff;
-  text-shadow: 0 0 14px var(--jt-c), 0 0 32px var(--jt-c); animation: jtrans-name var(--jt-ms, 900ms) cubic-bezier(.3, .7, .2, 1) forwards; }
+  font: 600 15px/1.4 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; letter-spacing: .06em; color: #f3ece0;
+  animation: jtrans-name var(--jt-ms, 900ms) cubic-bezier(.3, .7, .2, 1) forwards; }
 .jtrans-name b { display: block; font-size: 34px; letter-spacing: .08em; margin-bottom: 6px; }
 @keyframes jtrans-name { 0% { opacity: 0; transform: translateY(-50%) scale(.7); } 32% { opacity: 1; } 60% { opacity: 1; transform: translateY(-50%) scale(1.02); }
   100% { opacity: 0; transform: translateY(-50%) scale(1.4); } }
@@ -857,6 +906,7 @@ function paint(t) {
   g.clearRect(0, 0, E.W, E.H);
   const p0 = performance.now();
   if (t < 0.992) KINDS[entry.kind].draw(E, S, t, entry);
+  if (t < 0.992 && E.dust) dust(E, t);
   state.paintMs = Math.round((performance.now() - p0) * 10) / 10;
 }
 function finish() {
@@ -889,7 +939,7 @@ function fade(color, kind) {                                       // LITE: 250 
 
 /** play this app's transition over whatever is on screen; returns 'warp' (the full signature) | 'fade' | 'none'. Never throws. */
 export function play(app, opts) {
-  const a = app || {}, o = opts || {}, id = String(a.id || ''), color = a.color || a.accent || '#a855f7';
+  const a = app || {}, o = opts || {}, id = String(a.id || ''), color = hexOf(warmRgb(rgbOf(a.color || a.accent || '#c8a24a')));
   const at = typeof o.at === 'number' ? clamp(o.at) : null;
   try {
     state.runs++; state.id = id; state.ms = 0; state.frames = 0; state.cues = []; state.error = '';
@@ -905,7 +955,7 @@ export function play(app, opts) {
     const fx0 = fx();
     E = {
       g: g2, W, H, d, cx: W / 2, cy: H * 0.46, u: Math.min(W, H), R: Math.hypot(W, H) / 2, q: fx0 === 'ultra' ? 1.25 : 1,
-      rgb: rgbOf(color), from: o.from && o.from.color ? rgbOf(o.from.color) : null, glyph: a.glyph || (a.name || '').slice(0, 1), name: a.name || '', rnd: seeded(id || 'x'),
+      dust: true, rgb: rgbOf(color), from: o.from && o.from.color ? warmRgb(rgbOf(o.from.color)) : null, glyph: a.glyph || (a.name || '').slice(0, 1), name: a.name || '', rnd: seeded(id || 'x'),
     };
     S = KINDS[entry.kind].init(E);
     dur = clamp(entry.ms || DEFAULT.ms, 600, 1100); state.dur = dur;
@@ -916,7 +966,7 @@ export function play(app, opts) {
     name.className = 'jtrans-name';
     if (entry.label !== false) {
       if (a.glyph) { const gl = document.createElement('b'); gl.textContent = a.glyph; name.appendChild(gl); }
-      name.appendChild(document.createTextNode(String(a.name || '').toUpperCase()));
+      name.appendChild(document.createTextNode(String(a.name || '')));
     }
     wrap.appendChild(name);
     wrap.addEventListener('pointerdown', skip);
