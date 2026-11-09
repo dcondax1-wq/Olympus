@@ -106,7 +106,7 @@ function renderLook() {
   $('fxNote').textContent = (cur ? '' : 'Auto picks High (LITE if your phone asks for less motion). ') + (d ? d[2] + '.' : '');
   paintLite(); preview.sync(); renderWhy(level, cur); renderRead();
   // themes
-  const list = T && T.list ? T.list() : [], now = T && T.id ? (T.id() || 'olympus') : 'olympus', host = $('themes');
+  const list = T && T.list ? T.list() : [], now = T && T.id ? (T.id() || 'agora') : 'olympus', host = $('themes');
   clear(host);
   if (!list.length) host.appendChild(h('p', 'hint', 'Themes are not available in this copy.'));
   for (const t of list) {
@@ -324,7 +324,7 @@ $('importFile').addEventListener('change', async (e) => {
   if (!c.ok) { $('ioNote').textContent = c.reason || 'That file could not be read.'; return; }
   askSheet('Import ' + c.count + ' entries?', 'They replace the same entries on this phone.' + (c.skipped.length ? ' ' + c.skipped.length + ' will be skipped (secrets and odd names).' : ''), [], () => {
     const r = C.applyImport(LS, obj); $('ioNote').textContent = 'Imported ' + r.written.length + ' entries, skipped ' + r.skipped.length + '.';
-    if (T && T.apply) { try { T.set(T.id() || 'olympus'); } catch (_) { /* nothing */ } }
+    if (T && T.apply) { try { T.set(T.id() || 'agora'); } catch (_) { /* nothing */ } }
     renderAll();
   }, 'Import');
 });
