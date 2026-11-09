@@ -255,7 +255,7 @@ def test_json():
     pz = d["scenarios"]["eval:zlarior:2026"]["summary"]["pass"]
     check("d. jarvis.json: the docs/JARVIS_APPS.md contract (v, name, status, kpis, lines, t, theme, <= 8 KB)",
           jv["v"] == 1 and jv["name"] == "FATES" and jv["status"]["level"] in ("ok", "warn", "bad", "off") and len(jv["status"]["label"]) <= 48
-          and lines_ok and kp_ok and isinstance(jv["t"], int) and jv["theme"] == "#07050f" and len(raw) <= 8192, jv)
+          and lines_ok and kp_ok and isinstance(jv["t"], int) and jv["theme"] == "#14110e" and len(raw) <= 8192, jv)
     check("d. jarvis.json says \"Pass odds this eval: x%\" with the 2026 number", jv["lines"][0].startswith(f"Pass odds this eval: {EX.pct(pz)}"), jv["lines"][0])
     return d
 
@@ -351,7 +351,7 @@ def test_page():
             check("e. WebGL scene up with ~400 threads in one draw call", p.evaluate("__fates.webgl") and p.evaluate("__fates.threads.length") == len(fx["scenarios"]["eval:zlarior:2026"]["threads"]["b"]),
                   p.evaluate("__fates.probe()"))
             meta = p.evaluate("({tc: document.querySelector('meta[name=theme-color]').content, vp: document.querySelector('meta[name=viewport]').content})")
-            check("e. its own theme-color (= jarvis.json theme) and viewport-fit=cover", meta["tc"] == "#07050f" and "viewport-fit=cover" in meta["vp"], meta)
+            check("e. its own theme-color (= jarvis.json theme) and viewport-fit=cover", meta["tc"] == "#14110e" and "viewport-fit=cover" in meta["vp"], meta)
             css = open(os.path.join(FATES, "fates.css"), encoding="utf-8").read()
             check("e. safe areas on all four sides and reduced motion in the CSS", all(f"safe-area-inset-{s}" in css for s in ("top", "right", "bottom", "left"))
                   and "prefers-reduced-motion" in css)
