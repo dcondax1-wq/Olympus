@@ -21,10 +21,10 @@ export function cityLinks(L, highlights = {}) {
   };
   const tower = (id) => buildings.find((b) => b.id === id && !b.lab);
   const best = tower(highlights.bestId), worst = tower(highlights.worstId);
-  if (best) add('edge', { x: best.x, y: Math.min(34, best.fullH || 0) + 5, z: best.z }, '#ffd86a');
-  if (worst && worst.id !== best?.id) add('leak', { x: worst.x, y: Math.min(34, worst.fullH || 0) + 5, z: worst.z }, '#ff6372');
-  if (labs.length) add('research', { x: labs[0].cx, y: 9, z: labs[0].cz }, '#ab9aff');
-  districts.filter((d) => d !== core).slice(0, 10).forEach((d) => add('city', { x: d.cx, y: 8, z: d.cz }, d.color || '#68dcdf'));
-  labs.slice(1, 11).forEach((d) => add('research', { x: d.cx, y: 9, z: d.cz }, '#ab9aff'));
+  if (best) add('edge', { x: best.x, y: Math.min(34, best.fullH || 0) + 5, z: best.z }, '#d9a26b');
+  if (worst && worst.id !== best?.id) add('leak', { x: worst.x, y: Math.min(34, worst.fullH || 0) + 5, z: worst.z }, '#cc7f64');
+  if (labs.length) add('research', { x: labs[0].cx, y: 9, z: labs[0].cz }, '#9cbad2');
+  districts.filter((d) => d !== core).slice(0, 10).forEach((d) => add('city', { x: d.cx, y: 8, z: d.cz }, d.color || '#80a7c5'));
+  labs.slice(1, 11).forEach((d) => add('research', { x: d.cx, y: 9, z: d.cz }, '#9cbad2'));
   return routes.slice(0, 23);
 }

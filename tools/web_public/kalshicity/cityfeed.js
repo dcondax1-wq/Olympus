@@ -49,16 +49,16 @@ export function worldBotLabel(book, demo = false) {
   return book.running === false ? 'BOT NOT RUNNING' : 'BOT STATUS UNKNOWN';
 }
 export const STATUS = ['NEW', 'GROWING', 'HOLDING', 'DECAYING', 'DEAD'];
-export const STATUS_COLOR = { NEW: '#8f9bff', GROWING: '#35f0b0', HOLDING: '#ffd86a', DECAYING: '#ff9a3c', DEAD: '#ff4d57' };
+export const STATUS_COLOR = { NEW: '#99b8d0', GROWING: '#a0af6a', HOLDING: '#d9a26b', DECAYING: '#d49759', DEAD: '#ca785c' };
 export const STATUS_WORD = {
   NEW: 'Too few bets to judge', GROWING: 'Getting stronger', HOLDING: 'Holding up', DECAYING: 'Fading or unproven', DEAD: 'No edge: stop',
 };
 export const ADVICE = {
-  do_more: { word: 'DO MORE', color: '#35f0b0', text: 'Proven edge: this is where the bot earns. Worth more size, at the Kelly stake below, never more.' },
-  keep: { word: 'KEEP', color: '#ffd86a', text: 'Positive so far, not proven beyond luck. Keep it small and keep counting.' },
-  watch: { word: 'WATCH', color: '#ff9a3c', text: 'Fading, or losing without proof yet. Do not add size; cut it if the next bets lose.' },
-  stop: { word: 'STOP', color: '#ff4d57', text: 'Proven to lose money (or losing in every window). The bot should stop doing this.' },
-  collect: { word: 'COLLECT', color: '#8f9bff', text: 'Too few bets to say anything. No stake is suggested until it has 30.' },
+  do_more: { word: 'DO MORE', color: '#a0af6a', text: 'Proven edge: this is where the bot earns. Worth more size, at the Kelly stake below, never more.' },
+  keep: { word: 'KEEP', color: '#d9a26b', text: 'Positive so far, not proven beyond luck. Keep it small and keep counting.' },
+  watch: { word: 'WATCH', color: '#d49759', text: 'Fading, or losing without proof yet. Do not add size; cut it if the next bets lose.' },
+  stop: { word: 'STOP', color: '#ca785c', text: 'Proven to lose money (or losing in every window). The bot should stop doing this.' },
+  collect: { word: 'COLLECT', color: '#99b8d0', text: 'Too few bets to say anything. No stake is suggested until it has 30.' },
 };
 const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 const str = (v, n = 80) => (v == null ? '' : String(v)).replace(/\s+/g, ' ').trim().slice(0, n);
@@ -104,7 +104,7 @@ function cleanEdge(e) {
 export const HYP_WORD = {
   COLLECTING: 'Collecting', 'NEEDS DATA': 'Needs data', PROMISING: 'Promising', WORKS: 'Works', 'NO HELP': 'No help', SAFER: 'Safer',
 };
-export const HYP_COLOR = { COLLECTING: '#8f9bff', 'NEEDS DATA': '#8f9bff', PROMISING: '#ffd86a', WORKS: '#35f0b0', 'NO HELP': '#ff4d57', SAFER: '#35f0b0' };
+export const HYP_COLOR = { COLLECTING: '#99b8d0', 'NEEDS DATA': '#99b8d0', PROMISING: '#d9a26b', WORKS: '#a0af6a', 'NO HELP': '#ca785c', SAFER: '#a0af6a' };
 const HYP_STATUS = { COLLECTING: 'NEW', 'NEEDS DATA': 'NEW', PROMISING: 'HOLDING', WORKS: 'GROWING', 'NO HELP': 'DEAD', SAFER: 'GROWING' };
 export const HYP_PARTS = { back: 'Looking back', live: 'Live since the start', prog: 'Live bets collected' };
 const cleanWin = (x) => {

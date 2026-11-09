@@ -4,9 +4,9 @@ import * as THREE from '../jarvis/three.module.min.js';
 export function skylinePorts(towers, extent) {
   const group = new THREE.Group(), selected = towers.map((s, i) => ({ ...s, index: i })).filter((s) => s.seed > 0.94);
   const spired = selected.filter((s) => s.seed > 0.972), haloed = selected.filter((s) => s.seed > 0.988);
-  const crowns = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: '#7696bb', metalness: 0.7, roughness: 0.25, emissive: '#17314f', emissiveIntensity: 0.5 }), selected.length * 3);
-  const spires = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.12, 0.34, 1, 6), new THREE.MeshStandardMaterial({ color: '#a9c5dd', emissive: '#274f72', emissiveIntensity: 0.65, metalness: 0.82, roughness: 0.2 }), spired.length);
-  const halos = new THREE.InstancedMesh(new THREE.TorusGeometry(1, 0.07, 5, 22), new THREE.MeshBasicMaterial({ color: '#ffbe58', transparent: true, opacity: 0.72 }), haloed.length);
+  const crowns = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: '#7696bb', metalness: 0.7, roughness: 0.25, emissive: '#436f91', emissiveIntensity: 0.5 }), selected.length * 3);
+  const spires = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.12, 0.34, 1, 6), new THREE.MeshStandardMaterial({ color: '#96b6cf', emissive: '#4b7da3', emissiveIntensity: 0.65, metalness: 0.82, roughness: 0.2 }), spired.length);
+  const halos = new THREE.InstancedMesh(new THREE.TorusGeometry(1, 0.07, 5, 22), new THREE.MeshBasicMaterial({ color: '#d79e64', transparent: true, opacity: 0.72 }), haloed.length);
   const mat = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
   selected.forEach((s, i) => {
     q.setFromAxisAngle(up, s.yaw);
@@ -14,7 +14,7 @@ export function skylinePorts(towers, extent) {
       const width = 0.9 - tier * (0.18 + s.seed * 0.055), tierH = 2.4 + s.seed * 1.7;
       mat.compose(new THREE.Vector3(s.x, s.h + tierH * (tier + 0.5), s.z), q, new THREE.Vector3(s.w * width, tierH, s.d * width));
       crowns.setMatrixAt(i * 3 + tier, mat);
-      crowns.setColorAt(i * 3 + tier, new THREE.Color(tier === 2 ? '#ffce74' : '#8cabbf'));
+      crowns.setColorAt(i * 3 + tier, new THREE.Color(tier === 2 ? '#daa56f' : '#8cabbf'));
     }
   });
   spired.forEach((s, i) => {
