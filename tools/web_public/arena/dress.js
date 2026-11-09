@@ -66,7 +66,7 @@ export function dress(ctx) {
   setTimeout(() => guard('embers', () => {
     if (stopped || lite || /[?&]noatmos=1/.test(location.search)) return;
     const pts = []; for (let i = 0; i < 14; i++) { const a = (i / 14) * TAU; pts.push([Math.cos(a) * 15.7, 2.6, Math.sin(a) * 15.7]); }
-    const em = AT.embers({ count: 170, points: pts, spread: [0.35, 0, 0.35], rise: 3.2, colors: ['#f0dca0', '#e0a060', '#c0603f'], size: 6, wind: 0.3, seed: 14 });
+    const em = AT.embers({ count: 170, points: pts, spread: [0.35, 0, 0.35], rise: 3.2, colors: ['#f0dca0', '#e0a060', '#c96a4a'], size: 6, wind: 0.3, seed: 14 });
     scene.add(em.object); atm.push(em); AT.setQuality(atm, 'high');
   }), 900);
   citadel = guard('citadel', () => createCitadel(scene, lite));

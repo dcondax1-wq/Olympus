@@ -165,7 +165,7 @@ export function createScene(canvas, opt = {}) {
   G.gauge = new THREE.Group();
   G.gauge.visible = false;
   const rod = (c) => new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1, 12), M.neon({ color: c, intensity: 2.4, fog: true }));
-  G.gRoom = rod('#c0603f'); G.gToGo = rod('#d4b05a');
+  G.gRoom = rod('#c96a4a'); G.gToGo = rod('#d4b05a');
   G.gPearl = new THREE.Mesh(new THREE.SphereGeometry(0.095, 20, 14), M.glass({ color: '#ffffff', rim: '#ffffff', opacity: 0.85 }));
   G.gWheelBg = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.34, 64), M.neon({ color: '#8a7656', intensity: 0.8, fog: true, opacity: 0.8 }));
   G.gWheel = new THREE.Mesh(new THREE.RingGeometry(0.29, 0.355, 64, 1, 0, 0.01), M.neon({ color: '#d4b05a', intensity: 1.4, fog: true }));
@@ -400,7 +400,7 @@ export function createScene(canvas, opt = {}) {
       G.gauge.visible = false;
       const lab = (t, c, h, x, y, z, left = true) => { const s = label(t, c, h); s.position.set(left ? x + s.scale.x / 2 : x, y, z); G.labels.add(s); };
       lab(map.gateText, '#ffd36a', 0.3, -1.75, map.gateY + 0.2, -1.6);
-      lab(map.abyssText, '#c0603f', 0.26, -1.75, map.floorY != null ? ay + 0.2 : map.yOf(0) - 0.2, -1.6);   // money: $0 under its line, clear of the goal
+      lab(map.abyssText, '#c96a4a', 0.26, -1.75, map.floorY != null ? ay + 0.2 : map.yOf(0) - 0.2, -1.6);   // money: $0 under its line, clear of the goal
       lab('TODAY', '#efe3cc', 0.17, 0, startY - 0.5, zOf(0), false);
       lab(map.money ? '12 MONTHS' : `DAY ${map.H}`, '#b8a07c', 0.5, 0, map.gateY * 0.5, zOf(map.H) - 1, false);
       if (!map.money && map.H > 12) lab('SESSION 10', '#ffe7a8', 0.22, 2.2, map.gateY + 0.14, zOf(10), false);

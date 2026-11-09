@@ -1,7 +1,7 @@
 /* ARES: the war room. Blood-red on black; the type is the OLYMPUS kit's (Orbitron / Rajdhani, self-hosted in ../jarvis/). */
 :root {
   --bg: #0a0907; --bg2: #050203; --panel: rgba(20, 17, 13, .88); --line: rgba(192, 96, 63, .2);
-  --text: #f3ece0; --dim: #bfb8b1; --red: #c0603f; --go: #9bab63; --wait: #e0a060; --halt: #c0603f;
+  --text: #f3ece0; --dim: #bfb8b1; --red: #c96a4a; --go: #9bab63; --wait: #e0a060; --halt: #c96a4a;
   --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px);
   --dock-h: 150px;
   color-scheme: dark;
@@ -17,7 +17,7 @@ body { background: radial-gradient(120% 60% at 50% 28%, #241c13 0%, #100d09 50%,
 .hud { position: fixed; top: 0; left: 0; right: 0; padding: calc(10px + var(--st)) calc(16px + var(--sr)) 14px calc(16px + var(--sl)); pointer-events: none;
   background: linear-gradient(180deg, rgba(5, 2, 3, .92) 0%, rgba(5, 2, 3, .55) 70%, rgba(5, 2, 3, 0) 100%); }
 .title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-h1 { margin: 0; font: 600 22px/1.1 var(--ag-serif); letter-spacing: .01em; color: #c0603f;
+h1 { margin: 0; font: 600 22px/1.1 var(--ag-serif); letter-spacing: .01em; color: #c96a4a;
    }
 .sub { margin: 3px 0 0; color: var(--dim); font-size: 13px; }
 .tag { font: 700 12px var(--ag-num); letter-spacing: .01em; padding: 2px 7px; border-radius: 6px; color: #100c08; background: var(--wait); }
@@ -127,10 +127,10 @@ input[type="range"] { width: 100%; min-height: 44px; accent-color: var(--red); }
 .ptab th { padding: 3px 4px; text-align: right; font: 600 10px/1.2 var(--oly-ui, sans-serif); letter-spacing: .01em;  color: var(--dim); }
 .ptab th:first-child, .ptab td.k { text-align: left; }
 .ptab td { padding: 6px 4px; text-align: right; font-size: 13px; border-top: 1px solid var(--line); }
-.ptab td.k { font-weight: 700; } .ptab td.good { color: #9bab63; } .ptab td.bad { color: #c0603f; font-weight: 700; }
-.ptab tr.me td { background: rgba(192, 96, 63, .14); } .ptab tr.dim td { color: var(--dim); } .ptab tr.bad td.k { color: #c0603f; }
+.ptab td.k { font-weight: 700; } .ptab td.good { color: #9bab63; } .ptab td.bad { color: #c96a4a; font-weight: 700; }
+.ptab tr.me td { background: rgba(192, 96, 63, .14); } .ptab tr.dim td { color: var(--dim); } .ptab tr.bad td.k { color: #c96a4a; }
 .pbar { display: block; height: 10px; border-radius: 6px; background: rgba(243, 236, 224, .09); overflow: hidden; }
-.pbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #c0603f, #e0a060 45%, #9bab63); transition: width .5s cubic-bezier(.16, 1, .3, 1); }
+.pbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #c96a4a, #e0a060 45%, #9bab63); transition: width .5s cubic-bezier(.16, 1, .3, 1); }
 @media (prefers-reduced-motion: reduce) { .pbar i, .pd summary::after { transition: none; } }
 
 /* ---- AGORA pass: warm marble night, serif titles, calm gold (docs/DESIGN_AGORA.md) */

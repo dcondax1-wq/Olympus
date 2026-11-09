@@ -50,7 +50,7 @@ export function ago(sec) {
 }
 
 // Category colours: glowing, told apart on a near-black ground. Gold and mint lead (Tyche's own colours).
-export const PALETTE = ['#c8a24a', '#6f9bb8', '#c0603f', '#9bab63', '#e0a060', '#b0866a', '#8a9a7a', '#4b7a99', '#d9c58a', '#cfc4b2'];
+export const PALETTE = ['#c8a24a', '#6f9bb8', '#c96a4a', '#9bab63', '#e0a060', '#b0866a', '#8a9a7a', '#4b7a99', '#d9c58a', '#cfc4b2'];
 export const OTHER_COLOR = '#988d81';
 
 /** {category name -> colour}: the biggest categories (by stake, then count) get the first colours; "Other" stays grey. */

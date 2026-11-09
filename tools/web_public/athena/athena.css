@@ -1,7 +1,7 @@
 /* ATHENA: the library. Deep blue night with warm gold; the type is the OLYMPUS kit's (Orbitron / Rajdhani, self-hosted in ../jarvis/). */
 :root {
   --bg: #110e0a; --bg2: #080705; --panel: rgba(28, 22, 16, .9); --line: #3a3228;
-  --text: #f3ece0; --dim: #cfc4b2; --acc: #c8a24a; --gold: #c8a24a; --ok: #9bab63; --bad: #c0603f;
+  --text: #f3ece0; --dim: #cfc4b2; --acc: #c8a24a; --gold: #c8a24a; --ok: #9bab63; --bad: #c96a4a;
   --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px);
   --stage-h: clamp(238px, 35vh, 330px); --dock-h: 124px;
   color-scheme: dark;

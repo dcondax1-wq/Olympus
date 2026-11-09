@@ -157,7 +157,7 @@ html[data-fx="off"] #flash.go { animation: none; }
 /* ---- 2026-11-03 upgrade: the rank card opens the ladder; weekly bosses, trophies, the ladder sheet, the rank-up banner */
 .rank { cursor: pointer; }
 .rank:focus-visible { outline: 2px solid var(--a-gold); outline-offset: 2px; }
-.boss { --bc: #c0603f; display: flex; flex-direction: column; gap: 6px; padding: 12px; margin-bottom: 8px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--bc) 45%, transparent);
+.boss { --bc: #c96a4a; display: flex; flex-direction: column; gap: 6px; padding: 12px; margin-bottom: 8px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--bc) 45%, transparent);
   background: linear-gradient(160deg, color-mix(in srgb, var(--bc) 14%, transparent), rgba(243, 236, 224, .02)); }
 .boss.big { box-shadow: 0 4px 14px rgba(0, 0, 0, .3); }
 .boss.slain { border-color: rgba(var(--a-gold-rgb), .7); background: linear-gradient(160deg, rgba(var(--a-gold-rgb), .18), rgba(var(--a-gold-rgb), .03)); }
@@ -224,7 +224,7 @@ html[data-fx="off"] #flash.go { animation: none; }
 /* ---- 2026-11-04 (JOB 10+11): the record sections under Quests, Trophies and the XP log */
 .wkboard, .rec { margin-top: 14px; padding: 12px; border-radius: 14px; border: 1px solid var(--oly-line); background: rgba(243, 236, 224, .03); }
 .wkboard h3, .rec h3 { margin: 0 0 8px; font: 700 12px/1.2 var(--ag-num); letter-spacing: .01em;  color: var(--a-gold); }
-.wkrow { --bc: #c0603f; display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(243, 236, 224, .06); font-size: 12.5px; }
+.wkrow { --bc: #c96a4a; display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(243, 236, 224, .06); font-size: 12.5px; }
 .wkrow:first-of-type { border-top: 0; }
 .wkrow b { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
 .wkrow .pips { display: flex; gap: 3px; }
@@ -239,7 +239,7 @@ html[data-fx="off"] #flash.go { animation: none; }
 .sq { display: block; aspect-ratio: 2 / 1; min-height: 14px; border-radius: 4px; background: rgba(243, 236, 224, .06); border: 1px solid transparent; }
 .sq.clean { background: var(--a-ok); box-shadow: 0 4px 14px rgba(0, 0, 0, .3); }
 .sq.quiet { background: rgba(155, 171, 99, .32); }
-.sq.broken { background: #c0603f; box-shadow: 0 4px 14px rgba(0, 0, 0, .3); }
+.sq.broken { background: #c96a4a; box-shadow: 0 4px 14px rgba(0, 0, 0, .3); }
 .sq.future { background: transparent; border-color: rgba(243, 236, 224, .05); }
 .sq.today { border-color: var(--a-gold); }
 .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 8px 0 4px; font-size: 12px; color: var(--oly-dim); }
@@ -274,7 +274,7 @@ html[data-fx="off"] #flash.go { animation: none; }
 .desk .rhythm .band { fill: rgba(155, 171, 99, .12); stroke: rgba(155, 171, 99, .35); stroke-dasharray: 3 3; }
 .desk .rhythm .wk { fill: rgba(243, 236, 224, .28); }
 .desk .rhythm .wk.plan { fill: var(--a-ok); }
-.desk .rhythm .wk.over { fill: #c0603f; }
+.desk .rhythm .wk.over { fill: #c96a4a; }
 .desk .rhythm .wk.under { fill: rgba(var(--a-gold-rgb), .6); }
 .desk .rhythm .wk.now { stroke: #f3ece0; stroke-width: 1.2; }
 .desk .rhythm .lab { fill: var(--oly-dim, #aba298); font: 700 10px/1 sans-serif; }
@@ -286,7 +286,7 @@ html[data-fx="off"] #flash.go { animation: none; }
 .qrow b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .qrow .qbar { height: 6px; border-radius: 3px; background: rgba(243, 236, 224, .1); overflow: hidden; }
 .qrow .qbar i { display: block; height: 100%; background: var(--a-ok); }
-.qrow.warn .qbar i { background: var(--a-gold); } .qrow.lapsed .qbar i { background: #c0603f; }
+.qrow.warn .qbar i { background: var(--a-gold); } .qrow.lapsed .qbar i { background: #c96a4a; }
 .qrow .st { font: 700 12px/1 var(--ag-num); text-align: right; }
 .qrow.warn .st { color: var(--a-gold); } .qrow.lapsed .st { color: #e0907a; }
 .sweep.warnline { color: var(--a-gold); }
@@ -389,7 +389,7 @@ body { font-family: var(--ag-sans); }
 .pace .dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #5a4c3a; background: transparent; }
 .pace .dots .trade i { background: var(--a-gold); border-color: var(--a-gold); }
 .pace .dots .bot i { background: #7f8a52; border-color: #7f8a52; }
-.pace .dots .broken i { background: #c0603f; border-color: #c0603f; }
+.pace .dots .broken i { background: #c96a4a; border-color: #c96a4a; }
 .pace .dots .today i { border-color: var(--a-gold); }
 .pace .dots .future i { border-style: dashed; opacity: .6; }
 .pace .pl, .pace .nx { margin: 6px 0 0; font-size: 13.5px; color: var(--oly-dim); }

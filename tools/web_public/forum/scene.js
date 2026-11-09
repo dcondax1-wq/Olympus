@@ -13,12 +13,12 @@ const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#c8a24a', bloom: '
 
 const TAU = Math.PI * 2;
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
-const TONE = { calm: '#aeb86e', watch: '#e0b060', storm: '#c0603f', info: '#4b7a99' };
+const TONE = { calm: '#aeb86e', watch: '#e0b060', storm: '#c96a4a', info: '#4b7a99' };
 const PIL = [[-3.4, 3], [3.4, 3], [-3.4, -3], [3.4, -3], [-3.4, -9], [3.4, -9]];     // x, z of the six pillars
 const ROSTRUM_Z = -14, TEMPLE_Z = -27;
 // [hour, top, middle, horizon]: the sky colours through the New York day
-const SKY = [[0, '#13100d', '#171410', '#2e2720'], [3, '#13100d', '#221d18', '#393028'], [5, '#302922', '#9c6b3c', '#c0603f'], [7, '#4b7a99', '#4b7a99', '#e0b060'],
-  [10, '#4b7a99', '#4b7a99', '#f3ece0'], [15, '#4b7a99', '#4b7a99', '#f3ece0'], [17, '#4b7a99', '#c0603f', '#e0b060'], [19, '#362e25', '#9c6b3c', '#c0603f'], [21, '#13100d', '#221d18', '#393028'], [24, '#13100d', '#171410', '#2e2720']];
+const SKY = [[0, '#13100d', '#171410', '#2e2720'], [3, '#13100d', '#221d18', '#393028'], [5, '#302922', '#9c6b3c', '#c96a4a'], [7, '#4b7a99', '#4b7a99', '#e0b060'],
+  [10, '#4b7a99', '#4b7a99', '#f3ece0'], [15, '#4b7a99', '#4b7a99', '#f3ece0'], [17, '#4b7a99', '#c96a4a', '#e0b060'], [19, '#362e25', '#9c6b3c', '#c96a4a'], [21, '#13100d', '#221d18', '#393028'], [24, '#13100d', '#171410', '#2e2720']];
 function skyAt(h) {
   let i = 0; while (i < SKY.length - 2 && h >= SKY[i + 1][0]) i++;
   const a = SKY[i], b = SKY[i + 1], t = Math.max(0, Math.min(1, (h - a[0]) / (b[0] - a[0])));
@@ -107,8 +107,8 @@ export function createForum(canvas, { O = null } = {}) {
   setTimeout(() => {                                                // 0.9 s after the first paint
     const shafts = FX.shafts({ count: 5, from: [-9, 16, 4], to: [0, 0, -6], width: 5, spread: [10, 0, 22], color: '#e0b060', strength: 0.1, seed: 4 });
     const dust = FX.dust({ count: 240, box: [14, 7, 46], color: '#e0b060', size: 4, strength: 0.8, seed: 15 }); dust.object.position.set(0, 0, -12);
-    const embers = FX.embers({ count: 140, origin: [-5.1, 2.5, -2], spread: [0.3, 0, 8], rise: 2.6, colors: ['#e0b060', '#e0b060', '#c0603f'], size: 5.5, wind: 0.15, seed: 8 });
-    const embers2 = FX.embers({ count: 140, origin: [5.1, 2.5, -2], spread: [0.3, 0, 8], rise: 2.6, colors: ['#e0b060', '#e0b060', '#c0603f'], size: 5.5, wind: -0.15, seed: 19 });
+    const embers = FX.embers({ count: 140, origin: [-5.1, 2.5, -2], spread: [0.3, 0, 8], rise: 2.6, colors: ['#e0b060', '#e0b060', '#c96a4a'], size: 5.5, wind: 0.15, seed: 8 });
+    const embers2 = FX.embers({ count: 140, origin: [5.1, 2.5, -2], spread: [0.3, 0, 8], rise: 2.6, colors: ['#e0b060', '#e0b060', '#c96a4a'], size: 5.5, wind: -0.15, seed: 19 });
     scene.add(shafts.object, dust.object, embers.object, embers2.object);
     fxList = [shafts, dust, embers, embers2];
     for (const x of [-6.6, 6.6]) for (let i = 0; i < NC; i += 2) { const ao = FX.contactAO({ radius: 0.9, strength: 0.7 }); ao.object.position.set(x, 0.03, 10 - i * 4.4); scene.add(ao.object); fxList.push(ao); }

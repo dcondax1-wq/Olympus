@@ -6,7 +6,7 @@
 
 export const FLOOR_Y = -6;
 const FOUNTAIN = [-3.4, FLOOR_Y, 1.2], SAND = [3.4, FLOOR_Y, 1.2], COLUMN = [0, FLOOR_Y, 0];     // the column is the wheel's axle
-const GOLD = '#c8a24a', MINT = '#9bab63', ROSE = '#c0603f';
+const GOLD = '#c8a24a', MINT = '#9bab63', ROSE = '#c96a4a';
 const BASIN_R = 1.7, COL_MAX = 5.2, TURNS = 2.2, HELIX_PTS = 72;
 const FALL_S = 1.55, GAP_S = 1.1, PAUSE_S = 3.5, REPLAY = 14;
 
@@ -232,7 +232,7 @@ export class Pools {
     this.pops.push({ id: 'p:' + b.key + ':' + Math.random().toString(36).slice(2, 6), pos: f.to.clone(), text: txt, win: b.win, age: 0 });
     if (this.pops.length > 4) this.pops.shift();
     if (b.win) { this.burst = 1; this.sparks.burst(f.to, this.lite ? 12 : 26, '#c8a24a', 3.4, 1.0); this.sparks.burst(f.to, 6, '#f3ece0', 2.2, 0.7); }
-    else { this.puffAt(f.to); this.sparks.burst(f.to, 8, '#c0603f', 1.6, 0.6, 0.6); }
+    else { this.puffAt(f.to); this.sparks.burst(f.to, 8, '#c96a4a', 1.6, 0.6, 0.6); }
   }
 
   puffAt(p) {

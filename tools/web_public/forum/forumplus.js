@@ -6,7 +6,7 @@ import { moneyToday, riskPlan, tradingDay, newsGate, evalOf } from './forumcore.
 const $ = (id) => document.getElementById(id);
 const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; };
 const usd = (x) => { const v = Math.round(+x || 0), s = '$' + Math.abs(v).toLocaleString('en-US'); return v < 0 ? '-' + s : s; };
-const TONE = { calm: '#7f8a52', watch: '#c8a24a', storm: '#c0603f', info: '#4b7a99' };
+const TONE = { calm: '#7f8a52', watch: '#c8a24a', storm: '#c96a4a', info: '#4b7a99' };
 
 export function renderMoney(box, home, pan) {
   if (!box) return null;

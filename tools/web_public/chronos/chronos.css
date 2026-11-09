@@ -2,7 +2,7 @@
    Jarvis's orb owns the bottom-right 80 x 160 px: the dock stops 96 px from the right; the sheet sits above the dock. Safe areas on
    every edge; no sideways scroll at 390 px; inputs are 16 px (no iPhone zoom). */
 :root {
-  --c-bg: #13100d; --c-acc: #c8a24a; --c-acc-rgb: 200, 162, 74; --c-gold: #c8a24a; --c-ok: #7f8a52; --c-bad: #c0603f; --dock-h: 186px;
+  --c-bg: #13100d; --c-acc: #c8a24a; --c-acc-rgb: 200, 162, 74; --c-gold: #c8a24a; --c-ok: #7f8a52; --c-bad: #c96a4a; --dock-h: 186px;
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
   --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px));
   --vh: var(--oly-vh, 100vh);
@@ -102,17 +102,17 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #43392
 .cmpcols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .cmpcol { display: flex; flex-direction: column; gap: 3px; padding: 10px; border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); font-size: 12px; min-width: 0; }
 .cmpcol.a { border-color: rgba(224, 176, 96, .5); } .cmpcol.b { border-color: rgba(224, 176, 96, .5); }
-.cmpcol b { font-size: 13px; } .cmpcol .big { font: 800 22px/1.1 var(--oly-display, sans-serif); color: var(--c-ok, #c8a24a); } .cmpcol .big.neg { color: #c0603f; }
+.cmpcol b { font-size: 13px; } .cmpcol .big { font: 800 22px/1.1 var(--oly-display, sans-serif); color: var(--c-ok, #c8a24a); } .cmpcol .big.neg { color: #c96a4a; }
 .cmpcol .note { font-size: 12px; }
 .cchart { display: block; width: 100%; height: auto; background: rgba(0, 0, 0, .25); border-radius: 10px; }
-.cchart .z { stroke: rgba(255, 255, 255, .18); } .cchart .stop { stroke: #c0603f; stroke-dasharray: 4 3; }
+.cchart .z { stroke: rgba(255, 255, 255, .18); } .cchart .stop { stroke: #c96a4a; stroke-dasharray: 4 3; }
 .cchart .lb { font: 600 12px var(--oly-ui, sans-serif); fill: var(--oly-dim); }
 .cchart .p { fill: none; stroke-width: 1.8; stroke-linejoin: round; opacity: .9; }
-.cchart .p.a, .cchart .p.best { stroke: #e0b060; } .cchart .p.b, .cchart .p.avg { stroke: #e0b060; } .cchart .p.worst { stroke: #c0603f; }
+.cchart .p.a, .cchart .p.best { stroke: #e0b060; } .cchart .p.b, .cchart .p.avg { stroke: #e0b060; } .cchart .p.worst { stroke: #c96a4a; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin: 0; font-size: 12px; color: var(--oly-dim); }
 .legend .k { display: inline-block; width: 18px; height: 3px; border-radius: 2px; } .legend .k.a { background: #e0b060; } .legend .k.b { background: #e0b060; }
 .reel { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); }
-.reel .rh { display: flex; justify-content: space-between; align-items: baseline; } .reel .rh .pos { color: #c8a24a; font-weight: 700; } .reel .rh .neg { color: #c0603f; font-weight: 700; }
+.reel .rh { display: flex; justify-content: space-between; align-items: baseline; } .reel .rh .pos { color: #c8a24a; font-weight: 700; } .reel .rh .neg { color: #c96a4a; font-weight: 700; }
 .reel .rd { font-size: 12px; color: var(--oly-dim); }
 .wtab { width: 100%; border-collapse: collapse; font-size: 12px; }
 .wtab th { text-align: right; font: 700 12px var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--oly-dim); padding: 4px; } .wtab th:first-child, .wtab td:first-child { text-align: left; }

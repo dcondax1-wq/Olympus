@@ -98,6 +98,25 @@
    ],
    "name": "olympus_sfx",
    "mode": "FULL"
+  },
+  {
+   "state": "FAIL",
+   "passed": 33,
+   "total": 35,
+   "seconds": 67.9,
+   "note": "",
+   "fails": [
+    "[FAIL] a. the kit: Jarvis's fonts, the type scale, 44 px taps, safe areas, the orb's 80 x 160, dvh with a vh fallback, reduced motion  -> ",
+    "[FAIL] e. datacity phone-high (phone): worst 66 calls / 80, 223258 tris / 250000, far overview 66 calls / 60, 47.8 MB heap (budget 40 on phone-high)  -> ({'calls': 66, 'triangles': 223258}, {'calls': 66, 'triangles': 183582, 'points': 15254"
+   ],
+   "argv": [
+    "-m",
+    "tests.test_olympus_kit",
+    "power",
+    "tiers"
+   ],
+   "name": "olympus_kit",
+   "mode": "FULL"
   }
  ]
 }

@@ -32,7 +32,7 @@ function bars(s) {
   svg.appendChild(sv('line', { x1: 6, x2: 354, y1: mid, y2: mid, stroke: '#3a3228', 'stroke-width': 1 }));
   s.byDay.forEach((d, i) => {
     const x = 18 + i * (w + gap), hh = d.n ? Math.max(3, Math.abs(d.usd) * sc) : 0, y = d.usd >= 0 ? mid - hh : mid;
-    if (d.n) svg.appendChild(sv('rect', { x, y, width: w, height: hh, rx: 4, fill: d.usd >= 0 ? '#7f8a52' : '#c0603f' }));
+    if (d.n) svg.appendChild(sv('rect', { x, y, width: w, height: hh, rx: 4, fill: d.usd >= 0 ? '#7f8a52' : '#c96a4a' }));
     else svg.appendChild(sv('rect', { x, y: mid - 1, width: w, height: 2, rx: 1, fill: '#3a3228' }));
     svg.appendChild(sv('text', { x: x + w / 2, y: 104, 'text-anchor': 'middle', fill: '#cfc4b2', 'font-size': 12 }, C.DOW[i]));
     if (d.n) svg.appendChild(sv('text', { x: x + w / 2, y: d.usd >= 0 ? y - 4 : y + hh + 12, 'text-anchor': 'middle', fill: '#f3ece0', 'font-size': 11 }, C.moneyS(d.usd)));

@@ -86,8 +86,8 @@ export function brief(pan, home, p) {
   if (vix != null) {
     const band = vix < 15 ? ['calm', 'Calm waters'] : vix < 20 ? ['calm', 'Normal'] : vix < 27 ? ['watch', 'Lively'] : ['storm', 'Stormy'];
     out.push({ id: 'fear', title: 'Fear (VIX)', glyph: 'Ω', tone: band[0], stat: `VIX ${readingOf(ares)}`, line: `${band[1]}. ${changeOf(ares)}`.trim(),
-      body: `${band[1]}: the VIX is ${readingOf(ares)} (${changeOf(ares) || 'no change shown'}). The bot's target is a VIX-band move, so a livelier day means a wider target and a wider stop, never a bigger bet: size follows the stop.`, color: '#c0603f' });
-  } else out.push({ id: 'fear', title: 'Fear (VIX)', glyph: 'Ω', tone: 'info', stat: 'No VIX', line: 'The volatility reading is missing.', body: 'The Pantheon has no volatility reading right now.', color: '#c0603f' });
+      body: `${band[1]}: the VIX is ${readingOf(ares)} (${changeOf(ares) || 'no change shown'}). The bot's target is a VIX-band move, so a livelier day means a wider target and a wider stop, never a bigger bet: size follows the stop.`, color: '#c96a4a' });
+  } else out.push({ id: 'fear', title: 'Fear (VIX)', glyph: 'Ω', tone: 'info', stat: 'No VIX', line: 'The volatility reading is missing.', body: 'The Pantheon has no volatility reading right now.', color: '#c96a4a' });
   // 3. the calendar
   const ath = godOf(pan, 'athena'), when = readingOf(ath);
   if (when) {

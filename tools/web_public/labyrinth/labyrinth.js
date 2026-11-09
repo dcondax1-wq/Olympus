@@ -116,7 +116,7 @@ function sizesView() {
   [0, 0.5, 1].forEach((p) => { svg.append(svgEl('line', { x1: L, x2: W - 8, y1: Y(p), y2: Y(p), stroke: 'rgba(243,236,224,.14)' })); const t = svgEl('text', { x: 2, y: Y(p) + 3 }); t.textContent = pct(p); svg.append(t); });
   S.rows.forEach((r) => { const t = svgEl('text', { x: X(r.m) - 8, y: H - 4 }); t.textContent = mx(r.m).replace('.00', ''); svg.append(t); });
   const line = (key, color) => svg.append(svgEl('polyline', { points: S.rows.map((r) => `${X(r.m).toFixed(1)},${Y(r[key]).toFixed(1)}`).join(' '), fill: 'none', stroke: color, 'stroke-width': 2.4, 'stroke-linejoin': 'round' }));
-  line('pass', '#c8a24a'); line('bust', '#c0603f');
+  line('pass', '#c8a24a'); line('bust', '#c96a4a');
   svg.append(svgEl('line', { x1: X(S.mult), x2: X(S.mult), y1: T, y2: H - B, stroke: '#f3ece0', 'stroke-dasharray': '3 3', opacity: 0.7 }));
   if (S.sweet) svg.append(svgEl('circle', { cx: X(S.sweet.m), cy: Y(S.sweet.pass), r: 4.5, fill: '#c8a24a', stroke: '#14110e' }));
   const tbl = h('table', 'tbl'), head = h('tr'); ['Size', 'Reach target', 'Hit floor', 'Median'].forEach((x) => head.append(h('th', '', x)));

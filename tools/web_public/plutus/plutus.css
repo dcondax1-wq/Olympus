@@ -1,7 +1,7 @@
 /* PLUTUS: the vault, AGORA look (marble, bronze, gold; serif headings, system sans). */
 :root {
   --bg: #13100d; --bg2: #13100d; --panel: rgba(21, 18, 15, .9); --line: rgba(127, 138, 82, .2);
-  --text: #f3ece0; --dim: #bfb6a8; --lime: #aeb86e; --gold: #e0b060; --bad: #c0603f; --ice: #e0b060;
+  --text: #f3ece0; --dim: #bfb6a8; --lime: #aeb86e; --gold: #e0b060; --bad: #c96a4a; --ice: #e0b060;
   --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px);
   --dock-h: 150px;
   color-scheme: dark;
@@ -60,7 +60,7 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .stat b { display: block; font: 700 18px var(--oly-display, sans-serif); }
 .stat span { font-size: 12px; color: var(--dim); }
 .line { padding: 7px 0; border-bottom: 1px solid rgba(255, 255, 255, .06); font-size: 13.5px; }
-.line.bad { color: #c0603f; }
+.line.bad { color: #c96a4a; }
 .src { color: var(--dim); font-size: 12px; margin-top: 8px; }
 
 .dock { position: fixed; left: 0; right: 0; bottom: 0; height: calc(var(--dock-h) + var(--sb)); padding: 8px calc(88px + var(--sr)) calc(8px + var(--sb)) calc(10px + var(--sl));
@@ -92,7 +92,7 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .cal .cell em { font-style: normal; font-size: 12px; color: var(--dim); } .cal .cell small { font-size: 12px; color: var(--gold); }
 .fall .wf { display: grid; grid-template-columns: 30px 1fr 74px 78px; gap: 6px; align-items: center; padding: 4px 0; font-size: 12.5px; font-variant-numeric: tabular-nums; }
 .fall .wk { color: var(--dim); } .fall .bars { display: grid; gap: 2px; } .fall .bars i { display: block; height: 6px; border-radius: 3px; transition: width .5s var(--oly-ease, ease); min-width: 2px; }
-.fall .bars .up { background: linear-gradient(90deg, #aeb86e, var(--lime)); } .fall .bars .dn { background: linear-gradient(90deg, #c0603f, var(--bad)); }
+.fall .bars .up { background: linear-gradient(90deg, #aeb86e, var(--lime)); } .fall .bars .dn { background: linear-gradient(90deg, #c96a4a, var(--bad)); }
 .fall .wd, .fall b { text-align: right; } .fall b { font-weight: 700; } .pos { color: var(--lime); } .neg { color: var(--bad); }
 .wirows { display: grid; gap: 6px; }
 .wirow { display: flex; justify-content: space-between; gap: 8px; min-height: 44px; padding: 6px 12px; text-align: left; }

@@ -178,8 +178,8 @@ textarea.field { resize: none; line-height: 1.35; font-family: inherit; }
 .choice:not(:disabled):active { transform: scale(0.985); }
 .choice.right { border-color: var(--ok); background: rgba(200, 162, 74, 0.14); }
 .choice.right span { background: var(--ok); color: #15120f; }
-.choice.wrong { border-color: #c0603f; background: rgba(192, 96, 63, 0.13); }
-.choice.wrong span { background: #c0603f; color: #221d18; }
+.choice.wrong { border-color: #c96a4a; background: rgba(192, 96, 63, 0.13); }
+.choice.wrong span { background: #c96a4a; color: #221d18; }
 .choice.off { opacity: 0.45; }
 .why p { margin: 4px 0 10px; color: var(--mut); line-height: 1.4; }
 .why > b { font: 700 16px/1 var(--ui); }
@@ -198,7 +198,7 @@ textarea.field { resize: none; line-height: 1.35; font-family: inherit; }
 .warn:not(:empty) { color: #e0b060; font-size: 13.5px; }
 .msg:empty { display: none; }
 .msg.ok { color: var(--ok); font-weight: 600; }
-.msg.bad { color: #c0603f; font-weight: 600; }
+.msg.bad { color: #c96a4a; font-weight: 600; }
 .titlebox[hidden] { display: none; }
 .starter .st-steps { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--mut); font-size: 13.5px; line-height: 1.35; }
 .starter .cta:disabled { opacity: 0.45; }

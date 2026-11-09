@@ -12,7 +12,7 @@ import { barsAt, formingBar, priceAt, stopAt, eventsUpTo } from './timeline.js';
 
 const COL = {
   up: new THREE.Color('#8a9a5a'), down: new THREE.Color('#d06a48'), level: new THREE.Color('#6fa3c4'),
-  spent: new THREE.Color('#b8a07c'), stop: new THREE.Color('#c0603f'), be: new THREE.Color('#d9c9a8'),
+  spent: new THREE.Color('#b8a07c'), stop: new THREE.Color('#c96a4a'), be: new THREE.Color('#d9c9a8'),
   gold: new THREE.Color('#d4b05a'), entry: new THREE.Color('#f3ece0'), limit: new THREE.Color('#6fa3c4'),
   win: new THREE.Color('#8a9a5a'), loss: new THREE.Color('#d06a48'), bev: new THREE.Color('#d9c9a8'), bolt: new THREE.Color('#f0dcb0'),
 };

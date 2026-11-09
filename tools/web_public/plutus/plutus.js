@@ -223,7 +223,7 @@ class Vault {
     }
     for (const m of [this.cols, this.ghost, this.goalRings]) { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
     const end = P.mean[P.months], txt = usd(end);
-    if (this.lastTag !== txt) { this.lastTag = txt; this.tag.material.map?.dispose(); this.tag.material.map = labelTex(txt, end >= 0 ? '#aeb86e' : '#c0603f'); this.tag.material.needsUpdate = true; }
+    if (this.lastTag !== txt) { this.lastTag = txt; this.tag.material.map?.dispose(); this.tag.material.map = labelTex(txt, end >= 0 ? '#aeb86e' : '#c96a4a'); this.tag.material.needsUpdate = true; }
     this.tag.position.set(x0 + (M - 1) * GAP, Math.max(0, end * sc) + 0.7, 0);
     this.dirty = true;
   }

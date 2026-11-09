@@ -1,7 +1,7 @@
 /* LEDGER: glass cards over a golden vault. The kit (../olympus/olympus.css) gives fonts, tokens and the close button. 16 px gutters, safe areas, 44 px targets, inputs 16 px
    (no iPhone zoom). The page scrolls; the vault is the top of it. The + button sits bottom-left: Jarvis's orb owns the bottom-right 80 x 160 px. */
 :root {
-  --g-bg: #15120f; --g-gold: #c8a24a; --g-gold-rgb: 200, 162, 74; --g-good: #7f8a52; --g-bad: #c0603f; --g-warn: #e0b060; --g-blue: #4b7a99;
+  --g-bg: #15120f; --g-gold: #c8a24a; --g-gold-rgb: 200, 162, 74; --g-good: #7f8a52; --g-bad: #c96a4a; --g-warn: #e0b060; --g-blue: #4b7a99;
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
   --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px));
 }
@@ -104,7 +104,7 @@ label.f.amt input { font: 800 24px/1 var(--oly-display, sans-serif); }
 .sheet header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .sheet h2 { margin: 0; font: 700 14px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--g-gold); }
 .more { margin: 0 0 10px; } .more summary { min-height: 44px; display: flex; align-items: center; color: var(--oly-dim); font-size: 12.5px; cursor: pointer; }
-.err { margin: 0 0 8px; padding: 8px 10px; border-radius: 10px; background: rgba(192, 96, 63, .12); border: 1px solid rgba(192, 96, 63, .5); color: #c0603f; font-size: 12.5px; } .err[hidden] { display: none; }
+.err { margin: 0 0 8px; padding: 8px 10px; border-radius: 10px; background: rgba(192, 96, 63, .12); border: 1px solid rgba(192, 96, 63, .5); color: #c96a4a; font-size: 12.5px; } .err[hidden] { display: none; }
 .row-b { display: flex; gap: 10px; }
 .go { flex: 1; min-height: 52px; border-radius: 14px; border: 1px solid rgba(224, 176, 96, .8); background: linear-gradient(#e0b060, #c8a24a); color: #43392f; font: 800 16px/1 var(--oly-display, sans-serif); letter-spacing: .01em; }
 .del { min-height: 52px; padding: 0 18px; border-radius: 14px; border: 1px solid rgba(192, 96, 63, .7); background: transparent; color: var(--g-bad); font-weight: 800; } .del[hidden] { display: none; }

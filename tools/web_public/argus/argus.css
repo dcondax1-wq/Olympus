@@ -1,7 +1,7 @@
 /* ARGUS: the watchtower. Deep navy, electric cyan; the type is the OLYMPUS kit's (Orbitron / Rajdhani, self-hosted in ../jarvis/). */
 :root {
   --bg: #13100d; --bg2: #13100d; --panel: rgba(32, 27, 22, .9); --line: rgba(75, 122, 153, .2);
-  --text: #f3ece0; --dim: #9a8f7d; --accent: #c8a24a; --ok: #7f8a52; --warn: #c8a24a; --bad: #c0603f; --idle: #4b7a99;
+  --text: #f3ece0; --dim: #9a8f7d; --accent: #c8a24a; --ok: #7f8a52; --warn: #c8a24a; --bad: #c96a4a; --idle: #4b7a99;
   --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px);
   --dock-h: 150px; --hud-h: 62px; --sheet-top: clamp(290px, 41vh, 380px);
   color-scheme: dark;
@@ -123,17 +123,17 @@ code { display: block; padding: 8px 10px; border-radius: 8px; background: rgba(0
 .tag.demo { color: #c8a24a; border-color: rgba(200, 162, 74, .5); background: transparent; }
 .demobtn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; margin: 8px 0; border-radius: 12px; border: 1px solid rgba(224, 176, 96, .6); background: rgba(224, 176, 96, .12); color: #e0b060; font-weight: 700; text-decoration: none; }
 .rdy { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--rc, #c8a24a); background: color-mix(in srgb, var(--rc, #c8a24a) 10%, transparent); }
-.rdy.ok { --rc: #c8a24a; } .rdy.warn { --rc: #e0b060; } .rdy.bad { --rc: #c0603f; }
+.rdy.ok { --rc: #c8a24a; } .rdy.warn { --rc: #e0b060; } .rdy.bad { --rc: #c96a4a; }
 .rdy b { font: 800 20px/1.1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--rc); } .rdy span { font-size: 13px; line-height: 1.4; color: var(--text, #f3ece0); }
 #p-money .note { margin: 6px 0 8px; font-size: 12px; color: var(--dim, #4b7a99); } #p-money .plainp { margin: 4px 0; font-size: 13px; line-height: 1.45; }
 .gates { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
 .gate { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: center; min-height: 44px; padding: 4px 10px; border-radius: 10px; background: rgba(255, 255, 255, .04); font-size: 13px; }
-.gate i { font-style: normal; font-weight: 800; text-align: center; color: var(--gc, #4b7a99); } .gate.ok { --gc: #c8a24a; } .gate.warn { --gc: #e0b060; } .gate.bad { --gc: #c0603f; }
+.gate i { font-style: normal; font-weight: 800; text-align: center; color: var(--gc, #4b7a99); } .gate.ok { --gc: #c8a24a; } .gate.warn { --gc: #e0b060; } .gate.bad { --gc: #c96a4a; }
 .gate .gv { color: var(--gc, #4b7a99); font-size: 12px; text-align: right; }
 .mrow { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; margin-top: 6px; border-radius: 14px; border: 1px solid rgba(224, 176, 96, .22); background: rgba(224, 176, 96, .05); }
 .mrow b { font-size: 14px; } .mrow .dd { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text, #f3ece0); }
-.mrow .mbar { display: block; height: 10px; border-radius: 6px; background: rgba(255, 255, 255, .09); overflow: hidden; } .mrow .mbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #c0603f, #e0b060 45%, #c8a24a); }
-.mrow .q { font-size: 12px; color: var(--dim, #4b7a99); } .mrow .q.warn { color: #e0b060; } .mrow .q.bad { color: #c0603f; }
+.mrow .mbar { display: block; height: 10px; border-radius: 6px; background: rgba(255, 255, 255, .09); overflow: hidden; } .mrow .mbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #c96a4a, #e0b060 45%, #c8a24a); }
+.mrow .q { font-size: 12px; color: var(--dim, #4b7a99); } .mrow .q.warn { color: #e0b060; } .mrow .q.bad { color: #c96a4a; }
 
 /* ===== AGORA revamp (2026-11-09): the verdict is the one big thing, money in plain numbers ===== */
 h1 { font: 600 28px/1.05 var(--ag-serif, Georgia, serif); color: #f3ece0; }
@@ -156,7 +156,7 @@ h1::after { content: ""; display: block; width: 56px; height: 2px; margin-top: 6
 .grp { text-transform: lowercase; } .grp::first-letter { text-transform: uppercase; }
 
 .heroc { display: grid; gap: 4px; padding: 16px 18px; margin: 0 0 12px; border-radius: 16px; background: #26211b; border: 1px solid #3a3228; border-left: 4px solid #4b7a99; }
-.heroc.ok { border-left-color: #7f8a52; } .heroc.warn { border-left-color: #e0b060; } .heroc.bad { border-left-color: #c0603f; }
+.heroc.ok { border-left-color: #7f8a52; } .heroc.warn { border-left-color: #e0b060; } .heroc.bad { border-left-color: #c96a4a; }
 .heroc .ag-money { font-size: 46px; } .heroc .mbar { display: block; height: 8px; border-radius: 99px; background: #2b251d; overflow: hidden; margin: 4px 0; }
 .heroc .mbar i { display: block; height: 100%; background: linear-gradient(90deg, #9c6b3c, #c8a24a); }
 .heroline { margin: 6px 0 0; font-size: 15px; line-height: 1.4; color: #f3ece0; }

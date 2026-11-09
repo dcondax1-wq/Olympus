@@ -35,7 +35,7 @@
   {"id": "hestia", "name": "Hestia", "glyph": "\u0397", "colour": "#c8a24a", "group": "trading", "groupName": "Trading", "purpose": "Today at home: what to do right now", "path": "hestia/", "live": true},
   {"id": "demeter", "name": "Demeter", "glyph": "\u0394", "colour": "#9aa564", "group": "trading", "groupName": "Trading", "purpose": "Account health: drawdown dials, payout rules", "path": "demeter/", "live": true},
   {"id": "apollo", "name": "Apollo", "glyph": "\u0391", "colour": "#e0b060", "group": "trading", "groupName": "Trading", "purpose": "Your weekly review and the one rule for next week", "path": "apollo/", "live": true},
-  {"id": "hera", "name": "Hera", "glyph": "\u03a9", "colour": "#c0603f", "group": "money", "groupName": "Money", "purpose": "The 12-month money plan, payouts, what to buy next", "path": "hera/", "live": true},
+  {"id": "hera", "name": "Hera", "glyph": "\u03a9", "colour": "#c96a4a", "group": "money", "groupName": "Money", "purpose": "The 12-month money plan, payouts, what to buy next", "path": "hera/", "live": true},
   {"id": "dionysus", "name": "Dionysus", "glyph": "\u03a3", "colour": "#b77a8a", "group": "money", "groupName": "Money", "purpose": "The Kalshi desk: guard, what-if, scan. Suggestions only", "path": "dionysus/", "live": true},
   {"id": "clio", "name": "Clio", "glyph": "\u039a", "colour": "#d8c9a8", "group": "trading", "groupName": "Trading", "purpose": "The research library: every study in plain words", "path": "clio/", "live": true},
   {"id": "atlas", "name": "Atlas", "glyph": "\u25c8", "colour": "#efc979", "group": "life", "groupName": "Life", "purpose": "A fast map of every Olympus dashboard", "path": "atlas/", "live": true},

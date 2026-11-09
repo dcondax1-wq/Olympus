@@ -90,7 +90,7 @@ function ritualToggle() {
 
 // ------------------------------------------------------------------------------------------------ the share card
 export function drawShare(S) {
-  const sp = shareSpec(S.last, S.st), col = { go: '#9bab63', wait: '#e0a060', halt: '#c0603f' }[sp.level];
+  const sp = shareSpec(S.last, S.st), col = { go: '#9bab63', wait: '#e0a060', halt: '#c96a4a' }[sp.level];
   const c = document.createElement('canvas'); c.width = 1080; c.height = 1350;
   const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 1350);
   g.addColorStop(0, '#15110c'); g.addColorStop(1, '#0a0907'); x.fillStyle = g; x.fillRect(0, 0, 1080, 1350);

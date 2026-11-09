@@ -53,7 +53,7 @@ export class Ambient {
       uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uC: { value: new THREE.Color() },
       uBase: { value: new THREE.Color() }, uAmt: { value: 0.62 },
     };
-    this.colours(['#3a2c3e', '#c0603f', '#9c6b3c'], '#14110e');
+    this.colours(['#3a2c3e', '#c96a4a', '#9c6b3c'], '#14110e');
     this.sky = new THREE.Mesh(new THREE.SphereGeometry(6000, 24, 16), new THREE.ShaderMaterial({
       uniforms: this.skyU, vertexShader: SKY_VS, fragmentShader: SKY_FS, side: THREE.BackSide, depthWrite: false, depthTest: false,
     }));

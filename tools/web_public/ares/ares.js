@@ -13,7 +13,7 @@ const Q = new URLSearchParams(location.search);
 const RM = O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 const $ = (id) => document.getElementById(id);
 const KEY = 'ares.v1';
-const LEVEL = { go: { color: '#9bab63', word: 'GO' }, wait: { color: '#e0a060', word: 'WAIT' }, halt: { color: '#c0603f', word: 'HALT' } };
+const LEVEL = { go: { color: '#9bab63', word: 'GO' }, wait: { color: '#e0a060', word: 'WAIT' }, halt: { color: '#c96a4a', word: 'HALT' } };
 const DEFAULTS = { plan: '50k', stage: 'eval', inst: 'MNQ', side: 'long', entry: '', stop: '', riskPct: 40, balance: '', peak: '', today: '', riskCap: '',
   maxTrades: 2, stopAfter: 2, tradesToday: 0, lossesToday: 0, news: false, hedge: false, checks: {}, day: '', botBalance: false };
 const S = { rules: null, st: { ...DEFAULTS }, site: null, acct: null, hall: null, errors: [], tab: 'trade', last: null };
@@ -167,7 +167,7 @@ class Room {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 120);
     this.yaw = 0.6; this.pitch = 0.3; this.dist = 20; this.t = 0; this.dirty = true; this.last = performance.now(); this.frames = [];
-    this.col = new THREE.Color('#c0603f'); this.tint = new THREE.Color('#c0603f');
+    this.col = new THREE.Color('#c96a4a'); this.tint = new THREE.Color('#c96a4a');
     this.glow = glowTex();
     this.build();
     try { this.dress = dressRoom(this); } catch (e) { this.dress = null; }          // bronze, steel, banners, torches, the hologram table (aresfx.js)
@@ -221,7 +221,7 @@ class Room {
     this.slabRisk.scale.set(1, Math.max(0.001, yB - yR), 1); this.slabRisk.position.set(0, (yB + yR) / 2, 0); this.slabRisk.visible = risk > 0;
     this.slabWin.scale.set(1, Math.max(0.001, yW - yB), 1); this.slabWin.position.set(0, (yB + yW) / 2, 0); this.slabWin.visible = win > 0;
     this.tint.set(lv.color); this.ring.material.color.copy(this.tint); this.orb.material.emissive.copy(this.tint); this.halo.material.color.copy(this.tint); this.key.color.copy(this.tint);
-    this.spikes.material.emissive.set(R.level === 'halt' ? '#c0603f' : R.level === 'wait' ? '#b0763c' : '#4f5633');
+    this.spikes.material.emissive.set(R.level === 'halt' ? '#c96a4a' : R.level === 'wait' ? '#b0763c' : '#4f5633');
     this.label('floor', 'FLOOR ' + usd(lo), '#e0907a', 2.1, 0.9); this.label('top', (S.st.stage === 'funded' ? 'PAYOUT ' : 'TARGET ') + usd(top), '#9bab63', 2.1, H + 0.3);
     this.label('you', 'YOU ' + usd(z.bal), '#f3ece0', -2.1, yB);
     this.yB = yB; this.dirty = true;

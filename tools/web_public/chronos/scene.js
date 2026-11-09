@@ -16,8 +16,8 @@ import { dress } from './dress.js';
 const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#c8a24a', bloom: '#c8a24a', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
 
 const W = 9.6, H = 6.6, X0 = -W / 2, Y0 = 0.2, ZC = 0;
-const ACC = '#4b7a99', CYAN = '#e0b060', GREEN = '#c8a24a', RED = '#c0603f', GOLD = '#e0b060', VIOLET = '#e0b060';
-const KIND = { sweep: '#c0603f', idm: '#e0b060', disp: '#e0b060', cisd5: CYAN, limit: VIOLET, tap: '#e6dbca', cisd1: CYAN, entry: GREEN, be: '#f3ece0', setup: '#e0b060', session: '#4b7a99', level: VIOLET };
+const ACC = '#4b7a99', CYAN = '#e0b060', GREEN = '#c8a24a', RED = '#c96a4a', GOLD = '#e0b060', VIOLET = '#e0b060';
+const KIND = { sweep: '#c96a4a', idm: '#e0b060', disp: '#e0b060', cisd5: CYAN, limit: VIOLET, tap: '#e6dbca', cisd1: CYAN, entry: GREEN, be: '#f3ece0', setup: '#e0b060', session: '#4b7a99', level: VIOLET };
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
 const ease = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
 

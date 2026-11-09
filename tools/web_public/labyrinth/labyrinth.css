@@ -1,7 +1,7 @@
 /* LABYRINTH in the AGORA look (docs/DESIGN_AGORA.md): warm marble cards over a bronze maze. Jarvis's orb owns the bottom-right 80 x 160 px:
    the dock stops 96 px from the right; the sheet sits above the dock. Safe areas on every edge; no sideways scroll at 390 px; inputs are 16 px (no iPhone zoom). */
 :root {
-  --l-bg: #14110e; --l-red: #c0603f; --l-red-rgb: 192, 96, 63; --l-gold: #c8a24a; --l-ok: #7f8a52; --dock-h: 232px;
+  --l-bg: #14110e; --l-red: #c96a4a; --l-red-rgb: 192, 96, 63; --l-gold: #c8a24a; --l-ok: #7f8a52; --dock-h: 232px;
   --panel: #1d1914; --raise: #26211b; --line: #3a3228; --text: #f3ece0; --soft: #cfc4b2; --muted: #9a8f7d;
   --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; --num: 'SF Pro Rounded', -apple-system, system-ui, sans-serif;
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
@@ -115,7 +115,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #3a2a1
 .ruin b { font: 700 22px/1 var(--num); color: var(--gc, #7f8a52); }
 .ruin .lv { font: 600 13px/1 -apple-system, system-ui, sans-serif; color: var(--gc, #7f8a52); text-transform: capitalize; }
 .ruin p { display: none; }
-.ruin[data-level="moderate"] { --gc: #e0b060; } .ruin[data-level="high"] { --gc: #c98a4a; } .ruin[data-level="extreme"] { --gc: #c0603f; }
+.ruin[data-level="moderate"] { --gc: #e0b060; } .ruin[data-level="high"] { --gc: #c98a4a; } .ruin[data-level="extreme"] { --gc: #c96a4a; }
 .bestbtn { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 76px; min-height: 44px; padding: 4px 10px; border-radius: 12px; border: 1px solid var(--l-gold); background: #2a2217; color: var(--soft); }
 .bestbtn .k { font-size: 12px; color: var(--soft); }
 .bestbtn b { font: 700 16px/1 var(--num); color: var(--l-gold); }
@@ -127,7 +127,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #3a2a1
 .heatrows { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
 .heatrows > div { display: grid; grid-template-columns: 58px 1fr 44px; align-items: center; gap: 8px; font-size: 13px; }
 .heatrows .bar { height: 10px; border-radius: 6px; background: #33291f; overflow: hidden; }
-.heatrows .bar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #7f8a52, #e0b060 50%, #c0603f); }
+.heatrows .bar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #7f8a52, #e0b060 50%, #c96a4a); }
 .heatrows .n { color: var(--muted); } .heatrows .v { text-align: right; font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { .gauge .arc, .gauge .needle { transition: none; } }
 /* a sheet is open: the verdict shrinks to the three odds so the sheet has room (the money lines and the gauge come back when it closes) */

@@ -61,7 +61,7 @@ function renderKeep(P) {
   const top = Math.max(1, ...P.rows.map((r) => Math.abs(r.six))), list = h('div', 'rbars');
   P.rows.forEach((r) => {
     const line = h('div', 'rb'), i = h('i'), bar = h('span', 'bar');
-    i.style.width = `${Math.max(3, Math.round((Math.abs(r.six) / top) * 100))}%`; if (r.six < 0) i.style.background = 'var(--ag-terra, #c0603f)'; bar.append(i);
+    i.style.width = `${Math.max(3, Math.round((Math.abs(r.six) / top) * 100))}%`; if (r.six < 0) i.style.background = 'var(--ag-terra, #c96a4a)'; bar.append(i);
     line.append(h('em', '', `${r.n} x ${r.name}`), bar, h('b', r.six >= 0 ? 'good' : 'bad', usd(r.six)));
     list.append(line);
   });

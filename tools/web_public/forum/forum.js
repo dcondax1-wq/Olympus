@@ -21,7 +21,7 @@ async function getJSON(url, ms = 6000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
   try { if (wasGone(url)) return null; const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); if (r.status === 404) markGone(url); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
-const TONE = { calm: ['#aeb86e', 'CALM'], watch: ['#e0b060', 'WATCH'], storm: ['#c0603f', 'CAUTION'], info: ['#4b7a99', 'READ'] };
+const TONE = { calm: ['#aeb86e', 'CALM'], watch: ['#e0b060', 'WATCH'], storm: ['#c96a4a', 'CAUTION'], info: ['#4b7a99', 'READ'] };
 const OATH = oath();
 
 // ------------------------------------------------------------------------------------------------ the clock

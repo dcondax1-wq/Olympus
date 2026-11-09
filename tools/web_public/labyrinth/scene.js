@@ -15,7 +15,7 @@ import * as M from '../olympus/materials.js';
 import * as FX from '../olympus/fx-atmos.js';
 
 const W = 22, H = 8.5, XL = -W / 2;
-const RED = '#c0603f', GOLD = '#d4b05a', CYAN = '#efe0bd';   // AGORA: terracotta floor wall, gold gate, a warm ivory trail
+const RED = '#c96a4a', GOLD = '#d4b05a', CYAN = '#efe0bd';   // AGORA: terracotta floor wall, gold gate, a warm ivory trail
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
 
 function mazeCells(cols, rows, seed) {                    // a seeded depth-first maze: the walls that remain

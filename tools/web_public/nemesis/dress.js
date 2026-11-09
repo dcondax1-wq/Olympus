@@ -27,7 +27,7 @@ export function dress({ scene, camera, lite }) {
     gr.addColorStop(0, 'rgba(224, 176, 96,1)'); gr.addColorStop(0.34, 'rgba(192, 96, 63,.95)'); gr.addColorStop(0.4, 'rgba(192, 96, 63,.3)'); gr.addColorStop(1, 'rgba(192, 96, 63,0)');
     g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, color: new THREE.Color('#c0603f').multiplyScalar(1.6), transparent: true, fog: false, depthWrite: false }));
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, color: new THREE.Color('#c96a4a').multiplyScalar(1.6), transparent: true, fog: false, depthWrite: false }));
     m.scale.set(30, 30, 1); m.position.set(40, 34, -70); scene.add(m); return m;
   });
   return {

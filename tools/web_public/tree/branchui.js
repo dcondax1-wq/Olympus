@@ -147,7 +147,7 @@ export async function makeShareImage(b) {
   x.fillStyle = 'rgba(155, 171, 99,.6)'; x.font = `500 26px ${mono}`; x.fillText('THE STRATEGY TREE · NQ', 84, 160);
   x.fillStyle = '#fff'; x.font = `800 84px ${mono}`; x.fillText(L.title, 84, 290);
   x.fillStyle = 'rgba(155, 171, 99,.8)'; x.font = `500 34px ${mono}`; x.fillText(L.sub.toUpperCase(), 84, 345);
-  const ok = b.allPos, pill = ok ? '#9bab63' : b.holds ? '#e0a060' : '#c0603f';
+  const ok = b.allPos, pill = ok ? '#9bab63' : b.holds ? '#e0a060' : '#c96a4a';
   x.fillStyle = pill; x.globalAlpha = 0.18; x.fillRect(84, 385, 760, 76); x.globalAlpha = 1; x.strokeStyle = pill; x.lineWidth = 2; x.strokeRect(84, 385, 760, 76);
   x.fillStyle = pill; x.font = `800 38px ${mono}`; x.fillText(L.verdict, 112, 435);
   // the three bars
@@ -155,7 +155,7 @@ export async function makeShareImage(b) {
   x.strokeStyle = 'rgba(243, 236, 224,.25)'; x.lineWidth = 2; x.beginPath(); x.moveTo(84, base); x.lineTo(W - 84, base); x.stroke();
   L.bars.forEach(([name, v], i) => {
     const bx = 120 + i * 300, h = Math.max(6, (Math.abs(v) / hi) * 260), up = v >= 0;
-    x.fillStyle = up ? '#9bab63' : '#c0603f'; x.fillRect(bx, up ? base - h : base, 200, h);
+    x.fillStyle = up ? '#9bab63' : '#c96a4a'; x.fillRect(bx, up ? base - h : base, 200, h);
     x.fillStyle = '#fff'; x.font = `800 44px ${mono}`; x.textAlign = 'center'; x.fillText((v < 0 ? '-$' : '+$') + Math.abs(v).toFixed(1), bx + 100, up ? base - h - 18 : base + h + 52);
     x.fillStyle = 'rgba(155, 171, 99,.7)'; x.font = `600 30px ${mono}`; x.fillText(name, bx + 100, base + 120 + (up ? 0 : 0)); x.textAlign = 'left';
   });

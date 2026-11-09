@@ -17,7 +17,7 @@ const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
 const KEY = 'argus.v1';
 const N_EYES = 100;
-const COLOR = { ok: '#c8a24a', warn: '#e0b060', bad: '#c0603f', idle: '#4b7a99' };
+const COLOR = { ok: '#c8a24a', warn: '#e0b060', bad: '#c96a4a', idle: '#4b7a99' };
 const GROUPS = { bots: 'THE BOTS', pc: 'THE PC', feed: 'PRICES AND NINJATRADER', pipes: 'THE CLOUD', rules: 'MFFU RULES AND MONEY', apps: 'OLYMPUS APPS' };
 const S = { fixOpen: new Set(), hist: null, copied: null, R: null, tab: 'fix', sel: null, offline: false, asOf: null, errors: [], room: null, loaded: false, open: new Set() };
 

@@ -12,7 +12,7 @@
 import { addDays, weekday, dayNumber, cleanEvents } from './rules.js';
 
 export const BOSSES = [
-  { id: 'minotaur', name: 'The Minotaur of Revenge', glyph: 'MI', color: '#c0603f', title: 'No revenge trade',
+  { id: 'minotaur', name: 'The Minotaur of Revenge', glyph: 'MI', color: '#c96a4a', title: 'No revenge trade',
     text: 'Five market days without a revenge trade: no manual order, no broken rule, never a second trade in a day. A quiet day counts.',
     needs: 'site', max: 5, src: 'Site events (bot_day, clean_trade, rule_broken)' },
   { id: 'cerberus', name: 'Cerberus of the Plan', glyph: 'CE', color: '#e0a060', title: 'Follow the plan',

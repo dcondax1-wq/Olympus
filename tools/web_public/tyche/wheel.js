@@ -169,7 +169,7 @@ export class Wheel {
       // no edge -> a small dim red ring
       const ratio = k.stake > 0 ? Math.sqrt(k.stake / o.cost) : 0.3;
       c.halo.scale.setScalar(c.r * 2.2 * Math.max(0.35, Math.min(2.4, ratio)));
-      c.halo.material.color.set(k.stake > 0 ? '#f3ece0' : '#c0603f');
+      c.halo.material.color.set(k.stake > 0 ? '#f3ece0' : '#c96a4a');
       c.halo.material.opacity = k.stake > 0 ? 0.7 : 0.4;
     });
   }

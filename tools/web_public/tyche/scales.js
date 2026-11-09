@@ -5,7 +5,7 @@
 
 export const SCALES_X = 13;
 const PIVOT_Y = 1.45, ARM = 2.3, DROP = 1.55, GROUND = -3.2, SKY_Z = 2.6, SKY_H = 2.1;
-const GOLD = '#c8a24a', MINT = '#9bab63', ROSE = '#c0603f';
+const GOLD = '#c8a24a', MINT = '#9bab63', ROSE = '#c96a4a';
 
 export class Scales {
   constructor(THREE, glow) {

@@ -12,7 +12,7 @@ const TOPICS = [
   ['trading', 'Trading', '#c8a24a', /^(trad|nq|es$|lit|futures?|mffu|prop|eval|ifvg|cisd|liquidity|setup|risk|journal|market)/],
   ['goals', 'Goals', '#b58aa0', /^(goal|plan|vision|habit|routine|discipline|mindset|review)/],
   ['health', 'Health', '#8a9a62', /^(gym|health|fitness|workout|training|sleep|diet|food|nutrition|run|lift|body)/],
-  ['kalshi', 'Kalshi', '#c0603f', /^(kalshi|prediction|polymarket|bets?$)/],
+  ['kalshi', 'Kalshi', '#c96a4a', /^(kalshi|prediction|polymarket|bets?$)/],
   ['business', 'Business', '#d08a3c', /^(business|biz|money|startup|side|brand|content|client|olympus|idea|work|project)/],
 ];
 const KIND_CLUSTERS = {

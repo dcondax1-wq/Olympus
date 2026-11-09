@@ -8,7 +8,7 @@ import * as T from './athenatraincore.js';
 import { load, save } from './athenastore.js';
 
 const KEY = 'train.v1';
-const COL = { up: '#9bab63', down: '#c0603f', entry: '#6f9bb8', stop: '#c0603f', target: '#9bab63', exit: '#c8a24a', sweep: '#b08064', opt: '#6f9bb8', pick: '#c8a24a', grid: 'rgba(111, 155, 184,.18)', text: '#6f9bb8' };
+const COL = { up: '#9bab63', down: '#c96a4a', entry: '#6f9bb8', stop: '#c96a4a', target: '#9bab63', exit: '#c8a24a', sweep: '#b08064', opt: '#6f9bb8', pick: '#c8a24a', grid: 'rgba(111, 155, 184,.18)', text: '#6f9bb8' };
 
 /** a tiny element builder: text goes in as text, never as HTML. props: class, text, vars (CSS variables), anything else is an attribute */
 export function h(tag, props, ...kids) {

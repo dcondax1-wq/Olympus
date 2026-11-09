@@ -11,7 +11,7 @@
 //   createPlus({F, open, setGen, toast, getGen}) -> {open(tab), close(), state}
 import { FMT } from './forgecore.js';
 
-const GOOD = '#7f8a52', BAD = '#c0603f', GOLD = '#c8a24a', ICE = '#d9c9a8';
+const GOOD = '#7f8a52', BAD = '#c96a4a', GOLD = '#c8a24a', ICE = '#d9c9a8';
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const BANDS = [[20, 'Healthy', GOOD, 'Most of the H1 gain is still there on new data.'], [50, 'Warm', GOLD, 'About a third to a half of the H1 gain did not carry over.'],
   [80, 'Overfit', '#c98a4a', 'Most of the H1 gain is gone on new data: it mostly fitted the past.'], [1e9, 'Burnt', BAD, 'The H1 gain is gone or reversed on new data. Do not trust it.']];

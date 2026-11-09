@@ -7,7 +7,7 @@
   --oly-accent: #c8a24a !important; --oly-accent-rgb: 200, 162, 74 !important;
   --oly-bg: #14110e; --oly-bg2: #1d1914; --oly-text: #f3ece0; --oly-dim: #cfc4b2;
   --oly-glass: rgba(29, 25, 20, .94); --oly-glass2: rgba(38, 33, 27, .97); --oly-line: #3a3228; --oly-edge: rgba(200, 162, 74, .28);
-  --oly-good: #7f8a52; --oly-bad: #c0603f; --oly-warn: #e0b060;
+  --oly-good: #7f8a52; --oly-bad: #c96a4a; --oly-warn: #e0b060;
   --oly-shadow: 0 6px 18px rgba(0, 0, 0, .35);
 }
 :root { --ag-num: 'SF Pro Rounded', -apple-system, system-ui, sans-serif; }

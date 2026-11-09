@@ -2,7 +2,7 @@
    Jarvis's orb owns the bottom-right 80 x 160 px: the dock stops 96 px from the right, and the sheet sits at least 176 px above the
    bottom so its edge never reaches the orb's corner. Safe areas on every edge; no sideways scroll at 390 px; inputs are 16 px. */
 :root {
-  --n-bg: #13100d; --n-acc: #c8a24a; --n-acc-rgb: 200, 162, 74; --n-plan: #c0603f; --n-soft: #c8a24a; --n-break: #9c6b3c; --n-ok: #7f8a52; --dock-h: 100px;
+  --n-bg: #13100d; --n-acc: #c8a24a; --n-acc-rgb: 200, 162, 74; --n-plan: #c96a4a; --n-soft: #c8a24a; --n-break: #9c6b3c; --n-ok: #7f8a52; --dock-h: 100px;
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
   --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px));
   --vh: var(--oly-vh, 100vh);

@@ -71,7 +71,7 @@ export function createScene(canvas, { O = null } = {}) {
 
   // ---- sky
   const stars = M.starfield({ count: 260, radius: 170, size: 1.6 }); scene.add(stars);
-  const neb = M.nebula({ colors: ['#e0b060', '#9c6b3c', '#4b7a99', '#c0603f'], count: 8, radius: 90, size: 95, opacity: 0.1 }); neb.position.y = 18; scene.add(neb);
+  const neb = M.nebula({ colors: ['#e0b060', '#9c6b3c', '#4b7a99', '#c96a4a'], count: 8, radius: 90, size: 95, opacity: 0.1 }); neb.position.y = 18; scene.add(neb);
 
   // ---- the floor: sand, a marble disc under the ladder, a gold ring, a marble plaza ring
   const sand = new THREE.Mesh(new THREE.CircleGeometry(15.5, 72), new THREE.MeshStandardMaterial({ color: '#392716', roughness: 0.96, metalness: 0 }));
@@ -215,20 +215,20 @@ export function createScene(canvas, { O = null } = {}) {
 
   // ---- the boss: a glass crystal with a neon core, HP pips on a ring, shards when it is slain
   const boss = new THREE.Group(); boss.position.set(0, 5, -12.5); scene.add(boss);
-  const bossShell = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15, 1), M.glass({ color: '#f3ece0', rim: '#c0603f', opacity: 0.28 }));
-  const bossCore = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), calmNeon({ color: '#c0603f', intensity: 4 }));
-  const bossWire = new THREE.Mesh(new THREE.IcosahedronGeometry(1.35, 0), new THREE.MeshBasicMaterial({ color: hdr('#c0603f', 1.6), wireframe: true, transparent: true, opacity: 0.5 }));
-  const bossHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#c0603f', 1.2), transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+  const bossShell = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15, 1), M.glass({ color: '#f3ece0', rim: '#c96a4a', opacity: 0.28 }));
+  const bossCore = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), calmNeon({ color: '#c96a4a', intensity: 4 }));
+  const bossWire = new THREE.Mesh(new THREE.IcosahedronGeometry(1.35, 0), new THREE.MeshBasicMaterial({ color: hdr('#c96a4a', 1.6), wireframe: true, transparent: true, opacity: 0.5 }));
+  const bossHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#c96a4a', 1.2), transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
   bossHalo.scale.set(6, 6, 1);
   boss.add(bossShell, bossCore, bossWire, bossHalo);
   bossShell.userData.boss = bossCore.userData.boss = bossWire.userData.boss = true;
   const pips = [];
   for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * TAU, p = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), calmNeon({ color: '#c0603f', intensity: 4 }));
+    const a = (i / 6) * TAU, p = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), calmNeon({ color: '#c96a4a', intensity: 4 }));
     p.position.set(Math.cos(a) * 1.8, -1.9, Math.sin(a) * 1.8); boss.add(p); pips.push(p);
   }
   const shards = new THREE.Group(); scene.add(shards);
-  const bossLight = new THREE.PointLight('#c0603f', 0, 26, 1.6); bossLight.position.copy(boss.position); scene.add(bossLight);
+  const bossLight = new THREE.PointLight('#c96a4a', 0, 26, 1.6); bossLight.position.copy(boss.position); scene.add(bossLight);
 
   // ---- effects: lightning, the burst, shockwave rings, petals
   const fx = { bolts: [], burst: null, rings: [], petals: null, t0: 0, rank: false, hold: false, on: false };
@@ -281,12 +281,12 @@ export function createScene(canvas, { O = null } = {}) {
   // ---- state
   const st = { progress: 0, shown: 0, color: new THREE.Color('#c8a24a'), labours: [], rank: 0, ranks: [], marker: 0, trophies: [], boss: null };
   let pick = null, levelups = 0;
-  const bossColor = new THREE.Color('#c0603f');
+  const bossColor = new THREE.Color('#c96a4a');
   function applyBoss() {
     const b = st.boss;
     boss.visible = !!b;
     if (!b) return;
-    bossColor.set(b.color || '#c0603f');
+    bossColor.set(b.color || '#c96a4a');
     bossCore.material.color.copy(bossColor).multiplyScalar(b.state === 'slain' ? 5 : 4);
     bossWire.material.color.copy(bossColor).multiplyScalar(1.6);
     bossHalo.material.color.copy(bossColor).multiplyScalar(1.2);

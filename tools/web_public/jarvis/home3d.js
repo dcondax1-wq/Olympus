@@ -90,7 +90,7 @@ export function findVix(f) {
 }
 
 // ------------------------------------------------------------------------------------------------ the reactor: state, voice, mode
-export const STATE_TINT = { idle: null, listening: '#c0603f', thinking: '#e0b060', speaking: null, alert: '#c0603f' };
+export const STATE_TINT = { idle: null, listening: '#c96a4a', thinking: '#e0b060', speaking: null, alert: '#c96a4a' };
 export const MODE_TINT = { auto: null, trading: '#4b7a99', research: '#9c8f6a', business: '#e0b060', life: '#b8714a' };
 export const modeTint = (m) => (Object.prototype.hasOwnProperty.call(MODE_TINT, m) ? MODE_TINT[m] : null);
 // the energy 0..1 the world should have now

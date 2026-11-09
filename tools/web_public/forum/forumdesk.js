@@ -5,7 +5,7 @@
 
 const FX = () => window.OLYMPUS_FX || null;
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
-const TONE = { calm: '#aeb86e', watch: '#e0b060', storm: '#c0603f', info: '#4b7a99' };
+const TONE = { calm: '#aeb86e', watch: '#e0b060', storm: '#c96a4a', info: '#4b7a99' };
 
 /** the Planner's tasks / events on this phone (read-only); null when there is none */
 export function readPlanner() {

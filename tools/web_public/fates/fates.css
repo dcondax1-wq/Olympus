@@ -1,7 +1,7 @@
 /* FATES in the AGORA look (docs/DESIGN_AGORA.md): warm marble panels, gold for passes, terracotta for fails, ivory stone for the undecided. */
 :root {
   --bg: #14110e; --panel: #1d1914; --raise: #26211b; --line: #3a3228; --txt: #f3ece0; --mut: #9a8f7d; --soft: #cfc4b2;
-  --gold: #c8a24a; --gold-rgb: 200, 162, 74; --red: #c0603f; --red-rgb: 192, 96, 63; --vio: #b8a07c; --vio-rgb: 184, 160, 124;
+  --gold: #c8a24a; --gold-rgb: 200, 162, 74; --red: #c96a4a; --red-rgb: 192, 96, 63; --vio: #b8a07c; --vio-rgb: 184, 160, 124;
   --up: #7f8a52; --sl: env(safe-area-inset-left, 0px); --sr: env(safe-area-inset-right, 0px);
   --st: env(safe-area-inset-top, 0px); --sb: env(safe-area-inset-bottom, 0px);
   --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; --num: 'SF Pro Rounded', -apple-system, system-ui, sans-serif;

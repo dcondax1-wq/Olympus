@@ -101,7 +101,7 @@ html[data-fx="low"] .candle.lit .flame, html[data-fx="off"] .candle.lit .flame {
 .desk.plus .mcard { --dtone: #4b7a99; padding: 10px 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--dtone) 45%, var(--oly-line)); background: linear-gradient(160deg, color-mix(in srgb, var(--dtone) 12%, transparent), rgba(255, 255, 255, .02)); }
 .mcard .mdd { display: block; font: 800 15px/1.25 var(--oly-ui, sans-serif); color: var(--dtone); font-variant-numeric: tabular-nums; }
 .mcard .mbar { display: block; height: 10px; margin: 8px 0; border-radius: 6px; background: rgba(255, 255, 255, .09); overflow: hidden; }
-.mcard .mbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #c0603f, #e0b060 45%, #aeb86e); transition: width .6s cubic-bezier(.16, 1, .3, 1); }
+.mcard .mbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #c96a4a, #e0b060 45%, #aeb86e); transition: width .6s cubic-bezier(.16, 1, .3, 1); }
 .mcard .mline, .mcard .mnote { margin: 4px 0; font-size: 12.5px; line-height: 1.4; color: var(--oly-dim); } .mcard .mnote { font-size: 12px; }
 .mcard .mnews { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--ntone, #4b7a99); background: rgba(255, 255, 255, .04); font-size: 12.5px; line-height: 1.4; color: var(--oly-text, #f3ece0); }
 .mtab { width: 100%; border-collapse: collapse; margin-top: 6px; font-variant-numeric: tabular-nums; }

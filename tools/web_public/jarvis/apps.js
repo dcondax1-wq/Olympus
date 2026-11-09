@@ -99,7 +99,7 @@ export const BUILT_INS = Object.freeze([
   app('hestia', 'Hestia', 'trading', '#c8a24a', 'Today at home: what to do right now', { glyph: 'Η' }),
   app('demeter', 'Demeter', 'trading', '#9aa564', 'Account health: drawdown dials, payout rules', { glyph: 'Δ' }),
   app('apollo', 'Apollo', 'trading', '#e0b060', 'Your weekly review and the one rule for next week', { glyph: 'Α' }),
-  app('hera', 'Hera', 'money', '#c0603f', 'The 12-month money plan, payouts, what to buy next', { glyph: 'Ω' }),
+  app('hera', 'Hera', 'money', '#c96a4a', 'The 12-month money plan, payouts, what to buy next', { glyph: 'Ω' }),
   app('dionysus', 'Dionysus', 'money', '#b77a8a', 'The Kalshi desk: guard, what-if, scan. Suggestions only', { glyph: 'Σ' }),
   app('clio', 'Clio', 'trading', '#d8c9a8', 'The research library: every study in plain words', { glyph: 'Κ' }),
   app('atlas', 'Atlas', 'life', '#efc979', 'A fast map of every Olympus dashboard', { glyph: '\u25c8' }),

@@ -10,7 +10,7 @@ function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.c
 function sv(tag, attrs, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = String(text); return e; }
 const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
 const sign = (v) => (v > 0 ? 'pos' : v < 0 ? 'neg' : '');
-const COL = { ok: '#7f8a52', warn: '#e0b060', bad: '#c0603f', off: '#5b5144' };
+const COL = { ok: '#7f8a52', warn: '#e0b060', bad: '#c96a4a', off: '#5b5144' };
 const S = { fixture: null, home: null, rules: null, roadmap: null, accounts: [], demo: false, forced: false, sel: 'zlarior', mult: 1, ready: false, today: '' };
 
 async function getJSON(url, ms) {

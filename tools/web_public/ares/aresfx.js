@@ -63,8 +63,8 @@ export function dressRoom(room) {
     const fl = AT.polishedFloor({ size: 70, color: '#13100c', y: -0.37, roughness: 0.28, metalness: 0.5, env: 0.55 }); S.add(fl.object); list.push(fl);
     const ap = AT.contactAO({ radius: 4.7, depth: 4.7, strength: 0.85 }); ap.object.position.set(0, -0.36, 0); S.add(ap.object); list.push(ap);
     for (let i = 0; i < 4; i++) { const a = Math.PI / 4 + (i * Math.PI) / 2, ao = AT.contactAO({ radius: 0.6, strength: 0.7 }); ao.object.position.set(Math.cos(a) * 4.5, -0.355, Math.sin(a) * 4.5); S.add(ao.object); list.push(ao); }
-    const em = AT.embers({ count: 90, origin: [torches[0][0], torches[0][1] + 0.05, torches[0][2]], spread: [0.2, 0, 0.2], rise: 2.4, colors: ['#f0dca0', '#e0a060', '#c0603f'], size: 5, wind: 0.2, seed: 5 }); S.add(em.object); list.push(em);
-    const em2 = AT.embers({ count: 90, origin: [torches[1][0], torches[1][1] + 0.05, torches[1][2]], spread: [0.2, 0, 0.2], rise: 2.4, colors: ['#f0dca0', '#e0a060', '#c0603f'], size: 5, wind: -0.2, seed: 9 }); S.add(em2.object); list.push(em2);
+    const em = AT.embers({ count: 90, origin: [torches[0][0], torches[0][1] + 0.05, torches[0][2]], spread: [0.2, 0, 0.2], rise: 2.4, colors: ['#f0dca0', '#e0a060', '#c96a4a'], size: 5, wind: 0.2, seed: 5 }); S.add(em.object); list.push(em);
+    const em2 = AT.embers({ count: 90, origin: [torches[1][0], torches[1][1] + 0.05, torches[1][2]], spread: [0.2, 0, 0.2], rise: 2.4, colors: ['#f0dca0', '#e0a060', '#c96a4a'], size: 5, wind: -0.2, seed: 9 }); S.add(em2.object); list.push(em2);
     extra.at = list; AT.setQuality(list, lite ? 'low' : 'high'); room.dirty = true;
   } catch (e) { /* the plain room */ } }, 900);
   const fx = FX();
@@ -72,7 +72,7 @@ export function dressRoom(room) {
     Promise.all(['fx-sky.js', 'fx-weather.js', 'fx-surface.js'].map((f) => import('../olympus/' + f + '?v=f1'))).then(() => {
       const t = { scene: S, camera: room.camera, renderer: R };
       const table = new THREE.Mesh(new THREE.CylinderGeometry(2.9, 2.9, 0.04, 64), new THREE.MeshBasicMaterial({ visible: false })); table.position.y = 0.05; S.add(table);
-      extra.handles.push(fx.hologram(t, { target: table, color: '#c0603f' }));
+      extra.handles.push(fx.hologram(t, { target: table, color: '#c96a4a' }));
       torches.slice(0, 2).forEach(([x, y, z]) => extra.handles.push(fx.fire(t, { position: [x, y - 0.1, z], height: 1.0, radius: 0.12, size: 0.36, light: 5, count: 160 })));
       extra.handles.push(fx.godRays(t, { position: [0, H + 4.5, 0], color: '#e0a060', intensity: 0.28, length: 8, count: 4 }));
       extra.handles.push(fx.dust(t, { color: '#e0a060', box: [9, 6, 9], center: [0, 2.6, 0], count: 260, size: 0.05 }));

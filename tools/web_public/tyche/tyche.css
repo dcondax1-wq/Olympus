@@ -5,7 +5,7 @@
 :root {
   color-scheme: dark;
   --bg: #0a0907; --glass: rgba(16, 13, 10, .6); --line: rgba(200, 162, 74, .18); --text: #f3ece0; --dim: #b4aca3;
-  --gold: #c8a24a; --mint: #9bab63; --rose: #c0603f; --violet: #6f9bb8; --amber: #e0a060;
+  --gold: #c8a24a; --mint: #9bab63; --rose: #c96a4a; --violet: #6f9bb8; --amber: #e0a060;
   --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px);
   --orb-w: 96px; --orb-h: 176px;
 }
@@ -169,10 +169,10 @@ h1 { margin: 0; font: 700 16px var(--ag-serif); letter-spacing: .01em; color: #f
 .bk-line { stroke: var(--gold); stroke-width: 2; stroke-linejoin: round;  }
 .bk-fan { fill: rgba(155, 171, 99, .17) !important; stroke: none; }
 .bk-med { stroke: var(--mint); stroke-width: 1.5; stroke-dasharray: 4 3; }
-.bk-floor { stroke: #c0603f; stroke-width: 1; stroke-dasharray: 3 4; opacity: .7; }
+.bk-floor { stroke: #c96a4a; stroke-width: 1; stroke-dasharray: 3 4; opacity: .7; }
 .bk-now { stroke: rgba(243, 236, 224, .25); stroke-width: 1; }
 .bk-dot { fill: #f3ece0;  }
-#bk-ruin[data-sign="up"], #bk-med[data-sign="up"] { color: var(--mint); } #bk-ruin[data-sign="down"], #bk-half[data-sign="down"], #bk-med[data-sign="down"] { color: #c0603f; }
+#bk-ruin[data-sign="up"], #bk-med[data-sign="up"] { color: var(--mint); } #bk-ruin[data-sign="down"], #bk-half[data-sign="down"], #bk-med[data-sign="down"] { color: #c96a4a; }
 
 /* 2026-11-04: the Fortune view (fortunepanel.js): leaderboard, streak coins, the fortune card, two bankrolls, the replay */
 #p-fortune { max-height: 36vh; max-height: 36dvh; display: flex; flex-direction: column; gap: 6px; }
@@ -204,13 +204,13 @@ h1 { margin: 0; font: 700 16px var(--ag-serif); letter-spacing: .01em; color: #f
 .cx-rest { margin: 0; padding: 7px 10px; border-radius: 10px; font-size: 12.5px; line-height: 1.35; color: #f0dca0; background: rgba(200, 162, 74, .08); border: 1px dashed rgba(200, 162, 74, .4); }
 .cx-hero { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .cx-hero b { font: 600 24px var(--ag-serif); font-variant-numeric: tabular-nums;  }
-.cx-hero span { color: var(--dim); font-size: 12.5px; } .cx-hero.up b { color: var(--mint); } .cx-hero.down b { color: #c0603f; }
+.cx-hero span { color: var(--dim); font-size: 12.5px; } .cx-hero.up b { color: var(--mint); } .cx-hero.down b { color: #c96a4a; }
 .cx-line { color: var(--text); }
 .cx-meter, .cx-bars { display: block; width: 100%; height: auto; max-height: 96px; margin: 2px 0 4px; }
-.cx-track { fill: rgba(243, 236, 224, .1); } .cx-bar.up { fill: var(--mint);  } .cx-bar.down { fill: #c0603f; }
+.cx-track { fill: rgba(243, 236, 224, .1); } .cx-bar.up { fill: var(--mint);  } .cx-bar.down { fill: #c96a4a; }
 .cx-need { stroke: var(--gold); stroke-width: 2.5; stroke-linecap: round; } .cx-t { fill: var(--dim); font: 700 12px var(--ag-num); } .cx-t.me { fill: var(--text); }
 .cx-mid { stroke: rgba(243, 236, 224, .25); stroke-width: 1; vector-effect: non-scaling-stroke; }
-.cx-b.up { fill: var(--mint); } .cx-b.down { fill: #c0603f; } .cx-b.thin { opacity: .35; }
+.cx-b.up { fill: var(--mint); } .cx-b.down { fill: #c96a4a; } .cx-b.thin { opacity: .35; }
 .cx-warn { margin: 0; padding: 6px 9px; border-radius: 9px; background: rgba(192, 96, 63, .1); color: #e0907a; font-size: 12.5px; }
 .cx-ladder { list-style: none; margin: 0 0 4px; padding: 0; display: grid; gap: 4px; }
 .cx-ladder li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 8px; align-items: baseline; padding: 5px 8px; border-radius: 9px; background: rgba(243, 236, 224, .04); font-size: 13px; }

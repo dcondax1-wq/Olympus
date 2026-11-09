@@ -28,7 +28,7 @@
      nothing, so these values (and every app's own) are today's look */
   --oly-bg: #14110e; --oly-bg2: #1d1914; --oly-glass2: rgba(38, 33, 27, .96); --oly-edge: rgba(200, 162, 74, .38);
   --oly-tone: #c8a24a; --oly-tone-rgb: 200, 162, 74; --oly-tone2: #e0b060; --oly-glow: #c8a24a; --oly-glow-rgb: 200, 162, 74;
-  --oly-ok: #7f8a52; --oly-bad: #c0603f; --oly-warn: #e0b060;
+  --oly-ok: #7f8a52; --oly-bad: #c96a4a; --oly-warn: #e0b060;
   --oly-fog: #2a2118; --oly-sky: #3a2a1c; --oly-emissive: #e0b060; --oly-bloom: #f0d9a0;
   /* motion: one set of curves and durations for every app */
   --oly-ease: cubic-bezier(.2, .8, .2, 1); --oly-ease-in-out: cubic-bezier(.65, 0, .35, 1); --oly-spring: cubic-bezier(.34, 1.56, .64, 1);

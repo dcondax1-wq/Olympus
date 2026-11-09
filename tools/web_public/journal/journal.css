@@ -1,6 +1,6 @@
 /* MNEMOSYNE: a glass journal over a soft rose aurora. The kit's tokens drive every colour; Jarvis's orb owns the bottom-right 80 x 160 px: the page ends 176 px above the
    bottom. Safe areas on every edge; no sideways scroll at 375 px; every tap target is at least 44 px; animations only without reduced motion and not in LITE. */
-:root { --j-acc: var(--oly-accent, #c8a24a); --j-rgb: var(--oly-accent-rgb, 200, 162, 74); --good: #7f8a52; --bad: #c0603f; --warn: #e0b060;
+:root { --j-acc: var(--oly-accent, #c8a24a); --j-rgb: var(--oly-accent-rgb, 200, 162, 74); --good: #7f8a52; --bad: #c96a4a; --warn: #e0b060;
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px)); --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px)); }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html { background: var(--oly-bg, #15120f); }

@@ -11,7 +11,7 @@ export const CACHE_KEY = 'inbox.cache.v1';    // { t, feeds: { name: json } }: t
 export const SOURCES = [
   { id: 'bots', name: 'Bots', icon: '◎', color: '#c8a24a', href: '../' },
   { id: 'argus', name: 'Argus', icon: 'Α', color: '#4b7a99', href: '../argus/' },
-  { id: 'kalshi', name: 'Kalshi', icon: 'K', color: '#c0603f', href: '../kalshi/' },
+  { id: 'kalshi', name: 'Kalshi', icon: 'K', color: '#c96a4a', href: '../kalshi/' },
   { id: 'bridge', name: 'Bridge', icon: 'Β', color: '#7f8a52', href: '../bridge/' },
   { id: 'mind', name: 'Jarvis learned', icon: 'Ω', color: '#e0b060', href: '../jarvis/' },
   { id: 'arena', name: 'Arena', icon: 'Α', color: '#9c6b3c', href: '../arena/' },

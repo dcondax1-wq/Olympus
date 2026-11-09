@@ -10,7 +10,7 @@ import { HIST_DAYS } from './arguscore.js';
 
 const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; };
 const ET = 'America/New_York';
-const COLOR = { ok: '#c8a24a', warn: '#e0b060', bad: '#c0603f', idle: '#4b7a99' };
+const COLOR = { ok: '#c8a24a', warn: '#e0b060', bad: '#c96a4a', idle: '#4b7a99' };
 const dayOf = (t) => new Intl.DateTimeFormat('en-CA', { timeZone: ET }).format(new Date(t * 1000));
 const clock = (t) => new Intl.DateTimeFormat('en-US', { timeZone: ET, hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(t * 1000));
 export const dur = (s) => (s < 90 ? `${Math.round(s)} sec` : s < 5400 ? `${Math.round(s / 60)} min` : s < 172800 ? `${(s / 3600).toFixed(1).replace(/\.0$/, '')} hours` : `${Math.round(s / 86400)} days`);

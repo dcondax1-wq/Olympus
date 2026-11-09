@@ -31,7 +31,7 @@ export function createVault(canvas, { O = null } = {}) {
   scene.add(new THREE.HemisphereLight('#e0b060', '#3a2c1e', 0.8));
   const key = new THREE.DirectionalLight('#e0b060', 0.9); key.position.set(-6, 10, 8); scene.add(key);
   const glow = new THREE.PointLight('#e0b060', 30, 22, 1.5); glow.position.set(0, 2.4, -1.5); scene.add(glow);
-  const lamp = new THREE.PointLight('#c0603f', 0, 14, 1.6); lamp.position.set(-4.5, 5.4, -1); scene.add(lamp);
+  const lamp = new THREE.PointLight('#c96a4a', 0, 14, 1.6); lamp.position.set(-4.5, 5.4, -1); scene.add(lamp);
 
   // ---- the room and the vault
   const floor = new THREE.Mesh(new THREE.CircleGeometry(30, 48), M.marble({ color: '#cfc4b0', roughness: 0.4, scale: 0.5, envMapIntensity: 0.7 }));

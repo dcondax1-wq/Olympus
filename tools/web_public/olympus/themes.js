@@ -36,7 +36,7 @@
       // inline) and Jarvis's own 'agora' palette in jarvis.css. Scenes keep their own colours (mix 0): warm light, no neon.
       tokens: { bg: '#14110e', bg2: '#1d1914', glass: 'rgba(29, 25, 20, .88)', glass2: 'rgba(38, 33, 27, .96)', line: '#3a3228',
         edge: 'rgba(200, 162, 74, .38)', text: '#f3ece0', dim: '#cfc4b2', accent: '#c8a24a', accent2: '#e0b060', glow: '#c8a24a',
-        ok: '#7f8a52', bad: '#c0603f', warn: '#e0b060', shadow: '0 6px 18px rgba(0, 0, 0, .35)', scheme: 'dark', themeColor: '#14110e',
+        ok: '#7f8a52', bad: '#c96a4a', warn: '#e0b060', shadow: '0 6px 18px rgba(0, 0, 0, .35)', scheme: 'dark', themeColor: '#14110e',
         fog: '#2a2118', sky: '#3a2a1c', emissive: '#e0b060', bloom: '#f0d9a0', mix: 0, harmony: 0 },
       jarvis: null },
     { id: 'olympus', name: 'Olympus Night', greek: 'ΟΛΥΜΠΟΣ', tag: 'Violet + gold · the old look', scheme: 'dark',

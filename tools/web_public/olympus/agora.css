@@ -2,7 +2,7 @@
 :root, :root[data-theme="agora"] {
   --ag-night: #14110e; --ag-panel: #1d1914; --ag-raise: #26211b; --ag-line: #3a3228;
   --ag-text: #f3ece0; --ag-soft: #cfc4b2; --ag-muted: #9a8f7d;
-  --ag-gold: #c8a24a; --ag-bronze: #9c6b3c; --ag-olive: #7f8a52; --ag-terra: #c0603f; --ag-aegean: #4b7a99; --ag-sun: #e0b060;
+  --ag-gold: #c8a24a; --ag-bronze: #9c6b3c; --ag-olive: #7f8a52; --ag-terra: #c96a4a; --ag-aegean: #4b7a99; --ag-sun: #e0b060;
   --ag-radius: 16px; --ag-radius-s: 12px; --ag-shadow: 0 6px 18px rgba(0,0,0,.35);
   --ag-serif: 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
   --ag-sans: -apple-system,'SF Pro Text',system-ui,'Helvetica Neue',Arial,sans-serif;

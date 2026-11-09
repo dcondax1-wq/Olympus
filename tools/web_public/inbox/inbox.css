@@ -50,7 +50,7 @@ html.framed #app { padding-top: 12px; }
 .it.pin { background: linear-gradient(112deg, rgba(224, 176, 96, .12), rgba(255,255,255,0) 40%), var(--oly-glass, rgba(25, 21, 18, .74)); }
 .ic { grid-row: 1 / span 2; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font: 800 16px/1 var(--oly-display, sans-serif); color: var(--c); background: rgba(255,255,255,.06); border: 1px solid var(--c); box-shadow: none; }
 .tx { margin: 0; font-size: 15.5px; line-height: 1.35; overflow-wrap: anywhere; padding-right: 16px; }
-.it.bad .tx { color: #c0603f; } .it.warn .tx { color: #e0b060; }
+.it.bad .tx { color: #c96a4a; } .it.warn .tx { color: #e0b060; }
 .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; color: var(--oly-dim); font-size: 13px; }
 .meta .src { font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--c); }
 .row { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
@@ -58,7 +58,7 @@ html.framed #app { padding-top: 12px; }
 .mini.ghost { background: transparent; border-color: var(--oly-line); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips button { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--oly-line); background: rgba(255,255,255,.05); font: 600 13.5px var(--oly-ui, sans-serif); display: inline-flex; align-items: center; gap: 8px; }
-.chips button[aria-pressed="true"] { border-color: rgba(192, 96, 63, .6); color: #c0603f; text-decoration: line-through; }
+.chips button[aria-pressed="true"] { border-color: rgba(192, 96, 63, .6); color: #c96a4a; text-decoration: line-through; }
 .chips i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
 .calm h2 { color: #c8a24a; }
 .foot { text-align: center; color: var(--oly-dim); font-size: 13px; margin: 4px 0 0; }
