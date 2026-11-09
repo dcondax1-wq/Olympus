@@ -5,13 +5,16 @@ const num = (x, d = 2) => (x == null || !Number.isFinite(x) ? '—' : x.toFixed(
 const sgn = (x, d = 2) => (x == null || !Number.isFinite(x) ? '—' : (x >= 0 ? '+' : '') + x.toFixed(d));
 
 export const LEAN = {
-  'risk-on': { cls: 'on', text: 'RISK-ON', hex: '#46d79a' },
-  'risk-off': { cls: 'off', text: 'RISK-OFF', hex: '#ff6b7f' },
-  neutral: { cls: 'mid', text: 'NEUTRAL', hex: '#f5b84a' },
-  caution: { cls: 'caution', text: 'CAUTION', hex: '#a78bfa' },
-  offline: { cls: 'dead', text: 'OFFLINE', hex: '#6b6878' },
+  'risk-on': { cls: 'on', text: 'RISK-ON', hex: '#9bab63' },
+  'risk-off': { cls: 'off', text: 'RISK-OFF', hex: '#d0715a' },
+  neutral: { cls: 'mid', text: 'NEUTRAL', hex: '#e0b060' },
+  caution: { cls: 'caution', text: 'CAUTION', hex: '#6f9bb8' },
+  offline: { cls: 'dead', text: 'OFFLINE', hex: '#8a8070' },
 };
-export const VERDICT = { 'RISK-ON': '#46d79a', 'RISK-OFF': '#ff6b7f', MIXED: '#f5b84a', SILENT: '#8a8798' };
+export const VERDICT = { 'RISK-ON': '#9bab63', 'RISK-OFF': '#d0715a', MIXED: '#e0b060', SILENT: '#8a8070' };
+/** AGORA: each god keeps one calm, warm colour (the build's own neon values are replaced on load) */
+export const GOD_COLOR = { poseidon: '#6b9bb8', zeus: '#d9b45a', ares: '#c9664a', athena: '#b7ab94', demeter: '#9bab63', helios: '#e0a050', nyx: '#9a86a0', artemis: '#d8d0c0' };
+export const calmColor = (g) => GOD_COLOR[g && g.key] || '#cfc4b2';
 
 function valid(d) {
   return d && d.app === 'pantheon' && Array.isArray(d.gods) && d.gods.length && d.council;
@@ -24,6 +27,7 @@ export async function loadPantheon(url = 'pantheon.json', force) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
     if (!valid(d)) throw new Error('bad ' + u);
+    d.gods.forEach((g) => { g.color = calmColor(g); });
     return d;
   };
   if (force !== 'demo') {
@@ -57,7 +61,7 @@ export function curveSvg(c, color) {
   const y = c.yields, W = 300, H = 70, P = 6, lo = Math.min(...y) - 0.1, hi = Math.max(...y) + 0.1;
   const px = (i) => P + (W - 2 * P) * i / (y.length - 1), py = (v) => H - 14 - (H - 22) * (v - lo) / (hi - lo);
   const pts = y.map((v, i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
-  const lab = [0, Math.floor(y.length / 2), y.length - 1].map((i) => `<text x="${px(i).toFixed(0)}" y="${H - 2}" fill="#b9b3a3" font-size="10"
+  const lab = [0, Math.floor(y.length / 2), y.length - 1].map((i) => `<text x="${px(i).toFixed(0)}" y="${H - 2}" fill="#cfc4b2" font-size="10"
     text-anchor="${i === 0 ? 'start' : i === y.length - 1 ? 'end' : 'middle'}">${esc(c.tenors[i])} ${y[i].toFixed(2)}%</text>`).join('');
   return `<svg class="curve" viewBox="0 0 ${W} ${H}" aria-label="Treasury yield curve ${esc(c.date)}">
     <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round"/>
@@ -75,11 +79,11 @@ export function gaugeSvg(g, label) {
   };
   const nx = cx + (R - 22) * Math.cos(a), ny = cy - (R - 22) * Math.sin(a);
   return `<svg class="gauge" viewBox="0 0 300 150" aria-label="Council gauge ${g ?? '—'} of 100: ${esc(label)}">
-    ${arc(0, 0.4, '#ff6b7f')}${arc(0.4, 0.6, '#f5b84a')}${arc(0.6, 1, '#46d79a')}
+    ${arc(0, 0.4, '#d0715a')}${arc(0.4, 0.6, '#e0b060')}${arc(0.6, 1, '#9bab63')}
     <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="${col}" stroke-width="4" stroke-linecap="round"/>
     <circle cx="${cx}" cy="${cy}" r="8" fill="${col}"/>
-    <text x="${cx}" y="${cy - 34}" text-anchor="middle" fill="${col}" font-size="30" font-weight="700" font-family="Orbitron, sans-serif">${g ?? '—'}</text>
-    <text x="20" y="148" fill="#b9b3a3" font-size="11">RISK-OFF</text><text x="280" y="148" fill="#b9b3a3" font-size="11" text-anchor="end">RISK-ON</text></svg>`;
+    <text x="${cx}" y="${cy - 34}" text-anchor="middle" fill="${col}" font-size="30" font-weight="700" font-family="'SF Pro Rounded',-apple-system,sans-serif">${g ?? '—'}</text>
+    <text x="20" y="148" fill="#cfc4b2" font-size="11">RISK-OFF</text><text x="280" y="148" fill="#cfc4b2" font-size="11" text-anchor="end">RISK-ON</text></svg>`;
 }
 
 const pctText = (g) => (g.pct == null ? '' : `${num(g.pct, 0)}th percentile vs ${g.pct_years >= 4.5 ? '5' : num(g.pct_years, 1)} years`);
@@ -108,7 +112,7 @@ export function godCard(g) {
   const pct = g.pct == null ? '' : `<div class="pct" aria-label="${esc(pctText(g))}"><em style="left:${Math.max(0, Math.min(100, g.pct))}%"></em></div>
     <div class="pctl"><span>5-yr low</span><span>${esc(pctText(g))}</span><span>high</span></div>`;
   const body = !g.ok ? `<p class="mean">${esc(g.meaning)}</p>${srcs}` : `
-    ${g.futures ? '' : '<p class="warnline">NOT FUTURES DATA · DISPLAY ONLY</p>'}
+    ${g.futures ? '' : '<p class="warnline">Not futures data: display only</p>'}
     <div class="read"><b>${esc(g.reading.text)}</b><i class="${(g.change.value ?? 0) >= 0 ? '' : ''}">${esc(g.change.text)}${g.change.window ? ' · ' + esc(g.change.window) : ''}</i>
       <span class="lean ${L.cls}">${L.text}</span></div>
     ${pct}${sparkSvg(g.spark, g.color)}
@@ -126,7 +130,7 @@ export function councilHtml(d) {
   const c = d.council;
   const votes = d.gods.filter((g) => g.council).map((g) => {
     const v = g.vote, w = v == null ? 0 : Math.abs(v) * 50, left = v == null ? 50 : v >= 0 ? 50 : 50 - w;
-    const col = v == null ? '#6b6878' : v >= 0.25 ? '#46d79a' : v <= -0.25 ? '#ff6b7f' : '#f5b84a';
+    const col = v == null ? '#8a8070' : v >= 0.25 ? '#9bab63' : v <= -0.25 ? '#d0715a' : '#e0b060';
     return `<div class="vote"><span style="color:${g.color}">${esc(g.name)}</span><span class="bar"><em style="left:${left}%;width:${w}%;background:${col}"></em></span><span>${sgn(v, 2)}</span></div>`;
   }).join('');
   const edge = (h, c) => (h == null || c == null ? '—' : sgn(h - c, 1));
@@ -139,7 +143,7 @@ export function councilHtml(d) {
   return `${gaugeSvg(c.gauge, c.label)}
     <p class="mean" style="text-align:center;color:${VERDICT[c.label] || '#fff'}">${esc(c.label)}</p>
     <p class="mean">${esc(c.text)}</p>
-    ${c.caution ? `<p class="honest" style="color:var(--caution)">${esc(c.caution)}</p>` : ''}
+    ${c.caution ? `<p class="honest" style="color:var(--aegean)">${esc(c.caution)}</p>` : ''}
     <p class="honest ${c.stats && c.stats.holds ? 'holds' : ''}">${esc(c.honesty || '')}</p>
     <h3>Verdict history</h3>${historyHtml(d)}
     <h3>The votes (risk-off −1 … +1 risk-on)</h3>${votes}

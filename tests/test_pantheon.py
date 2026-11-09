@@ -414,7 +414,7 @@ def part_g(tmp):
             p.click("#cardX")
             p.click(".god[data-key='artemis']")
             p.wait_for_timeout(300)
-            check("g. ARTEMIS's card says NOT FUTURES DATA", "NOT FUTURES DATA" in p.inner_text("#card-b"))
+            check("g. ARTEMIS's card says NOT FUTURES DATA", "not futures data" in p.inner_text("#card-b").lower())
             p.click("#councilBtn")
             p.wait_for_timeout(300)
             cb = p.inner_text("#council-b") if p.is_visible("#council") else ""
@@ -677,8 +677,8 @@ def part_k(tmp):
             check("k. the Desk button sits beside the Council button, at least 44 px", h[0] >= 43.5 and h[1] >= 43.5, h)
             p.click("#deskBtn")
             p.wait_for_selector("#desk-b section.plus")
-            check("k. tapping Desk opens a card with five sections (events, my gods, edge meter, freshness, copy) and the hash is #desk",
-                  p.locator("#desk-b section.plus").count() == 5 and p.is_visible("#desk") and p.evaluate("location.hash") == "#desk" and len(p.inner_text("#desk-b").strip()) > 200)
+            check("k. tapping Desk opens a card with six sections (day cost, events, my gods, edge meter, freshness, copy) and the hash is #desk",
+                  p.locator("#desk-b section.plus").count() == 6 and p.is_visible("#desk") and p.evaluate("location.hash") == "#desk" and len(p.inner_text("#desk-b").strip()) > 200)
             fol = p.locator("#desk-b .fol")
             n = fol.count()
             small = [b for b in (fol.nth(i).bounding_box() for i in range(n)) if b["height"] < 43.5 or b["width"] < 43.5]
