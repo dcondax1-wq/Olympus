@@ -187,7 +187,7 @@ def part_c():
             check("c. the Jarvis card kept for this phone says '<n> new' (red when something is red)", card["status"]["label"] == f"{n} new" and card["status"]["level"] == "bad" and card["kpis"][0]["value"] == str(n), card)
             open_h = p.get_attribute("#list .it[data-src=arena] a.mini", "href")
             check("c. every item has Open (the right app), Mark read, Pin and Mute <source>; each has an icon and its app colour", open_h == "../arena/" and p.locator("#list .it").first.locator(".ic").count() == 1
-                  and p.evaluate("getComputedStyle(document.querySelector('#list .it[data-src=bots]')).getPropertyValue('--c').trim()") == "#cc9362" and p.locator("#list .it[data-src=bots] button:has-text('Mute Bots')").count() >= 1)
+                  and p.evaluate("getComputedStyle(document.querySelector('#list .it[data-src=bots]')).getPropertyValue('--c').trim()") == "#c8a24a" and p.locator("#list .it[data-src=bots] button:has-text('Mute Bots')").count() >= 1)
             p.click("#filters [data-f=bots]")
             check("c. filter Bots: only bot items, its unread count is on the chip", p.locator("#list .it").count() == 2 and p.locator("#list .it:not([data-src=bots])").count() == 0 and p.locator("#filters [data-f=bots] b").text_content() == "2")
             p.click("#filters [data-f=all]")
