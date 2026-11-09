@@ -68,10 +68,10 @@ function render() {
   jset('inbox.card.v1', K.card(items, st, nowS()));
   // filters
   const f = $('filters'); clear(f);
-  const defs = [['all', 'All'], ['unread', 'Unread'], ['pinned', 'Pinned']].concat(K.SOURCES.map((s) => [s.id, s.name]));
+  const defs = [['all', 'All'], ['needs', 'Needs you'], ['money', 'Money'], ['unread', 'Unread'], ['pinned', 'Pinned']].concat(K.SOURCES.map((s) => [s.id, s.name]));
   for (const [id, label] of defs) {
     const b = h('button', null, label); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('data-f', id); b.setAttribute('aria-selected', String(S.filter === id));
-    const c = id === 'unread' ? n : K.SRC[id] ? cnt[id] : 0;
+    const c = id === 'unread' ? n : id === 'needs' ? K.view(items, st, 'needs').length : id === 'money' ? K.view(items, st, 'money').length : K.SRC[id] ? cnt[id] : 0;
     if (c > 0) b.appendChild(h('b', null, c));
     b.addEventListener('click', () => { S.filter = id; render(); });
     f.appendChild(b);
@@ -81,7 +81,7 @@ function render() {
   $('list').hidden = calm; $('calm').hidden = !calm;
   const ul = $('list'); clear(ul);
   if (!calm) {
-    if (!list.length) ul.appendChild(h('li', 'empty', S.filter === 'pinned' ? 'Nothing pinned yet. Tap Pin on an item to keep it here.' : S.filter === 'unread' ? 'Nothing unread.' : 'Nothing from this source yet.'));
+    if (!list.length) ul.appendChild(h('li', 'empty', S.filter === 'pinned' ? 'Nothing pinned yet. Tap Pin on an item to keep it here.' : S.filter === 'needs' ? 'Nothing needs you right now.' : S.filter === 'money' ? 'No item names dollars.' : S.filter === 'unread' ? 'Nothing unread.' : 'Nothing from this source yet.'));
     for (const it of list.slice(0, 80)) ul.appendChild(row(it));
   } else {
     $('calmText').textContent = items.length ? 'Your bots are fine. Nothing new needs you.' : 'Nothing has happened yet. Items from your bots, Argus, Kalshi, Bridge and Jarvis collect here.';

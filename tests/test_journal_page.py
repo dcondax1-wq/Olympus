@@ -72,7 +72,7 @@ def test_static():
     check("a. the kit: olympus.css?v=o3 before the app's sheet, themes.js, olympus.js?v=o3 data-app=\"journal\" and the intro tag on the very next line",
           html.index("../olympus/olympus.css?v=o3") < html.index("journal.css") and "../olympus/themes.js?v=o3" in html and 'data-app="journal"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
     check("a. the accessibility layer and the sound kit are on the page (a11y.js, sfx.js), the page is an ES module", "../olympus/a11y.js" in html and "../olympus/sfx.js?v=s2" in html and '<script type="module" src="journal.js' in html)
-    check("a. viewport-fit=cover, theme-color, manifest, icon, apple-touch-icon, lang, one h1 named MNEMOSYNE, a live status line", all(x in html for x in ("viewport-fit=cover", 'name="theme-color"', 'rel="manifest"', 'rel="icon"', "apple-touch-icon", '<html lang="en">'))
+    check("a. viewport-fit=cover, theme-color, manifest, icon, apple-touch-icon, lang, one h1 named MNEMOSYNE, a live status line", all(x in html for x in ("viewport-fit=cover", 'name="theme-color"', 'rel="manifest"', 'rel="icon"', "apple-touch-icon", '<html lang="en" data-theme="agora">'))
           and html.count("<h1>") == 1 and "<h1>MNEMOSYNE</h1>" in html and 'role="status"' in html and 'aria-live="polite"' in html)
     bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js) or re.search(p, core)]
     check("a. no markup is ever built from data: no innerHTML / outerHTML / insertAdjacentHTML / document.write / eval / dynamic import", not bad, bad)

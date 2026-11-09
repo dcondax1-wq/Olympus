@@ -56,6 +56,9 @@ function renderInsights() {
   $('tPlan').textContent = K.money(P.usd);
   $('tIntN').textContent = `${I.n} trade${I.n === 1 ? '' : 's'}`; $('tPlanN').textContent = `${P.n} trade${P.n === 1 ? '' : 's'}`;
   $('lead').textContent = ins.lines.join(' ');
+  { const I = ins.byRating.interfered, P = ins.byRating.plan, el = $('ifplan');   // AGORA: what discipline is worth, in dollars
+    if (el) { const extra = I.n && P.n ? I.n * (P.avg - I.avg) : 0; el.hidden = !(extra > 0);
+      if (extra > 0) el.textContent = `If every trade had gone like your plan trades, you would be ${K.plainMoney(extra)} richer.`; } }
   $('progress').textContent = ins.rated === ins.n ? `All ${ins.n} trades rated. Nice.` : `${ins.rated} of ${ins.n} trades rated. Each one takes about 10 seconds.`;
   bars(ins);
   // moods

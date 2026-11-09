@@ -43,7 +43,7 @@ def part_a():
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app) all at ?v=o2",
           all(s in html for s in ('../olympus/olympus.css?v=o3', '../olympus/themes.js?v=o3', '../olympus/olympus.js?v=o3" data-app="plutus"')))
     check("a. title Plutus, a description, theme-color = the page colour, the Jarvis icon like the siblings",
-          "<title>Plutus</title>" in html and 'name="description"' in html and 'content="#06100a"' in html and "../jarvis/icon-192.png" in html and "#06100a" in rd("plutus.css") + html)
+          "<title>Plutus</title>" in html and 'name="description"' in html and 'content="#14110e"' in html and "../jarvis/icon-192.png" in html and "#14110e" in rd("plutus.css") + html)
     srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
     check("a. only local files (no external script, font or stylesheet)", all(not s.startswith(("http:", "https:", "//")) for s in srcs), srcs)
     check("a. every local file the page links exists", all(os.path.exists(os.path.normpath(os.path.join(PAGE, s.split("?")[0]))) for s in srcs if not s.startswith("#")), srcs)

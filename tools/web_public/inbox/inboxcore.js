@@ -133,6 +133,8 @@ export function view(items, st, filter) {
   const list = items.filter((it) => {
     if (f === 'pinned') return !!st.pins[it.id];
     if (f === 'unread') return !st.muted[it.src] && !isRead(it, st);
+    if (f === 'needs') return !st.muted[it.src] && !isRead(it, st) && (it.level === 'bad' || it.level === 'warn');   // AGORA: what needs you
+    if (f === 'money') return !st.muted[it.src] && /\$\s?\d/.test(it.text);                                              // AGORA: items that name dollars
     if (SRC[f]) return it.src === f;
     return !st.muted[it.src];
   });
