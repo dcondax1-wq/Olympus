@@ -140,7 +140,10 @@
     return fromHsl((a[0] + turn + 360) % 360, a[1], a[2]);
   }
   function theme(id) { return by[id] || by[DEFAULT]; }
-  function stored() { var v = get(KEY); return by[v] ? v : DEFAULT; }
+  // A choice saved before AGORA (2026-11-09) may be 'olympus' only because that used to be the default (Jarvis wrote it when a Jarvis colour
+  // was picked): it reads as the default (AGORA) until the owner picks a theme again; every pick after that is marked (VKEY) and wins.
+  var VKEY = 'olympus.theme.v';
+  function stored() { var v = get(KEY); if (v === 'olympus' && get(VKEY) !== '2') return DEFAULT; return by[v] ? v : DEFAULT; }
   function tokens(id, where) {
     var t = theme(id), out = {}, k;
     for (k in t.tokens) out[k] = t.tokens[k];
@@ -222,7 +225,7 @@
     apply: function (w, opts) { if (opts) applyOpts = opts; var t = apply(w, applyOpts); return t; },
     set: function (id) {
       if (!by[id]) id = DEFAULT;
-      put(KEY, id);
+      put(KEY, id); put(VKEY, '2');
       if (id !== cur) { apply(where, applyOpts); emit(); }
       return id;
     },
