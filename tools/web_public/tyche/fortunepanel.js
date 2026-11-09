@@ -54,7 +54,7 @@ export class FortunePanel {
     s.coins.forEach((c, i) => { const d = el('span', 'coin ' + (c.win ? 'win' : 'loss')); d.title = `${c.title} ${usdF(c.pnl, true)}`; d.style.setProperty('--i', i); row.append(d); });
     this.body.append(row);
     const f = FX();
-    if (f && f.sparkleBurst && s.cur.kind === 'win' && s.cur.n >= 3 && !this.reduced) { const last = row.lastElementChild; if (last) f.sparkleBurst(last, { count: 20, colors: ['#ffcf5a', '#fff3c4', '#ffffff'] }); }
+    if (f && f.sparkleBurst && s.cur.kind === 'win' && s.cur.n >= 3 && !this.reduced) { const last = row.lastElementChild; if (last) f.sparkleBurst(last, { count: 20, colors: ['#c8a24a', '#f3ece0', '#f3ece0'] }); }
   }
 
   fortune(m) {
@@ -62,7 +62,7 @@ export class FortunePanel {
     card.append(el('b', 'fh', f.headline), ...f.lines.map((t) => el('p', 'fl', t)), el('small', 'fn', f.note));
     this.body.append(card);
     const fx = FX();
-    if (fx && fx.gradientBorder) this.fx.push(fx.gradientBorder(card, { colors: ['#ffcf5a', '#5ef2c0', '#b79bff'], width: 1.5, seconds: 6 }));
+    if (fx && fx.gradientBorder) this.fx.push(fx.gradientBorder(card, { colors: ['#c8a24a', '#9bab63', '#6f9bb8'], width: 1.5, seconds: 6 }));
   }
 
   compare(m) {
@@ -70,7 +70,7 @@ export class FortunePanel {
     const W = 320, H = 86, P = 4, X = (i) => P + (i / Math.max(1, c.n)) * (W - 2 * P), Y = (v) => P + (1 - (v - lo) / r) * (H - 2 * P);
     const svg = this.cmp, ns = svg.namespaceURI;
     svg.replaceChildren(); svg.removeAttribute('hidden');     // an <svg> has no .hidden property: the attribute it is
-    [[c.a, '#ffcf5a'], [c.b, '#5ef2c0']].forEach(([f, col]) => { const p = document.createElementNS(ns, 'polyline'); p.setAttribute('points', f.map((x) => `${X(x.i).toFixed(1)},${Y(x.bal).toFixed(1)}`).join(' ')); p.setAttribute('fill', 'none'); p.setAttribute('stroke', col); p.setAttribute('stroke-width', '2'); svg.append(p); });
+    [[c.a, '#c8a24a'], [c.b, '#9bab63']].forEach(([f, col]) => { const p = document.createElementNS(ns, 'polyline'); p.setAttribute('points', f.map((x) => `${X(x.i).toFixed(1)},${Y(x.bal).toFixed(1)}`).join(' ')); p.setAttribute('fill', 'none'); p.setAttribute('stroke', col); p.setAttribute('stroke-width', '2'); svg.append(p); });
     this.body.append(svg);
     const duo = el('p', 'duo');
     const cell = (lbl, v, cls) => { const s = el('span'); s.append(el('i', 'lbl', lbl), el('b', cls, v)); return s; };
@@ -87,7 +87,7 @@ export class FortunePanel {
       info.textContent = i === 0 ? `Start of the record · ${n} settled bets` : `Bet ${i} of ${n}: ${f.title} ${usdF(f.pnl, true)}`; info.dataset.sign = i ? sign(f.pnl) : 'flat';
       bal.textContent = usdF(f.bal);
       const fx = FX();
-      if (burst && fx && fx.sparkleBurst && f.win && !this.reduced) fx.sparkleBurst(bal, { count: 12, colors: ['#ffcf5a', '#fff3c4'] });
+      if (burst && fx && fx.sparkleBurst && f.win && !this.reduced) fx.sparkleBurst(bal, { count: 12, colors: ['#c8a24a', '#f3ece0'] });
     };
     rng.addEventListener('input', () => show(+rng.value, false));
     go.addEventListener('click', () => {

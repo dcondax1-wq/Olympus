@@ -21,14 +21,16 @@ import { dress } from './dress.js';
 import { citadel } from './colosseum.js?v=c1';
 
 const TAU = Math.PI * 2;
-const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
-const TIER_COLOR = { bronze: '#c9833f', silver: '#dfe7f5', gold: '#ffcf5a', legend: '#b98bff' };
+const hdr = (c, k) => new THREE.Color(c).multiplyScalar(1 + (k - 1) * 0.45);      // AGORA: warm light, a little above 1 only (bloom <= 0.25)
+const calmNeon = (o) => M.neon(Object.assign({}, o, { intensity: (o.intensity || 1) * 0.5 }));
+const AGORA3D = { sky: '#2b2018', fog: '#2a2018', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' };
+const TIER_COLOR = { bronze: '#e0a060', silver: '#f3ece0', gold: '#c8a24a', legend: '#b08064' };
 const STEP_R = [3.5, 2.9, 2.3, 1.7, 1.1], STEP_H = 0.5;
 
 function glowTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 64;
   const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(255,240,200,.75)'); r.addColorStop(1, 'rgba(255,200,80,0)');
+  r.addColorStop(0, 'rgba(243, 236, 224,1)'); r.addColorStop(0.25, 'rgba(243, 236, 224,.75)'); r.addColorStop(1, 'rgba(200, 162, 74,0)');
   g.fillStyle = r; g.fillRect(0, 0, 64, 64);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
   return t;
@@ -49,12 +51,12 @@ function lightColumnMaterial(color, power = 1) {
 export function createScene(canvas, { O = null } = {}) {
   const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#06040c');
-  scene.fog = new THREE.FogExp2(0x100d22, 0.01);
+  scene.background = new THREE.Color('#2b2018');
+  scene.fog = new THREE.FogExp2(0x2a2018, 0.009);
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
   let lite = false, dirty = true, qcb = null, dr = null;
-  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#ffb547', exposure: 0.95, maxDpr: 1.75,
-    bloom: { strength: 0.7, radius: 0.6, threshold: 1.0 },
+  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#c8a24a', theme: AGORA3D, exposure: 1.0, maxDpr: 1.75,
+    bloom: { strength: 0.22, radius: 0.5, threshold: 1.0 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; applyLite(); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
   const cit = citadel(scene, { lite });
@@ -62,29 +64,29 @@ export function createScene(canvas, { O = null } = {}) {
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e3 = new THREE.Euler(), s3 = new THREE.Vector3(1, 1, 1), p3 = new THREE.Vector3();
 
   // ---- light
-  scene.add(new THREE.HemisphereLight('#8c7cff', '#1a1208', 0.5));
-  const moon = new THREE.DirectionalLight('#c9d4ff', 1.1); moon.position.set(-9, 16, 10); scene.add(moon);
-  const crownLight = new THREE.PointLight('#ffcf5a', 40, 30, 1.6); crownLight.position.set(0, 5.4, 0); scene.add(crownLight);
-  const rimLight = new THREE.PointLight('#7a5cff', 22, 40, 1.8); rimLight.position.set(0, 12, -14); scene.add(rimLight);
+  scene.add(new THREE.HemisphereLight('#ffe2b8', '#3a2a1a', 0.75));
+  const moon = new THREE.DirectionalLight('#ffd9a0', 1.5); moon.position.set(-9, 16, 10); scene.add(moon);      // the sun
+  const crownLight = new THREE.PointLight('#e0b060', 30, 30, 1.6); crownLight.position.set(0, 5.4, 0); scene.add(crownLight);
+  const rimLight = new THREE.PointLight('#e0a060', 10, 40, 1.8); rimLight.position.set(0, 12, -14); scene.add(rimLight);
 
   // ---- sky
-  const stars = M.starfield({ count: 1500, radius: 170, size: 2.2 }); scene.add(stars);
-  const neb = M.nebula({ colors: ['#ffb547', '#7a4cff', '#3a2a8f', '#ff6b7f'], count: 8, radius: 90, size: 95, opacity: 0.16 }); neb.position.y = 18; scene.add(neb);
+  const stars = M.starfield({ count: 260, radius: 170, size: 1.6 }); scene.add(stars);
+  const neb = M.nebula({ colors: ['#e0b060', '#9c6b3c', '#4b7a99', '#c0603f'], count: 8, radius: 90, size: 95, opacity: 0.1 }); neb.position.y = 18; scene.add(neb);
 
   // ---- the floor: sand, a marble disc under the ladder, a gold ring, a marble plaza ring
-  const sand = new THREE.Mesh(new THREE.CircleGeometry(15.5, 72), new THREE.MeshStandardMaterial({ color: '#3d2c1a', roughness: 0.96, metalness: 0 }));
+  const sand = new THREE.Mesh(new THREE.CircleGeometry(15.5, 72), new THREE.MeshStandardMaterial({ color: '#392716', roughness: 0.96, metalness: 0 }));
   sand.rotation.x = -Math.PI / 2; scene.add(sand);
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(5.1, 64), M.marble({ color: '#b8b0a2', gold: true, scale: 0.9 }));
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(5.1, 64), M.marble({ color: '#b5aea5', gold: true, scale: 0.9 }));
   disc.rotation.x = -Math.PI / 2; disc.position.y = 0.02; scene.add(disc);
-  const ringGold = new THREE.Mesh(new THREE.TorusGeometry(5.15, 0.05, 6, 96), M.neon({ color: '#ffb547', intensity: 2.2 }));
+  const ringGold = new THREE.Mesh(new THREE.TorusGeometry(5.15, 0.05, 6, 96), calmNeon({ color: '#e0a060', intensity: 2.2 }));
   ringGold.rotation.x = Math.PI / 2; ringGold.position.y = 0.05; scene.add(ringGold);
-  const ringOuter = new THREE.Mesh(new THREE.TorusGeometry(15.4, 0.08, 6, 120), M.neon({ color: '#ffb547', intensity: 1.6, fog: true }));
+  const ringOuter = new THREE.Mesh(new THREE.TorusGeometry(15.4, 0.08, 6, 120), calmNeon({ color: '#e0a060', intensity: 1.6, fog: true }));
   ringOuter.rotation.x = Math.PI / 2; ringOuter.position.y = 0.06; scene.add(ringOuter);
 
   // ---- the bowl: four seating tiers (riser + seat surface), marble
-  let riser = new THREE.MeshStandardMaterial({ color: '#8e8678', roughness: 0.55, metalness: 0.05 });     // the big surfaces are plain stone: the marble shader is for the hero pieces
-  let seats = new THREE.MeshStandardMaterial({ color: '#6e6759', roughness: 0.7, metalness: 0.05 });
-  try { riser = SC.stone({ color: '#a39b8b', repeat: [36, 1], blocks: 4, bump: 2 }); seats = SC.stone({ color: '#857d6d', repeat: [9, 9], blocks: 8, cracks: false, bump: 1 }); } catch (e) { /* the plain stone stays */ }
+  let riser = new THREE.MeshStandardMaterial({ color: '#8f8477', roughness: 0.55, metalness: 0.05 });     // the big surfaces are plain stone: the marble shader is for the hero pieces
+  let seats = new THREE.MeshStandardMaterial({ color: '#726455', roughness: 0.7, metalness: 0.05 });
+  try { riser = SC.stone({ color: '#a1988d', repeat: [36, 1], blocks: 4, bump: 2 }); seats = SC.stone({ color: '#8a7a68', repeat: [9, 9], blocks: 8, cracks: false, bump: 1 }); } catch (e) { /* the plain stone stays */ }
   for (let k = 0; k < 4; k++) {
     const R = 16.2 + k * 2.2, h = 1.5, y0 = k * h;
     const wall = new THREE.Mesh(new THREE.CylinderGeometry(R, R, h, 72, 1, true), riser);
@@ -93,7 +95,7 @@ export function createScene(canvas, { O = null } = {}) {
     top.rotation.x = -Math.PI / 2; top.position.y = y0 + h; scene.add(top);
   }
   // the arcade at the back: 56 piers with gold capitals, an arch between each pair, a gold cornice
-  const NP = 56, RP = 25.4, PH = 8.5, pierMat = M.marble({ color: '#c7c0b3', gold: false, scale: 0.35, roughness: 0.38 });
+  const NP = 56, RP = 25.4, PH = 8.5, pierMat = M.marble({ color: '#c4bdb6', gold: false, scale: 0.35, roughness: 0.38 });
   // 2026-11-04 (docs/OLYMPUS_PERF.md): the arcade, cornice and rings carry fewer segments (the Arena was 64k triangles before the crowd; ~49k now)
   const piers = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.42, 0.5, PH, 10), pierMat, NP);
   const caps = new THREE.InstancedMesh(new THREE.BoxGeometry(1.15, 0.42, 1.15), M.metal({ kind: 'gold' }), NP);
@@ -110,29 +112,29 @@ export function createScene(canvas, { O = null } = {}) {
   cornice.rotation.x = Math.PI / 2; cornice.position.y = PH + 0.7; scene.add(cornice);
   const frieze = new THREE.Mesh(new THREE.CylinderGeometry(RP + 0.1, RP + 0.1, 1.1, 96, 1, true), pierMat);
   frieze.material.side = THREE.DoubleSide; frieze.position.y = PH + 0.2; scene.add(frieze);
-  const glowBand = new THREE.Mesh(new THREE.TorusGeometry(RP - 0.2, 0.05, 4, 120), M.neon({ color: '#ffb547', intensity: 2.4, fog: true }));
+  const glowBand = new THREE.Mesh(new THREE.TorusGeometry(RP - 0.2, 0.05, 4, 120), calmNeon({ color: '#e0a060', intensity: 2.4, fog: true }));
   glowBand.rotation.x = Math.PI / 2; glowBand.position.y = PH + 1.15; scene.add(glowBand);
 
   // braziers on the plaza ring: a metal bowl and a flickering flame
-  const NB = 14, brazMat = (() => { try { return SC.bronze({ color: '#7f5a2c', patina: 0.55, rough: 0.5 }); } catch (e) { return M.metal({ kind: 'gunmetal', color: '#4a4658' }); } })();
+  const NB = 14, brazMat = (() => { try { return SC.bronze({ color: '#b0763c', patina: 0.55, rough: 0.5 }); } catch (e) { return M.metal({ kind: 'gunmetal', color: '#5a5044' }); } })();
   const braz = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.5, 0.22, 0.6, 12), brazMat, NB);
   const legs = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08, 0.12, 1.5, 8), brazMat, NB);
   const flames = [];
   for (let i = 0; i < NB; i++) {
     const a = ((i + 0.5) / NB) * TAU, x = Math.cos(a) * 15.7, z = Math.sin(a) * 15.7;
     m4.makeTranslation(x, 1.6, z); braz.setMatrixAt(i, m4); m4.makeTranslation(x, 0.75, z); legs.setMatrixAt(i, m4);
-    const f = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#ff9a3a', 2.4), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+    const f = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#e0a060', 2.4), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
     f.position.set(x, 2.3, z); f.scale.set(1.5, 2.0, 1); f.userData.ph = i * 1.7; scene.add(f); flames.push(f);
   }
   scene.add(braz, legs);
 
   // ---- the rank ladder: five marble steps, a neon edge in each rank's colour
-  const ladder = [], RANK_TINT = ['#9aa4b2', '#e0a060', '#dfe7f5', '#ffcf5a', '#ff9d3a'];
+  const ladder = [], RANK_TINT = ['#afa79d', '#e0a060', '#f3ece0', '#c8a24a', '#e0a060'];
   for (let i = 0; i < 5; i++) {
-    const stepMat = M.marble({ color: new THREE.Color('#bdb6aa').lerp(new THREE.Color(RANK_TINT[i]), 0.35), gold: false, scale: 0.8, roughness: 0.25 });
+    const stepMat = M.marble({ color: new THREE.Color('#bbb4ac').lerp(new THREE.Color(RANK_TINT[i]), 0.35), gold: false, scale: 0.8, roughness: 0.25 });
     const g = new THREE.Mesh(new THREE.CylinderGeometry(STEP_R[i], STEP_R[i] + 0.08, STEP_H, 48), stepMat);
     g.position.y = STEP_H * i + STEP_H / 2 + 0.02; scene.add(g);
-    const nm = M.neon({ color: '#9aa4b2', intensity: 0.4 });
+    const nm = calmNeon({ color: '#afa79d', intensity: 0.4 });
     const edge = new THREE.Mesh(new THREE.TorusGeometry(STEP_R[i] + 0.04, 0.04, 4, 64), nm);
     edge.rotation.x = Math.PI / 2; edge.position.y = STEP_H * (i + 1) + 0.03; scene.add(edge);
     ladder.push({ nm, edge, top: STEP_H * (i + 1) + 0.03, r: STEP_R[i] + 0.04 });
@@ -140,8 +142,8 @@ export function createScene(canvas, { O = null } = {}) {
   const TOP = STEP_H * 5 + 0.05;
   const altar = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.7, 0.5, 24), M.metal({ kind: 'gold' }));
   altar.position.y = TOP + 0.25; scene.add(altar);
-  const marker = new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 10), M.neon({ color: '#fff1c8', intensity: 5 }));
-  const markerGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#ffcf5a', 1.6), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  const marker = new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 10), calmNeon({ color: '#f3ece0', intensity: 5 }));
+  const markerGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#c8a24a', 1.6), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
   markerGlow.scale.set(1.3, 1.3, 1); marker.add(markerGlow); scene.add(marker);
 
   // ---- the crown above the ladder, the column of light
@@ -159,9 +161,9 @@ export function createScene(canvas, { O = null } = {}) {
   crown.add(leaves);
   const band = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.03, 8, 64, TAU - 0.44), gold);
   band.rotation.x = Math.PI / 2; band.rotation.z = Math.PI / 2 + 0.22; crown.add(band);
-  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#ffcf5a', 1.1), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#c8a24a', 1.1), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
   halo.scale.set(5.2, 5.2, 1); halo.position.copy(crown.position); scene.add(halo);
-  const colMat = lightColumnMaterial('#ffcf5a'), coreMat = lightColumnMaterial('#fff4d6'), ghostMat = lightColumnMaterial('#ffcf5a', 0.16);
+  const colMat = lightColumnMaterial('#c8a24a'), coreMat = lightColumnMaterial('#f3ece0'), ghostMat = lightColumnMaterial('#c8a24a', 0.16);
   const colGeo = new THREE.CylinderGeometry(0.55, 0.55, 1, 32, 1, true); colGeo.translate(0, 0.5, 0);
   const column = new THREE.Mesh(colGeo, colMat), core = new THREE.Mesh(colGeo, coreMat), ghost = new THREE.Mesh(colGeo, ghostMat);
   column.position.y = core.position.y = ghost.position.y = TOP + 0.5; core.scale.set(0.35, 1, 0.35); ghost.scale.set(1.02, 12, 1.02);
@@ -169,14 +171,14 @@ export function createScene(canvas, { O = null } = {}) {
   const NM = 150, mp = new Float32Array(NM * 3), mv = new Float32Array(NM);
   for (let i = 0; i < NM; i++) { const a = Math.random() * TAU, r = Math.random() * 0.5; mp[i * 3] = Math.cos(a) * r; mp[i * 3 + 1] = Math.random() * 10; mp[i * 3 + 2] = Math.sin(a) * r; mv[i] = 0.6 + Math.random() * 1.4; }
   const motes = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(mp, 3)),
-    new THREE.PointsMaterial({ map: glow, color: hdr('#ffe3a0', 1.3), size: 0.2, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    new THREE.PointsMaterial({ map: glow, color: hdr('#f0dca0', 1.3), size: 0.2, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
   motes.position.y = TOP + 0.5; scene.add(motes);
 
   // ---- the 12 Labour statues (ring r = 9)
   const profile = [[0, 0], [0.3, 0], [0.34, 0.14], [0.23, 0.28], [0.2, 0.95], [0.31, 1.25], [0.23, 1.45], [0.08, 1.52], [0, 1.53]].map(([x, y]) => new THREE.Vector2(x, y));
   const bodyGeo = new THREE.LatheGeometry(profile, 16), headGeo = new THREE.SphereGeometry(0.17, 14, 10), baseGeo = new THREE.BoxGeometry(0.95, 0.6, 0.95);
-  const stoneMat = M.marble({ color: '#a39c90', vein: '#5a5468', scale: 1.6, roughness: 0.42 });
-  const plinth = M.marble({ color: '#b5aea1', gold: true, scale: 1.1 });
+  const stoneMat = M.marble({ color: '#a49a8f', vein: '#6b5f51', scale: 1.6, roughness: 0.42 });
+  const plinth = M.marble({ color: '#b3aca3', gold: true, scale: 1.1 });
   const goldStatue = M.metal({ kind: 'gold' });
   const statues = [];
   for (let i = 0; i < 12; i++) {
@@ -185,7 +187,7 @@ export function createScene(canvas, { O = null } = {}) {
     const base = new THREE.Mesh(baseGeo, plinth); base.position.y = 0.3;
     const body = new THREE.Mesh(bodyGeo, stoneMat); body.position.y = 0.6;
     const head = new THREE.Mesh(headGeo, stoneMat); head.position.y = 2.28;
-    const h = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#ffcf5a', 1.4), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+    const h = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#c8a24a', 1.4), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
     h.scale.set(2.6, 3.4, 1); h.position.y = 1.6;
     g.add(base, body, head, h); scene.add(g);
     statues.push({ g, body, head, halo: h, id: null, earned: false, i });
@@ -195,11 +197,11 @@ export function createScene(canvas, { O = null } = {}) {
   const NT = 28, tInfo = [];
   const cupProfile = [[0, 0], [0.16, 0], [0.18, 0.04], [0.06, 0.1], [0.05, 0.22], [0.2, 0.3], [0.27, 0.5], [0.24, 0.6], [0.2, 0.52], [0.13, 0.36], [0, 0.3]].map(([x, y]) => new THREE.Vector2(x, y));
   const cupGeo = new THREE.LatheGeometry(cupProfile, 14);
-  const cupMat = M.metal({ kind: 'chrome', color: '#ffffff', roughness: 0.16 });
+  const cupMat = M.metal({ kind: 'chrome', color: '#f3ece0', roughness: 0.16 });
   const cups = new THREE.InstancedMesh(cupGeo, cupMat, NT);
   const peds = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.3, 0.36, 0.7, 14), plinth, NT);
-  const sparks = new THREE.InstancedMesh(new THREE.SphereGeometry(0.06, 8, 6), M.neon({ color: '#fff1c8', intensity: 5 }), NT);
-  const dark = new THREE.Color('#2b2735');
+  const sparks = new THREE.InstancedMesh(new THREE.SphereGeometry(0.06, 8, 6), calmNeon({ color: '#f3ece0', intensity: 5 }), NT);
+  const dark = new THREE.Color('#352e27');
   const cupPos = [];
   for (let i = 0; i < NT; i++) {
     const a = (i / NT) * TAU - Math.PI / 2, x = Math.cos(a) * 6.5, z = Math.sin(a) * 6.5;
@@ -213,20 +215,20 @@ export function createScene(canvas, { O = null } = {}) {
 
   // ---- the boss: a glass crystal with a neon core, HP pips on a ring, shards when it is slain
   const boss = new THREE.Group(); boss.position.set(0, 5, -12.5); scene.add(boss);
-  const bossShell = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15, 1), M.glass({ color: '#ffffff', rim: '#ff5a6e', opacity: 0.28 }));
-  const bossCore = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), M.neon({ color: '#ff5a6e', intensity: 4 }));
-  const bossWire = new THREE.Mesh(new THREE.IcosahedronGeometry(1.35, 0), new THREE.MeshBasicMaterial({ color: hdr('#ff5a6e', 1.6), wireframe: true, transparent: true, opacity: 0.5 }));
-  const bossHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#ff5a6e', 1.2), transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+  const bossShell = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15, 1), M.glass({ color: '#f3ece0', rim: '#c0603f', opacity: 0.28 }));
+  const bossCore = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), calmNeon({ color: '#c0603f', intensity: 4 }));
+  const bossWire = new THREE.Mesh(new THREE.IcosahedronGeometry(1.35, 0), new THREE.MeshBasicMaterial({ color: hdr('#c0603f', 1.6), wireframe: true, transparent: true, opacity: 0.5 }));
+  const bossHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#c0603f', 1.2), transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
   bossHalo.scale.set(6, 6, 1);
   boss.add(bossShell, bossCore, bossWire, bossHalo);
   bossShell.userData.boss = bossCore.userData.boss = bossWire.userData.boss = true;
   const pips = [];
   for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * TAU, p = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), M.neon({ color: '#ff5a6e', intensity: 4 }));
+    const a = (i / 6) * TAU, p = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), calmNeon({ color: '#c0603f', intensity: 4 }));
     p.position.set(Math.cos(a) * 1.8, -1.9, Math.sin(a) * 1.8); boss.add(p); pips.push(p);
   }
   const shards = new THREE.Group(); scene.add(shards);
-  const bossLight = new THREE.PointLight('#ff5a6e', 0, 26, 1.6); bossLight.position.copy(boss.position); scene.add(bossLight);
+  const bossLight = new THREE.PointLight('#c0603f', 0, 26, 1.6); bossLight.position.copy(boss.position); scene.add(bossLight);
 
   // ---- effects: lightning, the burst, shockwave rings, petals
   const fx = { bolts: [], burst: null, rings: [], petals: null, t0: 0, rank: false, hold: false, on: false };
@@ -238,7 +240,7 @@ export function createScene(canvas, { O = null } = {}) {
       pts.push(p);
     }
     const mesh = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.07, 5, false),
-      new THREE.MeshBasicMaterial({ color: hdr('#cfe6ff', 2.6), transparent: true, opacity: 1, fog: false }));
+      new THREE.MeshBasicMaterial({ color: hdr('#f3ece0', 2.6), transparent: true, opacity: 1, fog: false }));
     scene.add(mesh);
     return mesh;
   }
@@ -250,7 +252,7 @@ export function createScene(canvas, { O = null } = {}) {
       vel[i * 3] = Math.cos(a) * s * u; vel[i * 3 + 1] = 3 + Math.random() * 7; vel[i * 3 + 2] = Math.sin(a) * s * u;
     }
     const pts = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(pos, 3)),
-      new THREE.PointsMaterial({ map: glow, color: hdr('#ffcf5a', 1.4), size: 0.36, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      new THREE.PointsMaterial({ map: glow, color: hdr('#c8a24a', 1.4), size: 0.36, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
     scene.add(pts);
     return { pts, vel, age: 0, n };
   }
@@ -273,32 +275,32 @@ export function createScene(canvas, { O = null } = {}) {
     if (fx.burst) { dispose3(fx.burst.pts); fx.burst = null; }
     fx.rings.forEach((r) => dispose3(r.m)); fx.rings = [];
     if (fx.petals) { dispose3(fx.petals.pts); fx.petals = null; }
-    fx.on = false; cam.zoom = 1; cam.lift = 0; rc.setBloom({ strength: 0.7 });
+    fx.on = false; cam.zoom = 1; cam.lift = 0; rc.setBloom({ strength: 0.22 });
   }
 
   // ---- state
-  const st = { progress: 0, shown: 0, color: new THREE.Color('#ffcf5a'), labours: [], rank: 0, ranks: [], marker: 0, trophies: [], boss: null };
+  const st = { progress: 0, shown: 0, color: new THREE.Color('#c8a24a'), labours: [], rank: 0, ranks: [], marker: 0, trophies: [], boss: null };
   let pick = null, levelups = 0;
-  const bossColor = new THREE.Color('#ff5a6e');
+  const bossColor = new THREE.Color('#c0603f');
   function applyBoss() {
     const b = st.boss;
     boss.visible = !!b;
     if (!b) return;
-    bossColor.set(b.color || '#ff5a6e');
+    bossColor.set(b.color || '#c0603f');
     bossCore.material.color.copy(bossColor).multiplyScalar(b.state === 'slain' ? 5 : 4);
     bossWire.material.color.copy(bossColor).multiplyScalar(1.6);
     bossHalo.material.color.copy(bossColor).multiplyScalar(1.2);
     bossShell.material.userData.rim && bossShell.material.userData.rim.uRim.value.copy(bossColor).multiplyScalar(1.4);
     const max = Math.max(1, Math.min(6, b.max | 0)), left = Math.max(0, Math.min(max, (b.max | 0) - (b.hits | 0)));
-    pips.forEach((p, i) => { p.visible = i < max; p.material.color.copy(i < left ? bossColor.clone().multiplyScalar(4) : new THREE.Color('#2a2530')); });
+    pips.forEach((p, i) => { p.visible = i < max; p.material.color.copy(i < left ? bossColor.clone().multiplyScalar(4) : new THREE.Color('#312b24')); });
     bossShell.visible = bossWire.visible = b.state !== 'slain' || !b.shattered;
-    if (b.state === 'slain') { bossCore.material.color.set('#ffcf5a').multiplyScalar(5); bossHalo.material.color.set('#ffcf5a').multiplyScalar(1.3); }
+    if (b.state === 'slain') { bossCore.material.color.set('#c8a24a').multiplyScalar(5); bossHalo.material.color.set('#c8a24a').multiplyScalar(1.3); }
     boss.userData.state = b.state;
   }
   function shatter() {
     shards.children.slice().forEach(dispose3);
     for (let i = 0; i < 26; i++) {
-      const s = new THREE.Mesh(new THREE.TetrahedronGeometry(0.22 + Math.random() * 0.2), new THREE.MeshBasicMaterial({ color: hdr('#ffcf5a', 2.5), transparent: true, opacity: 1 }));
+      const s = new THREE.Mesh(new THREE.TetrahedronGeometry(0.22 + Math.random() * 0.2), new THREE.MeshBasicMaterial({ color: hdr('#c8a24a', 2.5), transparent: true, opacity: 1 }));
       s.position.copy(boss.position); s.userData.v = new THREE.Vector3((Math.random() - 0.5) * 5, Math.random() * 4, (Math.random() - 0.5) * 5); s.userData.age = 0;
       shards.add(s);
     }
@@ -307,7 +309,7 @@ export function createScene(canvas, { O = null } = {}) {
   }
   function setState(s) {
     st.progress = Math.max(0.03, Math.min(1, +s.progress || 0));
-    st.color.set(s.color || '#ffcf5a');
+    st.color.set(s.color || '#c8a24a');
     halo.material.color.copy(st.color).multiplyScalar(1.1); crownLight.color.copy(st.color); markerGlow.material.color.copy(st.color).multiplyScalar(1.6);
     (s.labours || []).forEach((l, i) => {
       const x = statues[i]; if (!x) return;
@@ -329,7 +331,7 @@ export function createScene(canvas, { O = null } = {}) {
       st.trophies = s.trophies;
       for (let i = 0; i < NT; i++) {
         const t = s.trophies[i];
-        const c = t && t.earned ? new THREE.Color(TIER_COLOR[t.tier] || '#ffcf5a') : dark;
+        const c = t && t.earned ? new THREE.Color(TIER_COLOR[t.tier] || '#c8a24a') : dark;
         cups.setColorAt(i, c);
         const [x, z] = cupPos[i];
         m4.makeScale(t && t.earned ? 1 : 0, t && t.earned ? 1 : 0, t && t.earned ? 1 : 0).setPosition(x, 1.42, z); sparks.setMatrixAt(i, m4);
@@ -357,7 +359,7 @@ export function createScene(canvas, { O = null } = {}) {
     if (dr && rank) dr.cheer(4400);
     if (rank) {
       const c = '#' + st.color.getHexString();
-      fx.rings = [shockRing(0.35, c), shockRing(0.85, '#ffcf5a'), shockRing(1.35, '#ffffff')];
+      fx.rings = [shockRing(0.35, c), shockRing(0.85, '#c8a24a'), shockRing(1.35, '#f3ece0')];
       fx.petals = petals(lite ? 70 : 180, c);
     }
     fx.t0 = performance.now(); fx.rank = rank; fx.hold = !!hold; fx.on = true;
@@ -441,7 +443,7 @@ export function createScene(canvas, { O = null } = {}) {
     const mi = Math.max(0, Math.min(4, markerPos)), lo = Math.floor(mi), hi = Math.min(4, lo + 1), f = mi - lo;
     const ang = still ? 0.9 : t * 0.9, mr = ladder[lo].r * (1 - f) + ladder[hi].r * f, my = ladder[lo].top * (1 - f) + ladder[hi].top * f;
     marker.position.set(Math.cos(ang) * mr, my + 0.22 + Math.sin(t * 3) * (still ? 0 : 0.04), Math.sin(ang) * mr);
-    ladder.forEach((L, i) => { const k = i === st.rank + 1 && !still ? 0.75 + 0.25 * Math.sin(t * 2.2) : 1; L.nm.color.copy(new THREE.Color(st.ranks[i] ? st.ranks[i].color : '#9aa4b2')).multiplyScalar((L.base || 0.3) * k); });
+    ladder.forEach((L, i) => { const k = i === st.rank + 1 && !still ? 0.75 + 0.25 * Math.sin(t * 2.2) : 1; L.nm.color.copy(new THREE.Color(st.ranks[i] ? st.ranks[i].color : '#afa79d')).multiplyScalar((L.base || 0.3) * k); });
     flames.forEach((fl) => { const ph = fl.userData.ph; fl.scale.set(1.4 + (still ? 0 : Math.sin(t * 7 + ph) * 0.18), 1.9 + (still ? 0 : Math.sin(t * 9 + ph * 2) * 0.3), 1); });
     if (!still) {
       const arr = motes.geometry.attributes.position.array, top = 0.4 + st.shown * 11;
@@ -466,7 +468,7 @@ export function createScene(canvas, { O = null } = {}) {
       if (fx.rank) {
         const k = age < 0.5 ? age / 0.5 : age < 2.4 ? 1 : Math.max(0, 1 - (age - 2.4) / 1.6);        // dolly in, hold, ease out
         if (!still) { cam.zoom = 1 - 0.38 * k; cam.lift = k; cam.shake = age < 1.1 ? (1 - age / 1.1) * 0.5 : 0; }
-        rc.setBloom({ strength: 0.7 + 0.55 * Math.max(0, 1 - Math.abs(age - 0.9) / 1.3) });
+        rc.setBloom({ strength: 0.22 + 0.2 * Math.max(0, 1 - Math.abs(age - 0.9) / 1.3) });
         fx.rings.forEach((r) => {
           const a = age - r.delay;
           r.m.visible = a > 0 && a < 1.8;

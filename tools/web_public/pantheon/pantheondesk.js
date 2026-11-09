@@ -58,6 +58,21 @@ export function watchlist(d, watch, lastLeans) {
   return { rows, followed: f, flips: f.filter((r) => r.flipped),
     line: !f.length ? 'You follow no gods yet: tap Follow on the ones you care about.' : f.some((r) => r.flipped) ? 'Changed their mind: ' + f.filter((r) => r.flipped).map((r) => `${r.name} ${r.was} to ${r.lean}`).join(', ') + '.' : 'Following: ' + f.map((r) => `${r.name} ${r.lean}`).join(', ') + '. No change since your last visit.' };
 }
+/** MONEY: what a normal day costs. The VIX (ARES) is the market's own one-day move guess: VIX / sqrt(252) per cent of the NQ level, one standard day.
+ *  `level` is the NQ price (typed by the owner; the default is the last close in the repo data). Event days run wider by ATHENA's 2026 ratio. */
+export const NQ_LEVEL = 29400;
+export function dayMove(d, level, evToday) {
+  const ares = (d.gods || []).find((g) => g.key === 'ares'), vix = ares && ares.ok && ares.reading && fin(ares.reading.value) ? ares.reading.value : null;
+  const L = fin(level) && level > 1000 ? level : NQ_LEVEL;
+  const ath = (d.gods || []).find((g) => g.key === 'athena'), per = ath && ath.stats && Array.isArray(ath.stats.periods) ? ath.stats.periods.find((p) => p.period === '2026') : null;
+  const ratio = per && fin(per.ratio) ? per.ratio : 1.3;
+  if (vix == null) return { vix: null, level: L, pts: null, mnq: null, nq: null, ratio, line: 'No VIX reading in this build, so no dollar estimate for a normal day yet.' };
+  const pct = vix / Math.sqrt(252), pts = L * pct / 100, mnq = pts * 2, nq = pts * 20;
+  const r = (x) => Math.round(x);
+  return { vix, level: L, pct, pts, mnq, nq, ratio, wide: pts * 2, evPts: pts * ratio,
+    line: `A normal day (VIX ${vix}) moves NQ about ${r(pts)} points: ${r(mnq).toLocaleString('en-US')} dollars per micro, ${r(nq).toLocaleString('en-US')} dollars per full NQ.` + (evToday ? ` An event day runs about ${ratio.toFixed(1)}x wider: ${r(pts * ratio)} points, ${r(mnq * ratio).toLocaleString('en-US')} dollars per micro.` : '') };
+}
+
 export const leansOf = (d) => Object.fromEntries((d.gods || []).map((g) => [g.key, g.lean || 'neutral']));
 
 export function edgeMeter(d) {
@@ -104,8 +119,26 @@ export function renderDesk(root, d, o = {}) {
   if (!LAST) { LAST = rd(LEANS_KEY) || {}; wr(LEANS_KEY, leansOf(d)); }          // this visit's leans are kept for the NEXT visit; flips are shown against the last one
   const last = LAST;
   root.replaceChildren();
+  // ---- what a normal day costs (money first)
+  const cap = (t) => H('h3', '', t), s0 = H('section', 'plus'), er0 = eventRisk(d, now);
+  const lvKey = 'pantheon.level'; let lv = rd(lvKey); if (!fin(lv)) lv = NQ_LEVEL;
+  const costBox = H('div', 'cost'), paintCost = () => {
+    const m = dayMove(d, lv, er0.todayIn.length > 0); costBox.replaceChildren();
+    costBox.append(H('p', 'dline ' + (er0.todayIn.length ? 'warn' : 'ok'), m.line));
+    if (m.pts != null) {
+      const t = H('table'); t.setAttribute('aria-label', 'Dollars for a normal day');
+      t.innerHTML = '<thead><tr><th>Size</th><th>Normal day</th><th>Wide day (2x)</th></tr></thead>';
+      const tb = H('tbody'); [['1 micro', 1], ['3 micros', 3], ['5 micros', 5], ['1 full NQ', 10]].forEach(([n, k]) => { const tr = H('tr'); tr.append(H('td', '', n), H('td', '', '±$' + Math.round(m.mnq * k).toLocaleString('en-US')), H('td', '', '±$' + Math.round(m.mnq * 2 * k).toLocaleString('en-US'))); tb.append(tr); });
+      t.append(tb); costBox.append(t);
+    }
+  };
+  const lvIn = H('input'); lvIn.type = 'number'; lvIn.inputMode = 'numeric'; lvIn.min = '1000'; lvIn.step = '50'; lvIn.value = String(lv); lvIn.id = 'dk-level'; lvIn.setAttribute('aria-label', 'NQ level');
+  lvIn.addEventListener('change', () => { const v = parseFloat(lvIn.value); if (fin(v) && v > 1000) { lv = v; wr(lvKey, v); paintCost(); } });
+  const lvRow = H('label', 'lvrow'); lvRow.append(H('span', '', 'NQ level'), lvIn);
+  s0.append(cap('What a normal day costs'), costBox, lvRow, H('p', 'note', 'One typical day from the VIX, in dollars for the size you trade. Context for sizing, never a signal. Type today\'s NQ level to sharpen it.'));
+  paintCost();
   // ---- event risk
-  const er = eventRisk(d, now), s1 = H('section', 'plus'), cap = (t) => H('h3', '', t);
+  const er = eventRisk(d, now), s1 = H('section', 'plus');
   s1.append(cap('Event risk against your trading window'), H('p', 'dline ' + er.level, er.line));
   const ul = H('ul', 'evs');
   er.events.forEach((e) => { const li = H('li', e.inside ? 'in' : 'out'); li.append(H('b', '', e.event), H('span', '', `${e.today ? 'today' : e.tomorrow ? 'tomorrow' : e.when.split(' ')[0]} ${e.when.split(' ').slice(-2).join(' ')}`), H('small', '', `${e.inside ? 'inside' : 'outside'} 02:00-15:30 · ${e.left === 'now' ? 'now' : 'in ' + e.left}`)); ul.append(li); });
@@ -150,6 +183,6 @@ export function renderDesk(root, d, o = {}) {
   const msg = H('p', 'note'); msg.id = 'dk-msg'; msg.setAttribute('role', 'status');
   cp.addEventListener('click', async () => { const line = deskLine(d, o.now ? o.now() : Date.now(), watch); msg.dataset.line = line; try { await navigator.clipboard.writeText(line); msg.textContent = 'Copied: ' + line; } catch (_) { msg.textContent = 'Could not copy here: ' + line; } });
   s5.append(cp, msg);
-  root.append(s1, s2, s3, s4, s5);
+  root.append(s0, s1, s2, s3, s4, s5);
   return { watch: () => watch.slice() };
 }

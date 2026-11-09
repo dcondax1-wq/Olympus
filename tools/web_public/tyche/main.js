@@ -17,7 +17,7 @@ import { startSceneFx, startAtmosphere, ceremony } from './tychefx.js';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const QUALITY_KEY = 'tyche.quality', VIEW_KEY = 'tyche.view';   // quality: the old per-app key, read only without the kit
-const THEME = '#07060b';
+const THEME = '#0a0907';
 const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const params = new URLSearchParams(location.search);
 const forced = params.has('demo');

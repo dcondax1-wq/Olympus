@@ -10,8 +10,8 @@ export function startSceneFx(scene, { lite = false } = {}) {
   if (!fx || !scene || !scene.scene) return null;
   target = { scene: scene.scene, camera: scene.camera, renderer: scene.renderer, rc: scene.rc };
   ready = Promise.all(['fx-sky.js', 'fx-weather.js', 'fx-surface.js'].map((f) => import('../olympus/' + f + '?v=f1'))).then(() => {
-    const hs = [fx.caustics(target, { position: [5, FLOOR_Y + 0.08, -1], size: 34, intensity: 0.42, color: '#ffcf7a' })];
-    if (!lite) hs.push(fx.dust(target, { color: '#ffe08a', box: [18, 9, 12], center: [2, -1, 0], count: 420, size: 0.08 }));
+    const hs = [fx.caustics(target, { position: [5, FLOOR_Y + 0.08, -1], size: 34, intensity: 0.42, color: '#e0a060' })];
+    if (!lite) hs.push(fx.dust(target, { color: '#f0dca0', box: [18, 9, 12], center: [2, -1, 0], count: 420, size: 0.08 }));
     return hs;
   }).catch(() => null);
   return ready;
@@ -21,7 +21,7 @@ export function startSceneFx(scene, { lite = false } = {}) {
 export function ceremony() {
   const fx = FX();
   if (!fx || !target || !ready) return null;
-  try { return fx.shockwave(target, { position: [0, 0.3, 0], radius: 7, color: '#ffcf5a', seconds: 1.8 }); } catch (_) { return null; }
+  try { return fx.shockwave(target, { position: [0, 0.3, 0], radius: 7, color: '#c8a24a', seconds: 1.8 }); } catch (_) { return null; }
 }
 
 /** The atmosphere kit (../olympus/fx-atmos.js, 2026-11-04): warm light shafts down onto the wheel and gold sparks rising from the fountain. Each is ONE draw
@@ -30,8 +30,8 @@ export function ceremony() {
 export function startAtmosphere(scene, { lite = false, reduced = false } = {}) {
   if (!scene || !scene.scene || typeof scene.frame !== 'function') return null;
   return import('../olympus/fx-atmos.js').then((A) => {
-    const parts = [A.shafts({ count: 5, from: [1, 15, 5], to: [3, FLOOR_Y, -1], width: 2.6, color: '#ffd9a0', strength: 0.13, spread: [12, 0, 8] }),
-      A.embers({ count: 120, origin: [5, FLOOR_Y + 0.3, -1], spread: [3.5, 0, 3.5], rise: 6, colors: ['#ffe08a', '#ffb347'] })];
+    const parts = [A.shafts({ count: 5, from: [1, 15, 5], to: [3, FLOOR_Y, -1], width: 2.6, color: '#e0a060', strength: 0.13, spread: [12, 0, 8] }),
+      A.embers({ count: 120, origin: [5, FLOOR_Y + 0.3, -1], spread: [3.5, 0, 3.5], rise: 6, colors: ['#f0dca0', '#e0a060'] })];
     const lvl = (q) => (reduced ? 'low' : q === 'low' ? 'low' : 'high');
     parts.forEach((p) => { p.setQuality(lvl(lite ? 'low' : 'high')); scene.scene.add(p.object); });
     const frame0 = scene.frame.bind(scene), q0 = scene.setQuality.bind(scene);

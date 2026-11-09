@@ -6,7 +6,7 @@
 
 export const FLOOR_Y = -6;
 const FOUNTAIN = [-3.4, FLOOR_Y, 1.2], SAND = [3.4, FLOOR_Y, 1.2], COLUMN = [0, FLOOR_Y, 0];     // the column is the wheel's axle
-const GOLD = '#ffcf5a', MINT = '#5ef2c0', ROSE = '#ff6b7f';
+const GOLD = '#c8a24a', MINT = '#9bab63', ROSE = '#c0603f';
 const BASIN_R = 1.7, COL_MAX = 5.2, TURNS = 2.2, HELIX_PTS = 72;
 const FALL_S = 1.55, GAP_S = 1.1, PAUSE_S = 3.5, REPLAY = 14;
 
@@ -35,7 +35,7 @@ export class Pools {
 
   buildBasins() {
     const T = this.T, g = this.glow;
-    [[FOUNTAIN, GOLD, 0.6], [SAND, '#8a6a4a', 0.25]].forEach(([p, c, e]) => {
+    [[FOUNTAIN, GOLD, 0.6], [SAND, '#b0763c', 0.25]].forEach(([p, c, e]) => {
       const rim = new T.Mesh(new T.TorusGeometry(BASIN_R, 0.08, 12, 72), g.metal(c, e));
       rim.rotation.x = Math.PI / 2;
       rim.position.set(p[0], p[1] + 0.05, p[2]);
@@ -56,7 +56,7 @@ export class Pools {
     const n = this.lite ? 260 : 720;
     this.jet = this.glow.points(n, this.lite ? 0.16 : 0.12, 0.95);
     this.jetV = new Float32Array(n * 3);
-    const c = this.jet.geometry.attributes.color.array, gold = new this.T.Color(GOLD), white = new this.T.Color('#fff6dc'), mint = new this.T.Color(MINT), amber = new this.T.Color('#ffa53d');
+    const c = this.jet.geometry.attributes.color.array, gold = new this.T.Color(GOLD), white = new this.T.Color('#f3ece0'), mint = new this.T.Color(MINT), amber = new this.T.Color('#e0a060');
     for (let i = 0; i < n; i++) { const k = i % 13 === 0 ? mint : i % 4 === 0 ? white : i % 7 === 0 ? amber : gold; c.set([k.r, k.g, k.b], i * 3); this.spawnDrop(i, Math.random()); }
     this.group.add(this.jet);
     this.sparks = new Sparks(this.T, this.glow, this.lite ? 60 : 140, 0.11);      // coin-drop sparks
@@ -65,7 +65,7 @@ export class Pools {
     const m = this.lite ? 50 : 150;
     this.mist = this.glow.points(m, this.lite ? 0.36 : 0.3, 0.32);
     this.mistV = new Float32Array(m * 3);
-    const mc = this.mist.geometry.attributes.color.array, pale = new this.T.Color('#ffe7a8');
+    const mc = this.mist.geometry.attributes.color.array, pale = new this.T.Color('#f0dca0');
     for (let i = 0; i < m; i++) { mc.set([pale.r, pale.g, pale.b], i * 3); this.spawnMist(i, Math.random()); }
     this.group.add(this.mist);
   }
@@ -98,22 +98,22 @@ export class Pools {
     this.sand.material.blending = T.NormalBlending;
     this.sandSeed = new Float32Array(n * 3);
     const c = this.sand.geometry.attributes.color.array;
-    const tones = ['#8a6a48', '#6b5038', '#a8845a', '#4a3a2a', '#e0b070'].map((x) => new T.Color(x));
+    const tones = ['#b0763c', '#6a4928', '#e0a060', '#4c341d', '#e0a060'].map((x) => new T.Color(x));
     for (let i = 0; i < n; i++) {
       const k = tones[i % 17 === 0 ? 4 : i % tones.length === 4 ? 0 : i % 4];
       c.set([k.r, k.g, k.b], i * 3);
       const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * (BASIN_R - 0.12);
       this.sandSeed.set([a, r, Math.random()], i * 3);
     }
-    this.dune = new T.Mesh(new T.ConeGeometry(BASIN_R - 0.1, 1, 48, 1), new T.MeshStandardMaterial({ color: '#5a4430', roughness: 0.95, metalness: 0.05,
-      emissive: '#24170c', emissiveIntensity: 1 }));
+    this.dune = new T.Mesh(new T.ConeGeometry(BASIN_R - 0.1, 1, 48, 1), new T.MeshStandardMaterial({ color: '#5a3e22', roughness: 0.95, metalness: 0.05,
+      emissive: '#1f1811', emissiveIntensity: 1 }));
     this.dune.position.set(SAND[0], FLOOR_Y - 0.1, SAND[2]);
     this.group.add(this.dune, this.sand);
     // grains loose in the air: a lost coin dissolving
     this.puff = this.glow.points(this.lite ? 60 : 140, 0.09, 1);
     this.puff.material.blending = T.NormalBlending;
     this.puffV = new Float32Array(this.puff.geometry.attributes.position.count * 4);       // vx, vy, vz, life
-    const pc = this.puff.geometry.attributes.color.array, dark = new T.Color('#4a3a2c');
+    const pc = this.puff.geometry.attributes.color.array, dark = new T.Color('#4d351d');
     for (let i = 0; i < this.puff.geometry.attributes.position.count; i++) { pc.set([dark.r, dark.g, dark.b], i * 3); this.puff.geometry.attributes.position.array[i * 3 + 1] = -99; }
     this.group.add(this.puff);
     this.shapeSand();
@@ -138,17 +138,17 @@ export class Pools {
     this.column.position.set(COLUMN[0], COLUMN[1], COLUMN[2]);
     this.group.add(this.column);
     this.shaft = new T.Mesh(new T.CylinderGeometry(0.42, 0.42, 1, 32, 1, true), g.light(GOLD, 0.55, { map: g.fade, side: T.DoubleSide }));
-    this.core = new T.Mesh(new T.CylinderGeometry(0.11, 0.11, 1, 12, 1, true), g.light('#fff3cf', 0.9, { map: g.fade }));
+    this.core = new T.Mesh(new T.CylinderGeometry(0.11, 0.11, 1, 12, 1, true), g.light('#f3ece0', 0.9, { map: g.fade }));
     this.column.add(this.shaft, this.core);
     const base = new T.Mesh(new T.TorusGeometry(0.62, 0.05, 10, 48), g.metal(GOLD, 0.6));
     base.rotation.x = Math.PI / 2;
     this.column.add(base);
-    this.head = g.sprite('#fff3cf', 1.6, 0.9);
+    this.head = g.sprite('#f3ece0', 1.6, 0.9);
     this.column.add(this.head);
     this.foot = g.sprite(GOLD, 3.2, 0.4);
     this.column.add(this.foot);
     this.motes = g.points(this.lite ? 40 : 110, 0.09, 0.9);
-    const c = this.motes.geometry.attributes.color.array, k = new T.Color('#fff0c0');
+    const c = this.motes.geometry.attributes.color.array, k = new T.Color('#f0dca0');
     for (let i = 0; i < c.length / 3; i++) { c.set([k.r, k.g, k.b], i * 3); this.motes.geometry.attributes.position.array.set([(Math.random() - 0.5) * 0.5, Math.random() * 4, (Math.random() - 0.5) * 0.5], i * 3); }
     this.column.add(this.motes);
     this.helix = null;
@@ -189,7 +189,7 @@ export class Pools {
     this.grow = this.grown ? 1 : 0;                     // drawn in once per visit; a minute's new point just appears
     this.grown = true;
     if (this.grow < 1) geo.setDrawRange(0, 0);
-    if (!this.comet) this.comet = [1, 0.62, 0.38].map((s, i) => this.glow.sprite(i ? GOLD : '#ffffff', 0.62 * s, 0.95 - i * 0.25));
+    if (!this.comet) this.comet = [1, 0.62, 0.38].map((s, i) => this.glow.sprite(i ? GOLD : '#f3ece0', 0.62 * s, 0.95 - i * 0.25));
     this.comet.forEach((c) => this.helix.add(c));
   }
 
@@ -231,8 +231,8 @@ export class Pools {
     const b = f.bet, txt = (b.pnl >= 0 ? '+$' : '−$') + Math.abs(b.pnl).toFixed(2);
     this.pops.push({ id: 'p:' + b.key + ':' + Math.random().toString(36).slice(2, 6), pos: f.to.clone(), text: txt, win: b.win, age: 0 });
     if (this.pops.length > 4) this.pops.shift();
-    if (b.win) { this.burst = 1; this.sparks.burst(f.to, this.lite ? 12 : 26, '#ffd76a', 3.4, 1.0); this.sparks.burst(f.to, 6, '#fff6dc', 2.2, 0.7); }
-    else { this.puffAt(f.to); this.sparks.burst(f.to, 8, '#ff7a5a', 1.6, 0.6, 0.6); }
+    if (b.win) { this.burst = 1; this.sparks.burst(f.to, this.lite ? 12 : 26, '#c8a24a', 3.4, 1.0); this.sparks.burst(f.to, 6, '#f3ece0', 2.2, 0.7); }
+    else { this.puffAt(f.to); this.sparks.burst(f.to, 8, '#c0603f', 1.6, 0.6, 0.6); }
   }
 
   puffAt(p) {
@@ -323,7 +323,7 @@ export class Pools {
       if (!f.fade) this.land(f);
       f.fade += dt * (f.bet.win ? 2.5 : 1.2);
       f.mesh.material.opacity = Math.max(0, 1 - f.fade);
-      if (!f.bet.win) { f.mesh.position.y -= dt * 0.2; f.mesh.material.color.lerp(new this.T.Color('#2a221c'), Math.min(1, dt * 3)); }
+      if (!f.bet.win) { f.mesh.position.y -= dt * 0.2; f.mesh.material.color.lerp(new this.T.Color('#29231d'), Math.min(1, dt * 3)); }
       if (f.fade < 1) return true;
       this.group.remove(f.mesh);
       f.mesh.material.dispose();

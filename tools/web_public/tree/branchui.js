@@ -139,32 +139,32 @@ export function createBranchUI({ model, open, toast }) {
 export async function makeShareImage(b) {
   const L = shareLines(b), W = 1080, H = 1350, c = document.createElement('canvas');
   c.width = W; c.height = H;
-  const x = c.getContext('2d'), mono = 'ui-monospace, "SF Mono", Menlo, monospace';
-  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#04100a'); g.addColorStop(1, '#010503'); x.fillStyle = g; x.fillRect(0, 0, W, H);
-  const rg = x.createRadialGradient(W / 2, H * 0.3, 20, W / 2, H * 0.3, 640); rg.addColorStop(0, 'rgba(70,255,154,.22)'); rg.addColorStop(1, 'rgba(70,255,154,0)'); x.fillStyle = rg; x.fillRect(0, 0, W, H);
-  x.strokeStyle = 'rgba(70,255,154,.35)'; x.lineWidth = 3; x.strokeRect(36, 36, W - 72, H - 72);
-  x.fillStyle = '#46ff9a'; x.font = `700 40px ${mono}`; x.fillText('DAPHNE', 84, 120);
-  x.fillStyle = 'rgba(190,255,215,.6)'; x.font = `500 26px ${mono}`; x.fillText('THE STRATEGY TREE · NQ', 84, 160);
+  const x = c.getContext('2d'), mono = '-apple-system, "SF Pro Text", system-ui, sans-serif';
+  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0d0a07'); g.addColorStop(1, '#010503'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const rg = x.createRadialGradient(W / 2, H * 0.3, 20, W / 2, H * 0.3, 640); rg.addColorStop(0, 'rgba(155, 171, 99,.22)'); rg.addColorStop(1, 'rgba(155, 171, 99,0)'); x.fillStyle = rg; x.fillRect(0, 0, W, H);
+  x.strokeStyle = 'rgba(155, 171, 99,.35)'; x.lineWidth = 3; x.strokeRect(36, 36, W - 72, H - 72);
+  x.fillStyle = '#9bab63'; x.font = `700 40px ${mono}`; x.fillText('DAPHNE', 84, 120);
+  x.fillStyle = 'rgba(155, 171, 99,.6)'; x.font = `500 26px ${mono}`; x.fillText('THE STRATEGY TREE · NQ', 84, 160);
   x.fillStyle = '#fff'; x.font = `800 84px ${mono}`; x.fillText(L.title, 84, 290);
-  x.fillStyle = 'rgba(190,255,215,.8)'; x.font = `500 34px ${mono}`; x.fillText(L.sub.toUpperCase(), 84, 345);
-  const ok = b.allPos, pill = ok ? '#46ff9a' : b.holds ? '#f5b84a' : '#ff6b7f';
+  x.fillStyle = 'rgba(155, 171, 99,.8)'; x.font = `500 34px ${mono}`; x.fillText(L.sub.toUpperCase(), 84, 345);
+  const ok = b.allPos, pill = ok ? '#9bab63' : b.holds ? '#e0a060' : '#c0603f';
   x.fillStyle = pill; x.globalAlpha = 0.18; x.fillRect(84, 385, 760, 76); x.globalAlpha = 1; x.strokeStyle = pill; x.lineWidth = 2; x.strokeRect(84, 385, 760, 76);
   x.fillStyle = pill; x.font = `800 38px ${mono}`; x.fillText(L.verdict, 112, 435);
   // the three bars
   const hi = Math.max(10, ...L.bars.map(([, v]) => Math.abs(v))), base = 880;
-  x.strokeStyle = 'rgba(255,255,255,.25)'; x.lineWidth = 2; x.beginPath(); x.moveTo(84, base); x.lineTo(W - 84, base); x.stroke();
+  x.strokeStyle = 'rgba(243, 236, 224,.25)'; x.lineWidth = 2; x.beginPath(); x.moveTo(84, base); x.lineTo(W - 84, base); x.stroke();
   L.bars.forEach(([name, v], i) => {
     const bx = 120 + i * 300, h = Math.max(6, (Math.abs(v) / hi) * 260), up = v >= 0;
-    x.fillStyle = up ? '#46ff9a' : '#ff6b7f'; x.fillRect(bx, up ? base - h : base, 200, h);
+    x.fillStyle = up ? '#9bab63' : '#c0603f'; x.fillRect(bx, up ? base - h : base, 200, h);
     x.fillStyle = '#fff'; x.font = `800 44px ${mono}`; x.textAlign = 'center'; x.fillText((v < 0 ? '-$' : '+$') + Math.abs(v).toFixed(1), bx + 100, up ? base - h - 18 : base + h + 52);
-    x.fillStyle = 'rgba(190,255,215,.7)'; x.font = `600 30px ${mono}`; x.fillText(name, bx + 100, base + 120 + (up ? 0 : 0)); x.textAlign = 'left';
+    x.fillStyle = 'rgba(155, 171, 99,.7)'; x.font = `600 30px ${mono}`; x.fillText(name, bx + 100, base + 120 + (up ? 0 : 0)); x.textAlign = 'left';
   });
-  x.fillStyle = 'rgba(190,255,215,.6)'; x.font = `500 26px ${mono}`; x.fillText('$ PER TRADE, ONE MICRO, AFTER COSTS', 84, 1040);
+  x.fillStyle = 'rgba(155, 171, 99,.6)'; x.font = `500 26px ${mono}`; x.fillText('$ PER TRADE, ONE MICRO, AFTER COSTS', 84, 1040);
   // the plain-words sentence, wrapped
-  x.fillStyle = '#e8fff0'; x.font = `500 34px ${mono}`;
+  x.fillStyle = '#f3ece0'; x.font = `500 34px ${mono}`;
   const words = L.text.split(' '); let line = '', y = 1110;
   for (const w of words) { const t = line ? line + ' ' + w : w; if (x.measureText(t).width > W - 168 && line) { x.fillText(line, 84, y); line = w; y += 46; if (y > 1230) { line += '...'; break; } } else line = t; }
   if (y <= 1260) x.fillText(line, 84, y);
-  x.fillStyle = 'rgba(190,255,215,.45)'; x.font = `500 24px ${mono}`; x.fillText(L.foot, 84, H - 72);
+  x.fillStyle = 'rgba(155, 171, 99,.45)'; x.font = `500 24px ${mono}`; x.fillText(L.foot, 84, H - 72);
   return await new Promise((res, rej) => c.toBlob((blob) => (blob ? res(blob) : rej(new Error('no image'))), 'image/png'));
 }

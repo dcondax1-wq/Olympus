@@ -50,7 +50,7 @@ function money(w, p, peers) {
   const twin = p.paper_twin ? `<p class="note">Paper twin ${esc(usd(p.paper_twin.net))}: the same trades on paper, not counted twice.</p>` : '';
   const ks = kp ? row(kp.name, 'real money', 'Kalshi', kp.net) : '';
   return {
-    id: 'money', name: 'The money', colors: up ? ['#04140f', '#1f8f6a', '#f7c948'] : ['#14040a', '#6b1030', '#ff7a8a'], mode: up ? 4 : 1, ms: 8000,
+    id: 'money', name: 'The money', colors: up ? ['#100c08', '#7f8a52', '#c8a24a'] : ['#100c08', '#483327', '#e0907a'], mode: up ? 4 : 1, ms: 8000,
     html: `${kick(p)}${kt(p.trades ? (up ? 'The bots made money' : 'A red stretch. Here it is.') : 'No trades yet')}
       <div class="hero" data-z="3">${counter(p.net, 'xl')}<p class="sub">${esc(plural(p.trades, 'trade'))} · ${p.wins} won · ${p.losses} lost${p.win_pct != null ? ` · ${p.win_pct}% wins` : ''}</p></div>
       <div class="split"><div><small>Won</small><b class="up">${esc(usd(p.won_usd))}</b></div><div><small>Lost</small><b class="down">${esc(usd(p.lost_usd))}</b></div>
@@ -58,8 +58,8 @@ function money(w, p, peers) {
       ${dayBars(p.days)}<ul class="bots">${bots}${ks}</ul>${twin}`,
     enter(el, fx) {
       if (!p.trades) return;
-      fx.burst(up ? 'coins' : 'embers', up ? 60 : 50, { colors: up ? ['#f7c948'] : ['#ff7a8a', '#ffb199'] });
-      if (up) fx.burst('confetti', 80, { colors: ['#5ef2a8', '#f7c948', '#ffffff', '#59d0ff', '#ff5edb'] });   // a green week: confetti
+      fx.burst(up ? 'coins' : 'embers', up ? 60 : 50, { colors: up ? ['#c8a24a'] : ['#e0907a', '#e0907a'] });
+      if (up) fx.burst('confetti', 80, { colors: ['#9bab63', '#c8a24a', '#f3ece0', '#6f9bb8', '#b08064'] });   // a green week: confetti
     },
     share: () => ({ kicker: `${p.label} · ${span(p)}`, title: 'The money', big: usd(p.net), tone: tone(p.net),
       lines: [`${plural(p.trades, 'trade')}: ${p.wins} won, ${p.losses} lost`, `Won ${usd(p.won_usd)} · Lost ${usd(p.lost_usd)}`,
@@ -71,12 +71,12 @@ function best(w, p) {
   const b = p.best;
   if (!b) return null;
   return {
-    id: 'best', name: 'Best trade', colors: ['#03140e', '#0f6b4f', '#5ef2a8'], mode: 0, ms: 7500,
+    id: 'best', name: 'Best trade', colors: ['#0f0c08', '#3f4529', '#9bab63'], mode: 0, ms: 7500,
     html: `${kick(p)}${kt('Trade of the week'.replace('week', p.key === 'all' ? 'all time' : p.key))}
       <div class="hero" data-z="3">${counter(b.pnl, 'lg')}<p class="sub">${esc(b.bot)} · ${esc(b.side || '')} · ${esc(dayLabel(b.day, { weekday: 'short', month: 'short', day: 'numeric' }))}${b.time ? ' ' + esc(b.time) : ''} · ${esc(R(b.r))}</p></div>
       ${sparkSVG(b.spark, 'up')}
       <p class="fact">${esc(b.exit ? `Exit: ${b.exit}.` : '')} ${b.qty ? esc(`${b.qty} micros`) + ', ' : ''}${b.risk_pts ? esc(`${b.risk_pts}-pt stop`) : ''}${b.paper ? ' (paper)' : ''}</p>`,
-    enter(el, fx) { fx.burst('sparks', 50, { y: 0.55, colors: ['#5ef2a8', '#ffffff'] }); },
+    enter(el, fx) { fx.burst('sparks', 50, { y: 0.55, colors: ['#9bab63', '#f3ece0'] }); },
     share: () => ({ kicker: `${p.label} · best trade`, title: `${b.bot} · ${dayLabel(b.day)}`, big: usd(b.pnl), tone: 'up', spark: b.spark.points,
       lines: [`${b.side || ''} · ${R(b.r)}${b.exit ? ' · ' + b.exit : ''}`] }),
   };
@@ -86,12 +86,12 @@ function worst(w, p) {
   const b = p.worst;
   if (!b) {
     if (!p.trades) return null;
-    return { id: 'worst', name: 'Worst trade', colors: ['#071410', '#1f5a3a', '#bfffd9'], mode: 2, ms: 5500,
+    return { id: 'worst', name: 'Worst trade', colors: ['#110e0a', '#3f4429', '#9bab63'], mode: 2, ms: 5500,
       html: `${kick(p)}${kt('No losing trade. Not one.')}<p class="lesson">Every trade closed green or flat. Enjoy it; it will not always look like this.</p>`,
       enter() {}, share: () => ({ kicker: p.label, title: 'No losing trade', big: '0 losses', tone: 'up', lines: [`${plural(p.trades, 'trade')}, all green or flat`] }) };
   }
   return {
-    id: 'worst', name: 'Worst trade', colors: ['#140606', '#5a1a24', '#ff9a6b'], mode: 2, ms: 8500,
+    id: 'worst', name: 'Worst trade', colors: ['#110d09', '#4c291d', '#e0a060'], mode: 2, ms: 8500,
     html: `${kick(p)}${kt('The one that hurt')}
       <div class="hero" data-z="3">${counter(b.pnl, 'lg')}<p class="sub">${esc(b.bot)} · ${esc(b.side || '')} · ${esc(dayLabel(b.day, { weekday: 'short', month: 'short', day: 'numeric' }))} · ${esc(R(b.r))}</p></div>
       ${sparkSVG(b.spark, 'down')}<blockquote class="lesson"><small>The lesson</small>${esc(b.lesson || '')}</blockquote>`,
@@ -113,10 +113,10 @@ function evalCard(w, p, peers) {
       <span>${e.room != null ? `Drawdown left ${esc(usd(e.room, { sign: false, cents: false }))}${e.mll != null ? ` of ${esc(usd(e.mll, { sign: false, cents: false }))}` : ''}` : ''}</span></div></div>`;
   }).join('');
   return {
-    id: 'eval', name: 'Evals', colors: ['#040a1a', '#1a3f8f', '#59d0ff'], mode: 6, ms: 8000,
+    id: 'eval', name: 'Evals', colors: ['#140f0a', '#4b7a99', '#6f9bb8'], mode: 6, ms: 8000,
     html: `<p class="kicker">Evals · now</p>${kt('Road to funded')}<div class="evs" data-z="2">${rows}</div>${odds}
       <p class="note">Outer ring: profit to the target. Inner ring: room above the trailing floor.</p>`,
-    enter(el, fx) { if (E.some((e) => e.to_target <= 0)) fx.burst('confetti', 90, { colors: ['#59d0ff', '#f7c948', '#ffffff', '#ff5edb'] }); },
+    enter(el, fx) { if (E.some((e) => e.to_target <= 0)) fx.burst('confetti', 90, { colors: ['#6f9bb8', '#c8a24a', '#f3ece0', '#b08064'] }); },
     share: () => ({ kicker: 'Evals', title: 'Road to funded', big: `${Math.round(E[0].progress * 100)}%`, tone: E[0].progress >= 1 ? 'up' : 'flat',
       lines: E.map((e) => `${e.bot} ${e.plan || e.name}: ${usd(e.profit)} of ${usd(e.target, { sign: false, cents: false })}, floor ${usd(e.room, { sign: false, cents: false })} below`) }),
   };
@@ -127,10 +127,10 @@ function disciplineCard(w, p) {
   if (d.score == null) return null;
   const rows = (d.rules || []).map((r, i) => `<li style="--i:${i}" class="${r.ok ? 'ok' : 'miss'}"><span class="mk">${r.ok ? '✓' : '✕'}</span><span>${esc(r.label)}</span><b>${r.kept}/${r.total}</b></li>`).join('');
   return {
-    id: 'discipline', name: 'Discipline', colors: ['#0d0902', '#6b4a0f', '#f5b84a'], mode: 3, ms: 7500,
+    id: 'discipline', name: 'Discipline', colors: ['#0a0805', '#50371e', '#e0a060'], mode: 3, ms: 7500,
     html: `${kick(p)}${kt('Discipline score')}<div class="score" data-z="3"><span class="count big" data-to="${d.score}" data-fmt="int">0</span><small>/100</small></div>
       <ul class="rules">${rows}</ul><p class="note">Checked from the trades: ${esc(d.kept)} of ${esc(d.checked)} rule checks kept.</p>`,
-    enter(el, fx) { if (d.score >= 90) fx.burst('sparks', 40, { colors: ['#f5b84a', '#fff1c9'] }); },
+    enter(el, fx) { if (d.score >= 90) fx.burst('sparks', 40, { colors: ['#e0a060', '#f3ece0'] }); },
     share: () => ({ kicker: `${p.label} · discipline`, title: 'Rules kept', big: `${d.score}/100`, tone: d.score >= 90 ? 'up' : d.score >= 70 ? 'flat' : 'down',
       lines: (d.rules || []).map((r) => `${r.ok ? '✓' : '✕'} ${r.label} ${r.kept}/${r.total}`) }),
   };
@@ -140,7 +140,7 @@ function learnedCard(w) {
   const L = w.learned || [];
   if (!L.length) return null;
   return {
-    id: 'learned', name: 'Learned', colors: ['#06041a', '#3a2a9a', '#c08bff'], mode: 0, ms: 9500,
+    id: 'learned', name: 'Learned', colors: ['#140f0a', '#4b7a99', '#b08064'], mode: 0, ms: 9500,
     html: `<p class="kicker">What the bots learned</p>${kt('Smarter than last week')}<ol class="learn">${L.map((x, i) => `<li style="--i:${i}"><small>${esc(x.tag)}</small>${esc(x.text)}</li>`).join('')}</ol>
       <p class="note">Read-only: nothing changes until you approve it.</p>`,
     enter() {}, share: () => ({ kicker: 'What the bots learned', title: 'Smarter than last week', big: `${L.length} lessons`, tone: 'flat', lines: L.map((x) => x.text) }),
@@ -151,11 +151,11 @@ function discoveryCard(w, p, peers) {
   const d = peers.discovery;
   if (!d) return null;
   return {
-    id: 'discovery', name: 'Discovery', colors: ['#021214', '#0b4a52', '#3fb8ad'], mode: 3, ms: 7500,
+    id: 'discovery', name: 'Discovery', colors: ['#0e0b08', '#1c2d38', '#6f9bb8'], mode: 3, ms: 7500,
     html: `<p class="kicker">Data City · discovery of the week</p>${kt(d.title || 'Discovery')}
       ${d.usd != null ? `<div class="hero" data-z="3">${counter(d.usd, 'lg')}</div>` : d.stat ? `<div class="hero"><span class="count lg flat">${esc(d.stat)}</span></div>` : ''}
       <p class="lesson">${esc(d.text)}</p>`,
-    enter(el, fx) { fx.burst('sparks', 30, { colors: ['#7af0e0', '#ffffff'] }); },
+    enter(el, fx) { fx.burst('sparks', 30, { colors: ['#6f9bb8', '#f3ece0'] }); },
     share: () => ({ kicker: 'Data City · discovery', title: d.title || 'Discovery', big: d.usd != null ? usd(d.usd) : d.stat || '', tone: tone(d.usd), lines: [d.text] }),
   };
 }
@@ -163,15 +163,15 @@ function discoveryCard(w, p, peers) {
 function kalshiCard(w, p, peers) {
   const k = kalshiPeriod(peers.kalshi, p);
   if (!k) {
-    return { id: 'kalshi', name: 'Kalshi', colors: ['#04100a', '#145a2e', '#9cff6b'], mode: 1, ms: 5000,
+    return { id: 'kalshi', name: 'Kalshi', colors: ['#0d0a07', '#393e25', '#9bab63'], mode: 1, ms: 5000,
       html: `<p class="kicker">Kalshi · coming soon</p>${kt('The prediction bot joins next')}<p class="lesson">Once the Kalshi bot publishes its feed, its week shows up here: real money, wins, losses, the best strategy.</p>`,
       enter() {}, share: () => ({ kicker: 'Kalshi', title: 'Coming soon', big: 'Kalshi', tone: 'flat', lines: ['The prediction bot joins the recap once its feed is live.'] }) };
   }
   return {
-    id: 'kalshi', name: 'Kalshi', colors: ['#04100a', '#145a2e', '#6fd64a'], mode: 1, ms: 7000,
+    id: 'kalshi', name: 'Kalshi', colors: ['#0d0a07', '#393e25', '#9bab63'], mode: 1, ms: 7000,
     html: `${kick(p, 'real money')}${kt(k.name)}<div class="hero" data-z="3">${counter(k.net, 'lg')}<p class="sub">${k.balance != null ? `Balance ${esc(usd(k.balance, { sign: false }))} · ` : ''}${esc(plural(k.wins, 'win'))} · ${esc(plural(k.losses, 'loss', 'losses'))} (all time)</p></div>
       ${dayBars(k.days)}${k.top ? `<p class="fact">Best strategy: ${esc(k.top.name)} ${esc(usd(k.top.pnl))}</p>` : ''}${k.running ? '' : '<p class="note">The bot reports it is stopped.</p>'}`,
-    enter(el, fx) { if (k.net > 0) fx.burst('coins', 40, { colors: ['#9cff6b'] }); },
+    enter(el, fx) { if (k.net > 0) fx.burst('coins', 40, { colors: ['#9bab63'] }); },
     share: () => ({ kicker: `${p.label} · Kalshi`, title: k.name, big: usd(k.net), tone: tone(k.net), lines: [k.balance != null ? `Balance ${usd(k.balance, { sign: false })}` : ''] }),
   };
 }
@@ -181,7 +181,7 @@ function plannerCard(w, p, peers) {
   if (!P) return null;
   const hab = P.habits.map((h) => `<li><span>${esc(h.name)}</span><b>${h.n}×</b></li>`).join('');
   return {
-    id: 'planner', name: 'Planner', colors: ['#140a02', '#7a3d0f', '#ffb36b'], mode: 0, ms: 7000,
+    id: 'planner', name: 'Planner', colors: ['#0e0b08', '#593e22', '#e0a060'], mode: 0, ms: 7000,
     html: `${kick(p, 'Planner')}${kt('Off the charts too')}<div class="split"><div><small>Tasks done</small><b>${P.done}</b></div><div><small>Still open</small><b>${P.open}</b></div><div><small>Events</small><b>${P.events}</b></div></div>
       ${hab ? `<ul class="bots">${hab}</ul>` : ''}${P.top.length ? `<p class="fact">Done: ${P.top.map(esc).join(' · ')}</p>` : ''}`,
     enter() {}, share: () => ({ kicker: `${p.label} · Planner`, title: 'Off the charts too', big: `${P.done} done`, tone: 'flat', lines: P.habits.map((h) => `${h.name}: ${h.n}×`) }),
@@ -203,14 +203,14 @@ function paceCard(w, p) {
   const fees = pm > 0 ? Math.floor(pm / EVAL_FEE) : 0;
   const rel = avg ? pm / avg : null;
   return {
-    id: 'pace', name: 'Per month', colors: pm >= 0 ? ['#06130f', '#136b4e', '#ffd76a'] : ['#14060a', '#5a1330', '#ff9aa8'], mode: 2, ms: 8000,
+    id: 'pace', name: 'Per month', colors: pm >= 0 ? ['#100d09', '#41472a', '#c8a24a'] : ['#110d09', '#402d22', '#e0907a'], mode: 2, ms: 8000,
     html: `${kick(p)}${kt(pm >= 0 ? 'At this pace, a month is' : 'At this pace, a month costs')}
       <div class="hero" data-z="3">${counter(pm, 'xl gold').replace('class="count', 'data-fmt="usd0" class="count')}<p class="sub">a month, if every month looked like ${esc(p.label.toLowerCase())}</p></div>
       <div class="pbars" data-z="2">${bar(p.label, pm, 'now')}${avg != null && p.key !== 'all' ? bar('All-time average', avg, 'avg') : ''}</div>
       <div class="split">${cell('A week', pm * 12 / 52)}${cell('A trading day', pm / 21)}${cell('A year', pm * 12)}</div>
       ${pm > 0 ? `<p class="fact">One month covers the $${EVAL_FEE.toFixed(2)} Builder 50K eval fee <b class="up">${fees}×</b>${rel != null && p.key !== 'all' ? ` · ${rel >= 1 ? `${rel.toFixed(1)}× your all-time pace` : `${Math.round(rel * 100)}% of your all-time pace`}` : ''}.</p>` : ''}
       <p class="note">A pace, not a promise: ${esc(plural(p.trades, 'trade'))} is a small sample. Paper and eval accounts, losses included.</p>`,
-    enter(el, fx) { if (pm > 0) fx.burst('coins', 40, { colors: ['#ffd76a', '#fff3c4'] }); },
+    enter(el, fx) { if (pm > 0) fx.burst('coins', 40, { colors: ['#c8a24a', '#f3ece0'] }); },
     share: () => ({ kicker: `${p.label} · money a month`, title: pm >= 0 ? 'At this pace, a month is' : 'At this pace, a month costs', big: usd(pm, { cents: false }), tone: tone(pm),
       lines: [`${usd(pm * 12 / 52, { cents: false })} a week · ${usd(pm / 21, { cents: false })} a trading day`, avg != null ? `All-time average ${usd(avg, { cents: false })} a month` : '',
         `${plural(p.trades, 'trade')} · a pace, not a promise`].filter(Boolean) }),
@@ -226,7 +226,7 @@ function reportCard(w, p) {
   const plaque = (label, value, sub, cls = '') => `<div class="plaque ${cls}" data-oly-fx="shimmer"><small>${esc(label)}</small><b>${esc(value)}</b><i>${esc(sub)}</i></div>`;
   const grade = pf == null ? 'A+' : pf >= 3 ? 'A+' : pf >= 2 ? 'A' : pf >= 1.5 ? 'B' : pf >= 1 ? 'C' : 'D';
   return {
-    id: 'report', name: 'Report card', colors: ['#0a0716', '#3a1d86', '#59d0ff'], mode: 6, ms: 8000,
+    id: 'report', name: 'Report card', colors: ['#130f0a', '#304e62', '#6f9bb8'], mode: 6, ms: 8000,
     html: `${kick(p)}${kt('The report card')}
       <div class="hero grade" data-z="3"><span class="count lg ${pf != null && pf < 1 ? 'down' : 'up'}" data-fmt="grade">${esc(grade)}</span><p class="sub">${pf == null ? 'No losing trade' : `Profit factor ${pf.toFixed(2)}: every $1 lost brought $${pf.toFixed(2)}`}</p></div>
       <div class="wl" data-z="2" aria-label="${esc(p.wins)} wins, ${esc(p.losses)} losses"><i class="w" style="--w:${wp.toFixed(1)}%"></i><i class="l"></i><b>${esc(Math.round(wp))}% won</b></div>
@@ -236,7 +236,7 @@ function reportCard(w, p) {
         ${plaque('Win / loss size', payoff != null ? `${payoff.toFixed(1)} : 1` : '—', 'the average win against the average loss')}
         ${plaque('A trade is worth', usd(exp, { cents: false }), 'average, losses included', exp >= 0 ? 'up' : '')}
       </div>`,
-    enter(el, fx) { if (pf == null || pf >= 2) fx.burst('glitter', 50, { colors: ['#59d0ff', '#ffffff', '#c08bff'] }); },
+    enter(el, fx) { if (pf == null || pf >= 2) fx.burst('glitter', 50, { colors: ['#6f9bb8', '#f3ece0', '#b08064'] }); },
     share: () => ({ kicker: `${p.label} · report card`, title: 'The report card', big: grade, tone: pf != null && pf < 1 ? 'down' : 'up',
       lines: [pf != null ? `Profit factor ${pf.toFixed(2)}` : 'No losing trade', `${Math.round(wp)}% won · ${plural(p.trades, 'trade')}`,
         aw != null && al != null ? `Average win ${usd(aw, { cents: false })} · average loss ${usd(-al, { cents: false })}` : '', `A trade is worth ${usd(exp, { cents: false })} on average`].filter(Boolean) }),
@@ -254,12 +254,12 @@ function streakCard(w, p) {
   const cells = last.map(([d, v], i) => `<i class="hc ${tone(v)}" style="--a:${(0.25 + 0.75 * Math.min(1, Math.abs(v) / m)).toFixed(2)};--i:${i}" title="${esc(dayLabel(d))} ${esc(usd(v, { cents: false }))}"></i>`).join('');
   const green = last.filter(([, v]) => v > 0).length;
   return {
-    id: 'streak', name: 'Streak', colors: ['#10060a', '#8f2a0e', '#ffb347'], mode: 3, ms: 7500,
+    id: 'streak', name: 'Streak', colors: ['#0e0b08', '#663727', '#e0a060'], mode: 3, ms: 7500,
     html: `<p class="kicker">Streak · the last ${esc(plural(last.length, 'trading day'))}</p>${kt(cur >= 2 ? `${cur} green days in a row` : cur === 1 ? 'A green day on the board' : 'The streak starts again')}
       <div class="hero" data-z="3"><span class="count xl gold" data-to="${cur}" data-fmt="int">0</span><p class="sub">${cur === 1 ? 'green day' : 'green days'} in a row now · the record is ${esc(plural(rec, 'day'))}</p></div>
       <div class="heat" data-z="2" role="img" aria-label="${green} green days of ${last.length}">${cells}</div>
       <p class="note">${green} green of the last ${last.length} trading days. Brighter = a bigger day. Paper and eval accounts, losses included.</p>`,
-    enter(el, fx) { if (cur >= 3) fx.burst('embers', 40, { colors: ['#ffb347', '#ff7a1a', '#fff3c4'] }); },
+    enter(el, fx) { if (cur >= 3) fx.burst('embers', 40, { colors: ['#e0a060', '#e0a060', '#f3ece0'] }); },
     share: () => ({ kicker: 'Streak', title: cur >= 2 ? `${cur} green days in a row` : 'The streak', big: `${cur}`, tone: cur ? 'up' : 'flat',
       lines: [`Record: ${plural(rec, 'day')} in a row`, `${green} of the last ${last.length} trading days green`] }),
   };
@@ -295,11 +295,11 @@ function bestDayCard(w, p) {
   if (!top || top[1] <= 0) return null;
   const share = p.net > 0 ? Math.min(100, Math.round((top[1] / p.net) * 100)) : null, green = days.filter(([, v]) => v > 0).length;
   return {
-    id: 'bestday', name: 'Best day', colors: ['#03140e', '#0f6b4f', '#f7c948'], mode: 4, ms: 7500,
+    id: 'bestday', name: 'Best day', colors: ['#0f0c08', '#3f4529', '#c8a24a'], mode: 4, ms: 7500,
     html: `${kick(p)}${kt('The best day')}<div class="hero" data-z="3">${counter(top[1], 'xl gold')}<p class="sub">${esc(dayLabel(top[0], { weekday: 'long', month: 'short', day: 'numeric' }))}</p></div>
       ${dayBars(days)}<div class="split"><div><small>Share of the profit</small><b class="up">${share != null ? share + '%' : '—'}</b></div><div><small>Green days</small><b>${green}/${days.length}</b></div></div>
       <p class="note">One day out of ${esc(plural(days.length, 'trading day'))}. Paper and eval accounts, losses included.</p>`,
-    enter(el, fx) { lib('sparkleBurst', el, { count: 30 }, ['sparks', 50, { y: 0.45, colors: ['#f7c948', '#ffffff'] }], fx); },
+    enter(el, fx) { lib('sparkleBurst', el, { count: 30 }, ['sparks', 50, { y: 0.45, colors: ['#c8a24a', '#f3ece0'] }], fx); },
     share: () => ({ kicker: `${p.label} · best day`, title: dayLabel(top[0], { weekday: 'long', month: 'short', day: 'numeric' }), big: usd(top[1]), tone: 'up',
       lines: [share != null ? `${share}% of the period's profit in one day` : '', `${green} of ${days.length} trading days green`].filter(Boolean) }),
   };
@@ -314,10 +314,10 @@ function bestWeekCard(w, p) {
   const last = W.slice(-8), m = Math.max(...last.map((x) => Math.abs(x[1]))) || 1, green = W.filter((x) => x[1] > 0).length, avg = W.reduce((a, x) => a + x[1], 0) / W.length;
   const bars = `<div class="bars" aria-label="P&amp;L per week">${last.map(([d, v], i) => `<div class="dbar ${tone(v)}" style="--h:${Math.max(4, Math.abs(v) / m * 100).toFixed(1)}%;--i:${i}"><i></i><b>${esc(dayLabel(d, { month: 'numeric', day: 'numeric' }))}</b></div>`).join('')}</div>`;
   return {
-    id: 'bestweek', name: 'Best week', colors: ['#0b0702', '#6b4a0f', '#ffd76a'], mode: 2, ms: 7500,
+    id: 'bestweek', name: 'Best week', colors: ['#080705', '#50371e', '#c8a24a'], mode: 2, ms: 7500,
     html: `<p class="kicker">All time · ${esc(plural(W.length, 'week'))} on record</p>${kt('The best week ever')}<div class="hero" data-z="3">${counter(top[1], 'xl gold')}<p class="sub">Week of ${esc(dayLabel(top[0], { month: 'short', day: 'numeric' }))} · ${esc(plural(top[2], 'trading day'))}</p></div>
       ${bars}<div class="split"><div><small>Green weeks</small><b class="up">${green}/${W.length}</b></div><div><small>Average week</small><b class="${tone(avg)}">${esc(usd(avg, { cents: false }))}</b></div></div>`,
-    enter(el, fx) { lib('confetti', el, { count: 90 }, ['confetti', 80, { colors: ['#ffd76a', '#fff3c4', '#5ef2a8', '#ffffff'] }], fx); },
+    enter(el, fx) { lib('confetti', el, { count: 90 }, ['confetti', 80, { colors: ['#c8a24a', '#f3ece0', '#9bab63', '#f3ece0'] }], fx); },
     share: () => ({ kicker: 'All time · best week', title: `Week of ${dayLabel(top[0])}`, big: usd(top[1]), tone: 'up', lines: [`${green} of ${W.length} weeks green`, `${plural(top[2], 'trading day')} that week`] }),
   };
 }
@@ -335,12 +335,12 @@ function accountsCard(w, p) {
   const top = Math.max(...rows.map((r) => Math.abs(r.net)), 1), sum = rows.reduce((a, r) => a + r.net, 0), ev = (w.eval || []).length;
   const bar = (r) => `<div class="pbar ${r.net < 0 ? 'avg' : 'now'}"><span>${esc(r.name)}</span><b class="${tone(r.net)}">${esc(usd(r.net, { cents: false }))}</b><i style="--w:${(Math.abs(r.net) / top * 100).toFixed(1)}%"></i></div>`;
   return {
-    id: 'accounts', name: 'Accounts', colors: ['#040a1a', '#1a3f8f', '#f7c948'], mode: 6, ms: 7500,
+    id: 'accounts', name: 'Accounts', colors: ['#140f0a', '#4b7a99', '#c8a24a'], mode: 6, ms: 7500,
     html: `${kick(p)}${kt('Where the money sits')}<div class="hero" data-z="3">${counter(sum, 'lg gold')}<p class="sub">${esc(plural(rows.length, 'account'))} · ${esc(plural(rows.reduce((a, r) => a + r.trades, 0), 'trade'))}</p></div>
       <div class="pbars" data-z="2">${rows.slice(0, 4).map(bar).join('')}</div>
       <ul class="bots">${rows.slice(0, 4).map((r) => `<li><span>${esc(r.bots.join(', '))}<small>${esc(plural(r.trades, 'trade'))}</small></span><span class="${tone(r.net)}">${sum ? Math.round((r.net / Math.abs(sum)) * 100) : 0}%</span></li>`).join('')}</ul>
       <p class="note">${ev ? `${esc(plural(ev, 'eval account'))} on the road to funded (see the Evals card). ` : ''}Paper twins are not counted twice.</p>`,
-    enter(el, fx) { lib('sparkleBurst', el, { count: 24 }, ['sparks', 36, { y: 0.45, colors: ['#f7c948', '#59d0ff'] }], fx); },
+    enter(el, fx) { lib('sparkleBurst', el, { count: 24 }, ['sparks', 36, { y: 0.45, colors: ['#c8a24a', '#6f9bb8'] }], fx); },
     share: () => ({ kicker: `${p.label} · accounts`, title: 'Where the money sits', big: usd(sum, { cents: false }), tone: tone(sum), lines: rows.slice(0, 4).map((r) => `${r.name} ${usd(r.net, { cents: false })} (${plural(r.trades, 'trade')})`) }),
   };
 }
@@ -365,7 +365,7 @@ function hallCard(w) {
   const plaque = (label, value, sub, cls = '') => `<div class="plaque ${cls}" data-oly-fx="shimmer"><small>${esc(label)}</small><b>${esc(value)}</b><i>${esc(sub)}</i></div>`;
   const b = H.best;
   return {
-    id: 'hall', name: 'Hall of fame', colors: ['#0b0702', '#5c3d07', '#ffd76a'], mode: 5, ms: 8500,
+    id: 'hall', name: 'Hall of fame', colors: ['#080705', '#412d19', '#c8a24a'], mode: 5, ms: 8500,
     html: `<p class="kicker">All time · since ${esc(dayLabel(H.from, { month: 'short', day: 'numeric', year: 'numeric' }))}</p>${kt('The hall of fame', 'title hall-t')}
       <div class="hero" data-z="3">${counter(H.net, 'xl gold')}<p class="sub">${esc(plural(H.trades, 'trade'))} · ${esc(usd(H.perMonth, { cents: false }))} a month on average</p></div>
       <div class="plaques" data-z="2">
@@ -374,7 +374,7 @@ function hallCard(w) {
         ${plaque('Longest green run', plural(H.streak, 'day'), `${H.greenDays} of ${H.days} trading days green`)}
         ${H.winPct != null ? plaque('Win rate', `${H.winPct}%`, 'every trade, losses included') : ''}
       </div>`,
-    enter(el, fx) { fx.burst('glitter', 70, { colors: ['#ffd76a', '#fff3c4', '#f7c948'] }); },
+    enter(el, fx) { fx.burst('glitter', 70, { colors: ['#c8a24a', '#f3ece0', '#c8a24a'] }); },
     share: () => ({ kicker: 'All time · the hall of fame', title: 'The hall of fame', big: usd(H.net), tone: tone(H.net),
       lines: [b ? `Best trade: ${b.bot} ${usd(b.pnl)} (${dayLabel(b.day)})` : '', H.bestDay ? `Best day: ${usd(H.bestDay[1])} (${dayLabel(H.bestDay[0])})` : '',
         `Longest green run: ${plural(H.streak, 'day')}`, H.winPct != null ? `Win rate ${H.winPct}% over ${plural(H.trades, 'trade')}` : ''].filter(Boolean) }),
@@ -384,11 +384,11 @@ function hallCard(w) {
 function nextCard(w, p) {
   const n = w.next || { goal: 'Same rules, same edge', why: '' };
   return {
-    id: 'next', name: 'Next week', colors: ['#12081f', '#7a2fd1', '#ff5edb'], mode: 1, ms: 9000,
+    id: 'next', name: 'Next week', colors: ['#19140e', '#b08064', '#b08064'], mode: 1, ms: 9000,
     html: `<p class="kicker">Next week's plan · one goal</p>${kt(n.goal, 'title goal')}<p class="lesson">${esc(n.why)}</p>
       <div class="end"><button type="button" class="btn ghost" data-act="replay">Watch again</button><button type="button" class="btn gold" data-act="share-week">Share the ${p.key === 'month' ? 'month' : p.key === 'all' ? 'story' : 'week'}</button></div>
       <p class="note">${w.demo ? 'DEMO data: the real recap appears once the dashboard publishes.' : `Built ${esc(new Date(w.t * 1000).toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', minute: '2-digit' }))} ET${NBSP}· paper and eval accounts, losses included.`}</p>`,
-    enter(el, fx) { fx.burst('confetti', 70, { colors: ['#ff5edb', '#c08bff', '#f7c948', '#ffffff'] }); },
+    enter(el, fx) { fx.burst('confetti', 70, { colors: ['#b08064', '#b08064', '#c8a24a', '#f3ece0'] }); },
     share: () => ({ kicker: "Next week's plan", title: n.goal, big: 'One goal', tone: 'up', lines: [n.why] }),
   };
 }

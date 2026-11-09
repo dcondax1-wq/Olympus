@@ -23,13 +23,13 @@ export function passClock(w) {
     : ahead ? `You are ahead: ${d0(pace)} a session so far against ${d0(need)} needed.` : pace > 0 ? `You are behind: ${d0(pace)} a session so far, ${d0(need)} needed.` : `No profit yet: ${d0(need)} a session is needed.`;
   const cell = (k, v, c = '') => `<div><small>${esc(k)}</small><b class="${c}">${esc(v)}</b></div>`;
   return {
-    id: 'passclock', name: 'Pass clock', colors: ['#040a1a', '#12408f', '#59d0ff'], mode: 6, ms: 8000,
+    id: 'passclock', name: 'Pass clock', colors: ['#140f0a', '#304e61', '#6f9bb8'], mode: 6, ms: 8000,
     html: `${kick(`${e.bot || 'Eval'} · ${e.plan || e.name || 'eval'} · pass clock`)}${kt(done ? 'Target reached' : left != null ? `${left} sessions left` : 'The pass clock')}
       <div class="hero" data-z="3"><span class="count xl gold" data-fmt="usd0" data-to="${esc(Math.max(0, num(e.to_target) || 0))}">${esc(usd(0, { cents: false }))}</span><p class="sub">${done ? 'to the target: done' : 'still to bank to pass'}</p></div>
       <div class="split" data-z="2">${cell('Needed a session', need != null ? d0(need) : '—')}${cell('Your pace', pace != null ? usd(pace, { cents: false }) : '—', pace != null ? tone(pace) : '')}${cell(finish ? 'At this pace' : 'Session', finish ? `${finish} more` : S != null && s != null ? `${s} of ${S}` : '—')}</div>
       <p class="fact">${esc(verdict)}</p>
       ${odds ? `<p class="note">Backtest at the live sizing: the median pass takes ${esc(odds.pass_med)} sessions; ${esc(odds.p10)}% pass within 2 weeks, ${esc(odds.f10)}% fail.</p>` : '<p class="note">A pace, not a promise: eval days are few.</p>'}`,
-    enter(el, fx) { if (done) fx.burst('confetti', 70, { colors: ['#59d0ff', '#f7c948', '#ffffff'] }); },
+    enter(el, fx) { if (done) fx.burst('confetti', 70, { colors: ['#6f9bb8', '#c8a24a', '#f3ece0'] }); },
     share: () => ({ kicker: 'Evals · pass clock', title: done ? 'Target reached' : 'Still to bank', big: usd(Math.max(0, e.to_target), { cents: false }), tone: ahead === false ? 'down' : 'up', lines: [verdict] }),
   };
 }
@@ -43,7 +43,7 @@ export function cushion(w, p) {
   const level = frac == null ? 'ok' : frac < 0.25 ? 'bad' : frac < 0.5 ? 'warn' : 'ok';
   const cell = (k, v, c = '') => `<div><small>${esc(k)}</small><b class="${c}">${esc(v)}</b></div>`;
   return {
-    id: 'cushion', name: 'Cushion', colors: level === 'ok' ? ['#040f14', '#0f5a6b', '#5ef2c0'] : ['#14060a', '#5a1330', '#ff9aa8'], mode: 2, ms: 7500,
+    id: 'cushion', name: 'Cushion', colors: level === 'ok' ? ['#100c08', '#243b4a', '#9bab63'] : ['#110d09', '#402d22', '#e0907a'], mode: 2, ms: 7500,
     html: `${kick(`${e.bot || 'Eval'} · the floor`)}${kt(n != null ? 'Losers you can afford' : 'The cushion')}
       <div class="hero" data-z="3"><span class="count xl ${level === 'ok' ? 'up' : 'down'}" data-fmt="int" data-to="${esc(n != null ? n : 0)}">0</span><p class="sub">${n != null ? 'average losers before the floor' : 'no losing trade in this period to size it by'}</p></div>
       <div class="split" data-z="2">${cell('Room left', d0(e.room), level === 'ok' ? 'up' : 'down')}${cell('Average loser', al != null ? '−' + d0(al) : '—', 'down')}${cell('Worst loser', biggest != null ? '−' + d0(biggest) : '—', 'down')}</div>
@@ -72,7 +72,7 @@ export function weekdays(w) {
   const mx = Math.max(1, ...rows.map((r) => Math.abs(r.net)));
   const bars = rows.map((r, i) => `<div class="dbar ${tone(r.net)}" style="--h:${Math.max(4, Math.abs(r.net) / mx * 100).toFixed(1)}%;--i:${i}"><i></i><b>${esc(r.n)}</b></div>`).join('');
   return {
-    id: 'weekdays', name: 'Weekdays', colors: ['#0b0702', '#5c3d07', '#ffd76a'], mode: 4, ms: 7500,
+    id: 'weekdays', name: 'Weekdays', colors: ['#080705', '#412d19', '#c8a24a'], mode: 4, ms: 7500,
     html: `${kick('All time · by weekday')}${kt(best && best.net > 0 ? `${best.long} pays` : 'Which weekday pays')}
       <div class="hero" data-z="3">${best ? `<span class="count xl ${tone(best.net)}" data-fmt="usd0" data-to="${esc(best.net)}">${esc(usd(0))}</span><p class="sub">${esc(best.long)}, the best weekday (${esc(plural(best.days, 'day'))})</p>` : ''}</div>
       <div class="bars" aria-label="P&amp;L by weekday">${bars}</div>
@@ -99,7 +99,7 @@ export function summary(w, p) {
   if (!p.trades) return null;
   const text = summaryText(w, p);
   return {
-    id: 'summary', name: 'Summary', colors: ['#12081f', '#3a1d86', '#c08bff'], mode: 1, ms: 9000,
+    id: 'summary', name: 'Summary', colors: ['#19140e', '#304e62', '#b08064'], mode: 1, ms: 9000,
     html: `${kick(`${p.label} · in words`)}${kt('The whole period, one line')}
       <p class="lesson" data-z="2" id="sumText">${esc(text)}</p>
       <div class="end"><button type="button" class="btn gold" data-act="copy-text" data-text="${esc(text)}">Copy as text</button></div>
@@ -120,7 +120,7 @@ export function weekRank(w, p) {
   const weeks = [...m.entries()], mine = m.get(cur), better = weeks.filter(([k, v]) => k !== cur && mine > v).length, others = weeks.length - 1;
   const avg = weeks.filter(([k]) => k !== cur).reduce((a, [, v]) => a + v, 0) / others, rank = weeks.filter(([, v]) => v > mine).length + 1;
   return {
-    id: 'weekrank', name: 'This week vs the rest', colors: ['#06130f', '#136b4e', '#ffd76a'], mode: 2, ms: 7500,
+    id: 'weekrank', name: 'This week vs the rest', colors: ['#100d09', '#41472a', '#c8a24a'], mode: 2, ms: 7500,
     html: `${kick('This week · against every week so far')}${kt(rank === 1 ? 'Your best week yet' : `Week ${rank} of ${weeks.length}`)}
       <div class="hero" data-z="3"><span class="count xl ${tone(mine)}" data-fmt="usd0" data-to="${esc(mine)}">${esc(usd(0, { cents: false }))}</span><p class="sub">${esc(`better than ${better} of ${plural(others, 'other week')}`)}</p></div>
       <div class="split" data-z="2"><div><small>Average week</small><b class="${tone(avg)}">${esc(usd(avg, { cents: false }))}</b></div><div><small>This week</small><b class="${tone(mine)}">${esc(usd(mine, { cents: false }))}</b></div><div><small>Difference</small><b class="${tone(mine - avg)}">${esc(usd(mine - avg, { cents: false }))}</b></div></div>

@@ -84,7 +84,7 @@ function shader(canvas) {
 }
 
 export function createFx(bg, layer, { still = false, lite = false } = {}) {
-  const S = { from: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], to: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], hexes: ['#12081f', '#3b1a6b', '#f2c14e'],
+  const S = { from: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], to: [[0, 0, 0], [0, 0, 0], [0, 0, 0]], hexes: ['#19140e', '#4e372a', '#c8a24a'],
     ma: 0, mb: 0, k0: 0, parts: [], frames: [], raf: 0, t0: performance.now(), lastW: 0, lastH: 0 };
   const gl = shader(bg);
   const ctx = layer.getContext('2d');
@@ -121,8 +121,8 @@ export function createFx(bg, layer, { still = false, lite = false } = {}) {
       ctx.globalAlpha = a;
       if (p.kind === 'coins') {
         const sx = Math.abs(Math.cos(p.rot)) * p.s;
-        ctx.fillStyle = '#f7c948'; ctx.beginPath(); ctx.ellipse(p.x, p.y, Math.max(0.6, sx), p.s, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fff3c4'; ctx.beginPath(); ctx.ellipse(p.x - sx * 0.3, p.y - p.s * 0.3, Math.max(0.3, sx * 0.35), p.s * 0.35, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#c8a24a'; ctx.beginPath(); ctx.ellipse(p.x, p.y, Math.max(0.6, sx), p.s, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#f3ece0'; ctx.beginPath(); ctx.ellipse(p.x - sx * 0.3, p.y - p.s * 0.3, Math.max(0.3, sx * 0.35), p.s * 0.35, 0, 0, Math.PI * 2); ctx.fill();
       } else if (p.kind === 'confetti') {                    // a paper strip that flutters and flips in 3D as it falls
         const flip = Math.cos(p.rot * 1.7 + p.life * 9);
         ctx.save(); ctx.translate(p.x + Math.sin(p.life * p.wob + p.ph) * 14, p.y); ctx.rotate(p.rot);
@@ -174,7 +174,7 @@ export function createFx(bg, layer, { still = false, lite = false } = {}) {
       S.to = colors.map(hex); S.mb = mode; S.k0 = still ? now - 1e4 : now; S.hexes = colors.slice();
       kick();
     },
-    burst(kind, n = 60, { x = 0.5, y = 0.45, colors = ['#f7c948', '#ffffff', '#7af0c4'] } = {}) {
+    burst(kind, n = 60, { x = 0.5, y = 0.45, colors = ['#c8a24a', '#f3ece0', '#9bab63'] } = {}) {
       if (still) return;
       const w = S.lastW || innerWidth, h = S.lastH || innerHeight, cap = CAP - S.parts.length;
       const rain = kind === 'embers' || kind === 'glitter';                   // these fall from above instead of bursting

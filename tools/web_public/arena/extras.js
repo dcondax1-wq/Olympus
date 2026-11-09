@@ -37,7 +37,7 @@ export function weekBoard(B, R) {
   if (!list.length) { box.append(h('p', 'sweep', 'No boss this week yet.')); return box; }
   for (const b of list) {
     const row = h('div', 'wkrow ' + b.state);
-    row.style.setProperty('--bc', b.color || '#ff5a6e');
+    row.style.setProperty('--bc', b.color || '#c0603f');
     const pips = h('span', 'pips');
     for (let i = 0; i < b.max; i++) pips.append(h('i', i < b.hits ? 'on' : ''));
     row.append(h('b', '', b.title || b.name), pips, h('span', 'st', { slain: 'Slain', escaped: 'Escaped', locked: 'Locked', fighting: `${b.hits} of ${b.max}` }[b.state] || b.state));

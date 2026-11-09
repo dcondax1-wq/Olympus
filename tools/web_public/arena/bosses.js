@@ -12,16 +12,16 @@
 import { addDays, weekday, dayNumber, cleanEvents } from './rules.js';
 
 export const BOSSES = [
-  { id: 'minotaur', name: 'The Minotaur of Revenge', glyph: 'MI', color: '#ff5a6e', title: 'No revenge trade',
+  { id: 'minotaur', name: 'The Minotaur of Revenge', glyph: 'MI', color: '#c0603f', title: 'No revenge trade',
     text: 'Five market days without a revenge trade: no manual order, no broken rule, never a second trade in a day. A quiet day counts.',
     needs: 'site', max: 5, src: 'Site events (bot_day, clean_trade, rule_broken)' },
-  { id: 'cerberus', name: 'Cerberus of the Plan', glyph: 'CE', color: '#ff9d3a', title: 'Follow the plan',
+  { id: 'cerberus', name: 'Cerberus of the Plan', glyph: 'CE', color: '#e0a060', title: 'Follow the plan',
     text: 'Three heads: at least 2 clean trades this week, not one rule broken, and never more than 4 trades (the plan is 2 to 4 a week).',
     needs: 'site', max: 3, src: 'Site events (clean_trade, rule_broken)' },
-  { id: 'sphinx', name: 'The Sphinx of the Journal', glyph: 'SP', color: '#7fe9ff', title: 'Write the journal',
+  { id: 'sphinx', name: 'The Sphinx of the Journal', glyph: 'SP', color: '#6f9bb8', title: 'Write the journal',
     text: 'Answer the riddle 4 days out of 5: a daily note in the Obsidian vault for that date.',
     needs: 'vault', max: 4, src: 'Obsidian daily notes (this phone)' },
-  { id: 'chimera', name: 'The Chimera of Habits', glyph: 'CH', color: '#46d79a', title: 'Hit the daily goal',
+  { id: 'chimera', name: 'The Chimera of Habits', glyph: 'CH', color: '#9bab63', title: 'Hit the daily goal',
     text: 'Meet the daily goal (every habit checked in, or every task of the day done) on 3 days this week.',
     needs: 'planner', max: 3, src: 'Planner daily goal (this phone)' },
 ];

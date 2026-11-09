@@ -217,7 +217,7 @@ async function onShareWeek(btn) {
   btn.disabled = true;
   setPaused(true);
   try {
-    const blob = await renderWeekPNG(S.w, S.key, ['#12081f', '#5b1fd1', '#f7c948']);
+    const blob = await renderWeekPNG(S.w, S.key, ['#19140e', '#6f9bb8', '#c8a24a']);
     S.lastShare = { type: blob.type, size: blob.size, card: 'week', key: S.key };
     dispatchEvent(new CustomEvent('hermes:share', { detail: S.lastShare }));
     const how = await share(blob, `olympus-wrapped-${S.key}.png`);
@@ -286,7 +286,7 @@ async function start() {
   const got = await loadWrapped(r.demo);
   if (!got.w) {
     $('#stage').innerHTML = '<section class="card on c-err"><div class="tilt"><p class="kicker">HERMES</p><h1 class="title">The recap could not load</h1><button type="button" class="btn" onclick="location.reload()">Try again</button></div></section>';
-    fx.palette(['#120810', '#40142a', '#ff7a8a'], 0);
+    fx.palette(['#100d0a', '#31231a', '#e0907a'], 0);
     O?.fail('the recap could not load');
     return;
   }

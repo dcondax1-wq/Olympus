@@ -5,7 +5,7 @@
 
 export const SCALES_X = 13;
 const PIVOT_Y = 1.45, ARM = 2.3, DROP = 1.55, GROUND = -3.2, SKY_Z = 2.6, SKY_H = 2.1;
-const GOLD = '#ffcf5a', MINT = '#5ef2c0', ROSE = '#ff6b7f';
+const GOLD = '#c8a24a', MINT = '#9bab63', ROSE = '#c0603f';
 
 export class Scales {
   constructor(THREE, glow) {
@@ -25,7 +25,7 @@ export class Scales {
     plinth.position.y = GROUND + 0.15;
     const post = new T.Mesh(new T.CylinderGeometry(0.07, 0.1, PIVOT_Y - GROUND, 16), gold);
     post.position.y = (PIVOT_Y + GROUND) / 2;
-    const pivot = new T.Mesh(new T.SphereGeometry(0.17, 20, 14), g.metal('#fff0c0', 0.9));
+    const pivot = new T.Mesh(new T.SphereGeometry(0.17, 20, 14), g.metal('#f0dca0', 0.9));
     pivot.position.y = PIVOT_Y;
     const finial = g.sprite(GOLD, 1.8, 0.7);
     finial.position.y = PIVOT_Y + 0.05;
@@ -48,7 +48,7 @@ export class Scales {
       return { pan, orb, aura, chain, r: 0.3 };
     });
     // the skyline's terrace
-    const terrace = new T.Mesh(new T.BoxGeometry(8.2, 0.12, 1.6), g.metal('#3a2f1c', 0.15, { transparent: true, opacity: 0.85 }));
+    const terrace = new T.Mesh(new T.BoxGeometry(8.2, 0.12, 1.6), g.metal('#382715', 0.15, { transparent: true, opacity: 0.85 }));
     terrace.position.set(0, GROUND - 0.06, SKY_Z);
     const edge = new T.Mesh(new T.BoxGeometry(8.2, 0.02, 0.02), g.light(GOLD, 0.8));
     edge.position.set(0, GROUND, SKY_Z + 0.8);
@@ -78,7 +78,7 @@ export class Scales {
     const mx = Math.max(0.05, ...live.map((r) => Math.abs(r.roi)));
     const n = rows.length, gap = Math.min(0.95, 7.6 / Math.max(1, n));
     rows.forEach((r, i) => {
-      const h = r.roi == null ? 0.15 : 0.2 + SKY_H * Math.abs(r.roi) / mx, up = r.roi == null || r.roi >= 0, c = r.roi == null ? '#9a927f' : up ? MINT : ROSE;
+      const h = r.roi == null ? 0.15 : 0.2 + SKY_H * Math.abs(r.roi) / mx, up = r.roi == null || r.roi >= 0, c = r.roi == null ? '#988d81' : up ? MINT : ROSE;
       const geo = new T.BoxGeometry(gap * 0.62, h, 0.62);
       const win = g.windows.clone();
       win.needsUpdate = true;

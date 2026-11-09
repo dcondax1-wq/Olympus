@@ -19,6 +19,8 @@ try {
 } catch (_) { CORE = null; }
 
 const O = window.OLYMPUS || null;
+// AGORA 3D mood: marble, bronze, warm sun, warm fog (docs/DESIGN_AGORA.md)
+const AGORA3D = { sky: '#2b2018', fog: '#2a2018', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' };
 const Q = new URLSearchParams(location.search);
 const RM = O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 const $ = (id) => document.getElementById(id);
@@ -44,36 +46,36 @@ const marbleTex = (n) => canvasTex(n, n, (x, w) => {
   const r = rng(7);
   x.fillStyle = '#e7e1d2'; x.fillRect(0, 0, w, w);
   for (let i = 0; i < 26; i++) {
-    x.strokeStyle = `rgba(${120 + r() * 40},${115 + r() * 40},${130 + r() * 30},${0.08 + r() * 0.14})`; x.lineWidth = 0.6 + r() * 2.2;
+    x.strokeStyle = `rgba(${140 + r() * 40},${115 + r() * 35},${90 + r() * 30},${0.08 + r() * 0.14})`; x.lineWidth = 0.6 + r() * 2.2;
     x.beginPath(); let px = r() * w, py = 0; x.moveTo(px, py);
     while (py < w) { const nx = px + (r() - 0.5) * w * 0.25, ny = py + w * (0.08 + r() * 0.12); x.quadraticCurveTo(px + (r() - 0.5) * 30, (py + ny) / 2, nx, ny); px = nx; py = ny; }
     x.stroke();
   }
   for (let i = 0; i < 10; i++) {           // flutes: vertical soft shadows (the texture wraps around the shaft)
     const fx = (i + 0.5) / 10 * w, g = x.createLinearGradient(fx - w / 20, 0, fx + w / 20, 0);
-    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.5, 'rgba(40,36,60,.16)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.5, 'rgba(70,50,32,.16)'); g.addColorStop(1, 'rgba(0,0,0,0)');
     x.fillStyle = g; x.fillRect(fx - w / 20, 0, w / 10, w);
   }
 });
 const floorTex = (n) => canvasTex(n, n, (x, w) => {
   const c = w / 2, r = rng(11);
   const g = x.createRadialGradient(c, c, 0, c, c, c);
-  g.addColorStop(0, '#4a4560'); g.addColorStop(0.35, '#2b2840'); g.addColorStop(0.8, '#17152a'); g.addColorStop(1, 'rgba(10,9,20,0)');
+  g.addColorStop(0, '#7d6a52'); g.addColorStop(0.35, '#5a4a3a'); g.addColorStop(0.8, '#2c231b'); g.addColorStop(1, 'rgba(20,17,14,0)');
   x.fillStyle = g; x.fillRect(0, 0, w, w);
   for (let i = 0; i < 40; i++) {                                                   // marble veins
-    x.strokeStyle = `rgba(220,210,240,${0.03 + r() * 0.05})`; x.lineWidth = 1 + r() * 2;
+    x.strokeStyle = `rgba(245,230,205,${0.03 + r() * 0.05})`; x.lineWidth = 1 + r() * 2;
     x.beginPath(); x.moveTo(r() * w, r() * w); x.quadraticCurveTo(r() * w, r() * w, r() * w, r() * w); x.stroke();
   }
-  x.strokeStyle = 'rgba(242,214,138,.55)'; x.lineWidth = w / 340;
+  x.strokeStyle = 'rgba(200,162,74,.6)'; x.lineWidth = w / 340;
   for (const k of [0.16, 0.6, 0.64, 0.9]) { x.beginPath(); x.arc(c, c, c * k, 0, Math.PI * 2); x.stroke(); }
-  x.strokeStyle = 'rgba(242,214,138,.32)'; x.lineWidth = w / 420;                // the Greek key band between 0.6 and 0.64
+  x.strokeStyle = 'rgba(200,162,74,.4)'; x.lineWidth = w / 420;                // the Greek key band between 0.6 and 0.64
   const n2 = 96;
   for (let i = 0; i < n2; i++) {
     const a0 = i / n2 * Math.PI * 2, a1 = (i + 0.5) / n2 * Math.PI * 2, r0 = c * 0.6, r1 = c * 0.64;
     x.beginPath(); x.moveTo(c + Math.cos(a0) * r0, c + Math.sin(a0) * r0); x.lineTo(c + Math.cos(a0) * r1, c + Math.sin(a0) * r1);
     x.lineTo(c + Math.cos(a1) * r1, c + Math.sin(a1) * r1); x.lineTo(c + Math.cos(a1) * (r0 + (r1 - r0) * 0.5), c + Math.sin(a1) * (r0 + (r1 - r0) * 0.5)); x.stroke();
   }
-  x.strokeStyle = 'rgba(167,139,250,.22)'; x.lineWidth = w / 500;
+  x.strokeStyle = 'rgba(156,107,60,.3)'; x.lineWidth = w / 500;
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
     x.beginPath(); x.moveTo(c + Math.cos(a) * c * 0.17, c + Math.sin(a) * c * 0.17); x.lineTo(c + Math.cos(a) * c * 0.58, c + Math.sin(a) * c * 0.58); x.stroke();
@@ -81,15 +83,15 @@ const floorTex = (n) => canvasTex(n, n, (x, w) => {
 });
 function emblemTex(key, color) {
   return canvasTex(128, 128, (x, w) => {
-    x.shadowColor = color; x.shadowBlur = 16; x.strokeStyle = '#ffffff'; x.fillStyle = color;
+    x.shadowColor = 'rgba(20,14,8,.7)'; x.shadowBlur = 5; x.strokeStyle = '#f3ece0'; x.fillStyle = color;
     x.translate(w * 0.12, w * 0.12); drawGlyph(x, key, w * 0.76);
   });
 }
 function labelTex(name, value, color) {
   return canvasTex(256, 96, (x, w) => {
     x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.font = '800 30px Orbitron, sans-serif'; x.shadowColor = color; x.shadowBlur = 12; x.fillStyle = color; x.fillText(name, w / 2, 30);
-    x.shadowBlur = 6; x.font = '700 30px Rajdhani, sans-serif'; x.fillStyle = '#f6f1e4'; x.fillText(value, w / 2, 70);
+    x.font = '600 28px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif'; x.shadowColor = 'rgba(20,14,8,.85)'; x.shadowBlur = 5; x.fillStyle = color; x.fillText(name.charAt(0) + name.slice(1).toLowerCase(), w / 2, 30);
+    x.font = '700 30px "SF Pro Rounded",-apple-system,system-ui,sans-serif'; x.fillStyle = '#f3ece0'; x.fillText(value, w / 2, 70);
   });
 }
 
@@ -100,8 +102,8 @@ const BEAM_FS = `uniform float uTime; varying vec2 vUv; varying vec3 vColor; var
   void main() {
     float edge = 1.0 - abs(vUv.x * 2.0 - 1.0); edge = edge * edge;
     float flow = pow(fract(vUv.y * 2.5 - uTime * 0.55), 6.0);
-    float a = edge * (0.18 + 0.9 * flow) * vPow;
-    gl_FragColor = vec4(vColor * (0.6 + 0.8 * flow), a);
+    float a = edge * (0.12 + 0.5 * flow) * vPow;
+    gl_FragColor = vec4(vColor * (0.6 + 0.4 * flow), a);
   }`;
 
 function beamGeometry(n) {
@@ -126,13 +128,13 @@ class Hall {
     this.lite = Q.get('lite') === '1' || quality === 'low' || quality === 'off' || !!(O && O.lite());
     this.chosen = Q.get('lite') === '1' || Q.get('full') === '1' || ['ultra', 'high', 'low', 'off'].includes(quality) || !!(O && O.chosen());
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x0b0a18, 0.035);
+    this.scene.fog = new THREE.FogExp2(0x2a2018, 0.03);
     this.camera = new THREE.PerspectiveCamera(56, 1, 0.1, 200);
     this.rc = null;
     if (CORE) {
       try {
-        this.rc = CORE.createRenderer({ canvas, scene: this.scene, camera: this.camera, alpha: true, env: 'night', quality: ['ultra', 'high', 'low', 'off'].includes(quality) ? quality : undefined, exposure: 1.05, autoSize: false,
-          maxDpr: this.lite ? 1.5 : 2, bloom: { strength: 0.7, radius: 0.6, threshold: 0.9 }, onQuality: (l) => { this.lite = l === 'low' || l === 'off'; this.resize(); } });
+        this.rc = CORE.createRenderer({ canvas, scene: this.scene, camera: this.camera, alpha: true, env: 'night', quality: ['ultra', 'high', 'low', 'off'].includes(quality) ? quality : undefined, exposure: 1.0, autoSize: false, theme: AGORA3D, tint: '#c8a24a',
+          maxDpr: this.lite ? 1.5 : 2, bloom: { strength: 0.22, radius: 0.5, threshold: 0.95 }, onQuality: (l) => { this.lite = l === 'low' || l === 'off'; this.resize(); } });
         this.renderer = this.rc.renderer;
       } catch (_) { this.rc = null; }
     }
@@ -157,26 +159,26 @@ class Hall {
 
   build() {
     const S = this.scene, n = this.gods.length, T = this.tex;
-    S.add(new THREE.HemisphereLight(0xd6dcff, 0x2a2440, CORE ? 0.9 : 1.25));
+    S.add(new THREE.HemisphereLight(0xffe2b8, 0x4a3a2c, CORE ? 1.0 : 1.3));
     const vc = new THREE.Color(VERDICT[this.d.council.label] || VERDICT.SILENT);
-    this.orbLight = new THREE.PointLight(vc, 26, 14, 1.6);
+    this.orbLight = new THREE.PointLight(vc, 16, 14, 1.6);
     this.orbLight.position.set(0, ORB_Y, 0);
     S.add(this.orbLight);
-    this.moon = new THREE.DirectionalLight(0xe8ebff, 1.5); S.add(this.moon, this.moon.target);   // follows the camera (place())
+    this.moon = new THREE.DirectionalLight(0xffd9a0, 1.7); S.add(this.moon, this.moon.target);   // follows the camera (place())
 
     const floor = new THREE.Mesh(new THREE.CircleGeometry(7.4, 72), new THREE.MeshStandardMaterial({ map: T.floor, roughness: 0.55, metalness: 0.1, transparent: true }));
     floor.rotation.x = -Math.PI / 2; S.add(floor);
-    const rim = new THREE.Mesh(new THREE.CylinderGeometry(7.4, 6.9, 0.6, 72, 1, true), new THREE.MeshStandardMaterial({ color: 0x2a2640, roughness: 0.8, side: THREE.DoubleSide }));
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(7.4, 6.9, 0.6, 72, 1, true), new THREE.MeshStandardMaterial({ color: 0x5a4a3a, roughness: 0.8, side: THREE.DoubleSide }));
     rim.position.y = -0.3; S.add(rim);
 
     // pillars: instanced base, shaft, capital (three draw calls for all eight)
     const marble = CORE ? CORE.marble({ scale: 0.9 }) : new THREE.MeshStandardMaterial({ map: T.marble, roughness: 0.42, metalness: 0.05 });
-    const gold = CORE ? CORE.metal({ kind: 'gold' }) : new THREE.MeshStandardMaterial({ color: 0xe9b75a, roughness: 0.35, metalness: 0.9 });
+    const gold = CORE ? CORE.metal({ kind: 'gold' }) : new THREE.MeshStandardMaterial({ color: 0xc8a24a, roughness: 0.4, metalness: 0.85 });
     const mk = (geo, count) => { const m = new THREE.InstancedMesh(geo, marble, count); S.add(m); return m; };
     const base = mk(new THREE.BoxGeometry(0.95, 0.3, 0.95), n), shaft = mk(new THREE.CylinderGeometry(0.27, 0.32, 2.5, 20, 1, true), n),
       echinus = mk(new THREE.CylinderGeometry(0.46, 0.3, 0.16, 20), n), cap = mk(new THREE.BoxGeometry(0.98, 0.16, 0.98), n);
-    const bandMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
-    if (CORE) bandMat.color.setScalar(2.6);                // brighter than 1 in HDR: the live-data band blooms
+    const bandMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false });
+    if (CORE) bandMat.color.setScalar(1.2);                // brighter than 1 in HDR: the live-data band blooms
     const bands = new THREE.InstancedMesh(new THREE.TorusGeometry(0.42, 0.045, 8, 32), bandMat, n);
     S.add(bands);
     const M = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(1, 1, 1), p = new THREE.Vector3();
@@ -197,7 +199,7 @@ class Hall {
       echinus.setMatrixAt(i, M.compose(p.set(x, 2.86, z), q.identity(), sc));
       cap.setMatrixAt(i, M.compose(p.set(x, 3.0, z), q.identity(), sc));
       bands.setMatrixAt(i, M.compose(p.set(x, 2.74, z), flat, sc));
-      const col = new THREE.Color(g.ok ? g.color : '#4a4858');
+      const col = new THREE.Color(g.ok ? g.color : '#6a6052');
       bands.setColorAt(i, col);
       shaft.setColorAt(i, new THREE.Color('#ffffff').lerp(col, 0.18));
       // the statue's six parts go into six instanced meshes (one draw call each for all gods): the god's transform times the part's own
@@ -205,11 +207,11 @@ class Hall {
       const part = (mesh, px, py, pz, rx) => { PM.compose(PP.set(px, py, pz), PQ.setFromAxisAngle(PX, rx || 0), PS.set(1, 1, 1)); mesh.setMatrixAt(i, PM2.multiplyMatrices(st.matrix, PM)); };
       part(statues.body, 0, 0, 0); part(statues.head, 0, 0.87, 0); part(statues.crown, 0, 0.93, 0, Math.PI / 2); part(statues.staff, 0.2, 0.52, 0.04);
       part(statues.belt, 0, 0.42, 0, Math.PI / 2); part(statues.ember, 0.2, 1.08, 0.04);          // a staff topped with the god's own light
-      statues.ember.setColorAt(i, col.clone().multiplyScalar(CORE ? 4 : 1));
+      statues.ember.setColorAt(i, col.clone().multiplyScalar(CORE ? 1.5 : 1));
       const glyph = new THREE.Sprite(new THREE.SpriteMaterial({ map: emblemTex(g.glyph, g.color), transparent: true, depthWrite: false, opacity: g.ok ? 1 : 0.35 }));
       glyph.scale.set(1.0, 1.0, 1); glyph.position.set(x, GLYPH_Y, z);
-      if (CORE) glyph.material.color.setScalar(1.5);
-      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: g.ok ? 0.55 : 0.15 }));
+      if (CORE) glyph.material.color.setScalar(1.1);
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: g.ok ? 0.18 : 0.06 }));
       halo.scale.set(2.3, 2.3, 1); halo.position.copy(glyph.position);
       const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex(g.name, chipValue(g), g.color), transparent: true, depthWrite: false }));
       label.scale.set(2.3, 0.86, 1); label.position.set(x, GLYPH_Y + 1.0, z);
@@ -230,18 +232,18 @@ class Hall {
     });
     this.orb = new THREE.Mesh(new THREE.SphereGeometry(0.85, this.lite ? 24 : 40, this.lite ? 16 : 28), this.orbMat);
     this.orb.position.set(0, ORB_Y, 0);
-    this.orbGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: vc, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.8 }));
+    this.orbGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: vc, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.3 }));
     this.orbGlow.scale.set(4.6, 4.6, 1); this.orbGlow.position.copy(this.orb.position);
-    this.orbCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.9 }));
+    this.orbCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: 0xfff0d0, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.4 }));
     this.orbCore.scale.set(1.0, 1.0, 1); this.orbCore.position.copy(this.orb.position);
     const gauge = this.d.council.gauge == null ? 50 : this.d.council.gauge;
     this.ring = new THREE.Mesh(new THREE.TorusGeometry(1.3, 0.03, 6, 96, Math.PI * 2 * gauge / 100),
-      new THREE.MeshBasicMaterial({ color: vc, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+      new THREE.MeshBasicMaterial({ color: vc, transparent: true, opacity: 0.85, depthWrite: false }));
     this.ring.position.copy(this.orb.position); this.ring.rotation.x = Math.PI / 2.4;
     const c = this.d.council;
     this.orbLabel = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex(c.label, c.gauge == null ? '—' : `${c.gauge} / 100`, VERDICT[c.label] || '#fff'), transparent: true, depthWrite: false }));
     this.orbLabel.scale.set(2.4, 0.9, 1); this.orbLabel.position.set(0, ORB_Y + 1.75, 0);
-    const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.9, 1.3, 24), CORE ? CORE.marble({ scale: 1.4, gold: '#e9b75a', color: '#8a869c' }) : marble);
+    const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.9, 1.3, 24), CORE ? CORE.marble({ scale: 1.4, gold: '#c8a24a', color: '#b8ab98' }) : marble);
     pedestal.position.set(0, 0.65, 0);
     S.add(pedestal, this.orbGlow, this.orb, this.orbCore, this.ring, this.orbLabel);
     this.verdictRing(vc);
@@ -267,16 +269,16 @@ class Hall {
     this.motes.frustumCulled = false;
     S.add(this.motes);
     this.paintMotes();
-    const ns = this.lite ? 220 : 650, sp = new Float32Array(ns * 3);
+    const ns = this.lite ? 60 : 180, sp = new Float32Array(ns * 3);
     for (let i = 0; i < ns; i++) {
       const u = r() * 0.8 - 0.05, a = r() * Math.PI * 2, rr = 60 + r() * 30, y = u * rr * 0.7;
       sp[i * 3] = Math.cos(a) * rr * Math.sqrt(1 - u * u); sp[i * 3 + 1] = y; sp[i * 3 + 2] = Math.sin(a) * rr * Math.sqrt(1 - u * u);
     }
     const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
-    this.stars = new THREE.Points(sg, new THREE.PointsMaterial({ size: 0.5, map: this.tex.glow, color: 0xdcd6ff, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
+    this.stars = new THREE.Points(sg, new THREE.PointsMaterial({ size: 0.32, map: this.tex.glow, color: 0xf0d9a8, opacity: 0.5, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
     S.add(this.stars);
     // the sky: a moon and two nebulae (sprites, no fog) fill the space above the summit
-    const sky = [[-8, -1.5, -30, 4.4, 0xf2ecd8, 0.95], [-8, -1.5, -30, 15, 0x8f87d8, 0.28], [13, -3, -34, 24, 0x7a3fb0, 0.24], [2, 2, -42, 36, 0x2f5f9e, 0.2]];
+    const sky = [[-8, -1.5, -30, 4.4, 0xffe2b0, 0.8], [-8, -1.5, -30, 15, 0xe0a060, 0.22], [13, -3, -34, 24, 0xa05a3c, 0.18], [2, 2, -42, 36, 0x4b6a86, 0.16]];
     this.skyG = new THREE.Group(); S.add(this.skyG);        // turned with the camera in place(): always behind the hall
     this.sky = (this.lite ? sky.slice(0, 2) : sky).map(([x, y, z, s, c, o]) => {      // LITE: the moon only (less overdraw)
       const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: c, transparent: true, depthWrite: false, fog: false, opacity: o, blending: THREE.AdditiveBlending }));
@@ -286,7 +288,7 @@ class Hall {
     this.clouds = [];
     const nc = this.lite ? 5 : 9;
     for (let i = 0; i < nc; i++) {
-      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: 0x6c66a8, transparent: true, depthWrite: false, opacity: 0.22 }));
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: 0xd9bf9a, transparent: true, depthWrite: false, opacity: 0.16 }));
       const a = i / nc * Math.PI * 2, rr = 7.5 + r() * 3;
       s.position.set(Math.cos(a) * rr, -1.2 - r() * 1.2, Math.sin(a) * rr); s.scale.set(9 + r() * 5, 3.2 + r() * 1.5, 1);
       this.clouds.push({ s, a, rr, sp: 0.01 + r() * 0.02 }); S.add(s);
@@ -300,9 +302,9 @@ class Hall {
     const FX = window.OLYMPUS_FX;
     if (!FX) return;
     try { await FX.load('3d'); } catch (_) { return; }
-    this.fxAdd('godRays', this.scene, { position: [0, 13, 0], intensity: 0.5 });
-    this.fxAdd('dust', this.scene, {});
-    this.fxAdd('fireflies', this.scene, { count: 40 });
+    this.fxAdd('godRays', this.scene, { position: [0, 13, 0], intensity: 0.32, color: '#ffd9a0' });
+    this.fxAdd('dust', this.scene, { color: '#e8d2a8', size: 0.07 });
+    this.fxAdd('fireflies', this.scene, { count: 28, color: '#e0b060', color2: '#ffd9a0', size: 0.22 });
     this.dirty = true;
   }
 
@@ -330,9 +332,9 @@ class Hall {
 
   verdictRing(vc) {
     const S = this.scene, hist = verdictHistory(this.d), N = hist.cells.length;
-    const dais = new THREE.Mesh(new THREE.CylinderGeometry(HIST_R + 0.35, HIST_R + 0.5, 0.12, 72), CORE ? CORE.marble({ scale: 0.7, gold: '#e9b75a', color: '#5b5870', clearcoat: 0.4 }) : new THREE.MeshStandardMaterial({ color: 0x3a3650, roughness: 0.6 }));
+    const dais = new THREE.Mesh(new THREE.CylinderGeometry(HIST_R + 0.35, HIST_R + 0.5, 0.12, 72), CORE ? CORE.marble({ scale: 0.7, gold: '#c8a24a', color: '#9a8c78', clearcoat: 0.4 }) : new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.6 }));
     dais.position.y = 0.04; S.add(dais);
-    const edge = new THREE.Mesh(new THREE.TorusGeometry(HIST_R + 0.42, 0.035, 8, 96), new THREE.MeshStandardMaterial({ color: 0xe9b75a, roughness: 0.3, metalness: 0.9 }));
+    const edge = new THREE.Mesh(new THREE.TorusGeometry(HIST_R + 0.42, 0.035, 8, 96), new THREE.MeshStandardMaterial({ color: 0xc8a24a, roughness: 0.35, metalness: 0.85 }));
     edge.rotation.x = Math.PI / 2; edge.position.y = 0.11; S.add(edge);
     this.column = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 6.5, 24, 1, true), new THREE.MeshBasicMaterial({ color: vc, transparent: true, opacity: 0.045,
       blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
@@ -340,7 +342,7 @@ class Hall {
     this.history = hist;
     if (!N) return;
     const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    if (CORE) mat.color.setScalar(1.9);                      // HDR: the ring glows in the verdict colours
+    if (CORE) mat.color.setScalar(1.2);                      // HDR: the ring glows in the verdict colours
     const blocks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.34, 1, 0.2), mat, N), M = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), sc = new THREE.Vector3();
     const up = new THREE.Vector3(0, 1, 0);
     hist.cells.forEach((c, i) => {
@@ -358,7 +360,7 @@ class Hall {
   }
 
   beamColor(g) {
-    return new THREE.Color(g.ok ? (LEAN[g.lean] || LEAN.neutral).hex : '#4a4858').lerp(new THREE.Color(g.color), 0.35);
+    return new THREE.Color(g.ok ? (LEAN[g.lean] || LEAN.neutral).hex : '#6a6052').lerp(new THREE.Color(g.color), 0.35);
   }
 
   setBeams() {
@@ -582,6 +584,11 @@ function hud(d) {
   $('c-label').textContent = c.label; $('c-label').style.color = col;
   $('c-gauge').textContent = c.gauge == null ? '' : `${c.gauge} / 100 · ${c.voices} voices`;
   $('demo').hidden = !d.demo;
+  try {                                                                              // money first: what a normal day costs, under the verdict
+    let lv = null; try { lv = JSON.parse(localStorage.getItem('pantheon.level') || 'null'); } catch (_) { lv = null; }
+    const m = DESK.dayMove(d, lv, false);
+    if (m.pts != null) { $('glance').hidden = false; $('glance').innerHTML = `A normal day moves NQ about <b>${Math.round(m.pts)} points</b>: <b>±$${Math.round(m.mnq).toLocaleString('en-US')}</b> per micro.`; }
+  } catch (_) { /* no estimate */ }
   $('sub').textContent = d.demo ? 'Demo data (pantheon.json not found)' : `Eight free data gods · built ${d.built}`;
   $('vline').innerHTML = `${esc(c.text)}${c.caution ? ' <b>' + esc(c.caution) + '</b>' : ''}`;
   $('strip').innerHTML = d.gods.map((g) => `<button type="button" class="god" data-key="${esc(g.key)}" style="--c:${esc(g.color)}" aria-label="${esc(g.name)}: ${esc(g.title)}, ${esc(chipValue(g))}">

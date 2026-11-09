@@ -76,6 +76,7 @@ function render() {
   const sc = S.sc;
   HUD.renderRank(sc);
   HUD.renderStreaks(sc);
+  more(() => renderPace());
   HUD.renderQuests(S.quests, S.results, S.R);           // keeps the tab's count fresh
   HUD.renderLabours(sc, openLabour);
   HUD.renderBosses(S.bosses, S.R, openBoss);
@@ -90,6 +91,29 @@ function render() {
       trophies: S.trophies, boss: { id: fb.id, name: fb.name, color: fb.color, state: fb.state, hits: fb.hits, max: fb.max } });
   }
   postCard();
+}
+
+/** This week at a glance (AGORA): one dot per weekday (a clean trade, a bot day, a broken rule, still to come), the plan pace against the 2-4 trades a week
+ *  and the labour that is closest to being earned. Reads the ledger only; no money is ever turned into XP. */
+function renderPace() {
+  const box = document.getElementById('pace'); if (!box) return;
+  const evs = S.ledger.events(), mon = weekStart(S.today), days = [];
+  for (let i = 0; i < 5; i++) days.push(new Date(Date.parse(mon + 'T12:00:00Z') + i * 864e5).toISOString().slice(0, 10));
+  const kinds = (d) => new Set(evs.filter((e) => e.day === d).map((e) => e.kind));
+  const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  const st = days.map((d, i) => { const k = kinds(d); return { d, n: names[i], s: d > S.today ? 'future' : k.has('rule_broken') ? 'broken' : k.has('clean_trade') ? 'trade' : k.has('bot_day') ? 'bot' : d === S.today ? 'today' : 'quiet' }; });
+  const trades = days.reduce((a, d) => a + evs.filter((e) => e.day === d && e.kind === 'clean_trade').length, 0);
+  const botDays = st.filter((x) => x.s === 'bot' || x.s === 'trade').length, broken = st.filter((x) => x.s === 'broken').length, past = st.filter((x) => x.d <= S.today).length;
+  const lab = S.sc.labours.filter((l) => !l.earned).sort((a, b) => b.value / b.goal - a.value / a.goal)[0];
+  const word = { trade: 'a clean trade', bot: 'the bot ran, no trade', broken: 'a rule was broken', today: 'today', quiet: 'no record', future: 'still to come' };
+  const plan = trades > 4 ? `${trades} trades, above the 2 to 4 plan` : `${trades} of the 2 to 4 trades planned`;
+  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  const ol = el('ol', 'dots'); ol.setAttribute('aria-label', 'This week by weekday');
+  st.forEach((x) => { const li = el('li', x.s); li.setAttribute('aria-label', `${x.n}: ${word[x.s]}`); li.append(el('i'), el('span', '', x.n)); ol.append(li); });
+  const pl = el('p', 'pl'); pl.append(el('b', '', 'This week: '), `${plan} · bot ran `, el('b', '', String(botDays)), ` of ${Math.max(1, past)} days`);
+  if (broken) pl.append(' · ', el('em', '', `${broken} rule broken`)); else pl.append(' · no rule broken');
+  box.replaceChildren(ol, pl);
+  if (lab) { const nx = el('p', 'nx'); nx.append('Closest labour: ', el('b', '', lab.name), `, ${lab.value} of ${lab.goal}`); box.append(nx); }
 }
 
 // the record: sections that read the ledger (extras.js), appended under each sheet's own content; a failure there never hides the sheet
@@ -141,7 +165,7 @@ function card() {
     lines: [('Today: ' + S.quests.map((q, i) => `${q.title} (${S.results[i].done ? 'done' : 'open'})`).join(', ')).slice(0, 120),
       `Streaks: uptime ${sc.streaks.uptime.cur}, hands off ${sc.streaks.discipline.cur}, daily goal ${sc.streaks.planner.cur}`.slice(0, 120),
       (S.bosses ? `Boss: ${S.bosses.cur.filter((b) => b.state === 'slain').length} of 4 slain this week, ${S.trophies.filter((t) => t.earned).length} trophies` : '').slice(0, 120)].filter(Boolean),
-    t: Math.floor(Date.now() / 1000), open: '#quests', theme: '#0a0710', stale_after: 86400 };
+    t: Math.floor(Date.now() / 1000), open: '#quests', theme: '#0e0c09', stale_after: 86400 };
 }
 function postCard() {
   if (S.demo || !O || !O.framed) return;
@@ -177,7 +201,7 @@ async function startScene() {
     return;
   }
   try {
-    const { createScene } = await import('./scene.js?v=a5');
+    const { createScene } = await import('./scene.js?v=a6');
     S.scene = createScene(document.getElementById('scene'), { O });
     S.scene.onPick(picked);
     HUD.setTags({ demo: S.demo, lite: S.scene.lite() });
