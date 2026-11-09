@@ -43,6 +43,7 @@ varying vec3 vColor; varying vec4 vHY; varying vec2 vState; varying vec3 vLocal;
 ${FOG}
 float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)) + vSeed*17.0)*43758.5453); }
 void main(){
+  vec3 vC = mix(vec3(dot(vColor, vec3(0.3,0.59,0.11))), vColor, 0.6) * vec3(0.95,0.9,0.8);
   vec3 N = normalize(vN), n = abs(N);
   float side = 1.0 - step(0.5, n.y);
   vec2 uv = n.x > 0.5 ? vec2(vLocal.z, vLocal.y) : vec2(vLocal.x, vLocal.y);
@@ -55,9 +56,7 @@ void main(){
   float win = step(inset,f.x)*step(f.x,1.0-inset)*step(0.22,f.y)*step(f.y,0.78);
   float rnd = h2(cell + n.xz*3.1);
   // the windows blink with the data: a busy building (high glow_by) flickers fast, a quiet one barely
-  float rate = 0.25 + vHY.z * 2.2;
-  float flick = step(0.985 - 0.04 * vHY.z, h2(cell + floor(uTime * rate + vSeed * 9.0)));
-  float lit = abs(step(rnd, vHY.w) - flick);
+  float lit = step(rnd, vHY.w);
   vec3 V = normalize(uCam - vW), L = normalize(uSun.y > -0.5 ? uSun : vec3(0.45,0.8,0.25));
   float ndv = max(dot(N, V), 0.0), fres = pow(1.0 - ndv, 3.0);
   vec3 R = reflect(-V, N);
@@ -65,25 +64,22 @@ void main(){
   float diff = 0.30 + 0.55*max(dot(N, L), 0.0);
   // facade: panel grooves + a metal / concrete sheen that picks up the sky and the sun
   float groove = 1.0 - 0.18 * (smoothstep(0.0, 0.07, f.x) * smoothstep(1.0, 0.93, f.x) < 0.5 ? 1.0 : 0.0) * side;
-  vec3 body = mix(vColor*0.14, vColor*0.55 + 0.05, uDay) * diff * (0.7 + 0.45*vLocal.y) * groove;
+  vec3 marble = mix(vec3(0.70, 0.62, 0.50), vC, 0.34);
+  vec3 body = mix(marble*0.46, marble*0.66 + 0.04, uDay) * diff * (0.72 + 0.4*vLocal.y) * groove;
   float spec = pow(max(dot(R, L), 0.0), 38.0) * (0.25 + 0.75 * (1.0 - win));
   body += (env * (0.10 + 0.5 * fres) + vec3(1.0, 0.95, 0.85) * spec * 0.55) * uPbr * (0.4 + 0.6 * side);
-  vec3 warm = mix(uWinTint, vColor, 0.26 + 0.36*step(0.5, h2(cell*1.7)));
-  warm = mix(warm, vec3(1.0,0.57,0.25), 0.18*step(0.72,h2(cell+9.3)));
+  vec3 warm = mix(vec3(1.0, 0.80, 0.50), vec3(1.0, 0.62, 0.30), step(0.6, h2(cell*1.7)));
   vec3 col = body + side*win*lit*warm*mix(1.4, 0.45, uDay);
   // glass: dark panes reflect the sky at a grazing angle, sparkle in the sun
   col += side * win * (1.0 - lit) * (env * (0.18 + 0.9 * fres) + vec3(1.0) * spec * 0.9) * uPbr;
   float tall = smoothstep(2.0, 18.0, H);
   float edge = smoothstep(0.44, 0.5, abs(uv.x)) * side;
   float crown = smoothstep(0.93, 1.0, vLocal.y) * side;
-  float neon = mix(1.0, 0.5, uDay);
-  col += vColor * (edge*0.62*tall + crown*(0.5 + vHY.z*1.6)) * neon;
+  col += mix(vec3(0.95,0.75,0.40), vC, 0.45) * (edge*0.10*tall + crown*(0.16 + vHY.z*0.55));
   float mullion = (1.0-smoothstep(0.0,0.045,abs(fract((uv.x+0.5)*6.0)-0.5))) * side;
-  col += mix(vColor,vec3(1.0,.58,.25),.45) * mullion * .12 * (1.0-uDay);
-  col += vColor * step(0.975, fract(vLocal.y*H*0.05 - uTime*0.25 + vSeed)) * side * tall * 0.8 * neon;
+  col += vec3(1.0,.72,.40) * mullion * .05 * (1.0-uDay);
   float roofEdge = smoothstep(0.22,0.5,max(abs(vLocal.x),abs(vLocal.z)));
-  col += vColor * (1.0 - side) * (0.16 + roofEdge*0.36 + vHY.z * 0.72);
-  col += vColor * vHY.z * (0.5 + 0.5*sin(uTime*2.6 + vSeed*6.0)) * 0.35 * step(0.5, vHY.z);
+  col += mix(marble, vC, 0.7) * (1.0 - side) * (0.10 + roofEdge*0.22 + vHY.z * 0.42);
   col += vec3(1.0,0.88,0.45) * step(0.5, vState.y) * (crown*2.6 + edge*1.0 + 0.18 + (1.0 - side)*0.7);
   col *= mix(1.0, 0.13, vState.x);
   float fog = clamp(fogAmount(vFD) * (1.0 + uScenery*0.34),0.0,1.0);
@@ -142,11 +138,11 @@ void main(){
   vec2 sp = vec2(atan(d.z, d.x) * 90.0, y * 160.0);
   vec2 cell = floor(sp); vec2 f = fract(sp) - 0.5;
   float s = step(0.985 - uStars * 0.012, hash(cell)) * smoothstep(0.32, 0.0, length(f));
-  s *= 0.55 + 0.45 * sin(uTime * (1.0 + hash(cell + 3.0) * 3.0) + hash(cell) * 30.0);
-  c += vec3(0.85, 0.92, 1.0) * s * uStars * smoothstep(0.02, 0.5, y);
+  s *= 0.7 + 0.3 * sin(uTime * (0.2 + hash(cell + 3.0) * 0.5) + hash(cell) * 30.0);
+  c += vec3(1.0, 0.93, 0.80) * s * uStars * smoothstep(0.02, 0.5, y);
   // sun / moon
   float sd = max(dot(d, normalize(uSun)), 0.0);
-  c += (uKind == 3.0 ? vec3(1.0, 0.92, 0.7) : vec3(0.75, 0.85, 1.0)) * (pow(sd, 900.0) * 2.0 + pow(sd, 18.0) * 0.18);
+  c += (uKind == 3.0 ? vec3(1.0, 0.92, 0.7) : vec3(1.0, 0.86, 0.62)) * (pow(sd, 900.0) * 2.0 + pow(sd, 18.0) * 0.18);
   // aurora curtains
   if (uKind == 6.0) {
     float band = smoothstep(0.1, 0.5, y) * (1.0 - smoothstep(0.55, 0.95, y));
@@ -160,7 +156,7 @@ void main(){
   if (uKind == 5.0) c += uAccent * 0.14 * pow(noise(vec2(atan(d.z, d.x) * 2.0, y * 3.0 + uTime * 0.01)), 2.0);
   // storm: clouds + lightning
   if (uKind == 4.0) { c = mix(c, uMid * 1.4, 0.4 * noise(vec2(atan(d.z, d.x) * 4.0 + uTime * 0.03, y * 5.0))); }
-  c += vec3(0.7, 0.8, 1.0) * uFlash * (0.4 + 0.6 * smoothstep(-0.2, 0.7, y));
+  c += vec3(1.0, 0.9, 0.75) * uFlash * (0.4 + 0.6 * smoothstep(-0.2, 0.7, y));
   gl_FragColor = vec4(c, 1.0);
 }`;
 
@@ -178,11 +174,11 @@ void main(){
   float junction = 1.0 - min(max(junctionDistance.x, junctionDistance.y), 1.0);
   float d = length(vW - uCam);
   float nearRoad = 1.0 - smoothstep(180.0, 900.0, d);
-  vec3 street = mix(vec3(1.0, 0.43, 0.10), uAccent, 0.38);
+  vec3 street = vec3(1.0, 0.66, 0.30);
   vec3 col = uGround * (0.7 + 0.5 * noise(p * 0.05));
   // The glowing grid is a street surface cue; towers still come only from source records.
-  col += (uAccent * line * 0.09 + street * (line * 0.16 + junction * 0.34) * (1.0 - uDay)) * nearRoad;
-  col += uAccent * 0.035 * smoothstep(0.0, 400.0, 400.0 - length(p));
+  col += (vec3(0.70, 0.56, 0.34) * line * 0.07 + street * junction * 0.20 * (1.0 - uDay)) * nearRoad;
+  col += vec3(0.80, 0.55, 0.30) * 0.035 * smoothstep(0.0, 400.0, 400.0 - length(p));
   col = mix(col, uFog, clamp(1.0 - exp(-uFogD*uFogD*d*d), 0.0, 1.0));
   gl_FragColor = vec4(col, 1.0);
 }`;
@@ -202,8 +198,8 @@ varying vec3 vColor; varying vec2 vUv; varying float vFD;
 void main(){
   vec2 q = abs(vUv);
   float edge = smoothstep(0.93, 1.0, max(q.x, q.y));
-  float a = 0.07 + edge * 0.5;
-  vec3 col = vColor * (0.12 + edge * 1.3);
+  float a = 0.10 + edge * 0.34;
+  vec3 col = mix(vec3(0.55,0.46,0.34), vColor, 0.4) * (0.22 + edge * 0.55);
   col = mix(col, uFog, clamp(1.0 - exp(-uFogD*uFogD*vFD*vFD), 0.0, 1.0));
   gl_FragColor = vec4(col, a);
 }`;
@@ -219,7 +215,7 @@ void main(){
 }`;
 export const GLOW_FS = `
 varying vec3 vColor; varying float vP;
-void main(){ vec2 q = gl_PointCoord - 0.5; float r = length(q) * 2.0; float a = pow(max(1.0 - r, 0.0), 2.2) * vP; gl_FragColor = vec4(vColor * a * 1.7, a); }`;
+void main(){ vec2 q = gl_PointCoord - 0.5; float r = length(q) * 2.0; float a = pow(max(1.0 - r, 0.0), 2.2) * vP; gl_FragColor = vec4(mix(vColor, vec3(1.0,0.78,0.42), 0.55) * a * 0.9, a); }`;
 
 export const WX_VS = `
 attribute vec3 aSeed; uniform vec3 uCam; uniform float uTime; uniform vec3 uBox; uniform vec3 uVel; uniform float uSize; uniform float uPR; uniform float uKind;
@@ -262,7 +258,7 @@ void main(){
   vec3 V = normalize(uCam - vW), R = reflect(-V, N);
   float fres = pow(1.0 - max(dot(N, V), 0.0), 2.5);
   vec3 sky = mix(uLow, uTop, clamp(R.y, 0.0, 1.0));
-  vec3 col = mix(uAccent * 0.08 + uLow * 0.25, sky, 0.25 + 0.75 * fres) + vec3(1.0) * pow(max(dot(R, normalize(uSun)), 0.0), 120.0) * 0.8 + uAccent * 0.05 * w;
+  vec3 col = mix(vec3(0.05, 0.12, 0.16) + uLow * 0.2, sky, 0.25 + 0.75 * fres) + vec3(1.0, 0.86, 0.6) * pow(max(dot(R, normalize(uSun)), 0.0), 120.0) * 0.7 + vec3(0.1, 0.16, 0.18) * 0.1 * w;
   float d = length(vW - uCam);
   col = mix(col, uFog, clamp(1.0 - exp(-uFogD*uFogD*d*d), 0.0, 1.0));
   gl_FragColor = vec4(col, 0.93);
@@ -277,12 +273,12 @@ void main(){
   float life = 2.4;
   vec3 p = aOrigin + aDir.xyz * aDir.w * (1.0 - exp(-age * 1.6)) * 2.2;
   p.y -= 9.0 * age * age * 0.5;
-  vA = (age > 0.0 && age < life) ? (1.0 - age / life) * (0.6 + 0.4 * sin(age * 40.0 + aDir.w)) : 0.0;
+  vA = (age > 0.0 && age < life) ? (1.0 - age / life) * 0.9 : 0.0;
   vColor = aColor;
   vec4 mv = viewMatrix * vec4(p, 1.0);
   gl_PointSize = clamp(5.0 * uPR * 220.0 / max(1.0, -mv.z), 1.0, 22.0 * uPR) * step(0.001, vA);
   gl_Position = projectionMatrix * mv;
 }`;
 export const FW_FS = `varying vec3 vColor; varying float vA;
-void main(){ vec2 q = gl_PointCoord - 0.5; float a = pow(max(1.0 - length(q) * 2.0, 0.0), 1.8) * vA; gl_FragColor = vec4(vColor * a * 2.2, a); }`;
+void main(){ vec2 q = gl_PointCoord - 0.5; float a = pow(max(1.0 - length(q) * 2.0, 0.0), 1.8) * vA; gl_FragColor = vec4(mix(vColor, vec3(1.0,0.82,0.5), 0.5) * a * 1.4, a); }`;
 

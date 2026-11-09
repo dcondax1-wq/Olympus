@@ -7,7 +7,7 @@
 // Draw calls stay flat whatever the data: 40k buildings are still one draw (the tier's cap keeps the triangles in budget).
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
-import * as SH from './shaders.js?v=s4';
+import * as SH from './shaders.js?v=g3';
 import { buildLandmark, spinLandmark, disposeGroup } from './landmarks.js';
 import { rgb, clamp, rng, hash32 } from './util.js';
 import { buildMetropolis } from './metropolis.js?v=m3';
@@ -25,7 +25,7 @@ export const BUDGETS = {
 };
 const SKY_KIND = { night: 0, dusk: 1, dawn: 2, day: 3, storm: 4, void: 5, aurora: 6, ember: 7 };
 const DAYF = { day: 1, dawn: 0.55, dusk: 0.22 };
-const SUN = { day: [0.4, 0.8, 0.3], dawn: [-0.8, 0.14, 0.5], dusk: [0.8, 0.1, -0.4], night: [-0.4, 0.55, -0.5], storm: [0, -1, 0], void: [0.3, 0.6, 0.2], aurora: [-0.4, 0.5, -0.5], ember: [0.7, 0.08, 0.3] };
+const SUN = { day: [0.4, 0.8, 0.3], dawn: [-0.8, 0.14, 0.5], dusk: [0.55, 0.32, -0.5], night: [-0.4, 0.55, -0.5], storm: [0, -1, 0], void: [0.3, 0.6, 0.2], aurora: [-0.4, 0.5, -0.5], ember: [0.7, 0.08, 0.3] };
 const WX = {   // kind id, box, velocity (box units per second), sprite size, tint, share of the tier's count
   rain: { k: 1, box: [70, 56, 70], vel: [4, -48, 1.5], size: 0.55, tint: [0.6, 0.78, 1], share: 1 },
   storm: { k: 7, box: [70, 56, 70], vel: [-16, -60, 6], size: 0.7, tint: [0.7, 0.8, 1], share: 1 },
@@ -37,6 +37,15 @@ const WX = {   // kind id, box, velocity (box units per second), sprite size, ti
 };
 
 const col3 = (hex) => new THREE.Color(hex);
+/** AGORA skies (docs/DESIGN_AGORA.md): dusk indigo into amber, a bright Aegean day, a peach dawn. */
+const AGORA_SKY = {
+  dusk: { top: '#1c1a3a', mid: '#4a3f68', low: '#d98f55', ground: '#6a5848', stars: 0.55 },
+  dawn: { top: '#2a2540', mid: '#8a5a62', low: '#f0b27a', ground: '#2c2118', stars: 0.2 },
+  day: { top: '#4f7fa3', mid: '#9fc0cf', low: '#f3dcae', ground: '#7a6a55', stars: 0 },
+};
+
+/** A palette colour pulled toward bronze and gold, so no accent is neon. */
+export const warmHex = (hex) => '#' + col3(hex).lerp(col3('#d8b25a'), 0.5).multiplyScalar(0.92).getHexString();
 
 /** A unit box without its bottom: x, z in -0.5..0.5, y in 0..1 (10 triangles). */
 export function unitBox5() {
@@ -77,22 +86,22 @@ export class Stage {
     this.onTier = opts.onTier || (() => {});
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(56, 1, 0.5, 5000);
-    this.scene.fog = new THREE.FogExp2(0x05060f, 0.0012);
+    this.scene.fog = new THREE.FogExp2(0x1a1420, 0.0012);
     this.rc = createRenderer({ canvas, context: opts.context, scene: this.scene, camera: this.camera, space: 'display', env: 'night', maxDpr: 1.75, adapt: true,
-      bloom: { strength: 0.6, radius: 0.5, threshold: 0.8 }, grade: { grain: 0.03, vignette: 0.26, aberration: 0.002, saturation: 1.05 },
+      bloom: { strength: 0.2, radius: 0.4, threshold: 0.88 }, grade: { grain: 0.02, vignette: 0.24, aberration: 0, saturation: 1.0 },
       onQuality: (lv) => { this.onTier(lv); } });
     this.renderer = this.rc.renderer;
     this.box5 = unitBox5();
     this.mode = 'hub';
-    this.lights = [new THREE.HemisphereLight(0x9aa8ff, 0x1a1030, 0.9), new THREE.DirectionalLight(0xffffff, 1.4)];
+    this.lights = [new THREE.HemisphereLight(0xffd8a8, 0x2a1c10, 0.9), new THREE.DirectionalLight(0xffcf9a, 1.4)];
     this.lights[1].position.set(0.4, 0.9, 0.3);
     this.scene.add(...this.lights);
 
     const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
     this.U = {
       uTime: { value: 0 }, uFog: { value: new THREE.Color(0x070a1c) }, uFogD: { value: 0.002 }, uDay: { value: 0 }, uGrow: { value: 1 }, uBobAmp: { value: 0 },
-      uWinTint: { value: new THREE.Color(1, 0.84, 0.55) }, uAccent: { value: new THREE.Color(0x3fd8ff) }, uPR: { value: 1 }, uSel: { value: 0 },
-      uTop: { value: new THREE.Color(0x02030a) }, uMid: { value: new THREE.Color(0x0a1430) }, uLow: { value: new THREE.Color(0x1c3566) }, uStars: { value: 0.9 },
+      uWinTint: { value: new THREE.Color(1, 0.84, 0.55) }, uAccent: { value: new THREE.Color(0xc8a24a) }, uPR: { value: 1 }, uSel: { value: 0 },
+      uTop: { value: new THREE.Color(0x15121f) }, uMid: { value: new THREE.Color(0x3a2a3e) }, uLow: { value: new THREE.Color(0xb8704a) }, uStars: { value: 0.6 },
       uKind: { value: 0 }, uSun: { value: v3(-0.4, 0.55, -0.5) }, uFlash: { value: 0 }, uGround: { value: new THREE.Color(0x06101a) }, uCam: { value: v3(0, 0, 0) }, uPbr: { value: 1 },
     };
     const pick = (...n) => Object.fromEntries(n.map((k) => [k, this.U[k]]));
@@ -206,21 +215,25 @@ export class Stage {
   // ------------------------------------------------------------------ the look of a city (or of the hub when spec is null)
   look(spec, hubPal, night = false) {
     const U = this.U;
-    const sk = spec && !night ? spec.sky : { kind: 'night', top: '#020410', mid: '#0c1235', low: '#302055', stars: 0.98 };
-    const pal = spec ? spec.palette : hubPal || { accent: '#a68bff', ground: '#080614', fog: '#0a0820' };
-    U.uTop.value.set(sk.top); U.uMid.value.set(sk.mid); U.uLow.value.set(sk.low); U.uStars.value = sk.stars; U.uKind.value = SKY_KIND[sk.kind] ?? 0;
-    U.uSun.value.set(...(SUN[sk.kind] || SUN.night));
+    const kind = spec && !night ? spec.sky.kind : 'dusk', own = spec && !night ? spec.sky : null;
+    const AG = AGORA_SKY[kind === 'day' ? 'day' : kind === 'dawn' ? 'dawn' : 'dusk'];
+    const sk = { kind: kind === 'day' ? 'day' : kind === 'dawn' ? 'dawn' : 'dusk', top: AG.top, mid: AG.mid, low: AG.low, stars: AG.stars };
+    if (own) for (const k of ['top', 'mid', 'low']) sk[k] = '#' + col3(AG[k]).lerp(col3(own[k]), 0.12).getHexString();
+    const pal = spec ? spec.palette : hubPal || { accent: '#c8a24a', ground: '#1c1610', fog: '#1a1420' };
+    U.uTop.value.set(sk.top); U.uMid.value.set(sk.mid); U.uLow.value.set(sk.low); U.uStars.value = sk.stars; U.uKind.value = SKY_KIND[sk.kind] ?? 1;
+    U.uSun.value.set(...(SUN[sk.kind] || SUN.dusk));
     U.uDay.value = DAYF[sk.kind] ?? 0;
-    const f = col3(sk.mid).lerp(col3(sk.low), 0.35).multiplyScalar(sk.kind === 'day' ? 1 : 0.62);
+    const f = col3(sk.kind === 'day' ? sk.mid : '#4a4a78').lerp(col3(sk.low), sk.kind === 'day' ? 0.3 : 0.3);
     U.uFog.value.copy(f); this.scene.fog.color.copy(f);
-    U.uGround.value.set(pal.ground); U.uAccent.value.set(pal.accent);
-    U.uWinTint.value.setRGB(1, 0.84, 0.55).lerp(col3(pal.accent), 0.22);
-    this.rc.setBloom({ strength: sk.kind === 'day' ? 0.32 : 0.6, tint: 0xffffff });
+    U.uGround.value.set(AG.ground).lerp(col3(pal.ground), 0.1); U.uAccent.value.set('#c8a24a');
+    U.uWinTint.value.setRGB(1, 0.8, 0.5);
+    this.rc.setBloom({ strength: sk.kind === 'day' ? 0.1 : 0.2, tint: 0xffffff });
     this.setWeather(spec ? spec.weather : 'fog');
-    U.uPbr.value = { ultra: 1, high: 0.9, low: 0.55, off: 0 }[this.rc.quality()] ?? 0.8;
+    U.uPbr.value = { ultra: 1, high: 0.8, low: 0.5, off: 0 }[this.rc.quality()] ?? 0.7;
+    this.lights[0].color.set(sk.kind === 'day' ? 0xdfeaf2 : 0xffd8a8); this.lights[0].groundColor.set(sk.kind === 'day' ? 0x6a5a44 : 0x2a1c10);
     this.lights[0].intensity = sk.kind === 'day' ? 1.5 : 0.9;
-    this.lights[1].color.set(sk.kind === 'day' ? 0xfff3d6 : 0xb9c4ff);
-    this.lights[1].intensity = sk.kind === 'day' ? 2.0 : 1.2;
+    this.lights[1].color.set(sk.kind === 'day' ? 0xfff0d0 : 0xffcf9a);
+    this.lights[1].intensity = sk.kind === 'day' ? 2.0 : 1.1;
   }
 
   setFogRadius(r) { const d = 1.18 / Math.max(60, r * 2.6); this.U.uFogD.value = d; this.scene.fog.density = d * 0.9; }
@@ -376,7 +389,7 @@ export class Stage {
       this.cityG.add(pts); dispose.push(gg, gm);
     }
     // landmark
-    const lm = buildLandmark(spec.landmark.kind, spec.palette.accent, city.site.scale);
+    const lm = buildLandmark(spec.landmark.kind, warmHex(spec.palette.accent), city.site.scale);
     lm.position.set(city.site.x, 0, city.site.z);
     this.cityG.add(lm);
     const scenery = this._scenery(spec, city, dispose);

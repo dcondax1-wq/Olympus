@@ -14,9 +14,9 @@ import { cityResultPage, planCityNetwork } from './network-layout.js?v=n1';
 import { openDistrictWorld } from './district-world.js?v=d2';
 import { insight } from './insight.js';
 import { randomSpec, seedDataset, newSeed, cleanSeed } from './procedural.js';
-import { AgoraMap } from './agoramap.js?v=g1';
+import { AgoraMap } from './agoramap.js?v=g2';
 // Do not load/compile the 3D pipeline until this device has a usable context.
-let Stage, TIERS, BUDGETS, Rig, makePath, safeFlight;
+let Stage, TIERS, BUDGETS, Rig, makePath, safeFlight, warmHex = (h) => h;
 
 const GROUPS = { trading: ['Trading', '#4f8cff'], research: ['Research', '#a68bff'], money: ['Money', '#ff9f43'], kalshi: ['Kalshi', '#ff6b9a'], life: ['Life', '#39e59a'], obsidian: ['Obsidian', '#9d8cff'] };
 const GROUP_ORDER = Object.keys(GROUPS);
@@ -419,7 +419,7 @@ function buildCityView(spec, ds) {
   S.rig.auto = 0.05;
   const far = city.bounds.r * 1.7 + 70;
   S.rig.t.set(0, city.maxH * 0.28, 0);
-  const p0 = Math.max(canvas.clientWidth < 600 ? 0.64 : 0, spec.cam_pitch || (city.layout === 'terrain' ? 0.62 : 0.42));
+  const p0 = Math.max(canvas.clientWidth < 600 ? 0.5 : 0, spec.cam_pitch || (city.layout === 'terrain' ? 0.62 : 0.42));
   S.rig.dist = far; S.rig.pitch = p0 - 0.06; S.rig.yaw = 0; S.rig.fly = null; S.rig.path = null; S.rig.apply();
   S.rig.flyTo({ dist: far * 0.82, pitch: p0, yaw: 0.25 }, reduced() ? 0.01 : 2.4);
   setCam('orbit', true);
@@ -623,7 +623,7 @@ function drawThumb(cv, city) {
   const step = Math.max(1, Math.floor(city.n / 2500));
   for (let k = 0; k < city.n; k += step) {
     const t = 0.3 + 0.7 * Math.min(1, city.h[k] / Math.max(1, city.maxH)), r = Math.max(1.2, city.w[k] * sc * 0.85);
-    g.fillStyle = `rgb(${Math.round(city.col[k * 3] * 255 * t)},${Math.round(city.col[k * 3 + 1] * 255 * t)},${Math.round(city.col[k * 3 + 2] * 255 * t)})`;
+    g.fillStyle = `rgb(${Math.round((city.col[k * 3] * 0.62 + 0.30) * 255 * t)},${Math.round((city.col[k * 3 + 1] * 0.62 + 0.25) * 255 * t)},${Math.round((city.col[k * 3 + 2] * 0.62 + 0.17) * 255 * t)})`;
     g.fillRect((city.x[k] + half) * sc - r / 2, (city.z[k] + half) * sc - r / 2, r, r);
   }
 }
@@ -705,7 +705,7 @@ $('#photoDone').addEventListener('click', () => setPhoto(false));
 function celebrate(k, auto) {
   const C = S.cur; if (!C || k === undefined || k < 0 || k >= C.city.n) return;
   const c = C.city, x = c.x[k], y = c.h[k] + 6, z = c.z[k];
-  S.stage.fireworks(x, y, z, C.spec.palette.accent);
+  S.stage.fireworks(x, y, z, warmHex(C.spec.palette.accent));
   S.records = (S.records || 0) + 1;
   try {
     const F = window.OLYMPUS_FX, p = S.stage.project(x, y, z, canvas.clientWidth, canvas.clientHeight);
@@ -825,7 +825,7 @@ function drawMiniBase() {
   miniScale = W / (half * 2);
   const c = document.createElement('canvas'); c.width = c.height = W;
   const g = c.getContext('2d');
-  g.fillStyle = 'rgba(8,6,18,0.9)'; g.fillRect(0, 0, W, W);
+  g.fillStyle = 'rgba(26,21,16,0.94)'; g.fillRect(0, 0, W, W);
   for (const d of city.districts) {
     g.strokeStyle = d.color; g.globalAlpha = 0.35; g.lineWidth = 1.2;
     if (['districts', 'clock', 'calendar'].includes(city.layout)) g.strokeRect((d.x0 + half) * miniScale, (d.z0 + half) * miniScale, (d.x1 - d.x0) * miniScale, (d.z1 - d.z0) * miniScale);
@@ -834,10 +834,10 @@ function drawMiniBase() {
   const step = Math.max(1, Math.floor(city.n / 6000));
   for (let k = 0; k < city.n; k += step) {
     const r = Math.max(1.1, city.w[k] * miniScale * 0.8), t = 0.35 + 0.65 * Math.min(1, city.h[k] / Math.max(1, city.maxH));
-    g.fillStyle = `rgb(${Math.round(city.col[k * 3] * 255 * t)},${Math.round(city.col[k * 3 + 1] * 255 * t)},${Math.round(city.col[k * 3 + 2] * 255 * t)})`;
+    g.fillStyle = `rgb(${Math.round((city.col[k * 3] * 0.62 + 0.30) * 255 * t)},${Math.round((city.col[k * 3 + 1] * 0.62 + 0.25) * 255 * t)},${Math.round((city.col[k * 3 + 2] * 0.62 + 0.17) * 255 * t)})`;
     g.fillRect((city.x[k] + half) * miniScale - r / 2, (city.z[k] + half) * miniScale - r / 2, r, r);
   }
-  g.fillStyle = '#fff'; g.beginPath(); g.arc((city.site.x + half) * miniScale, (city.site.z + half) * miniScale, 3.5, 0, 7); g.fill();
+  g.fillStyle = '#e0b060'; g.beginPath(); g.arc((city.site.x + half) * miniScale, (city.site.z + half) * miniScale, 3.5, 0, 7); g.fill();
   miniBase = { c, half };
 }
 function drawMini() {
@@ -868,6 +868,8 @@ function placeLabel(e, p, w, h, above = false) {
   const x = clamp(p.x, half + 8, w - half - 8);
   let y = clamp(p.y, low, Math.max(low, h - (hub ? 280 : 140)));
   if (!hub) {
+    const cm = $('#cams').getBoundingClientRect(), ctop = y - (above ? e.offsetHeight : e.offsetHeight / 2);
+    if (x - half < cm.right + 4 && ctop < cm.bottom + 4 && y > cm.top - 4) y = Math.min(h - 130, cm.bottom + e.offsetHeight + 8);
     const map = mini.getBoundingClientRect(), top = y - (above ? e.offsetHeight : e.offsetHeight / 2);
     if (x + half > map.left - 4 && x - half < map.right + 4 && top < map.bottom + 4 && y > map.top - 4)
       y = Math.min(h - 130, map.bottom + e.offsetHeight + 8);
@@ -1082,10 +1084,10 @@ async function boot() {
   let importTimer;
   try {
     const modules = await Promise.race([
-      Promise.all([import('./scene.js?v=w5'), import('./rig.js?v=r2')]),
+      Promise.all([import('./scene.js?v=g4'), import('./rig.js?v=r2')]),
       new Promise((_, reject) => { importTimer = setTimeout(() => reject(Error('3D startup timed out')), 8000); }),
     ]);
-    ({ Stage, TIERS, BUDGETS } = modules[0]); ({ Rig, makePath, safeFlight } = modules[1]);
+    ({ Stage, TIERS, BUDGETS, warmHex } = modules[0]); ({ Rig, makePath, safeFlight } = modules[1]);
   } catch (_) { context.getExtension('WEBGL_lose_context')?.loseContext(); if (!window.__citiesImportAbandoned) fallbackList('The 3D files could not start.'); return; }
   finally { clearTimeout(importTimer); }
   if (window.__citiesImportAbandoned) return;
