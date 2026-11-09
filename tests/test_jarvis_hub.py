@@ -812,7 +812,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v24');
+          const c = await caches.open('jarvis-v26');
           const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j13', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
@@ -896,7 +896,10 @@ def run_c(br, url):
         check(f"k. {sz}: the dock, the next chip and the search button never cover the hint or the mic row (both reachable, nothing over them)", not ov, ov)
         if wdt >= 390:
             first = p.evaluate("(() => { document.getElementById('home').scrollTop = 0; const v = document.querySelector('.vrow').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect(); return [Math.round(v.bottom), Math.round(h.bottom)]; })()")
-            check(f"k. {sz}: HANDS-FREE · mic · VOICE on the first screen, as on the old Jarvis (no scrolling)", first[0] <= first[1], first)
+            # AGORA home (2026-11-09): the hero, the Atlas card and the cards come first and the HANDS-FREE row is reached by scrolling
+            # (it stays reachable: the check above); the first screen always holds the Ask Jarvis dock with its mic, in reach of the thumb
+            dock = p.evaluate("(() => { const m = document.querySelector('#dock #bigmic, #dock .ask .key, #dock .ask button'), q = document.getElementById('q'); const r = (e) => e ? e.getBoundingClientRect() : null; const a = r(m), b = r(q); return [a && Math.round(a.bottom), b && Math.round(b.bottom), innerHeight]; })()")
+            check(f"k. {sz}: the Ask Jarvis field and its mic are on the first screen (no scrolling)", dock[0] and dock[1] and dock[0] <= dock[2] and dock[1] <= dock[2], (first, dock))
         # D1: nothing cut short (KALSHI TODAY's words, the Market card's NQ last, the ⋯ keys), every tap target 44 px tall (pads count)
         tsz = """(q) => {
             const hitH = (el) => { el.scrollIntoView({ block: 'center', inline: 'center' }); const r = el.getBoundingClientRect(); if (r.height >= 43.5) return r.height;
