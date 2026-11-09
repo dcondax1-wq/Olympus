@@ -2,7 +2,7 @@
 
 export const $ = (s) => document.querySelector(s);
 
-export const COLORS = { gold: 0xd39556, green: 0x9bab62, amber: 0xd1904e, grey: 0x5d6480, thin: 0x3a3f55, strat: 0x9d8aae,
+export const COLORS = { gold: 0xd39556, green: 0x9bab62, amber: 0xd1904e, grey: 0x5d6480, thin: 0x3a3f55, strat: 0xcdbf9f,
                         monument: 0xddae7d, lit: 0xd39556, win: 0x9bab62, loss: 0xce8841 };
 export const CLASS_TEXT = { gold: 'holds everywhere', green: 'both periods', amber: 'one period', grey: 'noise', thin: 'thin' };
 const CLASS_RANK = { gold: 0, green: 1, amber: 2, grey: 3, thin: 4 };

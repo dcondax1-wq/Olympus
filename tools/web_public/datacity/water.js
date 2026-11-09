@@ -27,7 +27,7 @@ void main(){
   float NoV = clamp(dot(N, V), 0.0, 1.0);
   float fres = 0.02 + 0.98 * pow(1.0 - NoV, 4.0);
   vec3 R = reflect(-V, N);
-  vec3 top = mix(vec3(0.004,0.007,0.028), vec3(0.14,0.40,0.86), uDay), hor = mix(vec3(0.07,0.05,0.17), vec3(0.70,0.83,0.96), uDay);
+  vec3 top = mix(vec3(0.11,0.10,0.24), vec3(0.22,0.46,0.72), uDay), hor = mix(vec3(0.48,0.30,0.28), vec3(0.88,0.86,0.76), uDay);
   vec3 sky = mix(hor, top, smoothstep(0.0, 0.55, R.y));
   sky += vec3(1.0,0.42,0.22) * uDusk * 0.5 * exp(-abs(R.y)*5.0);
   vec3 sd = normalize(uSun);
@@ -132,7 +132,7 @@ export class Ships {
     this.total = 0;
     if (!h) return;
     const n = SHIPS.hq, att = new Float32Array(n * 4), col = new Float32Array(n * 3), c = new THREE.Color();
-    const pal = [0xce8841, 0xd39556, 0xd39556, 0x9d8aae, 0x9bab62, 0xd1904e];
+    const pal = [0xce8841, 0xd39556, 0xd39556, 0xcdbf9f, 0x9bab62, 0xd1904e];
     for (let i = 0; i < n; i++) {
       att.set([(i % 3) - 1, (i * 0.37) % 1, (6 + (i % 4) * 2.2) * (i % 2 ? 1 : -1), 2.6 + (i % 3) * 0.9], i * 4);
       c.setHex(pal[i % pal.length]); col.set([c.r, c.g, c.b], i * 3);

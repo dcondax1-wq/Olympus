@@ -3,7 +3,7 @@
 // the canvas and the billboards' canvases; city.js drives it.
 import * as THREE from '../jarvis/three.module.min.js';
 import { COLORS } from './util.js';
-import * as SH from './shaders.js?v=dcgfx4';
+import * as SH from './shaders.js?v=dcgfx5';
 import { Skyline, pick } from './skyline.js';
 import { Rays, SunRays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.js';
 import { createRenderer } from '../olympus/render.js';          // the OLYMPUS render core: ACES, MSAA, bloom, the film finish, tiers
@@ -20,7 +20,7 @@ import { KitFx } from './kitfx.js';
 import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcgfx1';
 import { Link } from './links.js';
 
-const FOG = { night: 0x1a1424, day: 0xb8c9d2, dusk: 0x5a3340, storm: 0x35303c };
+const FOG = { night: 0x3a2e46, day: 0xc2cfd2, dusk: 0x7a4a52, storm: 0x4c4650 };
 const DENSITY = { night: 0.0024, day: 0.0015 };
 const FLOW = { hq: 1600, lq: 420 };
 const STARS = { hq: 1800, lq: 450 };
@@ -213,9 +213,9 @@ export class CityScene {
   _tower() {
     this.tower = new THREE.Group();
     const tm = new THREE.ShaderMaterial({ vertexShader: SH.TOWER_VS, fragmentShader: SH.TOWER_FS, uniforms: pick(this.U, 'uTime', 'uDay', 'uAccent') });
-    const plinth = new THREE.Mesh(new THREE.CylinderGeometry(15, 20, 1.7, 16), new THREE.MeshBasicMaterial({ color: 0x436f91 }));
+    const plinth = new THREE.Mesh(new THREE.CylinderGeometry(15, 20, 1.7, 16), new THREE.MeshBasicMaterial({ color: 0xb8a584 }));
     plinth.position.y = 0.2;
-    const crownDeck = new THREE.Mesh(new THREE.CylinderGeometry(10.2, 13.5, 1.4, 12), new THREE.MeshBasicMaterial({ color: 0x49799e, emissive: 0x416c8d }));
+    const crownDeck = new THREE.Mesh(new THREE.CylinderGeometry(10.2, 13.5, 1.4, 12), new THREE.MeshBasicMaterial({ color: 0xcdbd9a, emissive: 0x3a2e1c }));
     crownDeck.position.y = 1.6;
     const shaft = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 5.4, 72, 10, 1), tm);
     shaft.position.y = 38;

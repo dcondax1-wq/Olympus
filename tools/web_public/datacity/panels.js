@@ -141,7 +141,7 @@ export function viewCompare(body, A, B, label, cb) {
     const s = svg(300, 64, 'cumulative $ per micro, A and B'), all = [...spA, ...spB], lo = Math.min(0, ...all), hi = Math.max(0, ...all), r = hi - lo || 1;
     const y = (v) => 60 - ((v - lo) / r) * 56;
     s.appendChild(node('line', { x1: 0, x2: 300, y1: y(0), y2: y(0), stroke: 'rgba(255,255,255,.18)', 'stroke-dasharray': '3 3' }));
-    for (const [sp, col] of [[spA, '#d39556'], [spB, '#9d8aae']]) {
+    for (const [sp, col] of [[spA, '#d39556'], [spB, '#cdbf9f']]) {
       s.appendChild(node('polyline', { points: sp.map((v, i) => `${(i / (sp.length - 1)) * 300},${y(v)}`).join(' '), fill: 'none', stroke: col, 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }));
     }
     body.append(el('div', 'note', 'Cumulative $ per micro, quarter by quarter (A cyan, B violet)'), s);

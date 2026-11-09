@@ -68,8 +68,8 @@ ${HASH}
 float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)) + vSeed*17.0)*43758.5453); }
 vec3 envSky(vec3 d){                                         // the sky the glass reflects (the same palette as the sky dome)
   float h = clamp(d.y, -0.3, 1.0);
-  vec3 top = mix(vec3(0.045,0.040,0.105), vec3(0.20,0.42,0.68), uDay);
-  vec3 hor = mix(vec3(0.26,0.15,0.17), vec3(0.86,0.84,0.74), uDay);
+  vec3 top = mix(vec3(0.11,0.10,0.24), vec3(0.22,0.46,0.72), uDay);
+  vec3 hor = mix(vec3(0.48,0.30,0.28), vec3(0.88,0.86,0.76), uDay);
   vec3 c = mix(hor, top, smoothstep(0.0, 0.55, h));
   c += vec3(1.0,0.42,0.22) * uDusk * 0.5 * exp(-abs(h)*5.0);
   float s = max(dot(d, normalize(uSun)), 0.0);
@@ -255,7 +255,7 @@ void main(){
   vec2 p = vW.xz / 2.2;
   vec2 g = abs(fract(p - 0.5) - 0.5) / fwidth(p);
   float line = 1.0 - min(min(g.x, g.y), 1.0);
-  vec3 base = mix(vec3(0.060,0.048,0.040), vec3(0.50,0.44,0.36), uDay);
+  vec3 base = mix(vec3(0.15,0.125,0.10), vec3(0.58,0.51,0.42), uDay);
   float puddle = smoothstep(0.55, 0.75, noise(vW.xz * 0.07)) * uWet;
   vec3 col = base * (1.0 - puddle*0.5) + line * mix(vec3(0.16,0.11,0.06), vec3(0.18,0.14,0.10), uDay) * 0.5;
   float r = length(vW.xz);
@@ -386,8 +386,8 @@ void main(){
   vec2 p = vW.xz;
   float w = noise(p*0.15 + vec2(uTime*0.15, uTime*0.07)) * 0.6 + noise(p*0.6 - uTime*0.25) * 0.4;
   float streak = pow(noise(vec2(p.x*0.5, p.y*0.05 + uTime*0.3)), 6.0);
-  vec3 col = mix(vec3(0.004,0.02,0.05), vec3(0.12,0.3,0.45), uDay) + vec3(0.02,0.08,0.14) * w;
-  col += uAccent * streak * 0.9 + vec3(1.0,0.4,0.55) * pow(noise(vec2(p.x*0.4 + 9.0, p.y*0.06 - uTime*0.2)), 7.0) * 0.6;
+  vec3 col = mix(vec3(0.05,0.11,0.12), vec3(0.18,0.44,0.48), uDay) + vec3(0.05,0.08,0.08) * w;
+  col += uAccent * streak * 0.9 + vec3(1.0,0.74,0.46) * pow(noise(vec2(p.x*0.4 + 9.0, p.y*0.06 - uTime*0.2)), 7.0) * 0.6;
   gl_FragColor = vec4(mix(col, uFog, fogAmount(vFD, 0.0)), 1.0);
 }`;
 export const TOWER_VS = `varying vec3 vL; void main(){ vL = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`;

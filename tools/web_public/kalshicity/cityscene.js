@@ -34,7 +34,7 @@ const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
 const lerpC = (a, b, t) => a.clone().lerp(b, t);
 const sstep = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const C = (hex) => new THREE.Color(hex);
-const SKY = { nTop: C('#17142a'), nMid: C('#3a2f50'), nHor: C('#8a5a52'), dTop: C('#4f7fa3'), dMid: C('#9fc0cf'), dHor: C('#f3dcae'), tw: C('#e08a50'), grey: C('#566070') };
+const SKY = { nTop: C('#2a2a56'), nMid: C('#6a5688'), nHor: C('#e0906a'), dTop: C('#4f7fa3'), dMid: C('#9fc0cf'), dHor: C('#f3dcae'), tw: C('#e08a50'), grey: C('#566070') };
 
 // ------------------------------------------------------------------ the building shader (a MeshStandardMaterial plus windows, roof glow, rise and crumble)
 const U = { uTime: { value: 0 }, uAnimT: { value: 0 }, uNight: { value: 1 }, uWinGain: { value: 1.7 }, uRoofGain: { value: 2.4 } };
@@ -113,21 +113,21 @@ function labelSprite(text, color) {
 export function createCity(canvas, { O = null, model, layout, sound = () => false }) {
   const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x3a2f44, 0.0034);
+  scene.fog = new THREE.FogExp2(0x6a5670, 0.0030);
   const camera = new THREE.PerspectiveCamera(58, 1, 0.5, 2600);
   let lite = false, dirty = true, qcb = null, pickCb = null, drawn = 0, frames = 0, stopped = false, raf = 0, tier = TIERS.low, last = performance.now() / 1000, t0 = last;
   let hourOverride = null, hour = 21, hourAt = -9, selected = null, mode = 'orbit', flash = 0, nextFlash = 6, L = layout, M0 = model;
-  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#d8b25a', exposure: 0.92, maxDpr: 1.75, bloom: { strength: 0.28, radius: 0.25, threshold: 1.35 },
+  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#d8b25a', exposure: 1.15, maxDpr: 1.75, bloom: { strength: 0.28, radius: 0.25, threshold: 1.35 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; applyTier(); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
   const fxl = createCityFx({ scene, camera, rc, O, sound });
   let skySt = { tw: 0, day: 0, sun: [0, 100, 0], hour: 21 }, hl = [];
 
   // ---- lights, sky
-  const hemi = new THREE.HemisphereLight('#ffd8a8', '#2a1c10', 0.6); scene.add(hemi);
+  const hemi = new THREE.HemisphereLight('#ffd8a8', '#4a3a2c', 0.95); scene.add(hemi);
   const sun = new THREE.DirectionalLight('#e2b88d', 1.0); scene.add(sun, sun.target);
   const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 24, 12), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
-    uniforms: { uTop: { value: C('#17142a') }, uMid: { value: C('#3a2f50') }, uHor: { value: C('#8a5a52') }, uFlash: { value: 0 } },
+    uniforms: { uTop: { value: C('#2a2a56') }, uMid: { value: C('#6a5688') }, uHor: { value: C('#e0906a') }, uFlash: { value: 0 } },
     vertexShader: 'varying vec3 vD; void main() { vD = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: 'uniform vec3 uTop, uMid, uHor; uniform float uFlash; varying vec3 vD; void main() { float h = normalize(vD).y; vec3 c = mix(uHor, uMid, smoothstep(0.0, 0.28, h)); c = mix(c, uTop, smoothstep(0.22, 0.85, h)); c += uFlash * vec3(0.55, 0.6, 0.8); gl_FragColor = vec4(c, 1.0); }' }));
   sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);

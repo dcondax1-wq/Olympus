@@ -8,7 +8,7 @@ import { PROFILES } from './caps.js';
 import { boulevardPlan, skylineForm } from './districtform.js';
 
 const COUNT = { hq: 2600, lq: 900 };
-const PALETTE = [0x7d6a52, 0x78a1c1, 0xdaa56f, 0x9d8aae, 0x9a8a72, 0xdba875, 0xd39556];
+const PALETTE = [0x7d6a52, 0x78a1c1, 0xdaa56f, 0xcdbf9f, 0x9a8a72, 0xdba875, 0xd39556];
 const mulberry = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 
 export class Outskirts {

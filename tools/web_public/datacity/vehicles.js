@@ -47,7 +47,7 @@ export class Cars {
   constructor(L, U, quality) {
     const rnd = mulberry(5), segs = L.streets.filter((s) => Math.hypot(s[2] - s[0], s[3] - s[1]) > 14);
     const n = CARS.hq, seg = new Float32Array(n * 4), car = new Float32Array(n * 3), col = new Float32Array(n * 3), c = new THREE.Color();
-    const pal = [0xce8841, 0xd39556, 0xd39556, 0xb2cadc, 0x9d8aae, 0x9bab62, 0xd1904e];
+    const pal = [0xce8841, 0xd39556, 0xd39556, 0xb2cadc, 0xcdbf9f, 0x9bab62, 0xd1904e];
     for (let i = 0; i < n; i++) {
       let s = segs[Math.floor(rnd() * segs.length)];
       if (rnd() < 0.5) s = [s[2], s[3], s[0], s[1]];
@@ -151,7 +151,7 @@ export class Flyers {
     const dt = new THREE.DataTexture(tex, PATH_SAMPLES, np, THREE.RGBAFormat, THREE.FloatType);
     dt.minFilter = dt.magFilter = THREE.NearestFilter; dt.needsUpdate = true;
     const n = FLYERS.hq, fly = new Float32Array(n * 4), col = new Float32Array(n * 3), c = new THREE.Color();
-    const pal = [0xd39556, 0xd39556, 0xcc8073, 0x9d8aae, 0x9bab62];
+    const pal = [0xd39556, 0xd39556, 0xcc8073, 0xcdbf9f, 0x9bab62];
     for (let i = 0; i < n; i++) {
       fly.set([i % np, rnd(), (0.0022 + rnd() * 0.003) * (rnd() < 0.5 ? 1 : -1), 0.9 + rnd() * 0.5], i * 4);
       c.setHex(pal[Math.floor(rnd() * pal.length)]); col.set([c.r, c.g, c.b], i * 3);

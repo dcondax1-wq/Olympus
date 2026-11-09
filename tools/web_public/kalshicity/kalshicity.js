@@ -429,7 +429,7 @@ async function refresh() {                                               // ever
 async function startScene() {
   try {
     if (new URLSearchParams(location.search).get('view') === 'atlas') throw new Error('Atlas requested');
-    const { createCity } = await import('./cityscene.js?v=night9');
+    const { createCity } = await import('./cityscene.js?v=night10');
     S.scene = createCity($('city'), { O, model: S.model, layout: S.L, sound: () => S.sound });
     $('lite').hidden = !S.scene.lite();
     S.scene.onQuality(() => { $('lite').hidden = !S.scene.lite(); });
