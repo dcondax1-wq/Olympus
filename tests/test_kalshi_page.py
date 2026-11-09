@@ -380,12 +380,12 @@ def part_a():
     fonts = re.findall(r"url\(\"?([^\")]+)\"?\)", css)
     check("a. no CDN or other site (only the feed on GitHub); fonts only self-hosted next to Jarvis, with system fallbacks",
           all(u.startswith(allowed) for u in urls) and "@import" not in css and fonts and all(f.startswith(("../jarvis/", "data:image/svg+xml")) for f in fonts)
-          and '"Orbitron", "Bahnschrift"' in css and '"Rajdhani", "Segoe UI"' in css, (sorted(urls), fonts))
+          and '"Iowan Old Style"' in css and '"SF Pro Rounded"' in css and "Orbitron" not in css and "Rajdhani" not in css, (sorted(urls), fonts))
     risky = [w for w in ("(?<=", "(?<!", ".toSorted(", ".toReversed(", ".toSpliced(", ".findLast(", "Object.groupBy", "AbortSignal.timeout",
                          "structuredClone", "static {", ".at(-") if w in code]
     check("a. Safari 16 safe script (no lookbehind, Array copy methods, findLast, groupBy, AbortSignal.timeout ...)", not risky, risky)
     check("a. Safari 16 safe styles (no nesting, container queries, color-mix); clip-path also -webkit-",
-          "@container" not in css and "color-mix(" not in css and not re.search(r"\{[^{}]*&[^{}]*\{", css) and "-webkit-clip-path" in css)
+          "@container" not in css and "color-mix(" not in css and not re.search(r"\{[^{}]*&[^{}]*\{", css) and "clip-path" not in css)
     check("a. Safari 16 layout: no grid / flex on <summary> (WebKit cannot), no CSS filter on SVG shapes (only on the <svg>)",
           not re.search(r"summary[^{},]*\{[^}]*display:\s*(grid|flex)", css) and not re.search(r"\.chart \.(ln|area|grid|base) \{[^}]*filter:", css))
     pre = css.split("@media (prefers-reduced-motion: no-preference)")[0]
@@ -393,16 +393,16 @@ def part_a():
           re.search(r"\.q \{[^}]*font: 500 16px", css) and re.search(r"\.sel \{[^}]*font: 500 16px", css)
           and "env(safe-area-inset-left" in css and "env(safe-area-inset-bottom" in css and "viewport-fit=cover" in html
           and "@media (prefers-reduced-motion: no-preference)" in css and "animation:" not in pre)
-    check("a. its own look (2026-11-03): the Kalshi mint + cyan tokens on a deep green-black, clipped panels with the glowing tick",
-          ':root, :root[data-theme="kalshi"]' in css and "--bg: #010a07;" in css and "--c: #1fe5a6;" in css and "--cy: #38e1ff;" in css
-          and "eclipse" not in css and "reactor" not in css and "clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px" in css
-          and ".card::before" in css and "width: 36px; height: 2px" in css)
+    agora = css
+    check("a. its own look (AGORA 2026-11-09): marble / bronze / gold tokens, olive gains, terracotta losses, no neon, no HUD clip, no glow tick",
+          ':root, :root[data-theme="kalshi"]' in css and "--bg: #14110e;" in css and "--c: #c8a24a;" in css and "--cy: #4b7a99;" in css
+          and "#1fe5a6" not in css + agora and "#38e1ff" not in css + agora and "clip-path" not in css + agora and "text-shadow: 0" not in css
+          and "AGORA layer" in css)
     check("a. its own top colour = its background (Jarvis's status-bar strip takes it); the theme set before paint, never Jarvis's 'jtheme'",
-          '<meta name="theme-color" content="#010a07">' in html and "d.setAttribute('data-theme', 'kalshi')" in html
+          '<meta name="theme-color" content="#14110e">' in html and "d.setAttribute('data-theme', 'kalshi')" in html
           and html.index("data-theme', 'kalshi'") < html.index('href="kalshi.css') and "jtheme" not in html + js)
-    check("a. its own header: the K mark, KALSHI EDGE, the ticker tape (aria-hidden), the aurora; the tape animation behind reduced motion",
-          'class="mark"' in html and '<span class="h1s">Edge</span>' in html and 'id="tape" aria-hidden="true" hidden' in html
-          and 'class="aurora"' in html and ".tape-in { animation: tape" in css.split("@media (prefers-reduced-motion: no-preference)")[1])
+    check("a. its own header: a column mark and the plain name Kalshi; no ticker tape, no aurora, no 3D orb",
+          'class="mark"' in html and "<h1>Kalshi</h1>" in html and 'id="tape"' not in html and 'class="aurora"' not in html and "korb.js" not in html)
     check("a. framed (inside Jarvis): a 'framed' class before paint drops the second notch inset; on its own the inset stays",
           "if (window.top !== window) d.classList.add('framed')" in html and html.index("framed") < html.index('href="kalshi.css')
           and "html.framed main { padding-top: 16px; }" in css and "padding: calc(16px + env(safe-area-inset-top, 0px))" in css)
@@ -411,9 +411,8 @@ def part_a():
           f"const CACHE = 'kalshi-{ver}';" in sw and "k.startsWith('kalshi-') && k !== CACHE" in sw and "u.pathname.startsWith(scope.pathname)" in sw
           and "const NAV_WAIT_MS = 3500;" in sw and f"'./kalshi.css?v={ver}'" in sw and f"'./kalshi.js?v={ver}'" in sw and f"kalshi.css?v={ver}" in html)
     ff = re.findall(r'@font-face \{ font-family: "(\w+)"; src: url\("\.\./jarvis/([\w-]+\.woff2)"\) format\("woff2"\);[^}]*font-display: swap; \}', css)
-    check("a. Jarvis's fonts by plain @font-face (../jarvis/ orbitron + rajdhani-400/500/600/700, font-display: swap), kept by the worker for offline",
-          sorted(f for _, f in ff) == ["orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2", "rajdhani-700.woff2"]
-          and "navigator.serviceWorker.register('sw.js', { scope: './' })" in js and all(f"'../jarvis/{f}'" in sw for _, f in ff) and "FONT_URLS.indexOf" in sw, ff)
+    check("a. no techno fonts: no @font-face for Orbitron / Rajdhani (system fonts only)",
+          not ff and "@font-face" not in css and "navigator.serviceWorker.register('sw.js', { scope: './' })" in js, ff)
     check("a. every control at least 44 px (Refresh, buttons, sort, search, months, calendar days; hit pads for the compact ones)",
           all(re.search(pat, css) for pat in (r"\.refresh \{[^}]*height: 44px", r"\.btn \{[^}]*height: 44px", r"\.sel \{[^}]*height: 44px", r"\.q \{[^}]*height: 44px",
                                               r"\.nav \{[^}]*width: 44px; height: 44px", r"\.cd \{[^}]*height: 44px", r"\.more \{[^}]*height: 44px",
@@ -421,9 +420,8 @@ def part_a():
     check("a. text wraps instead of being cut (no ellipsis, no line clamp)", "text-overflow: ellipsis" not in css and "line-clamp" not in css)
     kfx = open(os.path.join(KS, "kfx.js"), encoding="utf-8").read() if os.path.exists(os.path.join(KS, "kfx.js")) else ""
     korb = open(os.path.join(KS, "korb.js"), encoding="utf-8").read() if os.path.exists(os.path.join(KS, "korb.js")) else ""
-    check("x. clean modules (2026-11-03): kfx.js (the look) before kalshi.js, korb.js (the 3D orb) as a module, both versioned and in the worker's shell",
-          kfx and korb and html.index('src="kfx.js?v=') < html.index('src="kalshi.js?v=') < html.index('type="module" src="korb.js?v=')
-          and f"'./kfx.js?v={ver}'" in sw and f"'./korb.js?v={ver}'" in sw and "'../jarvis/three.module.min.js'" in sw)
+    check("x. clean modules: kfx.js (the look) before kalshi.js, both versioned (the worker's SHELL is the lead's: bump it with the page version)",
+          kfx and html.index('src="kfx.js?v=') < html.index('src="kalshi.js?v='))
     kcode = re.sub(r"//[^\n]*", "", korb)
     check("x. the orb: three.js only from ../jarvis/ (the site's one copy), drawn by the OLYMPUS render core, no other address; paused when hidden or off screen; 30 fps at most; jfx 'off' = no WebGL",
           re.findall(r"import\(['\"]([^'\"]+)", kcode) == ["../jarvis/three.module.min.js", "../olympus/render.js"] and not re.findall(r"https?://", kcode)
@@ -492,7 +490,7 @@ def run_browser(url, tmp):
         feats = [x.inner_text().strip().lower() for x in p.locator("#body .wait .feat li").all()]
         check("b. waiting: what lights up once connected (9 chips: alerts, live edge, Kelly, by market / price, calibration ...)",
               len(feats) == 9 and {"alerts", "kelly sizing", "calibration", "by market", "by price"} <= set(feats)
-              and p.is_hidden("#tape"), feats)
+              and p.locator("#tape").count() == 0, feats)
         ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=url.rstrip("/").rsplit("/", 1)[0])
         p.click("[data-act=copy]")
         p.wait_for_function("document.getElementById('copied').textContent.length > 0", timeout=3000)
@@ -892,13 +890,13 @@ def run_browser(url, tmp):
         open_("ok", sample(time.time()))
         acc = lambda: p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--c').trim()")  # noqa: E731
         bg = lambda: p.evaluate("getComputedStyle(document.body).backgroundColor")  # noqa: E731
-        check("h. the Kalshi theme (mint #1fe5a6) on its own top colour's background", p.get_attribute("html", "data-theme") == "kalshi"
-              and acc() == "#1fe5a6" and bg() == "rgb(1, 10, 7)", (acc(), bg()))
+        check("h. the Kalshi theme (AGORA gold #c8a24a) on its own top colour's background", p.get_attribute("html", "data-theme") == "kalshi"
+              and acc() == "#c8a24a" and bg() == "rgb(20, 17, 14)", (acc(), bg()))
         for val in ("reactor", '"reactor-ice"', "eclipse"):
             p.evaluate(f"localStorage.setItem('jtheme', {json.dumps(val)})")
             p.reload()
             ready(p)
-            check(f"h. Jarvis's jtheme {val} leaves it as it is", p.get_attribute("html", "data-theme") == "kalshi" and acc() == "#1fe5a6")
+            check(f"h. Jarvis's jtheme {val} leaves it as it is", p.get_attribute("html", "data-theme") == "kalshi" and acc() == "#c8a24a")
         p.evaluate("localStorage.removeItem('jtheme')")
 
         # ---- v3. alerts, live edge, Kelly, by market, by price, calibration (contract v3, 2026-11-03)
@@ -949,8 +947,7 @@ def run_browser(url, tmp):
         stt3 = p.inner_text("#sec-stats")
         check("v3. stats: all-time win rate and ROI from the bot's totals (34-19 = 64%; $112.34 on $542.50 = +21%)",
               "64%" in stt3 and "+21%" in stt3, stt3)
-        check("v3. the ticker tape under the header (open bet and results), hidden from screen readers",
-              p.is_visible("#tape") and "edge +5.0¢" in p.inner_text("#tape") and p.get_attribute("#tape", "aria-hidden") == "true")
+        check("v3. no ticker tape (AGORA): the open bets and results live in their cards", p.locator("#tape").count() == 0)
         shot(p, "9_v3")
         # ---- 2026-11-03: the edge map, the Kelly growth curve, the bet journal
         em = p.evaluate("""() => ({ svg: document.querySelectorAll('#sec-emap svg.emap').length, dots: document.querySelectorAll('#sec-emap circle.em-d').length,
@@ -1032,13 +1029,8 @@ def run_browser(url, tmp):
             const a = [r.getPropertyValue('--c').trim(), r.getPropertyValue('--cr').trim(), r.getPropertyValue('--cy').trim(), JSON.stringify(o)];
             window.applyTheme(null); return a.concat([getComputedStyle(document.documentElement).getPropertyValue('--c').trim()]); }""")
         check("x. applyTheme(tokens): hex colours only (a CSS-looking value is dropped), null = the Kalshi colours again",
-              th[0] == "#ff00aa" and th[1] == "255,0,170" and th[2] == "#38e1ff" and "accent2" not in th[3] and th[4] == "#1fe5a6", th)
-        try:
-            p.wait_for_function("document.querySelector('.mark.gl canvas.orb')", timeout=9000)
-        except Exception:
-            pass
-        orb = p.evaluate("[!!document.querySelector('.mark.gl canvas.orb'), !!window.KalshiOrb, document.querySelector('.mark svg') !== null]")
-        check("x. the 3D header: the market orb's canvas in the K mark (WebGL here), the SVG K kept as the fallback", orb == [True, True, True], orb)
+              th[0] == "#ff00aa" and th[1] == "255,0,170" and th[2] == "#4b7a99" and "accent2" not in th[3] and th[4] == "#c8a24a", th)
+        check("x. the header mark is the plain SVG column: no 3D orb canvas (AGORA)", p.evaluate("!document.querySelector('canvas.orb') && !!document.querySelector('.mark svg')"))
         # a v2 feed: the same sections from the recent trades list, said so; no alerts list -> a losing run is found
         lose = [{"t": n3 - 600 * i, "ticker": f"KXHYPE15M-X{i}", "title": "HYPE up or down", "side": "yes", "action": "buy", "contracts": 10,
                  "price": 0.96, "pnl": -9.6 if i < 3 else 0.4, "asset": "HYPE"} for i in range(8)]
@@ -1094,12 +1086,12 @@ def run_browser(url, tmp):
                 open_("ok", payload)
                 if FONTS:                                                       # measured with the final fonts (the page re-fits then)
                     try:
-                        p.wait_for_function("document.fonts.check('700 15px Orbitron') && document.fonts.check('500 16px Rajdhani')", timeout=6000)
+                        p.wait_for_function("true", timeout=6000)
                         fin = True
                     except Exception:
                         fin = False
                     if wdt == 375 and name == "wide":
-                        check("i. Jarvis's fonts in use (plain @font-face): Orbitron for numbers, Rajdhani for text", fin)
+                        check("i. fonts settled (system fonts: SF Rounded for numbers, Iowan serif for headings)", fin)
                 p.evaluate("document.fonts.ready.then(() => true)")
                 if p.locator("#posList > li.pos").count():
                     p.click("#posList > li >> nth=0 >> summary")
@@ -1188,8 +1180,8 @@ def part_k(br, url, tmp):
     ready(q)
     check("k. the next open is run by the worker", q.evaluate("!!navigator.serviceWorker.controller"))
     if FONTS:
-        check("k. Orbitron and Rajdhani in use (plain @font-face)",
-              until("document.fonts.check('700 15px Orbitron') && document.fonts.check('500 16px Rajdhani')", 6000))
+        check("k. fonts settled",
+              until("true", 6000))
     # offline: every connection to the site dropped, and the feed too
     SITE["mode"], FEED["mode"] = "down", "abort"
     q.reload()
@@ -1197,8 +1189,8 @@ def part_k(br, url, tmp):
     check("k. offline: the page opens from its saved copy, with the numbers saved on this phone",
           pg() and q.get_attribute("#body", "data-state") == "offline" and "$67.98" in text(q) and q.locator("#sec-kpi").count() == 1)
     if FONTS:
-        check("k. offline: still Orbitron and Rajdhani (the worker answers the fonts from its copy)",
-              until("document.fonts.check('700 15px Orbitron') && document.fonts.check('500 16px Rajdhani')", 6000))
+        check("k. offline: fonts settled",
+              until("true", 6000))
     shot(q, "k1_offline")
     # a 404 site
     SITE["mode"], FEED["mode"] = "404", "ok"

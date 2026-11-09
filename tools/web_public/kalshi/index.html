@@ -16,22 +16,14 @@
 <link rel="icon" href="../jarvis/icon-192.png?v=j4">
 <!-- Kalshi page (owner 2026-11-01): the Kalshi bot runs on its own server; its numbers arrive as kalshi.json
      (engine/kalshi_publish.py, docs/KALSHI_PUBLISH.md) and this page shows them, inside Jarvis or on its own. Read-only.
-     Its own dashboard (2026-11-03): the Kalshi theme (mint on deep green-black, its own top colour above), its own header
-     with the K mark and a ticker tape. Look: kalshi.css; logic: kalshi.js; offline: sw.js. Bump ?v= on both when either
-     changes, and in sw.js its SHELL and CACHE ('kalshi-' + the version).
-     2026-11-03 "way higher quality, 3D, futuristic, organized": four groups (Today -> Edge -> Performance -> Alerts) with a section
-     bar; kfx.js = the look (odometer counters, glowing sparklines, the bar, OLYMPUS themes via applyTheme); korb.js = the 3D
-     market orb in the K mark (three.js from ../jarvis/, cheap, optional: the SVG K stays without WebGL).
-     2026-11-04 "every single dashboard needs to look sick" (k15): the verdict banner ("You win 94% of bets but lose money: here is
-     why", each reason linked to its numbers), glass cards with a specular edge, a living balance sparkline, streak chips, a heat map
-     of every day, drawdown shading, the strategy race and battle, the risk-of-ruin gauge with a seeded Monte Carlo fan, calibration
-     bands, the timeline, asset badges drawn in SVG, settle rings on open bets, the paused / quiet explainer, a skeleton that looks
-     like the page, and a link to Kalshi City (../kalshicity/) once that page exists on the site. All of it from the numbers the bot sends. -->
+     AGORA look (owner 2026-11-09, docs/DESIGN_AGORA.md): marble, bronze, gold; olive gains, terracotta losses; serif headings; no neon, no
+     HUD, no ticker, no 3D orb. Four groups (Today -> Edge -> Performance -> Alerts) with a section bar; the balance first. Look: kalshi.css
+     (the AGORA layer is at its end); logic: kalshi.js; kfx.js = counters, sparklines, OLYMPUS themes via applyTheme; offline: sw.js.
+     Bump ?v= on both when either changes, and in sw.js its SHELL and CACHE ('kalshi-' + the version). -->
 <script>(function () { var d = document.documentElement; d.setAttribute('data-theme', 'kalshi');
   /* inside Jarvis (a frame under its bar) the notch is Jarvis's: no second top inset */
   try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="kalshi.css?v=k21">
-<link rel="stylesheet" href="agora-kalshi.css?v=k21">
 <!-- OLYMPUS theme (../olympus/themes.js, key 'olympus.theme', picked in Jarvis's Look sheet): the shared --oly-* tokens and Kalshi's
      page / panels blended toward the theme (the mint stays Kalshi's own). Async, never waited on; the default changes nothing. -->
 <script>(function () {
