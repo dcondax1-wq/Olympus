@@ -39,7 +39,10 @@
     chronos: ['rings', 'Time, measured', 'tick'], hephaestus: ['embers', 'Built in the forge', 'portal'], bridge: ['streaks', 'Cross over', 'portal'],
     cities: ['skyline', 'Every number, a city', 'portal'], kalshicity: ['skyline', 'Odds, rising', 'portal'], settings: ['rings', 'Make it yours', 'tick'],
     inbox: ['streaks', 'Everything that arrived', 'tick'], ledger: ['coins', 'Every dollar, counted', 'tap'],
-    journal: ['neurons', 'Remember every trade', 'tick'], observatory: ['rings', 'Evidence comes into focus', 'tick']
+    journal: ['neurons', 'Remember every trade', 'tick'], observatory: ['rings', 'Evidence comes into focus', 'tick'],
+    hestia: ['embers', 'Keep the hearth warm', 'portal'], demeter: ['leaves', 'Reap what you sow', 'portal'], apollo: ['rings', 'Light on the numbers', 'portal'],
+    hera: ['columns', 'Order, held steady', 'portal'], dionysus: ['coins', 'Celebrate the wins', 'tap'], clio: ['threads', 'The story, in order', 'tick'],
+    atlas: ['stars', 'Find your arena', 'portal']
   };
   var FL = FLAVOUR[O.app] || ['stars', 'Welcome to Olympus', 'portal'];
   st.scene = FL[0];

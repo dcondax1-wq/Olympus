@@ -25,7 +25,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
 KIT = os.path.join(WEB, "olympus")
-INCLUDE = '<script src="../olympus/intro-app.js?v=i1" defer></script>'
+INCLUDE = '<script src="../olympus/intro-app.js?v=i5" defer></script>'
 KNOWN_UNWIRED = {"cities", "kalshicity"}      # load the kit, built by another job (2026-11-04): they add the one line; bridge / kalshi / pc do not load the kit at
 RES: list = []
 
@@ -98,7 +98,7 @@ def test_static():
     check("a. never under reduced motion / 3D Off (O.reduced), ?q=off, ?intro=0, localStorage 'oly.intro' = off, or automation unless ?intro=1",
           all(x in js for x in ("q=off", "intro=0", "ls('oly.intro') === 'off'", "O.reduced()", "navigator.webdriver && !forced", "intro=1")))
     check("a. it never blocks: a tap / Esc / Enter / Space skips (70 ms, the overlay waits for the finger), a hard timer, a hidden tab and any error remove it",
-          all(x in js for x in ("'pointerdown'", "e.key === 'Escape'", "finish('deadline')", "finish('hidden')", "} catch (err) { fail(err); }", "holdUp")))
+          all(x in js for x in ("'pointerdown'", "e.key !== 'Escape'", "finish('deadline')", "finish('hidden')", "} catch (err) { fail(err); }", "holdUp")))
     check("a. its overlay sits above the loading veil (z-index 70 > 60 / 61)", "z-index:70" in js)
 
 
@@ -113,8 +113,8 @@ def test_hub_intro_static():
     js = jarvis_intro_js()
     check("b. the hub intro is still inline (no file to wait for), under 64 KB, no fetch / import, Safari 16 safe", bool(js) and len(js.encode()) < 64_000
           and not re.search(r"fetch\(|import |XMLHttpRequest|\(\?<", js) and not re.search(r"[\w)\]]\?\.[A-Za-z_$]", js) and "??" not in js, len(js.encode()))
-    check("b. volumetric god-rays (angular shafts thinned by the cloud, violet in the storm, gold in the rise)",
-          all(x in js for x in ("if(uY.x>.001)", "float la=atan(lv.x,lv.y)", "(1.-cld*.7)", "vec3 rcl=mix(vec3(.55,.5,1.),vec3(1.,.74,.36),uGlow)")))
+    check("b. volumetric god-rays (angular shafts thinned by the cloud, in AGORA's warm bronze and gold)",
+          all(x in js for x in ("if(uY.x>.001)", "float la=atan(lv.x,lv.y)", "(1.-cld*.7)", "vec3 rcl=mix(vec3(.85,.75,.55),vec3(.88,.72,.48),uGlow)")   # AGORA: bronze / gold shafts))
     check("b. deeper parallax: two far temples (colonnade + pediment) and 5 layers of columns (3 on the lite tier)",
           all(x in js for x in ("if(uZ.x>.001)", "NTEMP", "NCOL", "float ped=", "replace(/NCOL/g, lite ? '3' : '5')", "replace(/NTEMP/g, lite ? '1' : '2')")))
     check("b. camera dolly and roll (a slow roll, a dolly in that eases back for the ring) and a shake on strikes and hammer hits",
@@ -125,9 +125,9 @@ def test_hub_intro_static():
           all(x in js for x in ("uMode", "var HITS = [[", "s.hot =", "uY.z*2.4", "[6.8, 'hit']", "[7.14, 'hit']", "function clang()")))
     check("b. the eclipse ring ignites with a lens flare (hot core, chromatic halo, ghost chain, an anamorphic streak) that runs round the lit edge",
           all(x in js for x in ("if(uY.y>.001)", "float ang=clamp(uRing*1.12-.06,0.,1.)*3.14159", "for(int g=0;g<4;g++)", "s.lens =")))
-    check("b. a heartbeat bass (lub-dub through Web Audio, after a gesture only), rumbles after the strikes, thunder timed to the cues, film grain at 24 fps",
-          all(x in js for x in ("function thump(k)", "[0.28, 'beat']", "[1.82, 'rumble']", "[2.35, 'thunder']", "[3.45, 'thunder']", "floor(uT*24.)"))
-          and len(re.findall(r"'thunder'\]", js)) == 3 and "if (!canSound()) return;" in js)
+    check("b. a heartbeat bass (lub-dub through Web Audio, after a gesture only), rumbles (AGORA: no thunder), film grain at 24 fps",
+          all(x in js for x in ("function thump(k)", "[0.28, 'beat']", "[1.82, 'rumble']", "[3.0, 'rumble']", "floor(uT*24.)"))
+          and len(re.findall(r"'thunder'\]", js)) == 0 and len(re.findall(r"'rumble'\]", js)) == 2 and "if (!canSound()) return;" in js)
     check("b. the film's contract is unchanged: 10 s / 5 s lite, six phases, skip in 60 ms, the portal cue at 8.68, reduced motion = the calm still",
           all(x in js for x in ("full: 10, lite: 5", "[8.68, 'portal']", "fadeOut(60, 'skipped')", "[5.5, 'pad']", "[7.1, 'rankup']", "calm: 3.5")))
 

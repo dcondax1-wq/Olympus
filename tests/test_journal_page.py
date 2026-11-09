@@ -27,7 +27,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
 PAGE = os.path.join(WEB, "journal")
 RES: list = []
-INCLUDE = '<script src="../olympus/intro-app.js?v=i1" defer></script>'
+INCLUDE = '<script src="../olympus/intro-app.js?v=i5" defer></script>'
 
 
 def check(name, ok, info=""):
