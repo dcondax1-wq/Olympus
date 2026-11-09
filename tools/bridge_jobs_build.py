@@ -14,8 +14,8 @@ import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "tools", "web_public", "bridge", "jobs.json")
-CTX = ("Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 "
-       "on near-black). I am 18 and use an iPhone. Use plain words.")
+CTX = ("Context: I am building OLYMPUS, a set of phone web apps (three.js, calm classical Greek AGORA look: marble, bronze, gold #c8a24a, olive and terracotta "
+       "on warm near-black #14110e; no neon, no sci-fi). I am 18 and use an iPhone. Use plain words.")
 CAPS = "File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB."
 
 CATS = [

@@ -97,7 +97,7 @@ async function refresh(){
 function decorateCity(){
  const box=$('city-lights');if(!box)return;
  const hubs=[[130,160,76],[430,155,76],[285,410,76],[278,275,88]];
- const palette=['#eaa65a','#eaa65a','#f2bd65','#72caff','#66d7b0'];
+ const palette=['#c8a24a','#9c6b3c','#b99a68','#8d8472','#7f8a52'];
  for(let row=0;row<14;row++)for(let col=0;col<14;col++){
   const seed=col*73+row*131;
   const x=22+col*39+((seed*17)%13)-6,y=23+row*39+((seed*29)%15)-7;

@@ -169,7 +169,7 @@ def card(st):
     return {"v": 1, "name": "Bridge", "status": {"level": level, "label": label},
             "kpis": [{"label": "Delivered", "value": f"{done}/{total}"}, {"label": "Files", "value": str(c.get("files", 0))}],
             "lines": [f"ChatGPT link: {done} of {total} jobs delivered"] + ([f"{q} question{'s' if q != 1 else ''} waiting for you"] if q else []),
-            "t": st.get("t", int(time.time())), "theme": "#06040d"}
+            "t": st.get("t", int(time.time())), "theme": "#14110e"}
 
 
 def publish(out):

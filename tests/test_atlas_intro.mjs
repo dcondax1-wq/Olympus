@@ -10,10 +10,10 @@ const css = fs.readFileSync(path.join(root, 'atlas', 'atlas.css'), 'utf8');
 const intro = fs.readFileSync(path.join(root, 'atlas', 'atlas-intro.js'), 'utf8');
 
 test('Atlas entrance is versioned without replacing the standalone hub', () => {
-  assert.match(html, /atlas\.css\?v=6/);
+  assert.match(html, /atlas\.css\?v=7/);
   assert.match(html, /atlas-intro\.js\?v=1/);
   assert.match(html, /hub\.js\?v=1/);
-  assert.match(html, /FULL OLYMPUS DIRECTORY/);
+  assert.match(html, /The full directory/);
   assert.match(html, /Every arena\.<br><em>One command center\.<\/em>/);
 });
 

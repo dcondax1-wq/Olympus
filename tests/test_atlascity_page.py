@@ -12,7 +12,7 @@ def test_files_and_safe_source():
     css = (PAGE / "city.css").read_text(encoding="utf-8")
     assert 'ATLAS Strategy City' in html
     assert all(f'data-key="{key}"' in html for key in ("ema_lon_vix", "macd_sweep", "sr_nyreclaim"))
-    assert 'RESEARCH DISTRICT · NEVER ROUTED HERE' in html and 'id="outposts"' in html
+    assert 'Research district · never routed here' in html and 'id="outposts"' in html
     assert 'PAPER ONLY' in js
     assert "s.route===false" in js
     assert "'../home.json?atlas_city='" in js
