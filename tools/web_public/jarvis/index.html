@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" data-theme="eclipse" data-fx="high" data-mode="jarvis" data-state="idle">
+<html lang="en" data-theme="agora" data-fx="high" data-mode="jarvis" data-state="idle">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Jarvis</title>
 <meta name="description" content="J.A.R.V.I.S.: your assistant and the home screen for all your projects. Switch between Jarvis and Zenith in one tap, plus the Planner, Kalshi and the rest.">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#14110e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,19 +14,18 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=j4">
 <link rel="icon" href="icon-192.png?v=j4">
 <!-- dark from the first paint, even before (or without) the stylesheet: never a white screen -->
-<style>html,body{background:#000;color:#ece9f2;margin:0}</style>
+<style>html,body{background:#14110e;color:#f3ece0;margin:0}</style>
 <script>
-// before the first paint: the saved theme (localStorage 'jtheme', as the old Jarvis kept it; default Reactor, the violet reactor of
-// the app icon), the effects level and the boot screen
+// before the first paint: the saved theme (localStorage 'jtheme', as the old Jarvis kept it; default Agora, marble and gold since 2026-11-09), the effects level and the boot screen
 (function () {
   var d = document.documentElement, g = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var s = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ } };
-  d.setAttribute('data-theme', g('jtheme') || 'reactor');
+  d.setAttribute('data-theme', g('jtheme') || 'agora');
   // the OLYMPUS theme (../olympus/themes.js, key 'olympus.theme'): its colours from the first paint, from the copy the theme engine
   // keeps of what it painted ('olympus.theme.paint'); the engine loads after the start (async, never waited on) and repaints
   try {
     var ot = g('olympus.theme'), op = JSON.parse(g('olympus.theme.paint') || 'null'), on = [];
-    if (ot && ot !== 'olympus' && op && op.id === ot && op.vars) {
+    if (ot && ot !== 'agora' && op && op.id === ot && op.vars) {
       for (var vk in op.vars) { d.style.setProperty(vk, op.vars[vk]); on.push(vk); }
       d.setAttribute('data-oly-theme', ot); d.setAttribute('data-oly-scheme', op.scheme === 'light' ? 'light' : 'dark'); window.__olyPaint = on;
     }
@@ -94,8 +93,8 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j14">
-<link rel="stylesheet" id="jhome" href="home3d.css?v=h1">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j15">
+<link rel="stylesheet" id="jhome" href="home3d.css?v=h2">
 <script src="../olympus/themes.js?v=o3" id="olyThemesJs" async></script>
 <script src="../olympus/sfx.js?v=s2" id="olySfxJs" async></script>
 <style>.booted #bootfx{display:none}
@@ -109,38 +108,16 @@ window.addEventListener('error', function (e) {
 /* the OLYMPUS intro's overlay (the olympus-intro script below it). Built into the page, so it never waits for a file, and it goes
    away by itself: gone by 0.95 s when the script never gets going; the script swaps in its own deadline (olyEnd) and removes the
    overlay when it ends, skips or fails */
-.oly{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483640;background:#000;display:none;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:none;-webkit-user-select:none;user-select:none}
+.oly{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483640;background:#14110e;display:none;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:none;-webkit-user-select:none;user-select:none}
 html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 @keyframes olyGo{to{opacity:0;visibility:hidden}}
 @keyframes olyEnd{to{opacity:0;visibility:hidden}}
 .oly canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
-.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(ellipse at 50% 42%,#1a0b2e,#000 62%)}
-.oly .oly-w b{font:800 38px/1 Orbitron,-apple-system,system-ui,sans-serif;letter-spacing:.32em;padding-left:.32em;color:#ffd98a;background:linear-gradient(180deg,#fff3d1,#ffc95c 45%,#c084fc);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(168,85,247,.75))}
+.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(ellipse at 50% 42%,#3a2a1c,#14110e 62%)}
+.oly .oly-w b{font:600 38px/1 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:.12em;padding-left:.12em;color:#e0b060;background:linear-gradient(180deg,#f3e3bd,#e0b060 50%,#c8a24a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .oly .oly-w canvas.oly-l{width:min(78vw,52vh,400px);height:min(78vw,52vh,400px);margin-bottom:-4px}
-.oly .oly-w small{font:600 11px/1 Orbitron,-apple-system,system-ui,sans-serif;letter-spacing:.5em;padding-left:.5em;color:rgba(222,190,255,.6)}
-.oly .oly-skip{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;font:600 10px/1 -apple-system,system-ui,sans-serif;letter-spacing:.32em;color:rgba(236,233,242,.34);pointer-events:none}</style>
-<style id="olyLaunchUI">
-.oly-launch-ui{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:space-between;padding:calc(16px + env(safe-area-inset-top,0px)) 18px calc(18px + env(safe-area-inset-bottom,0px));pointer-events:none;color:#eef5ff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.oly-launch-bar{display:flex;align-items:center;gap:10px;min-height:46px;padding:7px 12px;border:1px solid rgba(161,191,228,.2);border-radius:15px;background:linear-gradient(120deg,rgba(5,12,25,.82),rgba(9,18,33,.62));backdrop-filter:blur(16px);box-shadow:0 12px 40px #0008}
-.oly-launch-bar img{width:122px;height:61px;object-fit:contain;filter:brightness(1.25) contrast(1.2) saturate(1.2) drop-shadow(0 1px 0 #fff9) drop-shadow(0 0 15px #f4b84acc) drop-shadow(0 7px 10px #000);mix-blend-mode:screen}
-.oly-launch-bar span{font-size:9px;font-weight:800;letter-spacing:.16em;color:#d6e2f2}.oly-launch-bar i{color:#52d6ad;font-style:normal}.oly-launch-bar b{margin-left:auto;font:600 10px ui-monospace,monospace;color:#8ea3bb}
-.oly-launch-ui:before{content:"";position:absolute;z-index:0;left:-42%;right:-42%;bottom:-18%;height:75%;transform-origin:center bottom;transform:perspective(520px) rotateX(38deg) rotateZ(5deg) scaleX(1.25);background:repeating-conic-gradient(from 0deg at 50% 0%,transparent 0deg 8deg,rgba(70,201,169,.32) 8.2deg 8.35deg,transparent 8.55deg 16deg),repeating-linear-gradient(0deg,transparent 0 28px,rgba(245,165,75,.28) 29px,transparent 30px),radial-gradient(ellipse at 50% 0%,rgba(73,213,169,.34),transparent 68%);mask-image:linear-gradient(to bottom,transparent,#000 17%);animation:olyGridDrift 5s ease-in-out infinite alternate;pointer-events:none}
-.oly-depth-front{position:absolute;z-index:0;inset:0;pointer-events:none;overflow:hidden}
-.oly-depth-front i{position:absolute;bottom:19%;width:27%;height:43%;border:1px solid rgba(77,206,178,.52);background:linear-gradient(110deg,rgba(11,22,35,.82) 0 70%,rgba(4,11,20,.98) 70%),repeating-linear-gradient(0deg,transparent 0 8px,rgba(240,157,68,.7) 9px,transparent 11px),repeating-linear-gradient(90deg,rgba(8,17,27,.95) 0 7px,rgba(236,158,69,.8) 8px,rgba(8,17,27,.95) 9px);box-shadow:0 0 36px rgba(33,223,166,.14),inset 0 0 22px rgba(11,220,156,.08);opacity:.86}
-.oly-depth-front i:first-child{left:-7%;height:34%;transform:perspective(300px) rotateY(28deg) skewY(-4deg);clip-path:polygon(0 18%,72% 0,100% 100%,0 100%)}
-.oly-depth-front i:last-child{right:-8%;height:42%;transform:perspective(300px) rotateY(-28deg) skewY(4deg);clip-path:polygon(0 0,100% 18%,100% 100%,0 100%)}
-@keyframes olyGridDrift{from{transform:perspective(520px) rotateX(38deg) rotateZ(4deg) scaleX(1.25) translateY(0)}to{transform:perspective(520px) rotateX(35deg) rotateZ(6deg) scaleX(1.25) translateY(9px)}}
-.oly-launch-bar,.oly-launch-copy,.oly-enter{position:relative;z-index:1}
-.oly-launch-copy{margin:auto 0 22px 3px;text-align:left;text-shadow:0 4px 26px #000}
-.oly-launch-copy small{display:block;margin-bottom:11px;color:#77e5bc;font:700 9px ui-monospace,monospace;letter-spacing:.2em}
-.oly-launch-copy strong{display:block;font-size:clamp(35px,10vw,48px);line-height:.96;letter-spacing:-.055em;font-weight:650}
-.oly-launch-copy span{display:block;margin-top:10px;color:#bac9d9;font-size:12px;letter-spacing:.03em}
-.oly-enter{display:flex;align-items:center;justify-content:space-between;min-height:54px;padding:0 18px;border:1px solid rgba(135,222,196,.55);border-radius:14px;background:linear-gradient(110deg,rgba(12,37,44,.96),rgba(9,22,39,.96));color:#eafff7;box-shadow:0 0 34px rgba(31,221,163,.16),inset 0 1px #ffffff1c;font:750 11px ui-monospace,monospace;letter-spacing:.13em;pointer-events:auto}
-.oly-enter b{color:#71edc0;font-size:18px}
-.oly canvas{z-index:1}.oly .oly-skip{z-index:6;text-align:right;right:22px;bottom:calc(92px + env(safe-area-inset-bottom,0px));color:#d4deec;font-size:9px}
-@media(min-width:700px){.oly-launch-ui{padding:24px 28px}.oly-launch-bar{max-width:520px}.oly-launch-copy strong{font-size:clamp(48px,6vw,76px)}.oly-enter{max-width:360px}}
-@media(prefers-reduced-motion:reduce){.oly-launch-ui:before,.oly-launch-ui *{animation:none!important;transition:none!important}}
-</style>
+.oly .oly-w small{font:500 17px/1 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:.04em;color:rgba(243,236,224,.7)}
+.oly .oly-skip{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;font:500 14px/1 -apple-system,system-ui,sans-serif;letter-spacing:.02em;color:rgba(243,236,224,.55);pointer-events:none}</style>
 </head>
 <body>
 <div class="oly" id="olyIntro" aria-hidden="true"><div class="oly-launch-ui" aria-hidden="true"><div class="oly-depth-front" aria-hidden="true"><i></i><i></i></div><div class="oly-launch-bar"><img src="intro-logo.webp" alt=""><span>OLYMPUS <i>/</i> COMMAND DECK</span><b>01</b></div><div class="oly-launch-copy"><small>CONNECTED WORLDS</small><strong>Enter your<br>night city.</strong><span>One map. Every arena.</span></div><button class="oly-enter" type="button" tabindex="-1">ENTER OLYMPUS <b>↗</b></button></div></div>
@@ -156,7 +133,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
  *   1.0  storm   the camera dollies and rolls into storm clouds with god-rays and embers; lightning lights the clouds and the ridge of Mount Olympus
  *   3.3  rise    the camera rises past far temples and five layers of marble columns and a field of gold sparks; gold light shafts build above
  *   5.5  eclipse the eclipse ring ignites (a lens flare runs round its edge), the scene falls dark, the gold peaks are forged into place (three hammer strikes), the temple lights
- *   7.05 word    the sparks fly into OLYMPUS (Orbitron, gold, a light sweep), JARVIS ONLINE beneath
+ *   7.05 word    the sparks fly into OLYMPUS (a serif, gold, a light sweep), Welcome back beneath
  *   8.7  portal  the camera punches through the ring: the ring grows past the screen and its inside is a hole onto Jarvis
  *
  * Versions (picked before the first paint by the start script in <head>, html[data-intro]):
@@ -185,7 +162,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   'use strict';
   var W = window, doc = document, root = doc.documentElement;
   var st = W.__olyIntro = { mode: '', q: '', state: 'idle', frames: 0, ms: 0, err: '', done: false, scale: 0, n: 0, fps: 0, phase: '', cues: [], logo: false };
-  var LEN = { full: 3.6, lite: 2.8, short: 1.8, calm: 1.8, fade: 0.8, off: 0.5 };
+  var LEN = { full: 10, lite: 5, short: 1.0, calm: 3.5, fade: 0.8, off: 0.5 };
   var RATE = { full: 1, lite: 2, short: 1 };                // the film's clock runs at this multiple of the wall clock
   var ls = function (k, v) {
     try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ }
@@ -353,7 +330,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     st.q = 'still';
     var w = doc.createElement('div');
     w.className = 'oly-w';
-    w.innerHTML = '<b>OLYMPUS</b><small>' + (mode === 'calm' ? 'JARVIS ONLINE' : 'J.A.R.V.I.S.') + '</small>';
+    w.innerHTML = '<b>OLYMPUS</b><small>' + 'Welcome back' + '</small>';
     if (mode === 'calm') {                                 // the logo from the shared file: the left half (ring) and the right half (peaks), drawn on a canvas
       var c = doc.createElement('canvas'); c.width = 512; c.height = 512; c.className = 'oly-l';
       w.insertBefore(c, w.firstChild);
@@ -389,8 +366,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     ' vec2 pq=p-uPo;float cr=cos(uX.x),sr=sin(uX.x);pq=vec2(cr*pq.x-sr*pq.y,sr*pq.x+cr*pq.y)+uX.zw;',
     ' vec2 q=uO+pq/(uS*uZoom*uX.y);',
     ' vec2 rc=q-uO;float rl=length(rc);',
-    ' vec3 gold=vec3(1.,.74,.32),org=vec3(1.,.5,.12),vio=vec3(.55,.36,.95);',
-    ' vec3 col=vec3(.004,.003,.012);',
+    ' vec3 gold=vec3(.87,.71,.45),org=vec3(.83,.53,.29),vio=vec3(.82,.71,.49);',
+    ' vec3 col=mix(vec3(.11,.07,.04),vec3(.02,.016,.03),clamp(q.y*.8+.55,0.,1.))*(.35+.65*uStorm);',
     // 1. the heartbeat: a warm glow where the ring will be, and a shock ring each lub
     ' col+=org*uHeart*.0042/(rl+.008)+vec3(1.,.8,.6)*uHeart*exp(-rl*13.)*.5;',
     ' col+=org*exp(-abs(rl-uShock.x)*36.)*uShock.y*.8;',
@@ -400,29 +377,29 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     ' float bl=uStrike*exp(-bd*2.4);float cld=0.;',
     ' if(uStorm>.001){vec2 vp=q-vec2(0.,.12);float vr=length(vp);vec2 dir=vp/max(vr,1e-4);float z=.2/(vr+.05)+uFly;',
     '  float c1=fbm(dir*2.3+vec2(z*.9,z*.6));float dn=smoothstep(.34,.8,c1)*smoothstep(.0,.2,vr)*uStorm;cld=dn;',
-    '  vec3 cc=mix(vec3(.05,.05,.12),vec3(.22,.19,.36),c1)*(.3+uFlash*1.9+bl*4.5);cc+=vio*smoothstep(.55,.85,c1)*.12*uStorm;cc+=vec3(.78,.7,1.)*bl*smoothstep(.5,.8,c1)*1.1;',
+    '  vec3 cc=mix(vec3(.10,.09,.07),vec3(.31,.27,.24),c1)*(.9+uFlash*1.9+bl*4.5);cc+=vio*smoothstep(.55,.85,c1)*.12*uStorm;cc+=vec3(.85,.75,.55)*bl*smoothstep(.5,.8,c1)*1.1;',
     '  col+=cc*dn*1.6;',
     '  #ifdef HI', '  float c2=fbm(dir*3.4+vec2(z*1.7+4.,z*1.1));float d2=smoothstep(.42,.85,c2)*smoothstep(.1,.5,vr)*uStorm;',
-    '  col+=mix(vec3(.04,.04,.1),vec3(.3,.26,.46),c2)*(.25+uFlash*3.+bl*5.)*d2*1.2;cld=max(cld,d2*.8);', '  #endif',
-    '  col+=vec3(.5,.42,.9)*exp(-vr*3.)*uFlash*.18;}',
+    '  col+=mix(vec3(.08,.07,.06),vec3(.40,.36,.31),c2)*(.8+uFlash*3.+bl*5.)*d2*1.2;cld=max(cld,d2*.8);', '  #endif',
+    '  col+=vec3(.79,.71,.53)*exp(-vr*3.)*uFlash*.18;}',
     // volumetric god-rays: shafts fan out from a light above the ridge, drifting, thinned by the cloud in front, violet in the storm and gold in the rise
     ' if(uY.x>.001){vec2 lv=q-(uO+vec2(.06,.34));float la=atan(lv.x,lv.y),ld=length(lv);',
     '  float rn=vn(vec2(la*6.+uT*.13,uT*.21))*.55+vn(vec2(la*17.-uT*.17,4.+uT*.1))*.45;',
     '  float sh=smoothstep(.42,.86,rn)*smoothstep(.02,.18,ld)*exp(-ld*1.25)*(.35+.65*smoothstep(-.4,.5,q.y))*(1.-cld*.7);',
-    '  vec3 rcl=mix(vec3(.55,.5,1.),vec3(1.,.74,.36),uGlow);',
+    '  vec3 rcl=mix(vec3(.85,.75,.55),vec3(.88,.72,.48),uGlow);',
     '  col+=rcl*sh*uY.x*.62+rcl*exp(-ld*4.)*uY.x*.2*(.5+uFlash);}',
     // the lightning
     ' if(uStrike>.001){float d=bd,db=bb;',
     '  float c=smoothstep(.0045,.0,d)*1.7+exp(-d*85.)*.75+exp(-d*16.)*.28,cb=smoothstep(.003,0.,db)*.9+exp(-db*100.)*.35;',
-    '  col+=(vec3(.92,.88,1.)*c+vec3(.62,.42,1.)*cb)*uStrike;}',
+    '  col+=(vec3(.96,.95,.91)*c+vec3(.85,.75,.55)*cb)*uStrike;}',
     // the ridge of Mount Olympus seen from below: three layers, lit only by the flashes; the camera rises and it sinks away
     ' if(uRidge>.001){for(int j=0;j<3;j++){float fi=2.-float(j);',
     '  float xs=q.x*(1.15-fi*.18)+fi*3.7;',
     '  float hg=.2*tri(xs*1.3)+.1*tri(xs*3.1+1.3)+.05*tri(xs*7.3+.4)+(1.-step(.5,fi))*.24*exp(-q.x*q.x*7.);',
     '  float ry=-.6+fi*.15+hg*(1.-fi*.16)-uCam*(1.7-fi*.3);',
     '  float ins=step(q.y,ry);float ed=smoothstep(.011,0.,abs(q.y-ry));',
-    '  float rk=fbm(q*vec2(10.,16.)+fi*7.);float lit=uFlash*(1.7-fi*.35)+bl*3.+.05*uRidge;',
-    '  vec3 rcol=mix(vec3(.1,.08,.2),vec3(.75,.74,.95),rk*rk)*lit*.6*(.25+.75*smoothstep(ry-.25,ry,q.y))*(1.+fi*.3);',
+    '  float rk=fbm(q*vec2(10.,16.)+fi*7.);float lit=uFlash*(1.7-fi*.35)+bl*3.+.42*uRidge;',
+    '  vec3 rcol=mix(vec3(.16,.14,.12),vec3(.81,.74,.59),rk*rk)*lit*.6*(.25+.75*smoothstep(ry-.25,ry,q.y))*(1.+fi*.3);',
     '  col=mix(col,rcol+vec3(.012,.01,.03),ins*uRidge);col+=ed*vec3(1.,.9,.85)*(uFlash+bl*1.6)*(.9-fi*.2)*uRidge;}}',
     // the rise: two far temples (colonnade, entablature, pediment) sinking away, then marble columns in NCOL parallax layers (fluted, banded, lit gold on the side facing the centre)
     ' col+=(org*exp(-rl*2.4)*.5+gold*exp(-rl*7.)*.5)*uGlow;',
@@ -434,9 +411,9 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     '  float ent=step(abs(tx),hw*1.05)*step(hc,ty)*step(ty,e1)+step(abs(tx),hw*1.1)*step(0.,ty)*step(ty,.012*sc);',
     '  float ped=step(e1,ty)*step(ty,e1+ph)*step(abs(tx),hw*1.05*(1.-(ty-e1)/ph));',
     '  float cov=max(max(colm,ent),max(ped,back));',
-    '  float lt=uFlash*1.4+bl*1.8+uGlow*.5+.07;vec3 tc=mix(vec3(.1,.09,.2),vec3(.85,.8,.96),clamp(.3+ty/(hc+ph)*.5,0.,1.))*lt*(1.-fj*.3);',
+    '  float lt=uFlash*1.4+bl*1.8+uGlow*.5+.07;vec3 tc=mix(vec3(.16,.15,.13),vec3(.93,.90,.83),clamp(.3+ty/(hc+ph)*.5,0.,1.))*lt*(1.-fj*.3);',
     '  tc+=gold*uGlow*.35*(.4+ty*2.)*step(.5,cov)+vio*.05;',
-    '  tc=mix(tc,vec3(.12,.1,.24)*(.4+uFlash),.35-fj*.2);',
+    '  tc=mix(tc,vec3(.20,.17,.15)*(.4+uFlash),.35-fj*.2);',
     '  col=mix(col,tc,cov*uZ.x*(.88-fj*.12));}}',
     ' if(uCols>.001){for(int i=0;i<NCOL;i++){float fz=float(i)*2./float(NCOL-1);',
     '  float xc=.17+fz*.16+fz*fz*.02,w=.036+fz*.032,ax=abs(q.x);',
@@ -444,7 +421,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     '  float band=smoothstep(.9,.96,f)+smoothstep(.1,.04,f)*.7,ww=w*(1.+.38*band),dx=ax-xc;',
     '  if(abs(dx)<ww){float u=dx/ww,cyl=sqrt(max(0.,1.-u*u));float fl=.8+.2*cos(u*14.);',
     '   float lg=uGlow*smoothstep(-.6,.9,q.y)*1.4+uFlash*1.5+bl*1.7+.12;',
-    '   vec3 m=vec3(.8,.76,.88)*cyl*fl*(.8+.38*vn(vec2(u*3.,yy*3.)))*lg*(1.-fz*.16);',
+    '   vec3 m=vec3(.75,.72,.65)*cyl*fl*(.8+.38*vn(vec2(u*3.,yy*3.)))*lg*(1.-fz*.16);',
     '   m+=gold*smoothstep(.45,1.,-u)*.8*uGlow*cyl+vio*smoothstep(.6,1.,u)*.12*lg;m+=gold*band*.18*uGlow;',
     '   col=mix(col,m,uCols);}}}',
     // A night market metropolis rises below the Olympus skyline. Buildings are drawn in two depth layers,
@@ -517,8 +494,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     ' if(uY.y>.001){float ang=clamp(uRing*1.12-.06,0.,1.)*3.14159;vec2 fl=mix(uPo+uRR*vec2(sin(ang),cos(ang)),uPo,clamp(smoothstep(.88,1.,uRing)+step(.001,uPush),0.,1.));',
     '  float lr=length(p-fl),fa=uY.y;',
     '  col+=vec3(1.,.82,.55)*exp(-lr*10.)*fa*.5+vec3(1.,.95,.85)*exp(-lr*38.)*fa*.7;',
-    '  col+=vec3(1.,.5,.22)*exp(-pow((lr-.2)/.028,2.))*fa*.16+vec3(.35,.55,1.)*exp(-pow((lr-.235)/.02,2.))*fa*.13;',
-    '  col+=vec3(.7,.8,1.)*exp(-abs(p.y-fl.y)*90.)*exp(-abs(p.x-fl.x)*2.2)*fa*.25;',
+    '  col+=vec3(.85,.54,.37)*exp(-pow((lr-.2)/.028,2.))*fa*.16+vec3(.84,.73,.51)*exp(-pow((lr-.235)/.02,2.))*fa*.13;',
+    '  col+=vec3(.85,.75,.55)*exp(-abs(p.y-fl.y)*90.)*exp(-abs(p.x-fl.x)*2.2)*fa*.25;',
     '  for(int g=0;g<4;g++){float gk=-.45+float(g)*.62;vec2 gc=-fl*gk*1.2;float gr=.035+float(g)*.024,gd=length(p-gc);',
     '   col+=vec3(.95,.55+.12*float(g),.3+.22*float(g))*(smoothstep(gr,gr*.6,gd)*.1+exp(-pow((gd-gr)/.007,2.))*.34)*fa*.55;}}',
     ' col+=vec3(1.,.82,.6)*uZ.y*exp(-rr*2.6)*.7;',
@@ -532,8 +509,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     '   float fe=smoothstep(0.,.06,tu.x)*smoothstep(1.,.94,tu.x);',
     '   vec3 face=mix(vec3(1.,.66,.24),vec3(1.,.86,.52),clamp(.55+.6*(tu.y-.65)*2.+.15*sin(tu.x*9.+uT*2.),0.,1.));',
     '   face=mix(face,vec3(1.,.93,.78),isS*.8);',
-    '   col=mix(col,face*(.95+2.2*shine),t.r*vis)+(vio*t.g*t.g*.1)*vis*fe+gold*t.g*t.g*(1.-t.r)*.22*vis+vec3(.85,.7,1.)*edge*(t.r+t.g*.4)*1.6;}}',
-    ' col+=vec3(.5,.42,.9)*uFlash*.2;',
+    '   col=mix(col,face*(.95+2.2*shine),t.r*vis)+(vio*t.g*t.g*.1)*vis*fe+gold*t.g*t.g*(1.-t.r)*.22*vis+vec3(.85,.75,.55)*edge*(t.r+t.g*.4)*1.6;}}',
+    ' col+=vec3(.79,.71,.53)*uFlash*.2;',
     // 6. the portal: a crisp rim on the ring as it grows past the screen; its inside is a hole onto Jarvis
     ' float pr=length(p-uPo);',
     ' col+=mix(org,vec3(1.,.9,.7),.5)*exp(-pow((pr-uRR)/(.005*uS*uZoom+.002),2.))*smoothstep(.02,.2,uPush)*1.6;',
@@ -607,32 +584,63 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   var PHASES = [[0, 'heart'], [1.0, 'storm'], [3.3, 'rise'], [5.5, 'eclipse'], [7.05, 'word'], [8.7, 'portal']];
   // the cues: 'tick' / 'thunder' / 'pad' / 'rankup' / 'portal' go to the owner's sound kit; 'beat' (the heartbeat bass), 'rumble' (a low roll after a strike),
   // 'ignite' (the ring lighting) and 'hit' (a hammer on the gold peaks) are synthesised here (after a gesture only)
-  var CUES = [[0.28, 'tick'], [0.28, 'beat'], [0.58, 'beat'], [0.9, 'thunder'], [0.98, 'tick'], [0.98, 'beat'], [1.28, 'beat'], [1.82, 'rumble'], [2.35, 'thunder'],
-    [3.0, 'rumble'], [3.45, 'thunder'], [5.5, 'pad'], [5.56, 'ignite'], [6.8, 'hit'], [6.97, 'hit'], [7.1, 'rankup'], [7.14, 'hit'], [8.68, 'portal']];
+  var CUES = [[0.28, 'tick'], [0.28, 'beat'], [0.58, 'beat'], [0.9, 'pad'], [0.98, 'tick'], [0.98, 'beat'], [1.28, 'beat'], [1.82, 'rumble'], [2.35, 'pad'],
+    [3.0, 'rumble'], [3.45, 'pad'], [5.5, 'pad'], [5.56, 'ignite'], [6.8, 'hit'], [6.97, 'hit'], [7.1, 'rankup'], [7.14, 'hit'], [8.68, 'portal']];
   // the three hammer strikes on the gold peaks: [time, x, y] in scene units (the left peak, the right peak, the summit under the temple)
   var HITS = [[6.8, -0.211, 0.129], [6.97, 0.195, 0.118], [7.14, 0.0075, 0.285]];
   var hp = function (t, a, peak) { var d = t - a; return d < 0 ? 0 : peak * Math.exp(-d * 6.5); };
   function envFull(t) {
-    // A concise city-first launch: the city is present immediately; the existing Olympus mark
-    // assembles above it as a product identity, not a long theatrical title sequence.
-    var s = {};
-    s.heart = 0; s.shockR = 0; s.shockA = 0; s.storm = 0; s.fly = sm(ramp(t, 0, 2.6)) * .12;
-    s.strike = 0; s.bolt = 0; s.flash = 0; s.ridge = 0; s.cam = sm(ramp(t, 0, 2.8));
-    s.cols = 0; s.city = 1; s.glow = .24 + .12 * sm(ramp(t, .4, 2.6)); s.bg = 1; s.spk = 0;
-    s.ring = 0; s.flare = 0;
-    s.asm = 0; s.temple = 0; s.form = 0;
-    s.shine = 0; s.sub = 0; s.push = 0;
-    s.reveal = 3.52; s.cues = [];
-    s.roll = .004 * Math.sin(t * .8) * (1 - sm(ramp(t, 2.7, 3.6)));
-    s.dolly = 1 + .055 * sm(ramp(t, .2, 2.6));
-    s.rays = 0; s.temples = 0; s.emb = .12; s.hot = 0; s.hx = 0; s.hy = 0;
-    s.sparks = 0; s.ignite = .16 * Math.exp(-t * 2); s.lens = 0;
-    s.shx = 0; s.shy = 0;
+    var lub = t < 0.98 ? 0.28 : 0.98, s = {};
+    s.heart = pulse(t, 0.28, 0.9) + pulse(t, 0.58, 0.55) + pulse(t, 0.98, 1.1) + pulse(t, 1.28, 0.65);
+    s.shockR = Math.max(0, t - lub); s.shockA = t < 0.28 ? 0 : Math.exp(-(t - lub) * 3.2) * (lub > 0.5 ? 1 : 0.7);
+    s.storm = sm(ramp(t, 0.95, 2.0));
+    var f = Math.max(0, t - 0.9); s.fly = f * 0.9 + f * f * 0.35;
+    s.strike = 0;                                   // AGORA: no lightning bolts
+    s.bolt = 0;
+    s.flash = 0.3 * (pulse(t, 0.95, 0.14) + pulse(t, 1.75, 0.5) + pulse(t, 2.35, 1) + pulse(t, 2.92, 0.9) + pulse(t, 3.45, 1.2)) + pulse(t, 8.7, 0.25);   // AGORA: the sun breaking through the clouds, not lightning
+    s.ridge = sm(ramp(t, 1.7, 2.4)) * (1 - sm(ramp(t, 4.4, 5.2)));
+    s.cam = sm(ramp(t, 2.1, 6.0));
+    s.cols = sm(ramp(t, 3.2, 4.1)) * (1 - sm(ramp(t, 5.2, 5.9))) * 0.19;
+    s.city = 0;                                     // AGORA: no night city
+    s.glow = sm(ramp(t, 3.0, 5.5));
+    s.bg = 1 - 0.92 * sm(ramp(t, 5.5, 6.4));
+    s.spk = sm(ramp(t, 3.3, 4.2));
+    s.ring = ease(ramp(t, 5.55, 6.5));
+    s.flare = (t < 5.55 ? 0 : Math.exp(-(t - 5.55) * 2.6) * 1.4) + (t < 8.7 ? 0 : Math.exp(-(t - 8.7) * 5) * 1.1);
+    s.asm = ramp(t, 6.1, 7.3);
+    s.temple = t < 6.95 ? 0 : t < 7.15 ? (t - 6.95) / 0.2 : 0.14 + 0.86 * Math.exp(-(t - 7.15) * 2.4);
+    s.form = sm(ramp(t, 7.05, 8.0));
+    s.shine = ramp(t, 7.9, 8.55);
+    s.sub = ramp(t, 8.0, 8.65);
+    s.push = ramp(t, 8.7, 9.95);
+    s.reveal = 9.82; s.cues = CUES;
+    // JOB 33b: the camera (a slow roll, a dolly in through the storm that eases back for the ring), the god-rays, the far temples, the embers,
+    // the forge (heat + shake), the lens flare of the ring, the grain
+    var cam = sm(ramp(t, 0.8, 1.8)) * (1 - sm(ramp(t, 4.5, 5.5)));
+    s.roll = (0.05 * Math.sin(t * 0.85 + 0.6) + 0.026 * Math.sin(t * 2.3)) * cam;
+    s.dolly = 1 + 0.2 * sm(ramp(t, 0.9, 4.6)) - 0.2 * sm(ramp(t, 4.6, 5.6));
+    s.rays = sm(ramp(t, 1.3, 2.4)) * (0.3 + 0.22 * s.flash) + sm(ramp(t, 3.0, 4.5)) * 0.95;
+    s.rays *= 1 - sm(ramp(t, 5.3, 5.95));
+    s.temples = sm(ramp(t, 2.7, 3.5)) * (1 - sm(ramp(t, 4.6, 5.4)));
+    s.emb = sm(ramp(t, 1.0, 2.2)) * (1 - sm(ramp(t, 5.3, 6.0))) * 0.85;
+    s.hot = 0; s.hx = HITS[0][1]; s.hy = HITS[0][2];
+    for (var hi = 0; hi < HITS.length; hi++) if (t >= HITS[hi][0]) { s.hot = hp(t, HITS[hi][0], hi === 2 ? 1.25 : 1); s.hx = HITS[hi][1]; s.hy = HITS[hi][2]; }
+    s.sparks = t > 6.7 && t < 8.5 ? 1 : 0;
+    s.ignite = t < 5.55 ? 0 : 1.1 * Math.exp(-(t - 5.55) * 8);
+    s.lens = t < 5.55 ? 0 : (1 - Math.exp(-(t - 5.55) * 14)) * Math.exp(-(t - 5.55) * 2.1) * 1.5 + (t < 8.7 ? 0 : Math.exp(-(t - 8.7) * 4.5) * 0.9);
+    var shk = (t < 4.4 ? Math.min(1, s.flash * 0.7) : 0) + hp(t, 5.55, 0.8) + hp(t, HITS[0][0], 0.7) + hp(t, HITS[1][0], 0.7) + hp(t, HITS[2][0], 1);
+    s.shx = Math.sin(t * 61.7) * shk * 0.002; s.shy = Math.cos(t * 77.3) * shk * 0.002;
     return s;
   }
-  function envShort(t) {
-    // Returning visits use the same city-first composition and quick mark reveal.
-    return envFull(Math.min(3.4, t * 1.9));
+  function envShort(t) {                                   // a launch seen again: the finished logo, a flare, the portal
+    var s = envFull(7.6 + t * 0.2);
+    s.heart = 0; s.shockA = 0; s.storm = 0; s.strike = 0; s.flash = pulse(t, 0.02, 0.5); s.ridge = 0; s.cols = 0; s.city = 0; s.glow = 0; s.spk = 0;
+    s.bg = 0.08; s.ring = 1; s.asm = 1; s.temple = 0.14 + 0.5 * Math.exp(-t * 6); s.form = 1; s.shine = ramp(t, 0.05, 0.4); s.sub = 1;
+    s.flare = (t < 0.02 ? 0 : Math.exp(-t * 5) * 0.9) + (t < 0.3 ? 0 : Math.exp(-(t - 0.3) * 5) * 1.0);
+    s.push = ramp(t, 0.3, 0.9); s.reveal = 0.82; s.cues = [[0.02, 'rankup'], [0.3, 'portal']];
+    s.roll = 0; s.dolly = 1; s.rays = 0; s.temples = 0; s.emb = 0; s.hot = 0; s.hx = 0; s.hy = 0; s.sparks = 0; s.ignite = 0; s.shx = 0; s.shy = 0;
+    s.lens = (t < 0.3 ? 0 : Math.exp(-(t - 0.3) * 4.5) * 0.7);
+    return s;
   }
 
   function bolt(seed) {                                    // a jagged bolt from above the screen to the peak
@@ -651,7 +659,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   function textTex(fontOk) {
     var c = doc.createElement('canvas'); c.width = 1024; c.height = 320;
     var x = c.getContext('2d'); if (!x) throw new Error('no 2d');
-    var face = fontOk ? 'Orbitron, sans-serif' : '-apple-system, "Segoe UI", system-ui, sans-serif';
+    var face = '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif';   // AGORA: a classical serif, no download
     var draw = function (word, size, wgt, sp, cy, maxW, style, blur) {
       x.font = wgt + ' ' + size + 'px ' + face;
       var ws = 0, i; for (i = 0; i < word.length; i++) ws += x.measureText(word[i]).width + (i ? sp : 0);
@@ -661,7 +669,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       for (var j = 0; j < word.length; j++) { x.fillText(word[j], px - (blur ? 3000 : 0), cy); px += x.measureText(word[j]).width + sp * fit; }
     };
     x.globalCompositeOperation = 'lighter';
-    var pass = function (style, blur) { draw('OLYMPUS', fontOk ? 118 : 112, 800, 26, 112, 900, style, blur); draw('JARVIS ONLINE', 40, 700, 15, 262, 560, style, blur * 0.5); };
+    var pass = function (style, blur) { draw('OLYMPUS', fontOk ? 118 : 112, 800, 26, 112, 900, style, blur); draw('Welcome back', 46, 600, 5, 262, 560, style, blur * 0.5); };
     pass('#0000ff', 34); pass('#00ff00', 10); x.shadowBlur = 0; x.shadowOffsetX = 0; pass('#ff0000', 0);
     var px2 = x.getImageData(0, 0, 1024, 320).data, pts = [];
     for (var yy = 0; yy < 224; yy += 2) for (var xx = 0; xx < 1024; xx += 2) if (px2[(yy * 1024 + xx) * 4] > 140) pts.push(xx / 1024, 1 - yy / 320);
@@ -746,7 +754,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     // Orbitron is Jarvis's own font (saved by its worker): the word is needed at ~7 s, so wait for it up to 1.8 s while the film plays
     var fontT = setTimeout(function () { buildText(false); }, mode === 'short' ? 150 : 1800);
     try {
-      if (doc.fonts && doc.fonts.load) doc.fonts.load('800 100px Orbitron').then(function (f) { clearTimeout(fontT); buildText(!!(f && f.length)); }, function () { /* the timer */ });
+      if (doc.fonts && doc.fonts.load) doc.fonts.load('700 100px Georgia').then(function (f) { clearTimeout(fontT); buildText(true); }, function () { /* the timer */ });
     } catch (e) { /* the timer */ }
     var last = 0, firstAt = 0, stepped = 0, revealed = false, frameMs = [], cued = 0, hole = false, fc0 = 0;
     // the film's clock starts at its first drawn frame (after the shader compile, which a phone may take a while over), and the hard
@@ -869,7 +877,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     doc.addEventListener('keydown', onKey, true);
     doc.addEventListener('visibilitychange', onVis);
     if (!replay) {
-      var sk = doc.createElement('small'); sk.className = 'oly-skip'; sk.textContent = 'TAP TO SKIP'; el.appendChild(sk);
+      var sk = doc.createElement('small'); sk.className = 'oly-skip'; sk.textContent = 'Tap to skip'; el.appendChild(sk);
     }
     if (mode !== 'fade' && mode !== 'off') {               // the logo file starts loading now (the start script has preloaded it)
       try { logoImg = new Image(); logoImg.src = 'intro-logo.webp'; } catch (e) { logoImg = null; }
@@ -941,24 +949,24 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   <section class="view" id="home" aria-label="Jarvis">
     <div class="home-in">
       <div class="hpanel">
-        <div class="htop"><span class="sdot" id="dot" title="System online"></span><img src="icon-192.png?v=j4" alt="" width="26" height="26" style="position:absolute;left:46px;top:19px;border-radius:6px;pointer-events:none"><h1 class="title">J.A.R.V.I.S.</h1><span class="clock" id="clock">--:--:--</span></div>
+        <div class="htop"><span class="sdot" id="dot" title="System online"></span><img src="icon-192.png?v=j4" alt="OLYMPUS" width="96" height="96"><h1 class="title">OLYMPUS</h1><span class="clock" id="clock">--:--:--</span></div>
         <p class="hsub"><b id="hello">Hello</b> · <span id="when">&nbsp;</span></p>
         <div class="boxes">
-          <button class="kbox" type="button" data-app="kalshi" id="kbox" title="Kalshi account today"><small>KALSHI TODAY</small><span id="kpct" class="m">--</span><em id="kusd" class="m">&nbsp;</em></button>
-          <button class="kbox" type="button" data-app="zenith" id="nbox" title="The NQ bots today"><small>NQ BOTS TODAY</small><span id="npnl" class="m">--</span><em id="nsub">&nbsp;</em></button>
+          <button class="kbox" type="button" data-app="kalshi" id="kbox" title="Kalshi account today"><small>Kalshi today</small><span id="kpct" class="m">--</span><em id="kusd" class="m">&nbsp;</em></button>
+          <button class="kbox" type="button" data-app="zenith" id="nbox" title="The NQ bots today"><small>NQ bots today</small><span id="npnl" class="m">--</span><em id="nsub">&nbsp;</em></button>
         </div>
         <button class="sysbar" type="button" id="sysbar" aria-controls="p-system" title="Every system at a glance"><i class="sdot off" id="sysdot"></i><b id="sysv">CHECKING</b><span id="syst">Every system at a glance</span><span class="sysdots" id="sysdots" aria-hidden="true"></span></button>
       </div>
 
       <section class="hub-gate" aria-labelledby="hub-gate-title">
         <div class="hub-gate-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><span></span></div>
-        <p class="hub-gate-kicker">OLYMPUS / COMMAND HUB <span aria-hidden="true">✦</span></p>
+        <p class="hub-gate-kicker">Olympus · the map <span aria-hidden="true">✦</span></p>
         <h2 id="hub-gate-title">Find your arena.</h2>
         <p class="hub-gate-copy">One map for every dashboard. Search, filter, and return to your favorites.</p>
-        <button class="hub-gate-primary" type="button" data-app="atlas" data-open="../atlas/?hub=j14" aria-label="Open Atlas, the Olympus arena hub">OPEN ATLAS <span aria-hidden="true">↗</span></button>
+        <button class="hub-gate-primary" type="button" data-app="atlas" data-open="../atlas/?hub=j14" aria-label="Open Atlas, the Olympus arena hub">Open Atlas <span aria-hidden="true">↗</span></button>
         <div class="hub-gate-doors" role="group" aria-label="Explore featured arenas">
-          <button type="button" data-app="cities">CITIES <span aria-hidden="true">↗</span></button>
-          <button type="button" data-app="observatory">OBSERVATORY <span aria-hidden="true">↗</span></button>
+          <button type="button" data-app="cities">Cities <span aria-hidden="true">↗</span></button>
+          <button type="button" data-app="observatory">Observatory <span aria-hidden="true">↗</span></button>
         </div>
       </section>
 
@@ -992,27 +1000,27 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         <div class="sats" id="sats" aria-hidden="true"></div>
         <!-- Jarvis talking (2026-11-03 evening): a waveform on the core while she speaks, and what a tap does then -->
         <div class="vwave" id="vwave" aria-hidden="true"></div>
-        <span class="vstop" id="vstop" aria-hidden="true">TAP TO STOP</span>
+        <span class="vstop" id="vstop" aria-hidden="true">Tap to stop</span>
       </div>
       </div>
       <div class="vbars" id="vbars" aria-hidden="true"></div>
-      <p class="state" id="state">STANDBY</p>
+      <p class="state" id="state">Standby</p>
       <p class="says" id="says">Good day. Tap the core or type below to speak with me.</p>
       <p class="hint" id="hint" hidden></p>
       <div class="vrow">
-        <button class="pillb" id="hf" type="button" aria-pressed="false" title="Keep listening while Jarvis is open"><i class="ld"></i>HANDS-FREE</button>
+        <button class="pillb" id="hf" type="button" aria-pressed="false" title="Keep listening while Jarvis is open"><i class="ld"></i>Hands-free</button>
         <button class="bigmic" id="bigmic" type="button" aria-label="Talk to Jarvis" title="Tap to talk · hold for voice mode">
           <svg width="26" height="26" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="6.2" y="2" width="5.6" height="9" rx="2.8" stroke="currentColor" stroke-width="1.5"/><path d="M3.8 8.6a5.2 5.2 0 0 0 10.4 0M9 13.8V16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
-        <button class="pillb" id="vset" type="button" title="Voice settings">VOICE ⚙</button>
+        <button class="pillb" id="vset" type="button" title="Voice settings">Voice ⚙</button>
       </div>
-      <p class="hint2">TAP · HANDS-FREE · HOLD · VOICE MODE</p>
+      <p class="hint2">Tap to talk · hold for voice mode</p>
       <div class="sugs" id="sugs"></div>
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
       <div class="qa" id="qa" role="group" aria-label="Quick actions"></div>
-      <details class="hub-directory">
-        <summary>ALL ARENAS <span>Browse the complete directory</span></summary>
+      <details class="hub-directory" open>
+        <summary>Your apps <span>Trading · Money · Life</span></summary>
         <div class="og-find" id="ogFindBox" hidden><input id="ogFind" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Find an app" aria-label="Find an app" aria-controls="olyApps"></div>
         <div class="og" id="olyApps" role="group" aria-label="OLYMPUS: every app"></div>
       </details>
@@ -1043,7 +1051,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <button class="key ic spk" type="button" id="spk" aria-pressed="true" aria-label="Voice on: answers are read out loud" title="Voice on / off">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 7.5h3l4-3.5v12l-4-3.5H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path class="w" d="M13 7.2a4 4 0 0 1 0 5.6M15.3 5a7 7 0 0 1 0 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path class="x" d="m13.2 7.6 4.6 4.8m0-4.8-4.6 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
     </button>
-    <button class="key send" type="submit">SEND</button>
+    <button class="key send" type="submit">Send</button>
     <button class="key ic" type="button" id="moreB" aria-label="More" aria-expanded="false" title="More">⋯</button>
   </form>
 </div>
@@ -1168,7 +1176,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   </form>
 </div>
 
-<div class="bootfx" id="bootfx" aria-hidden="true"><b>J.A.R.V.I.S.</b><div class="log" id="bootlog"></div><small>TAP TO SKIP</small></div>
+<div class="bootfx" id="bootfx" aria-hidden="true"><b>OLYMPUS</b><div class="log" id="bootlog"></div><small>Tap to skip</small></div>
 <div class="boot" id="boot" hidden><span><span id="bootMsg">Jarvis is taking a while to start.</span><small id="bootErr"></small></span><span class="boot-b"><button type="button" onclick="location.reload()">Reload</button><button type="button" class="alt" id="bootFix" onclick="window.__jarvisRepair && window.__jarvisRepair()">Repair</button></span></div>
 <script>
 // Start watchdog (2026-11-01; a classic script, so it runs even when the module below cannot). The module sets __jarvisRun as its
@@ -1260,7 +1268,7 @@ const S = {
   vcfg: () => Object.assign({ rate: 1.0, pitch: 1.0, voice: '' }, D.LS.get('jarvis.voiceCfg', {}) || {}),
 };
 const THEMES = [
-  ['reactor', 'Reactor', 'Violet + cyan · default', '#a95cff', '#22d3ee'], ['eclipse', 'Eclipse', 'Violet', '#a855f7', '#7c3aed'],
+  ['agora', 'Agora', 'Marble, bronze, gold · default', '#c8a24a', '#9c6b3c'], ['reactor', 'Reactor', 'Violet + cyan', '#a95cff', '#22d3ee'], ['eclipse', 'Eclipse', 'Violet', '#a855f7', '#7c3aed'],
   ['reactor-stark', 'Reactor Stark', 'Gold rings, arc-blue', '#ffbe3d', '#d6281f'], ['reactor-ice', 'Reactor Ice', 'Ice blue, silver', '#4fe3ff', '#0284c7'],
   ['reactor-emerald', 'Reactor Emerald', 'Emerald plasma', '#1ff5a4', '#059669'], ['obsidian', 'Obsidian', 'Monochrome silver', '#e5e7eb', '#9ca3af'],
   ['aurora', 'Aurora', 'Mint and violet', '#34f5b0', '#a78bfa'], ['tokyo', 'Tokyo', 'Neon pink', '#ff2bd6', '#22e5ff'], ['ocean', 'Ocean', 'Teal and sky', '#2ef2d0', '#38bdf8'],
@@ -1349,8 +1357,8 @@ let botsI = null, botsUI = null;
 ready.bots = load('bots', './bots.js', (m) => typeof m.createBots === 'function').then((m) => {
   if (m) botsI = safe(() => m.createBots({ speak: (t) => speak(t, false), hidden: () => S.hideMoney(),
     busy: () => state !== 'idle' || listening || speaking || !!rec || !!(vm && vm.isOpen()),
-    onEvent: (e) => toast(e.text, e.kind === 'plan' || e.kind === 'recap' ? e.kind.toUpperCase() : 'BOT ALERT'),
-    onCard: (c) => toast(c.lines[0] || c.title, c.title.toUpperCase()) }), null);
+    onEvent: (e) => toast(e.text, e.kind === 'plan' || e.kind === 'recap' ? e.kind[0].toUpperCase() + e.kind.slice(1) : 'Bot alert'),
+    onCard: (c) => toast(c.lines[0] || c.title, c.title) }), null);
   if (botsI) brainDeps.bots = botsI;
   return botsI;
 });
@@ -1365,7 +1373,7 @@ function tourHint(n = 0) {
   const a = byId('settings');
   if (!a || notOnSite(a)) return;
   rawSet('jarvis.tour.seen', '1');
-  toast('New here? A one-minute tour shows what everything does.', 'WELCOME', ['TAKE THE TOUR', () => show('settings', { url: '../settings/?tour=1' })]);
+  toast('New here? A one-minute tour shows what everything does.', 'Welcome', ['Take the tour', () => show('settings', { url: '../settings/?tour=1' })]);
 }
 function botsTick() {
   if (!botsI) return;
@@ -1476,8 +1484,9 @@ function applyCustom() {
 // One key for the whole system, 'olympus.theme'. The default ('olympus') leaves Jarvis's own colour (jtheme) as it is; any other
 // theme paints Jarvis's palette too. The engine loads async: until it is here, the <head> copy painted the same colours.
 const TH = () => window.OLYMPUS_THEMES || null;
-const olyId = () => (TH() ? TH().id() : root.dataset.olyTheme || 'olympus');
-const olyOn = () => olyId() !== 'olympus';
+const olyDefault = () => (TH() && TH().DEFAULT) || 'agora';
+const olyId = () => (TH() ? TH().id() : root.dataset.olyTheme || olyDefault());
+const olyOn = () => olyId() !== olyDefault();
 function olyRefresh() {
   readColors();
   if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
@@ -1501,10 +1510,10 @@ function olyStart() {
   safe(applyCustom); olyRefresh();
   return true;
 }
-const homeTint = () => (olyOn() && TH() ? TH().tokens(olyId(), 'page').themeColor : '#000000');
+const homeTint = () => (olyOn() && TH() ? TH().tokens(olyId(), 'page').themeColor : '#14110e');
 function setTheme(k) {
-  if (!THEMES.find((t) => t[0] === k)) k = 'reactor';
-  if (olyOn() && TH()) TH().set('olympus');                 // a Jarvis colour is a colour of the default OLYMPUS theme
+  if (!THEMES.find((t) => t[0] === k)) k = 'agora';
+  if (olyOn() && TH()) TH().set(olyDefault());                 // a Jarvis colour is a colour of the default OLYMPUS theme
   root.dataset.theme = k; rawSet('jtheme', k); applyCustom();
   readColors();
   if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
@@ -1721,7 +1730,7 @@ window.addEventListener('hashchange', () => {          // a #name link while Jar
 
 // ------------------------------------------------------------------ the core (core-visual.js, else the 2D reactor) and its state
 let core = null, state = 'idle', listening = false, speaking = false;
-const STATE_WORD = { idle: 'STANDBY', listening: 'LISTENING', thinking: 'THINKING', speaking: 'SPEAKING', alert: 'ALERT' };
+const STATE_WORD = { idle: 'Standby', listening: 'Listening', thinking: 'Thinking', speaking: 'Speaking', alert: 'Alert' };
 function setState(s) {
   state = STATE_WORD[s] ? s : 'idle';
   root.dataset.state = state;                           // the 2D reactor follows html[data-state] in the CSS
@@ -3106,8 +3115,8 @@ function boot() {
   try { sessionStorage.setItem('jarvis.booted', '1'); } catch (_) { /* private mode */ }
   if (quick) { el.remove(); bootEnd(); return; }
   const v = safe(() => D.liveView()), k = safe(() => D.kalshiView()), pl = safe(() => D.plannerDay());
-  const lines = ['> CORE ............ ONLINE', `> ZENITH · NQ BOTS  ${v ? (v.cached ? 'CACHED' : 'LINKED') : 'CONNECTING'}`, `> KALSHI FEED ..... ${k ? 'READY' : 'CONNECTING'}`,
-    `> PLANNER ......... ${pl ? 'READY' : 'NOT LINKED'}`, `> VOICE ........... ${SR && S.voice() ? 'READY' : 'TEXT ONLY'}`, 'JARVIS ONLINE'];
+  const lines = ['Opening Olympus', `NQ bots: ${v ? (v.cached ? 'saved copy' : 'linked') : 'connecting'}`, `Kalshi: ${k ? 'ready' : 'connecting'}`,
+    `Planner: ${pl ? 'ready' : 'not linked'}`, `Voice: ${SR && S.voice() ? 'ready' : 'text only'}`, 'Welcome back'];
   const log = $('#bootlog');
   let i = 0, done = false;
   const end = () => { if (done) return; done = true; el.classList.add('out'); setTimeout(() => { el.remove(); bootEnd(); }, 360); };

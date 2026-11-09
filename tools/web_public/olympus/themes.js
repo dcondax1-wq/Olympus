@@ -4,11 +4,11 @@
  *
  * A classic ES5 script (no module, never throws). It sets window.OLYMPUS_THEMES:
  *   list()            the themes in picker order: [{ id, name, greek, tag, scheme, tokens, stage?, jarvis? }]
- *   id() / get(id)    the stored id (unknown or missing = 'olympus') / one theme
+ *   id() / get(id)    the stored id (unknown or missing = 'agora', the default) / one theme
  *   tokens(id, where) the resolved palette. where = 'page' (Jarvis: the full palette, light themes light) or 'stage' (the 3D
  *                     apps, Zenith, Kalshi: surfaces that are dark by design; a light theme gives its dark 'stage' variant there)
  *   apply(where)      paints <html>: data-oly-theme / data-oly-scheme, the --oly-* tokens, color-scheme and the theme-color meta.
- *                     The default theme writes NOTHING inline: the stylesheets' own values stay, so it is today's look exactly.
+ *                     The default theme (AGORA) writes NOTHING inline: the stylesheets' own values (olympus.css :root, jarvis.css) are the AGORA palette.
  *   set(id)           stores the choice and applies it; on(cb) is told (tokens, id) after every change, cross-tab too
  *   mix(a, b, t)      blends two '#rrggbb' (or 0xrrggbb numbers; the result keeps the type of a); t = 0 returns a untouched
  *   harmonise(app, accent, t)  an app's identity colour with its hue turned toward the accent by t (0 = untouched)
@@ -20,7 +20,7 @@
 (function () {
   'use strict';
   if (window.OLYMPUS_THEMES) return;
-  var KEY = 'olympus.theme', DEFAULT = 'olympus';
+  var KEY = 'olympus.theme', DEFAULT = 'agora';     // AGORA is the default since 2026-11-09 (docs/DESIGN_AGORA.md); the old violet look is 'olympus'
   // the token names every theme must define (CSS ones become --oly-<name>; the 3D ones go to the scenes)
   var TOKENS = ['bg', 'bg2', 'glass', 'glass2', 'line', 'edge', 'text', 'dim', 'accent', 'accent2', 'glow', 'ok', 'bad', 'warn', 'shadow',
     'scheme', 'themeColor', 'fog', 'sky', 'emissive', 'bloom', 'mix', 'harmony'];
@@ -31,13 +31,22 @@
 
   /* ------------------------------------------------------------------ the themes (data only) */
   var THEMES = [
-    { id: 'olympus', name: 'Olympus', greek: 'ΟΛΥΜΠΟΣ', tag: 'Violet + gold · default', scheme: 'dark',
-      // today's look: these equal olympus.css's :root values (the default writes nothing inline; Jarvis keeps its own colour)
+    { id: 'agora', name: 'Agora', greek: 'ΑΓΟΡΑ', tag: 'Marble · bronze · gold · default', scheme: 'dark',
+      // the default (docs/DESIGN_AGORA.md): classical, warm, calm. These equal olympus.css's :root values (the default writes nothing
+      // inline) and Jarvis's own 'agora' palette in jarvis.css. Scenes keep their own colours (mix 0): warm light, no neon.
+      tokens: { bg: '#14110e', bg2: '#1d1914', glass: 'rgba(29, 25, 20, .88)', glass2: 'rgba(38, 33, 27, .96)', line: '#3a3228',
+        edge: 'rgba(200, 162, 74, .38)', text: '#f3ece0', dim: '#cfc4b2', accent: '#c8a24a', accent2: '#e0b060', glow: '#c8a24a',
+        ok: '#7f8a52', bad: '#c0603f', warn: '#e0b060', shadow: '0 6px 18px rgba(0, 0, 0, .35)', scheme: 'dark', themeColor: '#14110e',
+        fog: '#2a2118', sky: '#3a2a1c', emissive: '#e0b060', bloom: '#f0d9a0', mix: 0, harmony: 0 },
+      jarvis: null },
+    { id: 'olympus', name: 'Olympus Night', greek: 'ΟΛΥΜΠΟΣ', tag: 'Violet + gold · the old look', scheme: 'dark',
       tokens: { bg: '#04050c', bg2: '#0d0620', glass: 'rgba(9, 11, 22, .74)', glass2: 'rgba(14, 8, 30, .92)', line: 'rgba(255, 255, 255, .12)',
         edge: 'rgba(168, 85, 247, .38)', text: '#f3f5fb', dim: 'rgba(214, 220, 236, .66)', accent: '#a855f7', accent2: '#ffc94a', glow: '#a95cff',
         ok: '#4ade80', bad: '#ff4d6d', warn: '#fbbf24', shadow: '0 12px 40px rgba(0, 0, 0, .45)', scheme: 'dark', themeColor: '#000000',
         fog: '#04050c', sky: '#0d0620', emissive: '#a855f7', bloom: '#c084fc', mix: 0, harmony: 0 },
-      jarvis: null },
+      jarvis: { bg: '#03010a', bg2: '#0d0620', pr: '14,8,30', txt: '#efe9ff', mut: '#958ab3', dim: '#1f1538', dim2: '#3a2766', dim3: '#5233a0',
+        c: '#a95cff', c2: '#6d28d9', c3: '#22d3ee', cr: '169,92,255', cr2: '109,40,217', cr3: '226,214,255', tint: '#f5d0fe',
+        neb1: '124,58,237', neb2: '37,99,235', neb3: '34,211,238', grid: '.06', scan: '.03' } },
     { id: 'zeus', name: 'Zeus Storm', greek: 'ΖΕΥΣ', tag: 'Electric blue · lightning', scheme: 'dark',
       tokens: { bg: '#02050f', bg2: '#071430', glass: 'rgba(6, 14, 34, .74)', glass2: 'rgba(8, 20, 46, .92)', line: 'rgba(170, 210, 255, .16)',
         edge: 'rgba(120, 190, 255, .48)', text: '#f2f8ff', dim: 'rgba(200, 220, 245, .72)', accent: '#4da3ff', accent2: '#e8f4ff', glow: '#7cc4ff',

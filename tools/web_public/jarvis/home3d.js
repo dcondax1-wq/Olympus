@@ -24,19 +24,19 @@ const mix3 = (a, b, t) => [mixN(a[0], b[0], t), mixN(a[1], b[1], t), mixN(a[2], 
 // ------------------------------------------------------------------------------------------------ the sky by the New York clock
 // [ET minute, zenith, horizon, glow, stars 0..1, nebula 0..1, exposure]
 const KF = [
-  [0, '#050414', '#0e0b2b', '#3b2a8f', 1.0, 1.0, 1.0],
-  [240, '#060520', '#151236', '#45308f', 1.0, 1.0, 1.0],
-  [330, '#0b0e3a', '#3b2a6e', '#ff8a5c', 0.7, 0.8, 1.0],     // pre-dawn
-  [390, '#1b2a63', '#b35a6e', '#ffb066', 0.3, 0.55, 1.02],    // dawn, 6:30
-  [480, '#2b4f9a', '#e7a27c', '#ffd29a', 0.1, 0.4, 1.05],     // pre-market morning, 8:00
-  [570, '#1d4f9c', '#6fa8d6', '#ffe7b0', 0.05, 0.3, 1.05],    // the open, 9:30
-  [720, '#123f8a', '#5f9bd0', '#fff2c8', 0.04, 0.25, 1.05],   // midday
-  [900, '#1a3d80', '#6a8fc4', '#ffe0a0', 0.05, 0.3, 1.05],    // afternoon
-  [960, '#2a2f78', '#c9825f', '#ffb25c', 0.15, 0.45, 1.03],   // the close, 16:00
-  [1050, '#2a1a5e', '#b8466e', '#ff7a50', 0.4, 0.7, 1.0],     // dusk, 17:30
-  [1110, '#130f3e', '#4a2a7a', '#c0508f', 0.75, 0.9, 1.0],    // 18:30, the Globex evening
-  [1200, '#080620', '#1a1245', '#5a35a0', 1.0, 1.0, 1.0],
-  [1440, '#050414', '#0e0b2b', '#3b2a8f', 1.0, 1.0, 1.0],
+  [0, '#0d0b12', '#241a1c', '#7a4a2a', 1.0, 0.5, 1.0],
+  [240, '#0e0c16', '#2a1e20', '#8a5230', 1.0, 0.5, 1.0],
+  [330, '#1a1b3a', '#6b4a52', '#e0a060', 0.5, 0.45, 1.0],     // pre-dawn: indigo to amber
+  [390, '#2b3566', '#c8845e', '#f0b870', 0.2, 0.35, 1.02],    // dawn, 6:30
+  [480, '#3d5f98', '#e8b890', '#ffd9a0', 0.05, 0.3, 1.05],    // pre-market morning, 8:00
+  [570, '#3a679d', '#a6bcc8', '#ffe7b8', 0.02, 0.25, 1.05],   // the open, 9:30
+  [720, '#33639c', '#a3bccb', '#fff0cc', 0.02, 0.2, 1.05],    // midday
+  [900, '#3a5f94', '#b3b3b0', '#ffe2a8', 0.02, 0.25, 1.05],   // afternoon
+  [960, '#3a4678', '#d29a70', '#ffbe70', 0.1, 0.3, 1.03],     // the close, 16:00
+  [1050, '#2e2a58', '#c27a62', '#f09a58', 0.25, 0.4, 1.0],    // dusk, 17:30
+  [1110, '#1b1a3a', '#6a4458', '#d08a5a', 0.5, 0.45, 1.0],    // 18:30, the Globex evening
+  [1200, '#100e1c', '#2a1e24', '#8a5230', 0.9, 0.5, 1.0],
+  [1440, '#0d0b12', '#241a1c', '#7a4a2a', 1.0, 0.5, 1.0],
 ].map((k) => ({ m: k[0], z: hex(k[1]), h: hex(k[2]), g: hex(k[3]), stars: k[4], neb: k[5], ex: k[6] }));
 export const PHASES = [[0, 'night', 'Night'], [240, 'predawn', 'Pre-dawn'], [390, 'premarket', 'Pre-market'], [570, 'open', 'Market open'], [930, 'close', 'The close'], [1050, 'dusk', 'Dusk'], [1110, 'evening', 'Evening'], [1260, 'night', 'Night']];
 export function phaseOf(min) {
@@ -90,8 +90,8 @@ export function findVix(f) {
 }
 
 // ------------------------------------------------------------------------------------------------ the reactor: state, voice, mode
-export const STATE_TINT = { idle: null, listening: '#ff5a6e', thinking: '#ffd36b', speaking: null, alert: '#ff3b3b' };
-export const MODE_TINT = { auto: null, trading: '#2ee6d6', research: '#7b8cff', business: '#ffc14d', life: '#ff7ab6' };
+export const STATE_TINT = { idle: null, listening: '#c0603f', thinking: '#e0b060', speaking: null, alert: '#c0603f' };
+export const MODE_TINT = { auto: null, trading: '#4b7a99', research: '#9c8f6a', business: '#e0b060', life: '#b8714a' };
 export const modeTint = (m) => (Object.prototype.hasOwnProperty.call(MODE_TINT, m) ? MODE_TINT[m] : null);
 // the energy 0..1 the world should have now
 export function reactFor(state, level) {
@@ -136,7 +136,7 @@ export function attach(ext) {
   const discMat = (c) => new T.ShaderMaterial({ uniforms: { uC: { value: new T.Color(c) }, uI: { value: 1 } }, transparent: true, depthWrite: false, blending: T.AdditiveBlending, fog: false,
     vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: 'uniform vec3 uC; uniform float uI; varying vec2 vU; void main(){ float d = length(vU - 0.5) * 2.0; float core = smoothstep(0.34, 0.26, d); float halo = pow(max(0.0, 1.0 - d), 2.6);\n gl_FragColor = vec4(uC * (core * 1.35 + halo * 0.55) * uI, 1.0); }' });
-  const sun = new T.Mesh(discGeo, discMat('#ffe3a8')), moon = new T.Mesh(discGeo, discMat('#cfd8ff'));
+  const sun = new T.Mesh(discGeo, discMat('#ffe3a8')), moon = new T.Mesh(discGeo, discMat('#efe3c8'));
   const sunR = new T.Mesh(discGeo, sun.material), moonR = new T.Mesh(discGeo, moon.material);   // the reflections share the material
   for (const d of [sun, moon, sunR, moonR]) { d.scale.setScalar(26); d.renderOrder = -50; d.frustumCulled = false; scene.add(d); }
   moon.scale.setScalar(18); moonR.scale.setScalar(18);
@@ -176,7 +176,7 @@ export function attach(ext) {
   const flipY = (y) => 2 * FLOOR_Y - y;
   if (!soft && ext.columns && ext.capitals) {
     // the reflections are drawn bright and flat (a mirror image is dim anyway once the glass floor has dimmed it); fog still fades the far ones
-    const mc = new T.InstancedMesh(ext.columns.geometry, new T.MeshBasicMaterial({ color: col('#d9d2f2'), fog: true }), ext.columns.count);
+    const mc = new T.InstancedMesh(ext.columns.geometry, new T.MeshBasicMaterial({ color: col('#eadfca'), fog: true }), ext.columns.count);
     const mp = new T.InstancedMesh(ext.capitals.geometry, new T.MeshBasicMaterial({ color: col('#f6d890'), fog: true }), ext.capitals.count);
     const m4 = new T.Matrix4(), v3 = new T.Vector3();
     for (const [src, dst] of [[ext.columns, mc], [ext.capitals, mp]]) {
@@ -198,7 +198,7 @@ export function attach(ext) {
     rainPos.set([x, y, z, x, y, z], i * 6); rainEnd[i * 2] = 0; rainEnd[i * 2 + 1] = 1; rainSeed[i * 2] = sd; rainSeed[i * 2 + 1] = sd;
   }
   const rainGeo = new T.BufferGeometry(); rainGeo.setAttribute('position', new T.BufferAttribute(rainPos, 3)); rainGeo.setAttribute('aEnd', new T.BufferAttribute(rainEnd, 1)); rainGeo.setAttribute('aSeed', new T.BufferAttribute(rainSeed, 1));
-  const rainU = { uT: { value: 0 }, uC: { value: new T.Color('#9fb4ff') }, uI: { value: 0.5 } };
+  const rainU = { uT: { value: 0 }, uC: { value: new T.Color('#b9a98a') }, uI: { value: 0.4 } };
   const rain = new T.LineSegments(rainGeo, new T.ShaderMaterial({ uniforms: rainU, transparent: true, depthWrite: false, blending: T.AdditiveBlending, fog: false,
     vertexShader: `attribute float aEnd, aSeed; uniform float uT; varying float vA;
       void main(){ vec3 p = position; float fall = mod(p.y - uT * (16.0 + aSeed * 8.0), 16.0); p.y = fall - 2.6 + aEnd * 0.9; p.x += aEnd * 0.12; vA = 0.3 + 0.7 * aSeed;
@@ -207,14 +207,14 @@ export function attach(ext) {
   rain.frustumCulled = false; rain.renderOrder = 4; rain.visible = false; scene.add(rain);
 
   // --- the shockwave under the core: one ring, thrown when she starts a word
-  const wave = new T.Mesh(new T.RingGeometry(0.92, 1, 96), new T.MeshBasicMaterial({ color: col('#c084fc'), transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, fog: false, side: T.DoubleSide }));
+  const wave = new T.Mesh(new T.RingGeometry(0.92, 1, 96), new T.MeshBasicMaterial({ color: col('#c8a24a'), transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, fog: false, side: T.DoubleSide }));
   wave.rotation.x = -Math.PI / 2; wave.position.set(0, FLOOR_Y + 0.03, -30); wave.renderOrder = 5; wave.visible = false; wave.frustumCulled = false; scene.add(wave);
   const waveRise = new T.Mesh(new T.RingGeometry(0.97, 1, 96), wave.material);          // the same wave in the sky behind the core
   waveRise.position.set(0, 2.2, -26); waveRise.renderOrder = 5; waveRise.visible = false; waveRise.frustumCulled = false; scene.add(waveRise);
   let waveAge = 9, wavePrevLevel = 0, waveState = 'idle';
 
   // --- the clock, the weather and the reactor: refreshed about every 1.5 s (never per frame)
-  const base = { exposure: ext.baseExposure || 0.8, fogDensity: 0.03, lampI: 22, lampC: col('#c084fc'), poolC: new T.Color(), beamI: 0.12 };
+  const base = { exposure: ext.baseExposure || 0.8, fogDensity: 0.03, lampI: 22, lampC: col('#e0b060'), poolC: new T.Color(), beamI: 0.12 };
   const tmpC = new T.Color(), tmpC2 = new T.Color();
   let skyNow = null, slowWall = 0, lastSlow = -9, flash = 0, nextFlash = 6 + Math.random() * 8, clockAt = 0;
   const ET = (ms) => {
@@ -264,7 +264,7 @@ export function attach(ext) {
     // the shafts: fan from the light toward the floor in front of the temple
     // the shafts live in one plane 20 units out (the visible half-width there is about 5, the half-height 11); the light is projected into it
     const PK = 20 / 150, lx = light.x * 32 * PK, ly = camera.position.y + (FLOOR_Y + 3 + Math.max(0, light.y) * 52 - camera.position.y) * PK, lz = -20;
-    const n = lite() ? 3 : shaftN, shaftC = skyNow.sunUp ? skyNow.glow : mix3(hex('#9bb0ff'), skyNow.glow, 0.25);
+    const n = lite() ? 3 : shaftN, shaftC = skyNow.sunUp ? skyNow.glow : mix3(hex('#d8c8a0'), skyNow.glow, 0.25);
     shafts.forEach((m, i) => {
       m.visible = i < n && skyNow.rays * (1 - 0.6 * w.haze) > 0.04;
       const spread = (i - (n - 1) / 2) * (lite() ? 3.4 : 2.1), tx = lx * 0.3 + spread, ty = camera.position.y - 10, dx = tx - lx, dy = ty - ly, L = Math.hypot(dx, dy);
