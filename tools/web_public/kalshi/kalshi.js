@@ -137,8 +137,8 @@
     ETH: ['#627eea', '<path d="M12 4.6 7.2 12.2l4.8 2.8 4.8-2.8zM7.2 13.7 12 20.4l4.8-6.7-4.8 2.8z" fill="#fff" fill-opacity=".92"/>'],
     DOGE: ['#c9a227', '<path d="M8.4 7h3.3a5 5 0 0 1 0 10H8.4zM6.9 12h7" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'],
     XRP: ['#2b3a4a', '<path d="m6.8 7.4 5.2 4.6 5.2-4.6M6.8 16.6l5.2-4.6 5.2 4.6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'],
-    SOL: ['#8247e5', '<path d="M8.4 8h9.2M6.4 12h9.2M8.4 16h9.2" fill="none" stroke="#6ff2c4" stroke-width="2" stroke-linecap="round"/>'],
-    HYPE: ['#0f6f66', '<path d="M8.2 7.5v9M15.8 7.5v9M8.2 12h7.6" fill="none" stroke="#9ffff0" stroke-width="2" stroke-linecap="round"/>'],
+    SOL: ['#6b5a8e', '<path d="M8.4 8h9.2M6.4 12h9.2M8.4 16h9.2" fill="none" stroke="#e0c27a" stroke-width="2" stroke-linecap="round"/>'],
+    HYPE: ['#3d6b5c', '<path d="M8.2 7.5v9M15.8 7.5v9M8.2 12h7.6" fill="none" stroke="#f3ece0" stroke-width="2" stroke-linecap="round"/>'],
     BNB: ['#d8a516', '<path d="m12 6.2 1.9 1.9L12 10 10.1 8.1zM7.6 10.6l1.9 1.9-1.9 1.9-1.9-1.9zM16.4 10.6l1.9 1.9-1.9 1.9-1.9-1.9zM12 15l1.9 1.9L12 18.8l-1.9-1.9z" fill="#fff"/>'],
     GOLD: ['#b8891a', '<path d="M6.2 16.4h11.6l-1.5-4.2H7.7zM9.4 12.2l.9-3.2h3.4l.9 3.2" fill="none" stroke="#fff3c4" stroke-width="1.6" stroke-linejoin="round"/>'],
     SILVER: ['#7d8794', '<path d="M6.2 16.4h11.6l-1.5-4.2H7.7zM9.4 12.2l.9-3.2h3.4l.9 3.2" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>'],
@@ -147,7 +147,7 @@
   const assetIcon = (a) => {
     a = String(a == null ? '' : a).trim().toUpperCase().slice(0, 6);
     if (!a) return '';
-    const ic = ICONS[a] || ['#1b6a55', `<text x="12" y="15.6" text-anchor="middle" font-size="10" font-weight="700" font-family="Orbitron,sans-serif" fill="#fff">${esc(a.charAt(0))}</text>`];
+    const ic = ICONS[a] || ['#5a4d3a', `<text x="12" y="15.6" text-anchor="middle" font-size="10" font-weight="700" font-family="Georgia,serif" fill="#fff">${esc(a.charAt(0))}</text>`];
     return `<svg class="ai" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11.2" fill="${ic[0]}"/><circle cx="12" cy="12" r="11.2" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>${ic[1]}</svg>`;
   };
   const assetTag = (a) => (a ? `<span class="asset">${assetIcon(a)}${esc(a)}</span>` : '');
@@ -1010,7 +1010,7 @@
   // ================================================================== 2026-11-04 "every view looks sick": the verdict, the heat map,
   // the strategy race and battle, the risk-of-ruin gauge with its Monte Carlo fan, the timeline, the rest-state explainer. Everything is
   // worked out from the numbers the bot sends (never invented), drawn as SVG / HTML, and drawn once per update (no per-frame work).
-  const PALETTE = ['#1fe5a6', '#38e1ff', '#fbbf24', '#e879f9', '#a78bfa', '#fb7185'];
+  const PALETTE = ['#c8a24a', '#4b7a99', '#9aa664', '#d97a58', '#9c6b3c', '#b9a8d0'];
   const stratName = (t) => (t.strategy != null && String(t.strategy) ? String(t.strategy) : t.book != null ? String(t.book) : '');
 
   // ---- the verdict: one plain sentence at the top, then the reasons, each linked to the numbers behind it
@@ -1836,7 +1836,7 @@
     const shown = pv || data, fx = FX();
     navUi(shown);
     emitData(S.v, shown);
-    if (fx && shown) { fx.odometer(body); fx.tilt(body); }
+    if (fx && shown) { fx.odometer(body); }
     if (fid) {
       const nEl = document.getElementById(fid);
       if (nEl) {

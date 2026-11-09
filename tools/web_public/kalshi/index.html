@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kalshi</title>
 <meta name="description" content="The Kalshi bot: balance, P&L, alerts, open bets with live edge, Kelly sizing, P&L by market and price, calibration, equity and trades, from the numbers its server sends.">
-<meta name="theme-color" content="#010a07">
+<meta name="theme-color" content="#14110e">
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png?v=j4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -30,15 +30,16 @@
 <script>(function () { var d = document.documentElement; d.setAttribute('data-theme', 'kalshi');
   /* inside Jarvis (a frame under its bar) the notch is Jarvis's: no second top inset */
   try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="stylesheet" href="kalshi.css?v=k20">
+<link rel="stylesheet" href="kalshi.css?v=k21">
+<link rel="stylesheet" href="agora-kalshi.css?v=k21">
 <!-- OLYMPUS theme (../olympus/themes.js, key 'olympus.theme', picked in Jarvis's Look sheet): the shared --oly-* tokens and Kalshi's
      page / panels blended toward the theme (the mint stays Kalshi's own). Async, never waited on; the default changes nothing. -->
 <script>(function () {
-  var K = { '--bg': ['#010a07', 'bg'], '--bg2': ['#04170f', 'bg2'] };
+  var K = { '--bg': ['#14110e', 'bg'], '--bg2': ['#1d1914', 'bg2'] };
   function go() {
     var T = window.OLYMPUS_THEMES; if (!T) return;
     T.apply('stage', { meta: true, extra: function (t) {
-      var o = { '--pr': T.rgb(T.mix('#031610', t.bg2, t.mix)).join(','), '--txt': t.text };
+      var o = { '--pr': T.rgb(T.mix('#1d1914', t.bg2, t.mix)).join(','), '--txt': t.text };
       for (var k in K) o[k] = T.mix(K[k][0], t[K[k][1]], t.mix);
       return o; } });
   }
@@ -46,16 +47,12 @@
 })();</script>
 </head>
 <body>
-<div class="aurora" aria-hidden="true"></div>
 <main>
-  <style>/* opened on its own (not inside Jarvis): the way back to Olympus, above the header */
-  .olyback{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin:0 0 6px;padding:0 14px;border-radius:999px;border:1px solid rgba(var(--cr,46,242,208),.55);background:rgba(2,12,9,.82);
-  color:var(--txt,#eafff8);text-decoration:none;font:700 12px/1 var(--fh,system-ui);letter-spacing:.12em}.framed .olyback{display:none}</style>
-  <a class="olyback" href="../jarvis/" aria-label="Back to Olympus">&#927; OLYMPUS</a>
+  <a class="olyback" href="../jarvis/" aria-label="Back to Olympus">&#8592; Olympus</a>
   <header class="top">
-    <div class="mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M20 2.5 35.2 11.25v17.5L20 37.5 4.8 28.75v-17.5Z" stroke="currentColor" stroke-width="1.6"/><path d="M15 12v16M15 20.5l9.5-8.5M17.6 18.2 25 28" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M7 9h26M10 13h20M13 13v18M18 13v18M22 13v18M27 13v18M10 31h20M7 35h26" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <div class="top-t">
-      <h1>Kalshi <span class="h1s">Edge</span></h1>
+      <h1>Kalshi</h1>
       <p class="sub" id="sub" aria-live="polite">Loading…</p>
     </div>
     <button type="button" class="refresh" id="refresh" aria-busy="false" aria-label="Refresh" title="Refresh">
@@ -63,15 +60,13 @@
       <span>Refresh</span>
     </button>
   </header>
-  <div class="tape" id="tape" aria-hidden="true" hidden></div>
   <nav class="secnav" id="secnav" aria-label="Sections" hidden>
     <button type="button" data-go="today">Today</button><button type="button" data-go="edge">Edge</button><button type="button" data-go="perf">Performance</button><button type="button" data-go="alerts">Alerts <b></b></button>
   </nav>
   <div id="body" aria-busy="true" data-state="loading"><div class="sk sk1" aria-hidden="true"></div><div class="sk sk2" aria-hidden="true"></div><div class="sk sk3" aria-hidden="true"></div></div>
   <p class="foot" id="foot"></p>
 </main>
-<script src="kfx.js?v=k19"></script>
-<script src="kalshi.js?v=k20"></script>
-<script type="module" src="korb.js?v=k19"></script>
+<script src="kfx.js?v=k21"></script>
+<script src="kalshi.js?v=k21"></script>
 </body>
 </html>
