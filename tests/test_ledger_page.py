@@ -73,7 +73,7 @@ def part_a():
           fetched == {"'../home.json'", "'rules.json'", "RAW", "'fixture.json'", "'../plutus/roadmap.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
           and not re.search(r"method\s*:|'POST'|headers\s*:|body\s*:", js["ledger.js"]), fetched)
     ls = re.findall(r"localStorage\.(\w+)Item\(([^,)]+)", " ".join(js.values()))
-    check("a. storage only under the one key 'ledger.v1' (read, write); no cookies, no IndexedDB, no other keys", ls and all(k == "KEY" for _, k in ls) and "const KEY = 'ledger.v1'" in js["ledger.js"]
+    check("a. storage only under the one key 'ledger.v1' (read, write) plus the 30-minute 'ledger.opt404.<url>' not-there notes; no cookies, no IndexedDB, no other keys", ls and all(k in ("KEY", "'ledger.opt404.' + u") for _, k in ls) and "const KEY = 'ledger.v1'" in js["ledger.js"]
           and not re.search(r"document\.cookie|indexedDB|sessionStorage", " ".join(js.values())), ls)
     check("a. no key, token or secret anywhere in the app's files", not re.search(r"api[_-]?key|secret|password|access[_-]?token|bearer|\\bsk-[A-Za-z0-9]{10}", html + css + " ".join(js.values()), re.I))
     check("a. safe areas on every edge, the + button on the LEFT (Jarvis's orb owns the bottom-right corner), the toast stops 96 px from the right, 44 px+ targets, 16 px inputs, reduced motion",
@@ -493,7 +493,7 @@ def run_browser():
             check("c. Import JSON (a file chosen on the phone) puts the three entries back; importing the same file again adds nothing", net(p) == "$708.20" and "Imported 3 entries" in p.inner_text("#toast"), p.inner_text("#toast"))
             r = p.evaluate("LG.importText(" + json.dumps(open(path_j, encoding="utf-8").read()) + ")")
             check("c. ...a second import of the same file adds 0; a file that is not a Ledger export is refused with a message and changes nothing", r["added"] == 0 and st(p)["entries"] == 3 and p.evaluate("LG.importText('{\"x\": 1}')")["ok"] is False and "not a Ledger export" in p.inner_text("#toast") and st(p)["entries"] == 3)
-            check("c. no page errors so far, and the only key on the phone besides the quality setting is ledger.v1", not p.errs and p.evaluate("Object.keys(localStorage).filter((k) => k !== 'jfx' && !k.startsWith('olympus'))") == ["ledger.v1"], (p.errs, p.evaluate("Object.keys(localStorage)")))
+            check("c. no page errors so far, and the only key on the phone besides the quality setting is ledger.v1", not p.errs and p.evaluate("Object.keys(localStorage).filter((k) => k !== 'jfx' && !k.startsWith('olympus') && !k.startsWith('ledger.opt404.'))") == ["ledger.v1"], (p.errs, p.evaluate("Object.keys(localStorage)")))
             ctx.close()
 
             # ---- 5. reduced motion keeps the vault still; the high tier; offline already covered (no feed, no home)
