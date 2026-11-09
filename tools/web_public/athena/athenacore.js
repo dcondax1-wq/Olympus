@@ -3,7 +3,7 @@ export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&a
 export const norm = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9$%.+ ]+/g, ' ').replace(/\s+/g, ' ').trim();
 
 // a tiny embedded library so the page still opens when library.json is missing (the build writes the real one)
-export const FALLBACK = { v: 1, kind: 'olympus-athena-library', sources: [], tags: [{ id: 'strategy', name: 'Strategy', color: '#6aa8ff', blurb: '' }],
+export const FALLBACK = { v: 1, kind: 'olympus-athena-library', sources: [], tags: [{ id: 'strategy', name: 'Strategy', color: '#6f9bb8', blurb: '' }],
   entries: [{ id: 'offline', kind: 'strategy', tags: ['strategy'], title: 'Library file not found', short: 'Run python tools/athena_build.py to build library.json.', body: [], src: [] }] };
 
 export async function loadLibrary(url) {

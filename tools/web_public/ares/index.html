@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ares</title>
 <meta name="description" content="ARES, the war room: the pre-trade checklist and the risk calculator for NQ / MNQ sized to your stop and the MFFU drawdown left, with a GO / WAIT / HALT verdict.">
-<meta name="theme-color" content="#0b0608">
+<meta name="theme-color" content="#14110e">
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png?v=j4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -21,13 +21,14 @@
      human: it never places or changes an order. Bump ?v= on all of them when one changes. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<link rel="stylesheet" href="../olympus/agora.css?v=a1">
 <script src="../olympus/themes.js?v=o3"></script>
 <script src="../olympus/olympus.js?v=o3" data-app="ares"></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#ff3b30'); r.setProperty('--oly-accent-rgb', '255, 59, 48'); })();</script>
-<link rel="stylesheet" href="ares.css?v=r2">
+<link rel="stylesheet" href="ares.css?v=r3">
 </head>
 <body>
 <canvas id="room" aria-label="The war room: the account as a tower from the max-loss floor up to the target, your balance as an orb and the stop-out you are about to risk as a red slab" role="img"></canvas>
@@ -114,7 +115,7 @@
     <button type="button" data-tab="rules" aria-pressed="false">Rules</button>
   </nav>
 </footer>
-<script type="module" src="ares.js?v=r2"></script>
+<script type="module" src="ares.js?v=r3"></script>
 <script type="module" src="glossary.js"></script>
 </body>
 </html>

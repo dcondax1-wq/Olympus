@@ -122,7 +122,7 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
   let atm = [], leafKind = [], leafBase = [], leafQuat = [], curSeason = '', fx = [], fxNames = [], weather = null, FX = null;
   let edgeAppear = [], edgeIdx = [], glowAppear = [], glowIdx = [], leafAppear = [], nodePos = new Map(), leafNodes = [], tipNodes = [];
   try {
-    rc = mod.createRenderer({ canvas: glCanvas, scene, camera, env: 'night', exposure: 1.1, maxDpr: 2, fitCamera: false,
+    rc = mod.createRenderer({ canvas: glCanvas, scene, camera, env: 'night', tint: '#c8a24a', theme: { sky: '#2b2018', fog: '#2a2018', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, exposure: 1.1, maxDpr: 2, fitCamera: false,
       quality: ['ultra', 'high', 'low', 'off'].includes(forced) ? forced : undefined,
       bloom: { strength: 0.85, radius: 0.6, threshold: 0.9 }, grade: { grain: 0.03, vignette: 0.3, aberration: 0.0015, saturation: 1.08 },
       onQuality: (l) => set(l === 'ultra' || l === 'high') });

@@ -8,7 +8,7 @@ import * as T from './athenatraincore.js';
 import { load, save } from './athenastore.js';
 
 const KEY = 'train.v1';
-const COL = { up: '#46d79a', down: '#ff6b7a', entry: '#5ea8ff', stop: '#ff6b7a', target: '#46d79a', exit: '#ffcf5a', sweep: '#d49bff', opt: '#aab6cf', pick: '#ffcf5a', grid: 'rgba(170,182,207,.18)', text: '#aab6cf' };
+const COL = { up: '#9bab63', down: '#c0603f', entry: '#6f9bb8', stop: '#c0603f', target: '#9bab63', exit: '#c8a24a', sweep: '#b08064', opt: '#6f9bb8', pick: '#c8a24a', grid: 'rgba(111, 155, 184,.18)', text: '#6f9bb8' };
 
 /** a tiny element builder: text goes in as text, never as HTML. props: class, text, vars (CSS variables), anything else is an attribute */
 export function h(tag, props, ...kids) {
@@ -129,7 +129,7 @@ export function createTrain(H) {
   function draw(cv, m, dpr, d, opt) {
     const x = cv.getContext('2d'); if (!x) return;
     x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, m.w, m.h);
-    x.font = '10px Rajdhani, sans-serif'; x.textBaseline = 'middle';
+    x.font = '10px -apple-system,"SF Pro Text",system-ui,sans-serif'; x.textBaseline = 'middle';
     x.strokeStyle = COL.grid; x.lineWidth = 1; x.fillStyle = COL.text;
     for (const a of m.axis) { x.beginPath(); x.moveTo(4, a.y); x.lineTo(m.plotR, a.y); x.stroke(); x.textAlign = 'left'; x.fillText(a.label, m.plotR + 4, a.y); }
     x.textAlign = 'center';
@@ -143,7 +143,7 @@ export function createTrain(H) {
     for (const l of m.lines) {
       const col = COL[l.kind] || COL.opt; x.strokeStyle = col; x.lineWidth = l.kind === 'pick' ? 2 : 1.3; x.setLineDash(l.kind === 'opt' || l.kind === 'pick' ? [5, 3] : []);
       x.beginPath(); x.moveTo(l.x0, l.y); x.lineTo(l.x1, l.y); x.stroke(); x.setLineDash([]);
-      x.fillStyle = col; x.textAlign = 'left'; x.font = '700 11px Rajdhani, sans-serif'; x.fillText(l.label, l.x1 + 4, l.ly); x.font = '10px Rajdhani, sans-serif';
+      x.fillStyle = col; x.textAlign = 'left'; x.font = '700 11px -apple-system,"SF Pro Text",system-ui,sans-serif'; x.fillText(l.label, l.x1 + 4, l.ly); x.font = '10px -apple-system,"SF Pro Text",system-ui,sans-serif';
     }
     if (m.off) { x.fillStyle = COL.target; x.textAlign = 'right'; x.fillText((m.off.dir === 'up' ? '↑ ' : '↓ ') + m.off.label, m.plotR, m.off.dir === 'up' ? 10 : m.plotB - 4); }
   }

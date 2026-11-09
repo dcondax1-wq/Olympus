@@ -90,17 +90,17 @@ function ritualToggle() {
 
 // ------------------------------------------------------------------------------------------------ the share card
 export function drawShare(S) {
-  const sp = shareSpec(S.last, S.st), col = { go: '#46d79a', wait: '#f5b84a', halt: '#ff4d5e' }[sp.level];
+  const sp = shareSpec(S.last, S.st), col = { go: '#9bab63', wait: '#e0a060', halt: '#c0603f' }[sp.level];
   const c = document.createElement('canvas'); c.width = 1080; c.height = 1350;
   const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 1350);
-  g.addColorStop(0, '#1a0709'); g.addColorStop(1, '#0b0608'); x.fillStyle = g; x.fillRect(0, 0, 1080, 1350);
+  g.addColorStop(0, '#15110c'); g.addColorStop(1, '#0a0907'); x.fillStyle = g; x.fillRect(0, 0, 1080, 1350);
   x.strokeStyle = col; x.lineWidth = 6; x.strokeRect(36, 36, 1008, 1278);
-  x.textAlign = 'center'; x.fillStyle = '#ffb0a8'; x.font = '700 40px Orbitron, Rajdhani, sans-serif'; x.fillText('ARES · THE WAR ROOM', 540, 130);
-  x.fillStyle = col; x.shadowColor = col; x.shadowBlur = 40; x.font = '800 260px Orbitron, Rajdhani, sans-serif'; x.fillText(sp.word, 540, 480); x.shadowBlur = 0;
-  x.fillStyle = '#f3e8e6'; x.font = '700 48px Rajdhani, sans-serif'; x.fillText(sp.title.toUpperCase(), 540, 590);
-  x.font = '600 46px Rajdhani, sans-serif'; x.fillStyle = '#ffe3df';
+  x.textAlign = 'center'; x.fillStyle = '#e0907a'; x.font = '700 40px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif'; x.fillText('ARES · THE WAR ROOM', 540, 130);
+  x.fillStyle = col; x.font = '800 260px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif'; x.fillText(sp.word, 540, 480); x.shadowBlur = 0;
+  x.fillStyle = '#f3ece0'; x.font = '700 48px -apple-system,"SF Pro Text",system-ui,sans-serif'; x.fillText(sp.title.toUpperCase(), 540, 590);
+  x.font = '600 46px -apple-system,"SF Pro Text",system-ui,sans-serif'; x.fillStyle = '#f3ece0';
   sp.lines.slice(0, 6).forEach((t, i) => { const s = String(t); x.fillText(s.length > 56 ? s.slice(0, 55) + '…' : s, 540, 700 + i * 78); });
-  x.fillStyle = '#b79a96'; x.font = '500 34px Rajdhani, sans-serif'; x.fillText(sp.note, 540, 1260);
+  x.fillStyle = '#afa79e'; x.font = '500 34px -apple-system,"SF Pro Text",system-ui,sans-serif'; x.fillText(sp.note, 540, 1260);
   return c;
 }
 async function share(S) {

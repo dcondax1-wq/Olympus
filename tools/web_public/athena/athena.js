@@ -136,54 +136,54 @@ function tex(w, h, draw, repeat) {
 const mulberry = (a) => () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 const woodTex = (base, seed, size) => tex(size, size, (x, w, h) => {
   const r = mulberry(seed); x.fillStyle = base; x.fillRect(0, 0, w, h);
-  for (let i = 0; i < h; i += 2) { const k = r(); x.fillStyle = `rgba(${k > 0.5 ? '255,214,160' : '0,0,0'},${(0.03 + r() * 0.07).toFixed(3)})`; x.fillRect(0, i, w, 1 + r() * 2); }
+  for (let i = 0; i < h; i += 2) { const k = r(); x.fillStyle = `rgba(${k > 0.5 ? '224,160,96' : '0,0,0'},${(0.03 + r() * 0.07).toFixed(3)})`; x.fillRect(0, i, w, 1 + r() * 2); }
   for (let i = 0; i < 9; i++) { const y = r() * h; x.strokeStyle = 'rgba(0,0,0,.22)'; x.lineWidth = 1 + r() * 1.5; x.beginPath(); x.moveTo(0, y); for (let k = 0; k <= w; k += 16) x.lineTo(k, y + Math.sin(k * 0.03 + i) * 3); x.stroke(); }
 }, [1, 1]);
 const leatherTex = (hex, seed) => tex(128, 256, (x, w, h) => {
   const r = mulberry(seed); x.fillStyle = hex; x.fillRect(0, 0, w, h);
-  for (let i = 0; i < 700; i++) { x.fillStyle = `rgba(${r() > 0.5 ? '255,255,255' : '0,0,0'},${(0.02 + r() * 0.05).toFixed(3)})`; x.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }
-  x.fillStyle = '#e6c15a'; for (const y of [0.1, 0.16, 0.84, 0.9]) x.fillRect(0, h * y, w, 4);
-  x.strokeStyle = '#e6c15a'; x.lineWidth = 2; x.strokeRect(w * 0.22, h * 0.3, w * 0.56, h * 0.4);
+  for (let i = 0; i < 700; i++) { x.fillStyle = `rgba(${r() > 0.5 ? '243,236,224' : '0,0,0'},${(0.02 + r() * 0.05).toFixed(3)})`; x.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }
+  x.fillStyle = '#c8a24a'; for (const y of [0.1, 0.16, 0.84, 0.9]) x.fillRect(0, h * y, w, 4);
+  x.strokeStyle = '#c8a24a'; x.lineWidth = 2; x.strokeRect(w * 0.22, h * 0.3, w * 0.56, h * 0.4);
 });
 const parchmentTex = () => tex(128, 128, (x, w, h) => {
-  const g = x.createLinearGradient(0, 0, w, 0); g.addColorStop(0, '#d9c89a'); g.addColorStop(0.5, '#f1e4bd'); g.addColorStop(1, '#cdb985'); x.fillStyle = g; x.fillRect(0, 0, w, h);
-  const r = mulberry(7); x.fillStyle = 'rgba(70,45,20,.55)'; for (let y = 10; y < h - 8; y += 9) x.fillRect(10, y, 40 + r() * (w - 60), 2);
+  const g = x.createLinearGradient(0, 0, w, 0); g.addColorStop(0, '#c8a24a'); g.addColorStop(0.5, '#f0dca0'); g.addColorStop(1, '#c8a24a'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  const r = mulberry(7); x.fillStyle = 'rgba(59, 41, 22,.55)'; for (let y = 10; y < h - 8; y += 9) x.fillRect(10, y, 40 + r() * (w - 60), 2);
   for (let i = 0; i < 90; i++) { x.fillStyle = `rgba(120,80,30,${(0.04 + r() * 0.08).toFixed(2)})`; x.fillRect(r() * w, r() * h, 3, 3); }
 });
 class Hall {
   constructor(canvas) {
     this.canvas = canvas; this.yaw = 0; this.target = null; this.dirty = true; this.auto = !RM; this.shelves = [];
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color('#050a16');
+    this.scene.background = new THREE.Color('#120e09');
     this.camera = new THREE.PerspectiveCamera(60, 1.3, 0.1, 120);
     this.camera.position.set(0, 1.9, 0);
-    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, maxDpr: 2 });
+    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, maxDpr: 2, tint: '#c8a24a', theme: { sky: '#2b2018', fog: '#2a2018', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, bloom: { strength: 0.22, radius: 0.5, threshold: 1.0 } });
     this.lite = this.rc.quality() === 'low' || this.rc.quality() === 'off';
     this.build();
     this.input();
   }
   build() {
     const sc = this.scene;
-    sc.add(new THREE.HemisphereLight(0xb5cdff, 0x1a1428, 1.5));
+    sc.add(new THREE.HemisphereLight(0xe0a060, 0x372615, 1.4));
     this.stars = starfield({ count: 700 }); sc.add(this.stars);
-    const wood = new THREE.MeshStandardMaterial({ map: woodTex('#4a2d18', 3, 256), roughness: 0.6, metalness: 0.05 });
-    const woodLight = new THREE.MeshStandardMaterial({ map: woodTex('#7a4e2c', 9, 256), roughness: 0.55, metalness: 0.05 });
-    const parch = new THREE.MeshStandardMaterial({ map: parchmentTex(), roughness: 0.85, emissive: new THREE.Color('#ffcf7a'), emissiveIntensity: 0.1 });
-    this.warm = new THREE.PointLight(0xffc27a, this.lite ? 0 : 45, 28, 1.3); this.warm.position.set(0, 4.2, 0); sc.add(this.warm);       // a warm chandelier
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(26, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#0c1226', side: THREE.BackSide, roughness: 0.9 }));
+    const wood = new THREE.MeshStandardMaterial({ map: woodTex('#402c18', 3, 256), roughness: 0.6, metalness: 0.05 });
+    const woodLight = new THREE.MeshStandardMaterial({ map: woodTex('#b0763c', 9, 256), roughness: 0.55, metalness: 0.05 });
+    const parch = new THREE.MeshStandardMaterial({ map: parchmentTex(), roughness: 0.85, emissive: new THREE.Color('#e0a060'), emissiveIntensity: 0.1 });
+    this.warm = new THREE.PointLight(0xe0a060, this.lite ? 0 : 45, 28, 1.3); this.warm.position.set(0, 4.2, 0); sc.add(this.warm);       // a warm chandelier
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(26, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#201a12', side: THREE.BackSide, roughness: 0.9 }));
     dome.position.y = 4; sc.add(dome);
-    const oculus = new THREE.Mesh(new THREE.RingGeometry(2.4, 2.6, 64), neon({ color: '#ffd27a', intensity: 1.6 })); oculus.rotation.x = Math.PI / 2; oculus.position.y = 29.6; sc.add(oculus);
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(30, 64), marble({ color: '#0e1530', vein: '#2b3b6e', roughness: 0.35, clearcoat: 0.3 }));
+    const oculus = new THREE.Mesh(new THREE.RingGeometry(2.4, 2.6, 64), neon({ color: '#e0a060', intensity: 1.6 })); oculus.rotation.x = Math.PI / 2; oculus.position.y = 29.6; sc.add(oculus);
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(30, 64), marble({ color: '#282016', vein: '#5a4630', roughness: 0.35, clearcoat: 0.3 }));
     floor.rotation.x = -Math.PI / 2; floor.position.y = -0.02; sc.add(floor);
-    const ring = new THREE.Mesh(new THREE.RingGeometry(3.1, 3.2, 96), neon({ color: '#5ea8ff', intensity: 2.2 }));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(3.1, 3.2, 96), neon({ color: '#c8a24a', intensity: 1.0 }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.01; sc.add(ring);
     const gold = metal({ kind: 'gold' }), slab = wood, dark = woodLight;
     const geo = { back: new THREE.BoxGeometry(4.5, 3.4, 0.18), plank: new THREE.BoxGeometry(4.5, 0.1, 0.62), post: new THREE.BoxGeometry(0.14, 3.5, 0.66), book: new THREE.BoxGeometry(1, 1, 1), scroll: new THREE.CylinderGeometry(0.11, 0.11, 0.5, 14), cap: new THREE.CylinderGeometry(0.125, 0.125, 0.04, 14), strip: new THREE.BoxGeometry(1, 1, 1) };
     const c = counts(S.lib);
-    const leathers = ['#5b1f1f', '#1f3a5b', '#24543a', '#5b3d1f', '#3b2457', '#1f4a52'].map((h, n) => leatherTex(h, 40 + n));
+    const leathers = ['#502b1e', '#243b4a', '#3e4428', '#50371e', '#483327', '#213644'].map((h, n) => leatherTex(h, 40 + n));
     // the books, scrolls, glowing spines and caps of a shelf are INSTANCED (2026-11-04, docs/OLYMPUS_PERF.md: ~35 meshes a shelf became ~11):
     // one leather material per shelf (the six leathers rotate across shelves; each book keeps its own tint through instanceColor)
-    const bookMats = leathers.map((map) => new THREE.MeshPhysicalMaterial({ map, color: 0xffffff, roughness: 0.5, metalness: 0.1, clearcoat: 0.4 }));
+    const bookMats = leathers.map((map) => new THREE.MeshPhysicalMaterial({ map, color: 0xf3ece0, roughness: 0.5, metalness: 0.1, clearcoat: 0.4 }));
     const dummy = new THREE.Object3D();
     const inst = (g, geometry, material, count) => { const m = new THREE.InstancedMesh(geometry, material, Math.max(1, count)); m.count = count; g.add(m); return m; };
     const put = (m, i, x, y, z, rx, ry, rz, sx, sy, sz) => { dummy.position.set(x, y, z); dummy.rotation.set(rx, ry, rz); dummy.scale.set(sx, sy, sz); dummy.updateMatrix(); m.setMatrixAt(i, dummy.matrix); };
@@ -199,7 +199,7 @@ class Hall {
       const n = Math.min(c[t.id] || 0, 18), planks = [0.2, 1.25, 2.3];
       for (const y of planks.slice(1)) { const p = new THREE.Mesh(geo.plank, slab); p.position.set(0, y, 0); g.add(p); }
       let seed = 11 + i * 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-      const cols = [new THREE.Color(t.color).multiplyScalar(0.55), new THREE.Color(t.color).lerp(new THREE.Color('#1b2238'), 0.55), new THREE.Color('#2a3558')];
+      const cols = [new THREE.Color(t.color).multiplyScalar(0.55), new THREE.Color(t.color).lerp(new THREE.Color('#192832'), 0.55), new THREE.Color('#263f4f')];
       const nScroll = Math.floor(n / 3), nBook = n - nScroll;           // k % 3 === 2 are scrolls
       const books = inst(g, geo.book, bookMats[i % bookMats.length], nBook), strips = inst(g, geo.strip, mat, nBook);
       const scrolls = inst(g, geo.scroll, parch, nScroll), caps = inst(g, geo.cap, mat, nScroll * 2);
@@ -212,7 +212,7 @@ class Hall {
           isc++;
         } else {                                                       // a book standing up, a glowing spine strip
           const h = 0.62 + rnd() * 0.3, w = 0.17 + rnd() * 0.07, rz = (k % 5 === 4) ? 0.12 : 0;
-          put(books, ib, x, y0 + h / 2, 0.04, 0, 0, rz, w, h, 0.38); books.setColorAt(ib, cols[k % 3].clone().lerp(new THREE.Color('#ffffff'), 0.55));
+          put(books, ib, x, y0 + h / 2, 0.04, 0, 0, rz, w, h, 0.38); books.setColorAt(ib, cols[k % 3].clone().lerp(new THREE.Color('#f3ece0'), 0.55));
           put(strips, ib, x, y0 + h * 0.7, 0.04, 0, 0, rz, w * 1.04, 0.05, 0.4);
           ib++;
         }
@@ -234,8 +234,8 @@ class Hall {
     try { await FX.load('3d'); } catch (_) { return; }
     const add = (name, target, opts) => { try { if (typeof FX[name] === 'function') { this.fx.push(FX[name](target, opts)); this.fxNames.push(name); } } catch (_) { /* an effect failing never stops the library */ } };
     add('godRays', this.scene, { position: [0, 16, 0], intensity: 0.55 });
-    add('dust', this.scene, {});
-    add('fireflies', this.scene, { count: 50 });
+    add('dust', this.scene, { color: '#e8d2a8', size: 0.07 });
+    add('fireflies', this.scene, { count: 24, color: '#e0b060', color2: '#ffd9a0', size: 0.2 });
     this.dirty = true;
   }
   refresh() {
@@ -289,7 +289,7 @@ class Hall {
 }
 function labelSprite(text, color) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 96;
-  const x = c.getContext('2d'); x.font = '700 40px Orbitron, Rajdhani, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  const x = c.getContext('2d'); x.font = '700 40px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
   x.shadowColor = color; x.shadowBlur = 14; x.fillStyle = color; x.fillText(text, 256, 50);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false }));
