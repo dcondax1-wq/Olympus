@@ -70,7 +70,7 @@ def jarvis_problems(card):
 BANNED_LOOK = re.compile(r"Orbitron|Rajdhani|text-shadow\s*:\s*0\s+0|#00ffff|#0ff\b|neon|scanline|cyber|hologra|quantum", re.I)
 
 
-def static_kit(app, name, reads=(), storage=None):
+def static_kit(app, name, reads=(), storage=None, allow_urls=()):
     """The checks every AGORA app shares. reads = the published files its JS may fetch (besides ./fixture.json)."""
     d = os.path.join(WEB, app)
     names = ["index.html", f"{app}.css", f"{app}.js", f"{app}core.js", "fixture.json", "icon.svg", "manifest.webmanifest", "jarvis.json"]
@@ -89,9 +89,12 @@ def static_kit(app, name, reads=(), storage=None):
     bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js) or re.search(p, core)]
     check("a. no markup is ever built from data: no innerHTML / outerHTML / insertAdjacentHTML / document.write / eval / dynamic import", not bad, bad)
     fetches = set(re.findall(r"getJSON\('([^']+)'", js))
-    want = {"./fixture.json", *reads}
+    want = {"./fixture.json", *reads, *allow_urls}
+    web_js = js + core
+    for u in allow_urls:
+        web_js = web_js.replace(u, "")
     check("a. it reads only published JSON of this site and its fixture, and sends nothing: no XHR / WebSocket / sendBeacon / POST / cookies / web address",
-          fetches == want and not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|method:\s*['\"]POST|document\.cookie|https?://(?!www\.w3\.org)", js + core), (sorted(fetches), sorted(want)))
+          fetches == want and not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|method:\s*['\"]POST|document\.cookie|https?://(?!www\.w3\.org)", web_js), (sorted(fetches), sorted(want)))
     check(f"a. {app}core.js is pure (no document / window / fetch / localStorage), Safari 16 safe (no lookbehind, no .at())",
           not re.search(r"\bdocument\.|\bwindow\.|\bfetch\(|\blocalStorage\b|\(\?<[=!]|\.at\(", re.sub(r"//[^\n]*", "", core)))
     check("a. text only through textContent / createElementNS / a value", "textContent" in js and "createElementNS" in js)
@@ -185,16 +188,21 @@ def browser():
         yield br
 
 
-def page(br, origin, w=390, h=844, reduced=False, lite=False, storage=None):
+def page(br, origin, w=390, h=844, reduced=False, lite=False, storage=None, mock=None):
     ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=True, has_touch=True, reduced_motion="reduce" if reduced else "no-preference", accept_downloads=True)
     init = "try { localStorage.setItem('jfx', '%s'); } catch (e) {}" % ("low" if lite else "high")
     for k, v in (storage or {}).items():
         init += " try { localStorage.setItem(%s, %s); } catch (e) {}" % (json.dumps(k), json.dumps(v))
     ctx.add_init_script(init)
-    seen, off = [], []
+    seen, off, mocked = [], [], []
 
     def route(r):
         u = r.request.url
+        for frag, body in (mock or {}).items():
+            if frag in u:
+                mocked.append(u)
+                r.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body=body)
+                return
         if not u.startswith(origin):
             off.append(u)
             r.abort()
@@ -206,6 +214,7 @@ def page(br, origin, w=390, h=844, reduced=False, lite=False, storage=None):
     errs = []
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text and "net::ERR" not in m.text else None)
+    p.mocked = mocked
     return ctx, p, errs, seen, off
 
 
