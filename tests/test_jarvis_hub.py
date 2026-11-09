@@ -1533,7 +1533,7 @@ INTRO_PROBE = """(() => {
       if (P.gone == null && !document.getElementById('olyIntro')) P.gone = at();
     }).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-ready'] });
     setTimeout(() => {
-      const b = document.getElementById('bigmic').getBoundingClientRect();
+      const b = document.getElementById('mic').getBoundingClientRect();
       const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
       P.cover1s = !!(e && e.closest('#olyIntro')); P.at1s = at();
     }, Math.max(0, 1000 - at()));
@@ -1547,9 +1547,9 @@ NO_WEBGL = """HTMLCanvasElement.prototype.getContext = (function (g) {
 PHASE_LOG = """(() => { const L = window.__phases = []; setInterval(() => { const x = window.__olyIntro && window.__olyIntro.phase; if (x && L[L.length - 1] !== x) L.push(x); }, 25); })();"""
 SFX_KIT = """window.__sfx = []; window.OLYMPUS_SFX = { play(n) { window.__sfx.push(n); } };"""
 INTRO_GONE = "!document.getElementById('olyIntro') && !document.documentElement.hasAttribute('data-intro')"
-MIC_WHO = """(() => { const b = document.getElementById('bigmic').getBoundingClientRect(); const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return [e && (e.id || e.className || e.tagName), Math.round(b.top), Math.round(b.height), innerHeight]; })()"""
-MIC_FREE = """(() => { const b = document.getElementById('bigmic').getBoundingClientRect();
-  const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !!e && !!e.closest('#bigmic'); })()"""
+MIC_WHO = """(() => { const b = document.getElementById('mic').getBoundingClientRect(); const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return [e && (e.id || e.className || e.tagName), Math.round(b.top), Math.round(b.height), innerHeight]; })()"""
+MIC_FREE = """(() => { const b = document.getElementById('mic').getBoundingClientRect();
+  const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !!e && !!e.closest('#mic'); })()"""
 
 
 def intro_page(br, url, force="1", extra="", reduced=None, block=False, scale="0.3", init=(), cut=False, abort=None):
@@ -1595,7 +1595,7 @@ def run_intro(br, url):
     check("o. a cold open plays the full 10 s version in WebGL (its canvas, the OLYMPUS particles, the logo texture, frames running)",
           s["st"]["mode"] == "full" and s["st"]["len"] == 10 and s["st"]["state"] == "playing" and s["st"]["n"] > 0 and p.locator("#olyIntro canvas").count() == 1, s)
     check("o. while it plays it covers the screen (the mic under it), the boot log steps aside",
-          p.evaluate(MIC_FREE.replace("closest('#bigmic')", "closest('#olyIntro')")) and p.locator("#bootfx").count() == 0, s)
+          p.evaluate(MIC_FREE.replace("closest('#mic')", "closest('#olyIntro')")) and p.locator("#bootfx").count() == 0, s)
     wait(p, INTRO_GONE)
     ready_slow(p)
     s = intro_state(p)
@@ -1604,13 +1604,14 @@ def run_intro(br, url):
     seen = p.evaluate("window.__phases")
     check("o. the film went through its six phases in order (heart, storm, rise, eclipse, word, portal), the logo texture was used, the sound kit was called for each cue",
           seen == ["heart", "storm", "rise", "eclipse", "word", "portal"] and s["st"]["logo"] is True
-          and set(p.evaluate("window.__sfx")) >= {"tick", "thunder", "pad", "rankup", "portal"} and s["st"]["cues"].count("thunder") == 3, (seen, s["st"]["cues"], p.evaluate("window.__sfx")))
+          and set(p.evaluate("window.__sfx")) >= {"tick", "pad", "rankup", "portal"} and s["st"]["cues"].count("rumble") == 2,   # the AGORA film: rumbles, not thunder
+           (seen, s["st"]["cues"], p.evaluate("window.__sfx")))
     check("o. Jarvis started underneath it, never after it (ready before the intro's end)",
           s["pr"].get("ready") is not None and s["pr"].get("end") is not None and s["pr"]["ready"] < s["pr"]["end"], s["pr"])
     check("o. the day is remembered, the in-progress flag cleared, no page errors",
           bool(p.evaluate("localStorage.getItem('jarvis.intro.day')")) and p.evaluate("localStorage.getItem('jarvis.intro.run')") is None and not errs, errs)
-    vr = p.evaluate("['#hf', '#bigmic', '#vset'].map((s) => document.querySelector(s).getBoundingClientRect().bottom)")
-    check("o. after it, the mic / HANDS-FREE / VOICE are on the first 390 x 844 screen", all(0 < b <= 844 for b in vr), vr)
+    vr = p.evaluate("['#mic', '#q'].map((s) => document.querySelector(s).getBoundingClientRect().bottom)")
+    check("o. after it, the Ask Jarvis field and the dock mic are on the first 390 x 844 screen (AGORA home: the HANDS-FREE row is below the cards)", all(0 < b <= 844 for b in vr), vr)
 
     # 2. a later open the same day: the 1 s version
     p.reload(wait_until="commit")
@@ -1636,8 +1637,7 @@ def run_intro(br, url):
     ctx, p, errs = intro_page(br, url, "full")
     wait(p, "window.__olyIntro && window.__olyIntro.frames > 2")
     ready_slow(p)
-    box = p.locator("#stage").bounding_box()
-    p.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+    p.mouse.click(195, 422)                       # the middle of the 390 x 844 screen (the AGORA home keeps the core lower, below the first screen)
     wait(p, INTRO_GONE)
     s = intro_state(p)
     check("o. a tap skips it: gone within 1 s of the tap (its own clock), the mic tappable",
