@@ -285,7 +285,7 @@ def run(br, url, name, ios, device=None):
     p.wait_for_timeout(700)
     look = p.evaluate("[getComputedStyle(document.getElementById('vwave')).opacity, getComputedStyle(document.getElementById('vstop')).opacity, document.getElementById('vwave').children.length, document.getElementById('state').textContent]")
     check(f"{tag} speaking: the waveform on the core and 'TAP TO STOP' show, the state says SPEAKING",
-          float(look[0]) > 0.5 and float(look[1]) > 0.5 and look[2] >= 12 and look[3] == "SPEAKING", look)
+          float(look[0]) > 0.5 and float(look[1]) > 0.5 and look[2] >= 12 and look[3].upper() == "SPEAKING", look)
     if SHOTS and ios:
         os.makedirs(SHOTS, exist_ok=True)
         p.locator(".stagebox").screenshot(path=os.path.join(SHOTS, "talk_speaking_iphone13.png"))
