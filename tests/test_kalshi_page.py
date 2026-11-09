@@ -433,7 +433,7 @@ def part_a():
           and 'id="secnav"' in html and all(f'data-go="{g}"' in html for g in ("today", "edge", "perf", "alerts")))
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes every file of kalshi/ (index.html, kalshi.js, kalshi.css, sw.js)",
-          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal"):' in b and "for name in os.listdir(src_dir):" in b)
+          re.search(r'for app in \(("[a-z]+", )*"kalshi"(, "[a-z]+")*\):', b) is not None and "for name in os.listdir(src_dir):" in b)
 
 
 # ------------------------------------------------------------------ the browser parts
@@ -578,8 +578,8 @@ def run_browser(url, tmp):
         rb, rtr = realbot(time.time())
         open_("ok", rb)
         body = p.locator("#body").text_content()
-        check("d. LIVE · real money: a calm badge (mint, not red)", " ".join(p.locator("#mode").text_content().split()) == "LIVE · real money"
-              and p.evaluate("getComputedStyle(document.getElementById('mode')).color") == "rgb(141, 255, 216)", (p.inner_text("#mode"), p.evaluate("getComputedStyle(document.getElementById('mode')).color")))
+        check("d. LIVE · real money: a calm badge (AGORA gold/olive, not red)", " ".join(p.locator("#mode").text_content().split()) == "LIVE · real money"
+              and p.evaluate("getComputedStyle(document.getElementById('mode')).color") in ("rgb(224, 194, 122)", "rgb(200, 162, 74)", "rgb(127, 138, 82)"), (p.inner_text("#mode"), p.evaluate("getComputedStyle(document.getElementById('mode')).color")))
         today = dt.datetime.now(NY).date().isoformat()
         tw = sum(1 for x in rtr if x["pnl"] is not None and x["pnl"] > 0 and et_day(x["t"]) == today)
         tl = sum(1 for x in rtr if x["pnl"] is not None and x["pnl"] < 0 and et_day(x["t"]) == today)
@@ -1121,7 +1121,7 @@ def run_browser(url, tmp):
         miss = [b_ for b_ in bad if not (not FONTS and ".woff2" in b_[1])]     # a checkout without Jarvis's fonts: only those may be missing
         check("j. no failed same-site request (nothing missing on the site)", not miss, miss[:5])
         if FONTS:
-            check("j. Jarvis's fonts load from ../jarvis/ (all 200)", fontres and all(st_ == 200 for st_, _ in fontres), fontres[:6])
+            check("j. any Jarvis font that loads from ../jarvis/ is 200 (AGORA uses system fonts)", all(st_ == 200 for st_, _ in fontres), fontres[:6])
         else:
             print("       (this checkout has no tools/web_public/jarvis/*.woff2: the font requests 404 here; strict once the fonts are in)")
         check("j. kalshi.json only ever asked from kalshi-feed (raw, then the API)", not FEED["wrong"], FEED["wrong"][:3])
