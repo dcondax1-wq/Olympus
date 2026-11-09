@@ -2,7 +2,7 @@
    Jarvis's orb owns the bottom-right 80 x 160 px: the dock stops 96 px from the right, and the sheet sits at least 176 px above the
    bottom so its edge never reaches the orb's corner. Safe areas on every edge; no sideways scroll at 390 px; inputs are 16 px. */
 :root {
-  --n-bg: #13100d; --n-acc: #6da5c7; --n-acc-rgb: 138, 107, 255; --n-plan: #e69a57; --n-soft: #e6b657; --n-break: #cc9362; --n-ok: #d3a950; --dock-h: 100px;
+  --n-bg: #13100d; --n-acc: #c8a24a; --n-acc-rgb: 200, 162, 74; --n-plan: #c0603f; --n-soft: #c8a24a; --n-break: #9c6b3c; --n-ok: #7f8a52; --dock-h: 100px;
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
   --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px));
   --vh: var(--oly-vh, 100vh);
@@ -24,7 +24,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 .brand .sub { margin: 3px 0 0; font-size: var(--oly-t-micro, 10.5px); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
 .tags { display: flex; gap: 6px; }
 .tag { padding: 3px 8px; border-radius: 999px; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line); color: var(--oly-dim); background: var(--oly-glass); }
-.tag.demo { color: #e6b657; border-color: rgba(230, 182, 87, .5); }
+.tag.demo { color: #e0b060; border-color: rgba(224, 176, 96, .5); }
 .tag[hidden] { display: none; }
 
 .verdict { padding: 10px 12px; border-radius: var(--oly-r-card, 16px); background: rgba(19, 16, 13, .74); border: 1px solid var(--oly-line);
@@ -84,14 +84,14 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 .list .amt { font: 800 14px/1 var(--oly-display, sans-serif); color: var(--n-plan); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .list button[aria-current="true"] { background: rgba(var(--n-acc-rgb), .12); }
 .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font: 800 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; border: 1px solid; }
-.badge.plan { color: var(--n-plan); border-color: rgba(230, 154, 87, .6); } .badge.soft { color: var(--n-soft); border-color: rgba(230, 182, 87, .6); } .badge.break { color: var(--n-break); border-color: rgba(204, 147, 98, .7); }
+.badge.plan { color: var(--n-plan); border-color: rgba(224, 176, 96, .6); } .badge.soft { color: var(--n-soft); border-color: rgba(224, 176, 96, .6); } .badge.break { color: var(--n-break); border-color: rgba(224, 176, 96, .7); }
 .who { margin-left: 8px; font-size: 12px; color: var(--oly-dim); }
 
 .rows { list-style: none; margin: 8px 0 0; padding: 0; }
 .rows li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 8px 0; border-top: 1px solid rgba(255, 255, 255, .07); }
 .rows .st { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font: 800 12px/1 var(--oly-ui); margin-top: 1px; }
-.rows .st.ok { background: rgba(211, 169, 80, .18); color: var(--n-ok); } .rows .st.bad { background: rgba(204, 147, 98, .2); color: var(--n-break); }
-.rows .st.warn { background: rgba(230, 182, 87, .18); color: var(--n-soft); } .rows .st.na { background: rgba(255, 255, 255, .08); color: var(--oly-dim); } .rows .st.info { background: rgba(var(--n-acc-rgb), .2); color: #6da5c7; }
+.rows .st.ok { background: rgba(200, 162, 74, .18); color: var(--n-ok); } .rows .st.bad { background: rgba(224, 176, 96, .2); color: var(--n-break); }
+.rows .st.warn { background: rgba(224, 176, 96, .18); color: var(--n-soft); } .rows .st.na { background: rgba(255, 255, 255, .08); color: var(--oly-dim); } .rows .st.info { background: rgba(var(--n-acc-rgb), .2); color: #4b7a99; }
 .rows .l { display: block; font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-text); margin-bottom: 2px; }
 .rows .t { margin: 0; font-size: 12.5px; color: var(--oly-dim); }
 .lesson { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(var(--n-acc-rgb), .5); background: rgba(var(--n-acc-rgb), .12); }
@@ -157,3 +157,23 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 .vdots { display: flex; gap: 6px; margin-top: 8px; }
 .vdots i { width: 14px; height: 14px; border-radius: 50%; background: rgba(255, 255, 255, .1); }
 .vdots i.on { background: var(--n-ok); box-shadow: none; }
+
+/* ===== AGORA revamp (2026-11-09): the money lost is the one big number; the leaks are the lesson ===== */
+.brand h1 { font: 600 26px/1.05 var(--ag-serif, Georgia, serif); color: #f3ece0; }
+.brand h1::after { content: ""; display: block; width: 56px; height: 2px; margin-top: 7px; background: linear-gradient(90deg, #c8a24a, transparent); }
+.brand .sub { font-size: 13px; color: #cfc4b2; }
+.verdict { padding: 14px 16px; background: rgba(29, 25, 20, .94); border-color: #3a3228; border-radius: 16px; }
+.verdict .v { font: 500 15px/1.4 var(--ag-sans, system-ui); color: #cfc4b2; margin-bottom: 10px; }
+.tiles { grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.tile.lost { grid-column: 1 / -1; order: -1; }
+.tile b { font: 700 26px/1.1 var(--ag-num, system-ui); } .tile.lost b { font-size: 44px; color: #d9785a; } .tile.leak b { color: #c8a24a; }
+.tile .k { font-size: 13px; color: #9a8f7d; }
+.verdict .avoid { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid #3a3228; font-size: 14px; line-height: 1.4; color: #f3ece0; }
+.verdict .avoid[hidden] { display: none; }
+.pills button { font: 600 15px var(--ag-sans, system-ui); background: rgba(29, 25, 20, .94); border-color: #3a3228; }
+.pills button[aria-pressed="true"] { background: #c8a24a; color: #1b1610; border-color: #c8a24a; }
+/* while a sheet is open the summary shrinks to the one big number */
+#ui:has(+ .sheet:not([hidden])) :is(.tile:not(.lost), .avoid, .live, .verdict .v) { display: none; }
+#ui:has(+ .sheet:not([hidden])) .tile.lost b { font-size: 30px; }
+#ui:has(+ .sheet:not([hidden])) .verdict { padding: 8px 16px; }
+.sheet p { font-size: 14px; } .sheet h2 { font: 600 17px var(--ag-serif, Georgia, serif); } .sheet h3 { font: 600 15px var(--ag-serif, Georgia, serif); color: #c8a24a; }

@@ -19,9 +19,12 @@ const jset = (k, v) => { try { LS.setItem(k, JSON.stringify(v)); } catch (_) { /
 
 const S = { items: [], st: K.readState(LS), filter: 'all', ids: new Set(), first: true, busy: false, offline: false, feeds: jget(K.CACHE_KEY, { feeds: {} }).feeds || {} };
 
+// an optional file that answered 404 is not asked again for 30 minutes (a browser logs every 404 as a console error): once per phone, not on every open
+const wasGone = (u) => { try { const t = +localStorage.getItem('inbox.opt404.' + u); return !!t && Date.now() - t < 1800e3; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem('inbox.opt404.' + u, String(Date.now())); } catch (_) { /* private mode */ } };
 async function getJSON(url, ms = 5000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
-  try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
+  try { if (wasGone(url)) return null; const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); if (r.status === 404) markGone(url); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
 const lite = () => (O && O.lite ? O.lite() : false) || mq('(prefers-reduced-motion: reduce)');
 

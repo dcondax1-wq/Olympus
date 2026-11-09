@@ -9,16 +9,16 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
 import * as FX from '../olympus/fx-atmos.js';        // JOB 4+5 follow-up: sun shafts, dust in them, torch embers, contact shadows, a polished avenue
-const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#e0b060', bloom: '#e0b060', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
+const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#c8a24a', bloom: '#c8a24a', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
 
 const TAU = Math.PI * 2;
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
-const TONE = { calm: '#aeb86e', watch: '#e6b657', storm: '#cc7156', info: '#6da5c7' };
+const TONE = { calm: '#aeb86e', watch: '#e0b060', storm: '#c0603f', info: '#4b7a99' };
 const PIL = [[-3.4, 3], [3.4, 3], [-3.4, -3], [3.4, -3], [-3.4, -9], [3.4, -9]];     // x, z of the six pillars
 const ROSTRUM_Z = -14, TEMPLE_Z = -27;
 // [hour, top, middle, horizon]: the sky colours through the New York day
-const SKY = [[0, '#13100d', '#171410', '#2e2720'], [3, '#13100d', '#221d18', '#393028'], [5, '#302922', '#8c6543', '#c46d52'], [7, '#4d748c', '#6da5c7', '#e6b657'],
-  [10, '#6da5c7', '#6da5c7', '#f3ece0'], [15, '#6da5c7', '#6da5c7', '#f3ece0'], [17, '#557f9a', '#cc7156', '#e69a57'], [19, '#362e25', '#8c6543', '#cc7156'], [21, '#13100d', '#221d18', '#393028'], [24, '#13100d', '#171410', '#2e2720']];
+const SKY = [[0, '#13100d', '#171410', '#2e2720'], [3, '#13100d', '#221d18', '#393028'], [5, '#302922', '#9c6b3c', '#c0603f'], [7, '#4b7a99', '#4b7a99', '#e0b060'],
+  [10, '#4b7a99', '#4b7a99', '#f3ece0'], [15, '#4b7a99', '#4b7a99', '#f3ece0'], [17, '#4b7a99', '#c0603f', '#e0b060'], [19, '#362e25', '#9c6b3c', '#c0603f'], [21, '#13100d', '#221d18', '#393028'], [24, '#13100d', '#171410', '#2e2720']];
 function skyAt(h) {
   let i = 0; while (i < SKY.length - 2 && h >= SKY[i + 1][0]) i++;
   const a = SKY[i], b = SKY[i + 1], t = Math.max(0, Math.min(1, (h - a[0]) / (b[0] - a[0])));
@@ -64,9 +64,9 @@ export function createForum(canvas, { O = null } = {}) {
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e3 = new THREE.Euler(), p3 = new THREE.Vector3(), s3 = new THREE.Vector3(1, 1, 1);
 
   // ---- lights + the sky
-  const hemi = new THREE.HemisphereLight('#6da5c7', '#26201a', 0.6); scene.add(hemi);
-  const sun = new THREE.DirectionalLight('#e6b657', 1.4); scene.add(sun);
-  const skyU = { top: { value: new THREE.Color() }, mid: { value: new THREE.Color() }, hor: { value: new THREE.Color() }, sunDir: { value: new THREE.Vector3(0, 0.5, -1) }, sunCol: { value: new THREE.Color('#e6b657') }, glow: { value: 0.6 } };
+  const hemi = new THREE.HemisphereLight('#4b7a99', '#26201a', 0.6); scene.add(hemi);
+  const sun = new THREE.DirectionalLight('#e0b060', 1.4); scene.add(sun);
+  const skyU = { top: { value: new THREE.Color() }, mid: { value: new THREE.Color() }, hor: { value: new THREE.Color() }, sunDir: { value: new THREE.Vector3(0, 0.5, -1) }, sunCol: { value: new THREE.Color('#e0b060') }, glow: { value: 0.6 } };
   const dome = new THREE.Mesh(new THREE.SphereGeometry(300, 24, 16), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyU,
     vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: `uniform vec3 top, mid, hor, sunDir, sunCol; uniform float glow; varying vec3 vD;
@@ -74,9 +74,9 @@ export function createForum(canvas, { O = null } = {}) {
         float s = max(dot(normalize(vD), normalize(sunDir)), 0.0); c += sunCol * (pow(s, 24.0) * 0.55 + pow(s, 6.0) * 0.18) * glow;
         gl_FragColor = vec4(c, 1.0); }` }));
   dome.renderOrder = -10; dome.frustumCulled = false; scene.add(dome);
-  const sunDisc = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#e6b657', 2.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+  const sunDisc = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#e0b060', 2.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
   sunDisc.scale.set(46, 46, 1); scene.add(sunDisc);
-  const moon = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#6da5c7', 1.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+  const moon = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#4b7a99', 1.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
   moon.scale.set(26, 26, 1); scene.add(moon);
   const stars = M.starfield({ count: 1300, radius: 250, size: 2.2, color: '#f0e2c4' }); scene.add(stars);
 
@@ -97,18 +97,18 @@ export function createForum(canvas, { O = null } = {}) {
     const z = 10 - i * 4.4;
     m4.makeTranslation(x, 3.1, z); cols.setMatrixAt(ci, m4); m4.makeTranslation(x, 6.4, z); caps.setMatrixAt(ci, m4); ci++;
     if (i % 2 === 0) {
-      const f = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#e69a57', 2.4), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+      const f = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#e0b060', 2.4), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
       f.position.set(x * 0.78, 2.7, z); f.scale.set(1.3, 1.8, 1); f.userData.ph = i * 1.9; scene.add(f); flames.push(f);
-      const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.14, 0.34, 10), M.metal({ kind: 'gunmetal', color: '#4d748c' })); bowl.position.set(x * 0.78, 2.35, z); scene.add(bowl);
+      const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.14, 0.34, 10), M.metal({ kind: 'gunmetal', color: '#4b7a99' })); bowl.position.set(x * 0.78, 2.35, z); scene.add(bowl);
     }
   }
   scene.add(cols, caps);
   // the forum's air and light: shafts of sun through the colonnade, dust in them, embers off the torch bowls, a soft shadow under every column, a polished avenue
   setTimeout(() => {                                                // 0.9 s after the first paint
-    const shafts = FX.shafts({ count: 5, from: [-9, 16, 4], to: [0, 0, -6], width: 5, spread: [10, 0, 22], color: '#e6b657', strength: 0.1, seed: 4 });
-    const dust = FX.dust({ count: 240, box: [14, 7, 46], color: '#e6b657', size: 4, strength: 0.8, seed: 15 }); dust.object.position.set(0, 0, -12);
-    const embers = FX.embers({ count: 140, origin: [-5.1, 2.5, -2], spread: [0.3, 0, 8], rise: 2.6, colors: ['#e6b657', '#e69a57', '#c26c51'], size: 5.5, wind: 0.15, seed: 8 });
-    const embers2 = FX.embers({ count: 140, origin: [5.1, 2.5, -2], spread: [0.3, 0, 8], rise: 2.6, colors: ['#e6b657', '#e69a57', '#c26c51'], size: 5.5, wind: -0.15, seed: 19 });
+    const shafts = FX.shafts({ count: 5, from: [-9, 16, 4], to: [0, 0, -6], width: 5, spread: [10, 0, 22], color: '#e0b060', strength: 0.1, seed: 4 });
+    const dust = FX.dust({ count: 240, box: [14, 7, 46], color: '#e0b060', size: 4, strength: 0.8, seed: 15 }); dust.object.position.set(0, 0, -12);
+    const embers = FX.embers({ count: 140, origin: [-5.1, 2.5, -2], spread: [0.3, 0, 8], rise: 2.6, colors: ['#e0b060', '#e0b060', '#c0603f'], size: 5.5, wind: 0.15, seed: 8 });
+    const embers2 = FX.embers({ count: 140, origin: [5.1, 2.5, -2], spread: [0.3, 0, 8], rise: 2.6, colors: ['#e0b060', '#e0b060', '#c0603f'], size: 5.5, wind: -0.15, seed: 19 });
     scene.add(shafts.object, dust.object, embers.object, embers2.object);
     fxList = [shafts, dust, embers, embers2];
     for (const x of [-6.6, 6.6]) for (let i = 0; i < NC; i += 2) { const ao = FX.contactAO({ radius: 0.9, strength: 0.7 }); ao.object.position.set(x, 0.03, 10 - i * 4.4); scene.add(ao.object); fxList.push(ao); }
@@ -124,14 +124,14 @@ export function createForum(canvas, { O = null } = {}) {
     const base = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.45, 1.1), plinth); base.position.y = 0.22;
     const col = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 2.2, 16), stone); col.position.y = 1.5;
     const cap = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.2, 0.9), goldM); cap.position.y = 2.7;
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.75, 0.9, 40), new THREE.MeshBasicMaterial({ color: hdr('#6da5c7', 2), transparent: true, opacity: 0.9, side: THREE.DoubleSide, fog: true }));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.75, 0.9, 40), new THREE.MeshBasicMaterial({ color: hdr('#4b7a99', 2), transparent: true, opacity: 0.9, side: THREE.DoubleSide, fog: true }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05;
     const tab = new THREE.Group(); tab.position.y = 4.1; tab.rotation.y = x < 0 ? 0.5 : -0.5;
     const frame = new THREE.Mesh(new THREE.BoxGeometry(2.75, 1.5, 0.12), goldM);
     const face = new THREE.Mesh(new THREE.PlaneGeometry(2.55, 1.28), new THREE.MeshBasicMaterial({ color: 0x14110e, toneMapped: true })); face.position.z = 0.07;
     const hit = new THREE.Mesh(new THREE.BoxGeometry(3.0, 1.8, 0.4), new THREE.MeshBasicMaterial({ visible: false })); hit.userData.scroll = i;
     tab.add(frame, face, hit);
-    const beam = M.energyBeam({ color: '#6da5c7', length: 1.35, radius: 0.1, intensity: 1.4, speed: 0.8 }); beam.position.y = 2.7;
+    const beam = M.energyBeam({ color: '#4b7a99', length: 1.35, radius: 0.1, intensity: 1.4, speed: 0.8 }); beam.position.y = 2.7;
     g.add(base, col, cap, ring, tab, beam); scene.add(g);
     return { g, tab, face, ring, beam, hit, item: null };
   });
@@ -141,12 +141,12 @@ export function createForum(canvas, { O = null } = {}) {
   for (let i = 0; i < 3; i++) { const s = new THREE.Mesh(new THREE.CylinderGeometry(2.6 - i * 0.55, 2.7 - i * 0.55, 0.3, 40), plinth); s.position.y = 0.15 + i * 0.3; dais.add(s); }
   const lect = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.5, 0.7), stone); lect.position.y = 1.65; dais.add(lect);
   const scroll = new THREE.Group(); scroll.position.set(0, 2.9, 0); dais.add(scroll);
-  const roll = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 1.5, 20), new THREE.MeshStandardMaterial({ color: '#e6b657', roughness: 0.6, emissive: new THREE.Color('#e6b657'), emissiveIntensity: 0.9 }));
+  const roll = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 1.5, 20), new THREE.MeshStandardMaterial({ color: '#e0b060', roughness: 0.6, emissive: new THREE.Color('#e0b060'), emissiveIntensity: 0.9 }));
   roll.rotation.z = Math.PI / 2; scroll.add(roll);
   for (const sx of [-0.8, 0.8]) { const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.12, 20), goldM); cap.rotation.z = Math.PI / 2; cap.position.x = sx; scroll.add(cap); }
   const laurel = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.045, 8, 64), M.neon({ color: '#aeb86e', intensity: 2.4 })); laurel.position.y = 0; laurel.rotation.x = Math.PI / 2; scroll.add(laurel);
   const oathHit = new THREE.Mesh(new THREE.SphereGeometry(1.5, 10, 8), new THREE.MeshBasicMaterial({ visible: false })); oathHit.userData.scroll = 6; scroll.add(oathHit);
-  const oathLight = new THREE.PointLight('#e6b657', 14, 12, 1.6); oathLight.position.set(0, 3.4, ROSTRUM_Z + 0.6); scene.add(oathLight);
+  const oathLight = new THREE.PointLight('#e0b060', 14, 12, 1.6); oathLight.position.set(0, 3.4, ROSTRUM_Z + 0.6); scene.add(oathLight);
 
   // ---- the temple at the end of the way: steps, eight columns, a pediment, the doors
   const temple = new THREE.Group(); temple.position.set(0, 0, TEMPLE_Z); scene.add(temple);
@@ -159,17 +159,17 @@ export function createForum(canvas, { O = null } = {}) {
   const gold1 = new THREE.Mesh(new THREE.BoxGeometry(17.7, 0.14, 3.1), goldM); gold1.position.set(0, 9.75, 0.6); temple.add(gold1);
   const ped = new THREE.Shape(); ped.moveTo(-8.8, 0); ped.lineTo(8.8, 0); ped.lineTo(0, 3.2); ped.lineTo(-8.8, 0);
   const pedMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(ped, { depth: 2.4, bevelEnabled: false }), stone); pedMesh.position.set(0, 9.8, -0.6); temple.add(pedMesh);
-  const pedGlow = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.05, 8, 40), M.neon({ color: '#e6b657', intensity: 3, fog: true })); pedGlow.position.set(0, 11.2, 1.85); temple.add(pedGlow);
+  const pedGlow = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.05, 8, 40), M.neon({ color: '#e0b060', intensity: 3, fog: true })); pedGlow.position.set(0, 11.2, 1.85); temple.add(pedGlow);
   const doors = [-1, 1].map((s) => {
     const pivot = new THREE.Group(); pivot.position.set(s * 2.3, 0, 0.5);
     const leaf = new THREE.Mesh(new THREE.BoxGeometry(2.3, 6, 0.3), M.metal({ kind: 'gunmetal', color: '#362e26', roughness: 0.3 })); leaf.position.set(-s * 1.15, 3.35, 0);
     const trim = new THREE.Mesh(new THREE.BoxGeometry(2.0, 5.7, 0.06), M.metal({ kind: 'gold', roughness: 0.4 })); trim.position.set(-s * 1.15, 3.35, 0.18);
     pivot.add(leaf, trim); temple.add(pivot); return { pivot, s };
   });
-  const inner = new THREE.Mesh(new THREE.PlaneGeometry(4.5, 6), new THREE.MeshBasicMaterial({ color: hdr('#e6b657', 0.5), side: THREE.DoubleSide })); inner.position.set(0, 3.35, 0.2); temple.add(inner);
-  const seam = new THREE.Mesh(new THREE.BoxGeometry(0.06, 5.9, 0.05), M.neon({ color: '#e6b657', intensity: 2.4, fog: true })); seam.position.set(0, 3.35, 0.7); temple.add(seam);
-  const gateBeam = M.energyBeam({ color: '#e6b657', length: 18, radius: 1.9, taper: 1.6, intensity: 0.6, speed: 0.3 }); gateBeam.rotation.x = Math.PI / 2; gateBeam.position.set(0, 3.2, 0.6); gateBeam.visible = false; temple.add(gateBeam);
-  const gateLight = new THREE.PointLight('#e6b657', 0, 40, 1.4); gateLight.position.set(0, 3.2, 3); temple.add(gateLight);
+  const inner = new THREE.Mesh(new THREE.PlaneGeometry(4.5, 6), new THREE.MeshBasicMaterial({ color: hdr('#e0b060', 0.5), side: THREE.DoubleSide })); inner.position.set(0, 3.35, 0.2); temple.add(inner);
+  const seam = new THREE.Mesh(new THREE.BoxGeometry(0.06, 5.9, 0.05), M.neon({ color: '#e0b060', intensity: 2.4, fog: true })); seam.position.set(0, 3.35, 0.7); temple.add(seam);
+  const gateBeam = M.energyBeam({ color: '#e0b060', length: 18, radius: 1.9, taper: 1.6, intensity: 0.6, speed: 0.3 }); gateBeam.rotation.x = Math.PI / 2; gateBeam.position.set(0, 3.2, 0.6); gateBeam.visible = false; temple.add(gateBeam);
+  const gateLight = new THREE.PointLight('#e0b060', 0, 40, 1.4); gateLight.position.set(0, 3.2, 3); temple.add(gateLight);
 
   // ---- petals when the gates open
   const petals = (() => {
@@ -204,14 +204,14 @@ export function createForum(canvas, { O = null } = {}) {
   function setClock({ h, tone }) {
     st.h = h; if (tone) st.tone = tone;
     const [top, mid, hor] = skyAt(h);
-    const tint = new THREE.Color(st.tone === 'calm' ? '#e6b657' : st.tone === 'storm' ? '#8c6543' : '#6da5c7');
+    const tint = new THREE.Color(st.tone === 'calm' ? '#e0b060' : st.tone === 'storm' ? '#9c6b3c' : '#4b7a99');
     hor.lerp(tint, h > 4 && h < 20 ? 0.22 : 0.08);
     skyU.top.value.copy(top); skyU.mid.value.copy(mid); skyU.hor.value.copy(hor);
     const t = (h - 6) / 12, up = t > 0 && t < 1, el = up ? Math.sin(Math.PI * t) : 0, az = Math.max(0, Math.min(1, t));
     const dir = new THREE.Vector3(Math.cos(Math.PI * (1 - az)) * 0.8, Math.max(0.02, el * 0.9), -0.9).normalize();
     skyU.sunDir.value.copy(dir); skyU.glow.value = up ? 0.9 : 0.1;
     sunDisc.position.copy(dir).multiplyScalar(260); sunDisc.visible = up; sun.position.copy(dir).multiplyScalar(40); sun.intensity = up ? 0.5 + 1.3 * el : 0.05;
-    const warm = up && (el < 0.35) ? 1 : 0; sun.color.set(warm ? '#e69a57' : '#e6b657'); sunDisc.material.color.copy(hdr(warm ? '#e69a57' : '#e6b657', 2.2));
+    const warm = up && (el < 0.35) ? 1 : 0; sun.color.set(warm ? '#e0b060' : '#e0b060'); sunDisc.material.color.copy(hdr(warm ? '#e0b060' : '#e0b060', 2.2));
     moon.visible = !up; moon.position.set(-90, 120, -180);
     const night = up ? Math.max(0, 1 - el * 3) : 1;
     stars.material.uniforms.uColor.value.setScalar(0.9 * night); stars.visible = night > 0.05;
@@ -268,9 +268,9 @@ export function createForum(canvas, { O = null } = {}) {
     const sway = live ? Math.sin(t * 0.3) * 0.18 : 0;
     camera.position.set(cam.pos.x + sway, cam.pos.y + (live ? Math.sin(t * 0.23) * 0.08 : 0), cam.pos.z); camera.lookAt(cam.look);
     doors.forEach((d) => { d.pivot.rotation.y = d.s * st.gates * 1.5; });
-    inner.material.color.copy(hdr('#e6b657', 0.5 + 2.3 * st.gates)); seam.visible = st.gates < 0.5;
+    inner.material.color.copy(hdr('#e0b060', 0.5 + 2.3 * st.gates)); seam.visible = st.gates < 0.5;
     gateBeam.visible = st.gates > 0.05; gateBeam.material.uniforms.uTime.value = t; gateBeam.material.uniforms.uPower.value = 0.9 * st.gates; gateLight.intensity = 120 * st.gates;
-    laurel.material.color.copy(hdr(st.gatesTarget ? '#e6b657' : '#aeb86e', st.gatesTarget ? 3.4 : 2.4));
+    laurel.material.color.copy(hdr(st.gatesTarget ? '#e0b060' : '#aeb86e', st.gatesTarget ? 3.4 : 2.4));
     scroll.rotation.y = live ? t * 0.6 : 0.4; scroll.position.y = 2.9 + (live ? Math.sin(t * 1.4) * 0.08 : 0); laurel.rotation.z = live ? t * 0.5 : 0;
     pillars.forEach((P, i) => { P.tab.position.y = 4.1 + (live ? Math.sin(t * 1.2 + i) * 0.06 : 0); P.beam.material.uniforms.uTime.value = t; const f = st.focus === i ? 1.6 : 1; P.tab.scale.setScalar(f); });
     flames.forEach((f) => { const ph = f.userData.ph; f.scale.set(1.2 + (live ? Math.sin(t * 7 + ph) * 0.16 : 0), 1.7 + (live ? Math.sin(t * 9 + ph * 2) * 0.28 : 0), 1); });

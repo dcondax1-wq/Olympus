@@ -79,34 +79,34 @@ export function brief(pan, home, p) {
   if (C && num(C.gauge) != null) {
     const g = num(C.gauge), lean = g >= 62 ? 'lean risk-on' : g <= 38 ? 'lean risk-off' : 'are split';
     out.push({ id: 'council', title: 'The Council', glyph: 'Σ', tone: g >= 62 ? 'calm' : g <= 38 ? 'storm' : 'watch', stat: `${txt(C.label, 12) || 'Mixed'} ${Math.round(g)}`,
-      line: `The gods ${lean}.`, body: `${txt(C.text, 220)} ${txt(C.honesty, 160)}`.trim(), color: '#e6b657' });
-  } else out.push({ id: 'council', title: 'The Council', glyph: 'Σ', tone: 'info', stat: 'Silent', line: 'No verdict published yet.', body: 'The Pantheon has not published a council verdict. The Forum never guesses one.', color: '#e6b657' });
+      line: `The gods ${lean}.`, body: `${txt(C.text, 220)} ${txt(C.honesty, 160)}`.trim(), color: '#e0b060' });
+  } else out.push({ id: 'council', title: 'The Council', glyph: 'Σ', tone: 'info', stat: 'Silent', line: 'No verdict published yet.', body: 'The Pantheon has not published a council verdict. The Forum never guesses one.', color: '#e0b060' });
   // 2. fear (VIX)
   const ares = godOf(pan, 'ares'), vix = ares && isObj(ares.reading) ? num(ares.reading.value) : null;
   if (vix != null) {
     const band = vix < 15 ? ['calm', 'Calm waters'] : vix < 20 ? ['calm', 'Normal'] : vix < 27 ? ['watch', 'Lively'] : ['storm', 'Stormy'];
     out.push({ id: 'fear', title: 'Fear (VIX)', glyph: 'Ω', tone: band[0], stat: `VIX ${readingOf(ares)}`, line: `${band[1]}. ${changeOf(ares)}`.trim(),
-      body: `${band[1]}: the VIX is ${readingOf(ares)} (${changeOf(ares) || 'no change shown'}). The bot's target is a VIX-band move, so a livelier day means a wider target and a wider stop, never a bigger bet: size follows the stop.`, color: '#cc7156' });
-  } else out.push({ id: 'fear', title: 'Fear (VIX)', glyph: 'Ω', tone: 'info', stat: 'No VIX', line: 'The volatility reading is missing.', body: 'The Pantheon has no volatility reading right now.', color: '#cc7156' });
+      body: `${band[1]}: the VIX is ${readingOf(ares)} (${changeOf(ares) || 'no change shown'}). The bot's target is a VIX-band move, so a livelier day means a wider target and a wider stop, never a bigger bet: size follows the stop.`, color: '#c0603f' });
+  } else out.push({ id: 'fear', title: 'Fear (VIX)', glyph: 'Ω', tone: 'info', stat: 'No VIX', line: 'The volatility reading is missing.', body: 'The Pantheon has no volatility reading right now.', color: '#c0603f' });
   // 3. the calendar
   const ath = godOf(pan, 'athena'), when = readingOf(ath);
   if (when) {
     const tone = /today/i.test(when) ? 'storm' : /tomorrow/i.test(when) ? 'watch' : 'calm';
-    out.push({ id: 'calendar', title: 'The calendar', glyph: 'Α', tone, stat: when, line: changeOf(ath) || 'The next high-impact release.', body: `${txt(C && C.caution, 200) || `Next high-impact release: ${when}.`} Big news can move NQ in seconds; the bot has no news filter, so know the time.`, color: '#fac95f' });
-  } else out.push({ id: 'calendar', title: 'The calendar', glyph: 'Α', tone: 'info', stat: 'No data', line: 'No calendar reading.', body: 'The macro calendar is not in the Pantheon feed right now.', color: '#fac95f' });
+    out.push({ id: 'calendar', title: 'The calendar', glyph: 'Α', tone, stat: when, line: changeOf(ath) || 'The next high-impact release.', body: `${txt(C && C.caution, 200) || `Next high-impact release: ${when}.`} Big news can move NQ in seconds; the bot has no news filter, so know the time.`, color: '#e0b060' });
+  } else out.push({ id: 'calendar', title: 'The calendar', glyph: 'Α', tone: 'info', stat: 'No data', line: 'No calendar reading.', body: 'The macro calendar is not in the Pantheon feed right now.', color: '#e0b060' });
   // 4. the money tide (rates + liquidity)
   const zeus = godOf(pan, 'zeus'), pos = godOf(pan, 'poseidon');
   if (zeus || pos) out.push({ id: 'money', title: 'The money tide', glyph: 'Π', tone: 'info', stat: readingOf(zeus) ? `10y ${readingOf(zeus)}` : readingOf(pos),
     line: [readingOf(zeus) && `10y yield ${readingOf(zeus)} (${changeOf(zeus)})`, readingOf(pos) && `liquidity ${readingOf(pos)}`].filter(Boolean).join(', '),
-    body: `Rates and liquidity set the tide NQ floats on: ${readingOf(zeus) ? `the 10-year yield is ${readingOf(zeus)} (${changeOf(zeus)})` : 'no yield reading'}${readingOf(pos) ? `; liquidity ${readingOf(pos)} (${changeOf(pos)})` : ''}. Context only: it did not predict the next day in 2021-26.`, color: '#6da5c7' });
-  else out.push({ id: 'money', title: 'The money tide', glyph: 'Π', tone: 'info', stat: 'No data', line: 'No rates or liquidity reading.', body: 'Rates and liquidity are not in the Pantheon feed right now.', color: '#6da5c7' });
+    body: `Rates and liquidity set the tide NQ floats on: ${readingOf(zeus) ? `the 10-year yield is ${readingOf(zeus)} (${changeOf(zeus)})` : 'no yield reading'}${readingOf(pos) ? `; liquidity ${readingOf(pos)} (${changeOf(pos)})` : ''}. Context only: it did not predict the next day in 2021-26.`, color: '#4b7a99' });
+  else out.push({ id: 'money', title: 'The money tide', glyph: 'Π', tone: 'info', stat: 'No data', line: 'No rates or liquidity reading.', body: 'Rates and liquidity are not in the Pantheon feed right now.', color: '#4b7a99' });
   // 5. the eval
   const ev = evalOf(home);
   if (ev) {
     const tone = ev.room < 600 ? 'storm' : ev.room < 1200 ? 'watch' : 'calm';
     out.push({ id: 'eval', title: 'The eval', glyph: 'Φ', tone, stat: `${fmtUsd(ev.room)} room`, line: `${fmtUsd(ev.toTarget)} to the target${ev.session ? `, session ${ev.session}${ev.sessions ? ' of ' + ev.sessions : ''}` : ''}.`,
-      body: `${ev.name}: balance ${fmtUsd(ev.balance)}, floor ${fmtUsd(ev.floor)}${ev.locked ? ' (locked)' : ''}, target ${fmtUsd(ev.target)}. You are ${fmtUsd(ev.room)} above the floor and ${fmtUsd(ev.toTarget)} below the target. One full stop-out is about one trade; the Labyrinth shows what a size does to that.`, color: '#e6b657' });
-  } else out.push({ id: 'eval', title: 'The eval', glyph: 'Φ', tone: 'info', stat: 'No eval', line: 'No eval account is published.', body: 'The site does not show a Builder 50K eval right now.', color: '#e6b657' });
+      body: `${ev.name}: balance ${fmtUsd(ev.balance)}, floor ${fmtUsd(ev.floor)}${ev.locked ? ' (locked)' : ''}, target ${fmtUsd(ev.target)}. You are ${fmtUsd(ev.room)} above the floor and ${fmtUsd(ev.toTarget)} below the target. One full stop-out is about one trade; the Labyrinth shows what a size does to that.`, color: '#e0b060' });
+  } else out.push({ id: 'eval', title: 'The eval', glyph: 'Φ', tone: 'info', stat: 'No eval', line: 'No eval account is published.', body: 'The site does not show a Builder 50K eval right now.', color: '#e0b060' });
   // 6. the plan
   out.push({ id: 'plan', title: "Today's plan", glyph: 'Λ', tone: 'info', stat: 'LIT, hands off', line: 'One trade at most. The bot does the work.',
     body: 'LIT: a sweep of a level, then a 5-minute CISD entry. One trade a day, entries 02:00-15:30 ET, the stop one tick beyond the sweep extreme, the target banked at 8R, breakeven at 1R, flat at 15:55. Paper and Sim only. Your job today: do not touch it.', color: '#aeb86e' });

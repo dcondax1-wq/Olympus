@@ -152,12 +152,12 @@ function bind() {
 function tex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
 const glowTex = () => tex(64, 64, (x) => { const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.3, 'rgba(255,255,255,.4)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); });
 const coinTex = () => tex(128, 128, (x, w) => {
-  x.fillStyle = '#d9ac52'; x.fillRect(0, 0, w, w);
-  const g = x.createRadialGradient(64, 64, 6, 64, 64, 64); g.addColorStop(0, '#e6b657'); g.addColorStop(1, '#b89246'); x.fillStyle = g; x.beginPath(); x.arc(64, 64, 60, 0, 7); x.fill();
-  x.strokeStyle = '#b89246'; x.lineWidth = 4; x.beginPath(); x.arc(64, 64, 52, 0, 7); x.stroke();
-  x.fillStyle = '#b89246'; x.font = '700 64px "Iowan Old Style", Palatino, Georgia, serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('Ρ', 64, 68);
+  x.fillStyle = '#c8a24a'; x.fillRect(0, 0, w, w);
+  const g = x.createRadialGradient(64, 64, 6, 64, 64, 64); g.addColorStop(0, '#e0b060'); g.addColorStop(1, '#c8a24a'); x.fillStyle = g; x.beginPath(); x.arc(64, 64, 60, 0, 7); x.fill();
+  x.strokeStyle = '#c8a24a'; x.lineWidth = 4; x.beginPath(); x.arc(64, 64, 52, 0, 7); x.stroke();
+  x.fillStyle = '#c8a24a'; x.font = '700 64px "Iowan Old Style", Palatino, Georgia, serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('Ρ', 64, 68);
 });
-const stripeTex = () => { const t = tex(8, 64, (x, w, h) => { for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? '#c99f4c' : '#e6b657'; x.fillRect(0, i * 8, w, 8); } }); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 1); return t; };
+const stripeTex = () => { const t = tex(8, 64, (x, w, h) => { for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? '#c8a24a' : '#e0b060'; x.fillRect(0, i * 8, w, 8); } }); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 1); return t; };
 const labelTex = (text, color) => tex(256, 64, (x) => { x.font = '700 30px "Iowan Old Style", Palatino, Georgia, serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = color; x.fillText(text, 128, 34); });
 const MAXC = 13, GAP = 0.62, HMAX = 3.4;
 
@@ -176,32 +176,32 @@ class Vault {
   build() {
     const S3 = this.scene;
     S3.add(new THREE.HemisphereLight(0xffe9c8, 0x3a2c1e, 1.1));
-    const key = new THREE.PointLight(0xe6b657, 40, 26, 1.5); key.position.set(0, 6, 5); S3.add(key);
+    const key = new THREE.PointLight(0xe0b060, 40, 26, 1.5); key.position.set(0, 6, 5); S3.add(key);
     const floor = new THREE.Mesh(new THREE.BoxGeometry(MAXC * GAP + 1.2, 0.2, 2.2), new THREE.MeshStandardMaterial({ color: 0xd8cdb8, roughness: 0.42, metalness: 0.05 }));
     floor.position.y = -0.1; S3.add(floor);
     const stripe = stripeTex();
-    this.cols = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.22, 0.22, 1, 20), new THREE.MeshStandardMaterial({ map: stripe, emissive: 0x6a4a1c, emissiveIntensity: 0.12, roughness: 0.34, metalness: 0.55 }), MAXC);
-    this.ghost = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.3, 0.3, 1, 20, 1, true), new THREE.MeshBasicMaterial({ color: 0xfac95f, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }), MAXC);
-    this.goalRings = new THREE.InstancedMesh(new THREE.TorusGeometry(0.34, 0.025, 8, 28), new THREE.MeshBasicMaterial({ color: 0xaeb86e }), MAXC);
+    this.cols = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.22, 0.22, 1, 20), new THREE.MeshStandardMaterial({ map: stripe, emissive: 0x9c6b3c, emissiveIntensity: 0.12, roughness: 0.34, metalness: 0.55 }), MAXC);
+    this.ghost = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.3, 0.3, 1, 20, 1, true), new THREE.MeshBasicMaterial({ color: 0xe0b060, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }), MAXC);
+    this.goalRings = new THREE.InstancedMesh(new THREE.TorusGeometry(0.34, 0.025, 8, 28), new THREE.MeshBasicMaterial({ color: 0x7f8a52 }), MAXC);
     this.goalRings.rotation.x = 0;
     S3.add(this.cols, this.ghost, this.goalRings);
-    this.coin = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.16, 40), [new THREE.MeshStandardMaterial({ color: 0xe0b255, metalness: 0.8, roughness: 0.3 }), new THREE.MeshStandardMaterial({ map: coinTex(), metalness: 0.7, roughness: 0.35 }), new THREE.MeshStandardMaterial({ map: coinTex(), metalness: 0.7, roughness: 0.35 })]);
+    this.coin = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.16, 40), [new THREE.MeshStandardMaterial({ color: 0xc8a24a, metalness: 0.8, roughness: 0.3 }), new THREE.MeshStandardMaterial({ map: coinTex(), metalness: 0.7, roughness: 0.35 }), new THREE.MeshStandardMaterial({ map: coinTex(), metalness: 0.7, roughness: 0.35 })]);
     this.coin.position.set(0, 4.6, -1.2); this.coin.rotation.z = Math.PI / 2; S3.add(this.coin);
-    this.halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex(), color: 0xe6b657, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.6 }));
+    this.halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex(), color: 0xe0b060, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.6 }));
     this.halo.scale.set(3.4, 3.4, 1); this.halo.position.copy(this.coin.position); S3.add(this.halo);
     this.tag = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false })); this.tag.scale.set(2.4, 0.6, 1); S3.add(this.tag);
     this.lastTag = '';
     const n = this.lite ? 10 : 24; this.sparkN = n; this.sparkPos = new Float32Array(n * 3);
     this.seed = Array.from({ length: n }, (_, i) => ({ x: ((i * 0.61) % 1 - 0.5) * 8, y: (i * 0.37) % 4.5, z: (((i * 0.83) % 1) - 0.5) * 2, s: 0.2 + (i % 5) * 0.07 }));
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(this.sparkPos, 3));
-    this.sparks = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xe6b657, size: 0.045, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending })); S3.add(this.sparks);
+    this.sparks = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xe0b060, size: 0.045, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending })); S3.add(this.sparks);
     // the vault's air and light (fx-atmos): a studio environment so the gold reads as metal, a soft shadow under the vault floor, shafts from above, gold embers rising
     setTimeout(() => { try {          // 0.9 s after the vault: the first paint is the vault itself
       const R = this.renderer, pm = new THREE.PMREMGenerator(R); S3.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; pm.dispose();
       this.at = [];
       const ao = AT.contactAO({ radius: 5.6, depth: 1.9, strength: 0.8 }); ao.object.position.set(0, -0.21, 0); S3.add(ao.object); this.at.push(ao);
-      const sh = AT.shafts({ count: 4, from: [-1, 11, 1], to: [0, 0, 0], width: 3.4, spread: [7, 0, 1.5], color: '#e6b657', strength: 0.1, seed: 12 }); S3.add(sh.object); this.at.push(sh);
-      const em = AT.embers({ count: 40, origin: [0, 0, 0.3], spread: [8, 0, 1.4], rise: 4.2, colors: ['#e6b657', '#e6b657', '#b89246'], size: 3, wind: 0, seed: 33 }); S3.add(em.object); this.at.push(em);
+      const sh = AT.shafts({ count: 4, from: [-1, 11, 1], to: [0, 0, 0], width: 3.4, spread: [7, 0, 1.5], color: '#e0b060', strength: 0.1, seed: 12 }); S3.add(sh.object); this.at.push(sh);
+      const em = AT.embers({ count: 40, origin: [0, 0, 0.3], spread: [8, 0, 1.4], rise: 4.2, colors: ['#e0b060', '#e0b060', '#c8a24a'], size: 3, wind: 0, seed: 33 }); S3.add(em.object); this.at.push(em);
       AT.setQuality(this.at, this.lite ? 'low' : 'high'); this.dirty = true;
     } catch (e) { this.at = []; } }, 900);
   }
@@ -214,7 +214,7 @@ class Vault {
       const x = x0 + k * GAP, v = P.mean[k] * sc, b = P.p10[k] * sc;
       const h = Math.max(0.04, Math.abs(v));
       this.cols.setMatrixAt(k, m4.compose(p.set(x, v >= 0 ? h / 2 : -h / 2, 0), q.identity(), s.set(1, h, 1)));
-      this.cols.setColorAt?.(k, new THREE.Color(v >= 0 ? 0xf3ece0 : 0xcc7156));
+      this.cols.setColorAt?.(k, new THREE.Color(v >= 0 ? 0xf3ece0 : 0xc0603f));
       const hb = Math.max(0.04, Math.abs(b));
       this.ghost.setMatrixAt(k, m4.compose(p.set(x, b >= 0 ? hb / 2 : -hb / 2, 0.02), q.identity(), s.set(1, hb, 1)));
       const gy = P.goal && k > 0 ? P.goal * k * sc : -9;
@@ -223,7 +223,7 @@ class Vault {
     }
     for (const m of [this.cols, this.ghost, this.goalRings]) { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
     const end = P.mean[P.months], txt = usd(end);
-    if (this.lastTag !== txt) { this.lastTag = txt; this.tag.material.map?.dispose(); this.tag.material.map = labelTex(txt, end >= 0 ? '#aeb86e' : '#cc7156'); this.tag.material.needsUpdate = true; }
+    if (this.lastTag !== txt) { this.lastTag = txt; this.tag.material.map?.dispose(); this.tag.material.map = labelTex(txt, end >= 0 ? '#aeb86e' : '#c0603f'); this.tag.material.needsUpdate = true; }
     this.tag.position.set(x0 + (M - 1) * GAP, Math.max(0, end * sc) + 0.7, 0);
     this.dirty = true;
   }

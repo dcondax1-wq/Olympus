@@ -19,9 +19,12 @@ const store = {
 };
 const persist = () => store.write({ vows: S.vows });
 
+// an optional file that answered 404 is not asked again for 30 minutes (a browser logs every 404 as a console error): once per phone, not on every open
+const wasGone = (u) => { try { const t = +localStorage.getItem('nemesis.opt404.' + u); return !!t && Date.now() - t < 1800e3; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem('nemesis.opt404.' + u, String(Date.now())); } catch (_) { /* private mode */ } };
 async function getJSON(url, ms = 6000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
-  try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
+  try { if (wasGone(url)) return null; const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); if (r.status === 404) markGone(url); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
 function journalTags() { try { return readTags(localStorage.getItem('le.jtags')); } catch (_) { return {}; } }
 
@@ -46,6 +49,10 @@ function renderSummary() {
   $('tLost').textContent = usd(-rk.lost);
   const lc = rk.rank.reduce((s, r) => s + r.cost, 0);
   $('tLeak').textContent = usd(-lc);
+  { let av = $('avoid');                                          // AGORA: how much of the loss was avoidable, in dollars
+    if (!av) { av = document.createElement('p'); av.id = 'avoid'; av.className = 'avoid'; $('live').before(av); }
+    av.hidden = !(rk.lost > 0);
+    if (rk.lost > 0) av.textContent = lc > 0 ? `${Math.round((lc / rk.lost) * 100)}% of the money lost was avoidable: ${usd(lc)} of ${usd(rk.lost)}. The rest was the plan working as designed, a normal loss.` : `None of the ${usd(rk.lost)} lost was a leak: every loss was the plan working as designed.`; }
   const live = $('live'), ev = S.home && S.home.eval;
   if (ev && ev.balance != null && ev.floor != null) {
     live.textContent = `Your live eval now: balance ${usd(ev.balance)}, floor ${usd(ev.floor)}, room ${usd(ev.balance - ev.floor)}.`;

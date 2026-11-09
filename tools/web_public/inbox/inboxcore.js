@@ -9,13 +9,13 @@ export const CACHE_KEY = 'inbox.cache.v1';    // { t, feeds: { name: json } }: t
 
 // the sources: id, name, glyph, colour (the app's own), where "Open" goes
 export const SOURCES = [
-  { id: 'bots', name: 'Bots', icon: '◎', color: '#cc9362', href: '../' },
-  { id: 'argus', name: 'Argus', icon: 'Α', color: '#fac95f', href: '../argus/' },
-  { id: 'kalshi', name: 'Kalshi', icon: 'K', color: '#edbf5a', href: '../kalshi/' },
-  { id: 'bridge', name: 'Bridge', icon: 'Β', color: '#cfa64f', href: '../bridge/' },
-  { id: 'mind', name: 'Jarvis learned', icon: 'Ω', color: '#e5b857', href: '../jarvis/' },
-  { id: 'arena', name: 'Arena', icon: 'Α', color: '#e6b657', href: '../arena/' },
-  { id: 'system', name: 'System', icon: '⚙', color: '#6a9fc0', href: '../argus/' },
+  { id: 'bots', name: 'Bots', icon: '◎', color: '#e0b060', href: '../' },
+  { id: 'argus', name: 'Argus', icon: 'Α', color: '#e0b060', href: '../argus/' },
+  { id: 'kalshi', name: 'Kalshi', icon: 'K', color: '#e0b060', href: '../kalshi/' },
+  { id: 'bridge', name: 'Bridge', icon: 'Β', color: '#c8a24a', href: '../bridge/' },
+  { id: 'mind', name: 'Jarvis learned', icon: 'Ω', color: '#e0b060', href: '../jarvis/' },
+  { id: 'arena', name: 'Arena', icon: 'Α', color: '#e0b060', href: '../arena/' },
+  { id: 'system', name: 'System', icon: '⚙', color: '#4b7a99', href: '../argus/' },
 ];
 export const SRC = Object.fromEntries(SOURCES.map((s) => [s.id, s]));
 

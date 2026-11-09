@@ -1,7 +1,7 @@
 /* FORUM: the HUD over the Roman forum. The kit (../olympus/olympus.css) gives fonts, tokens, chips and the veil. Jarvis's orb owns the
    bottom-right 80 x 160 px: the card and the step bar stop 96 px from the right. Safe areas on every edge; no sideways scroll at 390 px. */
 :root {
-  --f-bg: #13100d; --f-acc: #aeb86e; --f-acc-rgb: 184, 224, 74; --f-gold: #e6b657; --tone: #6da5c7;
+  --f-bg: #13100d; --f-acc: #c8a24a; --f-acc-rgb: 200, 162, 74; --f-gold: #c8a24a; --tone: #4b7a99;
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
   --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px));
   --vh: var(--oly-vh, 100vh);
@@ -13,7 +13,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 button:focus-visible { outline: 2px solid var(--f-acc); outline-offset: 2px; }
 #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; }
 html[data-noscene] #view { display: none; }
-html[data-noscene] body { background: linear-gradient(#453b31, #8c6543 60%, #13100d); }
+html[data-noscene] body { background: linear-gradient(#453b31, #9c6b3c 60%, #13100d); }
 
 #ui { position: fixed; top: 0; left: 0; right: 0; padding: calc(var(--st) + 10px) calc(var(--sr) + 16px) 0 calc(var(--sl) + 16px); pointer-events: none; display: flex; flex-direction: column; gap: 8px; }
 #ui > * { pointer-events: auto; }
@@ -22,7 +22,7 @@ html[data-noscene] body { background: linear-gradient(#453b31, #8c6543 60%, #131
 .brand .sub { margin: 3px 0 0; font-size: var(--oly-t-micro, 10.5px); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
 .tags { display: flex; gap: 6px; }
 .tag { padding: 3px 8px; border-radius: 999px; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line); color: var(--oly-dim); background: var(--oly-glass); }
-.tag.demo { color: #e6b657; border-color: rgba(230, 182, 87, .5); }
+.tag.demo { color: #e0b060; border-color: rgba(224, 176, 96, .5); }
 .tag[hidden] { display: none; }
 
 .clock { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; padding: 8px 12px; border-radius: var(--oly-r-card, 16px); background: var(--oly-glass); border: 1px solid var(--oly-line);
@@ -77,8 +77,8 @@ html[data-noscene] body { background: linear-gradient(#453b31, #8c6543 60%, #131
 
 /* 2026-11-04: the desk tablets, the streak shrine */
 .shrine { grid-column: 1 / -1; display: flex; gap: 9px; align-items: flex-end; height: 26px; padding: 0 2px; }
-.candle { position: relative; display: block; width: 8px; height: 16px; border-radius: 2px; background: linear-gradient(#e6b657, #b89246); opacity: .45; }
-.candle .flame { position: absolute; left: 50%; bottom: 100%; width: 8px; height: 11px; margin-left: -4px; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%; background: radial-gradient(#e6b657, #e6b657 60%, rgba(230, 154, 87, 0)); opacity: 0; transform-origin: 50% 100%; }
+.candle { position: relative; display: block; width: 8px; height: 16px; border-radius: 2px; background: linear-gradient(#e0b060, #c8a24a); opacity: .45; }
+.candle .flame { position: absolute; left: 50%; bottom: 100%; width: 8px; height: 11px; margin-left: -4px; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%; background: radial-gradient(#e0b060, #e0b060 60%, rgba(224, 176, 96, 0)); opacity: 0; transform-origin: 50% 100%; }
 .candle.lit { opacity: 1; box-shadow: none; }
 .candle.lit .flame { opacity: 1; animation: flick 1.1s ease-in-out infinite alternate; filter: none; }
 .candle:nth-child(2n) .flame { animation-delay: -.4s; } .candle:nth-child(3n) .flame { animation-delay: -.7s; }
@@ -98,18 +98,51 @@ html[data-fx="low"] .candle.lit .flame, html[data-fx="off"] .candle.lit .flame {
 @media (max-height: 700px) { .clock { padding: 6px 10px; } .ck b { font-size: 20px; } }
 
 /* ---- Money today + the trading day (forumplus.js) ---- */
-.desk.plus .mcard { --dtone: #6da5c7; padding: 10px 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--dtone) 45%, var(--oly-line)); background: linear-gradient(160deg, color-mix(in srgb, var(--dtone) 12%, transparent), rgba(255, 255, 255, .02)); }
+.desk.plus .mcard { --dtone: #4b7a99; padding: 10px 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--dtone) 45%, var(--oly-line)); background: linear-gradient(160deg, color-mix(in srgb, var(--dtone) 12%, transparent), rgba(255, 255, 255, .02)); }
 .mcard .mdd { display: block; font: 800 15px/1.25 var(--oly-ui, sans-serif); color: var(--dtone); font-variant-numeric: tabular-nums; }
 .mcard .mbar { display: block; height: 10px; margin: 8px 0; border-radius: 6px; background: rgba(255, 255, 255, .09); overflow: hidden; }
-.mcard .mbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #cc7156, #e6b657 45%, #aeb86e); transition: width .6s cubic-bezier(.16, 1, .3, 1); }
+.mcard .mbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #c0603f, #e0b060 45%, #aeb86e); transition: width .6s cubic-bezier(.16, 1, .3, 1); }
 .mcard .mline, .mcard .mnote { margin: 4px 0; font-size: 12.5px; line-height: 1.4; color: var(--oly-dim); } .mcard .mnote { font-size: 12px; }
-.mcard .mnews { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--ntone, #6da5c7); background: rgba(255, 255, 255, .04); font-size: 12.5px; line-height: 1.4; color: var(--oly-text, #f3ece0); }
+.mcard .mnews { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--ntone, #4b7a99); background: rgba(255, 255, 255, .04); font-size: 12.5px; line-height: 1.4; color: var(--oly-text, #f3ece0); }
 .mtab { width: 100%; border-collapse: collapse; margin-top: 6px; font-variant-numeric: tabular-nums; }
 .mtab th { padding: 3px 4px; text-align: right; font: 600 12px/1.2 var(--oly-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
 .mtab th:first-child, .mtab td.k { text-align: left; } .mtab td { padding: 6px 4px; text-align: right; font-size: 13px; border-top: 1px solid var(--oly-line); } .mtab td.k { font-weight: 700; } .mtab td.good { color: #aeb86e; }
 .dbar { position: relative; display: flex; height: 16px; border-radius: 8px; overflow: hidden; background: rgba(255, 255, 255, .06); }
-.dbar .ds { display: block; height: 100%; } .dbar .ds.go { background: linear-gradient(90deg, rgba(174, 184, 110, .55), rgba(174, 184, 110, .75)); } .dbar .ds.warn { background: rgba(230, 182, 87, .7); } .dbar .ds.rest { background: rgba(109, 165, 199, .16); }
+.dbar .ds { display: block; height: 100%; } .dbar .ds.go { background: linear-gradient(90deg, rgba(127, 138, 82, .55), rgba(127, 138, 82, .75)); } .dbar .ds.warn { background: rgba(224, 176, 96, .7); } .dbar .ds.rest { background: rgba(75, 122, 153, .16); }
 .dbar .dnow { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: #f3ece0; box-shadow: none; }
 .dticks { display: flex; justify-content: space-between; margin-top: 3px; font-size: 12px; color: var(--oly-dim); }
 .dline { margin: 6px 0 0; font-size: 12.5px; line-height: 1.4; color: var(--oly-text, #f3ece0); }
 @media (prefers-reduced-motion: reduce) { .mcard .mbar i { transition: none; } }
+
+/* ===== AGORA revamp (2026-11-09): one primary thing per screen, big plain numbers, fewer boxes ===== */
+.brand h1 { font: 600 26px/1.05 var(--ag-serif, Georgia, serif); color: #f3ece0; letter-spacing: .01em; }
+.brand h1::after { content: ""; display: block; width: 56px; height: 2px; margin-top: 7px; background: linear-gradient(90deg, #c8a24a, transparent); }
+.brand .sub { font-size: 13px; color: #9a8f7d; }
+.clock { background: transparent; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 6px 2px 0; gap: 0 14px; }
+.ck b { font: 600 40px/1 var(--ag-serif, Georgia, serif); color: #f3ece0; text-shadow: 0 1px 10px rgba(0,0,0,.6) !important; }
+.ck span { color: #cfc4b2; font-size: 13px; }
+.nx { font-size: 15px; color: #f3ece0; text-shadow: 0 1px 8px rgba(0,0,0,.7) !important; }
+.streak { background: rgba(20, 17, 14, .72); }
+.shrine { height: 20px; opacity: .85; }
+.card { background: #1d1914; border-color: #3a3228; padding: 18px 18px 16px; border-radius: 16px; max-height: calc(100dvh - var(--st) - 250px); }
+.card h2 { font: 600 24px/1.15 var(--ag-serif, Georgia, serif); margin-bottom: 8px; }
+.card p { font-size: 15px; line-height: 1.45; color: #cfc4b2; }
+.go { min-height: 52px; border-radius: 12px; background: linear-gradient(180deg, #c8a24a, #c8a24a); border: 1px solid #e0b060; color: #1b1610; font-size: 17px; letter-spacing: 0; }
+.go:disabled { background: #2a251d; color: #9a8f7d; border-color: #3a3228; }
+.desk { margin-top: 14px; padding-top: 12px; }
+.desk .dhead { font: 600 15px/1.2 var(--ag-serif, Georgia, serif); color: #c8a24a; margin-bottom: 8px; }
+.dgrid { grid-template-columns: 1fr; gap: 0; }
+.dtab { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding: 10px 0; border: 0; border-top: 1px solid #3a3228; border-radius: 0; background: transparent; }
+.dtab:first-child { border-top: 0; }
+.dtop b { font: 600 15px/1.2 var(--ag-serif, Georgia, serif); color: #f3ece0; }
+.dstat { margin-left: auto; font-size: 16px; font-family: var(--ag-num, system-ui); }
+.dline { flex: 0 0 100%; font-size: 13px; color: #9a8f7d; }
+.desk.plus .mcard { background: transparent; border: 0; padding: 0; }
+.mhero { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; margin: 2px 0 12px; }
+.mh { display: grid; gap: 2px; min-width: 0; } .mh:first-child { grid-column: 1 / -1; }
+.mh .ag-money { color: var(--mt, #f3ece0); font-size: 34px; } .mh:first-child .ag-money { font-size: 44px; }
+.mcard .mdd { display: none; }
+.mcard .mbar { height: 8px; } .mcard .mbar i { background: linear-gradient(90deg, #9c6b3c, #c8a24a); }
+.mcard .mnews { background: #26211b; border-radius: 12px; }
+.dbar .ds.go { background: #7f8a52; } .dbar .ds.warn { background: #c8a24a; } .dbar .ds.rest { background: #2b251d; }
+.pledge { border-radius: 12px; background: #26211b; font-size: 15px; min-height: 48px; }

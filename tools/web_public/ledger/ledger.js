@@ -19,9 +19,12 @@ const kv = (rows) => { const ul = h('ul', 'kv'); for (const r of rows) { if (!r)
 const pct0 = (x) => `${Math.round(x * 100)}%`;
 const NAMES = { kalshi: 'Kalshi bot (real money)', general: 'General (expenses, other income)' };
 
+// an optional file that answered 404 is not asked again for 30 minutes (a browser logs every 404 as a console error): once per phone, not on every open
+const wasGone = (u) => { try { const t = +localStorage.getItem('ledger.opt404.' + u); return !!t && Date.now() - t < 1800e3; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem('ledger.opt404.' + u, String(Date.now())); } catch (_) { /* private mode */ } };
 async function getJSON(url, ms = 6000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
-  try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
+  try { if (wasGone(url)) return null; const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); if (r.status === 404) markGone(url); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
 const store = {
   read() { try { return C.loadState(localStorage.getItem(KEY)); } catch (_) { return C.emptyState(); } },
@@ -175,12 +178,12 @@ function barsChart(rows) {
   svg.append(sv('line', { x1: padL, x2: W - padL, y1: sc(0), y2: sc(0), stroke: 'rgba(255,255,255,.25)', 'stroke-width': 1 }));
   rows.forEach((r, i) => {
     const x = padL + i * bw + bw * 0.18, w = bw * 0.64;
-    if (up[i] > 0) svg.append(sv('rect', { x, y: sc(up[i]), width: w / 2 - 1, height: Math.max(1, sc(0) - sc(up[i])), rx: 2, fill: '#e1b556' }, null));
-    if (dn[i] > 0) svg.append(sv('rect', { x: x + w / 2, y: sc(0), width: w / 2 - 1, height: Math.max(1, sc(-dn[i]) - sc(0)), rx: 2, fill: '#cc7156' }));
+    if (up[i] > 0) svg.append(sv('rect', { x, y: sc(up[i]), width: w / 2 - 1, height: Math.max(1, sc(0) - sc(up[i])), rx: 2, fill: '#e0b060' }, null));
+    if (dn[i] > 0) svg.append(sv('rect', { x: x + w / 2, y: sc(0), width: w / 2 - 1, height: Math.max(1, sc(-dn[i]) - sc(0)), rx: 2, fill: '#c0603f' }));
     svg.append(sv('text', { x: padL + i * bw + bw / 2, y: H - 6, 'text-anchor': 'middle' }, C.monthName(r.ym)));
   });
-  svg.append(sv('polyline', { points: rows.map((r, i) => `${padL + i * bw + bw / 2},${sc(r.cum)}`).join(' '), fill: 'none', stroke: '#e6b657', 'stroke-width': 2, 'stroke-linejoin': 'round' }));
-  rows.forEach((r, i) => svg.append(sv('circle', { cx: padL + i * bw + bw / 2, cy: sc(r.cum), r: 2.6, fill: '#e6b657' })));
+  svg.append(sv('polyline', { points: rows.map((r, i) => `${padL + i * bw + bw / 2},${sc(r.cum)}`).join(' '), fill: 'none', stroke: '#e0b060', 'stroke-width': 2, 'stroke-linejoin': 'round' }));
+  rows.forEach((r, i) => svg.append(sv('circle', { cx: padL + i * bw + bw / 2, cy: sc(r.cum), r: 2.6, fill: '#e0b060' })));
   return svg;
 }
 function heatChart(map, today) {
@@ -218,7 +221,7 @@ function calGrid(month, m) {
 }
 function cashView() {
   const m = S.model, t = m.totals, out = [];
-  const leg = h('div', 'legend'); [['#e1b556', 'money in'], ['#cc7156', 'money out'], ['#e6b657', 'running total']].forEach(([c, l]) => { const s = h('span'); const i = h('i'); i.style.background = c; s.append(i, document.createTextNode(l)); leg.append(s); });
+  const leg = h('div', 'legend'); [['#e0b060', 'money in'], ['#c0603f', 'money out'], ['#e0b060', 'running total']].forEach(([c, l]) => { const s = h('span'); const i = h('i'); i.style.background = c; s.append(i, document.createTextNode(l)); leg.append(s); });
   out.push(card('Monthly waterfall', barsChart(m.months), leg, h('p', '', 'Each month: what came in, what went out, and the running total of your net profit. Kalshi counts by the bot\'s own daily results.')));
   const map = C.daily(m.list, m.feed, C.addDays(m.today, -98), m.today);
   out.push(card('Cash flow by day', heatChart(map, m.today), h('p', '', 'Green = more came in than went out that day, red = the opposite. Empty = nothing happened. Last 14 weeks.')));
@@ -227,7 +230,7 @@ function cashView() {
   const nav = h('div', 'mnav'), prev = h('button', 'btn sm', '‹'), next = h('button', 'btn sm', '›'), lab = h('b', '', `${C.monthName(cm).replace("'", '20')}`.replace(/(\w{3}) 20(\d\d)/, (a, b, c) => `${b} 20${c}`));
   prev.type = 'button'; prev.dataset.act = 'cal'; prev.dataset.d = '-1'; prev.setAttribute('aria-label', 'Previous month'); next.type = 'button'; next.dataset.act = 'cal'; next.dataset.d = '1'; next.setAttribute('aria-label', 'Next month'); nav.append(prev, lab, next);
   const pc = card('Payout calendar', nav, calGrid(cm, m), h('div', 'legend', null));
-  const lg2 = pc.lastChild; for (const [c, l] of [['rgba(230, 182, 87,.6)', 'requested'], ['rgba(225, 181, 86,.6)', 'received'], ['rgba(109, 165, 199,.8)', 'a repeating cost is due']]) { const s = h('span'); const i = h('i'); i.style.background = c; s.append(i, document.createTextNode(l)); lg2.append(s); }
+  const lg2 = pc.lastChild; for (const [c, l] of [['rgba(224, 176, 96,.6)', 'requested'], ['rgba(224, 176, 96,.6)', 'received'], ['rgba(75, 122, 153,.8)', 'a repeating cost is due']]) { const s = h('span'); const i = h('i'); i.style.background = c; s.append(i, document.createTextNode(l)); lg2.append(s); }
   if (pay.pending.length) pc.append(kv(pay.pending.map((p) => [`${acctName(p.acct)} · asked ${p.date}`, `${C.money(p.amount)} · waiting ${p.waiting} day${p.waiting === 1 ? '' : 's'}`, p.waiting > 7 ? 'neg' : ''])), h('p', '', 'MFFU\'s payout time is not in the rulebook, so Ledger only shows how long each request has waited. Check your MFFU dashboard if it feels long.'));
   else pc.append(h('p', '', pay.requested.length ? 'No payout is waiting: every request has a matching payout received.' : 'No payout requested yet.'));
   const plans = pay.plans;

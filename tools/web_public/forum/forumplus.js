@@ -6,7 +6,7 @@ import { moneyToday, riskPlan, tradingDay, newsGate, evalOf } from './forumcore.
 const $ = (id) => document.getElementById(id);
 const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; };
 const usd = (x) => { const v = Math.round(+x || 0), s = '$' + Math.abs(v).toLocaleString('en-US'); return v < 0 ? '-' + s : s; };
-const TONE = { calm: '#aeb86e', watch: '#e6b657', storm: '#cc7156', info: '#6da5c7' };
+const TONE = { calm: '#7f8a52', watch: '#c8a24a', storm: '#c0603f', info: '#4b7a99' };
 
 export function renderMoney(box, home, pan) {
   if (!box) return null;
@@ -16,6 +16,12 @@ export function renderMoney(box, home, pan) {
   const card = h('div', 'mcard'); card.style.setProperty('--dtone', TONE[M.has ? M.tone : 'info']);
   if (M.has) {
     const bar = h('span', 'mbar'), i = h('i'); i.style.width = `${Math.round(M.frac * 100)}%`; bar.append(i);
+    const hero = h('div', 'mhero');
+    [['Drawdown left', usd(M.room), `of ${usd(M.mll)} max loss`, M.tone], ['To the target', usd(M.toTarget), M.toTarget <= 0 ? 'reached' : 'still to make', 'calm'],
+      ['A session needs', M.perSession == null ? '-' : usd(M.perSession), M.left ? `${M.left} session${M.left === 1 ? '' : 's'} left in the 2 weeks` : 'no session count yet', 'info']].forEach(([k, v, n, tn]) => {
+      const c = h('div', 'mh'); c.style.setProperty('--mt', TONE[tn] || TONE.info); c.append(h('span', 'ag-cap', k), h('b', 'ag-money', v), h('small', 'ag-cap', n)); hero.append(c);
+    });
+    card.append(hero);
     card.append(h('b', 'mdd', M.ddText), bar, h('p', 'mline', `${M.paceText}${M.locked ? ' The floor is locked at start + $100.' : ''}`));
     const t = h('table', 'mtab'), hr = h('tr');
     ['Stop', 'Size', 'Risk', 'A 2R win'].forEach((x) => hr.append(h('th', '', x))); t.append(hr);

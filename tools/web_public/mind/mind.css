@@ -8,15 +8,15 @@
   --glass: rgba(27, 23, 19, 0.6);
   --glass-hi: rgba(50, 43, 35, 0.82);
   --line: rgba(255, 255, 255, 0.09);
-  --line-hi: rgba(250, 201, 95, 0.35);
+  --line-hi: rgba(224, 176, 96, 0.35);
   --text: #f6f1ea;
   --mut: #bab4ac;
   --dim: #858078;
   --cyan: #c8a24a;
-  --cyan-rgb: 250, 201, 95;
-  --gold: #e0b060;
-  --ok: #d3a950;
-  --warn: #e6b657;
+  --cyan-rgb: 200, 162, 74;
+  --gold: #c8a24a;
+  --ok: #c8a24a;
+  --warn: #e0b060;
   --orb-w: 80px;
   --orb-h: 160px;
   --gut: 12px;
@@ -77,7 +77,7 @@ h1 { margin: 0; display: grid; line-height: 1; white-space: nowrap; }
 h1 small { font: 600 12px/1 var(--display); letter-spacing: .01em; color: var(--mut); margin-bottom: 3px; }
 h1 b {
   font: 800 16px/1 var(--display); letter-spacing: .01em;
-  background: linear-gradient(90deg, #f3ece0 0%, #e0b060 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  background: linear-gradient(90deg, #f3ece0 0%, #c8a24a 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .mode {
   display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--line);
@@ -85,9 +85,9 @@ h1 b {
   background: rgba(255, 255, 255, 0.04); margin-left: auto;
 }
 .mode i { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); }
-.mode[data-mode="live"] { color: var(--ok); border-color: rgba(211, 169, 80, 0.35); }
+.mode[data-mode="live"] { color: var(--ok); border-color: rgba(200, 162, 74, 0.35); }
 .mode[data-mode="live"] i { background: var(--ok); box-shadow: none; animation: beat 2s ease-in-out infinite; }
-.mode[data-mode="demo"] { color: var(--warn); border-color: rgba(230, 182, 87, 0.35); }
+.mode[data-mode="demo"] { color: var(--warn); border-color: rgba(224, 176, 96, 0.35); }
 .mode[data-mode="demo"] i { background: var(--warn); }
 .mode[data-mode="offline"] i { background: var(--dim); }
 #quality { font-family: var(--display); font-size: 12px; padding: 0 9px; }
@@ -114,7 +114,7 @@ h1 b {
 
 .demo {
   max-width: 100%; margin: 0; padding: 6px 12px; border-radius: 999px; font-size: 13px; color: var(--mut);
-  background: rgba(230, 182, 87, 0.08); border: 1px solid rgba(230, 182, 87, 0.3);
+  background: rgba(224, 176, 96, 0.08); border: 1px solid rgba(224, 176, 96, 0.3);
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
 .demo b { color: var(--warn); font-weight: 700; }
@@ -228,7 +228,7 @@ h1 b {
 .c-md li.md-task.done i { background: var(--c, var(--cyan)); }
 .c-md blockquote { margin: 0 0 6px; padding: 4px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.04); font-style: italic; }
 .c-md b { color: var(--text); }
-.c-md mark { background: rgba(230, 182, 87, 0.25); color: var(--text); border-radius: 3px; padding: 0 2px; }
+.c-md mark { background: rgba(224, 176, 96, 0.25); color: var(--text); border-radius: 3px; padding: 0 2px; }
 .c-md code, .c-md pre { font: 13px/1.4 ui-monospace, Menlo, monospace; background: rgba(0, 0, 0, 0.35); border-radius: 6px; }
 .c-md code { padding: 1px 5px; }
 .c-md pre { margin: 0 0 6px; padding: 8px 10px; white-space: pre-wrap; }

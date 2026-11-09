@@ -2,7 +2,7 @@
    change repaints the page live. Jarvis's orb owns the bottom-right 80 x 160 px: the page ends 176 px above the bottom. Safe areas on every
    edge; no sideways scroll at 375 px. Every animation sits behind prefers-reduced-motion and the LITE / Still tiers. */
 :root {
-  --s-acc: var(--oly-accent, #cc894e); --s-rgb: var(--oly-accent-rgb, 183, 155, 255);
+  --s-acc: var(--oly-accent, #c8a24a); --s-rgb: var(--oly-accent-rgb, 200, 162, 74);
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
   --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px));
 }
@@ -18,8 +18,8 @@ button { cursor: pointer; }
   -webkit-mask-image: linear-gradient(#161310 30%, transparent); mask-image: linear-gradient(#161310 30%, transparent); }
 .aurora i { position: absolute; width: 70%; height: 70%; border-radius: 50%; filter: blur(60px); }
 .aurora i:nth-child(1) { left: 0; top: 0; background: rgba(var(--s-rgb), .5); }
-.aurora i:nth-child(2) { right: 0; top: 10%; background: rgba(230, 182, 87, .22); }
-.aurora i:nth-child(3) { left: 25%; top: 30%; background: rgba(230, 182, 87, .22); }
+.aurora i:nth-child(2) { right: 0; top: 10%; background: rgba(224, 176, 96, .22); }
+.aurora i:nth-child(3) { left: 25%; top: 30%; background: rgba(224, 176, 96, .22); }
 html[data-lite] .aurora i { filter: blur(40px); }
 #app { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px;
   padding: calc(var(--st) + 14px) calc(var(--sr) + 16px) calc(176px + var(--sb)) calc(var(--sl) + 16px); }
@@ -75,12 +75,12 @@ label.row { cursor: pointer; }
   font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
 .go { width: 100%; }
 .go.ghost { background: transparent; border-color: var(--oly-line); }
-.go.danger { border-color: rgba(204, 113, 86,.7); background: rgba(204, 113, 86,.16); }
+.go.danger { border-color: rgba(192, 96, 63,.7); background: rgba(192, 96, 63,.16); }
 .mini { flex: none; }
 .filebtn { cursor: pointer; }
 .ro .mini { margin-left: auto; }
 .st { flex: none; padding: 5px 11px; border-radius: 999px; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line); color: var(--oly-dim); }
-.st.on { color: #b89246; border-color: rgba(184, 146, 70,.55); background: rgba(184, 146, 70,.1); }
+.st.on { color: #c8a24a; border-color: rgba(200, 162, 74,.55); background: rgba(200, 162, 74,.1); }
 .themes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .theme { position: relative; display: grid; gap: 6px; min-height: 76px; padding: 10px; text-align: left; border-radius: 14px; border: 1px solid var(--oly-line); overflow: hidden; }
 .theme .sw3 { display: flex; gap: 4px; }
@@ -103,14 +103,14 @@ label.row { cursor: pointer; }
 .big b { font: 800 30px/1 var(--oly-display, sans-serif); letter-spacing: .01em;  }
 .big span { color: var(--oly-dim); font-size: 14px; }
 .bar { height: 8px; border-radius: 8px; background: rgba(255,255,255,.1); overflow: hidden; }
-.bar i { display: block; height: 100%; width: 0; border-radius: 8px; background: linear-gradient(90deg, var(--s-acc), #b89246); box-shadow: none; transition: width .6s var(--oly-ease, ease); }
+.bar i { display: block; height: 100%; width: 0; border-radius: 8px; background: linear-gradient(90deg, var(--s-acc), #c8a24a); box-shadow: none; transition: width .6s var(--oly-ease, ease); }
 .apps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
 .apps li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.07); }
 .apps li:first-child { border-top: 0; }
 .apps li b { font-size: 15.5px; overflow-wrap: anywhere; }
 .apps li small { color: var(--oly-dim); font-size: 13.5px; grid-column: 1; }
 .apps li .mini { grid-column: 2; grid-row: 1 / span 2; }
-.apps li .kept { grid-column: 1 / -1; color: #e6b657; font-size: 13px; }
+.apps li .kept { grid-column: 1 / -1; color: #e0b060; font-size: 13px; }
 .link { display: grid; gap: 1px; min-height: 56px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--oly-line); text-decoration: none; color: var(--oly-text); background: rgba(255,255,255,.04); }
 .link b { font: 700 14px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; }
 .link span { color: var(--oly-dim); font-size: 14px; }
@@ -119,7 +119,7 @@ label.row { cursor: pointer; }
 .sheet-box { display: grid; gap: 10px; padding: 16px; border-radius: 18px; background: var(--oly-glass2, #28221c); border: 1px solid rgba(var(--s-rgb), .4); max-width: 520px; width: 100%; margin: 0 auto; }
 .sheet-box h2 { margin: 0; font: 700 14px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; }
 .sheet-box p { margin: 0; color: var(--oly-dim); }
-.kept { list-style: none; margin: 0; padding: 0; color: #e6b657; font-size: 13.5px; }
+.kept { list-style: none; margin: 0; padding: 0; color: #e0b060; font-size: 13.5px; }
 .sheet-a { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .tour { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: calc(var(--st) + 12px) 16px calc(var(--sb) + 12px); background: radial-gradient(ellipse at 50% 0%, rgba(var(--s-rgb), .3), rgba(21, 18, 15,.96) 70%); }
 .tour-box { position: relative; width: 100%; max-width: 440px; display: grid; gap: 10px; justify-items: center; text-align: center; padding: 22px 18px 18px; border-radius: 22px;
@@ -150,7 +150,7 @@ label.row { cursor: pointer; }
 .sample { margin: 0; padding: 10px; border-radius: 10px; border: 1px dashed var(--oly-line); font-size: 16px; }
 .tog[aria-pressed="true"] { background: rgba(var(--s-rgb), .4); border-color: var(--s-acc); box-shadow: none; }
 .apps li small.about { color: var(--oly-text); opacity: .8; }
-.go.danger-line { border-color: rgba(204, 113, 86,.6); color: #cc7156; margin-top: 8px; }
+.go.danger-line { border-color: rgba(192, 96, 63,.6); color: #c0603f; margin-top: 8px; }
 /* Big text (the kit's html[data-oly-text="big"]): tabs and the segmented pickers keep whole words (no mid-word breaks), the pickers wrap into rows */
 html[data-oly-text="big"] .tabs button { letter-spacing: .01em; padding: 0 2px; font-size: 12px; }
 html[data-oly-text="big"] .seg { flex-wrap: wrap; border-radius: 22px; }
@@ -176,3 +176,8 @@ html[data-oly-text="big"] .seg button { flex: 1 1 28%; letter-spacing: 0; }
 @media (min-width: 520px) { .themes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .intro-prev.flip i { transform: scale(1.35); border-color: #f3e7d6; }
 .seg.wrap button { flex: 1 1 30%; }
+
+/* AGORA: how to read the money numbers */
+.moneyread h2 { font: 600 18px var(--ag-serif, Georgia, serif); margin: 0 0 6px; }
+.mr { list-style: none; margin: 0; padding: 0; } .mr li { display: grid; gap: 2px; padding: 10px 0; border-top: 1px solid #3a3228; } .mr li:first-child { border-top: 0; }
+.mr b { font: 700 16px var(--ag-num, system-ui); color: #f3ece0; } .mr span { font-size: 14px; line-height: 1.4; color: #cfc4b2; }

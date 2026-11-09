@@ -13,10 +13,10 @@ import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
 import * as SC from '../olympus/scenery.js';
 import { dress } from './dress.js';
-const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#e0b060', bloom: '#e0b060', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
+const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#c8a24a', bloom: '#c8a24a', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
 
-const TONES = { plan: '#e69a57', soft: '#e6b657', break: '#cc9362' };
-const GOLD = '#e6b657';
+const TONES = { plan: '#e0b060', soft: '#e0b060', break: '#e0b060' };
+const GOLD = '#e0b060';
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
 const MAXF = 64;
 
@@ -29,37 +29,37 @@ export function createUnderworld(canvas, { O = null } = {}) {
   scene.fog = new THREE.FogExp2(0x13100d, 0.021);
   const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 300);
   let embers = null, dr = null, lite = false, dirty = true, qcb = null, pickcb = null, drawn = 0, frames = 0, stopped = false, raf = 0;
-  const rc = createRenderer({ canvas, scene, camera, env: 'night', theme: AG_THEME, grade: { aberration: 0, saturation: 0.92 }, tint: '#cc7156', exposure: 0.95, maxDpr: 1.75, bloom: { strength: 0.22, radius: 0.6, threshold: 0.95 },
+  const rc = createRenderer({ canvas, scene, camera, env: 'night', theme: AG_THEME, grade: { aberration: 0, saturation: 0.92 }, tint: '#c0603f', exposure: 0.95, maxDpr: 1.75, bloom: { strength: 0.22, radius: 0.6, threshold: 0.95 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; if (embers) embers.geometry.setDrawRange(0, lite ? 110 : 280); if (dr) dr.setLite(lite); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
 
   // ---- light: a cold violet sky and warm embers from below
-  scene.add(new THREE.HemisphereLight('#6da5c7', '#1b1713', 0.55));
-  const key = new THREE.DirectionalLight('#e69a57', 0.7); key.position.set(-6, 16, 8); scene.add(key);
-  const e1 = new THREE.PointLight('#cc7156', 55, 34, 1.5); e1.position.set(0, 1.6, 0); scene.add(e1);
-  const e2 = new THREE.PointLight('#cc9362', 30, 30, 1.6); e2.position.set(-8, 1.2, -6); scene.add(e2);
-  const e3 = new THREE.PointLight('#6da5c7', 26, 30, 1.6); e3.position.set(8, 1.2, 7); scene.add(e3);
+  scene.add(new THREE.HemisphereLight('#4b7a99', '#1b1713', 0.55));
+  const key = new THREE.DirectionalLight('#e0b060', 0.7); key.position.set(-6, 16, 8); scene.add(key);
+  const e1 = new THREE.PointLight('#c0603f', 55, 34, 1.5); e1.position.set(0, 1.6, 0); scene.add(e1);
+  const e2 = new THREE.PointLight('#e0b060', 30, 30, 1.6); e2.position.set(-8, 1.2, -6); scene.add(e2);
+  const e3 = new THREE.PointLight('#4b7a99', 26, 30, 1.6); e3.position.set(8, 1.2, 7); scene.add(e3);
   const selLight = new THREE.PointLight(GOLD, 0, 14, 1.8); selLight.position.set(0, 2, 0); scene.add(selLight);
 
   // ---- the sky of the underworld and the arena
-  const stars = M.starfield({ count: 700, radius: 160, size: 1.8, color: '#cc7156' }); scene.add(stars);
-  const neb = M.nebula({ colors: ['#cc7156', '#cc9362', '#3d342b'], count: 6, radius: 90, size: 100, opacity: 0.16 }); neb.position.y = 12; scene.add(neb);
+  const stars = M.starfield({ count: 700, radius: 160, size: 1.8, color: '#c0603f' }); scene.add(stars);
+  const neb = M.nebula({ colors: ['#c0603f', '#e0b060', '#3d342b'], count: 6, radius: 90, size: 100, opacity: 0.16 }); neb.position.y = 12; scene.add(neb);
   const floor = new THREE.Mesh(new THREE.CircleGeometry(15, 64), M.metal({ kind: 'gunmetal', color: '#1d1915', roughness: 0.32, clearcoat: 1, envMapIntensity: 0.55 }));
   floor.rotation.x = -Math.PI / 2; scene.add(floor);
-  try { floor.material = SC.basalt({ color: '#221d18', glow: '#cc7156', repeat: [1.5, 1.5], intensity: 0.85, veins: 4 }); } catch (e) { /* the plain obsidian stays */ }
+  try { floor.material = SC.basalt({ color: '#221d18', glow: '#c0603f', repeat: [1.5, 1.5], intensity: 0.85, veins: 4 }); } catch (e) { /* the plain obsidian stays */ }
   const outer = new THREE.Mesh(new THREE.RingGeometry(15, 90, 64), new THREE.MeshStandardMaterial({ color: '#13100d', roughness: 0.9, metalness: 0.1 }));
   outer.rotation.x = -Math.PI / 2; outer.position.y = -0.02; scene.add(outer);
-  for (const [r, k, c] of [[4.5, 1.4, '#cc7156'], [9, 1.6, '#cc9362'], [14.7, 2.4, '#6da5c7']]) {
+  for (const [r, k, c] of [[4.5, 1.4, '#c0603f'], [9, 1.6, '#e0b060'], [14.7, 2.4, '#4b7a99']]) {
     const ring = new THREE.Mesh(new THREE.RingGeometry(r - 0.04, r + 0.04, 96), M.neon({ color: c, intensity: k, fog: true }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.012; scene.add(ring);
   }
   const spokes = []; for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; spokes.push(Math.cos(a) * 2.2, 0.014, Math.sin(a) * 2.2, Math.cos(a) * 14.7, 0.014, Math.sin(a) * 14.7); }
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(spokes, 3));
-  scene.add(new THREE.LineSegments(sg, new THREE.LineBasicMaterial({ color: hdr('#cc7156', 1.2), transparent: true, opacity: 0.35 })));
+  scene.add(new THREE.LineSegments(sg, new THREE.LineBasicMaterial({ color: hdr('#c0603f', 1.2), transparent: true, opacity: 0.35 })));
   // broken columns around the rim, an ember seam on each
   const colN = 16, colMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.7, 0.9, 1, 8), M.metal({ kind: 'gunmetal', color: '#372e26', roughness: 0.55 }), colN);
-  const seam = new THREE.InstancedMesh(new THREE.TorusGeometry(0.78, 0.035, 6, 20), M.neon({ color: '#cc7156', intensity: 2.2, fog: true }), colN);
-  try { colMesh.material = SC.stone({ color: '#4e463d', tint: '#ad6049', repeat: [3, 2], blocks: 4, bump: 2.2 }); } catch (e) { /* the plain columns stay */ }
+  const seam = new THREE.InstancedMesh(new THREE.TorusGeometry(0.78, 0.035, 6, 20), M.neon({ color: '#c0603f', intensity: 2.2, fog: true }), colN);
+  try { colMesh.material = SC.stone({ color: '#4e463d', tint: '#c0603f', repeat: [3, 2], blocks: 4, bump: 2.2 }); } catch (e) { /* the plain columns stay */ }
   const rr = rnd(17), dm = new THREE.Object3D();
   for (let i = 0; i < colN; i++) {
     const a = (i / colN) * Math.PI * 2 + 0.1, h = 2.2 + rr() * 4.8;
@@ -83,8 +83,8 @@ export function createUnderworld(canvas, { O = null } = {}) {
   embers.geometry.setDrawRange(0, lite ? 110 : 280);
 
   // ---- the fallen: four instanced parts + the ember pools
-  const bodyMat = M.metal({ kind: 'gold', color: '#b87b46', roughness: 0.42, clearcoat: 0.4 });
-  const headMat = M.metal({ kind: 'gold', color: '#b89246', roughness: 0.3, clearcoat: 0.6 });
+  const bodyMat = M.metal({ kind: 'gold', color: '#9c6b3c', roughness: 0.42, clearcoat: 0.4 });
+  const headMat = M.metal({ kind: 'gold', color: '#c8a24a', roughness: 0.3, clearcoat: 0.6 });
   const shieldMat = M.metal({ kind: 'chrome', color: '#888178', roughness: 0.28 });
   const spearMat = new THREE.MeshStandardMaterial({ color: '#4e4236', roughness: 0.7, metalness: 0.2 });
   const body = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.3, 0.95, 4, 10), bodyMat, MAXF);
@@ -97,9 +97,9 @@ export function createUnderworld(canvas, { O = null } = {}) {
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })() });
   const pool = new THREE.InstancedMesh(poolGeo, poolMat, MAXF);
   try {                                                  // real armour: aged bronze, a steel shield, an ember rim on the bronze (they glow where they lie)
-    body.material = SC.bronze({ color: '#b87b46', patina: 0.25, rough: 0.5 }); head.material = SC.bronze({ color: '#b89246', patina: 0.1, rough: 0.34 });
+    body.material = SC.bronze({ color: '#9c6b3c', patina: 0.25, rough: 0.5 }); head.material = SC.bronze({ color: '#c8a24a', patina: 0.1, rough: 0.34 });
     shield.material = SC.bronze({ color: '#9c9589', patina: 0, kind: 'steel', rough: 0.3 });
-    M.fresnelRim(body.material, { color: '#cc7156', power: 2.4, strength: 1.5 }); M.fresnelRim(shield.material, { color: '#cc7156', power: 3, strength: 1 });
+    M.fresnelRim(body.material, { color: '#c0603f', power: 2.4, strength: 1.5 }); M.fresnelRim(shield.material, { color: '#c0603f', power: 3, strength: 1 });
   } catch (e) { /* the plain metal stays */ }
   const parts = [body, head, shield, spear, pool];
   for (const m of parts) { m.count = 0; m.frustumCulled = false; scene.add(m); }

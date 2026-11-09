@@ -10,8 +10,8 @@ import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
 
 const TIERS = { ultra: { max: 900, dust: 500, rays: true }, high: { max: 620, dust: 320, rays: true }, low: { max: 260, dust: 120, rays: false }, off: { max: 120, dust: 0, rays: false } };
-const GOLD = '#d9b04e';
-const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#e0b060', bloom: '#e0b060', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
+const GOLD = '#c8a24a';
+const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#c8a24a', bloom: '#c8a24a', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
 /** dollars per coin: the pile stays readable from a few hundred dollars to tens of thousands */
 export const unitFor = (net) => { const a = Math.abs(net || 0); return a < 500 ? 5 : a < 2000 ? 10 : a < 8000 ? 25 : a < 30000 ? 100 : 500; };
@@ -28,27 +28,27 @@ export function createVault(canvas, { O = null } = {}) {
     onQuality: (l) => { lite = l === 'low' || l === 'off'; applyTier(); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
 
-  scene.add(new THREE.HemisphereLight('#ffe2b8', '#3a2c1e', 0.8));
-  const key = new THREE.DirectionalLight('#ffe2b0', 0.9); key.position.set(-6, 10, 8); scene.add(key);
-  const glow = new THREE.PointLight('#ffb640', 30, 22, 1.5); glow.position.set(0, 2.4, -1.5); scene.add(glow);
+  scene.add(new THREE.HemisphereLight('#e0b060', '#3a2c1e', 0.8));
+  const key = new THREE.DirectionalLight('#e0b060', 0.9); key.position.set(-6, 10, 8); scene.add(key);
+  const glow = new THREE.PointLight('#e0b060', 30, 22, 1.5); glow.position.set(0, 2.4, -1.5); scene.add(glow);
   const lamp = new THREE.PointLight('#c0603f', 0, 14, 1.6); lamp.position.set(-4.5, 5.4, -1); scene.add(lamp);
 
   // ---- the room and the vault
   const floor = new THREE.Mesh(new THREE.CircleGeometry(30, 48), M.marble({ color: '#cfc4b0', roughness: 0.4, scale: 0.5, envMapIntensity: 0.7 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -0.02; scene.add(floor);
-  const steel = M.marble({ color: '#d8cdb8', vein: '#8a7a62', roughness: 0.35, scale: 0.6, envMapIntensity: 0.9 });
+  const steel = M.marble({ color: '#d8cdb8', vein: '#c8a24a', roughness: 0.35, scale: 0.6, envMapIntensity: 0.9 });
   const wall = new THREE.Mesh(new THREE.BoxGeometry(14, 9, 1.2), steel); wall.position.set(0, 4.5, -4); scene.add(wall);
-  const hole = new THREE.Mesh(new THREE.CylinderGeometry(3.3, 3.3, 1.3, 48), new THREE.MeshBasicMaterial({ color: hdr('#ffb640', 1.6) }));
+  const hole = new THREE.Mesh(new THREE.CylinderGeometry(3.3, 3.3, 1.3, 48), new THREE.MeshBasicMaterial({ color: hdr('#e0b060', 1.6) }));
   hole.rotation.x = Math.PI / 2; hole.position.set(0, 4.3, -3.55); scene.add(hole);
   const rim = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.28, 16, 64), M.metal({ kind: 'gold', color: GOLD, roughness: 0.22, envMapIntensity: 1.4 })); rim.position.set(0, 4.3, -3.3); scene.add(rim);
   const door = new THREE.Group();
-  const slab = new THREE.Mesh(new THREE.CylinderGeometry(3.15, 3.15, 0.55, 56), M.metal({ kind: 'gold', color: '#e8b64a', roughness: 0.25, clearcoat: 0.8, envMapIntensity: 1.5 })); slab.rotation.x = Math.PI / 2; door.add(slab);
+  const slab = new THREE.Mesh(new THREE.CylinderGeometry(3.15, 3.15, 0.55, 56), M.metal({ kind: 'gold', color: '#e0b060', roughness: 0.25, clearcoat: 0.8, envMapIntensity: 1.5 })); slab.rotation.x = Math.PI / 2; door.add(slab);
   const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.9, 32), M.metal({ kind: 'chrome', color: '#fff1c8', roughness: 0.12 })); hub.rotation.x = Math.PI / 2; hub.position.z = 0.4; door.add(hub);
   const spokes = new THREE.Group();
   for (let i = 0; i < 6; i++) { const sp = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 2.6, 10), M.metal({ kind: 'chrome', color: '#fff1c8', roughness: 0.15 })); sp.position.z = 0.4; sp.rotation.z = (i / 6) * Math.PI; spokes.add(sp); }
   door.add(spokes);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.55, 0.09, 12, 64), M.metal({ kind: 'gold', color: '#b88a3a', roughness: 0.3 })); ring.position.z = 0.32; door.add(ring);
-  for (const [r, k] of [[1.9, 0.07], [1.25, 0.06]]) { const g = new THREE.Mesh(new THREE.TorusGeometry(r, k, 10, 56), M.metal({ kind: 'gold', color: '#9a6a14', roughness: 0.35 })); g.position.z = 0.3; door.add(g); }
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.55, 0.09, 12, 64), M.metal({ kind: 'gold', color: '#c8a24a', roughness: 0.3 })); ring.position.z = 0.32; door.add(ring);
+  for (const [r, k] of [[1.9, 0.07], [1.25, 0.06]]) { const g = new THREE.Mesh(new THREE.TorusGeometry(r, k, 10, 56), M.metal({ kind: 'gold', color: '#c8a24a', roughness: 0.35 })); g.position.z = 0.3; door.add(g); }
   door.position.set(3.1, 4.3, -2.7); door.rotation.y = -1.05; door.userData.hinge = 3.1;       // ajar: swung out on the right
   scene.add(door);
 
@@ -93,9 +93,9 @@ export function createVault(canvas, { O = null } = {}) {
     unit = o && o.unit > 0 ? o.unit : unitFor(net);
     count = coinsFor(net, unit, tier.max); layout(count);
     const win = net > 0, loss = net < 0;
-    glow.intensity = win ? 22 + Math.min(30, count / 25) : 6; glow.color.set(win ? '#ffb640' : '#a86a30');
+    glow.intensity = win ? 22 + Math.min(30, count / 25) : 6; glow.color.set(win ? '#e0b060' : '#9c6b3c');
     lamp.intensity = loss ? 26 : 0;
-    hole.material.color.copy(hdr(loss ? '#5a3a1a' : '#ffb640', loss ? 0.8 : 1.6 + Math.min(1.2, count / 500)));
+    hole.material.color.copy(hdr(loss ? '#9c6b3c' : '#e0b060', loss ? 0.8 : 1.6 + Math.min(1.2, count / 500)));
     door.rotation.y = loss ? -0.2 : -1.05;
     setRays(); dirty = true;
   }

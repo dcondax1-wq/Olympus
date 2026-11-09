@@ -172,7 +172,7 @@ export class Brain {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setClearColor(0x14110e, 1);
     this.view = 'galaxy';
-    this.skyColours = ['#3a2c3e', '#5a3a2a', '#6b4a28'];
+    this.skyColours = ['#3a2c3e', '#c0603f', '#9c6b3c'];
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(52, 1, 1, 12000);
     this.u = {

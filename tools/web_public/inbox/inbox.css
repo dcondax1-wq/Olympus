@@ -1,6 +1,6 @@
 /* INBOX: a glass inbox over a soft aurora. The kit's tokens drive every colour (a theme change repaints it); Jarvis's orb owns the bottom-right
    80 x 160 px: the page ends 176 px above the bottom. Safe areas on every edge; no sideways scroll at 375 px; animations only without reduced motion. */
-:root { --i-acc: var(--oly-accent, #6da5c7); --i-rgb: var(--oly-accent-rgb, 127, 208, 255); --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
+:root { --i-acc: var(--oly-accent, #c8a24a); --i-rgb: var(--oly-accent-rgb, 200, 162, 74); --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
   --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px)); }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html { background: var(--oly-bg, #15120f); }
@@ -11,7 +11,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 [hidden] { display: none !important; }
 .aurora { position: fixed; inset: -20% -20% auto -20%; height: 70vh; pointer-events: none; z-index: 0; overflow: hidden; opacity: .7; -webkit-mask-image: linear-gradient(#161310 30%, transparent); mask-image: linear-gradient(#161310 30%, transparent); }
 .aurora i { position: absolute; width: 70%; height: 70%; border-radius: 50%; filter: blur(60px); }
-.aurora i:nth-child(1) { left: 0; top: 0; background: rgba(var(--i-rgb), .45); } .aurora i:nth-child(2) { right: 0; top: 10%; background: rgba(230, 182, 87, .2); } .aurora i:nth-child(3) { left: 25%; top: 30%; background: rgba(204, 137, 78, .22); }
+.aurora i:nth-child(1) { left: 0; top: 0; background: rgba(var(--i-rgb), .45); } .aurora i:nth-child(2) { right: 0; top: 10%; background: rgba(224, 176, 96, .2); } .aurora i:nth-child(3) { left: 25%; top: 30%; background: rgba(224, 176, 96, .22); }
 html[data-lite] .aurora i { filter: blur(36px); }
 #app { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: calc(var(--st) + 14px) calc(var(--sr) + 16px) calc(176px + var(--sb)) calc(var(--sl) + 16px); }
 html.framed #app { padding-top: 12px; }
@@ -47,10 +47,10 @@ html.framed #app { padding-top: 12px; }
   box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 8px 22px rgba(0,0,0,.28); }
 .it.unread { border-color: rgba(var(--i-rgb), .5); border-left-color: var(--c); box-shadow: inset 0 1px 0 rgba(255,255,255,.14); }
 .it.unread::after { content: ""; position: absolute; right: 12px; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--i-acc); box-shadow: none; }
-.it.pin { background: linear-gradient(112deg, rgba(230, 182, 87, .12), rgba(255,255,255,0) 40%), var(--oly-glass, rgba(25, 21, 18, .74)); }
+.it.pin { background: linear-gradient(112deg, rgba(224, 176, 96, .12), rgba(255,255,255,0) 40%), var(--oly-glass, rgba(25, 21, 18, .74)); }
 .ic { grid-row: 1 / span 2; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font: 800 16px/1 var(--oly-display, sans-serif); color: var(--c); background: rgba(255,255,255,.06); border: 1px solid var(--c); box-shadow: none; }
 .tx { margin: 0; font-size: 15.5px; line-height: 1.35; overflow-wrap: anywhere; padding-right: 16px; }
-.it.bad .tx { color: #cc7156; } .it.warn .tx { color: #e6b657; }
+.it.bad .tx { color: #c0603f; } .it.warn .tx { color: #e0b060; }
 .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; color: var(--oly-dim); font-size: 13px; }
 .meta .src { font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--c); }
 .row { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
@@ -58,9 +58,9 @@ html.framed #app { padding-top: 12px; }
 .mini.ghost { background: transparent; border-color: var(--oly-line); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips button { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--oly-line); background: rgba(255,255,255,.05); font: 600 13.5px var(--oly-ui, sans-serif); display: inline-flex; align-items: center; gap: 8px; }
-.chips button[aria-pressed="true"] { border-color: rgba(204, 113, 86, .6); color: #cc7156; text-decoration: line-through; }
+.chips button[aria-pressed="true"] { border-color: rgba(192, 96, 63, .6); color: #c0603f; text-decoration: line-through; }
 .chips i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
-.calm h2 { color: #b89246; }
+.calm h2 { color: #c8a24a; }
 .foot { text-align: center; color: var(--oly-dim); font-size: 13px; margin: 4px 0 0; }
 .empty { padding: 14px; color: var(--oly-dim); text-align: center; }
 @media (prefers-reduced-motion: no-preference) {

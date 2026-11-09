@@ -2,7 +2,7 @@
    Jarvis's orb owns the bottom-right 80 x 160 px: the dock stops 96 px from the right; the sheet sits above the dock. Safe areas on
    every edge; no sideways scroll at 390 px; inputs are 16 px (no iPhone zoom). */
 :root {
-  --c-bg: #13100d; --c-acc: #6da5c7; --c-acc-rgb: 157, 140, 255; --c-gold: #e6b657; --c-ok: #d3a950; --c-bad: #cc7156; --dock-h: 186px;
+  --c-bg: #13100d; --c-acc: #c8a24a; --c-acc-rgb: 200, 162, 74; --c-gold: #c8a24a; --c-ok: #7f8a52; --c-bad: #c0603f; --dock-h: 186px;
   --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
   --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px));
   --vh: var(--oly-vh, 100vh);
@@ -24,7 +24,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #43392
 .brand .sub { margin: 3px 0 0; font-size: var(--oly-t-micro, 10.5px); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
 .tags { display: flex; gap: 6px; }
 .tag { padding: 3px 8px; border-radius: 999px; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line); color: var(--oly-dim); background: var(--oly-glass); }
-.tag.demo { color: #e6b657; border-color: rgba(230, 182, 87, .5); }
+.tag.demo { color: #e0b060; border-color: rgba(224, 176, 96, .5); }
 .tag[hidden] { display: none; }
 
 .daycard, .caption { padding: 8px 10px; border-radius: var(--oly-r-card, 16px); background: var(--oly-glass); border: 1px solid var(--oly-line);
@@ -101,22 +101,22 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #43392
 .cmpsel select { min-width: 0; min-height: 44px; border-radius: 10px; border: 1px solid var(--oly-line); background: var(--oly-glass); color: var(--oly-text); font: 600 12px var(--oly-ui); font-size: 16px; padding: 0 8px; }   /* 16px: iOS zooms the page when a smaller select is focused */
 .cmpcols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .cmpcol { display: flex; flex-direction: column; gap: 3px; padding: 10px; border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); font-size: 12px; min-width: 0; }
-.cmpcol.a { border-color: rgba(250, 201, 95, .5); } .cmpcol.b { border-color: rgba(230, 182, 87, .5); }
-.cmpcol b { font-size: 13px; } .cmpcol .big { font: 800 22px/1.1 var(--oly-display, sans-serif); color: var(--c-ok, #d3a950); } .cmpcol .big.neg { color: #cc7156; }
+.cmpcol.a { border-color: rgba(224, 176, 96, .5); } .cmpcol.b { border-color: rgba(224, 176, 96, .5); }
+.cmpcol b { font-size: 13px; } .cmpcol .big { font: 800 22px/1.1 var(--oly-display, sans-serif); color: var(--c-ok, #c8a24a); } .cmpcol .big.neg { color: #c0603f; }
 .cmpcol .note { font-size: 12px; }
 .cchart { display: block; width: 100%; height: auto; background: rgba(0, 0, 0, .25); border-radius: 10px; }
-.cchart .z { stroke: rgba(255, 255, 255, .18); } .cchart .stop { stroke: #cc7156; stroke-dasharray: 4 3; }
+.cchart .z { stroke: rgba(255, 255, 255, .18); } .cchart .stop { stroke: #c0603f; stroke-dasharray: 4 3; }
 .cchart .lb { font: 600 12px var(--oly-ui, sans-serif); fill: var(--oly-dim); }
 .cchart .p { fill: none; stroke-width: 1.8; stroke-linejoin: round; opacity: .9; }
-.cchart .p.a, .cchart .p.best { stroke: #fac95f; } .cchart .p.b, .cchart .p.avg { stroke: #e6b657; } .cchart .p.worst { stroke: #cc7156; }
+.cchart .p.a, .cchart .p.best { stroke: #e0b060; } .cchart .p.b, .cchart .p.avg { stroke: #e0b060; } .cchart .p.worst { stroke: #c0603f; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin: 0; font-size: 12px; color: var(--oly-dim); }
-.legend .k { display: inline-block; width: 18px; height: 3px; border-radius: 2px; } .legend .k.a { background: #fac95f; } .legend .k.b { background: #e6b657; }
+.legend .k { display: inline-block; width: 18px; height: 3px; border-radius: 2px; } .legend .k.a { background: #e0b060; } .legend .k.b { background: #e0b060; }
 .reel { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); }
-.reel .rh { display: flex; justify-content: space-between; align-items: baseline; } .reel .rh .pos { color: #d3a950; font-weight: 700; } .reel .rh .neg { color: #cc7156; font-weight: 700; }
+.reel .rh { display: flex; justify-content: space-between; align-items: baseline; } .reel .rh .pos { color: #c8a24a; font-weight: 700; } .reel .rh .neg { color: #c0603f; font-weight: 700; }
 .reel .rd { font-size: 12px; color: var(--oly-dim); }
 .wtab { width: 100%; border-collapse: collapse; font-size: 12px; }
 .wtab th { text-align: right; font: 700 12px var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--oly-dim); padding: 4px; } .wtab th:first-child, .wtab td:first-child { text-align: left; }
-.wtab td { text-align: right; padding: 6px 4px; border-top: 1px solid rgba(255, 255, 255, .07); } .wtab tr.base td { color: var(--c-acc); font-weight: 700; } .wtab tr.best td { background: rgba(211, 169, 80, .12); }
+.wtab td { text-align: right; padding: 6px 4px; border-top: 1px solid rgba(255, 255, 255, .07); } .wtab tr.base td { color: var(--c-acc); font-weight: 700; } .wtab tr.best td { background: rgba(200, 162, 74, .12); }
 .month h4 { margin: 6px 0; font: 700 12px var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--c-acc); }
 .hgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
 .hc { display: grid; place-items: center; aspect-ratio: 1; min-height: 30px; border-radius: 6px; font-size: 12px; color: var(--oly-dim); background: rgba(255, 255, 255, .04); border: 0; padding: 0; }
@@ -125,3 +125,20 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #43392
 .lab .btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
 .lab .btn { min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(var(--c-acc-rgb), .7); background: rgba(var(--c-acc-rgb), .16); color: var(--oly-text); font: 700 13px var(--oly-ui); }
 .lab .btn.ghost { background: transparent; } .lab .btn.mini { min-height: 44px; }
+
+/* ===== AGORA revamp (2026-11-09): the day's money first; the controls are quiet ===== */
+.brand h1 { font: 600 26px/1.05 var(--ag-serif, Georgia, serif); color: #f3ece0; }
+.brand h1::after { content: ""; display: block; width: 56px; height: 2px; margin-top: 7px; background: linear-gradient(90deg, #c8a24a, transparent); }
+.brand .sub { font-size: 13px; color: #cfc4b2; }
+.daycard, .caption { background: rgba(29, 25, 20, .94); border-color: #3a3228; border-radius: 16px; padding: 12px 14px; }
+.daymoney { margin: 0 0 8px; }
+.dm-top { display: flex; align-items: baseline; gap: 10px; }
+.dm-big { font: 700 40px/1.05 var(--ag-num, system-ui); font-variant-numeric: tabular-nums; } .dm-big.pos { color: #a3ad73; } .dm-big.neg { color: #d9785a; }
+.dm-r { font: 600 16px var(--ag-num, system-ui); color: #cfc4b2; }
+.dm-line { margin: 3px 0 0; font-size: 14px; line-height: 1.35; color: #f3ece0; } .dm-line.dim { color: #9a8f7d; }
+.jumps button { font: 600 13px/1.1 var(--ag-sans, system-ui); background: transparent; }
+.jumps button[aria-pressed="true"] { background: #2a2217; border-color: #c8a24a; color: #c8a24a; }
+.caption b { font: 600 17px var(--ag-serif, Georgia, serif); color: #c8a24a; } .caption p { font-size: 14px; }
+.pills button { font: 600 15px var(--ag-sans, system-ui); background: rgba(29, 25, 20, .94); border-color: #3a3228; }
+.pills button[aria-pressed="true"] { background: #c8a24a; color: #1b1610; border-color: #c8a24a; }
+.play { background: linear-gradient(180deg, #c8a24a, #c8a24a); color: #1b1610; border-color: #e0b060; font-weight: 700; }

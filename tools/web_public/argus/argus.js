@@ -10,14 +10,14 @@ import { renderMoney } from './argusplus.js';
 import * as AT from '../olympus/fx-atmos.js';        // JOB 4+5 follow-up: scanner shafts, drifting data dust and rising sparks around the sphere
 import * as SC from '../olympus/scenery.js';
 import { APPS, analyze, cardOf, histUpdate, histSummary, demoData } from './arguscore.js';
-const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#e0b060', bloom: '#e0b060', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
+const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#c8a24a', bloom: '#c8a24a', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
 const KEY = 'argus.v1';
 const N_EYES = 100;
-const COLOR = { ok: '#d3a950', warn: '#e6b657', bad: '#cc7156', idle: '#4f7790' };
+const COLOR = { ok: '#c8a24a', warn: '#e0b060', bad: '#c0603f', idle: '#4b7a99' };
 const GROUPS = { bots: 'THE BOTS', pc: 'THE PC', feed: 'PRICES AND NINJATRADER', pipes: 'THE CLOUD', rules: 'MFFU RULES AND MONEY', apps: 'OLYMPUS APPS' };
 const S = { fixOpen: new Set(), hist: null, copied: null, R: null, tab: 'fix', sel: null, offline: false, asOf: null, errors: [], room: null, loaded: false, open: new Set() };
 
@@ -109,7 +109,7 @@ function paintHist() {
 function paint() {
   const R = S.R; if (!R) return;
   const v = R.verdict;
-  $('vk').textContent = v.word.toUpperCase();
+  $('vk').textContent = v.word;
   $('vs').textContent = R.hasData ? `${R.counts.bad} red · ${R.counts.warn} amber · ${R.counts.ok} green` : '';
   $('verdict').dataset.level = v.level;
   $('vline').textContent = (S.offline && R.hasData ? 'Offline, as of ' + hm(S.asOf) + '. ' : '') + v.line;
@@ -188,13 +188,13 @@ class Room {
   reduced() { return O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
   build() {
     const S3 = this.scene;
-    S3.add(new THREE.HemisphereLight(0x6da5c7, 0x241e19, 0.9));
-    const key = new THREE.DirectionalLight(0x6da5c7, 2.2); key.position.set(3, 5, 6); S3.add(key);
+    S3.add(new THREE.HemisphereLight(0x4b7a99, 0x241e19, 0.9));
+    const key = new THREE.DirectionalLight(0x4b7a99, 2.2); key.position.set(3, 5, 6); S3.add(key);
     this.stars = starfield({ count: 900, radius: 60, color: '#f0e2c4' }); S3.add(this.stars);
     this.orb = new THREE.Group(); S3.add(this.orb);
     this.core = new THREE.Mesh(new THREE.SphereGeometry(R_SPHERE - 0.04, 48, 32), metal({ kind: 'gunmetal', color: '#473d32' }));
     this.orb.add(this.core);
-    this.shell = new THREE.Mesh(new THREE.SphereGeometry(R_SPHERE + 0.5, 40, 28), glass({ rim: '#fac95f', opacity: 0.035, rimStrength: 0.5 }));
+    this.shell = new THREE.Mesh(new THREE.SphereGeometry(R_SPHERE + 0.5, 40, 28), glass({ rim: '#e0b060', opacity: 0.035, rimStrength: 0.5 }));
     this.orb.add(this.shell);
     this.ring = new THREE.Mesh(new THREE.TorusGeometry(R_SPHERE + 0.75, 0.02, 8, 120), neon({ color: '#f3ece0', intensity: 2.2 }));
     this.ring.rotation.x = Math.PI / 2.3; S3.add(this.ring);
@@ -211,7 +211,7 @@ class Room {
     // an armillary of aged bronze round the sphere: three tilted rings turning slowly (the watchtower's instrument)
     this.arm = null;
     try {
-      const bz = SC.bronze({ color: '#b89246', patina: 0.45, rough: 0.4 }); this.arm = new THREE.Group();
+      const bz = SC.bronze({ color: '#c8a24a', patina: 0.45, rough: 0.4 }); this.arm = new THREE.Group();
       [[R_SPHERE + 0.6, 0.04, 0.3, 0], [R_SPHERE + 0.82, 0.035, 1.2, 0.8], [R_SPHERE + 0.94, 0.03, 0.65, 2.1]].forEach(([r, t, rx, rz]) => { const m = new THREE.Mesh(new THREE.TorusGeometry(r, t, 10, 120), bz); m.rotation.set(rx, 0, rz); this.arm.add(m); });
       S3.add(this.arm);
     } catch (_) { this.arm = null; }
@@ -229,9 +229,9 @@ class Room {
     this.blink = this.pos.map((p, i) => 2 + hash(i + 50) * 7);
     // the watchtower's air (fx-atmos): a cyan scanner beam behind the sphere, motes drifting through the dark, sparks rising off the eyes
     setTimeout(() => { try {         // 0.9 s after the first paint
-      this.at = [AT.shafts({ count: 3, from: [0, 7, -3], to: [0, -6, -2], width: 3.2, spread: [3, 0, 1], color: '#fac95f', strength: 0.09, seed: 2 }),
-        AT.dust({ count: 200, box: [12, 8, 10], color: '#fac95f', size: 3.6, strength: 0.7, seed: 21 }),
-        AT.embers({ count: 90, origin: [0, -2.4, 0], spread: [2.6, 0, 2.6], rise: 5, colors: ['#f3ece0', '#fac95f', '#56819c'], size: 4.5, wind: 0, seed: 17 })];
+      this.at = [AT.shafts({ count: 3, from: [0, 7, -3], to: [0, -6, -2], width: 3.2, spread: [3, 0, 1], color: '#e0b060', strength: 0.09, seed: 2 }),
+        AT.dust({ count: 200, box: [12, 8, 10], color: '#e0b060', size: 3.6, strength: 0.7, seed: 21 }),
+        AT.embers({ count: 90, origin: [0, -2.4, 0], spread: [2.6, 0, 2.6], rise: 5, colors: ['#f3ece0', '#e0b060', '#4b7a99'], size: 4.5, wind: 0, seed: 17 })];
       this.at[1].object.position.set(0, -3, -1);
       this.at.forEach((f) => S3.add(f.object)); AT.setQuality(this.at, this.rc.quality()); this.dirty = true;
     } catch (e) { this.at = []; } }, 900);

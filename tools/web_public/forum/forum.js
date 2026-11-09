@@ -14,11 +14,14 @@ const store = {
   read() { try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && typeof v === 'object' ? v : {}; } catch (_) { return {}; } },
   write(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (_) { /* private mode */ } },
 };
+// an optional file that answered 404 is not asked again for 30 minutes (a browser logs every 404 as a console error): once per phone, not on every open
+const wasGone = (u) => { try { const t = +localStorage.getItem('forum.opt404.' + u); return !!t && Date.now() - t < 1800e3; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem('forum.opt404.' + u, String(Date.now())); } catch (_) { /* private mode */ } };
 async function getJSON(url, ms = 6000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
-  try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
+  try { if (wasGone(url)) return null; const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); if (r.status === 404) markGone(url); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
-const TONE = { calm: ['#aeb86e', 'CALM'], watch: ['#e6b657', 'WATCH'], storm: ['#cc7156', 'CAUTION'], info: ['#6da5c7', 'READ'] };
+const TONE = { calm: ['#aeb86e', 'CALM'], watch: ['#e0b060', 'WATCH'], storm: ['#c0603f', 'CAUTION'], info: ['#4b7a99', 'READ'] };
 const OATH = oath();
 
 // ------------------------------------------------------------------------------------------------ the clock
@@ -55,7 +58,7 @@ function show(step) {
     card.style.setProperty('--tone', col);
     $('sGlyph').textContent = it.glyph; $('sTitle').textContent = it.title; $('sStat').textContent = it.stat; $('sTone').textContent = word; $('sBody').textContent = it.line + ' ' + it.body;
   } else if (step === S.items.length) card.style.setProperty('--tone', '#aeb86e');
-  else card.style.setProperty('--tone', '#6da5c7');
+  else card.style.setProperty('--tone', '#4b7a99');
   if (S.scene) S.scene.focus(step === -1 ? -1 : step);
   const dots = $('dots');
   document.documentElement.dataset.walk = step === -1 ? '' : '1';          // the tablet card rises above the two-row nav (dots, then the arrows)

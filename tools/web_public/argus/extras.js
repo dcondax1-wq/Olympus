@@ -10,7 +10,7 @@ import { HIST_DAYS } from './arguscore.js';
 
 const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; };
 const ET = 'America/New_York';
-const COLOR = { ok: '#d3a950', warn: '#e6b657', bad: '#cc7156', idle: '#4f7790' };
+const COLOR = { ok: '#c8a24a', warn: '#e0b060', bad: '#c0603f', idle: '#4b7a99' };
 const dayOf = (t) => new Intl.DateTimeFormat('en-CA', { timeZone: ET }).format(new Date(t * 1000));
 const clock = (t) => new Intl.DateTimeFormat('en-US', { timeZone: ET, hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(t * 1000));
 export const dur = (s) => (s < 90 ? `${Math.round(s)} sec` : s < 5400 ? `${Math.round(s / 60)} min` : s < 172800 ? `${(s / 3600).toFixed(1).replace(/\.0$/, '')} hours` : `${Math.round(s / 86400)} days`);
@@ -87,7 +87,7 @@ export function shareCanvas(R, H, now) {
   const g = c.getContext('2d'), lv = R.verdict.level, col = COLOR[lv] || COLOR.idle;
   g.fillStyle = '#13100d'; g.fillRect(0, 0, 1080, 1080);
   const bg = g.createRadialGradient(540, 470, 40, 540, 470, 640); bg.addColorStop(0, col + '55'); bg.addColorStop(1, 'rgba(19, 16, 13,0)'); g.fillStyle = bg; g.fillRect(0, 0, 1080, 1080);
-  g.textAlign = 'center'; g.fillStyle = '#fac95f'; g.font = '700 46px "Iowan Old Style", Palatino, Georgia, serif'; g.fillText('ARGUS', 540, 92);
+  g.textAlign = 'center'; g.fillStyle = '#e0b060'; g.font = '700 46px "Iowan Old Style", Palatino, Georgia, serif'; g.fillText('ARGUS', 540, 92);
   // the eyes: a Fibonacci disc of 100 dots, each coloured by its light
   const N = 100, owner = (i) => Math.min(R.eyes.length - 1, Math.floor((i * R.eyes.length) / N)), ga = Math.PI * (3 - Math.sqrt(5));
   for (let i = 0; i < N; i++) {
@@ -99,8 +99,8 @@ export function shareCanvas(R, H, now) {
   g.fillStyle = col; g.font = '800 96px "Iowan Old Style", Palatino, Georgia, serif'; g.fillText(R.verdict.word.toUpperCase(), 540, 862);
   g.fillStyle = '#e6dbca'; g.font = '600 40px system-ui, sans-serif'; g.fillText(`${R.counts.bad} red · ${R.counts.warn} amber · ${R.counts.ok} green`, 540, 920);
   const U = uptimeStats(H);
-  g.fillStyle = '#6294b3'; g.font = '500 34px system-ui, sans-serif'; g.fillText(`Uptime streak ${U.cur} day${U.cur === 1 ? '' : 's'}${U.pct != null ? ` · ${U.pct}% clear` : ''}`, 540, 975);
-  g.fillStyle = '#4d748c'; g.font = '500 28px system-ui, sans-serif'; g.fillText(`${new Intl.DateTimeFormat('en-US', { timeZone: ET, dateStyle: 'medium', timeStyle: 'short' }).format(new Date(now * 1000))} ET · read-only · paper`, 540, 1032);
+  g.fillStyle = '#4b7a99'; g.font = '500 34px system-ui, sans-serif'; g.fillText(`Uptime streak ${U.cur} day${U.cur === 1 ? '' : 's'}${U.pct != null ? ` · ${U.pct}% clear` : ''}`, 540, 975);
+  g.fillStyle = '#4b7a99'; g.font = '500 28px system-ui, sans-serif'; g.fillText(`${new Intl.DateTimeFormat('en-US', { timeZone: ET, dateStyle: 'medium', timeStyle: 'short' }).format(new Date(now * 1000))} ET · read-only · paper`, 540, 1032);
   return c;
 }
 

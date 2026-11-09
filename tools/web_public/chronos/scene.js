@@ -13,11 +13,11 @@ import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
 import * as SC from '../olympus/scenery.js';
 import { dress } from './dress.js';
-const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#e0b060', bloom: '#e0b060', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
+const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#c8a24a', bloom: '#c8a24a', accent: '#c8a24a' };   // AGORA: warm dusk, no violet rims
 
 const W = 9.6, H = 6.6, X0 = -W / 2, Y0 = 0.2, ZC = 0;
-const ACC = '#6da5c7', CYAN = '#fac95f', GREEN = '#d3a950', RED = '#cc7156', GOLD = '#e6b657', VIOLET = '#cc9362';
-const KIND = { sweep: '#cc7156', idm: '#e6b657', disp: '#e6b657', cisd5: CYAN, limit: VIOLET, tap: '#e6dbca', cisd1: CYAN, entry: GREEN, be: '#f3ece0', setup: '#cc9362', session: '#6da5c7', level: VIOLET };
+const ACC = '#4b7a99', CYAN = '#e0b060', GREEN = '#c8a24a', RED = '#c0603f', GOLD = '#e0b060', VIOLET = '#e0b060';
+const KIND = { sweep: '#c0603f', idm: '#e0b060', disp: '#e0b060', cisd5: CYAN, limit: VIOLET, tap: '#e6dbca', cisd1: CYAN, entry: GREEN, be: '#f3ece0', setup: '#e0b060', session: '#4b7a99', level: VIOLET };
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
 const ease = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
 
@@ -32,15 +32,15 @@ export function createChronos(canvas, { O = null } = {}) {
     onQuality: (l) => { lite = l === 'low' || l === 'off'; if (dr) dr.setLite(lite); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
 
-  scene.add(new THREE.HemisphereLight('#6da5c7', '#1b1713', 0.55));
-  const key = new THREE.DirectionalLight('#e6b657', 0.95); key.position.set(-6, 12, 10); scene.add(key);
+  scene.add(new THREE.HemisphereLight('#4b7a99', '#1b1713', 0.55));
+  const key = new THREE.DirectionalLight('#e0b060', 0.95); key.position.set(-6, 12, 10); scene.add(key);
   const glow = new THREE.PointLight(ACC, 60, 40, 1.6); glow.position.set(0, 4, 3); scene.add(glow);
   const faceLight = new THREE.PointLight(GOLD, 40, 30, 1.6); faceLight.position.set(0, 8.2, -6); scene.add(faceLight);
 
   // ---- the sky and the temple (built once)
   const stars = M.starfield({ count: lite ? 500 : 1100, radius: 150, size: 2, color: '#f0e2c4' }); scene.add(stars);
-  const neb = M.nebula({ colors: ['#6da5c7', '#8f6745', '#cc9362'], count: 6, radius: 80, size: 90, opacity: 0.13 }); neb.position.y = 14; scene.add(neb);
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), M.marble({ color: '#d8cfc1', vein: '#8c6543', gold: '#e6b657', scale: 0.5, roughness: 0.22 }));
+  const neb = M.nebula({ colors: ['#4b7a99', '#9c6b3c', '#e0b060'], count: 6, radius: 80, size: 90, opacity: 0.13 }); neb.position.y = 14; scene.add(neb);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), M.marble({ color: '#d8cfc1', vein: '#9c6b3c', gold: '#e0b060', scale: 0.5, roughness: 0.22 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -0.6; scene.add(floor);
   const marble = M.marble({ color: '#ece3d7', vein: '#78726a', scale: 1.1 }), goldM = M.metal({ kind: 'gold' });
   // the tower: a stepped base, a shaft, the clock block, a pediment
@@ -73,7 +73,7 @@ export function createChronos(canvas, { O = null } = {}) {
   // a ring of light that turns with the playhead, behind the tower
   const ring = new THREE.Mesh(new THREE.TorusGeometry(6.4, 0.05, 6, lite ? 64 : 140), M.neon({ color: ACC, intensity: 2, fog: true }));
   ring.position.set(0, 8, TZ - 2.5); scene.add(ring);
-  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(5.3, 0.03, 6, lite ? 56 : 120), M.neon({ color: '#cc9362', intensity: 1.4, fog: true }));
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(5.3, 0.03, 6, lite ? 56 : 120), M.neon({ color: '#e0b060', intensity: 1.4, fog: true }));
   ring2.position.copy(ring.position); scene.add(ring2);
   // colonnade: two rows of fluted columns going back
   const colGeo = new THREE.CylinderGeometry(0.34, 0.4, 7, lite ? 10 : 18), cols = new THREE.InstancedMesh(colGeo, marble, 12);
