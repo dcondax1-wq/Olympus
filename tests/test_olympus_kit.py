@@ -456,7 +456,7 @@ def test_mind_labels(br, origin):
 
 
 def test_datacity_tiers(br, origin):
-    """the Data City's budget per tier: phone-high (the phone-safe preset: <= 95 calls / 250k tris, heap <= 40 MB) and ultra (the full city)"""
+    """the Data City's budget per tier: phone-high (the phone-safe preset: <= 95 calls / 250k tris, heap <= 60 MB, full detail) and ultra (the full city)"""
     for name, (q, calls, tris, far_calls) in DATACITY_TIERS.items():
         ctx, p, errs = page(br, origin, fx="high")
         p.goto(f"{origin}/datacity/{q}&nolite=1")
