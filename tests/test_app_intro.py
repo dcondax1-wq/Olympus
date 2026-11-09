@@ -114,7 +114,7 @@ def test_hub_intro_static():
     check("b. the hub intro is still inline (no file to wait for), under 64 KB, no fetch / import, Safari 16 safe", bool(js) and len(js.encode()) < 64_000
           and not re.search(r"fetch\(|import |XMLHttpRequest|\(\?<", js) and not re.search(r"[\w)\]]\?\.[A-Za-z_$]", js) and "??" not in js, len(js.encode()))
     check("b. volumetric god-rays (angular shafts thinned by the cloud, in AGORA's warm bronze and gold)",
-          all(x in js for x in ("if(uY.x>.001)", "float la=atan(lv.x,lv.y)", "(1.-cld*.7)", "vec3 rcl=mix(vec3(.85,.75,.55),vec3(.88,.72,.48),uGlow)")   # AGORA: bronze / gold shafts))
+          all(x in js for x in ("if(uY.x>.001)", "float la=atan(lv.x,lv.y)", "(1.-cld*.7)", "vec3 rcl=mix(vec3(.85,.75,.55),vec3(.88,.72,.48),uGlow)")))   # AGORA: bronze / gold shafts
     check("b. deeper parallax: two far temples (colonnade + pediment) and 5 layers of columns (3 on the lite tier)",
           all(x in js for x in ("if(uZ.x>.001)", "NTEMP", "NCOL", "float ped=", "replace(/NCOL/g, lite ? '3' : '5')", "replace(/NTEMP/g, lite ? '1' : '2')")))
     check("b. camera dolly and roll (a slow roll, a dolly in that eases back for the ring) and a shake on strikes and hammer hits",
