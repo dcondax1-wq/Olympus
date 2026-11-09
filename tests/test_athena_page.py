@@ -58,7 +58,7 @@ def part_a():
           "no timers or animation loop (a screen is drawn once per tap: cheap on LITE)",
           not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write|localStorage|sessionStorage|indexedDB|document\.cookie|sendBeacon|XMLHttpRequest|fetch\(|requestAnimationFrame|setInterval|setTimeout|eval\(|new Function", tr)
           and "from './athenastore.js'" in rd("athenatrain.js") and "load(KEY" in rd("athenatrain.js") and "const KEY = 'train.v1';" in rd("athenatrain.js"))
-    check("a. the Train tab is in the dock (data-tab=train, badge) with its pane, and the Jarvis files stay the same", 'data-tab="train"' in html and 'id="p-train"' in html and 'id="bd-train"' in html and 'athena.js?v=a3' in html and 'athena.css?v=a3' in html)
+    check("a. the Train tab is in the dock (data-tab=train, badge) with its pane, and the Jarvis files stay the same", 'data-tab="train"' in html and 'id="p-train"' in html and 'id="bd-train"' in html and 'athena.js?v=a4' in html and 'athena.css?v=a4' in html)
     check("a. the 3D library is built on the render core (createRenderer) and not a bare WebGLRenderer", "createRenderer(" in js and "new THREE.WebGLRenderer" not in js)
     store = rd("athenastore.js") + rd("athenaplus.js") + rd("athenabrain.js")
     check("a. the reader's memory lives in athenastore.js only, every key under 'athena.' (nothing else is written, no cookies, no network in the new modules)",
@@ -676,7 +676,7 @@ def part_e(tmp, lib):
             nd = len(drills)
             cv = p.evaluate("(() => { const c = document.querySelector('#train canvas.chart'); return c ? [c.width, c.height, c.getAttribute('aria-label')] : null; })()")
             px = p.evaluate("""() => { const c = document.querySelector('#train canvas.chart'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let g = 0, r = 0, any = 0;
-              for (let i = 0; i < d.length; i += 4) { if (d[i + 3]) any++; if (d[i + 3] > 200 && d[i + 1] > 180 && d[i] < 110) g++; if (d[i + 3] > 200 && d[i] > 220 && d[i + 1] < 130) r++; } return [any, g, r]; }""")
+              for (let i = 0; i < d.length; i += 4) { if (d[i + 3]) any++; if (d[i + 3] > 200 && Math.abs(d[i] - 155) < 22 && Math.abs(d[i + 1] - 171) < 22 && Math.abs(d[i + 2] - 99) < 28) g++; if (d[i + 3] > 200 && Math.abs(d[i] - 201) < 22 && Math.abs(d[i + 1] - 106) < 22 && Math.abs(d[i + 2] - 74) < 28) r++;   /* AGORA olive #9bab63 / terracotta #c96a4a */ } return [any, g, r]; }""")
             check(f"e. Read the chart: setup 1 of {nd} draws the candles on one canvas (green and red candles, an aria-label), asks 'does the bot take a trade?' with Yes / No, taps 44 px or more",
                   cv and cv[2].startswith("Candle chart of NQ") and px[1] > 20 and px[2] > 20 and f"Setup 1 of {nd}" in p.inner_text("#train") and len(p.query_selector_all("#train [data-dtake]")) == 2 and p.evaluate(TAPS) == [], (cv, px))
             m0 = p.evaluate("document.querySelector('#train canvas.chart').__model.bars")
