@@ -17,17 +17,17 @@ export function buildForgeSet(THREE, scene, o) {
   const R = o.ARENA_R, parts = {}, U = { uT: { value: 0 } };
   const lite = !!o.lite;
 
-  // ---- sky dome: near black, an ember-red glow at the horizon (no fog, no depth)
+  // ---- sky dome: a dusk, indigo overhead and amber at the horizon (no fog, no depth)
   const dome = new THREE.Mesh(new THREE.SphereGeometry(90, 16, 8), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: U, vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: `uniform float uT; varying vec3 vD;
       void main(){ float h = clamp(vD.y, -0.2, 1.0);
-        vec3 c = vec3(0.012, 0.004, 0.003) + vec3(0.30, 0.075, 0.016) * exp(-abs(h) * 5.5) * 0.9 + vec3(0.04, 0.01, 0.006) * (1.0 - h) * 0.3;
+        vec3 c = mix(vec3(0.20, 0.17, 0.22), vec3(0.62, 0.40, 0.20), exp(-abs(h) * 3.2)) * (0.55 + 0.25 * (1.0 - h));
         gl_FragColor = vec4(c, 1.0); }` }));
   dome.renderOrder = -10; scene.add(dome);
 
   // ---- floor: polished obsidian
-  const floorMat = o.metal({ kind: 'gunmetal', color: '#1b0f0b', roughness: 0.46, clearcoat: 0.6, envMapIntensity: 0.9 });
+  const floorMat = o.metal({ kind: 'gunmetal', color: '#4a3a2c', roughness: 0.5, clearcoat: 0.3, envMapIntensity: 0.9 });
   const floor = new THREE.Mesh(new THREE.CircleGeometry(R + 2.9, lite ? 40 : 64), floorMat);
   floor.rotation.x = -Math.PI / 2; scene.add(floor);
 

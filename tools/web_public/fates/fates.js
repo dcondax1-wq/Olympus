@@ -349,7 +349,7 @@ S.probe = () => (sc ? sc.probe() : { k: null, calls: 0 });
 // 0 in the default theme: nothing changes; missing: the token as given). The scene re-tints its clear colour, fog, gate,
 // motes and spindle. With the kit's themes (olympus.js theme / onTheme / themeScene) the kit paints the CSS tokens itself
 // and themeScene keeps the scene's fog, clear colour and accent in step; without themeScene, theme() / onTheme feed this.
-const OWN = { bg: '#07050f', accent: '#ffcf5a' };
+const OWN = { bg: '#14110e', accent: '#ffcf5a' };
 const THEME_VARS = { text: '--txt', dim: '--mut', glass: '--panel', panel: '--panel', line: '--line' };
 // '#rrggbb' a -> b by t (0 = a untouched); anything else: b when t > 0 (the OLYMPUS themes' own mix rule, kept local)
 function mixHex(a, b, t) {

@@ -56,7 +56,7 @@ export function createScene(canvas, opt = {}) {
   const cam = new THREE.PerspectiveCamera(56, 1, 0.1, 120);
   let rc;
   try {
-    rc = createRenderer({ canvas, scene, camera: cam, space: 'display', env: 'night', tint: '#ffd36a', autoSize: false, fitCamera: false, adapt: false,
+    rc = createRenderer({ canvas, scene, camera: cam, space: 'display', env: 'night', theme: { sky: '#4a3626', fog: '#2a1d14', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, tint: '#ffd36a', autoSize: false, fitCamera: false, adapt: false,
       maxDpr: 1.75, bloom: { strength: 0.24, radius: 0.55, threshold: 0.9 }, grade: { vignette: 0.36, grain: 0.035 } });
   } catch (e) { return null; }
   const R = rc.renderer;

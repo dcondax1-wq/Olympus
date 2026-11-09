@@ -195,7 +195,7 @@ export function jarvisCard(data, nowS = Math.floor(Date.now() / 1000)) {
     v: 1, name: 'FATES', status: { level: lvl, label: `Zlarior pass odds ${Math.round(zp)}%` },
     kpis: [{ label: 'Zlarior pass', value: fmtPct(zp) }, { label: 'ATLAS pass', value: fmtPct(a.summary.pass) }],
     lines: [`Pass odds this eval: ${Math.round(zp)}% (Zlarior, 2026 sample${zr ? `; 2021-25: ${Math.round(zr.summary.pass)}%` : ''})`.slice(0, 120)],
-    t: nowS, open: '#zlarior/2026', theme: '#07050f',
+    t: nowS, open: '#zlarior/2026', theme: '#14110e',
   };
 }
 

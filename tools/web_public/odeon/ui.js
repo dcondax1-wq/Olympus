@@ -66,6 +66,7 @@ export class Reels {
     this.picks = [];
     this.shown = [];
     this.stats = root.querySelector('#reelStats');
+    this.hero = root.querySelector('#reelHero');
     this.hist = root.querySelector('#reelHist');
     this.moreBox = root.querySelector('#reelMore');
     const group = (sel, key) => root.querySelectorAll(sel).forEach((b) => b.addEventListener('click', () => {
@@ -159,9 +160,20 @@ export class Reels {
     this.list.textContent = '';
     if (this.stats) {
       const st = statsOf(T);
-      this.stats.textContent = T.length ? `${st.winPct}% won · avg ${fmtR(st.avgR)} · best ${fmtR(st.bestR)} · worst ${fmtR(st.worstR)}` + (isFinite(st.pf) ? ` · PF ${st.pf.toFixed(2)}` : '') : 'No trade matches these filters';
+      const bestT = T.length ? T.reduce((x, y) => (y.r > x.r ? y : x)) : null, worstT = T.length ? T.reduce((x, y) => (y.r < x.r ? y : x)) : null;
+      this.stats.textContent = T.length ? `${st.winPct}% won · avg ${fmtR(st.avgR)} · best ${fmtR(st.bestR)}${bestT ? ' (' + fmtUsd(bestT.usd) + ')' : ''} · worst ${fmtR(st.worstR)}${worstT ? ' (' + fmtUsd(worstT.usd) + ')' : ''}` + (isFinite(st.pf) ? ` · PF ${st.pf.toFixed(2)}` : '') : 'No trade matches these filters';
     }
     const net = T.reduce((a, t) => a + t.usd, 0);
+    if (this.hero) {                                                   // the money first: the net, what it is per month, what the wins and losses add up to
+      this.hero.textContent = '';
+      const mo = new Set(T.map((t) => String(t.day || '').slice(0, 7)).filter(Boolean)).size, w = T.filter((t) => t.usd > 0).reduce((x, t) => x + t.usd, 0), l = T.filter((t) => t.usd < 0).reduce((x, t) => x + t.usd, 0);
+      if (T.length) {
+        const big = el('b', 'rh-net' + (net < 0 ? ' neg' : ''), fmtUsd(net));
+        this.hero.append(big, el('span', 'rh-sub', `net from ${T.length} trade${T.length === 1 ? '' : 's'}` + (mo ? ` · about ${fmtUsd(net / mo)} a month` : '')),
+          el('span', 'rh-split', `Winners ${fmtUsd(w)} · losers ${fmtUsd(l)}`));
+      }
+      this.hero.hidden = !T.length;
+    }
     const days = this.trades.map((t) => t.day).sort();
     this.sum.textContent = this.demo ? 'Demo reel (no trades file yet)'
       : `${T.length} reels · ${dayLabel(days[0] || '')} → ${dayLabel(days[days.length - 1] || '')} · net ${fmtUsd(net)}`;
@@ -288,6 +300,10 @@ export function fillStats(card, tr) {
   } else {
     twin = 'No backtest twin for this trade.';
   }
+  // what it left on the table (money first): the best it showed against what was kept
+  const best = tr.mfe_usd || 0, kept = tr.usd;
+  set('stLeft', best > 0 && kept >= 0 && best - kept > 1 ? `At its best it was up ${fmtUsd(best, false)}; you kept ${fmtUsd(kept)} (${Math.round((100 * kept) / best)}%).`
+    : best > 0 && kept < 0 ? `It was up ${fmtUsd(best, false)} at one point and finished ${fmtUsd(kept)}.` : kept > 0 ? 'Held to the end: it kept what it made.' : '');
   set('stTwin', twin);
 }
 

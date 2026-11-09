@@ -51,7 +51,7 @@ export function createMaze(canvas, { O = null } = {}) {
   scene.fog = new THREE.FogExp2(0x3a2a20, 0.017);
   const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 300);
   let fxList = [], lite = false, dirty = true, qcb = null, drawn = 0, frames = 0, stopped = false, raf = 0;
-  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: GOLD, exposure: 1.0, maxDpr: 1.75, bloom: { strength: 0.2, radius: 0.5, threshold: 0.96 },
+  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: GOLD, theme: { sky: '#4a3626', fog: '#2a1d14', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, exposure: 1.0, maxDpr: 1.75, bloom: { strength: 0.2, radius: 0.5, threshold: 0.96 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; dirty = true; FX.setQuality(fxList, l); if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
 

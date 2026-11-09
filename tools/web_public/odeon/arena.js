@@ -21,9 +21,9 @@ export class Arena {
     const gold = M.metal({ kind: 'gold', roughness: 0.3 }); gold.fog = false;
 
     // the cavea
-    const riser = stone({ color: '#8d87a2', vein: '#3a3466', gold: true, scale: 0.05, roughness: 0.3 });
+    const riser = stone({ color: '#cbbfa8', vein: '#8a6f4a', gold: true, scale: 0.05, roughness: 0.3 });
     riser.side = THREE.BackSide;
-    const tread = stone({ color: '#4d4965', vein: '#2c2750', gold: false, scale: 0.05, roughness: 0.22 });
+    const tread = stone({ color: '#a89a82', vein: '#6a5236', gold: false, scale: 0.05, roughness: 0.22 });
     tread.side = THREE.DoubleSide;
     this.risers = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, lite ? 40 : 72, 1, true, Math.PI / 2, Math.PI), riser, STEPS);
     this.treads = new THREE.InstancedMesh(new THREE.RingGeometry(0.9, 1, lite ? 40 : 72, 1, 0, Math.PI).rotateX(-Math.PI / 2), tread, STEPS);
@@ -36,7 +36,7 @@ export class Arena {
     this.risers.frustumCulled = this.treads.frustumCulled = false;
 
     // the skene: marble columns, gold capitals and bases, a gold architrave and a thin neon frieze
-    const colMat = stone({ color: '#b9b4c8', vein: '#3a3466', gold: true, scale: 0.35, roughness: 0.24 });
+    const colMat = stone({ color: '#e8dfcf', vein: '#8a6f4a', gold: true, scale: 0.35, roughness: 0.24 });
     this.cols = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.5, 0.62, COL_H, lite ? 12 : 24, 1), colMat, COLS);
     this.caps = new THREE.InstancedMesh(new THREE.BoxGeometry(1.7, 0.4, 1.7), gold, COLS * 2);
     const span = (COLS - 1) * COL_GAP;
@@ -48,14 +48,14 @@ export class Arena {
     }
     this.arch = new THREE.Mesh(new THREE.BoxGeometry(span + 3, 0.7, 1.5), gold);
     this.arch.position.set(0, COL_H + 0.75, SKENE_Z);
-    this.frieze = new THREE.Mesh(new THREE.BoxGeometry(span + 3, 0.09, 0.09), M.neon({ color: '#ffc65a', intensity: 2.6 }));
+    this.frieze = new THREE.Mesh(new THREE.BoxGeometry(span + 3, 0.09, 0.09), M.metal({ kind: 'gold', color: '#b0703a', roughness: 0.4 }));
     this.frieze.position.set(0, COL_H + 1.2, SKENE_Z + 0.78);
     this.cols.frustumCulled = this.caps.frustumCulled = false;
 
     // torches: a gold bowl on a stem, a flame that blooms (HDR neon), and one warm light shared by all of them
     const bronze = M.metal({ kind: 'gold', color: '#b0703a', roughness: 0.38, clearcoat: 0.35 }); bronze.fog = false;      // the braziers are bronze, the architecture gold
     this.bowls = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.42, 0.18, 0.5, 14), bronze, TORCH_X.length);
-    this.flames = new THREE.InstancedMesh(new THREE.SphereGeometry(0.36, 12, 8), M.neon({ color: '#ff9a3c', intensity: 3.4 }), TORCH_X.length);
+    this.flames = new THREE.InstancedMesh(new THREE.SphereGeometry(0.36, 12, 8), M.neon({ color: '#ff9a3c', intensity: 2.2 }), TORCH_X.length);
     TORCH_X.forEach((x, i) => {
       at.scale.set(1, 1, 1); at.position.set(x, 2.6, SKENE_Z + 4.5); at.updateMatrix(); this.bowls.setMatrixAt(i, at.matrix);
       at.scale.set(1, 1.5, 1); at.position.set(x, 3.2, SKENE_Z + 4.5); at.updateMatrix(); this.flames.setMatrixAt(i, at.matrix);
@@ -66,7 +66,7 @@ export class Arena {
     this.stems.frustumCulled = false;
 
     // the orchestra: stone under the glass floor (translucent: the tape's reflection still shows through)
-    const deck = stone({ color: '#1d1b29', vein: '#4b4690', gold: true, scale: 0.08, roughness: 0.18, clearcoat: 1, envMapIntensity: 0.9 });
+    const deck = stone({ color: '#3a3026', vein: '#8a6f4a', gold: true, scale: 0.08, roughness: 0.18, clearcoat: 1, envMapIntensity: 0.9 });
     deck.transparent = true; deck.opacity = 0.55; deck.depthWrite = false;
     this.deck = new THREE.Mesh(new THREE.CircleGeometry(80, lite ? 48 : 96).rotateX(-Math.PI / 2), deck);
     this.deck.position.y = -0.05; this.deck.renderOrder = 0;
@@ -74,9 +74,9 @@ export class Arena {
     // light: the warm key from the skene, the torches, and the head lamp (the candle's colour)
     this.key = new THREE.DirectionalLight(0xffe2b8, 1.5); this.key.position.set(-20, 40, 30);
     this.torch = new THREE.PointLight(0xffa04a, 60, 55, 2); this.torch.position.set(0, 4, SKENE_Z + 5);
-    this.lamp = new THREE.PointLight(0x46d79a, 40, 40, 2); this.lamp.position.set(0, 3, 4);
+    this.lamp = new THREE.PointLight(0xc8a24a, 28, 40, 2); this.lamp.position.set(0, 3, 4);
     g.add(this.deck, this.risers, this.treads, this.cols, this.caps, this.arch, this.frieze, this.stems, this.bowls, this.flames, this.key, this.torch, this.lamp);
-    this.lamp.color.set('#46d79a');
+    this.lamp.color.set('#c8a24a');
     try { this.fx = new StageFx({ lite }); g.add(this.fx.g); } catch (e) { this.fx = null; }       // flames, incense, mist, contact shadows: optional
     this.dim = 1;
   }

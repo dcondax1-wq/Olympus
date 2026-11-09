@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The Forge</title>
 <meta name="description" content="PROMETHEUS: a genetic algorithm evolves the live LIT strategy's knobs on 2026 H1 and checks every survivor on 2026 H2 and 2021-25.">
-<meta name="theme-color" content="#120806">
+<meta name="theme-color" content="#14110e">
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png?v=j4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -24,7 +24,8 @@
 <script src="../olympus/olympus.js?v=o3" data-app="prometheus"></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
-<link rel="stylesheet" href="forge.css?v=f7">
+<link rel="stylesheet" href="../olympus/agora.css?v=a1">
+<link rel="stylesheet" href="forge.css?v=f8">
 <script src="../olympus/fx-core.js?v=f1"></script>
 </head>
 <body>
@@ -32,18 +33,18 @@
 <section id="nogl" class="forge-flat" hidden aria-label="Prometheus forge and lineage fallback"></section>
 <header class="hud" id="hud">
   <div class="title">
-    <h1>THE FORGE</h1>
-    <p class="sub" id="sub">PROMETHEUS · evolving LIT on 2026 H1</p>
-    <span class="tag" id="demo" hidden>DEMO DATA</span>
+    <h1>The Forge</h1>
+    <p class="sub" id="sub">Prometheus: evolving the live LIT on 2026 H1</p>
+    <span class="tag" id="demo" hidden>Demo data</span>
   </div>
   <div class="stats" id="stats" aria-live="polite">
-    <div class="st"><span class="k" title="the best creature's 2026 H1 $ per month">BEST H1/MO</span><b id="s-h1">—</b><i id="s-h1l"></i></div>
-    <div class="st"><span class="k" title="the same creature on 2026 H2 (never seen by the forge)">ITS H2/MO</span><b id="s-h2">—</b><i id="s-h2l"></i></div>
-    <div class="st"><span class="k" title="eval pass / fail % within 10 sessions (2026 H1)">P10/F10</span><b id="s-pf">—</b><i id="s-pfl"></i></div>
-    <div class="st"><span class="k" title="trades a week">TR/WK</span><b id="s-tpw">—</b><i id="s-tpwl"></i></div>
-    <div class="st"><span class="k" title="generation: how many rounds of breeding this run has done">GEN</span><b id="s-gen">—</b><i id="s-gen2"></i></div>
+    <div class="st"><span class="k" title="the best creature's 2026 H1 $ per month">Best creature, Jan-Jun $/mo</span><b id="s-h1">—</b><i id="s-h1l"></i></div>
+    <div class="st"><span class="k" title="the same creature on 2026 H2 (never seen by the forge)">Same, new data Jul-Oct $/mo</span><b id="s-h2">—</b><i id="s-h2l"></i></div>
+    <div class="st"><span class="k" title="eval pass / fail % within 10 sessions (2026 H1)">Pass / fail in 10</span><b id="s-pf">—</b><i id="s-pfl"></i></div>
+    <div class="st"><span class="k" title="trades a week">Trades a week</span><b id="s-tpw">—</b><i id="s-tpwl"></i></div>
+    <div class="st"><span class="k" title="generation: how many rounds of breeding this run has done">Round</span><b id="s-gen">—</b><i id="s-gen2"></i></div>
   </div>
-  <button type="button" class="banner" id="banner" aria-controls="truth"><b id="bn-t">LIVE LIT STILL BEST</b><span id="bn-s"></span></button>
+  <button type="button" class="banner" id="banner" aria-controls="truth"><b id="bn-t">Live LIT is still best</b><span id="bn-s"></span></button>
   <div class="legend" aria-hidden="true">
     <span><em class="dot live"></em>live LIT</span><span><em class="dot champ"></em>champion's lineage</span><span><em class="dot hot"></em>fitter = taller, hotter</span>
   </div>
@@ -85,17 +86,17 @@
 </section>
 <section class="card plus" id="plus" hidden role="dialog" aria-modal="false" aria-labelledby="plus-h">
   <button type="button" class="x" id="plusX" data-pclose aria-label="Close">✕</button>
-  <h2 id="plus-h">Tools · the forge's own numbers</h2>
+  <h2 id="plus-h">Tools: the forge numbers</h2>
   <nav class="ptabs" role="tablist" aria-label="Tools; swipe horizontally for more tabs">
-    <button type="button" role="tab" data-ptab="meter" aria-selected="true">METER</button><button type="button" role="tab" data-ptab="breed" aria-selected="false">BREEDING</button>
-    <button type="button" role="tab" data-ptab="verdicts" aria-selected="false">VERDICTS</button><button type="button" role="tab" data-ptab="survivors" aria-selected="false">SURVIVORS</button>
-    <button type="button" role="tab" data-ptab="compare" aria-selected="false">COMPARE</button><button type="button" role="tab" data-ptab="search" aria-selected="false">SEARCH</button>
+    <button type="button" role="tab" data-ptab="meter" aria-selected="true">Meter</button><button type="button" role="tab" data-ptab="breed" aria-selected="false">Breeding</button>
+    <button type="button" role="tab" data-ptab="verdicts" aria-selected="false">Verdicts</button><button type="button" role="tab" data-ptab="survivors" aria-selected="false">Survivors</button>
+    <button type="button" role="tab" data-ptab="compare" aria-selected="false">Compare</button><button type="button" role="tab" data-ptab="search" aria-selected="false">Search</button>
   </nav>
-  <p class="ptabs-hint" aria-hidden="true">SWIPE FOR MORE TOOLS <span>→</span></p>
+  <p class="ptabs-hint" aria-hidden="true">Swipe for more tools <span>→</span></p>
   <div id="plus-b" class="plus-b"></div>
 </section>
-<div class="fshare" id="fshare" hidden role="dialog" aria-label="Share card"><img alt=""><p>Press and hold the picture to save or share it.</p><button type="button" id="fshareX">CLOSE</button></div>
+<div class="fshare" id="fshare" hidden role="dialog" aria-label="Share card"><img alt=""><p>Press and hold the picture to save or share it.</p><button type="button" id="fshareX">Close</button></div>
 <div class="ftoast" id="ftoast" role="status" hidden></div>
-<script type="module" src="forge.js?v=f6"></script>
+<script type="module" src="forge.js?v=f7"></script>
 </body>
 </html>
