@@ -3,7 +3,7 @@
 // the canvas and the billboards' canvases; city.js drives it.
 import * as THREE from '../jarvis/three.module.min.js';
 import { COLORS } from './util.js';
-import * as SH from './shaders.js?v=dcgfx6';
+import * as SH from './shaders.js?v=dcgfx9';
 import { Skyline, pick } from './skyline.js';
 import { Rays, SunRays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.js';
 import { createRenderer } from '../olympus/render.js';          // the OLYMPUS render core: ACES, MSAA, bloom, the film finish, tiers
