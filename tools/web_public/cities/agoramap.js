@@ -46,6 +46,23 @@ function blob(isl, seed, pts = 72) {
 }
 const inBlob = (isl, x, y, k = 1) => { const dx = (x - isl.cx) / (isl.rx * k), dy = (y - isl.cy) / (isl.ry * k); return dx * dx + dy * dy <= 1; };
 
+/** The sky follows New York time: night, a slow peach sunrise, a bright Aegean day, a rose sunset. [sky top, sky mid, upper horizon, horizon, sea near, sea far, star share, sun share] */
+const SKYS = [
+  [0, ['#15121f', '#2f2438', '#7d4a45', '#d9985a'], ['#46565a', '#183341', '#0d1d27'], 1, 0],
+  [5.5, ['#241f3a', '#5a3d58', '#b0607a', '#f0a070'], ['#4a5a62', '#1f3a4a', '#10222d'], 0.5, 0],
+  [7.5, ['#4a5f8a', '#c08a8a', '#f5b58a', '#ffd9a0'], ['#7a9aa2', '#2f5a6e', '#17323f'], 0.1, 1],
+  [12, ['#4f86b0', '#8ab4cc', '#d6dcc6', '#f3e4b8'], ['#8cc0c4', '#3c7a92', '#1e4a60'], 0, 1],
+  [17, ['#4a6f9a', '#a8a0aa', '#eab088', '#f6c78a'], ['#80a8b0', '#32627a', '#193a4c'], 0, 1],
+  [19, ['#2a2548', '#7a4a68', '#e0805a', '#f4b870'], ['#58606a', '#25404f', '#12262f'], 0.4, 0],
+  [21, ['#15121f', '#2f2438', '#7d4a45', '#d9985a'], ['#46565a', '#183341', '#0d1d27'], 1, 0],
+  [24, ['#15121f', '#2f2438', '#7d4a45', '#d9985a'], ['#46565a', '#183341', '#0d1d27'], 1, 0],
+];
+const mixHex = (a, b, t) => { const p = (h) => parseInt(h.slice(1), 16), x = p(a), y = p(b), f = (s) => Math.round(((x >> s) & 255) * (1 - t) + ((y >> s) & 255) * t); return `rgb(${f(16)},${f(8)},${f(0)})`; };
+const etHour = () => {
+  try { const q = new URLSearchParams(location.search).get('hour'); if (q !== null && q !== '') return +q; } catch (e) { /* no address */ }
+  try { const p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour12: false, hour: '2-digit', minute: '2-digit' }).formatToParts(new Date()); const g = (t) => +p.find((x) => x.type === t).value; return (g('hour') % 24) + g('minute') / 60; } catch (e) { return 21; }
+};
+
 export class AgoraMap {
   constructor(canvas, o = {}) {
     this.cv = canvas; this.g = canvas.getContext('2d');
@@ -57,6 +74,7 @@ export class AgoraMap {
     this.cities = []; this.districts = []; this.isl = {}; this.shapes = {};
     this.sel = -1; this.dim = null; this.seen = new Set(); this.star = null; this.lift = false;
     this.cam = { x: 460, y: 800, s: 0.4 }; this.fit = 0.4; this.fly = null;
+    this.hourNow = etHour(); this.hourT = 0;
     this.W = 390; this.H = 844; this.dpr = 1; this.t = 0; this.last = 0; this.raf = 0; this.running = false;
     this.ptr = new Map(); this.tap = null; this.pinch = null; this.touched = false;
     this.banners = []; this.labelBoxes = [];
@@ -322,17 +340,21 @@ export class AgoraMap {
   }
 
   // ---------------------------------------------------------------- painting
+  _pal() {
+    const h = this.hourNow, i = SKYS.findIndex((k, j) => h >= k[0] && h <= SKYS[j + 1][0]), a = SKYS[Math.max(0, i)], b = SKYS[Math.max(0, i) + 1], u = (h - a[0]) / (b[0] - a[0] || 1), sm = u * u * (3 - 2 * u);
+    return { sky: a[1].map((c, k) => mixHex(c, b[1][k], sm)), sea: a[2].map((c, k) => mixHex(c, b[2][k], sm)), star: a[3] + (b[3] - a[3]) * sm, sun: a[4] + (b[4] - a[4]) * sm };
+  }
   _sky(g, W) {
-    const hz = this.hz, t = this.t;
+    const hz = this.hz, t = this.t, P = this.pal = this._pal();
     const sk = g.createLinearGradient(0, 0, 0, hz);
-    sk.addColorStop(0, '#15121f'); sk.addColorStop(0.5, '#2f2438'); sk.addColorStop(0.82, '#7d4a45'); sk.addColorStop(1, '#d9985a');
+    sk.addColorStop(0, P.sky[0]); sk.addColorStop(0.5, P.sky[1]); sk.addColorStop(0.82, P.sky[2]); sk.addColorStop(1, P.sky[3]);
     g.fillStyle = sk; g.fillRect(0, 0, W, hz + 2);
-    for (const s of this.stars) { const a = 0.35 + 0.25 * Math.sin(t * 0.25 + s.ph); g.fillStyle = `rgba(243,236,224,${a * (1 - s.y)})`; g.fillRect(s.x * W, s.y * hz, s.r, s.r); }
+    for (const s of this.stars) { const a = 0.35 + 0.25 * Math.sin(t * 0.25 + s.ph); g.fillStyle = `rgba(243,236,224,${a * (1 - s.y) * P.star})`; g.fillRect(s.x * W, s.y * hz, s.r, s.r); }
     // moon with a soft halo (warm ivory)
     const mx = W * 0.8, my = hz - 34, mh = g.createRadialGradient(mx, my, 4, mx, my, 62);
     mh.addColorStop(0, 'rgba(240,226,190,.32)'); mh.addColorStop(1, 'rgba(240,226,190,0)');
     g.fillStyle = mh; g.fillRect(mx - 64, my - 64, 128, 128);
-    g.fillStyle = '#f1e4c2'; g.beginPath(); g.arc(mx, my, 16, 0, TAU); g.fill();
+    g.fillStyle = P.sun > 0.5 ? '#fff1c8' : '#f1e4c2'; g.beginPath(); g.arc(mx, my, 16 + 4 * P.sun, 0, TAU); g.fill();
     g.fillStyle = 'rgba(160,130,100,.25)'; g.beginPath(); g.arc(mx - 4, my - 3, 4, 0, TAU); g.arc(mx + 5, my + 4, 2.6, 0, TAU); g.fill();
     // soft clouds drifting
     for (let k = 0; k < 4; k++) {
@@ -354,8 +376,8 @@ export class AgoraMap {
     g.fillStyle = 'rgba(255,205,130,.55)'; for (let k = 0; k < 3; k++) g.fillRect(tx - 9 + k * 8, ty - 12, 1.6, 3);
   }
   _sea(g, W, H) {
-    const hz = this.hz, sea = g.createLinearGradient(0, hz, 0, H);
-    sea.addColorStop(0, '#46565a'); sea.addColorStop(0.07, '#2c4650'); sea.addColorStop(0.35, '#183341'); sea.addColorStop(1, '#0d1d27');
+    const hz = this.hz, P = this.pal, sea = g.createLinearGradient(0, hz, 0, H);
+    sea.addColorStop(0, P.sea[0]); sea.addColorStop(0.07, P.sea[0]); sea.addColorStop(0.35, P.sea[1]); sea.addColorStop(1, P.sea[2]);
     g.fillStyle = sea; g.fillRect(0, hz, W, H - hz);
     // moon path on the water
     const mx = W * 0.8;
@@ -441,12 +463,17 @@ export class AgoraMap {
       g.fillStyle = '#7e5b45'; g.fillRect(x - w / 2 - 0.3, y - w * 1.05, w + 0.6, w * 0.3);
       if (h.lit) { g.fillStyle = 'rgba(255,208,130,.95)'; g.fillRect(x - w * 0.12, y - w * 0.55, Math.max(0.8, w * 0.26), Math.max(0.8, w * 0.3)); }
     }
+    // sea sparkle: tiny warm glints that wake and fade (cheap: a few dots)
+    if (!this.reduced) { const n = this.low ? 14 : 34; g.fillStyle = 'rgba(255,236,190,.8)'; for (let k = 0; k < n; k++) { const ph = (this.t * 0.35 + k * 0.618) % 1, a = Math.sin(ph * Math.PI); if (a < 0.2) continue; const gx = ((k * 97.3) % W), gy = this.hz + 14 + ((k * 61.7) % (H - this.hz - 150)); g.globalAlpha = a * (0.25 + 0.45 * (this.pal ? 1 - this.pal.star * 0.3 : 1)); g.fillRect(gx, gy, 1.6, 1.6); } g.globalAlpha = 1; }
     // lighthouses
     for (const l of this.lights) {
       const [x, y] = this.toScreen(l.x, l.y); if (x < -20 || x > W + 20 || y < 0 || y > H + 20) continue;
       const k = Math.max(0.8, s * 2.2), gl = g.createRadialGradient(x, y - 17 * k, 1, x, y - 17 * k, 16 * k);
       gl.addColorStop(0, 'rgba(255,205,120,.5)'); gl.addColorStop(1, 'rgba(255,205,120,0)');
       g.fillStyle = gl; g.fillRect(x - 17 * k, y - 34 * k, 34 * k, 34 * k);
+      if (this.pal && this.pal.star > 0.2) { const ang = this.t * 0.6 + x * 0.01, bl = 70 * k, bx = Math.cos(ang), side = bx > 0 ? 1 : -1, wd = 0.25 + Math.abs(Math.sin(ang)) * 0.2;   // a soft turning beam
+        const bg = g.createLinearGradient(x, y - 17 * k, x + side * bl, y - 17 * k); bg.addColorStop(0, `rgba(255,214,140,${0.30 * this.pal.star})`); bg.addColorStop(1, 'rgba(255,214,140,0)');
+        g.fillStyle = bg; g.beginPath(); g.moveTo(x, y - 17 * k); g.lineTo(x + side * bl, y - 17 * k - bl * wd * 0.5); g.lineTo(x + side * bl, y - 17 * k + bl * wd * 0.5); g.closePath(); g.fill(); }
       g.fillStyle = '#d2c3a2'; g.beginPath(); g.moveTo(x - 2.6 * k, y); g.lineTo(x - 1.7 * k, y - 15 * k); g.lineTo(x + 1.7 * k, y - 15 * k); g.lineTo(x + 2.6 * k, y); g.fill();
       g.fillStyle = '#7e5b45'; g.fillRect(x - 2.2 * k, y - 18 * k, 4.4 * k, 3 * k);
       g.fillStyle = '#ffd28a'; g.fillRect(x - 1 * k, y - 17.4 * k, 2 * k, 1.8 * k);

@@ -7,7 +7,7 @@
 // Draw calls stay flat whatever the data: 40k buildings are still one draw (the tier's cap keeps the triangles in budget).
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
-import * as SH from './shaders.js?v=g3';
+import * as SH from './shaders.js?v=g5';
 import { buildLandmark, spinLandmark, disposeGroup } from './landmarks.js';
 import { rgb, clamp, rng, hash32 } from './util.js';
 import { buildMetropolis } from './metropolis.js?v=m3';
@@ -27,8 +27,8 @@ const SKY_KIND = { night: 0, dusk: 1, dawn: 2, day: 3, storm: 4, void: 5, aurora
 const DAYF = { day: 1, dawn: 0.55, dusk: 0.22 };
 const SUN = { day: [0.4, 0.8, 0.3], dawn: [-0.8, 0.14, 0.5], dusk: [0.55, 0.32, -0.5], night: [-0.4, 0.55, -0.5], storm: [0, -1, 0], void: [0.3, 0.6, 0.2], aurora: [-0.4, 0.5, -0.5], ember: [0.7, 0.08, 0.3] };
 const WX = {   // kind id, box, velocity (box units per second), sprite size, tint, share of the tier's count
-  rain: { k: 1, box: [70, 56, 70], vel: [4, -48, 1.5], size: 0.55, tint: [0.6, 0.78, 1], share: 1 },
-  storm: { k: 7, box: [70, 56, 70], vel: [-16, -60, 6], size: 0.7, tint: [0.7, 0.8, 1], share: 1 },
+  rain: { k: 1, box: [70, 56, 70], vel: [4, -48, 1.5], size: 0.55, tint: [0.88, 0.84, 0.78], share: 1 },
+  storm: { k: 7, box: [70, 56, 70], vel: [-16, -60, 6], size: 0.7, tint: [0.88, 0.84, 0.78], share: 1 },
   snow: { k: 2, box: [80, 50, 80], vel: [2, -4, 1], size: 0.4, tint: [1, 1, 1], share: 0.8 },
   embers: { k: 3, box: [90, 60, 90], vel: [1.5, 7, 0.6], size: 0.45, tint: [1, 0.55, 0.15], share: 0.6 },
   fireflies: { k: 4, box: [90, 40, 90], vel: [0.3, 0, 0.2], size: 0.55, tint: [0.7, 1, 0.4], share: 0.45 },
@@ -39,7 +39,7 @@ const WX = {   // kind id, box, velocity (box units per second), sprite size, ti
 const col3 = (hex) => new THREE.Color(hex);
 /** AGORA skies (docs/DESIGN_AGORA.md): dusk indigo into amber, a bright Aegean day, a peach dawn. */
 const AGORA_SKY = {
-  dusk: { top: '#1c1a3a', mid: '#4a3f68', low: '#d98f55', ground: '#6a5848', stars: 0.55 },
+  dusk: { top: '#2a2a56', mid: '#7a6490', low: '#f4a868', ground: '#8c7660', stars: 0.4 },
   dawn: { top: '#2a2540', mid: '#8a5a62', low: '#f0b27a', ground: '#2c2118', stars: 0.2 },
   day: { top: '#4f7fa3', mid: '#9fc0cf', low: '#f3dcae', ground: '#7a6a55', stars: 0 },
 };
@@ -223,7 +223,7 @@ export class Stage {
     U.uTop.value.set(sk.top); U.uMid.value.set(sk.mid); U.uLow.value.set(sk.low); U.uStars.value = sk.stars; U.uKind.value = SKY_KIND[sk.kind] ?? 1;
     U.uSun.value.set(...(SUN[sk.kind] || SUN.dusk));
     U.uDay.value = DAYF[sk.kind] ?? 0;
-    const f = col3(sk.kind === 'day' ? sk.mid : '#4a4a78').lerp(col3(sk.low), sk.kind === 'day' ? 0.3 : 0.3);
+    const f = col3(sk.kind === 'day' ? sk.mid : '#8a7298').lerp(col3(sk.low), 0.32);
     U.uFog.value.copy(f); this.scene.fog.color.copy(f);
     U.uGround.value.set(AG.ground).lerp(col3(pal.ground), 0.1); U.uAccent.value.set('#c8a24a');
     U.uWinTint.value.setRGB(1, 0.8, 0.5);
@@ -231,7 +231,7 @@ export class Stage {
     this.setWeather(spec ? spec.weather : 'fog');
     U.uPbr.value = { ultra: 1, high: 0.8, low: 0.5, off: 0 }[this.rc.quality()] ?? 0.7;
     this.lights[0].color.set(sk.kind === 'day' ? 0xdfeaf2 : 0xffd8a8); this.lights[0].groundColor.set(sk.kind === 'day' ? 0x6a5a44 : 0x2a1c10);
-    this.lights[0].intensity = sk.kind === 'day' ? 1.5 : 0.9;
+    this.lights[0].intensity = sk.kind === 'day' ? 1.5 : 1.3;
     this.lights[1].color.set(sk.kind === 'day' ? 0xfff0d0 : 0xffcf9a);
     this.lights[1].intensity = sk.kind === 'day' ? 2.0 : 1.1;
   }

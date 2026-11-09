@@ -14,7 +14,7 @@ import { cityResultPage, planCityNetwork } from './network-layout.js?v=n1';
 import { openDistrictWorld } from './district-world.js?v=d2';
 import { insight } from './insight.js';
 import { randomSpec, seedDataset, newSeed, cleanSeed } from './procedural.js';
-import { AgoraMap } from './agoramap.js?v=g2';
+import { AgoraMap } from './agoramap.js?v=g4';
 // Do not load/compile the 3D pipeline until this device has a usable context.
 let Stage, TIERS, BUDGETS, Rig, makePath, safeFlight, warmHex = (h) => h;
 
@@ -419,7 +419,7 @@ function buildCityView(spec, ds) {
   S.rig.auto = 0.05;
   const far = city.bounds.r * 1.7 + 70;
   S.rig.t.set(0, city.maxH * 0.28, 0);
-  const p0 = Math.max(canvas.clientWidth < 600 ? 0.5 : 0, spec.cam_pitch || (city.layout === 'terrain' ? 0.62 : 0.42));
+  const p0 = Math.max(canvas.clientWidth < 600 ? 0.36 : 0, spec.cam_pitch || (city.layout === 'terrain' ? 0.62 : 0.42));
   S.rig.dist = far; S.rig.pitch = p0 - 0.06; S.rig.yaw = 0; S.rig.fly = null; S.rig.path = null; S.rig.apply();
   S.rig.flyTo({ dist: far * 0.82, pitch: p0, yaw: 0.25 }, reduced() ? 0.01 : 2.4);
   setCam('orbit', true);
@@ -1084,7 +1084,7 @@ async function boot() {
   let importTimer;
   try {
     const modules = await Promise.race([
-      Promise.all([import('./scene.js?v=g4'), import('./rig.js?v=r2')]),
+      Promise.all([import('./scene.js?v=g5'), import('./rig.js?v=r2')]),
       new Promise((_, reject) => { importTimer = setTimeout(() => reject(Error('3D startup timed out')), 8000); }),
     ]);
     ({ Stage, TIERS, BUDGETS, warmHex } = modules[0]); ({ Rig, makePath, safeFlight } = modules[1]);

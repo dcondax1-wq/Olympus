@@ -64,8 +64,8 @@ void main(){
   float diff = 0.30 + 0.55*max(dot(N, L), 0.0);
   // facade: panel grooves + a metal / concrete sheen that picks up the sky and the sun
   float groove = 1.0 - 0.18 * (smoothstep(0.0, 0.07, f.x) * smoothstep(1.0, 0.93, f.x) < 0.5 ? 1.0 : 0.0) * side;
-  vec3 marble = mix(vec3(0.70, 0.62, 0.50), vC, 0.34);
-  vec3 body = mix(marble*0.46, marble*0.66 + 0.04, uDay) * diff * (0.72 + 0.4*vLocal.y) * groove;
+  vec3 marble = mix(vec3(0.80, 0.72, 0.60), vC, 0.32);
+  vec3 body = mix(marble*0.78, marble*0.66 + 0.04, uDay) * diff * (0.78 + 0.4*vLocal.y) * groove + marble*0.07;
   float spec = pow(max(dot(R, L), 0.0), 38.0) * (0.25 + 0.75 * (1.0 - win));
   body += (env * (0.10 + 0.5 * fres) + vec3(1.0, 0.95, 0.85) * spec * 0.55) * uPbr * (0.4 + 0.6 * side);
   vec3 warm = mix(vec3(1.0, 0.80, 0.50), vec3(1.0, 0.62, 0.30), step(0.6, h2(cell*1.7)));

@@ -322,7 +322,7 @@ def run_browser():
             check("c. loads on the chosen LITE tier at 390 x 844: real mode (no DEMO), the engine's edges, the live feed over them, 2 passes, no errors",
                   not s["demo"] and s["n"] == edges["counts"]["edges"] and s["liveUsed"] and sc["quality"] == "low" and sc["passes"] == 2 and not p.errs and p.is_visible("#lite") and not p.is_visible("#demo"), (s["demo"], s["n"], s["liveUsed"], sc, p.errs))
             check("c. one district per market plus Downtown, a building for every edge, the skyline (LITE: 700 towers), cars on the roads, orders for the 2 open positions, the weather and the clock",
-                  s["districts"][0] == "Downtown" and "Bitcoin" in s["districts"] and s["edgeBuildings"] == s["n"] and sc["edges"] == s["n"] and sc["scenery"] == 700 and sc["cars"] > 60 and sc["orders"] == 2
+                  s["districts"][0] == "Downtown" and "Bitcoin" in s["districts"] and s["edgeBuildings"] == s["n"] and sc["edges"] == s["n"] and sc["scenery"] == 1400 and sc["cars"] > 60 and sc["orders"] == 2
                   and sc["weather"] == edges["regime"]["state"] and re.search(r"\d\d:\d\d · (Night|Dawn|Day|Dusk)", p.inner_text("#clock")), (s["districts"], sc))
             t = p.inner_text("#verdict")
             check("c. the top card in plain words: the headline, Do more / Stop / Ruin risk, the bot line with the live bankroll ($77.77) and how many bets were read one by one; the weather chip",
@@ -359,6 +359,9 @@ def run_browser():
             p.keyboard.press("Escape")
             check("c. Escape closes the card and clears the selection", not p.is_visible("#sheet") and st(p)["sel"] is None)
             # ---- the Lab: Best edge so far / Worst leak, the learning ticker, the idea districts
+            if p.get_attribute("#cityInsights", "aria-expanded") != "true":
+                p.click("#cityInsights")        # the phone card starts folded; the Lab cards live in the opened insights
+            p.wait_for_selector("#pBest", state="visible", timeout=8000)
             pb, pw = p.inner_text("#pBestV"), p.inner_text("#pWorstV")
             boxes = [p.locator(i).bounding_box() for i in ("#pBest", "#pWorst", "#ticker")]
             tk0 = p.inner_text("#tkText")
