@@ -1,5 +1,5 @@
 {
- "at": "2026-11-04 08:45",
+ "at": "2026-11-09 03:52",
  "mode": "FULL",
  "rows": [
   {
@@ -17,12 +17,16 @@
    "mode": "FULL"
   },
   {
-   "state": "PASS",
-   "passed": 33,
+   "state": "FAIL",
+   "passed": 30,
    "total": 33,
-   "seconds": 16.5,
+   "seconds": 15.8,
    "note": "",
-   "fails": [],
+   "fails": [
+    "[FAIL] b. launcher.js is byte-identical in tools/web_public and web_next/js/next  -> ",
+    "[FAIL] b. the phone dashboard has ONE tag, launcher.js (deferred); the list is loaded by the launcher, async, so a slow site never holds Zenith back  -> ",
+    "[FAIL] b. the PC worker caches both files and its version is bumped (v34 or later)  -> "
+   ],
    "argv": [
     "-m",
     "tests.test_apps_list"
@@ -31,12 +35,16 @@
    "mode": "FULL"
   },
   {
-   "state": "PASS",
-   "passed": 18,
+   "state": "FAIL",
+   "passed": 15,
    "total": 18,
-   "seconds": 26.9,
+   "seconds": 32.1,
    "note": "",
-   "fails": [],
+   "fails": [
+    "[FAIL] lint: every backdrop-filter has its -webkit- twin beside it (iOS 16 / 17 only know the prefixed one)  -> [('observatory/observatory.css', 'backdrop-filter:blur(15px);border-radius:18px}.overview '), ('cities/district-world.css', 'bac",
+    "[FAIL] lint: every height made of 100vh has a 100dvh / 100svh twin in the same rule (iOS toolbars make 100vh taller than the screen)  -> [('observatory/observatory.css', 'body', 'min-height:100vh'), ('atlascity/city.css', 'body', 'min-heigh",
+    "[FAIL] lint: no input / select / textarea is styled under 16px (iOS zooms the page on focus)  -> [('kalshicity/kalshicity.css', '.district-control select', '11px'), ('kalshicity/kalshicity.css', '.district-control select', '10.5px')]"
+   ],
    "argv": [
     "-m",
     "tests.test_safari_smoke",
@@ -61,12 +69,15 @@
    "mode": "FULL"
   },
   {
-   "state": "PASS",
-   "passed": 20,
+   "state": "FAIL",
+   "passed": 18,
    "total": 20,
    "seconds": 3.0,
    "note": "",
-   "fails": [],
+   "fails": [
+    "[FAIL] b. every theme's text, muted ink, accents, ok / bad / warn reach 4.5:1 on their background (page, stage and Jarvis palettes: 140 pairs)  -> [('agora', 'page', 'bad', 4.47), ('agora', 'stage', 'bad', 4.47)]",
+    "[FAIL] b. the muted ink tokens of the app stylesheets (--dim / --muted / --faint ...) are at least 4.5:1 on their own background  -> [('zenith_agora.css', '--muted', '#827d73', 3.53)]"
+   ],
    "argv": [
     "-m",
     "tests.test_olympus_a11y"
@@ -75,10 +86,10 @@
    "mode": "FULL"
   },
   {
-   "state": "PASS",
-   "passed": 13,
+   "state": "FAIL",
+   "passed": 12,
    "total": 13,
-   "seconds": 0.2,
+   "seconds": 0.3,
    "note": "",
    "fails": [],
    "argv": [
@@ -86,325 +97,6 @@
     "tests.test_olympus_sfx"
    ],
    "name": "olympus_sfx",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 35,
-   "total": 35,
-   "seconds": 67.4,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.test_olympus_kit",
-    "power",
-    "tiers"
-   ],
-   "name": "olympus_kit",
-   "mode": "FULL"
-  },
-  {
-   "state": "FAIL",
-   "passed": 106,
-   "total": 111,
-   "seconds": 255.2,
-   "note": "",
-   "fails": [
-    "[FAIL] c. tree: no key -> every computed CSS variable as before the themes (51)  -> {'--dim': ('rgba(150, 230, 185, .52)', 'rgba(150, 230, 185, .66)'), '--faint': ('rgba(150, 230, 185, .3)', 'rgba(150, 230, 185, .58)')}",
-    "[FAIL] c. tree: olympus.theme = olympus -> every computed CSS variable as before the themes (51)  -> {'--dim': ('rgba(150, 230, 185, .52)', 'rgba(150, 230, 185, .66)'), '--faint': ('rgba(150, 230, 185, .3)', 'rgba(150, 230, 185, .58)')}",
-    "[FAIL] c. zenith: no key -> every computed CSS variable as before the themes (90)  -> {'--muted': ('#6f788b', '#8590a7')}",
-    "[FAIL] c. zenith: olympus.theme = olympus -> every computed CSS variable as before the themes (90)  -> {'--muted': ('#6f788b', '#8590a7')}",
-    "[FAIL] e. tree: back on the default, every CSS variable is today's again  -> {'--dim': ('rgba(150, 230, 185, .52)', 'rgba(150, 230, 185, .66)'), '--faint': ('rgba(150, 230, 185, .3)', 'rgba(150, 230, 185, .58)')}"
-   ],
-   "argv": [
-    "-m",
-    "tests.test_olympus_themes"
-   ],
-   "name": "olympus_themes",
-   "mode": "FULL"
-  },
-  {
-   "state": "FAIL",
-   "passed": 54,
-   "total": 56,
-   "seconds": 177.1,
-   "note": "",
-   "fails": [
-    "[FAIL] c. setQuality high -> low -> off and OLYMPUS.setFx('ultra') rebuild the pipeline (3 -> 2 -> 1 -> 3 passes)  -> ['high', 3, 'low', 2, True, 1, False, 'ultra', 3, 4, False]",
-    "[FAIL] d. slow frames step ultra -> high -> low, never below, never stored  -> {'seen': [], 'now': 'ultra', 'stored': None}"
-   ],
-   "argv": [
-    "-m",
-    "tests.test_olympus_render"
-   ],
-   "name": "olympus_render",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 50,
-   "total": 50,
-   "seconds": 0.1,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.hub_parts",
-    "static"
-   ],
-   "name": "jarvis_hub:static",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 50,
-   "total": 50,
-   "seconds": 137.8,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.hub_parts",
-    "a"
-   ],
-   "name": "jarvis_hub:a",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 22,
-   "total": 22,
-   "seconds": 59.5,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.hub_parts",
-    "b"
-   ],
-   "name": "jarvis_hub:b",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 4,
-   "total": 4,
-   "seconds": 25.2,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.hub_parts",
-    "missing"
-   ],
-   "name": "jarvis_hub:missing",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 30,
-   "total": 30,
-   "seconds": 104.0,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.hub_parts",
-    "c"
-   ],
-   "name": "jarvis_hub:c",
-   "mode": "FULL"
-  },
-  {
-   "state": "FAIL",
-   "passed": 27,
-   "total": 28,
-   "seconds": 139.3,
-   "note": "",
-   "fails": [
-    "[FAIL] l. What's new: a card once per release (Show me -> the notes), not again after; 'what's new' shows the notes any time  -> ('iGAME PLAN \u00b7 4:02 AMZlarior (50K): entry window 02:00-15:30 ET, one trade a day at most, flat by 3:55 PM.', T"
-   ],
-   "argv": [
-    "-m",
-    "tests.hub_parts",
-    "look"
-   ],
-   "name": "jarvis_hub:look",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 14,
-   "total": 14,
-   "seconds": 55.1,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.hub_parts",
-    "switcher"
-   ],
-   "name": "jarvis_hub:switcher",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 14,
-   "total": 14,
-   "seconds": 24.4,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.hub_parts",
-    "olympus"
-   ],
-   "name": "jarvis_hub:olympus",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 14,
-   "total": 14,
-   "seconds": 40.6,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.hub_parts",
-    "system"
-   ],
-   "name": "jarvis_hub:system",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 35,
-   "total": 35,
-   "seconds": 65.7,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.hub_parts",
-    "intro"
-   ],
-   "name": "jarvis_hub:intro",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 55,
-   "total": 55,
-   "seconds": 21.8,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.test_jarvis_assistant"
-   ],
-   "name": "jarvis_assistant",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 30,
-   "total": 30,
-   "seconds": 17.7,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.test_jarvis_tools"
-   ],
-   "name": "jarvis_tools",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 31,
-   "total": 31,
-   "seconds": 6.3,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.test_jarvis_modes"
-   ],
-   "name": "jarvis_modes",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 177,
-   "total": 177,
-   "seconds": 12.0,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.test_jarvis_brain"
-   ],
-   "name": "jarvis_brain",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 49,
-   "total": 49,
-   "seconds": 3.9,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.test_jarvis_obsidian"
-   ],
-   "name": "jarvis_obsidian",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 27,
-   "total": 27,
-   "seconds": 89.7,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.test_jarvis_talk"
-   ],
-   "name": "jarvis_talk",
-   "mode": "FULL"
-  },
-  {
-   "state": "FAIL",
-   "passed": 46,
-   "total": 47,
-   "seconds": 178.7,
-   "note": "",
-   "fails": [
-    "[FAIL] d. holographic cards: 'ZLARIOR \u00b7 ROOM $1,106' floats out as Zlarior is named  -> [['Zlarior 50K \u00b7 drawdown$1,106', True], ['ATLAS 25K \u00b7 drawdown$750', False], ['BLITZ 25K \u00b7 drawdown$612', False]]"
-   ],
-   "argv": [
-    "-m",
-    "tests.test_jarvis_voice"
-   ],
-   "name": "jarvis_voice",
-   "mode": "FULL"
-  },
-  {
-   "state": "PASS",
-   "passed": 89,
-   "total": 89,
-   "seconds": 61.9,
-   "note": "",
-   "fails": [],
-   "argv": [
-    "-m",
-    "tests.test_jarvis_engines"
-   ],
-   "name": "jarvis_engines",
    "mode": "FULL"
   }
  ]
