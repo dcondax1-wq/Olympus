@@ -16,4 +16,4 @@ Rules:
 - When you finish, add one line to `handoff/inbox/<task-id>/DONE.md`: what you made, file list, anything Claude must wire.
 - If blocked, write `handoff/inbox/<task-id>/QUESTION.md` instead of guessing.
 
-Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble + gold + violet neon), plain words.
+Style of the owner: 18, iPhone, wants it premium and calm (classical Greece: marble, bronze, gold, olive; serif headings; NO neon, NO glow, NO sci-fi / cyber look), plain words.

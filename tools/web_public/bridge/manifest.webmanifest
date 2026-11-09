@@ -7,8 +7,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#06040d",
-  "theme_color": "#06040d",
+  "background_color": "#14110e",
+  "theme_color": "#14110e",
   "icons": [
     {
       "src": "../jarvis/icon-192.png?v=j4",
