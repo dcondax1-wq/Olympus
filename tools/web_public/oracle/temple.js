@@ -151,7 +151,7 @@ export class Temple {
     // incense: 36 puffs per censer
     const nS = this.censers.length * 36, sp = new Float32Array(nS * 3);
     for (let i = 0; i < nS; i++) { const [x, z] = this.censers[i % this.censers.length]; sp[i * 3] = x; sp[i * 3 + 1] = FLOOR_Y + 2; sp[i * 3 + 2] = z; }
-    this.smoke = points(T, sp, nS, SMOKE_VS, SMOKE_FS, { uTime: this.uTime, uPx: this.uPx, uCol: { value: new T.Color('#cdc4e6') } }, T.NormalBlending);
+    this.smoke = points(T, sp, nS, SMOKE_VS, SMOKE_FS, { uTime: this.uTime, uPx: this.uPx, uCol: { value: new T.Color('#e6dcc4') } }, T.NormalBlending);
     this.smoke.renderOrder = 5;
     // dust in the light: a volume over the floor
     this.nDust = 240;
@@ -163,7 +163,7 @@ export class Temple {
 
     // light shafts from the high window: two open cones, bright at the top, soft at the edge
     this.shafts = [];
-    [[-16, 36, 18, -3, 0, 2, 6.5, '#ffe2b0', 0.5], [-24, 34, -6, -6, 0, -4, 4.2, '#bcd2ff', 0.4]].forEach(([tx, ty, tz, bx, by, bz, rad, col, I]) => {
+    [[-16, 36, 18, -3, 0, 2, 6.5, '#ebd0a2', 0.5], [-24, 34, -6, -6, 0, -4, 4.2, '#ebd8ad', 0.4]].forEach(([tx, ty, tz, bx, by, bz, rad, col, I]) => {
       const top = new T.Vector3(tx, FLOOR_Y + ty, tz), bot = new T.Vector3(bx, FLOOR_Y + by, bz), len = top.distanceTo(bot);
       const m = new T.Mesh(new T.CylinderGeometry(0.4, rad, len, 20, 1, true),
         new T.ShaderMaterial({ uniforms: { uCol: { value: new T.Color(col) }, uI: { value: I }, uTime: this.uTime }, vertexShader: SHAFT_VS, fragmentShader: SHAFT_FS,
@@ -174,7 +174,7 @@ export class Temple {
       this.shafts.push(m); g.add(m);
     });
     // ground fog: two scrolling layers over the floor
-    this.fog = [[0.7, 0.55, '#6f7fcf'], [2.6, 0.32, '#9d8fe0']].map(([h, I, col]) => {
+    this.fog = [[0.7, 0.55, '#cfb26f'], [2.6, 0.32, '#e0c88f']].map(([h, I, col]) => {
       const m = new T.Mesh(new T.PlaneGeometry(140, 140).rotateX(-Math.PI / 2), new T.ShaderMaterial({
         uniforms: { uCol: { value: new T.Color(col) }, uI: { value: I }, uTime: this.uTime }, vertexShader: FOG_VS, fragmentShader: FOG_FS,
         transparent: true, depthWrite: false, blending: T.AdditiveBlending }));
@@ -186,7 +186,7 @@ export class Temple {
     const c = document.createElement('canvas');
     c.width = c.height = 64;
     const cx = c.getContext('2d'), gr = cx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gr.addColorStop(0, '#fff'); gr.addColorStop(0.45, '#9a9a9a'); gr.addColorStop(1, '#000');
+    gr.addColorStop(0, '#fff'); gr.addColorStop(0.45, '#9a968f'); gr.addColorStop(1, '#000');
     cx.fillStyle = gr; cx.fillRect(0, 0, 64, 64);
     const tex = new T.CanvasTexture(c);
     const spots = [[0, 0, 7.2]];
@@ -199,12 +199,12 @@ export class Temple {
     this.shadows.frustumCulled = false; this.shadows.renderOrder = 1;
     g.add(this.shadows);
     // the moon: a soft halo and a bright disc, far behind the default view
-    this.halo = glowSprite(T, 0xaec4ff, 70, 0.22); this.halo.position.set(48, 40, -88);
-    this.moon = glowSprite(T, 0xf2f6ff, 9, 0.95); this.moon.position.copy(this.halo.position);
+    this.halo = glowSprite(T, 0xebd4a0, 70, 0.22); this.halo.position.set(48, 40, -88);
+    this.moon = glowSprite(T, 0xf3ece0, 9, 0.95); this.moon.position.copy(this.halo.position);
     this.halo.material.fog = this.moon.material.fog = false;
     g.add(this.halo, this.moon);
     // the braziers' light
-    this.light = new T.PointLight(0xff9448, 40, 85, 2);
+    this.light = new T.PointLight(0xeb8842, 40, 85, 2);
     this.light.position.set(this.torches[1][0] * 0.55, FLOOR_Y + 7, this.torches[1][1] * 0.55);
     g.add(this.light);
     this.setQuality(quality);
@@ -223,8 +223,8 @@ export class Temple {
   /** a theme's accent: the cold shaft and the fog take a hint of it */
   applyTheme(accent) {
     if (!accent) return;
-    this.shafts[1].material.uniforms.uCol.value.set(accent).lerp(new this.T.Color('#bcd2ff'), 0.5);
-    this.fog[0].material.uniforms.uCol.value.set(accent).lerp(new this.T.Color('#6f7fcf'), 0.6);
+    this.shafts[1].material.uniforms.uCol.value.set(accent).lerp(new this.T.Color('#ebd8ad'), 0.5);
+    this.fog[0].material.uniforms.uCol.value.set(accent).lerp(new this.T.Color('#cfb26f'), 0.6);
   }
 
   frame(t, dt, px) {

@@ -20,14 +20,14 @@ export class Polis {
     this.group.scale.setScalar(CITY_SCALE);
     this.group.position.y = FLOOR * (1 - CITY_SCALE); // keep the terraces at their authored floor
     scene.add(this.group);
-    const stone = M.marble({ color: '#171d2c', vein: '#3a4564', scale: 0.14, roughness: 0.56 });
+    const stone = M.marble({ color: '#2c2618', vein: '#64573a', scale: 0.14, roughness: 0.56 });
     const metal = M.metal({ kind: 'gold', color: '#a88a5a', roughness: 0.33 });
-    const light = M.neon({ color: '#fff4db', intensity: 2.5, fog: true });
+    const light = M.neon({ color: '#ebe0c9', intensity: 2.5, fog: true });
     // Three stepped districts make the buildings sit on a visible piece of terrain.
     this.terraces = [0, 1, 2].map((i) => {
       const base = 71 + i * 31;
       const deck = new T.Mesh(new T.RingGeometry(base, base + 27, 96), M.marble({
-        color: i % 2 ? '#171a2b' : '#202034', vein: '#544f73', scale: 0.055, roughness: 0.48
+        color: i % 2 ? '#2b2518' : '#342d1d', vein: '#73684f', scale: 0.055, roughness: 0.48
       }));
       deck.rotation.x = -Math.PI / 2;
       deck.position.y = FLOOR - 0.12 - i * 0.2;
@@ -40,12 +40,12 @@ export class Polis {
     // Low, luminous parcels make the outer blocks legible at phone size.
     // They are fixed street lighting, never a market heatmap.
     this.parcels = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1),
-      M.neon({ color: '#ffffff', intensity: 1.25, fog: true }), COUNT);
+      M.neon({ color: '#f3ece0', intensity: 1.25, fog: true }), COUNT);
     // Fixed low-rise neighborhood between the authored skyline and the camera.
     // Its lights are decorative and never encode a market row, level, or signal.
     this.nightBlocks = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), stone, NIGHT_BLOCKS);
     this.nightRoofs = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1),
-      M.neon({ color: '#ffffff', intensity: 1.65, fog: true }), NIGHT_BLOCKS);
+      M.neon({ color: '#f3ece0', intensity: 1.65, fog: true }), NIGHT_BLOCKS);
     const o = new T.Object3D(), col = new T.Color();
     for (let i = 0; i < NIGHT_BLOCKS; i++) {
       const side = i % 4, k = Math.floor(i / 4), row = Math.floor(k / 26), slot = k % 26;
@@ -59,7 +59,7 @@ export class Polis {
       o.scale.set(w, h, d); o.updateMatrix(); this.nightBlocks.setMatrixAt(i, o.matrix);
       o.position.y = FLOOR + h + 0.12; o.scale.set(w * 1.03, 0.24, d * 1.03);
       o.updateMatrix(); this.nightRoofs.setMatrixAt(i, o.matrix);
-      const lit = hash(i + 401) < 0.22 ? '#28bb6d' : hash(i + 403) < 0.05 ? '#3b98c3' : '#e77c26';
+      const lit = hash(i + 401) < 0.22 ? '#aabb54' : hash(i + 403) < 0.05 ? '#c39f4a' : '#e7812e';
       this.nightRoofs.setColorAt(i, new T.Color(lit));
     }
     this.nightBlocks.instanceMatrix.needsUpdate = this.nightRoofs.instanceMatrix.needsUpdate = true;
@@ -77,7 +77,7 @@ export class Polis {
       o.rotation.set(0, -a, 0);
       o.position.set(x, FLOOR + 0.12, z);
       o.scale.set(w * 1.48, 0.24, w * 1.28); o.updateMatrix(); this.parcels.setMatrixAt(i, o.matrix);
-      const lit = hash(i + 55) < 0.18 ? '#28ab61' : hash(i + 56) < 0.08 ? '#4688b9' : '#a94b16';
+      const lit = hash(i + 55) < 0.18 ? '#9bab4d' : hash(i + 56) < 0.08 ? '#b99746' : '#a95322';
       this.parcels.setColorAt(i, new T.Color(lit));
       o.position.set(x, FLOOR + h / 2, z);
       o.scale.set(w, h, w * 0.82); o.updateMatrix(); this.towers.setMatrixAt(i, o.matrix);
@@ -87,7 +87,7 @@ export class Polis {
       o.scale.set(w * 0.8, 1.8, w * 0.8); o.updateMatrix(); this.roofs.setMatrixAt(i, o.matrix);
       // Three small lit floors read as a dense night city from the phone camera.
       // These are decorative: tower count and color never encode market results.
-      const windowColor = new T.Color(hash(i + 31) < 0.18 ? '#50e59c' : hash(i + 32) < 0.08 ? '#8acaff' : '#ff9b42');
+      const windowColor = new T.Color(hash(i + 31) < 0.18 ? '#d0e567' : hash(i + 32) < 0.08 ? '#ebca7f' : '#eb8f3d');
       for (let j = 0; j < WINDOWS; j++) {
         o.position.set(x + Math.cos(a) * w * 0.43, FLOOR + h * (0.28 + j * 0.22), z + Math.sin(a) * w * 0.43);
         o.scale.set(w * 0.44, 0.65, 0.16); o.updateMatrix();
@@ -105,7 +105,7 @@ export class Polis {
     this.parcels.instanceColor.needsUpdate = true;
     this.beacons = [];
     this.activeBeacons = 0;
-    const beaconMat = M.neon({ color: '#7fe9ff', intensity: 3, fog: true });
+    const beaconMat = M.neon({ color: '#ebc775', intensity: 3, fog: true });
     for (let i = 0; i < BEACONS; i++) {
       const a = i * Math.PI * 2 / BEACONS + 0.32, r = 91;
       const column = new T.Mesh(new T.CylinderGeometry(0.18, 0.7, 43, 8), beaconMat.clone());
@@ -118,8 +118,8 @@ export class Polis {
         new T.Vector3(0, FLOOR + 0.5, 0),
         new T.Vector3(Math.cos(a) * r * 0.55, FLOOR + 0.5, Math.sin(a) * r * 0.55),
         new T.Vector3(column.position.x, FLOOR + 0.5, column.position.z),
-      ]), new T.LineBasicMaterial({ color: '#7fe9ff', transparent: true, opacity: 0.48, depthWrite: false }));
-      const pad = new T.Mesh(new T.RingGeometry(2.6, 3.8, 24), M.neon({ color: '#7fe9ff', intensity: 1.8, opacity: 0.62, fog: true }));
+      ]), new T.LineBasicMaterial({ color: '#ebc775', transparent: true, opacity: 0.48, depthWrite: false }));
+      const pad = new T.Mesh(new T.RingGeometry(2.6, 3.8, 24), M.neon({ color: '#ebc775', intensity: 1.8, opacity: 0.62, fog: true }));
       pad.rotation.x = -Math.PI / 2;
       pad.position.set(column.position.x, FLOOR + 0.18, column.position.z);
       this.group.add(column, crown, route, pad);
@@ -132,11 +132,11 @@ export class Polis {
       paths.push(new T.Vector3(Math.cos(a) * 158, FLOOR + 0.1, Math.sin(a) * 158));
     }
     const pathGeo = new T.BufferGeometry().setFromPoints(paths);
-    this.paths = new T.LineSegments(pathGeo, new T.LineBasicMaterial({ color: '#8c7694', transparent: true, opacity: 0.38 }));
+    this.paths = new T.LineSegments(pathGeo, new T.LineBasicMaterial({ color: '#948476', transparent: true, opacity: 0.38 }));
     this.group.add(this.paths);
     // Elevated district loops echo Data City's colored night routes. They are
     // decorative connections, never level, signal, or order paths.
-    this.skyways = ['#ff9b42', '#50e59c', '#8acaff'].map((color, district) => {
+    this.skyways = ['#eb8f3d', '#d0e567', '#ebca7f'].map((color, district) => {
       const r = 89 + district * 31, y = FLOOR + 20 + district * 4;
       const points = Array.from({ length: 96 }, (_, k) => {
         const a = k * Math.PI * 2 / 96;
@@ -177,9 +177,9 @@ export class Polis {
       if (active) {
         const side = levels[i].dist >= 0 ? 1 : -1;
         column.scale.y = 0.48 + Math.min(0.52, Math.abs(levels[i].dist || 0) / 150);
-        column.material.color.set(side > 0 ? '#7fe9ff' : '#e1a5ff').multiplyScalar(3);
-        route.material.color.set(side > 0 ? '#7fe9ff' : '#e1a5ff');
-        pad.material.color.set(side > 0 ? '#7fe9ff' : '#e1a5ff').multiplyScalar(1.8);
+        column.material.color.set(side > 0 ? '#ebc775' : '#ebbe98').multiplyScalar(3);
+        route.material.color.set(side > 0 ? '#ebc775' : '#ebbe98');
+        pad.material.color.set(side > 0 ? '#ebc775' : '#ebbe98').multiplyScalar(1.8);
       }
     });
   }

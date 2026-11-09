@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#04050d">
+<meta name="theme-color" content="#14110e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,9 +20,10 @@
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
 <script src="../olympus/glossary-lite.js?v=g1" defer></script>
-<link rel="stylesheet" href="oracle.css?v=phone2">
-<link rel="stylesheet" href="sheet.css">
-<script type="module" src="main.js?v=ofst3"></script>
+<link rel="stylesheet" href="../olympus/agora.css?v=a1">
+<link rel="stylesheet" href="oracle.css?v=o5">
+<link rel="stylesheet" href="sheet.css?v=o5">
+<script type="module" src="main.js?v=o5"></script>
 </head>
 <body>
 <canvas id="gl" aria-label="NQ as a 3D radar: the price column, the LIT levels as rings, the session clock and the bot's stage. Drag to turn, pinch to zoom, double tap to reset."></canvas>
@@ -37,8 +38,8 @@
       <path d="M16 2v28" stroke="currentColor" stroke-width="1.4"/>
       <circle cx="16" cy="13.5" r="2.6" fill="currentColor"/>
     </svg>
-    <h1>ORACLE</h1>
-    <span id="mode" class="mode" data-mode="loading" role="status"><i></i><span>CONNECTING</span></span>
+    <h1>Oracle</h1>
+    <span id="mode" class="mode" data-mode="loading" role="status"><i></i><span>Connecting</span></span>
     <span class="grow"></span>
     <button id="replay" class="ghost" type="button" hidden>Replay a day</button>
     <button id="oracle-btn" class="ghost pr-btn" type="button" aria-controls="oracle" aria-expanded="false" title="What the bot needs next, level by level">
@@ -55,7 +56,7 @@
     <p id="stage-gloss" class="gloss"></p>
     <div id="wait" class="wait" data-tone="wait" aria-label="What the bot is waiting for">
       <ol class="pips" aria-hidden="false"></ol>
-      <p class="need"><b>NEXT</b><span class="nx"></span><span class="dt"></span></p>
+      <p class="need"><b>Next</b><span class="nx"></span><span class="dt"></span></p>
     </div>
     <p id="waiting" tabindex="0" role="region" aria-label="Full waiting reason"></p>
   </div>
@@ -69,13 +70,14 @@
   </div>
   <div id="demo-bar" class="demo-bar" hidden>
     <button id="demo-play" class="ghost play" type="button" aria-label="Pause the replay" data-playing="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/><path class="i-play" d="M8 5.5v13l11-6.5z"/></svg></button>
-    <span id="demo-tag" class="tag">REPLAY</span>
+    <span id="demo-tag" class="tag">Replay</span>
     <span class="scrub-wrap"><input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Scrub through the session"><span id="scrub-ticks" class="scrub-ticks" aria-hidden="true"></span></span>
     <span id="demo-time"></span>
   </div>
   <div id="pos" class="pos" hidden>
     <p id="pos-side"></p>
     <p id="pos-levels"></p>
+    <p id="pos-money" class="pos-money"></p>
     <b id="pos-pnl" data-sign="up"></b>
     <span id="pos-r"></span>
     <a id="pos-film" class="film" hidden>Watch in Odeon ▸</a>
@@ -105,7 +107,7 @@
   </div>
   <div class="os-body">
     <section role="tabpanel" data-tab="prophecy">
-      <p class="pr-need"><b>NEXT</b><span id="pr-next"></span></p>
+      <p class="pr-need"><b>Next</b><span id="pr-next"></span></p>
       <ol id="pr-list" class="pr-list"></ol>
       <p id="pr-empty" class="os-empty" hidden>No open level to read right now.</p>
       <p id="pr-src" class="os-src"></p>

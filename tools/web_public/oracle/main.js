@@ -20,7 +20,7 @@ import { sweepCount, dayTypeOf, heatHistory, alertsOf } from './insights.js';
 
 const O = window.OLYMPUS || null;          // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const QUALITY_KEY = 'oracle.quality';      // the old per-app key: read only when the kit is missing
-const THEME = '#04050d';
+const THEME = '#0d0b07';
 const SITE_EVERY_S = 300;
 const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const forced = new URLSearchParams(location.search).has('demo');
@@ -59,7 +59,7 @@ try {
     const note = document.createElement('p');
     note.textContent = 'Visuals are unavailable on this device. The market numbers and replay still work.';
     note.setAttribute('role', 'status');
-    note.style.cssText = 'position:absolute;top:42%;left:16px;right:16px;text-align:center;color:#d8e6f2;font:600 14px/1.5 system-ui,sans-serif';
+    note.style.cssText = 'position:absolute;top:42%;left:16px;right:16px;text-align:center;color:#ebe3d1;font:600 14px/1.5 system-ui,sans-serif';
     document.getElementById('nogl').append(note);
   }
   O?.ready();                                  // the numbers still update: the page is up
@@ -298,7 +298,7 @@ function autoLite(dt) {
 }
 
 // ------------------------------------------------------------------ themes (OLYMPUS)
-const OWN_ACCENT = '#7fe9ff';
+const OWN_ACCENT = '#ebc775';
 const hexOk = (c) => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
 /** '#rrggbb' a blended toward b by t (0 = a untouched): the kit's own mix when it is there. */
 function blend(a, b, t) {

@@ -3,19 +3,19 @@
 
 // Each LIT level family has its colour (engine/brain.py level kinds); ring radius grows with the level's timeframe.
 const KIND = {
-  asia: { color: 0x9b7bff, r: 3.1, name: 'Asia' },
-  london: { color: 0x36e0ff, r: 3.6, name: 'London' },
-  ny: { color: 0xffb547, r: 2.7, name: 'New York' },
-  pre: { color: 0xffd27a, r: 2.4, name: 'Premarket' },
-  pd: { color: 0xffe066, r: 4.3, name: 'Prior day' },
-  pw: { color: 0xff5fd2, r: 5.0, name: 'Prior week' },
-  pm: { color: 0xff7a7a, r: 5.6, name: 'Prior month' },
-  gap: { color: 0x3effc4, r: 2.1, name: 'Opening gap' },
-  buildup: { color: 0xdfe8ff, r: 1.9, name: 'Equal highs / lows' },
-  level: { color: 0xb8c4ff, r: 3.0, name: 'Level' },
+  asia: { color: 0xebc671, r: 3.1, name: 'Asia' },
+  london: { color: 0xebbf59, r: 3.6, name: 'London' },
+  ny: { color: 0xeba741, r: 2.7, name: 'New York' },
+  pre: { color: 0xebc170, r: 2.4, name: 'Premarket' },
+  pd: { color: 0xebce5e, r: 4.3, name: 'Prior day' },
+  pw: { color: 0xebac75, r: 5.0, name: 'Prior week' },
+  pm: { color: 0xeb8d70, r: 5.6, name: 'Prior month' },
+  gap: { color: 0xd5eb6a, r: 2.1, name: 'Opening gap' },
+  buildup: { color: 0xebe2cd, r: 1.9, name: 'Equal highs / lows' },
+  level: { color: 0xebd7a9, r: 3.0, name: 'Level' },
 };
 export const kindOf = (k) => KIND[k] || KIND.level;
-export const COLOR = { up: 0x46f0a0, down: 0xff4f7a, open: 0xf4f6ff, entry: 0x8fd8ff, stop: 0xff4f6d, target: 0x46f0a0, comet: 0xbff4ff };
+export const COLOR = { up: 0xd5eb6a, down: 0xeb7450, open: 0xf3ece0, entry: 0xebcc84, stop: 0xeb7450, target: 0xd5eb6a, comet: 0xebd9b0 };
 
 let glowTex = null;
 /** One radial glow (white core, soft falloff) shared by every sprite and light plane. */
@@ -24,10 +24,10 @@ export function glowTexture(THREE) {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
   const g = c.getContext('2d'), grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  grd.addColorStop(0, 'rgba(255,255,255,1)');
-  grd.addColorStop(0.18, 'rgba(255,255,255,.75)');
-  grd.addColorStop(0.45, 'rgba(255,255,255,.18)');
-  grd.addColorStop(1, 'rgba(255,255,255,0)');
+  grd.addColorStop(0, 'rgba(243,236,224,1)');
+  grd.addColorStop(0.18, 'rgba(243,236,224,.75)');
+  grd.addColorStop(0.45, 'rgba(243,236,224,.18)');
+  grd.addColorStop(1, 'rgba(243,236,224,0)');
   g.fillStyle = grd;
   g.fillRect(0, 0, 128, 128);
   glowTex = new THREE.CanvasTexture(c);
@@ -49,7 +49,7 @@ export function glowSprite(THREE, color, size, opacity = 1) {
 }
 
 /** A text label as a sprite (canvas texture). `h` = its height in world units; redraw with setLabel(). */
-export function labelSprite(THREE, text, color = '#e8f3ff', h = 0.42, opts = {}) {
+export function labelSprite(THREE, text, color = '#ebe4d5', h = 0.42, opts = {}) {
   const c = document.createElement('canvas'), tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.minFilter = THREE.LinearFilter;

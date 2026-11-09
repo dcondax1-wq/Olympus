@@ -127,6 +127,12 @@ export class Hud {
     }
     $('pos-side').textContent = `${p.side} ${p.qty} @ ${px(p.entry)}`;
     $('pos-levels').textContent = `stop ${p.be ? 'BE ' : ''}${px(p.stop)} · tgt ${px(p.target)}`;
+    const pm = $('pos-money');                                         // the money at stake, plain: if stopped / at target (MNQ $2 a point a micro)
+    if (pm) {
+      const q = p.qty || 0, up = (x, y) => (x == null || y == null || !q ? null : Math.round(Math.abs(x - y) * 2 * q));
+      const lose = up(p.entry, p.stop), win = up(p.entry, p.target);
+      pm.textContent = q && (lose != null || win != null) ? `${q} micro${q === 1 ? '' : 's'}` + (p.be ? ', stop at break-even' : lose != null ? ` · if stopped about -$${lose.toLocaleString('en-US')}` : '') + (win != null ? ` · at target about +$${win.toLocaleString('en-US')}` : '') : '';
+    }
     const v = $('pos-pnl');
     v.textContent = usd(p.usd, true);
     $('pos-r').textContent = p.r == null ? '' : `${p.r >= 0 ? '+' : '−'}${Math.abs(p.r).toFixed(2)}R`;

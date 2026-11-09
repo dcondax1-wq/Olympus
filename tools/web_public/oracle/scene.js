@@ -32,15 +32,15 @@ export class Scene {
     this.reduced = reduced;
     this.quality = quality;
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x02030a, 0.0046);
+    this.scene.fog = new THREE.FogExp2(0x2a1d14, 0.0046);
     this.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 800);
     // the OLYMPUS render core (docs/OLYMPUS_RENDER.md): ACES + sRGB, the environment light, bloom, 4x MSAA on HD, FXAA on LITE. 'display'
     // space: the glow shaders keep the colours they were tuned in. The pixel size comes from resize() (the band logic below).
-    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, space: 'display', env: 'night', tint: '#7fe9ff', autoSize: false,
-      fitCamera: false, adapt: false, maxDpr: 1.75, exposure: 1, bloom: { strength: 0.8, radius: 0.62, threshold: 0.74 },
+    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, space: 'display', env: 'night', tint: '#c8a24a', theme: { sky: '#4a3626', fog: '#2a1d14', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, autoSize: false,
+      fitCamera: false, adapt: false, maxDpr: 1.75, exposure: 1, bloom: { strength: 0.24, radius: 0.55, threshold: 0.9 },
       grade: { vignette: 0.34, grain: 0.03 } });
     this.renderer = this.rc.renderer;
-    this.renderer.setClearColor(0x02030a, 1);
+    this.renderer.setClearColor(0x2a1d14, 1);
     this.rig = { az: -0.55, el: 0.2, zoom: 1, vaz: 0, idle: 0, fit: 40, target: new THREE.Vector3(0, 0.5, 0) };
     this.cam = { right: new THREE.Vector3(1, 0, 0), dir: new THREE.Vector3(0, 0, 1), q: this.camera.quaternion };
     this.map = { center: null, half: 60, y: (p) => ((p - this.map.center) / this.map.half) * Y_MAX };
