@@ -4,11 +4,11 @@
 // URL: #root=<root id> opens a root, #top opens the top 10, #rules opens the TOP RULES tab. ?at=<ms> freezes the playback
 // clock (screenshots).
 import * as C from './core.js?v=d3';
-import { paint, ancestry, bestPath, GROW_MS, IGNITE_MS, LENS_MS } from './paint.js?v=d3';
+import { paint, ancestry, bestPath, GROW_MS, IGNITE_MS, LENS_MS } from './paint.js?v=d4';
 import { startGlow } from './glow.js?v=d3';
-import { startTree3d, SEASON_NAMES } from './tree3d.js?v=d5';
-import { createBranchUI } from './branchui.js?v=d1';
-import * as G from './gate.js?v=g1';           // JOB 47: the owner's adoption checks, R beside $, the losing run against the max loss
+import { startTree3d, SEASON_NAMES } from './tree3d.js?v=d6';
+import { createBranchUI } from './branchui.js?v=d2';
+import * as G from './gate.js?v=g2';           // JOB 47: the owner's adoption checks, R beside $, the losing run against the max loss
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil, themes
 
@@ -113,24 +113,22 @@ function updateHud(t) {
   S.hudAt = bucket;
   const st = S.root.tree, f = Math.min(1, t / GROW_MS);
   const best = f >= 1 ? st.best : Math.max(0, ...S.tree.nodes.filter((n) => n.appear <= t).map((n) => n.score || 0));
-  set('topo', `TOPOLOGY · NODES <b>${C.int(Math.round(st.nodes * f))}</b> · CUT <b>${f >= 1 ? st.cut_pct : Math.round(st.cut_pct * f)}%</b>` +
-    ` · BEST <b>${best.toFixed(3)}</b> · BOUND <b>${st.bound.toFixed(3)}</b>`);
+  set('topo', `Searched <b>${C.int(Math.round(st.nodes * f))}</b> branches · cut <b>${f >= 1 ? st.cut_pct : Math.round(st.cut_pct * f)}%</b> as dead ends` +
+    ` · best score <b>${best.toFixed(1)}</b> of a possible <b>${st.bound.toFixed(1)}</b>`);
 }
 
 function renderStatic() {
   const m = S.model, r = S.root, meta = m.meta, best = r.best;
   const idx = m.roots.findIndex((x) => x.id === r.id) + 1;
   $('demo').hidden = !m.demo;
-  set('rule', `RULE · ${esc(r.text.toUpperCase())}`);
-  set('crit', `CRITERION: MEAN EXCESS · TRAIN ≤ ${meta.train_end} · ROOTS ${idx}/${m.roots.length} · DEPTH ${meta.depth}` +
-    ` · MIN ${meta.min_n} TRADES`);
+  set('rule', `<b>The rule:</b> ${esc(r.text.charAt(0) + r.text.slice(1).toLowerCase())}`);
+  set('crit', `Scored on mean excess, trained up to ${meta.train_end} · root ${idx} of ${m.roots.length} · depth ${meta.depth} · at least ${meta.min_n} trades`);
   const tr = best.train || {}, te = best.test || {}, y = best.y2026 || {};
   const cell = (name, v, f = C.usd) => `${name} <span class="${C.sign(v)}">${f(v)}</span>`;
-  set('money', [cell('$/TRADE/µ TRAIN', tr.mean), cell('TEST', te.mean), cell('2026', y.mean),
-    cell('· TEST $/MO 1µ', te.mo_1, C.money), cell('BOT', te.mo_bot, C.money)].join(' '));
+  set('money', `<span class="mhead">One micro, per trade</span> ` + [cell('train', tr.mean), cell('unseen', te.mean), cell('2026', y.mean)].join(' · ') + `<span class="mbig">${cell('Per month on unseen data', te.mo_1, C.money)} · ${cell('at bot size', te.mo_bot, C.money)}</span>`);
   const path = bestPath(S).slice(1);
   $('nsteps').textContent = path.length;
-  document.querySelector('.sheet-tabs [data-tab="search"]').textContent = `THE SEARCH · ${path.length} STEP${path.length === 1 ? '' : 'S'}`;
+  document.querySelector('.sheet-tabs [data-tab="search"]').textContent = `The search · ${path.length} step${path.length === 1 ? '' : 's'}`;
   const conds = m.conds;
   $('steps').innerHTML = path.length ? path.map((n) => `<li><span class="c">${esc(conds[n.cond] ? conds[n.cond][3] : '?')}</span>` +
     `<span class="v">${(n.score || 0).toFixed(2)}</span></li>`).join('')
@@ -138,10 +136,10 @@ function renderStatic() {
   S.lit = -1;
   const st = r.tree, scale = Math.max(st.bound, 1e-6);
   const bar = (name, v, color) => `<div class="bar"><span>${name}</span><i style="--w:${Math.max(0, Math.min(100, 100 * v / scale)).toFixed(1)}%;--c:${color}"></i><span>${v.toFixed(2)}</span></div>`;
-  $('bars').innerHTML = bar('GAP', st.bound - st.best, 'var(--amber)') + bar('BOUND', st.bound, 'rgba(70,255,154,.45)') + bar('BEST', st.best, 'var(--green)');
+  $('bars').innerHTML = bar('Gap', st.bound - st.best, 'var(--amber)') + bar('Bound', st.bound, 'rgba(155, 171, 99,.45)') + bar('Best', st.best, 'var(--green)');
   $('roots').innerHTML = m.roots.map((x) => `<i class="${x.tree.open ? 'open' : ''}${x.id === r.id ? ' cur' : ''}" title="${esc(x.key)} ${C.variant(x)}"></i>`).join('');
   const complete = m.roots.filter((x) => !x.tree.open).length;
-  $('rootsLegend').textContent = `${complete} SEARCHED TO THE END · ${m.roots.length - complete} OPEN · ${C.int(meta.nodes)} NODES IN ALL`;
+  $('rootsLegend').textContent = `${complete} searched to the end · ${m.roots.length - complete} still open · ${C.int(meta.nodes)} branches in all`;
   renderVerdict();
 }
 
@@ -150,11 +148,11 @@ function renderVerdict() {
   const m = S.model, r = S.root, h = m.honesty, real = h.real || {}, plc = (h.placebo || []).map((p) => p.hold_pct);
   const held = r.best.holds, chance = C.beatsChance(h), te = r.best.test || {};
   $('verdict').className = 'verdict ' + (chance ? 'ok' : 'no');
-  set('verdict', `<b class="vt">${chance ? 'BEATS CHANCE' : 'CHANCE LEVEL'}</b>` +
+  set('verdict', `<b class="vt">${chance ? 'Beats chance' : 'Chance level'}</b>` +
     `<span>${real.hold}/${real.best_rules} best rules hold out of sample (${real.hold_pct}%)` +
     (plc.length ? ` · shuffled conditions ${plc.map((p) => p + '%').join(' / ')}` : '') + `</span>` +
-    `<span>THIS ROOT: <b class="${held ? 'pos' : 'neg'}">${held ? 'HOLDS' : 'FAILS'}</b> · ` +
-    (te.n ? `test ${C.usd(te.mean)}/trade on ${te.n} trades` : 'no test trades') + `</span>`);
+    `<span>This root: <b class="${held ? 'pos' : 'neg'}">${held ? 'holds' : 'fails'}</b> · ` +
+    (te.n ? `unseen ${C.usd(te.mean)} a trade on ${te.n} trades` : 'no test trades') + `</span>`);
 }
 
 function lightSteps(lit) {
@@ -176,18 +174,18 @@ function buildBest() {
   const words = (steps) => (steps && steps.length ? steps.map((x) => esc(x)).join(' <i>and</i> ') : 'no extra condition: the plain level trade');
   const line = (rule, root, head) => {
     const te = rule.test || {}, y = rule.y2026 || {}, holds = rule.holds;
-    return `<h3>${head}</h3><p class="big"><b>${esc(rule.key)}</b> ${root && root.target_r ? C.variant(root) : ''} · <b class="${holds ? 'pos' : 'neg'}">${holds ? 'HOLDS out of sample' : 'FAILS out of sample'}</b></p>`
+    return `<h3>${head}</h3><p class="big"><b>${esc(rule.key)}</b> ${root && root.target_r ? C.variant(root) : ''} · <b class="${holds ? 'pos' : 'neg'}">${holds ? 'holds out of sample' : 'fails out of sample'}</b></p>`
       + `<p>Take the level trade, but only when ${words(rule.steps)}.</p>`
-      + `<div class="stats"><div><b class="${C.sign(te.mean)}">${C.usd(te.mean)}</b><small>TEST $/TRADE</small></div>`
-      + `<div><b class="${C.sign(te.mo_bot)}">${C.money(te.mo_bot)}</b><small>BOT $/MO</small></div><div><b>${C.int(te.n || 0)}</b><small>TEST TRADES</small></div></div>`
-      + (y.mean !== undefined ? `<p>2026 alone: <b class="${C.sign(y.mean)}">${C.usd(y.mean)}</b> a trade.</p>` : '');
+      + `<div class="stats"><div><b class="${C.sign(te.mean)}">${C.usd(te.mean)}</b><small>Unseen, per trade</small></div>`
+      + `<div><b class="${C.sign(te.mo_bot)}">${C.money(te.mo_bot)}</b><small>Bot, per month</small></div><div><b>${C.int(te.n || 0)}</b><small>Unseen trades</small></div></div>`
+      + (y.mean !== undefined ? `<p>2026 alone: <b class="${C.sign(y.mean)}">${C.usd(y.mean)}</b> a trade.</p>` : '') + G.gateHtml(rule, m.meta);
   };
   const here = { key: r.key, steps: bestPath(S).slice(1).map((n) => (m.conds[n.cond] ? m.conds[n.cond][3] : '?')), test: r.best.test, y2026: r.best.y2026, holds: r.best.holds };
   const held = m.top.filter((x) => x.holds).length;
-  $('best').innerHTML = (top ? line(top, m.byId[top.root], 'BEST BRANCH OF THE WHOLE SEARCH') : '')
-    + (top && top.root === r.id ? '' : line(here, r, 'BEST BRANCH OF THIS TREE'))
+  $('best').innerHTML = (top ? line(top, m.byId[top.root], 'Best branch of the whole search') : '')
+    + (top && top.root === r.id ? '' : line(here, r, 'Best branch of this tree'))
     + `<p>${held} of the top ${m.top.length} rules hold out of sample. This tree cut ${cut}% of its branches as dead ends (they fade).</p>`
-    + (top && top.root !== r.id ? `<button type="button" class="go" id="bestGo">GROW THE BEST TREE</button>` : '');
+    + (top && top.root !== r.id ? `<button type="button" class="go" id="bestGo">Grow the best tree</button>` : '');
   const go = $('bestGo');
   if (go) go.addEventListener('click', () => selectRoot(top.root));
 }
@@ -198,10 +196,10 @@ function buildRules() {
     return `<li data-root="${esc(r.root)}" class="${r.root === S.rootId ? 'cur' : ''}"><span class="rk">#${i + 1}</span>` +
       `<span class="nm"><b>${esc(r.key)}</b> ${root.target_r ? C.variant(root) : ''}<small>${esc(r.steps.join(' · '))}</small><small class="gn ${G.gate(r, m.meta).verdict}">${esc(G.noteText(r, m.meta))}</small></span>` +
       `<span class="mo ${C.sign(tb ? tb.usd : te.mean)}">${tb ? G.fmtUsd(tb.usd) : C.usd(te.mean)}<small>${tb ? G.fmtR(tb.r) + ' TEST/TR' : 'TEST/TR'}</small></span>` +
-      `<span class="tag ${r.holds ? 'ok' : 'no'}">${r.holds ? 'HOLDS' : 'FAILS'}</span></li>`;
+      `<span class="tag ${r.holds ? 'ok' : 'no'}">${r.holds ? 'Holds' : 'Fails'}</span></li>`;
   }).join('');
   const held = m.top.filter((r) => r.holds).length;
-  $('rulesNote').textContent = `${held} OF THE TOP ${m.top.length} HOLD OUT OF SAMPLE · TAP ONE TO GROW ITS TREE · $ A TRADE AT BOT SIZE (1R = $${+m.meta.bot_risk_usd || 282}) AFTER COSTS`;
+  $('rulesNote').textContent = `${held} of the top ${m.top.length} hold out of sample. Tap one to grow its tree. Dollars a trade at bot size (1R = $${+m.meta.bot_risk_usd || 282}), after costs.`;
 }
 
 // ------------------------------------------------------------------------------------------------ seeds
@@ -210,7 +208,7 @@ function buildSeeds() {
   $('seeds').innerHTML = m.featured.map((id) => {
     const r = m.byId[id], te = r.best.test || {};
     return `<button type="button" class="seed" data-root="${esc(id)}" aria-current="false" aria-label="${esc(r.key)} ${C.variant(r)}">` +
-      `<canvas width="128" height="60"></canvas><b>${esc(r.key)}</b><small>${C.variant(r)}<span class="${C.sign(te.mean)}">TEST ${C.usd(te.mean)}</span></small></button>`;
+      `<canvas width="128" height="60"></canvas><b>${esc(r.key)}</b><small>${C.variant(r)}<span class="${C.sign(te.mean)}">${C.usd(te.mean)}</span></small></button>`;
   }).join('');
   document.querySelectorAll('.seed').forEach((b) => {
     drawSeed(b.querySelector('canvas'), b.dataset.root);
@@ -222,14 +220,14 @@ function drawSeed(cv, id) {
   if (!S.layouts.has(id)) S.layouts.set(id, C.layoutTree(S.model.trees[id]));
   const L = S.layouts.get(id), g = cv.getContext('2d');
   const geo = { cx: cv.width / 2, baseY: cv.height - 3, spread: 1.2, ry: cv.height - 8, rx: (cv.width / 2 - 4) / Math.sin(1.2) };
-  g.fillStyle = '#030705'; g.fillRect(0, 0, cv.width, cv.height);
+  g.fillStyle = '#17130f'; g.fillRect(0, 0, cv.width, cv.height);
   g.globalCompositeOperation = 'lighter';
   for (const n of L.nodes) {
     const p = L.byId.get(n.parent);
     if (!p) continue;
     const [x1, y1] = C.place(p, geo), [x2, y2] = C.place(n, geo);
     g.lineWidth = Math.max(0.5, 1.6 - 0.25 * n.depth);
-    g.strokeStyle = n.best ? 'rgba(225,255,235,.9)' : n.status === C.CUT ? 'rgba(60,120,90,.25)' : 'rgba(70,255,154,.32)';
+    g.strokeStyle = n.best ? 'rgba(243, 236, 224,.9)' : n.status === C.CUT ? 'rgba(127, 138, 82,.25)' : 'rgba(155, 171, 99,.32)';
     g.beginPath(); g.moveTo(x1, y1); g.quadraticCurveTo(x1, (y1 + y2) / 2, x2, y2); g.stroke();
   }
 }
@@ -287,7 +285,7 @@ function buildTopList() {
     }).join('');
     const root = m.byId[r.root] || {};
     return `<li data-root="${esc(r.root)}"><div class="hd"><span class="rk">#${i + 1}</span><b>${esc(r.key)}</b><small>${root.target_r ? C.variant(root) : ''}</small>` +
-      `<span class="tag ${r.holds ? 'ok' : 'no'}">${r.holds ? 'HOLDS' : 'FAILS'}</span></div>` +
+      `<span class="tag ${r.holds ? 'ok' : 'no'}">${r.holds ? 'Holds' : 'Fails'}</span></div>` +
       `<div class="chips">${r.steps.map((s) => `<span class="chip">${esc(s)}</span>`).join('')}</div>` +
       `<table class="nums"><thead><tr><th></th><th>N</th><th>$/TR/µ</th><th>WIN</th><th>TR/WK</th><th>BOT $/MO · R</th></tr></thead><tbody>${rows}</tbody></table>${G.gateHtml(r, m.meta)}</li>`;
   }).join('') : `<li class="none">NO RULE HOLDS OUT OF SAMPLE IN THIS SEARCH. TURN OFF ONLY HOLDS TO SEE ALL ${m.top.length}.</li>`;
@@ -329,7 +327,7 @@ function stepFx(now) {
 // names ('--x': value). bg blends into DAPHNE's own phosphor dark by `mix`, the accent into its green by `harmony` (0 in the
 // default theme: nothing changes; missing: as given); the canvas takes the background on its next frame. With the kit's
 // themes (olympus.js theme / onTheme) the kit paints the CSS tokens itself: the canvas then reads the kit's --bg.
-const OWN = { bg: '#030705', accent: '#46ff9a' };
+const OWN = { bg: '#17130f', accent: '#c8a24a' };
 const THEME_VARS = { text: '--text', dim: '--dim', glass: '--panel', panel: '--panel', line: '--line' };
 // '#rrggbb' a -> b by t (0 = a untouched); anything else: b when t > 0 (the OLYMPUS themes' own mix rule, kept local)
 function mixHex(a, b, t) {
@@ -498,7 +496,7 @@ function adapt(ms, now) {
 async function postJarvis() {
   // inside Jarvis: hand it the card the engine wrote (jarvis.json, tools/strategytree/report.jarvis_card), stamped now
   if (window.parent === window) return;
-  let card = { v: 1, name: 'DAPHNE', status: { level: 'off', label: 'Demo data' }, open: '#top', theme: '#030705' };
+  let card = { v: 1, name: 'DAPHNE', status: { level: 'off', label: 'Demo data' }, open: '#top', theme: '#14110e' };
   if (!S.model.demo) {
     try { const res = await fetch('jarvis.json', { cache: 'no-cache' }); if (res.ok) card = await res.json(); } catch (e) { /* keep the plain card */ }
   }

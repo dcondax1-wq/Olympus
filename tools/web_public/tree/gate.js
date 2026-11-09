@@ -32,10 +32,10 @@ export function gate(rule, meta) {
   const rk = risk(meta), te = rule.test || {}, y = rule.y2026 || {};
   const yb = atBot(y, rk), tb = atBot(te, rk);
   const checks = [
-    { key: 'oos', ok: !!rule.holds, text: rule.holds ? 'HOLDS OUT OF SAMPLE' : 'FAILS OUT OF SAMPLE' },
-    { key: 'y26', ok: !!(yb && yb.usd > 0), text: yb ? (yb.usd > 0 ? '2026 MAKES MONEY' : '2026 LOSES MONEY') : 'NO 2026 TRADES' },
-    { key: 'test', ok: !!(tb && tb.usd > 0), text: tb ? (tb.usd > 0 ? 'TEST MAKES MONEY AT BOT SIZE' : 'TEST LOSES MONEY AT BOT SIZE') : 'NO TEST TRADES' },
-    { key: 'n', ok: (num(y.n) || 0) >= EVAL.minTrades, text: `${num(y.n) || 0} TRADES IN 2026 (NEED ${EVAL.minTrades}+)` },
+    { key: 'oos', ok: !!rule.holds, text: rule.holds ? 'Holds out of sample' : 'Fails out of sample' },
+    { key: 'y26', ok: !!(yb && yb.usd > 0), text: yb ? (yb.usd > 0 ? '2026 makes money' : '2026 loses money') : 'No 2026 trades' },
+    { key: 'test', ok: !!(tb && tb.usd > 0), text: tb ? (tb.usd > 0 ? 'Unseen data makes money at bot size' : 'Unseen data loses money at bot size') : 'No unseen trades' },
+    { key: 'n', ok: (num(y.n) || 0) >= EVAL.minTrades, text: `${num(y.n) || 0} trades in 2026 (need ${EVAL.minTrades}+)` },
   ];
   const passed = checks.filter((c) => c.ok).length;
   return { verdict: passed === checks.length ? 'candidate' : passed >= 3 && checks[0].ok ? 'watch' : 'reject', passed, checks };
@@ -89,21 +89,21 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 export function gateHtml(rule, meta) {
   const g = gate(rule, meta), rh = rhythm(rule), lr = lossRun(rule, meta), rk = risk(meta);
-  const word = { candidate: 'CANDIDATE FOR THE BOT', watch: 'WATCH, NOT READY', reject: 'DOES NOT PASS' }[g.verdict];
+  const word = { candidate: 'Candidate for the bot', watch: 'Watch, not ready', reject: 'Does not pass' }[g.verdict];
   const cell = (name, p) => {
     const t = atBot(p, rk), mo = monthly(p, rk);
-    return `<div><small>${name}</small>${t ? `<b class="${t.usd >= 0 ? 'pos' : 'neg'}">${fmtUsd(t.usd)} · ${fmtR(t.r)}</b><small>A TRADE</small>` : '<b>—</b><small>NO TRADES</small>'}`
-      + `${mo ? `<b class="${mo.usd >= 0 ? 'pos' : 'neg'}">${fmtUsd(mo.usd)} · ${fmtR(mo.r)}</b><small>A MONTH</small>` : ''}</div>`;
+    return `<div><small>${name}</small>${t ? `<b class="${t.usd >= 0 ? 'pos' : 'neg'}">${fmtUsd(t.usd)} · ${fmtR(t.r)}</b><small>a trade</small>` : '<b>—</b><small>no trades</small>'}`
+      + `${mo ? `<b class="${mo.usd >= 0 ? 'pos' : 'neg'}">${fmtUsd(mo.usd)} · ${fmtR(mo.r)}</b><small>a month</small>` : ''}</div>`;
   };
-  let h = `<div class="gate g-${g.verdict}"><p class="gv"><b>${word}</b><span>${g.passed} OF ${g.checks.length} CHECKS</span></p>`
+  let h = `<div class="gate g-${g.verdict}"><p class="gv"><b>${word}</b><span>${g.passed} of ${g.checks.length} checks</span></p>`
     + `<ul class="gc">${g.checks.map((c) => `<li class="${c.ok ? 'ok' : 'no'}">${esc(c.text)}</li>`).join('')}</ul>`
-    + `<div class="gm">${cell('TEST', rule.test)}${cell('2026', rule.y2026)}</div>`;
+    + `<div class="gm">${cell('Unseen', rule.test)}${cell('2026', rule.y2026)}</div>`;
   if (rh) {
-    h += `<p class="gl"><b>HOW OFTEN</b> ${rh.tpw} a week. It would take ${rh.stack} like it to make ${EVAL.planMin} a week. `
+    h += `<p class="gl"><b>How often:</b> ${rh.tpw} a week. It would take ${rh.stack} like it to make ${EVAL.planMin} a week. `
       + `${EVAL.proof} live trades to prove it take about ${rh.weeks >= 104 ? Math.round(rh.weeks / 52 * 10) / 10 + ' years' : rh.weeks >= 9 ? Math.round(rh.months) + ' months' : Math.round(rh.weeks) + ' weeks'}.</p>`;
   }
   if (lr) {
-    h += `<p class="gl"><b>LOSING RUN</b> ${lr.k} stop-outs in a row = ${fmtUsd(-lr.loss)} (−${lr.k}R). Drawdown left ${fmtUsd(lr.left).replace('+', '')} of ${fmtUsd(EVAL.mll).replace('+', '')} max loss. `
+    h += `<p class="gl"><b>Losing run:</b> ${lr.k} stop-outs in a row = ${fmtUsd(-lr.loss)} (−${lr.k}R). Drawdown left ${fmtUsd(lr.left).replace('+', '')} of ${fmtUsd(EVAL.mll).replace('+', '')} max loss. `
       + `Odds of that run in the next ${lr.n} trades: ${Math.round(lr.odds * 100)}%. ${lr.wipe} in a row would use the whole max loss: ${Math.round(lr.wipeOdds * 100)}%.</p>`;
   }
   return h + `<p class="gl dim">1R = ${fmtUsd(rk).replace('+', '')}, the bot's risk a trade. Paper only.</p></div>`;

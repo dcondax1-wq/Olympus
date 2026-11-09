@@ -16,10 +16,10 @@ export const LENS_MS = 1100;            // the lens wavefront climbs the tree in
 const FADE_MS = 800;                    // a cut branch dims over this long
 const PULSE_EVERY = 1150, PULSE_MS = 1800, SPARK_EVERY = 210, SPARK_MS = 1500, SPROUT_MS = 520;
 const MAX_LEAVES = 700;
-const BG = '#030705';
+const BG = '#17130f';
 // buckets keep the fill count low: every branch of one colour and alpha class goes into one Path2D
-export const RGB = { pos: '70,255,154', hot: '190,255,215', dim: '80,170,120', cut: '60,120,90', open: '245,184,74', red: '255,107,127',
-  na: '110,150,130', amber: '245,184,74' };
+export const RGB = { pos: '155,171,99', hot: '236,226,190', dim: '120,130,82', cut: '96,84,62', open: '224,176,96', red: '192,96,63',
+  na: '142,131,118', amber: '224,176,96' };
 
 // ------------------------------------------------------------------------------------------------ geometry
 export function curve(p, q, n) {
@@ -112,7 +112,7 @@ function leafSprite(rgb, k) {                  // an almond leaf with a midrib, 
   grad.addColorStop(0, `rgba(${rgb},.95)`); grad.addColorStop(1, `rgba(${rgb},.35)`);
   g.fillStyle = grad;
   g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(7, -6, 14, 0); g.quadraticCurveTo(7, 6, 0, 0); g.fill();
-  g.strokeStyle = 'rgba(230,255,240,.55)'; g.lineWidth = 0.8;
+  g.strokeStyle = 'rgba(243, 236, 224,.55)'; g.lineWidth = 0.8;
   g.beginPath(); g.moveTo(1, 0); g.lineTo(12, 0); g.stroke();
   return (SPR[key] = c);
 }
@@ -156,10 +156,10 @@ function drawGround(ctx, S) {
   ctx.strokeStyle = `rgba(${rgb},.22)`;
   ctx.lineWidth = 1 / s;
   ctx.beginPath(); ctx.moveTo(cx - rx, baseY + 0.5); ctx.lineTo(cx + rx, baseY + 0.5); ctx.stroke();
-  label(ctx, s, `${S.root.key} · ${C.variant(S.root)}`, cx + 18 / s, baseY - 5 / s, 'left', 'rgba(190,255,215,.7)');
+  label(ctx, s, `${S.root.key} · ${C.variant(S.root)}`, cx + 18 / s, baseY - 5 / s, 'left', 'rgba(155, 171, 99,.7)');
 }
 function label(ctx, s, text, x, y, align, color) {
-  ctx.font = `600 ${9.5 / s}px ui-monospace, "SF Mono", Menlo, monospace`;
+  ctx.font = `600 ${9.5 / s}px -apple-system, "SF Pro Text", system-ui, sans-serif`;
   ctx.textAlign = align;
   ctx.fillStyle = color;
   ctx.fillText(text, x, y);
@@ -220,10 +220,10 @@ function drawBranches(ctx, S, t, now, s, env) {
     shoots.moveTo(P[0], P[1]);
     for (let i = 1; i <= 10; i++) { const [px, py] = bezierAt(P, c, Q, (i / 10) * g); shoots.lineTo(px, py); }
   }
-  ctx.strokeStyle = 'rgba(190,255,215,.7)';
+  ctx.strokeStyle = 'rgba(155, 171, 99,.7)';
   ctx.lineWidth = 0.9 / s;
   ctx.stroke(shoots);
-  for (const [P, c, Q, g] of growing) { const [tx, ty] = bezierAt(P, c, Q, g); glow(ctx, tx, ty, 6 / s, '210,255,225', 0.9); }
+  for (const [P, c, Q, g] of growing) { const [tx, ty] = bezierAt(P, c, Q, g); glow(ctx, tx, ty, 6 / s, '243,236,224', 0.9); }
   glow(ctx, S.tree.root.x, S.tree.root.y, 18 / s, S.lens === 'test' ? RGB.amber : RGB.pos, 0.9);
   S.leafCount = leaves.length;
 }
@@ -238,7 +238,7 @@ function drawLeaves(ctx, S, leaves, t, s, env) {
     const flutter = env.sway ? Math.sin(t * 0.0021 + n.phase * 3) * 0.35 : 0;
     const base = Math.atan2(n.y - c[3], n.x - c[2]);          // the tip's direction
     const sz = (5 + 6 * v) * age / s;
-    const rgb = v > 0.7 ? RGB.hot : lens === 'test' ? '120,255,180' : RGB.pos;
+    const rgb = v > 0.7 ? RGB.hot : lens === 'test' ? '155,171,99' : RGB.pos;
     for (const side of [-0.65, 0.65]) {                       // a pair of leaves, one each side of the tip
       const a = base + side + flutter, k = ((Math.round(a / (Math.PI * 2) * LEAF_ANGLES) % LEAF_ANGLES) + LEAF_ANGLES) % LEAF_ANGLES;
       ctx.globalAlpha = 0.35 + 0.55 * v;
@@ -265,10 +265,10 @@ function drawBest(ctx, S, t, s, env) {
   const ig = Math.min(1, Math.max(0, (t - GROW_MS) / IGNITE_MS));
   if (ig <= 0) return;
   const testFail = S.lens === 'test' && !(C.holds(S.root, path[path.length - 1], S.model.meta.min_test_n || 10, S.model.meta.sessions || {}));
-  const rgb = testFail ? RGB.red : '120,255,180';
+  const rgb = testFail ? RGB.red : '155,171,99';
   strokePath(ctx, path, ig, 14 / s, `rgba(${rgb},.05)`);
   strokePath(ctx, path, ig, 6 / s, `rgba(${rgb},.18)`);
-  strokePath(ctx, path, ig, 1.9 / s, testFail ? 'rgba(255,170,180,.95)' : 'rgba(225,255,235,.95)');
+  strokePath(ctx, path, ig, 1.9 / s, testFail ? 'rgba(224, 144, 122,.95)' : 'rgba(243, 236, 224,.95)');
   const head = pathPoint(path, ig);
   glow(ctx, head[0], head[1], 20 / s, rgb, 0.85);
   const lit = Math.floor(ig * (path.length - 1) + 1e-6);
@@ -278,13 +278,13 @@ function drawBest(ctx, S, t, s, env) {
     glow(ctx, leaf.x, leaf.y, (26 + 5 * Math.sin(t * 0.004)) / s, rgb, 0.9);
     const right = leaf.x < S.geo.cx;
     const tag = S.lens === 'test' ? `TEST ${C.usd(S.root.best.test.mean)} · ${testFail ? 'FAILS' : 'HOLDS'}` : `BEST ${(leaf.score || 0).toFixed(2)}`;
-    label(ctx, s, tag, leaf.x + (right ? 14 : -14) / s, leaf.y - 10 / s, right ? 'left' : 'right', testFail ? 'rgba(255,170,180,.95)' : 'rgba(225,255,235,.95)');
+    label(ctx, s, tag, leaf.x + (right ? 14 : -14) / s, leaf.y - 10 / s, right ? 'left' : 'right', testFail ? 'rgba(224, 144, 122,.95)' : 'rgba(243, 236, 224,.95)');
   }
 }
 
 // pulses, sound-free: sprouts ring out as nodes appear, the root beats, pulses climb the best path, sparks climb the others
 function drawPulses(ctx, S, t, s) {
-  const nodes = S.tree.nodes, rgbL = S.lens === 'test' ? RGB.amber : '150,255,195';
+  const nodes = S.tree.nodes, rgbL = S.lens === 'test' ? RGB.amber : '155,171,99';
   if (t < GROW_MS + EDGE_MS) {
     const big = 0.45 * S.maxScore;
     for (const n of nodes) {
@@ -303,8 +303,8 @@ function drawPulses(ctx, S, t, s) {
       const f = (after - k * PULSE_EVERY) / PULSE_MS;
       if (f < 0 || f > 1) continue;
       const [px, py] = pathPoint(path, f);
-      glow(ctx, px, py, 11 / s, '225,255,235', 0.95);
-      if (f > 0.9) { const leaf = path[path.length - 1]; ring(ctx, leaf.x, leaf.y, (10 + 120 * (f - 0.9)) / s, '225,255,235', (1 - f) * 6); }
+      glow(ctx, px, py, 11 / s, '243,236,224', 0.95);
+      if (f > 0.9) { const leaf = path[path.length - 1]; ring(ctx, leaf.x, leaf.y, (10 + 120 * (f - 0.9)) / s, '243,236,224', (1 - f) * 6); }
     }
   }
   const leaves = S.positiveLeaves;
@@ -316,7 +316,7 @@ function drawPulses(ctx, S, t, s) {
     const f = (t - k * SPARK_EVERY) / SPARK_MS;
     if (f < 0 || f > 1) continue;
     const [px, py] = pathPoint(ancestry(S, leaf), f);
-    glow(ctx, px, py, 6 / s, '150,255,195', 0.55 * (1 - f));
+    glow(ctx, px, py, 6 / s, '155,171,99', 0.55 * (1 - f));
   }
 }
 
@@ -339,8 +339,8 @@ function drawWave(ctx, S, now, s) {
 function drawSelection(ctx, S, s) {
   const n = S.selected;
   if (!n || n.x === undefined) return;
-  strokePath(ctx, ancestry(S, n), 1, 1.4 / s, 'rgba(245,184,74,.85)');
-  ctx.strokeStyle = 'rgba(245,184,74,.95)';
+  strokePath(ctx, ancestry(S, n), 1, 1.4 / s, 'rgba(224, 160, 96,.85)');
+  ctx.strokeStyle = 'rgba(224, 160, 96,.95)';
   ctx.lineWidth = 1.2 / s;
   ctx.beginPath(); ctx.arc(n.x, n.y, 7 / s, 0, Math.PI * 2); ctx.stroke();
 }

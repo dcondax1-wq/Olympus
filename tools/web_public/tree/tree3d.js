@@ -31,7 +31,7 @@ function leafTexture() {
   const g = c.getContext('2d');
   g.translate(64, 64);
   const grad = g.createLinearGradient(-30, 0, 30, 0);                    // a laurel leaf: lighter in the middle, darker at the rim, side veins, a midrib
-  grad.addColorStop(0, 'rgba(190,190,190,1)'); grad.addColorStop(0.5, 'rgba(255,255,255,1)'); grad.addColorStop(1, 'rgba(190,190,190,1)');
+  grad.addColorStop(0, 'rgba(196, 190, 184,1)'); grad.addColorStop(0.5, 'rgba(243, 236, 224,1)'); grad.addColorStop(1, 'rgba(196, 190, 184,1)');
   g.fillStyle = grad; g.beginPath(); g.moveTo(0, -60); g.quadraticCurveTo(36, -14, 0, 60); g.quadraticCurveTo(-36, -14, 0, -60); g.fill();
   g.strokeStyle = 'rgba(0,0,0,.28)'; g.lineWidth = 1.6;
   for (let k = -44; k <= 40; k += 14) { g.beginPath(); g.moveTo(0, k); g.quadraticCurveTo(14, k - 8, 25 - Math.abs(k) * 0.2, k - 22); g.moveTo(0, k); g.quadraticCurveTo(-14, k - 8, -25 + Math.abs(k) * 0.2, k - 22); g.stroke(); }
@@ -43,10 +43,10 @@ function leafTexture() {
 function barkTexture() {
   const c = document.createElement('canvas'); c.width = 128; c.height = 256;
   const g = c.getContext('2d');
-  g.fillStyle = '#6b4a2a'; g.fillRect(0, 0, 128, 256);
+  g.fillStyle = '#614325'; g.fillRect(0, 0, 128, 256);
   for (let i = 0; i < 70; i++) {                                         // long vertical furrows and flecks, a seeded scatter
     const x = hash(i, 71) * 128, w = 1 + hash(i, 72) * 4, y = hash(i, 73) * 256, h = 30 + hash(i, 74) * 140;
-    g.fillStyle = `rgba(${hash(i, 75) > 0.5 ? '20,10,4' : '170,125,75'},${(0.18 + hash(i, 76) * 0.3).toFixed(2)})`; g.fillRect(x, y, w, h);
+    g.fillStyle = `rgba(${hash(i, 75) > 0.5 ? '16,12,8' : '176,118,60'},${(0.18 + hash(i, 76) * 0.3).toFixed(2)})`; g.fillRect(x, y, w, h);
     g.fillRect(x - 128, y, w, h); g.fillRect(x + 128, y, w, h);          // wrap around the seam
   }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
@@ -241,7 +241,7 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
     if (dead || /[?&]noatmos=1/.test(location.search)) return;
     try {
       const ao = AT.contactAO({ radius: 2.6, strength: 0.8 }); ao.object.position.y = 0.012; scene.add(ao.object);
-      const pollen = AT.dust({ count: 120, box: [13, 9, 13], color: '#d8ffb8', size: 4.5, drift: 0.4, seed: 47 }); pollen.object.position.y = 0.4; scene.add(pollen.object);
+      const pollen = AT.dust({ count: 120, box: [13, 9, 13], color: '#9bab63', size: 4.5, drift: 0.4, seed: 47 }); pollen.object.position.y = 0.4; scene.add(pollen.object);
       atm = [ao, pollen]; AT.setQuality(atm, rc.quality() === 'ultra' ? 'ultra' : 'high');
     } catch (_) { atm = []; }
   }, 900);
