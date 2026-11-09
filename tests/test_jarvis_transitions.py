@@ -32,9 +32,9 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 JARVIS = os.path.join(WEB, "jarvis")
 RES: list = []
 
-# the signature each app must keep (the owner's brief: Zeus' lightning for Oracle, sea surge for Tyche, ...)
-SIGNATURE = {"oracle": "lightning", "tyche": "waves", "prometheus": "forge", "pantheon": "columns", "mind": "constellation",
-             "tree": "laurel", "plutus": "coins", "hermes": "dash", "ares": "slash", "chronos": "clock", "nemesis": "shatter"}
+# the signature each app must keep (AGORA 2026-11-09: no lightning / slash / shatter; Oracle a sunburst, sea surge for Tyche, marble for the default, ...)
+SIGNATURE = {"oracle": "sunburst", "tyche": "waves", "prometheus": "forge", "pantheon": "columns", "mind": "constellation",
+             "tree": "laurel", "plutus": "coins", "hermes": "dash", "ares": "columns", "chronos": "clock", "nemesis": "marble"}
 # wrappers: count WebGL contexts made on any canvas (the transitions must make none)
 GL_COUNT = """(() => { window.__gl = 0; const f = HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (t) { if (/webgl/i.test(String(t))) window.__gl++; return f.apply(this, arguments); }; })();"""
@@ -249,8 +249,8 @@ def test_sound(br, origin):
     p.evaluate(PLAY, ["oracle", None])
     p.wait_for_function("() => !window.__jarvisTransitions.active", polling=100, timeout=6000)
     plays = p.evaluate("() => window.__plays.slice()")
-    check("e. Oracle's lightning calls the kit's 'thunder' at its strike (the kit adds the vibration)", plays == ["thunder"], plays)
-    check("e. the cues fired are the table's (state.cues)", p.evaluate("() => window.__jarvisTransitions.cues") == ["thunder"])
+    check("e. Oracle's sunburst calls the kit's 'rankup' at its peak (the kit adds the vibration)", plays == ["rankup"], plays)
+    check("e. the cues fired are the table's (state.cues)", p.evaluate("() => window.__jarvisTransitions.cues") == ["rankup"])
     p.evaluate("() => { window.__plays.length = 0; window.__q = true; }")
     p.evaluate(PLAY, ["hephaestus", None])
     p.wait_for_function("() => !window.__jarvisTransitions.active", polling=100, timeout=6000)
@@ -276,7 +276,7 @@ def test_flow(br, origin):
     p.evaluate("() => document.querySelector('[data-app=\"oracle\"]').click()")
     s = p.evaluate("() => ({ t: Object.assign({}, window.__jarvisTransitions), p: Object.assign({}, window.__jarvisPortal), over: !!document.querySelector('.jportal.jtrans'), frame: !!document.querySelector('iframe[src*=\"oracle\"]') })")
     check("f. opening Oracle from the home: its lightning plays over the already loading frame (portal state follows)",
-          s["t"]["id"] == "oracle" and s["t"]["kind"] == "lightning" and s["t"]["active"] and s["over"] and s["frame"] and s["p"]["mode"] == "warp" and s["p"]["active"] and s["p"]["app"] == "oracle", s)
+          s["t"]["id"] == "oracle" and s["t"]["kind"] == "sunburst" and s["t"]["active"] and s["over"] and s["frame"] and s["p"]["mode"] == "warp" and s["p"]["active"] and s["p"]["app"] == "oracle", s)
     p.wait_for_function("() => !window.__jarvisTransitions.active", polling=100, timeout=6000)
     check("f. ... it ends by itself and the portal state agrees (ms set, not active)", p.evaluate("() => !window.__jarvisPortal.active && window.__jarvisPortal.ms > 400 && !document.querySelector('.jportal')"))
     p.evaluate("() => document.getElementById('nxOrb').click()")
