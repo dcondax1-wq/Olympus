@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ARENA</title>
 <meta name="description" content="ARENA, Olympian Ranks: XP, the rank ladder, 28 trophies, weekly discipline bosses, the 12 Labours, daily quests and streaks from verifiable events across OLYMPUS. Paper only.">
-<meta name="theme-color" content="#0a0710">
+<meta name="theme-color" content="#14110e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,26 +18,27 @@
      come from events.json (python -m tools.arena.build), the phone adds the Planner, Obsidian, Kalshi and quests (sources.js) and
      keeps the progress (ledger.js, localStorage 'arena.v1', export in the XP log). Jarvis's orb owns the bottom-right 80 x 160 px. -->
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<link rel="stylesheet" href="../olympus/agora.css?v=a1">
 <script src="../olympus/themes.js?v=o3"></script>
 <script src="../olympus/olympus.js?v=o3" data-app="arena"></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/intro-app.js?v=i4" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script>
-<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#ffb547'); r.setProperty('--oly-accent-rgb', '255, 181, 71'); })();</script>
-<link rel="stylesheet" href="arena.css?v=a5">
+<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
+<link rel="stylesheet" href="arena.css?v=a6">
 </head>
 <body>
 <canvas id="scene" aria-hidden="true"></canvas>
 <div id="arena-illustration" aria-hidden="true"></div>
 <div class="arena-vignette" aria-hidden="true"></div>
 <aside class="world-caption" aria-label="Arena setting">
-  <span class="world-eyebrow">OLYMPUS · REALM OF DISCIPLINE</span>
-  <h2>THE COLOSSEUM</h2>
+  <span class="world-eyebrow">Olympus · the realm of discipline</span>
+  <h2>The Colosseum</h2>
   <p>Every habit leaves a mark.</p>
   <span class="world-mode"><i></i><span id="worldMode">Explore the arena</span></span>
 </aside>
 <aside class="campaign" aria-label="Campaign progress">
-  <span>YOUR CAMPAIGN</span>
+  <span>Your campaign</span>
   <b id="campaignState">Loading your progress</b>
   <p id="campaignDetail">Quests, labours and trophies from your records.</p>
 </aside>
@@ -45,10 +46,10 @@
 <main id="ui">
   <header class="top">
     <div class="brand">
-      <h1>ARENA</h1>
+      <h1>Arena</h1>
       <p class="sub">Olympian Ranks</p>
     </div>
-    <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
+    <div class="tags"><span id="demo" class="tag demo" hidden>Demo</span><span id="lite" class="tag" hidden>Lite</span></div>
   </header>
   <section class="rank" id="rank" aria-live="polite" role="button" tabindex="0" aria-label="Rank. Open the rank ladder">
     <svg class="emblem" viewBox="0 0 64 64" aria-hidden="true">
@@ -72,6 +73,7 @@
     </div>
   </section>
   <section class="streaks" id="streaks" aria-label="Streaks"></section>
+  <section class="pace" id="pace" aria-label="This week"></section>
 </main>
 <nav class="tabs" id="tabs" aria-label="ARENA">
   <button type="button" data-tab="quests" aria-pressed="false">Quests <b id="qCount">0/3</b></button>
@@ -89,7 +91,7 @@
   <button type="button" class="oly-close" id="popClose" aria-label="Close">×</button>
 </div>
 <div class="banner" id="banner" hidden role="status" aria-live="assertive"></div>
-<script type="module" src="main.js?v=a6"></script>
+<script type="module" src="main.js?v=a7"></script>
 </body>
 </html>
 

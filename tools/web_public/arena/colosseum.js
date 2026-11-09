@@ -6,10 +6,10 @@ export const CITADEL_LIMITS = Object.freeze({ calls: 6, triangles: 6500 });
 
 export function citadel(scene, { lite = false } = {}) {
   const group = new THREE.Group(); group.name = 'Olympian citadel';
-  const stone = new THREE.MeshStandardMaterial({ color: '#aaa2ae', roughness: 0.62, metalness: 0.12 });
-  const gold = new THREE.MeshStandardMaterial({ color: '#dfb973', roughness: 0.32, metalness: 0.88 });
-  const night = new THREE.MeshStandardMaterial({ color: '#242136', roughness: 0.78, metalness: 0.18 });
-  const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color('#e8b05b').multiplyScalar(1.8), fog: true });
+  const stone = new THREE.MeshStandardMaterial({ color: '#b1a99f', roughness: 0.62, metalness: 0.12 });
+  const gold = new THREE.MeshStandardMaterial({ color: '#e0a060', roughness: 0.32, metalness: 0.88 });
+  const night = new THREE.MeshStandardMaterial({ color: '#1a2a35', roughness: 0.78, metalness: 0.18 });
+  const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color('#e0a060').multiplyScalar(1.8), fog: true });
   const pillar = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.3, 0.4, 4.2, 8), stone, 48);
   const capital = new THREE.InstancedMesh(new THREE.BoxGeometry(1.0, 0.28, 1.0), gold, 48);
   const arch = new THREE.InstancedMesh(new THREE.TorusGeometry(1, 0.13, 3, 8, Math.PI), stone, 24);

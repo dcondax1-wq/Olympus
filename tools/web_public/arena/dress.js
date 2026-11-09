@@ -14,9 +14,9 @@ const TAU = Math.PI * 2;
 function sandMaterial() {
   const c = document.createElement('canvas'); c.width = c.height = 256;
   const g = c.getContext('2d'); let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
-  g.fillStyle = '#7a5d3a'; g.fillRect(0, 0, 256, 256);
-  for (let i = 0; i < 5200; i++) { const v = 90 + r() * 110 | 0; g.fillStyle = `rgba(${v},${v * 0.78 | 0},${v * 0.5 | 0},.5)`; g.fillRect(r() * 256, r() * 256, 1 + r() * 2, 1 + r() * 2); }
-  g.strokeStyle = 'rgba(40,25,10,.22)'; g.lineWidth = 2;
+  g.fillStyle = '#a89279'; g.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 5200; i++) { const v = 90 + r() * 110 | 0; g.fillStyle = `rgba(${v},${v * 0.88 | 0},${v * 0.68 | 0},.5)`; g.fillRect(r() * 256, r() * 256, 1 + r() * 2, 1 + r() * 2); }
+  g.strokeStyle = 'rgba(32, 26, 18,.22)'; g.lineWidth = 2;
   for (let i = 0; i < 28; i++) { const y = 4 + i * 9 + r() * 3; g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(70, y + r() * 6, 160, y - r() * 6, 256, y + r() * 3); g.stroke(); }
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(9, 9); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   return new THREE.MeshStandardMaterial({ map: t, bumpMap: t, bumpScale: 1.2, roughness: 0.97, metalness: 0 });
@@ -25,11 +25,11 @@ function sandMaterial() {
 function moonSprite(scene) {
   const c = document.createElement('canvas'); c.width = c.height = 128;
   const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 4, 64, 64, 64);
-  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.32, 'rgba(235,240,255,.95)'); gr.addColorStop(0.36, 'rgba(210,222,255,.35)'); gr.addColorStop(1, 'rgba(160,190,255,0)');
+  gr.addColorStop(0, 'rgba(243, 236, 224,1)'); gr.addColorStop(0.32, 'rgba(243, 236, 224,.95)'); gr.addColorStop(0.36, 'rgba(243, 236, 224,.35)'); gr.addColorStop(1, 'rgba(111, 155, 184,0)');
   g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
-  g.fillStyle = 'rgba(120,130,160,.35)'; for (const [x, y, r] of [[52, 52, 8], [70, 62, 6], [58, 74, 5], [74, 46, 4]]) { g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); }
+  g.fillStyle = 'rgba(152, 141, 129,.35)'; for (const [x, y, r] of [[52, 52, 8], [70, 62, 6], [58, 74, 5], [74, 46, 4]]) { g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); }
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: new THREE.Color('#dfe8ff').multiplyScalar(2.2), transparent: true, fog: false, depthWrite: false }));
+  const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: new THREE.Color('#f3ece0').multiplyScalar(2.2), transparent: true, fog: false, depthWrite: false }));
   m.scale.set(26, 26, 1); m.position.set(-60, 52, -70); scene.add(m);
   return m;
 }
@@ -50,7 +50,7 @@ export function dress(ctx) {
   banners = guard('banners', () => {
     const items = [], NP = 56, RP = 25.4, PH = 8.5;
     for (let i = 0; i < NP; i += 7) { const a = ((i + 0.5) / NP) * TAU; items.push([Math.cos(a) * (RP - 0.9), PH - 0.4, Math.sin(a) * (RP - 0.9), -a + Math.PI / 2]); }
-    return S.banners(scene, { items, w: 1.7, h: 4.6, glyph: 'Α', color: '#7a1822', trim: '#e0b45a' });
+    return S.banners(scene, { items, w: 1.7, h: 4.6, glyph: 'Α', color: '#5f3324', trim: '#c8a24a' });
   });
   // torches on the plaza (between the braziers) with real flames when the FX library is on the page
   const F = window.OLYMPUS_FX;
@@ -66,7 +66,7 @@ export function dress(ctx) {
   setTimeout(() => guard('embers', () => {
     if (stopped || lite || /[?&]noatmos=1/.test(location.search)) return;
     const pts = []; for (let i = 0; i < 14; i++) { const a = (i / 14) * TAU; pts.push([Math.cos(a) * 15.7, 2.6, Math.sin(a) * 15.7]); }
-    const em = AT.embers({ count: 170, points: pts, spread: [0.35, 0, 0.35], rise: 3.2, colors: ['#fff0c0', '#ff9a3a', '#c2300f'], size: 6, wind: 0.3, seed: 14 });
+    const em = AT.embers({ count: 170, points: pts, spread: [0.35, 0, 0.35], rise: 3.2, colors: ['#f0dca0', '#e0a060', '#c0603f'], size: 6, wind: 0.3, seed: 14 });
     scene.add(em.object); atm.push(em); AT.setQuality(atm, 'high');
   }), 900);
   citadel = guard('citadel', () => createCitadel(scene, lite));
