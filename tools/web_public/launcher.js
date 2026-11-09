@@ -46,7 +46,7 @@
     if (listState === 'loading') return;
     listState = 'loading';
     var s = d.createElement('script'), fin = function () { listState = window.OLYMPUS_APPS_LIST ? 'done' : 'failed'; var w = waiters; waiters = []; w.forEach(function (f) { try { f(); } catch (e) { /* */ } }); };
-    s.async = true; s.src = isPC ? '/js/next/apps-list.js?v=l1' : 'olympus/apps-list.js?v=l1';
+    s.async = true; s.src = isPC ? '/js/next/apps-list.js?v=l1' : 'olympus/apps-list.js?v=o4';
     s.onload = fin; s.onerror = fin;
     (d.head || root).appendChild(s);
   }

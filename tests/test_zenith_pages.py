@@ -2,7 +2,7 @@
 both apps), the phone glue zenith_pages.js, the PC glue web_next/js/next/zenith_pages_pc.js, the visual pass in zenith.css / zenith_pc.css,
 the Bridge and pc/ pages. Read-only UI.
 
-  a. static   core byte-identical on both apps; phone index.html loads zenith.css?v=6+, zenpagescore.js then zenith_pages.js before embed.js;
+  a. static   core byte-identical on both apps; phone index.html loads zenith.css?v=7+, zenpagescore.js then zenith_pages.js before embed.js;
               PC index.html loads zenith_pc.css and the two scripts; the new files never fetch / POST / route / arm; Bridge + pc/ pages keep their
               content and honour reduced motion
   b. phone    Playwright 390x844: an empty page (Performance) gets the "what you will see here" card with a SAMPLE label, a sample chart, the
@@ -45,7 +45,7 @@ def part_a():
     check("a. zenpagescore.js byte-identical on both apps", core == rd("web_next", "js", "next", "zenpagescore.js"))
     idx = rd("tools", "web_public", "index.html")
     head = idx[:idx.find("</head>")]
-    check("a. phone: zenith.css?v=6+ in the head", any(f"zenith.css?v={n}" in head for n in range(6, 40)))
+    check("a. phone: zenith.css?v=7+ in the head", any(f"zenith.css?v={n}" in head for n in range(6, 40)))
     o = [idx.find(f'src="{n}?v=') for n in ("zenith_money.js", "zenpagescore.js", "zenith_pages.js", "embed.js")]
     check("a. phone: zenpagescore.js then zenith_pages.js after zenith_money.js, before embed.js", all(i > 0 for i in o) and o == sorted(o), o)
     pidx = rd("web_next", "index.html")

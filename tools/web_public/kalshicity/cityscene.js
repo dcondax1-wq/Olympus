@@ -18,7 +18,7 @@ import { scenery, rng } from './citylayout.js?v=night8';
 import { STATUS_COLOR, dayFactor, etHour, pairOf } from './cityfeed.js';
 import { Rig } from './cityrig.js?v=night4';
 import { createCityFx } from './cityfx.js?v=night4';
-import { skylinePorts } from './skylineports.js?v=night4';
+import { skylinePorts } from './skylineports.js?v=night5';
 import { cityLinks, LINK_SEGMENTS } from './citylinks.js';
 import { districtCamera } from './citynav.js?v=nav1';
 

@@ -77,9 +77,9 @@ def static_kit(app, name, reads=(), storage=None, allow_urls=()):
     check(f"a. the files: {', '.join(names)}", all(os.path.isfile(os.path.join(d, n)) for n in names), [n for n in names if not os.path.isfile(os.path.join(d, n))])
     html, js, core, css = (read(os.path.join(d, n)) for n in ("index.html", f"{app}.js", f"{app}core.js", f"{app}.css"))
     lines = html.splitlines()
-    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o3" in ln), -1)
-    check(f'a. the kit: olympus.css?v=o3, agora.css after it, themes.js, olympus.js?v=o3 data-app="{app}", the intro tag on the very next line',
-          html.index("../olympus/olympus.css?v=o3") < html.index("../olympus/agora.css") < html.index(f"{app}.css") and "../olympus/themes.js?v=o3" in html
+    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o4" in ln), -1)
+    check(f'a. the kit: olympus.css?v=o4, agora.css after it, themes.js, olympus.js?v=o4 data-app="{app}", the intro tag on the very next line',
+          html.index("../olympus/olympus.css?v=o4") < html.index("../olympus/agora.css") < html.index(f"{app}.css") and "../olympus/themes.js?v=o4" in html
           and f'data-app="{app}"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
     check("a. AGORA: <html data-theme=\"agora\">, the a11y layer and the sound kit, the page is an ES module",
           '<html lang="en" data-theme="agora">' in html and "../olympus/a11y.js" in html and "../olympus/sfx.js?v=s2" in html and f'<script type="module" src="{app}.js' in html)

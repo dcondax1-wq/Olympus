@@ -18,7 +18,7 @@ import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
 import * as SC from '../olympus/scenery.js';
 import { dress } from './dress.js';
-import { citadel } from './colosseum.js?v=c1';
+import { citadel } from './colosseum.js?v=c2';
 
 const TAU = Math.PI * 2;
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(1 + (k - 1) * 0.45);      // AGORA: warm light, a little above 1 only (bloom <= 0.25)

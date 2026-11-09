@@ -3,14 +3,14 @@
 // the canvas and the billboards' canvases; city.js drives it.
 import * as THREE from '../jarvis/three.module.min.js';
 import { COLORS } from './util.js';
-import * as SH from './shaders.js?v=dcgfx5';
+import * as SH from './shaders.js?v=dcgfx6';
 import { Skyline, pick } from './skyline.js';
 import { Rays, SunRays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.js';
 import { createRenderer } from '../olympus/render.js';          // the OLYMPUS render core: ACES, MSAA, bloom, the film finish, tiers
 import { Landmarks } from './landmarks.js';
-import { Outskirts } from './outskirts.js?v=dcgfx2';
-import { SatelliteTowns } from './towns.js?v=dcgfx1';
-import { Streams } from './streams.js?v=dcgfx1';
+import { Outskirts } from './outskirts.js?v=dcgfx3';
+import { SatelliteTowns } from './towns.js?v=dcgfx2';
+import { Streams } from './streams.js?v=dcgfx2';
 import { routes } from './routes.js';
 import { Cars, Flyers, Airships, Monorail } from './vehicles.js';
 import { River, Ships } from './water.js';

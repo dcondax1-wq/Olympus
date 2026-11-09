@@ -8,7 +8,7 @@ import { evaluateWeek, history as bossHistory, bossEvents, bossStats, weekStart,
 import { trophies as makeTrophies } from './trophies.js';
 import * as X from './extras.js';
 import { desk } from './rhythm.js';
-import { illustratedColosseum } from './illustration.js?v=c1';
+import { illustratedColosseum } from './illustration.js?v=c2';
 
 const O = window.OLYMPUS || null;
 const JARVIS_ORIGIN = 'https://demetrades2000-coder.github.io';

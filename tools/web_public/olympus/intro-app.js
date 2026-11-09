@@ -1,6 +1,6 @@
 /* OLYMPUS app intro (tools/web_public/olympus/intro-app.js, 2026-11-04, JOB 33a): the 2.4 s cinematic entrance every app plays when it opens.
  * One classic deferred script, loaded by ONE line in each app's index.html, right after olympus.js:
- *   <script src="../olympus/intro-app.js?v=i1" defer></script>
+ *   <script src="../olympus/intro-app.js?v=i5" defer></script>
  * It reads the kit (window.OLYMPUS: the app's name, glyph and colour, the same table the loading veil uses), paints one full-screen
  * 2D canvas over the page (z-index 70, above the veil) and takes itself away. It carries its own CSS (nothing to link).
  *
