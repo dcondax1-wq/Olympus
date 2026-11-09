@@ -51,7 +51,7 @@ html[data-oly-scheme="light"] .dock::after { opacity: .3; }
 /* ---------------------------------------------------------------- the morning briefing card (briefing.js) */
 .jbrief { position: relative; width: 100%; box-sizing: border-box; margin: 6px 0; padding: 12px 14px 12px; white-space: normal; border: 1px solid rgba(var(--cr), .45); border-radius: 14px;
   background: linear-gradient(180deg, rgba(var(--cr2), .16), rgba(var(--pr), .6)); box-shadow: 0 4px 14px rgba(21,20,17,.32); color: #f9f6f0; }
-.jbrief::before { content: "MORNING BRIEFING"; display: block; margin-bottom: 3px; font: 600 12px var(--fh); letter-spacing: .02em; color: var(--c); }
+.jbrief::before { content: "Morning briefing"; display: block; margin-bottom: 3px; font: 600 12px var(--fh); letter-spacing: .02em; color: var(--c); }
 .bf-h { margin: 0 0 6px; display: flex; flex-direction: column; gap: 2px; }
 .bf-h b { font: 600 17px var(--fh); letter-spacing: .06em; color: #efeeeb; }
 .bf-h small { display: none; }
@@ -67,3 +67,5 @@ html[data-oly-scheme="light"] .dock::after { opacity: .3; }
 .bf-q p { margin: 0; font: 500 13.5px/1.4 var(--fb); color: #f6f1e7; }
 @media (max-width: 380px) { .bf-r { grid-template-columns: 1fr; gap: 1px; } }
 html[data-oly-scheme="light"] .bf-r p, html[data-oly-scheme="light"] .bf-one p, html[data-oly-scheme="light"] .bf-q p, html[data-oly-scheme="light"] .bf-h b { color: var(--txt); }
+.bf-one span, .bf-r span { text-transform: lowercase; } .bf-one span::first-letter, .bf-r span::first-letter { text-transform: uppercase; }
+.jbrief::before { font: 600 14px var(--fb); }
