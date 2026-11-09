@@ -421,7 +421,7 @@ def part_c(tmp):
             tab(p, "all")
             body = p.inner_text("#p-all")
             check("c. all lights: grouped (bots, PC, prices, cloud, MFFU rules, apps), 25 rows with plain values",
-                  p.evaluate("document.querySelectorAll('#p-all .lrow').length") == 25 and all(x in body for x in ("THE BOTS", "OLYMPUS APPS", "Zlarior 50K", "running, armed", "day 1 of 7", "$1,800 left", "Plutus")), body[:160])
+                  p.evaluate("document.querySelectorAll('#p-all .lrow').length") == 25 and all(x in body for x in ("The bots", "Olympus apps", "Zlarior 50K", "running, armed", "day 1 of 7", "$1,800 left", "Plutus")), body[:160])
             p.click("#p-all [data-light='room_lit']")
             check("c. a tap on a light opens its one-line explanation and picks it (the caption over the sphere names it)",
                   "before the max-loss floor" in p.inner_text("#p-all") and p.is_visible("#pick") and "drawdown" in p.inner_text("#pick") and p.evaluate("window.__argus.sel") == "room_lit")
