@@ -111,9 +111,9 @@ function renderLook() {
   if (!list.length) host.appendChild(h('p', 'hint', 'Themes are not available in this copy.'));
   for (const t of list) {
     const tk = t.tokens || {}, b = h('button', 'theme'); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('data-id', t.id); b.setAttribute('aria-checked', String(t.id === now));
-    b.style.background = 'linear-gradient(135deg, ' + (tk.bg2 || tk.bg || '#111') + ', ' + (tk.bg || '#000') + ')'; b.style.color = tk.text || '#fff';
+    b.style.background = 'linear-gradient(135deg, ' + (tk.bg2 || tk.bg || '#131210') + ', ' + (tk.bg || '#14110e') + ')'; b.style.color = tk.text || '#f3ece0';
     const dots = h('span', 'sw3');
-    for (const c of [tk.accent, tk.accent2, tk.glow]) { const i = h('i'); i.style.background = c || '#888'; dots.appendChild(i); }
+    for (const c of [tk.accent, tk.accent2, tk.glow]) { const i = h('i'); i.style.background = c || '#888683'; dots.appendChild(i); }
     b.appendChild(dots); b.appendChild(h('b', null, t.name)); b.appendChild(h('small', null, t.tag || ''));
     b.addEventListener('click', () => { T.set(t.id); renderLook(); });
     host.appendChild(b);

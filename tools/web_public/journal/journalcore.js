@@ -288,5 +288,5 @@ export function card(trades, store, demo, now = Date.now() / 1000) {
   const short = (s, n) => String(s).replace(/[<>&]/g, '').slice(0, n);
   return { v: 1, name: 'MNEMOSYNE', status: { level: demo ? 'off' : ins.unrated > ins.n / 2 ? 'warn' : 'ok', label: demo ? 'Demo journal' : `${ins.rated} of ${ins.n} rated` },
            kpis: [{ label: 'Rated', value: `${ins.rated} of ${ins.n}` }, { label: 'Interfered', value: money(I.usd) }, { label: 'Plan streak', value: `${ins.streak} day${ins.streak === 1 ? '' : 's'}` }],
-           lines: [short(recent(trades, store).line, 118), short(wk ? 'Next week: ' + wk.rule.text.split('. ')[0].replace(/\.$/, '') : 'Rate your trades in 10 seconds.', 118)], t: Math.round(now), open: '#', theme: '#0b0710', stale_after: 604800 };
+           lines: [short(recent(trades, store).line, 118), short(wk ? 'Next week: ' + wk.rule.text.split('. ')[0].replace(/\.$/, '') : 'Rate your trades in 10 seconds.', 118)], t: Math.round(now), open: '#', theme: '#13100d', stale_after: 604800 };
 }

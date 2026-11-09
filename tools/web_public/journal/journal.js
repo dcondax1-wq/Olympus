@@ -45,8 +45,8 @@ function bars(ins) {
   svg.appendChild(sv('line', { x1: 0, x2: 300, y1: mid, y2: mid, stroke: 'rgba(255,255,255,.25)', 'stroke-dasharray': '3 3' }));
   items.forEach(([k, label, usd, n], i) => {
     const x = 12 + i * (w + gap), hh = Math.max(n ? 2 : 0, Math.abs(usd) * scale), y = usd >= 0 ? mid - hh : mid;
-    svg.appendChild(sv('rect', { x, y, width: w, height: hh, rx: 3, fill: usd < 0 ? '#ff7a90' : '#4ade80', opacity: n ? 1 : 0.25 }));
-    svg.appendChild(sv('text', { x: x + w / 2, y: 70, 'text-anchor': 'middle', fill: '#cfc6dc', 'font-size': 10.5 }, `${label} (${n})`));
+    svg.appendChild(sv('rect', { x, y, width: w, height: hh, rx: 3, fill: usd < 0 ? '#cc7156' : '#aeb86e', opacity: n ? 1 : 0.25 }));
+    svg.appendChild(sv('text', { x: x + w / 2, y: 70, 'text-anchor': 'middle', fill: '#dcd1c2', 'font-size': 10.5 }, `${label} (${n})`));
   });
 }
 
@@ -63,7 +63,7 @@ function renderInsights() {
   const big = Math.max(50, ...K.MOODS.map(([k]) => Math.abs(ins.byMood[k].usd)));
   for (const [k, label] of K.MOODS) {
     const b = ins.byMood[k], li = h('li', 'mrow'), bar = h('span', 'bar'), fill = document.createElement('i');
-    fill.style.background = b.usd < 0 ? '#ff7a90' : '#4ade80';
+    fill.style.background = b.usd < 0 ? '#cc7156' : '#aeb86e';
     const half = (Math.abs(b.usd) / big) * 50; fill.style.width = half + '%'; fill.style.left = b.usd < 0 ? 50 - half + '%' : '50%';
     bar.appendChild(fill);
     li.append(h('span', 'nm', label), bar, h('span', 'v ' + cls(b.usd), b.n ? `${K.money(b.usd)} (${b.n})` : '-'));

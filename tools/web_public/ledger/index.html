@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ledger</title>
 <meta name="description" content="LEDGER: your real money, tracked. Eval fees, resets, payouts requested and received, Kalshi deposits and balance, expenses and a tax set-aside, on your phone only. Net profit, per-account payback, a monthly waterfall, a break-even tracker, a payout calendar, a cash heat map and a CSV for your accountant. Records what happened; plans live in Plutus.">
-<meta name="theme-color" content="#0b0905">
+<meta name="theme-color" content="#14110e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ledger">
@@ -20,6 +20,7 @@
      core, ledger.js = the page. Plutus projects; Ledger records. Nothing here is tax advice and nothing here moves money. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<link rel="stylesheet" href="../olympus/agora.css?v=g1"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g1">
 <script src="../olympus/themes.js?v=o3"></script>
 <script src="../olympus/olympus.js?v=o3" data-app="ledger"></script>
 <script src="../olympus/a11y.js" defer></script>
@@ -27,7 +28,7 @@
 <script src="../olympus/sfx.js?v=s2" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#ffcf5a'); r.setProperty('--oly-accent-rgb', '255, 207, 90'); })();</script>
-<link rel="stylesheet" href="ledger.css?v=g1">
+<link rel="stylesheet" href="ledger.css?v=g1g">
 </head>
 <body>
 <canvas id="vault" aria-label="A golden vault with a pile of coins that grows with your net profit" role="img"></canvas>
@@ -77,6 +78,6 @@
     <div class="row-b"><button type="submit" class="go" id="fSave" data-oly-cue="success">Save</button><button type="button" class="del" id="fDelete" data-oly-cue="warning" hidden>Delete</button></div>
   </form>
 </section>
-<script type="module" src="ledger.js?v=g1"></script>
+<script type="module" src="ledger.js?v=g1g"></script>
 </body>
 </html>
