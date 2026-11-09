@@ -21,7 +21,7 @@ import * as M from '../olympus/materials.js';
 import { buildLoom } from './fates-loom.js';
 import * as FX from '../olympus/fx-atmos.js';
 
-export const COL = { gold: [1.0, 0.76, 0.28], red: [1.0, 0.26, 0.34], violet: [0.62, 0.46, 1.0] };
+export const COL = { gold: [0.95, 0.74, 0.3], red: [0.85, 0.36, 0.22], violet: [0.78, 0.68, 0.52] };
 export const Y1 = 3.0;            // the target's height (progress 1)
 export const LEN = 34;            // how far the future runs into the distance
 const FOG_D = 0.045;
@@ -50,14 +50,14 @@ function label(text, color, h = 0.32) {
 function dispose(o) { o.traverse((x) => { x.geometry?.dispose(); if (x.material) { x.material.map?.dispose(); x.material.dispose(); } }); }
 
 export function createScene(canvas, opt = {}) {
-  const BG = new THREE.Color(0x07050f);
+  const BG = new THREE.Color(0x1a130e);
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(BG.getHex(), FOG_D);
   const cam = new THREE.PerspectiveCamera(56, 1, 0.1, 120);
   let rc;
   try {
     rc = createRenderer({ canvas, scene, camera: cam, space: 'display', env: 'night', tint: '#ffd36a', autoSize: false, fitCamera: false, adapt: false,
-      maxDpr: 1.75, bloom: { strength: 0.72, radius: 0.6, threshold: 0.8 }, grade: { vignette: 0.36, grain: 0.035 } });
+      maxDpr: 1.75, bloom: { strength: 0.24, radius: 0.55, threshold: 0.9 }, grade: { vignette: 0.36, grain: 0.035 } });
   } catch (e) { return null; }
   const R = rc.renderer;
   R.setClearColor(BG, 1);
@@ -81,8 +81,8 @@ export function createScene(canvas, opt = {}) {
       void main() {
         float g = max(line(vW.x * 0.5, 0.04), line((vW.z - uT * 0.6) * 0.5, 0.04));
         float glow = exp(-length(vW.xz * vec2(0.12, 0.05)));
-        vec3 c = vec3(0.05, 0.0, 0.03) + vec3(0.55, 0.06, 0.12) * g * 0.35 * (0.4 + glow) + vec3(0.28, 0.02, 0.08) * glow * 0.5;
-        gl_FragColor = vec4(mix(c, vec3(0.027, 0.02, 0.059), vF), 1.0);
+        vec3 c = vec3(0.09, 0.05, 0.03) + vec3(0.55, 0.22, 0.12) * g * 0.3 * (0.4 + glow) + vec3(0.3, 0.12, 0.06) * glow * 0.45;
+        gl_FragColor = vec4(mix(c, vec3(0.102, 0.075, 0.055), vF), 1.0);
       }`,
   }));
   G.abyss.rotation.x = -Math.PI / 2; G.abyss.position.set(0, 0, -LEN / 2 + 4); G.abyss.renderOrder = -2;
@@ -103,7 +103,7 @@ export function createScene(canvas, opt = {}) {
   const rimMat = (c, o) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, blending: THREE.AdditiveBlending, depthWrite: false });
   G.rim = new THREE.Mesh(new THREE.BoxGeometry(12, 0.03, 0.03), rimMat(0xffd36a, 0.85));
   G.rim.position.set(0, Y1, -1.6);
-  G.floorRim = new THREE.Mesh(new THREE.BoxGeometry(12, 0.025, 0.025), rimMat(0xff4d64, 0.6));
+  G.floorRim = new THREE.Mesh(new THREE.BoxGeometry(12, 0.025, 0.025), rimMat(0xc0603f, 0.6));
   G.floorRim.position.set(0, 0.01, -1.6);
   scene.add(G.abyss, G.gate, G.rim, G.floorRim);
 
@@ -120,7 +120,7 @@ export function createScene(canvas, opt = {}) {
         float wind = abs(fract(vUv.y * 34.0 + vUv.x * 3.0) - 0.5) * 2.0;      // the wound thread: a helix round the body
         float band = smoothstep(0.25, 0.95, wind);
         float seam = smoothstep(0.96, 1.0, abs(fract(vUv.x * 6.0) - 0.5) * 2.0); // six seams make the turning visible
-        vec3 c = mix(vec3(0.55, 0.42, 1.0), uAccent, smoothstep(0.15, 0.7, vUv.y)) * (0.25 + 0.75 * band) + seam * 0.35;
+        vec3 c = mix(vec3(0.80, 0.62, 0.40), uAccent, smoothstep(0.15, 0.7, vUv.y)) * (0.25 + 0.75 * band) + seam * 0.35;
         gl_FragColor = vec4((c * 0.6 + vec3(1.0, 0.92, 0.8) * vRim * 0.7) * 0.75, 1.0);
       }`,
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
@@ -129,7 +129,7 @@ export function createScene(canvas, opt = {}) {
   G.spinCore = new THREE.Mesh(new THREE.LatheGeometry(prof, lite ? 18 : 32), M.metal({ kind: 'gold', roughness: 0.22 }));
   G.whorl = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.032, 12, 48), M.metal({ kind: 'gold', roughness: 0.18 }));
   G.whorl.rotation.x = Math.PI / 2;
-  G.whorlGlass = new THREE.Mesh(new THREE.CircleGeometry(0.29, 40).rotateX(-Math.PI / 2), M.glass({ color: '#e9ddff', rim: '#c9a8ff', opacity: 0.3 }));
+  G.whorlGlass = new THREE.Mesh(new THREE.CircleGeometry(0.29, 40).rotateX(-Math.PI / 2), M.glass({ color: '#efe3cc', rim: '#d8c19a', opacity: 0.3 }));
   G.whorlGlass.material.side = THREE.DoubleSide;
   G.whorl.add(G.whorlGlass); G.whorlGlass.rotation.x = -Math.PI / 2;
   G.spindle = new THREE.Group();
@@ -146,7 +146,7 @@ export function createScene(canvas, opt = {}) {
   // the room's light and air (JOB 4+5)
   const fxShafts = FX.shafts({ count: 4, from: [-3.2, 12, -1], to: [0.4, 0, -3], width: 5, spread: [6, 0, 5], color: '#ffd38a', strength: 0.11, seed: 14 });
   const fxDust = FX.dust({ count: 180, box: [18, 9, 26], color: '#ffe3b0', size: 4, strength: 0.75, seed: 6 }); fxDust.object.position.set(0, 0, -9);
-  const fxSparks = FX.embers({ count: 110, origin: [0, 0.4, 0], spread: [0.5, 0, 0.5], rise: 3.6, colors: ['#fff4cc', '#ffcf5a', '#b28cff'], size: 5, wind: 0, seed: 40 });
+  const fxSparks = FX.embers({ count: 110, origin: [0, 0.4, 0], spread: [0.5, 0, 0.5], rise: 3.6, colors: ['#fff4cc', '#e0b060', '#c8a24a'], size: 5, wind: 0, seed: 40 });
   const fxAoL = FX.contactAO({ radius: 0.7, strength: 0.7 }), fxAoR = FX.contactAO({ radius: 0.7, strength: 0.7 }), fxAoS = FX.contactAO({ radius: 0.8, strength: 0.6 });
   fxAoL.object.position.set(-2.1, 0.01, -1.8); fxAoR.object.position.set(2.1, 0.01, -1.8); fxAoS.object.position.set(0, 0.01, 0);
   const plinth = new THREE.Group();                               // a bronze plinth with a marble ring under the spindle
@@ -165,10 +165,10 @@ export function createScene(canvas, opt = {}) {
   G.gauge = new THREE.Group();
   G.gauge.visible = false;
   const rod = (c) => new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1, 12), M.neon({ color: c, intensity: 2.4, fog: true }));
-  G.gRoom = rod('#ff4d64'); G.gToGo = rod('#ffc65a');
+  G.gRoom = rod('#c0603f'); G.gToGo = rod('#d4b05a');
   G.gPearl = new THREE.Mesh(new THREE.SphereGeometry(0.095, 20, 14), M.glass({ color: '#ffffff', rim: '#ffffff', opacity: 0.85 }));
-  G.gWheelBg = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.34, 64), M.neon({ color: '#6b5aa8', intensity: 1.0, fog: true, opacity: 0.8 }));
-  G.gWheel = new THREE.Mesh(new THREE.RingGeometry(0.29, 0.355, 64, 1, 0, 0.01), M.neon({ color: '#ffc65a', intensity: 3.2, fog: true }));
+  G.gWheelBg = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.34, 64), M.neon({ color: '#8a7656', intensity: 0.8, fog: true, opacity: 0.8 }));
+  G.gWheel = new THREE.Mesh(new THREE.RingGeometry(0.29, 0.355, 64, 1, 0, 0.01), M.neon({ color: '#d4b05a', intensity: 1.4, fog: true }));
   G.gWheel.rotation.z = Math.PI / 2; G.gWheelBg.rotation.z = 0;
   G.gauge.add(G.gRoom, G.gToGo, G.gPearl, G.gWheelBg, G.gWheel);
   scene.add(G.gauge);
@@ -201,7 +201,7 @@ export function createScene(canvas, opt = {}) {
           } else {
             p.y += mod(t * (0.05 + s * 0.08) + s * 7.0, 4.6) - 1.0; p.x += sin(t * 0.3 + s * 40.0) * 0.25;
             vA = 0.25 + 0.35 * sin(t * 1.3 + s * 30.0) * sin(t * 1.3 + s * 30.0);
-            vC = mix(vec3(0.7, 0.55, 1.0), vec3(1.0, 0.82, 0.45), step(0.7, s));
+            vC = mix(vec3(0.85, 0.72, 0.52), vec3(1.0, 0.82, 0.45), step(0.7, s));
           }
           vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv;
           gl_PointSize = uPx * (1.0 + s * 2.0 + gate * 1.5) * 18.0 / max(1.0, -mv.z);
@@ -400,9 +400,9 @@ export function createScene(canvas, opt = {}) {
       G.gauge.visible = false;
       const lab = (t, c, h, x, y, z, left = true) => { const s = label(t, c, h); s.position.set(left ? x + s.scale.x / 2 : x, y, z); G.labels.add(s); };
       lab(map.gateText, '#ffd36a', 0.3, -1.75, map.gateY + 0.2, -1.6);
-      lab(map.abyssText, '#ff5a6e', 0.26, -1.75, map.floorY != null ? ay + 0.2 : map.yOf(0) - 0.2, -1.6);   // money: $0 under its line, clear of the goal
-      lab('TODAY', '#e5d6ff', 0.17, 0, startY - 0.5, zOf(0), false);
-      lab(map.money ? '12 MONTHS' : `DAY ${map.H}`, '#9b8cc4', 0.5, 0, map.gateY * 0.5, zOf(map.H) - 1, false);
+      lab(map.abyssText, '#c0603f', 0.26, -1.75, map.floorY != null ? ay + 0.2 : map.yOf(0) - 0.2, -1.6);   // money: $0 under its line, clear of the goal
+      lab('TODAY', '#efe3cc', 0.17, 0, startY - 0.5, zOf(0), false);
+      lab(map.money ? '12 MONTHS' : `DAY ${map.H}`, '#b8a07c', 0.5, 0, map.gateY * 0.5, zOf(map.H) - 1, false);
       if (!map.money && map.H > 12) lab('SESSION 10', '#ffe7a8', 0.22, 2.2, map.gateY + 0.14, zOf(10), false);
       return W;
     },
@@ -501,7 +501,7 @@ export function createScene(canvas, opt = {}) {
       G.gWheel.geometry.dispose();
       G.gWheel.geometry = new THREE.RingGeometry(0.29, 0.355, 64, 1, 0, th);
       for (const k of ['gLabRoom', 'gLabGo', 'gLabOdds']) { if (G[k]) { G.gauge.remove(G[k]); dispose(G[k]); G[k] = null; } }
-      G.gLabRoom = label(`ROOM ${g.roomText}`, '#ff7a8c', 0.15); G.gLabRoom.position.set(GX + 0.1 + G.gLabRoom.scale.x / 2, (fy + y) / 2, GZ);
+      G.gLabRoom = label(`ROOM ${g.roomText}`, '#d98a6e', 0.15); G.gLabRoom.position.set(GX + 0.1 + G.gLabRoom.scale.x / 2, (fy + y) / 2, GZ);
       G.gLabGo = label(`TO GO ${g.goText}`, '#ffd88a', 0.15); G.gLabGo.position.set(GX + 0.1 + G.gLabGo.scale.x / 2, (y + gy) / 2 + 0.05, GZ);
       G.gLabOdds = label(`PASS ${g.passText}`, '#ffe9b0', 0.17); G.gLabOdds.position.set(GX + 0.46 + G.gLabOdds.scale.x / 2, gy + 0.62, GZ);
       G.gauge.add(G.gLabRoom, G.gLabGo, G.gLabOdds);
