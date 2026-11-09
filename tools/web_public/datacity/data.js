@@ -6,7 +6,7 @@
 //   labelOf(b, dict)         -> the plain-language label of a building (computed on first use)
 //
 // Plug-in contract (one JSON a new data source writes next to the page, listed in plugins.json):
-//   { "v": 1, "key": "rates", "name": "RATES", "blurb": "...", "color": "#7fe9ff",
+//   { "v": 1, "key": "rates", "name": "RATES", "blurb": "...", "color": "#daa56f",
 //     "items": [ { "id": "...", "lab": "...", "value": 12.5, "unit": "$/trade", "cls": "green", "note": "...", "sp": [..] } ] }
 // value sets the height (scaled within the district); cls (gold / green / amber / grey) keeps the city's honesty colours,
 // anything else draws in the district's colour.
@@ -54,7 +54,7 @@ function fromRow(row, ix, D) {
            fdr: !!(fl & F.fdr), tr: trendOf(fl, F), td: fl & F.fired ? 2 : fl & F.armed ? 1 : 0, compact: true };
 }
 
-const DEFAULT_SECTIONS = { times: ['TIMES', '#7fe9ff'], confluences: ['CONFLUENCES', '#ffd36b'], while: ['WHILE-STATES', '#e9ecf6'] };
+const DEFAULT_SECTIONS = { times: ['TIMES', '#daa56f'], confluences: ['CONFLUENCES', '#d79e64'], while: ['WHILE-STATES', '#b2cadc'] };
 
 /** Normalise one plug-in district (see the contract above); null when it is not usable. */
 export function pluginSection(p, i = 0) {
@@ -68,7 +68,7 @@ export function pluginSection(p, i = 0) {
     sp: Array.isArray(x.sp) ? x.sp.filter(Number.isFinite).slice(0, 60) : null,
     e: 60 * (Math.abs(+x.value || 0) / top) * Math.sign(+x.value || 0) }));    // height on the city's $ scale
   return { key, name: String(p.name || key).toUpperCase().slice(0, 24), blurb: String(p.blurb || '').slice(0, 200),
-           color: /^#[0-9a-f]{6}$/i.test(p.color || '') ? p.color : '#7fe9ff', kind: 'plugin', plugin: true, items,
+           color: /^#[0-9a-f]{6}$/i.test(p.color || '') ? p.color : '#daa56f', kind: 'plugin', plugin: true, items,
            tested: items.length, fdr: 0, gold: items.filter((x) => x.cls === 'gold').length };
 }
 
@@ -119,7 +119,7 @@ export function decode(city, plugins = [], synth = 0) {
   for (const s of meta) sections.push({ ...s, items: [] });
   const sec = new Map(sections.map((s) => [s.key, s]));
   for (const b of buildings) {
-    if (!sec.has(b.d)) { const s = { key: b.d, name: b.d.toUpperCase(), color: '#e9ecf6', kind: 'combos', items: [] }; sections.push(s); sec.set(b.d, s); }
+    if (!sec.has(b.d)) { const s = { key: b.d, name: b.d.toUpperCase(), color: '#b2cadc', kind: 'combos', items: [] }; sections.push(s); sec.set(b.d, s); }
     sec.get(b.d).items.push(b);
   }
   for (const p of plugins) {

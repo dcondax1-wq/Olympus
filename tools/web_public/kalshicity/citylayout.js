@@ -6,9 +6,9 @@ import { MIN_N, ageDays } from './cityfeed.js';
 
 export const SP = 4.4;                 // grid cell
 export const COLORS = {
-  Downtown: '#2ef2d0', Bitcoin: '#ff9a1f', Ethereum: '#8f9bff', Dogecoin: '#ffd23f', XRP: '#4fb2ff', Solana: '#b36bff', HYPE: '#6dffd0', BNB: '#f3ba2f', Gold: '#ffe08a', Silver: '#cfd8ee', Other: '#9fb0cf',
+  Downtown: '#9fae68', Bitcoin: '#d1904e', Ethereum: '#99b8d0', Dogecoin: '#d9b45f', XRP: '#83a9c6', Solana: '#a999b8', HYPE: '#afbc81', BNB: '#d1914f', Gold: '#dcaa78', Silver: '#a9c3d7', Other: '#9fb0cf',
 };
-const SPARE = ['#ff6b9d', '#5eead4', '#a3e635', '#fb7185', '#38bdf8', '#f59e0b'];
+const SPARE = ['#d08a7e', '#81a7c5', '#9ead67', '#cd8268', '#78a1c1', '#ce8842'];
 export const colorOf = (name, i = 0) => COLORS[name] || SPARE[i % SPARE.length];
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 export function rng(seed) { let s = seed >>> 0 || 1; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
@@ -162,7 +162,7 @@ export function layout(model, prev = null) {
 
 // ------------------------------------------------------------------ the Lab (one district per research idea)
 export const LAB_HALF = 9.5, LAB_GAP = 5.8;
-export const LAB_COLORS = ['#7cf0ff', '#b3ff8a', '#ffb86b', '#ff8fd0', '#a9a0ff', '#ffe36b', '#7dffd1', '#ff8a8a', '#9fd0ff', '#d0ff7c'];
+export const LAB_COLORS = ['#92b3cd', '#b5c18a', '#d9a36c', '#d5968b', '#9ebcd3', '#ddbd71', '#b2be86', '#d18b73', '#9ebcd2', '#b2be86'];
 const PART_WORD = { back: 'looking back', live: 'live', prog: 'live bets collected' };
 const gainH = (g, maxG) => (g > 0 ? 3 + 24 * Math.sqrt(clamp01(g / maxG)) : g < 0 ? 1.7 + 2.0 * clamp01(-g / maxG) : 1.3);       // a loss is a low stub, nothing is ever invisible
 /** One tower of an idea: back = what the rule would have added looking back, live = what it adds on bets since it was registered, prog = how many live bets are collected

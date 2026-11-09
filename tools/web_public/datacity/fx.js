@@ -27,7 +27,7 @@ export class Rays {
     this.mesh = new THREE.InstancedMesh(geo, new THREE.ShaderMaterial({ vertexShader: SH.RAY_VS, fragmentShader: SH.RAY_FS,
       uniforms: { ...pick(U, 'uTime', 'uDay', 'uHaze'), uGain: { value: 1 }, uFlip: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide }), n);
-    for (let i = 0; i < towerBeams; i++) { c.setHex(0x3fd8ff); color.set([c.r, c.g, c.b], i * 3); alpha[i] = 0.55; }
+    for (let i = 0; i < towerBeams; i++) { c.setHex(0xd39556); color.set([c.r, c.g, c.b], i * 3); alpha[i] = 0.55; }
     this.fixed = [];
     L.districts.forEach((d, k) => {
       const i = towerBeams + k;
@@ -206,7 +206,7 @@ export class Beam {
       uniforms: { ...pick(U, 'uTime', 'uDay', 'uHaze'), uGain: { value: 1 }, uFlip: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), 1);
     this.mesh.frustumCulled = false;
     this.mesh.renderOrder = 7;
-    this.ring = new THREE.Mesh(new THREE.RingGeometry(1.6, 2.1, 48), new THREE.MeshBasicMaterial({ color: 0xffe08a, transparent: true,
+    this.ring = new THREE.Mesh(new THREE.RingGeometry(1.6, 2.1, 48), new THREE.MeshBasicMaterial({ color: 0xddac7b, transparent: true,
       opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
     this.ring.rotation.x = -Math.PI / 2;
     this.ring.renderOrder = 7;
@@ -243,7 +243,7 @@ export class Billboards {
   /** Holographic boards round the plaza; items: [{ title, lines[], big, color }], cycled every few seconds. */
   constructor(U, items, n = 4) {
     this.group = new THREE.Group();
-    this.items = items.length ? items : [{ title: 'DATA CITY', lines: ['No discovery yet'], big: '', color: '#7fe9ff' }];
+    this.items = items.length ? items : [{ title: 'DATA CITY', lines: ['No discovery yet'], big: '', color: '#daa56f' }];
     this.boards = [];
     for (let k = 0; k < Math.min(n, this.items.length); k++) {
       const c = document.createElement('canvas');
@@ -251,7 +251,7 @@ export class Billboards {
       const tex = new THREE.CanvasTexture(c);
       tex.colorSpace = THREE.SRGBColorSpace;
       const mat = new THREE.ShaderMaterial({ vertexShader: SH.HOLO_VS, fragmentShader: SH.HOLO_FS, transparent: true, depthWrite: false,
-        blending: THREE.AdditiveBlending, uniforms: { ...pick(U, 'uTime'), uMap: { value: tex }, uTint: { value: new THREE.Color(0x3fd8ff) }, uFade: { value: 1 } } });
+        blending: THREE.AdditiveBlending, uniforms: { ...pick(U, 'uTime'), uMap: { value: tex }, uTint: { value: new THREE.Color(0xd39556) }, uFade: { value: 1 } } });
       const m = new THREE.Mesh(new THREE.PlaneGeometry(22, 11), mat);
       const a = (k / n) * Math.PI * 2 + Math.PI / 4;
       m.position.set(Math.cos(a) * 29, 27 + (k % 2) * 5, Math.sin(a) * 29);
@@ -267,18 +267,18 @@ export class Billboards {
   _draw(b) {
     const it = this.items[b.at % this.items.length], g = b.canvas.getContext('2d');
     g.clearRect(0, 0, 512, 256);
-    g.fillStyle = it.color || '#7fe9ff';
+    g.fillStyle = it.color || '#daa56f';
     g.font = '700 22px Orbitron, Rajdhani, system-ui, sans-serif';
     g.fillText(it.title, 22, 40);
     g.font = '600 25px Rajdhani, system-ui, sans-serif';
-    g.fillStyle = '#e9f6ff';
+    g.fillStyle = '#b2cadc';
     let y = 82;
     for (const line of wrap(g, it.lines.join(' '), 468).slice(0, 4)) { g.fillText(line, 22, y); y += 30; }
     g.font = '800 34px Orbitron, Rajdhani, system-ui, sans-serif';
-    g.fillStyle = it.color || '#ffe08a';
+    g.fillStyle = it.color || '#ddac7b';
     g.fillText(it.big || '', 22, 230);
     b.tex.needsUpdate = true;
-    b.mat.uniforms.uTint.value.set(it.color || '#3fd8ff');
+    b.mat.uniforms.uTint.value.set(it.color || '#d39556');
   }
 
   redrawAll() { for (const b of this.boards) this._draw(b); }

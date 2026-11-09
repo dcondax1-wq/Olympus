@@ -14,10 +14,10 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
-import { scenery, rng } from './citylayout.js?v=night7';
+import { scenery, rng } from './citylayout.js?v=night8';
 import { STATUS_COLOR, dayFactor, etHour, pairOf } from './cityfeed.js';
 import { Rig } from './cityrig.js?v=night4';
-import { createCityFx } from './cityfx.js?v=night3';
+import { createCityFx } from './cityfx.js?v=night4';
 import { skylinePorts } from './skylineports.js?v=night4';
 import { cityLinks, LINK_SEGMENTS } from './citylinks.js';
 import { districtCamera } from './citynav.js?v=nav1';
@@ -34,7 +34,7 @@ const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
 const lerpC = (a, b, t) => a.clone().lerp(b, t);
 const sstep = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const C = (hex) => new THREE.Color(hex);
-const SKY = { nTop: C('#02040c'), nMid: C('#07112a'), nHor: C('#10204a'), dTop: C('#2a5db0'), dMid: C('#5f93d6'), dHor: C('#c4d9f2'), tw: C('#ff8a4a'), grey: C('#566070') };
+const SKY = { nTop: C('#2a2a56'), nMid: C('#6a5688'), nHor: C('#e0906a'), dTop: C('#4f7fa3'), dMid: C('#9fc0cf'), dHor: C('#f3dcae'), tw: C('#e08a50'), grey: C('#566070') };
 
 // ------------------------------------------------------------------ the building shader (a MeshStandardMaterial plus windows, roof glow, rise and crumble)
 const U = { uTime: { value: 0 }, uAnimT: { value: 0 }, uNight: { value: 1 }, uWinGain: { value: 1.7 }, uRoofGain: { value: 2.4 } };
@@ -86,9 +86,9 @@ function buildingMaterial() {
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = mix(roughnessFactor, 0.07, inWin);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        vec3 civic = mix(vec3(1.0, 0.48, 0.12), vec3(0.18, 0.72, 1.0), step(0.42, vArch.z));
-        civic = mix(civic, vec3(0.42, 1.0, 0.72), step(0.78, vArch.z));
-        vec3 winc = mix(civic, mix(vec3(1.0, 0.78, 0.42), vec3(1.0, 0.18, 0.14), isLoss), real);
+        vec3 civic = mix(vec3(1.0, 0.56, 0.20), vec3(1.0, 0.72, 0.38), step(0.42, vArch.z));
+        civic = mix(civic, vec3(0.78, 0.86, 0.48), step(0.78, vArch.z));
+        vec3 winc = mix(civic, mix(vec3(1.0, 0.78, 0.42), vec3(0.85, 0.32, 0.20), isLoss), real);
         totalEmissiveRadiance += winc * inWin * lit * uWinGain * mix(0.48, 0.92, hs) * mix(0.35, 1.0, uNight) * mix(0.42, 1.0, real);
         float roof = vTop * 0.45 + (1.0 - vTop) * smoothstep(0.94, 1.0, vRoof);
         totalEmissiveRadiance += vStat * (roof * uRoofGain + 0.1) * vInfo.x * real;
@@ -113,29 +113,29 @@ function labelSprite(text, color) {
 export function createCity(canvas, { O = null, model, layout, sound = () => false }) {
   const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x10204a, 0.0034);
+  scene.fog = new THREE.FogExp2(0x6a5670, 0.0030);
   const camera = new THREE.PerspectiveCamera(58, 1, 0.5, 2600);
   let lite = false, dirty = true, qcb = null, pickCb = null, drawn = 0, frames = 0, stopped = false, raf = 0, tier = TIERS.low, last = performance.now() / 1000, t0 = last;
   let hourOverride = null, hour = 21, hourAt = -9, selected = null, mode = 'orbit', flash = 0, nextFlash = 6, L = layout, M0 = model;
-  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#2ef2d0', exposure: 0.92, maxDpr: 1.75, bloom: { strength: 0.28, radius: 0.25, threshold: 1.35 },
+  const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#d8b25a', exposure: 1.15, maxDpr: 1.75, bloom: { strength: 0.28, radius: 0.25, threshold: 1.35 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; applyTier(); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
   const fxl = createCityFx({ scene, camera, rc, O, sound });
   let skySt = { tw: 0, day: 0, sun: [0, 100, 0], hour: 21 }, hl = [];
 
   // ---- lights, sky
-  const hemi = new THREE.HemisphereLight('#7a8cff', '#0a0e18', 0.6); scene.add(hemi);
-  const sun = new THREE.DirectionalLight('#ffe2c0', 1.0); scene.add(sun, sun.target);
+  const hemi = new THREE.HemisphereLight('#ffd8a8', '#4a3a2c', 0.95); scene.add(hemi);
+  const sun = new THREE.DirectionalLight('#e2b88d', 1.0); scene.add(sun, sun.target);
   const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 24, 12), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
-    uniforms: { uTop: { value: C('#02040c') }, uMid: { value: C('#07112a') }, uHor: { value: C('#10204a') }, uFlash: { value: 0 } },
+    uniforms: { uTop: { value: C('#2a2a56') }, uMid: { value: C('#6a5688') }, uHor: { value: C('#e0906a') }, uFlash: { value: 0 } },
     vertexShader: 'varying vec3 vD; void main() { vD = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: 'uniform vec3 uTop, uMid, uHor; uniform float uFlash; varying vec3 vD; void main() { float h = normalize(vD).y; vec3 c = mix(uHor, uMid, smoothstep(0.0, 0.28, h)); c = mix(c, uTop, smoothstep(0.22, 0.85, h)); c += uFlash * vec3(0.55, 0.6, 0.8); gl_FragColor = vec4(c, 1.0); }' }));
   sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);
   const stars = M.starfield({ count: 1500, radius: 1300, size: 2.3 }); scene.add(stars);
-  const orb = new THREE.Mesh(new THREE.SphereGeometry(30, 20, 12), new THREE.MeshBasicMaterial({ color: hdr('#ffe9b0', 3), fog: false })); orb.frustumCulled = false; scene.add(orb);
+  const orb = new THREE.Mesh(new THREE.SphereGeometry(30, 20, 12), new THREE.MeshBasicMaterial({ color: hdr('#e0b487', 3), fog: false })); orb.frustumCulled = false; scene.add(orb);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(4200, 4200), M.metal({ kind: 'gunmetal', color: '#0a0d14', roughness: 0.42, clearcoat: 0.6, envMapIntensity: 0.4 }));
   ground.rotation.x = -Math.PI / 2; ground.position.y = -0.05; scene.add(ground);
-  const grid = new THREE.GridHelper(2400, 400, 0x1a2a40, 0x1a2a40); grid.material.transparent = true; grid.material.opacity = 0.35; grid.position.y = 0.02; scene.add(grid);
+  const grid = new THREE.GridHelper(2400, 400, 0x416c8d, 0x416c8d); grid.material.transparent = true; grid.material.opacity = 0.35; grid.position.y = 0.02; scene.add(grid);
 
   // ---- the world (rebuilt when the layout changes)
   const world = new THREE.Group(); scene.add(world);
@@ -214,7 +214,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
       p3.y = 0.27; s3.set(len, 0.03, 0.12); m4.compose(p3, q4, s3); lanes.setMatrixAt(i, m4);
       const dc = L.districts.find((d) => d.key === rd.district);
       const wardRoad = rd.kind.startsWith('ward-'), localRoad = rd.kind === 'ward-local';
-      lanes.setColorAt(i, col.set(rd.kind === 'labring' ? '#061020' : localRoad ? '#ff9d42' : wardRoad ? '#578994' : dc ? dc.color : '#596b91').multiplyScalar(rd.kind === 'labring' ? 0.15 : localRoad ? 0.48 : wardRoad ? 0.32 : dc ? 0.75 : 0.4));
+      lanes.setColorAt(i, col.set(rd.kind === 'labring' ? '#061020' : localRoad ? '#d5985b' : wardRoad ? '#578994' : dc ? dc.color : '#596b91').multiplyScalar(rd.kind === 'labring' ? 0.15 : localRoad ? 0.48 : wardRoad ? 0.32 : dc ? 0.75 : 0.4));
     });
     roadsMesh.frustumCulled = false; lanes.frustumCulled = false; world.add(roadsMesh, lanes);
     buildLinks();
@@ -347,11 +347,11 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
 
   // ---- landmarks: the Exchange, the Vault, the Observatory, the Lighthouse of ruin, the Hall of Fame beam
   function buildLandmarks() {
-    const bk = M0.book, mint = '#2ef2d0';
+    const bk = M0.book, mint = '#9fae68';
     const g = new THREE.Group();
     const steel = M.metal({ kind: 'chrome', color: '#9fb4c8', roughness: 0.18, envMapIntensity: 1.2 });
     const base = new THREE.Mesh(new THREE.CylinderGeometry(4.4, 5.2, 2.2, 28), steel); base.position.y = 1.1;
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 3.0, 30, 24), M.glass({ color: '#bfeee8', rim: mint, rimStrength: 1.6, iridescence: 0.5, opacity: 0.38 })); shaft.position.y = 17;
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 3.0, 30, 24), M.glass({ color: '#a3bfd5', rim: mint, rimStrength: 1.6, iridescence: 0.5, opacity: 0.38 })); shaft.position.y = 17;
     const spire = new THREE.Mesh(new THREE.ConeGeometry(0.9, 11, 12), steel); spire.position.y = 38.5;
     g.add(base, shaft, spire);
     ring1 = new THREE.Group();
@@ -361,24 +361,24 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     tower = g; tower.userData.beam = beam; g.userData.name = 'The Exchange'; world.add(g);
 
     vault = new THREE.Group();
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(3.4, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), M.metal({ kind: 'gold', color: '#ffcf5a', roughness: 0.16, envMapIntensity: 1.5 }));
-    const drum = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.8, 2.6, 28), M.metal({ kind: 'gold', color: '#d9a640', roughness: 0.3 })); drum.position.y = 1.3; dome.position.y = 2.6;
-    const halo = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.1, 8, 48), M.neon({ color: '#ffcf5a', intensity: 3 })); halo.rotation.x = Math.PI / 2; halo.position.y = 3.2;
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(3.4, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), M.metal({ kind: 'gold', color: '#d79e65', roughness: 0.16, envMapIntensity: 1.5 }));
+    const drum = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.8, 2.6, 28), M.metal({ kind: 'gold', color: '#d08f4c', roughness: 0.3 })); drum.position.y = 1.3; dome.position.y = 2.6;
+    const halo = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.1, 8, 48), M.neon({ color: '#d79e65', intensity: 3 })); halo.rotation.x = Math.PI / 2; halo.position.y = 3.2;
     vault.add(drum, dome, halo);
     const bal = Math.max(20, bk.balance || 50), vs = 0.75 + 0.4 * Math.min(1, Math.log10(bal / 20) / 2);
     vault.scale.setScalar(vs); vault.position.set(11, 0.3, -8); world.add(vault);
 
     obs = new THREE.Group();
     const ob = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.1, 7, 18), steel); ob.position.y = 3.5;
-    const od = new THREE.Mesh(new THREE.SphereGeometry(2.0, 22, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.glass({ color: '#c9d4ff', rim: '#8f9bff', opacity: 0.5 })); od.position.y = 7;
-    const tele = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 3.4), M.neon({ color: '#8f9bff', intensity: 2.4 })); tele.position.set(0, 8.1, 0.8); tele.rotation.x = -0.6;
+    const od = new THREE.Mesh(new THREE.SphereGeometry(2.0, 22, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.glass({ color: '#adc6d9', rim: '#99b8d0', opacity: 0.5 })); od.position.y = 7;
+    const tele = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 3.4), M.neon({ color: '#99b8d0', intensity: 2.4 })); tele.position.set(0, 8.1, 0.8); tele.rotation.x = -0.6;
     obs.add(ob, od); obs.userData.tele = tele; obs.add(tele);
     const today = M0.log.some((x) => x.d === M0.day && (x.kind === 'learned' || x.kind === 'changed'));
-    if (today) { const b2 = M.energyBeam({ length: 50, radius: 0.2, color: '#8f9bff', intensity: 1.2 }); b2.position.y = 8; obs.add(b2); obs.userData.beam = b2; }
+    if (today) { const b2 = M.energyBeam({ length: 50, radius: 0.2, color: '#99b8d0', intensity: 1.2 }); b2.position.y = 8; obs.add(b2); obs.userData.beam = b2; }
     obs.position.set(-11, 0.3, -9); world.add(obs);
 
     lighthouse = new THREE.Group();
-    const ruin = bk.ruinNow == null ? 0.2 : bk.ruinNow, lc = ruin > 0.5 ? '#ff4d57' : ruin > 0.15 ? '#ff9a3c' : '#35f0b0';
+    const ruin = bk.ruinNow == null ? 0.2 : bk.ruinNow, lc = ruin > 0.5 ? '#ca785c' : ruin > 0.15 ? '#d49759' : '#a0af6a';
     const lt = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.6, 9, 14), M.metal({ kind: 'gunmetal', color: '#2a2f3a', roughness: 0.4 })); lt.position.y = 4.5;
     const lamp = new THREE.Mesh(new THREE.SphereGeometry(1.1, 16, 10), M.neon({ color: lc, intensity: 3.4 })); lamp.position.y = 9.8;
     const lb = M.energyBeam({ length: 26, radius: 0.28, color: lc, intensity: 1.1 }); lb.position.y = 9.8; lb.rotation.z = Math.PI / 2;
@@ -389,11 +389,11 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     const pr = pairOf(M0), best = (pr.best && bIndex.has(pr.best.id) ? pr.best.id : null) || M0.lists.doMore[0] || M0.lists.board[0];      // the HUD's Best edge so far
     if (best && bIndex.has(best)) {
       const b = L.buildings[bIndex.get(best)];
-      fame = M.energyBeam({ length: 60, radius: 0.26, color: '#ffe08a', intensity: 1.4 }); fame.position.set(b.x, b.fullH + 1, b.z); world.add(fame);
+      fame = M.energyBeam({ length: 60, radius: 0.26, color: '#dcaa78', intensity: 1.4 }); fame.position.set(b.x, b.fullH + 1, b.z); world.add(fame);
     }
     if (pr.worst && bIndex.has(pr.worst.id)) {                           // a red beam over the Worst leak
       const b = L.buildings[bIndex.get(pr.worst.id)];
-      leak = M.energyBeam({ length: 60, radius: 0.26, color: '#ff4d57', intensity: 1.4 }); leak.position.set(b.x, b.h + 1, b.z); world.add(leak); labObjs.push(leak);
+      leak = M.energyBeam({ length: 60, radius: 0.26, color: '#ca785c', intensity: 1.4 }); leak.position.set(b.x, b.h + 1, b.z); world.add(leak); labObjs.push(leak);
     }
     // the selection marker
     marker = new THREE.Group();
@@ -415,7 +415,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     });
     if (!pts.length) return;
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-    scaffold = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: hdr('#8f9bff', 2.2), fog: true })); scaffold.frustumCulled = false; world.add(scaffold);
+    scaffold = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: hdr('#99b8d0', 2.2), fog: true })); scaffold.frustumCulled = false; world.add(scaffold);
   }
 
   // ---- the equity skyway: a glowing ribbon winding up round Downtown, green where the bankroll rose, red where it fell
@@ -428,7 +428,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     const geo = new THREE.TubeGeometry(curve, seg, 0.32, 5, false), cols = new Float32Array(geo.attributes.position.count * 3), ring = 6;
     for (let i = 0; i < geo.attributes.position.count; i++) {
       const k = Math.min(n - 2, Math.floor((Math.floor(i / ring) / seg) * (n - 1))), rising = eq[k + 1][1] >= eq[k][1];
-      col.set(rising ? '#35f0b0' : '#ff4d57').multiplyScalar(2.2); cols.set([col.r, col.g, col.b], i * 3);
+      col.set(rising ? '#a0af6a' : '#ca785c').multiplyScalar(2.2); cols.set([col.r, col.g, col.b], i * 3);
     }
     geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
     skyway = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, fog: true })); skyway.frustumCulled = false; world.add(skyway);
@@ -495,14 +495,14 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     scene.fog.color.copy(u.uHor.value).multiplyScalar(0.75);
     const paused = M0.regime.paused ? 1.4 : 1, ext = L.extent;
     scene.fog.density = (0.0016 * 240 / Math.max(240, ext * 1.2)) * W.fog * paused * (1 + 0.4 * day) * (rig.mode === 'map' ? 0.3 : 1);
-    hemi.color.copy(lerpC(C('#6f7fff'), C('#cfe2ff'), day)); hemi.intensity = 0.55 + 0.7 * day;
+    hemi.color.copy(lerpC(C('#8eb0cb'), C('#afc7da'), day)); hemi.intensity = 0.55 + 0.7 * day;
     // the sun by day, the moon by night, on a fixed arc over the city
     const ph = ((h >= 6 && h <= 18) ? (h - 6) / 12 : (((h + 6) % 24) / 12)) * Math.PI, el = Math.sin(ph);
     const dir = new THREE.Vector3(Math.cos(ph) * 0.9, el * 0.8 + 0.1, -0.45).normalize();
     skySt = { tw, day, sun: [dir.x * 300, dir.y * 300, dir.z * 300], hour: h };
     ground.material.roughness = 0.42 - 0.32 * Math.min(1, W.rain); ground.material.clearcoat = 0.6 + 0.4 * Math.min(1, W.rain);   // wet streets shine
-    sun.position.copy(dir).multiplyScalar(300); sun.color.copy(day > 0.3 ? C('#ffe2c0') : C('#9fb4ff')); sun.intensity = (day > 0.2 ? 0.7 + 1.3 * day : 0.45) * (1 - grey * 0.5) * (0.4 + 0.6 * el);
-    orb.position.copy(dir).multiplyScalar(1250); orb.material.color.copy(day > 0.3 ? hdr('#ffe9b0', 3) : hdr('#cfd9ff', 1.7)); orb.scale.setScalar(day > 0.3 ? 1.0 : 0.7); orb.visible = grey < 0.7;
+    sun.position.copy(dir).multiplyScalar(300); sun.color.copy(day > 0.3 ? C('#e2b88d') : C('#9ebcd2')); sun.intensity = (day > 0.2 ? 0.7 + 1.3 * day : 0.45) * (1 - grey * 0.5) * (0.4 + 0.6 * el);
+    orb.position.copy(dir).multiplyScalar(1250); orb.material.color.copy(day > 0.3 ? hdr('#e0b487', 3) : hdr('#afc7da', 1.7)); orb.scale.setScalar(day > 0.3 ? 1.0 : 0.7); orb.visible = grey < 0.7;
     stars.material.uniforms.uColor.value.setScalar(Math.max(0, 1 - day * 1.6) * (1 - grey * 0.7) * 0.9);
     stars.visible = rc.quality() !== 'off' && day < 0.6;
     U.uNight.value = 1 - 0.85 * day;

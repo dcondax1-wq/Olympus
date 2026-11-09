@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>OLYMPUS Cities</title>
 <meta name="description" content="One connected night metropolis: orbit from Olympus HQ through six data-rich city districts and all 173 cities.">
-<meta name="theme-color" content="#050814">
+<meta name="theme-color" content="#14110e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cities">
 <meta name="color-scheme" content="dark">
@@ -15,6 +15,7 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png">
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<link rel="stylesheet" href="../olympus/agora.css?v=g1">
 <script src="../olympus/themes.js?v=o3"></script>
 <script src="../olympus/olympus.js?v=o3" data-app="cities"></script>
 <script src="../olympus/a11y.js" defer></script>
@@ -223,8 +224,10 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
 @media (max-width:360px){body[data-mode=city] .mini{width:96px;height:96px}}
 </style>
 <link rel="stylesheet" href="./world.css?v=w2">
+<link rel="stylesheet" href="./agora-cities.css?v=g1">
 </head>
 <body data-mode="hub" data-ready="false">
+<canvas id="amap" aria-label="The Olympus archipelago: six district islands with 173 cities. Tap a city to open it, or use Find."></canvas>
 <canvas id="c" aria-label="Olympus Cities: one connected night metropolis centered on Olympus HQ with six navigable city districts. Browse 173 source-backed city records, or open Data City and Kalshi City."></canvas>
 <div id="labels" aria-hidden="true"></div>
 <aside class="atlas" id="atlas" aria-label="City atlas">
@@ -237,11 +240,11 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
   </div>
   <div class="atlas-actions"><button data-atlas="tour">Fly the world</button><button data-atlas="find">Find a city</button></div>
 </aside>
-<div class="loading" id="loading">BUILDING THE WORLD…</div>
+<div class="loading" id="loading">Building the world…</div>
 <header class="top" id="top">
   <div class="row">
     <button class="ic" id="backB" aria-label="Back to the world map" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <h1 id="title">OLYMPUS HQ</h1>
+    <h1 id="title">Olympus Cities</h1>
     <button class="ic" id="photoB" aria-label="Photo mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
     <button class="ic on" id="nightB" aria-label="Night view on; switch to original sky" aria-pressed="true" title="Night view">☾</button>
     <button class="ic" id="qB" aria-label="Quality">HD</button>
@@ -252,14 +255,14 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
 <nav class="network-bar" id="cityNetwork" aria-label="City network">
   <button class="network-key" id="networkHQ" type="button" aria-label="Fly to the Olympus headquarters capital" aria-pressed="true">HQ</button>
   <div class="network-strip" role="group" aria-label="Choose a city district">
-    <button type="button" data-network-district="trading" aria-pressed="false">TRADE</button>
-    <button type="button" data-network-district="research" aria-pressed="false">RESEARCH</button>
-    <button type="button" data-network-district="money" aria-pressed="false">MONEY</button>
-    <button type="button" data-network-district="kalshi" aria-pressed="false">KALSHI</button>
-    <button type="button" data-network-district="life" aria-pressed="false">LIFE</button>
-    <button type="button" data-network-district="obsidian" aria-pressed="false">OBSIDIAN</button>
+    <button type="button" data-network-district="trading" aria-pressed="false">Trade</button>
+    <button type="button" data-network-district="research" aria-pressed="false">Research</button>
+    <button type="button" data-network-district="money" aria-pressed="false">Money</button>
+    <button type="button" data-network-district="kalshi" aria-pressed="false">Kalshi</button>
+    <button type="button" data-network-district="life" aria-pressed="false">Life</button>
+    <button type="button" data-network-district="obsidian" aria-pressed="false">Obsidian</button>
   </div>
-  <button class="network-apps" id="networkApps" type="button" aria-label="Open City Network" aria-haspopup="dialog">CITY</button>
+  <button class="network-apps" id="networkApps" type="button" aria-label="Open City Network" aria-haspopup="dialog">Cities</button>
 </nav>
 <canvas class="mini" id="mini" width="216" height="216" aria-label="Minimap: tap to fly there"></canvas>
 <section class="sheet" id="sheet" role="dialog" aria-labelledby="sheetTitle">
@@ -275,6 +278,7 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
 <div class="tag" id="tag" aria-hidden="true"></div>
 <div class="photobar" id="photoBar"><button class="pill go" id="photoTake">Take photo</button><button class="pill" id="photoDone">Done</button></div>
 <nav class="dock" id="dock" aria-label="Views"></nav>
+<div class="maphint" id="maphint" aria-hidden="true"><b>Tap a city</b> to open it<small>Drag to look around, pinch to zoom</small></div>
 <div class="caption" id="caption" aria-live="polite"></div>
 <div class="toast" id="toast" role="status"></div>
 <div class="veil" id="veil" aria-hidden="true"><b id="veilName"></b><small id="veilSub"></small></div>
@@ -294,7 +298,7 @@ async function recover() {
 }
 // Module import settles before its asynchronous boot does. Watch readiness itself.
 setTimeout(recover, 18000);
-import('./app.js?v=o20').catch(recover);
+import('./app.js?v=o21').catch(recover);
 </script>
 </body>
 </html>

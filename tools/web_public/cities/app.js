@@ -14,8 +14,9 @@ import { cityResultPage, planCityNetwork } from './network-layout.js?v=n1';
 import { openDistrictWorld } from './district-world.js?v=d2';
 import { insight } from './insight.js';
 import { randomSpec, seedDataset, newSeed, cleanSeed } from './procedural.js';
+import { AgoraMap } from './agoramap.js?v=g4';
 // Do not load/compile the 3D pipeline until this device has a usable context.
-let Stage, TIERS, BUDGETS, Rig, makePath, safeFlight;
+let Stage, TIERS, BUDGETS, Rig, makePath, safeFlight, warmHex = (h) => h;
 
 const GROUPS = { trading: ['Trading', '#4f8cff'], research: ['Research', '#a68bff'], money: ['Money', '#ff9f43'], kalshi: ['Kalshi', '#ff6b9a'], life: ['Life', '#39e59a'], obsidian: ['Obsidian', '#9d8cff'] };
 const GROUP_ORDER = Object.keys(GROUPS);
@@ -87,6 +88,7 @@ const SHORT = { 'Surprise me': 'Wow', 'World map': 'World', 'Random city': 'Dice
 const tab = (id, label, icon, fn) => { const b = el('button', 'tab'); b.id = id; b.setAttribute('aria-label', label); b.append(svg(icon), document.createTextNode(SHORT[label] || label)); b.addEventListener('click', fn); return b; };
 const grid = (rows) => { const g = el('div', 'grid4'); for (const [k, v] of rows) { const d = el('div'); d.append(el('small', null, k), el('b', null, v)); g.append(d); } return g; };
 const closeSheet = () => { $('#atlas').classList.remove('behind'); sheet.classList.remove('on'); const was = S.sheet; S.sheet = null; document.querySelectorAll('.tab').forEach((t) => t.classList.remove('on')); if (S.mode === 'city' && was === 'building') { S.stage.setSelected(-1); tagEl.style.display = 'none'; S.cur.sel = -1; } if (S.mode === 'hub' && was === 'find') hubFilter(null);
+  if (S.map) S.map.setLift(false);
   if (S.mode === 'city' && S.cur && S.cur.match) { S.stage.setDim(null); S.cur.match = null; } };
 function openSheet(view, title, build) {
   $('#atlas').classList.add('behind'); sheet.dataset.view = view; $('#sheetTitle').textContent = title; sheetBody.replaceChildren(); build(sheetBody); sheet.classList.add('on'); sheet.scrollTop = 0; S.sheet = view;
@@ -117,19 +119,38 @@ function layoutIslands() {
 }
 
 function buildHub() {
-  const st = S.stage, slots = hubSlots();
   S.islands = layoutIslands();
-  const routes = cityRoutes(S.islands.map((s) => ({ i: s.i, cont: s.cont, hq: s.hq, capital: s.capital, x: s.x, z: s.z })), S.conts);
-  st.buildHub(S.islands.map((s) => ({ x: s.x, y: s.y, z: s.z, R: s.R, top: s.top, rim: s.rim, seed: s.seed, hq: s.hq, capital: s.capital })), slots, routes);
-  S.slots = slots;
+  S.slots = 0;
+  ensureMap();
   S.islands.forEach((isl) => miniOf(isl));
+}
+/** The Cities front screen is the AGORA map (2D, no WebGL): the 3D stage only runs inside a city. */
+function ensureMap() {
+  const cities = S.islands.map((s) => ({ i: s.i, id: s.spec.id, name: s.spec.name, cont: s.cont, hq: !!s.hq, capital: !!s.capital, region: s.spec.region || '' }));
+  const districts = S.conts.map((c) => ({ key: c.key, name: c.name, count: c.count }));
+  if (!S.map) {
+    const lowQ = () => { const f = q.get('q') || (O() && O().fx ? O().fx() : 'high'); return f === 'low' || f === 'off' ? 'low' : 'high'; };
+    S.map = new AgoraMap($('#amap'), { quality: lowQ(), reduced: reduced(), onTap: (r) => { if (S.tour) stopTour(); onMapPick(r); }, onMove: () => { if (S.tour) stopTour(); hideHint(); }, onFrame: (dt) => { if (S.tour) tourTick(dt); } });
+    O()?.onFx?.((lv) => S.map && S.map.setQuality(lv));
+    window.addEventListener('resize', () => S.map && S.map.resize());
+  }
+  S.map.setData(cities, districts);
+  S.map.dayId = cityOfDay(todayStr(), S.specs.map((x) => x.id));
+  S.map.setSeen(S.visited, S.favs);
 }
 function miniOf(isl) {
   const ds = dsNow(isl.spec.dataset);
-  if (!ds || !ds.items.length) { S.stage.setMini(isl.i, null); return; }
-  const c = generate(isl.spec, ds, { cap: S.slots });
-  S.stage.setMini(isl.i, c);
+  if (!ds || !ds.items.length) return;
   isl.n = ds.items.length;
+  if (S.map) S.map.setLive(isl.i, !ds.demo, isl.n);
+}
+const hideHint = () => { const h = $('#maphint'); if (h) h.classList.add('off'); };
+function onMapPick(r) {
+  if (S.busy || S.mode !== 'hub') return;
+  hideHint();
+  if (r.kind === 'city') { selectIsland(r.i); return; }
+  if (r.kind === 'district') { const c = S.conts.find((k) => k.key === r.key); if (c) flyToContinent(c); return; }
+  closeSheet(); S.hubSel = -1; S.map.select(-1); S.map.setLift(false); refreshChips();
 }
 
 async function prefetch() {
@@ -152,26 +173,6 @@ async function prefetch() {
     refreshChips();
     if (S.hubSel >= 0 && S.sheet === 'island' && S.islands[S.hubSel].spec.dataset === id) showIsland(S.hubSel);
   }
-}
-
-function pickIsland(x, y) {
-  const w = canvas.clientWidth, h = canvas.clientHeight, ray = S.stage.ray(x, y, w, h);
-  let best = -1, bt = Infinity;
-  if (farHub()) {                  // zoomed out an island is a few pixels: the nearest one to the finger wins
-    let bd = 26;
-    for (const is of S.islands) { const p = S.stage.project(is.x, is.y + is.R * 0.3, is.z, w, h); if (!p.on) continue; const d = Math.hypot(p.x - x, p.y - y); if (d < bd) { bd = d; best = is.i; } }
-    return best;
-  }
-  for (const is of S.islands) {
-    const cx = is.x - ray.o.x, cy = is.y + is.R * 0.35 - ray.o.y, cz = is.z - ray.o.z, r = is.R * 1.2;
-    const tca = cx * ray.d.x + cy * ray.d.y + cz * ray.d.z;
-    if (tca < 0) continue;
-    const d2 = cx * cx + cy * cy + cz * cz - tca * tca;
-    if (d2 > r * r) continue;
-    const t = tca - Math.sqrt(r * r - d2);
-    if (t < bt) { bt = t; best = is.i; }
-  }
-  return best;
 }
 
 function dataTag(ds) { return ds.historical ? (ds.items.length ? ['BACKTEST', 'demo'] : ['NO SOURCE ROWS', 'demo']) : ds.demo ? ['SAMPLE', 'demo'] : ['LIVE DATA', 'live']; }
@@ -238,10 +239,10 @@ function showIsland(i) {
 
 async function selectIsland(i, fly = true) {
   if (S.tour) stopTour();
-  S.hubSel = i; S.stage.selectIsland(i);
+  S.hubSel = i; S.map.select(i);
   const isl = S.islands[i];
   S.activeDistrict = isl.cont; syncNetwork();
-  if (fly) S.rig.flyTo({ x: isl.x, y: isl.y + isl.R * 0.35, z: isl.z, dist: isl.R * 4.4, pitch: 0.5 }, 1.0);
+  if (fly) { S.map.setLift(true); S.map.flyToCity(i, 3.0, 0.9); }
   sfx('tick');
   showIsland(i);
   refreshChips();
@@ -254,7 +255,7 @@ async function selectIsland(i, fly = true) {
 
 function hubFilter(match) {          // match(spec) -> bool; null clears
   S.hubDim = match ? S.islands.map((i) => !match(i.spec)) : null;
-  S.stage.setHubDim(S.hubDim);
+  S.map && S.map.setDim(S.hubDim);
 }
 
 function openFind(initialGroup = '') {
@@ -341,35 +342,27 @@ function surpriseHub() {
 
 // ------------------------------------------------------------------ the hub tour (across the continents)
 function startTour() {
-  closeSheet();
+  closeSheet(); S.map.setLift(false);
   const stops = [];
-  for (const c of S.conts) {                                             // a continent at a time: its first islands by region, then on
+  for (const c of S.conts) {                                             // a district at a time: its islands by region, then on
     const mine = S.islands.filter((is) => is.cont === c.key), step = Math.max(1, Math.ceil(mine.length / 5));
     stops.push({ cont: c, is: null });
     mine.forEach((is, k) => { if (k % step === 0) stops.push({ cont: c, is }); });
   }
-  const pos = [], look = [];
-  stops.forEach((st, j) => {
-    const a = j * 0.9 + 0.6;
-    if (st.is) { const is = st.is; pos.push([is.x + Math.cos(a) * is.R * 3.2, is.y + is.R * 1.5, is.z + Math.sin(a) * is.R * 3.2]); look.push([is.x, is.y + is.R * 0.5, is.z]); }
-    else { const c = st.cont; pos.push([c.x + Math.cos(a) * (c.r * 0.8 + 140), 150 + c.r * 0.25, c.z + Math.sin(a) * (c.r * 0.8 + 140)]); look.push([c.x, 0, c.z]); }
-  });
   if (stops.length < 3) return;
-  S.tour = true; S.tourStops = stops;
-  S.rig.follow(makePath(pos, look, true), 78, true, 'tour');
+  S.tour = true; S.tourStops = stops; S.tourIdx = -1; S.tourT = 0;
   $('#tourB') && $('#tourB').classList.add('on');
-  S.tourT = 0; S.tourLast = -1;
-  caption('TOUR', `Flying over ${S.conts.length} continents and ${S.islands.length} cities. Touch to take over.`, 3600);
+  hideHint();
+  caption('TOUR', `Sailing past ${S.conts.length} districts and ${S.islands.length} cities. Touch to take over.`, 3600);
+  tourNext();
 }
-function stopTour() { S.tour = false; S.rig.stopPath(); $('#tourB') && $('#tourB').classList.remove('on'); }
-function tourTick(dt) {
-  S.tourT += dt;
-  if (S.tourT < 0.4) return;
-  S.tourT = 0;
-  let best = -1, bd = Infinity;
-  for (const is of S.islands) { const d = Math.hypot(is.x - S.rig.t.x, is.z - S.rig.t.z) + Math.abs(is.y - S.rig.t.y) * 0.5; if (d < bd) { bd = d; best = is.i; } }
-  if (best >= 0 && best !== S.tourLast && bd < 70) { S.tourLast = best; const is = S.islands[best]; S.stage.selectIsland(best); caption(`${(GROUPS[is.cont] || [''])[0].toUpperCase()} \u00b7 ${is.spec.region || ''}`, is.spec.name + ': ' + is.spec.motto, 3000); }
+function stopTour() { S.tour = false; $('#tourB') && $('#tourB').classList.remove('on'); }
+function tourNext() {
+  const st = S.tourStops[(++S.tourIdx) % S.tourStops.length];
+  if (st.is) { const is = st.is; S.map.select(is.i); S.map.flyToCity(is.i, 2.8, 2.2); caption(`${(GROUPS[is.cont] || [''])[0].toUpperCase()} · ${is.spec.region || ''}`, is.spec.name + ': ' + is.spec.motto, 3000); }
+  else { S.map.select(-1); S.map.flyToDistrict(st.cont.key, 2.4); caption(st.cont.name.toUpperCase(), `${st.cont.count} cities`, 2800); }
 }
+function tourTick(dt) { S.tourT += dt; if (S.tourT >= 4.2) { S.tourT = 0; tourNext(); } }
 
 // ------------------------------------------------------------------ entering and leaving a city
 const veil = $('#veil');
@@ -388,8 +381,7 @@ async function enterCity(id, arrival = false) {
     const isl = S.islands.find((i) => i.spec === spec);
     if (S.photo) setPhoto(false);
     if (S.mode === 'hub') {
-      S.hubPose = { x: S.rig.t.x, y: S.rig.t.y, z: S.rig.t.z, dist: S.rig.dist, pitch: S.rig.pitch, yaw: S.rig.yaw };
-      if (isl && !reduced() && !arrival) await Promise.race([S.rig.flyTo({ x: isl.x, y: isl.y + 6, z: isl.z, dist: isl.R * 1.6, pitch: 0.28 }, 0.8), sleep(1400)]);
+      if (isl && !reduced() && !arrival) { S.map.select(isl.i); S.map.setLift(false); await Promise.race([S.map.flyToCity(isl.i, 7, 0.7), sleep(1100)]); }
     }
     showVeil(true, spec.name, spec.motto);
     sfx(spec.sound === 'tick' || spec.sound === 'tap' ? 'portal' : spec.sound);
@@ -419,6 +411,7 @@ function buildCityView(spec, ds) {
   const picker = new Picker(city);
   S.cur = { spec, ds, city, picker, f: fieldMap(ds), sel: -1, match: null, base: null };
   S.mode = 'city'; document.body.dataset.mode = 'city';
+  engine('city');
   syncNetwork();
   $('#title').textContent = canvas.clientWidth < 600 && /^atlas-(ema|macd|sr)-city$/.test(spec.id) ? spec.name.replace(/^ATLAS /, '') : spec.name;
   $('#title').setAttribute('aria-label', spec.name); $('#backB').hidden = false; $('#readB').hidden = true;
@@ -426,7 +419,7 @@ function buildCityView(spec, ds) {
   S.rig.auto = 0.05;
   const far = city.bounds.r * 1.7 + 70;
   S.rig.t.set(0, city.maxH * 0.28, 0);
-  const p0 = Math.max(canvas.clientWidth < 600 ? 0.64 : 0, spec.cam_pitch || (city.layout === 'terrain' ? 0.62 : 0.42));
+  const p0 = Math.max(canvas.clientWidth < 600 ? 0.36 : 0, spec.cam_pitch || (city.layout === 'terrain' ? 0.62 : 0.42));
   S.rig.dist = far; S.rig.pitch = p0 - 0.06; S.rig.yaw = 0; S.rig.fly = null; S.rig.path = null; S.rig.apply();
   S.rig.flyTo({ dist: far * 0.82, pitch: p0, yaw: 0.25 }, reduced() ? 0.01 : 2.4);
   setCam('orbit', true);
@@ -449,18 +442,16 @@ async function leaveCity() {
   await sleep(reduced() ? 20 : 300);
   stopAmbient(); S.stage.clearCity(); S.stage.look(null, null, S.night); S.stage.setFogRadius(S.hubR * 2.8); S.stage.show('hub');
   S.mode = 'hub'; document.body.dataset.mode = 'hub';
+  engine('hub');
   S.activeDistrict = S.cur.spec.group; S.cur = null; syncNetwork();
-  $('#title').textContent = 'OLYMPUS HQ'; $('#backB').hidden = true; $('#readB').hidden = false;
-  S.rig.limits = { min: 50, max: S.hubR * 3.4, pmin: 0.08, pmax: 1.5 };
+  $('#title').textContent = 'Olympus Cities'; $('#backB').hidden = true; $('#readB').hidden = false;
   S.rig.stopPath();
-  const p = S.hubPose || hubStartPose();
-  Object.assign(S.rig, { dist: p.dist, pitch: p.pitch, yaw: p.yaw }); S.rig.t.set(p.x, p.y, p.z); S.rig.apply();
   S.cam = 'orbit';
   setDock(); refreshChips();
   history.replaceState(null, '', cleanUrl());
   showVeil(false);
   S.busy = false;
-  if (S.hubSel >= 0) { S.stage.selectIsland(S.hubSel); showIsland(S.hubSel); }
+  if (S.hubSel >= 0) { S.map.select(S.hubSel); S.map.setLift(true); S.map.flyToCity(S.hubSel, 3.0, 0.01); showIsland(S.hubSel); }
 }
 
 // ------------------------------------------------------------------ inside a city
@@ -632,7 +623,7 @@ function drawThumb(cv, city) {
   const step = Math.max(1, Math.floor(city.n / 2500));
   for (let k = 0; k < city.n; k += step) {
     const t = 0.3 + 0.7 * Math.min(1, city.h[k] / Math.max(1, city.maxH)), r = Math.max(1.2, city.w[k] * sc * 0.85);
-    g.fillStyle = `rgb(${Math.round(city.col[k * 3] * 255 * t)},${Math.round(city.col[k * 3 + 1] * 255 * t)},${Math.round(city.col[k * 3 + 2] * 255 * t)})`;
+    g.fillStyle = `rgb(${Math.round((city.col[k * 3] * 0.62 + 0.30) * 255 * t)},${Math.round((city.col[k * 3 + 1] * 0.62 + 0.25) * 255 * t)},${Math.round((city.col[k * 3 + 2] * 0.62 + 0.17) * 255 * t)})`;
     g.fillRect((city.x[k] + half) * sc - r / 2, (city.z[k] + half) * sc - r / 2, r, r);
   }
 }
@@ -714,7 +705,7 @@ $('#photoDone').addEventListener('click', () => setPhoto(false));
 function celebrate(k, auto) {
   const C = S.cur; if (!C || k === undefined || k < 0 || k >= C.city.n) return;
   const c = C.city, x = c.x[k], y = c.h[k] + 6, z = c.z[k];
-  S.stage.fireworks(x, y, z, C.spec.palette.accent);
+  S.stage.fireworks(x, y, z, warmHex(C.spec.palette.accent));
   S.records = (S.records || 0) + 1;
   try {
     const F = window.OLYMPUS_FX, p = S.stage.project(x, y, z, canvas.clientWidth, canvas.clientHeight);
@@ -799,7 +790,7 @@ function setDock() {
     T('creadB', 'Report', ICON.report, openReport, 'report');
   }
 }
-function qLabel() { const fx = S.stage?.tier?.() || (O() ? O().fx() : 'high'); return fx === 'low' || fx === 'off' ? 'LITE' : 'HD'; }
+function qLabel() { const fx = S.mode === 'hub' ? (q.get('q') || (O() ? O().fx() : 'high')) : (S.stage?.tier?.() || (O() ? O().fx() : 'high')); return fx === 'low' || fx === 'off' ? 'LITE' : 'HD'; }
 $('#qB').addEventListener('click', () => {
   const o = O(); if (!o || !o.setFx) return;
   o.setFx(qLabel() === 'HD' ? 'low' : 'high');
@@ -834,7 +825,7 @@ function drawMiniBase() {
   miniScale = W / (half * 2);
   const c = document.createElement('canvas'); c.width = c.height = W;
   const g = c.getContext('2d');
-  g.fillStyle = 'rgba(8,6,18,0.9)'; g.fillRect(0, 0, W, W);
+  g.fillStyle = 'rgba(26,21,16,0.94)'; g.fillRect(0, 0, W, W);
   for (const d of city.districts) {
     g.strokeStyle = d.color; g.globalAlpha = 0.35; g.lineWidth = 1.2;
     if (['districts', 'clock', 'calendar'].includes(city.layout)) g.strokeRect((d.x0 + half) * miniScale, (d.z0 + half) * miniScale, (d.x1 - d.x0) * miniScale, (d.z1 - d.z0) * miniScale);
@@ -843,10 +834,10 @@ function drawMiniBase() {
   const step = Math.max(1, Math.floor(city.n / 6000));
   for (let k = 0; k < city.n; k += step) {
     const r = Math.max(1.1, city.w[k] * miniScale * 0.8), t = 0.35 + 0.65 * Math.min(1, city.h[k] / Math.max(1, city.maxH));
-    g.fillStyle = `rgb(${Math.round(city.col[k * 3] * 255 * t)},${Math.round(city.col[k * 3 + 1] * 255 * t)},${Math.round(city.col[k * 3 + 2] * 255 * t)})`;
+    g.fillStyle = `rgb(${Math.round((city.col[k * 3] * 0.62 + 0.30) * 255 * t)},${Math.round((city.col[k * 3 + 1] * 0.62 + 0.25) * 255 * t)},${Math.round((city.col[k * 3 + 2] * 0.62 + 0.17) * 255 * t)})`;
     g.fillRect((city.x[k] + half) * miniScale - r / 2, (city.z[k] + half) * miniScale - r / 2, r, r);
   }
-  g.fillStyle = '#fff'; g.beginPath(); g.arc((city.site.x + half) * miniScale, (city.site.z + half) * miniScale, 3.5, 0, 7); g.fill();
+  g.fillStyle = '#e0b060'; g.beginPath(); g.arc((city.site.x + half) * miniScale, (city.site.z + half) * miniScale, 3.5, 0, 7); g.fill();
   miniBase = { c, half };
 }
 function drawMini() {
@@ -869,7 +860,7 @@ mini.addEventListener('click', (e) => {
 // ------------------------------------------------------------------ labels
 const labelEls = Array.from({ length: 8 }, () => { const i = el('i'); $('#labels').append(i); return i; });
 const contEls = Array.from({ length: 8 }, () => { const i = el('i'); i.className = 'cont'; $('#labels').append(i); return i; });
-const farHub = () => S.mode === 'hub' && S.rig.dist > S.hubR * 0.7;
+const farHub = () => false;
 // Measure the actual label before clamping: long names never disappear off either edge.
 function placeLabel(e, p, w, h, above = false) {
   const half = Math.min(w / 2 - 12, e.offsetWidth / 2 + 4);
@@ -877,6 +868,8 @@ function placeLabel(e, p, w, h, above = false) {
   const x = clamp(p.x, half + 8, w - half - 8);
   let y = clamp(p.y, low, Math.max(low, h - (hub ? 280 : 140)));
   if (!hub) {
+    const cm = $('#cams').getBoundingClientRect(), ctop = y - (above ? e.offsetHeight : e.offsetHeight / 2);
+    if (x - half < cm.right + 4 && ctop < cm.bottom + 4 && y > cm.top - 4) y = Math.min(h - 130, cm.bottom + e.offsetHeight + 8);
     const map = mini.getBoundingClientRect(), top = y - (above ? e.offsetHeight : e.offsetHeight / 2);
     if (x + half > map.left - 4 && x - half < map.right + 4 && top < map.bottom + 4 && y > map.top - 4)
       y = Math.min(h - 130, map.bottom + e.offsetHeight + 8);
@@ -933,20 +926,12 @@ function updateTag() {
 }
 
 // ------------------------------------------------------------------ input
-function pickContinent(x, y) {
-  const ray = S.stage.ray(x, y, canvas.clientWidth, canvas.clientHeight);
-  if (ray.d.y > -0.02) return null;
-  const t = -ray.o.y / ray.d.y, px = ray.o.x + ray.d.x * t, pz = ray.o.z + ray.d.z * t;
-  let best = null, bd = Infinity;
-  for (const c of S.conts) { const d = Math.hypot(px - c.x, pz - c.z); if (d < c.r * 1.05 && d < bd) { bd = d; best = c; } }
-  return best;
-}
 function flyToContinent(c) {
   if (S.tour) stopTour();
   S.activeDistrict = c.key; syncNetwork();
-  closeSheet();
-  S.rig.flyTo({ x: c.x, y: 0, z: c.z, dist: c.r * 2.2 + 140, pitch: 0.8 }, 1.3);
-  caption(c.name.toUpperCase(), `${c.count} cities: ${c.regions.slice(0, 5).join(', ')}${c.regions.length > 5 ? '\u2026' : ''}`, 3400);
+  closeSheet(); hideHint(); S.hubSel = -1; S.map.select(-1); S.map.setLift(false);
+  S.map.flyToDistrict(c.key, 1.1);
+  caption(c.name.toUpperCase(), `${c.count} cities: ${c.regions.slice(0, 5).join(', ')}${c.regions.length > 5 ? '…' : ''}`, 3400);
   sfx('tick');
 }
 
@@ -956,8 +941,7 @@ async function flyToHQ() {
   if (S.mode !== 'hub' || S.busy) return;
   closeSheet();
   S.activeDistrict = 'hq'; syncNetwork();
-  S.hubSel = S.hqIndex ?? 0; S.stage.selectIsland(S.hubSel);
-  S.rig.flyTo({ x: 0, y: 8, z: 0, dist: canvas.clientWidth < 600 ? 540 : Math.max(740, S.hubR * 1.15), pitch: 0.86, yaw: 0.24 }, 1.2);
+  hideHint(); S.hubSel = S.hqIndex ?? 0; S.map.select(S.hubSel); S.map.setLift(false); S.map.flyToCity(S.hubSel, 2.2, 1.1);
   caption('OLYMPUS HQ', 'The capital sits at the center of six connected city districts.', 3600);
 }
 
@@ -994,11 +978,7 @@ function syncNetwork() {
 function onTap(x, y) {
   if (S.busy) return;
   if (S.mode === 'hub') {
-    const i = pickIsland(x, y);
-    if (i >= 0) { selectIsland(i); return; }
-    const c = farHub() ? pickContinent(x, y) : null;
-    if (c) { flyToContinent(c); return; }
-    closeSheet(); S.hubSel = -1; S.stage.selectIsland(-1); refreshChips();
+    onMapPick(S.map.pick(x, y));
     return;
   }
   const C = S.cur; if (!C) return;
@@ -1029,6 +1009,12 @@ function loop(dt, t) {
 }
 
 // ------------------------------------------------------------------ boot
+/** Only one of the two engines draws at a time: the 2D map on the world screen, the 3D stage inside a city. */
+function engine(which) {
+  const st = S.stage; if (!st) return;
+  if (which === 'city') { S.map && S.map.stop(); st.start(S.stageCb); }
+  else { try { st.rc.stop(); } catch (_) { /* already stopped */ } if (S.map) { S.map.resize(); S.map.start(); } }
+}
 function hubStartPose() {
   // Start at the real trading capital; the in-world rail reaches every district.
   return canvas.clientWidth < 600
@@ -1041,9 +1027,10 @@ function fallbackList(why) {
   S.mode = 'hub'; S.cur = null; S.sheet = null; S.photo = false; S.tour = false;
   document.body.dataset.mode = 'hub'; document.body.classList.remove('photo');
   sheet.classList.remove('on'); $('#atlas').classList.remove('behind');
-  $('#backB').hidden = true; $('#readB').hidden = true; $('#title').textContent = 'OLYMPUS HQ';
+  $('#backB').hidden = true; $('#readB').hidden = true; $('#title').textContent = 'Olympus Cities';
   tagEl.style.display = 'none';
   $('#loading')?.remove();
+  if (S.map) { S.map.stop(); $('#amap').style.display = 'none'; }
   $('#qB').textContent = 'ATLAS'; $('#qB').disabled = true; $('#photoB').hidden = true; nightButton.hidden = true;
   mountWorld(S.specs, { fallback: true, onExplore:openNestedCity, describe: (s) => {
     const ds = dsNow(s.dataset); if (!ds) return { line: 'This dataset is not available yet.', note: why };
@@ -1097,10 +1084,10 @@ async function boot() {
   let importTimer;
   try {
     const modules = await Promise.race([
-      Promise.all([import('./scene.js?v=w5'), import('./rig.js?v=r2')]),
+      Promise.all([import('./scene.js?v=g5'), import('./rig.js?v=r2')]),
       new Promise((_, reject) => { importTimer = setTimeout(() => reject(Error('3D startup timed out')), 8000); }),
     ]);
-    ({ Stage, TIERS, BUDGETS } = modules[0]); ({ Rig, makePath, safeFlight } = modules[1]);
+    ({ Stage, TIERS, BUDGETS, warmHex } = modules[0]); ({ Rig, makePath, safeFlight } = modules[1]);
   } catch (_) { context.getExtension('WEBGL_lose_context')?.loseContext(); if (!window.__citiesImportAbandoned) fallbackList('The 3D files could not start.'); return; }
   finally { clearTimeout(importTimer); }
   if (window.__citiesImportAbandoned) return;
@@ -1117,10 +1104,10 @@ async function boot() {
   S.rig.limits = { min: 50, max: S.hubR * 3.4, pmin: 0.08, pmax: 1.5 };
   const pose = hubStartPose(); S.rig.t.set(pose.x, pose.y, pose.z); S.rig.dist = pose.dist; S.rig.pitch = pose.pitch; S.rig.yaw = pose.yaw; S.rig.auto = 0.018; S.rig.apply();
   S.activeDistrict = 'hq'; syncNetwork();
-  $('#title').textContent = 'OLYMPUS HQ';
+  $('#title').textContent = 'Olympus Cities';
   setDock(); refreshChips(); $('#qB').textContent = qLabel();
   $('#atlasCount').textContent = `${S.specs.length} cities · 1 connected network · ${S.conts.length} districts`;
-  stage.start((dt, t) => {
+  S.stageCb = (dt, t) => {
     if (document.body.dataset.ready === 'fallback') return;
     try { loop(dt, t); }
     catch (e) {
@@ -1128,10 +1115,12 @@ async function boot() {
       try { stage.dispose(); } catch (_) { /* keep the atlas available */ }
       fallbackList('The 3D renderer stopped.');
     }
-  });
+  };
+  engine('hub');
   $('#loading').remove();
   document.body.dataset.ready = 'true';
   S.ready = true;
+  setTimeout(() => O()?.ready?.(), 60);
   window.addEventListener('olympus:theme', () => stage.look(S.cur ? S.cur.spec : null, null, S.night));
   stage.onFlash = () => sfx('thunder');
   const seedQ = cleanSeed(q.get('seed') || (/^r-/.test(location.hash.slice(1)) ? location.hash.slice(3) : ''));
@@ -1148,10 +1137,7 @@ function retier(lv) {
     if (!S.stage) return;
     const keep = S.cur && S.cur.sel >= 0 ? S.cur.ds.items[S.cur.city.item[S.cur.sel]].id : null;
     const hubSel = S.hubSel;
-    buildHub();
-    S.islands.forEach((i) => { if (S.live[i.i]) S.stage.selectIsland(-1); });
-    if (hubSel >= 0) S.stage.selectIsland(hubSel);
-    if (S.hubDim) S.stage.setHubDim(S.hubDim);
+    void hubSel;
     if (S.cur) {
       const C = S.cur;
       C.city = generate(C.spec, C.ds, { cap: S.stage.caps().cap });
@@ -1182,7 +1168,7 @@ window.__cities = {
   pickBuilding: (k) => selectBuilding(k),
   tallest: () => { const c = S.cur.city; let b = 0; for (let k = 1; k < c.n; k++) if (c.h[k] > c.h[b]) b = k; return b; },
   conts: () => S.conts.map((c) => ({ key: c.key, name: c.name, count: c.count, regions: c.regions, x: c.x, z: c.z, r: c.r })),
-  rig: () => ({ t: [S.rig.t.x, S.rig.t.y, S.rig.t.z], dist: S.rig.dist, pitch: S.rig.pitch, yaw: S.rig.yaw, hubR: S.hubR, far: farHub() }),
+  rig: () => ({ t: [S.rig.t.x, S.rig.t.y, S.rig.t.z], dist: S.rig.dist, pitch: S.rig.pitch, yaw: S.rig.yaw, hubR: S.hubR, far: false }),
   fav: (id) => toggleFav(id), favs: () => [...S.favs], visited: () => [...S.visited],
   random: (seed) => enterRandom(seed), shareLink: (id) => shareLink(specOf(id)), share: (id) => shareCity(specOf(id)),
   report: () => openReport(), compare: (a, b) => openCompare(a, b), photoMode: (on) => setPhoto(on), photo: () => takePhoto(true),
@@ -1196,7 +1182,10 @@ window.__cities = {
     return best;
   },
   project: (k) => { const c = S.cur.city; return S.stage.project(c.x[k], c.h[k] * 0.5, c.z[k], canvas.clientWidth, canvas.clientHeight); },
-  projectIsland: (i) => { const is = S.islands[i]; return S.stage.project(is.x, is.y + is.R * 0.3, is.z, canvas.clientWidth, canvas.clientHeight); },
+  projectIsland: (i) => S.map.project(i),
+  map: () => S.map && { zoom: S.map.zoomLevel(), scale: S.map.cam.s, fit: S.map.fit, x: S.map.cam.x, y: S.map.cam.y, cities: S.map.cities.length, labels: S.map.labelBoxes.length, banners: S.map.banners.length, running: S.map.running },
+  mapZoom: (z) => S.map.flyTo(S.map.cam.x, S.map.cam.y, S.map.fit * z, 0),
+  mapTo: (i, z) => S.map.flyToCity(i, z || 3, 0),
   cam: (m) => setCam(m),
   tour: () => (S.tour ? stopTour() : startTour()),
   surprise: () => (S.mode === 'hub' ? surpriseHub() : surpriseCity()),

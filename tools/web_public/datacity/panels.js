@@ -141,7 +141,7 @@ export function viewCompare(body, A, B, label, cb) {
     const s = svg(300, 64, 'cumulative $ per micro, A and B'), all = [...spA, ...spB], lo = Math.min(0, ...all), hi = Math.max(0, ...all), r = hi - lo || 1;
     const y = (v) => 60 - ((v - lo) / r) * 56;
     s.appendChild(node('line', { x1: 0, x2: 300, y1: y(0), y2: y(0), stroke: 'rgba(255,255,255,.18)', 'stroke-dasharray': '3 3' }));
-    for (const [sp, col] of [[spA, '#3fd8ff'], [spB, '#b48cff']]) {
+    for (const [sp, col] of [[spA, '#d39556'], [spB, '#cdbf9f']]) {
       s.appendChild(node('polyline', { points: sp.map((v, i) => `${(i / (sp.length - 1)) * 300},${y(v)}`).join(' '), fill: 'none', stroke: col, 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }));
     }
     body.append(el('div', 'note', 'Cumulative $ per micro, quarter by quarter (A cyan, B violet)'), s);
@@ -179,8 +179,8 @@ export function viewTimeline(body, model, tl) {
   rows.forEach((x, i) => {
     const h1 = (x.tested / top) * 60, h2 = (x.paid / top) * 60;
     s.appendChild(node('rect', { x: i * bw + bw * 0.12, y: 66 - h1, width: bw * 0.76, height: Math.max(1, h1), rx: 2, fill: 'rgba(124,130,153,.55)' }));
-    s.appendChild(node('rect', { x: i * bw + bw * 0.12, y: 66 - h2, width: bw * 0.76, height: Math.max(1, h2), rx: 2, fill: '#39e59a' }));
-    if (x.gold) s.appendChild(node('circle', { cx: i * bw + bw / 2, cy: 66 - h2 - 5, r: 3.2, fill: '#ffc94a' }));
+    s.appendChild(node('rect', { x: i * bw + bw * 0.12, y: 66 - h2, width: bw * 0.76, height: Math.max(1, h2), rx: 2, fill: '#9bab62' }));
+    if (x.gold) s.appendChild(node('circle', { cx: i * bw + bw / 2, cy: 66 - h2 - 5, r: 3.2, fill: '#d39556' }));
     const tx = node('text', { x: i * bw + bw / 2, y: 80, 'text-anchor': 'middle', fill: '#aeb3c6', 'font-size': 10 });
     tx.textContent = String(x.year);
     s.appendChild(tx);
@@ -189,7 +189,7 @@ export function viewTimeline(body, model, tl) {
   const hist = model.city?.history;
   if (Array.isArray(hist) && hist.length > 1) {
     const sp = svg(300, 48, 'ideas that survive the noise guard, run by run'), v = hist.map((h) => h.fdr ?? 0), lo = Math.min(...v), hi = Math.max(...v), rr = hi - lo || 1;
-    sp.appendChild(node('polyline', { points: v.map((x, i) => `${(i / (v.length - 1)) * 300},${44 - ((x - lo) / rr) * 38}`).join(' '), fill: 'none', stroke: '#ffc94a', 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }));
+    sp.appendChild(node('polyline', { points: v.map((x, i) => `${(i / (v.length - 1)) * 300},${44 - ((x - lo) / rr) * 38}`).join(' '), fill: 'none', stroke: '#d39556', 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }));
     body.append(el('div', 'note', `Nightly runs of the research (${hist.length}): ideas passing the noise guard`), sp);
   }
   tl.readout = (year, st) => { yr.textContent = String(Math.floor(year + 1e-6)); stat.textContent = st; if (document.activeElement !== r) r.value = String(year); };

@@ -54,7 +54,7 @@ export class Signs {
     this.canvas = document.createElement('canvas');
     this.canvas.width = ROW_W; this.canvas.height = ROW_H * rows;
     this.g = this.canvas.getContext('2d');
-    this.names = ds.map((d) => [d.name, d.css || '#e9ecf6']).concat([['DATA CITY', '#7fe9ff']]);
+    this.names = ds.map((d) => [d.name, d.css || '#b2cadc']).concat([['DATA CITY', '#daa56f']]);
     this.names.forEach(([t, c], i) => drawRow(this.g, i * ROW_H, t, c));
     this.tex = new THREE.CanvasTexture(this.canvas);
     this.tex.colorSpace = THREE.SRGBColorSpace;
@@ -77,7 +77,7 @@ export class Signs {
     this.mesh = new THREE.InstancedMesh(inst, new THREE.ShaderMaterial({ vertexShader: VS, fragmentShader: FS, transparent: true, depthWrite: false, side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending, uniforms: { ...pick(U, 'uTime', 'uDay', 'uFog', 'uFogD', 'uHaze'), uMap: { value: this.tex } } }), n);
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), poles = new THREE.InstancedMesh(new THREE.BoxGeometry(0.5, 1, 0.5).translate(0, 0.5, 0),
-      new THREE.MeshBasicMaterial({ color: 0x1b2140 }), n * 2);
+      new THREE.MeshBasicMaterial({ color: 0x416c8e }), n * 2);
     boards.forEach((b, i) => {
       rect.set([0, 1 - (b.row + 1) / rows, 1, 1 / rows], i * 4);
       tint.set([1, 1, 1, b.seed], i * 4);

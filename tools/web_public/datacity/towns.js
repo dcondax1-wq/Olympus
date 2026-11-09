@@ -9,7 +9,7 @@ import { SATELLITE_TOWNS } from './satellites.js?v=dcgfx1';
 
 const MAX_PER_TOWN = 12;
 const POSITIONS = [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[0,-2],[-1,2],[1,2]];
-const PALETTE = [0xff8737, 0xffa243, 0xffbf57, 0xf77e35, 0xffd06a];
+const PALETTE = [0xd39657, 0xd5995c, 0xd79e64, 0xd29353, 0xd9a26b];
 const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453123; return x - Math.floor(x); };
 
 export class SatelliteTowns {
@@ -32,7 +32,7 @@ export class SatelliteTowns {
         const h = rank === 0 ? 10.5 + hash(i + 1) * 4.5 : 2.4 + hash(i * 23 + rank) * 6.2;
         const w = rank === 0 ? 2.0 : 1.2 + hash(i * 11 + rank) * 0.45;
         const accent = town.accent && rank < 5;
-        const hex = accent ? (rank < 3 ? 0x38d88a : 0x43dfff) : PALETTE[Math.floor(hash(i * 31 + rank * 13) * PALETTE.length)];
+        const hex = accent ? (rank < 3 ? 0x9cac63 : 0x7fa6c4) : PALETTE[Math.floor(hash(i * 31 + rank * 13) * PALETTE.length)];
         const j = rank * SATELLITE_TOWNS + i;
         m4.makeScale(w, h, w).setPosition(x, 0, z);
         mesh.setMatrixAt(j, m4);

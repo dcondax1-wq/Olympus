@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="agora">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Olympus Data City</title>
 <meta name="description" content="The NQ data machine as a city: every tested time, confluence and while-state is a building.">
-<meta name="theme-color" content="#05060f">
+<meta name="theme-color" content="#14110e">
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png?v=j4">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Data City">
@@ -15,6 +15,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<link rel="stylesheet" href="../olympus/agora.css?v=g1">
 <script src="../olympus/themes.js?v=o3"></script>
 <script src="../olympus/olympus.js?v=o3" data-app="datacity"></script>
 <script src="../olympus/a11y.js" defer></script>
@@ -196,10 +197,11 @@ body.hc{--panel:rgba(0,0,0,.94);--line:rgba(255,255,255,.55);--sub:#e6e9f4}
 body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 </style>
+<link rel="stylesheet" href="./agora-datacity.css?v=g1">
 </head>
 <body>
 <canvas id="c" aria-label="Olympus Data City, a 3D city of NQ research results"></canvas>
-<div class="loading" id="loading"><span>BUILDING THE CITY…</span><a href="./map.html">Open 2D map</a></div>
+<div class="loading" id="loading"><span>Building the city…</span><a href="./map.html">Open 2D map</a></div>
 <header class="top" id="top">
   <div class="row">
     <h1>Data City</h1>
@@ -213,10 +215,10 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
   </div>
   <div class="chips"><span class="chip clock" id="clock"></span><span id="chips" class="chiprow"></span></div>
   <nav class="city-network" aria-label="City network">
-    <span class="city-network-label">CITY NETWORK</span>
-    <a href="../cities/" aria-label="Open Arenas">ARENA</a>
-    <a href="./" aria-label="Open Data City" aria-current="page">DATA CITY</a>
-    <a href="../kalshicity/" aria-label="Open Kalshi City">KALSHI</a>
+    <span class="city-network-label">Cities</span>
+    <a href="../cities/" aria-label="Open Arenas">Arena</a>
+    <a href="./" aria-label="Open Data City" aria-current="page">Data City</a>
+    <a href="../kalshicity/" aria-label="Open Kalshi City">Kalshi</a>
   </nav>
 </header>
 <canvas class="mini" id="mini" aria-label="Minimap: tap a district to fly there"></canvas>
@@ -225,11 +227,11 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
   <div id="sheetBody"></div>
 </section>
 <div class="cams" id="cams" role="group" aria-label="Camera mode">
-  <button data-cam="orbit" class="on" aria-label="Orbit camera">ORBIT</button>
-  <button data-cam="skim" aria-label="Fly low through the districts">SKIM</button>
-  <button data-cam="drone" aria-label="Drone loop over the city">DRONE</button>
-  <button data-cam="grand" aria-label="Grand tour of the landmarks">GRAND</button>
-  <a href="./map.html" aria-label="Map view without 3D">MAP</a>
+  <button data-cam="orbit" class="on" aria-label="Orbit camera">Orbit</button>
+  <button data-cam="skim" aria-label="Fly low through the districts">Skim</button>
+  <button data-cam="drone" aria-label="Drone loop over the city">Drone</button>
+  <button data-cam="grand" aria-label="Grand tour of the landmarks">Grand</button>
+  <a href="./map.html" aria-label="Map view without 3D">Map</a>
 </div>
 <div class="tag" id="tag" aria-hidden="true"></div>
 <div class="sr" id="sr" role="status" aria-live="polite"></div>
@@ -242,7 +244,7 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
 </nav>
 <div class="caption" id="caption" aria-live="polite"></div>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="./city.js?v=dcgfx3"></script>
+<script type="module" src="./city.js?v=dcgfx8"></script>
 <script type="module" src="glossary.js"></script>
 </body>
 </html>

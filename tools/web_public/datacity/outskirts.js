@@ -8,7 +8,7 @@ import { PROFILES } from './caps.js';
 import { boulevardPlan, skylineForm } from './districtform.js';
 
 const COUNT = { hq: 2600, lq: 900 };
-const PALETTE = [0x3a5fb5, 0x4f8cff, 0x7fe9ff, 0xa68bff, 0x6a7bd8, 0xc9b8ff, 0xffc94a];
+const PALETTE = [0x7d6a52, 0x78a1c1, 0xdaa56f, 0xcdbf9f, 0x9a8a72, 0xdba875, 0xd39556];
 const mulberry = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 
 export class Outskirts {
@@ -29,7 +29,7 @@ export class Outskirts {
       seen.add(key);
       const t = (Math.hypot(x, z) - R0) / (R1 - R0), seed = rnd(), form = skylineForm(a, t, seed);
       const h = form.height, w = form.width;
-      list.push({ x, z, h, w, color: form.crown && rnd() < 0.62 ? 0xffc94a : PALETTE[Math.floor(rnd() * 6)],
+      list.push({ x, z, h, w, color: form.crown && rnd() < 0.62 ? 0xd39556 : PALETTE[Math.floor(rnd() * 6)],
         lit: 0.5 + rnd() * 0.46, seed, crown: form.crown });
     }
     const n = list.length;
@@ -66,7 +66,7 @@ export class Outskirts {
     this.boulevards = [R0 + 48, R0 + 124].map((radius, ring) => {
       const plan = boulevardPlan(radius, (x, z) => blocked(x, z, 5));
       const deck = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.06, ring ? 0.52 : 0.68), new THREE.MeshBasicMaterial({
-        color: ring ? 0xff8b45 : 0x54dcff, transparent: true, opacity: ring ? 0.42 : 0.58,
+        color: ring ? 0xd5995d : 0x84aac7, transparent: true, opacity: ring ? 0.42 : 0.58,
         blending: THREE.AdditiveBlending, depthWrite: false,
       }), plan.length);
       plan.forEach((s, i) => {

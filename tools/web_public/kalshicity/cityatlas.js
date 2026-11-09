@@ -66,15 +66,15 @@ export function cityAtlas(oldCanvas, L, select, reason, highlights = {}, demo = 
       for (let i = 0; i <= 128; i++) points.push(p(Math.cos(i / 128 * Math.PI * 2) * r, Math.sin(i / 128 * Math.PI * 2) * r));
       path(points, ring ? '#39546a' : '#3b7b82', false);
     }
-    for (let i = 0; i < 90; i++) { const x = i / 90 * w, bh = (11 + (i * 31 % 64)) * scale; g.fillStyle = '#17313c'; g.fillRect(x, h * 0.27 - bh, Math.max(2, 3 * scale), bh); }
+    for (let i = 0; i < 90; i++) { const x = i / 90 * w, bh = (11 + (i * 31 % 64)) * scale; g.fillStyle = '#406a8b'; g.fillRect(x, h * 0.27 - bh, Math.max(2, 3 * scale), bh); }
     // Scenic city mass surrounds the measured districts without manufacturing edges.
     const decor = Array.from({ length: 650 }, (_, i) => {
       const a = i * 2.399963, r = L.extent * (0.91 + ((i * 37) % 100) / 280);
       return { x: Math.cos(a) * r, z: Math.sin(a) * r, h: 8 + ((i * 23) % 51), w: 2.5 + i % 4 };
     }).sort((a, b) => a.x + a.z - b.x - b.z);
     for (const b of decor) {
-      path([p(b.x, b.z), p(b.x + b.w, b.z), p(b.x + b.w, b.z, b.h), p(b.x, b.z, b.h)], '#173749', true);
-      path([p(b.x + b.w, b.z), p(b.x + b.w, b.z + b.w), p(b.x + b.w, b.z + b.w, b.h), p(b.x + b.w, b.z, b.h)], '#0f293a', true);
+      path([p(b.x, b.z), p(b.x + b.w, b.z), p(b.x + b.w, b.z, b.h), p(b.x, b.z, b.h)], '#426e8f', true);
+      path([p(b.x + b.w, b.z), p(b.x + b.w, b.z + b.w), p(b.x + b.w, b.z + b.w, b.h), p(b.x + b.w, b.z, b.h)], '#3e6888', true);
       const [x,y] = p(b.x, b.z, b.h); g.fillStyle = '#739faf'; g.fillRect(x, y, Math.max(1,b.w * scale), Math.max(1,scale));
       for (let row = 5; row < b.h - 3; row += 8) { const [wx, wy] = p(b.x + 1, b.z, row); g.fillStyle = '#3f6478'; g.fillRect(wx, wy, Math.max(1,scale), Math.max(1,scale)); }
     }
@@ -91,9 +91,9 @@ export function cityAtlas(oldCanvas, L, select, reason, highlights = {}, demo = 
     }
     g.restore();
     L.buildings.slice().sort((a, b) => a.x + a.z - b.x - b.z).forEach((b) => {
-      const hw = b.w * 0.65, hh = Math.max(2, b.h), color = b.e.small ? '#889cb3' : STATUS_COLOR[b.e.status] || '#81cadc';
-      path([p(b.x - hw, b.z), p(b.x, b.z + hw), p(b.x, b.z + hw, hh), p(b.x - hw, b.z, hh)], '#244f5b', true);
-      path([p(b.x, b.z + hw), p(b.x + hw, b.z), p(b.x + hw, b.z, hh), p(b.x, b.z + hw, hh)], '#163840', true);
+      const hw = b.w * 0.65, hh = Math.max(2, b.h), color = b.e.small ? '#889cb3' : STATUS_COLOR[b.e.status] || '#88acc8';
+      path([p(b.x - hw, b.z), p(b.x, b.z + hw), p(b.x, b.z + hw, hh), p(b.x - hw, b.z, hh)], '#47769a', true);
+      path([p(b.x, b.z + hw), p(b.x + hw, b.z), p(b.x + hw, b.z, hh), p(b.x, b.z + hw, hh)], '#416b8c', true);
       path([p(b.x - hw, b.z, hh), p(b.x, b.z - hw, hh), p(b.x + hw, b.z, hh), p(b.x, b.z + hw, hh)], color, true);
       const [x, y] = p(b.x, b.z, hh); targets.push({ id: b.id, x, y });
     });
@@ -107,7 +107,7 @@ export function cityAtlas(oldCanvas, L, select, reason, highlights = {}, demo = 
       const x = choice?.x ?? Math.max(tw / 2 + 9, Math.min(w - tw / 2 - 9, anchor[0])), y = choice?.y ?? Math.min(h - 22, Math.max(18, anchor[1]));
       if (Math.hypot(x-anchor[0], y-anchor[1]) > 5) { g.lineWidth = 1; path([anchor, [x, y - 10]], '#6c9eae', false); }
       occupied.push({ x, y, w: tw });
-      g.fillStyle = '#06121bf5'; g.fillRect(x - tw / 2 - 6, y - 12, tw + 12, 19); g.fillStyle = '#e0f2f7'; g.fillText(text, x, y + 1);
+      g.fillStyle = '#06121bf5'; g.fillRect(x - tw / 2 - 6, y - 12, tw + 12, 19); g.fillStyle = '#b2c9db'; g.fillText(text, x, y + 1);
     }
   };
   canvas.addEventListener('click', (e) => { const box = canvas.getBoundingClientRect(), x = e.clientX - box.left, y = e.clientY - box.top; const near = targets.map((t) => ({ ...t, dist: Math.hypot(t.x - x, t.y - y) })).sort((a, b) => a.dist - b.dist)[0]; if (near && near.dist < 18) select(near.id); });

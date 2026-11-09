@@ -47,7 +47,7 @@ export class Minimap {
     this.t = 0;
     const g = this.g, s = SIZE / this.span;
     g.clearRect(0, 0, SIZE, SIZE);
-    g.fillStyle = 'rgba(6,8,20,.72)';
+    g.fillStyle = 'rgba(24,19,14,.86)';
     g.fillRect(0, 0, SIZE, SIZE);
     for (const d of this.L.districts) {
       const [x, y] = this.toMap(d.cx, d.cz), hw = (d.wide ? d.w / 2 : d.half) * s, hh = d.half * s;
@@ -59,13 +59,13 @@ export class Minimap {
     }
     if (this.L.satellites) {
       g.lineWidth = 0.7;
-      g.strokeStyle = 'rgba(62,216,255,.30)';
+      g.strokeStyle = 'rgba(216,178,90,.30)';
       for (const link of this.L.satellites.links) {
         if (link.kind !== 'district') continue;
         const [x0, y0] = this.toMap(...link.from), [x1, y1] = this.toMap(...link.to);
         g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
       }
-      g.strokeStyle = 'rgba(62,216,255,.62)'; g.lineWidth = 1;
+      g.strokeStyle = 'rgba(216,178,90,.62)'; g.lineWidth = 1;
       for (const link of this.L.satellites.links) {
         if (link.kind !== 'ring') continue;
         const [x0, y0] = this.toMap(...link.from), [x1, y1] = this.toMap(...link.to);
@@ -73,12 +73,12 @@ export class Minimap {
       }
       for (const town of this.L.satellites.towns) {
         const [x, y] = this.toMap(town.x, town.z);
-        g.fillStyle = town.accent ? '#45e9a3' : '#ffad4d';
+        g.fillStyle = town.accent ? '#a2b16d' : '#d69b60';
         g.beginPath(); g.arc(x, y, town.accent ? 1.7 : 1.15, 0, Math.PI * 2); g.fill();
       }
     }
     if (this.R) {
-      g.strokeStyle = 'rgba(63,170,255,.75)'; g.lineWidth = 2.2; g.lineJoin = 'round';
+      g.strokeStyle = 'rgba(111,160,192,.8)'; g.lineWidth = 2.2; g.lineJoin = 'round';
       g.beginPath();
       this.R.river.forEach(([x, z], i) => { const [a, b] = this.toMap(x, z); if (i) g.lineTo(a, b); else g.moveTo(a, b); });
       g.stroke();
@@ -90,15 +90,15 @@ export class Minimap {
       for (const st of this.R.stations) { const [a, b] = this.toMap(st.x, st.z); g.fillRect(a - 1.2, b - 1.2, 2.4, 2.4); }
     }
     const [px, py] = this.toMap(0, 0);
-    g.strokeStyle = 'rgba(63,216,255,.75)'; g.lineWidth = 1;
+    g.strokeStyle = 'rgba(216,178,90,.8)'; g.lineWidth = 1;
     g.beginPath(); g.arc(px, py, Math.max(2, this.L.plazaR * s * 0.5), 0, Math.PI * 2); g.stroke();
-    g.fillStyle = '#fff0b2';
+    g.fillStyle = '#e4ca8d';
     g.beginPath(); g.arc(px, py, 2.2, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#ffc94a';
+    g.fillStyle = '#d39556';
     for (const [x, z] of this.gold) { const [a, b] = this.toMap(x, z); g.beginPath(); g.arc(a, b, 2.2, 0, Math.PI * 2); g.fill(); }
-    g.fillStyle = '#3fd8ff';
+    g.fillStyle = '#d39556';
     for (const [x, z] of this.hits) { const [a, b] = this.toMap(x, z); g.fillRect(a - 1, b - 1, 2, 2); }
-    g.fillStyle = '#ffd36b';
+    g.fillStyle = '#d79e64';
     for (const [x, z] of this.pins) { const [a, b] = this.toMap(x, z); g.fillRect(a - 1.5, b - 1.5, 3, 3); }
     const [cx, cy] = this.toMap(camera.position.x, camera.position.z), [tx, ty] = this.toMap(target.x, target.z);
     const a = Math.atan2(ty - cy, tx - cx), fov = 0.55;

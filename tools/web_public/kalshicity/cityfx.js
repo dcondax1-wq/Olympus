@@ -57,7 +57,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
       const picks = L.buildings.filter((b) => !b.lab && !b.e.small && b.e.status !== 'DEAD').sort((a, b) => b.fullH - a.fullH).slice(0, n);
       L.buildings.filter((b) => !b.lab && b.e.status === 'DEAD' && !b.e.small).sort((a, b) => b.e.n - a.e.n).slice(0, 3).forEach((b) => picks.push(b));
       picks.forEach((b, i) => {
-        const dead = b.e.status === 'DEAD', col = dead ? '#ff4d57' : STATUS_COLOR[b.e.status];
+        const dead = b.e.status === 'DEAD', col = dead ? '#ca785c' : STATUS_COLOR[b.e.status];
         const map = signTexture(dead ? 'STOP' : short(b.e), col, dead || b.e.status === 'DECAYING');
         const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map, color: hdr('#ffffff', 1.5), transparent: true, depthWrite: false, fog: true }));
         const w = Math.max(7, b.w * 3.4);
@@ -115,7 +115,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
         const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(mode ? pos : new Float32Array(3), 3));
         g.setAttribute('aDir', new THREE.BufferAttribute(mode ? dir : new Float32Array(4), 4)); g.setAttribute('aSeed', new THREE.BufferAttribute(mode ? seed : new Float32Array(1), 1));
         const u = { uT0: { value: t }, uTime: { value: t }, uPix: { value: rc.renderer.getPixelRatio() }, uSize: { value: mode ? 7 : 11 }, uBase: { value: new THREE.Vector3(b.x, 0.5, b.z) },
-          uTop: { value: new THREE.Vector3(b.x, b.fullH + 22 + r() * 8, b.z) }, uMode: { value: mode }, uColor: { value: hdr('#ffe08a', 1) }, uColor2: { value: hdr('#35f0b0', 1) } };
+          uTop: { value: new THREE.Vector3(b.x, b.fullH + 22 + r() * 8, b.z) }, uMode: { value: mode }, uColor: { value: hdr('#dcaa78', 1) }, uColor2: { value: hdr('#a0af6a', 1) } };
         const pts = new THREE.Points(g, new THREE.ShaderMaterial(Object.assign({ uniforms: u, vertexShader: FWV, fragmentShader: FWF, fog: false }, ADD))); pts.frustumCulled = false; pts.userData.u = u; pts.userData.count = count;
         g.setDrawRange(0, count); return pts;
       };
@@ -131,7 +131,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     if (dead || !L || reduced() || tierName === 'off') { if (ids && ids.length && hooks) hooks.highlight(ids, 1.5); return false; }
     if (scan) { root.remove(scan.grp); scan.grp.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
     const grp = new THREE.Group(), R = Math.max(40, L.extent * 1.1);
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.97, 1, 128), new THREE.MeshBasicMaterial(Object.assign({ color: hdr('#2ef2d0', 2.4), side: THREE.DoubleSide, fog: false }, ADD)));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.97, 1, 128), new THREE.MeshBasicMaterial(Object.assign({ color: hdr('#9fae68', 2.4), side: THREE.DoubleSide, fog: false }, ADD)));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.7;
     const curtain = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 16, 96, 1, true), new THREE.ShaderMaterial(Object.assign({ side: THREE.DoubleSide, fog: false, uniforms: { uA: { value: 1 } },
       vertexShader: 'varying float vY; void main() { vY = position.y / 16.0 + 0.5; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
@@ -152,7 +152,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     if (k >= 1) { root.remove(scan.grp); scan.grp.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); scan = null; return; }
     const r = Math.max(1, k * scan.R), fade = Math.pow(1 - k, 0.8);
     scan.ring.scale.set(r, r, 1); scan.curtain.scale.set(r, 1, r); scan.curtain.material.uniforms.uA.value = fade;
-    scan.ring.material.color.copy(hdr('#2ef2d0', 2.4 * fade));
+    scan.ring.material.color.copy(hdr('#9fae68', 2.4 * fade));
     scan.sweep.scale.set(scan.R, scan.R, 1); scan.sweep.rotation.z = -t * 2.6; scan.sweep.material.uniforms.uA.value = fade;
     if (!scan.hit && k > 0.28) { scan.hit = true; if (scan.hooks && scan.ids.length) scan.hooks.highlight(scan.ids, 5); }
   }
@@ -173,14 +173,14 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     if (!on) { Object.keys(live).forEach(stopFx); return; }
     const ext = L ? L.extent : 120;
     // god rays at dusk and dawn
-    if (st.tw > 0.3 && !live.godRays) startFx('godRays', { position: [st.sun[0] * 0.35, 120, st.sun[2] * 0.35], length: 125, intensity: 0.5, color: '#ffb36a', spread: 0.22 });
+    if (st.tw > 0.3 && !live.godRays) startFx('godRays', { position: [st.sun[0] * 0.35, 120, st.sun[2] * 0.35], length: 125, intensity: 0.5, color: '#d9a26b', spread: 0.22 });
     else if (st.tw < 0.12) stopFx('godRays');
     // a storm: weather or a risk of ruin that is high
-    if (st.stormy && !live.lightning) startFx('lightning', { position: [0, 95, 0], spread: ext * 0.7, width: 0.5, flash: 0.75, every: [3, 8], color: '#cfe0ff',
+    if (st.stormy && !live.lightning) startFx('lightning', { position: [0, 95, 0], spread: ext * 0.7, width: 0.5, flash: 0.75, every: [3, 8], color: '#afc7da',
       onFlash: (f) => { if (f > 0.5 && lastF <= 0.5) { counts.strikes++; setTimeout(() => sfx('thunder'), 380); } lastF = f; } });
     else if (!st.stormy) stopFx('lightning');
     // aurora over the Vault, at night, not in a storm
-    if (st.night > 0.7 && st.weather !== 'storm' && !live.aurora) startFx('aurora', { position: [10, 62, -70], width: 95, height: 30, intensity: 0.12, colors: ['#ffd86a', '#4a97d1', '#8f9bff'] });
+    if (st.night > 0.7 && st.weather !== 'storm' && !live.aurora) startFx('aurora', { position: [10, 62, -70], width: 95, height: 30, intensity: 0.12, colors: ['#d9a26b', '#719cbe', '#99b8d0'] });
     else if (st.night < 0.4 || st.weather === 'storm') stopFx('aurora');
     // lens flares: the Exchange's spire at night; the sun or the moon, moved to where it is now
     if (st.night > 0.6 && !live.spire) { /* the tower itself glows: screen-space flare covered the foreground blocks */ }
@@ -188,7 +188,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     const key = `${Math.round(st.hour * 2)}|${st.night > 0.5 ? 'n' : 'd'}|${st.stormy ? 1 : 0}`;
     if (key !== flareKey) {
       flareKey = key; stopFx('flare');
-      if (!st.stormy && FXL.has('lensFlare')) { try { live.flare = FXL.lensFlare({ scene, camera }, { position: [st.sun[0] * 0.5, Math.max(30, st.sun[1] * 0.5), st.sun[2] * 0.5], color: st.night > 0.5 ? '#cfe0ff' : '#ffe6b0' }); } catch (_) { /* skip */ } }
+      if (!st.stormy && FXL.has('lensFlare')) { try { live.flare = FXL.lensFlare({ scene, camera }, { position: [st.sun[0] * 0.5, Math.max(30, st.sun[1] * 0.5), st.sun[2] * 0.5], color: st.night > 0.5 ? '#afc7da' : '#e0b487' }); } catch (_) { /* skip */ } }
     }
   }
 
