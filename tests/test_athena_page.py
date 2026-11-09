@@ -44,7 +44,7 @@ def part_a():
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app) all at ?v=o2",
           all(s in html for s in ('../olympus/olympus.css?v=o4', '../olympus/themes.js?v=o4', '../olympus/olympus.js?v=o4" data-app="athena"')))
     check("a. title Athena, a description, theme-color = the page colour, the Jarvis icon like the siblings",
-          "<title>Athena</title>" in html and 'name="description"' in html and 'content="#070b14"' in html and "../jarvis/icon-192.png" in html)
+          "<title>Athena</title>" in html and 'name="description"' in html and 'content="#14110e"' in html and "../jarvis/icon-192.png" in html)
     srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
     check("a. only local files (no external script, font or stylesheet)", all(not s.startswith(("http:", "https:", "//")) for s in srcs), srcs)
     check("a. every local file the page links exists",
