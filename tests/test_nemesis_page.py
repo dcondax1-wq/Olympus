@@ -68,7 +68,7 @@ def part_a():
     stores = set(re.findall(r"localStorage\.(\w+)Item\(([A-Za-z'\"\.]+)", js["nemesis.js"]))
     check("a. the page fetches only the site's own files (odeon/trades.json, home.json, its fixture), no WebSocket / beacon / XHR; storage: set only 'nemesis.v1', read 'le.jtags'",
           fetched == {"../odeon/trades.json", "../home.json", "fixture.json"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
-          and stores == {("get", "KEY"), ("set", "KEY"), ("get", "'le.jtags'")} and "const KEY = 'nemesis.v1'" in js["nemesis.js"], (fetched, stores))
+          and stores == {("get", "KEY"), ("set", "KEY"), ("get", "'le.jtags'"), ("get", "'nemesis.opt"), ("set", "'nemesis.opt")} and "const KEY = 'nemesis.v1'" in js["nemesis.js"], (fetched, stores))
     check("a. it only reads: no POST, no order, nothing that writes to a bot; the only way out is the clipboard", "method:" not in js["nemesis.js"].replace(" ", "").lower()
           and "'POST'" not in js["nemesis.js"] and js["nemesis.js"].count("fetch(") == 1 and "navigator.clipboard.writeText" in js["nemesis.js"])
     check("a. safe areas on every edge, the orb's corner (dock stops 96 px from the right; the sheet stays 176 px above the bottom), 16 px text areas, dvh after vh, reduced motion",
