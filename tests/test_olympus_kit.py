@@ -75,8 +75,11 @@ def hd(q):
 # phone-safe preset), "ultra" = a PC at ultra (the full city). The heap budget is HEAP_MB for phone-high.
 # (query, calls, triangles at the worst of the load view and the close-up, calls at the FAR overview: camera 380 units out, the view a phone opens on).
 # 2026-11-04 after the landmark meshes were merged (52 -> 15 draws) and the overview-only details hidden on phones: phone-high far overview 59 calls (was 78), worst 71.
-DATACITY_TIERS = {"phone-high": ("?q=high&phone=1", 80, 250_000, 60), "ultra": ("?q=ultra&phone=0", 110, 700_000, 100)}
+# phone-high: the owner wants the full-detail Data City on phones (2026-11-09), so the budget is what it really measures
+# (66 calls worst/far, 223k tris, 47.8 MB heap) with headroom; it used to be the thinned "phone-safe" preset (80 / 250k / far 60 / 40 MB).
+DATACITY_TIERS = {"phone-high": ("?q=high&phone=1", 90, 250_000, 75), "ultra": ("?q=ultra&phone=0", 110, 700_000, 100)}
 HEAP_MB, LAYOUTS_PER_FRAME = 40, 1.25   # 1.25: room for the day-sprint HUDs (Odeon 1.11 under load)
+DATACITY_PHONE_HEAP_MB = 60   # phone-high Data City heap (measured 47.8 MB); the other apps keep HEAP_MB
 
 COUNT_DRAWS = """
 (() => {
@@ -149,8 +152,8 @@ def test_static():
           "g('jfx')" in jarvis and "rawSet('jfx', level)" in jarvis and "['ultra', 'high', 'low', 'off']" in jarvis)
     bad = [p for p in (r"color-mix\(", r":has\(", r"\(\?<[=!]", r"\.at\(", r"\?\.", r"\?\?") if re.search(p, js + css)]
     check("a. the kit is Safari 16 safe (no color-mix, :has, lookbehind, .at(), and ES5-only syntax in the classic script)", not bad, bad)
-    check("a. the kit: Jarvis's fonts, the type scale, 44 px taps, safe areas, the orb's 80 x 160, dvh with a vh fallback, reduced motion",
-          "../jarvis/orbitron.woff2" in css and "--oly-t-label" in css and "--oly-tap: 44px" in css
+    check("a. the kit: AGORA's system fonts (serif display, no Orbitron), the type scale, 44 px taps, safe areas, the orb's 80 x 160, dvh with a vh fallback, reduced motion",
+          "Iowan Old Style" in css and "--oly-display" in css and "@font-face" not in css and "--oly-t-label" in css and "--oly-tap: 44px" in css
           and all(f"safe-area-inset-{e}" in css for e in ("top", "right", "bottom", "left")) and "--oly-orb-w: 80px; --oly-orb-h: 160px" in css
           and "--oly-vh: 100vh" in css and "@supports (height: 100dvh)" in css and "prefers-reduced-motion: reduce" in css)
     check("a. the veil never takes a tap", re.search(r"\.oly-veil \{[^}]*pointer-events: none", css))
@@ -474,8 +477,8 @@ def test_datacity_tiers(br, origin):
         far = p.evaluate("window.__city.stats()")
         heap = metrics(cdp).get("JSHeapUsedSize", 0) / 1e6
         prof = p.evaluate("window.__app.city.profile")
-        ok = worst["calls"] <= calls and worst["triangles"] <= tris and far["calls"] <= far_calls and (name != "phone-high" or heap <= HEAP_MB)
-        check(f"e. datacity {name} ({prof}): worst {worst['calls']} calls / {calls}, {worst['triangles']} tris / {tris}, far overview {far['calls']} calls / {far_calls}, {round(heap, 1)} MB heap (budget {HEAP_MB} on phone-high)", ok, (worst, far, heap, errs[:2]))
+        ok = worst["calls"] <= calls and worst["triangles"] <= tris and far["calls"] <= far_calls and (name != "phone-high" or heap <= DATACITY_PHONE_HEAP_MB)
+        check(f"e. datacity {name} ({prof}): worst {worst['calls']} calls / {calls}, {worst['triangles']} tris / {tris}, far overview {far['calls']} calls / {far_calls}, {round(heap, 1)} MB heap (budget {DATACITY_PHONE_HEAP_MB} on phone-high)", ok, (worst, far, heap, errs[:2]))
         ctx.close()
 
 
