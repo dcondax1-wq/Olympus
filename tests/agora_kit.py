@@ -97,7 +97,7 @@ def static_kit(app, name, reads=(), storage=None, allow_urls=()):
           fetches == want and not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|method:\s*['\"]POST|document\.cookie|https?://(?!www\.w3\.org)", web_js), (sorted(fetches), sorted(want)))
     check(f"a. {app}core.js is pure (no document / window / fetch / localStorage), Safari 16 safe (no lookbehind, no .at())",
           not re.search(r"\bdocument\.|\bwindow\.|\bfetch\(|\blocalStorage\b|\(\?<[=!]|\.at\(", re.sub(r"//[^\n]*", "", core)))
-    check("a. text only through textContent / createElementNS / a value", "textContent" in js and "createElementNS" in js)
+    check("a. text only through textContent / createElementNS / a value", "textContent" in js and (("createElementNS" in js) or "<svg" not in read(os.path.join(d, "index.html")) and "sv(" not in js))
     check("a. every tap target is at least 44 px in the CSS, safe areas, 176 px clear of Jarvis's corner, reduced motion, LITE",
           css.count("min-height: 44px") >= 3 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion" in css and 'data-oly-lite="1"' in css)
     check("a. the AGORA look: no neon / glow / techno font / cyber words in the app's own files", not BANNED_LOOK.search(css + html.split("</head>")[0].split("-->")[-1]) and not BANNED_LOOK.search(js), BANNED_LOOK.findall(css + js)[:3])
