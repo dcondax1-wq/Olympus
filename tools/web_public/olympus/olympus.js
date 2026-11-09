@@ -41,7 +41,7 @@
     hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#e879f9'],
     pantheon: ['Pantheon', 'Σ', '#f2d68a'], arena: ['Arena', 'Α', '#ffb547'],
     ares: ['Ares', 'Λ', '#ff3b30'], plutus: ['Plutus', 'Ρ', '#9be84a'], athena: ['Athena', '🦉', '#5ea8ff'],
-    cities: ['Cities', '◈', '#a68bff'], settings: ['Settings', '⚙', '#b79bff'], inbox: ['Inbox', '✉', '#7fd0ff'], ledger: ['Ledger', 'L', '#ffcf5a'], journal: ['Mnemosyne', 'Μ', '#f09bd8'], kalshicity: ['Kalshi City', 'K', '#2ef2d0'], forum: ['Forum', 'Γ', '#b8e04a'], labyrinth: ['Labyrinth', 'Ξ', '#ff4d57'], argus: ['Argus', 'Α', '#3ad7ff'], nemesis: ['Nemesis', 'Ν', '#8a6bff'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#d96bff'],
+    cities: ['Cities', '◈', '#a68bff'], settings: ['Settings', '⚙', '#b79bff'], inbox: ['Inbox', '✉', '#7fd0ff'], ledger: ['Ledger', 'L', '#ffcf5a'], hestia: ['Hestia', 'Η', '#c8a24a'], demeter: ['Demeter', 'Δ', '#9aa564'], apollo: ['Apollo', 'Α', '#e0b060'], hera: ['Hera', 'Ω', '#c0603f'], dionysus: ['Dionysus', 'Σ', '#b77a8a'], clio: ['Clio', 'Κ', '#d8c9a8'], journal: ['Mnemosyne', 'Μ', '#f09bd8'], kalshicity: ['Kalshi City', 'K', '#2ef2d0'], forum: ['Forum', 'Γ', '#b8e04a'], labyrinth: ['Labyrinth', 'Ξ', '#ff4d57'], argus: ['Argus', 'Α', '#3ad7ff'], nemesis: ['Nemesis', 'Ν', '#8a6bff'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#d96bff'],
     bridge: ['Bridge', 'Β', '#34d399'], observatory: ['Observatory', '◉', '#6eeaff'], atlas: ['Atlas', '◈', '#efc979'],
   };
   // each app's own CSS tokens -> the theme token they take under any theme but the default (bg = the app's own page colour
@@ -147,7 +147,7 @@
   })();
 
   // ---------------------------------------------------------------- ambience: each app's own quiet bed (olympus/sfx.js, synthesised)
-  var AMBIENT = { journal: 'scroll', datacity: 'city', cities: 'city', kalshicity: 'city', kalshi: 'city', oracle: 'space', mind: 'space', argus: 'space', chronos: 'chimes',
+  var AMBIENT = { hestia: 'smithy', demeter: 'breeze', apollo: 'chimes', hera: 'coins', dionysus: 'sea', clio: 'scroll', journal: 'scroll', datacity: 'city', cities: 'city', kalshicity: 'city', kalshi: 'city', oracle: 'space', mind: 'space', argus: 'space', chronos: 'chimes',
     odeon: 'crowd', arena: 'crowd', forum: 'agora', ares: 'crowd', fates: 'lab', plutus: 'coins', ledger: 'coins', labyrinth: 'lab', pantheon: 'wind', athena: 'scroll',
     hermes: 'breeze', nemesis: 'wind', bridge: 'wind', prometheus: 'smithy', hephaestus: 'smithy', tyche: 'sea', tree: 'forest', zenith: 'space', inbox: 'scroll',
     settings: 'lab', planner: 'chimes' };       // 2026-11-04: every app has a bed of its own (forge hammer-and-hiss, scroll rustle, coin chime, forum murmur, lab hum)
