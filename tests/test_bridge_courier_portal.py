@@ -29,9 +29,9 @@ class BridgeCourierPortalTests(unittest.TestCase):
         self.assertIn('Plain word: liquidity',self.page)
         self.assertIn('Liquidity</b> means how much money is available and moving in a market',self.page)
         self.assertIn('No live orders',self.page)
-        self.assertIn('@media(max-width:560px)',self.page)
-        self.assertIn('@media(prefers-reduced-motion:reduce)',self.page)
-        self.assertIn('.chips button { min-height:44px; }',self.page)
+        self.assertIn('@media (max-width: 560px)',self.page)
+        self.assertIn('@media (prefers-reduced-motion: reduce)',self.page)
+        self.assertIn('.chips button { min-height: 44px;',self.page)
         self.assertNotIn('innerHTML',self.page)
 
     def test_inline_javascript_still_parses(self):

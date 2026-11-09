@@ -2,34 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080b17"><meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#14110e"><meta name="color-scheme" content="dark">
 <title>Atlas · Olympus</title>
 <meta name="description" content="A fast visual map of the Olympus dashboards.">
-<link rel="stylesheet" href="atlas.css?v=6">
+<link rel="stylesheet" href="atlas.css?v=7">
 <script src="../olympus/apps-list.js?v=o4" defer></script>
 <script src="atlas-intro.js?v=1" defer></script>
-<script src="atlas.js?v=6" defer></script>
+<script src="atlas.js?v=7" defer></script>
 <script src="hub.js?v=1" defer></script>
 </head>
 <body>
 <a class="skip" href="#results">Skip to dashboards</a>
-<div class="sky" aria-hidden="true"><canvas id="world"></canvas><div class="vignette"></div></div>
 <header class="top">
-  <a class="home" href="./" aria-label="Olympus Atlas home">◈ <span>OLYMPUS</span></a>
-  <span class="edition">COMMAND CENTER / ATLAS</span>
-  <button id="motion" class="round" type="button" aria-label="Pause city animation" aria-pressed="false">Ⅱ</button>
+  <a class="home" href="./" aria-label="Olympus Atlas home">◈ <span>Olympus</span></a>
+  <span class="edition">Command center / Atlas</span>
 </header>
 <main>
   <section class="hero" aria-labelledby="title">
     <div class="hero-copy">
-      <p class="eyebrow">OLYMPUS // NIGHT NETWORK</p>
+      <p class="eyebrow">Olympus</p>
       <h1 id="title">Every arena.<br><em>One command center.</em></h1>
-      <p class="lead">Search all 32 arenas, jump by district, and pin the rooms you use most.</p>
+      <p class="lead">Search every arena, jump by district, and pin the rooms you use most.</p>
       <div class="hero-actions"><a class="primary" href="#deckTitle">Open the arena map <span aria-hidden="true">↓</span></a><button class="secondary" type="button" data-focus-search>Find an arena <span aria-hidden="true">⌕</span></button></div>
     </div>
     <aside class="command-glass" aria-label="Olympus network overview">
-      <div class="command-kicker"><span class="pulse" aria-hidden="true"></span> COMMAND GRID</div>
-      <strong>All systems in one map</strong>
+      
+      <strong>Everything in one map</strong>
       <p>Choose a district now. Every route stays inside Olympus.</p>
       <dl><div><dt id="arenaTotal">32</dt><dd>arenas</dd></div><div><dt>4</dt><dd>districts</dd></div><div><dt id="pinTotal">0</dt><dd>pinned</dd></div></dl>
     </aside>
@@ -39,10 +37,10 @@
       <button type="button" data-jump-filter="risk"><span>03</span><strong>Money</strong><small>Risk and outcomes</small></button>
       <button type="button" data-jump-filter="life"><span>04</span><strong>Command</strong><small>Work and planning</small></button>
     </nav>
-    <nav class="spotlight" aria-label="Featured destinations"><a href="../oracle/"><span>01 · MARKET</span><strong>Oracle</strong><small>Market radar ↗</small></a><a href="../datacity/"><span>02 · RESEARCH</span><strong>Data City</strong><small>Explore the data ↗</small></a><a href="../cities/"><span>03 · WORLDS</span><strong>Cities</strong><small>Enter the city map ↗</small></a><a href="../kalshicity/"><span>04 · MONEY</span><strong>Kalshi City</strong><small>Prediction markets ↗</small></a></nav>
+    <nav class="spotlight" aria-label="Featured destinations"><a href="../oracle/"><span>Market</span><strong>Oracle</strong><small>Market radar ↗</small></a><a href="../datacity/"><span>Research</span><strong>Data City</strong><small>Explore the data ↗</small></a><a href="../cities/"><span>Worlds</span><strong>Cities</strong><small>Enter the city map ↗</small></a><a href="../kalshicity/"><span>Money</span><strong>Kalshi City</strong><small>Prediction markets ↗</small></a></nav>
   </section>
   <section class="deck" aria-labelledby="deckTitle">
-    <div class="deck-head"><div><p class="eyebrow">FULL OLYMPUS DIRECTORY</p><h2 id="deckTitle">Choose your arena</h2></div><span id="count" class="count" aria-live="polite"></span></div>
+    <div class="deck-head"><div><p class="eyebrow">The full directory</p><h2 id="deckTitle">Choose your arena</h2></div><span id="count" class="count" aria-live="polite"></span></div>
     <label class="search"><span aria-hidden="true">⌕</span><span class="sr">Search dashboards by name or purpose</span><input id="query" type="search" autocomplete="off" placeholder="Search arenas, tools, and missions"><kbd>/</kbd></label>
     <div class="filters" role="group" aria-label="Dashboard categories">
       <button data-filter="all" aria-pressed="true">All</button><button data-filter="favorites" aria-pressed="false">★ Favorites</button><button data-filter="market" aria-pressed="false">Market</button><button data-filter="research" aria-pressed="false">Research</button><button data-filter="risk" aria-pressed="false">Money &amp; risk</button><button data-filter="life" aria-pressed="false">Life &amp; command</button>
@@ -52,6 +50,6 @@
     <p id="empty" class="empty" hidden>No dashboards match this search. Try another name or category.</p>
   </section>
 </main>
-<footer>OLYMPUS ATLAS <span>·</span> <output id="saveStatus" role="status" aria-live="polite">Checking device storage…</output></footer>
+<footer>Olympus Atlas <span>·</span> <output id="saveStatus" role="status" aria-live="polite">Checking device storage…</output></footer>
 </body>
 </html>

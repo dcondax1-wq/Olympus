@@ -1,1 +1,0 @@
-{"v":1,"name":"Observatory","status":{"level":"off","label":"Open to review sources"},"kpis":[{"label":"Sources","value":"6"},{"label":"Mode","value":"Read only"}],"lines":["Checks published data when opened; review evidence before changing a dashboard."],"t":1793836800,"stale_after":1209600,"theme":"#6eeaff"}

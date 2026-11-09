@@ -117,6 +117,27 @@
    ],
    "name": "olympus_kit",
    "mode": "FULL"
+  },
+  {
+   "state": "FAIL",
+   "passed": 85,
+   "total": 112,
+   "seconds": 293.7,
+   "note": "",
+   "fails": [
+    "[FAIL] c. datacity: no key -> every computed CSS variable as before the themes (50)  -> {'--amber': ('#ff9f43', '#d1904e'), '--bg': ('#05060f', '#14110e'), '--cyan': ('#3fd8ff', '#6fa0c0'), '--gold': ('#ffc94a', '#d8b25a'), '--green': ('#39",
+    "[FAIL] c. datacity: olympus.theme = agora -> every computed CSS variable as before the themes (50)  -> {'--amber': ('#ff9f43', '#d1904e'), '--bg': ('#05060f', '#14110e'), '--cyan': ('#3fd8ff', '#6fa0c0'), '--gold': ('#ffc94a', '#d8b25a'), '",
+    "[FAIL] c. fates: no key -> every computed CSS variable as before the themes (50)  -> {'--bg': ('#07050f', '#14110e'), '--gold': ('#ffcf5a', '#c8a24a'), '--gold-rgb': ('255, 207, 90', '200, 162, 74'), '--line': ('rgba(196, 170, 255, .14)', '",
+    "[FAIL] c. fates: olympus.theme = agora -> every computed CSS variable as before the themes (50)  -> {'--bg': ('#07050f', '#14110e'), '--gold': ('#ffcf5a', '#c8a24a'), '--gold-rgb': ('255, 207, 90', '200, 162, 74'), '--line': ('rgba(196, 170",
+    "[FAIL] c. hermes: no key -> every computed CSS variable as before the themes (51)  -> {'--bg': ('#12081f', '#19140e'), '--down': ('#ff7a8a', '#e0907a'), '--flat': ('#f4f4f6', '#f3ece0'), '--font': ('-apple-system, \"SF Pro Text\", BlinkMacSys",
+    "[FAIL] c. hermes: olympus.theme = agora -> every computed CSS variable as before the themes (51)  -> {'--bg': ('#12081f', '#19140e'), '--down': ('#ff7a8a', '#e0907a'), '--flat': ('#f4f4f6', '#f3ece0'), '--font': ('-apple-system, \"SF Pro Tex"
+   ],
+   "argv": [
+    "-m",
+    "tests.test_olympus_themes"
+   ],
+   "name": "olympus_themes",
+   "mode": "FULL"
   }
  ]
 }

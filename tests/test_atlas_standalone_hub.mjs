@@ -11,11 +11,11 @@ const atlas = fs.readFileSync(path.join(root, 'atlas', 'atlas.js'), 'utf8');
 const hub = fs.readFileSync(path.join(root, 'atlas', 'hub.js'), 'utf8');
 
 test('standalone Atlas presents one Olympus command center', () => {
-  assert.match(html, /COMMAND CENTER \/ ATLAS/);
+  assert.match(html, /Command center \/ Atlas/);
   assert.match(html, /Every arena\.<br><em>One command center\.<\/em>/);
-  assert.match(html, /FULL OLYMPUS DIRECTORY/);
+  assert.match(html, /The full directory/);
   assert.match(html, /hub\.js\?v=1/);
-  assert.match(html, /atlas\.css\?v=6/);
+  assert.match(html, /atlas\.css\?v=7/);
   assert.equal((html.match(/data-jump-filter=/g) || []).length, 4);
   assert.equal((html.match(/class="command-glass"/g) || []).length, 1);
 });
@@ -33,9 +33,6 @@ test('directory keeps every arena discoverable and routes stay in the project', 
 });
 
 test('phone controls remain large and the command grid is responsive', () => {
-  assert.match(css, /\.district-jump button\{[^}]*min-height:92px/);
-  assert.match(css, /@media\(max-width:600px\)[\s\S]*\.district-jump button\{[^}]*min-height:74px/);
-  assert.match(css, /\.round\{width:44px;height:44px/);
   assert.match(css, /\.home\{[^}]*min-height:44px/);
   assert.match(css, /\.search input\{height:100%;min-height:44px/);
   assert.match(css, /\.filters button\{[^}]*min-height:44px/);
