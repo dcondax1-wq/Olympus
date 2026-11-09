@@ -178,7 +178,7 @@ def part_c():
     need = {"index.html", "odeon.css", "app.js", "data.js", "timeline.js", "scene.js", "director.js", "captions.js", "ui.js", "flat.js", "fixture.js", "arena.js", "strip.js"}
     check("c. the modules (data, timeline, scene, director, captions, ui, app, flat fallback, fixture)", need <= set(files), sorted(need - set(files)))
     html, css = files["index.html"], files["odeon.css"]
-    check("c. phone viewport with safe areas, own theme-color, dark scheme", 'viewport-fit=cover' in html and 'name="theme-color" content="#07060c"' in html
+    check("c. phone viewport with safe areas, own theme-color, dark scheme", 'viewport-fit=cover' in html and 'name="theme-color" content="#14110e"' in html
           and all(f"env(safe-area-inset-{s}" in css for s in ("top", "right", "bottom", "left")) and "color-scheme: dark" in css)
     code = "".join(v for k, v in files.items() if k != "fixture.js")
     check("c. three.js from ../jarvis/three.module.min.js, nothing from another site, no frame break-out",
@@ -207,7 +207,7 @@ def part_c():
           and len(j.get("kpis", [])) <= 3 and all(len(k["label"]) <= 20 and len(str(k["value"])) <= 24 and len(str(k.get("delta", ""))) <= 16 for k in j["kpis"])
           and len(j.get("lines", [])) <= 3 and all(len(x) <= 120 and "<" not in x and "\n" not in x for x in j["lines"])
           and isinstance(j.get("t"), int) and re.fullmatch(r"#[0-9a-f]{6}", j.get("theme", "")) and j.get("open") == "#reels" and len(raw) <= 8192)
-    check("c. jarvis.json follows the Jarvis contract (v 1, status, <= 3 kpis / lines, t, open, theme #07060c)", ok and j["theme"] == "#07060c", j)
+    check("c. jarvis.json follows the Jarvis contract (v 1, status, <= 3 kpis / lines, t, open, theme #14110e)", ok and j["theme"] == "#14110e", j)
     return fx, tj
 
 
