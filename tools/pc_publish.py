@@ -229,7 +229,7 @@ def api_base(env=None) -> str:
     return (env.get("OLYMPUS_NETLIFY_API") or NETLIFY_API).rstrip("/")
 
 
-def publish_netlify(site: str, files: dict, cfg: dict, env=None, log=print) -> dict:
+def publish_netlify(site: str, files: dict, cfg: dict, env=None, log=print, **_k) -> dict:
     n = cfg.get("netlify") or {}
     token, sid = n.get("token"), n.get("site_id")
     if not token or not sid:
