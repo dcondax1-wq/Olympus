@@ -1,0 +1,238 @@
+{
+ "v": 1,
+ "asof": "2026-11-10T06:00:00Z",
+ "mode": "paper",
+ "label": "ESTIMATE",
+ "total": {
+  "low": 0.0,
+  "base": 255.0,
+  "high": 510.0,
+  "real_base": 0.0,
+  "unit": "usd_per_month"
+ },
+ "counts": {
+  "streams": 5,
+  "ok": 0,
+  "stale": 0,
+  "sample": 5
+ },
+ "note": "EXAMPLE numbers, not real: five sample money streams shown until the site has its own money/index.json. Nothing here is a real find or income.",
+ "streams": [
+  {
+   "id": "chrysos",
+   "name": "Chrysos",
+   "role": "Prop-firm savings and payouts",
+   "status": "sample",
+   "source": "fixture",
+   "asof": null,
+   "age_min": null,
+   "headline": "Two prop-firm discount windows are open; the best saves about $38 on the next eval fee.",
+   "usd_month": {
+    "low": 0.0,
+    "base": 38.0,
+    "high": 76.0
+   },
+   "items": [
+    {
+     "title": "Builder 50K discount code",
+     "detail": "A public code takes the one-time fee from $91.80 to about $73. Check the code on the firm's own page before paying.",
+     "usd": 19.0,
+     "score": 72,
+     "risk": "low"
+    },
+    {
+     "title": "ATLAS 25K promo week",
+     "detail": "The 25K fee is $43 today; a seasonal promo may cut it by a third. Not a promise: promos end without notice.",
+     "usd": 14.0,
+     "score": 55,
+     "risk": "low"
+    },
+    {
+     "title": "Payout timing",
+     "detail": "A funded payout can be requested after the minimum trading days. Waiting a week costs nothing but delays cash.",
+     "usd": 0.0,
+     "score": 40,
+     "risk": "med"
+    }
+   ],
+   "notes": [
+    "Sample numbers, not real. Savings are one-time, not monthly income.",
+    "Promo codes change often and may not apply to your account."
+   ],
+   "error": null
+  },
+  {
+   "id": "mercury",
+   "name": "Mercury",
+   "role": "Small resale gaps",
+   "status": "sample",
+   "source": "fixture",
+   "asof": null,
+   "age_min": null,
+   "headline": "Three small resale gaps look open this week; about $60 a month if you act on one a week.",
+   "usd_month": {
+    "low": 0.0,
+    "base": 60.0,
+    "high": 120.0
+   },
+   "items": [
+    {
+     "title": "Used monitor, local listing",
+     "detail": "Listed about $45 under the usual sold price. Needs pickup and a quick test.",
+     "usd": 45.0,
+     "score": 66,
+     "risk": "med"
+    },
+    {
+     "title": "Gift-card discount",
+     "detail": "A store card sells about 6% under face value on a public marketplace.",
+     "usd": 12.0,
+     "score": 48,
+     "risk": "med"
+    },
+    {
+     "title": "Bundle of cables",
+     "detail": "Small margin, low effort, fast to sell.",
+     "usd": 8.0,
+     "score": 35,
+     "risk": "low"
+    }
+   ],
+   "notes": [
+    "Sample numbers, not real. Fees, shipping and your time are not in these estimates.",
+    "Prices move; a gap seen this morning can be gone by evening."
+   ],
+   "error": null
+  },
+  {
+   "id": "sibyl",
+   "name": "Sibyl",
+   "role": "Prediction-market edges (paper)",
+   "status": "sample",
+   "source": "fixture",
+   "asof": null,
+   "age_min": null,
+   "headline": "Two prediction-market prices look off by more than the fee; about $90 a month if they hold, paper only.",
+   "usd_month": {
+    "low": 0.0,
+    "base": 90.0,
+    "high": 180.0
+   },
+   "items": [
+    {
+     "title": "Rate decision market",
+     "detail": "Market says 62%, the public futures curve implies about 71%. Edge after fee is thin.",
+     "usd": 55.0,
+     "score": 61,
+     "risk": "high"
+    },
+    {
+     "title": "Weather high-temperature market",
+     "detail": "Forecast agreement is strong; market price lags by 5 points.",
+     "usd": 35.0,
+     "score": 58,
+     "risk": "med"
+    },
+    {
+     "title": "Earnings beat market",
+     "detail": "Close to fair; skip unless the price moves.",
+     "usd": 0.0,
+     "score": 22,
+     "risk": "high"
+    }
+   ],
+   "notes": [
+    "Sample numbers, not real. This is paper only: no order is ever placed.",
+    "A market can stay wrong longer than your money lasts; size small."
+   ],
+   "error": null
+  },
+  {
+   "id": "oikos",
+   "name": "Oikos",
+   "role": "Household savings",
+   "status": "sample",
+   "source": "fixture",
+   "asof": null,
+   "age_min": null,
+   "headline": "Four household savings found; about $47 a month if you cancel the two unused subscriptions.",
+   "usd_month": {
+    "low": 0.0,
+    "base": 47.0,
+    "high": 94.0
+   },
+   "items": [
+    {
+     "title": "Unused streaming plan",
+     "detail": "No sign-in for 90 days on the list you gave. Cancelling saves the monthly fee.",
+     "usd": 16.0,
+     "score": 80,
+     "risk": "low"
+    },
+    {
+     "title": "Second phone-line extra",
+     "detail": "A cheaper plan with the same data exists.",
+     "usd": 21.0,
+     "score": 70,
+     "risk": "low"
+    },
+    {
+     "title": "Bank fee refund request",
+     "detail": "A fee charged twice this quarter; one call may refund it.",
+     "usd": 10.0,
+     "score": 60,
+     "risk": "low"
+    }
+   ],
+   "notes": [
+    "Sample numbers, not real. Savings count only if you act on them.",
+    "Check any cancel fee or contract end date first."
+   ],
+   "error": null
+  },
+  {
+   "id": "arbiter",
+   "name": "Arbiter",
+   "role": "The referee: what to do first",
+   "status": "sample",
+   "source": "fixture",
+   "asof": null,
+   "age_min": null,
+   "headline": "The referee ranks the other streams: do the lowest-risk, highest-return task first; about $20 a month.",
+   "usd_month": {
+    "low": 0.0,
+    "base": 20.0,
+    "high": 40.0
+   },
+   "items": [
+    {
+     "title": "Do first: cancel the unused plan",
+     "detail": "Highest score, lowest risk, five minutes.",
+     "usd": 16.0,
+     "score": 82,
+     "risk": "low"
+    },
+    {
+     "title": "Do next: check the Builder 50K code",
+     "detail": "Saves a one-time fee; verify on the firm's page.",
+     "usd": 19.0,
+     "score": 72,
+     "risk": "low"
+    },
+    {
+     "title": "Wait on: prediction-market edge",
+     "detail": "Thin after fees and high risk; paper only for now.",
+     "usd": 0.0,
+     "score": 30,
+     "risk": "high"
+    }
+   ],
+   "notes": [
+    "Sample numbers, not real. The referee only orders tasks; it never moves money.",
+    "Rankings change as the other streams refresh."
+   ],
+   "error": null
+  }
+ ],
+ "demo": true
+}
