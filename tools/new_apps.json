@@ -369,10 +369,26 @@
     "ms": 1000,
     "n": 5
    }
+  },
+  {
+   "id": "kairos",
+   "name": "Kairos",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The right moment: the bots' day on a 24-hour ring, what they do now",
+   "glyph": "K",
+   "ambient": "chimes",
+   "flavour": [
+    "rings",
+    "Find the right moment",
+    "tick"
+   ],
+   "transition": {
+    "kind": "sunburst",
+    "ms": 1000
+   }
   }
  ],
- "pending": [
-  "kairos"
- ],
+ "pending": [],
  "_pending_note": "Listed by the lead but with no wiring section (and no folder) yet: add an entry here when their section lands."
 }

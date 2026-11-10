@@ -121,6 +121,7 @@ export const BUILT_INS = Object.freeze([
   app('kratos', 'Kratos', 'trading', '#c8a24a', 'Discipline score 0-100 per day: plan, stop, size, hours, flat', { glyph: 'K' }),
   app('pythia', 'Pythia', 'trading', '#e0b060', 'The risk calendar: the next 14 days, and what the bots do around each event', { glyph: 'Ψ' }),
   app('gallery', 'Agora Gallery', 'life', '#c8a24a', 'Every 3D shape of the Agora on a turning pedestal', { glyph: 'Γ' }),
+  app('kairos', 'Kairos', 'trading', '#c8a24a', "The right moment: the bots' day on a 24-hour ring, what they do now", { glyph: 'K' }),
   app('clio', 'Clio', 'trading', '#d8c9a8', 'The research library: every study in plain words', { glyph: 'Κ' }),
   app('atlas', 'Atlas', 'life', '#efc979', 'A fast map of every Olympus dashboard', { glyph: '\u25c8' }),
   app('athena', 'Athena', 'life', '#5ea8ff', 'The library: strategy, rules, quiz', { glyph: '\ud83e\udd89' }),

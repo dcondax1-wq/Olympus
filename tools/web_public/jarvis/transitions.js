@@ -62,6 +62,7 @@ export const REGISTRY = {
   kratos:     { kind: 'columns',       ms: 1000, n: 4 },
   pythia:     { kind: 'sunburst',      ms: 1000 },
   gallery:    { kind: 'columns',       ms: 1000, n: 5 },
+  kairos:     { kind: 'sunburst',      ms: 1000 },
   clio:       { kind: 'tiles',         ms: 820 },
   atlas:      { kind: 'sunburst',      ms: 900 },
   observatory:{ kind: 'sunburst',      ms: 950 },
