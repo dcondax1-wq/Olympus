@@ -31,7 +31,7 @@ void main() {
 def('caustics', 'rippling water-light caustics dancing on a floor (additive, themed)', (t, o, ctx) => {
   const p = parts(t, o), size = o.size || 40, pl = pal();
   const mat = new THREE.ShaderMaterial(Object.assign({ fog: false, defines: { MAXIT: ctx.pick(5, 4, 3) },
-    uniforms: { uTime: { value: 0 }, uPower: { value: o.intensity || 0.55 }, uScale: { value: size / 9 }, uColor: { value: new THREE.Color(o.color || '#' + pl.bloom.clone().lerp(new THREE.Color('#9fe8ff'), 0.5).getHexString()) } },
+    uniforms: { uTime: { value: 0 }, uPower: { value: o.intensity || 0.55 }, uScale: { value: size / 9 }, uColor: { value: new THREE.Color(o.color || '#' + pl.bloom.clone().lerp(new THREE.Color('#7fa6bd'), 0.5).getHexString()) } },
     vertexShader: PLAIN_VS, fragmentShader: CFS }, ADD));
   const m = new THREE.Mesh(floorGeo(size), mat); m.position.copy(vec(o.position, [0, 0.03, 0])); m.renderOrder = 1;
   ctx.scene(p.scene, m);
@@ -208,7 +208,7 @@ function overlay(ctx, target, material) {
   return kids;
 }
 def('hologram', 'scanlines, a rolling light band, fresnel glow and flicker: on opts.target (any Object3D) or as a small hologram projector', (t, o, ctx) => {
-  const p = parts(t, o), mat = holoMaterial(ctx, o.color || '#' + pal().bloom.clone().lerp(new THREE.Color('#7fe9ff'), 0.6).getHexString());
+  const p = parts(t, o), mat = holoMaterial(ctx, o.color || '#' + pal().bloom.clone().lerp(new THREE.Color('#7fa6bd'), 0.6).getHexString());
   ctx.tick((dt, tm) => { mat.uniforms.uTime.value = tm; });
   if (o.target) { overlay(ctx, o.target, mat); return {}; }
   const g = new THREE.Group(), body = new THREE.Mesh(new THREE.TorusKnotGeometry(0.55, 0.17, ctx.pick(160, 110, 60), ctx.pick(18, 12, 8)), mat);

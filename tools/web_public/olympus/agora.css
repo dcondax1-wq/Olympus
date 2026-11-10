@@ -34,6 +34,14 @@ html[data-theme="agora"] body, body.agora {
 /* sheets, tabs */
 .ag-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; } .ag-tab { flex: 0 0 auto; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--ag-line); color: var(--ag-soft); background: transparent; font: 600 15px var(--ag-sans); }
 .ag-tab[aria-selected="true"] { color: #1b1610; background: var(--ag-gold); border-color: var(--ag-gold); }
+/* the one header pattern (2026-11-10 audit): back link, serif title with the gold rule, one-line purpose, a DEMO / LITE chip.
+   Apps that already use .ag-title keep it; every other app's first h1 gets the same serif + rule without any markup change. */
+.ag-back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; color: var(--ag-gold); font: 600 14px var(--ag-sans); text-decoration: none; }
+.ag-sub { margin: 6px 0 0; color: var(--ag-soft); font: 400 14px/1.35 var(--ag-sans); }
+.ag-mode { display: inline-flex; align-items: center; min-height: 24px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--ag-line); background: var(--ag-panel); color: var(--ag-muted); font: 600 12px var(--ag-sans); letter-spacing: .04em; }
+html[data-theme="agora"] h1:not(.ag-title) { font-family: var(--ag-serif); font-weight: 600; letter-spacing: .01em; text-transform: none; }
+html[data-theme="agora"] :is(header, .top, .hd, .head, .topbar) > :is(h1, div) > h1:not(.ag-title)::after,
+html[data-theme="agora"] :is(header, .top, .hd, .head, .topbar) > h1:not(.ag-title)::after { content: ""; display: block; width: 56px; height: 2px; margin-top: 8px; background: linear-gradient(90deg, var(--ag-gold), transparent); }
 /* kill the old techno look wherever it is still around */
 html[data-theme="agora"] * { text-shadow: none !important; }
 html[data-theme="agora"] .scan, html[data-theme="agora"] .scanlines, html[data-theme="agora"] .hud-corner, html[data-theme="agora"] .grid-bg { display: none !important; }

@@ -96,7 +96,7 @@ export function watch(terms, opts = {}) {
     st.textContent = 'abbr.oly-gl{text-decoration:underline dotted rgba(255,255,255,.55);text-underline-offset:3px;cursor:help}'
       + '.oly-gl-tip{position:fixed;z-index:90;max-width:min(280px,calc(100vw - 24px));padding:9px 12px;border-radius:12px;pointer-events:none;'
       + 'background:rgba(9,11,22,.96);border:1px solid rgba(255,255,255,.22);color:#f3f5fb;font:600 13px/1.35 var(--oly-ui,system-ui,sans-serif);box-shadow:0 8px 28px rgba(0,0,0,.5)}'
-      + '.oly-gl-tip b{display:block;margin-bottom:2px;font:800 11px/1 var(--oly-display,system-ui,sans-serif);letter-spacing:.1em;text-transform:uppercase;color:var(--oly-accent,#c084fc)}';
+      + '.oly-gl-tip b{display:block;margin-bottom:2px;font:800 11px/1 var(--oly-display,system-ui,sans-serif);letter-spacing: .05em;text-transform:uppercase;color:var(--oly-accent,#c9a06a)}';
     document.head.append(st);
   }
   function show(a) {

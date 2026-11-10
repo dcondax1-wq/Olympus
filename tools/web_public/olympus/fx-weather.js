@@ -75,7 +75,7 @@ def('rain', 'slanted rain streaks falling through a box around the scene (GPU li
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 4)); geo.setAttribute('aEnd', new THREE.BufferAttribute(end, 1));
   const u = { uTime: { value: 0 }, uLen: { value: o.length || 0.9 }, uBox: { value: vec(o.box, [26, 14, 20]) }, uCenter: { value: vec(o.center, [0, 6, -2]) },
-    uVel: { value: vec(o.vel, [-2.2, -22, 0]) }, uColor: { value: new THREE.Color(o.color || '#9fc4ff').multiplyScalar(0.75) } };
+    uVel: { value: vec(o.vel, [-2.2, -22, 0]) }, uColor: { value: new THREE.Color(o.color || '#7fa6bd').multiplyScalar(0.75) } };
   const mat = new THREE.ShaderMaterial(Object.assign({ uniforms: u, vertexShader: RVS, fragmentShader: RFS, fog: false }, ADD));
   const lines = new THREE.LineSegments(geo, mat); lines.frustumCulled = false; lines.name = 'fx-rain';
   ctx.scene(p.scene, lines);

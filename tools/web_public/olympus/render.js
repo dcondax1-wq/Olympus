@@ -133,8 +133,8 @@ class FinishPass extends Pass {
 /** the theme's 3D colours, or the defaults of the OLYMPUS violet night (an app's own tint leads when the theme is default) */
 export function palette(theme, tint) {
   const t = theme || {};
-  return { sky: t.sky || '#0d0620', fog: t.fog || '#04050c', emissive: t.emissive || tint || '#a855f7', bloom: t.bloom || '#c084fc',
-    accent: t.accent || tint || '#a855f7' };
+  return { sky: t.sky || '#0d0620', fog: t.fog || '#04050c', emissive: t.emissive || tint || '#9c6b3c', bloom: t.bloom || '#c9a06a',
+    accent: t.accent || tint || '#9c6b3c' };
 }
 
 const SKY_FS = `uniform vec3 top, mid, low; varying vec3 vDir;
