@@ -133,7 +133,7 @@ def test_page():
               groups: document.querySelectorAll('#map g').length, chips: [...document.querySelectorAll('#chips button')].map((b) => b.textContent), scene: window.MINTCITY.S.scene, sheet: !document.querySelector('#sheet').hidden,
               map: getComputedStyle(document.querySelector('#mapWrap')).visibility, font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor })""")
             check("c. DEMO (the fixture, flat): the chip, the golden pillar says $1,495 a month, EXAMPLE ESTIMATE, five districts in the list with their dollars and an Open link each to the right app, the 2D map with five tappable districts, five district chips (no tours without 3D)",
-                  d["demo"] and d["base"] == "$1,495" and d["pill"] == "EXAMPLE ESTIMATE" and "$0 to $2,990" in d["text"] and d["rows"] == ["Chrysos", "$1,339", "Mercury", "no estimate", "Sibyl", "$8", "Oikos", "$111", "Arbiter", "$37"]
+                  d["demo"] and d["base"] == "$1,495" and d["pill"] == "EXAMPLE ESTIMATE" and "you could lose about $42 a month" in d["text"] and "$2,547" in d["text"] and d["rows"] == ["Chrysos", "$1,339", "Mercury", "no estimate", "Sibyl", "$8", "Oikos", "$111", "Arbiter", "$37"]
                   and d["links"] == [f"../{i}/" for i in IDS] and d["labels"][0] == "Open the Chrysos app" and d["groups"] == 5 and d["chips"] == ["Chrysos", "Mercury", "Sibyl", "Oikos", "Arbiter"] and d["scene"] == "2d" and not d["sheet"] and d["map"] == "visible", d)
             check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
             AK.shot(p, "mintcity-2d")

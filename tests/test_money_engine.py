@@ -63,6 +63,17 @@ def test_run():
     check("c. the command line works (--fixture --quiet) and exits 0", r.returncode == 0, r.stderr[-300:])
     ex = M.estimate("ok", 100), M.estimate("stale", 100), M.estimate("sample", 100), M.estimate("ok", None)
     check("c. the honest range: ok 30%-150%, stale 0-120%, sample 0-200%, no number -> none", ex == ((30.0, 100.0, 150.0), (0.0, 100.0, 120.0), (0.0, 100.0, 200.0), (None, None, None)), ex)
+    own = {"low": -42.0, "base": 100.0, "high": 150.0}
+    nr = M.normalize("chrysos", {"id": "chrysos", "status": "ok", "asof": M.iso(M.now_utc()), "headline": {"text": "x", "usd_month": 100}, "usd_month": own})
+    check("c. a scanner's OWN range passes through (a negative low is a loss and is kept) and wins over the multipliers; one that gives only a number keeps 30% / 100% / 150%",
+          nr["usd_range"] == own and M.estimate("ok", 100, own) == (-42.0, 100.0, 150.0) and M.estimate("sample", 100, own) == (-42.0, 100.0, 150.0) and M.estimate("ok", 100, None) == (30.0, 100.0, 150.0)
+          and M.normalize("mercury", {"id": "mercury", "status": "ok", "asof": M.iso(M.now_utc()), "headline": {"text": "x", "usd_month": 100}})["usd_range"] is None, nr)
+    junk = [{"low": 5, "base": 1, "high": 9}, {"low": "a", "base": 1, "high": 9}, {"low": 1, "base": 2}, [1, 2, 3], "x", None, {"low": float("nan"), "base": 1, "high": 2}]
+    check("c. a broken own range is ignored (low > base, text, a missing key, nan, a list): the fixed multipliers apply instead", all(M.own_range({"usd_month": j}) is None for j in junk), junk)
+    two = M.build_index([dict(M.normalize("chrysos", {"id": "chrysos", "status": "ok", "asof": M.iso(M.now_utc()), "headline": {"text": "x", "usd_month": 100}, "usd_month": own}), source="scanner", error=None),
+                         dict(M.normalize("mercury", {"id": "mercury", "status": "ok", "asof": M.iso(M.now_utc()), "headline": {"text": "y", "usd_month": 100}}), source="scanner", error=None)])
+    check("c. the combined total adds each stream's own range: (-42 + 30) / (100 + 100) / (150 + 150) = -12 / 200 / 300; the stream rows carry their own low / base / high",
+          two["total"]["low"] == -12.0 and two["total"]["base"] == 200.0 and two["total"]["high"] == 300.0 and two["streams"][0]["usd_month"] == own and two["streams"][1]["usd_month"] == {"low": 30.0, "base": 100.0, "high": 150.0}, two["total"])
     bad = M.normalize("mercury", {"id": "mercury", "status": "ok", "asof": "garbage", "headline": {"text": "x", "usd_month": float("nan")}, "items": [None, {"title": ""}, {"title": "t", "score": "x", "risk": 5}]})
     check("c. junk input is cleaned, never raises: bad date -> stale, nan -> no number, bad items dropped / defaulted", bad and bad["status"] == "stale" and bad["headline"]["usd_month"] is None and len(bad["items"]) == 1 and bad["items"][0]["risk"] == "med" and bad["items"][0]["score"] == 0, bad)
 
@@ -110,7 +121,23 @@ import(process.argv[2]).then((C) => {
   const live = JSON.parse(JSON.stringify(idx)); live.streams.forEach((s) => { s.status = 'ok'; });
   const cards = C.buildCards({ home: { accounts: [] }, money: live }, Date.parse('2026-11-12T12:00:00Z'));
   const d = cards.find((c) => c.slot === 'deals'), f = cards.find((c) => c.slot === 'feeds');
-  console.log(JSON.stringify({ deals: [d.tone, d.title, d.needs], n: cards.length, feeds: f.tone }));
+  console.log(JSON.stringify({ deals: [d.tone, d.title, d.needs], n: cards.length, feeds: f.tone, dollarMinus: JSON.stringify(cards).includes('$-') }));
+});
+"""
+
+
+MINT_HARNESS = r"""
+import(process.argv[2]).then((C) => {
+  const idx = JSON.parse(require('fs').readFileSync(process.argv[3], 'utf8')), now = Date.parse(idx.asof);
+  const streams = C.IDS.map((id) => C.normStream(id, idx.streams.find((s) => s.id === id), now)), c = C.combine(streams), bar = C.rangeBar(c.low, c.base, c.high);
+  console.log(JSON.stringify({ low: c.low, base: c.base, high: c.high, text: c.text, worst: C.worstText(c.low), bar, dollarMinus: (c.text + C.worstText(c.low) + C.rangeText(c.low, c.high)).includes('$-') }));
+});
+"""
+CITY_HARNESS = r"""
+import(process.argv[2]).then((C) => {
+  const idx = JSON.parse(require('fs').readFileSync(process.argv[3], 'utf8'));
+  const streams = C.IDS.map((id) => C.normStream(id, idx.streams.find((s) => s.id === id))), c = C.combine(streams), card = C.jarvisCard(streams, Date.parse(idx.asof));
+  console.log(JSON.stringify({ low: c.low, text: c.text, range: card.kpis.find((k) => k.label === 'Range').value, dollarMinus: (c.text + C.rangeText(c.low, c.high)).includes('$-') }));
 });
 """
 
@@ -130,6 +157,25 @@ def test_real_scanners():
     o = AK.node("stoa", STOA_HARNESS, os.path.join(out, "index.json"))
     if o is not None:
         check("g. Stoa reads the real index: Mercury's 'ends 2026-11-13' deal becomes 'Deal ends in ...' on 2026-11-12 (warn), six cards", "_error" not in o and o["deals"][0] == "warn" and o["deals"][1].startswith("Deal ends in") and o["n"] == 6, o)
+    ch = by["chrysos"]["usd_month"]
+    t = idx["total"]
+    check("g. the REAL Chrysos scanner's own range reaches the index: its Stress case is a LOSS (negative low), low < base < high, and the combined low is the sum of the five lows (so it can be below the others' lows)",
+          ch["low"] < 0 < ch["base"] < ch["high"] and abs(t["low"] - sum((s["usd_month"]["low"] or 0) for s in idx["streams"])) < 0.02 and t["low"] < sum(max((s["usd_month"]["low"] or 0), 0) for s in idx["streams"]), (ch, t))
+    sibyl = by["sibyl"]["usd_month"]
+    check("g. a scanner that gives only a number keeps the fixed multipliers (a sample stream: 0 to 200% of its base)", sibyl["low"] in (0, 0.0, None) or sibyl["base"] is None or (sibyl["low"] == 0 and sibyl["high"] == round(sibyl["base"] * 2, 2)), sibyl)
+    M.run(out, True, 120, quiet=True)          # the whole index again (the Mercury-only run above rewrote it)
+    idx_path = os.path.join(out, "index.json")
+    mo = AK.node("mint", MINT_HARNESS, idx_path)
+    if mo is not None:
+        check("g. Mint reads the REAL index: the combined low end is negative (the Stress loss), worded 'Worst case: you could lose about $...', the sentence says so, the range bar marks zero, nothing reads '$-'",
+              "_error" not in mo and mo["low"] < 0 and mo["worst"].startswith("Worst case: you could lose about $") and "could lose about" in mo["text"] and mo["bar"]["neg"] and mo["bar"]["zero"] is not None and not mo["dollarMinus"], mo)
+    co = AK.node("mintcity", CITY_HARNESS, idx_path)
+    if co is not None:
+        check("g. Mint City reads the REAL index: the same negative low end, 'you could lose about $...' in its sentence, the Jarvis range with a sign, nothing reads '$-'",
+              "_error" not in co and co["low"] < 0 and "could lose about" in co["text"] and co["range"].startswith("-$") and not co["dollarMinus"], co)
+    so = AK.node("stoa", STOA_HARNESS, idx_path)
+    if so is not None:
+        check("g. Stoa reads the REAL index with a negative Chrysos low end: six cards, no crash, no '$-' in any card", "_error" not in so and so["n"] == 6 and not so.get("dollarMinus", False), so)
     P.publish(out, os.path.join(out, "site"), True)
     pub = os.listdir(os.path.join(out, "site", "money"))
     check("g. publish copies the five whole scanner files and the index, not the state file", sorted(pub) == sorted([i + ".json" for i in M.IDS] + ["index.json"]), pub)
