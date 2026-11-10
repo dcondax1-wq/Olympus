@@ -5,7 +5,7 @@ const O = () => window.OLYMPUS || null;
 
 export async function openAthens() {
   if (session) return session;
-  const [{ AthensUI }, { Athens }, { loadLive }] = await Promise.all([import('./athens-ui.js?v=t2'), import('./athens.js?v=t2'), import('./athens-data.js?v=t2')]);
+  const [{ AthensUI }, { Athens }, { loadLive }] = await Promise.all([import('./athens-ui.js?v=t3'), import('./athens.js?v=t3'), import('./athens-data.js?v=t3')]);
   if (!document.querySelector('link[data-athens-css]')) {
     const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens.css?v=t1', import.meta.url).href; l.dataset.athensCss = '1'; document.head.append(l);
     await new Promise((r) => { l.onload = l.onerror = r; setTimeout(r, 1500); });

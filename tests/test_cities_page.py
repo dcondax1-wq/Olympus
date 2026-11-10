@@ -793,7 +793,7 @@ def sec_i(br, base, C, days, picks, ids):
 
 
 # ------------------------------------------------------------------ j. ATHENS: the giant Greek metropolis (cities/athens*.js, 2026-11-10)
-ATHENS_JS = ("athens-plan.js", "athens-geo.js", "athens-build.js", "athens.js", "athens-ui.js", "athens-entry.js", "athens-data.js")
+ATHENS_JS = ("athens-interior.js", "athens-plan.js", "athens-geo.js", "athens-build.js", "athens.js", "athens-ui.js", "athens-entry.js", "athens-data.js")
 
 
 def part_athens():
@@ -806,6 +806,9 @@ def part_athens():
     check("j. Athens has no outside address, no CDN, no Math.random, no network call", not any(outside.values()) and all("Math.random" not in t for t in srcs.values()) and all("fetch(" not in t for n, t in srcs.items() if n != "athens-data.js")
           and "fetch(url" in srcs["athens-data.js"] and "http" not in srcs["athens-data.js"].replace("//", ""), outside)
     check("j. three.js from ../jarvis/ only; scenery only (no order, no trade call)", "../jarvis/three.module.min.js" in srcs["athens.js"] and not any(w in " ".join(srcs.values()).lower() for w in ("placeorder", "/api/order", "arm_live")))
+    check("j. hill lit warm (normals leaned to the sky, limestone colours), photo mode with a watermark and no network, temple interior, ambient life",
+          "lean every normal" in srcs["athens.js"] and "OLYMPUS" in srcs["athens.js"] and "toBlob" in srcs["athens-ui.js"] and "preserveDrawingBuffer" not in " ".join(srcs.values())
+          and "InstancedMesh" in srcs["athens-interior.js"] and "lifeInit" in srcs["athens.js"] and "this.ambient = this.tierName !== 'low' && !this.reduced" in srcs["athens.js"])
     check("j. warm light: 3500 K by day, 2700 K at dusk; marble, bronze and gold materials", all(k in srcs["athens.js"] for k in ("3500", "2700", "MeshPhongMaterial")) and all(k in srcs["athens-geo.js"] for k in ("marble", "bronze", "gold")))
     check("j. instancing + near / far LOD + frustum-culled house chunks, tier caps, LITE stays light",
           all(k in srcs["athens.js"] for k in ("InstancedMesh", "c.a.visible = !far", "TIERS", "low: {")) and "frameGap" in srcs["athens-entry.js"])
@@ -881,6 +884,32 @@ def sec_j(br, base, C, days, picks, ids):
             fates = p.evaluate("(() => { const s = window.__athens.scene, a = s.anchors.find((x) => x.id === 'fates'); window.__athens.ui.showCard(a); return document.querySelector('.ath-card').textContent; })()")
             check("j. a glowing temple's card says what needs you, in plain words", "Needs you" in fates and "Drawdown" in fates, fates)
             p.screenshot(path=os.path.join(SHOTS, "athens_390x844_needs.png"))
+            amb = p.evaluate("({ birds: !!window.__athens.scene.birds, smoke: !!window.__athens.scene.smoke, shimmer: window.__athens.scene.wU.uShimmer.value })")
+            check("j. ambient life on in HD: birds, market smoke, water shimmer", amb["birds"] and amb["smoke"] and amb["shimmer"] == 1, amb)
+            p.click("[data-a=enter]")
+            p.wait_for_timeout(500)
+            inside = p.evaluate("({ hall: !!window.__athens.scene.interior, text: document.querySelector('.ath-int').textContent, go: !!document.querySelector('.ath-int .ath-go'), flat: document.querySelector('.ath-int').classList.contains('flat') })")
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_interior.png"))
+            check("j. Enter opens a 3D marble hall with the app name, the same reason text and the Open button", inside["hall"] and not inside["flat"] and "Needs you" in inside["text"] and "Fates" in inside["text"] and inside["go"], inside)
+            p.click("[data-a=leave]")
+            check("j. leaving the hall frees it", p.evaluate("!window.__athens.scene.interior"))
+            p.click("[data-a=photo]")
+            ui_hidden = p.evaluate("getComputedStyle(document.querySelector('.ath-top')).display === 'none' && getComputedStyle(document.querySelector('.ath-dock')).display === 'none' && !document.querySelector('.ath-photobar').hidden")
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_photo.png"))
+            with p.expect_download(timeout=60000) as dl:
+                p.click("[data-a=save]")
+            path = dl.value.path()
+            head = open(path, "rb").read(8)
+            check("j. photo mode hides the UI and Save picture downloads a PNG", ui_hidden and head == b"\x89PNG\r\n\x1a\n" and dl.value.suggested_filename.endswith(".png") and os.path.getsize(path) > 5000, [ui_hidden, head, dl.value.suggested_filename])
+            p.click("[data-a=photodone]")
+            p.wait_for_timeout(300)
+            f0 = p.evaluate("window.__athens.scene.frameCount")
+            for _ in range(40):
+                p.wait_for_timeout(500)
+                if p.evaluate("[...document.querySelectorAll('.ath-label')].filter((l) => l.style.display !== 'none' && l.style.transform).filter((l) => { const m = document.querySelector('.ath-mini').getBoundingClientRect(), r = l.getBoundingClientRect(); return r.right > m.left && r.left < m.right && r.bottom > m.top && r.top < m.bottom; }).length") == 0:
+                    break
+            overlap = p.evaluate("(() => { const m = document.querySelector('.ath-mini').getBoundingClientRect(); return [...document.querySelectorAll('.ath-label')].filter((l) => l.style.display !== 'none' && l.style.transform).map((l) => l.getBoundingClientRect()).filter((r) => r.right > m.left && r.left < m.right && r.bottom > m.top && r.top < m.bottom).length; })()")
+            check("j. no monument label hides behind the minimap", overlap == 0, overlap)
             check("j. tap a building -> its app card with an Open link", card["shown"] and p.evaluate("window.__tapId") in (card["go"] or "") and card["title"], card)
             p.click("[data-a=jump]")
             p.wait_for_timeout(600)
@@ -916,12 +945,19 @@ def sec_j(br, base, C, days, picks, ids):
             p.click("[data-a=close]")
             p.wait_for_timeout(500)
             check("j. close leaves Cities as it was (overlay gone, no leftover renderer)", p.evaluate("!document.querySelector('#athens') && !window.__athens"))
+        if q == "low":
+            amb = p.evaluate("({ birds: !!window.__athens.scene.birds, smoke: !!window.__athens.scene.smoke, shimmer: window.__athens.scene.wU.uShimmer.value })")
+            p.evaluate("window.__athens.ui.showCard(window.__athens.scene.anchors.find((a) => a.id === 'fates'))")
+            p.click("[data-a=enter]")
+            p.wait_for_timeout(300)
+            flat = p.evaluate("({ hall: !!window.__athens.scene.interior, flat: document.querySelector('.ath-int').classList.contains('flat'), text: document.querySelector('.ath-int').textContent })")
+            check("j. LITE: no birds, smoke or shimmer; Enter shows a flat card (no 3D hall) with the same reason and button", not amb["birds"] and not amb["smoke"] and amb["shimmer"] == 0 and flat["flat"] and not flat["hall"] and "Needs you" in flat["text"], [amb, flat])
         ctx.close()
     # first visit: shown once (localStorage), 3 steps; reduced motion: no light cycle
     ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=True, is_mobile=True, reduced_motion="reduce")
     p = ctx.new_page()
     p.on("pageerror", lambda e: errs.append(str(e)))
-    p.goto(base + "?athens=1&q=low", wait_until="domcontentloaded")
+    p.goto(base + "?athens=1&q=high", wait_until="domcontentloaded")
     p.wait_for_function("window.__athens && window.__athens.live", timeout=150000)
     p.wait_for_timeout(800)
     shown = p.evaluate("!document.querySelector('.ath-first').hidden")
@@ -936,11 +972,21 @@ def sec_j(br, base, C, days, picks, ids):
     ta = p.evaluate("window.__athens.scene.time")
     p.wait_for_timeout(1500)
     check("j. reduced motion: no automatic day / dusk cycle (locked on Day, only the buttons change the light)", p.evaluate("window.__athens.scene.mode") == "day" and p.evaluate("window.__athens.scene.time") == ta)
+    check("j. reduced motion: no birds, smoke or shimmer", not p.evaluate("!!window.__athens.scene.birds"))
     p.click("[data-a=close]")
     p.evaluate("window.openAthens()")
     p.wait_for_function("window.__athens && window.__athens.live", timeout=150000)
     p.wait_for_timeout(500)
     check("j. the first-visit card does not come back", p.evaluate("document.querySelector('.ath-first').hidden"))
+    ctx.close()
+    ctx = br.new_context(viewport={"width": 375, "height": 667}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    p = ctx.new_page()
+    p.goto(base + "?athens=1&first=0&q=low", wait_until="domcontentloaded")
+    p.wait_for_function("window.__athens && window.__athens.live", timeout=150000)
+    p.wait_for_timeout(1500)
+    lay = p.evaluate("(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(), d = r('.ath-dock'), m = r('.ath-mini'), t = r('.ath-today'); return { sideways: document.documentElement.scrollWidth > innerWidth, dockIn: d.bottom <= innerHeight && d.left >= 0 && d.right <= innerWidth, miniIn: m.right <= innerWidth && m.bottom < d.top, bannerClear: t.right <= m.left + 1 || t.bottom <= m.top }; })()")
+    p.screenshot(path=os.path.join(SHOTS, "athens_375x667_open.png"))
+    check("j. layout at 375 x 667: dock, minimap and banner fit and do not collide", not lay["sideways"] and lay["dockIn"] and lay["miniIn"] and lay["bannerClear"], lay)
     ctx.close()
     hi, lo = out["high"], out["low"]
     check("j. HIGH: 900+ houses, <= 40 draw calls, <= 150k triangles on screen", not hi["err"] and hi["houses"] >= 900 and hi["calls"] <= 42 and hi["tris"] <= 150_000, hi)
