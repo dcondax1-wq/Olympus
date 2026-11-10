@@ -191,3 +191,16 @@ App `stoa` (`tools/web_public/stoa/`): reads `../home.json`, `../money/index.jso
 5. `python tools/apps_list_build.py` then `--check`.
 6. `intro-app.js` FLAVOUR: `stoa: ['columns', 'Light the columns', 'tick'],` ; `transitions.js` REGISTRY: `stoa: { kind: 'columns', ms: 1000, n: 6 },`
 7. Tests: `tests.test_stoa_page`, `tests.test_mint_page`, `tests.test_money_engine`, plus the shared list in section 7 above.
+
+---
+# Wiring MINT CITY, the money machines as a 3D city (2026-11-10)
+
+App `mintcity` (`tools/web_public/mintcity/`): reads `../money/index.json`, falls back to `fixture.json` (DEMO). 3D is `mintcityscene.js` (optional module, instanced buildings + LOD); LITE / no WebGL keeps the 2D map and the list of five districts. A tap on a district selects it (camera flies there, a sheet opens); its Open button / the list links open `../chrysos/`, `../mercury/`, `../sibyl/`, `../oikos/`, `../arbiter/`. URL: `?district=<id>`, `?demo=1`, `?flat=1`, `?q=low`. Test `tests/test_mintcity_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('mintcity', 'Mint City', 'money', '#c8a24a', 'The five money machines as a marble city', { glyph: 'MC' }),`
+2. `olympus/olympus.js` APPS: `mintcity: ['Mint City', 'MC', '#c8a24a'],` AMBIENT: `mintcity: 'coins',`
+3. `tools/build_web_dashboard.py` app tuple: add `"mintcity"` (with `"mint"`, `"stoa"`); the money files come from `python tools/money_publish.py --site <site_dir>`.
+4. `sw.js` OTHER_APPS add `'mintcity/'`, bump `CACHE`, update the pinned strings in the zenith / hub tests.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `intro-app.js` FLAVOUR: `mintcity: ['columns', 'Raise the city', 'tick'],` ; `transitions.js` REGISTRY: `mintcity: { kind: 'columns', ms: 1000, n: 5 },`
+7. Tests: `tests.test_mintcity_page`, `tests.test_mint_page`, `tests.test_stoa_page`, `tests.test_money_engine`, plus the shared list in section 7 above.
