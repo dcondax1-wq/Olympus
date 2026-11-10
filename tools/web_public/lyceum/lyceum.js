@@ -158,6 +158,13 @@ async function boot() {
   S.fixture = fx; S.trades = tr; S.home = home;
   setup();
   render();
+  quizFromHash();
 }
+// Deep link from Jarvis ("start the quiz"): #quiz brings today's questions into view and focuses the first answer.
+function quizFromHash() {
+  if (!/(?:^#|[&#])quiz\b/.test(location.hash || '')) return;
+  try { const c = $('quizCard') || $('quizBody'); if (c && c.scrollIntoView) c.scrollIntoView({ block: 'start' }); const b = $('quizBody') && $('quizBody').querySelector('button'); if (b) b.focus({ preventScroll: true }); } catch (_) { /* the page is already showing the quiz */ }
+}
+window.addEventListener('hashchange', quizFromHash);
 window.LYCEUM = { S, C, ready: () => S.ready, render };
 boot().catch((e) => { say('Something went wrong: ' + (e && e.message ? e.message : e)); try { if (O && O.fail) O.fail('Lyceum could not start'); } catch (_) { /* nothing */ } });

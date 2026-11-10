@@ -264,7 +264,7 @@ def run_main(br, url):
           and abs(g["rate"] - 1) <= 0.05 and abs(g["pitch"] - 1) <= 0.05, g)       # (2026-11-04: the natural-speech layer nudges rate / pitch by up to 2.5% per phrase)
     check("c. the 3D core goes full screen (mounted in voice mode, the Jarvis screen's core let go: one core at a time)",
           s.get("core") is not None and p.evaluate("document.getElementById('coreSlot').children.length") == 0, (s.get("core"), home_core))
-    check("c. the button labels the voice", p.inner_text("#vmVoice").startswith("VOICE · AVA"), p.inner_text("#vmVoice"))
+    check("c. the button labels the voice", p.inner_text("#vmVoice").lower().startswith("voice: ava"), p.inner_text("#vmVoice"))
     # the mic analyser (asked inside the tile's tap) and the core reacting to it while listening
     wait_phase(p, "listening", 8000)
     p.wait_for_function(f"{VMS}.mic && {VMS}.micLive", timeout=8000)
@@ -289,7 +289,7 @@ def run_main(br, url):
     check("d. turn-taking: listening again after the answer (seen in the phase history: the 'once' recognizer's listening phase can end before a poll on a loaded machine)",
           p.evaluate("(() => { const a = window.__phases; const i = a.lastIndexOf('speaking'); return i >= 0 && a.slice(i).includes('listening'); })()") and p.evaluate("window.__srStarts") >= 2, vm(p))
     vd = p.evaluate("document.getElementById('vmVerdict').textContent")
-    check("d. the HUD arc shows the system verdict (the bots' RUNNING), in its colour", vd.startswith("SYSTEM · RUNNING")
+    check("d. the HUD arc shows the system verdict (the bots' RUNNING), in its colour", vd.lower().startswith("system: running")
           and p.evaluate("document.getElementById('vm').dataset.verdict") == "ok", vd)
     # the numbers cited float out: 'how much room do I have' -> Zlarior · room $1,106
     p.evaluate("window.__utter = 'how much room do I have'; window.__ttsStep = 1200; window.__srMode = 'once'; window.__sr.stop()")

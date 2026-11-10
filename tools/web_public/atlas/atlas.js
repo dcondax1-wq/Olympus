@@ -199,6 +199,15 @@
     }
   }
   loadNeeds().catch(() => { $('#needsText').textContent = 'Status is not available right now.'; });
+  // Deep link from Jarvis ("open the money district"): #zone=market|research|risk|command|life shows only that district.
+  function zoneFromHash() {
+    const m = /(?:^#|[&#])zone=([a-z]+)/.exec(location.hash || ''), id = m && zones.some((zn) => zn.id === m[1]) ? m[1] : null;
+    if (!id) return;
+    filter = id;
+    document.querySelectorAll('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.filter === id)));
+  }
+  zoneFromHash();
+  window.addEventListener('hashchange', () => { zoneFromHash(); render(); });
   render();
   // Back/forward cache restores the old DOM without rerunning this script.
   window.addEventListener('pageshow', (event) => {

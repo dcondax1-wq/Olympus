@@ -29,6 +29,8 @@ a missing file is `null`. `jdata.readLocal(storage)` adds what this phone keeps.
 | `odeon` | `../odeon/trades.json` | trades, worst / best weekday, win rate, explain a trade, usual 1R |
 | `rules` | `../ledger/rules.json` | MFFU limits (micros, flat by, payouts, inactivity) |
 | `pythia` | `../pythia/events.json` | next CPI / FOMC / NFP, event nudges |
+| `kalshi` | the Kalshi bot's `kalshi.json` (the brain passes its facts; `sources.kalshi`) | how is Kalshi, balance, open bets, today |
+| `kalshiEdges`, `kalshiLog`, `kalshiLearned`, `kalshiLedger` | `../kalshicity/edges.json`, `learning_log.json`, `learned.json`, `ledger.json` | the engine's copy when the feed is down; which bet kinds lose money |
 | `planner`, `journal`, `ledger`, `compassState` | `planner.agora.v1`, `journal.v1`, `ledger.v1`, `compass.state.v1` | read only here |
 
 Every answer carries `sources: ['home.json, 6 min ago']` and ends with "From home.json, 6 min ago." R is dollars divided by the owner's
@@ -59,7 +61,9 @@ into a switch of app (existing contract), and `finish()` adds `say`.
 `explain_trade`, `trades_count`, `next_event`, `can_trade_now`, `rules_limit`, `deals`, `sibyl_pick`, `streams`, `unrated`, `feeds`,
 `next_action` (Compass's own rules when `../compass/compasscore.js` loads, else the nudges), `navigate`, `atlas_district`, `quiz_start`,
 `planner_goal`, `planner_task`, `planner_note`, `compass_done`, `copy_briefing`, `export_data`, `import_data`, `remember`, `recall`,
-`memory_list`, `forget`, `help_skills`. The briefing itself stays with the brain.
+`memory_list`, `forget`, `help_skills`, `kalshi_status` (kalshi-brain.js's own answer), `kalshi_balance`, `kalshi_positions`, `kalshi_today`, `kalshi_losers`, `kalshi_edge_research` (answers only from a published `sources.kalshiEdge = { text }`, else "I do not have that yet"; no such file exists today). The briefing itself stays with the brain.
+
+`what can you do` is generated: `router.helpTable()` groups every intent from the router's own table with 3 example phrases (`INFO`); a test routes each example back to its intent, so the help cannot drift.
 
 ## Actions (`createActions`)
 
@@ -127,6 +131,8 @@ vm.setPtt(true|false)  vm.pttDown()  vm.pttUp()  vm.stats()  // adds { ptt, hold
 import { statusText, isIOS, PTT_KEY } from './voice-mode.js';
 ```
 
+The voice screen is AGORA (serif title, marble panels, gold and terracotta, sentence-case words, no glow); the 3D core inside it keeps its own colours.
+
 ## Smart mode (the owner's own brain)
 
 When "Connect my brain" is on, open-ended questions go to the model with `sk.contextFor(question)` added to its system prompt as
@@ -140,6 +146,5 @@ router answers. The model never writes: memory and Planner writes stay behind th
 - `jarvis/index.html` (Jarvis home agent): optionally pass `skillsEnv: { navigate, copy, download, briefing }` to `createBrain` so "copy the
   briefing" and "export my data" reach the clipboard and a download; without it the reply still carries the text and the `download` object.
   Handle `reply.download` (`{ name, text, mime }`) with a Blob link, and show `sk.nudges()` on the home.
-- `atlas/atlas.js`: honour `#zone=<id>` (the five districts) and `lyceum/lyceum.js`: honour `#quiz` (start today's quiz). Until then the app opens
-  without the deep link.
+- Done (2026-11-10): `atlas/atlas.js` honours `#zone=<id>` and `lyceum/lyceum.js` honours `#quiz`.
 - Settings: nothing, the memory key is already under `jarvis.`.
