@@ -455,7 +455,7 @@ def run_browser(url, tmp):
         p = ctx.new_page()
         p.set_default_timeout(120000)                   # a busy box: software GL + many pages
         errs, cons, dialogs, bad, fontres = [], [], [], [], []
-        p.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and r.url.startswith(url.split("/nq-dashboard/")[0]) and "/kalshicity/" not in r.url else None)
+        p.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and r.url.startswith(url.split("/nq-dashboard/")[0]) and "/kalshicity/" not in r.url and "/nq-dashboard/kalshi.json" not in r.url else None)
         p.on("response", lambda r: fontres.append((r.status, r.url.rsplit("/", 1)[1])) if ".woff2" in r.url else None)
         p.on("pageerror", lambda e: errs.append(str(e)))
         p.on("console", lambda m: cons.append(m.text) if m.type == "error" and not re.search(r"Failed to load resource|net::ERR", m.text) else None)
@@ -1150,7 +1150,7 @@ def part_k(br, url, tmp):
     nofont = lambda u: FONTS or ".woff2" not in u                    # noqa: E731  (a checkout without Jarvis's fonts: their 404s only)
     q.on("console", lambda m: errs.append((m.text, (m.location or {}).get("url", ""))) if m.type == "error" and SITE["mode"] == "ok" and not SITE["slow"]
          and nofont((m.location or {}).get("url", "")) and "kalshi.json" not in (m.location or {}).get("url", "") and "/kalshicity/" not in (m.location or {}).get("url", "") else None)   # the feed's 404 = waiting; Kalshi City's HEAD = 404 until that page exists
-    q.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and "127.0.0.1" in r.url and SITE["mode"] == "ok" and nofont(r.url) and "/kalshicity/" not in r.url else None)
+    q.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and "127.0.0.1" in r.url and SITE["mode"] == "ok" and nofont(r.url) and "/kalshicity/" not in r.url and "/nq-dashboard/kalshi.json" not in r.url else None)
     pg = lambda: q.evaluate("document.title === 'Kalshi' && !!document.getElementById('body')")  # noqa: E731
 
     def until(js, timeout=10000):

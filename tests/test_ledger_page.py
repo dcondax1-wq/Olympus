@@ -69,8 +69,8 @@ def part_a():
           and "new THREE.WebGLRenderer" not in sc and "rc.dispose()" in sc and "InstancedMesh" in sc and "godRays" in sc)
     check("a. no innerHTML / insertAdjacentHTML / document.write: the data only ever goes in as text", not any(re.search(r"innerHTML|insertAdjacentHTML|document\.write", s) for s in js.values()))
     fetched = {x.strip() for x in re.findall(r"getJSON\(([^,)]+)", js["ledger.js"])} - {"url"}
-    check("a. the page reads only home.json, rules.json, the public Kalshi feed, its fixture and the Money plan's ../plutus/roadmap.json (GET); no WebSocket / beacon / XHR / EventSource, no POST, no custom header, nothing sent",
-          fetched == {"'../home.json'", "'rules.json'", "RAW", "'fixture.json'", "'../plutus/roadmap.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
+    check("a. the page reads only home.json, rules.json, the public Kalshi feed (this site's own kalshi.json first), its fixture and the Money plan's ../plutus/roadmap.json (GET); no WebSocket / beacon / XHR / EventSource, no POST, no custom header, nothing sent",
+          fetched == {"'../home.json'", "'rules.json'", "RAW", "SITE_FEED", "'fixture.json'", "'../plutus/roadmap.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
           and not re.search(r"method\s*:|'POST'|headers\s*:|body\s*:", js["ledger.js"]), fetched)
     ls = re.findall(r"localStorage\.(\w+)Item\(([^,)]+)", " ".join(js.values()))
     check("a. storage only under the one key 'ledger.v1' (read, write) plus the 30-minute 'ledger.opt404.<url>' not-there notes; no cookies, no IndexedDB, no other keys", ls and all(k in ("KEY", "'ledger.opt404.' + u") for _, k in ls) and "const KEY = 'ledger.v1'" in js["ledger.js"]
