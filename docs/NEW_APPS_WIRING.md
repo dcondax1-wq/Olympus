@@ -67,3 +67,24 @@ Then update CLAUDE_REFERENCE "OLYMPUS apps and tools" (36 apps) and the one OLYM
 | hera | `../plutus/roadmap.json` | `fixture.json` (saved copy; a test fails when it goes stale) |
 | dionysus | the public `kalshi-feed` raw `kalshi.json` (same as the Kalshi page), `../kalshicity/edges.json`, `../kalshicity/whatif.json` | the site's copy of the book, then `fixture.json` |
 | clio | `../writeups/index.json` (optional, see 3), `../data.json` (docs list), `../writeups/<slug>.md` on tap | `fixture.json` |
+
+---
+# Wiring the two money pages DELPHI and PNYX (2026-11-10)
+
+Apps: `delphi` (the oracle's briefing, reads `../home.json` live.brief + `../ledger/rules.json`) and `pnyx` (the assembly, MFFU rules / risk calculator, reads `../home.json` + `../ledger/rules.json`) in `tools/web_public/<id>/`. Tests `tests/test_delphi_page.py`, `tests/test_pnyx_page.py`. Same kit pins as the six above (`olympus.js?v=o4`, `agora.css?v=a1`, `intro-app.js?v=i5`). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+## 1. `jarvis/apps.js` BUILT_INS (after the `clio` row; colours equal the APPS rows)
+```js
+  app('delphi', 'Delphi', 'trading', '#e0b060', 'The oracle\'s briefing: plan, target, go / no-go', { glyph: 'Φ' }),
+  app('pnyx', 'Pnyx', 'money', '#c8a24a', 'Prop-firm rules and risk calculator: stop to micros', { glyph: 'Π' }),
+```
+## 2. `olympus/olympus.js`
+APPS: `delphi: ['Delphi', 'Φ', '#e0b060'], pnyx: ['Pnyx', 'Π', '#c8a24a'],`
+AMBIENT (existing beds): `delphi: 'chimes', pnyx: 'coins',`
+## 3. `tools/build_web_dashboard.py` app tuple (~line 1212): add `"delphi", "pnyx"` after the AGORA six.
+## 4. `tools/web_public/sw.js`: `OTHER_APPS` add `'delphi/', 'pnyx/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+## 5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+## 6. Shared lines
+`olympus/intro-app.js` FLAVOUR: `delphi: ['rings', 'Read the omens', 'tick'], pnyx: ['columns', 'Count the risk', 'tap'],`
+`jarvis/transitions.js` REGISTRY: `delphi: { kind: 'sunburst', ms: 1000 }, pnyx: { kind: 'columns', ms: 1000, n: 5 },`
+## 7. Tests after wiring: `tests.test_delphi_page`, `tests.test_pnyx_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`. Then app count 38 in CLAUDE_REFERENCE / CLAUDE.md.
