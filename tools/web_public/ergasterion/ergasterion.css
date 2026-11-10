@@ -1,0 +1,74 @@
+/* AGORA app base (docs/DESIGN_AGORA.md, olympus/agora.css): marble cards, serif headings, gold rule. Only layout lives here; every colour is an --ag-* token.
+   Safe areas on every edge; the page ends 176 px above the bottom (Jarvis's orb owns the bottom-right corner); every tap target is at least 44 px; no sideways scroll at 375 px. */
+:root { --acc: var(--oly-accent, #c8a24a); --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px)); --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px)); }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { background: var(--ag-night, #14110e); }
+body { margin: 0; min-height: var(--oly-vh, 100vh); overflow-x: hidden; font: 500 15px/1.45 var(--ag-sans, -apple-system, system-ui, sans-serif); color: var(--ag-text, #f3ece0); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ag-gold, #c8a24a); outline-offset: 2px; }
+[hidden] { display: none !important; }
+#app { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: calc(var(--st) + 14px) calc(var(--sr) + 16px) calc(176px + var(--sb)) calc(var(--sl) + 16px); }
+html.framed #app { padding-top: 12px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand img { width: 44px; height: 44px; border-radius: 12px; flex: none; box-shadow: var(--ag-shadow); }
+.brand h1 { margin: 0; }
+.brand .sub { margin: 6px 0 0; font-size: 13px; color: var(--ag-soft); }
+.tags { display: flex; gap: 6px; align-items: center; flex: none; }
+.tag { padding: 5px 10px; border-radius: 999px; font: 700 12px/1 var(--ag-sans); letter-spacing: .02em; border: 1px solid var(--ag-line); color: var(--ag-soft); }
+.tag.demo { color: #1b1610; background: var(--ag-sun); border-color: transparent; }
+.card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
+.card > h2 { margin: 0; }
+.lead { margin: 0; font-size: 15px; color: var(--ag-soft); }
+.note { margin: 0; font-size: 13px; color: var(--ag-muted); }
+.pos { color: var(--ag-olive); } .neg { color: var(--ag-terra); }
+.kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; margin: 0; font-size: 14px; }
+.kv dt { color: var(--ag-soft); } .kv dd { margin: 0; text-align: right; font-family: var(--ag-num); font-variant-numeric: tabular-nums; font-weight: 600; }
+.pill { display: inline-flex; align-items: center; min-height: 26px; padding: 0 10px; border-radius: 999px; font: 700 12px var(--ag-sans); border: 1px solid var(--ag-line); color: var(--ag-soft); background: #211c16; white-space: nowrap; }
+.pill.ok { color: var(--ag-olive); border-color: #4c5530; } .pill.warn { color: var(--ag-sun); border-color: #6e5424; } .pill.bad { color: var(--ag-terra); border-color: #6e3424; } .pill.info { color: #7fa7c2; border-color: #2f4a5c; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: var(--ag-raise); color: var(--ag-text); font: 600 15px var(--ag-sans); }
+.btn[aria-expanded="true"] { border-color: var(--ag-gold); color: var(--ag-gold); background: #2a2217; }
+svg text { font-family: var(--ag-sans); }
+.foot { margin: 4px 0 0; font-size: 12px; color: var(--ag-muted); }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 10px; } .row h2 { margin: 0; }
+
+/* ERGASTERION: the workshop floor (3D, first person) or its flat plan; cards for every worker. Only layout and the app's own parts live here. */
+.hero { border-color: #4a3d28; } .hero[data-level="bad"] { border-color: #6e3424; } .hero[data-level="warn"] { border-color: #6e5424; }
+.big { margin: 0; font: 700 clamp(24px, 7.4vw, 32px)/1.15 var(--ag-serif); color: var(--ag-gold); }
+.stage { position: relative; width: 100%; height: min(64vh, 480px); min-height: 320px; border-radius: var(--ag-radius-s, 12px); overflow: hidden; background: linear-gradient(180deg, #3b2c1e, #1d1914); border: 1px solid var(--ag-line); }
+.stage canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; touch-action: none; outline: none; }
+.plan { width: 100%; height: auto; display: block; background: #26211b; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); }
+.plan [role="button"] { cursor: pointer; } .plan [role="button"]:focus-visible { outline: 2px solid var(--ag-gold); }
+.mini { position: absolute; top: 8px; right: 8px; width: 112px; height: 88px; background: rgba(29, 25, 20, .82); border: 1px solid var(--ag-line); border-radius: 10px; pointer-events: none; }
+.joy { position: absolute; left: 14px; bottom: 14px; width: 112px; height: 112px; border-radius: 50%; background: rgba(29, 25, 20, .55); border: 1px solid #9c6b3c; touch-action: none; }
+.joy i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: var(--ag-gold); border: 2px solid #e2c47a; transition: transform 120ms ease-out; }
+.hint { position: absolute; left: 12px; right: 140px; top: 10px; margin: 0; font-size: 12px; color: var(--ag-soft); pointer-events: none; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bar select { min-height: 44px; padding: 0 12px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: var(--ag-raise); color: var(--ag-text); max-width: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--ag-soft); }
+.lamp { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(0, 0, 0, .35); background: #b8ad98; }
+.lamp[data-s="working"] { background: #8fa05a; } .lamp[data-s="idle"] { background: #4b7a99; } .lamp[data-s="stale"] { background: #e0b060; } .lamp[data-s="failed"] { background: #c96a4a; }
+.workers { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.workers button { width: 100%; min-height: 56px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; text-align: left; padding: 8px 12px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: var(--ag-raise); color: var(--ag-text); }
+.workers button[aria-pressed="true"] { border-color: var(--ag-gold); background: #2a2217; }
+.workers .nm { font-weight: 700; display: block; } .workers .sm { display: block; font-size: 12.5px; color: var(--ag-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.grp { margin: 6px 0 0; font: 600 12.5px var(--ag-sans); color: var(--ag-gold); }
+.sheet { border-color: #6e5424; }
+.sheet h3 { margin: 0; font: 700 20px/1.2 var(--ag-serif); } .sheet h4 { margin: 8px 0 4px; font: 700 14px var(--ag-serif); color: var(--ag-gold); }
+.sheet ul, .list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.sheet li, .list li { font-size: 14px; color: var(--ag-soft); min-width: 0; overflow-wrap: anywhere; }
+.when, .src { display: block; font-size: 12px; color: var(--ag-muted); }
+.list li b { color: var(--ag-text); font-weight: 600; }
+.ticker li { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 8px; }
+.ticker .t { font: 600 12px var(--ag-num); color: var(--ag-muted); }
+.lessons li { padding: 2px 0 2px 10px; border-left: 3px solid var(--ag-bronze); }
+.lessons li[data-week="1"] { border-left-color: var(--ag-gold); }
+.next li { padding: 8px 10px; border: 1px solid var(--ag-line); border-radius: var(--ag-radius-s, 12px); background: var(--ag-raise); } .next li b { display: block; }
+.next .go { display: block; margin-top: 4px; color: var(--ag-sun); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+html[data-oly-lite="1"] .ag-card { box-shadow: none; } html[data-oly-lite="1"] .joy i { transition: none; }
+.ag-tab, .ag-chip { min-height: 44px; }
+.btn, .acts .btn { min-height: 44px; }
+summary { min-height: 44px; }
+.acts { display: flex; gap: 8px; flex-wrap: wrap; }
