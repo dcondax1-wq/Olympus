@@ -1,0 +1,27 @@
+{
+  "v": 1,
+  "team": "A (calibration / base rate)",
+  "asof": "2026-11-10",
+  "status": "no_edge_found",
+  "mode": "paper",
+  "note": "Nothing survived the held-out block, so there are NO rules to follow. Sibyl must not read this as a pick. Kept only so a reader can see the answer and the one watch item.",
+  "rules": [],
+  "watch": [
+    {
+      "id": "A-longshot-no-T10-30",
+      "text": "Buy NO when the YES side is 10c or less, 10 to 30 minutes before close (crypto 15-min, hourly crypto, index hourly).",
+      "train": {"n": 598, "edge_per_usd": 0.0106, "ci95": [-0.0076, 0.0277]},
+      "test": {"n": 221, "edge_per_usd": 0.0070, "ci95": [-0.0238, 0.0326]},
+      "why_not_an_edge": "Both CIs include zero; Bonferroni lower bound negative. Same sign in both blocks, so worth collecting, not worth sizing.",
+      "forward_paper_test": {
+        "start": "2026-11-11",
+        "stake_usd_per_bet": 1.0,
+        "max_open": 5,
+        "entry": "buy at the ask, one contract-set per market, only when ask-bid spread <= 4c",
+        "min_n_before_any_claim": 3000,
+        "stop_rule": "kill if cluster-bootstrap 95% upper bound of edge per $ < 0 after n >= 1000",
+        "orders": "NONE: paper ledger only, never routed to the live bot"
+      }
+    }
+  ]
+}
