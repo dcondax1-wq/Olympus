@@ -99,27 +99,27 @@ function style() {
   s.id = 'vmCss';
   s.textContent = `
 .vm{position:fixed;inset:0;z-index:2147483300;display:flex;flex-direction:column;align-items:center;color:var(--txt,#ece9f2);
-  background:radial-gradient(120% 80% at 50% 38%,rgba(var(--cr2,124,58,237),.28),rgba(0,0,0,.94) 62%),#000;
+  background:radial-gradient(120% 80% at 50% 38%,rgba(var(--cr2,124,58,237),.28),rgba(20,17,14,.94) 62%),#14110e;
   padding:max(12px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));box-sizing:border-box;overflow:hidden;
-  font-family:var(--fb,"Rajdhani",system-ui,sans-serif);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  font-family:var(--fb,"Georgia",system-ui,sans-serif);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .vm[hidden]{display:none}
 .vm::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px)}
 .vm-top{position:relative;width:100%;max-width:640px;display:flex;align-items:center;gap:8px;z-index:3}
-.vm-tag{flex:1;min-width:0;font:600 11px var(--fh,"Orbitron",sans-serif);letter-spacing:.16em;color:var(--c3,#c084fc);text-shadow:0 0 10px rgba(var(--cr,168,85,247),.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vm-tag{flex:1;min-width:0;font:600 11px var(--fh,"Georgia",sans-serif);letter-spacing: .05em;color:var(--c3,#c9a06a);text-shadow: none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vm-btn{min-height:44px;min-width:44px;padding:0 11px;border-radius:22px;border:1px solid rgba(var(--cr,168,85,247),.55);background:rgba(var(--cr,168,85,247),.12);
-  color:var(--txt,#fff);font:600 11px var(--fh,"Orbitron",sans-serif);letter-spacing:.08em;cursor:pointer;max-width:42vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  color:var(--txt,#fff);font:600 11px var(--fh,"Georgia",sans-serif);letter-spacing: .05em;cursor:pointer;max-width:42vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vm-x{border-color:rgba(255,77,109,.7);background:rgba(255,77,109,.16)}
 .vm-stage{position:relative;flex:1 1 auto;width:100%;display:flex;align-items:center;justify-content:center;min-height:0;cursor:pointer;outline:none;z-index:1}
 .vm-ring{position:relative;flex:none}
 .vm-core{position:absolute;inset:0}
 .vm-spec,.vm-hud{position:absolute;inset:-9%;width:118%;height:118%;pointer-events:none}
-.vm-hud text{font:600 11px var(--fh,"Orbitron",sans-serif);letter-spacing:.3em;fill:var(--c3,#c084fc)}
+.vm-hud text{font:600 11px var(--fh,"Georgia",sans-serif);letter-spacing: .05em;fill:var(--c3,#c9a06a)}
 .vm-hud .arc{fill:none;stroke:rgba(var(--cr,168,85,247),.35);stroke-width:1.2}
-.vm-hud .gauge{fill:none;stroke:var(--c,#a855f7);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 4px var(--c,#a855f7))}
+.vm-hud .gauge{fill:none;stroke:var(--c,#9c6b3c);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 4px var(--c,#9c6b3c))}
 .vm[data-verdict=ok] .vm-hud .vd{fill:var(--ok,#4ade80)} .vm[data-verdict=warn] .vm-hud .vd{fill:var(--warn,#fbbf24)} .vm[data-verdict=bad] .vm-hud .vd{fill:var(--bad,#ff4d6d)}
 .vm-orb{position:absolute;inset:14%;border-radius:50%;border:2px solid rgba(var(--cr,168,85,247),.8);box-shadow:0 0 40px rgba(var(--cr,168,85,247),.6),inset 0 0 40px rgba(var(--cr,168,85,247),.45);
   transform:scale(calc(.92 + var(--lv,0) * .16))}
-.vm-orb i{position:absolute;inset:30%;border-radius:50%;background:radial-gradient(circle,#fff,var(--c3,#c084fc) 40%,transparent 72%);opacity:calc(.6 + var(--lv,0) * .4)}
+.vm-orb i{position:absolute;inset:30%;border-radius:50%;background:radial-gradient(circle,#fff,var(--c3,#c9a06a) 40%,transparent 72%);opacity:calc(.6 + var(--lv,0) * .4)}
 .vm[data-phase=listening] .vm-orb{border-color:rgba(255,77,109,.85);box-shadow:0 0 40px rgba(255,77,109,.55),inset 0 0 40px rgba(255,77,109,.4)}
 .vm-frags{position:absolute;inset:0;pointer-events:none}
 .vm-frag{position:absolute;left:50%;top:50%;padding:6px 10px 7px;border:1px solid rgba(var(--cr,168,85,247),.6);background:rgba(var(--pr,12,10,20),.62);
@@ -127,19 +127,19 @@ function style() {
   -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);white-space:nowrap;opacity:0;transform:translate(-50%,-50%) scale(.6);
   transition:opacity .45s ease,transform .7s cubic-bezier(.2,.9,.3,1.15)}
 .vm-frag.on{opacity:1;transform:translate(calc(-50% + var(--fx)),calc(-50% + var(--fy))) scale(1)}
-.vm-frag b{display:block;font:600 9px var(--fh,"Orbitron",sans-serif);letter-spacing:.2em;color:var(--c3,#c084fc);text-transform:uppercase}
-.vm-frag span{display:block;font:700 17px var(--fb,"Rajdhani",sans-serif);color:#fff;text-shadow:0 0 8px rgba(var(--cr,168,85,247),.8)}
+.vm-frag b{display:block;font:600 9px var(--fh,"Georgia",sans-serif);letter-spacing: .05em;color:var(--c3,#c9a06a);text-transform:uppercase}
+.vm-frag span{display:block;font:700 17px var(--fb,"Georgia",sans-serif);color:#f3ece0;text-shadow: none}
 .vm-cap{position:relative;z-index:2;width:100%;max-width:640px;min-height:118px;text-align:center}
 .vm-you{margin:0 0 6px;font-size:15px;color:var(--mut,#8a8499);min-height:20px;font-style:italic}
-.vm-you:not(:empty)::before{content:"YOU · ";font:600 9px var(--fh,"Orbitron",sans-serif);letter-spacing:.2em;font-style:normal;color:#ffb3c2}
+.vm-you:not(:empty)::before{content:"YOU · ";font:600 9px var(--fh,"Georgia",sans-serif);letter-spacing: .05em;font-style:normal;color:#ffb3c2}
 .vm-jar{margin:0;font-size:21px;line-height:1.3;font-weight:600;min-height:28px;max-height:34vh;overflow:auto}
 .vm-jar .w{opacity:.32;transition:opacity .18s}
-.vm-jar .w.on{opacity:1;text-shadow:0 0 12px rgba(var(--cr,168,85,247),.75)}
-.vm-hint{position:relative;z-index:2;margin:6px 0 0;font:600 9px var(--fh,"Orbitron",sans-serif);letter-spacing:.24em;color:var(--mut,#8a8499);text-align:center}
+.vm-jar .w.on{opacity:1;text-shadow: none}
+.vm-hint{position:relative;z-index:2;margin:6px 0 0;font:600 9px var(--fh,"Georgia",sans-serif);letter-spacing: .05em;color:var(--mut,#8a8499);text-align:center}
 .vm-type{position:relative;z-index:3;display:flex;gap:8px;width:100%;max-width:640px;margin-top:8px}
 .vm-type[hidden]{display:none}
-.vm-type input{flex:1;min-width:0;min-height:44px;padding:0 14px;border-radius:22px;border:1px solid rgba(var(--cr,168,85,247),.6);background:rgba(0,0,0,.5);color:#fff;font:500 16px var(--fb,"Rajdhani",sans-serif)}
-.vm[data-phase=listening] .vm-tag{color:#ffd0da;text-shadow:0 0 10px var(--bad,#ff4d6d)}
+.vm-type input{flex:1;min-width:0;min-height:44px;padding:0 14px;border-radius:22px;border:1px solid rgba(var(--cr,168,85,247),.6);background:rgba(0,0,0,.5);color:#f3ece0;font:500 16px var(--fb,"Georgia",sans-serif)}
+.vm[data-phase=listening] .vm-tag{color:#ffd0da;text-shadow: none}
 .vm[data-motion=on] .vm-tag{animation:vmBlink 2.4s ease-in-out infinite}
 @keyframes vmBlink{50%{opacity:.55}}
 .vm[data-motion=off] .vm-frag,.vm[data-motion=off] .vm-jar .w,.vm[data-motion=off] .vm-orb{transition:none;animation:none}
@@ -156,7 +156,7 @@ export function createVoiceMode(deps) {
   let el = null, open = false, phase = 'idle', turn = 0, silent = 0, motion = false, typed = false;
   let core = null, rec = null, recT = 0, raf = 0, lastT = 0, level = 0, evLv = 0, pulse = 0;
   let actx = null, stream = null, src = null, an = null, buf = null, fbuf = null, micErr = '', wake = null;
-  let speech = null, sess = 0, specCol = '#c084fc';   // speech: the reply being spoken {words, frags, t0, real, idx, done}
+  let speech = null, sess = 0, specCol = '#c9a06a';   // speech: the reply being spoken {words, frags, t0, real, idx, done}
   let voices = [], said = { noSR: false }, turns = 0, lastReply = null;
   const $ = (s) => (el ? el.querySelector(s) : null);
 
@@ -251,7 +251,7 @@ export function createVoiceMode(deps) {
     const cv = $('#vmSpec'), dpr = Math.min(2, window.devicePixelRatio || 1), px = Math.round(size * 1.18 * dpr);
     cv.width = cv.height = px;
     cv.hidden = !motion;
-    specCol = (getComputedStyle(el).getPropertyValue('--c3') || '').trim() || '#c084fc';      // the theme's colour, read once
+    specCol = (getComputedStyle(el).getPropertyValue('--c3') || '').trim() || '#c9a06a';      // the theme's colour, read once
   }
   function paintLevel(v) {
     level = v;
