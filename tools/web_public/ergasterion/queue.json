@@ -1,0 +1,1078 @@
+{
+ "v": 1,
+ "asof": "2026-11-04",
+ "note": "Built from handoff/QUEUE.md, research/writeups, the Mind's proposals and git (when present) by tools/ergasterion_build.py. Plain text only; nothing here is a trade.",
+ "queue": {
+  "total": 67,
+  "open": 67,
+  "done": 0,
+  "tasks": [
+   {
+    "id": "cities-blank",
+    "text": "cities/ renders almost nothing after 30 s (only 160 characters of text, a few dots, no labels, no cards). It is the worst app. Find why (console, fet…",
+    "section": "P0",
+    "done": false
+   },
+   {
+    "id": "inbox-noise",
+    "text": "inbox/ shows \"Delivered: Merge pull request #118...\" cards from the Bridge for every merge. Only show real ChatGPT deliveries; also 3 console errors…",
+    "section": "P0",
+    "done": false
+   },
+   {
+    "id": "forum-errors",
+    "text": "forum/ 1 console error and 2 failed requests on load: find and fix (optional files must not error).",
+    "section": "P0",
+    "done": false
+   },
+   {
+    "id": "hermes-errors",
+    "text": "hermes/ 1 console error and 1 failed request on load.",
+    "section": "P0",
+    "done": false
+   },
+   {
+    "id": "pc-page-error",
+    "text": "pc/index.html has a console error.",
+    "section": "P0",
+    "done": false
+   },
+   {
+    "id": "journal-overlap",
+    "text": "journal/ two controls overlap at 390 px. odeon-overlap: odeon/ same. Fix spacing.",
+    "section": "P0",
+    "done": false
+   },
+   {
+    "id": "clipped-text",
+    "text": "labyrinth/ and oracle/ have clipped text at 390 px; kalshi/ has text cut at the screen edge (ticker excluded); cities/ has low-contrast text.",
+    "section": "P0",
+    "done": false
+   },
+   {
+    "id": "jargon",
+    "text": "bridge/ says \"liquidity\", kalshi/ and inbox/ say \"EV\": explain in plain words or replace.",
+    "section": "P0",
+    "done": false
+   },
+   {
+    "id": "ledger-headline",
+    "text": "ledger/ shows \"-$216.57 net profit\" in big red before any payout (it only counts the auto-filled eval fees). Label it \"so far: fees paid, no payouts…",
+    "section": "P0",
+    "done": false
+   },
+   {
+    "id": "hermes-readability",
+    "text": "hermes/ first screen is very dark with confetti over the text: make the headline and numbers clearly readable.",
+    "section": "P0",
+    "done": false
+   },
+   {
+    "id": "cities-layout",
+    "text": "tools/web_public/cities/. Hub shows tiny dim clusters in a huge empty void and clipped group labels",
+    "section": "P1",
+    "done": false
+   },
+   {
+    "id": "datacity-look-check",
+    "text": "tools/web_public/datacity/. The owner said Data City looked worse tonight; the lead restored the full profile for phones",
+    "section": "P1",
+    "done": false
+   },
+   {
+    "id": "kalshicity-look",
+    "text": "tools/web_public/kalshicity/. Same pass: the city should look rich on first open, not sparse.",
+    "section": "P1",
+    "done": false
+   },
+   {
+    "id": "oracle, odeon, fates, labyr…",
+    "text": "oracle, odeon, fates, labyrinth, hephaestus, prometheus, pantheon, arena, tree, tyche, hermes, athena, ares, plutus, forum, argus,",
+    "section": "P2",
+    "done": false
+   },
+   {
+    "id": "Every app: first-screen ans…",
+    "text": "Every app: first-screen answer to \"what do I do right now?\" in one plain sentence at the top.",
+    "section": "P2",
+    "done": false
+   },
+   {
+    "id": "ledger-import",
+    "text": "Ledger: paste-a-CSV import of payouts/fees (client-side only, nothing sent anywhere), with a preview and undo.",
+    "section": "P3",
+    "done": false
+   },
+   {
+    "id": "journal-weekly-card",
+    "text": "Mnemosyne: Sunday review card with the one rule for next week, copy as Markdown for Obsidian.",
+    "section": "P3",
+    "done": false
+   },
+   {
+    "id": "athena-more-drills",
+    "text": "Athena Train: 10 more \"read the chart\" drills from research/lab/backtest_live.json via tools/athena_drills.py.",
+    "section": "P3",
+    "done": false
+   },
+   {
+    "id": "plutus-what-if-buy",
+    "text": "Plutus: \"if I buy another ATLAS 25K now\" card using plutus/roadmap.json numbers (no new numbers invented).",
+    "section": "P3",
+    "done": false
+   },
+   {
+    "id": "Do the Bridge money jobs fi…",
+    "text": "Do the Bridge money jobs first (prop-firm rules digest, payout rules, discount codes WITH sources, CME holidays, NQ roll dates).",
+    "section": "P4",
+    "done": false
+   },
+   {
+    "id": "gate-full-run",
+    "text": "run python -X utf8 tests/run_gate.py on a quiet machine, write the table to research/handoff/date/gate.md, fix every real FAIL",
+    "section": "P5",
+    "done": false
+   },
+   {
+    "id": "hub-look-test-clock",
+    "text": "tests/test_jarvis_hub.py part look (What's new check) fails when run 01:45-02:00 or 09:15-10:00 ET because a bots card appears first.",
+    "section": "P5",
+    "done": false
+   },
+   {
+    "id": "odeon-reduced-motion-wait",
+    "text": "test_odeon_page \"d. reduced motion still plays the reel\" waits a fixed 1 s: make it wait for the clock to move.",
+    "section": "P5",
+    "done": false
+   },
+   {
+    "id": "themes-test-rerun",
+    "text": "tests/test_olympus_themes.py baseline tests/fixtures/olympus_default_vars.json was edited by hand for the a11y contrast fixes",
+    "section": "P5",
+    "done": false
+   },
+   {
+    "id": "planner-webkit",
+    "text": "Planner (published separately from the planner-backup branch) was never tested in WebKit or by the crawler: test it and report.",
+    "section": "P5",
+    "done": false
+   },
+   {
+    "id": "kalshicity-reads-whatif",
+    "text": "the Kalshi City page only fetches 5 files; let it also show the whatif.json and forward.json strips (optional files, never blank).",
+    "section": "P5",
+    "done": false
+   },
+   {
+    "id": "root-worker-offline-olympus",
+    "text": "the root dashboard offline loses olympus/themes.js and icons because olympus/ is skipped by the root worker.",
+    "section": "P5",
+    "done": false
+   },
+   {
+    "id": "cities-fixture-drift",
+    "text": "tests/test_cities_page.py \"catalogue and fixture are reproducible\" rewrites cities/fixture.json: make the generator deterministic and the test compar…",
+    "section": "P5",
+    "done": false
+   },
+   {
+    "id": "argus-arena-high-tier",
+    "text": "Argus and Arena \"high tier draws 3 render passes\" fail only on software GL. Make the test skip with a clear message when the renderer is SwiftShader,…",
+    "section": "P5",
+    "done": false
+   },
+   {
+    "id": "hermes-argus-404",
+    "text": "Hermes datacity/discoveries.json and Argus cronos/status.json 404 on a bare site: write the proposal to make them optional site files in handoff/inbo…",
+    "section": "P5",
+    "done": false
+   }
+  ]
+ },
+ "writeups": {
+  "count": 143,
+  "latest": [
+   {
+    "date": "2026-11-04",
+    "title": "Second strategies night - ATLAS and BLITZ on the 25K accounts (72 new versions, none beats today), how they c…",
+    "status": "rejected",
+    "summary": "Job 27. Part 1 - ATLAS (EMA + MACD + S/R) and BLITZ (noise-area scalp) re-tested for the 25K accounts with 43 BLITZ and 29 ATLAS versions (stop multiple, entry window, d…",
+    "file": "research/writeups/2026-11-04_second_strategies_night.md"
+   },
+   {
+    "date": "2026-11-04",
+    "title": "Money roadmap: the next 12 months (2026-11-04)",
+    "status": "",
+    "summary": "",
+    "file": "research/writeups/2026-11-04_money_roadmap.md"
+   },
+   {
+    "date": "2026-11-04",
+    "title": "LIT ideas round 3 (48 versions of 10 new ideas - quarterly / monthly / weekly levels, inside day, overnight-r…",
+    "status": "nothing",
+    "summary": "Job 29. Part A closes the open items from the Plutus fix - lit_funded_firms.py rerun with today's live trades and the live presets (eval room 0.8, funded 60% / = $1,500…",
+    "file": "research/writeups/2026-11-04_lit_ideas_round3.md"
+   },
+   {
+    "date": "2026-11-04",
+    "title": "LIT ideas round 2 - scale-in again (bootstrap by session, best trades removed in steps) and six more new idea…",
+    "status": "nothing",
+    "summary": "Job 28. (1) Scale-in at LIT size re-measured with a bootstrap over sessions and over weeks and with only the best 1, 2 or 3 trades removed.",
+    "file": "research/writeups/2026-11-04_lit_ideas_round2.md"
+   },
+   {
+    "date": "2026-11-04",
+    "title": "LIT ideas night - 16 new ideas (165 versions) on the live LIT - partials and stair stops, a second cut check,…",
+    "status": "nothing",
+    "summary": "Job 26. 16 new ideas for Zlarior (live LIT) written down with a reason, then run as 165 versions on the exact live trades (the re-walk equals all 631 live trades - every…",
+    "file": "research/writeups/2026-11-04_lit_ideas_night.md"
+   },
+   {
+    "date": "2026-11-04",
+    "title": "Kalshi Edge v2: why it loses, and what (if anything) works",
+    "status": "",
+    "summary": "",
+    "file": "research/writeups/2026-11-04_kalshi_edges.md"
+   },
+   {
+    "date": "2026-11-04",
+    "title": "ATLAS round 3 - why the funded 25K pays about $580 a month and what could raise it (39 versions), plus the BL…",
+    "status": "nothing",
+    "summary": "Job 30. The owner's ATLAS 25K passes its eval often (2-week pass / fail 65.5 / 0.0 and 43.5 / 0.0) but the funded account pays only $586 / $519 a month (6-month Monte Ca…",
+    "file": "research/writeups/2026-11-04_atlas_round3.md"
+   },
+   {
+    "date": "2026-11-03",
+    "title": "Olympus Data City - a nightly data machine that tests 114,200 time / confluence / while-state combinations on…",
+    "status": "info",
+    "summary": "Owner orders 2026-11-02 (\"a data center like a city of data\") and 2026-11-03 (\"make the city bigger ...",
+    "file": "research/writeups/datacity.md"
+   },
+   {
+    "date": "2026-11-03",
+    "title": "DAPHNE strategy-tree search (2026-11-03) - 1.13 million rule combinations on plain NQ level trades; the best…",
+    "status": "rejected",
+    "summary": "The owner's TikTok \"it likes moves\" tree, built our own way on real CME NQ1!",
+    "file": "research/writeups/2026-11-03-strategy-tree.md"
+   },
+   {
+    "date": "2026-11-03",
+    "title": "How much slippage each bot survives (2026-11-03 night) - Zlarior barely notices it in 2026, ATLAS holds to +4…",
+    "status": "info",
+    "summary": "Extra slippage per round trip (on top of the 1 tick already in the backtests and the $1.90 commission) was charged to every trade of the three bots, $0.50 a micro a tick.",
+    "file": "research/writeups/2026-11-03-slippage.md"
+   },
+   {
+    "date": "2026-11-03",
+    "title": "PROMETHEUS - a genetic algorithm evolves the live LIT's ten knobs on 2026 H1; does anything it breeds beat li…",
+    "status": "rejected",
+    "summary": "A seeded genetic algorithm (24 creatures x 20 generations, 5 independent seeds, 1,875 distinct variants) evolved ten numeric knobs of the live LIT (live_model_lit.json -…",
+    "file": "research/writeups/2026-11-03-prometheus.md"
+   },
+   {
+    "date": "2026-11-03",
+    "title": "Night R&D 2026-11-03 (money + eval agent) - the biggest lever is WHERE the bots sit, not a new rule; Zlarior…",
+    "status": "adopt-candidate",
+    "summary": "Owner 2026-11-02 \"keep building all bots, see what you haven't tried, eval pass rate, overall the amount of money\".",
+    "file": "research/writeups/2026-11-03-night-rnd.md"
+   }
+  ]
+ },
+ "rejected": [
+  {
+   "date": "2026-11-04",
+   "title": "Second strategies night - ATLAS and BLITZ on the 25K accounts (72 new versions, none beats today), how they c…",
+   "file": "research/writeups/2026-11-04_second_strategies_night.md",
+   "summary": "Job 27. Part 1 - ATLAS (EMA + MACD + S/R) and BLITZ (noise-area scalp) re-tested for the 25K accounts with 43 BLITZ and 29 ATLAS versions (stop multiple, entry window, d…"
+  },
+  {
+   "date": "2026-11-03",
+   "title": "DAPHNE strategy-tree search (2026-11-03) - 1.13 million rule combinations on plain NQ level trades; the best…",
+   "file": "research/writeups/2026-11-03-strategy-tree.md",
+   "summary": "The owner's TikTok \"it likes moves\" tree, built our own way on real CME NQ1!"
+  },
+  {
+   "date": "2026-11-03",
+   "title": "PROMETHEUS - a genetic algorithm evolves the live LIT's ten knobs on 2026 H1; does anything it breeds beat li…",
+   "file": "research/writeups/2026-11-03-prometheus.md",
+   "summary": "A seeded genetic algorithm (24 creatures x 20 generations, 5 independent seeds, 1,875 distinct variants) evolved ten numeric knobs of the live LIT (live_model_lit.json -…"
+  },
+  {
+   "date": "2026-10-31",
+   "title": "BLITZ in-day streak size (2026-10-31 evening) - size the day's next BLITZ trade by how its previous one ended",
+   "file": "research/writeups/blitz-streak-size-2026-10-31.md",
+   "summary": "Eval size of the day's next BLITZ trade by the previous one's result (x m_loss after a same-day loss, x m_win after a win, on top of the later-break size; 7 cells, pick…"
+  },
+  {
+   "date": "2026-10-31",
+   "title": "ATLAS funded 25K - one trade a day (2026-10-31) - fewer trades on the funded account pays the owner LESS; the…",
+   "file": "research/writeups/atlas-funded-one-a-day-2026-10-31.md",
+   "summary": "Owner 2026-10-31 \"keep building those strategies\" - does the FUNDED ATLAS 25K pay the owner more with a day limit of one trade (the day's first ATLAS signal) instead of…"
+  },
+  {
+   "date": "2026-10-30",
+   "title": "Discretion score for ATLAS and BLITZ (2026-10-30) - judging each trade before entry and sizing the good ones…",
+   "file": "research/writeups/discretion-score-2026-10-30.md",
+   "summary": "Owner 2026-10-30 - \"give ATLAS and BLITZ good discretion like a skilled human trader - judge each trade before entry, trade the good ones bigger, the bad ones smaller or…"
+  },
+  {
+   "date": "2026-10-30",
+   "title": "BLITZ edge, rounds 2-4 (2026-10-30 afternoon) - funded size, eval rules, signal facts, a momentum-regime gate…",
+   "file": "research/writeups/blitz-edge-2026-10-30b.md",
+   "summary": "Round 4 (coordinator 13:12) - today's BLITZ rule on CME ES1!"
+  },
+  {
+   "date": "2026-10-30",
+   "title": "ATLAS per-member trading windows and limit entries (2026-10-30) - no window cut or limit entry beats today's…",
+   "file": "research/writeups/atlas-windows-entries-2026-10-30.md",
+   "summary": "Owner 2026-10-30 (round 2) - for ATLAS (account B, Builder 25K - EMA London pullback, MACD sweep, S/R NY reclaim), (1) skip each member's weakest time-of-day / weekday w…"
+  },
+  {
+   "date": "2026-10-28",
+   "title": "Mean-reversion scalps for a third account - none makes money in both 2026 and 2021-25 after costs",
+   "file": "research/writeups/scalp-mean-reversion.md",
+   "summary": "Owner 2026-10-28 - a third strategy, a scalper that trades several times a day on its own MFFU account and makes money."
+  },
+  {
+   "date": "2026-10-28",
+   "title": "LIT reversal exits - get out on a violent reversal, trail after 0.5-1R, breakeven near 1R, stop at the first…",
+   "file": "research/writeups/lit-reversal-exit.md",
+   "summary": "The first real live LIT trade (2026-10-28, short 5 MNQ at 29,945) went 0.95R in our favour, then four big green 1m candles took it to the full stop (-$437)."
+  },
+  {
+   "date": "2026-10-27",
+   "title": "B-holds vs LIT priority - when ATLAS is in a trade and LIT signals the other way, who gives way?",
+   "file": "research/writeups/b-holds-vs-lit-priority.md",
+   "summary": "Owner (2026-10-27) - \"If ATLAS is in a trade and its target is clear it should hold, and not let Zlarior trade?\" Today ATLAS went long at 03:30 (MACD, hit its 8R target…"
+  },
+  {
+   "date": "2026-10-24",
+   "title": "ChatGPT's 20 LIT filters and the VXN / VIX9D target band - 66 tests, nothing worth switching on",
+   "file": "research/writeups/lit-chatgpt-filters.md",
+   "summary": "The owner's ChatGPT dossier (2026-10-24) proposed 20 skip / cancel filters for LIT (L01-L20, each with a primary and two alternative thresholds) and a target band from V…"
+  }
+ ],
+ "rejected_ref": [
+  "Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ATM 5m/1m with a sharp V (0.2–1.5 trades/wk,",
+  "92 confluences; 6 daily-bias methods; grade/confidence sizing; partials and trails.",
+  "Fixed 10–15 pt stops: wicked out, lose money. Structural stops are rarely ≤15 pts.",
+  "Target variants: no cap / draw mode / \"last real pool\" all worse (2026 PF 1.6–2.2 vs 3.48).",
+  "Re-sweep, inducement, FBOS, RBOS: recorded as engine features x_resweep, x_inducement, x_fbos, x_rbos; no edge that",
+  "The skip-mode cold-streak filter: best PF, but it paused for 14 weeks, which the owner rejected.",
+  "All variants with numbers: research/lab/variant_results.json.",
+  "B-holds (2026-10-27, b-holds-vs-lit-priority.md, tools/bholds.py, runs bholds_): while ATLAS (account B) holds a trade, skip",
+  "The owner's LIT Complete Report (2026-10-18, research/writeups/lit-report-tests.md, tools/lit_report.py, runs lit_rep_):",
+  "LIT studies of 2026-10-18/19 (none adopted unless noted; write-ups in research/writeups/): HTF confluences (75,",
+  "Reversal exits after the first live trade (2026-10-28, lit-reversal-exit.md, tools/lit_rev_exit.py, runs lit_rev_):",
+  "Diversifier search (2026-10-26, diversifier-search.md, tools/div_search.py / div_stack.py, runs div_): the",
+  "Payout / eval mechanics (2026-10-26, payout-policy.md, eval-cost.md): ask line $1,000 / $2,000 vs $1,500,",
+  "BLITZ on its own 25K, \"like a person\" (2026-10-29, blitz-25k.md, tools/blitz25k_.py, runs blitz25k_, pick"
+ ],
+ "learnings": [
+  {
+   "d": "2026-11-04",
+   "who": "atlas",
+   "text": "Job 27. Part 1 - ATLAS (EMA + MACD + S/R) and BLITZ (noise-area scalp) re-tested for the 25K accounts with 43 BLITZ and 29 ATLAS versions (stop multiple, entry window, d…",
+   "src": "research/writeups/2026-11-04_second_strategies_night.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-11-04",
+   "who": "lit",
+   "text": "Job 29. Part A closes the open items from the Plutus fix - lit_funded_firms.py rerun with today's live trades and the live presets (eval room 0.8, funded 60% / = $1,500…",
+   "src": "research/writeups/2026-11-04_lit_ideas_round3.md",
+   "kind": "nothing"
+  },
+  {
+   "d": "2026-11-04",
+   "who": "lit",
+   "text": "Job 28. (1) Scale-in at LIT size re-measured with a bootstrap over sessions and over weeks and with only the best 1, 2 or 3 trades removed.",
+   "src": "research/writeups/2026-11-04_lit_ideas_round2.md",
+   "kind": "nothing"
+  },
+  {
+   "d": "2026-11-04",
+   "who": "lit",
+   "text": "Job 26. 16 new ideas for Zlarior (live LIT) written down with a reason, then run as 165 versions on the exact live trades (the re-walk equals all 631 live trades - every…",
+   "src": "research/writeups/2026-11-04_lit_ideas_night.md",
+   "kind": "nothing"
+  },
+  {
+   "d": "2026-11-04",
+   "who": "atlas",
+   "text": "Job 30. The owner's ATLAS 25K passes its eval often (2-week pass / fail 65.5 / 0.0 and 43.5 / 0.0) but the funded account pays only $586 / $519 a month (6-month Monte Ca…",
+   "src": "research/writeups/2026-11-04_atlas_round3.md",
+   "kind": "nothing"
+  },
+  {
+   "d": "2026-11-03",
+   "who": "dev",
+   "text": "The owner's TikTok \"it likes moves\" tree, built our own way on real CME NQ1!",
+   "src": "research/writeups/2026-11-03-strategy-tree.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-11-03",
+   "who": "prometheus",
+   "text": "A seeded genetic algorithm (24 creatures x 20 generations, 5 independent seeds, 1,875 distinct variants) evolved ten numeric knobs of the live LIT (live_model_lit.json -…",
+   "src": "research/writeups/2026-11-03-prometheus.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-11-03",
+   "who": "blitz",
+   "text": "Owner 2026-11-02 \"keep building all bots, see what you haven't tried, eval pass rate, overall the amount of money\".",
+   "src": "research/writeups/2026-11-03-night-rnd.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-11-03",
+   "who": "blitz",
+   "text": "Owner 2026-11-02 \"overall the amount of money we will make\".",
+   "src": "research/writeups/2026-11-03-money-plan.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-11-03",
+   "who": "dev",
+   "text": "The live eval size is one rule for every eval state (micros so one winner covers what is left to +$3,000, capped at 80% of the room).",
+   "src": "research/writeups/2026-11-03-eval-dp.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-31",
+   "who": "blitz",
+   "text": "Eval size of the day's next BLITZ trade by the previous one's result (x m_loss after a same-day loss, x m_win after a win, on top of the later-break size; 7 cells, pick…",
+   "src": "research/writeups/blitz-streak-size-2026-10-31.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-31",
+   "who": "atlas",
+   "text": "Owner 2026-10-31 \"keep building those strategies\" - does the FUNDED ATLAS 25K pay the owner more with a day limit of one trade (the day's first ATLAS signal) instead of…",
+   "src": "research/writeups/atlas-funded-one-a-day-2026-10-31.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-30",
+   "who": "lit",
+   "text": "Owner 2026-10-29 - \"build every bot more than you can, find more edge, better rules for everything\".",
+   "src": "research/writeups/lit-edge-2026-10-30.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-30",
+   "who": "atlas",
+   "text": "Owner 2026-10-30 - \"give ATLAS and BLITZ good discretion like a skilled human trader - judge each trade before entry, trade the good ones bigger, the bad ones smaller or…",
+   "src": "research/writeups/discretion-score-2026-10-30.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-30",
+   "who": "blitz",
+   "text": "Round 4 (coordinator 13:12) - today's BLITZ rule on CME ES1!",
+   "src": "research/writeups/blitz-edge-2026-10-30b.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-30",
+   "who": "atlas",
+   "text": "Owner 2026-10-30 (round 2) - for ATLAS (account B, Builder 25K - EMA London pullback, MACD sweep, S/R NY reclaim), (1) skip each member's weakest time-of-day / weekday w…",
+   "src": "research/writeups/atlas-windows-entries-2026-10-30.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-30",
+   "who": "atlas",
+   "text": "Owner 2026-10-30 - \"make ATLAS way better\".",
+   "src": "research/writeups/atlas-edge-2026-10-30b.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-10-30",
+   "who": "atlas",
+   "text": "Owner 2026-10-29 - \"build every bot more than you can, find more edge, better rules for everything\" for ATLAS (account B, Builder 25K) and BLITZ (the 1m noise-area scalp…",
+   "src": "research/writeups/atlas-blitz-edge-2026-10-30.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "atlas",
+   "text": "Owner (2026-10-28) - \"Written rules the bot knows, trade like a person, not a fixed rr, learn market structure.\" A new market-structure engine (swings, BOS, CHoCH, prote…",
+   "src": "research/writeups/structure-management.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "atlas",
+   "text": "Owner (2026-10-29) - \"Give it a brain that's very smart.",
+   "src": "research/writeups/mind.md",
+   "kind": "finding"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "blitz",
+   "text": "Owner 2026-10-28/29 - BLITZ gets its own MFFU Builder 25K next week; make it trade \"like a person, not a fixed rr\" and \"learn market structure\", judged on money and eval…",
+   "src": "research/writeups/blitz-25k.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "mind",
+   "text": "14 of the last 20 Zlarior losses came after a buildup level sweep (22 of its last 40 trades, history + live, were there)",
+   "src": "research/mind/proposals_seed.json",
+   "kind": "observation"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "mind",
+   "text": "14 of the last 17 ATLAS losses came with VIX under 15.8 (24 of its last 40 trades, history + live, were there)",
+   "src": "research/mind/proposals_seed.json",
+   "kind": "observation"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "mind",
+   "text": "9 of the last 17 ATLAS losses came on longs (19 of its last 40 trades, history + live, were there)",
+   "src": "research/mind/proposals_seed.json",
+   "kind": "observation"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "mind",
+   "text": "9 of the last 17 ATLAS losses came against the 1h structure trend (18 of its last 40 trades, history + live, were there)",
+   "src": "research/mind/proposals_seed.json",
+   "kind": "observation"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "mind",
+   "text": "9 of the last 17 ATLAS losses came when the 5m ATR is above 1.34x its 7-day median (its top third) (16 of its last 40 trades, history + live, were there)",
+   "src": "research/mind/proposals_seed.json",
+   "kind": "observation"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "mind",
+   "text": "BLITZ trades with VIX under 16.9 made 64% of its 2026 R with 33% of the trades",
+   "src": "research/mind/proposals_seed.json",
+   "kind": "observation"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "mind",
+   "text": "7 of the last 12 BLITZ losses came in New York lunch (21 of its last 40 trades, history + live, were there)",
+   "src": "research/mind/proposals_seed.json",
+   "kind": "observation"
+  },
+  {
+   "d": "2026-10-29",
+   "who": "mind",
+   "text": "7 of the last 12 BLITZ losses came on shorts (20 of its last 40 trades, history + live, were there)",
+   "src": "research/mind/proposals_seed.json",
+   "kind": "observation"
+  },
+  {
+   "d": "2026-10-28",
+   "who": "atlas",
+   "text": "Owner 2026-10-28 - make the noise-area (NA) momentum scalp (\"BLITZ\") pay on MFFU, honestly.",
+   "src": "research/writeups/scalp-na-mffu.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-10-28",
+   "who": "chrysos",
+   "text": "Owner 2026-10-28 - a third strategy, a scalper that trades several times a day on its own MFFU account and makes money.",
+   "src": "research/writeups/scalp-momentum.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-10-28",
+   "who": "chrysos",
+   "text": "Owner 2026-10-28 - a third strategy, a scalper that trades several times a day on its own MFFU account and makes money.",
+   "src": "research/writeups/scalp-mean-reversion.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-28",
+   "who": "lit",
+   "text": "The first real live LIT trade (2026-10-28, short 5 MNQ at 29,945) went 0.95R in our favour, then four big green 1m candles took it to the full stop (-$437).",
+   "src": "research/writeups/lit-reversal-exit.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-27",
+   "who": "atlas",
+   "text": "Owner (2026-10-27) - \"If ATLAS is in a trade and its target is clear it should hold, and not let Zlarior trade?\" Today ATLAS went long at 03:30 (MACD, hit its 8R target…",
+   "src": "research/writeups/b-holds-vs-lit-priority.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-26",
+   "who": "chrysos",
+   "text": "Owner order 2026-10-26, item 2 - more funded money from the MFFU / LucidPro / FundedNext payout mechanics without changing a trade.",
+   "src": "research/writeups/payout-policy.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-26",
+   "who": "dev",
+   "text": "LIT is backtested on NQ1!, the PC decides on NinjaTrader MNQ.",
+   "src": "research/writeups/mnq-vs-nq-feed.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-26",
+   "who": "dev",
+   "text": "Owner order 2026-10-26, item 3 - the eval-sizing trade-off between pass speed and fail rate when many evals are bought, priced at the owner's prices (MFFU Builder 25K $6…",
+   "src": "research/writeups/eval-cost.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-26",
+   "who": "lit",
+   "text": "Owner order 2026-10-26, item 1 - a strategy uncorrelated with LIT that holds in 2026 (H1 pick / H2 check) AND 2021-25 at 2-4 trades a week.",
+   "src": "research/writeups/diversifier-search.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-10-26",
+   "who": "atlas",
+   "text": "Once ATLAS's MFFU Builder 25K eval (MFFUEVBLD602936017, $43) passes, the bot can now keep trading ATLAS on the new funded account under the funded rules (one owner-run s…",
+   "src": "research/writeups/atlas-funded.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-25",
+   "who": "chrysos",
+   "text": "Owner (2026-10-25) - \"that little bit per month doesn't seem normal, figure out what you're missing\".",
+   "src": "research/writeups/uprisk.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-25",
+   "who": "chrysos",
+   "text": "Once an MFFU Builder eval passes, the funded account is where the money is.",
+   "src": "research/writeups/funded-path.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-25",
+   "who": "atlas",
+   "text": "Owner (2026-10-25) - make ATLAS stronger where the audit found it weak - 2025 loses (-$2,156) and 2021-24 is flat, and its 2026 H2 money rests on a few trades.",
+   "src": "research/writeups/atlas-v2.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-10-24",
+   "who": "dev",
+   "text": "Pre-launch audit.",
+   "src": "research/writeups/sizing-caps.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-24",
+   "who": "lit",
+   "text": "The owner's ChatGPT dossier (2026-10-24) proposed 20 skip / cancel filters for LIT (L01-L20, each with a primary and two alternative thresholds) and a target band from V…",
+   "src": "research/writeups/lit-chatgpt-filters.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-24",
+   "who": "chrysos",
+   "text": "Four habits that successful discretionary traders swear by were backtested on today's live LIT and on the hq-lit candidate set (cisd1m 22 + room_f 0.55 + wk_loss_usd 120…",
+   "src": "research/writeups/hq-habits.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-24",
+   "who": "atlas",
+   "text": "Owner's ChatGPT dossier (2026-10-24) proposed 10 breakout templates for ATLAS (account B, Builder 25K) - opening ranges (1-min, 5-min), the overnight box, the previous R…",
+   "src": "research/writeups/atlas-chatgpt-breakouts.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "dev",
+   "text": "Owner (2026-10-23) - retail stops sit at obvious highs and lows; wait for them to be hunted, a resweep or an inducement, then a strong candle toward the draw on liquidit…",
+   "src": "research/writeups/stophunt.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "dev",
+   "text": "An adversarial check of the two stop-hunt leads (stophunt.md) before anyone trusts them, 7 checks.",
+   "src": "research/writeups/stophunt-audit.md",
+   "kind": "finding"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "dev",
+   "text": "Owner (2026-10-23) - \"What about quant, could you learn that?\" Yes, and I tested the textbook quant edges on our own CME NQ bars - intraday momentum (Gao et al.",
+   "src": "research/writeups/quant-anomalies.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "dev",
+   "text": "Owner (2026-10-23) \"What about quant, could you learn that?\" - Lopez de Prado meta-labeling on LIT (630 trades), the three ATLAS members (1,395) and the two stop-hunt ca…",
+   "src": "research/writeups/meta-labeling.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "lit",
+   "text": "The testable ideas of the owner's \"LIT Advanced Knowledge Supplement\" (path history, trap geometry, inducement taken vs reclaimed, required raid, second shift, completed…",
+   "src": "research/writeups/lit-supplement.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "lit",
+   "text": "Every rule of the live LIT was taken away alone (17 components, 46 neighbours / alternatives, 5 eval-cap settings), a greedy \"minimal LIT\" dropped whatever cost nothing…",
+   "src": "research/writeups/lit-ablation.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "dev",
+   "text": "Owner (2026-10-23) - \"a strategy that trades 2+ times a week, high-quality setups, with high probability and high profit.\" Four mean-reversion families that should have…",
+   "src": "research/writeups/hq-reversion.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "lit",
+   "text": "The owner asked for 2+ trades a week, high quality, high probability, high profit.",
+   "src": "research/writeups/hq-lit.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "dev",
+   "text": "Owner (2026-10-23) - \"a strategy that trades 2+ times a week, high-quality setups, with high probability and high profit.\" Tested as a trend-continuation family, the opp…",
+   "src": "research/writeups/hq-continuation.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "lit",
+   "text": "Owner (2026-10-23) wants 2+ trades a week with a high win rate and a high payoff.",
+   "src": "research/writeups/hq-bias.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "atlas",
+   "text": "Owner (2026-10-22 night) - \"Find a way to progress this strategy, whether it's adding a confluence or risking something else, make it better.\" ATLAS = account B on a Bui…",
+   "src": "research/writeups/atlas-confluences.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-23",
+   "who": "dev",
+   "text": "Owner (2026-10-23) - \"Start trading 24/7.",
+   "src": "research/writeups/allday.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-22",
+   "who": "lit",
+   "text": "Owner's order (2026-10-22) to find a strategy to trade alongside LIT and tune it the way LIT was tuned (pick on 2026 H1, check untouched on 2026 H2).",
+   "src": "research/writeups/second-sr.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-10-22",
+   "who": "lit",
+   "text": "Owner's order (2026-10-22) - \"add this to this account, I want the bot to search for both\".",
+   "src": "research/writeups/second-route.md",
+   "kind": "finding"
+  },
+  {
+   "d": "2026-10-22",
+   "who": "lit",
+   "text": "Owner's question (2026-10-22) - what is the best way to combine LIT with the three paper second strategies (London EMA pullback, MACD sweep divergence, S/R NY reclaim) a…",
+   "src": "research/writeups/second-mix.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-10-22",
+   "who": "lit",
+   "text": "Owner's overnight order - find a strategy to trade next to LIT and tune it on 2026 like LIT.",
+   "src": "research/writeups/second-md.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-10-22",
+   "who": "lit",
+   "text": "Owner's order (2026-10-22) was to find an EMA strategy to trade alongside LIT and make it profitable by tuning on 2026, the way LIT was tuned.",
+   "src": "research/writeups/second-ema.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-10-22",
+   "who": "dev",
+   "text": "Owner (2026-10-22) - \"If I get another 50K account or maybe a 25K account, could you trade it on that account?\" Yes.",
+   "src": "research/writeups/second-account-b.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-22",
+   "who": "atlas",
+   "text": "Owner (2026-10-22) - \"LIT is on the 50K, ATLAS (EMA+MACD+S/R, account B) on the 25K, then eventually we just scale.",
+   "src": "research/writeups/scale-plan.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-22",
+   "who": "chrysos",
+   "text": "The owner asked whether EMA, MACD, support/resistance and supply/demand strategies make money on their own, separate from LIT.",
+   "src": "research/writeups/retail-standalone.md",
+   "kind": "finding"
+  },
+  {
+   "d": "2026-10-22",
+   "who": "lit",
+   "text": "The owner asked for more LIT trades (\"entries all the time, not one window\"), at least 3 a week, adding money in both 2026 halves without more MFFU eval fails.",
+   "src": "research/writeups/lit-more-entries.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-10-22",
+   "who": "atlas",
+   "text": "Owner (2026-10-22) - LIT on the 50K eval, the new strategy now called ATLAS (account B - London EMA pullback + MACD sweep divergence + S/R NY reclaim) on a Builder 25K;…",
+   "src": "research/writeups/atlas.md",
+   "kind": "adopt-candidate"
+  },
+  {
+   "d": "2026-10-21",
+   "who": "lit",
+   "text": "Every LIT trade (630 backtest trades of the live settings, run lit_live, plus the cloud paper and PC live trades as they come) now carries ~60 facts - 57 known at entry…",
+   "src": "research/writeups/lit-trade-intel.md",
+   "kind": "descriptive"
+  },
+  {
+   "d": "2026-10-21",
+   "who": "lit",
+   "text": "The owner asked whether big retail tools (EMAs, supply and demand, support and resistance, MACD) can add LIT trades to reach 3+ a week.",
+   "src": "research/writeups/lit-retail-entries.md",
+   "kind": "rejected"
+  }
+ ],
+ "mind": {
+  "tested": 22,
+  "t": 1793316860,
+  "date": "2026-10-29",
+  "observations": [
+   {
+    "text": "14 of the last 20 Zlarior losses came after a buildup level sweep (22 of its last 40 trades, history + live, were there)",
+    "bot": "lit",
+    "score": 0.7
+   },
+   {
+    "text": "14 of the last 17 ATLAS losses came with VIX under 15.8 (24 of its last 40 trades, history + live, were there)",
+    "bot": "atlas",
+    "score": 0.82
+   },
+   {
+    "text": "9 of the last 17 ATLAS losses came on longs (19 of its last 40 trades, history + live, were there)",
+    "bot": "atlas",
+    "score": 0.53
+   },
+   {
+    "text": "9 of the last 17 ATLAS losses came against the 1h structure trend (18 of its last 40 trades, history + live, were there)",
+    "bot": "atlas",
+    "score": 0.53
+   },
+   {
+    "text": "9 of the last 17 ATLAS losses came when the 5m ATR is above 1.34x its 7-day median (its top third) (16 of its last 40 trades, history + live, were there)",
+    "bot": "atlas",
+    "score": 0.53
+   },
+   {
+    "text": "BLITZ trades with VIX under 16.9 made 64% of its 2026 R with 33% of the trades",
+    "bot": "blitz",
+    "score": 0.64
+   },
+   {
+    "text": "7 of the last 12 BLITZ losses came in New York lunch (21 of its last 40 trades, history + live, were there)",
+    "bot": "blitz",
+    "score": 0.58
+   },
+   {
+    "text": "7 of the last 12 BLITZ losses came on shorts (20 of its last 40 trades, history + live, were there)",
+    "bot": "blitz",
+    "score": 0.58
+   }
+  ],
+  "source": "research/mind/proposals_seed.json"
+ },
+ "git": {
+  "available": true,
+  "commits": [
+   {
+    "t": 1794321890,
+    "s": "Night brief round 2"
+   },
+   {
+    "t": 1794288702,
+    "s": "Merge old-app phone-fit fixes (16 apps); worker v73"
+   },
+   {
+    "t": 1794288675,
+    "s": "Phone-fit round 3: old-app fixes, results and what is left"
+   },
+   {
+    "t": 1794288548,
+    "s": "Phone-fit old app: tyche (its 7 failing checks exist without this CSS)"
+   },
+   {
+    "t": 1794288548,
+    "s": "Phone-fit old app: oracle (its 4 failing checks exist without this CSS)"
+   },
+   {
+    "t": 1794288547,
+    "s": "Phone-fit old app: argus (its 2 failing checks exist without this CSS)"
+   },
+   {
+    "t": 1794288547,
+    "s": "Phone-fit old app: arena (its 3 failing checks exist without this CSS)"
+   },
+   {
+    "t": 1794288529,
+    "s": "Phone-fit old app: observatory"
+   },
+   {
+    "t": 1794288529,
+    "s": "Phone-fit old app: tree"
+   },
+   {
+    "t": 1794288528,
+    "s": "Phone-fit old app: ledger"
+   },
+   {
+    "t": 1794288477,
+    "s": "Phone-fit old app: hephaestus"
+   },
+   {
+    "t": 1794288454,
+    "s": "Phone-fit old app: forum"
+   },
+   {
+    "t": 1794288402,
+    "s": "Phone-fit old app: bridge"
+   },
+   {
+    "t": 1794288343,
+    "s": "Phone-fit old app: plutus"
+   },
+   {
+    "t": 1794288182,
+    "s": "Phone-fit old app: mind"
+   },
+   {
+    "t": 1794287917,
+    "s": "Phone-fit old app: fates"
+   },
+   {
+    "t": 1794287030,
+    "s": "Phone-fit old app: datacity"
+   },
+   {
+    "t": 1794286885,
+    "s": "Phone-fit old app: labyrinth"
+   },
+   {
+    "t": 1794286485,
+    "s": "Phone-fit old app: ares"
+   },
+   {
+    "t": 1794285867,
+    "s": "Merge agora-release"
+   },
+   {
+    "t": 1794285861,
+    "s": "Merge phone-fit round 2 (iPhone profiles, text-safe tokens, new-app fixes)"
+   },
+   {
+    "t": 1794285838,
+    "s": "Phone-fit round 2: iPhone mode, text-safe agora tokens, fixes in kairos gallery clio dionysus demeter hestia…"
+   },
+   {
+    "t": 1794285645,
+    "s": "Merge Kalshi City clock chip fix (k16) and Data City walk checks"
+   },
+   {
+    "t": 1794285625,
+    "s": "Kalshi City: cams row above the dock, short phones scroll above the dock; kalshicity page test runs to the en…"
+   },
+   {
+    "t": 1794285384,
+    "s": "Merge QA sweep fixes (resolved hub/wire tests, jarvis OLD list, kalshicity tags); sync web_next copies"
+   }
+  ],
+  "branches": [
+   {
+    "name": "worktree-agent-a0a9a87e7ec8491ef",
+    "t": 1794322211,
+    "s": "agora_audit: static + rendered theme audit"
+   },
+   {
+    "name": "worktree-agent-a1351957c8298b0e0",
+    "t": 1794321890,
+    "s": "Night brief round 2"
+   },
+   {
+    "name": "worktree-agent-a1683cbeb359a2648",
+    "t": 1794321890,
+    "s": "Night brief round 2"
+   },
+   {
+    "name": "worktree-agent-a1d6e613452093af6",
+    "t": 1794321890,
+    "s": "Night brief round 2"
+   },
+   {
+    "name": "worktree-agent-a3fd8699bc82d314d",
+    "t": 1794321890,
+    "s": "Night brief round 2"
+   },
+   {
+    "name": "worktree-agent-a5ca1b51d9fc9e0df",
+    "t": 1794321890,
+    "s": "Night brief round 2"
+   },
+   {
+    "name": "worktree-agent-a6e002b939ee7ee1c",
+    "t": 1794321890,
+    "s": "Night brief round 2"
+   },
+   {
+    "name": "worktree-agent-a72f1240716b4b76f",
+    "t": 1794321890,
+    "s": "Night brief round 2"
+   },
+   {
+    "name": "worktree-agent-ace41d8d484f75e7c",
+    "t": 1794321890,
+    "s": "Night brief round 2"
+   },
+   {
+    "name": "worktree-agent-afe94f2583c16b5ef",
+    "t": 1794321890,
+    "s": "Night brief round 2"
+   },
+   {
+    "name": "worktree-agent-ae49898dbc04700e7",
+    "t": 1794288675,
+    "s": "Phone-fit round 3: old-app fixes, results and what is left"
+   },
+   {
+    "name": "worktree-agent-a8942a8a57581e4e2",
+    "t": 1794285625,
+    "s": "Kalshi City: cams row above the dock, short phones scroll above the dock; kalshicity page test runs…"
+   }
+  ]
+ }
+}

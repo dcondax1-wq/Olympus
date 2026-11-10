@@ -459,6 +459,25 @@
     "kind": "sunburst",
     "ms": 1000
    }
+  },
+  {
+   "id": "ergasterion",
+   "name": "Ergasterion",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The workshop: every AI worker, what it does and learns",
+   "glyph": "E",
+   "ambient": "chimes",
+   "flavour": [
+    "columns",
+    "Walk the workshop",
+    "tap"
+   ],
+   "transition": {
+    "kind": "columns",
+    "ms": 1000,
+    "n": 5
+   }
   }
  ],
  "pending": [],

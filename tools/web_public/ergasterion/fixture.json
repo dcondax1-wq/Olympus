@@ -1,0 +1,347 @@
+{
+ "v": 1,
+ "demo": true,
+ "note": "EXAMPLE numbers, not real: fifteen sample workers shown until the site has its own files. Times are counted back from now.",
+ "home": {
+  "t_ago_h": 0.1,
+  "accounts": [
+   {
+    "id": "mffu50k_eval",
+    "name": "Zlarior 50K",
+    "conn": {
+     "connected": true
+    },
+    "eval": {
+     "room": 1420,
+     "mll": 2000
+    },
+    "pnl": {
+     "today": 312
+    }
+   },
+   {
+    "id": "acctb",
+    "name": "ATLAS 25K",
+    "conn": {
+     "connected": true
+    },
+    "eval": {
+     "room": 840,
+     "mll": 1000
+    },
+    "pnl": {
+     "today": -60
+    }
+   },
+   {
+    "id": "acct_c",
+    "name": "BLITZ 25K",
+    "conn": {
+     "connected": true
+    },
+    "eval": {
+     "room": 560,
+     "mll": 1000,
+     "paused": true
+    },
+    "pnl": {
+     "today": 0
+    },
+    "paused": true
+   }
+  ]
+ },
+ "money": {
+  "streams": [
+   {
+    "id": "chrysos",
+    "name": "Chrysos",
+    "status": "ok",
+    "age_min": 30,
+    "headline": "Example: the next buy looks best, about $5,400 over 12 months (an estimate).",
+    "items": [
+     {
+      "title": "Next buy: the 50K plan",
+      "usd": 5439
+     },
+     {
+      "title": "Buy: the 25K plan",
+      "usd": 2528
+     }
+    ],
+    "notes": [
+     "Example: break-even is about 1.4 months in every case."
+    ]
+   },
+   {
+    "id": "mercury",
+    "name": "Mercury",
+    "status": "ok",
+    "age_min": 90,
+    "headline": "Example: one prop-firm sale found.",
+    "items": [
+     {
+      "title": "Prop-firm sale on the 50K plan",
+      "usd": 18
+     }
+    ],
+    "notes": []
+   },
+   {
+    "id": "sibyl",
+    "name": "Sibyl",
+    "status": "ok",
+    "age_min": 200,
+    "headline": "Example: 3 picks, 1 survives the out-of-sample check.",
+    "items": [
+     {
+      "title": "Pick A",
+      "usd": null
+     },
+     {
+      "title": "Pick B",
+      "usd": null
+     },
+     {
+      "title": "Pick C",
+      "usd": null
+     }
+    ],
+    "notes": [
+     "Example: only 1 pick survives out-of-sample."
+    ]
+   },
+   {
+    "id": "oikos",
+    "name": "Oikos",
+    "status": "stale",
+    "age_min": 3000,
+    "headline": "Example: savings rates last read two days ago.",
+    "items": [],
+    "notes": []
+   },
+   {
+    "id": "arbiter",
+    "name": "Arbiter",
+    "status": "ok",
+    "age_min": 45,
+    "headline": "Example: no price gap is worth the fees today.",
+    "items": [],
+    "notes": [
+     "Example: gaps shrink to nothing after fees."
+    ]
+   }
+  ]
+ },
+ "kalshi": {
+  "running": true,
+  "t_ago_h": 0.5,
+  "today_pnl": 12.4,
+  "settled_n": 4,
+  "last_trades": [
+   {
+    "title": "Example market A",
+    "pnl": 3.2
+   },
+   {
+    "title": "Example market B",
+    "pnl": -1.1
+   }
+  ]
+ },
+ "cron": {
+  "tasks": {
+   "fates": {
+    "ok": true,
+    "ago_h": 8,
+    "cadence": "nightly",
+    "note": "new simulations"
+   },
+   "odeon": {
+    "ok": true,
+    "ago_h": 8,
+    "cadence": "nightly",
+    "note": "trade replays"
+   },
+   "prometheus": {
+    "ok": true,
+    "ago_h": 60,
+    "cadence": "weekly",
+    "note": "settings bred"
+   },
+   "datacity": {
+    "ok": false,
+    "ago_h": 9,
+    "cadence": "nightly",
+    "error": "Example: a data file was empty"
+   }
+  }
+ },
+ "forge": {
+  "built_ago_d": 3,
+  "gens_n": 20,
+  "pop": 24,
+  "verdict": {
+   "h1_gain_pm": 1548,
+   "h2_gain_pm": -675,
+   "survive_pct": -43.6,
+   "real_margin": false
+  },
+  "honesty": {
+   "genomes_checked": 349,
+   "beat_live_both": 9
+  }
+ },
+ "heph": {
+  "built_ago_d": 6,
+  "dials": [
+   {
+    "label": "Target (banked at)",
+    "options": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ]
+   },
+   {
+    "label": "Break-even at 1R",
+    "options": [
+     1,
+     2,
+     3
+    ]
+   },
+   {
+    "label": "15-minute cut",
+    "options": [
+     1,
+     2
+    ]
+   }
+  ]
+ },
+ "queue": {
+  "asof_ago_d": 1,
+  "queue": {
+   "total": 6,
+   "open": 4,
+   "done": 2,
+   "tasks": [
+    {
+     "id": "cities-layout",
+     "text": "Example task: make the first screen a lively map.",
+     "section": "P1",
+     "done": false
+    },
+    {
+     "id": "inbox-noise",
+     "text": "Example task: only show real deliveries.",
+     "section": "P0",
+     "done": false
+    },
+    {
+     "id": "ledger-headline",
+     "text": "Example task: calmer headline before the first payout.",
+     "section": "P0",
+     "done": false
+    },
+    {
+     "id": "gate-full-run",
+     "text": "Example task: run the full gate.",
+     "section": "P5",
+     "done": false
+    }
+   ]
+  },
+  "writeups": {
+   "count": 3,
+   "latest": [
+    {
+     "d_ago": 1,
+     "title": "Example write-up: a filter that did not hold",
+     "status": "rejected",
+     "summary": "Example."
+    }
+   ]
+  },
+  "rejected": [
+   {
+    "d_ago": 2,
+    "title": "Example idea that failed on the check half",
+    "file": "research/writeups/example.md",
+    "summary": "Example."
+   }
+  ],
+  "mind": {
+   "tested": 22,
+   "ago_h": 20,
+   "source": "research/mind/proposals_seed.json",
+   "observations": [
+    {
+     "text": "Example: 14 of the last 20 losses came after one kind of level sweep.",
+     "bot": "lit",
+     "score": 0.7
+    },
+    {
+     "text": "Example: most ATLAS losses came when VIX was low.",
+     "bot": "atlas",
+     "score": 0.8
+    }
+   ]
+  },
+  "git": {
+   "available": true,
+   "commits": [
+    {
+     "ago_h": 2,
+     "s": "Example commit: a new app page"
+    },
+    {
+     "ago_h": 5,
+     "s": "Example commit: fix a clipped label"
+    }
+   ],
+   "branches": []
+  },
+  "learnings": [
+   {
+    "d_ago": 1,
+    "who": "sibyl",
+    "text": "Example: only 1 pick survives out-of-sample.",
+    "src": "money/sibyl.json"
+   },
+   {
+    "d_ago": 1,
+    "who": "kalshi",
+    "text": "Example: only 4 real trades so far, too few to call an edge.",
+    "src": "kalshi.json"
+   },
+   {
+    "d_ago": 2,
+    "who": "prometheus",
+    "text": "Example: 9 of 349 bred settings beat live on both halves; nothing to switch.",
+    "src": "prometheus/forge.json"
+   },
+   {
+    "d_ago": 3,
+    "who": "lit",
+    "text": "Example: a filter that lowered the trades per week did not hold in both periods.",
+    "src": "research/writeups/example.md"
+   },
+   {
+    "d_ago": 4,
+    "who": "atlas",
+    "text": "Example: holding the second account's trade made 2021-25 worse.",
+    "src": "research/writeups/example2.md"
+   },
+   {
+    "d_ago": 5,
+    "who": "mind",
+    "text": "Example: similar-setup memory is context only, not predictive.",
+    "src": "research/mind/calibration.json"
+   }
+  ]
+ }
+}
