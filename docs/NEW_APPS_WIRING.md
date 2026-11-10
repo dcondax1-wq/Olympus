@@ -312,3 +312,33 @@ App `kratos` in `tools/web_public/kratos/` (3D column via the render core: `colu
 5. `python tools/apps_list_build.py` then `--check`.
 6. `olympus/intro-app.js` FLAVOUR: `kratos: ['columns', 'Keep your own rules', 'tap'],` and `jarvis/transitions.js` REGISTRY: `kratos: { kind: 'columns', ms: 1000, n: 4 },`
 7. Tests: `tests.test_kratos_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+# Wiring the Agora Gallery and the 3D shapes library (2026-11-10)
+
+New shared library `olympus/shapes3d.js` (19 AGORA shapes, HD + LITE, instanced; any app: `import { build, materials, SHAPES } from '../olympus/shapes3d.js'` and add the group to a scene on the render core) and the app `gallery` (`tools/web_public/gallery/`, name "Agora Gallery": a rotating pedestal, the shelf of all 19 shapes with what each stands for, drag to turn, tap to look closer, Auto / High / Lite, 2D drawing fallback). Reads only its own `fixture.json` (the shelf; a test keeps it equal to `shapes3d.js`, regenerate it when a shape changes). Test `tests/test_shapes3d.py` (`--static` skips the one browser smoke). Same kit pins as the other AGORA apps (`olympus.js?v=o4`, `agora.css?v=a1`, `intro-app.js?v=i5`). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `apps-list.js`, `intro-app.js`, `transitions.js`.
+
+## 1. `jarvis/apps.js` BUILT_INS (after the `pnyx` row)
+```js
+  app('gallery', 'Agora Gallery', 'life', '#c8a24a', 'Every 3D shape of the Agora on a turning pedestal', { glyph: 'Γ' }),
+```
+## 2. `olympus/olympus.js`
+APPS: `gallery: ['Agora Gallery', 'Γ', '#c8a24a'],`
+AMBIENT (existing bed): `gallery: 'chimes',`
+## 3. `tools/build_web_dashboard.py` app tuple (~line 1212): add `"gallery"` after `"pnyx"`.
+## 4. `tools/web_public/sw.js`: `OTHER_APPS` add `'gallery/'`, bump `CACHE`; the precache list should also hold `olympus/shapes3d.js`, `olympus/render.js`, `olympus/materials.js` and `olympus/three-addons/*` if not already there; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+## 5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+## 6. Shared lines
+`olympus/intro-app.js` FLAVOUR: `gallery: ['columns', 'Walk the Agora', 'tap'],`
+`jarvis/transitions.js` REGISTRY: `gallery: { kind: 'columns', ms: 1000, n: 5 },`
+## 7. Tests after wiring: `tests.test_shapes3d`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`. Then the app count goes up by one in CLAUDE_REFERENCE / CLAUDE.md.
+## 8. Using a shape in another app (no wiring)
+```js
+import { createRenderer } from '../olympus/render.js';
+import * as KIT from '../olympus/materials.js';
+import { build, materials, warmLights } from '../olympus/shapes3d.js';
+const lite = OLYMPUS.lite(), M = materials({ lite, kit: lite ? null : KIT });   // one material set for all shapes of the scene
+warmLights(scene, { lite });
+const owl = build('owl', { lite, materials: M, size: 1.6 }); scene.add(owl);     // pillarbar takes { values: [0..1], tones: ['gain', 'loss'] }
+rc.start((dt, t) => { if (owl.userData.update) owl.userData.update(t); });
+```
+Keep bloom at 0.25 or less (`createRenderer({ bloom: { strength: 0.2, threshold: 0.95 } })`): only fire and gold may catch it.

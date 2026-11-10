@@ -1,0 +1,18 @@
+{
+  "name": "Agora Gallery",
+  "short_name": "Gallery",
+  "description": "OLYMPUS AGORA GALLERY: every 3D shape of the Agora on a rotating marble pedestal, with what it stands for. Drag to turn, tap to look closer.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14110e",
+  "theme_color": "#14110e",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "../jarvis/icon-192.png?v=j4", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "../jarvis/icon-512.png?v=j4", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "../jarvis/icon-maskable-512.png?v=j4", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
