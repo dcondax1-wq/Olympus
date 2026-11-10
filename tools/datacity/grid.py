@@ -24,11 +24,13 @@ SEED = 20261103
 # the newer families (2026-11-03) are crossed with a few partners only, not with every KEY family
 NEW_PAIRS = {"orw": ("vwap", "today", "gap"), "orp": ("vwap", "today", "atr"), "gapt": ("vwap", "today", "atr"),
              "vts": ("atr", "today", "vwap"), "vtr": ("atr", "today", "vwap"), "esr": ("vwap", "today", "smt"),
-             "cal": ("vwap", "today", "atr")}
-TIME_FAMS = ("wd", "dst", "news", "vix", "mon", "cal", "vts", "vtr", "orw", "gapt")   # a session open x one state
+             "cal": ("vwap", "today", "atr"),
+             "dom": ("vwap",), "wom": ("vwap",), "mend": ("vwap",), "fomc": ("vwap",),
+             "gsz": ("wd",), "hr": ("vix",), "onr": ("vwap",), "fhd": ("vwap",), "esd": ("vwap",)}
+TIME_FAMS = ("wd", "dst", "news", "vix", "mon", "cal", "vts", "vtr", "orw", "gapt", "dom", "wom", "mend", "fomc", "gsz", "onr")   # a session open x one state
 # districts: a combination lives where its most specific state belongs (first match wins), else times / confluences / while
-DISTRICT_OF_FAMILY = (("esnq", ("smt", "esr")), ("orange", ("orw", "orp")), ("gaps", ("gap", "gapt")),
-                      ("volatility", ("vix", "vxn", "atr", "vts", "vtr")), ("week", ("wd",)), ("seasons", ("mon", "cal")))
+DISTRICT_OF_FAMILY = (("esnq", ("smt", "esr", "esd")), ("orange", ("orw", "orp", "onr", "fhd")), ("gaps", ("gap", "gapt", "gsz")),
+                      ("volatility", ("vix", "vxn", "atr", "vts", "vtr")), ("week", ("wd",)), ("seasons", ("mon", "cal", "dom", "wom", "mend", "fomc")), ("times", ("hr",)))
 DISTRICTS = ("times", "confluences", "week", "seasons", "volatility", "gaps", "orange", "esnq", "while")
 
 
@@ -288,3 +290,23 @@ def guard(combos, rows):
                         "mean_oos_usd": round(float(np.mean(oos)), 2) if oos else None,
                         "mean_oos_r": round(float(np.mean(oos_r)), 3) if oos_r else None},
             "classes": cls_count, "districts": by_d}
+
+
+def family_stats(combos, rows, fams) -> dict:
+    """Honest per-family counts of the distinct combinations that use a state family: n tested (30+ trades), how many hold in
+    BOTH periods (green + gold: positive in 2026 and in 2021-25), FDR survivors, gold. The rest is noise or one period only."""
+    out = {f: {"tested": 0, "both": 0, "fdr": 0, "gold": 0, "n_med": 0} for f in fams}
+    ns = {f: [] for f in fams}
+    for c, s in zip(combos, rows, strict=True):
+        if s.get("n", 0) < MIN_N or "dup_of" in s:
+            continue
+        for f in {f for f, _ in c["conds"]} & set(fams):
+            o = out[f]
+            o["tested"] += 1
+            o["both"] += s["cls"] in ("green", "gold")
+            o["fdr"] += bool(s.get("fdr"))
+            o["gold"] += s["cls"] == "gold"
+            ns[f].append(s["n"])
+    for f in fams:
+        out[f]["n_med"] = int(np.median(ns[f])) if ns[f] else 0
+    return out

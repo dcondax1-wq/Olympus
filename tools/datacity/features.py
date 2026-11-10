@@ -77,8 +77,22 @@ STATES = {
     "vtr": ("VIX falling", "VIX steady", "VIX rising"),
     "esr": ("NQ outpacing ES the trade's way", "NQ and ES in step", "NQ lagging ES the trade's way"),
     "cal": ("the turn of the month", "OpEx week", "a plain week"),
+    # added 2026-11-10 (MORE DATABASES): calendar facts, the overnight range, the first hour, the hour of the day, gap size,
+    # ES-NQ divergence over the last hour. All past-only or scheduled in advance.
+    "dom": ("days 1-10 of the month", "days 11-20 of the month", "days 21-31 of the month"),
+    "wom": ("the 1st week of the month", "the 2nd week of the month", "the 3rd week of the month", "the 4th week or later"),
+    "mend": ("a plain day of the month", "month-end (last 2 weekdays)", "quarter-end (last 2 weekdays of Mar / Jun / Sep / Dec)"),
+    "fomc": ("a plain week", "FOMC week", "FOMC decision day"),
+    "gsz": ("a small gap (under 0.15 ATR)", "a medium gap (0.15-0.5 ATR)", "a large gap (over 0.5 ATR)"),
+    "hr": ("overnight (18:00-02:00 ET)", "London early (02:00-05:00)", "London late (05:00-08:00)", "NY pre-open (08:00-09:30)",
+           "NY open hour (09:30-10:30)", "NY late morning (10:30-12:00)", "NY midday (12:00-14:00)", "NY afternoon (14:00-16:00)"),
+    "onr": ("a narrow overnight range", "a normal overnight range", "a wide overnight range"),
+    "fhd": ("with the first hour's direction", "after a flat first hour", "against the first hour's direction"),
+    "esd": ("NQ outpacing ES over the last hour (trade's way)", "NQ and ES in step over the last hour",
+            "NQ lagging ES over the last hour (trade's way)"),
 }
 FAMILIES = list(STATES)
+NEW_FAMILIES = ("dom", "wom", "mend", "fomc", "gsz", "hr", "onr", "fhd", "esd")     # added 2026-11-10
 
 
 HIGH_LEVELS = ("asia_h", "lon_h", "pdh", "pwh", "orh")
@@ -86,8 +100,12 @@ LEVEL_VALID_FROM = {"asia_h": 480, "asia_l": 480, "lon_h": 780, "lon_l": 780, "p
                     "orh": 945, "orl": 945}
 STATE_EDGES = {"vix": (15, 20, 25), "vxn": (20, 28), "atr": (1 / 3, 2 / 3), "orw": (1 / 3, 2 / 3), "vts": (0.9, 1.0),
                "vtr": (0.95, 1.05)}
-DAY_FAMILIES = ("wd", "dst", "news", "vix", "vxn", "atr", "prev", "vts", "vtr", "cal", "mon")   # known before the day trades
+DAY_FAMILIES = ("wd", "dst", "news", "vix", "vxn", "atr", "prev", "vts", "vtr", "cal", "mon", "dom", "wom", "mend", "fomc")   # known before the day trades
 ESR_PCT = 0.15                    # NQ vs ES % change since the day's open: beyond +/- this = one leads the other
+ESD_PCT = 0.10                    # NQ vs ES % change over the last hour: beyond +/- this = one leads the other
+FH_FLAT = 0.10                    # a first hour (09:30-10:30) moving less than this x the daily ATR is flat
+GSZ_EDGES = (0.15, 0.5)           # gap size buckets, in daily ATRs
+HR_EDGES = (120, 300, 480, 570, 630, 720, 840, 960)   # ET minutes: 02:00 05:00 08:00 09:30 10:30 12:00 14:00 16:00 (before 02:00 = 0)
 GAP_X = 0.15                      # an RTH gap: |09:30 open - prior RTH close| > this x the daily ATR
 
 
@@ -177,6 +195,28 @@ def _calendar(days):
     return out
 
 
+def _calendar2(days, fomc_dates):
+    """Schedule facts of each CME day: (day of month 0-2, week of month 0-3, month/quarter-end 0-2, FOMC 0-2). -1 on weekends."""
+    n = len(days)
+    dom, wom, mend, fomc = (np.full(n, -1, dtype=np.int8) for _ in range(4))
+    fw = set()
+    for ds in fomc_dates:
+        d = dt.date.fromisoformat(ds)
+        mon = d - dt.timedelta(days=d.weekday())
+        fw.add(mon.isoformat())
+    for i, d in enumerate(days.astype(object)):
+        if d.weekday() > 4:
+            continue
+        dom[i] = 0 if d.day <= 10 else (1 if d.day <= 20 else 2)
+        wom[i] = min((d.day - 1) // 7, 3)
+        nxt = dt.date(d.year + (d.month == 12), d.month % 12 + 1, 1)
+        wd_after = int(np.busday_count(d, nxt)) - 1
+        mend[i] = (2 if d.month in (3, 6, 9, 12) else 1) if wd_after < 2 else 0
+        mon = (d - dt.timedelta(days=d.weekday())).isoformat()
+        fomc[i] = 2 if d.isoformat() in fomc_dates else (1 if mon in fw else 0)
+    return dom, wom, mend, fomc
+
+
 class Bars:
     """The 5m bars as arrays, with their ET clock and CME day."""
 
@@ -240,6 +280,14 @@ def day_facts(b: Bars, vix=None, vxn=None, news=None, vix3m=None) -> dict:
     news_dates = set(news["date"].astype(str)) if news is not None and len(news) else set()
     orh, orl = b.per_day(orng, b.h, "max"), b.per_day(orng, b.l, "min")
     v_prev, v3_prev = _cboe_before(vix, b.days), _cboe_before(vix3m, b.days)
+    fomc_dates = set()
+    if news is not None and len(news):
+        fomc_dates = set(news["date"][news["event"].astype(str).str.contains("FOMC rate decision", regex=False)].astype(str))
+    dom, wom, mend, fomc = _calendar2(b.days, fomc_dates)
+    onight = (b.mod < 930)                                                                # 18:00 -> 09:30 ET: complete at the open
+    on_rng = b.per_day(onight, b.h, "max") - b.per_day(onight, b.l, "min")
+    fh = (b.mod >= 930) & (b.mod < 990)                                                   # 09:30-10:30 ET
+    fh_open, fh_close = b.per_day(b.mod == 930, b.o, "first"), b.per_day(b.mod == 985, b.c, "last")
     return {
         "levels": {"asia_h": b.per_day(asia, b.h, "max"), "asia_l": b.per_day(asia, b.l, "min"),
                    "lon_h": b.per_day(lon, b.h, "max"), "lon_l": b.per_day(lon, b.l, "min"),
@@ -255,6 +303,9 @@ def day_facts(b: Bars, vix=None, vxn=None, news=None, vix3m=None) -> dict:
         "vts": _bucket(v_prev / v3_prev, STATE_EDGES["vts"]),                           # VIX / VIX3M, closes before the day
         "vtr": _bucket(_cboe_before(_vix_trend(vix), b.days), STATE_EDGES["vtr"]),
         "cal": _calendar(b.days),
+        "dom": dom, "wom": wom, "mend": mend, "fomc": fomc,
+        "onr": _bucket(_past_pct(on_rng / datr), STATE_EDGES["orw"]),                    # the overnight range vs the last 250 days
+        "fh_move": (fh_close - fh_open) / datr,                                           # known once the 10:30 bar has closed
     }
 
 
@@ -290,13 +341,19 @@ def bar_facts(b: Bars, D: dict, es=None) -> dict:
     gapt = np.where(rth & (b.mod < 1320) & np.isfinite(gx), gapt, -1)
     orh, orl = D["levels"]["orh"][did], D["levels"]["orl"][did]
     or_side = np.where((b.mod >= 945) & np.isfinite(orh), np.where(c > orh, 1.0, np.where(c < orl, -1.0, 0.0)), np.nan)
-    return {"gapt": gapt.astype(np.int8), "or_side": or_side, "esrel": es_rel(b, es),"pcl": pcl, "atr": pd.Series(tr).rolling(14, min_periods=5).mean().to_numpy(),
+    return {"esd": es_hour(b, es), "gapt": gapt.astype(np.int8), "or_side": or_side, "esrel": es_rel(b, es),"pcl": pcl, "atr": pd.Series(tr).rolling(14, min_periods=5).mean().to_numpy(),
             "ema": pd.Series(c).ewm(span=200, adjust=False).mean().to_numpy(), "vwap": vw,
             "today": today.astype(np.int8),
             "lsa": np.where(b.mod < 480, -1, swept_h.astype(int) + 2 * swept_l.astype(int)).astype(np.int8),
             "gap": np.where(~np.isfinite(drift), -1, np.where(drift > 0.15, 1, np.where(drift < -0.15, 2, 0))).astype(np.int8),
             "smt": smt(b, hi_sofar, lo_sofar, es),
             "lo6": b.rolling(lo, 6, "min"), "hi6": b.rolling(h, 6, "max")}
+
+
+def _gap_size(gx):
+    """0 small / 1 medium / 2 large by |gap| in ATRs, -1 where unknown."""
+    a = np.abs(np.asarray(gx, dtype=float))
+    return np.where(np.isfinite(a), np.searchsorted(np.asarray(GSZ_EDGES), a, side="right"), -1)
 
 
 def es_rel(b: Bars, es=None) -> np.ndarray:
@@ -309,6 +366,16 @@ def es_rel(b: Bars, es=None) -> np.ndarray:
     nq0, es0 = first(b.o), first(eo)
     have = np.isfinite(ec) & np.isfinite(es0) & (b.mod >= 60)
     return np.where(have, 100 * ((b.c / nq0 - 1) - (ec / np.where(have, es0, 1.0) - 1)), np.nan)
+
+
+def es_hour(b: Bars, es=None) -> np.ndarray:
+    """NQ's % change over the last 12 bars (1 hour) minus ES's, at each bar's close (NaN without ES bars)."""
+    if es is None or not len(es):
+        return np.full(b.n, np.nan)
+    e = es.set_index("time").reindex(b.t)["close"].to_numpy(dtype=float)
+    nq0, es0 = np.r_[np.full(12, np.nan), b.c[:-12]], np.r_[np.full(12, np.nan), e[:-12]]
+    ok = np.isfinite(e) & np.isfinite(es0) & np.isfinite(nq0)
+    return np.where(ok, 100 * ((b.c / np.where(ok, nq0, 1.0) - 1) - (e / np.where(ok, es0, 1.0) - 1)), np.nan)
 
 
 def smt(b: Bars, hi_sofar, lo_sofar, es=None) -> np.ndarray:
@@ -526,7 +593,13 @@ def states(b: Bars, D: dict, X: dict, ti, dirs) -> dict:
             "orw": np.where(b.mod[ti] >= 945, D["orw"][day], -1).astype(np.int8),
             "orp": rel3(X["or_side"][ti] * dirs), "gapt": X["gapt"][ti], "vts": D["vts"][day], "vtr": D["vtr"][day],
             "esr": rel3(np.where(np.isfinite(er), np.where(np.abs(er) > ESR_PCT, np.sign(er), 0.0), np.nan) * dirs),
-            "cal": D["cal"][day]}
+            "cal": D["cal"][day], "dom": D["dom"][day], "wom": D["wom"][day], "mend": D["mend"][day], "fomc": D["fomc"][day],
+            "gsz": np.where(b.mod[ti] >= 930, _gap_size(D["gapx"][day]), -1).astype(np.int8),
+            "hr": np.where(b.mins[ti] >= 960, 0, np.searchsorted(HR_EDGES, b.mins[ti], side="right")).astype(np.int8),
+            "onr": np.where(b.mod[ti] >= 930, D["onr"][day], -1).astype(np.int8),
+            "fhd": np.where(b.mod[ti] >= 990, rel3(np.where(np.isfinite(D["fh_move"][day]), np.where(np.abs(D["fh_move"][day]) > FH_FLAT,
+                            np.sign(D["fh_move"][day]), 0.0), np.nan) * dirs), -1).astype(np.int8),
+            "esd": rel3(np.where(np.isfinite(X["esd"][ti]), np.where(np.abs(X["esd"][ti]) > ESD_PCT, np.sign(X["esd"][ti]), 0.0), np.nan) * dirs)}
 
 
 # ------------------------------------------------------------------------------------------------ build

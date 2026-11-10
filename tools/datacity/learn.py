@@ -131,7 +131,7 @@ def run(full=False, heartbeat=False, out=OUT, web=WEB, store_run=True, df=None, 
                           "target": f"{F.TGT_R:g}R, else the close after {F.H * 5} min or at the day's end", "one_a_day": True,
                           "test": f"two-sided t on R after costs (equal $ risk), BH FDR q={G.FDR_Q}, sign-flip placebo, "
                                   "2021-24 -> 2025-26 holdout"},
-               "guard": guard, "run": how, "heartbeat": hb,
+               "guard": guard, "new_families": G.family_stats(combos, rows, F.NEW_FAMILIES), "run": how, "heartbeat": hb,
                "seconds": {"events": round(t1 - t0, 1), "grid": round(t2 - t1, 1), "total": round(time.time() - t0, 1)}}
     city = {"v": 1, "built": built, "t": int(now), "last_day": st.last_day, "summary": summary, "lit": RP.lit_tower(),
             "buildings": buildings, "strategies": strategies,
