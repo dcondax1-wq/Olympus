@@ -88,3 +88,7 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .btn.primary { background: linear-gradient(180deg, #d4b05a, var(--ag-gold)); color: #1b1610; border-color: #e2c47a; font-weight: 700; }
 .btn.del { padding: 0; min-width: 44px; color: var(--ag-terra); }
 ol.plain { margin: 0; padding-left: 22px; }
+
+/* phone-fit 2026-11-10 (tools/phone_fit_audit.py): gain / loss words at least 4.5:1 on the raised panels */
+.pos, .ag-good, .pill.ok { color: #a0ac6e; } .neg, .ag-bad, .pill.bad { color: #e08a6b; }
+.btn.del { color: #e08a6b; }

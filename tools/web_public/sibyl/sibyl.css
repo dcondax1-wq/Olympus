@@ -63,3 +63,6 @@ details > summary { min-height: 44px; display: flex; align-items: center; cursor
 .risk { display: grid; gap: 4px; } .risk.high { border-color: #6e3424 !important; } .risk.med { border-color: #6e5424 !important; }
 @media (prefers-reduced-motion: reduce) { .ag-bar > i { transition: none; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }
+
+/* phone-fit 2026-11-10 (tools/phone_fit_audit.py): gain / loss words at least 4.5:1 on the raised panels */
+.pos, .ag-good, .pill.ok { color: #a0ac6e; } .neg, .ag-bad, .pill.bad { color: #e08a6b; }
