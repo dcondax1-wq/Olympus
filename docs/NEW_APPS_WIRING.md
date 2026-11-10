@@ -88,3 +88,19 @@ AMBIENT (existing beds): `delphi: 'chimes', pnyx: 'coins',`
 `olympus/intro-app.js` FLAVOUR: `delphi: ['rings', 'Read the omens', 'tick'], pnyx: ['columns', 'Count the risk', 'tap'],`
 `jarvis/transitions.js` REGISTRY: `delphi: { kind: 'sunburst', ms: 1000 }, pnyx: { kind: 'columns', ms: 1000, n: 5 },`
 ## 7. Tests after wiring: `tests.test_delphi_page`, `tests.test_pnyx_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`. Then app count 38 in CLAUDE_REFERENCE / CLAUDE.md.
+
+---
+# SIBYL: money machine #3, the prediction-market edge scanner (2026-11-10)
+
+App `sibyl` (`tools/web_public/sibyl/`, 3D marble ball in `sibylball.js`, its own module tag) + scanner `tools/money/sibyl.py` (stdlib, `--out <dir>`, `--fixture`, `--selftest`; writes `<dir>/sibyl.json`). Tests `tests/test_sibyl_page.py` (+ `python tools/money/sibyl.py --selftest`). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`, the Kalshi bot, `engine/`.
+
+## 1. `jarvis/apps.js` BUILT_INS: `app('sibyl', 'Sibyl', 'money', '#c8a24a', 'Prediction-market edges after fees: paper picks, ruin odds, what could go wrong', { glyph: 'Σ' }),`
+## 2. `olympus/olympus.js`: APPS `sibyl: ['Sibyl', 'Σ', '#c8a24a'],` and AMBIENT `sibyl: 'chimes',`
+## 3. `tools/build_web_dashboard.py` app tuple (~line 1212): add `"sibyl"`. The page reads `../money/sibyl.json`: have the build run `python tools/money/sibyl.py --out <site>/money` (cloud monitor / build step); without that file the page shows its labelled DEMO.
+## 4. `tools/web_public/sw.js`: `OTHER_APPS` add `'sibyl/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+## 5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+## 6. Shared lines
+`olympus/intro-app.js` FLAVOUR: `sibyl: ['rings', 'Read the odds', 'tick'],`
+`jarvis/transitions.js` REGISTRY: `sibyl: { kind: 'sunburst', ms: 1000 },`
+## 7. Tests after wiring: `tests.test_sibyl_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`.
+Reads (all published, read only): `../money/sibyl.json` (the scanner's file); fallback `fixture.json` (DEMO, exactly `sibyl.py --fixture`). The scanner reads `kalshicity/edges.json`, `whatif.json`, `forward.json` (when present) and never the network.
