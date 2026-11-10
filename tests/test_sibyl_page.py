@@ -35,6 +35,8 @@ def test_static():
     check("a. the scanner's own selftest passes (tools/money/sibyl.py --selftest)", r.returncode == 0 and "ALL PASS" in r.stdout, r.stdout[-600:] + r.stderr[-300:])
     r2 = subprocess.run([sys.executable, "-I", os.path.join(AK.ROOT, "tools", "money", "sibyl_ledger.py"), "--selftest"], capture_output=True, text=True, timeout=300)
     check("a. the own-picks ledger's selftest passes (tools/money/sibyl_ledger.py --selftest)", r2.returncode == 0 and "ALL PASS" in r2.stdout, r2.stdout[-600:] + r2.stderr[-300:])
+    r3 = subprocess.run([sys.executable, "-I", os.path.join(AK.ROOT, "tools", "money", "sibyl_results.py"), "--selftest"], capture_output=True, text=True, timeout=300)
+    check("a. the results builder's selftest passes (tools/money/sibyl_results.py --selftest: a proxy from the bot's settled bets, nothing invented)", r3.returncode == 0 and "ALL PASS" in r3.stdout, r3.stdout[-600:] + r3.stderr[-300:])
     AK.static_kit(APP, NAME, reads=("../money/sibyl.json", "../money/sibyl_forward.json"))
     d = os.path.join(AK.WEB, APP)
     fx = json.load(open(os.path.join(d, "fixture.json"), encoding="utf-8"))
