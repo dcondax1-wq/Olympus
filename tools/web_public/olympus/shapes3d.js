@@ -109,8 +109,8 @@ const rnd = () => { _seed = (_seed * 16807) % 2147483647; return (_seed - 1) / 2
 // ------------------------------------------------------------------ the shapes
 function doric(c) {
   const { g, M, lite } = c;
-  let y = steps(g, M, 2, 1.0, 1.0, 0, 0.08);
-  const h = 1.7;
+  let y = c.o.steps === false ? 0 : steps(g, M, 2, 1.0, 1.0, 0, 0.08);                  // steps: false = just the column (a hall places its own base)
+  const h = Number(c.o.shaft) > 0.3 ? Number(c.o.shaft) : 1.7;                          // shaft: the length of the fluted shaft
   mesh(g, flutedShaft(0.2, 0.27, h, 20, 0.07, lite), M.marble, 0, y + h / 2, 0);
   y += h;
   mesh(g, cyl(0.3, 0.2, 0.1, seg(c, 32, 10)), M.marble, 0, y + 0.05, 0);
@@ -557,17 +557,23 @@ function bust(c) {
   const { g, M, lite } = c, s = seg(c, 28, 10), h = seg(c, 20, 8);
   mesh(g, box(0.9, 0.12, 0.9), M.stone, 0, 0.06, 0);
   mesh(g, box(0.7, 0.55, 0.7), M.marble, 0, 0.395, 0);
-  mesh(g, sph(0.5, s, h, 1.05, 0.5, 0.48), M.marble, 0, 0.94, 0);
-  mesh(g, cyl(0.13, 0.17, 0.3, seg(c, 14, 8)), M.marble, 0, 1.25, 0);
-  mesh(g, sph(0.27, s, h, 0.88, 1.15, 1), M.marble, 0, 1.58, 0);
-  mesh(g, cone(0.045, 0.14, seg(c, 8, 4)), M.marble, 0, 1.54, 0.28, PI / 2);
-  mesh(g, box(0.34, 0.035, 0.08), M.marble, 0, 1.66, 0.22);
-  mesh(g, torus(0.26, 0.02, 6, seg(c, 28, 10)), M.gold, 0, 1.78, 0, PI / 2);
-  if (!lite) {
-    for (const sx of [-1, 1]) mesh(g, sph(0.028, 8, 6), M.ink, sx * 0.09, 1.61, 0.25);
-    const hair = []; for (let i = 0; i < 16; i++) { const a = PI * 0.35 + (i / 15) * PI * 1.3, r = 0.22; hair.push({ p: [Math.sin(a) * r, 1.82 - (i % 2) * 0.05, -Math.cos(a) * r * 0.9 - 0.02], s: 0.055 }); }
-    instanced(g, sph(1, 8, 6), M.marble, hair);
+  mesh(g, sph(0.5, s, h, 1.05, 0.5, 0.48), M.marble, 0, 0.94, 0);                                       // shoulders and chest
+  mesh(g, cyl(0.13, 0.17, 0.3, seg(c, 14, 8)), M.marble, 0, 1.22, 0);                                   // the neck
+  mesh(g, sph(0.27, s, h, 0.88, 1.15, 1), M.marble, 0, 1.58, 0);                                        // the head
+  mesh(g, sph(0.08, seg(c, 12, 6), seg(c, 10, 5), 1, 0.8, 1), M.marble, 0, 1.33, 0.19);                 // the chin
+  mesh(g, cone(0.05, 0.17, seg(c, 8, 4)), M.marble, 0, 1.53, 0.29, PI / 2 + 0.25);                      // the nose
+  mesh(g, box(0.34, 0.04, 0.09), M.marble, 0, 1.66, 0.225);                                             // the brow
+  for (const sx of [-1, 1]) {
+    mesh(g, sph(0.03, 8, 6), M.ink, sx * 0.09, 1.62, 0.255);                                            // eye sockets
+    mesh(g, sph(0.05, seg(c, 10, 5), seg(c, 8, 4), 0.5, 1, 0.8), M.marble, sx * 0.235, 1.56, 0.0);     // ears
   }
+  mesh(g, box(0.11, 0.022, 0.05), M.stone, 0, 1.44, 0.255);                                             // the lips
+  const cap = (th, ph0, pl) => new THREE.SphereGeometry(0.285, s, h, ph0, pl, 0, th);
+  const top = mesh(g, cap(1.05, 0, TAU), M.stone, 0, 1.58, 0); top.scale.set(0.88, 1.15, 1.03);          // the hair: a cap on top ...
+  const back = mesh(g, cap(2.15, PI, PI), M.stone, 0, 1.58, 0); back.scale.set(0.88, 1.15, 1.03);        // ... and a shell at the back
+  mesh(g, torus(0.27, 0.02, 6, seg(c, 28, 10)), M.gold, 0, 1.76, 0, PI / 2);                            // the laurel band
+  if (!lite) { const k = []; for (let i = 0; i < 10; i++) { const a = PI * 1.1 + (i / 9) * PI * 0.8; k.push({ p: [Math.sin(a) * 0.24, 1.32 + (i % 2) * 0.05, Math.cos(a) * 0.2], s: 0.065 }); } instanced(g, sph(1, 8, 6), M.stone, k);
+    mesh(g, torus(0.4, 0.045, 6, 24, PI * 0.8), M.marble, 0.05, 1.0, 0.18, 0.7, 0, PI * 0.1); }       // a fold of the toga across the chest
 }
 function anchor(c) {
   const { g, M, lite } = c;
@@ -659,19 +665,30 @@ function pegasus(c) {
   sweep(p, cyl(1, 1, 1, seg(c, 8, 5)), M.gold, curveOf([[-0.85, 1.2], [-1.05, 1.05], [-1.12, 0.7], [-1.0, 0.45]]), lite ? 5 : 9, (t) => 0.05 + 0.05 * t, 1.25);
   if (!lite) { const m = []; for (let i = 0; i < 7; i++) m.push({ p: [0.62 + i * 0.065, 1.88 + i * 0.085 - 0.15 + (i % 2) * 0.03, 0], s: 0.07 }); instanced(p, sph(1, 8, 6), M.gold, m); }
 }
+/** a round strap from point a to point b */
+function strap(g, geo, mat, a, b) {
+  const va = V3(a[0], a[1], a[2]), vb = V3(b[0], b[1], b[2]), d = vb.clone().sub(va), m = new THREE.Mesh(geo, mat);
+  m.position.copy(va).addScaledVector(d, 0.5); m.scale.set(1, d.length(), 1); m.quaternion.setFromUnitVectors(_Y, d.normalize()); g.add(m);
+  return m;
+}
 function sandal(c) {
   const { g, M, lite } = c;
   mesh(g, cyl(0.5, 0.58, 0.12, seg(c, 28, 10)), M.stone, 0, 0.06, 0);
-  mesh(g, sph(1, seg(c, 20, 8), seg(c, 12, 6), 0.3, 0.06, 0.78), M.terra, 0, 0.2, 0.05);              // the sole
-  mesh(g, sph(1, seg(c, 16, 8), seg(c, 10, 5), 0.21, 0.14, 0.46), M.terra, 0, 0.32, 0.14);
-  mesh(g, sph(0.17, seg(c, 14, 6), seg(c, 10, 5), 1, 1.1, 1.1), M.terra, 0, 0.36, -0.34);
-  for (const z of [-0.05, 0.2, 0.42]) mesh(g, torus(0.2 - (z > 0.3 ? 0.06 : 0), 0.025, 6, seg(c, 14, 8), PI), M.terra, 0, 0.2, z, 0, PI / 2);
-  mesh(g, cyl(0.17, 0.2, 0.34, seg(c, 14, 8), true), M.terra, 0, 0.62, -0.42);                         // the ankle cuff
-  mesh(g, torus(0.19, 0.03, 6, seg(c, 14, 8)), M.gold, 0, 0.8, -0.42, PI / 2);
-  mesh(g, box(0.07, 0.4, 0.04), M.terra, 0, 0.4, -0.3, 0.5);
+  mesh(g, sph(1, seg(c, 20, 8), seg(c, 12, 6), 0.26, 0.05, 0.68), M.wood, 0, 0.2, 0.08);               // the sole, long and narrow
+  mesh(g, sph(0.2, seg(c, 14, 6), seg(c, 10, 5), 1, 0.9, 1), M.wood, 0, 0.27, -0.46);                  // the heel
+  const sg = cyl(0.028, 0.028, 1, seg(c, 8, 4));
   for (const sx of [-1, 1]) {
-    const w = new THREE.Group(); w.position.set(sx * 0.2, 0.86, -0.42); w.rotation.set(0, sx * 0.3, 0); w.scale.x = sx; g.add(w);
-    fan(w, sph(1, 8, 6), M.marble, lite ? 4 : 7, 0.4, 1.45, 0.75, 0.35, 0.06);
+    strap(g, sg, M.terra, [sx * 0.23, 0.24, 0.3], [0, 0.5, 0.12]);                                      // the instep straps meet over the foot
+    strap(g, sg, M.terra, [sx * 0.23, 0.24, -0.05], [0, 0.5, 0.12]);
+    strap(g, sg, M.terra, [sx * 0.2, 0.26, -0.4], [sx * 0.12, 0.78, -0.4]);                             // up the ankle
+  }
+  strap(g, sg, M.terra, [0, 0.5, 0.12], [0, 0.24, 0.55]);                                              // the toe post
+  mesh(g, sph(0.05, 8, 6), M.gold, 0, 0.52, 0.12);
+  mesh(g, torus(0.15, 0.03, 6, seg(c, 16, 8)), M.gold, 0, 0.8, -0.4, PI / 2);                          // the ankle band
+  if (!lite) mesh(g, torus(0.15, 0.022, 6, 16), M.gold, 0, 0.64, -0.4, PI / 2);
+  for (const sx of [-1, 1]) {
+    const w = new THREE.Group(); w.position.set(sx * 0.16, 0.82, -0.4); w.rotation.set(0, sx * 0.25, 0); w.scale.x = sx; g.add(w);
+    fan(w, sph(1, 8, 6), M.marble, lite ? 4 : 7, 0.35, 1.4, 0.8, 0.4, 0.065);
   }
 }
 function bow(c) {
