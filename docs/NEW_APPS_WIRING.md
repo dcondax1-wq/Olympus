@@ -114,3 +114,16 @@ App `mercury` (`tools/web_public/mercury/`, reads `../money/mercury.json`, falls
 5. `python tools/apps_list_build.py` then `--check`.
 6. `intro-app.js` FLAVOUR: `mercury: ['coins', 'Find the saving', 'tap'],` `transitions.js` REGISTRY: `mercury: { kind: 'tiles', ms: 800 },`
 7. Tests: `tests.test_mercury_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring STOA, the colonnade "what needs me now" (2026-11-10)
+
+App `stoa` (`tools/web_public/stoa/`): reads `../home.json`, `../money/index.json`, the public `kalshi-feed` raw `kalshi.json` (same URL as Dionysus), `../alerts.json` (optional: `{"alerts":[{"text","level":"bad|warn"}]}`), falls back to `fixture.json` (DEMO). Done / Snooze in localStorage `stoa.state.v1`. Test `tests/test_stoa_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('stoa', 'Stoa', 'trading', '#c8a24a', 'The colonnade: what needs you right now', { glyph: 'Σ' }),`
+2. `olympus/olympus.js` APPS: `stoa: ['Stoa', 'Σ', '#c8a24a'],` AMBIENT: `stoa: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"stoa"` (and `"mint"`); to publish the money files add the call `python tools/money_publish.py --site <site_dir>` after the site folder is built (copies `money_out/*.json` to `<site>/money/`, or a labelled sample when the engine has not run).
+4. `sw.js` OTHER_APPS add `'stoa/'`, bump `CACHE`, update the pinned strings in the zenith / hub tests.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `intro-app.js` FLAVOUR: `stoa: ['columns', 'Light the columns', 'tick'],` ; `transitions.js` REGISTRY: `stoa: { kind: 'columns', ms: 1000, n: 6 },`
+7. Tests: `tests.test_stoa_page`, `tests.test_mint_page`, `tests.test_money_engine`, plus the shared list in section 7 above.

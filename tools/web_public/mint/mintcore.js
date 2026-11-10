@@ -2,7 +2,7 @@
 // the pillar heights, the history line and the Jarvis card. No document / window / fetch here. Everything money is an ESTIMATE, never income.
 export const IDS = ['chrysos', 'mercury', 'sibyl', 'oikos', 'arbiter'];
 export const NAMES = { chrysos: 'Chrysos', mercury: 'Mercury', sibyl: 'Sibyl', oikos: 'Oikos', arbiter: 'Arbiter' };
-export const ROLES = { chrysos: 'Prop-firm savings and payouts', mercury: 'Small resale gaps', sibyl: 'Prediction-market edges (paper)', oikos: 'Household savings', arbiter: 'The referee: what to do first' };
+export const ROLES = { chrysos: 'Prop-firm savings and payouts', mercury: 'Prop-firm and tool deals', sibyl: 'Prediction-market edges (paper)', oikos: 'Household savings', arbiter: 'The referee: what to do first' };
 export const STATUS = { ok: { label: 'Live', tone: 'ok' }, stale: { label: 'Old data', tone: 'warn' }, sample: { label: 'Example', tone: 'info' }, none: { label: 'No data', tone: '' } };
 export const RANGE = { ok: [0.3, 1.5], stale: [0, 1.2], sample: [0, 2], none: [0, 0] };
 export const STALE_MIN = 6 * 60;

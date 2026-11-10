@@ -131,8 +131,8 @@ def test_page():
               pills: [...document.querySelectorAll('#streams .pill')].map((h) => h.textContent), todo: document.querySelectorAll('#todo li').length, legend: document.querySelectorAll('#legend li').length,
               cols: document.querySelectorAll('#fallback rect').length, hist: document.querySelector('#histNote').textContent, font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor,
               ests: [...document.querySelectorAll('#streams .amt')].map((h) => h.textContent), scene: window.MINT.S.scene })""")
-            check("c. DEMO (the fixture): the chip, $255 a month with the range $0 to $510, EXAMPLE ESTIMATE, 'not real finds', five cards in order, each marked Example",
-                  d["demo"] and d["base"] == "$255" and "$0 to $510" in d["text"] and d["pill"] == "EXAMPLE ESTIMATE" and "not real finds" in d["why"] and d["names"] == ["Chrysos", "Mercury", "Sibyl", "Oikos", "Arbiter"] and d["pills"] == ["Example"] * 5, d)
+            check("c. DEMO (the fixture): the chip, $210 a month with the range $0 to $420, EXAMPLE ESTIMATE, 'not real finds', five cards in order, each marked Example",
+                  d["demo"] and d["base"] == "$210" and "$0 to $420" in d["text"] and d["pill"] == "EXAMPLE ESTIMATE" and "not real finds" in d["why"] and d["names"] == ["Chrysos", "Mercury", "Sibyl", "Oikos", "Arbiter"] and d["pills"] == ["Example"] * 5, d)
             check("c. every card shows its dollars as an estimate ('a month (estimate)'); at most 3 things to do; five legend rows; the 2D pillars (flat=1) are drawn; examples are not saved to the history",
                   all("estimate" in e for e in d["ests"]) and 1 <= d["todo"] <= 3 and d["legend"] == 5 and d["cols"] >= 20 and d["scene"] == "2d" and "not saved" in d["hist"], d)
             check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
@@ -163,7 +163,7 @@ def test_page():
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?flat=1")
             m = p.evaluate("() => [!document.querySelector('#demo').hidden, document.querySelectorAll('#streams .stream').length, document.querySelector('#heroBase').textContent]")
-            check("c. no money/index.json on the site: the example fixture fills the page (DEMO chip, five cards, $255), never blank", m == [True, 5, "$255"], m)
+            check("c. no money/index.json on the site: the example fixture fills the page (DEMO chip, five cards, $210), never blank", m == [True, 5, "$210"], m)
             ctx.close()
             # the 3D pillars (one browser run, short)
             ctx, p, errs, seen, off = AK.page(br, origin)
@@ -173,8 +173,8 @@ def test_page():
               pillars: window.MINT3D ? window.MINT3D.pillars() : [], svg: getComputedStyle(document.querySelector('#fallback')).visibility })""")
             if w["scene"] == "webgl":
                 ps = w["pillars"]
-                check("c. 3D: a canvas draws frames, five pillars, the tallest is Sibyl ($90) and the shortest Chrysos ($38) or Arbiter ($20): height follows the estimate; the 2D picture steps aside",
-                      w["three"] and w["canvas"] and w["frames"] > 1 and len(ps) == 5 and ps.index(max(ps)) == 2 and ps.index(min(ps)) == 4, w)
+                check("c. 3D: a canvas draws frames, five pillars, the tallest is Sibyl ($90) and the shortest Mercury ($15): height follows the estimate; the 2D picture steps aside",
+                      w["three"] and w["canvas"] and w["frames"] > 1 and len(ps) == 5 and ps.index(max(ps)) == 2 and ps.index(min(ps)) == 1, w)
                 AK.shot(p, "mint-3d")
             else:
                 check("c. 3D not available in this browser: the 2D pillars stay (never blank)", w["scene"] == "2d" and not w["three"] and w["svg"] == "visible", w)
