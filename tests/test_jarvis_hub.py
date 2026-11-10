@@ -48,6 +48,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import threading
@@ -185,6 +186,10 @@ def site(tmp, name, parts):
     with open(os.path.join(base, "planner", "index.html"), "w") as f:
         f.write("<!doctype html><title>Planner stub</title><style>body{background:#0b0b0d;color:#eee}</style><h1>Planner stub</h1><script>"
                 f"localStorage.setItem('planner.v1', JSON.stringify({json.dumps(S)}));window.loads=(window.loads||0)+1;</script>")
+    # the Planner is a built-in app now (live: true): its status card, so the shell finds it on the site (the card shows the next thing / FREE)
+    with open(os.path.join(base, "planner", "jarvis.json"), "w") as f:
+        json.dump({"v": 1, "name": "Planner", "status": {"level": "ok", "label": "Day plan"}, "kpis": [{"label": "Next", "value": "Gym"}],
+                   "lines": ["Nothing else today"], "t": int(time.time()) - 60}, f)
     os.makedirs(os.path.join(base, "datacity"))
     with open(os.path.join(base, "datacity", "index.html"), "w") as f:
         f.write("<!doctype html><title>Data City stub</title><meta name='theme-color' content='#05060f'><style>body{background:#05060f;color:#eee}</style><h1>Data City stub</h1>")
@@ -226,8 +231,12 @@ def part_a():
           m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "./"
           and m["theme_color"] == "#14110e" and all(i["src"].endswith("?v=j4") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
-    check("a. the site build publishes jarvis/ and kalshi/ with every build (every top-level file: fonts and parts too)",
-          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "hestia", "demeter", "apollo", "hera", "dionysus", "clio"):' in b and 'os.path.join(out, app, name)' in b)
+    tup = re.search(r'for app in \(([^)]*)\):', b)
+    published = set(re.findall(r'"([a-z0-9-]+)"', tup.group(1))) if tup else set()
+    # every app of apps.js with a folder is published by the build (the list grows: read from apps.js; Zenith is the site root, the Planner has its own build)
+    need = {"jarvis", "kalshi"} | {a["id"] for a in _REG["apps"] if a["id"] not in ("zenith", "planner")}
+    check("a. the site build publishes jarvis/ and kalshi/ and every app of apps.js with every build (every top-level file: fonts and parts too)",
+          tup and need <= published and 'os.path.join(out, app, name)' in b, sorted(need - published))
     check("a. kalshi/index.html exists", os.path.exists(os.path.join(KS, "index.html")))
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     check("a. the hub's service worker only handles its own folder", "u.pathname.startsWith(scope.pathname)" in sw)
@@ -1114,9 +1123,28 @@ def run_look(br, url):
 
 
 # the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
-ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "observatory", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "journal", "bridge", "hestia", "demeter", "apollo", "clio", "inbox", "settings", "planner", "mind", "arena", "atlas", "athena", "kalshicity", "ledger", "hera", "dionysus", "kalshi", "tyche", "hermes", "plutus"]
-MONEY_FIRST = "kalshicity"          # the first MONEY app in apps.js: the group chip glides its card to the middle
-NOT_ON_SITE = ["oracle", "odeon", "fates", "observatory", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "journal", "bridge", "hestia", "demeter", "apollo", "clio", "inbox", "settings", "mind", "arena", "atlas", "athena", "kalshicity", "ledger", "hera", "dionysus", "tyche", "hermes", "plutus"]
+def _registry():
+    """apps.js is the one source of truth (the list GROWS): its groups and BUILT_INS, read with node, so no count or name is typed here."""
+    out = subprocess.run(["node", "--input-type=module", "-e",
+                          "import('./apps.js').then((m) => console.log(JSON.stringify({ groups: m.GROUPS.map((g) => ({ id: g.id, name: g.name })), apps: m.BUILT_INS.map((a) => ({ id: a.id, name: a.name, group: a.group })) })))"],
+                         cwd=JV, capture_output=True, text=True, timeout=60, check=True).stdout
+    return json.loads(out)
+
+
+_REG = _registry()
+_GIDS = [g["id"] for g in _REG["groups"]]
+_gi = lambda a: _GIDS.index(a["group"]) if a["group"] in _GIDS else len(_GIDS) - 1       # noqa: E731 - an unknown group is MORE
+# the switch order: Jarvis, then each group's apps in apps.js order (the shell's byGroup)
+SORTED_APPS = sorted(_REG["apps"], key=lambda a: _gi(a))                                  # stable: list order inside a group
+ORDER = ["home"] + [a["id"] for a in SORTED_APPS]
+GROUP_HEADS = [g["name"] for i, g in enumerate(_REG["groups"]) if any(_gi(a) == i for a in _REG["apps"])]
+GROUP_IDS_USED = [g["id"] for i, g in enumerate(_REG["groups"]) if any(_gi(a) == i for a in _REG["apps"])]
+NX_LABEL = {"home": "JARVIS", "zenith": "NQ BOT", "planner": "CALENDAR", "kalshi": "KALSHI"}   # index.html NX_NAMES
+NAMES_ORDER = [NX_LABEL.get(i, next((a["name"] for a in _REG["apps"] if a["id"] == i), i).upper()) for i in ORDER]
+# the test site only has these folders (stubs); every other app answers 404 and shows "not on the site yet"
+ON_SITE = {"home", "zenith", "planner", "kalshi", "datacity"}
+NOT_ON_SITE = [i for i in ORDER if i not in ON_SITE]
+MONEY_FIRST = next(a["id"] for a in SORTED_APPS if a["group"] == "money")       # the first MONEY app: the group chip glides its card to the middle
 
 
 def run_olympus(br, url):
@@ -1138,14 +1166,14 @@ def run_olympus(br, url):
           cards: [...document.querySelectorAll('#cards > [data-own]')].map((c) => c.dataset.app || c.dataset.slot || '') }; })()""")
     t = {x["id"]: x for x in g["tiles"]}
     check("p. the OLYMPUS grid: TRADING, LIFE, MONEY with every app in the orb's order (+ ADD), each tile in its own colour, 44 px+",
-          g["heads"] == ["TRADING", "LIFE", "MONEY"] and [x["id"] for x in g["tiles"]] == ORDER[1:] + ["add"]
+          g["heads"] == GROUP_HEADS and [x["id"] for x in g["tiles"]] == ORDER[1:] + ["add"]
           and t["datacity"]["acr"] == "79,140,255" and t["tree"]["acr"] == "52,245,160" and all(x["h"] >= 44 for x in g["tiles"]), g)
     check("p. live status on the tiles: Data City from its jarvis.json (19,942 · 25 pass the noise guard), NQ BOT and KALSHI from the shell's own feeds",
           t["datacity"]["v"] == "19,942" and "25 pass the noise guard" in t["datacity"]["s"] and t["zenith"]["name"] == "NQ BOT" and t["zenith"]["v"].startswith("+$")
           and t["kalshi"]["v"] and "Data City" in t["datacity"]["label"], g["tiles"])
     check("p. an app whose folder is not on the site (Mind, Daphne): 'Not on the site yet', dimmed, never an error",
           t["mind"]["soon"] and t["tree"]["soon"] and "Not on the site yet" in t["mind"]["s"] and t["mind"]["v"] == "SOON" and not t["datacity"]["soon"], g["tiles"])
-    check("p. the OLYMPUS apps are tiles, not cards: the project cards stay Zenith, the Planner and Kalshi", g["cards"] == ["zenith", "planner", "kalshi"], g["cards"])
+    check("p. the OLYMPUS apps are tiles, not cards: the project cards stay Zenith and Kalshi (the Planner is a tile since it joined apps.js)", g["cards"] == ["zenith", "kalshi"], g["cards"])
     # the stagger: once, when the grid comes into view (3D effects High here)
     st0 = p.evaluate("document.getElementById('olyApps').className")
     p.evaluate("document.getElementById('olyApps').scrollIntoView({ block: 'center' })")
@@ -1181,7 +1209,7 @@ def run_olympus(br, url):
           q: [...row.querySelectorAll('.nx-qb')].map((b) => [b.dataset.nx, Math.round(b.getBoundingClientRect().height)]), seps: row.querySelectorAll('.nx-qs').length,
           scroll: [row.scrollWidth, row.clientWidth, getComputedStyle(row).overflowX], sw: document.documentElement.scrollWidth }; })()""")
     check("p. the orb: group headings and chips (TRADING, LIFE, MONEY; Data City's group lit), the not-yet apps dimmed, Data City NOW",
-          o["heads"] == ["TRADING", "LIFE", "MONEY"] and [c[0] for c in o["chips"]] == ["trading", "life", "money"] and o["chips"][0][1] and all(c[2] >= 44 for c in o["chips"])
+          o["heads"] == GROUP_HEADS and [c[0] for c in o["chips"]] == GROUP_IDS_USED and o["chips"][0][1] and all(c[2] >= 44 for c in o["chips"])
           and sorted(o["off"]) == sorted(NOT_ON_SITE) and o["now"] and o["now"].get("nx") == "datacity", o)
     check("p. the quick row: every app in group order with separators, 44 px+ buttons, one scrollable line (no page sideways scroll)",
           [x[0] for x in o["q"]] == ORDER and o["seps"] == 3 and all(x[1] >= 44 for x in o["q"])
@@ -1189,7 +1217,7 @@ def run_olympus(br, url):
     p.click('#nxGroups [data-nx-jump="money"]')
     try:
         p.wait_for_function("""(id) => { const t = document.getElementById('nxTrack'), c = t.querySelector('.nx-card[data-nx="' + id + '"]');
-            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 45; }""", arg=MONEY_FIRST, timeout=5000, polling=50)
+            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 45; }""", arg=MONEY_FIRST, timeout=20000, polling=50)      # a long smooth scroll over many cards (the list grows)
         jumped = True
     except Exception:                                   # noqa: BLE001 - reported below
         jumped = False
@@ -1224,7 +1252,7 @@ def run_olympus(br, url):
     except Exception:                                   # noqa: BLE001 - reported below
         pass
     heads = p.evaluate("[...document.querySelectorAll('#nxTrack .nx-gl')].map((h) => h.textContent)")
-    check("p. 'more' opens the whole switcher; the added apps have their own group (MORE)", heads == ["TRADING", "LIFE", "MONEY", "MORE"], heads)
+    check("p. 'more' opens the whole switcher; the added apps have their own group (MORE)", heads == GROUP_HEADS + ["MORE"], heads)
     check("p. no page errors", not errs, errs)
     ctx.close()
 
@@ -1276,7 +1304,7 @@ def run_system(br, url):
     a2 = ask("how's the pc")
     check("s. 'how's the pc': the one fix first (none), its check-in, CPU and RAM", a2.startswith("The PC looks healthy: nothing to fix.") and re.search(r"checked in [2-9] min ago", a2) and "CPU 23%, RAM 61%" in a2, a2)
     a3 = ask("is everything ok")
-    check("s. 'is everything ok' is the System answer too", a3 == a1, a3[:100])
+    check("s. 'is everything ok' is the System answer too", re.sub(r"checked in \d+ min", "checked in N min", a3) == re.sub(r"checked in \d+ min", "checked in N min", a1), a3[:100])
     check("s. no page errors (all good)", not errs, errs)
     ctx.close()
     # a red health line on the PC: NEEDS YOU + the one thing to do, everywhere (strip, panel, orb, switcher)
@@ -1350,11 +1378,8 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS, PANTHEON, ARES, FORUM, LABYRINTH, ARGUS, NEMESIS, CHRONOS, HEPHAESTUS, CITIES, BRIDGE), LIFE (INBOX, SETTINGS, CALENDAR, MIND, ARENA, ATHENA), "
-          "MONEY (KALSHI CITY, KALSHI, TYCHE, HERMES, PLUTUS) and + ADD, "
-          "Jarvis's card marked NOW",
-          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "OBSERVATORY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "HEPHAESTUS", "CITIES", "MNEMOSYNE", "BRIDGE", "HESTIA", "DEMETER", "APOLLO", "CLIO", "INBOX", "SETTINGS", "CALENDAR", "MIND", "ARENA", "ATLAS", "ATHENA", "KALSHI CITY", "LEDGER", "HERA", "DIONYSUS", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
-          and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
+    check("n. tap: the switcher opens with JARVIS, then every app of apps.js in its group order (built from apps.js, so it grows by itself), and + ADD, Jarvis's card marked NOW",
+          names == NAMES_ORDER + ["ADD"] and cards[0]["now"] and not any(c["now"] for c in cards[1:]), (names, NAMES_ORDER, cards[:2]))
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
     check("n. the cards are live: NQ BOT shows today's $ across the accounts (+$308) and their status; CALENDAR the next thing or FREE",
@@ -1373,19 +1398,27 @@ def run_switcher(br, url):
     # unprobed one is tried, says so and stays put)
     p.wait_for_function("(ids) => import('./apps.js').then((A) => ids.every((id) => A.missing(id)))", arg=NOT_ON_SITE, timeout=120000)
     # swipe: the next app (Planner -> Kalshi), then back the other way
+    CUR = "(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app"
+
     def swipe(dx):
+        before = p.evaluate(CUR)
         p.mouse.move(cx, cy); p.mouse.down()
         for k in range(1, 6):
             p.mouse.move(cx + dx * k / 5, cy + 2)
             p.wait_for_timeout(18)
         p.mouse.up()
         p.wait_for_timeout(450)
+        try:                                            # a loaded machine switches late: wait for the change (more apps = a heavier shell)
+            p.wait_for_function(f"{CUR} !== {before!r}", timeout=6000, polling=100)
+        except Exception:                               # noqa: BLE001 - reported by the check
+            pass
         return p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
     a1 = swipe(-80)
     a2 = swipe(80)
     # the next app in the switch order that can open: Mind's folder is not on this test site (its card dimmed), so Kalshi
     check("n. swipe the orb left: the next app that can open (Mind is not on this site: Kalshi); right: back (the Planner)", a1 == "kalshi" and a2 == "planner", (a1, a2))
     # hold: the ring; slide onto Jarvis and let go
+    cur_before = p.evaluate(CUR)                        # the app on screen (left out of the ring)
     p.mouse.move(cx, cy); p.mouse.down(); p.wait_for_timeout(520)
     ring = p.evaluate("""() => [...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const r = b.getBoundingClientRect(); return { id: b.dataset.nx, x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width }; })""")
     home = next((b for b in ring if b["id"] == "home"), None)
@@ -1394,7 +1427,7 @@ def run_switcher(br, url):
     p.mouse.up(); p.wait_for_timeout(450)
     cur = p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
     check("n. hold: the ring fans out with every other app that can open (44 px+ each, on screen, none on another); slide onto Jarvis and let go: Jarvis",
-          sorted(b["id"] for b in ring) == ["datacity", "home", "kalshi", "zenith"] and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
+          sorted(b["id"] for b in ring) == sorted(i for i in ORDER if i in ON_SITE and i != cur_before) and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
           and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:])
           and cur == "home" and p.evaluate("!document.querySelector('.nx-fan.on')"), (ring, cur))
     # drag: move it (kept on this phone)

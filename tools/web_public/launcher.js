@@ -180,7 +180,7 @@
     var jt = el('span'); jt.appendChild(el('b', '', 'Open Olympus (Jarvis)')); jt.appendChild(el('small', '', 'Talk to Jarvis, switch apps, see everything at once'));
     jv.appendChild(jo); jv.appendChild(jt); jv.appendChild(el('span', 'oly-go', '›'));
     jv.addEventListener('click', function () { close(); });
-    var sr = el('div', 'oly-sr'), inp = el('input'); inp.type = 'search'; inp.placeholder = 'Search apps by name or what they do'; inp.setAttribute('aria-label', 'Search apps'); inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false; inp.enterKeyHint = 'go';
+    var sr = el('div', 'oly-sr'), inp = el('input'); inp.type = 'search'; inp.placeholder = 'Search apps'; inp.setAttribute('aria-label', 'Search apps'); inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false; inp.enterKeyHint = 'go';
     inp.addEventListener('input', function () { st.q = inp.value; filter(); });
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { var t = sc.querySelector('.oly-tile:not([hidden])'); if (t) t.click(); } });
     sr.appendChild(inp);

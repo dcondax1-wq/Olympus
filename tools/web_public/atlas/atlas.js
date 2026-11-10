@@ -12,11 +12,11 @@
   const apps = rows.length ? rows : fallback;
   // Five districts (2026-11-10, every app has one). Colours are the AGORA ones: gold, aegean, olive, terracotta, bronze.
   const zones = [
-    { id:'market', title:'Market', colour:'#c8a24a', note:'Read the tape and the live-facing rooms.', ids:['zenith','oracle','ares','forum','chronos','cities','odeon','pantheon','delphi'] },
-    { id:'research', title:'Research', colour:'#4b7a99', note:'Ideas, tests, signals and the library of studies.', ids:['datacity','observatory','tree','prometheus','hephaestus','nemesis','clio','fates'] },
-    { id:'risk', title:'Money', colour:'#7f8a52', note:'Balances, payouts, risk and prediction markets.', ids:['ledger','hera','plutus','pnyx','demeter','labyrinth','kalshi','kalshicity','tyche','dionysus','hermes'] },
-    { id:'command', title:'Command', colour:'#c96a4a', note:'Today at home, alerts, links and settings.', ids:['hestia','inbox','argus','bridge','settings','atlas'] },
-    { id:'life', title:'Life', colour:'#9c6b3c', note:'Plan the day, learn, review the week.', ids:['planner','mind','arena','journal','athena','apollo'] }
+    { id:'market', title:'Market', colour:'#c8a24a', note:'Read the tape and the live-facing rooms.', ids:['zenith','oracle','ares','forum','chronos','cities','odeon','pantheon','delphi','kronos'] },
+    { id:'research', title:'Research', colour:'#4b7a99', note:'Ideas, tests, signals and the library of studies.', ids:['datacity','observatory','tree','prometheus','hephaestus','nemesis','clio','fates','moirai'] },
+    { id:'risk', title:'Money', colour:'#7f8a52', note:'Balances, payouts, risk and prediction markets.', ids:['ledger','hera','plutus','pnyx','demeter','labyrinth','kalshi','kalshicity','tyche','dionysus','hermes','mint','mintcity','mercury','chrysos','sibyl','oikos','arbiter','aegis'] },
+    { id:'command', title:'Command', colour:'#c96a4a', note:'Today at home, alerts, links and settings.', ids:['hestia','inbox','argus','bridge','settings','atlas','stoa','kratos','argo'] },
+    { id:'life', title:'Life', colour:'#9c6b3c', note:'Plan the day, learn, review the week.', ids:['planner','mind','arena','journal','athena','apollo','lyceum','nike','epilogue','gallery'] }
   ];
   const zoneOf = (a) => zones.find((zone) => zone.ids.includes(a.id)) || zones.find((zone) => zone.id === (a.group === 'money' ? 'risk' : a.group === 'life' ? 'life' : 'market'));
   const key = 'olympus.atlas.v1';
