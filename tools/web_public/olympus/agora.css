@@ -3,6 +3,7 @@
   --ag-night: #14110e; --ag-panel: #1d1914; --ag-raise: #26211b; --ag-line: #3a3228;
   --ag-text: #f3ece0; --ag-soft: #cfc4b2; --ag-muted: #9a8f7d;
   --ag-gold: #c8a24a; --ag-bronze: #9c6b3c; --ag-olive: #7f8a52; --ag-terra: #c96a4a; --ag-aegean: #4b7a99; --ag-sun: #e0b060;
+  --ag-olive-text: #a0ac6e; --ag-terra-text: #e08a6b;   /* text-safe gain / loss ink: >= 4.5:1 on the raised panels (the fills keep --ag-olive / --ag-terra) */
   --ag-radius: 16px; --ag-radius-s: 12px; --ag-shadow: 0 6px 18px rgba(0,0,0,.35);
   --ag-serif: 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
   --ag-sans: -apple-system,'SF Pro Text',system-ui,'Helvetica Neue',Arial,sans-serif;
@@ -23,7 +24,7 @@ html[data-theme="agora"] body, body.agora {
 .ag-card { background: linear-gradient(180deg, var(--ag-raise), var(--ag-panel)); border: 1px solid var(--ag-line); border-radius: var(--ag-radius); padding: 16px 18px; box-shadow: var(--ag-shadow); }
 .ag-card h2, .ag-card h3 { margin: 0 0 8px; font-size: 17px; }
 .ag-num { font-family: var(--ag-num); font-variant-numeric: tabular-nums; font-weight: 700; }
-.ag-good { color: var(--ag-olive); } .ag-bad { color: var(--ag-terra); } .ag-warn { color: var(--ag-sun); } .ag-info { color: var(--ag-aegean); } .ag-muted { color: var(--ag-muted); }
+.ag-good { color: var(--ag-olive-text); } .ag-bad { color: var(--ag-terra-text); } .ag-warn { color: var(--ag-sun); } .ag-info { color: var(--ag-aegean); } .ag-muted { color: var(--ag-muted); }
 .ag-btn, html[data-theme="agora"] button.ag-btn { min-height: 44px; padding: 0 18px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line); background: var(--ag-raise); color: var(--ag-text); font: 600 15px var(--ag-sans); }
 .ag-btn.primary { background: linear-gradient(180deg, #d4b05a, var(--ag-gold)); color: #1b1610; border-color: #e2c47a; }
 .ag-chip { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--ag-line); background: var(--ag-panel); color: var(--ag-soft); font: 600 14px var(--ag-sans); }

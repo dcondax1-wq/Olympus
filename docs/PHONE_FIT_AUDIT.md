@@ -22,3 +22,56 @@ Totals: 20 failing checks before, 0 after. The tests of every touched app still 
 - Only app CSS was touched; no logic, no tests, none of the files the lead owns.
 - WARN left on purpose: `oikos` asks for the optional `money/oikos.json` (404 on the static server, falls back to its fixture even with `?demo=1`).
 - The root cause of 8 of the 9 colour fixes is two shared tokens: `--ag-olive` #7f8a52 and `--ag-terra` #c96a4a are 4.2:1 to 4.3:1 on the raised panel (#26211b / #2a2217). A one-line change of those two tokens in `olympus/agora.css` (for example #a0ac6e and #e08a6b for TEXT use) would fix every other app at once; it was left alone because the brief says each app's own files.
+
+---
+# Round 2 (2026-11-10, later): the last five apps, the shared tokens, the iPhone mode
+
+## 1. kairos, kratos, pythia, mintcity, gallery (and argo) at 390x844 / 375x667
+Before: kairos (small labels on the heat cells 2.3:1 to 4.4:1, the empty cells were faded with `opacity`), gallery (the hint on the lit stage 4.10:1). kratos, pythia, mintcity, argo were clean.
+Fixed in their own CSS: kairos (small labels use the soft / text ink, an empty cell is dashed and plain, not faded), gallery (the hint uses the soft ink). After: 0 failing checks. There is no `compass` app in this tree (nothing to audit).
+
+## 2. Shared tokens (`olympus/agora.css`)
+Added `--ag-olive-text: #a0ac6e` and `--ag-terra-text: #e08a6b` (6:1 or better on the raised panels; the fills `--ag-olive` / `--ag-terra` are unchanged) and `.ag-good` / `.ag-bad` now use them. Nothing else in the file changed.
+Checks (machine under heavy load, so sections were run separately): `tests.test_olympus_themes` baseline was 112/112 before the change; after it, `jarvis` 43/43, `default zenith` 61/61, the nine app pages 78/78 (the computed-variable baseline still equals `tests/fixtures/olympus_default_vars.json`: nothing was regenerated). `tests.test_olympus_a11y` 20/20. One full-file run of the themes test stopped at a `#moreB` click timeout in the Jarvis section (a Look sheet intercepting the click while the load average was above 20); the same section passes alone, and it passed before the change under the same file.
+Apps can now use the tokens (clio, dionysus, demeter, hestia do, with a hex fallback).
+
+## 3. `--iphone` mode and the whole suite
+`python tools/phone_fit_audit.py --iphone --all` uses Playwright's `iPhone 14` (390x664 visible area, DPR 3, touch, mobile) and `iPhone SE` (320x568, the narrowest iPhone) descriptors over every folder of `tools/web_public` that has an `index.html` and a `jarvis.json` (57 apps). Hidden helper text (1 px `.sr`) and intended line clamps are not counted as clipped text.
+
+### New / AGORA apps (28, all fixed): clean at both devices
+aegis, apollo, arbiter, argo, chrysos, clio, delphi, demeter, dionysus, epilogue, gallery, hera, hestia, kairos, kratos, kronos, lyceum, mercury, mint, mintcity, moirai, nike, oikos, planner, pnyx, pythia, sibyl, stoa.
+
+| App | iPhone finding | Fix (its own files) |
+|---|---|---|
+| argo | the island hit areas were 42 px high on a 320 px screen | hit ring radius 28 -> 34 (map units) |
+| mintcity | the five district buttons were 39 px wide on a 320 px screen | hit rectangle 56 -> 66 wide |
+| kairos | 37 px heat cells at 320 px | 3 columns under 340 px |
+| clio, demeter, dionysus, hestia | gain / loss words and headings 4.3:1 | use `--ag-olive-text` / `--ag-terra-text` |
+
+### Old apps: failures left for the lead (not touched). `contrast` on text over a canvas / 3D scene (mind, observatory, oracle) can be a false reading
+| App | FAILs (first example; device) |
+|---|---|
+| arena | clip: buttonbutton 53>50 (iP14, iPSE); tap: buttonbutton 38x44 (iPSE) |
+| ares | tap: buttonbutton 41x44 (iPSE) |
+| argus | contrast: b#fixN 3.43:1 "1" (iP14, iPSE) |
+| bridge | contrast: bb 3.90:1 "2" (iP14, iPSE) |
+| cities | clip: h1#title 141>80 (iPSE) |
+| datacity | clip: h1h1 80>44 (iPSE); tap: button.tab 35x44 (iPSE) |
+| fates | contrast: b.r 3.89:1 "10%" (iP14, iPSE); clip: span.l 91>73 (iPSE) |
+| forum | contrast: span.dglyph 3.78:1 "Κ" (iP14, iPSE) |
+| hephaestus | contrast: button.chip.nt 2.70:1 "4R" (iP14, iPSE) |
+| hermes | clip: span#pos.pos 100>37 (iPSE) |
+| kalshicity | clip: p#bot.live 1162>332 (iP14, iPSE); tap: buttonbutton 38x44 (iP14, iPSE) |
+| labyrinth | tap: buttonbutton 39x44 (iPSE) |
+| ledger | contrast: b#mNet.pos 4.19:1 "+$5.80" (iP14, iPSE) |
+| mind | clip: spanspan 226>135 (iP14, iPSE); contrast: bb 1.00:1 "MIND" (iP14, iPSE) |
+| nemesis | clip: span#wkSub 107>36 (iPSE) |
+| observatory | contrast: spanspan 1.39:1 "Data City" (iP14, iPSE); tap: a.back 37x48 (iPSE) |
+| odeon | tap: button.tick.k-sweep 14x14 (iP14, iPSE) |
+| oracle | clip: span#demo-tag.tag 127>90 (iP14, iPSE); contrast: timetime 3.38:1 "00:10" (iP14, iPSE); tap: input#scrub 40x44 (iPSE) |
+| plutus | clip: p#vline.vline h 31>28 (iP14, iPSE) |
+| tree | clip: span.c 188>169 (iPSE) |
+| tyche | clip: b#h-roi 54>50 (iPSE); tap: buttonbutton 33x44 (iPSE) |
+
+Clean at both iPhone sizes among the old apps: athena, atlas, chronos, inbox, journal, pantheon, prometheus, settings.
+Raw reports: `python tools/phone_fit_audit.py --iphone --all --json iphone.json`. WARN lines (missing optional JSON, blocked off-origin feeds such as the Kalshi and dashboard raw files) are not failures.

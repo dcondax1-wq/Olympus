@@ -12,6 +12,7 @@ at 390 x 844 and 375 x 667 with ?demo=1&q=low and checks what a phone user would
 
     python tools/phone_fit_audit.py                       all apps, both sizes, table, screenshots in <tmp>/phone_fit
     python tools/phone_fit_audit.py --apps nike,argo --out shots --timeout 90 --json report.json
+    python tools/phone_fit_audit.py --iphone --all --json iphone.json     iPhone 14 + iPhone SE descriptors over every app that has index.html and jarvis.json
 Exit code 1 when any check FAILs (WARN does not fail). Per-app timeout (default 90 s) turns a stuck app into a FAIL ("timeout") and moves on.
 """
 from __future__ import annotations
@@ -50,11 +51,12 @@ JS = r"""
     const r = e.getBoundingClientRect(), cs = getComputedStyle(e);
     if (cs.position === 'fixed' && (r.right < 0 || r.left > W)) continue;
     if ((r.right > W + 1.5 || r.left < -1.5) && !scrollerOf(e) && cs.position !== 'fixed' && !(r.width <= 2 || r.height <= 2)) out.wide.push(`${label(e)} ${Math.round(r.left)}..${Math.round(r.right)}`);
-    if ((cs.overflowX === 'hidden' || cs.overflowX === 'clip' || cs.textOverflow === 'ellipsis') && e.scrollWidth > e.clientWidth + 1 && e.clientWidth > 0 && e.tagName !== 'CANVAS' && e.tagName.toLowerCase() !== 'svg' && /\S/.test(e.textContent || '') && !e.querySelector('canvas,svg')) {
+    const srOnly = r.width <= 2 || r.height <= 2, clamped = (cs.webkitLineClamp && cs.webkitLineClamp !== 'none') || cs.lineClamp > 0;   // visually hidden helper text and an intended line clamp are not clipped text
+    if (!srOnly && !clamped && (cs.overflowX === 'hidden' || cs.overflowX === 'clip' || cs.textOverflow === 'ellipsis') && e.scrollWidth > e.clientWidth + 1 && e.clientWidth > 0 && e.tagName !== 'CANVAS' && e.tagName.toLowerCase() !== 'svg' && /\S/.test(e.textContent || '') && !e.querySelector('canvas,svg')) {
       const own = [...e.childNodes].some((n) => n.nodeType === 3 && /\S/.test(n.textContent)) || e.children.length === 0;
       if (own) out.clip.push(`${label(e)} ${e.scrollWidth}>${e.clientWidth}`);
     }
-    if (cs.overflowY === 'hidden' && cs.textOverflow !== 'ellipsis' && e.scrollHeight > e.clientHeight + 2 && e.clientHeight > 0 && /\S/.test(e.textContent || '') && !e.querySelector('canvas,svg') && e.tagName.toLowerCase() !== 'body' && e.tagName.toLowerCase() !== 'html' && cs.display !== 'inline' && !(e.clientHeight > innerHeight * 0.6)) {
+    if (!srOnly && !clamped && cs.overflowY === 'hidden' && cs.textOverflow !== 'ellipsis' && e.scrollHeight > e.clientHeight + 2 && e.clientHeight > 0 && /\S/.test(e.textContent || '') && !e.querySelector('canvas,svg') && e.tagName.toLowerCase() !== 'body' && e.tagName.toLowerCase() !== 'html' && cs.display !== 'inline' && !(e.clientHeight > innerHeight * 0.6)) {
       const own = [...e.childNodes].some((n) => n.nodeType === 3 && /\S/.test(n.textContent));
       if (own) out.clip.push(`${label(e)} h ${e.scrollHeight}>${e.clientHeight}`);
     }
@@ -126,10 +128,13 @@ def launch(pw):
         return pw.chromium.launch(args=["--no-sandbox", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"], **({"executable_path": exe} if exe else {}))
 
 
-def audit_one(br, origin, app, w, h, timeout, shots, q="low"):
+def audit_one(br, origin, app, w, h, timeout, shots, q="low", device=None):
     """-> {check: [issues]} plus 'status' of each check: PASS / WARN / FAIL"""
     t0 = time.time()
-    ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, reduced_motion="reduce")
+    if device:   # a Playwright device descriptor (viewport, DPR, touch, mobile): the screenshot stays at DPR 1 size via the same viewport
+        ctx = br.new_context(**{k: v for k, v in device.items() if k not in ("default_browser_type", "_label")}, reduced_motion="reduce")
+    else:
+        ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, reduced_motion="reduce")
     ctx.add_init_script("try { localStorage.setItem('jfx', 'low'); } catch (e) {}")
     bad_req, soft, off, errs = [], [], [], []
 
@@ -169,7 +174,7 @@ def audit_one(br, origin, app, w, h, timeout, shots, q="low"):
             res[k] = r[k]
         res["minContrast"] = r["minContrast"]
         os.makedirs(shots, exist_ok=True)
-        p.screenshot(path=os.path.join(shots, f"{app}-{w}x{h}.png"), full_page=True)
+        p.screenshot(path=os.path.join(shots, f"{app}-{w}x{h}{'-' + device['_label'].replace(' ', '') if device else ''}.png"), full_page=True, scale="css")
     except Exception as e:  # noqa: BLE001
         res["console"].append(f"{'timeout' if 'imeout' in type(e).__name__ or 'imeout' in str(e) else type(e).__name__}: {str(e)[:100]}")
     res["console"] += errs + bad_req
@@ -179,16 +184,35 @@ def audit_one(br, origin, app, w, h, timeout, shots, q="low"):
     return res
 
 
-def run(apps, sizes, timeout, shots, q="low"):
+IPHONES = ["iPhone 14", "iPhone SE"]
+
+
+def all_apps():
+    """every app folder of tools/web_public with an index.html AND a jarvis.json (old apps included)"""
+    return sorted(d for d in os.listdir(WEB) if os.path.isfile(os.path.join(WEB, d, "index.html")) and os.path.isfile(os.path.join(WEB, d, "jarvis.json")))
+
+
+def run(apps, sizes, timeout, shots, q="low", iphone=False):
     from playwright.sync_api import sync_playwright
     srv, origin = serve()
     rows = []
     try:
         with sync_playwright() as pw:
             br = launch(pw)
+            devs = []
+            if iphone:
+                for n in IPHONES:
+                    d = dict(pw.devices[n])
+                    d["_label"] = n
+                    devs.append((n, d))
             for app in apps:
                 if not os.path.isfile(os.path.join(WEB, app, "index.html")):
                     rows.append({"app": app, "size": "-", "skipped": True})
+                    continue
+                if iphone:
+                    for n, d in devs:
+                        vp = d["viewport"]
+                        rows.append({"app": app, "size": n.replace("iPhone ", "iP") + f" {vp['width']}x{vp['height']}", **audit_one(br, origin, app, vp["width"], vp["height"], timeout, shots, q, d)})
                     continue
                 for w, h in sizes:
                     rows.append({"app": app, "size": f"{w}x{h}", **audit_one(br, origin, app, w, h, timeout, shots, q)})
@@ -226,14 +250,16 @@ def main(argv=None):
     ap.add_argument("--q", default="low", help="the ?q= quality (default low)")
     ap.add_argument("--json", help="write the raw report here")
     ap.add_argument("--small-only", action="store_true", help="only 375 x 667")
+    ap.add_argument("--iphone", action="store_true", help="use Playwright's iPhone 14 and iPhone SE device descriptors (touch, DPR, mobile UA) instead of the two plain sizes")
+    ap.add_argument("--all", action="store_true", help="every app folder with an index.html and a jarvis.json (old apps too)")
     a = ap.parse_args(argv)
     try:
         import playwright  # noqa: F401
     except ImportError:
         print("Playwright is not installed: cannot audit.")
         return 2
-    apps = [x.strip() for x in a.apps.split(",")] if a.apps else APPS
-    rows = run(apps, SIZES[1:] if a.small_only else SIZES, a.timeout, a.out, a.q)
+    apps = [x.strip() for x in a.apps.split(",")] if a.apps else all_apps() if a.all else APPS
+    rows = run(apps, SIZES[1:] if a.small_only else SIZES, a.timeout, a.out, a.q, a.iphone)
     txt, nfail = table(rows)
     print(txt)
     print(f"screenshots: {a.out}")

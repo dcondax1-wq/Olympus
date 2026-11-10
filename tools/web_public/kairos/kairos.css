@@ -126,3 +126,11 @@ textarea { width: 100%; min-height: 96px; padding: 10px 12px; border-radius: var
 .cell[aria-pressed="true"] { border-color: var(--ag-gold); box-shadow: inset 0 0 0 1px var(--ag-gold); }
 .detail { min-height: 44px; font-size: 14px; } .detail p { margin: 0; }
 .cell.pos, .cell.neg { color: var(--ag-text); }
+
+/* phone-fit 2026-11-10: small labels at least 4.5:1 on the heat cells (an empty cell is dashed and plain, not faded) */
+.cell small { color: var(--ag-soft); }
+.cell.pos small, .cell.neg small { color: var(--ag-text); }
+.cell.none { opacity: 1; background: transparent; border-style: dashed; } .cell.none b, .cell.none small { color: var(--ag-muted); }
+
+/* phone-fit 2026-11-10: on a 320 px screen the heat grid has 3 columns so every cell is a 44 px tap */
+@media (max-width: 340px) { .heat { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

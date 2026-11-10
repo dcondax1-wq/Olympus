@@ -80,3 +80,6 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .shape[data-picked="1"] { border-color: var(--ag-gold); background: #2a2217; }
 .shape[data-picked="1"] svg { color: var(--ag-gold); }
 .shape[hidden] { display: none !important; }
+
+/* phone-fit 2026-11-10: the hint on the stage's lit centre */
+.hint { color: var(--ag-soft); }

@@ -43,7 +43,7 @@ function renderMap() {
   S.streams.forEach((s, i) => {
     const a = (i / 5) * Math.PI * 2 - Math.PI / 2, x = cx + Math.cos(a) * R * 1.35, y = cy + Math.sin(a) * R * 0.85, hh = 10 + ((S.heights[i] - C.MIN_H) / (C.MAX_H - C.MIN_H)) * maxBar;
     const g = sv('g', { 'data-id': s.id, role: 'button', tabindex: '0', 'aria-label': `${s.name}: ${s.place}. ${s.base == null ? 'no estimate' : C.money(s.base) + ' a month, an estimate'}. Tap to select.` });
-    g.appendChild(sv('rect', { x: x - 28, y: y - 36, width: 56, height: 74, fill: 'transparent' }));
+    g.appendChild(sv('rect', { x: x - 33, y: y - 36, width: 66, height: 74, fill: 'transparent' }));
     g.appendChild(sv('rect', { x: x - 14, y: y + 14 - hh, width: 28, height: hh, fill: s.accent, rx: 3, opacity: s.status === 'sample' ? 0.8 : 1 }));
     g.appendChild(sv('rect', { x: x - 18, y: y + 12, width: 36, height: 5, fill: '#cfc4b2', rx: 2 }));
     g.appendChild(sv('text', { x, y: y + 31, 'text-anchor': 'middle', fill: '#f3ece0', 'font-size': 11, 'font-weight': 700 }, s.name));
