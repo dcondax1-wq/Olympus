@@ -85,6 +85,7 @@ export class Athens {
     this.scene.add(this.hemi, this.sun, this.sun.target);
     this.scene.fog = new THREE.FogExp2('#e8d2a4', .0004);
     this.cam = { tx: -20, ty: 8, tz: 40, yaw: 2.55, pitch: .5, dist: 980 };
+    this.mode = this.reduced ? 'day' : 'auto'; this.autoT0 = performance.now(); this.live = null; this.shipAnch = [];
     this.fly = null; this.tour = null; this.anchors = []; this.sel = null; this.frameCount = 0; this.calls = 0;
     this.build();
     this.applyTime(); this.placeCamera();
@@ -167,13 +168,15 @@ export class Athens {
     S.cone(0, 1.7, 7.7, .4, 1.2, PAL.gold, 5);
     this.shipGeo = own(S.geometry()); const n = this.plan.ships.length;
     this.shipMesh = new THREE.InstancedMesh(this.shipGeo, own(new THREE.MeshLambertMaterial({ vertexColors: true })), n); this.shipMesh.frustumCulled = false; this.scene.add(this.shipMesh);
-    this.shipD = new THREE.Object3D(); this.shipsTick(0);
+    this.shipD = new THREE.Object3D(); this.shipTint = new THREE.Color(); this.tintShips(); this.shipsTick(0);
   }
   shipsTick(t) {
     const move = this.T.ships && !this.reduced; this.plan.ships.forEach((s, i) => {
       const d = this.shipD; let x = s.x, z = s.z, yaw = Math.PI * .5 + Math.sin(s.ph) * .3;
+      if (s.acct) { x = s.ax; z = s.az; }
       if (move && s.speed) { const a = t * .03 + s.ph; x = 40 + Math.cos(a) * 190; z = 420 + Math.sin(a) * 52 + 40; yaw = Math.atan2(-Math.sin(a) * 190, Math.cos(a) * 52) ; }
       else if (move) { yaw += Math.sin(t * .4 + s.ph) * .05; z += Math.sin(t * .6 + s.ph) * .35; }
+      if (s.acct && this.shipAnch[i]) { this.shipAnch[i].x = x; this.shipAnch[i].z = z; }
       d.position.set(x, -.2 + (move ? Math.sin(t * 1.3 + s.ph) * .18 : 0), z); d.rotation.set(0, yaw, move ? Math.sin(t * .9 + s.ph) * .04 : 0); d.scale.setScalar(s.scale); d.updateMatrix(); this.shipMesh.setMatrixAt(i, d.matrix);
     }); this.shipMesh.instanceMatrix.needsUpdate = true;
   }
@@ -190,7 +193,7 @@ export class Athens {
     for (const h of plan.houses.slice(0, this.T.houses)) if (r() < .34) wp.push(h.x + (r() - .5) * h.w * .6, h.y + 1.8, h.z + h.d / 2 + .25);
     const c = document.createElement('canvas'); c.width = c.height = 64; const cx = c.getContext('2d'), gr = cx.createRadialGradient(32, 32, 0, 32, 32, 32);
     gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.35, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); cx.fillStyle = gr; cx.fillRect(0, 0, 64, 64);
-    const tex = own(new THREE.CanvasTexture(c)); tex.colorSpace = THREE.SRGBColorSpace;
+    const tex = this.tex = own(new THREE.CanvasTexture(c)); tex.colorSpace = THREE.SRGBColorSpace;
     const pt = (arr, cap, size, op) => {
       const g = own(new THREE.BufferGeometry()); g.setAttribute('position', new THREE.Float32BufferAttribute(arr.slice(0, cap * 3), 3));
       const m = own(new THREE.PointsMaterial({ map: tex, color: '#ffb35c', size, sizeAttenuation: true, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
@@ -203,6 +206,63 @@ export class Athens {
     this.beacon = new THREE.Mesh(own(new THREE.ConeGeometry(16, 150, 14, 1, true).rotateZ(Math.PI / 2).translate(75, 0, 0)), bm); this.beacon.position.set(...b); this.beacon.frustumCulled = false; this.beacon.userData.max = .22; this.scene.add(this.beacon);
     const gm = own(new THREE.PointsMaterial({ map: tex, color: '#ffd27a', size: 30, sizeAttenuation: true, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
     const gg = own(new THREE.BufferGeometry()); gg.setAttribute('position', new THREE.Float32BufferAttribute(b, 3)); this.glow = new THREE.Points(gg, gm); this.glow.userData.max = .8; this.scene.add(this.glow);
+  }
+
+
+  // ------------------------------------------------------------------ the owner's data (read only): glowing temples, the P&L pillar, account ships
+  tintShips() {
+    this.plan.ships.forEach((s, i) => {
+      const c = this.shipTint; if (s.acct) { if (s.acct.open) c.setRGB(1.45, 1.1, .62); else c.setRGB(1, .96, .9); } else c.setRGB(.8, .78, .74);
+      this.shipMesh.setColorAt(i, c);
+    });
+    this.shipMesh.instanceColor.needsUpdate = true;
+  }
+  setLive(live) {
+    this.live = live; const scene = this.scene, tex = this.tex;
+    // temples that need the owner glow warm gold (a soft sprite and a thin column of light); calm temples stay as they are
+    for (const a of this.anchors) if (a.kind === 'app') a.need = live.needs[a.id] || null;
+    const glow = this.anchors.filter((a) => a.need);
+    if (this.needPts) { scene.remove(this.needPts); this.needPts.geometry.dispose(); this.needPts.material.dispose(); }
+    if (this.needBeams) { scene.remove(this.needBeams); this.needBeams.geometry.dispose(); this.needBeams.material.dispose(); }
+    this.needPts = this.needBeams = null;
+    if (glow.length) {
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(glow.flatMap((a) => [a.x, a.y + 4, a.z]), 3));
+      this.needPts = new THREE.Points(g, new THREE.PointsMaterial({ map: tex, color: '#ffd27a', size: 30, sizeAttenuation: true, transparent: true, opacity: .8, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+      this.needPts.frustumCulled = false; scene.add(this.needPts);
+      const bg = new THREE.CylinderGeometry(.6, 1.5, 30, 8, 1, true).translate(0, 15, 0), bm = new THREE.MeshBasicMaterial({ color: '#ffc861', transparent: true, opacity: .26, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+      this.needBeams = new THREE.InstancedMesh(bg, bm, glow.length); const d = new THREE.Object3D();
+      glow.forEach((a, i) => { d.position.set(a.x, groundY(a.x, a.z) + 6, a.z); d.updateMatrix(); this.needBeams.setMatrixAt(i, d.matrix); this.needBeams.instanceMatrix.needsUpdate = true; });
+      this.needBeams.frustumCulled = false; scene.add(this.needBeams);
+    }
+    // the pillar of today on the Agora: its height is today's result in R, its colour says gain or loss
+    const R = live.pnl.r, h = 3.5 + 15 * Math.min(1, Math.abs(R) / 2), col = live.pnl.usd > 0 ? '#8fa65c' : live.pnl.usd < 0 ? '#c9654a' : '#b0793f';
+    if (!this.pillar) {
+      this.pillar = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 3).translate(0, .5, 0), new THREE.MeshLambertMaterial({ color: col })); this.dispose_.push(this.pillar.geometry, this.pillar.material);
+      this.pillar.position.set(30, groundY(30, -37) + .4, -37); scene.add(this.pillar);
+      const base = new THREE.Mesh(new THREE.BoxGeometry(5, .8, 5).translate(0, .4, 0), new THREE.MeshLambertMaterial({ color: '#d2c6ae' })); base.position.set(30, groundY(30, -37), -37); scene.add(base); this.dispose_.push(base.geometry, base.material);
+      this.pillarAnchor = { kind: 'pillar', id: 'pnl', name: "Today's pillar", group: 'trading', x: 30, y: 12, z: -37, major: true, appId: 'hestia', blurb: '' };
+      this.anchors.push(this.pillarAnchor);
+    }
+    this.pillar.scale.y = h; this.pillar.material.color.set(col); this.pillarAnchor.y = h + 2;
+    const usd = (v) => (v < 0 ? '-' : v > 0 ? '+' : '') + '$' + Math.abs(live.pnl.usd).toLocaleString('en-US'); void usd;
+    this.pillarAnchor.blurb = `Today ${live.pnl.usd < 0 ? '-' : live.pnl.usd > 0 ? '+' : ''}$${Math.abs(live.pnl.usd).toLocaleString('en-US')} = ${R > 0 ? '+' : ''}${R} R${live.pnl.est ? ' (R is an estimate)' : ''}. The taller the pillar, the bigger the day.${live.demo ? ' Example numbers: no home.json yet.' : ''}`;
+    // ships: one per account. A ship under way = an open position; a resting ship = flat. Other ships are scenery.
+    this.shipAnch.forEach((a) => { if (a) this.anchors.splice(this.anchors.indexOf(a), 1); }); this.shipAnch = [];
+    this.plan.ships.forEach((sh) => { sh.acct = null; });
+    live.accounts.slice(0, 3).forEach((acct, i) => {
+      const sh = this.plan.ships[i]; sh.acct = acct; sh.speed = acct.open ? 1 : 0; sh.scale = 1.5; sh.ax = -70 + i * 58; sh.az = 392;
+      const room = acct.room != null && acct.mll ? ` Drawdown room $${Math.round(acct.room).toLocaleString('en-US')} of $${Math.round(acct.mll).toLocaleString('en-US')}.` : '';
+      const an = { kind: 'ship', id: 'ship-' + i, name: acct.name, group: 'money', x: sh.ax, y: 12, z: sh.az, major: true, appId: 'hestia',
+        blurb: `${acct.open ? 'A position is open: this ship is under way.' : 'Flat, no open position: the ship rests.'} Today ${acct.today < 0 ? '-' : acct.today > 0 ? '+' : ''}$${Math.abs(Math.round(acct.today)).toLocaleString('en-US')}.${room}` };
+      this.shipAnch[i] = an; this.anchors.push(an);
+    });
+    this.tintShips();
+  }
+  // ------------------------------------------------------------------ day / dusk: auto (about 90 s a cycle), or locked on Day or on Dusk
+  setMode(mode) {
+    this.mode = mode;
+    if (mode === 'auto') { const p = Math.acos(Math.max(-1, Math.min(1, 1 - 2 * this.time))) / (Math.PI * 2); this.autoT0 = performance.now() - p * 90000; this.fade = null; }
+    else this.setDusk(mode === 'dusk');
   }
 
   // ------------------------------------------------------------------ light and sky (day 3500 K, dusk 2700 K)
@@ -276,7 +336,8 @@ export class Athens {
 
   frame(dt, t) {
     this.u.uTime.value = t;
-    if (this.fade) { const k = Math.min(1, (performance.now() - this.fade.t0) / 1600), e = k * k * (3 - 2 * k); this.time = lerp(this.fade.from, this.target, e); this.applyTime(); if (k >= 1) this.fade = null; }
+    if (this.mode === 'auto' && !this.reduced) { const p = ((performance.now() - this.autoT0) / 90000) % 1; this.time = .5 - .5 * Math.cos(p * Math.PI * 2); this.target = this.time; this.applyTime(); }
+    else if (this.fade) { const k = Math.min(1, (performance.now() - this.fade.t0) / 1600), e = k * k * (3 - 2 * k); this.time = lerp(this.fade.from, this.target, e); this.applyTime(); if (k >= 1) this.fade = null; }
     const cam = this.cam;
     if (this.fly) {
       const f = this.fly; f.t += dt / f.dur; const k = Math.min(1, f.t), e = k * k * (3 - 2 * k);
@@ -295,6 +356,7 @@ export class Athens {
     for (const c of this.chunks) { const far = Math.hypot(c.cx - cp.x, c.cz - cp.z) > (this.tierName === 'low' ? 520 : 760); c.a.visible = !far; c.b.visible = far; }
     this.shipsTick(t);
     if (this.beacon) this.beacon.rotation.y = t * .5;
+    if (this.needPts) { const k = this.reduced ? .7 : .62 + .22 * Math.sin(t * 2.2); this.needPts.material.opacity = k; this.needBeams.material.opacity = .14 + .16 * k; }
     if (this.sel) { const s = 1 + Math.sin(t * 3) * .04; this.ring.scale.setScalar((this.sel.major ? 16 : 11) * s); }
     this.renderer.render(this.scene, this.camera);
     this.calls = this.renderer.info.render.calls; this.trisDrawn = this.renderer.info.render.triangles;

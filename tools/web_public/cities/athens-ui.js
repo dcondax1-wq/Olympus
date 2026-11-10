@@ -17,7 +17,7 @@ const MAP = { x0: -640, x1: 660, z0: -600, z1: 560 };
 export function appHref(id) { return id === 'zenith' ? '../' : `../${id}/`; }
 
 export class AthensUI {
-  constructor(plan = planAthens(), hooks = {}) { this.plan = plan; this.hooks = hooks; this.q = ''; this.scene = null; this.sheet = ''; this.labels = []; this.tick = 0; this.appMap = new Map(plan.apps.map((a) => [a.id, a])); }
+  constructor(plan = planAthens(), hooks = {}) { this.plan = plan; this.hooks = hooks; this.q = ''; this.scene = null; this.sheet = ''; this.labels = []; this.tick = 0; this.appMap = new Map(plan.apps.map((a) => [a.id, a])); this.light = hooks.reduced ? 'day' : 'auto'; this.live = null; }
 
   mount(parent = document.body) {
     const root = this.root = el('div', 'ath'); root.id = 'athens'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', 'Athens, the giant Greek metropolis of Olympus');
@@ -31,13 +31,15 @@ export class AthensUI {
       </header>
       <button class="ath-mini" data-a="mini" aria-label="District map. Tap a spot to fly there."><canvas></canvas></button>
       <div class="ath-tourbar" hidden><span id="athTourName"></span><i><b id="athTourBar"></b></i><button data-a="stop">Stop</button></div>
+      <section class="ath-today" hidden><button data-a="today" aria-expanded="true"><b>Athens today</b><i>hide</i></button><div></div></section>
+      <section class="ath-first" hidden role="dialog" aria-label="First visit tour"></section>
       <section class="ath-card" hidden aria-live="polite"></section>
       <section class="ath-sheet" hidden></section>
       <nav class="ath-dock" aria-label="Athens tools">
         <button data-a="jump">${SVG.list}<span>Find</span></button>
         <button data-a="tours">${SVG.fly}<span>Fly</span></button>
         <button data-a="bigmap">${SVG.map}<span>Map</span></button>
-        <button data-a="time2">${SVG.moon}<span>Dusk</span></button>
+        <button data-a="time2">${SVG.sun}<span>Auto</span></button>
       </nav>
       <div class="ath-loading" id="athLoad">Building Athens… <small>hundreds of houses, 40 temples, the harbour</small></div>`;
     parent.append(root);
@@ -57,6 +59,36 @@ export class AthensUI {
     this.gestures();
     this.root.querySelector('#athSub').textContent = `${scene.houseCount} houses · ${this.plan.apps.length} app temples · ${this.plan.landmarks.length} monuments`;
   }
+
+  /** the owner's data arrived: banner of 3 lines, glowing temples, pillar, ships (the scene does the 3D part) */
+  setLive(live) {
+    this.live = live; if (this.scene) this.scene.setLive(live);
+    const t = this.root.querySelector('.ath-today'); t.hidden = false; t.classList.toggle('demo', live.demo);
+    t.querySelector('div').innerHTML = live.lines.map((l) => `<p>${txt(l)}</p>`).join('');
+    this.labels = this.labels || []; if (this.scene) for (const a of this.scene.anchors) if (a.major && !this.labels.some((l) => l.a === a)) { const e = el('span', 'ath-label', txt(a.name)); e.dataset.g = a.group; this.labelsEl.append(e); this.labels.push({ a, e }); }
+    clearTimeout(this.todayT); this.todayT = setTimeout(() => { if (!this.todayTouched) this.act('today'); this.todayTouched = false; }, 14000);
+    if (this.sheet === 'jump') this.renderJump();
+  }
+
+  // ------------------------------------------------------------------ first visit: 3 steps, shown once
+  firstVisit() {
+    let seen = false; try { seen = localStorage.getItem('athens.first') === '1'; } catch (e) { /* private mode: show it, it is short */ }
+    if (this.hooks.first === false || (seen && this.hooks.first !== true)) return;
+    this.firstStep(0);
+  }
+  firstStep(i) {
+    const steps = [
+      ['Welcome to Athens', 'One city for everything in Olympus. Drag to turn it, pinch to zoom. The map at the top right shows where you are.', null],
+      ['Every temple is an app', 'Tap a temple to open its card. A warm gold glow means that app needs you today. No glow means calm: nothing to do.', [60, 60, { dist: 230, pitch: .5 }]],
+      ['Find, Fly and Map', 'The buttons below search by group, fly you on a tour, or open the big map. The light changes slowly; the sun button locks Day or Dusk.', [10, 330, { dist: 260, pitch: .35 }]],
+    ];
+    if (i >= steps.length) return this.firstDone();
+    this.fstep = i; const [h, p, fly] = steps[i], box = this.root.querySelector('.ath-first');
+    box.innerHTML = `<small>Step ${i + 1} of 3</small><h3>${txt(h)}</h3><p>${txt(p)}</p><div class="ath-btns"><button data-a="firstskip">Skip</button><button class="ath-go" data-a="firstnext">${i === 2 ? 'Start exploring' : 'Next'}</button></div>`;
+    box.hidden = false; this.hideCard(); this.closeSheet(); this.root.classList.add('has-first');
+    if (fly && this.scene) this.scene.flyTo(fly[0], fly[1], fly[2]);
+  }
+  firstDone() { this.root.querySelector('.ath-first').hidden = true; this.root.classList.remove('has-first'); try { localStorage.setItem('athens.first', '1'); } catch (e) { /* fine */ } }
 
   // ------------------------------------------------------------------ touch: one finger orbits, two fingers pinch and pan, a tap picks
   gestures() {
@@ -94,8 +126,8 @@ export class AthensUI {
   showCard(a) {
     const g = GROUPS.find((x) => x.key === a.group) || GROUPS[4], app = a.appId && this.findApp(a.appId);
     this.card.innerHTML = `<button class="ath-x" data-a="cardx" aria-label="Close card">${SVG.close}</button>
-      <span class="ath-pill" style="--c:${g.tint}">${txt(g.name)}${a.kind === 'app' ? ' · app' : ' · monument'}</span>
-      <h3>${txt(a.name)}</h3><p>${txt(a.blurb)}</p>
+      <span class="ath-pill" style="--c:${g.tint}">${txt(g.name)}${a.kind === 'app' ? ' · app' : a.kind === 'ship' ? ' · account ship' : a.kind === 'pillar' ? ' · today' : ' · monument'}</span>
+      <h3>${txt(a.name)}</h3><p>${txt(a.blurb)}</p>${a.need ? `<p class="ath-need"><b>Needs you:</b> ${txt(a.need.title)}. ${txt(a.need.say)}</p>` : a.kind === 'app' && this.live ? '<p class="ath-calm">Calm: nothing to do here right now.</p>' : ''}
       <div class="ath-btns">${app && app.id !== 'cities' ? `<a class="ath-go" href="${appHref(app.id)}">Open ${txt(app.name)}</a>` : ''}<button data-a="fly" data-id="${txt(a.id)}">Fly here</button></div>`;
     this.card.hidden = false; this.cur = a; this.root.classList.add('has-card');
   }
@@ -103,6 +135,7 @@ export class AthensUI {
   findApp(id) { return this.appMap.get(id) || null; }
 
   // ------------------------------------------------------------------ sheets: find / tours
+  toast(msg) { let t = this.root.querySelector('.ath-toast'); if (!t) { t = el('div', 'ath-toast'); t.setAttribute('role', 'status'); this.root.append(t); } t.textContent = msg; t.classList.add('on'); clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('on'), 2600); }
   closeSheet() { this.sheetEl.hidden = true; this.sheet = ''; this.root.classList.remove('has-sheet'); }
   openSheet(kind) {
     if (this.sheet === kind) return this.closeSheet();
@@ -117,10 +150,16 @@ export class AthensUI {
       <input type="search" class="ath-q" placeholder="Search ${gi.length} places and apps" aria-label="Search Athens" value="${txt(this.q)}" autocomplete="off">
       <div class="ath-groups">`;
     let any = false;
+    const needy = gi.filter((a) => a.need && match(a));
+    if (needy.length) {
+      any = true; html += `<details open><summary style="--c:#e8bb55"><b>Needs you now</b><em>Temples glowing gold</em><span>${needy.length}</span></summary>`;
+      for (const a of needy) { items.push(a); html += `<button class="ath-row major" data-a="jumpto" data-i="${items.length - 1}"><i style="background:${a.colour || '#e8bb55'}"></i><b>${txt(a.name)}</b><small>${txt(a.need.title)}</small></button>`; }
+      html += '</details>';
+    }
     for (const g of GROUPS) {
       const rows = gi.filter((a) => a.group === g.key && match(a)).sort((x, y) => (y.major ? 1 : 0) - (x.major ? 1 : 0) || x.name.localeCompare(y.name));
       if (!rows.length) continue; any = true;
-      html += `<details ${q || g.key === 'trading' ? 'open' : ''}><summary style="--c:${g.tint}"><b>${g.name}</b><em>${txt(g.blurb)}</em><span>${rows.length}</span></summary>`;
+      html += `<details ${q || (g.key === 'trading' && !needy.length) ? 'open' : ''}><summary style="--c:${g.tint}"><b>${g.name}</b><em>${txt(g.blurb)}</em><span>${rows.length}</span></summary>`;
       for (const a of rows) { items.push(a); html += `<button class="ath-row ${a.major ? 'major' : ''}" data-a="jumpto" data-i="${items.length - 1}"><i style="background:${a.colour || g.tint}"></i><b>${txt(a.name)}</b><small>${txt(a.blurb)}</small></button>`; }
       html += '</details>';
     }
@@ -149,12 +188,22 @@ export class AthensUI {
     if (a === 'jump' || a === 'tours') return this.openSheet(a);
     if (a === 'bigmap') { this.closeSheet(); this.root.classList.toggle('bigmap'); this.drawStatic(); this.drawMini(); return; }
     if (a === 'mini') return this.miniTap(ev);
-    if (a === 'time' || a === 'time2') { const d = !this.dusk; this.dusk = d; S && S.setDusk(d); this.root.classList.toggle('dusk', d); this.root.querySelectorAll('[data-a=time]').forEach((x) => x.setAttribute('aria-pressed', String(d))); const lab = this.root.querySelector('[data-a=time2] span'); lab.textContent = d ? 'Day' : 'Dusk'; return; }
+    if (a === 'time' || a === 'time2') { const modes = this.hooks.reduced ? ['day', 'dusk'] : ['auto', 'day', 'dusk']; this.light = modes[(modes.indexOf(this.light) + 1) % modes.length]; this.applyLight(); return; }
+    if (a === 'today') { const t = this.root.querySelector('.ath-today'), min = !t.classList.contains('min'); t.classList.toggle('min', min); t.querySelector('button').setAttribute('aria-expanded', String(!min)); t.querySelector('i').textContent = min ? 'show' : 'hide'; this.todayTouched = true; return; }
+    if (a === 'firstnext') return this.firstStep(this.fstep + 1);
+    if (a === 'firstskip') return this.firstDone();
     if (a === 'stop') { if (S) { S.stopTour(); } this.tourState(false); return; }
     if (!S) return;
     if (a === 'fly') { const x = this.cur; if (x) S.flyTo(x.x, x.z, { dist: x.major ? 150 : 95, lift: Math.min(20, x.y * .3) }); return; }
     if (a === 'jumpto') { const x = this.items[+b.dataset.i]; this.closeSheet(); S.flyTo(x.x, x.z, { dist: x.major ? 150 : 95, lift: Math.min(20, x.y * .3) }); S.select(x); this.showCard(x); return; }
     if (a === 'tour') { const t = this.plan.tours[+b.dataset.i]; this.closeSheet(); this.hideCard(); S.select(null); S.startTour(t); this.tourState(true, t.name); return; }
+  }
+  applyLight() {
+    const L = this.light, S = this.scene; S && S.setMode(L); this.root.classList.toggle('dusk', L === 'dusk');
+    const lab = { auto: 'Auto', day: 'Day', dusk: 'Dusk' }[L];
+    this.root.querySelector('[data-a=time2] span').textContent = lab;
+    this.root.querySelectorAll('[data-a=time]').forEach((x) => { x.setAttribute('aria-label', `Light: ${lab}. Tap to change between Auto, Day and Dusk.`); x.setAttribute('aria-pressed', String(L === 'dusk')); });
+    this.toast && this.toast(L === 'auto' ? 'Light follows a slow day and dusk (about 90 s).' : L === 'day' ? 'Light locked on day (3500 K).' : 'Light locked on dusk (2700 K).');
   }
   miniTap(ev) {
     if (!this.scene) return;
