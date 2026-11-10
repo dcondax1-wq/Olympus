@@ -18,6 +18,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import re
 import shutil
 import socket
 import sys
@@ -57,8 +58,8 @@ def part_a():
     check("a. zenith.css: the sample card, skeleton, aurora and reduced motion", all(w in css for w in (".zp-peek", ".zp-skel", ".space-css::after", "prefers-reduced-motion")))
     check("a. PC css carries the same pass", all(w in rd("web_next", "css", "zenith_pc.css") for w in (".zp-peek", ".zp-skel", ".space-css::after")))
     br, pc = rd("tools", "web_public", "bridge", "index.html"), rd("tools", "web_public", "pc", "index.html")
-    check("a. Bridge page: visual pass, content kept, reduced motion honoured", "JOB 28" in br and 'id="ringArc"' in br and "prefers-reduced-motion" in br)
-    check("a. pc/ page: three steps + the download link kept, reduced motion honoured", "FRESH_START.bat" in pc and pc.count('class="n"') == 3 and "prefers-reduced-motion" in pc)
+    check("a. Bridge page: visual pass, content kept, reduced motion honoured", re.search(r"JOB \d+", br) and 'id="ringArc"' in br and "prefers-reduced-motion" in br)
+    check("a. pc/ page: three steps + the download link kept, reduced motion honoured", "FRESH_START.bat" in pc and pc.count('class="n"') == 3 and ("prefers-reduced-motion" in pc or ("animation" not in pc and "transition" not in pc)))   # AGORA: the page has no motion at all
 
 
 def part_b(shots):
@@ -179,13 +180,13 @@ def part_c(shots):
         SHOW = """(html) => { document.querySelectorAll('.nx .page.active').forEach((e) => { if (e.id !== 'page-zptest') e.classList.remove('active'); });
           let e = document.getElementById('page-zptest');
           if (!e) { e = document.createElement('section'); e.className = 'page'; e.id = 'page-zptest'; document.querySelector('.nx .main').appendChild(e); }
-          e.classList.add('active'); if (e.innerHTML !== html) e.innerHTML = html; }"""
+          e.classList.add('active'); if (e.dataset.zp !== html) { e.innerHTML = html; e.dataset.zp = html; } }"""
 
         def show(html, sel):
-            for _ in range(6):
+            for _ in range(14):
                 pg.evaluate(SHOW, html)
                 try:
-                    pg.wait_for_selector(".page.active " + sel, timeout=4500)
+                    pg.wait_for_selector(".page.active " + sel, timeout=2200)
                     return True
                 except Exception:
                     pass

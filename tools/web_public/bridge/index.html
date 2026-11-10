@@ -214,7 +214,7 @@ demetrades2000-coder/nq-liquidity-engine (connect GitHub in ChatGPT / use Codex)
 
 Every time before you start:
 1. Read `handoff/SYNC.md` (the shared board: what is done, what is yours, what is Claude's, what is blocked).
-2. Read `handoff/inbox/README.md` and the newest job on __BRIDGE_URL__ .
+2. Read `handoff/inbox/README.md` and the newest job on https://demetrades2000-coder.github.io/nq-dashboard/bridge/ .
 
 Rules:
 - Only add files under `handoff/inbox/<task-id>/` (open a pull request on branch `chatgpt/<task-id>`). Never edit the bots,
@@ -356,8 +356,7 @@ if (!window.BRIDGE_STATUS_LINE) window.BRIDGE_STATUS_LINE = function () {
   try { W = JSON.parse(localStorage.getItem(WK) || '{}') || {}; } catch (e) { W = {}; }
   function wsave() { try { localStorage.setItem(WK, JSON.stringify(W)); } catch (e) { /* private mode */ } }
   W.seen = 1; wsave();                       // Jarvis reads this: the owner has opened the wizard
-  var BRIDGE_URL = /^https?:/.test(location.protocol) && !/^(localhost|127\.|\[::1\])/.test(location.hostname) ? location.origin + location.pathname.replace(/[^\/]*$/, '') : 'https://demetrades2000-coder.github.io/nq-dashboard/bridge/';   // this very page; the old address only as a fallback
-  var PROMPT = document.getElementById('onboardText').textContent.trim().replace('__BRIDGE_URL__', BRIDGE_URL);
+  var PROMPT = document.getElementById('onboardText').textContent.trim();
   function copy(text, btn, label, after) {
     var ok = function () { btn.textContent = 'Copied \u2713'; btn.classList.add('copied'); setTimeout(function () { btn.textContent = label; btn.classList.remove('copied'); }, 1600); if (after) after(); };
     try { navigator.clipboard.writeText(text).then(ok, function () { prompt('Copy this:', text); if (after) after(); }); }
