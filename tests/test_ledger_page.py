@@ -459,6 +459,7 @@ def run_browser():
             add(p, "5", "tax", "2026-11-03")
             p.wait_for_function("LG.state().entries === 3")
             p.click("#t-list")
+            before = p.evaluate("() => JSON.parse(localStorage.getItem('ledger.v1'))")
             with p.expect_download() as dj:
                 p.click("[data-act=json]")
             path_j = dj.value.path()
@@ -469,6 +470,16 @@ def run_browser():
             check("c. Export JSON downloads a file with every entry and the settings (v1, app ledger); CSV downloads a header and one signed row per dated entry (fee -91.8, payout 800, tax)",
                   exp["app"] == "ledger" and len(exp["entries"]) == 3 and exp["settings"]["taxPct"] == 25 and dj.value.suggested_filename == "ledger-2026-11-04.json" and csv_txt.startswith("date,type,category,account,amount_usd,direction,source,recurring,note\n")
                   and "2026-10-18,Eval fee,Eval fees,general,-91.8,out,you" in csv_txt and "2026-11-02,Payout received,Payouts,general,800,in,you" in csv_txt and "Tax paid" in csv_txt and dc.value.suggested_filename == "ledger-2026-11-04.csv", (exp["entries"][:1], csv_txt[:300]))
+            after = p.evaluate("() => JSON.parse(localStorage.getItem('ledger.v1'))")
+            import datetime as _dt
+            le = after.get("lastExport", "")
+            fresh = False
+            try:
+                fresh = abs((_dt.datetime.now(_dt.timezone.utc) - _dt.datetime.fromisoformat(le.replace("Z", "+00:00"))).total_seconds()) < 300
+            except ValueError:
+                pass
+            check("c. tapping Export JSON writes `lastExport` (an ISO time, just now) into the ledger.v1 state so Compass can see it; before the export there was none; the CSV button does not set it; the entries are untouched",
+                  "lastExport" not in before and fresh and len(after["entries"]) == 3 and after["settings"]["taxPct"] == 25, (before.keys(), after.get("lastExport")))
             p.reload()
             p.wait_for_function("document.body.dataset.ready === '1'", timeout=240000)
             check("c. a reload keeps the ledger (3 entries, net $703.20 = 800 - 91.80 - 0 tax is not a cost... $708.20)", st(p)["entries"] == 3 and net(p) == "$708.20" and not st(p)["demo"], (st(p), net(p)))

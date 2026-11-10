@@ -73,9 +73,12 @@ export function loadState(raw) {                                       // never 
   for (const e of arr(o.entries).slice(0, MAX_ENTRIES)) { const c = cleanEntry(e); if (c && !seen.has(c.id)) { seen.add(c.id); s.entries.push(c); } }
   if (isObj(o.settings)) { const t = num(o.settings.taxPct); if (t != null) s.settings.taxPct = Math.min(60, Math.max(0, t)); }
   s.hidden = arr(o.hidden).map((x) => str(x, 80)).filter(Boolean).slice(0, 200);
+  if (typeof o.lastExport === 'string' && o.lastExport.length <= 40 && Number.isFinite(Date.parse(o.lastExport))) s.lastExport = o.lastExport;     // when the owner last tapped Export JSON (Compass reads it)
   return s;
 }
-export const serialize = (s) => JSON.stringify({ v: VERSION, entries: s.entries, settings: s.settings, hidden: s.hidden });
+export const serialize = (s) => JSON.stringify({ v: VERSION, entries: s.entries, settings: s.settings, hidden: s.hidden, ...(s.lastExport ? { lastExport: s.lastExport } : {}) });
+/** the state with the time of the export (ISO text) written into it */
+export const markExported = (s, nowMs) => ({ ...s, lastExport: new Date(nowMs).toISOString() });
 /** the JSON file the owner exports (and imports back): what he entered, never the site's auto entries */
 export const exportJSON = (s, nowMs) => JSON.stringify({ v: VERSION, app: 'ledger', exported: new Date(nowMs || Date.now()).toISOString(), entries: s.entries, settings: s.settings, hidden: s.hidden }, null, 2);
 /** import: { ok, state, added, skipped } | { ok: false, error }. mode 'merge' adds entries whose id is new; 'replace' takes the file's. */

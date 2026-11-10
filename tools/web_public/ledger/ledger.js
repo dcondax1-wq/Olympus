@@ -377,7 +377,7 @@ function download(name, text, type) {
   } catch (_) { return false; }
 }
 function doCSV() { const m = S.model; if (S.demo) { toast('These are example numbers: add your first entry first.', false); return; } download(`ledger-${m.today}.csv`, C.toCSV(m.list), 'text/csv'); toast('CSV downloaded (every dated entry, with the site\'s auto entries marked).', false); }
-function doJSON() { if (S.demo) { toast('Nothing to export yet: these are example numbers.', false); return; } download(`ledger-${S.model.today}.json`, C.exportJSON(S.st), 'application/json'); toast('Exported. Keep the file safe: it is your whole ledger.', false); }
+function doJSON() { if (S.demo) { toast('Nothing to export yet: these are example numbers.', false); return; } const ok = download(`ledger-${S.model.today}.json`, C.exportJSON(S.st), 'application/json'); if (ok) { S.st = C.markExported(S.st, Date.now()); S.saveOk = store.write(S.st); } toast('Exported. Keep the file safe: it is your whole ledger.', false); }
 function doImport() {
   let inp = $('importFile');
   if (!inp) { inp = h('input'); inp.type = 'file'; inp.id = 'importFile'; inp.accept = '.json,application/json'; inp.hidden = true; inp.addEventListener('change', async () => { const f = inp.files && inp.files[0]; if (!f) return; try { importText(await f.text()); } catch (_) { toast('Could not read that file.', false); } inp.value = ''; }); document.body.append(inp); }
