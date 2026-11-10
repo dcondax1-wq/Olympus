@@ -374,3 +374,5 @@ App `kairos` in `tools/web_public/kairos/` (the New York trading day on a 24 h r
 7. Tests: `python -X utf8 -m tests.test_kairos_page` (`--static` skips the browser), then `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
 
 (Moirai needs no new wiring for the honesty upgrade; it is the same app folder.)
+
+`events.json` is GENERATED: `python tools/money/pythia_dates.py` rebuilds it from rules (claims, option expiry, quad witching, the roll, holidays, the NFP rule) and from the repo's saved calendar `data/news/events.csv` (FOMC, CPI, PPI, ...; refresh that with `data/build_news.py` / the news hub, then rerun the script). The range and as-of date live in the file's `generated` block (edit them to extend the window). `--check` (run by `tests.test_pythia_page`) fails when the file is out of step. Dates the repo does not carry stay in `undated` with the name of the official calendar (text only). Never hand-edit a date into `events.json`.
