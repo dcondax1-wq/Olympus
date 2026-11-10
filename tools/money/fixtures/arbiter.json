@@ -1,0 +1,38 @@
+{
+ "v": 1,
+ "id": "arbiter",
+ "asof": "2026-11-10T06:00:00Z",
+ "mode": "paper",
+ "status": "sample",
+ "headline": {
+  "text": "The referee ranks the other streams: do the lowest-risk, highest-return task first; about $20 a month.",
+  "usd_month": 20
+ },
+ "items": [
+  {
+   "title": "Do first: cancel the unused plan",
+   "detail": "Highest score, lowest risk, five minutes.",
+   "usd": 16,
+   "score": 82,
+   "risk": "low"
+  },
+  {
+   "title": "Do next: check the Builder 50K code",
+   "detail": "Saves a one-time fee; verify on the firm's page.",
+   "usd": 19,
+   "score": 72,
+   "risk": "low"
+  },
+  {
+   "title": "Wait on: prediction-market edge",
+   "detail": "Thin after fees and high risk; paper only for now.",
+   "usd": 0,
+   "score": 30,
+   "risk": "high"
+  }
+ ],
+ "notes": [
+  "Sample numbers, not real. The referee only orders tasks; it never moves money.",
+  "Rankings change as the other streams refresh."
+ ]
+}

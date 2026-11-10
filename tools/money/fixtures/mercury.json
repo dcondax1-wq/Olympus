@@ -1,0 +1,38 @@
+{
+ "v": 1,
+ "id": "mercury",
+ "asof": "2026-11-10T06:00:00Z",
+ "mode": "paper",
+ "status": "sample",
+ "headline": {
+  "text": "Three small resale gaps look open this week; about $60 a month if you act on one a week.",
+  "usd_month": 60
+ },
+ "items": [
+  {
+   "title": "Used monitor, local listing",
+   "detail": "Listed about $45 under the usual sold price. Needs pickup and a quick test.",
+   "usd": 45,
+   "score": 66,
+   "risk": "med"
+  },
+  {
+   "title": "Gift-card discount",
+   "detail": "A store card sells about 6% under face value on a public marketplace.",
+   "usd": 12,
+   "score": 48,
+   "risk": "med"
+  },
+  {
+   "title": "Bundle of cables",
+   "detail": "Small margin, low effort, fast to sell.",
+   "usd": 8,
+   "score": 35,
+   "risk": "low"
+  }
+ ],
+ "notes": [
+  "Sample numbers, not real. Fees, shipping and your time are not in these estimates.",
+  "Prices move; a gap seen this morning can be gone by evening."
+ ]
+}

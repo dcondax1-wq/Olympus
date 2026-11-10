@@ -1,0 +1,38 @@
+{
+ "v": 1,
+ "id": "sibyl",
+ "asof": "2026-11-10T06:00:00Z",
+ "mode": "paper",
+ "status": "sample",
+ "headline": {
+  "text": "Two prediction-market prices look off by more than the fee; about $90 a month if they hold, paper only.",
+  "usd_month": 90
+ },
+ "items": [
+  {
+   "title": "Rate decision market",
+   "detail": "Market says 62%, the public futures curve implies about 71%. Edge after fee is thin.",
+   "usd": 55,
+   "score": 61,
+   "risk": "high"
+  },
+  {
+   "title": "Weather high-temperature market",
+   "detail": "Forecast agreement is strong; market price lags by 5 points.",
+   "usd": 35,
+   "score": 58,
+   "risk": "med"
+  },
+  {
+   "title": "Earnings beat market",
+   "detail": "Close to fair; skip unless the price moves.",
+   "usd": 0,
+   "score": 22,
+   "risk": "high"
+  }
+ ],
+ "notes": [
+  "Sample numbers, not real. This is paper only: no order is ever placed.",
+  "A market can stay wrong longer than your money lasts; size small."
+ ]
+}

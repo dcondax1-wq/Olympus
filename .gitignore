@@ -156,3 +156,5 @@ data/pantheon_cache/
 
 # run_area.py results (tests/run_area.py)
 scratch/
+money_out/
+money_out_log.txt

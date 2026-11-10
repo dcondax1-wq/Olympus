@@ -88,3 +88,17 @@ AMBIENT (existing beds): `delphi: 'chimes', pnyx: 'coins',`
 `olympus/intro-app.js` FLAVOUR: `delphi: ['rings', 'Read the omens', 'tick'], pnyx: ['columns', 'Count the risk', 'tap'],`
 `jarvis/transitions.js` REGISTRY: `delphi: { kind: 'sunburst', ms: 1000 }, pnyx: { kind: 'columns', ms: 1000, n: 5 },`
 ## 7. Tests after wiring: `tests.test_delphi_page`, `tests.test_pnyx_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`. Then app count 38 in CLAUDE_REFERENCE / CLAUDE.md.
+
+---
+# Wiring MINT, the money machine hub (2026-11-10)
+
+App `mint` in `tools/web_public/mint/` (reads `../money/index.json`, falls back to `fixture.json`). Engine `tools/money_engine.py` (writes `money_out/<id>.json` + `index.json`), runner `RUN_MONEY.bat`, workflow `.github/workflows/money-engine.yml` (schedule / dispatch only, artifact `money-out`). Tests `tests/test_mint_page.py`, `tests/test_money_engine.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('mint', 'Mint', 'money', '#c8a24a', 'The money machine: five streams, one honest estimate', { glyph: 'M' }),`
+2. `olympus/olympus.js` APPS: `mint: ['Mint', 'M', '#c8a24a'],` AMBIENT: `mint: 'coins',`
+3. `tools/build_web_dashboard.py` app tuple: add `"mint"`; the site build must also copy `money_out/*.json` (or the published money JSON) to `money/` so `../money/index.json` exists (until then the page shows its DEMO fixture).
+4. `sw.js` OTHER_APPS add `'mint/'`, bump `CACHE`, update the pinned strings in the zenith / hub tests.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `intro-app.js` FLAVOUR: `mint: ['columns', 'Strike the coin', 'tap'],` ; `transitions.js` REGISTRY: `mint: { kind: 'columns', ms: 1000, n: 5 },`
+7. Tests: `tests.test_mint_page`, `tests.test_money_engine`, plus the shared list in section 7 above.
+Scanners to land in `tools/money/<id>.py` (chrysos, mercury, sibyl, oikos, arbiter): `--out DIR`, `--fixture`, `--selftest`; the engine skips missing ones and uses `tools/money/fixtures/<id>.json`.

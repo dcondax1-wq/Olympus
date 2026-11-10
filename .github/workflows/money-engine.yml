@@ -1,0 +1,46 @@
+# MONEY ENGINE (tools/money_engine.py): runs the five money scanners (tools/money/) and uploads their JSON as a build artifact.
+# PAPER ONLY: it reads public data and writes files. It never trades, never touches live_model*.json or any key, and has read-only permissions.
+# Runs only on a schedule or by hand (never on push). Free: about 1 billed minute per run.
+name: money-engine
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"            # every 3 hours (free-tier friendly); the PC runs RUN_MONEY.bat every 30 minutes
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Use the bundled samples (offline)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: money-engine
+  cancel-in-progress: false
+
+jobs:
+  money:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /tools/money_engine.py
+            /tools/money/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Self-test (offline)
+        run: python tools/money_engine.py --selftest
+      - name: Run the scanners
+        run: python tools/money_engine.py --out money_out --timeout 60 ${{ inputs.fixture && '--fixture' || '' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: money-out
+          path: money_out/*.json
+          retention-days: 7

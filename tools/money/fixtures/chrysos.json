@@ -1,0 +1,38 @@
+{
+ "v": 1,
+ "id": "chrysos",
+ "asof": "2026-11-10T06:00:00Z",
+ "mode": "paper",
+ "status": "sample",
+ "headline": {
+  "text": "Two prop-firm discount windows are open; the best saves about $38 on the next eval fee.",
+  "usd_month": 38
+ },
+ "items": [
+  {
+   "title": "Builder 50K discount code",
+   "detail": "A public code takes the one-time fee from $91.80 to about $73. Check the code on the firm's own page before paying.",
+   "usd": 19,
+   "score": 72,
+   "risk": "low"
+  },
+  {
+   "title": "ATLAS 25K promo week",
+   "detail": "The 25K fee is $43 today; a seasonal promo may cut it by a third. Not a promise: promos end without notice.",
+   "usd": 14,
+   "score": 55,
+   "risk": "low"
+  },
+  {
+   "title": "Payout timing",
+   "detail": "A funded payout can be requested after the minimum trading days. Waiting a week costs nothing but delays cash.",
+   "usd": 0,
+   "score": 40,
+   "risk": "med"
+  }
+ ],
+ "notes": [
+  "Sample numbers, not real. Savings are one-time, not monthly income.",
+  "Promo codes change often and may not apply to your account."
+ ]
+}
