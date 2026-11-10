@@ -108,7 +108,7 @@ function badge(p) {
   const c = document.createElement('canvas'); c.width = c.height = 64;
   const g = c.getContext('2d');
   const pnl = p.position ? +p.position.unrealized_usd || 0 : +p.day_pnl || 0;
-  const col = p.kill ? '#ff5a7a' : p.feed?.stale ? '#f7b955' : pnl > 0 ? '#2ee59d' : pnl < 0 ? '#ff5a7a' : '#8a93a8';
+  const col = p.kill ? '#ff5a7a' : p.feed?.stale ? '#f7b955' : pnl > 0 ? '#7f8a52' : pnl < 0 ? '#ff5a7a' : '#8a93a8';
   g.fillStyle = '#10131c'; g.beginPath(); g.roundRect ? g.roundRect(2, 2, 60, 60, 14) : g.rect(2, 2, 60, 60); g.fill();
   g.lineWidth = 6; g.strokeStyle = col; g.beginPath(); g.roundRect ? g.roundRect(5, 5, 54, 54, 12) : g.rect(5, 5, 54, 54); g.stroke();
   g.fillStyle = col; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 34px system-ui, sans-serif';

@@ -196,7 +196,7 @@ function heatChart(map, today) {
     const date = C.addDays(start, w * 7 + d);
     if (date > today) continue;
     const v = map[date], a = v == null ? 0.07 : 0.25 + 0.75 * Math.min(1, Math.abs(v) / max);
-    const r = sv('rect', { x: w * (cell + gap), y: 12 + d * (cell + gap), width: cell, height: cell, rx: 4, fill: v == null ? 'rgba(255,255,255,0.07)' : v > 0 ? `rgba(94,230,168,${a})` : `rgba(255,90,102,${a})`, 'data-date': date });
+    const r = sv('rect', { x: w * (cell + gap), y: 12 + d * (cell + gap), width: cell, height: cell, rx: 4, fill: v == null ? 'rgba(255,255,255,0.07)' : v > 0 ? `rgba(127,138,82,${a})` : `rgba(255,90,102,${a})`, 'data-date': date });
     r.append(sv('title', {}, `${date}: ${v == null ? 'nothing' : C.moneyS(v)}`)); svg.append(r);
   }
   ['M', 'W', 'F'].forEach((l, i) => svg.append(sv('text', { x: 0, y: 8, opacity: 0 }, l)));

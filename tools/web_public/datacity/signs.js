@@ -38,10 +38,10 @@ function drawRow(g, y, text, color) {
   g.beginPath(); g.roundRect ? g.roundRect(14, 14, ROW_W - 28, ROW_H - 28, 22) : g.rect(14, 14, ROW_W - 28, ROW_H - 28); g.fill();
   g.lineWidth = 5; g.strokeStyle = color; g.shadowColor = color; g.shadowBlur = 18;               // the tube frame
   g.beginPath(); g.roundRect ? g.roundRect(14, 14, ROW_W - 28, ROW_H - 28, 22) : g.rect(14, 14, ROW_W - 28, ROW_H - 28); g.stroke();
-  g.font = '800 50px Orbitron, Rajdhani, -apple-system, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = '800 50px Georgia, Georgia, -apple-system, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
   const label = text.split('').join(String.fromCharCode(8202));
   let size = 50;
-  while (g.measureText(label).width > ROW_W - 80 && size > 20) { size -= 3; g.font = `800 ${size}px Orbitron, Rajdhani, -apple-system, system-ui, sans-serif`; }
+  while (g.measureText(label).width > ROW_W - 80 && size > 20) { size -= 3; g.font = `800 ${size}px Georgia, Georgia, -apple-system, system-ui, sans-serif`; }
   g.shadowBlur = 20; g.fillStyle = color; g.fillText(label, ROW_W / 2, ROW_H / 2 + 4);          // coloured glow
   g.shadowBlur = 0; g.lineWidth = 1.6; g.strokeStyle = '#ffffff'; g.strokeText(label, ROW_W / 2, ROW_H / 2 + 4);   // the hot white core of the tube
   g.restore();
@@ -100,7 +100,7 @@ export class Signs {
     this.boards = boards;
   }
 
-  /** the HUD fonts (Orbitron / Rajdhani) arrived: draw the lettering again */
+  /** the HUD fonts (Georgia / Georgia) arrived: draw the lettering again */
   refresh() {
     this.names.forEach(([t, c], i) => drawRow(this.g, i * ROW_H, t, c));
     this.tex.needsUpdate = true;

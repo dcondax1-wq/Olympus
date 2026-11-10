@@ -139,7 +139,7 @@ export class FallbackCity {
       c.beginPath(); c.arc(p.x, p.y - lift, 3.5, 0, Math.PI * 2); c.fill();
     });
     c.fillStyle = 'rgba(235,213,161,.85)';
-    c.font = '600 11px Rajdhani, sans-serif';
+    c.font = '600 11px Georgia, sans-serif';
     c.textAlign = 'center';
     c.fillText(this.mode === 'stale' ? 'ORACLE · LAST SEEN' : this.mode === 'demo' ? 'ORACLE · REPLAY' : 'ORACLE · DELPHI', core.x, core.y - scale * 7);
   }

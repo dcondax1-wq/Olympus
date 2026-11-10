@@ -31,7 +31,7 @@ html.framed #app { padding-top: 12px; }
 .kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; margin: 0; font-size: 14px; }
 .kv dt { color: var(--ag-soft); } .kv dd { margin: 0; text-align: right; font-family: var(--ag-num); font-variant-numeric: tabular-nums; font-weight: 600; }
 .pill { display: inline-flex; align-items: center; min-height: 26px; padding: 0 10px; border-radius: 999px; font: 700 12px var(--ag-sans); border: 1px solid var(--ag-line); color: var(--ag-soft); background: #211c16; }
-.pill.ok { color: var(--ag-olive); border-color: #4c5530; } .pill.warn { color: var(--ag-sun); border-color: #6e5424; } .pill.bad { color: var(--ag-terra); border-color: #6e3424; } .pill.info { color: #7fa7c2; border-color: #2f4a5c; }
+.pill.ok { color: var(--ag-olive); border-color: #4c5530; } .pill.warn { color: var(--ag-sun); border-color: #6e5424; } .pill.bad { color: var(--ag-terra); border-color: #6e3424; } .pill.info { color: #7fa7c2; border-color: #554636; }
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: var(--ag-raise); color: var(--ag-text); font: 600 15px var(--ag-sans); }
 .btn[aria-pressed="true"], .btn.on { border-color: var(--ag-gold); color: var(--ag-gold); background: #2a2217; }
 .seg { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -66,9 +66,9 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .big { margin: 0; font: 700 clamp(36px, 12vw, 48px)/1.05 var(--ag-num); font-variant-numeric: tabular-nums; color: var(--ag-gold); }
 .when { margin: 0; font-size: 13px; color: var(--ag-gold); font-variant-numeric: tabular-nums; }
 .sub3 { margin: 6px 0 0; font: 600 14px var(--ag-serif); color: var(--ag-soft); }
-.stage { display: grid; justify-items: center; border-radius: 14px; border: 1px solid var(--ag-line); overflow: hidden; background: #2a2547; }
+.stage { display: grid; justify-items: center; border-radius: 14px; border: 1px solid var(--ag-line); overflow: hidden; background: #42362a; }
 .stage canvas { display: block; width: 100%; max-width: 420px; height: auto; aspect-ratio: 340 / 200; }
-.map { width: 100%; max-width: 420px; margin: 0 auto; border-radius: 14px; border: 1px solid var(--ag-line); background: radial-gradient(90% 60% at 50% 30%, #20384a, #172a38); overflow: hidden; }
+.map { width: 100%; max-width: 420px; margin: 0 auto; border-radius: 14px; border: 1px solid var(--ag-line); background: radial-gradient(90% 60% at 50% 30%, #413529, #30281f); overflow: hidden; }
 .map svg { display: block; width: 100%; height: auto; }
 .map text { fill: var(--ag-text); font: 600 11px var(--ag-sans); }
 .map .isle { cursor: pointer; } .map .isle:focus-visible { outline: none; } .map .isle:focus-visible .ring { stroke: var(--ag-gold); stroke-width: 3; }

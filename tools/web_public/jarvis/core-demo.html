@@ -5,27 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Jarvis Core</title>
 <meta name="description" content="Demo of the animated Jarvis core: the violet 3D reactor, its five states, designs, themes and effects levels.">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#14110e">
 <link rel="icon" href="icon-192.png">
 <style>
-:root { --bg: #000; --bg2: #0b0a10; --c: #a855f7; --cr: 168, 85, 247; --txt: #ece9f2; --mut: #8a8499; --dim: #3b2a5c;
+:root { --bg: #000; --bg2: #0b0a10; --c: #9c6b3c; --cr: 168, 85, 247; --txt: #ece9f2; --mut: #8a8499; --dim: #524334;
   --f: -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif; color-scheme: dark; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--txt); font: 15px/1.4 var(--f); }
-body { background: radial-gradient(ellipse at 50% 30%, var(--bg2) 0%, #000 65%) fixed, var(--bg); }
+body { background: radial-gradient(ellipse at 50% 30%, var(--bg2) 0%, #14110e 65%) fixed, var(--bg); }
 body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 5;
   background: repeating-linear-gradient(0deg, rgba(var(--cr), .035) 0 1px, transparent 1px 3px); }
 main { max-width: 520px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); display: grid; gap: 12px; }
-h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: .5em; text-align: center; color: var(--txt); text-shadow: 0 0 12px var(--c); }
+h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: .05em; text-align: center; color: var(--txt); text-shadow: none; }
 #core { width: 100%; max-width: 440px; margin: 0 auto; }
-.state { text-align: center; font-size: 11px; letter-spacing: .4em; color: var(--c); text-shadow: 0 0 8px var(--c); min-height: 1.4em; }
+.state { text-align: center; font-size: 11px; letter-spacing: .05em; color: var(--c); text-shadow: none; min-height: 1.4em; }
 .row { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; }
-button { font: inherit; font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--c); background: rgba(12,10,20,.75);
+button { font: inherit; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--c); background: rgba(12,10,20,.75);
   border: 1px solid var(--dim); border-radius: 999px; padding: 9px 13px; cursor: pointer; }
-button[aria-pressed="true"] { color: #fff; border-color: var(--c); box-shadow: 0 0 0 1px var(--c) inset, 0 0 16px rgba(var(--cr), .35); }
+button[aria-pressed="true"] { color: #f3ece0; border-color: var(--c); box-shadow: 0 0 0 1px var(--c) inset, 0 0 16px rgba(var(--cr), .35); }
 button[data-s="alert"][aria-pressed="true"] { border-color: #ff4d6d; box-shadow: 0 0 0 1px #ff4d6d inset, 0 0 16px rgba(255,77,109,.35); }
-.lbl { text-align: center; font-size: 10px; letter-spacing: .3em; color: var(--mut); margin: 4px 0 0; }
-label { display: flex; align-items: center; gap: 10px; color: var(--mut); font-size: 12px; justify-content: center; letter-spacing: .1em; }
+.lbl { text-align: center; font-size: 10px; letter-spacing: .05em; color: var(--mut); margin: 4px 0 0; }
+label { display: flex; align-items: center; gap: 10px; color: var(--mut); font-size: 12px; justify-content: center; letter-spacing: .05em; }
 input[type="range"] { width: min(240px, 58vw); accent-color: var(--c); }
 .stat { text-align: center; color: var(--mut); font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 1.4em; }
 </style>
@@ -74,9 +74,9 @@ const core = mountCore(document.getElementById('core'), o);
 window.core = core;                         // for the tests and the console
 const WORD = { idle: 'STANDBY', listening: 'LISTENING', thinking: 'THINKING', speaking: 'SPEAKING', alert: 'ALERT' };
 // the old Jarvis theme colours (static/themes.css, themes4.css)
-const THEMES = { violet: { c: '#a855f7', c2: '#7c3aed', c3: '#c084fc', tint: '#e9ddff' }, reactor: { c: '#a95cff', c2: '#6d28d9', c3: '#22d3ee', tint: '#f5d0fe' },
-  stark: { c: '#ffbe3d', c2: '#d6281f', c3: '#6fd8ff', tint: '#fff1d0' }, ice: { c: '#4fe3ff', c2: '#0284c7', c3: '#9d8cff', tint: '#e6fbff' },
-  emerald: { c: '#1ff5a4', c2: '#059669', c3: '#b4ff3c', tint: '#dcfff0' } };
+const THEMES = { violet: { c: '#9c6b3c', c2: '#9c6b3c', c3: '#c9a06a', tint: '#e9ddff' }, reactor: { c: '#9c6b3c', c2: '#9c6b3c', c3: '#8b7259', tint: '#f5d0fe' },
+  stark: { c: '#ffbe3d', c2: '#d6281f', c3: '#7fa6bd', tint: '#fff1d0' }, ice: { c: '#8b7259', c2: '#8b7259', c3: '#7fa6bd', tint: '#e6fbff' },
+  emerald: { c: '#7f8a52', c2: '#059669', c3: '#b4ff3c', tint: '#dcfff0' } };
 function group(sel, attr, fn) {
   const bs = [...document.querySelectorAll(sel + ' button')];
   const pick = (v) => { fn(v); bs.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset[attr] === v))); };

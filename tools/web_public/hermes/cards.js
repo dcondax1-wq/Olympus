@@ -113,7 +113,7 @@ function evalCard(w, p, peers) {
       <span>${e.room != null ? `Drawdown left ${esc(usd(e.room, { sign: false, cents: false }))}${e.mll != null ? ` of ${esc(usd(e.mll, { sign: false, cents: false }))}` : ''}` : ''}</span></div></div>`;
   }).join('');
   return {
-    id: 'eval', name: 'Evals', colors: ['#140f0a', '#4b7a99', '#6f9bb8'], mode: 6, ms: 8000,
+    id: 'eval', name: 'Evals', colors: ['#140f0a', '#8b7259', '#6f9bb8'], mode: 6, ms: 8000,
     html: `<p class="kicker">Evals · now</p>${kt('Road to funded')}<div class="evs" data-z="2">${rows}</div>${odds}
       <p class="note">Outer ring: profit to the target. Inner ring: room above the trailing floor.</p>`,
     enter(el, fx) { if (E.some((e) => e.to_target <= 0)) fx.burst('confetti', 90, { colors: ['#6f9bb8', '#c8a24a', '#f3ece0', '#b08064'] }); },
@@ -140,7 +140,7 @@ function learnedCard(w) {
   const L = w.learned || [];
   if (!L.length) return null;
   return {
-    id: 'learned', name: 'Learned', colors: ['#140f0a', '#4b7a99', '#b08064'], mode: 0, ms: 9500,
+    id: 'learned', name: 'Learned', colors: ['#140f0a', '#8b7259', '#b08064'], mode: 0, ms: 9500,
     html: `<p class="kicker">What the bots learned</p>${kt('Smarter than last week')}<ol class="learn">${L.map((x, i) => `<li style="--i:${i}"><small>${esc(x.tag)}</small>${esc(x.text)}</li>`).join('')}</ol>
       <p class="note">Read-only: nothing changes until you approve it.</p>`,
     enter() {}, share: () => ({ kicker: 'What the bots learned', title: 'Smarter than last week', big: `${L.length} lessons`, tone: 'flat', lines: L.map((x) => x.text) }),
@@ -151,7 +151,7 @@ function discoveryCard(w, p, peers) {
   const d = peers.discovery;
   if (!d) return null;
   return {
-    id: 'discovery', name: 'Discovery', colors: ['#0e0b08', '#1c2d38', '#6f9bb8'], mode: 3, ms: 7500,
+    id: 'discovery', name: 'Discovery', colors: ['#0e0b08', '#332a21', '#6f9bb8'], mode: 3, ms: 7500,
     html: `<p class="kicker">Data City · discovery of the week</p>${kt(d.title || 'Discovery')}
       ${d.usd != null ? `<div class="hero" data-z="3">${counter(d.usd, 'lg')}</div>` : d.stat ? `<div class="hero"><span class="count lg flat">${esc(d.stat)}</span></div>` : ''}
       <p class="lesson">${esc(d.text)}</p>`,
@@ -226,7 +226,7 @@ function reportCard(w, p) {
   const plaque = (label, value, sub, cls = '') => `<div class="plaque ${cls}" data-oly-fx="shimmer"><small>${esc(label)}</small><b>${esc(value)}</b><i>${esc(sub)}</i></div>`;
   const grade = pf == null ? 'A+' : pf >= 3 ? 'A+' : pf >= 2 ? 'A' : pf >= 1.5 ? 'B' : pf >= 1 ? 'C' : 'D';
   return {
-    id: 'report', name: 'Report card', colors: ['#130f0a', '#304e62', '#6f9bb8'], mode: 6, ms: 8000,
+    id: 'report', name: 'Report card', colors: ['#130f0a', '#594939', '#6f9bb8'], mode: 6, ms: 8000,
     html: `${kick(p)}${kt('The report card')}
       <div class="hero grade" data-z="3"><span class="count lg ${pf != null && pf < 1 ? 'down' : 'up'}" data-fmt="grade">${esc(grade)}</span><p class="sub">${pf == null ? 'No losing trade' : `Profit factor ${pf.toFixed(2)}: every $1 lost brought $${pf.toFixed(2)}`}</p></div>
       <div class="wl" data-z="2" aria-label="${esc(p.wins)} wins, ${esc(p.losses)} losses"><i class="w" style="--w:${wp.toFixed(1)}%"></i><i class="l"></i><b>${esc(Math.round(wp))}% won</b></div>
@@ -335,7 +335,7 @@ function accountsCard(w, p) {
   const top = Math.max(...rows.map((r) => Math.abs(r.net)), 1), sum = rows.reduce((a, r) => a + r.net, 0), ev = (w.eval || []).length;
   const bar = (r) => `<div class="pbar ${r.net < 0 ? 'avg' : 'now'}"><span>${esc(r.name)}</span><b class="${tone(r.net)}">${esc(usd(r.net, { cents: false }))}</b><i style="--w:${(Math.abs(r.net) / top * 100).toFixed(1)}%"></i></div>`;
   return {
-    id: 'accounts', name: 'Accounts', colors: ['#140f0a', '#4b7a99', '#c8a24a'], mode: 6, ms: 7500,
+    id: 'accounts', name: 'Accounts', colors: ['#140f0a', '#8b7259', '#c8a24a'], mode: 6, ms: 7500,
     html: `${kick(p)}${kt('Where the money sits')}<div class="hero" data-z="3">${counter(sum, 'lg gold')}<p class="sub">${esc(plural(rows.length, 'account'))} · ${esc(plural(rows.reduce((a, r) => a + r.trades, 0), 'trade'))}</p></div>
       <div class="pbars" data-z="2">${rows.slice(0, 4).map(bar).join('')}</div>
       <ul class="bots">${rows.slice(0, 4).map((r) => `<li><span>${esc(r.bots.join(', '))}<small>${esc(plural(r.trades, 'trade'))}</small></span><span class="${tone(r.net)}">${sum ? Math.round((r.net / Math.abs(sum)) * 100) : 0}%</span></li>`).join('')}</ul>

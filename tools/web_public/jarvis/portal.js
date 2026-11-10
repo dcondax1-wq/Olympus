@@ -44,9 +44,9 @@ const CSS = `
 .jportal-fade { position: fixed; inset: 0; z-index: 9000; pointer-events: none; background: radial-gradient(circle at 50% 46%, var(--jp-c) 0%, #02020a 62%);
   opacity: .55; transition: opacity .2s ease-out; }
 .jportal-name { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%) scale(.82); text-align: center; pointer-events: none;
-  font: 600 13px/1.4 "Orbitron", "Rajdhani", system-ui, sans-serif; letter-spacing: .42em; color: #fff; opacity: 0;
-  text-shadow: 0 0 14px var(--jp-c), 0 0 32px var(--jp-c); animation: jportal-name ${DURATION}ms cubic-bezier(.3, .7, .2, 1) forwards; }
-.jportal-name b { display: block; font-size: 34px; letter-spacing: .08em; margin-bottom: 6px; }
+  font: 600 13px/1.4 "Georgia", "Georgia", system-ui, sans-serif; letter-spacing: .05em; color: #f3ece0; opacity: 0;
+  text-shadow: none; animation: jportal-name ${DURATION}ms cubic-bezier(.3, .7, .2, 1) forwards; }
+.jportal-name b { display: block; font-size: 34px; letter-spacing: .05em; margin-bottom: 6px; }
 @keyframes jportal-name { 0% { opacity: 0; transform: translateY(-50%) scale(.7); } 30% { opacity: 1; } 62% { opacity: 1; transform: translateY(-50%) scale(1.02); }
   100% { opacity: 0; transform: translateY(-50%) scale(1.5); } }
 `;
@@ -63,7 +63,7 @@ function css() {
   const s = document.createElement('style'); s.id = STYLE_ID; s.textContent = CSS; document.head.appendChild(s);
 }
 const toLinear = (h) => {
-  const n = parseInt(String(h || '#a855f7').replace('#', '').padEnd(6, '0').slice(0, 6), 16) || 0xa855f7;
+  const n = parseInt(String(h || '#9c6b3c').replace('#', '').padEnd(6, '0').slice(0, 6), 16) || 0xa855f7;
   return [n >> 16 & 255, n >> 8 & 255, n & 255].map((c) => Math.pow(c / 255, 2.2));
 };
 
@@ -126,7 +126,7 @@ function fade(color) {
 
 /** play the jump into this app; returns the mode played */
 export function jump(app, opts) {
-  const a = app || {}, color = a.color || '#a855f7', at = opts && typeof opts.at === 'number' ? Math.max(0, Math.min(1, opts.at)) : null;
+  const a = app || {}, color = a.color || '#9c6b3c', at = opts && typeof opts.at === 'number' ? Math.max(0, Math.min(1, opts.at)) : null;
   state.runs++; state.app = a.id || ''; state.ms = 0;
   if (!document.body) return (state.mode = 'none');
   finish();                                         // a second jump replaces the first
