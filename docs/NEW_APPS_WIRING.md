@@ -272,3 +272,18 @@ App `epilogue` (`tools/web_public/epilogue/`): your week in 60 seconds: P&L in $
 5. `python tools/apps_list_build.py` then `--check`.
 6. `intro-app.js` FLAVOUR: `epilogue: ['rings', 'Read the week', 'tick'],` `transitions.js` REGISTRY: `epilogue: { kind: 'tiles', ms: 800 },`
 7. Tests: `tests.test_epilogue_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring ARGO, the voyage (2026-11-10)
+
+App `argo` (`tools/web_public/argo/`) reads `../home.json` (accounts with `kind: funded`; `payouts[] {usd, date}` at the top or per account) and `../ledger/rules.json` (payout rules); `fixture.json` is the labelled DEMO, used only when home.json is missing. Goals (islands) are the owner's own, kept in this browser (`localStorage argo.goals.v1`, export / import as JSON). Progress is computed only from published numbers; a date appears only with at least 2 full months of real payouts, always as a fastest / base / slowest range with n and "not a promise". 3D = a marble trireme on waves drawn on a 2D canvas (`argoscene.js`, no WebGL); the map is plain SVG. Test `tests/test_argo_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+As with Nike, publishing `payouts` (dated) in `home.json` is what makes the money islands and the ETA come alive.
+
+1. `jarvis/apps.js` BUILT_INS: `app('argo', 'Argo', 'money', '#4b7a99', 'The voyage: your money goals as islands, honest ETA ranges', { glyph: 'Α' }),`
+2. `olympus/olympus.js` APPS: `argo: ['Argo', 'Α', '#4b7a99'],` AMBIENT: `argo: 'sea',`
+3. `tools/build_web_dashboard.py` app tuple: add `"argo"`.
+4. `sw.js` OTHER_APPS: `'argo/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `olympus/intro-app.js` FLAVOUR: `argo: ['waves', 'Set sail', 'tap'],` `jarvis/transitions.js` REGISTRY: `argo: { kind: 'waves', ms: 1000 },`
+7. Tests: `tests.test_argo_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_app_intro`, `tests.test_jarvis_transitions`.
