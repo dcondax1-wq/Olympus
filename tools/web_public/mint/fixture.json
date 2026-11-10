@@ -5,8 +5,8 @@
  "label": "ESTIMATE",
  "total": {
   "low": 0.0,
-  "base": 255.0,
-  "high": 510.0,
+  "base": 210.0,
+  "high": 420.0,
   "real_base": 0.0,
   "unit": "usd_per_month"
  },
@@ -64,43 +64,43 @@
   {
    "id": "mercury",
    "name": "Mercury",
-   "role": "Small resale gaps",
+   "role": "Prop-firm and tool deals",
    "status": "sample",
    "source": "fixture",
    "asof": null,
    "age_min": null,
-   "headline": "Three small resale gaps look open this week; about $60 a month if you act on one a week.",
+   "headline": "Two prop-firm sales are on; the best could save about $18 on your next eval fee.",
    "usd_month": {
     "low": 0.0,
-    "base": 60.0,
-    "high": 120.0
+    "base": 15.0,
+    "high": 30.0
    },
    "items": [
     {
-     "title": "Used monitor, local listing",
-     "detail": "Listed about $45 under the usual sold price. Needs pickup and a quick test.",
-     "usd": 45.0,
-     "score": 66,
-     "risk": "med"
-    },
-    {
-     "title": "Gift-card discount",
-     "detail": "A store card sells about 6% under face value on a public marketplace.",
-     "usd": 12.0,
-     "score": 48,
-     "risk": "med"
-    },
-    {
-     "title": "Bundle of cables",
-     "detail": "Small margin, low effort, fast to sell.",
-     "usd": 8.0,
-     "score": 35,
+     "title": "Prop-firm sale on the 50K plan",
+     "detail": "A public sale page shows a discount. Check the code on the firm's own page before paying.",
+     "usd": 18.0,
+     "score": 70,
      "risk": "low"
+    },
+    {
+     "title": "Free reset offer",
+     "detail": "A reset can save a failed-eval fee, but only matters if an eval fails.",
+     "usd": 10.0,
+     "score": 50,
+     "risk": "low"
+    },
+    {
+     "title": "Rule change noticed",
+     "detail": "A firm page changed its rule wording. Read it before your next eval.",
+     "usd": null,
+     "score": 45,
+     "risk": "med"
     }
    ],
    "notes": [
-    "Sample numbers, not real. Fees, shipping and your time are not in these estimates.",
-    "Prices move; a gap seen this morning can be gone by evening."
+    "Sample numbers, not real. Savings are one-time, not monthly income.",
+    "Sales end without notice; Mercury never buys anything."
    ],
    "error": null
   },

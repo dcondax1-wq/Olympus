@@ -30,7 +30,7 @@ FIXTURES = os.path.join(SCANNERS, "fixtures")
 DEFAULT_OUT = os.path.join(ROOT, "money_out")
 IDS = ("chrysos", "mercury", "sibyl", "oikos", "arbiter")
 NAMES = {"chrysos": "Chrysos", "mercury": "Mercury", "sibyl": "Sibyl", "oikos": "Oikos", "arbiter": "Arbiter"}
-ROLES = {"chrysos": "Prop-firm savings and payouts", "mercury": "Small resale gaps", "sibyl": "Prediction-market edges (paper)",
+ROLES = {"chrysos": "Prop-firm savings and payouts", "mercury": "Prop-firm and tool deals", "sibyl": "Prediction-market edges (paper)",
          "oikos": "Household savings", "arbiter": "The referee: what to do first"}
 STALE_HOURS = 6            # a file older than this is shown as stale, whatever it says
 LOCK_MAX_MIN = 20          # a lock older than this is abandoned
@@ -301,7 +301,7 @@ def selftest() -> int:
     chk("all five bundled fixtures follow the contract (paper, sample, headline, 1-8 items, 'not real' note)",
         all(f and f["status"] == "sample" and f["items"] and any("not real" in n for n in f["notes"]) for f in fixt))
     full = run(os.path.join(tmp, "fx"), True, 3, scanners=os.path.join(tmp, "none"), quiet=True)
-    chk("--fixture with no scanners at all still gives five sample cards and a total", full["counts"]["sample"] == 5 and full["total"]["base"] == 255.0 and len(full["streams"]) == 5)
+    chk("--fixture with no scanners at all still gives five sample cards and a total", full["counts"]["sample"] == 5 and full["total"]["base"] == 210.0 and len(full["streams"]) == 5)
     print(f"\n{len(total) - len(bad)}/{len(total)} passed")
     return 1 if bad else 0
 

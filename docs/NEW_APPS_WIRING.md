@@ -101,6 +101,7 @@ App `mercury` (`tools/web_public/mercury/`, reads `../money/mercury.json`, falls
 6. `intro-app.js` FLAVOUR: `mercury: ['coins', 'Find the saving', 'tap'],` `transitions.js` REGISTRY: `mercury: { kind: 'tiles', ms: 800 },`
 7. Tests: `tests.test_mercury_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
 
+
 # Wiring MINT, the money machine hub (2026-11-10)
 
 App `mint` in `tools/web_public/mint/` (reads `../money/index.json`, falls back to `fixture.json`). Engine `tools/money_engine.py` (writes `money_out/<id>.json` + `index.json`), runner `RUN_MONEY.bat`, workflow `.github/workflows/money-engine.yml` (schedule / dispatch only, artifact `money-out`). Tests `tests/test_mint_page.py`, `tests/test_money_engine.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
@@ -165,3 +166,28 @@ App `oikos` in `tools/web_public/oikos/` (the household: leaks, tax set-aside, b
 6. `olympus/intro-app.js` FLAVOUR: `oikos: ['coins', 'Keep what you make', 'tap'],`
    `jarvis/transitions.js` REGISTRY: `oikos: { kind: 'waves', ms: 1000 },`
 7. Tests: `python -X utf8 -m tests.test_oikos_page` (`--static` skips the browser), `python tools/money/oikos.py --selftest`, then `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring MERCURY, money machine #2 DEALS (2026-11-10)
+
+App `mercury` (`tools/web_public/mercury/`, reads `../money/mercury.json`, falls back to its `fixture.json` = DEMO) + scanner `tools/money/mercury.py` (`--out DIR`, `--fixture`, `--selftest`; writes `DIR/mercury.json` and `DIR/mercury_state.json`). Test `tests/test_mercury_page.py`.
+1. `jarvis/apps.js` BUILT_INS: `app('mercury', 'Mercury', 'money', '#c8a24a', 'Deal watcher: sales, codes, free resets, rule changes', { glyph: '☿' }),`
+2. `olympus/olympus.js` APPS: `mercury: ['Mercury', '☿', '#c8a24a'],` AMBIENT: `mercury: 'coins',`
+3. `tools/build_web_dashboard.py` app tuple: add `"mercury"`; to publish the scanner file, run `python tools/money/mercury.py --out <site>/money` in the cloud monitor / build step (no secrets, public pages only; one GET per page, at most every 30 min; the state file `mercury_state.json` must be kept between runs or every deal shows "new").
+4. `sw.js` OTHER_APPS: add `'mercury/'`, bump `CACHE`; update the pinned strings in `test_zenith_mode`, `test_jarvis_hub`, `test_zenith_shell`, `test_phone_e2e`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `intro-app.js` FLAVOUR: `mercury: ['coins', 'Find the saving', 'tap'],` `transitions.js` REGISTRY: `mercury: { kind: 'tiles', ms: 800 },`
+7. Tests: `tests.test_mercury_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring STOA, the colonnade "what needs me now" (2026-11-10)
+
+App `stoa` (`tools/web_public/stoa/`): reads `../home.json`, `../money/index.json`, the public `kalshi-feed` raw `kalshi.json` (same URL as Dionysus), `../alerts.json` (optional: `{"alerts":[{"text","level":"bad|warn"}]}`), falls back to `fixture.json` (DEMO). Done / Snooze in localStorage `stoa.state.v1`. Test `tests/test_stoa_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('stoa', 'Stoa', 'trading', '#c8a24a', 'The colonnade: what needs you right now', { glyph: 'Σ' }),`
+2. `olympus/olympus.js` APPS: `stoa: ['Stoa', 'Σ', '#c8a24a'],` AMBIENT: `stoa: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"stoa"` (and `"mint"`); to publish the money files add the call `python tools/money_publish.py --site <site_dir>` after the site folder is built (copies `money_out/*.json` to `<site>/money/`, or a labelled sample when the engine has not run).
+4. `sw.js` OTHER_APPS add `'stoa/'`, bump `CACHE`, update the pinned strings in the zenith / hub tests.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `intro-app.js` FLAVOUR: `stoa: ['columns', 'Light the columns', 'tick'],` ; `transitions.js` REGISTRY: `stoa: { kind: 'columns', ms: 1000, n: 6 },`
+7. Tests: `tests.test_stoa_page`, `tests.test_mint_page`, `tests.test_money_engine`, plus the shared list in section 7 above.

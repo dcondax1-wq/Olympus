@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 from tests import agora_kit as AK  # noqa: E402
 import money_engine as M  # noqa: E402
+import money_publish as P  # noqa: E402
 
 check = AK.check
 ROOT = AK.ROOT
@@ -84,6 +85,25 @@ def test_schedule():
     check("d. the generated money_out/ folder and the runner log are gitignored", "money_out/" in ig and "money_out_log.txt" in ig)
 
 
+def test_publish():
+    tmp = tempfile.mkdtemp(prefix="money-pubtest-")
+    site, src = os.path.join(tmp, "site"), os.path.join(tmp, "src")
+    got = P.publish(os.path.join(tmp, "missing"), site, True)
+    idx = json.load(open(os.path.join(site, "money", "index.json"), encoding="utf-8"))
+    check("f. no engine output yet: publish writes a SAMPLE index (five sample streams, ESTIMATE) and the five files, so the pages are never blank", len(got) == 6 and idx["counts"]["sample"] == 5 and idx["label"] == "ESTIMATE", got)
+    os.makedirs(src)
+    M.run(src, True, 5, scanners=os.path.join(tmp, "none"), quiet=True)
+    for n, body in (("mercury_state.json", "{}"), ("notes.json", "{}"), (".money_engine.lock", "x"), ("sibyl.json", "{broken")):
+        open(os.path.join(src, n), "w").write(body)
+    got = P.publish(src, site, True)
+    left = sorted(os.listdir(os.path.join(site, "money")))
+    check("f. only <id>.json and index.json are published: no state file, no lock, no unknown file, no broken JSON, no .tmp left", "sibyl.json" not in got and left == sorted(f for f in left if f[:-5] in P.KEEP and f.endswith(".json")) and not any(x.endswith(".tmp") for x in left), (got, left))
+    r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "money_publish.py"), "--site", os.path.join(tmp, "s2"), "--src", src, "--quiet"], capture_output=True, text=True, timeout=60)
+    check("f. the command line (--site, --src) works and writes <site>/money/index.json", r.returncode == 0 and os.path.isfile(os.path.join(tmp, "s2", "money", "index.json")), r.stderr[-200:])
+    r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "money_publish.py"), "--selftest"], capture_output=True, text=True, timeout=60)
+    check("f. money_publish.py --selftest passes", r.returncode == 0, r.stdout[-300:])
+
+
 def test_paper_only():
     src = open(os.path.join(ROOT, "tools", "money_engine.py"), encoding="utf-8").read()
     code = re.sub(r'""".*?"""', "", src, flags=re.S)
@@ -97,5 +117,6 @@ if __name__ == "__main__":
     test_selftest()
     test_run()
     test_schedule()
+    test_publish()
     test_paper_only()
     AK.finish()
