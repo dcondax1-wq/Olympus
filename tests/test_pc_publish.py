@@ -199,6 +199,60 @@ def main() -> int:
               r1["uploaded"] == 3 and r2["uploaded"] == 1 and not os.path.exists(os.path.join(dest, "runs", "a.json"))
               and os.path.exists(os.path.join(dest, "index.html")) and os.path.exists(os.path.join(dest, ".olympus_manifest.json")), (r1, r2))
 
+        # ------------------------------------------------------------------ scp provider (your own server) with fake ssh / scp
+        fb = os.path.join(tmp, "fakebin")
+        os.makedirs(fb)
+        open(os.path.join(fb, "scp"), "w").write('#!/bin/sh\n# fake scp: the last two args are SRC and user@host:/path\nsrc=""; dst=""\nfor a in "$@"; do src="$dst"; dst="$a"; done\n'
+                                                 'case "$src" in *@*) exit 9;; esac\ncp "$src" "${dst#*:}"\n')
+        open(os.path.join(fb, "ssh"), "w").write('#!/bin/sh\n# fake ssh: runs the last argument (the remote command) locally\nfor a in "$@"; do c="$a"; done\nexec sh -c "$c"\n')
+        os.chmod(os.path.join(fb, "scp"), 0o755)
+        os.chmod(os.path.join(fb, "ssh"), 0o755)
+        remote = os.path.join(tmp, "remote", "www")
+        scfg = {"scp_target": "me@box", "scp_dir": remote}
+        sw = os.path.join(tmp, "scpwork")
+        os.makedirs(sw)
+        ssite = os.path.join(tmp, "ssite")
+        make_site(ssite)
+        old_path = os.environ["PATH"]
+        os.environ["PATH"] = fb + os.pathsep + old_path
+        try:
+            f1 = PP.site_files(ssite)
+            q1 = PP.publish_scp(ssite, f1, scfg, work=sw)
+            q1b = PP.publish_scp(ssite, f1, scfg, work=sw)
+            open(os.path.join(ssite, "data.json"), "w").write('{"t":2}')
+            os.remove(os.path.join(ssite, "runs", "a.json"))
+            f2 = PP.site_files(ssite)
+            q2 = PP.publish_scp(ssite, f2, scfg, work=sw)
+            got = sorted(os.path.relpath(os.path.join(r_, f), remote) for r_, _d, fs in os.walk(remote) for f in fs)
+            check("scp: first run sends every file, an unchanged site sends nothing, a change sends only the changed file and removes deleted ones",
+                  q1["uploaded"] == 3 and q1b["uploaded"] == 0 and q2["uploaded"] == 1 and got == ["data.json", "index.html"]
+                  and open(os.path.join(remote, "data.json")).read() == '{"t":2}' and not os.path.exists(os.path.join(remote, ".olympus_upload.zip")), (q1, q1b, q2, got))
+            try:
+                PP.publish_scp(ssite, f2, {"scp_target": "me@box"}, work=sw)
+                msg = ""
+            except PP.ProviderError as e:
+                msg = str(e)
+            check("scp: a missing target / non-absolute dir is a plain error", "scp_target" in msg, msg)
+        finally:
+            os.environ["PATH"] = old_path
+
+        # ------------------------------------------------------------------ the Kalshi feed goes into the site as kalshi.json
+        ksite = os.path.join(tmp, "ksite")
+        make_site(ksite)
+        kf = os.path.join(tmp, "kfeed.json")
+        open(kf, "w").write('{"t": 1, "balance": 5.5}')
+        note = PP.add_kalshi(ksite, {"kalshi_file": kf})
+        check("kalshi feed: a configured kalshi_file is copied into the site as kalshi.json", note == "kalshi feed added" and json.load(open(os.path.join(ksite, "kalshi.json")))["balance"] == 5.5, note)
+        open(kf, "w").write("<html>not json</html>")
+        os.remove(os.path.join(ksite, "kalshi.json"))
+        note2 = PP.add_kalshi(ksite, {"kalshi_file": kf})
+        check("kalshi feed: junk (HTML) is left out, soft; no setting = nothing added", "not added" in note2 and not os.path.exists(os.path.join(ksite, "kalshi.json")) and PP.add_kalshi(ksite, {}) == "")
+        cdk = os.path.join(tmp, "cfgk")
+        os.makedirs(os.path.join(cdk, "kalshi_feed"))
+        open(os.path.join(cdk, "kalshi_feed", "kalshi.json"), "w").write("{}")
+        check("kalshi feed: a kalshi.json left in <settings>/kalshi_feed/ is used with no setting at all", PP.load_config(cdir=cdk)["kalshi_file"].endswith("kalshi.json"))
+        check("kalshi feed: the https-only rule for kalshi_feed_url", PP.add_kalshi(ksite, {"kalshi_feed_url": "http://example.com/k.json"}) == "kalshi feed: address must be https")
+
         # ------------------------------------------------------------------ run_once with the heavy steps faked
         work = os.path.join(tmp, "work")
         calls = {"state": 0, "site": 0, "fail_state": False}
@@ -346,6 +400,12 @@ def main() -> int:
         check("kalshi kit: no token literal in the file", not leak, leak)
         # the page text
         js = open(os.path.join(ROOT, "tools", "web_public", "kalshi", "kalshi.js"), encoding="utf-8").read()
+        W = os.path.join(ROOT, "tools", "web_public")
+        readers = ["hermes/data.js", "tyche/data.js", "kalshi/kalshi.js", "ledger/ledger.js", "inbox/inbox.js", "stoa/stoa.js",
+                   "ergasterion/ergasterion.js", "dionysus/dionysus.js", "kalshicity/kalshicity.js", "jarvis/data.js", "cities/datasets.js"]
+        bad = [rd for rd in readers if "../kalshi.json" not in open(os.path.join(W, rd), encoding="utf-8").read()]
+        check("every Kalshi reader asks this site's ../kalshi.json before the old GitHub address (which stays as the fallback)", not bad, bad)
+        check("every Kalshi reader keeps the old feed address as the fallback", all("kalshi-feed" in open(os.path.join(W, rd), encoding="utf-8").read() for rd in readers))
         check("kalshi page: the kalshi-server message holds {SITE_URL}, filled from location.origin, no github.io address",
               "{SITE_URL}/kalshi/SETUP.md" in js and "location.origin" in js and "github.io" not in js)
     finally:

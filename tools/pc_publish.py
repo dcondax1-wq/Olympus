@@ -10,6 +10,7 @@
                         (%USERPROFILE%\\.olympus\\netlify.json), never printed, never committed. Default method "digest"
                         (sends only the files that changed, the site is ~280 MB of mostly unchanging research); method "zip"
                         (the whole site zipped with the files at the zip root, Content-Type application/zip) is the fallback.
+               scp      your own Linux server over ssh (Oracle VM + Caddy / nginx): only changed files, no deploy limits
                none     build only
 Unchanged content (sha256 of the whole site) is not uploaded again. Every failure is soft: it is logged, the last good site
 stays up, the exit code is 0 unless --strict. Nothing here touches the trading bot, live_model*.json or any order.
@@ -120,6 +121,12 @@ def config_dir(env=None) -> str:
     return nogithub.olympus_dir(env)
 
 
+def _default_kalshi_file(d: str):
+    """No setting needed: a kalshi.json the VM's kit left in <config dir>/kalshi_feed/ (folder provider, synced or copied) is used."""
+    f = os.path.join(d, "kalshi_feed", "kalshi.json")
+    return f if os.path.exists(f) else None
+
+
 def load_config(env=None, cdir: str | None = None) -> dict:
     """{"provider", "folder", "method", "min_interval_min", "netlify": {"site_id", "token"}, "dir"}. Never raises."""
     d = cdir or config_dir(env)
@@ -130,7 +137,9 @@ def load_config(env=None, cdir: str | None = None) -> dict:
         prov = "netlify" if (net.get("token") and net.get("site_id")) else "none"
     return {"provider": prov, "folder": pub.get("folder"), "method": str(pub.get("method") or "digest").lower(),
             "min_interval_min": float(pub.get("min_interval_min") or 0), "dir": d,
-            "kalshi_file": pub.get("kalshi_file"), "kalshi_feed_url": pub.get("kalshi_feed_url"),
+            "kalshi_file": pub.get("kalshi_file") or _default_kalshi_file(d), "kalshi_feed_url": pub.get("kalshi_feed_url"),
+            "scp_target": pub.get("scp_target"), "scp_dir": pub.get("scp_dir"), "scp_key": pub.get("scp_key"),
+            "scp_port": pub.get("scp_port"), "scp_url": pub.get("scp_url"),
             "max_deploys_per_month": int(pub.get("max_deploys_per_month") or DEPLOYS_PER_MONTH_DEFAULT),
             "netlify": {"site_id": str(net.get("site_id") or net.get("siteId") or "").strip(),
                         "token": str(net.get("token") or net.get("access_token") or "").strip()}}
@@ -319,7 +328,76 @@ def publish_folder(site: str, files: dict, cfg: dict, **_k) -> dict:
     return {"url": None, "bytes": sent, "uploaded": n, "method": "folder", "state": "copied"}
 
 
-PROVIDERS = {"netlify": publish_netlify, "folder": publish_folder}
+_REMOTE_UNPACK = (
+    "import zipfile,os,sys\n"
+    "zp,d=sys.argv[1],sys.argv[2]\n"
+    "z=zipfile.ZipFile(zp)\n"
+    "z.extractall(d)\n"
+    "dl=os.path.join(d,'.olympus_delete.txt')\n"
+    "if os.path.exists(dl):\n"
+    "    for n in open(dl).read().split('\\n'):\n"
+    "        p=os.path.normpath(os.path.join(d,n))\n"
+    "        if n and p.startswith(os.path.normpath(d)+os.sep) and os.path.isfile(p): os.remove(p)\n"
+    "    os.remove(dl)\n"
+    "z.close(); os.remove(zp)\n")
+
+
+def publish_scp(site: str, files: dict, cfg: dict, env=None, log=print, work: str | None = None, **_k) -> dict:
+    """Your own server (the Oracle VM, any Linux box with ssh + python3 and a web server such as Caddy): only the changed files are
+    zipped, sent with scp, and unpacked remotely with python3; files the site no longer has are removed. No deploy limits.
+    publish.json: {"provider": "scp", "scp_target": "user@host", "scp_dir": "/var/www/olympus", "scp_key": "~/.ssh/id_x", "scp_port": 22}.
+    The local record of what the server holds is <work>/scp_manifest.json (delete it to resend everything)."""
+    import shlex
+    tgt, rdir = cfg.get("scp_target"), cfg.get("scp_dir")
+    if not tgt or not rdir or not str(rdir).startswith("/"):
+        raise ProviderError('provider "scp" needs scp_target (user@host) and an absolute scp_dir in publish.json')
+    if not shutil.which("scp") or not shutil.which("ssh"):
+        raise ProviderError("scp / ssh not found (Windows 10+: Settings > Apps > Optional features > OpenSSH Client)")
+    mpath = os.path.join(work or WORK_DEFAULT, "scp_manifest.json")
+    old = read_json(mpath, {}) or {}
+    changed = [k for k, h in files.items() if old.get(k) != h]
+    gone = sorted(set(old) - set(files))
+    if not changed and not gone:
+        return {"url": None, "bytes": 0, "uploaded": 0, "method": "scp", "state": "unchanged"}
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
+        for k in sorted(changed):
+            z.write(os.path.join(site, k.replace("/", os.sep)), k)
+        if gone:
+            z.writestr(".olympus_delete.txt", "\n".join(gone))
+    blob = buf.getvalue()
+    key = os.path.expanduser(cfg["scp_key"]) if cfg.get("scp_key") else None
+    base_opts = ["-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new", "-o", "ConnectTimeout=20"] + \
+                (["-i", key, "-o", "IdentitiesOnly=yes"] if key else [])
+    port = str(int(cfg["scp_port"])) if cfg.get("scp_port") else None
+    tmp = os.path.join(work or WORK_DEFAULT, "upload.zip")
+    with open(tmp, "wb") as fh:
+        fh.write(blob)
+    rzip = rdir.rstrip("/") + "/.olympus_upload.zip"
+    try:
+        r = subprocess.run(["ssh", *base_opts, *(["-p", port] if port else []), tgt, "mkdir -p " + shlex.quote(rdir)],
+                           capture_output=True, timeout=120)
+        if r.returncode:
+            raise ProviderError("ssh failed: " + redact((r.stderr or b"").decode(errors="replace").strip()[-160:]))
+        r = subprocess.run(["scp", "-q", *base_opts, *(["-P", port] if port else []), tmp, f"{tgt}:{rzip}"], capture_output=True, timeout=1800)
+        if r.returncode:
+            raise ProviderError("scp failed: " + redact((r.stderr or b"").decode(errors="replace").strip()[-160:]))
+        cmd = "python3 -c " + shlex.quote(_REMOTE_UNPACK) + " " + shlex.quote(rzip) + " " + shlex.quote(rdir)
+        r = subprocess.run(["ssh", *base_opts, *(["-p", port] if port else []), tgt, cmd], capture_output=True, timeout=600)
+        if r.returncode:
+            raise ProviderError("unpack on the server failed (is python3 installed there?): " + redact((r.stderr or b"").decode(errors="replace").strip()[-160:]))
+    except subprocess.TimeoutExpired:
+        raise ProviderError("the server did not answer in time")
+    finally:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+    write_json(mpath, files)
+    return {"url": cfg.get("scp_url"), "bytes": len(blob), "uploaded": len(changed), "method": "scp", "state": "sent"}
+
+
+PROVIDERS = {"netlify": publish_netlify, "folder": publish_folder, "scp": publish_scp}
 
 
 # ------------------------------------------------------------------------------------------------ steps
@@ -551,7 +629,7 @@ def run_once(args, env=None, say=print) -> dict:
                 rec.update(ok=True, uploaded=0, bytes=0, url=prev.get("url"), throttled=True, site_hash=prev.get("site_hash"),
                            state_text=rec["state_text"] + "; not sent: " + why)
                 return rec
-        res = PROVIDERS[cfg["provider"]](site, files, cfg, env=env, log=lambda m: say(redact(m, secrets)))
+        res = PROVIDERS[cfg["provider"]](site, files, cfg, env=env, log=lambda m: say(redact(m, secrets)), work=work)
         if counts is not None:
             deploy_count(work, counts)
         rec.update(ok=True, url=res.get("url") or prev.get("url"), bytes=res.get("bytes"), uploaded=res.get("uploaded"),
@@ -580,6 +658,15 @@ def setup(args, env=None) -> int:
             print("[FIX] add --folder <path to a synced folder>")
             return 2
         pub.update(provider="folder", folder=args.folder)
+    elif args.setup == "scp":
+        if not (args.scp_target and args.scp_dir):
+            print("[FIX] needs --scp-target user@host and --scp-dir /absolute/folder/on/the/server")
+            return 2
+        pub.update(provider="scp", scp_target=args.scp_target, scp_dir=args.scp_dir)
+        if args.scp_key:
+            pub["scp_key"] = args.scp_key
+        if args.scp_url:
+            pub["scp_url"] = args.scp_url
     elif args.setup == "netlify":
         tok = sys.stdin.readline().strip() if args.token_stdin else (args.token or "")
         if not (args.site_id and tok):
@@ -605,7 +692,7 @@ def setup(args, env=None) -> int:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Build the NQ state + site on this PC and publish it (no GitHub).")
     ap.add_argument("--work", help="work folder (default data/pc_publish)")
-    ap.add_argument("--provider", choices=["folder", "netlify", "none"])
+    ap.add_argument("--provider", choices=["folder", "netlify", "scp", "none"])
     ap.add_argument("--folder")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="publish even when nothing changed")
@@ -613,7 +700,11 @@ def main(argv=None) -> int:
     ap.add_argument("--min-interval", type=float, default=0, help="skip when the last good publish is younger than N minutes")
     ap.add_argument("--status", action="store_true")
     ap.add_argument("--strict", action="store_true", help="exit 1 when the run failed (default: always 0, a failure is only logged)")
-    ap.add_argument("--setup", choices=["folder", "netlify", "none"])
+    ap.add_argument("--setup", choices=["folder", "netlify", "scp", "none"])
+    ap.add_argument("--scp-target")
+    ap.add_argument("--scp-dir")
+    ap.add_argument("--scp-key")
+    ap.add_argument("--scp-url")
     ap.add_argument("--site-id")
     ap.add_argument("--token")
     ap.add_argument("--token-stdin", action="store_true")

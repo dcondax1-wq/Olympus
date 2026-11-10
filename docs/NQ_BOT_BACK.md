@@ -32,7 +32,7 @@ Undo everything: `UNDO_PUBLISH_NQ.bat`.
 Nothing is built or published, and the bots do not trade either (they live on the PC). The phone keeps showing the **last good site** (the old numbers, with their age). There is no cloud fallback any more: the GitHub Actions monitor is gone.
 
 ## Honest limits
-- **Netlify's new free plan allows about 20 deploys a month** (each costs 15 of 300 credits; at zero the site pauses). So the publisher keeps a budget: at most **1 a day, 18 a month** by default, and says so on its status line. 15-minute freshness on the phone is therefore **not** possible on Netlify's new free plan. Older Netlify accounts have no such cap: raise `max_deploys_per_month` in `publish.json`. For fresher numbers use the folder provider into any host you can sync to, or keep Netlify for a daily page.
+- **Netlify's new free plan allows about 20 deploys a month** (each costs 15 of 300 credits; at zero the site pauses). So the publisher keeps a budget: at most **1 a day, 18 a month** by default, and says so on its status line. 15-minute freshness on the phone is therefore **not** possible on Netlify's new free plan. Older Netlify accounts have no such cap: raise `max_deploys_per_month` in `publish.json`. For fresher numbers use `--setup scp` to your own Oracle VM (docs/HOSTING_OPTIONS.md), or keep Netlify for a daily page.
 - Check your real limit at app.netlify.com > Usage (the price page can change).
 - The phone live view (minute-by-minute) and phone remote control used GitHub; they are **off**. Phone alerts from the cloud monitor are gone; PC-side alerts still work.
 - Auto-update of the bot from GitHub is off: update by copying a new zip over the bot folder.
@@ -40,4 +40,7 @@ Nothing is built or published, and the bots do not trade either (they live on th
 
 ## Kalshi bot feed (Oracle VM)
 The VM's `kalshi_status_vm.py` now publishes without GitHub: `--publish folder --publish-dir DIR`, `--publish netlify` (its own small Netlify site; id and token in `~/.olympus/netlify.json` on the VM, paced to 1 an hour), or `--publish scp --publish-dir user@host:/path`. The same redaction applies (only the contract's keys, free text cleaned). Easiest path: the VM writes a folder the PC can read, then in `%USERPROFILE%\.olympus\publish.json` set `"kalshi_file": "<that path>"` or `"kalshi_feed_url": "https://<feed-site>/kalshi.json"`; the PC puts it in the site as `kalshi.json`.
-**Not done yet:** most Kalshi pages (Jarvis, Hermes, Tyche, Ledger, Stoa, Inbox, Kalshi City) still read the old GitHub feed address. They need one follow-up change to read `kalshi.json` from the site first. The Kalshi setup message now says `{SITE_URL}`, which the page fills from its own address.
+Every Kalshi page (Jarvis, Hermes, Tyche, Ledger, Stoa, Inbox, Dionysus, Ergasterion, Kalshi City, Cities, the Kalshi page) now reads the site's own `kalshi.json` first and the old GitHub address only as a fallback. A `kalshi.json` that the VM kit left in `%USERPROFILE%\.olympus\kalshi_feed\` goes into the site with no setting.
+The Kalshi setup message says `{SITE_URL}`, which the page fills from its own address.
+
+More hosts and what each needs: `docs/HOSTING_OPTIONS.md` (best for 15-minute updates: your own Oracle VM with `--setup scp`, no deploy limit).
