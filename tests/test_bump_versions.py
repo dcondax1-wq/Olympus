@@ -159,7 +159,7 @@ class BumpVersions(unittest.TestCase):
         root_sw = read(self.root, "tools/web_public/sw.js")
         self.assertIn("const CACHE = 'le-public-v11';", root_sw)                                  # once, though two reasons asked for it
         self.assertEqual(root_sw.count("le-public-v"), 1)
-        self.assertIn("const SHELL = 'le-shell-next-v36';", read(self.root, "web_next/sw.js"))
+        self.assertIn("const SHELL = 'le-shell-next-v37';", read(self.root, "web_next/sw.js"))
         k = read(self.root, "tools/web_public/kalshi/sw.js")
         self.assertIn("const CACHE = 'kalshi-k18';", k)
         self.assertIn("'./kalshi.js?v=k18'", k)
