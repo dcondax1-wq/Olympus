@@ -285,7 +285,7 @@ As with Nike, publishing `payouts` (dated) in `home.json` is what makes the mone
 3. `tools/build_web_dashboard.py` app tuple: add `"argo"`.
 4. `sw.js` OTHER_APPS: `'argo/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
 5. `python tools/apps_list_build.py` then `--check`.
-6. `olympus/intro-app.js` FLAVOUR: `argo: ['waves', 'Set sail', 'tap'],` `jarvis/transitions.js` REGISTRY: `argo: { kind: 'waves', ms: 1000 },`
+6. `olympus/intro-app.js` FLAVOUR: `argo: ['rings', 'Set sail', 'tap'],` `jarvis/transitions.js` REGISTRY: `argo: { kind: 'waves', ms: 1000 },`
 7. Tests: `tests.test_argo_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_app_intro`, `tests.test_jarvis_transitions`.
 
 # Wiring MINT CITY, the money machines as a 3D city (2026-11-10)

@@ -158,9 +158,9 @@ def test_list():
     d = json.load(open(os.path.join(ROOT, "tools", "new_apps.json"), encoding="utf-8"))
     apps = W.load_list(os.path.join(ROOT, "tools", "new_apps.json"))
     ids = [a["id"] for a in apps]
-    want = ["delphi", "pnyx", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo"]
+    want = ["delphi", "pnyx", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos"]
     check("a. the list holds every app of the night that has a wiring section (valid entries, no duplicates); the already-wired old apps are not in it", ids == want and not {"planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio"} & set(ids), ids)
-    check("a. kairos, kratos, pythia, gallery are named as pending (no section and no folder yet): add them when their sections land", d.get("pending") == ["kairos", "kratos", "pythia", "gallery"])
+    check("a. nothing is pending any more (kairos, kratos, pythia and gallery landed with their sections)", d.get("pending") == [])
     doc = open(os.path.join(ROOT, "docs", "NEW_APPS_WIRING.md"), encoding="utf-8").read()
     bad = []
     for a in apps:
