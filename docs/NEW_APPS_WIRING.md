@@ -152,3 +152,16 @@ App `sibyl` (`tools/web_public/sibyl/`, 3D marble ball in `sibylball.js`, its ow
 `jarvis/transitions.js` REGISTRY: `sibyl: { kind: 'sunburst', ms: 1000 },`
 ## 7. Tests after wiring: `tests.test_sibyl_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`.
 Reads (all published, read only): `../money/sibyl.json` (the scanner's file); fallback `fixture.json` (DEMO, exactly `sibyl.py --fixture`). The scanner reads `kalshicity/edges.json`, `whatif.json`, `forward.json` (when present) and never the network.
+
+# Wiring OIKOS, money machine #4 (2026-11-10)
+
+App `oikos` in `tools/web_public/oikos/` (the household: leaks, tax set-aside, buckets, reinvest-or-withdraw, 3D marble amphora). Scanner `tools/money/oikos.py` (`--out DIR`, `--fixture`, `--ledger X.json`, `--selftest`) writes `<DIR>/oikos.json`; the page reads `../money/oikos.json` (optional), `../ledger/rules.json` and its own `fixture.json`. Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('oikos', 'Oikos', 'money', '#c8a24a', 'The household: where money leaks, tax set-aside, buckets, reinvest or withdraw', { glyph: 'O' }),`
+2. `olympus/olympus.js` APPS: `oikos: ['Oikos', 'O', '#c8a24a'],` AMBIENT: `oikos: 'coins',`
+3. `tools/build_web_dashboard.py` app tuple: add `"oikos"`. The cloud monitor / dashboard build should copy `<out>/oikos.json` to the published `money/oikos.json` (e.g. `python tools/money/oikos.py --out <site>/money`); the page works without it.
+4. `sw.js`: `OTHER_APPS` add `'oikos/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+6. `olympus/intro-app.js` FLAVOUR: `oikos: ['coins', 'Keep what you make', 'tap'],`
+   `jarvis/transitions.js` REGISTRY: `oikos: { kind: 'waves', ms: 1000 },`
+7. Tests: `python -X utf8 -m tests.test_oikos_page` (`--static` skips the browser), `python tools/money/oikos.py --selftest`, then `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
