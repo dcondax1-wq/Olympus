@@ -374,12 +374,12 @@ def test_jarvis(br, origin, shots=None):
     check("d. reopened: Athena is there before the engine arrives (the <head> copy), and Jarvis's line reads on the marble (AA)",
           early[0] == "athena" and early[1].strip() == "#55631f" and early[2] == "light" and contrast(says[0], says[1]) >= 4.5, (early, says))
     # a Jarvis colour belongs to the default theme
-    p.evaluate("window.__jarvis.setTheme('reactor-stark')")
+    p.evaluate("window.__jarvis.setTheme('agora')")
     p.wait_for_timeout(200)
     back = p.evaluate("() => [localStorage.getItem('olympus.theme'), document.documentElement.dataset.olyTheme, getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), document.documentElement.style.getPropertyValue('--c'), localStorage.getItem('olympus.theme.paint')]")
-    check("d. a Jarvis colour (Reactor Stark) goes back to the OLYMPUS default and shows its own colour (no inline paint left)",
-          back[0] == "agora" and back[1] == "agora" and back[2] == "#ffbe3d" and back[3] == "" and back[4] is None, back)
-    p.evaluate("window.__jarvis.setTheme('reactor')")
+    check("d. a Jarvis colour (Agora) goes back to the OLYMPUS default and shows its own colour (no inline paint left)",
+          back[0] == "agora" and back[1] == "agora" and back[2] == "#c8a24a" and back[3] == "" and back[4] is None, back)
+    p.evaluate("window.__jarvis.setTheme('agora')")
     check("d. Jarvis: no console error while theming", not real(errs), real(errs)[:3])
     ctx.close()
 

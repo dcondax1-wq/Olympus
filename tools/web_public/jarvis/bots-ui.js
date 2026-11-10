@@ -24,8 +24,8 @@ function style() {
 .jx-bots[data-state=bad]{border-color:rgba(207,132,110,.55)}.jx-bots[data-state=warn]{border-color:rgba(213,174,74,.5)}
 .jx-bots .h{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:13px;letter-spacing: .02em;text-transform: none;opacity:.9;flex-wrap:wrap}
 .jx-bots .h span{flex:1;min-width:60px}
-.jx-bots .h button,.jx-bots .card button.x{font:inherit;font-size:13px;min-height:30px;padding:3px 10px;border-radius:999px;color:inherit;letter-spacing:.02em;text-transform:none;
-  background:rgba(var(--cr,125,211,252),.14);border:1px solid rgba(var(--cr,125,211,252),.45);cursor:pointer}
+.jx-bots .h button,.jx-bots .card button.x{font:inherit;font-size:13px;min-height:44px;padding:3px 12px;border-radius:999px;color:inherit;letter-spacing:.02em;text-transform:none;
+  background:rgba(var(--cr,200,162,74),.14);border:1px solid rgba(var(--cr,200,162,74),.45);cursor:pointer}
 .jx-bots .h button[aria-pressed=false]{opacity:.6}
 .jx-bots ul.lights{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
 .jx-bots ul.lights li{display:flex;align-items:center;gap:7px;min-width:0;font-size:13px;line-height:1.25}

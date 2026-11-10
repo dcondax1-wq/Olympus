@@ -302,10 +302,10 @@ def part_a():
           and css_nc.count("-webkit-backdrop-filter") >= css_nc.count(" backdrop-filter") - css_nc.count("-webkit-backdrop-filter"), "")
     check("a. reduced motion respected, animations pause while hidden, dark before the stylesheet loads",
           "prefers-reduced-motion" in css and ".paused" in css and "visibilitychange" in page and "html,body{background:#14110e" in page.replace(" ", ""))
-    check("a. the AGORA look: Agora by default (a saved 'jtheme' wins), its tokens (#14110e, gold #c8a24a / bronze #9c6b3c / #e0b060, ivory #f3ece0 / #9a8f7d), the old Reactor family kept as choices",
-          "g('jtheme') || 'agora'" in page and all(x in css for x in ("--bg: #14110e", "--c: #c8a24a", "--c2: #9c6b3c", "--c3: #e0b060", "--txt: #f3ece0", "--mut: #9a8f7d",
-                                 'data-theme="agora"', 'data-theme="reactor"', 'data-theme="reactor-stark"', 'data-theme="reactor-ice"', 'data-theme="reactor-emerald"',
-                                 'data-theme="obsidian"', 'data-theme="tokyo"')) and "g('jtheme')" in page and "rawSet('jtheme', k)" in page)
+    check("a. the AGORA look (2026-11-10): ONE theme, Agora, whatever an old copy saved; its tokens (#14110e, gold #c8a24a / bronze #9c6b3c / #e0b060, ivory #f3ece0 / #9a8f7d); the neon themes, the HUD ring, the grid floor, the globe and the scanlines are gone",
+          "d.setAttribute('data-theme', 'agora')" in page and all(x in css for x in ("--bg: #14110e", "--c: #c8a24a", "--c2: #9c6b3c", "--c3: #e0b060", "--txt: #f3ece0", "--mut: #9a8f7d", 'data-theme="agora"'))
+          and not any(x in css for x in ('data-theme="reactor', 'data-theme="eclipse"', 'data-theme="tokyo"', 'data-theme="aurora"', '.hudring', '.bgglobe', '.floor {', '.scan {', 'glowT', '#a855f7', '#22d3ee'))
+          and 'class="hudring"' not in page and 'id="bgglobe"' not in page and 'class="scan"' not in page and "rawSet('jtheme', k)" in page)
     check("a. no Orbitron / Rajdhani is loaded (the woff2 files stay on disk), a serif heading font, no clipped corners; the old fonts keep their licence file",
           all(os.path.isfile(os.path.join(JV, f)) for f in FONTS) and "@font-face" not in css and "Iowan Old Style" in css and "clip-path: polygon(" not in css
           and "SIL Open Font License" in open(os.path.join(JV, "OFL.txt"), encoding="utf-8").read())
@@ -958,25 +958,24 @@ def run_look(br, url):
         return { c: cs.getPropertyValue('--c').trim(), bg: getComputedStyle(document.body).backgroundColor, theme: document.documentElement.dataset.theme,
                  orb: document.fonts.check('700 16px Orbitron'), raj: document.fonts.check('500 16px Rajdhani'),
                  tfont: getComputedStyle(t).fontFamily, title: t.textContent, state: document.getElementById('state').textContent,
-                 hudBot: document.getElementById('hudBot').textContent, hudTop: document.getElementById('hudTop').textContent,
-                 says: document.getElementById('says').textContent, ticks: document.querySelectorAll('#ticks .tk.on').length,
+                 hud: !!document.querySelector('#hud, .hudring, #hudBot, #hudTop'),
+                 says: document.getElementById('says').textContent, ticks: 0,
                  bars: document.querySelectorAll('#vbars i').length, fx: document.documentElement.dataset.fx };
     })()""")
     check("l. Agora by default (gold #c8a24a); the title OLYMPUS in the serif",
           look["c"] == "#c8a24a" and look["theme"] == "agora" and look["tfont"].lstrip('"').startswith("Iowan")
           and look["title"] == "OLYMPUS", look)
-    check("l. the core's HUD ring: the clock and STANDBY along the bottom, the market / bots / Kalshi along the top, Zlarior's room as ticks; 32 voice bars",
-          re.match(r"\d\d:\d\d:\d\d · Standby$", look["hudBot"]) and "NQ" in look["hudTop"] and "KALSHI" in look["hudTop"] and look["ticks"] == 20
+    check("l. no HUD ring around the core any more (AGORA); the state word, 32 voice bars and the line under the core",
+          not look["hud"]
           and look["state"] == "Standby" and look["bars"] == 32 and "Tap the core or type below to speak with me." in look["says"] and look["fx"] == "high", look)
     if p.evaluate("document.documentElement.dataset.brain") == "module":
         check("l. brain.js: the old Jarvis's line under the core until the first question ('Good day. Tap the core ...')", look["says"].startswith("Good day. Tap the core"), look["says"])
     if p.evaluate("document.documentElement.dataset.core") == "module":
-        c3 = p.evaluate("[getComputedStyle(document.querySelector('.hudring')).display, getComputedStyle(document.querySelector('.pad')).display, !!document.querySelector('#coreSlot canvas'), window.__jarvis.core()]")
+        c3 = p.evaluate("[!document.querySelector('.hudring') ? 'none' : 'x', !document.querySelector('.pad') ? 'none' : 'x', !!document.querySelector('#coreSlot canvas'), window.__jarvis.core()]")
         check("l. core-visual.js: the 3D reactor in the centre (its own HUD ring and dial: the 2D ones step aside)",
               c3[0] == "none" and c3[1] == "none" and c3[2] and c3[3] and c3[3].get("design") == "reactor", c3)
-    bg = p.evaluate("[document.querySelectorAll('#bgglobe ellipse').length, !!document.querySelector('.floor'), getComputedStyle(document.querySelector('.bgfx'), '::before').filter, getComputedStyle(document.querySelector('#bgglobe .spin')).animationName]")
-    check("l. the old backdrop, CSS / SVG only: the full-bleed wireframe globe (turning slowly at high), nebula clouds, the perspective grid floor",
-          bg[0] >= 16 and bg[1] and "blur" in bg[2] and bg[3] == "spin", bg)
+    bg = p.evaluate("[!!document.querySelector('#bgglobe, .floor, .scan, .hudring, .pad'), !!document.querySelector('.bgfx')]")
+    check("l. the backdrop is calm: no wireframe globe, grid floor, scanlines or projector pad (the 3D courtyard, or the plain marble dark, is all there is)", bg[0] is False and bg[1], bg)
     head = p.evaluate("[document.getElementById('kpct').textContent, document.getElementById('npnl').textContent, document.getElementById('nsub').textContent]")
     check("l. KALSHI TODAY says OFFLINE (not connected yet) while kalshi.json is missing; NQ BOTS TODAY adds the three accounts (+$308)",
           head[0] == "OFFLINE" and head[1] == "+$308" and head[2].startswith("3 accounts"), head)
@@ -1015,8 +1014,8 @@ def run_look(br, url):
         return [cs.appearance || cs.webkitAppearance, cs.width, cs.height, getComputedStyle(t, '::before').content, segs.every((x) => x[0] === 'none' && x[1] >= 43.5) && !over]; })()""")
     check("l. the sheets' switches are pill toggles (46 x 26, a knob), the segment buttons in sentence case (AGORA: no upper case) and 44 px", tg[0] == "none" and tg[1] == "46px" and tg[2] == "26px"
           and tg[3] == '""' and tg[4], tg)
-    check("l. Theme opens the Look sheet: 13 themes (Agora first, then Reactor, Eclipse ... Custom), effects levels, the core designs, sounds, calm motion (off), tilt",
-          p.locator("#look").is_visible() and p.locator("#themes .th").count() == 13 and p.locator('#fxSeg [aria-pressed="true"]').inner_text().upper() == "HIGH"
+    check("l. Theme opens the Look sheet: one theme (Agora; the neon ones were removed), effects levels, the core designs, sounds, calm motion (off), tilt",
+          p.locator("#look").is_visible() and p.locator("#themes .th").count() == 1 and p.locator('#fxSeg [aria-pressed="true"]').inner_text().upper() == "HIGH"
           and p.locator("#coreSeg button").count() == 2 and p.get_attribute("#themes .th >> nth=0", "data-theme-k") == "agora"
           and not p.locator("#setCalm").is_checked())
     p.click("#setCalm")
@@ -1024,15 +1023,12 @@ def run_look(br, url):
     p.click("#setCalm")
     check("l. Calm motion: kept on this phone (the 3D core then follows the iPhone's reduce-motion switch)", calm == "true"
           and p.evaluate("localStorage.getItem('jarvis.calm')") == "false", calm)
-    p.click('#themes [data-theme-k="reactor-stark"]')
-    st = p.evaluate("[getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), localStorage.getItem('jtheme')]")
-    check("l. Reactor Stark: gold accents, saved as 'jtheme'", st == ["#ffbe3d", "reactor-stark"], st)
+    p.evaluate("localStorage.setItem('jtheme', 'reactor-stark')")      # an old copy's neon theme: ignored, Agora stays
     p.click("#lookX")
     p.reload()
     ready(p)
     th = p.evaluate("[document.documentElement.dataset.theme, getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), !!document.getElementById('bootfx')]")
-    check("l. reopened: the theme is there from the first paint; no boot screen again in the same launch", th == ["reactor-stark", "#ffbe3d", False], th)
-    p.evaluate("window.__jarvis.setTheme('reactor')")
+    check("l. an old saved neon theme is ignored: Agora gold from the first paint; no boot screen again in the same launch", th == ["agora", "#c8a24a", False], th)
     # voice: tap the big mic, Jarvis hears, answers out loud in her voice at its own pace (tts.js: rate 1.0 / pitch 1.0, 2026-11-03), the state word follows
     p.evaluate("window.__utter = 'is the market open'; window.__states = []; window.__said = []")
     p.click("#bigmic")
@@ -1099,18 +1095,19 @@ def run_look(br, url):
     ctx.add_init_script("try { localStorage.setItem('jarvis.bots.set', JSON.stringify({ on: true, plan: false, recap: false, rituals: false })); } catch (e) {}")
     p.goto(url + "jarvis/")
     ready(p)
-    p.wait_for_function("(() => { const t = document.getElementById('toast'); return !!t && !t.hidden; })()", timeout=12000)
-    tt = p.text_content("#toast")
-    p.click("#toastA")
+    p.wait_for_function("(() => { const t = document.getElementById('wnb'); return !!t && !t.hidden; })()", timeout=12000)
+    tt = p.text_content("#wnb")
+    bn = p.evaluate("(() => { const r = document.getElementById('wnb').getBoundingClientRect(), c = document.getElementById('htoday') || document.querySelector('.hpanel'), q = c.getBoundingClientRect(); return [getComputedStyle(document.getElementById('wnb')).position, r.bottom <= q.top + 1, r.height]; })()")
+    p.click("#wnbA")
     p.wait_for_timeout(300)
     wn = p.text_content("#talk")
     p.reload()
     ready(p)
     p.wait_for_timeout(2600)
-    again = p.locator("#toast").count() == 0 or p.locator("#toast").is_hidden() or "WHAT'S NEW" not in p.text_content("#toast")
+    again = p.locator("#wnb").count() == 0 or p.locator("#wnb").is_hidden()
     a = asker(p)("what's new")
     check("l. What's new: a card once per release (Show me -> the notes), not again after; 'what's new' shows the notes any time",
-          "WHAT'S NEW" in tt and "What's new in Jarvis" in wn and "Every app is its own dashboard" in wn and again and "What's new in Jarvis" in a and not errs, (tt, again, a[:80], errs))
+          "What's new" in tt and bn[0] == "static" and bn[1] and bn[2] < 120 and "What's new in Jarvis" in wn and "Every app is its own dashboard" in wn and again and "What's new in Jarvis" in a and not errs, (tt, bn, again, a[:80], errs))
     ctx.close()
     # the OS 'reduce motion' setting: the effects start low (nothing spins), no boot screen
     ctx, p, errs, _ = new_page(br, boot=True, reduced_motion="reduce")
@@ -1126,7 +1123,7 @@ def run_look(br, url):
 def _registry():
     """apps.js is the one source of truth (the list GROWS): its groups and BUILT_INS, read with node, so no count or name is typed here."""
     out = subprocess.run(["node", "--input-type=module", "-e",
-                          "import('./apps.js').then((m) => console.log(JSON.stringify({ groups: m.GROUPS.map((g) => ({ id: g.id, name: g.name })), apps: m.BUILT_INS.map((a) => ({ id: a.id, name: a.name, group: a.group })) })))"],
+                          "Promise.all([import('./apps.js'), import('./districts.js')]).then(([m, d]) => console.log(JSON.stringify({ groups: m.GROUPS.map((g) => ({ id: g.id, name: g.name })), apps: m.BUILT_INS.map((a) => ({ id: a.id, name: a.name, group: a.group, dist: d.districtOf(a) })), dists: d.DISTRICTS.map((x) => ({ id: x.id, title: x.title })) })))"],
                          cwd=JV, capture_output=True, text=True, timeout=60, check=True).stdout
     return json.loads(out)
 
@@ -1144,6 +1141,18 @@ NAMES_ORDER = [NX_LABEL.get(i, next((a["name"] for a in _REG["apps"] if a["id"] 
 # the test site only has these folders (stubs); every other app answers 404 and shows "not on the site yet"
 ON_SITE = {"home", "zenith", "planner", "kalshi", "datacity"}
 NOT_ON_SITE = [i for i in ORDER if i not in ON_SITE]
+# the orb is organised by the five districts of the Atlas map (2026-11-10): Jarvis, then Market, Research, Money, Command, Life (switcher.js DIST = districts.js)
+_DIDS = [d["id"] for d in _REG["dists"]]
+D_SORTED = sorted(SORTED_APPS, key=lambda a: _DIDS.index(a["dist"]))                       # stable: apps.js order inside a district
+D_ORDER = ["home"] + [a["id"] for a in D_SORTED]
+D_USED = [d for d in _REG["dists"] if any(a["dist"] == d["id"] for a in _REG["apps"])]
+D_HEADS = [d["title"] for d in D_USED]
+D_IDS = [d["id"] for d in D_USED]
+D_ALL5 = [d["id"] for d in _REG["dists"]]
+D_WITH_EXTRAS = [d["title"] for d in _REG["dists"] if d["id"] == "command" or any(a["dist"] == d["id"] for a in _REG["apps"])]   # the added apps (Alpha, Beta, Gamma) sit in Command
+D_NAMES_ORDER = [NX_LABEL.get(i, next((a["name"] for a in _REG["apps"] if a["id"] == i), i).upper()) for i in D_ORDER]
+D_ON = [i for i in D_ORDER if i in ON_SITE]
+D_MONEY_FIRST = next(a["id"] for a in D_SORTED if a["dist"] == "money")
 MONEY_FIRST = next(a["id"] for a in SORTED_APPS if a["group"] == "money")       # the first MONEY app: the group chip glides its card to the middle
 
 
@@ -1208,20 +1217,20 @@ def run_olympus(br, url):
           off: [...document.querySelectorAll('#nxTrack .nx-card.off')].map((c) => c.dataset.nx), now: (document.querySelector('#nxTrack .nx-card.now') || {}).dataset,
           q: [...row.querySelectorAll('.nx-qb')].map((b) => [b.dataset.nx, Math.round(b.getBoundingClientRect().height)]), seps: row.querySelectorAll('.nx-qs').length,
           scroll: [row.scrollWidth, row.clientWidth, getComputedStyle(row).overflowX], sw: document.documentElement.scrollWidth }; })()""")
-    check("p. the orb: group headings and chips (TRADING, LIFE, MONEY; Data City's group lit), the not-yet apps dimmed, Data City NOW",
-          o["heads"] == GROUP_HEADS and [c[0] for c in o["chips"]] == GROUP_IDS_USED and o["chips"][0][1] and all(c[2] >= 44 for c in o["chips"])
+    check("p. the orb is organised by districts: headings and chips (Market, Research, Money, Command, Life; Data City's district, Research, lit), the not-yet apps dimmed, Data City NOW",
+          o["heads"] == D_HEADS and [c[0] for c in o["chips"]] == D_IDS and [c[0] for c in o["chips"] if c[1]] == ["research"] and all(c[2] >= 44 for c in o["chips"])
           and sorted(o["off"]) == sorted(NOT_ON_SITE) and o["now"] and o["now"].get("nx") == "datacity", o)
     check("p. the quick row: every app in group order with separators, 44 px+ buttons, one scrollable line (no page sideways scroll)",
-          [x[0] for x in o["q"]] == ORDER and o["seps"] == 3 and all(x[1] >= 44 for x in o["q"])
+          [x[0] for x in o["q"]] == D_ORDER and o["seps"] == len(D_USED) and all(x[1] >= 44 for x in o["q"])
           and o["scroll"][2] == "auto" and o["sw"] <= 390, o)
     p.click('#nxGroups [data-nx-jump="money"]')
     try:
         p.wait_for_function("""(id) => { const t = document.getElementById('nxTrack'), c = t.querySelector('.nx-card[data-nx="' + id + '"]');
-            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 45; }""", arg=MONEY_FIRST, timeout=20000, polling=50)      # a long smooth scroll over many cards (the list grows)
+            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 45; }""", arg=D_MONEY_FIRST, timeout=20000, polling=50)      # a long smooth scroll over many cards (the list grows)
         jumped = True
     except Exception:                                   # noqa: BLE001 - reported below
         jumped = False
-    check("p. a group chip glides the cards to that group (MONEY: its first app in the middle), the switcher stays open",
+    check("p. a district chip glides the cards to that district (Money: its first app in the middle), the switcher stays open",
           jumped and p.evaluate("document.getElementById('nxRoot').classList.contains('on')"))
     p.click('#nxRow .nx-qb[data-nx="home"]')
     p.wait_for_function("window.__jarvis.active() === 'home'", timeout=5000)
@@ -1237,22 +1246,25 @@ def run_olympus(br, url):
     p.mouse.move(r[0], r[1]); p.mouse.down()
     p.wait_for_function("document.querySelectorAll('.nx-fan.on .nx-fb').length > 0", timeout=5000)
     p.wait_for_function("[...document.querySelectorAll('.nx-fb')].every((b) => !b.getAnimations || !b.getAnimations().length)", timeout=5000)   # grown out
-    ring = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const q = b.getBoundingClientRect(); return { id: b.dataset.nx || (b.dataset.nxMore ? 'MORE' : ''), x: q.left + q.width / 2, y: q.top + q.height / 2 }; })")
-    more = next((b for b in ring if b["id"] == "MORE"), None)
-    if more:                                            # slide onto "more" and let go
-        p.mouse.move((r[0] + more["x"]) / 2, (r[1] + more["y"]) / 2); p.mouse.move(more["x"], more["y"])
-    p.mouse.up()
+    ring = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const q = b.getBoundingClientRect(); return { id: b.dataset.nx || b.dataset.nxDist || (b.dataset.nxSearch ? 'SEARCH' : ''), x: q.left + q.width / 2, y: q.top + q.height / 2, w: q.width, h: q.height }; })")
     ids = [b["id"] for b in ring]
-    check("p. the ring: the six most opened apps (most first), then 'more'; none on top of another, all on screen",
-          ids[:3] == ["x-gamma", "kalshi", "x-alpha"] and len(ids) == 7 and ids[-1] == "MORE" and "mind" not in ids and "tree" not in ids
-          and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:])
-          and all(30 <= b["x"] <= 360 and 30 <= b["y"] <= 844 for b in ring), ring)
-    try:
-        p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=5000)
-    except Exception:                                   # noqa: BLE001 - reported below
-        pass
+    check("p. the ring is two steps: hold shows the five districts (Market, Research, Money, Command, Life) and Search; none on top of another, all on screen, 44 px+",
+          ids == D_ALL5 + ["SEARCH"] and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:])
+          and all(30 <= b["x"] <= 360 and 30 <= b["y"] <= 844 and b["w"] >= 44 and b["h"] >= 44 for b in ring), ring)
+    cmd = next(b for b in ring if b["id"] == "command")        # slide onto Command and let go: its apps fan out (the three added apps, most opened first) with Back
+    p.mouse.move((r[0] + cmd["x"]) / 2, (r[1] + cmd["y"]) / 2); p.mouse.move(cmd["x"], cmd["y"])
+    p.mouse.up()
+    p.wait_for_function("[...document.querySelectorAll('.nx-fan.on .nx-fb')].some((b) => b.dataset.nxBack)", timeout=5000)
+    ring2 = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => b.dataset.nx || (b.dataset.nxBack ? 'BACK' : b.dataset.nxMore ? 'MORE' : '?'))")
+    check("p. step 2: the district's most opened apps (Gamma 9, Alpha 5, then Beta; at most four, then All <district>), then Back; Zenith / Kalshi are not in Command", ring2 == ["x-gamma", "x-alpha", "x-beta", "BACK"], ring2)
+    p.click('.nx-fan.on .nx-fb[data-nx-back]')
+    p.wait_for_function("[...document.querySelectorAll('.nx-fan.on .nx-fb')].some((b) => b.dataset.nxSearch)", timeout=5000)
+    p.click('.nx-fan.on .nx-fb[data-nx-search]')
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=5000)
+    p.wait_for_timeout(300)
+    check("p. Search on the ring opens the switcher with the search box ready", p.evaluate("document.activeElement && document.activeElement.id") == "nxFind")
     heads = p.evaluate("[...document.querySelectorAll('#nxTrack .nx-gl')].map((h) => h.textContent)")
-    check("p. 'more' opens the whole switcher; the added apps have their own group (MORE)", heads == GROUP_HEADS + ["MORE"], heads)
+    check("p. the whole switcher: the added apps sit in Command (the districts stay in Atlas order)", heads == D_WITH_EXTRAS, heads)
     check("p. no page errors", not errs, errs)
     ctx.close()
 
@@ -1378,8 +1390,8 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with JARVIS, then every app of apps.js in its group order (built from apps.js, so it grows by itself), and + ADD, Jarvis's card marked NOW",
-          names == NAMES_ORDER + ["ADD"] and cards[0]["now"] and not any(c["now"] for c in cards[1:]), (names, NAMES_ORDER, cards[:2]))
+    check("n. tap: the switcher opens with JARVIS, then every app of apps.js in its district order (Market, Research, Money, Command, Life; built from apps.js, so it grows by itself), and + ADD, Jarvis's card marked NOW",
+          names == D_NAMES_ORDER + ["ADD"] and cards[0]["now"] and not any(c["now"] for c in cards[1:]), (names, D_NAMES_ORDER, cards[:2]))
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
     check("n. the cards are live: NQ BOT shows today's $ across the accounts (+$308) and their status; CALENDAR the next thing or FREE",
@@ -1403,9 +1415,8 @@ def run_switcher(br, url):
     def swipe(dx):
         before = p.evaluate(CUR)
         p.mouse.move(cx, cy); p.mouse.down()
-        for k in range(1, 6):
+        for k in (2, 5):                                # two quick moves: the flick must end within 600 ms of the finger's own clock, even on a loaded machine
             p.mouse.move(cx + dx * k / 5, cy + 2)
-            p.wait_for_timeout(18)
         p.mouse.up()
         p.wait_for_timeout(450)
         try:                                            # a loaded machine switches late: wait for the change (more apps = a heavier shell)
@@ -1413,21 +1424,29 @@ def run_switcher(br, url):
         except Exception:                               # noqa: BLE001 - reported by the check
             pass
         return p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
-    a1 = swipe(-80)
-    a2 = swipe(80)
-    # the next app in the switch order that can open: Mind's folder is not on this test site (its card dimmed), so Kalshi
-    check("n. swipe the orb left: the next app that can open (Mind is not on this site: Kalshi); right: back (the Planner)", a1 == "kalshi" and a2 == "planner", (a1, a2))
+    def swipe_to(dx, want):                              # a loaded machine can take a quick flick for a slow drag (the finger's own clock > 320 ms): once more
+        got = swipe(dx)
+        for _ in range(2):
+            if got == want:
+                break
+            got = swipe(dx)
+        return got
+    e1 = D_ON[(D_ON.index("planner") - 1) % len(D_ON)]            # swiping right goes back: the app before the Planner in district order that can open (Kalshi); left comes back
+    a1 = swipe_to(80, e1)
+    a2 = swipe_to(-80, "planner")
+    check("n. swipe the orb right: the previous app that can open in district order (the apps not on this site are skipped: Kalshi, before the Planner in Life); left: the next (the Planner)", a1 == e1 and a2 == "planner", (a1, a2, e1))
     # hold: the ring; slide onto Jarvis and let go
     cur_before = p.evaluate(CUR)                        # the app on screen (left out of the ring)
     p.mouse.move(cx, cy); p.mouse.down(); p.wait_for_timeout(520)
-    ring = p.evaluate("""() => [...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const r = b.getBoundingClientRect(); return { id: b.dataset.nx, x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width }; })""")
+    p.wait_for_function("[...document.querySelectorAll('.nx-fb')].length > 0 && [...document.querySelectorAll('.nx-fb')].every((b) => !b.getAnimations || !b.getAnimations().length)", timeout=8000)   # grown out
+    ring = p.evaluate("""() => [...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const r = b.getBoundingClientRect(); return { id: b.dataset.nx || b.dataset.nxDist || (b.dataset.nxSearch ? 'SEARCH' : ''), x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width }; })""")
     home = next((b for b in ring if b["id"] == "home"), None)
     if home:
         p.mouse.move((cx + home["x"]) / 2, (cy + home["y"]) / 2); p.mouse.move(home["x"], home["y"])
     p.mouse.up(); p.wait_for_timeout(450)
     cur = p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
-    check("n. hold: the ring fans out with every other app that can open (44 px+ each, on screen, none on another); slide onto Jarvis and let go: Jarvis",
-          sorted(b["id"] for b in ring) == sorted(i for i in ORDER if i in ON_SITE and i != cur_before) and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
+    check("n. hold: the ring fans out Jarvis, the districts that have an app that can open, and Search (44 px+ each, on screen, none on another); slide onto Jarvis and let go: Jarvis",
+          sorted(b["id"] for b in ring) == sorted((["home"] if cur_before != "home" else []) + [d for d in D_ALL5 if any(a["dist"] == d and a["id"] in ON_SITE and a["id"] != cur_before for a in _REG["apps"])] + ["SEARCH"]) and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
           and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:])
           and cur == "home" and p.evaluate("!document.querySelector('.nx-fan.on')"), (ring, cur))
     # drag: move it (kept on this phone)

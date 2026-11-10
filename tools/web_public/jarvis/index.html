@@ -20,7 +20,7 @@
 (function () {
   var d = document.documentElement, g = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var s = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ } };
-  d.setAttribute('data-theme', g('jtheme') || 'agora');
+  d.setAttribute('data-theme', 'agora');   // one theme since 2026-11-10 (an old saved neon theme is ignored)
   // the OLYMPUS theme (../olympus/themes.js, key 'olympus.theme'): its colours from the first paint, from the copy the theme engine
   // keeps of what it painted ('olympus.theme.paint'); the engine loads after the start (async, never waited on) and repaints
   try {
@@ -93,8 +93,8 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j15">
-<link rel="stylesheet" id="jhome" href="home3d.css?v=h2">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j16">
+<link rel="stylesheet" id="jhome" href="home3d.css?v=h3">
 <script src="../olympus/themes.js?v=o4" id="olyThemesJs" async></script>
 <script src="../olympus/sfx.js?v=s2" id="olySfxJs" async></script>
 <style>.booted #bootfx{display:none}
@@ -933,8 +933,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   else { st.state = 'off'; st.done = true; }               // no intro this start: nothing may wait for one
 }());
 </script>
-<div class="bgfx" aria-hidden="true"><canvas id="stars"></canvas><svg class="bgglobe" id="bgglobe" viewBox="-130 -130 260 260"></svg><div class="floor"></div></div>
-<div class="scan" aria-hidden="true"></div>
+<div class="bgfx" aria-hidden="true"><canvas id="stars"></canvas></div>
 
 <header class="bar">
   <div class="bar-in">
@@ -958,10 +957,12 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         <button class="sysbar" type="button" id="sysbar" aria-controls="p-system" title="Every system at a glance"><i class="sdot off" id="sysdot"></i><b id="sysv">CHECKING</b><span id="syst">Every system at a glance</span><span class="sysdots" id="sysdots" aria-hidden="true"></span></button>
       </div>
 
+      <div class="hc" id="htoday" aria-label="Your day at a glance"></div>
+
       <section class="hub-gate" aria-labelledby="hub-gate-title">
         <div class="hub-gate-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><span></span></div>
         <p class="hub-gate-kicker">Olympus · the map <span aria-hidden="true">✦</span></p>
-        <h2 id="hub-gate-title">Find your arena.</h2>
+        <h2 id="hub-gate-title">Find your arena</h2>
         <p class="hub-gate-copy">One map for every dashboard. Search, filter, and return to your favorites.</p>
         <button class="hub-gate-primary" type="button" data-app="atlas" data-open="../atlas/?hub=j14" aria-label="Open Atlas, the Olympus arena hub">Open Atlas <span aria-hidden="true">↗</span></button>
         <div class="hub-gate-doors" role="group" aria-label="Explore featured arenas">
@@ -972,7 +973,6 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 
       <div class="stagebox">
       <div class="stage" id="stage" role="button" tabindex="0" aria-label="Talk to Jarvis">
-        <div class="pad" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <div class="core" id="core" aria-hidden="true">
           <div class="orb" id="orb">
             <svg viewBox="0 0 400 400" aria-hidden="true">
@@ -985,18 +985,6 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
           </div>
           <div class="core-slot" id="coreSlot"></div>
         </div>
-        <svg class="hudring" id="hud" viewBox="0 0 400 400" aria-hidden="true">
-          <defs>
-            <path id="arcTop" d="M 16 200 A 184 184 0 0 1 384 200"/>
-            <path id="arcBot" d="M 6 200 A 194 194 0 0 0 394 200"/>
-          </defs>
-          <circle class="dots" cx="200" cy="200" r="198"/>
-          <circle class="thin" cx="200" cy="200" r="170"/>
-          <g id="ticks"></g>
-          <text><textPath href="#arcTop" xlink:href="#arcTop" startOffset="50%" text-anchor="middle" id="hudTop">JARVIS · CORE ONLINE</textPath></text>
-          <text><textPath href="#arcBot" xlink:href="#arcBot" startOffset="50%" text-anchor="middle" id="hudBot">--:--:-- · STANDBY</textPath></text>
-          <text class="vt" transform="translate(12 200) rotate(-90)" text-anchor="middle">JARVIS // CORE</text>
-        </svg>
         <div class="sats" id="sats" aria-hidden="true"></div>
         <!-- Jarvis talking (2026-11-03 evening): a waveform on the core while she speaks, and what a tap does then -->
         <div class="vwave" id="vwave" aria-hidden="true"></div>
@@ -1019,11 +1007,6 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
       <div class="qa" id="qa" role="group" aria-label="Quick actions"></div>
-      <details class="hub-directory" open>
-        <summary>Your apps <span>Trading · Money · Life</span></summary>
-        <div class="og-find" id="ogFindBox" hidden><input id="ogFind" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Find an app" aria-label="Find an app" aria-controls="olyApps"></div>
-        <div class="og" id="olyApps" role="group" aria-label="OLYMPUS: every app"></div>
-      </details>
       <p class="sec-t">Today · timeline</p>
       <section class="panel tl" id="p-today" aria-label="Today: the trading day and your plan"></section>
 
@@ -1033,6 +1016,11 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       <div class="cards" id="cards"></div>
       <p class="sec-t">Systems</p>
       <div class="panels" id="panels"></div>
+      <details class="hub-directory" open>
+        <summary>Your apps <span>Trading · Money · Life</span></summary>
+        <div class="og-find" id="ogFindBox" hidden><input id="ogFind" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Find an app" aria-label="Find an app" aria-controls="olyApps"></div>
+        <div class="og" id="olyApps" role="group" aria-label="OLYMPUS: every app"></div>
+      </details>
       <p class="foot">Read-only: Jarvis never places a trade. Every project keeps running on its own; Jarvis only switches what you see.</p>
     </div>
   </section>
@@ -1108,7 +1096,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <p class="note" id="olyNote">The whole system: Jarvis now, and each app the next time it opens.</p>
     <h3>Jarvis colour</h3>
     <div class="themes" id="themes"></div>
-    <label>Custom hue<input id="hue" type="range" min="0" max="359" step="1" value="275"></label>
+    <label hidden>Custom hue<input id="hue" type="range" min="0" max="359" step="1" value="275"></label>
     <h3>3D effects</h3>
     <div class="seg3" id="fxSeg"><button type="button" data-fx="ultra">Ultra</button><button type="button" data-fx="high">High</button><button type="button" data-fx="low">Low</button><button type="button" data-fx="off">Off</button></div>
     <p class="note" id="fxNote">High is the phone default. Low keeps the glass and stops the motion; Off is fully static.</p>
@@ -1268,11 +1256,7 @@ const S = {
   vcfg: () => Object.assign({ rate: 1.0, pitch: 1.0, voice: '' }, D.LS.get('jarvis.voiceCfg', {}) || {}),
 };
 const THEMES = [
-  ['agora', 'Agora', 'Marble, bronze, gold · default', '#c8a24a', '#9c6b3c'], ['reactor', 'Reactor', 'Violet + cyan', '#a95cff', '#22d3ee'], ['eclipse', 'Eclipse', 'Violet', '#a855f7', '#7c3aed'],
-  ['reactor-stark', 'Reactor Stark', 'Gold rings, arc-blue', '#ffbe3d', '#d6281f'], ['reactor-ice', 'Reactor Ice', 'Ice blue, silver', '#4fe3ff', '#0284c7'],
-  ['reactor-emerald', 'Reactor Emerald', 'Emerald plasma', '#1ff5a4', '#059669'], ['obsidian', 'Obsidian', 'Monochrome silver', '#e5e7eb', '#9ca3af'],
-  ['aurora', 'Aurora', 'Mint and violet', '#34f5b0', '#a78bfa'], ['tokyo', 'Tokyo', 'Neon pink', '#ff2bd6', '#22e5ff'], ['ocean', 'Ocean', 'Teal and sky', '#2ef2d0', '#38bdf8'],
-  ['forge', 'Forge', 'Molten orange', '#ff7a1a', '#c2410c'], ['void', 'Void', 'Black and white', '#f2f2f2', '#9a9a9a'], ['custom', 'Custom', 'Your hue', '', ''],
+  ['agora', 'Agora', 'Marble, bronze, gold', '#c8a24a', '#9c6b3c'],
 ];
 const CORE_DESIGNS = [['reactor', 'Reactor'], ['singularity', 'Singularity']];
 
@@ -1785,37 +1769,10 @@ ready.core.then((m) => { if (m) bootDone.then(mountCore3d); });
 bootDone.then(() => setTimeout(voiceMod, 1500));
 let coreRT = 0;
 window.addEventListener('resize', () => { clearTimeout(coreRT); coreRT = setTimeout(() => { const w = Math.round($('#stage').getBoundingClientRect().width); if (core && w && Math.abs(w - coreSize) > 8) mountCore3d(); }, 300); }, { passive: true });
-// the backdrop's wireframe globe (as the old Jarvis's scene behind everything): meridians, parallels and a tilted orbit, drawn
-// once; CSS turns it slowly at high / ultra (composited, no per-frame drawing)
-(function buildGlobe() {
-  const R = 96, mer = [], par = [];
-  for (let i = 0; i < 9; i++) { const a = (i * 20) * Math.PI / 180; mer.push(`<ellipse rx="${(R * Math.abs(Math.cos(a))).toFixed(1)}" ry="${R}"/>`); }
-  for (const lat of [-60, -40, -20, 0, 20, 40, 60]) { const t = lat * Math.PI / 180; par.push(`<ellipse cy="${(-R * Math.sin(t)).toFixed(1)}" rx="${(R * Math.cos(t)).toFixed(1)}" ry="${(R * Math.cos(t) * .2).toFixed(1)}"/>`); }
-  $('#bgglobe').innerHTML = `<g transform="rotate(-16)"><g class="spin"><circle class="gl" r="${R}"/><g class="mer">${mer.join('')}</g><g class="par">${par.join('')}</g></g>`
-    + '<g class="ospin"><ellipse class="orbit" rx="122" ry="30"/></g></g>';
-})();
-// the HUD ring: the clock and the state along the bottom, the market and the bots along the top, a tick gauge of Zlarior's room
-(function buildTicks() {
-  let h = '';
-  for (let i = 0; i < 36; i++) {
-    const a = (-38 + i * (76 / 35)) * Math.PI / 180, r1 = 174, r2 = i % 5 === 0 ? 186 : 181;
-    h += `<line class="tk" data-i="${i}" x1="${(200 + r1 * Math.cos(a)).toFixed(1)}" y1="${(200 + r1 * Math.sin(a)).toFixed(1)}" x2="${(200 + r2 * Math.cos(a)).toFixed(1)}" y2="${(200 + r2 * Math.sin(a)).toFixed(1)}"/>`;
-  }
-  $('#ticks').innerHTML = h;
-})();
 const hms = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 function hudTick() {
   const tm = hms.format(new Date());
   $('#clock').textContent = tm;
-  $('#hudBot').textContent = `${tm} · ${STATE_WORD[state]}`;
-}
-function hudData() {
-  const m = D.market(), v = D.liveView(), k = D.kalshiView();
-  const bots = v && v.verdict ? String(v.verdict.code || v.verdict.label || '').split(':')[0].toUpperCase().slice(0, 14) : 'BOTS —';
-  $('#hudTop').textContent = `NQ ${m.open ? (m.rth ? 'OPEN' : 'OVERNIGHT') : 'CLOSED'} · ${bots} · KALSHI ${k ? D.kalshiRun(k)[1].toUpperCase() : D.kalshiState() === 'waiting' ? 'WAITING' : '—'}`;
-  const rf = v && v.lit && Number.isFinite(+v.lit.room_frac) ? Math.max(0, Math.min(1, +v.lit.room_frac)) : null;
-  const on = rf == null ? 0 : Math.round(rf * 36);
-  for (const t of document.querySelectorAll('#ticks .tk')) t.classList.toggle('on', +t.dataset.i < on);
 }
 
 // ------------------------------------------------------------------ the header panel: greeting, clock, KALSHI TODAY, NQ BOTS TODAY
@@ -1845,7 +1802,6 @@ function renderHead() {
   }
   const lv = levels();
   $('#dot').className = 'sdot' + (lv.zenith === 'bad' ? ' bad' : lv.zenith === 'warn' ? ' warn' : !navigator.onLine ? ' off' : '');
-  hudData();
 }
 
 // ------------------------------------------------------------------ the project panels (NQ bots, Kalshi, Today, added apps)
@@ -2051,7 +2007,7 @@ function renderSystem() {                              // the panel itself is in
 }
 function showSystem() {                               // the System panel on the Jarvis screen (from the strip, the orb, "status")
   if (active !== 'home') show('home');
-  setTimeout(() => { const p = $('#p-system'); if (p) safe(() => p.scrollIntoView({ block: 'start', behavior: calmScroll() ? 'auto' : 'smooth' })); }, 60);
+  setTimeout(() => { const p = $('#p-system'); if (p) safe(() => p.scrollIntoView({ block: 'start', behavior: calmScroll() || Math.abs(p.getBoundingClientRect().top) > window.innerHeight * 1.2 ? 'auto' : 'smooth' })); }, 60);   // far away (the long home): at once, a long glide is slow on a busy phone
 }
 document.addEventListener('click', (e) => { if (e.target.closest('#sysbar')) showSystem(); });
 document.addEventListener('click', (e) => {                // "I did it" on the inactivity warning: today's manual trade, per account
@@ -2679,6 +2635,17 @@ function offerAlerts() {                              // the first reminder: a t
 }
 ready.assistant.then((a) => { if (!a) return; bootDone.then(() => setTimeout(checkReminders, 2500)); setInterval(checkReminders, 15000); });
 document.addEventListener('visibilitychange', () => { if (visible()) setTimeout(checkReminders, 800); });
+// the "What's new" note (2026-11-10): a slim banner in the page flow under the header, never over content; one tap on x = gone; once per version
+function banner(text, label, action) {
+  const host = $('#home .home-in');
+  if (!host) return;
+  let el = $('#wnb');
+  if (!el) { el = document.createElement('div'); el.id = 'wnb'; el.className = 'wnb'; el.setAttribute('role', 'status'); host.insertBefore(el, host.firstChild); }
+  el.innerHTML = `<span class="wn-t"><b>${esc(label)}</b> ${esc(text)}</span>${action ? `<button class="wn-a" type="button" id="wnbA">${esc(action[0])}</button>` : ''}<button class="wn-x" type="button" id="wnbX" aria-label="Dismiss">\u00d7</button>`;
+  el.hidden = false;
+  if (action) $('#wnbA').onclick = () => { el.hidden = true; action[1](); };
+  $('#wnbX').onclick = () => { el.hidden = true; };
+}
 function toast(text, label = 'INFO', action) {
   let el = $('#toast');
   if (!el) { el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
@@ -3018,7 +2985,7 @@ async function setTilt(on) {
 }
 
 // ------------------------------------------------------------------ effects: stars, the hologram globe, tap ripples, scan sweeps, press glare, auto-low
-let COL = { cr: '168,85,247', cr3: '222,190,255' };
+let COL = { cr: '200,162,74', cr3: '240,217,160' };
 const fx = (() => {
   const starC = $('#stars');
   let raf = 0, last = 0, stars = [], frames = 0, t0 = 0, probe = true, dprS = 1;
@@ -3033,7 +3000,7 @@ const fx = (() => {
     g.clearRect(0, 0, w, h);
     for (const s of stars) {
       const a = tw ? .25 + .55 * (.5 + .5 * Math.sin(t * .001 * s.s + s.p)) : .45;
-      g.fillStyle = s.c ? `rgba(${COL.cr},${a})` : `rgba(255,255,255,${a * .8})`;
+      g.fillStyle = s.c ? `rgba(${COL.cr},${a})` : `rgba(243,236,224,${a * .5})`;
       g.fillRect(s.x * w, s.y * h, s.r * dprS, s.r * dprS);
     }
   }
@@ -3092,7 +3059,7 @@ const fx = (() => {
   window.addEventListener('resize', () => restart(), { passive: true });
   return { restart, adopt };
 })();
-function readColors() { const cs = getComputedStyle(root); COL = { cr: cs.getPropertyValue('--cr').trim() || '168,85,247', cr3: cs.getPropertyValue('--cr3').trim() || '222,190,255' }; fx.restart(); }
+function readColors() { const cs = getComputedStyle(root); COL = { cr: cs.getPropertyValue('--cr').trim() || '200,162,74', cr3: cs.getPropertyValue('--cr3').trim() || '240,217,160' }; fx.restart(); }
 
 // ------------------------------------------------------------------ the boot screen (once per launch, at most 1.2 s, tap to skip)
 function boot() {
@@ -3363,7 +3330,7 @@ window.addEventListener('pagehide', swTakeOver);
     // A first-run film is the welcome. Keep the gateway clear when it lands; What's new remains in the command palette.
     const film = window.__olyIntro;
     if (!film || !film.mode || film.mode === 'off' || film.mode === 'fade') {
-      setTimeout(() => toast('Welcome to OLYMPUS. Every app is its own dashboard: tap the orb to switch.', "WHAT'S NEW", ['Show me', whatsNew]), 2200);
+      setTimeout(() => banner('Every app is its own dashboard: tap the orb to switch.', "What's new:", ['Show me', whatsNew]), 2200);
     }
     return;
   }
@@ -3411,5 +3378,6 @@ if ('serviceWorker' in navigator) {
 <script src="./welcome.js?v=w1" defer></script>
 <script type="module" src="./transitions.js?v=t2"></script>
 <script type="module" src="./briefing.js?v=r1"></script>
+<script type="module" src="./home-cards.js?v=hc1"></script>
 </body>
 </html>

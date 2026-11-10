@@ -136,8 +136,8 @@ def main() -> int:
                 if ring:
                     break
             n_apps = p.evaluate("window.__jarvis.facts().apps.length")
-            check("e. the quick ring with %d apps on the site: at most 6 apps and 'All apps', each 44 px+, on screen, none on another" % n_apps,
-                  n_apps > 20 and 2 <= len(ring) <= 7 and any(b["more"] for b in ring) and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
+            check("e. the quick ring with %d apps on the site: Jarvis, the five districts and Search (at most 7), each 44 px+, on screen, none on another" % n_apps,
+                  n_apps > 20 and 2 <= len(ring) <= 7 and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
                   and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:]), (n_apps, ring))
             ctx.close()
 
