@@ -66,6 +66,7 @@ export const REGISTRY = {
   compass:    { kind: 'sunburst',      ms: 1000 },
   pheme:      { kind: 'tiles',         ms: 800 },
   harmonia:   { kind: 'waves',         ms: 1000 },
+  helios:     { kind: 'sunburst',      ms: 1000 },
   clio:       { kind: 'tiles',         ms: 820 },
   atlas:      { kind: 'sunburst',      ms: 900 },
   observatory:{ kind: 'sunburst',      ms: 950 },

@@ -61,6 +61,7 @@
   {"id": "compass", "name": "Compass", "glyph": "C", "colour": "#c8a24a", "group": "trading", "groupName": "Trading", "purpose": "The next best action: at most five things for today, with why", "path": "compass/", "live": true},
   {"id": "pheme", "name": "Pheme", "glyph": "\u039e", "colour": "#c8a24a", "group": "trading", "groupName": "Trading", "purpose": "The word on the street: releases, and NQ's past moves on them", "path": "pheme/", "live": true},
   {"id": "harmonia", "name": "Harmonia", "glyph": "H", "colour": "#c8a24a", "group": "money", "groupName": "Money", "purpose": "The balance: what leans on the NQ bots, and what is left", "path": "harmonia/", "live": true},
+  {"id": "helios", "name": "Helios", "glyph": "S", "colour": "#c8a24a", "group": "trading", "groupName": "Trading", "purpose": "The morning briefing: today, drawdown, deals, plan", "path": "helios/", "live": true},
   {"id": "clio", "name": "Clio", "glyph": "\u039a", "colour": "#d8c9a8", "group": "trading", "groupName": "Trading", "purpose": "The research library: every study in plain words", "path": "clio/", "live": true},
   {"id": "atlas", "name": "Atlas", "glyph": "\u25c8", "colour": "#efc979", "group": "life", "groupName": "Life", "purpose": "A fast map of every Olympus dashboard", "path": "atlas/", "live": true},
   {"id": "athena", "name": "Athena", "glyph": "\ud83e\udd89", "colour": "#5ea8ff", "group": "life", "groupName": "Life", "purpose": "The library: strategy, rules, quiz", "path": "athena/", "live": true},
