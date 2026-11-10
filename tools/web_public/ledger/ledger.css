@@ -117,3 +117,6 @@ label.f.amt input { font: 800 24px/1 var(--oly-display, sans-serif); }
 .snapt:last-child { grid-column: 1 / -1; }
 .snapt .ag-money { font-size: 28px; overflow-wrap: anywhere; }
 .snapt .ag-money.pos { color: #a3ad73; } .snapt .ag-money.neg { color: #d9785a; }
+
+/* phone-fit 2026-11-10 (text contrast) */
+.pos, b.pos { color: var(--ag-olive-text, #a0ac6e); } .neg, b.neg { color: var(--ag-terra-text, #e08a6b); }

@@ -394,3 +394,6 @@ body { font-family: var(--ag-sans); }
 .pace .dots .future i { border-style: dashed; opacity: .6; }
 .pace .pl, .pace .nx { margin: 6px 0 0; font-size: 13.5px; color: var(--oly-dim); }
 .pace b { color: var(--oly-text); font-family: var(--ag-num); } .pace em { color: #e0907a; font-style: normal; }
+
+/* phone-fit 2026-11-10 (tap targets and clipped text on a 320 px screen) */
+.tabs button { min-width: 44px; padding: 4px 0; font-size: 10.5px; letter-spacing: -.01em; } .tabs button b { font-size: 10.5px; }

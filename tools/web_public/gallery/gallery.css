@@ -63,6 +63,9 @@ details > summary { min-height: 44px; display: flex; align-items: center; cursor
 @media (prefers-reduced-motion: reduce) { .stage.live .flat { transition: none; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 
+
+/* phone-fit 2026-11-10: the hint on the stage's lit centre */
+.hint { color: var(--ag-soft); }
 /* views, categories, the scene builder, the collection */
 .views { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .views .btn { min-height: 44px; padding: 0 8px; }
@@ -83,3 +86,4 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 
 /* phone-fit 2026-11-10: the hint on the stage's lit centre */
 .hint { color: var(--ag-soft); }
+

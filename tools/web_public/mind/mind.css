@@ -351,3 +351,6 @@ html[data-fx="off"] *, html[data-fx="off"] *::before, html[data-fx="off"] *::aft
 .jbrain a { margin-left: auto; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 999px; text-decoration: none; color: var(--cyan);
   border: 1px solid var(--line-hi); font-size: 12px; letter-spacing: .01em; text-transform: none; }
 @media (orientation: landscape) and (max-height: 500px) { .jbrain { grid-column: 1 / -1; } }
+
+/* phone-fit 2026-11-10 (clipped text on a 320 px screen: wrap instead of cutting) */
+.stream button span { white-space: normal; overflow: visible; text-overflow: clip; }

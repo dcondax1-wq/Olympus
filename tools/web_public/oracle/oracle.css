@@ -214,3 +214,7 @@ h1 { margin: 0; font: 700 14px var(--display); }
 .pos-money:empty { display: none; }
 @media (max-width: 420px) { #price { font-size: 24px; } #pnl { font-size: 24px; } }
 .hud .bar h1 { font-weight: 600; font-size: 20px; }
+
+/* phone-fit 2026-11-10 (tap target and clipped text on a 320 px screen) */
+#scrub { min-width: 44px; }
+.demo-bar .tag { white-space: normal; max-width: 100

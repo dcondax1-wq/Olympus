@@ -132,3 +132,6 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #3a2a1
 @media (prefers-reduced-motion: reduce) { .gauge .arc, .gauge .needle { transition: none; } }
 /* a sheet is open: the verdict shrinks to the three odds so the sheet has room (the money lines and the gauge come back when it closes) */
 #ui:has(~ #sheet:not([hidden])) .money, #ui:has(~ #sheet:not([hidden])) .ruin, #ui:has(~ #sheet:not([hidden])) .verdict .v, #ui:has(~ #sheet:not([hidden])) .mazes { display: none; }
+
+/* phone-fit 2026-11-10 (tap targets on a 320 px screen) */
+.dock .chips button { min-width: 44px; }

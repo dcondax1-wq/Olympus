@@ -163,3 +163,6 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .headline .hk { font: 700 34px/1 var(--ag-num, system-ui); color: #f3ece0; }
 .tabs button[aria-pressed="true"] { background: #c8a24a; color: #1b1610; border-color: #c8a24a; }
 .rbars .rb { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 36px; font-size: 13px; }
+
+/* phone-fit 2026-11-10 (clipped text on a 320 px screen: wrap instead of cutting) */
+.vline { max-height: none; overflow: visible; }

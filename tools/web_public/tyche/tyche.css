@@ -226,3 +226,8 @@ h1 { margin: 0; font: 700 16px var(--ag-serif); letter-spacing: .01em; color: #f
 .tabs button[aria-selected="true"] { color: #1b1610; }
 .pace { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; }
 .tabs button { font-size: 12px; letter-spacing: 0; }
+
+/* phone-fit 2026-11-10 (tap targets and clipped text on a 320 px screen) */
+.tabs button { min-width: 44px; }
+.chip { padding: 4px 6px; } .chip b { font-size: 13px; overflow: visible; text-overflow: clip; }
+.next, .next * { white-space: normal; overflow: visible; text-overflow: clip; } .next { flex-wrap: wrap; }
