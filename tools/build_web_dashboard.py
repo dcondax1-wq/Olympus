@@ -1300,6 +1300,18 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             n_rc += 1
     if n_rc:
         print(f"  recaps: {n_rc} PNGs -> recaps/")
+    # the money machines (tools/money_engine.py + tools/money_publish.py, 2026-11-10): paper/sample output published to <site>/money/ so
+    # Mint, Stoa, Mint City and the five scanner pages never open blank. Never fatal: a failure only leaves their own fixtures in use.
+    try:
+        import subprocess, tempfile
+        with tempfile.TemporaryDirectory() as mtmp:
+            r1 = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "money_engine.py"), "--fixture", "--out", mtmp],
+                                capture_output=True, text=True, timeout=180)
+            r2 = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "money_publish.py"), "--site", out, "--src", mtmp, "--quiet"],
+                                capture_output=True, text=True, timeout=60)
+            print(f"  money: engine rc={r1.returncode}, publish rc={r2.returncode} -> money/*.json (sample data until the PC runs RUN_MONEY.bat)")
+    except Exception as e:  # noqa: BLE001
+        print(f"  money: skipped ({e})")
     open(os.path.join(out, ".nojekyll"), "w").close()
     kb = os.path.getsize(os.path.join(out, "data.json")) // 1024
     print(f"site -> {out}: data.json {kb} KB, {len(ledger)} paper trades, {len(data['trades'])} replay trades, "
