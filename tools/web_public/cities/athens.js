@@ -8,6 +8,7 @@ import { buildStatic } from './athens-build.js';
 import { Batch, PAL, unit } from './athens-geo.js';
 import { rng, hash32 } from './util.js';
 import { Interior } from './athens-interior.js';
+import { renderList, makeCollider, makeNpcs, npcAt, walkStep, HOUSE_TINT, EYE, TIER_NPC } from './athens-world.js';
 
 export const TIERS = { // house cap, trees, lamps, windows
   low: { houses: 520, trees: 150, lamps: 120, windows: 100, dpr: 1.25, ships: false, fps: 30 },
@@ -131,23 +132,24 @@ export class Athens {
     this.ring.visible = this.beam.visible = false; this.ring.frustumCulled = this.beam.frustumCulled = false; scene.add(this.ring, this.beam); own(rm); own(bm);
   }
 
-  houses(own, sm) {
-    const cap = this.T.houses, rows = this.plan.houses.slice(0, cap), size = 280, chunks = new Map(), tones = [[1, 1, 1], [.96, .9, .8], [.98, .86, .68], [.96, .8, .72], [.88, .93, .97], [1, .94, .82]];
+  houses(own = (o) => { this.dispose_.push(o); return o; }, sm) {
+    const cap = this.T.houses, rows = this.houseRows || this.plan.houses.slice(0, cap), size = 280, chunks = new Map(), tones = [[1, 1, 1], [.96, .9, .8], [.98, .86, .68], [.96, .8, .72], [.88, .93, .97], [1, .94, .82]];
     const tint = { trading: [1.02, .98, .86], research: [.94, .98, 1.04], money: [1.04, .94, .84], life: [.98, 1.02, .88] };
     for (const h of rows) { const key = `${Math.floor(h.x / size)}:${Math.floor(h.z / size)}`; (chunks.get(key) || chunks.set(key, []).get(key)).push(h); }
+    if (this.chunks) for (const c of this.chunks) { this.scene.remove(c.a, c.b); c.a.dispose(); c.b.dispose(); }
     const near = unit.house(), far = unit.houseFar(), mat = own(new THREE.MeshLambertMaterial({ vertexColors: true })), farMat = mat;
     const d = new THREE.Object3D(), color = new THREE.Color(); this.chunks = [];
     for (const [, list] of chunks) {
       const mk = (geo) => { const m = new THREE.InstancedMesh(geo, mat, list.length); m.frustumCulled = true; return m; };
       const a = mk(near), b = mk(far); let cx = 0, cz = 0;
       list.forEach((h, i) => {
-        d.position.set(h.x, h.y, h.z); d.rotation.set(0, h.tone > .5 ? 0 : Math.PI / 2, 0); d.scale.set(h.w, h.h, h.d); d.updateMatrix(); a.setMatrixAt(i, d.matrix); b.setMatrixAt(i, d.matrix);
-        const t = tones[Math.floor(h.tone * 6) % 6], g = tint[h.dist] || [1, 1, 1]; color.setRGB(t[0] * g[0], t[1] * g[1], t[2] * g[2]); a.setColorAt(i, color); b.setColorAt(i, color); cx += h.x; cz += h.z;
+        d.position.set(h.x, h.y, h.z); d.rotation.set(0, h.tone > .5 ? 0 : Math.PI / 2, 0); const hs = h.hall ? 1.35 : 1; d.scale.set(h.w * hs, h.h, h.d * hs); d.updateMatrix(); a.setMatrixAt(i, d.matrix); b.setMatrixAt(i, d.matrix);
+        const t = tones[Math.floor(h.tone * 6) % 6], g = tint[h.dist] || [1, 1, 1]; if (h.tintKey) { const k = h.hall ? [1.1, .92, .5] : HOUSE_TINT[h.tintKey]; color.setRGB(t[0] * .35 + k[0] * .65, t[1] * .35 + k[1] * .65, t[2] * .35 + k[2] * .65); } else color.setRGB(t[0] * g[0], t[1] * g[1], t[2] * g[2]); a.setColorAt(i, color); b.setColorAt(i, color); cx += h.x; cz += h.z;
       });
       for (const m of [a, b]) { m.instanceMatrix.needsUpdate = true; m.instanceColor.needsUpdate = true; m.computeBoundingSphere(); }
       b.visible = false; this.scene.add(a, b); this.chunks.push({ a, b, cx: cx / list.length, cz: cz / list.length });
     }
-    void sm; void farMat; this.houseCount = rows.length;
+    void sm; void farMat; this.houseCount = rows.length; this.houseItems = rows.filter((h) => h.village >= 0);
   }
 
   trees(own, sm) {
@@ -372,12 +374,12 @@ export class Athens {
   }
   select(a) {
     this.sel = a; this.ring.visible = this.beam.visible = !!a; if (!a) return;
-    const gy = groundY(a.x, a.z), r = a.major ? 16 : 11; this.ring.position.set(a.x, gy + .6, a.z); this.ring.scale.setScalar(r);
+    const gy = groundY(a.x, a.z), r = a.r || (a.major ? 16 : 11); this.ring.position.set(a.x, gy + .6, a.z); this.ring.scale.setScalar(r);
     this.beam.position.set(a.x, gy, a.z); this.beam.scale.set(.5, a.y + 40 - gy, .5);
   }
 
   frame(dt, t) {
-    this.u.uTime.value = t;
+    this.u.uTime.value = t; this.frameCount++;
     if (this.mode === 'auto' && !this.reduced) { const p = ((performance.now() - this.autoT0) / 90000) % 1; this.time = .5 - .5 * Math.cos(p * Math.PI * 2); this.target = this.time; this.applyTime(); }
     else if (this.fade) { const k = Math.min(1, (performance.now() - this.fade.t0) / 1600), e = k * k * (3 - 2 * k); this.time = lerp(this.fade.from, this.target, e); this.applyTime(); if (k >= 1) this.fade = null; }
     const cam = this.cam;
@@ -387,7 +389,8 @@ export class Athens {
       cam.dist = Math.exp(lerp(Math.log(f.from.dist), Math.log(f.to.dist), e)) * (1 + Math.sin(k * Math.PI) * .35);
       if (k >= 1) this.fly = null;
     }
-    if (this.tour) {
+    if (this.walk) this.walkTick(dt);
+    else if (this.tour) {
       const T = this.tour; T.t += dt; const u = Math.min(1, T.t / T.def.secs), e = u * u * (3 - 2 * u) * .35 + u * .65;
       const p = T.cam.getPoint(e), l = T.look.getPoint(e); this.camera.position.copy(p); const fl = groundY(p.x, p.z) + 4; if (p.y < fl) this.camera.position.y = fl; this.camera.lookAt(l);
       if (u >= 1) { this.tour = null; this.syncFromCamera(l); this.onTourEnd && this.onTourEnd(); }
@@ -399,12 +402,70 @@ export class Athens {
     this.shipsTick(t);
     if (this.beacon) this.beacon.rotation.y = t * .5;
     if (this.needPts) { const k = this.reduced ? .7 : .62 + .22 * Math.sin(t * 2.2); this.needPts.material.opacity = k; this.needBeams.material.opacity = .14 + .16 * k; }
-    if (this.sel) { const s = 1 + Math.sin(t * 3) * .04; this.ring.scale.setScalar((this.sel.major ? 16 : 11) * s); }
-    this.lifeTick(t);
+    if (this.sel) { const s = 1 + Math.sin(t * 3) * .04; this.ring.scale.setScalar((this.sel.r || (this.sel.major ? 16 : 11)) * s); }
+    this.lifeTick(t); this.npcTick(t);
     if (this.interior) this.interior.frame(dt, t);
     this.renderCurrent();
     this.calls = this.renderer.info.render.calls; this.trisDrawn = this.renderer.info.render.triangles;
   }
+
+
+  // ------------------------------------------------------------------ the nested world: villages, villagers, walking
+  /** the world of villages arrived (or changed): redraw the houses with their data, add hamlet halls, villagers, the collision grid */
+  setWorld(world) {
+    this.world = world; this.houseRows = renderList(world, this.T.houses, this.tierName === 'low' ? 6 : 40);
+    this.houses(undefined, undefined);
+    this.anchors = this.anchors.filter((a) => !a.hamlet);
+    for (const v of world.villages) if (!v.temple) this.anchors.push({ kind: 'app', id: v.id, appId: v.id, name: v.name, group: v.group, x: v.x, y: 9, z: v.z, colour: v.colour, blurb: v.blurb + ' (a hamlet: no temple, its houses are its data)', hamlet: true });
+    this.col = makeCollider(this.houseRows, this.plan);
+    this.npcInit(world);
+  }
+  npcInit(world) {
+    if (this.npcMesh) { this.scene.remove(this.npcMesh); this.npcMesh.dispose(); this.npcMesh = null; }
+    const n = TIER_NPC[this.tierName] || 0; this.npcs = n ? makeNpcs(world, this.col, n) : [];
+    if (!this.npcs.length) return;
+    if (!this.npcGeo) { const b = new Batch(); b.cone(0, 0, 0, .36, 1.35, '#ffffff', 6); b.put(unit.sphere(6, 4), 0, 1.3, 0, .21, .21, .21, '#ffffff'); this.npcGeo = b.geometry(); this.dispose_.push(this.npcGeo); this.npcMat = new THREE.MeshLambertMaterial({ vertexColors: true }); this.dispose_.push(this.npcMat); }
+    const m = this.npcMesh = new THREE.InstancedMesh(this.npcGeo, this.npcMat, this.npcs.length), c = new THREE.Color();
+    this.npcs.forEach((q, i) => { m.setColorAt(i, c.set(q.colour)); }); m.instanceColor.needsUpdate = true; m.frustumCulled = false; this.scene.add(m); this.npcD = new THREE.Object3D(); this.npcT = 0;
+  }
+  npcTick(t) {
+    const m = this.npcMesh; if (!m) return; const d = this.npcD, sc = this.walk ? 1 : 2.4, cp = this.camera.position;
+    this.npcT = t; this.npcPos = this.npcPos || [];
+    for (let i = 0; i < this.npcs.length; i++) {
+      const q = npcAt(this.npcs[i], t); this.npcPos[i] = q;
+      d.position.set(q.x, groundY(q.x, q.z), q.z); d.rotation.set(0, -q.yaw, 0); d.scale.setScalar(sc); d.updateMatrix(); m.setMatrixAt(i, d.matrix);
+    }
+    m.instanceMatrix.needsUpdate = true; void cp;
+  }
+  /** a villager near a screen point: { npc, village, fact } or null */
+  pickNpc(px, py, radius = 36) {
+    if (!this.npcs || !this.npcPos) return null; let best = null, bd = radius; const sc = this.walk ? 1 : 2.4;
+    for (let i = 0; i < this.npcs.length; i++) { const q = this.npcPos[i]; if (!q) continue; const p = this.project(q.x, groundY(q.x, q.z) + 1.3 * sc, q.z); if (!p.vis) continue; const d = Math.hypot(p.x - px, p.y - py); if (d < bd) { bd = d; best = i; } }
+    if (best == null) return null; const n = this.npcs[best], v = this.world.villages[this.npcPos[best].near === 'a' ? n.a : n.b]; return { npc: n, village: v, fact: v.fact };
+  }
+  /** a village house near a screen point (the houses that carry data) */
+  pickHouse(px, py, radius = 30) {
+    if (!this.houseItems) return null; let best = null, bd = radius; const cp = this.camera.position;
+    for (const h of this.houseItems) { if (Math.abs(h.x - cp.x) > 520 || Math.abs(h.z - cp.z) > 520) continue; const p = this.project(h.x, (h.y || 0) + h.h * .6, h.z); if (!p.vis) continue; const d = Math.hypot(p.x - px, p.y - py); if (d < bd) { bd = d; best = h; } }
+    return best;
+  }
+  // walking at street level: eye 1.7 m, drag to look, a joystick moves
+  startWalk(x, z, yaw = 0) {
+    if (!this.col) return false; this.tour = null; this.fly = null; this.camera.near = .35; this.camera.updateProjectionMatrix();
+    this.walk = { x, z, yaw, pitch: -.03, input: { fwd: 0, side: 0, run: false }, bob: 0, y: groundY(x, z) + EYE, dist: 0 }; return true;
+  }
+  stopWalk() {
+    if (!this.walk) return; const w = this.walk; this.walk = null; this.camera.near = 1.5; this.camera.updateProjectionMatrix();
+    const c = this.cam; c.tx = w.x; c.tz = w.z; c.ty = groundY(w.x, w.z); c.dist = 120; c.pitch = .55; c.yaw = w.yaw + Math.PI;
+  }
+  walkLook(dx, dy) { const w = this.walk; if (!w) return; w.yaw += dx * .0055; w.pitch = Math.max(-1, Math.min(.9, w.pitch - dy * .0045)); }
+  walkTick(dt) {
+    const w = this.walk, r = walkStep(w, w.input, dt, this.col); w.x = r.x; w.z = r.z; w.dist += r.moved; w.bob += r.moved * 2.1;
+    const gy = groundY(w.x, w.z) + EYE; w.y += (gy - w.y) * Math.min(1, dt * 8);
+    const bob = this.reduced ? 0 : Math.sin(w.bob) * .035, cp = Math.cos(w.pitch);
+    this.camera.position.set(w.x, w.y + bob, w.z); this.camera.lookAt(w.x + Math.sin(w.yaw) * cp, w.y + bob + Math.sin(w.pitch), w.z - Math.cos(w.yaw) * cp);
+  }
+  get walking() { return !!this.walk; }
 
   dispose() { for (const o of this.dispose_) o.dispose && o.dispose(); this.renderer.dispose(); }
 }

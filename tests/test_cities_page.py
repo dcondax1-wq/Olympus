@@ -17,7 +17,7 @@ Read-only: nothing here touches trading logic, orders or secrets.
      no WebGL -> the plain list
 Screenshots: CITIES_SHOTS=<dir> (default: a temp folder, nothing is written into the repo).
 
-    python -X utf8 -m tests.test_cities_page            (~15 min on a quiet machine; --no-browser: a and b only, ~3 s; --only=c|d|e|f|g runs one browser section)
+    python -X utf8 -m tests.test_cities_page            (~15 min on a quiet machine; --no-browser: a and b only, ~3 s; --only=c|d|e|f|g|j|k runs one section; k = the Athens nested world)
 """
 from __future__ import annotations
 
@@ -492,7 +492,7 @@ def sec_d(br, base, C, days, picks, ids):
         inf = pg.enter(cid, settle=3.2)
         k = p.evaluate("window.__cities.nearestToCenter()")
         pt = p.evaluate(f"window.__cities.project({k})")
-        p.touchscreen.tap(pt["x"], pt["y"])
+        p.evaluate(f"window.__athens.ui.tap({pt['x']}, {pt['y']})")
         try:
             p.wait_for_function("window.__cities.info().sheet === 'building'", timeout=20000)
             tapped = True
@@ -994,7 +994,201 @@ def sec_j(br, base, C, days, picks, ids):
     check("j. no console error or page error", not errs, errs[:3])
 
 
-SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f, "g": sec_g, "h": sec_h, "i": sec_i, "j": sec_j}
+# ------------------------------------------------------------------ k. ATHENS nested world: villages, districts, houses, walking, villagers
+NEST_JS = ("athens-villages.js", "athens-world.js", "athens-nest.js")
+
+NEST_NODE = r"""
+import fs from 'fs';
+import { planAthens } from './tools/web_public/cities/athens-plan.js';
+import * as V from './tools/web_public/cities/athens-villages.js';
+import * as W from './tools/web_public/cities/athens-world.js';
+const R = './tools/web_public/cities/', out = {};
+const files = {}; for (const u of V.allUrls()) { try { files[u] = JSON.parse(fs.readFileSync(new URL(u, 'file://' + process.cwd() + '/' + R).pathname, 'utf8')); } catch (e) { files[u] = null; } }
+const NOW = Date.parse('2026-11-10T12:00:00Z'), apps = V.allApps(), by = (id) => apps.find((a) => a.id === id), vd = (id, f = files) => V.villageData(by(id), f, NOW);
+out.apps = apps.length; out.uniq = new Set(apps.map((a) => a.id)).size; out.temples = apps.filter((a) => a.temple).length; out.groups = [...new Set(apps.map((a) => a.group))].sort();
+out.specs = apps.every((a) => { const s = V.specFor(a.id); return Array.isArray(s.src) && typeof s.map === 'function'; });
+const k = vd('kronos'), sib = vd('sibyl'), mer = vd('mercury'), pyt = vd('pythia'), nik = vd('nike'), lyc = vd('lyceum'), chr = vd('chrysos'), dc = vd('datacity'), cas = vd('plutus');
+out.kronos = { n: k.rows.length, status: k.status, fact: k.fact, days: new Set(k.rows.map((r) => r.label)).size, tones: [...new Set(k.rows.map((r) => r.tone))].sort(), money: k.rows.every((r) => r.money && /\$/.test(r.say)), sizes: k.rows.every((r) => r.size >= 0 && r.size <= 1) };
+out.sibyl = { n: sib.rows.length, ok: sib.rows.every((r) => r.label && r.say) }; out.mercury = { n: mer.rows.length, fact: mer.fact, noFakeUsd: !/\$80\b/.test(mer.fact) };
+out.pythia = { n: pyt.rows.length, within14: pyt.rows.every((r) => /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d+ (Nov|Dec)/.test(r.say)) };
+out.misc = { nike: nik.rows.length, lyceum: lyc.rows.length, chrysos: chr.rows.length, datacity: dc.rows.length, plutus: cas.rows.length };
+out.nofiles = { allNone: apps.map((a) => V.villageData(a, {}, NOW)).every((d) => d.status === 'none' && d.rows.length === 0 && /no data today/.test(d.fact)) };
+const junk = {}; for (const u of V.allUrls()) junk[u] = { weird: [1, 'x', null], trades: 'nope', accounts: [null, 3] };
+out.junk = apps.every((a) => { try { V.villageData(a, junk, NOW); return true; } catch (e) { return false; } });
+out.limit = apps.every((a) => vd(a.id).rows.length <= V.MAX_ROWS);
+const st = {}; for (const a of apps) { const d = vd(a.id); st[d.status] = (st[d.status] || 0) + 1; } out.status = st;
+const plan = planAthens(), w = W.buildWorld(plan, files, { now: NOW }), w2 = W.buildWorld(planAthens(), files, { now: NOW });
+out.world = { villages: w.villages.length, summary: w.summary, again: w2.summary === w.summary && w2.villages[7].houses[0].x === w.villages[7].houses[0].x, counts: w.counts };
+const seen = new Set(); let dup = 0, small = 0, over = 0;
+for (const v of w.villages) { for (const h of v.houses) { const key = h.x + ',' + h.z; if (seen.has(key)) dup++; seen.add(key); } if (v.houses.length < 6) small++; if (v.real > v.rows.length) over++; }
+out.claims = { dup, small, over, claimed: w.items.length, total: plan.houses.length, scenery: w.scenery.length, sumReal: w.villages.reduce((s, v) => s + v.real, 0) };
+out.honest = { sumMatches: w.counts.houses === out.claims.sumReal, text: /^\d+ houses from \d+ apps, \d+ apps? without data today/.test(w.summary), noneCount: w.counts.none === w.villages.filter((v) => !v.real).length };
+out.districts = w.districts.map((d) => [d.key, d.villages.length, d.houses]);
+const hi = W.renderList(w, 1100), lo = W.renderList(w, 520, 6);
+out.render = { hi: hi.length, lo: lo.length, loMax: Math.max(...w.villages.map((v) => lo.filter((h) => h.village === v.idx).length)) };
+const col = W.makeCollider(hi, plan); let inside = 0, tried = 0, moved = 0;
+for (const v of w.villages) { const d = W.doorOf(col, v); for (const h of v.houses.slice(0, 4)) { let s = { x: d.x, z: d.z, yaw: W.headingTo(d.x, d.z, h.x, h.z) }; for (let i = 0; i < 300; i++) s = W.walkStep(s, { fwd: 1 }, .05, col); tried++; if (hi.some((q) => { const f = W.footprint(q); return Math.abs(s.x - q.x) < f.hx && Math.abs(s.z - q.z) < f.hz; })) inside++; if (Math.hypot(s.x - d.x, s.z - d.z) > 3) moved++; } }
+out.collide = { inside, tried, moved };
+let slideOk = false, slideInfo = null;
+for (const hb of hi.filter((h) => h.village >= 0).slice(0, 60)) { const f = W.footprint(hb), wx = hb.x - f.hx - .7, wz = hb.z; if (col.hits(wx, wz) || col.hits(wx - 3, wz)) continue;
+  let s = { x: wx - 2, z: wz, yaw: Math.PI / 2 + .7 }; for (let i = 0; i < 30; i++) s = W.walkStep(s, { fwd: 1 }, .05, col);
+  if (Math.abs(s.z - wz) > .8 && s.x < hb.x - f.hx + .01) { slideOk = true; slideInfo = [s.x, s.z, wx, wz]; break; } }
+out.slide = { ok: slideOk, info: slideInfo };
+out.water = col.hits(0, 330) && col.hits(2000, 0);
+const dt = W.walkStep({ x: -75, z: 135, yaw: 0 }, { fwd: 1 }, 1, W.makeCollider([], plan)); out.speed = Math.round(Math.hypot(dt.x + 75, dt.z - 135) * 10) / 10;
+const npcs = W.makeNpcs(w, col, 120); let bad = 0, factOk = 0;
+for (const n of npcs) { for (let t = 0; t < 600; t += 25) { const p = W.npcAt(n, t); if (!Number.isFinite(p.x + p.z) || col.hits(p.x, p.z, .3)) bad++; } const f2 = W.npcFact(w, n, 100); if (f2.village && f2.text.startsWith(f2.village.name)) factOk++; }
+out.npc = { n: npcs.length, bad, factOk, low: W.TIER_NPC.low, high: W.TIER_NPC.high, ultra: W.TIER_NPC.ultra, groups: new Set(npcs.map((n) => n.colour)).size };
+const wh = W.whereAmI(w, w.villages[0].x, w.villages[0].z);
+out.where = { village: wh.village && wh.village.id, district: wh.district, c0: W.compassName(0), c90: W.compassName(Math.PI / 2), c225: W.compassName(Math.PI * 1.25) };
+console.log(JSON.stringify(out));
+"""
+
+
+def part_nest():
+    need = list(NEST_JS) + ["athens-nest.css"]
+    check("k. nest files are all there", all(os.path.isfile(os.path.join(PAGE, n)) for n in need), [n for n in need if not os.path.isfile(os.path.join(PAGE, n))])
+    srcs = {n: read(os.path.join(PAGE, n)) for n in NEST_JS}
+    css = read(os.path.join(PAGE, "athens-nest.css"))
+    check("k. nest: no Math.random, no outside address, no trade or order call, only the village loader reads files",
+          all("Math.random" not in t for t in srcs.values()) and not any(re.findall(r"https?://", t) for t in srcs.values()) and not any(w in " ".join(srcs.values()).lower() for w in ("placeorder", "/api/order", "arm_live"))
+          and all("fetch(" not in t for n, t in srcs.items() if n != "athens-villages.js") and "AbortController" in srcs["athens-villages.js"])
+    check("k. nest: AGORA look (no neon / glow / blur), 44 px targets, joystick on the left half, compass strip, walk bar",
+          "min-height:44px" in css and "min-height:50px" in css and "width:50%" in css and not re.search(r"neon|text-shadow:0 0 [4-9]|backdrop-filter", css)
+          and all(k in css for k in (".ath-compass", ".ath-stickzone", ".ath-walkbar", ".ath-crumbs", ".ath-dtile")))
+    r = subprocess.run(["node", "--input-type=module", "-e", NEST_NODE], cwd=ROOT, capture_output=True, text=True, timeout=90)
+    try:
+        d = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception:
+        d = {}
+        print(r.stdout[-500:], r.stderr[-800:])
+    check("k. registry: one entry per app (40 temples + 20 hamlet apps, 4 districts), every app has a source list and a row mapper, never throws on junk, 40 rows at most",
+          d.get("apps", 0) >= 60 and d.get("apps") == d.get("uniq") and d.get("temples") == 40 and d.get("groups") == ["life", "money", "research", "trading"] and d.get("specs") and d.get("junk") and d.get("limit"),
+          {k: d.get(k) for k in ("apps", "uniq", "temples", "groups", "specs", "junk", "limit")})
+    kr = d.get("kronos", {})
+    check("k. mapping: Kronos = one house per trading day (newest 14) coloured by P&L with $ and R in the sentence, best weekday as the fact; Sibyl / Mercury / Pythia / Nike / Lyceum / Chrysos / Data City / Plutus all give rows",
+          kr.get("n") == kr.get("days") and 5 <= kr.get("n", 0) <= 14 and "best weekday so far" in kr.get("fact", "") and kr.get("money") and kr.get("sizes") and {"good", "bad"} <= set(kr.get("tones", []))
+          and d.get("sibyl", {}).get("n", 0) >= 10 and d.get("sibyl", {}).get("ok") and d.get("mercury", {}).get("n", 0) >= 5 and d.get("pythia", {}).get("n", 0) >= 1 and d.get("pythia", {}).get("within14")
+          and all(d.get("misc", {}).get(x, 0) >= 1 for x in ("nike", "lyceum", "chrysos", "datacity", "plutus")), d.get("kronos"))
+    check("k. honesty: a percent is never shown as dollars, with no files every village says 'no data today', example files are marked 'example' (live vs example vs none counted)",
+          d.get("mercury", {}).get("noFakeUsd") and d.get("nofiles", {}).get("allNone") and d.get("status", {}).get("example", 0) >= 10 and d.get("status", {}).get("none", 0) >= 1, d.get("status"))
+    w = d.get("world", {})
+    c = d.get("claims", {})
+    h = d.get("honest", {})
+    check("k. world: 60+ villages carved from the plan's own houses (no house in two villages, none under 6 houses, deterministic), the headline counts match the houses ('N houses from M apps, K apps without data today')",
+          w.get("villages", 0) >= 60 and w.get("again") and c.get("dup") == 0 and c.get("small") == 0 and c.get("over") == 0 and c.get("claimed", 0) + c.get("scenery", 0) == c.get("total") and h.get("sumMatches") and h.get("text") and h.get("noneCount"),
+          {"world": w, "claims": c, "honest": h})
+    check("k. levels: Athens -> 4 districts (Agora, Acropolis, Harbour, Academy) -> villages -> houses; LITE draws 6 houses per village and never more than the old cap",
+          len(d.get("districts", [])) == 4 and all(x[1] >= 8 for x in d.get("districts", [])) and d.get("render", {}).get("hi", 0) <= 1100 and d.get("render", {}).get("lo", 9999) <= 520 and d.get("render", {}).get("loMax", 99) <= 6,
+          {"districts": d.get("districts"), "render": d.get("render")})
+    co = d.get("collide", {})
+    check("k. collision: walking at every village's houses never ends inside a footprint, the walker moves, slides along a wall, cannot enter the sea, walks about 2.6 m per second",
+          co.get("inside") == 0 and co.get("tried", 0) >= 200 and co.get("moved", 0) > co.get("tried", 1) * .5 and d.get("slide", {}).get("ok") and d.get("water") and 2.4 <= d.get("speed", 0) <= 2.8,
+          {"collide": co, "slide": d.get("slide"), "water": d.get("water"), "speed": d.get("speed")})
+    n = d.get("npc", {})
+    check("k. villagers: 120 on ULTRA / 80 on HIGH / 0 on LITE, every route is clear of houses, every villager tells a fact that starts with its village, colour = the app's group (4 colours), compass and 'where am I' work",
+          n.get("n") == 120 and n.get("bad") == 0 and n.get("factOk") == n.get("n") and (n.get("low"), n.get("high"), n.get("ultra")) == (0, 80, 120) and 1 < n.get("groups", 0) <= 4
+          and d.get("where", {}).get("village") == "zenith" and (d.get("where", {}).get("c0"), d.get("where", {}).get("c90"), d.get("where", {}).get("c225")) == ("N", "E", "SW"), {"npc": n, "where": d.get("where")})
+
+
+def frames(p, n):
+    """wait until the scene has drawn n more frames (a slow software GPU draws only a few a second)"""
+    f = p.evaluate("window.__athens.scene.frameCount")
+    p.wait_for_function(f"window.__athens.scene.frameCount >= {f + n}", timeout=90000)
+
+
+def sec_k(br, base, C, days, picks, ids):
+    """Athens nested world in Chromium at 390 x 844: villages load, budgets hold, Places levels with crumbs, a house card, walking, the guide, villagers."""
+    errs = []
+    out = {}
+    os.makedirs(SHOTS, exist_ok=True)
+    for q in ("high", "low"):
+        ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2 if q == "high" else 1, has_touch=True, is_mobile=True)
+        p = ctx.new_page()
+        p.on("pageerror", lambda e: errs.append(str(e)))
+        p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
+        p.goto(base + f"?athens=1&first=0&q={q}&light=day", wait_until="domcontentloaded")
+        p.wait_for_function("window.__athens && window.__athens.world", timeout=170000)
+        p.wait_for_timeout(2000)
+        out[q] = p.evaluate("({ calls: window.__athens.calls(), tris: window.__athens.tris(), houses: window.__athens.houses, npcs: (window.__athens.scene.npcs || []).length, sub: document.querySelector('#athSub').textContent, err: window.__athensWorldError || null })")
+        if q == "high":
+            p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_open.png"))
+            p.click("[data-a=n-places]")
+            p.wait_for_timeout(400)
+            world = p.evaluate("document.querySelector('.ath-sheet').innerText")
+            p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_world.png"))
+            p.click("[data-a=n-district][data-k=money]")
+            p.wait_for_timeout(1700)
+            dist = p.evaluate("document.querySelector('.ath-sheet').innerText")
+            p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_district.png"))
+            p.click("[data-a=n-village][data-id=kronos]")
+            p.wait_for_timeout(2000)
+            vill = p.evaluate("({ t: document.querySelector('.ath-sheet').innerText, map: !!document.querySelector('.ath-vmap'), rows: document.querySelectorAll('.ath-hrow').length, crumbs: [...document.querySelectorAll('.ath-sheet .ath-crumbs button')].map((b) => b.textContent) })")
+            p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_village.png"))
+            p.click(".ath-hrow >> nth=0")
+            p.wait_for_timeout(1700)
+            house = p.evaluate("({ t: document.querySelector('.ath-sheet').innerText, href: (document.querySelector('.ath-sheet .ath-go') || {}).href || '' })")
+            p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_house.png"))
+            p.click(".ath-sheet .ath-crumbs button >> nth=1")
+            p.wait_for_timeout(1500)
+            back = p.evaluate("document.querySelector('.ath-sheet').innerText")
+            p.click("[data-a=sheetx]")
+            tiny = p.evaluate("[...document.querySelectorAll('.ath-dock button, .ath-walkbar button')].filter((b) => b.offsetParent && (b.getBoundingClientRect().height < 43.5 || b.getBoundingClientRect().width < 43.5)).map((b) => b.textContent)")
+            check("k. HIGH: Places shows the honest count, 4 districts, the villages of a district, a village with a house map and one row per house, a house with the item's words and an Open button, breadcrumbs lead back",
+                  "houses from" in world and "without data today" in world and all(x in world for x in ("Agora district", "Acropolis district", "Harbour district", "Academy district")) and "Kronos" in dist and "Mercury" in dist
+                  and vill["map"] and vill["rows"] >= 5 and vill["crumbs"][:3] == ["Athens", "Harbour district", "Kronos"] and "R)" in house["t"] and "$" in house["t"] and house["href"].endswith("/kronos/") and "Harbour district" in back and "Kronos" in back,
+                  {"w": world[:120], "v": vill, "h": house})
+            check("k. the dock fits 6 buttons, all taps >= 44 px", not tiny, tiny)
+            p.evaluate("(() => { const s = window.__athens.scene, v = s.world.villages.find((x) => x.id === 'kronos'); s.flyTo(v.x, v.z, { dist: 70, pitch: .7, dur: .02 }); })()")
+            p.wait_for_function("!window.__athens.scene.fly", timeout=60000)
+            frames(p, 2)
+            pt = p.evaluate("(() => { const s = window.__athens.scene, v = s.world.villages.find((x) => x.id === 'kronos'), hh = v.houses[1]; return s.project(hh.x, (hh.y || 0) + hh.h * .6, hh.z); })()")
+            p.evaluate(f"window.__athens.ui.tap({pt['x']}, {pt['y']})")
+            p.wait_for_timeout(700)
+            card = p.evaluate("document.querySelector('.ath-card').innerText")
+            p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_housecard.png"))
+            check("k. tap a village house in 3D -> a card with its plain words, a $ and an R, Open Kronos, Walk here", "Kronos" in card and "$" in card and " R" in card and "Open Kronos" in card and "Walk here" in card, card[:160])
+            p.evaluate("(() => { const s = window.__athens.scene, q = s.npcPos[0]; s.flyTo(q.x, q.z, { dist: 40, pitch: .5, dur: .02 }); })()")
+            p.wait_for_function("!window.__athens.scene.fly", timeout=60000)
+            frames(p, 2)
+            p.evaluate("(() => { const s = window.__athens.scene, q = s.npcPos[0], v = s.project(q.x, 3, q.z); window.__athens.ui.tap(v.x, v.y); })()")
+            p.wait_for_timeout(700)
+            npc = p.evaluate("document.querySelector('.ath-card').innerText")
+            p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_villager.png"))
+            check("k. HIGH: 80 villagers in one extra draw call; tap one -> 'Villager' and a plain fact from its village", out[q]["npcs"] == 80 and "Villager" in npc and ":" in npc, npc[:140])
+        # walk (both tiers)
+        p.evaluate("window.__athens.nest.act('n-walkto', { dataset: { id: 'kronos' } })")
+        frames(p, 3)
+        w0 = p.evaluate("(async () => { const { groundY } = await import('./athens-plan.js'), s = window.__athens.scene, w = s.walk; return { x: w.x, z: w.z, y: s.camera.position.y, gy: w.y, ground: groundY(w.x, w.z) }; })()")
+        p.evaluate("(() => { const s = window.__athens.scene; s.walk.input.fwd = 1; for (let i = 0; i < 60; i++) s.walkTick(.1); s.walk.input.fwd = 0; })()")
+        frames(p, 4)
+        w1 = p.evaluate("(() => { const s = window.__athens.scene, w = s.walk; return { x: w.x, z: w.z, dist: w.dist, where: document.querySelector('.ath-where').textContent, compass: document.querySelector('.ath-compass').innerText, stick: !document.querySelector('.ath-stickzone').hidden }; })()")
+        p.screenshot(path=os.path.join(SHOTS, f"athens_nest_390x844_walk_{q}.png"))
+        p.evaluate("(() => { const z = document.querySelector('.ath-stickzone'), ev = (t, x, y) => z.dispatchEvent(new PointerEvent(t, { pointerId: 9, clientX: x, clientY: y, bubbles: true, isPrimary: true })); ev('pointerdown', 100, 600); ev('pointermove', 100, 556); window.__ev = ev; })()")
+        inp = p.evaluate("({ ...window.__athens.scene.walk.input })")
+        p.evaluate("window.__ev('pointerup', 100, 556)")
+        inp0 = p.evaluate("({ ...window.__athens.scene.walk.input })")
+        p.evaluate("window.__athens.nest.act('n-guide', document.querySelector('[data-a=n-guide]'))")
+        p.wait_for_timeout(500)
+        d0 = p.evaluate("window.__athens.scene.walk.dist")
+        p.evaluate("(() => { const s = window.__athens.scene, n = window.__athens.nest; for (let i = 0; i < 80; i++) { n.guideFrame(.1); s.walkTick(.1); } })()")
+        gd = p.evaluate("(() => { const g = window.__athens.nest.guide; return g ? { on: true, tgt: g.target.id, moved: window.__athens.scene.walk.dist } : { on: false }; })()")
+        p.evaluate("window.__athens.nest.act('n-exit')")
+        p.wait_for_timeout(600)
+        after = p.evaluate("({ walking: window.__athens.scene.walking, cls: document.querySelector('#athens').classList.contains('walking'), bar: document.querySelector('.ath-walkbar').hidden, dock: getComputedStyle(document.querySelector('.ath-dock')).display })")
+        check(f"k. {q.upper()}: Walk drops to street level (eye 1.7 m), the joystick moves the walker, the compass and 'where am I' read right, the guide walks, Leave returns to the city",
+              abs(w0["gy"] - (w0["ground"] + 1.7)) < .6 and abs(w0["y"] - w0["gy"]) < .3 and w1["dist"] > 5 and w1["stick"] and "Facing" in w1["where"] and "district" in w1["where"] and w1["compass"].strip() != "" and inp["fwd"] > .6 and inp0["fwd"] == 0
+              and gd["on"] and gd["tgt"] and gd["moved"] > d0 + 3 and not after["walking"] and not after["cls"] and after["bar"] and after["dock"] != "none", {"w0": w0, "w1": w1, "inp": inp, "gd": gd, "after": after})
+        ctx.close()
+    hi, lo = out["high"], out["low"]
+    check("k. budgets unchanged: HIGH <= 42 draw calls / 150k triangles, LITE <= 28 draw calls / 80k triangles with 0 villagers; the villages load without an error",
+          not hi["err"] and not lo["err"] and hi["calls"] <= 42 and hi["tris"] <= 150_000 and lo["calls"] <= 28 and lo["tris"] <= 80_000 and lo["npcs"] == 0 and hi["houses"] >= 900 and 400 <= lo["houses"] <= 520, out)
+    check("k. the header says how many houses and apps are real ('N houses from M apps' and 'without data')", all("houses from" in out[q]["sub"] and "without data" in out[q]["sub"] for q in out), out)
+    check("k. no console error or page error", not errs, errs[:3])
+    print("       numbers:", json.dumps(out))
+
+
+SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f, "g": sec_g, "h": sec_h, "i": sec_i, "j": sec_j, "k": sec_k}
 
 def run_browser(C, days, picks):
     from playwright.sync_api import sync_playwright
@@ -1037,6 +1231,8 @@ def main():
     C = part_a()
     if want("j"):
         part_athens()
+    if want("k"):
+        part_nest()
     days, picks, seeds = part_b(C)
     if not no_browser:
         try:

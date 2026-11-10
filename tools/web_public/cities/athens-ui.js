@@ -103,6 +103,7 @@ export class AthensUI {
       const p = ptr.get(e.pointerId); if (!p) return; const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
       if (down) down.moved += Math.abs(dx) + Math.abs(dy);
       if (S.interior) { S.interior.look(dx, dy); return; }
+      if (S.walk) { if (ptr.size === 1) S.walkLook(dx, dy); return; }
       if (ptr.size === 1) { if (down.moved > 4) stopTour(); S.orbit(dx, dy); }
       else if (ptr.size === 2 && pinch) {
         stopTour(); const [a, b] = [...ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
@@ -124,6 +125,7 @@ export class AthensUI {
     if (this.scene.interior || this.root.classList.contains('photo')) return;
     const r = this.canvas.getBoundingClientRect(), a = this.scene.pick(cx - r.left, cy - r.top, 44);
     this.closeSheet();
+    if (this.nest && this.nest.tap(cx - r.left, cy - r.top)) return;
     if (a) { this.showCard(a); this.scene.select(a); window.OLYMPUS?.cue?.('tap'); } else { this.hideCard(); this.scene.select(null); }
   }
 
@@ -132,7 +134,7 @@ export class AthensUI {
     const g = GROUPS.find((x) => x.key === a.group) || GROUPS[4], app = a.appId && this.findApp(a.appId);
     this.card.innerHTML = `<button class="ath-x" data-a="cardx" aria-label="Close card">${SVG.close}</button>
       <span class="ath-pill" style="--c:${g.tint}">${txt(g.name)}${a.kind === 'app' ? ' · app' : a.kind === 'ship' ? ' · account ship' : a.kind === 'pillar' ? ' · today' : ' · monument'}</span>
-      <h3>${txt(a.name)}</h3><p>${txt(a.blurb)}</p>${a.need ? `<p class="ath-need"><b>Needs you:</b> ${txt(a.need.title)}. ${txt(a.need.say)}</p>` : a.kind === 'app' && this.live ? '<p class="ath-calm">Calm: nothing to do here right now.</p>' : ''}
+      <h3>${txt(a.name)}</h3><p>${txt(a.blurb)}</p>${this.nest && a.kind === 'app' ? this.nest.cardExtra(a) : ''}${a.need ? `<p class="ath-need"><b>Needs you:</b> ${txt(a.need.title)}. ${txt(a.need.say)}</p>` : a.kind === 'app' && this.live ? '<p class="ath-calm">Calm: nothing to do here right now.</p>' : ''}
       <div class="ath-btns">${a.kind === 'app' ? `<button data-a="enter" data-id="${txt(a.id)}">Enter</button>` : ''}${app && app.id !== 'cities' ? `<a class="ath-go" href="${appHref(app.id)}">Open ${txt(app.name)}</a>` : ''}<button data-a="fly" data-id="${txt(a.id)}">Fly here</button></div>`;
     this.card.hidden = false; this.cur = a; this.root.classList.add('has-card');
   }
@@ -187,6 +189,7 @@ export class AthensUI {
   // ------------------------------------------------------------------ actions
   act(a, b, ev) {
     const S = this.scene;
+    if (a.startsWith('n-') && this.nest) return this.nest.act(a, b);
     if (a === 'close') return this.hooks.onClose && this.hooks.onClose();
     if (a === 'cardx') { this.hideCard(); S && S.select(null); return; }
     if (a === 'sheetx') return this.closeSheet();
@@ -276,7 +279,7 @@ export class AthensUI {
 
   // ------------------------------------------------------------------ per frame
   frame() {
-    const S = this.scene; if (!S) return; this.tick++;
+    const S = this.scene; if (!S) return; this.tick++; if (this.nest) this.nest.frame();
     if (this.tick % 3 === 0) { this.drawMini(); if (S.touring) this.root.querySelector('#athTourBar').style.width = Math.round(S.progress * 100) + '%'; }
     if (this.tick % 2) return;
     this.avoid = [this.miniB, this.root.querySelector('.ath-today'), this.root.querySelector('.ath-tourbar')].filter((e) => e && !e.hidden).map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0);
