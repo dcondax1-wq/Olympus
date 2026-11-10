@@ -27,11 +27,25 @@
 // the Jarvis screen, from tts.js: the owner's pick (the Voice sheet, else the VOICE button here), else the most natural female
 // English voice the phone has (Ava / Zoe premium first, novelty voices never), said in sentence chunks with the text cleaned
 // for speech. The VOICE button steps through them; the pick is kept for both ('jarvis.voiceCfg' and 'jarvis.vmVoice').
+// Push-to-talk (2026-11-10, JARVIS BRAIN): on an iPhone / iPad the default is HOLD TO TALK: the big button listens while it is held
+// and sends on release, and Jarvis never starts listening by itself after an answer (iOS Safari drops hands-free recognition, asks
+// for the mic again and loops on "no-speech"). A plain-words status line (#vmState, aria-live) always says what is happening:
+// Listening / Thinking / Speaking / Hold the button to talk. The MODE button switches to hands-free and back; the choice is kept in
+// 'jarvis.vmPtt' ('1' hold, '0' hands-free). Elsewhere the default stays hands-free (the old behaviour). vm.stats() adds { ptt, status }.
 // iPhone Safari 16: plain ES2020, no regex lookbehind.
 
 import { voiceScore as ttsScore, bestVoice as ttsBest, voiceChoices as ttsChoices, cleanSpeech, createSpeaker, savedVoiceName, needsPrimer, CFG_KEY, DEFAULTS } from './tts.js';
 
 export const VOICE_KEY = 'jarvis.vmVoice';
+export const PTT_KEY = 'jarvis.vmPtt';
+/** the status line's words per phase, in plain language (ptt: hold-to-talk) */
+export function statusText(phase, ptt, holding) {
+  if (phase === 'listening') return ptt && holding ? 'Listening. Let go to send.' : 'Listening. Say it now.';
+  if (phase === 'thinking') return 'Thinking.';
+  if (phase === 'speaking') return ptt ? 'Speaking. Hold the button to cut in.' : 'Speaking. Tap the circle to cut in.';
+  return ptt ? 'Hold the button and talk.' : 'Tap the circle to talk.';
+}
+export const isIOS = (ua, touchPts) => /iPad|iPhone|iPod/.test(String(ua || '')) || (/Macintosh/.test(String(ua || '')) && (touchPts || 0) > 1);
 const SILENT_TURNS = 3;          // turns with nothing heard before voice mode waits for a tap (no endless listening)
 const LISTEN_MAX_MS = 15000;     // one listening turn at most
 const WPS = 2.7;                 // words per second at rate 1, for the speaking pulse until the phone reports word timing
@@ -138,6 +152,11 @@ function style() {
 .vm-hint{position:relative;z-index:2;margin:6px 0 0;font:600 9px var(--fh,"Orbitron",sans-serif);letter-spacing:.24em;color:var(--mut,#8a8499);text-align:center}
 .vm-type{position:relative;z-index:3;display:flex;gap:8px;width:100%;max-width:640px;margin-top:8px}
 .vm-type[hidden]{display:none}
+.vm-state{margin:6px 16px 0;text-align:center;font:600 15px/1.3 -apple-system,'SF Pro Text',system-ui,sans-serif;color:#f3ece0;min-height:20px}
+.vm-ptt-row{display:flex;gap:10px;justify-content:center;align-items:center;margin:8px 16px calc(14px + env(safe-area-inset-bottom,0px))}
+.vm-ptt{min-height:56px;min-width:180px;padding:0 26px;border-radius:28px;border:1px solid #c8a24a;background:#26211b;color:#f3ece0;font:600 17px -apple-system,'SF Pro Text',system-ui,sans-serif;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.vm-ptt[hidden]{display:none}
+.vm[data-holding=on] .vm-ptt{background:#c8a24a;color:#14110e}
 .vm-type input{flex:1;min-width:0;min-height:44px;padding:0 14px;border-radius:22px;border:1px solid rgba(var(--cr,168,85,247),.6);background:rgba(0,0,0,.5);color:#fff;font:500 16px var(--fb,"Rajdhani",sans-serif)}
 .vm[data-phase=listening] .vm-tag{color:#ffd0da;text-shadow:0 0 10px var(--bad,#ff4d6d)}
 .vm[data-motion=on] .vm-tag{animation:vmBlink 2.4s ease-in-out infinite}
@@ -158,6 +177,9 @@ export function createVoiceMode(deps) {
   let actx = null, stream = null, src = null, an = null, buf = null, fbuf = null, micErr = '', wake = null;
   let speech = null, sess = 0, specCol = '#c084fc';   // speech: the reply being spoken {words, frags, t0, real, idx, done}
   let voices = [], said = { noSR: false }, turns = 0, lastReply = null;
+  let holding = false, status = '';
+  const savedPtt = (() => { const v = safe(() => localStorage.getItem(PTT_KEY), null); return v === '1' ? true : v === '0' ? false : null; })();
+  let ptt = savedPtt != null ? savedPtt : isIOS(safe(() => navigator.userAgent, ''), safe(() => navigator.maxTouchPoints, 0));
   const $ = (s) => (el ? el.querySelector(s) : null);
 
   // ---------------------------------------------------------------- the voice list (iPhone loads it late)
@@ -203,14 +225,25 @@ export function createVoiceMode(deps) {
         <div class="vm-frags" id="vmFrags"></div>
       </div>
     </div>
+    <p class="vm-state" id="vmState" role="status" aria-live="polite"></p>
     <div class="vm-cap"><p class="vm-you" id="vmYou"></p><p class="vm-jar" id="vmJar" aria-live="polite"></p></div>
     <p class="vm-hint" id="vmHint">TAP THE CORE TO TALK OR INTERRUPT · END TO STOP</p>
-    <form class="vm-type" id="vmType" autocomplete="off" hidden><input id="vmQ" type="text" enterkeyhint="send" placeholder="Type to Jarvis…" aria-label="Type to Jarvis"><button class="vm-btn" type="submit">SEND</button></form>`;
+    <form class="vm-type" id="vmType" autocomplete="off" hidden><input id="vmQ" type="text" enterkeyhint="send" placeholder="Type to Jarvis…" aria-label="Type to Jarvis"><button class="vm-btn" type="submit">SEND</button></form>
+    <div class="vm-ptt-row"><button class="vm-ptt" type="button" id="vmPtt" aria-label="Hold to talk" hidden>Hold to talk</button>
+      <button class="vm-btn" type="button" id="vmMode" aria-label="Switch between hold to talk and hands free" title="Hold to talk or hands free">HOLD TO TALK</button></div>`;
     document.body.appendChild(el);
     $('#vmX').addEventListener('click', (e) => { e.stopPropagation(); close('end'); });
     $('#vmVoice').addEventListener('click', (e) => { e.stopPropagation(); ensureMic(); nextVoice(); });
     $('#vmKb').addEventListener('click', (e) => { e.stopPropagation(); showType(true, true); });
     $('#vmStage').addEventListener('click', tapCore);
+    const pb = $('#vmPtt');
+    pb.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); try { pb.setPointerCapture(e.pointerId); } catch (_) { /* old browser */ } pttDown(); });
+    pb.addEventListener('pointerup', (e) => { e.stopPropagation(); pttUp(); });
+    pb.addEventListener('pointercancel', () => pttUp());
+    pb.addEventListener('contextmenu', (e) => e.preventDefault());
+    pb.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); pttDown(); } });
+    pb.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pttUp(); } });
+    $('#vmMode').addEventListener('click', (e) => { e.stopPropagation(); setPtt(!ptt); });
     $('#vmStage').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCore(); } });
     $('#vmType').addEventListener('submit', (e) => { e.preventDefault(); const q = $('#vmQ'), t = q.value.trim(); q.value = ''; if (t) { stopTalk(); submit(t); } });
     el.addEventListener('keydown', (e) => { if (e.key === 'Escape') close('end'); });
@@ -220,9 +253,39 @@ export function createVoiceMode(deps) {
     if (!el) return;
     el.dataset.phase = phase;
     $('#vmPhase').textContent = PHASE_WORD[phase];
+    paintStatus();
     if (core) safe(() => core.setState(CORE_STATE[phase]));
     if (hint != null) $('#vmHint').textContent = hint;
     if (!motion) paintLevel(phase === 'listening' || phase === 'speaking' ? 0.5 : 0.15);
+  }
+  function paintStatus(msg) {
+    status = msg || statusText(phase, ptt, holding);
+    if (!el) return;
+    const st = $('#vmState'); if (st) st.textContent = status;
+    el.dataset.holding = holding ? 'on' : 'off'; el.dataset.ptt = ptt ? 'on' : 'off';
+    const pb = $('#vmPtt'), mb = $('#vmMode');
+    if (pb) pb.hidden = !ptt || typed || !SR || said.blocked;
+    if (mb) mb.textContent = ptt ? 'HOLD TO TALK' : 'HANDS-FREE';
+  }
+  function setPtt(on) {
+    ptt = !!on; safe(() => localStorage.setItem(PTT_KEY, ptt ? '1' : '0'));
+    holding = false; paintStatus();
+    if (open && SR && !said.blocked) { if (ptt && phase === 'listening') { stopRec(); ++turn; setPhase('idle', ''); } }
+  }
+  // hold to talk: the press (a tap, so the mic and the voice may start) begins listening, the release sends what was heard
+  function pttDown() {
+    if (!open || holding) return;
+    ensureMic(); unlockVoice();
+    if (!SR || said.blocked) { toTyping(said.blocked ? 'blocked' : ''); return; }
+    holding = true; silent = 0; stopTalk();
+    listen({ hold: true });
+    paintStatus();
+  }
+  function pttUp() {
+    if (!holding) return;
+    holding = false; paintStatus();
+    if (rec) { const r = rec; safe(() => r.stop()); }               // the recognizer finishes: onresult / onend send it
+    else if (phase === 'listening') { ++turn; setPhase('idle', ''); }
   }
   function renderVerdict() {
     const v = call('verdict') || {};
@@ -331,7 +394,8 @@ export function createVoiceMode(deps) {
         : 'Voice input is not available here, so type below and I will answer out loud.', null);
     } else setPhase('idle', 'TYPE BELOW · END TO STOP');
   }
-  function listen() {
+  function listen(opt) {
+    const hold = !!(opt && opt.hold);
     if (!open) return;
     if (!SR || said.blocked) { toTyping(said.blocked ? 'blocked' : ''); return; }
     stopRec(); stopTalk();
@@ -341,33 +405,37 @@ export function createVoiceMode(deps) {
       if (sent || my !== turn) return;
       sent = true;
       const t = (fin || inter).trim();
-      if (t) { silent = 0; submit(t); return; }
+      if (t) { silent = 0; holding = false; submit(t); return; }
+      holding = false;
+      if (hold) { setPhase('idle', ''); paintStatus('I did not catch that. Hold the button and try again.'); return; }
       silent++;
       if (silent < SILENT_TURNS) setTimeout(() => { if (open && my === turn && phase === 'listening') listen(); }, 350);
       else setPhase('idle', 'TAP THE CORE WHEN YOU NEED ME · END TO STOP');
     };
     try {
       const r = rec = new SR();
-      r.lang = 'en-US'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 1;
+      r.lang = 'en-US'; r.continuous = hold; r.interimResults = true; r.maxAlternatives = 1;
       r.onresult = (e) => {
         if (my !== turn) return;
         fin = ''; inter = '';
         const res = e && e.results ? e.results : [];
         for (let i = 0; i < res.length; i++) { const a = res[i] && res[i][0]; if (!a) continue; if (res[i].isFinal) fin += a.transcript + ' '; else inter += a.transcript + ' '; }
         capYou((fin + inter).trim()); evLv = 1;
-        if (fin.trim()) { safe(() => r.stop()); done(); }
+        if (fin.trim() && !hold) { safe(() => r.stop()); done(); }
       };
       r.onspeechstart = () => { evLv = 1; };
       r.onerror = (e) => {
         if (my !== turn) return;
         const er = e && e.error;
-        if (er === 'not-allowed' || er === 'service-not-allowed') { said.blocked = true; sent = true; rec = null; toTyping('blocked'); }
+        if (er === 'not-allowed' || er === 'service-not-allowed') { said.blocked = true; sent = true; rec = null; holding = false; toTyping('blocked'); }
+        else if (er === 'network') { said.blocked = true; sent = true; rec = null; holding = false; toTyping('blocked'); paintStatus('The speech service is not reachable. Type below instead.'); }
+        else if (er === 'no-speech') { paintStatus('I heard nothing. ' + (ptt ? 'Hold the button and talk.' : 'Say it again.')); }
         else if (er === 'audio-capture' && stream) { releaseMic(); micErr = 'busy'; }        // the phone gives the mic to one of them: speech wins
       };
       r.onend = () => { if (my !== turn) return; rec = null; clearTimeout(recT); done(); };
       r.start();
-      recT = setTimeout(() => { if (rec === r) safe(() => r.stop()); }, LISTEN_MAX_MS);
-      setPhase('listening', 'LISTENING · TAP TO PAUSE · END TO STOP');
+      recT = setTimeout(() => { if (rec === r) safe(() => r.stop()); }, hold ? LISTEN_MAX_MS * 2 : LISTEN_MAX_MS);
+      setPhase('listening', hold ? 'LISTENING · LET GO TO SEND · END TO STOP' : 'LISTENING · TAP TO PAUSE · END TO STOP');
     } catch (_) { rec = null; toTyping(''); }
   }
 
@@ -454,7 +522,8 @@ export function createVoiceMode(deps) {
       s.done = true; clearTimeout(s.watch); revealAll(); speech = null;
       if (typeof after === 'function') { after(); return; }
       if (reply && reply.open) { close('open'); call('openApp', reply); return; }
-      if (SR && !said.blocked) setTimeout(() => { if (open && my === turn) listen(); }, 300);
+      if (SR && !said.blocked && !ptt) setTimeout(() => { if (open && my === turn) listen(); }, 300);
+      else if (SR && !said.blocked) setPhase('idle', 'HOLD THE BUTTON TO TALK · END TO STOP');
       else setPhase('idle', 'TYPE BELOW · END TO STOP');
     };
     const est = 900 + (words.length / (WPS * rate)) * 1000;
@@ -470,12 +539,12 @@ export function createVoiceMode(deps) {
     if (!open) return;
     ensureMic(); unlockVoice();
     if (phase === 'speaking' || phase === 'thinking') { stopTalk(); ++turn; silent = 0; listen(); return; }
-    if (phase === 'listening') { stopRec(); ++turn; setPhase('idle', 'PAUSED · TAP THE CORE TO TALK · END TO STOP'); return; }
+    if (phase === 'listening') { if (holding) return; stopRec(); ++turn; setPhase('idle', 'PAUSED · TAP THE CORE TO TALK · END TO STOP'); return; }
     silent = 0; listen();
   }
 
   // ---------------------------------------------------------------- open / close
-  const onHide = () => { if (document.visibilityState !== 'visible') close('hidden'); };
+  const onHide = (e) => { if ((e && e.type === 'pagehide') || document.visibilityState !== 'visible') close('hidden'); };
   function openVM(o) {
     if (open) return;
     if (!el) build();
@@ -485,8 +554,8 @@ export function createVoiceMode(deps) {
     el.hidden = false;
     call('onOpen');
     capYou(''); $('#vmJar').textContent = ''; clearFrags(); showType(false);
-    loadVoices(); renderVerdict(); mountCore(); setPhase('idle', '');
-    document.addEventListener('visibilitychange', onHide);
+    loadVoices(); renderVerdict(); mountCore(); setPhase('idle', ''); paintStatus();
+    document.addEventListener('visibilitychange', onHide); window.addEventListener('pagehide', onHide);
     if (o && o.gesture) { ensureMic(); unlockVoice(); }
     else window.addEventListener('pointerup', ensureMic, { once: true, capture: true });   // a hold: the release is the tap
     safe(() => { if (navigator.wakeLock) navigator.wakeLock.request('screen').then((w) => { if (open) wake = w; else w.release(); }).catch(() => {}); });
@@ -494,14 +563,14 @@ export function createVoiceMode(deps) {
     safe(() => $('#vmX').focus({ preventScroll: true }));
     if (!SR) { toTyping(''); return; }
     const g = String(call('greeting') || 'At your service').replace(/[.!]+$/, '');
-    sayLine(`${g}. I'm listening.`, null);
+    sayLine(`${g}. ${ptt ? 'Hold the button and talk.' : "I'm listening."}`, null);
   }
   function close(why) {
     if (!open) return;
     open = false; ++turn;
     stopRec(); stopTalk(); stopLoop(); releaseMic();
     window.removeEventListener('pointerup', ensureMic, { capture: true });
-    document.removeEventListener('visibilitychange', onHide);
+    document.removeEventListener('visibilitychange', onHide); window.removeEventListener('pagehide', onHide); holding = false;
     if (wake) { safe(() => wake.release()); wake = null; }
     if (core) safe(() => core.destroy());
     core = null;
@@ -512,7 +581,8 @@ export function createVoiceMode(deps) {
     open: (o) => safe(() => openVM(o || {})),
     close: (why) => safe(() => close(why)),
     isOpen: () => open,
-    stats: () => ({ open, phase, level: +level.toFixed(3), turns, motion, typing: typed, recognition: !!SR && !said.blocked,
+    setPtt: (v) => safe(() => setPtt(v)), pttDown: () => safe(pttDown), pttUp: () => safe(pttUp),
+    stats: () => ({ ptt, holding, status, open, phase, level: +level.toFixed(3), turns, motion, typing: typed, recognition: !!SR && !said.blocked,
       mic: !!stream, micLive: !!(stream && stream.getTracks().some((t) => t.readyState === 'live')), micErr, audio: actx ? actx.state : 'closed',
       core: core ? safe(() => (typeof core.stats === 'function' ? core.stats() : 'mounted'), 'mounted') : null, loop: !!raf,
       voice: (voice() || {}).name || '', speaking: !!speech, reply: lastReply ? lastReply.speak || lastReply.text : '' }),
