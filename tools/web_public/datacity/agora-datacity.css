@@ -53,3 +53,9 @@ input[type=search]{background:#14110e;border-color:#3a3228}
 .mi:active{border-color:#c8a24a}
 .vote{letter-spacing:0}
 .lift .lb{background:#2b251d}
+
+/* phone-fit 2026-11-10 (tap targets on a 320 px screen) */
+.tab { min-width: 44px; }
+
+/* phone-fit 2026-11-10 (clipped text on a 320 px screen: wrap instead of cutting) */
+.top h1 { flex: 0 1 auto; min-width: 0; overflow: visible; white-space: normal; }
