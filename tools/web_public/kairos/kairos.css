@@ -66,7 +66,7 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .fallback .gold { fill: #c8a24a; }
 .lead { font-size: 15px; color: var(--ag-text); }
 .filebtn { cursor: pointer; }
-textarea { width: 100%; min-height: 96px; padding: 10px 12px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-text); font: 500 13px/1.4 var(--ag-sans); resize: vertical; }
+textarea { width: 100%; min-height: 96px; padding: 10px 12px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-text); font: 500 16px/1.4 var(--ag-sans); resize: vertical; }
 .fld input[type="range"] { padding: 0; min-height: 44px; accent-color: #c8a24a; background: transparent; border: 0; }
 .fld input[type="number"] { font-size: 17px; }
 .flds { display: grid; gap: 10px; margin: 8px 0; }

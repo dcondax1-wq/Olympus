@@ -197,7 +197,7 @@ def part_a():
           and all(x in html for x in ("../kalshicity/edges.json", "../kalshicity/learning_log.json", "../kalshicity/learned.json")) and "kbI.line(k, Date.now())" in html)
     check("a. brain.js and modes.js carry their delimited KALSHI-BRAIN blocks (the option, the ask after the bots', the digest items; the Think-for-me items and the Business quick asks)",
           brain.count("KALSHI-BRAIN") >= 3 and "kb.answer(raw, q, V.f && V.f.kalshi, V.now)" in brain and "kalshiBrain: kb" in brain and "D.kalshiBrain" in modes and "How much should I bet?" in modes)
-    check("a. this job did not edit sw.js (the shell worker belongs to the bug-hunt agent): the new file is listed for the lead", "kalshi-brain" not in rd(JV, "sw.js"))
+    check("a. the lead listed the new file in the shell worker (sw.js SHELL), so the offline copy is whole", "kalshi-brain" in rd(JV, "sw.js"))
 
 
 def part_bcd(R):
