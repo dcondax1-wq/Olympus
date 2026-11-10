@@ -34,6 +34,18 @@ function cleanItem(i) {
     n: Math.max(0, Math.round(num(i.n) || 0)), win: num(i.win), breakEven: num(i.break_even), winLow: num(i.win_low), evC: num(i.ev_c), edgeC: num(i.edge_c), feeC: num(i.fee_c),
     stakePct: num(i.stake_pct) || 0, stakeUsd: num(i.stake_usd), winUsd: num(i.win_usd), ruinPct: num(i.ruin_pct), usdMonth: num(i.usd_month), study: str(i.status_study, 12) };
 }
+/** Sibyl's own paper ledger (money/sibyl_forward.json, written by tools/money/sibyl_ledger.py) -> counts recomputed from the bets themselves. Net and win rate exist ONLY at MIN_N settled bets or more: no claim without n. */
+export const OWN_MIN = 30;
+export function normOwn(j) {
+  if (!isObj(j) || j.kind !== 'sibyl-forward' || !Array.isArray(j.bets)) return null;
+  const bets = j.bets.filter(isObj).map((b) => ({ id: str(b.id, 80), day: str(b.day, 10), title: str(b.title, 60), stake: num(b.stake_usd), win: num(b.win_usd), status: ['open', 'won', 'lost', 'void'].includes(b.status) ? b.status : 'open', pnl: num(b.pnl_usd), r: num(b.r) })).filter((b) => b.id && b.stake > 0);
+  const done = bets.filter((b) => (b.status === 'won' || b.status === 'lost') && b.pnl != null), n = done.length, wins = done.filter((b) => b.status === 'won').length;
+  const out = { start: str(j.start_day, 10), nBets: bets.length, nOpen: bets.filter((b) => b.status === 'open').length, n, wins, losses: n - wins, claim: n >= OWN_MIN, status: n < OWN_MIN ? 'collecting' : n < 100 ? 'early' : 'building', recent: bets.slice(-8).reverse() };
+  if (out.claim) { const net = r2(done.reduce((s, b) => s + b.pnl, 0)), avg = done.reduce((s, b) => s + b.stake, 0) / n; Object.assign(out, { net, avg: r2(avg), netR: Math.round(net / avg * 10) / 10, winRate: wins / n }); }
+  out.text = out.claim ? `${n} settled paper bets since ${out.start} (n=${n}): ${wins} won, ${n - wins} lost, net ${both(out.net, out.avg)}. ${n < 100 ? 'Still a small sample: luck can look like skill.' : 'A bigger sample, but a short stretch of one market.'}`
+    : `Collecting: ${n} settled paper bets since ${out.start} (${out.nOpen} still open). n=${n}, fewer than ${OWN_MIN}: no claim is made. Net and win rate stay hidden until then.`;
+  return out;
+}
 /** the scanner's file -> a view, or null when it is not a Sibyl file (so the page falls back to the demo) */
 export function normSibyl(j) {
   if (!isObj(j) || j.id !== 'sibyl' || !Array.isArray(j.items) || !isObj(j.headline)) return null;
@@ -51,6 +63,7 @@ export function normSibyl(j) {
     score: { n: Math.max(0, Math.round(num(sb.n) || 0)), minN: num(sb.min_n) || 30, status: ['collecting', 'early', 'building'].includes(sb.status) ? sb.status : 'collecting', start: str(sb.start_day, 10), text: str(sb.text, 400) || 'No forward paper tally yet: nothing is claimed.',
       note: str(sb.note, 300), gaps: Math.round(num(sb.gaps) || 0),
       sets: (Array.isArray(sb.sets) ? sb.sets : []).filter(isObj).map((s) => ({ id: str(s.id, 8), name: str(s.name, 60), n: Math.round(num(s.n) || 0), net: r2(num(s.net) || 0), vsAsis: r2(num(s.vs_asis) || 0), wins: Math.round(num(s.wins) || 0), losses: Math.round(num(s.losses) || 0) })).slice(0, 6) },
+    own: normOwn(j.own),
     ageDays: isObj(j.source) ? num(j.source.age_days) : null,
   };
 }

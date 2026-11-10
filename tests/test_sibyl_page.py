@@ -33,7 +33,9 @@ def _scanner():
 def test_static():
     r = subprocess.run([sys.executable, "-I", SCAN, "--selftest"], capture_output=True, text=True, timeout=300)
     check("a. the scanner's own selftest passes (tools/money/sibyl.py --selftest)", r.returncode == 0 and "ALL PASS" in r.stdout, r.stdout[-600:] + r.stderr[-300:])
-    AK.static_kit(APP, NAME, reads=("../money/sibyl.json",))
+    r2 = subprocess.run([sys.executable, "-I", os.path.join(AK.ROOT, "tools", "money", "sibyl_ledger.py"), "--selftest"], capture_output=True, text=True, timeout=300)
+    check("a. the own-picks ledger's selftest passes (tools/money/sibyl_ledger.py --selftest)", r2.returncode == 0 and "ALL PASS" in r2.stdout, r2.stdout[-600:] + r2.stderr[-300:])
+    AK.static_kit(APP, NAME, reads=("../money/sibyl.json", "../money/sibyl_forward.json"))
     d = os.path.join(AK.WEB, APP)
     fx = json.load(open(os.path.join(d, "fixture.json"), encoding="utf-8"))
     m = _scanner()
@@ -41,7 +43,7 @@ def test_static():
     _, fresh = m.run(tempfile.mkdtemp(prefix="sibyl-t-"), fixture=True)
     check("a. fixture.json is exactly what `sibyl.py --fixture` writes (rebuild it with that command when the scanner changes): demo, status sample", json.dumps(fx, sort_keys=True) == json.dumps(fresh, sort_keys=True) and fx["status"] == "sample", fx.get("status"))
     html = AK.read(os.path.join(d, "index.html"))
-    check("a. the page order: today (ball), picks, every kind of bet, scoreboard, what could go wrong, how to read this", html.index('id="stage"') < html.index('id="picks"') < html.index('id="list"') < html.index('id="sbCard"') < html.index('id="riskCard"') < html.index('id="notes"'))
+    check("a. the page order: today (ball), picks, every kind of bet, scoreboard, what could go wrong, how to read this", html.index('id="stage"') < html.index('id="picks"') < html.index('id="list"') < html.index('id="sbCard"') < html.index('id="ownCard"') < html.index('id="riskCard"') < html.index('id="notes"'))
     check("a. the 3D ball is its own module tag (a failed load can never stop the page) and the flat twin exists", 'src="sibylball.js' in html and "SIBYL_BALL_FAIL" in html and 'id="flat"' in html)
     ball = AK.read(os.path.join(d, "sibylball.js"))
     check("a. the ball is light: the OLYMPUS render core + materials, bloom <= .25, a dpr cap <= 1.5, a lathe stand, no per-frame allocation of textures, reads no data and sends nothing",
@@ -70,6 +72,9 @@ import(process.argv[2]).then((C) => {
   o.junk = [junk.map((x) => x === null || (Array.isArray(x.items) && x.items.length === 0)), C.chooseView(null, fx).src, C.chooseView({ id: 'sibyl', items: [], headline: { text: 'x' } }, fx).src, C.chooseView(null, null)];
   const evil = C.normSibyl({ id: 'sibyl', status: 'ok', headline: { text: '<img src=x onerror=alert(1)>Hello' }, items: [{ title: '<b>Bold</b> bet', detail: 'a<script>x</script>b', score: 999, risk: 'zzz', tier: 'nope', n: -5 }, { title: '' }, 7], notes: ['<i>n</i>'] });
   o.evil = [evil.head, evil.items.length, evil.items[0].title, evil.items[0].detail, evil.items[0].score, evil.items[0].risk, evil.items[0].tier, evil.items[0].n, evil.notes[0], evil.bank.usd, evil.status];
+  const ow = C.normOwn(fx.own), bigb = []; for (let i = 0; i < 40; i++) bigb.push({ id: 'd' + i, day: '2026-01-01', title: 'x', stake_usd: 2, win_usd: 0.1, status: i % 10 ? 'won' : 'lost', pnl_usd: i % 10 ? 0.1 : -2 });
+  const big = C.normOwn({ kind: 'sibyl-forward', start_day: '2026-01-01', bets: bigb });
+  o.own = [ow.n, ow.nOpen, ow.nBets, ow.claim, ow.status, 'net' in ow, ow.text.includes('no claim') && ow.text.includes('n=12'), ow.recent.length, big.claim, big.n, big.net, big.netR, big.text.includes('n=40') && big.text.includes('small sample'), C.normOwn(null), C.normOwn({ kind: 'x', bets: [] }), C.normOwn({ kind: 'sibyl-forward', bets: [{ id: 'a', stake_usd: 0 }, 7] }).nBets, v.own.n];
   const a = C.tokenLayout(v.items, 8), b = C.tokenLayout(v.items, 8);
   o.tok = [a.length, JSON.stringify(a) === JSON.stringify(b), a[0].label, a.every((t) => t.radius > 1.4 && t.size > 0.1), C.flatPos(a[0], 0).x > 0 && C.flatPos(a[0], 10).x < 320, C.tokenLayout([], 8).length, C.tokenLayout(v.items, 3).length];
   o.head = [C.headlineWords(v).startsWith('Example numbers: '), C.headlineWords({ ...v, demo: false, status: 'stale' }).startsWith('Old numbers: '), C.headlineWords({ ...v, demo: false, status: 'ok' }) === v.head, C.statusLevel(v), C.statusLevel({ ...v, status: 'ok', counts: { worthy: 2 } }), C.statusLevel({ ...v, status: 'ok', counts: { worthy: 0 } }), C.statusLevel({ ...v, status: 'stale' })];
@@ -104,6 +109,8 @@ def test_maths():
           o["evil"] == ["Hello", 1, "Bold bet", "a x b", 100, "high", "unproven", 0, "n", 100, "ok"], o["evil"])
     check("b. the token layout is deterministic, one token per ranked pick (8 at most), the label is the break-even price in cents, the flat twin stays inside its box",
           o["tok"] == [8, True, "96¢", True, True, 0, 3], o["tok"])
+    check("b. own ledger: 12 settled, 2 open, 14 recorded, collecting with NO net field and 'no claim' + n in the words; 40 settled gives the claim with n, net $ with R, 'small sample'; junk is null or empty; the demo view carries it",
+          o["own"] == [12, 2, 14, False, "collecting", False, True, 8, True, 40, -4.4, -2.2, True, None, None, 0, 12], o["own"])
     check("b. headline words say Example / Old numbers; the status level is off for the demo, ok with picks, warn with none or stale", o["head"] == [True, True, True, "off", "ok", "warn", "warn"], o["head"])
     check("b. the Jarvis card: Sibyl, a level, 3 kpis (picks, best edge, the paper 1R), a paper-only line, an integer t, under 8 KB, no markup", o["card"] == ["Sibyl", "off", 3, "3", "$3.41", "Paper only: Sibyl places no bet.", True, True, False], o["card"])
     check("b. ages in plain words and 'time unknown' when it cannot tell", o["age"] == ["30 min ago", "9 days ago", "time unknown", "time unknown"], o["age"])
@@ -143,6 +150,9 @@ def test_page():
             check("c. the scoreboard says Collecting with its n (18), and the bankroll box starts at the file's $170.26; the risks list has the standing cautions",
                   d["sb"] == "Collecting, n=18" and "n=18" in d["sbt"] and d["bank"] == "170.26" and d["risks"] >= 4, d)
             check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
+            ow = p.evaluate("() => [document.querySelector('#ownPill').textContent, document.querySelector('#ownTiles').textContent, document.querySelectorAll('#ownRows > li').length, document.querySelector('#ownText').textContent]")
+            check("c. Sibyl's own picks: 'Collecting, n=12', the counts, net and win rate HIDDEN (no claim below 30), recent bets with their R, n in the words",
+                  ow[0] == "Collecting, n=12" and "Settled12" in ow[1] and "Net and win ratehidden" in ow[1] and "$" not in ow[1] and ow[2] == 8 and "n=12" in ow[3] and "no claim" in ow[3], ow)
             AK.shot(p, "sibyl-demo")
             p.fill("#bank", "1000")
             p.wait_for_timeout(200)
