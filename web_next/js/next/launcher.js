@@ -17,7 +17,7 @@
   'use strict';
   if (window.OLYMPUS_LAUNCHER) return;
   var d = document, root = d.documentElement;
-  var PUBLIC = 'https://demetrades2000-coder.github.io/nq-dashboard/';
+  var PUBLIC = (function () { try { var o = localStorage.getItem('oly.public'); if (o && /^https:\/\/[^ ]+\/$/.test(o)) return o; } catch (e) { /* the default below */ } return 'https://demetrades2000-coder.github.io/nq-dashboard/'; })();   // the PC dashboard has no apps of its own: a site address saved as localStorage 'oly.public' overrides the default
   var RECENT_KEY = 'oly.launcher.recent', STATUS_KEY = 'oly.launcher.status', RECENT_MAX = 4, STATUS_TTL = 5 * 60 * 1000, STALE_S = 30 * 60, FETCH_MS = 5000, PARALLEL = 4;
   var GROUPS = [['trading', 'Trading'], ['life', 'Life'], ['money', 'Money']];
   // Every app keeps its registry glyph and receives a small visual signature. These names are presentation only:

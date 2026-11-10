@@ -15,7 +15,9 @@
   // the Pages site. Raw first, the GitHub API second; a 404 = not connected yet.
   const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
   const API = 'https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main';
-  const STEP0 = 'Open your kalshi-server chat in the Claude app and paste: Set up Jarvis for my Kalshi bot by following https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md';
+  // the setup link is this site's own SETUP.md (same origin); the old address stays as the fallback when the page is opened locally
+  const SETUP_URL = /^https:$/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname) ? new URL('SETUP.md', location.href).href : 'https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md';
+  const STEP0 = 'Open your kalshi-server chat in the Claude app and paste: Set up Jarvis for my Kalshi bot by following ' + SETUP_URL;
   // the server script is pinned: the site build writes kit.json next to this page ({"v":1, "file":"kalshi_status_vm.py",
   // "sha256":"<64 hex>"}); with a valid hash the step carries it, else the step stays exactly STEP0
   let STEP = STEP0;

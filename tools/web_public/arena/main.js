@@ -11,7 +11,7 @@ import { desk } from './rhythm.js';
 import { illustratedColosseum } from './illustration.js?v=c2';
 
 const O = window.OLYMPUS || null;
-const JARVIS_ORIGIN = 'https://demetrades2000-coder.github.io';
+const JARVIS_ORIGIN = (/^https?:/.test(location.protocol) ? location.origin : 'https://demetrades2000-coder.github.io');   // Jarvis is on the same origin as the app; the old address only when opened from a file
 const REFRESH_MS = 60000;
 document.getElementById('arena-illustration').innerHTML = illustratedColosseum(); // static local artwork only; no event/user data
 // the demo's phone: what a linked Planner, vault and Kalshi feed would show on Friday 2026-10-30 at 17:00 ET
