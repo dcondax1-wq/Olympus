@@ -55,3 +55,6 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold2);outline-offs
 .towers{z-index:1}
 @media(max-width:600px){.tower{width:13%}.tower span{font-size:12px;writing-mode:vertical-rl;bottom:-68px}.city{height:380px}.towers{bottom:32%}.ground{height:32%}.horizon{bottom:32%}}
 *{scroll-behavior:auto!important;transition:none!important}
+
+/* phone-fit 2026-11-10 (tap targets on a 320 px screen) */
+.back { flex: 0 0 48px; min-width: 48px; }
