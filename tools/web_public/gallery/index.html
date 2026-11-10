@@ -35,10 +35,11 @@
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
 
+  <div class="seg views" id="views" role="group" aria-label="View"></div>
   <section class="ag-card stagecard" id="stageCard" aria-label="The pedestal">
     <div class="stage" id="stageBox">
       <canvas id="stage" tabindex="0" role="img" aria-label="A 3D shape turning on a marble pedestal. Drag to turn it, tap to look closer."></canvas>
-      <div class="flat" id="flat" aria-hidden="true"><svg id="flatSvg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg></div>
+      <div class="flat" id="flat" aria-hidden="true"><svg id="flatSvg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg><div class="flatrow" id="flatRow"></div></div>
       <button class="nav prev" id="prev" type="button" aria-label="Previous shape">&#8249;</button>
       <button class="nav next" id="next" type="button" aria-label="Next shape">&#8250;</button>
       <p class="hint" id="hint">Drag to turn. Tap to look closer.</p>
@@ -61,6 +62,25 @@
     <p class="note" id="qualityNote"></p>
   </section>
 
+  <section class="ag-card card" id="buildCard" aria-labelledby="buildH" hidden>
+    <p class="ag-eyebrow">Scene builder</p>
+    <h2 id="buildH">Your scene</h2>
+    <p class="lead" id="buildCount">Tap shapes on the shelf below to put up to 6 on the pedestal.</p>
+    <div class="picked" id="picked"></div>
+    <div class="row"><button class="btn" id="buildClear" type="button">Clear</button><button class="btn primary" id="buildShare" type="button">Share</button></div>
+    <input class="link" id="shareUrl" type="text" readonly aria-label="Link to this scene" hidden>
+    <p class="note" id="buildNote"></p>
+  </section>
+
+  <section class="ag-card card" id="collCard" aria-labelledby="collH" hidden>
+    <p class="ag-eyebrow">Collection</p>
+    <h2 id="collH">Every shape at once</h2>
+    <p class="lead" id="collCount"></p>
+    <p class="lead"><b id="collName">Tap a shape</b> <span id="collMeans"></span></p>
+    <div class="row"><button class="btn" id="collOpen" type="button" disabled>Show on the pedestal</button></div>
+  </section>
+
+  <div class="chips" id="cats" role="group" aria-label="Category"></div>
   <section id="shelf" class="shelf" aria-label="The shelf: every shape"></section>
   <p class="foot">Built from olympus/shapes3d.js. Warm marble, bronze and gold; nothing here moves money.</p>
 </main>
