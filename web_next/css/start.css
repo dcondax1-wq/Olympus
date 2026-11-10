@@ -121,7 +121,7 @@ button.rsw[disabled] { cursor: default; }
 .rsw.starting .rsw-knob { background: color-mix(in srgb, var(--warn) 30%, transparent); }
 .rsw.starting .rsw-t b { color: var(--warn); }
 .rsw.need { border-color: color-mix(in srgb, var(--bad) 65%, transparent); background: color-mix(in srgb, var(--bad) 13%, transparent); }
-.rsw.need .rsw-knob { background: var(--bad); color: #fff; }
+.rsw.need .rsw-knob { background: var(--bad); color: #f3ece0; }
 .rsw.need .rsw-t b { color: var(--bad); }
 .rsw.need .rsw-t em { color: var(--ink); }
 .rsw.offline { opacity: .75; cursor: default; }

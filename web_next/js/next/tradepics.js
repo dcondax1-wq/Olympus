@@ -45,7 +45,7 @@
     const rt = realTxt(x);
     return `${x.short || x.key || ''} · ${hm(x.entry_t)} ET · ${x.side || ''} · ${res}${rt ? ' · ' + rt : ''}`.trim();
   }
-  const col = (x) => x.open || x.exit_kind === 'OPEN' ? 'var(--accent,#6d7cff)' : (x.r || 0) > 0.05 ? 'var(--good,#2ee59d)' : (x.r || 0) < -0.05 ? 'var(--bad,#ff5a7a)' : 'var(--muted,#8a93a6)';
+  const col = (x) => x.open || x.exit_kind === 'OPEN' ? 'var(--accent,#7fa6bd)' : (x.r || 0) > 0.05 ? 'var(--good,#7f8a52)' : (x.r || 0) < -0.05 ? 'var(--bad,#ff5a7a)' : 'var(--muted,#8a93a6)';
   function reg(L) { const g = 'tp' + (++gid); G[g] = L; return g; }
   function img(x, cls) {
     return `<span class="tp-sk ${cls || ''}"><img class="tp-img" src="${esc(x.url)}" alt="${esc(x.alt || title(x))}" loading="lazy" decoding="async" width="${x.w || 1600}" height="${x.h || 900}"></span>`;
@@ -199,7 +199,7 @@ border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:11px;
 .tp-lb-n{opacity:.7;font-size:12px}.tp-lb-x{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;font-size:24px;line-height:1;cursor:pointer}
 .tp-lb-stage{position:relative;flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:zoom-in}
 .tp-lb.zoom .tp-lb-stage{cursor:grab}.tp-lb-img{max-width:100%;max-height:100%;transform-origin:center;user-select:none;-webkit-user-drag:none;transition:opacity .2s;opacity:0}
-.tp-lb.ok .tp-lb-img{opacity:1}.tp-lb-spin{position:absolute;width:30px;height:30px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#6d7cff;animation:tp-rot 0.9s linear infinite}
+.tp-lb.ok .tp-lb-img{opacity:1}.tp-lb-spin{position:absolute;width:30px;height:30px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#7fa6bd;animation:tp-rot 0.9s linear infinite}
 .tp-lb.ok .tp-lb-spin{display:none}@keyframes tp-rot{to{transform:rotate(360deg)}}
 .tp-lb-p,.tp-lb-q{position:absolute;top:50%;width:44px;height:64px;margin-top:-32px;border:0;border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-size:34px;cursor:pointer}
 .tp-lb-p{left:8px}.tp-lb-q{right:8px}.tp-lb-p[hidden],.tp-lb-q[hidden]{display:none}
