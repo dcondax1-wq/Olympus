@@ -89,7 +89,7 @@
 // v54 (2026-11-03 night, owner: "room to floor should be directly what the drawdown is"): every eval card shows "Drawdown left
 // $X of $max loss" (the real MFFU account first, not the cloud paper ledger) and no "session X of 10" bars (boardcore, realcore,
 // missioncore, goals, hub, more, extras, litkit, second, statuscore, procore, blitzcore, fleet, launch, hermes/cards).
-const CACHE = 'le-public-v64';
+const CACHE = 'le-public-v65';
 const NAV_WAIT_MS = 3500;
 let SLOW_UNTIL = 0;       // the site was just slow (the page waited NAV_WAIT_MS): data.json / home.json then wait 0.4 s, not 3.5 s
 const COPY_CLIENTS = new Map();   // a page (client id) answered from the saved copy -> until when its data.json / home.json are too
