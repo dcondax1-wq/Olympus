@@ -85,11 +85,9 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .stage canvas { transition: none; } }
 html[data-oly-lite="1"] .stage { background: #2a2118; }
 /* the page ends 176px above the bottom so Jarvis keeps its corner */
-<<<<<<< HEAD
 .wrong { border-color: #6e3424; }
-=======
+
 
 /* phone-fit 2026-11-10 (tools/phone_fit_audit.py): gain / loss words at least 4.5:1 on the raised panels */
 .pos, .ag-good, .pill.ok { color: #a0ac6e; } .neg, .ag-bad, .pill.bad { color: #e08a6b; }
 .note { color: var(--ag-soft); }
->>>>>>> worktree-agent-ae49898dbc04700e7
