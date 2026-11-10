@@ -35,8 +35,8 @@
 //   "atlas trades" -> '#/atlas/trades', "holodeck" -> '#/holo', null when nothing matches.
 //   CSS hooks on the Jarvis page: --zm-z (the layer's z-index, default 2147483000) and --zm-safe-top / -right / -bottom /
 //   -left (override the screen's safe areas, e.g. in a test; default env(safe-area-inset-*)). The look follows the page's
-//   theme: --c (border, glow), --c2, --c3 (highlights), --pr (glass), --txt, --fh (Georgia labels); without them the
-//   Jarvis violet: #9c6b3c / #c9a06a on rgba(12,10,20,.85).
+//   theme: --c (border, glow), --c2, --c3 (highlights), --pr (glass), --txt, --fh (Orbitron labels); without them the
+//   Jarvis violet: #a855f7 / #c084fc on rgba(12,10,20,.85).
 //   Zenith's side: index.html's head (inside-Jarvis detection, the safe areas) and embed.js (the protocol, the settings
 //   code "bring my Zenith settings": which keys move and which never do is listed at the top of embed.js).
 //   Tested by tests/test_zenith_mode.py.
@@ -111,7 +111,7 @@ const CSS = `
 .zm-root{position:fixed;inset:0;z-index:var(--zm-z,2147483000);background:#07080c;opacity:0;visibility:hidden;pointer-events:none;
   transition:opacity .2s ease,visibility 0s linear .2s;
   --zm-cr:168,85,247;--zm-c2r:192,132,252;--zm-c3r:192,132,252;--zm-pr:12,10,20;--zm-txt:var(--txt,#ece9f2);
-  --zm-fh:var(--fh,"Georgia","Bahnschrift","Segoe UI",system-ui,-apple-system,sans-serif)}
+  --zm-fh:var(--fh,"Orbitron","Bahnschrift","Segoe UI",system-ui,-apple-system,sans-serif)}
 .zm-root.on{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .2s ease}
 .zm-frame{position:absolute;inset:0;width:100%;height:100%;border:0;margin:0;padding:0;display:block;background:#07080c;color-scheme:dark}
 .zm-back{position:absolute;z-index:5;top:0;right:var(--zm-sr,0px);width:44px;height:${CH}px;margin:0;padding:0;border:0;background:none;color:var(--zm-txt);
@@ -134,7 +134,7 @@ const CSS = `
 .zm-back:focus{outline:none}.zm-back:focus-visible .zm-pill{outline:2px solid rgba(var(--zm-cr),.9);outline-offset:2px}
 .zm-back:active .zm-orb{transform:scale(.9)}
 .zm-tip{position:absolute;top:50%;right:42px;transform:translate(6px,-50%);padding:8px 12px;border-radius:10px;background:rgba(var(--zm-pr),.92);
-  border:1px solid rgba(var(--zm-cr),.5);color:var(--zm-txt);font:600 10.5px/1.2 var(--zm-fh);letter-spacing: .05em;text-transform:uppercase;
+  border:1px solid rgba(var(--zm-cr),.5);color:var(--zm-txt);font:600 10.5px/1.2 var(--zm-fh);letter-spacing:.14em;text-transform:uppercase;
   white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .25s ease,transform .25s ease;
   box-shadow:0 0 14px rgba(var(--zm-cr),.3),0 8px 24px rgba(0,0,0,.5)}
 .zm-back.left .zm-tip{right:auto;left:42px;transform:translate(-6px,-50%)}
@@ -149,14 +149,14 @@ const CSS = `
 .zm-root.apps .zm-apps,.zm-root.apps .zm-scrim{opacity:1;transform:none}
 .zm-apps[hidden],.zm-scrim[hidden]{display:none}
 .zm-chip{display:flex;align-items:center;gap:10px;min-height:44px;min-width:44px;margin:0;padding:0 16px 0 8px;text-align:left;border-radius:11px;
-  border:1px solid rgba(var(--zm-cr),.32);background:rgba(var(--zm-cr),.07);color:var(--zm-txt);font:600 11.5px/1 var(--zm-fh);letter-spacing: .05em;
+  border:1px solid rgba(var(--zm-cr),.32);background:rgba(var(--zm-cr),.07);color:var(--zm-txt);font:600 11.5px/1 var(--zm-fh);letter-spacing:.14em;
   text-transform:uppercase;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s ease,border-color .12s ease}
 .zm-chip:active{background:rgba(var(--zm-cr),.2);border-color:rgba(var(--zm-cr),.75)}
 .zm-chip:focus{outline:none}.zm-chip:focus-visible{outline:2px solid rgba(var(--zm-cr),.9);outline-offset:2px}
 .zm-ci{width:28px;height:28px;border-radius:8px;flex:none;display:grid;place-items:center;object-fit:cover;box-sizing:border-box;overflow:hidden;
   border:1px solid rgba(var(--zm-cr),.35);background:rgba(var(--zm-pr),.9)}
 .zm-chip .zm-orb{width:18px;height:18px}
-.zm-gl{color:rgb(var(--zm-c3r));font:700 13px/1 var(--zm-fh);letter-spacing:0;text-shadow: none}
+.zm-gl{color:rgb(var(--zm-c3r));font:700 13px/1 var(--zm-fh);letter-spacing:0;text-shadow:0 0 8px rgba(var(--zm-cr),.6)}
 @media (prefers-reduced-motion:reduce){.zm-root,.zm-back,.zm-apps,.zm-scrim,.zm-chip{transition:none!important}}
 html.zm-on,html.zm-on body{overscroll-behavior:none}
 `;
@@ -195,7 +195,7 @@ export function mountZenithMode(opts = {}) {
   host.appendChild(root);
 
   // the hub's theme (Jarvis: --c / --c2 / --c3 / --pr on <html data-theme>, any CSS colour or an "r,g,b" token) carries over
-  // to the control and its chips; violet (#9c6b3c / #c9a06a on rgba(12,10,20,.85)) when the page has none
+  // to the control and its chips; violet (#a855f7 / #c084fc on rgba(12,10,20,.85)) when the page has none
   const cprobe = doc.createElement('i');
   cprobe.setAttribute('aria-hidden', 'true');
   cprobe.style.cssText = 'position:absolute;width:0;height:0;visibility:hidden;pointer-events:none';
