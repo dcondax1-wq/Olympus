@@ -57,3 +57,7 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .dd { margin: 0; text-align: center; font-size: 17px; font-weight: 700; }
 .kv dd small.sub2 { display: block; font: 500 12px var(--ag-sans); color: var(--ag-muted); }
 .plain { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; color: var(--ag-soft); } .plain li::marker { color: var(--ag-bronze); }
+
+/* phone-fit 2026-11-10 (tools/phone_fit_audit.py): text-safe gain / loss ink (olympus/agora.css --ag-olive-text / --ag-terra-text) */
+.pos, .sub3.pos, .sblock.more h3, .pill.ok { color: var(--ag-olive-text, #a0ac6e); }
+.neg, .sub3.neg, .sblock.stop h3, .pill.bad { color: var(--ag-terra-text, #e08a6b); }

@@ -59,3 +59,7 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .trow { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--ag-line); font-size: 14px; min-height: 44px; align-items: center; } .trow:last-child { border-bottom: 0; }
 .clock { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; } .clock b { font-size: 34px; line-height: 1; }
 .line { width: 100%; height: auto; display: block; }
+
+/* phone-fit 2026-11-10 (tools/phone_fit_audit.py): text-safe gain / loss ink (olympus/agora.css --ag-olive-text / --ag-terra-text) */
+.pos, .sub3.pos, .sblock.more h3, .pill.ok { color: var(--ag-olive-text, #a0ac6e); }
+.neg, .sub3.neg, .sblock.stop h3, .pill.bad { color: var(--ag-terra-text, #e08a6b); }

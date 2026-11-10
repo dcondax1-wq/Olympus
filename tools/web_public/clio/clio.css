@@ -70,3 +70,9 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .shbody { overflow-y: auto; display: grid; gap: 10px; align-content: start; padding-bottom: 24px; -webkit-overflow-scrolling: touch; }
 .rd-h { margin: 8px 0 0; font-size: 17px; } .rd-p { margin: 0; font-size: 15px; color: var(--ag-soft); } .rd-row { margin: 0; font: 600 13px var(--ag-num); color: var(--ag-text); padding: 6px 10px; background: #211c16; border-radius: 8px; overflow-wrap: anywhere; }
 .rd-ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--ag-soft); }
+
+/* phone-fit 2026-11-10 (tools/phone_fit_audit.py): text-safe gain / loss ink (olympus/agora.css --ag-olive-text / --ag-terra-text) */
+.pos, .sub3.pos, .sblock.more h3, .pill.ok { color: var(--ag-olive-text, #a0ac6e); }
+.neg, .sub3.neg, .sblock.stop h3, .pill.bad { color: var(--ag-terra-text, #e08a6b); }
+.ag-num.pos, .tile b.pos, b.pos { color: var(--ag-olive-text, #a0ac6e); } .ag-num.neg, .tile b.neg, b.neg { color: var(--ag-terra-text, #e08a6b); }
+.ideabtn b.pos, .wu-m b.pos { color: var(--ag-olive-text, #a0ac6e); } .ideabtn b.neg, .wu-m b.neg { color: var(--ag-terra-text, #e08a6b); }

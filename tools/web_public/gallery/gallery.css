@@ -62,3 +62,6 @@ html.framed #app { padding-top: 12px; }
 details > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--ag-soft); }
 @media (prefers-reduced-motion: reduce) { .stage.live .flat { transition: none; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }
+
+/* phone-fit 2026-11-10: the hint on the stage's lit centre */
+.hint { color: var(--ag-soft); }

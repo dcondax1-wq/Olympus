@@ -46,7 +46,7 @@ function paintMap() {
   S.goals.forEach((g, i) => {
     const p = lay.pts[i], pr = C.progress(g, S.F), isNext = !pr.done && S.goals.findIndex((x) => !C.progress(x, S.F).done) === i;
     const a = sv('g', { class: 'isle', role: 'button', tabindex: 0, 'data-i': i, 'aria-label': `${g.name}: ${pr.done ? 'reached' : C.pct(pr.frac) + ' of the way'}`, 'aria-pressed': i === S.pick ? 'true' : 'false' }, svg);
-    sv('circle', { class: 'ring', cx: p.x, cy: p.y, r: 28, fill: i === S.pick ? 'rgba(200,162,74,.18)' : 'rgba(0,0,0,0)', stroke: isNext || i === S.pick ? '#c8a24a' : 'rgba(0,0,0,0)', 'stroke-width': 2 }, a);
+    sv('circle', { class: 'ring', cx: p.x, cy: p.y, r: 34, fill: i === S.pick ? 'rgba(200,162,74,.18)' : 'rgba(0,0,0,0)', stroke: isNext || i === S.pick ? '#c8a24a' : 'rgba(0,0,0,0)', 'stroke-width': 2 }, a);
     sv('ellipse', { cx: p.x, cy: p.y + 8, rx: 24, ry: 8, fill: '#13222c' }, a);
     sv('path', { d: `M${p.x - 22} ${p.y + 6} Q${p.x - 10} ${p.y - 18} ${p.x} ${p.y - 14} Q${p.x + 12} ${p.y - 20} ${p.x + 22} ${p.y + 6} Z`, fill: pr.done ? '#7f8a52' : '#8a7f6a', stroke: pr.done ? '#5a6338' : '#5e5444', 'stroke-width': 1.2 }, a);
     if (pr.done) { sv('line', { x1: p.x, y1: p.y - 14, x2: p.x, y2: p.y - 34, stroke: '#f3ece0', 'stroke-width': 1.6 }, a); sv('path', { d: `M${p.x} ${p.y - 34} l14 4 l-14 5 z`, fill: '#c8a24a' }, a); }
