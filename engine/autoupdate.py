@@ -96,6 +96,12 @@ def is_enabled(state: dict | None = None, env=None) -> bool:
     env = os.environ if env is None else env
     if env.get("LE_AUTOUPDATE") == "0":
         return False
+    try:
+        from . import nogithub
+        if nogithub.active(env):         # GitHub-free mode (engine/nogithub.py)
+            return False
+    except Exception:
+        pass
     return bool((state if state is not None else load_state()).get("enabled"))
 
 

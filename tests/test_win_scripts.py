@@ -31,10 +31,11 @@ HARN = os.path.join(ROOT, "tests", "win_harness")
 RES = []
 
 BATS = ["ONE_TIME_SETUP.bat", "UPDATE.bat", "HEALTH_CHECK.bat", "START_DASHBOARD.bat", "STOP_BOT.bat", "SETUP_SHORTCUTS.bat", "NO_CHART_MODE.bat",
-        "CLEAN_PC.bat", "UNDO_PC_TUNE.bat", "BOT_LITE.bat", "MOVE_BOT.bat", "FRESH_START.bat", "CLEAN_STORAGE.bat", "PC_CARE.bat", "STATUS.bat"]
+        "CLEAN_PC.bat", "UNDO_PC_TUNE.bat", "BOT_LITE.bat", "MOVE_BOT.bat", "FRESH_START.bat", "CLEAN_STORAGE.bat", "PC_CARE.bat", "STATUS.bat",
+        "PUBLISH_NQ.bat", "UNDO_PUBLISH_NQ.bat"]
 PS1 = ["one_time_setup.ps1", "run_bot.ps1", "stop_bot.ps1", "make_shortcuts.ps1", "install_ops_task.ps1",
        "install_autostart.ps1", "setup_dedicated_pc.ps1", "uninstall_autostart.ps1", "status.ps1", "schedule_pc.ps1",
-       "schedule_pc_run.ps1", "clean_pc.ps1", "clean_storage.ps1", "pc_care.ps1", "pc_status.ps1", "pc_tune.ps1", "pc_keeper.ps1", "bot_lite.ps1", "move_bot.ps1"]
+       "schedule_pc_run.ps1", "clean_pc.ps1", "clean_storage.ps1", "pc_care.ps1", "pc_status.ps1", "pc_tune.ps1", "pc_keeper.ps1", "bot_lite.ps1", "move_bot.ps1", "publish_nq.ps1"]
 ADMIN_EXPR = ("([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole("
               "[Security.Principal.WindowsBuiltInRole]::Administrator)")
 DUMMY_PHRASE ="dummy words for the harness"          # not the live phrase; the fake python never forwards it anywhere
@@ -410,6 +411,7 @@ def scenario_small(sb: Sandbox):
           and "replacing it" in o2, f"{c} {c2} {ps_errors(o, e)} {ps_errors(o2, e2)} {o2}")
     c, o, e = sb.ps("uninstall_autostart.ps1")
     check("[autostart] uninstall_autostart.ps1 removes it", c == 0 and not sb.task("LiquidityEngine"), f"{c} {o} {e}")
+    scenario_publish(sb)
     c, o, e = sb.ps("install_ops_task.ps1", "-Remove")
     check("[ops] install_ops_task.ps1 -Remove", c == 0 and not sb.task("LiquidityEngineOps") and not ps_errors(o, e), f"{c} {o} {e}")
     # an Administrator PowerShell running setup_dedicated_pc.ps1 for real
@@ -426,6 +428,34 @@ def scenario_small(sb: Sandbox):
     check("[branch] on another branch with local edits: stops with a [FIX], exit 1, no checkout", c == 1 and "[FIX]" in o
           and not [x for x in sb.calls("git") if "checkout" in x] and not ps_errors(o, e), f"{c} {o[-1000:]} {e}")
     os.remove(os.path.join(sb.dir, "git/dirty"))
+
+
+def scenario_publish(sb: Sandbox):
+    """PUBLISH_NQ / UNDO_PUBLISH_NQ (scripts/publish_nq.ps1): the 15-minute task, the GitHub-free marker, one publish, undo."""
+    oh = os.path.join(sb.dir, "olympus")
+    env = {"OLYMPUS_HOME": oh}
+    open(sb.log, "w").close()
+    c, o, e = sb.ps("publish_nq.ps1", "-DryRun", env=env)
+    check("[publish] publish_nq.ps1 -DryRun: exits 0, says what it would do, creates no task, no marker, runs no python",
+          c == 0 and "DRY RUN" in o and "OlympusPublishNQ" in o and not sb.task("OlympusPublishNQ") and not os.path.exists(os.path.join(oh, "no_github"))
+          and not sb.calls("python") and not ps_errors(o, e), f"{c} {o} {e}")
+    c, o, e = sb.ps("publish_nq.ps1", env=env)
+    t = sb.task("OlympusPublishNQ")
+    py = [x for x in sb.calls("python") if any("pc_publish.py" in a for a in x)]
+    check("[publish] publish_nq.ps1: task OlympusPublishNQ every 15 min as the owner (not elevated), runs pc_publish.py hidden",
+          c == 0 and not ps_errors(o, e) and bool(t) and t["Triggers"][0]["Repetition"]["Interval"] == "PT15M"
+          and "pc_publish.py" in t["Actions"][0]["Arguments"] and "-X utf8" in t["Actions"][0]["Arguments"]
+          and t["Principal"]["RunLevel"] == "Limited" and t["Principal"]["UserId"] == "SURFACE\\owner", f"{c} {t} {ps_errors(o, e)} {o}")
+    check("[publish] ... GitHub-free marker written outside the repo, one publish ran now, the bot was not started or stopped",
+          os.path.exists(os.path.join(oh, "no_github")) and len(py) == 1
+          and not [x for x in sb.calls("python") if "--start" in x or "engine.live" in " ".join(x)] and not sb.calls("powercfg"),
+          f"{py} {os.listdir(oh) if os.path.isdir(oh) else None}")
+    c, o, e = sb.ps("publish_nq.ps1", env=env)
+    check("[publish] ... run again: replaces the task, exit 0", c == 0 and not ps_errors(o, e) and sb.task("OlympusPublishNQ"), f"{c} {o} {e}")
+    open(os.path.join(oh, "netlify.json"), "w").write('{"site_id":"s","token":"x"}')
+    c, o, e = sb.ps("publish_nq.ps1", "-Remove", env=env)
+    check("[publish] UNDO (-Remove): task and marker gone, the settings file kept", c == 0 and not sb.task("OlympusPublishNQ")
+          and not os.path.exists(os.path.join(oh, "no_github")) and os.path.exists(os.path.join(oh, "netlify.json")) and not ps_errors(o, e), f"{c} {o} {e}")
 
 
 def run_dynamic(pwsh: str, strict: bool):

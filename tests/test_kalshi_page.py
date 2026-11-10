@@ -65,7 +65,8 @@ KS = os.path.join(ROOT, "tools", "web_public", "kalshi")
 JV_ICON = os.path.join(ROOT, "tools", "web_public", "jarvis", "icon-192.png")
 JV_THREE = os.path.join(ROOT, "tools", "web_public", "jarvis", "three.module.min.js")
 STEP = ("Open your kalshi-server chat in the Claude app and paste: Set up Jarvis for my Kalshi bot by following "
-        "https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md")
+        "{SITE_URL}/kalshi/SETUP.md")
+STEP_T = STEP                                  # the template: {SITE_URL} is filled by the page from location.origin
 PASTE = STEP.split("paste: ", 1)[1]
 # the server script's pin: the site build writes kalshi/kit.json ({"v":1, "file":"kalshi_status_vm.py", "sha256":"<64 hex>"})
 KIT_SHA = hashlib.sha256(b"kalshi_status_vm.py (test stand-in)").hexdigest()
@@ -367,7 +368,8 @@ def part_a():
     code = re.sub(r"/\*.*?\*/", "", js, flags=re.S)
     check("a. the page keeps #body and #sub, loads kalshi.css + kalshi.js (versioned)",
           'id="body"' in html and 'id="sub"' in html and 'href="kalshi.css?v=' in html and 'src="kalshi.js?v=' in html)
-    check("a. the one step is the exact text (tests/test_jarvis_hub reads it from #step)", f"const STEP0 = '{STEP}';" in js)
+    check("a. the one step is the exact text (tests/test_jarvis_hub reads it from #step)", f"const STEP0 = '{STEP_T}';" in js
+          and "location.origin" in js and "github.io" not in js and "{SITE_URL}" in js and "fillSite(STEP0)" in js)
     check("a. the pin: kit.json (same origin, 3 s at most), a lowercase 64-hex sha256 only, the exact pinned wording, Copy takes it",
           "get('kit.json', {}, 3000)" in js and "/^[0-9a-f]{64}$/.test(h)" in js and "(only run kalshi_status_vm.py if its sha256 is ${h})" in js
           and "writeText(paste())" in js and "'./kit.json'" in sw and "u.searchParams.has('v')" in sw)
@@ -376,7 +378,7 @@ def part_a():
           and code.index("get(RAW") < code.index("get(API"))
     urls = set(re.findall(r"https?://[^\s'\"`)<>]+", html + js + css))
     allowed = ("https://raw.githubusercontent.com/", "https://api.github.com/", "http://www.w3.org/2000/svg",
-               "https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md")
+               )
     fonts = re.findall(r"url\(\"?([^\")]+)\"?\)", css)
     check("a. no CDN or other site (only the feed on GitHub); fonts only self-hosted next to Jarvis, with system fallbacks",
           all(u.startswith(allowed) for u in urls) and "@import" not in css and fonts and all(f.startswith(("../jarvis/", "data:image/svg+xml")) for f in fonts)
@@ -1982,10 +1984,16 @@ def KW_usd(x):
 
 
 def main():
+    global STEP, PASTE, STEP_PINNED, PASTE_PINNED
     part_a()
     tmp = site(tempfile.mkdtemp(prefix="le_kalshi_page_"))
     srv = serve(tmp)
     try:
+        _origin = f"http://127.0.0.1:{srv.server_address[1]}"           # what the page's {SITE_URL} becomes
+        STEP = STEP_T.replace("{SITE_URL}", _origin)
+        PASTE = STEP.split("paste: ", 1)[1]
+        STEP_PINNED = STEP + f" (only run kalshi_status_vm.py if its sha256 is {KIT_SHA})"
+        PASTE_PINNED = STEP_PINNED.split("paste: ", 1)[1]
         run_browser(f"http://127.0.0.1:{srv.server_address[1]}/nq-dashboard/", tmp)
     finally:
         srv.shutdown()

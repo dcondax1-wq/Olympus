@@ -1475,6 +1475,137 @@ def push(payload, url=REPO_URL, branch=BRANCH, git_dir=None, file=FILE, prune=Fa
         return {"ok": False, "error": redact(f"{e.__class__.__name__}: {e}")}
 
 
+# ------------------------------------------------------------------------------------------------ publishing without GitHub
+# (owner 2026-11-10: the GitHub account is gone). The payload that reaches these functions is the SAME already-redacted
+# payload the git push sends (the maker builds it: only the contract's keys, free text redacted); a provider only moves bytes.
+#   folder   write kalshi.json into a folder (a synced Dropbox / OneDrive / iCloud folder, or the PC's pc_publish picks it up)
+#   netlify  Netlify deploy API (file digest: kalshi.json + _headers + index.html) to the feed's OWN small site; the token
+#            and site id come from a file on this machine (default ~/.olympus/netlify.json), never from the command line
+#   scp      copy kalshi.json to user@host:/path with the machine's own ssh key (a server you own)
+NETLIFY_API = "https://api.netlify.com/api/v1"
+NETLIFY_FILE_DEFAULT = os.path.join("~", ".olympus", "netlify.json")
+NETLIFY_MIN_GAP_S = 3600        # Netlify's new free plan allows about 20 deploys a month: at most one an hour by default
+FEED_HEADERS = "/*\n  Access-Control-Allow-Origin: *\n  Cache-Control: no-cache\n"
+FEED_INDEX = "<!doctype html><meta charset=utf-8><title>feed</title><p>kalshi.json: a read-only status file.</p>\n"
+
+
+def _atomic_write(path, data):
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "wb") as fh:
+        fh.write(data)
+    os.replace(tmp, path)
+
+
+def _body(payload):
+    return json.dumps(payload, separators=(",", ":"), default=str).encode("utf-8")
+
+
+def publish_folder(payload, directory, **_k):
+    """{"ok", "bytes"}: kalshi.json atomically into `directory`. Never raises."""
+    try:
+        if not directory:
+            return {"ok": False, "error": "no folder: pass --publish-dir"}
+        body = _body(payload)
+        _atomic_write(os.path.join(os.path.expanduser(directory), FILE), body)
+        return {"ok": True, "bytes": len(body), "commit": "folder"}
+    except Exception as e:
+        return {"ok": False, "error": redact(f"{e.__class__.__name__}: {e}")}
+
+
+def _nl_call(method, url, token, data=None, ctype=None, timeout=60):
+    req = urllib.request.Request(url, data=data, method=method)
+    req.add_header("Authorization", "Bearer " + token)
+    req.add_header("User-Agent", "kalshi-status-vm/1")
+    if ctype:
+        req.add_header("Content-Type", ctype)
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        raw = r.read()
+    try:
+        return json.loads(raw.decode("utf-8")) if raw else {}
+    except ValueError:
+        return {}
+
+
+def read_netlify_file(path=None, env=None):
+    """(site_id, token) from the local file (JSON {"site_id", "token"}); never printed. ("", "") when missing."""
+    env = os.environ if env is None else env
+    p = os.path.expanduser(path or env.get("KALSHI_NETLIFY_FILE") or NETLIFY_FILE_DEFAULT)
+    try:
+        with open(p, encoding="utf-8-sig") as fh:
+            d = json.load(fh)
+        return str(d.get("site_id") or d.get("siteId") or "").strip(), str(d.get("token") or d.get("access_token") or "").strip()
+    except (OSError, ValueError):
+        return "", ""
+
+
+def publish_netlify(payload, netlify_file=None, api=None, state_file=None, min_gap_s=NETLIFY_MIN_GAP_S, now=None, env=None, **_k):
+    """The feed as a tiny Netlify site: files kalshi.json + _headers (CORS *) + index.html, file-digest deploy (only the changed
+    kalshi.json is uploaded). Paced to one deploy per min_gap_s (the free plan's deploy budget). Never raises, never prints
+    the token. {"ok", "bytes", "commit"} or {"ok": False, "error"} or {"ok": True, "skipped": "..."}."""
+    sid, tok = "", ""
+    try:
+        env = os.environ if env is None else env
+        sid, tok = read_netlify_file(netlify_file, env)
+        if not sid or not tok:
+            return {"ok": False, "error": "no Netlify site id / token file: " + (netlify_file or NETLIFY_FILE_DEFAULT)}
+        t = time.time() if now is None else now
+        sf = state_file or os.path.join(state_dir(), "netlify_last.json")
+        last = _jload(sf) or {}
+        if min_gap_s and t - float(last.get("t") or 0) < min_gap_s:
+            return {"ok": True, "skipped": "paced: one deploy per %d min" % (min_gap_s // 60), "bytes": 0, "commit": last.get("deploy")}
+        base = (api or env.get("OLYMPUS_NETLIFY_API") or NETLIFY_API).rstrip("/")
+        files = {"kalshi.json": _body(payload), "_headers": FEED_HEADERS.encode(), "index.html": FEED_INDEX.encode()}
+        digest = {"/" + k: hashlib.sha1(v).hexdigest() for k, v in files.items()}
+        d = _nl_call("POST", f"{base}/sites/{urllib.parse.quote(sid)}/deploys", tok,
+                     json.dumps({"files": digest}).encode(), "application/json")
+        did = d.get("id")
+        if not did:
+            return {"ok": False, "error": "Netlify gave no deploy id"}
+        need = set(d.get("required") or [])
+        for k, v in files.items():
+            if hashlib.sha1(v).hexdigest() in need:
+                _nl_call("PUT", f"{base}/deploys/{urllib.parse.quote(did)}/files/{urllib.parse.quote(k)}", tok, v, "application/octet-stream")
+        try:
+            _atomic_write(sf, json.dumps({"t": t, "deploy": did}).encode())
+        except OSError:
+            pass
+        return {"ok": True, "bytes": len(files["kalshi.json"]), "commit": str(did)[:10], "url": d.get("ssl_url") or d.get("url")}
+    except urllib.error.HTTPError as e:
+        return {"ok": False, "error": redact(f"Netlify HTTP {e.code}" + (" (token refused: make a new one)" if e.code in (401, 403) else ""), (sid, tok))}
+    except Exception as e:
+        return {"ok": False, "error": redact(f"{e.__class__.__name__}: {e}", (sid, tok))}
+
+
+def publish_scp(payload, target, key=None, **_k):
+    """scp kalshi.json to user@host:/path/ (the machine's own ssh key). Never raises."""
+    try:
+        if not target or "@" not in target:
+            return {"ok": False, "error": "give --publish-dir user@host:/path"}
+        body = _body(payload)
+        tmp = os.path.join(state_dir(), "kalshi.json.out")
+        _atomic_write(tmp, body)
+        cmd = ["scp", "-q", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new"] + \
+              (["-i", os.path.expanduser(key), "-o", "IdentitiesOnly=yes"] if key else []) + [tmp, target.rstrip("/") + "/" + FILE]
+        r = _run(cmd, timeout=60)
+        if r.returncode:
+            return {"ok": False, "error": redact((r.stderr or b"").decode(errors="replace").strip()[-160:]) or "scp failed"}
+        return {"ok": True, "bytes": len(body), "commit": "scp"}
+    except Exception as e:
+        return {"ok": False, "error": redact(f"{e.__class__.__name__}: {e}")}
+
+
+def provider_push(name, dest=None, netlify_file=None, key=None):
+    """A push_fn(payload, prune=False) for --publish folder|netlify|scp; None for git (the default)."""
+    if name == "folder":
+        return lambda p, prune=False: publish_folder(p, dest)
+    if name == "netlify":
+        return lambda p, prune=False: publish_netlify(p, netlify_file)
+    if name == "scp":
+        return lambda p, prune=False: publish_scp(p, dest, key)
+    return None
+
+
 def phone_url(url=REPO_URL):
     """Where the phone reads the feed: raw.githubusercontent.com/<owner>/<repo>/main/kalshi.json."""
     m = re.search(r"github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?/?$", url or "")
@@ -1574,6 +1705,10 @@ def parser(prog=None):
     ap.add_argument("--bot-dir", default=None, help="the folder of the bot's .env (--from-api only)")
     ap.add_argument("--demo", action="store_true", help="Kalshi's demo API (--from-api)")
     ap.add_argument("--deploy-key", default=None, help="SSH deploy key with write access to kalshi-feed only (the VM); pushes over SSH")
+    ap.add_argument("--publish", choices=("git", "folder", "netlify", "scp"), default="git",
+                    help="where kalshi.json goes: git (the old feed repo), folder, netlify (its own small site) or scp. Default git")
+    ap.add_argument("--publish-dir", default=None, help="folder (--publish folder) or user@host:/path (--publish scp)")
+    ap.add_argument("--netlify-file", default=None, help="JSON file {site_id, token} on this machine (default ~/.olympus/netlify.json)")
     ap.add_argument("--week", choices=("monday", "rolling7"), default="monday", help="week start for week_pnl (default Monday 00:00 ET)")
     ap.add_argument("--every", type=float, default=None, help="seconds between reads in --loop (default 60; --from-api 300)")
     ap.add_argument("--vm-helper", default=None, help="the PC's srv.py (default: found under %%APPDATA%%\\Claude\\scratch-workspaces)")
@@ -1664,6 +1799,8 @@ def main(argv=None, push_fn=None, prog=None, defaults=None):
     secrets = _secret_set(st.get("key_id"), st.get("key_ref"))
     log = Log(st["log"] or (os.path.join(state_dir(), "kalshi_to_jarvis.log") if a.loop else None), secrets)
     make = maker(a, st, log)
+    if push_fn is None and getattr(a, "publish", "git") != "git":
+        push_fn = provider_push(a.publish, a.publish_dir, a.netlify_file, a.deploy_key)
     if push_fn is None:
         extra = push_env(os.path.abspath(os.path.expanduser(a.deploy_key)) if a.deploy_key else None)
 
@@ -1718,7 +1855,9 @@ def main(argv=None, push_fn=None, prog=None, defaults=None):
             log(f"kalshi to jarvis: {'pushed ' + str(r.get('commit')) if r.get('ok') else 'push FAILED: ' + redact(str(r.get('error')))}")
         return 0 if r.get("ok") else 1
     print(json.dumps(r))
-    if r.get("ok"):
+    if r.get("ok") and getattr(a, "publish", "git") != "git":
+        print("published with:", a.publish, ("-> " + r["url"] + "/kalshi.json") if r.get("url") else "")
+    elif r.get("ok"):
         print("phone reads it at:", phone_url(st["repo"]))
     return 0 if r.get("ok") else 1
 

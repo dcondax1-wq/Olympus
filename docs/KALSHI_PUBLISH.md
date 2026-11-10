@@ -24,7 +24,7 @@ nothing from this repo or the bot. The site build copies `tools/kalshi_kit/publi
 
 ## 1. The way: the VM publishes by itself
 **The owner's one step** (shown on the Kalshi page): open the kalshi-server chat in the Claude app and paste
-"Set up Jarvis for my Kalshi bot by following https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md
+"Set up Jarvis for my Kalshi bot by following {SITE_URL}/kalshi/SETUP.md (the page fills {SITE_URL} from its own address; no GitHub, see docs/NQ_BOT_BACK.md)
 (sha256 `<hex>`)".
 - The hash pins the script. `python tools/kalshi_kit/print_sha.py` prints it with the whole paste line.
 - `--live` also checks that the site serves that exact file.

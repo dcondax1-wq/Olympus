@@ -71,6 +71,12 @@ _PATHLIKE = re.compile(r"([A-Za-z]:\\[^\s\"']+|/(?:home|Users|root)/[^\s\"']+)")
 
 def enabled(env=None) -> bool:
     env = os.environ if env is None else env
+    try:
+        from . import nogithub
+        if nogithub.active(env):         # GitHub-free mode (engine/nogithub.py)
+            return False
+    except Exception:
+        pass
     v = env.get("LE_LIVE_PUBLISH")
     if v == "0":
         return False
