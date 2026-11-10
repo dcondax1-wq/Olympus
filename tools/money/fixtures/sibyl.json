@@ -5,34 +5,27 @@
  "mode": "paper",
  "status": "sample",
  "headline": {
-  "text": "Two prediction-market prices look off by more than the fee; about $90 a month if they hold, paper only.",
-  "usd_month": 90
+  "text": "3 paper-worthy edges in the Kalshi study; suggestions only, Sibyl places no bet.",
+  "usd_month": 8
  },
  "items": [
   {
-   "title": "Rate decision market",
-   "detail": "Market says 62%, the public futures curve implies about 71%. Edge after fee is thin.",
-   "usd": 55,
-   "score": 61,
-   "risk": "high"
+   "title": "95-97 cent contracts",
+   "detail": "Win rate beat the break-even price after fees on the cautious estimate; paper stake only.",
+   "usd": 0.02,
+   "score": 60,
+   "risk": "low"
   },
   {
-   "title": "Weather high-temperature market",
-   "detail": "Forecast agreement is strong; market price lags by 5 points.",
-   "usd": 35,
-   "score": 58,
+   "title": "97-99 cent contracts",
+   "detail": "Thin edge, few bets. Paper only.",
+   "usd": 0.01,
+   "score": 45,
    "risk": "med"
-  },
-  {
-   "title": "Earnings beat market",
-   "detail": "Close to fair; skip unless the price moves.",
-   "usd": 0,
-   "score": 22,
-   "risk": "high"
   }
  ],
  "notes": [
-  "Sample numbers, not real. This is paper only: no order is ever placed.",
-  "A market can stay wrong longer than your money lasts; size small."
+  "Sample numbers, not real. Past bets do not promise future wins.",
+  "Nothing here places a bet."
  ]
 }

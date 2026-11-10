@@ -34,6 +34,12 @@ export function ageH(obj, nowMs) {
   }
   return null;
 }
+/** an item's `expires` (ISO date or date-time) -> ms; a date alone means the END of that day (UTC); anything else -> null */
+export function expiresMs(v) {
+  if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(v.trim())) return null;
+  const t = v.trim(), ms = Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(t) ? t + 'T23:59:59Z' : t);
+  return Number.isFinite(ms) ? ms : null;
+}
 export function streamsOf(money_) { return isObj(money_) && Array.isArray(money_.streams) ? money_.streams.filter((s) => isObj(s) && str(s.id)) : []; }
 
 const card = (slot, tone, title, say, sig, needs, extra) => ({ id: slot, slot, label: LABELS[slot], tone, needs: !!needs, title, say, key: slot + ':' + sig, ...(extra || {}) });
@@ -66,8 +72,9 @@ function dealsCard(streams, nowMs) {
   let best = null;
   for (const s of streams) { if (s.status === 'sample') continue; for (const i of Array.isArray(s.items) ? s.items : []) {
     if (!isObj(i) || !str(i.title)) continue;
-    const exp = typeof i.expires === 'string' && Number.isFinite(Date.parse(i.expires)) ? (Date.parse(i.expires) - nowMs) / 3600000 : null;
+    const em = expiresMs(i.expires), exp = em != null ? (em - nowMs) / 3600000 : null;
     if (exp != null && exp < 0) continue;
+    if (exp == null && s.id !== 'mercury') continue;   // only the deal watcher's items are "deals"; a dated item from any stream counts
     const score = num(i.score) || 0, soon = exp != null && exp <= 48;
     if (!soon && score < 60) continue;
     const w = (soon ? 1000 - exp : 0) + score;

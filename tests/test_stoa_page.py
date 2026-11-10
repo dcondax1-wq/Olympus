@@ -55,6 +55,9 @@ import(process.argv[2]).then((C) => {
   const dsoon = by(C.buildCards({ home: calmHome, money: deal({ expires: new Date(NOW + 20 * H).toISOString() }) }, NOW), 'deals'), dnorm = by(C.buildCards({ home: calmHome, money: deal({}) }, NOW), 'deals'),
     dgone = by(C.buildCards({ home: calmHome, money: deal({ expires: new Date(NOW - H).toISOString() }) }, NOW), 'deals'), dweak = by(C.buildCards({ home: calmHome, money: deal({ score: 30 }) }, NOW), 'deals'),
     dsamp = by(C.buildCards({ home: calmHome, money: { streams: [Object.assign(deal({}).streams[0], { status: 'sample' })] } }, NOW), 'deals');
+  const dated = (d, now) => by(C.buildCards({ home: calmHome, money: deal({ expires: d }) }, now), 'deals'), dchr = by(C.buildCards({ home: calmHome, money: { streams: [Object.assign(stream('chrysos', 'ok', 5, [{ title: 'Next buy', usd: 5439, score: 89, risk: 'low' }]), {})] } }, NOW), 'deals');
+  const dA = dated('2026-11-13', Date.parse('2026-11-10T15:00:00Z')), dB = dated('2026-11-13', Date.parse('2026-11-12T15:00:00Z')), dC = dated('2026-11-13', Date.parse('2026-11-14T01:00:00Z'));
+  o.dates = [dA.tone, dB.tone, dB.title, dC.needs, dchr.needs, C.expiresMs('2026-11-13') === Date.parse('2026-11-13T23:59:59Z'), C.expiresMs('junk'), C.expiresMs(5), C.expiresMs('2026-11-13T10:00:00Z') === Date.parse('2026-11-13T10:00:00Z')];
   o.deals = [dsoon.tone, dsoon.title, dsoon.say.includes('about $18, an estimate'), dnorm.tone, dnorm.title, dgone.needs, dweak.needs, dsamp.needs, dsoon.stream];
   const feeds = C.buildCards({ home: calmHome, money: { streams: [stream('chrysos', 'stale', 700), stream('mercury', 'ok', 10)] }, kalshi: { running: true, t: (NOW - 50 * H) / 1000 } }, NOW);
   const f0 = by(feeds, 'feeds'), nohome = C.buildCards({ money: calmMoney }, NOW), nomoney = C.buildCards({ home: calmHome }, NOW), oldHome = C.buildCards({ home: Object.assign({ t: (NOW - 60 * H) / 1000 }, calmHome), money: calmMoney }, NOW);
@@ -93,6 +96,8 @@ def test_rules():
     check("b. today: the daily loss nearly used (83%) is a warning that says stop for the day", o["today"] == ["warn", "Daily loss nearly used: Atlas", True], o["today"])
     check("b. deals: one ending within 48 h is a warning 'Deal ends in 20 h' with the estimate worded; a good one is info; an ended one, a weak one (score < 40... under 60) and an Example one never need you",
           o["deals"] == ["warn", "Deal ends in 20 h: Sale on the 50K", True, "info", "Deal found: Sale on the 50K", False, False, False, "mercury"], o["deals"])
+    check("b. the optional item date `expires`: a date alone means the end of that day (UTC); 81 h away = a plain deal (info), 33 h away = 'Deal ends in 33 h' (warn), after it = gone; a high-score item from another stream (Chrysos) is not a deal; junk dates -> none",
+          o["dates"] == ["info", "warn", "Deal ends in 33 h: Sale on the 50K", False, False, True, None, None, True], o["dates"])
     check("b. feeds: old money (Chrysos) and an old Kalshi file are named with the RUN_MONEY.bat step; no home.json -> 'account numbers' missing and a bots card saying so; no money -> 'money data'; a 60 h old home.json is old",
           o["feeds"][0] == "warn" and "money: chrysos" in o["feeds"][1] and "Kalshi (2 days old)" in o["feeds"][1] and o["feeds"][2] and o["feeds"][3] == "Old or missing: account numbers" and o["feeds"][4] == "Account numbers are missing" and o["feeds"][5] == "Old or missing: money data" and "account numbers (3 days old)" in o["feeds"][6], o["feeds"])
     check("b. alerts: junk rows are dropped; a bad one makes the card bad; a plain list also works", o["alerts"] == ["bad", "2 alerts: Feed stalled", "warn", "1 alert: One"], o["alerts"])
@@ -163,6 +168,19 @@ def test_page():
             check("c. it read the site's own files and no console error", any("home.json" in u for u in seen) and any("money/index.json" in u for u in seen) and not errs, (errs[:3],))
             ctx.close()
             srv2.shutdown()
+            # the REAL scanners' output
+            import tempfile
+            sys.path.insert(0, os.path.join(AK.ROOT, "tools"))
+            import money_engine as ME
+            real_out = tempfile.mkdtemp(prefix="stoa-real-")
+            ME.run(real_out, True, 120, quiet=True)
+            srv5, origin5 = AK.serve({"/home.json": home_json(), "/money/index.json": open(os.path.join(real_out, "index.json"), encoding="utf-8").read()})
+            ctx, p, errs, seen, off = AK.page(br, origin5)
+            AK.open_app(p, origin5, APP, "?flat=1")
+            z = p.evaluate("() => [document.querySelector('#heroTitle').textContent, document.querySelectorAll('#cards .need').length, !document.querySelector('#demo').hidden]")
+            check("c. the real scanners' index (all Example): nothing needs you (a sample deal never lights a column), no DEMO chip, no console error", z == ["Nothing needs you now", 0, False] and not errs, (z, errs[:2]))
+            ctx.close()
+            srv5.shutdown()
             # a disconnected bot
             srv3, origin3 = AK.serve({"/home.json": home_json(room=150, conn=False), "/money/index.json": MONEY_OK})
             ctx, p, errs, seen, off = AK.page(br, origin3)

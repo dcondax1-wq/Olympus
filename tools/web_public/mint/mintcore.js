@@ -2,7 +2,7 @@
 // the pillar heights, the history line and the Jarvis card. No document / window / fetch here. Everything money is an ESTIMATE, never income.
 export const IDS = ['chrysos', 'mercury', 'sibyl', 'oikos', 'arbiter'];
 export const NAMES = { chrysos: 'Chrysos', mercury: 'Mercury', sibyl: 'Sibyl', oikos: 'Oikos', arbiter: 'Arbiter' };
-export const ROLES = { chrysos: 'Prop-firm savings and payouts', mercury: 'Prop-firm and tool deals', sibyl: 'Prediction-market edges (paper)', oikos: 'Household savings', arbiter: 'The referee: what to do first' };
+export const ROLES = { chrysos: 'Prop-firm eval and payout planner', mercury: 'Prop-firm and tool deals', sibyl: 'Kalshi study: paper-worthy bets (paper)', oikos: 'Household money leaks from your Ledger', arbiter: 'Spread and funding ideas (paper)' };
 export const STATUS = { ok: { label: 'Live', tone: 'ok' }, stale: { label: 'Old data', tone: 'warn' }, sample: { label: 'Example', tone: 'info' }, none: { label: 'No data', tone: '' } };
 export const RANGE = { ok: [0.3, 1.5], stale: [0, 1.2], sample: [0, 2], none: [0, 0] };
 export const STALE_MIN = 6 * 60;
@@ -33,7 +33,7 @@ export function normStream(id, raw, nowMs) {
   const um = r.usd_month && typeof r.usd_month === 'object' ? r.usd_month : { base: r.headline && r.headline.usd_month };
   const base = isNum(um.base) ? um.base : null, rg = RANGE[status] || RANGE.stale;
   const lo = isNum(um.low) ? um.low : base == null ? null : base * rg[0], hi = isNum(um.high) ? um.high : base == null ? null : base * rg[1];
-  const items = (Array.isArray(r.items) ? r.items : []).filter((i) => i && txt(i.title)).slice(0, 3).map((i) => ({ title: txt(i.title, 90), detail: txt(i.detail, 260), usd: isNum(i.usd) ? i.usd : null, score: isNum(i.score) ? Math.max(0, Math.min(100, Math.round(i.score))) : 0, risk: ['low', 'med', 'high'].includes(i.risk) ? i.risk : 'med' }));
+  const items = (Array.isArray(r.items) ? r.items : []).filter((i) => i && txt(i.title)).slice(0, 3).map((i) => ({ title: txt(i.title, 90), detail: txt(i.detail, 260), usd: isNum(i.usd) ? i.usd : null, score: isNum(i.score) ? Math.max(0, Math.min(100, Math.round(i.score))) : 0, risk: ['low', 'med', 'high'].includes(i.risk) ? i.risk : 'med', expires: typeof i.expires === 'string' ? i.expires : '' }));
   return { id, name: NAMES[id] || txt(id), role: txt(r.role) || ROLES[id] || '', status, age, headline: head || 'No data yet for this stream.', low: lo, base, high: hi, items, notes: (Array.isArray(r.notes) ? r.notes : []).map((n) => txt(n, 200)).filter(Boolean).slice(0, 3), error: r.error ? txt(r.error, 120) : '' };
 }
 
@@ -65,7 +65,7 @@ export function todo(streams, max) {
   const stale = streams.filter((s) => s.status === 'stale');
   if (stale.length) out.push({ kind: 'refresh', stream: stale[0].id, title: `Refresh ${stale.map((s) => s.name).join(' and ')}`, why: `Data is ${ageText(stale[0].age)}. Double-click RUN_MONEY.bat on the PC, then reopen this page.`, usd: null, risk: 'low' });
   const pool = [];
-  for (const s of streams) { if (s.id === 'arbiter') continue; for (const i of s.items) { const w = i.score * (RISK_W[i.risk] || 0.75) + Math.min(10, (i.usd || 0) / 10); if (i.score >= 40) pool.push({ w, kind: 'task', stream: s.id, title: i.title, why: i.detail, usd: i.usd, risk: i.risk, sample: s.status === 'sample' }); } }
+  for (const s of streams) { for (const i of s.items) { const w = i.score * (RISK_W[i.risk] || 0.75) + Math.min(10, (i.usd || 0) / 10); if (i.score >= 40) pool.push({ w, kind: 'task', stream: s.id, title: i.title, why: i.detail, usd: i.usd, risk: i.risk, sample: s.status === 'sample' }); } }
   pool.sort((a, b) => b.w - a.w);
   for (const p of pool) { if (out.length >= cap) break; out.push(p); }
   if (!out.length) out.push({ kind: 'none', stream: null, title: 'Nothing to do today', why: 'No stream found a task worth your time. Quiet days are normal.', usd: null, risk: 'low' });
