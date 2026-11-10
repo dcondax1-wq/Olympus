@@ -207,3 +207,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @media (max-height: 800px) { .story { display: none; } }
 .live { padding: 8px 12px; border-radius: 12px; background: rgba(29, 25, 20, .92); border: 1px solid var(--line); }
 .live:empty { display: none; }
+
+/* phone-fit 2026-11-10 (clipped text on a 320 px screen: wrap instead of cutting) */
+.gauge .l { white-space: normal; overflow: visible; text-overflow: clip; }
+
+/* phone-fit 2026-11-10 (text contrast) */
+.verdict b.r { color: var(--ag-terra-text, #e08a6b); }
+.verdict b.v { color: #c9b8ee; }
+.gauge [data-warn="1"] .v, .gauge [data-id="dd"][data-warn="1"] .v, .gauge [data-id="odds"][data-warn="1"] .v { color: var(--ag-terra-text, #e08a6b); }
+.verdict b.v, .cap .k.v { color: #c9b8ee; }
