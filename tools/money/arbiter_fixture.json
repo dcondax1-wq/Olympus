@@ -1,0 +1,30 @@
+{
+  "asof": "2026-11-10T06:00:00Z",
+  "note": "EXAMPLE numbers, not real. Shaped like the public feeds (funding per interval, stablecoin prices, two prediction venues).",
+  "perps": [
+    {"exchange": "Binance", "symbol": "SOLUSDT", "funding": 0.00052, "interval_h": 8, "mark": 150.32, "index": 150.0},
+    {"exchange": "Binance", "symbol": "BTCUSDT", "funding": 0.0001, "interval_h": 8, "mark": 91210.0, "index": 91190.0},
+    {"exchange": "Bybit", "symbol": "DOGEUSDT", "funding": 0.00035, "interval_h": 8, "mark": 0.2214, "index": 0.2211},
+    {"exchange": "Bybit", "symbol": "WIFUSDT", "funding": 0.0004, "interval_h": 4, "mark": 1.84, "index": 1.835},
+    {"exchange": "Binance", "symbol": "ETHUSDT", "funding": 0.00008, "interval_h": 8, "mark": 3120.5, "index": 3119.0},
+    {"exchange": "SmallEx", "symbol": "PEPEUSDT", "funding": 0.0009, "interval_h": 8, "mark": 0.0000121, "index": 0.0000120},
+    {"exchange": "Binance", "symbol": "XRPUSDT", "funding": -0.0003, "interval_h": 8, "mark": 2.41, "index": 2.41}
+  ],
+  "stables": [
+    {"symbol": "USDT", "price_usd": 0.9998},
+    {"symbol": "USDC", "price_usd": 1.0001},
+    {"symbol": "USDe", "price_usd": 0.9962},
+    {"symbol": "FDUSD", "price_usd": 0.9985}
+  ],
+  "venues": {
+    "a": [
+      {"venue": "Polymarket", "title": "Will the Fed cut rates in December 2026?", "yes_bid": 0.58, "yes_ask": 0.60, "close_days": 36},
+      {"venue": "Polymarket", "title": "Will Bitcoin close above $100,000 on December 31, 2026?", "yes_bid": 0.31, "yes_ask": 0.32, "close_days": 51},
+      {"venue": "Polymarket", "title": "Will it snow in Denver on Christmas Day?", "yes_bid": 0.20, "yes_ask": 0.22, "close_days": 45}
+    ],
+    "b": [
+      {"venue": "Kalshi", "title": "Fed cut rates in December 2026", "yes_bid": 0.66, "yes_ask": 0.68, "close_days": 36},
+      {"venue": "Kalshi", "title": "Bitcoin close above $100,000 on December 31, 2026", "yes_bid": 0.33, "yes_ask": 0.34, "close_days": 51}
+    ]
+  }
+}
