@@ -395,8 +395,8 @@ def session_a(br, GPU, GPU_COUNT):
     # ---- A: 7:30 ET, everything on
     ctx, p, errs = opened(br, ORIGIN, "high", (7, 30), extra=GPU_COUNT)
     s = p.evaluate(SNAP)
-    check("i. the home loads home3d.js into the backdrop: no error, the shafts, the mirrored world, the orbs' badges and the constellation lines are there",
-          p.evaluate("() => __jarvisBackdrop.extra") == "on" and not p.evaluate("() => __jarvisBackdrop.extError") and s["rays"] >= 3 and s["reflect"] >= 10 and s["badges"] >= 3 and s["cons"] >= 3 and s["draws"] > 0, s)
+    check("i. the home loads home3d.js into the backdrop: no error, the shafts, the mirrored temple (no glass shards since AGORA), the orbs' badges and the constellation lines are there",
+          p.evaluate("() => __jarvisBackdrop.extra") == "on" and not p.evaluate("() => __jarvisBackdrop.extError") and s["rays"] >= 3 and s["reflect"] >= 4 and s["badges"] >= 3 and s["cons"] >= 3 and s["draws"] > 0, s)
     check("i. 7:30 AM ET on a weekday is the pre-market morning sky", s["phase"] == "premarket" and s["label"] == "Pre-market", s)
     sat = p.evaluate("() => { const b = document.querySelector('.sat'); const sb = b && b.querySelector('i .sb'); return { n: document.querySelectorAll('.sat').length, sb: document.querySelectorAll('.sat i .sb').length, t: sb ? sb.textContent : '', title: b ? b.title : '' }; }")
     check("i. every orb has a live status badge (a check, a dot, an ! or a dash) and a title with its numbers", sat["n"] >= 3 and sat["sb"] == sat["n"] and sat["t"] in ("✓", "•", "!", "–") and len(sat["title"]) > 3, sat)

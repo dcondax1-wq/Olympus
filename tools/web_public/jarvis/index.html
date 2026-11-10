@@ -2007,7 +2007,7 @@ function renderSystem() {                              // the panel itself is in
 }
 function showSystem() {                               // the System panel on the Jarvis screen (from the strip, the orb, "status")
   if (active !== 'home') show('home');
-  setTimeout(() => { const p = $('#p-system'); if (p) safe(() => p.scrollIntoView({ block: 'start', behavior: calmScroll() ? 'auto' : 'smooth' })); }, 60);
+  setTimeout(() => { const p = $('#p-system'); if (p) safe(() => p.scrollIntoView({ block: 'start', behavior: calmScroll() || Math.abs(p.getBoundingClientRect().top) > window.innerHeight * 1.2 ? 'auto' : 'smooth' })); }, 60);   // far away (the long home): at once, a long glide is slow on a busy phone
 }
 document.addEventListener('click', (e) => { if (e.target.closest('#sysbar')) showSystem(); });
 document.addEventListener('click', (e) => {                // "I did it" on the inactivity warning: today's manual trade, per account

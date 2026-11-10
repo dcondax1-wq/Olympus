@@ -1256,7 +1256,7 @@ def run_olympus(br, url):
     p.mouse.up()
     p.wait_for_function("[...document.querySelectorAll('.nx-fan.on .nx-fb')].some((b) => b.dataset.nxBack)", timeout=5000)
     ring2 = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => b.dataset.nx || (b.dataset.nxBack ? 'BACK' : b.dataset.nxMore ? 'MORE' : '?'))")
-    check("p. step 2: the district's most opened apps (Gamma 9, Alpha 5, then Beta), then Back; Zenith / Kalshi are not in Command", ring2 == ["x-gamma", "x-alpha", "x-beta", "BACK"], ring2)
+    check("p. step 2: the district's most opened apps (Gamma 9, Alpha 5, then Beta; at most four, then All <district>), then Back; Zenith / Kalshi are not in Command", ring2 == ["x-gamma", "x-alpha", "x-beta", "BACK"], ring2)
     p.click('.nx-fan.on .nx-fb[data-nx-back]')
     p.wait_for_function("[...document.querySelectorAll('.nx-fan.on .nx-fb')].some((b) => b.dataset.nxSearch)", timeout=5000)
     p.click('.nx-fan.on .nx-fb[data-nx-search]')

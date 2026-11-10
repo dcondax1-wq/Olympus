@@ -42,7 +42,7 @@ const FAV_KEY = 'jarvis.orb.fav';          // favourites (long-press a card or a
 const REC_KEY = 'jarvis.orb.recent';       // the last apps opened, newest first
 const FAV_MAX = 12, REC_MAX = 4, PRESS_MS = 520;
 const HOLD_MS = 380;
-const RING_MAX = 5;
+const RING_MAX = 4;
 // the five districts (Atlas order, colours and app lists: the same as atlas/atlas.js and districts.js; tests.test_jarvis_home_agora keeps the three equal)
 const DIST = [
   { id: 'market', title: 'Market', colour: '#c8a24a', ids: ['zenith', 'oracle', 'ares', 'forum', 'chronos', 'cities', 'odeon', 'pantheon', 'delphi', 'kronos'] },
