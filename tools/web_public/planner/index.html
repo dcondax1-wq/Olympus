@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en" data-theme="agora">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Planner</title>
+<meta name="description" content="OLYMPUS PLANNER: the trader's day and week plan. Pre-session checklist, the trading windows (entries 02:00 to 15:30 ET, flat 15:55), tasks, habits, a week view and notes, kept on this phone with Export and Import.">
+<meta name="theme-color" content="#14110e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Planner">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<!-- PLANNER (OLYMPUS, AGORA look, 2026-11-10): the trader's day and week plan, rebuilt after the old Planner branch was lost. plannercore.js = the pure maths (node-tested); planner.js = the page (ES module).
+     The plan lives in this phone's localStorage ('planner.agora.v1') with Export / Import JSON; it works offline; fixture.json is the DEMO plan shown while nothing is saved (never blank).
+     It sends nothing anywhere. Text only through textContent (no markup is built from data). -->
+<script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
+<link rel="stylesheet" href="../olympus/olympus.css?v=o4">
+<link rel="stylesheet" href="../olympus/agora.css?v=a1">
+<script src="../olympus/themes.js?v=o4"></script>
+<script src="../olympus/olympus.js?v=o4" data-app="planner"></script>
+<script src="../olympus/intro-app.js?v=i5" defer></script>
+<script src="../olympus/a11y.js" defer></script>
+<script src="../olympus/sfx.js?v=s2" defer></script>
+<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#7fa7c2'); r.setProperty('--oly-accent-rgb', '127, 167, 194'); })();</script>
+<link rel="stylesheet" href="planner.css?v=a1">
+</head>
+<body>
+<main id="app">
+  <header class="top">
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Planner</h1><p class="sub">Your day and week</p></div></div>
+    <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
+  </header>
+  <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
+  <section class="ag-card card" id="demoBar" aria-labelledby="demoH" hidden>
+    <h2 id="demoH">This is an example plan</h2>
+    <p class="lead" id="demoNote">Example plan, not real.</p>
+    <div class="seg"><button type="button" class="btn primary" id="startBtn">Start my plan</button></div>
+  </section>
+  <div class="ag-tabs" role="tablist" aria-label="Planner views" id="tabs">
+    <button type="button" class="ag-tab" role="tab" id="tab-today" data-tab="today" aria-controls="p-today" aria-selected="true">Today</button>
+    <button type="button" class="ag-tab" role="tab" id="tab-week" data-tab="week" aria-controls="p-week" aria-selected="false">Week</button>
+    <button type="button" class="ag-tab" role="tab" id="tab-habits" data-tab="habits" aria-controls="p-habits" aria-selected="false">Habits</button>
+    <button type="button" class="ag-tab" role="tab" id="tab-notes" data-tab="notes" aria-controls="p-notes" aria-selected="false">Notes</button>
+    <button type="button" class="ag-tab" role="tab" id="tab-data" data-tab="data" aria-controls="p-data" aria-selected="false">Data</button>
+  </div>
+  <section class="ag-card card daynav" id="dayNav" aria-label="Choose the day">
+    <button type="button" class="btn sq" id="dayPrev" aria-label="Previous day">&lsaquo;</button>
+    <div class="daymid"><b id="dayTitle" class="ag-title2">--</b><span class="note" id="daySub"></span></div>
+    <button type="button" class="btn sq" id="dayNext" aria-label="Next day">&rsaquo;</button>
+    <button type="button" class="btn wide" id="dayToday">Back to today</button>
+  </section>
+
+  <section id="p-today" class="panel" role="tabpanel" aria-labelledby="tab-today">
+    <section class="ag-card card" id="nowCard" aria-labelledby="nowH">
+      <h2 id="nowH">Trading windows</h2>
+      <div class="clock"><b id="clkTime" class="ag-num">--:--</b><span class="note">New York time</span><span class="pill" id="clkPhase"></span></div>
+      <p class="lead" id="clkNext"></p>
+      <div class="ag-bar" aria-hidden="true"><i id="clkBar" style="width:0%"></i></div>
+      <dl class="kv" id="winKv"></dl>
+    </section>
+    <section class="ag-card card" id="checkCard" aria-labelledby="checkH">
+      <h2 id="checkH">Pre-session checklist</h2>
+      <p class="note" id="checkSum"></p>
+      <ul class="rows" id="checkList"></ul>
+    </section>
+    <section class="ag-card card" id="taskCard" aria-labelledby="taskH">
+      <h2 id="taskH">Tasks</h2>
+      <form class="addrow" id="taskForm" autocomplete="off">
+        <input id="taskIn" type="text" maxlength="200" enterkeyhint="done" placeholder="New task, add a time like 09:30" aria-label="New task">
+        <button type="submit" class="btn primary" id="taskAdd">Add</button>
+      </form>
+      <ul class="rows" id="taskList"></ul>
+    </section>
+    <section class="ag-card card" id="habitCard" aria-labelledby="habitH">
+      <h2 id="habitH">Habits today</h2>
+      <ul class="rows" id="habitList"></ul>
+    </section>
+  </section>
+
+  <section id="p-week" class="panel" role="tabpanel" aria-labelledby="tab-week" hidden>
+    <section class="ag-card card" aria-labelledby="weekH">
+      <div class="weeknav">
+        <button type="button" class="btn sq" id="weekPrev" aria-label="Previous week">&lsaquo;</button>
+        <div class="daymid"><h2 id="weekH">Week</h2><span class="note" id="weekSub"></span></div>
+        <button type="button" class="btn sq" id="weekNext" aria-label="Next week">&rsaquo;</button>
+      </div>
+      <div class="tiles" id="weekTiles"></div>
+      <ul class="rows" id="weekList"></ul>
+    </section>
+  </section>
+
+  <section id="p-habits" class="panel" role="tabpanel" aria-labelledby="tab-habits" hidden>
+    <div id="habitCards" class="stack"></div>
+    <section class="ag-card card" aria-labelledby="habitAddH">
+      <h2 id="habitAddH">Add a habit</h2>
+      <form class="addrow" id="habitForm" autocomplete="off">
+        <input id="habitIn" type="text" maxlength="80" enterkeyhint="done" placeholder="For example: Read for 20 minutes" aria-label="New habit">
+        <button type="submit" class="btn primary">Add</button>
+      </form>
+    </section>
+  </section>
+
+  <section id="p-notes" class="panel" role="tabpanel" aria-labelledby="tab-notes" hidden>
+    <section class="ag-card card" aria-labelledby="noteH">
+      <h2 id="noteH">Note for the day</h2>
+      <label class="note" for="noteIn" id="noteLbl">Write anything: the one rule, what you saw, what to do differently.</label>
+      <textarea id="noteIn" rows="8" maxlength="4000" placeholder="Write here. It saves as you type."></textarea>
+      <p class="note" id="noteCount"></p>
+    </section>
+    <section class="ag-card card" aria-labelledby="recentH">
+      <h2 id="recentH">Recent notes</h2>
+      <ul class="rows" id="recentList"></ul>
+    </section>
+  </section>
+
+  <section id="p-data" class="panel" role="tabpanel" aria-labelledby="tab-data" hidden>
+    <section class="ag-card card" aria-labelledby="expH">
+      <h2 id="expH">Export</h2>
+      <p class="lead" id="expSum"></p>
+      <div class="seg"><button type="button" class="btn primary" id="expBtn">Export JSON</button></div>
+      <p class="note">Saves one file with your whole plan. Keep a copy somewhere safe: the plan lives only on this phone.</p>
+    </section>
+    <section class="ag-card card" aria-labelledby="impH">
+      <h2 id="impH">Import</h2>
+      <p class="lead">Replace the plan on this phone with an exported file. The plan you have now is kept as a backup first.</p>
+      <label class="btn filebtn" for="impFile">Choose a file<input id="impFile" type="file" accept=".json,application/json"></label>
+      <label class="note" for="impText">Or paste the file's text here</label>
+      <textarea id="impText" rows="4" placeholder="Paste the exported text"></textarea>
+      <div class="seg"><button type="button" class="btn" id="impBtn">Import</button></div>
+      <p class="note" id="impMsg" role="status" aria-live="polite"></p>
+    </section>
+    <section class="ag-card card" aria-labelledby="clH">
+      <h2 id="clH">Edit the pre-session checklist</h2>
+      <ul class="rows" id="clEdit"></ul>
+      <form class="addrow" id="clForm" autocomplete="off">
+        <input id="clIn" type="text" maxlength="200" enterkeyhint="done" placeholder="New checklist line" aria-label="New checklist line">
+        <button type="submit" class="btn primary">Add</button>
+      </form>
+    </section>
+    <section class="ag-card card" aria-labelledby="stH">
+      <h2 id="stH">Storage</h2>
+      <p class="lead" id="stMsg"></p>
+      <div class="seg"><button type="button" class="btn" id="resetBtn">Reset to a blank plan</button></div>
+    </section>
+  </section>
+
+  <p class="foot" id="foot">Planner keeps your plan on this phone only (nothing is sent anywhere) and works offline. Trading windows are New York time: entries 02:00 to 15:30, the bot is flat at 15:55, MFFU needs you flat by 16:10. Paper and eval only: the bot never goes live for you.</p>
+</main>
+<script type="module" src="planner.js?v=a1"></script>
+</body>
+</html>

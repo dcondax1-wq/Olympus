@@ -1,0 +1,30 @@
+{
+  "demo": true,
+  "note": "Example plan, not real. It only shows how the Planner looks. Tap Start my plan to begin with your own.",
+  "checklist": [
+    "Look at the news calendar for red-folder events",
+    "Mark the levels: the 18:00 open and the VIX band",
+    "Check the drawdown left on the account",
+    "Check the bot is on and its feed is fresh",
+    "Decide the one rule for today",
+    "I am present: no live order without me"
+  ],
+  "checkedToday": [0, 1, 2],
+  "tasks": [
+    { "text": "Review yesterday's trade picture", "off": 0, "done": true, "slot": "08:30" },
+    { "text": "Reply to the prop firm support ticket", "off": 0, "done": false, "slot": "10:00" },
+    { "text": "Read the weekly report", "off": 0, "done": false, "slot": "" },
+    { "text": "Pay the data subscription", "off": 1, "done": false, "slot": "09:00" },
+    { "text": "Write up the Thursday idea", "off": 2, "done": false, "slot": "" },
+    { "text": "Weekly review", "off": 4, "done": false, "slot": "16:30" }
+  ],
+  "habits": [
+    { "name": "Journal the day", "hits": [1, 2, 3, 5] },
+    { "name": "Review the trades", "hits": [1, 2, 4] },
+    { "name": "Move: walk or train", "hits": [0, 1, 3, 4, 6] }
+  ],
+  "notes": [
+    { "off": 0, "text": "One rule today: no second trade after a loss. Wait for the sweep, then the stop goes beyond the extreme." },
+    { "off": -1, "text": "Quiet day. Skipped two setups that did not sweep a level. Good." }
+  ]
+}
