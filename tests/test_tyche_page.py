@@ -11,7 +11,7 @@ the two GitHub endpoints itself, and checks:
      endpoints (the same as the Kalshi page's), viewport / theme-color / safe areas / the orb's corner / reduced motion, no
      innerHTML, Safari 16 safe, jarvis.json by the Jarvis contract (with theme), the site build and the root worker know it
   b. the pure parts in the browser: normalize() of v3 / v2 / v1 / junk, Kelly, the formats, the Feed's 404 backoff
-  c. not linked (404) at 390 x 844 and 844 x 390: ONE request per load, the "Not linked yet: demo" chip, no console errors,
+  c. not linked (404) at 390 x 844 and 844 x 390: TWO requests per load (the site copy, then raw), the "Not linked yet: demo" chip, no console errors,
      the HUD = the demo's numbers, a coin per open bet, no sideways scroll, the orb's corner free, in all three views
   d. a v3 feed: LIVE, every HUD number = the fixture's (balance, today, week, open, win rate, ROI, next settlement), a coin
      per position, the Kelly slider's stakes (capped at the max bet), the pools' and the scales' panels, a tapped coin's sheet
@@ -366,7 +366,7 @@ def pure_checks(br, origin, now):
       const fake = (seq) => { let i = 0; return async () => { const s = seq[Math.min(i++, seq.length - 1)]; if (s === 'net') throw new TypeError('offline');
         return { ok: s === 200, status: s, json: async () => ({ t: now, balance: 1 }) }; }; };
       const f404 = new d.Feed(fake([404])), a = await f404.poll(), d1 = f404.delay(), b = await f404.poll(), d2 = f404.delay();
-      const fApi = new d.Feed(fake([500, 200])), c = await fApi.poll();
+      const fApi = new d.Feed(fake([500, 500, 200])), c = await fApi.poll();
       const fNet = new d.Feed(fake(['net', 'net'])), e = await fNet.poll();
       const dm = d.normalize(demo.demoFeed(now), now);
       return {
@@ -413,8 +413,8 @@ def pure_checks(br, origin, now):
           abs(k[0]["f"] - 0.2) < 1e-9 and k[0]["stake"] == 25 and k[0]["capped"] is True and abs(k[0]["raw"] - 50) < 1e-9
           and abs(k[1]["stake"] - 0.0625 * 0.25 * 2400) < 1e-9 and k[1]["capped"] is False
           and k[2]["stake"] == 0 and k[2]["f"] < 0 and k[3]["stake"] is None, k)
-    check("b. the Feed: a 404 = unlinked, one request, 10 then 20 min backoff; raw failing -> the API; offline -> error, 2 min",
-          r["feed"] == ["unlinked", 600000, "unlinked", 1200000, 2, "ok", 2, "error", 2, 120000], r["feed"])
+    check("b. the Feed: a 404 = unlinked, two requests a poll (this site's ../kalshi.json, then raw), 10 then 20 min backoff; site copy + raw failing -> the API; offline -> error, 2 min",
+          r["feed"] == ["unlinked", 600000, "unlinked", 1200000, 4, "ok", 3, "error", 3, 120000], r["feed"])
     check("b. formats: money to the cent with a real minus, percents, cents, edge, countdowns",
           r["fmt"] == [f"{MINUS}$3.10", "$1,234.50", "$0.00", "64.2%", "+8.3%", "42¢", "96.8¢", "+5.0¢", "4m 12s", "2h 05m", "3d 4h", "settling"], r["fmt"])
     dm = r["demo"]
@@ -436,7 +436,7 @@ def unlinked_checks(br, origin, vw):
     p.wait_for_timeout(4000)
     h, m = hud(p), p.evaluate("""() => { const m = window.tyche.model; return { open: m.open.length, bal: m.balance, today: m.today, week: m.week,
       win: m.stats.winRate, roi: m.stats.roi, next: m.next && m.next.title, coins: window.tyche.coins, req: window.tyche.requests }; }""")
-    check(f"c. {tag}: a 404 = ONE request per load (raw only, no API retry, no poll), backed off", FEED["calls"] == ["raw"] and m["req"] == 1, FEED["calls"])
+    check(f"c. {tag}: a 404 = TWO requests per load (the site's own ../kalshi.json, then raw only; no API retry, no poll), backed off", FEED["calls"] == ["raw"] and m["req"] == 2, FEED["calls"])
     check(f"c. {tag}: the chip says 'Not linked yet: demo'", h["_mode"] == "unlinked" and h["_chip"] == "Not linked yet: demo", h["_chip"])
     want = {"h-balance": usd(m["bal"]), "h-today": usd(m["today"], True), "h-week": usd(m["week"], True), "h-open": str(m["open"]),
             "h-win": pct(m["win"]), "h-roi": pct(m["roi"], True), "h-next-title": m["next"]}
