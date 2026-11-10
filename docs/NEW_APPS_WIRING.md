@@ -88,3 +88,16 @@ AMBIENT (existing beds): `delphi: 'chimes', pnyx: 'coins',`
 `olympus/intro-app.js` FLAVOUR: `delphi: ['rings', 'Read the omens', 'tick'], pnyx: ['columns', 'Count the risk', 'tap'],`
 `jarvis/transitions.js` REGISTRY: `delphi: { kind: 'sunburst', ms: 1000 }, pnyx: { kind: 'columns', ms: 1000, n: 5 },`
 ## 7. Tests after wiring: `tests.test_delphi_page`, `tests.test_pnyx_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`. Then app count 38 in CLAUDE_REFERENCE / CLAUDE.md.
+
+---
+# Wiring CHRYSOS (money machine #1, 2026-11-10)
+
+App `chrysos` in `tools/web_public/chrysos/` (3D tower via the render core: `tower.js` + `towerload.js`), data tool `tools/money/chrysos.py` (`--out <dir>`, `--fixture`, `--selftest`; writes `<dir>/chrysos.json`). Page reads `../money/chrysos.json`, falls back to `fixture.json` (equals `chrysos.py --fixture`, a test keeps it fresh). Test `tests/test_chrysos_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('chrysos', 'Chrysos', 'money', '#c8a24a', 'Prop-firm fleet planner: fees against payouts, break-even (estimate)', { glyph: 'X' }),`
+2. `olympus/olympus.js` APPS: `chrysos: ['Chrysos', 'X', '#c8a24a'],` AMBIENT: `chrysos: 'coins',`
+3. `tools/build_web_dashboard.py` app tuple: add `"chrysos"`; and in the publish step run `python tools/money/chrysos.py --out <site>/money` (writes `money/chrysos.json`); add `chrysos.py` output to the site copy list.
+4. `sw.js` OTHER_APPS: `'chrysos/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `olympus/intro-app.js` FLAVOUR: `chrysos: ['coins', 'Count the gold', 'tap'],` and `jarvis/transitions.js` REGISTRY: `chrysos: { kind: 'columns', ms: 1000, n: 4 },`
+7. Tests: `tests.test_chrysos_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
