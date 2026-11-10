@@ -403,6 +403,32 @@ def test_districts_today():
 TODAY_FIXTURE = {}
 
 
+def test_new_families():
+    """MORE DATABASES (2026-11-10): calendar, FOMC, gap size, hour, overnight range, first hour, ES-NQ hour: new districts, no look-ahead."""
+    new = F.NEW_FAMILIES
+    combos = G.enumerate_combos()
+    check("n. nine new state families, filed in the existing nine districts (no new landmarks: the performance budgets stay)", all(f in F.STATES for f in new)
+          and len(G.DISTRICTS) == 9 and {c["district"] for c in combos} == set(G.DISTRICTS), len(combos))
+    ids = {c["id"]: c["district"] for c in combos}
+    check("n. families land in their districts (calendar facts -> seasons, overnight range / first hour -> opening range, hour -> times, gap size -> gaps, ES-NQ hour -> ES-NQ, hour x VIX -> volatility)",
+          ids.get("slot_long|nyam|fomc=1") == "seasons" and ids.get("vwap_dn|pm|onr=2&vwap=0") == "orange" and ids.get("vwap_dn|pm|hr=6") == "times" and ids.get("vwap_dn|pm|hr=6&vix=1") == "volatility"
+          and ids.get("fvg_bear|pm|gsz=2&wd=1") == "gaps" and ids.get("fvg_bear|pm|esd=0&vwap=0") == "esnq", [ids.get(k) for k in ("slot_long|nyam|fomc=1", "vwap_dn|pm|hr=6")])
+    feat = F.build(slice_df("2024-06-02", "2025-12-31"), **src())
+    ev = feat["ev"]
+    check("n. no look-ahead: gap size and overnight range from 09:30, the first hour from 10:30",
+          (ev["s_gsz"][ev["slot"] < 38] == -1).all() and (ev["s_onr"][ev["slot"] < 38] == -1).all() and (ev["s_fhd"][ev["slot"] < 42] == -1).all(), None)
+    check("n. calendar states are schedule facts: constant within a day", all(len(set(ev["s_" + f][ev["day"] == d])) == 1 for f in ("dom", "wom", "mend", "fomc") for d in range(3)), None)
+    days = np.array(["2026-03-30", "2026-03-31", "2026-06-17", "2026-06-18", "2026-04-04"], dtype="datetime64[D]")
+    dom, wom, mend, fomc = F._calendar2(days, {"2026-06-17"})
+    check("n. month-end, quarter-end, FOMC week, weekend", list(mend) == [2, 2, 0, 0, -1] and list(fomc) == [0, 0, 2, 1, -1] and wom[1] == 3 and dom[0] == 2,
+          (list(mend), list(fomc)))
+    gr = G.Grid(feat)
+    rows = gr.score_all(combos)
+    guard = G.guard(combos, rows)
+    st = G.family_stats(combos, rows, new)
+    check("n. every new family is scored (n, both periods, FDR kept)", all(st[f]["tested"] > 0 for f in new if f != "esd") and guard["tested"] > 0, st)
+
+
 def test_v2_files():
     """i. the v2 files exist, ride the OLYMPUS render core and touch nothing shared."""
     names = ["landmarks.js", "streams.js", "outskirts.js", "fly.js"]
@@ -1363,6 +1389,7 @@ def main():
     test_incremental()
     test_outputs()
     test_districts_today()
+    test_new_families()
     test_v2_files()
     test_v3_files()
     if "--no-page" not in sys.argv:

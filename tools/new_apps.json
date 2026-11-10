@@ -459,6 +459,24 @@
     "kind": "sunburst",
     "ms": 1000
    }
+  },
+  {
+   "id": "archive",
+   "name": "Archive",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The library of everything we ever tested, searchable",
+   "glyph": "B",
+   "ambient": "chimes",
+   "flavour": [
+    "columns",
+    "Open the shelves",
+    "tap"
+   ],
+   "transition": {
+    "kind": "tiles",
+    "ms": 800
+   }
   }
  ],
  "pending": [],

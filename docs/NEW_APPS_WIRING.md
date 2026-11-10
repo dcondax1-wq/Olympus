@@ -433,3 +433,24 @@ App `helios` in `tools/web_public/helios/` (3D sun over columns via the render c
 (its light copies of Pythia's day rules and Compass's urgent rules are checked against the real `pythiacore.js` and `compasscore.js`: if either changes, that test tells you).
 The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `S`, ambient `chimes`, flavour `['rings', 'Rise and plan', 'tick']`, transition `{ kind: 'sunburst', ms: 1000 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and runs `python tools/apps_list_build.py --check`.
 Tests after wiring: `tests.test_helios_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring ARCHIVE (the library of everything we ever tested, 2026-11-10)
+
+App `archive` in `tools/web_public/archive/` (3D marble bookcases via the render core: `archivestage.js`, its own module tag; flat twin without WebGL). Reads `./index.json` (first load about 300 KB: facets, write-ups, the rejected list, datasets, every adopted / open run) and, after the first paint, `./runs-0.json` .. `runs-3.json` (the rejected runs); falls back to `fixture.json` (DEMO). Built OFFLINE by `python tools/archive_build.py` (stdlib; `--check`, `--selftest`) from `research/runs/*.json`, `research/writeups/*.md`, the "Tested and rejected" section of `docs/CLAUDE_REFERENCE.md` and `data/`. Test `tests/test_archive_page.py`.
+The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `B`, ambient `chimes`, flavour `['columns', 'Open the shelves', 'tap']`, transition `{ kind: 'tiles', ms: 800 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and runs `python tools/apps_list_build.py --check`.
+
+## Site build lines (needed, otherwise `archive/index.json` is stale on the site)
+1. `tools/build_web_dashboard.py`: the app tuple gets `"archive"` (the folder is copied whole, so `index.json` and `runs-*.json` ride along; `runs-*.json` must NOT be filtered out as "private").
+2. `.github/workflows/cloud-monitor.yml`, step "Publish web dashboard" (line ~225): add this line directly ABOVE `python tools/build_web_dashboard.py --state dash/state.json --chart dash/chart.png --out site`:
+   `          python tools/archive_build.py   # the Archive library index (stdlib, ~3 s)`
+   (rewrites `tools/web_public/archive/*.json` from the repo; about 3 s; it needs `research/runs/`, `research/writeups/`, `docs/CLAUDE_REFERENCE.md`, `data/*.csv`). If the checkout is shallow or lacks those, skip it: the committed `archive/index.json` is still valid.
+3. `tools/web_public/sw.js`: `OTHER_APPS` add `'archive/'`; do NOT precache `archive/runs-*.json` (about 540 KB together), only `archive/index.json` if at all.
+Tests after wiring: `tests.test_archive_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+## The six rows (what `wire_new_apps.py --apply` writes for Archive)
+1. `jarvis/apps.js` BUILT_INS: `app('archive', 'Archive', 'trading', '#c8a24a', 'The library of everything we ever tested, searchable', { glyph: 'B' }),`
+2. `olympus/olympus.js`: APPS `archive: ['Archive', 'B', '#c8a24a'],` and AMBIENT `archive: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"archive"`.  4. `sw.js` OTHER_APPS: `'archive/'`.
+5. `olympus/intro-app.js` FLAVOUR: `archive: ['columns', 'Open the shelves', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `archive: { kind: 'tiles', ms: 800 },`

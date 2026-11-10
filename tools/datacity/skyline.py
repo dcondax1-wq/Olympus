@@ -28,13 +28,13 @@ CLS = ("gold", "green", "amber", "grey")
 COLS = ("t", "w", "k1", "k2", "d", "cls", "e", "r", "wr", "n", "tpw", "e26", "n26", "eo", "no", "fl")
 FL_FDR, FL_RISE, FL_DECAY, FL_FIRED, FL_ARMED = 1, 2, 4, 8, 16
 SECTION_META = {          # key -> (name on the street sign, what lives there, sign colour)
-    "times": ("TIMES", "Every 15-minute slot and session open, long and short", "#7fe9ff"),
+    "times": ("TIMES", "Every 15-minute slot and session open, long and short, and the hour of the day", "#7fe9ff"),
     "confluences": ("CONFLUENCES", "Every trigger (sweeps, breaks, FVG, IFVG, CISD, displacement, VWAP, gap fill, news)", "#ffd36b"),
     "week": ("THE WEEK", "Weekday x session, and weekday x every 15-minute slot", "#9ad1ff"),
-    "seasons": ("SEASONS", "Month of the year, the turn of the month, OpEx week", "#ffb38a"),
+    "seasons": ("SEASONS", "Month of the year, day and week of the month, month-end and quarter-end, the turn of the month, OpEx week, FOMC week", "#ffb38a"),
     "volatility": ("VOLATILITY", "VIX and VXN levels, the ATR regime, the VIX curve and the VIX trend", "#ff7ad9"),
     "gaps": ("GAPS", "Gap up / down at the RTH open, filled or still open", "#8affc1"),
-    "orange": ("OPENING RANGE", "Narrow / normal / wide 09:30-09:45 range, price beyond or inside it", "#ffa24a"),
+    "orange": ("OPENING RANGE", "Narrow / normal / wide 09:30-09:45 range, price beyond or inside it, the overnight range, the first hour", "#ffa24a"),
     "esnq": ("ES-NQ", "ES-NQ SMT and relative strength (ES bars from 2025-04 only: never green in 2021-25)", "#b9a6ff"),
     "while": ("WHILE-STATES", "VWAP side, EMA trend, London vs Asia, day type, DST, news day", "#e9ecf6"),
 }
