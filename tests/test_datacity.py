@@ -415,7 +415,7 @@ def test_v2_files():
     check("i. LITE caps the frame loop at 30 fps", "this.quality === 'lq' && now - last < 28" in read_text(os.path.join(PAGE, "city.js")))
     html = read_text(os.path.join(PAGE, "index.html"))
     check("i. the camera buttons and the tag are in the page",
-          all(f'data-cam="{k}"' in html for k in ("orbit", "skim", "drone", "grand")) and 'id="tag"' in html)
+          all(f'data-cam="{k}"' in html for k in ("orbit", "skim", "walk", "drone", "grand")) and 'id="tag"' in html)
     shared = os.path.join(os.path.dirname(PAGE), "olympus")
     check("i. the render core sits next to the page (the site layout); none of it is copied into datacity",
           os.path.exists(os.path.join(shared, "render.js")) and not os.path.exists(os.path.join(PAGE, "render.js")))

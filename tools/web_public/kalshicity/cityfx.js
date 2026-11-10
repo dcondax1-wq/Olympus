@@ -176,7 +176,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     if (st.tw > 0.3 && !live.godRays) startFx('godRays', { position: [st.sun[0] * 0.35, 120, st.sun[2] * 0.35], length: 125, intensity: 0.5, color: '#d9a26b', spread: 0.22 });
     else if (st.tw < 0.12) stopFx('godRays');
     // a storm: weather or a risk of ruin that is high
-    if (st.stormy && !live.lightning) startFx('lightning', { position: [0, 95, 0], spread: ext * 0.7, width: 0.5, flash: 0.75, every: [3, 8], color: '#afc7da',
+    if (st.stormy && !live.lightning) startFx('lightning', { position: [0, 95, 0], spread: ext * 0.7, width: 0.5, flash: 0.75, every: [3, 8], color: '#e8dcc0',
       onFlash: (f) => { if (f > 0.5 && lastF <= 0.5) { counts.strikes++; setTimeout(() => sfx('thunder'), 380); } lastF = f; } });
     else if (!st.stormy) stopFx('lightning');
     // aurora over the Vault, at night, not in a storm
@@ -188,7 +188,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     const key = `${Math.round(st.hour * 2)}|${st.night > 0.5 ? 'n' : 'd'}|${st.stormy ? 1 : 0}`;
     if (key !== flareKey) {
       flareKey = key; stopFx('flare');
-      if (!st.stormy && FXL.has('lensFlare')) { try { live.flare = FXL.lensFlare({ scene, camera }, { position: [st.sun[0] * 0.5, Math.max(30, st.sun[1] * 0.5), st.sun[2] * 0.5], color: st.night > 0.5 ? '#afc7da' : '#e0b487' }); } catch (_) { /* skip */ } }
+      if (!st.stormy && FXL.has('lensFlare')) { try { live.flare = FXL.lensFlare({ scene, camera }, { position: [st.sun[0] * 0.5, Math.max(30, st.sun[1] * 0.5), st.sun[2] * 0.5], color: st.night > 0.5 ? '#e8dcc0' : '#e0b487' }); } catch (_) { /* skip */ } }
     }
   }
 
