@@ -142,8 +142,8 @@ def test_page():
               pills: [...document.querySelectorAll('#streams .pill')].map((h) => h.textContent), todo: document.querySelectorAll('#todo li').length, legend: document.querySelectorAll('#legend li').length,
               cols: document.querySelectorAll('#fallback rect').length, hist: document.querySelector('#histNote').textContent, font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor,
               ests: [...document.querySelectorAll('#streams .amt')].map((h) => h.textContent), scene: window.MINT.S.scene })""")
-            check("c. DEMO (the fixture): the chip, $1,495 a month with the range $0 to $2,990, EXAMPLE ESTIMATE, 'not real finds', five cards in order, each marked Example",
-                  d["demo"] and d["base"] == "$1,495" and "$0 to $2,990" in d["text"] and d["pill"] == "EXAMPLE ESTIMATE" and "not real finds" in d["why"] and d["names"] == ["Chrysos", "Mercury", "Sibyl", "Oikos", "Arbiter"] and d["pills"] == ["Example"] * 5, d)
+            check("c. DEMO (the fixture): the chip, $1,495 a month with a worst case of losing about $42 and a best case of $2,547 (Chrysos's Stress case, from the real scanner), EXAMPLE ESTIMATE, 'not real finds', five cards in order, each marked Example",
+                  d["demo"] and d["base"] == "$1,495" and "in the worst case you could lose about $42 a month" in d["text"] and "$2,547" in d["text"] and d["pill"] == "EXAMPLE ESTIMATE" and "not real finds" in d["why"] and d["names"] == ["Chrysos", "Mercury", "Sibyl", "Oikos", "Arbiter"] and d["pills"] == ["Example"] * 5, d)
             check("c. every card shows its dollars as an estimate ('a month (estimate)'); at most 3 things to do; five legend rows; the 2D pillars (flat=1) are drawn; examples are not saved to the history",
                   all("estimate" in e for e in d["ests"]) and 1 <= d["todo"] <= 3 and d["legend"] == 5 and d["cols"] >= 20 and d["scene"] == "2d" and "not saved" in d["hist"], d)
             check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
@@ -151,7 +151,7 @@ def test_page():
             p.locator("#streams .stream").first.locator("button").click()
             p.wait_for_timeout(120)
             e = p.evaluate("() => { const c = document.querySelector('#streams .stream'); return [c.querySelector('.more').hidden, c.querySelector('button').getAttribute('aria-expanded'), c.querySelector('.items').children.length, c.textContent.includes('estimate')]; }")
-            check("c. tap Details: the items open (with their own risk words), the button says expanded, tap again closes", e == [False, "true", 2, True], e)
+            check("c. tap Details: the items open (with their own risk words), the button says expanded, tap again closes", e == [False, "true", 3, True], e)
             t = AK.taps(p)
             check("c. every tap target is at least 44 x 44 px", not t, t[:5])
             check("c. no sideways scroll; Jarvis's corner is free; no console error; nothing off the origin", AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (errs[:3], off[:3]))

@@ -64,7 +64,7 @@ export function combine(streams) {
   }
   for (const s of streams) { if (s.status === 'sample') sample++; if (s.status === 'stale') stale++; }
   const allSample = streams.length > 0 && sample === streams.length;
-  const text = n === 0 ? 'No estimate yet: no stream has reported a number.' : lo < 0 ? `About ${money(base)} a month, but ${worstText(lo).charAt(0).toLowerCase() + worstText(lo).slice(1)} At best about ${money(hi)} a month.` : `About ${money(base)} a month, but it could be anywhere from ${money(lo)} to ${money(hi)}.`;
+  const text = n === 0 ? 'No estimate yet: no stream has reported a number.' : lo < 0 ? `About ${money(base)} a month, but in the worst case you could lose about ${money(-lo)} a month. At best about ${money(hi)} a month.` : `About ${money(base)} a month, but it could be anywhere from ${money(lo)} to ${money(hi)}.`;
   const why = allSample ? 'These are example numbers, not real finds.' : sample ? `${sample} of 5 streams still show examples, not real finds.` : stale ? `${stale} stream${stale > 1 ? 's' : ''} have old data.` : 'Every stream is fresh.';
   return { low: lo, base, high: hi, n, real, sample, stale, allSample, text, why, tone: allSample ? 'info' : stale || sample ? 'warn' : 'ok' };
 }
