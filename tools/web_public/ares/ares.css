@@ -142,3 +142,6 @@ button { font-family: var(--ag-sans); }
 
 button { background: rgba(37, 30, 23, .88); }
 button[aria-pressed="true"] { background: #2a2217; border-color: #c8a24a; color: #c8a24a; }
+
+/* phone-fit 2026-11-10 (tap targets on a 320 px screen) */
+.tabs button { min-width: 44px; }
