@@ -21,6 +21,24 @@ function say(t) { $('status').textContent = t; }
 const tile = (box, k, v, n, cls) => { const t = h('div', 'tile'); t.appendChild(h('small', '', k)); t.appendChild(h('b', cls || '', v)); if (n) t.appendChild(h('span', '', n)); box.appendChild(t); };
 const items = () => S.view.items;
 
+const VERB = { stop: 'Stop', pause: 'Pause', watch: 'Watch', keep: 'Keep' };
+function renderStop() {
+  const d = S.stop; if (!d || !Array.isArray(d.items)) { $('stopCard').hidden = true; return; }
+  $('stopCard').hidden = false;
+  const c = d.counts || {};
+  $('stopPill').textContent = S.stopSrc === 'saved' ? 'Saved copy' : 'Fresh study'; $('stopPill').className = 'pill ' + (S.stopSrc === 'saved' ? 'info' : 'ok');
+  $('stopText').textContent = `Suggestions only, the bot is untouched. ${c.stop || 0} to stop, ${c.pause || 0} to pause, ${c.watch || 0} to watch. Dollars are what the bot really made or lost after Kalshi fees, with the number of bets (n).`;
+  const ul = $('stopRows'); clear(ul);
+  for (const it of d.items.filter((i) => i.verdict !== 'keep')) {
+    const li = h('li', '');
+    const iv = it.interval_pct && it.interval_pct[0] != null ? `, 95% range ${it.interval_pct[0]}% to ${it.interval_pct[1]}%${it.interval_is ? ' (' + it.interval_is + ')' : ' of stake'}` : '';
+    li.appendChild(h('b', it.verdict === 'stop' ? 'neg' : '', `${VERB[it.verdict]}: ${it.kind}. `));
+    li.appendChild(h('span', '', `${it.net_usd < 0 ? '-' : '+'}$${Math.abs(it.net_usd).toFixed(2)} over ${it.n} bets${it.roi_pct != null ? ', ' + it.roi_pct + '% of stake' : ''}${iv}. ${it.rule}`));
+    ul.appendChild(li);
+  }
+  $('stopNote').textContent = (d.not_proven || []).join(' ');
+}
+
 function renderHero() {
   const v = S.view, pill = $('srcPill');
   pill.textContent = v.src === 'demo' ? 'Example' : v.status === 'stale' ? 'Old study' : 'Fresh study'; pill.className = 'pill ' + (v.src === 'demo' ? 'info' : v.status === 'stale' ? 'warn' : 'ok');
@@ -144,7 +162,7 @@ function select(i, scroll) {
 
 function render() {
   $('demo').hidden = !(S.view.src === 'demo'); try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
-  renderHero(); renderBank(); renderPicks(); renderList(); renderScore(); renderOwn(); renderRisks();
+  renderHero(); renderBank(); renderPicks(); renderList(); renderScore(); renderOwn(); renderStop(); renderRisks();
   say(`Sibyl: ${S.view.counts.worthy} paper pick${S.view.counts.worthy === 1 ? '' : 's'} of ${S.view.counts.edges} kinds of bet. ${S.view.src === 'demo' ? 'Example numbers. ' : S.view.status === 'stale' ? 'Old study. ' : ''}Suggestions only.`);
 }
 
@@ -152,6 +170,8 @@ async function boot() {
   const q = new URLSearchParams(location.search), forced = q.get('demo') === '1', at = q.get('at');
   S.now = at && Number.isFinite(Date.parse(at)) ? Date.parse(at) / 1000 : Date.now() / 1000;
   const [fx, real, own] = await Promise.all([getJSON('./fixture.json'), forced ? null : getJSON('../money/sibyl.json'), forced ? null : getJSON('../money/sibyl_forward.json')]);
+  const sug = forced ? null : await getJSON('../kalshicity/suggestions.json');
+  S.stop = sug && Array.isArray(sug.items) ? sug : await getJSON('./suggestions_fixture.json'); S.stopSrc = sug && Array.isArray(sug.items) ? 'live' : 'saved';
   S.fixture = fx; const v = C.chooseView(real, fx); if (!v) throw new Error('no numbers');
   S.view = v; S.bank = v.bank.usd; S.own = v.src === 'demo' ? v.own : C.normOwn(own);
   const b = Number(q.get('bank')); if (Number.isFinite(b) && b > 0 && b <= 1e6) S.bank = Math.round(b * 100) / 100;

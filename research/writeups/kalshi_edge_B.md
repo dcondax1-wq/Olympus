@@ -69,3 +69,13 @@ python research/kalshi_edge_B/collect.py 15m KXBTC15M 2900   # refetch (public A
 Results: `results.json`, `results_candidate.json`, `results_replication.json`, `results_frozen.json`, `stop_bleed.json`, `costs.json`.
 
 Known limits: Coinbase is a proxy for the settlement index; quotes are minute-close bid/ask (no depth); hourly ladders keep only strikes within 1.2% of the final value (irrelevant at the favourite end, it only trims far tails); 15m data covers about 2 months, one market regime.
+
+## Follow-up experiment design (not run, not deployed)
+
+Goal: answer the two questions this study could not. (a) Can a resting (maker) order get filled without being picked off? (b) Do CPI / FOMC / jobs windows misprice?
+
+- **What to record, free, for 3 months:** `tools/kalshi_kit/public/book_recorder.py` (stdlib, GET-only, no key, selftested with a stubbed API). Each minute it stores the top of book of every open market in BTC/ETH/SOL/XRP 15-minute and BTC/ETH hourly series, the full order book of the 12 mid-priced markets nearest expiry, and the public trade tape. Raw JSON lines, about 30-100 MB a day, stops itself at 4 GB. At most 40 requests a minute, one at a time, back-off on 429.
+- **Where:** the Oracle VM, as its own cron or service, in a folder outside the bot. Not deployed by this change: the owner decides.
+- **Maker question:** replay a resting bid on the favourite at each minute; a fill happens when a trade prints at or through our price while we are at the front by queue size from the book. Measure profit per fill after the 1.75% maker fee, and the same for fills that happen within 60 s of a spot move against us. Needs about 3 months and at least 500 simulated fills to separate a 1c edge.
+- **Event windows:** list CPI, FOMC and jobs release times (about 12 each over 3 months is only 3 each: log 12 months, or accept that this stays exploratory), compare the model-vs-quote gap and the favourite win rate in the 30 minutes after each release against the same hours on other days.
+- **Decision rule written now, before the data exists:** an idea counts only if the last third of the recording (never used to tune) shows a positive edge after fees whose 95% interval is above 0, on at least two assets, with n shown. Otherwise the answer is again "no edge found".
