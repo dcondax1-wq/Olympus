@@ -15,13 +15,13 @@ test('standalone Atlas presents one Olympus command center', () => {
   assert.match(html, /Every arena\.<br><em>One command center\.<\/em>/);
   assert.match(html, /The full directory/);
   assert.match(html, /hub\.js\?v=1/);
-  assert.match(html, /atlas\.css\?v=7/);
-  assert.equal((html.match(/data-jump-filter=/g) || []).length, 4);
+  assert.match(html, /atlas\.css\?v=8/);
+  assert.equal((html.match(/data-jump-filter=/g) || []).length, 5);
   assert.equal((html.match(/class="command-glass"/g) || []).length, 1);
 });
 
 test('directory keeps every arena discoverable and routes stay in the project', () => {
-  for (const zone of ['market', 'research', 'risk', 'life']) {
+  for (const zone of ['market', 'research', 'risk', 'command', 'life']) {
     assert.match(atlas, new RegExp(`id:'${zone}'`));
     assert.match(html, new RegExp(`data-filter="${zone}"`));
   }

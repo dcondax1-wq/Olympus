@@ -25,6 +25,8 @@
 //                      (the shell passes apps.js byGroup: Jarvis first, then TRADING, LIFE, MONEY ...). The cards, the quick row
 //                      and the swipe follow that order, each group under its heading; chips over the cards jump to a group.
 //                      Without it (or when it fails): one list, as opts.apps() gives it.
+//   Organize (2026-11-10): a search box (name or plain-words purpose), a MAP button (every app on one screen, group colours), favourites
+//                      (long-press a card / tile, or F: 'jarvis.orb.fav') and recent apps ('jarvis.orb.recent') as their own sections on top.
 //   opts.doc           optional: the document (tests)
 // use(id) counts an app's opens on this phone ('jarvis.orb.use'; the shell calls it on every switch): the hold ring shows the
 // RING_MAX most opened apps, plus a "more" slice (the whole switcher) when there are more.
@@ -32,6 +34,9 @@ const VERSION = 1;
 const POS_KEY = 'jarvis.orb';
 const TIP_KEY = 'jarvis.orb.tips';
 const USE_KEY = 'jarvis.orb.use';
+const FAV_KEY = 'jarvis.orb.fav';          // favourites (long-press a card or a map tile)
+const REC_KEY = 'jarvis.orb.recent';       // the last apps opened, newest first
+const FAV_MAX = 12, REC_MAX = 4, PRESS_MS = 520;
 const HOLD_MS = 380;
 const RING_MAX = 6;
 
@@ -167,6 +172,27 @@ const CSS = `
 .nx-orb .nx-alert{position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;border:2px solid #14110e;display:none;box-sizing:border-box}
 .nx-orb.lv-warn .nx-alert{display:block;background:#e0b060}.nx-orb.lv-bad .nx-alert{display:block;background:#e0795a}
 .nx-hint{text-align:center;color:#9a8f7d;font:600 13px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,-apple-system,system-ui,sans-serif;letter-spacing: .02em;padding:10px 16px 0}
+.nx-find{display:flex;gap:8px;padding:8px 16px 0}
+.nx-find input{flex:1;min-width:0;height:46px;border-radius:12px;border:1px solid rgba(200,162,74,.4);background:rgba(28,24,20,.92);color:#f3ece0;padding:0 14px;font:500 16px -apple-system,system-ui,sans-serif}
+.nx-find input::placeholder{color:#9a8f7d}
+.nx-find input:focus{outline:2px solid #e0b060;outline-offset:1px}
+.nx-mapb{flex:none;min-width:64px;min-height:46px;padding:0 14px;border-radius:12px;border:1px solid rgba(200,162,74,.5);background:rgba(28,24,20,.92);color:#e0b060;
+  font:700 13px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:.02em}
+.nx-mapb[aria-pressed="true"]{background:#c8a24a;color:#14110e}
+.nx-fv{position:absolute;top:12px;left:12px;color:#e0b060;font-size:16px;line-height:1}
+.nx-empty{padding:18px 16px;text-align:center;color:#cfc4b2;font:500 15px -apple-system,system-ui,sans-serif}
+.nx-map{display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 16px calc(18px + env(safe-area-inset-bottom,0px));flex:1;min-height:0}
+.nx-root.map .nx-map{display:block}
+.nx-root.map .nx-stage,.nx-root.map .nx-row,.nx-root.map .nx-gr,.nx-root.map .nx-hint{display:none}
+.nx-map h3{margin:12px 2px 6px;font:700 14px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:.02em;color:var(--mc,#c8a24a);border-bottom:1px solid var(--mc,#c8a24a);padding-bottom:4px}
+.nx-mg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.nx-mt{position:relative;min-height:56px;padding:6px 2px 4px;border-radius:12px;border:1px solid var(--mc,#c8a24a);background:rgba(28,24,20,.92);color:#f3ece0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:600 11px/1.15 -apple-system,system-ui,sans-serif;text-align:center;overflow:hidden}
+.nx-mt i{font:700 18px/1 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-style:normal;color:var(--mc,#c8a24a)}
+.nx-mt span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nx-mt.now{background:rgba(200,162,74,.22)}.nx-mt.off{opacity:.5;border-style:dashed}
+.nx-mt .nx-fv{top:2px;left:4px;font-size:11px}
+@media (min-width:520px){.nx-mg{grid-template-columns:repeat(6,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){.nx-root,.nx-root.on,.nx-fb,.nx-orb,.nx-tip,.nx-fan .nx-fs{transition:none!important}.nx-card{will-change:auto}}
 html[data-nexus] .zm-back{display:none!important}
 `;
@@ -218,14 +244,31 @@ export function mountSwitcher(opts = {}) {
   rootEl.setAttribute('aria-label', 'Switch apps'); rootEl.setAttribute('aria-hidden', 'true');
   rootEl.innerHTML = '<div class="nx-head"><div><h2>OLYMPUS</h2><small>SWITCH \u00b7 SWIPE OR HOLD THE ORB</small></div>'
     + '<button class="nx-x" type="button" aria-label="Close">×</button></div>'
+    + '<div class="nx-find"><input id="nxFind" type="search" autocomplete="off" autocapitalize="off" placeholder="Search apps by name or what they do" aria-label="Search apps by name or what they do">'
+    + '<button class="nx-mapb" id="nxMapBtn" type="button" aria-pressed="false" aria-label="Show all apps on one screen">MAP</button></div>'
     + '<button class="nx-sys" type="button" id="nxSys" hidden></button>'
     + '<div class="nx-gr" id="nxGroups" role="group" aria-label="Jump to a group" hidden></div>'
-    + '<div class="nx-stage"><div class="nx-track" id="nxTrack"></div></div><div class="nx-row" id="nxRow"></div>';
+    + '<div class="nx-stage"><div class="nx-track" id="nxTrack"></div></div><div class="nx-row" id="nxRow"></div>'
+    + '<div class="nx-map" id="nxMap" aria-label="All apps on one screen"></div>';
   doc.body.appendChild(fan); doc.body.appendChild(rootEl); doc.body.appendChild(orb); doc.body.appendChild(tip);
   const noImg = (e) => { const t = e.target; if (t && t.tagName === 'IMG' && t.parentNode) t.parentNode.replaceChild(doc.createTextNode(t.dataset.g || '?'), t); };
   rootEl.addEventListener('error', noImg, true); fan.addEventListener('error', noImg, true);
   const track = rootEl.querySelector('.nx-track'), row = rootEl.querySelector('.nx-row'), sysEl = rootEl.querySelector('.nx-sys');
-  const groupsEl = rootEl.querySelector('.nx-gr');
+  const groupsEl = rootEl.querySelector('.nx-gr'), findEl = rootEl.querySelector('#nxFind'), mapBtn = rootEl.querySelector('#nxMapBtn'), mapEl = rootEl.querySelector('#nxMap');
+  let query = '', mapOn = false;
+  const GCOL = { trading: '#c8a24a', life: '#4b7a99', money: '#7f8a52', fav: '#e0b060', recent: '#9c6b3c' };
+  const favs = () => { const f = lsGet(FAV_KEY, []); return Array.isArray(f) ? f.filter((x) => typeof x === 'string').slice(0, FAV_MAX) : []; };
+  const recents = () => { const f = lsGet(REC_KEY, []); return Array.isArray(f) ? f.filter((x) => typeof x === 'string').slice(0, REC_MAX) : []; };
+  function toggleFav(id) {
+    const f = favs(), i = f.indexOf(id);
+    if (i >= 0) f.splice(i, 1); else f.push(id);
+    lsSet(FAV_KEY, f.slice(0, FAV_MAX));
+    try { if (win.navigator.vibrate) win.navigator.vibrate(10); } catch (_) { /* none on iPhone */ }
+    render();
+  }
+  // the plain-words line of an app: its sub-line, else the Olympus list's purpose
+  const plain = (a) => { const L = win.OLYMPUS_APPS_LIST, r = Array.isArray(L) ? L.find((x) => x.id === a.id) : null; return String(a.sub || '') + ' ' + (r ? r.purpose : ''); };
+  const matches = (a, gname) => !query || (String(a.label || '') + ' ' + String(a.name || '') + ' ' + a.id + ' ' + plain(a) + ' ' + (gname || '')).toLowerCase().includes(query);
 
   // position: a side ('r' | 'l') and a height (fraction of the screen), kept on this phone
   let pos = lsGet(POS_KEY, null);
@@ -301,12 +344,26 @@ export function mountSwitcher(opts = {}) {
   }
   function render() {
     renderSys();
-    const parts = sections(), cur = activeId(), many = parts.filter((p) => p.g).length > 1;
+    const base = sections(), cur = activeId(), all = list(), byId = new Map(all.map((a) => [a.id, a]));
+    let parts = base.map((p) => ({ g: p.g, apps: p.apps.filter((a) => matches(a, p.g && p.g.name)) })).filter((p) => p.apps.length);
+    const fv = favs().map((id) => byId.get(id)).filter(Boolean), rc = recents().map((id) => byId.get(id)).filter((a) => a && a.id !== cur && !fv.includes(a));
+    const top = [];
+    if (!query && fv.length) top.push({ g: { id: 'fav', name: 'FAVOURITES' }, apps: fv });
+    if (!query && rc.length) top.push({ g: { id: 'recent', name: 'RECENT' }, apps: rc });
+    parts = top.concat(parts);
+    const many = parts.filter((p) => p.g).length > 1, favSet = new Set(favs());
     const head = (p) => (many && p.g ? `<div class="nx-gl" data-nx-g="${escH(p.g.id)}" aria-hidden="true">${escH(p.g.name)}</div>` : '');
-    track.innerHTML = parts.map((p) => head(p) + p.apps.map((a) => card(a, a.id === cur, many && p.g)).join('')).join('')
+    track.innerHTML = (parts.length ? '' : `<p class="nx-empty">No app matches "${escH(query.slice(0, 40))}".</p>`) + parts.map((p) => head(p) + p.apps.map((a) => card(a, a.id === cur, many && p.g)).join('')).join('')
       + (typeof opts.onAdd === 'function' ? '<button class="nx-card add" type="button" data-nx-add="1" aria-label="Add a dashboard">'
         + '<span class="nx-ic">+</span><div class="nx-nm"><b>ADD</b><span>Any dashboard with a link (Ascend too)</span></div></button>' : '');
     const qb = (a) => `<button class="nx-qb${a.id === cur ? ' now' : ''}${a.off ? ' off' : ''}" type="button" data-nx="${escH(a.id)}" aria-label="${escH(label(a))}">${inner(a)}</button>`;
+    track.querySelectorAll('.nx-card[data-nx]').forEach((c) => { if (favSet.has(c.dataset.nx)) c.insertAdjacentHTML('afterbegin', '<span class="nx-fv" aria-hidden="true">\u2605</span>'); });
+    const star = (a) => (favSet.has(a.id) ? '<b class="nx-fv" aria-hidden="true">\u2605</b>' : '');
+    mapEl.innerHTML = !parts.length ? `<p class="nx-empty">No app matches "${escH(query.slice(0, 40))}".</p>` : parts.map((p) => {
+      const gid = p.g ? p.g.id : 'more', col = GCOL[String(gid).toLowerCase()] || '#c96a4a';
+      return `<h3 style="--mc:${col}">${escH(p.g ? p.g.name : 'MORE')}</h3><div class="nx-mg" style="--mc:${col}">`
+        + p.apps.map((a) => `<button class="nx-mt${a.id === cur ? ' now' : ''}${a.off ? ' off' : ''}" type="button" data-nx="${escH(a.id)}" aria-label="${escH(label(a))}${favSet.has(a.id) ? ', favourite' : ''}">${star(a)}<i>${escH(String(a.glyph || a.name || '?').charAt(0).toUpperCase())}</i><span>${escH(String(a.name || a.id))}</span></button>`).join('') + '</div>';
+    }).join('');
     row.innerHTML = parts.map((p, i) => (i && many ? '<i class="nx-qs" aria-hidden="true"></i>' : '') + p.apps.map(qb).join('')).join('');
     groupsEl.hidden = !many;
     groupsEl.innerHTML = !many ? '' : parts.filter((p) => p.g).map((p) => `<button class="nx-gb${p.apps.some((a) => a.id === cur) ? ' on' : ''}" type="button" `
@@ -342,6 +399,7 @@ export function mountSwitcher(opts = {}) {
   function open() {
     if (openNow) return;
     hideFan();
+    query = ''; findEl.value = ''; mapOn = false; rootEl.classList.remove('map'); mapBtn.setAttribute('aria-pressed', 'false');
     render();
     const r = orb.getBoundingClientRect();
     rootEl.style.setProperty('--ox', Math.round(r.left + r.width / 2) + 'px');
@@ -367,21 +425,42 @@ export function mountSwitcher(opts = {}) {
   function go(id) {
     try { if (win.jarvisSfx) win.jarvisSfx('tap'); } catch (_) { /* the sound layer is optional */ }
     close(); hideFan();
+    if (id && id !== 'home' && id !== activeId()) lsSet(REC_KEY, [id].concat(recents().filter((x) => x !== id)).slice(0, REC_MAX));
     if (id && id !== activeId()) call(opts.onSwitch, id);
     orb.classList.remove('pulse'); void orb.offsetWidth; orb.classList.add('pulse');
   }
+  let noClickUntil = 0;
   rootEl.addEventListener('click', (e) => {
+    if (Date.now() < noClickUntil) return;                // the long-press that just set a favourite
     if (Date.now() - openedAt < 350) return;              // the tap that opened it, landing again (never a switch by itself)
     if (e.target.closest('.nx-sys')) { close(); call(opts.onSystem); return; }
     const j = e.target.closest('[data-nx-jump]');
     if (j) { jump(j.dataset.nxJump); return; }
     const t = e.target.closest('[data-nx], [data-nx-add], .nx-x');
-    if (!t) { if (!e.target.closest('.nx-card, .nx-qb, .nx-row, .nx-gr')) close(); return; }
+    if (e.target.closest('#nxMapBtn')) { mapOn = !mapOn; rootEl.classList.toggle('map', mapOn); mapBtn.setAttribute('aria-pressed', String(mapOn)); return; }
+    if (!t) { if (!e.target.closest('.nx-card, .nx-qb, .nx-row, .nx-gr, .nx-find, .nx-map')) close(); return; }
     if (t.classList.contains('nx-x')) { close(); return; }
     if (t.dataset.nxAdd) { close(); call(opts.onAdd); return; }
     go(t.dataset.nx);
   });
   doc.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (openNow) close(); else hideFan(); } });
+  findEl.addEventListener('input', () => { query = findEl.value.trim().toLowerCase(); render(); });
+  findEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && query) { const t = (mapOn ? mapEl : track).querySelector('[data-nx]'); if (t) go(t.dataset.nx); } });
+  // long-press a card or a map tile (or press F on it): star it as a favourite
+  let pressT = 0;
+  const pressEnd = () => clearTimeout(pressT);
+  rootEl.addEventListener('pointerdown', (e) => {
+    const t = e.target.closest('.nx-card[data-nx], .nx-mt[data-nx]');
+    if (!t || t.dataset.nx === 'home') return;
+    clearTimeout(pressT);
+    pressT = setTimeout(() => { noClickUntil = Date.now() + 700; toggleFav(t.dataset.nx); }, PRESS_MS);
+  });
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) rootEl.addEventListener(ev, pressEnd);
+  rootEl.addEventListener('keydown', (e) => {
+    const t = e.target.closest && e.target.closest('[data-nx]');
+    if ((e.key === 'f' || e.key === 'F') && t && t.dataset.nx !== 'home' && e.target !== findEl) toggleFav(t.dataset.nx);
+  });
+  rootEl.addEventListener('contextmenu', (e) => { if (e.target.closest('[data-nx]')) e.preventDefault(); });
 
   // ---------------------------------------------------------------- swipe: the next / previous app
   function flick(dir) {
