@@ -152,3 +152,20 @@ App `sibyl` (`tools/web_public/sibyl/`, 3D marble ball in `sibylball.js`, its ow
 `jarvis/transitions.js` REGISTRY: `sibyl: { kind: 'sunburst', ms: 1000 },`
 ## 7. Tests after wiring: `tests.test_sibyl_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`.
 Reads (all published, read only): `../money/sibyl.json` (the scanner's file); fallback `fixture.json` (DEMO, exactly `sibyl.py --fixture`). The scanner reads `kalshicity/edges.json`, `whatif.json`, `forward.json` (when present) and never the network.
+
+**Sibyl's own ledger (added 2026-11-10):** `tools/money/sibyl_ledger.py --sibyl <site>/money/sibyl.json --state <site>/money/sibyl_forward.json [--results results.json]` appends each day's picks once (frozen start day, only a fresh study, never back-filled), settles them from an optional results file and writes the summary into the same file. The cloud step must PERSIST `sibyl_forward.json` between runs (keep it on a state branch, like `forward_state.json`), or the start day restarts. The page reads `../money/sibyl_forward.json` (optional; without it the own-picks card says "Not started"). Net and win rate stay hidden until 30 bets are settled.
+
+---
+# KRONOS: the calendar of money (2026-11-10)
+
+App `kronos` (`tools/web_public/kronos/`; the 3D marble sundial is `kronosdial.js`, its own module tag). Reads only `../odeon/trades.json` (real and paper trades; the backtest on a chip) and its `fixture.json` (DEMO, fixed today 2026-11-06). Test `tests/test_kronos_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+## 1. `jarvis/apps.js` BUILT_INS: `app('kronos', 'Kronos', 'money', '#c8a24a', 'The calendar of money: daily P&L, best weekday and hour, a normal bad week, a sundial', { glyph: 'K' }),`
+## 2. `olympus/olympus.js`: APPS `kronos: ['Kronos', 'K', '#c8a24a'],` and AMBIENT `kronos: 'chimes',`
+## 3. `tools/build_web_dashboard.py` app tuple (~line 1212): add `"kronos"` (it needs no new data file: `odeon/trades.json` is already published).
+## 4. `tools/web_public/sw.js`: `OTHER_APPS` add `'kronos/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+## 5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+## 6. Shared lines
+`olympus/intro-app.js` FLAVOUR: `kronos: ['rings', 'Read the shadow', 'tick'],`
+`jarvis/transitions.js` REGISTRY: `kronos: { kind: 'sunburst', ms: 1000 },`
+## 7. Tests after wiring: `tests.test_kronos_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`.
