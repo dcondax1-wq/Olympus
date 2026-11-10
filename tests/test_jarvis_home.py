@@ -15,7 +15,7 @@ logic, a fake vault, the brain) and in Chromium (SwiftShader).
      "pull my tasks" (asks, dedupes, adds to the Jarvis list on yes), the weekly review draft (asks, writes on yes only), "save today's
      brief", "read my notes", "log: ..." (daily note), every write confirmed first
   h. voice commands through the brain: open <app>, switch to <mode> mode, go home, what's next, read my notes, mute / unmute, "hey Jarvis"
-  i. Chromium: the home with everything on (sky, shafts, reflections, orbs with badges, constellation lines, dock glass), the clock and
+  i. Chromium: the home with everything on (sky, shafts, reflections, orbs with badges, constellation lines, the marble dock), the clock and
      VIX change the world, state and mode colour the light, Tilt moves the camera (only when on), LITE has no rain and fewer shafts,
      one multisampled composer, no page error
   j. Chromium: the briefing card (first open, spoken from 7:00 ET, quiet hours = card only, once a day, Save to Obsidian asks first) and
@@ -401,7 +401,7 @@ def session_a(br, GPU, GPU_COUNT):
     sat = p.evaluate("() => { const b = document.querySelector('.sat'); const sb = b && b.querySelector('i .sb'); return { n: document.querySelectorAll('.sat').length, sb: document.querySelectorAll('.sat i .sb').length, t: sb ? sb.textContent : '', title: b ? b.title : '' }; }")
     check("i. every orb has a live status badge (a check, a dot, an ! or a dash) and a title with its numbers", sat["n"] >= 3 and sat["sb"] == sat["n"] and sat["t"] in ("✓", "•", "!", "–") and len(sat["title"]) > 3, sat)
     dock = p.evaluate("() => { const d = document.querySelector('#dock'), c = getComputedStyle(d); const b = getComputedStyle(d, '::before'); return { bf: c.backdropFilter || c.webkitBackdropFilter, line: b.content, h: getComputedStyle(document.querySelector('.jconst')).pointerEvents }; }")
-    check("i. the dock is glass (a 22 px blur with saturation, a specular line) and the constellation canvas never takes a tap", "blur(22px)" in dock["bf"] and dock["line"] not in ("none", "normal") and dock["h"] == "none", dock)
+    check("i. the dock is a solid marble bar (AGORA 2026-11-10: no glass blur, no sheen line) and the constellation canvas never takes a tap", (not dock["bf"] or dock["bf"] == "none") and dock["line"] in ("none", "normal") and dock["h"] == "none", dock)
     g = p.evaluate(GPU)
     check("i. still ONE multisampled composer (the core's two MSAA buffers; the backdrop has none) after home3d.js joined", g["msaa"] == 2, g)
     # the world follows the clock and the VIX

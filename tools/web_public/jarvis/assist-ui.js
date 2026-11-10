@@ -36,26 +36,26 @@ function style() {
 .jx-modes::-webkit-scrollbar{display:none}
 .jx-modes button{flex:0 0 auto;min-height:34px;padding:4px 12px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;letter-spacing:.04em;color:inherit;
   background:rgba(239,238,235,.05);border:1px solid rgba(239,238,235,.16);cursor:pointer}
-.jx-modes button[aria-pressed=true]{background:rgba(var(--cr,125,211,252),.28);border-color:rgba(var(--cr,125,211,252),.75)}
-.jx-modes .think{background:rgba(var(--cr,125,211,252),.16);border-color:rgba(var(--cr,125,211,252),.55)}
+.jx-modes button[aria-pressed=true]{background:rgba(var(--cr,200,162,74),.28);border-color:rgba(var(--cr,200,162,74),.75)}
+.jx-modes .think{background:rgba(var(--cr,200,162,74),.16);border-color:rgba(var(--cr,200,162,74),.55)}
 .jx-plan{margin:8px auto 0;max-width:560px;padding:10px 12px;border-radius:14px;background:rgba(239,238,235,.05);border:1px solid rgba(239,238,235,.12);text-align:left}
 .jx-plan[hidden]{display:none}
 .jx-plan .h{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:13px;letter-spacing: .02em;text-transform: none;opacity:.8}
-.jx-plan .h span{flex:1}.jx-plan .h button{font:inherit;font-size:16px;line-height:1;color:inherit;background:none;border:0;opacity:.7;padding:2px 4px;cursor:pointer}
+.jx-plan .h span{flex:1}.jx-plan .h button{font:inherit;font-size:16px;line-height:1;color:inherit;background:none;border:0;opacity:.7;padding:2px 4px;min-width:44px;min-height:44px;cursor:pointer}
 .jx-plan ol{margin:0;padding:0;list-style:none;counter-reset:jp}
 .jx-plan li{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid rgba(239,238,235,.07);font-size:14px;line-height:1.35}
 .jx-plan li:first-child{border-top:0}
 .jx-plan li::before{counter-increment:jp;content:counter(jp);flex:0 0 20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:13px;background:rgba(239,238,235,.1)}
 .jx-plan li[data-p=hot]::before{background:rgba(207,132,110,.6)}
 .jx-plan li span{flex:1}
-.jx-plan li button{flex:0 0 auto;min-height:32px;padding:3px 10px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;color:inherit;
-  background:rgba(var(--cr,125,211,252),.18);border:1px solid rgba(var(--cr,125,211,252),.5);cursor:pointer}
+.jx-plan li button{flex:0 0 auto;min-height:44px;padding:3px 10px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;color:inherit;
+  background:rgba(var(--cr,200,162,74),.18);border:1px solid rgba(var(--cr,200,162,74),.5);cursor:pointer}
 .jx-plan .apps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.jx-plan .apps button{font:inherit;font-size:13px;min-height:30px;padding:3px 10px;border-radius:10px;color:inherit;background:rgba(239,238,235,.06);border:1px solid rgba(239,238,235,.14);cursor:pointer}
+.jx-plan .apps button{font:inherit;font-size:13px;min-height:44px;padding:3px 10px;border-radius:10px;color:inherit;background:rgba(239,238,235,.06);border:1px solid rgba(239,238,235,.14);cursor:pointer}
 .jx-plan .apps i{font-style:normal;opacity:.7;margin-left:4px}
 .og-find{margin:4px 0 8px}.og-find[hidden]{display:none}
 .og-find input{width:100%;box-sizing:border-box;height:44px;padding:0 14px;border-radius:12px;border:1px solid rgba(239,238,235,.16);background:rgba(21,20,17,.4);color:inherit;font-family:inherit;font-weight:500;font-size:16px;outline:none}
-.og-find input:focus{border-color:rgba(var(--cr,125,211,252),.7)}
+.og-find input:focus{border-color:rgba(var(--cr,200,162,74),.7)}
 .og .og-none{grid-column:1/-1;opacity:.8}
 @media (max-width:400px){.ask{gap:5px}.ask .key{padding:0 10px}.ask .key.ic{width:44px}}`;   /* the dock's input was 102 px on a 375 phone (four keys beside it): smaller keys leave it about 150 px (SEND still goes below 361 px: jarvis.css) */
   document.head.appendChild(s);

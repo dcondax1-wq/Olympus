@@ -235,7 +235,7 @@ export function attach(ext) {
     const w = weatherFor(vix);
     home.sky = skyNow; home.weather = w; home.clock = e.min; home.open = open;
     const K = themeCols();
-    // the dome: the time-of-day colours with a little of the theme's own violet kept in (so every theme still has its colour)
+    // the dome: the time-of-day colours with a little of the theme's own bronze kept in
     const th = tmpC2.set(K.c2);
     skyU.uZ.value.setRGB(...skyNow.zenith).lerp(th, 0.1);
     skyU.uH.value.setRGB(...skyNow.horizon).lerp(th, 0.14);
@@ -255,7 +255,7 @@ export function attach(ext) {
     skyU.uSunI.value = (skyNow.sunUp ? 1 : 0.35) * (1 - 0.5 * w.haze);
     // the stars and the nebula fade by day and in weather
     const sg = skyNow.stars * (1 - 0.7 * w.haze);
-    if (ext.stars) { const c = ext.stars.material.uniforms.uColor.value; c.setRGB(0.875, 0.9, 1).multiplyScalar(Math.max(0.02, sg)); }
+    if (ext.stars) { const c = ext.stars.material.uniforms.uColor.value; c.setRGB(1, 0.92, 0.78).multiplyScalar(Math.max(0.02, sg)); }
     if (ext.nebula) ext.nebula.children.forEach((s) => { s.material.opacity = (s.userData.o0 || (s.userData.o0 = s.material.opacity)) * (0.35 + 0.65 * skyNow.nebula); });
     // fog, exposure
     ext.fog.density = base.fogDensity * w.fog;
@@ -355,6 +355,9 @@ export function attach(ext) {
   slow(0);
   home.ready = true;
 
+  // --- the courtyard: five marble doorways, one per Atlas district (courtyard.js; never stops the home if it fails)
+  import('./courtyard.js?v=c1').then((m) => { m.attach(ext, home); }).catch((e) => { home.courtyardError = String((e && e.message) || e); });
+
   // =========================================================================================== constellation lines + badges (2D, over the stage)
   mountConstellation(home, ext);
 }
@@ -367,7 +370,7 @@ function mountConstellation(home, ext) {
   const cv = document.createElement('canvas'); cv.className = 'jconst'; cv.setAttribute('aria-hidden', 'true');
   stage.insertBefore(cv, stage.firstChild);
   const g = cv.getContext('2d');
-  const LV = { ok: '74,222,128', warn: '251,191,36', bad: '255,77,109', off: '138,130,153' };
+  const LV = { ok: '160,176,96', warn: '224,176,96', bad: '201,106,74', off: '154,143,125' };   // AGORA: olive, sunrise, terracotta, stone
   let raf = 0, last = 0, t0 = performance.now(), W = 0, H = 0, dpr = 1, drawn = 0;
   const live = () => !document.hidden && root.dataset.mode === 'jarvis' && stage.getClientRects().length > 0;
   const animated = () => (root.dataset.fx === 'high' || root.dataset.fx === 'ultra') && !matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -418,8 +421,7 @@ function mountConstellation(home, ext) {
       // a star out beyond the orb, on its own line: the constellation's far end
       const fx = p.x + ux * (22 + 6 * Math.sin(t * 0.6 + i)), fy = p.y + uy * (22 + 6 * Math.sin(t * 0.6 + i)), tw = 0.5 + 0.5 * Math.sin(t * 1.9 + i * 2.3);
       g.strokeStyle = `rgba(${c},0.45)`; g.lineWidth = 1; g.beginPath(); g.moveTo(p.x + ux * 16, p.y + uy * 16); g.lineTo(fx, fy); g.stroke();
-      g.fillStyle = `rgba(255,255,255,${0.55 + 0.4 * tw})`; g.beginPath(); g.arc(fx, fy, 1.4 + tw * 0.8, 0, 6.2832); g.fill();
-      g.strokeStyle = `rgba(${c},${0.3 * tw})`; g.beginPath(); g.moveTo(fx - 4, fy); g.lineTo(fx + 4, fy); g.moveTo(fx, fy - 4); g.lineTo(fx, fy + 4); g.stroke();
+      g.fillStyle = `rgba(243,236,224,${0.45 + 0.3 * tw})`; g.beginPath(); g.arc(fx, fy, 1.4 + tw * 0.6, 0, 6.2832); g.fill();
     });
     g.globalCompositeOperation = 'source-over';
     drawn++; home.constellation = pts.length; home.constellationDraws = drawn;

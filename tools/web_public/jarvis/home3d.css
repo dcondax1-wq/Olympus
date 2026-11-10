@@ -17,31 +17,13 @@ html[data-fx="high"] .sat.bad::after, html[data-fx="ultra"] .sat.bad::after, htm
 @keyframes satPing { 0% { transform: scale(.7); opacity: .8; } 100% { transform: scale(1.9); opacity: 0; } }
 html:not([data-fx-set]) .sat::after { animation: none !important; }
 
-/* ---------------------------------------------------------------- the glass dock */
-.dock { background: linear-gradient(180deg, rgba(var(--pr), .46), rgba(var(--pr), .72));
-  -webkit-backdrop-filter: blur(22px) saturate(1.7) brightness(1.08); backdrop-filter: blur(22px) saturate(1.7) brightness(1.08);
-  border: 1px solid rgba(239,238,235,.09);
-  box-shadow: 0 4px 14px rgba(21,20,17,.32);
-  transition: box-shadow .5s ease, background .5s ease; }
-.dock::before { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 1px; border-radius: 1px; pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgba(239,238,235,.55), rgba(var(--cr3), .8), rgba(239,238,235,.55), transparent); }
-.dock::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: .55;
-  background: radial-gradient(120% 90% at 18% -10%, rgba(239,238,235,.13), transparent 46%), radial-gradient(90% 70% at 100% 120%, rgba(var(--cr), .16), transparent 60%); }
-.dock .ask input { background: rgba(21,20,17,.3); box-shadow: 0 4px 14px rgba(21,20,17,.32); }
-.dock .ask input:focus { box-shadow: 0 4px 14px rgba(21,20,17,.32); }
-.dock .key { background: linear-gradient(180deg, rgba(239,238,235,.13), rgba(var(--pr), .45)); border-color: rgba(239,238,235,.16);
-  box-shadow: 0 2px 0 rgba(var(--cr2), .4), 0 6px 14px rgba(21,20,17,.35), inset 0 1px 0 rgba(239,238,235,.28); }
-.dock .key:active { box-shadow: 0 1px 0 rgba(var(--cr2), .4), inset 0 1px 6px rgba(21,20,17,.4); }
-.dock .key.on { box-shadow: 0 4px 14px rgba(21,20,17,.32); }
-/* the glass takes the colour of what Jarvis is doing */
-html[data-state="listening"] .dock { box-shadow: 0 4px 14px rgba(21,20,17,.32); }
-html[data-state="speaking"] .dock { box-shadow: 0 4px 14px rgba(21,20,17,.32); }
-html[data-state="thinking"] .dock { box-shadow: 0 4px 14px rgba(21,20,17,.32); }
-html[data-fx="off"] .dock, html[data-fx="low"] .dock { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-html[data-fx="off"] .dock::after { display: none; }
-html[data-oly-scheme="light"] .dock { background: linear-gradient(180deg, rgba(239,238,235,.62), rgba(204,195,163,.8)); border-color: rgba(60,58,40,.14); }
-html[data-oly-scheme="light"] .dock::after { opacity: .3; }
-.fab, .nextchip { -webkit-backdrop-filter: blur(16px) saturate(1.5); backdrop-filter: blur(16px) saturate(1.5); border: 1px solid rgba(239,238,235,.1); }
+/* ---------------------------------------------------------------- the dock: a solid marble bar (AGORA: no glass blur, no sheen) */
+.dock { background: rgb(var(--pr)); border: 1px solid var(--dim2); box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+.dock::before, .dock::after { content: none; }
+.dock .ask input { background: var(--bg); box-shadow: none; }
+.dock .key { background: var(--dim); border-color: var(--dim2); box-shadow: none; }
+.dock .key:active { box-shadow: none; transform: scale(.97); }
+.fab, .nextchip { border: 1px solid var(--dim2); }
 
 /* ---------------------------------------------------------------- Settings → Jarvis: quiet hours */
 .qh { display: flex; gap: 8px; }
@@ -50,10 +32,10 @@ html[data-oly-scheme="light"] .dock::after { opacity: .3; }
 
 /* ---------------------------------------------------------------- the morning briefing card (briefing.js) */
 .jbrief { position: relative; width: 100%; box-sizing: border-box; margin: 6px 0; padding: 12px 14px 12px; white-space: normal; border: 1px solid rgba(var(--cr), .45); border-radius: 14px;
-  background: linear-gradient(180deg, rgba(var(--cr2), .16), rgba(var(--pr), .6)); box-shadow: 0 4px 14px rgba(21,20,17,.32); color: #f9f6f0; }
+  background: linear-gradient(180deg, rgba(var(--cr2), .16), rgba(var(--pr), .6)); box-shadow: 0 4px 14px rgba(21,20,17,.32); color: #f3ece0; }
 .jbrief::before { content: "Morning briefing"; display: block; margin-bottom: 3px; font: 600 12px var(--fh); letter-spacing: .02em; color: var(--c); }
 .bf-h { margin: 0 0 6px; display: flex; flex-direction: column; gap: 2px; }
-.bf-h b { font: 600 17px var(--fh); letter-spacing: .06em; color: #efeeeb; }
+.bf-h b { font: 600 17px var(--fh); letter-spacing: 0; color: #efeeeb; }
 .bf-h small { display: none; }
 .bf-r { display: grid; grid-template-columns: 92px 1fr; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(var(--cr), .16); align-items: start; }
 .bf-r span, .bf-one span { font: 600 12px/1.5 var(--fh); letter-spacing: .02em; color: var(--c3); text-transform: none; padding-top: 2px; }
@@ -61,7 +43,7 @@ html[data-oly-scheme="light"] .dock::after { opacity: .3; }
 .bf-one { margin-top: 6px; padding: 9px 11px; border-radius: 12px; border: 1px solid rgba(var(--cr), .5); background: rgba(var(--cr), .12); display: grid; gap: 3px; }
 .bf-one p { font-weight: 600; color: #efeeeb; }
 .bf-b { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.bf-b button { height: 38px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(var(--cr), .6); background: rgba(var(--pr), .7); color: var(--c3); font: 600 12px var(--fh); letter-spacing: .02em; text-transform: none; cursor: pointer; }
+.bf-b button { min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(var(--cr), .6); background: rgba(var(--pr), .7); color: var(--c3); font: 600 15px var(--fb); letter-spacing: 0; text-transform: none; cursor: pointer; }
 .bf-b button.ghost { border-color: rgba(var(--cr), .28); color: var(--mut); }
 .bf-q { margin-top: 10px; padding: 9px 11px; border-radius: 12px; border: 1px dashed rgba(var(--cr), .45); }
 .bf-q p { margin: 0; font: 500 13.5px/1.4 var(--fb); color: #f6f1e7; }

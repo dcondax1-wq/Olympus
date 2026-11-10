@@ -1266,11 +1266,13 @@ def part_c(br, S, base, ph):
             p.wait_for_timeout(700)
             p.mouse.up()
             p.wait_for_timeout(300)
-            ring = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => b.dataset.nx)")
-            check("c. holding the orb over Zenith mode fans out the other apps (Jarvis, Planner, Kalshi)",
-                  all(a in ring for a in ("home", "planner", "kalshi")), ring)
-            if "planner" in ring:
-                real_tap(p, p.locator('.nx-fb[data-nx="planner"]').first, "the Planner in the orb's ring", done=opened("planner"))
+            ring = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => b.dataset.nx || b.dataset.nxDist || '')")
+            check("c. holding the orb over Zenith mode fans out Jarvis and the five districts (Market, Research, Money, Command, Life)",
+                  all(a in ring for a in ("home", "market", "research", "money", "command", "life")), ring)
+            if "life" in ring:
+                real_tap(p, p.locator('.nx-fb[data-nx-dist="life"]').first, "Life in the orb's ring", done="() => !!document.querySelector('.nx-fan.on .nx-fb[data-nx=\"planner\"]')")
+                p.wait_for_timeout(300)
+                real_tap(p, p.locator('.nx-fb[data-nx="planner"]').first, "the Planner in Life's ring", done=opened("planner"))
                 ok = False
                 for _ in range(40):
                     if mode_of(p) == "app" and p.query_selector("#v-planner iframe") and not _ev(p, ZEN_MODULE):
