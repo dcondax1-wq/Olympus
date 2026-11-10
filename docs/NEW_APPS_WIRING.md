@@ -165,3 +165,17 @@ App `oikos` in `tools/web_public/oikos/` (the household: leaks, tax set-aside, b
 6. `olympus/intro-app.js` FLAVOUR: `oikos: ['coins', 'Keep what you make', 'tap'],`
    `jarvis/transitions.js` REGISTRY: `oikos: { kind: 'waves', ms: 1000 },`
 7. Tests: `python -X utf8 -m tests.test_oikos_page` (`--static` skips the browser), `python tools/money/oikos.py --selftest`, then `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring MOIRAI, the three fates (2026-11-10)
+
+App `moirai` in `tools/web_public/moirai/` (a seeded Monte-Carlo scenario lab for the MFFU Builder 50K eval; a simulation, not a forecast; marble spindle with three threads in 3D). Reads `fixture.json` (the bot's own 2026 numbers as defaults, never blank) and optionally `../ledger/rules.json`. Keeps only its sliders on the phone (`moirai.v1`). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('moirai', 'Moirai', 'trading', '#c8a24a', 'The three fates: pass, bust and time of an eval, simulated', { glyph: 'M' }),`
+2. `olympus/olympus.js` APPS: `moirai: ['Moirai', 'M', '#c8a24a'],` AMBIENT: `moirai: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"moirai"`.
+4. `sw.js`: `OTHER_APPS` add `'moirai/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+6. `olympus/intro-app.js` FLAVOUR: `moirai: ['rings', 'Spin the threads', 'tick'],`
+   `jarvis/transitions.js` REGISTRY: `moirai: { kind: 'waves', ms: 1000 },`
+7. Tests: `python -X utf8 -m tests.test_moirai_page` (`--static` skips the browser), then `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
