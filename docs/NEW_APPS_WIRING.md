@@ -423,3 +423,11 @@ Tests after wiring: `tests.test_harmonia_page`, `tests.test_apps_list`, `tests.t
   `OLYMPUS_SHAPES.mount(canvasOrElement, 'owl', { lite, spin, size, quality, label, values, tones })` -> `{ ok, id, flat, set(id), stop() }`. It uses the render core and warm light; with no WebGL (or `?flat=1`) the element gets the shape's drawing and name instead, so the spot is never blank. `OLYMPUS_SHAPES.ids / shapes` list what exists. Demo page: `olympus/shapes-demo.html`.
 - Gallery: category chips (Architecture, Objects, Beasts, Money, Sea), tabs Shelf / Build / Collection. **Scene builder**: in Build, tap up to 6 shapes on the shelf, they stand on a ring of one big pedestal; Share copies `...gallery/#b=owl,temple,lyre` and opening that link restores the layout (`?view=collection` opens the collection). **Collection**: all 41 at once in rings (LITE, baked), tap one to name it and open it on the pedestal.
 - Wiring is unchanged by the second batch (same `gallery` rows as sections 1 to 7). `sw.js` precache: also add `olympus/shapes3d.js`, `shapes2d.js`, `shapes-mount.js`, `gallery/stage.js`, `gallery/gallerycore.js`.
+
+---
+# Wiring HELIOS (the morning briefing, 2026-11-10)
+
+App `helios` in `tools/web_public/helios/` (3D sun over columns via the render core: `sun.js` + `sunload.js`). Reads `../pythia/events.json`, `../home.json`, `../money/index.json`; on the phone it READS the quiz progress `lyceum.v1` (never written); falls back to `fixture.json` (DEMO). Test `tests/test_helios_page.py`
+(its light copies of Pythia's day rules and Compass's urgent rules are checked against the real `pythiacore.js` and `compasscore.js`: if either changes, that test tells you).
+The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `S`, ambient `chimes`, flavour `['rings', 'Rise and plan', 'tick']`, transition `{ kind: 'sunburst', ms: 1000 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and runs `python tools/apps_list_build.py --check`.
+Tests after wiring: `tests.test_helios_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
