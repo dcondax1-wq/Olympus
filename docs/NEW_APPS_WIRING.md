@@ -88,3 +88,16 @@ AMBIENT (existing beds): `delphi: 'chimes', pnyx: 'coins',`
 `olympus/intro-app.js` FLAVOUR: `delphi: ['rings', 'Read the omens', 'tick'], pnyx: ['columns', 'Count the risk', 'tap'],`
 `jarvis/transitions.js` REGISTRY: `delphi: { kind: 'sunburst', ms: 1000 }, pnyx: { kind: 'columns', ms: 1000, n: 5 },`
 ## 7. Tests after wiring: `tests.test_delphi_page`, `tests.test_pnyx_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`. Then app count 38 in CLAUDE_REFERENCE / CLAUDE.md.
+
+---
+# Wiring ARBITER (money machine #5, 2026-11-10)
+
+App `arbiter` (`tools/web_public/arbiter/`, paper-only spread / funding finder) reads `../money/arbiter.json` (written by `python tools/money/arbiter.py --out <site>/money`, stdlib, `--fixture` offline, `--selftest`), falls back to its own `fixture.json` (regenerate: `python tools/money/arbiter.py --fixture --out tools/web_public/arbiter && mv tools/web_public/arbiter/arbiter.json tools/web_public/arbiter/fixture.json`). Test `tests/test_arbiter_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('arbiter', 'Arbiter', 'money', '#c8a24a', 'Paper-only spreads and funding: net yearly return after costs', { glyph: 'Ξ' }),`
+2. `olympus/olympus.js` APPS: `arbiter: ['Arbiter', 'Ξ', '#c8a24a'],` AMBIENT: `arbiter: 'coins',`
+3. `tools/build_web_dashboard.py` app tuple: add `"arbiter"`; also publish `money/arbiter.json` (run the scanner with `--out <site>/money`, soft-fail to nothing).
+4. `sw.js` OTHER_APPS: `'arbiter/'`, bump `CACHE`; update pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `olympus/intro-app.js` FLAVOUR: `arbiter: ['coins', 'Weigh the spread', 'tap'],` `jarvis/transitions.js` REGISTRY: `arbiter: { kind: 'tiles', ms: 800 },`
+7. Tests: `tests.test_arbiter_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_app_intro`, `tests.test_jarvis_transitions`.
