@@ -64,6 +64,7 @@ export const REGISTRY = {
   gallery:    { kind: 'columns',       ms: 1000, n: 5 },
   kairos:     { kind: 'sunburst',      ms: 1000 },
   compass:    { kind: 'sunburst',      ms: 1000 },
+  pheme:      { kind: 'tiles',         ms: 800 },
   clio:       { kind: 'tiles',         ms: 820 },
   atlas:      { kind: 'sunburst',      ms: 900 },
   observatory:{ kind: 'sunburst',      ms: 950 },

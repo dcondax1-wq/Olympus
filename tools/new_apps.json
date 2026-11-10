@@ -389,7 +389,6 @@
    }
   },
   {
-<<<<<<< HEAD
    "id": "compass",
    "name": "Compass",
    "group": "trading",
@@ -405,7 +404,9 @@
    "transition": {
     "kind": "sunburst",
     "ms": 1000
-=======
+   }
+  },
+  {
    "id": "pheme",
    "name": "Pheme",
    "group": "trading",
@@ -421,7 +422,6 @@
    "transition": {
     "kind": "tiles",
     "ms": 800
->>>>>>> worktree-agent-a4c39f422b9cbc0ee
    }
   }
  ],
