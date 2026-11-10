@@ -312,3 +312,18 @@ App `kratos` in `tools/web_public/kratos/` (3D column via the render core: `colu
 5. `python tools/apps_list_build.py` then `--check`.
 6. `olympus/intro-app.js` FLAVOUR: `kratos: ['columns', 'Keep your own rules', 'tap'],` and `jarvis/transitions.js` REGISTRY: `kratos: { kind: 'columns', ms: 1000, n: 4 },`
 7. Tests: `tests.test_kratos_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring COMPASS (the next best action, 2026-11-10)
+
+App `compass` in `tools/web_public/compass/` (3D rose via the render core: `rose.js` + `needleload.js`). Reads `../home.json`, `../money/index.json`, `../ledger/rules.json`, `../odeon/trades.json`; on the phone it READS `journal.v1` and `ledger.v1` and writes only `compass.state.v1` (Done / Snooze). Falls back to `fixture.json` (DEMO). Test `tests/test_compass_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('compass', 'Compass', 'trading', '#c8a24a', 'The next best action: up to five, ranked, with a $ or free tag', { glyph: 'C' }),`
+2. `olympus/olympus.js` APPS: `compass: ['Compass', 'C', '#c8a24a'],` AMBIENT: `compass: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"compass"` (no extra data file).
+4. `sw.js` OTHER_APPS: `'compass/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `olympus/intro-app.js` FLAVOUR: `compass: ['rings', 'Find your bearing', 'tap'],` and `jarvis/transitions.js` REGISTRY: `compass: { kind: 'sunburst', ms: 1000 },`
+7. Tests: `tests.test_compass_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+Optional, outside this app: the Ledger page can store `lastExport` (ISO text or epoch) in `ledger.v1` when Export JSON is tapped; until then Compass says "no export on record".
