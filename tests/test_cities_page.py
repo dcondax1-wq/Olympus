@@ -791,7 +791,102 @@ def sec_i(br, base, C, days, picks, ids):
     pg.close()
 
 
-SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f, "g": sec_g, "h": sec_h, "i": sec_i}
+
+# ------------------------------------------------------------------ j. ATHENS: the giant Greek metropolis (cities/athens*.js, 2026-11-10)
+ATHENS_JS = ("athens-plan.js", "athens-geo.js", "athens-build.js", "athens.js", "athens-ui.js", "athens-entry.js")
+
+
+def part_athens():
+    need = list(ATHENS_JS) + ["athens.css", "athens-btn.css"]
+    check("j. Athens files are all there", all(os.path.isfile(os.path.join(PAGE, n)) for n in need), [n for n in need if not os.path.isfile(os.path.join(PAGE, n))])
+    html = read(os.path.join(PAGE, "index.html"))
+    check("j. index.html loads only the small entry module; the metropolis is imported on demand", "athens-entry.js" in html and "athens.js" not in html.replace("athens-entry.js", ""))
+    srcs = {n: read(os.path.join(PAGE, n)) for n in ATHENS_JS}
+    outside = {n: [u for u in re.findall(r"https?://[^\s'\"`)]+", t) if "w3.org" not in u] for n, t in srcs.items()}
+    check("j. Athens has no outside address, no CDN, no Math.random, no network call", not any(outside.values()) and all("Math.random" not in t and "fetch(" not in t for t in srcs.values()), outside)
+    check("j. three.js from ../jarvis/ only; scenery only (no order, no trade call)", "../jarvis/three.module.min.js" in srcs["athens.js"] and not any(w in " ".join(srcs.values()).lower() for w in ("placeorder", "/api/order", "arm_live")))
+    check("j. warm light: 3500 K by day, 2700 K at dusk; marble, bronze and gold materials", all(k in srcs["athens.js"] for k in ("3500", "2700", "MeshPhongMaterial")) and all(k in srcs["athens-geo.js"] for k in ("marble", "bronze", "gold")))
+    check("j. instancing + near / far LOD + frustum-culled house chunks, tier caps, LITE stays light",
+          all(k in srcs["athens.js"] for k in ("InstancedMesh", "c.a.visible = !far", "TIERS", "low: {")) and "frameGap" in srcs["athens-entry.js"])
+    check("j. UI: minimap, find list by group (Trading / Money / Research / Life), flying tours, tap a building -> app card, 44 px targets",
+          all(k in srcs["athens-ui.js"] for k in ("ath-mini", "GROUPS", "renderJump", "renderTours", "showCard", "Open ")) and "min-height:44px" in read(os.path.join(PAGE, "athens.css")))
+    r = subprocess.run(["node", "--input-type=module", "-e", """
+import { planAthens, GROUPS, TOURS, riverDist, RIVER_W } from './tools/web_public/cities/athens-plan.js';
+const a = planAthens(), g = {}; a.apps.forEach((x) => { g[x.group] = (g[x.group] || 0) + 1; });
+const ids = new Set(a.apps.map((x) => x.id)), near = a.houses.filter((h) => riverDist(h.x, h.z) < RIVER_W / 2).length;
+let clash = 0; for (const x of a.apps) for (const y of a.apps) if (x !== y && Math.hypot(x.x - y.x, x.z - y.z) < 20) clash++;
+const hc = a.houses.filter((h) => a.apps.some((x) => Math.hypot(h.x - x.x, h.z - x.z) < 14)).length;
+const b = planAthens().houses.length;
+console.log(JSON.stringify({ houses: a.houses.length, again: b, apps: a.apps.length, uniq: ids.size, g, groups: GROUPS.map((x) => x.key), lm: a.landmarks.length, tours: TOURS.length, near, clash, hc, trees: a.trees.length, ships: a.ships.length }));
+"""], cwd=ROOT, capture_output=True, text=True, timeout=60)
+    try:
+        d = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception:
+        d = {}
+        print(r.stdout[-400:], r.stderr[-400:])
+    check("j. plan: hundreds of buildings, deterministic, 40 distinct app temples in 4 groups, none on the river, none touching each other or a house",
+          d.get("houses", 0) >= 700 and d.get("houses") == d.get("again") and d.get("apps") == 40 == d.get("uniq") and set(d.get("g", {})) == {"trading", "money", "research", "life"}
+          and d.get("near") == 0 and d.get("clash") == 0 and d.get("hc") == 0, d)
+    check("j. plan: 18+ monuments, 5 flying tours, trees and ships", d.get("lm", 0) >= 18 and d.get("tours") == 5 and d.get("trees", 0) > 300 and d.get("ships", 0) >= 12, d)
+
+
+def sec_j(br, base, C, days, picks, ids):
+    """Athens in Chromium at 390 x 844: builds, draws within budget, tap -> card, find list, tour, LITE lighter, closes cleanly."""
+    errs = []
+    out = {}
+    for q in ("high", "low"):
+        ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=True, is_mobile=True)
+        p = ctx.new_page()
+        p.on("pageerror", lambda e: errs.append(str(e)))
+        p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "githubusercontent" not in m.text and "Failed to load resource" not in m.text else None)
+        p.goto(base + f"?athens=1&q={q}", wait_until="domcontentloaded")
+        p.wait_for_function("window.__athens || window.__athensError", timeout=150000)
+        p.wait_for_timeout(2500)
+        out[q] = p.evaluate("({ err: window.__athensError || null, calls: window.__athens && window.__athens.calls(), tris: window.__athens && window.__athens.tris(), houses: window.__athens && window.__athens.houses, tier: window.__athens && window.__athens.tier })")
+        if q == "high":
+            os.makedirs(SHOTS, exist_ok=True)
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_open.png"))
+            p.evaluate("window.__athens.scene.flyTo(60, 60, { dist: 200, yaw: .2, pitch: .5, dur: .05 })")
+            p.wait_for_timeout(1500)
+            pt = p.evaluate("(() => { const s = window.__athens.scene, a = s.anchors.find((x) => x.id === 'zenith'), q = s.project(a.x, a.y * .6, a.z); return [q.x, q.y]; })()")
+            p.touchscreen.tap(pt[0], pt[1])
+            p.wait_for_timeout(900)
+            card = p.evaluate("(() => { const c = document.querySelector('.ath-card'); return { shown: !c.hidden, title: c.querySelector('h3') && c.querySelector('h3').textContent, go: c.querySelector('.ath-go') && c.querySelector('.ath-go').getAttribute('href') }; })()")
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_card.png"))
+            check("j. tap a building -> its app card with an Open link", card["shown"] and card["title"] == "Zenith" and card["go"] == "../", card)
+            p.click("[data-a=jump]")
+            p.wait_for_timeout(600)
+            grp = p.evaluate("[...document.querySelectorAll('.ath-groups summary b')].map((b) => b.textContent)")
+            small = p.evaluate("[...document.querySelectorAll('.ath-dock button, .ath-ic, .ath-row')].filter((b) => b.getBoundingClientRect().height && (b.getBoundingClientRect().height < 43.5 || b.getBoundingClientRect().width < 43.5)).length")
+            p.fill(".ath-q", "harbour")
+            p.wait_for_timeout(400)
+            rows = p.evaluate("[...document.querySelectorAll('.ath-row b')].map((b) => b.textContent)")
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_find.png"))
+            check("j. find list is organised by group (Trading, Money, Research, Life, City works), searchable, targets >= 44 px", grp == ["Trading", "Money", "Research", "Life", "City works"] and small == 0 and any("Harbour" in r for r in rows), [grp, small, rows])
+            p.click("[data-a=sheetx]")
+            p.click("[data-a=tours]")
+            p.click("[data-a=tour] >> nth=0")
+            p.wait_for_timeout(1800)
+            touring = p.evaluate("window.__athens.scene.touring")
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_tour.png"))
+            check("j. a flying tour starts and the camera moves on its own", touring is True)
+            p.click("[data-a=stop]")
+            p.click("[data-a=time2]")
+            p.wait_for_timeout(4500)
+            dusk = p.evaluate("window.__athens.scene.time")
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_dusk.png"))
+            check("j. dusk switch warms the light", dusk > .6, dusk)
+            p.click("[data-a=close]")
+            p.wait_for_timeout(500)
+            check("j. close leaves Cities as it was (overlay gone, no leftover renderer)", p.evaluate("!document.querySelector('#athens') && !window.__athens"))
+        ctx.close()
+    hi, lo = out["high"], out["low"]
+    check("j. HIGH: 900+ houses, <= 40 draw calls, <= 150k triangles on screen", not hi["err"] and hi["houses"] >= 900 and hi["calls"] <= 40 and hi["tris"] <= 150_000, hi)
+    check("j. LITE: fewer houses, <= 25 draw calls, <= 80k triangles (stays light on an iPhone)", not lo["err"] and 400 <= lo["houses"] < hi["houses"] and lo["calls"] <= 25 and lo["tris"] <= 80_000, lo)
+    check("j. no console error or page error", not errs, errs[:3])
+
+
+SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f, "g": sec_g, "h": sec_h, "i": sec_i, "j": sec_j}
 
 def run_browser(C, days, picks):
     from playwright.sync_api import sync_playwright
@@ -832,6 +927,8 @@ def main():
         print(f"\n{sum(RES)}/{len(RES)} passed; screenshots in {SHOTS}")
         return 0 if all(RES) else 1
     C = part_a()
+    if want("j"):
+        part_athens()
     days, picks, seeds = part_b(C)
     if not no_browser:
         try:
