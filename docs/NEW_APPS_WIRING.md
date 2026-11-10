@@ -203,3 +203,15 @@ App `lyceum` (`tools/web_public/lyceum/`): daily 5-question quiz on the owner's 
 5. `python tools/apps_list_build.py` then `--check`.
 6. `intro-app.js` FLAVOUR: `lyceum: ['columns', 'Learn your own rules', 'tap'],` `transitions.js` REGISTRY: `lyceum: { kind: 'columns', ms: 1000, n: 6 },`
 7. Tests: `tests.test_lyceum_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring EPILOGUE, the Sunday review "Oracle of Weeks" (2026-11-10)
+
+App `epilogue` (`tools/web_public/epilogue/`): your week in 60 seconds: P&L in $ with R per account (50K, ATLAS, BLITZ), best / worst trade with the rule followed or broken, drawdown used / left, money-machine highlights, 3 lessons, one goal to tick, a Copy-the-summary button (clipboard only, no network), past weeks, a 3D marble scroll with a gold day timeline. Reads `../home.json`, `../odeon/trades.json` (paper + real only, backtests left out), `../money/index.json` (optional), the Journal's `journal.v1` on the phone (READ ONLY), `fixture.json` (DEMO). Writes only its own `epilogue.v1` on the phone (never in the demo). `?week=YYYY-MM-DD` shows another week. Test `tests/test_epilogue_page.py`.
+1. `jarvis/apps.js` BUILT_INS: `app('epilogue', 'Epilogue', 'life', '#c8a24a', 'Your week in 60 seconds: the Sunday review', { glyph: 'Ω' }),`
+2. `olympus/olympus.js` APPS: `epilogue: ['Epilogue', 'Ω', '#c8a24a'],` AMBIENT: `epilogue: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"epilogue"`. It also needs `money/index.json` published next to `home.json` to show the money machines; without it the card says "No money-machine report yet".
+4. `sw.js` OTHER_APPS: add `'epilogue/'`, bump `CACHE`; update the pinned strings in `test_zenith_mode`, `test_jarvis_hub`, `test_zenith_shell`, `test_phone_e2e`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `intro-app.js` FLAVOUR: `epilogue: ['rings', 'Read the week', 'tick'],` `transitions.js` REGISTRY: `epilogue: { kind: 'tiles', ms: 800 },`
+7. Tests: `tests.test_epilogue_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
