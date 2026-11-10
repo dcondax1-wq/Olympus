@@ -93,6 +93,10 @@ def test_maths():
     check("b. a paid fee is sunk: the owned accounts start their forward cash at $0 (a candidate starts at minus its price)", all(a["cases"]["base"]["cum"][0] == 0 for a in c["owned"]) and all(a["cases"]["base"]["cum"][0] == -a["price"] for a in c["candidates"]))
     check("b. payouts never pass the MFFU cap (5 payouts x the max) and every chance is a probability", all(a["cases"][k]["income"][-1] <= a["cases"][k]["payout_cap_total"] + 0.01 and 0 < a["cases"][k]["p_funded"] < 100 for a in c["owned"] + c["candidates"] for k in t.CASES))
     check("b. the fleet is the sum of its accounts (month by month, base case) and capped", all(abs(c["fleet"]["base"]["cum"][m] - sum(a["cases"]["base"]["cum"][m] for a in c["owned"] + c["buy_next"])) < 0.2 for m in range(13)) and len(c["owned"]) + len(c["buy_next"]) <= c["max_accounts"])
+    fcz = c["fleet"]["conservative"]
+    check("b. Cautious is a correlated stress path: net negative in months 1 and 2, at least one LOSS month, every copy fails together once and is bought again (same cycle length, 2 purchases), the weak-month ratio is the worst real 2026 month",
+          fcz["cum"][1] < 0 and fcz["cum"][2] < 0 and fcz["loss_months"] and len({a["cases"]["conservative"]["days_to_funded"] for a in c["candidates"]}) == 1
+          and all(abs(a["cases"]["conservative"]["attempts"] - 2.0) < 1e-9 for a in c["candidates"]) and 0.05 < st["funded"]["weak_ratio"] < 0.2, (fcz["cum"][:4], fcz["loss_months"]))
     check("b. the budget rules: $0 buys nothing, a huge budget still obeys the 6-account cap, an empty fleet works", t.plan(st, src, budget=0)["chrysos"]["buy_next"] == [] and len(t.plan(st, src, fleet=[], budget=1e5)["chrysos"]["buy_next"]) <= t.MAX_ACCOUNTS)
     check("b. honest labels: 'Estimate' in the headline and every item, a not-a-promise note, the correlated-accounts warning", "Estimate" in doc["headline"]["text"] and all("Estimate" in i["detail"] for i in doc["items"]) and any("SAME signals" in n for n in doc["notes"]) and any("promise" in n.lower() for n in doc["notes"] + [doc["headline"]["text"]]))
     live, lsrc = t.load_stats(fixture=False)
@@ -116,7 +120,7 @@ def test_maths():
     check("b. tower model: 4 accounts, a coin unit, coins at month 12, none paid back at month 0, junk month -> 12, negative -> 0, drums never below 1", tw[0] == 4 and tw[1] in (25, 50, 100, 250, 500) and all(x > 0 for x in tw[2]) and not any(tw[4]) and tw[5] and tw[6] == 12 and tw[7] == 0 and tw[8], tw)
     check("b. coin unit is bounded: 10 for nothing, a nice step for a tall tower, 5000 at the top, junk safe", out["unit"][0] == 10 and out["unit"][1] == 10 and out["unit"][3] == 5000 and out["unit"][4] == 10, out["unit"])
     check("b. calendar groups: months in order, expected <= if-funded, labelled", out["cal"][0] >= 3 and out["cal"][3] and out["cal"][4] and out["cal"][2].endswith("2026") or out["cal"][2].endswith("2027"), out["cal"])
-    check("b. account line is an Estimate with odds, first payout, the monthly figure, fees and break-even; the risk lines are never empty; the cautious line is honest", out["lines"][0].startswith("Estimate:") and "break-even" in out["lines"][0] and "already paid" in out["lines"][0] and out["lines"][1] == 4, out["lines"])
+    check("b. account line is an Estimate with odds, first payout, the monthly figure, fees and break-even; the risk lines are never empty; the cautious line is honest", out["lines"][0].startswith("Estimate:") and "break-even" in out["lines"][0] and "already paid" in out["lines"][0] and out["lines"][1] == 5, out["lines"])
     check("b. the Jarvis helper card and the case order", out["card"]["name"] == "Chrysos" and out["order"] == sorted(out["order"]), out)
 
 
@@ -143,9 +147,9 @@ def test_page():
               head: document.querySelector('#headline').textContent, tiles: document.querySelector('#tiles').textContent, buy: document.querySelectorAll('#buy .acard').length, fleet: document.querySelectorAll('#fleet .acard').length,
               cal: document.querySelectorAll('#cal .calrow').length, gone: document.querySelectorAll('#gone li').length, how: document.querySelectorAll('#how li').length, legend: document.querySelectorAll('#legend li').length,
               warn: document.querySelector('#warn').textContent, font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor, mode: window.CHRYSOS.mode })""")
-            check("c. DEMO: the chip, three cases (Middle on), an 'Estimate' headline with Not a promise, five tiles, 3 buy cards, 4 fleet cards, a calendar, 4 risks, the warning line",
+            check("c. DEMO: the chip, three cases (Middle on), an 'Estimate' headline with Not a promise, five tiles, 3 buy cards, 4 fleet cards, a calendar, 5 risks, the warning line",
                   d["demo"] and d["cases"] == ["Cautious", "Middle", "Hopeful"] and d["on"] == "Middle" and d["head"].startswith("Estimate, middle case") and d["head"].endswith("Not a promise.") and "Net after 12 months" in d["tiles"] and "Break-even" in d["tiles"]
-                  and d["buy"] == 3 and d["fleet"] == 4 and d["cal"] >= 8 and d["gone"] == 4 and d["how"] >= 6 and d["legend"] == 4 and "not a promise" in d["warn"].lower(), d)
+                  and d["buy"] == 3 and d["fleet"] == 4 and d["cal"] >= 8 and d["gone"] == 5 and d["how"] >= 6 and d["legend"] == 4 and "not a promise" in d["warn"].lower(), d)
             check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
             check("c. the tower is 3D or the flat drawing, never nothing: the canvas XOR the svg is visible", d["mode"] in ("3d", "flat") and p.evaluate("() => document.querySelector('#stage').hidden !== document.querySelector('#flat').hasAttribute('hidden')"), d["mode"])
             if d["mode"] == "3d":
