@@ -98,3 +98,11 @@ export function collection(n, spacing) {
   }
   return { places: out, outer: (k - 1) * sp };
 }
+/** the ring radius that keeps every neighbour clear: radii = each shape's own footprint radius (half its diagonal), gap in world units */
+export function ringFit(radii, gap) {
+  const r = (radii || []).map((v) => Math.max(0, Number(v) || 0)), n = r.length, g = Number.isFinite(Number(gap)) ? Number(gap) : 0.18;
+  if (n <= 1) return 0;
+  let R = 0.9;
+  for (let i = 0; i < n; i++) R = Math.max(R, (r[i] + r[(i + 1) % n] + g) / (2 * Math.sin(Math.PI / n)));
+  return R;
+}

@@ -35,7 +35,8 @@ function start() {
   const turn = new THREE.Group(), buildG = new THREE.Group(), collG = new THREE.Group();
   scene.add(turn, buildG, collG);
   buildG.visible = false; collG.visible = false;
-  let view = 'shelf', ped = null, cur = null, curId = '', shapeLite = null, born = 0, yaw = 0.5, vel = 0, focus = false, dist = 6, lookY = 1, frames = 0, last = null;
+  const still = q.get('still') === '1';
+  let view = 'shelf', ped = null, cur = null, curId = '', shapeLite = null, born = 0, yaw = Number(q.get('yaw')) || 0.5, buildR = 0, vel = 0, focus = false, dist = 6, lookY = 1, frames = 0, last = null;
   let buildIds = [], buildLite = null, buildStat = { tris: 0, draws: 0 }, collInfo = null, collBuilt = false, collLite = null;
   const cache = {}, rays = new THREE.Raycaster(), ndc = new THREE.Vector2();
 
@@ -68,15 +69,17 @@ function start() {
   function placeBuild() {
     freeGroup(buildG);
     const lite = isLite(); buildLite = lite;
-    const n = buildIds.length, R = C.ringRadius(n), M = matsFor(lite);
-    const pd = SH.pedestal({ lite, radius: Math.max(1.55, R + 1.25), M }); buildG.add(pd);
+    const n = buildIds.length, M = matsFor(lite);
+    const shapes = buildIds.map((id) => SH.build(id, { lite, materials: M, size: n > 3 ? 1.85 : 2.2 }));
+    const radii = shapes.map((s) => { const sz = new THREE.Box3().setFromObject(s).getSize(new THREE.Vector3()); return 0.5 * Math.hypot(sz.x, sz.z); });   // each shape's own footprint
+    const R = C.ringFit(radii, 0.18); buildR = R;
+    const pd = SH.pedestal({ lite, radius: Math.max(1.55, R + Math.max(0, ...radii) + 0.35), M }); buildG.add(pd);
     let tris = 0, draws = 0;
     C.ring(n, R).forEach((pl, i) => {
-      const s = SH.build(buildIds[i], { lite, materials: M, size: n > 3 ? 1.85 : 2.2 });
-      const o = new THREE.Group(); o.position.set(pl.x, 0, pl.z); o.rotation.y = pl.ry; o.add(s); buildG.add(o);
+      const s = shapes[i], o = new THREE.Group(); o.position.set(pl.x, 0, pl.z); o.rotation.y = pl.ry; o.add(s); buildG.add(o);
       const st = SH.stats(s); tris += st.tris; draws += st.draws;
     });
-    const sp = SH.stats(pd); buildStat = { tris: tris + sp.tris, draws: draws + sp.draws, n };
+    const sp = SH.stats(pd); buildStat = { tris: tris + sp.tris, draws: draws + sp.draws, n, radius: buildR };
     changed();
   }
   // ---- collection (every shape baked: one draw each)
@@ -137,7 +140,7 @@ function start() {
     const d = Math.min(0.1, dt || 0.016), k = Math.min(1, d * (reduced() ? 40 : 5));
     if (!drag) {
       if (Math.abs(vel) > 0) { yaw += vel * d; vel = C.inertia(vel, d); }
-      else if (!focus && !reduced()) yaw += (view === 'collection' ? 0.08 : 0.22) * d;
+      else if (!focus && !reduced() && !still) yaw += (view === 'collection' ? 0.08 : 0.22) * d;
     }
     active().rotation.y = yaw;
     if (view === 'shelf' && cur) {
@@ -149,7 +152,7 @@ function start() {
     const w = canvas.clientWidth || 360, h = canvas.clientHeight || 360, aspect = w / h;
     let want, wantY, hgt;
     if (view === 'collection') { const R = collInfo ? collInfo.outer + 1.3 : 7; want = C.fitDistance(camera.fov, aspect, R, R * 0.62, false) * 0.8; wantY = 0.5; hgt = want * 0.62; }
-    else if (view === 'build') { const R = C.ringRadius(buildIds.length) + 1.4; want = C.fitDistance(camera.fov, aspect, R, 1.6, false); wantY = 0.9; hgt = 1.5 + R * 0.35; }
+    else if (view === 'build') { const R = buildR + 1.9; want = C.fitDistance(camera.fov, aspect, R, 1.6, false); wantY = 0.9; hgt = 1.5 + R * 0.35; }
     else { want = C.fitDistance(camera.fov, aspect, 1.85, 1.5, focus); wantY = focus ? 1.2 : 1.05; hgt = focus ? 0.5 : 1.15; }
     dist += (want - dist) * k; lookY += (wantY - lookY) * k;
     camera.position.set(0, lookY + (view === 'collection' ? dist * 0.62 : hgt), view === 'collection' ? dist * 0.8 : dist); camera.lookAt(0, lookY, 0);
@@ -174,7 +177,7 @@ function start() {
     },
     setBuild(ids) { buildIds = ids.filter((id) => SH.IDS.includes(id)).slice(0, C.MAX_BUILD); placeBuild(); return buildIds.slice(); },
     setMode(m) { mode = C.MODES.indexOf(m) >= 0 ? m : 'auto'; const mm = C.modeFor(mode, rc.quality()); if (mm.level) rc.setQuality(mm.level); else rc.setQuality(O && O.fx ? O.fx() : 'high'); place(); if (view === 'build') placeBuild(); return { mode, lite: isLite(), level: rc.quality() }; },
-    info() { return { id: curId, view, lite: view === 'shelf' ? shapeLite : isLite(), level: rc.quality(), mode, frames, yaw, focus, last, both: curId ? statsBoth(curId) : null, dist, passes: rc.stats().passes, build: { ids: buildIds.slice(), tris: buildStat.tris, draws: buildStat.draws }, collection: collInfo }; },
+    info() { return { id: curId, view, lite: view === 'shelf' ? shapeLite : isLite(), level: rc.quality(), mode, frames, yaw, focus, last, both: curId ? statsBoth(curId) : null, dist, passes: rc.stats().passes, build: { ids: buildIds.slice(), tris: buildStat.tris, draws: buildStat.draws, radius: buildR }, collection: collInfo }; },
     stats: statsBoth,
     spin(a) { yaw += a; },
     projectCollection(id) {                                    // test hook: where on the canvas (CSS px) a collection shape is

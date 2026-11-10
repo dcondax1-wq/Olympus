@@ -50,6 +50,9 @@ def test_static():
           all(f'id="{i}"' in html for i in ("flat", "flatSvg", "flatRow", "shelf", "prev", "next", "quality", "focusBtn", "stage", "hint", "views", "cats", "buildCard", "picked", "buildShare", "buildClear", "shareUrl", "collCard", "collOpen")) and "touch-action: pan-y" in css)
     fx = json.load(open(os.path.join(d, "fixture.json"), encoding="utf-8"))
     check("a. the fixture lists the 41 shapes with name, meaning and category", sorted(s["id"] for s in fx["shapes"]) == sorted(IDS) and all(s["name"] and len(s["means"]) > 20 and s["group"] in CATS for s in fx["shapes"]), [s["id"] for s in fx["shapes"]])
+    ly = AK.read(os.path.join(AK.WEB, "lyceum", "lyceum3d.js"))
+    check("a. Lyceum's hall builds its columns with the library: one baked Doric column geometry (steps off, 3.2 shaft) shared by the 8 places, LITE aware",
+          "from '../olympus/shapes3d.js'" in ly and "shape('doric', { lite, steps: false, shaft: 3.2 })" in ly and "bake(lib).geometry" in ly and "colGeo" in ly)
     s2 = AK.read(os.path.join(AK.WEB, "olympus", "shapes2d.js"))
     mount = AK.read(os.path.join(AK.WEB, "olympus", "shapes-mount.js"))
     demo = AK.read(os.path.join(AK.WEB, "olympus", "shapes-demo.html"))
@@ -149,6 +152,7 @@ import(process.argv[2]).then((C) => {
   o.hash = [hh, C.parseHash(hh, ids, 6), C.parseHash('#b=owl,nope,lyre', ids, 6), C.parseHash('#b=', ids, 6), C.parseHash('#x=owl', ids, 6), C.parseHash('b=owl', ids, 6), C.parseHash('#b=doric,ionic,temple,owl,lyre,harp,bust,anchor', ids, 6).length, C.parseHash('#b=owl;<script>', ids, 6), C.parseHash(null, ids, 6)];
   const r0 = C.ring(0, 2), r1 = C.ring(1, 2), r4 = C.ring(4, 2);
   o.ring = [r0.length, r1.length, r1[0].x, r4.length, Math.abs(r4[0].z - 2) < 1e-9, Math.abs(r4[1].x - 2) < 1e-9, r4.every((p) => Math.abs(Math.hypot(p.x, p.z) - 2) < 1e-9), C.ringRadius(1), C.ringRadius(6), C.ringRadius(2) >= 1.3];
+  o.fit2 = [C.ringFit([0.9, 0.9], 0.2), C.ringFit([0.5, 0.5, 0.5, 0.5, 0.5, 0.5], 0.18), C.ringFit([1.2, 1.2, 1.2, 1.2, 1.2, 1.2], 0.18), C.ringFit([1.2, 0.4, 0.4], 0.1), C.ringFit([], 1), C.ringFit([1], 1), C.ringFit(['x', null], 'y'), C.ringFit([0.1, 0.1, 0.1], 0)];
   const col = C.collection(41, 1.7), pts = col.places;
   let minD = 99; for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) minD = Math.min(minD, Math.hypot(pts[i].x - pts[j].x, pts[i].z - pts[j].z));
   o.coll = [pts.length, pts[0].x, minD > 1.3, col.outer, C.collection(0, 1.7).places.length, C.collection(1, 1.7).places.length, C.collection(7, 1.7).places.length];
@@ -259,6 +263,9 @@ def test_node():
     check("b. scene builder: toggle adds and removes, stops at 6 with a 'full' flag, a junk max is 1; the #hash is made and read back (known shapes only, 6 at most, junk and script text refused)",
           core["toggle"] == [["owl"], True, ["owl", "temple"], ["temple"], False, True, 6, ["x"], 6] and core["hash"][0] == "#b=owl,temple,lyre" and core["hash"][1] == ["owl", "temple", "lyre"] and core["hash"][2] == ["owl", "lyre"]
           and core["hash"][3] == [] and core["hash"][4] is None and core["hash"][5] == ["owl"] and core["hash"][6] == 6 and core["hash"][7] is None and core["hash"][8] is None, core["toggle"] + core["hash"])
+    f2 = core["fit2"]
+    check("b. ringFit: the ring radius grows with the shapes' own footprints (2 shapes of radius .9 -> 1.0; six of .5 -> 1.18; six of 1.2 -> 2.58), a wide neighbour widens it, 0 / 1 shapes need no ring, junk is safe, never under 0.9",
+          abs(f2[0] - 1.0) < 1e-9 and abs(f2[1] - 1.18) < 1e-9 and abs(f2[2] - 2.58) < 1e-9 and f2[3] > 0.95 and f2[4] == 0 and f2[5] == 0 and f2[6] >= 0.9 and f2[7] == 0.9, f2)
     check("b. the ring layout (shapes face outward on a circle) and the collection layout (41 places in rings, none closer than 1.3 apart, first in the middle)",
           core["ring"][:4] == [0, 1, 0, 4] and all(core["ring"][4:7]) and core["ring"][7] == 0 and core["ring"][8] >= 2.2 and core["ring"][9] and core["coll"][0] == 41 and core["coll"][1] == 0 and core["coll"][2] and core["coll"][3] > 5 and core["coll"][4:] == [0, 1, 7], (core["ring"], core["coll"]))
     check("b. step() wraps both ways and survives junk; indexOf falls back to 0", core["step"] == [18, 0, 4, 1, 0, 18, 4] and core["index"] == [1, 0], (core["step"], core["index"]))
@@ -378,6 +385,17 @@ def test_page():
             clr = p.evaluate("() => [window.GALLERY3D.info().build.ids.length, document.querySelector('#buildShare').disabled, document.querySelector('#picked').children.length]")
             check("c. a 7th shape is refused with plain words (the limit is 6), tapping a chip takes one out and updates the link, Clear empties the scene and disables Share",
                   full[0] == 6 and "most a scene holds" in full[1] and one[0] == ["temple", "lyre", "doric", "ionic", "harp"] and one[1] == "#b=temple,lyre,doric,ionic,harp" and clr == [0, True, 0], (full, one, clr))
+            def ring_of(ids):
+                for sid in ids:
+                    p.locator(f"#shelf .shape[data-id={sid}]").click()
+                p.wait_for_timeout(300)
+                r = p.evaluate("() => [window.GALLERY3D.info().build.ids.length, window.GALLERY3D.info().build.radius]")
+                p.locator("#buildClear").click()
+                return r
+            wide = ring_of(["temple", "trireme", "stoa", "mosaic", "vaultdoor", "pillarbar"])
+            slim = ring_of(["obelisk", "amphora", "lyre", "owl", "sandal", "bust"])
+            check("c. the ring is fitted to each shape's own footprint: six wide shapes (temple, ship, stoa, mosaic, vault door, pillar chart) get a wider ring than six slim ones, and no ring is tighter than the old fixed 2.4",
+                  wide[0] == slim[0] == 6 and wide[1] > slim[1] + 0.3 and wide[1] > 2.4 and slim[1] >= 0.9, (wide, slim))
             # ---- the collection
             p.locator("#views [data-view=collection]").click()
             p.wait_for_function("window.GALLERY3D.info().collection", timeout=60000)
