@@ -415,3 +415,11 @@ The row is already in `tools/new_apps.json` (group money, accent `#c8a24a`, glyp
 1. `jarvis/apps.js` BUILT_INS row  2. `olympus/olympus.js` APPS + AMBIENT  3. `tools/build_web_dashboard.py` app tuple  4. `sw.js` OTHER_APPS  5. `olympus/intro-app.js` FLAVOUR  6. `jarvis/transitions.js` REGISTRY.
 Then bump `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and run `python tools/apps_list_build.py --check`.
 Tests after wiring: `tests.test_harmonia_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring HELIOS (the morning briefing, 2026-11-10)
+
+App `helios` in `tools/web_public/helios/` (3D sun over columns via the render core: `sun.js` + `sunload.js`). Reads `../pythia/events.json`, `../home.json`, `../money/index.json`; on the phone it READS the quiz progress `lyceum.v1` (never written); falls back to `fixture.json` (DEMO). Test `tests/test_helios_page.py`
+(its light copies of Pythia's day rules and Compass's urgent rules are checked against the real `pythiacore.js` and `compasscore.js`: if either changes, that test tells you).
+The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `S`, ambient `chimes`, flavour `['rings', 'Rise and plan', 'tick']`, transition `{ kind: 'sunburst', ms: 1000 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and runs `python tools/apps_list_build.py --check`.
+Tests after wiring: `tests.test_helios_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.

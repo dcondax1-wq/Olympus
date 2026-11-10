@@ -441,6 +441,24 @@
     "kind": "waves",
     "ms": 1000
    }
+  },
+  {
+   "id": "helios",
+   "name": "Helios",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The morning briefing: today, drawdown, deals, plan",
+   "glyph": "S",
+   "ambient": "chimes",
+   "flavour": [
+    "rings",
+    "Rise and plan",
+    "tick"
+   ],
+   "transition": {
+    "kind": "sunburst",
+    "ms": 1000
+   }
   }
  ],
  "pending": [],
