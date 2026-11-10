@@ -56,3 +56,7 @@ details > summary { min-height: 44px; display: flex; align-items: center; cursor
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 html[data-oly-lite="1"] .stage { height: 150px; }
+
+/* phone-fit 2026-11-10 (tools/phone_fit_audit.py): gain / loss words at least 4.5:1 on the raised panels */
+.pos, .ag-good, .pill.ok { color: #a0ac6e; } .neg, .ag-bad, .pill.bad { color: #e08a6b; }
+.btn[aria-pressed="true"] { color: #a0ac6e; }

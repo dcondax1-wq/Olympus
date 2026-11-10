@@ -74,3 +74,6 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .lad td { padding: 0 4px; height: 44px; border-top: 1px solid var(--ag-line); font-family: var(--ag-num); font-variant-numeric: tabular-nums; }
 .lad tr.me td { color: var(--ag-gold); font-weight: 700; }
 .lad td:last-child, .lad th:last-child { text-align: right; }
+
+/* phone-fit 2026-11-10 (tools/phone_fit_audit.py): gain / loss words at least 4.5:1 on the raised panels */
+.pos, .ag-good, .pill.ok { color: #a0ac6e; } .neg, .ag-bad, .pill.bad { color: #e08a6b; }

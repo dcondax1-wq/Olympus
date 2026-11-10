@@ -63,3 +63,11 @@ details > summary { min-height: 44px; display: flex; align-items: center; cursor
 @media (max-width: 400px) { .brow { grid-template-columns: 64px minmax(0, 1fr) auto; } }
 @media (prefers-reduced-motion: reduce) { .ag-bar > i { transition: none; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }
+
+/* phone-fit 2026-11-10 (tools/phone_fit_audit.py): gain / loss words at least 4.5:1 on the raised panels */
+.pos, .ag-good, .pill.ok { color: #a0ac6e; } .neg, .ag-bad, .pill.bad { color: #e08a6b; }
+.grid { margin: 0 -10px; gap: 3px; }
+.cell { padding: 4px 0; }
+.cell small { color: var(--ag-soft); }
+.cell b { font-size: 10px; letter-spacing: -.04em; overflow: visible; white-space: nowrap; }
+.cell.up b { color: #b4c07e; } .cell.dn b { color: #e8a089; }
