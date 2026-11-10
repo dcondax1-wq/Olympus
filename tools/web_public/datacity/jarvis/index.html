@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Jarvis</title>
 <meta name="description" content="J.A.R.V.I.S.: your assistant and the home screen for all your projects. Switch between Jarvis and Zenith in one tap, plus the Planner, Kalshi and the rest.">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#14110e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=j4">
 <link rel="icon" href="icon-192.png?v=j4">
 <!-- dark from the first paint, even before (or without) the stylesheet: never a white screen -->
-<style>html,body{background:#000;color:#ece9f2;margin:0}</style>
+<style>html,body{background:#14110e;color:#ece9f2;margin:0}</style>
 <script>
 // before the first paint: the saved theme (localStorage 'jtheme', as the old Jarvis kept it; default Reactor, the violet reactor of
 // the app icon), the effects level and the boot screen
@@ -100,24 +100,24 @@ window.addEventListener('error', function (e) {
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
-.boot{position:fixed;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:95;padding:12px 14px;border-radius:14px;background:rgba(20,14,32,.96);border:1px solid rgba(168,85,247,.5);color:#ece9f2;font:15px/1.35 -apple-system,system-ui,sans-serif;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.boot{position:fixed;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:95;padding:12px 14px;border-radius:14px;background:rgba(20,14,32,.96);border:1px solid rgba(156,107,60,.5);color:#ece9f2;font:15px/1.35 -apple-system,system-ui,sans-serif;display:flex;gap:10px;align-items:center;justify-content:space-between}
 .boot small{display:block;margin-top:4px;color:#8a8499;font-size:12px;word-break:break-word}
 .boot .boot-b{display:flex;gap:8px;flex:none}
-.boot button{height:44px;padding:0 14px;border-radius:11px;border:0;background:#a855f7;color:#fff;font:700 15px -apple-system,system-ui,sans-serif}
-.boot button.alt{background:transparent;border:1px solid #a855f7}
+.boot button{height:44px;padding:0 14px;border-radius:11px;border:0;background:#9c6b3c;color:#f3ece0;font:700 15px -apple-system,system-ui,sans-serif}
+.boot button.alt{background:transparent;border:1px solid #9c6b3c}
 /* the OLYMPUS intro's overlay (the olympus-intro script below it). Built into the page, so it never waits for a file, and it goes
    away by itself: gone by 0.95 s when the script never gets going; the script swaps in its own deadline (olyEnd) and removes the
    overlay when it ends, skips or fails */
-.oly{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483640;background:#000;display:none;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:none;-webkit-user-select:none;user-select:none}
+.oly{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483640;background:#14110e;display:none;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:none;-webkit-user-select:none;user-select:none}
 html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 @keyframes olyGo{to{opacity:0;visibility:hidden}}
 @keyframes olyEnd{to{opacity:0;visibility:hidden}}
 .oly canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
-.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(ellipse at 50% 42%,#1a0b2e,#000 62%)}
-.oly .oly-w b{font:800 38px/1 Orbitron,-apple-system,system-ui,sans-serif;letter-spacing:.32em;padding-left:.32em;color:#ffd98a;background:linear-gradient(180deg,#fff3d1,#ffc95c 45%,#c084fc);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(168,85,247,.75))}
+.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(ellipse at 50% 42%,#231c16,#000 62%)}
+.oly .oly-w b{font:800 38px/1 Georgia,-apple-system,system-ui,sans-serif;letter-spacing: .05em;padding-left:.32em;color:#ffd98a;background:linear-gradient(180deg,#fff3d1,#ffc95c 45%,#c9a06a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(156,107,60,.75))}
 .oly .oly-w canvas.oly-l{width:min(78vw,52vh,400px);height:min(78vw,52vh,400px);margin-bottom:-4px}
-.oly .oly-w small{font:600 11px/1 Orbitron,-apple-system,system-ui,sans-serif;letter-spacing:.5em;padding-left:.5em;color:rgba(222,190,255,.6)}
-.oly .oly-skip{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;font:600 10px/1 -apple-system,system-ui,sans-serif;letter-spacing:.32em;color:rgba(236,233,242,.34);pointer-events:none}</style>
+.oly .oly-w small{font:600 11px/1 Georgia,-apple-system,system-ui,sans-serif;letter-spacing: .05em;padding-left:.5em;color:rgba(201,160,106,.6)}
+.oly .oly-skip{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;font:600 10px/1 -apple-system,system-ui,sans-serif;letter-spacing: .05em;color:rgba(236,233,242,.34);pointer-events:none}</style>
 </head>
 <body>
 <div class="oly" id="olyIntro" aria-hidden="true"></div>
@@ -133,7 +133,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
  *   1.0  storm   the camera flies into storm clouds; lightning strikes light the ridge of Mount Olympus from below
  *   3.3  rise    the camera rises past marble columns and a field of gold sparks; a gold glow builds above
  *   5.5  eclipse the eclipse ring ignites (bloom flare), the scene falls dark, the gold peaks slide into place, the temple lights
- *   7.05 word    the sparks fly into OLYMPUS (Orbitron, gold, a light sweep), JARVIS ONLINE beneath
+ *   7.05 word    the sparks fly into OLYMPUS (Georgia, gold, a light sweep), JARVIS ONLINE beneath
  *   8.7  portal  the camera punches through the ring: the ring grows past the screen and its inside is a hole onto Jarvis
  *
  * Versions (picked before the first paint by the start script in <head>, html[data-intro]):
@@ -491,7 +491,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   function textTex(fontOk) {
     var c = doc.createElement('canvas'); c.width = 1024; c.height = 320;
     var x = c.getContext('2d'); if (!x) throw new Error('no 2d');
-    var face = fontOk ? 'Orbitron, sans-serif' : '-apple-system, "Segoe UI", system-ui, sans-serif';
+    var face = fontOk ? 'Georgia, sans-serif' : '-apple-system, "Segoe UI", system-ui, sans-serif';
     var draw = function (word, size, wgt, sp, cy, maxW, style, blur) {
       x.font = wgt + ' ' + size + 'px ' + face;
       var ws = 0, i; for (i = 0; i < word.length; i++) ws += x.measureText(word[i]).width + (i ? sp : 0);
@@ -502,7 +502,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     };
     x.globalCompositeOperation = 'lighter';
     var pass = function (style, blur) { draw('OLYMPUS', fontOk ? 118 : 112, 800, 26, 112, 900, style, blur); draw('JARVIS ONLINE', 40, 700, 15, 262, 560, style, blur * 0.5); };
-    pass('#0000ff', 34); pass('#00ff00', 10); x.shadowBlur = 0; x.shadowOffsetX = 0; pass('#ff0000', 0);
+    pass('#8b7259', 34); pass('#00ff00', 10); x.shadowBlur = 0; x.shadowOffsetX = 0; pass('#ff0000', 0);
     var px2 = x.getImageData(0, 0, 1024, 320).data, pts = [];
     for (var yy = 0; yy < 224; yy += 2) for (var xx = 0; xx < 1024; xx += 2) if (px2[(yy * 1024 + xx) * 4] > 140) pts.push(xx / 1024, 1 - yy / 320);
     return { canvas: c, pts: pts };
@@ -577,10 +577,10 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         nPts = np ? N : 0; st.n = nPts;
       } catch (e) { tex = null; /* the intro still plays without the word */ }
     };
-    // Orbitron is Jarvis's own font (saved by its worker): the word is needed at ~7 s, so wait for it up to 1.8 s while the film plays
+    // Georgia is Jarvis's own font (saved by its worker): the word is needed at ~7 s, so wait for it up to 1.8 s while the film plays
     var fontT = setTimeout(function () { buildText(false); }, mode === 'short' ? 150 : 1800);
     try {
-      if (doc.fonts && doc.fonts.load) doc.fonts.load('800 100px Orbitron').then(function (f) { clearTimeout(fontT); buildText(!!(f && f.length)); }, function () { /* the timer */ });
+      if (doc.fonts && doc.fonts.load) doc.fonts.load('800 100px Georgia').then(function (f) { clearTimeout(fontT); buildText(!!(f && f.length)); }, function () { /* the timer */ });
     } catch (e) { /* the timer */ }
     var last = 0, firstAt = 0, stepped = 0, revealed = false, frameMs = [], cued = 0, hole = false, fc0 = 0;
     // the film's clock starts at its first drawn frame (after the shader compile, which a phone may take a while over), and the hard
@@ -1029,10 +1029,10 @@ const S = {
   vcfg: () => Object.assign({ rate: 1.0, pitch: 1.0, voice: '' }, D.LS.get('jarvis.voiceCfg', {}) || {}),
 };
 const THEMES = [
-  ['reactor', 'Reactor', 'Violet + cyan · default', '#a95cff', '#22d3ee'], ['eclipse', 'Eclipse', 'Violet', '#a855f7', '#7c3aed'],
-  ['reactor-stark', 'Reactor Stark', 'Gold rings, arc-blue', '#ffbe3d', '#d6281f'], ['reactor-ice', 'Reactor Ice', 'Ice blue, silver', '#4fe3ff', '#0284c7'],
-  ['reactor-emerald', 'Reactor Emerald', 'Emerald plasma', '#1ff5a4', '#059669'], ['obsidian', 'Obsidian', 'Monochrome silver', '#e5e7eb', '#9ca3af'],
-  ['aurora', 'Aurora', 'Mint and violet', '#34f5b0', '#a78bfa'], ['tokyo', 'Tokyo', 'Neon pink', '#ff2bd6', '#22e5ff'], ['ocean', 'Ocean', 'Teal and sky', '#2ef2d0', '#38bdf8'],
+  ['reactor', 'Reactor', 'Violet + cyan · default', '#9c6b3c', '#8b7259'], ['eclipse', 'Eclipse', 'Violet', '#9c6b3c', '#9c6b3c'],
+  ['reactor-stark', 'Reactor Stark', 'Gold rings, arc-blue', '#ffbe3d', '#d6281f'], ['reactor-ice', 'Reactor Ice', 'Ice blue, silver', '#8b7259', '#8b7259'],
+  ['reactor-emerald', 'Reactor Emerald', 'Emerald plasma', '#7f8a52', '#059669'], ['obsidian', 'Obsidian', 'Monochrome silver', '#e5e7eb', '#9ca3af'],
+  ['aurora', 'Aurora', 'Mint and violet', '#7f8a52', '#c9a06a'], ['tokyo', 'Tokyo', 'Neon pink', '#c96a4a', '#8b7259'], ['ocean', 'Ocean', 'Teal and sky', '#7f8a52', '#8b7259'],
   ['forge', 'Forge', 'Molten orange', '#ff7a1a', '#c2410c'], ['void', 'Void', 'Black and white', '#f2f2f2', '#9a9a9a'], ['custom', 'Custom', 'Your hue', '', ''],
 ];
 const CORE_DESIGNS = [['reactor', 'Reactor'], ['singularity', 'Singularity']];
@@ -2485,7 +2485,7 @@ function renderLook() {
   $('#setGrain').checked = !!(TH() && TH().grain());
   $('#olyNote').textContent = olyOn() ? `${(TH() && TH().get(olyId()).name) || 'This theme'} colours Jarvis and every app. Jarvis colour below goes back to the OLYMPUS default.`
     : 'The whole system: Jarvis now, and each app the next time it opens. Jarvis colour below tunes the default.';
-  $('#themes').innerHTML = THEMES.map(([k, n, tag, a, b]) => `<button class="th" type="button" data-theme-k="${k}" aria-pressed="${!olyOn() && root.dataset.theme === k}"><i style="background:${k === 'custom' ? 'conic-gradient(#f43f5e,#f59e0b,#22c55e,#06b6d4,#6366f1,#d946ef,#f43f5e)' : `radial-gradient(circle at 40% 38%, #fff 0 8%, ${a} 26%, ${b} 62%, #000 100%)`}"></i>${esc(n)}<small>${esc(tag)}</small></button>`).join('');
+  $('#themes').innerHTML = THEMES.map(([k, n, tag, a, b]) => `<button class="th" type="button" data-theme-k="${k}" aria-pressed="${!olyOn() && root.dataset.theme === k}"><i style="background:${k === 'custom' ? 'conic-gradient(#f43f5e,#f59e0b,#22c55e,#8b7259,#8b7259,#9c6b3c,#f43f5e)' : `radial-gradient(circle at 40% 38%, #fff 0 8%, ${a} 26%, ${b} 62%, #000 100%)`}"></i>${esc(n)}<small>${esc(tag)}</small></button>`).join('');
   for (const b of $('#fxSeg').children) b.setAttribute('aria-pressed', String(b.dataset.fx === root.dataset.fx));
   $('#coreSeg').innerHTML = CORE_DESIGNS.map(([k, n]) => `<button type="button" data-core-k="${k}" aria-pressed="${coreDesign() === k}">${esc(n)}</button>`).join('');
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
