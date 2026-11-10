@@ -173,7 +173,7 @@ function glowTexture() {
 function textSprite(text, color, sub) {
   const c = document.createElement('canvas');
   const g = c.getContext('2d');
-  const font = '600 34px Rajdhani, -apple-system, system-ui, sans-serif';
+  const font = '600 34px Georgia, -apple-system, system-ui, sans-serif';
   g.font = font;
   const w = Math.ceil(Math.max(g.measureText(text).width, sub ? g.measureText(sub).width * 0.8 : 0)) + 24;
   c.width = Math.min(1024, w);
@@ -185,7 +185,7 @@ function textSprite(text, color, sub) {
   g.fillStyle = color;
   g.fillText(text, 12, 6);
   if (sub) {
-    g.font = '500 26px Rajdhani, -apple-system, system-ui, sans-serif';
+    g.font = '500 26px Georgia, -apple-system, system-ui, sans-serif';
     g.globalAlpha = 0.8;
     g.fillText(sub, 12, 48);
   }
@@ -222,7 +222,7 @@ function tagSprite() {
     if (g.roundRect) g.roundRect(4, 8, 312, 56, 14); else g.rect(4, 8, 312, 56);
     g.fill();
     g.strokeStyle = color; g.lineWidth = 2; g.globalAlpha = 0.8; g.stroke(); g.globalAlpha = 1;
-    g.font = '700 36px Rajdhani, -apple-system, system-ui, sans-serif';
+    g.font = '700 36px Georgia, -apple-system, system-ui, sans-serif';
     g.textBaseline = 'middle'; g.fillStyle = color; g.shadowColor = color; g.shadowBlur = 10;
     g.fillText(text, 18, 37);
     tex.needsUpdate = true;

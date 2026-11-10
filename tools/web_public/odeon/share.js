@@ -6,8 +6,8 @@ import { fmtUsd, fmtR, fmtPx, dayLabel, hhmm, heldLabel, exitLabel, outcomeOf } 
 import { setupOf } from './library.js';
 
 const CARD = { w: 1080, h: 1350 };
-const TONE = { win: '#46d79a', loss: '#ff6b7f', be: '#b18cff' };
-const DISPLAY = "Orbitron, 'Arial Black', sans-serif", UI = "Rajdhani, system-ui, sans-serif";
+const TONE = { win: '#7f8a52', loss: '#ff6b7f', be: '#c9a06a' };
+const DISPLAY = "Georgia, 'Arial Black', sans-serif", UI = "Georgia, system-ui, sans-serif";
 
 export function drawCard(canvas, tr) {
   canvas.width = CARD.w;
@@ -34,15 +34,15 @@ export function drawCard(canvas, tr) {
     g.beginPath(); g.moveTo(X0, py(p)); g.lineTo(X1, py(p)); g.stroke(); g.setLineDash([]);
     txt(label + ' ' + fmtPx(p), X1, py(p) - 8, `600 22px ${UI}`, color, 'right');
   };
-  line(tr.target, '#46d79a', 'TARGET'); line(tr.stop, '#ff6b7f', 'STOP'); line(tr.entry.px, '#8fb0ff', 'ENTRY');
+  line(tr.target, '#7f8a52', 'TARGET'); line(tr.stop, '#ff6b7f', 'STOP'); line(tr.entry.px, '#7fa6bd', 'ENTRY');
   const cw = Math.max(2, ((X1 - X0) / B.n) * 0.62);
   for (let i = 0; i < B.n; i++) {
     const up = B.c[i] >= B.o[i], x = px(B.t[i] + B.s / 2);
-    g.strokeStyle = g.fillStyle = up ? '#46d79a' : '#ff6b7f';
+    g.strokeStyle = g.fillStyle = up ? '#7f8a52' : '#ff6b7f';
     g.lineWidth = 2; g.beginPath(); g.moveTo(x, py(B.h[i])); g.lineTo(x, py(B.l[i])); g.stroke();
     g.fillRect(x - cw / 2, Math.min(py(B.o[i]), py(B.c[i])), cw, Math.max(2, Math.abs(py(B.o[i]) - py(B.c[i]))));
   }
-  for (const [t, p, c] of [[tr.entry.t, tr.entry.px, '#8fb0ff'], [tr.exit.t, tr.exit.px, tone]]) {
+  for (const [t, p, c] of [[tr.entry.t, tr.entry.px, '#7fa6bd'], [tr.exit.t, tr.exit.px, tone]]) {
     g.fillStyle = c; g.beginPath(); g.arc(px(t), py(p), 11, 0, Math.PI * 2); g.fill();
     g.strokeStyle = '#07060c'; g.lineWidth = 4; g.stroke();
   }
