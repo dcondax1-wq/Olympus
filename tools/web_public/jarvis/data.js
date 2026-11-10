@@ -26,6 +26,7 @@ export const URLS = {
   liveApi: `https://api.github.com/repos/${OWNER}/${REPO}/contents/live.json?ref=live`,
   liveRaw: `https://raw.githubusercontent.com/${OWNER}/${REPO}/live/live.json`,
   // the Kalshi bot's own feed repo (security review 2026-11-01: not the dashboard's repo)
+  kalshiLocal: '../kalshi.json',
   kalshiRaw: `https://raw.githubusercontent.com/${OWNER}/kalshi-feed/main/kalshi.json`,
   kalshiApi: `https://api.github.com/repos/${OWNER}/kalshi-feed/contents/kalshi.json?ref=main`,
 };
@@ -206,6 +207,9 @@ function kalshiFetch() {
   K.busy = (async () => {
     try {
       let r = null;
+      let lj = null;                      // this site's own copy first (pc_publish puts the feed next to the pages); HTML or junk falls through
+      try { const lr = await get(URLS.kalshiLocal + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' }); if (lr && lr.ok) { const x = await lr.json(); if (x && typeof x === 'object' && !Array.isArray(x)) lj = x; } } catch (_) { lj = null; }
+      if (lj) { K.j = lj; K.state = 'ok'; K.n404 = 0; LS.set('jarvis.lastKalshi', lj); K.at = Date.now(); K.busy = null; emit('kalshi'); return; }
       try { r = await get(URLS.kalshiRaw + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' }); } catch (_) { r = null; }
       if (!r || (!r.ok && r.status !== 404)) { try { r = await get(URLS.kalshiApi, { cache: 'no-cache', headers: { Accept: 'application/vnd.github.raw+json' } }); } catch (_) { r = null; } }
       if (r && r.ok) { const j = await r.json(); if (j && typeof j === 'object') { K.j = j; K.state = 'ok'; K.n404 = 0; LS.set('jarvis.lastKalshi', j); } else K.state = 'error'; }

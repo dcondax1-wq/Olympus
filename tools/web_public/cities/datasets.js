@@ -386,7 +386,7 @@ export const DATASETS = {
 
   // ---- Kalshi: the bot's bets (a remote feed; the sample stands in until it answers)
   kalshi: {
-    title: 'Kalshi bets', source: 'kalshi-feed/kalshi.json', url: 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json', remote: true,
+    title: 'Kalshi bets', source: 'kalshi-feed/kalshi.json', local: '../kalshi.json', url: 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json', remote: true,
     fields: [F('asset', 'Asset', 'txt'), F('side', 'Side', 'txt'), F('state', 'State', 'txt'), F('contracts', 'Contracts', 'int'), F('price', 'Price', 'num'), F('pnl', 'Result', 'usd'),
       F('value', 'Value', 'usd'), F('strategy', 'Strategy', 'txt'), F('t', 'Time', 'int'), F('hour', 'Hour (ET)', 'int', { values: HOURS }), F('weekday', 'Weekday', 'int', { values: WD })],
     build(raw) {
@@ -452,7 +452,10 @@ export async function loadDataset(id, env, cache) {
         items = D.build(raw); real = items.length > 0;
       } else {
         const url = DATASETS[shares(id)].url, rawMap = env._raw || (env._raw = new Map());
-        if (!rawMap.has(url)) rawMap.set(url, env.get(url));
+        if (!rawMap.has(url)) {
+          const L = DATASETS[shares(id)].local;      // this site's own copy first (pc_publish); the remote url is the fallback
+          rawMap.set(url, L ? (async () => { try { const r = await env.get(L); if (r && typeof r === 'object' && !Array.isArray(r)) return r; } catch (_) { /* fall back */ } return env.get(url); })() : env.get(url));
+        }
         raw = await rawMap.get(url);
         items = D.deriveRaw ? D.deriveRaw(raw) : D.build(raw);
         real = items.length > 0;

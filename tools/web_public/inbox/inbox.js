@@ -26,12 +26,16 @@ async function getJSON(url, ms = 5000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
   try { if (wasGone(url)) return null; const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); if (r.status === 404) markGone(url); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
+// the feed is read from this site first (pc_publish puts the Kalshi bot's feed next to the pages as kalshi.json); the old
+// GitHub address is only the fallback. A host that answers a missing file with its index page gives HTML: not an object, so it falls through.
+const SITE_FEED = '../kalshi.json';
+async function getFeed(ms) { const j = await getJSON(SITE_FEED, ms); return j && typeof j === 'object' && !Array.isArray(j) ? j : getJSON(KALSHI_RAW, ms); }
 const lite = () => (O && O.lite ? O.lite() : false) || mq('(prefers-reduced-motion: reduce)');
 
 // ------------------------------------------------------------------------------------------------ gather
 async function gather() {
   const names = ['bridge', 'learning'], urls = { bridge: '../bridge/status.json', learning: '../kalshicity/learning_log.json' };
-  const got = await Promise.all([...names.map((n) => getJSON(urls[n])), getJSON(KALSHI_RAW), ...CARD_APPS.map((a) => getJSON('../' + a + '/jarvis.json', 4000))]);
+  const got = await Promise.all([...names.map((n) => getJSON(urls[n])), getFeed(), ...CARD_APPS.map((a) => getJSON('../' + a + '/jarvis.json', 4000))]);
   const feeds = {}; let ok = 0;
   names.forEach((n, i) => { if (got[i]) { feeds[n] = got[i]; ok++; } else if (S.feeds[n]) feeds[n] = S.feeds[n]; });
   const cards = {};

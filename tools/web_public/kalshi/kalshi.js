@@ -13,6 +13,7 @@
   'use strict';
   // the feed has its own repo (security review 2026-11-01): the Kalshi server's deploy key can write kalshi-feed only, never
   // the Pages site. Raw first, the GitHub API second; a 404 = not connected yet.
+  const LOCAL = new URL('../kalshi.json', location.href).href;      // this site's own copy of the feed (pc_publish), tried first
   const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
   const API = 'https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main';
   // the setup link is this site's own SETUP.md (same origin); the old address stays as the fallback when the page is opened locally
@@ -199,13 +200,17 @@
     if (S.busy) return;
     S.busy = true;
     busyUi();
-    let r = await get(RAW + '?t=' + Math.floor(Date.now() / 60000));
-    if (!r || (!r.ok && r.status !== 404)) r = await get(API, { Accept: 'application/vnd.github.raw+json' });
-    let j = null, st = 'error';
-    if (r && r.ok) {
-      try { j = await r.json(); } catch (_) { j = null; }
-      if (isObj(j)) st = 'ok';
-    } else if (r && r.status === 404) st = 'waiting';
+    let j = null, st = 'error', r = null;
+    const lr = await get(LOCAL + '?t=' + Math.floor(Date.now() / 60000));          // this site's own copy first (pc_publish)
+    if (lr && lr.ok) { try { const x = await lr.json(); if (isObj(x)) { j = x; st = 'ok'; } } catch (_) { j = null; } }
+    if (st !== 'ok') {
+      r = await get(RAW + '?t=' + Math.floor(Date.now() / 60000));
+      if (!r || (!r.ok && r.status !== 404)) r = await get(API, { Accept: 'application/vnd.github.raw+json' });
+      if (r && r.ok) {
+        try { j = await r.json(); } catch (_) { j = null; }
+        if (isObj(j)) st = 'ok';
+      } else if (r && r.status === 404) st = 'waiting';
+    }
     S.busy = false;
     S.at = Date.now();
     busyUi();                                                // the spinner stops even when the drawing waits (render below)

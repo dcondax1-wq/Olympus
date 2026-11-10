@@ -15,6 +15,10 @@ async function getJSON(url, ms) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms || 6000) : 0;
   try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
+// the feed is read from this site first (pc_publish puts the Kalshi bot's feed next to the pages as kalshi.json); the old
+// GitHub address is only the fallback. A host that answers a missing file with its index page gives HTML: not an object, so it falls through.
+const SITE_FEED = '../kalshi.json';
+async function getFeed(ms) { const j = await getJSON(SITE_FEED, ms); return j && typeof j === 'object' && !Array.isArray(j) ? j : getJSON('https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json', ms); }
 function say(t) { $('status').textContent = t; }
 const tile = (box, k, v, n, cls) => { const t = h('div', 'tile'); t.appendChild(h('small', '', k)); t.appendChild(h('b', cls || '', v)); if (n) t.appendChild(h('span', '', n)); box.appendChild(t); };
 
@@ -78,7 +82,7 @@ function render() {
 async function boot() {
   const q = new URLSearchParams(location.search), forced = q.get('demo') === '1', at = q.get('at');
   S.now = at && Number.isFinite(Date.parse(at)) ? Date.parse(at) / 1000 : Date.now() / 1000;
-  const [fx, feed, edges, wi] = await Promise.all([getJSON('./fixture.json'), forced ? null : getJSON('https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json', 5000), forced ? null : getJSON('../kalshicity/edges.json'), forced ? null : getJSON('../kalshicity/whatif.json')]);
+  const [fx, feed, edges, wi] = await Promise.all([getJSON('./fixture.json'), forced ? null : getFeed(5000), forced ? null : getJSON('../kalshicity/edges.json'), forced ? null : getJSON('../kalshicity/whatif.json')]);
   S.fixture = fx; const book = C.chooseBook(feed, edges, fx); if (!book) throw new Error('no numbers');
   S.book = book; S.demo = book.src === 'demo';
   S.edges = S.demo ? (fx && fx.edges) || null : edges; S.whatif = S.demo ? (fx && fx.whatif) || null : wi;

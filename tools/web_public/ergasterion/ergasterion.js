@@ -18,6 +18,10 @@ async function getJSON(url, ms) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms || 6000) : 0;
   try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
+// the feed is read from this site first (pc_publish puts the Kalshi bot's feed next to the pages as kalshi.json); the old
+// GitHub address is only the fallback. A host that answers a missing file with its index page gives HTML: not an object, so it falls through.
+const SITE_FEED = '../kalshi.json';
+async function getFeed(ms) { const j = await getJSON(SITE_FEED, ms); return j && typeof j === 'object' && !Array.isArray(j) ? j : getJSON('https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json', ms); }
 function say(t) { $('status').textContent = t; }
 function shortAgo(ms, now) { const a = C.ageH(ms, now); return a == null ? '' : a < 1 ? Math.max(1, Math.round(a * 60)) + ' min' : a < 36 ? Math.round(a) + ' h' : Math.round(a / 24) + ' d'; }
 
@@ -222,7 +226,7 @@ function wireControls() {
 async function load() {
   const q = new URLSearchParams(location.search); S.forced = q.get('demo') === '1';
   const [fx, queue, home, money, kalshi, cron, forge, heph] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('./queue.json'), S.forced ? null : getJSON('../home.json'), S.forced ? null : getJSON('../money/index.json'),
-    S.forced ? null : getJSON('https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json', 5000), S.forced ? null : getJSON('../cronos/status.json'), S.forced ? null : getJSON('../prometheus/forge.json'), S.forced ? null : getJSON('../hephaestus/data.json')]);
+    S.forced ? null : getFeed(5000), S.forced ? null : getJSON('../cronos/status.json'), S.forced ? null : getJSON('../prometheus/forge.json'), S.forced ? null : getJSON('../hephaestus/data.json')]);
   S.fixture = fx; S.inputs = { home, money, kalshi, cron, forge, heph, queue };
 }
 async function boot() {

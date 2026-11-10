@@ -26,6 +26,10 @@ async function getJSON(url, ms = 6000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
   try { if (wasGone(url)) return null; const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); if (r.status === 404) markGone(url); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
+// the feed is read from this site first (pc_publish puts the Kalshi bot's feed next to the pages as kalshi.json); the old
+// GitHub address is only the fallback. A host that answers a missing file with its index page gives HTML: not an object, so it falls through.
+const SITE_FEED = '../kalshi.json';
+async function getFeed(ms) { const j = await getJSON(SITE_FEED, ms); return j && typeof j === 'object' && !Array.isArray(j) ? j : getJSON(RAW, ms); }
 const store = {
   read() { try { return C.loadState(localStorage.getItem(KEY)); } catch (_) { return C.emptyState(); } },
   write(s) { try { localStorage.setItem(KEY, C.serialize(s)); return true; } catch (_) { return false; } },
@@ -456,7 +460,7 @@ async function main() {
   const p = new URLSearchParams(location.search), t = p.get('today');
   if (t && C.isDate(t)) S.today = t;
   S.st = store.read();
-  const [home, rules, feed, fixture, roadmap] = await Promise.all([getJSON('../home.json'), getJSON('rules.json'), getJSON(RAW, 7000), getJSON('fixture.json'), getJSON('../plutus/roadmap.json')]);
+  const [home, rules, feed, fixture, roadmap] = await Promise.all([getJSON('../home.json'), getJSON('rules.json'), getFeed(7000), getJSON('fixture.json'), getJSON('../plutus/roadmap.json')]);
   S.roadmap = C.roadmapOk(roadmap) ? roadmap : null;       // the Money plan (read only); without it the tracker is as before
   S.home = home && typeof home === 'object' ? home : null; S.rules = rules && rules.plans ? rules : null; S.fixture = fixture && Array.isArray(fixture.entries) ? fixture : null;
   S.feed = feed && feed.kind === 'kalshi' ? feed : null;

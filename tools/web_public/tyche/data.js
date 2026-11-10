@@ -7,6 +7,7 @@
 // worked out from the lists the feed does carry, and `own` says which came from the bot itself.
 // Read-only: nothing here talks to Kalshi or places anything.
 
+export const LOCAL = '../kalshi.json';      // this site's own copy (pc_publish): tried first, the GitHub address is the fallback
 export const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
 export const API = 'https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main';
 export const STALE_S = 15 * 60;
@@ -255,7 +256,9 @@ export class Feed {
   }
 
   async poll() {
-    let r = await this.get(RAW + '?t=' + Math.floor(Date.now() / 60000));
+    let r = await this.get(LOCAL + '?t=' + Math.floor(Date.now() / 60000));
+    if (r && r.ok) { const c = r.clone ? r.clone() : null; let t0 = null; try { t0 = c ? await c.json() : null; } catch (_) { t0 = null; } if (!isObj(t0) || parseT(t0.t) == null) r = null; }
+    if (!r || !r.ok) r = await this.get(RAW + '?t=' + Math.floor(Date.now() / 60000));
     if (!r || (!r.ok && r.status !== 404)) r = await this.get(API, { Accept: 'application/vnd.github.raw+json' });
     if (r && r.ok) {
       let j = null;

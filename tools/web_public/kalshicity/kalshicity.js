@@ -27,6 +27,10 @@ async function getJSON(url, ms = 7000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
   try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
+// the feed is read from this site first (pc_publish puts the Kalshi bot's feed next to the pages as kalshi.json); the old
+// GitHub address is only the fallback. A host that answers a missing file with its index page gives HTML: not an object, so it falls through.
+const SITE_FEED = '../kalshi.json';
+async function getFeed(ms) { const j = await getJSON(SITE_FEED, ms); return j && typeof j === 'object' && !Array.isArray(j) ? j : getJSON(RAW, ms); }
 const dollars = (x) => usd(x);
 const smoney = (x) => (x == null ? '-' : `${x < 0 ? '-' : '+'}$${Math.abs(x).toFixed(2)}`);
 const dotOf = (e) => { const d = h('span', 'dot'); d.style.background = e.small ? '#8a7f6e' : STATUS_COLOR[e.status]; return d; };
@@ -435,7 +439,7 @@ function greetNew() {                                                    // once
 }
 async function refresh() {                                               // every 5 minutes: the engine's files and the bot's numbers again; something new = scan
   if (document.hidden || S.startedDemo || S.showingDemo) return;
-  const [edges, log, live, hyp] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getJSON(RAW, 8000), getJSON('hypotheses.json')]);
+  const [edges, log, live, hyp] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getFeed(8000), getJSON('hypotheses.json')]);
   const m = shape(edges, log, live, Date.now() / 1000, hyp, false);
   if (!m || m.edges.length < 3) return;
   if (!m.hyp && S.model.hyp) m.hyp = S.model.hyp;                        // no fresh ideas file: keep the ones on screen
@@ -519,7 +523,7 @@ function wire() {
 }
 
 async function main() {
-  const [edges, log, live, learned, hyp] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getJSON(RAW, 8000), getJSON('learned.json'), getJSON('hypotheses.json')]);
+  const [edges, log, live, learned, hyp] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getFeed(8000), getJSON('learned.json'), getJSON('hypotheses.json')]);
   S.liveFailed = !live;
   S.learned = learned && Array.isArray(learned.buckets) ? learned : null;
   S.sound = !!store.read().sound;

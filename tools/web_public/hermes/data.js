@@ -7,7 +7,7 @@
 
 export const TZ = 'America/New_York';
 const MINUS = '−';
-const KALSHI = ['https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json',
+const KALSHI = ['../kalshi.json', 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json',
   'https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main'];
 
 // ------------------------------------------------------------------------------------------------ helpers
@@ -119,7 +119,7 @@ export function kalshiPeriod(k, p) {
 
 async function kalshiFeed() {
   for (const [i, u] of KALSHI.entries()) {
-    let j = await getJSON(i ? u : u + '?t=' + Date.now(), 4000, i ? { headers: { Accept: 'application/vnd.github.raw+json' } } : {});
+    let j = await getJSON(/api\.github\.com/.test(u) ? u : u + '?t=' + Date.now(), 4000, /api\.github\.com/.test(u) ? { headers: { Accept: 'application/vnd.github.raw+json' } } : {});
     if (j && j.encoding === 'base64' && typeof j.content === 'string') {
       try { j = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\s/g, '')), (c) => c.charCodeAt(0)))); } catch (_) { j = null; }
     }
