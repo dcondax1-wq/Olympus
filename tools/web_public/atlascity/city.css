@@ -36,7 +36,7 @@ main{max-width:900px;margin:auto;padding:0 16px 48px}
 .scene:active{cursor:grabbing}
 .scene:focus-visible{outline:2px solid var(--gold);outline-offset:-5px}
 .city{position:absolute;left:50%;top:56%;width:560px;height:560px;transform-style:preserve-3d;transform:translate(-50%,-50%) translate3d(var(--pan,0px),0,var(--zoom,0px)) rotateX(62deg) rotateZ(var(--yaw,-22deg)) scale(.68);transition:transform .42s ease}
-.floor{position:absolute;inset:0;border:1px solid #cdbb98;border-radius:42px;background:repeating-linear-gradient(0deg,#00000010 0 1px,transparent 1px 45px),repeating-linear-gradient(90deg,#00000010 0 1px,transparent 1px 45px),radial-gradient(#d8cdb6,#a89a80 78%);box-shadow:0 0 0 20px #5a4d3a}
+.floor{position:absolute;inset:0;border:1px solid #cdbb98;border-radius:42px;background:repeating-linear-gradient(0deg,#14110e10 0 1px,transparent 1px 45px),repeating-linear-gradient(90deg,#14110e10 0 1px,transparent 1px 45px),radial-gradient(#d8cdb6,#a89a80 78%);box-shadow:0 0 0 20px #5a4d3a}
 .road{position:absolute;background:#b9a98a}
 .road-a{height:16px;left:8%;right:8%;top:50%}
 .road-b{width:16px;top:8%;bottom:8%;left:50%}
