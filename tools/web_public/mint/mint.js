@@ -40,11 +40,13 @@ function renderHero() {
   $('heroBase').textContent = t.n ? C.money(t.base) : '-';
   $('heroText').textContent = t.text; $('heroWhy').textContent = t.why;
   const p = $('heroPill'); p.textContent = t.allSample ? 'EXAMPLE ESTIMATE' : 'ESTIMATE'; p.className = 'pill ' + t.tone;
-  $('rngLo').textContent = C.money(t.low); $('rngHi').textContent = C.money(t.high);
-  const top = t.high || 1;
-  $('rngFill').style.left = Math.round((t.low / top) * 100) + '%'; $('rngFill').style.width = Math.round(((t.high - t.low) / top) * 100) + '%';
-  $('rngMark').style.left = `calc(${Math.round((t.base / top) * 100)}% - 1px)`;
-  $('rng').setAttribute('aria-label', `Estimate ${C.money(t.base)} a month, range ${C.rangeText(t.low, t.high)}`);
+  const lo = $('rngLo'), bar = C.rangeBar(t.low, t.base, t.high);
+  lo.textContent = t.low < 0 ? `${C.money(t.low)} (a loss)` : C.money(t.low); lo.className = t.low < 0 ? 'neg' : ''; $('rngHi').textContent = C.money(t.high);
+  $('rngFill').style.left = bar.left + '%'; $('rngFill').style.width = bar.width + '%'; $('rngFill').className = bar.neg ? 'neg' : '';
+  $('rngMark').style.left = `calc(${bar.mark}% - 1px)`;
+  const z = $('rngZero'); z.hidden = bar.zero == null; if (bar.zero != null) z.style.left = `calc(${bar.zero}% - 1px)`;
+  $('rngWorst').textContent = C.worstText(t.low); $('rngWorst').className = 'note' + (t.low < 0 ? ' neg' : '');
+  $('rng').setAttribute('aria-label', `Estimate ${C.money(t.base)} a month, ${t.low < 0 ? 'worst case a loss of ' + C.money(-t.low) + ' a month' : 'range ' + C.rangeText(t.low, t.high)}`);
 }
 
 function renderFallback() {
