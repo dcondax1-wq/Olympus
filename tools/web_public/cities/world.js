@@ -6,17 +6,17 @@ import { planCityNetwork } from './network-layout.js?v=n1';
 const node = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const svgNode = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
 export const WORLDS = [
-  ['trading', 'Trading', '#66c8ff', 325, 215], ['research', 'Research', '#b89aff', 325, 78],
-  ['money', 'Money', '#ffd781', 443, 145], ['kalshi', 'Kalshi', '#5ef5cc', 443, 285],
-  ['life', 'Life', '#9aeda7', 207, 285], ['obsidian', 'Obsidian', '#f0b4ec', 207, 145],
+  ['trading', 'Trading', '#8b7259', 325, 215], ['research', 'Research', '#c9a06a', 325, 78],
+  ['money', 'Money', '#ffd781', 443, 145], ['kalshi', 'Kalshi', '#7f8a52', 443, 285],
+  ['life', 'Life', '#9aeda7', 207, 285], ['obsidian', 'Obsidian', '#c9a06a', 207, 145],
 ];
-export function skyline(seed = 0, color = '#b89aff', compact = false) {
+export function skyline(seed = 0, color = '#c9a06a', compact = false) {
   const svg = svgNode('svg', { viewBox: '0 0 180 110', 'aria-hidden': 'true', focusable: 'false' });
   svg.classList.add('atlas-skyline');
   svg.append(svgNode('ellipse', { cx: 90, cy: 94, rx: 78, ry: 10, fill: color, opacity: '.12' }));
   for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) {
     const k = (seed * 17 + r * 31 + c * 23) % 71, x = 32 + c * 22 - r * 8, y = 67 + r * 9 + c * 2, h = 12 + k * .63;
-    svg.append(svgNode('path', { d: `M${x},${y}v-${h}l12,-5 9,5v${h}l-9,5z`, fill: '#101b33', stroke: color, 'stroke-opacity': '.52', 'stroke-width': '.65' }));
+    svg.append(svgNode('path', { d: `M${x},${y}v-${h}l12,-5 9,5v${h}l-9,5z`, fill: '#29221a', stroke: color, 'stroke-opacity': '.52', 'stroke-width': '.65' }));
     svg.append(svgNode('path', { d: `M${x},${y-h}l12,-5 9,5 -9,5z`, fill: color, opacity: '.5' }));
     svg.append(svgNode('path', { d: `M${x+12},${y-h+5}v${h}`, stroke: color, opacity: '.45' }));
     if (!compact) for (let w = 7; w < h - 2; w += 9) svg.append(svgNode('path', { d: `M${x+3},${y-w}h5m7,-2h3`, stroke: color, 'stroke-width': '1.7', opacity: (k+w)%3 ? '.85' : '.2' }));
@@ -36,9 +36,9 @@ function worldMap(specs) {
 
   const defs = svgNode('defs', {});
   const sky = svgNode('linearGradient', { id: 'city-sky', x1: '0', y1: '0', x2: '0', y2: '1' });
-  sky.append(svgNode('stop', { offset: '0%', 'stop-color': '#050711' }), svgNode('stop', { offset: '100%', 'stop-color': '#111b36' }));
+  sky.append(svgNode('stop', { offset: '0%', 'stop-color': '#050711' }), svgNode('stop', { offset: '100%', 'stop-color': '#2b241c' }));
   const floor = svgNode('linearGradient', { id: 'city-floor', x1: '0', y1: '0', x2: '0', y2: '1' });
-  floor.append(svgNode('stop', { offset: '0%', 'stop-color': '#0b1530' }), svgNode('stop', { offset: '42%', 'stop-color': '#10182b' }), svgNode('stop', { offset: '100%', 'stop-color': '#030812' }));
+  floor.append(svgNode('stop', { offset: '0%', 'stop-color': '#241e17' }), svgNode('stop', { offset: '42%', 'stop-color': '#241e17' }), svgNode('stop', { offset: '100%', 'stop-color': '#030812' }));
   defs.append(sky, floor); map.append(defs);
   map.append(svgNode('rect', { width: '650', height: '430', fill: 'url(#city-sky)' }));
   for (let i = 0; i < 34; i++) map.append(svgNode('circle', {
@@ -46,7 +46,7 @@ function worldMap(specs) {
     fill: '#d7e4ff', opacity: i % 3 ? '.38' : '.7',
   }));
   map.append(svgNode('path', { d: 'M0 177 Q325 137 650 177 V430 H0Z', fill: 'url(#city-floor)' }));
-  map.append(svgNode('path', { d: 'M0 177 Q325 137 650 177', fill: 'none', stroke: '#405482', 'stroke-width': '1.4', opacity: '.8' }));
+  map.append(svgNode('path', { d: 'M0 177 Q325 137 650 177', fill: 'none', stroke: '#76614c', 'stroke-width': '1.4', opacity: '.8' }));
 
   // One unbroken perspective street grid and a deterministic carpet of tiny 3D blocks.
   const grid = [];
@@ -73,10 +73,10 @@ function worldMap(specs) {
     }
   }
   map.append(svgNode('path', { d: front.join(' '), fill: '#442314', opacity: '.78' }));
-  map.append(svgNode('path', { d: side.join(' '), fill: '#182034', opacity: '.93' }));
+  map.append(svgNode('path', { d: side.join(' '), fill: '#2e261e', opacity: '.93' }));
   map.append(svgNode('path', { d: amber.join(' '), fill: '#ff8b2d', opacity: '.9' }));
-  map.append(svgNode('path', { d: mint.join(' '), fill: '#48f1a0', opacity: '.96' }));
-  map.append(svgNode('path', { d: cyan.join(' '), fill: '#45d9ff', opacity: '.9' }));
+  map.append(svgNode('path', { d: mint.join(' '), fill: '#7f8a52', opacity: '.96' }));
+  map.append(svgNode('path', { d: cyan.join(' '), fill: '#8b7259', opacity: '.9' }));
 
   const bridgeSet = new Set(routes.bridges.map(([a, b]) => `${a}:${b}`));
   const localPaths = new Map(WORLDS.map(([key]) => [key, []])), localSeen = new Map(), trunkPaths = [];
@@ -88,7 +88,7 @@ function worldMap(specs) {
     const midX = (from.x + to.x) / 2, midY = (from.y + to.y) / 2 - (bridge ? 28 : 5);
     const d = `M${from.x.toFixed(1)},${from.y.toFixed(1)}Q${midX.toFixed(1)},${midY.toFixed(1)} ${to.x.toFixed(1)},${to.y.toFixed(1)}`;
     const group = bridge ? layout.islands[b].cont : layout.islands[a].cont;
-    const color = WORLDS.find(([key]) => key === group)?.[2] || '#a68bff';
+    const color = WORLDS.find(([key]) => key === group)?.[2] || '#c9a06a';
     if (bridge) trunkPaths.push({ d, color });
     else {
       const seen = localSeen.get(group) || 0; localSeen.set(group, seen + 1);
@@ -116,7 +116,7 @@ function worldMap(specs) {
   map.append(svgNode('circle', { cx: hq.x, cy: hq.y, r: '18', fill: 'none', stroke: '#ffd878', 'stroke-width': '1.8', opacity: '.82' }));
   map.append(svgNode('circle', { cx: hq.x, cy: hq.y, r: '8', fill: '#ffd878', opacity: '.24' }));
   const hqLabel = svgNode('text', { x: hq.x, y: hq.y - 22, 'text-anchor': 'middle', fill: '#ffe2a2', class: 'network-label hq-label',
-    'font-weight': '900', stroke: '#050918', 'stroke-width': '3', 'paint-order': 'stroke' });
+    'font-weight': '900', stroke: '#120e0b', 'stroke-width': '3', 'paint-order': 'stroke' });
   hqLabel.textContent = 'OLYMPUS HQ'; map.append(hqLabel);
 
   const labelOffsets = { research: [-38, -18], money: [45, -16], kalshi: [52, 20], life: [-48, 21], obsidian: [-52, -17] };
@@ -126,7 +126,7 @@ function worldMap(specs) {
     const p = points[city.i], [dx, dy] = labelOffsets[district.key] || [24, -18], x = Math.max(36, Math.min(614, p.x + dx)), y = Math.max(186, Math.min(408, p.y + dy));
     map.append(svgNode('path', { d: `M${p.x.toFixed(1)},${p.y.toFixed(1)}L${x.toFixed(1)},${y.toFixed(1)}`, fill: 'none', stroke: district.color, 'stroke-width': '1.2', opacity: '.8' }));
     const label = svgNode('text', { x, y, 'text-anchor': 'middle', fill: district.color, class: 'network-label', 'font-weight': '850',
-      stroke: '#050918', 'stroke-width': '3', 'paint-order': 'stroke' });
+      stroke: '#120e0b', 'stroke-width': '3', 'paint-order': 'stroke' });
     label.textContent = `${district.name.toUpperCase()} · ${district.count}`; map.append(label);
   }
   return map;
@@ -142,7 +142,7 @@ export function mountWorld(specs, { fallback = false, onCity, onDistrict, onExpl
   const featured=node('div','atlas-featured');
   const picked=['trading','research','money'].map(g=>specs.find(s=>s.group===g)).filter(Boolean);
   picked.forEach((s,i)=>{
-    const b=node('button','atlas-portal'); b.type='button';b.style.setProperty('--district',WORLDS.find(w=>w[0]===s.group)?.[2]||'#a68bff');
+    const b=node('button','atlas-portal'); b.type='button';b.style.setProperty('--district',WORLDS.find(w=>w[0]===s.group)?.[2]||'#c9a06a');
     b.append(skyline(i+2,WORLDS.find(w=>w[0]===s.group)?.[2]),node('small',null,'START EXPLORING'),node('strong',null,s.name),node('span',null,s.motto),node('em',null,fallback?'Open the numbers ↗':'Land in this city ↗'));
     b.addEventListener('click',()=>open(s));featured.append(b);
   });box.append(featured);
@@ -161,7 +161,7 @@ export function mountWorld(specs, { fallback = false, onCity, onDistrict, onExpl
     const search=node('input');search.type='search';search.placeholder='Search cities or data';search.setAttribute('aria-label','Search the city atlas');catalog.append(search);
     const filters=node('div','atlas-filters');filters.setAttribute('role','group');filters.setAttribute('aria-label','Filter by district');let group='';
     const list=node('div','atlas-city-list'), empty=node('p','atlas-empty','No city matches. Try a different name or district.');empty.hidden=true;
-    const rows=specs.map(s=>{const b=node('button','atlas-city');b.type='button';const groupName=WORLDS.find(w=>w[0]===s.group)?.[1]||s.group;b.setAttribute('aria-label',`${s.name}. ${groupName} district. ${s.motto}`);b.setAttribute('data-city-id',s.id);const color=WORLDS.find(w=>w[0]===s.group)?.[2]||'#a68bff';b.style.setProperty('--district',color);b.append(node('strong',null,s.name),node('span',null,s.motto),node('small',null,(WORLDS.find(w=>w[0]===s.group)?.[1]||s.group)+' / '+s.region));b.onclick=()=>open(s);list.append(b);return{s,b};});
+    const rows=specs.map(s=>{const b=node('button','atlas-city');b.type='button';const groupName=WORLDS.find(w=>w[0]===s.group)?.[1]||s.group;b.setAttribute('aria-label',`${s.name}. ${groupName} district. ${s.motto}`);b.setAttribute('data-city-id',s.id);const color=WORLDS.find(w=>w[0]===s.group)?.[2]||'#c9a06a';b.style.setProperty('--district',color);b.append(node('strong',null,s.name),node('span',null,s.motto),node('small',null,(WORLDS.find(w=>w[0]===s.group)?.[1]||s.group)+' / '+s.region));b.onclick=()=>open(s);list.append(b);return{s,b};});
     const filter=()=>{const term=search.value.trim().toLowerCase();let n=0;rows.forEach(({s,b})=>{b.hidden=!!((group&&group!==s.group)||(term&&!`${s.name} ${s.motto} ${s.dataset} ${s.region}`.toLowerCase().includes(term)));if(!b.hidden)n++;});empty.hidden=n>0;};
     [['','All districts'],...WORLDS.map(w=>[w[0],w[1]])].forEach(([id,name])=>{const b=node('button','atlas-filter',name);b.type='button';b.setAttribute('aria-pressed',String(!id));b.onclick=()=>{group=id;[...filters.children].forEach(e=>e.setAttribute('aria-pressed',String(e===b)));filter();};filters.append(b);});
     search.addEventListener('input',filter);catalog.append(filters,list,empty);box.append(catalog);
