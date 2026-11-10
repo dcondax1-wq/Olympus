@@ -1,0 +1,28 @@
+{
+  "v": 1,
+  "updated": "2026-11-10",
+  "about": "Hand-maintained list of market-moving dates for NQ. Only dates that follow a fixed rule or that were published are dated. verify: true means check the source before relying on it (agencies move releases and exchanges change holiday hours). A release whose date is not known is in 'undated', never guessed. All times are New York (ET) clock times.",
+  "weekly": [
+    { "kind": "claims", "title": "Jobless claims", "dow": 3, "time": "08:30", "impact": "low", "verify": false, "skip": ["2026-11-26", "2026-12-24", "2026-12-31"], "src": "US Labor Department: every Thursday 8:30 AM ET" }
+  ],
+  "events": [
+    { "date": "2026-11-11", "time": null, "kind": "holiday", "title": "Veterans Day: stocks trade, bond market closed", "impact": "low", "closed": false, "verify": false, "src": "NYSE holiday calendar: stock market open" },
+    { "date": "2026-11-20", "time": "09:30", "kind": "opex", "title": "Monthly options expiration (third Friday)", "impact": "low", "verify": false, "src": "Third Friday of the month" },
+    { "date": "2026-11-25", "time": "08:30", "kind": "claims", "title": "Jobless claims (moved to Wednesday for Thanksgiving)", "impact": "low", "verify": true, "src": "Labor Department moves the Thursday release when Thursday is a holiday" },
+    { "date": "2026-11-26", "time": null, "kind": "holiday", "title": "Thanksgiving: US markets closed", "impact": "low", "closed": true, "verify": true, "src": "NYSE holiday; check the CME holiday calendar for futures" },
+    { "date": "2026-11-27", "time": "13:15", "kind": "early", "title": "Day after Thanksgiving: early close 1:15 PM ET", "impact": "med", "close_et": "13:15", "verify": true, "src": "CME equity futures short day; check the CME holiday calendar" },
+    { "date": "2026-12-04", "time": "08:30", "kind": "nfp", "title": "Jobs report (NFP, November data)", "impact": "high", "verify": true, "src": "BLS: normally the first Friday; confirm on bls.gov" },
+    { "date": "2026-12-08", "time": null, "kind": "fomc", "title": "FOMC meeting, day 1", "impact": "med", "verify": true, "src": "Federal Reserve 2026 calendar: Dec 8-9" },
+    { "date": "2026-12-09", "time": "14:00", "kind": "fomc", "title": "FOMC decision 2:00 PM, press conference 2:30 PM", "impact": "high", "verify": true, "src": "Federal Reserve 2026 calendar: Dec 8-9" },
+    { "date": "2026-12-09", "time": "16:00", "kind": "roll", "title": "Your roll step: switch the NinjaTrader chart to MNQ 03-27", "impact": "med", "verify": false, "src": "docs/ROLL_DEC_2026.md" },
+    { "date": "2026-12-10", "time": "00:00", "kind": "roll", "title": "NQ roll: orders switch to the March contract (8 days before expiry)", "impact": "med", "verify": false, "src": "engine/roll_watch.py: Thursday 2026-12-10 00:00 ET" },
+    { "date": "2026-12-18", "time": "09:30", "kind": "quad", "title": "Quad witching and December NQ expiry", "impact": "med", "verify": false, "src": "Third Friday of December; the quarterly NQ contract expires 9:30 AM ET" },
+    { "date": "2026-12-24", "time": "13:15", "kind": "early", "title": "Christmas Eve: early close 1:15 PM ET", "impact": "med", "close_et": "13:15", "verify": true, "src": "CME equity futures short day; check the CME holiday calendar" },
+    { "date": "2026-12-25", "time": null, "kind": "holiday", "title": "Christmas Day: US markets closed", "impact": "low", "closed": true, "verify": true, "src": "NYSE holiday; check the CME holiday calendar for futures" }
+  ],
+  "undated": [
+    { "kind": "cpi", "title": "CPI (consumer prices)", "approx": "mid-month, 8:30 AM ET", "impact": "high", "verify": true, "src": "BLS release schedule: the exact day is not in this file yet" },
+    { "kind": "ppi", "title": "PPI (producer prices)", "approx": "mid-month, 8:30 AM ET", "impact": "med", "verify": true, "src": "BLS release schedule: the exact day is not in this file yet" },
+    { "kind": "retail", "title": "Retail sales", "approx": "mid-month, 8:30 AM ET", "impact": "med", "verify": true, "src": "Census release schedule: the exact day is not in this file yet" }
+  ]
+}

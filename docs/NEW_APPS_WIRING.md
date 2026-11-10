@@ -342,3 +342,19 @@ const owl = build('owl', { lite, materials: M, size: 1.6 }); scene.add(owl);    
 rc.start((dt, t) => { if (owl.userData.update) owl.userData.update(t); });
 ```
 Keep bloom at 0.25 or less (`createRenderer({ bloom: { strength: 0.2, threshold: 0.95 } })`): only fire and gold may catch it.
+
+---
+# PYTHIA: the risk calendar (2026-11-10)
+
+App `pythia` (`tools/web_public/pythia/`; the 3D marble wheel of days is `pythiawheel.js`, its own module tag). Reads the BUNDLED `events.json` (hand-maintained; edit it, then update `updated`), `../home.json` (today's live brief, optional) and `fixture.json` (DEMO, only if events.json cannot be read). Test `tests/test_pythia_page.py` (it checks every rule date and the roll against `docs/ROLL_DEC_2026.md`). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+## 1. `jarvis/apps.js` BUILT_INS: `app('pythia', 'Pythia', 'trading', '#e0b060', 'The risk calendar: the next 14 days of Fed, inflation, jobs, expiries, holidays and the roll, with what the bots do', { glyph: 'Ψ' }),`
+## 2. `olympus/olympus.js`: APPS `pythia: ['Pythia', 'Ψ', '#e0b060'],` and AMBIENT `pythia: 'chimes',`
+## 3. `tools/build_web_dashboard.py` app tuple (~line 1212): add `"pythia"`. The build must copy `pythia/events.json` with the rest of the folder (it is a plain static file).
+## 4. `tools/web_public/sw.js`: `OTHER_APPS` add `'pythia/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+## 5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+## 6. Shared lines
+`olympus/intro-app.js` FLAVOUR: `pythia: ['rings', 'Read the calendar', 'tick'],`
+`jarvis/transitions.js` REGISTRY: `pythia: { kind: 'sunburst', ms: 1000 },`
+## 7. Tests after wiring: `tests.test_pythia_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`.
+Keep `events.json` current: add the next months' FOMC / jobs / CPI dates when the agencies publish them (CPI, PPI and retail sales are in `undated` until then). Never guess a date: leave it undated or set `"verify": true`.

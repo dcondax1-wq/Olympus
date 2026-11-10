@@ -9,6 +9,10 @@ cd /d "%~dp0"
 where python >nul 2>&1
 if errorlevel 1 goto :nopy
 python -X utf8 tools\money_engine.py --out money_out --timeout 60 >> money_out_log.txt 2>&1
+rem Sibyl's own paper record (paper only). money_keep\sibyl_forward.json is the MEMORY (frozen start day): keep that folder, it is not synced anywhere.
+if not exist money_keep mkdir money_keep
+python -X utf8 tools\money\sibyl_results.py --state money_keep\sibyl_forward.json --out money_keep\sibyl_results.json >> money_out_log.txt 2>&1
+python -X utf8 tools\money\sibyl_ledger.py --sibyl money_out\sibyl.json --state money_keep\sibyl_forward.json --results money_keep\sibyl_results.json >> money_out_log.txt 2>&1
 if /I "%~1"=="auto" exit /b 0
 type money_out_log.txt
 echo.

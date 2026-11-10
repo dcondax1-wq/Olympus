@@ -33,6 +33,20 @@ Open a normal Command Prompt once and paste:
 
 The free GitHub Actions copy (`money-engine.yml`) runs every 3 hours and keeps the JSON as a 7-day download. It does not publish to the site by itself. The site build runs `python tools/money_publish.py --site <site folder>` to copy the files to `<site>/money/`.
 
+## Sibyl's own paper picks: where the memory lives (2026-11-10)
+
+Sibyl (`tools/money/sibyl.py`) ranks kinds of Kalshi bet and writes `sibyl.json`. Three small steps turn that into a track record, all paper only:
+
+1. **Record**: `python tools/money/sibyl_ledger.py --sibyl <folder>\sibyl.json --state <folder>\sibyl_forward.json` adds each day's picks once, with the stake in $ and in R. The first run freezes the **start day**. Nothing before it is counted and nothing is back-filled.
+2. **Settle**: `python tools/money/sibyl_results.py --state <folder>\sibyl_forward.json --out <folder>\sibyl_results.json` builds the results file from the bot's real settled bets (`kalshicity/ledger.json`). It is a **proxy**: a pick is a kind of bet ("95-97 cent", "Bitcoin", "buying NO"), not one named market, so it is settled by the real result of the bot's first settled bet of that kind on or after the pick's day (each real bet used once). No matching bet yet means the pick stays open: nothing is invented. If the ledger file is missing the script says so and exits cleanly.
+3. **Count**: `python tools/money/sibyl_ledger.py ... --results <folder>\sibyl_results.json` settles the open picks (won = the paper win, lost = minus the paper stake) and rewrites `sibyl_forward.json`. The Sibyl page shows n, and hides net and win rate until 30 bets have settled.
+
+**`sibyl_forward.json` is the memory, so it must survive between runs.** If it is lost, the start day restarts and the count begins again.
+
+- **On the PC (the plain way): `RUN_MONEY.bat` keeps it in a local folder on the PC**, next to the bot (`money_keep\`, made by the script; `RUN_MONEY.bat` now runs steps 2 and 3 after the money engine, reading `money_out\sibyl.json`). That folder is not synced anywhere: back it up if you care about the record, and do not delete it. A damaged file is refused (the script stops and says so) rather than restarted, because the start day is frozen.
+- **In the cloud**: the free GitHub Actions copy only keeps its JSON as a 7-day download, so it would restart the count every run unless the file is saved on a state branch. Until that is set up, the PC folder is the only place the record is kept.
+- The Sibyl page reads `money/sibyl_forward.json` on the site; without it the card says "Not started". Nothing here touches the Kalshi bot, a key or an order.
+
 ## Honest limits
 
 - The total is a **range** (live streams 30% to 150% of the base guess; old data 0% to 120%; examples 0% to 200%). The middle number is a guess, not a forecast. Chrysos's items are 12-month nets for a purchase, Mercury's are one-time savings, so the cards say "estimate" and what the number means; do not add them up in your head as income.
