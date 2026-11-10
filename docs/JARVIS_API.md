@@ -31,7 +31,7 @@ a missing file is `null`. `jdata.readLocal(storage)` adds what this phone keeps.
 | `pythia` | `../pythia/events.json` | next CPI / FOMC / NFP, event nudges |
 | `kalshi` | the Kalshi bot's `kalshi.json` (the brain passes its facts; `sources.kalshi`) | how is Kalshi, balance, open bets, today |
 | `kalshiEdges`, `kalshiLog`, `kalshiLearned`, `kalshiLedger` | `../kalshicity/edges.json`, `learning_log.json`, `learned.json`, `ledger.json` | the engine's copy when the feed is down; which bet kinds lose money |
-| `planner`, `journal`, `ledger`, `compassState` | `planner.agora.v1`, `journal.v1`, `ledger.v1`, `compass.state.v1` | read only here |
+| `planner`, `journal`, `ledger`, `compassState` | `planner.agora.v2`, `journal.v1`, `ledger.v1`, `compass.state.v1` | read only here |
 
 Every answer carries `sources: ['home.json, 6 min ago']` and ends with "From home.json, 6 min ago." R is dollars divided by the owner's
 usual 1R (the median `risk_usd` of his last 30 trades, shown in the answer). A missing file or field gives `{ missing: true }` and
@@ -80,9 +80,11 @@ acts.run(id, args)       // no question (for an app that asked on its own)
 | `open_app` | no | navigate to any of the 60+ apps (`open: id`) |
 | `open_district` | no | Atlas on one district: `open: 'atlas', route: '#zone=<market\|research\|risk\|command\|life>'` |
 | `start_quiz` | no | `open: 'lyceum', route: '#quiz'` |
-| `planner_goal` | yes | "Goal: ..." as the first line of today's note in `planner.agora.v1` (New York day) |
-| `planner_task` | yes | a task for today (`09:30` in the text becomes its slot) |
-| `planner_note` | yes | appends a line to today's note |
+| `planner_goal` | yes | "Goal: ..." as the first line of today's day note (Planner v2, key `planner.agora.v2`, New York day) |
+| `planner_task` | yes | a task, read by the Planner's own `parseQuick` (`Fri 9am ...`, `!high`, `#project`); no day given means today |
+| `planner_event` | yes | an event ("add event Fri 9am journal review"), same parser, `addEvent` |
+| `planner_note` | yes | appends a line to today's day note |
+| `plan_today` | no | today's (or tomorrow's) events, tasks, overdue and note from the Planner on this phone |
 | `compass_done` | yes | marks the top (or a named) Compass item done in `compass.state.v1` |
 | `import_memory` | yes | merges a memory file |
 | `copy_briefing` | no | `env.briefing()` text to the clipboard |
@@ -90,6 +92,10 @@ acts.run(id, args)       // no question (for an app that asked on its own)
 
 Memory (`remember that ...`) saves at once and says how to undo it ("forget ..."); it is the owner's own explicit command, so it has no
 extra question. Everything that edits another app's data (Planner, Compass) asks first.
+
+Planner writes use `planner/plannercore.js` (v2) only: `loadAll` reads the plan (an older v1 plan is migrated, `planner.agora.v1` and `planner.v1` are never changed),
+the change is made with `parseQuick` / `addTask` / `addEvent` / `setDayNote`, and it is saved like `planner.js` does (`planner.agora.v2`, `planner.today.v1`,
+`planner.sessions.v1`). An unreadable v2 text is never overwritten ("could not be read").
 
 ## Memory (`createMemStore`)
 
@@ -118,6 +124,13 @@ Rules (each fires only on data that is there): `dll_near`, `dd_low` (under 25% b
 (within 48 h), `event_soon` (high impact today / tomorrow / within 3 days), `unrated` (last 14 days), `feeds_stale` (a file older than its limit
 or missing). Bad first, then warn, then info. `ask` is a phrase to send to `brain.ask`; `open` is an app id for the "Open" button; `key` is
 what to store when the owner dismisses it (pass it back in `quiet`). Sample data is skipped for deals.
+
+### window.JARVIS_API (for the Jarvis home: `home-data.js` reads it)
+
+`brain.js` installs `globalThis.JARVIS_API = { v: 1, nudges, refresh, ask, skills }` when it loads the skills in a browser.
+`nudges()` is synchronous (the last list, refreshed in the background about every 60 s and on every call; empty until the first load):
+`[{ id, key, text, tone: 'bad'|'warn'|'info', app, say, why, ask, usd }]`, at most 3, where `app` is an app id for the Open button. `ask(text)` -> `Promise<reply>`.
+It does not exist until the brain has loaded; `home-data.js` already treats a missing API as empty.
 
 ## Voice (`voice-mode.js`)
 

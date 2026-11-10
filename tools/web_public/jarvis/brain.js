@@ -536,8 +536,26 @@ export function createBrain(opts) {
         };
         const apps = () => { try { const l = (typeof globalThis !== 'undefined' && globalThis.OLYMPUS_APPS_LIST) || (ap && ap.BUILT_INS) || (lastFacts && lastFacts.apps) || []; return Array.isArray(l) ? l : []; } catch (_) { return []; } };
         skills = sk.createSkills({ getSources, apps, storage: store(), now: () => (nowFn ? nowFn() : Date.now()), assistant, env: isObj(o.skillsEnv) ? o.skillsEnv : {} });
+        installApi();
       }).catch(() => null).then(() => { skillsWait = null; });
     } catch (_) { skillsWait = null; }
+  }
+  // window.JARVIS_API (docs/JARVIS_API.md): what the Jarvis home reads. nudges() is SYNCHRONOUS (the last computed list, refreshed in the
+  // background every 60 s and on every call), each { id, text, tone: 'bad'|'warn'|'info', app, say, why, ask, usd, key }; ask(text) -> Promise<reply>.
+  function installApi() {
+    try {
+      const g = typeof globalThis !== 'undefined' ? globalThis : null;
+      if (!g || !skills || typeof skills.nudges !== 'function' || (g.JARVIS_API && g.JARVIS_API.v === 1)) return;
+      let list = [], at = 0, busy = false;
+      const refresh = () => {
+        if (busy || Date.now() - at < 60000) return;
+        busy = true;
+        Promise.resolve(skills.nudges({ max: 3 })).then((n) => { list = arr(n).filter(isObj).map((x) => ({ id: x.id, key: x.key, text: x.text, tone: x.level === 'bad' ? 'bad' : x.level === 'warn' ? 'warn' : 'info', app: x.open || '', say: x.text, why: x.why, ask: x.ask, usd: x.usd })); at = Date.now(); })
+          .catch(() => null).then(() => { busy = false; });
+      };
+      g.JARVIS_API = { v: 1, nudges: () => { refresh(); return list.slice(); }, refresh: () => { at = 0; refresh(); }, ask: (text, opt) => ask(text, opt), skills };
+      refresh();
+    } catch (_) { /* the home works without it */ }
   }
   const YES_RX = /^(yes|yep|yeah|yup|sure|ok|okay|confirm|confirmed|do it|go ahead|please do|yes please|y)$/, NO_RX = /^(no|nope|nah|cancel|stop|don'?t|never ?mind|forget it|no thanks|n)$/;
 

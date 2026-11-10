@@ -319,6 +319,8 @@ export function createSkills(opts) {
       case 'planner_goal': return actions.plan('planner_goal', { text: a.text });
       case 'planner_task': return actions.plan('planner_task', { text: a.text });
       case 'planner_note': return actions.plan('planner_note', { text: a.text });
+      case 'planner_event': return actions.plan('planner_event', { text: a.text });
+      case 'plan_today': return actions.plan('plan_today', { which: a.which });
       case 'compass_done': return actions.plan('compass_done', { which: a.which });
       case 'export_data': return actions.plan('export_data', {});
       case 'copy_briefing': return actions.plan('copy_briefing', {});

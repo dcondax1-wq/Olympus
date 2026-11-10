@@ -62,8 +62,8 @@ def main() -> int:
     check("docs/JARVIS_API.md exists", os.path.exists(doc_p))
     if os.path.exists(doc_p):
         d = read(doc_p)
-        names = ["route(", "createSkills", "handle(", "contextFor", "nudges(", "createActions", "createMemStore", "loadSources", "jarvis.memory.v1", "planner.agora.v1", "compass.state.v1",
-                 "exportJson", "importJson", "plan(", "confirm(", "cancel()", "#zone=", "#quiz", "pttDown", "jarvis.vmPtt", "sw.js"]
+        names = ["route(", "createSkills", "handle(", "contextFor", "nudges(", "createActions", "createMemStore", "loadSources", "jarvis.memory.v1", "planner.agora.v2", "compass.state.v1",
+                 "exportJson", "importJson", "plan(", "confirm(", "cancel()", "#zone=", "#quiz", "pttDown", "jarvis.vmPtt", "sw.js", "JARVIS_API", "planner_event", "plan_today"]
         miss = [n for n in names if n not in d]
         check("JARVIS_API.md names every export, key and the wiring", not miss, ", ".join(miss))
     r = subprocess.run(["node", os.path.join(ROOT, "tests", "test_jarvis_skills.mjs")], capture_output=True, text=True, timeout=120, env={**os.environ, "TZ": "America/New_York"})

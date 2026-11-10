@@ -145,24 +145,33 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   r = await sk.handle('open the war room', null, { now: NOW }); check('war room is Ares', r.open === 'ares', JSON.stringify(r));
   // a write asks first and writes only after yes
   r = await sk.handle('set my goal for today to stay flat before 10', null, { now: NOW });
-  check('goal asks first', r.pending && /Say yes or no/.test(r.text) && storage.getItem('planner.agora.v1') == null, r.text);
+  check('goal asks first', r.pending && /Say yes or no/.test(r.text) && storage.getItem('planner.agora.v2') == null && storage.getItem('planner.agora.v1') == null, r.text);
   check('a pending write exists', !!sk.pending);
   r = await sk.confirm();
-  const st = JSON.parse(storage.getItem('planner.agora.v1') || 'null');
-  check('goal written to planner.agora.v1 as a Goal: note for today (ET)', st && /^Goal: stay flat before 10/.test(st.notes['2026-11-10'] || ''), JSON.stringify(st && st.notes));
-  check('planner state still normalises (the Planner can read it)', PL.normalise(st) != null && PL.normalise(st).notes['2026-11-10'] === st.notes['2026-11-10']);
-  check('today summary written for Jarvis', !!storage.getItem('planner.today.v1'));
+  const PK = 'planner.agora.v2', rdP = () => JSON.parse(storage.getItem(PK) || 'null'), noteOf = (s) => { const n = PL.dayNote(s, '2026-11-10'); return n ? n.text : ''; };
+  const st = rdP();
+  check('goal written to planner.agora.v2 as a Goal: line of today\'s day note (ET)', st && st.v === 2 && /^Goal: stay flat before 10/.test(noteOf(st)), JSON.stringify(st && st.notes));
+  check('v2 state still normalises (the Planner can read it)', PL.normalise(st) != null && noteOf(PL.normalise(st)) === noteOf(st));
+  check('today summary and sessions file written like planner.js does', !!storage.getItem('planner.today.v1') && !!storage.getItem('planner.sessions.v1') && JSON.parse(storage.getItem('planner.today.v1')).day === '2026-11-10');
   check('nothing pending after yes', !sk.pending);
   r = await sk.handle('add task review levels 09:30', null, { now: NOW }); await sk.confirm();
-  const st2 = JSON.parse(storage.getItem('planner.agora.v1'));
+  const st2 = rdP();
   check('task added with its slot', st2.tasks.some((t) => t.text === 'review levels' && t.slot === '09:30' && t.day === '2026-11-10' && !t.done), JSON.stringify(st2.tasks));
-  check('the goal survived the task write', /^Goal:/.test(st2.notes['2026-11-10']));
+  check('the goal survived the task write', /^Goal:/.test(noteOf(st2)));
   r = await sk.handle('add a note that levels held', null, { now: NOW }); await sk.confirm();
-  check('note appended, goal kept', /Goal: stay flat/.test(JSON.parse(storage.getItem('planner.agora.v1')).notes['2026-11-10']) && /levels held/.test(JSON.parse(storage.getItem('planner.agora.v1')).notes['2026-11-10']));
+  check('note appended, goal kept', /Goal: stay flat/.test(noteOf(rdP())) && /levels held/.test(noteOf(rdP())));
+  // an event through the Planner's own phrase parser (Tue 2026-11-10: Friday is the 13th)
+  r = await sk.handle('add event Fri 9am journal review', null, { now: NOW });
+  check('event asks first, in the Planner\'s words', r.pending && /Say yes or no/.test(r.text) && rdP().events.length === 0, r.text);
+  r = await sk.confirm(); const st3 = rdP();
+  check('event: Fri 13 Nov at 09:00 titled journal review', st3.events.some((e) => e.title === 'journal review' && e.day === '2026-11-13' && e.start === '09:00') && /Event: journal review/.test(r.text), JSON.stringify(st3.events) + r.text);
+  r = await sk.handle('what is on my plan today', null, { now: NOW }); check('plan today: tasks, note, no event today', /Tuesday 10 November 2026/.test(r.text) && /review levels/.test(r.text) && /Goal: stay flat/.test(r.text) && /No events/.test(r.text) && r.sources[0].includes('planner.agora.v2'), r.text);
+  r = await sk.handle('whats on my calendar tomorrow', null, { now: NOW }); check('plan tomorrow reads its own day', /Wednesday 11 November/.test(r.text), r.text);
+  r = await sk.handle('add an event', null, { now: NOW }); check('empty event asks what and when', r == null || !r.pending);
   // no: nothing changes
-  const before = storage.getItem('planner.agora.v1');
+  const before = storage.getItem('planner.agora.v2');
   await sk.handle('add task buy milk', null, { now: NOW }); const c = sk.cancel();
-  check('no cancels', /nothing changed/.test(c.text) && storage.getItem('planner.agora.v1') === before && !sk.pending);
+  check('no cancels', /nothing changed/.test(c.text) && storage.getItem('planner.agora.v2') === before && !sk.pending);
   // expiry
   await sk.handle('add task late one', null, { now: NOW });
   let clock = NOW; const sk3 = K.createSkills({ getSources: async () => S, apps: () => apps, storage, now: () => clock });
@@ -179,10 +188,10 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   storage.setItem('jarvis.smart', '{"keys":{"groq":"gsk_SECRET"}}'); storage.setItem('jarvis.vault', 'github_pat_SECRET'); storage.setItem('other.site', 'x');
   r = await sk.handle('export my data', null, { now: NOW });
   const ex = JSON.parse(r.download.text);
-  check('export is an olympus-data envelope without secrets', ex.kind === 'olympus-data' && ex.keys['planner.agora.v1'] && !ex.keys['jarvis.smart'] && !ex.keys['jarvis.vault'] && !ex.keys['other.site'] && !/SECRET/.test(r.download.text) && ex.kept.includes('jarvis.smart'), Object.keys(ex.keys).join(','));
+  check('export is an olympus-data envelope without secrets', ex.kind === 'olympus-data' && ex.keys['planner.agora.v2'] && !ex.keys['jarvis.smart'] && !ex.keys['jarvis.vault'] && !ex.keys['other.site'] && !/SECRET/.test(r.download.text) && ex.kept.includes('jarvis.smart'), Object.keys(ex.keys).join(','));
   check('export reported to the shell', calls.dl.length === 1);
   r = await sk.handle('copy the briefing', null, { now: NOW }); check('copy briefing', r.copied === true && calls.copy[0] === 'Good morning. All calm.');
-  check('every action def has a write flag and label', A.DEFS.every((d) => typeof d.write === 'boolean' && d.label) && A.DEFS.filter((d) => d.write).length === 5);
+  check('every action def has a write flag and label', A.DEFS.every((d) => typeof d.write === 'boolean' && d.label) && A.DEFS.filter((d) => d.write).length === 6);
 }
 
 // ---------------------------------------------------------------------------------------------- 4. memory
@@ -259,8 +268,8 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   let r = await brain.ask('how much drawdown do I have left');
   check('brain: the skills answer drawdown from home.json with $ and R and the source', /\$1,420 \(3\.2R\)/.test(r.text) && /home\.json/.test(r.text), r.text.slice(0, 200));
   r = await brain.ask('what is my worst weekday'); check('brain: weekday', /Monday/.test(r.text) && /n|trades/.test(r.text), r.text.slice(0, 120));
-  r = await brain.ask('set my goal for today to stay flat before 10'); check('brain: a write asks first', /Say yes or no/.test(r.text) && storage.getItem('planner.agora.v1') == null, r.text);
-  r = await brain.ask('yes'); check('brain: "yes" runs the write', /Done/.test(r.text) && /Goal: stay flat before 10/.test(storage.getItem('planner.agora.v1') || ''), r.text);
+  r = await brain.ask('set my goal for today to stay flat before 10'); check('brain: a write asks first', /Say yes or no/.test(r.text) && storage.getItem('planner.agora.v2') == null, r.text);
+  r = await brain.ask('yes'); check('brain: "yes" runs the write', /Done/.test(r.text) && /Goal: stay flat before 10/.test(storage.getItem('planner.agora.v2') || ''), r.text);
   r = await brain.ask('add task buy milk'); r = await brain.ask('no'); check('brain: "no" cancels', /nothing changed/.test(r.text));
   r = await brain.ask('show me Athens'); check('brain: navigation carries open + route', r.open === 'cities' && r.route === '#athens', JSON.stringify([r.open, r.route]));
   await new Promise((ok) => setTimeout(ok, 30));
@@ -319,6 +328,34 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   const atlas = fs.readFileSync(path.join(WP, 'atlas/atlas.js'), 'utf8'), lyc = fs.readFileSync(path.join(WP, 'lyceum/lyceum.js'), 'utf8');
   check('atlas honours #zone= for the five districts', /zone=\(\[a-z\]\+\)/.test(atlas) && /zones\.some\(\(zn\) => zn\.id === m\[1\]\)/.test(atlas) && /hashchange/.test(atlas));
   check('lyceum honours #quiz', /quizFromHash/.test(lyc) && /#\|\[&#\]\)quiz/.test(lyc));
+}
+// ---------------------------------------------------------------------------------------------- 10. Planner v2: migration, a bad plan, the home API
+{
+  const storage = mkStore();
+  const v1 = { v: 1, checklist: [], checks: {}, tasks: [{ id: 't1', text: 'old task', day: '2026-11-10', done: false, slot: '' }], habits: [], habitLog: {}, notes: { '2026-11-10': 'old note' }, updated: 5 };
+  storage.setItem('planner.agora.v1', JSON.stringify(v1));
+  const { sk } = mkSk(mkS(), storage);
+  await sk.handle('set my goal for today to hold the plan', null, { now: NOW }); await sk.confirm();
+  const v2 = JSON.parse(storage.getItem('planner.agora.v2') || 'null');
+  check('an old v1 plan is migrated by the v2 core, not overwritten', v2 && v2.v === 2 && v2.tasks.some((t) => t.text === 'old task') && /old note/.test(PL.dayNote(v2, '2026-11-10').text) && /^Goal: hold the plan/.test(PL.dayNote(v2, '2026-11-10').text), JSON.stringify(v2 && v2.notes));
+  check('the v1 key is never changed', storage.getItem('planner.agora.v1') === JSON.stringify(v1));
+  const bad = mkStore(); bad.setItem('planner.agora.v2', '{not json');
+  const sk2 = mkSk(mkS(), bad).sk; await sk2.handle('add task x', null, { now: NOW }); const rr = await sk2.confirm();
+  check('an unreadable v2 plan is never overwritten', bad.getItem('planner.agora.v2') === '{not json' && /could not be read/.test(rr.text) && rr.ok === false, rr.text);
+  const empty = mkSk(mkS(), mkStore()).sk; const rp = await empty.handle('what is on my plan today', null, { now: NOW });
+  check('empty planner: I don\'t have a plan', rp.missing === true && /^I don't have a plan/.test(rp.text));
+  // window.JARVIS_API for the Jarvis home: nudges() is synchronous and has the home's fields
+  const g = globalThis; g.location = { href: 'https://x.test/jarvis/' }; const S0 = mkS();
+  g.fetch = async (u) => { const k = String(u).split('?')[0]; const m = { '../home.json': S0.home, '../money/index.json': S0.money, '../odeon/trades.json': S0.odeon, '../ledger/rules.json': S0.rules, '../pythia/events.json': S0.pythia }; return m[k] ? { ok: true, json: async () => m[k] } : { ok: false, json: async () => ({}) }; };
+  delete g.JARVIS_API;
+  const B = await imp('jarvis/brain.js');
+  const brain = B.createBrain({ getFacts: () => ({ now: NOW, apps: [] }), open() {}, now: () => NOW, storage: mkStore(), zenithRoutes: false });
+  await brain.ask('hello');
+  const api = g.JARVIS_API;
+  check('window.JARVIS_API installed with nudges / ask', api && api.v === 1 && typeof api.nudges === 'function' && typeof api.ask === 'function');
+  await new Promise((ok) => setTimeout(ok, 150)); const ns = api.nudges();
+  check('nudges() is synchronous, an array of { id, text, tone, app, say }', Array.isArray(ns) && ns.length >= 1 && ns.every((n) => n.id && n.text && /^(bad|warn|info)$/.test(n.tone) && typeof n.app === 'string' && n.say), JSON.stringify(ns));
+  delete g.location; delete g.fetch; delete g.JARVIS_API;
 }
 console.log(`${passes} passed, ${fails} failed`);
 process.exit(fails ? 1 : 0);

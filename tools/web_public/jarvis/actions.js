@@ -28,6 +28,8 @@ export const DEFS = [
   { id: 'start_quiz', label: 'Start the Lyceum quiz', write: false, args: {}, about: 'Opens Lyceum on today\'s quiz.' },
   { id: 'planner_goal', label: 'Set today\'s goal in Planner', write: true, args: { text: 'string' }, about: 'Writes "Goal: ..." at the top of today\'s Planner note.' },
   { id: 'planner_task', label: 'Add a Planner task', write: true, args: { text: 'string (a time like 09:30 is kept as the slot)' }, about: 'A task for today.' },
+  { id: 'planner_event', label: 'Add a Planner event', write: true, args: { text: 'string, e.g. "Fri 9am journal review"' }, about: 'An event, read by the Planner\'s own phrase parser.' },
+  { id: 'plan_today', label: 'What is on my plan', write: false, args: { which: 'today | tomorrow' }, about: 'The day\'s events, tasks and note from the Planner.' },
   { id: 'planner_note', label: 'Add to today\'s Planner note', write: true, args: { text: 'string' }, about: 'Appends a line to today\'s note.' },
   { id: 'compass_done', label: 'Mark a Compass item done', write: true, args: { which: 'optional words of its title (default: the top one)' }, about: 'Compass hides it until the situation changes.' },
   { id: 'import_memory', label: 'Import memory', write: true, args: { text: 'JSON text' }, about: 'Merges a Jarvis memory file into what he kept.' },
@@ -48,29 +50,68 @@ export function createActions(opts) {
   const rdJson = (k) => { try { const st = store(); const v = st && st.getItem(k); return v ? JSON.parse(v) : null; } catch (_) { return null; } };
   const wrJson = (k, v) => { try { const st = store(); if (!st) return false; st.setItem(k, JSON.stringify(v)); return true; } catch (_) { return false; } };
 
-  // ---------------------------------------------------------------------------------------- planner (planner.agora.v1)
-  async function plannerState() { const P = await getPlanner(); return { P, st: (P.normalise(rdJson(P.STORE_KEY)) || P.blankState()) }; }
+  // ---------------------------------------------------------------------------------------- planner (Planner v2, planner.agora.v2)
+  // Written only through plannercore.js's own functions (loadAll migrates an older plan, parseQuick reads "Fri 9am ...", addTask / addEvent /
+  // setDayNote / todaySummary / sessionsExport), and saved the way planner.js saves: the plan, the today summary Jarvis reads, the sessions file.
+  const rdText = (k) => { try { const st = store(); return st ? st.getItem(k) : null; } catch (_) { return null; } };
+  async function plannerState() {
+    const P = await getPlanner(), t2 = rdText(P.STORE_KEY), r = P.loadAll(t2, rdText(P.OLD_KEY), rdText(P.LEGACY_KEY));
+    if (r.bad) return { P, bad: true };                                  // an unreadable v2 plan is never overwritten
+    return { P, st: r.state || P.blankState() };
+  }
   function savePlanner(P, st, day) {
     st.updated = nowMs();
     const ok = wrJson(P.STORE_KEY, st);
-    if (ok && typeof P.todaySummary === 'function') wrJson('planner.today.v1', P.todaySummary(st, day, nowMs()));     // what Jarvis's own plan view reads
+    if (ok) {
+      try { wrJson(P.TODAY_KEY || 'planner.today.v1', P.todaySummary(st, day, nowMs())); } catch (_) { /* the summary is optional */ }
+      try { if (typeof P.sessionsExport === 'function') wrJson(P.SESSIONS_KEY, P.sessionsExport(st, day, nowMs())); } catch (_) { /* optional */ }
+    }
     return ok;
   }
+  const badPlan = (id) => rep('The saved Planner could not be read, so I will not write to it. Open the Planner to look at it. Nothing was changed.', { ok: false, intent: 'action_' + id });
   async function plannerGoal(text) {
-    const { P, st } = await plannerState(), day = etParts(nowMs()).day, goal = 'Goal: ' + str(text, 160);
-    const old = String(st.notes[day] || '').split('\n').filter((l) => !/^goal:/i.test(l.trim()));
-    P.setNote(st, day, [goal].concat(old).join('\n').trim());
-    return savePlanner(P, st, day) ? rep(`Done. Today's goal in Planner: ${str(text, 160)}.`, { intent: 'action_planner_goal', speak: 'Done. Your goal for today is set in the Planner.', open: undefined }) : fail('planner_goal');
+    const { P, st, bad } = await plannerState(); if (bad) return badPlan('planner_goal');
+    const day = etParts(nowMs()).day, goal = 'Goal: ' + str(text, 160), cur = P.dayNote(st, day);
+    const rest = String(cur ? cur.text : '').split('\n').filter((l) => !/^goal:/i.test(l.trim()));
+    P.setDayNote(st, day, [goal].concat(rest).join('\n').trim());
+    return savePlanner(P, st, day) ? rep(`Done. Today's goal in Planner: ${str(text, 160)}.`, { intent: 'action_planner_goal', speak: 'Done. Your goal for today is set in the Planner.' }) : fail('planner_goal');
   }
   async function plannerTask(text) {
-    const { P, st } = await plannerState(), day = etParts(nowMs()).day, t = P.addTask(st, str(text, 200), day);
+    const { P, st, bad } = await plannerState(); if (bad) return badPlan('planner_task');
+    const day = etParts(nowMs()).day, q = P.parseQuick(str(text, 200), day, { kind: 'task', defaultLane: 'today' });
+    if (q && !q.day) q.day = day;
+    const t = q && q.text ? P.addTask(st, q, day) : null;
     if (!t) return rep('The Planner would not take that task (empty, or the list is full).', { ok: false, intent: 'action_planner_task' });
-    return savePlanner(P, st, day) ? rep(`Added to today's Planner: ${t.text}${t.slot ? ' at ' + t.slot : ''}.`, { intent: 'action_planner_task', speak: `Added to your Planner: ${t.text}.` }) : fail('planner_task');
+    return savePlanner(P, st, day) ? rep(`Added to the Planner: ${t.text}${t.day ? ' (' + P.dayLabel(t.day) + (t.slot ? ' at ' + P.timeWord(t.slot) : '') + ')' : ''}.`, { intent: 'action_planner_task', speak: `Added to your Planner: ${t.text}.` }) : fail('planner_task');
+  }
+  async function plannerEvent(text) {
+    const { P, st, bad } = await plannerState(); if (bad) return badPlan('planner_event');
+    const day = etParts(nowMs()).day, q = P.parseQuick(str(text, 200), day, { kind: 'event' });
+    if (q && q.text && !q.day) q.day = day;
+    const e = q && q.text && q.day ? P.addEvent(st, q) : null;
+    if (!e) return rep('The Planner would not take that event. Say what and when, for example "add event Fri 9am journal review".', { ok: false, intent: 'action_planner_event' });
+    return savePlanner(P, st, day) ? rep(`Added to the Planner: ${P.describeQuick({ ...q, kind: 'event' })}.`, { intent: 'action_planner_event', speak: `Added to your Planner: ${e.title}, ${P.dayLabel(e.day)}${e.start ? ' at ' + P.timeWord(e.start) : ''}.` }) : fail('planner_event');
   }
   async function plannerNote(text) {
-    const { P, st } = await plannerState(), day = etParts(nowMs()).day;
-    P.setNote(st, day, (String(st.notes[day] || '').trim() ? st.notes[day].trim() + '\n' : '') + str(text, 400));
+    const { P, st, bad } = await plannerState(); if (bad) return badPlan('planner_note');
+    const day = etParts(nowMs()).day, cur = P.dayNote(st, day);
+    P.setDayNote(st, day, (cur && cur.text.trim() ? cur.text.trim() + '\n' : '') + str(text, 400));
     return savePlanner(P, st, day) ? rep(`Added to today's Planner note: ${str(text, 160)}.`, { intent: 'action_planner_note', speak: 'Added to today\'s note in the Planner.' }) : fail('planner_note');
+  }
+  // what is on the plan (read only): the day's events and tasks, its note and the next events
+  async function planToday(which) {
+    const { P, st, bad } = await plannerState();
+    if (bad) return badPlan('plan_today');
+    const today = etParts(nowMs()).day, day = which === 'tomorrow' ? P.addDays(today, 1) : today, rel = day === today ? 'today' : 'tomorrow';
+    if (!st || (!st.events.length && !st.tasks.length && !st.notes.length)) return rep(`I don't have a plan for ${rel}: the Planner is empty on this phone. Say "add task ..." or "add event Fri 9am ..." and I will add it after you say yes.`, { ok: false, missing: true, intent: 'action_plan_today' });
+    const ag = P.agenda(st, day).filter((x) => x.kind === 'event'), v = P.dayView(st, day), open = v.tasks.filter((t) => !t.done), late = st.tasks.filter((t) => !t.parent && !t.done && t.day && t.day < day);
+    const lines = [`${P.dayLong(day)}:`];
+    for (const e of ag) lines.push(`• ${e.allDay || !e.start ? 'All day' : P.timeWord(e.start)}${e.end ? ' to ' + P.timeWord(e.end) : ''}: ${e.title}`);
+    if (!ag.length) lines.push('• No events.');
+    lines.push(open.length ? `Tasks (${open.length} open${v.tasksDone ? ', ' + v.tasksDone + ' done' : ''}): ${open.slice(0, 5).map((t) => t.text + (t.slot ? ' ' + P.timeWord(t.slot) : '')).join('; ')}${open.length > 5 ? '…' : ''}.` : (v.tasks.length ? `All ${v.tasks.length} tasks are done.` : 'No tasks.'));
+    if (late.length) lines.push(`${late.length} overdue: ${late.slice(0, 3).map((t) => t.text).join('; ')}.`);
+    if (v.note) lines.push('Note: ' + str(v.note.split('\n')[0], 120));
+    return rep(lines.join('\n') + '\nFrom the Planner on this phone.', { intent: 'action_plan_today', sources: ['planner.agora.v2 on this phone'], speak: `${rel === 'today' ? 'Today' : 'Tomorrow'} you have ${ag.length} ${ag.length === 1 ? 'event' : 'events'} and ${open.length} open ${open.length === 1 ? 'task' : 'tasks'}.` });
   }
   const fail = (id) => rep('I could not save that on this phone (storage is full or blocked). Nothing was changed.', { ok: false, intent: 'action_' + id });
 
@@ -136,6 +177,8 @@ export function createActions(opts) {
       case 'planner_goal': return plannerGoal(a.text);
       case 'planner_task': return plannerTask(a.text);
       case 'planner_note': return plannerNote(a.text);
+      case 'planner_event': return plannerEvent(a.text);
+      case 'plan_today': return planToday(a.which);
       case 'compass_done': return compassDone(a.which);
       case 'import_memory': { if (!o.mem) return rep('Memory is not available here.', { ok: false, intent: 'action_import_memory' }); const r = o.mem.importJson(a.text, { mode: 'merge' }); return r.ok ? rep(`Imported ${r.added} ${r.added === 1 ? 'memory' : 'memories'} (${r.skipped} already there or skipped).`, { intent: 'action_import_memory' }) : rep(r.reason || 'That file did not work.', { ok: false, intent: 'action_import_memory' }); }
       case 'copy_briefing': return copyBriefing();
@@ -145,14 +188,18 @@ export function createActions(opts) {
   }
   const summaryOf = (id, a) => {
     const t = str(a.text, 160);
-    return { planner_goal: `Set today's goal in your Planner to "${t}"`, planner_task: `Add "${t}" to today's Planner tasks`, planner_note: `Add "${t}" to today's Planner note`, compass_done: `Mark ${a.which ? '"' + str(a.which, 60) + '"' : 'the top Compass item'} done`, import_memory: 'Merge this memory file into what Jarvis remembers' }[id] || id;
+    return { planner_goal: `Set today's goal in your Planner to "${t}"`, planner_task: `Add "${t}" to today's Planner tasks`, planner_note: `Add "${t}" to today's Planner note`, planner_event: `Add the event "${t}" to your Planner`, compass_done: `Mark ${a.which ? '"' + str(a.which, 60) + '"' : 'the top Compass item'} done`, import_memory: 'Merge this memory file into what Jarvis remembers' }[id] || id;
   };
   async function plan(id, args) {
     const def = DEFS.find((d) => d.id === id);
     if (!def) return rep('I do not have that action.', { ok: false, intent: 'action_unknown' });
     const a = isObj(args) ? args : {};
     if (!def.write) { pending = null; return run(id, a); }
-    if ((id === 'planner_goal' || id === 'planner_task' || id === 'planner_note') && !str(a.text, 200)) return rep(`What should the ${id === 'planner_goal' ? 'goal' : id === 'planner_task' ? 'task' : 'note'} say? For example: "${id === 'planner_goal' ? 'set my goal for today to stay flat before 10' : id === 'planner_task' ? 'add task review levels 09:30' : 'add a note: levels held'}".`, { ok: false, intent: 'action_' + id });
+    if ((id === 'planner_goal' || id === 'planner_task' || id === 'planner_note' || id === 'planner_event') && !str(a.text, 200)) {
+      const what = { planner_goal: 'goal', planner_task: 'task', planner_event: 'event', planner_note: 'note' }[id];
+      const eg = { planner_goal: 'set my goal for today to stay flat before 10', planner_task: 'add task review levels 09:30', planner_event: 'add event Fri 9am journal review', planner_note: 'add a note: levels held' }[id];
+      return rep(`What should the ${what} say? For example: "${eg}".`, { ok: false, intent: 'action_' + id });
+    }
     const summary = summaryOf(id, a);
     pending = { token: 'p' + nowMs().toString(36), id, args: a, summary, at: nowMs() };
     return rep(`${summary}? Say yes or no.`, { intent: 'action_confirm', speak: `${summary}? Say yes or no.`, pending: { token: pending.token, id, summary } });
