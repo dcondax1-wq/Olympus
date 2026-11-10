@@ -62,7 +62,7 @@ function renderNext() {
   for (const e of up) { const li = h('li', 'nx ' + (e.closed ? 'closed' : e.impact)); li.appendChild(h('b', '', e.title)); li.appendChild(h('small', 'note', `${C.dayWord(e.day)}${e.time ? ' · ' + C.hmWord(e.time) : ''} · ${e.cd.word}${e.verify ? ' · check date' : ''}`)); box.appendChild(li); }
   if (!up.length) box.appendChild(h('li', 'note', `No event in these 14 days. The list runs to ${C.lastDate(S.data.n) ? C.dayWord(C.lastDate(S.data.n)) : 'nowhere yet'}.`));
   const ud = $('undated'); clear(ud);
-  for (const u of S.data.n.undated) { const li = h('li', 'nx ' + u.impact); li.appendChild(h('b', '', u.title)); li.appendChild(h('small', 'note', `Date not in the list yet (${u.approx}). Check ${u.src.split(':')[0]}.`)); ud.appendChild(li); }
+  for (const u of S.data.n.undated) { const li = h('li', 'nx ' + u.impact); li.appendChild(h('b', '', u.title)); li.appendChild(h('small', 'note', `No date in the list yet (${u.approx}). Confirm at: ${u.confirm || u.src}.`)); ud.appendChild(li); }
   $('undatedCard').hidden = !S.data.n.undated.length;
   $('notes').textContent = `${C.staleWord(S.data.n.updated, S.today)} The list ends ${C.lastDate(S.data.n) ? C.dayWord(C.lastDate(S.data.n)) : 'nowhere'}.`;
 }
