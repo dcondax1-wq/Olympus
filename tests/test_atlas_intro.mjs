@@ -4,7 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'tools', 'web_public');
 const html = fs.readFileSync(path.join(root, 'atlas', 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'atlas', 'atlas.css'), 'utf8');
 const intro = fs.readFileSync(path.join(root, 'atlas', 'atlas-intro.js'), 'utf8');

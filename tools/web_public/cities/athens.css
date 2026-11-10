@@ -44,3 +44,28 @@
 .athens-open body>*:not(.ath):not(script){visibility:hidden}
 @media (min-width:700px){.ath-card,.ath-tourbar,.ath-dock{left:50%;right:auto;width:520px;transform:translateX(-50%)}.ath-sheet{left:50%;right:auto;width:560px;transform:translateX(-50%)}.ath-mini{top:78px}}
 @media (prefers-reduced-motion:reduce){.ath-mini{transition:none}}
+
+.ath-today{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 64px);width:calc(100% - 184px);max-width:260px;border:1px solid var(--bronze);background:var(--panel);border-radius:14px;overflow:hidden}
+.ath-today[hidden],.ath-first[hidden]{display:none}
+.ath-today>button{width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border:0;background:transparent;color:var(--text)}
+.ath-today b{font:700 15px var(--serif)}.ath-today i{font:12px var(--sans);color:var(--gold);font-style:normal}
+.ath-today div{padding:0 12px 10px}.ath-today p{margin:0 0 5px;font-size:12.5px;line-height:1.35;color:var(--sub)}.ath-today.min div{display:none}.ath-today.demo>button b::after{content:' (example)';font:12px var(--sans);color:var(--sub);font-weight:400}
+.ath.bigmap .ath-today{display:none}
+.ath-first{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);padding:14px;border:1px solid var(--gold);background:var(--panel);border-radius:18px;box-shadow:0 10px 28px rgba(0,0,0,.45);z-index:6}
+.ath-first small{color:var(--gold);font:600 12px var(--sans)}.ath-first h3{margin:4px 0;font:700 20px var(--serif)}.ath-first p{margin:0 0 10px;color:var(--sub);font-size:14px;line-height:1.4}
+.ath-need{color:#f1d9a0!important;border-left:3px solid #e8bb55;padding-left:10px}.ath-calm{color:var(--muted,#9a8f7d)!important}
+.ath-toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);max-width:80%;padding:10px 14px;border:1px solid var(--line);background:var(--panel);border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:7;text-align:center}.ath-toast.on{opacity:1}
+@media (min-width:700px){.ath-first{left:50%;right:auto;width:520px;transform:translateX(-50%)}}
+
+.ath-photobar{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);display:flex;gap:8px;z-index:8}.ath-photobar[hidden]{display:none}
+.ath-photobar button{flex:1;min-height:50px;border-radius:14px;border:1px solid var(--bronze);background:var(--panel);color:var(--text);font:700 16px var(--serif)}.ath-photobar .ath-go{background:var(--gold);color:#14110e;border-color:var(--gold)}
+.ath.photo .ath-top,.ath.photo .ath-dock,.ath.photo .ath-mini,.ath.photo .ath-labels,.ath.photo .ath-today,.ath.photo .ath-card,.ath.photo .ath-tourbar,.ath.photo .ath-sheet,.ath.photo .ath-first{display:none}
+.ath.photo .ath-toast{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
+.ath-int{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);padding:14px;border:1px solid var(--bronze);background:var(--panel);border-radius:18px;z-index:6;box-shadow:0 10px 28px rgba(0,0,0,.45)}
+.ath-int[hidden]{display:none}.ath-int h3{margin:6px 0 4px;font:700 22px var(--serif)}.ath-int p{margin:0 0 8px;color:var(--sub);font-size:14px;line-height:1.4}
+.ath-int.flat{top:calc(env(safe-area-inset-top,0px) + 80px);bottom:auto;background:linear-gradient(180deg,#e9dfca,#cdbf9f);color:#2a231b;border-color:var(--c)}.ath-int.flat p{color:#4b4034}.ath-int.flat .ath-need{color:#6b4a14!important;border-color:#b8862a}.ath-int.flat .ath-calm{color:#5d5242!important}
+.ath-int .ath-btns>*{flex:1;min-height:46px;display:grid;place-items:center;border-radius:12px;border:1px solid var(--bronze);background:#26211b;color:var(--text);font:600 15px var(--serif);text-decoration:none}.ath-int .ath-go{background:var(--gold);color:#14110e;border-color:var(--gold)}
+.ath.inside .ath-dock,.ath.inside .ath-mini,.ath.inside .ath-labels,.ath.inside .ath-today,.ath.inside .ath-card,.ath.inside .ath-tourbar,.ath.inside .ath-first{display:none}
+.ath.hall .ath-top{background:linear-gradient(180deg,rgba(20,17,14,.6),rgba(20,17,14,0))}
+@media (max-height:700px){.ath-today{top:calc(env(safe-area-inset-top,0px) + 60px)}.ath-card h3{font-size:18px}.ath-card p{margin-bottom:8px;font-size:13px}.ath-dock button{min-height:50px}.ath-card,.ath-tourbar{bottom:calc(env(safe-area-inset-bottom,0px) + 76px)}}
+.ath-today b{white-space:nowrap}.ath-today.demo>button b::after{content:' (example)';font-size:11px}

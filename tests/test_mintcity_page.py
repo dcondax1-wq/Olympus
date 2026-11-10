@@ -71,6 +71,9 @@ import(process.argv[2]).then((C) => {
   const a = C.rng(5), b = C.rng(5), x = []; for (let i = 0; i < 4; i++) x.push(a() === b()); o.rng = [x.every(Boolean), C.seedOf('a') !== C.seedOf('b'), (() => { const r = C.rng(1); for (let i = 0; i < 200; i++) { const v = r(); if (v < 0 || v >= 1) return false; } return true; })()];
   const card = C.jarvisCard(A, 1793394000000), cardS = C.jarvisCard(five([1, 2, 3, 4, 5], 'sample'), 0);
   o.card = [card.name, card.status.level, card.kpis.length, card.kpis[0].value, card.lines.length, Number.isInteger(card.t), cardS.status.level, cardS.status.label];
+  const nr = (id, lo, b, hi) => C.normStream(id, { id, status: 'ok', age_min: 5, headline: { text: id }, usd_month: { low: lo, base: b, high: hi }, items: [] });
+  const nn = C.combine([nr('chrysos', -42, 1339, 2235), nr('mercury', 5, 20, 30)]);
+  o.neg = [C.rangeText(-42, 2235), C.rangeText(0, 510), nn.low, nn.text, nn.text.includes('$-')];
   console.log(JSON.stringify(o));
 });
 """
@@ -89,6 +92,8 @@ def test_city():
           o["streams"] == [",".join(IDS), True, "No data yet for this stream.", "The treasury tower", "../sibyl/", "none", None], o["streams"])
     check("b. heights are linear in the estimate: the biggest stream is the tallest (15), no estimate is the lowest (1.6), equal streams are equal, order follows the dollars", o["heights"][0] == [15, 1.6, 1.68, 2.71, 1.97] and all(o["heights"][1:]), o["heights"])
     check("b. the golden pillar follows the combined estimate: 6 m with no estimate, 30 m from $3,000 a month, 18 m at $1,500, never beyond 30 m, taller for a bigger estimate", o["pillar"] == [6, 6, 30, 30, 18, True], o["pillar"])
+    check("b. a NEGATIVE low end: 'a loss of $42 a month to $2,235 a month', the combined sentence says 'you could lose about $37 a month', the low end keeps its sign, never '$-'",
+          o["neg"][0] == "a loss of $42 a month to $2,235 a month" and o["neg"][1] == "$0 to $510 a month" and o["neg"][2] == -37 and "you could lose about $37 a month" in o["neg"][3] and o["neg"][4] is False, o["neg"])
     check("b. the combined estimate is the sum ($1,495), says 'estimate', examples are flagged ('Example numbers, not real finds'), no streams -> no number and a plain sentence",
           o["combine"][0] == 1495 and o["combine"][1] == 5 and o["combine"][2] is False and "an estimate" in o["combine"][3] and o["combine"][4] is True and o["combine"][5].startswith("Example") and o["combine"][6] == 0 and o["combine"][7].startswith("No estimate yet"), o["combine"])
     check("b. the city plan: the same plan every time (seeded), fewer buildings per tier (high > mid > low), 400+ on high and 150+ on low, 260 filler blocks, the pillar from the estimate, every district has a real set of buildings",
@@ -128,7 +133,7 @@ def test_page():
               groups: document.querySelectorAll('#map g').length, chips: [...document.querySelectorAll('#chips button')].map((b) => b.textContent), scene: window.MINTCITY.S.scene, sheet: !document.querySelector('#sheet').hidden,
               map: getComputedStyle(document.querySelector('#mapWrap')).visibility, font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor })""")
             check("c. DEMO (the fixture, flat): the chip, the golden pillar says $1,495 a month, EXAMPLE ESTIMATE, five districts in the list with their dollars and an Open link each to the right app, the 2D map with five tappable districts, five district chips (no tours without 3D)",
-                  d["demo"] and d["base"] == "$1,495" and d["pill"] == "EXAMPLE ESTIMATE" and "$0 to $2,990" in d["text"] and d["rows"] == ["Chrysos", "$1,339", "Mercury", "no estimate", "Sibyl", "$8", "Oikos", "$111", "Arbiter", "$37"]
+                  d["demo"] and d["base"] == "$1,495" and d["pill"] == "EXAMPLE ESTIMATE" and "you could lose about $42 a month" in d["text"] and "$2,547" in d["text"] and d["rows"] == ["Chrysos", "$1,339", "Mercury", "no estimate", "Sibyl", "$8", "Oikos", "$111", "Arbiter", "$37"]
                   and d["links"] == [f"../{i}/" for i in IDS] and d["labels"][0] == "Open the Chrysos app" and d["groups"] == 5 and d["chips"] == ["Chrysos", "Mercury", "Sibyl", "Oikos", "Arbiter"] and d["scene"] == "2d" and not d["sheet"] and d["map"] == "visible", d)
             check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
             AK.shot(p, "mintcity-2d")

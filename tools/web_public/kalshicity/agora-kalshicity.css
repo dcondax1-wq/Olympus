@@ -26,3 +26,7 @@ button:focus-visible{outline-color:#e0b060}
 .city-mini svg{background:radial-gradient(circle,#2a2118,#1a1510)}
 .sheet h2{font:600 19px/1.25 var(--ag-serif);text-transform:none}
 @media (max-width:480px){.district-control p{display:none}}
+.world-card[hidden]{display:none}
+.world-find{width:100%;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid #3a3228;background:#14110e;color:#f3ece0;font:16px var(--ag-sans);margin:6px 0 4px}
+.world-key{margin:4px 0 8px;font-size:13px;line-height:1.4;color:#cfc4b2}
+.world-bands{color:#cfc4b2}

@@ -30,6 +30,10 @@
 
   // ------------------------------------------------------------------ the per-app flavour: [scene, tagline, first sound]
   var FLAVOUR = {
+    helios: ['rings', 'Rise and plan', 'tick'],
+    harmonia: ['bars', 'Weigh it up', 'tap'],
+    pheme: ['threads', 'Hear the word', 'tick'],
+    compass: ['rings', 'Find north', 'tick'],
     kairos: ['rings', 'Find the right moment', 'tick'],
     mint: ['columns', 'Strike the coin', 'tap'],
     mintcity: ['columns', 'Raise the city', 'tick'],

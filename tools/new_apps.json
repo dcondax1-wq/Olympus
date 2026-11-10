@@ -387,6 +387,78 @@
     "kind": "sunburst",
     "ms": 1000
    }
+  },
+  {
+   "id": "compass",
+   "name": "Compass",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The next best action: at most five things for today, with why",
+   "glyph": "C",
+   "ambient": "chimes",
+   "flavour": [
+    "rings",
+    "Find north",
+    "tick"
+   ],
+   "transition": {
+    "kind": "sunburst",
+    "ms": 1000
+   }
+  },
+  {
+   "id": "pheme",
+   "name": "Pheme",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The word on the street: releases, and NQ's past moves on them",
+   "glyph": "Ξ",
+   "ambient": "chimes",
+   "flavour": [
+    "threads",
+    "Hear the word",
+    "tick"
+   ],
+   "transition": {
+    "kind": "tiles",
+    "ms": 800
+   }
+  },
+  {
+   "id": "harmonia",
+   "name": "Harmonia",
+   "group": "money",
+   "accent": "#c8a24a",
+   "description": "The balance: what leans on the NQ bots, and what is left",
+   "glyph": "H",
+   "ambient": "coins",
+   "flavour": [
+    "bars",
+    "Weigh it up",
+    "tap"
+   ],
+   "transition": {
+    "kind": "waves",
+    "ms": 1000
+   }
+  },
+  {
+   "id": "helios",
+   "name": "Helios",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The morning briefing: today, drawdown, deals, plan",
+   "glyph": "S",
+   "ambient": "chimes",
+   "flavour": [
+    "rings",
+    "Rise and plan",
+    "tick"
+   ],
+   "transition": {
+    "kind": "sunburst",
+    "ms": 1000
+   }
   }
  ],
  "pending": [],

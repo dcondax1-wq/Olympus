@@ -5,20 +5,21 @@ const O = () => window.OLYMPUS || null;
 
 export async function openAthens() {
   if (session) return session;
-  const [{ AthensUI }, { Athens }] = await Promise.all([import('./athens-ui.js?v=t1'), import('./athens.js?v=t1')]);
+  const [{ AthensUI }, { Athens }, { loadLive }] = await Promise.all([import('./athens-ui.js?v=t3'), import('./athens.js?v=t3'), import('./athens-data.js?v=t3')]);
   if (!document.querySelector('link[data-athens-css]')) {
     const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens.css?v=t1', import.meta.url).href; l.dataset.athensCss = '1'; document.head.append(l);
     await new Promise((r) => { l.onload = l.onerror = r; setTimeout(r, 1500); });
   }
   const q = new URLSearchParams(location.search), lite = !!(O() && O().lite && O().lite()), tier = q.get('q') === 'low' || lite ? 'low' : q.get('q') === 'ultra' ? 'ultra' : 'high';
-  const ui = new AthensUI(undefined, { onClose: closeAthens }).mount();
+  const reduced0 = !!(O() && O().reduced && O().reduced()), ui = new AthensUI(undefined, { onClose: closeAthens, reduced: reduced0, first: q.get('first') === '0' ? false : q.get('first') === '1' ? true : undefined }).mount();
   session = { ui, scene: null, raf: 0, last: 0, closed: false };
   document.documentElement.classList.add('athens-open'); if (O() && O().covered) O().covered(true);
   await new Promise((r) => setTimeout(r, 40));
   try {
     const reduced = !!(O() && O().reduced && O().reduced());
-    const scene = new Athens(ui.canvas, { tier, reduced, dusk: false }); scene.resize(); ui.attach(scene); session.scene = scene;
-    if (q.get('dusk') === '1') ui.act('time');
+    const scene = new Athens(ui.canvas, { tier, reduced }); scene.resize(); ui.attach(scene); session.scene = scene;
+    if (q.get('light') === 'day' || q.get('light') === 'dusk') { ui.light = q.get('light'); ui.applyLight(); }
+    loadLive().then((live) => { if (!session || session.closed) return; ui.setLive(live); ui.firstVisit(); window.__athens && (window.__athens.live = live); }).catch(() => { ui.firstVisit(); });
     window.__athens = { scene, ui, calls: () => scene.calls, tris: () => scene.trisDrawn, houses: scene.houseCount, tier };
     addEventListener('resize', onResize);
     const loop = (now) => {

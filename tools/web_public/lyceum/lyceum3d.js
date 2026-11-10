@@ -2,6 +2,7 @@
 // (the empty places show a bare bronze base), and from the fourth rank each new column gets an olive laurel. A lectern waits at the far end. Warm 3000 K light, warm fog, plain lit materials.
 // If WebGL is missing the canvas is hidden and the page works without it. Reduced motion or LITE draws one still frame; a hidden tab draws nothing. three.js is Jarvis's copy.
 import * as THREE from '../jarvis/three.module.min.js';
+import { build as shape, bake, dispose } from '../olympus/shapes3d.js';       // the AGORA shapes library: the Doric column (fluted shaft, echinus, abacus) baked into one mesh per column
 
 const O = window.OLYMPUS || null;
 const cv = document.getElementById('stage'), box = cv ? cv.parentElement : null;
@@ -29,13 +30,13 @@ function build() {
   const top = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.08, 0.8), bronze); top.position.set(0, 1.28, -7.6); top.rotation.x = -0.18; scene.add(top);
   // eight column places: four rows deep, left and right; the order of the ranks goes front to back, left then right
   const H = 3.4, laurel = new THREE.MeshStandardMaterial({ color: 0x7f8a52, roughness: 0.7 });
+  const lib = shape('doric', { lite, steps: false, shaft: 3.2 }), colGeo = bake(lib).geometry, colMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, metalness: 0.02 }); dispose(lib);   // ONE geometry, eight columns
   for (let n = 0; n < 8; n++) {
     const row = n >> 1, x = (n & 1 ? 1 : -1) * 2.5, z = 2.2 - row * 2.6, g = new THREE.Group(); g.position.set(x, 0, z);
     const base = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.5, 0.18, 24), bronze); base.position.y = 0.09; g.add(base);
     const col = new THREE.Group();
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.36, H, 14), marble); shaft.position.y = 0.18 + H / 2; col.add(shaft);
-    const cap = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.2, 0.85), marble); cap.position.y = 0.18 + H + 0.1; col.add(cap);
-    const wreath = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.06, 8, 24), laurel); wreath.rotation.x = Math.PI / 2; wreath.position.y = 0.18 + H - 0.35; col.add(wreath);
+    const shaft = new THREE.Mesh(colGeo, colMat); shaft.position.y = 0.18; shaft.scale.set(1.25, 1, 1.25); col.add(shaft);           // fluted shaft + capital from the library
+    const wreath = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.06, 6, 16), laurel); wreath.rotation.x = Math.PI / 2; wreath.position.y = 0.18 + H - 0.35; col.add(wreath);
     g.add(col); scene.add(g);
     st.slots.push({ g, col, wreath, k: 1 });
   }

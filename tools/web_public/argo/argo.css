@@ -81,8 +81,8 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .step.done .n { color: var(--ag-olive); }
 .flds { display: grid; gap: 10px; }
 .fld { display: grid; gap: 4px; min-width: 0; font-size: 13px; color: var(--ag-soft); }
-.fld input, .fld select, .fld textarea { min-height: 44px; width: 100%; padding: 0 12px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-text); font: 600 15px var(--ag-sans); }
-.fld textarea { padding: 10px 12px; font: 500 12px/1.4 var(--ag-sans); min-height: 120px; }
+.fld input, .fld select, .fld textarea { min-height: 44px; width: 100%; padding: 0 12px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-text); font: 600 16px var(--ag-sans); }
+.fld textarea { padding: 10px 12px; font: 500 16px/1.4 var(--ag-sans); min-height: 120px; }
 .edrow { display: grid; grid-template-columns: minmax(0, 1fr) 96px 44px; gap: 8px; align-items: end; }
 .edrow .fld input { padding: 0 10px; }
 .btn.primary { background: linear-gradient(180deg, #d4b05a, var(--ag-gold)); color: #1b1610; border-color: #e2c47a; font-weight: 700; }

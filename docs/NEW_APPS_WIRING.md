@@ -285,7 +285,9 @@ As with Nike, publishing `payouts` (dated) in `home.json` is what makes the mone
 3. `tools/build_web_dashboard.py` app tuple: add `"argo"`.
 4. `sw.js` OTHER_APPS: `'argo/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
 5. `python tools/apps_list_build.py` then `--check`.
-6. `olympus/intro-app.js` FLAVOUR: `argo: ['waves', 'Set sail', 'tap'],` `jarvis/transitions.js` REGISTRY: `argo: { kind: 'waves', ms: 1000 },`
+6. `olympus/intro-app.js` FLAVOUR: `argo: ['rings', 'Set sail', 'tap'],` (the intro scene `waves` does not exist: the list uses `rings`) `jarvis/transitions.js` REGISTRY: `argo: { kind: 'waves', ms: 1000 },`
+
+6. `olympus/intro-app.js` FLAVOUR: `argo: ['rings', 'Set sail', 'tap'],` `jarvis/transitions.js` REGISTRY: `argo: { kind: 'waves', ms: 1000 },`
 7. Tests: `tests.test_argo_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_app_intro`, `tests.test_jarvis_transitions`.
 
 # Wiring MINT CITY, the money machines as a 3D city (2026-11-10)
@@ -374,3 +376,60 @@ App `kairos` in `tools/web_public/kairos/` (the New York trading day on a 24 h r
 7. Tests: `python -X utf8 -m tests.test_kairos_page` (`--static` skips the browser), then `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
 
 (Moirai needs no new wiring for the honesty upgrade; it is the same app folder.)
+
+`events.json` is GENERATED: `python tools/money/pythia_dates.py` rebuilds it from rules (claims, option expiry, quad witching, the roll, holidays, the NFP rule) and from the repo's saved calendar `data/news/events.csv` (FOMC, CPI, PPI, ...; refresh that with `data/build_news.py` / the news hub, then rerun the script). The range and as-of date live in the file's `generated` block (edit them to extend the window). `--check` (run by `tests.test_pythia_page`) fails when the file is out of step. Dates the repo does not carry stay in `undated` with the name of the official calendar (text only). Never hand-edit a date into `events.json`.
+
+---
+# Wiring COMPASS (the next best action, 2026-11-10)
+
+App `compass` in `tools/web_public/compass/` (3D rose via the render core: `rose.js` + `needleload.js`). Reads `../home.json`, `../money/index.json`, `../ledger/rules.json`, `../odeon/trades.json`; on the phone it READS `journal.v1` and `ledger.v1` and writes only `compass.state.v1` (Done / Snooze). Falls back to `fixture.json` (DEMO). Test `tests/test_compass_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('compass', 'Compass', 'trading', '#c8a24a', 'The next best action: up to five, ranked, with a $ or free tag', { glyph: 'C' }),`
+2. `olympus/olympus.js` APPS: `compass: ['Compass', 'C', '#c8a24a'],` AMBIENT: `compass: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"compass"` (no extra data file).
+4. `sw.js` OTHER_APPS: `'compass/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `olympus/intro-app.js` FLAVOUR: `compass: ['rings', 'Find your bearing', 'tap'],` and `jarvis/transitions.js` REGISTRY: `compass: { kind: 'sunburst', ms: 1000 },`
+7. Tests: `tests.test_compass_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+Optional, outside this app: the Ledger page can store `lastExport` (ISO text or epoch) in `ledger.v1` when Export JSON is tapped; until then Compass says "no export on record".
+
+# PHEME: the word on the street (2026-11-10)
+
+App `pheme` (`tools/web_public/pheme/`; the 3D marble scroll rack is `phemerack.js`, its own module tag). Reads only `./stats.json` (built OFFLINE by `python tools/pheme_build.py` from `data/news/events.csv`, `data/news/hub.json` when newer, and the 5m NQ file `data/NQ_5m.csv`; stdlib, `--check`, `--selftest`) and its `fixture.json` (DEMO). HISTORY ONLY: how far NQ travelled on the last 8 CPI / jobs / PPI / FOMC days (points and $ for one MNQ micro, n shown), never a forecast. Test `tests/test_pheme_page.py` (it re-reads the raw 5m file to check real rows). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`. The row is already in `tools/new_apps.json` (the lead runs `python tools/wire_new_apps.py --apply`).
+
+## 1. `jarvis/apps.js` BUILT_INS: `app('pheme', 'Pheme', 'trading', '#c8a24a', 'The word on the street: releases, and NQ\'s past moves on them', { glyph: 'Ξ' }),`
+## 2. `olympus/olympus.js`: APPS `pheme: ['Pheme', 'Ξ', '#c8a24a'],` and AMBIENT `pheme: 'chimes',`
+## 3. `tools/build_web_dashboard.py` app tuple (~line 1212): add `"pheme"`. The build must copy `pheme/stats.json` with the folder (a plain static file). Rebuild it with `python tools/pheme_build.py` after `data/news/events.csv` or `data/NQ_5m.csv` change (`--check` fails when it is stale; the test runs it).
+## 4. `tools/web_public/sw.js`: `OTHER_APPS` add `'pheme/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+## 5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+## 6. Shared lines
+`olympus/intro-app.js` FLAVOUR: `pheme: ['threads', 'Hear the word', 'tick'],`
+`jarvis/transitions.js` REGISTRY: `pheme: { kind: 'tiles', ms: 800 },`
+## 7. Tests after wiring: `tests.test_pheme_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`.
+
+---
+# Wiring HARMONIA (the balance, 2026-11-10)
+
+App `harmonia` in `tools/web_public/harmonia/` (3D balance beam via the render core: `beam.js` + `beamload.js`). Reads `../home.json` and `../money/index.json`; falls back to `fixture.json` (DEMO). Test `tests/test_harmonia_page.py`.
+The row is already in `tools/new_apps.json` (group money, accent `#c8a24a`, glyph `H`, ambient `coins`, flavour `['bars', 'Weigh it up', 'tap']`, transition `{ kind: 'waves', ms: 1000 }`): the lead runs `python tools/wire_new_apps.py --apply`, which writes the six files:
+
+1. `jarvis/apps.js` BUILT_INS row  2. `olympus/olympus.js` APPS + AMBIENT  3. `tools/build_web_dashboard.py` app tuple  4. `sw.js` OTHER_APPS  5. `olympus/intro-app.js` FLAVOUR  6. `jarvis/transitions.js` REGISTRY.
+Then bump `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and run `python tools/apps_list_build.py --check`.
+Tests after wiring: `tests.test_harmonia_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+## 9. Second batch (2026-11-10): 41 shapes, scene builder, collection, `OLYMPUS_SHAPES.mount`
+- `olympus/shapes3d.js` now holds **41 shapes in five categories** (Architecture, Objects, Beasts, Money, Sea): the first 19 plus olivetree, chariot, cornucopia, kylix, redvase, bust, anchor, stele, tetradrachm (spinning), harp, caduceus, pegasus, sandal, bow, swordspear, trophy, goldbars, vaultdoor, fountain, stoa, dolphin, mosaic. The owl and the lyre were redrawn. Same contract: HD + LITE, instanced, warm only, `build(id, { lite, materials, size })`. `SHAPES[i].group` is now the category.
+- New in the library: `bake(group)` / `bakedShape(id, { size })` merge a whole LITE shape into ONE mesh with vertex colours (one draw call), used by the collection (41 shapes, under 40,000 triangles, 42 draw calls).
+- New `olympus/shapes2d.js` (pure data, one 64 x 64 line drawing per shape) and `olympus/shapes-mount.js`: after `<script type="module" src="../olympus/shapes-mount.js"></script>` any page has
+  `OLYMPUS_SHAPES.mount(canvasOrElement, 'owl', { lite, spin, size, quality, label, values, tones })` -> `{ ok, id, flat, set(id), stop() }`. It uses the render core and warm light; with no WebGL (or `?flat=1`) the element gets the shape's drawing and name instead, so the spot is never blank. `OLYMPUS_SHAPES.ids / shapes` list what exists. Demo page: `olympus/shapes-demo.html`.
+- Gallery: category chips (Architecture, Objects, Beasts, Money, Sea), tabs Shelf / Build / Collection. **Scene builder**: in Build, tap up to 6 shapes on the shelf, they stand on a ring of one big pedestal; Share copies `...gallery/#b=owl,temple,lyre` and opening that link restores the layout (`?view=collection` opens the collection). **Collection**: all 41 at once in rings (LITE, baked), tap one to name it and open it on the pedestal.
+- Wiring is unchanged by the second batch (same `gallery` rows as sections 1 to 7). `sw.js` precache: also add `olympus/shapes3d.js`, `shapes2d.js`, `shapes-mount.js`, `gallery/stage.js`, `gallery/gallerycore.js`.
+
+---
+# Wiring HELIOS (the morning briefing, 2026-11-10)
+
+App `helios` in `tools/web_public/helios/` (3D sun over columns via the render core: `sun.js` + `sunload.js`). Reads `../pythia/events.json`, `../home.json`, `../money/index.json`; on the phone it READS the quiz progress `lyceum.v1` (never written); falls back to `fixture.json` (DEMO). Test `tests/test_helios_page.py`
+(its light copies of Pythia's day rules and Compass's urgent rules are checked against the real `pythiacore.js` and `compasscore.js`: if either changes, that test tells you).
+The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `S`, ambient `chimes`, flavour `['rings', 'Rise and plan', 'tick']`, transition `{ kind: 'sunburst', ms: 1000 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and runs `python tools/apps_list_build.py --check`.
+Tests after wiring: `tests.test_helios_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.

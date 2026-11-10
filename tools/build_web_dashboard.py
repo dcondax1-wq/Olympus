@@ -1209,7 +1209,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # it opens; published with every build so a publish never drops them
     # 2026-11-03: the OLYMPUS apps Jarvis opens full screen: Data City, Mind (the Obsidian brain), the strategy tree ...;
     # olympus/ is their shared kit (tokens, fonts, the loading veil, the one 3D-quality setting: docs/OLYMPUS_DESIGN.md)
-    for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "atlascity", "pc", "delphi", "pnyx", "planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos"):
+    for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "atlascity", "pc", "delphi", "pnyx", "planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos", "compass", "pheme", "harmonia", "helios"):
         src_dir = os.path.join(WEB, app)
         if os.path.isdir(src_dir):
             os.makedirs(os.path.join(out, app), exist_ok=True)
@@ -1300,6 +1300,18 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             n_rc += 1
     if n_rc:
         print(f"  recaps: {n_rc} PNGs -> recaps/")
+    # the money machines (tools/money_engine.py + tools/money_publish.py, 2026-11-10): paper/sample output published to <site>/money/ so
+    # Mint, Stoa, Mint City and the five scanner pages never open blank. Never fatal: a failure only leaves their own fixtures in use.
+    try:
+        import subprocess, tempfile
+        with tempfile.TemporaryDirectory() as mtmp:
+            r1 = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "money_engine.py"), "--fixture", "--out", mtmp],
+                                capture_output=True, text=True, timeout=180)
+            r2 = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "money_publish.py"), "--site", out, "--src", mtmp, "--quiet"],
+                                capture_output=True, text=True, timeout=60)
+            print(f"  money: engine rc={r1.returncode}, publish rc={r2.returncode} -> money/*.json (sample data until the PC runs RUN_MONEY.bat)")
+    except Exception as e:  # noqa: BLE001
+        print(f"  money: skipped ({e})")
     open(os.path.join(out, ".nojekyll"), "w").close()
     kb = os.path.getsize(os.path.join(out, "data.json")) // 1024
     print(f"site -> {out}: data.json {kb} KB, {len(ledger)} paper trades, {len(data['trades'])} replay trades, "

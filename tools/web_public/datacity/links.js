@@ -1,11 +1,11 @@
-// The link between two compared ideas (v3): a glowing arc from one roof to the other, cyan at A and violet at B, with light running along it.
+// The link between two compared ideas (v3): an arc from one roof to the other, gold at A and terracotta at B.
 // One LineSegments (48 segments) + one point sprite pair, 2 draw calls, hidden until set(a, b).
 import * as THREE from '../jarvis/three.module.min.js';
 
 const SEG = 48;
 const VS = `attribute float aT; uniform float uTime; varying float vT; varying float vA;
 void main(){ vT = aT; vA = 0.55 + 0.45 * step(0.5, fract(aT * 14.0 - uTime * 1.2)); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-const FS = `varying float vT; varying float vA; void main(){ vec3 c = mix(vec3(0.25, 0.9, 1.0), vec3(0.72, 0.55, 1.0), vT); gl_FragColor = vec4(c * vA * 1.6, 1.0); }`;
+const FS = `varying float vT; varying float vA; void main(){ vec3 c = mix(vec3(0.78, 0.64, 0.29), vec3(0.79, 0.42, 0.29), vT); gl_FragColor = vec4(c * vA * 1.0, 1.0); }`;
 
 export class Link {
   constructor() {

@@ -33,7 +33,7 @@ def main(argv) -> int:
         return 3
     for n in names:
         getattr(mod, n)()
-    res = list(getattr(mod, "RES", []) or [])
+    res = list(getattr(mod, "RES", None) or getattr(getattr(mod, "AK", None), "RES", None) or [])      # the AGORA suites keep their results in tests/agora_kit.RES
     print(f"\n{argv[0]} static: {sum(res)}/{len(res)} " + ("ALL PASS" if res and all(res) else "FAILED"))
     return 0 if res and all(res) else 1
 

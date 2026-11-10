@@ -29,7 +29,7 @@ async function getJSON(url, ms = 7000) {
 }
 const dollars = (x) => usd(x);
 const smoney = (x) => (x == null ? '-' : `${x < 0 ? '-' : '+'}$${Math.abs(x).toFixed(2)}`);
-const dotOf = (e) => { const d = h('span', 'dot'); d.style.background = e.small ? '#8b93a7' : STATUS_COLOR[e.status]; return d; };
+const dotOf = (e) => { const d = h('span', 'dot'); d.style.background = e.small ? '#8a7f6e' : STATUS_COLOR[e.status]; return d; };
 
 // ------------------------------------------------------------------------------------------------ the top card
 function renderTop() {
@@ -102,7 +102,7 @@ function renderMiniMap() {
     elements.push(node('path', { d:`M ${x0} ${y0} L ${x1} ${y1}`, 'data-kind':road.kind, opacity:0.44 }));
   });
   places.forEach((d) => { const [cx,cy] = at(d.cx, d.cz);
-    elements.push(node('circle', { cx, cy, r:d===core ? 4 : d.ward ? 1.15 : d.lab ? 2.1 : 3, fill:d.color || (d.lab ? '#9cbad1' : '#d69c62'), opacity:d.ward ? 0.58 : 1 })); });
+    elements.push(node('circle', { cx, cy, r:d===core ? 4 : d.ward ? 1.15 : d.lab ? 2.1 : 3, fill:d.color || (d.lab ? '#b9a98c' : '#d69c62'), opacity:d.ward ? 0.58 : 1 })); });
   svg.replaceChildren(...elements);
   const marketCount = Math.max(0, S.L.districts.length - 1);
   $('miniCount').textContent = `${marketCount} market districts · ${wards.length} scene wards`;
@@ -188,7 +188,7 @@ function labView() {
   });
   const log = H.log.slice().reverse(), lul = h('ul', 'list log');
   log.slice(0, 30).forEach((x) => {
-    const li = h('li'), bar = h('span', 'bar'); bar.style.background = x.kind === 'live' ? '#a0af6a' : x.kind === 'started' ? '#99b8d0' : '#d9a26b';
+    const li = h('li'), bar = h('span', 'bar'); bar.style.background = x.kind === 'live' ? '#a0af6a' : x.kind === 'started' ? '#b9a98c' : '#d9a26b';
     const body = h('div'); body.append(h('small', '', x.d), document.createTextNode(x.text)); li.append(bar, body); lul.append(li);
   });
   return [H.demo ? h('p', 'warnbox', 'DEMO ideas: invented bets, not the bot\'s numbers. The real ideas appear as soon as the engine has run once.') : null,
@@ -218,8 +218,17 @@ function worldsView() {
   const pulse = h('div', 'world-pulse');
   pulse.append(h('span', 'pulse-light'), h('span', 'pulse-state', worldBotLabel(S.model.book, S.demo)), h('span', 'pulse-meta', `${L.districts.length} market districts · ${L.labs.length} research outposts`));
   pulse.querySelector('.pulse-state').setAttribute('aria-live', 'polite');
-  wrap.append(pulse, h('h3', '', 'City districts'));
+  const find = h('input', 'world-find');
+  find.type = 'search'; find.placeholder = 'Find a district: bitcoin, gold, strategy...'; find.setAttribute('aria-label', 'Find a district'); find.autocomplete = 'off';
+  const key = h('p', 'world-key', 'Tall tower = big edge (profit per $1). Olive = do more, gold = keep, bronze = watch, terracotta = stop. The bank vault is the balance; the harbour holds the open bets.');
+  wrap.append(pulse, find, key, h('h3', '', 'City districts'));
   const grid = h('div', 'world-grid');
+  const band = (list, ids) => list.filter((e) => ids.includes(e.id)).length;
+  const Ls = S.model.lists;
+  find.addEventListener('input', () => {
+    const w = find.value.toLowerCase().split(/\s+/).filter(Boolean);
+    grid.querySelectorAll('.world-card').forEach((c) => { c.hidden = !w.every((x) => c.dataset.q.includes(x)); });
+  });
   L.districts.forEach((d, i) => {
     const candidates = d.list.filter(e => !e.small && e.ev != null).sort((a,b) => b.ev - a.ev);
     const best = candidates[0], c = h('button', 'world-card');
@@ -228,7 +237,9 @@ function worldsView() {
     const top = h('span', 'world-top'); top.append(glyph, h('span','world-count', edgeCountLabel(d.count)));
     const name = h('strong','',districtTitle(d));
     const detail = h('small','',best ? `Strongest observed: ${best.label} · ${evf(best.ev)} per $1` : 'Collecting bets; no tested edge yet');
-    c.append(top,name,detail,h('span','world-action','FLY TO DISTRICT  ↗'));
+    const bands = h('small', 'world-bands', `${band(d.list, Ls.doMore)} do more · ${band(d.list, Ls.watch)} watch · ${band(d.list, Ls.stop)} stop`);
+    c.dataset.q = `${districtTitle(d)} ${d.key} ${i === 0 ? 'downtown strategy price band side hour' : (d.key === 'Gold' || d.key === 'Silver' ? 'metals' : d.key === 'Other' ? 'other' : 'crypto')}`.toLowerCase();
+    c.append(top,name,detail,bands,h('span','world-action','FLY TO DISTRICT  ↗'));
     c.addEventListener('click', () => {
       switchDistrict(d.key);
       if (best) selectEdge(best.id,true);
@@ -237,13 +248,32 @@ function worldsView() {
     });
     grid.append(c);
   });
-  wrap.append(grid, h('h3', '', 'Research outposts'));
+  // market types (the data decides: crypto, metals, other) and Downtown's quarters by kind of edge, each with its edge bands and its tallest tower
+  const TYPE = { Gold: 'Metals', Silver: 'Metals', Other: 'Other markets' }, typeOf = (k) => TYPE[k] || 'Crypto';
+  const types = new Map();
+  L.districts.slice(1).forEach((d) => { const t = typeOf(d.key); if (!types.has(t)) types.set(t, []); types.get(t).push(d); });
+  const QUARTER = { strategy: 'Strategy quarter', hour: 'Hour quarter', band: 'Price-band quarter', side: 'Side quarter', combo: 'Combination quarter' };
+  const quarters = new Map();
+  (L.districts[0]?.list || []).forEach((e) => { const k = QUARTER[e.kind] ? e.kind : 'combo'; if (!quarters.has(k)) quarters.set(k, []); quarters.get(k).push(e); });
+  const row = (title, list, onTap) => {
+    const real = list.filter((e) => !e.small && e.ev != null).sort((a, b) => b.ev - a.ev), top = real[0] || list[0];
+    const r = h('button', 'world-lab'); r.type = 'button';
+    r.append(h('span', 'lab-number', String(list.length)), h('span', 'lab-description', title),
+      h('span', 'lab-verdict', `${band(list, Ls.doMore)} do more · ${band(list, Ls.watch)} watch · ${band(list, Ls.stop)} stop${top && top.ev != null ? ' · tallest ' + evf(top.ev) + ' per $1' : ''}`));
+    r.addEventListener('click', () => onTap(top)); return r;
+  };
+  const groups = h('div', 'world-labs');
+  groups.append(h('h3', '', 'By market type'));
+  for (const [t, ds] of types) groups.append(row(`${t}: ${ds.map((d) => d.key).join(', ')}`, ds.flatMap((d) => d.list), (top) => { switchDistrict(ds[0].key); if (top) selectEdge(top.id, true); }));
+  groups.append(h('h3', '', 'Downtown quarters'));
+  for (const [k, list] of quarters) groups.append(row(QUARTER[k], list, (top) => { switchDistrict('Downtown'); if (top) selectEdge(top.id, true); }));
+  wrap.append(grid, groups, h('h3', '', 'Research outposts'));
   if (!H || !H.hyps.length) wrap.append(h('p','', 'No research ideas have been recorded yet. They appear when the next learning run publishes them.'));
   else {
     const labs = h('div','world-labs');
     H.hyps.forEach((idea,i) => {
       const b = h('button','world-lab'); b.type = 'button';
-      b.style.setProperty('--world-color',L.labs[i]?.color || '#92b3cd');
+      b.style.setProperty('--world-color',L.labs[i]?.color || '#b9a98c');
       b.append(h('span','lab-number',String(i+1).padStart(2,'0')), h('span','lab-description',idea.name),
         h('span','lab-verdict',`${HYP_WORD[idea.word] || 'Collecting'} · ${idea.nLive || 0} later bets`));
       b.addEventListener('click',() => selectEdge(`hyp:${idea.id}:live`,true)); labs.append(b);
@@ -293,14 +323,14 @@ function guideView() {
     lg('#d9a26b', 'Height: profit per $1 staked (after fees). A losing edge is a low stub.'),
     lg('#a0af6a', 'Roof glow: the recent win rate. Roof colour is the status: green growing, gold holding, orange fading, red dead, blue new.'),
     lg('#d79e65', 'Windows: the bets. Gold windows won, red windows lost.'),
-    lg('#8b93a7', 'Grey and low: fewer than 30 bets. Too few to trust: no verdict, no stake.'),
-    lg('#99b8d0', 'Going up with a crane: a new edge. Crumbling with embers: one that just died.'),
+    lg('#8a7f6e', 'Grey and low: fewer than 30 bets. Too few to trust: no verdict, no stake.'),
+    lg('#b9a98c', 'Going up with a crane: a new edge. Crumbling with embers: one that just died.'),
     lg('#9fae68', 'Roads: capital out (cool cars), bets that came back (gold won, red lost). Pink cars are the bot\'s open orders.'),
     lg('#d49759', 'Weather is the last 7 days: clear, overcast, rain, storm. Fog means the bot is paused. Day and night follow New York time.'),
     lg('#9fae68', 'The scanner (the round button) sweeps the city when the engine learns something new, and the buildings it learned light up. Fireworks mark a new DO MORE edge.'),
     lg('#ca785c', 'Neon signs name the tallest edges (flickering = fading, STOP = dead). Lightning means a storm or a high risk of ruin; in rain every glowing building reflects on the street. The note button turns the ambience on.'),
     lg('#dcaa78', 'The gold beam marks the best proven edge. The red/green lighthouse shows the risk of ruin.'),
-    lg('#92b3cd', 'The Lab, on the outer ring: one small district per idea that might fix the bot, three towers each. Left: what the rule would have added looking back (it was picked after seeing the bets, so this proves nothing). Middle: what it adds on live bets since it was registered. Right, with a crane: how many live bets are collected. Taller means more dollars; a loss is a low stub. Tap the LAB strip for the list.'),
+    lg('#b9a98c', 'The Lab, on the outer ring: one small district per idea that might fix the bot, three towers each. Left: what the rule would have added looking back (it was picked after seeing the bets, so this proves nothing). Middle: what it adds on live bets since it was registered. Right, with a crane: how many live bets are collected. Taller means more dollars; a loss is a low stub. Tap the LAB strip for the list.'),
     lg('#dcaa78', 'Best edge so far and Worst leak are the biggest winner and loser (30+ bets), in dollars after fees. A gold beam marks the winner, a red beam the leak. A tower that moved since your last visit grows or shrinks when you open the city.'),
     h('p', 'warnbox', 'Market HQ anchors the connected city. SWITCH DISTRICT moves the camera to a published market; the 40 glowing low-rise satellite wards beyond those districts and the distant skyline are scenery only. Only buildings inside a market district carry edge data.'),
     S.startedDemo ? null : demoButton(),
@@ -335,7 +365,7 @@ function cardView() {
   const e = S.model.byId.get(S.sel); if (!e) return [h('p', '', 'Select a building.')];
   const c = cardOf(e, S.model.book), rows = h('ul', 'kv');
   c.rows.forEach(([k, v, tone]) => { const li = h('li', tone || ''); li.append(h('span', 'k', k), h('span', 'v', v)); rows.append(li); });
-  const st = h('span', 'badge', e.small ? 'NEW' : e.status); st.style.color = e.small ? '#8b93a7' : STATUS_COLOR[e.status];
+  const st = h('span', 'badge', e.small ? 'NEW' : e.status); st.style.color = e.small ? '#8a7f6e' : STATUS_COLOR[e.status];
   const ad = h('span', 'badge', c.advice.word); ad.style.color = c.advice.color;
   const pr = h('div', 'pillrow'); pr.append(st, ad);
   return [pr, c.banner ? h('p', 'warnbox', c.banner) : null, h('p', 'strong', `${c.statusWord}. ${c.advice.text}`), rows];

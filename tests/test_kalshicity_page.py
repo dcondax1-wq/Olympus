@@ -261,6 +261,12 @@ GEOM = """() => { const W = innerWidth, H = innerHeight, bad = [];
   return bad; }"""
 
 
+def ins(p):
+    """On a tall phone the pair and the ticker are folded away until 'Open insights' is tapped: open them if they are not showing."""
+    if not p.is_visible("#ticker") and p.is_visible("#cityInsights"):
+        p.click("#cityInsights")
+
+
 def run_browser():
     from playwright.sync_api import sync_playwright
     tmp = tempfile.mkdtemp(prefix="le_kc_page_")
@@ -283,6 +289,10 @@ def run_browser():
                 ctx = br.new_context(viewport={"width": vw[0], "height": vw[1]}, device_scale_factor=1, has_touch=True, reduced_motion="reduce" if reduced else "no-preference")
                 try:
                     ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=f"http://127.0.0.1:{srv.server_address[1]}")
+                except Exception:
+                    pass
+                try:                                                  # the page lives on the engine copy's own day (lessons "of today", freshness): not on whatever date the suite runs
+                    ctx.clock.set_system_time(int(edges["t"] + 1800))
                 except Exception:
                     pass
                 if quality:
@@ -377,7 +387,7 @@ def run_browser():
             check("c. a tap on an idea's tower opens its card: the rule, the bets it would skip and what they made, a plain verdict, and the 'looking back only' warning; inside the gutters",
                   "only buy 95c and up" in card.lower() and "bets it would skip" in card.lower() and "looking back only" in card.lower() and "PROMISING" in card.upper() and not p.evaluate(GEOM), card[:160])
             p.keyboard.press("Escape")
-            p.click("#ticker")
+            ins(p); p.click("#ticker")
             p.wait_for_function("KC.state().view === 'lab'")
             lab = p.inner_text("#sheet")
             rows = p.locator("#sheet .ideas .row-btn")
@@ -494,9 +504,9 @@ def run_browser():
             ctx, p = page()
             ready(p)
             p.evaluate("KC.hour(22)")
-            p.wait_for_function("KC.fx() && KC.fx().live.includes('aurora') && KC.fx().live.includes('spire')", timeout=120000)
+            p.wait_for_function("KC.fx() && KC.fx().live.includes('aurora')", timeout=120000)
             f = p.evaluate("KC.fx()")
-            check("c. at night: the aurora over the Vault and a lens flare on the Exchange's spire (OLYMPUS fx library), LITE-tier caps held", "aurora" in f["live"] and "spire" in f["live"] and f["tier"] == "low" and not p.errs, (f, p.errs))
+            check("c. at night: the aurora over the Vault and no spire flare (the tower itself glows), OLYMPUS fx library, LITE-tier caps held", "aurora" in f["live"] and f["tier"] == "low" and not p.errs, (f, p.errs))
             p.wait_for_function("KC.fx().counts.scans >= 1", timeout=120000)
             f = p.evaluate("KC.fx()")
             check("c. the engine learned something today: the edge scanner swept the city once and fireworks went up over the new DO MORE edge", f["counts"]["scans"] == 1 and f["counts"]["fireworks"] >= 1 and not p.errs, f)
@@ -506,8 +516,8 @@ def run_browser():
             p.wait_for_function("KC.fx().live.includes('godRays')", timeout=120000)
             check("c. at dusk: god rays", "godRays" in p.evaluate("KC.fx().live") and not p.errs, p.errs)
             p.evaluate("KC.hour(12)")
-            p.wait_for_function("!KC.fx().live.includes('aurora') && !KC.fx().live.includes('spire') && !KC.fx().live.includes('godRays')", timeout=120000)
-            check("c. by day: the aurora, the spire flare and the god rays stop (nothing is left running that the clock does not call for)", not p.errs, p.errs)
+            p.wait_for_function("!KC.fx().live.includes('aurora') && !KC.fx().live.includes('godRays')", timeout=120000)
+            check("c. by day: the aurora and the god rays stop (nothing is left running that the clock does not call for)", not p.errs, p.errs)
             p.click("#scan")
             p.wait_for_function("KC.fx().counts.scans >= 2")
             check("c. the scan button sweeps again on demand", p.evaluate("KC.fx().counts.scans") >= 2 and not p.errs, p.errs)
@@ -540,7 +550,7 @@ def run_browser():
             ctx, p = page(reduced=True)
             ready(p)
             s = st(p)
-            p.click("#ticker")
+            ins(p); p.click("#ticker")
             p.wait_for_function("KC.state().view === 'lab'")
             check("c. no ideas file yet: the real city stays real (no DEMO badge) and the Lab shows the recorded demo ideas, labelled DEMO in the ticker and the sheet, still 8 districts, Best / Worst filled",
                   not s["demo"] and s["hypDemo"] and len(s["labs"]) == 8 and p.inner_text("#tkText").startswith("Demo: ") and "DEMO ideas" in p.inner_text("#sheet") and p.inner_text("#pWorstV").startswith("-$") and not p.errs, (s["hypDemo"], p.inner_text("#tkText"), p.errs))

@@ -67,7 +67,7 @@ max-height:calc(100% - var(--sheet-bottom) - var(--top-h) - 26px - var(--st) - v
 background:var(--panel);border:1px solid var(--line);border-radius:var(--oly-r-card,16px);padding:0 14px 12px;backdrop-filter:blur(14px);
 -webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.45)}
 .sheet.on{display:block;animation:rise .2s ease-out}
-.sheet[data-view=now],.sheet[data-view=district],.sheet[data-view=today],.sheet[data-view=watch],.sheet[data-view=find]{max-height:min(calc(100% - var(--sheet-bottom) - var(--top-h) - 26px - var(--st) - var(--sb)),44vh)}
+.sheet[data-view=now],.sheet[data-view=district],.sheet[data-view=today],.sheet[data-view=watch],.sheet[data-view=find],.sheet[data-view=districts]{max-height:min(calc(100% - var(--sheet-bottom) - var(--top-h) - 26px - var(--st) - var(--sb)),44vh)}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .sheet header{position:sticky;top:0;display:flex;align-items:center;gap:8px;padding:10px 0 6px;background:linear-gradient(var(--panel) 80%,transparent);z-index:1}
 .sheet h2{margin:0;flex:1;min-width:0;font:700 17px/1.25 var(--oly-ui,inherit);letter-spacing:.01em}
@@ -228,8 +228,9 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
 </section>
 <div class="cams" id="cams" role="group" aria-label="Camera mode">
   <button data-cam="orbit" class="on" aria-label="Orbit camera">Orbit</button>
-  <button data-cam="skim" aria-label="Fly low through the districts">Skim</button>
-  <button data-cam="drone" aria-label="Drone loop over the city">Drone</button>
+  <button data-cam="skim" aria-label="Street view: low through the districts">Street</button>
+  <button data-cam="walk" aria-label="Walk the streets at eye level">Walk</button>
+  <button data-cam="drone" aria-label="Fly over the city">Fly</button>
   <button data-cam="grand" aria-label="Grand tour of the landmarks">Grand</button>
   <a href="./map.html" aria-label="Map view without 3D">Map</a>
 </div>
@@ -244,7 +245,7 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
 </nav>
 <div class="caption" id="caption" aria-live="polite"></div>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="./city.js?v=dcgfx8"></script>
+<script type="module" src="./city.js?v=dcgfx9"></script>
 <script type="module" src="glossary.js"></script>
 </body>
 </html>

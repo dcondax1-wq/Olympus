@@ -4,6 +4,12 @@ Owner goal: every OLYMPUS app looks and feels great on an iPhone, and helps him 
 One task = one branch `chatgpt/<task-id>` = one pull request. Read `handoff/CODEX_RUNBOOK.md` first (how to test, how to finish).
 When a task is done, change `[ ]` to `[x]` here in the same PR and add one line under it: what changed, how you checked.
 
+## What changed on 2026-11-10 (newer than every item below)
+- **AGORA look** replaced the old neon / cyber look everywhere (`docs/DESIGN_AGORA.md`; shared page-test kit `tests/agora_kit.py`). Any task below that asks for neon, glow, HUD or a techno font is obsolete: use AGORA.
+- **Money machines** (paper only, `tools/money/*.py`, `tools/money_engine.py`, `docs/MONEY_MACHINE.md`) and about 30 **new apps** now exist; the generated list of every app with its test is `docs/OLYMPUS_MAP.md` (`python tools/olympus_map_build.py`). Do not re-build an app that is in that list: improve it.
+- **Wiring** a new app is done by the lead with `tools/new_apps.json` + `tools/wire_new_apps.py`, never by hand in a PR.
+- **Hosting:** the site is published by **Netlify Drop of the built site folder**. The GitHub account was suspended for a while and is **back on the same repo**; PRs and the `chatgpt-guard` check work as before. No secrets belong in the repo or in these files.
+
 ## Rules that never change
 - Paper only. Never touch `engine/`, `live_model*.json`, `.github/`, `sw.js`, `tools/build_web_dashboard.py`, `jarvis/apps.js`,
   the `APPS` table in `olympus/olympus.js`, or any secret. A bot guard blocks the PR if you do.

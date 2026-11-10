@@ -133,7 +133,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     const grp = new THREE.Group(), R = Math.max(40, L.extent * 1.1);
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.97, 1, 128), new THREE.MeshBasicMaterial(Object.assign({ color: hdr('#9fae68', 2.4), side: THREE.DoubleSide, fog: false }, ADD)));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.7;
-    const curtain = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 16, 96, 1, true), new THREE.ShaderMaterial(Object.assign({ side: THREE.DoubleSide, fog: false, uniforms: { uA: { value: 1 } },
+    const curtain = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 16, 48, 1, true), new THREE.ShaderMaterial(Object.assign({ side: THREE.DoubleSide, fog: false, uniforms: { uA: { value: 1 } },
       vertexShader: 'varying float vY; void main() { vY = position.y / 16.0 + 0.5; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
       fragmentShader: 'uniform float uA; varying float vY; void main() { gl_FragColor = vec4(vec3(0.18, 0.95, 0.82) * pow(1.0 - vY, 2.4) * 0.9 * uA, 1.0); }' }, ADD)));
     curtain.position.y = 8;
@@ -176,11 +176,11 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     if (st.tw > 0.3 && !live.godRays) startFx('godRays', { position: [st.sun[0] * 0.35, 120, st.sun[2] * 0.35], length: 125, intensity: 0.5, color: '#d9a26b', spread: 0.22 });
     else if (st.tw < 0.12) stopFx('godRays');
     // a storm: weather or a risk of ruin that is high
-    if (st.stormy && !live.lightning) startFx('lightning', { position: [0, 95, 0], spread: ext * 0.7, width: 0.5, flash: 0.75, every: [3, 8], color: '#afc7da',
+    if (st.stormy && !live.lightning) startFx('lightning', { position: [0, 95, 0], spread: ext * 0.7, width: 0.5, flash: 0.75, every: [3, 8], color: '#e8dcc0',
       onFlash: (f) => { if (f > 0.5 && lastF <= 0.5) { counts.strikes++; setTimeout(() => sfx('thunder'), 380); } lastF = f; } });
     else if (!st.stormy) stopFx('lightning');
     // aurora over the Vault, at night, not in a storm
-    if (st.night > 0.7 && st.weather !== 'storm' && !live.aurora) startFx('aurora', { position: [10, 62, -70], width: 95, height: 30, intensity: 0.12, colors: ['#d9a26b', '#719cbe', '#99b8d0'] });
+    if (st.night > 0.7 && st.weather !== 'storm' && !live.aurora) startFx('aurora', { position: [10, 62, -70], width: 95, height: 30, intensity: 0.12, colors: ['#d9a26b', '#c96a4a', '#b9a98c'] });
     else if (st.night < 0.4 || st.weather === 'storm') stopFx('aurora');
     // lens flares: the Exchange's spire at night; the sun or the moon, moved to where it is now
     if (st.night > 0.6 && !live.spire) { /* the tower itself glows: screen-space flare covered the foreground blocks */ }
@@ -188,7 +188,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     const key = `${Math.round(st.hour * 2)}|${st.night > 0.5 ? 'n' : 'd'}|${st.stormy ? 1 : 0}`;
     if (key !== flareKey) {
       flareKey = key; stopFx('flare');
-      if (!st.stormy && FXL.has('lensFlare')) { try { live.flare = FXL.lensFlare({ scene, camera }, { position: [st.sun[0] * 0.5, Math.max(30, st.sun[1] * 0.5), st.sun[2] * 0.5], color: st.night > 0.5 ? '#afc7da' : '#e0b487' }); } catch (_) { /* skip */ } }
+      if (!st.stormy && FXL.has('lensFlare')) { try { live.flare = FXL.lensFlare({ scene, camera }, { position: [st.sun[0] * 0.5, Math.max(30, st.sun[1] * 0.5), st.sun[2] * 0.5], color: st.night > 0.5 ? '#e8dcc0' : '#e0b487' }); } catch (_) { /* skip */ } }
     }
   }
 

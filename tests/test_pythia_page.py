@@ -9,9 +9,11 @@ otherwise, unknown dates listed apart and never guessed), what the bots do aroun
 from __future__ import annotations
 
 import datetime as dt
+import importlib.util
 import json
 import os
 import re
+import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,6 +30,21 @@ def nth_weekday(y, m, dow, n):
 
 
 def test_static():
+    gen = os.path.join(AK.ROOT, "tools", "money", "pythia_dates.py")
+    r1 = subprocess.run([sys.executable, "-I", gen, "--selftest"], capture_output=True, text=True, timeout=300)
+    check("a. the date generator's selftest passes (tools/money/pythia_dates.py --selftest)", r1.returncode == 0 and "ALL PASS" in r1.stdout, r1.stdout[-600:] + r1.stderr[-300:])
+    r2 = subprocess.run([sys.executable, "-I", gen, "--check"], capture_output=True, text=True, timeout=300)
+    check("a. events.json is EXACTLY what `python tools/money/pythia_dates.py` writes from the rules and data/news/events.csv (regenerate it after changing either)", r2.returncode == 0, r2.stdout[-300:] + r2.stderr[-200:])
+    spec = importlib.util.spec_from_file_location("pythia_dates", gen)
+    PD = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(PD)
+    bn = AK.read(os.path.join(AK.ROOT, "data", "build_news.py"))
+    hist = re.search(r'NFP = """(.*?)"""', bn, re.S).group(1).split()
+    miss = [h for h in hist if PD.nfp(*((lambda d: (d.year - (d.month == 1), (d.month - 2) % 12 + 1))(dt.date.fromisoformat(h)))).isoformat() != h]
+    check("a. the NFP rule (third Friday after the week with the 12th) matches the BLS archive in data/build_news.py: " + f"{len(hist) - len(miss)} of {len(hist)} releases, and the ones it misses are EXACTLY the listed exceptions (shutdown, weeks next to a holiday)",
+          len(hist) >= 36 and set(miss) == set(PD.NFP_EXCEPTIONS) and len(hist) - len(miss) >= 28, (miss, sorted(PD.NFP_EXCEPTIONS)))
+    ho = PD.holidays(2026)
+    check("a. holidays by rule: Thanksgiving Nov 26, Christmas Dec 25, early closes Nov 27 and Dec 24; and the roll rule is the docs' (Thursday 8 days before the expiry)", ho[dt.date(2026, 11, 26)][1] == "closed" and ho[dt.date(2026, 12, 25)][1] == "closed" and ho[dt.date(2026, 11, 27)][1] == "early" and ho[dt.date(2026, 12, 24)][1] == "early" and (dt.date(2026, 12, 18) - dt.timedelta(days=8)).isoformat() == "2026-12-10")
     AK.static_kit(APP, NAME, reads=("./events.json", "../home.json"))
     d = os.path.join(AK.WEB, APP)
     html = AK.read(os.path.join(d, "index.html"))
@@ -43,21 +60,21 @@ def test_static():
         by.setdefault(e["kind"], []).append(e)
     check("a. events.json: every event has an ISO date, a valid kind and impact and a verify flag; times are HH:MM; the undated ones carry NO date and verify true (never guessed)",
           all(re.match(r"^\d{4}-\d{2}-\d{2}$", e["date"]) and e["impact"] in ("high", "med", "low") and isinstance(e["verify"], bool) and (e["time"] is None or re.match(r"^\d\d:\d\d$", e["time"])) for e in evs)
-          and all("date" not in u and u["verify"] is True and u["approx"] for u in ev["undated"]) and {u["kind"] for u in ev["undated"]} == {"cpi", "ppi", "retail"}, ev["undated"])
+          and all("date" not in u and u["verify"] is True and u["approx"] for u in ev["undated"]) and {u["kind"] for u in ev["undated"]} == {"cpi", "ppi", "retail", "nfp"} and all(u["confirm"] for u in ev["undated"]), ev["undated"])
     third = lambda y, m: nth_weekday(y, m, 4, 3).isoformat()
     check("a. the rule dates are right: monthly expiry = third Friday of Nov 2026 (Nov 20), quad witching = third Friday of Dec (Dec 18), Thanksgiving = fourth Thursday (Nov 26), the early close is the Friday after, NFP = first Friday of Dec (Dec 4)",
           by["opex"][0]["date"] == third(2026, 11) == "2026-11-20" and by["quad"][0]["date"] == third(2026, 12) == "2026-12-18" and any(e["date"] == nth_weekday(2026, 11, 3, 4).isoformat() == "2026-11-26" and e["closed"] for e in by["holiday"])
-          and any(e["date"] == "2026-11-27" and e["kind"] == "early" for e in evs) and by["nfp"][0]["date"] == nth_weekday(2026, 12, 4, 1).isoformat() == "2026-12-04", by)
+          and any(e["date"] == "2026-11-27" and e["kind"] == "early" for e in evs) and "2026-12-04" in [e["date"] for e in by["nfp"]] and nth_weekday(2026, 12, 4, 1).isoformat() == "2026-12-04", by["nfp"])
     roll = [e for e in by["roll"] if e["time"] == "00:00"][0]
     check("a. the December roll: orders switch Thursday 2026-12-10 00:00 ET, exactly 8 days before the Dec 18 expiry (docs/ROLL_DEC_2026.md, engine/roll_watch.py), and the owner's step is Wednesday Dec 9 after 16:00 ET",
           roll["date"] == "2026-12-10" and dt.date(2026, 12, 10).weekday() == 3 and (dt.date(2026, 12, 18) - dt.date(2026, 12, 10)).days == 8 and any(e["date"] == "2026-12-09" and e["time"] == "16:00" for e in by["roll"]), by["roll"])
     doc = AK.read(os.path.join(AK.ROOT, "docs", "ROLL_DEC_2026.md"))
     check("a. the roll words agree with docs/ROLL_DEC_2026.md (Wed Dec 9 after 16:00 ET, Thu Dec 10 00:00, MNQ 03-27)", "Wed Dec 9, after 16:00 ET" in doc and "Thu 12-10, 00:00" in doc and "MNQ 03-27" in doc)
-    fomc = [e for e in by["fomc"] if e["time"]]
-    check("a. FOMC: the decision is a Wednesday at 14:00 ET, marked 'check'; the Fed's two-day meeting has its day 1 the day before",
-          len(fomc) == 1 and fomc[0]["date"] == "2026-12-09" and dt.date(2026, 12, 9).weekday() == 2 and fomc[0]["time"] == "14:00" and fomc[0]["verify"] is True and any(e["date"] == "2026-12-08" for e in by["fomc"]))
+    fomc = by["fomc"]
+    check("a. FOMC decisions (from the saved calendar): every one is a Wednesday at 14:00 ET marked 'check' (Oct 28, Dec 9 2026, Jan 27, Mar 17 2027); no 'day 1' is made up",
+          [e["date"] for e in fomc] == ["2026-10-28", "2026-12-09", "2027-01-27", "2027-03-17"] and all(dt.date.fromisoformat(e["date"]).weekday() == 2 and e["time"] == "14:00" and e["verify"] is True for e in fomc), fomc)
     check("a. the weekly rule: jobless claims every Thursday 08:30 ET; Thanksgiving week is skipped and replaced by a dated Wednesday event; nothing is dated twice on one day with the same kind",
-          ev["weekly"][0]["dow"] == 3 and ev["weekly"][0]["time"] == "08:30" and "2026-11-26" in ev["weekly"][0]["skip"] and any(e["date"] == "2026-11-25" and e["kind"] == "claims" for e in evs) and len({(e["date"], e["kind"], e["time"]) for e in evs}) == len(evs))
+          ev["weekly"][0]["dow"] == 3 and ev["weekly"][0]["time"] == "08:30" and "2026-11-26" in ev["weekly"][0]["skip"] and any(e["date"] == "2026-11-25" and e["kind"] == "claims" for e in evs) and len({(e["date"], e["kind"], e["time"], e["title"]) for e in evs}) == len(evs))
     lit = json.load(open(os.path.join(AK.ROOT, "live_model.json"), encoding="utf-8")).get("lit", {})
     core = AK.read(os.path.join(d, "pythiacore.js"))
     m = re.search(r"RULES = \{ entryFrom: '(\d\d:\d\d)', entryTo: '(\d\d:\d\d)', flat: '(\d\d:\d\d)'", core)
@@ -89,7 +106,7 @@ import(process.argv[2]).then((C) => {
     C.countdown(100, 100 + 35 * 60).word, C.countdown(100, 130).word, C.countdown(100 + 3 * 3600, 100).word, C.countdown(100, 100 + 3600 + 600).word, C.countdown(100, 100 + 86400).word, C.countdown(100, 100 + 2 * 86400 + 3600).word];
   o.norm = [n.events.length, n.weekly.length, n.undated.length, n.updated, n.events.every((e) => e.verify !== undefined), n.undated.every((u) => u.verify === true)];
   const cal = C.calendar(n, '2026-12-07');
-  o.cal = [cal.length, cal.map((d) => d.risk).join(','), cal[2].events.map((e) => e.kind + '@' + e.time).join(','), cal[3].events.map((e) => e.kind + '@' + e.time).join(','), cal[11].events[0].kind, cal[1].events[0].time, cal[0].word, cal[13].ymd];
+  o.cal = [cal.length, cal.map((d) => d.risk).join(','), cal[2].events.map((e) => e.kind + '@' + e.time).join(','), cal[3].events.map((e) => e.kind + '@' + e.time).join(','), cal[11].events[0].kind, cal[1].events.length, cal[0].word, cal[13].ymd];
   const calN = C.calendar(n, '2026-11-23');
   o.thanks = [calN.slice(0, 5).map((d) => d.ymd + ':' + d.risk + ':' + d.events.map((e) => e.kind).join('+')).join(' | ')];
   o.risk = [C.dayRisk([]), C.dayRisk([{ impact: 'low' }]), C.dayRisk([{ impact: 'low' }, { impact: 'high' }]), C.dayRisk([{ impact: 'med' }, { impact: 'low', closed: true }]), C.dayRisk([{ impact: 'high', closed: true }, { impact: 'high' }]), C.RISKWORD.high, C.RISKCLS.closed];
@@ -98,7 +115,7 @@ import(process.argv[2]).then((C) => {
   const w = (k, extra) => C.botWords({ kind: k, time: '08:30', title: 'x', closed: false, ...(extra || {}) });
   o.words = [w('fomc', { time: '14:00' }).includes('2:00 PM ET'), w('fomc', { time: '14:00' }).includes('LIT has no news pause'), w('fomc', { time: '14:00' }).includes('2:00 AM to 3:30 PM ET'), w('fomc', { time: '14:00' }).includes('flat at 3:55 PM ET'),
     w('fomc', { time: null }).includes('day 2'), w('holiday', { closed: true }).startsWith('The market is closed'), w('early', { closeEt: '13:15' }).includes('1:15 PM ET') && w('early', { closeEt: '13:15' }).includes('be flat before the close yourself'),
-    w('roll', { title: 'Your roll step: switch the NinjaTrader chart to MNQ 03-27' }).includes('MNQ 03-27'), w('roll', { title: 'NQ roll: orders switch' }).includes('300 points'), w('quad').includes('expires'), w('zzz').includes('LIT has no news pause'), C.CALM_WORDS.includes('Nothing special')];
+    w('roll', { title: 'Your roll step: switch the NinjaTrader chart to MNQ 03-27' }).includes('next contract'), w('roll', { title: 'NQ roll: orders switch' }).includes('300 points'), w('quad').includes('expires'), w('zzz').includes('LIT has no news pause'), C.CALM_WORDS.includes('Nothing special')];
   const home = { live: { brief: { day: '2026-12-07', news: [{ time: '08:30', title: 'Core PCE', kind: 'Inflation', blackout: '08:25-08:40' }, { title: '<b>x</b>y' }, { time: '99:99', title: 'No time' }, 5] } } };
   o.live = [C.liveNews(home, '2026-12-07').map((x) => [x.time, x.title, x.blackout]), C.liveNews(home, '2026-12-08'), C.liveNews(null, '2026-12-07'), C.liveNews({ live: { brief: { day: '2026-12-07' } } }, '2026-12-07')];
   const fx = JSON.parse(process.argv[4]);
@@ -133,14 +150,14 @@ def test_maths():
     check("b. clock words: 2:00 PM ET, 12:00 AM ET, 12:30 PM ET, 8:05 AM ET; a bad time gives nothing", o["hm"] == ["2:00 PM ET", "12:00 AM ET", "12:30 PM ET", "8:05 AM ET", "", ""], o["hm"])
     check("b. countdowns: Oct 31 8:30 to Nov 1 8:30 ET is '1 day 1 hour' (the clocks go back, 25 real hours); Nov 1 to Nov 2 is '1 day'; Oct 30 11:00 to Nov 5 8:30 is '5 days 22 hours' (DST night inside); 35 min, 'now', '3 hours ago', '1 hour 10 min', 1 day, 2 days 1 hour",
           o["cd"] == ["in 1 day 1 hour", "in 1 day", "in 5 days 22 hours", "in 35 min", "now", "3 hours ago", "in 1 hour 10 min", "in 1 day", "in 2 days 1 hour"], o["cd"])
-    check("b. events.json is read whole: 13 dated events, 1 weekly rule, 3 undated, the update date; every undated release is 'verify'", o["norm"] == [13, 1, 3, "2026-11-10", True, True], o["norm"])
-    check("b. the Dec 7 window: 14 days; Dec 8 amber (FOMC day 1), Dec 9 red (decision 14:00 + your roll step 16:00), Dec 10 amber (the roll at 00:00, then claims 08:30), Dec 17 light (claims), Dec 18 amber (quad witching); the rest calm",
-          o["cal"][0] == 14 and o["cal"][1] == "calm,med,high,med,calm,calm,calm,calm,calm,calm,low,med,calm,calm" and o["cal"][2] == "fomc@14:00,roll@16:00" and o["cal"][3] == "roll@00:00,claims@08:30" and o["cal"][4] == "quad" and o["cal"][5] is None and o["cal"][6] == "Mon Dec 7" and o["cal"][7] == "2026-12-20", o["cal"])
+    check("b. events.json is read whole: 41 dated events, 1 weekly rule, 4 undated, the update date; every undated release is 'verify'", o["norm"] == [41, 1, 4, "2026-11-10", True, True], o["norm"])
+    check("b. the Dec 7 window: 14 days; Dec 9 red (decision 14:00 + your roll step 16:00), Dec 10 amber (the roll at 00:00, then claims 08:30), Dec 17 light (claims), Dec 18 amber (quad witching); the rest calm",
+          o["cal"][0] == 14 and o["cal"][1] == "calm,calm,high,med,calm,calm,calm,calm,calm,calm,low,med,calm,calm" and o["cal"][2] == "fomc@14:00,roll@16:00" and o["cal"][3] == "roll@00:00,claims@08:30" and o["cal"][4] == "quad" and o["cal"][5] == 0 and o["cal"][6] == "Mon Dec 7" and o["cal"][7] == "2026-12-20", o["cal"])
     check("b. Thanksgiving week: Nov 25 claims move to Wednesday (the Thursday rule skips Nov 26), Nov 26 is a closed day, Nov 27 is the early close (amber)",
           o["thanks"] == ["2026-11-23:calm: | 2026-11-24:calm: | 2026-11-25:low:claims | 2026-11-26:closed:holiday | 2026-11-27:med:early"], o["thanks"])
     check("b. risk colour: calm < low < amber < red; a closed day outranks everything", o["risk"] == ["calm", "low", "high", "closed", "closed", "Red day", "info"], o["risk"])
-    check("b. coming up from Dec 7 10:00 ET: FOMC day 1, the decision, your roll step, the roll, then claims, in that order with ET countdowns; past the end of the list nothing is invented",
-          o["up"][0][:4] == ["fomc", "fomc", "roll", "roll"] and o["up"][1:5] == ["in 14 hours", "in 2 days 4 hours", "in 2 days 6 hours", "in 2 days 14 hours"] and o["up"][5] == 0, o["up"])
+    check("b. coming up from Dec 7 10:00 ET: the Fed decision, your roll step, the roll, then claims, in that order with ET countdowns; past the end of the list nothing is invented",
+          o["up"][0][:5] == ["fomc", "roll", "roll", "claims", "claims"] and o["up"][1:5] == ["in 2 days 4 hours", "in 2 days 6 hours", "in 2 days 14 hours", "in 2 days 22 hours"] and o["up"][5] == 0, o["up"])
     check("b. what the bots do, in plain words: FOMC names 2:00 PM ET and 'LIT has no news pause', the real rules (entries 2:00 AM to 3:30 PM ET, flat at 3:55 PM ET), an early close says be flat before it yourself, the roll step and the roll differ, a closed day says nothing to do",
           all(o["words"]), o["words"])
     check("b. the live briefing: only when the brief is for today; a bad time is dropped, tags stripped, junk rows ignored; no brief -> null; a brief without news -> null",
@@ -148,9 +165,9 @@ def test_maths():
     check("b. choosing the data: the bundled file wins, a missing or empty file falls back to the labelled demo (with its fixed today), a file with only a weekly rule still counts, nothing at all gives null", o["choose"] == ["file", "demo", "demo", None, "2026-11-10", "file"], o["choose"])
     check("b. junk is harmless: bad dates and titleless rows dropped, tags stripped, a bad impact -> low, a bad kind -> other, a bad time -> all-day, verify defaults to true; a bad weekday rule is dropped; null in -> null out",
           o["junk"] == [1, "Hi", "low", "other", None, True, 1, 1, "u", None, None, None], o["junk"])
-    check("b. the list's age in words, and its last date", o["stale"] == [True, True, True, "2026-12-25"], o["stale"])
+    check("b. the list's age in words, and its last date", o["stale"] == [True, True, True, "2027-03-26"], o["stale"])
     check("b. the Jarvis card: Pythia, ok on a calm day, 'off' for the demo, bad on the FOMC day ('Red day'), 3 kpis (today, events, next), a New York line, an integer t, under 8 KB, no markup",
-          o["card"] == ["Pythia", "ok", "off", "bad", "Red day", 3, "Calm", "7", o["card"][8], True, True, True, False] and bool(o["card"][8]), o["card"])
+          o["card"] == ["Pythia", "ok", "off", "bad", "Red day", 3, "Calm", "6", o["card"][8], True, True, True, False] and bool(o["card"][8]), o["card"])
 
 
 def home_json(day):
@@ -171,13 +188,13 @@ def test_page():
             d = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, pill: document.querySelector('#riskPill').textContent, today: document.querySelector('#todayWord').textContent, todayEv: document.querySelector('#todayEv').textContent,
               btns: document.querySelectorAll('#grid .dbtn').length, risks: [...document.querySelectorAll('#grid .dbtn')].map((b) => b.dataset.risk).join(','), now: document.querySelectorAll('#grid .dbtn.now').length, sel: document.querySelector('#grid .dbtn.sel b').textContent,
               range: document.querySelector('#range').textContent, live: !document.querySelector('#liveCard').hidden, liveText: document.querySelector('#liveBox').textContent, next: [...document.querySelectorAll('#nextList > li')].map((l) => l.textContent),
-              ud: document.querySelectorAll('#undated > li').length, udShown: !document.querySelector('#undatedCard').hidden, notes: document.querySelector('#notes').textContent, font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor })""")
+              ud: document.querySelectorAll('#undated > li').length, udText: document.querySelector('#undated').textContent, udShown: !document.querySelector('#undatedCard').hidden, notes: document.querySelector('#notes').textContent, font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor })""")
             check("c. Monday Dec 7 (10:00 ET): no DEMO chip, 'Calm day', 'Monday, December 7 · 10:00 AM ET now', the bot's words for a day with nothing scheduled, 14 day buttons, today outlined and selected",
                   not d["demo"] and d["pill"] == "Calm day" and d["today"] == "Monday, December 7 · 10:00 AM ET now" and "Nothing special" in d["todayEv"] and d["btns"] == 14 and d["now"] == 1 and d["sel"] == "7", d)
-            check("c. the colours of the fortnight: Dec 8 amber, Dec 9 red, Dec 10 amber, Dec 17 light, Dec 18 amber; the range line names both ends", d["risks"] == "calm,med,high,med,calm,calm,calm,calm,calm,calm,low,med,calm,calm" and d["range"] == "Mon Dec 7 to Sun Dec 20", d)
+            check("c. the colours of the fortnight: Dec 8 amber, Dec 9 red, Dec 10 amber, Dec 17 light, Dec 18 amber; the range line names both ends", d["risks"] == "calm,calm,high,med,calm,calm,calm,calm,calm,calm,low,med,calm,calm" and d["range"] == "Mon Dec 7 to Sun Dec 20", d)
             check("c. the live briefing card shows (home.json brief is for today): 8:30 AM ET, Core PCE, the quiet window 08:25-08:40", d["live"] and "8:30 AM ET" in d["liveText"] and "Core PCE" in d["liveText"], d["liveText"])
-            check("c. coming up: FOMC first, with ET countdowns; the three undated releases (CPI, PPI, retail sales) sit in 'Dates to confirm' and say no date is guessed; the list's age is in words",
-                  d["next"][0].startswith("FOMC meeting, day 1") and "in 14 hours" in d["next"][0] and any("FOMC decision" in x and "check date" in x for x in d["next"]) and d["ud"] == 3 and d["udShown"] and "was updated 2026-11-10" in d["notes"], d["next"])
+            check("c. coming up: the Fed decision first, with its ET countdown and 'check date'; the four releases with no known date (CPI and PPI after the saved ones, retail sales, the January jobs report) sit in 'Dates to confirm' with the official calendar named; the list's age is in words",
+                  d["next"][0].startswith("FOMC decision 2:00 PM") and "in 2 days 4 hours" in d["next"][0] and "check date" in d["next"][0] and d["ud"] == 4 and d["udShown"] and d["udText"].count("Confirm at: bls.gov") == 3 and "census.gov" in d["udText"] and "was updated 2026-11-10" in d["notes"], d["next"])
             check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
             AK.shot(p, "pythia-dec7")
             p.locator("#grid .dbtn").nth(2).click()

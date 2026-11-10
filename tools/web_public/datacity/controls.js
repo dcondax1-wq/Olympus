@@ -54,7 +54,9 @@ export class Orbit {
     if (this.ptrs.size === 1) {
       const dx = cur.x - prev.x, dy = cur.y - prev.y;
       if (this.gesture) this.gesture.moved += Math.abs(dx) + Math.abs(dy);
-      if (this.gesture && this.gesture.moved > TAP_MOVE) {
+      if (this.gesture && this.gesture.moved > TAP_MOVE && this.steer && this.driver) {
+        this.steer(dx, dy);                                  // the street walk: one finger turns and tilts the head, the walk goes on
+      } else if (this.gesture && this.gesture.moved > TAP_MOVE) {
         this.stopFly();
         g.theta += dx * 0.006;
         g.phi -= dy * 0.005;
@@ -101,7 +103,7 @@ export class Orbit {
 
   stopFly() {
     if (!this.driver) return;
-    this.driver = null;
+    this.driver = null; this.steer = null;
     this.syncFromCamera();
     this.opts.onFlyEnd?.();
   }

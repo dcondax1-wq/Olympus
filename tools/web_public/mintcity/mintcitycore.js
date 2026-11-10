@@ -19,7 +19,18 @@ export const TIER_KEEP = { high: 1, mid: 0.6, low: 0.35 };  // share of the deco
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 const txt = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n || 200);
 export function money(v) { if (!isNum(v)) return '-'; const r = Math.round(Math.abs(v)); return (v < 0 ? '-$' : '$') + String(r).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
-export function rangeText(lo, hi) { return isNum(lo) && isNum(hi) ? `${money(lo)} to ${money(hi)} a month` : 'no range yet'; }
+export function rangeText(lo, hi) {
+  if (!(isNum(lo) && isNum(hi))) return 'no range yet';
+  return lo < 0 ? `a loss of ${money(-lo)} a month to ${money(hi)} a month` : `${money(lo)} to ${money(hi)} a month`;       // a negative low end is a LOSS in words, never "-$42 to ..."
+}
+/** the worst case in plain words: a negative low end is said as a loss */
+export function worstText(lo) { return !isNum(lo) ? 'no worst case yet' : lo < 0 ? `Worst case: you could lose about ${money(-lo)} a month.` : `Worst case: about ${money(lo)} a month.`; }
+/** the range bar in percent of the bar's width. The bar spans the smaller of the low end and 0 up to the larger of the high end and the estimate; zero is marked when the low end is a loss. */
+export function rangeBar(lo, base, hi) {
+  if (!isNum(lo) || !isNum(hi)) return { left: 0, width: 0, mark: 0, zero: null, neg: false };
+  const b = isNum(base) ? base : (lo + hi) / 2, min = Math.min(lo, 0), max = Math.max(hi, b, 0.01), span = max - min || 1, pc = (v) => Math.max(0, Math.min(100, Math.round(((v - min) / span) * 100)));
+  return { left: pc(lo), width: Math.max(1, pc(hi) - pc(lo)), mark: pc(b), zero: lo < 0 ? pc(0) : null, neg: lo < 0 };
+}
 export function ageText(min) { if (!isNum(min) || min < 0) return 'no date'; if (min < 2) return 'just now'; if (min < 90) return `${Math.round(min)} min ago`; if (min < 2880) return `${Math.round(min / 60)} h ago`; return `${Math.round(min / 1440)} days ago`; }
 
 /** seeded random (mulberry32) so the city is the same every visit */
@@ -41,7 +52,7 @@ export function combine(streams) {
   let lo = 0, base = 0, hi = 0, n = 0, sample = 0;
   for (const s of streams) { if (s.status === 'sample') sample++; if (s.base == null) continue; n++; lo += s.low; base += s.base; hi += s.high; }
   const allSample = streams.length > 0 && sample === streams.length;
-  return { low: lo, base, high: hi, n, sample, allSample, text: n ? `About ${money(base)} a month (an estimate), anywhere from ${money(lo)} to ${money(hi)}.` : 'No estimate yet: no stream has reported a number.',
+  return { low: lo, base, high: hi, n, sample, allSample, text: n ? (lo < 0 ? `About ${money(base)} a month (an estimate). Worst case: you could lose about ${money(-lo)} a month; at best about ${money(hi)}.` : `About ${money(base)} a month (an estimate), anywhere from ${money(lo)} to ${money(hi)}.`) : 'No estimate yet: no stream has reported a number.',
     why: allSample ? 'Example numbers, not real finds.' : sample ? `${sample} of 5 districts still show examples.` : 'Every district reports live numbers.' };
 }
 
@@ -149,6 +160,6 @@ export function lodDetail(camDist, tier) { return camDist <= (LOD_NEAR[tier] || 
 export function jarvisCard(streams, nowMs) {
   const c = combine(streams);
   return { v: 1, name: 'Mint City', status: { level: c.allSample ? 'off' : 'ok', label: c.allSample ? 'Example numbers' : 'Estimate' },
-    kpis: [{ label: 'Estimate / month', value: money(c.base) }, { label: 'Range', value: `${money(c.low)}-${money(c.high)}` }, { label: 'Districts', value: '5' }],
+    kpis: [{ label: 'Estimate / month', value: money(c.base) }, { label: 'Range', value: c.low < 0 ? `${money(c.low)} to ${money(c.high)}` : `${money(c.low)}-${money(c.high)}` }, { label: 'Districts', value: '5' }],
     lines: [c.why], t: Math.floor((isNum(nowMs) ? nowMs : 0) / 1000), open: '#', theme: '#14110e', stale_after: 21600 };
 }

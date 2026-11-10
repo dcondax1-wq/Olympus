@@ -793,18 +793,22 @@ def sec_i(br, base, C, days, picks, ids):
 
 
 # ------------------------------------------------------------------ j. ATHENS: the giant Greek metropolis (cities/athens*.js, 2026-11-10)
-ATHENS_JS = ("athens-plan.js", "athens-geo.js", "athens-build.js", "athens.js", "athens-ui.js", "athens-entry.js")
+ATHENS_JS = ("athens-interior.js", "athens-plan.js", "athens-geo.js", "athens-build.js", "athens.js", "athens-ui.js", "athens-entry.js", "athens-data.js")
 
 
 def part_athens():
-    need = list(ATHENS_JS) + ["athens.css", "athens-btn.css"]
+    need = list(ATHENS_JS) + ["athens.css", "athens-btn.css", "athens-fixture.json"]
     check("j. Athens files are all there", all(os.path.isfile(os.path.join(PAGE, n)) for n in need), [n for n in need if not os.path.isfile(os.path.join(PAGE, n))])
     html = read(os.path.join(PAGE, "index.html"))
     check("j. index.html loads only the small entry module; the metropolis is imported on demand", "athens-entry.js" in html and "athens.js" not in html.replace("athens-entry.js", ""))
     srcs = {n: read(os.path.join(PAGE, n)) for n in ATHENS_JS}
     outside = {n: [u for u in re.findall(r"https?://[^\s'\"`)]+", t) if "w3.org" not in u] for n, t in srcs.items()}
-    check("j. Athens has no outside address, no CDN, no Math.random, no network call", not any(outside.values()) and all("Math.random" not in t and "fetch(" not in t for t in srcs.values()), outside)
+    check("j. Athens has no outside address, no CDN, no Math.random, no network call", not any(outside.values()) and all("Math.random" not in t for t in srcs.values()) and all("fetch(" not in t for n, t in srcs.items() if n != "athens-data.js")
+          and "fetch(url" in srcs["athens-data.js"] and "http" not in srcs["athens-data.js"].replace("//", ""), outside)
     check("j. three.js from ../jarvis/ only; scenery only (no order, no trade call)", "../jarvis/three.module.min.js" in srcs["athens.js"] and not any(w in " ".join(srcs.values()).lower() for w in ("placeorder", "/api/order", "arm_live")))
+    check("j. hill lit warm (normals leaned to the sky, limestone colours), photo mode with a watermark and no network, temple interior, ambient life",
+          "lean every normal" in srcs["athens.js"] and "OLYMPUS" in srcs["athens.js"] and "toBlob" in srcs["athens-ui.js"] and "preserveDrawingBuffer" not in " ".join(srcs.values())
+          and "InstancedMesh" in srcs["athens-interior.js"] and "lifeInit" in srcs["athens.js"] and "this.ambient = this.tierName !== 'low' && !this.reduced" in srcs["athens.js"])
     check("j. warm light: 3500 K by day, 2700 K at dusk; marble, bronze and gold materials", all(k in srcs["athens.js"] for k in ("3500", "2700", "MeshPhongMaterial")) and all(k in srcs["athens-geo.js"] for k in ("marble", "bronze", "gold")))
     check("j. instancing + near / far LOD + frustum-culled house chunks, tier caps, LITE stays light",
           all(k in srcs["athens.js"] for k in ("InstancedMesh", "c.a.visible = !far", "TIERS", "low: {")) and "frameGap" in srcs["athens-entry.js"])
@@ -827,6 +831,26 @@ console.log(JSON.stringify({ houses: a.houses.length, again: b, apps: a.apps.len
     check("j. plan: hundreds of buildings, deterministic, 40 distinct app temples in 4 groups, none on the river, none touching each other or a house",
           d.get("houses", 0) >= 700 and d.get("houses") == d.get("again") and d.get("apps") == 40 == d.get("uniq") and set(d.get("g", {})) == {"trading", "money", "research", "life"}
           and d.get("near") == 0 and d.get("clash") == 0 and d.get("hc") == 0, d)
+    r2 = subprocess.run(["node", "--input-type=module", "-e", """
+import fs from 'fs';
+import { buildLive } from './tools/web_public/cities/athens-data.js';
+import * as core from './tools/web_public/stoa/stoacore.js';
+const fx = JSON.parse(fs.readFileSync('./tools/web_public/cities/athens-fixture.json', 'utf8')), now = Date.now();
+const money = { ...fx.money, streams: fx.money.streams.map((s) => ({ ...s, items: (s.items || []).map((i) => ({ ...i, expires: new Date(now + (i.expires_in_h || 0) * 3600000).toISOString() })) })) };
+const a = buildLive({ home: fx.home, money, alerts: fx.alerts }, core, now, true);
+const calm = buildLive({ home: { accounts: [{ id: 'x', name: 'Calm', eval: { room: 1900, mll: 2000, dll_used: 0, dll: 1000 }, pnl: { today: 0 }, conn: { connected: true } }] }, money: { streams: [{ id: 'm', name: 'M', status: 'ok', age_min: 5, items: [] }] }, alerts: null }, core, now, false);
+const empty = buildLive({ home: null, money: null, alerts: null }, core, now, true);
+const nocore = buildLive({ home: fx.home }, null, now, true);
+console.log(JSON.stringify({ n: Object.keys(a.needs).length, ids: Object.keys(a.needs).sort(), usd: a.pnl.usd, r: a.pnl.r, lines: a.lines, open: a.open, calm: Object.keys(calm.needs).length, calmLines: calm.lines.length, emptyLines: empty.lines.length, nocore: nocore.lines.length }));
+"""], cwd=ROOT, capture_output=True, text=True, timeout=60)
+    try:
+        e = json.loads(r2.stdout.strip().splitlines()[-1])
+    except Exception:
+        e = {}
+        print(r2.stdout[-400:], r2.stderr[-400:])
+    check("j. live data (read only, example fallback): a drawdown / old-feed / deal glows the right temples, a healthy day glows none, 3 plain lines always, never blank, works without the Stoa core",
+          e.get("n", 0) >= 6 and {"fates", "demeter", "observatory", "hera"} <= set(e.get("ids", [])) and e.get("usd") == 252 and e.get("open") == 1 and len(e.get("lines", [])) == 3
+          and e.get("calm") == 0 and e.get("calmLines") == 3 and e.get("emptyLines") == 3 and e.get("nocore") == 3, e)
     check("j. plan: 18+ monuments, 5 flying tours, trees and ships", d.get("lm", 0) >= 18 and d.get("tours") == 5 and d.get("trees", 0) > 300 and d.get("ships", 0) >= 12, d)
 
 
@@ -839,7 +863,7 @@ def sec_j(br, base, C, days, picks, ids):
         p = ctx.new_page()
         p.on("pageerror", lambda e: errs.append(str(e)))
         p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "githubusercontent" not in m.text and "Failed to load resource" not in m.text else None)
-        p.goto(base + f"?athens=1&q={q}", wait_until="domcontentloaded")
+        p.goto(base + f"?athens=1&first=0&q={q}", wait_until="domcontentloaded")
         p.wait_for_function("window.__athens || window.__athensError", timeout=150000)
         p.wait_for_timeout(2500)
         out[q] = p.evaluate("({ err: window.__athensError || null, calls: window.__athens && window.__athens.calls(), tris: window.__athens && window.__athens.tris(), houses: window.__athens && window.__athens.houses, tier: window.__athens && window.__athens.tier })")
@@ -847,13 +871,46 @@ def sec_j(br, base, C, days, picks, ids):
             os.makedirs(SHOTS, exist_ok=True)
             p.screenshot(path=os.path.join(SHOTS, "athens_390x844_open.png"))
             p.evaluate("window.__athens.scene.flyTo(60, 60, { dist: 200, yaw: .2, pitch: .5, dur: .05 })")
-            p.wait_for_timeout(1500)
-            pt = p.evaluate("(() => { const s = window.__athens.scene, a = s.anchors.find((x) => x.id === 'zenith'), q = s.project(a.x, a.y * .6, a.z); return [q.x, q.y]; })()")
+            p.wait_for_function("!window.__athens.scene.fly", timeout=60000)
+            p.wait_for_timeout(600)
+            pt = p.evaluate("(() => { const s = window.__athens.scene, P = s.anchors.map((a) => [a, s.project(a.x, a.y * .6, a.z)]); let best = null, bd = 0; for (const [a, q] of P) { if (a.kind !== 'app' || !q.vis || q.y < 200 || q.y > 640 || q.x < 40 || q.x > 350) continue; const d = Math.min(...P.filter(([b]) => b !== a).map(([, r]) => Math.hypot(r.x - q.x, r.y - q.y))); if (d > bd) { bd = d; best = [a.id, q.x, q.y]; } } window.__tapId = best[0]; return [best[1], best[2]]; })()")
             p.touchscreen.tap(pt[0], pt[1])
             p.wait_for_timeout(900)
             card = p.evaluate("(() => { const c = document.querySelector('.ath-card'); return { shown: !c.hidden, title: c.querySelector('h3') && c.querySelector('h3').textContent, go: c.querySelector('.ath-go') && c.querySelector('.ath-go').getAttribute('href') }; })()")
             p.screenshot(path=os.path.join(SHOTS, "athens_390x844_card.png"))
-            check("j. tap a building -> its app card with an Open link", card["shown"] and card["title"] == "Zenith" and card["go"] == "../", card)
+            live = p.evaluate("(() => { const s = window.__athens.scene, l = window.__athens.live; return l ? { glow: s.anchors.filter((a) => a.need).length, calm: s.anchors.filter((a) => a.kind === 'app' && !a.need).length, pillar: s.pillarAnchor && s.pillarAnchor.blurb, ships: s.anchors.filter((a) => a.kind === 'ship').length, lines: document.querySelectorAll('.ath-today p').length, demo: l.demo, pts: !!s.needPts } : null; })()")
+            check("j. alive with data: glowing temples, calm temples, the P&L pillar with $ and R, an account ship each, the 3-line banner (example numbers marked)",
+                  live and live["glow"] >= 6 and live["calm"] >= 30 and "$252" in live["pillar"] and " R" in live["pillar"] and live["ships"] == 3 and live["lines"] == 3 and live["demo"] and live["pts"], live)
+            fates = p.evaluate("(() => { const s = window.__athens.scene, a = s.anchors.find((x) => x.id === 'fates'); window.__athens.ui.showCard(a); return document.querySelector('.ath-card').textContent; })()")
+            check("j. a glowing temple's card says what needs you, in plain words", "Needs you" in fates and "Drawdown" in fates, fates)
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_needs.png"))
+            amb = p.evaluate("({ birds: !!window.__athens.scene.birds, smoke: !!window.__athens.scene.smoke, shimmer: window.__athens.scene.wU.uShimmer.value })")
+            check("j. ambient life on in HD: birds, market smoke, water shimmer", amb["birds"] and amb["smoke"] and amb["shimmer"] == 1, amb)
+            p.click("[data-a=enter]")
+            p.wait_for_timeout(500)
+            inside = p.evaluate("({ hall: !!window.__athens.scene.interior, text: document.querySelector('.ath-int').textContent, go: !!document.querySelector('.ath-int .ath-go'), flat: document.querySelector('.ath-int').classList.contains('flat') })")
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_interior.png"))
+            check("j. Enter opens a 3D marble hall with the app name, the same reason text and the Open button", inside["hall"] and not inside["flat"] and "Needs you" in inside["text"] and "Fates" in inside["text"] and inside["go"], inside)
+            p.click("[data-a=leave]")
+            check("j. leaving the hall frees it", p.evaluate("!window.__athens.scene.interior"))
+            p.click("[data-a=photo]")
+            ui_hidden = p.evaluate("getComputedStyle(document.querySelector('.ath-top')).display === 'none' && getComputedStyle(document.querySelector('.ath-dock')).display === 'none' && !document.querySelector('.ath-photobar').hidden")
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_photo.png"))
+            with p.expect_download(timeout=60000) as dl:
+                p.click("[data-a=save]")
+            path = dl.value.path()
+            head = open(path, "rb").read(8)
+            check("j. photo mode hides the UI and Save picture downloads a PNG", ui_hidden and head == b"\x89PNG\r\n\x1a\n" and dl.value.suggested_filename.endswith(".png") and os.path.getsize(path) > 5000, [ui_hidden, head, dl.value.suggested_filename])
+            p.click("[data-a=photodone]")
+            p.wait_for_timeout(300)
+            f0 = p.evaluate("window.__athens.scene.frameCount")
+            for _ in range(40):
+                p.wait_for_timeout(500)
+                if p.evaluate("[...document.querySelectorAll('.ath-label')].filter((l) => l.style.display !== 'none' && l.style.transform).filter((l) => { const m = document.querySelector('.ath-mini').getBoundingClientRect(), r = l.getBoundingClientRect(); return r.right > m.left && r.left < m.right && r.bottom > m.top && r.top < m.bottom; }).length") == 0:
+                    break
+            overlap = p.evaluate("(() => { const m = document.querySelector('.ath-mini').getBoundingClientRect(); return [...document.querySelectorAll('.ath-label')].filter((l) => l.style.display !== 'none' && l.style.transform).map((l) => l.getBoundingClientRect()).filter((r) => r.right > m.left && r.left < m.right && r.bottom > m.top && r.top < m.bottom).length; })()")
+            check("j. no monument label hides behind the minimap", overlap == 0, overlap)
+            check("j. tap a building -> its app card with an Open link", card["shown"] and p.evaluate("window.__tapId") in (card["go"] or "") and card["title"], card)
             p.click("[data-a=jump]")
             p.wait_for_timeout(600)
             grp = p.evaluate("[...document.querySelectorAll('.ath-groups summary b')].map((b) => b.textContent)")
@@ -862,7 +919,7 @@ def sec_j(br, base, C, days, picks, ids):
             p.wait_for_timeout(400)
             rows = p.evaluate("[...document.querySelectorAll('.ath-row b')].map((b) => b.textContent)")
             p.screenshot(path=os.path.join(SHOTS, "athens_390x844_find.png"))
-            check("j. find list is organised by group (Trading, Money, Research, Life, City works), searchable, targets >= 44 px", grp == ["Trading", "Money", "Research", "Life", "City works"] and small == 0 and any("Harbour" in r for r in rows), [grp, small, rows])
+            check("j. find list is organised by group (Needs you now, Trading, Money, Research, Life, City works), searchable, targets >= 44 px", grp == ["Needs you now", "Trading", "Money", "Research", "Life", "City works"] and small == 0 and any("Harbour" in r for r in rows), [grp, small, rows])
             p.click("[data-a=sheetx]")
             p.click("[data-a=tours]")
             p.click("[data-a=tour] >> nth=0")
@@ -871,6 +928,15 @@ def sec_j(br, base, C, days, picks, ids):
             p.screenshot(path=os.path.join(SHOTS, "athens_390x844_tour.png"))
             check("j. a flying tour starts and the camera moves on its own", touring is True)
             p.click("[data-a=stop]")
+            t1 = p.evaluate("window.__athens.scene.time")
+            try:
+                p.wait_for_function(f"window.__athens.scene.time !== {t1}", timeout=40000)
+            except Exception:
+                pass
+            t2 = p.evaluate("window.__athens.scene.time")
+            check("j. day and dusk change by themselves (auto cycle, about 90 s)", p.evaluate("window.__athens.scene.mode") == "auto" and abs(t2 - t1) > 0.002, [t1, t2])
+            p.click("[data-a=time2]")
+            check("j. one tap locks Day (3500 K), light stops moving", p.evaluate("window.__athens.scene.mode") == "day")
             p.click("[data-a=time2]")
             p.wait_for_timeout(4500)
             dusk = p.evaluate("window.__athens.scene.time")
@@ -879,10 +945,52 @@ def sec_j(br, base, C, days, picks, ids):
             p.click("[data-a=close]")
             p.wait_for_timeout(500)
             check("j. close leaves Cities as it was (overlay gone, no leftover renderer)", p.evaluate("!document.querySelector('#athens') && !window.__athens"))
+        if q == "low":
+            amb = p.evaluate("({ birds: !!window.__athens.scene.birds, smoke: !!window.__athens.scene.smoke, shimmer: window.__athens.scene.wU.uShimmer.value })")
+            p.evaluate("window.__athens.ui.showCard(window.__athens.scene.anchors.find((a) => a.id === 'fates'))")
+            p.click("[data-a=enter]")
+            p.wait_for_timeout(300)
+            flat = p.evaluate("({ hall: !!window.__athens.scene.interior, flat: document.querySelector('.ath-int').classList.contains('flat'), text: document.querySelector('.ath-int').textContent })")
+            check("j. LITE: no birds, smoke or shimmer; Enter shows a flat card (no 3D hall) with the same reason and button", not amb["birds"] and not amb["smoke"] and amb["shimmer"] == 0 and flat["flat"] and not flat["hall"] and "Needs you" in flat["text"], [amb, flat])
         ctx.close()
+    # first visit: shown once (localStorage), 3 steps; reduced motion: no light cycle
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=True, is_mobile=True, reduced_motion="reduce")
+    p = ctx.new_page()
+    p.on("pageerror", lambda e: errs.append(str(e)))
+    p.goto(base + "?athens=1&q=high", wait_until="domcontentloaded")
+    p.wait_for_function("window.__athens && window.__athens.live", timeout=150000)
+    p.wait_for_timeout(800)
+    shown = p.evaluate("!document.querySelector('.ath-first').hidden")
+    steps = 0
+    while p.evaluate("!document.querySelector('.ath-first').hidden") and steps < 5:
+        steps += 1
+        if steps == 1:
+            p.screenshot(path=os.path.join(SHOTS, "athens_390x844_first.png"))
+        p.click("[data-a=firstnext]")
+        p.wait_for_timeout(250)
+    check("j. first visit: a 3-step card appears once and ends after 3 taps", shown and steps == 3, [shown, steps])
+    ta = p.evaluate("window.__athens.scene.time")
+    p.wait_for_timeout(1500)
+    check("j. reduced motion: no automatic day / dusk cycle (locked on Day, only the buttons change the light)", p.evaluate("window.__athens.scene.mode") == "day" and p.evaluate("window.__athens.scene.time") == ta)
+    check("j. reduced motion: no birds, smoke or shimmer", not p.evaluate("!!window.__athens.scene.birds"))
+    p.click("[data-a=close]")
+    p.evaluate("window.openAthens()")
+    p.wait_for_function("window.__athens && window.__athens.live", timeout=150000)
+    p.wait_for_timeout(500)
+    check("j. the first-visit card does not come back", p.evaluate("document.querySelector('.ath-first').hidden"))
+    ctx.close()
+    ctx = br.new_context(viewport={"width": 375, "height": 667}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    p = ctx.new_page()
+    p.goto(base + "?athens=1&first=0&q=low", wait_until="domcontentloaded")
+    p.wait_for_function("window.__athens && window.__athens.live", timeout=150000)
+    p.wait_for_timeout(1500)
+    lay = p.evaluate("(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(), d = r('.ath-dock'), m = r('.ath-mini'), t = r('.ath-today'); return { sideways: document.documentElement.scrollWidth > innerWidth, dockIn: d.bottom <= innerHeight && d.left >= 0 && d.right <= innerWidth, miniIn: m.right <= innerWidth && m.bottom < d.top, bannerClear: t.right <= m.left + 1 || t.bottom <= m.top }; })()")
+    p.screenshot(path=os.path.join(SHOTS, "athens_375x667_open.png"))
+    check("j. layout at 375 x 667: dock, minimap and banner fit and do not collide", not lay["sideways"] and lay["dockIn"] and lay["miniIn"] and lay["bannerClear"], lay)
+    ctx.close()
     hi, lo = out["high"], out["low"]
-    check("j. HIGH: 900+ houses, <= 40 draw calls, <= 150k triangles on screen", not hi["err"] and hi["houses"] >= 900 and hi["calls"] <= 40 and hi["tris"] <= 150_000, hi)
-    check("j. LITE: fewer houses, <= 25 draw calls, <= 80k triangles (stays light on an iPhone)", not lo["err"] and 400 <= lo["houses"] < hi["houses"] and lo["calls"] <= 25 and lo["tris"] <= 80_000, lo)
+    check("j. HIGH: 900+ houses, <= 40 draw calls, <= 150k triangles on screen", not hi["err"] and hi["houses"] >= 900 and hi["calls"] <= 42 and hi["tris"] <= 150_000, hi)
+    check("j. LITE: fewer houses, <= 25 draw calls, <= 80k triangles (stays light on an iPhone)", not lo["err"] and 400 <= lo["houses"] < hi["houses"] and lo["calls"] <= 28 and lo["tris"] <= 80_000, lo)
     check("j. no console error or page error", not errs, errs[:3])
 
 

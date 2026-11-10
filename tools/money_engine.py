@@ -10,6 +10,8 @@ Scanners: tools/money/<id>.py (chrysos, mercury, sibyl, oikos, arbiter), each `-
 slow, crashing or writing bad JSON never stops the others: the hub falls back to the last good file (status stale) and then to the
 bundled sample (status sample). The engine never trades, never reads keys, never touches engine/ or live_model*.json.
 Contract of a scanner file: {"v":1,"id","asof","mode":"paper","status":"ok|stale|sample","headline":{"text","usd_month"},"items":[...],"notes":[...]}.
+A scanner may also give its OWN range: a top-level "usd_month": {"low","base","high"} (numbers, low <= base <= high; low may be negative = a loss). It passes through to
+the index and drives the combined low / base / high; a scanner that gives only the headline number keeps the fixed multipliers (RANGE).
 All money here is an ESTIMATE with a low / base / high range, never a promise.
 """
 from __future__ import annotations
@@ -97,6 +99,17 @@ def read_json(path: str):
 
 
 # ------------------------------------------------------------------------------------------------ the contract
+def own_range(raw):
+    """a scanner's own {low, base, high} $ a month, or None unless all three are numbers with low <= base <= high (a negative low is a loss and is kept)"""
+    r = raw.get("usd_month") if isinstance(raw, dict) else None
+    if not isinstance(r, dict):
+        return None
+    lo, b, hi = num(r.get("low")), num(r.get("base")), num(r.get("high"))
+    if lo is None or b is None or hi is None or not (lo <= b <= hi):
+        return None
+    return {"low": round(lo, 2), "base": round(b, 2), "high": round(hi, 2)}
+
+
 def normalize(sid: str, raw, now: dt.datetime | None = None):
     """A scanner file -> a clean stream dict, or None when it is not usable. Never raises."""
     if not isinstance(raw, dict) or raw.get("id") not in (sid, None):
@@ -124,11 +137,13 @@ def normalize(sid: str, raw, now: dt.datetime | None = None):
         status = "stale"
     notes = [clean_text(n, 200) for n in raw.get("notes", []) if clean_text(n)] if isinstance(raw.get("notes"), list) else []
     return {"v": 1, "id": sid, "asof": iso(asof) if asof else None, "mode": "paper", "status": status, "age_min": age_min,
-            "headline": {"text": text, "usd_month": num(head.get("usd_month"))}, "items": items[:8], "notes": notes[:6]}
+            "headline": {"text": text, "usd_month": num(head.get("usd_month"))}, "usd_range": own_range(raw), "items": items[:8], "notes": notes[:6]}
 
 
-def estimate(status: str, base):
-    """(low, base, high) in $ a month for one stream; base None -> all None."""
+def estimate(status: str, base, own=None):
+    """(low, base, high) in $ a month for one stream; base None -> all None. A scanner's own range (own) wins over the fixed multipliers."""
+    if isinstance(own, dict) and all(num(own.get(k)) is not None for k in ("low", "base", "high")):
+        return round(num(own["low"]), 2), round(num(own["base"]), 2), round(num(own["high"]), 2)
     b = num(base)
     if b is None:
         return None, None, None
@@ -142,7 +157,7 @@ def build_index(streams: list[dict], now: dt.datetime | None = None) -> dict:
     rows, lo, base, hi = [], 0.0, 0.0, 0.0
     real = 0.0
     for s in streams:
-        e = estimate(s["status"], s["headline"]["usd_month"]) if s.get("headline") else (None, None, None)
+        e = estimate(s["status"], s["headline"]["usd_month"], s.get("usd_range")) if s.get("headline") else (None, None, None)
         rows.append({"id": s["id"], "name": NAMES.get(s["id"], s["id"].title()), "role": ROLES.get(s["id"], ""), "status": s["status"], "source": s.get("source", "scanner"),
                      "asof": s.get("asof"), "age_min": s.get("age_min"), "headline": s["headline"]["text"] if s.get("headline") else "",
                      "usd_month": {"low": e[0], "base": e[1], "high": e[2]}, "items": (s.get("items") or [])[:3], "notes": (s.get("notes") or [])[:3],
@@ -326,7 +341,7 @@ def selftest() -> int:
     chk("all five bundled fixtures follow the contract (paper, sample, headline, 1-8 items, 'not real' note)",
         all(f and f["status"] == "sample" and f["items"] and any("not real" in n for n in f["notes"]) for f in fixt))
     full = run(os.path.join(tmp, "fx"), True, 3, scanners=os.path.join(tmp, "none"), quiet=True)
-    chk("--fixture with no scanners at all still gives five sample cards and a total", full["counts"]["sample"] == 5 and full["total"]["base"] == 1495.0 and len(full["streams"]) == 5)
+    chk("--fixture with no scanners at all still gives five sample cards and a total", full["counts"]["sample"] == 5 and abs(full["total"]["base"] - 1495.01) < 0.01 and full["total"]["low"] < 0 and len(full["streams"]) == 5)
     print(f"\n{len(total) - len(bad)}/{len(total)} passed")
     return 1 if bad else 0
 

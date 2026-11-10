@@ -1,6 +1,6 @@
 // Fly-through camera modes of the Data City (the manual orbit is the fourth). Each mode is a closed Catmull-Rom path the camera
 // rides while orbit.drive() steers it (a drag, a pinch or a tap on a building hands the camera back):
-//   skim   low over the districts, through every district gate and across its middle, the neon streets and windows at eye level
+//   skim   low over the districts, through every district gate and across its middle, the streets and windows at eye level
 //   drone  a wide, high loop round the whole city looking in at the plaza (the skyline, the streams, the outskirts)
 //   grand  the landmarks in turn: the forum, the Pharos, the Gate of Poseidon, the temple on its acropolis
 // flight(mode, L, spots, from) -> { step(dt) -> { pos, look }, info() }; pure maths on three.js vectors (no DOM).
@@ -8,8 +8,9 @@ import * as THREE from '../jarvis/three.module.min.js';
 
 export const MODES = [
   { key: 'orbit', label: 'ORBIT', hint: 'Orbit: drag to turn, pinch to zoom' },
-  { key: 'skim', label: 'SKIM', hint: 'Skim: low through the district gates' },
-  { key: 'drone', label: 'DRONE', hint: 'Drone: a wide loop over the whole skyline' },
+  { key: 'skim', label: 'STREET', hint: 'Street: low at eye level through the district gates' },
+  { key: 'drone', label: 'FLY', hint: 'Fly: a wide, high loop over the whole skyline' },
+  { key: 'walk', label: 'WALK', hint: 'Walk: along the streets at eye level, drag to look round and pick the next street' },
   { key: 'grand', label: 'GRAND', hint: 'Grand tour: the forum, the Pharos, the Poseidon gate, the temple' },
 ];
 const SPEED = { skim: 24, drone: 36, grand: 20 };

@@ -244,7 +244,7 @@ export function mountSwitcher(opts = {}) {
   rootEl.setAttribute('aria-label', 'Switch apps'); rootEl.setAttribute('aria-hidden', 'true');
   rootEl.innerHTML = '<div class="nx-head"><div><h2>OLYMPUS</h2><small>SWITCH \u00b7 SWIPE OR HOLD THE ORB</small></div>'
     + '<button class="nx-x" type="button" aria-label="Close">×</button></div>'
-    + '<div class="nx-find"><input id="nxFind" type="search" autocomplete="off" autocapitalize="off" placeholder="Search apps by name or what they do" aria-label="Search apps by name or what they do">'
+    + '<div class="nx-find"><input id="nxFind" type="search" autocomplete="off" autocapitalize="off" placeholder="Search apps" aria-label="Search apps by name or what they do">'
     + '<button class="nx-mapb" id="nxMapBtn" type="button" aria-pressed="false" aria-label="Show all apps on one screen">MAP</button></div>'
     + '<button class="nx-sys" type="button" id="nxSys" hidden></button>'
     + '<div class="nx-gr" id="nxGroups" role="group" aria-label="Jump to a group" hidden></div>'
@@ -360,8 +360,8 @@ export function mountSwitcher(opts = {}) {
     track.querySelectorAll('.nx-card[data-nx]').forEach((c) => { if (favSet.has(c.dataset.nx)) c.insertAdjacentHTML('afterbegin', '<span class="nx-fv" aria-hidden="true">\u2605</span>'); });
     const star = (a) => (favSet.has(a.id) ? '<b class="nx-fv" aria-hidden="true">\u2605</b>' : '');
     mapEl.innerHTML = !parts.length ? `<p class="nx-empty">No app matches "${escH(query.slice(0, 40))}".</p>` : parts.map((p) => {
-      const gid = p.g ? p.g.id : 'more', col = GCOL[String(gid).toLowerCase()] || '#c96a4a';
-      return `<h3 style="--mc:${col}">${escH(p.g ? p.g.name : 'MORE')}</h3><div class="nx-mg" style="--mc:${col}">`
+      const isHome = !p.g && p.apps.some((a) => a.id === 'home'), gid = p.g ? p.g.id : isHome ? 'fav' : 'more', col = GCOL[String(gid).toLowerCase()] || '#c96a4a';
+      return `<h3 style="--mc:${col}">${escH(p.g ? p.g.name : isHome ? 'HOME' : 'MORE')}</h3><div class="nx-mg" style="--mc:${col}">`
         + p.apps.map((a) => `<button class="nx-mt${a.id === cur ? ' now' : ''}${a.off ? ' off' : ''}" type="button" data-nx="${escH(a.id)}" aria-label="${escH(label(a))}${favSet.has(a.id) ? ', favourite' : ''}">${star(a)}<i>${escH(String(a.glyph || a.name || '?').charAt(0).toUpperCase())}</i><span>${escH(String(a.name || a.id))}</span></button>`).join('') + '</div>';
     }).join('');
     row.innerHTML = parts.map((p, i) => (i && many ? '<i class="nx-qs" aria-hidden="true"></i>' : '') + p.apps.map(qb).join('')).join('');

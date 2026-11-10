@@ -13,7 +13,18 @@ const txt = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().sli
 
 export function money(v) { if (!isNum(v)) return '-'; const r = Math.round(Math.abs(v)); return (v < 0 ? '-$' : '$') + String(r).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 export function perMonth(v) { return isNum(v) ? money(v) + ' a month' : 'no estimate'; }
-export function rangeText(lo, hi) { return isNum(lo) && isNum(hi) ? `${money(lo)} to ${money(hi)} a month` : 'no range yet'; }
+export function rangeText(lo, hi) {
+  if (!(isNum(lo) && isNum(hi))) return 'no range yet';
+  return lo < 0 ? `a loss of ${money(-lo)} a month to ${money(hi)} a month` : `${money(lo)} to ${money(hi)} a month`;       // a negative low end is a LOSS in words, never "-$42 to ..."
+}
+/** the worst case in plain words: a negative low end is said as a loss */
+export function worstText(lo) { return !isNum(lo) ? 'no worst case yet' : lo < 0 ? `Worst case: you could lose about ${money(-lo)} a month.` : `Worst case: about ${money(lo)} a month.`; }
+/** the range bar in percent of the bar's width. The bar spans the smaller of the low end and 0 up to the larger of the high end and the estimate; zero is marked when the low end is a loss. */
+export function rangeBar(lo, base, hi) {
+  if (!isNum(lo) || !isNum(hi)) return { left: 0, width: 0, mark: 0, zero: null, neg: false };
+  const b = isNum(base) ? base : (lo + hi) / 2, min = Math.min(lo, 0), max = Math.max(hi, b, 0.01), span = max - min || 1, pc = (v) => Math.max(0, Math.min(100, Math.round(((v - min) / span) * 100)));
+  return { left: pc(lo), width: Math.max(1, pc(hi) - pc(lo)), mark: pc(b), zero: lo < 0 ? pc(0) : null, neg: lo < 0 };
+}
 export function ageText(min) {
   if (!isNum(min) || min < 0) return 'no date';
   if (min < 2) return 'just now';
@@ -53,7 +64,7 @@ export function combine(streams) {
   }
   for (const s of streams) { if (s.status === 'sample') sample++; if (s.status === 'stale') stale++; }
   const allSample = streams.length > 0 && sample === streams.length;
-  const text = n === 0 ? 'No estimate yet: no stream has reported a number.' : `About ${money(base)} a month, but it could be anywhere from ${money(lo)} to ${money(hi)}.`;
+  const text = n === 0 ? 'No estimate yet: no stream has reported a number.' : lo < 0 ? `About ${money(base)} a month, but in the worst case you could lose about ${money(-lo)} a month. At best about ${money(hi)} a month.` : `About ${money(base)} a month, but it could be anywhere from ${money(lo)} to ${money(hi)}.`;
   const why = allSample ? 'These are example numbers, not real finds.' : sample ? `${sample} of 5 streams still show examples, not real finds.` : stale ? `${stale} stream${stale > 1 ? 's' : ''} have old data.` : 'Every stream is fresh.';
   return { low: lo, base, high: hi, n, real, sample, stale, allSample, text, why, tone: allSample ? 'info' : stale || sample ? 'warn' : 'ok' };
 }
@@ -101,6 +112,6 @@ export function histText(hist) {
 export function jarvisCard(streams, nowMs) {
   const c = combine(streams), t = todo(streams, 3);
   return { v: 1, name: 'Mint', status: { level: c.allSample ? 'off' : c.tone === 'ok' ? 'ok' : 'warn', label: c.allSample ? 'Example numbers' : c.stale ? 'Old data' : 'Estimate' },
-    kpis: [{ label: 'Estimate / month', value: money(c.base) }, { label: 'Range', value: `${money(c.low)}-${money(c.high)}` }, { label: 'Streams', value: String(streams.filter((s) => s.status === 'ok').length) + ' live' }],
+    kpis: [{ label: 'Estimate / month', value: money(c.base) }, { label: 'Range', value: c.low < 0 ? `${money(c.low)} to ${money(c.high)}` : `${money(c.low)}-${money(c.high)}` }, { label: 'Streams', value: String(streams.filter((s) => s.status === 'ok').length) + ' live' }],
     lines: t.slice(0, 2).map((x) => txt(x.title, 110)), t: Math.floor((isNum(nowMs) ? nowMs : 0) / 1000), open: '#', theme: '#14110e', stale_after: 21600 };
 }

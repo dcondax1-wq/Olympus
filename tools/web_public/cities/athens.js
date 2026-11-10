@@ -7,6 +7,7 @@ import { planAthens, groundY, COAST, RIVER, RIVER_W, WALL, insideWall, ACROPOLIS
 import { buildStatic } from './athens-build.js';
 import { Batch, PAL, unit } from './athens-geo.js';
 import { rng, hash32 } from './util.js';
+import { Interior } from './athens-interior.js';
 
 export const TIERS = { // house cap, trees, lamps, windows
   low: { houses: 520, trees: 150, lamps: 120, windows: 100, dpr: 1.25, ships: false, fps: 30 },
@@ -25,7 +26,7 @@ function terrain(tier) {
   const edges = []; for (let x = WORLD.x0; x < WORLD.x1;) { edges.push(x); const ax = Math.abs(x); x += ax < 640 ? (tier === 'low' ? 24 : 16) : ax < 820 ? (tier === 'low' ? 80 : 40) : 130; } edges.push(WORLD.x1);
   const nx = edges.length, pos = new Float32Array(nx * nx * 3), col = new Float32Array(nx * nx * 3), idx = [];
   const C = (h) => new THREE.Color(h);
-  const paved = C('#b6a687'), dust = C('#a49c6a'), olive = C('#8d9158'), rock = C('#9a8d76'), top = C('#d0c2a2'), sand = C('#d9c796'), sea = C('#7a9892'), farRock = C('#8a7c68'), hill = C('#a79a78');
+  const paved = C('#b6a687'), dust = C('#a49c6a'), olive = C('#8d9158'), rock = C('#b3a283'), top = C('#dccda9'), sand = C('#d9c796'), sea = C('#7a9892'), farRock = C('#8a7c68'), hill = C('#bfae85');
   const tmp = new THREE.Color(), r = rng(hash32('terrain'));
   for (let j = 0; j < nx; j++) for (let i = 0; i < nx; i++) {
     const x = edges[i], z = edges[j], y = groundY(x, z), k = (j * nx + i) * 3;
@@ -42,11 +43,13 @@ function terrain(tier) {
   }
   for (let j = 0; j < nx - 1; j++) for (let i = 0; i < nx - 1; i++) { const a = j * nx + i, b = a + 1, d = a + nx, c = d + 1; idx.push(a, d, b, b, d, c); }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals();
+  // soften the lighting of slopes: lean every normal toward the sky so a hill facing away from the sun is warm limestone, never black
+  const nr = g.attributes.normal.array; for (let i = 0; i < nr.length; i += 3) { const x = nr[i] * .45, y = nr[i + 1] * .45 + .55, z = nr[i + 2] * .45, l = Math.hypot(x, y, z) || 1; nr[i] = x / l; nr[i + 1] = y / l; nr[i + 2] = z / l; }
   return g;
 }
 
 const WATER_VS = `varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }`;
-const WATER_FS = `uniform float uTime; uniform vec3 uDeep, uShallow, uSun, uSky, uFog; uniform vec3 uSunDir; uniform float uFogD, uMove;
+const WATER_FS = `uniform float uTime; uniform vec3 uDeep, uShallow, uSun, uSky, uFog; uniform vec3 uSunDir; uniform float uFogD, uMove, uShimmer;
 varying vec3 vW;
 void main(){
   float t = uTime*uMove;
@@ -56,7 +59,8 @@ void main(){
   vec3 h = normalize(uSunDir + v); float spec = pow(max(dot(n, h), 0.), 90.);
   vec3 c = mix(uDeep, uShallow, .5 + .5*sin(vW.x*.013 + vW.z*.017)) ;
   c = mix(c, uSky, clamp(fres*.8, 0., .85)) + uSun*spec*.8;
-  float d = length(cameraPosition - vW); float f = 1. - exp(-d*d*uFogD*uFogD);
+  c += uSun*pow(max(0., sin(vW.x*.7+t*3.)*sin(vW.z*.9-t*2.4)), 24.)*uShimmer*.7;
+  float d = length(cameraPosition - vW); float f = 1. - exp(-d*d*uFogD*uFogD*3.);
   gl_FragColor = vec4(mix(c, uFog, clamp(f,0.,1.)), .93);
   #include <colorspace_fragment>
 }`;
@@ -74,7 +78,7 @@ void main(){
 export class Athens {
   constructor(canvas, opts = {}) {
     this.canvas = canvas; this.tierName = opts.tier || 'high'; this.T = TIERS[this.tierName] || TIERS.high;
-    this.reduced = !!opts.reduced; this.time = opts.dusk ? 1 : 0; this.target = this.time;
+    this.reduced = !!opts.reduced; this.ambient = this.tierName !== 'low' && !this.reduced; this.time = opts.dusk ? 1 : 0; this.target = this.time;
     this.plan = planAthens();
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: this.tierName !== 'low', powerPreference: 'high-performance', alpha: false });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace; this.renderer.toneMapping = THREE.NoToneMapping;
@@ -85,6 +89,7 @@ export class Athens {
     this.scene.add(this.hemi, this.sun, this.sun.target);
     this.scene.fog = new THREE.FogExp2('#e8d2a4', .0004);
     this.cam = { tx: -20, ty: 8, tz: 40, yaw: 2.55, pitch: .5, dist: 980 };
+    this.mode = this.reduced ? 'day' : 'auto'; this.autoT0 = performance.now(); this.live = null; this.shipAnch = [];
     this.fly = null; this.tour = null; this.anchors = []; this.sel = null; this.frameCount = 0; this.calls = 0;
     this.build();
     this.applyTime(); this.placeCamera();
@@ -101,9 +106,9 @@ export class Athens {
     // terrain
     const tm = own(new THREE.MeshLambertMaterial({ vertexColors: true })); const ter = new THREE.Mesh(own(terrain(this.tierName)), tm); scene.add(ter);
     // water: the sea and the river share one material
-    this.wU = { uTime: this.u.uTime, uDeep: { value: new THREE.Color('#2f5f78') }, uShallow: { value: new THREE.Color('#5c97a2') }, uSun: { value: new THREE.Color('#ffd9a0') }, uSky: { value: new THREE.Color('#d8c9a5') }, uFog: { value: new THREE.Color('#e8d2a4') }, uSunDir: { value: new THREE.Vector3(0, .5, -.8) }, uFogD: { value: .0004 }, uMove: { value: this.reduced ? 0 : 1 } };
+    this.wU = { uTime: this.u.uTime, uDeep: { value: new THREE.Color('#2f5f78') }, uShallow: { value: new THREE.Color('#5c97a2') }, uSun: { value: new THREE.Color('#ffd9a0') }, uSky: { value: new THREE.Color('#d8c9a5') }, uFog: { value: new THREE.Color('#e8d2a4') }, uSunDir: { value: new THREE.Vector3(0, .5, -.8) }, uFogD: { value: .0004 }, uMove: { value: this.reduced ? 0 : 1 }, uShimmer: { value: this.ambient ? 1 : 0 } };
     const wm = own(new THREE.ShaderMaterial({ vertexShader: WATER_VS, fragmentShader: WATER_FS, uniforms: this.wU, transparent: true }));
-    const sea = new THREE.Mesh(own(new THREE.PlaneGeometry(2600, 1100).rotateX(-Math.PI / 2)), wm); sea.position.set(0, -.25, 790); scene.add(sea);
+    const sea = new THREE.Mesh(own(new THREE.PlaneGeometry(7000, 2600).rotateX(-Math.PI / 2)), wm); sea.position.set(0, -.25, 1490); scene.add(sea);
     const curve = new THREE.CatmullRomCurve3(RIVER.map(([x, z]) => new THREE.Vector3(x, 0, z)), false, 'centripetal'), N = 90, rp = [], ri = [];
     for (let i = 0; i <= N; i++) { const p = curve.getPoint(i / N), t = curve.getTangent(i / N), nx = -t.z, nz = t.x, l = Math.hypot(nx, nz) || 1; const w = RIVER_W * .5 * (.85 + .3 * (i / N)); rp.push(p.x + nx / l * w, -.55, p.z + nz / l * w, p.x - nx / l * w, -.55, p.z - nz / l * w); if (i < N) { const a = i * 2; ri.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
     const rg = own(new THREE.BufferGeometry()); rg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3)); rg.setIndex(ri); scene.add(new THREE.Mesh(rg, wm));
@@ -116,6 +121,7 @@ export class Athens {
     this.trees(own, sm);
     this.shipsInit(own, sm);
     this.lights(own);
+    this.lifeInit(own);
     // anchors: every app temple and every monument can be tapped
     for (const a of plan.apps) this.anchors.push({ kind: 'app', id: a.id, appId: a.id, name: a.name, group: a.group, x: a.x, y: a.top || 12, z: a.z, colour: a.colour, blurb: a.blurb });
     for (const l of plan.landmarks) this.anchors.push({ kind: 'landmark', id: l.id, appId: l.app || null, name: l.name, group: l.group, x: l.x, y: l.top || 14, z: l.z, blurb: l.blurb, major: true });
@@ -167,13 +173,15 @@ export class Athens {
     S.cone(0, 1.7, 7.7, .4, 1.2, PAL.gold, 5);
     this.shipGeo = own(S.geometry()); const n = this.plan.ships.length;
     this.shipMesh = new THREE.InstancedMesh(this.shipGeo, own(new THREE.MeshLambertMaterial({ vertexColors: true })), n); this.shipMesh.frustumCulled = false; this.scene.add(this.shipMesh);
-    this.shipD = new THREE.Object3D(); this.shipsTick(0);
+    this.shipD = new THREE.Object3D(); this.shipTint = new THREE.Color(); this.tintShips(); this.shipsTick(0);
   }
   shipsTick(t) {
     const move = this.T.ships && !this.reduced; this.plan.ships.forEach((s, i) => {
       const d = this.shipD; let x = s.x, z = s.z, yaw = Math.PI * .5 + Math.sin(s.ph) * .3;
+      if (s.acct) { x = s.ax; z = s.az; }
       if (move && s.speed) { const a = t * .03 + s.ph; x = 40 + Math.cos(a) * 190; z = 420 + Math.sin(a) * 52 + 40; yaw = Math.atan2(-Math.sin(a) * 190, Math.cos(a) * 52) ; }
       else if (move) { yaw += Math.sin(t * .4 + s.ph) * .05; z += Math.sin(t * .6 + s.ph) * .35; }
+      if (s.acct && this.shipAnch[i]) { this.shipAnch[i].x = x; this.shipAnch[i].z = z; }
       d.position.set(x, -.2 + (move ? Math.sin(t * 1.3 + s.ph) * .18 : 0), z); d.rotation.set(0, yaw, move ? Math.sin(t * .9 + s.ph) * .04 : 0); d.scale.setScalar(s.scale); d.updateMatrix(); this.shipMesh.setMatrixAt(i, d.matrix);
     }); this.shipMesh.instanceMatrix.needsUpdate = true;
   }
@@ -190,7 +198,7 @@ export class Athens {
     for (const h of plan.houses.slice(0, this.T.houses)) if (r() < .34) wp.push(h.x + (r() - .5) * h.w * .6, h.y + 1.8, h.z + h.d / 2 + .25);
     const c = document.createElement('canvas'); c.width = c.height = 64; const cx = c.getContext('2d'), gr = cx.createRadialGradient(32, 32, 0, 32, 32, 32);
     gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.35, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); cx.fillStyle = gr; cx.fillRect(0, 0, 64, 64);
-    const tex = own(new THREE.CanvasTexture(c)); tex.colorSpace = THREE.SRGBColorSpace;
+    const tex = this.tex = own(new THREE.CanvasTexture(c)); tex.colorSpace = THREE.SRGBColorSpace;
     const pt = (arr, cap, size, op) => {
       const g = own(new THREE.BufferGeometry()); g.setAttribute('position', new THREE.Float32BufferAttribute(arr.slice(0, cap * 3), 3));
       const m = own(new THREE.PointsMaterial({ map: tex, color: '#ffb35c', size, sizeAttenuation: true, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
@@ -205,6 +213,100 @@ export class Athens {
     const gg = own(new THREE.BufferGeometry()); gg.setAttribute('position', new THREE.Float32BufferAttribute(b, 3)); this.glow = new THREE.Points(gg, gm); this.glow.userData.max = .8; this.scene.add(this.glow);
   }
 
+
+  // ------------------------------------------------------------------ ambient life: a few birds, smoke over the market (off in LITE and with reduced motion)
+  lifeInit(own) {
+    if (!this.ambient) return;
+    const P = [0, 0, .5, -1.4, .35, -.35, 0, 0, -.35, 0, 0, .5, 1.4, .35, -.35, 0, 0, -.35], g = own(new THREE.BufferGeometry()); g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+    this.birds = new THREE.InstancedMesh(g, own(new THREE.MeshBasicMaterial({ color: '#3a2e22', side: THREE.DoubleSide, fog: false })), 14); this.birds.frustumCulled = false; this.scene.add(this.birds);
+    this.birdD = new THREE.Object3D();
+    const N = 24, sg = own(new THREE.BufferGeometry()); sg.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(N * 3), 3));
+    this.smoke = new THREE.Points(sg, own(new THREE.PointsMaterial({ map: this.tex, color: '#d9cfbf', size: 9, sizeAttenuation: true, transparent: true, opacity: .32, depthWrite: false, fog: true })));
+    this.smoke.frustumCulled = false; this.scene.add(this.smoke); this.smokeSrc = [[-2, 150], [38, 188], [64, 216], [-20, 120]];
+  }
+  lifeTick(t) {
+    if (!this.birds) return; const d = this.birdD;
+    for (let i = 0; i < 14; i++) {
+      const a = t * (.09 + (i % 3) * .015) + i * .9, r = 90 + i * 9, cx = i % 2 ? 60 : -150, cz = i % 2 ? -40 : -200;
+      d.position.set(cx + Math.cos(a) * r, 52 + (i % 4) * 7 + Math.sin(t + i) * 2, cz + Math.sin(a) * r); d.rotation.set(0, -a, 0); d.scale.set(1.4, .55 + .45 * Math.sin(t * 9 + i * 2), 1.4); d.updateMatrix(); this.birds.setMatrixAt(i, d.matrix);
+    }
+    this.birds.instanceMatrix.needsUpdate = true;
+    const p = this.smoke.geometry.attributes.position, A = p.array;
+    for (let i = 0; i < 24; i++) { const s = this.smokeSrc[i % 4], u = ((t * .08 + i * .137) % 1); A[i * 3] = s[0] + Math.sin(u * 5 + i) * 2 + u * 9; A[i * 3 + 1] = 7 + u * 26; A[i * 3 + 2] = s[1] + Math.cos(u * 4 + i) * 1.5; }
+    p.needsUpdate = true;
+  }
+
+  // ------------------------------------------------------------------ temple interior (not in LITE) and pictures
+  enterInterior(a) {
+    if (this.tierName === 'low' || this.interior) return false;
+    try { const it = new Interior(this.renderer, { reduced: this.reduced }); it.build(a, a.need); it.resize(this.w || 390, this.h || 844); this.interior = it; return true; } catch (e) { this.interior = null; return false; }
+  }
+  leaveInterior() { if (!this.interior) return; this.interior.dispose(); this.interior = null; }
+  renderCurrent() { const I = this.interior; this.renderer.render(I ? I.scene : this.scene, I ? I.camera : this.camera); }
+  /** a copy of the current view with a small 'OLYMPUS · Athens' mark; rendered and copied in the same task, so the drawing buffer never has to be kept */
+  snapshot() {
+    this.renderCurrent(); const c = document.createElement('canvas'); c.width = this.canvas.width; c.height = this.canvas.height; const x = c.getContext('2d'); x.drawImage(this.canvas, 0, 0);
+    const f = Math.max(14, Math.round(c.width * .034)); x.font = `600 ${f}px "Iowan Old Style","Palatino Linotype",Georgia,serif`; x.textAlign = 'right'; x.textBaseline = 'bottom';
+    x.shadowColor = 'rgba(20,17,14,.7)'; x.shadowBlur = f * .3; x.fillStyle = 'rgba(243,236,224,.92)'; x.fillText('OLYMPUS \u00b7 Athens', c.width - f * .7, c.height - f * .6);
+    return c;
+  }
+
+  // ------------------------------------------------------------------ the owner's data (read only): glowing temples, the P&L pillar, account ships
+  tintShips() {
+    this.plan.ships.forEach((s, i) => {
+      const c = this.shipTint; if (s.acct) { if (s.acct.open) c.setRGB(1.45, 1.1, .62); else c.setRGB(1, .96, .9); } else c.setRGB(.8, .78, .74);
+      this.shipMesh.setColorAt(i, c);
+    });
+    this.shipMesh.instanceColor.needsUpdate = true;
+  }
+  setLive(live) {
+    this.live = live; const scene = this.scene, tex = this.tex;
+    // temples that need the owner glow warm gold (a soft sprite and a thin column of light); calm temples stay as they are
+    for (const a of this.anchors) if (a.kind === 'app') a.need = live.needs[a.id] || null;
+    const glow = this.anchors.filter((a) => a.need);
+    if (this.needPts) { scene.remove(this.needPts); this.needPts.geometry.dispose(); this.needPts.material.dispose(); }
+    if (this.needBeams) { scene.remove(this.needBeams); this.needBeams.geometry.dispose(); this.needBeams.material.dispose(); }
+    this.needPts = this.needBeams = null;
+    if (glow.length) {
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(glow.flatMap((a) => [a.x, a.y + 4, a.z]), 3));
+      this.needPts = new THREE.Points(g, new THREE.PointsMaterial({ map: tex, color: '#ffd27a', size: 30, sizeAttenuation: true, transparent: true, opacity: .8, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+      this.needPts.frustumCulled = false; scene.add(this.needPts);
+      const bg = new THREE.CylinderGeometry(.6, 1.5, 30, 8, 1, true).translate(0, 15, 0), bm = new THREE.MeshBasicMaterial({ color: '#ffc861', transparent: true, opacity: .26, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+      this.needBeams = new THREE.InstancedMesh(bg, bm, glow.length); const d = new THREE.Object3D();
+      glow.forEach((a, i) => { d.position.set(a.x, groundY(a.x, a.z) + 6, a.z); d.updateMatrix(); this.needBeams.setMatrixAt(i, d.matrix); this.needBeams.instanceMatrix.needsUpdate = true; });
+      this.needBeams.frustumCulled = false; scene.add(this.needBeams);
+    }
+    // the pillar of today on the Agora: its height is today's result in R, its colour says gain or loss
+    const R = live.pnl.r, h = 3.5 + 15 * Math.min(1, Math.abs(R) / 2), col = live.pnl.usd > 0 ? '#8fa65c' : live.pnl.usd < 0 ? '#c9654a' : '#b0793f';
+    if (!this.pillar) {
+      this.pillar = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 3).translate(0, .5, 0), new THREE.MeshLambertMaterial({ color: col })); this.dispose_.push(this.pillar.geometry, this.pillar.material);
+      this.pillar.position.set(30, groundY(30, -37) + .4, -37); scene.add(this.pillar);
+      const base = new THREE.Mesh(new THREE.BoxGeometry(5, .8, 5).translate(0, .4, 0), new THREE.MeshLambertMaterial({ color: '#d2c6ae' })); base.position.set(30, groundY(30, -37), -37); scene.add(base); this.dispose_.push(base.geometry, base.material);
+      this.pillarAnchor = { kind: 'pillar', id: 'pnl', name: "Today's pillar", group: 'trading', x: 30, y: 12, z: -37, major: true, appId: 'hestia', blurb: '' };
+      this.anchors.push(this.pillarAnchor);
+    }
+    this.pillar.scale.y = h; this.pillar.material.color.set(col); this.pillarAnchor.y = h + 2;
+    const usd = (v) => (v < 0 ? '-' : v > 0 ? '+' : '') + '$' + Math.abs(live.pnl.usd).toLocaleString('en-US'); void usd;
+    this.pillarAnchor.blurb = `Today ${live.pnl.usd < 0 ? '-' : live.pnl.usd > 0 ? '+' : ''}$${Math.abs(live.pnl.usd).toLocaleString('en-US')} = ${R > 0 ? '+' : ''}${R} R${live.pnl.est ? ' (R is an estimate)' : ''}. The taller the pillar, the bigger the day.${live.demo ? ' Example numbers: no home.json yet.' : ''}`;
+    // ships: one per account. A ship under way = an open position; a resting ship = flat. Other ships are scenery.
+    this.shipAnch.forEach((a) => { if (a) this.anchors.splice(this.anchors.indexOf(a), 1); }); this.shipAnch = [];
+    this.plan.ships.forEach((sh) => { sh.acct = null; });
+    live.accounts.slice(0, 3).forEach((acct, i) => {
+      const sh = this.plan.ships[i]; sh.acct = acct; sh.speed = acct.open ? 1 : 0; sh.scale = 1.5; sh.ax = -70 + i * 58; sh.az = 392;
+      const room = acct.room != null && acct.mll ? ` Drawdown room $${Math.round(acct.room).toLocaleString('en-US')} of $${Math.round(acct.mll).toLocaleString('en-US')}.` : '';
+      const an = { kind: 'ship', id: 'ship-' + i, name: acct.name, group: 'money', x: sh.ax, y: 12, z: sh.az, major: true, appId: 'hestia',
+        blurb: `${acct.open ? 'A position is open: this ship is under way.' : 'Flat, no open position: the ship rests.'} Today ${acct.today < 0 ? '-' : acct.today > 0 ? '+' : ''}$${Math.abs(Math.round(acct.today)).toLocaleString('en-US')}.${room}` };
+      this.shipAnch[i] = an; this.anchors.push(an);
+    });
+    this.tintShips();
+  }
+  // ------------------------------------------------------------------ day / dusk: auto (about 90 s a cycle), or locked on Day or on Dusk
+  setMode(mode) {
+    this.mode = mode;
+    if (mode === 'auto') { const p = Math.acos(Math.max(-1, Math.min(1, 1 - 2 * this.time))) / (Math.PI * 2); this.autoT0 = performance.now() - p * 90000; this.fade = null; }
+    else this.setDusk(mode === 'dusk');
+  }
+
   // ------------------------------------------------------------------ light and sky (day 3500 K, dusk 2700 K)
   setDusk(on) { this.target = on ? 1 : 0; this.fade = { from: this.time, t0: performance.now() }; if (this.reduced) { this.time = this.target; this.applyTime(); this.fade = null; } }
   applyTime() {
@@ -212,7 +314,7 @@ export class Athens {
     const sunC = k(KELVIN[3500]).lerp(k(KELVIN[2700]), t), elev = lerp(.82, .17, t), az = lerp(-.5, -1.1, t);
     const dir = new THREE.Vector3(Math.sin(az) * Math.cos(elev), Math.sin(elev), -Math.cos(az) * Math.cos(elev)).normalize();
     this.sun.color.copy(sunC); this.sun.intensity = lerp(2.9, 2.2, t); this.sun.position.copy(dir).multiplyScalar(900); this.sun.target.position.set(0, 0, 0);
-    this.hemi.color.copy(mixC('#dfe6e8', '#8a7aa0', t)); this.hemi.groundColor.copy(mixC('#9a8566', '#4a3a34', t)); this.hemi.intensity = lerp(1.25, .85, t);
+    this.hemi.color.copy(mixC('#dfe6e8', '#8a7aa0', t)); this.hemi.groundColor.copy(mixC('#b39a72', '#6a5448', t)); this.hemi.intensity = lerp(1.4, 1.2, t);
     const top = mixC(SKY.day[0], SKY.dusk[0], t), mid = mixC(SKY.day[1], SKY.dusk[1], t), hor = mixC(SKY.day[2], SKY.dusk[2], t);
     this.skyU.uTop.value.copy(top); this.skyU.uMid.value.copy(mid); this.skyU.uHor.value.copy(hor); this.skyU.uSun.value.copy(sunC); this.skyU.uSunDir.value.copy(dir);
     this.scene.fog.color.copy(mixC('#e8d2a4', '#c88a68', t)); this.scene.fog.density = lerp(.00042, .00052, t);
@@ -255,7 +357,7 @@ export class Athens {
 
   resize() {
     const w = this.canvas.clientWidth || 390, h = this.canvas.clientHeight || 844, O = window.OLYMPUS, dpr = Math.min(this.T.dpr, O && O.dpr ? O.dpr(this.tierName === 'low') : (window.devicePixelRatio || 1));
-    this.renderer.setPixelRatio(dpr); this.renderer.setSize(w, h, false); this.camera.aspect = w / h; this.camera.fov = h > w ? 62 : 50; this.camera.updateProjectionMatrix(); this.w = w; this.h = h;
+    this.renderer.setPixelRatio(dpr); this.renderer.setSize(w, h, false); if (this.interior) this.interior.resize(w, h); this.camera.aspect = w / h; this.camera.fov = h > w ? 62 : 50; this.camera.updateProjectionMatrix(); this.w = w; this.h = h;
   }
 
   /** screen position of a world point; z < 0 or off-screen means not visible */
@@ -276,7 +378,8 @@ export class Athens {
 
   frame(dt, t) {
     this.u.uTime.value = t;
-    if (this.fade) { const k = Math.min(1, (performance.now() - this.fade.t0) / 1600), e = k * k * (3 - 2 * k); this.time = lerp(this.fade.from, this.target, e); this.applyTime(); if (k >= 1) this.fade = null; }
+    if (this.mode === 'auto' && !this.reduced) { const p = ((performance.now() - this.autoT0) / 90000) % 1; this.time = .5 - .5 * Math.cos(p * Math.PI * 2); this.target = this.time; this.applyTime(); }
+    else if (this.fade) { const k = Math.min(1, (performance.now() - this.fade.t0) / 1600), e = k * k * (3 - 2 * k); this.time = lerp(this.fade.from, this.target, e); this.applyTime(); if (k >= 1) this.fade = null; }
     const cam = this.cam;
     if (this.fly) {
       const f = this.fly; f.t += dt / f.dur; const k = Math.min(1, f.t), e = k * k * (3 - 2 * k);
@@ -295,8 +398,11 @@ export class Athens {
     for (const c of this.chunks) { const far = Math.hypot(c.cx - cp.x, c.cz - cp.z) > (this.tierName === 'low' ? 520 : 760); c.a.visible = !far; c.b.visible = far; }
     this.shipsTick(t);
     if (this.beacon) this.beacon.rotation.y = t * .5;
+    if (this.needPts) { const k = this.reduced ? .7 : .62 + .22 * Math.sin(t * 2.2); this.needPts.material.opacity = k; this.needBeams.material.opacity = .14 + .16 * k; }
     if (this.sel) { const s = 1 + Math.sin(t * 3) * .04; this.ring.scale.setScalar((this.sel.major ? 16 : 11) * s); }
-    this.renderer.render(this.scene, this.camera);
+    this.lifeTick(t);
+    if (this.interior) this.interior.frame(dt, t);
+    this.renderCurrent();
     this.calls = this.renderer.info.render.calls; this.trisDrawn = this.renderer.info.render.triangles;
   }
 

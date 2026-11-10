@@ -60,7 +60,7 @@ export function countdown(nowSec, tSec) {
 function cleanEvent(e) {
   if (!isObj(e) || !YMD.test(String(e.date || ''))) return null;
   const title = str(e.title, 120); if (!title) return null;
-  return { date: e.date, time: HM.test(String(e.time || '')) ? e.time : null, kind: KINDS.includes(e.kind) ? e.kind : 'other', title, impact: IMPACTS.includes(e.impact) ? e.impact : 'low', closed: e.closed === true,
+  return { date: e.date, time: HM.test(String(e.time || '')) ? e.time : null, kind: KINDS.includes(e.kind) ? e.kind : 'other', title, impact: IMPACTS.includes(e.impact) ? e.impact : 'low', closed: e.closed === true, partial: e.partial === true,
     closeEt: HM.test(String(e.close_et || '')) ? e.close_et : null, verify: e.verify !== false, src: str(e.src, 140) };
 }
 /** events.json -> { updated, weekly, events, undated } or null when it is not an events file */
@@ -69,7 +69,7 @@ export function normEvents(j) {
   const events = j.events.map(cleanEvent).filter(Boolean);
   const weekly = (Array.isArray(j.weekly) ? j.weekly : []).filter(isObj).map((w) => ({ kind: KINDS.includes(w.kind) ? w.kind : 'other', title: str(w.title, 120), dow: num(w.dow), time: HM.test(String(w.time || '')) ? w.time : null, impact: IMPACTS.includes(w.impact) ? w.impact : 'low',
     verify: w.verify !== false, skip: (Array.isArray(w.skip) ? w.skip : []).filter((x) => YMD.test(String(x))), src: str(w.src, 140) })).filter((w) => w.title && w.dow != null && w.dow >= 0 && w.dow <= 6);
-  const undated = (Array.isArray(j.undated) ? j.undated : []).filter(isObj).map((u) => ({ kind: KINDS.includes(u.kind) ? u.kind : 'other', title: str(u.title, 120), approx: str(u.approx, 80), impact: IMPACTS.includes(u.impact) ? u.impact : 'low', verify: true, src: str(u.src, 140) })).filter((u) => u.title);
+  const undated = (Array.isArray(j.undated) ? j.undated : []).filter(isObj).map((u) => ({ kind: KINDS.includes(u.kind) ? u.kind : 'other', title: str(u.title, 120), approx: str(u.approx, 80), impact: IMPACTS.includes(u.impact) ? u.impact : 'low', verify: true, confirm: str(u.confirm, 140), src: str(u.src, 140) })).filter((u) => u.title);
   return { updated: YMD.test(String(j.updated || '')) ? j.updated : '', events, weekly, undated };
 }
 /** every event on one day, weekly rules included, sorted by time (all-day first) */
@@ -107,9 +107,9 @@ const WORDS = {
   claims: (e) => `Weekly jobless claims at ${hmWord(e.time || '08:30')}: usually a small move. ${FRAME}`,
   opex: () => `Options expire today, so volume is heavier and price can get pinned near big levels into the close. ${FRAME}`,
   quad: () => `The December NQ contract expires and stock options and futures all expire together: very heavy volume. By now the bot has traded the March contract since the roll. ${FRAME}`,
-  holiday: (e) => e.closed ? 'The market is closed: no signals and no trade. Nothing for the bot or for you to do.' : 'Stocks trade as usual; only the bond market is closed, so rates trading is thin. ' + FRAME,
+  holiday: (e) => e.closed ? 'The market is closed: no signals and no trade. Nothing for the bot or for you to do.' : e.partial ? `The US stock market is closed and CME futures run on holiday hours (usually shorter: check the CME holiday calendar). LIT has no holiday-hours rule: be flat before the early close yourself. ${FRAME}` : 'Stocks trade as usual; only the bond market is closed, so rates trading is thin. ' + FRAME,
   early: (e) => `The market closes early, at ${hmWord(e.closeEt || e.time || '13:15')}: before the bot's ${hmWord(R.entryTo)} entry cut-off and its ${hmWord(R.flat)} flat time. LIT has no early-close rule, so be flat before the close yourself, and expect thin trading into it.`,
-  roll: (e) => /switch the ninjatrader chart/i.test(e.title) ? 'Your step (3 steps in docs/ROLL_DEC_2026.md): after 4 PM ET, switch the chart to MNQ 03-27, then run the roll check. The bot waits for the chart: until it is switched it takes no new entry.' : 'The bot moves its orders to the March contract at midnight by itself. The March price is about 300 points higher; the chart must be on March or the bot sends no new entry (the roll guard).',
+  roll: (e) => /switch the ninjatrader chart/i.test(e.title) ? 'Your step (3 steps in docs/ROLL_DEC_2026.md): after 4 PM ET, switch the chart to the next contract (named in the title), then run the roll check. The bot waits for the chart: until it is switched it takes no new entry.' : 'The bot moves its orders to the March contract at midnight by itself. The new contract trades hundreds of points away from the old one (about 300 points at the December roll); the chart must be on it or the bot sends no new entry (the roll guard).',
   other: () => FRAME,
 };
 export function botWords(e) { const f = WORDS[e.kind] || WORDS.other; return f(e); }
