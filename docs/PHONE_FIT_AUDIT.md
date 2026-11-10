@@ -75,3 +75,33 @@ aegis, apollo, arbiter, argo, chrysos, clio, delphi, demeter, dionysus, epilogue
 
 Clean at both iPhone sizes among the old apps: athena, atlas, chronos, inbox, journal, pantheon, prometheus, settings.
 Raw reports: `python tools/phone_fit_audit.py --iphone --all --json iphone.json`. WARN lines (missing optional JSON, blocked off-origin feeds such as the Kalshi and dashboard raw files) are not failures.
+
+---
+# Round 3: the old-app failures (time-boxed, one commit per app)
+
+Each fix is a short block at the end of the app's own CSS (`/* phone-fit 2026-11-10 */`, plus one inline rule in `bridge/index.html`). Tests were run per app; "unrelated" means the failing checks are about other things (dead exports, viewport-fit, theme colours, render passes) and exist without this CSS.
+
+| App | Fixed | Test result | Left |
+|---|---|---|---|
+| ares | tabs 44 px wide | 92/92 | none |
+| labyrinth | preset chips 44 px wide | 39/39 | none |
+| datacity | tabs 44 px wide, title wraps instead of clipping | 180/188 (8 unrelated: module size, memory budget, menu count) | none |
+| arena | tabs 44 px wide, tab labels fit | 92/95 (3 unrelated) | none |
+| tyche | tabs 44 px, chips and "next" line wrap | 105/112 (7 unrelated) | none |
+| oracle | scrubber 44 px, demo tag wraps | 97/101 (4 unrelated) | demo tag 47>41 px at 320 px; time stamps 3.4:1 are drawn over the scene (likely a false reading) |
+| fates | "Drawdown left" label wraps, loss word lighter | 79/79 | violet percentage 4.29:1 on the verdict |
+| plutus | verdict line no longer cut | 99/99 | none |
+| mind | stream buttons wrap | 208/208 | "MIND" 1.00:1 and small numbers over the canvas: false readings (skipped) |
+| argus | fix counter uses `--ag-terra-text` | 98/100 (2 unrelated: render passes) | none |
+| bridge | stage number badges 3.9:1 -> 6:1 | 82/82 | none |
+| forum | glyph and status words lighter | 46/46 | none |
+| hephaestus | "not tested" chip no longer faded (2.7:1 -> 5:1) | 44/44 | none |
+| ledger | gain / loss words use the new tokens | 88/88 | none |
+| tree | step labels wrap | no python test | none |
+| observatory | back button 48 px wide | no python test | 7 bar buttons are 38 px wide at 320 px (7 bars cannot be 44 px each: needs a layout change); labels over the scene 1.39:1: false reading (skipped) |
+
+## Not done (left for the lead)
+- cities, kalshicity, hermes, nemesis: the fixes were written, but the app's own test timed out on a click / wait (a 3D scene, a sheet intercepting a click, an unstable element) so they were reverted unverified. Fixes to re-apply and re-test: cities `#title` and `.top h1` wrap; kalshicity `.help-btn` 44 px, `#cams button, #pills button` min-width 44 px with `#pills` scrolling, `.verdict .live` wraps; hermes `.pos` wraps; nemesis `.dock .wl span` wraps.
+- odeon: the 14 px timeline ticks already have a 30 x 18 px hit area; a 44 px one needs a timeline redesign (not attempted).
+- Contrast readings over canvas / 3D scenes (mind, observatory, oracle time stamps) were not changed.
+- The arena test rewrites tracked PNGs under `research/handoff/`: they were restored, not committed.
