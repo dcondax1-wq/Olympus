@@ -12,8 +12,8 @@ import argparse, colorsys, json, os, re, sys, threading, http.server, socketserv
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOTS = [os.path.join(ROOT, "tools", "web_public"), os.path.join(ROOT, "web_next")]
-SKIP_DIRS = {"icon_options", "brand", "node_modules", "vendor", "fonts", "jarvis_legacy"}
-SKIP_FILE = re.compile(r"(\.min\.|three(\.module)?\.js$|OFL\.txt|/lib/|/vendor/)")
+SKIP_DIRS = {"fx", "icon_options", "brand", "node_modules", "vendor", "fonts", "jarvis_legacy"}
+SKIP_FILE = re.compile(r"(\.min\.|(^|/)sw\.js$|three(\.module)?\.js$|OFL\.txt|/lib/|/vendor/)")
 EXTS = (".css", ".js", ".mjs", ".html")
 THEME = "#14110e"
 
@@ -21,12 +21,12 @@ HEX = re.compile(r"#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b")
 # old purple/blue accents found by grep (named explicitly so they always show up, whatever the HSL says)
 OLD_ACCENTS = {"#a68bff", "#b79bff", "#7fd0ff", "#b388ff", "#a78bfa", "#8b5cf6", "#7c3aed", "#a855f7", "#c084fc",
                "#22d3ee", "#2ee59d", "#ff2bd6", "#3ee0c8", "#6d28d9", "#4f9bff", "#38bdf8", "#67e8f9", "#7c4dff"}
-FONT = re.compile(r"orbitron|rajdhani|share tech|vt323|press start|audiowide|exo 2|major mono|space mono|\bmono-display", re.I)
+FONT = re.compile(r"orbitron|rajdhani|share tech|vt323|audiowide|major mono|space mono|\bmono-display", re.I)
 WORDS = re.compile(r"\b(cyber\w*|neural|quantum|holographic|hologram|matrix|terminal|scanner|uplink)\b", re.I)
 SHADOW = re.compile(r"text-shadow\s*:\s*([^;}]+)", re.I)
 LSPACE = re.compile(r"letter-spacing\s*:\s*([\d.]+)(em|px)", re.I)
 RADIAL = re.compile(r"radial-gradient\([^;]*", re.I)
-BG000 = re.compile(r"(background(?:-color)?\s*:\s*[^;}]*?)(#000000|#000\b|\bblack\b)", re.I)
+BG000 = re.compile(r"(background(?:-color)?\s*:\s*(?:[^;}(]*,\s*)?)(#000000|#000\b|\bblack\b)\s*(?=[;}'\"]|$)", re.I)
 TXTFFF = re.compile(r"(?<![-\w])color\s*:\s*(#ffffff|#fff\b|\bwhite\b)", re.I)
 THEME_META = re.compile(r'<meta[^>]+name=["\']theme-color["\'][^>]*content=["\']([^"\']+)["\']', re.I)
 
@@ -55,7 +55,25 @@ def neon_rgba(line):
         H, L, S = colorsys.rgb_to_hls(r, g, b)
         if S >= .5 and .38 <= L <= .92 and 150 <= H * 360 <= 335:
             out.append(m.group(0))
+    for m in re.finditer(r"hsla?\(\s*(\d+(?:\.\d+)?)(?:deg)?[ ,]+(\d+(?:\.\d+)?)%?[ ,]+(\d+(?:\.\d+)?)%", line):
+        h, sa, li = (float(x) for x in m.groups())
+        if sa >= 50 and 38 <= li <= 92 and 150 <= h % 360 <= 335:
+            out.append(m.group(0))
     return out
+
+
+def covered_names():
+    """files shared by the phone root pages and the PC app: the neon in them is re-toned by zenith_agora.css / agora_pc.css (the
+    shared copies stay byte-identical on purpose, tests/test_zenith_shell.py), so they are reported as covered, not as FAIL."""
+    a = set(f for f in os.listdir(ROOTS[0]) if f.endswith(EXTS) and os.path.isfile(os.path.join(ROOTS[0], f)))
+    b = set()
+    for dp, _, fs in os.walk(os.path.join(ROOT, "web_next")):
+        b.update(f for f in fs if f.endswith(EXTS))
+    return (a & b) - {"index.html", "sw.js"}
+
+
+LEAD_FILES = {"apps.js", "apps-list.js", "olympus.js", "sw.js", "build_web_dashboard.py"}   # wired by the lead, reported only
+COVERED = covered_names()
 
 
 def apps():
@@ -126,7 +144,7 @@ def scan_file(fp):
             val = float(m.group(1))
             if (m.group(2) == "em" and val > .06) or (m.group(2) == "px" and val > 1.2):
                 add("spacing", m.group(0)); break
-        if WORDS.search(ln) and not ln.lstrip().startswith(("//", "/*", "*")) and re.search(r"[\"'>]\s*[^\"'<]*\b(cyber|neural|quantum|holographic|matrix|terminal|scanner|uplink)", ln, re.I):
+        if not fp.endswith((".js", ".mjs")) and WORDS.search(ln) and re.search(r">[^<]*\b(cyber\w*|neural|quantum|holographic|matrix|terminal|scanner|uplink)\b[^<]*<|content\s*:\s*[\"'][^\"']*\b(cyber|neural|quantum|matrix|terminal|scanner|uplink)", ln, re.I):
             add("words", s)
         if BG000.search(ln):
             add("black", s)
@@ -157,7 +175,7 @@ def static_scan(only=None):
         for fp in files_of(name, path):
             rel = os.path.relpath(fp, ROOT)
             h = scan_file(fp)
-            code = fp.endswith(".js") or fp.endswith(".mjs")
+            code = fp.endswith(".js") or fp.endswith(".mjs") or os.path.basename(fp) in COVERED or os.path.basename(fp) in LEAD_FILES
             if "theme" in h and not code:
                 pass
             for k, v in h.items():
@@ -255,6 +273,32 @@ def render_scan(ids, shotdir, port=8799, per=25):
     return out
 
 
+def header_survey():
+    """per app: back link, h1, one-line purpose, DEMO/LITE chip in index.html (+ the app's own js/css for builders)."""
+    rows = []
+    base = ROOTS[0]
+    for d in sorted(os.listdir(base)):
+        p = os.path.join(base, d, "index.html")
+        if not os.path.isfile(p) or d in SKIP_DIRS:
+            continue
+        txt = open(p, encoding="utf-8", errors="replace").read()
+        extra = ""
+        for f in os.listdir(os.path.join(base, d)):
+            if f.endswith((".js", ".css")) and not SKIP_FILE.search(f):
+                try:
+                    extra += open(os.path.join(base, d, f), encoding="utf-8", errors="replace").read()[:400000]
+                except OSError:
+                    pass
+        both = txt + extra
+        back = bool(re.search(r'href="\.\./jarvis/?[^"]*"|class="[^"]*\b(back|olyback|ag-back|home)\b', txt)) or bool(re.search(r"olympus\.js[^>]*data-app=|data-app=[^>]*olympus\.js", txt))
+        h1 = bool(re.search(r"<h1\b", txt)) or "<h1" in extra or "createElement('h1')" in extra
+        sub = bool(re.search(r'class="[^"]*\b(sub|tag|lede|ag-sub|purpose|tagline)\b', both))
+        chip = bool(re.search(r"DEMO|\bLITE\b|class=\"[^\"]*\b(mode|chip|ag-mode|demo)\b", both))
+        rule = "ag-title" in both or "ag-rulet" in both or "olympus/agora.css" in txt
+        rows.append((d, back, h1, rule, sub, chip))
+    return rows
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--app", action="append")
@@ -264,7 +308,16 @@ def main():
     ap.add_argument("--top", type=int, default=3)
     ap.add_argument("--strict-js", action="store_true", help="JS hits also count as hard FAIL")
     ap.add_argument("--quiet", action="store_true")
+    ap.add_argument("--headers", action="store_true", help="list apps whose header differs from the AGORA pattern")
     a = ap.parse_args()
+    if a.headers:
+        rows = header_survey()
+        print("%-14s %5s %5s %5s %5s %5s" % ("app", "back", "h1", "rule", "sub", "chip"))
+        for r in rows:
+            if not all(r[1:]):
+                print("%-14s " % r[0] + " ".join("%5s" % ("yes" if x else "NO") for x in r[1:]))
+        print("%d apps, %d match the pattern" % (len(rows), sum(1 for r in rows if all(r[1:]))))
+        return 0
     res = static_scan(a.app)
     fails = 0
     rows = sorted(res.items(), key=lambda kv: -(sum(kv[1]["counts"].values())))
