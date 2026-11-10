@@ -127,6 +127,7 @@ export const BUILT_INS = Object.freeze([
   app('harmonia', 'Harmonia', 'money', '#c8a24a', 'The balance: what leans on the NQ bots, and what is left', { glyph: 'H' }),
   app('helios', 'Helios', 'trading', '#c8a24a', 'The morning briefing: today, drawdown, deals, plan', { glyph: 'S' }),
   app('ergasterion', 'Ergasterion', 'trading', '#c8a24a', 'The workshop: every AI worker, what it does and learns', { glyph: 'E' }),
+  app('archive', 'Archive', 'trading', '#c8a24a', 'The library of everything we ever tested, searchable', { glyph: 'B' }),
   app('clio', 'Clio', 'trading', '#d8c9a8', 'The research library: every study in plain words', { glyph: 'Κ' }),
   app('atlas', 'Atlas', 'life', '#efc979', 'A fast map of every Olympus dashboard', { glyph: '\u25c8' }),
   app('athena', 'Athena', 'life', '#5ea8ff', 'The library: strategy, rules, quiz', { glyph: '\ud83e\udd89' }),

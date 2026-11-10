@@ -8,6 +8,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 
 | App (id) | District | Group | What it is | Data it reads | Test |
 |---|---|---|---|---|---|
+| Archive (`archive`) | Market | trading | The library of everything we ever tested, searchable | `fixture.json`, `index.json` | `tests.test_archive_page` |
 | Ares (`ares`) | Market | trading | The war room: GO, WAIT or HALT | `../data.json`, `jarvis.json`, `rules.json`, `../home.json` | `tests.test_ares_page` |
 | Chronos (`chronos`) | Market | trading | Time and the session clock | `../odeon/trades.json`, `fixture.json` | `tests.test_chronos_page` |
 | Cities (`cities`) | Market | trading | A world of city islands | `fixture.json` | `tests.test_cities_page` |
@@ -71,9 +72,9 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Lyceum (`lyceum`) | Life | life | The school: daily rules quiz, ranks, habits costing | `fixture.json`, `../odeon/trades.json`, `../home.json` | `tests.test_lyceum_page` |
 | Mind (`mind`) | Life | life | Your vault as a living 3D brain | bundled fixture / its own files | `tests.test_mind_page` |
 | Nike (`nike`) | Life | life | The trophy hall: milestones and wins from real | `fixture.json`, `../home.json`, `../ledger/rules.json`, `../odeon/trades.json`, `../kalshicity/edges.json` | `tests.test_nike_page` |
-| Planner (`planner`) | Life | life | Day and week plan: session windows, tasks, habits | `fixture.json` | `tests.test_planner_page` |
+| Planner (`planner`) | Life | life | Day and week plan: session windows, tasks, habits | `../pythia/events.json`, `../home.json`, `fixture.json` | `tests.test_planner_page` |
 
-64 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+65 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 
