@@ -51,6 +51,7 @@
   }
  ],
  "notes": [
+  "EXAMPLE numbers, not real: a sample plan from bundled test statistics, shown until the site's own chrysos.json exists.",
   "Estimate, not a promise. Every dollar below comes from backtests of the LIT rules on past data. Real results will differ and you can lose every fee.",
   "All accounts take the SAME signals, so they win and lose together. Five accounts are not five independent chances.",
   "A failed eval is assumed to be bought again at the same price (MFFU publishes no reset price for one-time plans). Check the real price before you rely on it.",

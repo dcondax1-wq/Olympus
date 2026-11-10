@@ -407,6 +407,7 @@ def write(out_dir, root=ROOT, fixture=False, fleet=None, budget=DEFAULT_BUDGET, 
     if status == "sample":
         doc["demo"] = True
         doc["note"] = "EXAMPLE numbers, not real: a sample plan from bundled test statistics, shown until the site's own chrysos.json exists."
+        doc["notes"] = [doc["note"]] + doc["notes"]
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "chrysos.json")
     with open(path, "w", encoding="utf-8") as fh:
