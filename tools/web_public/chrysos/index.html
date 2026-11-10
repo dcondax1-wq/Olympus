@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" data-theme="agora">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chrysos</title>
+<meta name="description" content="OLYMPUS CHRYSOS: the gold. A prop-firm eval and payout fleet planner: which account to buy next at your real prices, fees against payouts, break-even, pass and fail odds, a payout calendar and a rising tower of coins for every account. Estimates only, never a promise.">
+<meta name="theme-color" content="#14110e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chrysos">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<!-- CHRYSOS (OLYMPUS, AGORA look, 2026-11-10): money machine #1. The plan comes from tools/money/chrysos.py (published as money/chrysos.json); chrysoscore.js = the pure words and tower model (node-tested);
+     tower.js = the 3D tower (render core ../olympus/render.js); chrysos.js = the page (ES module). Read only: it reads ../money/chrysos.json and fixture.json (DEMO, never blank) and sends nothing. Text only through textContent. -->
+<script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
+<link rel="stylesheet" href="../olympus/olympus.css?v=o4">
+<link rel="stylesheet" href="../olympus/agora.css?v=a1">
+<script src="../olympus/themes.js?v=o4"></script>
+<script src="../olympus/olympus.js?v=o4" data-app="chrysos"></script>
+<script src="../olympus/intro-app.js?v=i5" defer></script>
+<script src="../olympus/a11y.js" defer></script>
+<script src="../olympus/sfx.js?v=s2" defer></script>
+<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
+<link rel="stylesheet" href="chrysos.css?v=a1">
+</head>
+<body>
+<main id="app">
+  <header class="top">
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Chrysos</h1><p class="sub">The gold: fees against payouts</p></div></div>
+    <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
+  </header>
+  <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
+  <p class="warn" id="warn">Estimates from backtests, not a promise. You can lose every fee.</p>
+
+  <section class="ag-card card hero" aria-labelledby="heroH">
+    <h2 id="heroH">The fleet in one line</h2>
+    <div class="seg" id="cases" role="group" aria-label="Which case"></div>
+    <p class="note" id="caseNote"></p>
+    <p class="lead" id="headline"></p>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="towerH">
+    <h2 id="towerH">The towers</h2>
+    <div class="stage">
+      <canvas id="stage" aria-label="A bronze column and a stack of gold coins for each account. The bronze is the fees paid, the gold is the payouts received." role="img"></canvas>
+      <svg id="flat" class="flat" viewBox="0 0 360 220" role="img" aria-label="A bronze column and a stack of gold coins for each account"></svg>
+    </div>
+    <label class="slide" for="month"><span>Month <b id="monthV" class="ag-num">12</b> of 12</span><input id="month" type="range" min="0" max="12" step="1" value="12"></label>
+    <ul class="legend" id="legend"></ul>
+    <p class="note">Bronze = fees paid. Gold coins = payouts received (each coin is <span id="unit">$100</span>). The olive line is the top of the bronze: coins above it mean the fees are paid back.</p>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="buyH">
+    <h2 id="buyH">Which account next?</h2>
+    <p class="note" id="buyNote"></p>
+    <ul class="cards" id="buy"></ul>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="fleetH">
+    <h2 id="fleetH">Your fleet, account by account</h2>
+    <ul class="cards" id="fleet"></ul>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="calH">
+    <h2 id="calH">Payout calendar (estimate)</h2>
+    <p class="note">The date a payout could be requested, the amount if the account is funded and the chance that it is. The expected dollars already include the chance.</p>
+    <div id="cal"></div>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="goneH">
+    <h2 id="goneH">What could go wrong</h2>
+    <ul class="plain" id="gone"></ul>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="howH">
+    <h2 id="howH">How it is worked out</h2>
+    <ul class="plain" id="how"></ul>
+  </section>
+
+  <p class="foot" id="foot">Chrysos reads the plan file of this site and sends nothing. It never buys an account, never places an order and never promises income: every dollar is an estimate from backtests. Prices are yours: Builder 50K $91.80, Builder 25K $63, ATLAS 25K $43, one time, $0 activation. Rules: MFFU's pages as checked on 2026-10-18; re-check before a payout.</p>
+</main>
+<script type="module" src="towerload.js?v=a1"></script>
+<script type="module" src="chrysos.js?v=a1"></script>
+</body>
+</html>
