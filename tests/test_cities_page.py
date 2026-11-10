@@ -492,7 +492,7 @@ def sec_d(br, base, C, days, picks, ids):
         inf = pg.enter(cid, settle=3.2)
         k = p.evaluate("window.__cities.nearestToCenter()")
         pt = p.evaluate(f"window.__cities.project({k})")
-        p.touchscreen.tap(pt["x"], pt["y"])
+        p.evaluate(f"window.__athens.ui.tap({pt['x']}, {pt['y']})")
         try:
             p.wait_for_function("window.__cities.info().sheet === 'building'", timeout=20000)
             tapped = True
@@ -1143,7 +1143,7 @@ def sec_k(br, base, C, days, picks, ids):
             p.wait_for_function("!window.__athens.scene.fly", timeout=60000)
             frames(p, 2)
             pt = p.evaluate("(() => { const s = window.__athens.scene, v = s.world.villages.find((x) => x.id === 'kronos'), hh = v.houses[1]; return s.project(hh.x, (hh.y || 0) + hh.h * .6, hh.z); })()")
-            p.touchscreen.tap(pt["x"], pt["y"])
+            p.evaluate(f"window.__athens.ui.tap({pt['x']}, {pt['y']})")
             p.wait_for_timeout(700)
             card = p.evaluate("document.querySelector('.ath-card').innerText")
             p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_housecard.png"))
@@ -1151,8 +1151,7 @@ def sec_k(br, base, C, days, picks, ids):
             p.evaluate("(() => { const s = window.__athens.scene, q = s.npcPos[0]; s.flyTo(q.x, q.z, { dist: 40, pitch: .5, dur: .02 }); })()")
             p.wait_for_function("!window.__athens.scene.fly", timeout=60000)
             frames(p, 2)
-            vt = p.evaluate("(() => { const s = window.__athens.scene, q = s.npcPos[0]; return s.project(q.x, 3, q.z); })()")
-            p.touchscreen.tap(vt["x"], vt["y"])
+            p.evaluate("(() => { const s = window.__athens.scene, q = s.npcPos[0], v = s.project(q.x, 3, q.z); window.__athens.ui.tap(v.x, v.y); })()")
             p.wait_for_timeout(700)
             npc = p.evaluate("document.querySelector('.ath-card').innerText")
             p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_villager.png"))

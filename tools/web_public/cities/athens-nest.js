@@ -69,7 +69,7 @@ export class Nest {
   /** a tap on the 3D view: true when a villager or a house took it */
   tap(px, py) {
     const S = this.S; if (!S || !this.world) return false;
-    const n = S.pickNpc(px, py, 34); if (n) { this.showNpc(n); return true; }
+    const n = S.pickNpc(px, py, 46); if (n) { this.showNpc(n); return true; }
     const a = S.pick(px, py, 44), h = S.pickHouse(px, py, 30), near = S.walking || S.cam.dist < 330;
     if (h && (near || !a)) { this.showHouse(h); return true; }
     return false;
