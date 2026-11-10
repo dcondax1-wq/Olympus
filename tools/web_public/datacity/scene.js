@@ -134,7 +134,7 @@ export class CityScene {
       const a = Math.random() * Math.PI * 2, h = 0.08 + Math.random() * 0.9, r = 1400, flat = Math.sqrt(1 - h * h);
       p.set([Math.cos(a) * r * flat, h * r, Math.sin(a) * r * flat], i * 3);
     }
-    this.stars = points({ position: [p, 3] }, new THREE.PointsMaterial({ color: 0xafc7da, size: 1.6, sizeAttenuation: false,
+    this.stars = points({ position: [p, 3] }, new THREE.PointsMaterial({ color: 0xe8dcc0, size: 1.4, sizeAttenuation: false,
       transparent: true, opacity: 0.85, depthWrite: false, fog: false }));
     this.scene.add(this.stars);
   }

@@ -180,7 +180,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
       onFlash: (f) => { if (f > 0.5 && lastF <= 0.5) { counts.strikes++; setTimeout(() => sfx('thunder'), 380); } lastF = f; } });
     else if (!st.stormy) stopFx('lightning');
     // aurora over the Vault, at night, not in a storm
-    if (st.night > 0.7 && st.weather !== 'storm' && !live.aurora) startFx('aurora', { position: [10, 62, -70], width: 95, height: 30, intensity: 0.12, colors: ['#d9a26b', '#719cbe', '#99b8d0'] });
+    if (st.night > 0.7 && st.weather !== 'storm' && !live.aurora) startFx('aurora', { position: [10, 62, -70], width: 95, height: 30, intensity: 0.12, colors: ['#d9a26b', '#c96a4a', '#b9a98c'] });
     else if (st.night < 0.4 || st.weather === 'storm') stopFx('aurora');
     // lens flares: the Exchange's spire at night; the sun or the moon, moved to where it is now
     if (st.night > 0.6 && !live.spire) { /* the tower itself glows: screen-space flare covered the foreground blocks */ }

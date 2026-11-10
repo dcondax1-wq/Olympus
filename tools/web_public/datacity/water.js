@@ -27,7 +27,7 @@ void main(){
   float NoV = clamp(dot(N, V), 0.0, 1.0);
   float fres = 0.02 + 0.98 * pow(1.0 - NoV, 4.0);
   vec3 R = reflect(-V, N);
-  vec3 top = mix(vec3(0.11,0.10,0.24), vec3(0.22,0.46,0.72), uDay), hor = mix(vec3(0.48,0.30,0.28), vec3(0.88,0.86,0.76), uDay);
+  vec3 top = mix(vec3(0.16,0.13,0.26), vec3(0.42,0.56,0.68), uDay), hor = mix(vec3(0.48,0.30,0.28), vec3(0.88,0.86,0.76), uDay);
   vec3 sky = mix(hor, top, smoothstep(0.0, 0.55, R.y));
   sky += vec3(1.0,0.42,0.22) * uDusk * 0.5 * exp(-abs(R.y)*5.0);
   vec3 sd = normalize(uSun);
@@ -39,7 +39,7 @@ void main(){
   float glow = pow(facing, 3.0) * (0.45 + 0.55 * smoothstep(0.0, 0.5, 1.0 - R.y)) * mix(1.0, 0.25, uDay);
   float streak = pow(noise(vec2(vW.x * 0.35 + vW.z * 0.2, vW.z * 0.04 - uTime * 0.25)), 5.0);
   vec3 city = uAccent * glow * (0.35 + 2.2 * streak) + vec3(1.0, 0.4, 0.6) * glow * pow(noise(vec2(vW.z * 0.3, vW.x * 0.05 + uTime * 0.2)), 6.0) * 1.2;
-  vec3 deep = mix(vec3(0.004,0.02,0.05), vec3(0.1,0.28,0.42), uDay) + vec3(0.02,0.07,0.12) * n1;
+  vec3 deep = mix(vec3(0.03,0.025,0.02), vec3(0.30,0.30,0.22), uDay) + vec3(0.06,0.05,0.03) * n1;
   vec3 col = mix(deep, sky * mix(0.8, 1.0, uDay), fres) + city * (0.4 + 0.6 * fres) + vec3(1.0, 0.9, 0.7) * (sunSpec * 1.4 + glitter * 0.5) * mix(0.6, 1.0, uDay);
   float rip = pow(noise(vW.xz * 0.9 + uTime * 0.4), 8.0) * uRain;                              // rain rings
   col += vec3(0.6, 0.75, 1.0) * rip * 0.7;
@@ -47,7 +47,7 @@ void main(){
   float quay = smoothstep(0.86, 0.97, across) * (1.0 - smoothstep(0.97, 1.0, across));       // neon quay lines on both banks
   col += mix(uAccent, vec3(1.0, 0.7, 0.35), step(0.5, fract(vUv.y * 40.0))) * quay * mix(1.1, 0.5, uDay);
   float bank = smoothstep(0.93, 1.0, across);
-  col = mix(col, vec3(0.02, 0.03, 0.06), bank * 0.6);
+  col = mix(col, vec3(0.06, 0.05, 0.04), bank * 0.6);
   float a = 1.0 - smoothstep(0.98, 1.0, across);
   gl_FragColor = vec4(mix(col, uFog, fogAmount(vFD, 0.0)), a);
 }`;
@@ -99,7 +99,7 @@ uniform float uDay; uniform float uTime;
 varying vec3 vC; varying vec3 vL; varying float vFD; varying vec3 vN; varying float vFade;
 ${FOG}
 void main(){
-  vec3 hull = vec3(0.07, 0.09, 0.14) * mix(1.0, 3.5, uDay);
+  vec3 hull = vec3(0.12, 0.09, 0.07) * mix(1.0, 3.5, uDay);
   vec3 col = mix(hull, vC * 0.7, smoothstep(0.55, 0.65, vL.y));                       // red-oxide hull, coloured containers above the waterline
   col *= 0.5 + 0.5 * max(vN.y, 0.0) + 0.2 * abs(vN.z);
   col += vec3(1.0, 0.85, 0.5) * step(0.5, vL.y) * step(abs(fract(vL.x * 3.0) - 0.5), 0.2) * step(vL.y, 0.8) * 0.9;     // lit windows
@@ -170,8 +170,8 @@ export class Ships {
 }
 
 function craneGeo() {
-  const boxes = [[0.5, 14, 0.5, -1.5, 7, 0.9, 0x232a45], [0.5, 14, 0.5, 1.5, 7, 0.9, 0x232a45], [0.5, 14, 0.5, -1.5, 7, -0.9, 0x232a45], [0.5, 14, 0.5, 1.5, 7, -0.9, 0x232a45],
-                 [16, 0.7, 1.6, 4.5, 14.5, 0, 0x232a45], [3.4, 0.6, 2.2, 0, 12, 0, 0x232a45], [0.9, 0.9, 0.9, 6, 15.5, 0, 0xc67052]];
+  const boxes = [[0.5, 14, 0.5, -1.5, 7, 0.9, 0x3a3228], [0.5, 14, 0.5, 1.5, 7, 0.9, 0x3a3228], [0.5, 14, 0.5, -1.5, 7, -0.9, 0x3a3228], [0.5, 14, 0.5, 1.5, 7, -0.9, 0x3a3228],
+                 [16, 0.7, 1.6, 4.5, 14.5, 0, 0x3a3228], [3.4, 0.6, 2.2, 0, 12, 0, 0x3a3228], [0.9, 0.9, 0.9, 6, 15.5, 0, 0xc67052]];
   const pos = [], nor = [], col = [], idx = [], c = new THREE.Color();
   for (const [sx, sy, sz, ox, oy, oz, hex] of boxes) {
     const b = new THREE.BoxGeometry(sx, sy, sz), base = pos.length / 3;

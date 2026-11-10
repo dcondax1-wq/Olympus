@@ -32,7 +32,7 @@ export class SatelliteTowns {
         const h = rank === 0 ? 10.5 + hash(i + 1) * 4.5 : 2.4 + hash(i * 23 + rank) * 6.2;
         const w = rank === 0 ? 2.0 : 1.2 + hash(i * 11 + rank) * 0.45;
         const accent = town.accent && rank < 5;
-        const hex = accent ? (rank < 3 ? 0x9cac63 : 0x7fa6c4) : PALETTE[Math.floor(hash(i * 31 + rank * 13) * PALETTE.length)];
+        const hex = accent ? (rank < 3 ? 0x9cac63 : 0x8a7f6e) : PALETTE[Math.floor(hash(i * 31 + rank * 13) * PALETTE.length)];
         const j = rank * SATELLITE_TOWNS + i;
         m4.makeScale(w, h, w).setPosition(x, 0, z);
         mesh.setMatrixAt(j, m4);
