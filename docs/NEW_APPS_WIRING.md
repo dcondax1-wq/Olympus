@@ -218,3 +218,16 @@ Data the lead may want to publish so the hall fills in: `payouts` (and `passed_o
 5. `python tools/apps_list_build.py` then `--check`.
 6. `olympus/intro-app.js` FLAVOUR: `nike: ['rings', 'Count your wins', 'tap'],` `jarvis/transitions.js` REGISTRY: `nike: { kind: 'sunburst', ms: 1000 },`
 7. Tests: `tests.test_nike_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_app_intro`, `tests.test_jarvis_transitions`.
+
+---
+# Wiring AEGIS (the shield, risk guard, 2026-11-10)
+
+App `aegis` in `tools/web_public/aegis/` (3D shield via the render core: `shield.js` + `shieldload.js`). Reads `../home.json` + `../ledger/rules.json`, falls back to `fixture.json` (DEMO). Warns only, never blocks an order. Test `tests/test_aegis_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('aegis', 'Aegis', 'trading', '#c8a24a', 'Risk guard: drawdown left, a full-stop what-if, when to stop for the day', { glyph: 'A' }),`
+2. `olympus/olympus.js` APPS: `aegis: ['Aegis', 'A', '#c8a24a'],` AMBIENT: `aegis: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"aegis"` (no extra data file: it reads the published `home.json` and `ledger/rules.json`).
+4. `sw.js` OTHER_APPS: `'aegis/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `olympus/intro-app.js` FLAVOUR: `aegis: ['columns', 'Raise the shield', 'tap'],` and `jarvis/transitions.js` REGISTRY: `aegis: { kind: 'columns', ms: 1000, n: 3 },`
+7. Tests: `tests.test_aegis_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.

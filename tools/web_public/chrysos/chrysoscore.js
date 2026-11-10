@@ -5,7 +5,7 @@
 export const CASES = ['conservative', 'base', 'optimistic'];
 export const CASE_WORD = { conservative: 'Cautious', base: 'Middle', optimistic: 'Hopeful' };
 export const CASE_SAY = {
-  conservative: 'Cautious: pays 40% of the tested amount, fails twice as often, loses 8% of funded accounts a month.',
+  conservative: 'Cautious: all copies fail their first eval together and are bought again, then pay 40% of the tested amount; every third month is as weak as the worst real month of 2026.',
   base: 'Middle: the stored H2-2026 results as they are.',
   optimistic: 'Hopeful: the headline payout rate and the best test run. Do not plan on it.',
 };
@@ -122,6 +122,7 @@ export function riskLines(doc, key) {
   const f = doc.chrysos.fleet, accs = fleetAccounts(doc), fees = accs.reduce((s, a) => s + (a.paid || a.price || 0), 0);
   const worst = f.conservative.net12;
   const L = [];
+  if (f.conservative.loss_months && f.conservative.loss_months.length) L.push(`In the cautious case month ${f.conservative.loss_months.join(', ')} is a LOSS month and the first two months are net negative.`);
   L.push(`All ${accs.length} account${accs.length === 1 ? '' : 's'} trade the same signals, so one bad stretch can fail them together. That would cost the fees, about ${money(fees)}.`);
   L.push(worst >= 0 ? `Even the cautious case is only ${moneyS(worst)} over 12 months, and that case is itself a guess.` : `In the cautious case the fleet LOSES ${money(-worst)} over 12 months.`);
   const hi = accs.reduce((m, a) => Math.max(m, a.cases[key].fail_pct), 0);

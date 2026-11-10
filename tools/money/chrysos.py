@@ -53,12 +53,13 @@ BUNDLED = {
                 "MC H2": {"pass": 70.0, "fail": 6.0, "open": 24.0, "pass_med": 6.0, "p10": 50.0, "f10": 1.0}},
     },
     # funded phase on a 50K: owner payout per month (uprisk lifecycle H1 / H2, REF = 2021-25 reference line) and sessions to the first payout
-    "funded": {"H1_month": 761.0, "H2_month": 684.0, "REF_month": 16.0, "headline_month": 915.0, "first_pay_sessions": 26.0, "first_pay_sessions_slow": 52.0},
+    "funded": {"H1_month": 761.0, "H2_month": 684.0, "REF_month": 16.0, "headline_month": 915.0, "first_pay_sessions": 26.0, "first_pay_sessions_slow": 52.0,
+               "weak_ratio": 0.105, "weak_month": "2026-08", "worst_month_usd": 459.0, "mean_month_usd": 4372.0},
 }
 
 # the three cases: how hard each number is pushed against (or for) the owner. Everything is an assumption, written down here.
 CASE_RULES = {
-    "conservative": {"open_w": 0.5, "fail_x": 2.0, "fail_add": 5.0, "pay_share": 0.40, "survive": 0.92, "time_x": 1.6, "first_pay": "slow", "pass_pick": "worst"},
+    "conservative": {"open_w": 0.5, "fail_x": 2.0, "fail_add": 5.0, "pay_share": 0.40, "survive": 0.92, "time_x": 1.6, "first_pay": "slow", "pass_pick": "worst", "cohort": True, "fail_cycles": 1, "weak_every": 3},
     "base":         {"open_w": 0.25, "fail_x": 1.0, "fail_add": 0.0, "pay_share": 1.00, "survive": 0.97, "time_x": 1.0, "first_pay": "med", "pass_pick": "H2"},
     "optimistic":   {"open_w": 0.0, "fail_x": 0.8, "fail_add": 0.0, "pay_share": 915.0 / 684.0, "survive": 0.99, "time_x": 0.8, "first_pay": "fast", "pass_pick": "best"},
 }
@@ -76,7 +77,8 @@ NOTES = [
     "All accounts take the SAME signals, so they win and lose together. Five accounts are not five independent chances.",
     "A failed eval is assumed to be bought again at the same price (MFFU publishes no reset price for one-time plans). Check the real price before you rely on it.",
     "Payouts need the owner present, MFFU's consistency and minimum-day rules and a request every two weeks at most. Rules checked 2026-10-18: re-check before the first payout.",
-    "The conservative case pays 40% of the tested monthly amount, fails twice as often and loses 8% of funded accounts each month. The 2021-25 reference line pays about nothing.",
+    "The Cautious case is a stress path, not an average: every copy shares ONE outcome, so the whole cohort fails its first eval together, every account is bought again (a loss month), and only the second try passes. "
+    "It then pays 40% of the tested amount, loses 8% of funded accounts a month, and every third month is as weak as the worst real 2026 month (August: $459 against a $4,372 average, about 10%). The 2021-25 reference line pays about nothing.",
 ]
 
 
@@ -136,6 +138,16 @@ def load_stats(root=ROOT, fixture=False):
         used.append("uprisk_life/today__rec")
     except (TypeError, KeyError):
         pass
+    ll = _read(os.path.join(root, "research", "runs", "lit_live.json"))
+    try:
+        mm = {k: _num(v["net"]) for k, v in ll["months"].items() if k.startswith("2026") and _num(v.get("net")) is not None}
+        if len(mm) >= 6:
+            mean = sum(mm.values()) / len(mm)
+            worst_k = min(mm, key=mm.get)
+            st["funded"].update({"weak_ratio": round(mm[worst_k] / mean, 4), "weak_month": worst_k, "worst_month_usd": mm[worst_k], "mean_month_usd": round(mean, 1)})
+            used.append("lit_live/months 2026")
+    except (TypeError, KeyError, AttributeError, ZeroDivisionError):
+        pass
     m = _read(os.path.join(lit, "mffu_rules.json"))
     try:
         for p in ("builder_50k", "builder_25k"):
@@ -175,6 +187,12 @@ def funded_month(st, plan, case):
     return base * PLANS[plan]["scale"]
 
 
+def cohort_days(st):
+    """Calendar days of ONE eval cycle that every copy shares in the Cautious case: the slowest plan's median sessions to pass, pushed by the case."""
+    cr = CASE_RULES["conservative"]
+    return max(eval_odds(st, k, "conservative")[2] for k in ORDER) * SESSIONS_TO_DAYS
+
+
 def account_case(st, plan, case, owned=False, months=HORIZON):
     """One account type, one case: odds, time, cost, month-by-month cumulative net and the break-even. Money in dollars, ESTIMATES."""
     P = PLANS[plan]
@@ -184,6 +202,13 @@ def account_case(st, plan, case, owned=False, months=HORIZON):
     attempts = 1.0 / p_adj
     price = P["price"]
     to_funded_days = pass_med * SESSIONS_TO_DAYS + (attempts - 1.0) * pass_med * SESSIONS_TO_DAYS
+    cohort = bool(cr.get("cohort"))
+    cyc = cohort_days(st)
+    if cohort:
+        # CORRELATED stress path: the copies trade the same signals, so they share ONE outcome per cycle. The whole cohort fails its first eval together
+        # (the fees are lost at the same moment), every copy is bought again, and only the next cycle passes. Not an average of independent chances.
+        attempts = 1.0 + cr["fail_cycles"]
+        to_funded_days = cyc * attempts
     fp = {"slow": st["funded"]["first_pay_sessions_slow"], "med": st["funded"]["first_pay_sessions"], "fast": st["funded"]["first_pay_sessions"] * 0.6}[cr["first_pay"]]
     first_pay_days = to_funded_days + fp * SESSIONS_TO_DAYS
     rate = funded_month(st, plan, case)
@@ -192,6 +217,7 @@ def account_case(st, plan, case, owned=False, months=HORIZON):
     rate = min(rate, cap_month)
     first_buy = 0.0 if owned else price
     extra_buys = (attempts - 1.0) * price
+    weak = st["funded"].get("weak_ratio", 0.105)
     series, cum_in, inc_s, fee_s = [], 0.0, [], []
     for m in range(0, months + 1):
         t = m * 30.0
@@ -202,9 +228,14 @@ def account_case(st, plan, case, owned=False, months=HORIZON):
             if live > 0:
                 mid = (max(lo, first_pay_days) + hi) / 2.0
                 surv = cr["survive"] ** max(0.0, (mid - first_pay_days) / 30.0)
-                inc = min(rate * live / 30.0 * surv * p_adj, max(0.0, cap_total * p_adj - cum_in))
+                pw = p_adj if not cohort else 1.0
+                wk = weak if cohort and cr["weak_every"] and m % cr["weak_every"] == 0 else 1.0     # every 3rd month is as weak as the worst real 2026 month
+                inc = min(rate * wk * live / 30.0 * surv * pw, max(0.0, cap_total * pw - cum_in))
         cum_in += inc
-        spent = first_buy + (extra_buys if t >= to_funded_days else extra_buys * (t / max(to_funded_days, 1.0)))
+        if cohort:
+            spent = first_buy + (extra_buys if t >= cyc else 0.0)          # the repurchase lands in the month the cohort fails: a real loss month
+        else:
+            spent = first_buy + (extra_buys if t >= to_funded_days else extra_buys * (t / max(to_funded_days, 1.0)))
         series.append(r2(cum_in - spent))
         inc_s.append(r2(cum_in))
         fee_s.append(r2(spent + (price if owned else 0.0)))
@@ -220,7 +251,7 @@ def account_case(st, plan, case, owned=False, months=HORIZON):
     return {
         "case": case, "p_funded": r2(p_adj * 100), "fail_pct": r2(fail_pct), "attempts": r2(attempts),
         "days_to_funded": int(round(to_funded_days)), "days_to_first_payout": int(round(first_pay_days)),
-        "payout_month": r2(rate * p_adj), "payout_month_if_funded": r2(rate), "cost_expected": r2(cost_exp), "cum": series, "income": inc_s, "fees_all": fee_s,
+        "payout_month": r2(rate * (p_adj if not cohort else (2 + weak) / 3.0)), "cohort_fail": cohort, "payout_month_if_funded": r2(rate), "cost_expected": r2(cost_exp), "cum": series, "income": inc_s, "fees_all": fee_s,
         "net6": series[min(6, months)], "net12": series[min(12, months)], "breakeven_month": be_month, "survive_month": cr["survive"], "payout_cap_total": cap_total,
     }
 
@@ -292,7 +323,7 @@ def fleet_totals(accounts):
             if cum[i - 1] < 0 <= cum[i]:
                 be = r2(i - 1 + (0 - cum[i - 1]) / (cum[i] - cum[i - 1]))
                 break
-        t[c] = {"cum": [r2(x) for x in cum], "net6": r2(cum[6]), "net12": r2(cum[12]), "breakeven_month": be,
+        t[c] = {"cum": [r2(x) for x in cum], "loss_months": [i for i in range(1, len(cum)) if cum[i] < cum[i - 1] - 0.005], "net6": r2(cum[6]), "net12": r2(cum[12]), "breakeven_month": be,
                 "cost_expected": r2(sum(a["cases"][c]["cost_expected"] for a in accounts)), "payout_month": r2(sum(a["cases"][c]["payout_month"] for a in accounts))}
     return t
 
@@ -408,7 +439,13 @@ def selftest():
     cal = doc["chrysos"]["calendar"]
     chk("calendar sorted, dated, within 12 months", cal == sorted(cal, key=lambda e: (e["date"], e["id"])) and all(e["date"] <= "2027-11-30" for e in cal) and len(cal) > 0)
     chk("calendar chance <= 100 and expected <= if-funded", all(0 < e["chance_pct"] <= 100 and e["usd_expected"] <= e["usd_if_funded"] for e in cal))
-    chk("fleet cum is the sum of the accounts", True)
+    fc = doc["chrysos"]["fleet"]["conservative"]
+    chk("Cautious: net-negative at month 1 and 2 (fees, a failed first cycle, no payout yet)", fc["cum"][1] < 0 and fc["cum"][2] < 0, fc["cum"][:4])
+    chk("Cautious: shows a real LOSS month (the whole cohort is bought again at once)", len(fc["loss_months"]) >= 1, fc["loss_months"])
+    cc = doc["chrysos"]["candidates"]
+    chk("Cautious: every copy shares the same failure moment (one cohort, not independent multiples): same days_to_funded for 25K and 50K", len({a["cases"]["conservative"]["days_to_funded"] for a in cc}) == 1)
+    chk("Cautious: every account is bought exactly twice (1 fail + 1 pass), resets repurchased", all(abs(a["cases"]["conservative"]["attempts"] - 2.0) < 1e-9 for a in cc))
+    chk("weak month ratio is the worst real 2026 month over the mean (bundled 459 / 4372)", abs(st["funded"]["weak_ratio"] - 459.0 / 4372.0) < 0.01, st["funded"]["weak_ratio"])
     n_acc = len(doc["chrysos"]["owned"]) + len(doc["chrysos"]["buy_next"])
     chk("fleet capped", n_acc <= MAX_ACCOUNTS, n_acc)
     zero = plan(st, src, budget=0.0)
