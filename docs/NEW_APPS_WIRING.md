@@ -391,3 +391,13 @@ App `compass` in `tools/web_public/compass/` (3D rose via the render core: `rose
 7. Tests: `tests.test_compass_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
 
 Optional, outside this app: the Ledger page can store `lastExport` (ISO text or epoch) in `ledger.v1` when Export JSON is tapped; until then Compass says "no export on record".
+
+---
+# Wiring HARMONIA (the balance, 2026-11-10)
+
+App `harmonia` in `tools/web_public/harmonia/` (3D balance beam via the render core: `beam.js` + `beamload.js`). Reads `../home.json` and `../money/index.json`; falls back to `fixture.json` (DEMO). Test `tests/test_harmonia_page.py`.
+The row is already in `tools/new_apps.json` (group money, accent `#c8a24a`, glyph `H`, ambient `coins`, flavour `['bars', 'Weigh it up', 'tap']`, transition `{ kind: 'waves', ms: 1000 }`): the lead runs `python tools/wire_new_apps.py --apply`, which writes the six files:
+
+1. `jarvis/apps.js` BUILT_INS row  2. `olympus/olympus.js` APPS + AMBIENT  3. `tools/build_web_dashboard.py` app tuple  4. `sw.js` OTHER_APPS  5. `olympus/intro-app.js` FLAVOUR  6. `jarvis/transitions.js` REGISTRY.
+Then bump `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and run `python tools/apps_list_build.py --check`.
+Tests after wiring: `tests.test_harmonia_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.

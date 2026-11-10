@@ -405,6 +405,24 @@
     "kind": "sunburst",
     "ms": 1000
    }
+  },
+  {
+   "id": "harmonia",
+   "name": "Harmonia",
+   "group": "money",
+   "accent": "#c8a24a",
+   "description": "The balance: what leans on the NQ bots, and what is left",
+   "glyph": "H",
+   "ambient": "coins",
+   "flavour": [
+    "bars",
+    "Weigh it up",
+    "tap"
+   ],
+   "transition": {
+    "kind": "waves",
+    "ms": 1000
+   }
   }
  ],
  "pending": [],
