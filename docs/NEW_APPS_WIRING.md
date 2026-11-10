@@ -125,3 +125,18 @@ App `arbiter` (`tools/web_public/arbiter/`, paper-only spread / funding finder) 
 5. `python tools/apps_list_build.py` then `--check`.
 6. `olympus/intro-app.js` FLAVOUR: `arbiter: ['coins', 'Weigh the spread', 'tap'],` `jarvis/transitions.js` REGISTRY: `arbiter: { kind: 'tiles', ms: 800 },`
 7. Tests: `tests.test_arbiter_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_app_intro`, `tests.test_jarvis_transitions`.
+
+---
+# Wiring NIKE, the trophy hall (2026-11-10)
+
+App `nike` (`tools/web_public/nike/`) reads `../home.json` (accounts: `kind: funded` / `eval.passed` / `eval.progress` / `eval.to_target`, optional `passed_on`; `payouts[] {usd, date}` at the top or per account), `../ledger/rules.json` (target, payout rules), `../odeon/trades.json`, `../kalshicity/edges.json` (`book.total`, `book.days`) and the journal's ratings from this phone (`localStorage journal.v1`, read only); `fixture.json` is the labelled DEMO, used only when home.json is missing. Nothing unpublished is invented: a trophy without a real number is "Not yet". The 3D is four small meshes drawn on a 2D canvas (`nikescene.js`, no WebGL, `olympus/shapes3d.js` had not landed). Test `tests/test_nike_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+Data the lead may want to publish so the hall fills in: `payouts` (and `passed_on`) in `home.json`. Until then the payout trophies honestly say "No payout has been published".
+
+1. `jarvis/apps.js` BUILT_INS: `app('nike', 'Nike', 'life', '#c8a24a', 'The trophy hall: milestones and wins from real numbers', { glyph: 'Ν' }),`
+2. `olympus/olympus.js` APPS: `nike: ['Nike', 'Ν', '#c8a24a'],` AMBIENT: `nike: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"nike"`.
+4. `sw.js` OTHER_APPS: `'nike/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `olympus/intro-app.js` FLAVOUR: `nike: ['rings', 'Count your wins', 'tap'],` `jarvis/transitions.js` REGISTRY: `nike: { kind: 'sunburst', ms: 1000 },`
+7. Tests: `tests.test_nike_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_app_intro`, `tests.test_jarvis_transitions`.
