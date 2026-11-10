@@ -191,3 +191,15 @@ App `stoa` (`tools/web_public/stoa/`): reads `../home.json`, `../money/index.jso
 5. `python tools/apps_list_build.py` then `--check`.
 6. `intro-app.js` FLAVOUR: `stoa: ['columns', 'Light the columns', 'tick'],` ; `transitions.js` REGISTRY: `stoa: { kind: 'columns', ms: 1000, n: 6 },`
 7. Tests: `tests.test_stoa_page`, `tests.test_mint_page`, `tests.test_money_engine`, plus the shared list in section 7 above.
+
+---
+# Wiring LYCEUM, the school (2026-11-10)
+
+App `lyceum` (`tools/web_public/lyceum/`): daily 5-question quiz on the owner's rules, XP + Greek ranks, review cards from Journal mistakes, 3 costliest habits ($ with R), weekly report card, 3D lecture hall (one column per rank). Reads `../odeon/trades.json`, `../home.json`, the Journal's `journal.v1` on the phone (READ ONLY), `fixture.json` (DEMO). Writes only its own `lyceum.v1` on the phone (never in the demo). Test `tests/test_lyceum_page.py`.
+1. `jarvis/apps.js` BUILT_INS: `app('lyceum', 'Lyceum', 'life', '#c8a24a', 'The school: daily rules quiz, ranks, habits costing money', { glyph: 'Σ' }),`
+2. `olympus/olympus.js` APPS: `lyceum: ['Lyceum', 'Σ', '#c8a24a'],` AMBIENT: `lyceum: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"lyceum"`.
+4. `sw.js` OTHER_APPS: add `'lyceum/'`, bump `CACHE`; update the pinned strings in `test_zenith_mode`, `test_jarvis_hub`, `test_zenith_shell`, `test_phone_e2e`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `intro-app.js` FLAVOUR: `lyceum: ['columns', 'Learn your own rules', 'tap'],` `transitions.js` REGISTRY: `lyceum: { kind: 'columns', ms: 1000, n: 6 },`
+7. Tests: `tests.test_lyceum_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
