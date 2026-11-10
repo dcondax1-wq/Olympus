@@ -231,3 +231,16 @@ App `aegis` in `tools/web_public/aegis/` (3D shield via the render core: `shield
 5. `python tools/apps_list_build.py` then `--check`.
 6. `olympus/intro-app.js` FLAVOUR: `aegis: ['columns', 'Raise the shield', 'tap'],` and `jarvis/transitions.js` REGISTRY: `aegis: { kind: 'columns', ms: 1000, n: 3 },`
 7. Tests: `tests.test_aegis_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring KRATOS (the discipline score, 2026-11-10)
+
+App `kratos` in `tools/web_public/kratos/` (3D column via the render core: `column.js` + `columnload.js`). Reads `../odeon/trades.json` and, on the phone, the journal ratings in localStorage `journal.v1` (read only, never written); falls back to `fixture.json` (DEMO). Test `tests/test_kratos_page.py`. Not touched: `sw.js`, `build_web_dashboard.py`, `apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('kratos', 'Kratos', 'trading', '#c8a24a', 'Discipline score 0-100 per day: plan, stop, size, hours, flat', { glyph: 'K' }),`
+2. `olympus/olympus.js` APPS: `kratos: ['Kratos', 'K', '#c8a24a'],` AMBIENT: `kratos: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"kratos"` (no extra data file).
+4. `sw.js` OTHER_APPS: `'kratos/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `olympus/intro-app.js` FLAVOUR: `kratos: ['columns', 'Keep your own rules', 'tap'],` and `jarvis/transitions.js` REGISTRY: `kratos: { kind: 'columns', ms: 1000, n: 4 },`
+7. Tests: `tests.test_kratos_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
