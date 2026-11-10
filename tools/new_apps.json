@@ -407,7 +407,6 @@
    }
   },
   {
-<<<<<<< HEAD
    "id": "pheme",
    "name": "Pheme",
    "group": "trading",
@@ -423,7 +422,9 @@
    "transition": {
     "kind": "tiles",
     "ms": 800
-=======
+   }
+  },
+  {
    "id": "harmonia",
    "name": "Harmonia",
    "group": "money",
@@ -439,7 +440,6 @@
    "transition": {
     "kind": "waves",
     "ms": 1000
->>>>>>> worktree-agent-af878daccdbb2156e
    }
   }
  ],
