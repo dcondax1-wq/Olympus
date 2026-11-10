@@ -5,34 +5,27 @@
  "mode": "paper",
  "status": "sample",
  "headline": {
-  "text": "Two prop-firm discount windows are open; the best saves about $38 on the next eval fee.",
-  "usd_month": 38
+  "text": "Estimate: buying the next eval account is worth about $1,339 a month if the backtests hold; not a promise.",
+  "usd_month": 1339
  },
  "items": [
   {
-   "title": "Builder 50K discount code",
-   "detail": "A public code takes the one-time fee from $91.80 to about $73. Check the code on the firm's own page before paying.",
-   "usd": 19,
-   "score": 72,
+   "title": "Next buy: Builder 50K ($91.80)",
+   "detail": "Planner view from stored backtests. All accounts take the same signals, so they win and lose together.",
+   "usd": 5439,
+   "score": 89,
    "risk": "low"
   },
   {
-   "title": "ATLAS 25K promo week",
-   "detail": "The 25K fee is $43 today; a seasonal promo may cut it by a third. Not a promise: promos end without notice.",
-   "usd": 14,
-   "score": 55,
+   "title": "Buy: ATLAS 25K ($43.00)",
+   "detail": "Cheaper account, smaller payouts. The fee is lost if the eval fails.",
+   "usd": 2528,
+   "score": 88,
    "risk": "low"
-  },
-  {
-   "title": "Payout timing",
-   "detail": "A funded payout can be requested after the minimum trading days. Waiting a week costs nothing but delays cash.",
-   "usd": 0,
-   "score": 40,
-   "risk": "med"
   }
  ],
  "notes": [
-  "Sample numbers, not real. Savings are one-time, not monthly income.",
-  "Promo codes change often and may not apply to your account."
+  "Sample numbers, not real. Every dollar is an estimate from past backtests, not income.",
+  "You can lose every eval fee."
  ]
 }

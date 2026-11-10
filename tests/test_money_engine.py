@@ -31,8 +31,8 @@ def test_fixtures():
     for sid in M.IDS:
         raw = json.load(open(os.path.join(FX, sid + ".json"), encoding="utf-8"))
         ok = (raw["v"] == 1 and raw["id"] == sid and raw["mode"] == "paper" and raw["status"] == "sample" and M.parse_iso(raw["asof"]) is not None
-              and isinstance(raw["headline"]["text"], str) and raw["headline"]["text"] and M.num(raw["headline"]["usd_month"]) is not None
-              and 1 <= len(raw["items"]) <= 8 and all(set(i) == {"title", "detail", "usd", "score", "risk"} and 0 <= i["score"] <= 100 and i["risk"] in M.RISKS for i in raw["items"])
+              and isinstance(raw["headline"]["text"], str) and raw["headline"]["text"] and (raw["headline"]["usd_month"] is None or M.num(raw["headline"]["usd_month"]) is not None)
+              and 1 <= len(raw["items"]) <= 8 and all({"title", "detail", "usd", "score", "risk"} <= set(i) <= {"title", "detail", "usd", "score", "risk", "expires"} and 0 <= i["score"] <= 100 and i["risk"] in M.RISKS for i in raw["items"])
               and any("not real" in n.lower() for n in raw["notes"]))
         check(f"a. fixture {sid}: v1, paper, sample, headline + $/month, 1-8 items with title/detail/usd/score/risk, a 'not real' note", ok, raw)
         n = M.normalize(sid, raw)
@@ -104,6 +104,37 @@ def test_publish():
     check("f. money_publish.py --selftest passes", r.returncode == 0, r.stdout[-300:])
 
 
+STOA_HARNESS = r"""
+import(process.argv[2]).then((C) => {
+  const fs = require('fs'), idx = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
+  const live = JSON.parse(JSON.stringify(idx)); live.streams.forEach((s) => { s.status = 'ok'; });
+  const cards = C.buildCards({ home: { accounts: [] }, money: live }, Date.parse('2026-11-12T12:00:00Z'));
+  const d = cards.find((c) => c.slot === 'deals'), f = cards.find((c) => c.slot === 'feeds');
+  console.log(JSON.stringify({ deals: [d.tone, d.title, d.needs], n: cards.length, feeds: f.tone }));
+});
+"""
+
+
+def test_real_scanners():
+    out = tempfile.mkdtemp(prefix="money-real-")
+    idx = M.run(out, True, 120, quiet=True)
+    by = {s["id"]: s for s in idx["streams"]}
+    check("g. the five REAL scanners run through the engine with --fixture: every stream comes from its scanner (not the stand-in), status sample, no error", all(by[i]["source"] == "scanner" and by[i]["status"] == "sample" and not by[i]["error"] for i in M.IDS), {i: (by[i]["source"], by[i]["error"]) for i in M.IDS})
+    raw = json.load(open(os.path.join(out, "mercury.json"), encoding="utf-8"))
+    check("g. the scanner's own file is kept whole (Mercury still has its pick, prices and pages for its own page), not the hub's trimmed copy", all(k in raw for k in ("pick", "prices", "pages")) and "mercury_state.json" in os.listdir(out), sorted(raw))
+    check("g. the scanner's memory file survives a second run (Mercury's polite one-fetch-per-page state)", M.run(out, True, 120, only=["mercury"], quiet=True) is not None and os.path.isfile(os.path.join(out, "mercury_state.json")))
+    exp = [i.get("expires") for i in by["mercury"]["items"] if i.get("expires")]
+    check("g. Mercury's dated deals carry `expires` (YYYY-MM-DD) into the index", exp and all(M.clean_expires(e) for e in exp), exp)
+    check("g. the contract: expires accepts a date or a date-time and nothing else", M.clean_expires("2026-11-13") and M.clean_expires("2026-11-13T10:00:00Z") and not M.clean_expires("soon") and not M.clean_expires("2026-13-45") and not M.clean_expires(5) and not M.clean_expires("13/11/2026"))
+    check("g. every real stream has a headline, 1+ items, and a hub role", all(by[i]["headline"] and by[i]["items"] and by[i]["role"] for i in M.IDS))
+    o = AK.node("stoa", STOA_HARNESS, os.path.join(out, "index.json"))
+    if o is not None:
+        check("g. Stoa reads the real index: Mercury's 'ends 2026-11-13' deal becomes 'Deal ends in ...' on 2026-11-12 (warn), six cards", "_error" not in o and o["deals"][0] == "warn" and o["deals"][1].startswith("Deal ends in") and o["n"] == 6, o)
+    P.publish(out, os.path.join(out, "site"), True)
+    pub = os.listdir(os.path.join(out, "site", "money"))
+    check("g. publish copies the five whole scanner files and the index, not the state file", sorted(pub) == sorted([i + ".json" for i in M.IDS] + ["index.json"]), pub)
+
+
 def test_paper_only():
     src = open(os.path.join(ROOT, "tools", "money_engine.py"), encoding="utf-8").read()
     code = re.sub(r'""".*?"""', "", src, flags=re.S)
@@ -118,5 +149,6 @@ if __name__ == "__main__":
     test_run()
     test_schedule()
     test_publish()
+    test_real_scanners()
     test_paper_only()
     AK.finish()

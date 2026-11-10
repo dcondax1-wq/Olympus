@@ -91,7 +91,7 @@ def test_maths():
           o["combine"][:8] == [76.5, 255, 382.5, 255, False, "ok", "About $255 a month, but it could be anywhere from $77 to $383.", "Every stream is fresh."], o["combine"])
     check("b. five examples: flagged all-example, tone info, 'not real finds'; no streams at all: no number, a plain sentence, never NaN", o["combine"][8:11] == [True, "info", "These are example numbers, not real finds."] and o["combine"][11] == 0 and o["combine"][12].startswith("No estimate yet") and o["combine"][13] is False, o["combine"])
     check("b. always five streams in the fixed order, even from a one-stream index (the other four say 'none')", o["five"] == [",".join(IDS), "none,none,none,ok,none"], o["five"])
-    check("b. what to do today is at most 3, never lists the referee's own rows as tasks, and is never empty (an honest 'nothing to do today')", o["todo"][0] == 3 and o["todo"][3] is True and o["todo"][4] >= 1 and o["todo"][5] in ("task", "none"), o["todo"])
+    check("b. what to do today is at most 3, draws tasks from every stream, and is never empty (an honest 'nothing to do today')", o["todo"][0] == 3 and o["todo"][4] >= 1 and o["todo"][5] in ("task", "none"), o["todo"])
     check("b. old data comes first: 'Refresh Mercury', with the RUN_MONEY.bat step, then the best two tasks", o["stale"] == [3, "refresh", "Refresh Mercury", True], o["stale"])
     check("b. low risk beats high risk at the same score; weak items (score < 40) are dropped", o["order"] == ["safe,risky"] or o["order"][0].startswith("safe"), o["order"])
     check("b. pillar heights are linear in the dollars (tallest = 100%), never zero, and a stream with no number is a thin stub", o["pillars"][1] is True and o["pillars"][0].split(",")[2] == "100" and o["pillars"][2] == 0.04, o["pillars"])
@@ -131,8 +131,8 @@ def test_page():
               pills: [...document.querySelectorAll('#streams .pill')].map((h) => h.textContent), todo: document.querySelectorAll('#todo li').length, legend: document.querySelectorAll('#legend li').length,
               cols: document.querySelectorAll('#fallback rect').length, hist: document.querySelector('#histNote').textContent, font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor,
               ests: [...document.querySelectorAll('#streams .amt')].map((h) => h.textContent), scene: window.MINT.S.scene })""")
-            check("c. DEMO (the fixture): the chip, $210 a month with the range $0 to $420, EXAMPLE ESTIMATE, 'not real finds', five cards in order, each marked Example",
-                  d["demo"] and d["base"] == "$210" and "$0 to $420" in d["text"] and d["pill"] == "EXAMPLE ESTIMATE" and "not real finds" in d["why"] and d["names"] == ["Chrysos", "Mercury", "Sibyl", "Oikos", "Arbiter"] and d["pills"] == ["Example"] * 5, d)
+            check("c. DEMO (the fixture): the chip, $1,495 a month with the range $0 to $2,990, EXAMPLE ESTIMATE, 'not real finds', five cards in order, each marked Example",
+                  d["demo"] and d["base"] == "$1,495" and "$0 to $2,990" in d["text"] and d["pill"] == "EXAMPLE ESTIMATE" and "not real finds" in d["why"] and d["names"] == ["Chrysos", "Mercury", "Sibyl", "Oikos", "Arbiter"] and d["pills"] == ["Example"] * 5, d)
             check("c. every card shows its dollars as an estimate ('a month (estimate)'); at most 3 things to do; five legend rows; the 2D pillars (flat=1) are drawn; examples are not saved to the history",
                   all("estimate" in e for e in d["ests"]) and 1 <= d["todo"] <= 3 and d["legend"] == 5 and d["cols"] >= 20 and d["scene"] == "2d" and "not saved" in d["hist"], d)
             check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
@@ -140,7 +140,7 @@ def test_page():
             p.locator("#streams .stream").first.locator("button").click()
             p.wait_for_timeout(120)
             e = p.evaluate("() => { const c = document.querySelector('#streams .stream'); return [c.querySelector('.more').hidden, c.querySelector('button').getAttribute('aria-expanded'), c.querySelector('.items').children.length, c.textContent.includes('estimate')]; }")
-            check("c. tap Details: the items open (with their own risk words), the button says expanded, tap again closes", e == [False, "true", 3, True], e)
+            check("c. tap Details: the items open (with their own risk words), the button says expanded, tap again closes", e == [False, "true", 2, True], e)
             t = AK.taps(p)
             check("c. every tap target is at least 44 x 44 px", not t, t[:5])
             check("c. no sideways scroll; Jarvis's corner is free; no console error; nothing off the origin", AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (errs[:3], off[:3]))
@@ -159,11 +159,25 @@ def test_page():
             check("c. it reads only the site's own files and no console error", any("money/index.json" in u for u in seen) and not off and not errs, (off[:3], errs[:3]))
             ctx.close()
             srv2.shutdown()
+            # the REAL scanners' output (--fixture run of tools/money/*.py through the engine)
+            import tempfile
+            sys.path.insert(0, os.path.join(AK.ROOT, "tools"))
+            import money_engine as ME
+            real_out = tempfile.mkdtemp(prefix="mint-real-")
+            ME.run(real_out, True, 120, quiet=True)
+            srv4, origin4 = AK.serve({"/money/index.json": open(os.path.join(real_out, "index.json"), encoding="utf-8").read()})
+            ctx, p, errs, seen, off = AK.page(br, origin4)
+            AK.open_app(p, origin4, APP, "?flat=1")
+            rr = p.evaluate("() => ({ n: document.querySelectorAll('#streams .stream').length, demo: !document.querySelector('#demo').hidden, pills: [...document.querySelectorAll('#streams .pill')].map((h) => h.textContent), base: document.querySelector('#heroBase').textContent, todo: document.querySelectorAll('#todo li').length, roles: [...document.querySelectorAll('#streams .top2 .note')].map((h) => h.textContent) })")
+            check("c. the real scanners' index: five cards (their sample status shown as Example), no DEMO chip (it is the real file), a total, at most 3 things to do, the real one-line roles, no console error",
+                  rr["n"] == 5 and not rr["demo"] and rr["pills"] == ["Example"] * 5 and rr["base"].startswith("$") and 1 <= rr["todo"] <= 3 and rr["roles"][4] == "Spread and funding ideas (paper)" and not errs, (rr, errs[:2]))
+            ctx.close()
+            srv4.shutdown()
             # no index at all (404): the fixture, never blank
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?flat=1")
             m = p.evaluate("() => [!document.querySelector('#demo').hidden, document.querySelectorAll('#streams .stream').length, document.querySelector('#heroBase').textContent]")
-            check("c. no money/index.json on the site: the example fixture fills the page (DEMO chip, five cards, $210), never blank", m == [True, 5, "$210"], m)
+            check("c. no money/index.json on the site: the example fixture fills the page (DEMO chip, five cards, $1,495), never blank", m == [True, 5, "$1,495"], m)
             ctx.close()
             # the 3D pillars (one browser run, short)
             ctx, p, errs, seen, off = AK.page(br, origin)
@@ -173,8 +187,8 @@ def test_page():
               pillars: window.MINT3D ? window.MINT3D.pillars() : [], svg: getComputedStyle(document.querySelector('#fallback')).visibility })""")
             if w["scene"] == "webgl":
                 ps = w["pillars"]
-                check("c. 3D: a canvas draws frames, five pillars, the tallest is Sibyl ($90) and the shortest Mercury ($15): height follows the estimate; the 2D picture steps aside",
-                      w["three"] and w["canvas"] and w["frames"] > 1 and len(ps) == 5 and ps.index(max(ps)) == 2 and ps.index(min(ps)) == 1, w)
+                check("c. 3D: a canvas draws frames, five pillars, the tallest is Chrysos and the shortest Mercury (no monthly number): height follows the estimate; the 2D picture steps aside",
+                      w["three"] and w["canvas"] and w["frames"] > 1 and len(ps) == 5 and ps.index(max(ps)) == 0 and ps.index(min(ps)) == 1, w)
                 AK.shot(p, "mint-3d")
             else:
                 check("c. 3D not available in this browser: the 2D pillars stay (never blank)", w["scene"] == "2d" and not w["three"] and w["svg"] == "visible", w)

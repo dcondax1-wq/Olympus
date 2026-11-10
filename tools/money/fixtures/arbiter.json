@@ -5,34 +5,27 @@
  "mode": "paper",
  "status": "sample",
  "headline": {
-  "text": "The referee ranks the other streams: do the lowest-risk, highest-return task first; about $20 a month.",
-  "usd_month": 20
+  "text": "Best paper idea: hold a coin and short its perpetual, about $37 a month on $1,000 (estimate).",
+  "usd_month": 37
  },
  "items": [
   {
-   "title": "Do first: cancel the unused plan",
-   "detail": "Highest score, lowest risk, five minutes.",
-   "usd": 16,
-   "score": 82,
-   "risk": "low"
+   "title": "Hold WIF, short its perpetual",
+   "detail": "Collect the funding rate, market neutral. Fees, slippage and exchange risk can eat it.",
+   "usd": 32,
+   "score": 84,
+   "risk": "med"
   },
   {
-   "title": "Do next: check the Builder 50K code",
-   "detail": "Saves a one-time fee; verify on the firm's page.",
-   "usd": 19,
-   "score": 72,
-   "risk": "low"
-  },
-  {
-   "title": "Wait on: prediction-market edge",
-   "detail": "Thin after fees and high risk; paper only for now.",
-   "usd": 0,
-   "score": 30,
-   "risk": "high"
+   "title": "Stablecoin below one dollar",
+   "detail": "Buy under the peg and redeem at one dollar. The peg can break.",
+   "usd": 35,
+   "score": 80,
+   "risk": "med"
   }
  ],
  "notes": [
-  "Sample numbers, not real. The referee only orders tasks; it never moves money.",
-  "Rankings change as the other streams refresh."
+  "Sample numbers, not real. Paper only: Arbiter never trades or asks for a key.",
+  "Funding rates change every few hours."
  ]
 }

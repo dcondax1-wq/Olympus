@@ -21,6 +21,8 @@ import os
 import subprocess
 import sys
 import tempfile
+import re
+import shutil
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -30,8 +32,8 @@ FIXTURES = os.path.join(SCANNERS, "fixtures")
 DEFAULT_OUT = os.path.join(ROOT, "money_out")
 IDS = ("chrysos", "mercury", "sibyl", "oikos", "arbiter")
 NAMES = {"chrysos": "Chrysos", "mercury": "Mercury", "sibyl": "Sibyl", "oikos": "Oikos", "arbiter": "Arbiter"}
-ROLES = {"chrysos": "Prop-firm savings and payouts", "mercury": "Prop-firm and tool deals", "sibyl": "Prediction-market edges (paper)",
-         "oikos": "Household savings", "arbiter": "The referee: what to do first"}
+ROLES = {"chrysos": "Prop-firm eval and payout planner", "mercury": "Prop-firm and tool deals", "sibyl": "Kalshi study: paper-worthy bets (paper)",
+         "oikos": "Household money leaks from your Ledger", "arbiter": "Spread and funding ideas (paper)"}
 STALE_HOURS = 6            # a file older than this is shown as stale, whatever it says
 LOCK_MAX_MIN = 20          # a lock older than this is abandoned
 # the honest range around a base estimate: (low, high) as multiples of the base, by how much we trust it
@@ -68,6 +70,15 @@ def clean_text(v, n=240):
     return s[:n]
 
 
+EXPIRES_RE = re.compile(r"^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$")
+
+
+def clean_expires(v):
+    """The optional item field `expires`: an ISO date (YYYY-MM-DD, a date alone means the end of that day) or ISO date-time. Anything else -> None."""
+    s = v.strip() if isinstance(v, str) else ""
+    return s if s and EXPIRES_RE.match(s) and parse_iso(s) is not None else None
+
+
 def write_json(path: str, obj) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     tmp = path + ".tmp"
@@ -100,8 +111,12 @@ def normalize(sid: str, raw, now: dt.datetime | None = None):
         if not isinstance(it, dict) or not clean_text(it.get("title")):
             continue
         sc = num(it.get("score"))
-        items.append({"title": clean_text(it.get("title"), 90), "detail": clean_text(it.get("detail"), 260), "usd": num(it.get("usd")),
-                      "score": int(max(0, min(100, sc))) if sc is not None else 0, "risk": it.get("risk") if it.get("risk") in RISKS else "med"})
+        row = {"title": clean_text(it.get("title"), 90), "detail": clean_text(it.get("detail"), 260), "usd": num(it.get("usd")),
+               "score": int(max(0, min(100, sc))) if sc is not None else 0, "risk": it.get("risk") if it.get("risk") in RISKS else "med"}
+        exp = clean_expires(it.get("expires"))
+        if exp:
+            row["expires"] = exp
+        items.append(row)
     status = raw.get("status") if raw.get("status") in ("ok", "stale", "sample") else "stale"
     asof = parse_iso(raw.get("asof"))
     age_min = max(0, int((now - asof).total_seconds() // 60)) if asof else None
@@ -185,17 +200,26 @@ def run_scanner(sid: str, out: str, fixture: bool, timeout: float, scanners: str
     now = now or now_utc()
     script = os.path.join(scanners, sid + ".py")
     target = os.path.join(out, sid + ".json")
-    err, source, stream = None, "scanner", None
+    err, source, stream, raw = None, "scanner", None, None
     if os.path.isfile(script):
         work = tempfile.mkdtemp(prefix=f"money-{sid}-")
+        for f in (os.listdir(out) if os.path.isdir(out) else []):       # the scanner's own memory (<id>_state.json ...) survives between runs
+            if f.startswith(sid + "_") and f.endswith(".json"):
+                shutil.copyfile(os.path.join(out, f), os.path.join(work, f))
         cmd = [sys.executable, script, "--out", work] + (["--fixture"] if fixture else [])
         try:
             r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=ROOT, stdin=subprocess.DEVNULL)
             if r.returncode:
                 err = f"exit {r.returncode}: {clean_text(r.stderr[-200:], 160)}"
-            stream = normalize(sid, read_json(os.path.join(work, sid + ".json")), now)
+            raw = read_json(os.path.join(work, sid + ".json"))
+            stream = normalize(sid, raw, now)
             if stream is None and not err:
                 err = "no usable file written"
+            if stream is not None:
+                os.makedirs(out, exist_ok=True)
+                for f in os.listdir(work):
+                    if f.startswith(sid + "_") and f.endswith(".json"):
+                        shutil.copyfile(os.path.join(work, f), os.path.join(out, f))
         except subprocess.TimeoutExpired:
             err = f"timed out after {int(timeout)} s"
         except OSError as e:
@@ -210,18 +234,19 @@ def run_scanner(sid: str, out: str, fixture: bool, timeout: float, scanners: str
     else:
         err = "scanner not written yet"
     if stream is None:
-        old = normalize(sid, read_json(target), now)
+        raw = read_json(target)
+        old = normalize(sid, raw, now)
         if old is not None and old["status"] != "sample":
-            stream, source = dict(old, status="stale"), "previous"
+            stream, source, raw = dict(old, status="stale"), "previous", dict(raw, status="stale")
         else:
-            stream, source = normalize(sid, read_json(os.path.join(fixtures, sid + ".json")), now), "fixture"
+            raw = read_json(os.path.join(fixtures, sid + ".json"))
+            stream, source = normalize(sid, raw, now), "fixture"
     if stream is None:   # even the sample is gone: a stub so the hub still has a card
         stream, source = {"v": 1, "id": sid, "asof": None, "mode": "paper", "status": "sample", "age_min": None,
                           "headline": {"text": "No data yet for this stream.", "usd_month": None}, "items": [], "notes": []}, "none"
+        raw = {k: v for k, v in stream.items() if k != "age_min"}
     stream["source"], stream["error"] = source, err
-    if err is None:
-        stream["error"] = None
-    write_json(target, {k: v for k, v in stream.items() if k not in ("age_min", "source", "error")})
+    write_json(target, raw)   # the scanner's whole file, unchanged: its own page reads extra fields the hub does not need
     return stream
 
 
@@ -301,7 +326,7 @@ def selftest() -> int:
     chk("all five bundled fixtures follow the contract (paper, sample, headline, 1-8 items, 'not real' note)",
         all(f and f["status"] == "sample" and f["items"] and any("not real" in n for n in f["notes"]) for f in fixt))
     full = run(os.path.join(tmp, "fx"), True, 3, scanners=os.path.join(tmp, "none"), quiet=True)
-    chk("--fixture with no scanners at all still gives five sample cards and a total", full["counts"]["sample"] == 5 and full["total"]["base"] == 210.0 and len(full["streams"]) == 5)
+    chk("--fixture with no scanners at all still gives five sample cards and a total", full["counts"]["sample"] == 5 and full["total"]["base"] == 1495.0 and len(full["streams"]) == 5)
     print(f"\n{len(total) - len(bad)}/{len(total)} passed")
     return 1 if bad else 0
 

@@ -5,34 +5,28 @@
  "mode": "paper",
  "status": "sample",
  "headline": {
-  "text": "Two prop-firm sales are on; the best could save about $18 on your next eval fee.",
-  "usd_month": 15
+  "text": "Best deal now: 30% off at MyFundedFutures, about $27.54 saved (estimate).",
+  "usd_month": null
  },
  "items": [
   {
-   "title": "Prop-firm sale on the 50K plan",
-   "detail": "A public sale page shows a discount. Check the code on the firm's own page before paying.",
-   "usd": 18,
-   "score": 70,
-   "risk": "low"
+   "title": "30% off at MyFundedFutures",
+   "detail": "Code BLACK30. A saving only if you would buy the eval anyway. Check the checkout before you pay.",
+   "usd": 27.54,
+   "score": 90,
+   "risk": "low",
+   "expires": "2026-11-13"
   },
   {
-   "title": "Free reset offer",
-   "detail": "A reset can save a failed-eval fee, but only matters if an eval fails.",
-   "usd": 10,
-   "score": 50,
-   "risk": "low"
-  },
-  {
-   "title": "Rule change noticed",
-   "detail": "A firm page changed its rule wording. Read it before your next eval.",
+   "title": "Rule change at MyFundedFutures",
+   "detail": "A page changed its rule wording. Read it before your next eval.",
    "usd": null,
-   "score": 45,
+   "score": 70,
    "risk": "med"
   }
  ],
  "notes": [
-  "Sample numbers, not real. Savings are one-time, not monthly income.",
-  "Sales end without notice; Mercury never buys anything."
+  "Sample numbers, not real. A discount is not monthly income.",
+  "Mercury only reads public pages; it never buys."
  ]
 }

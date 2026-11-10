@@ -5,34 +5,27 @@
  "mode": "paper",
  "status": "sample",
  "headline": {
-  "text": "Four household savings found; about $47 a month if you cancel the two unused subscriptions.",
-  "usd_month": 47
+  "text": "4 leaks worth watching; about $111 a month is going out without paying back (estimate).",
+  "usd_month": 111
  },
  "items": [
   {
-   "title": "Unused streaming plan",
-   "detail": "No sign-in for 90 days on the list you gave. Cancelling saves the monthly fee.",
-   "usd": 16,
-   "score": 80,
-   "risk": "low"
+   "title": "Resets that did not pay back",
+   "detail": "Money spent on resets that did not turn into payouts.",
+   "usd": 110,
+   "score": 100,
+   "risk": "high"
   },
   {
-   "title": "Second phone-line extra",
-   "detail": "A cheaper plan with the same data exists.",
-   "usd": 21,
-   "score": 70,
-   "risk": "low"
-  },
-  {
-   "title": "Bank fee refund request",
-   "detail": "A fee charged twice this quarter; one call may refund it.",
-   "usd": 10,
-   "score": 60,
-   "risk": "low"
+   "title": "Never covered its cost",
+   "detail": "An eval account whose fee was never earned back.",
+   "usd": 43,
+   "score": 76,
+   "risk": "high"
   }
  ],
  "notes": [
-  "Sample numbers, not real. Savings count only if you act on them.",
-  "Check any cancel fee or contract end date first."
+  "Sample numbers, not real. Computed only from what you record in the Ledger.",
+  "Not tax advice."
  ]
 }

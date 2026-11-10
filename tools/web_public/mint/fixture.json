@@ -5,8 +5,8 @@
  "label": "ESTIMATE",
  "total": {
   "low": 0.0,
-  "base": 210.0,
-  "high": 420.0,
+  "base": 1495.0,
+  "high": 2990.0,
   "real_base": 0.0,
   "unit": "usd_per_month"
  },
@@ -21,43 +21,36 @@
   {
    "id": "chrysos",
    "name": "Chrysos",
-   "role": "Prop-firm savings and payouts",
+   "role": "Prop-firm eval and payout planner",
    "status": "sample",
    "source": "fixture",
    "asof": null,
    "age_min": null,
-   "headline": "Two prop-firm discount windows are open; the best saves about $38 on the next eval fee.",
+   "headline": "Estimate: buying the next eval account is worth about $1,339 a month if the backtests hold; not a promise.",
    "usd_month": {
     "low": 0.0,
-    "base": 38.0,
-    "high": 76.0
+    "base": 1339.0,
+    "high": 2678.0
    },
    "items": [
     {
-     "title": "Builder 50K discount code",
-     "detail": "A public code takes the one-time fee from $91.80 to about $73. Check the code on the firm's own page before paying.",
-     "usd": 19.0,
-     "score": 72,
+     "title": "Next buy: Builder 50K ($91.80)",
+     "detail": "Planner view from stored backtests. All accounts take the same signals, so they win and lose together.",
+     "usd": 5439.0,
+     "score": 89,
      "risk": "low"
     },
     {
-     "title": "ATLAS 25K promo week",
-     "detail": "The 25K fee is $43 today; a seasonal promo may cut it by a third. Not a promise: promos end without notice.",
-     "usd": 14.0,
-     "score": 55,
+     "title": "Buy: ATLAS 25K ($43.00)",
+     "detail": "Cheaper account, smaller payouts. The fee is lost if the eval fails.",
+     "usd": 2528.0,
+     "score": 88,
      "risk": "low"
-    },
-    {
-     "title": "Payout timing",
-     "detail": "A funded payout can be requested after the minimum trading days. Waiting a week costs nothing but delays cash.",
-     "usd": 0.0,
-     "score": 40,
-     "risk": "med"
     }
    ],
    "notes": [
-    "Sample numbers, not real. Savings are one-time, not monthly income.",
-    "Promo codes change often and may not apply to your account."
+    "Sample numbers, not real. Every dollar is an estimate from past backtests, not income.",
+    "You can lose every eval fee."
    ],
    "error": null
   },
@@ -69,167 +62,140 @@
    "source": "fixture",
    "asof": null,
    "age_min": null,
-   "headline": "Two prop-firm sales are on; the best could save about $18 on your next eval fee.",
+   "headline": "Best deal now: 30% off at MyFundedFutures, about $27.54 saved (estimate).",
    "usd_month": {
-    "low": 0.0,
-    "base": 15.0,
-    "high": 30.0
+    "low": null,
+    "base": null,
+    "high": null
    },
    "items": [
     {
-     "title": "Prop-firm sale on the 50K plan",
-     "detail": "A public sale page shows a discount. Check the code on the firm's own page before paying.",
-     "usd": 18.0,
-     "score": 70,
-     "risk": "low"
+     "title": "30% off at MyFundedFutures",
+     "detail": "Code BLACK30. A saving only if you would buy the eval anyway. Check the checkout before you pay.",
+     "usd": 27.54,
+     "score": 90,
+     "risk": "low",
+     "expires": "2026-11-13"
     },
     {
-     "title": "Free reset offer",
-     "detail": "A reset can save a failed-eval fee, but only matters if an eval fails.",
-     "usd": 10.0,
-     "score": 50,
-     "risk": "low"
-    },
-    {
-     "title": "Rule change noticed",
-     "detail": "A firm page changed its rule wording. Read it before your next eval.",
+     "title": "Rule change at MyFundedFutures",
+     "detail": "A page changed its rule wording. Read it before your next eval.",
      "usd": null,
-     "score": 45,
+     "score": 70,
      "risk": "med"
     }
    ],
    "notes": [
-    "Sample numbers, not real. Savings are one-time, not monthly income.",
-    "Sales end without notice; Mercury never buys anything."
+    "Sample numbers, not real. A discount is not monthly income.",
+    "Mercury only reads public pages; it never buys."
    ],
    "error": null
   },
   {
    "id": "sibyl",
    "name": "Sibyl",
-   "role": "Prediction-market edges (paper)",
+   "role": "Kalshi study: paper-worthy bets (paper)",
    "status": "sample",
    "source": "fixture",
    "asof": null,
    "age_min": null,
-   "headline": "Two prediction-market prices look off by more than the fee; about $90 a month if they hold, paper only.",
+   "headline": "3 paper-worthy edges in the Kalshi study; suggestions only, Sibyl places no bet.",
    "usd_month": {
     "low": 0.0,
-    "base": 90.0,
-    "high": 180.0
+    "base": 8.0,
+    "high": 16.0
    },
    "items": [
     {
-     "title": "Rate decision market",
-     "detail": "Market says 62%, the public futures curve implies about 71%. Edge after fee is thin.",
-     "usd": 55.0,
-     "score": 61,
-     "risk": "high"
+     "title": "95-97 cent contracts",
+     "detail": "Win rate beat the break-even price after fees on the cautious estimate; paper stake only.",
+     "usd": 0.02,
+     "score": 60,
+     "risk": "low"
     },
     {
-     "title": "Weather high-temperature market",
-     "detail": "Forecast agreement is strong; market price lags by 5 points.",
-     "usd": 35.0,
-     "score": 58,
+     "title": "97-99 cent contracts",
+     "detail": "Thin edge, few bets. Paper only.",
+     "usd": 0.01,
+     "score": 45,
      "risk": "med"
-    },
-    {
-     "title": "Earnings beat market",
-     "detail": "Close to fair; skip unless the price moves.",
-     "usd": 0.0,
-     "score": 22,
-     "risk": "high"
     }
    ],
    "notes": [
-    "Sample numbers, not real. This is paper only: no order is ever placed.",
-    "A market can stay wrong longer than your money lasts; size small."
+    "Sample numbers, not real. Past bets do not promise future wins.",
+    "Nothing here places a bet."
    ],
    "error": null
   },
   {
    "id": "oikos",
    "name": "Oikos",
-   "role": "Household savings",
+   "role": "Household money leaks from your Ledger",
    "status": "sample",
    "source": "fixture",
    "asof": null,
    "age_min": null,
-   "headline": "Four household savings found; about $47 a month if you cancel the two unused subscriptions.",
+   "headline": "4 leaks worth watching; about $111 a month is going out without paying back (estimate).",
    "usd_month": {
     "low": 0.0,
-    "base": 47.0,
-    "high": 94.0
+    "base": 111.0,
+    "high": 222.0
    },
    "items": [
     {
-     "title": "Unused streaming plan",
-     "detail": "No sign-in for 90 days on the list you gave. Cancelling saves the monthly fee.",
-     "usd": 16.0,
-     "score": 80,
-     "risk": "low"
+     "title": "Resets that did not pay back",
+     "detail": "Money spent on resets that did not turn into payouts.",
+     "usd": 110.0,
+     "score": 100,
+     "risk": "high"
     },
     {
-     "title": "Second phone-line extra",
-     "detail": "A cheaper plan with the same data exists.",
-     "usd": 21.0,
-     "score": 70,
-     "risk": "low"
-    },
-    {
-     "title": "Bank fee refund request",
-     "detail": "A fee charged twice this quarter; one call may refund it.",
-     "usd": 10.0,
-     "score": 60,
-     "risk": "low"
+     "title": "Never covered its cost",
+     "detail": "An eval account whose fee was never earned back.",
+     "usd": 43.0,
+     "score": 76,
+     "risk": "high"
     }
    ],
    "notes": [
-    "Sample numbers, not real. Savings count only if you act on them.",
-    "Check any cancel fee or contract end date first."
+    "Sample numbers, not real. Computed only from what you record in the Ledger.",
+    "Not tax advice."
    ],
    "error": null
   },
   {
    "id": "arbiter",
    "name": "Arbiter",
-   "role": "The referee: what to do first",
+   "role": "Spread and funding ideas (paper)",
    "status": "sample",
    "source": "fixture",
    "asof": null,
    "age_min": null,
-   "headline": "The referee ranks the other streams: do the lowest-risk, highest-return task first; about $20 a month.",
+   "headline": "Best paper idea: hold a coin and short its perpetual, about $37 a month on $1,000 (estimate).",
    "usd_month": {
     "low": 0.0,
-    "base": 20.0,
-    "high": 40.0
+    "base": 37.0,
+    "high": 74.0
    },
    "items": [
     {
-     "title": "Do first: cancel the unused plan",
-     "detail": "Highest score, lowest risk, five minutes.",
-     "usd": 16.0,
-     "score": 82,
-     "risk": "low"
+     "title": "Hold WIF, short its perpetual",
+     "detail": "Collect the funding rate, market neutral. Fees, slippage and exchange risk can eat it.",
+     "usd": 32.0,
+     "score": 84,
+     "risk": "med"
     },
     {
-     "title": "Do next: check the Builder 50K code",
-     "detail": "Saves a one-time fee; verify on the firm's page.",
-     "usd": 19.0,
-     "score": 72,
-     "risk": "low"
-    },
-    {
-     "title": "Wait on: prediction-market edge",
-     "detail": "Thin after fees and high risk; paper only for now.",
-     "usd": 0.0,
-     "score": 30,
-     "risk": "high"
+     "title": "Stablecoin below one dollar",
+     "detail": "Buy under the peg and redeem at one dollar. The peg can break.",
+     "usd": 35.0,
+     "score": 80,
+     "risk": "med"
     }
    ],
    "notes": [
-    "Sample numbers, not real. The referee only orders tasks; it never moves money.",
-    "Rankings change as the other streams refresh."
+    "Sample numbers, not real. Paper only: Arbiter never trades or asks for a key.",
+    "Funding rates change every few hours."
    ],
    "error": null
   }
