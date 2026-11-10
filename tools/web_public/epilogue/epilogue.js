@@ -61,9 +61,10 @@ function renderAccounts(m) {
     top.appendChild(h('span', usdCls(a.week), C.both(a.week, a.weekR, a.weekEst)));
     li.appendChild(top);
     li.appendChild(h('p', 'it-detail', a.n ? a.n + ' trade' + (a.n === 1 ? '' : 's') + ': ' + a.wins + ' won, ' + a.losses + ' lost.' : a.from === 'home' ? 'The account reported this figure; no trade list yet (R is an estimate).' : a.has ? 'No trades this week.' : 'No numbers for this account yet.'));
+    li.appendChild(h('p', 'it-detail oner', '1R on this account = ' + C.money(a.risk) + (a.est ? ' (its usual risk, an estimate)' : ' (its average losing trade)') + '. R is never added across accounts.'));
     ul.appendChild(li);
   }
-  const t = h('li', 'total'); const top = h('div', 'it-top'); top.appendChild(h('h3', '', 'All accounts')); top.appendChild(h('span', usdCls(m.usd), C.both(m.usd, m.r, m.rEst))); t.appendChild(top); ul.appendChild(t);
+  const t = h('li', 'total'); const top = h('div', 'it-top'); top.appendChild(h('h3', '', 'All accounts')); top.appendChild(h('span', usdCls(m.usd), C.moneyS(m.usd))); t.appendChild(top); ul.appendChild(t);
 }
 
 function tradeCard(label, t, none) {
@@ -128,7 +129,7 @@ function renderGoals(m) {
   for (const g of m.goalOthers) { const b = h('button', 'btn', 'Instead: ' + g.text); b.type = 'button'; b.dataset.goal = g.id; b.addEventListener('click', () => { S.goalId = g.id; S.hist = C.saveWeek(S.hist, S.monday, weekRec(S.model, { id: g.id, done: false })); saveHist(); render(); }); chips.appendChild(b); }
 }
 
-function weekRec(m, goal) { return { usd: m.usd, r: m.r, trades: m.trades, rated: m.rated, plan: m.plan, goal }; }
+function weekRec(m, goal) { return { usd: m.usd, trades: m.trades, rated: m.rated, plan: m.plan, goal }; }
 
 function renderShare(m) {
   const prevKey = C.addDays(S.monday, -7), prev = S.hist.weeks[prevKey], lg = prev && prev.goal ? { ...C.goalById(prev.goal.id), done: prev.goal.done } : null;
@@ -140,7 +141,7 @@ function renderHistory(m) {
   if (!rows.length) { ul.appendChild(h('li', 'empty', 'No past weeks saved yet. Each time you open Epilogue on a live week, it keeps that week here.')); return; }
   for (const w of rows) {
     const li = h('li', 'past'); li.dataset.week = w.week; const top = h('div', 'it-top');
-    top.appendChild(h('h3', '', w.label)); top.appendChild(h('span', usdCls(w.usd), C.both(w.usd, w.r)));
+    top.appendChild(h('h3', '', w.label)); top.appendChild(h('span', usdCls(w.usd), C.moneyS(w.usd)));
     li.appendChild(top);
     const g = w.goal ? C.goalById(w.goal.id) : null;
     li.appendChild(h('p', 'it-detail', w.trades + ' trade' + (w.trades === 1 ? '' : 's') + (w.rated ? ', plan followed ' + w.plan + ' of ' + w.rated : '') + (g ? '. Goal: ' + g.text + (w.goal.done ? ' (done)' : ' (not ticked)') : '.')));

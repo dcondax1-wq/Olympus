@@ -34,6 +34,7 @@ def test_static():
           and not AK.BANNED_LOOK.search(s3d) and not re.search(r"fetch\(|XMLHttpRequest|innerHTML|WebSocket|https?://", s3d))
     check("a. storage: it writes only 'epilogue.v1', reads the Journal's 'journal.v1' without writing it, never writes in the demo; Copy uses the clipboard only (no network)",
           re.findall(r"localStorage\.setItem\('([^']+)'", js) == ["epilogue.v1"] and "localStorage.getItem('journal.v1')" in js and "if (S.demo) return;" in js and "navigator.clipboard.writeText" in js and not re.search(r"sessionStorage|indexedDB", js + core))
+    check("a. R is never added across accounts: no total R in the model, the page or the share text", "rSum" not in core and "C.both(m.usd" not in js and "both(m.usd" not in core and "m.r," not in core)
     check("a. every dollar result is shown with its R", "both(" in core and "C.both(" in js and "R n/a" in core)
     fx = json.load(open(FX, encoding="utf-8"))
     check("a. the fixture has three accounts, a week of trades (weekday offsets) with R and exits, Journal ratings, money-machine lines and past weeks",
@@ -49,7 +50,7 @@ import(process.argv[2]).then((C) => {
   const dd = C.demoData(fx, MON);
   o.demoData = { days: dd.trades.map((t) => t.day), hist: Object.keys(dd.hist.weeks), none: C.demoData(null, MON), entries: Object.keys(dd.entries).length };
   const m = C.buildReview({ monday: MON, home: null, fxAccounts: dd.accounts, trades: dd.trades, entries: dd.entries, money: dd.money, current: true, demo: true });
-  o.review = { demo: m.demo, usd: m.usd, r: m.r, rEst: m.rEst, trades: m.trades, acc: m.accounts.map((a) => [a.key, a.week, a.weekR, a.n, a.from, a.weekEst]), perDay: m.perDay, traded: m.traded, headline: m.headline,
+  o.review = { demo: m.demo, usd: m.usd, noR: !('r' in m) && !('rEst' in m), trades: m.trades, acc: m.accounts.map((a) => [a.key, a.week, a.weekR, a.n, a.from, a.weekEst]), perDay: m.perDay, traded: m.traded, headline: m.headline,
     best: m.best && [m.best.id, m.best.usd, m.best.rule.verdict, m.best.account], worst: m.worst && [m.worst.id, m.worst.usd, m.worst.rule.verdict], plan: [m.plan, m.rated],
     habits: m.hab.top.map((x) => [x.key, x.cost]), lessons: m.lessons.map((l) => l.id), goal: m.goal.goal.id, others: m.goal.others.length, worstRoom: m.worstRoom && [m.worstRoom.key, m.worstRoom.room, m.worstRoom.used, m.worstRoom.usedPct],
     money: [m.money.streams.length, m.money.total, m.money.streams[1].base, m.money.streams[0].status] };
@@ -58,7 +59,7 @@ import(process.argv[2]).then((C) => {
   // backtests are left out, other weeks too
   const T = (id, day, usd, r, exit, src, bot) => ({ id, day, usd, r, side: 'LONG', qty: 5, src: src || 'paper', bot: bot || 'LIT', exit: { kind: exit || 'STOP' } });
   const mix = C.buildReview({ monday: MON, home: null, trades: { trades: [T('a', '2026-11-09', 300, 0.7, 'TARGET'), T('b', '2026-11-10', 999, 5, 'TARGET', 'backtest'), T('c', '2026-11-02', -400, -1, 'STOP'), T('d', '2026-11-11', -500, -2.0, 'STOP', 'real')] }, entries: {}, current: false });
-  o.mix = { trades: mix.trades, usd: mix.usd, best: mix.best.id, worst: mix.worst.id, worstRule: mix.worst.rule.verdict, lessons: mix.lessons.map((l) => l.id), goal: mix.goal.goal.id, demo: mix.demo, rEst: mix.rEst };
+  o.mix = { trades: mix.trades, usd: mix.usd, best: mix.best.id, worst: mix.worst.id, worstRule: mix.worst.rule.verdict, lessons: mix.lessons.map((l) => l.id), goal: mix.goal.goal.id, demo: mix.demo, rEst: false };
   const none = C.buildReview({ monday: MON, home: null, trades: null, entries: {}, current: false });
   o.none = { trades: none.trades, usd: none.usd, best: none.best, worst: none.worst, headline: none.headline, lessons: none.lessons.map((l) => l.id), goal: none.goal.goal.id, money: none.money.streams.length };
   const only = C.buildReview({ monday: MON, home: null, trades: [T('a', '2026-11-09', 300, 0.7, 'TARGET')], entries: {}, current: false });
@@ -84,7 +85,7 @@ import(process.argv[2]).then((C) => {
   let big = C.emptyHist(); for (let i = 0; i < 40; i++) big = C.saveWeek(big, C.addDays('2026-01-05', i * 7), { usd: i, r: 0, trades: 0, rated: 0, plan: 0 });
   o.cap = [Object.keys(big.weeks).length, Object.keys(big.weeks).sort()[0]];
   const share = C.shareText(m, { text: 'Rate every trade', done: true });
-  o.share = { lines: share.split('\n').length, has: ['EPILOGUE', '[EXAMPLE numbers, not real]', 'MFFU 50K: -$223 (+0.7R)', 'Drawdown used'.toLowerCase(), 'Best: +$566', 'Worst: -$437', 'Lessons:', "Last week's goal: Rate every trade in the Journal the same evening.".slice(0, 0) + "Last week's goal: Rate every trade (done)", 'Goal for next week:'].map((s) => share.toLowerCase().includes(s.toLowerCase())), ascii: /^[\x00-\x7f\n]*$/.test(share) };
+  o.share = { lines: share.split('\n').length, has: ['EPILOGUE', '[EXAMPLE numbers, not real]', 'MFFU 50K: -$223 (+0.7R)', 'Drawdown used'.toLowerCase(), 'Best: +$566', 'Worst: -$437', 'Total (dollars only, each account has its own 1R): -$253', 'MFFU 50K: -$223 (+0.7R), 1R = $425', 'ATLAS 25K: -$30 (-0.2R), 1R = $150', 'Lessons:', "Last week's goal: Rate every trade in the Journal the same evening.".slice(0, 0) + "Last week's goal: Rate every trade (done)", 'Goal for next week:'].map((s) => share.toLowerCase().includes(s.toLowerCase())), ascii: /^[\x00-\x7f\n]*$/.test(share) };
   const e = C.normEntries({ v: 1, entries: { a: { rating: 'plan', mood: 'zzz' }, b: { rating: 'nope' }, '<c>': { rating: 'plan' }, d: { mood: 'fomo' } } });
   o.entries = [e, C.normEntries(null), C.normEntries({ a: { rating: 'interfered' } })];
   o.trades = [C.normTrades(null).length, C.normTrades([{ id: 'a', day: '2026-11-01', usd: 5 }, { id: 'b', day: 'nope', usd: 1 }, { id: 'c', day: '2026-11-01', usd: 'x' }, null, 4]).map((t) => t.id), C.normTrades([{ id: 'z', day: '2026-11-01', usd: 1, bot: 'BLITZ' }, { id: 'y', day: '2026-11-01', usd: 1, label: 'ATLAS twin' }, { id: 'x', day: '2026-11-01', usd: 1 }]).map((t) => t.key)];
@@ -106,10 +107,10 @@ def test_maths():
     dd = o["demoData"]
     check("b. the demo is moved to the week asked for (weekday offsets), with two past weeks in the history; no fixture = nothing", dd["days"] == ["2026-11-09", "2026-11-10", "2026-11-12", "2026-11-09", "2026-11-11"] and dd["hist"] == ["2026-10-26", "2026-11-02"] and dd["none"] is None and dd["entries"] == 5, dd)
     r = o["review"]
-    check("b. per account: the week's $ and R from its trades (50K -$223 +0.7R, ATLAS -$30 -0.2R); an account with no trades takes the account's own week figure, marked as an estimate",
-          r["acc"] == [["zlarior", -223, 0.7, 3, "trades", False], ["atlas", -30, -0.2, 2, "trades", False], ["blitz", 0, 0, 0, "home", True]] and r["usd"] == -253 and abs(r["r"] - 0.5) < 1e-9 and r["trades"] == 5 and r["rEst"], r)
+    check("b. per account: the week's $ and R from its trades (50K -$223 +0.7R, ATLAS -$30 -0.2R) and NO R total: the total is dollars only because each account risks a different 1R; an account with no trades takes the account's own week figure, marked as an estimate",
+          r["acc"] == [["zlarior", -223, 0.7, 3, "trades", False], ["atlas", -30, -0.2, 2, "trades", False], ["blitz", 0, 0, 0, "home", True]] and r["usd"] == -253 and r["noR"] and r["trades"] == 5, r)
     check("b. a past week never uses the account's week-to-date figure (no trades = $0, not estimated)", o["past"]["blitz"] == "0/none" and o["past"]["money"] == 0, o["past"])
-    check("b. each day of the week for the timeline, and a plain headline with $ and R", r["perDay"] == [-317, 566, -150, -352, 0, 0, 0] and r["traded"] == [True, True, True, True, False, False, False] and r["headline"] == "Week of Nov 9 to Nov 15: -$253 (~+0.5R) on 5 trades.", (r["perDay"], r["headline"]))
+    check("b. each day of the week for the timeline, and a plain headline with $ and R", r["perDay"] == [-317, 566, -150, -352, 0, 0, 0] and r["traded"] == [True, True, True, True, False, False, False] and r["headline"] == "Week of Nov 9 to Nov 15: -$253 on 5 trades.", (r["perDay"], r["headline"]))
     check("b. best and worst trade, each with the rule it followed (one target banked) or broke (touched by hand, from the Journal)", r["best"] == ["demo.w2", 566, "followed", "MFFU 50K"] and r["worst"] == ["demo.w1", -437, "broke"], (r["best"], r["worst"]))
     check("b. habits ranked by what they cost against followed-plan trades; plan 3 of 5 rated", r["habits"][0][0] == "interfered" and abs(r["habits"][0][1] - 615.67) < 0.01 and r["plan"] == [3, 5] and len(r["habits"]) >= 3, r["habits"])
     check("b. exactly three lessons (costliest habit, plan-following, the stop did its job), and the goal follows the habit (stop)", r["lessons"] == ["habit", "plan", "stop"] and r["goal"] == "stop" and r["others"] == 2, (r["lessons"], r["goal"]))
@@ -117,7 +118,7 @@ def test_maths():
     check("b. money machines from money/index.json: three lines, the total, an estimate with no income promise (Mercury has no monthly figure)", r["money"] == [3, 70, None, "sample"], r["money"])
     m = o["mix"]
     check("b. backtest trades and other weeks are left out; a loss past 1R is called out; with no Journal the lessons say to rate trades and the goal is 'rate' or 'stop'",
-          m["trades"] == 2 and m["usd"] == -200 and m["best"] == "a" and m["worst"] == "d" and m["worstRule"] == "broke" and m["lessons"] == ["stop", "freq", "rate"] and m["goal"] == "stop" and m["demo"] is False and m["rEst"] is False, m)
+          m["trades"] == 2 and m["usd"] == -200 and m["best"] == "a" and m["worst"] == "d" and m["worstRule"] == "broke" and m["lessons"] == ["stop", "freq", "rate"] and m["goal"] == "stop" and m["demo"] is False, m)
     n = o["none"]
     check("b. a week with nothing in it is still a page: no best / worst, a quiet-week headline, three lessons, a goal", n["trades"] == 0 and n["usd"] == 0 and n["best"] is None and n["worst"] is None and "no trades" in n["headline"] and len(n["lessons"]) == 3 and n["goal"] == "rate" and n["money"] == 0, n)
     check("b. one winning trade: there is a best and no worst ('no losing trade')", o["only"]["best"] == "a" and o["only"]["worst"] is None, o["only"])
@@ -162,9 +163,11 @@ def test_page():
               best: document.querySelector('#trades li.tr .it-detail.followed') && document.querySelector('#trades li.tr .it-detail.followed').textContent, broke: !!document.querySelector('#trades .it-detail.broke'), dd: document.querySelectorAll('#dd li.ddrow').length,
               dd1: document.querySelector('#dd li.ddrow').textContent, mach: document.querySelectorAll('#machines li.mach').length, lessons: document.querySelectorAll('#lessons li.lesson').length, hist: document.querySelectorAll('#hist li.past').length,
               last: document.querySelector('#lastGoal').textContent, goal: document.querySelector('#goal p').textContent, chips: document.querySelectorAll('#goalChips button').length, h1: document.querySelectorAll('h1').length })""")
-            check("c. ?demo=1: DEMO chip, the week's headline with $ and R, 3 accounts + a total, best and worst with their rules, drawdown used / left, money-machine lines, 3 lessons, last week's goal, a goal, 2 past weeks",
-                  r["demo"] and "Week of" in r["head"] and "R)" in r["head"] and r["accts"] == 4 and r["trades"] == 2 and r["best"] and r["broke"] and r["dd"] == 3 and "Drawdown used" in r["dd1"] and "left" in r["dd1"] and r["mach"] == 3 and r["lessons"] == 3
+            check("c. ?demo=1: DEMO chip, the week's headline in $, 3 accounts each with its own 1R + a total, best and worst with their rules, drawdown used / left, money-machine lines, 3 lessons, last week's goal, a goal, 2 past weeks",
+                  r["demo"] and "Week of" in r["head"] and "R)" not in r["head"] and r["accts"] == 4 and r["trades"] == 2 and r["best"] and r["broke"] and r["dd"] == 3 and "Drawdown used" in r["dd1"] and "left" in r["dd1"] and r["mach"] == 3 and r["lessons"] == 3
                   and r["hist"] == 2 and "Set every stop" in r["last"] and r["goal"] and r["chips"] == 3 and r["h1"] == 1, r)
+            oner = p.evaluate("() => [...document.querySelectorAll('#accts .oner')].map((e) => e.textContent)")
+            check("c. each account shows its own 1R in dollars ($425 / $150 / $120) and the total row has no R", len(oner) == 3 and "$425" in oner[0] and "$150" in oner[1] and "$120" in oner[2] and "R)" not in p.evaluate("() => document.querySelector('#accts li.total').textContent"), oner)
             check("c. 390 x 844: no sideways scroll, every tap >= 44 px, nothing under Jarvis's corner, no console error, nothing off the page's origin", AK.no_sideways(p) and not AK.taps(p) and not AK.corner(p) and not errs and not off, (AK.taps(p)[:3], AK.corner(p), errs[:3], off[:3]))
             p.click("#goal .btn")
             check("c. ticking the goal turns it green and keeps it in memory only (the demo never writes to this phone)", p.evaluate("() => document.querySelector('#goal .btn').getAttribute('aria-pressed')") == "true" and p.evaluate("() => { try { return localStorage.getItem('epilogue.v1'); } catch (e) { return null; } }") is None)
