@@ -62,13 +62,38 @@
   }
  ],
  "rules": {
-  "plan": "Builder 50K",
-  "start": 50000,
-  "target": 3000,
-  "mll": 2000,
-  "lock": 100,
-  "dll": 1000,
-  "price": 91.8,
-  "horizon": 30
+  "b50": {
+   "start": 50000,
+   "target": 3000.0,
+   "mll": 2000.0,
+   "lock": 100.0,
+   "dll": 1000.0,
+   "price": 91.8
+  },
+  "atlas": {
+   "start": 25000,
+   "target": 1500.0,
+   "mll": 1000.0,
+   "lock": 100.0,
+   "dll": 600.0,
+   "price": 43
+  },
+  "blitz": {
+   "start": 25000,
+   "target": 1500.0,
+   "mll": 1000.0,
+   "lock": 100.0,
+   "dll": 600.0,
+   "price": 63
+  },
+  "horizon": 30,
+  "min_days": 2,
+  "cons": 0.5,
+  "notes": {
+   "consistency": "MFFU's Builder eval has no best-day rule (confirmed in research/lit/mffu_rules.json); the 50% rule is for payouts. The switch applies it to the eval as a stress test.",
+   "min_days": "MFFU's help guides say a pass can come in 1 trading day; the plan page table says 2. The simulation uses 2.",
+   "dll": "Soft daily loss limit: trading is paused for the rest of the session, the account stays open.",
+   "plans": "ATLAS 25K and BLITZ 25K both run on a Builder 25K account (target $1,500, max loss $1,000, daily loss $600); the prices are the owner's ($43 and $63). Their own odds are not in this file: set them yourself."
+  }
  }
 }

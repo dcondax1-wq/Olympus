@@ -33,9 +33,13 @@ def test_static():
     check("a. 3D: a marble spindle with three threads (olive pass, terracotta bust, gold open), a thread as thick as its chance, a LITE tier, WebGL optional (null -> flat bars), no bloom / composer",
           "../jarvis/three.module.min.js" in scene and "TubeGeometry" in scene and "LatheGeometry" in scene and "return null" in scene and "lite()" in scene and not re.search(r"Bloom|EffectComposer|neon", scene) and "drawFallback" in js, None)
     check("a. every R sits next to its dollars on the page ('both(' for the sliders, the cash table and the note)", js.count("C.both(") >= 6, js.count("C.both("))
-    rules = json.load(open(os.path.join(ROOT, "tools", "web_public", "ledger", "rules.json"), encoding="utf-8"))["limits"]["builder_50k"]
-    r = fx["rules"]
-    check("a. the fixture's 50K rules equal the ledger rules file (target, max loss, lock, daily loss)", all(abs(r[k] - rules[k]) < 1e-9 for k in ("target", "mll", "lock", "dll")), (r, rules))
+    lim = json.load(open(os.path.join(ROOT, "tools", "web_public", "ledger", "rules.json"), encoding="utf-8"))["limits"]
+    fr = fx["rules"]
+    same = all(abs(fr[k][f] - lim[src][f]) < 1e-9 for k, src in (("b50", "builder_50k"), ("atlas", "builder_25k"), ("blitz", "builder_25k")) for f in ("target", "mll", "lock", "dll"))
+    check("a. the fixture's rules for Builder 50K, ATLAS 25K and BLITZ 25K equal the ledger rules file (target, max loss, lock, daily loss); ATLAS and BLITZ run on a Builder 25K", same, fr)
+    check("a. the owner's real prices: Builder 50K $91.80, ATLAS 25K $43, BLITZ 25K $63; best-day share 50% and a 2-day minimum are in the fixture with their notes",
+          (fr["b50"]["price"], fr["atlas"]["price"], fr["blitz"]["price"], fr["cons"], fr["min_days"]) == (91.8, 43, 63, 0.5, 2) and all(k in fr["notes"] for k in ("consistency", "min_days", "dll", "plans")), fr["notes"].keys())
+    check("a. the rules page text says what is modelled and that the eval has no best-day rule", "Which rules bit" in html and "MFFU's Builder eval has none" in js + core and "soft" in js.lower() + core.lower(), None)
     run = os.path.join(ROOT, "research", "runs", "lit_live.json")
     if os.path.exists(run):
         t = [x for x in json.load(open(run, encoding="utf-8"))["trades"] if x[0] >= "2026-01-01"]
@@ -77,6 +81,21 @@ import(process.argv[2]).then((C) => {
   o.edge = [good.pass > coin.pass, coin.expected.r];
   o.words = [C.both(4.5, 300), C.both(-1, 300), C.rS(0.81), C.pct(0.2656, 1), C.money(-2.5), C.fates(a).map((x) => x.id).join()];
   o.card = [C.jarvisCard(a, p0, 5).name, C.jarvisCard(a, p0, 5).kpis.length, C.jarvisCard(a, p0, 5).lines[0]];
+  const at = C.clean({ plan: 'atlas' }), bl = C.clean({ plan: 'blitz', risk_pct: 5 }), nope = C.clean({ plan: 'zzz' });
+  o.plans = [at.rules.plan, at.rules.start, at.rules.target, at.rules.mll, at.rules.dll, at.rules.price, at.oneR, bl.rules.plan, bl.rules.price, bl.oneR, nope.rules.plan, C.PLAN_ORDER.join()];
+  const forced = (extra) => Object.assign(C.clean({ plan: 'b50', tpw: 5, risk_pct: 5, avg_win_r: 4 }), { win: 1, loss: 0, scratch: 0 }, extra || {});
+  const md = C.simPath(forced(), 0), mdr = C.simPath(forced(), 0, true);
+  o.minDays = [md.end, md.day, md.hit, md.hitWhy, mdr.end, mdr.day, mdr.hit];
+  const cs = C.simPath(forced({ min_days: 1, cons_on: 1 }), 0), csr = C.simPath(forced({ min_days: 1, cons_on: 1 }), 0, true);
+  o.cons = [cs.end, cs.day, cs.hit, cs.hitWhy, csr.end, csr.day];
+  const lp = Object.assign(C.clean({ plan: 'atlas', tpw: 5, risk_pct: 5, avg_loss_r: 1, max_trades: 3 }), { win: 0, scratch: 0, loss: 1 });
+  const lres = C.simChunk(lp, 0, 200), lrel = C.simChunk(lp, 0, 200, true);
+  const lk = lres.map((r, i) => [r, lrel[i]]).filter(([r]) => r.lockBlocked > 0);
+  o.lock = [lp.oneR, lk.length > 0, lk.every(([r, q]) => r.eq[1] === 24400 && r.end !== 'bust' || r.day > 1), lk.some(([r, q]) => q.end === 'bust' && q.day === 1 && r.eq[1] === 24400), C.summarize(lres, lp, lrel).rules.lock_trades > 0];
+  const one = C.runAll(C.clean({})), two = C.runAll(C.clean({ max_trades: 2, cons_on: 1 }));
+  const w1 = C.rulesWords(one, C.clean({})), w2 = C.rulesWords(two, C.clean({ max_trades: 2, cons_on: 1 }));
+  o.words2 = [one.overstated.pass >= -0.001, one.rules.lock_trades, w1.some((x) => x.includes('blocked nothing: with one trade a day')), w1.some((x) => x.includes('overstates it by')), w1.some((x) => x.includes('OFF')), w2.some((x) => x.includes('stress test')), w2.length >= 5, two.relaxed !== null];
+  o.sameOdds = [C.clean({ plan: 'atlas' }).expR === C.clean({}).expR, C.runAll(C.clean({ plan: 'atlas', risk_pct: 2.5 })).pass !== C.runAll(C.clean({ risk_pct: 2.5 })).pass];
   o.presets = {};
   for (const [id, inp] of Object.entries(JSON.parse(process.argv[3]))) { const S = C.runAll(C.clean(inp)); o.presets[id] = [C.pct(S.pass, 1), C.pct(S.bust, 1), C.pct(S.p15, 1), C.pct(S.f15, 1), S.pass_med == null ? null : Math.round(S.pass_med * 10) / 10]; }
   o.chunked.then((ok) => { o.chunked = ok; console.log(JSON.stringify(o)); });
@@ -113,6 +132,17 @@ def test_maths():
     check("b. more risk per trade busts more and passes faster; a real edge beats a coin flip; the coin flip has zero expectancy", o["risk"] == [True, True] and o["edge"][0] and o["edge"][1] == 0, (o["risk"], o["edge"]))
     check("b. words: every R next to its dollars (+4.5R (+$1,350), -1.0R (-$300)), +0.8R, 26.6%, -$2.50, fates pass / bust / open", o["words"] == ["+4.5R (+$1,350)", "-1.0R (-$300)", "+0.8R", "26.6%", "-$2.50", "pass,bust,open"], o["words"])
     check("b. the Jarvis card: Moirai, 3 kpis, the first line says it is a simulation", o["card"][0] == "Moirai" and o["card"][1] == 3 and "not a forecast" in o["card"][2], o["card"])
+    check("b. accounts: ATLAS 25K = $25,000, +$1,500, $1,000 max loss, $600 daily loss, $43, 1R $150; BLITZ 25K $63 with 1R capped at the $600 daily loss; an unknown plan is Builder 50K",
+          o["plans"] == ["ATLAS 25K", 25000, 1500, 1000, 600, 43, 150, "BLITZ 25K", 63, 600, "Builder 50K", "b50,atlas,blitz"], o["plans"])
+    check("b. minimum days (hand path: +$4,000 on day 1 = $54,000, past the $53,000 target): with the 2-day minimum it passes on day 2 (hit day 1, held by 'mindays'); with the rule off, on day 1",
+          o["minDays"] == ["pass", 2, 1, "mindays", "pass", 1, 1], o["minDays"])
+    check("b. best-day rule (hand path: +$4,000 a day): day 1 hits the target but one day is 100% of the profit; day 2 is 50% and passes (hit day 1, held by 'consistency'); with the rule off it passes on day 1",
+          o["cons"] == ["pass", 2, 1, "consistency", "pass", 1], o["cons"])
+    check("b. daily loss lockout (ATLAS, three slots a day, a $600 loss each): once a day has lost $600 the rest of the day is blocked, and the path ends day 1 at $24,400 where the unlocked twin busted at $24,000",
+          o["lock"][0] == 600 and o["lock"][1] and o["lock"][2] and o["lock"][3] and o["lock"][4], o["lock"])
+    check("b. the rules in words: one trade a day says the lockout blocked nothing and why; the 'overstates it by' line; the best-day rule is OFF by default and described as a stress test when on; pass odds are never overstated by a negative amount",
+          o["words2"][0] and o["words2"][1] == 0 and all(o["words2"][2:]), o["words2"])
+    check("b. another account changes the rules, not the odds: same expectancy; at the same percent risk a 25K and a 50K are scaled twins until the daily loss cap bites (2.5% risk: 00 cap on the 25K, ,000 on the 50K), then the pass chance differs", o["sameOdds"] == [True, True], o["sameOdds"])
     globals()["NODE_PRESETS"] = o["presets"]
 
 
@@ -156,6 +186,29 @@ def test_page():
             AK.shot(p, "moirai-demo")
             font = p.evaluate("() => [getComputedStyle(document.querySelector('h1')).fontFamily, getComputedStyle(document.body).backgroundColor]")
             check("c. AGORA look: serif title, warm dark body", any(f in font[0] for f in ("Palatino", "Iowan", "Georgia")) and font[1] == "rgb(20, 17, 14)", font)
+            rb = p.evaluate("() => ({ plans: [...document.querySelectorAll('#plans button')].map((b) => b.textContent), on: document.querySelector('#plans [aria-pressed=true]').textContent, bit: [...document.querySelectorAll('#bit li')].map((l) => l.textContent), md: document.querySelector('#minDays [aria-pressed=true]').textContent, mt: document.querySelector('#maxTrades [aria-pressed=true]').textContent, cons: document.querySelector('#consBox [aria-pressed=true]').textContent })")
+            check("c. the rules card: three accounts (Builder 50K on), 2-day minimum, one trade a day, best-day rule off; 'Which rules bit' says in words what each rule did, including that the lockout blocked nothing and the overstated pass chance",
+                  rb["plans"] == ["Builder 50K", "ATLAS 25K", "BLITZ 25K"] and rb["on"] == "Builder 50K" and rb["md"] == "2 days" and rb["mt"] == "One" and rb["cons"].startswith("Off") and len(rb["bit"]) >= 4
+                  and any("minimum" in x for x in rb["bit"]) and any("blocked nothing" in x for x in rb["bit"]) and any("overstates it by" in x for x in rb["bit"]), rb)
+            p.locator("#consBox button").nth(1).click()
+            settle(p, "m.S.p.cons_on === 1")
+            cb = p.evaluate("() => [...document.querySelectorAll('#bit li')].map((l) => l.textContent)")
+            p.locator("#maxTrades button").nth(2).click()
+            settle(p, "m.S.p.max_trades === 3")
+            lk = p.evaluate("() => [...document.querySelectorAll('#bit li')].map((l) => l.textContent)")
+            check("c. switch the best-day rule on: the page says it is a stress test (MFFU's eval has none) and what it delayed; three trades a day: the lockout line now counts blocked trades or says nothing was blocked on these odds",
+                  any("stress test" in x for x in cb) and any("lockout" in x for x in lk) and not any("with one trade a day" in x for x in lk), (cb, lk))
+            p.locator("#consBox button").nth(0).click()
+            settle(p, "m.S.p.cons_on === 0")
+            p.locator("#maxTrades button").nth(0).click()
+            settle(p, "m.S.p.max_trades === 1")
+            p.locator("#plans [data-v=atlas]").click()
+            settle(p, "m.S.p.plan === 'atlas'")
+            at = p.evaluate("() => [document.querySelector('#planNote').textContent, document.querySelector('#riskL').textContent, document.querySelector('#cash').textContent, document.querySelector('#fan').getAttribute('aria-label')]")
+            check("c. tap ATLAS 25K: $25,000 account, +$1,500 target, $1,000 max loss, $600 daily loss, your price $43, 1R = $150 on the risk slider, and the page tells you the odds are LIT's until you change them",
+                  all(x in at[0] for x in ("$25,000", "+$1,500", "$1,000", "$600", "$43")) and "own." in at[0] and "1R = $150" in at[1] and "$43" in at[2] and "$26,500" in at[3], at)
+            p.locator("#plans [data-v=b50]").click()
+            settle(p, "m.S.p.plan === 'b50'")
             # presets
             p.locator("#presets [data-preset=coin]").click()
             settle(p, "m.S.p.win === 0.5")
