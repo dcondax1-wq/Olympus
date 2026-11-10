@@ -357,6 +357,41 @@ def part_c():
         srv.shutdown()
 
 
+def part_d():
+    """d. the Data section (2026-11-10): the records every app keeps on this phone, the address warning, Export all / Import all."""
+    html = rd(WEB, "settings", "index.html")
+    js = rd(WEB, "settings", "settings.js")
+    check("d. the Data tab has 'If the site address changes' (a warning card) and 'Your records on this phone' (a list), and Export all / Import all buttons",
+          'id="c-addr"' in html and "If the site address changes" in html and 'id="recList"' in html and "Export all" in html and "Import all" in html and 'id="exportBtn"' in html and 'id="importFile"' in html)
+    check("d. the page fills the list from recordsReport and the warning from ADDRESS_WARNING (as text, no innerHTML)", "C.recordsReport(LS)" in js and "C.ADDRESS_WARNING.text" in js and "innerHTML" not in js)
+    # every known key must be a real key some app uses (grep the apps, so the list cannot drift into names nobody writes)
+    r = node("""const C = await import(url + '/settingscore.js');
+      const st = new Mem();
+      ['ledger.v1', 'journal.v1', 'planner.agora.v1', 'lyceum.v1', 'jarvis.orb.fav', 'oly.launcher.fav', 'jarvis.smart', 'x.token'].forEach((k) => st.setItem(k, 'v-' + k));
+      const rep = C.recordsReport(st), exp = C.buildExport(st), st2 = new Mem(), imp = C.applyImport(st2, exp);
+      out({ keys: C.KNOWN_KEYS.map((k) => k[0]), present: rep.rows.filter((x) => x.present).map((x) => x.key), n: rep.present, bytes: rep.bytes > 0,
+        secretInKnown: C.KNOWN_KEYS.some((k) => C.isSecret(k[0])), expKeys: Object.keys(exp.keys).sort(), imp: imp.written.length, back: st2.getItem('ledger.v1'),
+        names: [C.groupOf('journal.v1').name, C.groupOf('planner.agora.v1').name, C.groupOf('oikos.v1').name, C.groupOf('mint.hist.v1').name], warn: C.ADDRESS_WARNING.text });""")
+    if r.get("error"):
+        check("d. node runs recordsReport", False, r["error"])
+        return
+    apps = ""
+    for root, _d, files in os.walk(WEB):
+        for f in files:
+            if f.endswith((".js", ".html")) and "settings" not in root:
+                try:
+                    apps += open(os.path.join(root, f), encoding="utf-8", errors="ignore").read()
+                except OSError:
+                    pass
+    missing = [k for k in r["keys"] if k not in apps]
+    check("d. every known key is really written by some app (found in the app sources)", not missing, missing)
+    check("d. the report lists the six keys that are on the phone, with sizes, and never a secret", r["present"] == sorted(["ledger.v1", "journal.v1", "planner.agora.v1", "lyceum.v1", "jarvis.orb.fav", "oly.launcher.fav"], key=lambda k: r["keys"].index(k)) and r["n"] == 6 and r["bytes"] and not r["secretInKnown"], r)
+    check("d. Export all: one file with every non-secret key (ledger, journal, planner, favourites ...) and no secret; Import all puts them back",
+          "jarvis.smart" not in r["expKeys"] and "x.token" not in r["expKeys"] and "ledger.v1" in r["expKeys"] and r["imp"] == 6 and r["back"] == "v-ledger.v1", r)
+    check("d. the newer apps have plain names (Journal, Planner, Oikos, Mint)", r["names"] == ["Journal", "Planner", "Oikos", "Mint"], r["names"])
+    check("d. the address warning says the data does not follow a new address and to export first", "NOT follow" in r["warn"] and "Export all" in r["warn"] and "Import all" in r["warn"], r["warn"])
+
+
 def main():
     which = os.environ.get("SET_PART", "")
     if which in ("", "a"):
@@ -364,6 +399,8 @@ def main():
     if which in ("", "b"):
         part_b()
         part_b2()
+    if which in ("", "d"):
+        part_d()
     if which in ("", "c") and not os.environ.get("SET_NO_BROWSER"):
         part_c()
     n = sum(RES)

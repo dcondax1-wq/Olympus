@@ -276,7 +276,21 @@ async function renderData() {
     if (g.kept.length) li.appendChild(h('small', 'kept', 'Kept (secret): ' + g.kept.join(', ')));
     ul.appendChild(li);
   }
+  renderRecords();
   await renderCaches();
+}
+function renderRecords() {
+  const rep = C.recordsReport(LS), ul = $('recList'); clear(ul);
+  $('addrText').textContent = C.ADDRESS_WARNING.text;
+  let where = ''; try { where = location.origin; } catch (_) { where = ''; }
+  $('addrNow').textContent = 'This phone is saving under: ' + (where || 'this site') + ' (' + rep.present + ' of your records here, ' + C.fmtBytes(rep.bytes) + ').';
+  for (const r of rep.rows) {
+    const li = h('li'); li.setAttribute('data-key', r.key); li.setAttribute('data-present', r.present ? '1' : '0');
+    li.appendChild(h('b', null, r.app));
+    li.appendChild(h('small', 'about', r.what));
+    li.appendChild(h('small', null, r.present ? r.key + ' · ' + C.fmtBytes(r.bytes) : r.key + ' · not used yet'));
+    ul.appendChild(li);
+  }
 }
 $('clearAll').addEventListener('click', () => {
   const sum = C.summarize(LS);

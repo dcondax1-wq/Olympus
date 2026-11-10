@@ -225,3 +225,37 @@ export const TOUR = [
     links: [['Bridge', '../bridge/'], ['Jarvis', '../jarvis/']] },
   { id: 'home', glyph: 'home', title: 'Put it on your Home Screen', text: 'On the iPhone: open this site in Safari, tap the Share button (the square with the arrow), scroll down and tap Add to Home Screen, then Add. It opens full screen like an app and works offline with the last numbers it saved.' },
 ];
+
+// ------------------------------------------------------------------------------------------------ Data section (2026-11-10): the records every app keeps on THIS phone
+// Names for the newer apps (a key's first word decides its group, see groupOf) and what each keeps, in plain words.
+Object.assign(APP_NAMES, { journal: 'Journal', planner: 'Planner', lyceum: 'Lyceum', epilogue: 'Epilogue', argo: 'Argo', oikos: 'Oikos', compass: 'Compass', stoa: 'Stoa', mint: 'Mint',
+  arbiter: 'Arbiter', moirai: 'Moirai', hera: 'Hera', pnyx: 'Pnyx', inbox: 'Inbox', chronos: 'Chronos', hephaestus: 'Hephaestus', atlas: 'Atlas', le: 'Zenith (dashboard)', daphne: 'Daphne',
+  athens: 'Athens' });
+Object.assign(APP_ABOUT, { journal: 'Your trade journal entries: only here, export them', planner: 'Your day plan, tasks, habits and notes', lyceum: 'Your daily quiz answers and streak',
+  epilogue: 'Your end-of-day notes', argo: 'Your goals and their progress', oikos: 'Your household money entries', compass: 'Your compass choices and state', stoa: 'What you marked as done',
+  mint: 'The history of the paper money streams', arbiter: 'Your paper tracker (never real orders)', moirai: 'Your choices', atlas: 'Your favourites, pinned rooms and recent rooms',
+  hera: 'Your plan choices', pnyx: 'Your calculator choices', inbox: 'What you read', chronos: 'Your clock choices', hephaestus: 'Your dials' });
+/** the keys that hold YOUR own records (they exist nowhere else): what they are, in plain words. A key that is not on the phone is listed as "not used yet". */
+export const KNOWN_KEYS = [
+  ['ledger.v1', 'Ledger', 'Your money record: every fee, payout and entry you typed'], ['journal.v1', 'Journal', 'Your trade journal'],
+  ['planner.agora.v1', 'Planner', 'Your day plan, tasks and habits'], ['planner.v1', 'Planner', 'Your plan (older copy)'], ['lyceum.v1', 'Lyceum', 'Your quiz answers and streak'],
+  ['epilogue.v1', 'Epilogue', 'Your end-of-day notes'], ['argo.goals.v1', 'Argo', 'Your goals'], ['oikos.v1', 'Oikos', 'Your household money entries'],
+  ['compass.state.v1', 'Compass', 'Your compass state'], ['stoa.state.v1', 'Stoa', 'What you marked done'], ['mint.hist.v1', 'Mint', 'The paper money streams history'],
+  ['arbiter.paper.v1', 'Arbiter', 'Your paper tracker'], ['moirai.v1', 'Moirai', 'Your choices'], ['jarvis.orb.fav', 'Jarvis switcher', 'Your favourite apps'],
+  ['oly.launcher.fav', 'Launcher', 'Your favourite apps'], ['olympus.atlas.v1', 'Atlas', 'Your pinned and recent rooms'], ['olympus.welcome.v1', 'Welcome card', 'That you saw the welcome'],
+];
+/** { rows: [{ key, app, what, present, bytes }], present, bytes } for the known keys; a secret is never read */
+export function recordsReport(st) {
+  const rows = KNOWN_KEYS.map(([key, app, what]) => {
+    let present = false, bytes = 0;
+    if (!isSecret(key)) { try { present = st.getItem(key) != null; } catch (_) { present = false; } if (present) bytes = sizeOf(st, key); }
+    return { key, app, what, present, bytes };
+  });
+  const on = rows.filter((r) => r.present);
+  return { rows, present: on.length, bytes: on.reduce((t, r) => t + r.bytes, 0) };
+}
+/** the warning that matters most: the phone keeps these per web address */
+export const ADDRESS_WARNING = {
+  title: 'If the site address changes',
+  text: 'Your phone saves all of this under the web address of the site. A new address (a new domain, or a new username in the link) is a new, empty place: your journal, ledger, plans, goals and favourites would NOT follow. Export all before any move, open the new address, then Import all. Your Home Screen icon is tied to the address too: add it again from the new one.',
+};
