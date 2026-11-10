@@ -247,7 +247,7 @@
    "name": "Kronos",
    "group": "money",
    "accent": "#c8a24a",
-   "description": "The calendar of money: daily P&L, best weekday and hour, a normal bad week, a sundial",
+   "description": "The calendar of money: daily P&L, best weekday and hour, a bad week",
    "glyph": "K",
    "ambient": "chimes",
    "flavour": [
@@ -305,7 +305,7 @@
    "glyph": "Α",
    "ambient": "sea",
    "flavour": [
-    "waves",
+    "rings",
     "Set sail",
     "tap"
    ],
@@ -313,13 +313,66 @@
     "kind": "waves",
     "ms": 1000
    }
+  },
+  {
+   "id": "kratos",
+   "name": "Kratos",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "Discipline score 0-100 per day: plan, stop, size, hours, flat",
+   "glyph": "K",
+   "ambient": "chimes",
+   "flavour": [
+    "columns",
+    "Keep your own rules",
+    "tap"
+   ],
+   "transition": {
+    "kind": "columns",
+    "ms": 1000,
+    "n": 4
+   }
+  },
+  {
+   "id": "pythia",
+   "name": "Pythia",
+   "group": "trading",
+   "accent": "#e0b060",
+   "description": "The risk calendar: the next 14 days, and what the bots do around each event",
+   "glyph": "Ψ",
+   "ambient": "chimes",
+   "flavour": [
+    "rings",
+    "Read the calendar",
+    "tick"
+   ],
+   "transition": {
+    "kind": "sunburst",
+    "ms": 1000
+   }
+  },
+  {
+   "id": "gallery",
+   "name": "Agora Gallery",
+   "group": "life",
+   "accent": "#c8a24a",
+   "description": "Every 3D shape of the Agora on a turning pedestal",
+   "glyph": "Γ",
+   "ambient": "chimes",
+   "flavour": [
+    "columns",
+    "Walk the Agora",
+    "tap"
+   ],
+   "transition": {
+    "kind": "columns",
+    "ms": 1000,
+    "n": 5
+   }
   }
  ],
  "pending": [
-  "kairos",
-  "kratos",
-  "pythia",
-  "gallery"
+  "kairos"
  ],
  "_pending_note": "Listed by the lead but with no wiring section (and no folder) yet: add an entry here when their section lands."
 }

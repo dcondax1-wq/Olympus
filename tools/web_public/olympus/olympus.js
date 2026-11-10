@@ -36,6 +36,7 @@
   var KEY = 'jfx', LEVELS = ['ultra', 'high', 'low', 'off'];
   // the nine apps: name, glyph and colour exactly as Jarvis's switcher shows them (jarvis/apps.js BUILT_INS)
   var APPS = {
+    mint: ['Mint', 'M', '#c8a24a'], mintcity: ['Mint City', 'MC', '#c8a24a'], mercury: ['Mercury', '☿', '#c8a24a'], chrysos: ['Chrysos', 'X', '#c8a24a'], sibyl: ['Sibyl', 'Σ', '#c8a24a'], oikos: ['Oikos', 'O', '#c8a24a'], arbiter: ['Arbiter', 'Ξ', '#c8a24a'], stoa: ['Stoa', 'Σ', '#c8a24a'], aegis: ['Aegis', 'A', '#c8a24a'], lyceum: ['Lyceum', 'Σ', '#c8a24a'], nike: ['Nike', 'Ν', '#c8a24a'], kronos: ['Kronos', 'K', '#c8a24a'], moirai: ['Moirai', 'M', '#c8a24a'], epilogue: ['Epilogue', 'Ω', '#c8a24a'], argo: ['Argo', 'Α', '#4b7a99'], kratos: ['Kratos', 'K', '#c8a24a'], pythia: ['Pythia', 'Ψ', '#e0b060'], gallery: ['Agora Gallery', 'Γ', '#c8a24a'],
     datacity: ['Data City', 'Δ', '#4f8cff'], mind: ['Mind', 'Ω', '#5eead4'], tree: ['Daphne', 'Ψ', '#34f5a0'],
     oracle: ['Oracle', 'Θ', '#7fe9ff'], odeon: ['Odeon', 'Ξ', '#ff6b7f'], fates: ['Fates', 'Φ', '#ffcf5a'],
     hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#e879f9'],
@@ -149,7 +150,7 @@
   })();
 
   // ---------------------------------------------------------------- ambience: each app's own quiet bed (olympus/sfx.js, synthesised)
-  var AMBIENT = { delphi: 'chimes', pnyx: 'coins', observatory: 'space', atlas: 'chimes', hestia: 'smithy', demeter: 'breeze', apollo: 'chimes', hera: 'coins', dionysus: 'sea', clio: 'scroll', journal: 'scroll', datacity: 'city', cities: 'city', kalshicity: 'city', kalshi: 'city', oracle: 'space', mind: 'space', argus: 'space', chronos: 'chimes',
+  var AMBIENT = { mint: 'coins', mintcity: 'coins', mercury: 'coins', chrysos: 'coins', sibyl: 'chimes', oikos: 'coins', arbiter: 'coins', stoa: 'chimes', aegis: 'chimes', lyceum: 'chimes', nike: 'chimes', kronos: 'chimes', moirai: 'chimes', epilogue: 'chimes', argo: 'sea', kratos: 'chimes', pythia: 'chimes', gallery: 'chimes', delphi: 'chimes', pnyx: 'coins', observatory: 'space', atlas: 'chimes', hestia: 'smithy', demeter: 'breeze', apollo: 'chimes', hera: 'coins', dionysus: 'sea', clio: 'scroll', journal: 'scroll', datacity: 'city', cities: 'city', kalshicity: 'city', kalshi: 'city', oracle: 'space', mind: 'space', argus: 'space', chronos: 'chimes',
     odeon: 'crowd', arena: 'crowd', forum: 'agora', ares: 'crowd', fates: 'lab', plutus: 'coins', ledger: 'coins', labyrinth: 'lab', pantheon: 'wind', athena: 'scroll',
     hermes: 'breeze', nemesis: 'wind', bridge: 'wind', prometheus: 'smithy', hephaestus: 'smithy', tyche: 'sea', tree: 'forest', zenith: 'space', inbox: 'scroll',
     settings: 'lab', planner: 'chimes' };       // 2026-11-04: every app has a bed of its own (forge hammer-and-hiss, scroll rustle, coin chime, forum murmur, lab hum)
