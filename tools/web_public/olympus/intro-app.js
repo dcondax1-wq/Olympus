@@ -41,7 +41,7 @@
     inbox: ['streaks', 'Everything that arrived', 'tick'], ledger: ['coins', 'Every dollar, counted', 'tap'],
     journal: ['neurons', 'Remember every trade', 'tick'], observatory: ['rings', 'Evidence comes into focus', 'tick'],
     hestia: ['embers', 'Keep the hearth warm', 'portal'], demeter: ['leaves', 'Reap what you sow', 'portal'], apollo: ['rings', 'Light on the numbers', 'portal'],
-    hera: ['columns', 'Order, held steady', 'portal'], dionysus: ['coins', 'Celebrate the wins', 'tap'], clio: ['threads', 'The story, in order', 'tick'],
+    delphi: ['rings', 'Read the omens', 'tick'], pnyx: ['columns', 'Count the risk', 'tap'], planner: ['rings', 'Plan the day', 'tick'], hera: ['columns', 'Order, held steady', 'portal'], dionysus: ['coins', 'Celebrate the wins', 'tap'], clio: ['threads', 'The story, in order', 'tick'],
     atlas: ['stars', 'Find your arena', 'portal']
   };
   var FL = FLAVOUR[O.app] || ['stars', 'Welcome to Olympus', 'portal'];

@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 WEB = os.path.join(ROOT, "tools", "web_public")
 NEXT = os.path.join(ROOT, "web_next")
 RES: list = []
-EXTERNAL = ("planner",)   # published next to the dashboard by its own build (tools/planner_patches), not a folder of tools/web_public
+EXTERNAL = ()   # published next to the dashboard by its own build (tools/planner_patches), not a folder of tools/web_public
 
 
 def check(name, ok, info=""):

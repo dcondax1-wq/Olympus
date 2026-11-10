@@ -25,7 +25,6 @@ if [ "$what" = "all" ] && [ -n "$key" ]; then
   (
     cd "$root" || exit 0
     python tools/build_web_dashboard.py --state "$dir/state.json" --chart "$dir/chart.png" --out site || exit 0
-    bash scripts/add_planner.sh site   # keep the Planner app in every publish (it used to be erased)
     mkdir -p ~/.ssh && printf '%s\n' "$key" > ~/.ssh/dash_key && chmod 600 ~/.ssh/dash_key
     ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
     cd site || exit 0
