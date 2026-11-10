@@ -88,3 +88,15 @@ AMBIENT (existing beds): `delphi: 'chimes', pnyx: 'coins',`
 `olympus/intro-app.js` FLAVOUR: `delphi: ['rings', 'Read the omens', 'tick'], pnyx: ['columns', 'Count the risk', 'tap'],`
 `jarvis/transitions.js` REGISTRY: `delphi: { kind: 'sunburst', ms: 1000 }, pnyx: { kind: 'columns', ms: 1000, n: 5 },`
 ## 7. Tests after wiring: `tests.test_delphi_page`, `tests.test_pnyx_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`. Then app count 38 in CLAUDE_REFERENCE / CLAUDE.md.
+
+---
+# Wiring MERCURY, money machine #2 DEALS (2026-11-10)
+
+App `mercury` (`tools/web_public/mercury/`, reads `../money/mercury.json`, falls back to its `fixture.json` = DEMO) + scanner `tools/money/mercury.py` (`--out DIR`, `--fixture`, `--selftest`; writes `DIR/mercury.json` and `DIR/mercury_state.json`). Test `tests/test_mercury_page.py`.
+1. `jarvis/apps.js` BUILT_INS: `app('mercury', 'Mercury', 'money', '#c8a24a', 'Deal watcher: sales, codes, free resets, rule changes', { glyph: '☿' }),`
+2. `olympus/olympus.js` APPS: `mercury: ['Mercury', '☿', '#c8a24a'],` AMBIENT: `mercury: 'coins',`
+3. `tools/build_web_dashboard.py` app tuple: add `"mercury"`; to publish the scanner file, run `python tools/money/mercury.py --out <site>/money` in the cloud monitor / build step (no secrets, public pages only; one GET per page, at most every 30 min; the state file `mercury_state.json` must be kept between runs or every deal shows "new").
+4. `sw.js` OTHER_APPS: add `'mercury/'`, bump `CACHE`; update the pinned strings in `test_zenith_mode`, `test_jarvis_hub`, `test_zenith_shell`, `test_phone_e2e`.
+5. `python tools/apps_list_build.py` then `--check`.
+6. `intro-app.js` FLAVOUR: `mercury: ['coins', 'Find the saving', 'tap'],` `transitions.js` REGISTRY: `mercury: { kind: 'tiles', ms: 800 },`
+7. Tests: `tests.test_mercury_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
