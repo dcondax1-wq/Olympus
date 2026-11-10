@@ -44,3 +44,15 @@
 .athens-open body>*:not(.ath):not(script){visibility:hidden}
 @media (min-width:700px){.ath-card,.ath-tourbar,.ath-dock{left:50%;right:auto;width:520px;transform:translateX(-50%)}.ath-sheet{left:50%;right:auto;width:560px;transform:translateX(-50%)}.ath-mini{top:78px}}
 @media (prefers-reduced-motion:reduce){.ath-mini{transition:none}}
+
+.ath-today{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 64px);width:calc(100% - 184px);max-width:260px;border:1px solid var(--bronze);background:var(--panel);border-radius:14px;overflow:hidden}
+.ath-today[hidden],.ath-first[hidden]{display:none}
+.ath-today>button{width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border:0;background:transparent;color:var(--text)}
+.ath-today b{font:700 15px var(--serif)}.ath-today i{font:12px var(--sans);color:var(--gold);font-style:normal}
+.ath-today div{padding:0 12px 10px}.ath-today p{margin:0 0 5px;font-size:12.5px;line-height:1.35;color:var(--sub)}.ath-today.min div{display:none}.ath-today.demo>button b::after{content:' (example)';font:12px var(--sans);color:var(--sub);font-weight:400}
+.ath.bigmap .ath-today{display:none}
+.ath-first{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);padding:14px;border:1px solid var(--gold);background:var(--panel);border-radius:18px;box-shadow:0 10px 28px rgba(0,0,0,.45);z-index:6}
+.ath-first small{color:var(--gold);font:600 12px var(--sans)}.ath-first h3{margin:4px 0;font:700 20px var(--serif)}.ath-first p{margin:0 0 10px;color:var(--sub);font-size:14px;line-height:1.4}
+.ath-need{color:#f1d9a0!important;border-left:3px solid #e8bb55;padding-left:10px}.ath-calm{color:var(--muted,#9a8f7d)!important}
+.ath-toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);max-width:80%;padding:10px 14px;border:1px solid var(--line);background:var(--panel);border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:7;text-align:center}.ath-toast.on{opacity:1}
+@media (min-width:700px){.ath-first{left:50%;right:auto;width:520px;transform:translateX(-50%)}}
