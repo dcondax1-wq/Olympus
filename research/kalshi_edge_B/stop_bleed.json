@@ -1,0 +1,380 @@
+{
+ "source": "research/kalshi/edge_tables.json (feed 2026-11-04)",
+ "kinds": [
+  {
+   "group": "category",
+   "kind": "Bitcoin",
+   "n": 623,
+   "wins": 592,
+   "win_rate": 0.9502,
+   "win_wilson": [
+    0.9302,
+    0.9647
+   ],
+   "pnl": 51.82,
+   "roi": 0.0069,
+   "roi_ci": [
+    0.001,
+    0.0121
+   ],
+   "low_n": false,
+   "verdict": "not negative"
+  },
+  {
+   "group": "category",
+   "kind": "Other",
+   "n": 347,
+   "wins": 336,
+   "win_rate": 0.9683,
+   "win_wilson": [
+    0.9441,
+    0.9822
+   ],
+   "pnl": 23.96,
+   "roi": 0.0049,
+   "roi_ci": [
+    -0.0161,
+    0.0229
+   ],
+   "low_n": false,
+   "verdict": "not negative"
+  },
+  {
+   "group": "category",
+   "kind": "XRP",
+   "n": 192,
+   "wins": 178,
+   "win_rate": 0.9271,
+   "win_wilson": [
+    0.8813,
+    0.9561
+   ],
+   "pnl": -106.63,
+   "roi": -0.0613,
+   "roi_ci": [
+    -0.1095,
+    -0.0119
+   ],
+   "low_n": false,
+   "verdict": "PROVEN LEAK: stop"
+  },
+  {
+   "group": "category",
+   "kind": "Dogecoin",
+   "n": 165,
+   "wins": 158,
+   "win_rate": 0.9576,
+   "win_wilson": [
+    0.915,
+    0.9793
+   ],
+   "pnl": -0.65,
+   "roi": -0.0003,
+   "roi_ci": [
+    -0.0255,
+    0.0196
+   ],
+   "low_n": false,
+   "verdict": "negative, not proven: pause / watch"
+  },
+  {
+   "group": "category",
+   "kind": "Ethereum",
+   "n": 165,
+   "wins": 152,
+   "win_rate": 0.9212,
+   "win_wilson": [
+    0.8699,
+    0.9534
+   ],
+   "pnl": -5.35,
+   "roi": -0.003,
+   "roi_ci": [
+    -0.0386,
+    0.0269
+   ],
+   "low_n": false,
+   "verdict": "negative, not proven: pause / watch"
+  },
+  {
+   "group": "category",
+   "kind": "Solana",
+   "n": 142,
+   "wins": 129,
+   "win_rate": 0.9085,
+   "win_wilson": [
+    0.8497,
+    0.9457
+   ],
+   "pnl": -13.29,
+   "roi": -0.0134,
+   "roi_ci": [
+    -0.04,
+    0.0082
+   ],
+   "low_n": false,
+   "verdict": "negative, not proven: pause / watch"
+  },
+  {
+   "group": "category",
+   "kind": "HYPE",
+   "n": 122,
+   "wins": 114,
+   "win_rate": 0.9344,
+   "win_wilson": [
+    0.8759,
+    0.9664
+   ],
+   "pnl": -12.14,
+   "roi": -0.0074,
+   "roi_ci": [
+    -0.0588,
+    0.0354
+   ],
+   "low_n": false,
+   "verdict": "negative, not proven: pause / watch"
+  },
+  {
+   "group": "category",
+   "kind": "BNB",
+   "n": 77,
+   "wins": 73,
+   "win_rate": 0.9481,
+   "win_wilson": [
+    0.8739,
+    0.9796
+   ],
+   "pnl": -7.66,
+   "roi": -0.0088,
+   "roi_ci": [
+    -0.0766,
+    0.0434
+   ],
+   "low_n": false,
+   "verdict": "negative, not proven: pause / watch"
+  },
+  {
+   "group": "category",
+   "kind": "Gold",
+   "n": 3,
+   "wins": 3,
+   "win_rate": 1.0,
+   "win_wilson": [
+    0.4385,
+    1.0
+   ],
+   "pnl": 7.13,
+   "roi": 0.1143,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": true,
+   "verdict": "too few to judge (n<30)"
+  },
+  {
+   "group": "strategy",
+   "kind": "15-min favourites",
+   "n": 1131,
+   "wins": 1074,
+   "win_rate": 0.9496,
+   "win_wilson": [
+    0.9353,
+    0.9609
+   ],
+   "pnl": -88.77,
+   "roi": null,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": false,
+   "pnl_per_trade": -0.078,
+   "breakeven_win": 0.9656,
+   "win_ci_vs_breakeven": "below",
+   "verdict": "PROVEN LEAK: stop"
+  },
+  {
+   "group": "strategy",
+   "kind": "Late favourite (BTC hourly)",
+   "n": 182,
+   "wins": 179,
+   "win_rate": 0.9835,
+   "win_wilson": [
+    0.9527,
+    0.9944
+   ],
+   "pnl": 16.26,
+   "roi": null,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": false,
+   "pnl_per_trade": 0.089,
+   "breakeven_win": 0.9795,
+   "win_ci_vs_breakeven": "straddles",
+   "verdict": "not negative"
+  },
+  {
+   "group": "strategy",
+   "kind": "Gold 5 PM",
+   "n": 3,
+   "wins": 3,
+   "win_rate": 1.0,
+   "win_wilson": [
+    0.4385,
+    1.0
+   ],
+   "pnl": 7.13,
+   "roi": null,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": true,
+   "pnl_per_trade": 2.377,
+   "verdict": "too few to judge (n<30)"
+  },
+  {
+   "group": "strategy",
+   "kind": "Hourly BTC",
+   "n": 291,
+   "wins": 277,
+   "win_rate": 0.9519,
+   "win_wilson": [
+    0.9209,
+    0.9711
+   ],
+   "pnl": 30.32,
+   "roi": null,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": false,
+   "pnl_per_trade": 0.104,
+   "verdict": "not negative"
+  },
+  {
+   "group": "strategy",
+   "kind": "combo",
+   "n": 159,
+   "wins": 156,
+   "win_rate": 0.9811,
+   "win_wilson": [
+    0.946,
+    0.9936
+   ],
+   "pnl": 5.29,
+   "roi": null,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": false,
+   "pnl_per_trade": 0.033,
+   "verdict": "not negative"
+  },
+  {
+   "group": "strategy",
+   "kind": "Value",
+   "n": 40,
+   "wins": 30,
+   "win_rate": 0.75,
+   "win_wilson": [
+    0.5981,
+    0.8581
+   ],
+   "pnl": -13.04,
+   "roi": null,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": false,
+   "pnl_per_trade": -0.326,
+   "verdict": "negative, not proven: pause / watch"
+  },
+  {
+   "group": "strategy",
+   "kind": "Flip exit sell-backs",
+   "n": 16,
+   "wins": 5,
+   "win_rate": 0.3125,
+   "win_wilson": [
+    0.1416,
+    0.556
+   ],
+   "pnl": -7.66,
+   "roi": null,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": true,
+   "pnl_per_trade": -0.479,
+   "verdict": "too few to judge (n<30)"
+  },
+  {
+   "group": "strategy",
+   "kind": "Sniper test",
+   "n": 14,
+   "wins": 10,
+   "win_rate": 0.7143,
+   "win_wilson": [
+    0.4535,
+    0.8828
+   ],
+   "pnl": -5.25,
+   "roi": null,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": true,
+   "pnl_per_trade": -0.375,
+   "verdict": "too few to judge (n<30)"
+  },
+  {
+   "group": "strategy",
+   "kind": "arbx",
+   "n": 5,
+   "wins": 0,
+   "win_rate": 0.0,
+   "win_wilson": [
+    0.0,
+    0.4345
+   ],
+   "pnl": -0.65,
+   "roi": null,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": true,
+   "pnl_per_trade": -0.13,
+   "verdict": "too few to judge (n<30)"
+  },
+  {
+   "group": "strategy",
+   "kind": "arb",
+   "n": 4,
+   "wins": 1,
+   "win_rate": 0.25,
+   "win_wilson": [
+    0.0456,
+    0.6994
+   ],
+   "pnl": -2.82,
+   "roi": null,
+   "roi_ci": [
+    null,
+    null
+   ],
+   "low_n": true,
+   "pnl_per_trade": -0.705,
+   "verdict": "too few to judge (n<30)"
+  }
+ ]
+}
