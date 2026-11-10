@@ -60,3 +60,8 @@ svg text { font-family: var(--ag-sans); }
 @media (prefers-reduced-motion: reduce) { .rng i, .rng b { transition: none; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .ag-tab, .ag-chip { min-height: 44px; }
+
+/* a negative low end: terracotta fill and the label, a thin line where zero is */
+.rng i.neg { background: linear-gradient(90deg, #7a3a24, var(--ag-terra) 40%, var(--ag-gold)); }
+.rng u { position: absolute; top: -1px; bottom: -1px; width: 2px; background: var(--ag-soft); opacity: .7; }
+.rngl .neg, .note.neg { color: var(--ag-terra); }

@@ -68,6 +68,11 @@ import(process.argv[2]).then((C) => {
   o.histText = [C.histText([]).includes('second visit'), C.histText(hist).includes('2 visits') || C.histText(hist).includes('2 visits saved'), C.histText(hist).includes('up $30')];
   const card = C.jarvisCard(five('ok'), NOW), cardS = C.jarvisCard(five('sample'), NOW);
   o.card = [card.name, card.status.level, card.kpis.length, card.kpis[0].value, card.kpis[1].value, card.kpis[2].value, card.lines.length, Number.isInteger(card.t), cardS.status.level, cardS.status.label];
+  const negRow = (id, lo, b, hi) => ({ id, status: 'ok', age_min: 5, headline: { text: id + ' headline', usd_month: b }, usd_month: { low: lo, base: b, high: hi }, items: [] });
+  const negStreams = [negRow('chrysos', -42, 1339, 2235), negRow('mercury', 5, 20, 30)].map((r) => C.normStream(r.id, r, NOW));
+  const nc = C.combine(negStreams), bar = C.rangeBar(-42, 1339, 2235), bar0 = C.rangeBar(300, 1000, 1500), barN = C.rangeBar(null, 1, 2);
+  o.neg = [C.rangeText(-42, 2235), C.rangeText(0, 510), C.worstText(-42), C.worstText(76.5), C.worstText(null), negStreams[0].low, nc.low, nc.text, bar, bar0, barN, C.money(-42), C.money(-0.4), nc.text.includes('$-')];
+  o.negCard = C.jarvisCard(negStreams.map((x) => x), NOW).kpis.map((k) => k.value);
   console.log(JSON.stringify(o));
 });
 """
@@ -93,6 +98,12 @@ def test_maths():
     check("b. always five streams in the fixed order, even from a one-stream index (the other four say 'none')", o["five"] == [",".join(IDS), "none,none,none,ok,none"], o["five"])
     check("b. what to do today is at most 3, draws tasks from every stream, and is never empty (an honest 'nothing to do today')", o["todo"][0] == 3 and o["todo"][4] >= 1 and o["todo"][5] in ("task", "none"), o["todo"])
     check("b. old data comes first: 'Refresh Mercury', with the RUN_MONEY.bat step, then the best two tasks", o["stale"] == [3, "refresh", "Refresh Mercury", True], o["stale"])
+    check("b. a NEGATIVE low end is worded honestly: 'a loss of $42 a month to $2,235 a month', 'Worst case: you could lose about $42 a month.', never $-42; a positive worst case reads 'Worst case: about $77 a month.'",
+          o["neg"][0] == "a loss of $42 a month to $2,235 a month" and o["neg"][1] == "$0 to $510 a month" and o["neg"][2] == "Worst case: you could lose about $42 a month." and o["neg"][3] == "Worst case: about $77 a month." and o["neg"][4] == "no worst case yet" and o["neg"][11] == "-$42" and o["neg"][12] in ("-$0", "$0"), o["neg"])
+    check("b. the combined sentence with a negative low end: the worst case is said as a loss, the best case follows, no '$-' anywhere; the low end keeps its sign (-$42 + $5 = -$37)",
+          o["neg"][5] == -42 and o["neg"][6] == -37 and "you could lose about $37 a month" in o["neg"][7] and "At best about $2,265 a month" in o["neg"][7] and o["neg"][13] is False and o["negCard"][1].startswith("-$37 to $"), (o["neg"][5:8], o["negCard"]))
+    check("b. the range bar spans the loss and the gain: for -$42 / $1,339 / $2,235 zero is marked at 2% and the fill starts at 0%; a positive range has no zero mark; null is empty",
+          o["neg"][8]["neg"] is True and o["neg"][8]["left"] == 0 and o["neg"][8]["zero"] == 2 and 0 < o["neg"][8]["mark"] < 100 and o["neg"][8]["width"] >= 97 and o["neg"][9]["zero"] is None and o["neg"][9]["neg"] is False and o["neg"][10]["width"] == 0, o["neg"][8:11])
     check("b. low risk beats high risk at the same score; weak items (score < 40) are dropped", o["order"] == ["safe,risky"] or o["order"][0].startswith("safe"), o["order"])
     check("b. pillar heights are linear in the dollars (tallest = 100%), never zero, and a stream with no number is a thin stub", o["pillars"][1] is True and o["pillars"][0].split(",")[2] == "100" and o["pillars"][2] == 0.04, o["pillars"])
     check("b. history: one point per 10 minutes (a quicker visit updates the last one), junk in -> clean list out", o["hist"] == [2, 120, 150, 0, 2], o["hist"])
@@ -203,9 +214,35 @@ def test_page():
         srv.shutdown()
 
 
+def test_negative_page():
+    try:
+        import playwright  # noqa: F401
+    except ImportError:
+        check("c. page tests skipped: no Playwright", True)
+        return
+    rows = json.loads(REAL)
+    rows["streams"][0]["usd_month"] = {"low": -42.0, "base": 100.0, "high": 150.0}
+    for r in rows["streams"][1:]:
+        r["usd_month"]["low"] = 0.0
+    srv, origin = AK.serve({"/money/index.json": json.dumps(rows)})
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, APP, "?flat=1")
+            r = p.evaluate("""() => ({ lo: document.querySelector('#rngLo').textContent, loCls: document.querySelector('#rngLo').className, worst: document.querySelector('#rngWorst').textContent, text: document.querySelector('#heroText').textContent,
+              zero: !document.querySelector('#rngZero').hidden, fill: document.querySelector('#rngFill').className, label: document.querySelector('#rng').getAttribute('aria-label'), all: document.body.innerText.includes('$-') })""")
+            check("c. a negative low end on the page: '-$' words, 'Worst case: you could lose about', the low label is terracotta, a zero line on the bar, the aria label says a loss, nothing reads '$-'",
+                  r["lo"].startswith("-$") and "(a loss)" in r["lo"] and r["loCls"] == "neg" and r["worst"].startswith("Worst case: you could lose about $") and "could lose about" in r["text"] and r["zero"] and r["fill"] == "neg" and "worst case a loss of $" in r["label"] and not r["all"], r)
+            check("c. no console error, nothing off the origin", not errs and not off, (errs[:2], off[:2]))
+            ctx.close()
+    finally:
+        srv.shutdown()
+
+
 if __name__ == "__main__":
     test_static()
     test_maths()
     if "--static" not in sys.argv:
         test_page()
+        test_negative_page()
     AK.finish()
