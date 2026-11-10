@@ -22,10 +22,26 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S.inp)); } catc
 function load() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (_) { return null; } }
 
 function limits() {
-  const fx = S.fixture && S.fixture.rules ? S.fixture.rules : {}, r = S.rules, o = { ...fx };
-  if (r && r.limits && r.limits.builder_50k) for (const k of ['target', 'mll', 'lock', 'dll']) if (r.limits.builder_50k[k] > 0) o[k] = r.limits.builder_50k[k];
-  if (r && r.plans && r.plans.builder_50k && r.plans.builder_50k.price_owner > 0) o.price = r.plans.builder_50k.price_owner;
-  return C.rules(o);
+  const fx = S.fixture && S.fixture.rules ? S.fixture.rules : {}, r = S.rules, o = { horizon: fx.horizon, cons: fx.cons };
+  for (const k of C.PLAN_ORDER) o[k] = { ...(fx[k] || {}) };
+  const lim = r && r.limits ? r.limits : {}, pl = r && r.plans ? r.plans : {};
+  for (const [k, src] of [['b50', 'builder_50k'], ['atlas', 'builder_25k'], ['blitz', 'builder_25k']]) {
+    if (lim[src]) for (const f of ['target', 'mll', 'lock', 'dll']) if (lim[src][f] > 0) o[k][f] = lim[src][f];
+  }
+  if (pl.builder_50k && pl.builder_50k.price_owner > 0) o.b50.price = pl.builder_50k.price_owner;
+  if (pl.builder_25k && pl.builder_25k.price_owner_atlas > 0) o.atlas.price = pl.builder_25k.price_owner_atlas;
+  if (pl.builder_25k && pl.builder_25k.price_owner > 0) o.blitz.price = pl.builder_25k.price_owner;
+  return o;
+}
+function renderRules(p) {
+  const chips = (id, items, cur, on, label) => { const box = $(id); clear(box); for (const [v, text] of items) { const b = h('button', 'ag-chip', text); b.type = 'button'; b.dataset.v = String(v); b.setAttribute('aria-pressed', v === cur ? 'true' : 'false'); b.setAttribute('aria-label', label + ' ' + text); b.addEventListener('click', () => { on(v); update(true); }); box.appendChild(b); } };
+  chips('plans', C.PLAN_ORDER.map((k) => [k, C.PLANS[k].name]), p.plan, (v) => { S.inp.plan = v; }, 'Account');
+  chips('minDays', [[1, '1 day'], [2, '2 days']], p.min_days, (v) => { S.inp.min_days = v; }, 'Minimum days');
+  chips('maxTrades', [[1, 'One'], [2, 'Two'], [3, 'Three']], p.max_trades, (v) => { S.inp.max_trades = v; }, 'Most trades a day');
+  chips('consBox', [[0, 'Off (MFFU eval has none)'], [1, 'On: 50% best day']], p.cons_on, (v) => { S.inp.cons_on = v; }, 'Best-day rule');
+  const R = p.rules, n = S.fixture && S.fixture.rules && S.fixture.rules.notes ? S.fixture.rules.notes : {};
+  $('planNote').textContent = `${R.plan}: start ${C.money(R.start)}, target ${C.moneyS(R.target)}, trailing max loss ${C.money(R.mll)} (locks ${C.money(R.lock)} above the start), daily loss ${C.money(R.dll)}, your price ${C.money(R.price)}. ${R.key === 'b50' ? '' : 'The odds below are LIT\'s until you change them: ATLAS and BLITZ have their own.'}`;
+  $('rulesNote').textContent = [n.min_days, n.consistency, n.dll].filter(Boolean).join(' ');
 }
 
 // ------------------------------------------------------------------ controls
@@ -77,6 +93,7 @@ function renderResults(sum, p) {
     ['Average week', `${C.moneyS(e.week)} (${C.rS(e.r * p.tpw)})`, e.week >= 0 ? 'pos' : 'neg'], ['Average month', `${C.moneyS(e.month)} (${C.rS(e.r * p.tpw * 52 / 12)})`, e.month >= 0 ? 'pos' : 'neg'],
     ['Profit target', `${C.moneyS(R.target)} (${C.rS(R.target / p.oneR)})`], ['Eval fee', C.money(R.price)], ['Fees to land one pass (estimate)', sum.fees == null ? 'no path passed' : C.money(sum.fees)]]);
   $('cashNote').textContent = 'Fees to land one pass = the eval price divided by the chance to pass, if every failed try is bought again. An estimate, not a promise.';
+  const bit = $('bit'); clear(bit); for (const l of C.rulesWords(sum, p)) bit.appendChild(h('li', '', l));
   const sc = S.scene; if (sc) sc.set({ pass: sum.pass, bust: sum.bust, open: sum.open }); else drawFallback(sum);
   drawFan(sum, p);
   say(`${C.pct(sum.pass)} pass, ${C.pct(sum.bust)} bust, ${C.pct(sum.open)} still open after ${R.horizon} sessions. A simulation, not a forecast.`);
@@ -102,9 +119,9 @@ function drawFallback(sum) {
 
 // ------------------------------------------------------------------ the run
 function update(syncAll) {
-  S.p = C.clean(S.inp, limits()); S.inp = { ...S.inp, ...Object.fromEntries(['win', 'scratch', 'avg_win_r', 'avg_loss_r', 'tpw', 'risk_pct', 'seed'].map((k) => [k, S.p[k]])) };
-  if (syncAll || true) syncSliders(S.p);
-  labels(S.p); renderPresets(); save();
+  S.p = C.clean(S.inp, limits()); S.inp = { ...S.inp, ...Object.fromEntries(['win', 'scratch', 'avg_win_r', 'avg_loss_r', 'tpw', 'risk_pct', 'seed', 'plan', 'min_days', 'max_trades', 'cons_on'].map((k) => [k, S.p[k]])) };
+  syncSliders(S.p);
+  labels(S.p); renderPresets(); renderRules(S.p); save();
   if (S.run) S.run.cancel();
   const token = ++S.runs; $('runPill').textContent = 'Running...'; $('runPill').className = 'pill info';
   S.run = C.runChunked(S.p, { chunk: 100, onProgress: (f) => { if (token === S.runs) $('runPill').textContent = `Running ${Math.round(f * 100)}%`; } });
@@ -126,10 +143,12 @@ async function boot() {
   const [fx, rules] = await Promise.all([getJSON('./fixture.json'), getJSON('../ledger/rules.json')]);
   S.fixture = fx || { defaults: C.DEFAULTS, presets: [], rules: C.RULES }; S.rules = rules;
   const d = S.fixture.defaults || {};
-  S.inp = { ...C.DEFAULTS, win: d.win, scratch: d.scratch, avg_win_r: d.avg_win_r, avg_loss_r: d.avg_loss_r, tpw: d.tpw, risk_pct: d.risk_pct, seed: d.seed };
-  const sv0 = load(); if (sv0 && typeof sv0 === 'object') { for (const k of Object.keys(S.inp)) { const v = C.num(sv0[k]); if (v != null) S.inp[k] = v; } S.preset = ''; }
+  S.inp = { ...C.DEFAULTS, plan: 'b50', win: d.win, scratch: d.scratch, avg_win_r: d.avg_win_r, avg_loss_r: d.avg_loss_r, tpw: d.tpw, risk_pct: d.risk_pct, seed: d.seed };
+  const sv0 = load(); if (sv0 && typeof sv0 === 'object') { for (const k of Object.keys(S.inp)) { const v = C.num(sv0[k]); if (v != null) S.inp[k] = v; } if (C.PLANS[sv0.plan]) S.inp.plan = sv0.plan; S.preset = ''; }
   const q = new URLSearchParams(location.search);
-  if (q.get('demo') !== '1') { /* nothing else to load: the fixture is the data */ } else { S.inp = { ...S.inp, win: d.win, scratch: d.scratch, avg_win_r: d.avg_win_r, avg_loss_r: d.avg_loss_r, tpw: d.tpw, risk_pct: d.risk_pct, seed: d.seed }; S.preset = 'lit26'; }
+  if (C.PLANS[q.get('plan')]) S.inp.plan = q.get('plan');
+  for (const [qk, key] of [['mindays', 'min_days'], ['trades', 'max_trades'], ['cons', 'cons_on']]) { const v = parseFloat(q.get(qk)); if (Number.isFinite(v)) S.inp[key] = v; }
+  if (q.get('demo') !== '1') { /* nothing else to load: the fixture is the data */ } else { S.inp = { ...S.inp, plan: 'b50', min_days: 2, max_trades: 1, cons_on: 0, win: d.win, scratch: d.scratch, avg_win_r: d.avg_win_r, avg_loss_r: d.avg_loss_r, tpw: d.tpw, risk_pct: d.risk_pct, seed: d.seed }; S.preset = 'lit26'; }
   for (const [qk, key, k] of [['win', 'win', 100], ['scratch', 'scratch', 100], ['aw', 'avg_win_r', 1], ['al', 'avg_loss_r', 1], ['tpw', 'tpw', 1], ['risk', 'risk_pct', 1], ['seed', 'seed', 1]]) { const v = parseFloat(q.get(qk)); if (Number.isFinite(v)) { S.inp[key] = v / k; S.preset = ''; } }
   try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
   bind();
