@@ -1,15 +1,15 @@
 /* AGORA for the kit-based apps (docs/DESIGN_AGORA.md): points the kit's variables at marble / bronze / gold, serif headings, no glow.
-   Load AFTER olympus.css and agora.css. The !important on the accent beats the per-app inline accent and the theme painter. */
+   Load AFTER olympus.css and agora.css. The !important on the accent (AGORA theme only) beats the per-app inline accent; other themes paint their own. */
 :root {
   --oly-ui: -apple-system, 'SF Pro Text', system-ui, 'Helvetica Neue', Arial, sans-serif;
   --oly-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   --oly-track-label: .02em; --oly-track-name: .02em;
-  --oly-accent: #c8a24a !important; --oly-accent-rgb: 200, 162, 74 !important;
   --oly-bg: #14110e; --oly-bg2: #1d1914; --oly-text: #f3ece0; --oly-dim: #cfc4b2;
   --oly-glass: rgba(29, 25, 20, .94); --oly-glass2: rgba(38, 33, 27, .97); --oly-line: #3a3228; --oly-edge: rgba(200, 162, 74, .28);
   --oly-good: #7f8a52; --oly-bad: #c96a4a; --oly-warn: #e0b060;
   --oly-shadow: 0 6px 18px rgba(0, 0, 0, .35);
 }
+:root:where(:not([data-oly-theme]), [data-oly-theme="agora"]) { --oly-accent: #c8a24a !important; --oly-accent-rgb: 200, 162, 74 !important; }   /* pinned on AGORA only; another theme (Hades...) keeps the accent the kit painted */
 :root { --ag-num: 'SF Pro Rounded', -apple-system, system-ui, sans-serif; }
 html, body { background-color: #14110e; }
 body { font-variant-numeric: tabular-nums; letter-spacing: 0; }

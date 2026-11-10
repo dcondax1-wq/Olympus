@@ -50,15 +50,17 @@ const TRADE_FIELDS = [
   F('streak', 'Streak', 'int'), F('idx', 'Trade number', 'int'),
 ];
 
+const ODEON_FIELDS = [...TRADE_FIELDS, F('risk_pts', 'Stop distance', 'pts'), F('risk_usd', 'Money at risk', 'usd'), F('qty', 'Micros', 'int'),
+      F('stopb', 'Stop size', 'txt'), F('qtyb', 'Size group', 'txt'), F('acct', 'Account', 'txt'), F('bot', 'Bot', 'txt'), F('src', 'Source', 'txt'),
+      F('held_min', 'Minutes in trade', 'int'), F('mfe_r', 'Best move', 'r'), F('mae_r', 'Worst move', 'r'), F('plan_rr', 'Planned reward', 'num'),
+      F('nlev', 'Levels swept', 'int'), F('t', 'Entry time', 'int'), F('strat', 'Strategy', 'txt')];
+
 // ------------------------------------------------------------------ the adapters
 export const DATASETS = {
   // ---- the 60 reels of ODEON: LIT and ATLAS trades with bars, risk, size
   trades: {
     title: 'Odeon trades', source: 'odeon/trades.json', url: '../odeon/trades.json',
-    fields: [...TRADE_FIELDS, F('risk_pts', 'Stop distance', 'pts'), F('risk_usd', 'Money at risk', 'usd'), F('qty', 'Micros', 'int'),
-      F('stopb', 'Stop size', 'txt'), F('qtyb', 'Size group', 'txt'), F('acct', 'Account', 'txt'), F('bot', 'Bot', 'txt'), F('src', 'Source', 'txt'),
-      F('held_min', 'Minutes in trade', 'int'), F('mfe_r', 'Best move', 'r'), F('mae_r', 'Worst move', 'r'), F('plan_rr', 'Planned reward', 'num'),
-      F('nlev', 'Levels swept', 'int'), F('t', 'Entry time', 'int'), F('strat', 'Strategy', 'txt')],
+    fields: ODEON_FIELDS,
     build(raw) {
       const T = (raw && raw.trades) || [];
       const out = T.map((t) => {
@@ -81,7 +83,7 @@ export const DATASETS = {
   // Odeon rows. Recompute the curve on each slice; never carry mixed-bot equity.
   ...Object.fromEntries([['atlas_ema', 'EMA'], ['atlas_macd', 'MACD'], ['atlas_sr', 'S/R']].map(([id, strategy]) => [id, {
     title: `ATLAS ${strategy} historical backtest`, source: `odeon/trades.json (ATLAS ${strategy} backtest rows)`, from: 'trades', historical: true, emptyIsValid: true,
-    fields: [...TRADE_FIELDS.map(f => f.key === 'cum' ? F('cum', 'Strategy backtest cumulative', 'usd') : f.key === 'dd' ? F('dd', 'Strategy backtest drawdown', 'usd') : f), F('strat', 'Strategy', 'txt'), F('src', 'Source mode', 'txt'), F('bot', 'Bot', 'txt'), F('qty', 'Micros', 'int'), F('risk_pts', 'Stop distance', 'pts'), F('t', 'Entry time', 'int')],
+    fields: ODEON_FIELDS.map(f => f.key === 'cum' ? F('cum', 'Strategy backtest cumulative', 'usd') : f.key === 'dd' ? F('dd', 'Strategy backtest drawdown', 'usd') : f.key === 'src' ? F('src', 'Source mode', 'txt') : f),
     derive(base) {
       return series(base.filter(it => it.f.bot === 'ATLAS' && it.f.strat === strategy && it.f.src === 'backtest')
         .map(it => ({ ...it, label: `ATLAS ${strategy} backtest · ${it.f.day}`, f: { ...it.f } })));
@@ -444,7 +446,7 @@ export async function loadDataset(id, env, cache) {
       if (D.from && !D.raw) {
         const base = await loadDataset(D.from, env, memo);
         if (!base.demo) { items = D.derive(base.items); real = items.length > 0 || !!D.emptyIsValid; }
-        else if (D.emptyIsValid) return wrap(id, [], { demo: true, note: 'No verified ATLAS historical backtest rows are available; no source towers are shown.' });
+        else if (D.emptyIsValid && !(env.fixture && env.fixture[id])) return wrap(id, [], { demo: true, note: 'No verified ATLAS historical backtest rows are available; no source towers are shown.' });
       } else if (D.vault) {
         raw = env.vault ? await env.vault() : null;
         items = D.build(raw); real = items.length > 0;
