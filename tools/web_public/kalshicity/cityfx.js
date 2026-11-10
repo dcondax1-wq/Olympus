@@ -133,7 +133,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     const grp = new THREE.Group(), R = Math.max(40, L.extent * 1.1);
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.97, 1, 128), new THREE.MeshBasicMaterial(Object.assign({ color: hdr('#9fae68', 2.4), side: THREE.DoubleSide, fog: false }, ADD)));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.7;
-    const curtain = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 16, 96, 1, true), new THREE.ShaderMaterial(Object.assign({ side: THREE.DoubleSide, fog: false, uniforms: { uA: { value: 1 } },
+    const curtain = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 16, 48, 1, true), new THREE.ShaderMaterial(Object.assign({ side: THREE.DoubleSide, fog: false, uniforms: { uA: { value: 1 } },
       vertexShader: 'varying float vY; void main() { vY = position.y / 16.0 + 0.5; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
       fragmentShader: 'uniform float uA; varying float vY; void main() { gl_FragColor = vec4(vec3(0.18, 0.95, 0.82) * pow(1.0 - vY, 2.4) * 0.9 * uA, 1.0); }' }, ADD)));
     curtain.position.y = 8;

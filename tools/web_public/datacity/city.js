@@ -24,6 +24,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { $, el, clsRank, settings, money, num, pct } from './util.js';
 import { decode, loadPlugins, labelOf } from './data.js';
+import { walker } from './walk.js';
 import { layout } from './layout.js?v=dcgfx2';
 import { CityScene } from './scene.js?v=dcgfx5';
 import { Orbit } from './controls.js';
@@ -320,13 +321,15 @@ class App {
     if (this.tour) this.orbit.stopFly();
     const cam = this.city.camera, dir = new THREE.Vector3();
     cam.getWorldDirection(dir);
-    const f = flight(mode, this.L, this.city.lm.spots, { pos: cam.position.clone(), look: cam.position.clone().add(dir.multiplyScalar(70)) });
+    const from = { pos: cam.position.clone(), look: cam.position.clone().add(dir.multiplyScalar(70)) };
+    const f = mode === 'walk' ? walker(this.L, from) : flight(mode, this.L, this.city.lm.spots, from);
     if (!f) return;
     this.orbit.drive((dt) => f.step(dt));
+    if (mode === 'walk') this.orbit.steer = (dx, dy) => f.steer(dx, dy);
     this.cam = { mode, f, lm: null };
     state.cam = { mode, on: true };
     UI.sheet.close();
-    UI.caption(MODES.find((x) => x.key === mode).hint + ' · drag to take over', 0, 0, mode.toUpperCase());
+    UI.caption(MODES.find((x) => x.key === mode).hint + (mode === 'walk' ? ' · pinch to stop' : ' · drag to take over'), 0, 0, mode.toUpperCase());
     this.camButtons();
   }
 
