@@ -391,3 +391,17 @@ App `compass` in `tools/web_public/compass/` (3D rose via the render core: `rose
 7. Tests: `tests.test_compass_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
 
 Optional, outside this app: the Ledger page can store `lastExport` (ISO text or epoch) in `ledger.v1` when Export JSON is tapped; until then Compass says "no export on record".
+
+# PHEME: the word on the street (2026-11-10)
+
+App `pheme` (`tools/web_public/pheme/`; the 3D marble scroll rack is `phemerack.js`, its own module tag). Reads only `./stats.json` (built OFFLINE by `python tools/pheme_build.py` from `data/news/events.csv`, `data/news/hub.json` when newer, and the 5m NQ file `data/NQ_5m.csv`; stdlib, `--check`, `--selftest`) and its `fixture.json` (DEMO). HISTORY ONLY: how far NQ travelled on the last 8 CPI / jobs / PPI / FOMC days (points and $ for one MNQ micro, n shown), never a forecast. Test `tests/test_pheme_page.py` (it re-reads the raw 5m file to check real rows). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`. The row is already in `tools/new_apps.json` (the lead runs `python tools/wire_new_apps.py --apply`).
+
+## 1. `jarvis/apps.js` BUILT_INS: `app('pheme', 'Pheme', 'trading', '#c8a24a', 'The word on the street: releases, and NQ\'s past moves on them', { glyph: 'Ξ' }),`
+## 2. `olympus/olympus.js`: APPS `pheme: ['Pheme', 'Ξ', '#c8a24a'],` and AMBIENT `pheme: 'chimes',`
+## 3. `tools/build_web_dashboard.py` app tuple (~line 1212): add `"pheme"`. The build must copy `pheme/stats.json` with the folder (a plain static file). Rebuild it with `python tools/pheme_build.py` after `data/news/events.csv` or `data/NQ_5m.csv` change (`--check` fails when it is stale; the test runs it).
+## 4. `tools/web_public/sw.js`: `OTHER_APPS` add `'pheme/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+## 5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+## 6. Shared lines
+`olympus/intro-app.js` FLAVOUR: `pheme: ['threads', 'Hear the word', 'tick'],`
+`jarvis/transitions.js` REGISTRY: `pheme: { kind: 'tiles', ms: 800 },`
+## 7. Tests after wiring: `tests.test_pheme_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, then `python -X utf8 tests/run_gate.py --fast`.
