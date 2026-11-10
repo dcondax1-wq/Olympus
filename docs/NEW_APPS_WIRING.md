@@ -261,3 +261,19 @@ App `moirai` in `tools/web_public/moirai/` (a seeded Monte-Carlo scenario lab fo
 6. `olympus/intro-app.js` FLAVOUR: `moirai: ['rings', 'Spin the threads', 'tick'],`
    `jarvis/transitions.js` REGISTRY: `moirai: { kind: 'waves', ms: 1000 },`
 7. Tests: `python -X utf8 -m tests.test_moirai_page` (`--static` skips the browser), then `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring KAIROS, the right moment (2026-11-10)
+
+App `kairos` in `tools/web_public/kairos/` (the New York trading day on a 24 h ring and a marble sundial: bot windows, what the bots do now, today's trades with $ and R, dollars by hour with no claim below 3 trades; tested across the clock change of Sun 1 Nov 2026). Reads `../odeon/trades.json` (the bot's trades), `../home.json` (the bot's own state line, optional) and `fixture.json` (DEMO). Read only, keeps nothing. `?at=<ISO UTC>` fixes the clock for links and tests. Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+1. `jarvis/apps.js` BUILT_INS: `app('kairos', 'Kairos', 'trading', '#c8a24a', 'The right moment: bot windows, what the bots do now, trades on the clock', { glyph: 'K' }),`
+2. `olympus/olympus.js` APPS: `kairos: ['Kairos', 'K', '#c8a24a'],` AMBIENT: `kairos: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"kairos"`.
+4. `sw.js`: `OTHER_APPS` add `'kairos/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+6. `olympus/intro-app.js` FLAVOUR: `kairos: ['rings', 'Find the right moment', 'tick'],`
+   `jarvis/transitions.js` REGISTRY: `kairos: { kind: 'sunburst', ms: 1000 },`
+7. Tests: `python -X utf8 -m tests.test_kairos_page` (`--static` skips the browser), then `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+(Moirai needs no new wiring for the honesty upgrade; it is the same app folder.)
