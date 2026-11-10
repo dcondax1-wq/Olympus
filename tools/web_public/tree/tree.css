@@ -425,3 +425,6 @@ h2, .sheet-head h2, h3 { font-family: var(--serif); font-weight: 600; letter-spa
 .verdict span:first-of-type, .hud-top .line.rule { display: none; }
 .verdict { padding: 8px 12px; margin: 6px 0 2px; }
 .money .mbig { font-size: 14px; } .money .mbig .pos, .money .mbig .neg { font-size: 16px; }
+
+/* phone-fit 2026-11-10 (clipped text on a 320 px screen: wrap instead of cutting) */
+.steps li .c { overflow: visible; text-overflow: clip; white-space: normal; }
