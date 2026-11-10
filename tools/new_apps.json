@@ -387,6 +387,24 @@
     "kind": "sunburst",
     "ms": 1000
    }
+  },
+  {
+   "id": "compass",
+   "name": "Compass",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The next best action: at most five things for today, with why",
+   "glyph": "C",
+   "ambient": "chimes",
+   "flavour": [
+    "rings",
+    "Find north",
+    "tick"
+   ],
+   "transition": {
+    "kind": "sunburst",
+    "ms": 1000
+   }
   }
  ],
  "pending": [],

@@ -30,6 +30,7 @@
 
   // ------------------------------------------------------------------ the per-app flavour: [scene, tagline, first sound]
   var FLAVOUR = {
+    compass: ['rings', 'Find north', 'tick'],
     kairos: ['rings', 'Find the right moment', 'tick'],
     mint: ['columns', 'Strike the coin', 'tap'],
     mintcity: ['columns', 'Raise the city', 'tick'],
