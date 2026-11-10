@@ -62,3 +62,21 @@ html.framed #app { padding-top: 12px; }
 details > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--ag-soft); }
 @media (prefers-reduced-motion: reduce) { .stage.live .flat { transition: none; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }
+
+/* views, categories, the scene builder, the collection */
+.views { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.views .btn { min-height: 44px; padding: 0 8px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chips .ag-chip { flex: 0 0 auto; min-height: 44px; padding: 0 16px; }
+.picked { display: flex; flex-wrap: wrap; gap: 8px; }
+.picked .ag-chip { min-height: 44px; }
+.btn.primary { background: linear-gradient(180deg, #d4b05a, var(--ag-gold)); color: #1b1610; border-color: #e2c47a; }
+.link { width: 100%; min-height: 44px; padding: 0 12px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-soft); font: 500 13px var(--ag-sans); }
+.flatrow { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.flatrow svg { width: 52px; height: 52px; }
+.flatrow:empty { display: none; }
+.stage.rowmode #flatSvg { display: none; }
+.shape[data-picked="1"] { border-color: var(--ag-gold); background: #2a2217; }
+.shape[data-picked="1"] svg { color: var(--ag-gold); }
+.shape[hidden] { display: none !important; }
