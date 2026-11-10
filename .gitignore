@@ -158,3 +158,9 @@ data/pantheon_cache/
 scratch/
 money_out/
 money_out_log.txt
+
+# NQ publisher (tools/pc_publish.py): local work folder and any token file
+data/pc_publish/
+logs/pc_hb/
+netlify.json
+.olympus/

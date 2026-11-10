@@ -663,6 +663,13 @@ class Heartbeat:
         # no GitHub push): on with the real push; a test's fake push_fn gets it only with its own notify_fn
         self.notify_fn = notify_fn if notify_fn is not None else (_default_notify if push_fn is None else None)
         self._fail_notified = None
+        if push_fn is None:                  # GitHub-free mode (engine/nogithub.py): same payload and bars, written to logs/pc_hb/
+            try:
+                from . import nogithub as _ng
+                if _ng.active():
+                    push_fn, self.notify_fn = _ng.local_push, None
+            except Exception:
+                pass
         self.push_fn = push_fn or push
         self.clock = clock
         self.watch_s, self.stuck_s, self.frozen_s, self.retry_s, self.lock_wait_s = watch_s, stuck_s, frozen_s, retry_s, lock_wait_s

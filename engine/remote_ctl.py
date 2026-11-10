@@ -66,6 +66,12 @@ ID_RE = re.compile(r"^[A-Za-z0-9._:\-]{1,64}$")
 
 def enabled(env=None) -> bool:
     env = os.environ if env is None else env
+    try:
+        from . import nogithub
+        if nogithub.active(env):         # GitHub-free mode (engine/nogithub.py)
+            return False
+    except Exception:
+        pass
     return env.get("LE_REMOTE", "0") == "1"
 
 

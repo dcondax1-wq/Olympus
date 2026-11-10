@@ -16,12 +16,14 @@
   const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
   const API = 'https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main';
   // the setup link is this site's own SETUP.md (same origin); the old address stays as the fallback when the page is opened locally
-  const SETUP_URL = /^https:$/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname) ? new URL('SETUP.md', location.href).href : 'https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md';
-  const STEP0 = 'Open your kalshi-server chat in the Claude app and paste: Set up Jarvis for my Kalshi bot by following ' + SETUP_URL;
+  // {SITE_URL} is filled from this page's own address (location.origin), so the message follows the site wherever it is hosted
+  const STEP0 = 'Open your kalshi-server chat in the Claude app and paste: Set up Jarvis for my Kalshi bot by following {SITE_URL}/kalshi/SETUP.md';
+  const SITE = /^https?:$/.test(location.protocol) ? location.origin : '{SITE_URL}';
+  const fillSite = (t) => t.split('{SITE_URL}').join(SITE);
   // the server script is pinned: the site build writes kit.json next to this page ({"v":1, "file":"kalshi_status_vm.py",
   // "sha256":"<64 hex>"}); with a valid hash the step carries it, else the step stays exactly STEP0
-  let STEP = STEP0;
-  const pinned = (h) => `${STEP0} (only run kalshi_status_vm.py if its sha256 is ${h})`;
+  let STEP = fillSite(STEP0);
+  const pinned = (h) => `${fillSite(STEP0)} (only run kalshi_status_vm.py if its sha256 is ${h})`;
   const paste = () => STEP.slice(STEP.indexOf('paste: ') + 7);     // what goes into the bot's chat (the hash included)
   const TZ = 'America/New_York', STALE_S = 15 * 60, POLL_MS = 60e3, TICK_MS = 30e3, TIMEOUT_MS = 12e3, TR_PAGE = 10, TR_CAP = 40;
   const RANGES = [['1W', 7, 'past week'], ['1M', 30, 'past month'], ['3M', 90, 'past 3 months'], ['All', 0, '']];

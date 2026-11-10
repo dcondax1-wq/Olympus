@@ -5,6 +5,7 @@ printf 'python' >> "$LE_T_LOG"; for a in "$@"; do printf '\t%s' "$a" >> "$LE_T_L
 all=" $* "
 case "$all" in
   *"print(sys.executable)"*) echo "$0"; exit 0 ;;          # Find-Python asks for the real exe: this fake is it
+  *"pc_publish.py"*) echo "fake publish: six lines"; exit 0 ;;
   *" -m pip "*) exit 0 ;;
   *" -m engine.autoupdate "*) exit 0 ;;
   *" -m engine.ninjatrader "*" --start "*) echo "fake: bot started"; exit "${LE_T_START_RC:-0}" ;;

@@ -82,7 +82,12 @@ else {
 $hb = $null; $hbWhy = ''
 try {
     $raw = $null
+    $localHb = J2 (J2 (J2 (Split-Path -Parent $PSScriptRoot) 'logs') 'pc_hb') 'heartbeat.json'
     if ($env:LE_STATUS_HOME_FILE) { $raw = Get-Content -LiteralPath $env:LE_STATUS_HOME_FILE -Raw -ErrorAction Stop }
+    elseif (Test-Path -LiteralPath $localHb) {
+        # GitHub-free bot (PUBLISH_NQ.bat): the bot writes its heartbeat to logs\pc_hb on this PC; no internet needed
+        $raw = '{"live":{"pc":' + (Get-Content -LiteralPath $localHb -Raw -ErrorAction Stop) + '}}'
+    }
     else { $raw = (Invoke-WebRequest -Uri ($SiteHome + '?t=' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) -UseBasicParsing -TimeoutSec 8 -ErrorAction Stop).Content }
     $d = $raw | ConvertFrom-Json -ErrorAction Stop
     $live = P $d 'live'
@@ -192,6 +197,20 @@ try {
     elseif ($main -and $plan -notmatch 'PC Care|High performance|Ultimate') { Line 'SKIP' 'POWER' ("plan: $plan (this PC may go to sleep)"); $next += ,@('SKIP', 'The power plan can let this PC sleep: double-click PC_CARE.bat.') }
     else { Line 'OK' 'POWER' "plan: $plan" }
 } catch { Line '..' 'POWER' 'not readable on this PC' }
+
+# PUBLISH (extra, not one of the six): when the PC publisher has run (PUBLISH_NQ.bat), when it last sent the site out
+try {
+    $pubFile = J2 (J2 (J2 (Split-Path -Parent $PSScriptRoot) 'data') 'pc_publish') 'last.json'
+    if (Test-Path -LiteralPath $pubFile) {
+        $pj = (Get-Content -LiteralPath $pubFile -Raw -ErrorAction Stop) | ConvertFrom-Json -ErrorAction Stop
+        $pAge = (Get-Now) - [int64](P $pj 't')
+        $pWhat = "last publish $(Age-Text $pAge) to $(P $pj 'provider')"
+        if (P $pj 'ok') {
+            if ($pAge -gt 3600 -and $trading) { Line 'SKIP' 'PUBLISH' ($pWhat + ': older than an hour'); $next += ,@('SKIP', 'The site was not refreshed for an hour: double-click PUBLISH_NQ.bat.') }
+            else { Line 'OK' 'PUBLISH' $pWhat }
+        } else { Line 'SKIP' 'PUBLISH' ($pWhat + ' FAILED, the last good site stays up'); $next += ,@('SKIP', 'The last publish failed: double-click PUBLISH_NQ.bat and read its six lines.') }
+    }
+} catch { }
 
 Write-Host ''
 $fix = @($next | Where-Object { $_[0] -eq 'FIX' }); $look = @($next | Where-Object { $_[0] -eq 'SKIP' })
