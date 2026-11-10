@@ -109,7 +109,7 @@ function card(a, isBuy, rank) {
   const kv = h('dl', 'kv');
   const row = (k, v, cls) => { kv.appendChild(h('dt', '', k)); kv.appendChild(h('dd', cls || '', v)); };
   row('Chance it gets funded', C.pct(c.p_funded)); row('Net after 12 months', C.moneyS(c.net12), c.net12 >= 0 ? 'pos' : 'neg');
-  row('Cautious / hopeful', `${C.moneyS(a.cases.conservative.net12)} / ${C.moneyS(a.cases.optimistic.net12)}`);
+  row('Stress / cautious / hopeful', `${C.moneyS(a.cases.stress.net12)} / ${C.moneyS(a.cases.conservative.net12)} / ${C.moneyS(a.cases.optimistic.net12)}`);
   li.appendChild(kv);
   const bar = h('div', 'ag-bar ' + (a.score >= 70 ? 'green' : a.score >= 45 ? 'amber' : 'red')); bar.setAttribute('role', 'img'); bar.setAttribute('aria-label', `Score ${a.score} of 100, an estimate`);
   const i = h('i'); i.style.width = Math.max(4, Math.min(100, a.score)) + '%'; bar.appendChild(i); li.appendChild(bar);
@@ -147,6 +147,8 @@ function renderCal() {
   }
 }
 
+function renderWrong() { const u = $('wrong'); clear(u); for (const l of C.wrongLines(S.doc)) u.appendChild(h('li', '', l)); }
+
 function renderText() {
   const g = $('gone'); clear(g); for (const l of C.riskLines(S.doc, S.key)) g.appendChild(h('li', '', l));
   const how = $('how'); clear(how); for (const l of S.doc.notes) how.appendChild(h('li', '', l));
@@ -155,7 +157,7 @@ function renderText() {
 function render() {
   if (!S.doc) return;
   $('demo').hidden = !S.demo; try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
-  renderCases(); renderHero(); renderTowers(); renderBuy(); renderFleet(); renderCal(); renderText();
+  renderCases(); renderHero(); renderTowers(); renderWrong(); renderBuy(); renderFleet(); renderCal(); renderText();
   const f = S.doc.chrysos.fleet[S.key];
   say(`Chrysos, ${C.CASE_WORD[S.key]} case: an estimate of ${C.moneyS(f.net12)} net over 12 months for ${C.fleetAccounts(S.doc).length} accounts. Month ${S.month} shown.`);
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }

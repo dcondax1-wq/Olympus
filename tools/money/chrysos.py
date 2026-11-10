@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """CHRYSOS ("the gold"): the prop-firm eval and payout fleet planner. Money machine #1. PAPER / PLANNING ONLY: it reads published stats and writes one JSON file.
-It never trades, never buys anything and never promises income: every dollar is an ESTIMATE from the stored LIT backtests, with a conservative, a base and an optimistic case.
+It never trades, never buys anything and never promises income: every dollar is an ESTIMATE from the stored LIT backtests, with four cases: stress ("what if I am wrong": two failed eval cycles, then the 2021-25 reference line), cautious, base and optimistic.
 
     python tools/money/chrysos.py --out <dir>             # reads research/lit/*.json when present, else the bundled numbers; writes <dir>/chrysos.json
     python tools/money/chrysos.py --out <dir> --fixture   # the bundled sample only (offline, deterministic): status "sample"
@@ -24,7 +24,7 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-CASES = ("conservative", "base", "optimistic")
+CASES = ("stress", "conservative", "base", "optimistic")
 HORIZON = 12                 # months planned
 SESSIONS_TO_DAYS = 7 / 5     # 5 trading sessions = 7 calendar days
 GAP_DAYS = 14                # one payout request every two weeks at most (MFFU cycle)
@@ -59,6 +59,7 @@ BUNDLED = {
 
 # the three cases: how hard each number is pushed against (or for) the owner. Everything is an assumption, written down here.
 CASE_RULES = {
+    "stress":       {"open_w": 0.5, "fail_x": 2.0, "fail_add": 5.0, "pay_share": 0.40, "survive": 0.90, "time_x": 1.6, "first_pay": "slow", "pass_pick": "worst", "cohort": True, "fail_cycles": 2, "weak_every": 3, "ref_pay": True},
     "conservative": {"open_w": 0.5, "fail_x": 2.0, "fail_add": 5.0, "pay_share": 0.40, "survive": 0.92, "time_x": 1.6, "first_pay": "slow", "pass_pick": "worst", "cohort": True, "fail_cycles": 1, "weak_every": 3},
     "base":         {"open_w": 0.25, "fail_x": 1.0, "fail_add": 0.0, "pay_share": 1.00, "survive": 0.97, "time_x": 1.0, "first_pay": "med", "pass_pick": "H2"},
     "optimistic":   {"open_w": 0.0, "fail_x": 0.8, "fail_add": 0.0, "pay_share": 915.0 / 684.0, "survive": 0.99, "time_x": 0.8, "first_pay": "fast", "pass_pick": "best"},
@@ -173,7 +174,7 @@ def eval_odds(st, plan, case):
     else:
         run = st["eval"][PLANS[plan]["stats"]]["H2"]
     fail = clamp(run["fail"] * cr["fail_x"] + cr["fail_add"], 0.0, 100.0)
-    passed = run["pass"] - (cr["fail_add"] if case == "conservative" else 0.0)
+    passed = run["pass"] - (cr["fail_add"] if cr.get("cohort") else 0.0)
     passed = clamp(passed, 1.0, 100.0)
     open_ = max(0.0, run.get("open", 0.0))
     p_adj = passed / (passed + fail + open_ * cr["open_w"])
@@ -183,6 +184,8 @@ def eval_odds(st, plan, case):
 def funded_month(st, plan, case):
     """Expected payout to the owner per month while the account is funded, in dollars (a 50K figure scaled to the account)."""
     f = st["funded"]
+    if CASE_RULES[case].get("ref_pay"):
+        return f["REF_month"] * PLANS[plan]["scale"]            # the 2021-25 reference line: the rules that earned almost nothing
     base = f["H2_month"] * CASE_RULES[case]["pay_share"] if case != "optimistic" else f["headline_month"]
     return base * PLANS[plan]["scale"]
 
@@ -233,7 +236,7 @@ def account_case(st, plan, case, owned=False, months=HORIZON):
                 inc = min(rate * wk * live / 30.0 * surv * pw, max(0.0, cap_total * pw - cum_in))
         cum_in += inc
         if cohort:
-            spent = first_buy + (extra_buys if t >= cyc else 0.0)          # the repurchase lands in the month the cohort fails: a real loss month
+            spent = first_buy + price * sum(1 for k in range(1, int(cr["fail_cycles"]) + 1) if t >= cyc * k)     # each repurchase lands in the month the cohort fails: a real loss month
         else:
             spent = first_buy + (extra_buys if t >= to_funded_days else extra_buys * (t / max(to_funded_days, 1.0)))
         series.append(r2(cum_in - spent))
@@ -349,26 +352,28 @@ def plan(st, source, fleet=None, budget=DEFAULT_BUDGET, asof=FIXED_ASOF, status=
     all_acc = owned + buys
     items = []
     for i, a in enumerate(ranked):
-        b, c, o = a["cases"]["base"], a["cases"]["conservative"], a["cases"]["optimistic"]
+        b, c, o = a["cases"]["base"], a["cases"]["stress"], a["cases"]["optimistic"]
         pick = any(x["plan"] == a["plan"] for x in buys)
         items.append({
             "title": f"{'Next buy' if pick and i == 0 else 'Buy' if pick else 'Lower priority'}: {a['name']} (${a['price']:.2f})",
-            "detail": f"Estimate: {b['p_funded']:.0f}% become funded (base), about ${b['cost_expected']:.0f} in fees per funded account, break-even {fmt_be(b['breakeven_month'])}, 12-month net about ${b['net12']:,.0f} "
-                      f"(worst case ${c['net12']:,.0f}, best case ${o['net12']:,.0f}).",
+            "detail": f"Estimate: {b['p_funded']:.0f}% become funded (base), about ${b['cost_expected']:.0f} in fees per funded account, break-even {fmt_be(b['breakeven_month'])}, 12-month net about {usd(b['net12'])} "
+                      f"(stress case {usd(c['net12'])}, best case {usd(o['net12'])}).",
             "usd": b["net12"], "score": a["score"], "risk": a["risk"],
         })
     for a in owned:
-        b, c = a["cases"]["base"], a["cases"]["conservative"]
-        items.append({"title": f"Keep going: {a['name']} (fee ${a['paid']:.2f} already paid)", "detail": f"Estimate: first payout in about {b['days_to_first_payout']} days (base), then about ${b['payout_month']:,.0f} a month expected; worst case ${c['net12']:,.0f} over 12 months.",
+        b, c = a["cases"]["base"], a["cases"]["stress"]
+        items.append({"title": f"Keep going: {a['name']} (fee ${a['paid']:.2f} already paid)", "detail": f"Estimate: first payout in about {b['days_to_first_payout']} days (base), then about ${b['payout_month']:,.0f} a month expected; stress case {usd(c['net12'])} over 12 months.",
                       "usd": b["net12"], "score": a["score"], "risk": a["risk"]})
     fl = fleet_totals(all_acc)
     cal = calendar(all_acc, asof)
     b12 = fl["base"]["net12"]
-    headline = (f"Estimate: the fleet of {len(all_acc)} account{'s' if len(all_acc) != 1 else ''} nets about ${b12:,.0f} over 12 months (worst case ${fl['conservative']['net12']:,.0f}, best case ${fl['optimistic']['net12']:,.0f}); "
+    headline = (f"Estimate: the fleet of {len(all_acc)} account{'s' if len(all_acc) != 1 else ''} nets about {usd(b12)} over 12 months (stress case {usd(fl['stress']['net12'])}, cautious {usd(fl['conservative']['net12'])}, best case {usd(fl['optimistic']['net12'])}); "
                 f"break-even {fmt_be(fl['base']['breakeven_month'])}. Not a promise.")
     return {
         "v": 1, "id": "chrysos", "asof": asof, "mode": "paper", "status": status,
         "headline": {"text": headline, "usd_month": r2(b12 / 12.0)},
+        # read by Mint's combined range: low = the Stress case (may be negative), base = the base case, high = the optimistic case, all per month, all estimates
+        "usd_month": {"low": r2(fl["stress"]["net12"] / 12.0), "base": r2(b12 / 12.0), "high": r2(fl["optimistic"]["net12"] / 12.0)},
         "items": items,
         "notes": NOTES + [f"Stats source: {source}. Prices: Builder 50K $91.80, Builder 25K $63, ATLAS 25K $43, one time, $0 activation."],
         "chrysos": {
@@ -378,6 +383,12 @@ def plan(st, source, fleet=None, budget=DEFAULT_BUDGET, asof=FIXED_ASOF, status=
             "stats": {"eval": st["eval"], "funded": st["funded"]}, "source": source, "horizon_months": HORIZON,
         },
     }
+
+
+def usd(x):
+    """$1,234 or -$504 (never $-504)"""
+    v = int(round(x))
+    return ('-$' if v < 0 else '$') + f'{abs(v):,}'
 
 
 def fmt_be(m):
@@ -421,7 +432,7 @@ def selftest():
     chk("odds are probabilities", all(0 < x < 1 for x in (p_c, p_b, p_o)))
     for k in ORDER:
         a = {c: account_case(st, k, c) for c in CASES}
-        chk(f"{k}: net12 conservative <= base <= optimistic", a["conservative"]["net12"] <= a["base"]["net12"] <= a["optimistic"]["net12"], [a[c]["net12"] for c in CASES])
+        chk(f"{k}: net12 stress <= conservative <= base <= optimistic", a["stress"]["net12"] <= a["conservative"]["net12"] <= a["base"]["net12"] <= a["optimistic"]["net12"], [a[c]["net12"] for c in CASES])
         chk(f"{k}: month 0 equals minus the fee", a["base"]["cum"][0] == -PLANS[k]["price"], a["base"]["cum"][0])
         chk(f"{k}: first payout after funded", a["base"]["days_to_first_payout"] > a["base"]["days_to_funded"] > 0)
         cap = a["base"]["payout_cap_total"]
@@ -445,6 +456,13 @@ def selftest():
     cc = doc["chrysos"]["candidates"]
     chk("Cautious: every copy shares the same failure moment (one cohort, not independent multiples): same days_to_funded for 25K and 50K", len({a["cases"]["conservative"]["days_to_funded"] for a in cc}) == 1)
     chk("Cautious: every account is bought exactly twice (1 fail + 1 pass), resets repurchased", all(abs(a["cases"]["conservative"]["attempts"] - 2.0) < 1e-9 for a in cc))
+    fs = doc["chrysos"]["fleet"]["stress"]
+    chk("Stress: two failed cycles in a row, every account bought three times (1 + 2 resets), one shared cycle length", all(abs(a["cases"]["stress"]["attempts"] - 3.0) < 1e-9 for a in cc) and len({a["cases"]["stress"]["days_to_funded"] for a in cc}) == 1)
+    chk("Stress: pays at the 2021-25 reference line (a few dollars a month), so it ends month 12 near zero or negative and loses months 1 and 2", fs["net12"] < 1000 and fs["net12"] <= doc["chrysos"]["fleet"]["conservative"]["net12"] and fs["loss_months"][:2] == [1, 2], (fs["net12"], fs["loss_months"]))
+    chk("Stress: the cases are ordered stress <= cautious <= base <= optimistic for the fleet", [doc["chrysos"]["fleet"][k]["net12"] for k in CASES] == sorted(doc["chrysos"]["fleet"][k]["net12"] for k in CASES))
+    um = doc["usd_month"]
+    chk("usd_month for Mint: low = the Stress case per month (may be negative), base = the base case, high = the optimistic case", um["low"] <= um["base"] <= um["high"] and abs(um["low"] - fs["net12"] / 12.0) < 0.01 and abs(um["base"] - doc["headline"]["usd_month"]) < 0.01, um)
+    chk("money words never read $-504", "$-" not in json.dumps(doc))
     chk("weak month ratio is the worst real 2026 month over the mean (bundled 459 / 4372)", abs(st["funded"]["weak_ratio"] - 459.0 / 4372.0) < 0.01, st["funded"]["weak_ratio"])
     n_acc = len(doc["chrysos"]["owned"]) + len(doc["chrysos"]["buy_next"])
     chk("fleet capped", n_acc <= MAX_ACCOUNTS, n_acc)

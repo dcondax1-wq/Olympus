@@ -85,3 +85,4 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .stage canvas { transition: none; } }
 html[data-oly-lite="1"] .stage { background: #2a2118; }
 /* the page ends 176px above the bottom so Jarvis keeps its corner */
+.wrong { border-color: #6e3424; }

@@ -2,9 +2,10 @@
 // The numbers are computed by tools/money/chrysos.py (published as money/chrysos.json, or the saved fixture.json); this file validates them, picks the case, builds the tower model and the words.
 // Every dollar is an ESTIMATE from backtests; nothing here promises income and nothing places or buys anything.
 
-export const CASES = ['conservative', 'base', 'optimistic'];
-export const CASE_WORD = { conservative: 'Cautious', base: 'Middle', optimistic: 'Hopeful' };
+export const CASES = ['stress', 'conservative', 'base', 'optimistic'];
+export const CASE_WORD = { stress: 'Stress', conservative: 'Cautious', base: 'Middle', optimistic: 'Hopeful' };
 export const CASE_SAY = {
+  stress: 'Stress, what if I am wrong: the whole cohort fails its eval twice in a row (all fees paid three times), then trades like the 2021-25 reference line, which earned almost nothing.',
   conservative: 'Cautious: all copies fail their first eval together and are bought again, then pay 40% of the tested amount; every third month is as weak as the worst real month of 2026.',
   base: 'Middle: the stored H2-2026 results as they are.',
   optimistic: 'Hopeful: the headline payout rate and the best test run. Do not plan on it.',
@@ -120,11 +121,11 @@ export function calendarGroups(doc) {
 /** "what could go wrong" lines, from the numbers (never empty) */
 export function riskLines(doc, key) {
   const f = doc.chrysos.fleet, accs = fleetAccounts(doc), fees = accs.reduce((s, a) => s + (a.paid || a.price || 0), 0);
-  const worst = f.conservative.net12;
+  const worst = f.stress.net12;
   const L = [];
-  if (f.conservative.loss_months && f.conservative.loss_months.length) L.push(`In the cautious case month ${f.conservative.loss_months.join(', ')} is a LOSS month and the first two months are net negative.`);
+  if (f.stress.loss_months && f.stress.loss_months.length) L.push(`In the stress case month ${f.stress.loss_months.join(' and ')} are LOSS months (every account is bought again) and the first two months are net negative.`);
   L.push(`All ${accs.length} account${accs.length === 1 ? '' : 's'} trade the same signals, so one bad stretch can fail them together. That would cost the fees, about ${money(fees)}.`);
-  L.push(worst >= 0 ? `Even the cautious case is only ${moneyS(worst)} over 12 months, and that case is itself a guess.` : `In the cautious case the fleet LOSES ${money(-worst)} over 12 months.`);
+  L.push(worst >= 0 ? `Even the stress case is only ${moneyS(worst)} over 12 months, and that case is itself a guess.` : `In the stress case the fleet LOSES ${money(-worst)} over 12 months.`);
   const hi = accs.reduce((m, a) => Math.max(m, a.cases[key].fail_pct), 0);
   L.push(`A failed eval means buying a new account: the fail share in this case is up to ${pct(hi)}, and the open ones can still fail later.`);
   L.push('Payouts need you present, a request every two weeks at most, and MFFU can change its rules. Re-check them before the first payout.');
@@ -135,4 +136,15 @@ export function riskLines(doc, key) {
 export function jarvisCard(doc, key) {
   const f = doc.chrysos.fleet[key || 'base'];
   return { name: 'Chrysos', level: doc.status === 'ok' ? 'ok' : 'off', net12: money(f.net12), line: `Estimate: ${money(f.net12)} net over 12 months, break-even ${beWords(f.breakeven_month)}.` };
+}
+
+/** "What if I am wrong?": the Stress case in plain sentences, always shown, whatever case is selected */
+export function wrongLines(doc) {
+  const f = doc.chrysos.fleet.stress, n = fleetAccounts(doc).length;
+  const L = [];
+  L.push(`Suppose the strategy is not as good as the backtests: all ${n} accounts fail their eval together, are bought again, fail again, and only the third try passes. After that they earn like the 2021-25 line, about nothing.`);
+  L.push(`Estimate: after 6 months ${moneyS(f.net6)}, after 12 months ${moneyS(f.net12)}. Fees in this case: ${money(f.cost_expected)}.`);
+  L.push(f.loss_months && f.loss_months.length ? `Loss months: ${f.loss_months.join(' and ')} (each time every account is paid for again).` : 'No loss month in this case.');
+  L.push(f.net12 < 0 ? `That is a real loss of ${money(-f.net12)}. It is the price of finding out, and it is the number to compare with the plan above.` : `Even then the fleet ends near ${moneyS(f.net12)}. That is the weakest case, not a floor.`);
+  return L;
 }
