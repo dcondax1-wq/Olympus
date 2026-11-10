@@ -278,7 +278,7 @@ varying vec3 vW; varying vec2 vUv; varying float vFD;
 ${FOG}
 ${HASH}
 void main(){
-  vec3 col = mix(vec3(0.016,0.02,0.05), vec3(0.22,0.24,0.28), uDay);
+  vec3 col = mix(vec3(0.05,0.04,0.03), vec3(0.30,0.26,0.22), uDay);
   float lane = step(abs(vUv.y - 0.5), 0.02) * step(0.5, fract(vUv.x * 40.0));
   float sheen = noise(vW.xz * 0.35 + vec2(0.0, uTime*0.05)) * uWet;
   col += vec3(1.0, 0.85, 0.5) * lane * 0.35 + uAccent * sheen * 0.16 + vec3(1.0,0.4,0.6) * sheen * 0.05;

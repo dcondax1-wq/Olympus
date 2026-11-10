@@ -3,7 +3,7 @@
 //                   roof colour = status). Grey and low = fewer than 30 bets (no verdict). Going up = a new edge; crumbling = one that just died.
 //   a district      one market (Bitcoin, Ethereum, ...) on a ring round Downtown (strategies, price bands, hours, sides)
 //   the roads       an avenue from Downtown to every district; traffic = the capital that went out (cool) and what came back (gold won, red lost)
-//   live orders     the bot's open positions: bright magenta cars driving out to their district
+//   live orders     the bot's open positions: bright gold cars driving out to their district
 //   the weather     the market regime of the last days: clear / overcast / rain / storm; fog when the bot is paused
 //   day and night   the New York clock
 //   satellite wards low-rise neighborhoods and connecting local roads: scenery only (the guide says so)
@@ -133,9 +133,9 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
   sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);
   const stars = M.starfield({ count: 1500, radius: 1300, size: 2.3 }); scene.add(stars);
   const orb = new THREE.Mesh(new THREE.SphereGeometry(30, 20, 12), new THREE.MeshBasicMaterial({ color: hdr('#e0b487', 3), fog: false })); orb.frustumCulled = false; scene.add(orb);
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(4200, 4200), M.metal({ kind: 'gunmetal', color: '#0a0d14', roughness: 0.42, clearcoat: 0.6, envMapIntensity: 0.4 }));
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(4200, 4200), M.metal({ kind: 'gunmetal', color: '#14110e', roughness: 0.42, clearcoat: 0.6, envMapIntensity: 0.4 }));
   ground.rotation.x = -Math.PI / 2; ground.position.y = -0.05; scene.add(ground);
-  const grid = new THREE.GridHelper(2400, 400, 0x416c8d, 0x416c8d); grid.material.transparent = true; grid.material.opacity = 0.35; grid.position.y = 0.02; scene.add(grid);
+  const grid = new THREE.GridHelper(2400, 400, 0x6b5a42, 0x6b5a42); grid.material.transparent = true; grid.material.opacity = 0.12; grid.position.y = 0.02; scene.add(grid);
 
   // ---- the world (rebuilt when the layout changes)
   const world = new THREE.Group(); scene.add(world);
@@ -163,9 +163,9 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     real.forEach((b, i) => {
       q4.setFromAxisAngle(up, b.yaw); p3.set(b.x, 0, b.z); s3.set(b.w, b.mode ? b.fullH : b.h, b.d); m4.compose(p3, q4, s3); bMesh.setMatrixAt(i, m4);
       const dc = b.lab ? L.labs.find((d) => d.key === b.lab) : L.districts.find((d) => d.key === b.district), dead = b.e.status === 'DEAD';
-      tint.set(b.e.small ? '#343b4b' : dead ? '#3a1d20' : '#1b2233').lerp(col.set(dc ? dc.color : '#ffffff'), b.e.small ? 0.05 : 0.22);
+      tint.set(b.e.small ? '#3a3328' : dead ? '#3d221a' : '#2a241c').lerp(col.set(dc ? dc.color : '#ffffff'), b.e.small ? 0.05 : 0.22);
       bMesh.setColorAt(i, tint);
-      const st = b.e.small ? '#8b93a7' : STATUS_COLOR[b.e.status];
+      const st = b.e.small ? '#8a7f6e' : STATUS_COLOR[b.e.status];
       col.set(st); aStat.set([col.r, col.g, col.b], i * 3);
       aInfo.set([b.glow, b.lit, b.loss, r()], i * 4);
       aAnim.set([b.mode, 1.0 + r() * 1.4, 1, b.from || 0], i * 4);
@@ -214,7 +214,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
       p3.y = 0.27; s3.set(len, 0.03, 0.12); m4.compose(p3, q4, s3); lanes.setMatrixAt(i, m4);
       const dc = L.districts.find((d) => d.key === rd.district);
       const wardRoad = rd.kind.startsWith('ward-'), localRoad = rd.kind === 'ward-local';
-      lanes.setColorAt(i, col.set(rd.kind === 'labring' ? '#061020' : localRoad ? '#d5985b' : wardRoad ? '#578994' : dc ? dc.color : '#596b91').multiplyScalar(rd.kind === 'labring' ? 0.15 : localRoad ? 0.48 : wardRoad ? 0.32 : dc ? 0.75 : 0.4));
+      lanes.setColorAt(i, col.set(rd.kind === 'labring' ? '#14110e' : localRoad ? '#d5985b' : wardRoad ? '#8a7f6e' : dc ? dc.color : '#9c6b3c').multiplyScalar(rd.kind === 'labring' ? 0.15 : localRoad ? 0.48 : wardRoad ? 0.32 : dc ? 0.75 : 0.4));
     });
     roadsMesh.frustumCulled = false; lanes.frustumCulled = false; world.add(roadsMesh, lanes);
     buildLinks();
@@ -303,11 +303,11 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
       const count = Math.max(4, Math.round((MAX_CARS * 0.86) * (weight[di] / wsum)));
       for (let k = 0; k < count; k++) {
         const out = r() < 0.5;
-        carState.push({ path: di, s: r(), v: 0.05 + r() * 0.05, lane: out ? 1 : -1, out, c: out ? [0.55, 0.95, 1.0, 2.2] : (r() < lossRate ? [1.0, 0.16, 0.14, 2.4] : [1.0, 0.78, 0.3, 2.2]), order: -1 });
+        carState.push({ path: di, s: r(), v: 0.05 + r() * 0.05, lane: out ? 1 : -1, out, c: out ? [0.9, 0.82, 0.62, 1.6] : (r() < lossRate ? [0.79, 0.42, 0.29, 1.8] : [0.78, 0.64, 0.29, 1.6]), order: -1 });
       }
     });
     const nRing = Math.max(8, Math.round(MAX_CARS * 0.12));
-    for (let k = 0; k < nRing; k++) carState.push({ path: -1, s: r(), v: 0.012 + r() * 0.01, lane: k % 2 ? 1 : -1, out: true, c: [0.2, 0.95, 0.82, 2.0], order: -1 });
+    for (let k = 0; k < nRing; k++) carState.push({ path: -1, s: r(), v: 0.012 + r() * 0.01, lane: k % 2 ? 1 : -1, out: true, c: [0.5, 0.54, 0.32, 1.6], order: -1 });
     carState.length = Math.min(carState.length, MAX_CARS);
     setOrders();
   }
@@ -317,7 +317,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     orders = pos.length;
     pos.forEach((p, k) => {
       const di = ds.findIndex((d) => d.key === p.market);
-      carState.unshift({ path: di, s: r() * 0.6, v: 0.045, lane: 1, out: true, c: [1.0, 0.36, 0.95, 3.4], order: k, scale: 1.7 });
+      carState.unshift({ path: di, s: r() * 0.6, v: 0.045, lane: 1, out: true, c: [1.0, 0.8, 0.35, 2.6], order: k, scale: 1.7 });
     });
     for (let i = 0; i < carState.length; i++) carState[i].i = i;
   }
@@ -346,40 +346,68 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
   }
 
   // ---- landmarks: the Exchange, the Vault, the Observatory, the Lighthouse of ruin, the Hall of Fame beam
+  /** The harbour for the open bets: a stone quay on the promenade ring, one small ship moored per open position (gold = market's strength, terracotta = a losing market). One merged mesh of ships. */
+  function buildHarbour(bk) {
+    const R = L.extent + 36, g = new THREE.Group(), pos = (bk.positions || []).slice(0, tier.cars ? MAX_ORDERS : 6);
+    const quay = new THREE.Mesh(new THREE.BoxGeometry(34, 0.5, 5), M.metal({ kind: 'gunmetal', color: '#8a7f6e', roughness: 0.6 })); quay.position.set(0, 0.25, -3.5);
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(34, 9), new THREE.MeshStandardMaterial({ color: '#3d4a44', roughness: 0.25, metalness: 0.3 })); water.rotation.x = -Math.PI / 2; water.position.set(0, 0.06, 3.5);
+    g.add(quay, water);
+    const hull = new THREE.BoxGeometry(2.6, 0.7, 1.1).toNonIndexed(), sail = new THREE.ConeGeometry(0.55, 2.4, 4).toNonIndexed(); sail.translate(0, 1.5, 0);
+    const parts = [hull, sail], n = parts.reduce((a, q) => a + q.attributes.position.count, 0), P = new Float32Array(n * 3), N = new Float32Array(n * 3);
+    let o = 0; for (const q of parts) { P.set(q.attributes.position.array, o * 3); N.set(q.attributes.normal.array, o * 3); o += q.attributes.position.count; }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(P, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+    const ships = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }), Math.max(1, pos.length));
+    const m = new THREE.Matrix4(), c = new THREE.Color();
+    pos.forEach((q, i) => {
+      const d = L.districts.find((x) => x.key === q.market);
+      m.makeTranslation(-15 + (i + 0.5) * (30 / Math.max(6, pos.length)), 0.5, 2.2 + (i % 2) * 2.6); ships.setMatrixAt(i, m);
+      ships.setColorAt(i, c.set(d ? d.color : '#c8a24a'));
+    });
+    ships.count = pos.length; if (ships.instanceColor) ships.instanceColor.needsUpdate = true; ships.instanceMatrix.needsUpdate = true;
+    ships.frustumCulled = false; g.add(ships);
+    g.position.set(0, 0, R); g.userData.name = 'The Harbour: ' + pos.length + ' open bet' + (pos.length === 1 ? '' : 's');
+    world.add(g);
+  }
   function buildLandmarks() {
     const bk = M0.book, mint = '#9fae68';
     const g = new THREE.Group();
-    const steel = M.metal({ kind: 'chrome', color: '#9fb4c8', roughness: 0.18, envMapIntensity: 1.2 });
+    const steel = M.metal({ kind: 'chrome', color: '#cfc4b2', roughness: 0.18, envMapIntensity: 1.2 });
     const base = new THREE.Mesh(new THREE.CylinderGeometry(4.4, 5.2, 2.2, 28), steel); base.position.y = 1.1;
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 3.0, 30, 24), M.glass({ color: '#a3bfd5', rim: mint, rimStrength: 1.6, iridescence: 0.5, opacity: 0.38 })); shaft.position.y = 17;
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 3.0, 30, 24), M.glass({ color: '#d9ccb4', rim: mint, rimStrength: 1.6, iridescence: 0.5, opacity: 0.38 })); shaft.position.y = 17;
     const spire = new THREE.Mesh(new THREE.ConeGeometry(0.9, 11, 12), steel); spire.position.y = 38.5;
     g.add(base, shaft, spire);
     ring1 = new THREE.Group();
     for (let i = 0; i < 4; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(3.3 - i * 0.2, 0.12, 8, 40), M.neon({ color: mint, intensity: 3 })); t.rotation.x = Math.PI / 2; t.position.y = 8 + i * 7.5; ring1.add(t); }
     g.add(ring1);
-    const beam = M.energyBeam({ length: 60, radius: 0.34, color: bk.running === false ? '#7f8aa0' : mint, intensity: bk.running === false ? 0.7 : 1.3 }); beam.position.y = 44; g.add(beam);
+    const beam = M.energyBeam({ length: 60, radius: 0.34, color: bk.running === false ? '#8a7f6e' : mint, intensity: bk.running === false ? 0.7 : 1.3 }); beam.position.y = 44; g.add(beam);
     tower = g; tower.userData.beam = beam; g.userData.name = 'The Exchange'; world.add(g);
 
     vault = new THREE.Group();
     const dome = new THREE.Mesh(new THREE.SphereGeometry(3.4, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), M.metal({ kind: 'gold', color: '#d79e65', roughness: 0.16, envMapIntensity: 1.5 }));
     const drum = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.8, 2.6, 28), M.metal({ kind: 'gold', color: '#d08f4c', roughness: 0.3 })); drum.position.y = 1.3; dome.position.y = 2.6;
     const halo = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.1, 8, 48), M.neon({ color: '#d79e65', intensity: 3 })); halo.rotation.x = Math.PI / 2; halo.position.y = 3.2;
-    vault.add(drum, dome, halo);
+    // the bank vault tower: a marble-and-bronze shaft that grows with the balance (height = dollars, the plaque says how many)
+    const balT = Math.max(20, bk.balance || 50), vh = 6 + 16 * Math.min(1, Math.log10(balT / 20) / 2.2);
+    const vshaft = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.6, vh, 10), M.metal({ kind: 'gold', color: '#b07a45', roughness: 0.4 })); vshaft.position.y = 2.6 + vh / 2;
+    dome.position.y = 2.6 + vh; vault.userData.name = 'The Bank Vault';
+    vault.add(drum, vshaft, dome, halo);
     const bal = Math.max(20, bk.balance || 50), vs = 0.75 + 0.4 * Math.min(1, Math.log10(bal / 20) / 2);
     vault.scale.setScalar(vs); vault.position.set(11, 0.3, -8); world.add(vault);
 
+    buildHarbour(bk);
+
     obs = new THREE.Group();
     const ob = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.1, 7, 18), steel); ob.position.y = 3.5;
-    const od = new THREE.Mesh(new THREE.SphereGeometry(2.0, 22, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.glass({ color: '#adc6d9', rim: '#99b8d0', opacity: 0.5 })); od.position.y = 7;
-    const tele = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 3.4), M.neon({ color: '#99b8d0', intensity: 2.4 })); tele.position.set(0, 8.1, 0.8); tele.rotation.x = -0.6;
+    const od = new THREE.Mesh(new THREE.SphereGeometry(2.0, 22, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.glass({ color: '#d9ccb4', rim: '#b9a98c', opacity: 0.5 })); od.position.y = 7;
+    const tele = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 3.4), M.neon({ color: '#b9a98c', intensity: 2.4 })); tele.position.set(0, 8.1, 0.8); tele.rotation.x = -0.6;
     obs.add(ob, od); obs.userData.tele = tele; obs.add(tele);
     const today = M0.log.some((x) => x.d === M0.day && (x.kind === 'learned' || x.kind === 'changed'));
-    if (today) { const b2 = M.energyBeam({ length: 50, radius: 0.2, color: '#99b8d0', intensity: 1.2 }); b2.position.y = 8; obs.add(b2); obs.userData.beam = b2; }
+    if (today) { const b2 = M.energyBeam({ length: 50, radius: 0.2, color: '#b9a98c', intensity: 1.2 }); b2.position.y = 8; obs.add(b2); obs.userData.beam = b2; }
     obs.position.set(-11, 0.3, -9); world.add(obs);
 
     lighthouse = new THREE.Group();
     const ruin = bk.ruinNow == null ? 0.2 : bk.ruinNow, lc = ruin > 0.5 ? '#ca785c' : ruin > 0.15 ? '#d49759' : '#a0af6a';
-    const lt = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.6, 9, 14), M.metal({ kind: 'gunmetal', color: '#2a2f3a', roughness: 0.4 })); lt.position.y = 4.5;
+    const lt = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.6, 9, 14), M.metal({ kind: 'gunmetal', color: '#3a3228', roughness: 0.4 })); lt.position.y = 4.5;
     const lamp = new THREE.Mesh(new THREE.SphereGeometry(1.1, 16, 10), M.neon({ color: lc, intensity: 3.4 })); lamp.position.y = 9.8;
     const lb = M.energyBeam({ length: 26, radius: 0.28, color: lc, intensity: 1.1 }); lb.position.y = 9.8; lb.rotation.z = Math.PI / 2;
     lighthouse.add(lt, lamp); lighthouse.userData.sweep = lb; lighthouse.add(lb);
@@ -415,7 +443,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     });
     if (!pts.length) return;
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-    scaffold = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: hdr('#99b8d0', 2.2), fog: true })); scaffold.frustumCulled = false; world.add(scaffold);
+    scaffold = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: hdr('#b9a98c', 2.2), fog: true })); scaffold.frustumCulled = false; world.add(scaffold);
   }
 
   // ---- the equity skyway: a glowing ribbon winding up round Downtown, green where the bankroll rose, red where it fell
@@ -447,7 +475,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
       vertexShader: `uniform float uTime; uniform float uI; uniform vec3 uO; attribute float aSeed; attribute float aEnd; varying float vA;
         void main() { vec3 p = position; p.y = mod(p.y - uTime * (52.0 + aSeed * 26.0), 80.0); p.xz = mod(p.xz - uO.xz + 70.0, 140.0) - 70.0 + uO.xz; p.y -= aEnd * 1.7; p.x += aEnd * 0.3;
           vA = step(aSeed, uI) * (0.18 + 0.5 * aSeed) * (1.0 - aEnd * 0.8); gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0); }`,
-      fragmentShader: 'varying float vA; void main() { gl_FragColor = vec4(vec3(0.62, 0.76, 1.0) * vA * 1.4, 1.0); }' }));
+      fragmentShader: 'varying float vA; void main() { gl_FragColor = vec4(vec3(0.85, 0.78, 0.65) * vA * 1.4, 1.0); }' }));
     rain.frustumCulled = false; world.add(rain);
     const dying = L.buildings.filter((b) => b.mode === 2).slice(0, 12);
     if (dying.length) {
@@ -495,14 +523,14 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     scene.fog.color.copy(u.uHor.value).multiplyScalar(0.75);
     const paused = M0.regime.paused ? 1.4 : 1, ext = L.extent;
     scene.fog.density = (0.0016 * 240 / Math.max(240, ext * 1.2)) * W.fog * paused * (1 + 0.4 * day) * (rig.mode === 'map' ? 0.3 : 1);
-    hemi.color.copy(lerpC(C('#8eb0cb'), C('#afc7da'), day)); hemi.intensity = 0.55 + 0.7 * day;
+    hemi.color.copy(lerpC(C('#cbb89a'), C('#e8dcc0'), day)); hemi.intensity = 0.55 + 0.7 * day;
     // the sun by day, the moon by night, on a fixed arc over the city
     const ph = ((h >= 6 && h <= 18) ? (h - 6) / 12 : (((h + 6) % 24) / 12)) * Math.PI, el = Math.sin(ph);
     const dir = new THREE.Vector3(Math.cos(ph) * 0.9, el * 0.8 + 0.1, -0.45).normalize();
     skySt = { tw, day, sun: [dir.x * 300, dir.y * 300, dir.z * 300], hour: h };
     ground.material.roughness = 0.42 - 0.32 * Math.min(1, W.rain); ground.material.clearcoat = 0.6 + 0.4 * Math.min(1, W.rain);   // wet streets shine
-    sun.position.copy(dir).multiplyScalar(300); sun.color.copy(day > 0.3 ? C('#e2b88d') : C('#9ebcd2')); sun.intensity = (day > 0.2 ? 0.7 + 1.3 * day : 0.45) * (1 - grey * 0.5) * (0.4 + 0.6 * el);
-    orb.position.copy(dir).multiplyScalar(1250); orb.material.color.copy(day > 0.3 ? hdr('#e0b487', 3) : hdr('#afc7da', 1.7)); orb.scale.setScalar(day > 0.3 ? 1.0 : 0.7); orb.visible = grey < 0.7;
+    sun.position.copy(dir).multiplyScalar(300); sun.color.copy(day > 0.3 ? C('#e2b88d') : C('#c9b58f')); sun.intensity = (day > 0.2 ? 0.7 + 1.3 * day : 0.45) * (1 - grey * 0.5) * (0.4 + 0.6 * el);
+    orb.position.copy(dir).multiplyScalar(1250); orb.material.color.copy(day > 0.3 ? hdr('#e0b487', 3) : hdr('#e8dcc0', 1.7)); orb.scale.setScalar(day > 0.3 ? 1.0 : 0.7); orb.visible = grey < 0.7;
     stars.material.uniforms.uColor.value.setScalar(Math.max(0, 1 - day * 1.6) * (1 - grey * 0.7) * 0.9);
     stars.visible = rc.quality() !== 'off' && day < 0.6;
     U.uNight.value = 1 - 0.85 * day;
@@ -538,7 +566,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     if (selected) {
       const i = bIndex.get(selected), b = L.buildings[i];
       bMesh.geometry.attributes.aAnim.setZ(i, 2);
-      const c = b.e.small ? '#8b93a7' : STATUS_COLOR[b.e.status];
+      const c = b.e.small ? '#8a7f6e' : STATUS_COLOR[b.e.status];
       marker.position.set(b.x, 0, b.z); marker.visible = true; marker.userData.ring.scale.setScalar(Math.max(b.w, b.d) * 1.1 + 0.8);
       marker.userData.ring.material.color.copy(hdr(c, 3.2)); marker.userData.beam.material.uniforms.uColor.value.set(c); marker.userData.beam.position.y = b.fullH * 0.9;
     } else marker.visible = false;

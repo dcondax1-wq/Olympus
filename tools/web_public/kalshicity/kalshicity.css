@@ -98,8 +98,8 @@ body.sheeted .pair, body.sheeted .ticker { display: none; }
 .mini-title { align-self:flex-start; font:800 8px/1 var(--oly-display,sans-serif); letter-spacing:.08em; color:#9fc8ec; }
 .city-mini svg { width:100px; height:82px; background:radial-gradient(circle at 50% 50%,#183853 0%,#07111f 69%); border-radius:9px; }
 .mini-count { font:700 8.5px/1.12 var(--oly-ui,sans-serif); color:#b8d3db; white-space:normal; text-align:center; }
-.city-mini path { fill:none; stroke:#52a7b6; stroke-width:.8; opacity:.7; }
-.city-mini path[data-kind^="ward-"] { stroke:#65d4da; stroke-width:.55; }
+.city-mini path { fill:none; stroke:#9c6b3c; stroke-width:.8; opacity:.7; }
+.city-mini path[data-kind^="ward-"] { stroke:#b9a98c; stroke-width:.55; }
 .city-mini circle { stroke:#dff4ff; stroke-width:.55; filter:drop-shadow(0 0 2px currentColor); }
 .city-mini circle:first-of-type { stroke:#fff1c0; stroke-width:1.5; }
 

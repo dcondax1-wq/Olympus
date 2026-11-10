@@ -3,6 +3,7 @@
 // tour's caption, toasts. Every data string goes in as text (el()), never as HTML.
 import { $, el, money, pct, num, signed, cssColor, CLASS_TEXT } from './util.js';
 import { FAMILIES, IDEA_FAMILIES } from './kinds.js';
+import { THEMES, themeOf } from './agora.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const SPAN_COLS = [['trades', (o) => o.n ?? '–'], ['/wk', (o) => num(o.tpw, 2)], ['win', (o) => pct(o.win)], ['PF', (o) => num(o.pf, 2)],
@@ -429,7 +430,10 @@ export function viewFind(body, sections, onInput, extra = {}) {
     for (const [box, first] of [[seg, 'all'], [dseg, 'all'], [fseg, 'all'], [hseg, 'any']]) box.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x.dataset.v === first));
     sE.reset(); sT.reset(); onInput('', state); extra.reset?.();
   });
-  act.append(fly, nxt, rst);
+  const dst = el('button', 'pill', 'Districts');
+  dst.id = 'districtsB';
+  dst.addEventListener('click', () => extra.districts?.());
+  act.append(fly, nxt, rst, dst);
   body.append(q, act, el('div', 'note', 'Plain words work: a time (morning, afternoon, london, asia), a side (long, short), a kind (sweep, fvg, break), a mood (wild, quiet, rising).'),
               seg, hseg, fseg, dseg, sE, sT, Object.assign(el('ul', 'list'), { id: 'findList' }));
   return { q, state };
@@ -445,4 +449,44 @@ export function fillFound(hits, label, open, total) {
     listRow(ul, '', cssColor(it.b.cls), label(it.b), `${pct(it.b.w)} win · ${num(it.b.tpw, 2)}/wk · ${it.b.n ?? '–'} trades`, money(it.b.e), () => open(it));
   }
   if (!hits.length) ul.appendChild(el('li', null, 'No building matches.'));
+}
+
+// ------------------------------------------------------------------------------------------------ the district index (v4, AGORA)
+/** The index of every district, filed by theme (hour, setup, weekday, month, mood) with a search box and a legend; tap a row to fly there.
+ *  districts: layout districts ({ key, name, blurb, css }); sections: the model's sections (their buildings give the counts). */
+export function viewDistricts(body, districts, sections, open) {
+  const q = el('input');
+  Object.assign(q, { type: 'search', id: 'dq', placeholder: 'Find a district: week, hour, month, gap...', autocomplete: 'off' });
+  q.setAttribute('enterkeyhint', 'search');
+  const legend = el('div', 'note legend-key');
+  for (const [cls, t] of [['gold', 'gold: holds in every year'], ['green', 'olive: holds in both periods'], ['amber', 'bronze: one period'], ['grey', 'stone: noise']]) {
+    const i = el('i');
+    Object.assign(i.style, { display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', margin: '0 4px 0 8px', background: cssColor(cls) });
+    legend.append(i, document.createTextNode(t));
+  }
+  const bySec = new Map(sections.map((s) => [s.key, s]));
+  const ul = el('ul', 'list');
+  ul.id = 'districtList';
+  const fill = (text) => {
+    const w = String(text || '').toLowerCase().split(/\s+/).filter(Boolean);
+    ul.replaceChildren();
+    let shown = 0;
+    for (const th of [...THEMES, { key: 'other', name: 'Other', blurb: 'Added districts' }]) {
+      const rows = districts.filter((d) => d.key !== 'harbor' && themeOf(d.key).key === th.key
+        && w.every((x) => `${d.name} ${d.blurb || ''} ${th.name}`.toLowerCase().includes(x)));
+      if (!rows.length) continue;
+      ul.appendChild(el('li', 'count', th.name + (th.blurb ? ' · ' + th.blurb : '')));
+      for (const d of rows) {
+        const items = bySec.get(d.key)?.items || [];
+        const gold = items.filter((b) => b.cls === 'gold').length, both = items.filter((b) => b.cls === 'green').length;
+        listRow(ul, '', d.css || '#c8a24a', d.name, `${items.length.toLocaleString()} buildings · ${gold} hold in every year · ${both} in both periods`, undefined, () => open(d));
+        shown++;
+      }
+    }
+    if (!shown) ul.appendChild(el('li', null, 'No district matches.'));
+  };
+  q.addEventListener('input', () => fill(q.value));
+  fill('');
+  body.append(q, legend, ul);
+  return { q, fill };
 }

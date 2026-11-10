@@ -54,7 +54,7 @@ function fromRow(row, ix, D) {
            fdr: !!(fl & F.fdr), tr: trendOf(fl, F), td: fl & F.fired ? 2 : fl & F.armed ? 1 : 0, compact: true };
 }
 
-const DEFAULT_SECTIONS = { times: ['TIMES', '#daa56f'], confluences: ['CONFLUENCES', '#d79e64'], while: ['WHILE-STATES', '#b2cadc'] };
+const DEFAULT_SECTIONS = { times: ['TIMES', '#c8a24a'], confluences: ['CONFLUENCES', '#b07a45'], while: ['WHILE-STATES', '#cfc4b2'] };
 
 /** Normalise one plug-in district (see the contract above); null when it is not usable. */
 export function pluginSection(p, i = 0) {
@@ -96,6 +96,8 @@ export function synthRows(D, n) {
   return rows;
 }
 
+import { agoraColor } from './agora.js';
+
 export function decode(city, plugins = [], synth = 0) {
   const D = city.dict || null;
   const rich = (city.buildings || []).map((b) => ({ ...b }));
@@ -116,10 +118,10 @@ export function decode(city, plugins = [], synth = 0) {
   }
   const sections = [];
   const meta = city.sections || Object.entries(DEFAULT_SECTIONS).map(([key, [name, color]]) => ({ key, name, color, kind: 'combos' }));
-  for (const s of meta) sections.push({ ...s, items: [] });
+  meta.forEach((s, i) => sections.push({ ...s, color: agoraColor(s.key, i), items: [] }));
   const sec = new Map(sections.map((s) => [s.key, s]));
   for (const b of buildings) {
-    if (!sec.has(b.d)) { const s = { key: b.d, name: b.d.toUpperCase(), color: '#b2cadc', kind: 'combos', items: [] }; sections.push(s); sec.set(b.d, s); }
+    if (!sec.has(b.d)) { const s = { key: b.d, name: b.d.toUpperCase(), color: agoraColor(b.d), kind: 'combos', items: [] }; sections.push(s); sec.set(b.d, s); }
     sec.get(b.d).items.push(b);
   }
   for (const p of plugins) {

@@ -663,10 +663,11 @@ class App {
       const list = [...this.watch].map((id) => m.byId.get(id)).filter(Boolean).map((b) => ({ b, label: labelOf(b, m.D) }));
       UI.sheet.open('watch', `Watchlist (${list.length})`, (b) => UI.viewWatch(b, list, (id) => this.openId(id), (id) => this.toggleWatch(id)));
     } else if (name === 'find') {
-      UI.sheet.open('find', 'Search the city', (b) => { this.findUI = UI.viewFind(b, m.sections, (q, st) => this.find(q, st), { fly: () => this.flyToMatches(), next: () => this.nextMatch(), reset: () => this.resetFind() }); });
+      UI.sheet.open('find', 'Search the city', (b) => { this.findUI = UI.viewFind(b, m.sections, (q, st) => this.find(q, st), { fly: () => this.flyToMatches(), next: () => this.nextMatch(), reset: () => this.resetFind(), districts: () => this.showView('districts') }); });
       this.find('', this.findUI.state);
       setTimeout(() => this.findUI?.q.focus({ preventScroll: true }), 50);
-    } else if (name === 'read') UI.sheet.open('read', 'How to read the city', (b) => UI.viewRead(b, m));
+    } else if (name === 'districts') UI.sheet.open('districts', 'All districts', (b) => UI.viewDistricts(b, this.L.districts, m.sections, (d) => this.openDistrict(d)));
+    else if (name === 'read') UI.sheet.open('read', 'How to read the city', (b) => UI.viewRead(b, m));
     else if (name === 'menu') UI.sheet.open('menu', 'The city', (b) => PN.viewMenu(b, this.menuItems()));
     else if (name === 'now') {
       const card = this.nowCard();
@@ -721,6 +722,7 @@ class App {
     return [
       { key: 'now', title: 'Market now', sub: 'What is moving the market, in dollars, and what matches LIT', fn: go(() => this.showView('now')) },
       { key: 'report', title: 'City report', sub: 'What was tested, who survives, what the Council of ideas says', fn: go(() => this.showView('report')) },
+      { key: 'districts', title: 'All districts', sub: 'By hour, setup, weekday, month and mood, with search', fn: go(() => this.showView('districts')) },
       { key: 'compare', title: 'Compare two ideas', sub: 'Open an idea, tap Compare, tap a second building', fn: go(() => { UI.sheet.close(); UI.toast('Tap a building, then Compare, then a second building'); }) },
       { key: 'timeline', title: 'How it grew', sub: 'Watch the city rise year by year', fn: go(() => this.showView('timeline')) },
       { key: 'fireworks', title: 'Fireworks', sub: 'Celebrate the gold ideas', fn: go(() => this.celebrateGold()) },
