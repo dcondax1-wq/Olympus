@@ -167,7 +167,7 @@ export function cleanHist(h) {
   for (const k of Object.keys(h.weeks).filter(okYmd).sort().slice(-26)) {
     const w = h.weeks[k]; if (!isObj(w) || num(w.usd) == null) continue;
     const g = isObj(w.goal) && goalById(w.goal.id) ? { id: w.goal.id, done: !!w.goal.done } : null;
-    out.weeks[k] = { usd: r2(num(w.usd)), r: num(w.r), trades: Math.max(0, Math.min(999, Math.round(num(w.trades) || 0))), rated: Math.max(0, Math.round(num(w.rated) || 0)), plan: Math.max(0, Math.round(num(w.plan) || 0)), goal: g };
+    out.weeks[k] = { usd: r2(num(w.usd)), trades: Math.max(0, Math.min(999, Math.round(num(w.trades) || 0))), rated: Math.max(0, Math.round(num(w.rated) || 0)), plan: Math.max(0, Math.round(num(w.plan) || 0)), goal: g };
   }
   return out;
 }
@@ -193,25 +193,25 @@ export function buildReview(o) {
     else { r = 0; est = false; from = 'none'; }
     return { ...a, week: usd, weekR: r, weekEst: est || from === 'home', n, from, wins: tr.filter((t) => t.usd > 0).length, losses: tr.filter((t) => t.usd < 0).length };
   });
-  const usd = r2(accounts.reduce((s, a) => s + a.week, 0)), rSum = r2(accounts.reduce((s, a) => s + (a.weekR || 0), 0)), anyEst = accounts.some((a) => a.weekEst || a.from === 'home');
+  const usd = r2(accounts.reduce((s, a) => s + a.week, 0));   // the total is dollars only: accounts risk different amounts per trade, so their R is never added
   const sorted = [...wk].sort((a, b) => b.usd - a.usd), best = sorted.length && sorted[0].usd > 0 ? sorted[0] : null, worst = sorted.length && sorted[sorted.length - 1].usd < 0 ? sorted[sorted.length - 1] : null;
   const pack = (t) => (t ? { ...t, rule: ruleFor(t, entries[t.id]), account: PLANS[t.key].name } : null);
   const hab = habitsOf(wk, entries), entriesCount = Object.keys(entries).length, week = { trades: wk }, ls = lessons(week, hab, entriesCount), sg = suggestGoal(week, hab, entriesCount);
   const perDay = days.map((d) => r2(wk.filter((t) => t.day === d).reduce((s, t) => s + t.usd, 0))), traded = days.map((d) => wk.some((t) => t.day === d));
   const worstRoom = accounts.filter((a) => a.has && a.room != null).sort((a, b) => a.room / a.mll - b.room / b.mll)[0] || null;
-  return { monday, label: weekLabel(monday), days, demo: !!o.demo, current: !!o.current, usd, r: rSum, rEst: anyEst, trades: wk.length, accounts, best: pack(best), worst: pack(worst), perDay, traded, hab, lessons: ls, goal: sg, worstRoom,
-    money: normMoney(o.money), plan: hab.plan, rated: hab.rated, headline: headline(usd, rSum, wk.length, anyEst, weekLabel(monday)) };
+  return { monday, label: weekLabel(monday), days, demo: !!o.demo, current: !!o.current, usd, trades: wk.length, accounts, best: pack(best), worst: pack(worst), perDay, traded, hab, lessons: ls, goal: sg, worstRoom,
+    money: normMoney(o.money), plan: hab.plan, rated: hab.rated, headline: headline(usd, wk.length, weekLabel(monday)) };
 }
 
-function headline(usd, r, n, est, label) {
+function headline(usd, n, label) {
   if (!n && usd === 0) return 'Week of ' + label + ': no trades. A quiet week is a valid week.';
-  return 'Week of ' + label + ': ' + both(usd, r, est) + ' on ' + n + ' trade' + (n === 1 ? '' : 's') + '.';
+  return 'Week of ' + label + ': ' + moneyS(usd) + ' on ' + n + ' trade' + (n === 1 ? '' : 's') + '.';
 }
 
 /** the plain-text summary the Copy button puts on the clipboard (no network) */
 export function shareText(m, lastGoal) {
-  const L = ['EPILOGUE, my week (' + m.label + ')' + (m.demo ? ' [EXAMPLE numbers, not real]' : ''), 'Total: ' + both(m.usd, m.r, m.rEst) + ', ' + m.trades + ' trade' + (m.trades === 1 ? '' : 's')];
-  for (const a of m.accounts) if (a.has || a.n) L.push('- ' + a.name + ': ' + both(a.week, a.weekR, a.weekEst || a.from === 'home') + (a.room != null ? '; drawdown used ' + money(a.used) + ', left ' + money(a.room) + ' of ' + money(a.mll) + ' max loss' : ''));
+  const L = ['EPILOGUE, my week (' + m.label + ')' + (m.demo ? ' [EXAMPLE numbers, not real]' : ''), 'Total (dollars only, each account has its own 1R): ' + moneyS(m.usd) + ', ' + m.trades + ' trade' + (m.trades === 1 ? '' : 's')];
+  for (const a of m.accounts) if (a.has || a.n) L.push('- ' + a.name + ': ' + both(a.week, a.weekR, a.weekEst || a.from === 'home') + ', 1R = ' + money(a.risk) + (a.room != null ? '; drawdown used ' + money(a.used) + ', left ' + money(a.room) + ' of ' + money(a.mll) + ' max loss' : ''));
   if (m.best) L.push('Best: ' + both(m.best.usd, m.best.r) + ' (' + m.best.rule.text.split(':')[0] + ')');
   if (m.worst) L.push('Worst: ' + both(m.worst.usd, m.worst.r) + ' (' + m.worst.rule.text.split(':')[0] + ')');
   L.push('Lessons:'); m.lessons.forEach((l, i) => L.push((i + 1) + '. ' + l.title));
