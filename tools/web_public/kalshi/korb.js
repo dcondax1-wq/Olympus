@@ -20,7 +20,7 @@ async function boot() {
   try { RC = await import('../olympus/render.js'); } catch (_) { return; }     // the OLYMPUS render core: ACES, a studio environment, bloom, MSAA
   const css = getComputedStyle(document.documentElement);
   const col = (name, dflt) => { const v = css.getPropertyValue(name).trim(); return /^#[0-9a-f]{3,6}$/i.test(v) ? v : dflt; };
-  const C = { a: new T.Color(col('--c', '#1fe5a6')), b: new T.Color(col('--cy', '#38e1ff')), yes: new T.Color('#4ade80'), no: new T.Color('#ff4d6d') };
+  const C = { a: new T.Color(col('--c', '#7f8a52')), b: new T.Color(col('--cy', '#4b7a99')), yes: new T.Color('#4ade80'), no: new T.Color('#ff4d6d') };
 
   const scene = new T.Scene();
   const cam = new T.PerspectiveCamera(32, 1, 0.1, 20);
@@ -144,8 +144,8 @@ async function boot() {
   });
   document.addEventListener('kalshi:theme', (e) => {
     const t = e.detail || {};
-    C.a.set(t.accent || col('--c', '#1fe5a6'));
-    C.b.set(t.accent2 || col('--cy', '#38e1ff'));
+    C.a.set(t.accent || col('--c', '#7f8a52'));
+    C.b.set(t.accent2 || col('--cy', '#4b7a99'));
     shellMat.color.copy(C.a); glowMat.color.copy(C.a); kMat.emissive.copy(C.a); innerMat.color.copy(C.b); orbit.material.color.copy(C.b);
     draw(performance.now());
   });

@@ -136,7 +136,7 @@
   // ---- asset badges (2026-11-04): each coin drawn as its own little SVG, no image files; an unknown asset gets a letter badge
   const ICONS = {
     BTC: ['#f7931a', '<path d="M9 7.5h4a2 2 0 0 1 0 4H9m0 0h4.4a2.1 2.1 0 0 1 0 4.2H9M9 7.5v8.2M11 6v1.5M13.4 6v1.5M11 15.8v1.7M13.4 15.8v1.7" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'],
-    ETH: ['#627eea', '<path d="M12 4.6 7.2 12.2l4.8 2.8 4.8-2.8zM7.2 13.7 12 20.4l4.8-6.7-4.8 2.8z" fill="#fff" fill-opacity=".92"/>'],
+    ETH: ['#4b7a99', '<path d="M12 4.6 7.2 12.2l4.8 2.8 4.8-2.8zM7.2 13.7 12 20.4l4.8-6.7-4.8 2.8z" fill="#fff" fill-opacity=".92"/>'],
     DOGE: ['#c9a227', '<path d="M8.4 7h3.3a5 5 0 0 1 0 10H8.4zM6.9 12h7" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'],
     XRP: ['#2b3a4a', '<path d="m6.8 7.4 5.2 4.6 5.2-4.6M6.8 16.6l5.2-4.6 5.2 4.6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'],
     SOL: ['#6b5a8e', '<path d="M8.4 8h9.2M6.4 12h9.2M8.4 16h9.2" fill="none" stroke="#e0c27a" stroke-width="2" stroke-linecap="round"/>'],
