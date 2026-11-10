@@ -49,7 +49,7 @@ export const isIOS = (ua, touchPts) => /iPad|iPhone|iPod/.test(String(ua || ''))
 const SILENT_TURNS = 3;          // turns with nothing heard before voice mode waits for a tap (no endless listening)
 const LISTEN_MAX_MS = 15000;     // one listening turn at most
 const WPS = 2.7;                 // words per second at rate 1, for the speaking pulse until the phone reports word timing
-const PHASE_WORD = { idle: 'STANDBY', listening: 'LISTENING', thinking: 'THINKING', speaking: 'SPEAKING' };
+const PHASE_WORD = { idle: 'Standing by', listening: 'Listening', thinking: 'Thinking', speaking: 'Speaking' };
 const CORE_STATE = { idle: 'idle', listening: 'listening', thinking: 'thinking', speaking: 'speaking' };
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -112,57 +112,54 @@ function style() {
   const s = document.createElement('style');
   s.id = 'vmCss';
   s.textContent = `
-.vm{position:fixed;inset:0;z-index:2147483300;display:flex;flex-direction:column;align-items:center;color:var(--txt,#ece9f2);
-  background:radial-gradient(120% 80% at 50% 38%,rgba(var(--cr2,124,58,237),.28),rgba(0,0,0,.94) 62%),#000;
+.vm{position:fixed;inset:0;z-index:2147483300;display:flex;flex-direction:column;align-items:center;color:#f3ece0;
+  background:radial-gradient(120% 80% at 50% 38%,#2a2218,#14110e 68%);
   padding:max(12px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));box-sizing:border-box;overflow:hidden;
-  font-family:var(--fb,"Rajdhani",system-ui,sans-serif);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  font-family:-apple-system,'SF Pro Text',system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .vm[hidden]{display:none}
-.vm::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px)}
-.vm-top{position:relative;width:100%;max-width:640px;display:flex;align-items:center;gap:8px;z-index:3}
-.vm-tag{flex:1;min-width:0;font:600 11px var(--fh,"Orbitron",sans-serif);letter-spacing:.16em;color:var(--c3,#c084fc);text-shadow:0 0 10px rgba(var(--cr,168,85,247),.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vm-btn{min-height:44px;min-width:44px;padding:0 11px;border-radius:22px;border:1px solid rgba(var(--cr,168,85,247),.55);background:rgba(var(--cr,168,85,247),.12);
-  color:var(--txt,#fff);font:600 11px var(--fh,"Orbitron",sans-serif);letter-spacing:.08em;cursor:pointer;max-width:42vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vm-x{border-color:rgba(255,77,109,.7);background:rgba(255,77,109,.16)}
+.vm-top{position:relative;width:100%;max-width:640px;display:flex;align-items:center;gap:8px;z-index:3;padding-bottom:8px;border-bottom:1px solid #3a3228}
+.vm-tag{flex:1;min-width:0;font:600 22px 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;color:#f3ece0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vm-tag::after{content:"";display:block;width:36px;height:2px;margin-top:3px;background:#c8a24a;border-radius:2px}
+.vm-btn{min-height:44px;min-width:44px;padding:0 14px;border-radius:12px;border:1px solid #3a3228;background:#26211b;
+  color:#f3ece0;font:600 14px -apple-system,'SF Pro Text',system-ui,sans-serif;cursor:pointer;max-width:42vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vm-btn:focus-visible,.vm-ptt:focus-visible,.vm-stage:focus-visible{outline:2px solid #c8a24a;outline-offset:2px}
+.vm-x{border-color:#c96a4a;color:#f3ece0}
 .vm-stage{position:relative;flex:1 1 auto;width:100%;display:flex;align-items:center;justify-content:center;min-height:0;cursor:pointer;outline:none;z-index:1}
 .vm-ring{position:relative;flex:none}
 .vm-core{position:absolute;inset:0}
 .vm-spec,.vm-hud{position:absolute;inset:-9%;width:118%;height:118%;pointer-events:none}
-.vm-hud text{font:600 11px var(--fh,"Orbitron",sans-serif);letter-spacing:.3em;fill:var(--c3,#c084fc)}
-.vm-hud .arc{fill:none;stroke:rgba(var(--cr,168,85,247),.35);stroke-width:1.2}
-.vm-hud .gauge{fill:none;stroke:var(--c,#a855f7);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 4px var(--c,#a855f7))}
-.vm[data-verdict=ok] .vm-hud .vd{fill:var(--ok,#4ade80)} .vm[data-verdict=warn] .vm-hud .vd{fill:var(--warn,#fbbf24)} .vm[data-verdict=bad] .vm-hud .vd{fill:var(--bad,#ff4d6d)}
-.vm-orb{position:absolute;inset:14%;border-radius:50%;border:2px solid rgba(var(--cr,168,85,247),.8);box-shadow:0 0 40px rgba(var(--cr,168,85,247),.6),inset 0 0 40px rgba(var(--cr,168,85,247),.45);
-  transform:scale(calc(.92 + var(--lv,0) * .16))}
-.vm-orb i{position:absolute;inset:30%;border-radius:50%;background:radial-gradient(circle,#fff,var(--c3,#c084fc) 40%,transparent 72%);opacity:calc(.6 + var(--lv,0) * .4)}
-.vm[data-phase=listening] .vm-orb{border-color:rgba(255,77,109,.85);box-shadow:0 0 40px rgba(255,77,109,.55),inset 0 0 40px rgba(255,77,109,.4)}
+.vm-hud text{font:600 14px 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;letter-spacing:0;fill:#cfc4b2}
+.vm-hud .arc{fill:none;stroke:#3a3228;stroke-width:1.2}
+.vm-hud .gauge{fill:none;stroke:#c8a24a;stroke-width:3;stroke-linecap:round}
+.vm[data-verdict=ok] .vm-hud .vd{fill:#7f8a52} .vm[data-verdict=warn] .vm-hud .vd{fill:#e0b060} .vm[data-verdict=bad] .vm-hud .vd{fill:#c96a4a}
+.vm-orb{position:absolute;inset:14%;border-radius:50%;border:2px solid #c8a24a;background:#1d1914;box-shadow:0 6px 18px rgba(0,0,0,.35);
+  transform:scale(calc(.94 + var(--lv,0) * .12))}
+.vm-orb i{position:absolute;inset:30%;border-radius:50%;background:radial-gradient(circle,#e0b060,#9c6b3c 70%,transparent 100%);opacity:calc(.55 + var(--lv,0) * .4)}
+.vm[data-phase=listening] .vm-orb{border-color:#c96a4a}
 .vm-frags{position:absolute;inset:0;pointer-events:none}
-.vm-frag{position:absolute;left:50%;top:50%;padding:6px 10px 7px;border:1px solid rgba(var(--cr,168,85,247),.6);background:rgba(var(--pr,12,10,20),.62);
-  clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px));box-shadow:0 0 18px rgba(var(--cr,168,85,247),.35);
-  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);white-space:nowrap;opacity:0;transform:translate(-50%,-50%) scale(.6);
-  transition:opacity .45s ease,transform .7s cubic-bezier(.2,.9,.3,1.15)}
+.vm-frag{position:absolute;left:50%;top:50%;padding:7px 12px 8px;border:1px solid #3a3228;border-radius:12px;background:#26211b;
+  box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:nowrap;opacity:0;transform:translate(-50%,-50%) scale(.9);
+  transition:opacity .35s ease-out,transform .45s ease-out}
 .vm-frag.on{opacity:1;transform:translate(calc(-50% + var(--fx)),calc(-50% + var(--fy))) scale(1)}
-.vm-frag b{display:block;font:600 9px var(--fh,"Orbitron",sans-serif);letter-spacing:.2em;color:var(--c3,#c084fc);text-transform:uppercase}
-.vm-frag span{display:block;font:700 17px var(--fb,"Rajdhani",sans-serif);color:#fff;text-shadow:0 0 8px rgba(var(--cr,168,85,247),.8)}
+.vm-frag b{display:block;font:600 12px -apple-system,'SF Pro Text',system-ui,sans-serif;color:#9a8f7d;text-transform:none;letter-spacing:0}
+.vm-frag span{display:block;font:700 18px 'SF Pro Rounded',-apple-system,sans-serif;font-variant-numeric:tabular-nums;color:#f3ece0}
 .vm-cap{position:relative;z-index:2;width:100%;max-width:640px;min-height:118px;text-align:center}
-.vm-you{margin:0 0 6px;font-size:15px;color:var(--mut,#8a8499);min-height:20px;font-style:italic}
-.vm-you:not(:empty)::before{content:"YOU · ";font:600 9px var(--fh,"Orbitron",sans-serif);letter-spacing:.2em;font-style:normal;color:#ffb3c2}
-.vm-jar{margin:0;font-size:21px;line-height:1.3;font-weight:600;min-height:28px;max-height:34vh;overflow:auto}
-.vm-jar .w{opacity:.32;transition:opacity .18s}
-.vm-jar .w.on{opacity:1;text-shadow:0 0 12px rgba(var(--cr,168,85,247),.75)}
-.vm-hint{position:relative;z-index:2;margin:6px 0 0;font:600 9px var(--fh,"Orbitron",sans-serif);letter-spacing:.24em;color:var(--mut,#8a8499);text-align:center}
+.vm-you{margin:0 0 6px;font-size:16px;color:#9a8f7d;min-height:20px;font-style:italic}
+.vm-you:not(:empty)::before{content:"You: ";font:600 13px -apple-system,'SF Pro Text',system-ui,sans-serif;font-style:normal;color:#c96a4a}
+.vm-jar{margin:0;font:600 22px/1.35 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;min-height:28px;max-height:34vh;overflow:auto}
+.vm-jar .w{opacity:.4;transition:opacity .2s ease-out}
+.vm-jar .w.on{opacity:1}
+.vm-hint{position:relative;z-index:2;margin:6px 0 0;font:500 13px -apple-system,'SF Pro Text',system-ui,sans-serif;color:#9a8f7d;text-align:center}
 .vm-type{position:relative;z-index:3;display:flex;gap:8px;width:100%;max-width:640px;margin-top:8px}
 .vm-type[hidden]{display:none}
-.vm-state{margin:6px 16px 0;text-align:center;font:600 15px/1.3 -apple-system,'SF Pro Text',system-ui,sans-serif;color:#f3ece0;min-height:20px}
+.vm-type input{flex:1;min-width:0;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid #3a3228;background:#1d1914;color:#f3ece0;font:500 16px -apple-system,'SF Pro Text',system-ui,sans-serif}
+.vm-state{margin:6px 16px 0;text-align:center;font:600 16px/1.3 -apple-system,'SF Pro Text',system-ui,sans-serif;color:#f3ece0;min-height:20px}
 .vm-ptt-row{display:flex;gap:10px;justify-content:center;align-items:center;margin:8px 16px calc(14px + env(safe-area-inset-bottom,0px))}
-.vm-ptt{min-height:56px;min-width:180px;padding:0 26px;border-radius:28px;border:1px solid #c8a24a;background:#26211b;color:#f3ece0;font:600 17px -apple-system,'SF Pro Text',system-ui,sans-serif;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.vm-ptt{min-height:56px;min-width:180px;padding:0 26px;border-radius:16px;border:1px solid #c8a24a;background:#26211b;color:#f3ece0;font:600 17px -apple-system,'SF Pro Text',system-ui,sans-serif;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .vm-ptt[hidden]{display:none}
 .vm[data-holding=on] .vm-ptt{background:#c8a24a;color:#14110e}
-.vm-type input{flex:1;min-width:0;min-height:44px;padding:0 14px;border-radius:22px;border:1px solid rgba(var(--cr,168,85,247),.6);background:rgba(0,0,0,.5);color:#fff;font:500 16px var(--fb,"Rajdhani",sans-serif)}
-.vm[data-phase=listening] .vm-tag{color:#ffd0da;text-shadow:0 0 10px var(--bad,#ff4d6d)}
-.vm[data-motion=on] .vm-tag{animation:vmBlink 2.4s ease-in-out infinite}
-@keyframes vmBlink{50%{opacity:.55}}
 .vm[data-motion=off] .vm-frag,.vm[data-motion=off] .vm-jar .w,.vm[data-motion=off] .vm-orb{transition:none;animation:none}
-@media (prefers-reduced-motion: reduce){.vm[data-motion=off] *{animation:none !important;transition:none !important}}`;
+@media (prefers-reduced-motion: reduce){.vm *{animation:none !important;transition:none !important}}`;
   document.head.appendChild(s);
 }
 
@@ -175,7 +172,7 @@ export function createVoiceMode(deps) {
   let el = null, open = false, phase = 'idle', turn = 0, silent = 0, motion = false, typed = false;
   let core = null, rec = null, recT = 0, raf = 0, lastT = 0, level = 0, evLv = 0, pulse = 0;
   let actx = null, stream = null, src = null, an = null, buf = null, fbuf = null, micErr = '', wake = null;
-  let speech = null, sess = 0, specCol = '#c084fc';   // speech: the reply being spoken {words, frags, t0, real, idx, done}
+  let speech = null, sess = 0, specCol = '#c8a24a';   // speech: the reply being spoken {words, frags, t0, real, idx, done}
   let voices = [], said = { noSR: false }, turns = 0, lastReply = null;
   let holding = false, status = '';
   const savedPtt = (() => { const v = safe(() => localStorage.getItem(PTT_KEY), null); return v === '1' ? true : v === '0' ? false : null; })();
@@ -187,7 +184,7 @@ export function createVoiceMode(deps) {
   if (synth) safe(() => synth.addEventListener('voiceschanged', loadVoices));
   const voice = () => bestVoice(voices, savedVoiceName());
   const speaker = synth ? createSpeaker({ synth, voices: () => voices, cfg: () => Object.assign({}, DEFAULTS, call('voiceCfg') || {}, { voice: savedVoiceName() }), cloud: (c) => call('cloudVoice', c), prosody: () => call('prosody'), player: () => call('player') }) : null;
-  function renderVoice() { const b = $('#vmVoice'), v = voice(); if (b) b.textContent = 'VOICE · ' + (v ? v.name.replace(/\s*\(.*\)$/, '').toUpperCase() : 'AUTO'); }
+  function renderVoice() { const b = $('#vmVoice'), v = voice(); if (b) b.textContent = 'Voice: ' + (v ? v.name.replace(/\s*\(.*\)$/, '') : 'Auto'); }
   function nextVoice() {
     loadVoices();
     const list = voiceChoices(voices);
@@ -207,10 +204,10 @@ export function createVoiceMode(deps) {
     el = document.createElement('div');
     el.className = 'vm'; el.id = 'vm'; el.hidden = true;
     el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Voice mode');
-    el.innerHTML = `<div class="vm-top"><span class="vm-tag" id="vmTag">J.A.R.V.I.S</span>
-      <button class="vm-btn" type="button" id="vmVoice" title="Change Jarvis's voice">VOICE · AUTO</button>
+    el.innerHTML = `<div class="vm-top"><span class="vm-tag" id="vmTag">Jarvis</span>
+      <button class="vm-btn" type="button" id="vmVoice" title="Change Jarvis's voice">Voice: Auto</button>
       <button class="vm-btn" type="button" id="vmKb" aria-label="Type instead" title="Type instead">⌨</button>
-      <button class="vm-btn vm-x" type="button" id="vmX" aria-label="End voice mode">END</button></div>
+      <button class="vm-btn vm-x" type="button" id="vmX" aria-label="End voice mode">End</button></div>
     <div class="vm-stage" id="vmStage" role="button" tabindex="0" aria-label="Tap to talk, or to interrupt Jarvis">
       <div class="vm-ring" id="vmRing">
         <canvas class="vm-spec" id="vmSpec" aria-hidden="true"></canvas>
@@ -219,18 +216,18 @@ export function createVoiceMode(deps) {
           <path id="vmArcT" d="M 38 200 A 162 162 0 0 1 362 200"/><path id="vmArcB" d="M 30 200 A 170 170 0 0 0 370 200"/></defs>
           <path class="arc" d="M 30 200 A 170 170 0 0 1 370 200"/><path class="arc" d="M 22 200 A 178 178 0 0 0 378 200"/>
           <path class="gauge" id="vmGauge" d="M 52 290 A 170 170 0 0 0 348 290" pathLength="100" stroke-dasharray="0 100"/>
-          <text><textPath href="#vmArcT" startOffset="50%" text-anchor="middle" class="vd" id="vmVerdict">SYSTEM · —</textPath></text>
-          <text><textPath href="#vmArcB" startOffset="50%" text-anchor="middle" id="vmPhase">STANDBY</textPath></text>
+          <text><textPath href="#vmArcT" startOffset="50%" text-anchor="middle" class="vd" id="vmVerdict">System: none yet</textPath></text>
+          <text><textPath href="#vmArcB" startOffset="50%" text-anchor="middle" id="vmPhase">Standing by</textPath></text>
         </svg>
         <div class="vm-frags" id="vmFrags"></div>
       </div>
     </div>
     <p class="vm-state" id="vmState" role="status" aria-live="polite"></p>
     <div class="vm-cap"><p class="vm-you" id="vmYou"></p><p class="vm-jar" id="vmJar" aria-live="polite"></p></div>
-    <p class="vm-hint" id="vmHint">TAP THE CORE TO TALK OR INTERRUPT · END TO STOP</p>
-    <form class="vm-type" id="vmType" autocomplete="off" hidden><input id="vmQ" type="text" enterkeyhint="send" placeholder="Type to Jarvis…" aria-label="Type to Jarvis"><button class="vm-btn" type="submit">SEND</button></form>
+    <p class="vm-hint" id="vmHint">Tap the circle to talk or to cut in. End to stop.</p>
+    <form class="vm-type" id="vmType" autocomplete="off" hidden><input id="vmQ" type="text" enterkeyhint="send" placeholder="Type to Jarvis…" aria-label="Type to Jarvis"><button class="vm-btn" type="submit">Send</button></form>
     <div class="vm-ptt-row"><button class="vm-ptt" type="button" id="vmPtt" aria-label="Hold to talk" hidden>Hold to talk</button>
-      <button class="vm-btn" type="button" id="vmMode" aria-label="Switch between hold to talk and hands free" title="Hold to talk or hands free">HOLD TO TALK</button></div>`;
+      <button class="vm-btn" type="button" id="vmMode" aria-label="Switch between hold to talk and hands free" title="Hold to talk or hands free">Hold to talk</button></div>`;
     document.body.appendChild(el);
     $('#vmX').addEventListener('click', (e) => { e.stopPropagation(); close('end'); });
     $('#vmVoice').addEventListener('click', (e) => { e.stopPropagation(); ensureMic(); nextVoice(); });
@@ -265,7 +262,7 @@ export function createVoiceMode(deps) {
     el.dataset.holding = holding ? 'on' : 'off'; el.dataset.ptt = ptt ? 'on' : 'off';
     const pb = $('#vmPtt'), mb = $('#vmMode');
     if (pb) pb.hidden = !ptt || typed || !SR || said.blocked;
-    if (mb) mb.textContent = ptt ? 'HOLD TO TALK' : 'HANDS-FREE';
+    if (mb) mb.textContent = ptt ? 'Hold to talk' : 'Hands-free';
   }
   function setPtt(on) {
     ptt = !!on; safe(() => localStorage.setItem(PTT_KEY, ptt ? '1' : '0'));
@@ -290,7 +287,7 @@ export function createVoiceMode(deps) {
   function renderVerdict() {
     const v = call('verdict') || {};
     el.dataset.verdict = ['ok', 'warn', 'bad'].indexOf(v.level) >= 0 ? v.level : '';
-    $('#vmVerdict').textContent = 'SYSTEM · ' + short(String(v.text || 'no verdict yet').replace(/[.:]+$/, ''), 34).toUpperCase();
+    $('#vmVerdict').textContent = 'System: ' + short(String(v.text || 'no verdict yet').replace(/[.:]+$/, ''), 34);
   }
   function capYou(t) { $('#vmYou').textContent = t || ''; }
   function capJar(words, on) {             // words: the spoken line split in words; on: how many are lit
@@ -314,7 +311,7 @@ export function createVoiceMode(deps) {
     const cv = $('#vmSpec'), dpr = Math.min(2, window.devicePixelRatio || 1), px = Math.round(size * 1.18 * dpr);
     cv.width = cv.height = px;
     cv.hidden = !motion;
-    specCol = (getComputedStyle(el).getPropertyValue('--c3') || '').trim() || '#c084fc';      // the theme's colour, read once
+    specCol = '#c8a24a';      // gold, the AGORA accent
   }
   function paintLevel(v) {
     level = v;
@@ -346,7 +343,7 @@ export function createVoiceMode(deps) {
     const W = cv.width, c = W / 2, r0 = W * 0.39, n = 72;
     g.clearRect(0, 0, W, W);
     if (an && phase === 'listening') an.getByteFrequencyData(fbuf);
-    g.strokeStyle = phase === 'listening' ? '#ff6b88' : specCol; g.lineWidth = Math.max(1.5, W / 260); g.lineCap = 'round';
+    g.strokeStyle = phase === 'listening' ? '#c96a4a' : specCol; g.lineWidth = Math.max(1.5, W / 260); g.lineCap = 'round';
     g.globalAlpha = 0.85; g.beginPath();
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 - Math.PI / 2, j = i < n / 2 ? i : n - i;          // mirrored: low notes at the top
@@ -392,7 +389,7 @@ export function createVoiceMode(deps) {
       said.noSR = true;
       sayLine(why === 'blocked' ? 'The microphone is blocked for speech here, so type below and I will answer out loud.'
         : 'Voice input is not available here, so type below and I will answer out loud.', null);
-    } else setPhase('idle', 'TYPE BELOW · END TO STOP');
+    } else setPhase('idle', 'Type below, or tap End to stop.');
   }
   function listen(opt) {
     const hold = !!(opt && opt.hold);
@@ -410,7 +407,7 @@ export function createVoiceMode(deps) {
       if (hold) { setPhase('idle', ''); paintStatus('I did not catch that. Hold the button and try again.'); return; }
       silent++;
       if (silent < SILENT_TURNS) setTimeout(() => { if (open && my === turn && phase === 'listening') listen(); }, 350);
-      else setPhase('idle', 'TAP THE CORE WHEN YOU NEED ME · END TO STOP');
+      else setPhase('idle', 'Tap the circle when you need me. End to stop.');
     };
     try {
       const r = rec = new SR();
@@ -435,7 +432,7 @@ export function createVoiceMode(deps) {
       r.onend = () => { if (my !== turn) return; rec = null; clearTimeout(recT); done(); };
       r.start();
       recT = setTimeout(() => { if (rec === r) safe(() => r.stop()); }, hold ? LISTEN_MAX_MS * 2 : LISTEN_MAX_MS);
-      setPhase('listening', hold ? 'LISTENING · LET GO TO SEND · END TO STOP' : 'LISTENING · TAP TO PAUSE · END TO STOP');
+      setPhase('listening', hold ? 'Listening. Let go to send.' : 'Listening. Tap to pause.');
     } catch (_) { rec = null; toTyping(''); }
   }
 
@@ -446,7 +443,7 @@ export function createVoiceMode(deps) {
     const my = ++turn;
     turns++;
     capYou(text); $('#vmJar').textContent = ''; clearFrags();
-    setPhase('thinking', 'THINKING · TAP TO CANCEL');
+    setPhase('thinking', 'Thinking. Tap to cancel.');
     let r = null;
     try { r = await Promise.resolve(d.answer ? d.answer(text) : null); } catch (_) { r = null; }
     if (!open || my !== turn) return;
@@ -516,15 +513,15 @@ export function createVoiceMode(deps) {
     capJar(words, motion ? 0 : words.length);
     s.frags = reply ? placeFrags(fragmentsOf(reply), text) : (clearFrags(), []);
     if (!motion) revealAll();
-    setPhase('speaking', 'SPEAKING · TAP TO INTERRUPT · END TO STOP');
+    setPhase('speaking', 'Speaking. Tap to cut in.');
     const finish = () => {
       if (s.done || my !== turn || !open) return;
       s.done = true; clearTimeout(s.watch); revealAll(); speech = null;
       if (typeof after === 'function') { after(); return; }
       if (reply && reply.open) { close('open'); call('openApp', reply); return; }
       if (SR && !said.blocked && !ptt) setTimeout(() => { if (open && my === turn) listen(); }, 300);
-      else if (SR && !said.blocked) setPhase('idle', 'HOLD THE BUTTON TO TALK · END TO STOP');
-      else setPhase('idle', 'TYPE BELOW · END TO STOP');
+      else if (SR && !said.blocked) setPhase('idle', 'Hold the button to talk.');
+      else setPhase('idle', 'Type below, or tap End to stop.');
     };
     const est = 900 + (words.length / (WPS * rate)) * 1000;
     if (!synth || call('muted') || !text) { s.watch = setTimeout(finish, Math.min(est, 9000)); return; }
@@ -539,7 +536,7 @@ export function createVoiceMode(deps) {
     if (!open) return;
     ensureMic(); unlockVoice();
     if (phase === 'speaking' || phase === 'thinking') { stopTalk(); ++turn; silent = 0; listen(); return; }
-    if (phase === 'listening') { if (holding) return; stopRec(); ++turn; setPhase('idle', 'PAUSED · TAP THE CORE TO TALK · END TO STOP'); return; }
+    if (phase === 'listening') { if (holding) return; stopRec(); ++turn; setPhase('idle', 'Paused. Tap the circle to talk.'); return; }
     silent = 0; listen();
   }
 

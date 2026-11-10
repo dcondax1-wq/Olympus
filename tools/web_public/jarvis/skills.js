@@ -17,7 +17,8 @@
 //   sk.mem · sk.actions                           the memory store and the action registry
 //   sk.route(raw)                                 the router's verdict, for tests
 
-import { route as routeText, norm, findApp, tokens, fuzzyEq } from './router.js';
+import { route as routeText, norm, findApp, tokens, fuzzyEq, helpTable } from './router.js';
+import * as KB from './kalshi-brain.js';
 import { createMemStore } from './memstore.js';
 import { createActions } from './actions.js';
 import { nudges as nudgeList } from './nudges.js';
@@ -202,6 +203,54 @@ export function createSkills(opts) {
       return reply((bad.length ? `${bad.length} of ${f.length} files need a look.` : 'All the published files look fresh.') + '\n' + f.map((x) => `${x.file}: ${age(x)}${x.stale ? ' (too old)' : ''}`).join('\n'), { intent: 'feeds', sources: f.map((x) => `${x.file}, ${age(x)}`), speak: bad.length ? `${bad.length} of ${f.length} files need a look.` : 'All the published files look fresh.' });
     },
   };
+
+  // ------------------------------------------------------------------------------------------------ Kalshi (kalshi-brain.js + the City's files)
+  // The live feed (sources.kalshi, the brain's facts) when it answers, else the engine's copy in kalshicity/edges.json. How the bot is doing,
+  // its risks and size come from kalshi-brain.js's own answer(); the rest is read from the same snapshot. Paper-style: suggestions only.
+  const kSnap = (S, now) => { const f = isObj(S.kalshi) ? S.kalshi : null, e = isObj(S.kalshiEdges) ? S.kalshiEdges : null; if (!f && !e) return null; const s2 = KB.snapshot(f, { edges: e, log: S.kalshiLog, learned: S.kalshiLearned }, now); return s2 && s2.ok ? s2 : null; };
+  const kNames = (S) => (isObj(S.kalshi) ? ['kalshi'] : []).concat(isObj(S.kalshiEdges) ? ['kalshiEdges'] : []);
+  const kR = (v, st) => { const u = st && st.stakeAvg; return u && num(v) != null ? ` (${rtxt(v / u, false)} of a ${usd(u)} average bet)` : ''; };
+  const kUsd = (v, sign) => KB.usd(v, sign) || '$0.00';
+  const kNote = (s2) => (s2.live ? '' : 'This is the engine\'s copy: the live feed is not answering.');
+  const kMissing = () => MISSING('the Kalshi numbers', 'kalshi.json and kalshicity/edges.json');
+  const kPositions = (S) => (isObj(S.kalshi) ? S.kalshi.positions : isObj(S.kalshiEdges) && isObj(S.kalshiEdges.book) ? S.kalshiEdges.book.positions : []) || [];
+  const kRecent = (S) => (isObj(S.kalshi) && Array.isArray(S.kalshi.trades) ? S.kalshi.trades : isObj(S.kalshiEdges) && isObj(S.kalshiEdges.book) ? S.kalshiEdges.book.recent : []) || [];
+  const kTime = (S, s2, now) => withSrc(S, kNames(S), now, [], { sources: kNames(S).map((n) => J.srcTag(S, n, now).text) });
+  A.kalshi_status = (S, now) => {
+    const sn = kSnap(S, now); if (!sn) return kMissing();
+    let r = null; try { r = KB.answer('how is kalshi doing', sn, now); } catch (_) { r = null; }
+    const lines = r && r.text ? [r.text] : [`Kalshi: ${sn.paused ? 'paused' : sn.running ? 'running' : 'status unknown'}, balance ${kUsd(sn.balance)}, today ${kUsd(sn.today, true)}${kR(sn.today, sn)}, this week ${kUsd(sn.week, true)}, all time ${kUsd(sn.total, true)}.`];
+    return withSrc(S, kNames(S), now, lines.concat([kNote(sn), sn.ledger && sn.ledger.n != null ? `Based on ${sn.ledger.n} settled bets in the engine's ledger.` : '']), { intent: 'kalshi_status', speak: r && r.speak });
+  };
+  A.kalshi_balance = (S, now) => {
+    const sn = kSnap(S, now); if (!sn || sn.balance == null) return kMissing();
+    return withSrc(S, kNames(S), now, [`Kalshi balance ${kUsd(sn.balance)}. Today ${kUsd(sn.today, true)}${kR(sn.today, sn)}, this week ${kUsd(sn.week, true)}, all time ${kUsd(sn.total, true)} (${sn.mode || 'live'} money).`, sn.balance < 40 ? 'That is under the $40 floor Jarvis watches.' : '', kNote(sn)], { intent: 'kalshi_balance' });
+  };
+  A.kalshi_positions = (S, now) => {
+    const sn = kSnap(S, now); if (!sn) return kMissing();
+    const pos = kPositions(S).filter(isObj);
+    if (!pos.length) return withSrc(S, kNames(S), now, ['No open Kalshi bets right now (n=0).', kNote(sn)], { intent: 'kalshi_positions' });
+    const sum = pos.reduce((a, p) => a + (num(p.pnl) || 0), 0);
+    return withSrc(S, kNames(S), now, [`${pos.length} open ${pos.length === 1 ? 'bet' : 'bets'}, ${kUsd(sum, true)} open P&L${kR(sum, sn)}:`].concat(pos.slice(0, 5).map((p) => `• ${str(p.title || p.ticker, 60)}: ${str(p.side, 4)} ${num(p.contracts) != null ? p.contracts + ' contracts' : ''}${num(p.avg_price) != null ? ' at ' + p.avg_price : ''}${num(p.pnl) != null ? ', ' + kUsd(p.pnl, true) : ''}`), pos.length > 5 ? `…and ${pos.length - 5} more.` : '', kNote(sn)), { intent: 'kalshi_positions' });
+  };
+  A.kalshi_today = (S, now) => {
+    const sn = kSnap(S, now); if (!sn || sn.today == null) return kMissing();
+    const day = J.etParts(now).day, rec = kRecent(S).filter((t) => isObj(t) && num(t.t) != null && J.etParts(num(t.t) * 1000).day === day && num(t.pnl) != null);
+    const wins = rec.filter((t) => t.pnl > 0).length, head = sn.today > 0.004 ? `Yes: up ${kUsd(sn.today)} today` : sn.today < -0.004 ? `No: down ${kUsd(Math.abs(sn.today))} today` : 'Flat today: $0.00';
+    return withSrc(S, kNames(S), now, [`${head}${kR(sn.today, sn)}${rec.length ? `, ${rec.length} settled ${rec.length === 1 ? 'bet' : 'bets'} (n=${rec.length}), ${wins} won` : ''}.`, sn.paused ? 'The bot is paused, so no new bets.' : '', kNote(sn)], { intent: 'kalshi_today' });
+  };
+  A.kalshi_losers = (S, now) => {
+    const E = isObj(S.kalshiEdges) ? S.kalshiEdges : null; if (!E || !Array.isArray(E.edges)) return kMissing();
+    const sn = kSnap(S, now), bad = E.edges.filter((e) => isObj(e) && e.size === 1 && num(e.pnl) != null && e.pnl < 0 && (num(e.n) || 0) >= 30).sort((a, b) => a.pnl - b.pnl).slice(0, 4);
+    if (!bad.length) return withSrc(S, ['kalshiEdges'], now, ['No bet kind with 30 or more bets is losing money in the engine\'s ledger.'], { intent: 'kalshi_losers' });
+    const stopIds = new Set((E.lists && E.lists.stop) || []);
+    return withSrc(S, ['kalshiEdges'], now, ['Bet kinds that lost money (30 or more bets, after fees):'].concat(bad.map((e) => `• ${str(e.label, 60)}: ${kUsd(e.pnl, true)}${kR(e.pnl, sn)} over n=${e.n} bets, ${num(e.w) != null ? Math.round(e.w * 1000) / 10 + '% won' : ''}${num(e.p) != null ? ' vs ' + Math.round(e.p * 1000) / 10 + '% needed to break even' : ''}${stopIds.has(e.id) ? ' (the engine says STOP)' : ''}`), 'A losing past is not proof it keeps losing; the engine only says STOP when the sample is big enough.'), { intent: 'kalshi_losers' });
+  };
+  A.kalshi_edge_research = (S) => {
+    const t = isObj(S.kalshiEdge) && typeof S.kalshiEdge.text === 'string' ? S.kalshiEdge : null;      // a published json of the Kalshi edge write-ups (none exists yet)
+    if (!t) return { text: 'I do not have that yet: the Kalshi edge research has no published file. I will not guess what it says.', speak: 'I do not have that yet.', intent: 'kalshi_edge_research', missing: true, sources: [] };
+    return { text: str(t.text, 600), speak: str(t.text, 300), intent: 'kalshi_edge_research', sources: ['kalshi edge research'] };
+  };
   function tradeLine(x, S) {
     const en = isObj(x.entry) ? x.entry : {};
     return `${x.day}: ${str(x.side, 6).toLowerCase() || 'trade'}${x.qty ? ' ' + x.qty + ' micros' : ''}${num(en.px) != null ? ' at ' + en.px : ''} (${str(x.strat || x.bot, 20)}), ${usd(x.usd, true)}${x.r != null ? ` (${rtxt(x.r)} on its own stop` + (x.risk ? `, risk ${usd(x.risk)}` : '') + ')' : ''}.`;
@@ -254,7 +303,11 @@ export function createSkills(opts) {
   }
 
   // ------------------------------------------------------------------------------------------------ the entry points
-  function helpReply() { return reply('I can answer from your own numbers and do things for you:\n' + EXAMPLES.map((x) => `• "${x}"`).join('\n') + '\nEvery number comes with its dollars, its R and where it came from. Anything that changes something asks you first.', { intent: 'skills_help', speak: 'I can answer from your numbers, open any app, set a goal in the Planner, and remember things for you. Ask for examples on screen.' }); }
+  function helpReply() {
+    const T = helpTable(), lines = ['Here is what I can do. Every number comes with its dollars, its R and where it came from; anything that changes something asks you first.'];
+    for (const g of T) { lines.push('', g.name); for (const it of g.items) lines.push(`• ${it.label}: ${it.examples.map((x) => '"' + x + '"').join(', ')}`); }
+    return reply(lines.join('\n'), { intent: 'skills_help', groups: T, speak: 'I can answer from your numbers, open any app, set a goal in the Planner, check Kalshi, and remember things for you. The full list is on screen.' });
+  }
   const AN = { weekday_worst: (S, n, a) => A.weekday(S, n, true, a.day), weekday_best: (S, n, a) => A.weekday(S, n, false, a.day) };
 
   async function answerIntent(r, raw, now) {
@@ -275,6 +328,7 @@ export function createSkills(opts) {
       case 'memory_list': return memList();
       case 'forget': return forget(a.topic);
       case 'help_skills': return helpReply();
+      case 'kalshi_edge_research': return A.kalshi_edge_research(await sources());
       case 'briefing': return null;               // the brain's own briefing
       default: break;
     }

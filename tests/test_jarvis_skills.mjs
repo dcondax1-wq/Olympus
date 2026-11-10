@@ -234,7 +234,7 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   const hits = [];
   const f = async (u) => { hits.push(u); return u.endsWith('home.json') ? { ok: true, json: async () => ({ accounts: [], t: 1 }) } : { ok: false }; };
   const S = await D.loadSources({ fetch: f, now: () => NOW });
-  check('loader: one GET per file, relative, no keys, a missing file is null', hits.length === 5 && hits.every((u) => /^\.\.\//.test(u)) && S.home && S.odeon === null && S.at.home === NOW);
+  check('loader: one GET per file, relative, no keys, a missing file is null', hits.length === 9 && hits.every((u) => /^\.\.\//.test(u)) && S.home && S.odeon === null && S.at.home === NOW);
   const bad = await D.loadSources({ fetch: async () => { throw new Error('offline'); } }); check('loader: offline never throws', bad.home === null);
   check('zones list matches the Atlas districts', (() => { const src = fs.readFileSync(path.join(WP, 'atlas/atlas.js'), 'utf8'); return Object.entries(K.ZONES).every(([id, ids]) => ids.every((i) => src.includes("'" + i + "'"))) && Object.keys(K.ZONES).every((id) => src.includes("id:'" + id + "'")); })());
   check('et time helper', D.etParts(NOW).h === 10 && D.etParts(NOW).day === '2026-11-10' && D.etParts(NOW).dow === 2);
@@ -283,6 +283,42 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   check('smart mode: the model call carries TOOL RESULTS with the exact numbers', sent.length >= 1 && /TOOL RESULTS/.test(sys) && /1,420/.test(sys), sys.slice(0, 200) + ' | ' + (r && r.text));
   check('smart mode: the key went only to groq', sent.length >= 1);
   delete g.location; delete g.fetch;
+}
+// ---------------------------------------------------------------------------------------------- 9. Kalshi, the help table, the deep links
+{
+  const E = rd('kalshicity/edges.json');
+  const feed = { t: NOW / 1000 - 120, status: 'Running', running: true, mode: 'live', balance: 55.81, today_pnl: 1.2, week_pnl: -3.3, total_pnl: -81.77,
+    positions: [{ title: 'BTC above 78,000 at 5pm', ticker: 'KXBTCD-X', side: 'no', contracts: 6, avg_price: 0.97, pnl: 0.11 }, { title: 'ETH hourly', side: 'yes', contracts: 3, avg_price: 0.95, pnl: -0.4 }],
+    trades: [{ t: NOW / 1000 - 3600, pnl: 0.11, title: 'x' }, { t: NOW / 1000 - 7200, pnl: -5.89, title: 'y' }, { t: NOW / 1000 - 90000, pnl: 0.5, title: 'old' }] };
+  const SK = mkS({ kalshi: feed, kalshiEdges: E, kalshiLog: rd('kalshicity/learning_log.json'), kalshiLearned: rd('kalshicity/learned.json'), at: { ...mkS().at, kalshi: NOW - 120000, kalshiEdges: NOW - 7200000 } });
+  const { sk } = mkSk(SK), say = (t) => sk.handle(t, null, { now: NOW });
+  const KPH = [['how is kalshi doing', 'kalshi_status'], ['is the kalshi bot running', 'kalshi_status'], ['kalshi status', 'kalshi_status'], ['what are my open bets', 'kalshi_positions'], ['what am I betting on', 'kalshi_positions'], ['did the kalshi bot win today', 'kalshi_today'], ['is kalshi up today', 'kalshi_today'], ['did the bot win today', 'kalshi_today'],
+    ['what is the kalshi balance', 'kalshi_balance'], ['kalshi bankroll', 'kalshi_balance'], ['which bet kinds lose money', 'kalshi_losers'], ['which strategies are losing', 'kalshi_losers'], ['what did Sibyl find about Kalshi edge', 'kalshi_edge_research'], ['what did sibyl find about the kalshi edge', 'kalshi_edge_research'], ['open kalshi', 'navigate'], ['show me kalshi city', 'navigate']];
+  for (const [t, want] of KPH) { const r = R.route(t, { apps }); check('route: ' + t, r && r.intent === want, r ? r.intent : 'null'); }
+  let r = await say('how is kalshi doing'); check('kalshi status: balance, source and engine count', /55\.81/.test(r.text) && /kalshi\.json, 2 min ago/.test(r.text) && /kalshicity\/edges\.json/.test(r.text), r.text);
+  r = await say('what is the kalshi balance'); check('kalshi balance with $ and R of an average bet', /\$55\.81/.test(r.text) && /\+\$1\.20/.test(r.text) && /average bet/.test(r.text) && /under the \$40 floor/.test(r.text) === false, r.text);
+  r = await say('what are my open bets'); check('open bets: n, $ each, total', /2 open bets/.test(r.text) && /BTC above 78,000/.test(r.text) && /-\$0\.29/.test(r.text), r.text);
+  r = await say('did the kalshi bot win today'); check('won today: up $, n settled today', /^Yes: up \$1\.20/.test(r.text) && /2 settled bets \(n=2\), 1 won/.test(r.text), r.text);
+  r = await say('which bet kinds lose money'); check('losers: 15-min favourites with $ and n and the STOP flag', /15-min favourites: -\$88\.77/.test(r.text) && /n=1131/.test(r.text) && /XRP/.test(r.text) && /kalshicity\/edges\.json/.test(r.text), r.text);
+  r = await say('what did Sibyl find about Kalshi edge'); check('kalshi edge research: not invented', r.missing === true && /^I do not have that yet/.test(r.text) && !/\$\d/.test(r.text), r.text);
+  const sk2 = mkSk(mkS({ kalshiEdge: { text: 'The edge is thin after fees.' } })).sk; r = await sk2.handle('what did Sibyl find about the Kalshi edge', null, { now: NOW });
+  check('kalshi edge research: answers only from a published file', /thin after fees/.test(r.text) && !r.missing);
+  const sk3 = mkSk(mkS({ kalshi: null, kalshiEdges: E })).sk; r = await sk3.handle('did the kalshi bot win today', null, { now: NOW });
+  check('without the live feed: the engine copy, and it says so', /engine's copy/.test(r.text) && /kalshicity\/edges\.json/.test(r.text), r.text);
+  const sk4 = mkSk({ at: {} }).sk; r = await sk4.handle('what are my open bets', null, { now: NOW });
+  check('no Kalshi data at all: I don\'t have that', r.missing === true && /^I don't have that/.test(r.text));
+  // help: generated from the router's own table
+  const T = R.helpTable(), ids = new Set(R.INTENTS.map((i) => i.id)), listed = new Set(T.flatMap((g) => g.items.map((i) => i.id)));
+  check('help lists every intent exactly once', [...ids].every((i) => listed.has(i)) && listed.size === ids.size, [...ids].filter((i) => !listed.has(i)).join(','));
+  check('every intent has 3 examples', T.every((g) => g.items.every((i) => i.examples.length === 3)), T.flatMap((g) => g.items).filter((i) => i.examples.length !== 3).map((i) => i.id).join(','));
+  const bad = [];
+  for (const g of T) for (const it of g.items) for (const e of it.examples) { const rt = R.route(e, { apps }); const want = it.id === 'briefing' ? null : it.id; if (it.id === 'briefing') { if (rt && rt.intent !== 'briefing') bad.push(e + '=>' + rt.intent); } else if (!rt || rt.intent !== want) bad.push(e + '=>' + (rt ? rt.intent : 'null')); }
+  check('every help example routes to its own intent (no drift)', bad.length === 0, bad.join(' | '));
+  r = await say('what can you do'); check('help reply groups intents with 3 examples each', /Risk and drawdown/.test(r.text) && /Kalshi/.test(r.text) && /• Drawdown left: "how much drawdown do I have left", "how can I|how much can I still lose"/.test(r.text) || (/Drawdown left/.test(r.text) && r.groups.length >= 8), r.text.slice(0, 200));
+  // deep links in the apps' own files
+  const atlas = fs.readFileSync(path.join(WP, 'atlas/atlas.js'), 'utf8'), lyc = fs.readFileSync(path.join(WP, 'lyceum/lyceum.js'), 'utf8');
+  check('atlas honours #zone= for the five districts', /zone=\(\[a-z\]\+\)/.test(atlas) && /zones\.some\(\(zn\) => zn\.id === m\[1\]\)/.test(atlas) && /hashchange/.test(atlas));
+  check('lyceum honours #quiz', /quizFromHash/.test(lyc) && /#\|\[&#\]\)quiz/.test(lyc));
 }
 console.log(`${passes} passed, ${fails} failed`);
 process.exit(fails ? 1 : 0);

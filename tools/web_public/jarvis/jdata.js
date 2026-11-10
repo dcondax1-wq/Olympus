@@ -17,6 +17,8 @@
 export const FILES = {
   home: '../home.json', money: '../money/index.json', odeon: '../odeon/trades.json', rules: '../ledger/rules.json', pythia: '../pythia/events.json',
 };
+// the Kalshi City engine's own published files (the live feed kalshi.json comes from the brain's facts: sources.kalshi)
+export const KFILES = { kalshiEdges: '../kalshicity/edges.json', kalshiLog: '../kalshicity/learning_log.json', kalshiLearned: '../kalshicity/learned.json', kalshiLedger: '../kalshicity/ledger.json' };
 export const STALE_H = { home: 36, odeon: 72, money: 6, pythia: 24 * 14, rules: 24 * 30 };
 const FETCH_MS = 8000;
 
@@ -55,7 +57,7 @@ export function fileTime(obj, fetchedAt) {
 }
 /** the source tag of an answer: "home.json, 6 min ago" */
 export function srcTag(S, name, now) {
-  const file = { home: 'home.json', money: 'money/index.json', odeon: 'odeon/trades.json', rules: 'ledger/rules.json', pythia: 'pythia/events.json' }[name] || name;
+  const file = { home: 'home.json', money: 'money/index.json', odeon: 'odeon/trades.json', rules: 'ledger/rules.json', pythia: 'pythia/events.json', kalshi: 'kalshi.json', kalshiEdges: 'kalshicity/edges.json', kalshiLog: 'kalshicity/learning_log.json', kalshiLedger: 'kalshicity/ledger.json' }[name] || name;
   const t = S && isObj(S[name]) ? fileTime(S[name], S.at && S.at[name]) : null;
   return { file, ms: t, text: `${file}, ${agoText(t, now)}` };
 }
@@ -79,6 +81,7 @@ export async function loadSources(opts) {
   const S = { home: null, money: null, odeon: null, rules: null, pythia: null, at: {} };
   if (!fetchFn) return S;
   const base = typeof o.base === 'string' ? o.base : '';
+  await Promise.all(Object.keys(KFILES).map(async (k) => { const j = await getJson(fetchFn, base + KFILES[k]); if (j) { S[k] = j; S.at[k] = now; } }));
   await Promise.all(Object.keys(FILES).map(async (k) => { const j = await getJson(fetchFn, base + FILES[k]); if (j) { S[k] = j; S.at[k] = now; } }));
   return S;
 }

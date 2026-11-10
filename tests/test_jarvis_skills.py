@@ -18,7 +18,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JV = os.path.join(ROOT, "tools", "web_public", "jarvis")
 RES: list = []
-NEW = ["router.js", "jdata.js", "skills.js", "actions.js", "memstore.js", "nudges.js"]
+NEW = ["router.js", "jdata.js", "skills.js", "actions.js", "memstore.js", "nudges.js"]  # (skills.js also imports kalshi-brain.js)
 
 
 def check(name, ok, info=""):
@@ -53,6 +53,9 @@ def main() -> int:
     check("brain.js: a skill's 'I don't have that' only replaces the generic fallback", "missedSkill" in brain)
     vm = read(os.path.join(JV, "voice-mode.js"))
     check("voice-mode.js: hold to talk, status line, iOS default, kept choice", all(x in vm for x in ["pttDown", "pttUp", "vmState", "PTT_KEY", "isIOS", "statusText", "pagehide"]))
+    check("voice-mode.js is AGORA: no neon fonts, glow, uppercase labels or purple", not re.search(r"Orbitron|Rajdhani|text-shadow|filter:drop-shadow|text-transform:uppercase|c084fc|a855f7|168,85,247|scanline|repeating-linear", vm))
+    check("voice-mode.js status words are sentence case", "'Listening. Let go to send.'" in vm and "STANDBY" not in vm and "'SYSTEM" not in vm)
+    check("atlas.js honours #zone= and lyceum.js honours #quiz", "zoneFromHash" in read(os.path.join(JV, "..", "atlas", "atlas.js")) and "quizFromHash" in read(os.path.join(JV, "..", "lyceum", "lyceum.js")))
     mem = read(os.path.join(JV, "memstore.js"))
     check("memory key is jarvis.* so Settings lists and exports it", "'jarvis.memory.v1'" in mem and "olympus-data" in mem)
     doc_p = os.path.join(ROOT, "docs", "JARVIS_API.md")

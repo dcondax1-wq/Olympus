@@ -530,9 +530,9 @@ export function createBrain(opts) {
       skillsWait = Promise.all([import('./skills.js'), import('./jdata.js'), import('./apps.js').catch(() => null)]).then(([sk, jd, ap]) => {
         let cache = null, at = 0;
         const getSources = async () => {
-          if (cache && Date.now() - at < 60000) return cache;
+          if (cache && Date.now() - at < 60000) return { ...cache, kalshi: isObj(lastFacts.kalshi) ? lastFacts.kalshi : null };
           const S = await jd.loadSources({ fetch: (...a) => fetch(...a), now: () => Date.now() });
-          cache = { ...S, ...jd.readLocal(store()) }; at = Date.now(); return cache;
+          cache = { ...S, ...jd.readLocal(store()) }; at = Date.now(); return { ...cache, kalshi: isObj(lastFacts.kalshi) ? lastFacts.kalshi : null };
         };
         const apps = () => { try { const l = (typeof globalThis !== 'undefined' && globalThis.OLYMPUS_APPS_LIST) || (ap && ap.BUILT_INS) || (lastFacts && lastFacts.apps) || []; return Array.isArray(l) ? l : []; } catch (_) { return []; } };
         skills = sk.createSkills({ getSources, apps, storage: store(), now: () => (nowFn ? nowFn() : Date.now()), assistant, env: isObj(o.skillsEnv) ? o.skillsEnv : {} });

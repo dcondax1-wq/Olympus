@@ -70,13 +70,20 @@ export const INTENTS = [
   { id: 'eval_progress', group: 'risk', g: [W('target|profit target|pass|passing|eval progress|how far|to go|progress|close to passing|payout'), W('eval|target|pass|far|much|progress|account|funded|go')], need: 2, not: W('weekday|day of the week|calendar|event'), prio: 2 },
   { id: 'pnl_today', group: 'money', g: [W('p and l|pnl|profit|money|made|make|earn|earned|up|down|pnl today|results|score|performance'), W('today|so far|todays|this morning|tonight|day')], need: 2, not: W('weekday|best|worst|month|week|deal|plan'), prio: 2 },
   { id: 'pnl_today', group: 'money', g: [W('how am i doing today|how did i do today|how is today|how was today|am i up today|am i down today|how am i doing|todays p and l|todays pnl|todays result')], prio: 2 },
-  { id: 'balance', group: 'money', g: [W('balance|balances|how much money|account value|equity|how much do i have|how much is in'), W('account|accounts|have|money|balance|zlarior|atlas|eval|funded|mffu')], need: 1, not: W('left|room|drawdown|target|weekday|stream|deal|weather|forecast|temperature'), prio: 1 },
+  { id: 'balance', group: 'money', g: [W('balance|balances|how much money|account value|equity|how much do i have|how much is in'), W('account|accounts|have|money|balance|zlarior|atlas|eval|funded|mffu')], need: 1, not: W('left|room|drawdown|target|weekday|stream|deal|weather|forecast|temperature|kalshi'), prio: 1 },
   { id: 'weekday_worst', group: 'stats', g: [W('worst|weakest|bad|losing|lose|losses|least profitable|poorest|terrible'), W('weekday|day of the week|day|days|monday|tuesday|wednesday|thursday|friday')], need: 2, not: W('hour|time of day|deal'), prio: 3 },
   { id: 'weekday_best', group: 'stats', g: [W('best|strongest|good|winning|win|most profitable|top|greatest|luckiest'), W('weekday|day of the week|day|days|monday|tuesday|wednesday|thursday|friday')], need: 2, not: W('hour|time of day|deal|next step|thing to do'), prio: 3 },
   { id: 'win_rate', group: 'stats', g: [W('win rate|winrate|win percentage|hit rate|percent of trades|how often do i win|how many do i win|profit factor|expectancy|average r|avg r|average trade'), W('trade|trades|win|rate|my|factor|expectancy|average|often')], need: 1, prio: 2 },
   { id: 'last_trade', group: 'stats', g: [W('last|latest|recent|previous|most recent'), W('trade|trades|entry|position|fill')], need: 2, not: W('explain|why|what happened|week|month'), prio: 2 },
   { id: 'explain_trade', group: 'stats', g: [W('explain|why|what happened|walk me through|break down|review|what went|analyze|analyse|how did that|how did this'), W('trade|this trade|that trade|last trade|the trade|loss|win|stop|entry|exit|it')], need: 2, not: W('rule|quiz|stop trading|drawdown'), prio: 3 },
   { id: 'trades_count', group: 'stats', g: [W('how many'), W('trades|trade|times|wins|losses|losers|winners')], need: 2, not: W('left|more|can i'), prio: 1 },
+  // --- Kalshi (the bot's feed and the Kalshi City engine's files)
+  { id: 'kalshi_status', group: 'kalshi', g: [W('kalshi')], need: 1, not: W('open|show me|go to|take me|launch|balance|bankroll|positions|bets|bet kinds|losing|lose money|edge|research|sibyl|win today|won today|alert|alerts|size|stake|how much should'), prio: 4, also: [W('how|doing|status|going|update|report|summary|running|paused|ok|okay|alive|working|is it|health')] },
+  { id: 'kalshi_positions', group: 'kalshi', g: [W('open bets|open bet|my bets|my positions|open positions|current bets|current positions|what am i betting|betting on|bets open|bets are open|what bets|which bets are open|holding')], not: W('sibyl|how much should|kinds|types|lose money|losing'), prio: 5 },
+  { id: 'kalshi_today', group: 'kalshi', g: [W('kalshi|bot|bots'), W('win|won|lose|lost|make money|made money|profit|green|red|up|down|did well|do well')], need: 2, not: W('weekday|nq|zlarior|atlas|blitz|eval|drawdown'), prio: 3, g3: [W('today|so far|tonight|this morning')] },
+  { id: 'kalshi_balance', group: 'kalshi', g: [W('kalshi'), W('balance|bankroll|cash|how much money|how much do i have|account value|equity')], need: 2, prio: 6 },
+  { id: 'kalshi_losers', group: 'kalshi', g: [W('bet kinds|kinds of bets|bet types|types of bets|strategies|which bets|which kind|what kind|which markets|which edges|which strategy|bets|bet kind'), W('lose|losing|loses|lost|lose money|losing money|worst|negative|bleeding|cost me')], need: 2, not: W('sibyl|open|how much should'), prio: 5 },
+  { id: 'kalshi_edge_research', group: 'kalshi', g: [W('sibyl|research|writeup|study|findings|found|find|learned'), W('kalshi edge|kalshi edges|edge research|kalshi research')], need: 2, prio: 8 },
   // --- calendar, rules, deals
   { id: 'next_event', group: 'calendar', g: [W('next|upcoming|when is|when does|when\'s|coming|calendar|any|what time is|what\'s on|whats on|big|today|this week|tomorrow'), W('cpi|fomc|nfp|jobs report|payroll|news|event|events|release|rate decision|fed|powell|ppi|gdp|pce|inflation|earnings|jobless claims|opex|expiry|holiday|risk calendar|red folder|high impact')], need: 2, prio: 3 },
   { id: 'can_trade_now', group: 'rules', g: [W('allowed|can i|may i|should i|ok to|okay to|is it ok|is it safe|safe to|permitted|green light|go or wait|go no go|am i good to|good to'), W('trade|trading|take a trade|enter|place|go long|go short|buy|sell|open a position|trade now')], need: 2, not: W('how many|why|explain|weekday|fee|journal'), prio: 4 },
@@ -256,7 +263,10 @@ export function route(text, ctx) {
     let hit = 0;
     for (const grp of groups) if (grp.some((w) => has(w, q, toks))) hit++;
     if (hit < need || hit === 0) continue;
-    if (need < groups.length && !groups[0].some((w) => has(w, q, toks))) continue;      // an optional second group never carries an intent alone
+    if (need < groups.length && !groups[0].some((w) => has(w, q, toks))) continue;
+    if (it.also && !it.also.every((grp) => grp.some((w) => has(w, q, toks)))) continue;       // extra required groups
+    if (it.g3 && !it.g3.every((grp) => grp.some((w) => has(w, q, toks)))) continue;
+    if (it.must && !it.must.some((w) => has(w, q, toks))) continue;      // an optional second group never carries an intent alone
     // a longer, more specific phrasing wins: the score is the share of content words the groups explain
     const score = hit / Math.max(1, groups.length) + (it.prio || 0) * 0.01 + Math.min(0.3, toks.length * 0.01) * 0.2;
     results.push({ intent: it.id, score, args: {}, order: i });
@@ -295,3 +305,63 @@ export function route(text, ctx) {
 }
 export const intentIds = () => Array.from(new Set(INTENTS.map((i) => i.id)));
 export default route;
+
+// ------------------------------------------------------------------------------------------------ what Jarvis can do (the help skill)
+// One label and three example phrases per intent. helpTable() groups them from INTENTS' own `group`, so the help can only list intents
+// that exist; the tests route every example back to its intent and fail when an intent has no entry (it can never drift).
+export const GROUP_NAMES = { risk: 'Risk and drawdown', money: 'Money', stats: 'My trades', calendar: 'Calendar', rules: 'Rules', plan: 'What to do', action: 'Do things', memory: 'Memory', kalshi: 'Kalshi', system: 'System', life: 'Journal', meta: 'Help' };
+export const GROUP_ORDER = ['risk', 'money', 'stats', 'calendar', 'rules', 'plan', 'kalshi', 'action', 'memory', 'system', 'life', 'meta'];
+export const INFO = {
+  drawdown_left: { label: 'Drawdown left', ex: ['how much drawdown do I have left', 'how much can I still lose', 'whats my max loss buffer'] },
+  daily_loss_left: { label: 'Daily loss left', ex: ['how much daily loss do I have left', 'whats my dll', 'how close am I to the daily limit'] },
+  eval_progress: { label: 'Eval progress', ex: ['how far am I from the target', 'how close am I to passing the eval', 'eval progress'] },
+  pnl_today: { label: 'Today\'s result', ex: ['how am I doing today', 'whats my pnl today', 'am I up today'] },
+  balance: { label: 'Balances', ex: ['whats my balance', 'how much money is in the accounts', 'show my account balance'] },
+  weekday_worst: { label: 'Worst weekday', ex: ['what is my worst weekday', 'which day of the week do I lose the most', 'my worst day'] },
+  weekday_best: { label: 'Best weekday', ex: ['what is my best weekday', 'which day of the week do I win the most', 'best day for me'] },
+  win_rate: { label: 'Win rate and profit factor', ex: ['whats my win rate', 'what is my profit factor', 'how often do I win'] },
+  last_trade: { label: 'Last trade', ex: ['whats my last trade', 'show my most recent trade', 'what was the latest trade'] },
+  explain_trade: { label: 'Explain a trade', ex: ['explain this trade', 'why did the last trade lose', 'walk me through that trade'] },
+  trades_count: { label: 'How many trades', ex: ['how many trades did I take', 'how many trades this week', 'how many trades have I had'] },
+  next_event: { label: 'Next news event', ex: ['when is the next CPI', 'when is the next FOMC', 'is there any news today'] },
+  can_trade_now: { label: 'Am I allowed to trade', ex: ['am I allowed to trade now', 'is the entry window open', 'can I trade right now'] },
+  rules_limit: { label: 'MFFU rules', ex: ['how many micros can I trade', 'when do I have to be flat', 'whats the inactivity rule'] },
+  deals: { label: 'Deals ending', ex: ['any deals ending soon', 'are there any discount codes', 'whats the best prop firm sale'] },
+  sibyl_pick: { label: 'Sibyl\'s pick', ex: ['what did Sibyl pick', 'sibyl picks today', 'what does sibyl recommend'] },
+  streams: { label: 'Money machines', ex: ['how are the money machines doing', 'how are my money streams', 'whats the mint status'] },
+  unrated: { label: 'Unrated trades', ex: ['how many unrated trades do I have', 'which trades are not rated', 'do I have journal backlog'] },
+  feeds: { label: 'Are the feeds fresh', ex: ['are my feeds stale', 'is the data fresh', 'is the data up to date'] },
+  next_action: { label: 'What to do next', ex: ['what should I do next', 'whats my next best action', 'what needs me now'] },
+  copy_briefing: { label: 'Copy the briefing', ex: ['copy the briefing', 'copy my morning brief', 'put the summary on the clipboard'] },
+  briefing: { label: 'The briefing', ex: ['brief me', 'catch me up', 'morning briefing'] },
+  navigate: { label: 'Open any app', ex: ['open kronos', 'take me to the planner', 'show me Athens'] },
+  atlas_district: { label: 'Open an Atlas district', ex: ['open the money district', 'show me the life district', 'go to the research zone'] },
+  quiz_start: { label: 'Start the quiz', ex: ['start the quiz', 'test me on my rules', 'lets do the daily quiz'] },
+  planner_goal: { label: 'Set a goal in the Planner', ex: ['set my goal for today to stay flat before 10', 'add a goal: no trades after 11', 'my goal for today is to follow the plan'] },
+  planner_task: { label: 'Add a Planner task', ex: ['add task review levels 09:30', 'add a task to call the broker', 'new task export the ledger'] },
+  planner_note: { label: 'Add a Planner note', ex: ['add a note that levels held', 'planner note: news at 8:30', 'write a note that I stayed flat'] },
+  compass_done: { label: 'Mark a Compass item done', ex: ['mark that done', 'mark the compass item as finished', 'tick off the top action'] },
+  export_data: { label: 'Export my data', ex: ['export my data', 'download a backup of my data', 'make a backup of everything'] },
+  import_data: { label: 'Import a backup', ex: ['import my data', 'restore my data from a file', 'upload a memory file'] },
+  remember: { label: 'Remember something', ex: ['remember that I trade best before 10', 'dont forget I prefer short answers', 'keep in mind my cutoff is 11'] },
+  recall: { label: 'What did I say', ex: ['what did I say about mornings', 'do you remember what I said about sizing', 'what do I prefer for answers'] },
+  memory_list: { label: 'Show my memories', ex: ['what do you remember', 'show my memories', 'list my memories'] },
+  forget: { label: 'Forget something', ex: ['forget that I trade best before 10', 'forget about sizing', 'delete that memory'] },
+  help_skills: { label: 'What I can do', ex: ['what can you do', 'what can I ask you', 'show me the commands'] },
+  kalshi_status: { label: 'How is Kalshi doing', ex: ['how is kalshi doing', 'is the kalshi bot running', 'kalshi status'] },
+  kalshi_positions: { label: 'Open Kalshi bets', ex: ['what are my open bets', 'what am I betting on', 'show my open positions'] },
+  kalshi_today: { label: 'Did the Kalshi bot win today', ex: ['did the kalshi bot win today', 'is kalshi up today', 'did kalshi make money today'] },
+  kalshi_balance: { label: 'Kalshi balance', ex: ['what is the kalshi balance', 'how much money is on kalshi', 'kalshi bankroll'] },
+  kalshi_losers: { label: 'Which bet kinds lose money', ex: ['which bet kinds lose money', 'which strategies are losing', 'what kind of bets lose'] },
+  kalshi_edge_research: { label: 'Kalshi edge research', ex: ['what did Sibyl find about the kalshi edge', 'what did the research find about kalshi edges', 'kalshi edge research findings'] },
+};
+/** [{ id, name, items: [{ id, label, examples: [3] }] }] in a fixed order, built from INTENTS (its groups) and INFO */
+export function helpTable() {
+  const seen = new Set(), by = {};
+  for (const it of INTENTS) {
+    if (seen.has(it.id)) continue; seen.add(it.id);
+    const info = INFO[it.id] || { label: it.id.replace(/_/g, ' '), ex: [] };
+    (by[it.group] || (by[it.group] = [])).push({ id: it.id, label: info.label, examples: info.ex.slice(0, 3) });
+  }
+  return GROUP_ORDER.filter((g) => by[g]).map((g) => ({ id: g, name: GROUP_NAMES[g] || g, items: by[g] }));
+}
