@@ -151,3 +151,7 @@ html[data-fx="low"] .candle.lit .flame, html[data-fx="off"] .candle.lit .flame {
 .heroc .ag-money { font-size: 44px; } .heroc .mbar { display: block; height: 8px; border-radius: 99px; background: #2b251d; overflow: hidden; margin: 4px 0; }
 .heroc .mbar i { display: block; height: 100%; background: linear-gradient(90deg, #9c6b3c, #c8a24a); }
 .heroc .heroline { margin: 6px 0 0 !important; font-size: 14px !important; color: #f3ece0 !important; }
+
+/* phone-fit 2026-11-10 (text contrast) */
+.dglyph { color: #f3ece0; }
+.dstat { color: #eadfce; }
