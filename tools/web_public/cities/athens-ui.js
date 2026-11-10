@@ -27,12 +27,15 @@ export class AthensUI {
       <header class="ath-top">
         <button class="ath-ic" data-a="close" aria-label="Back to Cities">${SVG.close}</button>
         <div class="ath-title"><h2>Athens</h2><small id="athSub">The Olympus metropolis</small></div>
+        <button class="ath-ic" data-a="photo" aria-label="Photo mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
         <button class="ath-ic" data-a="time" aria-label="Switch between day and dusk" aria-pressed="false">${SVG.moon}</button>
       </header>
       <button class="ath-mini" data-a="mini" aria-label="District map. Tap a spot to fly there."><canvas></canvas></button>
       <div class="ath-tourbar" hidden><span id="athTourName"></span><i><b id="athTourBar"></b></i><button data-a="stop">Stop</button></div>
       <section class="ath-today" hidden><button data-a="today" aria-expanded="true"><b>Athens today</b><i>hide</i></button><div></div></section>
       <section class="ath-first" hidden role="dialog" aria-label="First visit tour"></section>
+      <div class="ath-photobar" hidden><button class="ath-go" data-a="save">Save picture</button><button data-a="photodone">Done</button></div>
+      <section class="ath-int" hidden></section>
       <section class="ath-card" hidden aria-live="polite"></section>
       <section class="ath-sheet" hidden></section>
       <nav class="ath-dock" aria-label="Athens tools">
@@ -57,7 +60,7 @@ export class AthensUI {
     this.labels = scene.anchors.filter((a) => a.major).map((a) => { const e = el('span', 'ath-label', txt(a.name)); e.dataset.g = a.group; this.labelsEl.append(e); return { a, e }; });
     this.appLabels = Array.from({ length: 6 }, () => { const e = el('span', 'ath-label app'); e.style.display = 'none'; this.labelsEl.append(e); return { e }; });
     this.gestures();
-    this.root.querySelector('#athSub').textContent = `${scene.houseCount} houses · ${this.plan.apps.length} app temples · ${this.plan.landmarks.length} monuments`;
+    this.root.querySelector('#athSub').textContent = `${scene.houseCount} houses · ${this.plan.apps.length} temples`;
   }
 
   /** the owner's data arrived: banner of 3 lines, glowing temples, pillar, ships (the scene does the 3D part) */
@@ -99,6 +102,7 @@ export class AthensUI {
     c.addEventListener('pointermove', (e) => {
       const p = ptr.get(e.pointerId); if (!p) return; const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
       if (down) down.moved += Math.abs(dx) + Math.abs(dy);
+      if (S.interior) { S.interior.look(dx, dy); return; }
       if (ptr.size === 1) { if (down.moved > 4) stopTour(); S.orbit(dx, dy); }
       else if (ptr.size === 2 && pinch) {
         stopTour(); const [a, b] = [...ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
@@ -117,6 +121,7 @@ export class AthensUI {
   }
 
   tap(cx, cy) {
+    if (this.scene.interior || this.root.classList.contains('photo')) return;
     const r = this.canvas.getBoundingClientRect(), a = this.scene.pick(cx - r.left, cy - r.top, 44);
     this.closeSheet();
     if (a) { this.showCard(a); this.scene.select(a); window.OLYMPUS?.cue?.('tap'); } else { this.hideCard(); this.scene.select(null); }
@@ -128,7 +133,7 @@ export class AthensUI {
     this.card.innerHTML = `<button class="ath-x" data-a="cardx" aria-label="Close card">${SVG.close}</button>
       <span class="ath-pill" style="--c:${g.tint}">${txt(g.name)}${a.kind === 'app' ? ' · app' : a.kind === 'ship' ? ' · account ship' : a.kind === 'pillar' ? ' · today' : ' · monument'}</span>
       <h3>${txt(a.name)}</h3><p>${txt(a.blurb)}</p>${a.need ? `<p class="ath-need"><b>Needs you:</b> ${txt(a.need.title)}. ${txt(a.need.say)}</p>` : a.kind === 'app' && this.live ? '<p class="ath-calm">Calm: nothing to do here right now.</p>' : ''}
-      <div class="ath-btns">${app && app.id !== 'cities' ? `<a class="ath-go" href="${appHref(app.id)}">Open ${txt(app.name)}</a>` : ''}<button data-a="fly" data-id="${txt(a.id)}">Fly here</button></div>`;
+      <div class="ath-btns">${a.kind === 'app' ? `<button data-a="enter" data-id="${txt(a.id)}">Enter</button>` : ''}${app && app.id !== 'cities' ? `<a class="ath-go" href="${appHref(app.id)}">Open ${txt(app.name)}</a>` : ''}<button data-a="fly" data-id="${txt(a.id)}">Fly here</button></div>`;
     this.card.hidden = false; this.cur = a; this.root.classList.add('has-card');
   }
   hideCard() { this.card.hidden = true; this.cur = null; this.root.classList.remove('has-card'); }
@@ -190,6 +195,11 @@ export class AthensUI {
     if (a === 'mini') return this.miniTap(ev);
     if (a === 'time' || a === 'time2') { const modes = this.hooks.reduced ? ['day', 'dusk'] : ['auto', 'day', 'dusk']; this.light = modes[(modes.indexOf(this.light) + 1) % modes.length]; this.applyLight(); return; }
     if (a === 'today') { const t = this.root.querySelector('.ath-today'), min = !t.classList.contains('min'); t.classList.toggle('min', min); t.querySelector('button').setAttribute('aria-expanded', String(!min)); t.querySelector('i').textContent = min ? 'show' : 'hide'; this.todayTouched = true; return; }
+    if (a === 'photo') { this.root.classList.add('photo'); this.hideCard(); this.closeSheet(); this.root.querySelector('.ath-photobar').hidden = false; return; }
+    if (a === 'photodone') { this.root.classList.remove('photo'); this.root.querySelector('.ath-photobar').hidden = true; return; }
+    if (a === 'save') return this.savePicture();
+    if (a === 'enter') { const x = this.cur; if (x) this.enter(x); return; }
+    if (a === 'leave') return this.leave();
     if (a === 'firstnext') return this.firstStep(this.fstep + 1);
     if (a === 'firstskip') return this.firstDone();
     if (a === 'stop') { if (S) { S.stopTour(); } this.tourState(false); return; }
@@ -198,6 +208,27 @@ export class AthensUI {
     if (a === 'jumpto') { const x = this.items[+b.dataset.i]; this.closeSheet(); S.flyTo(x.x, x.z, { dist: x.major ? 150 : 95, lift: Math.min(20, x.y * .3) }); S.select(x); this.showCard(x); return; }
     if (a === 'tour') { const t = this.plan.tours[+b.dataset.i]; this.closeSheet(); this.hideCard(); S.select(null); S.startTour(t); this.tourState(true, t.name); return; }
   }
+  savePicture() {
+    const S = this.scene; if (!S) return this.toast('No picture: this device has no 3D view.');
+    try {
+      const c = S.snapshot(); c.toBlob((b) => {
+        if (!b) return this.toast('Could not make the picture.');
+        const url = URL.createObjectURL(b), a = document.createElement('a'); a.href = url; a.download = `olympus-athens-${new Date().toISOString().slice(0, 10)}.png`; document.body.append(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000); this.toast('Picture saved.'); this.saved = (this.saved || 0) + 1;
+      }, 'image/png');
+    } catch (e) { this.toast('Could not make the picture.'); }
+  }
+  /** a temple interior: 3D hall when the device can, a flat card in LITE */
+  enter(a) {
+    const S = this.scene, app = this.findApp(a.id), need = a.need, box = this.root.querySelector('.ath-int'), g = GROUPS.find((x) => x.key === a.group);
+    const ok = S ? S.enterInterior(a) : false;
+    box.className = 'ath-int' + (ok ? '' : ' flat'); box.style.setProperty('--c', a.colour || '#c8a24a');
+    box.innerHTML = `<span class="ath-pill" style="--c:${g ? g.tint : '#c8a24a'}">${txt(g ? g.name : '')} \u00b7 inside the temple</span><h3>${txt(a.name)}</h3><p>${txt(a.blurb)}</p>
+      ${need ? `<p class="ath-need"><b>Needs you:</b> ${txt(need.title)}. ${txt(need.say)}</p>` : '<p class="ath-calm">Calm: nothing to do here right now.</p>'}
+      <div class="ath-btns"><button data-a="leave">Back to the city</button>${app && app.id !== 'cities' ? `<a class="ath-go" href="${appHref(app.id)}">Open ${txt(app.name)}</a>` : ''}</div>`;
+    box.hidden = false; this.hideCard(); this.root.classList.add('inside'); if (ok) this.root.classList.add('hall');
+  }
+  leave() { const S = this.scene; S && S.leaveInterior(); this.root.querySelector('.ath-int').hidden = true; this.root.classList.remove('inside', 'hall'); }
   applyLight() {
     const L = this.light, S = this.scene; S && S.setMode(L); this.root.classList.toggle('dusk', L === 'dusk');
     const lab = { auto: 'Auto', day: 'Day', dusk: 'Dusk' }[L];
@@ -248,10 +279,12 @@ export class AthensUI {
     const S = this.scene; if (!S) return; this.tick++;
     if (this.tick % 3 === 0) { this.drawMini(); if (S.touring) this.root.querySelector('#athTourBar').style.width = Math.round(S.progress * 100) + '%'; }
     if (this.tick % 2) return;
+    this.avoid = [this.miniB, this.root.querySelector('.ath-today'), this.root.querySelector('.ath-tourbar')].filter((e) => e && !e.hidden).map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0);
     const cp = S.camera.position, placed = [];
     const put = (e, a, show) => {
       if (!show) { e.style.display = 'none'; return; } const p = S.project(a.x, a.y + 4, a.z);
       if (!p.vis || p.y < 110 || p.y > S.h - 90 || p.x < 64 || p.x > S.w - 64) { e.style.display = 'none'; return; }
+      for (const r of this.avoid) if (p.x > r.left - 60 && p.x < r.right + 60 && p.y > r.top - 14 && p.y < r.bottom + 30) { e.style.display = 'none'; return; }
       for (const q of placed) if (Math.abs(q.x - p.x) < 86 && Math.abs(q.y - p.y) < 18) { e.style.display = 'none'; return; }
       placed.push(p); e.style.display = ''; e.style.transform = `translate(${p.x.toFixed(0)}px,${p.y.toFixed(0)}px) translate(-50%,-100%)`;
     };
