@@ -10,11 +10,13 @@
     { id:'jarvis',name:'Jarvis',glyph:'J',colour:'#e5be83',group:'life',purpose:'Your assistant',path:'jarvis/' }
   ];
   const apps = rows.length ? rows : fallback;
+  // Five districts (2026-11-10, every app has one). Colours are the AGORA ones: gold, aegean, olive, terracotta, bronze.
   const zones = [
-    { id:'market', title:'Market & trading', note:'Read the tape, context, and live-facing dashboards.', ids:['zenith','oracle','ares','forum','chronos','cities','odeon','bridge'] },
-    { id:'research', title:'Strategies & research', note:'Explore ideas, signals, and your research trail.', ids:['datacity','observatory','tree','prometheus','pantheon','argus','nemesis','hephaestus','athena','journal'] },
-    { id:'risk', title:'Money & risk', note:'Review decisions, balances, and prediction markets.', ids:['fates','labyrinth','ledger','kalshi','kalshicity','tyche','hermes','plutus'] },
-    { id:'life', title:'Life & command', note:'Plan, reflect, and manage your workspace.', ids:['inbox','settings','planner','mind','arena','atlas'] }
+    { id:'market', title:'Market', colour:'#c8a24a', note:'Read the tape and the live-facing rooms.', ids:['zenith','oracle','ares','forum','chronos','cities','odeon','pantheon','delphi'] },
+    { id:'research', title:'Research', colour:'#4b7a99', note:'Ideas, tests, signals and the library of studies.', ids:['datacity','observatory','tree','prometheus','hephaestus','nemesis','clio','fates'] },
+    { id:'risk', title:'Money', colour:'#7f8a52', note:'Balances, payouts, risk and prediction markets.', ids:['ledger','hera','plutus','pnyx','demeter','labyrinth','kalshi','kalshicity','tyche','dionysus','hermes'] },
+    { id:'command', title:'Command', colour:'#c96a4a', note:'Today at home, alerts, links and settings.', ids:['hestia','inbox','argus','bridge','settings','atlas'] },
+    { id:'life', title:'Life', colour:'#9c6b3c', note:'Plan the day, learn, review the week.', ids:['planner','mind','arena','journal','athena','apollo'] }
   ];
   const zoneOf = (a) => zones.find((zone) => zone.ids.includes(a.id)) || zones.find((zone) => zone.id === (a.group === 'money' ? 'risk' : a.group === 'life' ? 'life' : 'market'));
   const key = 'olympus.atlas.v1';
@@ -82,11 +84,17 @@
       gate.addEventListener('click', () => recordRecent(a.id));
     }
   }
+  const words = (q) => q.split(/\s+/).filter(Boolean);
+  const matchesAll = (a, q) => {
+    if (!q) return true;
+    const hay = (a.name + ' ' + a.purpose + ' ' + a.id + ' ' + a.group + ' ' + zoneOf(a).title).toLocaleLowerCase();
+    return words(q).every((w) => hay.includes(w));
+  };
   function render() {
     renderSpotlight();
     const q = $('#query').value.toLocaleLowerCase().trim();
     const shown = apps.filter((a) => (filter === 'all' || (filter === 'favorites' ? saved.stars.includes(a.id) : zoneOf(a).id === filter)) &&
-      (!q || (a.name + ' ' + a.purpose + ' ' + a.group + ' ' + zoneOf(a).title).toLocaleLowerCase().includes(q)));
+      matchesAll(a, q));
     const host = $('#results'); host.replaceChildren();
     for (const zone of zones) {
       const zoneApps = shown.filter((a) => zoneOf(a).id === zone.id);
@@ -95,11 +103,12 @@
       const heading = document.createElement('div'); heading.className = 'zone-head';
       const title = document.createElement('h3'); title.textContent = zone.title;
       const note = document.createElement('p'); note.textContent = zone.note;
+      section.style.setProperty('--zc', zone.colour);
       const tally = document.createElement('span'); tally.textContent = zoneApps.length + ' destinations';
       heading.append(title,note,tally); section.append(heading);
       const grid = document.createElement('div'); grid.className = 'zone-grid'; section.append(grid);
       for (const a of zoneApps) {
-      const card = document.createElement('article'); card.className = 'card'; card.style.setProperty('--accent', /^#[0-9a-f]{6}$/i.test(a.colour) ? a.colour : '#e5be83');
+      const card = document.createElement('article'); card.className = 'card'; card.style.setProperty('--accent', /^#[0-9a-f]{6}$/i.test(a.colour) ? a.colour : '#e5be83'); card.style.setProperty('--zc', zone.colour); card.dataset.id = a.id;
       const sigil = document.createElement('span'); sigil.className = 'sigil'; sigil.textContent = a.glyph || a.name.charAt(0); sigil.setAttribute('aria-hidden','true');
       const body = document.createElement('div'); body.className = 'card-body';
       const group = document.createElement('small'); group.textContent = zone.title;
@@ -114,12 +123,22 @@
         const next = [...document.querySelectorAll('.star')].find((b) => b.dataset.id === a.id) || document.querySelector('[data-filter="favorites"]');
         if (next) next.focus({ preventScroll: true });
       });
+      let pt = 0, pressed = false;
+      go.addEventListener('pointerdown', () => { clearTimeout(pt); pt = setTimeout(() => { pressed = true; star.click(); }, 520); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => go.addEventListener(ev, () => clearTimeout(pt)));
+      go.addEventListener('click', (e) => { if (pressed) { pressed = false; e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+      go.addEventListener('contextmenu', (e) => e.preventDefault());
       card.append(sigil,body,go,star); grid.append(card);
       }
       host.append(section);
     }
     const resultLabel = shown.length + (shown.length === 1 ? ' destination' : ' destinations');
     $('#count').textContent = rows.length ? resultLabel : resultLabel + ' · limited map (catalog unavailable)'; $('#empty').hidden = shown.length > 0;
+    const pinned = $('#pinned'); pinned.replaceChildren(); pinned.hidden = !saved.stars.length || !!q || filter !== 'all';
+    if (!pinned.hidden) {
+      const pl = document.createElement('span'); pl.textContent = '\u2605 Pinned  '; pinned.append(pl);
+      for (const id of saved.stars) { const a = apps.find((x) => x.id === id); if (!a) continue; const el = document.createElement('a'); el.href = link(a); el.textContent = a.name; el.addEventListener('click', () => recordRecent(a.id)); pinned.append(el); }
+    }
     const recent = $('#recent'); recent.replaceChildren(); recent.hidden = !saved.recent.length || !!q || filter !== 'all';
     if (!recent.hidden) {
       const label = document.createElement('span'); label.textContent = 'Recent  '; recent.append(label);
@@ -129,6 +148,57 @@
   $('#query').addEventListener('input',render);
   document.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => { filter = b.dataset.filter; document.querySelectorAll('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); render(); }));
   document.addEventListener('keydown', (e) => { if (e.key === '/' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) { e.preventDefault(); $('#query').focus(); } else if (e.key === 'Escape' && document.activeElement === $('#query')) { $('#query').value = ''; render(); $('#query').blur(); } });
+  const mapBtn = $('#mapBtn');
+  mapBtn.addEventListener('click', () => {
+    const on = mapBtn.getAttribute('aria-pressed') !== 'true';
+    mapBtn.setAttribute('aria-pressed', String(on));
+    mapBtn.textContent = on ? 'Back to the full list' : 'All apps on one screen';
+    document.body.classList.toggle('mapview', on);
+    if (on) { filter = 'all'; document.querySelectorAll('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.filter === 'all'))); render(); $('#deckTitle').scrollIntoView({ block: 'start' }); }
+  });
+
+  // "What needs me now": every live room's status card (jarvis.json) plus the accounts in home.json, when they are published.
+  // Read-only; a room that does not answer in 5 s is skipped, and the strip always says something.
+  function getJson(u) {
+    return new Promise((res) => {
+      let done = false; const fin = (v) => { if (!done) { done = true; res(v); } };
+      setTimeout(() => fin(null), 5000);
+      try { fetch(u, { cache: 'no-cache', credentials: 'omit' }).then((r) => (r.ok ? r.json() : null)).then(fin, () => fin(null)); } catch (_) { fin(null); }
+    });
+  }
+  async function loadNeeds() {
+    const list = apps.filter((a) => a.live && a.path), found = [];
+    let asked = 0, answered = 0, i = 0;
+    const worker = async () => {
+      while (i < list.length) {
+        const a = list[i++]; asked++;
+        const c = await getJson('../' + a.path + 'jarvis.json');
+        if (!c) continue;
+        answered++;
+        const lv = c.status && c.status.level, age = c.t ? Date.now() / 1000 - +c.t : 0;
+        if ((lv === 'warn' || lv === 'bad') && !(age > c.stale_after && c.stale_after)) found.push({ a, lv, text: String((c.status && c.status.label) || (lv === 'bad' ? 'A problem' : 'Needs a look')).slice(0, 60) });
+      }
+    };
+    const home = getJson('../home.json');
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    const h = await home;
+    if (h && Array.isArray(h.accounts)) {
+      for (const acc of h.accounts) {
+        const ev = acc && (acc.eval || acc.funded_eval), room = ev && +ev.room, mll = ev && +ev.mll;
+        if (room >= 0 && mll > 0 && room / mll < 0.5) found.push({ a: apps.find((x) => x.id === 'demeter') || apps[0], lv: room / mll < 0.25 ? 'bad' : 'warn', text: String(acc.name || acc.label || 'An account') + ': drawdown left $' + Math.round(room) + ' of $' + Math.round(mll) + ' max loss' });
+      }
+    }
+    found.sort((x, y) => (x.lv === 'bad' ? 0 : 1) - (y.lv === 'bad' ? 0 : 1));
+    const host = $('#needsList'); host.replaceChildren();
+    $('#needsText').textContent = !answered && !h ? 'No live status yet. Open a room to see it.' : found.length ? found.length + (found.length === 1 ? ' room needs a look.' : ' rooms need a look.') : 'Nothing needs you right now.';
+    $('#needs').dataset.level = found.some((f) => f.lv === 'bad') ? 'bad' : found.length ? 'warn' : 'ok';
+    for (const f of found.slice(0, 6)) {
+      const el = document.createElement('a'); el.href = link(f.a); el.className = 'need ' + f.lv;
+      const n = document.createElement('strong'); n.textContent = f.a.name; const t = document.createElement('small'); t.textContent = f.text;
+      el.append(n, t); el.addEventListener('click', () => recordRecent(f.a.id)); host.append(el);
+    }
+  }
+  loadNeeds().catch(() => { $('#needsText').textContent = 'Status is not available right now.'; });
   render();
   // Back/forward cache restores the old DOM without rerunning this script.
   window.addEventListener('pageshow', (event) => {

@@ -18,13 +18,13 @@
   if (window.OLYMPUS_LAUNCHER) return;
   var d = document, root = d.documentElement;
   var PUBLIC = (function () { var o = get('oly.public'); if (o && /^https:\/\/[^ ]+\/$/.test(o)) return o; return 'https://demetrades2000-coder.github.io/nq-dashboard/'; })();   // the PC dashboard has no apps of its own: a site address saved as localStorage 'oly.public' overrides the default
-  var RECENT_KEY = 'oly.launcher.recent', STATUS_KEY = 'oly.launcher.status', RECENT_MAX = 4, STATUS_TTL = 5 * 60 * 1000, STALE_S = 30 * 60, FETCH_MS = 5000, PARALLEL = 4;
+  var RECENT_KEY = 'oly.launcher.recent', STATUS_KEY = 'oly.launcher.status', RECENT_MAX = 4, FAV_KEY = 'oly.launcher.fav', FAV_MAX = 12, PRESS_MS = 520, STATUS_TTL = 5 * 60 * 1000, STALE_S = 30 * 60, FETCH_MS = 5000, PARALLEL = 4;
   var GROUPS = [['trading', 'Trading'], ['life', 'Life'], ['money', 'Money']];
   // Every app keeps its registry glyph and receives a small visual signature. These names are presentation only:
   // routes, status, order and the generated app list remain the existing sources of truth.
   var GLYPH_MOTION = { oracle:'scan', odeon:'curtain', fates:'thread', datacity:'rise', tree:'leaf', prometheus:'flame', pantheon:'lightning', ares:'shield', forum:'banner', labyrinth:'maze', argus:'blink', nemesis:'scale', chronos:'tick', hephaestus:'forge', cities:'flight', kalshicity:'flow', journal:'ripple', ledger:'vault', inbox:'letter', settings:'control', bridge:'portal', planner:'calendar', mind:'neuron', arena:'laurel', athena:'owl', kalshi:'market', tyche:'coin', hermes:'wing', plutus:'treasure', atlas:'cartography', observatory:'lens' };
   var isPC = false, base = '';                                  // decided at mount (the PC dashboard's own top bar is there, or port 8766)
-  var st = { open: false, q: '', apps: [], tiles: {}, status: {}, fetching: false, lastFetch: 0, built: false };
+  var st = { open: false, q: '', apps: [], tiles: {}, status: {}, fetching: false, lastFetch: 0, built: false, map: false };
   var els = {}, lastFocus = null;
 
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -62,6 +62,10 @@
   function recent() { var r = json(RECENT_KEY, []); return Array.isArray(r) ? r.filter(function (x) { return typeof x === 'string'; }).slice(0, RECENT_MAX) : []; }
   function touch(id) { var r = recent().filter(function (x) { return x !== id; }); r.unshift(id); set(RECENT_KEY, JSON.stringify(r.slice(0, RECENT_MAX))); }
 
+  // favourites: long-press a tile (or press F on it) to star it; the stars sit on top of the sheet
+  function favs() { var r = json(FAV_KEY, []); return Array.isArray(r) ? r.filter(function (x) { return typeof x === 'string'; }).slice(0, FAV_MAX) : []; }
+  function toggleFav(id) { var f = favs(), i = f.indexOf(id); if (i >= 0) f.splice(i, 1); else f.push(id); set(FAV_KEY, JSON.stringify(f.slice(0, FAV_MAX))); try { if (navigator.vibrate) navigator.vibrate(10); } catch (e) { /* none on iPhone */ } render(); }
+
   // ---------------------------------------------------------------- status dots
   var WORDS = { ok: 'Running well', warn: 'Needs a look', bad: 'A problem', stale: 'Not updated for a while', off: 'Resting', none: 'No status card' };
   function level(card) {
@@ -71,12 +75,14 @@
     return lv;
   }
   function paintDot(id) {
-    var tile = st.tiles[id]; if (!tile) return;
-    var s = st.status[id], lv = s ? s.lv : 'none', dot = tile.querySelector('.oly-dot');
-    dot.className = 'oly-dot ' + lv;
-    var label = s && s.label ? WORDS[lv] + ': ' + s.label : WORDS[lv];
-    dot.title = label; dot.setAttribute('aria-label', label);
-    tile.setAttribute('data-status', lv);
+    if (!els.body) return;
+    var s = st.status[id], lv = s ? s.lv : 'none', label = s && s.label ? WORDS[lv] + ': ' + s.label : WORDS[lv];
+    [].forEach.call(els.body.querySelectorAll('.oly-tile[data-app="' + id + '"]'), function (tile) {
+      var dot = tile.querySelector('.oly-dot');
+      dot.className = 'oly-dot ' + lv;
+      dot.title = label; dot.setAttribute('aria-label', label);
+      tile.setAttribute('data-status', lv);
+    });
   }
   function fetchJson(u) {
     return new Promise(function (res) {
@@ -113,63 +119,48 @@
 
   // ---------------------------------------------------------------- the sheet
   var CSS = [
-    '.oly-lbtn{display:inline-grid;grid-auto-flow:column;align-items:center;justify-content:center;gap:7px;min-width:40px;height:40px;padding:0 11px;border-radius:12px;cursor:pointer;color:var(--ink-2,#a9b1c3);',
-    'background:rgba(22,26,35,.7);border:1px solid var(--line,rgba(160,170,220,.14));font:700 12px/1 var(--font,Inter,system-ui,sans-serif);letter-spacing:.08em;transition:color .18s,border-color .18s,box-shadow .18s}',
-    '.oly-lbtn:hover,.oly-lbtn:focus-visible{color:var(--ink,#eef1f8);border-color:rgba(168,85,247,.6);box-shadow:0 0 16px rgba(168,85,247,.3)}',
+    '.oly-lbtn{display:inline-grid;grid-auto-flow:column;align-items:center;justify-content:center;gap:7px;min-width:40px;height:40px;padding:0 11px;border-radius:12px;cursor:pointer;color:var(--ink-2,#cfc4b2);',
+    'background:#1d1914;border:1px solid #3a3228;font:700 12px/1 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:.04em;transition:color .2s,border-color .2s}',
+    '.oly-lbtn:hover,.oly-lbtn:focus-visible{color:#f3ece0;border-color:#c8a24a}',
     '.oly-lbtn svg{width:18px;height:18px;display:block}.oly-lbtn .t{display:none}@media(min-width:900px){.oly-lbtn .t{display:inline}}',
-    '.oly-lbtn.float{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));z-index:8000;background:rgba(10,12,22,.82)}',
-    '.oly-l{position:fixed;left:0;top:0;right:0;bottom:0;z-index:9000;display:flex;align-items:flex-end;justify-content:center;font-family:var(--font,Inter,system-ui,sans-serif)}',
-    '.oly-l[hidden]{display:none}.oly-l .oly-bd{position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(3,4,10,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}',
-    '.oly-l .oly-pn{position:relative;isolation:isolate;width:100%;max-width:640px;max-height:90vh;max-height:90dvh;display:flex;flex-direction:column;border-radius:22px 22px 0 0;overflow:hidden;color:#eef1f8;',
-    'background:linear-gradient(165deg,rgba(26,18,52,.94),rgba(9,11,22,.96) 55%);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgba(168,85,247,.38);border-bottom:0;',
-    'box-shadow:0 -18px 60px rgba(0,0,0,.55),0 0 50px rgba(168,85,247,.18),inset 0 1px 0 rgba(255,255,255,.08)}',
-    '.oly-l .oly-pn::before,.oly-l .oly-pn::after{content:"";position:absolute;inset:-12%;z-index:-1;pointer-events:none;background-repeat:repeat}',
-    '.oly-l .oly-pn::before{opacity:.62;background-image:radial-gradient(circle,#fff 0 1px,transparent 1.4px),radial-gradient(circle,#a98cff 0 1.2px,transparent 1.7px),radial-gradient(circle,#6be7ff 0 .8px,transparent 1.3px);background-size:83px 79px,131px 127px,57px 61px;background-position:11px 17px,42px 9px,3px 33px;filter:drop-shadow(0 0 4px rgba(184,160,255,.7))}',
-    '.oly-l .oly-pn::after{inset:0;opacity:.7;background:radial-gradient(ellipse at 18% 24%,rgba(91,51,190,.25),transparent 28%),radial-gradient(ellipse at 82% 46%,rgba(34,190,230,.16),transparent 32%),linear-gradient(140deg,transparent 20%,rgba(169,128,255,.07) 48%,transparent 72%)}',
-    '.oly-l:not(.calm) .oly-pn::before{animation:olyStars 18s linear infinite}.oly-l:not(.calm) .oly-pn::after{animation:olyNebula 9s ease-in-out infinite alternate}@keyframes olyStars{to{transform:translate3d(-34px,28px,0)}}@keyframes olyNebula{to{opacity:.9;transform:scale(1.05) translate3d(1.5%,-1%,0)}}',
-    '.oly-l .oly-hd,.oly-l .oly-sc{position:relative;z-index:1}',
-    '.oly-l.pc{align-items:center}.oly-l.pc .oly-pn{border-radius:22px;border-bottom:1px solid rgba(168,85,247,.38);max-height:84vh;max-width:760px}',
-    '.oly-l:not(.calm) .oly-pn{animation:olyUp .34s cubic-bezier(.2,.8,.2,1)}.oly-l:not(.calm) .oly-bd{animation:olyFade .25s ease}',
-    '@keyframes olyUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}@keyframes olyFade{from{opacity:0}to{opacity:1}}',
-    '.oly-l .oly-hd{display:flex;align-items:center;gap:10px;padding:14px 16px 8px;padding-top:calc(14px)}.oly-l .oly-hd h2{flex:1;margin:0;font:800 15px/1 var(--display,Oxanium,Inter,sans-serif);letter-spacing:.3em;color:#c9a8ff;text-shadow:0 0 18px rgba(168,85,247,.55)}',
-    '.oly-l .oly-x{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#eef1f8;font-size:22px;line-height:1;cursor:pointer}',
+    '.oly-lbtn.float{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));z-index:8000;background:#1d1914}',
+    '.oly-l{position:fixed;left:0;top:0;right:0;bottom:0;z-index:9000;display:flex;align-items:flex-end;justify-content:center;font-family:-apple-system,"SF Pro Text",system-ui,sans-serif}',
+    '.oly-l[hidden]{display:none}.oly-l .oly-bd{position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(20,17,14,.72)}',
+    '.oly-l .oly-pn{position:relative;width:100%;max-width:640px;max-height:92vh;max-height:92dvh;display:flex;flex-direction:column;border-radius:16px 16px 0 0;overflow:hidden;color:#f3ece0;',
+    'background:#1d1914;border:1px solid #3a3228;border-bottom:0;box-shadow:0 6px 18px rgba(0,0,0,.35)}',
+    '.oly-l.pc{align-items:center}.oly-l.pc .oly-pn{border-radius:16px;border-bottom:1px solid #3a3228;max-height:84vh;max-width:760px}',
+    '.oly-l:not(.calm) .oly-pn{animation:olyUp .3s ease-out}.oly-l:not(.calm) .oly-bd{animation:olyFade .25s ease}',
+    '@keyframes olyUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}@keyframes olyFade{from{opacity:0}to{opacity:1}}',
+    '.oly-l .oly-hd{display:flex;align-items:center;gap:10px;padding:14px 16px 8px}.oly-l .oly-hd h2{flex:1;margin:0;font:700 20px/1.1 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:.02em;color:#e0c27a;border-bottom:1px solid #c8a24a;padding-bottom:6px}',
+    '.oly-l .oly-x{width:44px;height:44px;border-radius:50%;border:1px solid #3a3228;background:#26211b;color:#f3ece0;font-size:22px;line-height:1;cursor:pointer}',
     '.oly-l .oly-sc{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:4px 14px calc(18px + env(safe-area-inset-bottom,0px))}',
-    '.oly-l .oly-jv{position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:12px 16px;border-radius:18px;text-decoration:none;color:#fff;overflow:hidden;isolation:isolate;',
-    'background:linear-gradient(120deg,rgba(124,58,237,.55),rgba(56,189,248,.28));border:1px solid rgba(190,150,255,.55);box-shadow:0 0 30px rgba(168,85,247,.35)}',
-    '.oly-l .oly-jv::before{content:"";position:absolute;left:-40%;top:-120%;width:80%;height:340%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);transform:rotate(18deg);z-index:-1}',
-    '.oly-l:not(.calm) .oly-jv::before{animation:olySweep 4.5s ease-in-out infinite}@keyframes olySweep{0%,60%{left:-60%}100%{left:130%}}',
-    '.oly-l .oly-jv .oly-o{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);font:800 20px/1 var(--display,Oxanium,sans-serif);box-shadow:0 0 18px rgba(255,255,255,.35),inset 0 0 12px rgba(255,255,255,.18)}',
-    '.oly-l .oly-jv b{display:block;font:700 16px/1.2 var(--font,Inter,sans-serif)}.oly-l .oly-jv small{display:block;margin-top:2px;font-size:12px;color:rgba(255,255,255,.78)}.oly-l .oly-jv .oly-go{margin-left:auto;font-size:22px;opacity:.85}',
-    '.oly-l .oly-sr{position:relative;margin:12px 0 4px}.oly-l .oly-sr input{width:100%;height:46px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.32);color:#eef1f8;padding:0 14px;font:500 16px var(--font,Inter,sans-serif);outline:0}',
-    '.oly-l .oly-sr input:focus{border-color:rgba(168,85,247,.8);box-shadow:0 0 0 3px rgba(168,85,247,.22)}',
-    '.oly-l h3{margin:16px 2px 8px;font:700 11px/1 var(--font,Inter,sans-serif);letter-spacing:.2em;text-transform:uppercase;color:#9aa3bd}',
+    '.oly-l .oly-jv{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:12px 16px;border-radius:16px;text-decoration:none;color:#f3ece0;background:#26211b;border:1px solid #c8a24a}',
+    '.oly-l .oly-jv .oly-o{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;border:1.5px solid #c8a24a;color:#e0c27a;font:700 20px/1 "Iowan Old Style",Palatino,Georgia,serif}',
+    '.oly-l .oly-jv b{display:block;font:700 17px/1.2 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}.oly-l .oly-jv small{display:block;margin-top:2px;font-size:13px;color:#cfc4b2}.oly-l .oly-jv .oly-go{margin-left:auto;font-size:24px;color:#e0c27a}',
+    '.oly-l .oly-sr{position:relative;display:flex;gap:8px;margin:12px 0 4px}.oly-l .oly-sr input{flex:1;min-width:0;height:46px;border-radius:12px;border:1px solid #3a3228;background:#14110e;color:#f3ece0;padding:0 14px;font:500 16px -apple-system,system-ui,sans-serif}',
+    '.oly-l .oly-sr input:focus{border-color:#c8a24a;outline:0}.oly-l .oly-sr input::placeholder{color:#9a8f7d}',
+    '.oly-l .oly-mb{flex:none;min-width:64px;min-height:46px;padding:0 14px;border-radius:12px;border:1px solid #9c6b3c;background:#26211b;color:#e0c27a;font:700 13px "Iowan Old Style",Palatino,Georgia,serif;cursor:pointer}',
+    '.oly-l .oly-mb[aria-pressed="true"]{background:#c8a24a;color:#14110e}',
+    '.oly-l h3{margin:16px 2px 8px;font:700 15px/1.1 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:.02em;color:var(--gc,#e0c27a);border-bottom:1px solid var(--gc,#c8a24a);padding-bottom:5px}',
+    '.oly-l [data-group=trading]{--gc:#c8a24a}.oly-l [data-group=life]{--gc:#4b7a99}.oly-l [data-group=money]{--gc:#7f8a52}.oly-l .oly-fav{--gc:#e0b060}',
     '.oly-l .oly-rc{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}.oly-l .oly-rc::-webkit-scrollbar{display:none}',
-    '.oly-l .oly-chip{flex:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px 0 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#eef1f8;text-decoration:none;font:600 13px var(--font,Inter,sans-serif)}',
-    '.oly-l .oly-chip i,.oly-l .oly-tile .oly-g{display:grid;place-items:center;font-style:normal;border-radius:50%;color:var(--c);background:rgba(var(--cr),.14);border:1.5px solid var(--c);box-shadow:0 0 12px rgba(var(--cr),.4)}',
-    '.oly-l .oly-chip i{width:28px;height:28px;font:700 14px/1 var(--display,Oxanium,sans-serif)}',
+    '.oly-l .oly-chip{flex:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px 0 8px;border-radius:999px;border:1px solid #3a3228;background:#26211b;color:#f3ece0;text-decoration:none;font:600 14px -apple-system,system-ui,sans-serif}',
+    '.oly-l .oly-chip i,.oly-l .oly-tile .oly-g{display:grid;place-items:center;font-style:normal;border-radius:50%;color:var(--c);background:rgba(var(--cr),.12);border:1.5px solid var(--c)}',
+    '.oly-l .oly-chip i{width:28px;height:28px;font:700 14px/1 "Iowan Old Style",Palatino,Georgia,serif}',
     '.oly-l .oly-gr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.oly-l.pc .oly-gr{grid-template-columns:repeat(3,minmax(0,1fr))}',
-    '.oly-l .oly-tile{position:relative;display:flex;align-items:center;gap:11px;min-height:64px;padding:10px 12px;border-radius:16px;text-decoration:none;color:#eef1f8;min-width:0;',
-    'background:linear-gradient(160deg,rgba(var(--cr),.13),rgba(255,255,255,.035));border:1px solid rgba(var(--cr),.34);transition:transform .16s,box-shadow .2s,border-color .2s}',
-    '.oly-l .oly-tile:hover,.oly-l .oly-tile:focus-visible{border-color:var(--c);box-shadow:0 0 22px rgba(var(--cr),.35);transform:translateY(-1px);outline:0}.oly-l .oly-tile:active{transform:scale(.98)}',
-    '.oly-l:not(.calm) .oly-tile{animation:olyUp .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*18ms)}',
-    '.oly-l .oly-tile .oly-g{position:relative;flex:none;width:40px;height:40px;font:700 18px/1 var(--display,Oxanium,sans-serif);transform-origin:50% 50%;will-change:transform,filter}',
-    '.oly-l .oly-tile .oly-g::after,.oly-l .oly-chip i::after{content:"";position:absolute;inset:-5px;border:1px solid rgba(var(--cr),.28);border-radius:inherit;opacity:.55}',
-    '.oly-l:not(.calm) [data-motion="scan"] .oly-g,.oly-l:not(.calm) [data-motion="blink"] .oly-g,.oly-l:not(.calm) [data-motion="owl"] .oly-g,.oly-l:not(.calm) [data-motion="lens"] .oly-g{animation:olyGlyphScan 2.8s ease-in-out infinite var(--phase)}',
-    '.oly-l:not(.calm) [data-motion="curtain"] .oly-g,.oly-l:not(.calm) [data-motion="banner"] .oly-g,.oly-l:not(.calm) [data-motion="wing"] .oly-g{animation:olyGlyphSway 3.4s ease-in-out infinite alternate var(--phase)}',
-    '.oly-l:not(.calm) [data-motion="thread"] .oly-g,.oly-l:not(.calm) [data-motion="flow"] .oly-g,.oly-l:not(.calm) [data-motion="ripple"] .oly-g,.oly-l:not(.calm) [data-motion="neuron"] .oly-g{animation:olyGlyphPulse 2.7s ease-in-out infinite var(--phase)}',
-    '.oly-l:not(.calm) [data-motion="rise"] .oly-g,.oly-l:not(.calm) [data-motion="flame"] .oly-g,.oly-l:not(.calm) [data-motion="forge"] .oly-g,.oly-l:not(.calm) [data-motion="treasure"] .oly-g{animation:olyGlyphRise 3.1s ease-in-out infinite var(--phase)}',
-    '.oly-l:not(.calm) [data-motion="leaf"] .oly-g,.oly-l:not(.calm) [data-motion="flight"] .oly-g,.oly-l:not(.calm) [data-motion="laurel"] .oly-g{animation:olyGlyphFloat 3.8s ease-in-out infinite alternate var(--phase)}',
-    '.oly-l:not(.calm) [data-motion="lightning"] .oly-g,.oly-l:not(.calm) [data-motion="shield"] .oly-g,.oly-l:not(.calm) [data-motion="market"] .oly-g{animation:olyGlyphCharge 3s ease-in-out infinite var(--phase)}',
-    '.oly-l:not(.calm) [data-motion="scale"] .oly-g,.oly-l:not(.calm) [data-motion="tick"] .oly-g,.oly-l:not(.calm) [data-motion="coin"] .oly-g,.oly-l:not(.calm) [data-motion="control"] .oly-g{animation:olyGlyphTurn 5.2s ease-in-out infinite var(--phase)}',
-    '.oly-l:not(.calm) [data-motion="maze"] .oly-g,.oly-l:not(.calm) [data-motion="vault"] .oly-g,.oly-l:not(.calm) [data-motion="letter"] .oly-g,.oly-l:not(.calm) [data-motion="portal"] .oly-g,.oly-l:not(.calm) [data-motion="calendar"] .oly-g,.oly-l:not(.calm) [data-motion="cartography"] .oly-g{animation:olyGlyphGate 3.6s ease-in-out infinite var(--phase)}',
-    '@keyframes olyGlyphScan{0%,100%{filter:drop-shadow(0 0 4px var(--c));transform:scale(.96)}50%{filter:drop-shadow(0 0 13px var(--c));transform:scale(1.08)}}@keyframes olyGlyphSway{to{transform:perspective(70px) rotateY(14deg) rotate(-3deg)}}@keyframes olyGlyphPulse{50%{transform:scale(1.1);box-shadow:0 0 22px rgba(var(--cr),.62)}}@keyframes olyGlyphRise{0%,100%{transform:translateY(2px)}50%{transform:translateY(-3px) scale(1.06);filter:drop-shadow(0 4px 9px var(--c))}}',
-    '@keyframes olyGlyphFloat{to{transform:translate3d(2px,-3px,0) rotate(4deg)}}@keyframes olyGlyphCharge{0%,72%,100%{filter:drop-shadow(0 0 3px var(--c))}76%{filter:drop-shadow(0 0 15px #fff);transform:scale(1.1)}80%{transform:scale(.96)}}@keyframes olyGlyphTurn{50%{transform:rotate(12deg) scale(1.05)}}@keyframes olyGlyphGate{50%{transform:perspective(80px) rotateY(-16deg) scale(1.04);box-shadow:0 0 18px rgba(var(--cr),.55)}}',
-    '.oly-l .oly-tile .oly-tx{min-width:0;display:flex;flex-direction:column;gap:2px}.oly-l .oly-tile b{font:700 14px/1.15 var(--font,Inter,sans-serif);overflow-wrap:anywhere}',
-    '.oly-l .oly-tile small{font-size:11.5px;line-height:1.25;color:#a9b1c3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}',
-    '.oly-dot{position:absolute;top:9px;right:9px;width:9px;height:9px;border-radius:50%;background:transparent;border:1px solid rgba(255,255,255,.25)}',
-    '.oly-dot.ok{background:#2ee59d;border-color:#2ee59d;box-shadow:0 0 8px #2ee59d}.oly-dot.warn{background:#f7b955;border-color:#f7b955;box-shadow:0 0 8px #f7b955}.oly-dot.bad{background:#ff5a7a;border-color:#ff5a7a;box-shadow:0 0 8px #ff5a7a}',
-    '.oly-dot.stale,.oly-dot.off{background:#6f788b;border-color:#6f788b}.oly-dot.none{display:none}',
-    '.oly-l .oly-em{margin:18px 4px;text-align:center;color:#a9b1c3;font-size:14px}.oly-l .oly-ft{margin:14px 2px 0;font-size:11.5px;color:#6f788b;text-align:center}',
+    '.oly-l .oly-tile{position:relative;display:flex;align-items:center;gap:11px;min-height:64px;padding:10px 12px;border-radius:16px;text-decoration:none;color:#f3ece0;min-width:0;background:#26211b;border:1px solid #3a3228;border-left:3px solid var(--gc,#c8a24a);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}',
+    '.oly-l .oly-tile:hover,.oly-l .oly-tile:focus-visible{border-color:var(--gc,#c8a24a);outline:0}.oly-l .oly-tile:active{background:#2e271f}',
+    '.oly-l .oly-tile .oly-g{flex:none;width:40px;height:40px;font:700 18px/1 "Iowan Old Style",Palatino,Georgia,serif}',
+    '.oly-l .oly-tile .oly-tx{min-width:0;display:flex;flex-direction:column;gap:2px}.oly-l .oly-tile b{font:700 15px/1.15 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;overflow-wrap:anywhere}',
+    '.oly-l .oly-tile small{font-size:12px;line-height:1.25;color:#cfc4b2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}',
+    '.oly-l .oly-star{position:absolute;right:8px;bottom:6px;color:#e0b060;font-size:13px;line-height:1}',
+    '.oly-l.map .oly-gr{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.oly-l.map .oly-tile{flex-direction:column;justify-content:center;text-align:center;min-height:68px;padding:6px 3px;gap:3px;border-left:1px solid #3a3228;border-top:3px solid var(--gc,#c8a24a)}',
+    '.oly-l.map .oly-tile small,.oly-l.map .oly-jv small,.oly-l.map .oly-ft{display:none}.oly-l.map .oly-tile .oly-g{width:30px;height:30px;font-size:15px}.oly-l.map .oly-tile b{font-size:12px}.oly-l.map .oly-tile .oly-tx{align-items:center}',
+    '.oly-l.map .oly-sc h3{margin:10px 2px 6px}.oly-l.map.pc .oly-gr{grid-template-columns:repeat(6,minmax(0,1fr))}',
+    '.oly-dot{position:absolute;top:9px;right:9px;width:9px;height:9px;border-radius:50%;background:transparent;border:1px solid #6f6659}',
+    '.oly-dot.ok{background:#a3ae6b;border-color:#a3ae6b}.oly-dot.warn{background:#e0b060;border-color:#e0b060}.oly-dot.bad{background:#e0795a;border-color:#e0795a}',
+    '.oly-dot.stale,.oly-dot.off{background:#68625c;border-color:#68625c}.oly-dot.none{display:none}',
+    '.oly-l .oly-em{margin:18px 4px;text-align:center;color:#cfc4b2;font-size:14px}.oly-l .oly-ft{margin:14px 2px 0;font-size:12px;color:#9a8f7d;text-align:center}',
     '@media(prefers-reduced-motion:reduce){.oly-l *{animation:none!important;transition:none!important}}'
   ].join('');
 
@@ -189,10 +180,13 @@
     var jt = el('span'); jt.appendChild(el('b', '', 'Open Olympus (Jarvis)')); jt.appendChild(el('small', '', 'Talk to Jarvis, switch apps, see everything at once'));
     jv.appendChild(jo); jv.appendChild(jt); jv.appendChild(el('span', 'oly-go', '›'));
     jv.addEventListener('click', function () { close(); });
-    var sr = el('div', 'oly-sr'), inp = el('input'); inp.type = 'search'; inp.placeholder = 'Search apps'; inp.setAttribute('aria-label', 'Search apps'); inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false; inp.enterKeyHint = 'go';
+    var sr = el('div', 'oly-sr'), inp = el('input'); inp.type = 'search'; inp.placeholder = 'Search apps by name or what they do'; inp.setAttribute('aria-label', 'Search apps'); inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false; inp.enterKeyHint = 'go';
     inp.addEventListener('input', function () { st.q = inp.value; filter(); });
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { var t = sc.querySelector('.oly-tile:not([hidden])'); if (t) t.click(); } });
     sr.appendChild(inp);
+    var mb = el('button', 'oly-mb', 'MAP'); mb.type = 'button'; mb.setAttribute('aria-pressed', 'false'); mb.setAttribute('aria-label', 'Show every app on one screen');
+    mb.addEventListener('click', function () { st.map = !st.map; o.classList.toggle('map', st.map); mb.setAttribute('aria-pressed', String(st.map)); });
+    sr.appendChild(mb);
     var rcH = el('h3', '', 'Recent'), rc = el('div', 'oly-rc');
     var body = el('div', 'oly-bodyg'), em = el('p', 'oly-em', ''); em.hidden = true;
     var ft = el('p', 'oly-ft', isPC ? 'Apps open on the public site, in a new tab.' : 'Apps open on this site. Dots: green = running well, amber = look, red = a problem, grey = not updated.');
@@ -211,6 +205,7 @@
 
   function tile(a, i, chip) {
     var t = el('a', chip ? 'oly-chip' : 'oly-tile'); t.href = url(a.path); t.setAttribute('data-app', a.id);
+    if (!chip) t.setAttribute('data-group', a.group);
     t.style.setProperty('--c', a.colour); t.style.setProperty('--cr', rgb(a.colour)); t.style.setProperty('--i', String(i)); t.style.setProperty('--phase', (-((i * 37) % 29) / 10) + 's');
     t.setAttribute('data-motion', GLYPH_MOTION[a.id] || 'portal');
     if (isPC) { t.target = '_blank'; t.rel = 'noopener'; }
@@ -220,6 +215,13 @@
       var tx = el('span', 'oly-tx'); tx.appendChild(el('b', '', a.name)); tx.appendChild(el('small', '', a.purpose));
       t.appendChild(g); t.appendChild(tx);
       var dot = el('i', 'oly-dot none'); t.appendChild(dot);
+      if (favs().indexOf(a.id) >= 0) { var sg = el('span', 'oly-star', '\u2605'); sg.setAttribute('aria-hidden', 'true'); t.appendChild(sg); }
+      var pt = 0, pressed = false;
+      t.addEventListener('pointerdown', function () { clearTimeout(pt); pt = setTimeout(function () { pressed = true; toggleFav(a.id); }, PRESS_MS); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { t.addEventListener(ev, function () { clearTimeout(pt); }); });
+      t.addEventListener('click', function (e) { if (pressed) { pressed = false; e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+      t.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+      t.addEventListener('keydown', function (e) { if (e.key === 'f' || e.key === 'F') toggleFav(a.id); });
       t.setAttribute('data-q', (a.name + ' ' + a.purpose + ' ' + a.groupName + ' ' + a.id).toLowerCase());
     }
     t.addEventListener('click', function () { touch(a.id); if (isPC) setTimeout(renderRecent, 0); else close(); });
@@ -234,6 +236,12 @@
   function render() {
     st.apps = apps(); st.tiles = {};
     var frag = [], n = 0;
+    var byId = {}; st.apps.forEach(function (a) { byId[a.id] = a; });
+    var fv = favs().map(function (id) { return byId[id]; }).filter(Boolean);
+    if (fv.length) {                                           // a div, not a section: the three groups stay Trading / Life / Money
+      var fd = el('div', 'oly-fav'); fd.appendChild(el('h3', '', '\u2605 Favourites'));
+      var fg = el('div', 'oly-gr'); fv.forEach(function (a) { fg.appendChild(tile(a, n++, false)); }); fd.appendChild(fg); frag.push(fd);
+    }
     GROUPS.forEach(function (g) {
       var list = st.apps.filter(function (a) { return a.group === g[0]; });
       if (!list.length) return;
@@ -243,14 +251,16 @@
       sec.appendChild(gr); frag.push(sec);
     });
     els.body.replaceChildren.apply(els.body, frag);
+    st.apps.forEach(function (a) { paintDot(a.id); });
     if (!st.apps.length) { els.em.hidden = false; els.em.textContent = listState === 'loading' ? 'Loading the apps...' : 'The app list could not load. Open Olympus (Jarvis) above and pick an app there.'; }
     else els.em.hidden = true;
     renderRecent(); filter();
   }
   function filter() {
     var q = st.q.trim().toLowerCase(), shown = 0;
-    st.apps.forEach(function (a) { var t = st.tiles[a.id]; var ok = !q || t.getAttribute('data-q').indexOf(q) >= 0; t.hidden = !ok; if (ok) shown++; });
-    els.body.querySelectorAll('section').forEach(function (s) { s.hidden = !s.querySelector('.oly-tile:not([hidden])'); });
+    [].forEach.call(els.body.querySelectorAll('.oly-tile'), function (t) { t.hidden = !(!q || t.getAttribute('data-q').indexOf(q) >= 0); });
+    st.apps.forEach(function (a) { if (!st.tiles[a.id].hidden) shown++; });
+    els.body.querySelectorAll('section, .oly-fav').forEach(function (s) { s.hidden = !s.querySelector('.oly-tile:not([hidden])'); });
     if (st.apps.length) { els.em.hidden = shown > 0; if (!shown) els.em.textContent = 'No app matches "' + st.q.trim().slice(0, 40) + '".'; }
     renderRecent();
   }
