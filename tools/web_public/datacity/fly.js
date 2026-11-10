@@ -10,6 +10,7 @@ export const MODES = [
   { key: 'orbit', label: 'ORBIT', hint: 'Orbit: drag to turn, pinch to zoom' },
   { key: 'skim', label: 'STREET', hint: 'Street: low at eye level through the district gates' },
   { key: 'drone', label: 'FLY', hint: 'Fly: a wide, high loop over the whole skyline' },
+  { key: 'walk', label: 'WALK', hint: 'Walk: along the streets at eye level, drag to look round and pick the next street' },
   { key: 'grand', label: 'GRAND', hint: 'Grand tour: the forum, the Pharos, the Poseidon gate, the temple' },
 ];
 const SPEED = { skim: 24, drone: 36, grand: 20 };

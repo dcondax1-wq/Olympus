@@ -248,7 +248,26 @@ function worldsView() {
     });
     grid.append(c);
   });
-  wrap.append(grid, h('h3', '', 'Research outposts'));
+  // market types (the data decides: crypto, metals, other) and Downtown's quarters by kind of edge, each with its edge bands and its tallest tower
+  const TYPE = { Gold: 'Metals', Silver: 'Metals', Other: 'Other markets' }, typeOf = (k) => TYPE[k] || 'Crypto';
+  const types = new Map();
+  L.districts.slice(1).forEach((d) => { const t = typeOf(d.key); if (!types.has(t)) types.set(t, []); types.get(t).push(d); });
+  const QUARTER = { strategy: 'Strategy quarter', hour: 'Hour quarter', band: 'Price-band quarter', side: 'Side quarter', combo: 'Combination quarter' };
+  const quarters = new Map();
+  (L.districts[0]?.list || []).forEach((e) => { const k = QUARTER[e.kind] ? e.kind : 'combo'; if (!quarters.has(k)) quarters.set(k, []); quarters.get(k).push(e); });
+  const row = (title, list, onTap) => {
+    const real = list.filter((e) => !e.small && e.ev != null).sort((a, b) => b.ev - a.ev), top = real[0] || list[0];
+    const r = h('button', 'world-lab'); r.type = 'button';
+    r.append(h('span', 'lab-number', String(list.length)), h('span', 'lab-description', title),
+      h('span', 'lab-verdict', `${band(list, Ls.doMore)} do more · ${band(list, Ls.watch)} watch · ${band(list, Ls.stop)} stop${top && top.ev != null ? ' · tallest ' + evf(top.ev) + ' per $1' : ''}`));
+    r.addEventListener('click', () => onTap(top)); return r;
+  };
+  const groups = h('div', 'world-labs');
+  groups.append(h('h3', '', 'By market type'));
+  for (const [t, ds] of types) groups.append(row(`${t}: ${ds.map((d) => d.key).join(', ')}`, ds.flatMap((d) => d.list), (top) => { switchDistrict(ds[0].key); if (top) selectEdge(top.id, true); }));
+  groups.append(h('h3', '', 'Downtown quarters'));
+  for (const [k, list] of quarters) groups.append(row(QUARTER[k], list, (top) => { switchDistrict('Downtown'); if (top) selectEdge(top.id, true); }));
+  wrap.append(grid, groups, h('h3', '', 'Research outposts'));
   if (!H || !H.hyps.length) wrap.append(h('p','', 'No research ideas have been recorded yet. They appear when the next learning run publishes them.'));
   else {
     const labs = h('div','world-labs');

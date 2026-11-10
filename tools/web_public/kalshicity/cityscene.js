@@ -126,13 +126,13 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
   // ---- lights, sky
   const hemi = new THREE.HemisphereLight('#ffd8a8', '#4a3a2c', 0.95); scene.add(hemi);
   const sun = new THREE.DirectionalLight('#e2b88d', 1.0); scene.add(sun, sun.target);
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 24, 12), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 16, 8), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: { uTop: { value: C('#2a2a56') }, uMid: { value: C('#6a5688') }, uHor: { value: C('#e0906a') }, uFlash: { value: 0 } },
     vertexShader: 'varying vec3 vD; void main() { vD = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: 'uniform vec3 uTop, uMid, uHor; uniform float uFlash; varying vec3 vD; void main() { float h = normalize(vD).y; vec3 c = mix(uHor, uMid, smoothstep(0.0, 0.28, h)); c = mix(c, uTop, smoothstep(0.22, 0.85, h)); c += uFlash * vec3(0.55, 0.6, 0.8); gl_FragColor = vec4(c, 1.0); }' }));
   sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);
   const stars = M.starfield({ count: 1500, radius: 1300, size: 2.3 }); scene.add(stars);
-  const orb = new THREE.Mesh(new THREE.SphereGeometry(30, 20, 12), new THREE.MeshBasicMaterial({ color: hdr('#e0b487', 3), fog: false })); orb.frustumCulled = false; scene.add(orb);
+  const orb = new THREE.Mesh(new THREE.SphereGeometry(30, 12, 8), new THREE.MeshBasicMaterial({ color: hdr('#e0b487', 3), fog: false })); orb.frustumCulled = false; scene.add(orb);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(4200, 4200), M.metal({ kind: 'gunmetal', color: '#14110e', roughness: 0.42, clearcoat: 0.6, envMapIntensity: 0.4 }));
   ground.rotation.x = -Math.PI / 2; ground.position.y = -0.05; scene.add(ground);
   const grid = new THREE.GridHelper(2400, 400, 0x6b5a42, 0x6b5a42); grid.material.transparent = true; grid.material.opacity = 0.12; grid.position.y = 0.02; scene.add(grid);
@@ -372,20 +372,20 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     const bk = M0.book, mint = '#9fae68';
     const g = new THREE.Group();
     const steel = M.metal({ kind: 'chrome', color: '#cfc4b2', roughness: 0.18, envMapIntensity: 1.2 });
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(4.4, 5.2, 2.2, 28), steel); base.position.y = 1.1;
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 3.0, 30, 24), M.glass({ color: '#d9ccb4', rim: mint, rimStrength: 1.6, iridescence: 0.5, opacity: 0.38 })); shaft.position.y = 17;
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(4.4, 5.2, 2.2, 20), steel); base.position.y = 1.1;
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 3.0, 30, 16), M.glass({ color: '#d9ccb4', rim: mint, rimStrength: 1.6, iridescence: 0.5, opacity: 0.38 })); shaft.position.y = 17;
     const spire = new THREE.Mesh(new THREE.ConeGeometry(0.9, 11, 12), steel); spire.position.y = 38.5;
     g.add(base, shaft, spire);
     ring1 = new THREE.Group();
-    for (let i = 0; i < 4; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(3.3 - i * 0.2, 0.12, 8, 40), M.neon({ color: mint, intensity: 3 })); t.rotation.x = Math.PI / 2; t.position.y = 8 + i * 7.5; ring1.add(t); }
+    for (let i = 0; i < 4; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(3.3 - i * 0.2, 0.12, 6, 28), M.neon({ color: mint, intensity: 3 })); t.rotation.x = Math.PI / 2; t.position.y = 8 + i * 7.5; ring1.add(t); }
     g.add(ring1);
     const beam = M.energyBeam({ length: 60, radius: 0.34, color: bk.running === false ? '#8a7f6e' : mint, intensity: bk.running === false ? 0.7 : 1.3 }); beam.position.y = 44; g.add(beam);
     tower = g; tower.userData.beam = beam; g.userData.name = 'The Exchange'; world.add(g);
 
     vault = new THREE.Group();
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(3.4, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), M.metal({ kind: 'gold', color: '#d79e65', roughness: 0.16, envMapIntensity: 1.5 }));
-    const drum = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.8, 2.6, 28), M.metal({ kind: 'gold', color: '#d08f4c', roughness: 0.3 })); drum.position.y = 1.3; dome.position.y = 2.6;
-    const halo = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.1, 8, 48), M.neon({ color: '#d79e65', intensity: 3 })); halo.rotation.x = Math.PI / 2; halo.position.y = 3.2;
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(3.4, 20, 8, 0, Math.PI * 2, 0, Math.PI / 2), M.metal({ kind: 'gold', color: '#d79e65', roughness: 0.16, envMapIntensity: 1.5 }));
+    const drum = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.8, 2.6, 20), M.metal({ kind: 'gold', color: '#d08f4c', roughness: 0.3 })); drum.position.y = 1.3; dome.position.y = 2.6;
+    const halo = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.1, 6, 32), M.neon({ color: '#d79e65', intensity: 3 })); halo.rotation.x = Math.PI / 2; halo.position.y = 3.2;
     // the bank vault tower: a marble-and-bronze shaft that grows with the balance (height = dollars, the plaque says how many)
     const balT = Math.max(20, bk.balance || 50), vh = 6 + 16 * Math.min(1, Math.log10(balT / 20) / 2.2);
     const vshaft = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.6, vh, 10), M.metal({ kind: 'gold', color: '#b07a45', roughness: 0.4 })); vshaft.position.y = 2.6 + vh / 2;
@@ -398,7 +398,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
 
     obs = new THREE.Group();
     const ob = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.1, 7, 18), steel); ob.position.y = 3.5;
-    const od = new THREE.Mesh(new THREE.SphereGeometry(2.0, 22, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.glass({ color: '#d9ccb4', rim: '#b9a98c', opacity: 0.5 })); od.position.y = 7;
+    const od = new THREE.Mesh(new THREE.SphereGeometry(2.0, 14, 6, 0, Math.PI * 2, 0, Math.PI / 2), M.glass({ color: '#d9ccb4', rim: '#b9a98c', opacity: 0.5 })); od.position.y = 7;
     const tele = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 3.4), M.neon({ color: '#b9a98c', intensity: 2.4 })); tele.position.set(0, 8.1, 0.8); tele.rotation.x = -0.6;
     obs.add(ob, od); obs.userData.tele = tele; obs.add(tele);
     const today = M0.log.some((x) => x.d === M0.day && (x.kind === 'learned' || x.kind === 'changed'));
@@ -408,7 +408,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     lighthouse = new THREE.Group();
     const ruin = bk.ruinNow == null ? 0.2 : bk.ruinNow, lc = ruin > 0.5 ? '#ca785c' : ruin > 0.15 ? '#d49759' : '#a0af6a';
     const lt = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.6, 9, 14), M.metal({ kind: 'gunmetal', color: '#3a3228', roughness: 0.4 })); lt.position.y = 4.5;
-    const lamp = new THREE.Mesh(new THREE.SphereGeometry(1.1, 16, 10), M.neon({ color: lc, intensity: 3.4 })); lamp.position.y = 9.8;
+    const lamp = new THREE.Mesh(new THREE.SphereGeometry(1.1, 10, 6), M.neon({ color: lc, intensity: 3.4 })); lamp.position.y = 9.8;
     const lb = M.energyBeam({ length: 26, radius: 0.28, color: lc, intensity: 1.1 }); lb.position.y = 9.8; lb.rotation.z = Math.PI / 2;
     lighthouse.add(lt, lamp); lighthouse.userData.sweep = lb; lighthouse.add(lb);
     lighthouse.position.set(10, 0.3, 11); world.add(lighthouse);
@@ -425,7 +425,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     }
     // the selection marker
     marker = new THREE.Group();
-    const mr = new THREE.Mesh(new THREE.TorusGeometry(1, 0.06, 8, 48), M.neon({ color: '#ffffff', intensity: 3.2 })); mr.rotation.x = Math.PI / 2; mr.position.y = 0.4;
+    const mr = new THREE.Mesh(new THREE.TorusGeometry(1, 0.06, 6, 32), M.neon({ color: '#ffffff', intensity: 3.2 })); mr.rotation.x = Math.PI / 2; mr.position.y = 0.4;
     const mb = M.energyBeam({ length: 50, radius: 0.18, color: '#ffffff', intensity: 1.3 }); marker.add(mr, mb); marker.userData.ring = mr; marker.userData.beam = mb; marker.visible = false; world.add(marker);
   }
 
