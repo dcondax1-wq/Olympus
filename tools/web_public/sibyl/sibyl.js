@@ -90,6 +90,18 @@ function renderScore() {
   $('sbNote').textContent = s.note + (s.gaps ? ` ${s.gaps} gap(s) in the feed: the tally may be incomplete.` : '') + ' No claim is made below ' + s.minN + ' bets, and 30 is still very few.';
 }
 
+function renderOwn() {
+  const o = S.own, p = $('ownPill'), t = $('ownTiles'), box = $('ownRows'); clear(t); clear(box);
+  if (!o) { p.textContent = 'Not started'; p.className = 'pill'; $('ownText').textContent = 'Sibyl has not recorded a pick of its own yet. The ledger starts the first day a fresh study is scanned, and counts only picks made after that: nothing is back-filled.'; $('ownNote').textContent = ''; return; }
+  p.textContent = o.claim ? `${o.status === 'early' ? 'Early' : 'Building'}, n=${o.n}` : `Collecting, n=${o.n}`; p.className = 'pill ' + (o.claim ? 'info' : 'warn');
+  $('ownText').textContent = o.text;
+  tile(t, 'Settled', String(o.n), 'won or lost'); tile(t, 'Still open', String(o.nOpen), 'not settled yet'); tile(t, 'Recorded', String(o.nBets), `since ${o.start}`);
+  if (o.claim) { tile(t, 'Net', C.usdS(o.net), C.rWord(o.net, o.avg), o.net > 0 ? 'pos' : o.net < 0 ? 'neg' : ''); tile(t, 'Won', `${Math.round(o.winRate * 100)}%`, `${o.wins} of ${o.n}`); }
+  else tile(t, 'Net and win rate', 'hidden', `until ${C.OWN_MIN} bets settle`);
+  for (const b of o.recent) { const li = h('li', 'bet'); const done = b.status === 'won' || b.status === 'lost'; li.appendChild(h('b', done ? sign(b.pnl) : '', done ? `${C.usdS(b.pnl)} (${C.rWord(b.pnl, b.stake)})` : b.status === 'void' ? 'Void' : 'Open')); li.appendChild(h('span', 'note', `${b.day} · ${b.title} · stake ${C.usd(b.stake)} = 1R`)); box.appendChild(li); }
+  $('ownNote').textContent = 'Recorded by tools/money/sibyl_ledger.py on the day Sibyl made each pick, settled later from a results file. Paper only: no bet was ever placed.';
+}
+
 function renderRisks() {
   const box = $('risks'); clear(box);
   for (const r of S.view.risks) { const li = h('li', 'risk ' + r.level); const t = h('div', 'row'); t.appendChild(h('b', '', r.title)); t.appendChild(h('span', 'pill ' + C.RISKCLS[r.level], r.level === 'high' ? 'High' : r.level === 'med' ? 'Medium' : 'Low')); li.appendChild(t); li.appendChild(h('p', 'note', r.detail)); box.appendChild(li); }
@@ -132,16 +144,16 @@ function select(i, scroll) {
 
 function render() {
   $('demo').hidden = !(S.view.src === 'demo'); try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
-  renderHero(); renderBank(); renderPicks(); renderList(); renderScore(); renderRisks();
+  renderHero(); renderBank(); renderPicks(); renderList(); renderScore(); renderOwn(); renderRisks();
   say(`Sibyl: ${S.view.counts.worthy} paper pick${S.view.counts.worthy === 1 ? '' : 's'} of ${S.view.counts.edges} kinds of bet. ${S.view.src === 'demo' ? 'Example numbers. ' : S.view.status === 'stale' ? 'Old study. ' : ''}Suggestions only.`);
 }
 
 async function boot() {
   const q = new URLSearchParams(location.search), forced = q.get('demo') === '1', at = q.get('at');
   S.now = at && Number.isFinite(Date.parse(at)) ? Date.parse(at) / 1000 : Date.now() / 1000;
-  const [fx, real] = await Promise.all([getJSON('./fixture.json'), forced ? null : getJSON('../money/sibyl.json')]);
+  const [fx, real, own] = await Promise.all([getJSON('./fixture.json'), forced ? null : getJSON('../money/sibyl.json'), forced ? null : getJSON('../money/sibyl_forward.json')]);
   S.fixture = fx; const v = C.chooseView(real, fx); if (!v) throw new Error('no numbers');
-  S.view = v; S.bank = v.bank.usd;
+  S.view = v; S.bank = v.bank.usd; S.own = v.src === 'demo' ? v.own : C.normOwn(own);
   const b = Number(q.get('bank')); if (Number.isFinite(b) && b > 0 && b <= 1e6) S.bank = Math.round(b * 100) / 100;
   render();
   $('bank').addEventListener('input', () => { const x = Number($('bank').value); if (Number.isFinite(x) && x > 0 && x <= 1e6) { S.bank = x; renderHero(); renderBank(); renderPicks(); renderList(); } });

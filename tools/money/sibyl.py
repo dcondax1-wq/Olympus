@@ -366,7 +366,7 @@ def scan(study, now, fixture=False):
         "Monthly figure (estimate): the best pick's cautious dollars per bet times how often that kind of bet came up, times 30. One pick only: the picks overlap, so they are never added up.",
     ]
     asof = clean(study.get("asof"), 25) if fixture else iso(t_study) if t_study else iso(now)
-    demo = {"demo": True, "note": "EXAMPLE numbers, not real: an invented Kalshi study, what-if and forward tally, shown until the real file is there."} if fixture else {}
+    demo = {"demo": True, "note": "EXAMPLE numbers, not real: an invented Kalshi study, what-if and forward tally, shown until the real file is there.", "own": study.get("own")} if fixture else {}
     return {**demo, "v": 1, "id": "sibyl", "asof": asof or iso(now), "mode": "paper", "status": status,
             "headline": {"text": head, "usd_month": best_month}, "items": out_items, "notes": notes,
             "bankroll": {"usd": round(bankroll, 2), "known": bool(bank_known)},
