@@ -1,0 +1,121 @@
+{
+  "v": 1,
+  "demo": true,
+  "note": "EXAMPLE shelf, not real data: the 19 AGORA shapes with what each stands for. No numbers of yours are shown here.",
+  "shapes": [
+    {
+      "id": "doric",
+      "name": "Doric column",
+      "means": "Strength and discipline. The plain, sturdy column: one simple rule that holds the whole roof up.",
+      "group": "Temples and monuments"
+    },
+    {
+      "id": "ionic",
+      "name": "Ionic column",
+      "means": "Learning and balance. The scrolled column: a plan that is both strong and graceful.",
+      "group": "Temples and monuments"
+    },
+    {
+      "id": "temple",
+      "name": "Temple",
+      "means": "A place of trust. Every part of the system standing together under one roof.",
+      "group": "Temples and monuments"
+    },
+    {
+      "id": "lighthouse",
+      "name": "Lighthouse of Pharos",
+      "means": "Guidance in the dark. A steady light to steer by: the levels the bot watches.",
+      "group": "Temples and monuments"
+    },
+    {
+      "id": "obelisk",
+      "name": "Obelisk",
+      "means": "Permanence. A record carved to last: the long, honest track record.",
+      "group": "Temples and monuments"
+    },
+    {
+      "id": "sundial",
+      "name": "Sundial",
+      "means": "Timing. Reading the session by the light of day: when to trade and when to wait.",
+      "group": "Time and counsel"
+    },
+    {
+      "id": "hourglass",
+      "name": "Hourglass",
+      "means": "Time running. The eval clock and the trading day: sand falls, patience pays.",
+      "group": "Time and counsel"
+    },
+    {
+      "id": "owl",
+      "name": "Athena's owl",
+      "means": "Wisdom. Look carefully, then act: analysis before every decision.",
+      "group": "Time and counsel"
+    },
+    {
+      "id": "scroll",
+      "name": "Scroll",
+      "means": "The written plan. Rules and records kept on paper so nothing is left to memory.",
+      "group": "Time and counsel"
+    },
+    {
+      "id": "amphora",
+      "name": "Amphora",
+      "means": "Savings. A store of value kept safe for later: payouts put away.",
+      "group": "Wealth and trade"
+    },
+    {
+      "id": "coinstack",
+      "name": "Coin stacks",
+      "means": "Capital. The money itself, built coin by coin and counted in dollars.",
+      "group": "Wealth and trade"
+    },
+    {
+      "id": "scales",
+      "name": "Scales",
+      "means": "Risk against reward. Every R weighed next to its dollars.",
+      "group": "Wealth and trade"
+    },
+    {
+      "id": "pillarbar",
+      "name": "Pillar chart",
+      "means": "Results at a glance. A bar chart built as pillars: taller means more.",
+      "group": "Wealth and trade"
+    },
+    {
+      "id": "trireme",
+      "name": "Trireme",
+      "means": "Reach and trade. Capital sailing out to markets and coming home.",
+      "group": "Wealth and trade"
+    },
+    {
+      "id": "laurel",
+      "name": "Laurel wreath",
+      "means": "Victory. A goal reached: a passed eval, a good week.",
+      "group": "War and glory"
+    },
+    {
+      "id": "shield",
+      "name": "Hoplon shield",
+      "means": "Defence. Protecting the account: the drawdown limit that is never crossed.",
+      "group": "War and glory"
+    },
+    {
+      "id": "helmet",
+      "name": "Corinthian helmet",
+      "means": "Readiness. Focus put on before the open: calm, covered, ready.",
+      "group": "War and glory"
+    },
+    {
+      "id": "lyre",
+      "name": "Lyre of Apollo",
+      "means": "Harmony. Many strings in tune: entries, stops and targets playing one plan.",
+      "group": "War and glory"
+    },
+    {
+      "id": "brazier",
+      "name": "Brazier",
+      "means": "Hestia's fire. The steady daily routine that keeps the home warm.",
+      "group": "War and glory"
+    }
+  ]
+}
