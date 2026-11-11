@@ -361,8 +361,7 @@ export function highlight(person, facts) {
   const lastLine = L[0] ? sentence(L[0].text.replace(/^Commit: (.*)$/, 'My last commit: "$1"')) : '';
   if (p.kind === 'bot' && id !== 'bot:kalshi') {
     const lt = numT(f, /^Last trade$/), td = numT(f, /^Today$/), wk = numT(f, /^This week$/);
-    if (lt) return 'My last paper trade made ' + lt + '.' + (wk ? ' This week I am at ' + wk + '.' : '');
-    if (td) return 'Today my paper account is at ' + td + '.' + (wk ? ' This week: ' + wk + '.' : '');
+    if (td || lt) return (td ? 'My paper account is at ' + td + ' today.' : '') + (lt ? ' My last paper trade made ' + lt + '.' : wk ? ' This week I am at ' + wk + '.' : '');
   }
   if (id === 'bot:kalshi') { const td = numT(f, /^Today$/), n = numT(f, /^Settled paper bets$/); if (td || n) return (td ? 'Today my paper bets are at ' + td + '.' : '') + (n ? ' I have ' + n + ' settled paper bets on file.' : ''); }
   if (p.kind === 'scanner') { const tp = numT(f, /^Top pick$/), um = numT(f, /^Estimate per month$/); if (tp) return 'My best find: ' + dot(tp) + (um ? ' Altogether about ' + um.replace(/ \(an estimate, not a promise\)/, '') + ' a month, an estimate, not a promise.' : ''); }

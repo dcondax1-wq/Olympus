@@ -182,7 +182,7 @@ const CSS = `
 .oc-ring button svg{width:22px;height:22px}
 .oc-ring button:focus-visible{outline:2px solid #c8a24a;outline-offset:3px}
 .oc-ring .oc-who{position:absolute;transform:translate(-50%,-100%);padding:4px 12px;border-radius:999px;background:rgba(36,28,20,.86);color:#f3ead8;font:600 14px/1.2 "Iowan Old Style",Palatino,Georgia,serif;white-space:nowrap}
-@keyframes oc-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes oc-pop{from{opacity:0}to{opacity:1}}
 .oc-cta{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:2;pointer-events:auto;min-height:48px;padding:0 20px;border-radius:999px;border:1.5px solid #9c6b3c;background:#c8a24a;color:#2a1d10;font:600 15px/1 "Iowan Old Style",Palatino,Georgia,serif;letter-spacing:.02em;box-shadow:0 6px 18px rgba(0,0,0,.35);animation:oc-pop .3s ease-out both;white-space:nowrap}
 .oc-toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(36,28,20,.82);color:#f3ead8;font-size:13px;transition:opacity .4s ease;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
 .oc-toast.out{opacity:0}

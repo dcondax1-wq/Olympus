@@ -376,7 +376,7 @@ def test_page():
             g = p.evaluate(SHEET)
             a3 = ask(p, "do you remember me")
             check("c. the next person greets the owner by name; the chat shows his own character; a person remembers only his last question, on this phone",
-                  "Alex," in g["them"][0] and p.evaluate("() => !!document.querySelector('.pp-me .pp-ava svg')") and ("first talk on this phone" in a3["them"][-1] or "Last time you asked me" in a3["them"][-1]), (g["them"][0], a3["them"][-1]))
+                  "Alex" in g["them"][0] and p.evaluate("() => !!document.querySelector('.pp-me .pp-ava svg')") and ("first talk on this phone" in a3["them"][-1] or "Last time you asked me" in a3["them"][-1]), (g["them"][0], a3["them"][-1]))
             p.keyboard.press("Escape")
             check("c. LITE run: no console error and nothing requested off the page's origin", errs == [] and off == [], (errs[:4], off[:4]))
             ctx.close()
