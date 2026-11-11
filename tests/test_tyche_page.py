@@ -493,9 +493,14 @@ def _bank_checks(p, tag, j):
         p.locator(".tabs button[data-view=wheel]").click()
         p.wait_for_timeout(2500)
         wp = p.evaluate("window.tyche.wheelAt()")
-        p.mouse.click(wp["x"], wp["y"])
-        p.wait_for_timeout(300)
-        w1 = p.evaluate("window.tyche.spin")
+        for _ in range(5):                                   # the coins orbit over the hub: when one is under the finger the tap opens that coin (right), so let it pass and tap again
+            p.mouse.click(wp["x"], wp["y"])
+            p.wait_for_timeout(300)
+            w1 = p.evaluate("window.tyche.spin")
+            if w1 > 0 or p.evaluate("document.getElementById('sheet').hidden"):
+                break
+            p.evaluate("window.tyche.select(null)")
+            p.wait_for_timeout(1600)
         p.wait_for_timeout(2500)
         w2 = p.evaluate("window.tyche.spin")
         check(f"g. {tag}: a tap on the wheel spins it and it eases out (visual only): {w1:.1f} -> {w2:.1f} rad/s, no coin selected",
