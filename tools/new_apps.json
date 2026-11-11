@@ -588,6 +588,24 @@
         "kind": "tiles",
         "ms": 800
       }
+    },
+    {
+      "id": "polis",
+      "name": "Polis",
+      "group": "life",
+      "accent": "#e0b060",
+      "description": "The city of OLYMPUS: every app a building under the real New York sky",
+      "glyph": "Πλ",
+      "ambient": "agora",
+      "flavour": [
+        "skyline",
+        "Enter the city",
+        "tap"
+      ],
+      "transition": {
+        "kind": "skyline",
+        "ms": 1000
+      }
     }
   ],
   "pending": [],

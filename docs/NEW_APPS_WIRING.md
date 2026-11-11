@@ -639,3 +639,19 @@ No new app. Wiring for the lead:
 - `tools/web_public/jarvis/index.html`: `./transitions.js?v=t2` -> `?v=t3` (door / scroll / flythrough kinds + `level()`).
 - `tools/web_public/sw.js`: bump `CACHE` (render.js, fx-cine.js, fx-ui.js, fx-text.js, fx-lab.html, symposium/hall.js, ergasterion/floor.js, colosseum/arena.js, cities/athens.js, cities/hellas.js changed).
 - `olympus/olympus.js` FXMAP (zero-edit wiring of the new UI effects): `press: 'ui', stagger: 'ui', goldFlash: 'text'`.
+
+# Wiring POLIS (the city home, 2026-11-11, POLIS_25 items 19-25)
+New app `tools/web_public/polis/` (index.html, polis.css, polis.js, poliscore.js, fixture.json, jarvis.json, manifest, icon.svg) and two new shared files:
+`olympus/polis-skyline.js` (the painted 2.5D city on a 2D canvas: `window.OLYMPUS_POLIS_SKYLINE`, `layout / palette / create`) and `olympus/polis-skyline-sky.js`
+(the real sky over New York: `window.OLYMPUS_POLIS_SKY`, sun / moon / constellations from J2000 RA / Dec). ES5, no network, no image files. The row is in `tools/new_apps.json`.
+1. `jarvis/apps.js` BUILT_INS: `app('polis', 'Polis', 'life', '#e0b060', 'The city of OLYMPUS: every app a building under the real New York sky', { glyph: 'Πλ' }),`
+2. `olympus/olympus.js`: APPS `polis: ['Polis', 'Πλ', '#e0b060'],` and AMBIENT `polis: 'agora',`
+3. `tools/build_web_dashboard.py` app tuple: add `"polis"` (folder copied whole).  4. `sw.js` OTHER_APPS: `'polis/'`; precache `olympus/polis-skyline.js` and `olympus/polis-skyline-sky.js` with the kit.
+5. `olympus/intro-app.js` FLAVOUR: `polis: ['skyline', 'Enter the city', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `polis: { kind: 'skyline', ms: 1000 },`
+Then bump `sw.js` CACHE, run `python tools/apps_list_build.py` (Polis then shows itself in its own map: the gardens have room), and `python tools/make_app_icons.py polis` (writes only `polis/*.png` and fills the icon tags).
+Optional, when the Polis kit / Polis life files land: add `<script src="../olympus/polis.js" defer></script>` / `polis-life.js` to `polis/index.html`; the page calls
+`OLYMPUS_POLIS.decorate(main)` and `OLYMPUS_POLIS_LIFE.mount(main, {app: 'polis'})` when they exist (nothing else is assumed about them).
+Optional data: a build may publish `polis/sky.json` = `{"v": 1, "t": unix, "cloud": 0-1, "rain": 0-1, "fog": 0-1, "text": "Light rain"}` (New York weather); without it the sky is fair. `?wx=clear|cloud|rain|fog`, `?phase=dawn|day|dusk|night`, `?t=ISO`, `?pan=life|trading|money|harbour|<app id>` for demos.
+Reads (all optional, the page is never blank): `olympus/apps-list.js`, `../home.json` (bots + the Mind's proposals at `live.pc.mind.proposals`), `../kalshi.json`, `../olympus/people.json`, `../ergasterion/queue.json`, each app's `jarvis.json` (fresh = level ok / warn / bad and t in the last 24 h).
+Tests after wiring: `tests.test_polis_page` (static + node: `--static`; browser under the lock), `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, `tests.test_wire_new_apps`.
