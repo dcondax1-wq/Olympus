@@ -375,6 +375,32 @@
    ]
   },
   {
+   "id": "job:dev",
+   "name": "Epistates",
+   "meaning": "the overseer",
+   "title": "Foreman of the coding agents",
+   "kind": "mind",
+   "area": "factory",
+   "app": "ergasterion",
+   "seed": 1279485801,
+   "temperament": "calm",
+   "voice": {
+    "pitch": 1.25,
+    "rate": 1.0
+   },
+   "sources": [
+    "../ergasterion/builders.json"
+   ],
+   "home": {
+    "scene": "ergasterion",
+    "place": "dev"
+   },
+   "bio": "Watches over the coding agents in the builders' camp: who is building what, and what was merged.",
+   "aliases": [
+    "dev"
+   ]
+  },
+  {
    "id": "keeper:market",
    "name": "Agoraios",
    "meaning": "of the marketplace",

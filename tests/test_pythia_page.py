@@ -219,9 +219,9 @@ def test_page():
             t = AK.taps(p)
             check("c. every tap target is at least 44 x 44 px (the day buttons, the week buttons)", not t, t[:5])
             check("c. no sideways scroll; Jarvis's corner is free; no console error; nothing off the origin", AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (errs[:3], off[:3]))
-            wh = p.evaluate("() => { const w = window.PYTHIA.wheel; return w ? { n: w.count, q: w.quality(), lite: w.lite, shown: !document.querySelector('#stage').hidden && document.querySelector('#flat').hidden, size: [document.querySelector('#stage').clientWidth, document.querySelector('#stage').clientHeight] } : null }")
+            wh = p.evaluate("() => { const w = window.PYTHIA.wheel; return w ? { n: w.count, q: w.quality(), lite: w.lite, shown: !document.querySelector('#stage').hidden && document.querySelector('#flat').hasAttribute('hidden'), size: [document.querySelector('#stage').clientWidth, document.querySelector('#stage').clientHeight] } : null }")
             if wh is None:
-                check("c. 3D: no WebGL here, so the flat wheel is shown (the page still works)", p.evaluate("() => window.PYTHIA.flat === true && !document.querySelector('#flat').hidden"))
+                check("c. 3D: no WebGL here, so the flat wheel is shown (the page still works)", p.evaluate("() => window.PYTHIA.flat === true && !document.querySelector('#flat').hasAttribute('hidden')"))
             else:
                 check("c. 3D: the marble wheel is up with 14 pillars, the flat twin is hidden, the canvas has a real size", wh["n"] == 14 and wh["shown"] and wh["size"][0] > 200 and wh["size"][1] > 100, wh)
                 pos = p.evaluate("() => window.PYTHIA.wheel.screenOf(2)")
@@ -233,7 +233,7 @@ def test_page():
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?at=2026-10-30T15:00:00Z&q=off")
-            q = p.evaluate("""() => ({ flat: window.PYTHIA.flat, wheel: !!window.PYTHIA.wheel, svg: !document.querySelector('#flat').hidden, canvas: document.querySelector('#stage').hidden, bars: document.querySelectorAll('#flat rect').length,
+            q = p.evaluate("""() => ({ flat: window.PYTHIA.flat, wheel: !!window.PYTHIA.wheel, svg: !document.querySelector('#flat').hasAttribute('hidden'), canvas: document.querySelector('#stage').hidden, bars: document.querySelectorAll('#flat rect').length,
               next: [...document.querySelectorAll('#nextList > li')].map((l) => l.textContent), range: document.querySelector('#range').textContent, risks: [...document.querySelectorAll('#grid .dbtn')].map((b) => b.dataset.risk + ':' + b.querySelector('b').textContent).join(' '), live: document.querySelector('#liveCard').hidden })""")
             check("c. ?q=off (3D Off): the flat marble wheel is drawn instead (14 pillars), the page works the same, no error", q["flat"] and not q["wheel"] and q["svg"] and q["canvas"] and q["bars"] == 14 and not errs, (q, errs[:3]))
             check("c. the Oct 30 window crosses the Nov 1 clock change: it runs Oct 30 to Nov 12; the Thursday Nov 5 claims are '5 days 22 hours' away (not 5 days 21 or 23); Nov 11 (Veterans Day) is light; the brief for another day is not shown",

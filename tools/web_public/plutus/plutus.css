@@ -20,7 +20,7 @@ body { background: radial-gradient(120% 60% at 50% 28%, #2c251f 0%, #15120f 50%,
 h1 { margin: 0; font: 800 22px/1.1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--lime);
    }
 .sub { margin: 3px 0 0; color: var(--dim); font-size: 13px; }
-.tag { font: 700 12px var(--oly-display, sans-serif); letter-spacing: .01em; padding: 2px 7px; border-radius: 6px; color: #15120f; background: var(--gold); }
+.tag { font: 700 12px var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; padding: 2px 7px; border-radius: 6px; color: #15120f; background: var(--gold); }
 .tag.live { background: var(--lime); }
 
 .sheet { position: fixed; left: calc(10px + var(--sl)); right: calc(10px + var(--sr)); top: clamp(238px, 35vh, 330px); bottom: calc(166px + var(--sb));
@@ -51,7 +51,7 @@ input[type="range"] { width: 100%; min-height: 44px; accent-color: var(--lime); 
 .warn { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--gold); background: rgba(224, 176, 96, .08); font-size: 13px; }
 
 table { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
-th { text-align: right; font: 600 12px var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--dim); padding: 4px 4px; }
+th { text-align: right; font: 600 12px var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; color: var(--dim); padding: 4px 4px; }
 th:first-child, td:first-child { text-align: left; }
 td { text-align: right; padding: 6px 4px; border-top: 1px solid rgba(255, 255, 255, .06); }
 td.neg { color: var(--bad); } td.pos { color: var(--lime); }
@@ -75,7 +75,7 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 
 /* 2026-11-04: goal tracker, payout calendar, income waterfall, what-if (plutusfx.js; the effects come from ../olympus/fx-*.js) */
 .xbox { margin-top: 14px; padding: 10px 12px; border: 1px solid rgba(127, 138, 82, .22); border-radius: 14px; background: linear-gradient(160deg, rgba(127, 138, 82, .07), rgba(224, 176, 96, .04)); }
-.xbox h3 { margin: 0 0 8px; font: 700 12px var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--gold); }
+.xbox h3 { margin: 0 0 8px; font: 700 12px var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--gold); }
 .goalrow { display: flex; align-items: center; gap: 12px; }
 .ringhost { position: relative; flex: 0 0 84px; width: 84px; height: 84px; display: grid; place-items: center; }
 .ringhost b { font: 800 17px var(--oly-display, sans-serif); color: var(--lime); }
@@ -110,7 +110,7 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .pd { border: 1px solid rgba(127, 138, 82, .22); border-radius: 14px; background: linear-gradient(160deg, rgba(127, 138, 82, .07), rgba(224, 176, 96, .04)); overflow: hidden; }
 .pd summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 6px 12px; cursor: pointer; }
 .pd summary::-webkit-details-marker { display: none; }
-.pd summary b { font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--lime); }
+.pd summary b { font: 700 12px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--lime); }
 .pd summary span { font-size: 12px; color: var(--dim); text-align: right; font-variant-numeric: tabular-nums; }
 .pd summary::after { content: ''; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--dim); border-bottom: 2px solid var(--dim); transform: rotate(45deg); transition: transform .2s; margin-left: 2px; }
 .pd[open] summary::after { transform: rotate(-135deg); }

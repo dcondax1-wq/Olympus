@@ -639,3 +639,18 @@ No new app. Wiring for the lead:
 - `tools/web_public/jarvis/index.html`: `./transitions.js?v=t2` -> `?v=t3` (door / scroll / flythrough kinds + `level()`).
 - `tools/web_public/sw.js`: bump `CACHE` (render.js, fx-cine.js, fx-ui.js, fx-text.js, fx-lab.html, symposium/hall.js, ergasterion/floor.js, colosseum/arena.js, cities/athens.js, cities/hellas.js changed).
 - `olympus/olympus.js` FXMAP (zero-edit wiring of the new UI effects): `press: 'ui', stagger: 'ui', goldFlash: 'text'`.
+
+## Characters v3 (the rigged cast, People kit; 2026-11-11)
+No new app. Wiring for the lead:
+- `tools/web_public/sw.js`: bump `CACHE` (people3d.js, people.js, people-lab.html, symposium/hall.js changed; new olympus/people-rig.js, olympus/people-studio.js,
+  olympus/three-addons/{GLTFLoader,SkeletonUtils,BufferGeometryUtils,meshopt_decoder.module}.js, assets/people/cast.glb). `assets/` is not in OTHER_APPS, so
+  `assets/people/cast.glb?v=3` (497 KB, versioned) is kept cache-first after the first visit (offline OK). Optional: precache it in SHELL for offline-first.
+- Any app service worker that precaches `olympus/people3d.js` should also list `olympus/people-rig.js`, `olympus/people-studio.js`, the four three-addons
+  files and `assets/people/cast.glb?v=3` (`olympus/` is an OTHER_APPS folder with its own caching).
+- Nothing to add to apps.js / olympus.js APPS / build_web_dashboard.py.
+## AGORA v2 design system (2026-11-11, the product design agent)
+No new app. Wiring for the lead:
+- `tools/web_public/sw.js`: bump `CACHE` (`le-public-v90` -> next). Changed under the SAME `?v=` (cache-first, so phones need the new cache name): `olympus/agora.css` (v2 tokens, components, the page shell), `ergasterion/ergasterion.js` (pull to refresh), `herald/herald.js`, `pinakes/pinakes.js`, `kronos/kronos.js`, `pheme/pheme.js`, `pythia/pythia.js` (svg flat fallbacks visible again), `mint/mint.js` (pull to refresh), `mintcity/mintcity.js`, `symposium/symposium.js` (pull to refresh), the CSS of settings, inbox, journal, ledger, forum, nemesis, plutus, chronos, argus, kalshicity (small labels in the system sans).
+- New shared file `olympus/agora-ui.js?v=1` (icons, charts, toast, sheet, states, pull to refresh, the back row + compact bar). Loaded by the 39 apps on the AGORA app base (one deferred tag after `a11y.js`); covered by `olympus/` in `OTHER_APPS`. New lab page `olympus/agora-lab.html`.
+- Re-versioned in their pages (no lead action): `zenith_agora.css?v=a3`, `zenith_hero.js?v=4` (root), `nq.css?v=a2`, `nq.js?v=a2`, `planner.css?v=b2`, `pinakes.css?v=a2`, `kalshi.css?v=k24`.
+- No change to `apps.js`, the APPS table, `build_web_dashboard.py`.

@@ -90,3 +90,6 @@
 @media (min-width:760px){.hel-dock,.hel-card,.hel-ticker{left:50%;right:auto;width:520px;transform:translateX(-50%)}.hel-top{max-width:560px}}
 @media (max-height:520px){.hel-card{max-height:58%;left:auto;width:min(360px,52%);transform:none}.hel-find{display:none}}
 @media (prefers-reduced-motion:reduce){.hel-veil{transition:none}}
+
+/* scene direction (walk-direct.js): no thumb joystick unless asked for (?joy=1) */
+.hel.walking.nojoy .hel-stickzone{display:none}

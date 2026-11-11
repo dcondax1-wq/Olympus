@@ -70,8 +70,8 @@ def part_a():
     fb = idx[idx.index("function reactorFb("):idx.index("function reactorFb(") + 2600]
     sp = idx[idx.index("const cv = $('#spCv')"):idx.index("const cv = $('#spCv')") + 3200]
     check("a. the eval arc on Home (reactorFb) and the intro (stars, halo) are re-toned: no cold colour", not cold(fb) and not cold(sp), (cold(fb), cold(sp)))
-    check("a. changed files are re-versioned so a phone does not keep the old copy: zenith_hero.js?v=3, zenith_money.js?v=3, zenith_agora.css?v=a2",
-          'src="zenith_hero.js?v=3"' in idx and 'src="zenith_money.js?v=3"' in idx and 'href="zenith_agora.css?v=a2"' in idx)
+    check("a. changed files are re-versioned so a phone does not keep the old copy: zenith_hero.js?v=4, zenith_money.js?v=3, zenith_agora.css?v=a3 (AGORA v2 Home layer)",
+          'src="zenith_hero.js?v=4"' in idx and 'src="zenith_money.js?v=3"' in idx and 'href="zenith_agora.css?v=a3"' in idx)
 
 
 NODE = r"""

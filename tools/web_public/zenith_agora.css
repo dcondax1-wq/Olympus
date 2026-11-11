@@ -587,3 +587,34 @@ html .oly-l .oly-g, html .oly-l .oly-chip i { animation: none !important; filter
 .zn-nq-a:focus-visible { outline: 2px solid #f3ece0; outline-offset: 2px; }
 :root[data-theme="light"] .zn-nq { background: linear-gradient(180deg, #efeeeb, #fcfaf6); border-color: rgba(47,40,33,.14); color: #201c18; box-shadow: 0 6px 18px rgba(47,40,33,.12); }
 :root[data-theme="light"] .zn-nq-t { color: #201c18; } :root[data-theme="light"] .zn-nq-x { color: #5c544a; }
+/* ---- AGORA v2 (2026-11-11, docs/DESIGN_AGORA.md "v2"): one type scale on Home (serif titles, sans text, rounded tabular numbers), opaque
+   top and bottom bars (nothing reads through them), cards without the coloured top stripe (the status lives in the header pill), calm
+   eyebrow labels, a press you can feel on every tile. Dark theme only; the light theme keeps its own look. ---- */
+:root:not([data-theme="light"]) header.top { background: rgba(20, 17, 14, .97) !important; -webkit-backdrop-filter: saturate(1.2) blur(16px); backdrop-filter: saturate(1.2) blur(16px); border-bottom: 1px solid rgba(243, 236, 224, .06); box-shadow: 0 6px 16px rgba(0, 0, 0, .22); }
+:root:not([data-theme="light"]) nav#tabs.tabs { background: rgba(22, 19, 15, .97) !important; -webkit-backdrop-filter: saturate(1.2) blur(16px); backdrop-filter: saturate(1.2) blur(16px); border-top: 1px solid rgba(243, 236, 224, .07); box-shadow: 0 -8px 24px rgba(0, 0, 0, .3); }
+:root:not([data-theme="light"]) header.top h1 { font: 600 28px/1.1 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif; letter-spacing: 0; }
+:root:not([data-theme="light"]) .pl-hi > b { font: 600 28px/1.12 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif; letter-spacing: 0; color: #f3ece0; }
+:root:not([data-theme="light"]) :is(.mn-h, .sd-h) h3 { font: 600 19px/1.2 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif; letter-spacing: .005em; color: #f3ece0; }
+:root:not([data-theme="light"]) :is(.mn-card, .sd-card)::before { content: none; }
+:root:not([data-theme="light"]) :is(.mn-card, .sd-card) { padding: 16px 14px 12px; border-radius: 20px; border-color: rgba(243, 236, 224, .075);
+  background: linear-gradient(180deg, rgba(39, 33, 26, .92), rgba(28, 24, 19, .9)); box-shadow: inset 0 1px 0 rgba(255, 240, 214, .05), 0 1px 2px rgba(0, 0, 0, .32), 0 8px 22px rgba(0, 0, 0, .26); }
+:root:not([data-theme="light"]) :is(.pl-h3, .su-eye2) { font: 600 12px/1.2 -apple-system,'SF Pro Text',system-ui,sans-serif; letter-spacing: .03em; text-transform: none; color: #a89c88; }
+:root:not([data-theme="light"]) .zn-nq { margin-top: 14px; border-radius: 18px; border-left-width: 4px; box-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 22px rgba(0, 0, 0, .25); }
+:root:not([data-theme="light"]) :is(.mn-row, .su-acct, .zh-bot, .iconbtn, .pl-now a, .tabs a, .tabs button) { transition: scale .2s cubic-bezier(.2,.8,.2,1), background-color .2s; }
+:root:not([data-theme="light"]) :is(.mn-row, .su-acct, .pl-now a):active { scale: .985; }
+:root:not([data-theme="light"]) :is(.iconbtn, .tabs a, .tabs button):active { scale: .94; }
+@media (prefers-reduced-motion: reduce) { :root :is(.mn-row, .su-acct, .zh-bot, .iconbtn, .pl-now a, .tabs a, .tabs button) { transition: none; } :root :is(.mn-row, .su-acct, .pl-now a, .iconbtn, .tabs a, .tabs button):active { scale: 1; } }
+/* the three bots keep one identity colour each, on the AGORA palette (the shared scripts paint electric blue / orange / violet inline):
+   Zlarior aegean, ATLAS sun gold, BLITZ (paper) stone */
+:root:not([data-theme="light"]) :is([data-bot="lit"], [data-mn="lit"], [data-zh="lit"]) { --c: #7fa7c2 !important; }
+:root:not([data-theme="light"]) :is([data-bot="atlas"], [data-mn="atlas"], [data-zh="atlas"]) { --c: #e0b060 !important; }
+:root:not([data-theme="light"]) :is([data-bot="blitz"], [data-mn="blitz"], [data-zh="blitz"]) { --c: #b5a68e !important; }
+:root:not([data-theme="light"]) .su-acct.trading::before { box-shadow: inset 0 0 0 1.5px var(--c) !important; }
+/* the score ring: gold to bronze, not cyan */
+:root:not([data-theme="light"]) .pr-ring stop:first-of-type { stop-color: #e0b060; }
+:root:not([data-theme="light"]) .pr-ring stop:last-of-type { stop-color: #9c6b3c; }
+/* content fades out under the floating tab bar instead of showing through below it */
+@media (max-width: 760px) {
+  :root:not([data-theme="light"]) nav#tabs.tabs::before { content: ""; position: absolute; z-index: -1; left: -8px; right: -8px; top: -30px; bottom: calc(-16px - env(safe-area-inset-bottom, 0px)); pointer-events: none;
+    background: linear-gradient(180deg, rgba(14, 12, 10, 0), rgba(14, 12, 10, .9) 40%, #0e0c0a); }
+}

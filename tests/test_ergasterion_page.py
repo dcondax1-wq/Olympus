@@ -282,8 +282,8 @@ def test_maths():
     check("b. builders (the repo's builders.json, and the same agents WITHOUT git): real rows are never flagged sample; without git every agent is 'job only' with no commits and the note says so; 5 min = working, 16 min = quiet, merged = done, not live or no time = job; junk is cleaned; at most 10 tents",
           out["buildersReal"][:4] == [True] * 4 and "no live activity" in out["buildersReal"][4] and out["buildersReal"][5] and out["buildersReal"][6:11] == ["working", "quiet", "done", "job", "job"] and out["buildersReal"][11] == 0
           and out["buildersReal"][12].startswith("No build agents are listed") and out["buildersReal"][13] and out["buildersReal"][14] == 10, out["buildersReal"])
-    check("b. PEOPLE: 25 individuals (15 workers + 10 builders), each with a stable person id (scanner:chrysos, bot:lit, bot:kalshi, mind, villager:cronos, builder:<branch-short>), a one-liner and its hall; 'People here' = 5 / 4 / 4 / 2 and 10 in the camp; the Talk prompt needs you within 3 m; looks differ",
-          out["people"][0] == 25 and out["people"][1] == "scanner:chrysos|bot:lit|bot:kalshi|mind|villager:cronos" and out["people"][2] == "builder:a8fa04fb59e01df25|builder:a8fa04fb" and out["people"][3] == 0 and out["people"][4] and out["people"][5] == "5,4,4,2,10" and out["people"][6]
+    check("b. PEOPLE: 25 individuals (15 workers + 10 builders), each with a stable person id (scanner:chrysos, bot:lit, bot:kalshi, mind, job:cronos, builder:<branch-short>), a one-liner and its hall; 'People here' = 5 / 4 / 4 / 2 and 10 in the camp; the Talk prompt needs you within 3 m; looks differ",
+          out["people"][0] == 25 and out["people"][1] == "scanner:chrysos|bot:lit|bot:kalshi|mind|job:cronos" and out["people"][2] == "builder:a8fa04fb59e01df25|builder:a8fa04fb" and out["people"][3] == 0 and out["people"][4] and out["people"][5] == "5,4,4,2,10" and out["people"][6]
           and out["people"][7] == "w:queue" and out["people"][8] is None and out["people"][9] == "b:camp1" and out["people"][10] and out["people"][11] == "doing,last,learned,stuck,next,sure", out["people"])
     a = out["answers"]
     check("b. the built-in chat answers six questions from the worker's own row only: a failed worker says 'Yes' it is stuck and names its planner step; a lesson comes with its source; sample data is 'not at all' sure; nothing invented when there is no file",
@@ -451,13 +451,13 @@ def test_page():
             pe = p.evaluate("""() => ({ kit: !!window.OLYMPUS_PEOPLE, places: [...document.querySelectorAll('#places button')].map((b) => b.textContent), here: [...document.querySelectorAll('#peopleList button')].map((b) => b.getAttribute('aria-label')),
               faces: document.querySelectorAll('#peopleList .mini-face svg').length, chat: document.querySelector('#chatCard').hidden, talk: document.querySelector('#talkBtn').hidden })""")
             check("c. PEOPLE HERE (no kit loaded): 5 places with head counts, the Library's two people each with a face, a status dot and 'Talk to ...'; no chat open yet",
-                  pe["places"] == ["Money hall (5)", "Trading hall (4)", "Research hall (4)", "Library (2)", "Builders' camp (10)"] and len(pe["here"]) == 2 and pe["here"][0].startswith("Talk to The queue, Working.") and pe["faces"] == 2 and pe["chat"] and pe["talk"], pe)
+                  pe["places"] == ["Money hall (5)", "Trading hall (4)", "Research hall (4)", "Library (2)", "Builders' camp (10)"] and len(pe["here"]) == 2 and pe["here"][0].startswith("Talk to Kalamos, Working.") and pe["faces"] == 2 and pe["chat"] and pe["talk"], pe)
             if not pe["kit"]:
                 p.locator('#places button[data-place="research"]').click()
                 p.locator('#peopleList button[data-key="w:cronos"]').click()
                 c0 = p.evaluate("() => ({ hidden: document.querySelector('#chatCard').hidden, h: document.querySelector('#chatH').textContent, pill: document.querySelector('#chatPill').textContent, who: document.querySelector('#chatWho').textContent, log: [...document.querySelectorAll('#chatLog li')].map((e) => e.textContent), qs: [...document.querySelectorAll('#chatQs button')].map((b) => b.textContent), face: document.querySelector('#chatFace').dataset.kit, svg: !!document.querySelector('#chatFace svg') })")
                 check("c. TALK (fallback): tapping a person opens the built-in chat: its own face, name, status, 'Built-in answers ... only from its own data' with its person id, its one-liner, and six questions to tap",
-                      not c0["hidden"] and c0["h"] == "Cronos" and c0["pill"] == "Failed" and "Built-in answers" in c0["who"] and "villager:cronos" in c0["who"] and "cannot place orders" in c0["who"] and c0["log"] == ["Blocked: My last run failed. Failed: datacity."]
+                      not c0["hidden"] and c0["h"] == "Horaios" and c0["pill"] == "Failed" and "Built-in answers" in c0["who"] and "job:cronos" in c0["who"] and "cannot place orders" in c0["who"] and c0["log"] == ["Blocked: My last run failed. Failed: datacity."]
                       and c0["qs"] == ["What are you doing?", "What was your last result?", "What did you learn?", "Are you stuck?", "What is next?", "How sure are you?"] and c0["face"] == "0" and c0["svg"], c0)
                 for qid in ("doing", "last", "learned", "stuck", "next", "sure"):
                     p.locator(f'#chatQs button[data-q="{qid}"]').click()
@@ -537,14 +537,14 @@ def test_page():
             c = p.evaluate("""() => ({ h: document.querySelector('#sheetH').textContent, pill: document.querySelector('#sheetPill').textContent, doing: document.querySelector('#sheetDoing').textContent, outs: document.querySelectorAll('#sheetOut li').length, role: document.querySelector('#sheetRole').textContent, say: document.querySelector('#sheetSay').textContent,
               tags: [...document.querySelectorAll('#sheetOut .crate .tag')].map((e) => e.textContent), health: document.querySelector('#sheetHealth').textContent, hidden: document.querySelector('#sheet').hidden, status: document.querySelector('#status').textContent, planSay: document.querySelector('#planSay').textContent })""")
             check("c. a worker card: name, the status word, its hall and job, what it SAYS ('My last run failed'), what it is doing, its crates (at most 5, each with a short tag), the health line; the status line is spoken",
-                  not c["hidden"] and c["h"] == "Cronos" and c["pill"] == "Failed" and "1 failed" in c["doing"] and 1 <= c["outs"] <= 5 and c["health"].startswith("Example data.") and c["status"].startswith("Cronos: Failed.") and "Research hall" in c["role"] and "turning the search wheel" in c["role"]
+                  not c["hidden"] and c["h"] == "Horaios · Cronos" and c["pill"] == "Failed" and "1 failed" in c["doing"] and 1 <= c["outs"] <= 5 and c["health"].startswith("Example data.") and c["status"].startswith("Cronos: Failed.") and "Research hall" in c["role"] and "turning the search wheel" in c["role"]
                   and c["say"].startswith("Says: My last run failed.") and "datacity" in c["tags"] and c["planSay"].startswith("Cronos says: "), c)
             p.locator('#sheetOut .crate[data-i="0"]').click()
             cr = p.evaluate("() => [document.querySelector('#sheetOut .crate[data-i=\"0\"]').getAttribute('aria-expanded'), getComputedStyle(document.querySelector('#sheetOut .crate[data-i=\"0\"] .full')).whiteSpace, document.querySelectorAll('#sheetOut .crate[aria-expanded=true]').length]")
             check("c. tapping a crate opens it (its full text, when it was made); one crate open at a time", cr == ["true", "normal", 1], cr)
             p.locator('#workers button[data-id="mind"]').click()
             m = p.evaluate("() => [document.querySelector('#sheetH').textContent, [...document.querySelectorAll('#sheetLearn li')].map((e) => e.textContent), document.querySelectorAll('#sheetOut li').length]")
-            check("c. the Mind card lists its notes as crates and keeps the 'context only: not predictive' lesson with its source file", m[0] == "Mind" and m[2] == 2 and any("context only" in t and "source: docs/CLAUDE_REFERENCE.md" in t for t in m[1]), m)
+            check("c. the Mind card lists its notes as crates and keeps the 'context only: not predictive' lesson with its source file", m[0] == "Metis · Mind" and m[2] == 2 and any("context only" in t and "source: docs/CLAUDE_REFERENCE.md" in t for t in m[1]), m)
             p.locator("#sheetClose").click()
             check("c. Close hides the card", p.evaluate("() => document.querySelector('#sheet').hidden"))
             p.evaluate("() => { document.querySelector('#movesBox').open = true; }")
@@ -553,7 +553,7 @@ def test_page():
 
             # PEOPLE, kit path: a stubbed window.OLYMPUS_PEOPLE (the real module is optional and may be absent)
             STUB = """window.__opened = []; window.__kitMode = 'ok';
-              window.OLYMPUS_PEOPLE = { get: (id) => (/^(scanner:|bot:|mind$|villager:cronos|builder:example-1$)/.test(id) ? { id } : null),
+              window.OLYMPUS_PEOPLE = { get: (id) => (/^(scanner:|bot:|mind$|job:cronos|builder:example-1$)/.test(id) ? { id } : null),
                 open: (id, o) => { if (window.__kitMode === 'throw') throw new Error('kit broke'); window.__opened.push(id); },
                 portrait: (id, size) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('data-kit-face', id); s.setAttribute('width', size); s.setAttribute('height', size); return s; },
                 standup: (ids) => ids.map((id) => ({ id, line: 'KIT says ' + id })) };"""
@@ -589,7 +589,7 @@ def test_page():
 
             # 3D factory: pick, walk, walls, follow, tour, budget (only when the machine can draw it; ERG_NO3D=1 skips it when 3D is impossible)
             ctx, p, errs, seen, off = AK.page(br, origin)
-            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet&direct=0" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
             p.wait_for_timeout(2500)
             mode = p.evaluate("() => window.ERGASTERION.floor() ? '3d' : 'plan'")
             if no3d:
@@ -607,7 +607,7 @@ def test_page():
                     p.evaluate(tap, [pt["x"], pt["y"]])
                     p.wait_for_timeout(400)
                     sid = p.evaluate("() => [document.querySelector('#sheetH').textContent, document.querySelector('#sheet').hidden]")
-                    check("c. tapping a worker in the 3D factory opens that worker's card", sid[0] in ("The queue", "Dev agents") and not sid[1], sid)
+                    check("c. tapping a worker in the 3D factory opens that worker's card", sid[0] in ("Kalamos · The queue", "Epistates · Dev agents") and not sid[1], sid)
                 p.evaluate("() => { const f = window.ERGASTERION.floor(); f.reset(); f.teleport(4.3, 9.0); }")
                 p.wait_for_timeout(500)
                 cp = p.evaluate("() => window.ERGASTERION.floor().projectCrate('queue', 0)")
@@ -615,7 +615,7 @@ def test_page():
                     p.evaluate(tap, [cp["x"], cp["y"]])
                     p.wait_for_timeout(400)
                     cs = p.evaluate("() => [document.querySelector('#sheetH').textContent, document.querySelectorAll('#sheetOut .crate[aria-expanded=true]').length, document.querySelector('#status').textContent]")
-                    check("c. tapping a crate on a conveyor opens the worker's card with THAT crate open and reads it out", cs[0] == "The queue" and cs[1] == 1 and "Crate: " in cs[2], cs)
+                    check("c. tapping a crate on a conveyor opens the worker's card with THAT crate open and reads it out", cs[0] == "Kalamos · The queue" and cs[1] == 1 and "Crate: " in cs[2], cs)
                 else:
                     check("c. a crate of the queue's conveyor projects on screen from in front of it", False, cp)
                 p.evaluate("() => window.ERGASTERION.floor().reset()")
@@ -643,11 +643,11 @@ def test_page():
                 p.evaluate("() => window.ERGASTERION.floor().teleport(2.1, 3.68, -Math.PI / 2)")
                 p.wait_for_timeout(2600)
                 tk = p.evaluate("() => [document.querySelector('#talkBtn').hidden, document.querySelector('#talkBtn').textContent, Math.cos(window.ERGASTERION.floor().facing('w:queue') + Math.PI / 2)]")
-                check("c. the Talk prompt: nobody within 3 m = no button; 2.2 m from the queue's scribe = 'Talk to The queue', and it has turned to wave at you (it faces -x, toward where you stand)", far and tk[0] is False and tk[1] == "Talk to The queue" and tk[2] > 0.93, (far, tk))
+                check("c. the Talk prompt: nobody within 3 m = no button; 2.2 m from the queue's scribe = 'Talk to Kalamos', and it has turned to wave at you (it faces -x, toward where you stand)", far and tk[0] is False and tk[1] == "Talk to Kalamos" and tk[2] > 0.93, (far, tk))
                 p.locator("#talkBtn").click()
                 p.wait_for_timeout(900)
                 tf = p.evaluate("() => [window.ERGASTERION.floor().focused(), document.querySelector('#chatCard').hidden || !!window.OLYMPUS_PEOPLE, document.querySelector('#sheetH').textContent, Math.cos(window.ERGASTERION.floor().facing('w:queue') + Math.PI / 2), window.ERGASTERION.floor().stats()]")
-                check(f"c. pressing Talk opens the chat for that person: it is the focused one (talk pose, marble disc), still facing you, its card is open; inside the budget ({tf[4]['calls']} calls / {tf[4]['triangles']} triangles)", tf[0] == "w:queue" and tf[1] in (False, True) and tf[2] == "The queue" and tf[3] > 0.93 and tf[4]["calls"] <= BUDGET["calls"] and tf[4]["triangles"] <= BUDGET["triangles"], tf)
+                check(f"c. pressing Talk opens the chat for that person: it is the focused one (talk pose, marble disc), still facing you, its card is open; inside the budget ({tf[4]['calls']} calls / {tf[4]['triangles']} triangles)", tf[0] == "w:queue" and tf[1] in (False, True) and tf[2] == "Kalamos · The queue" and tf[3] > 0.93 and tf[4]["calls"] <= BUDGET["calls"] and tf[4]["triangles"] <= BUDGET["triangles"], tf)
                 AK.shot(p, "ergasterion-3d-talk")
                 p.evaluate("() => window.ERGASTERION.endTalk()")
                 check("c. ending the chat releases the person (no focus)", p.evaluate("() => window.ERGASTERION.floor().focused()") == "")
@@ -716,7 +716,7 @@ def test_page():
 
             # LIFE in 3D (life.js, 2026-11-11): a fixed clock = a fixed scene; the 09:30 stand-up ring, reactions to real events, the near full figure, "show me your work", say / show
             ctx, p, errs, seen, off = AK.page(br, origin)
-            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=standup" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=standup&direct=0" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
             p.wait_for_timeout(2500)
             if not no3d and p.evaluate("() => !!(window.ERGASTERION.floor() && window.ERGASTERION.floor().life)"):
                 F = "window.ERGASTERION.floor()"
@@ -742,7 +742,7 @@ def test_page():
                 t1 = p.evaluate(f"() => [{F}.life().near, !!{F}.figureOf('w:hephaestus'), {F}.posOf('w:hephaestus'), {F}.stats(), window.__k.slice(), document.querySelector('#leadBtn').hidden, document.querySelector('#leadBtn').textContent]")
                 check(f"c. LIFE TALK: the person you talk to becomes the full shared figure (LOD: near = {t1[0]}, {t1[3]['calls']} calls <= 45), stays where it stood, and speaks through the kit's say(id, text, {{scene: 'ergasterion', figure}}) and show(id, work); 'Show me your work' appears",
                       ("w:hephaestus" in t1[0]) == t1[1] and (t1[1] or not p.evaluate(f"() => {F}.life().full")) and t1[2]["away"] and t1[3]["calls"] <= BUDGET["calls"]
-                      and ["say", "villager:hephaestus", "ergasterion", t1[1]] in [x[:4] for x in t1[4] if x[0] == "say"] and any(x[0] == "show" and x[1] == "villager:hephaestus" and x[2] == "work" for x in t1[4]) and t1[5] is False and t1[6].startswith("Show me your work"), t1)
+                      and ["say", "job:hephaestus", "ergasterion", t1[1]] in [x[:4] for x in t1[4] if x[0] == "say"] and any(x[0] == "show" and x[1] == "job:hephaestus" and x[2] == "work" for x in t1[4]) and t1[5] is False and t1[6].startswith("Show me your work"), t1)
                 p.evaluate("() => document.querySelector('#leadBtn').click()")
                 p.wait_for_timeout(300)
                 l0 = p.evaluate(f"() => [{F}.pos().mode, {F}.posOf('w:hephaestus').act]")
@@ -795,7 +795,7 @@ def test_page():
             check("c. 375 x 667, LITE (?q=low), reduced motion: the 2D plan with 15 buttons, no 3D, no 'Walk the floor' or tour button, the LITE chip", r["plan"] and r["stage"] and r["buttons"] == 15 and r["view"] and r["tour"] and r["lite"] and not r["floor"], r)
             p.locator('#plan g[data-id="oikos"]').click()
             c2 = p.evaluate("() => [document.querySelector('#sheetH').textContent, document.querySelector('#sheetPill').textContent, document.querySelector('#sheet').hidden, document.querySelector('#planSay').textContent]")
-            check("c. tapping a worker on the plan opens its card (Oikos: Stale in the demo) and it speaks under the plan ('Old news')", c2[:3] == ["Oikos", "Stale", False] and c2[3].startswith("Oikos says: Old news:"), c2)
+            check("c. tapping a worker on the plan opens its card (Oikos: Stale in the demo) and it speaks under the plan ('Old news')", c2[:3] == ["Pheidon · Oikos", "Stale", False] and c2[3].startswith("Oikos says: Old news:"), c2)
             sz = p.evaluate("() => { const r = document.querySelector('#plan g[data-id=oikos]').getBoundingClientRect(); return [r.width, r.height]; }")
             check("c. a plan button is at least 44 px (its hit square), no sideways scroll, every tap >= 44 px, no error", sz[0] >= 43.5 and sz[1] >= 43.5 and AK.no_sideways(p) and not AK.taps(p) and not errs, (sz, AK.taps(p)[:3], errs[:2]))
             p.evaluate("() => window.ERGASTERION.replay.set(0)")
@@ -822,7 +822,7 @@ def test_page():
                   lanes: [...document.querySelectorAll('#pipeLanes a .n')].map((e) => e.textContent), fam0: document.querySelector('#pipeFams a').getAttribute('href'), moves: document.querySelectorAll('#pipeMoves a').length, pipe: document.querySelector('#pipeLine').textContent,
                   rnote: document.querySelector('#replayNote').textContent, rlist: [...document.querySelectorAll('#replayList li')].map((e) => e.textContent), all: document.body.textContent }; }""")
                 check("c. REAL files: no DEMO chip; Zlarior shows its real drawdown line; Sibyl's own headline; a machine with no file says 'No file from this machine yet' and is Stale, never invented",
-                      rr["demo"] and "Drawdown left $1,420 of $2,000 max loss" in rr["lit"] and rr["sibyl"].startswith("Sibyl, ") and "One pick survives the check." in rr["sibyl"] and "No file from this machine yet" in rr["chrysos"], rr["lit"])
+                      rr["demo"] and "Drawdown left $1,420 of $2,000 max loss" in rr["lit"] and rr["sibyl"].startswith("Manto (Sibyl), ") and "One pick survives the check." in rr["sibyl"] and "No file from this machine yet" in rr["chrysos"], rr["lit"])
                 check("c. REAL Learning board: Sibyl's note is a lesson of the week with 'source: money/sibyl.json' next to the builder's lessons; 'what changed our mind' shows the real Kalshi 95c flip; nothing says Example",
                       any("Only 1 pick survives out-of-sample." in t and "source: money/sibyl.json" in t for t in rr["learn"]) and any("We believed: 95c and above is +1.4% per $" in t and "kalshi_edge_A.md" in t for t in rr["changed"]) and not any("Example:" in t for t in rr["learn"] + rr["changed"]), (rr["learn"][:2], rr["changed"][:1]))
                 q = json.load(open(os.path.join(D, "queue.json"), encoding="utf-8"))
@@ -835,7 +835,7 @@ def test_page():
                 bj = json.load(open(os.path.join(D, "builders.json"), encoding="utf-8"))
                 check("c. REAL Builders' camp: the agents of builders.json by name (never 'Example'), a tent each, and the note says where the activity comes from (git at build time, or job lines only)",
                       "Example" not in rc[0] and rc[1] == min(10, len(bj["agents"])) and sorted(rc[3]) == sorted(a["name"] for a in bj["agents"][:10]) and ("Read from git when the site was built" in rc[2] if bj["source"] == "git" else "no live activity" in rc[2]), rc[:3])
-                check("c. REAL files: Kalshi (mocked feed) is Working and Cronos is Working from its status.json; the dev agents read the real queue.json", "Kalshi bot, Working" in rr["kalshi"] and "Cronos, Working" in rr["cron"] and rr["dev"].startswith("Dev agents"), rr["kalshi"])
+                check("c. REAL files: Kalshi (mocked feed) is Working and Cronos is Working from its status.json; the dev agents read the real queue.json", "(Kalshi bot), Working" in rr["kalshi"] and "(Cronos), Working" in rr["cron"] and rr["dev"].startswith("Epistates (Dev agents)"), rr["kalshi"])
                 check("c. REAL run reads only the site's own files (the kalshi feed is the one outside address) and has no console error; every tap >= 44 px with the real lists", any("queue.json" in u for u in seen) and not errs and not [u for u in off if "kalshi" not in u] and not AK.taps(p) and AK.no_sideways(p), (off[:3], errs[:3], AK.taps(p)[:3]))
                 AK.shot(p, "ergasterion-real")
                 ctx.close()
@@ -855,7 +855,7 @@ def test_page():
 
             # reduced motion with 3D: still, no error
             ctx, p, errs, seen, off = AK.page(br, origin, reduced=True)
-            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet&direct=0" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
             p.wait_for_timeout(1500)
             mode = p.evaluate("() => window.ERGASTERION.floor() ? '3d' : 'plan'")
             if mode == "3d":

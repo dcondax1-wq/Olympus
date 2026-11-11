@@ -39,7 +39,7 @@ function renderHero() {
   const t = S.total;
   $('heroBase').textContent = t.n ? C.money(t.base) : '-';
   $('heroText').textContent = t.text; $('heroWhy').textContent = t.why;
-  const p = $('heroPill'); p.textContent = t.allSample ? 'EXAMPLE ESTIMATE' : 'ESTIMATE'; p.className = 'pill ' + t.tone;
+  const p = $('heroPill'); p.textContent = t.allSample ? 'Example estimate' : 'Estimate'; p.className = 'pill ' + t.tone;
   const lo = $('rngLo'), bar = C.rangeBar(t.low, t.base, t.high);
   lo.textContent = t.low < 0 ? `${C.money(t.low)} (a loss)` : C.money(t.low); lo.className = t.low < 0 ? 'neg' : ''; $('rngHi').textContent = C.money(t.high);
   $('rngFill').style.left = bar.left + '%'; $('rngFill').style.width = bar.width + '%'; $('rngFill').className = bar.neg ? 'neg' : '';
@@ -161,6 +161,8 @@ async function boot() {
   S.fixture = fx; S.index = idx;
   render();
   setInterval(() => { if (!document.hidden) getJSON('../money/index.json').then((i) => { if (i && !S.forced) { S.index = i; render(); } }); }, 300000);
+  const A = window.AGORA;                       // pull down = read the money files again (olympus/agora-ui.js); the demo says so honestly
+  if (A && A.pull) A.pull(() => S.forced ? Promise.resolve(A.toast && A.toast('Example numbers: nothing to refresh')) : getJSON('../money/index.json').then((i) => { if (i) { S.index = i; render(); } if (A.toast) A.toast(i ? 'Up to date' : 'Could not read the money files'); }));
 }
 window.MINT = { S, C, ready: () => S.ready, render };
 boot().catch((e) => { say('Something went wrong: ' + (e && e.message ? e.message : e)); try { if (O && O.fail) O.fail('Mint could not start'); } catch (_) { /* nothing */ } });

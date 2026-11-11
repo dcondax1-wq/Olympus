@@ -323,13 +323,13 @@ def test_page():
             mode = p.evaluate("() => window.HERALD.S.sceneMode")
             if mode == "webgl":
                 p.wait_for_timeout(1600)
-                sc = p.evaluate("() => { const s = window.HERALD.scene(); return [s.open(), s.frames(), !document.querySelector('#stand').hidden, document.querySelector('#standFlat').hidden]; }")
+                sc = p.evaluate("() => { const s = window.HERALD.scene(); return [s.open(), s.frames(), !document.querySelector('#stand').hidden, document.querySelector('#standFlat').hasAttribute('hidden')]; }")
                 f0 = sc[1]
                 p.wait_for_timeout(600)
                 f1 = p.evaluate("() => window.HERALD.scene().frames()")
                 check("c. 3D: the marble newsstand is drawn (WebGL) and its scroll has unrolled with the headline; once open it draws nothing more (no idle frames)", sc[0] == 1 and sc[1] > 3 and sc[2] and sc[3] and f1 == f0, (sc, f1))
             else:
-                fb = p.evaluate("() => [document.querySelectorAll('#standFlat text').length, !document.querySelector('#standFlat').hidden]")
+                fb = p.evaluate("() => [document.querySelectorAll('#standFlat text').length, !document.querySelector('#standFlat').hasAttribute('hidden')]")
                 check("c. WebGL is not available here: the flat scroll with the headline is drawn instead (never blank)", fb[0] >= 2 and fb[1], fb)
             AK.shot(p, "herald-demo")
             view_shot(p, "herald-front", top=True)

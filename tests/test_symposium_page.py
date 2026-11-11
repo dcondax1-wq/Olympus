@@ -195,8 +195,9 @@ def test_people_lab():
                 check("d. people lab: no WebGL here, the portraits stay", p.evaluate("document.querySelectorAll('#grid .cell').length") > 30)
                 return
             ln = info["line"]
-            check(f"d. the lab's lineup: {ln['people']} people in {ln['calls']} draw calls and {ln['tris']} triangles (<= 45 / 160k; the crowd is {ln['crowdCalls']} draw calls)",
-                  ln["calls"] <= 45 and ln["tris"] <= 160000 and ln["crowdCalls"] == 2, ln)
+            check(f"d. the lab's lineup: {ln['people']} people in {ln['calls']} draw calls and {ln['tris']} triangles (<= 45 / 160k; the crowd is {ln['crowdCalls']} draw call(s))",
+                  ln["calls"] <= 45 and ln["tris"] <= 160000 and ln["crowdCalls"] in (1, 2), ln)
+            check(f"d. the lab shows the rigged cast (v3: {info.get('rig')}) and the crowd as sprites photographed from it (impostors: {ln.get('impostors')})", info.get("rig") == "v3", info.get("rig"))
             ids = p.evaluate("window.PEOPLE_LAB.ids()")
             states = []
             for k, pose in enumerate(["wave", "think", "hammer", "write", "read", "weigh", "telescope", "type", "carry", "cheer", "shrug", "slump"]):
@@ -376,7 +377,7 @@ def test_page():
             g = p.evaluate(SHEET)
             a3 = ask(p, "do you remember me")
             check("c. the next person greets the owner by name; the chat shows his own character; a person remembers only his last question, on this phone",
-                  "Alex," in g["them"][0] and p.evaluate("() => !!document.querySelector('.pp-me .pp-ava svg')") and ("first talk on this phone" in a3["them"][-1] or "Last time you asked me" in a3["them"][-1]), (g["them"][0], a3["them"][-1]))
+                  "Alex" in g["them"][0] and p.evaluate("() => !!document.querySelector('.pp-me .pp-ava svg')") and ("first talk on this phone" in a3["them"][-1] or "Last time you asked me" in a3["them"][-1]), (g["them"][0], a3["them"][-1]))
             p.keyboard.press("Escape")
             check("c. LITE run: no console error and nothing requested off the page's origin", errs == [] and off == [], (errs[:4], off[:4]))
             ctx.close()
@@ -410,15 +411,21 @@ def test_page():
 
             # ---- 3. high quality: the 3D hall (when WebGL is there)
             ctx, p, errs, seen, off = AK.page(br, origin)
-            AK.open_app(p, origin, APP, "?q=high")
+            AK.open_app(p, origin, APP, "?q=high&direct=0")
             p.wait_for_timeout(1500)
             st = p.evaluate(STATE)
             if st["hall"]:
                 check(f"c. high: the 3D hall is up: everyone on couches around the table in {st['calls']} draw calls (<= 40), {st['tags']} tappable portraits over the people facing you",
                       0 < st["calls"] <= 40 and 1 <= st["tags"] <= 7 and p.is_visible("#hall3d") and not p.is_visible("#wall") and p.inner_text("#viewBtn") == "Show as a list", st)
                 check("c. the portraits over the hall are >= 44 px taps and the page has no sideways scroll", AK.taps(p) == [] and AK.no_sideways(p), AK.taps(p))
-                hv = p.evaluate("() => { const h = window.SYMPOSIUM_HALL; return h ? { close: h.closeUps().length, tris: h.triangles(), calls: h.drawCalls() } : null; }")
-                check(f"c. people v2 in the hall: {hv and hv['close']} close-up figures across the table (the rest one crowd), {hv and hv['tris']} triangles (<= 160k), {hv and hv['calls']} draw calls (<= 40)",
+                try:
+                    p.wait_for_function("() => window.SYMPOSIUM_HALL && window.SYMPOSIUM_HALL.rigged() > 0", timeout=20000)
+                except Exception:
+                    pass
+                hv = p.evaluate("() => { const h = window.SYMPOSIUM_HALL; return h ? { close: h.closeUps().length, tris: h.triangles(), calls: h.drawCalls(), rigged: h.rigged(), crowd: h.crowdInfo() } : null; }")
+                check(f"c. characters v3 in the hall: {hv and hv['rigged']} of {hv and hv['close']} close-ups are the rigged cast (KayKit, CC0), the crowd {hv and hv['crowd']}",
+                      hv is not None and hv["rigged"] >= 1 and hv["rigged"] == hv["close"], hv)
+                check(f"c. people in the hall: {hv and hv['close']} close-up figures across the table (the rest one crowd), {hv and hv['tris']} triangles (<= 160k), {hv and hv['calls']} draw calls (<= 40)",
                       hv is not None and 1 <= hv["close"] <= 5 and hv["tris"] <= 160000 and hv["calls"] <= 40, hv)
                 spread = pixel_spread(p, "#hall3d")
                 check(f"c. the hall at 390 x 844 is not blank (pixel spread {spread})", spread > 12, spread)

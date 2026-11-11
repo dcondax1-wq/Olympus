@@ -98,13 +98,13 @@ function renderFlat() {
 }
 async function startDial() {
   const q = new URLSearchParams(location.search).get('q'), canvas = $('stage');
-  const flat = () => { S.flat = true; $('flat').hidden = false; canvas.hidden = true; renderFlat(); };
+  const flat = () => { S.flat = true; $('flat').removeAttribute('hidden'); canvas.hidden = true; renderFlat(); };
   if (q === 'off' || q === 'flat') { flat(); return; }
   try {
     for (let k = 0; k < 25 && !window.KRONOS_DIAL && !window.KRONOS_DIAL_FAIL; k++) await new Promise((r) => setTimeout(r, 100));
     if (!window.KRONOS_DIAL) throw new Error('the 3D module did not load');
     S.dial = window.KRONOS_DIAL.createDial(canvas, { reduced: RM() }); if (O && O.mode) O.mode(S.dial.lite);
-    $('flat').hidden = true; pushDial();
+    $('flat').setAttribute('hidden', ''); pushDial();
   } catch (_) { S.dial = null; flat(); }
 }
 function pushDial() { if (S.dial) S.dial.set(S.v.dial.shadow, C.shadowAngle(S.hour), S.v.dial.tone); if (S.flat) renderFlat(); }
