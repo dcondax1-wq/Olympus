@@ -341,6 +341,9 @@ def test_page():
             # read it to me is off by default
             v0 = p.evaluate("() => [window.HERALD.S.voice, window.HERALD.S.spoken.length, document.querySelector('#readMe').getAttribute('aria-pressed'), document.querySelector('#readMe').textContent]")
             check("c. 'Read it to me' is off by default: nothing has been spoken", v0 == [False, 0, "false", "Read it to me: off"], v0)
+            p.wait_for_timeout(1800)
+            tst = p.evaluate("() => [window.HERALD.S.people || '', [...document.querySelectorAll('.oly-err')].filter((e) => e.getBoundingClientRect().height > 0).length]")
+            check("c. the optional people kit is tried after the first paint; when it is not there the page never shows a 'could not load' failure and keeps its initials", tst[1] == 0 and tst[0] in ("missing", "loaded", ""), tst)
             # tap a story
             p.evaluate("() => window.scrollTo(0, 0)")
             second = fx["articles"][2]
