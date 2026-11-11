@@ -95,7 +95,7 @@ else rc.start((dt, t) => { orb.rotation.y = t * 0.2; knot.rotation.set(t * 0.3, 
 // ------------------------------------------------------------------ the sample element of each card / button / number effect
 const PROTO = {
   gradientBorder: 'card', shimmer: 'card', glow: 'btn', tilt: 'card', magnetic: 'btn', ripple: 'btn', glassSpecular: 'card', neonPulse: 'btn', skeleton: 'card',
-  odometer: 'num', countUp: 'num', typewriter: 'text', glitch: 'text', progressRing: 'ring', confetti: 'btn', sparkleBurst: 'btn', toast: 'btn',
+  press: 'card', stagger: 'card', goldFlash: 'num', odometer: 'num', countUp: 'num', typewriter: 'text', glitch: 'text', progressRing: 'ring', confetti: 'btn', sparkleBurst: 'btn', toast: 'btn',
 };
 const DEMO = {
   odometer: {}, countUp: { to: 12840 }, typewriter: { text: 'OLYMPUS online. All systems nominal.', loop: true }, progressRing: { value: 0.72, stroke: 7 },
@@ -155,7 +155,8 @@ function card(name, info) {
   const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.dataset.run = name; b.textContent = 'Start'; b.setAttribute('aria-pressed', 'false');
   b.addEventListener('click', () => { if (handles[name] && !handles[name].stopped) stop(name); else start(name); });
   row.appendChild(b);
-  if (name === 'odometer') { const nx = document.createElement('button'); nx.type = 'button'; nx.className = 'btn'; nx.textContent = 'Next number'; nx.addEventListener('click', () => { hosts[name].textContent = (Math.floor(Math.random() * 9e4) / 10).toLocaleString('en-US', { minimumFractionDigits: 1 }); }); row.appendChild(nx); }
+  if (name === 'stagger') { const h = hosts[name]; h.textContent = ''; ['Balance', 'Drawdown left', 'This week'].forEach((t) => { const d = document.createElement('div'); d.textContent = t; h.appendChild(d); }); }
+  if (name === 'odometer' || name === 'goldFlash') { const nx = document.createElement('button'); nx.type = 'button'; nx.className = 'btn'; nx.textContent = 'Next number'; nx.addEventListener('click', () => { hosts[name].textContent = (Math.floor(Math.random() * 9e4) / 10).toLocaleString('en-US', { minimumFractionDigits: 1 }); }); row.appendChild(nx); }
   if (name === 'progressRing' || name === 'countUp') { const nx = document.createElement('button'); nx.type = 'button'; nx.className = 'btn'; nx.textContent = 'Change'; nx.addEventListener('click', () => { const h = handles[name]; if (h) h.set(name === 'countUp' ? Math.round(Math.random() * 90000) : Math.random()); }); row.appendChild(nx); }
   c.appendChild(row);
   const pre = document.createElement('pre');
