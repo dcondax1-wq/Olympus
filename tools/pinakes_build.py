@@ -3,7 +3,7 @@
 
 It never copies data. Each card says where the table lives (its real URL on the site) and what is in it; the page loads the rows from that URL when you open it.
 
-    python tools/pinakes_build.py                 rewrite tools/web_public/pinakes/catalog.json (and the demo catalogue fixture.json)
+    python tools/pinakes_build.py                 rewrite tools/web_public/pinakes/catalog.json (and jarvis.json next to it, and the demo catalogue fixture.json)
     python tools/pinakes_build.py --check         exit 1 when catalog.json is not what this script writes now
     python tools/pinakes_build.py --selftest      the inference rules on tricky data (nulls, mixed types, unicode, maps, matrices)
     python tools/pinakes_build.py --web <site>    read another site folder (the BUILT site: then home.json, data.json, money/*.json ... are read too)
@@ -627,6 +627,22 @@ def fixture():
             "catalog": {"v": 1, "demo": True, "built": "2026-11-10", "tables": cards}, "data": {k: v[4] for k, v in docs.items()}}
 
 
+def jarvis_card(doc):
+    """The Jarvis card (pinakes/jarvis.json): the counts of this catalogue. Its time is the newest date stamp found in the tables, so the same catalogue gives the same card."""
+    import datetime as dt
+    t = doc["totals"]
+    try:
+        stamp = int(dt.datetime.strptime(doc["built"], "%Y-%m-%d").replace(tzinfo=dt.timezone.utc).timestamp())
+    except ValueError:
+        stamp = 0
+    demo = sum(1 for c in doc["tables"] if c["label"] in ("demo", "sample"))
+    return {"v": 1, "name": "Pinakes", "status": {"level": "ok", "label": f"{t['tables']} tables"},
+            "kpis": [{"label": "Tables", "value": f"{t['tables']:,}"}, {"label": "Rows", "value": f"{t['rows']:,}"}, {"label": "Open here", "value": f"{t['site_tables']:,}"}],
+            "lines": [f"{t['site_tables']} tables with {t['site_rows']:,} rows open on the site; {demo} of them are demo or sample data.",
+                      f"{t['research_tables']} research datasets with {t['research_rows']:,} rows stay on the PC (span and rows only)."],
+            "t": stamp, "open": "#", "theme": "#14110e", "stale_after": 1209600}
+
+
 def dumps(doc):
     return json.dumps(doc, ensure_ascii=False, separators=(",", ":"), sort_keys=False) + "\n"
 
@@ -737,14 +753,16 @@ def main():
         return selftest()
     out = a.out or os.path.join(a.web, "pinakes", "catalog.json")
     doc = build(a.web, a.data)
-    fx_path = os.path.join(WEB, "pinakes", "fixture.json")
+    fx_path, jv_path = os.path.join(WEB, "pinakes", "fixture.json"), os.path.join(os.path.dirname(out), "jarvis.json")
     if a.check:
-        ok = check(out, doc) and (a.out is not None or a.web != WEB or check(fx_path, fixture()))
+        ok = check(out, doc) and check(jv_path, jarvis_card(doc)) and (a.out is not None or a.web != WEB or check(fx_path, fixture()))
         print("pinakes: catalog.json is up to date" if ok else "pinakes: catalog.json is STALE (run python tools/pinakes_build.py)")
         return 0 if ok else 1
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(dumps(doc))
+    with open(jv_path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(dumps(jarvis_card(doc)))
     if a.out is None and a.web == WEB:                        # the demo catalogue rides along in the repo copy only
         with open(fx_path, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(dumps(fixture()))

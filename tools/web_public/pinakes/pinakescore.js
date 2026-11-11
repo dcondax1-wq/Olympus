@@ -509,6 +509,27 @@ export function whyWords(card, err) {
   return `${what} could not be loaded (no connection, or the file is missing).`;
 }
 
+// ------------------------------------------------------------------ what a loaded file says about itself
+const FRESH_KEYS = ['asof', 'as_of', 'built', 'generated', 'generated_at', 'updated', 'updated_at', 'published', 't', 'ts', 'time', 'date', 'last', 'when'];
+/** the field that says how old a file is: {field, value}, looked for at the top and one level down (same rule as the builder) */
+export function findFresh(doc) {
+  const ok = (v) => (typeof v === 'string' && DATE_RE.test(v.trim())) || isEpoch(v);
+  if (!isObj(doc)) return null;
+  for (const k of FRESH_KEYS) if (Object.prototype.hasOwnProperty.call(doc, k) && ok(doc[k])) return { field: k, value: doc[k] };
+  for (const outer of ['meta', '_meta', 'header', 'info', 'status', 'summary']) {
+    const sub = doc[outer];
+    if (isObj(sub)) for (const k of FRESH_KEYS) if (Object.prototype.hasOwnProperty.call(sub, k) && ok(sub[k])) return { field: `${outer}/${k}`, value: sub[k] };
+  }
+  return null;
+}
+/** demo | sample | live, from the file itself once it is loaded (a published file may still carry sample data) */
+export function docLabel(card, doc) {
+  if (card.label === 'demo' || card.label === 'research') return card.label;
+  if (isObj(doc)) { if (doc.demo === true) return 'demo'; if (String(doc.status || '').toLowerCase() === 'sample' || doc.sample === true) return 'sample'; }
+  return card.label === 'build' ? 'live' : card.label;
+}
+export const KIND_WORDS = { rows: 'a list of records', matrix: 'a grid of values', map: 'named records', values: 'a plain list', kv: 'the top-level fields', csv: 'a CSV file', auto: 'a list' };
+
 // ------------------------------------------------------------------ Ask: built-in questions that join known tables
 const pick = (r, keys) => { for (const k of keys) if (!isEmpty(r[k])) return r[k]; return null; };
 function askWeekday(sets) {
