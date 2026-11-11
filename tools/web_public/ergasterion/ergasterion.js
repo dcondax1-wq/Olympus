@@ -215,7 +215,7 @@ function leadMe(key) {
   const pn = personOf(key), r = S.floor.lead(key); if (!r) return null; S.follow = key.slice(0, 2) === 'w:' ? key.slice(2) : ''; try { $('follow').value = S.follow; } catch (_) { /* fine */ }
   say((pn ? pn.name : 'They') + (r.walking ? ' walks you back to its station. Touch the joystick to walk on your own.' : ' shows you its station. Touch the joystick to walk on your own.')); return r;
 }
-function endTalk() { S.chat = null; S.kitTalk = ''; renderChat(); focus(null); leadUi(); }
+function endTalk() { const K = kit(), was = S.kitTalk; S.chat = null; S.kitTalk = ''; renderChat(); focus(null); leadUi(); if (was && K && typeof K.close === 'function') { try { K.close(); } catch (_) { /* its sheet closes itself */ } } }   // ending the chat also closes the kit's sheet
 function askQ(qid) {
   if (!S.chat) return; const row = rowOf(S.chat.key), q = C.QUESTIONS.find((x) => x[0] === qid); if (!row || !q) return;
   const a = C.answer(row, qid, S.now, S.next); S.chat.log.push({ q: q[1], a: a.text, src: a.sources }); if (S.chat.log.length > 12) S.chat.log.shift(); renderChat();
