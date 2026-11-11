@@ -410,7 +410,9 @@
     function y() { return window.pageYOffset || root.scrollTop || 0; }
     function away(on) { if (on && d.activeElement === a) on = false; a.classList.toggle('oly-away', !!on); }
     function check() { raf = 0; away(covers(a)); }
-    function soon() { if (!raf) raf = (window.requestAnimationFrame || setTimeout)(check); }
+    // look right after a frame is painted (rAF, then a task): the layout is fresh then, so the look never forces an extra layout
+    // (a 3D app moving its labels every frame keeps its layouts-per-frame budget)
+    function soon() { if (!raf) raf = (window.requestAnimationFrame || setTimeout)(function () { setTimeout(check, 0); }); }
     window.addEventListener('scroll', function () {
       var now = y(), dy = now - lastY; lastY = now;
       if (dy > 4 && now > 48) away(true);                 // reading on: out of the way
@@ -419,13 +421,13 @@
     }, { passive: true });
     window.addEventListener('resize', soon, { passive: true });
     a.addEventListener('focus', function () { away(false); });
-    // the page fills in after load (data, the shell, a tab change): look again when the page's markup changes (at most every 200 ms)
+    // the page fills in after load (data, the shell, a tab change): look again when the page's markup changes (at most every 400 ms)
     // and now and then anyway (a layout that moved without new markup), never while the tab is hidden
     var mo = 0;
-    if (window.MutationObserver && d.body) new MutationObserver(function () { if (!mo) mo = setTimeout(function () { mo = 0; if (!d.hidden) soon(); }, 200); })
+    if (window.MutationObserver && d.body) new MutationObserver(function () { if (!mo) mo = setTimeout(function () { mo = 0; if (!d.hidden) soon(); }, 400); })
       .observe(d.body, { childList: true, subtree: true });
     setTimeout(soon, 400); setTimeout(soon, 1500);
-    setInterval(function () { if (!d.hidden) soon(); }, 1600);
+    setInterval(function () { if (!d.hidden) soon(); }, 2000);
   }
   O.seatClear = function () { var a = d.querySelector('.oly-home'); return a ? !covers(a) : true; };
   function lift() {
