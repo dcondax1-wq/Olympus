@@ -647,7 +647,7 @@ def test_page():
                 p.locator("#talkBtn").click()
                 p.wait_for_timeout(900)
                 tf = p.evaluate("() => [window.ERGASTERION.floor().focused(), document.querySelector('#chatCard').hidden || !!window.OLYMPUS_PEOPLE, document.querySelector('#sheetH').textContent, Math.cos(window.ERGASTERION.floor().facing('w:queue') + Math.PI / 2), window.ERGASTERION.floor().stats()]")
-                check(f"c. pressing Talk opens the chat for that person: it is the focused one (talk pose, marble disc), still facing you, its card is open; inside the budget ({tf[4]['calls']} calls / {tf[4]['triangles']} triangles)", tf[0] == "w:queue" and tf[1] in (False, True) and tf[2] == "The queue" and tf[3] > 0.93 and tf[4]["calls"] <= BUDGET["calls"] and tf[4]["triangles"] <= BUDGET["triangles"], tf)
+                check(f"c. pressing Talk opens the chat for that person: it is the focused one (talk pose, marble disc), still facing you, its card is open; inside the budget ({tf[4]['calls']} calls / {tf[4]['triangles']} triangles)", tf[0] == "w:queue" and tf[1] in (False, True) and tf[2] == "Kalamos · The queue" and tf[3] > 0.93 and tf[4]["calls"] <= BUDGET["calls"] and tf[4]["triangles"] <= BUDGET["triangles"], tf)
                 AK.shot(p, "ergasterion-3d-talk")
                 p.evaluate("() => window.ERGASTERION.endTalk()")
                 check("c. ending the chat releases the person (no focus)", p.evaluate("() => window.ERGASTERION.floor().focused()") == "")
@@ -835,7 +835,7 @@ def test_page():
                 bj = json.load(open(os.path.join(D, "builders.json"), encoding="utf-8"))
                 check("c. REAL Builders' camp: the agents of builders.json by name (never 'Example'), a tent each, and the note says where the activity comes from (git at build time, or job lines only)",
                       "Example" not in rc[0] and rc[1] == min(10, len(bj["agents"])) and sorted(rc[3]) == sorted(a["name"] for a in bj["agents"][:10]) and ("Read from git when the site was built" in rc[2] if bj["source"] == "git" else "no live activity" in rc[2]), rc[:3])
-                check("c. REAL files: Kalshi (mocked feed) is Working and Cronos is Working from its status.json; the dev agents read the real queue.json", "(Kalshi bot), Working" in rr["kalshi"] and "(Cronos), Working" in rr["cron"] and rr["dev"].startswith("Dev agents"), rr["kalshi"])
+                check("c. REAL files: Kalshi (mocked feed) is Working and Cronos is Working from its status.json; the dev agents read the real queue.json", "(Kalshi bot), Working" in rr["kalshi"] and "(Cronos), Working" in rr["cron"] and rr["dev"].startswith("Epistates (Dev agents)"), rr["kalshi"])
                 check("c. REAL run reads only the site's own files (the kalshi feed is the one outside address) and has no console error; every tap >= 44 px with the real lists", any("queue.json" in u for u in seen) and not errs and not [u for u in off if "kalshi" not in u] and not AK.taps(p) and AK.no_sideways(p), (off[:3], errs[:3], AK.taps(p)[:3]))
                 AK.shot(p, "ergasterion-real")
                 ctx.close()
