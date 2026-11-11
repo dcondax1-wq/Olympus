@@ -95,7 +95,7 @@
     if (a >= 1e3) return s + (a / 1e3).toFixed(a >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'k';
     return s + (Math.round(a * 100) / 100);
   }
-  var TONES = { gold: ['#c8a24a', '200,162,74'], olive: ['#a0ac6e', '160,172,110'], terra: ['#e08a6b', '224,138,107'], aegean: ['#7fa6bd', '127,166,189'], bronze: ['#b98551', '185,133,81'] };
+  var TONES = { gold: ['#c8a24a', '200,162,74'], olive: ['#a0ac6e', '160,172,110'], terra: ['#e08a6b', '224,138,107'], aegean: ['#7fa7c2', '127,167,194'], bronze: ['#b98551', '185,133,81'] };
   function chart(host, o) {
     if (!host) return null;
     o = o || {};

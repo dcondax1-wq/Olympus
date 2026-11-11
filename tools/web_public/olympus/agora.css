@@ -12,7 +12,7 @@
   --ag-line-soft: rgba(243, 236, 224, .07); --ag-line-gold: rgba(200, 162, 74, .32);
   --ag-text: #f3ece0; --ag-soft: #cfc4b2; --ag-muted: #a89c88;                                     /* muted: 5.1:1 even on --ag-s4 */
   --ag-gold: #c8a24a; --ag-gold-hi: #dcbd6e; --ag-bronze: #9c6b3c; --ag-olive: #7f8a52; --ag-terra: #c96a4a; --ag-aegean: #4b7a99; --ag-sun: #e0b060;
-  --ag-olive-text: #a0ac6e; --ag-terra-text: #e08a6b; --ag-aegean-text: #7fa6bd;                   /* text-safe ink (fills keep the base colours) */
+  --ag-olive-text: #a0ac6e; --ag-terra-text: #e08a6b; --ag-aegean-text: #7fa7c2;                   /* text-safe ink (fills keep the base colours) */
   --ag-gold-rgb: 200, 162, 74; --ag-olive-rgb: 127, 138, 82; --ag-terra-rgb: 201, 106, 74; --ag-sun-rgb: 224, 176, 96; --ag-aegean-rgb: 75, 122, 153;
   --ag-on-gold: #1b1610;
   /* type: serif display, system sans body, rounded tabular numbers. rem based (dynamic type / browser text size follow) */
