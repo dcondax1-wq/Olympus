@@ -204,7 +204,7 @@ def test_page():
                 p.wait_for_timeout(1500)
                 p.evaluate("() => window.__ev('pointerup', window.__cy - 40)")
                 after = p.evaluate("() => window.ERGASTERION.floor().pos()")
-                check("c. the joystick pushed forward walks you toward the back wall (z decreases) and the knob returns to the middle", after["z"] < before["z"] - 0.05 and p.evaluate("() => document.querySelector('#knob').style.transform") in ("translate(0px,0px)", ""), (before, after))
+                check("c. the joystick pushed forward walks you toward the back wall (z decreases) and the knob returns to the middle", after["z"] < before["z"] - 0.05 and p.evaluate("() => document.querySelector('#knob').style.transform").replace(" ", "") in ("translate(0px,0px)", "translate(0px)", ""), (before, after))
                 p.evaluate("() => { const f = window.ERGASTERION.floor(); f.teleport(-4.5, -1.2 + 0.2); }")
                 p.evaluate("() => { const f = window.ERGASTERION.floor(); f.move({ fwd: 0, side: 0 }); f.step(0.05); }")
                 inside = p.evaluate("() => window.ERGASTERION.floor().pos()")
