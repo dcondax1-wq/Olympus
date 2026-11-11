@@ -40,7 +40,7 @@ export const STATIONS = [
   { id: 'arbiter', name: 'Arbiter', role: 'Price-gap checker', group: 'Money machines', hall: 'money', job: 'scales', x: -3.4, z: -3 },
   { id: 'lit', name: 'Zlarior (LIT)', role: 'The live NQ strategy, paper account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 3, z: -7.5 },
   { id: 'atlas', name: 'ATLAS', role: 'Second NQ strategy, 25K account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 7, z: -7.5 },
-  { id: 'blitz', name: 'BLITZ', role: 'Third NQ strategy, 25K account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 11, z: -7.5 },
+  { id: 'blitz', name: 'BLITZ', role: 'Third NQ strategy, 25K account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 10.8, z: -7.5 },
   { id: 'mind', name: 'Mind', role: 'Nightly self-research and game plans', group: 'Thinkers', hall: 'research', job: 'oracle', x: -10.5, z: 2.8 },
   { id: 'kalshi', name: 'Kalshi bot', role: 'Prediction-market trading bot (paper)', group: 'Thinkers', hall: 'trading', job: 'oracle', x: 10, z: -3 },
   { id: 'prometheus', name: 'Prometheus', role: 'Breeds LIT settings, checks them on later months', group: 'Jobs', hall: 'research', job: 'smith', x: -2.9, z: 2.6 },
@@ -194,7 +194,7 @@ function cron1(inp, now, w) {
   w.demo = !!inp.demo;
   w.doing = rows.length + ' scheduled jobs: ' + (rows.length - failed.length - old.length) + ' fine' + (old.length ? ', ' + old.length + ' overdue' : '') + (failed.length ? ', ' + failed.length + ' failed' : '') + '.';
   w.outputs = rows.slice(0, 5).map((r) => out(r.t, r.k + ': ' + (r.e.ok === false ? 'FAILED ' + clean(r.e.error, 70) : 'ok') + (r.e.note && r.e.ok !== false ? ' (' + clean(r.e.note, 60) + ')' : '')));
-  w.health = failed.length ? 'Failed: ' + failed.map((r) => r.k).join(', ') + '.' : old.length ? 'Overdue: ' + old.map((r) => r.k).join(', ') + '.' : 'Every job ran on time.';
+  w.health = clean(failed.length ? 'Failed: ' + failed.map((r) => r.k).join(', ') + '.' : old.length ? 'Overdue: ' + old.map((r) => r.k).join(', ') + '.' : 'Every job ran on time.', 200);
 }
 
 function queue1(inp, now, w) {
@@ -244,7 +244,9 @@ export function sayOf(w) {
 }
 /** a crate's label: the first few words of an output, short enough to read on a small box */
 export function crateTag(text) {
-  const t = clean(String(text || '').replace(/^(Example|Commit):\s*/i, '').replace(/^(Example |Dial|Write-up|Today|Best candidate|Done|commit):?\s*/i, '').split(/[:(;]|, | - /)[0], 40), words = t.split(' ');
+  let raw = String(text || '');
+  for (let i = 0; i < 3; i++) raw = raw.replace(/^(Example|Commit|Dial|Write-up|Today|Best candidate|Done)[:\s]+/i, '');
+  const t = clean(raw.split(/[:(;]|, | - /)[0], 40), words = t.split(' ');
   let out = '';
   for (const w of words) { if ((out + ' ' + w).trim().length > 16) break; out = (out + ' ' + w).trim(); }
   return out || t.slice(0, 16) || 'output';
@@ -389,7 +391,7 @@ export function resolveDemo(fx, now) {
 export function haveReal(inp) { return isObj(inp) && ['home', 'money', 'kalshi', 'cron', 'forge', 'heph'].some((k) => isObj(inp[k])); }
 
 // ------------------------------------------------------------------ walking the floor (pure, so it is tested)
-export function hallOf(p) { const x = p && isFinite(p.x) ? p.x : 0, z = p && isFinite(p.z) ? p.z : 0; return HALLS.find((h) => x >= h.x0 && x <= h.x1 && z >= h.z0 && z <= h.z1) || HALLS[3]; }
+export function hallOf(p) { if (!p) return HALLS[3]; const x = p && isFinite(p.x) ? p.x : 0, z = p && isFinite(p.z) ? p.z : 0; return HALLS.find((h) => x >= h.x0 && x <= h.x1 && z >= h.z0 && z <= h.z1) || HALLS[3]; }
 const inDoor = (axis, c) => DOORS.some((d) => d.axis === axis && Math.abs(c - d.c) <= d.half - 0.3);
 /** keep a point inside the factory, out of the inner walls (except through a door) and out of every station's circle */
 export function resolveCollision(x, z, stations, r) {
@@ -457,7 +459,7 @@ export function stream(inp0, workers, now) {
   return E;
 }
 export const RANGES = { '24h': { ms: D, label: 'Last 24 hours' }, '7d': { ms: 7 * D, label: 'Last 7 days' } };
-/** the replay window. It ends now; when nothing at all happened in it, it honestly moves back to end on the newest event and says so (shifted). */
+/** the replay span. It ends now; when nothing at all happened in it, it honestly moves back to end on the newest event and says so (shifted). */
 export function replayWindow(E, now, range) {
   const span = (RANGES[range] || RANGES['24h']).ms, all = Array.isArray(E) ? E : [];
   let t1 = now, shifted = false, ev = all.filter((e) => e.t > t1 - span && e.t <= t1);
@@ -466,14 +468,14 @@ export function replayWindow(E, now, range) {
   return { range: RANGES[range] ? range : '24h', t0: t1 - span, t1, span, events: ev, shifted, fails: fails.length, workers: new Set(ev.map((e) => e.who)).size,
     note: !all.length ? 'No dated events at all yet.' : shifted ? 'Nothing ran in the ' + (RANGES[range] || RANGES['24h']).label.toLowerCase() + '. Showing the same span ending at the newest event, ' + dayOf(t1) + '.' : ev.length + ' event' + (ev.length === 1 ? '' : 's') + ' from ' + new Set(ev.map((e) => e.who)).size + ' workers' + (fails.length ? ', ' + fails.length + ' failed' : ', none failed') + '.' };
 }
-/** the state of the factory at the cursor (0..1 through the window): what just happened, who is busy, how much is done */
+/** the state of the factory at the cursor (0..1 through the span): what just happened, who is busy, how much is done */
 export function replayAt(win, f) {
   const k = Math.max(0, Math.min(1, isFinite(f) ? f : 1)), t = win.t0 + win.span * k, past = win.events.filter((e) => e.t <= t), slice = win.span / 24;
   const active = [...new Set(past.filter((e) => e.t > t - slice).map((e) => e.who))], counts = {};
   for (const e of past) counts[e.who] = (counts[e.who] || 0) + 1;
   return { t, f: k, done: past.length, total: win.events.length, recent: past.slice(-6).reverse(), active, failing: [...new Set(past.filter((e) => !e.ok && e.t > t - slice).map((e) => e.who))], counts };
 }
-/** 'jump to last failure': the newest failed event at or before the cursor in the window, else the newest failure of the window; null when nothing failed */
+/** 'jump to last failure': the newest failed event at or before the cursor in the span, else the newest failure of the span; null when nothing failed */
 export function lastFailure(win, f) {
   const t = win.t0 + win.span * (isFinite(f) ? Math.max(0, Math.min(1, f)) : 1), bad = win.events.filter((e) => !e.ok);
   if (!bad.length) return null;
