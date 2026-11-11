@@ -1,4 +1,4 @@
-/* HELLAS overlay, AGORA look: warm dark marble panels, bronze lines, gold accent, serif headings, no neon, no glow. 390 x 844 first. */
+/* HELLAS overlay, AGORA look: warm dark marble panels, bronze lines, gold accent, serif headings, calm and matt. 390 x 844 first. */
 .hel{--bg:#14110e;--panel:rgba(29,25,20,.95);--raised:#26211b;--line:#3a3228;--text:#f3ece0;--sub:#cfc4b2;--mute:#9a8f7d;--gold:#c8a24a;--bronze:#9c6b3c;--olive:#7f8a52;--terra:#c96a4a;--aegean:#4b7a99;--sun:#e0b060;
   --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;--sans:-apple-system,'SF Pro Text',system-ui,'Helvetica Neue',Arial,sans-serif;--num:'SF Pro Rounded',-apple-system,system-ui,sans-serif;
   position:fixed;inset:0;z-index:190;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
