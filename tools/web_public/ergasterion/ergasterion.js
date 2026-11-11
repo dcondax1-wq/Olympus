@@ -13,7 +13,7 @@ function sv(tag, attrs, text) { const e = document.createElementNS(NS, tag); for
 const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
 const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 const S = { fixture: null, inputs: null, demo: false, forced: false, workers: [], head: null, events: [], next: [], sel: null, crate: -1, follow: '', view: 'plan', floor: null, ready: false, now: Date.now(), tried: false,
-  builders: [], hands: null, bsel: null, bdoc: null, bdemo: false, scrollI: 0, stream: [], win: null, range: '24h', cur: 1, playing: false, speed: 1, at: null, board: null, pipe: null, cat: '', sayI: 0, tour: false };
+  people: [], place: 'library', chat: null, standing: false, builders: [], hands: null, bsel: null, bdoc: null, bdemo: false, scrollI: 0, stream: [], win: null, range: '24h', cur: 1, playing: false, speed: 1, at: null, board: null, pipe: null, cat: '', sayI: 0, tour: false };
 const LAMPC = { working: '#8fa05a', idle: '#4b7a99', stale: '#e0b060', failed: '#c96a4a', sample: '#b8ad98' };
 
 async function getJSON(url, ms) {
@@ -47,6 +47,7 @@ function model() {
   const realB = !S.forced && S.inputs && S.inputs.builders && Array.isArray(S.inputs.builders.agents) && S.inputs.builders.agents.length ? S.inputs.builders : null;
   S.bdemo = !realB; S.bdoc = realB || C.resolveBuilders(S.fixture && S.fixture.builders, S.now);
   S.builders = C.builders(S.bdoc, S.now, S.bdemo); S.hands = C.allHands(S.builders, S.bdoc, S.bdemo);
+  S.people = C.people(S.workers, S.builders);
 }
 const byId = (id) => S.workers.find((w) => w.id === id) || null;
 
@@ -138,7 +139,7 @@ function renderWorkers() {
 }
 function renderSheet() {
   const w = S.sel && byId(S.sel); $('sheet').hidden = !w; if (!w) return;
-  $('sheetH').textContent = w.name; const p = $('sheetPill'); p.textContent = C.STATUS_WORD[w.status]; p.className = pillOf(w.status);
+  $('sheetH').textContent = w.name; face($('sheetFace'), personOf('w:' + w.id), 44); $('sheetTalk').textContent = 'Talk to ' + w.name.split(' (')[0]; const p = $('sheetPill'); p.textContent = C.STATUS_WORD[w.status]; p.className = pillOf(w.status);
   $('sheetRole').textContent = w.role + (w.demo ? ' (example data)' : '') + '. In the ' + C.hallOf(w).name + ', ' + C.JOB_WORD[w.job] + '.';
   const sy2 = $('sheetSay'); clear(sy2); sy2.appendChild(h('b', '', 'Says: ')); sy2.appendChild(document.createTextNode(w.say));
   $('sheetDoing').textContent = w.doing || 'Nothing recorded.';
@@ -162,6 +163,85 @@ function renderTicker() {
   const ul = $('ticker'); clear(ul);
   if (!S.events.length) ul.appendChild(h('li', '', 'No dated events yet. Workers write theirs here when they run.'));
   for (const e of S.events) ul.appendChild(tickRow(e, shortAgo(e.t, S.now) + ' ago'));
+}
+
+// ------------------------------------------------------------------------------------------------ people: everyone is an individual you can talk to
+// The shared kit (window.OLYMPUS_PEOPLE, docs/PERSONA_API.md) is optional. With it: its portrait and its chat sheet. Without it, or if it throws: our own face and our own chat card
+// with six questions answered from the worker's own data. Talking always works.
+function kit() { try { const K = window.OLYMPUS_PEOPLE; return K && typeof K.open === 'function' ? K : null; } catch (_) { return null; } }
+function kitId(pn) { const K = kit(); if (!K || !pn) return null; if (typeof K.get !== 'function') return pn.pid; for (const id of pn.pids) { try { if (K.get(id)) return id; } catch (_) { /* next */ } } return null; }
+const personOf = (key) => S.people.find((x) => x.key === key) || null;
+const rowOf = (key) => (key.slice(0, 2) === 'w:' ? byId(key.slice(2)) : S.builders.find((b) => b.id === key.slice(2))) || null;
+/** our own small face: the same seeded character as the 3D person (round head, hair, dot eyes, tunic) */
+function ownFace(pn, size) {
+  const lk = C.lookOf(pn.look), svg = sv('svg', { viewBox: '0 0 44 44', width: size, height: size, role: 'img', 'aria-label': pn.name });
+  svg.appendChild(sv('rect', { x: 0, y: 0, width: 44, height: 44, fill: '#2f271e' }));
+  svg.appendChild(sv('path', { d: 'M6 46 Q6 31 22 31 Q38 31 38 46 Z', fill: lk.outfit }));
+  svg.appendChild(sv('circle', { cx: 22, cy: 20, r: 12.5, fill: lk.skin }));
+  svg.appendChild(sv('path', { d: 'M9.2 19 Q9 6.5 22 6.5 Q35 6.5 34.8 19 Q30 12.5 22 12.5 Q14 12.5 9.2 19 Z', fill: lk.hair }));
+  svg.appendChild(sv('ellipse', { cx: 17.5, cy: 21, rx: 1.5, ry: 2, fill: '#2a2018' })); svg.appendChild(sv('ellipse', { cx: 26.5, cy: 21, rx: 1.5, ry: 2, fill: '#2a2018' }));
+  svg.appendChild(sv('path', { d: pn.status === 'failed' ? 'M18.5 27.5 Q22 25.5 25.5 27.5' : 'M18.5 26 Q22 28.6 25.5 26', fill: 'none', stroke: '#7a3e2a', 'stroke-width': 1.3, 'stroke-linecap': 'round' }));
+  return svg;
+}
+function face(el, pn, size) {
+  clear(el); if (!pn) return;
+  const K = kit(), id = kitId(pn);
+  if (K && id && typeof K.portrait === 'function') { try { const n = K.portrait(id, size || 44); if (n && n.nodeType === 1) { el.appendChild(n); el.dataset.kit = '1'; return; } } catch (_) { /* our own face */ } }
+  el.dataset.kit = '0'; el.appendChild(ownFace(pn, size || 44));
+}
+function focus(key) { if (S.floor && S.floor.ok && S.floor.focus) S.floor.focus(key || null); }
+function talk(key) {
+  const pn = personOf(key); if (!pn) return;
+  const K = kit(), id = kitId(pn);
+  if (K && id) {
+    try { K.open(id, { anchor: $('floorCard') }); S.chat = null; renderChat(); focus(key); S.kitTalk = key; say('Talking to ' + pn.name + '.'); return; } catch (_) { /* the kit failed: our own chat card */ }
+  }
+  S.kitTalk = ''; S.chat = { key, log: [] }; renderChat(); focus(key); say('Talking to ' + pn.name + '. Tap a question.'); toView($('chatCard'), 'nearest');
+}
+function endTalk() { S.chat = null; S.kitTalk = ''; renderChat(); focus(null); }
+function askQ(qid) {
+  if (!S.chat) return; const row = rowOf(S.chat.key), q = C.QUESTIONS.find((x) => x[0] === qid); if (!row || !q) return;
+  const a = C.answer(row, qid, S.now, S.next); S.chat.log.push({ q: q[1], a: a.text, src: a.sources }); if (S.chat.log.length > 12) S.chat.log.shift(); renderChat();
+}
+function renderChat() {
+  const pn = S.chat && personOf(S.chat.key); $('chatCard').hidden = !pn; if (!pn) return;
+  $('chatH').textContent = pn.name; face($('chatFace'), pn, 44); const p = $('chatPill'); p.textContent = pn.word; p.className = 'pill ' + (pn.status === 'working' ? 'ok' : pn.status === 'failed' ? 'bad' : pn.status === 'stale' ? 'warn' : 'info');
+  $('chatWho').textContent = pn.title + '. Built-in answers, taken only from its own data (' + pn.pid + '). It cannot place orders: paper and suggestions only.';
+  const ul = $('chatLog'); clear(ul);
+  if (!S.chat.log.length) ul.appendChild(h('li', '', pn.line));
+  for (const m of S.chat.log) { ul.appendChild(h('li', 'q', m.q)); const li = h('li', 'a', m.a); if (m.src.length) li.appendChild(h('span', 'src', 'source: ' + m.src.join('; '))); ul.appendChild(li); }
+  const box = $('chatQs');
+  if (!box.firstChild) for (const [id, label] of C.QUESTIONS) { const b = h('button', 'ag-chip chip', label); b.type = 'button'; b.dataset.q = id; b.addEventListener('click', () => askQ(id)); box.appendChild(b); }
+}
+const PLACES = () => C.HALLS.map((x) => [x.id, x.name]).concat([['camp', C.CAMP.name]]);
+function renderPeople() {
+  const box = $('places'); clear(box);
+  for (const [id, name] of PLACES()) { const n = C.peopleHere(S.people, id).length, b = h('button', 'ag-chip chip', name + ' (' + n + ')'); b.type = 'button'; b.dataset.place = id; b.setAttribute('aria-pressed', String(S.place === id)); b.addEventListener('click', () => { S.place = id; S.placePinned = true; renderPeople(); }); box.appendChild(b); }
+  const ul = $('peopleList'); clear(ul); const here = C.peopleHere(S.people, S.place);
+  if (!here.length) ul.appendChild(h('li', 'note', 'Nobody is here.'));
+  for (const pn of here) {
+    const li = h('li'), b = h('button', 'person'); b.type = 'button'; b.dataset.key = pn.key; b.setAttribute('aria-label', 'Talk to ' + pn.name + ', ' + pn.word + '. ' + pn.title);
+    const f = h('span', 'mini-face'); face(f, pn, 34); const l = lampSpan(pn.status); l.style.marginRight = '0';
+    const mid = h('span'); mid.appendChild(h('span', 'nm', pn.name)); mid.appendChild(h('span', 'sm', pn.line));
+    b.appendChild(f); b.appendChild(l); b.appendChild(mid); b.appendChild(h('span', 'pill info', 'Talk'));
+    b.addEventListener('click', () => talk(pn.key)); li.appendChild(b); ul.appendChild(li);
+  }
+}
+let standTimer = 0;
+/** the stand-up: everyone in this hall says its one line in turn (the kit's standup() when it is loaded, our own lines otherwise) */
+function standUp() {
+  clearInterval(standTimer); const here = C.peopleHere(S.people, S.place), ol = $('standList'); clear(ol);
+  if (!here.length) { ol.appendChild(h('li', '', 'Nobody is here to speak.')); return; }
+  const lines = here.map((pn) => ({ pn, line: pn.line, kit: false })), K = kit();
+  if (K && typeof K.standup === 'function') { try { const ids = here.map((pn) => kitId(pn)), got = K.standup(ids.filter(Boolean)); if (Array.isArray(got)) lines.forEach((x, i) => { const g = got.find((y) => y && y.id === ids[i] && y.line); if (g) { x.line = C.clean(g.line, 200); x.kit = true; } }); } catch (_) { /* our own lines */ } }
+  let i = 0; S.standing = true; $('standBtn').textContent = 'Stand-up...';
+  const one = () => {
+    if (i >= lines.length) { clearInterval(standTimer); S.standing = false; $('standBtn').textContent = 'Stand-up'; if (!S.chat && !S.kitTalk) focus(null); return; }
+    const x = lines[i++], li = h('li'); li.dataset.key = x.pn.key; li.dataset.kit = x.kit ? '1' : '0'; li.appendChild(h('b', '', x.pn.name + ': ')); li.appendChild(document.createTextNode(x.line)); ol.appendChild(li);
+    if (!S.chat && !S.kitTalk) focus(x.pn.key); say(x.pn.name + ': ' + x.line);
+  };
+  if (reduced) { while (i < lines.length) one(); one(); return; }
+  one(); standTimer = setInterval(one, 1900);
 }
 
 // ------------------------------------------------------------------------------------------------ the Builders' camp
@@ -218,7 +298,7 @@ function renderCamp() {
 }
 function renderBuilder() {
   const b = S.bsel && S.builders.find((x) => x.id === S.bsel); $('bsheet').hidden = !b; if (!b) return;
-  $('bsheetH').textContent = b.name; const p = $('bsheetPill'); p.textContent = C.BUILD_WORD[b.status]; p.className = 'pill ' + (b.status === 'working' ? 'ok' : b.status === 'done' ? 'warn' : 'info');
+  $('bsheetH').textContent = b.name; face($('bsheetFace'), personOf('b:' + b.id), 44); $('bsheetTalk').textContent = 'Talk to ' + b.name; const p = $('bsheetPill'); p.textContent = C.BUILD_WORD[b.status]; p.className = 'pill ' + (b.status === 'working' ? 'ok' : b.status === 'done' ? 'warn' : 'info');
   $('bsheetJob').textContent = 'Job: ' + b.job + (b.sample ? ' (example agent)' : '');
   $('bsheetLine').textContent = b.line + (b.live ? ' ' + b.ahead + ' commit' + (b.ahead === 1 ? '' : 's') + ' not yet in the release, ' + b.files + ' file' + (b.files === 1 ? '' : 's') + ' changed, ' + b.today + ' commit' + (b.today === 1 ? '' : 's') + ' today.' : ' Git was not readable for its branch when the site was built, so only its job line is known.');
   const fill = (id, rows, empty, fn) => { const ul = $(id); clear(ul); if (!rows.length) ul.appendChild(h('li', '', empty)); for (const r of rows) ul.appendChild(fn(r)); };
@@ -403,7 +483,7 @@ function renderScene() {
 function render() {
   model();
   $('demo').hidden = !S.demo; try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
-  renderHero(); renderLegend(); renderFollow(); renderWorkers(); renderSheet(); renderTicker(); renderCamp(); renderReplay(); renderPipe(); renderBoard(); renderNext(); renderScene();
+  renderHero(); renderLegend(); renderFollow(); renderWorkers(); renderSheet(); renderTicker(); renderPeople(); renderChat(); renderCamp(); renderReplay(); renderPipe(); renderBoard(); renderNext(); renderScene();
   say(S.head.title + '. ' + S.head.line);
   S.ready = true;
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
@@ -417,13 +497,16 @@ function hud() {
   if (p.hall === 'camp' && p.mode !== 'tour') { $('mini').setAttribute('viewBox', '0 0 360 250'); drawCamp($('mini'), true); } else { $('mini').setAttribute('viewBox', '0 0 360 292'); drawPlan($('mini'), true); }
   $('hallNow').textContent = p.mode === 'tour' ? 'Tour: ' + (hl ? hl.name : '') : p.mode === 'follow' ? 'Following' : hl ? hl.name : '';
   if (S.tour && p.mode !== 'tour') setTour(false, true);
+  const near = p.mode === 'walk' ? C.talkTarget(p, S.people, 3) : null, tb = $('talkBtn');
+  tb.hidden = !near; if (near) { tb.textContent = 'Talk to ' + near.name.split(' (')[0]; tb.dataset.key = near.key; }
+  if (p.mode !== 'tour' && p.hall !== S.hallSeen) { S.hallSeen = p.hall; S.place = p.hall; renderPeople(); }
 }
 function mountFloor() {
   const M = window.__ergFloor;
   if (!M) return false;
   S.stopMini && clearInterval(S.stopMini);
   $('stage').hidden = false;
-  const fl = M.createFloor($('floor3d'), { reduced, stations: C.STATIONS, onPick: (id, crate) => open(id, true, crate) });
+  const fl = M.createFloor($('floor3d'), { reduced, stations: C.STATIONS, onPick: (id, crate) => { open(id, true, crate); if (crate == null && byId(id)) talk('w:' + id); else if (typeof id === 'string' && id.indexOf('camp:') === 0) talk('b:' + id.slice(5)); } });
   if (!fl || !fl.ok) { $('stage').hidden = true; S.floor = null; S.why = fl && fl.reason; return false; }
   S.floor = fl; S.view = '3d';
   S.stopMini = setInterval(hud, 250);
@@ -443,7 +526,7 @@ function tryFloor() {
 window.addEventListener('erg-floor', tryFloor);
 
 function toggleView() {
-  if (S.view === '3d') { if (S.floor) { try { S.floor.dispose(); } catch (_) { /* nothing */ } } S.floor = null; S.view = 'plan'; S.canTry = true; clearInterval(S.stopMini); S.follow = ''; S.tour = false; $('follow').value = ''; renderScene(); renderSheet(); return; }
+  if (S.view === '3d') { $('talkBtn').hidden = true; if (S.floor) { try { S.floor.dispose(); } catch (_) { /* nothing */ } } S.floor = null; S.view = 'plan'; S.canTry = true; clearInterval(S.stopMini); S.follow = ''; S.tour = false; $('follow').value = ''; renderScene(); renderSheet(); return; }
   try { mountFloor(); } catch (_) { S.floor = null; }
   if (!S.floor) { S.canTry = false; say('3D is not available on this device; the plan stays.'); }
   renderScene(); renderSheet(); hud();
@@ -485,6 +568,12 @@ function wireControls() {
   $('speedBtn').addEventListener('click', () => { S.speed = S.speed === 1 ? 4 : S.speed === 4 ? 16 : 1; $('speedBtn').textContent = 'Speed ' + S.speed + 'x'; if (S.playing) setPlaying(true); });
   $('failBtn').addEventListener('click', jumpFail);
   $('campGo').addEventListener('click', () => goCamp(null));
+  $('talkBtn').addEventListener('click', () => { const k = $('talkBtn').dataset.key; if (k) { if (k.slice(0, 2) === 'w:') open(k.slice(2)); else openBuilder(k.slice(2)); talk(k); } });
+  $('sheetTalk').addEventListener('click', () => { if (S.sel) talk('w:' + S.sel); });
+  $('bsheetTalk').addEventListener('click', () => { if (S.bsel) talk('b:' + S.bsel); });
+  $('chatClose').addEventListener('click', endTalk);
+  $('standBtn').addEventListener('click', standUp);
+  window.addEventListener('olympus:people:close', () => { S.kitTalk = ''; if (!S.chat) focus(null); });
   $('bsheetWalk').addEventListener('click', () => goCamp(S.builders.find((x) => x.id === S.bsel)));
   $('bsheetClose').addEventListener('click', () => { S.bsel = null; renderCamp(); });
   if (!reduced) setInterval(() => { if (!document.hidden && S.ready) { S.scrollI++; renderCampScroll(); } }, 4500);                                  // the camp's scroll reads on
@@ -503,6 +592,6 @@ async function boot() {
   render();
   setInterval(() => { if (!document.hidden) load().then(render); }, 5 * 60 * 1000);
 }
-window.ERGASTERION = { S, C, ready: () => S.ready, render, open, openBuilder, goCamp, setFollow, setTour, floor: () => S.floor,
+window.ERGASTERION = { S, C, ready: () => S.ready, render, open, openBuilder, goCamp, talk, endTalk, standUp, setFollow, setTour, floor: () => S.floor,
   replay: { set: (f) => { setPlaying(false); S.cur = Math.max(0, Math.min(1, f)); updateCursor(true); }, play: () => setPlaying(true), pause: () => setPlaying(false), fail: jumpFail, range: setRange } };
 boot();

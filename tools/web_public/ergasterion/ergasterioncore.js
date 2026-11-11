@@ -491,15 +491,18 @@ export function builderIds(branch) { const b = clean(branch, 60).replace(/^workt
 /** everyone: { key ('w:<id>' | 'b:<id>'), pid, pids, name, title, status, word, place (hall id), x, z, line (its one-liner for the stand-up) } */
 export function people(workers, buildersRows) {
   const P = [];
-  for (const w of Array.isArray(workers) ? workers : []) P.push({ key: 'w:' + w.id, pid: personId(w.id), pids: [personId(w.id)], name: w.name, title: w.role, status: w.status, word: STATUS_WORD[w.status], place: w.hall, x: w.x, z: w.z - 0.12, kind: 'worker',
+  for (const w of Array.isArray(workers) ? workers : []) P.push({ look: Math.max(0, IDS.indexOf(w.id)), key: 'w:' + w.id, pid: personId(w.id), pids: [personId(w.id)], name: w.name, title: w.role, status: w.status, word: STATUS_WORD[w.status], place: w.hall, x: w.x, z: w.z - 0.12, kind: 'worker',
     line: clean(w.status === 'failed' ? 'Blocked: ' + w.say : w.missing ? 'Nothing to report: no file from me yet.' : w.say, 140) });
-  for (const b of Array.isArray(buildersRows) ? buildersRows : []) { const ids = builderIds(b.branch); P.push({ key: 'b:' + b.id, pid: ids[0] || 'builder:' + b.id, pids: ids.length ? ids : ['builder:' + b.id], name: b.name, title: b.job, status: b.status, word: BUILD_WORD[b.status], place: 'camp', x: b.x, z: b.z - 1.9, kind: 'builder',
+  for (const b of Array.isArray(buildersRows) ? buildersRows : []) { const ids = builderIds(b.branch); P.push({ look: STATIONS.length + b.i, key: 'b:' + b.id, pid: ids[0] || 'builder:' + b.id, pids: ids.length ? ids : ['builder:' + b.id], name: b.name, title: b.job, status: b.status, word: BUILD_WORD[b.status], place: 'camp', x: b.x, z: b.z - 1.9, kind: 'builder',
     line: clean(b.status === 'job' ? 'My job: ' + b.job + '. No live activity to report.' : b.commits.length ? (b.status === 'working' ? 'Just now: ' : 'Last: ') + b.commits[0].text : b.shipped.length ? 'Shipped: ' + b.shipped[0].text : 'My job: ' + b.job, 140) }); }
   return P;
 }
 export function peopleHere(P, place) { return (Array.isArray(P) ? P : []).filter((x) => x.place === place); }
 /** the person you may talk to in first person: the nearest one within 3 m (null when nobody is that close) */
 export function talkTarget(pos, P, maxD) { let best = null, bd = maxD == null ? 3 : maxD; for (const x of Array.isArray(P) ? P : []) { const d = Math.hypot(pos.x - x.x, pos.z - x.z); if (d <= bd) { bd = d; best = x; } } return best; }
+const SKIN = ['#f1c9a5', '#e0ac7e', '#c68f5e', '#a56b43', '#f5d6b8', '#8a5a3c'], HAIR = ['#3a2a1c', '#6b4423', '#1f1a17', '#a0703a', '#c9b28a', '#7a2e1e', '#55524d'], OUTFIT = ['#c8a24a', '#7f8a52', '#c96a4a', '#4b7a99', '#e9dfc8', '#9c6b3c'];
+/** a seeded look so everyone is recognisably different: skin tone, hair colour, tunic in the AGORA colours. i = the station index, or 15 + the tent index for a builder */
+export function lookOf(i) { const n = Math.max(0, Math.round(num(i) || 0)); return { skin: SKIN[(n * 5 + 1) % SKIN.length], hair: HAIR[(n * 3 + 2) % HAIR.length], outfit: OUTFIT[(n * 7 + Math.floor(n / 6)) % OUTFIT.length] }; }
 export const QUESTIONS = [['doing', 'What are you doing?'], ['last', 'What was your last result?'], ['learned', 'What did you learn?'], ['stuck', 'Are you stuck?'], ['next', 'What is next?'], ['sure', 'How sure are you?']];
 /** the built-in chat (used when the shared people kit is not loaded): six questions, each answered ONLY from this worker's own row. { text, sources } */
 export function answer(row, qid, now, plan) {

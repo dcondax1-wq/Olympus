@@ -11,13 +11,10 @@
 // If WebGL, the render core or the tier (LITE / off) says no, ok is false and the page keeps its flat plan. Reduced motion: everything stands still and the camera jumps instead of gliding.
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
-import { walk, followCam, tourCam, ease, hallOf, resolveCollision, EYE, START, HALLS, DOORS, CAMP, CAMP_SPOTS, personId, builderIds } from './ergasterioncore.js';
+import { walk, followCam, tourCam, ease, hallOf, resolveCollision, EYE, START, HALLS, DOORS, CAMP, CAMP_SPOTS, personId, builderIds, lookOf } from './ergasterioncore.js';
 
 const BUILD = { working: '#8fa05a', quiet: '#4b7a99', done: '#c8a24a', job: '#b8ad98' }, BWORD = { working: 'Working', quiet: 'Quiet', done: 'Done', job: 'Job only' }, NC = CAMP_SPOTS.length, CSTACK = 6, PUFF = 5;
 const HS = 9;                                                                              // head-batch parts of one person: head, hair, 2 eyes, 2 hands, shoulders, 2 feet
-const SKIN = ['#f1c9a5', '#e0ac7e', '#c68f5e', '#a56b43', '#f5d6b8', '#8a5a3c'], HAIR = ['#3a2a1c', '#6b4423', '#1f1a17', '#a0703a', '#c9b28a', '#7a2e1e', '#55524d'], OUTFIT = ['#c8a24a', '#7f8a52', '#c96a4a', '#4b7a99', '#e9dfc8', '#9c6b3c'];
-/** a seeded look: everyone is recognisably different (skin tone, hair colour, tunic in the AGORA colours) */
-const lookOf = (i) => ({ skin: SKIN[(i * 5 + 1) % SKIN.length], hair: HAIR[(i * 3 + 2) % HAIR.length], outfit: OUTFIT[(i * 7 + Math.floor(i / 6)) % OUTFIT.length] });
 const LAMP = { working: '#8fa05a', idle: '#4b7a99', stale: '#e0b060', failed: '#c96a4a', sample: '#b8ad98' };
 const WORD = { working: 'Working', idle: 'Idle', stale: 'Stale', failed: 'Failed', sample: 'Sample data' };
 const PACE = { working: 1, idle: 0.3, stale: 0, failed: 0, sample: 0.5 };          // how briskly a figure works (and its belt runs)
