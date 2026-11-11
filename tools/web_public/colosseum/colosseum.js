@@ -116,7 +116,7 @@ function setDuel() {
   $('periodPill').textContent = !d ? 'Pick two fighters' : d.period === 'live' ? 'Live so far' : d.period ? `${d.periodWord} backtest` : 'No shared period';
   $('verdict').hidden = true;
   paintIntro(); paintScore(); paintControls();
-  try { const hs = C.makeHash(S.a && S.a.id, S.b && S.b.id); if (hs && hs !== location.hash) history.replaceState(null, '', hs); } catch (_) { /* a sandboxed frame */ }
+  try { const hs = C.makeHash(S.a && S.a.id, S.b && S.b.id); if (!S.want && hs && hs !== location.hash) history.replaceState(null, '', hs); } catch (_) { /* a sandboxed frame */ }
 }
 function paintIntro() {
   const d = S.duel;
@@ -221,6 +221,7 @@ function setMode(m) {
 }
 function pick(f, slot) {
   if (!f) return;
+  S.want = null;                                        // a pick by hand beats a link that is still loading
   const k = S.mode === 'champ' ? 'b' : slot || S.slot;
   if (k === 'a') { if (S.b && S.b.id === f.id) S.b = S.a; S.a = f; } else { if (S.a && S.a.id === f.id) { if (S.mode === 'champ') { say('The champion cannot fight itself: pick another run.'); return; } S.a = S.b; } S.b = f; }
   if (S.mode !== 'champ') S.slot = k === 'a' ? 'b' : 'a';
@@ -349,10 +350,10 @@ function renderFallen() {
 
 // ------------------------------------------------------------------ links and loading
 function resolve(id) { if (!id) return null; if (id.indexOf('bot:') === 0) return S.league.rows.find((r) => r.id === id) || null; return C.byId(S.v, id); }
-function applyHash() {
-  const w = C.parseHash(location.hash); if (!w.a && !w.b) return false;
+function applyHash(wanted) {
+  const w = wanted || C.parseHash(location.hash); if (!w.a && !w.b) return false;
   const a = resolve(w.a), b = resolve(w.b);
-  if ((w.a && !a) || (w.b && !b)) { if (!S.shardsLoaded) { S.want = w; } else if (S.ready) say(`The link names a run that is not in the Archive: ${[!a && w.a, !b && w.b].filter(Boolean).join(', ')}.`); }
+  if ((w.a && !a) || (w.b && !b)) { if (!S.shardsLoaded) { S.want = w; return false; } else if (S.ready) say(`The link names a run that is not in the Archive: ${[!a && w.a, !b && w.b].filter(Boolean).join(', ')}.`); }
   if (!a && !b) return false;
   const bots = (a && a.kind === 'bot') || (b && b.kind === 'bot');
   if (bots && !(a && b && a.kind === 'bot' && b.kind === 'bot')) return false;
@@ -365,10 +366,10 @@ async function loadRest(extraP) {
   const ex = await extraP; if (ex) { C.addExtra(S.v, ex); S.extra = ex; if (!S.busy && !S.auto && S.shown === 0) setDuel(); }
   for (const name of S.v.shards) {
     const sh = await getJSON(`../archive/${name}`, 15000);
-    if (sh) { C.addShard(S.v, sh); if (S.extra) C.addExtra(S.v, S.extra); if (S.want && applyHash()) { setDuel(); } if (S.q) renderPick(); }
+    if (sh) { C.addShard(S.v, sh); if (S.extra) C.addExtra(S.v, S.extra); if (S.want && applyHash(S.want)) { setDuel(); renderPick(); } if (S.q) renderPick(); }
   }
   S.shardsLoaded = true;
-  if (S.want) { applyHash(); S.want = null; }
+  if (S.want) { const w = S.want; S.want = null; if (applyHash(w)) setDuel(); }
   if (S.mode !== 'bots') renderPick();
   renderFallen();
 }
