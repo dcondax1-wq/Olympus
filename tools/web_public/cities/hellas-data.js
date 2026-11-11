@@ -299,10 +299,24 @@ function sixAnswers(p, rows, scope) {
   ];
 }
 /** the keeper stands at the gate of a polis and speaks for the whole city */
+/** why a ruined city fell, in plain words, from its own rows only (how many failed, the clearest failure with its money, its note) */
+export function whyFell(p) {
+  const rows = p.rows || [], n = rows.length, bad = rows.filter((r) => r.tone === 'bad'), isRun = p.src === 'archive', withNet = bad.filter((r) => r.net != null).sort((a, b) => a.net - b.net), worst = withNet[0] || bad[0];
+  if (!n) return 'I keep nothing but stones: no rows were left here.';
+  const money = (r) => (r.net == null ? '' : isRun ? ` (${usd(r.net)} after costs in 2026)` : ` (${usd(r.net, 2)})`), note = worst && worst.note ? ` The note says: ${clip(worst.note, 140).replace(/[\s,;:(]+$/, '')}.` : '';
+  const rule = isRun ? ' A run is only kept when it beats the live strategy in 2026 AND in 2021-25 and still trades 2 to 4 times a week.' : '';
+  return `${plural(bad.length || n, p.unit || 'row')} of ${n} ${isRun ? 'were rejected' : 'did not work'}.${rule}${worst ? ` The clearest case: ${clip(worst.title, 80)}${/\$/.test(worst.title) ? '' : money(worst)}.` : ''}${note} So the idea was closed; it stays here so nobody builds it again without a new idea.`;
+}
+/** a big number in this polis (a run adopted in the last 2 days): the crowd gathers at the agora and cheers when you arrive. From the rows only; example rows never count. */
+export function bigNews(p, now = Date.now()) {
+  if (!p || p.example || p.src !== 'archive') return null; const today = Math.floor(now / 864e5);
+  const fresh = (p.rows || []).filter((r) => r.verdict === 'adopted' && dayNum(r.built) != null && today - dayNum(r.built) <= 2 && today - dayNum(r.built) >= 0);
+  return fresh.length ? { n: fresh.length, text: `${plural(fresh.length, 'new run')} adopted here: ${clip(fresh[0].title, 70)}` } : null;
+}
 export function keeperPerson(p) {
-  const name = greekName('keeper:' + p.id), ruin = p.activity && p.activity.state === 'ruin';
-  return { id: 'keeper:' + p.id, alt: [], kind: 'keeper', name: `${name}, keeper of ${p.name}`, short: name, title: `${ruin ? 'Keeper of the ruins' : 'Keeper of the gate'} · ${p.label}`, polis: p.id,
-    hello: ruin ? `I am ${name}. I keep the ruins of ${p.name}. Ask me why it fell.` : `I am ${name}, keeper of ${p.name}. Ask me what we do here.`, qa: sixAnswers(p, p.rows, 'this city') };
+  const name = greekName('keeper:' + p.id), ruin = p.activity && p.activity.state === 'ruin', qa = sixAnswers(p, p.rows, 'this city');
+  return { id: 'keeper:' + p.id, alt: [], kind: 'keeper', name: `${name}, keeper of ${p.name || p.label}`, short: name, title: `${ruin ? 'Keeper of the ruins' : 'Keeper of the gate'} · ${p.label}`, polis: p.id, mood: ruin ? 'sad' : 'calm',
+    hello: ruin ? `I am ${name}. I keep the ruins of ${p.name || p.label}. ${whyFell(p)}` : `I am ${name}, keeper of ${p.name || p.label}. Ask me what we do here.`, qa: ruin ? [['Why did it fall?', whyFell(p)]].concat(qa.slice(0, 5)) : qa };
 }
 /** a townsperson speaks for the village block it walks around */
 export function townsPerson(p, village, rows, k = 0) {

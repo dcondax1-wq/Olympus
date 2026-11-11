@@ -34,7 +34,8 @@ export function makeCrowd(looks, { lite = false } = {}) {
   g.setAttribute('aHair', new THREE.InstancedBufferAttribute(hair, 3)); g.setAttribute('aSkin', new THREE.InstancedBufferAttribute(skin, 3)); mesh.instanceColor.needsUpdate = true;
   const d = new THREE.Object3D();
   return { mesh, count: looks.length, tris: figureGeo(lite).userData.tris,
-    place(i, x, y, z, ry = 0, s = 1, squash = 1) { d.position.set(x, y, z); d.rotation.set(0, ry, 0); d.scale.set(s, s * squash, s); d.updateMatrix(); mesh.setMatrixAt(i, d.matrix); },
+    /** lean = a bow forward (radians, about the figure's own feet): a sad keeper, a prayer at the temple; negative leans back (a cheer) */
+    place(i, x, y, z, ry = 0, s = 1, squash = 1, lean = 0) { d.position.set(x, y, z); d.rotation.set(lean, ry, 0, 'YXZ'); d.scale.set(s, s * squash, s); d.updateMatrix(); mesh.setMatrixAt(i, d.matrix); },
     commit() { mesh.instanceMatrix.needsUpdate = true; },
     dispose() { g.dispose(); mat.dispose(); mesh.dispose(); } };
 }

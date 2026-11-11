@@ -1235,13 +1235,32 @@ const bl = W.builders; out.builders = { n: bl.length, names: bl.map((b) => b.nam
 { const ruinP = W.poleis.find((p) => p.ruin), busy = arch.find((p) => p.activity.state === 'working'), kr = D.keeperPerson(ruinP), kb = D.keeperPerson(busy), bp = D.builderPerson(W.builders[1], W), tp = D.townsPerson(busy, { idx: 0, name: 'Built 30 Oct 2026' }, busy.rows.slice(0, 3), 0);
   const allK = W.poleis.filter((p) => p.rows.length).map((p) => D.keeperPerson(p)), ans = (k, i) => k.qa[i][1];
   out.people = { ids: kr.id === 'keeper:' + ruinP.id && kb.id === 'keeper:' + busy.id, six: allK.every((k) => k.qa.length === 6 && k.qa.every(([q, a]) => q.endsWith('?') && a.length > 12 && !/undefined|NaN|null/.test(a))), names: new Set(allK.map((k) => k.short)).size, same: D.keeperPerson(ruinP).name === kr.name,
-    ruinWhy: /every one rejected/.test(ans(kr, 0)) && /were rejected\. A run is rejected when it does not beat the live baseline in 2026 AND in 2021-25/.test(ans(kr, 3)) && /this idea is closed/.test(ans(kr, 4)) && /keep the ruins/.test(kr.hello),
+    ruinWhy: kr.qa[0][0] === 'Why did it fall?' && /every one rejected/.test(ans(kr, 1)) && /were rejected\. A run is rejected when it does not beat the live baseline in 2026 AND in 2021-25/.test(ans(kr, 4)) && /this idea is closed/.test(ans(kr, 5)) && /keep the ruins/.test(kr.hello),
     busy: /^We are at work: testing /.test(ans(kb, 0)) && /\$[\d,]+ after costs in 2026 \([+-]?\$[\d,]+ per month\)/.test(ans(kb, 1)) && /History, not a forecast/.test(ans(kb, 1)) && /one for every run/.test(ans(kb, 5)),
-    noOrders: allK.filter((k) => /cannot place orders/.test(ans(k, 4))).length > 50, builder: { id: bp.id, alt: bp.alt.length, snap: /snapshot/i.test(bp.qa[2][1]) && /Snapshot at build time/.test(bp.fine), job: bp.qa[0][1] === W.builders[1].job + '.', where: /Jarvis temple in Athens/.test(bp.qa[1][1]) },
+    noOrders: allK.filter((k) => /cannot place orders/.test(ans(k, 4)) || /cannot place orders/.test(ans(k, 5))).length > 50, builder: { id: bp.id, alt: bp.alt.length, snap: /snapshot/i.test(bp.qa[2][1]) && /Snapshot at build time/.test(bp.fine), job: bp.qa[0][1] === W.builders[1].job + '.', where: /Jarvis temple in Athens/.test(bp.qa[1][1]) },
     towns: tp.qa.length === 6 && /Built 30 Oct 2026/.test(tp.name), look: (() => { const a = PT.lookOf('keeper:a', 'keeper'), b = PT.lookOf('keeper:a', 'keeper'), c = new Set(W.poleis.slice(0, 60).map((p) => { const l = PT.lookOf('x:' + p.id); return l.skin + l.hair + l.outfit; })).size; return JSON.stringify(a) === JSON.stringify(b) && /^#/.test(a.skin + '') && c >= 25; })(),
     villager: (() => { const v = { id: 'kronos', name: 'Kronos', blurb: 'Time and the session clock', fact: 'Kronos: best weekday so far is Tuesday.', status: 'example', real: 2, rows: [{ label: 'Mon 3 Nov', say: '+$312 (+0.7 R)', tone: 'good' }, { label: 'Tue 4 Nov', say: '-$60 (-0.1 R)', tone: 'bad' }] }, q = PT.villagerPerson(v, 3), e = PT.villagerPerson({ ...v, rows: [], real: 0 }, 3);
       return q.id === 'villager:kronos' && q.qa.length === 6 && /\+\$312/.test(q.qa[2][1]) && /-\$60/.test(q.qa[3][1]) && /example numbers/.test(q.qa[0][1]) && /cannot place orders/.test(q.qa[4][1]) && /no data today/.test(e.qa[1][1]) && / of Kronos$/.test(q.name); })(),
     kitNone: PT.kit() === null && PT.talkTo(kr) === 'own' };
+}
+// round 4 (world director, 2026-11-11): the townspeople's day, the sad keeper of the ruins, the big news, say / show
+{ const big = W.poleis.filter((q) => !q.capital && q.rows.length > 40).sort((a, b) => b.rows.length - a.rows.length)[0], plan = P.planPolis(big), col = P.polisCollider(plan), pl = P.routinePlaces(plan);
+  const t0 = Date.now(), F = { market: P.fieldTo(plan, col, pl.market), temple: P.fieldTo(plan, col, pl.temple), gate: P.fieldTo(plan, col, pl.gate) }, ms = Date.now() - t0, npcs = P.polisNpcs(plan, 24), cache = new Map();
+  let inHouse = 0, jump = 0; const acts = {}, prev = [];
+  for (let sod = 8 * 3600; sod < 20 * 3600; sod += 2) npcs.forEach((n, i) => { const q = P.routineAt(n, sod, plan, F, cache); acts[q.act] = (acts[q.act] || 0) + 1; if (q.act !== 'stroll' && col.hits(q.x, q.z, .2)) inHouse++; if (prev[i] && Math.hypot(prev[i].x - q.x, prev[i].z - q.z) > 8) jump++; prev[i] = q; });
+  const at = (sod) => JSON.stringify(npcs.map((n) => P.routineAt(n, sod, plan, F, new Map())));
+  const where = (h) => { const c = { market: 0, temple: 0, gate: 0 }; for (let k = 0; k < 40; k++) for (const n of npcs) c[P.placeFor(n, k, h * 3600)]++; return c; };
+  const am = where(7), pm = where(19), noon = where(12);
+  const kr = D.keeperPerson(W.poleis.find((q) => q.ruin));
+  const gold = W.poleis.find((q) => q.src === 'archive' && !q.example && q.rows.some((r) => r.verdict === 'adopted')), ad = gold && gold.rows.find((r) => r.verdict === 'adopted'), dn = (s) => { const m = /^(\d\d)-(\d\d)-(\d\d)$/.exec(s || ''); return m ? Date.UTC(2000 + +m[1], +m[2] - 1, +m[3]) : null; };
+  const sayNone = PT.sayShow(kr, 'hellas'), calls = [];
+  globalThis.window = { OLYMPUS_PEOPLE: { open() {}, get: () => ({}), say: (id, t, o) => calls.push(['say', id, o.scene, t.slice(0, 20)]), show: (id, w) => calls.push(['show', id, w.kind]) } };
+  const sayKit = PT.sayShow(kr, 'hellas'); delete globalThis.window;
+  out.life = { ms, reached: F.market.reached > 100 && F.temple.reached > 100 && F.gate.reached > 100, inHouse, jump, acts, same: at(40000) === at(40000) && at(51234) === at(51234), noFields: P.routineAt(npcs[0], 40000, plan, null).act === 'stroll',
+    am: am.temple > am.market && am.gate === 0, pm: pm.gate > pm.market && pm.temple === 0, noon: noon.market > noon.temple && noon.market > noon.gate,
+    ruinKeeper: kr.mood === 'sad' && kr.qa.length === 6 && kr.qa[0][0] === 'Why did it fall?' && /of \d+ (were rejected|did not work)\./.test(kr.qa[0][1]) && /nobody builds it again without a new idea/.test(kr.qa[0][1]) && kr.hello.indexOf(kr.qa[0][1]) > 0 && !/undefined/.test(kr.hello),
+    news: ad ? [!!D.bigNews(gold, dn(ad.built) + 864e5), D.bigNews(gold, dn(ad.built) + 10 * 864e5), D.bigNews({ ...gold, example: true }, dn(ad.built) + 864e5), D.bigNews(W.poleis.find((q) => q.src !== 'archive'), Date.now())] : null,
+    say: [sayNone, sayKit, calls] };
 }
 // layout: no two markers touch, regions keep apart, everything inside the bounds
 let gap = 1e9; for (let i = 0; i < W.poleis.length; i++) for (let j = i + 1; j < W.poleis.length; j++) { const a = W.poleis[i], b = W.poleis[j]; gap = Math.min(gap, Math.hypot(a.x - b.x, a.z - b.z) - a.mr - b.mr); }
@@ -1344,6 +1363,16 @@ def part_hellas():
     check("l. people (own chat): every city has a keeper 'keeper:<polis-id>' with a Greek name and six questions answered only from the city's rows (no blanks); a keeper of ruins says plainly why the idea was rejected and that it is closed; a working city's keeper gives the last result with $ and $ per month; builders say they are a snapshot; an Athens villager answers from its village's rows (example numbers marked); nobody can place orders; without the kit talkTo() answers 'own'",
           pe.get("ids") and pe.get("six") and pe.get("names", 0) >= 30 and pe.get("same") and pe.get("ruinWhy") and pe.get("busy") and pe.get("noOrders") and pe.get("towns") and pe.get("look") and pe.get("villager") and pe.get("kitNone")
           and pe.get("builder", {}).get("id") == "builder:a43a2daec19cf8666" and pe.get("builder", {}).get("alt", 0) >= 3 and pe.get("builder", {}).get("snap") and pe.get("builder", {}).get("job") and pe.get("builder", {}).get("where"), pe)
+    lf = d.get("life", {})
+    check(f"l. LIFE: the townspeople's day on the polis' own walking grid ({lf.get('ms')} ms for three fields): from 8:00 to 20:00 nobody steps into a house ({lf.get('inHouse')}) or jumps ({lf.get('jump')}); they stroll, walk, shop, pray and trade ({lf.get('acts')}); the same clock gives the same scene; no fields = they only stroll",
+          lf.get("reached") and lf.get("inHouse") == 0 and lf.get("jump") == 0 and all(lf.get("acts", {}).get(k, 0) > 0 for k in ("stroll", "walk", "shop", "pray", "trade")) and lf.get("same") and lf.get("noFields") and lf.get("ms", 999) < 400, lf)
+    check("l. LIFE follows the real clock: the morning goes to the temple, the evening to the gate (the harbour road), the day to the market", lf.get("am") and lf.get("pm") and lf.get("noon"), {k: lf.get(k) for k in ("am", "pm", "noon")})
+    check("l. LIFE ruins: the keeper of a ruined city is sad (it hangs its head) and its first answer, 'Why did it fall?', says from the rows how many failed, the clearest case and that the idea is closed; it greets you with it",
+          lf.get("ruinKeeper"), lf.get("ruinKeeper"))
+    check("l. LIFE big news: a run adopted the day before makes a crowd gather; ten days later, example rows, or a city that is not the Archive: no",
+          lf.get("news") is None or lf.get("news") == [True, None, None, None], lf.get("news"))
+    check("l. LIFE say / show: without the kit nothing is called; with OLYMPUS_PEOPLE.say + show the keeper speaks its hello in the 'hellas' scene and shows its work",
+          lf.get("say", [None])[0] == {"say": False, "show": False} and lf.get("say", [None, None])[1] == {"say": True, "show": True} and [c[0] for c in lf.get("say", [0, 0, []])[2]] == ["say", "show"] and lf["say"][2][0][2] == "hellas", lf.get("say"))
     check("l. deterministic: the same files give the same world twice (ids, names, places); every city has a unique real Greek place name from the bundled list",
           d.get("same") and d.get("uniqIds") and d.get("uniqNames") and d.get("names") and d.get("places", 0) >= 300, {k: d.get(k) for k in ("same", "uniqIds", "uniqNames", "names", "places")})
     check("l. layout: no two city markers touch, every city is inside the map, the regions never overlap, every city belongs to one region; trade routes join cities of the same family only",
@@ -1580,6 +1609,22 @@ def sec_l(br, base, C, days, picks, ids):
                   kp["people"] == kp["npcs"] + 1 == kp["crowd"] and kp["id"] == "keeper:" + kp["polis"] and "keeper of" in kp["title"] and len(kp["qs"]) == 6 and kp["qs"][0].startswith("What is this city working on") and "Ask me" in kp["hello"] and kp["face"] and kp["how"] == "own"
                   and kp["talk"] == {"kind": "person", "i": 0} and kp["facing"] and not kp["small"] and re.search(r"\$[\d,]+ after costs in 2026 \([+-]?\$[\d,]+ per month\)", a1) and ("rejected" in a3 or "Nothing failed" in a3) and kq["talk"] is None and not kq["facing"] and len(kp["labels"]) >= 1,
                   {"kp": kp, "a1": a1[:160], "a3": a3[:160], "kq": kq})
+            # LIFE (2026-11-11): the day on a fixed clock is a fixed scene; a big number gathers the town at the agora (confetti + sound when the kits are there); inside the budget
+            lv = p.evaluate("""(() => { const S = window.__hellas.scene, at = (h, m) => { const d = new Date(); d.setHours(h, m, 0, 0); return d.getTime(); }, sig = () => S.people.map((P) => Math.round(P.x * 10) + ',' + Math.round(P.z * 10)).join(';'), tally = {};
+              for (const [h, m] of [[7, 10], [12, 3], [12, 7], [19, 6]]) { S.setClock(at(h, m)); for (const [k, v] of Object.entries(S.lifeState().acts)) tally[k] = (tally[k] || 0) + v; }
+              S.setClock(at(12, 3)); const a = sig(); S.setClock(at(12, 3)); const b = sig(); S.setClock(null); window.__k = []; const O = window.OLYMPUS; if (O && O.sound) O.sound.at = (n) => window.__k.push(['sound', n]);
+              const FX = window.OLYMPUS_FX || (window.OLYMPUS_FX = {}); const old = FX.burst; FX.burst = (k) => window.__k.push(['burst', k]); const n = S.celebrate('A new run was adopted'); FX.burst = old;
+              return { tally, same: a === b, n, gathering: S.lifeState().gathering, paths: S.people.filter((P) => P.gpath).length, k: window.__k.slice() }; })()""")
+            hframes(p, 4)
+            hb = p.evaluate(HN)
+            hshot(p, "hellas_390x844_life_gather.png")
+            check(f"l. LIFE in the polis: on a fixed clock the townspeople stroll, walk, shop, pray and trade ({lv['tally']}), the same clock twice is the same scene; a big number sends {lv['n']} of them along the streets to the agora with confetti and a cheer ({hb['calls']} calls / {hb['tris']:,} triangles)",
+                  sum(1 for k in ("stroll", "walk", "shop", "pray", "trade") if lv["tally"].get(k)) >= 4 and lv["same"] and lv["n"] > 0 and lv["gathering"] and lv["paths"] == lv["n"] and ["burst", "confetti"] in lv["k"]
+                  and hb["calls"] <= 45 and hb["tris"] <= 160_000, (lv, hb))
+            sk = p.evaluate("""(() => { const had = window.OLYMPUS_PEOPLE; const rec = []; window.OLYMPUS_PEOPLE = { open() {}, get: () => ({}), say: (id, t, o) => rec.push(['say', id, o.scene]), show: (id, w) => rec.push(['show', id, w.kind]) };
+              const u = window.__hellas.ui; u.talkKeeper(u.at.polis); const v = u.lastTalk.voice; u.hideCard(); if (had) window.OLYMPUS_PEOPLE = had; else delete window.OLYMPUS_PEOPLE; return { v, rec }; })()""")
+            check("l. LIFE talk with the new kit: the keeper speaks through OLYMPUS_PEOPLE.say(id, hello, {scene: 'hellas'}) and shows its work with show(id, {kind: 'work'})",
+                  sk["v"] == {"say": True, "show": True} and [r[0] for r in sk["rec"]] == ["say", "show"] and sk["rec"][0][1].startswith("keeper:") and sk["rec"][0][2] == "hellas", sk)
             check("l. a tap on a townsperson starts a talk with that person: it stops walking, turns to you, and answers for its own village",
                   bool(tw) and tw["kind"] == "towns" and tw["id"].startswith("towns:") and tw["facing"] and tw["qs"] == 6 and tw["x0"] == tw["x1"] and " of " in tw["title"], tw)
         # walking (the Athens walker), both tiers

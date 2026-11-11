@@ -345,7 +345,7 @@ function build(rc, scene, camera, canvas, o) {
   let AC = 'work', AW = false, HX = 0, HZ = 0, HT = 0, CARRY = -1;
   const ACT_POSE = { walk: 'walk', carry: 'carry', drop: 'idle', board: 'idle', standup: 'idle', speak: 'speak', cheer: 'cheer' };
   function actor(i, job, fx, fz, yb, th0, pz, k, mood, key, dt, camP) {
-    const a = ang[i], b3 = i * 3, h0 = i * HS, dC = Math.hypot(camP.x - fx, camP.z - fz), talking = focusKey === key, close = mode === 'walk' && dC < 3.4;
+    const a = ang[i], b3 = i * 3, h0 = i * HS, dC = Math.hypot(camP.x - fx, camP.z - fz), talking = focusKey === key && AC !== 'walk', close = mode === 'walk' && dC < 3.4;
     if (close && !wasNear[i]) nearT[i] = t; wasNear[i] = close ? 1 : 0;
     const re = reactT[i] > t ? reactP[i] : '';
     const pose = talking ? 'talk' : re || (close && t - nearT[i] < 2.6 ? 'wave' : lookT[i] > t ? 'look' : ACT_POSE[AC] || mood || (AW ? 'idle' : ''));
@@ -643,7 +643,7 @@ function build(rc, scene, camera, canvas, o) {
     tour(on) { mode = on ? 'tour' : 'walk'; following = null; if (on) tourT = 0; still(); return mode === 'tour'; },
     /** the day replay lights up who was busy at the cursor: their lamps pulse and their figures work for a moment */
     /** the person you are chatting with ('w:<station id>' | 'b:<builder id>' | null): it turns to face you, talks, and a soft marble disc marks it */
-    focus(key) { const prev = focusKey; focusKey = key || ''; if (prev && prev !== focusKey) sendHome(indexOf(prev)); still(); },
+    focus(key) { const prev = focusKey; focusKey = key || ''; if (prev && prev !== focusKey) sendHome(indexOf(prev)); lodT = 0; try { lodFrame(0, camera.position); } catch (_) { /* next frame */ } still(); },
     focused() { return focusKey; },
     facing(key) { const si = S.findIndex((x) => 'w:' + x.id === key), ci = camp.findIndex((b) => b && 'b:' + b.id === key); return si >= 0 ? thA[si] : ci >= 0 ? thA[N + ci] : null; },
     pulse(ids) { for (const id of ids || []) hot[id] = t + 1.6; still(); },

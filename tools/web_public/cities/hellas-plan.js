@@ -180,3 +180,58 @@ export function whereInPolis(plan, x, z) {
   if (vd > 14) v = null; let h = null, hd = 16; if (v) for (const i of v.houses) { const q = plan.houses[i], d = Math.hypot(q.x - x, q.z - z); if (d < hd) { hd = d; h = q; } }
   return { district: v ? plan.districts[v.district] : null, village: v, house: h, agora: Math.hypot(x, z) < plan.agoraR };
 }
+
+// ------------------------------------------------------------------ the townspeople's day (2026-11-11 world director: "everyone visibly doing their real job, walking between places")
+// Every townsperson walks the street round its own village block, and once every ROUTINE.cycle seconds leaves it for one of three places of the polis:
+//   market  the agora around the acropolis (they shop at the stalls),  temple  the foot of the acropolis rock (they bow),  gate  the south gate / harbour (they trade with the caravans).
+// Which one follows the real clock (the morning goes to the temple, the day to the market, the evening to the gate) and the person's own seed. The way there is a
+// walkable path on the city's own collision grid (a breadth-first distance field from each place, so nobody walks through a house). The loop clock pauses while a
+// person is out, so it leaves and comes back at the same spot of its street: no jumps. Pure and deterministic: the same clock gives the same scene.
+export const ROUTINE = { cycle: 600, away: 240, speed: 1.3, cell: 3 };
+export const PLACE_WORD = { market: 'shopping at the agora', temple: 'praying at the temple', gate: 'trading at the gate' };
+/** the three places of a polis as target points: market = a ring on the agora, temple = the foot of the rock, gate = inside the south gate */
+export function routinePlaces(plan) {
+  const A = plan.agoraR, h = plan.hillR, ring = (r, n) => Array.from({ length: n }, (_, i) => { const a = (i / n) * Math.PI * 2; return { x: Math.cos(a) * r, z: Math.sin(a) * r }; });
+  return { market: ring((A + h) / 2 + 2, 16), temple: ring(h + 2.2, 10), gate: [-6, -3, 0, 3, 6].map((x) => ({ x, z: plan.R - 9 })) };
+}
+/** a distance field (in cells) to a set of target points over the walkable grid of the polis (col.hits = blocked) */
+export function fieldTo(plan, col, targets, cell = ROUTINE.cell) {
+  const R = plan.R, n = Math.ceil((2 * R) / cell) + 1, o = -R, d = new Int32Array(n * n).fill(-1), q = new Int32Array(n * n), ok = new Uint8Array(n * n);
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) ok[j * n + i] = col.hits(o + i * cell, o + j * cell, .6) ? 0 : 1;
+  let qh = 0, qt = 0;
+  for (const p of targets) { const i = Math.round((p.x - o) / cell), j = Math.round((p.z - o) / cell); if (i < 0 || j < 0 || i >= n || j >= n) continue; const k = j * n + i; if (!ok[k] || d[k] === 0) continue; d[k] = 0; q[qt++] = k; }
+  while (qh < qt) { const k = q[qh++], i = k % n, j = (k - i) / n; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = i + di, b = j + dj; if (a < 0 || b < 0 || a >= n || b >= n) continue; const kk = b * n + a; if (ok[kk] && d[kk] < 0) { d[kk] = d[k] + 1; q[qt++] = kk; } } }
+  return { n, o, cell, d, reached: qt };
+}
+/** the walk from a point down the field to its place: a list of points (the start, the cell centres, simplified), or null when the place cannot be reached */
+export function pathDown(F, x, z, max = 600) {
+  const { n, o, cell, d } = F, at = (i, j) => (i < 0 || j < 0 || i >= n || j >= n ? -1 : d[j * n + i]);
+  let i = Math.round((x - o) / cell), j = Math.round((z - o) / cell);
+  if (at(i, j) < 0) { let best = null; for (let r = 1; r <= 2 && !best; r++) for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) { const v = at(i + a, j + b); if (v >= 0 && (!best || v < best[2])) best = [i + a, j + b, v]; } if (!best) return null; i = best[0]; j = best[1]; }
+  const pts = [{ x, z }];
+  for (let s = 0; s < max; s++) { const v = at(i, j); pts.push({ x: o + i * cell, z: o + j * cell }); if (v === 0) break; let nx = -1, ny = -1, nv = v; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const w = at(i + di, j + dj); if (w >= 0 && w < nv) { nv = w; nx = i + di; ny = j + dj; } } if (nx < 0) return null; i = nx; j = ny; }
+  const out = [pts[0]]; for (let k = 1; k < pts.length - 1; k++) { const a = out[out.length - 1], b = pts[k], c = pts[k + 1]; if (Math.abs((b.x - a.x) * (c.z - a.z) - (b.z - a.z) * (c.x - a.x)) > 1e-6) out.push(b); } out.push(pts[pts.length - 1]);
+  return out;
+}
+export const pathLen = (P) => { let s = 0; for (let k = 1; k < P.length; k++) s += Math.hypot(P[k].x - P[k - 1].x, P[k].z - P[k - 1].z); return s; };
+export function alongPath(P, f) { const tot = pathLen(P); let s = Math.max(0, Math.min(1, f)) * tot; for (let k = 1; k < P.length; k++) { const L = Math.hypot(P[k].x - P[k - 1].x, P[k].z - P[k - 1].z); if (s <= L || k === P.length - 1) { const u = L ? Math.min(1, s / L) : 1; return { x: P[k - 1].x + (P[k].x - P[k - 1].x) * u, z: P[k - 1].z + (P[k].z - P[k - 1].z) * u, yaw: Math.atan2(P[k].x - P[k - 1].x, P[k].z - P[k - 1].z) }; } s -= L; } const e = P[P.length - 1]; return { x: e.x, z: e.z, yaw: 0 }; }
+/** which place a person goes to in cycle c at second-of-day sod: the hour leads (morning temple, evening gate), its seed varies the rest */
+export function placeFor(n, c, sod) { const hr = Math.floor(sod / 3600) % 24, s = (c * 7 + Math.round(n.ph * 1000) + n.i) % 10; if (hr < 9) return s < 6 ? 'temple' : 'market'; if (hr >= 18) return s < 6 ? 'gate' : 'market'; return s < 6 ? 'market' : s < 8 ? 'temple' : 'gate'; }
+/** where townsperson n is at second-of-day sod: { x, z, yaw (radians, atan2 of the walk: 0 = +z), act: 'stroll' | 'walk' | 'shop' | 'pray' | 'trade', place, loopT }.
+ *  fields = { market, temple, gate } from fieldTo (null: everyone strolls); cache = a Map the caller keeps (paths per person and cycle). */
+export function routineAt(n, sod, plan, fields, cache) {
+  const C = ROUTINE.cycle, AW = ROUTINE.away, ph = Math.floor(n.ph * C), u = (sod + ph) % C, c = Math.floor((sod + ph) / C), u0 = C - AW;
+  const loopT = sod - AW * c - Math.max(0, u - u0), home = npcOnLoop(n, loopT), stroll = { x: home.x, z: home.z, yaw: Math.atan2(Math.sin(home.yaw), -Math.cos(home.yaw)), act: 'stroll', place: '', loopT };
+  if (!fields || u < u0) return stroll;
+  const place = placeFor(n, c, sod), F = fields[place]; if (!F) return stroll;
+  const key = n.i + ':' + c; let P = cache && cache.has(key) ? cache.get(key) : undefined;
+  if (P === undefined) { P = pathDown(F, home.x, home.z); if (cache) { cache.set(key, P); if (cache.size > 600) cache.delete(cache.keys().next().value); } }
+  if (!P || P.length < 2) return stroll;
+  const L = pathLen(P), leg = Math.min((AW - 30) / 2, Math.max(4, L / ROUTINE.speed)), v = u - u0;
+  if (v < leg) { const q = alongPath(P, v / leg); return { x: q.x, z: q.z, yaw: q.yaw, act: 'walk', place, loopT }; }
+  if (v > AW - leg) { const q = alongPath(P, (AW - v) / leg); return { x: q.x, z: q.z, yaw: q.yaw + Math.PI, act: 'walk', place, loopT }; }
+  const e = P[P.length - 1], face = place === 'gate' ? 0 : Math.atan2(-e.x, -e.z);             // at the market and the temple they face the rock; at the gate, the road out (south, +z)
+  return { x: e.x, z: e.z, yaw: face, act: place === 'market' ? 'shop' : place === 'temple' ? 'pray' : 'trade', place, loopT };
+}
+/** a crowd gathering (a big number: an eval passed, a new adopted run): who comes to the agora. Everyone within `reach` of it walks to a ring there and cheers. */
+export function gatherSpot(i, n, plan) { const r = (plan.agoraR + plan.hillR) / 2 + 1, a = (i / Math.max(1, n)) * Math.PI * 2; return { x: Math.cos(a) * r, z: Math.sin(a) * r }; }

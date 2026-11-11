@@ -47,6 +47,15 @@ export function talkTo(person, opts = {}) {
   return 'own';
 }
 
+/** the person speaks its hello (the kit's say(): a speech bubble, a voice, lips that move) and shows its work (the kit's show(): a card), when the kit has them.
+ *  -> { say, show } booleans; never throws. Without them the chat card says it. */
+export function sayShow(person, scene, figure) {
+  const K = typeof window !== 'undefined' ? window.OLYMPUS_PEOPLE : null, out = { say: false, show: false }; if (!K || !person) return out;
+  const id = kitId(person) || person.id, first = (person.qa || [])[0];
+  try { if (typeof K.say === 'function') { K.say(id, String(person.hello || (first && first[1]) || person.name).slice(0, 240), { scene, figure: figure || null }); out.say = true; } } catch (e) { /* our own card */ }
+  try { if (typeof K.show === 'function' && first) { K.show(id, { kind: 'work', title: person.title, text: first[1], items: (person.qa || []).slice(1, 4).map((x) => x[1]).filter(Boolean) }); out.show = true; } } catch (e) { /* our own card */ }
+  return out;
+}
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 /** an Athens villager speaks for its app's village: the six answers come from the village's own rows */
 export function villagerPerson(v, k = 0) {

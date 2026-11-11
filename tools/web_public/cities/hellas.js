@@ -9,7 +9,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { Batch, PAL, unit } from './athens-geo.js';
 import { rng, hash32 } from './util.js';
 import { walkStep, HOUSE_TINT, EYE } from './athens-world.js';
-import { planPolis, polisCollider, polisNpcs, npcOnLoop, builderAt, TIER } from './hellas-plan.js';
+import { planPolis, polisCollider, polisNpcs, npcOnLoop, builderAt, TIER, routinePlaces, fieldTo, routineAt, pathDown, pathLen, alongPath } from './hellas-plan.js';
 import { makeCrowd } from './people-fig.js';
 import { lookOf } from './people-talk.js';
 import { keeperPerson, townsPerson, builderPerson } from './hellas-data.js';
@@ -161,7 +161,7 @@ export class Hellas {
 
   // ------------------------------------------------------------------ one polis (streamed: the one before is disposed)
   disposePolis() {
-    if (!this.pg) return; this.scene.remove(this.pg); for (const g of this.pKeep) g.dispose(); this.pg = null; this.pKeep = []; this.polis = null; this.plan = null; this.col = null; this.npcs = null; this.npcMesh = null; this.houseMesh = null; this.pFlames = null; this.people = null; this.crowd = null; this.talk = null;
+    if (!this.pg) return; this.scene.remove(this.pg); for (const g of this.pKeep) g.dispose(); this.pg = null; this.pKeep = []; this.polis = null; this.plan = null; this.col = null; this.npcs = null; this.npcMesh = null; this.houseMesh = null; this.pFlames = null; this.people = null; this.crowd = null; this.talk = null; this.routine = null; this.gathering = null;
   }
   buildPolis(p) {
     this.disposePolis(); const plan = planPolis(p), T = this.T, G = new THREE.Group(), keep = this.pKeep = [], own = (g) => { keep.push(g); return g; }, r = rng(hash32('look:' + p.id));
@@ -200,6 +200,9 @@ export class Hellas {
     tm.instanceMatrix.needsUpdate = true; tm.instanceColor.needsUpdate = true; tm.frustumCulled = false; G.add(tm); own(tm); this.treeMesh = tm;
     // the people (one instanced draw): the KEEPER at the south gate (always), townspeople on the streets around their village (phone-high only)
     this.col = polisCollider(plan); this.npcs = T.npcs && !this.reduced ? polisNpcs(plan, Math.min(T.npcs, plan.villages.length * 3)) : [];
+    // their day: walkable distance fields to the market, the temple and the gate (about 20 ms once per polis; LITE has no townspeople, so none)
+    if (this.npcs.length) { const pl = routinePlaces(plan); this.routine = { fields: { market: fieldTo(plan, this.col, pl.market), temple: fieldTo(plan, this.col, pl.temple), gate: fieldTo(plan, this.col, pl.gate) }, cache: new Map() }; } else this.routine = null;
+    this.gathering = null; this.lookUntil = 0;
     this.people = [{ kind: 'keeper', id: 'keeper:' + p.id, x: 0, z: R - 8, ry: Math.PI, make: () => keeperPerson(p) }];
     this.npcs.forEach((q, k) => { const V = plan.villages[q.village]; this.people.push({ kind: 'towns', id: `towns:${p.id}:${V.idx}:${k}`, loop: q, x: 0, z: 0, ry: 0, make: () => townsPerson(p, V, V.houses.map((h) => plan.houses[h].row), k) }); });
     this.people.forEach((P, i) => { P.i = i; P.look = lookOf(P.id, P.kind === 'keeper' ? 'keeper' : ''); Object.defineProperty(P, 'person', { get() { return P._p || (P._p = P.make()); } }); });
@@ -209,17 +212,52 @@ export class Hellas {
       plan.districts.forEach((D, i) => { const l = Math.hypot(D.x, D.z) || 1; d.position.set(D.x / l * (A - 3), 5, D.z / l * (A - 3)); d.rotation.set(0, 0, 0); d.scale.setScalar(1); d.updateMatrix(); fm.setMatrixAt(i, d.matrix); }); fm.instanceMatrix.needsUpdate = true; G.add(fm); own(fm); this.pFlames = fm; } else this.pFlames = null;
     G.visible = false; this.scene.add(G); return plan;
   }
-  /** everyone in the polis: townspeople walk their street, the keeper stands at the gate; whoever you talk to (or walk up to) stops and turns to face you */
+  /** everyone in the polis, on the real clock (hellas-plan.js routineAt): townspeople stroll their street, then go shopping at the agora, praying at the temple or trading at the
+   *  gate, and come back; the keeper stands at the gate (a keeper of ruins hangs its head). Heads turn when you start walking, people near you face you, whoever you talk to
+   *  stops; for a big number the crowd gathers at the agora and cheers (celebrate). A fixed clock (setClock) = a fixed scene. */
   npcTick(t) {
-    if (!this.crowd || !this.people) return; const cp = this.camera.position, sc = this.walk ? 1.08 : 2.5, me = this.walk;
+    if (!this.crowd || !this.people) return; const cp = this.camera.position, sc = this.walk ? 1.08 : 2.5, me = this.walk, still = this.reduced;
+    const now = this.clockMs != null ? this.clockMs : Date.now(), sod = ((now / 1000 - new Date(now).getTimezoneOffset() * 60) % 86400 + 86400) % 86400; this.sod = sod;
+    const R = this.routine, G = this.gathering && t < this.gathering.until ? this.gathering : null, dt = Math.min(.25, Math.max(0, t - (this._npcT == null ? t : this._npcT))); this._npcT = t;
     for (const P of this.people) {
-      const talking = this.talk && this.talk.kind === 'person' && this.talk.i === P.i;
-      if (P.loop && !talking) { const q = npcOnLoop(P.loop, t); P.x = q.x; P.z = q.z; P.ry = Math.atan2(Math.sin(q.yaw), -Math.cos(q.yaw)); }
-      const near = me && Math.hypot(me.x - P.x, me.z - P.z) < (P.kind === 'keeper' ? 9 : 0); P.facing = talking || near;
-      const ry = P.facing ? Math.atan2(cp.x - P.x, cp.z - P.z) : P.kind === 'keeper' ? Math.PI : P.ry;
-      this.crowd.place(P.i, P.x, .1, P.z, ry, sc * (P.kind === 'keeper' ? 1.12 : P.look.height), talking && !this.reduced ? 1 + .035 * Math.sin(t * 9) : 1);
+      const talking = this.talk && this.talk.kind === 'person' && this.talk.i === P.i; let act = P.kind === 'keeper' ? (this.plan && this.plan.ruin ? 'sad' : 'keep') : 'stroll';
+      if (P.loop && !talking) {
+        let q = R ? routineAt(P.loop, sod, this.plan, R.fields, R.cache) : null;
+        if (!q) { const l = npcOnLoop(P.loop, t); q = { x: l.x, z: l.z, yaw: Math.atan2(Math.sin(l.yaw), -Math.cos(l.yaw)), act: 'stroll' }; }
+        if (G && P.gpath) { const L = P.glen || 1, leg = Math.max(3, L / 2.2), f = Math.min(1, (t - G.t0) / leg), e = alongPath(P.gpath, f); q = { x: e.x, z: e.z, yaw: f < 1 ? e.yaw : Math.atan2(-e.x, -e.z), act: f < 1 ? 'walk' : 'cheer' }; }
+        // nobody jumps: a far target (a gathering ended, the clock moved) is walked to first, briskly
+        if (P.x != null && !still && dt > 0 && t > .5) { const dx = q.x - P.x, dz = q.z - P.z, dd = Math.hypot(dx, dz), mx = dt * 3.2; if (dd > mx && dd < 400) { q = { x: P.x + dx / dd * mx, z: P.z + dz / dd * mx, yaw: Math.atan2(dx, dz), act: 'walk' }; } }
+        P.x = q.x; P.z = q.z; P.ry = q.yaw; act = q.act;
+      }
+      const dMe = me ? Math.hypot(me.x - P.x, me.z - P.z) : 1e9, look = !!(me && this.lookUntil && t < this.lookUntil && dMe < 45), near = me && dMe < (P.kind === 'keeper' ? 9 : 5);
+      P.facing = talking || near || look; P.act = talking ? 'talk' : near ? 'greet' : look ? 'look' : act;
+      const ry = P.facing ? Math.atan2(cp.x - P.x, cp.z - P.z) : P.kind === 'keeper' ? Math.PI : P.ry, w = still ? 0 : 1, ph = P.i * 1.7;
+      let y = .1, sq = 1, lean = 0, ryj = 0;
+      if (P.act === 'talk') sq = 1 + .035 * Math.sin(t * 9) * w;
+      else if (P.act === 'greet') { y += Math.max(0, Math.sin(t * 7 + ph)) * .12 * w * sc; }                         // a little hop: hello
+      else if (P.act === 'walk') y += Math.abs(Math.sin(t * 7.5 + ph)) * .05 * w * sc;
+      else if (P.act === 'shop') { ryj = Math.sin(t * .7 + ph) * .55 * w; lean = .08; }                              // looking along the stalls
+      else if (P.act === 'pray') lean = .12 + .26 * (.5 + .5 * Math.sin(t * 1.1 + ph)) * w + (still ? .2 : 0);    // a slow bow to the temple
+      else if (P.act === 'trade') { ryj = Math.sin(t * 1.6 + ph) * .3 * w; sq = 1 + .03 * Math.sin(t * 8 + ph) * w; }
+      else if (P.act === 'cheer') { y += Math.abs(Math.sin(t * 6 + ph)) * .3 * w * sc; sq = 1.05; lean = -.12; }
+      else if (P.act === 'sad') { lean = .3; sq = .94; }                                                              // the keeper of the ruins hangs its head
+      this.crowd.place(P.i, P.x, y, P.z, ry + (P.facing ? 0 : ryj), sc * (P.kind === 'keeper' ? 1.12 : P.look.height), sq, lean);
     }
     this.crowd.commit();
+  }
+  /** the life of the polis for the tests and the HUD: clock, how many do what, the gathering */
+  lifeState() { const acts = {}; for (const P of this.people || []) acts[P.act || 'stroll'] = (acts[P.act || 'stroll'] || 0) + 1; return { sod: this.sod, clock: this.clockMs == null ? null : this.clockMs, acts, routine: !!this.routine, gathering: !!(this.gathering && this.u.uTime.value < this.gathering.until), people: (this.people || []).length }; }
+  /** a fixed moment of the day (ms) or null for the real clock: the same clock gives the same scene */
+  setClock(ms) { this.clockMs = ms == null ? null : +ms; if (this.routine) this.routine.cache.clear(); for (const P of this.people || []) P.x = null; this.npcTick(this.u.uTime.value); return this.sod; }
+  /** a big number (an eval passed, a new adopted run): everyone within reach walks to the agora along the streets and cheers; confetti and a sound when the kits are there */
+  celebrate(text, reach = 260) {
+    if (this.level !== 'polis' || !this.people || !this.routine) return 0; const t = this.u.uTime.value, F = this.routine.fields.market; let n = 0;
+    for (const P of this.people) { P.gpath = null; if (!P.loop || P.x == null || Math.hypot(P.x, P.z) > reach) continue; const path = pathDown(F, P.x, P.z); if (path && path.length > 1) { P.gpath = path; P.glen = pathLen(path); n++; } }
+    this.gathering = { t0: t, until: t + 22, text: text || '', n };
+    const sp = this.project(0, 6, 0), at = { x: sp.vis ? sp.x : innerWidth / 2, y: sp.vis ? sp.y : innerHeight * .4, world: [0, 6, 0] };
+    try { const FX = window.OLYMPUS_FX; if (FX && typeof FX.burst === 'function') FX.burst('confetti', at); else if (FX && FX.confetti) FX.confetti(null, { count: 90 }); } catch (e) { /* effects are never needed */ }
+    try { const O = window.OLYMPUS; if (O && O.sound && typeof O.sound.at === 'function') O.sound.at('cheer', { x: 0, y: 6, z: 0 }); else if (O && O.cue) O.cue('success'); } catch (e) { /* sound is never needed */ }
+    return n;
   }
   /** the person near a screen point (a tap), and the people around a spot (the walker), nearest first */
   pickPerson(px, py, radius = 30) { if (!this.people || this.level !== 'polis') return null; const sc = this.walk ? 1.08 : 2.5; let best = null, bd = radius; for (const P of this.people) { const q = this.project(P.x, sc * .9, P.z); if (!q.vis) continue; const d = Math.hypot(q.x - px, q.y - py); if (d < bd) { bd = d; best = P; } } return best; }
@@ -282,7 +320,7 @@ export class Hellas {
 
   // ------------------------------------------------------------------ walking (the Athens walker: athens-world.js walkStep)
   startWalk(x, z, yaw = 0) { if (!this.col) return false; const s = this.plan.start; if (x == null || this.col.hits(x, z)) { x = s.x; z = s.z; yaw = s.yaw; } this.fly = null; this.camera.near = .35; this.camera.updateProjectionMatrix();
-    this.walk = { x, z, yaw, pitch: -.03, input: { fwd: 0, side: 0, run: false }, bob: 0, y: EYE, dist: 0 }; this.select(null); return true; }
+    this.walk = { x, z, yaw, pitch: -.03, input: { fwd: 0, side: 0, run: false }, bob: 0, y: EYE, dist: 0 }; this.select(null); this.lookUntil = this.u.uTime.value + 2.6; return true; }   // heads turn as you arrive
   stopWalk() { if (!this.walk) return; const w = this.walk; this.walk = null; this.camera.near = 1; this.camera.updateProjectionMatrix(); const c = this.cam; c.tx = w.x; c.tz = w.z; c.ty = 3; c.dist = 110; c.pitch = .6; c.yaw = w.yaw + Math.PI; }
   walkLook(dx, dy) { const w = this.walk; if (!w) return; w.yaw += dx * .0055; w.pitch = clamp(w.pitch - dy * .0045, -1, .9); }
   walkTick(dt) { const w = this.walk, r = walkStep(w, w.input, dt, this.col); w.x = r.x; w.z = r.z; w.dist += r.moved; w.bob += r.moved * 2.1; const bob = this.reduced ? 0 : Math.sin(w.bob) * .035, cp = Math.cos(w.pitch);

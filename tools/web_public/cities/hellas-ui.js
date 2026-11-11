@@ -1,8 +1,8 @@
 // HELLAS page layer: the header with the honest counter, breadcrumbs, the search box, the region list, the cards, the random voyage,
 // the 2D map (also the fallback when the device cannot draw 3D) and the walking controls. Plain words, AGORA look, 44 px targets.
 // Levels: Hellas (world) -> region -> polis -> district -> village -> house. READ ONLY: links open other apps, nothing trades.
-import { houseCard, searchPoleis, usd, STATE_WORD, keeperPerson, builderPerson } from './hellas-data.js';
-import { talkTo, chatCard } from './people-talk.js';
+import { houseCard, searchPoleis, usd, STATE_WORD, keeperPerson, builderPerson, bigNews } from './hellas-data.js';
+import { talkTo, chatCard, sayShow } from './people-talk.js';
 import { planPolis, voyage, whereInPolis } from './hellas-plan.js';
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; };
@@ -81,7 +81,7 @@ export class HellasUI {
   /** talk to a person: the shared People kit when it is loaded and knows them, else our own chat card (six questions, answers from this city's data) */
   talk(person, ref) {
     if (!person) return null; this.stopVoyage(); this.endTalk(); this.chat = person; if (this.scene && ref) this.scene.setTalk(ref);
-    const how = talkTo(person, { anchor: this.card }); this.lastTalk = { id: person.id, how };
+    const how = talkTo(person, { anchor: this.card }); this.lastTalk = { id: person.id, how, voice: sayShow(person, 'hellas') };
     if (how === 'kit') { this.card.hidden = true; return how; }
     this._chatting = true; this.showCard(person.name, [chatCard(person), person.kind === 'builder' ? this.acts(btn('All the builders', () => this.buildersCard())) : null]); return how;
   }
@@ -206,6 +206,7 @@ export class HellasUI {
     const S = this.scene, plan = this.at.plan; if (!S || !plan || S.level !== 'polis') return; this.stopVoyage(); if (this.mapMode) this.toggleMap();
     const V = this.at.village, at = V ? { x: V.x0 - 3, z: V.z, yaw: Math.PI / 2 } : plan.start; if (!S.startWalk(at.x, at.z, at.yaw)) return;
     this.root.classList.add('walking'); this.hideCard(); this.where.textContent = 'Walk with the left thumb, look with the right.';
+    const news = bigNews(this.at.polis); if (news) { const n = S.celebrate(news.text); if (n) this.where.textContent = `${news.text}. The town gathers at the agora to cheer.`; }   // a big number: the crowd gathers and cheers
   }
   stopWalk(quiet) { if (!this.scene) return; this.endTalk(); this.stripKey = ''; this.peopleStrip.replaceChildren(); this.scene.stopWalk(); this.root.classList.remove('walking'); this.knob.style.transform = ''; this.keys = {}; if (!quiet) this.polisCard(); }
   lookHere() { const S = this.scene; if (!S || !S.walk) return; const w = whereInPolis(this.at.plan, S.walk.x, S.walk.z); if (w.house) this.showHouse(w.house); else this.showCard('Nothing close', [el('p', '', 'Walk up to a house and tap Look, or tap a house on the screen.')]); }
