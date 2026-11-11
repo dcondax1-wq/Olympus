@@ -179,11 +179,12 @@ class FinishPass extends Pass {
 // Each grade works on display colours 0..1: white balance, split toning (shadows / highlights), lift / gain, contrast, saturation.
 // AGORA: warm and calm; night = indigo shadows with warm torch highlights, never black-blue, never neon.
 export const GRADES = Object.freeze({
-  dawn:   { wb: [1.04, 0.99, 0.97], shadow: [0.92, 0.8, 1.04], high: [1.0, 0.88, 0.78], split: 0.14, lift: 0.025, gain: 1.0, contrast: 0.04, sat: 1.02 },
-  golden: { wb: [1.07, 1.0, 0.88], shadow: [1.0, 0.82, 0.68], high: [1.0, 0.86, 0.64], split: 0.16, lift: 0.018, gain: 1.02, contrast: 0.08, sat: 1.06 },
-  day:    { wb: [1.02, 1.0, 0.97], shadow: [0.98, 0.95, 0.92], high: [1.0, 0.96, 0.88], split: 0.06, lift: 0.012, gain: 1.0, contrast: 0.05, sat: 1.03 },
-  dusk:   { wb: [1.05, 0.97, 0.93], shadow: [0.8, 0.72, 1.06], high: [1.0, 0.8, 0.62], split: 0.18, lift: 0.02, gain: 0.99, contrast: 0.07, sat: 0.98 },
-  night:  { wb: [0.98, 0.97, 1.02], shadow: [0.62, 0.62, 1.0], high: [1.0, 0.82, 0.58], split: 0.2, lift: 0.03, gain: 0.97, contrast: 0.06, sat: 0.86 },
+  // skin: how much the orange / amber mid-tones are calmed (faces under warm light read as people, not as oranges; 2026-11-11)
+  dawn:   { wb: [1.03, 0.995, 0.98], shadow: [0.92, 0.84, 1.04], high: [1.0, 0.92, 0.84], split: 0.12, lift: 0.025, gain: 1.0, contrast: 0.04, sat: 1.0, skin: 0.3 },
+  golden: { wb: [1.035, 1.0, 0.95], shadow: [0.96, 0.9, 0.92], high: [1.0, 0.93, 0.8], split: 0.12, lift: 0.018, gain: 1.02, contrast: 0.08, sat: 1.0, skin: 0.38 },
+  day:    { wb: [1.01, 1.0, 0.985], shadow: [0.98, 0.96, 0.96], high: [1.0, 0.97, 0.92], split: 0.05, lift: 0.012, gain: 1.0, contrast: 0.05, sat: 1.02, skin: 0.2 },
+  dusk:   { wb: [1.03, 0.98, 0.96], shadow: [0.82, 0.78, 1.06], high: [1.0, 0.86, 0.72], split: 0.15, lift: 0.02, gain: 0.99, contrast: 0.07, sat: 0.96, skin: 0.35 },
+  night:  { wb: [0.98, 0.98, 1.02], shadow: [0.66, 0.68, 1.0], high: [1.0, 0.86, 0.66], split: 0.18, lift: 0.03, gain: 0.97, contrast: 0.06, sat: 0.88, skin: 0.3 },
 });
 export const GRADE_NAMES = Object.freeze(Object.keys(GRADES));
 /** a blend of two grades (k 0..1): the slow drift from one time of day to the next */
@@ -205,7 +206,14 @@ export function gradeColor(c, gr) {
     o[i] = v;
   }
   const l = 0.299 * o[0] + 0.587 * o[1] + 0.114 * o[2];
-  for (let i = 0; i < 3; i++) o[i] = Math.min(1, Math.max(0, l + (o[i] - l) * G.sat));
+  // skin protection: an orange / amber mid-tone (red > green > blue, clearly coloured) loses part of its chroma and its red lead
+  let sat = G.sat;
+  if (G.skin && o[0] > o[1] && o[1] > o[2] && l > 0.12 && l < 0.9) {
+    const chroma = o[0] - o[2], hueK = Math.min(1, (o[1] - o[2]) / Math.max(1e-4, chroma) * 2.2);           // orange-yellow, not pure red
+    const w = G.skin * Math.min(1, chroma / 0.25) * hueK * Math.min(1, (l - 0.12) / 0.15) * Math.min(1, (0.9 - l) / 0.15);
+    sat *= 1 - w * 0.55; o[0] -= (o[0] - o[1]) * w * 0.25;
+  }
+  for (let i = 0; i < 3; i++) o[i] = Math.min(1, Math.max(0, l + (o[i] - l) * sat));
   return o;
 }
 /** the 256 x 16 RGBA LUT texture of a grade (16 KB, ~1 ms to rebuild); pass the old texture to refill it in place */

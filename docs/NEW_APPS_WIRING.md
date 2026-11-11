@@ -629,6 +629,10 @@ Wiring needed (lead only):
 Tests: `tests.test_jarvis_home_agora` (static, 41 checks), `tests.test_jarvis_home_v2` (browser, under the lock),
 `tools/phone_fit_audit.py --apps jarvis` (+ `--iphone`).
 
+## People v2 (characters, 2026-11-11, Round 4)
+No new app. Changed shared files: `olympus/people3d.js` (figure v2 + GPU crowd), `olympus/people-core.js` (portrait v2, `drawLook`, shared face tables), `olympus/people-lab.html`, `symposium/hall.js`.
+- Cache bumps for the lead: `sw.js` cache version (people3d.js, people-core.js, people-lab.html, symposium/hall.js changed). `hall.js` and the lab import `people3d.js?v=p2`; `people.js` still imports `./people-core.js` with no query (bump its importers' `?v=p1` -> `?v=p2` if the SW serves stale copies).
+- Optional for the people/voice agent: `people.js portrait()` could pass `opts.expr` / `opts.mouth` through to `portraitTree` (portraitText already does) so chat portraits can show expressions and mouth shapes; the hall listens to `olympus:people:speak {id, on}` and `olympus:people:viseme {id, viseme, amount}`.
 ## Effects pass: fx-cine (2026-11-11, the visual effects agent)
 No new app. Wiring for the lead:
 - `tools/web_public/jarvis/sw.js` precache: add `'../olympus/fx-cine.js'` (the Jarvis home imports it), keep `'../olympus/render.js'`, bump `'./transitions.js?v=t2'` -> `?v=t3` and `'./home3d.js'` (changed); bump the worker's cache name.

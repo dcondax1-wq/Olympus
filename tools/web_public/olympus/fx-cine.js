@@ -587,6 +587,7 @@ function buildSun(h, o) {
         sun.color.copy(ref.sunC).lerp(C(L.sun), 0.65);
         hemi.intensity = ref.hemiI * L.hemiI;
         hemi.color.copy(ref.sky).lerp(C(L.sky), 0.6); hemi.groundColor.copy(ref.ground).lerp(C(L.ground), 0.5);
+        if (o.neutral) { hemi.color.lerp(C('#f2efe8'), o.neutral); sun.color.lerp(C('#fff2e0'), o.neutral * 0.6); }   // neutral: calm a too-orange room (faces)
       }
       if (shadowOn && r) r.shadowMap.needsUpdate = true;
     },

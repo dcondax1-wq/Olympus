@@ -119,7 +119,7 @@ def test_static():
     js, css = read(os.path.join(KIT, "olympus.js")), read(os.path.join(KIT, "olympus.css"))
     arena = read(os.path.join(os.path.dirname(KIT), "arena", "main.js"))
     check("a. OLYMPUS.sfx(name): loads olympus/sfx.js lazily, never throws, no-op when missing or when the host says it is quiet (OLYMPUS_QUIET); Arena plays rankup through it, guarded",
-          all(x in js for x in ("sfx: function (name)", "window.OLYMPUS_QUIET", "'sfx.js?v=s2'", "k.play(name)")) and "O.sfx('rankup')" in arena and "O && O.sfx" in arena)
+          all(x in js for x in ("sfx: function (name)", "window.OLYMPUS_QUIET", "'sfx.js?v=s3'", "k.play(name)")) and "O.sfx('rankup')" in arena and "O && O.sfx" in arena)
     check("a. the kit: olympus.js reads and writes 'jfx' (Jarvis's key), caps the pixel ratio, pauses on a hidden tab",
           "KEY = 'jfx'" in js and "level === 'off' ? 1 : l ? 1.5 : 2" in js and "visibilityState" in js)
     render = read(os.path.join(KIT, "render.js"))
@@ -130,7 +130,7 @@ def test_static():
           and all(x in js for x in ("idle ? (level === 'low' ? 66 : 33) : 0", "idle ? 500 : 0", "saverNow()) return idle ? 66 : 33")))
     check("a. ambience: every app of the kit has a bed in the AMBIENT table, each bed exists in sfx.js, none starts before a gesture or when muted / saver / Jarvis talks",
           all(f"{a}:" in js.split("var AMBIENT = {")[1].split("};")[0] for a in list(APPS) + list(MORE) + ["bridge"]) and "OLYMPUS_QUIET" in js
-          and all(f"{b}: function" in read(os.path.join(KIT, "sfx.js")) for b in ("wind", "forge", "sea", "city", "forest", "crowd", "chimes", "space")))
+          and all(f"{b}: ['" in read(os.path.join(KIT, "sfx.js")) for b in ("wind", "forge", "sea", "city", "forest", "crowd", "chimes", "space")))   # 2026-11-11: the BED table maps old names to the new beds
     own = ["tree/app.js", "hermes/fx.js", "hermes/app.js", "tyche/main.js", "ares/ares.js", "plutus/plutus.js", "pantheon/pantheon.js", "forum/scene.js",
            "kalshicity/cityscene.js", "mind/main.js", "athena/athena.js", "oracle/main.js", "odeon/app.js", "prometheus/forge.js", "argus/argus.js", "datacity/city.js",
            "fates/fates.js", "labyrinth/scene.js", "hephaestus/scene.js", "arena/scene.js", "nemesis/scene.js", "chronos/scene.js", "chronos/chronos.js"]

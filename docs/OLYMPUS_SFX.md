@@ -1,5 +1,8 @@
 # OLYMPUS sound + haptics (sfx.js)
 
+**2026-11-11: the engine was rebuilt (buses, shared reverb, lyre cues, 24 evolving beds, world + 3D sounds, music). The current API is `docs/SOUND_API.md`;
+everything below still works (old names map to the new sounds).**
+
 1. Add `<script src="olympus/sfx.js"></script>` once per page (path relative to the page). It makes `window.OLYMPUS_SFX`.
 2. Call `OLYMPUS_SFX.play('tick'|'tap'|'portal'|'thunder'|'rankup')` on UI events; `play('pad')` / `stop('pad')` for the ambient pad.
 3. Nothing sounds until the user's first touch/click/key (browser rule); earlier `play()` calls just return false.
