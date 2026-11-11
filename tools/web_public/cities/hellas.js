@@ -27,7 +27,7 @@ void main(){ float t = uTime*uMove; vec2 p = vW.xz*uScale;
   vec3 v = normalize(cameraPosition - vW); float fres = pow(1. - clamp(dot(v, n), 0., 1.), 3.);
   vec3 h = normalize(uSunDir + v); float spec = pow(max(dot(n, h), 0.), 90.);
   vec3 c = mix(uDeep, uShallow, .5 + .5*sin(p.x*.013 + p.y*.017)); c = mix(c, uSky, clamp(fres*.8, 0., .85)) + uSun*spec*.7;
-  c += uSun*smoothstep(.4, .68, vn(p*.55 + vec2(t*.5, -t*.35))*vn(p*1.3 - vec2(t*.4, t*.3) + 7.))*.75*uShimmer*(.22 + .78*pow(max(-dot(normalize(vec3(v.x, 0., v.z)), normalize(vec3(uSunDir.x, 0., uSunDir.z))), 0.), 3.));
+  c += uSun*smoothstep(.46, .78, vn(p*.55 + vec2(t*.5, -t*.35))*vn(p*1.3 - vec2(t*.4, t*.3) + 7.))*.55*uShimmer*(.22 + .78*pow(max(-dot(normalize(vec3(v.x, 0., v.z)), normalize(vec3(uSunDir.x, 0., uSunDir.z))), 0.), 3.));
   float d = length(cameraPosition - vW); float f = 1. - exp(-d*d*uFogD*uFogD*3.);
   gl_FragColor = vec4(mix(c, uFog, clamp(f,0.,1.)), 1.);
   #include <colorspace_fragment>

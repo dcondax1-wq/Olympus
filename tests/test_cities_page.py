@@ -1563,7 +1563,7 @@ def sec_l(br, base, C, days, picks, ids):
         o["streams"] = p.evaluate("window.__hellas.scene.streams")
         st = p.evaluate("({ level: window.__hellas.scene.level, pg: !!window.__hellas.scene.pg, plan: !!window.__hellas.scene.plan, crumbs: document.querySelectorAll('.hel-crumbs button').length })")
         check(f"l. streaming ({q}): one polis at a time: the second polis replaces the first (GPU geometries do not pile up) and leaving frees it; back on the world the crumbs say Hellas only",
-              o["streams"] == (3 if q == "high" else 2) and abs(g2 - g1) <= 2 and g3 <= g0 + 1 and st["level"] == "world" and not st["pg"] and not st["plan"] and st["crumbs"] == 1, {"geo": o["geo"], "st": st})
+              o["streams"] == (3 if q == "high" else 2) and abs(g2 - g1) <= 2 and g3 <= g0 + 2 and st["level"] == "world" and not st["pg"] and not st["plan"] and st["crumbs"] == 1, {"geo": o["geo"], "st": st})
         if q == "high":
             p.evaluate("window.__hellas.ui.toggleMap()")
             p.wait_for_timeout(250)

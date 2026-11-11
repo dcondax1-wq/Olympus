@@ -143,7 +143,7 @@ export class HellasUI {
     const p = this.at.polis, plan = this.at.plan; if (!p || !plan) return; this.at.district = this.at.village = this.at.house = null; this.renderCrumbs(); this.select(null);
     if (this.scene && this.scene.level === 'polis' && !this.scene.fly) this.scene.flyCam({ tx: 0, tz: 0, ty: 4, dist: Math.max(150, Math.min(760, plan.R * 2.5)), pitch: .62 }, { dur: 1.1 });
     const tags = el('p'); tags.append(el('span', 'hel-tag ' + STATE_TONE[p.activity.state], STATE_WORD[p.activity.state]), el('span', 'hel-tag', nice(p.rows.length, 'house')), el('span', 'hel-tag', nice(plan.villages.length, 'village')), el('span', 'hel-tag', nice(plan.districts.length, 'district'))); if (p.example) tags.append(el('span', 'hel-tag warn', 'Example data'));
-    this.showCard(`${p.name} · ${p.label}`, [tags, el('p', 'hel-doing', p.activity.doing[0].toUpperCase() + p.activity.doing.slice(1) + '.'), el('p', '', `${plan.ruin ? 'These are ruins: roofless walls, one for every rejected run. ' : ''}${p.say} Every house is one ${p.unit}: tap a house, or pick a district.`),
+    this.showCard(`${p.name} · ${p.label}`, [tags, el('p', 'hel-doing', p.activity.doing[0].toUpperCase() + p.activity.doing.slice(1) + '.'), el('p', '', `${plan.ruin ? 'These are ruins: roofless walls, one for every rejected run. ' : ''}Every house is one ${p.unit}: tap a house, or pick a district.`),
       this.list(plan.districts.map((D) => ({ title: D.name, sub: `${nice(D.houses, 'house')} in ${nice(D.villages.length, 'village')}`, tone: 'gold', fn: () => this.goDistrict(D) }))),
       this.acts(this.scene ? btn('Walk the streets', () => this.startWalk(), 'go') : null, btn('Leave the city', () => this.showPolis(p)))]); this.drawMap();
   }
