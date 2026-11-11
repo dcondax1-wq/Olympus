@@ -510,6 +510,7 @@ async function start() {
   const v = C.decodeView(location.hash);
   if (v) await openTable(v.t, v);
   S.ready = true;
+  try { if (O && O.ready) O.ready(); } catch (_) { /* the kit lifts its loading veil by itself after 12 s */ }
 }
 
 window.PINAKES = {
