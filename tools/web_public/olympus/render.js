@@ -534,10 +534,15 @@ export function createRenderer(opts) {
     setGrade(gr) {
       const g = gr || {}, before = (post.lut ? 'L' : '') + post.tone;
       if (g.tone === 'agx' || g.tone === 'aces') post.tone = g.tone;
-      if (g.lut === null) { if (post.lut) post.lut.dispose(); post.lut = null; post.lutName = ''; }
+      if (g.lut === null) { if (post.lut) post.lut.dispose(); post.lut = null; post.lutName = ''; post.sig = ''; }
       else if (g.lut) {
-        const src = typeof g.lut === 'string' ? GRADES[g.lut] : g.lut;
-        if (src) { post.lut = gradeLut(src, post.lut || undefined); post.lutName = typeof g.lut === 'string' ? g.lut : 'mix'; }
+        // { lut: 'dusk', to: 'night', k: .3 } blends two grades (the slow drift of the clock)
+        const blend = typeof g.lut === 'string' && GRADES[g.to] && typeof g.k === 'number' && g.to !== g.lut;
+        const src = blend ? mixGrade(g.lut, g.to, Math.max(0, Math.min(1, g.k))) : typeof g.lut === 'string' ? GRADES[g.lut] : g.lut;
+        const name = blend ? (g.k < 0.5 ? g.lut : g.to) : typeof g.lut === 'string' ? g.lut : 'mix';
+        const sig = blend ? g.lut + g.to + Math.round(g.k * 200) : typeof g.lut === 'string' ? name : null;   // a grade object always refills
+        if (src && (sig === null || sig !== post.sig)) { post.lut = gradeLut(src, post.lut || undefined); post.sig = sig; }
+        if (src) post.lutName = name;
       }
       if (typeof g.mix === 'number') post.mix = Math.max(0, Math.min(1, g.mix));
       if ((post.lut ? 'L' : '') + post.tone !== before && composer) { build(); size(true); }
