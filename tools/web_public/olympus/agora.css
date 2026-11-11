@@ -312,9 +312,11 @@ main#app:where(:has(> header.top .ag-title)) .ag-card .note { font-size: var(--a
 main#app:where(:has(> header.top .ag-title)) .ag-card .lead { font-size: var(--ag-fs-body); line-height: 1.45; }
 /* pills read as status badges */
 main#app:where(:has(> header.top .ag-title)) .pill { min-height: 24px; padding: 0 9px; font: 600 var(--ag-fs-cap)/1 var(--ag-sans); letter-spacing: .01em; background: rgba(29, 25, 20, .8); }
-main#app:where(:has(> header.top .ag-title)) .pill.ok { background: rgba(var(--ag-olive-rgb), .1); border-color: rgba(var(--ag-olive-rgb), .45); }
-main#app:where(:has(> header.top .ag-title)) .pill.warn { background: rgba(var(--ag-sun-rgb), .08); border-color: rgba(var(--ag-sun-rgb), .38); }
-main#app:where(:has(> header.top .ag-title)) .pill.bad { background: rgba(var(--ag-terra-rgb), .1); border-color: rgba(var(--ag-terra-rgb), .45); }
+main#app:where(:has(> header.top .ag-title)) .pill.ok { color: var(--ag-olive-text); background: rgba(var(--ag-olive-rgb), .06); border-color: rgba(var(--ag-olive-rgb), .5); }
+main#app:where(:has(> header.top .ag-title)) .pill.warn { color: var(--ag-sun); background: rgba(var(--ag-sun-rgb), .05); border-color: rgba(var(--ag-sun-rgb), .4); }
+main#app:where(:has(> header.top .ag-title)) .pill.bad { color: var(--ag-terra-text); background: rgba(var(--ag-terra-rgb), .06); border-color: rgba(var(--ag-terra-rgb), .5); }
+/* gains and losses as text always use the text-safe ink (the olive / terracotta fills are for bars) */
+main#app:where(:has(> header.top .ag-title)) :is(.pos, .up):not(i):not(.bar) { color: var(--ag-olive-text); } main#app:where(:has(> header.top .ag-title)) :is(.neg, .dn):not(i):not(.bar) { color: var(--ag-terra-text); }
 /* buttons: one shape, a press you can feel */
 main#app:where(:has(> header.top .ag-title)) .btn { border-radius: 13px; font-weight: 600; touch-action: manipulation; -webkit-user-select: none; user-select: none;
   transition: scale var(--ag-d1) var(--ag-ease), background-color var(--ag-d1) var(--ag-ease), border-color var(--ag-d1) var(--ag-ease), color var(--ag-d1) var(--ag-ease), filter var(--ag-d1) var(--ag-ease); }
