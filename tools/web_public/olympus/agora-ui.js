@@ -269,8 +269,8 @@
   var shelled = false;
   function shell() {
     if (shelled || root.hasAttribute('data-ag-noshell')) return;
-    var head = d.querySelector('main#app > header.top');
-    if (!head) return;
+    var head = d.querySelector('main#app > header.top');   // the AGORA app base: its title is h1.ag-title (other layouts keep their own header)
+    if (!head || !head.querySelector('h1.ag-title')) return;
     shelled = true;
     var h1 = head.querySelector('h1'), name = h1 ? h1.textContent.trim() : (d.title || '');
     var back = function () {

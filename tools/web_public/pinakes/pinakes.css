@@ -110,3 +110,4 @@ details > summary { min-height: 44px; display: flex; align-items: center; cursor
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 html[data-oly-lite="1"] .stage { background: #1d1914; height: 190px; }
+main#app > #tabView:not([hidden]) { animation: ag-push var(--ag-d3, .34s) var(--ag-ease, ease-out) backwards; }   /* AGORA v2: the table slides in from the right, like a detail page */

@@ -263,58 +263,74 @@ html.framed .ag-appbar { height: 48px; padding-top: 0; }
 .ag-stagger > :nth-child(2) { animation-delay: calc(1 * var(--ag-stagger)); } .ag-stagger > :nth-child(3) { animation-delay: calc(2 * var(--ag-stagger)); }
 .ag-stagger > :nth-child(4) { animation-delay: calc(3 * var(--ag-stagger)); } .ag-stagger > :nth-child(5) { animation-delay: calc(4 * var(--ag-stagger)); }
 .ag-stagger > :nth-child(6) { animation-delay: calc(5 * var(--ag-stagger)); } .ag-stagger > :nth-child(n+7) { animation-delay: calc(6 * var(--ag-stagger)); }
-/* list -> detail: the same element keeps its name across a view transition (AGORA.morph) */
+/* list -> detail: a view that is shown slides in from the side it lives on (synchronous DOM: an element animates again each time it
+   leaves display:none). .ag-push = a detail (from the right), .ag-back = going back (from the left), any visible tab panel fades up. */
+@keyframes ag-push { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+@keyframes ag-back { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: none; } }
+@keyframes ag-panel { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.ag-push:not([hidden]) { animation: ag-push var(--ag-d3) var(--ag-ease) backwards; }
+.ag-back:not([hidden]) { animation: ag-back var(--ag-d3) var(--ag-ease) backwards; }
+main#app [role="tabpanel"]:not([hidden]) { animation: ag-panel var(--ag-d2) var(--ag-ease) backwards; }
+/* AGORA.morph(update): a real view transition where the browser has one; the compact bar keeps its place */
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--ag-d2); animation-timing-function: var(--ag-ease); }
 ::view-transition-group(*) { animation-duration: var(--ag-d3); animation-timing-function: var(--ag-ease); }
+.ag-appbar { view-transition-name: ag-appbar; }
 
 /* ================================================================================================ 14. the page shell: every app on the AGORA app base (main#app > header.top) gets the v2 look
-   with no markup change. #app gives these rules the weight to dress the copied base block in each app's own sheet; app-specific rules that
-   need to differ use #app too. */
+   with no markup change. Scope: main#app:where(:has(> header.top .ag-title)) = (1,1,1), so these dress the copied base block in each app's own sheet
+   and an app overrides with #app (1,2,0 and up). Pages with another header (inbox, journal, ledger, settings) are left alone. */
 html[data-theme="agora"] main#app { row-gap: 14px; }
 html[data-theme="agora"] main#app > * { animation: ag-enter var(--ag-d3) var(--ag-ease) backwards; }
 html[data-theme="agora"] main#app > :nth-child(2) { animation-delay: 30ms; } html[data-theme="agora"] main#app > :nth-child(3) { animation-delay: 70ms; }
 html[data-theme="agora"] main#app > :nth-child(4) { animation-delay: 110ms; } html[data-theme="agora"] main#app > :nth-child(5) { animation-delay: 150ms; }
 html[data-theme="agora"] main#app > :nth-child(6) { animation-delay: 190ms; } html[data-theme="agora"] main#app > :nth-child(n+7) { animation-delay: 220ms; }
 /* header: [back]  ........  [Demo] [Lite]  /  [icon] Large title / one line purpose */
-#app > header.top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 12px; row-gap: 6px; min-height: 0; margin: 0 0 2px; }
-#app > header.top > .brand { grid-column: 1; grid-row: 1; display: flex; align-items: center; gap: 14px; min-width: 0; }
-#app > header.top > .tags { grid-column: 2; grid-row: 1; display: flex; gap: 6px; align-items: center; padding-top: 6px; }
-#app > header.top.ag-hasnav > .ag-navback { grid-column: 1; grid-row: 1; justify-self: start; }
-#app > header.top.ag-hasnav > .tags { grid-row: 1; align-self: center; padding-top: 0; }
-#app > header.top.ag-hasnav > .brand { grid-column: 1 / -1; grid-row: 2; }
-#app > header.top .brand img { width: 52px; height: 52px; border-radius: 14px; border: 1px solid var(--ag-line-gold); background: var(--ag-s2); box-shadow: var(--ag-e2); }
-#app > header.top .brand h1 { margin: 0; font: 600 clamp(1.625rem, 7.6vw, var(--ag-fs-h1))/1.08 var(--ag-serif); letter-spacing: 0; overflow-wrap: anywhere; }
-#app > header.top .brand h1::after { width: 40px; height: 2px; margin-top: 7px; border-radius: 2px; }
-#app > header.top .brand .sub { margin: 6px 0 0; font: 400 var(--ag-fs-sub)/1.35 var(--ag-sans); color: var(--ag-soft); }
-#app > header.top .tag { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; padding: 0 9px; border-radius: 999px; border: 1px solid var(--ag-line); background: rgba(29, 25, 20, .8); color: var(--ag-muted);
+main#app:where(:has(> header.top .ag-title)) > header.top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 12px; row-gap: 6px; min-height: 0; margin: 0 0 2px; }
+main#app:where(:has(> header.top .ag-title)) > header.top > .brand { grid-column: 1; grid-row: 1; display: flex; align-items: center; gap: 14px; min-width: 0; }
+main#app:where(:has(> header.top .ag-title)) > header.top > .tags { grid-column: 2; grid-row: 1; display: flex; gap: 6px; align-items: center; padding-top: 6px; }
+main#app:where(:has(> header.top .ag-title)) > header.top.ag-hasnav > .ag-navback { grid-column: 1; grid-row: 1; justify-self: start; }
+main#app:where(:has(> header.top .ag-title)) > header.top.ag-hasnav > .tags { grid-row: 1; align-self: center; padding-top: 0; }
+main#app:where(:has(> header.top .ag-title)) > header.top.ag-hasnav > .brand { grid-column: 1 / -1; grid-row: 2; }
+main#app:where(:has(> header.top .ag-title)) > header.top .brand img { width: 52px; height: 52px; border-radius: 14px; border: 1px solid var(--ag-line-gold); background: var(--ag-s2); box-shadow: var(--ag-e2); }
+main#app:where(:has(> header.top .ag-title)) > header.top .brand h1 { margin: 0; font: 600 clamp(1.625rem, 7.6vw, var(--ag-fs-h1))/1.08 var(--ag-serif); letter-spacing: 0; overflow-wrap: anywhere; }
+main#app:where(:has(> header.top .ag-title)) > header.top .brand h1::after { width: 40px; height: 2px; margin-top: 7px; border-radius: 2px; }
+main#app:where(:has(> header.top .ag-title)) > header.top .brand .sub { margin: 6px 0 0; font: 400 var(--ag-fs-sub)/1.35 var(--ag-sans); color: var(--ag-soft); }
+main#app:where(:has(> header.top .ag-title)) > header.top .tag { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; padding: 0 9px; border-radius: 999px; border: 1px solid var(--ag-line); background: rgba(29, 25, 20, .8); color: var(--ag-muted);
   font: 600 var(--ag-fs-cap)/1 var(--ag-sans); letter-spacing: .03em; white-space: nowrap; }
-#app > header.top .tag.demo { color: var(--ag-sun); background: rgba(var(--ag-sun-rgb), .09); border-color: rgba(var(--ag-sun-rgb), .36); }
-#app > header.top .tag.demo::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+main#app:where(:has(> header.top .ag-title)) > header.top .tag.demo { color: var(--ag-sun); background: rgba(var(--ag-sun-rgb), .09); border-color: rgba(var(--ag-sun-rgb), .36); }
+main#app:where(:has(> header.top .ag-title)) > header.top .tag.demo::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 /* the one-line live status under the header: quiet, with a small gold mark */
-#app > #status.note { display: flex; gap: 8px; align-items: baseline; margin: -2px 0 2px; font: 400 var(--ag-fs-foot)/1.45 var(--ag-sans); color: var(--ag-muted); }
-#app > #status.note::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--ag-gold); opacity: .8; transform: translateY(-1px); }
-#app > #status.note:empty { display: none; }
+main#app:where(:has(> header.top .ag-title)) > #status.note { display: flex; gap: 8px; align-items: baseline; margin: -2px 0 2px; font: 400 var(--ag-fs-foot)/1.45 var(--ag-sans); color: var(--ag-muted); }
+main#app:where(:has(> header.top .ag-title)) > #status.note::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--ag-gold); opacity: .8; transform: translateY(-1px); }
+main#app:where(:has(> header.top .ag-title)) > #status.note:empty { display: none; }
 /* cards: layered warm surface, one radius, a clear title */
-#app > .ag-card, #app > .cards > .ag-card, #app .ag-card.card { border-radius: 20px; border-color: rgba(243, 236, 224, .075); background: linear-gradient(180deg, #27211a, #1e1a15 75%); box-shadow: var(--ag-e2); }
-#app > .ag-card > h2, #app > .ag-card > .row > h2, #app > .ag-card > .ag-cardhead > h2, #app .ag-card.card > h2 { font: 600 var(--ag-fs-h3)/1.25 var(--ag-serif); letter-spacing: .005em; color: var(--ag-text); }
-#app > .ag-card.hero, #app > .ag-card.ag-hero { border-radius: var(--ag-radius-l); border-color: var(--ag-line-gold);
+main#app:where(:has(> header.top .ag-title)) > .ag-card, main#app:where(:has(> header.top .ag-title)) > .cards > .ag-card, main#app:where(:has(> header.top .ag-title)) .ag-card.card { border-radius: 20px; border-color: rgba(243, 236, 224, .075); background: linear-gradient(180deg, #27211a, #1e1a15 75%); box-shadow: var(--ag-e2); }
+main#app:where(:has(> header.top .ag-title)) > .ag-card > h2, main#app:where(:has(> header.top .ag-title)) > .ag-card > .row > h2, main#app:where(:has(> header.top .ag-title)) > .ag-card > .ag-cardhead > h2, main#app:where(:has(> header.top .ag-title)) .ag-card.card > h2 { font: 600 var(--ag-fs-h3)/1.25 var(--ag-serif); letter-spacing: .005em; color: var(--ag-text); }
+main#app:where(:has(> header.top .ag-title)) > .ag-card.hero, main#app:where(:has(> header.top .ag-title)) > .ag-card.ag-hero { border-radius: var(--ag-radius-l); border-color: var(--ag-line-gold);
   background: radial-gradient(130% 80% at 0% 0%, rgba(var(--ag-gold-rgb), .12), rgba(var(--ag-gold-rgb), 0) 58%), linear-gradient(180deg, #2c251c, #1f1a14 80%); box-shadow: var(--ag-e3); }
-#app .ag-card .note { font-size: var(--ag-fs-foot); line-height: 1.45; color: var(--ag-muted); }
-#app .ag-card .lead { font-size: var(--ag-fs-body); line-height: 1.45; }
+main#app:where(:has(> header.top .ag-title)) .ag-card .note { font-size: var(--ag-fs-foot); line-height: 1.45; color: var(--ag-muted); }
+main#app:where(:has(> header.top .ag-title)) .ag-card .lead { font-size: var(--ag-fs-body); line-height: 1.45; }
 /* pills read as status badges */
-#app .pill { min-height: 24px; padding: 0 9px; font: 600 var(--ag-fs-cap)/1 var(--ag-sans); letter-spacing: .01em; background: rgba(29, 25, 20, .8); }
-#app .pill.ok { background: rgba(var(--ag-olive-rgb), .1); border-color: rgba(var(--ag-olive-rgb), .45); }
-#app .pill.warn { background: rgba(var(--ag-sun-rgb), .08); border-color: rgba(var(--ag-sun-rgb), .38); }
-#app .pill.bad { background: rgba(var(--ag-terra-rgb), .1); border-color: rgba(var(--ag-terra-rgb), .45); }
+main#app:where(:has(> header.top .ag-title)) .pill { min-height: 24px; padding: 0 9px; font: 600 var(--ag-fs-cap)/1 var(--ag-sans); letter-spacing: .01em; background: rgba(29, 25, 20, .8); }
+main#app:where(:has(> header.top .ag-title)) .pill.ok { background: rgba(var(--ag-olive-rgb), .1); border-color: rgba(var(--ag-olive-rgb), .45); }
+main#app:where(:has(> header.top .ag-title)) .pill.warn { background: rgba(var(--ag-sun-rgb), .08); border-color: rgba(var(--ag-sun-rgb), .38); }
+main#app:where(:has(> header.top .ag-title)) .pill.bad { background: rgba(var(--ag-terra-rgb), .1); border-color: rgba(var(--ag-terra-rgb), .45); }
 /* buttons: one shape, a press you can feel */
-#app .btn { border-radius: 13px; font-weight: 600; touch-action: manipulation; -webkit-user-select: none; user-select: none;
+main#app:where(:has(> header.top .ag-title)) .btn { border-radius: 13px; font-weight: 600; touch-action: manipulation; -webkit-user-select: none; user-select: none;
   transition: scale var(--ag-d1) var(--ag-ease), background-color var(--ag-d1) var(--ag-ease), border-color var(--ag-d1) var(--ag-ease), color var(--ag-d1) var(--ag-ease), filter var(--ag-d1) var(--ag-ease); }
-#app .btn:not(.primary) { background: linear-gradient(180deg, var(--ag-s4), var(--ag-s3)); border-color: rgba(243, 236, 224, .1); box-shadow: var(--ag-e1); }
-#app .btn.primary { background: linear-gradient(180deg, #d9b764, var(--ag-gold)); color: var(--ag-on-gold); border-color: #e2c47a; box-shadow: 0 1px 0 rgba(255,246,220,.35) inset, 0 1px 2px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.22); }
-#app :is(.btn, .chip, .ag-chip, .ag-tab, .seg button, .tab, .filters button):active { scale: .97; }
-#app .btn.primary:active { filter: brightness(.94); }
-#app .kv dd, #app .ag-num { font-variant-numeric: tabular-nums; }
-#app > .foot { padding-top: 12px; border-top: 1px solid rgba(243, 236, 224, .06); font-size: var(--ag-fs-cap); line-height: 1.5; color: var(--ag-muted); }
+main#app:where(:has(> header.top .ag-title)) .btn:not(.primary) { background: linear-gradient(180deg, var(--ag-s4), var(--ag-s3)); border-color: rgba(243, 236, 224, .1); box-shadow: var(--ag-e1); }
+main#app:where(:has(> header.top .ag-title)) .btn.primary { background: linear-gradient(180deg, #d9b764, var(--ag-gold)); color: var(--ag-on-gold); border-color: #e2c47a; box-shadow: 0 1px 0 rgba(255,246,220,.35) inset, 0 1px 2px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.22); }
+main#app:where(:has(> header.top .ag-title)) :is(.btn, .chip, .ag-chip, .ag-tab, .seg button, .tab, .filters button):active { scale: .97; }
+main#app:where(:has(> header.top .ag-title)) .btn.primary:active { filter: brightness(.94); }
+main#app:where(:has(> header.top .ag-title)) .kv dd, main#app:where(:has(> header.top .ag-title)) .ag-num { font-variant-numeric: tabular-nums; }
+/* a choice of 2 to 4 (chips with aria-pressed in a role="group" row) reads as one segmented control: one rail, a raised thumb */
+main#app:where(:has(> header.top .ag-title)) .seg[role="group"]:has(> .ag-chip[aria-pressed]):not(:has(> :nth-child(5))) { display: flex; flex-wrap: nowrap; gap: 2px; padding: 3px; border-radius: 14px;
+  background: var(--ag-s1); border: 1px solid var(--ag-line); box-shadow: 0 1px 2px rgba(0, 0, 0, .35) inset; }
+main#app:where(:has(> header.top .ag-title)) .seg[role="group"]:has(> .ag-chip[aria-pressed]):not(:has(> :nth-child(5))) > .ag-chip { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 0 6px; border: 0; border-radius: 11px;
+  background: transparent; color: var(--ag-soft); justify-content: center; text-align: center; white-space: normal; line-height: 1.15; font-size: var(--ag-fs-sub); box-shadow: none;
+  transition: background-color var(--ag-d2) var(--ag-ease), color var(--ag-d2) var(--ag-ease), scale var(--ag-d1) var(--ag-ease); }
+main#app:where(:has(> header.top .ag-title)) .seg[role="group"]:has(> .ag-chip[aria-pressed]):not(:has(> :nth-child(5))) > .ag-chip[aria-pressed="true"] { background: linear-gradient(180deg, var(--ag-s4), var(--ag-s3)); color: var(--ag-gold-hi); box-shadow: var(--ag-e1); }
+main#app:where(:has(> header.top .ag-title)) > .foot { padding-top: 12px; border-top: 1px solid rgba(243, 236, 224, .06); font-size: var(--ag-fs-cap); line-height: 1.5; color: var(--ag-muted); }
 
 /* ================================================================================================ 15. the one header pattern for apps that do not use the base (kept from v1) */
 html[data-theme="agora"] h1:not(.ag-title) { font-family: var(--ag-serif); font-weight: 600; letter-spacing: .01em; text-transform: none; }
@@ -326,7 +342,7 @@ html[data-theme="agora"] .scan, html[data-theme="agora"] .scanlines, html[data-t
 
 /* ================================================================================================ 16. reduced motion, LITE */
 @media (prefers-reduced-motion: reduce) {
-  .ag-card, .ag-btn, .ag-chip, .ag-tab, .ag-seg button, .ag-toast, .ag-sheet, .ag-scrim, .ag-appbar, .ag-enter, .ag-stagger > *, .ag-chart .draw, .ag-chart .grow, .ag-skel, .ag-ptr .ag-ic,
+  .ag-card, .ag-btn, .ag-chip, .ag-tab, .ag-seg button, .ag-toast, .ag-sheet, .ag-scrim, .ag-appbar, .ag-enter, .ag-stagger > *, .ag-chart .draw, .ag-chart .grow, .ag-skel, .ag-ptr .ag-ic, .ag-push, .ag-back, main#app [role="tabpanel"], main#app > #tabView,
   html[data-theme="agora"] main#app > *, #app .btn { transition: none !important; animation: none !important; }
   .ag-chart .draw { stroke-dashoffset: 0; }
   #app :is(.btn, .chip, .ag-chip, .ag-tab, .seg button, .tab, .filters button):active, .ag-btn:active, .ag-chip:active, .ag-tab:active, .ag-seg button:active { scale: 1; }
