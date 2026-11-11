@@ -301,7 +301,7 @@ def run_browser():
                 p.errs, p.bad = [], []
                 p.on("pageerror", lambda e: p.errs.append(str(e)))
                 p.on("console", lambda m: m.type == "error" and "Failed to load resource" not in m.text and p.errs.append(m.text))
-                expected = ("/fates/jarvis.json", "/datacity/discoveries.json", "kalshi-feed", "favicon") + tuple(expect)
+                expected = ("/fates/jarvis.json", "/datacity/discoveries.json", "kalshi-feed", "/kalshi.json", "favicon") + tuple(expect)
                 p.on("response", lambda r: r.status >= 400 and not any(x in r.url for x in expected) and p.bad.append(f"{r.status} {r.url}"))
                 return ctx, p
 

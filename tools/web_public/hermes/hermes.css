@@ -261,3 +261,8 @@ body.loading .foot, body.loading .periods { visibility: hidden; }
 .title { font-family: var(--serif); font-weight: 600; }
 .kicker { font-size: 13px; color: #cfc4b2; }
 .split small, .learn small, blockquote.lesson small { font-size: 12px; }
+/* phone-fit 2026-11-11: on a 320 px iPhone Share is its icon alone (44 px, the label stays for screen readers) and the story name wraps under its number instead of being cut */
+@media (max-width: 360px) {
+  .foot .share { width: 44px; padding: 0; gap: 0; justify-content: center; font-size: 0; flex: none; }
+  .pos { flex-direction: column; align-items: flex-start; gap: 1px; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+}

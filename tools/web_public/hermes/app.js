@@ -187,8 +187,8 @@ function input() {
   addEventListener('hashchange', () => { const r = route(); if (r.key !== S.key && S.w) build(r.key); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { S.t0 = performance.now() - S.held; tick(); } });
   $('#share').addEventListener('click', onShare);
-  if (!still) fx.onFrame((t) => {                                       // the idle sway of the 3D tilt
-    if (S.el) { S.el.style.setProperty('--sx', (Math.sin(t * 0.6) * 0.5).toFixed(3)); S.el.style.setProperty('--sy', (Math.cos(t * 0.45) * 0.5).toFixed(3)); }
+  if (!still) fx.onFrame((t) => {                                       // the idle sway of the 3D tilt; a paused story rests (its buttons hold still under a finger)
+    if (S.el && !S.paused) { S.el.style.setProperty('--sx', (Math.sin(t * 0.6) * 0.5).toFixed(3)); S.el.style.setProperty('--sy', (Math.cos(t * 0.45) * 0.5).toFixed(3)); }
   });
 }
 
