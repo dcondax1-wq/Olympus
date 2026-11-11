@@ -1,0 +1,264 @@
+{
+ "v": 1,
+ "kind": "olympus-polis",
+ "date": "2026-11-11",
+ "built": "2026-11-11",
+ "demo": false,
+ "paper": true,
+ "label": "Written from the published files. Nothing is invented. Paper only.",
+ "herald": [
+  {
+   "kind": "kalshi",
+   "day": "2026-11-02",
+   "cry": "From the Kalshi paper book: Late favourite (BTC hourly) on Bitcoin settled -$5.89.",
+   "plain": "Kalshi paper trade settled -$5.89 (Late favourite (BTC hourly)). Paper only, no real bet.",
+   "usd": -5.89,
+   "r": null,
+   "src": "kalshicity/ledger.json",
+   "by": {
+    "id": "bot:kalshi",
+    "name": "Eutychos"
+   },
+   "facts": [
+    {
+     "t": "-$5.89",
+     "src": "kalshicity/ledger.json",
+     "at": "trades/pnl"
+    },
+    {
+     "t": "Late favourite (BTC hourly)",
+     "src": "kalshicity/ledger.json",
+     "at": "trades/s"
+    }
+   ],
+   "crier": {
+    "id": "villager:herald",
+    "name": "Kosmas"
+   }
+  },
+  {
+   "kind": "kalshi",
+   "day": "2026-11-02",
+   "cry": "From the Kalshi paper book: Late favourite (BTC hourly) on Bitcoin settled +$0.11.",
+   "plain": "Kalshi paper trade settled +$0.11 (Late favourite (BTC hourly)). Paper only, no real bet.",
+   "usd": 0.11,
+   "r": null,
+   "src": "kalshicity/ledger.json",
+   "by": {
+    "id": "bot:kalshi",
+    "name": "Eutychos"
+   },
+   "facts": [
+    {
+     "t": "+$0.11",
+     "src": "kalshicity/ledger.json",
+     "at": "trades/pnl"
+    },
+    {
+     "t": "Late favourite (BTC hourly)",
+     "src": "kalshicity/ledger.json",
+     "at": "trades/s"
+    }
+   ],
+   "crier": {
+    "id": "villager:herald",
+    "name": "Kosmas"
+   }
+  }
+ ],
+ "oracle": {
+  "src": null,
+  "day": "2026-11-11",
+  "stale": false,
+  "speaker": {
+   "id": "villager:pythia",
+   "name": "Delia"
+  },
+  "verse": "The tripod is cold. The god keeps silent today.",
+  "plain": [
+   "No morning game plan was published yet, so the oracle says nothing about the market."
+  ],
+  "facts": []
+ },
+ "festivals": {
+  "src": "pythia/events.json",
+  "label": "From the published calendar (pythia/events.json). Confirm times on the official page.",
+  "items": [
+   {
+    "id": "nfp:2026-12-04",
+    "kind": "nfp",
+    "festival": "Thesmophoria",
+    "god": "Demeter",
+    "glyph": "wheat",
+    "meaning": "Demeter's harvest feast. The jobs count shows how the fields of work are growing.",
+    "event": "Jobs report (NFP)",
+    "title": "Jobs report (NFP, November data)",
+    "date": "2026-12-04",
+    "date_words": "Fri 4 Dec",
+    "time": "08:30",
+    "days_left": 23,
+    "when": "in 23 days",
+    "verify": true,
+    "week_of": null
+   },
+   {
+    "id": "fomc:2026-12-09",
+    "kind": "fomc",
+    "festival": "Panathenaia",
+    "god": "Athena",
+    "glyph": "owl",
+    "meaning": "The city's greatest feast, for Athena. The Fed sets the price of money.",
+    "event": "FOMC rate decision",
+    "title": "FOMC decision 2:00 PM with projections, press conference 2:30 PM",
+    "date": "2026-12-09",
+    "date_words": "Wed 9 Dec",
+    "time": "14:00",
+    "days_left": 28,
+    "when": "in 28 days",
+    "verify": true,
+    "week_of": null
+   },
+   {
+    "id": "roll:2026-12-09",
+    "kind": "roll",
+    "festival": "Synoikia",
+    "god": "Athena Polias",
+    "glyph": "walls",
+    "meaning": "The feast of the joining of the city. The bot moves to the next NQ contract.",
+    "event": "Contract roll week",
+    "title": "Your roll step: switch the NinjaTrader chart to MNQ 03-27",
+    "date": "2026-12-09",
+    "date_words": "Wed 9 Dec",
+    "time": "16:00",
+    "days_left": 28,
+    "when": "in 28 days",
+    "verify": false,
+    "week_of": "2026-12-07"
+   },
+   {
+    "id": "fomc:2027-01-27",
+    "kind": "fomc",
+    "festival": "Panathenaia",
+    "god": "Athena",
+    "glyph": "owl",
+    "meaning": "The city's greatest feast, for Athena. The Fed sets the price of money.",
+    "event": "FOMC rate decision",
+    "title": "FOMC decision 2:00 PM, press conference 2:30 PM",
+    "date": "2027-01-27",
+    "date_words": "Wed 27 Jan",
+    "time": "14:00",
+    "days_left": 77,
+    "when": "in 77 days",
+    "verify": true,
+    "week_of": null
+   },
+   {
+    "id": "nfp:2027-02-05",
+    "kind": "nfp",
+    "festival": "Thesmophoria",
+    "god": "Demeter",
+    "glyph": "wheat",
+    "meaning": "Demeter's harvest feast. The jobs count shows how the fields of work are growing.",
+    "event": "Jobs report (NFP)",
+    "title": "Jobs report (NFP, January data)",
+    "date": "2027-02-05",
+    "date_words": "Fri 5 Feb",
+    "time": "08:30",
+    "days_left": 86,
+    "when": "in 86 days",
+    "verify": true,
+    "week_of": null
+   },
+   {
+    "id": "nfp:2027-03-05",
+    "kind": "nfp",
+    "festival": "Thesmophoria",
+    "god": "Demeter",
+    "glyph": "wheat",
+    "meaning": "Demeter's harvest feast. The jobs count shows how the fields of work are growing.",
+    "event": "Jobs report (NFP)",
+    "title": "Jobs report (NFP, February data)",
+    "date": "2027-03-05",
+    "date_words": "Fri 5 Mar",
+    "time": "08:30",
+    "days_left": 114,
+    "when": "in 114 days",
+    "verify": true,
+    "week_of": null
+   },
+   {
+    "id": "roll:2027-03-10",
+    "kind": "roll",
+    "festival": "Synoikia",
+    "god": "Athena Polias",
+    "glyph": "walls",
+    "meaning": "The feast of the joining of the city. The bot moves to the next NQ contract.",
+    "event": "Contract roll week",
+    "title": "Your roll step: switch the NinjaTrader chart to MNQ 06-27",
+    "date": "2027-03-10",
+    "date_words": "Wed 10 Mar",
+    "time": "16:00",
+    "days_left": 119,
+    "when": "in 119 days",
+    "verify": false,
+    "week_of": "2027-03-08"
+   }
+  ],
+  "builtin": false
+ },
+ "torch": {
+  "weeks": {
+   "streak": 0,
+   "best": 0,
+   "rows": [],
+   "current": null
+  },
+  "days": {
+   "streak": 0,
+   "best": 0,
+   "rows": []
+  },
+  "flame": "unlit",
+  "src": null,
+  "rule": "A runner takes the torch for every finished week that closed green with every trade inside the rules (weeks without a trade are skipped), and for every trading day where each trade kept the rules (1 trade a day, stop beyond the sweep, entries 02:00-15:30, flat by 15:55, hands off). One break puts the flame out."
+ },
+ "grove": {
+  "src": null,
+  "trees": [],
+  "rule": "One olive tree per account. It grows with the eval's progress to the target (a funded account is a full tree), one ring per $500 of profit, one olive per winning trade. A tree below its start balance looks thirsty."
+ },
+ "amphorae": {
+  "src": null,
+  "n": 0,
+  "shelves": [],
+  "rule": "One amphora per closed trade. Long = a horse rising, short = a dolphin diving. Bright clay = win, dark clay = loss, pale clay = a scratch (under $5 either way)."
+ },
+ "statues": {
+  "src": null,
+  "items": [],
+  "rule": "The best winning trades (biggest $ first; the first is the record) and every eval pass and payout stand in the hall."
+ },
+ "stoic": {
+  "mood": "quiet",
+  "why": "A quiet day with no fresh trade: a line on today's task.",
+  "text": "Hold every hour in your grasp. Lay hold of to-day's task, and you will not need to depend so much upon to-morrow's.",
+  "author": "Seneca",
+  "work": "Moral Letters 1",
+  "translator": "R. M. Gummere",
+  "public_domain": true
+ },
+ "sources": {
+  "read": [
+   "kalshicity/ledger.json",
+   "olympus/people.json",
+   "pythia/events.json"
+  ],
+  "missing": [
+   "data.json",
+   "home.json",
+   "money/index.json"
+  ],
+  "trades": null,
+  "accounts": null
+ }
+}
