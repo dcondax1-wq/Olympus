@@ -30,12 +30,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QUERY = "?demo=1&q=low&welcome=0&intro=0"
 W, H = 390, 844
 MIN_TEXT = 40                 # characters of visible text below which a page counts as empty
-MIN_PAINTED = 0.01            # share of pixels that differ from the page's main colour below which nothing was painted
+MIN_PAINTED = 0.01            # share of pixels that differ from the page's main colour below which a page with little text counts as unpainted
+NOTHING = 0.003               # below this share nothing at all is on the screen, whatever the text says (hidden text, a stuck cover)
 CODE_EXT = (".js", ".mjs", ".css", ".html", ".htm", ".wasm")
 # console noise that is not a defect of the page: the request list already carries failed loads, and software GL warns about itself
 IGNORE_CONSOLE = re.compile(r"Failed to load resource|net::ERR_|GPU stall|WebGL.*(software|fallback|deprecated)|GL_INVALID|swiftshader|Automatic fallback to software|"
                             r"the server responded with a status of 404", re.I)
-HARD = ("status", "exception", "console", "request", "blank", "timeout")
+HARD = ("status", "exception", "console", "request", "blank", "timeout", "intro")
 
 
 # ------------------------------------------------------------------------------------------------ pure analysis (unit-tested)
@@ -104,7 +105,9 @@ def classify(rec):
             warnings.append(f"missing data: {short} ({code or 'no answer'})")
     if st == 200 and not rec.get("timeout"):
         text, painted, canvases = rec.get("text_len") or 0, rec.get("painted"), rec.get("canvases") or 0
-        if painted is not None and painted < MIN_PAINTED:
+        if rec.get("intro_stuck"):
+            problems.append("intro: the intro film did not end within 15 s (it covers the app)")
+        if painted is not None and (painted < NOTHING or (painted < MIN_PAINTED and text < MIN_TEXT and not canvases)):
             problems.append(f"blank: nothing is painted ({painted:.1%} of the screen differs from the background)")
         elif text < MIN_TEXT and not canvases:
             problems.append(f"blank: only {text} characters of text and no canvas")
@@ -252,14 +255,14 @@ def visit(br, origin, app, out, limit_s=40, query=QUERY):
         resp = p.goto(origin + rec["url"], wait_until="domcontentloaded", timeout=limit_s * 1000)
         rec["status"] = resp.status if resp else None
         try:
-            p.wait_for_function(INTRO_OVER, timeout=min(15.0, left()) * 1000, polling=200)
-        except Exception:
-            rec["intro_stuck"] = True
-        try:
             p.wait_for_function("() => document.body && ((document.body.innerText || '').trim().length >= %d || document.querySelector('canvas'))" % MIN_TEXT, timeout=min(15.0, left()) * 1000, polling=200)
             rec["first_content_ms"] = int((time.time() - t0) * 1000)
         except Exception:
             rec["first_content_ms"] = None
+        try:
+            p.wait_for_function(INTRO_OVER, timeout=min(15.0, left()) * 1000, polling=200)
+        except Exception:
+            rec["intro_stuck"] = True
         p.wait_for_timeout(int(min(1.5, left()) * 1000))
         rec.update(p.evaluate(PROBE))
         shot = p.screenshot(timeout=min(20.0, left()) * 1000)

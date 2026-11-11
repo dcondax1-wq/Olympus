@@ -74,6 +74,8 @@ def main():
         ("a request that got no answer at all is a hard failure when it is code", good(failed=[{"url": "http://127.0.0.1:1/x/y.js", "status": None}]), "request"),
         ("a page with almost no text and no canvas is blank", good(text_len=3, canvases=0, painted=0.2), "blank"),
         ("a page where nothing is painted is blank, whatever its text", good(text_len=5000, painted=0.001), "blank"),
+        ("a page with little text and almost nothing painted is blank", good(text_len=20, canvases=0, painted=0.006), "blank"),
+        ("an intro film that never ends is a hard failure (it covers the app)", good(intro_stuck=True), "intro"),
         ("a timeout is a hard failure", good(timeout=True, status=None), "timeout"),
         ("the kit's own 'could not load' banner is a hard failure", good(err_banner="colosseum could not load: people.js is missing"), "console"),
     ]
@@ -92,6 +94,8 @@ def main():
     for name, rec, text in soft:
         ok, pr, wa = S.classify(rec)
         check(f"classify: {name}", ok is True and pr == [] and wa == [text], (pr, wa))
+    ok, pr, wa = S.classify(good(text_len=101, canvases=0, painted=0.0077))
+    check("a short page of plain text on a dark background (0.8% painted, 101 characters) is NOT blank", ok and not pr, pr)
     ok, pr, wa = S.classify(good(text_len=0, canvases=3, painted=0.3))
     check("a 3D page with no text but a painted canvas is not blank", ok and not pr, pr)
     ok, pr, wa = S.classify(good(painted=None, text_len=500))
