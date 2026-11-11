@@ -11,8 +11,8 @@
  *   data-fail   a window flag set to 1 when the import fails (the old tag's onerror)
  *   data-event  the event the module fires when it is ready: fired at once (with nothing registered) when the 3D is skipped or fails, so a
  *               page that waits for it (helios: up to 6 s) goes straight to its 2D picture
- * Always after the first paint (two frames after the document is parsed), never while the tab is hidden, never twice, and never without WebGL
- * (a probe canvas whose context is released at once). window.OLYMPUS_LAZY3D = { list(), load(src) } is the test hook.
+ * Always after the first paint (two frames after the document is parsed), never while the tab is hidden, never twice, and never in a
+ * browser without WebGL (no probe context is made). window.OLYMPUS_LAZY3D = { list(), load(src) } is the test hook.
  */
 (function () {
   'use strict';
@@ -20,13 +20,10 @@
   var W = window, D = document, done = W.__olyLazy3d = W.__olyLazy3d || {};
   var hasGL = null, skips = {};
   function skippedList() { return Object.keys(skips).filter(function (k) { return !done[k]; }); }
-  function webgl() {                                         // one probe per page, and its context is given back at once (iOS keeps few)
-    if (hasGL !== null) return hasGL;
-    try {
-      var c = D.createElement('canvas'), g = c.getContext('webgl2') || c.getContext('webgl');
-      hasGL = !!g;
-      var x = g && g.getExtension('WEBGL_lose_context'); if (x) x.loseContext();
-    } catch (e) { hasGL = false; }
+  // no WebGL at all (an old or locked-down browser): the module is not fetched. No probe context is made: a context costs GPU memory on
+  // an iPhone, and the module itself still handles a context that cannot be created (each page keeps its 2D picture then)
+  function webgl() {
+    if (hasGL === null) hasGL = !!(W.WebGLRenderingContext || W.WebGL2RenderingContext);
     return hasGL;
   }
   // the page's ready event, with nothing registered: told now and a few times more, because a page may start waiting for it only after its

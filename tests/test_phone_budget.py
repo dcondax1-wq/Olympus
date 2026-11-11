@@ -103,8 +103,8 @@ def test_static():
           and "if (dead || asleep || lost || pageHidden()) return false;" in rnd)
     check("a. sfx.js: a missing format falls back to the other, an HTML answer is never decoded, both missing = synth for the session (no more requests)",
           all(k in sfx for k in ("smpDead", "!smpDead", "text\\/html", "if (!fmtUsed) smpDead = true;", "dead: smpDead")))
-    check("a. lazy3d.js: one WebGL probe per page and its context given back, after the first paint, never while hidden, skip on LITE (loads on HD)",
-          all(k in lz for k in ("WEBGL_lose_context", "loseContext()", "requestAnimationFrame", "D.hidden", "O.lite()", "O.onFx", "import(url)", "IntersectionObserver")))
+    check("a. lazy3d.js: no probe context (WebGL checked without one), after the first paint, never while hidden, skip on LITE (loads on HD)",
+          all(k in lz for k in ("WebGLRenderingContext", "requestAnimationFrame", "D.hidden", "O.lite()", "O.onFx", "import(url)", "IntersectionObserver")))
 
 
 # ------------------------------------------------------------------------------------------------ the browser
@@ -182,7 +182,7 @@ def test_lazy_hd(br, origin):
     check("b. HD: three.js is requested once, after the first paint (lazy3d), and the 3D columns mount",
           len(three) == 1 and fcp > 0 and three[0][1] >= fcp and ok3d == "webgl", [fcp, three, ok3d])
     gl = p.evaluate("OLYMPUS.gl()")
-    check("b. HD: one live WebGL context on the page (the probe's context was given back)", gl["live"] == 1, gl)
+    check("b. HD: one live WebGL context on the page, at most 2 made (nqscene's own probe + its renderer; lazy3d makes none)", gl["live"] == 1 and gl["made"] <= 2, gl)
     check("b. HD: no console error, no page error (a missing optional data file in the source tree is the browser's own network line)",
           not [e for e in p.__errs if "Failed to load resource" not in e], p.__errs)
     ctx.close()
