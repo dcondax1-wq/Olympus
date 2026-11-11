@@ -48,17 +48,26 @@ None of these four touches a new app or the wiring, so I left them; the two `cp`
 ---
 # Round 3 (2026-11-11): fixing what was still broken
 
-Behaviour, layout and stale tests only (no colour or font work: the theme finisher has that). Browser runs one at a time under the machine lock.
+Behaviour, layout and stale tests only (no colour or font work: the theme finisher has that). Browser runs one at a time under `/tmp/olympus_browser.lock`. "Clean" = the same test on a clean `agora-release` copy.
 
-| Item | Before | After | What was wrong |
+| Item | Before | After | What was wrong (APP = the page, TEST = the test was stale) |
 |---|---|---|---|
-| 1. test_hermes | crash at 64 checks (click timeout) | runs to the end, 112/116, then the 4 left fixed in the test (rerun: see below) | APP: the card kept swaying while paused, so its buttons never held still. A paused story now rests. TEST: the page now asks the site for `../kalshi.json` first; the test did not expect that optional file |
-| 1. test_cities_page | crash in section d (`reading 'ui'`) | past it: 113 pass, then two stale checks fixed (rerun: see below) | TEST: a district tap was sent to the Athens hook, which only exists inside Athens. TEST: the hub is a drawn map now, the continent fly was still measured on the old 3D camera; the optional site `kalshi.json` was not expected |
-| 2. cities, hermes, nemesis at 320 px | title / story name / week line cut | phone-fit audit clean at 390 and 320 | CSS wraps (layout only) |
-| 2. kalshicity | live line cut (1162 px in 332), 6 view buttons 38 px, 4 camera buttons 43 px, 2 top buttons 40 px | see below | view buttons slide sideways (52 px each), cameras and top buttons 44 px, live line two full lines |
-| 3. observatory | 7 columns 38 px wide at 320 px | see below | under 380 px the columns are a strip you slide (48 px each) |
-| 3. odeon | timeline ticks 14 x 14 px | see below | the ticks have their own 44 px row over the scrubber (44 x 44 px each); landscape keeps one row |
-| 5. test_tyche_page | 105/112 | see below | TEST: old neon values (theme, gold, text, 2 px ring). APP: three different theme values (page, jarvis.json, live card) made one: `#14110e` |
-| 5. test_ergasterion_page | 68/71 | static 45/45; browser see below | `queue.json` rebuilt (it also fixes the write-up index). TEST: the knob check compared `translate(0px,0px)` with the browser's `translate(0px, 0px)` |
-| 6. test_datacity | 180/188 | see below | `city.js` 69.8 KB split (`city-acts.js`): 56.6 KB. The menu really has 10 doors (All districts): test updated |
-| 8. gate: atlas_ui | "0/0" | 2/2 counted | the test now prints `[PASS]` and keeps `RES` |
+| 1. test_hermes | crash after 64 checks (click timeout) | 116/116 | APP: a paused story kept swaying, so its buttons never held still for a tap. Now a paused story rests. TEST: did not expect the optional site `../kalshi.json` the page now asks for first |
+| 1. test_cities_page | crash in section d (`reading 'ui'`) | runs to the end: a-f 138 pass, g-h pass, i-k 81/81 (full rerun: see last line) | TEST: a district tap went to the Athens hook (only there inside Athens). APP: the hub's Find button handed its click event over as the district, so Find listed 0 cities: fixed. TEST: continent fly / map labels / front screen / filter button were measured on the old 3D hub; brought to the drawn AGORA map |
+| 2. cities, hermes, nemesis, kalshicity (the four reverted) | title, story name, week line, live line cut; Kalshi City buttons 38-43 px | phone-fit audit clean at iPhone 14 and SE for all four | CSS wraps and 44 px targets (layout only). Kalshi City view buttons slide sideways inside the dock (52 px each), cameras and top buttons 44 px, live line a clean one-line clamp |
+| 2. test_kalshicity_page | (reverted before) | see last line | first try: a two-line live line made the card taller and pushed the sound chip under the sheet (clean copy 90/90): made one line again |
+| 2. test_nemesis_page | crash: a real tap on a 3D figure never opens it (same on clean) | see last line | APP: the idle camera sway stopped the moment a finger landed, so the scene jumped under the tap and the ray missed. The sway is now folded in at the touch, and a figure within 30 px of the finger counts |
+| 3. observatory | 7 columns 38 px at 320 px | 48 px each (audit: tap clean) | under 380 px the columns are a strip you slide |
+| 3. odeon | ticks 14 x 14 px | 44 x 44 px (audit clean); test 78/79 -> stale accent check fixed | ticks have their own 44 px row over the scrubber. TEST: Odeon's own accent is AGORA gold now, not the old blue |
+| 4. test_kalshi_page | 2 long-standing failures | 319/319 | APP: after the odometer split the digits, numbers were not fitted again (cut at 430 px): refit. APP: the section bar's glide now lands the heading just under the bar where it really is after the glide |
+| 5. test_tyche_page | 105/112 | 112/112 | APP: three different theme colours (page, jarvis.json, live card) made one. TEST: old neon values; the wheel tap waits for an orbiting coin to pass the hub |
+| 5. test_ergasterion_page | 68/71 | 71/71 | `queue.json` rebuilt (also fixes the write-up index). TEST: knob check compared `translate(0px,0px)` with the browser's `translate(0px, 0px)` |
+| 6. test_datacity | 180/188 | 189/194 then fixes below | `city.js` 69.8 KB split into `city.js` 56.6 KB + `city-acts.js` 14 KB. Menu really has 10 doors (All districts): test updated (2 places). APP: the landscape mini map sat inside Jarvis's corner: moved left. TEST: heap measured after a garbage collection |
+| 7. test_jarvis_voice | 44/47 | 47/47 | TEST: Jarvis now says the home welcome and a nudge before voice mode's greeting, so the greeting is found by its words; worker pin follows the version. No Jarvis UI file edited |
+| 8. gate: atlas_ui | "0/0" | 2/2 counted | prints `[PASS]` and keeps `RES` |
+
+## Left, and why
+- Data City far overview: 66-67 draw calls, target < 60. 52 landmark meshes are already merged into 15; what is left is 8 marble/bronze physical materials plus the kit effects. Cutting 8 more calls needs merging across materials (a texture atlas): not a minimal change, not attempted.
+- Observatory contrast 1.39:1 on labels drawn over the scene: the audit reads the canvas as the background (false reading, as in Round 2).
+- Fast gate (static): NO-GO on 3 suites, none in files this pass touched: safari_lint (`helios/helios.css` user-select twin; `jarvis/voice-mode.js` localStorage inside a `safe()` wrapper, the lint wants a literal try), jarvis_hub:static (the worker's SHELL list: the lead's file), archive_page (archive build stale + not wired yet: the archive app's agent / the lead).
+- Test screenshots under `research/handoff/` were rewritten by the runs: restored, not committed.
