@@ -209,8 +209,8 @@ export function createDirector(floor, opts) {
           k.say(best.pid, S.hello, { scene: floor.sceneFor ? floor.sceneFor(best.key) : null }); } catch (_) { /* the button still says it */ }
       }
       hud.cta('Talk to ' + best.name, () => goTo(best.key));
+      setTimeout(() => { if (floor.focus && floor.focused && floor.focused() === best.key && S.mode !== 'talk') floor.focus(null); }, 9000);
     });
-    setTimeout(() => { if (floor.focus && floor.focused && floor.focused() === best.key && S.mode !== 'talk') floor.focus(null); }, 9000);
   }
   const api = {
     start, walkTo, talkTo, talkCam, goTo, endTalk,

@@ -124,13 +124,13 @@ export function declutter(list, opts) {
   }
   return out;
 }
-/** the context ring: n round buttons around a point, kept inside the box and off its edges */
+/** the context ring: n round buttons in an arc under a point (the person's speech bubble is above their head), kept inside the box and off its edges */
 export function ringLayout(x, y, n, opts) {
-  const o = opts || {}, R = o.r || 74, B = o.size || 56, W = o.w || 390, H = o.h || 844, m = B / 2 + 8;
-  const cx = clamp(x, m + R * 0.7, W - m - R * 0.7), cy = clamp(y, m + R, H - m - R * 0.4);
-  const span = Math.PI * (n <= 2 ? 0.6 : n === 3 ? 0.9 : 1.15), a0 = -Math.PI / 2 - span / 2;
+  const o = opts || {}, R = o.r || 78, B = o.size || 56, W = o.w || 390, H = o.h || 844, m = B / 2 + 8;
+  const cx = clamp(x, m + R * 0.7, W - m - R * 0.7), cy = clamp(y + 28, m + 10, H - m - R);
+  const span = Math.PI * (n <= 2 ? 0.55 : n === 3 ? 0.8 : 1.0), a0 = Math.PI / 2 + span / 2;
   const out = [];
-  for (let i = 0; i < n; i++) { const a = n === 1 ? -Math.PI / 2 : a0 + (span * i) / (n - 1); out.push({ x: Math.round(clamp(cx + Math.cos(a) * R, m, W - m)), y: Math.round(clamp(cy + Math.sin(a) * R, m, H - m)) }); }
+  for (let i = 0; i < n; i++) { const a = n === 1 ? Math.PI / 2 : a0 - (span * i) / (n - 1); out.push({ x: Math.round(clamp(cx + Math.cos(a) * R, m, W - m)), y: Math.round(clamp(cy + Math.sin(a) * R * 0.8, m, H - m)) }); }
   return { cx, cy, items: out };
 }
 
@@ -174,7 +174,7 @@ const CSS = `
 .oc-plate b{display:block;font:600 13.5px/1.15 "Iowan Old Style",Palatino,Georgia,serif;letter-spacing:.02em}
 .oc-plate i{display:block;font-style:normal;font-size:10.5px;opacity:.82;max-width:150px;overflow:hidden;text-overflow:ellipsis}
 .oc-plate .oc-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
-.oc-ring{position:absolute;inset:0;pointer-events:auto;background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),rgba(20,15,10,.0) 0,rgba(20,15,10,.28) 160px)}
+.oc-ring{position:absolute;inset:0;z-index:40;pointer-events:auto;background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),rgba(20,15,10,.0) 0,rgba(20,15,10,.28) 160px)}
 .oc-ring button{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:1.5px solid #9c6b3c;background:#efe5cf;color:#3a2a1c;box-shadow:0 5px 14px rgba(0,0,0,.35);font:600 11px/1.05 -apple-system,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;cursor:pointer;animation:oc-pop .22s ease-out both}
 .oc-ring button svg{width:22px;height:22px}
 .oc-ring button:focus-visible{outline:2px solid #c8a24a;outline-offset:3px}
@@ -232,11 +232,11 @@ export function createHud(container, opts) {
       const W = container.clientWidth || 390, H = container.clientHeight || 844, L = ringLayout(x, y, actions.length, { w: W, h: H });
       ringEl = document.createElement('div'); ringEl.className = 'oc-ring'; ringEl.setAttribute('role', 'menu'); ringEl.setAttribute('aria-label', 'Actions for ' + who);
       ringEl.style.setProperty('--rx', L.cx + 'px'); ringEl.style.setProperty('--ry', L.cy + 'px');
-      const name = document.createElement('div'); name.className = 'oc-who'; name.textContent = who; name.style.left = L.cx + 'px'; name.style.top = Math.max(30, Math.min(...L.items.map((p) => p.y)) - 34) + 'px'; ringEl.appendChild(name);
+      // (the person's name plate stays over their head: the ring needs no label of its own)
       actions.forEach((a, k) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.dataset.act = a.id; b.style.left = L.items[k].x + 'px'; b.style.top = L.items[k].y + 'px'; b.style.animationDelay = (k * 40) + 'ms'; b.append(icon(a.icon || a.id)); const s = document.createElement('span'); s.textContent = a.label; b.appendChild(s); b.setAttribute('aria-label', a.label + ' ' + who);
         b.addEventListener('click', (e) => { e.stopPropagation(); api.closeRing(); if (onPick) onPick(a.id); }); ringEl.appendChild(b); });
       ringEl.addEventListener('click', () => api.closeRing());
-      root.appendChild(ringEl);
+      api.clearCta(); container.appendChild(ringEl);
       try { ringEl.querySelector('button').focus({ preventScroll: true }); } catch (_) { /* fine */ }
       return ringEl;
     },
