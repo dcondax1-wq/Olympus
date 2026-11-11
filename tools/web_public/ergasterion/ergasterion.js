@@ -188,7 +188,7 @@ function drawCamp(svg, mini) {
       for (let c = 0; c < b.crates; c++) g.appendChild(sv('rect', { x: x - 24 + (c % 3) * 5.2, y: y + 3 - Math.floor(c / 3) * 5.2, width: 4.4, height: 4.4, rx: 0.8, fill: '#e0b060', stroke: '#7a5631', 'stroke-width': 0.6 }));   // commits today
       g.appendChild(sv('circle', { cx: x + 20, cy: y + 5, r: 3, fill: b.status === 'working' ? '#e89a3c' : '#5a4530', stroke: '#9c6b3c', 'stroke-width': 1 }));                                                // its brazier
       if (b.status === 'working') { g.appendChild(sv('circle', { class: 'smoke', cx: x + 20, cy: y - 2, r: 2.6, fill: '#d8cdb8' })); g.appendChild(sv('circle', { class: 'smoke s2', cx: x + 21.5, cy: y - 4, r: 2, fill: '#d8cdb8' })); }
-      g.appendChild(sv('text', { x, y: y + 20, 'text-anchor': 'middle', fill: '#f6ecd6', 'font-size': 8.6, 'font-weight': 700 }, b.name.slice(0, 13)));
+      g.appendChild(sv('text', { x, y: y + 20 + (b.i % 2) * 9.5, 'text-anchor': 'middle', fill: '#f6ecd6', 'font-size': 8.6, 'font-weight': 700 }, b.name.length > 14 ? b.name.slice(0, 13) + '…' : b.name));
       g.addEventListener('click', () => openBuilder(b.id)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBuilder(b.id); } });
     }
     svg.appendChild(g);

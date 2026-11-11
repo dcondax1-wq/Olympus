@@ -13,7 +13,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import { walk, followCam, tourCam, ease, hallOf, resolveCollision, EYE, START, HALLS, DOORS, CAMP, CAMP_SPOTS } from './ergasterioncore.js';
 
-const BUILD = { working: '#8fa05a', quiet: '#4b7a99', done: '#c8a24a', job: '#b8ad98' }, BWORD = { working: 'Working', quiet: 'Quiet', done: 'Done', job: 'Job only' }, NC = CAMP_SPOTS.length, CSTACK = 6, PUFF = 3;
+const BUILD = { working: '#8fa05a', quiet: '#4b7a99', done: '#c8a24a', job: '#b8ad98' }, BWORD = { working: 'Working', quiet: 'Quiet', done: 'Done', job: 'Job only' }, NC = CAMP_SPOTS.length, CSTACK = 6, PUFF = 5;
 const LAMP = { working: '#8fa05a', idle: '#4b7a99', stale: '#e0b060', failed: '#c96a4a', sample: '#b8ad98' };
 const WORD = { working: 'Working', idle: 'Idle', stale: 'Stale', failed: 'Failed', sample: 'Sample data' };
 const PACE = { working: 1, idle: 0.3, stale: 0, failed: 0, sample: 0.5 };          // how briskly a figure works (and its belt runs)
@@ -129,7 +129,7 @@ function build(rc, scene, camera, canvas, o) {
   sBox.add(6.5, -0.12, cz0, 30, 0.2, CAMP.z1 - CAMP.z0 + 6, SAND); sBox.add(START.x, 0.0, 11.4, 2.2, 0.04, 3.4, '#dcc391'); sBox.add(START.x, 0.0, 16.9, 1.5, 0.04, 7.6, '#d6bb85');
   [[-6, 13, 4.5], [-7.5, 20, 6], [19.5, 14, 5], [20.5, 21, 6.5], [1, 25.5, 6], [8, 26.5, 7], [15, 25.5, 5.5], [-4.5, 25, 4.5]].forEach((dn) => dune.add(dn[0], -0.25, dn[1], dn[2], dn[2] * 0.3, dn[2] * 0.8, '#bf9a5e'));
   dune.add(-2.6, 0, 12.2, 0.5, 0.32, 0.45, '#a89a80'); dune.add(15.6, 0, 12.6, 0.6, 0.36, 0.5, '#a89a80'); dune.add(15.9, 0, 17.8, 0.4, 0.26, 0.4, '#a89a80');
-  bCyl.add(CAMP.fire.x, 0.5, CAMP.fire.z, 0.5, 0.16, 0.5, BRONZE); for (let k = 0; k < 3; k++) { const a = k * 2.094; bCyl.add(CAMP.fire.x + Math.sin(a) * 0.28, 0.24, CAMP.fire.z + Math.cos(a) * 0.28, 0.03, 0.52, 0.03, BRONZE, Math.cos(a) * 0.4, 0, -Math.sin(a) * 0.4); }
+  bCyl.add(CAMP.fire.x, 0.5, CAMP.fire.z, 0.36, 0.14, 0.36, BRONZE); for (let k = 0; k < 3; k++) { const a = k * 2.094; bCyl.add(CAMP.fire.x + Math.sin(a) * 0.28, 0.24, CAMP.fire.z + Math.cos(a) * 0.28, 0.03, 0.52, 0.03, BRONZE, Math.cos(a) * 0.4, 0, -Math.sin(a) * 0.4); }
   const TENT = ['#e6d9bd', '#c98f6a', '#d8c9a3', '#a9b07a', '#e0cfa8'];
   CAMP_SPOTS.forEach((c, j) => {
     tent.add(c.x, 1.0, c.z, 1.55, 2.0, 1.55, TENT[j % TENT.length]); tent.add(c.x, 2.12, c.z, 0.5, 0.5, 0.5, j % 2 ? '#9c6b3c' : '#c8a24a');
@@ -144,9 +144,9 @@ function build(rc, scene, camera, canvas, o) {
     for (let k = 0; k < 3; k++) { dBox.add(0, -9, 0, 1, 1, 1, k === 2 ? GOLD : BRONZE); dCyl.add(0, -9, 0, 1, 1, 1, BRONZE); } }
   S.forEach(() => { lamp.add(0, -9, 0, 1, 1, 1, LAMP.stale); for (let k = 0; k < MAXC; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
   const EMBER0 = N, PUFF0 = N + 1 + NC, CR0 = N * MAXC;
-  lamp.add(CAMP.fire.x, 0.66, CAMP.fire.z, 0.3, 0.2, 0.3, '#e89a3c');
+  lamp.add(CAMP.fire.x, 0.64, CAMP.fire.z, 0.22, 0.15, 0.22, '#e89a3c');
   CAMP_SPOTS.forEach((c) => lamp.add(c.x + 1.15, 0.6, c.z - 1.7, 0.13, 0.09, 0.13, '#4a3a28'));
-  CAMP_SPOTS.forEach(() => { for (let k = 0; k < PUFF; k++) lamp.add(0, -9, 0, 1, 1, 1, '#857b6c'); });
+  CAMP_SPOTS.forEach(() => { for (let k = 0; k < PUFF; k++) lamp.add(0, -9, 0, 1, 1, 1, '#b3a58e'); });
   CAMP_SPOTS.forEach(() => { for (let k = 0; k < CSTACK; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
   // board frames (the boards themselves are three canvases)
   const BOARDS = { board: { x: 10.35, y: 1.85, z: 0.17, w: 4.5, h: 2.5, ry: 0 }, changed: { x: 2.75, y: 1.85, z: 0.17, w: 4.5, h: 2.5, ry: 0 }, pipe: { x: -6.5, y: 1.85, z: 9.98, w: 9.2, h: 2.6, ry: Math.PI } };
@@ -291,7 +291,7 @@ function build(rc, scene, camera, canvas, o) {
       }
       hide(dBox.im, b3 + 1); hide(dCyl.im, b3 + 1); hide(dCyl.im, b3 + 2);
       // brazier smoke only while it is working; the ember glows then
-      for (let q = 0; q < PUFF; q++) { const ph = ((t * 0.3 * (mot || 0) + q / PUFF + j * 0.37) % 1 + 1) % 1; if (st !== 'working') hide(lamp.im, PUFF0 + j * PUFF + q); else put(lamp.im, PUFF0 + j * PUFF + q, c.x + 1.15 + Math.sin(ph * 5 + j) * 0.18 * ph, 0.75 + ph * 2.3, c.z - 1.7, 0.1 + 0.2 * ph, 0.1 + 0.2 * ph, 0.1 + 0.2 * ph); }
+      for (let q = 0; q < PUFF; q++) { const ph = ((t * 0.3 * (mot || 0) + q / PUFF + j * 0.37) % 1 + 1) % 1; if (st !== 'working') hide(lamp.im, PUFF0 + j * PUFF + q); else put(lamp.im, PUFF0 + j * PUFF + q, c.x + 1.15 + Math.sin(ph * 5 + j) * 0.18 * ph, 0.75 + ph * 2.0, c.z - 1.7, 0.05 + 0.11 * ph, 0.05 + 0.11 * ph, 0.05 + 0.11 * ph); }
       const eg = st === 'working' ? 1 + 0.15 * Math.sin(t * 7 + j) * mot : 0.8; put(lamp.im, EMBER0 + 1 + j, c.x + 1.15, 0.6, c.z - 1.7, 0.13 * eg, 0.09 * eg, 0.13 * eg);
       // its stack of crates = commits today
       for (let q = 0; q < CSTACK; q++) { if (q >= b.crates) hide(crate.im, CR0 + j * CSTACK + q); else put(crate.im, CR0 + j * CSTACK + q, c.x - 1.05 + (q % 3) * 0.3 + (q > 2 ? 0.15 : 0), 0.13 + (q > 2 ? 0.26 : 0), c.z - 2.5, 0.27, 0.25, 0.27, 0, (j + q) * 0.4, 0); }
@@ -300,7 +300,7 @@ function build(rc, scene, camera, canvas, o) {
       const d = Math.hypot(camP.x - c.x, camP.z - c.z), sc = (mode === 'tour' ? 1.15 : 1) * (0.62 + 0.38 * Math.min(1, d / 6.5));
       setQuad(campG, j, c.x, 2.85 + sc * 0.75 + (mot ? Math.sin(t * 0.9 + j) * 0.03 : 0), c.z - 0.9, 2.7 * sc, 1.35 * sc);
     });
-    const fp = 1 + 0.1 * Math.sin(t * 6) * mot; put(lamp.im, EMBER0, CAMP.fire.x, 0.68, CAMP.fire.z, 0.32 * fp, 0.22 * fp, 0.32 * fp);
+    const fp = 1 + 0.1 * Math.sin(t * 6) * mot; put(lamp.im, EMBER0, CAMP.fire.x, 0.64, CAMP.fire.z, 0.22 * fp, 0.15 * fp, 0.22 * fp);
     campG.attributes.position.needsUpdate = true;
   }
   function frame(dt) {
