@@ -2,15 +2,18 @@
 // door in each; one platform per worker with a marble figure DOING ITS JOB (turning the search wheel, writing at a desk, reading the tripod, hammering at the anvil, weighing on the
 // scales), a status lamp, a speech bubble with its latest finding, and a conveyor carrying its last outputs as labelled crates you can tap. The Learning board and "what changed our
 // mind" hang in the Library, the research pipeline wall in the Research hall. Built on the OLYMPUS render core (../olympus/render.js, three.js r160 from ../jarvis/). Warm light, bloom <= .2.
-// LIGHT BY DESIGN: every repeated part lives in one of ten instanced batches (unit box / cylinder / sphere, coloured per instance), all 15 bubbles are ONE mesh on one canvas atlas,
+// Outside the front door lies THE BUILDERS' CAMP: a desert caravan camp with one tent per build agent (a worker at a marble table, a banner with its name and job, a scroll that cycles
+// its latest commit messages, a stack of crates = commits today, brazier smoke only while it is working).
+// LIGHT BY DESIGN: every repeated part lives in one of ten instanced batches (unit box / cylinder / sphere, coloured per instance), all 15 bubbles are ONE mesh on one canvas atlas, the camp's banners and scrolls another,
 // all crate tags and hall signs are ONE mesh on a second atlas, plus three wall boards: about 15 draw calls and under 40k triangles for the whole factory.
 // createFloor(canvas, { reduced, stations, onPick }) -> { ok, set(workers, extra), move({fwd,side}), look(dx,dy), follow(id|null), tour(on), pulse(ids), reset(), teleport(x,z),
 //   face(id), pos(), project(id), pick(x,y), stats(), dispose() }
 // If WebGL, the render core or the tier (LITE / off) says no, ok is false and the page keeps its flat plan. Reduced motion: everything stands still and the camera jumps instead of gliding.
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
-import { walk, followCam, tourCam, ease, hallOf, EYE, BOUNDS, START, HALLS, DOORS } from './ergasterioncore.js';
+import { walk, followCam, tourCam, ease, hallOf, resolveCollision, EYE, START, HALLS, DOORS, CAMP, CAMP_SPOTS } from './ergasterioncore.js';
 
+const BUILD = { working: '#8fa05a', quiet: '#4b7a99', done: '#c8a24a', job: '#b8ad98' }, BWORD = { working: 'Working', quiet: 'Quiet', done: 'Done', job: 'Job only' }, NC = CAMP_SPOTS.length, CSTACK = 6, PUFF = 3;
 const LAMP = { working: '#8fa05a', idle: '#4b7a99', stale: '#e0b060', failed: '#c96a4a', sample: '#b8ad98' };
 const WORD = { working: 'Working', idle: 'Idle', stale: 'Stale', failed: 'Failed', sample: 'Sample data' };
 const PACE = { working: 1, idle: 0.3, stale: 0, failed: 0, sample: 0.5 };          // how briskly a figure works (and its belt runs)
@@ -24,7 +27,7 @@ export function createFloor(canvas, opts) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(72, 1.2, 0.1, 80);
     scene.background = new THREE.Color('#2a2118');
-    scene.fog = new THREE.Fog('#2a2118', 22, 60);
+    scene.fog = new THREE.Fog('#5a4030', 26, 72);
     rc = createRenderer({ canvas, scene, camera, maxDpr: 2, tint: '#c8a24a', env: 'night',
       theme: { sky: '#5a3c22', fog: '#2a2118', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, bloom: { strength: 0.15, radius: 0.5, threshold: 1.0 } });
     const q = rc.quality();
@@ -81,12 +84,14 @@ function build(rc, scene, camera, canvas, o) {
   const sBox = batch(boxG, stone), bBox = batch(boxG, metal), sCyl = batch(cylG, stone), bCyl = batch(cylG, metal);                     // static: the building and the furniture
   const fig = batch(robeG, stone, true), head = batch(ballG, stone, true), dBox = batch(boxG, metal, true), dCyl = batch(cylG, metal, true);   // moving: the figures and their tools
   const lamp = batch(ballG, new THREE.MeshBasicMaterial({ color: '#ffffff' }), true), crate = batch(boxG, std(0.7, 0.05), true);
+  const tentG = new THREE.ConeGeometry(1, 1, 4); tentG.rotateY(Math.PI / 4);
+  const tent = batch(tentG, std(0.85, 0), false), dune = batch(ballG, std(0.95, 0), false);                                          // the camp: tents and dunes
 
   // ---- the building: floor, four rugs (one tone per hall), outer walls, the cross of inner walls with a bronze door frame in each, columns along the outer walls
   sBox.add(0, -0.1, 0, 26.8, 0.2, 20.8, '#bdb29d');
   for (const h of HALLS) sBox.add((h.x0 + h.x1) / 2, 0.012, (h.z0 + h.z1) / 2, 11.2, 0.03, 8.2, RUG[h.id]);
   const WALL = '#a99f8d', WH = 3.4, IH = 3.0;
-  sBox.add(0, WH / 2, -10.2, 26.8, WH, 0.4, WALL); sBox.add(0, WH / 2, 10.2, 26.8, WH, 0.4, WALL); sBox.add(-13.2, WH / 2, 0, 0.4, WH, 20.8, WALL); sBox.add(13.2, WH / 2, 0, 0.4, WH, 20.8, WALL);
+  sBox.add(0, WH / 2, -10.2, 26.8, WH, 0.4, WALL); sBox.add(-4.075, WH / 2, 10.2, 18.65, WH, 0.4, WALL); sBox.add(10.575, WH / 2, 10.2, 5.65, WH, 0.4, WALL); sBox.add(START.x, 3.05, 10.2, 2.5, 0.7, 0.4, WALL); sBox.add(-13.2, WH / 2, 0, 0.4, WH, 20.8, WALL); sBox.add(13.2, WH / 2, 0, 0.4, WH, 20.8, WALL);
   for (const ax of ['x', 'z']) {
     const len = ax === 'x' ? 10 : 13, ds = DOORS.filter((d) => d.axis === ax).sort((a, b) => a.c - b.c); let from = -len;
     const seg = (a, b) => { if (b - a < 0.05) return; if (ax === 'x') sBox.add(0, IH / 2, (a + b) / 2, 0.3, IH, b - a, WALL); else sBox.add((a + b) / 2, IH / 2, 0, b - a, IH, 0.3, WALL); };
@@ -97,7 +102,7 @@ function build(rc, scene, camera, canvas, o) {
     }
     seg(from, len);
   }
-  bBox.add(0, 0.02, -9.95, 26.4, 0.1, 0.16, BRONZE); bBox.add(0, 0.02, 9.95, 26.4, 0.1, 0.16, BRONZE); bBox.add(-12.95, 0.02, 0, 0.16, 0.1, 20, BRONZE); bBox.add(12.95, 0.02, 0, 0.16, 0.1, 20, BRONZE);
+  bBox.add(0, 0.02, -9.95, 26.4, 0.1, 0.16, BRONZE); bBox.add(-4.0, 0.02, 9.95, 18.4, 0.1, 0.16, BRONZE); bBox.add(10.5, 0.02, 9.95, 5.4, 0.1, 0.16, BRONZE); bBox.add(-12.95, 0.02, 0, 0.16, 0.1, 20, BRONZE); bBox.add(12.95, 0.02, 0, 0.16, 0.1, 20, BRONZE);
   bBox.add(START.x - 1.25, 1.3, 9.95, 0.16, 2.6, 0.2, BRONZE); bBox.add(START.x + 1.25, 1.3, 9.95, 0.16, 2.6, 0.2, BRONZE); bBox.add(START.x, 2.7, 9.95, 2.66, 0.22, 0.2, BRONZE);   // the front door behind you
   const colAt = (x, z) => { sCyl.add(x, WH / 2, z, 0.27, WH, 0.27, MARBLE); sBox.add(x, WH + 0.1, z, 0.8, 0.2, 0.8, MARBLE); sBox.add(x, 0.1, z, 0.74, 0.2, 0.74, MARBLE); };
   for (const x of [-11, -6.5, -2, 2, 11]) { colAt(x, -9.7); colAt(x, 9.7); }
@@ -119,10 +124,30 @@ function build(rc, scene, camera, canvas, o) {
     else if (s.job === 'scales') { bCyl.add(px, Y0 + 0.55, pz, 0.03, 1.1, 0.03, BRONZE); bCyl.add(px, Y0 + 0.03, pz, 0.2, 0.06, 0.2, BRONZE); }
     else { bBox.add(px + 0.62, Y0 + 0.36, pz - 0.04, 0.08, 0.72, 0.08, BRONZE); bBox.add(px + 0.62, Y0 + 0.03, pz - 0.04, 0.5, 0.06, 0.34, BRONZE); }
   });
-  // moving parts: fixed slots per station so nothing is allocated while drawing
-  S.forEach(() => { fig.add(0, -9, 0, 1, 1, 1, MARBLE); fig.add(0, -9, 0, 1, 1, 1, MARBLE); fig.add(0, -9, 0, 1, 1, 1, MARBLE); head.add(0, -9, 0, 1, 1, 1, MARBLE); lamp.add(0, -9, 0, 1, 1, 1, LAMP.stale);
-    for (let k = 0; k < 3; k++) { dBox.add(0, -9, 0, 1, 1, 1, k === 2 ? GOLD : BRONZE); dCyl.add(0, -9, 0, 1, 1, 1, BRONZE); }
-    for (let k = 0; k < MAXC; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
+  // ---- THE BUILDERS' CAMP outside the front door: sand, a path, dunes, the hearth, and for each build agent a tent, a banner pole, a marble work table and a small brazier
+  const SAND = '#c9a66b', cz0 = (CAMP.z0 + CAMP.z1) / 2;
+  sBox.add(6.5, -0.12, cz0, 30, 0.2, CAMP.z1 - CAMP.z0 + 6, SAND); sBox.add(START.x, 0.0, 11.4, 2.2, 0.04, 3.4, '#dcc391'); sBox.add(START.x, 0.0, 16.9, 1.5, 0.04, 7.6, '#d6bb85');
+  [[-6, 13, 4.5], [-7.5, 20, 6], [19.5, 14, 5], [20.5, 21, 6.5], [1, 25.5, 6], [8, 26.5, 7], [15, 25.5, 5.5], [-4.5, 25, 4.5]].forEach((dn) => dune.add(dn[0], -0.25, dn[1], dn[2], dn[2] * 0.3, dn[2] * 0.8, '#bf9a5e'));
+  dune.add(-2.6, 0, 12.2, 0.5, 0.32, 0.45, '#a89a80'); dune.add(15.6, 0, 12.6, 0.6, 0.36, 0.5, '#a89a80'); dune.add(15.9, 0, 17.8, 0.4, 0.26, 0.4, '#a89a80');
+  bCyl.add(CAMP.fire.x, 0.5, CAMP.fire.z, 0.5, 0.16, 0.5, BRONZE); for (let k = 0; k < 3; k++) { const a = k * 2.094; bCyl.add(CAMP.fire.x + Math.sin(a) * 0.28, 0.24, CAMP.fire.z + Math.cos(a) * 0.28, 0.03, 0.52, 0.03, BRONZE, Math.cos(a) * 0.4, 0, -Math.sin(a) * 0.4); }
+  const TENT = ['#e6d9bd', '#c98f6a', '#d8c9a3', '#a9b07a', '#e0cfa8'];
+  CAMP_SPOTS.forEach((c, j) => {
+    tent.add(c.x, 1.0, c.z, 1.55, 2.0, 1.55, TENT[j % TENT.length]); tent.add(c.x, 2.12, c.z, 0.5, 0.5, 0.5, j % 2 ? '#9c6b3c' : '#c8a24a');
+    sBox.add(c.x, 0.55, c.z - 1.02, 0.66, 1.1, 0.3, '#3a2c1c'); bCyl.add(c.x, 2.5, c.z, 0.025, 0.5, 0.025, GOLD);
+    bCyl.add(c.x - 1.25, 1.3, c.z - 1.0, 0.035, 2.6, 0.035, BRONZE);
+    sBox.add(c.x, 0.62, c.z - 2.45, 0.95, 0.06, 0.5, MARBLE); bBox.add(c.x - 0.4, 0.3, c.z - 2.45, 0.06, 0.6, 0.42, BRONZE); bBox.add(c.x + 0.4, 0.3, c.z - 2.45, 0.06, 0.6, 0.42, BRONZE);
+    if (c.job === 'smith') bBox.add(c.x, 0.72, c.z - 2.45, 0.5, 0.14, 0.24, '#7a5631'); else sBox.add(c.x - 0.05, 0.665, c.z - 2.45, 0.5, 0.025, 0.32, '#efe6d2');
+    bCyl.add(c.x + 1.15, 0.5, c.z - 1.7, 0.2, 0.12, 0.2, BRONZE); bCyl.add(c.x + 1.15, 0.22, c.z - 1.7, 0.03, 0.44, 0.03, BRONZE);
+  });
+  // moving parts: fixed slots per station (and per camp builder) so nothing is allocated while drawing
+  for (let i = 0; i < N + NC; i++) { fig.add(0, -9, 0, 1, 1, 1, MARBLE); fig.add(0, -9, 0, 1, 1, 1, MARBLE); fig.add(0, -9, 0, 1, 1, 1, MARBLE); head.add(0, -9, 0, 1, 1, 1, MARBLE);
+    for (let k = 0; k < 3; k++) { dBox.add(0, -9, 0, 1, 1, 1, k === 2 ? GOLD : BRONZE); dCyl.add(0, -9, 0, 1, 1, 1, BRONZE); } }
+  S.forEach(() => { lamp.add(0, -9, 0, 1, 1, 1, LAMP.stale); for (let k = 0; k < MAXC; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
+  const EMBER0 = N, PUFF0 = N + 1 + NC, CR0 = N * MAXC;
+  lamp.add(CAMP.fire.x, 0.66, CAMP.fire.z, 0.3, 0.2, 0.3, '#e89a3c');
+  CAMP_SPOTS.forEach((c) => lamp.add(c.x + 1.15, 0.6, c.z - 1.7, 0.13, 0.09, 0.13, '#4a3a28'));
+  CAMP_SPOTS.forEach(() => { for (let k = 0; k < PUFF; k++) lamp.add(0, -9, 0, 1, 1, 1, '#857b6c'); });
+  CAMP_SPOTS.forEach(() => { for (let k = 0; k < CSTACK; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
   // board frames (the boards themselves are three canvases)
   const BOARDS = { board: { x: 10.35, y: 1.85, z: 0.17, w: 4.5, h: 2.5, ry: 0 }, changed: { x: 2.75, y: 1.85, z: 0.17, w: 4.5, h: 2.5, ry: 0 }, pipe: { x: -6.5, y: 1.85, z: 9.98, w: 9.2, h: 2.6, ry: Math.PI } };
   for (const k in BOARDS) { const b = BOARDS[k]; bBox.add(b.x, b.y, b.z - (b.ry ? -0.04 : 0.04), b.w + 0.24, b.h + 0.24, 0.06, BRONZE); }
@@ -171,6 +196,27 @@ function build(rc, scene, camera, canvas, o) {
     T.t.needsUpdate = true;
   }
 
+  // ---- the camp's atlas: for each builder a banner (name, job, status) and a parchment scroll that cycles its latest commit messages: ONE mesh
+  const CA = atlas(2048, 1024), campG = quads(NC), campM = new THREE.Mesh(campG, flat(CA.t)); campM.frustumCulled = false; campM.renderOrder = 5; scene.add(campM);
+  CAMP_SPOTS.forEach((_, j) => { const cx = (j % 4) * BW, cy = Math.floor(j / 4) * BH; setUV(campG, j, cx / 2048, 1 - (cy + BH) / 1024, (cx + BW) / 2048, 1 - cy / 1024); });
+  let camp = []; const campKey = CAMP_SPOTS.map(() => '');
+  function drawCamp(j, line) {
+    const b = camp[j], key = b ? b.name + '|' + b.status + '|' + line + '|' + b.mins : '-';
+    if (campKey[j] === key) return; campKey[j] = key;
+    const g = CA.g, x = (j % 4) * BW, y = Math.floor(j / 4) * BH; g.clearRect(x, y, BW, BH);
+    if (!b) { CA.t.needsUpdate = true; return; }
+    g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+    g.fillStyle = '#7a4a2c'; g.strokeStyle = GOLD; g.lineWidth = 4; panel(g, x + 6, y + 6, BW - 12, 92, 14);                       // the banner
+    g.fillStyle = '#f6ecd6'; g.font = '600 36px Georgia, serif'; let nm = b.name; while (nm.length > 4 && g.measureText(nm).width > BW - 190) nm = nm.slice(0, -1); g.fillText(nm, x + 24, y + 48);
+    g.fillStyle = BUILD[b.status]; g.beginPath(); g.arc(x + BW - 150, y + 37, 9, 0, 6.3); g.fill(); g.fillStyle = '#f6ecd6'; g.font = '700 24px -apple-system, "Segoe UI", sans-serif'; g.fillText(BWORD[b.status], x + BW - 134, y + 46);
+    g.fillStyle = '#ecd9b4'; g.font = '500 22px -apple-system, "Segoe UI", sans-serif'; let jb = b.job; while (jb.length > 4 && g.measureText(jb).width > BW - 48) jb = jb.slice(0, -2); g.fillText(jb === b.job ? jb : jb + '…', x + 24, y + 82);
+    g.fillStyle = '#eadcbc'; g.strokeStyle = '#9c6b3c'; g.lineWidth = 3; panel(g, x + 18, y + 106, BW - 36, 140, 10);                 // the scroll
+    g.fillStyle = '#9c6b3c'; g.fillRect(x + 10, y + 102, BW - 20, 8); g.fillRect(x + 10, y + 242, BW - 20, 8);
+    g.fillStyle = '#3a2c1c'; g.font = '600 28px -apple-system, "Segoe UI", sans-serif'; wrap(g, line, x + 34, y + 148, BW - 68, 34, 2);
+    g.fillStyle = '#7a5631'; g.font = '500 22px -apple-system, "Segoe UI", sans-serif'; g.fillText((b.sample ? 'example · ' : '') + (b.status === 'job' ? 'no live activity' : b.mins == null ? '' : 'last commit ' + (b.mins < 90 ? b.mins + ' min ago' : Math.round(b.mins / 60) + ' h ago')), x + 34, y + 228);
+    CA.t.needsUpdate = true;
+  }
+
   // ---- three wall boards: the Learning board and "what changed our mind" (Library), the research pipeline (Research hall)
   const mkBoard = (b, cw, ch) => { const C = atlas(cw, ch), m = new THREE.Mesh(new THREE.PlaneGeometry(b.w, b.h), new THREE.MeshBasicMaterial({ map: C.t, fog: false, toneMapped: false })); m.position.set(b.x, b.y, b.z); m.rotation.y = b.ry; scene.add(m); return { C, m, cw, ch }; };
   const bLearn = mkBoard(BOARDS.board, 1024, 568), bFlip = mkBoard(BOARDS.changed, 1024, 568), bPipe = mkBoard(BOARDS.pipe, 1536, 434);
@@ -212,7 +258,7 @@ function build(rc, scene, camera, canvas, o) {
 
   // ---- state
   let workers = [], cam = { x: START.x, z: START.z, yaw: START.yaw, pitch: -0.06 }, yawT = cam.yaw, pitchT = cam.pitch, mv = { fwd: 0, side: 0 }, mvT = { fwd: 0, side: 0 }, mode = 'walk', following = null, t = 0, tourT = 0;
-  const ray = new THREE.Raycaster(), ang = S.map((_, i) => i * 1.7), hot = {}, cratePos = new Float32Array(N * MAXC * 3);
+  const ray = new THREE.Raycaster(), ang = S.map((_, i) => i * 1.7).concat(CAMP_SPOTS.map((_, j) => j * 2.3)), COLL = S.concat(CAMP_SPOTS, CAMP_SPOTS.map((c) => ({ x: c.x, z: c.z - 2.1 }))), hot = {}, cratePos = new Float32Array(N * MAXC * 3);
   const pos = () => ({ x: cam.x, z: cam.z, yaw: cam.yaw, following, mode, hall: hallOf(mode === 'tour' ? { x: camera.position.x, z: camera.position.z } : cam).id });
   const nCrates = (w) => Math.max(0, Math.min(MAXC, w && w.crates ? w.crates.length : 0));
   // an arm: a cylinder from the shoulder, swung forward by `a` radians (0 = hanging down, 1.57 = straight ahead) and outward by `out`; returns the hand position
@@ -221,6 +267,41 @@ function build(rc, scene, camera, canvas, o) {
     const L = 0.5, dx = Math.sin(out), dy = -Math.cos(a) * Math.cos(out), dz = Math.sin(a) * Math.cos(out);
     put(fig.im, slot, sx + dx * L / 2, sy + dy * L / 2, sz + dz * L / 2, 0.06, L, 0.06, -a, 0, out);
     hand.x = sx + dx * L; hand.y = sy + dy * L; hand.z = sz + dz * L;
+  }
+  // a camp builder: the same marble figure, facing north (toward the door you come from), writing or hammering at its table
+  function campFrame(dt, camP) {
+    const hide = (im, j) => put(im, j, 0, -9, 0, 0.001, 0.001, 0.001);
+    CAMP_SPOTS.forEach((c, j) => {
+      const b = camp[j], i = N + j, b3 = i * 3, st = b ? b.status : 'job', k = (st === 'working' ? 1 : st === 'quiet' ? 0.22 : 0) * mot;
+      ang[i] += dt * k;
+      if (!b) { [0, 1, 2].forEach((q) => { hide(fig.im, b3 + q); hide(dBox.im, b3 + q); hide(dCyl.im, b3 + q); }); hide(head.im, i); for (let q = 0; q < PUFF; q++) hide(lamp.im, PUFF0 + j * PUFF + q); for (let q = 0; q < CSTACK; q++) hide(crate.im, CR0 + j * CSTACK + q); setQuad(campG, j, 0, -9, 0, 0, 0); return; }
+      const a = ang[i], fx = c.x, fz = c.z - 1.9, bob = 0.012 * Math.sin(a * 2.1) * (k ? 1 : 0), shY = 0.93 + bob, sit = st === 'done' ? 0.12 : 0;
+      put(fig.im, b3, fx, 0.5 + bob - sit, fz, 0.24, 1.0, 0.24); put(head.im, i, fx, 1.19 + bob - sit, fz - 0.04, 0.165, 0.175, 0.165);
+      const armN = (slot, sx, a2, out) => { const L = 0.5, dx = Math.sin(out), dy = -Math.cos(a2) * Math.cos(out), dz = -Math.sin(a2) * Math.cos(out); put(fig.im, slot, sx + dx * L / 2, shY - sit + dy * L / 2, fz - 0.04 + dz * L / 2, 0.06, L, 0.06, a2, 0, out); hand.x = sx + dx * L; hand.y = shY - sit + dy * L; hand.z = fz - 0.04 + dz * L; };
+      if (c.job === 'smith' && st !== 'done') {
+        const cc = Math.cos(a * 4), up = 1.45 + 0.55 * Math.max(-1, Math.min(1, cc * 1.6));
+        armN(b3 + 1, fx - 0.25, up, -0.05);
+        const ha = Math.PI - (up + 1.2), hdy = Math.cos(ha), hdz = -Math.sin(ha);
+        put(dCyl.im, b3, hand.x, hand.y + hdy * 0.18, hand.z + hdz * 0.18, 0.02, 0.38, 0.02, -ha, 0, 0); put(dBox.im, b3, hand.x, hand.y + hdy * 0.36, hand.z + hdz * 0.36, 0.2, 0.11, 0.11, -ha, 0, 0);
+        armN(b3 + 2, fx + 0.25, 0.85, -0.12); put(dBox.im, b3 + 2, c.x + 0.12, 0.81, c.z - 2.45, 0.22, 0.03, 0.08);
+      } else {
+        const wr = Math.sin(a * 5) * 0.16, dip = Math.sin(a * 10) * 0.03;
+        armN(b3 + 1, fx - 0.25, (st === 'done' ? 0.3 : 1.0) + dip, 0.22 - wr); if (st === 'done') hide(dCyl.im, b3); else put(dCyl.im, b3, hand.x, hand.y + 0.05, hand.z - 0.02, 0.012, 0.24, 0.012, 0.5, 0, -0.3);
+        armN(b3 + 2, fx + 0.25, st === 'done' ? 0.3 : 0.95, -0.2); hide(dBox.im, b3); hide(dBox.im, b3 + 2);
+      }
+      hide(dBox.im, b3 + 1); hide(dCyl.im, b3 + 1); hide(dCyl.im, b3 + 2);
+      // brazier smoke only while it is working; the ember glows then
+      for (let q = 0; q < PUFF; q++) { const ph = ((t * 0.3 * (mot || 0) + q / PUFF + j * 0.37) % 1 + 1) % 1; if (st !== 'working') hide(lamp.im, PUFF0 + j * PUFF + q); else put(lamp.im, PUFF0 + j * PUFF + q, c.x + 1.15 + Math.sin(ph * 5 + j) * 0.18 * ph, 0.75 + ph * 2.3, c.z - 1.7, 0.1 + 0.2 * ph, 0.1 + 0.2 * ph, 0.1 + 0.2 * ph); }
+      const eg = st === 'working' ? 1 + 0.15 * Math.sin(t * 7 + j) * mot : 0.8; put(lamp.im, EMBER0 + 1 + j, c.x + 1.15, 0.6, c.z - 1.7, 0.13 * eg, 0.09 * eg, 0.13 * eg);
+      // its stack of crates = commits today
+      for (let q = 0; q < CSTACK; q++) { if (q >= b.crates) hide(crate.im, CR0 + j * CSTACK + q); else put(crate.im, CR0 + j * CSTACK + q, c.x - 1.05 + (q % 3) * 0.3 + (q > 2 ? 0.15 : 0), 0.13 + (q > 2 ? 0.26 : 0), c.z - 2.5, 0.27, 0.25, 0.27, 0, (j + q) * 0.4, 0); }
+      // the banner and the scroll, over the tent; the scroll moves on to the next commit message every few seconds
+      const n = b.scroll.length, idx = mot ? Math.floor((t + j * 1.7) / 5.5) % n : 0; drawCamp(j, b.scroll[idx]);
+      const d = Math.hypot(camP.x - c.x, camP.z - c.z), sc = (mode === 'tour' ? 1.15 : 1) * (0.62 + 0.38 * Math.min(1, d / 6.5));
+      setQuad(campG, j, c.x, 2.85 + sc * 0.75 + (mot ? Math.sin(t * 0.9 + j) * 0.03 : 0), c.z - 0.9, 2.7 * sc, 1.35 * sc);
+    });
+    const fp = 1 + 0.1 * Math.sin(t * 6) * mot; put(lamp.im, EMBER0, CAMP.fire.x, 0.68, CAMP.fire.z, 0.32 * fp, 0.22 * fp, 0.32 * fp);
+    campG.attributes.position.needsUpdate = true;
   }
   function frame(dt) {
     t += dt;
@@ -281,6 +362,7 @@ function build(rc, scene, camera, canvas, o) {
       }
     });
     [fig, head, dBox, dCyl, lamp, crate].forEach((b) => { b.im.instanceMatrix.needsUpdate = true; });
+    const campLater = () => campFrame(dt, camP);
     // the camera: walking (eased joystick and look), following a worker, or the calm tour above the halls
     const rate = reduced ? 0 : 1;
     if (mode === 'tour') {
@@ -293,7 +375,7 @@ function build(rc, scene, camera, canvas, o) {
         camP.x += (fc.x - camP.x) * k; camP.y += (fc.y - camP.y) * k; camP.z += (fc.z - camP.z) * k; camera.lookAt(fc.look.x, fc.look.y + 0.35, fc.look.z); }
     } else {
       mv.fwd = ease(mv.fwd, mvT.fwd, dt, rate * 9); mv.side = ease(mv.side, mvT.side, dt, rate * 9);
-      if (Math.abs(mv.fwd) > 0.004 || Math.abs(mv.side) > 0.004) { const p = walk({ x: cam.x, z: cam.z }, cam.yaw, mv, dt, S); cam.x = p.x; cam.z = p.z; }
+      if (Math.abs(mv.fwd) > 0.004 || Math.abs(mv.side) > 0.004) { const p = walk({ x: cam.x, z: cam.z }, cam.yaw, mv, dt, COLL); cam.x = p.x; cam.z = p.z; }
       cam.yaw = ease(cam.yaw, yawT, dt, rate * 18); cam.pitch = ease(cam.pitch, pitchT, dt, rate * 18);
       const k = reduced ? 1 : Math.min(1, dt * 7);
       camP.x += (cam.x - camP.x) * k; camP.y += (eye - camP.y) * k; camP.z += (cam.z - camP.z) * k;
@@ -306,6 +388,7 @@ function build(rc, scene, camera, canvas, o) {
     S.forEach((s, i) => { const d = Math.hypot(camP.x - s.x, camP.z - s.z), sc = big * (0.6 + 0.4 * Math.min(1, d / 6)); setQuad(bubG, i, figAt[i].x, Y0 + 1.95 + sc * 0.3, figAt[i].z, 2.5 * sc, 1.25 * sc); });
     const inHall = mode === 'tour' ? '' : hallOf({ x: camP.x, z: camP.z }).id;
     HALLS.forEach((h, k) => { if (h.id === inHall) setQuad(tagG, NT + k, 0, -9, 0, 0, 0); else setQuad(tagG, NT + k, (h.x0 + h.x1) / 2, mode === 'tour' ? 4.6 : 4.1, (h.z0 + h.z1) / 2, 3.4 * big, 0.85 * big); });
+    campLater(); [fig, head, dBox, dCyl, lamp, crate].forEach((b) => { b.im.instanceMatrix.needsUpdate = true; });
     bubG.attributes.position.needsUpdate = true; tagG.attributes.position.needsUpdate = true;
     rc.render();
   }
@@ -321,21 +404,23 @@ function build(rc, scene, camera, canvas, o) {
         for (let c = 0; c < MAXC; c++) { const cr = w && w.crates && w.crates[c]; drawTag(i * MAXC + c, cr ? cr.tag : '', w ? w.status : 'stale'); crate.im.setColorAt(i * MAXC + c, colour.set(w && w.status === 'failed' ? '#a8573d' : w && w.status === 'sample' ? '#a39a88' : '#b08a52')); }
       });
       if (lamp.im.instanceColor) lamp.im.instanceColor.needsUpdate = true; if (crate.im.instanceColor) crate.im.instanceColor.needsUpdate = true;
-      if (extra) { drawLearn(extra.board || null); drawFlip(extra.board || null); drawPipe(extra.pipe || null); }
+      if (extra) { drawLearn(extra.board || null); drawFlip(extra.board || null); drawPipe(extra.pipe || null); if (extra.camp) { camp = CAMP_SPOTS.map((_, j) => extra.camp[j] || null); lamp.im.setColorAt(EMBER0, colour.set('#e89a3c'));
+        camp.forEach((b, j) => { lamp.im.setColorAt(EMBER0 + 1 + j, colour.set(b && b.status === 'working' ? '#e8923a' : '#4a3a28')); for (let q = 0; q < CSTACK; q++) crate.im.setColorAt(CR0 + j * CSTACK + q, colour.set(q % 2 ? '#b08a52' : '#c49a5c')); }); lamp.im.instanceColor.needsUpdate = true; crate.im.instanceColor.needsUpdate = true; } }
       if (reduced) frame(0.016);
     },
     move(m) { mvT = { fwd: (m && m.fwd) || 0, side: (m && m.side) || 0 }; if (mode !== 'walk' && (mvT.fwd || mvT.side)) api.follow(null); },
-    step(dt) { const p = walk({ x: cam.x, z: cam.z }, cam.yaw, mvT, dt || 0.1, S); cam.x = p.x; cam.z = p.z; snapCam(); frame(0.001); },
+    step(dt) { const p = walk({ x: cam.x, z: cam.z }, cam.yaw, mvT, dt || 0.1, COLL); cam.x = p.x; cam.z = p.z; snapCam(); frame(0.001); },
     look(dx, dy) { yawT -= dx; pitchT = Math.max(-0.6, Math.min(0.5, pitchT - dy)); still(); },
     follow(id) { following = id || null; mode = following ? 'follow' : 'walk'; still(); },
     tour(on) { mode = on ? 'tour' : 'walk'; following = null; if (on) tourT = 0; still(); return mode === 'tour'; },
     /** the day replay lights up who was busy at the cursor: their lamps pulse and their figures work for a moment */
     pulse(ids) { for (const id of ids || []) hot[id] = t + 1.6; still(); },
-    teleport(x, z) { cam.x = Math.max(-BOUNDS.x, Math.min(BOUNDS.x, x)); cam.z = Math.max(-BOUNDS.z, Math.min(BOUNDS.z, z)); following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; snapCam(); still(); },
+    teleport(x, z, yaw) { const q = resolveCollision(x, z, []); cam.x = q.x; cam.z = q.z; if (yaw != null) { cam.yaw = yaw; yawT = yaw; } following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; snapCam(); still(); },
     reset() { cam = { x: START.x, z: START.z, yaw: START.yaw, pitch: -0.06 }; yawT = cam.yaw; pitchT = cam.pitch; following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; mvT = { fwd: 0, side: 0 }; snapCam(); still(); },
     face(id) { const s = S.find((a) => a.id === id); if (s) { let y = Math.atan2(-(s.x - cam.x), -(s.z - cam.z)); while (y - cam.yaw > Math.PI) y -= Math.PI * 2; while (y - cam.yaw < -Math.PI) y += Math.PI * 2; yawT = y; pitchT = -0.16; still(); } },
     pos,
     stats() { const st = rc.stats(); return { calls: st.calls, triangles: st.triangles, quality: st.quality, batches: batches.length }; },
+    projectCamp(j) { const c = CAMP_SPOTS[j]; if (!c) return null; const v = new THREE.Vector3(c.x, 1.3, c.z - 1.2).project(camera); if (v.z > 1) return null; return { x: (v.x * 0.5 + 0.5) * canvas.clientWidth, y: (-v.y * 0.5 + 0.5) * canvas.clientHeight }; },
     project(id) { const s = S.find((a) => a.id === id); if (!s) return null; const v = new THREE.Vector3(s.x, 1.0, s.z).project(camera); if (v.z > 1) return null; return { x: (v.x * 0.5 + 0.5) * canvas.clientWidth, y: (-v.y * 0.5 + 0.5) * canvas.clientHeight }; },
     projectCrate(id, c) { const i = S.findIndex((a) => a.id === id), k = (i * MAXC + c) * 3; if (i < 0 || cratePos[k + 1] < 0) return null; const v = new THREE.Vector3(cratePos[k], cratePos[k + 1], cratePos[k + 2]).project(camera); if (v.z > 1) return null; return { x: (v.x * 0.5 + 0.5) * canvas.clientWidth, y: (-v.y * 0.5 + 0.5) * canvas.clientHeight }; },
     /** what is under a tap: { id, crate } for a crate, { id } for a worker, or 'board' / 'changed' / 'pipe' for a wall board */
@@ -350,12 +435,14 @@ function build(rc, scene, camera, canvas, o) {
       bd = 56;                                      // forgiving: the nearest station on screen within 56 px (figure or lamp)
       S.forEach((s) => { const p = api.project(s.id); if (p) { const d = Math.hypot(p.x - lx, p.y - ly); if (d < bd) { bd = d; best = { id: s.id }; } } });
       if (best) return best;
+      bd = 64; CAMP_SPOTS.forEach((c, j) => { if (!camp[j]) return; const v3 = new THREE.Vector3(c.x, 1.3, c.z - 1.2).project(camera); if (v3.z > 1) return; const d = Math.hypot((v3.x * 0.5 + 0.5) * canvas.clientWidth - lx, (-v3.y * 0.5 + 0.5) * canvas.clientHeight - ly); if (d < bd) { bd = d; best = { id: 'camp:' + camp[j].id }; } });
+      if (best) return best;
       if (ray.intersectObject(bLearn.m, false)[0]) return { id: 'board' };
       if (ray.intersectObject(bFlip.m, false)[0]) return { id: 'changed' };
       if (ray.intersectObject(bPipe.m, false)[0]) return { id: 'pipe' };
       return null;
     },
-    dispose() { try { rc.stop(); rc.dispose(); A.t.dispose(); T.t.dispose(); [bLearn, bFlip, bPipe].forEach((b) => b.C.t.dispose()); } catch (_) { /* nothing */ } },
+    dispose() { try { rc.stop(); rc.dispose(); A.t.dispose(); T.t.dispose(); CA.t.dispose(); [bLearn, bFlip, bPipe].forEach((b) => b.C.t.dispose()); } catch (_) { /* nothing */ } },
   };
   // drag to look; a short tap with no drag picks a crate, a station or a board
   let drag = null;

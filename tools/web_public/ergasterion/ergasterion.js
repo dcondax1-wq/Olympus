@@ -1,5 +1,5 @@
 // ERGASTERION page (ES module): the AI agent factory where you can see, first person, what every worker is doing, then what was learned from it.
-// Reads ./queue.json (tools/ergasterion_build.py: tasks, write-ups, lessons, what changed our mind, the dated event stream, the research pipeline, data gaps), ../home.json,
+// Reads ./builders.json (the Builders' camp: the build agents working right now, from handoff/agents_now.json joined with git), ./queue.json (tools/ergasterion_build.py: tasks, write-ups, lessons, what changed our mind, the dated event stream, the research pipeline, data gaps), ../home.json,
 // ../money/index.json, the public kalshi.json feed, ../cronos/status.json, ../prometheus/forge.json, ../hephaestus/data.json and ./fixture.json (DEMO when none of the live files is there).
 // Read only and paper only: it sends nothing and starts nothing. Text only through textContent / createElementNS. The 3D factory comes from floor.js (optional, loaded by
 // floorload.js); the flat plan (LITE) is always drawn first. window.ERGASTERION is the test hook.
@@ -13,7 +13,7 @@ function sv(tag, attrs, text) { const e = document.createElementNS(NS, tag); for
 const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
 const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 const S = { fixture: null, inputs: null, demo: false, forced: false, workers: [], head: null, events: [], next: [], sel: null, crate: -1, follow: '', view: 'plan', floor: null, ready: false, now: Date.now(), tried: false,
-  stream: [], win: null, range: '24h', cur: 1, playing: false, speed: 1, at: null, board: null, pipe: null, cat: '', sayI: 0, tour: false };
+  builders: [], hands: null, bsel: null, bdoc: null, bdemo: false, scrollI: 0, stream: [], win: null, range: '24h', cur: 1, playing: false, speed: 1, at: null, board: null, pipe: null, cat: '', sayI: 0, tour: false };
 const LAMPC = { working: '#8fa05a', idle: '#4b7a99', stale: '#e0b060', failed: '#c96a4a', sample: '#b8ad98' };
 
 async function getJSON(url, ms) {
@@ -43,6 +43,10 @@ function model() {
   S.board = C.board(inp.queue, S.workers, S.now, S.demo);
   S.pipe = C.pipeline(inp.queue, S.demo);
   S.next = C.suggestions(S.workers, inp.queue, S.now);
+  // the builders' camp has its own file: real when builders.json is there (and the demo is not forced), else the labelled sample
+  const realB = !S.forced && S.inputs && S.inputs.builders && Array.isArray(S.inputs.builders.agents) && S.inputs.builders.agents.length ? S.inputs.builders : null;
+  S.bdemo = !realB; S.bdoc = realB || C.resolveBuilders(S.fixture && S.fixture.builders, S.now);
+  S.builders = C.builders(S.bdoc, S.now, S.bdemo); S.hands = C.allHands(S.builders, S.bdoc, S.bdemo);
 }
 const byId = (id) => S.workers.find((w) => w.id === id) || null;
 
@@ -158,6 +162,81 @@ function renderTicker() {
   const ul = $('ticker'); clear(ul);
   if (!S.events.length) ul.appendChild(h('li', '', 'No dated events yet. Workers write theirs here when they run.'));
   for (const e of S.events) ul.appendChild(tickRow(e, shortAgo(e.t, S.now) + ' ago'));
+}
+
+// ------------------------------------------------------------------------------------------------ the Builders' camp
+const BUILDC = { working: '#8fa05a', quiet: '#4b7a99', done: '#c8a24a', job: '#b8ad98' };
+const cx2 = (x) => 180 + (x - 6.5) * 16.2, cy2 = (z) => 30 + (z - 10.6) * 17.2;
+function drawCamp(svg, mini) {
+  clear(svg);
+  const me = mini && S.floor && S.floor.ok ? S.floor.pos() : null;
+  if (mini) svg.appendChild(sv('rect', { x: 6, y: 4, width: 348, height: 242, rx: 8, fill: '#7a5f3c', stroke: '#9c6b3c', 'stroke-width': 3 }));
+  svg.appendChild(sv('ellipse', { cx: 60, cy: 236, rx: 90, ry: 20, fill: '#6f5636', opacity: 0.7 })); svg.appendChild(sv('ellipse', { cx: 300, cy: 240, rx: 110, ry: 24, fill: '#6f5636', opacity: 0.7 }));
+  svg.appendChild(sv('rect', { x: 0, y: 0, width: 360, height: 16, fill: '#a99f8d' })); svg.appendChild(sv('rect', { x: cx2(6.5) - 16, y: 0, width: 32, height: 16, fill: '#3a2c1c' }));
+  if (!mini) { svg.appendChild(sv('text', { x: cx2(6.5) + 22, y: 11.5, fill: '#1d1914', 'font-size': 9, 'font-weight': 600 }, 'Factory door')); svg.appendChild(sv('text', { x: 8, y: 11.5, fill: '#1d1914', 'font-size': 9 }, 'The factory wall')); }
+  svg.appendChild(sv('path', { d: 'M' + cx2(6.5) + ' 16 V ' + cy2(21), stroke: '#dcc391', 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.55, fill: 'none' }));
+  const fx = cx2(C.CAMP.fire.x), fy = cy2(C.CAMP.fire.z);
+  svg.appendChild(sv('circle', { cx: fx, cy: fy, r: 7, fill: '#9c6b3c' })); svg.appendChild(sv('circle', { cx: fx, cy: fy, r: 3.6, fill: '#e89a3c' }));
+  for (const b of S.builders) {
+    const x = cx2(b.x), y = cy2(b.z), sel = S.bsel === b.id;
+    const g = sv('g', mini ? {} : { role: 'button', tabindex: 0, 'data-id': b.id, 'aria-label': b.name + ': ' + C.BUILD_WORD[b.status] + '. ' + b.job + '. Open its card.' });
+    if (!mini) g.appendChild(sv('rect', { x: x - 26, y: y - 30, width: 52, height: 56, fill: 'transparent' }));
+    g.appendChild(sv('path', { d: 'M' + (x - 15) + ' ' + (y + 8) + ' L' + x + ' ' + (y - 17) + ' L' + (x + 15) + ' ' + (y + 8) + ' Z', fill: ['#e6d9bd', '#c98f6a', '#d8c9a3', '#a9b07a', '#e0cfa8'][b.i % 5], stroke: sel ? '#f3ece0' : '#7a5631', 'stroke-width': sel ? 2.5 : 1.2, 'stroke-linejoin': 'round' }));
+    g.appendChild(sv('path', { d: 'M' + (x - 3.5) + ' ' + (y + 8) + ' L' + x + ' ' + (y - 3) + ' L' + (x + 3.5) + ' ' + (y + 8) + ' Z', fill: '#3a2c1c' }));
+    g.appendChild(sv('circle', { cx: x + 13, cy: y - 14, r: 4.6, fill: BUILDC[b.status], stroke: '#1d1914', 'stroke-width': 1.3 }));
+    if (!mini) {
+      for (let c = 0; c < b.crates; c++) g.appendChild(sv('rect', { x: x - 24 + (c % 3) * 5.2, y: y + 3 - Math.floor(c / 3) * 5.2, width: 4.4, height: 4.4, rx: 0.8, fill: '#e0b060', stroke: '#7a5631', 'stroke-width': 0.6 }));   // commits today
+      g.appendChild(sv('circle', { cx: x + 20, cy: y + 5, r: 3, fill: b.status === 'working' ? '#e89a3c' : '#5a4530', stroke: '#9c6b3c', 'stroke-width': 1 }));                                                // its brazier
+      if (b.status === 'working') { g.appendChild(sv('circle', { class: 'smoke', cx: x + 20, cy: y - 2, r: 2.6, fill: '#d8cdb8' })); g.appendChild(sv('circle', { class: 'smoke s2', cx: x + 21.5, cy: y - 4, r: 2, fill: '#d8cdb8' })); }
+      g.appendChild(sv('text', { x, y: y + 20, 'text-anchor': 'middle', fill: '#f6ecd6', 'font-size': 8.6, 'font-weight': 700 }, b.name.slice(0, 13)));
+      g.addEventListener('click', () => openBuilder(b.id)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBuilder(b.id); } });
+    }
+    svg.appendChild(g);
+  }
+  if (me) { const x = cx2(me.x), y = cy2(me.z); svg.appendChild(sv('circle', { cx: x, cy: y, r: 13, fill: 'none', stroke: '#f3ece0', 'stroke-width': 2, opacity: 0.6 })); svg.appendChild(sv('path', { d: 'M0 -11 L7 8 L0 3.5 L-7 8 Z', fill: '#f3ece0', stroke: '#1d1914', 'stroke-width': 1, transform: 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + (-me.yaw * 180 / Math.PI).toFixed(0) + ')' })); }
+}
+function renderCampScroll() {
+  const el = $('campScroll'); clear(el); const L = S.builders.filter((b) => b.commits.length || b.shipped.length);
+  if (!L.length) { if (S.builders.length) el.textContent = 'No commit messages to read: ' + C.BUILD_HELP.job + '.'; return; }
+  const b = S.bsel && L.find((x) => x.id === S.bsel) || L[S.scrollI % L.length], line = b.scroll[Math.floor(S.scrollI / L.length) % b.scroll.length];
+  el.appendChild(h('b', '', b.name + ': ')); el.appendChild(document.createTextNode(line + (b.commits.length && b.mins != null ? '  (' + C.agoText(b.last, S.now) + ')' : '')));
+}
+function renderCamp() {
+  const hd = S.hands; $('handsLine').textContent = hd.line; $('campNote').textContent = hd.note + (hd.n ? ' Crates by a tent = commits today (' + hd.today + ' in all); smoke rises only from a working builder\'s brazier.' : '');
+  const p = $('campPill'); p.textContent = hd.counts.working ? hd.counts.working + ' working' : hd.n ? 'All quiet' : 'Empty'; p.className = 'pill ' + (hd.counts.working ? 'ok' : 'info');
+  drawCamp($('campMap'), false); renderCampScroll();
+  const ul = $('hands'); clear(ul);
+  if (!hd.n) ul.appendChild(h('li', 'note', 'Nobody is listed in handoff/agents_now.json.'));
+  for (const b of hd.list) {
+    const li = h('li'), bt = h('button'); bt.type = 'button'; bt.dataset.id = b.id; bt.setAttribute('aria-pressed', String(S.bsel === b.id)); bt.setAttribute('aria-label', b.name + ', ' + C.BUILD_WORD[b.status] + '. ' + b.job);
+    const l = lampSpan(b.status); l.style.marginRight = '0'; const mid = h('span'); mid.appendChild(h('span', 'nm', b.name)); mid.appendChild(h('span', 'sm', b.commits.length ? b.commits[0].text : b.job));
+    bt.appendChild(l); bt.appendChild(mid); bt.appendChild(h('span', 'pill ' + (b.status === 'working' ? 'ok' : b.status === 'done' ? 'warn' : 'info'), C.BUILD_WORD[b.status] + (b.status === 'working' || b.status === 'quiet' ? ' · ' + shortAgo(b.last, S.now) : '')));
+    bt.addEventListener('click', () => openBuilder(b.id)); li.appendChild(bt); ul.appendChild(li);
+  }
+  $('campGo').hidden = !(S.floor && S.floor.ok && S.view === '3d');
+  renderBuilder();
+}
+function renderBuilder() {
+  const b = S.bsel && S.builders.find((x) => x.id === S.bsel); $('bsheet').hidden = !b; if (!b) return;
+  $('bsheetH').textContent = b.name; const p = $('bsheetPill'); p.textContent = C.BUILD_WORD[b.status]; p.className = 'pill ' + (b.status === 'working' ? 'ok' : b.status === 'done' ? 'warn' : 'info');
+  $('bsheetJob').textContent = 'Job: ' + b.job + (b.sample ? ' (example agent)' : '');
+  $('bsheetLine').textContent = b.line + (b.live ? ' ' + b.ahead + ' commit' + (b.ahead === 1 ? '' : 's') + ' not yet in the release, ' + b.files + ' file' + (b.files === 1 ? '' : 's') + ' changed, ' + b.today + ' commit' + (b.today === 1 ? '' : 's') + ' today.' : ' Git was not readable for its branch when the site was built, so only its job line is known.');
+  const fill = (id, rows, empty, fn) => { const ul = $(id); clear(ul); if (!rows.length) ul.appendChild(h('li', '', empty)); for (const r of rows) ul.appendChild(fn(r)); };
+  fill('bsheetCommits', b.commits, b.live ? 'No commits waiting on its branch.' : 'No live activity to show.', (c) => { const li = h('li', '', c.text); li.appendChild(h('span', 'when', C.agoText(c.t, S.now) + ' · ' + C.clockText(c.t))); return li; });
+  fill('bsheetFolders', b.folders, b.live ? 'No files changed against the release.' : 'Unknown without git.', (f) => h('li', '', f.name + ': ' + f.n + ' file' + (f.n === 1 ? '' : 's')));
+  fill('bsheetShipped', b.shipped, b.live ? 'Nothing of this branch is merged into the release yet.' : 'Unknown without git.', (c) => { const li = h('li', '', c.text); if (c.t != null) li.appendChild(h('span', 'when', 'merged work · ' + C.agoText(c.t, S.now))); return li; });
+  $('bsheetWalk').hidden = !(S.floor && S.floor.ok && S.view === '3d');
+}
+function openBuilder(id, fromFloor) {
+  const b = S.builders.find((x) => x.id === id); if (!b) return;
+  S.bsel = id; renderCamp(); say(b.name + ': ' + C.BUILD_WORD[b.status] + '. ' + b.job + '. ' + b.line);
+  toView($('bsheet'), 'nearest');
+}
+function goCamp(b) {
+  if (!(S.floor && S.floor.ok)) return;
+  setFollow(''); setTour(false, true);
+  if (b) S.floor.teleport(b.x, b.z - 6.2, Math.PI); else S.floor.teleport(C.CAMP.enter.x, C.CAMP.enter.z, C.CAMP.enter.yaw);
+  say(b ? 'Standing in front of ' + b.name + '\'s tent.' : 'Out through the front door: the builders\' camp is ahead. Tap a tent.'); toView($('floorCard')); hud();
 }
 
 // ------------------------------------------------------------------------------------------------ the day replay
@@ -287,6 +366,7 @@ function renderNext() {
 function open(id, fromFloor, crate) {
   if (id === 'board' || id === 'changed') { toView($('boardCard')); return; }
   if (id === 'pipe') { toView($('pipeCard')); return; }
+  if (typeof id === 'string' && id.indexOf('camp:') === 0) { openBuilder(id.slice(5), true); return; }
   if (!byId(id)) return;
   S.sel = id; S.crate = crate == null ? -1 : crate; renderSheet(); renderWorkers(); drawPlan($('plan'), false); renderPlanSay();
   const w = byId(id); say(w.name + ': ' + C.STATUS_WORD[w.status] + '. ' + (crate != null && w.crates[crate] ? 'Crate: ' + w.crates[crate].text : w.doing));
@@ -316,13 +396,14 @@ function renderScene() {
   $('resetBtn').hidden = !in3; $('tourBtn').hidden = !in3; $('hallNow').hidden = !in3;
   $('sceneNote').textContent = in3 ? 'First person: drag to look, joystick (or arrow keys) to walk through the doors between the four halls. Tap a worker, a crate on its belt or a wall board. "Calm tour" flies you around instead.'
     : 'Plan of the four halls: each worker shows its job, its lamp and the crates on its belt. Tap one to open its card.' + (S.canTry ? ' "Walk the floor" shows the 3D factory.' : '');
-  if (f) S.floor.set(S.workers, { board: S.board, pipe: S.pipe });
+  if (f) S.floor.set(S.workers, { board: S.board, pipe: S.pipe, camp: S.builders });
+  $('campGo').hidden = !in3; $('bsheetWalk').hidden = !in3;
 }
 
 function render() {
   model();
   $('demo').hidden = !S.demo; try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
-  renderHero(); renderLegend(); renderFollow(); renderWorkers(); renderSheet(); renderTicker(); renderReplay(); renderPipe(); renderBoard(); renderNext(); renderScene();
+  renderHero(); renderLegend(); renderFollow(); renderWorkers(); renderSheet(); renderTicker(); renderCamp(); renderReplay(); renderPipe(); renderBoard(); renderNext(); renderScene();
   say(S.head.title + '. ' + S.head.line);
   S.ready = true;
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
@@ -332,8 +413,8 @@ function render() {
 // ------------------------------------------------------------------------------------------------ the optional 3D factory
 function hud() {
   if (document.hidden || S.view !== '3d' || !(S.floor && S.floor.ok)) return;
-  drawPlan($('mini'), true);
-  const p = S.floor.pos(), hl = C.HALLS.find((x) => x.id === p.hall);
+  const p = S.floor.pos(), hl = p.hall === 'camp' ? C.CAMP : C.HALLS.find((x) => x.id === p.hall);
+  if (p.hall === 'camp' && p.mode !== 'tour') { $('mini').setAttribute('viewBox', '0 0 360 250'); drawCamp($('mini'), true); } else { $('mini').setAttribute('viewBox', '0 0 360 292'); drawPlan($('mini'), true); }
   $('hallNow').textContent = p.mode === 'tour' ? 'Tour: ' + (hl ? hl.name : '') : p.mode === 'follow' ? 'Following' : hl ? hl.name : '';
   if (S.tour && p.mode !== 'tour') setTour(false, true);
 }
@@ -403,14 +484,18 @@ function wireControls() {
   $('playBtn').addEventListener('click', () => setPlaying(!S.playing));
   $('speedBtn').addEventListener('click', () => { S.speed = S.speed === 1 ? 4 : S.speed === 4 ? 16 : 1; $('speedBtn').textContent = 'Speed ' + S.speed + 'x'; if (S.playing) setPlaying(true); });
   $('failBtn').addEventListener('click', jumpFail);
+  $('campGo').addEventListener('click', () => goCamp(null));
+  $('bsheetWalk').addEventListener('click', () => goCamp(S.builders.find((x) => x.id === S.bsel)));
+  $('bsheetClose').addEventListener('click', () => { S.bsel = null; renderCamp(); });
+  if (!reduced) setInterval(() => { if (!document.hidden && S.ready) { S.scrollI++; renderCampScroll(); } }, 4500);                                  // the camp's scroll reads on
   if (!reduced) setInterval(() => { if (!document.hidden && !S.sel && S.view !== '3d' && S.ready) { S.sayI++; renderPlanSay(); } }, 6000);     // on the plan the workers take turns to speak
 }
 
 async function load() {
   const q = new URLSearchParams(location.search); S.forced = q.get('demo') === '1';
-  const [fx, queue, home, money, kalshi, cron, forge, heph] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('./queue.json'), S.forced ? null : getJSON('../home.json'), S.forced ? null : getJSON('../money/index.json'),
+  const [builders, fx, queue, home, money, kalshi, cron, forge, heph] = await Promise.all([S.forced ? null : getJSON('./builders.json'), getJSON('./fixture.json'), S.forced ? null : getJSON('./queue.json'), S.forced ? null : getJSON('../home.json'), S.forced ? null : getJSON('../money/index.json'),
     S.forced ? null : getFeed(5000), S.forced ? null : getJSON('../cronos/status.json'), S.forced ? null : getJSON('../prometheus/forge.json'), S.forced ? null : getJSON('../hephaestus/data.json')]);
-  S.fixture = fx; S.inputs = { home, money, kalshi, cron, forge, heph, queue };
+  S.fixture = fx; S.inputs = { home, money, kalshi, cron, forge, heph, queue, builders };
 }
 async function boot() {
   wireControls();
@@ -418,6 +503,6 @@ async function boot() {
   render();
   setInterval(() => { if (!document.hidden) load().then(render); }, 5 * 60 * 1000);
 }
-window.ERGASTERION = { S, C, ready: () => S.ready, render, open, setFollow, setTour, floor: () => S.floor,
+window.ERGASTERION = { S, C, ready: () => S.ready, render, open, openBuilder, goCamp, setFollow, setTour, floor: () => S.floor,
   replay: { set: (f) => { setPlaying(false); S.cur = Math.max(0, Math.min(1, f)); updateCursor(true); }, play: () => setPlaying(true), pause: () => setPlaying(false), fail: jumpFail, range: setRange } };
 boot();

@@ -14,7 +14,7 @@
 <link rel="icon" href="icon.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<!-- ERGASTERION (OLYMPUS, AGORA look, 2026-11-10): the AI agent factory where you can see, first person, what every worker is doing, and what was learned from it. Reads only published JSON (../home.json, ../money/index.json, the public kalshi.json feed, ../cronos/status.json, ../prometheus/forge.json, ../hephaestus/data.json and its own queue.json built by tools/ergasterion_build.py) and fixture.json (DEMO, never blank).
+<!-- ERGASTERION (OLYMPUS, AGORA look, 2026-11-10): the AI agent factory where you can see, first person, what every worker is doing, and what was learned from it. Outside the front door is the Builders' camp (builders.json: the build agents working right now, joined with git by the builder). Reads only published JSON (../home.json, ../money/index.json, the public kalshi.json feed, ../cronos/status.json, ../prometheus/forge.json, ../hephaestus/data.json and its own queue.json built by tools/ergasterion_build.py) and fixture.json (DEMO, never blank).
      Read only, paper only: it sends nothing and starts nothing. Text only through textContent / createElementNS. ergasterioncore.js = the pure rules (node-tested); ergasterion.js = the page; floor.js = the optional 3D floor (a separate module, so a device without WebGL keeps the flat plan). -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o4">
@@ -25,7 +25,7 @@
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/sfx.js?v=s2" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
-<link rel="stylesheet" href="ergasterion.css?v=a2">
+<link rel="stylesheet" href="ergasterion.css?v=a3">
 </head>
 <body>
 <main id="app">
@@ -72,6 +72,27 @@
     <h4>What it learned</h4><ul id="sheetLearn"></ul>
     <h4>Health</h4><p class="lead" id="sheetHealth"></p>
     <div class="acts"><button class="btn" id="sheetFollow" type="button">Follow this worker</button><button class="btn" id="sheetWalk" type="button" hidden>Walk to it</button><button class="btn" id="sheetClose" type="button">Close</button></div>
+  </section>
+
+  <section class="ag-card card camp" id="campCard" aria-labelledby="campH">
+    <div class="row"><h2 id="campH">The Builders' camp</h2><span class="pill" id="campPill">...</span></div>
+    <p class="lead" id="handsLine"></p>
+    <svg id="campMap" class="plan campmap" viewBox="0 0 360 250" role="group" aria-label="Map of the builders' camp outside the factory door: one tent for each build agent, with its status"></svg>
+    <p class="say scroll" id="campScroll"></p>
+    <div class="bar"><button class="btn" id="campGo" type="button" hidden>Walk to the camp</button></div>
+    <h3>All hands</h3>
+    <ul class="workers" id="hands"></ul>
+    <p class="note" id="campNote"></p>
+  </section>
+
+  <section class="ag-card card sheet" id="bsheet" aria-labelledby="bsheetH" hidden>
+    <div class="row"><h3 id="bsheetH">Builder</h3><span class="pill" id="bsheetPill">...</span></div>
+    <p class="lead" id="bsheetJob"></p>
+    <p class="lead" id="bsheetLine"></p>
+    <h4>Last commits</h4><ul id="bsheetCommits"></ul>
+    <h4>Folders touched</h4><ul id="bsheetFolders"></ul>
+    <h4>What it shipped</h4><ul id="bsheetShipped"></ul>
+    <div class="acts"><button class="btn" id="bsheetWalk" type="button" hidden>Walk to its tent</button><button class="btn" id="bsheetClose" type="button">Close</button></div>
   </section>
 
   <section class="ag-card card" id="replayCard" aria-labelledby="replayH">
@@ -128,7 +149,7 @@
 
   <p class="foot" id="foot">Ergasterion reads the site's own published files and sends nothing. It never starts a worker, never trades and never moves money: paper and suggestions only. A lamp is honest: green ran recently, blue is quiet, amber is old or missing data, red failed, grey is sample data. Every lesson is a sentence lifted from a file, with that file named.</p>
 </main>
-<script type="module" src="floorload.js?v=a2"></script>
-<script type="module" src="ergasterion.js?v=a2"></script>
+<script type="module" src="floorload.js?v=a3"></script>
+<script type="module" src="ergasterion.js?v=a3"></script>
 </body>
 </html>

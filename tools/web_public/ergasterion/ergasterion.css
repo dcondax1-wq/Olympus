@@ -108,3 +108,15 @@ details > summary { display: flex; align-items: center; min-height: 44px; cursor
 .next li b .rk { display: inline-block; min-width: 22px; color: var(--ag-gold); }
 .plan .hot circle.disc, .mini .hot circle.disc { stroke: #e0b060; stroke-width: 3.5; }
 @media (max-width: 350px) { .pipe { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* the Builders' camp: a desert caravan camp (sand, tents, bronze braziers), AGORA palette */
+.camp { border-color: #6e5a36; background-image: linear-gradient(180deg, rgba(201, 166, 107, .10), rgba(201, 166, 107, 0) 180px); }
+.campmap { background: linear-gradient(180deg, #5a4530, #7a5f3c 30%, #8d7044); }
+.campmap [role="button"] { cursor: pointer; }
+.scroll { border-color: #9c6b3c; background: #e9dcc0; color: #3a2c1c; border-radius: 6px; border-width: 1px 1px 1px 1px; box-shadow: 0 -4px 0 #9c6b3c inset, 0 4px 0 #9c6b3c inset; padding: 12px; }
+.scroll b { color: #7a4a2c; }
+.lamp[data-s="quiet"] { background: #4b7a99; } .lamp[data-s="done"] { background: #c8a24a; } .lamp[data-s="job"] { background: #b8ad98; }
+@keyframes ergsmoke { from { transform: translateY(0); opacity: .75; } to { transform: translateY(-9px); opacity: 0; } }
+.campmap .smoke { animation: ergsmoke 2.4s ease-out infinite; } .campmap .smoke.s2 { animation-delay: 1.2s; }
+@media (prefers-reduced-motion: reduce) { .campmap .smoke { animation: none; opacity: .6; } }
+html[data-oly-lite="1"] .campmap .smoke { animation: none; opacity: .6; }
