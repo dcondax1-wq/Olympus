@@ -419,7 +419,11 @@
     }, { passive: true });
     window.addEventListener('resize', soon, { passive: true });
     a.addEventListener('focus', function () { away(false); });
-    // the page fills in after load (data, the shell, a tab change): look again now and then, never while the tab is hidden
+    // the page fills in after load (data, the shell, a tab change): look again when the page's markup changes (at most every 200 ms)
+    // and now and then anyway (a layout that moved without new markup), never while the tab is hidden
+    var mo = 0;
+    if (window.MutationObserver && d.body) new MutationObserver(function () { if (!mo) mo = setTimeout(function () { mo = 0; if (!d.hidden) soon(); }, 200); })
+      .observe(d.body, { childList: true, subtree: true });
     setTimeout(soon, 400); setTimeout(soon, 1500);
     setInterval(function () { if (!d.hidden) soon(); }, 1600);
   }

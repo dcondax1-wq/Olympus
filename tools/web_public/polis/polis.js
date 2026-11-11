@@ -106,7 +106,7 @@
       if (!el) { el = h('a', 'spot boat'); el.setAttribute('href', '../' + s.app + '/'); world.appendChild(el); S.spots[id] = el; }
       el.setAttribute('aria-label', s.name + ' ship: ' + s.words + '. ' + s.why); el.textContent = s.name;
       var pos = s.state === 'port' ? L.berths[i] : s.state === 'returning' ? [2585, 494 + i * 6] : [L.lanes[i][0], L.lanes[i][1]];
-      var x = pos[0] * k;
+      var x = (s.state === 'port' && SK.berthX ? SK.berthX(pos[0], S.city.info().view.w) : pos[0]) * k;   // a phone spreads the berths (polis-skyline.js)
       el.style.left = Math.round(x - 40) + 'px'; el.style.top = Math.round((pos[1] + SK.PAD) * k - 64 * k) + 'px'; el.style.width = '80px'; el.style.height = Math.round(Math.max(44, 66 * k)) + 'px';
       el.setAttribute('data-state', s.state);
     }

@@ -151,6 +151,9 @@
   }
 
   // ------------------------------------------------------------------------------------------------ materials
+  // a phone frame: the moored ships stand wider apart (their berths spread round the middle berth) so they can be drawn larger; polis.js
+  // places the ships' tap targets with the same numbers (SK.berthX)
+  var BERTH_MID = 2668, BERTH_SPREAD = 1.22;
   var MAT = { marble: [236, 226, 208], marble2: [222, 210, 190], stone: [198, 180, 150], rock: [176, 152, 118], rock2: [150, 124, 94], terracotta: [178, 92, 58], tile: [160, 78, 50], plaster: [232, 218, 194],
     wood: [104, 70, 44], bronze: [156, 107, 60], gold: [214, 172, 82], olive: [96, 108, 62], olive2: [128, 136, 86], cypress: [44, 58, 40], grass: [128, 128, 72], sea: [58, 104, 136], deep: [34, 70, 100], path: [214, 196, 160], paint: [70, 98, 140], red: [150, 64, 48] };
 
@@ -804,11 +807,11 @@
         var S = st.ships[i], state = S.state || 'port', isFar = state !== 'port';
         if (isFar !== far) continue;
         var bx, by, s, lane = M.lanes[i % M.lanes.length];
-        if (state === 'port') { bx = M.berths[i][0]; by = M.berths[i][1]; s = 1; }
+        if (state === 'port') { bx = M.berths[i][0]; by = M.berths[i][1]; s = 1; if (view.w < 640) bx = BERTH_MID + (bx - BERTH_MID) * BERTH_SPREAD; }
         else if (state === 'returning') { var lt = still ? 0.5 : (t * 0.01 + i * 0.25) % 1; bx = lerp(2470, 2700, 0.5 + 0.5 * Math.sin(lt * Math.PI * 2)); by = 494 + i * 6; s = 0.82; }
         else { bx = lane[0] + (still ? 0 : Math.sin(t * 0.05 + i * 2) * 60); by = lane[1]; s = lane[2]; }
         // a phone frame (narrow view, small k): the bots' ships are drawn larger so they read at a glance (moored ships less, the berths are close)
-        if (view.w < 640) s *= state === 'port' ? 1.12 : 1.38;
+        if (view.w < 640) s *= state === 'port' ? 1.3 : 1.38;
         var factor = 1, sx = bx * k - st.pan * factor, bob = still ? 0 : Math.sin(t * 1.6 + i * 1.3) * 1.2 * s;
         if (sx < -120 || sx > view.w + 120) { S._hit = null; continue; }
         paintShip(ctx, sx, (by + PAD) * k + bob * k, s * k, S, state, i, t, still);
@@ -950,7 +953,8 @@
     return api;
   }
 
-  var API = { layout: layout, palette: palette, faces: faces, DISTRICTS: DISTRICTS, SPECIAL: SPECIAL, W: W0, H: H0, HORIZON: HORIZON, PAD: PAD, create: create, _shade: shade, _hash: hash };
+  function berthX(x, viewW) { return viewW < 640 ? BERTH_MID + (x - BERTH_MID) * BERTH_SPREAD : x; }
+  var API = { berthX: berthX, layout: layout, palette: palette, faces: faces, DISTRICTS: DISTRICTS, SPECIAL: SPECIAL, W: W0, H: H0, HORIZON: HORIZON, PAD: PAD, create: create, _shade: shade, _hash: hash };
   if (typeof module === 'object' && module.exports) module.exports = API;
   if (root) root.OLYMPUS_POLIS_SKYLINE = API;
 })(typeof self !== 'undefined' ? self : this);
