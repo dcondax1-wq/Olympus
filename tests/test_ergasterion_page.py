@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -326,6 +327,97 @@ def test_maths():
           and out["junk"][16] and out["junk"][17:] == [0, 0], out["junk"])
     check("b. the Jarvis card: Ergasterion, 'off' in demo, 3 kpis, the headline and the newest lesson, an integer t, under 8 KB", out["card"][:3] == ["Ergasterion", "off", "Demo data"] and out["card"][3] == 3 and out["card"][4] == "2" and out["card"][5] in (1, 2) and out["card"][6] and out["card"][7], out["card"])
 
+# ------------------------------------------------------------------------------------------------ LIFE on the floor (life.js, 2026-11-11 world director): the day, the events, the kits
+LIFE_HARNESS = r"""
+const url = require('url');
+Promise.all([import(url.pathToFileURL(process.argv[2]).href), import(url.pathToFileURL(process.argv[3]).href)]).then(([L, C]) => {
+  const o = {}, S = C.STATIONS, byHall = {}; S.forEach((s, i) => { (byHall[s.hall] = byHall[s.hall] || []).push(i); });
+  const who = (i) => ({ i, hall: S[i].hall, home: { x: S[i].x, z: S[i].z - 0.12 }, k: byHall[S[i].hall].indexOf(i), n: byHall[S[i].hall].length });
+  const day = (sod, opt) => S.map((s, i) => L.scheduleAt(who(i), sod, opt || {}));
+  o.clock = [L.secOfDay(Date.UTC(2026, 10, 11, 9, 33, 0), 0), L.secOfDay(Date.UTC(2026, 10, 11, 9, 33, 0), -120), L.clockWord('quiet'), L.clockWord('09:30'), L.clockWord('25:00'), L.secOfDay(L.atClock(L.QUIET))];
+  o.same = JSON.stringify(day(34380)) === JSON.stringify(day(34380)) && JSON.stringify(day(40000)) === JSON.stringify(day(40000));
+  const su = day(34380, {});                                          // 09:33: the stand-up
+  o.standup = Object.keys(byHall).map((h) => { const A = byHall[h].map((i) => su[i]); const G = L.GATHER[h]; return [h, A.filter((a) => a.act === 'speak').length, A.every((a) => a.act === 'standup' || a.act === 'speak'), Math.max(...A.map((a) => Math.hypot(a.x - G.x, a.z - G.z)))]; });
+  const sf = S.map((s, i) => L.scheduleAt(who(i), 34380, { failed: i === 12 }));
+  o.failedStays = [sf[12].act, sf[12].x === S[12].x, day(34380, { reduced: true }).every((a) => a.act === 'work' && !a.away)];
+  o.quiet = day(L.QUIET).every((a) => a.act === 'work' && !a.away);
+  // the whole day at 2 s: nobody leaves its hall or walks through another worker's spot; every worker reads its board ~48 times; a hall is never empty
+  let out = 0, through = 0, empty = 0; const visits = S.map(() => 0), prev = S.map(() => 'work');
+  for (let sod = 0; sod < 86400; sod += 2) { const D = day(sod);
+    D.forEach((a, i) => { const h = C.HALLS.find((x) => x.id === S[i].hall); if (a.x < h.x0 + 0.4 || a.x > h.x1 - 0.4 || a.z < h.z0 + 0.4 || a.z > h.z1 - 0.4) out++;
+      S.forEach((q, j) => { if (j !== i && Math.hypot(q.x - a.x, q.z - 0.12 - a.z) < 0.8) through++; }); if (a.act === 'board' && prev[i] !== 'board') visits[i]++; prev[i] = a.act; });
+    if (!(sod >= 34200 && sod < 34560)) for (const h in byHall) if (!byHall[h].some((i) => D[i].act === 'work')) empty++; }
+  o.dayWalk = [out, through, Math.min(...visits), Math.max(...visits), empty];
+  // the camp: a working builder carries a crate to the cart and walks back; quiet ones less often; done / job stay
+  const home = { x: C.CAMP_SPOTS[1].x, z: C.CAMP_SPOTS[1].z - 1.9 }, seen = new Set(); let minD = 99;
+  for (let s = 0; s < 80; s += 0.25) { const a = L.campAt(1, home, 'working', s, {}); seen.add(a.act + (a.crate ? '+crate' : '')); if (a.act === 'drop') minD = Math.min(minD, Math.hypot(a.x - L.CART.x, a.z - L.CART.z)); }
+  let quietTrips = 0; for (let s = 0; s < 300; s += 1) if (L.campAt(1, home, 'quiet', s, {}).act === 'carry') quietTrips++;
+  o.camp = [[...seen].sort().join(','), +minD.toFixed(2), quietTrips > 0 && quietTrips < 30, L.campAt(1, home, 'job', 10, {}).act, L.campAt(1, home, 'working', 10, { reduced: true }).act, L.cartCount([{ today: 3 }, { today: 30 }, { today: null }, null])];
+  const g = L.campAt(2, home, 'job', 1000 + 6, { gatherAt: 1000, n: 10 }); o.campGather = [g.act, Math.hypot(g.x - L.GATHER.camp.x, g.z - L.GATHER.camp.z) < 2.2];
+  // events: only real changes; nothing without a previous snapshot; a sample pipeline never celebrates
+  const snap0 = L.snapshot([{ id: 'lit', status: 'working' }], [{ branch: 'b1', status: 'quiet', today: 2 }], { lanes: [{ id: 'adopted', n: 3 }] }, { accounts: [{ id: 'mffu', eval: { room: 1 } }] });
+  const snap1 = L.snapshot([{ id: 'lit', status: 'failed' }], [{ branch: 'b1', status: 'done', today: 4 }], { lanes: [{ id: 'adopted', n: 4 }] }, { accounts: [{ id: 'mffu', eval: { passed: true } }] });
+  o.events = [L.diffEvents(null, snap1).length, L.diffEvents(snap0, snap1).map((e) => e.kind).join(), L.diffEvents(snap1, snap1).length, L.diffEvents(snap0, { ...snap1, sample: true }).map((e) => e.kind).includes('adopted'), L.diffEvents(snap0, snap1).filter(L.isBig).length];
+  const now = Date.parse('2026-11-11T12:00:00Z');
+  o.recent = [L.recentMerges([{ status: 'done', branch: 'x', name: 'X', shipped: [{ t: now - 10 * 60000 }] }, { status: 'done', branch: 'y', name: 'Y', shipped: [{ t: now - 90 * 60000 }] }, { status: 'done', sample: true, branch: 'z', name: 'Z', shipped: [{ t: now - 60000 }] }], now, 30).map((e) => e.who).join()];
+  // the hammer: one hit per quarter turn of 2 pi; the LOD picker: nearest first, capped, the shown one kept a little longer
+  o.hits = [L.hits(0, Math.PI / 2), L.hits(0, 2 * Math.PI), L.hits(1, 1.01) + L.hits(1.01, 1.02)];
+  o.lod = [L.nearSet([{ key: 'a', d: 3 }, { key: 'b', d: 1 }, { key: 'c', d: 9 }], 2, 4.6, []).join(), L.nearSet([{ key: 'a', d: 3 }, { key: 'b', d: 1 }], 1, 4.6, []).join(), L.nearSet([{ key: 'a', d: 5.2 }], 1, 4.6, ['a']).join(), L.nearSet([{ key: 'a', d: 5.2 }], 1, 4.6, []).length, L.nearSet(null, 2, 4).length];
+  // the optional kits: no window = nothing happens, nothing throws; a stub window gets the calls
+  o.noKit = [L.burst('sparks', { x: 1, y: 2 }, [0, 0, 0]), L.soundAt('clank', { x: 0, y: 0, z: 0 }, 'success'), L.sayLine('mind', 'hi'), L.showWork('mind', {})];
+  const calls = []; global.window = { OLYMPUS_FX: { burst: (k, at) => calls.push('burst:' + k + ':' + (at.world ? at.world.length : 0)) }, OLYMPUS: { sound: Object.assign(() => true, { at: (n) => calls.push('at:' + n) }), cue: (n) => calls.push('cue:' + n) },
+    OLYMPUS_PEOPLE: { say: (id, t, op) => calls.push('say:' + id + ':' + op.scene), show: (id, w) => calls.push('show:' + id + ':' + w.kind) } };
+  o.kit = [L.burst('sparks', { x: 1, y: 2 }, [1, 2, 3]), L.soundAt('clank', {}, 'success'), L.sayLine('mind', 'hello', { scene: 'ergasterion' }), L.showWork('mind', { kind: 'work' }), calls.join('|')];
+  global.window = { OLYMPUS_FX: { confetti: () => calls.push('confetti'), sparkleBurst: () => calls.push('sparkle') }, OLYMPUS: { cue: (n) => calls.push('cue:' + n) }, OLYMPUS_PEOPLE: { say: () => { throw new Error('x'); } } };
+  o.old = [L.burst('confetti', { x: 1, y: 2 }), L.burst('sparks', { x: 1, y: 2 }), L.soundAt('fanfare', {}, 'success'), L.soundAt('clank', {}), L.sayLine('mind', 'hi')];
+  console.log(JSON.stringify(o));
+}).catch((e) => { console.error(e && e.stack || e); process.exit(1); });
+"""
+
+
+def test_life():
+    exe = shutil.which("node")
+    if not exe:
+        check("b. node is not installed: the LIFE checks are skipped", True)
+        return
+    tmp = tempfile.mkdtemp(prefix="ag-erg-life-")
+    try:
+        life, core = os.path.join(tmp, "life.mjs"), os.path.join(tmp, "core.mjs")
+        shutil.copy(os.path.join(D, "life.js"), life)
+        shutil.copy(os.path.join(D, "ergasterioncore.js"), core)
+        h = os.path.join(tmp, "h.cjs")
+        with open(h, "w", encoding="utf-8") as fh:
+            fh.write(LIFE_HARNESS)
+        r = subprocess.run([exe, h, life, core], capture_output=True, text=True, timeout=120)
+        if r.returncode:
+            check("b. LIFE: the node harness runs", False, r.stderr[-800:])
+            return
+        o = json.loads(r.stdout)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("b. LIFE clock: 09:33 UTC is second 34380 of the day (and 2 h later two hours east), '?clock=quiet' = 10:05:20, '09:30' reads, '25:00' does not; atClock round-trips",
+          o["clock"] == [34380, 34380 + 7200, 36320, 34200, None, 36320], o["clock"])
+    check("b. LIFE is deterministic: the same clock gives the same scene, to the centimetre", o["same"])
+    check("b. LIFE 09:33 STAND-UP: in each of the four halls everyone is in the ring (<= 1.6 m from the hall's middle) and exactly ONE person speaks",
+          all(x[1] == 1 and x[2] and x[3] <= 1.6 for x in o["standup"]) and len(o["standup"]) == 4, o["standup"])
+    check("b. LIFE: a worker whose run FAILED stays slumped at its station (no stand-up for it); reduced motion = everyone stays at work", o["failedStays"] == ["work", True, True], o["failedStays"])
+    check("b. LIFE '?clock=quiet': at 10:05:20 every worker is at its own station (the moment the 3D tests use)", o["quiet"])
+    check(f"b. LIFE over a whole day (2 s steps): nobody leaves its hall ({o['dayWalk'][0]}), nobody walks through another worker's spot ({o['dayWalk'][1]}), every worker reads its queue board {o['dayWalk'][2]}-{o['dayWalk'][3]} times, and no hall is ever left with nobody at work outside the stand-up ({o['dayWalk'][4]})",
+          o["dayWalk"][0] == 0 and o["dayWalk"][1] == 0 and o["dayWalk"][2] >= 40 and o["dayWalk"][4] == 0, o["dayWalk"])
+    check("b. LIFE camp: a working builder works, carries a crate (crate in its arms) to the cart, sets it down beside it (< 1.2 m) and walks back; a quiet one carries less often; a 'job only' one and reduced motion stay at the table; the cart counts the real commits (33, 24 shown)",
+          o["camp"][0] == "carry+crate,drop,walk,work" and o["camp"][1] < 1.2 and o["camp"][2] and o["camp"][3] == "work" and o["camp"][4] == "work" and o["camp"][5] == {"n": 33, "shown": 24}, o["camp"])
+    check("b. LIFE camp gathering: for a big number the builders gather round the fire and cheer", o["campGather"] == ["cheer", True], o["campGather"])
+    check("b. LIFE events from real data only: no previous snapshot = nothing; a failed run, a merge, new commits, a new adopted run and a passed eval are found; the same snapshot twice = nothing; a SAMPLE pipeline never celebrates an adopted run; 2 big numbers",
+          o["events"] == [0, "fail,merge,commit,adopted,eval", 0, False, 2], o["events"])
+    check("b. LIFE: a fresh merge (10 min ago) is cheered on the first visit, an old one (90 min) and a sample one are not", o["recent"] == ["x"], o["recent"])
+    check("b. LIFE hammer: one blow (sparks + clank) per quarter turn, none in between; the near-figure picker takes the nearest within 4.6 m, honours the cap and keeps a shown figure a little longer",
+          o["hits"] == [1, 4, 0] and o["lod"] == ["b,a", "b", "a", 0, 0], (o["hits"], o["lod"]))
+    check("b. LIFE kits are optional: with no window nothing is called and nothing throws", o["noKit"] == [False, False, False, False], o["noKit"])
+    check("b. LIFE with the new kits: fx.burst('sparks', {x, y, world}), OLYMPUS.sound.at('clank'), OLYMPUS_PEOPLE.say(id, text, {scene}) and show(id, {kind}) are each called once",
+          o["kit"][:4] == ["burst", "at", True, True] and o["kit"][4] == "burst:sparks:3|at:clank|say:mind:ergasterion|show:mind:work", o["kit"])
+    check("b. LIFE with today's kits: confetti -> FX.confetti, sparks -> FX.sparkleBurst, a big moment -> the 'success' cue, a clank without sound.at -> silence, a say() that throws -> our own bubble",
+          o["old"] == ["confetti", "sparkleBurst", "cue", False, False], o["old"])
+
 
 def test_page():
     try:
@@ -497,7 +589,7 @@ def test_page():
 
             # 3D factory: pick, walk, walls, follow, tour, budget (only when the machine can draw it; ERG_NO3D=1 skips it when 3D is impossible)
             ctx, p, errs, seen, off = AK.page(br, origin)
-            AK.open_app(p, origin, APP, "?demo=1&q=high" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
             p.wait_for_timeout(2500)
             mode = p.evaluate("() => window.ERGASTERION.floor() ? '3d' : 'plan'")
             if no3d:
@@ -688,7 +780,7 @@ def test_page():
 
             # reduced motion with 3D: still, no error
             ctx, p, errs, seen, off = AK.page(br, origin, reduced=True)
-            AK.open_app(p, origin, APP, "?demo=1&q=high" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
             p.wait_for_timeout(1500)
             mode = p.evaluate("() => window.ERGASTERION.floor() ? '3d' : 'plan'")
             if mode == "3d":
@@ -709,6 +801,7 @@ def test_page():
 if __name__ == "__main__":
     test_static()
     test_maths()
+    test_life()
     if "--static" not in sys.argv:
         test_page()
     AK.finish()

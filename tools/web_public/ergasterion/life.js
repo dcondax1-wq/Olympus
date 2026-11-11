@@ -26,6 +26,11 @@ const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const TAU = Math.PI * 2;
 export const yawTo = (a, b) => Math.atan2(b.x - a.x, b.z - a.z);         // the floor's figures face +z at yaw 0
 export function smooth(u) { const x = Math.max(0, Math.min(1, u)); return x * x * (3 - 2 * x); }
+/** a moment when everyone is at work at its station (10:05:20; repeats every 30 minutes until the evening): the page's ?clock=quiet, tests and screenshots */
+export const QUIET = 10 * 3600 + 5 * 60 + 20;
+/** the clock time (ms) of second-of-day sod on the local day of baseMs; '?clock=' words: 'quiet', 'standup' or 'HH:MM' -> seconds of day (null when unreadable) */
+export function atClock(sod, baseMs) { const d = new Date(num(baseMs) != null ? baseMs : Date.now()); d.setHours(0, 0, 0, 0); return d.getTime() + Math.round(sod * 1000); }
+export function clockWord(w) { const s = String(w || '').trim().toLowerCase(); if (s === 'quiet') return QUIET; if (s === 'standup') return STANDUP.at * 60 + 150; const m = /^(\d{1,2}):(\d{2})$/.exec(s); return m && +m[1] < 24 && +m[2] < 60 ? +m[1] * 3600 + +m[2] * 60 : null; }
 /** seconds after local midnight; tzMin = minutes WEST of UTC (Date#getTimezoneOffset), defaults to the clock's own zone */
 export function secOfDay(ms, tzMin) {
   const t = num(ms); if (t == null) return 0;

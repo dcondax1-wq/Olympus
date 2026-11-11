@@ -510,16 +510,12 @@ function render() {
 }
 
 // ------------------------------------------------------------------------------------------------ the floor reacts to real events (life.js)
-// The snapshot of the last load is kept (memory + localStorage 'olympus.erg.snap.v1'); what changed since (a merge, a failed run, new commits, a new adopted run, an eval passed)
-// makes the 3D floor cheer, slump or gather. The demo never celebrates. A fresh merge (last 30 min) is cheered once on the first visit.
-const SNAP_KEY = 'olympus.erg.snap.v1';
+// The snapshot of the last load is kept in memory; what changed since (a merge, a failed run, new commits, a new adopted run, an eval passed) makes the 3D floor
+// cheer, slump or gather. The demo never celebrates. A fresh merge (last 30 min) is cheered once when the page opens. Nothing is stored in the browser.
 function lifeEvents() {
-  const snap = Life.snapshot(S.workers, S.builders, S.pipe, S.inp && S.inp.home);
-  let prev = S.snap || null; if (!prev) { try { prev = JSON.parse(localStorage.getItem(SNAP_KEY) || 'null'); } catch (_) { prev = null; } }
-  let ev = S.demo || S.bdemo ? [] : Life.diffEvents(prev, snap);
-  if (!prev && !S.bdemo) ev = Life.recentMerges(S.builders, S.now, 30);
-  S.snap = snap; if (!S.demo) { try { localStorage.setItem(SNAP_KEY, JSON.stringify(snap)); } catch (_) { /* private mode: memory only */ } }
-  S.lifeEv = ev;
+  const snap = Life.snapshot(S.demo ? [] : S.workers, S.bdemo ? [] : S.builders, S.demo ? null : S.pipe, S.demo ? null : S.inp && S.inp.home), prev = S.snap || null;   // example data never counts
+  const ev = prev ? Life.diffEvents(prev, snap) : S.bdemo ? [] : Life.recentMerges(S.builders, S.now, 30);
+  S.snap = snap; S.lifeEv = ev;
   if (ev.length) { say(ev.map((e) => e.text).slice(0, 3).join('. ') + '.'); S.pendingEv = ev; }
   flushEvents();
 }
@@ -545,6 +541,7 @@ function mountFloor() {
   const fl = M.createFloor($('floor3d'), { reduced, stations: C.STATIONS, onPick: (id, crate) => { open(id, true, crate); if (crate == null && byId(id)) talk('w:' + id); else if (typeof id === 'string' && id.indexOf('camp:') === 0) talk('b:' + id.slice(5)); } });
   if (!fl || !fl.ok) { $('stage').hidden = true; S.floor = null; S.why = fl && fl.reason; return false; }
   S.floor = fl; S.view = '3d';
+  { const cw = Life.clockWord(new URLSearchParams(location.search).get('clock')); if (cw != null && fl.clock) fl.clock(Life.atClock(cw), false); }   // ?clock=quiet | standup | HH:MM: a fixed moment of the day (tests, screenshots)
   S.stopMini = setInterval(hud, 250);
   setTimeout(flushEvents, 600);
   return true;
