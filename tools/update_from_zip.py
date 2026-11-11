@@ -214,16 +214,18 @@ def find_zip(folder: str, given: str | None) -> str | None:
 
 
 def expected_sha(zip_path: str) -> tuple[str | None, str | None]:
-    """(sha, file) from a *.sha256.txt next to the zip whose line names it ("<sha>  <name>  <size> MB", tools/make_backup.py)."""
+    """(sha, file) from a *.sha256*.txt next to the zip whose line names it ("<sha>  <name>  <size> MB", tools/make_backup.py).
+    A browser's second download is "name (1).zip" / "name.sha256 (1).txt": the " (1)" is ignored on both."""
     d, base = os.path.dirname(os.path.abspath(zip_path)), os.path.basename(zip_path)
-    first = os.path.join(d, base[:-4] + ".sha256.txt")
-    cands = ([first] if os.path.isfile(first) else []) + sorted(p for p in glob.glob(os.path.join(d, "*.sha256.txt")) if p != first)
+    plain = re.sub(r" \(\d+\)(?=\.zip$)", "", base, flags=re.I)
+    first = os.path.join(d, plain[:-4] + ".sha256.txt")
+    cands = ([first] if os.path.isfile(first) else []) + sorted(p for p in glob.glob(os.path.join(d, "*.sha256*.txt")) if p != first)
     for p in cands:
         try:
             with open(p, encoding="utf-8-sig", errors="replace") as fh:
                 for ln in fh:
                     m = re.match(r"^\s*([0-9a-fA-F]{64})\s+\*?(\S.*?)\s*$", ln)
-                    if m and (m.group(2) == base or m.group(2).startswith(base + " ")):
+                    if m and any(m.group(2) == n or m.group(2).startswith(n + " ") for n in (base, plain)):
                         return m.group(1).lower(), p
         except OSError:
             continue

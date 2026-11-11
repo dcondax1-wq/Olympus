@@ -354,6 +354,17 @@ def test_flows():
         check("3. a zip with no .sha256.txt next to it: applied, and line 1 says honestly 'SHA-256 not checked'", rc == 0 and "SHA-256 not checked (no .sha256.txt next to it)" in out and rb(os.path.join(bot, "engine", "lit.py")) == b"VERSION = 'newer'\n", out)
         check("3. backups are kept (at most 5) inside the bot folder's own gitignored backups folder", 1 <= len(os.listdir(os.path.join(bot, "backups", "update_from_zip"))) <= 5 and U.matches("backups/update_from_zip/x/manifest.json", U.ignore_patterns(GITIGNORE)))
 
+        # ---- a second download: "name (1).zip" next to "name.sha256 (1).txt"
+        d3 = os.path.join(base, "dl3")
+        z3 = make_zip(base, name="OLYMPUS_BACKUP_2026-11-14_twice00.zip", files={**ZIP_FILES, "engine/lit.py": "VERSION = 'twice'\n"}, where=d3)
+        os.rename(z3, z3[:-4] + " (1).zip")
+        os.rename(z3[:-4] + ".sha256.txt", z3[:-4] + ".sha256 (1).txt")
+        rc, out = run([z3[:-4] + " (1).zip", "--folder", bot, "--dry-run"], home, port)
+        check("3. a second download named '... (1).zip' with '....sha256 (1).txt': the SHA-256 is still found and checked", rc == 0 and "twice00 (1).zip  (SHA-256 OK)" in out, out)
+        wr(z3[:-4] + ".sha256 (1).txt", f"{'1' * 64}  OLYMPUS_BACKUP_2026-11-14_twice00.zip  0.1 MB\n")
+        rc, out = run([z3[:-4] + " (1).zip", "--folder", bot, "--dry-run"], home, port)
+        check("3. ...and a wrong one there is still refused (exit 3)", rc == 3 and "SHA-256 does NOT match" in out, out)
+
         # ---- the .bat's first-run line: take the updater out of the zip
         bat = rb(os.path.join(ROOT, "UPDATE_FROM_ZIP.bat")).decode("ascii")
         m = re.search(r'-c "([^"]+)" "%TOOL%" "%CD%" %ARGS%', bat)
