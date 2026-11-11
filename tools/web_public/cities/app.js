@@ -259,6 +259,7 @@ function hubFilter(match) {          // match(spec) -> bool; null clears
 }
 
 function openFind(initialGroup = '') {
+  if (typeof initialGroup !== 'string') initialGroup = '';       // the Find button hands over its click event: that is not a district (it used to list 0 cities)
   openSheet('find', 'Find a city', (b) => {
     const inp = el('input'); inp.type = 'search'; inp.placeholder = `Search ${S.specs.length} cities, data, landmarks`; inp.setAttribute('aria-label', 'Search cities');
     const seg = el('div', 'seg'), seg2 = el('div', 'seg'), list = el('ul', 'list');
@@ -778,7 +779,7 @@ function setDock() {
   const T = (id, label, icon, fn, view) => { const b = tab(id, label, icon, fn); if (view) b.dataset.view = view; dock.append(b); return b; };
   if (S.mode === 'hub') {
     T('tourB', 'Tour', ICON.tour, () => (S.tour ? stopTour() : startTour()));
-    T('findB', 'Find', ICON.find, openFind, 'find');
+    T('findB', 'Find', ICON.find, () => openFind(), 'find');
     T('surpriseB', 'Surprise me', ICON.surprise, surpriseHub);
     T('diceB', 'Random city', ICON.dice, () => enterRandom());
     T('todayB', 'Today', ICON.today, openToday, 'today');

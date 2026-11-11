@@ -59,3 +59,6 @@ input[type=search]{background:#14110e;border-color:#3a3228}
 
 /* phone-fit 2026-11-10 (clipped text on a 320 px screen: wrap instead of cutting) */
 .top h1 { flex: 0 1 auto; min-width: 0; overflow: visible; white-space: normal; }
+
+/* phone-fit 2026-11-11: on a phone held sideways (390 px tall) the mini map sat a few px inside Jarvis's corner (bottom-right 80 x 160 px): it moves left of that column */
+@media (orientation:landscape) and (max-height:520px){.mini{right:calc(92px + var(--sr))}}

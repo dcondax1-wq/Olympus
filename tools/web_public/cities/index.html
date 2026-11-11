@@ -224,7 +224,7 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
 @media (max-width:360px){body[data-mode=city] .mini{width:96px;height:96px}}
 </style>
 <link rel="stylesheet" href="./world.css?v=w2">
-<link rel="stylesheet" href="./agora-cities.css?v=g2">
+<link rel="stylesheet" href="./agora-cities.css?v=g3">
 </head>
 <body data-mode="hub" data-ready="false">
 <canvas id="amap" aria-label="The Olympus archipelago: six district islands with 173 cities. Tap a city to open it, or use Find."></canvas>
@@ -298,7 +298,7 @@ async function recover() {
 }
 // Module import settles before its asynchronous boot does. Watch readiness itself.
 setTimeout(recover, 18000);
-import('./app.js?v=o21').catch(recover);
+import('./app.js?v=o22').catch(recover);
 </script>
 <script type="module" src="./athens-entry.js?v=t3"></script>
 <script type="module" src="./hellas-entry.js?v=h1"></script>

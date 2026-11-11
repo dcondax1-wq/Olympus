@@ -257,3 +257,15 @@ html[data-noscene] .city-insights { display:none; }
 }
 /* short phones (375 x 667): the top controls scroll above the dock instead of sliding under it, so every control can be tapped */
 @media (max-height: 740px) { html:not([data-noscene]) #ui { bottom: calc(var(--sb) + 12px + 112px + 8px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; } }
+
+/* phone-fit 2026-11-11 (layout only): every control is at least 44 px wide on a 390 and a 320 px iPhone.
+   The six view buttons slide sideways inside the dock instead of being squeezed to 38 px; the four camera buttons sit 4 px apart on a 320 px screen;
+   the two round top buttons stay 44 px; the bot's live line is a clean one-line clamp (the whole line when the card is expanded). */
+.dock .pills { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: none; }
+.dock .pills::-webkit-scrollbar { display: none; }
+.dock .pills button { flex: 1 0 auto; min-width: 52px; padding-left: 8px; padding-right: 8px; }
+.dock .cams button { min-width: 44px; }
+@media (max-width: 350px) { .help-btn { width: 44px; height: 44px; } .dock .cams { gap: 4px; } }
+.verdict .live { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; text-overflow: clip; overflow-wrap: anywhere; }   /* one line as before (a taller card pushed the chips under the sheet); tap the card for all of it */
+.verdict.expanded .live { -webkit-line-clamp: 6; }
+.verdict .live[hidden] { display: none; }

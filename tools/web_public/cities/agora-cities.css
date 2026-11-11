@@ -90,3 +90,5 @@ background:rgba(24,19,14,.9);border:1px solid rgba(200,162,74,.6);color:#f3ece0;
 @media (orientation:landscape) and (max-height:520px){.maphint{display:none}
   /* the mini map stays above Jarvis's orb corner (bottom-right 160 px) on a 390 px tall screen */
   body[data-mode=city] .mini{width:92px;height:92px;top:calc(var(--top-h) + 56px + var(--st))}}
+/* phone-fit 2026-11-11: on a 320 px iPhone the title wraps onto two lines instead of being cut (layout only) */
+@media (max-width:360px){.top h1,body[data-mode=city] .top h1{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-size:18px;line-height:1.12}}

@@ -1,6 +1,6 @@
 {
  "v": 2,
- "asof": "2026-11-10",
+ "asof": "2026-11-11",
  "note": "Built from handoff/QUEUE.md, research/writeups, research/runs, the Archive index, the Mind's proposals and git (when present) by tools/ergasterion_build.py. Plain text only; nothing here is a trade.",
  "queue": {
   "total": 67,
@@ -190,8 +190,15 @@
   ]
  },
  "writeups": {
-  "count": 145,
+  "count": 146,
   "latest": [
+   {
+    "date": "2026-11-11",
+    "title": "Kalshi edge, team C (weather, economics, daily index, other daily series): NO EDGE FOUND",
+    "status": "rejected",
+    "summary": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
+    "file": "research/writeups/kalshi_edge_C.md"
+   },
    {
     "date": "2026-11-10",
     "title": "Kalshi edge, team B (structure and behaviour): NO EDGE FOUND",
@@ -268,17 +275,16 @@
     "status": "rejected",
     "summary": "The owner's TikTok \"it likes moves\" tree, built our own way on real CME NQ1! bars. 80 root rules (prior-day, overnight, Asia, London and opening-range highs and lows; fade after a sweep or trade the break; 1R / 2R; 60 /…",
     "file": "research/writeups/2026-11-03-strategy-tree.md"
-   },
-   {
-    "date": "2026-11-03",
-    "title": "How much slippage each bot survives (2026-11-03 night) - Zlarior barely notices it in 2026, ATLAS holds to +4…",
-    "status": "info",
-    "summary": "ATLAS's 2021-25 edge holds to +4 ticks (PF 1.09 - 1.02) and is gone at +8.",
-    "file": "research/writeups/2026-11-03-slippage.md"
    }
   ]
  },
  "rejected": [
+  {
+   "date": "2026-11-11",
+   "title": "Kalshi edge, team C (weather, economics, daily index, other daily series): NO EDGE FOUND",
+   "file": "research/writeups/kalshi_edge_C.md",
+   "summary": "No edge found. None of them beat the noise bar on the training data, so none was carried forward."
+  },
   {
    "date": "2026-11-10",
    "title": "Kalshi edge, team B (structure and behaviour): NO EDGE FOUND",
@@ -344,12 +350,6 @@
    "title": "ATLAS funded 25K - one trade a day (2026-10-31) - fewer trades on the funded account pays the owner LESS; the…",
    "file": "research/writeups/atlas-funded-one-a-day-2026-10-31.md",
    "summary": "Eval unchanged (today's ATLAS), so only the whole-slot money can move (tools/atx_edge.slot - eval - funded - MFFU payouts - a new $63 eval, 300 paths x 126 sessions)."
-  },
-  {
-   "date": "2026-10-30",
-   "title": "Discretion score for ATLAS and BLITZ (2026-10-30) - judging each trade before entry and sizing the good ones…",
-   "file": "research/writeups/discretion-score-2026-10-30.md",
-   "summary": "A combined pre-trade quality score (6 facts known at entry each - break strength, the day's range so far, VIX, the day's signal count, room to the next untaken liquidity pool, 15m market structure for BLITZ; stop size i…"
   }
  ],
  "rejected_ref": [
@@ -369,6 +369,13 @@
   "BLITZ on its own 25K, \"like a person\" (2026-10-29, blitz-25k.md, tools/blitz25k_.py, runs blitz25k_, pick"
  ],
  "learnings": [
+  {
+   "d": "2026-11-11",
+   "who": "kalshi",
+   "text": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
+   "src": "research/writeups/kalshi_edge_C.md",
+   "kind": "rejected"
+  },
   {
    "d": "2026-11-10",
    "who": "kalshi",
@@ -851,25 +858,22 @@
    "text": "The owner asked whether EMA, MACD, support/resistance and supply/demand strategies make money on their own, separate from LIT. 13,320 versions (8,636 with different trades) were tested as standalone NQ strategies on rea…",
    "src": "research/writeups/retail-standalone.md",
    "kind": "finding"
-  },
-  {
-   "d": "2026-10-22",
-   "who": "lit",
-   "text": "The owner asked for more LIT trades (\"entries all the time, not one window\"), at least 3 a week, adding money in both 2026 halves without more MFFU eval fails. 498 variants on the exact live LIT with today's upgrades on…",
-   "src": "research/writeups/lit-more-entries.md",
-   "kind": "rejected"
   }
  ],
  "lessons": [
   {
-   "text": "None gives an edge that survives fees, a held-out block and a second asset.",
+   "text": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
    "cat": "Kalshi",
    "who": "kalshi",
-   "d": "2026-11-10",
+   "d": "2026-11-11",
    "kind": "rejected",
-   "strength": 2,
-   "merged": 1,
+   "strength": 3,
+   "merged": 2,
    "sources": [
+    {
+     "src": "research/writeups/kalshi_edge_C.md",
+     "d": "2026-11-11"
+    },
     {
      "src": "research/writeups/kalshi_edge_B.md",
      "d": "2026-11-10"
@@ -881,14 +885,18 @@
    ]
   },
   {
-   "text": "No edge found. Out of the 38 cells that were big enough to test (and 7 pre-written textbook ideas), none beat the noise on training data, and none is positive with a confidence interval above zero on the held-out last 14 days.",
+   "text": "None gives an edge that survives fees, a held-out block and a second asset.",
    "cat": "Kalshi",
    "who": "kalshi",
    "d": "2026-11-10",
    "kind": "rejected",
-   "strength": 2,
+   "strength": 3,
    "merged": 1,
    "sources": [
+    {
+     "src": "research/writeups/kalshi_edge_C.md",
+     "d": "2026-11-11"
+    },
     {
      "src": "research/writeups/kalshi_edge_B.md",
      "d": "2026-11-10"
@@ -1897,6 +1905,14 @@
   }
  ],
  "events": [
+  {
+   "t": 1794398400,
+   "who": "kalshi",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up (rejected): Kalshi edge, team C (weather, economics, daily index, other daily series): NO EDGE FOUND",
+   "src": "research/writeups/kalshi_edge_C.md"
+  },
   {
    "t": 1794312000,
    "who": "kalshi",
@@ -3986,49 +4002,49 @@
   {
    "name": "CBOE_vol_1d.csv",
    "last": "2026-09-17",
-   "days": 54,
+   "days": 55,
    "file": "data/CBOE_vol_1d.csv"
   },
   {
    "name": "ES_15m.csv",
    "last": "2026-10-16",
-   "days": 25,
+   "days": 26,
    "file": "data/ES_15m.csv"
   },
   {
    "name": "ES_1d.csv",
    "last": "2026-10-16",
-   "days": 25,
+   "days": 26,
    "file": "data/ES_1d.csv"
   },
   {
    "name": "ES_1h.csv",
    "last": "2026-10-16",
-   "days": 25,
+   "days": 26,
    "file": "data/ES_1h.csv"
   },
   {
    "name": "ES_5m.csv",
    "last": "2026-10-16",
-   "days": 25,
+   "days": 26,
    "file": "data/ES_5m.csv"
   },
   {
    "name": "GEX_1d.csv",
    "last": "2026-10-16",
-   "days": 25,
+   "days": 26,
    "file": "data/GEX_1d.csv"
   },
   {
    "name": "NQ_15m.csv",
    "last": "2026-10-16",
-   "days": 25,
+   "days": 26,
    "file": "data/NQ_15m.csv"
   },
   {
    "name": "NQ_1d.csv",
    "last": "2026-10-16",
-   "days": 25,
+   "days": 26,
    "file": "data/NQ_1d.csv"
   }
  ],
@@ -4085,166 +4101,166 @@
   "available": true,
   "commits": [
    {
-    "t": 1794359313,
-    "s": "Merge branch 'agora-release' into worktree-agent-a1d36b031da943214"
+    "t": 1794375503,
+    "s": "Wire The Herald: build step, worker v84, catalogue refresh"
    },
    {
-    "t": 1794359239,
-    "s": "handoff/agents_now.json: the build agents and their jobs (for Ergasterion's builders hall)"
+    "t": 1794375433,
+    "s": "Merge The Olympus Herald"
    },
    {
-    "t": 1794358864,
-    "s": "Ergasterion v2: tour starts over the Library"
+    "t": 1794375382,
+    "s": "Pinakes: catalogue rebuilt with the Herald's tables"
    },
    {
-    "t": 1794358852,
-    "s": "Ergasterion v2: dusk sky, wheel beside the worker, calmer tags and signs, higher tour"
+    "t": 1794374754,
+    "s": "Herald: tell the kit the page is ready (O.ready) so a late optional script can never show a load failure"
    },
    {
-    "t": 1794358550,
-    "s": "Ergasterion v2: Library stations nearer the entrance sightline, wider first-person view, walk-to distance"
+    "t": 1794374510,
+    "s": "Worker v83 for Hellas"
    },
    {
-    "t": 1794358454,
-    "s": "Ergasterion v2: wiring note for the lead (no new build line; lessons.json rides on the existing one)"
+    "t": 1794374500,
+    "s": "Merge Hellas: 315 cities, desert of rejected ideas, people"
    },
    {
-    "t": 1794358437,
-    "s": "Ergasterion v2 step 4: tests rewritten for v2 (builder, halls/walls/doors, replay, pipeline, learning board,…"
+    "t": 1794374138,
+    "s": "Wire Symposium + People kit: icons, people_build step, worker v82"
    },
    {
-    "t": 1794357983,
-    "s": "Ergasterion v2 step 3 (WIP): 3D factory rewritten (4 halls, doors, job figures, bubbles, crates, boards, tour…"
+    "t": 1794374057,
+    "s": "Merge People of Olympus kit + Symposium"
    },
    {
-    "t": 1794357453,
-    "s": "Ergasterion v2 step 2 (WIP): core has 4 halls with doors and wall collision, worker jobs, speech bubbles, cra…"
+    "t": 1794373315,
+    "s": "Herald test: no load-failure toast when the people kit is missing"
    },
    {
-    "t": 1794357171,
-    "s": "Ergasterion v2 step 1: builder emits a dated event stream, distilled lessons (dedupe + strength), what change…"
+    "t": 1794373305,
+    "s": "Herald: the optional people kit is added after the first paint (a missing people.js is no longer a load failu…"
    },
    {
-    "t": 1794356326,
-    "s": "Night brief round 3"
+    "t": 1794373221,
+    "s": "Sync pinned OTHER_APPS in zenith test"
    },
    {
-    "t": 1794332272,
-    "s": "Worker v78"
+    "t": 1794373071,
+    "s": "tests: Hellas screenshots retry once and never abort the run (a picture is evidence, not a check)"
    },
    {
-    "t": 1794329229,
-    "s": "tests: Kalshi readers' site-first fetch pinned (ledger, kalshicity, kalshi page)"
+    "t": 1794372831,
+    "s": "Wire NQ + Jarvis brain v3: worker le-public-v81 / jarvis-v31, jarvis facts+search build step, update-from-zip…"
    },
    {
-    "t": 1794328781,
-    "s": "tyche test: pins follow the site-first feed read"
+    "t": 1794372638,
+    "s": "Merge theme finisher: one AGORA look, warm accent per app"
    },
    {
-    "t": 1794328159,
-    "s": "docs: HOSTING_OPTIONS"
+    "t": 1794372631,
+    "s": "Herald: Home Screen icons"
    },
    {
-    "t": 1794328141,
-    "s": "pc_publish: netlify accepts work kwarg"
+    "t": 1794372602,
+    "s": "Merge branch 'worktree-agent-aa29a7ded798881ae' into agora-release"
    },
    {
-    "t": 1794328120,
-    "s": "pc_publish: scp provider, kalshi.json from site feed / default folder; tests"
+    "t": 1794372594,
+    "s": "Merge NQ page + update-from-zip kit"
    },
    {
-    "t": 1794328102,
-    "s": "Kalshi feed: pages read the same-origin ../kalshi.json first, GitHub raw as fallback"
+    "t": 1794372592,
+    "s": "docs/AGORA_AUDIT.md: the one-theme pass, per-app table (before / after / test / baseline), accent table, rend…"
    },
    {
-    "t": 1794327276,
-    "s": "Jarvis: planner actions on Planner v2 (event, plan today), window.JARVIS_API for the home"
+    "t": 1794372589,
+    "s": "Merge branch 'worktree-agent-ab25b5ae6ac17c255' into agora-release"
    },
    {
-    "t": 1794327136,
-    "s": "Merge branch 'worktree-agent-a1351957c8298b0e0' into agora-release"
+    "t": 1794372587,
+    "s": "docs: Hellas wiring notes for the lead"
    },
    {
-    "t": 1794327133,
-    "s": "Wire Jarvis offline cache for brain + home (v30), cross-app core files"
+    "t": 1794372584,
+    "s": "Symposium hall: camera aims past the centre so the faces across the table read larger"
    },
    {
-    "t": 1794327095,
-    "s": "Kalshi edge team A: calibration walk-forward on public market quotes, no edge found"
+    "t": 1794372571,
+    "s": "People: load the shared People kit and its 3D look lazily (optional, at most 1.5 s, never throws) in Hellas a…"
    },
    {
-    "t": 1794327088,
-    "s": "Merge branch 'worktree-agent-a6e002b939ee7ee1c' into agora-release"
+    "t": 1794372566,
+    "s": "Kalshi edge C: final results, no edge found; writeup and edge_rules_C.json"
    },
    {
-    "t": 1794327064,
-    "s": "Jarvis home AGORA: test fixes, ring max 4, long-scroll to System panel, before/after screenshots"
+    "t": 1794372518,
+    "s": "Merge branch 'worktree-agent-a1d36b031da943214' into agora-release"
    },
    {
-    "t": 1794326812,
-    "s": "Worker v76 for the v6 build"
+    "t": 1794372511,
+    "s": "Kalshi edge C: other-series + econ descriptive results"
    }
   ],
   "branches": [
    {
-    "name": "worktree-agent-ab25b5ae6ac17c255",
-    "t": 1794359539,
-    "s": "Jarvis brain v3: 'what are the agents working on' (ergasterion/builders.json, else the bundled jarv…"
-   },
-   {
-    "name": "worktree-agent-a802da4078c305b1b",
-    "t": 1794359351,
-    "s": "Merge branch 'agora-release' into worktree-agent-a802da4078c305b1b"
+    "name": "worktree-agent-a9fa9fcc5a553e79b",
+    "t": 1794376609,
+    "s": "RELEASE_CHECK: the veil and intro rules, own temp folder, expected warnings"
    },
    {
     "name": "worktree-agent-aa54c21090a103d33",
-    "t": 1794359350,
-    "s": "Data City test: the City menu has 10 doors (All districts was added to the app)"
-   },
-   {
-    "name": "worktree-agent-aa29a7ded798881ae",
-    "t": 1794359348,
-    "s": "Kalshi edge C: more weather snapshots, resumable harvest script"
-   },
-   {
-    "name": "worktree-agent-a1d36b031da943214",
-    "t": 1794359313,
-    "s": "Merge branch 'agora-release' into worktree-agent-a1d36b031da943214"
-   },
-   {
-    "name": "worktree-agent-a545b014870ea708c",
-    "t": 1794358975,
-    "s": "update_from_zip: SHA-256 still checked for a second download ('name (1).zip' / '.sha256 (1).txt');…"
-   },
-   {
-    "name": "worktree-agent-afc68d30fdf5b4f1b",
-    "t": 1794358811,
-    "s": "Pinakes: Home Screen icons"
-   },
-   {
-    "name": "worktree-agent-a9fa9fcc5a553e79b",
-    "t": 1794358646,
-    "s": "Colosseum arena: larger champions, closer camera, stepped tier tones, terracotta podium wall, riche…"
+    "t": 1794376596,
+    "s": "QA_NIGHT Round 3: final numbers (datacity 193/194, kalshicity and nemesis open with the evidence)"
    },
    {
     "name": "worktree-agent-a43a2daec19cf8666",
-    "t": 1794358595,
-    "s": "tests: test_jarvis_home_v2 (browser: first screen at three sizes, no overlap, orb hint once, states…"
+    "t": 1794376350,
+    "s": "Jarvis home v2: numbers in the timeline and project cards wrap on a 320 px phone"
+   },
+   {
+    "name": "worktree-agent-afc68d30fdf5b4f1b",
+    "t": 1794375382,
+    "s": "Pinakes: catalogue rebuilt with the Herald's tables"
+   },
+   {
+    "name": "worktree-agent-a802da4078c305b1b",
+    "t": 1794373071,
+    "s": "tests: Hellas screenshots retry once and never abort the run (a picture is evidence, not a check)"
    },
    {
     "name": "worktree-agent-a8fa04fb59e01df25",
-    "t": 1794357374,
-    "s": "Jarvis portal: bronze fallback colour"
+    "t": 1794372592,
+    "s": "docs/AGORA_AUDIT.md: the one-theme pass, per-app table (before / after / test / baseline), accent t…"
+   },
+   {
+    "name": "worktree-agent-a72393bf3d5806f36",
+    "t": 1794372584,
+    "s": "Symposium hall: camera aims past the centre so the faces across the table read larger"
+   },
+   {
+    "name": "worktree-agent-aa29a7ded798881ae",
+    "t": 1794372566,
+    "s": "Kalshi edge C: final results, no edge found; writeup and edge_rules_C.json"
+   },
+   {
+    "name": "worktree-agent-a1d36b031da943214",
+    "t": 1794365040,
+    "s": "Ergasterion tests: Talk prompt checked from the queue's west side, facing compared modulo a turn"
+   },
+   {
+    "name": "worktree-agent-ab25b5ae6ac17c255",
+    "t": 1794363233,
+    "s": "Jarvis brain v3: talk to the people (OLYMPUS_PEOPLE kit when present, else builders.json / agents-n…"
+   },
+   {
+    "name": "worktree-agent-a545b014870ea708c",
+    "t": 1794362441,
+    "s": "test_zenith_nq: the stale case also blocks the old phone live feed (20/20 in the browser)"
    },
    {
     "name": "worktree-agent-ace9572796f7ae004",
     "t": 1794329229,
     "s": "tests: Kalshi readers' site-first fetch pinned (ledger, kalshicity, kalshi page)"
-   },
-   {
-    "name": "worktree-agent-afe94f2583c16b5ef",
-    "t": 1794327276,
-    "s": "Jarvis: planner actions on Planner v2 (event, plan today), window.JARVIS_API for the home"
    }
   ]
  }

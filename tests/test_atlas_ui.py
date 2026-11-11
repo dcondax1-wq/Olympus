@@ -30,12 +30,14 @@ sys.path.insert(0, ROOT)
 from engine import second  # noqa: E402
 
 RESULTS = []
+RES = []          # plain booleans, the shape tests/gate_static.py counts
 DAY = "2026-10-22"
 
 
 def check(name, ok, detail=None):
     RESULTS.append((name, bool(ok)))
-    print(("PASS " if ok else "FAIL ") + name + ("" if ok or detail is None else f"\n     {str(detail)[:400]}"), flush=True)
+    RES.append(bool(ok))
+    print(("[PASS] " if ok else "[FAIL] ") + name + ("" if ok or detail is None else f"\n     {str(detail)[:400]}"), flush=True)
 
 
 def _rows(rs, t0, day=DAY, usd=500.0):

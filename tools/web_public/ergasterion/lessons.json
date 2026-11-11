@@ -1,63 +1,29 @@
 {
  "v": 1,
  "name": "Ergasterion lessons",
- "asof": "2026-11-10",
- "say": "This week we wrote down 6 lessons. The strongest (2 files agree): None gives an edge that survives fees, a held-out block and a second asset. What changed our mind: One pocket looked real (and replicated across two assets) until I ran it on two months of data it had never seen: it vanished.",
+ "asof": "2026-11-11",
+ "say": "This week we wrote down 2 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: One pocket looked real (and replicated across two assets) until I ran it on two months of data it had never seen: it vanished.",
  "week": [
+  {
+   "text": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
+   "cat": "Kalshi",
+   "d": "2026-11-11",
+   "strength": 3,
+   "sources": [
+    "research/writeups/kalshi_edge_C.md",
+    "research/writeups/kalshi_edge_B.md",
+    "research/writeups/kalshi_edge_A.md"
+   ]
+  },
   {
    "text": "None gives an edge that survives fees, a held-out block and a second asset.",
    "cat": "Kalshi",
    "d": "2026-11-10",
-   "strength": 2,
+   "strength": 3,
    "sources": [
+    "research/writeups/kalshi_edge_C.md",
     "research/writeups/kalshi_edge_B.md",
     "research/writeups/kalshi_edge_A.md"
-   ]
-  },
-  {
-   "text": "No edge found. Out of the 38 cells that were big enough to test (and 7 pre-written textbook ideas), none beat the noise on training data, and none is positive with a confidence interval above zero on the held-out last 14 days.",
-   "cat": "Kalshi",
-   "d": "2026-11-10",
-   "strength": 2,
-   "sources": [
-    "research/writeups/kalshi_edge_B.md",
-    "research/writeups/kalshi_edge_A.md"
-   ]
-  },
-  {
-   "text": "Run all three accounts at once (LIT 50K, ATLAS 25K, BLITZ 25K): buying all three on day 1 beats every staggered order, and the fees are only $198. - Then: LIT on the 50K second: the biggest total ($6,549 in 12 months) b…",
-   "cat": "money",
-   "d": "2026-11-04",
-   "strength": 1,
-   "sources": [
-    "research/writeups/2026-11-04_money_roadmap.md"
-   ]
-  },
-  {
-   "text": "Part A closes the open items from the Plutus fix - lit_funded_firms.py rerun with today's live trades and the live presets (eval room 0.8, funded 60% / = $1,500 / winner = $2,000), the Builder 25K row refreshed, BLITZ g…",
-   "cat": "NQ strategy",
-   "d": "2026-11-04",
-   "strength": 1,
-   "sources": [
-    "research/writeups/2026-11-04_lit_ideas_round3.md"
-   ]
-  },
-  {
-   "text": "No management change (partials, stair stops, stale exits, news exits, a later cut) and no entry-window or per-session change holds in both halves.",
-   "cat": "NQ strategy",
-   "d": "2026-11-04",
-   "strength": 1,
-   "sources": [
-    "research/writeups/2026-11-04_lit_ideas_night.md"
-   ]
-  },
-  {
-   "text": "ATLAS (EMA + MACD + S/R) and BLITZ (noise-area scalp) re-tested for the 25K accounts with 43 BLITZ and 29 ATLAS versions (stop multiple, entry window, daily loss cap, trades a day, hold time, breakeven, trail, day filte…",
-   "cat": "NQ strategy",
-   "d": "2026-11-04",
-   "strength": 1,
-   "sources": [
-    "research/writeups/2026-11-04_second_strategies_night.md"
    ]
   }
  ],
@@ -74,21 +40,23 @@
    ]
   },
   {
-   "text": "None gives an edge that survives fees, a held-out block and a second asset.",
+   "text": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
    "cat": "Kalshi",
-   "d": "2026-11-10",
-   "strength": 2,
+   "d": "2026-11-11",
+   "strength": 3,
    "sources": [
+    "research/writeups/kalshi_edge_C.md",
     "research/writeups/kalshi_edge_B.md",
     "research/writeups/kalshi_edge_A.md"
    ]
   },
   {
-   "text": "No edge found. Out of the 38 cells that were big enough to test (and 7 pre-written textbook ideas), none beat the noise on training data, and none is positive with a confidence interval above zero on the held-out last 14 days.",
+   "text": "None gives an edge that survives fees, a held-out block and a second asset.",
    "cat": "Kalshi",
    "d": "2026-11-10",
-   "strength": 2,
+   "strength": 3,
    "sources": [
+    "research/writeups/kalshi_edge_C.md",
     "research/writeups/kalshi_edge_B.md",
     "research/writeups/kalshi_edge_A.md"
    ]

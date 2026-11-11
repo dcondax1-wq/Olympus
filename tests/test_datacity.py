@@ -1108,7 +1108,7 @@ def test_v3_page(shots=None):
             # the card of a building, the menu, hash routes
             mn = pg.evaluate("""(() => { const a = window.__app; document.querySelector('#menuB').click(); const n = document.querySelectorAll('#sheet .mi').length, view = document.querySelector('#sheet').dataset.view;
               location.hash = '#report'; return { n, view }; })()""")
-            check("j. the City menu opens its 9 doors (market now, report, compare, timeline, fireworks, photo, tour, accessibility, how to read)", mn["n"] == 9 and mn["view"] == "menu", mn)
+            check("j. the City menu opens its 10 doors (market now, report, all districts, compare, timeline, fireworks, photo, tour, accessibility, how to read)", mn["n"] == 10 and mn["view"] == "menu", mn)
             rd = pg.evaluate("(() => { window.__app.showView('read'); return document.querySelector('#sheet').innerText; })()").lower()
             check("j. the read-me explains building types and the windows", all(w in rd for w in ("building types", "windows tell the data", "monorail")))
             check("j. no page errors and no failed requests through all of it", not errs and not failed and not pg.evaluate("window.__city.errors.length"), (errs[:3], failed[:3], pg.evaluate("window.__city.errors")))
@@ -1181,6 +1181,7 @@ def test_v3_phone(shots=None):
                   f"close-up {s2['calls']} / {s2['triangles']:,}, {s2['lod']['mirrors']} reflected tile(s), at most 7 tiles in full ({s2['lod']['tilesFull']})",
                   all(x["calls"] <= c and x["triangles"] <= t for x in (s0, s1, s2)) and s2["lod"]["tilesFull"] <= 7 and s2["lod"]["mirrors"] <= 1, (s0, s1, s2))
             cdp = ctx.new_cdp_session(pg)
+            cdp.send("HeapProfiler.collectGarbage")          # what is alive, not what happens to be waiting for the collector
             cdp.send("Performance.enable")
             heap = {m["name"]: m["value"] for m in cdp.send("Performance.getMetrics")["metrics"]}.get("JSHeapUsedSize", 0) / 1e6
             check(f"k. the JS heap on a phone at the high tier: {heap:.1f} MB (budget {PHONE_HEAP_MB} MB)", 0 < heap <= PHONE_HEAP_MB, heap)
@@ -1256,7 +1257,7 @@ def test_v3_demo():
               a.showView('access'); document.querySelector('#ac_calm').click(); out.calm = a.calm;
               return out; }""")
             check("k. ?demo=1 offline: the menu, report with the Council, search, timeline, fireworks, photo and accessibility all work from the fixtures",
-                  r["menu"] == 9 and r["report"] and r["found"] >= 1 and r["tl"] >= 1 and r["gold"] and r["photo"] > 4000 and r["calm"], r)
+                  r["menu"] == 10 and r["report"] and r["found"] >= 1 and r["tl"] >= 1 and r["gold"] and r["photo"] > 4000 and r["calm"], r)
             check("k. ?demo=1 offline: no page errors (the Pantheon line and the kit modules fail soft)", not errs and not pg.evaluate("window.__city.errors.length"), (errs[:3], pg.evaluate("window.__city.errors")))
             br.close()
     finally:

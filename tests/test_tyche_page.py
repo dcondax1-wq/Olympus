@@ -39,7 +39,7 @@ TY = os.path.join(WEB, "tyche")
 MODULES = ["main.js", "data.js", "demo.js", "fmt.js", "scene.js", "wheel.js", "pools.js", "scales.js", "glow.js", "hud.js", "sparks.js", "bankroll.js", "caustics.js", "fortune.js", "fortunepanel.js", "cash.js", "cashpanel.js", "tychefx.js"]
 RAW = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
 API = "https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main"
-THEME = "#07060b"
+THEME = "#14110e"          # AGORA night: the page's theme-color, the committed jarvis.json and the live card all carry it
 MINUS = "−"
 RES: list = []
 SHOTS = os.environ.get("TYCHE_SHOTS")
@@ -493,13 +493,19 @@ def _bank_checks(p, tag, j):
         p.locator(".tabs button[data-view=wheel]").click()
         p.wait_for_timeout(2500)
         wp = p.evaluate("window.tyche.wheelAt()")
-        p.mouse.click(wp["x"], wp["y"])
-        p.wait_for_timeout(300)
-        w1 = p.evaluate("window.tyche.spin")
+        for _ in range(5):                                   # the coins orbit over the hub: when one is under the finger the tap opens that coin (right), so let it pass and tap again
+            p.mouse.click(wp["x"], wp["y"])
+            p.wait_for_timeout(300)
+            w1 = p.evaluate("window.tyche.spin")
+            if w1 > 0 or p.evaluate("document.getElementById('sheet').hidden"):
+                break
+            p.evaluate("window.tyche.select(null)")
+            p.wait_for_timeout(1600)
         p.wait_for_timeout(2500)
         w2 = p.evaluate("window.tyche.spin")
         check(f"g. {tag}: a tap on the wheel spins it and it eases out (visual only): {w1:.1f} -> {w2:.1f} rad/s, no coin selected",
-              w1 > 3 and 0 <= w2 < w1 and p.evaluate("document.getElementById('sheet').hidden"), (w1, w2))
+              w1 > 3 and 0 <= w2 < w1 and p.evaluate("document.getElementById('sheet').hidden"),
+              (w1, w2, wp, p.evaluate("[document.getElementById('sheet').hidden, document.getElementById('s-title').textContent, window.tyche.view, document.elementFromPoint(%f, %f).id]" % (wp["x"], wp["y"]))))
         lit = _lit_share(p.screenshot(), (0, 400, 780, 1180))
         check(f"g. {tag}: the wheel is really drawn: {lit * 100:.0f}% of the middle of the screen is lit (not black)", lit > 0.08, lit)
         p.locator(".tabs button[data-view=scales]").click()
@@ -543,8 +549,9 @@ def v3_checks(br, origin, vw):
         p.keyboard.press("Tab")
     ring = p.evaluate("""(() => { const s = getComputedStyle(document.getElementById('kelly'));
       return [document.activeElement.id, s.outlineStyle, s.outlineWidth, s.outlineColor, document.getElementById('kelly').getBoundingClientRect().height]; })()""")
-    check(f"d. {tag}: the Kelly slider: the gold focus ring from the keyboard, a 44 px tap target",
-          ring[0] == "kelly" and ring[1] == "solid" and ring[2] == "2px" and "255, 207, 90" in ring[3] and ring[4] >= 44, ring)
+    # the ring itself is the OLYMPUS kit's (olympus/a11y.css: 3 px solid in the app's accent, tests.test_olympus_a11y owns its colour)
+    check(f"d. {tag}: the Kelly slider: a solid focus ring from the keyboard (2 px or more), a 44 px tap target",
+          ring[0] == "kelly" and ring[1] == "solid" and float(ring[2].replace("px", "")) >= 2 and ring[4] >= 44, ring)
     p.locator("#kelly").fill("2")                         # back to full Kelly, as the loop above left it
     p.evaluate("document.activeElement && document.activeElement.blur()")
     shot(p, f"v3-wheel-{tag}")
@@ -571,7 +578,7 @@ def v3_checks(br, origin, vw):
         window.applyTheme({ accent: '#ff00aa', text: 'x;y' }); const g = s.getPropertyValue('--gold').trim(), t = s.getPropertyValue('--text').trim();
         window.applyTheme(null); return [a.getAttribute('href'), Math.round(r.height), g, t, s.getPropertyValue('--gold').trim(), window.tyche.intro]; }""")
     check(f"d. {tag}: the link to the Kalshi page (44 px), applyTheme (hex only, null = Tyche's gold), the intro camera move done",
-          lk[0] == "../kalshi/" and lk[1] >= 44 and lk[2] == "#ff00aa" and lk[3] == "#fff8e8" and lk[4] == "#ffcf5a" and lk[5] == 1, lk)
+          lk[0] == "../kalshi/" and lk[1] >= 44 and lk[2] == "#ff00aa" and lk[3] == "#f3ece0" and lk[4] == "#c8a24a" and lk[5] == 1, lk)     # AGORA ivory text and gold (tyche.css :root)
     shot(p, f"v3-scales-{tag}")
     _bank_checks(p, tag, j)
     errs = real_errors(log)

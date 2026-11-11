@@ -181,7 +181,8 @@ def part_files():
     check("a. the mic only from a tap (getUserMedia in ensureMic, called from the taps), released on close (tracks stopped, context closed)",
           src.count("getUserMedia(") == 1 and "t.stop()" in src and "actx.close()" in src and "releaseMic();" in src[src.index("function close("):])
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
-    check("a. worker jarvis-v31 saves voice-mode.js (and jarvis.css?v=j13)", "const CACHE = 'jarvis-v31';" in sw and "'./voice-mode.js'" in sw and "'./jarvis.css?v=j13'" in sw)
+    cv = re.search(r"const CACHE = 'jarvis-v(\d+)';", sw)
+    check("a. the worker (jarvis-v30 or later) saves voice-mode.js and the current jarvis.css", cv and int(cv.group(1)) >= 30 and "'./voice-mode.js'" in sw and re.search(r"'\./jarvis\.css\?v=j\d+'", sw))
     page = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the shell loads it after the start (bootDone + 1.5 s, or at first use), never in the start's own list",
           "load('voice', './voice-mode.js'" in page and "bootDone.then(() => setTimeout(voiceMod, 1500));" in page
@@ -258,8 +259,10 @@ def run_main(br, url):
     s = vm(p)
     box = p.evaluate("(() => { const r = document.getElementById('vm').getBoundingClientRect(); return [r.width, r.height, innerWidth, innerHeight]; })()")
     check("c. the tile opens voice mode full screen, greeting first", s.get("open") and box[0] == box[2] and box[1] == box[3], (s, box))
-    p.wait_for_function("window.__said.length >= 1", timeout=5000)
-    g = p.evaluate("window.__said[0]")
+    # Jarvis talks by default now: the home welcome ("Good evening. All systems look good.") and a nudge can be said before voice mode's own greeting,
+    # so the greeting is found by its words, and a turn's answer is what is said after it
+    p.wait_for_function("window.__said.some((x) => /listening/i.test(x.text))", timeout=8000)
+    g = p.evaluate("window.__said.find((x) => /listening/i.test(x.text))")
     check("c. the greeting in her voice: Ava (Premium), at the voice's own pace and pitch (within the natural-speech nudge)", g["voice"] == "Ava (Premium)" and "listening" in g["text"].lower()
           and abs(g["rate"] - 1) <= 0.05 and abs(g["pitch"] - 1) <= 0.05, g)       # (2026-11-04: the natural-speech layer nudges rate / pitch by up to 2.5% per phrase)
     check("c. the 3D core goes full screen (mounted in voice mode, the Jarvis screen's core let go: one core at a time)",
@@ -276,10 +279,10 @@ def run_main(br, url):
           vm(p)["mic"] and max(lv) > 0.12 and vm(p)["loop"], lv)
     shot(p, "voice_listening.png")
     # d. one turn: mocked recognition -> the brain's answer in the captions, said word by word
-    p.wait_for_function("window.__said.length >= 2", timeout=15000)
+    p.wait_for_function("(() => { const a = window.__said, i = a.findIndex((x) => /listening/i.test(x.text)); return i >= 0 && a.length >= i + 2; })()", timeout=15000)
     # back to listening after her answer: seen in the phase history (on a loaded machine the 'once' recognizer's listening phase can be over before a poll sees it)
     p.wait_for_function("(() => { const a = window.__phases; const i = a.lastIndexOf('speaking'); return i >= 0 && a.slice(i).includes('listening'); })()", timeout=15000)
-    said = p.evaluate("({ text: window.__said.slice(1).map((x) => x.text).join(' '), n: window.__said.length - 1 })")
+    said = p.evaluate("(() => { const a = window.__said, i = a.findIndex((x) => /listening/i.test(x.text)); return { text: a.slice(i + 1).map((x) => x.text).join(' '), n: a.length - i - 1 }; })()")
     caps = p.evaluate("[document.getElementById('vmYou').textContent, document.getElementById('vmJar').textContent, "
                       "[...document.querySelectorAll('#vmJar .w')].every((w) => w.classList.contains('on')), "
                       "[...document.querySelectorAll('#talk .msg.j')].map((m) => m.textContent).pop() || '']")

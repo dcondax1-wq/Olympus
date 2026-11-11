@@ -45,7 +45,7 @@ SHOTS = os.environ.get("CITIES_SHOTS") or os.path.join(tempfile.gettempdir(), "c
 RES = []
 ONLY = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)   # e.g. --only=c  or  --only=a,b,g: one section at a time (the machine is slow)
 want = lambda k: ONLY is None or k in ONLY  # noqa: E731
-BAD_ORIGINS = ("githubusercontent",)          # the Kalshi feed: blocked on purpose in the offline runs
+BAD_ORIGINS = ("githubusercontent", "/kalshi.json")          # the Kalshi feed: the site copy (tried first, absent on the test server) and the raw file, blocked on purpose in the offline runs
 
 
 def check(name, ok, info=""):
@@ -493,7 +493,7 @@ def sec_d(br, base, C, days, picks, ids):
         inf = pg.enter(cid, settle=3.2)
         k = p.evaluate("window.__cities.nearestToCenter()")
         pt = p.evaluate(f"window.__cities.project({k})")
-        p.evaluate(f"window.__athens.ui.tap({pt['x']}, {pt['y']})")
+        p.touchscreen.tap(pt["x"], pt["y"])
         try:
             p.wait_for_function("window.__cities.info().sheet === 'building'", timeout=20000)
             tapped = True
@@ -640,9 +640,9 @@ def sec_g(br, base, C, days, picks, ids):
     labels = p.evaluate("[...document.querySelectorAll('#labels i.cont')].filter(e => e.style.display !== 'none').map(e => e.textContent)")
     check("g. the world map has six continents with their cities (%s), drawn as labels when zoomed out (%d visible)" % (", ".join(f"{c['name']} {c['count']}" for c in cont), len(labels)),
           [c["key"] for c in cont] == ["trading", "research", "money", "kalshi", "life", "obsidian"] and sum(c["count"] for c in cont) == len(C) and len(labels) >= 2, (cont, labels))
-    d0 = p.evaluate("window.__cities.rig().dist")
+    m0 = p.evaluate("window.__cities.map()")                      # the hub is the drawn map now (agoramap.js): a fly is the map zooming in on that district
     p.evaluate("window.__cities.contTap('kalshi')")
-    p.wait_for_function(f"window.__cities.rig().dist < {d0 * 0.75}", timeout=240000)
+    p.wait_for_function(f"(() => {{ const m = window.__cities.map(); return m.scale > {m0['scale'] * 1.15} || Math.abs(m.x - {m0['x']}) + Math.abs(m.y - {m0['y']}) > 40; }})()", timeout=240000)
     cap = p.evaluate("document.querySelector('#caption').textContent")
     check("g. tap a continent: the camera flies to it and says what is there", "KALSHI" in cap.upper() and "cities" in cap, cap)
     # favourites + visited, persisted
@@ -667,7 +667,7 @@ def sec_g(br, base, C, days, picks, ids):
     p.evaluate("[...document.querySelectorAll('.sheet .seg button')].find(e => e.textContent === 'Everything').click()")
     p.evaluate("[...document.querySelectorAll('.sheet .seg button')].find(e => e.textContent === 'Trading').click()")
     regs = p.evaluate("[...document.querySelectorAll('.sheet .seg')].filter(e => e.style.display !== 'none').map(e => e.children.length)")
-    check("g. Find: continents, regions, Saved and Not visited filters (1 saved, %d not visited, regions appear under a continent)" % (len(C) - 1), n_saved == 1 and f"{len(C) - 1} of {len(C)}" in cnt and max(regs) >= 6, (n_saved, cnt, regs))
+    check("g. Find: continents, regions, Saved and Not visited filters (1 saved, %d not visited, regions appear under a continent)" % (len(C) - 1), n_saved == 1 and f"{len(C) - 1} matching" in cnt and f"{len(C)} total" in cnt and max(regs) >= 6, (n_saved, cnt, regs))
     chips = p.evaluate("[...document.querySelectorAll('.chip')].map(e => e.textContent.replace(/\\s/g, '')).join('|')")
     check("g. the hub chips count what you saved and visited", "saved1" in chips and "visited1" in chips, chips)
     p.evaluate("document.querySelector('#sheetX').click()")
@@ -754,7 +754,7 @@ def sec_h(br, base, C, days, picks, ids):
         p.goto(base + "?q=" + quality + "&demo=1")
         p.wait_for_function("document.body.dataset.ready === 'fallback'", timeout=60000)
         check(f"h. {quality}: all catalogue cities remain accessible without a GPU", p.locator(".atlas-city").count() == len(C))
-        check(f"h. {quality}: six fully named illustrated districts, no horizontal scroll", p.locator(".atlas-map text").count() == 12
+        check(f"h. {quality}: six fully named illustrated districts (Olympus HQ + five, each one label with its count), no horizontal scroll", p.locator(".atlas-map text").count() == 6
               and p.evaluate("document.documentElement.scrollWidth <= innerWidth"))
         portals = p.locator(".atlas-portal")
         check(f"h. {quality}: three named city portals have touch-sized targets", portals.count() == 3 and portals.evaluate_all("els => els.every(e=>{const r=e.getBoundingClientRect();return r.width>=44&&r.height>=44})"))
@@ -768,7 +768,7 @@ def sec_h(br, base, C, days, picks, ids):
         check(f"h. {quality}: a building reveals its source record and fields", p.locator(".dw-record").is_visible() and p.locator(".dw-fields dd").count() > 0)
         p.get_by_role("button", name="World map", exact=True).click()
         check(f"h. {quality}: breadcrumbs return to the atlas", p.locator(".district-world").count() == 0)
-        p.get_by_role("button", name="Research", exact=True).click()
+        p.locator(".atlas-filters").get_by_role("button", name="Research", exact=True).click()      # (the network bar has a Research button too)
         visible = p.locator(".atlas-city").evaluate_all("els=>els.filter(e=>!e.hidden).length")
         check(f"h. {quality}: district filter matches the actual catalogue", visible == sum(s["group"] == "research" for s in C))
         search = p.get_by_role("searchbox", name="Search the city atlas")
@@ -781,14 +781,15 @@ def sec_h(br, base, C, days, picks, ids):
 
 
 def sec_i(br, base, C, days, picks, ids):
-    """Default is navigable WebGL; the atlas stays the unsupported/off fallback."""
+    """Default is the drawn map of every city (the AGORA front screen, owner 2026-11-09); a city entered from it is the navigable WebGL city. The atlas stays the unsupported/off fallback."""
     pg = Page(br, base, q="high", world=False, extra="&demo=1").open()
-    pg.p.wait_for_function("window.__cities.info().mode === 'city' && window.__cities.info().id === 'trades-city'", timeout=120000)
-    check("i. normal HD entrance lands in the NQ Trades City with four flight cameras", pg.p.locator('#cams button').count() == 4 and not pg.p.locator('.district-world').count())
+    m = pg.p.evaluate("window.__cities.map()")
+    check("i. normal HD entrance is the drawn map with every catalogue city on it (not the flat fallback atlas)", pg.info()["mode"] == "hub" and m and m["cities"] == len(C)
+          and pg.p.evaluate("document.body.dataset.ready") == "true" and not pg.p.locator('.district-world').count(), (pg.info()["mode"], m))
+    inf = pg.enter("trades-city", settle=1.5)
+    check("i. a city entered from the map is the genuine WebGL city with four flight cameras, not a flat drilldown", inf['id'] == 'trades-city' and pg.p.locator('#cams button').count() == 4 and not pg.p.locator('.district-world').count())
     pg.back()
-    pg.p.locator('.atlas-portal').first.click()
-    pg.p.wait_for_function("window.__cities.info().mode === 'city'", timeout=120000)
-    check("i. world portals enter the genuine WebGL city, not a flat drilldown", pg.info()['id'] == 'trades-city' and not pg.p.locator('.district-world').count())
+    check("i. Back returns to the map", pg.info()["mode"] == "hub")
     pg.close()
 
 
