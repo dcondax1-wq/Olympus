@@ -1,5 +1,5 @@
 // PEOPLE OF OLYMPUS (docs/PERSONA_API.md): see any worker as a person and talk to them. ES module; also window.OLYMPUS_PEOPLE.
-//   <script type="module" src="../olympus/people.js?v=p1"></script>      then, anywhere:  if (window.OLYMPUS_PEOPLE) OLYMPUS_PEOPLE.open('scanner:sibyl')
+//   <script type="module" src="../olympus/people.js?v=p2"></script>      then, anywhere:  if (window.OLYMPUS_PEOPLE) OLYMPUS_PEOPLE.open('scanner:sibyl')
 // A person is a friendly cartoon character that speaks for ONE real worker and only from that worker's own published files (people-core.js builds the facts,
 // people-talk.js answers offline). Nothing is sent anywhere, with one exception the owner set up himself: when Jarvis's "Connect my brain" is on, a question
 // the offline engine cannot answer goes to his own model with the persona and the facts (people-brain.js), and a reply with an invented number is dropped.
