@@ -2,6 +2,7 @@
 // Read only: it warns and never blocks or places anything; it sends nothing and keeps nothing. Text only through textContent. window.AEGIS is the test hook.
 // ?acct=zlarior|atlas|blitz&risk=300&demo=1 opens a given view.
 import * as C from './aegiscore.js';
+import * as T from '../olympus/truth.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -9,7 +10,7 @@ const NS = 'http://www.w3.org/2000/svg';
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
 function sv(tag, attrs) { const e = document.createElementNS(NS, tag); for (const k in attrs || {}) e.setAttribute(k, String(attrs[k])); return e; }
 const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
-const S = { fixture: null, home: null, rules: null, built: null, key: 'zlarior', risk: null, demo: false, forced: false, shield: null, mode: 'flat', ready: false, reason: '' };
+const S = { fixture: null, home: null, ages: null, rules: null, built: null, key: 'zlarior', risk: null, demo: false, forced: false, shield: null, mode: 'flat', ready: false, reason: '' };
 
 async function getJSON(url, ms) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms || 6000) : 0;
@@ -47,7 +48,7 @@ function renderShield(a) {
   const t = $('tiles'); clear(t);
   const tile = (k, v, n, cls) => { const e = h('div', 'tile'); e.appendChild(h('small', '', k)); e.appendChild(h('b', cls || '', v)); e.appendChild(h('span', '', n)); t.appendChild(e); };
   const r = riskOf(a);
-  tile('Balance', a.balance == null ? '-' : C.money(a.balance), a.kind === 'funded' ? 'funded' : 'eval');
+  tile('Balance', a.balance == null ? '-' : C.money(a.balance), a.kind === 'funded' ? 'funded' : a.kind === 'paper' ? 'paper shadow' : 'eval');
   tile('Floor (trailing)', a.floor == null ? '-' : C.money(a.floor), 'the account ends here');
   const dl = C.dllLeft(a);
   tile('Daily loss left', dl == null ? '-' : C.money(dl), `of ${C.money(a.dll)} (soft)`);
@@ -96,6 +97,8 @@ function render() {
   renderChips(); renderShield(a); renderWhatIf(a); renderLocks(a); renderAll();
   const rl = $('rules'); clear(rl); for (const l of C.ruleLines(a)) rl.appendChild(h('li', '', l));
   say(C.sayLine(a));
+  $('src').textContent = S.forced ? 'Example numbers (?demo=1): open the page without it for the live accounts.' : S.demo ? 'Example numbers (fixture.json): home.json has no live accounts yet.'
+    : S.ages ? 'Source: home.json (the PC\'s report via the cloud). ' + S.ages.line + (S.ages.stale ? ' They may be out of date.' : '') : '';
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
 }
 
@@ -134,8 +137,10 @@ function bind() {
 async function boot() {
   const q = new URLSearchParams(location.search); S.forced = q.get('demo') === '1';
   const [fx, home, rules] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('../ledger/rules.json')]);
-  S.fixture = fx; S.home = home; S.rules = rules;
-  S.built = C.buildAccounts(S.forced ? null : home, fx, rules); S.demo = S.built.demo || S.forced;
+  // the account numbers and their age come from the shared truth (olympus/truth.js: home.json's board first, the same as Home and NQ)
+  const canon = !S.forced && home ? T.canonHome(home) : null;
+  S.fixture = fx; S.home = canon; S.rules = rules; S.ages = canon ? canon.truth.ages : null;
+  S.built = C.buildAccounts(canon, fx, rules); S.demo = S.built.demo || S.forced;
   const k = q.get('acct'); if (C.ORDER.includes(k)) S.key = k;
   const r = parseFloat(q.get('risk')); if (Number.isFinite(r) && r > 0) S.risk = Math.min(20000, r);
   bind(); render();

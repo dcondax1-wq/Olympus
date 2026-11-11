@@ -4619,6 +4619,7 @@ applyLook(); nav(); route(); load('boot'); schedule(); loadFX(); loadLK();
 setInterval(() => FX && D && FX.mood(moodNow()), 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => null);
 </script>
+<script type="module">import * as T from "./olympus/truth.js?v=1"; window.OLYMPUS_TRUTH = T;</script><!-- one source for drawdown / balance / data age (QA round 6) -->
 <script src="extras.js?v=2" defer></script>
 <script src="hub.js?v=9" defer></script>
 <script src="more.js?v=5" defer></script>

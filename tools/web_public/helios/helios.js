@@ -2,6 +2,7 @@
 // progress ('lyceum.v1') and never writes it. Sends nothing; it only informs. Text only through textContent / createElementNS. window.HELIOS is the test hook.
 // ?demo=1&now=2026-11-10T12:45:00Z&slot=pre|morning|ny opens a given view.
 import * as C from './helioscore.js';
+import * as T from '../olympus/truth.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -76,6 +77,8 @@ function render() {
   $('demo').hidden = !S.demo; try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
   renderAll(S.m);
   say(`Helios: ${C.lookWords(S.m.look)}. ${S.m.good} of ${S.m.total} good signs.${S.copied ? ' ' + S.copied : ''}`);
+  $('src').textContent = S.demo ? (S.forced ? 'Example numbers (?demo=1): open the page without it for the live accounts.' : 'Example numbers (fixture.json): the site has no home.json or money data yet.')
+    : S.ages ? 'Accounts: home.json (the PC\'s report via the cloud). ' + S.ages.line : 'No account file (home.json) on the site yet.';
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
 }
 
@@ -123,7 +126,9 @@ async function boot() {
   const [fx, events, home, money] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../pythia/events.json'), S.forced ? null : getJSON('../home.json'), S.forced ? null : getJSON('../money/index.json')]);
   const real = !S.forced && (!!home || !!money);
   S.demo = !real;
-  S.inp = real ? { events, home, money, lyceum: readLS('lyceum.v1') } : C.demoInputs(fx, S.now);
+  // the accounts and their age come from the shared truth (olympus/truth.js: home.json's board first, the same numbers as Home, NQ and Aegis)
+  const canon = home ? T.canonHome(home, S.now / 1000) : null; S.ages = canon ? canon.truth.ages : null;
+  S.inp = real ? { events, home: canon, money, lyceum: readLS('lyceum.v1') } : C.demoInputs(fx, S.now);
   $('copy').addEventListener('click', copyText);
   render();
   await startSun();

@@ -4,6 +4,7 @@
 // Read only: it sends nothing and keeps nothing. Text only through textContent / createElementNS. The 3D columns come from nqscene.js (optional). window.NQ is the test hook.
 // ?demo=1 the example; ?demo=1&silent=4d (or 90m, 5h) the example with a silent PC; ?flat=1 the 2D columns; ?howto=1 opens the sheet.
 import * as C from './nqcore.js';
+import * as T from '../olympus/truth.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -36,7 +37,9 @@ function parseSilent(v) { const m = /^(\d+(?:\.\d+)?)([mhd])$/.exec(String(v || 
 function model() {
   const now = Date.now(), real = !S.forced && C.hasData(S.home);
   S.demo = !real;
-  S.view = C.build(real ? S.home : demoHome(S.fixture, now, S.silent), now);
+  // the account numbers go through the shared truth (olympus/truth.js), so NQ, Home, Aegis and Helios show the same drawdown left
+  const canon = real ? T.canonHome(S.home, now / 1000) : null; S.ages = canon ? canon.truth.ages : null;
+  S.view = C.build(real ? canon : demoHome(S.fixture, now, S.silent), now);
 }
 
 // ------------------------------------------------------------------------------------------------ the banner
@@ -160,6 +163,7 @@ function render() {
   $('demo').hidden = !S.demo; try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
   renderBanner(); renderScene(); renderPlan(); renderBots(); renderTrades(); renderFacts();
   say(`${v.headline}${v.tight ? ` ${v.tight.name}: ${v.tight.ddLine}.` : ''}${S.demo ? ' Example numbers.' : ''}`);
+  { const el = $('src'); if (el) el.textContent = S.demo ? (S.forced ? 'Example numbers (?demo=1): open the page without it for the live bots.' : 'Example numbers (fixture.json): the site has no home.json yet.') : S.ages ? 'Source: home.json (the PC\'s report via the cloud). ' + S.ages.line : ''; }
   S.ready = true;
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   tryScene();
