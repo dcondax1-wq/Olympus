@@ -186,7 +186,7 @@ async function boot() {
   const q = new URLSearchParams(location.search); S.forced = q.get('demo') === '1'; S.silent = parseSilent(q.get('silent'));
   for (const b of document.querySelectorAll('[data-howto]')) b.addEventListener('click', () => openSheet(b));
   $('sheetClose').addEventListener('click', closeSheet); $('veil').addEventListener('click', closeSheet);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); else if (e.key === 'Tab' && S.sheet) { e.preventDefault(); try { $('sheetClose').focus(); } catch (_) { /* nothing */ } } });   // the sheet has one control: focus stays on it
   const [fx, home, howto] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json')]);
   S.fixture = fx; S.home = home; S.howto = howto;
   render();
