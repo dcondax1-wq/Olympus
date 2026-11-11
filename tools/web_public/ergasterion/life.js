@@ -185,5 +185,5 @@ export function sayLine(id, text, opts) { try { const K = W0().OLYMPUS_PEOPLE; i
 /** show a work card (what this person made) when the kit has show() */
 export function showWork(id, what) { try { const K = W0().OLYMPUS_PEOPLE; if (K && typeof K.show === 'function' && id) { K.show(id, what); return true; } } catch (_) { /* our own card */ } return false; }
 /** the work pose of a job for the v2 figure (docs/PERSONA_API.md "Figure API v2"): play(fig, pose) when present */
-export const WORK_POSE = { smith: 'hammer', scribe: 'write', oracle: 'read', scales: 'weigh', wheel: 'carry' };
+export const WORK_POSE = { smith: 'hammer', scribe: 'write', oracle: 'telescope', scales: 'weigh', wheel: 'think' };
 export const ACT_POSE = { work: null, walk: 'walk', carry: 'carry', drop: 'idle', board: 'read', standup: 'idle', speak: 'talk', cheer: 'cheer', slump: 'slump', wave: 'wave', talk: 'talk', look: 'idle' };

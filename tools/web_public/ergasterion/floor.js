@@ -456,7 +456,8 @@ function build(rc, scene, camera, canvas, o) {
     try {
       if (v2) P3.play(fg, want);
       else if (fg.userData && fg.userData.pose) fg.userData.pose(V1_POSES.includes(want) ? want : 'idle');
-      if (P3.setExpression) P3.setExpression(fg, want === 'cheer' ? 'happy' : want === 'slump' ? 'sad' : want === 'talk' ? 'talk' : 'calm');
+      if (P3.setExpression) P3.setExpression(fg, want === 'cheer' || want === 'wave' ? 'happy' : want === 'slump' ? 'worried' : want === 'talk' ? 'happy' : L.WORK_POSE[job] === want ? 'thinking' : 'neutral', 1);
+      if (P3.setTalking) P3.setTalking(fg, want === 'talk');
     } catch (_) { /* the figure keeps its last pose */ }
   }
   function lodFrame(dt, camP) {
@@ -487,7 +488,7 @@ function build(rc, scene, camera, canvas, o) {
       try {
         const lookC = pose === 'talk' || pose === 'wave' || pose === 'look';
         if (P3.lookAt) P3.lookAt(fg, lookC ? camP : null); else if (fg.userData.lookAt) fg.userData.lookAt(lookC ? camP : null);
-        if (P3.animate) P3.animate(fg, dt, t); else if (mot && fg.userData.tick) fg.userData.tick(dt, t);
+        if (P3.animate) { if (mot) P3.animate(fg, dt); } else if (mot && fg.userData.tick) fg.userData.tick(dt, t);
       } catch (_) { /* it stands in its pose */ }
       // the instanced body of this person steps aside (its furniture and the crate it carries stay instanced)
       for (let q = 0; q < 3; q++) gone(fig.im, i * 3 + q); for (let q = 0; q < HS; q++) gone(head.im, i * HS + q);
