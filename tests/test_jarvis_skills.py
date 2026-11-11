@@ -19,7 +19,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JV = os.path.join(ROOT, "tools", "web_public", "jarvis")
 RES: list = []
 NEW = ["router.js", "jdata.js", "skills.js", "actions.js", "memstore.js", "nudges.js",  # (skills.js also imports kalshi-brain.js)
-       "skills3.js", "search.js", "dialogue.js", "explain.js", "tours.js", "safety.js", "jbrief.js"]  # BRAIN v3 (2026-11-11)
+       "skills3.js", "search.js", "dialogue.js", "explain.js", "tours.js", "safety.js", "jbrief.js", "jpeople.js"]  # BRAIN v3 (2026-11-11)
 V3 = NEW[6:]
 
 
@@ -68,7 +68,7 @@ def main() -> int:
         names = ["route(", "createSkills", "handle(", "contextFor", "nudges(", "createActions", "createMemStore", "loadSources", "jarvis.memory.v1", "planner.agora.v2", "compass.state.v1",
                  "exportJson", "importJson", "plan(", "confirm(", "cancel()", "#zone=", "#quiz", "pttDown", "jarvis.vmPtt", "sw.js", "JARVIS_API", "planner_event", "plan_today"]
         names += ["search(", "tours()", "brief(", "context()", "explain(", "search-index.json", "strategy-facts.json", "jarvis_search_build.py", "jarvis_facts_build.py", "skills3.js", "safety.js",
-                  "dialogue.js", "refuse_trade", "#find=", "v: 2"]
+                  "dialogue.js", "refuse_trade", "#find=", "v: 2", "jpeople.js", "OLYMPUS_PEOPLE", "agents-now.json", "builders.json", "people.json"]
         miss = [n for n in names if n not in d]
         check("JARVIS_API.md names every export, key and the wiring", not miss, ", ".join(miss))
     r = subprocess.run(["node", os.path.join(ROOT, "tests", "test_jarvis_skills.mjs")], capture_output=True, text=True, timeout=120, env={**os.environ, "TZ": "America/New_York"})

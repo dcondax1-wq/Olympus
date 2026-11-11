@@ -17,6 +17,7 @@ import { createSearch, parseAsk as searchAsk } from './search.js';
 import { createExplain } from './explain.js';
 import { tours as tourList, findTour, tourAsk, tourText, stopText } from './tours.js';
 import { briefKind, compose, KIND_NAME } from './jbrief.js';
+import { peopleAsk, matchPerson, roster as buildRoster, FALLBACK as PEOPLE_FALLBACK, KIND_NAME as PEOPLE_KIND } from './jpeople.js';
 
 // the app that shows more about an answer ("open it")
 const LINK = { drawdown_left: 'demeter', daily_loss_left: 'demeter', eval_progress: 'fates', pnl_today: 'zenith', balance: 'zenith', weekday_worst: 'kronos', weekday_best: 'kronos', win_rate: 'odeon', last_trade: 'odeon',
@@ -38,6 +39,7 @@ export const V3_HELP = [
   { id: 'explain', label: 'Explain a word or a rule', ex: ['what is a sweep', 'what is drawdown', 'where does the stop go'] },
   { id: 'briefing', label: 'The six-line briefing', ex: ['brief me', 'brief me on Kalshi', 'brief me on money'] },
   { id: 'agents', label: 'Who is building what', ex: ['what are the agents working on', 'who is building what', 'agents status'] },
+  { id: 'people', label: 'Talk to the workers', ex: ['who can I talk to', 'talk to Sibyl', 'stand-up'] },
   { id: 'tour', label: 'A guided tour', ex: ['show me around', 'tour Athens', 'tour the money machines'] },
   { id: 'followup', label: 'Follow-ups (for 5 minutes)', ex: ['and yesterday?', 'what about ATLAS?', 'open it'] },
 ];
@@ -100,6 +102,64 @@ export function createV3(c) {
     const lines = [`${rows.length} ${rows.length === 1 ? 'agent' : 'agents'}${busy ? `, ${busy} working now` : ''}:`].concat(rows.slice(0, 12).map((r) => `• ${r.name}: ${r.job || 'no job written down'}${/[.!?]$/.test(r.job) || !r.job ? '' : '.'}${r.status ? ' Status: ' + r.status + '.' : ''}${r.commit ? ` Last commit: "${r.commit}"${r.ms ? ' (' + J.agoText(r.ms, now) + ')' : ''}.` : ' No commit yet.'}`), rows.length > 12 ? [`…and ${rows.length - 12} more in Ergasterion.`] : [], [got.file === 'jarvis/agents-now.json' ? 'This is the copy bundled at the last site build, so it can be behind.' : '', 'From ' + src + '.']).filter(Boolean);
     dlg.note({ intent: 'agents', args: {}, entity: 'agents', link: { open: 'ergasterion' }, text: lines.join('\n') }, now);
     return c.reply(lines.join('\n'), { intent: 'agents', agents: rows, sources: [src], speak: `${rows.length} agents${busy ? ', ' + busy + ' working now' : ''}. ${rows.slice(0, 3).map((r) => r.name + (r.job ? ': ' + r.job : '')).join('. ')}.` });
+  }
+
+  // ------------------------------------------------------------------------------------------------ the people (docs/PERSONA_API.md)
+  // With the People kit on the page (globalThis.OLYMPUS_PEOPLE) Jarvis hands over: its list(), ask(id, text), standup(), and an action
+  // { open: 'people', id } that the home turns into OLYMPUS_PEOPLE.open(id). Without it: the agents file and the bundled roster, and
+  // the line that the Symposium app has the full conversation. Jarvis never speaks FOR a person beyond what those files say.
+  const kit = () => { let k = null; try { k = (typeof c.people === 'function' ? c.people() : c.people) || (typeof globalThis !== 'undefined' ? globalThis.OLYMPUS_PEOPLE : null); } catch (_) { k = null; } return k && typeof k.list === 'function' ? k : null; };
+  const within = (p, ms) => Promise.race([Promise.resolve(p).catch(() => undefined), new Promise((ok) => setTimeout(() => ok(undefined), ms))]);
+  const SYMPOSIUM = 'The Symposium app has the full conversation.';
+  async function people() {
+    const k = kit();
+    let kl = [], pj = null, got = null;
+    if (k) { try { if (typeof k.ready === 'function') await within(k.ready(), 2500); kl = k.list() || []; } catch (_) { kl = []; } }
+    if (!kl.length) { try { pj = typeof c.getPeople === 'function' ? await c.getPeople() : null; } catch (_) { pj = null; } }
+    try { got = typeof c.getAgents === 'function' ? await c.getAgents() : null; } catch (_) { got = null; }
+    const rows = got && got.data ? agentRows(got.data) : [];
+    const builders = rows.map((r) => ({ id: 'builder:' + norm(r.name).replace(/ /g, '-'), name: r.name, title: r.job, kind: 'builder', app: 'ergasterion' }));
+    return { k: k && kl.length ? k : null, list: buildRoster([kl, isObj(pj) ? pj.people : null, builders, PEOPLE_FALLBACK]), rows, got };
+  }
+  const talkAction = (p) => ({ label: 'Talk to ' + p.name, open: 'people', id: p.id });
+  const hallLink = (p) => { const known = c.appsList().map((a) => a.id); return { open: !known.length || known.includes('symposium') ? 'symposium' : (p && p.app && known.includes(p.app) ? p.app : 'ergasterion') }; };
+  async function peopleReply(a, now) {
+    const R = await people(), k = R.k;
+    if (a.type === 'list') {
+      const by = {}; for (const p of R.list) (by[p.kind || 'other'] || (by[p.kind || 'other'] = [])).push(p.name);
+      const lines = [`You can talk to ${R.list.length} ${R.list.length === 1 ? 'person' : 'people'}:`].concat(Object.keys(by).map((kd) => `${PEOPLE_KIND[kd] || 'Others'}: ${by[kd].slice(0, 14).join(', ')}${by[kd].length > 14 ? ', and ' + (by[kd].length - 14) + ' more' : ''}.`), [k ? 'Say "talk to" and a name, or "stand-up" for one line from each.' : 'Say "talk to" and a name. ' + SYMPOSIUM]);
+      dlg.note({ intent: 'people', args: {}, entity: 'roster', link: hallLink(), text: lines.join('\n') }, now);
+      return c.reply(lines.join('\n'), { intent: 'people', people: R.list.map((p) => ({ id: p.id, name: p.name, title: p.title, kind: p.kind })), kit: !!k, speak: `You can talk to ${R.list.length} people. ${R.list.slice(0, 5).map((p) => p.name).join(', ')}, and more on screen.` });
+    }
+    if (a.type === 'standup') {
+      let su = null;
+      if (k && typeof k.standup === 'function') { try { su = await within(k.standup(), 4000); } catch (_) { su = null; } }
+      const rowsS = Array.isArray(su) ? su.filter((x) => isObj(x) && typeof x.line === 'string' && x.line.trim()).map((x) => ({ p: R.list.find((q) => q.id === x.id), id: x.id, line: J.str(x.line, 220) })) : [];
+      if (rowsS.length) {
+        const lines = [`Stand-up, ${rowsS.length} ${rowsS.length === 1 ? 'person' : 'people'}:`].concat(rowsS.slice(0, 14).map((x) => `• ${x.p ? x.p.name : String(x.id).split(':').pop()}: ${x.line}`), rowsS.length > 14 ? [`…and ${rowsS.length - 14} more in the Symposium.`] : [], ['Each line is that worker\'s own data, from the People kit.']);
+        dlg.note({ intent: 'people', args: {}, entity: 'standup', link: hallLink(), text: lines.join('\n') }, now);
+        return c.reply(lines.join('\n'), { intent: 'people', standup: rowsS.map((x) => ({ id: x.id, name: x.p ? x.p.name : '', line: x.line })), kit: true, sources: ['the People kit'], speak: `Stand-up. ${rowsS.slice(0, 3).map((x) => (x.p ? x.p.name : '') + ': ' + x.line).join(' ')}` });
+      }
+      const ar = await agentsReply(now);
+      if (ar.missing) return { ...ar, intent: 'people' };
+      dlg.note({ intent: 'people', args: {}, entity: 'standup', link: hallLink(), text: ar.text }, now);
+      return { ...ar, text: ar.text + '\n' + SYMPOSIUM, intent: 'people', kit: false };
+    }
+    const p = matchPerson(a.who, R.list);
+    if (!p) return a.soft ? null : c.reply(`I don't know anyone called "${J.str(a.who, 30)}". You can talk to: ${R.list.slice(0, 10).map((x) => x.name).join(', ')}${R.list.length > 10 ? ', and more ("who can I talk to")' : ''}.`, { intent: 'people', ok: false });
+    if (k) {
+      let ans = null;
+      if (a.question && typeof k.ask === 'function') { try { ans = await within(k.ask(p.id, a.question), 5000); } catch (_) { ans = null; } }
+      const src = ans && Array.isArray(ans.sources) ? ans.sources.filter((s) => typeof s === 'string').slice(0, 4) : [];
+      const text = ans && typeof ans.text === 'string' && ans.text.trim() ? `${p.name}: ${J.str(ans.text, 700)}${src.length ? '\nFrom ' + src.join('; ') + '.' : ''}` : `Opening a chat with ${p.name}${p.title ? ' (' + p.title.replace(/\.$/, '') + ')' : ''}.${a.question ? ' Ask there: I have no answer of theirs to pass on.' : ''}`;
+      dlg.note({ intent: 'people', args: {}, entity: p.id, link: hallLink(p), text }, now);
+      return c.reply(text, { intent: 'people', person: { id: p.id, name: p.name, title: p.title, kind: p.kind }, action: talkAction(p), kit: true, sources: src, followups: ans && Array.isArray(ans.followups) ? ans.followups.filter((s) => typeof s === 'string').slice(0, 4) : undefined });
+    }
+    const row = R.rows.find((r) => r.name === p.name);
+    const lines = [row ? `${p.name}: ${row.job || 'no job written down'}${/[.!?]$/.test(row.job) || !row.job ? '' : '.'}${row.status ? ' Status: ' + row.status + '.' : ''}${row.commit ? ` Last commit: "${row.commit}"${row.ms ? ' (' + J.agoText(row.ms, now) + ')' : ''}.` : ''}` : `${p.name}: ${p.title || 'one of the workers'}${/[.!?]$/.test(p.title) || !p.title ? '' : '.'}`,
+      `I can only read ${row ? 'the agents file' : 'the roster'} here, so I will not answer for ${p.name}. ${SYMPOSIUM}`, row && R.got ? `From ${R.got.file}.` : ''].filter(Boolean);
+    dlg.note({ intent: 'people', args: {}, entity: p.id, link: hallLink(p), text: lines.join('\n') }, now);
+    return c.reply(lines.join('\n'), { intent: 'people', person: { id: p.id, name: p.name, title: p.title, kind: p.kind }, action: talkAction(p), kit: false, sources: row && R.got ? [R.got.file] : [] });
   }
 
   // ------------------------------------------------------------------------------------------------ tours
@@ -351,6 +411,8 @@ export function createV3(c) {
     if (fu && st) { const r = await follow(fu, st, text, now); if (r) return r; }
     const tid = tourAsk(text);
     if (tid) { const r = tourReply(tid, now); if (r) return r; }
+    const pa = peopleAsk(text);
+    if (pa) { const r = await peopleReply(pa, now); if (r) return r; }
     if (AGENTS.test(norm(text).replace(/[?!.]+$/g, ''))) return agentsReply(now);
     const bk = briefKind(text);
     if (bk) return briefReply(bk, now);
@@ -376,6 +438,7 @@ export function createV3(c) {
     search: async (q, n) => { const e = await engine(); return e ? e.search(String(q || ''), { n: n || 5 }) : []; },
     brief: (kind, now) => briefReply(kind === 'kalshi' || kind === 'money' ? kind : 'day', now),
     agents: (now) => agentsReply(now == null ? clock() : now),
+    people: async () => (await people()).list,
     explain: async (word) => { const e = await explainer(), t = e && e.find(String(word || '')); return t ? e.answer(t) : null; },
     claims: (raw) => !!(guard(raw) || AGENTS.test(norm(raw)) || tourAsk(raw) || briefKind(raw) || searchAsk(raw) || (followUp(raw) && dlg.get())),
     help: V3_HELP,

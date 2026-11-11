@@ -197,6 +197,7 @@ await api.explain(word)      // -> reply | null (an unknown word)
 | Explain (`intent: 'explain'`) | "what is drawdown / CISD / an IFVG / a sweep / Kelly / PF", "where does the stop go", "what is the target rule", "what is the strategy" | the meaning, then "Your rule (STRATEGY.md, rule N, ...)" word for word; a word the live strategy does not use says so |
 | Tours (`intent: 'tour'`) | "show me around", "tour Athens", "tour the money machines" | `reply.tour` |
 | Agents (`intent: 'agents'`) | "what are the agents working on", "who is building what", "agents status" | name, job, status and last commit in plain words (`reply.agents`), from `../ergasterion/builders.json` when published, else the bundled `jarvis/agents-now.json` (a copy of `handoff/agents_now.json` written by `jarvis_search_build.py`; the reply says it can be behind); neither = "I don't have that" |
+| People (`intent: 'people'`, `jpeople.js`, docs/PERSONA_API.md) | "talk to Sibyl", "let me speak to Chrysos", "ask Chrysos what he found", "who can I talk to", "stand-up", "what is everyone doing" | With `globalThis.OLYMPUS_PEOPLE` on the page: its `list()`, `ask(id, text)`, `standup()`; the reply carries `person: { id, name, title, kind }` and `action: { label, open: 'people', id }` (never a top-level `open`): the home calls `OLYMPUS_PEOPLE.open(action.id)`. Without the kit: the roster is `../olympus/people.json`, else the agents file (builders) + a bundled list; a builder is answered from `builders.json` / `agents-now.json`, and the reply says "The Symposium app has the full conversation." Names are fuzzy (a word of the name, a prefix, a typo, swapped letters). An unknown name is said, with who he can talk to |
 | Safety (`intent: 'refuse_trade'`) | any wording of buy / sell / place / enter / arm / go live / move my stop / cancel / flatten / bet $50 on ... | "I can't place orders: paper and suggestions only." Nothing opens, nothing is pending, nothing is kept |
 
 The dialogue state: `{ intent, args, entity, account, range, topic, link, hits, tour }`, set after every skill answer, gone after 5 minutes
@@ -227,8 +228,9 @@ watch lists), the glossary and the strategy rules. Deterministic (no clock in th
 ## Wiring needed (not done here: the lead owns these files)
 
 - **v3 (2026-11-11)** `tools/web_public/jarvis/sw.js` SHELL (bump the worker): `./skills3.js`, `./search.js`, `./dialogue.js`, `./explain.js`,
-  `./tours.js`, `./safety.js`, `./jbrief.js`, `../helios/helioscore.js`, `./strategy-facts.json`, `./search-index.json`, `./agents-now.json` (only when the builder wrote it) (the brain loads them on
-  first use; without them offline, search / explain say "I don't have that"). `tests.test_jarvis_shell` lists the eight scripts as missing until this is done.
+  `./tours.js`, `./safety.js`, `./jbrief.js`, `./jpeople.js`, `../helios/helioscore.js`, `./strategy-facts.json`, `./search-index.json`, `./agents-now.json` (only when the builder wrote it) (the brain loads them on
+  first use; without them offline, search / explain say "I don't have that"). `tests.test_jarvis_shell` lists the nine scripts as missing until this is done.
+- **People** Jarvis home (`index.html` / `home-*.js`): load `../olympus/people.js` when it exists, and on a reply with `action.open === 'people'` call `OLYMPUS_PEOPLE.open(action.id)`. `createBrain({ skillsEnv })` is unchanged; a kit can also be handed in as `createSkills({ people })`.
 - **v3** `tools/build_web_dashboard.py`, after the site's JSON is published (Archive, Pythia, money, Kalshi City):
   `python tools/jarvis_facts_build.py --out <site>/jarvis` then `python tools/jarvis_search_build.py --site <site>` (in-process:
   `jarvis_search_build.main(["--site", out_dir])`). The repo copies are already built; `--check` is in `tests.test_jarvis_skills`.

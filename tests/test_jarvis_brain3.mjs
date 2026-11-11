@@ -290,7 +290,7 @@ const appIds = new Set(apps.map((a) => a.id));
   const wrong = GOOD.filter((g) => SF.orderAsk(g));
   check(`${GOOD.length} ordinary phrases are NOT refused (questions, his own reports, notes, navigation)`, wrong.length === 0, wrong.join(' | '));
   check('"can I trade now" still gets the rulebook answer, which says it is not an order', /this is the rulebook, not an order/.test((await sk.handle('can I trade now')).text));
-  check('no module of the brain can send an order', ['skills3.js', 'safety.js', 'search.js', 'explain.js', 'tours.js', 'dialogue.js', 'jbrief.js'].every((f) => !/place_order|armLive|go_live\(|submitOrder|fetch\(|XMLHttpRequest|WebSocket/.test(fs.readFileSync(path.join(WP, 'jarvis', f), 'utf8'))));
+  check('no module of the brain can send an order', ['skills3.js', 'safety.js', 'search.js', 'explain.js', 'tours.js', 'dialogue.js', 'jbrief.js', 'jpeople.js'].every((f) => !/place_order|armLive|go_live\(|submitOrder|fetch\(|XMLHttpRequest|WebSocket/.test(fs.readFileSync(path.join(WP, 'jarvis', f), 'utf8'))));
 }
 
 // ---------------------------------------------------------------------------------------------- 6b. who is building what
@@ -298,7 +298,7 @@ const appIds = new Set(apps.map((a) => a.id));
   NOW = T0;
   const live = { data: { t: T0 / 1000 - 600, builders: [{ name: 'Jarvis brain', job: 'Search, follow-ups and the briefing', status: 'working', last_commit: { msg: 'a1b2c3d Jarvis brain v3: safety tightened', t: T0 / 1000 - 1800 } }, { name: 'Home agent', task: 'The courtyard', state: 'in_review', commit: 'home: new cards' }, { id: 'archive', what: 'Deep links' }, { junk: true }] }, file: 'ergasterion/builders.json', at: T0 };
   const { sk } = mkSk(null, { getAgents: async () => live });
-  for (const say of ['what are the agents working on', 'who is building what', 'what is everyone working on', 'agents status', 'which agents are busy with what', 'whos building what']) { const r = await sk.handle(say); check(`agents: "${say}"`, r && r.intent === 'agents' && r.agents.length === 3, r ? r.intent + ' ' + r.text : 'null'); }
+  for (const say of ['what are the agents working on', 'who is building what', 'what is each agent building', 'agents status', 'which agents are busy with what', 'whos building what']) { const r = await sk.handle(say); check(`agents: "${say}"`, r && r.intent === 'agents' && r.agents.length === 3, r ? r.intent + ' ' + r.text : 'null'); }
   const r = await sk.handle('what are the agents working on');
   check('agents: name, job, status and the last commit in plain words', /^3 agents, 1 working now:/.test(r.text) && r.text.includes('• Jarvis brain: Search, follow-ups and the briefing. Status: working. Last commit: "Jarvis brain v3: safety tightened" (30 min ago).') && r.text.includes('• Home agent: The courtyard. Status: in review. Last commit: "home: new cards".') && r.text.includes('• archive: Deep links. No commit yet.') && /From ergasterion\/builders\.json, 10 min ago\.$/.test(r.text), r.text);
   check('agents: "open it" opens the workshop', (await sk.handle('open it')).open === 'ergasterion');
@@ -308,12 +308,66 @@ const appIds = new Set(apps.map((a) => a.id));
   check('not an agents ask', ['how are the bots', 'what should I do next', 'who made you', 'what is the status', 'agents'].every((x) => !mkSk().sk.claims(x)));
 }
 
+// ---------------------------------------------------------------------------------------------- 6c. the people (docs/PERSONA_API.md)
+{
+  NOW = T0;
+  const JP = await imp('jarvis/jpeople.js');
+  const AG = { data: rd('jarvis/agents-now.json'), file: 'jarvis/agents-now.json', at: T0 };
+  const calls = [];
+  const KIT = {
+    ready: async () => {}, list: () => [{ id: 'scanner:sibyl', name: 'Sibyl', title: 'Prediction-market edges', kind: 'scanner', app: 'sibyl' }, { id: 'scanner:chrysos', name: 'Chrysos', title: 'The fleet planner', kind: 'scanner', app: 'chrysos' }, { id: 'builder:jarvis-brain', name: 'Jarvis brain', title: 'Search and follow-ups', kind: 'builder', app: 'ergasterion' }, { id: 'bot:lit', name: 'Zlarior', title: 'The LIT bot', kind: 'bot', app: 'zenith' }, { id: 'mind', name: 'Mind', title: 'Memory', kind: 'mind', app: 'mind' }],
+    ask: async (id, text) => { calls.push([id, text]); return { text: 'I found two plans worth the fee.', sources: ['money/chrysos.json'], followups: ['Which one first?'] }; },
+    standup: () => [{ id: 'scanner:sibyl', line: 'Yesterday 3 paper picks; today scanning; not blocked.' }, { id: 'builder:jarvis-brain', line: 'Yesterday search; today people; not blocked.' }],
+  };
+  const withKit = () => mkSk(null, { people: () => KIT, getAgents: async () => AG }).sk, noKit = () => mkSk(null, { getAgents: async () => AG }).sk;
+  // 20+ phrasings: [what he says, the type, the person's id with the kit ('' = none)]
+  const PH = [
+    ['talk to Sibyl', 'talk', 'scanner:sibyl'], ['let me speak to Sibyl', 'talk', 'scanner:sibyl'], ['can I talk to chrysos', 'talk', 'scanner:chrysos'], ['chat with the mind', 'talk', 'mind'], ['speak with zlarior', 'talk', 'bot:lit'],
+    ['talk to sybil', 'talk', 'scanner:sibyl'], ['talk to crysos please', 'talk', 'scanner:chrysos'], ['i want to talk to the jarvis brain agent', 'talk', 'builder:jarvis-brain'], ['talk to lit', 'talk', 'bot:lit'], ['get me Sibyl', 'talk', 'scanner:sibyl'],
+    ['ask Chrysos what he found', 'talk', 'scanner:chrysos'], ['ask sibyl about her picks', 'talk', 'scanner:sibyl'], ['ask the mind what it learned', 'talk', 'mind'], ['hey jarvis let me speak to Chrysos', 'talk', 'scanner:chrysos'], ['have a word with sibyl', 'talk', 'scanner:sibyl'],
+    ['who can I talk to', 'list', ''], ['who is here', 'list', ''], ['show me the people', 'list', ''], ['list the workers', 'list', ''],
+    ['stand-up', 'standup', ''], ['standup', 'standup', ''], ['daily stand up please', 'standup', ''], ['what is everyone doing', 'standup', ''], ['run the stand-up', 'standup', ''],
+  ];
+  check('20 people phrasings are tested', PH.length >= 20, PH.length);
+  for (const [say, type, id] of PH) {
+    const a = JP.peopleAsk(say), r = await withKit().handle(say);
+    check(`people: "${say}" -> ${type}${id ? ' ' + id : ''}`, a && a.type === type && r && r.intent === 'people' && (!id || (r.person && r.person.id === id && r.action.open === 'people' && r.action.id === id)) && r.open === undefined, r ? JSON.stringify({ i: r.intent, p: r.person, t: r.text.slice(0, 120) }) : 'null');
+  }
+  const t1 = await withKit().handle('talk to Sibyl');
+  check('with the kit: "talk to Sibyl" returns the action that opens the chat', /^Opening a chat with Sibyl/.test(t1.text) && JSON.stringify(t1.action) === JSON.stringify({ label: 'Talk to Sibyl', open: 'people', id: 'scanner:sibyl' }) && t1.kit === true);
+  calls.length = 0; const t2 = await withKit().handle('ask Chrysos what he found');
+  check('with the kit: "ask Chrysos what he found" passes the question to ask(id, text) and says who answered', calls.length === 1 && calls[0][0] === 'scanner:chrysos' && calls[0][1] === 'what he found' && t2.text.startsWith('Chrysos: I found two plans worth the fee.') && /From money\/chrysos\.json\./.test(t2.text) && t2.followups.length === 1, t2.text);
+  const t3 = await withKit().handle('stand-up');
+  check('with the kit: the stand-up is one line per person, from standup()', /^Stand-up, 2 people:/.test(t3.text) && t3.text.includes('• Sibyl: Yesterday 3 paper picks') && t3.text.includes('• Jarvis brain: Yesterday search') && t3.standup.length === 2);
+  const t4 = await withKit().handle('who can I talk to');
+  check('with the kit: the roster is the kit\'s list (plus the builders and the bundled names, no doubles)', t4.people.filter((p) => p.name === 'Sibyl').length === 1 && t4.people.some((p) => p.id === 'builder:jarvis-brain') && /Money scanners: Sibyl, Chrysos/.test(t4.text) && /Builders: /.test(t4.text));
+  // without the kit
+  const n1 = await noKit().handle('talk to the jarvis brain');
+  check('no kit: a builder is answered from the agents file, with the Symposium line', n1.intent === 'people' && n1.kit === false && n1.text.startsWith('Jarvis brain: Search everything, follow-up questions, briefings, tours.') && /I will not answer for Jarvis brain\. The Symposium app has the full conversation\./.test(n1.text) && /From jarvis\/agents-now\.json\./.test(n1.text) && n1.action.open === 'people', n1.text);
+  const n2 = await noKit().handle('talk to Sibyl');
+  check('no kit: a bundled person gets its title and the Symposium line (nothing invented)', n2.text.startsWith('Sibyl: Prediction-market edges, on paper.') && /Symposium app has the full conversation/.test(n2.text) && n2.person.id === 'scanner:sibyl');
+  const n3 = await noKit().handle('stand-up');
+  check('no kit: the stand-up is the agents file, with the Symposium line', n3.intent === 'people' && /agents?:/.test(n3.text) && /Theme finisher: /.test(n3.text) && /Symposium app has the full conversation\.$/.test(n3.text), n3.text.slice(0, 300));
+  const n4 = await noKit().handle('who can I talk to');
+  check('no kit: the roster is the agents file + the bundled list', n4.people.length >= 12 && /Builders: Theme finisher/.test(n4.text) && /Bots: Zlarior, ATLAS, BLITZ, Kalshi bot/.test(n4.text) && /Symposium/.test(n4.text), n4.text);
+  const pj = mkSk(null, { getPeople: async () => ({ people: [{ id: 'keeper:athens', name: 'Pericles', title: 'Keeper of Athens', kind: 'keeper', app: 'cities' }] }) }).sk, n5 = await pj.handle('talk to pericles');
+  check('no kit: people.json is the roster when it is there', n5 && n5.person.id === 'keeper:athens' && /Pericles: Keeper of Athens\./.test(n5.text));
+  const n6 = await mkSk().sk.handle('stand-up');
+  check('no kit, no agents file: "I don\'t have that"', n6.missing === true && /^I don't have that/.test(n6.text));
+  const u = await noKit().handle('talk to Bartholomew');
+  check('an unknown name is said, with who he can talk to', u.intent === 'people' && u.ok === false && /I don't know anyone called "bartholomew"/.test(u.text) && /Theme finisher/.test(u.text) && /who can I talk to/.test(u.text));
+  check('fuzzy names against the roster', ['sybil', 'sibyll', 'Sibyl', 'the sibyl agent'].every((x) => JP.matchPerson(x, JP.FALLBACK).id === 'scanner:sibyl') && JP.matchPerson('crysos', JP.FALLBACK).id === 'scanner:chrysos' && JP.matchPerson('lit', JP.FALLBACK).id === 'bot:lit' && JP.matchPerson('kalshi', JP.FALLBACK).id === 'bot:kalshi' && JP.matchPerson('xyzzy', JP.FALLBACK) === null);
+  check('not a people ask', ['talk to me about drawdown', 'ask me later', 'tell me about the stop', 'speak up', 'call it a day', 'i want a tour', 'find me a deal', 'how is everyone', 'what is my worst weekday', 'ask the broker'].every((x) => { const a = JP.peopleAsk(x); return !a || a.soft; }) && (await noKit().handle('find me a deal')).intent === 'search' && (await noKit().handle('tell me about the stop')).intent === 'explain');
+  check('a person cannot be made to trade: "tell Sibyl to buy 5 contracts" is refused', (await withKit().handle('tell Sibyl to buy 5 contracts')).intent === 'refuse_trade');
+  check('"open it" after a chat opens the hall (Symposium when installed, else the person\'s app)', await (async () => { const s = noKit(); await s.handle('talk to Sibyl'); const r = await s.handle('open it'); return r && (r.open === 'symposium' || r.open === 'sibyl'); })());
+}
+
 // ---------------------------------------------------------------------------------------------- 7. help, and the brain end to end (JARVIS_API v2)
 {
   NOW = T0;
   const { sk } = mkSk();
   const hp = await sk.handle('what can you do');
-  check('help lists the v3 skills and the paper-only line', /Find, explain, tour/.test(hp.text) && /what did we test about VWAP/.test(hp.text) && /tour Athens/.test(hp.text) && /paper and suggestions only/.test(hp.text) && Array.isArray(hp.more) && hp.more.length === 6);
+  check('help lists the v3 skills and the paper-only line', /Find, explain, tour/.test(hp.text) && /what did we test about VWAP/.test(hp.text) && /tour Athens/.test(hp.text) && /paper and suggestions only/.test(hp.text) && Array.isArray(hp.more) && hp.more.length === 7);
   for (const g of hp.more) for (const e of g.ex.filter((x) => !/^(and yesterday|what about ATLAS|open it)/.test(x))) { const r = await mkSk(null, { getAgents: async () => ({ data: { agents: [{ name: 'A', job: 'x' }] }, file: 'ergasterion/builders.json', at: T0 }) }).sk.handle(e); check(`help example "${e}" is answered by ${g.id}`, r && r.intent === g.id, r ? r.intent : 'null'); }
 
   const g = globalThis; g.location = { href: 'https://x.test/jarvis/' }; const S0 = mkS(), fetched = [];

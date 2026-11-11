@@ -358,7 +358,7 @@ export function createSkills(opts) {
     } catch (_) { return null; }
   }
   // v3 (skills3.js): safety, follow-ups, tours, the six-line briefing, explain, search. It gets this module's own helpers.
-  const v3 = createV3({ J, KB, A: { ...A, weekday: A.weekday }, answerIntent, sources, appsList, actions, reply, withSrc, tag, MISSING, nextAction, now: o.now, getIndex: o.getIndex, getFacts: o.getFacts, getAgents: o.getAgents, helios: o.helios });
+  const v3 = createV3({ J, KB, A: { ...A, weekday: A.weekday }, answerIntent, sources, appsList, actions, reply, withSrc, tag, MISSING, nextAction, now: o.now, getIndex: o.getIndex, getFacts: o.getFacts, getAgents: o.getAgents, getPeople: o.getPeople, people: o.people, helios: o.helios });
   async function contextFor(raw) {
     const r = routeText(String(raw || ''), { apps: appsList() }), now = nowMs(), S = await sources();
     const lines = [];
