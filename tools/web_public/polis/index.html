@@ -21,14 +21,17 @@
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o4">
 <link rel="stylesheet" href="../olympus/agora.css?v=a1">
+<link rel="stylesheet" href="../olympus/polis.css?v=p1">
 <script src="../olympus/themes.js?v=o4"></script>
 <script src="../olympus/olympus.js?v=o4" data-app="polis"></script>
 <script src="../olympus/intro-app.js?v=i5" defer></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/sfx.js?v=s3" defer></script>
+<script src="../olympus/agora-ui.js?v=1" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#e0b060'); r.setProperty('--oly-accent-rgb', '224, 176, 96'); })();</script>
 <link rel="stylesheet" href="polis.css?v=p1">
 <script src="../olympus/apps-list.js"></script>
+<script src="../olympus/polis.js?v=p1"></script>
 <script src="../olympus/polis-skyline-sky.js?v=p1"></script>
 <script src="../olympus/polis-skyline.js?v=p1"></script>
 <script src="poliscore.js?v=p1"></script>
@@ -57,19 +60,21 @@
     </div>
   </section>
   <div class="wrap">
+    <div class="band" id="band" aria-hidden="true"></div>
     <p id="status" class="note status" role="status" aria-live="polite">Raising the city...</p>
 
     <section class="ag-card card" id="harbourCard" aria-labelledby="harH">
-      <p class="ag-eyebrow">The harbour of the bots</p>
+      <p class="ag-eyebrow"><span class="ic" data-ag-icon="wave"></span>The harbour of the bots</p>
+      <span class="potmark" data-polis-pottery="trireme red tondo" data-size="64" aria-hidden="true"></span>
       <h2 id="harH">Ships in the harbour</h2>
       <p class="lead" id="harLead"></p>
       <ul class="ships" id="ships"></ul>
-      <p class="treasury" id="treasury"></p>
+      <p class="treasury"><span class="coin" id="coin"></span><span id="treasury"></span></p>
       <p class="note" id="harNote">A ship is in port when its bot is off or silent, under sail when it runs, and comes back with cargo when it closed a trade today. Read only: nothing here controls a bot.</p>
     </section>
 
     <section class="ag-card card" id="assemblyCard" aria-labelledby="asmH">
-      <p class="ag-eyebrow">The assembly (ekklesia)</p>
+      <p class="ag-eyebrow"><span class="ic" data-ag-icon="column"></span>The assembly (ekklesia)</p>
       <h2 id="asmH">Open motions</h2>
       <p class="lead" id="asmLead"></p>
       <ol class="motions" id="motions"></ol>
@@ -78,18 +83,18 @@
     </section>
 
     <section class="ag-card card" id="skyCard" aria-labelledby="skyH">
-      <p class="ag-eyebrow">The night sky of myths</p>
+      <p class="ag-eyebrow"><span class="ic" data-ag-icon="star"></span>The night sky of myths</p>
       <h2 id="skyH">Tonight's sky over New York</h2>
       <p class="lead" id="skyLead"></p>
       <ul class="consts" id="consts"></ul>
-      <p class="note" id="recordLine"></p>
+      <p class="note record"><span class="wreath" id="wreath"></span><span id="recordLine"></span></p>
       <details class="how"><summary>How the sky is drawn</summary>
         <p class="note">The stars are real: each one's right ascension and declination (J2000, from the Bright Star catalogue) is turned into height and compass direction for New York (40.71 N, 74.01 W) at this minute, using sidereal time. The Sun and the Moon use the standard almanac formulas. The picture faces south-south-east over the Acropolis; walking the city turns the sky with you (left is east, right is west). A shooting star crosses the sky when today is a new best day.</p>
       </details>
     </section>
 
     <section class="ag-card card" id="rollsCard" aria-labelledby="rollH">
-      <p class="ag-eyebrow">The citizens' rolls</p>
+      <p class="ag-eyebrow"><span class="ic" data-ag-icon="users"></span>The citizens' rolls</p>
       <h2 id="rollH">Citizens of OLYMPUS</h2>
       <p class="lead" id="rollLead"></p>
       <ul class="rolls" id="rolls"></ul>
@@ -97,7 +102,7 @@
     </section>
 
     <section class="ag-card card" id="directory" aria-labelledby="dirH" tabindex="-1">
-      <p class="ag-eyebrow">The city directory</p>
+      <p class="ag-eyebrow"><span class="ic" data-ag-icon="map"></span>The city directory</p>
       <h2 id="dirH">Every building, as a list</h2>
       <p class="lead" id="dirLead">The same apps as the map, in a plain list.</p>
       <div id="dirList"></div>

@@ -670,8 +670,8 @@
       st.field = field.map(function (p) { var h = SKY.altaz(p[0], p[1], ms); return [h.alt, h.az, p[2]]; }).filter(function (p) { return p[0] > -2; });
       st.projected = ms;
     }
-    // azimuth at the screen centre: the Acropolis view faces south-south-east; the sky turns at half the pan speed
-    function azCentre() { return SKY.n360(150 + (st.pan - centrePan()) * 0.5 / view.ppd); }
+    // azimuth at the screen centre: the Acropolis view faces east-south-east (Orion, Taurus and the Pleiades rise there on winter nights); the sky turns at 0.8 of the pan speed
+    function azCentre() { return SKY.n360(118 + (st.pan - centrePan()) * 0.8 / view.ppd); }
     function centrePan() { return clamp(1150 * view.k - view.w / 2, 0, st.panMax); }
     function skyXY(alt, az) { var d = wrap180(az - azCentre()); return [view.w / 2 + d * view.ppd, (HORIZON + PAD) * view.k - alt * view.ppd, d]; }
 

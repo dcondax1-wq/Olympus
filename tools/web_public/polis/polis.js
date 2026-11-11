@@ -58,10 +58,11 @@
     }
   }
   function bindSpot(el, b) {
-    el.addEventListener('click', function (e) { e.preventDefault(); if (S.dragged) return; if (S.selected === b.id) { enter(b); return; } select(b.id); });
+    el.addEventListener('pointerdown', function () { S.ptr = true; });
+    el.addEventListener('click', function (e) { e.preventDefault(); S.ptr = false; if (S.dragged) return; if (S.selected === b.id) { enter(b); return; } select(b.id); });
     el.addEventListener('mouseenter', function () { if (S.city) S.city.hover(b.id); if (!S.selected && W.matchMedia && W.matchMedia('(hover: hover)').matches) showPlaque(b, true); });
     el.addEventListener('mouseleave', function () { if (S.city) S.city.hover(null); if (!S.selected) hidePlaque(); });
-    el.addEventListener('focus', function () { select(b.id, true); });
+    el.addEventListener('focus', function () { if (!S.ptr) select(b.id, true); });
   }
   function find(id) { var L = S.city.layout.buildings; for (var i = 0; i < L.length; i++) if (L[i].id === id) return L[i]; return null; }
   function select(id, quiet) {
@@ -170,6 +171,7 @@
     }
     $('harLead').textContent = (H.demo ? 'DEMO harbour (no bot report is published on this site yet): ' : '') + n.sail + ' under sail, ' + n.returning + ' returning with cargo, ' + n.port + ' in port.';
     $('treasury').textContent = (T.up ? 'Gold rises from the mint: ' : '') + T.words + (H.demo ? ' (demo numbers, not real)' : '');
+    S.treasury = T;
   }
   function stone(kind) {
     var svg = sv('svg', { viewBox: '0 0 26 26', role: 'img', 'aria-label': kind + ' voting stone' }), fill = kind === 'white' ? '#efe6d2' : kind === 'black' ? '#2a2420' : '#8f877a';
@@ -196,7 +198,7 @@
   }
   function renderSky(info, rec) {
     var ul = $('consts'), ph = info.phase; clear(ul);
-    var up = info.up.slice(0, 9);
+    var up = info.up.slice(0, 16);
     $('skyH').textContent = ph === 'night' ? "Tonight's sky over New York" : ph === 'dusk' || ph === 'dawn' ? 'The sky at ' + ph + ' over New York' : 'The sky over New York (stars hidden by daylight)';
     $('skyLead').textContent = (ph === 'night' ? 'Up now: ' : 'Above the horizon now, behind the daylight: ') + up.length + ' of the ' + SKY.CONSTELLATIONS.length + ' Greek constellations we draw. Swipe the city to turn the sky.' +
       (info.moon && info.moon.alt > 0 ? ' The Moon is up, ' + Math.round(info.moon.frac * 100) + '% lit.' : '');
@@ -271,7 +273,7 @@
       // fresh news: each app's status card, six at a time
       loadCards();
       // keep the clock and the sky moving with real time
-      if (S.nowFixed == null) setInterval(function () { var inf = S.city.info(); $('clock').textContent = C.skyWords(inf.phase, nyTime(Date.now())); }, 30000);
+      if (S.nowFixed == null) setInterval(function () { var inf = S.city.info(); $('clock').textContent = C.skyWords(inf.phase, nyTime(Date.now())) + (S.attic ? ' \u00b7 ' + S.attic : ''); }, 30000);
       decorate();
     });
   }
@@ -295,6 +297,14 @@
   }
   // the optional Polis kits of the other agents (olympus/polis.js, olympus/polis-life.js): used when the page already has them
   function decorate() {
+    var P = W.OLYMPUS_POLIS;
+    if (P) {
+      try { if (P.meander) P.meander($('band'), { sides: 'band', color: 'gold', size: 16, live: false }); } catch (e) { S.errors.push('meander: ' + e.message); }
+      try { if (P.coin && S.treasury) P.coin($('coin'), { value: S.treasury.n ? S.treasury.today : 0, size: 44, label: S.treasury.n ? C.money(S.treasury.today) : '$0' }); } catch (e) { S.errors.push('coin: ' + e.message); }
+      try { if (P.laurel && S.model && S.model.record.on) P.laurel($('wreath'), { kind: 'laurel', gold: true, size: 44 }); } catch (e) { S.errors.push('laurel: ' + e.message); }
+      try { if (P.atticDate) { var ad = P.atticDate(new Date(nowMs()), { tz: 'America/New_York' }); if (ad && ad.label) { S.attic = ad.label; $('clock').textContent = C.skyWords(S.city.info().phase, nyTime(nowMs())) + ' \u00b7 ' + ad.label; } } } catch (e) { S.errors.push('attic: ' + e.message); }
+      try { if (P.auto) P.auto($('app')); } catch (e) { S.errors.push('polis auto: ' + e.message); }
+    }
     try { if (W.OLYMPUS_POLIS && typeof W.OLYMPUS_POLIS.decorate === 'function') W.OLYMPUS_POLIS.decorate($('app')); } catch (e) { S.errors.push('polis kit: ' + e.message); }
     try { if (W.OLYMPUS_POLIS_LIFE && typeof W.OLYMPUS_POLIS_LIFE.mount === 'function') W.OLYMPUS_POLIS_LIFE.mount($('app'), { app: 'polis' }); } catch (e) { S.errors.push('polis life: ' + e.message); }
   }

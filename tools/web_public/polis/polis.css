@@ -58,6 +58,17 @@ html.framed .districts { top: 100px; }
 .wrap { max-width: 680px; margin: 4px auto 0; position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px;
   padding: 0 calc(var(--sr) + 16px) calc(176px + var(--sb)) calc(var(--sl) + 16px); }
 .status { margin: 0; }
+.band { position: relative; height: 22px; margin: 0 -4px; opacity: .85; }
+.ag-eyebrow .ic { display: inline-flex; width: 18px; height: 18px; margin-right: 6px; vertical-align: -3px; color: var(--ag-gold); }
+.ag-eyebrow .ic svg { width: 18px; height: 18px; }
+#harbourCard { position: relative; }
+.potmark { position: absolute; right: 14px; top: 12px; width: 64px; height: 64px; pointer-events: none; }
+.potmark svg { width: 64px; height: 64px; }
+#harH, #harLead { padding-right: 74px; }
+.treasury { display: flex; align-items: center; gap: 12px; }
+.treasury .coin { flex: none; }
+.record { display: flex; align-items: center; gap: 10px; }
+.record .wreath:empty { display: none; }
 .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
 .card > h2 { margin: 0; }
 .lead { margin: 0; font-size: 15px; color: var(--ag-soft); }

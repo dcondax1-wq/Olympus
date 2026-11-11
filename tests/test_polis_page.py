@@ -52,6 +52,10 @@ def test_static():
     ids = ('id="hero"', 'id="pan"', 'id="world"', 'id="plaque"', 'id="pkEnter"', 'id="ships"', 'id="treasury"', 'id="motions"', 'id="consts"', 'id="rolls"', 'id="directory"', 'id="dirList"', 'class="skip"')
     check("a. the page has every part: the city (pan, world, plaque with Enter), harbour + treasury, assembly, night sky, rolls, the directory (list fallback) and a skip link to it",
           all(x in html for x in ids), [x for x in ids if x not in html])
+    js = AK.read(os.path.join(D, "polis.js"))
+    check("a. it wears the shared kits: the Polis kit (Greek key band, owl coin for today's $, gold laurel on a record, the Attic date, red-figure trireme) and AGORA v2 (agora-ui.js icons)",
+          all(x in html for x in ('src="../olympus/polis.js', 'href="../olympus/polis.css', 'src="../olympus/agora-ui.js', 'data-polis-pottery="trireme', 'data-ag-icon="wave"'))
+          and all(x in js for x in ("P.meander(", "P.coin(", "P.laurel(", "P.atticDate(", "P.auto(")), None)
     sky = AK.read(os.path.join(OLY, "polis-skyline-sky.js"))
     check("a. the sky method is written down in the module (RA / Dec J2000, sidereal time, hour angle, New York latitude, the projection)",
           all(w in sky for w in ("J2000", "sidereal", "hour angle", "40.7128", "projects alt / az")), None)
