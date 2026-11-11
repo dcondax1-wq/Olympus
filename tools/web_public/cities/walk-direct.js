@@ -95,7 +95,7 @@ export function createWalkDirector(scene, opts) {
   }
   function talkCam(P) {
     if (!P) return; const p = walker.pos; walker.stop(); walker.faceTo(Math.atan2(P.x - p.x, P.z - p.z));
-    D.mode = 'talk'; D.talkP = P; D.tp = { a: { x: p.x, y: 0, z: p.z, h: AV * 0.92 }, b: { x: P.x, y: 0, z: P.z, h: PH }, side: 1, two: 1.6, lookDown: 0.12, back: 2.5 };
+    D.mode = 'talk'; D.talkP = P; D.tp = { a: { x: p.x, y: 0, z: p.z, h: AV * 0.92 }, b: { x: P.x, y: 0, z: P.z, h: PH }, side: 1, two: 1.6, lookDown: 0.8, back: 3.0 };
     rig.shot('talk', D.tp);
   }
   function endTalk(quiet) { if (D.mode !== 'talk') return; D.mode = 'walk'; D.talkP = null; rig.shot('follow'); if (!quiet && o.onEndTalk) o.onEndTalk(); }
