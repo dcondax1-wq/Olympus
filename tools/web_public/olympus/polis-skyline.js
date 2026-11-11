@@ -718,7 +718,7 @@
       ctx.ellipse(x, y, e, r, 0, Math.PI / 2, -Math.PI / 2, f > 0.5 ? side < 0 : side > 0); ctx.fill();
     }
     function drawStar(t, oy) {
-      var S = st.star; if (!S.t0) S.t0 = t; var u = (t - S.t0) / 1.4; if (u > 1) { st.star = null; return; }
+      var S = st.star; if (S.t0 == null) S.t0 = t; var u = S.still ? 0.55 : (t - S.t0) / 1.4; if (u > 1) { st.star = null; return; }
       var x = S.x + S.dx * u, y = S.y + S.dy * u + oy, tail = 0.22, a = Math.sin(Math.PI * u);
       var g = ctx.createLinearGradient(x, y, x - S.dx * tail, y - S.dy * tail); g.addColorStop(0, 'rgba(255,244,214,' + (0.95 * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,220,160,0)');
       ctx.strokeStyle = g; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - S.dx * tail, y - S.dy * tail); ctx.stroke();
@@ -875,7 +875,7 @@
       setQuality: function (q, reduced) { st.quality = q === 'low' ? 'low' : 'high'; st.reduced = !!reduced; size(); kick(); },
       select: function (id) { st.selected = id || null; kick(); },
       hover: function (id) { st.hover = id || null; kick(); },
-      shootingStar: function () { var r = Math.random(); st.star = { x: view.w * (0.25 + r * 0.5), y: HORIZON * view.k * (0.12 + Math.random() * 0.2), dx: -view.w * 0.32 * (r < 0.5 ? -1 : 1), dy: HORIZON * view.k * 0.22 }; st.starShown = (st.starShown || 0) + 1; if (!animated()) { st.star.t0 = 0; frame(0.7 * 1000 * 1.4); st.star = null; } else kick(); },
+      shootingStar: function () { var r = Math.random(); st.star = { x: view.w * (0.25 + r * 0.5), y: HORIZON * view.k * (0.12 + Math.random() * 0.2), dx: -view.w * 0.32 * (r < 0.5 ? -1 : 1), dy: HORIZON * view.k * 0.22 }; st.starShown = (st.starShown || 0) + 1; if (!animated()) { st.star.still = true; frame(0); } else kick(); },
       screenOf: function (b) { return { x: b.x * view.k - st.pan, y: b.y * view.k, w: b.w * view.k, h: b.h * view.k }; },
       ships: function () { return st.ships; },
       info: function () { return { phase: st.phase, sunAlt: sunNow ? sunNow.alt : null, sunAz: sunNow ? sunNow.az : null, moon: moonNow ? { alt: moonNow.alt, frac: moonNow.frac } : null, night: L ? L.night : 0, stars: L ? L.stars : 0,
