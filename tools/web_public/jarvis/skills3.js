@@ -31,10 +31,13 @@ const NQ_OF = { kalshi_balance: 'balance', kalshi_today: 'pnl_today', kalshi_sta
 const ACCT_ALIAS = { lit: 'zlarior', zlarior: 'zlarior', atlas: 'atlas', blitz: 'blitz' };
 const BOT_OF = { zlarior: /^(?:lit|zlarior)/i, atlas: /^atlas/i, blitz: /^blitz/i };
 
+const AGENTS = /\b(?:what|which|who|how)\b.*\b(?:agents?|builders?|workers?|ai workers?|claude sessions?|the swarm)\b.*\b(?:working on|work on|doing|building|build|up to|busy with|on right now|status|progress)\b|\bwho(?: is|'s|s)? (?:building|working on|doing) what\b|\bwhat(?: is|'s|s)? (?:everyone|everybody|the team|each agent) (?:building|working on|doing)\b|^(?:agents?|builders?) (?:status|report|update|progress)$|^(?:status|report|update|progress) (?:of|on) (?:the )?(?:agents?|builders?)$|\bwho is working on what\b|\bwhat (?:is|are) (?:being|getting) built\b/;
+
 export const V3_HELP = [
   { id: 'search', label: 'Find anything', ex: ['find the risk calendar', 'what did we test about VWAP', 'where is the quiz'] },
   { id: 'explain', label: 'Explain a word or a rule', ex: ['what is a sweep', 'what is drawdown', 'where does the stop go'] },
   { id: 'briefing', label: 'The six-line briefing', ex: ['brief me', 'brief me on Kalshi', 'brief me on money'] },
+  { id: 'agents', label: 'Who is building what', ex: ['what are the agents working on', 'who is building what', 'agents status'] },
   { id: 'tour', label: 'A guided tour', ex: ['show me around', 'tour Athens', 'tour the money machines'] },
   { id: 'followup', label: 'Follow-ups (for 5 minutes)', ex: ['and yesterday?', 'what about ATLAS?', 'open it'] },
 ];
@@ -72,6 +75,31 @@ export function createV3(c) {
     const nm = (known.find((x) => x.id === link.open) || {}).name || link.open;
     const r = await c.actions.plan('open_app', { app: link.open, route: link.route || undefined, name: nm });
     return { ...r, intent: 'navigate', followup: 'open', about: link.name || undefined };
+  }
+
+  // ------------------------------------------------------------------------------------------------ who is building what
+  // "what are the agents working on": ../ergasterion/builders.json when it is published, else jarvis/agents-now.json (a copy of
+  // handoff/agents_now.json that the search builder bundles). c.getAgents() -> { data, file, at } | null. Neither: "I don't have that".
+  const pickS = (o, keys, n) => { for (const k of keys) { const v = o[k]; if (typeof v === 'string' && J.str(v, n)) return J.str(v, n); if (typeof v === 'number' && Number.isFinite(v)) return String(v); } return ''; };
+  function agentRows(data) {
+    const list = Array.isArray(data) ? data : isObj(data) ? (['builders', 'agents', 'workers', 'items', 'list', 'now'].map((k) => data[k]).find(Array.isArray) || []) : [];
+    return list.filter(isObj).map((a) => {
+      const lc = ['last_commit', 'commit', 'last', 'lastCommit'].map((k) => a[k]).find((v) => v != null);
+      const msg = isObj(lc) ? pickS(lc, ['msg', 'message', 'subject', 'text', 'title'], 110) : J.str(lc, 110);
+      const when = isObj(lc) ? (lc.t != null ? lc.t : lc.at != null ? lc.at : lc.date != null ? lc.date : lc.time) : (a.last_commit_t != null ? a.last_commit_t : a.commit_t != null ? a.commit_t : a.updated != null ? a.updated : a.t);
+      let ms = null; if (typeof when === 'number' && Number.isFinite(when)) ms = when < 1e11 ? when * 1000 : when; else if (typeof when === 'string' && Number.isFinite(Date.parse(when))) ms = Date.parse(when);
+      return { name: pickS(a, ['name', 'agent', 'id', 'who', 'title'], 40), job: pickS(a, ['job', 'task', 'what', 'work', 'doing', 'brief', 'summary'], 140), status: pickS(a, ['status', 'state', 'phase'], 30).replace(/_/g, ' '), commit: msg.replace(/^[0-9a-f]{7,40}\s+/i, ''), ms };
+    }).filter((r) => r.name && (r.job || r.status || r.commit));
+  }
+  async function agentsReply(now) {
+    let got = null; try { got = typeof c.getAgents === 'function' ? await c.getAgents() : null; } catch (_) { got = null; }
+    const rows = got && got.data ? agentRows(got.data) : [];
+    if (!rows.length) return { ...c.MISSING('who is building what', 'ergasterion/builders.json (and the bundled jarvis/agents-now.json)'), intent: 'agents' };
+    const t = J.fileTime(isObj(got.data) ? got.data : null, got.at), src = `${got.file}, ${J.agoText(t, now)}`;
+    const busy = rows.filter((r) => /work|build|run|busy|active|progress|test/i.test(r.status)).length;
+    const lines = [`${rows.length} ${rows.length === 1 ? 'agent' : 'agents'}${busy ? `, ${busy} working now` : ''}:`].concat(rows.slice(0, 12).map((r) => `• ${r.name}: ${r.job || 'no job written down'}${/[.!?]$/.test(r.job) || !r.job ? '' : '.'}${r.status ? ' Status: ' + r.status + '.' : ''}${r.commit ? ` Last commit: "${r.commit}"${r.ms ? ' (' + J.agoText(r.ms, now) + ')' : ''}.` : ' No commit yet.'}`), rows.length > 12 ? [`…and ${rows.length - 12} more in Ergasterion.`] : [], [got.file === 'jarvis/agents-now.json' ? 'This is the copy bundled at the last site build, so it can be behind.' : '', 'From ' + src + '.']).filter(Boolean);
+    dlg.note({ intent: 'agents', args: {}, entity: 'agents', link: { open: 'ergasterion' }, text: lines.join('\n') }, now);
+    return c.reply(lines.join('\n'), { intent: 'agents', agents: rows, sources: [src], speak: `${rows.length} agents${busy ? ', ' + busy + ' working now' : ''}. ${rows.slice(0, 3).map((r) => r.name + (r.job ? ': ' + r.job : '')).join('. ')}.` });
   }
 
   // ------------------------------------------------------------------------------------------------ tours
@@ -323,6 +351,7 @@ export function createV3(c) {
     if (fu && st) { const r = await follow(fu, st, text, now); if (r) return r; }
     const tid = tourAsk(text);
     if (tid) { const r = tourReply(tid, now); if (r) return r; }
+    if (AGENTS.test(norm(text).replace(/[?!.]+$/g, ''))) return agentsReply(now);
     const bk = briefKind(text);
     if (bk) return briefReply(bk, now);
     const sa = searchAsk(text);
@@ -346,8 +375,9 @@ export function createV3(c) {
     tours: () => tourList(c.appsList()),
     search: async (q, n) => { const e = await engine(); return e ? e.search(String(q || ''), { n: n || 5 }) : []; },
     brief: (kind, now) => briefReply(kind === 'kalshi' || kind === 'money' ? kind : 'day', now),
+    agents: (now) => agentsReply(now == null ? clock() : now),
     explain: async (word) => { const e = await explainer(), t = e && e.find(String(word || '')); return t ? e.answer(t) : null; },
-    claims: (raw) => !!(guard(raw) || tourAsk(raw) || briefKind(raw) || searchAsk(raw) || (followUp(raw) && dlg.get())),
+    claims: (raw) => !!(guard(raw) || AGENTS.test(norm(raw)) || tourAsk(raw) || briefKind(raw) || searchAsk(raw) || (followUp(raw) && dlg.get())),
     help: V3_HELP,
     /** the facts file is missing and this looks like "what is X": say so instead of nothing (asked only after the router had no answer) */
     explainMissing: async (raw) => { const q = norm(raw); if (!/^(?:what is|whats|what's|what are|what does|define|explain|where does|how does|when does)\b/.test(q) || q.split(' ').length > 7 || /\b(?:my|i|me|today|now|you|we)\b/.test(q)) return null; return (await explainer()) ? null : { ...c.MISSING('the word list and your strategy rules', 'jarvis/strategy-facts.json'), intent: 'explain' }; },

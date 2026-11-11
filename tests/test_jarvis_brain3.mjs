@@ -293,13 +293,28 @@ const appIds = new Set(apps.map((a) => a.id));
   check('no module of the brain can send an order', ['skills3.js', 'safety.js', 'search.js', 'explain.js', 'tours.js', 'dialogue.js', 'jbrief.js'].every((f) => !/place_order|armLive|go_live\(|submitOrder|fetch\(|XMLHttpRequest|WebSocket/.test(fs.readFileSync(path.join(WP, 'jarvis', f), 'utf8'))));
 }
 
+// ---------------------------------------------------------------------------------------------- 6b. who is building what
+{
+  NOW = T0;
+  const live = { data: { t: T0 / 1000 - 600, builders: [{ name: 'Jarvis brain', job: 'Search, follow-ups and the briefing', status: 'working', last_commit: { msg: 'a1b2c3d Jarvis brain v3: safety tightened', t: T0 / 1000 - 1800 } }, { name: 'Home agent', task: 'The courtyard', state: 'in_review', commit: 'home: new cards' }, { id: 'archive', what: 'Deep links' }, { junk: true }] }, file: 'ergasterion/builders.json', at: T0 };
+  const { sk } = mkSk(null, { getAgents: async () => live });
+  for (const say of ['what are the agents working on', 'who is building what', 'what is everyone working on', 'agents status', 'which agents are busy with what', 'whos building what']) { const r = await sk.handle(say); check(`agents: "${say}"`, r && r.intent === 'agents' && r.agents.length === 3, r ? r.intent + ' ' + r.text : 'null'); }
+  const r = await sk.handle('what are the agents working on');
+  check('agents: name, job, status and the last commit in plain words', /^3 agents, 1 working now:/.test(r.text) && r.text.includes('• Jarvis brain: Search, follow-ups and the briefing. Status: working. Last commit: "Jarvis brain v3: safety tightened" (30 min ago).') && r.text.includes('• Home agent: The courtyard. Status: in review. Last commit: "home: new cards".') && r.text.includes('• archive: Deep links. No commit yet.') && /From ergasterion\/builders\.json, 10 min ago\.$/.test(r.text), r.text);
+  check('agents: "open it" opens the workshop', (await sk.handle('open it')).open === 'ergasterion');
+  const bundled = mkSk(null, { getAgents: async () => ({ data: { v: 1, agents: [{ name: 'A', job: 'x', status: 'idle' }] }, file: 'jarvis/agents-now.json', at: T0 }) }).sk, rb = await bundled.handle('who is building what');
+  check('agents: the bundled copy says it can be behind', rb.intent === 'agents' && /bundled at the last site build/.test(rb.text) && /From jarvis\/agents-now\.json/.test(rb.text));
+  for (const ga of [undefined, async () => null, async () => ({ data: { builders: [] }, file: 'x', at: T0 }), async () => { throw new Error('x'); }]) { const rm = await mkSk(null, { getAgents: ga }).sk.handle('what are the agents working on'); check('agents: neither file -> "I don\'t have that"', rm && rm.missing === true && /^I don't have that/.test(rm.text) && /builders\.json/.test(rm.text), rm && rm.text); }
+  check('not an agents ask', ['how are the bots', 'what should I do next', 'who made you', 'what is the status', 'agents'].every((x) => !mkSk().sk.claims(x)));
+}
+
 // ---------------------------------------------------------------------------------------------- 7. help, and the brain end to end (JARVIS_API v2)
 {
   NOW = T0;
   const { sk } = mkSk();
   const hp = await sk.handle('what can you do');
-  check('help lists the v3 skills and the paper-only line', /Find, explain, tour/.test(hp.text) && /what did we test about VWAP/.test(hp.text) && /tour Athens/.test(hp.text) && /paper and suggestions only/.test(hp.text) && Array.isArray(hp.more) && hp.more.length === 5);
-  for (const g of hp.more) for (const e of g.ex.filter((x) => !/^(and yesterday|what about ATLAS|open it)/.test(x))) { const r = await mkSk().sk.handle(e); check(`help example "${e}" is answered by ${g.id}`, r && r.intent === g.id, r ? r.intent : 'null'); }
+  check('help lists the v3 skills and the paper-only line', /Find, explain, tour/.test(hp.text) && /what did we test about VWAP/.test(hp.text) && /tour Athens/.test(hp.text) && /paper and suggestions only/.test(hp.text) && Array.isArray(hp.more) && hp.more.length === 6);
+  for (const g of hp.more) for (const e of g.ex.filter((x) => !/^(and yesterday|what about ATLAS|open it)/.test(x))) { const r = await mkSk(null, { getAgents: async () => ({ data: { agents: [{ name: 'A', job: 'x' }] }, file: 'ergasterion/builders.json', at: T0 }) }).sk.handle(e); check(`help example "${e}" is answered by ${g.id}`, r && r.intent === g.id, r ? r.intent : 'null'); }
 
   const g = globalThis; g.location = { href: 'https://x.test/jarvis/' }; const S0 = mkS(), fetched = [];
   const files = { '../home.json': S0.home, '../money/index.json': S0.money, '../odeon/trades.json': S0.odeon, '../ledger/rules.json': S0.rules, '../pythia/events.json': S0.pythia, '../kalshicity/edges.json': S0.kalshiEdges, 'search-index.json': INDEX, 'strategy-facts.json': FACTS };
@@ -319,7 +334,10 @@ const appIds = new Set(apps.map((a) => a.id));
   const bf = await api.brief('money');
   check('api.brief(kind) -> the six lines', bf && bf.brief.kind === 'money' && bf.brief.lines.length === 6 && typeof bf.text === 'string' && (await api.brief()).brief.kind === 'day' && (await api.brief('kalshi')).brief.kind === 'kalshi');
   check('api.context() -> the follow-up state (sync)', api.context() && api.context().intent === 'briefing' && api.context().expiresSec <= 300);
-  check('the index and the facts are fetched once, as relative files', fetched.filter((u) => u === 'search-index.json').length === 1 && fetched.every((u) => /^\.\.\//.test(u) || /^(search-index|strategy-facts)\.json$/.test(u)), fetched.join(','));
+  files['agents-now.json'] = { v: 1, agents: [{ name: 'Jarvis brain', job: 'search', status: 'working' }] };
+  const ag = await brain.ask('what are the agents working on');
+  check('brain: no builders.json -> the bundled agents-now.json answers', ag.intent === 'agents' && /Jarvis brain: search/.test(ag.text) && /jarvis\/agents-now\.json/.test(ag.text) && fetched.includes('../ergasterion/builders.json'), ag.text);
+  check('the index and the facts are fetched once, as relative files', fetched.filter((u) => u === 'search-index.json').length === 1 && fetched.every((u) => /^\.\.\//.test(u) || /^(search-index|strategy-facts|agents-now)\.json$/.test(u)), fetched.join(','));
   // the brain itself: safety first, the v3 skills before the older rules, and a state that other answers clear
   const ask = async (t) => brain.ask(t);
   let r = await ask('buy 2 MNQ at market');

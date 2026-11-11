@@ -10,6 +10,8 @@ One small file (under 350 KB) that jarvis/search.js searches offline: "find ..."
     event     Pythia's dated events (pythia/events.json)
     quiz      the Lyceum question bank (lyceum/lyceumcore.js)
     money     the money machines' item titles (money/<id>.json when published, else the bundled fixture, marked sample)
+    (also)    handoff/agents_now.json, when it exists, is copied to jarvis/agents-now.json (name, job, status, last commit only):
+              Jarvis' fallback for "what are the agents working on" when ergasterion/builders.json is not published
     kalshi    the Kalshi engine's stop / do-more / watch lists (kalshicity/edges.json)
     term      glossary words (olympus/glossary*.js + strategy-facts.json)
     rule      the live strategy's rules (strategy-facts.json, from STRATEGY.md)
@@ -243,6 +245,58 @@ def terms_and_rules(src: Src) -> list:
     return out
 
 
+AGENTS_SRC = os.path.join(ROOT, "handoff", "agents_now.json")
+AGENT_KEYS = ("name", "agent", "id", "job", "task", "what", "status", "state", "last_commit", "commit", "updated", "t", "branch")
+SECRET = re.compile(r"gsk_[A-Za-z0-9]{8}|AIza[A-Za-z0-9]{8}|github_pat_|ghp_[A-Za-z0-9]{8}|sk-[A-Za-z0-9]{12}|api[_-]?key\s*[:=]|token\s*[:=]|password", re.I)
+
+
+def agents_now(src_path: str = AGENTS_SRC):
+    """handoff/agents_now.json -> the small public copy jarvis/agents-now.json (None when the file is not there or holds nothing).
+    Only the fields Jarvis says are kept (name, job, status, last commit, time); anything that looks like a key drops the row."""
+    j = rjson(src_path)
+    rows = j if isinstance(j, list) else next((j[k] for k in ("agents", "builders", "workers", "items", "now") if isinstance(j, dict) and isinstance(j.get(k), list)), None)
+    if not rows:
+        return None
+    out = []
+    for a in rows[:60]:
+        if not isinstance(a, dict):
+            continue
+        row = {}
+        for k in AGENT_KEYS:
+            v = a.get(k)
+            if isinstance(v, dict):
+                v = {kk: (one(vv, 160) if isinstance(vv, str) else vv) for kk, vv in v.items() if kk in ("msg", "message", "subject", "t", "at", "date", "sha") and isinstance(vv, (str, int, float))}
+            elif isinstance(v, str):
+                v = one(v, 160)
+            elif not isinstance(v, (int, float)):
+                continue
+            if v not in ("", {}, None):
+                row[k] = v
+        if row and not SECRET.search(json.dumps(row)):
+            out.append(row)
+    if not out:
+        return None
+    body = {"v": 1, "src": "handoff/agents_now.json", "agents": out}
+    for k in ("t", "updated", "generated_at", "asof"):
+        if isinstance(j, dict) and isinstance(j.get(k), (str, int, float)):
+            body[k] = j[k]
+    return body
+
+
+def write_agents(out_dir: str) -> str:
+    """writes or removes <out_dir>/agents-now.json; returns what it did"""
+    path = os.path.join(out_dir, "agents-now.json")
+    body = agents_now()
+    if body is None:
+        if os.path.exists(path):
+            os.remove(path)
+            return "agents-now.json removed (handoff/agents_now.json is not there)"
+        return "agents-now.json: no handoff/agents_now.json, nothing bundled"
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(body, ensure_ascii=False, indent=1) + "\n")
+    return "agents-now.json: %d agents bundled" % len(body["agents"])
+
+
 def build(site: str | None = None) -> dict:
     src = Src(site)
     docs = []
@@ -293,6 +347,16 @@ def selftest() -> int:
         bad.append("the compact writer does not round-trip")
     if dumps(build()) != text:
         bad.append("not deterministic")
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        p = os.path.join(td, "a.json")
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump({"t": 1, "agents": [{"name": "A", "job": "builds x", "status": "working", "last_commit": {"msg": "add x", "t": 5}, "secret": "zz"}, {"name": "B", "job": "token: abc"}, "junk"]}, f)
+        a = agents_now(p)
+        if not a or len(a["agents"]) != 1 or "secret" in a["agents"][0] or a["agents"][0]["last_commit"]["msg"] != "add x" or a.get("t") != 1:
+            bad.append("agents_now(): wrong copy: %r" % (a,))
+        if agents_now(os.path.join(td, "none.json")) is not None:
+            bad.append("agents_now(): a missing file must give None")
     titles = " ".join(d[1] for d in b["docs"]).lower()
     for w in ("helios", "archive", "cpi", "sweep", "kelly", "lit rule 6"):
         if w not in titles:
@@ -340,6 +404,7 @@ def main(argv=None) -> int:
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
     print("wrote %s: %d docs, %d bytes" % (os.path.relpath(path, ROOT) if path.startswith(ROOT) else path, len(body["docs"]), len(text.encode("utf-8"))))
+    print(write_agents(os.path.dirname(path)))
     return 0
 
 

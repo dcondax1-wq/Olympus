@@ -537,7 +537,9 @@ export function createBrain(opts) {
         const apps = () => { try { const l = (typeof globalThis !== 'undefined' && globalThis.OLYMPUS_APPS_LIST) || (ap && ap.BUILT_INS) || (lastFacts && lastFacts.apps) || []; return Array.isArray(l) ? l : []; } catch (_) { return []; } };
         // v3: the search index and the strategy facts (built at site-build time), fetched once, on the first question that needs them
         const lazy = (name) => { let p = null; return () => { if (!p) p = Promise.resolve(typeof jd.loadJson === 'function' ? jd.loadJson(name, { fetch: (...a) => fetch(...a) }) : null).then((j) => { if (!j) p = null; return j; }).catch(() => { p = null; return null; }); return p; }; };
-        skills = sk.createSkills({ getSources, apps, storage: store(), now: () => (nowFn ? nowFn() : Date.now()), assistant, env: isObj(o.skillsEnv) ? o.skillsEnv : {}, getIndex: lazy('search-index.json'), getFacts: lazy('strategy-facts.json') });
+        skills = sk.createSkills({ getSources, apps, storage: store(), now: () => (nowFn ? nowFn() : Date.now()), assistant, env: isObj(o.skillsEnv) ? o.skillsEnv : {}, getIndex: lazy('search-index.json'), getFacts: lazy('strategy-facts.json'),
+          // "what are the agents working on": the workshop's builders.json when it is published, else the copy the search builder bundled; read fresh, at most once a minute
+          getAgents: (() => { let v = null, at = 0; return async () => { if (v && Date.now() - at < 60000) return v; const ld = (n) => (typeof jd.loadJson === 'function' ? jd.loadJson(n, { fetch: (...a) => fetch(...a) }) : null); const live = await ld(jd.BUILDERS_FILE || '../ergasterion/builders.json'); const j = live || await ld('agents-now.json'); v = j ? { data: j, file: live ? 'ergasterion/builders.json' : 'jarvis/agents-now.json', at: Date.now() } : null; at = Date.now(); return v; }; })() });
         installApi();
       }).catch(() => null).then(() => { skillsWait = null; });
     } catch (_) { skillsWait = null; }

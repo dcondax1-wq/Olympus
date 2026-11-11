@@ -184,6 +184,7 @@ await api.explain(word)      // -> reply | null (an unknown word)
 - `brief(kind)`: six lines, each amount with its $ and R, then one line of sources ending "Paper and suggestions only." A missing file is said on
   its own line; with nothing to read the reply is `{ missing: true }` and the brain's older briefing answers. In the brain, "brief me" keeps the
   brain's own bot `cards` and its urgent "First: ..." line (it replaces line 6).
+- Agents file, either shape: `{ builders | agents: [{ name, job | task | what, status | state, last_commit: 'text' | { msg, t } }] }`; `sk.agents()` returns the same reply.
 - `context()` holds no numbers and no answer text: only what a follow-up would refer to.
 
 ### What he can say
@@ -195,6 +196,7 @@ await api.explain(word)      // -> reply | null (an unknown word)
 | Briefing (`intent: 'briefing'`) | "brief me", "brief me on Kalshi", "brief me on money" | `brief.lines` (6) |
 | Explain (`intent: 'explain'`) | "what is drawdown / CISD / an IFVG / a sweep / Kelly / PF", "where does the stop go", "what is the target rule", "what is the strategy" | the meaning, then "Your rule (STRATEGY.md, rule N, ...)" word for word; a word the live strategy does not use says so |
 | Tours (`intent: 'tour'`) | "show me around", "tour Athens", "tour the money machines" | `reply.tour` |
+| Agents (`intent: 'agents'`) | "what are the agents working on", "who is building what", "agents status" | name, job, status and last commit in plain words (`reply.agents`), from `../ergasterion/builders.json` when published, else the bundled `jarvis/agents-now.json` (a copy of `handoff/agents_now.json` written by `jarvis_search_build.py`; the reply says it can be behind); neither = "I don't have that" |
 | Safety (`intent: 'refuse_trade'`) | any wording of buy / sell / place / enter / arm / go live / move my stop / cancel / flatten / bet $50 on ... | "I can't place orders: paper and suggestions only." Nothing opens, nothing is pending, nothing is kept |
 
 The dialogue state: `{ intent, args, entity, account, range, topic, link, hits, tour }`, set after every skill answer, gone after 5 minutes
@@ -225,7 +227,7 @@ watch lists), the glossary and the strategy rules. Deterministic (no clock in th
 ## Wiring needed (not done here: the lead owns these files)
 
 - **v3 (2026-11-11)** `tools/web_public/jarvis/sw.js` SHELL (bump the worker): `./skills3.js`, `./search.js`, `./dialogue.js`, `./explain.js`,
-  `./tours.js`, `./safety.js`, `./jbrief.js`, `../helios/helioscore.js`, `./strategy-facts.json`, `./search-index.json` (the brain loads them on
+  `./tours.js`, `./safety.js`, `./jbrief.js`, `../helios/helioscore.js`, `./strategy-facts.json`, `./search-index.json`, `./agents-now.json` (only when the builder wrote it) (the brain loads them on
   first use; without them offline, search / explain say "I don't have that"). `tests.test_jarvis_shell` lists the eight scripts as missing until this is done.
 - **v3** `tools/build_web_dashboard.py`, after the site's JSON is published (Archive, Pythia, money, Kalshi City):
   `python tools/jarvis_facts_build.py --out <site>/jarvis` then `python tools/jarvis_search_build.py --site <site>` (in-process:

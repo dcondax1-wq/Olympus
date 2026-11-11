@@ -358,7 +358,7 @@ export function createSkills(opts) {
     } catch (_) { return null; }
   }
   // v3 (skills3.js): safety, follow-ups, tours, the six-line briefing, explain, search. It gets this module's own helpers.
-  const v3 = createV3({ J, KB, A: { ...A, weekday: A.weekday }, answerIntent, sources, appsList, actions, reply, withSrc, tag, MISSING, nextAction, now: o.now, getIndex: o.getIndex, getFacts: o.getFacts, helios: o.helios });
+  const v3 = createV3({ J, KB, A: { ...A, weekday: A.weekday }, answerIntent, sources, appsList, actions, reply, withSrc, tag, MISSING, nextAction, now: o.now, getIndex: o.getIndex, getFacts: o.getFacts, getAgents: o.getAgents, helios: o.helios });
   async function contextFor(raw) {
     const r = routeText(String(raw || ''), { apps: appsList() }), now = nowMs(), S = await sources();
     const lines = [];
@@ -375,7 +375,7 @@ export function createSkills(opts) {
   return {
     handle, contextFor, nudges: nudgesFor, mem, actions, route: (t) => routeText(t, { apps: appsList() }), examples: EXAMPLES.slice(),
     early: (raw, opt) => v3.early(raw, nowMs(opt && opt.now)), heard: () => v3.heard(), context: (n) => v3.context(nowMs(n)), tours: () => v3.tours(), search: (q, n) => v3.search(q, n), brief: (kind, n) => v3.brief(kind, nowMs(n)),
-    explain: (w) => v3.explain(w), claims: (raw) => v3.claims(raw), guard: (raw) => v3.guard(raw),
+    explain: (w) => v3.explain(w), agents: (n) => v3.agents(nowMs(n)), claims: (raw) => v3.claims(raw), guard: (raw) => v3.guard(raw),
     confirm: () => actions.confirm(), cancel: () => actions.cancel(), get pending() { return actions.pending; }, answer: (id, S, now, args) => (A[id] ? A[id](S, nowMs(now), args || {}) : null),
   };
 }
