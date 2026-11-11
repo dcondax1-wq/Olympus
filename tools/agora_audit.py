@@ -17,7 +17,7 @@ SKIP_FILE = re.compile(r"(\.min\.|(^|/)sw\.js$|three(\.module)?\.js$|OFL\.txt|/l
 EXTS = (".css", ".js", ".mjs", ".html")
 THEME = "#14110e"
 
-HEX = re.compile(r"#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b")
+HEX = re.compile(r"#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})\b")   # 8 / 4 digits: with alpha (the alpha is dropped)
 # old purple/blue accents found by grep (named explicitly so they always show up, whatever the HSL says)
 OLD_ACCENTS = {"#a68bff", "#b79bff", "#7fd0ff", "#b388ff", "#a78bfa", "#8b5cf6", "#7c3aed", "#a855f7", "#c084fc",
                "#22d3ee", "#2ee59d", "#ff2bd6", "#3ee0c8", "#6d28d9", "#4f9bff", "#38bdf8", "#67e8f9", "#7c4dff"}
@@ -33,8 +33,9 @@ THEME_META = re.compile(r'<meta[^>]+name=["\']theme-color["\'][^>]*content=["\']
 
 def hsl(h):
     h = h.lstrip("#")
-    if len(h) == 3:
-        h = "".join(c * 2 for c in h)
+    if len(h) in (3, 4):
+        h = "".join(c * 2 for c in h[:3])
+    h = h[:6]
     r, g, b = (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
     H, L, S = colorsys.rgb_to_hls(r, g, b)
     return H * 360, S, L
@@ -42,7 +43,7 @@ def hsl(h):
 
 def is_neon(h):
     """Cool or magenta, saturated, bright enough to glow: cyan/mint 150-200, blue/violet 205-330 (aegean #4b7a99 passes)."""
-    if h.lower() in OLD_ACCENTS:
+    if h.lower() in OLD_ACCENTS or (len(h) == 9 and h[:7].lower() in OLD_ACCENTS):
         return True
     H, S, L = hsl(h)
     return S >= 0.5 and 0.38 <= L <= 0.92 and 150 <= H <= 335 and not (L > 0.9)

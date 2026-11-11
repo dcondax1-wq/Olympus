@@ -23,7 +23,9 @@ check("gold is not neon", not A.is_neon("#c8a24a"))
 check("aegean is not neon", not A.is_neon("#4b7a99"))
 check("olive is not neon", not A.is_neon("#7f8a52"))
 check("terracotta is not neon", not A.is_neon("#c96a4a"))
-check("hsl neon seen", bool(A.neon_rgba("color: hsl(280 90% 60%)")))
+check("neon with an alpha (8 and 4 hex digits) is seen", A.is_neon("#58dcff8c") and A.is_neon("#a855f780") and bool(A.HEX.search("border:1px solid #47dfff88;"))
+      and A.is_neon("#0ffc") and not A.is_neon("#c8a24a80"))
+check("hsl neon seen",bool(A.neon_rgba("color: hsl(280 90% 60%)")))
 
 # the tree is clean
 res = A.static_scan()
