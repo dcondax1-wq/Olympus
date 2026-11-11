@@ -54,14 +54,17 @@ export function attach(ext, home) {
   const jambs = inst(new T.BoxGeometry(0.48, H, 0.8), marble, N * 2);
   const lintels = inst(new T.BoxGeometry(W + 1.48, 0.6, 0.92), marble, N);
   const fillets = inst(new T.BoxGeometry(W + 1.0, 0.12, 1.0), gold, N);
+  function placeDoors(f) {
   for (let i = 0; i < N; i++) {
-    const x = xs[i], z = zOf(i);
+    const x = xs[i] * f, z = zOf(i);
     at.rotation.set(0, 0, 0); at.scale.set(1, 1, 1);
     at.position.set(x - (W / 2 + 0.24), FLOOR_Y + H / 2, z); at.updateMatrix(); jambs.setMatrixAt(i * 2, at.matrix);
     at.position.set(x + (W / 2 + 0.24), FLOOR_Y + H / 2, z); at.updateMatrix(); jambs.setMatrixAt(i * 2 + 1, at.matrix);
     at.position.set(x, FLOOR_Y + H + 0.3, z); at.updateMatrix(); lintels.setMatrixAt(i, at.matrix);
     at.position.set(x, FLOOR_Y + H + 0.66, z); at.updateMatrix(); fillets.setMatrixAt(i, at.matrix);
   }
+  }
+  placeDoors(1);
   // the light inside each doorway: a soft warm panel that is brightest low and fades upward, tinted a little by the district (mostly warm white);
   // iAmp is its strength per doorway (1 at rest, more when the district needs you)
   const lightMat = new T.ShaderMaterial({
@@ -72,10 +75,9 @@ export function attach(ext, home) {
   const lights = inst(new T.PlaneGeometry(W, H), lightMat, N, 5);
   const iCol = new Float32Array(N * 3), iAmp = new Float32Array(N).fill(1), want = new Float32Array(N).fill(1);
   const restCol = (i) => tmp.set(DISTRICTS[i].tint).lerp(warm, 0.55);
-  for (let i = 0; i < N; i++) {
-    restCol(i); iCol.set([tmp.r, tmp.g, tmp.b], i * 3);
-    at.position.set(xs[i], FLOOR_Y + H / 2, zOf(i) - 0.1); at.updateMatrix(); lights.setMatrixAt(i, at.matrix);
-  }
+  for (let i = 0; i < N; i++) { restCol(i); iCol.set([tmp.r, tmp.g, tmp.b], i * 3); }
+  const placeLights = (f) => { at.scale.set(1, 1, 1); for (let i = 0; i < N; i++) { at.position.set(xs[i] * f, FLOOR_Y + H / 2, zOf(i) - 0.1); at.updateMatrix(); lights.setMatrixAt(i, at.matrix); } };
+  placeLights(1);
   const colAttr = new T.InstancedBufferAttribute(iCol, 3), ampAttr = new T.InstancedBufferAttribute(iAmp, 1);
   lights.geometry.setAttribute('iCol', colAttr); lights.geometry.setAttribute('iAmp', ampAttr);
 
@@ -88,11 +90,22 @@ export function attach(ext, home) {
   }
   slabs.instanceColor.needsUpdate = true;
   const cols = inst(new T.CylinderGeometry(0.5, 0.58, 8.4, 20, 1), marble, 4), caps = inst(new T.BoxGeometry(1.5, 0.36, 1.5), gold, 4);
-  [[-8.4, Z + 3.2], [8.4, Z + 3.2], [-10.4, Z - 2.8], [10.4, Z - 2.8]].forEach((p, i) => {
-    at.position.set(p[0], FLOOR_Y + 4.2, p[1]); at.updateMatrix(); cols.setMatrixAt(i, at.matrix);
-    at.position.set(p[0], FLOOR_Y + 8.58, p[1]); at.updateMatrix(); caps.setMatrixAt(i, at.matrix);
-  });
+  // the columns: around the doorways on a wide screen; on a phone (the doorways spread over their names, below) one column stands in each gap, a little
+  // behind and lower, so the window reads as a colonnade with five lit doorways (QA6: at 390 px the old framing showed a few pale bars)
+  function placeColumns(f) {
+    const gap = f > 1.15, sy = gap ? 0.8 : 1;
+    const P = gap ? [0, 1, 2, 3].map((i) => [(xs[i] + xs[i + 1]) / 2 * f, (zOf(i) + zOf(i + 1)) / 2 - 1.6]) : [[-8.4, Z + 3.2], [8.4, Z + 3.2], [-10.4, Z - 2.8], [10.4, Z - 2.8]];
+    P.forEach((p, i) => {
+      at.scale.set(1, sy, 1); at.position.set(p[0], FLOOR_Y + 4.2 * sy, p[1]); at.updateMatrix(); cols.setMatrixAt(i, at.matrix);
+      at.scale.set(1, 1, 1); at.position.set(p[0], FLOOR_Y + 8.58 * sy - 0.18 * (1 - sy), p[1]); at.updateMatrix(); caps.setMatrixAt(i, at.matrix);
+    });
+    cols.instanceMatrix.needsUpdate = true; caps.instanceMatrix.needsUpdate = true;
+  }
+  placeColumns(1);
   for (const m of [jambs, lintels, fillets, lights]) m.instanceMatrix.needsUpdate = true;
+  /** spread the doorways sideways by f (home3d.js: so each doorway stands over its own name on the rail); 1 = the built row */
+  out.spread = (f) => { const g = Math.max(1, Math.min(2.2, +f || 1)); if (Math.abs(g - (out.dims.spread || 1)) < 0.004) return out.dims.spread; out.dims.spread = g; placeDoors(g); placeLights(g); placeColumns(g);
+    for (const m of [jambs, lintels, fillets, lights]) m.instanceMatrix.needsUpdate = true; return g; };
 
   // which doorways need the owner: { market: '' | 'warn' | 'bad', ... } (home-cards.js). The light eases to its new strength; with motion off it is set at once.
   function setNeeds(needs) {
