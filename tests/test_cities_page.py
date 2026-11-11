@@ -492,7 +492,7 @@ def sec_d(br, base, C, days, picks, ids):
         inf = pg.enter(cid, settle=3.2)
         k = p.evaluate("window.__cities.nearestToCenter()")
         pt = p.evaluate(f"window.__cities.project({k})")
-        p.evaluate(f"window.__athens.ui.tap({pt['x']}, {pt['y']})")
+        p.touchscreen.tap(pt["x"], pt["y"])
         try:
             p.wait_for_function("window.__cities.info().sheet === 'building'", timeout=20000)
             tapped = True
