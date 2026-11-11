@@ -63,9 +63,9 @@ export const TIME_NAMES = Object.freeze(Object.keys(TIMES));
 /** the local clock as a minute of the day (0..1439) */
 export function clockMinute(date) { const d = date || new Date(); return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60; }
 /** 'clock' | a name | a minute -> a minute; ?time=dusk in the address beats it (screenshots, tests) */
-export function resolveTime(t) {
-  let q = null;
-  try { q = new URLSearchParams(location.search).get('time'); } catch (e) { /* no location */ }
+export const urlTime = () => { try { return new URLSearchParams(location.search).get('time'); } catch (e) { return null; } };
+export function resolveTime(t, url) {
+  const q = url === false ? null : urlTime();
   const v = q || t;
   if (typeof v === 'number' && isFinite(v)) return ((v % 1440) + 1440) % 1440;
   if (v && TIMES[v] !== undefined) return TIMES[v];
@@ -671,7 +671,7 @@ export function cinema(rcOrParts, opts) {
   }
   function frame(dt, t) {
     if (dead || !H) return;
-    if (timeMode === 'clock' && t - lastClock > 20) { lastClock = t; const m = resolveTime('clock'); if (Math.abs(m - minute) > 0.5) { minute = m; applyTime(); } }
+    if (timeMode === 'clock' && !urlTime() && t - lastClock > 20) { lastClock = t; const m = resolveTime('clock'); if (Math.abs(m - minute) > 0.5) { minute = m; applyTime(); } }
     if (fade) { fade.k = Math.min(1, fade.k + dt / fade.dur); const e = fade.k * fade.k * (3 - 2 * fade.k); let d = fade.to - fade.from; if (d > 720) d -= 1440; if (d < -720) d += 1440; minute = (fade.from + d * e + 1440) % 1440; applyTime(); if (fade && fade.k >= 1) fade = null; }
     H.run(dt, t);
     if (rc && rc.setFocus && (focusT || focusK > 0)) {
@@ -714,7 +714,7 @@ export function cinema(rcOrParts, opts) {
     },
     /** 'clock' | 'dawn' | 'golden' | 'day' | 'dusk' | 'night' | a minute; fades over 1.6 s (at once with reduced motion) */
     setTime(t, ms) {
-      timeMode = t; const to = resolveTime(t);
+      timeMode = t; const to = resolveTime(t, false);                // an explicit call beats ?time= (which only sets the start)
       if (reduced || ms === 0) { minute = to; applyTime(true); } else fade = { from: minute, to, k: 0, dur: (ms || 1600) / 1000 };
       return L.name;
     },
