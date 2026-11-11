@@ -807,6 +807,8 @@
         if (state === 'port') { bx = M.berths[i][0]; by = M.berths[i][1]; s = 1; }
         else if (state === 'returning') { var lt = still ? 0.5 : (t * 0.01 + i * 0.25) % 1; bx = lerp(2470, 2700, 0.5 + 0.5 * Math.sin(lt * Math.PI * 2)); by = 494 + i * 6; s = 0.82; }
         else { bx = lane[0] + (still ? 0 : Math.sin(t * 0.05 + i * 2) * 60); by = lane[1]; s = lane[2]; }
+        // a phone frame (narrow view, small k): the bots' ships are drawn larger so they read at a glance (moored ships less, the berths are close)
+        if (view.w < 640) s *= state === 'port' ? 1.12 : 1.38;
         var factor = 1, sx = bx * k - st.pan * factor, bob = still ? 0 : Math.sin(t * 1.6 + i * 1.3) * 1.2 * s;
         if (sx < -120 || sx > view.w + 120) { S._hit = null; continue; }
         paintShip(ctx, sx, (by + PAD) * k + bob * k, s * k, S, state, i, t, still);

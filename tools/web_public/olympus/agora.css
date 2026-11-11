@@ -150,7 +150,7 @@ html[data-theme="agora"] ::selection { background: rgba(var(--ag-gold-rgb), .35)
 .ag-tab { flex: 0 0 auto; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--ag-line); color: var(--ag-soft); background: transparent; font: 600 var(--ag-fs-body) var(--ag-sans);
   transition: scale var(--ag-d1) var(--ag-ease), background-color var(--ag-d2) var(--ag-ease), color var(--ag-d2) var(--ag-ease); }
 .ag-tab[aria-selected="true"] { color: var(--ag-on-gold); background: var(--ag-gold); border-color: var(--ag-gold); }
-.ag-field { width: 100%; min-height: 44px; padding: 0 14px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line); background: var(--ag-s1); color: var(--ag-text); font: 400 1rem var(--ag-sans); }
+.ag-field { box-sizing: border-box; width: 100%; min-height: 44px; padding: 0 14px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line); background: var(--ag-s1); color: var(--ag-text); font: 400 1rem var(--ag-sans); }
 .ag-field::placeholder { color: var(--ag-muted); }
 .ag-field:focus { outline: none; border-color: rgba(var(--ag-gold-rgb), .7); box-shadow: 0 0 0 3px rgba(var(--ag-gold-rgb), .16); }
 .ag-bar { height: 8px; border-radius: 99px; background: #2b251d; overflow: hidden; } .ag-bar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--ag-bronze), var(--ag-gold)); transition: width var(--ag-d3) var(--ag-ease); }

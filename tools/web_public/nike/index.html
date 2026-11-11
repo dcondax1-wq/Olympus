@@ -20,9 +20,11 @@
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o4">
 <link rel="stylesheet" href="../olympus/agora.css?v=a1">
+<link rel="stylesheet" href="../olympus/polis.css?v=p1">
 <script src="../olympus/themes.js?v=o4"></script>
 <script src="../olympus/olympus.js?v=o4" data-app="nike"></script>
 <script src="../olympus/intro-app.js?v=i5" defer></script>
+<script src="../olympus/polis.js?v=p1" defer></script>
 <script src="../olympus/polis-life.js?v=pl2" defer></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/agora-ui.js?v=1" defer></script>
@@ -39,7 +41,7 @@
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
 
   <section class="ag-card card hero" aria-labelledby="heroH">
-    <div class="row"><h2 id="heroH">Your wins</h2><span class="pill" id="count">...</span></div>
+    <div class="row"><span class="winhead"><span class="winlaurel" data-polis-laurel="laurel gold wreath" aria-hidden="true"></span><h2 id="heroH">Your wins</h2></span><span class="pill" id="count">...</span></div>
     <p class="lead" id="headline"></p>
     <p class="note" id="demoNote" hidden></p>
   </section>
