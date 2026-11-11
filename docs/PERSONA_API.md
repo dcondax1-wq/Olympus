@@ -35,3 +35,29 @@ People are friendly cartoon characters in the spirit of console avatars: a big r
 - 2D: `portrait(id, size)` draws the same character as a round avatar (head and shoulders) in SVG.
 - 3D (new module `olympus/people3d.js`, optional import): `spec(id) -> {skin, hair, hairStyle, outfit, accent, accessory, height, build, face:{eyes, brows, mouth}, mood}` (plain data, deterministic from the person's seed) and `figure(THREE, spec, {lite}) -> Object3D` with `.userData.pose(name)` for idle / wave / talk / cheer / slump and `.userData.lookAt(vec3)`. Budget: <= 14 meshes and <= 900 triangles per figure on high, <= 350 on LITE; shared geometries and materials so 60 figures stay within a scene's budget (or use `figureInstanced(THREE, specs[])` for crowds).
 - ME: the owner can make his own character in Symposium ('Make my character': face, hair, outfit, name), stored in `olympus.me.v1`; scenes use it as the first-person body/shadow and in chat bubbles (`OLYMPUS_PEOPLE.me()`).
+
+## Figure API v2 (2026-11-11, `olympus/people3d.js`; the v1 calls above all still work)
+The look: our own stylised Olympus people (original design). Big expressive head, soft sculpted body (lathe / capsule / sphere shapes on a small skeleton), cel (toon) shading with a warm rim light and a thin ink outline. Faces: eyes with iris, pupil and highlights, upper and lower lids, brows, a mouth with visemes. Hair cuts (crop, side part, spiky, curly, afro, long, ponytail, wavy, swept, bob, bun, topknot, bald, shaved), garbs (chiton, cloak, apron, armour, toga), accessories by kind (laurel, helmet, hammer, scroll, coin pouch, owl, torch, key + lantern), eye colours; all from the seed (`drawLook(spec)` in people-core.js, shared with the 2D portrait), so every person looks the same everywhere and different from the others.
+
+```js
+import { spec, figure, figureInstanced, play, animate, lookAt, setMouth, setExpression, setTalking,
+         POSE_NAMES, WORK_POSES, WORK_POSE_NAMES, VISEMES, EXPRESSIONS, workPose } from '../olympus/people3d.js';
+const f = figure(THREE, spec('builder:abc'), { lite, seated, scale });   // 2 draw calls; feet at y = 0, faces +z, about 1 unit tall
+scene.add(f);
+play(f, 'hammer');                         // loops; one-shot poses (wave, cheer, nod, shrug) return to the last looping pose
+play(f, 'wave', { then: 'idle' });         // returns the one-shot's length in seconds
+lookAt(f, camera.position);                // head and eyes turn (clamped); lookAt(f, null) to stop
+setExpression(f, 'happy', 1);              // 'neutral' | 'happy' | 'proud' | 'worried' | 'thinking' | 'surprised' | 'sheepish'
+setTalking(f, true);                       // talk gestures + head bob + automatic syllable mouth until false
+setMouth(f, 'O', 0.8);                     // drive the mouth yourself (voice / TTS): wins for 0.3 s after each call
+animate(f, dt);                            // every frame (skip it for reduced motion: the figure holds its pose)
+f.userData.dispose();                      // when it leaves the scene
+```
+- Poses (`POSE_NAMES`): `idle` (breathing, weight shift, looks around), `walk`, `wave`, `talk`, `cheer`, `slump`, `nod`, `shrug`, `think`, and the work poses (`WORK_POSE_NAMES`): `hammer` (at an anvil), `write` (quill on a wax tablet), `read` (an open scroll), `weigh` (coins on hand scales), `telescope`, `type` (a slate), `carry` (a crate, walking). `WORK_POSES[kind]` / `workPose(spec | id)` gives the job of a kind: builder hammer, scanner weigh, bot type, mind write, keeper telescope, champion read, villager carry. Work props are built the first time a work pose plays (`{ work: true }` builds them at once, `{ work: false }` never).
+- Visemes (`VISEMES`): `rest`, `A`, `E`, `O`, `MBP`, `smile`, `frown` (6 morph targets on the mouth; rest = none).
+- `setTalking(f, on)` while the pose is `idle` plays the talk gestures; in a work pose it only moves the mouth and head.
+- `f.userData`: the v1 `pose(name)`, `lookAt(v)`, `tick(dt, t)`, `dispose()`, `parts.{head, armL, armR, torso, bones}`, plus `play`, `setMouth`, `setExpression`, `setTalking`, `state()` (pose, expression, talking, mouth weights, lids, props shown), `triangles`, `drawCalls` (2), `look` (the drawn look), `v: 2`.
+- Materials are shared (`materials(THREE)` -> `{ toon, line }`: the rim colour is `toon.userData.rim.value`, the line width `line.userData.width.value`).
+- Crowds: `figureInstanced(THREE, specs, { lite, seated })` bakes each person's own parts into one mesh, posed on the GPU from a small data texture: 2 draw calls for any number of people, each still with their own cut, garb and face (simpler: no lids, the mood sets the mouth). Calls: `place(i, x, y, z, ry, scale)`, `tick(t)`, `setActive(i, on)` (talk gestures + mouth), `setTalking(i, on)`, `setPose(i, 'idle' | 'talk' | 'cheer' | 'wave' | 'slump' | 'nod')`, `lookAt(i, v3 | null)`, `lookAll(v3 | null)` (everyone looks at the speaker), `setVisible(i, on)` (swap a person for a full `figure` when they come close), `pick(raycaster) -> i | -1`, `headWorld(i)`, `dispose()`.
+- Budgets (measured by `tests/test_people.py`): a figure is 2 draw calls and at most 10,000 triangles with its ink line (LITE 6,000); a crowd is 2 draw calls and at most 3,000 triangles a person (LITE 2,000). A scene of 30 people = one crowd + a few close-up figures: well inside 45 draw calls / 160k triangles.
+- Sound and voice are not here: the voice agent calls `setTalking` / `setMouth`; the 2D portrait (`OLYMPUS_PEOPLE.portrait`) draws the same face, hair, garb and mood.
