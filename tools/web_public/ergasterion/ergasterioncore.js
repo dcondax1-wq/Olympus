@@ -482,6 +482,52 @@ export function resolveBuilders(doc, now) {
   return f;
 }
 
+// ------------------------------------------------------------------ people: every worker and every builder is an individual you can talk to (docs/PERSONA_API.md)
+const SCANNERS = ['chrysos', 'mercury', 'sibyl', 'oikos', 'arbiter'], BOTS = ['lit', 'atlas', 'blitz', 'kalshi'];
+/** the shared person id of a station worker: scanner:chrysos, bot:lit, mind, villager:<id> for the jobs and the queue */
+export function personId(id) { return SCANNERS.includes(id) ? 'scanner:' + id : BOTS.includes(id) ? 'bot:' + id : id === 'mind' ? 'mind' : 'villager:' + clean(id, 20); }
+/** builder:<branch-short>: the branch without its 'worktree-agent-' prefix (the whole short name first, its first 8 characters as a second spelling the kit may use) */
+export function builderIds(branch) { const b = clean(branch, 60).replace(/^worktree-agent-/, '').replace(/[^A-Za-z0-9._-]/g, ''); return b ? ['builder:' + b, 'builder:' + b.slice(0, 8)].filter((x, i, a2) => a2.indexOf(x) === i) : []; }
+/** everyone: { key ('w:<id>' | 'b:<id>'), pid, pids, name, title, status, word, place (hall id), x, z, line (its one-liner for the stand-up) } */
+export function people(workers, buildersRows) {
+  const P = [];
+  for (const w of Array.isArray(workers) ? workers : []) P.push({ key: 'w:' + w.id, pid: personId(w.id), pids: [personId(w.id)], name: w.name, title: w.role, status: w.status, word: STATUS_WORD[w.status], place: w.hall, x: w.x, z: w.z - 0.12, kind: 'worker',
+    line: clean(w.status === 'failed' ? 'Blocked: ' + w.say : w.missing ? 'Nothing to report: no file from me yet.' : w.say, 140) });
+  for (const b of Array.isArray(buildersRows) ? buildersRows : []) { const ids = builderIds(b.branch); P.push({ key: 'b:' + b.id, pid: ids[0] || 'builder:' + b.id, pids: ids.length ? ids : ['builder:' + b.id], name: b.name, title: b.job, status: b.status, word: BUILD_WORD[b.status], place: 'camp', x: b.x, z: b.z - 1.9, kind: 'builder',
+    line: clean(b.status === 'job' ? 'My job: ' + b.job + '. No live activity to report.' : b.commits.length ? (b.status === 'working' ? 'Just now: ' : 'Last: ') + b.commits[0].text : b.shipped.length ? 'Shipped: ' + b.shipped[0].text : 'My job: ' + b.job, 140) }); }
+  return P;
+}
+export function peopleHere(P, place) { return (Array.isArray(P) ? P : []).filter((x) => x.place === place); }
+/** the person you may talk to in first person: the nearest one within 3 m (null when nobody is that close) */
+export function talkTarget(pos, P, maxD) { let best = null, bd = maxD == null ? 3 : maxD; for (const x of Array.isArray(P) ? P : []) { const d = Math.hypot(pos.x - x.x, pos.z - x.z); if (d <= bd) { bd = d; best = x; } } return best; }
+export const QUESTIONS = [['doing', 'What are you doing?'], ['last', 'What was your last result?'], ['learned', 'What did you learn?'], ['stuck', 'Are you stuck?'], ['next', 'What is next?'], ['sure', 'How sure are you?']];
+/** the built-in chat (used when the shared people kit is not loaded): six questions, each answered ONLY from this worker's own row. { text, sources } */
+export function answer(row, qid, now, plan) {
+  if (!isObj(row)) return { text: 'I have nothing on record.', sources: [] };
+  const builder = Array.isArray(row.commits), src = [];
+  let t = '';
+  if (builder) {
+    const c0 = row.commits[0];
+    if (qid === 'doing') t = 'My job: ' + row.job + '. ' + row.line;
+    else if (qid === 'last') t = c0 ? 'My last commit, ' + agoText(c0.t, now) + ': ' + c0.text : row.shipped.length ? 'My last merged work: ' + row.shipped[0].text : 'I have no commit to show: ' + BUILD_HELP.job + '.';
+    else if (qid === 'learned') t = row.shipped.length ? 'I build rather than research. What I shipped so far: ' + row.shipped.slice(0, 3).map((x) => x.text).join('; ') + '.' : 'I build rather than research, and nothing of mine is merged into the release yet. The lessons are on the Learning board.';
+    else if (qid === 'stuck') t = row.status === 'job' ? 'I cannot tell you: there is no live activity for my branch, only my job line.' : row.status === 'done' ? 'No: my work is merged into the release.' : row.status === 'working' ? 'No: I committed ' + agoText(row.last, now) + '.' : 'Maybe: my last commit was ' + agoText(row.last, now) + '. Ask the lead if that is too long.';
+    else if (qid === 'next') t = row.status === 'done' ? 'Nothing more on this job: it is merged. The lead hands out the next one.' : 'The next step of my job (' + row.job + '). I only know my job line and my commits; the lead holds the plan.';
+    else t = row.sample ? 'Not at all: I am an example builder, not a real one.' : !row.live ? 'I can only vouch for my job line: git was not readable for my branch.' : 'As sure as git: ' + row.ahead + ' commit' + (row.ahead === 1 ? '' : 's') + ' and ' + row.files + ' file' + (row.files === 1 ? '' : 's') + ' on my branch when the site was built. Whether it is good is for the tests and the lead to say.';
+    if (row.live) src.push('builders.json (git at build time)'); else src.push('handoff/agents_now.json');
+  } else {
+    const c0 = (row.crates || [])[0], l0 = (row.learned || []).filter((l) => l && l.text)[0], bad = row.status === 'failed' || row.status === 'stale' || row.missing;
+    if (qid === 'doing') t = row.doing || 'Nothing is recorded for me right now.';
+    else if (qid === 'last') t = c0 ? 'My last output' + (c0.t != null ? ', ' + agoText(c0.t, now) : '') + ': ' + c0.text : 'My conveyor is empty: no output on record yet.';
+    else if (qid === 'learned') { t = l0 ? l0.text + (l0.d ? ' (' + l0.d + ')' : '') : 'Nothing learned and written down yet.'; if (l0 && l0.src) src.push(l0.src); }
+    else if (qid === 'stuck') t = row.status === 'failed' ? 'Yes. ' + (row.health || 'My last run failed.') : row.missing ? 'Yes: ' + (row.health || 'my file is not published.') : row.status === 'stale' ? 'Sort of: my data is old. ' + (row.health || '') : 'No. ' + (row.health || '');
+    else if (qid === 'next') { const s2 = (Array.isArray(plan) ? plan : []).find((x) => x.who === row.id); t = s2 ? s2.title + '. First step: ' + s2.next : bad ? 'Getting fresh data: ' + (row.health || 'my file needs a refresh.') : 'Nothing is queued for me. I keep doing my job: ' + String(row.role || '').toLowerCase() + '.'; }
+    else t = row.demo ? 'Not at all: these are example numbers, not real ones.' : row.status === 'sample' ? 'Not at all: I am showing sample data.' : row.missing ? 'I cannot be: I have no file to read.' : row.status === 'stale' ? 'Not very: my numbers are old (' + agoText(row.last, now) + ').' : row.n != null && row.n < 30 && row.id === 'kalshi' ? 'Not very: only ' + row.n + ' settled trades, too few to call anything real.' : 'As sure as my file, updated ' + agoText(row.last, now) + '. I only report what it says: paper and suggestions only, I cannot place orders.';
+    if (row.src) src.push(row.src);
+  }
+  return { text: clean(t, 420), sources: src.filter((x, i, a2) => x && a2.indexOf(x) === i).map((x) => clean(x, 90)) };
+}
+
 // ------------------------------------------------------------------ the day replay (one dated stream across every worker)
 const nameOf = (id) => { const s = STATIONS.find((x) => x.id === id); return s ? s.name : id; };
 /** everything that has a time, oldest first: the builder's stream (research runs, write-ups, the Mind, done tasks), git commits, the money machines' own run times,
