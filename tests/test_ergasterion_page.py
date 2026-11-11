@@ -589,7 +589,7 @@ def test_page():
 
             # 3D factory: pick, walk, walls, follow, tour, budget (only when the machine can draw it; ERG_NO3D=1 skips it when 3D is impossible)
             ctx, p, errs, seen, off = AK.page(br, origin)
-            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet&direct=0" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
             p.wait_for_timeout(2500)
             mode = p.evaluate("() => window.ERGASTERION.floor() ? '3d' : 'plan'")
             if no3d:
@@ -716,7 +716,7 @@ def test_page():
 
             # LIFE in 3D (life.js, 2026-11-11): a fixed clock = a fixed scene; the 09:30 stand-up ring, reactions to real events, the near full figure, "show me your work", say / show
             ctx, p, errs, seen, off = AK.page(br, origin)
-            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=standup" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=standup&direct=0" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
             p.wait_for_timeout(2500)
             if not no3d and p.evaluate("() => !!(window.ERGASTERION.floor() && window.ERGASTERION.floor().life)"):
                 F = "window.ERGASTERION.floor()"
@@ -855,7 +855,7 @@ def test_page():
 
             # reduced motion with 3D: still, no error
             ctx, p, errs, seen, off = AK.page(br, origin, reduced=True)
-            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet&direct=0" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
             p.wait_for_timeout(1500)
             mode = p.evaluate("() => window.ERGASTERION.floor() ? '3d' : 'plan'")
             if mode == "3d":
