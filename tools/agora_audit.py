@@ -240,11 +240,14 @@ def render_scan(ids, shotdir, port=8799, per=25):
     os.makedirs(shotdir, exist_ok=True)
     srv = serve(port)
     out = {}
+    import glob
+    hit = sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))   # the suite's own browser (tests/browser_kit.py), when it is there
+    exe = {"executable_path": hit[-1]} if hit else {}
     with sync_playwright() as p:
         for aid in ids:
             if not os.path.isfile(os.path.join(ROOTS[0], aid, "index.html")):
                 continue
-            b = p.chromium.launch(args=["--disable-gpu", "--use-gl=swiftshader", "--no-sandbox"])
+            b = p.chromium.launch(args=["--disable-gpu", "--use-gl=swiftshader", "--no-sandbox"], **exe)
             try:
                 ctx = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, service_workers="block")
                 pg = ctx.new_page()
