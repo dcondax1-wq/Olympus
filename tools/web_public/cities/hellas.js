@@ -263,7 +263,8 @@ export class Hellas {
     for (const P of this.people) { P.gpath = null; if (!P.loop || P.x == null || Math.hypot(P.x, P.z) > reach) continue; const path = pathDown(F, P.x, P.z); if (path && path.length > 1) { P.gpath = path; P.glen = pathLen(path); n++; } }
     this.gathering = { t0: t, until: t + 22, text: text || '', n };
     const sp = this.project(0, 6, 0), at = { x: sp.vis ? sp.x : innerWidth / 2, y: sp.vis ? sp.y : innerHeight * .4, world: [0, 6, 0] };
-    try { const FX = window.OLYMPUS_FX; if (FX && typeof FX.burst === 'function') FX.burst('confetti', at); else if (FX && FX.confetti) FX.confetti(null, { count: 90 }); } catch (e) { /* effects are never needed */ }
+    try { const FX = window.OLYMPUS_FX; if (this.cine && this.cine.burst) { this.cine.burst('coins', [0, 6, 0], { count: 50 }); this.cine.burst('confetti', [0, 7, 0], { count: 80 }); }   // FX HOOK: coins + confetti over the agora (a new adopted run)
+      if (FX && typeof FX.burst === 'function') FX.burst('confetti', at); else if (FX && FX.confetti) FX.confetti(null, { count: 90 }); } catch (e) { /* effects are never needed */ }
     try { const X = window.OLYMPUS_SFX, O = window.OLYMPUS; if (X && typeof X.at === 'function') X.at('cheer', { x: 0, y: 6, z: 0 }, this.camera, { ref: 30, max: 400 }); else if (O && O.sound && typeof O.sound.at === 'function') O.sound.at('cheer', { x: 0, y: 6, z: 0 }); else if (O && O.cue) O.cue('success'); } catch (e) { /* sound is never needed */ }
     return n;
   }

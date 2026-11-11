@@ -349,7 +349,7 @@ function build(rc, scene, camera, canvas, o) {
     const a = ang[i], b3 = i * 3, h0 = i * HS, dC = Math.hypot(camP.x - fx, camP.z - fz), talking = focusKey === key && AC !== 'walk', close = mode === 'walk' && dC < 3.4;
     if (close && !wasNear[i]) nearT[i] = t; wasNear[i] = close ? 1 : 0;
     const re = reactT[i] > t ? reactP[i] : '';
-    const pose = talking ? 'talk' : re || (close && t - nearT[i] < 2.6 ? 'wave' : lookT[i] > t ? 'look' : ACT_POSE[AC] || mood || (AW ? 'idle' : ''));
+    const pose = talking ? 'talk' : re || (close && t - nearT[i] < 2.6 ? 'wave' : lookT[i] > t && AC !== 'walk' && AC !== 'carry' ? 'look' : ACT_POSE[AC] || mood || (AW ? 'idle' : ''));
     // a person away from its station leaves its furniture there at rest (the wheel, the scales, the gold on the anvil); what it holds in its hand goes with it
     if (AW) { oX = HX; oZ = HZ; cT = Math.cos(HT); sT = Math.sin(HT); qT.setFromAxisAngle(AXY, HT); jobProps(i, job, yb, pz, a, 0, yb + 0.66); if (job === 'smith' || job === 'scribe') gone(dCyl.im, b3); if (job === 'smith') gone(dBox.im, b3); }
     // turn: toward you while waving, talking or looking up as you come in, toward where it walks or works otherwise (eased; reduced motion turns at once)
@@ -437,11 +437,12 @@ function build(rc, scene, camera, canvas, o) {
   // SPARKS: each hammer blow near you throws sparks off the anvil (fx.burst, else the classic sparkleBurst) with a clank placed in the world (OLYMPUS.sound.at). Optional kits.
   const sparkT = new Float32Array(N).fill(-9), V3 = new THREE.Vector3();
   const life = { sparks: 0, bursts: 0, reacts: [], sounds: 0 };
+  let cine = null;                                                                     // the cinema kit (FX HOOK below), once it has loaded
   function screenOf(x, y, z) { V3.set(x, y, z).project(camera); if (V3.z > 1 || Math.abs(V3.x) > 1.05 || Math.abs(V3.y) > 1.05) return null; const r = canvas.getBoundingClientRect(); return { x: r.left + (V3.x * 0.5 + 0.5) * r.width, y: r.top + (-V3.y * 0.5 + 0.5) * r.height }; }
   function spark(i, s, camP) {
     if (!mot || mode === 'tour' || t - sparkT[i] < 0.6) return; if (Math.hypot(camP.x - s.x, camP.z - s.z) > 8) return;
     const wx = s.x - 0.12, wy = Y0 + 0.6, wz = s.z + 0.5, sc = screenOf(wx, wy, wz); if (!sc) return; sparkT[i] = t; life.sparks++;
-    if (L.burst('sparks', sc, [wx, wy, wz])) life.bursts++; if (L.soundAt('clank', { x: wx, y: wy, z: wz }, null, camera)) life.sounds++;
+    if (cine) { cine.burst('sparks', [wx, wy, wz], { count: 12 }); life.bursts++; } else if (L.burst('sparks', sc, [wx, wy, wz])) life.bursts++;   // in the world when the cinema kit is there if (L.soundAt('clank', { x: wx, y: wy, z: wz }, null, camera)) life.sounds++;
   }
   // FULL FIGURES near you (LOD): the far crowd is the instanced toy above; the 1-2 people closest to you are the shared figures of olympus/people3d.js
   // (v2: play(fig, pose) with the work poses, lookAt, setExpression; v1: userData.pose / lookAt / tick). How many is MEASURED: the frame's draw calls without
@@ -627,7 +628,10 @@ function build(rc, scene, camera, canvas, o) {
       }
       if (party || big) {
         const G = L.GATHER[camH] || L.GATHER.library, sc = screenOf(G.x, 1.2, G.z) || { x: (canvas.getBoundingClientRect().left + canvas.clientWidth / 2), y: canvas.getBoundingClientRect().top + canvas.clientHeight * 0.4 };
-        out.burst = !!L.burst(big ? 'confetti' : 'confetti', sc, [G.x, 1.2, G.z]); if (out.burst) life.bursts++;
+        // the cinema kit bursts in the world: confetti for a merge, coins for a new adopted run, laurel + confetti for a passed eval; else the page's confetti
+        const kinds = E.some((e) => e.kind === 'eval') ? ['laurel', 'confetti'] : E.some((e) => e.kind === 'adopted') ? ['coins', 'confetti'] : ['confetti'];
+        if (cine) { for (const k of kinds) cine.burst(k, [G.x, 1.6, G.z], { count: k === 'confetti' ? 60 : 40 }); out.burst = kinds.join('+'); } else out.burst = !!L.burst('confetti', sc, [G.x, 1.2, G.z]);
+        if (out.burst) life.bursts++;
         out.sound = !!L.soundAt(big ? 'fanfare' : 'cheer', { x: G.x, y: 1.2, z: G.z }, 'success', camera); if (out.sound) life.sounds++;
       }
       still(); return out;
@@ -696,7 +700,7 @@ function build(rc, scene, camera, canvas, o) {
   canvas.addEventListener('pointerdown', down); canvas.addEventListener('pointermove', move); canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', () => { drag = null; });
   // FX HOOK (olympus/fx-cine.js, optional; 2026-11-11 effects pass): the clock's light, sun shafts and dust in the halls, the camp hearth's
   // embers + smoke + firelight, sand blowing over the camp, birds over the desert, sparks off a WORKING smith's anvil. Same floor without it.
-  let cine = null, cineOff = false, sparkAt = 2, sparkJ = 0;
+  let cineOff = false, sparkAt = 2, sparkJ = 0;   // (cine itself is declared with the floor's life state above)
   if (o.cinema !== false) import('../olympus/fx-cine.js').then((C) => { if (cineOff) return; cine = C.cinema(rc, { time: 'clock', fog: 0.3,
     rays: { to: [0, 0, 0], spread: [22, 0, 16], length: 16, width: 2 }, dust: { box: [24, 4, 18], center: [0, 2, 0] },
     fires: [[CAMP.fire.x, 0.7, CAMP.fire.z]], fireRange: 7, smokeCount: 0, sand: { box: [26, 2, 14], center: [CAMP.fire.x, 0.4, 17], vel: [3.2, 0.1, 0.8], count: 260 } });   // budget: no birds / blobs / extra smoke here
