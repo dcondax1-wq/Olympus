@@ -22,7 +22,7 @@ Lamptrai Halai Myrrhinous Paiania Kephisia Pallene Gargettos Sphettos Kolonos Al
 export const PLACES = [...new Set(RAW.split(/\s+/).filter(Boolean))];
 
 // The regions of the map: where each data source lives. x grows east, z grows south; one unit is about one stadion on the world map.
-// kind 'land' = one landmass, 'isles' = every polis sits on its own small island.
+// kind 'land' = one green landmass, 'isles' = every polis sits on its own small island, 'desert' = one landmass of sand and dunes.
 export const REGIONS = [
   { key: 'attica', name: 'Attica', x: 70, z: 80, kind: 'land', tint: '#c8a24a', blurb: 'Athens, the capital, with the apps, the accounts and the live strategy' },
   { key: 'peloponnese', name: 'Peloponnese', x: -330, z: 330, kind: 'land', tint: '#b9603f', blurb: 'LIT research: every version of the live strategy that was tested' },
@@ -39,4 +39,8 @@ export const REGIONS = [
   { key: 'crete', name: 'Crete', x: 120, z: 880, kind: 'land', tint: '#c96a4a', blurb: 'Kalshi: one city per strategy and per market' },
   { key: 'cyclades', name: 'Cyclades', x: 330, z: 430, kind: 'isles', tint: '#4b7a99', blurb: 'Kalshi: price bands, hours, sides and the suggestions' },
   { key: 'dodecanese', name: 'Dodecanese', x: 640, z: 800, kind: 'isles', tint: '#7fa0b0', blurb: 'The money machines' },
+  // the desert of what did not work: every city here is a ghost town of rejected runs (you can still enter and read why)
+  { key: 'libya', name: 'Libya', x: -620, z: 1480, kind: 'desert', tint: '#d9b878', blurb: 'The desert of what did not work: rejected filter, management, stop and target tests' },
+  { key: 'egypt', name: 'Egypt', x: 150, z: 1560, kind: 'desert', tint: '#e0c080', blurb: 'The desert of what did not work: rejected LIT and ATLAS versions' },
+  { key: 'persia', name: 'Persia', x: 980, z: 1480, kind: 'desert', tint: '#d6ab6e', blurb: 'The desert of what did not work: rejected risk, session and timing tests' },
 ];

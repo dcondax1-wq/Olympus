@@ -2,12 +2,14 @@
 //   world   sea, land and hills in one batch, every polis as instanced markers (walls, houses, a gold acropolis), trade routes, ships
 //   polis   ONE polis at a time, generated from its rows (hellas-plan.js planPolis); the one before is disposed first
 // Budgets (measured every frame: calls / trisDrawn): world <= 30 draw calls; any view <= 45 calls / 160k triangles on phone-high,
-// <= 28 / 80k in LITE. Warm AGORA light (3500 K sun), no neon, no bloom. READ ONLY scenery: no order, no trade.
+// <= 28 / 80k in LITE. Golden-hour AGORA light (a low 3500 K sun, long shadows, sea shimmer), nothing glows. READ ONLY scenery: no order, no trade.
+// Biomes: green Greece for the living work, the southern DESERT for what did not work (ghost towns, dunes, pyramids, oases, caravans).
+// Activity, from real data: a city at work burns a brazier and smokes, a quiet one rests, a ruin is low, broken mud brick.
 import * as THREE from '../jarvis/three.module.min.js';
 import { Batch, PAL, unit } from './athens-geo.js';
 import { rng, hash32 } from './util.js';
 import { walkStep, HOUSE_TINT, EYE } from './athens-world.js';
-import { planPolis, polisCollider, polisNpcs, npcOnLoop, TIER } from './hellas-plan.js';
+import { planPolis, polisCollider, polisNpcs, npcOnLoop, builderAt, TIER } from './hellas-plan.js';
 
 const lerp = (a, b, t) => a + (b - a) * t, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const SKY_VS = `varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position.z = gl_Position.w; }`;
@@ -17,12 +19,13 @@ void main(){ float h = clamp(vD.y, -.1, 1.); vec3 c = mix(uHor, uMid, smoothstep
   #include <colorspace_fragment>
 }`;
 const SEA_VS = `varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }`;
-const SEA_FS = `uniform float uTime, uFogD, uMove, uScale; uniform vec3 uDeep, uShallow, uSun, uSky, uFog, uSunDir; varying vec3 vW;
+const SEA_FS = `uniform float uTime, uFogD, uMove, uScale, uShimmer; uniform vec3 uDeep, uShallow, uSun, uSky, uFog, uSunDir; varying vec3 vW;
 void main(){ float t = uTime*uMove; vec2 p = vW.xz*uScale;
   vec3 n = normalize(vec3(sin(p.x*.09+t*1.1)*.06+sin(p.y*.15-t*1.4)*.05+sin((p.x+p.y)*.31+t*2.)*.02, 1., cos(p.y*.11+t)*.05+sin(p.x*.2-t*1.7)*.03));
   vec3 v = normalize(cameraPosition - vW); float fres = pow(1. - clamp(dot(v, n), 0., 1.), 3.);
   vec3 h = normalize(uSunDir + v); float spec = pow(max(dot(n, h), 0.), 90.);
   vec3 c = mix(uDeep, uShallow, .5 + .5*sin(p.x*.013 + p.y*.017)); c = mix(c, uSky, clamp(fres*.8, 0., .85)) + uSun*spec*.7;
+  c += uSun*pow(max(0., sin(p.x*.7+t*3.)*sin(p.y*.9-t*2.4)), 18.)*uShimmer*(.22 + .78*pow(max(-dot(normalize(vec3(v.x, 0., v.z)), normalize(vec3(uSunDir.x, 0., uSunDir.z))), 0.), 3.));
   float d = length(cameraPosition - vW); float f = 1. - exp(-d*d*uFogD*uFogD*3.);
   gl_FragColor = vec4(mix(c, uFog, clamp(f,0.,1.)), 1.);
   #include <colorspace_fragment>
@@ -44,14 +47,14 @@ export class Hellas {
   own(o) { this.keep.push(o); return o; }
 
   buildWorld() {
-    const W = this.world, T = this.T, scene = this.scene, own = (o) => this.own(o), sunDir = new THREE.Vector3(-.45, .62, .64).normalize();
-    this.hemi = new THREE.HemisphereLight('#d6e2e6', '#8a7658', 1.05); this.sun = new THREE.DirectionalLight(new THREE.Color(1, .769, .537), 2.3); // 3500 K
+    const W = this.world, T = this.T, scene = this.scene, own = (o) => this.own(o), sunDir = new THREE.Vector3(-.74, .34, -.36).normalize();   // golden hour: the sun low in the north-west, shadows fall long to the south-east
+    this.sunDir = sunDir; this.hemi = new THREE.HemisphereLight('#ecd9bb', '#8a6f52', .92); this.sun = new THREE.DirectionalLight(new THREE.Color(1, .769, .537), 2.7); // 3500 K
     this.sun.position.copy(sunDir).multiplyScalar(100); scene.add(this.hemi, this.sun);
-    scene.fog = new THREE.FogExp2('#e8d2a4', .00009);
-    const skyU = { uTop: { value: C('#6f9bb8') }, uMid: { value: C('#cdbf9a') }, uHor: { value: C('#f3dba8') }, uSun: { value: C('#ffd9a0') }, uSunDir: { value: sunDir } };
+    scene.fog = new THREE.FogExp2('#ecc998', .00009);
+    const skyU = { uTop: { value: C('#5d82a8') }, uMid: { value: C('#e6b98c') }, uHor: { value: C('#f8d49a') }, uSun: { value: C('#ffd08a') }, uSunDir: { value: sunDir } };
     const sky = new THREE.Mesh(own(new THREE.SphereGeometry(9000, 20, 10)), own(new THREE.ShaderMaterial({ vertexShader: SKY_VS, fragmentShader: SKY_FS, uniforms: skyU, side: THREE.BackSide, depthWrite: false, fog: false })));
     sky.frustumCulled = false; sky.renderOrder = -10; scene.add(sky);
-    this.seaU = { uTime: this.u.uTime, uDeep: { value: C('#2f5f78') }, uShallow: { value: C('#5c97a2') }, uSun: { value: C('#ffd9a0') }, uSky: { value: C('#d8c9a5') }, uFog: { value: C('#e8d2a4') }, uSunDir: { value: sunDir }, uFogD: { value: .00009 }, uMove: { value: this.reduced ? 0 : 1 }, uScale: { value: .12 } };
+    this.seaU = { uTime: this.u.uTime, uDeep: { value: C('#2f5f78') }, uShallow: { value: C('#5c97a2') }, uSun: { value: C('#ffd9a0') }, uSky: { value: C('#e6c79c') }, uFog: { value: C('#ecc998') }, uSunDir: { value: sunDir }, uFogD: { value: .00009 }, uMove: { value: this.reduced ? 0 : 1 }, uScale: { value: .12 }, uShimmer: { value: 1 } };
     const sea = new THREE.Mesh(own(new THREE.PlaneGeometry(30000, 30000).rotateX(-Math.PI / 2)), own(new THREE.ShaderMaterial({ vertexShader: SEA_VS, fragmentShader: SEA_FS, uniforms: this.seaU })));
     sea.position.y = -.3; sea.frustumCulled = false; scene.add(sea); this.sea = sea;
     this.matVC = own(new THREE.MeshLambertMaterial({ vertexColors: true })); this.matPlain = own(new THREE.MeshLambertMaterial({ color: '#ffffff' }));
@@ -59,10 +62,20 @@ export class Hellas {
     this.ring = new THREE.Mesh(own(new THREE.TorusGeometry(1, .05, 6, 44).rotateX(Math.PI / 2)), this.matRing); this.ring.visible = false; this.ring.frustumCulled = false; scene.add(this.ring);
     const G = this.wg = new THREE.Group(); scene.add(G);
     // land: sand under every disc, the land on top, hills: ONE draw call
-    const b = new Batch(), seg = this.lite ? 8 : 14, tintOf = new Map(W.regions.map((R) => [R.key, C('#a8a070').lerp(C(R.tint), .2)]));
-    for (const d of W.land) b.put(unit.cyl(seg, 1), d.x, -1.2, d.z, d.r + 7, 1.5, d.r + 7, PAL.sand, 0, 0, 0, .1);
+    const b = new Batch(), seg = this.lite ? 8 : 14, tintOf = new Map(W.regions.map((R) => [R.key, R.kind === 'desert' ? C('#e2c58c').lerp(C(R.tint), .35) : C('#a8a070').lerp(C(R.tint), .2)])), desert = new Set(W.regions.filter((R) => R.kind === 'desert').map((R) => R.key));
+    for (const d of W.land) b.put(unit.cyl(seg, 1), d.x, -1.2, d.z, d.r + 7, 1.5, d.r + 7, desert.has(d.region) ? '#efd9a6' : PAL.sand, 0, 0, 0, .1);
     for (const d of W.land) b.put(unit.cyl(seg, .97), d.x, -1, d.z, d.r, 2.2, d.r, tintOf.get(d.region) || '#a8a070', 0, 0, 0, .1);
-    W.hills.slice(0, T.hills).forEach((h, i) => { b.cone(h.x, 1.1, h.z, h.r, h.h, i % 3 ? '#9a9668' : '#b3a283', this.lite ? 5 : 7); if (!this.lite && h.h > 14) b.cone(h.x, 1.1 + h.h * .62, h.z, h.r * .4, h.h * .4, '#e6dcc4', 6); });
+    const dunes = W.hills.filter((h) => h.dune), green = W.hills.filter((h) => !h.dune);
+    dunes.slice(0, Math.round(T.hills * .6)).forEach((h, i) => b.put(unit.cone(this.lite ? 5 : 7), h.x, 1.1, h.z, h.r, h.h, h.r * .62, i % 2 ? '#ecd29a' : '#dcbc80', (i * 37 % 60) / 100 - .9, 0, 0, .12));
+    for (const f of W.features || []) {
+      if (f.kind === 'pyramid') { b.put(unit.cone(4), f.x, 1.1, f.z, f.s, f.s * .78, f.s, '#e3c080', Math.PI / 4, 0, 0, .18); b.put(unit.cone(4), f.x + f.s * 1.1, 1.1, f.z + f.s * .5, f.s * .5, f.s * .4, f.s * .5, '#d9b472', Math.PI / 4, 0, 0, .18); }
+      else if (f.kind === 'obelisk') { b.box(f.x, 1.1, f.z, f.s * .3, f.s * .12, f.s * .3, PAL.stone); b.put(unit.cyl(4, .6), f.x, 1.1 + f.s * .12, f.z, f.s * .1, f.s * 1.15, f.s * .1, '#e6d3a8', Math.PI / 4); b.put(unit.cone(4), f.x, 1.1 + f.s * 1.27, f.z, f.s * .065, f.s * .14, f.s * .065, PAL.gold, Math.PI / 4); }
+      else { b.put(unit.cyl(this.lite ? 7 : 10, 1), f.x, 1.12, f.z, f.s * .95, .12, f.s * .95, '#8fa06a', 0, 0, 0, .05); b.put(unit.cyl(this.lite ? 6 : 9, 1), f.x, 1.2, f.z, f.s * .5, .1, f.s * .5, '#4f86a0', 0, 0, 0, .05);
+        for (let k = 0; k < (this.lite ? 3 : 5); k++) { const a = k * 1.9 + f.s, x = f.x + Math.cos(a) * f.s * .72, z = f.z + Math.sin(a) * f.s * .72; b.cyl(x, 1.2, z, .22, 3.2, PAL.timber, 4, .7); b.put(unit.cone(5), x, 3.9, z, 1.5, 1.1, 1.5, '#6f8a46'); } }
+    }
+    for (const s of W.sites || []) { b.box(s.x, 1.1, s.z, 9, .5, 7, PAL.marbleD); for (const [dx, dz] of [[-3.6, -2.6], [3.6, -2.6], [-3.6, 2.6], [3.6, 2.6]]) b.box(s.x + dx, 1.6, s.z + dz, .35, 5.5, .35, PAL.timber); b.box(s.x, 6.9, s.z - 2.6, 7.6, .3, .3, PAL.timber); b.box(s.x, 6.9, s.z + 2.6, 7.6, .3, .3, PAL.timber); b.box(s.x - 1.4, 1.6, s.z, 2.4, 2.2, 3, PAL.marble); }
+    if (W.camp && (W.builders || []).length) for (let k = 0; k < 4; k++) b.put(unit.cone(6), W.camp.x - 12 + k * 8, 1.1, W.camp.z + 14 + (k % 2) * 5, 3, 3.2, 3, k % 2 ? '#f1e6cd' : '#e3cfa6');
+    green.slice(0, T.hills).forEach((h, i) => { b.cone(h.x, 1.1, h.z, h.r, h.h, i % 3 ? '#9a9668' : '#b3a283', this.lite ? 5 : 7); if (!this.lite && h.h > 14) b.cone(h.x, 1.1 + h.h * .62, h.z, h.r * .4, h.h * .4, '#e6dcc4', 6); });
     G.add(new THREE.Mesh(own(b.geometry()), this.matVC)); this.landTris = b.tris;
     // markers: walls (the colour says adopted against rejected), little houses (the count says the size), a gold acropolis
     const P = W.poleis, n = P.length, d = new THREE.Object3D(), col = new THREE.Color(), bad = C('#c96a4a'), mid = C('#d9c7a0'), good = C('#7f8a52');
@@ -76,15 +89,28 @@ export class Hellas {
     let bi = 0, gi = 0; this.markerInfo = [];
     P.forEach((p, i) => {
       const r = rng(hash32('mk:' + p.id)), share = clamp(p.share || 0, 0, 1);
-      col.copy(share < .5 ? bad.clone().lerp(mid, share * 2) : mid.clone().lerp(good, (share - .5) * 2)); if (p.capital) col.set('#e8d9b8'); this.base.setColorAt(i, col);
-      const info = { b0: bi, nb: nb[i], gi: p.gold ? gi : -1, items: [] };
+      const ruin = p.activity && p.activity.state === 'ruin';
+      col.copy(share < .5 ? bad.clone().lerp(mid, share * 2) : mid.clone().lerp(good, (share - .5) * 2)); if (p.capital) col.set('#e8d9b8'); if (ruin) col.set(p.biome === 'desert' ? '#cfae7c' : '#a99a84'); this.base.setColorAt(i, col);
+      const info = { b0: bi, nb: nb[i], gi: p.gold ? gi : -1, items: [], ruin };
       for (let k = 0; k < nb[i]; k++) { const th = k * 2.399963 + r() * .5, rr = p.mr * (p.gold ? .42 + .42 * Math.sqrt((k + .5) / nb[i]) : .82 * Math.sqrt((k + .5) / nb[i])), s = p.mr * (.2 + r() * .08) * (p.capital ? .7 : 1);
-        info.items.push({ x: Math.cos(th) * rr, z: Math.sin(th) * rr, s, h: s * (.9 + r() * .7), ry: r() * 3.14 }); const t = .86 + r() * .14; col.setRGB(t, t * (.94 + r() * .06), t * (.84 + r() * .1)); this.blocks.setColorAt(bi + k, col); }
+        info.items.push({ x: Math.cos(th) * rr, z: Math.sin(th) * rr, s, h: s * (.9 + r() * .7) * (ruin ? (r() < .4 ? .12 : .42) : 1), ry: r() * 3.14 }); const t = .86 + r() * .14; if (ruin) col.setRGB(t * .95, t * .74, t * .5); else col.setRGB(t, t * (.94 + r() * .06), t * (.84 + r() * .1)); this.blocks.setColorAt(bi + k, col); }
       bi += nb[i]; if (p.gold) { col.setRGB(1, 1, 1); this.acro.setColorAt(gi, col); gi++; }
       this.markerInfo.push(info);
     });
     this.markerScale = 0; this.setMarkerScale(1);
     for (const m of [this.base, this.blocks, this.acro]) { m.frustumCulled = false; if (m.instanceColor) m.instanceColor.needsUpdate = true; G.add(m); }
+    // long golden-hour shadows: one flat instanced quad per city, stretched away from the sun
+    const sg = own(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(.5, 0, 0)); this.shadows = new THREE.InstancedMesh(sg, own(new THREE.MeshBasicMaterial({ color: '#2a1c10', transparent: true, opacity: .24, depthWrite: false })), n); this.shadows.frustumCulled = false; this.shadows.renderOrder = 1; G.add(this.shadows);
+    // what each city is working on: a brazier flame and smoke over every city that is at work (real data: hellas-data.js setActivity)
+    this.working = P.filter((p) => p.activity && p.activity.state === 'working');
+    if (this.working.length) { this.flames = new THREE.InstancedMesh(own(new THREE.ConeGeometry(1, 2.4, 5).translate(0, 1.2, 0)), own(new THREE.MeshBasicMaterial({ color: '#f4a63c' })), this.working.length); this.flames.frustumCulled = false; G.add(this.flames);
+      if (!this.lite) { this.smoke = new THREE.InstancedMesh(own(new THREE.IcosahedronGeometry(1, 0)), own(new THREE.MeshBasicMaterial({ color: '#e9dcc6', transparent: true, opacity: .34, depthWrite: false })), this.working.length * 3); this.smoke.frustumCulled = false; this.smoke.renderOrder = 2; G.add(this.smoke); } }
+    // caravans: camels on the desert routes (phone-high) and the builders travelling to the city each one is building (always)
+    this.builders = W.builders || []; this.caravanRoutes = this.lite ? [] : W.routes.filter((r) => r.caravan).slice(0, 14);
+    const nc = this.caravanRoutes.length * 2 + this.builders.length;
+    if (nc) { const cb = new Batch(); cb.box(0, .9, 0, .7, .9, 1.9, '#ffffff'); cb.box(0, 1.5, .95, .32, .95, .36, '#ffffff'); cb.box(0, 2.3, 1.2, .34, .34, .6, '#ffffff'); for (const [x, z] of [[-.25, -.7], [.25, -.7], [-.25, .7], [.25, .7]]) cb.box(x, 0, z, .16, .9, .16, '#e8e0d0'); cb.box(0, 1.8, -.1, .9, .5, 1, '#c9a060');
+      this.caravan = new THREE.InstancedMesh(own(cb.geometry()), this.matVC, nc); this.caravan.frustumCulled = false; for (let i = 0; i < nc; i++) { col.set(i < this.builders.length ? '#f0c45c' : '#c79a62'); this.caravan.setColorAt(i, col); } this.caravan.instanceColor.needsUpdate = true; G.add(this.caravan); }
+    this.markerScale = 0; this.setMarkerScale(1); this.lifeTick(0, true);
     // trade routes: one line set; ships sail them (none in LITE, still in reduced motion)
     const rp = []; for (const R of W.routes) { const a = P[R.a], q = P[R.b]; rp.push(a.x, 1.6, a.z, q.x, 1.6, q.z); }
     const rg = own(new THREE.BufferGeometry()); rg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
@@ -101,9 +127,21 @@ export class Hellas {
     P.forEach((p, i) => {
       const I = this.markerInfo[i]; d.rotation.set(0, 0, 0); d.position.set(p.x, 1.1, p.z); d.scale.set(p.mr * k, 1.3 * k, p.mr * k); d.updateMatrix(); this.base.setMatrixAt(i, d.matrix);
       I.items.forEach((it, j) => { d.position.set(p.x + it.x * k, 1.1 + 1.3 * k, p.z + it.z * k); d.rotation.set(0, it.ry, 0); d.scale.set(it.s * k, it.h * k * 1.2, it.s * k); d.updateMatrix(); this.blocks.setMatrixAt(I.b0 + j, d.matrix); });
+      { const L = p.mr * (I.ruin ? 1.5 : 2.6) * k, sd = this.sunDir; d.position.set(p.x, 1.24, p.z); d.rotation.set(0, Math.atan2(sd.z, -sd.x), 0); d.scale.set(L, 1, p.mr * 1.5 * k); d.updateMatrix(); this.shadows && this.shadows.setMatrixAt(i, d.matrix); }
       if (I.gi >= 0) { const s = p.mr * (p.capital ? .5 : .42) * k; d.position.set(p.x, 1.1 + 1.3 * k, p.z); d.rotation.set(0, 0, 0); d.scale.set(s, s * 1.25, s); d.updateMatrix(); this.acro.setMatrixAt(I.gi, d.matrix); }
     });
-    for (const m of [this.base, this.blocks, this.acro]) m.instanceMatrix.needsUpdate = true;
+    for (const m of [this.base, this.blocks, this.acro, this.shadows]) if (m) m.instanceMatrix.needsUpdate = true;
+    if (this.flames) this.lifeTick(this.u.uTime.value, true);
+  }
+  /** braziers flicker, smoke rises, camels and builders walk. force = also when motion is reduced (one still pose). */
+  lifeTick(t, force) {
+    if (this.reduced && !force) return; const d = this._d || (this._d = new THREE.Object3D()), k = this.markerScale || 1, still = this.reduced;
+    if (this.flames) { this.working.forEach((p, i) => { const f = still ? 1 : 1 + .16 * Math.sin(t * 9 + i * 1.7) + .08 * Math.sin(t * 15.3 + i), s = p.mr * .13 * k; d.position.set(p.x + p.mr * .5 * k, 1.1 + 1.3 * k + p.mr * .12 * k, p.z + p.mr * .2 * k); d.rotation.set(0, 0, 0); d.scale.set(s, s * f, s); d.updateMatrix(); this.flames.setMatrixAt(i, d.matrix);
+      if (this.smoke) for (let j = 0; j < 3; j++) { const u = still ? (j + .5) / 3 : (t * .11 + j / 3 + i * .37) % 1, s2 = p.mr * (.1 + u * .22) * k; d.position.set(p.x + p.mr * .5 * k + u * p.mr * .9 * k, 1.1 + 1.3 * k + p.mr * (.5 + u * 1.5) * k, p.z + p.mr * .2 * k + u * p.mr * .35 * k); d.scale.setScalar(s2 * (1 - u * .3)); d.updateMatrix(); this.smoke.setMatrixAt(i * 3 + j, d.matrix); } });
+      this.flames.instanceMatrix.needsUpdate = true; if (this.smoke) this.smoke.instanceMatrix.needsUpdate = true; }
+    if (this.caravan) { const P = this.world.poleis, nb = this.builders.length; this.builderPos = this.builders.map((b, i) => { const q = builderAt(b, t, still); d.position.set(q.x, 1.2, q.z); d.rotation.set(0, q.yaw, 0); d.scale.setScalar(2.1 * k); d.updateMatrix(); this.caravan.setMatrixAt(i, d.matrix); return q; });
+      this.caravanRoutes.forEach((R, i) => { const a = P[R.a], b = P[R.b]; for (let j = 0; j < 2; j++) { let u = still ? .3 + j * .4 : (t * .008 + j * .5 + i * .23) % 2; const back = u > 1; if (back) u = 2 - u; const e = .14 + .72 * u; d.position.set(a.x + (b.x - a.x) * e, 1.2, a.z + (b.z - a.z) * e); d.rotation.set(0, Math.atan2(b.x - a.x, b.z - a.z) + (back ? Math.PI : 0), 0); d.scale.setScalar(1.7 * k); d.updateMatrix(); this.caravan.setMatrixAt(nb + i * 2 + j, d.matrix); } });
+      this.caravan.instanceMatrix.needsUpdate = true; }
   }
   shipsTick(t) {
     if (!this.ships) return; const d = this._d || (this._d = new THREE.Object3D()), P = this.world.poleis, k = this.markerScale || 1;
@@ -114,37 +152,39 @@ export class Hellas {
 
   // ------------------------------------------------------------------ one polis (streamed: the one before is disposed)
   disposePolis() {
-    if (!this.pg) return; this.scene.remove(this.pg); for (const g of this.pKeep) g.dispose(); this.pg = null; this.pKeep = []; this.polis = null; this.plan = null; this.col = null; this.npcs = null; this.npcMesh = null; this.houseMesh = null;
+    if (!this.pg) return; this.scene.remove(this.pg); for (const g of this.pKeep) g.dispose(); this.pg = null; this.pKeep = []; this.polis = null; this.plan = null; this.col = null; this.npcs = null; this.npcMesh = null; this.houseMesh = null; this.pFlames = null;
   }
   buildPolis(p) {
     this.disposePolis(); const plan = planPolis(p), T = this.T, G = new THREE.Group(), keep = this.pKeep = [], own = (g) => { keep.push(g); return g; }, r = rng(hash32('look:' + p.id));
     this.polis = p; this.plan = plan; this.pg = G; this.streams++;
-    const b = new Batch(), R = plan.R, A = plan.agoraR, seg = this.lite ? 20 : 36;
-    b.put(unit.cyl(seg, 1), 0, -1.6, 0, R + 96, 1.5, R + 96, PAL.sand, 0, 0, 0, .1);
-    b.put(unit.cyl(seg, .985), 0, -1.5, 0, R + 80, 1.5, R + 80, '#a8a070', 0, 0, 0, .1);
-    b.put(unit.cyl(seg, 1), 0, -1.45, 0, R - 1, 1.5, R - 1, '#b9ab8a', 0, 0, 0, .05);                 // the city floor
+    const b = new Batch(), R = plan.R, A = plan.agoraR, seg = this.lite ? 20 : 36, ruin = !!(p.activity && p.activity.state === 'ruin'), desert = p.biome === 'desert', work = !!(p.activity && p.activity.state === 'working'); plan.ruin = ruin; plan.desert = desert;
+    b.put(unit.cyl(seg, 1), 0, -1.6, 0, R + 96, 1.5, R + 96, desert ? '#efd9a6' : PAL.sand, 0, 0, 0, .1);
+    b.put(unit.cyl(seg, .985), 0, -1.5, 0, R + 80, 1.5, R + 80, desert ? '#e2c58c' : '#a8a070', 0, 0, 0, .1);
+    b.put(unit.cyl(seg, 1), 0, -1.45, 0, R - 1, 1.5, R - 1, desert ? '#d8bf90' : '#b9ab8a', 0, 0, 0, .05);                 // the city floor
+    if (desert) for (let i = 0; i < (this.lite ? 6 : 12); i++) { const a = r() * 6.283, rr = R + 18 + r() * 54, s = 10 + r() * 12; b.put(unit.cone(this.lite ? 5 : 7), Math.cos(a) * rr, 0, Math.sin(a) * rr, s, 2 + r() * 3, s * .6, i % 2 ? '#ecd29a' : '#dcbc80', r() * 3, 0, 0, .12); }
     b.put(unit.cyl(this.lite ? 14 : 24, 1), 0, -1.4, 0, A, 1.5, A, PAL.paving, 0, 0, 0, .05);        // the agora
     for (const D of plan.districts) b.box(D.x, .02, D.z, D.w + 8, .06, D.h + 8, C('#c3b494').lerp(C(D.tint), .16));
     for (const V of plan.villages) b.box(V.x, .06, V.z, V.w + 2, .06, V.d + 2, '#cbbd9c');
     // the wall with towers and a south gate
     const N = clamp(Math.round(R / 7), 18, this.lite ? 28 : 48), step = Math.PI * 2 / N, len = 2 * R * Math.tan(step / 2) + .4;
-    for (let i = 0; i < N; i++) { const a = i * step + step / 2, x = Math.cos(a) * R, z = Math.sin(a) * R, gate = Math.abs(a - Math.PI / 2) < step * .6; if (!gate) b.box(x, 0, z, 1.6, 6.2, len, PAL.lime, -a);
+    for (let i = 0; i < N; i++) { const a = i * step + step / 2, x = Math.cos(a) * R, z = Math.sin(a) * R, gate = Math.abs(a - Math.PI / 2) < step * .6, broken = ruin && i % 3 === 1; if (!gate) b.box(x, 0, z, 1.6, broken ? 1.4 + (i % 4) * .5 : ruin ? 4.6 : 6.2, len, ruin ? '#c9a878' : PAL.lime, -a);
       if (i % 3 === 0 || gate) b.box(Math.cos(a - step / 2) * R, 0, Math.sin(a - step / 2) * R, 3.4, 8.6, 3.4, PAL.stone, -a + step / 2); }
     // the acropolis: a rock, a temple (gold roof when the polis has something adopted)
     const hr = plan.hillR, hh = 7 + Math.min(8, A * .12); b.put(unit.cyl(this.lite ? 8 : 12, .72), 0, 0, 0, hr, hh, hr, '#b3a283', 0, 0, 0, .3);
     const tw = hr * .95, td = hr * .6; b.box(0, hh, 0, tw + 1.6, .7, td + 1.6, PAL.marbleD); b.box(0, hh + .7, 0, tw * .78, tw * .34, td * .7, PAL.marble);
     const nc = this.lite ? 4 : 6; for (let i = 0; i < nc; i++) for (const s of [-1, 1]) b.col(-tw / 2 + .5 + i * (tw - 1) / (nc - 1), hh + .7, s * td / 2, .42, tw * .34, PAL.marble, this.lite);
-    b.box(0, hh + .7 + tw * .34 + .2, 0, tw + .8, .6, td + .8, PAL.marbleD); b.roof(0, hh + 1.5 + tw * .34, 0, td + 1, tw * .16, tw + .8, plan.gold ? PAL.gold : PAL.terra, Math.PI / 2);
+    if (!ruin) { b.box(0, hh + .7 + tw * .34 + .2, 0, tw + .8, .6, td + .8, PAL.marbleD); b.roof(0, hh + 1.5 + tw * .34, 0, td + 1, tw * .16, tw + .8, plan.gold ? PAL.gold : PAL.terra, Math.PI / 2); }
+    plan.topY = hh + 2 + tw * .5;
     for (const D of plan.districts) { const l = Math.hypot(D.x, D.z) || 1, x = D.x / l * (A - 3), z = D.z / l * (A - 3); b.cyl(x, 0, z, .55, 4.6, D.tint, 6, .8); b.box(x, 4.6, z, 1.5, .4, 1.5, PAL.marble); }
     G.add(new THREE.Mesh(own(b.geometry()), this.matVC)); this.polisTris = b.tris;
     // houses: one row each, ONE draw call
     const H = plan.houses, d = new THREE.Object3D(), col = new THREE.Color(), tones = [[1, 1, 1], [.96, .9, .8], [.98, .86, .68], [.96, .8, .72], [1, .94, .82]];
-    if (H.length) { const m = this.houseMesh = new THREE.InstancedMesh(unit.house(), this.matVC, H.length);
-      H.forEach((h, i) => { d.position.set(h.x, .1, h.z); d.rotation.set(0, h.rot ? Math.PI / 2 : 0, 0); d.scale.set(h.w, h.h, h.d); d.updateMatrix(); m.setMatrixAt(i, d.matrix);
-        const t = tones[Math.floor(r() * tones.length)], k = HOUSE_TINT[h.tone] || HOUSE_TINT.plain; col.setRGB(t[0] * .35 + k[0] * .65, t[1] * .35 + k[1] * .65, t[2] * .35 + k[2] * .65); m.setColorAt(i, col); });
+    if (H.length) { const m = this.houseMesh = new THREE.InstancedMesh(ruin ? unit.houseFar() : unit.house(), this.matVC, H.length);   // a ruin: roofless mud-brick walls, some fallen low
+      H.forEach((h, i) => { const fall = ruin ? (r() < .3 ? .22 : .55 + r() * .25) : 1; d.position.set(h.x, .1, h.z); d.rotation.set(0, h.rot ? Math.PI / 2 : 0, 0); d.scale.set(h.w, h.h * fall, h.d); d.updateMatrix(); m.setMatrixAt(i, d.matrix);
+        const t = tones[Math.floor(r() * tones.length)], k = ruin ? [1.08, .92, .7] : HOUSE_TINT[h.tone] || HOUSE_TINT.plain; col.setRGB(t[0] * .35 + k[0] * .65, t[1] * .35 + k[1] * .65, t[2] * .35 + k[2] * .65); m.setColorAt(i, col); });
       m.instanceMatrix.needsUpdate = true; m.instanceColor.needsUpdate = true; m.frustumCulled = false; G.add(m); own(m); }
     // cypress and olive trees: in the agora ring and outside the wall
-    const nt = Math.min(T.trees, 30 + Math.round(R * .9)), tb = new Batch(); tb.cone(0, 0, 0, .5, 1, PAL.cypress, this.lite ? 5 : 6);
+    const nt = Math.round(Math.min(T.trees, 30 + Math.round(R * .9)) * (desert ? .25 : ruin ? .6 : 1)), tb = new Batch(); tb.cone(0, 0, 0, .5, 1, PAL.cypress, this.lite ? 5 : 6);
     const tg = own(tb.geometry()), tm = new THREE.InstancedMesh(tg, this.matVC, nt);
     for (let i = 0; i < nt; i++) { const inner = i % 5 === 0, a = r() * 6.283, rr = inner ? lerp(hr + 3, A - 6, r()) : R + 8 + r() * 62, s = 1.6 + r() * 1.6; if (!inner && Math.abs(a - Math.PI / 2) < .09) { d.scale.setScalar(0); } else d.scale.set(s, s * (inner ? 3.6 : 2 + r() * 2.4), s);
       d.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); d.rotation.set(0, 0, 0); d.updateMatrix(); tm.setMatrixAt(i, d.matrix); if (i % 3) col.setRGB(1.35, 1.4, 1.25); else col.setRGB(2.1, 1.85, 1.4); tm.setColorAt(i, col); }
@@ -154,6 +194,9 @@ export class Hellas {
     if (this.npcs.length) { const nb2 = new Batch(); nb2.cyl(0, 0, 0, .28, 1.25, '#e9dcc0', 6, .7); nb2.put(unit.sphere(6, 4), 0, 1.25, 0, .2, .22, .2, '#c99a72');
       this.npcMesh = new THREE.InstancedMesh(own(nb2.geometry()), this.matVC, this.npcs.length); this.npcMesh.frustumCulled = false; const tints = ['#ffffff', '#e8c9a0', '#c9d6c0', '#e0b7a0', '#c8d2e0'];
       this.npcs.forEach((q, i) => { col.set(tints[i % tints.length]); this.npcMesh.setColorAt(i, col); }); this.npcMesh.instanceColor.needsUpdate = true; G.add(this.npcMesh); own(this.npcMesh); this.npcTick(0); }
+    // a city at work: a brazier burns on every district stele (one more draw call)
+    if (work && plan.districts.length) { const fm = new THREE.InstancedMesh(own(new THREE.ConeGeometry(.55, 1.5, 5).translate(0, .75, 0)), this.flames ? this.flames.material : this.matRing, plan.districts.length); fm.frustumCulled = false;
+      plan.districts.forEach((D, i) => { const l = Math.hypot(D.x, D.z) || 1; d.position.set(D.x / l * (A - 3), 5, D.z / l * (A - 3)); d.rotation.set(0, 0, 0); d.scale.setScalar(1); d.updateMatrix(); fm.setMatrixAt(i, d.matrix); }); fm.instanceMatrix.needsUpdate = true; G.add(fm); own(fm); this.pFlames = fm; } else this.pFlames = null;
     G.visible = false; this.scene.add(G); return plan;
   }
   npcTick(t) { if (!this.npcMesh) return; const d = this._d || (this._d = new THREE.Object3D()); this.npcs.forEach((n, i) => { const q = npcOnLoop(n, t); d.position.set(q.x, .1, q.z); d.rotation.set(0, -q.yaw, 0); d.scale.setScalar(1.35); d.updateMatrix(); this.npcMesh.setMatrixAt(i, d.matrix); }); this.npcMesh.instanceMatrix.needsUpdate = true; }
@@ -190,6 +233,7 @@ export class Hellas {
   }
   project(x, y, z) { const v = (this._v || (this._v = new THREE.Vector3())).set(x, y, z).project(this.camera); return { x: (v.x * .5 + .5) * this.w, y: (-v.y * .5 + .5) * this.h, vis: v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1 }; }
   pickPolis(px, py, radius = 34) { let best = null, bd = radius; for (const p of this.world.poleis) { const q = this.project(p.x, 3, p.z); if (!q.vis) continue; const d = Math.hypot(q.x - px, q.y - py) - (p.capital ? 8 : 0); if (d < bd) { bd = d; best = p; } } return best; }
+  pickBuilder(px, py, radius = 30) { if (!this.builderPos || this.level !== 'world') return null; let best = null, bd = radius; this.builders.forEach((b) => { const q = this.project(this.builderPos[b.i].x, 4, this.builderPos[b.i].z); if (!q.vis) return; const d = Math.hypot(q.x - px, q.y - py); if (d < bd) { bd = d; best = b; } }); return best; }
   pickHouse(px, py, radius = 30) { if (!this.plan) return null; let best = null, bd = radius; for (const h of this.plan.houses) { const q = this.project(h.x, h.h * .6, h.z); if (!q.vis) continue; const d = Math.hypot(q.x - px, q.y - py); if (d < bd) { bd = d; best = h; } } return best; }
   select(o) { this.sel = o; this.ring.visible = !!o; if (!o) return; const r = o.selR || 10; this.ring.position.set(o.x, this.level === 'world' ? 3 : .5, o.z); this.ring.scale.setScalar(r); }
   /** the labels the page draws: region names from far away, the nearest city names closer; districts then villages inside a polis */
@@ -199,8 +243,10 @@ export class Hellas {
     if (this.walk) return out;
     if (this.level === 'world') {
       if (c.dist > 1100) for (const R of this.world.regions) put(R.cx, 20, R.cz, R.name, 'region', R);
-      else for (const p of near(this.world.poleis, (p) => [p.x, p.z], max)) put(p.x, 8 + p.mr * .5, p.z, p.name, p.capital ? 'capital' : 'polis', p);
+      else { near(this.world.poleis, (p) => [p.x, p.z], max).forEach((p, i) => { put(p.x, 8 + p.mr * .5, p.z, p.name, (p.capital ? 'capital' : 'polis') + ' ' + p.activity.state, p); if (i < 2 && c.dist < 560 && out.length && out[out.length - 1].ref === p) out[out.length - 1].sub = p.activity.doing; });
+        if (c.dist < 900 && this.builderPos) near(this.builders, (b) => [this.builderPos[b.i].x, this.builderPos[b.i].z], 3).forEach((b) => { const q = this.builderPos[b.i]; put(q.x, 9, q.z, b.name, 'builder', b); if (out.length && out[out.length - 1].ref === b) out[out.length - 1].sub = (c.dist < 420 ? b.job + ' · ' : '') + 'to ' + b.site; }); }
     } else if (this.plan) {
+      if (this.polis && this.polis.activity && c.dist > this.plan.R * .8) { put(0, (this.plan.topY || 20) + 6, 0, this.polis.name, 'banner ' + this.polis.activity.state, this.polis); if (out.length) out[out.length - 1].sub = this.polis.activity.doing; }
       if (c.dist > this.plan.R * 1.1 || this.plan.villages.length <= 1) for (const D of this.plan.districts) put(D.x, 12, D.z, D.name, 'district', D);
       else for (const V of near(this.plan.villages, (v) => [v.x, v.z], max)) put(V.x, 11, V.z, V.name, 'village', V);
     }
@@ -224,11 +270,11 @@ export class Hellas {
       if (k >= 1) { this.fly = null; f.then && f.then(); } }
     if (this.walk) this.walkTick(dt); else this.placeCamera();
     this.camera.updateMatrixWorld();
-    if (this.level === 'world') { this.setMarkerScale(clamp(this.cam.dist / 1100, 1, 1.75)); if (!this.reduced) this.shipsTick(t); if (this.ships) this.ships.visible = this.cam.dist < 2600; }
-    else { const far = !this.walk && this.cam.dist > this.plan.R * 3.2; if (this.npcMesh) { this.npcMesh.visible = !far; if (!far) this.npcTick(t); } if (this.treeMesh) this.treeMesh.visible = !(this.lite && far); }
+    if (this.level === 'world') { this.setMarkerScale(clamp(this.cam.dist / 1100, 1, 1.75)); if (!this.reduced) { this.shipsTick(t); this.lifeTick(t); } if (this.ships) this.ships.visible = this.cam.dist < 2600; }
+    else { const far = !this.walk && this.cam.dist > this.plan.R * 3.2; if (this.npcMesh) { this.npcMesh.visible = !far; if (!far) this.npcTick(t); } if (this.treeMesh) this.treeMesh.visible = !(this.lite && far); if (this.pFlames && !this.reduced) this.pFlames.scale.y = 1 + .14 * Math.sin(t * 9); }
     if (this.sel && !this.reduced) this.ring.scale.setScalar((this.sel.selR || 10) * (1 + Math.sin(t * 3) * .04));
     this.renderer.render(this.scene, this.camera);
     this.calls = this.renderer.info.render.calls; this.trisDrawn = this.renderer.info.render.triangles;
   }
-  dispose() { this.disposePolis(); for (const o of this.keep) o.dispose && o.dispose(); for (const m of [this.base, this.blocks, this.acro, this.ships]) m && m.dispose(); this.renderer.dispose(); }
+  dispose() { this.disposePolis(); for (const o of this.keep) o.dispose && o.dispose(); for (const m of [this.base, this.blocks, this.acro, this.ships, this.shadows, this.flames, this.smoke, this.caravan]) m && m.dispose(); this.renderer.dispose(); }
 }

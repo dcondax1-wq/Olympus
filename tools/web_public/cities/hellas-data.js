@@ -35,6 +35,8 @@ const SRC = Object.fromEntries(SOURCES.map((s) => [s.key, s]));
 const VERDICT = ['adopted', 'rejected', 'open'], V_TONE = { adopted: 'good', rejected: 'bad', open: 'warn' }, V_WORD = { adopted: 'Adopted', rejected: 'Rejected', open: 'Still open' };
 const FAM_REGION = { 'LIT research': 'peloponnese', 'LIT headquarters': 'attica', filters: 'macedonia', risk: 'thessaly', 'other tests': 'boeotia', baseline: 'boeotia', management: 'epirus',
   sessions: 'thrace', timing: 'thrace', ATLAS: 'euboea', targets: 'ionian', stops: 'ionian', bias: 'ionian', winrate: 'ionian' };
+const FAM_DESERT = { 'LIT research': 'egypt', 'LIT headquarters': 'egypt', ATLAS: 'egypt', baseline: 'egypt', filters: 'libya', management: 'libya', stops: 'libya', targets: 'libya', bias: 'libya', winrate: 'libya',
+  risk: 'persia', 'other tests': 'persia', sessions: 'persia', timing: 'persia' };
 const humanSlug = (s) => String(s).replace(/^\d{4}-\d\d-\d\d-/, '').replace(/[-_]+/g, ' ').replace(/\blit\b/gi, 'LIT').replace(/\bhq\b/gi, 'HQ').replace(/\b1m\b/g, '1-minute').trim();
 
 function runRow(r, ci, verdicts) {
@@ -53,16 +55,22 @@ export function archivePoleis(index, runs) {
   const push = (family, key, label, rows, slug) => {
     const R = rows.map((r) => runRow(r, ci, verdicts)), n = R.length, ad = R.filter((x) => x.verdict === 'adopted').length, rej = R.filter((x) => x.verdict === 'rejected').length;
     const best = R.filter((x) => x.net != null).sort((a, b) => b.net - a.net)[0];
-    out.push({ id: 'archive:' + key, src: 'archive', family, label, unit: 'run', rows: R, size: n, gold: ad > 0, good: ad, bad: rej, open: n - ad - rej, region: FAM_REGION[family] || 'boeotia', slug: slug || '',
+    out.push({ id: 'archive:' + key, src: 'archive', family, label, unit: 'run', rows: R, size: n, gold: ad > 0, good: ad, bad: rej, open: n - ad - rej, ruin: rej === n, region: rej === n ? FAM_DESERT[family] || 'egypt' : FAM_REGION[family] || 'boeotia', slug: slug || '',
       keywords: `${family} archive strategy test run ${slug || ''}`,
       say: `${plural(n, 'run')} of the ${family} family: ${ad} adopted, ${rej} rejected, ${n - ad - rej} still open.${best ? ` Best 2026 result here: ${usd(best.net)} after costs (${usd(best.perMonth)} per month).` : ''}` });
+  };
+  // the desert of what did not work: when a cluster has enough rejected runs AND enough living ones, the rejected ones become their own ghost town
+  const rejIdx = verdicts.indexOf('rejected');
+  const split = (family, key, label, rows, slug) => {
+    const rj = rows.filter((r) => r[ci.verdict] === rejIdx), lv = rows.filter((r) => r[ci.verdict] !== rejIdx);
+    if (rj.length >= MIN_CLUSTER && lv.length >= MIN_CLUSTER) { push(family, key, label, lv, slug); push(family, key + '|ruin', label + ' (rejected)', rj, slug); } else push(family, key, label, rows, slug);
   };
   for (const [family, byW] of fam) {
     const small = [];
     for (const [w, rows] of byW) {
       if (!w || rows.length < MIN_CLUSTER) { small.push(...rows); continue; }
       const base = clip(String(title.get(w) || humanSlug(w)).replace(/\s*\(.*$/, ''), 46) || humanSlug(w);
-      if (rows.length <= MAX_POLIS) { push(family, `${family}|${w}`, base, rows, w); continue; }
+      if (rows.length <= MAX_POLIS) { split(family, `${family}|${w}`, base, rows, w); continue; }
       // a big cluster: one polis per verdict, and per build day when a verdict is still too big
       for (let vi = 0; vi < verdicts.length; vi++) {
         const part = rows.filter((r) => r[ci.verdict] === vi); if (!part.length) continue;
@@ -72,7 +80,7 @@ export function archivePoleis(index, runs) {
           push(family, `${family}|${w}|${verdicts[vi]}|${d}|${k}`, `${base} (${verdicts[vi]}, ${dayName(d).replace(/ 20\d\d$/, '')}${k ? ', part ' + (k / MAX_POLIS + 1) : ''})`, list.slice(k, k + MAX_POLIS), w);
       }
     }
-    for (let k = 0; k < small.length; k += MAX_POLIS) push(family, `${family}|~small|${k}`, `${family}: smaller tests${k ? ' ' + (k / MAX_POLIS + 1) : ''}`, small.slice(k, k + MAX_POLIS), '');
+    for (let k = 0; k < small.length; k += MAX_POLIS) split(family, `${family}|~small|${k}`, `${family}: smaller tests${k ? ' ' + (k / MAX_POLIS + 1) : ''}`, small.slice(k, k + MAX_POLIS), '');
   }
   return out;
 }
@@ -204,8 +212,71 @@ export function buildPoleis(inp = {}, fixture = {}) {
   const seen = new Set(), poleis = [];
   for (const p of parts.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) { if (seen.has(p.id)) continue; seen.add(p.id); p.share = p.size ? (p.good || 0) / Math.max(1, (p.good || 0) + (p.bad || 0) + (p.open || 0) * .5) : 0; poleis.push(p); }
   const live = sources.filter((s) => s.ok), houses = poleis.reduce((s, p) => s + p.rows.length, 0), example = poleis.filter((p) => p.example).length;
-  const counts = { cities: poleis.length, houses, sources: live.length, example, gold: poleis.filter((p) => p.gold).length };
-  return { poleis, sources, counts, header: headerLine(counts) };
+  setActivity(poleis);
+  const st = (k) => poleis.filter((p) => p.activity.state === k).length;
+  const counts = { cities: poleis.length, houses, sources: live.length, example, gold: poleis.filter((p) => p.gold).length, working: st('working'), quiet: st('quiet'), ruins: st('ruin'),
+    rejectedRuns: poleis.filter((p) => p.src === 'archive').reduce((s, p) => s + p.bad, 0), desertRuns: poleis.filter((p) => p.ruin).reduce((s, p) => s + p.rows.length, 0), ghostTowns: poleis.filter((p) => p.ruin).length };
+  const events = worldEvents(poleis, { datacity: isObj(inp.datacity) ? inp.datacity.built : null, kalshi: isObj(inp.edges) ? inp.edges.day : null });
+  const builders = buildersOf(inp.builders, poleis);
+  return { poleis, sources, counts, header: headerLine(counts), events, builders, buildersLabel: builders.length ? String((inp.builders && inp.builders.label) || 'Snapshot at build time') : '', buildersAsof: builders.length ? String((inp.builders && inp.builders.asof) || '') : '' };
+}
+const dayNum = (s) => { const m = /^(\d\d)-(\d\d)-(\d\d)$/.exec(String(s || '')); return m ? Date.UTC(2000 + +m[1], +m[2] - 1, +m[3]) / 864e5 : null; };
+const shortDay = (s) => dayName(s).replace(/ 20\d\d$/, '');
+export const STATE_WORD = { working: 'At work', quiet: 'Quiet', ruin: 'Ruins' };
+/**
+ * what every city is working on, from its own rows: 'working' (something recent or alive), 'quiet', 'ruin' (everything rejected / dead).
+ * Archive: recent = a run built in the last 7 days of the Archive (its newest build day is "today"). Sets p.activity = { state, doing, last }.
+ */
+export function setActivity(poleis) {
+  let now = 0; for (const p of poleis) if (p.src === 'archive') for (const r of p.rows) { const d = dayNum(r.built); if (d > now) now = d; }
+  for (const p of poleis) {
+    let state = 'quiet', verb = 'holds', last = '', n = `${plural(p.rows.length, p.unit)}`;
+    if (p.src === 'archive') {
+      let lr = null, ld = -1; for (const r of p.rows) { const d = dayNum(r.built) || 0; if (d > ld) { ld = d; lr = r; } }
+      const recent = now - ld <= 7; state = p.ruin ? 'ruin' : recent ? 'working' : 'quiet'; verb = p.ruin ? 'ruins of' : recent ? 'testing' : 'tested';
+      if (lr) { last = `last: ${lr.verdict === 'open' ? 'still open' : lr.verdict}${lr.m && lr.m[2] != null ? ', PF ' + lr.m[2] : ''} (${shortDay(lr.built)})`; p.lastDay = ld; p.lastRow = lr; }
+    } else if (p.src === 'datacity') {
+      const rising = p.rows.filter((r) => r.tr === 'rising').length, noise = p.rows.filter((r) => r.verdict === 'grey').length;
+      state = noise === p.rows.length ? 'ruin' : rising >= Math.max(2, p.rows.length * .4) ? 'working' : 'quiet'; verb = state === 'ruin' ? 'only noise in' : state === 'working' ? 'watching' : 'mapped'; last = `${rising} rising, ${noise} noise`;
+    } else if (p.src === 'kalshi') {
+      const r0 = p.rows[0] || {}, d7 = p.rows.find((r) => /#d7$/.test(r.id));
+      state = r0.status === 'DEAD' ? 'ruin' : d7 || r0.status === 'HOLDING' || r0.status === 'GROWING' ? 'working' : 'quiet'; verb = state === 'ruin' ? 'stopped' : state === 'working' ? 'betting' : 'collecting'; n = plural(p.weight || 0, 'bet');
+      last = `${r0.verdict || 'no advice'}, ${usd(r0.net, 2)} in total`;
+    } else if (p.src === 'suggest') { state = /: stop$/.test(p.label) ? 'ruin' : /: keep$/.test(p.label) ? 'working' : 'quiet'; verb = 'weighing'; last = usd(p.rows.reduce((s, r) => s + (r.net || 0), 0), 2) + ' in total'; }
+    else if (p.src === 'money') { state = p.rows.length > 1 ? 'working' : 'quiet'; verb = state === 'working' ? 'scouting' : 'resting'; last = p.rows.length > 1 ? `latest: ${clip(p.rows[1].title, 40)}` : 'no ideas today'; }
+    else if (p.src === 'accounts') { const pos = p.rows.find((r) => /#pos$/.test(r.id)), td = p.rows.find((r) => /#today$/.test(r.id)); state = pos && pos.tone === 'info' ? 'working' : 'quiet'; verb = state === 'working' ? 'in a trade' : 'flat'; last = td ? td.title.toLowerCase() : ''; }
+    else { state = p.capital ? 'working' : 'quiet'; verb = p.capital ? 'the capital' : 'home of'; last = p.capital ? 'builders at work' : ''; }
+    const what = p.label.replace(/^(Kalshi [a-z ]+|Money machine|Account): /, '').replace(/ \(rejected.*\)$/, '');
+    p.activity = { state, verb, last, doing: p.capital ? `the capital · ${last}` : `${verb} ${what} · ${n}${last ? ' · ' + last : ''}` };
+  }
+  return now;
+}
+/** the latest things that happened in the world, newest first (at most n): the newest Archive runs (two per city at most) and the newest file of each other source */
+export function worldEvents(poleis, extra = {}, n = 12) {
+  const ev = [];
+  for (const p of poleis) if (p.src === 'archive') { const top = p.rows.filter((r) => dayNum(r.built)).sort((a, b) => dayNum(b.built) - dayNum(a.built)).slice(0, 2);
+    for (const r of top) ev.push({ day: dayNum(r.built), when: shortDay(r.built), polis: p.id, tone: r.tone, text: `${clip(r.title, 64)}: ${r.verdict === 'open' ? 'still open' : r.verdict}${r.net != null ? `, ${usd(r.net)} (${usd(r.perMonth)} a month)` : ''}` }); }
+  ev.sort((a, b) => b.day - a.day || (a.polis < b.polis ? -1 : a.polis > b.polis ? 1 : 0) || (a.text < b.text ? -1 : 1));
+  const out = ev.slice(0, Math.max(0, n - 2));
+  const dc = poleis.filter((p) => p.src === 'datacity'), k = poleis.filter((p) => p.src === 'kalshi').sort((a, b) => (b.weight || 0) - (a.weight || 0))[0];
+  if (dc.length) out.push({ day: 0, when: extra.datacity ? String(extra.datacity).slice(5, 10) : 'latest', polis: dc[0].id, tone: 'info', text: `Data City rebuilt: ${plural(dc.reduce((s, p) => s + p.rows.length, 0), 'tested combo')} in ${dc.length} cities` });
+  if (k) out.push({ day: 0, when: extra.kalshi ? String(extra.kalshi).slice(5, 10) : 'latest', polis: k.id, tone: k.rows[0].tone, text: `Kalshi ${k.label.replace(/^Kalshi [a-z ]+: /, '')}: ${k.rows[0].title}` });
+  return out.slice(0, n);
+}
+/** the build agents (a snapshot file) -> a caravan: each builder travels to the city it is building. target = a polis id, or null for a new site. */
+export function buildersOf(json, poleis) {
+  const apps = allApps(), big = (f) => poleis.filter(f).sort((a, b) => (b.weight || b.size) - (a.weight || a.size))[0];
+  return arr(json && json.agents).filter((a) => isObj(a) && a.name).slice(0, 16).map((a, i) => {
+    const name = String(a.name).slice(0, 30), area = String(a.area || ''), low = name.toLowerCase(), app = apps.find((x) => low.split(/\s+/).some((w) => w.length > 3 && (x.id === w || x.name.toLowerCase() === w)));
+    let target = null, site = 'a new building site outside Athens';
+    if (area === 'jarvis') { target = 'apps:athens'; site = 'the Jarvis temple in Athens'; }
+    else if (/kalshi/.test(low)) { const k = big((p) => p.src === 'kalshi'); if (k) { target = k.id; site = '{city}, the biggest Kalshi city'; } }
+    else if (area === 'trading') { const k = big((p) => p.src === 'archive' && p.family === 'LIT headquarters' && !p.ruin); if (k) { target = k.id; site = '{city}, the LIT headquarters'; } }
+    else if (area === 'cities') { target = 'apps:athens'; site = 'Hellas itself, from the walls of Athens'; }
+    else if (app) { target = 'apps:' + app.group; site = `the ${app.name} house in ${DISTRICT_NAME[app.group] || 'Athens'}`; }
+    else if (area === 'design' || area === 'quality') { target = 'apps:athens'; site = 'every street of Athens'; }
+    return { i, name, job: String(a.job || '').slice(0, 120), area, target, site, newSite: !target };
+  });
 }
 export const headerLine = (c) => `${plural(c.cities, 'city').replace('citys', 'cities')}, ${plural(c.houses, 'house')}, from ${plural(c.sources, 'data source')}${c.example ? `; ${plural(c.example, 'city').replace('citys', 'cities')} on example data` : ''}`;
 
@@ -265,7 +336,7 @@ async function getJSON(url, ms) {
   const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, t = ctl && setTimeout(() => ctl.abort(), ms);
   try { const r = await fetch(url, { cache: 'no-cache', signal: ctl ? ctl.signal : undefined }); return r.ok ? await r.json() : null; } catch (e) { return null; } finally { if (t) clearTimeout(t); }
 }
-export const FILES = { archive: '../archive/index.json', datacity: '../datacity/city.json', edges: '../kalshicity/edges.json', suggestions: '../kalshicity/suggestions.json', money: '../money/index.json', home: '../home.json', fixture: './hellas-fixture.json' };
+export const FILES = { archive: '../archive/index.json', datacity: '../datacity/city.json', edges: '../kalshicity/edges.json', suggestions: '../kalshicity/suggestions.json', money: '../money/index.json', home: '../home.json', fixture: './hellas-fixture.json', builders: './hellas-builders.json' };
 /** read every source (each one optional). demo = true skips the real files: example data only. onStep(text) tells the loading line. */
 export async function loadSources(base, { demo = false, onStep = () => {} } = {}) {
   const u = (p) => new URL(p, base).href, get = (k, ms = 9000) => (demo ? Promise.resolve(null) : getJSON(u(FILES[k]), ms));
@@ -276,8 +347,8 @@ export async function loadSources(base, { demo = false, onStep = () => {} } = {}
     return { index, runs: index.runs.concat(...shards.map((s) => arr(s && s.runs))), missing: shards.filter((s) => !s).length };
   })();
   const slim = (c) => (isObj(c) && Array.isArray(c.buildings) ? { sections: c.sections, built: c.built, buildings: c.buildings.map((b) => ({ id: b.id, d: b.d, lab: b.lab, cls: b.cls, fdr: b.fdr, e: b.e, w: b.w, n: b.n, tpw: b.tpw, tr: b.tr, e26: b.e26, n26: b.n26, eo: b.eo, no: b.no })) } : null);
-  const [a, dc, edges, suggestions, money, home, fixture] = await Promise.all([archive, get('datacity', 25000).then(slim), get('edges'), get('suggestions'), get('money', 6000), get('home', 6000), getJSON(u(FILES.fixture), 9000)]);
-  return { inp: { archive: a, datacity: dc, edges: isObj(edges) && Array.isArray(edges.edges) && edges.edges.length ? edges : null, suggestions: isObj(suggestions) && Array.isArray(suggestions.items) && suggestions.items.length ? suggestions : null,
+  const [a, dc, edges, suggestions, money, home, fixture, builders] = await Promise.all([archive, get('datacity', 25000).then(slim), get('edges'), get('suggestions'), get('money', 6000), get('home', 6000), getJSON(u(FILES.fixture), 9000), getJSON(u(FILES.builders), 6000)]);
+  return { inp: { builders: isObj(builders) ? builders : null, archive: a, datacity: dc, edges: isObj(edges) && Array.isArray(edges.edges) && edges.edges.length ? edges : null, suggestions: isObj(suggestions) && Array.isArray(suggestions.items) && suggestions.items.length ? suggestions : null,
     money: isObj(money) && Array.isArray(money.streams) && money.streams.length ? money : null, home: isObj(home) && Array.isArray(home.accounts) && home.accounts.length ? home : null }, fixture: isObj(fixture) ? fixture : {} };
 }
 export { hash32 };

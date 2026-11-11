@@ -20,7 +20,7 @@ export async function openHellas() {
   // the data first (the header counter is honest from the first frame), then the scene
   let loaded; try { loaded = await D.loadSources(import.meta.url, { demo: q.get('demo') === '1', onStep: (t) => ui.step(t) }); } catch (e) { loaded = { inp: {}, fixture: {} }; }
   if (S.closed) return S;
-  const world = D.buildPoleis(loaded.inp, loaded.fixture); Object.assign(world, P.layoutWorld(world.poleis)); S.world = world; window.__hellas.world = world;
+  const world = D.buildPoleis(loaded.inp, loaded.fixture); Object.assign(world, P.layoutWorld(world.poleis, 'hellas', world.builders)); S.world = world; window.__hellas.world = world;
   try {
     if (q.get('gl') === '0') throw new Error('3D switched off');
     const { Hellas } = await import('./hellas.js'); if (S.closed) return S;

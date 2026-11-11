@@ -1,13 +1,14 @@
 // HELLAS page layer: the header with the honest counter, breadcrumbs, the search box, the region list, the cards, the random voyage,
 // the 2D map (also the fallback when the device cannot draw 3D) and the walking controls. Plain words, AGORA look, 44 px targets.
 // Levels: Hellas (world) -> region -> polis -> district -> village -> house. READ ONLY: links open other apps, nothing trades.
-import { houseCard, searchPoleis, usd } from './hellas-data.js';
+import { houseCard, searchPoleis, usd, STATE_WORD } from './hellas-data.js';
 import { planPolis, voyage, whereInPolis } from './hellas-plan.js';
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; };
 const btn = (text, fn, cls) => { const b = el('button', cls, text); b.type = 'button'; b.onclick = fn; return b; };
 const nice = (n, w) => `${n.toLocaleString('en-US')} ${n === 1 ? w : w === 'city' ? 'cities' : w + 's'}`;
 const TONE_HEX = { good: '#7f8a52', bad: '#c96a4a', warn: '#e0b060', info: '#4b7a99', plain: '#d9c7a0', none: '#9a8f7d' };
+const STATE_TONE = { working: 'gold', quiet: '', ruin: 'bad' }, STATE_HEX = { working: '#e0b060', quiet: '#d9c7a0', ruin: '#b08a5e' };
 const SHARE_WORDS = { archive: ['adopted', 'still open', 'rejected'], datacity: ['hold in both periods', 'hold in one period', 'noise'] };
 
 export class HellasUI {
@@ -29,19 +30,30 @@ export class HellasUI {
     const zoom = el('div', 'hel-zoom'), zi = btn('+', () => this.zoomBy(.7), 'hel-ic'), zo = btn('−', () => this.zoomBy(1.4), 'hel-ic'); zi.setAttribute('aria-label', 'Zoom in'); zo.setAttribute('aria-label', 'Zoom out'); zoom.append(zi, zo);
     this.load = el('div', 'hel-load', 'Reading the Archive, Data City and Kalshi'); this.load.setAttribute('role', 'status');
     this.card = el('section', 'hel-card'); this.card.hidden = true; this.card.setAttribute('aria-live', 'polite');
+    this.ticker = btn('', () => this.eventsCard(), 'hel-ticker'); this.ticker.hidden = true; this.ticker.setAttribute('aria-label', 'The latest events in Hellas');
     const dock = el('div', 'hel-dock'); this.dockB = { regions: btn('Regions', () => this.regionList()), voyage: btn('Random voyage', () => this.startVoyage()), walk: btn('Walk', () => this.startWalk()), map: btn('Map', () => this.toggleMap()) };
     this.dockB.walk.disabled = true; dock.append(...Object.values(this.dockB));
     const sz = el('div', 'hel-stickzone'); this.stick = el('div', 'hel-stick'); this.knob = el('i'); this.stick.append(this.knob); sz.append(this.stick);
     const wb = el('div', 'hel-walkbar'); this.where = el('span', 'hel-where', ''); wb.append(this.where, btn('Look', () => this.lookHere(), 'go'), btn('Stop walking', () => this.stopWalk()));
-    r.append(this.canvas, this.map, this.labels, this.veil, top, zoom, this.load, this.card, dock, sz, wb); parent.append(r);
+    r.append(this.canvas, this.map, this.labels, this.veil, top, zoom, this.load, this.ticker, this.card, dock, sz, wb); parent.append(r);
     for (const c of [this.canvas, this.map]) { c.addEventListener('pointerdown', (e) => this.down(e)); c.addEventListener('pointermove', (e) => this.move(e)); c.addEventListener('pointerup', (e) => this.up(e)); c.addEventListener('pointercancel', (e) => this.up(e, true)); c.addEventListener('wheel', (e) => { e.preventDefault(); this.zoomBy(e.deltaY > 0 ? 1.12 : .89); }, { passive: false }); }
     this.onKey = (e) => this.key(e); addEventListener('keydown', this.onKey); addEventListener('keyup', this.onKey);
     this.renderCrumbs(); return this;
   }
-  unmount() { removeEventListener('keydown', this.onKey); removeEventListener('keyup', this.onKey); this.stopVoyage(); this.root.remove(); }
+  unmount() { removeEventListener('keydown', this.onKey); removeEventListener('keyup', this.onKey); this.stopVoyage(); clearInterval(this.tickT); this.root.remove(); }
   attach(scene) { this.scene = scene; }
   noGL(msg) { this.scene = null; this.root.classList.add('nogl'); this.mapMode = true; this.dockB.map.disabled = true; this.dockB.walk.hidden = true; const n = el('div', 'hel-note', msg); this.root.append(n); setTimeout(() => n.remove(), 9000); this.drawMap(); }
-  setWorld(world) { this.world = world; this.load.remove(); this.count.textContent = world.header; this.renderCrumbs(); this.worldCard(); this.drawMap(); }
+  setWorld(world) { this.world = world; this.load.remove(); this.count.textContent = world.header; this.renderCrumbs(); this.worldCard(); this.drawMap(); this.tickN = 0; this.setTicker(); if (!this.reduced && world.events.length > 1) this.tickT = setInterval(() => { this.tickN++; this.setTicker(); }, 4200); }
+  /** the world ticker: the latest events, one at a time above the dock (it stands still with reduced motion); a tap lists all of them */
+  setTicker() { const E = this.world ? this.world.events : []; if (!E.length) { this.ticker.hidden = true; return; } const e = E[this.tickN % E.length]; this.ticker.hidden = false; this.ticker.replaceChildren(el('b', '', `Latest ${this.tickN % E.length + 1}/${E.length} · ${e.when}`), el('span', '', e.text)); }
+  eventsCard() { const W = this.world, by = new Map(W.poleis.map((p) => [p.id, p])); this.stopVoyage();
+    this.showCard(`The latest ${W.events.length} events`, [el('p', '', 'The newest things in your own files: the last runs added to the Archive and the last rebuild of each other source. History, not a forecast.'),
+      this.list(W.events.map((e) => { const p = by.get(e.polis); return { title: e.text, sub: `${e.when} · ${p ? p.name : ''}`, tone: e.tone, fn: () => p && this.showPolis(p) }; }))]); }
+  buildersCard(focus) { const W = this.world; if (!W || !W.builders.length) return; this.stopVoyage(); const by = new Map(W.poleis.map((p) => [p.id, p]));
+    if (focus && this.scene && this.scene.level === 'world') this.scene.flyTo(focus.tx, focus.tz, { dist: 330, pitch: .8 });
+    this.showCard(focus ? `Builder: ${focus.name}` : `The builders' caravan`, [focus ? el('p', '', `${focus.job}. Travelling to ${focus.site}.`) : null,
+      el('p', '', `${W.builders.length} build agents were at work when this page was built. Each one walks from the camp by the harbour of Athens to the city it is building. ${W.buildersLabel}${W.buildersAsof ? ' (' + W.buildersAsof.slice(0, 16).replace('T', ' ') + ' UTC)' : ''}`),
+      this.list(W.builders.map((b) => ({ title: `${b.name}: ${b.job}`, sub: 'to ' + b.site, tone: b.newSite ? 'info' : 'gold', fn: () => { const p = by.get(b.target); this.buildersCard(b); if (!this.scene && p) this.showPolis(p); } })))]); }
   step(text) { this.load.textContent = text; }
 
   // ------------------------------------------------------------------ levels
@@ -69,16 +81,17 @@ export class HellasUI {
   worldCard(full) {
     const W = this.world; if (!W) return;
     const lead = el('p', '', `${W.header}. Every city is a real group of your own rows, and every house is one row: one tested run, one combo, one bet fact, one deal, one app.`);
-    if (!full) return this.showCard('Hellas, the world of cities', [lead, this.acts(btn('Random voyage', () => this.startVoyage(), 'go'), btn('Regions', () => this.regionList()), btn('How it is counted', () => this.worldCard(true)))]);
+    const c = W.counts, live = el('p', '', `Now: ${c.working} cities at work (a brazier burns), ${c.quiet} quiet, ${c.ruins} in ruins. The southern desert holds what did not work: ${c.desertRuns.toLocaleString('en-US')} of the ${c.rejectedRuns.toLocaleString('en-US')} rejected runs, in ${c.ghostTowns} ghost towns you can still enter.`);
+    if (!full) return this.showCard('Hellas, the world of cities', [lead, live, this.acts(btn('Random voyage', () => this.startVoyage(), 'go'), btn('Regions', () => this.regionList()), btn('How it is counted', () => this.worldCard(true)), W.builders.length ? btn('The builders', () => this.buildersCard()) : null)]);
     const src = this.list(W.sources.filter((s) => s.ok).map((s) => ({ title: s.name, sub: s.example ? 'Example data: the real file was not found' : 'Read from the published file', tone: s.example ? 'warn' : 'good', right: `${nice(s.cities, 'city')}\n${nice(s.houses, 'house')}`, fn: () => this.find(s.name.split(' ')[0]) })));
-    this.showCard('How Hellas is counted', [lead, src,
+    this.showCard('How Hellas is counted', [lead, live, src,
       el('p', '', 'A city grows with its rows. Its walls turn olive when more was adopted than rejected and terracotta when most was rejected. A gold acropolis means something there was adopted or kept. Trade routes join cities of the same family.'),
       this.acts(btn('Random voyage', () => this.startVoyage(), 'go'), btn('Regions', () => this.regionList()))]);
   }
   goWorld() { this.stopVoyage(); this.leave(() => { this.at = {}; this.renderCrumbs(); this.select(null); if (this.scene) this.scene.goHome(); this.worldCard(); this.drawMap(); }); }
   regionList() {
     this.stopVoyage(); const W = this.world; if (!W) return;
-    this.showCard('The regions of Hellas', [el('p', '', 'Each region holds one kind of data. Tap one to fly there.'), this.list(W.regions.map((R) => ({ title: R.name, sub: R.blurb, tone: 'gold', right: nice(R.poleis.length, 'city'), fn: () => this.goRegion(R) })))]);
+    this.showCard('The regions of Hellas', [el('p', '', 'Each region holds one kind of data. Tap one to fly there.'), this.list(W.regions.map((R) => ({ title: R.name, sub: R.blurb, tone: R.kind === 'desert' ? 'bad' : R.kind === 'isles' ? 'info' : 'good', right: nice(R.poleis.length, 'city'), fn: () => this.goRegion(R) })))]);
   }
   goRegion(R) {
     this.stopVoyage(); this.leave(() => {
@@ -88,7 +101,7 @@ export class HellasUI {
       this.showCard(R.name, [el('p', '', `${R.blurb}. ${nice(R.poleis.length, 'city')}, ${nice(houses, 'house')}.`), this.list(R.poleis.map((p) => this.polisItem(p)))]); this.drawMap();
     });
   }
-  polisItem(p) { return { title: p.name, sub: p.label, tone: p.gold ? 'gold' : p.share > .5 ? 'good' : p.bad > p.good ? 'bad' : 'plain', right: p.capital ? 'capital' : nice(p.rows.length, p.unit), fn: () => this.showPolis(p) }; }
+  polisItem(p) { return { title: p.name, sub: `${STATE_WORD[p.activity.state]} · ${p.label}`, tone: p.gold ? 'gold' : p.share > .5 ? 'good' : p.bad > p.good ? 'bad' : 'plain', right: p.capital ? 'capital' : nice(p.rows.length, p.unit), fn: () => this.showPolis(p) }; }
   /** a city on the world map: fly to it, ring it, say what it is */
   showPolis(p, o = {}) {
     if (!o.voy) this.stopVoyage();
@@ -96,9 +109,12 @@ export class HellasUI {
       const R = this.world.regions.find((x) => x.key === p.region); this.at = { region: R, sel: p }; this.renderCrumbs(); this.select({ x: p.x, z: p.z, selR: p.mr * 1.6 });
       if (this.scene) this.scene.flyTo(p.x, p.z + p.mr, { dist: 300, pitch: .78, dur: o.voy ? 2.2 : 1.4 });
       const nodes = [], tags = el('p'); tags.append(el('span', 'hel-tag', p.regionName), el('span', 'hel-tag', p.capital ? 'the capital' : nice(p.rows.length, p.unit)));
+      tags.append(el('span', 'hel-tag ' + STATE_TONE[p.activity.state], STATE_WORD[p.activity.state]));
       if (p.gold) tags.append(el('span', 'hel-tag gold', 'Gold acropolis')); if (p.example) tags.append(el('span', 'hel-tag warn', 'Example data'));
       if (o.voy) nodes.push(el('p', '', `Voyage stop ${this.voy.i + 1} of ${this.voy.stops.length}.`));
-      nodes.push(tags, el('p', '', p.say)); const sw = SHARE_WORDS[p.src], tot = p.good + p.bad + p.open;
+      const doing = el('p', 'hel-doing', p.activity.doing[0].toUpperCase() + p.activity.doing.slice(1) + '.'); nodes.push(tags, doing, el('p', '', (p.ruin ? 'A ghost town in the desert of what did not work: every run here was rejected. Enter it to read why. ' : '') + p.say));
+      const comers = this.world.builders.filter((b) => b.target === p.id); if (comers.length) nodes.push(el('p', '', `Builders on the road here: ${comers.map((b) => b.name).join(', ')} (snapshot at build time).`));
+      const sw = SHARE_WORDS[p.src], tot = p.good + p.bad + p.open;
       if (sw && tot) { const bar = el('div', 'hel-share'); for (const [c, v] of [['g', p.good], ['o', p.open], ['b', p.bad]]) { const i = el('i', c); i.style.width = (v / tot * 100) + '%'; bar.append(i); } bar.setAttribute('role', 'img'); bar.setAttribute('aria-label', `${p.good} ${sw[0]}, ${p.open} ${sw[1]}, ${p.bad} ${sw[2]}`); nodes.push(bar, el('p', '', `${p.good} ${sw[0]} · ${p.open} ${sw[1]} · ${p.bad} ${sw[2]}`)); }
       const rel = this.world.routes.filter((r) => r.a === p.idx || r.b === p.idx).slice(0, 3).map((r) => this.world.poleis[r.a === p.idx ? r.b : r.a]);
       if (rel.length) nodes.push(el('p', '', 'Trade routes sail to its sister cities:'), this.list(rel.map((q) => this.polisItem(q))));
@@ -125,8 +141,8 @@ export class HellasUI {
   polisCard() {
     const p = this.at.polis, plan = this.at.plan; if (!p || !plan) return; this.at.district = this.at.village = this.at.house = null; this.renderCrumbs(); this.select(null);
     if (this.scene && this.scene.level === 'polis' && !this.scene.fly) this.scene.flyCam({ tx: 0, tz: 0, ty: 4, dist: Math.max(150, Math.min(760, plan.R * 2.5)), pitch: .62 }, { dur: 1.1 });
-    const tags = el('p'); tags.append(el('span', 'hel-tag', nice(p.rows.length, 'house')), el('span', 'hel-tag', nice(plan.villages.length, 'village')), el('span', 'hel-tag', nice(plan.districts.length, 'district'))); if (p.example) tags.append(el('span', 'hel-tag warn', 'Example data'));
-    this.showCard(`${p.name} · ${p.label}`, [tags, el('p', '', `${p.say} Every house is one ${p.unit}: tap a house, or pick a district.`),
+    const tags = el('p'); tags.append(el('span', 'hel-tag ' + STATE_TONE[p.activity.state], STATE_WORD[p.activity.state]), el('span', 'hel-tag', nice(p.rows.length, 'house')), el('span', 'hel-tag', nice(plan.villages.length, 'village')), el('span', 'hel-tag', nice(plan.districts.length, 'district'))); if (p.example) tags.append(el('span', 'hel-tag warn', 'Example data'));
+    this.showCard(`${p.name} · ${p.label}`, [tags, el('p', 'hel-doing', p.activity.doing[0].toUpperCase() + p.activity.doing.slice(1) + '.'), el('p', '', `${plan.ruin ? 'These are ruins: roofless walls, one for every rejected run. ' : ''}${p.say} Every house is one ${p.unit}: tap a house, or pick a district.`),
       this.list(plan.districts.map((D) => ({ title: D.name, sub: `${nice(D.houses, 'house')} in ${nice(D.villages.length, 'village')}`, tone: 'gold', fn: () => this.goDistrict(D) }))),
       this.acts(this.scene ? btn('Walk the streets', () => this.startWalk(), 'go') : null, btn('Leave the city', () => this.showPolis(p)))]); this.drawMap();
   }
@@ -211,6 +227,7 @@ export class HellasUI {
     const S = this.scene;
     if (S.level === 'polis') { const h = S.pickHouse(x, y); if (h) this.showHouse(h); return h; }
     if (S.cam.dist > 1100) { const L = S.labels().filter((l) => l.kind === 'region').map((l) => [Math.hypot(l.x - x, l.y - y), l]).sort((a, b) => a[0] - b[0])[0]; if (L && L[0] < 44) { this.goRegion(L[1].ref); return L[1].ref; } }
+    const bd = S.cam.dist < 1100 ? S.pickBuilder(x, y, 26) : null; if (bd) { this.buildersCard(bd); return bd; }
     const p = S.pickPolis(x, y); if (p) this.showPolis(p); return p;
   }
 
@@ -233,9 +250,11 @@ export class HellasUI {
       for (const h of P.houses) { g.fillStyle = TONE_HEX[h.tone] || TONE_HEX.plain; g.fillRect(X(h.x - h.hx), Z(h.z - h.hz), Math.max(2, h.hx * 2 * V.s), Math.max(2, h.hz * 2 * V.s)); }
       g.fillStyle = '#14110e'; for (const D of P.districts) g.fillText(D.name, X(D.x), Z(D.z0) - 4);
     } else {
-      const W = this.world; for (const d of W.land) disc(d.x, d.z, d.r + 7, '#dcc995'); for (const d of W.land) disc(d.x, d.z, d.r, '#a8a070');
+      const W = this.world; const des = new Set(W.regions.filter((R) => R.kind === 'desert').map((R) => R.key)); for (const d of W.land) disc(d.x, d.z, d.r + 7, des.has(d.region) ? '#efd9a6' : '#dcc995'); for (const d of W.land) disc(d.x, d.z, d.r, des.has(d.region) ? '#e2c58c' : '#a8a070');
+      for (const f of W.features || []) disc(f.x, f.z, f.s * .6, f.kind === 'oasis' ? '#4f86a0' : '#c9a060');
       g.strokeStyle = 'rgba(138,90,44,.55)'; g.lineWidth = 1; g.beginPath(); for (const r of W.routes) { const a = W.poleis[r.a], b = W.poleis[r.b]; g.moveTo(X(a.x), Z(a.z)); g.lineTo(X(b.x), Z(b.z)); } g.stroke();
-      for (const p of W.poleis) { const s = Math.max(0, Math.min(1, p.share || 0)); disc(p.x, p.z, p.mr * .8, p.capital ? '#f3ece0' : s > .5 ? '#7f8a52' : s > .2 ? '#d9c7a0' : '#c96a4a'); if (p.gold) disc(p.x, p.z, p.mr * .32, '#c8a24a'); }
+      for (const p of W.poleis) { const s = Math.max(0, Math.min(1, p.share || 0)); disc(p.x, p.z, p.mr * .8, p.capital ? '#f3ece0' : p.activity.state === 'ruin' ? '#b08a5e' : s > .5 ? '#7f8a52' : s > .2 ? '#d9c7a0' : '#c96a4a'); if (p.gold) disc(p.x, p.z, p.mr * .32, '#c8a24a'); if (p.activity.state === 'working') disc(p.x + p.mr * .6, p.z - p.mr * .6, Math.max(3.2 / V.s, p.mr * .22), '#f4a63c'); }
+      for (const b of W.builders) { g.fillStyle = '#f0c45c'; g.fillRect(X(b.tx) - 2.5, Z(b.tz) - 2.5, 5, 5); }
       g.fillStyle = '#14110e'; g.strokeStyle = 'rgba(243,236,224,.85)'; g.lineWidth = 3;
       const names = this.at.region ? this.at.region.poleis.slice(0, 14).map((p) => [p.name, p.x, p.z - p.mr - 3]) : W.regions.map((R) => [R.name, R.cx, R.cz]);
       for (const [t, x, z] of names) { g.strokeText(t, X(x), Z(z)); g.fillText(t, X(x), Z(z)); }
@@ -253,7 +272,8 @@ export class HellasUI {
     const S = this.scene; if (!S) return; this.tick++;
     if (this.mapMode) return;
     const L = this.tick % 2 ? null : S.labels(); if (L) { for (let i = 0; i < Math.max(L.length, this.labelPool.length); i++) { let d = this.labelPool[i]; if (!d) { d = this.labelPool[i] = el('div', 'hel-label'); this.labels.append(d); }
-      const l = L[i]; if (!l) { d.hidden = true; continue; } d.hidden = false; if (d.textContent !== l.text) d.textContent = l.text; d.className = 'hel-label ' + l.kind; d.style.transform = `translate(${Math.round(l.x)}px,${Math.round(l.y)}px) translate(-50%,-100%)`; } }
+      const l = L[i]; if (!l) { d.hidden = true; continue; } d.hidden = false; const key = l.text + '|' + (l.sub || ''); if (d.dataset.k !== key) { d.dataset.k = key; d.replaceChildren(el('b', '', l.text)); if (l.sub) d.append(el('small', '', l.sub)); } d.className = 'hel-label ' + l.kind + (l.sub ? ' wide' : ''); d.style.transform = `translate(${Math.round(l.x)}px,${Math.round(l.y)}px) translate(-50%,-100%)`; } }
+    if (this.tick % 10 === 0 && this.world && this.world.events.length) this.ticker.hidden = !this.card.hidden || S.level !== 'world' || S.walking;
     if (S.walking && this.tick % 12 === 0) { const w = whereInPolis(this.at.plan, S.walk.x, S.walk.z); this.where.textContent = w.agora ? 'The agora, under the acropolis' : w.village ? `${w.district.name} · ${w.village.name}${w.house ? ' · ' + w.house.row.title : ''}` : 'A street of ' + this.at.polis.name; }
   }
 }

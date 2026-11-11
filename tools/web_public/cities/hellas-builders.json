@@ -1,0 +1,17 @@
+{
+ "v": 1,
+ "asof": "2026-11-11T01:10:00Z",
+ "label": "Snapshot at build time: the build agents that were working when this page was built. Not live.",
+ "agents": [
+  { "name": "Theme finisher", "job": "One calm AGORA look in every app; a unique accent per app", "area": "design" },
+  { "name": "Jarvis home", "job": "A clean, beautiful Jarvis first screen with a golden-hour courtyard", "area": "jarvis" },
+  { "name": "Jarvis brain", "job": "Search everything, follow-up questions, briefings, tours", "area": "jarvis" },
+  { "name": "Hellas", "job": "A world of 200+ cities built from the real research data", "area": "cities" },
+  { "name": "Ergasterion", "job": "The agent factory: watch every worker and what it learned", "area": "factory" },
+  { "name": "NQ bot", "job": "The NQ page and the kit that updates the PC's bot folder", "area": "trading" },
+  { "name": "Pinakes", "job": "A browser for every table of data OLYMPUS has", "area": "data" },
+  { "name": "Kalshi team C", "job": "Hunting for a real Kalshi edge in weather and index markets", "area": "research" },
+  { "name": "Colosseum", "job": "A 3D arena where two strategies duel on real numbers", "area": "arena" },
+  { "name": "Fixer", "job": "Fixing the broken tests and phone-layout bugs in old apps", "area": "quality" }
+ ]
+}

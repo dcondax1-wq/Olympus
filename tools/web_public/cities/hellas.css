@@ -11,6 +11,9 @@
 .hel-label{position:absolute;left:0;top:0;white-space:nowrap;font:600 12px/1 var(--serif);color:#fff6df;background:rgba(20,17,14,.74);border:1px solid rgba(200,162,74,.55);padding:4px 8px;border-radius:10px;will-change:transform}
 .hel-label.region{font-size:14px;border-color:rgba(156,107,60,.8)}
 .hel-label.capital{border-color:var(--gold);color:#ffe9b0;font-size:13px}
+.hel-label b{font-weight:600}.hel-label small{display:block;margin-top:3px;font:500 11px/1.25 var(--sans);color:var(--sub);white-space:normal}
+.hel-label.wide{white-space:normal;width:max-content;max-width:236px;line-height:1.15;border-radius:12px}
+.hel-label.working{border-color:var(--sun)}.hel-label.ruin{border-color:rgba(176,138,94,.8);color:#e6d3b0}.hel-label.builder{border-color:var(--gold);background:rgba(58,44,20,.88);color:#ffe9b0}.hel-label.banner{font-size:13px}
 .hel-label.village,.hel-label.district{font:600 11px/1 var(--sans);color:var(--text)}
 .hel-veil{position:absolute;inset:0;background:#14110e;opacity:0;pointer-events:none;transition:opacity .28s ease-out}
 .hel-veil.on{opacity:1}
@@ -39,6 +42,11 @@
 .hel-dock button:disabled{color:var(--mute);opacity:.55}
 .hel-card{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);max-height:46%;display:flex;flex-direction:column;padding:12px 14px 12px;border:1px solid var(--bronze);background:var(--panel);border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.35);touch-action:pan-y}
 .hel-card[hidden]{display:none}
+.hel-ticker{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);min-height:48px;display:flex;flex-direction:column;justify-content:center;gap:2px;text-align:left;padding:6px 12px;border:1px solid var(--line);background:var(--panel);border-radius:14px}
+.hel-ticker[hidden]{display:none}
+.hel-ticker b{font:600 11.5px/1.2 var(--num);color:var(--gold);font-variant-numeric:tabular-nums}.hel-ticker span{font:500 13px/1.25 var(--sans);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hel-doing{color:var(--text);font-family:var(--serif);font-size:15px}
+.hel.walking .hel-ticker,.hel.map .hel-ticker{display:none}
 .hel-card header{display:flex;gap:8px;align-items:flex-start}
 .hel-card h3{flex:1;min-width:0;margin:0;font:700 17px/1.2 var(--serif);padding-bottom:5px;border-bottom:1px solid rgba(200,162,74,.45)}
 .hel-card .hel-ic{margin:-4px -6px 0 0;border-radius:12px}
@@ -72,6 +80,6 @@
 .hel.walking .hel-card{bottom:calc(env(safe-area-inset-bottom,0px) + 214px);max-height:34%}
 .hel.nogl .hel-c,.hel.nogl .hel-labels{display:none}.hel.nogl .hel-map{display:block}
 .hellas-open body>*:not(.hel):not(.ath):not(script){visibility:hidden}
-@media (min-width:760px){.hel-dock,.hel-card{left:50%;right:auto;width:520px;transform:translateX(-50%)}.hel-top{max-width:560px}}
+@media (min-width:760px){.hel-dock,.hel-card,.hel-ticker{left:50%;right:auto;width:520px;transform:translateX(-50%)}.hel-top{max-width:560px}}
 @media (max-height:520px){.hel-card{max-height:58%;left:auto;width:min(360px,52%);transform:none}.hel-find{display:none}}
 @media (prefers-reduced-motion:reduce){.hel-veil{transition:none}}

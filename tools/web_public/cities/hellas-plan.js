@@ -7,17 +7,20 @@
 import { rng, hash32 } from './util.js';
 import { PLACES, REGIONS } from './hellas-names.js';
 
+/** where a builder is on its road at time t (seconds): out to the site, a rest, back to the camp. still = the fixed place for reduced motion. */
+export function builderAt(b, t, still = false) { const len = Math.hypot(b.tx - b.sx, b.tz - b.sz) || 1, per = len / 9 + 14; let u = still ? .72 : ((t + b.i * 5.3) % (per * 2)) / per; const back = u > 1; if (back) u = 2 - u; const e = Math.min(1, u * per / (len / 9));
+  return { x: b.sx + (b.tx - b.sx) * e, z: b.sz + (b.tz - b.sz) * e, yaw: Math.atan2(b.tx - b.sx, b.tz - b.sz) + (back ? Math.PI : 0), at: e >= 1 }; }
 export const BUDGET = { high: { calls: 45, tris: 160000 }, low: { calls: 28, tris: 80000 }, world: { calls: 30 } };
 export const TIER = { // what a tier may draw
   low: { blocks: 5, hills: 40, ships: 0, trees: 60, npcs: 0, dpr: 1.25, detail: false },
   high: { blocks: 12, hills: 110, ships: 36, trees: 220, npcs: 36, dpr: 2, detail: true },
   ultra: { blocks: 14, hills: 150, ships: 48, trees: 320, npcs: 60, dpr: 2, detail: true },
 };
-const SHAPE = { crete: [2.3, .5], euboea: [.6, 1.5], ionia: [.75, 1.35], aeolis: [.8, 1.25], caria: [.85, 1.2], macedonia: [1.5, .75], thrace: [1.35, .7], epirus: [.8, 1.25], ionian: [.6, 1.6], dodecanese: [.8, 1.2] };
+const SHAPE = { libya: [1.35, .8], egypt: [1.2, .85], persia: [1.3, .8], crete: [2.3, .5], euboea: [.6, 1.5], ionia: [.75, 1.35], aeolis: [.8, 1.25], caria: [.85, 1.2], macedonia: [1.5, .75], thrace: [1.35, .7], epirus: [.8, 1.25], ionian: [.6, 1.6], dodecanese: [.8, 1.2] };
 const GOLDEN = 2.399963229728653;
 export const markerR = (p) => (p.capital ? 34 : 7 + 1.7 * Math.sqrt(Math.min(p.size, 130)));
 
-export function layoutWorld(poleis, seed = 'hellas') {
+export function layoutWorld(poleis, seed = 'hellas', builders = []) {
   const regions = REGIONS.map((R) => ({ ...R, poleis: [], r: 60, cx: R.x, cz: R.z }));
   const rb = new Map(regions.map((R) => [R.key, R]));
   // names: a real Greek place per polis, picked by its id (the capital keeps "Athens")
@@ -47,26 +50,37 @@ export function layoutWorld(poleis, seed = 'hellas') {
     const fa = a.key === 'attica' ? 0 : b.key === 'attica' ? 1 : .5, fb = 1 - fa;
     if (ox < oz) { const s = dx >= 0 ? 1 : -1; a.cx -= s * ox * fa; b.cx += s * ox * fb; } else { const s = dz >= 0 ? 1 : -1; a.cz -= s * oz * fa; b.cz += s * oz * fb; }
   }
-  const land = [], hills = [];
+  const land = [], hills = [], features = [];
   for (const R of live) {
     for (const p of R.poleis) { p.x = Math.round((R.cx + p.lx) * 10) / 10; p.z = Math.round((R.cz + p.lz) * 10) / 10; delete p.lx; delete p.lz; }
     if (R.kind === 'isles') for (const p of R.poleis) land.push({ x: p.x, z: p.z, r: p.mr + 16, region: R.key });
     else {
       land.push({ x: R.cx, z: R.cz, r: Math.min(R.rx, R.rz) * .7, region: R.key });
       for (const p of R.poleis) land.push({ x: p.x, z: p.z, r: p.mr + 30, region: R.key });
-      const r = rng(hash32(seed + ':hills:' + R.key)), want = Math.ceil(R.poleis.length * .8) + 2;
+      const r = rng(hash32(seed + ':hills:' + R.key)), desert = R.kind === 'desert', want = Math.ceil(R.poleis.length * (desert ? 1.5 : .8)) + 2;
       for (let k = 0, guard = 0; k < want && guard < want * 12; guard++) {
         const q = R.poleis[Math.floor(r() * R.poleis.length)], th = r() * 6.283, d = q.mr + 14 + r() * 12, x = q.x + Math.cos(th) * d, z = q.z + Math.sin(th) * d;
         if (R.poleis.some((p) => Math.hypot(p.x - x, p.z - z) < p.mr + 11)) continue;
-        hills.push({ x, z, r: 7 + r() * 9, h: 6 + r() * 16, region: R.key }); k++;
+        hills.push(desert ? { x, z, r: 12 + r() * 14, h: 2.5 + r() * 4, region: R.key, dune: true } : { x, z, r: 7 + r() * 9, h: 6 + r() * 16, region: R.key }); k++;
       }
+      // the desert's own sights: pyramids, obelisks and oases, between the ghost towns
+      if (desert) { const kinds = ['pyramid', 'oasis', 'obelisk', 'pyramid', 'oasis', 'obelisk', 'oasis'], nf = Math.min(7, 2 + Math.ceil(R.poleis.length / 6));
+        for (let k = 0, guard = 0; k < nf && guard < 200; guard++) { const q = R.poleis[Math.floor(r() * R.poleis.length)], th = r() * 6.283, d = q.mr + 20 + r() * 10, x = q.x + Math.cos(th) * d, z = q.z + Math.sin(th) * d;
+          if (R.poleis.some((p) => Math.hypot(p.x - x, p.z - z) < p.mr + 17) || features.some((f) => Math.hypot(f.x - x, f.z - z) < 30)) continue; features.push({ kind: kinds[k % kinds.length], x, z, s: 8 + r() * 6, region: R.key }); k++; } }
     }
   }
   const xs = poleis.map((p) => p.x), zs = poleis.map((p) => p.z);
   const bounds = { x0: Math.min(...xs) - 90, x1: Math.max(...xs) + 90, z0: Math.min(...zs) - 90, z1: Math.max(...zs) + 90 };
   bounds.cx = (bounds.x0 + bounds.x1) / 2; bounds.cz = (bounds.z0 + bounds.z1) / 2; bounds.w = bounds.x1 - bounds.x0; bounds.h = bounds.z1 - bounds.z0;
-  poleis.forEach((p, i) => { p.idx = i; });
-  return { regions: live, land, hills, routes: tradeRoutes(poleis), bounds };
+  poleis.forEach((p, i) => { p.idx = i; p.biome = (rb.get(p.region) || {}).kind === 'desert' ? 'desert' : 'green'; });
+  // the builders' caravan: from the camp at the harbour south of Athens to the city each one is building (a new site gets a free spot by Athens)
+  const cap = poleis.find((p) => p.capital), camp = cap ? { x: cap.x + 26, z: cap.z + cap.mr + 74 } : { x: 0, z: 0 }, byId = new Map(poleis.map((p) => [p.id, p])), sites = [];
+  builders.forEach((b, i) => { const t = b.target && byId.get(b.target); b.sx = camp.x + (i % 4 - 1.5) * 7; b.sz = camp.z + Math.floor(i / 4) * 7;
+    if (t) { b.site = b.site.replace('{city}', t.name); const a = (hash32('gate:' + b.name) % 628) / 100, rr = t.capital ? t.mr * .55 : t.mr + 6; b.tx = t.x + Math.cos(a) * rr; b.tz = t.z + Math.sin(a) * rr; return; }
+    let best = null; for (let k = 0; k < 16; k++) { const a = k / 16 * 6.283 + i, x = (cap ? cap.x : 0) + Math.cos(a) * ((cap ? cap.mr : 30) + 52), z = (cap ? cap.z : 0) + Math.sin(a) * ((cap ? cap.mr : 30) + 52);
+      const free = Math.min(...poleis.filter((p) => p !== cap).map((p) => Math.hypot(p.x - x, p.z - z) - p.mr), ...sites.map((s) => Math.hypot(s.x - x, s.z - z) - 14), 999); if (!best || free > best.free) best = { x, z, free }; }
+    b.tx = best.x; b.tz = best.z; sites.push({ x: best.x, z: best.z, name: b.name }); });
+  return { regions: live, land, hills, features, sites, camp, routes: tradeRoutes(poleis), bounds };
 }
 
 /** trade routes: related poleis (same source and family) joined into a shortest tree, the shortest links first, at most `cap` in all */
@@ -76,7 +90,7 @@ export function tradeRoutes(poleis, cap = 110) {
   for (const [family, L] of fam) {
     if (L.length < 2) continue; const inTree = [L[0]], rest = L.slice(1);
     while (rest.length) { let best = null; for (const a of inTree) for (let j = 0; j < rest.length; j++) { const d = Math.hypot(a.x - rest[j].x, a.z - rest[j].z); if (!best || d < best.d) best = { a, j, d }; }
-      const b = rest.splice(best.j, 1)[0]; inTree.push(b); out.push({ a: best.a.idx, b: b.idx, d: best.d, family }); }
+      const b = rest.splice(best.j, 1)[0]; inTree.push(b); out.push({ a: best.a.idx, b: b.idx, d: best.d, family, caravan: best.a.biome === 'desert' && b.biome === 'desert' }); }
   }
   return out.sort((p, q) => p.d - q.d || p.a - q.a || p.b - q.b).slice(0, cap);
 }
