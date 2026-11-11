@@ -934,7 +934,7 @@ def test_assets():
     files = sorted(f for f in os.listdir(d) if not f.startswith(".")) if os.path.isdir(d) else []
     rows = [ln for ln in lic.splitlines() if ln.startswith("|") and "CC0" in ln]
     missing = [f for f in files if not any(f in r for r in rows)]
-    check(f"g3. docs/ASSETS_LICENSES.md has a CC0 row (author, source URL, licence) for every file in assets/people ({len(files)} files)", bool(files) and not missing and all("http" in r for r in rows), missing)
+    check(f"g3. docs/ASSETS_LICENSES.md has a CC0 row (author, source URL, licence) for every file in assets/people ({len(files)} files)", bool(files) and not missing and all("http" in r for r in rows if any(f in r for f in files)), missing)
     sizes = {f: os.path.getsize(os.path.join(d, f)) for f in files}
     total = 0
     for root, _, fs in os.walk(os.path.join(AK.WEB, "assets")):
