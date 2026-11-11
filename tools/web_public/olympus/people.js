@@ -316,7 +316,7 @@ function buildSheet() {
   req.addEventListener('submit', (e) => { e.preventDefault(); const v = reqText.value.trim(); if (!v || !S.cur) return; const row = request(S.cur.id, v); reqText.value = ''; showReq(false); addBubble('me', 'Request: ' + v); addBubble('them', row ? 'Noted. It is in your request box; nothing was sent anywhere.' : 'I could not save that on this phone (storage is off).'); });
   bWork.addEventListener('click', () => { if (S.cur && S.cur.app) openWork(S.cur); });
   bShare.addEventListener('click', share);
-  bVoice.addEventListener('click', () => { const on = !speakOn(); if (on) { VO.unlock(); S.unlocked = true; } VO.set(on); if (!on) hush(); paintVoice(); if (on && S.cur) { say(S.cur.id, 'Voice is on. This is how I sound.', { mood: 'proud' }); toast(hasSpeech() && VO.voices().length ? 'Voice on: ' + VO.describe(S.cur) + '.' : 'No voice on this device: a soft murmur and the words on screen.'); } });
+  bVoice.addEventListener('click', () => { const on = !speakOn(); if (on) { VO.unlock(); S.unlocked = true; } VO.set(on); if (!on) hush(); paintVoice(); if (on && S.cur) { say(S.cur.id, 'Voice is on. This is how I sound.', { mood: 'proud' }); note(hasSpeech() && VO.voices().length ? 'Voice on: ' + VO.describe(S.cur) + '.' : 'No voice on this device: a soft murmur and the words on screen.'); } });
   root.addEventListener('pointerdown', () => { if (!S.unlocked && speakOn()) { S.unlocked = true; VO.unlock(); } }, true);
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) mic.hidden = true;
@@ -329,6 +329,7 @@ function micIcon() { const s = document.createElementNS(NS, 'svg'); s.setAttribu
 function trap(e, box) { const f = Array.from(box.querySelectorAll('button, input, textarea, [tabindex="0"]')).filter((x) => !x.hidden && x.offsetParent !== null); if (!f.length) return; const a = f[0], z = f[f.length - 1]; if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); } }
 function paintVoice() { const U = S.sheet, on = speakOn(); U.bVoice.textContent = 'Voice: ' + (on ? 'on' : 'off'); U.bVoice.setAttribute('aria-pressed', on ? 'true' : 'false'); }
 function showReq(on) { const U = S.sheet; U.req.hidden = !on; U.tools.hidden = on; U.form.hidden = on; U.chips.hidden = on; if (on) { U.reqLab.textContent = 'A note for ' + S.cur.name + ' (Claude will read it for them)'; U.reqText.focus(); } else if (!U.root.hidden && !U.root.contains(document.activeElement)) { try { U.sheet.focus({ preventScroll: true }); } catch (_) { /* fine */ } } U.log.scrollTop = U.log.scrollHeight; }
+function note(t) { toast(t); }      // (inside buildSheet `toast` is the element)
 function toast(t) { const U = S.sheet; U.toast.textContent = t; clearTimeout(S.toastT); S.toastT = setTimeout(() => { U.toast.textContent = ''; }, 2600); }
 function openWork(p) { const url = '../' + p.app + '/'; fire('olympus:people:work', { id: p.id, app: p.app }); try { if (window.OLYMPUS && typeof window.OLYMPUS.go === 'function') { window.OLYMPUS.go(url); return; } } catch (_) { /* plain link */ } location.href = url; }
 function paintHead(extra) {
