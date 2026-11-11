@@ -320,10 +320,11 @@ main#app:where(:has(> header.top .ag-title)) :is(.pos, .up):not(i):not(.bar) { c
 /* buttons: one shape, a press you can feel */
 main#app:where(:has(> header.top .ag-title)) .btn { border-radius: 13px; font-weight: 600; touch-action: manipulation; -webkit-user-select: none; user-select: none;
   transition: scale var(--ag-d1) var(--ag-ease), background-color var(--ag-d1) var(--ag-ease), border-color var(--ag-d1) var(--ag-ease), color var(--ag-d1) var(--ag-ease), filter var(--ag-d1) var(--ag-ease); }
-main#app:where(:has(> header.top .ag-title)) .btn:not(.primary) { background: linear-gradient(180deg, var(--ag-s4), var(--ag-s3)); border-color: rgba(243, 236, 224, .1); box-shadow: var(--ag-e1); }
-main#app:where(:has(> header.top .ag-title)) .btn.primary { background: linear-gradient(180deg, #d9b764, var(--ag-gold)); color: var(--ag-on-gold); border-color: #e2c47a; box-shadow: 0 1px 0 rgba(255,246,220,.35) inset, 0 1px 2px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.22); }
+main#app:where(:has(> header.top .ag-title)) .btn:not(.primary):not(.gold) { background: linear-gradient(180deg, var(--ag-s4), var(--ag-s3)); border-color: rgba(243, 236, 224, .1); box-shadow: var(--ag-e1); }
+/* .gold is an app's own name for its primary button (Colosseum): it gets the primary look, never dark text on the dark default */
+main#app:where(:has(> header.top .ag-title)) :is(.btn.primary, .btn.gold) { background: linear-gradient(180deg, #d9b764, var(--ag-gold)); color: var(--ag-on-gold); border-color: #e2c47a; box-shadow: 0 1px 0 rgba(255,246,220,.35) inset, 0 1px 2px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.22); }
 main#app:where(:has(> header.top .ag-title)) :is(.btn, .chip, .ag-chip, .ag-tab, .seg button, .tab, .filters button):active { scale: .97; }
-main#app:where(:has(> header.top .ag-title)) .btn.primary:active { filter: brightness(.94); }
+main#app:where(:has(> header.top .ag-title)) :is(.btn.primary, .btn.gold):active { filter: brightness(.94); }
 main#app:where(:has(> header.top .ag-title)) .kv dd, main#app:where(:has(> header.top .ag-title)) .ag-num { font-variant-numeric: tabular-nums; }
 /* an app's views (a role="tablist" row right under the page) become a sticky scope bar under the compact bar: always one tap away */
 main#app:where(:has(> header.top .ag-title)) > [role="tablist"] { position: sticky; top: calc(var(--ag-st) + 48px); z-index: 30; display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto;

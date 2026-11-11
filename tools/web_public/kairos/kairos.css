@@ -134,3 +134,5 @@ textarea { width: 100%; min-height: 96px; padding: 10px 12px; border-radius: var
 
 /* phone-fit 2026-11-10: on a 320 px screen the heat grid has 3 columns so every cell is a 44 px tap */
 @media (max-width: 340px) { .heat { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* QA round 6 (phone-fit contrast): an hour with no or too few trades still reads (soft ink, full opacity), the dashed edge says "few" */
+#app .cell.none, #app .cell.few { opacity: 1; } #app .cell.none b, #app .cell.few b, #app .cell.few small { color: var(--ag-soft); }
