@@ -226,10 +226,11 @@ async function start() {
     const d = fx && fx.edition ? C.normalizeEdition(fx.edition) : null;
     if (d) { d.demo = true; ed = d; S.demo = true; if (!why) why = S.forced ? 'DEMO edition: example files, not real numbers.' : 'Today\'s edition could not be read, so this is the DEMO edition: example files, not real numbers.'; }
   }
-  if (!ed) { say('No edition could be read, not even the demo. Check the connection and open the page again.'); S.ready = true; return; }
+  if (!ed) { say('No edition could be read, not even the demo. Check the connection and open the page again.'); try { if (O && O.ready) O.ready(); } catch (_) { /* no kit */ } S.ready = true; return; }
   S.latest = ed; S.dates = S.demo ? [] : C.indexDates(ix); if (!S.demo && S.dates.indexOf(ed.date) < 0) S.dates.push(ed.date);
   render(ed);
   say(why || `${ed.masthead.title}, ${ed.masthead.date_words}: edition ${ed.number}, ${C.allArticles(ed).length} stories.`);
+  try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   S.ready = true;
   setTimeout(loadPeople, 1500);
 }
