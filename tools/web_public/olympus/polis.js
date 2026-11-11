@@ -1028,11 +1028,12 @@
   }
   /* palettes: quiet = a backdrop for text (low contrast, warm dark stones); dense = richer, for under a hero */
   var MOS = {
-    quiet: { field: ['#211b15', '#241d16', '#1e1914', '#272018'], gold: ['#5e4b2c', '#6a5532'], terra: ['#5a3022', '#643628'], sea: ['#1e2c33', '#22333b', '#1b282f'], ivory: ['#4a4237', '#544a3d'], black: ['#16120e'] },
-    dense: { field: ['#2c241b', '#30271d', '#28211a', '#342a1f'], gold: ['#a8843f', '#c29a4c', '#8f6e33'], terra: ['#9a4b32', '#ad573b', '#87412c'], sea: ['#2f5468', '#376179', '#284a5c'], ivory: ['#d8ccb6', '#cbbfa8', '#e2d7c2'], black: ['#18130f'] }
+    quiet: { field: ['#211b15', '#241d16', '#1e1914', '#272018'], gold: ['#5e4b2c', '#6a5532'], terra: ['#5a3022', '#643628'], sea: ['#1e2c33', '#22333b', '#1b282f'], ivory: ['#4a4237', '#544a3d'], black: ['#16120e'], dol: ['#857a68', '#7a705f', '#8f846f'] },
+    dense: { field: ['#2c241b', '#30271d', '#28211a', '#342a1f'], gold: ['#a8843f', '#c29a4c', '#8f6e33'], terra: ['#9a4b32', '#ad573b', '#87412c'], sea: ['#2f5468', '#376179', '#284a5c'], ivory: ['#d8ccb6', '#cbbfa8', '#e2d7c2'], black: ['#18130f'], dol: ['#e2d7c2', '#d6c9b0', '#ece2cf'] }
   };
   function paintMosaic(g, w, h, pattern, dense, opts, lite, dprNow) {
     var pal = dense ? MOS.dense : MOS.quiet, T = opts.tile || (lite ? (dense ? 8 : 10) : (dense ? 6 : 8)), rnd = prng(hash(pattern + w + 'x' + h));
+    if (pattern === 'meander' && !opts.tile) T = Math.max(3, Math.min(T, Math.min(w, h) / 34));
     g.fillStyle = dense ? '#120e0b' : '#100d0a';
     g.fillRect(0, 0, w, h);
     var dol = null, dolT = [];
@@ -1067,7 +1068,7 @@
           if (yy < crest + T * 1.1) return 'ivory';
         }
         if (y < band * 1.6) { var ph2 = ((x + lam / 2) % lam) / lam; if (y < band * (0.55 + 0.5 * Math.sin(ph2 * 2 * Math.PI))) return 'sea'; if (y < band * (0.55 + 0.5 * Math.sin(ph2 * 2 * Math.PI)) + T) return 'ivory'; }
-        return (Math.sin(x * 0.011 + y * 0.004) + Math.sin(y * 0.017 - x * 0.006) > 1.55) ? 'gold' : 'field';
+        return 'field';
       }
       if (pattern === 'rosettes') {
         var R = dense ? 64 : 84, ix = Math.floor(x / R), iy = Math.floor(y / R), lx = x - (ix + 0.5) * R, ly = y - (iy + 0.5) * R;
@@ -1084,7 +1085,7 @@
           var t = dolT[i];
           g.setTransform(1, 0, 0, 1, 0, 0);
           var lxx = (x - t[0]) / t[2] * t[3] + (t[3] < 0 ? 120 : 0), lyy = (y - t[1]) / t[2];
-          if (lxx > 10 && lxx < 110 && lyy > 25 && lyy < 95 && g.isPointInPath(dol, lxx, lyy)) return 'ivory';
+          if (lxx > 10 && lxx < 110 && lyy > 25 && lyy < 95 && g.isPointInPath(dol, lxx, lyy)) return 'dol';
         }
         if (y > h - band * 1.6) return ((x / T + Math.floor(y / T)) % 6 < 3) ? 'sea' : 'black';
         return 'sea';
@@ -1165,9 +1166,9 @@
       tag('g', { filter: 'url(#' + id + 'e)' }, tag('path', { d: sprig + moon, fill: 'url(#' + id + 'r)' }) +
         tag('text', { x: 75, y: 57, 'text-anchor': 'middle', 'font-family': "'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif", 'font-size': 12, 'font-weight': 700, fill: 'url(#' + id + 'r)', 'letter-spacing': 0.3 }, 'ΑΘΕ')) +
       tag('path', { d: d, fill: 'none', stroke: '#2f302c', 'stroke-width': 1, opacity: 0.55 }) +
+      tag('g', { 'class': 'polis-coin-bronze', style: 'mix-blend-mode:multiply' }, tag('path', { d: d, fill: '#c0814a' }) + tag('path', { d: d, fill: '#5a3418', opacity: 0.22 }) +
+        tag('path', { d: circD(26, 72, 8) + circD(76, 28, 6) + circD(64, 80, 5) + circD(82, 64, 3.5), fill: '#7d9a78', opacity: 0.5, filter: 'url(#' + id + 'pb)' })) +
       tag('g', { 'clip-path': 'url(#' + id + 'k)' },
-        tag('g', { 'class': 'polis-coin-bronze' }, tag('path', { d: d, fill: '#a5683a', style: 'mix-blend-mode:multiply' }) + tag('path', { d: d, fill: '#3b2412', opacity: 0.25 }) +
-          tag('path', { d: circD(26, 72, 8) + circD(76, 28, 6) + circD(64, 80, 5) + circD(82, 64, 3.5), fill: '#6f8a6a', opacity: 0.22, filter: 'url(#' + id + 'pb)' })) +
         tag('rect', { 'class': 'polis-coin-shine', x: -120, y: -20, width: 120, height: 140, fill: 'url(#' + id + 'h)' }));
     return '<svg xmlns="' + NS + '" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><defs>' + defs + '</defs>' + body + '</svg>';
   }
@@ -1259,8 +1260,8 @@
       defs += grad(id + 'b', BRONZE, { a: { x1: 0, y1: 0, x2: 1, y2: 1 } });
       defs += goldGrad(id + 'g');
       defs += grad(id + 'n', [[0, '#25324a', 0.62], [1, '#121a29', 0.8]], { radial: true, a: { cx: '50%', cy: '50%', r: '50%' } });
-      defs += grad(id + 'sh', [[0, '#2a2016', 0.62], [1, '#2a2016', 0]], { a: { x1: 0, y1: 0, x2: 0, y2: 1 } });
-      defs += '<filter id="' + id + 'bl" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="1.6"/></filter>';
+      defs += grad(id + 'sh', [[0, '#2a2016', 0.2], [0.25, '#2a2016', 0.55], [1, '#2a2016', 0.85]], { a: { x1: 0, y1: 0, x2: 0, y2: 1 } });
+      defs += '<filter id="' + id + 'bl" x="-80%" y="-10%" width="260%" height="120%"><feGaussianBlur stdDeviation="1.3"/></filter>';
       defs += tag('clipPath', { id: id + 'c' }, tag('circle', { cx: C, cy: C, r: R - 6 }));
       var mUrl = MARBLE.light || marble('light');
       if (mUrl) defs += '<pattern id="' + id + 'p" patternUnits="userSpaceOnUse" width="160" height="160"><image href="' + mUrl + '" width="160" height="160" opacity="0.9"/></pattern>';
@@ -1305,7 +1306,8 @@
         [['rise', day.ar], ['set', day.as]].forEach(function (x) { var q = xy(x[1], R - 38); s += tag('circle', { cx: r2(q[0]), cy: r2(q[1]), r: 2.2, fill: '#e0b060', stroke: '#7a5a22', 'stroke-width': 0.6 }); });
       }
       s += '<g class="polis-sd-hand" style="transform-origin:' + C + 'px ' + C + 'px">' +
-        tag('path', { 'class': 'polis-sd-shadow', d: 'M' + (C - 3.4) + ',' + C + 'L' + C + ',' + (C - R + 16) + 'L' + (C + 3.4) + ',' + C + 'Z', fill: 'url(#' + id + 'sh)', filter: 'url(#' + id + 'bl)' }) +
+        tag('path', { 'class': 'polis-sd-shadow', d: 'M' + (C - 6) + ',' + (C + 2) + 'L' + (C - 1.4) + ',' + (C - R + 14) + 'Q' + C + ',' + (C - R + 11) + ' ' + (C + 1.4) + ',' + (C - R + 14) + 'L' + (C + 6) + ',' + (C + 2) + 'Z', fill: 'url(#' + id + 'sh)', filter: 'url(#' + id + 'bl)' }) +
+        tag('path', { 'class': 'polis-sd-shadow', d: 'M' + (C - 2.2) + ',' + C + 'L' + (C - 0.5) + ',' + (C - R + 16) + 'L' + (C + 0.5) + ',' + (C - R + 16) + 'L' + (C + 2.2) + ',' + C + 'Z', fill: '#241a10', opacity: 0.8 }) +
         tag('path', { 'class': 'polis-sd-moon', d: 'M' + C + ',' + (C - 8) + 'L' + C + ',' + (C - R + 18), stroke: '#dfe4ea', 'stroke-width': 1.4, 'stroke-linecap': 'round', opacity: 0 }) +
         tag('path', { 'class': 'polis-sd-moon', d: 'M' + (C - 3) + ',' + (C - R + 16) + 'a4.2,4.2 0 1,0 5.6,5.4a3.4,3.4 0 1,1 -5.6,-5.4Z', fill: '#e8ecf0', opacity: 0 }) + '</g>';
       s += tag('circle', { cx: C, cy: C, r: 9, fill: 'url(#' + id + 'b)' });
@@ -1320,9 +1322,9 @@
       var p = tzParts(now, tz), k = p.y + '-' + p.mo + '-' + p.d;
       if (k !== dayKey) { dayKey = k; build(now); }
       var sun = sunAt(now, loc.lat, loc.lon), hand = holder.querySelector('.polis-sd-hand');
-      var night = sun.alt < -0.833, sh = holder.querySelectorAll('.polis-sd-shadow')[0], mo = holder.querySelectorAll('.polis-sd-moon'), i;
+      var night = sun.alt < -0.833, sh = holder.querySelectorAll('.polis-sd-shadow'), mo = holder.querySelectorAll('.polis-sd-moon'), i;
       if (hand) hand.style.transform = 'rotate(' + r2(sun.ha) + 'deg)';
-      if (sh) sh.setAttribute('opacity', night ? 0 : r2(Math.max(0.35, Math.min(1, 0.4 + sun.alt / 40))));
+      for (i = 0; i < sh.length; i++) sh[i].setAttribute('opacity', night ? 0 : r2(Math.max(0.45, Math.min(1, 0.5 + sun.alt / 40)) * (i ? 0.8 : 1)));
       for (i = 0; i < mo.length; i++) mo[i].setAttribute('opacity', night ? (i ? 0.95 : 0.7) : 0);
       var hh = (p.h < 10 ? '0' : '') + p.h, mm = (p.mi < 10 ? '0' : '') + p.mi;
       tline.textContent = hh + ':' + mm + ' New York';
@@ -1411,7 +1413,7 @@
     var parts;
     if (form === 'wreath') parts = wreathParts(60, 56, 36, kind);
     else {
-      var b = branch([24, 100], [30, 50], [92, 22], { n: kind === 'olive' ? 12 : 9, len: kind === 'olive' ? 17 : 17, w: kind === 'olive' ? 2.5 : 4.4, spread: kind === 'olive' ? 34 : 40, fruit: kind === 'olive' ? 3 : 2 });
+      var b = branch([24, 100], [30, 50], [92, 22], { n: kind === 'olive' ? 12 : 9, len: kind === 'olive' ? 19 : 17, w: kind === 'olive' ? 3.3 : 4.4, spread: kind === 'olive' ? 34 : 40, fruit: kind === 'olive' ? 3 : 2 });
       parts = { stem: b.stem, leaves: b.leaves, ribs: b.ribs, fruit: b.fruit, ribbon: '', ribbonLines: '' };
     }
     var leafFill, stemCol, ribCol, fruitFill, ribbonFill, defs = '';
@@ -1424,7 +1426,7 @@
       defs += grad(id + 'sw', [[0, '#fff', 0], [0.42, '#fff', 0], [0.5, '#fff', 0.85], [0.58, '#fff', 0], [1, '#fff', 0]], { a: { x1: 0, y1: 0, x2: 1, y2: 0.5 } });
       defs += tag('clipPath', { id: id + 'k' }, tag('path', { d: parts.leaves.join('') }));
     } else if (kind === 'olive') {
-      defs += grad(id + 'o', [[0, '#b7c08a'], [0.5, '#7f8a52'], [1, '#56603a']], { a: { x1: 0, y1: 0, x2: 1, y2: 1 } });
+      defs += grad(id + 'o', [[0, '#d3d9ad'], [0.45, '#97a466'], [1, '#5e6a3e']], { a: { x1: 0, y1: 0, x2: 1, y2: 1 } });
       leafFill = 'url(#' + id + 'o)'; stemCol = '#6d5a3a'; ribCol = '#d6dcb6'; fruitFill = '#3c3a2a'; ribbonFill = '#8c2f20';
     } else {
       defs += grad(id + 'o', [[0, '#9fb070'], [0.5, '#5f7a3e'], [1, '#3d5228']], { a: { x1: 0, y1: 0, x2: 1, y2: 1 } });

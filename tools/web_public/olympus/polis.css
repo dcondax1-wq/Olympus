@@ -107,7 +107,7 @@
 
 /* ---------- 9. oil-lamp loader */
 .polis-lamp { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; }
-.polis-lamp-art { width: 150px; max-width: 70%; }
+.polis-lamp-art { width: 176px; max-width: 76%; }
 .polis-lamp-art svg { display: block; width: 100%; height: auto; overflow: visible; }
 .polis-lamp-label { font: 500 14px/1.35 -apple-system, 'SF Pro Text', system-ui, sans-serif; color: #cfc4b2; }
 .polis-lamp-flick { transform-box: fill-box; transform-origin: 50% 100%; animation: polis-flick 1.7s ease-in-out infinite alternate; }
