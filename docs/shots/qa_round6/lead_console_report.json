@@ -1,0 +1,222 @@
+{
+ "olympus-live.html": {
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 /kalshi/icon.svg"
+  ],
+  "scrollWidth": 409,
+  "s": 11.7
+ },
+ "polis/": {
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 /kalshi.json",
+   "404 /polis/sky.json"
+  ],
+  "scrollWidth": 390,
+  "s": 12.3
+ },
+ "symposium/": {
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 /cronos/status.json",
+   "404 /kalshi.json",
+   "404 /kalshi/jarvis.json",
+   "404 /zenith/jarvis.json"
+  ],
+  "scrollWidth": 390,
+  "s": 11.7
+ },
+ "ergasterion/": {
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 ()"
+  ],
+  "bad": [
+   "404 /cronos/status.json",
+   "404 /kalshi.json",
+   "404 https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
+  ],
+  "scrollWidth": 390,
+  "s": 11.7
+ },
+ "jarvis/": {
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 ()",
+   "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "Failed to load resource: the server responded with a status of 404 ()"
+  ],
+  "bad": [
+   "404 /kalshi.json?t=29907222",
+   "404 https://api.github.com/repos/demetrades2000-coder/nq-dashboard/contents/live.json?ref=live",
+   "404 https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json?t=29907222",
+   "404 https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/live/live.json?t=29907222"
+  ],
+  "scrollWidth": 390,
+  "s": 11.8
+ },
+ "nq/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.7
+ },
+ "kalshi/": {
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 ()"
+  ],
+  "bad": [
+   "404 /kalshi.json?t=29907222",
+   "404 /kalshicity/forward.json",
+   "404 /kalshicity/scan.json",
+   "404 https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json?t=29907222",
+   "FAILED /kalshicity/ net::ERR_ABORTED"
+  ],
+  "scrollWidth": 390,
+  "s": 11.6
+ },
+ "cities/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 12.3
+ },
+ "colosseum/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.7
+ },
+ "helios/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.7
+ },
+ "mint/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.7
+ },
+ "planner/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.7
+ },
+ "herald/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.8
+ },
+ "pinakes/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.7
+ },
+ "olympus/polis-life-lab.html": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.6
+ },
+ "olympus/polis-lab.html": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.8
+ },
+ "olympus/env-lab.html": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 12.2
+ },
+ "olympus/people-lab.html": {
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 /cronos/status.json",
+   "404 /kalshi.json",
+   "404 /kalshi/jarvis.json",
+   "404 /zenith/jarvis.json"
+  ],
+  "scrollWidth": 390,
+  "s": 12.2
+ },
+ "olympus/sfx-lab.html": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.6
+ },
+ "olympus/agora-lab.html": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 409,
+  "s": 11.6
+ },
+ "/": {
+  "errors": [
+   "Failed to load resource: the server responded with a status of 403 (rate limit exceeded)",
+   "Failed to load resource: the server responded with a status of 404 ()"
+  ],
+  "bad": [
+   "403 https://api.github.com/repos/demetrades2000-coder/nq-dashboard/contents/live.json?ref=live",
+   "404 https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/live/live.json?t=1794433514739"
+  ],
+  "scrollWidth": 390,
+  "s": 12.1
+ },
+ "pythia/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.7
+ },
+ "nike/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 15.5
+ },
+ "chrysos/": {
+  "errors": [],
+  "bad": [],
+  "scrollWidth": 390,
+  "s": 11.7
+ },
+ "sibyl/": {
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 /money/sibyl_forward.json"
+  ],
+  "scrollWidth": 390,
+  "s": 11.8
+ }
+}
