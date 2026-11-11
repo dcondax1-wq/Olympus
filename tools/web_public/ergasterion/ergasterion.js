@@ -1,7 +1,8 @@
-// ERGASTERION page (ES module): the workshop where every worker is visible.
-// Reads ./queue.json (tools/ergasterion_build.py), ../home.json, ../money/index.json, the public kalshi.json feed, ../cronos/status.json, ../prometheus/forge.json, ../hephaestus/data.json and ./fixture.json (DEMO when none of the live files is there).
-// Read only and paper only: it sends nothing and starts nothing. Text only through textContent / createElementNS. The 3D floor comes from floor.js (optional, loaded by floorload.js); the flat plan is always drawn first.
-// window.ERGASTERION is the test hook.
+// ERGASTERION page (ES module): the AI agent factory where you can see, first person, what every worker is doing, then what was learned from it.
+// Reads ./queue.json (tools/ergasterion_build.py: tasks, write-ups, lessons, what changed our mind, the dated event stream, the research pipeline, data gaps), ../home.json,
+// ../money/index.json, the public kalshi.json feed, ../cronos/status.json, ../prometheus/forge.json, ../hephaestus/data.json and ./fixture.json (DEMO when none of the live files is there).
+// Read only and paper only: it sends nothing and starts nothing. Text only through textContent / createElementNS. The 3D factory comes from floor.js (optional, loaded by
+// floorload.js); the flat plan (LITE) is always drawn first. window.ERGASTERION is the test hook.
 import * as C from './ergasterioncore.js';
 
 const O = window.OLYMPUS || null;
@@ -11,7 +12,8 @@ function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.c
 function sv(tag, attrs, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = String(text); return e; }
 const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
 const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-const S = { fixture: null, inputs: null, demo: false, forced: false, workers: [], head: null, events: [], lessons: [], next: [], sel: null, follow: '', view: 'plan', floor: null, ready: false, now: Date.now(), tried: false };
+const S = { fixture: null, inputs: null, demo: false, forced: false, workers: [], head: null, events: [], next: [], sel: null, crate: -1, follow: '', view: 'plan', floor: null, ready: false, now: Date.now(), tried: false,
+  stream: [], win: null, range: '24h', cur: 1, playing: false, speed: 1, at: null, board: null, pipe: null, cat: '', sayI: 0, tour: false };
 const LAMPC = { working: '#8fa05a', idle: '#4b7a99', stale: '#e0b060', failed: '#c96a4a', sample: '#b8ad98' };
 
 async function getJSON(url, ms) {
@@ -24,6 +26,7 @@ const SITE_FEED = '../kalshi.json';
 async function getFeed(ms) { const j = await getJSON(SITE_FEED, ms); return j && typeof j === 'object' && !Array.isArray(j) ? j : getJSON('https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json', ms); }
 function say(t) { $('status').textContent = t; }
 function shortAgo(ms, now) { const a = C.ageH(ms, now); return a == null ? '' : a < 1 ? Math.max(1, Math.round(a * 60)) + ' min' : a < 36 ? Math.round(a) + ' h' : Math.round(a / 24) + ' d'; }
+const toView = (el, block) => { try { el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: block || 'start' }); } catch (_) { /* nothing */ } };
 
 function model() {
   S.now = Date.now();
@@ -34,36 +37,71 @@ function model() {
   S.workers = C.buildWorkers(inp, S.now);
   S.head = C.headline(S.workers);
   S.events = C.events(S.workers, S.now, 12);
-  S.lessons = C.lessons(S.workers, S.now, 12);
+  S.stream = C.stream(inp, S.workers, S.now);
+  S.win = C.replayWindow(S.stream, S.now, S.range);
+  S.at = C.replayAt(S.win, S.cur);
+  S.board = C.board(inp.queue, S.workers, S.now, S.demo);
+  S.pipe = C.pipeline(inp.queue, S.demo);
   S.next = C.suggestions(S.workers, inp.queue, S.now);
 }
 const byId = (id) => S.workers.find((w) => w.id === id) || null;
 
-// ------------------------------------------------------------------------------------------------ the plan (also the minimap)
-function sx(x) { return 180 + x * 14.2; } function sy(z) { return 150 + z * 14.2; }
+// ------------------------------------------------------------------------------------------------ the plan (LITE view, also the minimap)
+function sx(x) { return 180 + x * 13.2; } function sy(z) { return 146 + z * 13.4; }
+// the job a worker is seen doing, as a small drawing on its marble disc (the 2D stand-in for the animated figure)
+const ICON = {
+  wheel: [['circle', { cx: 0, cy: 0, r: 6.5 }], ['path', { d: 'M-6.5 0H6.5M0 -6.5V6.5M-4.6 -4.6L4.6 4.6M-4.6 4.6L4.6 -4.6' }]],
+  scribe: [['path', { d: 'M-6 6.5H6M-5 6.5V2.5H5V6.5' }], ['path', { d: 'M-2.5 2.5L5.5 -6.5L3 -1.5Z' }]],
+  oracle: [['path', { d: 'M-5.5 -2.5Q0 3 5.5 -2.5ZM-3.5 0L-5.5 7M3.5 0L5.5 7M0 1V7' }], ['path', { d: 'M0 -4Q-2.5 -6 0 -8Q2.5 -6 0 -4' }]],
+  smith: [['path', { d: 'M-6.5 3H3.5L6 0.5H-4ZM-3 3V7M1 3V7M-5.5 7H3.5' }], ['path', { d: 'M5.5 -7L0.5 -2.5M3.5 -8.5L7 -5' }]],
+  scales: [['path', { d: 'M0 -7V7M-3.5 7H3.5M-6.5 -5H6.5' }], ['path', { d: 'M-6.5 -5L-8.5 0.5H-4.5ZM6.5 -5L4.5 0.5H8.5Z' }]],
+};
 function drawPlan(svg, mini) {
   clear(svg);
-  svg.appendChild(sv('rect', { x: 8, y: 6, width: 344, height: 278, rx: 8, fill: mini ? 'none' : '#2a2318', stroke: '#9c6b3c', 'stroke-width': mini ? 3 : 1.5 }));
-  svg.appendChild(sv('rect', { x: 60, y: 10, width: 240, height: 10, rx: 3, fill: '#c8a24a', opacity: 0.85 }));
-  if (!mini) {
-    svg.appendChild(sv('text', { x: 180, y: 19, 'text-anchor': 'middle', fill: '#1b1610', 'font-size': 8.5, 'font-weight': 700 }, 'Learning board'));
-    svg.appendChild(sv('text', { x: 180, y: 281, 'text-anchor': 'middle', fill: '#9a8f7d', 'font-size': 9 }, 'Door'));
+  const me = mini && S.floor && S.floor.ok ? S.floor.pos() : null, hot = new Set(S.at ? S.at.active : []);
+  svg.appendChild(sv('rect', { x: 6, y: 8, width: 348, height: 276, rx: 8, fill: mini ? 'rgba(29,25,20,.2)' : '#2a2318', stroke: '#9c6b3c', 'stroke-width': mini ? 3 : 1.5 }));
+  for (const hl of C.HALLS) {
+    const x = sx(hl.x0) + 2, y = sy(hl.z0) + 2, w = sx(hl.x1) - sx(hl.x0) - 4, hh = sy(hl.z1) - sy(hl.z0) - 4, here = me && me.hall === hl.id;
+    svg.appendChild(sv('rect', { x, y, width: w, height: hh, rx: 5, fill: hl.tone, opacity: here ? 0.34 : mini ? 0.14 : 0.1 }));
+    if (!mini) svg.appendChild(sv('text', { x: x + 6, y: y + 12, fill: '#cfc4b2', 'font-size': 9, 'font-weight': 600 }, hl.name));
   }
+  // the cross of inner walls, with a gap for each door
+  for (const ax of ['x', 'z']) {
+    const len = ax === 'x' ? 10 : 13, ds = C.DOORS.filter((d) => d.axis === ax).sort((a, b) => a.c - b.c); let from = -len;
+    const seg = (a, b) => svg.appendChild(sv('line', ax === 'x' ? { x1: sx(0), y1: sy(a), x2: sx(0), y2: sy(b), stroke: '#9c6b3c', 'stroke-width': mini ? 4 : 2.5 } : { x1: sx(a), y1: sy(0), x2: sx(b), y2: sy(0), stroke: '#9c6b3c', 'stroke-width': mini ? 4 : 2.5 }));
+    for (const d of ds) { seg(from, d.c - d.half); from = d.c + d.half; }
+    seg(from, len);
+  }
+  if (!mini) { svg.appendChild(sv('rect', { x: sx(C.START.x) - 14, y: 281, width: 28, height: 5, rx: 2, fill: '#c8a24a' })); svg.appendChild(sv('text', { x: sx(C.START.x) + 20, y: 279, fill: '#9a8f7d', 'font-size': 8.5 }, 'Front door')); }
   for (const w of S.workers) {
     const x = sx(w.x), y = sy(w.z), sel = S.sel === w.id;
-    const g = sv('g', mini ? {} : { role: 'button', tabindex: 0, 'aria-label': w.name + ': ' + C.STATUS_WORD[w.status] + '. Open its card.', 'data-id': w.id });
-    if (!mini) g.appendChild(sv('rect', { x: x - 28, y: y - 28, width: 56, height: 50, fill: 'transparent' }));
-    g.appendChild(sv('rect', { x: x - 14, y: y + 11, width: 28, height: 3, rx: 1.5, fill: '#9c6b3c' }));
-    g.appendChild(sv('circle', { cx: x, cy: y - 4, r: mini ? 9 : 13, fill: '#d9d2c3', stroke: sel ? '#c8a24a' : '#9c6b3c', 'stroke-width': sel ? 3 : 1.5 }));
-    g.appendChild(sv('circle', { cx: x, cy: y - 4, r: mini ? 5 : 7, fill: LAMPC[w.status] || LAMPC.stale, stroke: 'rgba(0,0,0,.35)' }));
-    if (!mini) g.appendChild(sv('text', { x, y: y + 24, 'text-anchor': 'middle', fill: sel ? '#e0b060' : '#f3ece0', 'font-size': 9.5, 'font-weight': 600 }, w.name.split(' ')[0].slice(0, 9)));
-    if (!mini) { g.addEventListener('click', () => open(w.id)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(w.id); } }); }
+    const g = sv('g', mini ? {} : { role: 'button', tabindex: 0, 'aria-label': w.name + ', ' + C.JOB_WORD[w.job] + ': ' + C.STATUS_WORD[w.status] + '. Open its card.', 'data-id': w.id });
+    if (hot.has(w.id)) g.setAttribute('class', 'hot');
+    if (!mini) g.appendChild(sv('rect', { x: x - 26, y: y - 23, width: 52, height: 54, fill: 'transparent' }));
+    g.appendChild(sv('circle', { class: 'disc', cx: x, cy: y - 4, r: mini ? 9 : 12.5, fill: '#d9d2c3', stroke: sel ? '#c8a24a' : '#9c6b3c', 'stroke-width': sel ? 3 : 1.5 }));
+    if (mini) g.appendChild(sv('circle', { cx: x, cy: y - 4, r: 5, fill: LAMPC[w.status] || LAMPC.stale, stroke: 'rgba(0,0,0,.35)' }));
+    else {
+      const ic = sv('g', { transform: 'translate(' + x.toFixed(1) + ' ' + (y - 4).toFixed(1) + ')', fill: 'none', stroke: '#3a2f22', 'stroke-width': 1.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+      for (const [tag, at] of ICON[w.job] || ICON.wheel) ic.appendChild(sv(tag, at));
+      g.appendChild(ic);
+      g.appendChild(sv('circle', { cx: x + 11, cy: y - 14, r: 5, fill: LAMPC[w.status] || LAMPC.stale, stroke: '#1d1914', 'stroke-width': 1.5 }));
+      g.appendChild(sv('rect', { x: x - 15, y: y + 11, width: 30, height: 4, rx: 2, fill: '#9c6b3c' }));               // its conveyor, one small crate per output
+      for (let c = 0; c < Math.min(5, w.crates.length); c++) g.appendChild(sv('rect', { x: x - 14 + c * 6, y: y + 8, width: 4.5, height: 4.5, rx: 1, fill: w.status === 'failed' ? '#c96a4a' : '#e0b060' }));
+      g.appendChild(sv('text', { x, y: y + 26, 'text-anchor': 'middle', fill: sel ? '#e0b060' : '#f3ece0', 'font-size': 9.5, 'font-weight': 600 }, w.name.split(' ')[0].slice(0, 10)));
+      g.addEventListener('click', () => open(w.id)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(w.id); } });
+    }
     svg.appendChild(g);
   }
-  if (mini && S.floor && S.floor.ok) {
-    const p = S.floor.pos(), x = sx(p.x), y = sy(p.z), a = p.yaw;
-    svg.appendChild(sv('path', { d: 'M0 -9 L6 7 L0 3 L-6 7 Z', fill: '#f3ece0', transform: 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + (-a * 180 / Math.PI).toFixed(0) + ')' }));
+  if (me && me.mode !== 'tour') {                // you are here
+    const x = sx(me.x), y = sy(me.z);
+    svg.appendChild(sv('circle', { cx: x, cy: y, r: 13, fill: 'none', stroke: '#f3ece0', 'stroke-width': 2, opacity: 0.55 }));
+    svg.appendChild(sv('path', { d: 'M0 -11 L7 8 L0 3.5 L-7 8 Z', fill: '#f3ece0', stroke: '#1d1914', 'stroke-width': 1, transform: 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + (-me.yaw * 180 / Math.PI).toFixed(0) + ')' }));
   }
+}
+function renderPlanSay() {
+  const el = $('planSay'), w = S.sel ? byId(S.sel) : S.workers.length ? S.workers[S.sayI % S.workers.length] : null; clear(el);
+  if (!w) return;
+  el.appendChild(h('b', '', w.name + ' says: ')); el.appendChild(document.createTextNode(w.say));
 }
 
 // ------------------------------------------------------------------------------------------------ the cards
@@ -81,6 +119,7 @@ function renderFollow() {
   const sel = $('follow'); if (sel.options.length > 1) return;
   for (const s of C.STATIONS) { const o = document.createElement('option'); o.value = s.id; o.textContent = s.name; sel.appendChild(o); }
 }
+const pillOf = (st) => 'pill ' + (st === 'working' ? 'ok' : st === 'failed' ? 'bad' : st === 'stale' ? 'warn' : 'info');
 function renderWorkers() {
   const ul = $('workers'); clear(ul); let grp = '';
   for (const w of S.workers) {
@@ -89,18 +128,24 @@ function renderWorkers() {
     b.setAttribute('aria-label', w.name + ', ' + C.STATUS_WORD[w.status] + '. ' + w.doing);
     const l = lampSpan(w.status); l.style.marginRight = '0';
     const mid = h('span'); mid.appendChild(h('span', 'nm', w.name)); mid.appendChild(h('span', 'sm', w.doing));
-    b.appendChild(l); b.appendChild(mid); b.appendChild(h('span', 'pill ' + (w.status === 'working' ? 'ok' : w.status === 'failed' ? 'bad' : w.status === 'stale' ? 'warn' : 'info'), C.STATUS_WORD[w.status]));
+    b.appendChild(l); b.appendChild(mid); b.appendChild(h('span', pillOf(w.status), C.STATUS_WORD[w.status]));
     b.addEventListener('click', () => open(w.id)); li.appendChild(b); ul.appendChild(li);
   }
 }
 function renderSheet() {
   const w = S.sel && byId(S.sel); $('sheet').hidden = !w; if (!w) return;
-  $('sheetH').textContent = w.name; const p = $('sheetPill'); p.textContent = C.STATUS_WORD[w.status]; p.className = 'pill ' + (w.status === 'working' ? 'ok' : w.status === 'failed' ? 'bad' : w.status === 'stale' ? 'warn' : 'info');
-  $('sheetRole').textContent = w.role + (w.demo ? ' (example data)' : '') + '.';
+  $('sheetH').textContent = w.name; const p = $('sheetPill'); p.textContent = C.STATUS_WORD[w.status]; p.className = pillOf(w.status);
+  $('sheetRole').textContent = w.role + (w.demo ? ' (example data)' : '') + '. In the ' + C.hallOf(w).name + ', ' + C.JOB_WORD[w.job] + '.';
+  const sy2 = $('sheetSay'); clear(sy2); sy2.appendChild(h('b', '', 'Says: ')); sy2.appendChild(document.createTextNode(w.say));
   $('sheetDoing').textContent = w.doing || 'Nothing recorded.';
   const o = $('sheetOut'); clear(o);
-  if (!w.outputs.length) o.appendChild(h('li', '', 'No outputs on record yet.'));
-  for (const x of w.outputs) { const li = h('li', '', x.text); if (x.t != null) li.appendChild(h('span', 'when', C.agoText(x.t, S.now))); o.appendChild(li); }
+  if (!w.crates.length) o.appendChild(h('li', '', 'Its conveyor is empty: no outputs on record yet.'));
+  for (const x of w.crates) {
+    const li = h('li'), b = h('button', 'crate'); b.type = 'button'; b.dataset.i = String(x.i); b.setAttribute('aria-expanded', String(S.crate === x.i));
+    b.appendChild(h('span', 'tag', x.tag)); const f = h('span', 'full', x.text); if (x.t != null) f.appendChild(h('span', 'when', C.agoText(x.t, S.now))); b.appendChild(f);
+    b.addEventListener('click', () => { S.crate = S.crate === x.i ? -1 : x.i; renderSheet(); });
+    li.appendChild(b); o.appendChild(li);
+  }
   const L = $('sheetLearn'); clear(L);
   if (!w.learned.length) L.appendChild(h('li', '', 'Nothing learned and written down yet.'));
   for (const x of w.learned) { const li = h('li', '', x.text); li.appendChild(h('span', 'src', (x.d ? x.d + ' · ' : 'undated · ') + 'source: ' + x.src)); L.appendChild(li); }
@@ -108,71 +153,199 @@ function renderSheet() {
   $('sheetFollow').textContent = S.follow === w.id ? 'Stop following' : 'Follow this worker';
   $('sheetWalk').hidden = !(S.floor && S.floor.ok);
 }
+function tickRow(e, when) { const li = h('li'); li.dataset.ok = e.ok === false ? '0' : '1'; li.appendChild(h('span', 't', when)); const d = h('span'); d.appendChild(h('b', '', e.name + ': ')); d.appendChild(document.createTextNode(e.text)); li.appendChild(d); return li; }
 function renderTicker() {
   const ul = $('ticker'); clear(ul);
   if (!S.events.length) ul.appendChild(h('li', '', 'No dated events yet. Workers write theirs here when they run.'));
-  for (const e of S.events) { const li = h('li'); li.appendChild(h('span', 't', shortAgo(e.t, S.now) + ' ago')); const d = h('span'); d.appendChild(h('b', '', e.name + ': ')); d.appendChild(document.createTextNode(e.text)); li.appendChild(d); ul.appendChild(li); }
+  for (const e of S.events) ul.appendChild(tickRow(e, shortAgo(e.t, S.now) + ' ago'));
+}
+
+// ------------------------------------------------------------------------------------------------ the day replay
+function renderReplay() {
+  const w = S.win, svg = $('lanes'), rows = C.lanes(w), H2 = Math.max(44, rows.length * 15 + 26);
+  $('r24').setAttribute('aria-pressed', String(S.range === '24h')); $('r7').setAttribute('aria-pressed', String(S.range === '7d'));
+  $('replayNote').textContent = w.note + (S.demo ? ' Example events.' : '') + ' Times are UTC, as written in the files.';
+  clear(svg); svg.setAttribute('viewBox', '0 0 340 ' + H2);
+  if (!rows.length) svg.appendChild(sv('text', { x: 170, y: 26, 'text-anchor': 'middle', fill: '#9a8f7d', 'font-size': 11 }, 'No events in this window.'));
+  rows.forEach((r, i) => {
+    const y = 14 + i * 15;
+    svg.appendChild(sv('text', { x: 6, y: y + 3.5, fill: '#cfc4b2', 'font-size': 9.5 }, r.name.split(' (')[0].slice(0, 13)));
+    svg.appendChild(sv('line', { x1: 84, y1: y, x2: 334, y2: y, stroke: '#3a3228', 'stroke-width': 1 }));
+    for (const tk of r.ticks) svg.appendChild(sv('rect', { x: (84 + 250 * tk.f - (tk.ok ? 1.5 : 2.5)).toFixed(1), y: y - (tk.ok ? 4 : 5.5), width: tk.ok ? 3 : 5, height: tk.ok ? 8 : 11, rx: 1, fill: tk.ok ? '#c8a24a' : '#c96a4a' }));
+  });
+  svg.appendChild(sv('text', { x: 84, y: H2 - 4, fill: '#9a8f7d', 'font-size': 8.5 }, C.clockText(w.t0).slice(0, 15)));
+  svg.appendChild(sv('text', { x: 334, y: H2 - 4, 'text-anchor': 'end', fill: '#9a8f7d', 'font-size': 8.5 }, w.shifted ? C.clockText(w.t1).slice(0, 15) : 'now'));
+  svg.appendChild(sv('line', { id: 'cursor', x1: 84, y1: 4, x2: 84, y2: H2 - 14, stroke: '#f3ece0', 'stroke-width': 1.5 }));
+  $('failBtn').disabled = false;
+  updateCursor(true);
+}
+function updateCursor(full) {
+  S.at = C.replayAt(S.win, S.cur);
+  const a = S.at, x = (84 + 250 * a.f).toFixed(1), cu = $('cursor');
+  if (cu) { cu.setAttribute('x1', x); cu.setAttribute('x2', x); }
+  const sc = $('scrub'); if (document.activeElement !== sc || full) sc.value = String(Math.round(a.f * 1000));
+  sc.setAttribute('aria-valuetext', C.clockText(a.t));
+  $('replayNow').textContent = C.clockText(a.t) + '  ·  ' + a.done + ' of ' + a.total + ' events so far' + (a.active.length ? '  ·  busy: ' + a.active.map((id) => (byId(id) || { name: id }).name.split(' (')[0]).slice(0, 3).join(', ') : '');
+  const key = a.recent.map((e) => e.t + e.who).join('|');
+  if (full || key !== S.atKey) {
+    S.atKey = key; const ul = $('replayList'); clear(ul);
+    if (!a.recent.length) ul.appendChild(h('li', '', a.total ? 'Nothing has happened yet at this point of the window. Press Play or drag the slider.' : 'Nothing to replay yet.'));
+    for (const e of a.recent) ul.appendChild(tickRow(e, C.clockText(e.t).slice(4, 15)));
+    drawPlan($('plan'), false);
+  }
+  if (S.floor && S.floor.ok && a.active.length && (S.playing || !full)) S.floor.pulse(a.active);
+}
+let playTimer = 0;
+function setPlaying(on) {
+  S.playing = !!on && S.win.events.length > 0; clearInterval(playTimer);
+  const b = $('playBtn'); b.textContent = S.playing ? 'Pause' : 'Play'; b.setAttribute('aria-pressed', String(S.playing));
+  if (!S.playing) return;
+  if (S.cur >= 0.999) S.cur = 0;
+  // one pass of the window takes 40 s at 1x. Reduced motion: no sweep, it steps from event to event instead.
+  playTimer = setInterval(() => {
+    if (document.hidden) return;
+    S.cur = reduced ? C.nextEvent(S.win, S.cur) : Math.min(1, S.cur + (0.1 / 40) * S.speed);
+    updateCursor(false);
+    if (S.cur >= 1) setPlaying(false);
+  }, reduced ? Math.max(250, 1000 / S.speed) : 100);
+}
+function setRange(r) { S.range = r; S.win = C.replayWindow(S.stream, S.now, r); S.cur = 1; setPlaying(false); renderReplay(); }
+function jumpFail() {
+  const lf = C.lastFailure(S.win, S.cur); setPlaying(false);
+  if (!lf) { say('Nothing failed in this window.'); $('replayNow').textContent = 'Nothing failed in this window (' + S.win.events.length + ' events, all fine).'; return; }
+  S.cur = Math.min(1, lf.f + 0.0005); updateCursor(true);
+  say('Last failure: ' + lf.e.name + ', ' + C.clockText(lf.e.t) + '. ' + lf.e.text);
+  if (S.floor && S.floor.ok) S.floor.pulse([lf.e.who]);
+}
+
+// ------------------------------------------------------------------------------------------------ the research pipeline wall
+function renderPipe() {
+  const p = S.pipe; $('pipeLine').textContent = p.line + (p.sample ? ' Example counts.' : '');
+  const box = $('pipeLanes'); clear(box);
+  for (const l of p.lanes) {
+    const a = h('a', 'lane'); a.href = l.href; a.dataset.id = l.id; a.setAttribute('aria-label', l.label + ': ' + l.n.toLocaleString('en-US') + ' (' + l.help + '). Open the Archive.');
+    a.appendChild(h('b', '', l.label)); a.appendChild(h('span', 'n', l.n.toLocaleString('en-US'))); a.appendChild(h('small', '', l.help)); box.appendChild(a);
+  }
+  const ul = $('pipeFams'); clear(ul);
+  for (const f of p.families.slice(0, 8)) {
+    const li = h('li'), a = h('a', 'fam'); a.href = f.href; a.dataset.name = f.name;
+    const top = h('span', 'top2'); top.appendChild(h('b', '', f.name)); top.appendChild(h('span', '', f.runs.toLocaleString('en-US') + ' ideas')); a.appendChild(top);
+    const st = h('span', 'stack'); st.setAttribute('aria-hidden', 'true');
+    for (const [cls, v] of [['a', f.pa], ['r', f.pr], ['o', f.po]]) { const i = h('i', cls); i.style.width = (v * 100).toFixed(1) + '%'; st.appendChild(i); }
+    a.appendChild(st); a.appendChild(h('span', '', f.adopted + ' adopted · ' + f.rejected + ' rejected · ' + f.open + ' still open'));
+    li.appendChild(a); ul.appendChild(li);
+  }
+  const mv = $('pipeMoves'); clear(mv); $('movesBox').hidden = !p.moves.length;
+  $('movesBox').querySelector('summary').textContent = 'Newest ' + p.moves.length + ' move' + (p.moves.length === 1 ? '' : 's');
+  for (const m of p.moves) {
+    const li = h('li'), a = h('a', 'move'); a.href = m.href;
+    const v = h('span', 'v', m.verdict.charAt(0).toUpperCase() + m.verdict.slice(1)); v.dataset.v = m.verdict;
+    const top = h('span'); top.appendChild(v); top.appendChild(document.createTextNode(' · ' + (m.d || 'undated') + ' · ' + m.family)); a.appendChild(top); a.appendChild(h('b', '', m.title));
+    li.appendChild(a); mv.appendChild(li);
+  }
+  $('pipeNote').textContent = !p.ok ? 'The pipeline is filled by tools/ergasterion_build.py from the Archive index.' : 'Green adopted, red rejected, blue still open. Tap a lane, a family or a move to open the Archive on it.' + (p.built ? ' Archive index built ' + p.built + '.' : '');
+}
+
+// ------------------------------------------------------------------------------------------------ the learning board
+function lessonRow(l) {
+  const li = h('li'); li.dataset.week = l.week ? '1' : '0'; li.dataset.cat = l.cat;
+  const meta = h('span', 'meta'); const dots = h('span', 'dots', '●'.repeat(Math.min(5, l.strength)) + '○'.repeat(Math.max(0, 3 - l.strength))); dots.setAttribute('aria-hidden', 'true'); meta.appendChild(dots);
+  meta.appendChild(document.createTextNode(C.strengthWord(l.strength) + ' · ' + l.cat + ' · ' + (l.d || 'undated') + (l.sample ? ' · example' : ''))); li.appendChild(meta);
+  li.appendChild(document.createTextNode(l.text));
+  li.appendChild(h('span', 'src', 'source: ' + l.sources.map((s) => s.src).join('; ')));
+  return li;
 }
 function renderBoard() {
-  const ol = $('lessons'); clear(ol); const wk = S.lessons.filter((l) => l.week).length;
-  $('boardNote').textContent = S.lessons.length ? wk + ' of these ' + S.lessons.length + ' are from the last 7 days; the gold bar marks them. Each lesson names the file it came from.' + (S.demo ? ' Example lessons.' : '') : 'No lessons are written down yet.';
-  for (const l of S.lessons) {
-    const li = h('li'); li.dataset.week = l.week ? '1' : '0';
-    li.appendChild(h('b', '', l.name + (l.d ? ' · ' + l.d : ' · undated') + (l.sample ? ' · example' : ''))); li.appendChild(document.createElement('br')); li.appendChild(document.createTextNode(l.text));
-    li.appendChild(h('span', 'src', 'source: ' + l.src)); ol.appendChild(li);
+  const b = S.board, pick = (L) => (S.cat ? L.filter((l) => l.cat === S.cat) : L);
+  $('boardNote').textContent = b.note;
+  const cats = $('cats'); clear(cats);
+  for (const [id, label] of [['', 'All (' + b.all.length + ')']].concat(C.CATS.map((c) => [c, c + ' (' + b.cats[c] + ')']))) {
+    const bt = h('button', 'ag-chip chip', label); bt.type = 'button'; bt.dataset.cat = id; bt.setAttribute('aria-pressed', String(S.cat === id)); bt.addEventListener('click', () => { S.cat = id; renderBoard(); }); cats.appendChild(bt);
   }
+  const wk = $('lessons'); clear(wk); const W = pick(S.cat ? b.all.filter((l) => l.week).sort((x, y) => y.strength - x.strength) : b.week);
+  if (!W.length) wk.appendChild(h('li', '', b.all.length ? 'No new lesson' + (S.cat ? ' about ' + S.cat : '') + ' in the last 7 days.' : 'No lessons are written down yet.'));
+  for (const l of W.slice(0, 8)) wk.appendChild(lessonRow(l));
+  const ch = $('changed'); clear(ch); const F = pick(b.changed);
+  if (!F.length) ch.appendChild(h('li', '', 'Nothing' + (S.cat ? ' about ' + S.cat : '') + ' has overturned an earlier belief yet.'));
+  for (const c of F.slice(0, 6)) {
+    const li = h('li'); li.dataset.cat = c.cat; li.appendChild(h('span', 'meta', c.cat + ' · ' + (c.d || 'undated') + (c.sample ? ' · example' : '')));
+    if (c.was) li.appendChild(h('span', 'was', 'We believed: ' + c.was));
+    li.appendChild(document.createTextNode(c.text)); li.appendChild(h('span', 'src', 'source: ' + c.src)); ch.appendChild(li);
+  }
+  const st = $('strong'); clear(st); const T = pick(S.cat ? b.all.slice().sort((x, y) => y.strength - x.strength || (y.ms || 0) - (x.ms || 0)) : b.top);
+  if (!T.length) st.appendChild(h('li', '', 'No lessons' + (S.cat ? ' about ' + S.cat : '') + ' yet.'));
+  for (const l of T.slice(0, 6)) st.appendChild(lessonRow(l));
 }
 function renderNext() {
   const ol = $('next'); clear(ol);
-  for (const s of S.next) { const li = h('li'); li.appendChild(h('b', '', s.title)); li.appendChild(document.createTextNode(s.why)); li.appendChild(h('span', 'go', 'Next: ' + s.next)); ol.appendChild(li); }
+  for (const s of S.next) {
+    const li = h('li'); li.dataset.kind = s.kind; const b = h('b'); b.appendChild(h('span', 'rk', s.rank + '.')); b.appendChild(document.createTextNode(' ' + s.title)); li.appendChild(b);
+    li.appendChild(document.createTextNode('Why: ' + s.why)); li.appendChild(h('span', 'ev', 'Worth it? ' + s.ev)); li.appendChild(h('span', 'go', 'First step: ' + s.next)); ol.appendChild(li);
+  }
 }
 
-function open(id, fromFloor) {
-  if (id === 'board') { try { $('boardCard').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); } catch (_) { /* nothing */ } return; }
+function open(id, fromFloor, crate) {
+  if (id === 'board' || id === 'changed') { toView($('boardCard')); return; }
+  if (id === 'pipe') { toView($('pipeCard')); return; }
   if (!byId(id)) return;
-  S.sel = id; renderSheet(); renderWorkers(); drawPlan($('plan'), false);
-  const w = byId(id); say(w.name + ': ' + C.STATUS_WORD[w.status] + '. ' + w.doing);
-  try { $('sheet').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); } catch (_) { /* nothing */ }
-  if (fromFloor && S.floor && S.floor.ok) S.floor.face(id);
+  S.sel = id; S.crate = crate == null ? -1 : crate; renderSheet(); renderWorkers(); drawPlan($('plan'), false); renderPlanSay();
+  const w = byId(id); say(w.name + ': ' + C.STATUS_WORD[w.status] + '. ' + (crate != null && w.crates[crate] ? 'Crate: ' + w.crates[crate].text : w.doing));
+  toView($('sheet'), 'nearest');
+  if (fromFloor && S.floor && S.floor.ok && S.floor.pos().mode === 'walk') S.floor.face(id);
 }
 function setFollow(id) {
   S.follow = id || ''; $('follow').value = S.follow;
   if (S.floor && S.floor.ok) S.floor.follow(S.follow || null);
+  if (S.follow) setTour(false, true);
   renderSheet();
   if (S.follow) { const w = byId(S.follow); say('Following ' + (w ? w.name : '') + '.'); }
 }
+function setTour(on, quiet) {
+  S.tour = !!on && !!(S.floor && S.floor.ok);
+  if (S.floor && S.floor.ok && (S.tour || !quiet)) S.floor.tour(S.tour);
+  if (S.tour) { S.follow = ''; $('follow').value = ''; }
+  const b = $('tourBtn'); b.textContent = S.tour ? 'Stop the tour' : 'Calm tour'; b.setAttribute('aria-pressed', String(S.tour));
+  if (!quiet) say(S.tour ? 'A calm tour above the four halls. Touch the joystick to walk again.' : 'Back on your feet.');
+}
 
 function renderScene() {
-  drawPlan($('plan'), false); drawPlan($('mini'), true);
-  const f = S.floor && S.floor.ok;
-  $('stage').hidden = !(f && S.view === '3d'); $('plan').hidden = f && S.view === '3d';
+  drawPlan($('plan'), false); drawPlan($('mini'), true); renderPlanSay();
+  const f = S.floor && S.floor.ok, in3 = f && S.view === '3d';
+  $('stage').hidden = !in3; $('plan').hidden = !!in3; $('planSay').hidden = !!in3;
   $('viewBtn').hidden = !f && !S.canTry; $('viewBtn').textContent = S.view === '3d' ? 'Plan view' : 'Walk the floor';
-  $('resetBtn').hidden = !(f && S.view === '3d');
-  $('sceneNote').textContent = f && S.view === '3d' ? 'First person: drag to look, joystick (or arrow keys) to walk, tap a platform to open its card, or pick a worker to follow.'
-    : 'Plan of the floor: tap a worker to open its card.' + (S.canTry ? ' "Walk the floor" shows the 3D version.' : '');
-  if (f) S.floor.set(S.workers, S.lessons);
+  $('resetBtn').hidden = !in3; $('tourBtn').hidden = !in3; $('hallNow').hidden = !in3;
+  $('sceneNote').textContent = in3 ? 'First person: drag to look, joystick (or arrow keys) to walk through the doors between the four halls. Tap a worker, a crate on its belt or a wall board. "Calm tour" flies you around instead.'
+    : 'Plan of the four halls: each worker shows its job, its lamp and the crates on its belt. Tap one to open its card.' + (S.canTry ? ' "Walk the floor" shows the 3D factory.' : '');
+  if (f) S.floor.set(S.workers, { board: S.board, pipe: S.pipe });
 }
 
 function render() {
   model();
   $('demo').hidden = !S.demo; try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
-  renderHero(); renderLegend(); renderFollow(); renderWorkers(); renderSheet(); renderTicker(); renderBoard(); renderNext(); renderScene();
+  renderHero(); renderLegend(); renderFollow(); renderWorkers(); renderSheet(); renderTicker(); renderReplay(); renderPipe(); renderBoard(); renderNext(); renderScene();
   say(S.head.title + '. ' + S.head.line);
   S.ready = true;
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   tryFloor();
 }
 
-// ------------------------------------------------------------------------------------------------ the optional 3D floor
+// ------------------------------------------------------------------------------------------------ the optional 3D factory
+function hud() {
+  if (document.hidden || S.view !== '3d' || !(S.floor && S.floor.ok)) return;
+  drawPlan($('mini'), true);
+  const p = S.floor.pos(), hl = C.HALLS.find((x) => x.id === p.hall);
+  $('hallNow').textContent = p.mode === 'tour' ? 'Tour: ' + (hl ? hl.name : '') : p.mode === 'follow' ? 'Following' : hl ? hl.name : '';
+  if (S.tour && p.mode !== 'tour') setTour(false, true);
+}
 function mountFloor() {
   const M = window.__ergFloor;
   if (!M) return false;
   S.stopMini && clearInterval(S.stopMini);
   $('stage').hidden = false;
-  const fl = M.createFloor($('floor3d'), { reduced, stations: C.STATIONS, onPick: (id) => open(id, true) });
+  const fl = M.createFloor($('floor3d'), { reduced, stations: C.STATIONS, onPick: (id, crate) => open(id, true, crate) });
   if (!fl || !fl.ok) { $('stage').hidden = true; S.floor = null; S.why = fl && fl.reason; return false; }
   S.floor = fl; S.view = '3d';
-  S.stopMini = setInterval(() => { if (!document.hidden && S.view === '3d') drawPlan($('mini'), true); }, 250);
+  S.stopMini = setInterval(hud, 250);
   return true;
 }
 function tryFloor() {
@@ -184,43 +357,51 @@ function tryFloor() {
   S.tried = true; S.canTry = true;
   try { mountFloor(); } catch (_) { S.floor = null; }
   if (!S.floor) S.canTry = false;
-  renderScene();
+  renderScene(); hud();
 }
 window.addEventListener('erg-floor', tryFloor);
 
 function toggleView() {
-  if (S.view === '3d') { if (S.floor) { try { S.floor.dispose(); } catch (_) { /* nothing */ } } S.floor = null; S.view = 'plan'; S.canTry = true; clearInterval(S.stopMini); S.follow = ''; $('follow').value = ''; renderScene(); renderSheet(); return; }
+  if (S.view === '3d') { if (S.floor) { try { S.floor.dispose(); } catch (_) { /* nothing */ } } S.floor = null; S.view = 'plan'; S.canTry = true; clearInterval(S.stopMini); S.follow = ''; S.tour = false; $('follow').value = ''; renderScene(); renderSheet(); return; }
   try { mountFloor(); } catch (_) { S.floor = null; }
   if (!S.floor) { S.canTry = false; say('3D is not available on this device; the plan stays.'); }
-  renderScene(); renderSheet();
+  renderScene(); renderSheet(); hud();
 }
 
-// joystick + keyboard (3D only)
+// joystick + keyboard (3D only); the floor eases both, so a thumb never jerks the view
 function wireControls() {
   const joy = $('joy'), knob = $('knob'); let act = null;
   const setKnob = (dx, dy) => { knob.style.transform = 'translate(' + dx.toFixed(0) + 'px,' + dy.toFixed(0) + 'px)'; };
-  const vec = (e) => { const r = joy.getBoundingClientRect(), R = r.width / 2, dx = e.clientX - (r.left + R), dy = e.clientY - (r.top + R), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / (R - 8)); return { dx: dx / d * k * (R - 8), dy: dy / d * k * (R - 8), k, ux: dx / d * k, uy: dy / d * k }; };
-  const push = (v) => { if (!S.floor || !S.floor.ok) return; if (S.follow) setFollow(''); S.floor.move({ fwd: -v.uy, side: v.ux }); if (reduced) S.floor.step(0.06); };
-  joy.addEventListener('pointerdown', (e) => { act = e.pointerId; try { joy.setPointerCapture(e.pointerId); } catch (_) { /* nothing */ } const v = vec(e); setKnob(v.dx, v.dy); push(v); e.preventDefault(); });
+  const vec = (e) => { const r = joy.getBoundingClientRect(), R = r.width / 2, dx = e.clientX - (r.left + R), dy = e.clientY - (r.top + R), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / (R - 8)), dead = k < 0.12 ? 0 : (k - 0.12) / 0.88; return { dx: dx / d * k * (R - 8), dy: dy / d * k * (R - 8), ux: dx / d * dead, uy: dy / d * dead }; };
+  const walkOn = () => { if (S.follow) setFollow(''); if (S.tour) setTour(false, true); };
+  const push = (v) => { if (!S.floor || !S.floor.ok) return; walkOn(); S.floor.move({ fwd: -v.uy, side: v.ux }); if (reduced) S.floor.step(0.06); };
+  joy.addEventListener('pointerdown', (e) => { act = e.pointerId; try { joy.setPointerCapture(e.pointerId); } catch (_) { /* nothing */ } knob.style.transition = 'none'; const v = vec(e); setKnob(v.dx, v.dy); push(v); e.preventDefault(); });
   joy.addEventListener('pointermove', (e) => { if (act !== e.pointerId) return; const v = vec(e); setKnob(v.dx, v.dy); push(v); });
-  const end = (e) => { if (act !== e.pointerId) return; act = null; setKnob(0, 0); if (S.floor && S.floor.ok) S.floor.move({ fwd: 0, side: 0 }); };
+  const end = (e) => { if (act !== e.pointerId) return; act = null; knob.style.transition = ''; setKnob(0, 0); if (S.floor && S.floor.ok) S.floor.move({ fwd: 0, side: 0 }); };
   joy.addEventListener('pointerup', end); joy.addEventListener('pointercancel', end);
   const keys = new Set();
   const upd = () => { if (!S.floor || !S.floor.ok) return; S.floor.move({ fwd: (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0), side: (keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0) }); if (reduced) S.floor.step(0.1); };
   window.addEventListener('keydown', (e) => {
-    if (S.view !== '3d' || !S.floor || !S.floor.ok || /^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test((e.target && e.target.tagName) || '')) return;
+    if (S.view !== '3d' || !S.floor || !S.floor.ok || /^(INPUT|SELECT|TEXTAREA|BUTTON|A|SUMMARY)$/.test((e.target && e.target.tagName) || '')) return;
     const k = String(e.key).toLowerCase();
     if (k === 'arrowleft' || k === 'arrowright') { S.floor.look(k === 'arrowleft' ? -0.07 : 0.07, 0); e.preventDefault(); return; }
-    if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown'].includes(k)) { if (S.follow) setFollow(''); keys.add(k); upd(); e.preventDefault(); }
+    if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown'].includes(k)) { walkOn(); keys.add(k); upd(); e.preventDefault(); }
   });
   window.addEventListener('keyup', (e) => { keys.delete(String(e.key).toLowerCase()); upd(); });
   $('viewBtn').addEventListener('click', toggleView);
-  $('resetBtn').addEventListener('click', () => { if (S.floor && S.floor.ok) { setFollow(''); S.floor.reset(); } });
+  $('tourBtn').addEventListener('click', () => setTour(!S.tour));
+  $('resetBtn').addEventListener('click', () => { if (S.floor && S.floor.ok) { setFollow(''); setTour(false, true); S.floor.reset(); } });
   $('follow').addEventListener('change', (e) => setFollow(e.target.value));
   $('sheetFollow').addEventListener('click', () => { if (!S.sel) return; if (!(S.floor && S.floor.ok)) { say('Following needs the 3D floor. Tap "Walk the floor" first.'); return; } setFollow(S.follow === S.sel ? '' : S.sel); });
-  $('sheetWalk').addEventListener('click', () => { if (S.floor && S.floor.ok && S.sel) { const w = byId(S.sel); setFollow(''); S.floor.teleport(w.x, w.z + 3.2); S.floor.face(S.sel); say('Standing in front of ' + w.name + '.'); } });
-  $('sheetClose').addEventListener('click', () => { S.sel = null; renderSheet(); renderWorkers(); drawPlan($('plan'), false); });
+  $('sheetWalk').addEventListener('click', () => { if (S.floor && S.floor.ok && S.sel) { const w = byId(S.sel); setFollow(''); setTour(false, true); S.floor.teleport(w.x, w.z + 3.4); S.floor.face(S.sel); say('Standing in front of ' + w.name + ', in the ' + C.hallOf(w).name + '.'); toView($('floorCard')); } });
+  $('sheetClose').addEventListener('click', () => { S.sel = null; S.crate = -1; renderSheet(); renderWorkers(); drawPlan($('plan'), false); renderPlanSay(); });
   $('refresh').addEventListener('click', () => { say('Refreshing...'); load().then(render); });
+  $('r24').addEventListener('click', () => setRange('24h')); $('r7').addEventListener('click', () => setRange('7d'));
+  $('scrub').addEventListener('input', (e) => { setPlaying(false); S.cur = Number(e.target.value) / 1000; updateCursor(false); });
+  $('playBtn').addEventListener('click', () => setPlaying(!S.playing));
+  $('speedBtn').addEventListener('click', () => { S.speed = S.speed === 1 ? 4 : S.speed === 4 ? 16 : 1; $('speedBtn').textContent = 'Speed ' + S.speed + 'x'; if (S.playing) setPlaying(true); });
+  $('failBtn').addEventListener('click', jumpFail);
+  if (!reduced) setInterval(() => { if (!document.hidden && !S.sel && S.view !== '3d' && S.ready) { S.sayI++; renderPlanSay(); } }, 6000);     // on the plan the workers take turns to speak
 }
 
 async function load() {
@@ -235,5 +416,6 @@ async function boot() {
   render();
   setInterval(() => { if (!document.hidden) load().then(render); }, 5 * 60 * 1000);
 }
-window.ERGASTERION = { S, C, ready: () => S.ready, render, open, setFollow, floor: () => S.floor };
+window.ERGASTERION = { S, C, ready: () => S.ready, render, open, setFollow, setTour, floor: () => S.floor,
+  replay: { set: (f) => { setPlaying(false); S.cur = Math.max(0, Math.min(1, f)); updateCursor(true); }, play: () => setPlaying(true), pause: () => setPlaying(false), fail: jumpFail, range: setRange } };
 boot();

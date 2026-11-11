@@ -40,7 +40,7 @@ svg text { font-family: var(--ag-sans); }
 .stage canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; touch-action: none; outline: none; }
 .plan { width: 100%; height: auto; display: block; background: #26211b; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); }
 .plan [role="button"] { cursor: pointer; } .plan [role="button"]:focus-visible { outline: 2px solid var(--ag-gold); }
-.mini { position: absolute; top: 8px; right: 8px; width: 112px; height: 88px; background: rgba(29, 25, 20, .82); border: 1px solid var(--ag-line); border-radius: 10px; pointer-events: none; }
+.mini { position: absolute; top: 8px; right: 8px; width: 118px; height: 96px; background: rgba(29, 25, 20, .82); border: 1px solid var(--ag-line); border-radius: 10px; pointer-events: none; }
 .joy { position: absolute; left: 14px; bottom: 14px; width: 112px; height: 112px; border-radius: 50%; background: rgba(29, 25, 20, .55); border: 1px solid #9c6b3c; touch-action: none; }
 .joy i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: var(--ag-gold); border: 2px solid #e2c47a; transition: transform 120ms ease-out; }
 .hint { position: absolute; left: 12px; right: 140px; top: 10px; margin: 0; font-size: 12px; color: var(--ag-soft); pointer-events: none; }
@@ -72,3 +72,39 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; } html[data-oly-lite="1"] .
 .btn, .acts .btn { min-height: 44px; }
 summary { min-height: 44px; }
 .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* v2: speech bubbles, crates, the day replay, the pipeline wall, the learning engine */
+.card > h3 { margin: 6px 0 0; font: 700 16px/1.25 var(--ag-serif); color: var(--ag-gold); }
+.say { margin: 0; padding: 10px 12px; border-radius: 12px 12px 12px 3px; border: 1px solid #5a4a30; background: #241e17; color: var(--ag-text); font-size: 14px; }
+.say:empty { display: none; }
+.say b { color: var(--ag-gold); font-weight: 700; }
+.crates li { padding: 0; }
+.crate { width: 100%; min-height: 48px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; padding: 6px 10px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: var(--ag-raise); color: var(--ag-soft); }
+.crate .tag { padding: 5px 9px; max-width: 132px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-radius: 6px; border: 1px solid #7a5631; background: #3a2c1c; color: var(--ag-text); font-weight: 600; font-size: 13px; }
+.crate[aria-expanded="true"] { border-color: var(--ag-gold); background: #2a2217; }
+.crate .full { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; } .crate[aria-expanded="true"] .full { white-space: normal; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--ag-line); background: var(--ag-raise); color: var(--ag-soft); font: 600 14px var(--ag-sans); }
+.chip[aria-pressed="true"] { border-color: var(--ag-gold); color: var(--ag-gold); background: #2a2217; }
+.lanes { width: 100%; height: auto; display: block; background: #211c16; border: 1px solid var(--ag-line); border-radius: var(--ag-radius-s, 12px); }
+.scrub { width: 100%; min-height: 44px; margin: 0; accent-color: #c8a24a; background: transparent; }
+.now { margin: 0; font: 600 15px var(--ag-num); font-variant-numeric: tabular-nums; color: var(--ag-text); }
+.ticker li[data-ok="0"] b { color: var(--ag-terra); }
+.pipe { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.lane { display: grid; gap: 2px; align-content: start; min-height: 84px; padding: 8px 6px 8px 9px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); border-top-width: 3px; background: var(--ag-raise); color: var(--ag-text); text-decoration: none; min-width: 0; }
+.lane b { font: 700 13px var(--ag-serif); } .lane .n { font: 700 clamp(17px, 5.2vw, 22px) var(--ag-num); font-variant-numeric: tabular-nums; } .lane small { font-size: 10.5px; line-height: 1.25; color: var(--ag-muted); overflow-wrap: anywhere; }
+.lane[data-id="ideas"] { border-top-color: var(--ag-gold); } .lane[data-id="testing"] { border-top-color: #4b7a99; } .lane[data-id="adopted"] { border-top-color: var(--ag-olive); } .lane[data-id="rejected"] { border-top-color: var(--ag-terra); }
+.fams, .moves { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.fam, .move { display: grid; gap: 4px; min-height: 48px; padding: 7px 10px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-soft); text-decoration: none; font-size: 13px; min-width: 0; overflow-wrap: anywhere; }
+.fam .top2 { display: flex; justify-content: space-between; gap: 8px; } .fam b, .move b { color: var(--ag-text); font-weight: 600; }
+.stack { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: #332b22; }
+.stack i { display: block; height: 100%; } .stack .a { background: #8fa05a; } .stack .r { background: #c96a4a; } .stack .o { background: #4b7a99; }
+.move .v { font-weight: 700; } .move .v[data-v="adopted"] { color: var(--ag-olive); } .move .v[data-v="rejected"] { color: var(--ag-terra); } .move .v[data-v="open"] { color: #7fa7c2; }
+details > summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; color: var(--ag-gold); font-weight: 600; }
+.lessons li .meta { display: block; font-size: 12.5px; color: var(--ag-gold); font-weight: 600; }
+.lessons li .dots { letter-spacing: 2px; margin-right: 6px; }
+.flips li { border-left-color: var(--ag-terra); } .flips .was { display: block; color: var(--ag-muted); text-decoration: line-through; text-decoration-color: #6e3424; }
+.next .ev { display: block; margin-top: 4px; color: var(--ag-soft); font-style: italic; }
+.next li b .rk { display: inline-block; min-width: 22px; color: var(--ag-gold); }
+.plan .hot circle.disc, .mini .hot circle.disc { stroke: #e0b060; stroke-width: 3.5; }
+@media (max-width: 350px) { .pipe { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
