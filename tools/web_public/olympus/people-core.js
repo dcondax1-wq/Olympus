@@ -153,6 +153,28 @@ export function spec(person, over) {
   return s;
 }
 
+// ------------------------------------------------------------------------------------------------ the drawn look (v2): what the 3D figure and the portrait both draw
+// More variety than the spec's lists, without changing anybody's spec: each hair style has cuts, each kind a garb, the eyes a colour; all picked from the seed.
+export const CUTS = { short: ['crop', 'sidepart', 'spiky'], curly: ['curly', 'afro'], long: ['long', 'ponytail'], wavy: ['wavy', 'swept'], bob: ['bob'], bun: ['bun'], topknot: ['topknot'], bald: ['bald', 'shaved'], none: ['bald'] };
+export const CUT_KEYS = { crop: ['h:cap', 'h:fringe'], sidepart: ['h:cap', 'h:swoop'], spiky: ['h:cap', 'h:spikes'], curly: ['h:cap', 'h:puffs'], afro: ['h:afro'], long: ['h:cap', 'h:long', 'h:fringe'], ponytail: ['h:cap', 'h:tail', 'h:fringe'], wavy: ['h:cap', 'h:waves'], swept: ['h:cap', 'h:quiff'], bob: ['h:cap', 'h:bob', 'h:fringe'], bun: ['h:cap', 'h:bun'], topknot: ['h:cap', 'h:knot'], bald: [], shaved: ['h:tufts'], helmet: [] };
+export const GARBS = ['chiton', 'cloak', 'apron', 'armour', 'toga'];
+const GARB_KEYS = { chiton: ['g:skirt'], cloak: ['g:skirt', 'g:cloak'], apron: ['g:skirt', 'g:apron'], armour: ['g:skirt', 'g:armour'], toga: ['g:long', 'g:sash'] };
+const ACC_KEYS = { laurel: ['a:laurel'], helmet: ['a:helmet'], pouch: ['a:pouch'], key: ['a:key', 'a:lantern'], owl: ['a:owl'], hammer: ['a:hammer'], torch: ['a:torch'], scroll: ['a:scroll'] };
+const IRISES = ['#5a3a22', '#6f4a2c', '#4f6b45', '#4b6f8c', '#6b5a48', '#3f5a6e'];
+const EYE_SHAPES = { dot: { rx: 0.11, ry: 0.135, ir: 0.088, iry: 0.1, pupil: 0, hl: 0.032 }, oval: { rx: 0.095, ry: 0.16, ir: 0.075, iry: 0.125, pupil: 0, hl: 0.03 }, wide: { rx: 0.14, ry: 0.16, ir: 0.092, iry: 0.1, pupil: 0.048, hl: 0.034 }, smile: { rx: 0.11, ry: 0.135, ir: 0.088, iry: 0.1, pupil: 0, hl: 0.032 } };
+/** spec -> what to draw: { cut, garb, keys[] (the 3D parts), eye{rx, ry, ir, iry, pupil, hl, iris}, eyeX, eyeY, browThick, browArch, browCol, blush, lidBias, beard, freckles }. Pure and deterministic. */
+export function drawLook(s) {
+  const seed = (s && s.seed) >>> 0, r = rng((seed ^ 0x2c1b3c6d) >>> 0), f = (s && s.face) || {};
+  const cuts = CUTS[s.hairStyle] || CUTS.short, cutPick = cuts[Math.floor(r() * cuts.length) % cuts.length], cut = s.accessory === 'helmet' ? 'helmet' : cutPick;
+  const a = s.accessory, g0 = r();
+  const garb = a === 'helmet' ? 'armour' : a === 'hammer' || a === 'torch' ? 'apron' : a === 'laurel' ? (g0 < 0.5 ? 'armour' : 'toga') : a === 'scroll' || a === 'owl' ? 'toga' : a === 'pouch' || a === 'key' ? 'cloak' : ['chiton', 'chiton', 'cloak', 'toga', 'apron'][Math.floor(g0 * 5)];
+  const beard = f.beard || 'none', keys = [].concat(CUT_KEYS[cut] || [], GARB_KEYS[garb], ACC_KEYS[a] || [], beard === 'short' ? ['b:short'] : beard === 'full' ? ['b:full'] : beard === 'moustache' ? ['b:mous'] : [], f.glasses ? ['glasses'] : []);
+  const es = EYE_SHAPES[f.eyes] || EYE_SHAPES.dot, iris = f.eyes === 'wide' ? IRISES[Math.floor(r() * IRISES.length) % IRISES.length] : '#2e2016';
+  const light = s.hair === '#e6e0d2' || s.hair === '#d9c08a' || s.hair === '#b98a4a';
+  return { cut, garb, keys, eye: { ...es, iris }, eyeX: 0.335, eyeY: -0.03, browThick: f.brows === 'thick' ? 0.05 : 0.034, browArch: f.brows === 'arched' ? 0.03 : f.brows === 'flat' ? 0.006 : 0.014, browSlant: f.brows === 'slant' ? 0.12 : 0,
+    browCol: light ? '#8a7a5a' : shade(s.hair, -0.3), blush: mix(s.skin, '#c96a4a', 0.42), lidBias: f.eyes === 'smile' ? 0.38 : 0, beard, freckles: !!f.freckles };
+}
+
 const N = (tag, attrs, children) => ({ tag, attrs: attrs || {}, children: children || [] });
 const f1 = (v) => Math.round(v * 10) / 10;
 /** head and shoulders in a round frame, viewBox 0 0 100 100. Bold enough to read at 44 px; no filters, no gradients, no images. */
