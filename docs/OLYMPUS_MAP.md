@@ -71,6 +71,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Athena (`athena`) | Life | life | The library: strategy, rules, quiz | `jarvis.json`, `library.json`, `drills.json` | `tests.test_athena_page` |
 | Epilogue (`epilogue`) | Life | life | Your week in 60 seconds: the Sunday review | `fixture.json`, `../home.json`, `../odeon/trades.json`, `../money/index.json` | `tests.test_epilogue_page` |
 | Agora Gallery (`gallery`) | Life | life | Every 3D shape of the Agora on a | `fixture.json` | covered by `tests.test_olympus_kit` |
+| Herald (`herald`) | Life | life | The daily paper: who built what, the day | `edition.json`, `editions/index.json`, `fixture.json`, `editions/${date}.json` | `tests.test_herald_page` |
 | Mnemosyne (`journal`) | Life | trading | A 10-second trade journal: what your habits cost | `../odeon/trades.json`, `fixture.json`, `mnemosyne-journal.json` | `tests.test_journal_page` |
 | Lyceum (`lyceum`) | Life | life | The school: daily rules quiz, ranks, habits costing | `fixture.json`, `../odeon/trades.json`, `../home.json` | `tests.test_lyceum_page` |
 | Mind (`mind`) | Life | life | Your vault as a living 3D brain | bundled fixture / its own files | `tests.test_mind_page` |
@@ -78,7 +79,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Planner (`planner`) | Life | life | Day and week plan: session windows, tasks, habits | `../pythia/events.json`, `../home.json`, `fixture.json` | `tests.test_planner_page` |
 | Symposium (`symposium`) | Life | life | Meet everyone who works for you, and talk | `fixture.json` | `tests.test_symposium_page` |
 
-69 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+70 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 

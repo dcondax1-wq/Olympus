@@ -13,14 +13,15 @@
  "lead": {
   "id": "kalshi-research",
   "kicker": "Kalshi desk",
-  "headline": "2 Kalshi edge hunts report: no edge found",
+  "headline": "3 Kalshi edge hunts report: no edge found",
   "standfirst": "The research teams' verdicts, one honest sentence each, copied from their write-ups.",
   "body": [
    "Kalshi edge, team A (calibration / base rate): NO EDGE FOUND (dated 2026-11-10).",
    "In its own words: No edge found. Out of the 38 cells that were big enough to test (and 7 pre-written textbook ideas), none beat the noise on training data, and none is positive with a confidence interval above zero on the held-out last 14 days.",
    "Kalshi edge, team B (structure and behaviour): NO EDGE FOUND (dated 2026-11-10).",
    "In its own words: None gives an edge that survives fees, a held-out block and a second asset.",
-   "Every test was on paper with fees in and a held-out block; no order was placed."
+   "Kalshi edge, team C (weather, economics, daily index, other daily series): NO EDGE FOUND (dated 2026-11-11).",
+   "In its own words: No edge found. I looked at 262 cells in three families."
   ],
   "facts": [
    {
@@ -54,15 +55,31 @@
     "quote": true
    },
    {
-    "t": "2",
+    "t": "Kalshi edge, team C (weather, economics, daily index, other daily series): NO EDGE FOUND",
+    "src": "research/writeups/kalshi_edge_C.md",
+    "quote": true
+   },
+   {
+    "t": "2026-11-11",
+    "src": "research/writeups/kalshi_edge_C.md",
+    "quote": true
+   },
+   {
+    "t": "No edge found. I looked at 262 cells in three families.",
+    "src": "research/writeups/kalshi_edge_C.md",
+    "quote": true
+   },
+   {
+    "t": "3",
     "src": "research/writeups/kalshi_edge_A.md",
     "calc": "count of kalshi_edge_*.md write-ups read",
-    "raw": 2
+    "raw": 3
    }
   ],
   "sources": [
    "research/writeups/kalshi_edge_A.md",
-   "research/writeups/kalshi_edge_B.md"
+   "research/writeups/kalshi_edge_B.md",
+   "research/writeups/kalshi_edge_C.md"
   ],
   "sample": false
  },
@@ -522,9 +539,9 @@
    "body": [
     "The build queue holds 67 tasks: 67 open and 0 done.",
     "First in line (P0): cities/ renders almost nothing after 30 s (only 160 characters of text, a few dots, no labels, no cards). It is the worst app. Find why (console, fet…",
-    "The research shelf now counts 143 write-ups.",
-    "The newest lesson on file, dated 2026-11-04, reads: Job 27. Part 1 - ATLAS (EMA + MACD + S/R) and BLITZ (noise-area scalp) re-tested for the 25K accounts with 43 BLITZ and 29 ATLAS versions (stop multiple, entry window, d…",
-    "It was filed under \"rejected\" and comes from research/writeups/2026-11-04_second_strategies_night.md."
+    "The research shelf now counts 145 write-ups.",
+    "The newest lesson on file, dated 2026-11-10, reads: None gives an edge that survives fees, a held-out block and a second asset.",
+    "It was filed under \"rejected\" and comes from research/writeups/kalshi_edge_B.md."
    ],
    "facts": [
     {
@@ -556,18 +573,18 @@
      "quote": true
     },
     {
-     "t": "143",
+     "t": "145",
      "src": "ergasterion/queue.json",
      "at": "writeups/count",
-     "raw": 143
+     "raw": 145
     },
     {
-     "t": "2026-11-04",
+     "t": "2026-11-10",
      "src": "ergasterion/queue.json",
      "quote": true
     },
     {
-     "t": "Job 27. Part 1 - ATLAS (EMA + MACD + S/R) and BLITZ (noise-area scalp) re-tested for the 25K accounts with 43 BLITZ and 29 ATLAS versions (stop multiple, entry window, d…",
+     "t": "None gives an edge that survives fees, a held-out block and a second asset.",
      "src": "ergasterion/queue.json",
      "quote": true
     },
@@ -577,7 +594,7 @@
      "quote": true
     },
     {
-     "t": "research/writeups/2026-11-04_second_strategies_night.md",
+     "t": "research/writeups/kalshi_edge_B.md",
      "src": "ergasterion/queue.json",
      "quote": true
     }
@@ -642,8 +659,8 @@
  ],
  "numbers": [
   {
-   "value": "2",
-   "label": "2 Kalshi edge hunts report: no edge found",
+   "value": "3",
+   "label": "3 Kalshi edge hunts report: no edge found",
    "src": "research/writeups/kalshi_edge_A.md",
    "article": "kalshi-research"
   },
@@ -876,7 +893,8 @@
    "mercury/fixture.json",
    "pythia/events.json",
    "research/writeups/kalshi_edge_A.md",
-   "research/writeups/kalshi_edge_B.md"
+   "research/writeups/kalshi_edge_B.md",
+   "research/writeups/kalshi_edge_C.md"
   ],
   "missing": [
    "home.json",
@@ -914,6 +932,7 @@
   "chrysos",
   "cities",
   "clio",
+  "colosseum",
   "compass",
   "datacity",
   "delphi",
@@ -928,6 +947,7 @@
   "helios",
   "hephaestus",
   "hera",
+  "herald",
   "hermes",
   "hestia",
   "inbox",
@@ -947,6 +967,7 @@
   "moirai",
   "nemesis",
   "nike",
+  "nq",
   "observatory",
   "odeon",
   "oikos",
@@ -962,6 +983,7 @@
   "settings",
   "sibyl",
   "stoa",
+  "symposium",
   "tree",
   "tyche",
   "zenith"
@@ -970,34 +992,46 @@
   "available": true,
   "shipped": [
    {
-    "who": "Colosseum",
-    "id": "builder:a9fa9fcc",
-    "t": 1794366322,
-    "text": "docs/RELEASE_CHECK.md: the five commands before a zip"
-   },
-   {
-    "who": "Kalshi team C",
-    "id": "builder:aa29a7de",
-    "t": 1794366186,
-    "text": "Kalshi edge C: weather backfill progress"
-   },
-   {
     "who": "Pinakes",
     "id": "builder:afc68d30",
-    "t": 1794366024,
-    "text": "Wire pinakes; build step for its catalogue; worker v79"
+    "t": 1794375382,
+    "text": "Pinakes: catalogue rebuilt with the Herald's tables"
+   },
+   {
+    "who": "Colosseum",
+    "id": "builder:a9fa9fcc",
+    "t": 1794374720,
+    "text": "Merge agora-release"
    },
    {
     "who": "Fixer",
     "id": "builder:aa54c210",
-    "t": 1794365833,
-    "text": "Kalshi page: numbers are fitted again after the odometer splits the digits (the balance was cut while rolling at 430 px); page version k22"
+    "t": 1794374448,
+    "text": "QA_NIGHT Round 3: before/after table and what is left"
+   },
+   {
+    "who": "Jarvis home",
+    "id": "builder:a43a2dae",
+    "t": 1794374019,
+    "text": "Merge agora-release (brain v3) into Jarvis home v2"
    },
    {
     "who": "Hellas",
     "id": "builder:a802da40",
-    "t": 1794365712,
-    "text": "People: friendlier figure (smaller eyes, mouth, hair cap), walk-scale, name labels while walking; test fixes"
+    "t": 1794373071,
+    "text": "tests: Hellas screenshots retry once and never abort the run (a picture is evidence, not a check)"
+   },
+   {
+    "who": "Theme finisher",
+    "id": "builder:a8fa04fb",
+    "t": 1794372592,
+    "text": "docs/AGORA_AUDIT.md: the one-theme pass, per-app table (before / after / test / baseline), accent table, rendered scan"
+   },
+   {
+    "who": "Kalshi team C",
+    "id": "builder:aa29a7de",
+    "t": 1794372566,
+    "text": "Kalshi edge C: final results, no edge found; writeup and edge_rules_C.json"
    },
    {
     "who": "Ergasterion",
@@ -1012,22 +1046,10 @@
     "text": "Jarvis brain v3: talk to the people (OLYMPUS_PEOPLE kit when present, else builders.json / agents-now.json + the Symposium line), 24 phrasings; agent…"
    },
    {
-    "who": "Jarvis home",
-    "id": "builder:a43a2dae",
-    "t": 1794362790,
-    "text": "Jarvis home v2: 3D doorways always readable (lamplit marble, golden-hour haze), browser test fixes"
-   },
-   {
     "who": "NQ bot",
     "id": "builder:a545b014",
     "t": 1794362441,
     "text": "test_zenith_nq: the stale case also blocks the old phone live feed (20/20 in the browser)"
-   },
-   {
-    "who": "Theme finisher",
-    "id": "builder:a8fa04fb",
-    "t": 1794362198,
-    "text": "agora_audit --render uses the suite's own browser"
    }
   ]
  }
