@@ -47,6 +47,13 @@ select.field { appearance: none; -webkit-appearance: none; background-image: lin
 .stage { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--ag-line); background: #3b2a1c; }
 #hall3d { display: block; width: 100%; height: min(58vh, 430px); min-height: 300px; touch-action: pan-y; outline-offset: -2px; }
 .tagsover { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.rowbtns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.subh { margin: 18px 0 6px; font-family: var(--ag-serif); font-size: 16px; }
+/* speech bubbles (olympus/people.css .pp-say) live in the stage over the hall; a small work card sits beside the speaker */
+.stage .pp-say { z-index: 5; }
+.cardsover { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 4; }
+.cardsover .pp-card { position: absolute; left: 0; top: 0; pointer-events: none; will-change: transform; transition: opacity .25s ease-out; }
+.cardsover .pp-card.gone { opacity: 0; }
 .htag { position: absolute; left: 0; top: 0; width: 48px; min-height: 44px; padding: 0; border: 0; background: none; pointer-events: auto; display: grid; justify-items: center; gap: 1px; will-change: transform; }
 .htag svg { width: 44px; height: 44px; box-shadow: 0 3px 8px rgba(0, 0, 0, .4); border-radius: 50%; }
 .htagname { font: 700 10.5px/1.1 var(--ag-sans); color: #f3ece0; background: rgba(29, 25, 20, .78); border-radius: 6px; padding: 2px 5px; white-space: nowrap; max-width: 84px; overflow: hidden; text-overflow: ellipsis; }
@@ -121,6 +128,7 @@ select.field { appearance: none; -webkit-appearance: none; background-image: lin
 
 @media (min-width: 560px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @keyframes sy-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .cardsover .pp-card { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .trow, .suitem { animation: none !important; } }
 html[data-oly-lite="1"] .trow, html[data-oly-lite="1"] .suitem { animation: none; }
 html[data-oly-lite="1"] .stage { display: none; }

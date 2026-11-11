@@ -263,7 +263,7 @@ const arr = C.arr;
 function ensureCss() {
   if (document.querySelector('link[data-pp-css]')) return;
   const l = document.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('data-pp-css', '1');
-  try { l.href = new URL('./people.css?v=p1', import.meta.url).href; } catch (_) { l.href = '../olympus/people.css?v=p1'; }
+  try { l.href = new URL('./people.css?v=p2', import.meta.url).href; } catch (_) { l.href = '../olympus/people.css?v=p2'; }
   document.head.appendChild(l);
 }
 function buildSheet() {

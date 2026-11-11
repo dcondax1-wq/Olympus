@@ -2,6 +2,8 @@
 // cartoon figure (../olympus/people3d.js, one instanced crowd). Built on the OLYMPUS render core (three.js r160 from ../jarvis/). Warm light, bloom <= .2.
 // Draw calls: floor, rug, table (2), krater, cups, columns (2), ring beam, couches (3), braziers (2), the crowd (11) = about 25, whatever the number of people.
 //   createHall(canvas, { people: [spec], reduced, onPick(i) }) -> { ok, yaw(), setYaw(a), spin(dx), focus(i), active(i|-1), project(i) -> {x, y, front}, pick(clientX, clientY), turntable?, dispose() }
+//   speaker(i) -> { figure, project(), onTick(fn) -> off }: the person who talks becomes a full figure (7 draw calls more) whose mouth, face and pose the kit drives
+//   (people.js say(): Figure API v2 setMouth / setExpression / play when people3d.js has them); release() puts them back in the crowd; walk(i) -> Promise: they get up and walk out.
 // If WebGL, the render core or the tier (LITE / off) says no, ok is false and the page keeps its portrait grid.
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
@@ -67,6 +69,8 @@ function build(rc, scene, camera, canvas, o) {
   scene.add(crowd);
 
   const st = { yaw: 0, goal: null, vel: 0, auto: !reduced, active: -1, t: 0, idle: 0, w: 1, h: 1 };
+  const spk = { i: -1, fig: null, subs: [], walk: null };
+  const seatY = 0.29 - 0.215 * SC;
   const ray = new THREE.Raycaster(), v = new THREE.Vector3(), ndc = new THREE.Vector2();
   function placeCam() {
     const portrait = st.w / st.h < 0.95, dist = r + (portrait ? 6.6 + r * 0.55 : 5.2 + r * 0.2), hgt = portrait ? 4.6 + r * 0.42 : 3.4 + r * 0.2;
@@ -79,6 +83,12 @@ function build(rc, scene, camera, canvas, o) {
     else if (Math.abs(st.vel) > 0.0004) { st.yaw += st.vel; st.vel *= Math.pow(0.04, dt); }
     else if (st.auto && st.active < 0) { st.idle += dt; if (st.idle > 2.5) st.yaw += dt * 0.045; }
     placeCam();
+    if (spk.fig) {
+      if (spk.walk) { const w = spk.walk, k = Math.min(1, (st.t - w.t0) / w.dur), e = k * k * (3 - 2 * k); spk.fig.position.set(w.x0 + (w.x1 - w.x0) * e, w.y0 + (0 - w.y0) * Math.min(1, k * 3), w.z0 + (w.z1 - w.z0) * e); spk.fig.rotation.y = w.ry; if (k >= 1 && w.done) { const d = w.done; w.done = null; d(); } }
+      else spk.fig.userData.lookAt(camera.position);
+      if (!reduced) spk.fig.userData.tick(dt, st.t);
+    }
+    for (const fn of spk.subs.slice()) { try { fn(); } catch (_) { /* a listener's own error */ } }
     if (!reduced) { crowd.userData.tick(st.t); for (let i = 0; i < nB; i++) { const a = (i / nB) * Math.PI * 2 + Math.PI / 4, k = 1 + Math.sin(st.t * 9 + i * 2) * 0.12; put(fires, i, Math.sin(a) * (r + 1.9), 1.08, Math.cos(a) * (r + 1.9), st.t * 2 + i, 1, k, 1); } fires.instanceMatrix.needsUpdate = true; }
     if (o.onFrame) o.onFrame();
   }
@@ -93,8 +103,40 @@ function build(rc, scene, camera, canvas, o) {
     active(i) { if (st.active >= 0) crowd.userData.setActive(st.active, false); st.active = i == null ? -1 : i; if (st.active >= 0) crowd.userData.setActive(st.active, true); if (reduced) crowd.userData.tick(0); },
     project(i) { crowd.userData.headWorld(i, v); const behind = v.clone().sub(camera.position).dot(camera.getWorldDirection(new THREE.Vector3())) <= 0; v.project(camera); return { x: (v.x * 0.5 + 0.5) * st.w, y: (-v.y * 0.5 + 0.5) * st.h, z: v.z, front: !behind }; },
     pick(cx, cy) { const b = canvas.getBoundingClientRect(); ndc.set(((cx - b.left) / b.width) * 2 - 1, -((cy - b.top) / b.height) * 2 + 1); ray.setFromCamera(ndc, camera); return crowd.userData.pick(ray); },
+    speaker(i) {
+      const s = L.seats[i]; if (!s) return null;
+      if (spk.i !== i) {
+        api.release();
+        const fig = figure(THREE, specs[i], { seated: true, scale: SC, lite });
+        fig.position.set(s.x, seatY, s.z); fig.rotation.y = s.ry; scene.add(fig);
+        crowd.userData.place(i, s.x, seatY, s.z, s.ry, 0.0001);
+        spk.i = i; spk.fig = fig; spk.walk = null;
+        if (reduced) fig.userData.lookAt(camera.position);
+      }
+      const fig = spk.fig, hv = new THREE.Vector3();
+      return { figure: fig, index: i,
+        project() { const f = spk.fig; if (!f) return { x: 0, y: 0, front: false }; f.getWorldPosition(hv); hv.y += (f.userData.height || 1) * 0.98; const behind = hv.clone().sub(camera.position).dot(camera.getWorldDirection(new THREE.Vector3())) <= 0; hv.project(camera); return { x: (hv.x * 0.5 + 0.5) * st.w, y: (-hv.y * 0.5 + 0.5) * st.h, front: !behind }; },
+        onTick(fn) { spk.subs.push(fn); return () => { const k = spk.subs.indexOf(fn); if (k >= 0) spk.subs.splice(k, 1); }; } };
+    },
+    release() {
+      if (!spk.fig) return;
+      const s = L.seats[spk.i]; if (s) crowd.userData.place(spk.i, s.x, seatY, s.z, s.ry, SC);
+      spk.fig.userData.dispose(); spk.fig = null; spk.i = -1; spk.walk = null; spk.subs.length = 0;
+    },
+    walk(i) {
+      const sp = api.speaker(i); if (!sp) return Promise.resolve(false);
+      const s = L.seats[i], out = Math.hypot(s.x, s.z) || 1, k = (r + 3) / out;
+      const up = figure(THREE, specs[i], { scale: SC * 0.86, lite });          // they stand up (a standing figure) and walk out between the columns
+      up.position.set(s.x, 0, s.z); up.rotation.y = s.ry; scene.add(up); spk.fig.userData.dispose(); spk.fig = up;
+      return new Promise((ok) => {
+        up.userData.pose('wave', false);
+        if (reduced) { ok(true); return; }
+        spk.walk = { t0: st.t, dur: 1.6, x0: s.x, y0: 0, z0: s.z, x1: s.x * k, z1: s.z * k, ry: Math.atan2(s.x, s.z), done: () => ok(true) };
+      });
+    },
+    speaking: () => spk.i,
     drawCalls: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && x.visible) n++; }); return n; },      // one draw per mesh: every repeated thing is instanced
-    dispose() { try { rc.dispose(); } catch (_) { /* gone */ } crowd.userData.dispose(); },
+    dispose() { try { api.release(); } catch (_) { /* gone */ } try { rc.dispose(); } catch (_) { /* gone */ } crowd.userData.dispose(); },
   };
   return api;
 }

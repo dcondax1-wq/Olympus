@@ -3,8 +3,11 @@
 // the debate, the request box and "Make my character". It reads ./fixture.json (example questions) and, through the kit, the site's own published JSON.
 // Read only and paper only: it sends nothing and starts nothing. Text only through textContent / createElementNS. The 3D hall comes from hall.js (optional, loaded
 // by hallload.js); the portrait wall is always drawn first and stays in LITE. window.SYMPOSIUM is the test hook.
+// 2026-11-11 voices: the hall lends its figures to the kit (P.stage): whoever talks becomes a full figure whose mouth moves with the words, a speech bubble
+// follows their head, "show me your work" puts their work card beside them, "walk with me" walks them out to their app. "Voices" turns every voice on
+// (off by default, remembered). Let them talk: two or three people talk to each other, each only about their own numbers.
 import * as C from './symposiumcore.js';
-import P from '../olympus/people.js?v=p1';
+import P from '../olympus/people.js?v=p2';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -24,7 +27,17 @@ const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
 const byId = (id) => S.people.find((p) => p.id === id) || null;
 const factsOf = (id) => { const r = S.rows.find((x) => x.person.id === id); return r ? r.facts : P.factsNow(id); };
 const pillClass = (st) => (st === 'working' ? 'ok' : st === 'failed' ? 'bad' : st === 'stale' ? 'warn' : st === 'sample' ? 'sample' : 'info');
-function talk(id, anchor, opts) { P.open(id, { anchor, ...(opts || {}) }); }
+function talk(id, anchor, opts) {
+  if (S.hall && S.hall.ok) { const b = $('hallCard').getBoundingClientRect(); if (b.top < -4 || b.top > 40) window.scrollTo(0, Math.max(0, window.scrollY + b.top - 6)); }
+  P.open(id, { anchor, ...(opts || {}) });
+}
+/** say a line out loud (when voices are on) with a bubble in the hall; resolves when it is said, or a short read later when voices are off */
+function voiced(id, text, mood) {
+  const sd = P.say(id, text, { mood });
+  if (!sd) return sleep(0);
+  if (QS.get('fast') === '1') return sleep(40);
+  return P.voice.on() ? sd.done : Promise.race([sd.done, sleep(reduced ? 600 : 2600)]);
+}
 
 // ------------------------------------------------------------------------------------------------ the wall (always there) and the cards
 function faceBtn(p, size, withName) {
@@ -119,6 +132,26 @@ async function askTable(question) {
   unspot();
 }
 
+// ------------------------------------------------------------------------------------------------ let them talk (two or three talk to each other)
+async function runTogether(g) {
+  const run = ++S.runId, out = $('togetherOut'); clear(out); $('togetherBox').hidden = true;
+  $('togetherNote').textContent = g.label + ' talk about: ' + g.topic;
+  const d = await P.talkTogether(g.ids, g.topic);
+  if (run !== S.runId) return;
+  S.together = { label: g.label, topic: d.topic, n: d.turns.length, turns: d.turns.map((t) => ({ id: t.id, text: t.text })) };
+  const first = d.turns.length ? d.turns[0].id : '';
+  for (const t of d.turns) {
+    if (run !== S.runId) return;
+    const p = byId(t.id); if (!p) continue;
+    out.appendChild(bubble(p, t.text, t.sources, t.id !== first));
+    await voiced(t.id, t.text, t.mood);
+  }
+  if (run !== S.runId) return;
+  unspot(); if (S.hall && S.hall.ok) S.hall.release();
+  $('togetherSummary').textContent = d.summary; $('togetherBox').hidden = false; S.together.done = true;
+}
+function drawTogether() { const box = $('togetherChips'); clear(box); for (const g of C.trios(S.people)) box.appendChild(chip(g.label, () => runTogether(g))); }
+
 // ------------------------------------------------------------------------------------------------ stand-up
 function drawStandup() {
   const d = P.talk.standup(S.rows); S.su.data = d;
@@ -146,12 +179,15 @@ function stepStandup(dir) {
   S.su.i += dir == null ? 1 : dir;
   if (!d || S.su.i >= d.lines.length) { stopStandup(true); return; }
   showSpeaker(S.su.i);
-  const ms = Math.max(2400, Math.min(6500, 1500 + d.lines[S.su.i].line.length * 26));
-  S.su.timer = setTimeout(() => { if (S.su.on) stepStandup(); }, QS.get('fast') === '1' ? 60 : ms);
+  const ms = Math.max(2400, Math.min(6500, 1500 + d.lines[S.su.i].line.length * 26)), at = S.su.i, l = d.lines[at];
+  const said = P.voice.on() || (S.hall && S.hall.ok) ? voiced(l.id, l.line, l.mood) : null;
+  const next = () => { if (S.su.on && S.su.i === at) stepStandup(); };
+  if (said && P.voice.on() && QS.get('fast') !== '1') said.then(() => { S.su.timer = setTimeout(next, 350); });
+  else S.su.timer = setTimeout(next, QS.get('fast') === '1' ? 60 : ms);
 }
 function playStandup() { drawStandup(); S.su.on = true; S.su.i = -1; $('suPlay').hidden = true; $('suNext').hidden = false; $('suStop').hidden = false; stepStandup(); }
 function stopStandup(done) {
-  clearTimeout(S.su.timer); const was = S.su.on; S.su.on = false; $('suPlay').hidden = false; $('suNext').hidden = true; $('suStop').hidden = true; unspot();
+  clearTimeout(S.su.timer); const was = S.su.on; S.su.on = false; P.hush(); $('suPlay').hidden = false; $('suNext').hidden = true; $('suStop').hidden = true; unspot();
   for (const el of document.querySelectorAll('.suitem.on')) el.classList.remove('on');
   if (done && was) { $('suName').textContent = 'That was everyone.'; $('suLine').textContent = S.su.data ? S.su.data.summary : ''; const f = $('suFace'); clear(f); S.su.done = true; } else if (!done) $('suNow').hidden = true;
 }
@@ -168,7 +204,8 @@ async function runDebate() {
     if (run !== S.runId) return;
     const p = byId(t.id); if (!p) continue;
     out.appendChild(bubble(p, t.text, null, t.id === b));
-    if (!reduced) { spot(t.id); await sleep(320); }
+    if (P.voice.on() || (S.hall && S.hall.ok)) { await voiced(t.id, t.text); if (run !== S.runId) return; }
+    else if (!reduced) { spot(t.id); await sleep(320); }
   }
   unspot();
   $('dbSummary').textContent = d.summary; $('dbSummaryBox').hidden = false;
@@ -262,9 +299,9 @@ function mountHall() {
   const M = window.__symHall;
   if (!M || !S.people.length) return false;
   $('stage').hidden = false;
-  const hl = M.createHall($('hall3d'), { reduced, people: S.people.map((p) => P.spec(p.id)), onFrame: placeTags });
+  const hl = M.createHall($('hall3d'), { reduced, people: S.people.map((p) => P.spec(p.id)), onFrame: () => { placeTags(); if (S.cardPlace) S.cardPlace(); } });
   if (!hl || !hl.ok) { $('stage').hidden = true; S.hall = null; S.why = hl && hl.reason; return false; }
-  S.hall = hl; S.view = 'hall';
+  S.hall = hl; S.view = 'hall'; mountStage();
   const box = $('hallTags'); clear(box); S.tagBtns = [];
   S.people.forEach((p) => { const b = h('button', 'htag'); b.type = 'button'; b.hidden = true; b.setAttribute('aria-label', 'Talk to ' + p.name + ', ' + p.title); b.appendChild(P.portrait(p.id, 44, { uid: 'h3' })); b.appendChild(h('span', 'htagname', p.name)); b.addEventListener('click', () => talk(p.id, b)); box.appendChild(b); S.tagBtns.push(b); });
   placeTags();
@@ -278,9 +315,25 @@ function wireHall() {
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', () => { down = null; });
   cv.addEventListener('keydown', (e) => { if (!S.hall || !S.hall.ok) return; if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); S.hall.setYaw(S.hall.yaw() + (e.key === 'ArrowLeft' ? -0.2 : 0.2)); placeTags(); } });
   $('viewBtn').addEventListener('click', () => {
-    if (S.view === 'hall') { if (S.hall) { try { S.hall.dispose(); } catch (_) { /* gone */ } } S.hall = null; S.view = 'wall'; S.canTry = true; $('stage').hidden = true; }
+    if (S.view === 'hall') { P.stage(null); if (S.hall) { try { S.hall.dispose(); } catch (_) { /* gone */ } } S.hall = null; S.view = 'wall'; S.canTry = true; $('stage').hidden = true; }
     else if (!mountHall()) { S.canTry = false; say('3D is not available on this device; the list stays.'); }
     paintView();
+  });
+}
+function paintVoices() { const on = P.voice.on(), b = $('voiceBtn'); b.textContent = 'Voices: ' + (on ? 'on' : 'off'); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+function stageCard(id, el) {
+  const box = $('hallCards'); clear(box); if (!el || !S.hall || !S.hall.ok) return;
+  const i = S.people.findIndex((p) => p.id === id); if (i < 0) return;
+  box.appendChild(el); S.card = { i, el };
+  const place = () => { if (!S.card || S.card.el !== el || !el.parentNode) return; const q = S.hall.speaking() === i ? S.hall.speaker(i).project() : S.hall.project(i), W = box.clientWidth, w = el.offsetWidth || 200, x = q.x < W / 2 ? Math.min(W - w - 8, q.x + 34) : Math.max(8, q.x - w - 34); el.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(Math.max(8, q.y - 10)) + 'px)'; };
+  place(); S.cardPlace = place;
+}
+function mountStage() {
+  P.stage({
+    figure(id) { if (!S.hall || !S.hall.ok) return null; const i = S.people.findIndex((p) => p.id === id); if (i < 0) return null; spot(id); const sp = S.hall.speaker(i); return sp ? { figure: sp.figure, project: sp.project, onTick: sp.onTick, container: $('stage') } : null; },
+    release() { if (S.hall && S.hall.ok) S.hall.release(); clear($('hallCards')); S.card = null; unspot(); },
+    walk(id) { const i = S.people.findIndex((p) => p.id === id); return S.hall && S.hall.ok && i >= 0 ? S.hall.walk(i) : Promise.resolve(false); },
+    card: stageCard,
   });
 }
 function paintView() {
@@ -320,7 +373,9 @@ async function init() {
   fillSelect($('tableScope'), C.SCOPES, 'all');
   $('tableForm').addEventListener('submit', (e) => { e.preventDefault(); askTable($('tableQ').value || $('tableQ').placeholder); });
   $('suPlay').addEventListener('click', playStandup); $('suNext').addEventListener('click', () => stepStandup()); $('suStop').addEventListener('click', () => stopStandup(false));
-  drawDebateSetup(); $('dbGo').addEventListener('click', runDebate);
+  drawDebateSetup(); $('dbGo').addEventListener('click', runDebate); drawTogether();
+  paintVoices(); $('voiceBtn').addEventListener('click', () => { P.voice.set(!P.voice.on()); paintVoices(); if (P.voice.on()) $('status').textContent = 'Voices on. Each person speaks with their own voice; tap Voices again to stop.'; else P.hush(); });
+  window.addEventListener('olympus:people:close', () => { clear($('hallCards')); S.card = null; S.cardPlace = null; paintVoices(); });
   fillSelect($('reqWho'), S.people.map((p) => [p.id, p.name + ' · ' + K.clean(p.title, 34)]));
   $('reqForm').addEventListener('submit', (e) => { e.preventDefault(); const t = $('reqText').value.trim(); if (!t) { $('reqNote').textContent = 'Write the request first.'; return; } const row = P.request($('reqWho').value, t); $('reqText').value = ''; $('reqNote').textContent = row ? 'Added.' : 'This phone would not store it.'; drawRequests(); });
   $('reqCopy').addEventListener('click', copyRequests); $('reqExport').addEventListener('click', exportRequests);
@@ -340,5 +395,5 @@ async function init() {
   setInterval(() => { if (!document.hidden && !P.isOpen() && !S.su.on) refresh(); }, 120000);
 }
 window.SYMPOSIUM = { ready: () => S.ready, state: () => ({ n: S.people.length, tab: S.tab, view: S.view, hall: !!(S.hall && S.hall.ok), why: S.why || '', head: S.head, lite: S.lite, table: S.table, debate: S.debate || null, standup: S.su.data, suOn: S.su.on, suI: S.su.i, tags: S.tagBtns.filter((b) => !b.hidden).length, calls: S.hall && S.hall.ok ? S.hall.drawCalls() : 0, turn: !!(S.turn && S.turn.ok), look: S.look }),
-  setTab, askTable, runDebate, playStandup, card: () => C.jarvisCard(S.head, P.requests().length, Date.now() / 1000), people: () => S.people.map((p) => p.id) };
+  setTab, askTable, runDebate, playStandup, runTogether, trios: () => C.trios(S.people), together: () => S.together || null, card: () => C.jarvisCard(S.head, P.requests().length, Date.now() / 1000), people: () => S.people.map((p) => p.id) };
 init().catch((e) => { say('Something went wrong while loading the hall: ' + (e && e.message ? e.message : e)); S.ready = true; });

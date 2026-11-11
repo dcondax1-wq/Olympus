@@ -30,14 +30,18 @@ def test_static():
     check("a. the page: the hall first, then new faces, then six tabs (Meet, Round table, Stand-up, Debate, Requests, Me), each a real tab with its panel",
           html.index('id="hallCard"') < html.index('id="newCard"') < html.index('id="tabs"') and all(f'id="tab-{t}"' in html and f'id="p-{t}"' in html and f'aria-controls="p-{t}"' in html for t in ("meet", "table", "standup", "debate", "requests", "me"))
           and html.count('role="tab"') == 6 and html.count('role="tabpanel"') == 6)
-    check("a. the people come from the shared kit (olympus/people.js?v=p1) and its stylesheet; the 3D hall is optional (hallload.js) and uses the render core, three r160 and people3d.js",
-          "from '../olympus/people.js?v=p1'" in js and "../olympus/people.css?v=p1" in html and 'src="hallload.js' in html and "../olympus/render.js" in hall and "../jarvis/three.module.min.js" in hall and "../olympus/people3d.js" in hall
+    check("a. the people come from the shared kit (olympus/people.js?v=p2) and its stylesheet; the 3D hall is optional (hallload.js) and uses the render core, three r160 and people3d.js",
+          "from '../olympus/people.js?v=p2'" in js and "../olympus/people.css?v=p2" in html and 'src="hallload.js' in html and "../olympus/render.js" in hall and "../jarvis/three.module.min.js" in hall and "../olympus/people3d.js" in hall
           and "figureInstanced" in hall)
     check("a. the 3D hall is calm: bloom <= .25, no neon colours, warm background and fog; LITE or no WebGL keeps the portrait wall", re.search(r"strength: 0\.(0\d|1\d|2[0-5]?)\b", hall) is not None and not AK.BANNED_LOOK.search(hall)
           and "'low' || q === 'off'" in hall and not re.search(r"#(?:0ff|00f|f0f|0f0)\b|#00ffff|#ff00ff", hall, re.I) and 'html[data-oly-lite="1"] .stage { display: none; }' in css)
     check("a. the request box: Copy for Claude, Export JSON, Clear all (two taps); the foot says paper and suggestions only and R next to every dollar",
           all(x in html for x in ("Copy for Claude", "Export JSON", "Clear all")) and "Tap again to clear all" in js and "paper and suggestions only" in html and "with its R" in html)
     check("a. make my character: a name, the looks, Randomise, Save; kept through the kit (olympus.me.v1), the page itself stores nothing", all(x in html for x in ("Make my character", "Randomise", "Save my character")) and "P.setMe(" in js and "localStorage" not in js)
+    check("a. VOICES: a 'Voices' switch over the hall (off until tapped, through the kit), the hall lends its figures to the kit (P.stage: speaker, release, walk, card),"
+          " speech bubbles and work cards over the hall, 'Let them talk' in the Round table; stand-up, debate and the talks are said out loud with P.say",
+          all(x in html for x in ('id="voiceBtn"', "Voices: off", 'id="hallCards"', "Let them talk", 'id="togetherChips"', 'id="togetherOut"')) and all(x in js for x in ("P.stage({", "P.say(", "P.voice.set(", "P.talkTogether(", "S.hall.speaker(", "S.hall.walk(", "S.hall.release()", "voiced("))
+          and all(x in hall for x in ("speaker(i)", "release()", "walk(i)", "onTick(fn)", "userData.lookAt(camera.position)")) and ".cardsover" in css)
     apps = json.loads(AK.read(os.path.join(AK.ROOT, "tools", "new_apps.json")))["apps"]
     row = next((a for a in apps if a["id"] == APP), None)
     scenes = "stars smoke coins embers neurons skyline torches threads streaks bars leaves columns shards rings maze".split()
@@ -64,6 +68,8 @@ import(process.argv[2]).then((C) => {
   o.scope = [C.scopeIds(people, 'all').length, C.scopeIds(people, 'bot'), C.scopeIds(people, 'nope').length, C.scopeIds(null, 'all').length, C.SCOPES.length];
   o.pairs = C.pairs(people).map((p) => p.a + '|' + p.b + '|' + p.topic);
   o.pairsNone = C.pairs([P('bot:lit', 'bot')]).length;
+  o.trios = C.trios(people).map((g) => g.ids.join('+') + '|' + g.topic + '|' + g.label);
+  o.triosNone = C.trios([P('bot:lit', 'bot')]).length;
   const now = Date.parse('2026-11-11T15:00:00Z'), F = (asof, extra) => ({ asof, status: 'idle', ...(extra || {}) });
   const rows = [{ person: people[2], facts: F('2026-11-11T14:00:00Z', { status: 'working' }) }, { person: people[1], facts: F('2026-11-11T14:30:00Z', { sample: true, status: 'sample' }) }, { person: people[5], facts: F('2026-11-08T10:00:00Z', { blocked: 'old' }) }, { person: people[3], facts: F('2026-11-10T09:00:00Z') }, { person: people[6], facts: F(null) }, { person: people[0], facts: F('2026-11-12T20:00:00Z') }];
   o.fresh = C.newFaces(rows, now, 12).map((r) => r.id + ':' + r.why);
@@ -110,6 +116,9 @@ def test_maths():
     check("b. who answers the round table: everyone, or one craft", o["scope"] == [10, ["bot:lit", "bot:atlas"], 0, 0, 7], o["scope"])
     check("b. the ready-made duels: two scanners, two champions, a bot against a rejected idea, a champion against a rejected idea, two bots, a builder and a thinker",
           o["pairs"][:3] == ["scanner:x|scanner:y|Who found more for the owner?", "champion:a|champion:c|Who makes more money?", "bot:lit|champion:f|What could go wrong?"] and len(o["pairs"]) == 6 and o["pairsNone"] == 0, o["pairs"])
+    check("b. let them talk: ready-made groups of two or three (the bots, the scanners, a champion with a rejected idea and a bot, a builder with a thinker), each with a topic; one person alone gets none",
+          o["trios"][0] == "bot:lit+bot:atlas|How did today go?|LIT and ATLAS" and o["trios"][1].startswith("scanner:x+scanner:y|What did you find?") and any(t.startswith("champion:a+champion:f+bot:lit|") for t in o["trios"])
+          and any(t.startswith("builder:b1+mind|") for t in o["trios"]) and o["triosNone"] == 0, o["trios"])
     check("b. new and active today: only real files from the last day and a half, newest first; sample data, old files, missing and future times never count",
           o["fresh"] == ["bot:lit:working now", "builder:b1:updated today"] and o["freshNone"] == [0, 0, 1], (o["fresh"], o["freshNone"]))
     check("b. the headline counts people, working, blocked and sample; DEMO only when everyone shows sample data",
