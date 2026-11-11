@@ -463,3 +463,51 @@ Tests after wiring: `tests.test_archive_page`, `tests.test_apps_list`, `tests.te
 3. `tools/build_web_dashboard.py` app tuple: add `"archive"`.  4. `sw.js` OTHER_APPS: `'archive/'`.
 5. `olympus/intro-app.js` FLAVOUR: `archive: ['columns', 'Open the shelves', 'tap'],`
 6. `jarvis/transitions.js` REGISTRY: `archive: { kind: 'tiles', ms: 800 },`
+
+---
+# Wiring SYMPOSIUM and the PEOPLE kit (talk to any worker, 2026-11-11)
+
+Two things land together: the shared **people kit** in `tools/web_public/olympus/` (contract: `docs/PERSONA_API.md`) and the app `symposium` in `tools/web_public/symposium/` (the hall where you meet everyone).
+Nothing in `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`, Jarvis, Ergasterion or Cities was touched.
+
+## 1. The roster builder (new, needs ONE line in the site build)
+`tools/people_build.py` (stdlib, `--selftest`, `--check`, `--no-git`) turns every real worker into a named person: the build agents of `handoff/agents_now.json` (+ their git branch when git is there, never required,
+never part of `--check`), the five money scanners, LIT / ATLAS / BLITZ / Kalshi, the Mind, Prometheus / Hephaestus / Cronos / the task queue, one keeper per district of `jarvis/districts.js`, the top adopted runs of
+`archive/index.json` (+ two rejected runs for debates) and one villager per app of `olympus/apps-list.js`. The exact build line (put it AFTER `python tools/archive_build.py` and `python tools/apps_list_build.py`, because it reads their files):
+
+`python tools/people_build.py --out <site>/olympus/people.json`
+
+The committed `tools/web_public/olympus/people.json` is the fallback (rebuild with `python tools/people_build.py` when `agents_now.json`, the Archive or the app list changes; `--check` fails when it is stale).
+Without any `people.json` the kit still shows its built-in cast of 14 (never blank).
+
+## 2. Files for `sw.js`
+- precache (small, needed offline for every page that shows a person): `olympus/people.js`, `olympus/people-core.js`, `olympus/people-talk.js`, `olympus/people-data.js`, `olympus/people-brain.js`, `olympus/people.css`, `olympus/people.json`
+- precache only if the 3D scenes are precached: `olympus/people3d.js`
+- `OTHER_APPS`: `'symposium/'` (its files: `index.html`, `symposium.css`, `symposium.js`, `symposiumcore.js`, `hall.js`, `hallload.js`, `fixture.json`, `icon.svg`, the PNG icons, `manifest.webmanifest`, `jarvis.json`)
+- `olympus/people-lab.html` is a checking page (every portrait and 3D figure); it does not need to be precached.
+- `people.json` changes with the build: serve it network-first (or bump CACHE with the build), like `ergasterion/queue.json`.
+
+## 3. The six rows (what `python tools/wire_new_apps.py --apply` writes for Symposium; the row is already in `tools/new_apps.json`)
+1. `jarvis/apps.js` BUILT_INS: `app('symposium', 'Symposium', 'life', '#d9b25a', 'Meet everyone who works for you, and talk to them', { glyph: 'Σ' }),`
+2. `olympus/olympus.js`: APPS `symposium: ['Symposium', 'Σ', '#d9b25a'],` and AMBIENT `symposium: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"symposium"`.  4. `sw.js` OTHER_APPS: `'symposium/'`.
+5. `olympus/intro-app.js` FLAVOUR: `symposium: ['torches', 'Take a seat', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `symposium: { kind: 'curtain', ms: 900 },`
+Also: `jarvis/districts.js` / `atlas/atlas.js` district lists: add `'symposium'` to **Command** (it is where you talk to your workers); `python tools/make_app_icons.py symposium` if the PNG icons are regenerated.
+
+## 4. How any page or 3D scene uses a person (for the Ergasterion, Hellas, Athens and Colosseum agents)
+- `<script type="module" src="../olympus/people.js?v=p1"></script>` then `if (window.OLYMPUS_PEOPLE) OLYMPUS_PEOPLE.open(id, { anchor, facts })`. The kit loads its own stylesheet.
+- Ids: `scanner:chrysos|mercury|sibyl|oikos|arbiter`, `bot:lit|atlas|blitz|kalshi`, `mind`, `job:prometheus|hephaestus|cronos|queue`, `keeper:market|research|money|command|life`, `builder:<first 8 of the branch>`,
+  `champion:<run-id>`, `villager:<app-id>`. `get()` is forgiving: the bare name (`'chrysos'`, `'lit'`), `worker:<station>` / `station:<station>` (the Ergasterion station ids), a whole branch name, `builder:<agent-name-slug>`.
+  ANY `keeper:<polis-id>` and `villager:<app-id>` gives a stable person even when it is not in the roster; give such a person something to say with `OLYMPUS_PEOPLE.provide(id, { doing, numbers: [{label, text}], last: [{t, text}], blocked, source })`
+  or `open(id, { facts: {...} })`. Without it a made-up keeper honestly says it only knows what the scene shows.
+- 2D: `OLYMPUS_PEOPLE.portrait(id, 44)` (SVG element; the ring colour is the status), `portraitText(id, 128)` (SVG text for a canvas texture).
+- 3D: `import { spec, figure, figureInstanced } from '../olympus/people3d.js'` (THREE is passed in). `figure(THREE, spec(id), { lite, seated, scale })` = 7 meshes, one shared material, <= 900 triangles (<= 350 lite), about 1 unit tall, feet at y = 0, facing +z;
+  `.userData.pose('idle'|'wave'|'talk'|'cheer'|'slump'|'nod'|'shrug')`, `.userData.lookAt(vec3)`, `.userData.tick(dt, t)` each frame (skip it under reduced motion), `.userData.dispose()`.
+  `figureInstanced(THREE, specs, { lite, seated })` = any crowd in 11 draw calls: `.userData.place(i, x, y, z, ry, scale)`, `.setActive(i, on)`, `.tick(t)`, `.pick(raycaster)`, `.headWorld(i)`.
+- ME: `OLYMPUS_PEOPLE.me()` -> `{ name, made, spec }` (the owner's own character, made in Symposium, stored in `olympus.me.v1`); `figure(THREE, OLYMPUS_PEOPLE.me().spec)` is his body in first person. Event `olympus:people:me` when he changes it.
+- Events on `window`: `olympus:people:open` / `close` / `request` / `me` / `ready`. Requests live in `localStorage` `olympus.requests.v1`; Symposium's Request box has "Copy for Claude".
+- "Connect my brain": the kit only READS Jarvis's `jarvis.smart`; when smart mode is on, a question the offline engine cannot answer goes to the owner's own provider with the persona + facts, and a reply containing a number that is not in the facts is dropped.
+
+Tests: `python -X utf8 -m tests.test_people` (node only, 83 checks) and `flock -w 2400 /tmp/olympus_browser.lock python -X utf8 -m tests.test_symposium_page` (`--static` needs no browser).
+After wiring also: `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
