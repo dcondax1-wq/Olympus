@@ -467,6 +467,10 @@ async function loadGltf(rel) {
 export function envKit(opts) {
   const o = opts || {}, renderer = o.renderer || (o.rc && o.rc.renderer), scene = o.scene || (o.rc && o.rc.scene);
   const tier = o.tier || (o.rc && o.rc.quality ? o.rc.quality() : 'high'), lite = isLite(tier);
+  // a software GL (SwiftShader / llvmpipe: no GPU, e.g. the test machine) gets the one-tap surfaces (no normal maps): same look from afar,
+  // a fraction of the cost; ?gpu=1 keeps the full surfaces there
+  let soft = false; try { const gl = renderer && renderer.getContext(), e = gl && gl.getExtension('WEBGL_debug_renderer_info');
+    soft = !!e && /swiftshader|llvmpipe|software/i.test(String(gl.getParameter(e.UNMASKED_RENDERER_WEBGL))) && !/[?&]gpu=1/.test(location.search); } catch (err) { soft = false; }
   const mats = new Map(), texs = new Map(), info = { files: 0, failed: [], bytes: 0, texels: 0, env: null };
   let dead = false, envTex = null, envSig = '';
   const aniso = renderer && renderer.capabilities ? Math.min(4, renderer.capabilities.getMaxAnisotropy()) : 1;
@@ -492,11 +496,11 @@ export function envKit(opts) {
       if (mats.has(k)) return mats.get(k);
       const [name, mode] = String(key).split(':');
       const T = TEX[name], P = PLAIN[name];
-      const m = surface(Object.assign({ tex: T ? name : null, plain: P ? name : null, uv: mode === 'uv', lite, envI: o.envI ?? 1 }, m0));
+      const m = surface(Object.assign({ tex: T ? name : null, plain: P ? name : null, uv: mode === 'uv', lite, envI: o.envI ?? 1 }, m0, soft && !lite ? { flat: true } : {}));
       if (T) {
         const u = m.userData.ek;
         loadTex('tex/' + name + (lite ? '_l.webp' : '_c.webp'), true).then((t) => { if (t && !dead) { u.tEkC.value = t; if (lite) u.uEkAO.value = 0; } });
-        if (!lite && !m0.flat && !m0.lambert) loadTex('tex/' + name + '_n.webp', false).then((t) => { if (t && !dead) u.tEkN.value = t; });
+        if (!lite && !m0.flat && !m0.lambert && !soft) loadTex('tex/' + name + '_n.webp', false).then((t) => { if (t && !dead) u.tEkN.value = t; });
         if (u.tEkC2) loadTex('tex/' + m0.dual + (lite ? '_l.webp' : '_c.webp'), true).then((t) => { if (t && !dead) u.tEkC2.value = t; });
       }
       mats.set(k, m);
@@ -649,7 +653,7 @@ export function envKit(opts) {
     setEnvIntensity(v) { mats.forEach((m) => { m.envMapIntensity = v; }); },
     stats() {
       const texMB = (info.texels * 4 * 1.34) / 1048576 + (envTex ? 1.6 : 0);       // RGBA8 + mips; a 256 PMREM is about 1.6 MB of half floats
-      return { tier, lite, materials: mats.size, files: info.files, failed: info.failed.slice(), texMB: Math.round(texMB * 10) / 10, env: info.env };
+      return { tier, lite, soft, materials: mats.size, files: info.files, failed: info.failed.slice(), texMB: Math.round(texMB * 10) / 10, env: info.env };
     },
     dispose() {
       if (dead) return; dead = true; if (kit._offFollow) kit._offFollow();

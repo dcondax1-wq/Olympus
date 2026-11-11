@@ -27,7 +27,7 @@ export function materials(kit) {
 export function dress(scene, kit, ctx) {
   const { S, Y0, CAMP_SPOTS, CAMP } = ctx, B = kit.builder();
   // fluted columns along the outer walls (where floor.js had plain cylinders)
-  const colAt = (x, z) => B.column({ x, z, h: 3.4, r: 0.25, flutes: 16, color: ctx.MARBLE || '#d9d2c3' });
+  const colAt = (x, z) => B.column({ x, z, h: 3.4, r: 0.25, flutes: 12, color: ctx.MARBLE || '#d9d2c3' });
   for (const x of [-11, -6.5, -2, 2, 11]) { colAt(x, -9.7); colAt(x, 9.7); }
   colAt(6.5, -9.7);
   for (const z of [-5, 5]) { colAt(-12.7, z); colAt(12.7, z); }
@@ -50,7 +50,7 @@ export function dress(scene, kit, ctx) {
     // Research hall (x -13..0, z 0..10)
     ['shelves', -12.88, 0, 4.4, W, 1.1], ['shelf_small', -12.9, 1.5, 8.2, W, 1.2], ['bottle_B_green', -12.7, 1.62, 8.0, 0, 1], ['bottle_C_brown', -12.7, 1.62, 8.5, 0, 1],
     ['table_long', -2.4, 0, 8.4, W, 1.0], ['candle_triple', -2.6, 0.98, 8.2, 0, 1], ['bottle_A_brown', -2.2, 0.98, 8.8, 0, 1], ['bottle_B_green', -2.3, 0.98, 7.6, 0, 1],
-    ['keg', -0.8, 0, 1.2, 0, 1], ['box_stacked', -12.0, 0, 9.0, 0.4, 0.8], ['rubble_half', -8.6, 0, 9.4, Sx, 0.5],
+    ['keg', -0.8, 0, 1.2, 0, 1], ['rubble_half', -8.6, 0, 9.4, Sx, 0.5],
     // Library (x 0..13, z 0..10): trunks, a reading table, banners (the bookshelves are Poly Haven, below)
     ['trunk_large_A', 12.2, 0, 1.2, E, 1.0], ['trunk_medium_B', 12.3, 0, 9.0, E, 1.1], ['table_medium_tablecloth', 10.2, 0, 8.4, 0, 1.3], ['candle_lit', 10.0, 0.66, 8.3, 0, 1], ['candle_lit', 10.5, 0.66, 8.6, 0, 1],
     ['banner_patternC_green', 0.18, 0, 8.4, W, 1.0], ['banner_thin_yellow', 0.18, 0, 1.6, W, 1.0],
@@ -70,7 +70,7 @@ export function dress(scene, kit, ctx) {
     ['rock_single_A', -4.2, 0, 22.5, 0.3, 2.2], ['rock_single_C', 17.6, 0, 22.2, 1.2, 2.4], ['rock_single_E', 18.4, 0, 15.2, 0.4, 2.0], ['rock_single_B', -5.0, 0, 15.4, 2.1, 2.2], ['rock_single_D', 3.0, 0, 24.6, 0.4, 2.0],
     ['trees_B_small', -6.2, 0, 19.0, 0.4, 1.6], ['tree_single_B', 19.2, 0, 18.4, 0, 1.7], ['trees_A_small', 11.0, 0, 25.6, 1.0, 1.6]);
   const tents = kit.place(scene, 'camp', camp);
-  const books = kit.hero(scene, 'bookshelf', [[12.62, 0, 4.8, -Math.PI / 2, 1], [0.38, 0, 2.9, Math.PI / 2, 1], [0.38, 0, 7.2, Math.PI / 2, 1]], { envI: 0.6 });
+  const books = kit.hero(scene, 'bookshelf', [[12.62, 0, 4.8, -Math.PI / 2, 1], [0.38, 0, 7.2, Math.PI / 2, 1]], { envI: 0.6 });
   // (no contact-shadow draw here: the factory's draw budget goes to the people)
   return { built, ready: Promise.all([props, tents, books]), stats: () => kit.stats() };
 }
