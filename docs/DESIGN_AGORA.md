@@ -68,7 +68,7 @@ Every R next to its $. Status = a badge with a dot, never a coloured stripe acro
 An `<svg>` has no `.hidden` property: toggle the attribute (`toggleAttribute('hidden', ...)`), or the flat fallback stays invisible.
 
 **The orb's seat (QA round 6).** Opened alone, the OLYMPUS seal (`.oly-home`, bottom-right, 44 px, 18 px in) steps aside (`.oly-away`: faded, no taps)
-while the page scrolls down and whenever text, a control or a picture sits under it; it comes back on a scroll up and at the page end.
+while the page scrolls down and whenever text, a control, a picture or a card sits under it (only the page background or a 3D canvas may be under it); it comes back on a scroll up and at the page end.
 Every page still ends with room for it: the app's own bottom padding (176 px + safe area in the base block) and `tools/phone_fit_audit.py`
 checks it (`orb`: nothing readable or tappable under the seat at the end of the scroll). `OLYMPUS.seatClear()` says whether the seat is clear now.
 Pages that size inputs to `width: 100%` need `box-sizing: border-box` (`.ag-field` has it), or they scroll sideways at 375 / 390.

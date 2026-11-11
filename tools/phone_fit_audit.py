@@ -115,12 +115,13 @@ ORB_JS = r"""
   const r = a && a.getBoundingClientRect().width ? a.getBoundingClientRect() : { left: W - 62, top: H - 62, width: 44, height: 44 };
   const HIT = 'button, a[href], input, select, textarea, summary, label, [role=button], [role=tab], [role=link]';
   const own = (e) => [...e.childNodes].some((n) => n.nodeType === 3 && /\S/.test(n.textContent));
+  const surf = (e) => { const cs = getComputedStyle(e), bg = cs.backgroundColor; if (cs.backgroundImage === 'none' && (!bg || bg === 'transparent' || /,\s*0\)$/.test(bg))) return false; const q = e.getBoundingClientRect(); return !(q.width >= W - 1 && q.height >= H - 1); };
   const out = [];
   for (const [fx, fy] of [[.5, .5], [.2, .5], [.8, .5], [.5, .2], [.5, .8]]) {
     for (const e of document.elementsFromPoint(r.left + r.width * fx, r.top + r.height * fy)) {
       if (a && (e === a || a.contains(e))) continue;
       if (e === document.body || e === document.documentElement || e.tagName === 'CANVAS' || e.tagName === 'MAIN') break;
-      if (e.closest(HIT) || own(e) || /^(IMG|VIDEO|svg)$/i.test(e.tagName)) { const t = (e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/)[0] : '')); if (!out.includes(t)) out.push(t); break; }
+      if (e.closest(HIT) || own(e) || /^(IMG|VIDEO|svg)$/i.test(e.tagName) || surf(e)) { const t = (e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/)[0] : '')); if (!out.includes(t)) out.push(t); break; }
     }
   }
   window.scrollTo(0, 0);

@@ -375,16 +375,23 @@
     if (state === 'failed') showErr();
   }
   // the seal never covers what the owner reads or taps (QA round 6): it steps aside (.oly-away: faded, no taps) while the page scrolls
-  // down and whenever text, a button, a link, a field or a picture sits under its seat; it comes back on a scroll up or at the page's
-  // end (every app ends with clear space under the seat). A canvas (a 3D scene) or an empty card edge under it is fine.
+  // down and whenever text, a button, a link, a field, a picture or a card sits under its seat; it comes back on a scroll up or at the
+  // page's end (every app ends with clear space under the seat). Only the page's own background or a canvas (a 3D scene) may be under it.
   var SEAT_HIT = 'button, a[href], input, select, textarea, summary, label, [role="button"], [role="tab"], [role="link"]';
   function ownText(e) {
     for (var n = e.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && /\S/.test(n.nodeValue)) return true;
     return false;
   }
+  // a card, a panel, a band: anything with its own painted surface that is not the page itself (a page-size wrapper is the page)
+  function surface(e) {
+    var cs = window.getComputedStyle(e), bg = cs.backgroundColor, rr;
+    if (cs.backgroundImage === 'none' && (!bg || bg === 'transparent' || /,\s*0\)$/.test(bg))) return false;
+    rr = e.getBoundingClientRect();
+    return !(rr.width >= window.innerWidth - 1 && rr.height >= window.innerHeight - 1);
+  }
   function covers(a) {
     if (!d.elementsFromPoint) return false;
-    var r = a.getBoundingClientRect(), P = [[0.5, 0.5], [0.2, 0.5], [0.8, 0.5], [0.5, 0.2], [0.5, 0.8]], i, j, list, e, t;
+    var r = a.getBoundingClientRect(), P = [[0.5, 0.5], [0.15, 0.5], [0.85, 0.5], [0.5, 0.15], [0.5, 0.85]], i, j, list, e, t;
     if (!r.width) return false;
     for (i = 0; i < P.length; i++) {
       list = d.elementsFromPoint(r.left + r.width * P[i][0], r.top + r.height * P[i][1]);
@@ -393,7 +400,7 @@
         if (e === a || a.contains(e)) continue;
         t = e.tagName;
         if (e === d.body || e === root || t === 'CANVAS' || t === 'MAIN') break;
-        if ((e.closest && e.closest(SEAT_HIT)) || ownText(e) || t === 'IMG' || t === 'VIDEO' || t === 'svg' || t === 'SVG') return true;
+        if ((e.closest && e.closest(SEAT_HIT)) || ownText(e) || t === 'IMG' || t === 'VIDEO' || t === 'svg' || t === 'SVG' || surface(e)) return true;
       }
     }
     return false;
