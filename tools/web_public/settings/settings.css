@@ -28,15 +28,15 @@ html.framed #app { padding-top: 12px; }
 .brand h1 { margin: 0; font: 800 20px/1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--s-acc);  }
 .brand .sub { margin: 4px 0 0; font-size: var(--oly-t-micro, 10.5px); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
 .tags { display: flex; gap: 8px; align-items: center; }
-.tag { padding: 4px 9px; border-radius: 999px; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line); color: var(--oly-dim); }
+.tag { padding: 4px 9px; border-radius: 999px; font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line); color: var(--oly-dim); }
 .tourbtn { min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(var(--s-rgb), .7); background: rgba(var(--s-rgb), .14); color: var(--oly-text);
-  font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; box-shadow: none; }
+  font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; box-shadow: none; }
 .card { position: relative; padding: 14px 14px 16px; border-radius: var(--oly-r-card, 16px); display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0;
   background: var(--oly-glass, rgba(25, 21, 18, .74));
   border: 1px solid var(--oly-line, rgba(255,255,255,.12)); border-top-color: rgba(255,255,255,.22);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 -24px 32px -22px rgba(0,0,0,.55), 0 14px 34px rgba(0,0,0,.35);
   -webkit-backdrop-filter: blur(var(--oly-blur, 14px)) saturate(1.3); backdrop-filter: blur(var(--oly-blur, 14px)) saturate(1.3); }
-.card h2 { margin: 0; font: 700 12px/1.3 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--s-acc); }
+.card h2 { margin: 0; font: 700 12px/1.3 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--s-acc); }
 .card h2::before { content: "\25C6"; margin-right: 8px; font-size: 12px; }
 .hint, .note { margin: 0; color: var(--oly-dim); font-size: 14px; }
 .note:empty { display: none; }
@@ -46,13 +46,13 @@ html.framed #app { padding-top: 12px; }
   -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
 html.framed .tabs { top: 4px; }
 .tabs button { flex: 1 1 0; min-width: 0; min-height: 44px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--oly-dim);
-  font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; }
+  font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; }
 .tabs button[aria-selected="true"] { color: var(--oly-text); border-color: rgba(var(--s-rgb), .7); background: rgba(var(--s-rgb), .2); box-shadow: none; }
 .panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
 .seg { display: flex; gap: 3px; padding: 3px; border-radius: 999px; background: rgba(0,0,0,.28); border: 1px solid var(--oly-line); }
 .seg.wrap { flex-wrap: wrap; border-radius: 22px; }
 .seg button { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 4px 3px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--oly-dim);
-  font: 700 12px/1.1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; }
+  font: 700 12px/1.1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; }
 .seg button[aria-checked="true"] { color: var(--oly-text); border-color: rgba(var(--s-rgb), .75); background: rgba(var(--s-rgb), .2); box-shadow: none; }
 .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,.07); margin: 0; }
 .row:first-of-type { border-top: 0; }
@@ -72,29 +72,29 @@ label.row { cursor: pointer; }
 .rng::-moz-range-track { height: 6px; border-radius: 6px; background: rgba(255,255,255,.18); }
 .rng::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--s-acc); border: 2px solid #f3e7d6; }
 .mini, .go { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid rgba(var(--s-rgb), .7); background: rgba(var(--s-rgb), .16); color: var(--oly-text);
-  font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
+  font: 700 12px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
 .go { width: 100%; }
 .go.ghost { background: transparent; border-color: var(--oly-line); }
 .go.danger { border-color: rgba(192, 96, 63,.7); background: rgba(192, 96, 63,.16); }
 .mini { flex: none; }
 .filebtn { cursor: pointer; }
 .ro .mini { margin-left: auto; }
-.st { flex: none; padding: 5px 11px; border-radius: 999px; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line); color: var(--oly-dim); }
+.st { flex: none; padding: 5px 11px; border-radius: 999px; font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line); color: var(--oly-dim); }
 .st.on { color: #c8a24a; border-color: rgba(200, 162, 74,.55); background: rgba(200, 162, 74,.1); }
 .themes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .theme { position: relative; display: grid; gap: 6px; min-height: 76px; padding: 10px; text-align: left; border-radius: 14px; border: 1px solid var(--oly-line); overflow: hidden; }
 .theme .sw3 { display: flex; gap: 4px; }
 .theme .sw3 i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); }
-.theme b { font: 700 12px/1.1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; }
+.theme b { font: 700 12px/1.1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; }
 .theme small { font-size: 12.5px; opacity: .8; }
 .theme[aria-checked="true"] { border-color: #f3e7d6; box-shadow: 0 0 0 1px #f3e7d6; }
 .theme[aria-checked="true"]::after { content: "\2713"; position: absolute; right: 9px; top: 7px; font-weight: 800; }
 .prev { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--oly-line); background: rgba(0,0,0,.35); height: 96px; }
 .prev canvas { display: block; width: 100%; height: 96px; }
-.pv { position: absolute; right: 8px; top: 8px; padding: 3px 8px; border-radius: 999px; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; background: rgba(0,0,0,.55); border: 1px solid rgba(var(--s-rgb), .6); }
+.pv { position: absolute; right: 8px; top: 8px; padding: 3px 8px; border-radius: 999px; font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; background: rgba(0,0,0,.55); border: 1px solid rgba(var(--s-rgb), .6); }
 .intro-prev { display: flex; align-items: center; justify-content: center; gap: 12px; height: 54px; border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(0,0,0,.35); overflow: hidden; }
 .intro-prev i { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--s-acc); box-shadow: none; }
-.intro-prev span { font: 800 13px/1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--s-acc); }
+.intro-prev span { font: 800 13px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; color: var(--s-acc); }
 .intro-prev.off { opacity: .35; filter: grayscale(1); }
 .times { justify-content: flex-start; gap: 18px; flex-wrap: wrap; }
 .times label { display: flex; align-items: center; gap: 8px; color: var(--oly-dim); }
@@ -112,12 +112,12 @@ label.row { cursor: pointer; }
 .apps li .mini { grid-column: 2; grid-row: 1 / span 2; }
 .apps li .kept { grid-column: 1 / -1; color: #e0b060; font-size: 13px; }
 .link { display: grid; gap: 1px; min-height: 56px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--oly-line); text-decoration: none; color: var(--oly-text); background: rgba(255,255,255,.04); }
-.link b { font: 700 14px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; }
+.link b { font: 700 14px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; }
 .link span { color: var(--oly-dim); font-size: 14px; }
 .foot { text-align: center; color: var(--oly-dim); font-size: 13px; margin: 4px 0 0; }
 .sheet { position: fixed; inset: 0; z-index: 40; display: grid; align-items: end; padding: 0 12px calc(var(--sb) + 12px); background: rgba(0,0,0,.6); }
 .sheet-box { display: grid; gap: 10px; padding: 16px; border-radius: 18px; background: var(--oly-glass2, #28221c); border: 1px solid rgba(var(--s-rgb), .4); max-width: 520px; width: 100%; margin: 0 auto; }
-.sheet-box h2 { margin: 0; font: 700 14px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; }
+.sheet-box h2 { margin: 0; font: 700 14px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; }
 .sheet-box p { margin: 0; color: var(--oly-dim); }
 .kept { list-style: none; margin: 0; padding: 0; color: #e0b060; font-size: 13.5px; }
 .sheet-a { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -128,22 +128,22 @@ label.row { cursor: pointer; }
 .skip { position: absolute; right: 8px; top: 6px; min-height: 44px; min-width: 56px; padding: 0 12px; border: 0; background: transparent; color: var(--oly-dim); font: 600 13px var(--oly-ui, sans-serif); }
 .glyph { width: 96px; height: 96px; display: grid; place-items: center; }
 .glyph svg { width: 96px; height: 96px; overflow: visible; filter: none; }
-.step { margin: 0; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--oly-dim); text-transform: none; }
+.step { margin: 0; font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; color: var(--oly-dim); text-transform: none; }
 .tour h2 { margin: 0; font: 800 20px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--oly-text); }
 .tt { margin: 0; font-size: 16px; line-height: 1.45; color: var(--oly-text); opacity: .92; }
 .tl { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.tl a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(var(--s-rgb), .6); color: var(--oly-text); text-decoration: none; font: 700 12px var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; background: rgba(var(--s-rgb), .12); }
+.tl a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(var(--s-rgb), .6); color: var(--oly-text); text-decoration: none; font: 700 12px var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; background: rgba(var(--s-rgb), .12); }
 .dots { display: flex; gap: 8px; margin: 4px 0; }
 .dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25); transition: all .25s; }
 .dots i.on { width: 24px; border-radius: 8px; background: var(--s-acc); box-shadow: none; }
 .tour-a { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; width: 100%; }
 /* the quality explainer, the reading card, the storage explainer (round 2) */
 .why { margin: 0; padding: 8px 10px; border-radius: 10px; background: rgba(var(--s-rgb), .1); border: 1px solid rgba(var(--s-rgb), .35); font-size: 14px; }
-.sub3 { margin: 4px 0 0; font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
+.sub3 { margin: 4px 0 0; font: 700 12px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
 .levels { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .levels li { display: grid; gap: 2px; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255,255,255,.04); }
 .levels li.now { border-color: rgba(var(--s-rgb), .8); background: rgba(var(--s-rgb), .14); }
-.levels li b { font: 700 13px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; }
+.levels li b { font: 700 13px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; }
 .levels li b em { font-style: normal; margin-left: 8px; font-size: 12px; letter-spacing: .01em; color: var(--s-acc); }
 .levels li span { font-size: 14px; }
 .levels li small { color: var(--oly-dim); font-size: 13.5px; line-height: 1.3; }
