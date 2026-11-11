@@ -28,8 +28,8 @@
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/sfx.js?v=s3" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#d9b25a'); r.setProperty('--oly-accent-rgb', '217, 178, 90'); })();</script>
-<link rel="stylesheet" href="../olympus/people.css?v=p1" data-pp-css="1">
-<link rel="stylesheet" href="symposium.css?v=a1">
+<link rel="stylesheet" href="../olympus/people.css?v=p2" data-pp-css="1">
+<link rel="stylesheet" href="symposium.css?v=a2">
 </head>
 <body>
 <main id="app">
@@ -40,10 +40,11 @@
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
 
   <section class="ag-card card hallcard" id="hallCard" aria-labelledby="hallH">
-    <div class="rowhead"><h2 id="hallH">The hall</h2><button class="btn small" id="viewBtn" type="button" hidden>Show as a list</button></div>
+    <div class="rowhead"><h2 id="hallH">The hall</h2><div class="rowbtns"><button class="btn small" id="voiceBtn" type="button" aria-pressed="false">Voices: off</button><button class="btn small" id="viewBtn" type="button" hidden>Show as a list</button></div></div>
     <div class="stage" id="stage" hidden>
       <canvas id="hall3d" tabindex="0" aria-label="The hall in 3D. Drag sideways or use the arrow keys to walk around the table; tap a person to talk."></canvas>
       <div class="tagsover" id="hallTags"></div>
+      <div class="cardsover" id="hallCards" aria-live="polite"></div>
     </div>
     <div class="wall" id="wall" role="list" aria-label="Everyone in the hall"></div>
     <p class="note" id="hallNote">Tap anyone to talk. They only say what their own files say.</p>
@@ -77,6 +78,12 @@
     <label class="pick"><span>Who answers</span><select id="tableScope" class="field"></select></label>
     <p class="note" id="tableNote" role="status" aria-live="polite"></p>
     <div class="talk" id="tableOut"></div>
+    <h3 class="subh" id="togetherH">Let them talk</h3>
+    <p class="lead">Two or three of them talk to each other, each about their own numbers. With voices on you hear them; in the 3D hall the words appear over their heads.</p>
+    <div class="chips" id="togetherChips" aria-labelledby="togetherH"></div>
+    <p class="note" id="togetherNote" role="status" aria-live="polite"></p>
+    <div class="talk" id="togetherOut"></div>
+    <div class="blockbox" id="togetherBox" hidden><h3>Summary</h3><p class="lead" id="togetherSummary"></p></div>
   </section>
 
   <section class="ag-card card panel" id="p-standup" role="tabpanel" aria-labelledby="tab-standup" hidden>
@@ -121,7 +128,7 @@
 
   <p class="foot" id="foot">Symposium reads the site's own files and sends nothing. A person speaks for one real worker and only says what that worker's files say; sample numbers are labelled sample. Nobody here can place an order: paper and suggestions only. Every dollar is shown with its R where both exist.</p>
 </main>
-<script type="module" src="hallload.js?v=a1"></script>
-<script type="module" src="symposium.js?v=a1"></script>
+<script type="module" src="hallload.js?v=a2"></script>
+<script type="module" src="symposium.js?v=a2"></script>
 </body>
 </html>

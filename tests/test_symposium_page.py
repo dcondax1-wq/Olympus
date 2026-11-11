@@ -30,14 +30,18 @@ def test_static():
     check("a. the page: the hall first, then new faces, then six tabs (Meet, Round table, Stand-up, Debate, Requests, Me), each a real tab with its panel",
           html.index('id="hallCard"') < html.index('id="newCard"') < html.index('id="tabs"') and all(f'id="tab-{t}"' in html and f'id="p-{t}"' in html and f'aria-controls="p-{t}"' in html for t in ("meet", "table", "standup", "debate", "requests", "me"))
           and html.count('role="tab"') == 6 and html.count('role="tabpanel"') == 6)
-    check("a. the people come from the shared kit (olympus/people.js?v=p1) and its stylesheet; the 3D hall is optional (hallload.js) and uses the render core, three r160 and people3d.js",
-          "from '../olympus/people.js?v=p1'" in js and "../olympus/people.css?v=p1" in html and 'src="hallload.js' in html and "../olympus/render.js" in hall and "../jarvis/three.module.min.js" in hall and "../olympus/people3d.js" in hall
+    check("a. the people come from the shared kit (olympus/people.js?v=p2) and its stylesheet; the 3D hall is optional (hallload.js) and uses the render core, three r160 and people3d.js",
+          "from '../olympus/people.js?v=p2'" in js and "../olympus/people.css?v=p2" in html and 'src="hallload.js' in html and "../olympus/render.js" in hall and "../jarvis/three.module.min.js" in hall and "../olympus/people3d.js" in hall
           and "figureInstanced" in hall)
     check("a. the 3D hall is calm: bloom <= .25, no neon colours, warm background and fog; LITE or no WebGL keeps the portrait wall", re.search(r"strength: 0\.(0\d|1\d|2[0-5]?)\b", hall) is not None and not AK.BANNED_LOOK.search(hall)
           and "'low' || q === 'off'" in hall and not re.search(r"#(?:0ff|00f|f0f|0f0)\b|#00ffff|#ff00ff", hall, re.I) and 'html[data-oly-lite="1"] .stage { display: none; }' in css)
     check("a. the request box: Copy for Claude, Export JSON, Clear all (two taps); the foot says paper and suggestions only and R next to every dollar",
           all(x in html for x in ("Copy for Claude", "Export JSON", "Clear all")) and "Tap again to clear all" in js and "paper and suggestions only" in html and "with its R" in html)
     check("a. make my character: a name, the looks, Randomise, Save; kept through the kit (olympus.me.v1), the page itself stores nothing", all(x in html for x in ("Make my character", "Randomise", "Save my character")) and "P.setMe(" in js and "localStorage" not in js)
+    check("a. VOICES: a 'Voices' switch over the hall (off until tapped, through the kit), the hall lends its figures to the kit (P.stage: stageFor, release, walk, card; lip sync through the kit's speak / viseme / expression events),"
+          " speech bubbles and work cards over the hall, 'Let them talk' in the Round table; stand-up, debate and the talks are said out loud with P.say",
+          all(x in html for x in ('id="voiceBtn"', "Voices: off", 'id="hallCards"', "Let them talk", 'id="togetherChips"', 'id="togetherOut"')) and all(x in js for x in ("P.stage({", "P.say(", "P.voice.set(", "P.talkTogether(", "S.hall.stageFor(", "S.hall.walk(", "S.hall.release()", "voiced("))
+          and all(x in hall for x in ("stageFor(i)", "release()", "walk(i)", "olympus:people:expression", "focus(i, off)")) and ".cardsover" in css)
     apps = json.loads(AK.read(os.path.join(AK.ROOT, "tools", "new_apps.json")))["apps"]
     row = next((a for a in apps if a["id"] == APP), None)
     scenes = "stars smoke coins embers neurons skyline torches threads streaks bars leaves columns shards rings maze".split()
@@ -64,6 +68,8 @@ import(process.argv[2]).then((C) => {
   o.scope = [C.scopeIds(people, 'all').length, C.scopeIds(people, 'bot'), C.scopeIds(people, 'nope').length, C.scopeIds(null, 'all').length, C.SCOPES.length];
   o.pairs = C.pairs(people).map((p) => p.a + '|' + p.b + '|' + p.topic);
   o.pairsNone = C.pairs([P('bot:lit', 'bot')]).length;
+  o.trios = C.trios(people).map((g) => g.ids.join('+') + '|' + g.topic + '|' + g.label);
+  o.triosNone = C.trios([P('bot:lit', 'bot')]).length;
   const now = Date.parse('2026-11-11T15:00:00Z'), F = (asof, extra) => ({ asof, status: 'idle', ...(extra || {}) });
   const rows = [{ person: people[2], facts: F('2026-11-11T14:00:00Z', { status: 'working' }) }, { person: people[1], facts: F('2026-11-11T14:30:00Z', { sample: true, status: 'sample' }) }, { person: people[5], facts: F('2026-11-08T10:00:00Z', { blocked: 'old' }) }, { person: people[3], facts: F('2026-11-10T09:00:00Z') }, { person: people[6], facts: F(null) }, { person: people[0], facts: F('2026-11-12T20:00:00Z') }];
   o.fresh = C.newFaces(rows, now, 12).map((r) => r.id + ':' + r.why);
@@ -110,6 +116,9 @@ def test_maths():
     check("b. who answers the round table: everyone, or one craft", o["scope"] == [10, ["bot:lit", "bot:atlas"], 0, 0, 7], o["scope"])
     check("b. the ready-made duels: two scanners, two champions, a bot against a rejected idea, a champion against a rejected idea, two bots, a builder and a thinker",
           o["pairs"][:3] == ["scanner:x|scanner:y|Who found more for the owner?", "champion:a|champion:c|Who makes more money?", "bot:lit|champion:f|What could go wrong?"] and len(o["pairs"]) == 6 and o["pairsNone"] == 0, o["pairs"])
+    check("b. let them talk: ready-made groups of two or three (the bots, the scanners, a champion with a rejected idea and a bot, a builder with a thinker), each with a topic; one person alone gets none",
+          o["trios"][0] == "bot:lit+bot:atlas|How did today go?|LIT and ATLAS" and o["trios"][1].startswith("scanner:x+scanner:y|What did you find?") and any(t.startswith("champion:a+champion:f+bot:lit|") for t in o["trios"])
+          and any(t.startswith("builder:b1+mind|") for t in o["trios"]) and o["triosNone"] == 0, o["trios"])
     check("b. new and active today: only real files from the last day and a half, newest first; sample data, old files, missing and future times never count",
           o["fresh"] == ["bot:lit:working now", "builder:b1:updated today"] and o["freshNone"] == [0, 0, 1], (o["fresh"], o["freshNone"]))
     check("b. the headline counts people, working, blocked and sample; DEMO only when everyone shows sample data",
@@ -139,6 +148,13 @@ SHEET = """() => { const r = document.querySelector('.pp-root'); if (!r || r.hid
   return { name: r.querySelector('.pp-name').textContent, title: r.querySelector('.pp-title').textContent, status: r.querySelector('.pp-sttext').textContent, them: [...r.querySelectorAll('.pp-them:not(.pp-typing) .pp-text')].map((e) => e.textContent), me: [...r.querySelectorAll('.pp-me .pp-text')].map((e) => e.textContent),
     chips: [...r.querySelectorAll('.pp-chip')].map((e) => e.textContent), src: [...r.querySelectorAll('.pp-src')].map((e) => e.textContent), face: !!r.querySelector('.pp-face svg'), bottom: Math.round(s.bottom), top: Math.round(s.top), inputBottom: Math.round(i.bottom), vh: innerHeight, mic: !r.querySelector('.pp-mic').hidden,
     voice: r.querySelector('.pp-tools .pp-btn:nth-child(4)').textContent, modal: r.querySelector('.pp-sheet').getAttribute('aria-modal'), typing: r.querySelectorAll('.pp-typing').length }; }"""
+
+
+CARD = """(id) => { const P = window.OLYMPUS_PEOPLE, all = [...document.querySelectorAll('.pp-log .pp-card')], c = all[all.length - 1]; if (!c) return null;
+  const bits = []; const tw = document.createTreeWalker(c, NodeFilter.SHOW_TEXT); while (tw.nextNode()) { if (tw.currentNode.parentNode.nodeName !== 'title') bits.push(tw.currentNode.nodeValue); }
+  const text = bits.join(' \\n '), corp = P.talk.corpus(P.get(id), P.factsNow(id), []);
+  return { title: c.querySelector('.pp-ctitle').textContent, src: c.querySelector('.pp-src').textContent, bars: c.querySelectorAll('.pp-chart rect').length, lines: c.querySelectorAll('.pp-cl').length, ung: P.talk.ungrounded(text, corp), n: all.length }; }"""
+GROUNDED = """(rows) => { const P = window.OLYMPUS_PEOPLE, bad = []; for (const [id, text] of rows) { const u = P.talk.ungrounded(text, P.talk.corpus(P.get(id), P.factsNow(id), [])); if (u.length) bad.push(id + ': ' + u.join(',')); } return bad; }"""
 
 
 def ask(p, text):
@@ -229,7 +245,7 @@ def test_page():
             s = p.evaluate(SHEET)
             check("c. tap LIT: the chat sheet opens (a modal dialog) with the portrait, name, title and status dot; the greeting uses the time of day and LIT's real numbers; four suggested questions",
                   s and s["name"] == "Phoibos" and "LIT" in s["title"] and s["status"].startswith("Working") and s["face"] and s["modal"] == "true" and re.match(r"(Good (morning|afternoon|evening))", s["them"][0]) is not None
-                  and "+$312 today" in s["them"][0] and len(s["chips"]) == 4 and s["voice"] == "Voice: off", s)
+                  and "+$312 today" in s["them"][0] and len(s["chips"]) == 6 and s["chips"][4:] == ["Show me your work", "Walk with me"] and s["voice"] == "Voice: off", s)
             check("c. the sheet fits the screen: its text box is on screen above the bottom edge", s["bottom"] <= s["vh"] + 1 and s["inputBottom"] <= s["vh"] and s["top"] >= 0, s)
             a1 = ask(p, "how much drawdown is left")
             a2 = ask(p, "buy it now")
@@ -239,6 +255,24 @@ def test_page():
             p.wait_for_function("() => document.querySelectorAll('.pp-them:not(.pp-typing)').length >= 4 && !document.querySelector('.pp-typing')", timeout=15000)
             check("c. a suggestion chip asks its question; every tap target in the sheet is at least 44 px", len(p.evaluate(SHEET)["me"]) == 3 and AK.taps(p) == [], AK.taps(p))
             AK.shot(p, "symposium-chat-390")
+            w = ask(p, "what are you working on?")
+            c = p.evaluate(CARD, "bot:lit")
+            check("c. SHOW WORK: 'what are you working on?' answers AND puts LIT's work card in the chat: its paper account with today / week / drawdown, the source (home.json), every number on it from LIT's own facts",
+                  c and c["title"] == "My paper account" and c["lines"] >= 3 and "home.json" in c["src"] and c["ung"] == [] and len(w["them"]) >= 4, c)
+            check("c. the card's taps are >= 44 px and nothing scrolls sideways", AK.taps(p) == [] and AK.no_sideways(p), AK.taps(p))
+            p.click(".pp-tools .pp-btn:nth-child(4)")
+            on = [p.inner_text(".pp-tools .pp-btn:nth-child(4)"), p.evaluate("localStorage.getItem('olympus.people.speak')")]
+            p.wait_for_timeout(300)
+            p.click(".pp-tools .pp-btn:nth-child(4)")
+            off2 = [p.inner_text(".pp-tools .pp-btn:nth-child(4)"), p.evaluate("localStorage.getItem('olympus.people.speak')")]
+            check("c. VOICE: one tap turns LIT's own voice on (remembered on this phone), a second tap off; nothing breaks without a phone voice (murmur + captions)", on == ["Voice: on", "1"] and off2 == ["Voice: off", "0"], (on, off2))
+            p.evaluate("() => { window.OLYMPUS = window.OLYMPUS || {}; window.OLYMPUS.go = (u) => { window.__went = u; }; }")
+            n0 = p.evaluate("() => document.querySelectorAll('.pp-them .pp-text').length")
+            p.fill(".pp-in", "walk with me")
+            p.press(".pp-in", "Enter")
+            p.wait_for_function("() => !!window.__went", timeout=10000)
+            went, said = p.evaluate("() => window.__went"), p.evaluate("() => [...document.querySelectorAll('.pp-them .pp-text')].pop().textContent")
+            check("c. WALK WITH ME: LIT says where its work lives and leads you there (its own app)", said.startswith("Walk with me. My work lives in") and went.startswith("../") and went.endswith("/") and p.evaluate("() => document.querySelectorAll('.pp-them .pp-text').length") == n0 + 1, (said, went))
             p.click(".pp-tools .pp-btn >> text=Leave a request")
             p.fill(".pp-reqtext", "Show the stop distance on the card")
             p.click(".pp-req .pp-primary")
@@ -285,6 +319,15 @@ def test_page():
             bots = p.evaluate("() => [...document.querySelectorAll('#tableOut .trow .ttext')].map((e) => e.textContent)")
             check("c. a typed question for the bots only: four answers, LIT's with 'Drawdown left $1,420 of $2,000 max loss'", len(bots) == 4 and any(b.startswith("Drawdown left $1,420 of $2,000 max loss") for b in bots), bots)
             AK.shot(p, "symposium-table-390")
+            trios = p.evaluate("() => window.SYMPOSIUM.trios().map((g) => g.label)")
+            p.click("#togetherChips .chip >> nth=0")
+            p.wait_for_function("() => { const t = window.SYMPOSIUM.together(); return t && t.done; }", timeout=30000)
+            tg = p.evaluate("() => window.SYMPOSIUM.together()")
+            rows = p.evaluate("() => [...document.querySelectorAll('#togetherOut .trow')].map((r) => [r.classList.contains('right'), r.querySelector('.tname').textContent, r.querySelector('.ttext').textContent])")
+            bad = p.evaluate(GROUNDED, [[t["id"], t["text"]] for t in tg["turns"]])
+            check(f"c. LET THEM TALK: {len(trios)} ready-made groups; the bots talk to each other ({tg['n']} turns, by name, one asks another what could go wrong), each number from the speaker's own facts, then a neutral summary",
+                  len(trios) >= 3 and tg["n"] >= 5 and len(rows) == tg["n"] and bad == [] and any("what could go wrong" in r[2] for r in rows) and p.is_visible("#togetherBox") and "not a forecast" in p.inner_text("#togetherSummary"), (trios, tg, bad))
+            check("c. the talk at 390 px: taps >= 44 px, no sideways scroll", AK.taps(p) == [] and AK.no_sideways(p), AK.taps(p))
             # stand-up
             p.click("#tab-standup")
             lines = p.evaluate("() => [...document.querySelectorAll('#suList .ttext')].map((e) => e.textContent)")
@@ -387,8 +430,25 @@ def test_page():
                 p.wait_for_timeout(1800)
                 sp = p.evaluate("() => window.SYMPOSIUM_HALL && window.SYMPOSIUM_HALL.speaker()")
                 check("c. the one you talk to is a close-up figure that waves, then talks to you (pose wave / talk)", sp is not None and sp["pose"] in ("wave", "talk"), sp)
+                p.wait_for_function("() => !!document.querySelector('#stage .pp-say')", timeout=8000)
+                sp = p.evaluate("() => { const b = document.querySelector('#stage .pp-say'), r = b.getBoundingClientRect(), s = document.getElementById('stage').getBoundingClientRect(); return { who: b.querySelector('.pp-sayname').textContent, said: b.querySelector('.pp-sayon').textContent, h: Math.round(r.height), inside: r.left >= s.left - 1 && r.right <= s.right + 1 && r.top >= s.top - 1, speaker: window.SYMPOSIUM.speaking(), calls: window.SYMPOSIUM.state().calls, tagsHidden: document.getElementById('stage').classList.contains('speaking') }; }")
+                p.wait_for_timeout(900)
+                later = p.evaluate("() => { const b = document.querySelector('#stage .pp-say'); return b ? b.querySelector('.pp-sayon').textContent.length : -1; }")
+                name = p.evaluate(SHEET)["name"]
+                check("c. SPEECH IN THE WORLD: the person who talks becomes a full figure in the hall, an AGORA speech bubble with their name follows their head (inside the stage, >= 44 px), the words appear as spoken, the floating name tags step aside; still <= 45 draw calls",
+                      sp["who"] == name and sp["inside"] and sp["h"] >= 44 and sp["speaker"] >= 0 and sp["tagsHidden"] and (later > len(sp["said"]) or later == -1) and 0 < sp["calls"] <= 45, (sp, later))
+                pid = p.evaluate("() => window.SYMPOSIUM.people()[window.SYMPOSIUM.speaking()]")
+                ask(p, "show me your work")
+                p.wait_for_function("() => !!document.querySelector('#hallCards .pp-card')", timeout=8000)
+                p.wait_for_timeout(1200)
+                c = p.evaluate(CARD, pid)
+                mini = p.evaluate("() => { const m = document.querySelector('#hallCards .pp-card'), r = m.getBoundingClientRect(), s = document.getElementById('stage').getBoundingClientRect(); return { mini: m.classList.contains('pp-mini'), inside: r.left >= s.left - 1 && r.right <= s.right + 1, w: Math.round(r.width) }; }")
+                check("c. SHOW WORK in the hall: the work card in the chat (every number from that person's facts, with its source) and a small one beside the figure, inside the stage",
+                      c and c["ung"] == [] and c["src"].startswith("From: ") and mini["mini"] and mini["inside"] and mini["w"] <= 180, (c, mini))
                 AK.shot(p, "symposium-hall-chat-390")
                 p.keyboard.press("Escape")
+                p.wait_for_timeout(300)
+                check("c. closing the chat puts the speaker back in the crowd and clears the card", p.evaluate("() => window.SYMPOSIUM.speaking()") == -1 and p.evaluate("() => document.querySelectorAll('#hallCards .pp-card').length") == 0)
                 p.click("#viewBtn")
                 check("c. 'Show as a list' swaps the hall for the portrait wall, and back is offered", p.is_visible("#wall") and not p.is_visible("#stage") and p.inner_text("#viewBtn") == "Show the 3D hall")
                 p.click("#tab-me")

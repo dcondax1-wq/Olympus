@@ -6,10 +6,12 @@
 //   createHall(canvas, { people: [spec], reduced, onPick(i) }) -> { ok, yaw(), setYaw(a), spin(dx), focus(i), active(i|-1), talking(i, on), mouth(i, viseme, amount),
 //                                                                  project(i) -> {x, y, front}, pick(clientX, clientY), drawCalls(), triangles(), dispose() }
 // The chat sheet's 'olympus:people:open' / 'close' make that person turn, wave and talk. Voice (optional): window events 'olympus:people:speak' {id, on} and 'olympus:people:viseme' {id, viseme, amount} move that person's mouth.
+// For the people kit's say() (speech bubbles, work cards, walk with me): stageFor(i) -> { project() } (that person becomes the active close-up), release(), walk(i) -> Promise,
+// speaking() -> seat | -1, focus(i, off) (off: the speaker a little to one side, room for a work card), and 'olympus:people:expression' {id, expr} sets their face.
 // If WebGL, the render core or the tier (LITE / off) says no, ok is false and the page keeps its portrait grid.
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
-import { figureInstanced, figure, play, lookAt, setTalking, setMouth, animate } from '../olympus/people3d.js?v=p2';
+import { figureInstanced, figure, play, lookAt, setTalking, setMouth, setExpression, animate, POSE_NAMES } from '../olympus/people3d.js?v=p2';
 import { seats, couchAt, turn, yawFor, front } from './symposiumcore.js';
 
 export function createHall(canvas, opts) {
@@ -84,7 +86,7 @@ function build(rc, scene, camera, canvas, o) {
   }
   function dropClose(i) { const f = close.get(i); if (!f) return; f.userData.dispose(); close.delete(i); crowd.userData.setVisible(i, true); }
 
-  const st = { yaw: 0, goal: null, vel: 0, auto: !reduced, active: -1, activeT: 0, voice: false, t: 0, idle: 0, w: 1, h: 1 };
+  const st = { yaw: 0, goal: null, vel: 0, auto: !reduced, active: -1, activeT: 0, voice: false, t: 0, idle: 0, w: 1, h: 1, walk: null };
   const ray = new THREE.Raycaster(), v = new THREE.Vector3(), ndc = new THREE.Vector2(), look = new THREE.Vector3(), camPos = new THREE.Vector3();
   function placeCam() {
     // you stand at the table on the near side and look across it: the people over there face you
@@ -112,6 +114,11 @@ function build(rc, scene, camera, canvas, o) {
         f.rotation.y += Math.max(-0.5, Math.min(0.5, dy)) * Math.min(1, dt * 3);       // turn on the couch towards you
         if (!st.voice) { st.activeT += dt; const talking = st.activeT > 1.2 && (st.activeT % 7) < 3.6; setTalking(f, talking); }
       } else { lookAt(f, talker || camPos); const s = L.seats[i]; f.rotation.y += turn(f.rotation.y, s.ry) * Math.min(1, dt * 2); }
+      if (st.walk && st.walk.i === i) {                                   // walk with me: they get up and walk out between the columns
+        const w = st.walk, k = Math.min(1, (st.t - w.t0) / w.dur), e = k * k * (3 - 2 * k);
+        f.position.set(w.x0 + (w.x1 - w.x0) * e, w.y0 * (1 - Math.min(1, k * 4)), w.z0 + (w.z1 - w.z0) * e); f.rotation.y = w.ry;
+        if (k >= 1 && w.done) { const d = w.done; w.done = null; d(true); }
+      }
       if (!reduced) animate(f, dt);
     }
     if (!reduced) { crowd.userData.tick(st.t); for (let i = 0; i < nB; i++) { const a = (i / nB) * Math.PI * 2 + Math.PI / 4, k = 1 + Math.sin(st.t * 9 + i * 2) * 0.12; put(fires, i, Math.sin(a) * (r + 1.9), 1.08, Math.cos(a) * (r + 1.9), st.t * 2 + i, 1, k, 1); } fires.instanceMatrix.needsUpdate = true; }
@@ -122,6 +129,8 @@ function build(rc, scene, camera, canvas, o) {
   const idx = (id) => { try { const P = window.OLYMPUS_PEOPLE; const s = P && P.spec ? P.spec(id) : null; return s ? (bySeed.has(s.seed >>> 0) ? bySeed.get(s.seed >>> 0) : -1) : -1; } catch (_) { return -1; } };
   const onSpeak = (e) => { const dd = e && e.detail || {}, i = idx(dd.id); if (i >= 0) api.talking(i, dd.on !== false); };
   const onViseme = (e) => { const dd = e && e.detail || {}, i = idx(dd.id); if (i >= 0) api.mouth(i, dd.viseme, dd.amount); };
+  const onExpr = (e) => { const dd = e && e.detail || {}, i = idx(dd.id), f = close.get(i); if (f && dd.expr) setExpression(f, dd.expr, 1); };
+  window.addEventListener('olympus:people:expression', onExpr);
   const onOpen = (e) => { const i = idx(e && e.detail && e.detail.id); if (i >= 0) { api.focus(i); api.active(i); } }, onClose = () => api.active(-1);      // the 1:1 chat sheet
   window.addEventListener('olympus:people:speak', onSpeak); window.addEventListener('olympus:people:viseme', onViseme);
   window.addEventListener('olympus:people:open', onOpen); window.addEventListener('olympus:people:close', onClose);
@@ -132,7 +141,7 @@ function build(rc, scene, camera, canvas, o) {
     yaw: () => st.yaw,
     setYaw(a) { st.yaw = a; st.goal = null; st.vel = 0; placeCam(); },
     spin(dx) { st.goal = null; st.idle = 0; st.yaw -= dx * 0.008; st.vel = -dx * 0.008 * 0.5; },
-    focus(i) { if (L.seats[i]) { st.goal = yawFor(L, i) + Math.PI; st.vel = 0; st.idle = 0; } },      // turn so this person sits across the table, facing you
+    focus(i, off) { if (L.seats[i]) { st.goal = yawFor(L, i) + Math.PI + (off || 0); st.vel = 0; st.idle = 0; } },      // turn so this person sits across the table, facing you
     active(i) {
       const prev = st.active; st.active = i == null || !L.seats[i] ? -1 : i; st.activeT = 0; st.voice = false;
       if (prev >= 0 && close.has(prev)) { const f = close.get(prev); setTalking(f, false); play(f, 'idle'); }
@@ -147,8 +156,19 @@ function build(rc, scene, camera, canvas, o) {
     drawCalls: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && x.visible) n++; }); return n; },      // one draw per mesh: every repeated thing is instanced
     triangles: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && x.visible && x.geometry) { const g = x.geometry, c = g.index ? g.index.count : g.getAttribute('position').count; n += (c / 3) * (x.isInstancedMesh ? x.count : 1); } }); return Math.round(n); },
     closeUps: () => [...close.keys()],
+    stageFor(i) { if (!L.seats[i]) return null; if (st.active !== i) { api.focus(i); api.active(i); } closeUp(i); return { seat: i, project: () => api.project(i) }; },
+    release() { if (st.walk) { const w = st.walk; st.walk = null; if (w.done) w.done(false); } api.active(-1); },
+    speaking: () => st.active,
+    walk(i) {
+      if (!L.seats[i]) return Promise.resolve(false);
+      if (st.active !== i) api.active(i);
+      const f = closeUp(i), s = L.seats[i], out = Math.hypot(s.x, s.z) || 1, k = (r + 3) / out;
+      play(f, POSE_NAMES.indexOf('walk') >= 0 ? 'walk' : 'wave');
+      if (reduced) return Promise.resolve(true);
+      return new Promise((ok) => { st.walk = { i, t0: st.t, dur: 1.6, x0: f.position.x, y0: f.position.y, z0: f.position.z, x1: s.x * k, z1: s.z * k, ry: Math.atan2(s.x, s.z), done: ok }; });
+    },
     speaker: () => (st.active >= 0 && close.has(st.active) ? { seat: st.active, ...close.get(st.active).userData.state() } : null),
-    dispose() { window.removeEventListener('olympus:people:open', onOpen); window.removeEventListener('olympus:people:close', onClose); window.removeEventListener('olympus:people:speak', onSpeak); window.removeEventListener('olympus:people:viseme', onViseme); try { rc.dispose(); } catch (_) { /* gone */ } for (const i of [...close.keys()]) dropClose(i); crowd.userData.dispose(); },
+    dispose() { window.removeEventListener('olympus:people:expression', onExpr); window.removeEventListener('olympus:people:open', onOpen); window.removeEventListener('olympus:people:close', onClose); window.removeEventListener('olympus:people:speak', onSpeak); window.removeEventListener('olympus:people:viseme', onViseme); try { rc.dispose(); } catch (_) { /* gone */ } for (const i of [...close.keys()]) dropClose(i); crowd.userData.dispose(); },
   };
   try { window.SYMPOSIUM_HALL = api; } catch (_) { /* no window */ }      // read-only hook for the page test
   return api;

@@ -57,6 +57,18 @@ export function pairs(people) {
   if (bl.length && mind.length) out.push({ a: bl[0].id, b: mind[mind.length - 1].id, label: bl[0].name + ' and ' + mind[mind.length - 1].name, topic: 'What are you doing?' });
   return out.slice(0, 6);
 }
+/** ready-made groups of two or three who talk to each other (Round table, "Let them talk") */
+export function trios(people) {
+  const P = arr(people), by = (k) => P.filter((p) => p.kind === k), out = [], names = (g) => g.map((p) => p.name).join(', ').replace(/, ([^,]*)$/, ' and $1');
+  const bots = by('bot'), sc = by('scanner'), mind = by('mind'), ch = by('champion').filter((p) => !p.fallen), fallen = by('champion').filter((p) => p.fallen), bl = by('builder');
+  const add = (g, topic, what) => { if (g.length >= 2) out.push({ ids: g.map((p) => p.id), label: names(g), topic, what }); };
+  add(bots.slice(0, 3), 'How did today go?', 'the bots');
+  add(sc.slice(0, 3), 'What did you find?', 'the money scanners');
+  add(mind.slice(0, 3), 'What did you learn?', 'the thinkers');
+  add(ch.slice(0, 1).concat(fallen.slice(0, 1), bots.slice(0, 1)), 'How did the earlier years go?', 'a champion, a rejected idea and a bot');
+  add(bl.slice(0, 2).concat(mind.slice(0, 1)), 'What are you doing?', 'the builders');
+  return out.slice(0, 5);
+}
 /** who has something from the last 36 hours (real data only): "new or active today" */
 export function newFaces(rows, now, limit) {
   const H36 = 36 * 3600000, out = [];

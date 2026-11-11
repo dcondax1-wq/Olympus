@@ -390,6 +390,43 @@ export function debate(a, fa, b, fb, topic, env) {
 }
 const cap = (s) => String(s).charAt(0).toUpperCase() + String(s).slice(1);
 
+// ------------------------------------------------------------------------------------------------ the face that goes with an answer (voice + 3D, 2026-11-11)
+const FIRM = { order: 1, secret: 1, forecast: 1, do: 1 };
+/** the mood a person shows while giving this answer: proud on good numbers, worried on drawdown or a block, sheepish on a rejected run or a loss, calm on a refusal */
+export function moodFor(a, facts) {
+  const f = facts || {}, it = a && a.intent, t = String((a && a.text) || '');
+  if (FIRM[it]) return 'calm';
+  if (it === 'failed' || ((it === 'verdict' || it === 'old') && f.failed)) return 'sheepish';
+  if ((it === 'drawdown' || it === 'risk' || it === 'stuck' || it === 'attention') && (f.blocked || f.status === 'failed' || f.status === 'stale')) return 'worried';
+  if (it === 'bad') return f.blocked || f.failed ? 'worried' : 'calm';
+  if (it === 'thanks' || it === 'joke' || it === 'good') return f.mood === 'sheepish' || f.mood === 'worried' ? 'calm' : 'proud';
+  if (/(^|\s)-\$\d/.test(t) && /today|trade|week|total|net/i.test(t)) return 'sheepish';
+  return MOODS_OK.indexOf(f.mood) >= 0 ? f.mood : 'calm';
+}
+const MOODS_OK = ['calm', 'proud', 'busy', 'worried', 'sheepish'];
+/** a plain topic for "earlier you asked me about ..." (never a number) */
+export const TOPIC = { doing: 'what I am doing', found: 'what I found', learned: 'what I learned', failed: 'what went wrong', stuck: 'whether I am stuck', need: 'what I need from you', last: 'my last result', next: 'my next step', sure: 'how sure I am',
+  changed: 'what changed', compare: 'how this week compares', number: 'my numbers', money: 'the money', risk: 'the risk', when: 'how fresh my data is', yesterday: 'how it went', drawdown: 'my drawdown', target: 'the eval target', rules: 'my rules',
+  old: 'the earlier years', pass: 'the eval odds', verdict: 'my verdict', commit: 'my last commit', branch: 'my branch', top: 'my top pick', expire: 'when the deals end', attention: 'what needs a look', tested: 'the ideas tested', open: 'my work', order: 'placing an order' };
+/** two or three people talk to each other about one topic. Each speaker quotes ONLY their own facts (names of the others, never their numbers). rows = [{ person, facts }] */
+export function talkTogether(rows, topic, env) {
+  const R = arr(rows).filter((r) => r && r.person && r.facts).slice(0, 3), t = clean(topic, 80) || 'How did it go?', turns = [];
+  if (R.length < 2) return { topic: t, turns, summary: 'It takes two to talk.' };
+  const own = (r) => { const a = answer(r.person, r.facts, t, null, env); return a.intent === 'fallback' || a.intent === 'greet' ? { text: dot(firstSentence(r.facts.doing)) + label(r.facts), sources: arr(r.facts.sources).slice(0, 2), intent: 'doing' } : a; };
+  const push = (r, text, a) => turns.push({ id: r.person.id, name: r.person.name, text: text.replace(/\s+/g, ' ').trim(), sources: a && a.sources ? a.sources.slice(0, 2) : arr(r.facts.sources).slice(0, 2), mood: moodFor(a || { intent: 'doing', text }, r.facts) });
+  const A = R[0], B = R[1], C = R[2] || null;
+  const a1 = own(A); push(A, a1.text, a1);
+  const b1 = own(B); push(B, A.person.name + ', here is mine. ' + b1.text, b1);
+  if (C) { const c1 = own(C); push(C, 'And mine, ' + B.person.name + '. ' + c1.text, c1); }
+  const asker = C || B;
+  push(asker, A.person.name + ', what could go wrong for you?', { intent: 'risk', sources: [] });
+  push(A, dot(A.facts.risk || 'I only know what my own files say.') + (A.facts.blocked ? ' Right now: ' + dot(A.facts.blocked) : ''), { intent: 'risk', text: A.facts.risk || '' });
+  push(B, (B.facts.blocked ? (W[B.person.temperament] || W.calm).bad + ' ' + dot(B.facts.blocked) : 'Nothing is blocking me.') + label(B.facts), { intent: 'stuck', text: B.facts.blocked || '' });
+  const names = R.map((r) => r.person.name);
+  const summary = 'Each of ' + joinAnd(names) + ' spoke from their own files only: ' + R.map((r) => r.person.name + ' (' + (arr(r.facts.sources)[0] || 'no file') + ')').join(', ') + '. History and paper data, not a forecast.' + (R.some((r) => r.facts.sample) ? ' Some of it is sample data, not real numbers.' : '');
+  return { topic: t, turns, summary };
+}
+
 // ------------------------------------------------------------------------------------------------ grounding
 const NUMS = /\d+(?:[.,]\d+)*/g;
 const canon = (s) => s.replace(/,/g, '').replace(/\.0+$/, '');

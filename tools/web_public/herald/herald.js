@@ -237,7 +237,7 @@ async function start() {
 /** the optional people kit (portraits): added after the first paint so a missing file is never a load failure; the interviews are redrawn when it arrives */
 function loadPeople() {
   if (window.OLYMPUS_PEOPLE) return;
-  const s = document.createElement('script'); s.type = 'module'; s.src = '../olympus/people.js?v=p1';
+  const s = document.createElement('script'); s.type = 'module'; s.src = '../olympus/people.js?v=p2';
   s.addEventListener('load', () => { S.people = 'loaded'; if (S.ed && window.OLYMPUS_PEOPLE) renderBoxes(S.ed); });
   s.addEventListener('error', () => { S.people = 'missing'; });                 // no kit: initials stay
   document.body.appendChild(s);
