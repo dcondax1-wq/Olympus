@@ -373,6 +373,8 @@ function wireControls() {
   const joy = $('joy'), knob = $('knob'); let act = null;
   const setKnob = (dx, dy) => { knob.style.transform = 'translate(' + dx.toFixed(0) + 'px,' + dy.toFixed(0) + 'px)'; };
   const vec = (e) => { const r = joy.getBoundingClientRect(), R = r.width / 2, dx = e.clientX - (r.left + R), dy = e.clientY - (r.top + R), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / (R - 8)), dead = k < 0.12 ? 0 : (k - 0.12) / 0.88; return { dx: dx / d * k * (R - 8), dy: dy / d * k * (R - 8), ux: dx / d * dead, uy: dy / d * dead }; };
+  const seen = () => { $('hint').hidden = true; };
+  joy.addEventListener('pointerdown', seen, { once: true }); $('floor3d').addEventListener('pointerdown', seen, { once: true });
   const walkOn = () => { if (S.follow) setFollow(''); if (S.tour) setTour(false, true); };
   const push = (v) => { if (!S.floor || !S.floor.ok) return; walkOn(); S.floor.move({ fwd: -v.uy, side: v.ux }); if (reduced) S.floor.step(0.06); };
   joy.addEventListener('pointerdown', (e) => { act = e.pointerId; try { joy.setPointerCapture(e.pointerId); } catch (_) { /* nothing */ } knob.style.transition = 'none'; const v = vec(e); setKnob(v.dx, v.dy); push(v); e.preventDefault(); });

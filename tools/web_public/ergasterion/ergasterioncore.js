@@ -428,9 +428,9 @@ export const TOUR_S = 80;                 // one calm lap of the four halls
 /** the calm overview flythrough for people who do not want to walk: a slow oval above the four halls, always looking down at the floor ahead. Reduced motion: one still view of everything. */
 export function tourCam(t, reduced) {
   if (reduced) return { x: 0, y: 21, z: 15, look: { x: 0, y: 0, z: 0.5 }, hall: null };
-  const a = Math.PI / 4 - (t / TOUR_S) * Math.PI * 2, b = a - 0.55;
-  const x = Math.cos(a) * 9.2, z = Math.sin(a) * 7.2, lx = Math.cos(b) * 5.6, lz = Math.sin(b) * 4.3;
-  return { x, y: 7.4, z, look: { x: lx, y: 0.9, z: lz }, hall: hallOf({ x: lx, z: lz }).id };
+  const a = Math.PI / 4 - (t / TOUR_S) * Math.PI * 2, b = a - 0.8;
+  const x = Math.cos(a) * 10.4, z = Math.sin(a) * 8.2, lx = Math.cos(b) * 5.2, lz = Math.sin(b) * 4.0;
+  return { x, y: 9.2, z, look: { x: lx, y: 0.6, z: lz }, hall: hallOf({ x: lx, z: lz }).id };
 }
 
 // ------------------------------------------------------------------ the day replay (one dated stream across every worker)

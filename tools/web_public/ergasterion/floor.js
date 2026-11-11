@@ -56,6 +56,10 @@ function build(rc, scene, camera, canvas, o) {
   const mot = reduced ? 0 : 1;
   scene.add(new THREE.HemisphereLight(0xf0dcb8, 0x4a3a28, 1.05));
   const sun = new THREE.DirectionalLight(0xffd9a0, 2.1); sun.position.set(6, 14, 9); scene.add(sun);
+  const skyG = new THREE.SphereGeometry(70, 20, 10), skyC = new Float32Array(skyG.attributes.position.count * 3), top = new THREE.Color('#23233f'), mid = new THREE.Color('#6b4a3a'), low = new THREE.Color('#c08a4e');
+  for (let i = 0; i < skyG.attributes.position.count; i++) { const hgt = Math.max(0, skyG.attributes.position.getY(i) / 70), c = hgt < 0.25 ? low.clone().lerp(mid, hgt / 0.25) : mid.clone().lerp(top, Math.min(1, (hgt - 0.25) / 0.5)); skyC[i * 3] = c.r; skyC[i * 3 + 1] = c.g; skyC[i * 3 + 2] = c.b; }
+  skyG.setAttribute('color', new THREE.BufferAttribute(skyC, 3));
+  const sky = new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false })); sky.frustumCulled = false; sky.renderOrder = -1; scene.add(sky);
   const std = (r, m) => new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: r, metalness: m });
   const stone = std(0.5, 0.02), metal = std(0.38, 0.55);
   const colour = new THREE.Color(), M4 = new THREE.Matrix4(), Q = new THREE.Quaternion(), EU = new THREE.Euler(), P = new THREE.Vector3(), SC = new THREE.Vector3();
@@ -113,7 +117,7 @@ function build(rc, scene, camera, canvas, o) {
     else if (s.job === 'oracle') { for (let k = 0; k < 3; k++) { const a = k * 2.094 + 0.5; bCyl.add(px + Math.sin(a) * 0.17, Y0 + 0.42, pz + Math.cos(a) * 0.17, 0.022, 0.9, 0.022, BRONZE, Math.cos(a) * 0.36, 0, -Math.sin(a) * 0.36); } bCyl.add(px, Y0 + 0.88, pz, 0.27, 0.1, 0.27, GOLD); }
     else if (s.job === 'smith') { sBox.add(px, Y0 + 0.3, pz, 0.34, 0.6, 0.3, MARBLE); bBox.add(px, Y0 + 0.69, pz, 0.6, 0.18, 0.26, '#7a5631'); }
     else if (s.job === 'scales') { bCyl.add(px, Y0 + 0.55, pz, 0.03, 1.1, 0.03, BRONZE); bCyl.add(px, Y0 + 0.03, pz, 0.2, 0.06, 0.2, BRONZE); }
-    else { bBox.add(px - 0.05, Y0 + 0.4, pz, 0.08, 0.8, 0.08, BRONZE); bBox.add(px - 0.05, Y0 + 0.03, pz, 0.5, 0.06, 0.34, BRONZE); }
+    else { bBox.add(px + 0.62, Y0 + 0.36, pz - 0.04, 0.08, 0.72, 0.08, BRONZE); bBox.add(px + 0.62, Y0 + 0.03, pz - 0.04, 0.5, 0.06, 0.34, BRONZE); }
   });
   // moving parts: fixed slots per station so nothing is allocated while drawing
   S.forEach(() => { fig.add(0, -9, 0, 1, 1, 1, MARBLE); fig.add(0, -9, 0, 1, 1, 1, MARBLE); fig.add(0, -9, 0, 1, 1, 1, MARBLE); head.add(0, -9, 0, 1, 1, 1, MARBLE); lamp.add(0, -9, 0, 1, 1, 1, LAMP.stale);
@@ -229,11 +233,11 @@ function build(rc, scene, camera, canvas, o) {
       put(head.im, i, f.x, Y0 + 1.19 + bob - bow, f.z + (s.job === 'scribe' ? 0.05 : 0) + bow, 0.165, 0.175, 0.165);
       const shY = Y0 + 0.93 + bob, hide = (im, j) => put(im, j, 0, -9, 0, 0.001, 0.001, 0.001);
       if (s.job === 'wheel') {
-        const sp = a * 2.2, wy = Y0 + 0.86, wx = px - 0.05, wz = pz + 0.06;
-        put(dCyl.im, b3, wx, wy, wz, 0.42, 0.05, 0.42, Math.PI / 2, sp, 0);
-        put(dBox.im, b3, wx, wy, wz + 0.035, 0.8, 0.05, 0.03, 0, 0, sp); put(dBox.im, b3 + 1, wx, wy, wz + 0.035, 0.8, 0.05, 0.03, 0, 0, sp + Math.PI / 2);
-        put(dBox.im, b3 + 2, wx + Math.cos(sp) * 0.36, wy + Math.sin(sp) * 0.36, wz + 0.09, 0.07, 0.07, 0.12);
-        arm(b3 + 1, f.x + 0.25, shY, f.z + 0.04, 1.05 + Math.sin(sp) * 0.3, 0.12 + Math.cos(sp) * 0.2); arm(b3 + 2, f.x - 0.25, shY, f.z + 0.04, 0.35, -0.1);
+        const sp = a * 2.2, wy = Y0 + 0.8, wx = px + 0.62, wz = pz + 0.06;
+        put(dCyl.im, b3, wx, wy, wz, 0.36, 0.05, 0.36, Math.PI / 2, sp, 0);
+        put(dBox.im, b3, wx, wy, wz + 0.035, 0.7, 0.05, 0.03, 0, 0, sp); put(dBox.im, b3 + 1, wx, wy, wz + 0.035, 0.7, 0.05, 0.03, 0, 0, sp + Math.PI / 2);
+        put(dBox.im, b3 + 2, wx + Math.cos(sp) * 0.3, wy + Math.sin(sp) * 0.3, wz + 0.09, 0.07, 0.07, 0.12);
+        arm(b3 + 1, f.x + 0.25, shY, f.z + 0.04, 1.0 + Math.sin(sp) * 0.3, 0.5 + Math.cos(sp) * 0.2); arm(b3 + 2, f.x - 0.25, shY, f.z + 0.04, 0.35, -0.1);
         hide(dCyl.im, b3 + 1); hide(dCyl.im, b3 + 2);
       } else if (s.job === 'scribe') {
         const wr = Math.sin(a * 5) * 0.16, dip = Math.sin(a * 10) * 0.03;
@@ -272,7 +276,8 @@ function build(rc, scene, camera, canvas, o) {
         if (c >= n) { put(crate.im, idx, 0, -9, 0, 0.001, 0.001, 0.001); setQuad(tagG, idx, 0, -9, 0, 0, 0); cratePos[idx * 3 + 1] = -9; continue; }
         const fr = (((c / n) + ang[i] * 0.06) % 1 + 1) % 1, cx = s.x - 1.15 + fr * 2.3, cz = s.z + 1.75;
         put(crate.im, idx, cx, 0.3, cz, 0.3, 0.26, 0.3); cratePos[idx * 3] = cx; cratePos[idx * 3 + 1] = 0.3; cratePos[idx * 3 + 2] = cz;
-        if (near) setQuad(tagG, idx, cx, 0.66 + (c % 2) * 0.2, cz, 0.84, 0.21); else setQuad(tagG, idx, 0, -9, 0, 0, 0);
+        const td = Math.min(1, Math.hypot(camP.x - cx, camP.z - cz) / 4.5), ts = 0.45 + 0.55 * td;
+        if (near) setQuad(tagG, idx, cx, 0.6 + (c % 2) * 0.17 * ts + 0.1 * ts, cz, 0.84 * ts, 0.21 * ts); else setQuad(tagG, idx, 0, -9, 0, 0, 0);
       }
     });
     [fig, head, dBox, dCyl, lamp, crate].forEach((b) => { b.im.instanceMatrix.needsUpdate = true; });
@@ -297,9 +302,10 @@ function build(rc, scene, camera, canvas, o) {
     camera.aspect = (canvas.clientWidth || 1) / (canvas.clientHeight || 1); camera.updateProjectionMatrix(); camera.updateMatrixWorld();
     // bubbles, tags and hall signs face the camera
     RT.setFromMatrixColumn(camera.matrixWorld, 0); UP.setFromMatrixColumn(camera.matrixWorld, 1);
-    const big = mode === 'tour' ? 1.35 : 1;
-    S.forEach((s, i) => { const d = Math.hypot(camP.x - s.x, camP.z - s.z), sc = big * (d < 3.2 ? 0.72 : 1); setQuad(bubG, i, figAt[i].x, Y0 + 2.2 + (sc - 1) * 0.3, figAt[i].z, 2.5 * sc, 1.25 * sc); });
-    HALLS.forEach((h, k) => setQuad(tagG, NT + k, (h.x0 + h.x1) / 2, mode === 'tour' ? 4.3 : 3.75, (h.z0 + h.z1) / 2, 3.4 * big, 0.85 * big));
+    const big = mode === 'tour' ? 1.2 : 1;
+    S.forEach((s, i) => { const d = Math.hypot(camP.x - s.x, camP.z - s.z), sc = big * (0.6 + 0.4 * Math.min(1, d / 6)); setQuad(bubG, i, figAt[i].x, Y0 + 1.95 + sc * 0.3, figAt[i].z, 2.5 * sc, 1.25 * sc); });
+    const inHall = mode === 'tour' ? '' : hallOf({ x: camP.x, z: camP.z }).id;
+    HALLS.forEach((h, k) => { if (h.id === inHall) setQuad(tagG, NT + k, 0, -9, 0, 0, 0); else setQuad(tagG, NT + k, (h.x0 + h.x1) / 2, mode === 'tour' ? 4.6 : 4.1, (h.z0 + h.z1) / 2, 3.4 * big, 0.85 * big); });
     bubG.attributes.position.needsUpdate = true; tagG.attributes.position.needsUpdate = true;
     rc.render();
   }

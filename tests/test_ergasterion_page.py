@@ -89,7 +89,7 @@ def test_static():
           "../olympus/render.js" in fl and "../jarvis/three.module.min.js" in fl and not AK.BANNED_LOOK.search(fl) and not re.search(r"fetch\(|innerHTML|XMLHttpRequest|https?://", fl)
           and all(float(x) <= 0.25 for x in re.findall(r"bloom: \{ strength: ([\d.]+)", fl)) and "q === 'low' || q === 'off'" in fl and "const mot = reduced ? 0 : 1" in fl)
     check("a. floor.js is light: every repeated part goes through batch() into ONE InstancedMesh per batch (10 batches), the 15 bubbles are one mesh on one atlas, the crate tags and hall signs another; no per-worker sprites or meshes",
-          fl.count("new THREE.InstancedMesh") == 1 and len(re.findall(r"= batch\(|, \w+ = batch\(", fl)) >= 5 and fl.count("batch(") >= 11 and "THREE.Sprite" not in fl and fl.count("atlas(2048, 1024)") == 2 and fl.count("new THREE.Mesh(") <= 4)
+          fl.count("new THREE.InstancedMesh") == 1 and len(re.findall(r"= batch\(|, \w+ = batch\(", fl)) >= 5 and fl.count("batch(") >= 11 and "THREE.Sprite" not in fl and fl.count("atlas(2048, 1024)") == 2 and fl.count("new THREE.Mesh(") <= 5)
     check("a. floor.js: first person from the core (walk with wall and station collision, eased joystick and look, follow camera, the calm tour, the hall you are in), a figure for each job, crates and boards you can tap",
           all(k in fl for k in ("walk(", "followCam", "tourCam(", "ease(", "hallOf(", "DOORS", "HALLS", "pulse(", "projectCrate")) and all("'" + j + "'" in fl for j in ("wheel", "scribe", "oracle", "smith", "scales")) and "o.onPick(hit.id, hit.crate)" in fl)
     html = AK.read(os.path.join(D, "index.html"))
