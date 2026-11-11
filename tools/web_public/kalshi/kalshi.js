@@ -1845,7 +1845,7 @@
     const shown = pv || data, fx = FX();
     navUi(shown);
     emitData(S.v, shown);
-    if (fx && shown) { fx.odometer(body); }
+    if (fx && shown) { fx.odometer(body); fit(body); }      // the rolling digits are a little wider than the plain number: fit again so none is cut while it rolls
     if (fid) {
       const nEl = document.getElementById(fid);
       if (nEl) {
