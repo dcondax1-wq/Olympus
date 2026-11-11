@@ -285,14 +285,16 @@ def test_audio(br, origin):
 
 REG = """(() => {
   const top = (() => { try { return window.top.__pbReg ? window.top : window; } catch (e) { return window; } })();
-  if (window === window.top) window.__pbReg = { ac: [], gl: [], cv: [] };
+  // add() runs in the TOP window's realm: the arrays and WeakRefs it makes belong to the top window (an array or WeakRef made in the app's
+  // frame and kept by the top window would keep that frame's whole realm, and every canvas in it, alive: the very leak this measures)
+  if (window === window.top) window.__pbReg = { ac: [], gl: [], cv: [], add(kind, x, path) { this[kind].push([new WeakRef(x), String(path)]); } };
   const reg = () => { try { return window.top.__pbReg; } catch (e) { return null; } };
   const A = window.AudioContext || window.webkitAudioContext;
-  if (A) { const W = function (...a) { const c = new A(...a); const r = reg(); if (r) r.ac.push([new WeakRef(c), location.pathname]); return c; }; W.prototype = A.prototype; window.AudioContext = W; window.webkitAudioContext = W; }
+  if (A) { const W = function (...a) { const c = new A(...a); const r = reg(); if (r) r.add('ac', c, location.pathname); return c; }; W.prototype = A.prototype; window.AudioContext = W; window.webkitAudioContext = W; }
   const g = HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (k, ...rest) {
     const c = g.call(this, k, ...rest);
-    if (c && /webgl/.test(String(k)) && !this.__pbr) { this.__pbr = 1; const r = reg(); if (r) { r.gl.push([new WeakRef(c), location.pathname]); r.cv.push([new WeakRef(this), location.pathname]); } }
+    if (c && /webgl/.test(String(k)) && !this.__pbr) { this.__pbr = 1; const r = reg(); if (r) { r.add('gl', c, location.pathname); r.add('cv', this, location.pathname); } }
     return c;
   };
 })();"""
@@ -308,7 +310,7 @@ def gc(p, n=4):
 
 
 def test_switch_memory(br, origin):
-    ctx, p = new_page(br, origin, [REG, "try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); } catch (e) {}"], "low")
+    ctx, p = new_page(br, origin, [REG, "try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); } catch (e) {}"], "high")
     p.goto(origin + "/jarvis/?welcome=0&intro=0")
     p.wait_for_function("window.__jarvis && document.documentElement.dataset.ready", timeout=60000)
     apps = ["helios", "symposium", "nq", "aegis", "polis", "mint", "chrysos", "ergasterion", "colosseum", "pythia"]
@@ -316,7 +318,9 @@ def test_switch_memory(br, origin):
     for i, a in enumerate(apps):
         p.evaluate("(a) => window.__jarvis.show(a)", a)
         p.wait_for_function("(a) => { const f = document.querySelector('#v-' + a + ' iframe'); return f && f.contentDocument && f.contentDocument.readyState === 'complete'; }", arg=a, timeout=60000)
-        p.wait_for_timeout(2500)
+        p.wait_for_timeout(1500)
+        p.mouse.click(195, 460)                                 # a tap inside the app: its sound engine unlocks (an AudioContext per frame)
+        p.wait_for_timeout(1200)
         if i in (1, len(apps) - 1):
             gc(p)
             heaps.append(p.evaluate(ALIVE)["heap"])
@@ -324,7 +328,8 @@ def test_switch_memory(br, origin):
     p.wait_for_timeout(1500)
     gc(p, 8)
     alive = p.evaluate(ALIVE)
-    stray = [x for x in alive["ac"] + alive["cv"] if not x.startswith("/jarvis/")]
+    kept = "/" + apps[-1] + "/"                                # Jarvis keeps the last app loaded for a quick return (by design)
+    stray = [x for x in alive["ac"] + alive["cv"] if not x.startswith("/jarvis/") and x != kept]
     grow = (heaps[-1] - heaps[0]) / 1048576.0 if len(heaps) == 2 else None
     check(f"e. 10 app switches in Jarvis: at most one app frame kept (now {alive['frames']})", alive["frames"] <= 1, alive)
     check("e. after the switches + GC no AudioContext / WebGL canvas of a closed app is still alive (made: %d audio contexts, %d WebGL contexts)" % tuple(alive["made"]),

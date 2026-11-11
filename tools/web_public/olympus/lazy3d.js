@@ -72,8 +72,7 @@
       io.observe(t);
     };
     var whenAllowed = function () {
-      if (!webgl()) return noGL();
-      if (!skipNow(skip)) return whenNear();
+      if (!skipNow(skip)) return webgl() ? whenNear() : noGL();     // the probe only when the 3D would be used
       skips[src] = skip; tell(ev, src);                              // the page stops waiting and keeps its 2D picture
       var O = W.OLYMPUS;                                     // LITE now: wait for the owner to pick HD (never stored by the kit itself)
       if (O && O.onFx) O.onFx(function () { if (!done[src] && !skipNow(skip)) whenNear(); });
