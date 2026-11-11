@@ -46,7 +46,15 @@ function renderAll(m) {
   if (S.sun && S.sun.ok) S.sun.set({ rise: m.rise, rays: m.good });
 
   const ac = $('accts'); clear(ac);
-  for (const a of m.accounts) { const li = h('li', 'item ' + (TONE[C.health(a)] || '')); li.appendChild(h('p', '', C.accountLine(a))); ac.appendChild(li); }
+  for (const a of m.accounts) {
+    const li = h('li', 'item acc ' + (TONE[C.health(a)] || ''));
+    if (a.has && a.room != null) {                     // the one number first (a visual summary; the sentence below says it all for a screen reader)
+      const top = h('div', 'acc-top'); top.setAttribute('aria-hidden', 'true');
+      top.appendChild(h('b', 'acc-n', `${a.name} ${a.size}`)); const v = h('span', 'acc-v ag-num', C.money(a.room)); v.appendChild(h('small', '', ` of ${C.money(a.mll)}`)); top.appendChild(v);
+      li.appendChild(top);
+    }
+    li.appendChild(h('p', '', C.accountLine(a))); ac.appendChild(li);
+  }
   const ul = $('acts'); clear(ul);
   m.actions.forEach((a, i) => {
     const li = h('li', 'item ' + (TONE[a.tone] || '')), row = h('div', 'row'); row.appendChild(h('b', '', `${i + 1}. ${a.title}`));
