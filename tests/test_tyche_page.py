@@ -499,7 +499,8 @@ def _bank_checks(p, tag, j):
         p.wait_for_timeout(2500)
         w2 = p.evaluate("window.tyche.spin")
         check(f"g. {tag}: a tap on the wheel spins it and it eases out (visual only): {w1:.1f} -> {w2:.1f} rad/s, no coin selected",
-              w1 > 3 and 0 <= w2 < w1 and p.evaluate("document.getElementById('sheet').hidden"), (w1, w2))
+              w1 > 3 and 0 <= w2 < w1 and p.evaluate("document.getElementById('sheet').hidden"),
+              (w1, w2, wp, p.evaluate("[document.getElementById('sheet').hidden, document.getElementById('s-title').textContent, window.tyche.view, document.elementFromPoint(%f, %f).id]" % (wp["x"], wp["y"]))))
         lit = _lit_share(p.screenshot(), (0, 400, 780, 1180))
         check(f"g. {tag}: the wheel is really drawn: {lit * 100:.0f}% of the middle of the screen is lit (not black)", lit > 0.08, lit)
         p.locator(".tabs button[data-view=scales]").click()
