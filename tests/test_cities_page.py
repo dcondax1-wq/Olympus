@@ -666,7 +666,7 @@ def sec_g(br, base, C, days, picks, ids):
     p.evaluate("[...document.querySelectorAll('.sheet .seg button')].find(e => e.textContent === 'Everything').click()")
     p.evaluate("[...document.querySelectorAll('.sheet .seg button')].find(e => e.textContent === 'Trading').click()")
     regs = p.evaluate("[...document.querySelectorAll('.sheet .seg')].filter(e => e.style.display !== 'none').map(e => e.children.length)")
-    check("g. Find: continents, regions, Saved and Not visited filters (1 saved, %d not visited, regions appear under a continent)" % (len(C) - 1), n_saved == 1 and f"{len(C) - 1} of {len(C)}" in cnt and max(regs) >= 6, (n_saved, cnt, regs))
+    check("g. Find: continents, regions, Saved and Not visited filters (1 saved, %d not visited, regions appear under a continent)" % (len(C) - 1), n_saved == 1 and f"{len(C) - 1} matching" in cnt and f"{len(C)} total" in cnt and max(regs) >= 6, (n_saved, cnt, regs))
     chips = p.evaluate("[...document.querySelectorAll('.chip')].map(e => e.textContent.replace(/\\s/g, '')).join('|')")
     check("g. the hub chips count what you saved and visited", "saved1" in chips and "visited1" in chips, chips)
     p.evaluate("document.querySelector('#sheetX').click()")
@@ -753,7 +753,7 @@ def sec_h(br, base, C, days, picks, ids):
         p.goto(base + "?q=" + quality + "&demo=1")
         p.wait_for_function("document.body.dataset.ready === 'fallback'", timeout=60000)
         check(f"h. {quality}: all catalogue cities remain accessible without a GPU", p.locator(".atlas-city").count() == len(C))
-        check(f"h. {quality}: six fully named illustrated districts, no horizontal scroll", p.locator(".atlas-map text").count() == 12
+        check(f"h. {quality}: six fully named illustrated districts (Olympus HQ + five, each one label with its count), no horizontal scroll", p.locator(".atlas-map text").count() == 6
               and p.evaluate("document.documentElement.scrollWidth <= innerWidth"))
         portals = p.locator(".atlas-portal")
         check(f"h. {quality}: three named city portals have touch-sized targets", portals.count() == 3 and portals.evaluate_all("els => els.every(e=>{const r=e.getBoundingClientRect();return r.width>=44&&r.height>=44})"))
@@ -767,7 +767,7 @@ def sec_h(br, base, C, days, picks, ids):
         check(f"h. {quality}: a building reveals its source record and fields", p.locator(".dw-record").is_visible() and p.locator(".dw-fields dd").count() > 0)
         p.get_by_role("button", name="World map", exact=True).click()
         check(f"h. {quality}: breadcrumbs return to the atlas", p.locator(".district-world").count() == 0)
-        p.get_by_role("button", name="Research", exact=True).click()
+        p.locator(".atlas-filters").get_by_role("button", name="Research", exact=True).click()      # (the network bar has a Research button too)
         visible = p.locator(".atlas-city").evaluate_all("els=>els.filter(e=>!e.hidden).length")
         check(f"h. {quality}: district filter matches the actual catalogue", visible == sum(s["group"] == "research" for s in C))
         search = p.get_by_role("searchbox", name="Search the city atlas")
