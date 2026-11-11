@@ -31,7 +31,7 @@ export const DOORS = [
 ];
 /** the job a figure is seen doing: wheel = turning a scanner wheel, scribe = writing at a desk, oracle = reading the tripod, smith = hammering at the anvil, scales = weighing risk against reward */
 /** THE BUILDERS' CAMP: a desert caravan camp outside the front door (south of the factory), one tent per build agent. You walk out through the front door (x = 6.5, z = 10). */
-export const CAMP = { id: 'camp', name: "Builders' camp", x0: -3.5, x1: 16.5, z0: 10.6, z1: 23, door: { x: 6.5, half: 0.9, z0: 9.4, z1: 10.6 }, fire: { x: 6.5, z: 12.6 }, enter: { x: 6.5, z: 11.0, yaw: Math.PI }, tone: '#c9a66b' };
+export const CAMP = { id: 'camp', name: "Builders' camp", x0: -3.5, x1: 16.5, z0: 10.6, z1: 23, door: { x: 6.5, half: 0.9, z0: 9.4, z1: 10.6 }, fire: { x: 6.5, z: 13.3 }, enter: { x: 6.5, z: 11.0, yaw: Math.PI }, tone: '#c9a66b' };
 /** ten tent spots: a near row of 4 and a far row of 6, every worker in front of its tent facing the door you come from */
 export const CAMP_SPOTS = [[0.5, 15.8], [4.5, 15.8], [8.5, 15.8], [12.5, 15.8], [-1.5, 20.4], [1.7, 20.4], [4.9, 20.4], [8.1, 20.4], [11.3, 20.4], [14.5, 20.4]].map((a, i) => ({ i, x: a[0], z: a[1], job: i % 2 ? 'scribe' : 'smith' }));
 export const BUILD_WORD = { working: 'Working', quiet: 'Quiet', done: 'Done', job: 'Job only' };
