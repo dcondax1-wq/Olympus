@@ -26,7 +26,7 @@ export class Nest {
     this.compass = this.root.querySelector('.ath-compass'); this.where = this.root.querySelector('.ath-where'); this.hlabel = this.root.querySelector('.ath-hlabel');
     this.zone = this.root.querySelector('.ath-stickzone'); this.walkbar = this.root.querySelector('.ath-walkbar'); this.people = this.root.querySelector('.ath-people'); this.plabel = this.root.querySelector('.ath-plabel'); this.talkB = this.walkbar.querySelector('[data-a=n-talk]');
     this.people.addEventListener('click', (e) => { const b = e.target.closest('button[data-i]'); if (b) this.talkNpc(+b.dataset.i); });
-    this.onPeopleClose = () => { if (this.S) this.S.talkNpc = null; this.kitTalk = false; }; addEventListener('olympus:people:close', this.onPeopleClose);
+    this.onPeopleClose = () => { if (this.S) this.S.talkNpc = null; this.kitTalk = false; if (this.dir) this.dir.endTalk(true); }; addEventListener('olympus:people:close', this.onPeopleClose);
     this.marks = DIRS.map(([n]) => { const s = el('span', null, n); this.compass.append(s); return s; });
     this.bindStick();
     this.onKey = (e) => { if (!this.S || !this.S.walk) return; const k = e.key.toLowerCase(), on = e.type === 'keydown'; if ('wasd'.includes(k) && k.length === 1 || k.startsWith('arrow')) { this.keys[k] = on; this.guideOff(); this.applyKeys(); e.preventDefault(); } if (k === 'shift') { this.keys.shift = on; this.applyKeys(); } };
@@ -79,6 +79,7 @@ export class Nest {
   /** a tap on the 3D view: true when a villager or a house took it */
   tap(px, py) {
     const S = this.S; if (!S || !this.world) return false;
+    if (S.walk && this.dir) { const r = S.canvas ? S.canvas.getBoundingClientRect() : { left: 0, top: 0 }; this.ui.hideCard(); this.dir.tap(px + r.left, py + r.top); return true; }
     const n = S.pickNpc(px, py, 46); if (n) { this.showNpc(n); return true; }
     const a = S.pick(px, py, 44), h = S.pickHouse(px, py, 30), near = S.walking || S.cam.dist < 330;
     if (h && (near || !a)) { this.showHouse(h); return true; }
@@ -150,10 +151,24 @@ export class Nest {
     ui.closeSheet(); ui.hideCard(); S.select(null); this.root.classList.add('walking');
     for (const e of [this.compass, this.where, this.zone, this.walkbar]) e.hidden = false;
     this.zone.querySelector('.ath-stickhint').hidden = false; this.run = false; this.walkbar.querySelector('[data-a=n-run]').setAttribute('aria-pressed', 'false');
-    ui.toast(`You stand in ${v.name} village. Walk with the left thumb, look with the right.`); return true;
+    const directed = this.direct(); if (directed) this.zone.hidden = !this.joyOn();
+    ui.toast(directed ? `You stand in ${v.name} village. Tap the street to walk, tap someone to talk.` : `You stand in ${v.name} village. Walk with the left thumb, look with the right.`); return true;
   }
+  // SCENE DIRECTION (QA6, athens-direct.js + olympus/camera-rig.js + controls.js): third person on the terrain, tap the street to walk, tap someone to
+  // walk up and talk, drag to look, pinch to zoom; the thumb joystick only as an option (?joy=1); ?direct=0 keeps the first-person walker.
+  joyOn() { try { return new URLSearchParams(location.search).get('joy') === '1'; } catch (e) { return false; } }
+  direct() {
+    const S = this.S; this.undirect(); try { if (new URLSearchParams(location.search).get('direct') === '0') return false; } catch (e) { /* no URL */ }
+    if (!S || !S.walk) return false;
+    import('./athens-direct.js?v=d1').then((M) => { if (!S.walk || this.dir) return;
+      this.dir = M.createAthensDirector(S, { container: this.root, canvas: S.canvas, reduced: S.reduced, guiding: () => !!(this.guide && this.guide.driving), nameOf: (i) => { const h = this.npcHit(i); return h ? villagerPerson(h.village, i).name : 'the villager'; },
+        onTalk: (i) => { S.talkHold = false; this.talkNpc(i); }, onHouse: (h) => this.showHouse(h) });
+      S.walkDirector = this.dir; window.__athensDirector = this.dir; }).catch(() => { this.zone.hidden = false; });
+    return true;
+  }
+  undirect() { if (this.dir) { try { this.dir.dispose(); } catch (e) { /* gone */ } } this.dir = null; if (this.S) { this.S.walkDirector = null; this.S.talkHold = false; } try { delete window.__athensDirector; } catch (e) { /* fine */ } }
   exitWalk() {
-    const S = this.S; if (!S || !S.walk) return; this.guideOff(); S.stopWalk(); this.root.classList.remove('walking');
+    const S = this.S; if (!S || !S.walk) return; this.guideOff(); this.undirect(); S.stopWalk(); this.root.classList.remove('walking');
     for (const e of [this.compass, this.where, this.zone, this.walkbar, this.hlabel, this.people, this.plabel]) e.hidden = true; this.keys = {}; this.peopleKey = '';
   }
 
@@ -202,7 +217,7 @@ export class Nest {
 
   // ------------------------------------------------------------------ every frame
   frame() {
-    const S = this.S; if (S && S.talkNpc != null && !this.kitTalk && this.ui.card.hidden) S.talkNpc = null;   // the chat card closed: the villager walks on
+    const S = this.S; if (S && S.talkNpc != null && !this.kitTalk && !S.talkHold && this.ui.card.hidden) { S.talkNpc = null; if (this.dir) this.dir.endTalk(true); }   // the chat card closed: the villager walks on
     if (!S || !S.walk) return; const now = performance.now(), dt = Math.min(.1, (now - this.t0) / 1000); this.t0 = now; this.tick++;
     this.guideFrame(dt); if (this.tick % 2) return;
     const me = S.walk, yaw = me.yaw, W = whereAmI(this.world, me.x, me.z), cw = this.compass.clientWidth || 340;
