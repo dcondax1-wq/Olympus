@@ -170,6 +170,7 @@ const CSS = `
 .oc-hud{position:absolute;inset:0;pointer-events:none;z-index:6;font:500 14px/1.3 -apple-system,"Segoe UI",system-ui,sans-serif;color:#2c2116;overflow:hidden}
 .oc-hint{position:absolute;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));margin:0 auto;width:max-content;max-width:calc(100% - 20px);box-sizing:border-box;padding:7px 12px;border-radius:12px;background:rgba(36,28,20,.78);color:#f3ead8;border:1px solid rgba(200,162,74,.45);box-shadow:0 3px 10px rgba(0,0,0,.25);text-align:center;transition:opacity .6s ease,transform .6s ease;font:500 12.5px/1.3 -apple-system,'Segoe UI',system-ui,sans-serif}
 .oc-hint.out{opacity:0;transform:translateY(8px)}
+.oc-hint.top{bottom:auto;top:calc(128px + env(safe-area-inset-top,0px))}
 .oc-plate{position:absolute;left:0;top:0;padding:3px 10px 4px;border-radius:999px;background:rgba(36,28,20,.72);color:#f3ead8;border:1px solid rgba(200,162,74,.5);white-space:nowrap;text-align:center;transform-origin:50% 100%;will-change:transform;transition:opacity .25s ease}
 .oc-plate b{display:block;font:600 13.5px/1.15 "Iowan Old Style",Palatino,Georgia,serif;letter-spacing:.02em}
 .oc-plate i{display:block;font-style:normal;font-size:10.5px;opacity:.82;max-width:150px;overflow:hidden;text-overflow:ellipsis}
@@ -204,7 +205,7 @@ export function createHud(container, opts) {
     /** a hint that fades after `ms` (default 5 s) and never shows again once used(key) was called */
     hint(key, text, hopt) {
       const q = hopt || {}; if (seen()[key] && !q.always) return false;
-      api.clearHint(); hintKey = key; hintEl = document.createElement('p'); hintEl.className = 'oc-hint'; hintEl.setAttribute('role', 'status'); hintEl.textContent = text; root.appendChild(hintEl);
+      api.clearHint(); hintKey = key; hintEl = document.createElement('p'); hintEl.className = 'oc-hint' + (o.hintTop ? ' top' : ''); hintEl.setAttribute('role', 'status'); hintEl.textContent = text; root.appendChild(hintEl);
       clearTimeout(hintT); hintT = setTimeout(() => api.clearHint(), q.ms || 5200); return true;
     },
     used(key) { const s = seen(); if (!s[key]) { s[key] = Date.now(); try { if (st) st.setItem(HKEY, JSON.stringify(s)); } catch (_) { /* private mode */ } } if (hintKey === key) api.clearHint(); },

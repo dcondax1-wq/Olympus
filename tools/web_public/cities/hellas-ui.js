@@ -77,7 +77,7 @@ export class HellasUI {
     const body = el('div', 'hel-body'); body.append(...nodes.filter(Boolean)); this.card.replaceChildren(head, body); this.card.hidden = false; this.card.dataset.tone = tone || ''; body.scrollTop = 0; if (this.mapMode) this.drawMap();
   }
   hideCard() { this.card.hidden = true; this.endTalk(); if (this.mapMode) this.drawMap(); }
-  endTalk() { if (this.chat) { this.chat = null; if (this.scene) this.scene.setTalk(null); } }
+  endTalk() { if (this.chat) { this.chat = null; if (this.scene) this.scene.setTalk(null); } if (this.dir) this.dir.endTalk(true); }
   /** talk to a person: the shared People kit when it is loaded and knows them, else our own chat card (six questions, answers from this city's data) */
   talk(person, ref) {
     if (!person) return null; this.stopVoyage(); this.endTalk(); this.chat = person; if (this.scene && ref) this.scene.setTalk(ref);
@@ -208,9 +208,21 @@ export class HellasUI {
     const S = this.scene, plan = this.at.plan; if (!S || !plan || S.level !== 'polis') return; this.stopVoyage(); if (this.mapMode) this.toggleMap();
     const V = this.at.village, at = V ? { x: V.x0 - 3, z: V.z, yaw: Math.PI / 2 } : plan.start; if (!S.startWalk(at.x, at.z, at.yaw)) return;
     this.root.classList.add('walking'); this.hideCard(); this.where.textContent = 'Walk with the left thumb, look with the right.';
+    this.direct();
     const news = bigNews(this.at.polis); if (news) { const n = S.celebrate(news.text); if (n) this.where.textContent = `${news.text}. The town gathers at the agora to cheer.`; }   // a big number: the crowd gathers and cheers
   }
-  stopWalk(quiet) { if (!this.scene) return; this.endTalk(); this.stripKey = ''; this.peopleStrip.replaceChildren(); this.scene.stopWalk(); this.root.classList.remove('walking'); this.knob.style.transform = ''; this.keys = {}; if (!quiet) this.polisCard(); }
+  // SCENE DIRECTION (walk-direct.js + olympus/camera-rig.js + controls.js, 2026-11-11): third person, tap the street to walk, tap someone to walk up and talk,
+  // drag to look, pinch to zoom; the thumb joystick only as an option (?joy=1 or localStorage olympus.joystick = '1'); ?direct=0 keeps the first-person walker.
+  joyOn() { try { return new URLSearchParams(location.search).get('joy') === '1' || localStorage.getItem('olympus.joystick') === '1'; } catch (_) { return false; } }
+  direct() {
+    const S = this.scene; this.undirect(); if (!S || new URLSearchParams(location.search).get('direct') === '0') return;
+    this.root.classList.toggle('nojoy', !this.joyOn());
+    import('./walk-direct.js?v=d1').then((D) => { if (!S.walking || this.dir) return;
+      this.dir = D.createWalkDirector(S, { container: this.root, canvas: this.canvas, reduced: this.reduced, onTalk: (P) => this.talk(P.person, { kind: 'person', i: P.i }), onHouse: (h) => this.showHouse(h) });
+      S.walkDirector = this.dir; this.where.textContent = 'Tap the street to walk, tap someone to talk.'; window.__hellasDirector = this.dir; }).catch(() => { this.root.classList.remove('nojoy'); });
+  }
+  undirect() { if (this.dir) { try { this.dir.dispose(); } catch (_) { /* gone */ } } this.dir = null; if (this.scene) this.scene.walkDirector = null; this.root.classList.remove('nojoy'); }
+  stopWalk(quiet) { if (!this.scene) return; this.undirect(); this.endTalk(); this.stripKey = ''; this.peopleStrip.replaceChildren(); this.scene.stopWalk(); this.root.classList.remove('walking'); this.knob.style.transform = ''; this.keys = {}; if (!quiet) this.polisCard(); }
   lookHere() { const S = this.scene; if (!S || !S.walk) return; const w = whereInPolis(this.at.plan, S.walk.x, S.walk.z); if (w.house) this.showHouse(w.house); else this.showCard('Nothing close', [el('p', '', 'Walk up to a house and tap Look, or tap a house on the screen.')]); }
   key(e) {
     if (!this.root.isConnected || document.documentElement.classList.contains('athens-open')) return;
@@ -223,11 +235,12 @@ export class HellasUI {
   down(e) {
     this.canvas.setPointerCapture && e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId);
     const p = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t: performance.now(), moved: 0 }; this.ptr.set(e.pointerId, p);
-    if (this.walking && e.clientX < innerWidth / 2 && e.clientY > innerHeight * .5 && !this.stickId) { this.stickId = e.pointerId; p.stick = true; }
+    if (this.walking && (!this.dir || this.joyOn()) && e.clientX < innerWidth / 2 && e.clientY > innerHeight * .5 && !this.stickId) { this.stickId = e.pointerId; p.stick = true; }
   }
   move(e) {
     const p = this.ptr.get(e.pointerId); if (!p) return; const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY; p.moved += Math.abs(dx) + Math.abs(dy);
     const S = this.scene; if (!S || this.mapMode) return;
+    if (S.walking && this.dir && !p.stick) { if (this.ptr.size >= 2) { const [a, b] = [...this.ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (this.pinch) this.dir.zoom(d / this.pinch); this.pinch = d; return; } if (p.moved > 6) this.dir.look(dx, dy); return; }
     if (S.walking) { if (p.stick) { const ox = Math.max(-50, Math.min(50, p.x - p.x0)), oy = Math.max(-50, Math.min(50, p.y - p.y0)); S.walk.input.side = ox / 50; S.walk.input.fwd = -oy / 50; S.walk.input.run = Math.hypot(ox, oy) > 46; this.knob.style.transform = `translate(${ox * .6}px,${oy * .6}px)`; } else S.walkLook(dx, dy); return; }
     if (this.ptr.size >= 2) { const [a, b] = [...this.ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (this.pinch) S.zoom(this.pinch / d); this.pinch = d; S.pan(dx * .5, dy * .5); return; }
     if (p.moved > 6) { if (S.level === 'world') S.pan(dx, dy); else S.orbit(dx, dy); }
@@ -243,6 +256,7 @@ export class HellasUI {
     if (!this.world) return null;
     if (this.mapMode || !this.scene) return this.mapTap(x, y);
     const S = this.scene;
+    if (S.level === 'polis' && S.walking && this.dir) return this.dir.tap(x, y);
     if (S.level === 'polis') { const P = S.pickPerson(x, y, S.walking ? 44 : 26); if (P) { this.talk(P.person, { kind: 'person', i: P.i }); return P; } const h = S.pickHouse(x, y); if (h) this.showHouse(h); return h; }
     if (S.cam.dist > 1100) { const L = S.labels().filter((l) => l.kind === 'region').map((l) => [Math.hypot(l.x - x, l.y - y), l]).sort((a, b) => a[0] - b[0])[0]; if (L && L[0] < 44) { this.goRegion(L[1].ref); return L[1].ref; } }
     const bd = S.cam.dist < 1100 ? S.pickBuilder(x, y, 26) : null; if (bd) { this.buildersCard(bd); return bd; }

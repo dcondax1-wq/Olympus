@@ -332,7 +332,8 @@ export class Hellas {
     this.walk = { x, z, yaw, pitch: -.03, input: { fwd: 0, side: 0, run: false }, bob: 0, y: EYE, dist: 0 }; this.select(null); this.lookUntil = this.u.uTime.value + 2.6; return true; }   // heads turn as you arrive
   stopWalk() { if (!this.walk) return; const w = this.walk; this.walk = null; this.camera.near = 1; this.camera.updateProjectionMatrix(); const c = this.cam; c.tx = w.x; c.tz = w.z; c.ty = 3; c.dist = 110; c.pitch = .6; c.yaw = w.yaw + Math.PI; }
   walkLook(dx, dy) { const w = this.walk; if (!w) return; w.yaw += dx * .0055; w.pitch = clamp(w.pitch - dy * .0045, -1, .9); }
-  walkTick(dt) { const w = this.walk, r = walkStep(w, w.input, dt, this.col); w.x = r.x; w.z = r.z; w.dist += r.moved; w.bob += r.moved * 2.1; const bob = this.reduced ? 0 : Math.sin(w.bob) * .035, cp = Math.cos(w.pitch);
+  walkTick(dt) { if (this.walkDirector && this.walkDirector.tick(dt)) return;     // SCENE DIRECTION HOOK (walk-direct.js): third person, tap-to-walk, the conversation camera
+    const w = this.walk, r = walkStep(w, w.input, dt, this.col); w.x = r.x; w.z = r.z; w.dist += r.moved; w.bob += r.moved * 2.1; const bob = this.reduced ? 0 : Math.sin(w.bob) * .035, cp = Math.cos(w.pitch);
     this.camera.position.set(w.x, w.y + bob, w.z); this.camera.lookAt(w.x + Math.sin(w.yaw) * cp, w.y + bob + Math.sin(w.pitch), w.z - Math.cos(w.yaw) * cp); }
   get walking() { return !!this.walk; }
 
