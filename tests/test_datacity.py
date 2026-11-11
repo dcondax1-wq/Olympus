@@ -1181,6 +1181,7 @@ def test_v3_phone(shots=None):
                   f"close-up {s2['calls']} / {s2['triangles']:,}, {s2['lod']['mirrors']} reflected tile(s), at most 7 tiles in full ({s2['lod']['tilesFull']})",
                   all(x["calls"] <= c and x["triangles"] <= t for x in (s0, s1, s2)) and s2["lod"]["tilesFull"] <= 7 and s2["lod"]["mirrors"] <= 1, (s0, s1, s2))
             cdp = ctx.new_cdp_session(pg)
+            cdp.send("HeapProfiler.collectGarbage")          # what is alive, not what happens to be waiting for the collector
             cdp.send("Performance.enable")
             heap = {m["name"]: m["value"] for m in cdp.send("Performance.getMetrics")["metrics"]}.get("JSHeapUsedSize", 0) / 1e6
             check(f"k. the JS heap on a phone at the high tier: {heap:.1f} MB (budget {PHONE_HEAP_MB} MB)", 0 < heap <= PHONE_HEAP_MB, heap)
@@ -1256,7 +1257,7 @@ def test_v3_demo():
               a.showView('access'); document.querySelector('#ac_calm').click(); out.calm = a.calm;
               return out; }""")
             check("k. ?demo=1 offline: the menu, report with the Council, search, timeline, fireworks, photo and accessibility all work from the fixtures",
-                  r["menu"] == 9 and r["report"] and r["found"] >= 1 and r["tl"] >= 1 and r["gold"] and r["photo"] > 4000 and r["calm"], r)
+                  r["menu"] == 10 and r["report"] and r["found"] >= 1 and r["tl"] >= 1 and r["gold"] and r["photo"] > 4000 and r["calm"], r)
             check("k. ?demo=1 offline: no page errors (the Pantheon line and the kit modules fail soft)", not errs and not pg.evaluate("window.__city.errors.length"), (errs[:3], pg.evaluate("window.__city.errors")))
             br.close()
     finally:
