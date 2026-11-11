@@ -39,7 +39,7 @@ function renderHero() {
   const t = S.total;
   $('heroBase').textContent = t.n ? C.money(t.base) : '-';
   $('heroText').textContent = t.text; $('heroWhy').textContent = t.why;
-  const p = $('heroPill'); p.textContent = t.allSample ? 'EXAMPLE ESTIMATE' : 'ESTIMATE'; p.className = 'pill ' + t.tone;
+  const p = $('heroPill'); p.textContent = t.allSample ? 'Example estimate' : 'Estimate'; p.className = 'pill ' + t.tone;
   const lo = $('rngLo'), bar = C.rangeBar(t.low, t.base, t.high);
   lo.textContent = t.low < 0 ? `${C.money(t.low)} (a loss)` : C.money(t.low); lo.className = t.low < 0 ? 'neg' : ''; $('rngHi').textContent = C.money(t.high);
   $('rngFill').style.left = bar.left + '%'; $('rngFill').style.width = bar.width + '%'; $('rngFill').className = bar.neg ? 'neg' : '';
