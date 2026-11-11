@@ -115,7 +115,7 @@ def test_static():
     rd = lambda p: AK.read(os.path.join(WEB, p))  # noqa: E731
     tc, hel, ath, hui, nest, aui, ad, wd = (rd(p) for p in ("cities/town-cast.js", "cities/hellas.js", "cities/athens.js", "cities/hellas-ui.js", "cities/athens-nest.js", "cities/athens-ui.js", "cities/athens-direct.js", "cities/walk-direct.js"))
     check("d. Hellas and Athens draw their people with the rigged cast (town-cast.js: photos far, rigged figures near; the toy figures only as the placeholder)",
-          "makeTownCast(THREE, this.people" in hel and "makeTownCast(THREE, this.npcs" in ath and "this.crowd.tick(dt, t, this.camera" in hel and "this.crowd.tick(dt, t, this.camera" in ath and "makeCrowd(" in tc and "atlas(S.specs, { views: true" in tc)
+          "makeTownCast(THREE, this.people" in hel and "makeTownCast(THREE, this.npcs" in ath and "this.crowd.tick(dt, t, this.camera" in hel and "this.crowd.tick(dt, t, this.camera" in ath and "makeCrowd(" in tc and "ST.atlas(uspecs, { views: true" in tc)
     check("d. the photos show a back and a walking profile (people-studio atlas views), LITE takes no photo studio (a second WebGL context) and at most 2 rigged figures near you",
           "o.views ? 5 : 2" in rd("olympus/people-studio.js") and "if (lite) return;" in tc and "lite ? 2 : 4" in tc)
     check("d. the person you talk to is a rigged figure that talks (Hellas passes it to say(); Athens keeps it while the villager waits)",
