@@ -1027,6 +1027,10 @@ html[data-bg3d="on"][data-court="3d"] .court-art { opacity: 0; }                
 .hbody .hc-row + .hc-row { margin-top: 0; }
 .hbody .hc-bot, .hbody .hc-app { transition: transform .2s ease-out, border-color .2s ease-out, background-color .2s ease-out; }
 .hc-strip.one .hc-bot { flex: 1 0 100%; }
+/* v2: the accounts stack (2-3 of them): every card whole, nothing off the right edge, no hidden sideways scroller */
+.hbody .hc-strip { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; overflow: visible; margin: 0; padding: 0; scroll-snap-type: none; }
+.hbody .hc-bot { min-height: 0; }
+@media (min-width: 620px) { .hbody .hc-strip { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); } }
 .hc-age { margin: 0; color: #b9ae9b; font: 500 13.5px/1.4 var(--fb); } .hc-age.stale { color: var(--c3); }
 .hbody .stagebox { margin: 0; padding: 4px 0 8px; }
 .hbody .hub-gate { margin: 0; } .hbody .hub-directory { margin: 0; }
