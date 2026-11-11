@@ -351,7 +351,7 @@ function build(rc, scene, camera, canvas, o) {
   const ACT_POSE = { walk: 'walk', carry: 'carry', drop: 'idle', board: 'idle', standup: 'idle', speak: 'speak', cheer: 'cheer' };
   function actor(i, job, fx, fz, yb, th0, pz, k, mood, key, dt, camP) {
     const a = ang[i], b3 = i * 3, h0 = i * HS, dC = Math.hypot(camP.x - fx, camP.z - fz), talking = focusKey === key && AC !== 'walk', close = mode === 'walk' && dC < 3.4;
-    if (close && !wasNear[i]) nearT[i] = t; wasNear[i] = close ? 1 : 0;
+    if (close && !wasNear[i]) { nearT[i] = t; if (mot) L.presenceAt(specFn ? specFn(key) : { kind: 'builder' }, { x: fx, y: 0.9, z: fz }, camera, { k: 0.4 }); } wasNear[i] = close ? 1 : 0;      // QA6: they notice you: their things jingle softly
     const re = reactT[i] > t ? reactP[i] : '';
     const pose = talking ? 'talk' : re || (close && t - nearT[i] < 2.6 ? 'wave' : lookT[i] > t && AC !== 'walk' && AC !== 'carry' ? 'look' : ACT_POSE[AC] || mood || (AW ? 'idle' : ''));
     // a person away from its station leaves its furniture there at rest (the wheel, the scales, the gold on the anvil); what it holds in its hand goes with it
@@ -361,7 +361,7 @@ function build(rc, scene, camera, canvas, o) {
     thA[i] = reduced ? want : thA[i] + dth * Math.min(1, dt * (pose === 'walk' || pose === 'carry' ? 9 : 6));
     oX = fx; oZ = fz; cT = Math.cos(thA[i]); sT = Math.sin(thA[i]); qT.setFromAxisAngle(AXY, thA[i]);
     const moving = pose === 'walk' || pose === 'carry', stride = moving && mot ? Math.sin(t * 7.5 + i) : 0;
-    if (moving && mot) { const sg = stride > 0 ? 1 : -1; if (sg !== stepS[i]) { stepS[i] = sg; if (dC < 7 && mode !== 'tour') L.soundAt('step', { x: fx, y: 0, z: fz }, null, camera, { surface: i >= N ? 'sand' : 'stone', k: 0.45 }); } }   // footsteps near you
+    if (moving && mot) { const sg = stride > 0 ? 1 : -1; if (sg !== stepS[i]) { stepS[i] = sg; if (dC < 7 && mode !== 'tour') L.stepAt(key, specFn ? specFn(key) : { kind: 'builder' }, { x: fx, y: 0, z: fz }, camera, { surface: i >= N ? 'sand' : 'stone', k: 0.45 }); } }   // footsteps near you (QA6: OLYMPUS_SFX.walker, with their things answering)
     const live = k > 0 || pose !== '' , bob = mot * (pose === 'cheer' ? Math.abs(Math.sin(t * 3 + i)) * 0.07 : moving ? Math.abs(stride) * 0.035 : live ? 0.012 * Math.sin(a * 2.1 + t * 1.3) : 0.006 * Math.sin(t * 1.1 + i));
     const sl = pose === 'slump' ? 1 : 0, y = yb + bob, shY = y + 0.66 - sl * 0.04, hy = y + 1.0 - sl * 0.07 + (pose === 'talk' || pose === 'speak' ? 0.012 * Math.sin(t * 5) * mot : 0), hz = sl * 0.07;
     pl(fig.im, b3, 0, y + 0.3, 0, 0.23, 0.5, 0.21);                                                                 // the tunic

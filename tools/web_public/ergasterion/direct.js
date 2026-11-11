@@ -72,6 +72,13 @@ export function createDirector(floor, opts) {
     try { const k = K(); sp = k && k.me ? k.me().spec : null; } catch (_) { sp = null; }
     try { S.av = P.figure(THREE, sp || P.spec('me'), { scale: AV }); S.av.name = 'you'; R.scene.add(S.av); P.play(S.av, 'idle'); } catch (_) { S.av = null; }
   }).catch(() => {});
+  // QA6 footsteps: your own steps (OLYMPUS_SFX.walker: stone in the halls, sand in the builders' camp); the engine honours mute, LITE and the first tap
+  const FWD = new THREE.Vector3(); let feet = null, strideD = 0.4; S.steps = 0;
+  function footstep(x, z) {
+    let X = null; try { X = window.OLYMPUS_SFX || null; } catch (_) { X = null; } if (!X || typeof X.walker !== 'function') return;
+    if (!feet) { let sp = null; try { const k = K(); sp = k && k.me ? k.me().spec : null; } catch (_) { sp = null; } feet = X.walker(sp || { kind: 'owner' }); }
+    camera.getWorldDirection(FWD); if (feet.step({ x, y: 0, z }, { position: camera.position, forward: { x: FWD.x, y: FWD.y, z: FWD.z } }, { surface: z > 10.6 ? 'sand' : 'stone', k: 0.5 })) S.steps++;
+  }
   function pose(name) { if (!S.av || !S.P3 || S.pose === name) return; S.pose = name; try { S.P3.play(S.av, name); } catch (_) { /* fine */ } }
   // ---- the frame (floor.js calls it in walk and follow mode; the tour keeps its own camera)
   function drive(dt, mode) {
@@ -85,6 +92,7 @@ export function createDirector(floor, opts) {
         if (ok) walker.place(ok[0], ok[1], Math.atan2(dx, dz)); }
     }
     const s = walker.tick(dt), moving = s.moving || !!(S.input.fwd || S.input.side);
+    { const mv = Math.hypot(s.x - S.last.x, s.z - S.last.z); if (moving && mv > 0 && mv < 1 && !reduced) { strideD += mv; if (strideD >= 0.6) { strideD = 0; footstep(s.x, s.z); } } else if (!moving) strideD = 0.4; }
     floor.setPlayer(s.x, s.z, s.yaw - Math.PI); S.last = { x: s.x, z: s.z };
     if (S.av) { S.av.position.set(s.x, 0, s.z); S.av.rotation.y = s.yaw; if (!S.waveT || S.t > S.waveT) pose(moving ? 'walk' : 'idle'); if (!reduced && S.P3) S.P3.animate(S.av, dt); }
     if (S.mode !== 'talk') {

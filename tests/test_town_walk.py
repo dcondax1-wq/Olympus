@@ -125,9 +125,9 @@ def test_static():
           and "this.dir.tap(" in nest and "S.walkDirector.look(" in aui and "S.walkDirector.zoom(" in aui)
     check("d. Athens: the camera's world has the terrain (groundAt: groundY) and the houses at their real height on their own ground; the feet follow groundY",
           "groundAt: groundY" in ad and "D.av.position.set(s.x, y, s.z)" in ad and "groundAt" in rd("olympus/camera-rig.js"))
-    sym, hall, erg, fl = rd("symposium/symposium.js"), rd("symposium/hall.js"), rd("ergasterion/direct.js"), rd("ergasterion/floor.js")
+    sym, hall, erg, fl = rd("symposium/symposium.js"), rd("symposium/hall.js"), rd("ergasterion/direct.js"), rd("ergasterion/floor.js") + rd("ergasterion/life.js")
     check("d. footsteps through OLYMPUS_SFX.walker(person).step(pos, listener, { surface }) in Hellas and Athens walking (yours and the near townspeople's), Symposium and Ergasterion; presence jingles when someone greets you",
-          ".walker(" in wd and ".walker(" in ad and "X.walker(sl.spec" in tc and "X.presence(sl.spec" in tc and ".walker(" in (hall + sym) and ".presence(" in (hall + sym) and ".walker(" in (erg + fl) and ".presence(" in (erg + fl))
+          ".walker(" in wd and ".walker(" in ad and "X.walker(sl.spec" in tc and "X.presence(sl.spec" in tc and ".walker(" in (hall + sym) and ".presence(" in (hall + sym) and ".walker(" in (erg + fl) and ".presence(" in (erg + fl) and "L.stepAt(key" in fl and "L.presenceAt(" in fl)
     pure = tc + ad
     check("d. the town files read no network, use no Math.random, place no order", not re.search(r"fetch\(|XMLHttpRequest|Math\.random|placeorder|submitorder", pure, re.I))
 
