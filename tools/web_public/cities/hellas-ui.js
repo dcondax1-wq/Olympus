@@ -118,7 +118,7 @@ export class HellasUI {
   }
   /** leave the polis (if inside one), then run fn */
   leave(fn) {
-    clearTimeout(this.veilT); if (this.walking) this.stopWalk(true);
+    clearTimeout(this.veilT); this.veil.classList.remove('on'); if (this.walking) this.stopWalk(true);
     if (this.at.polis && this.scene && this.scene.level === 'polis') this.scene.leavePolis();
     this.at.polis = null; this.at.plan = null; fn();
   }
