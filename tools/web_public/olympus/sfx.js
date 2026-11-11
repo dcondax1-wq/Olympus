@@ -829,8 +829,12 @@
           if (B.dead || !ctx) return;
           var seg = len * rnd(0.45, 0.8), off = Math.random() * Math.max(0, len - seg), src = ctx.createBufferSource(), g = ctx.createGain();
           src.buffer = buf; if (src.playbackRate) src.playbackRate.value = o.rate === false ? 1 : rnd(0.985, 1.015);
-          try { g.gain.setValueAtTime(0.0001, at); g.gain.setValueCurveAtTime(xfCurve(true), at, XF); g.gain.setValueAtTime(1, at + seg - XF); g.gain.setValueCurveAtTime(xfCurve(false), at + seg - XF, XF); }
-          catch (e) { g.gain.setValueAtTime(0.0001, at); g.gain.linearRampToValueAtTime(1, at + XF); g.gain.setValueAtTime(1, at + seg - XF); g.gain.linearRampToValueAtTime(0.0001, at + seg); }
+          g.gain.value = 0.0001;                                // two equal-power curves, nothing else on this gain (curves may not share a time with other events)
+          var up = false;
+          try { g.gain.setValueCurveAtTime(xfCurve(true), at, XF); up = true; g.gain.setValueCurveAtTime(xfCurve(false), at + seg - XF, XF); }
+          catch (e) {
+            try { if (!up) { g.gain.setValueAtTime(0.0001, at); g.gain.linearRampToValueAtTime(1, at + XF); } g.gain.setValueAtTime(1, at + seg - XF); g.gain.linearRampToValueAtTime(0.0001, at + seg); } catch (x) { errors++; }
+          }
           src.connect(g); g.connect(R.sw); src.start(at, off, seg + 0.05); src.stop(at + seg + 0.1); scheduled++; sampled++;
           B.srcs.push(src); B.nodes.push(g);
           src.onended = function () { try { g.disconnect(); src.disconnect(); } catch (e) {} var k = B.srcs.indexOf(src); if (k >= 0) B.srcs.splice(k, 1); k = B.nodes.indexOf(g); if (k >= 0) B.nodes.splice(k, 1); };
