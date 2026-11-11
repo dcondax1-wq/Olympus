@@ -1,577 +1,595 @@
 {
- "_about": "Every app built on the 2026-11-10 night sprint, copied from docs/NEW_APPS_WIRING.md. tools/wire_new_apps.py applies it idempotently, and only for apps whose folder tools/web_public/<id>/index.html exists. Add a new app by appending an entry (id, name, group, accent, glyph, description, ambient, flavour [scene, tagline, first sound], transition {kind, ms, n?}).",
- "apps": [
-  {
-   "id": "delphi",
-   "name": "Delphi",
-   "group": "trading",
-   "accent": "#e0b060",
-   "description": "The oracle\\'s briefing: plan, target, go / no-go",
-   "glyph": "Φ",
-   "ambient": "chimes",
-   "flavour": [
-    "rings",
-    "Read the omens",
-    "tick"
-   ],
-   "transition": {
-    "kind": "sunburst",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "pnyx",
-   "name": "Pnyx",
-   "group": "money",
-   "accent": "#c8a24a",
-   "description": "Prop-firm rules and risk calculator: stop to micros",
-   "glyph": "Π",
-   "ambient": "coins",
-   "flavour": [
-    "columns",
-    "Count the risk",
-    "tap"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 5
-   }
-  },
-  {
-   "id": "mint",
-   "name": "Mint",
-   "group": "money",
-   "accent": "#c8a24a",
-   "description": "The money machine: five streams, one honest estimate",
-   "glyph": "M",
-   "ambient": "coins",
-   "flavour": [
-    "columns",
-    "Strike the coin",
-    "tap"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 5
-   }
-  },
-  {
-   "id": "mintcity",
-   "name": "Mint City",
-   "group": "money",
-   "accent": "#c8a24a",
-   "description": "The five money machines as a marble city",
-   "glyph": "MC",
-   "ambient": "coins",
-   "flavour": [
-    "columns",
-    "Raise the city",
-    "tick"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 5
-   }
-  },
-  {
-   "id": "mercury",
-   "name": "Mercury",
-   "group": "money",
-   "accent": "#c8a24a",
-   "description": "Deal watcher: sales, codes, free resets, rule changes",
-   "glyph": "☿",
-   "ambient": "coins",
-   "flavour": [
-    "coins",
-    "Find the saving",
-    "tap"
-   ],
-   "transition": {
-    "kind": "tiles",
-    "ms": 800
-   }
-  },
-  {
-   "id": "chrysos",
-   "name": "Chrysos",
-   "group": "money",
-   "accent": "#c8a24a",
-   "description": "Prop-firm fleet planner: fees against payouts, break-even (estimate)",
-   "glyph": "X",
-   "ambient": "coins",
-   "flavour": [
-    "coins",
-    "Count the gold",
-    "tap"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 4
-   }
-  },
-  {
-   "id": "sibyl",
-   "name": "Sibyl",
-   "group": "money",
-   "accent": "#c8a24a",
-   "description": "Prediction-market edges after fees: paper picks, ruin odds, what could go wrong",
-   "glyph": "Σ",
-   "ambient": "chimes",
-   "flavour": [
-    "rings",
-    "Read the odds",
-    "tick"
-   ],
-   "transition": {
-    "kind": "sunburst",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "oikos",
-   "name": "Oikos",
-   "group": "money",
-   "accent": "#c8a24a",
-   "description": "The household: where money leaks, tax set-aside, buckets, reinvest or withdraw",
-   "glyph": "O",
-   "ambient": "coins",
-   "flavour": [
-    "coins",
-    "Keep what you make",
-    "tap"
-   ],
-   "transition": {
-    "kind": "waves",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "arbiter",
-   "name": "Arbiter",
-   "group": "money",
-   "accent": "#c8a24a",
-   "description": "Paper-only spreads and funding: net yearly return after costs",
-   "glyph": "Ξ",
-   "ambient": "coins",
-   "flavour": [
-    "coins",
-    "Weigh the spread",
-    "tap"
-   ],
-   "transition": {
-    "kind": "tiles",
-    "ms": 800
-   }
-  },
-  {
-   "id": "stoa",
-   "name": "Stoa",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "The colonnade: what needs you right now",
-   "glyph": "Σ",
-   "ambient": "chimes",
-   "flavour": [
-    "columns",
-    "Light the columns",
-    "tick"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 6
-   }
-  },
-  {
-   "id": "aegis",
-   "name": "Aegis",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "Risk guard: drawdown left, a full-stop what-if, when to stop for the day",
-   "glyph": "A",
-   "ambient": "chimes",
-   "flavour": [
-    "columns",
-    "Raise the shield",
-    "tap"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 3
-   }
-  },
-  {
-   "id": "lyceum",
-   "name": "Lyceum",
-   "group": "life",
-   "accent": "#c8a24a",
-   "description": "The school: daily rules quiz, ranks, habits costing money",
-   "glyph": "Σ",
-   "ambient": "chimes",
-   "flavour": [
-    "columns",
-    "Learn your own rules",
-    "tap"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 6
-   }
-  },
-  {
-   "id": "nike",
-   "name": "Nike",
-   "group": "life",
-   "accent": "#c8a24a",
-   "description": "The trophy hall: milestones and wins from real numbers",
-   "glyph": "Ν",
-   "ambient": "chimes",
-   "flavour": [
-    "rings",
-    "Count your wins",
-    "tap"
-   ],
-   "transition": {
-    "kind": "sunburst",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "kronos",
-   "name": "Kronos",
-   "group": "money",
-   "accent": "#c8a24a",
-   "description": "The calendar of money: daily P&L, best weekday and hour, a bad week",
-   "glyph": "K",
-   "ambient": "chimes",
-   "flavour": [
-    "rings",
-    "Read the shadow",
-    "tick"
-   ],
-   "transition": {
-    "kind": "sunburst",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "moirai",
-   "name": "Moirai",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "The three fates: pass, bust and time of an eval, simulated",
-   "glyph": "M",
-   "ambient": "chimes",
-   "flavour": [
-    "rings",
-    "Spin the threads",
-    "tick"
-   ],
-   "transition": {
-    "kind": "waves",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "epilogue",
-   "name": "Epilogue",
-   "group": "life",
-   "accent": "#c8a24a",
-   "description": "Your week in 60 seconds: the Sunday review",
-   "glyph": "Ω",
-   "ambient": "chimes",
-   "flavour": [
-    "rings",
-    "Read the week",
-    "tick"
-   ],
-   "transition": {
-    "kind": "tiles",
-    "ms": 800
-   }
-  },
-  {
-   "id": "argo",
-   "name": "Argo",
-   "group": "money",
-   "accent": "#4b7a99",
-   "description": "The voyage: your money goals as islands, honest ETA ranges",
-   "glyph": "Α",
-   "ambient": "sea",
-   "flavour": [
-    "rings",
-    "Set sail",
-    "tap"
-   ],
-   "transition": {
-    "kind": "waves",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "kratos",
-   "name": "Kratos",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "Discipline score 0-100 per day: plan, stop, size, hours, flat",
-   "glyph": "K",
-   "ambient": "chimes",
-   "flavour": [
-    "columns",
-    "Keep your own rules",
-    "tap"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 4
-   }
-  },
-  {
-   "id": "pythia",
-   "name": "Pythia",
-   "group": "trading",
-   "accent": "#e0b060",
-   "description": "The risk calendar: the next 14 days, and what the bots do around each event",
-   "glyph": "Ψ",
-   "ambient": "chimes",
-   "flavour": [
-    "rings",
-    "Read the calendar",
-    "tick"
-   ],
-   "transition": {
-    "kind": "sunburst",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "gallery",
-   "name": "Agora Gallery",
-   "group": "life",
-   "accent": "#c8a24a",
-   "description": "Every 3D shape of the Agora on a turning pedestal",
-   "glyph": "Γ",
-   "ambient": "chimes",
-   "flavour": [
-    "columns",
-    "Walk the Agora",
-    "tap"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 5
-   }
-  },
-  {
-   "id": "kairos",
-   "name": "Kairos",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "The right moment: the bots' day on a 24-hour ring, what they do now",
-   "glyph": "K",
-   "ambient": "chimes",
-   "flavour": [
-    "rings",
-    "Find the right moment",
-    "tick"
-   ],
-   "transition": {
-    "kind": "sunburst",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "compass",
-   "name": "Compass",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "The next best action: at most five things for today, with why",
-   "glyph": "C",
-   "ambient": "chimes",
-   "flavour": [
-    "rings",
-    "Find north",
-    "tick"
-   ],
-   "transition": {
-    "kind": "sunburst",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "pheme",
-   "name": "Pheme",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "The word on the street: releases, and NQ's past moves on them",
-   "glyph": "Ξ",
-   "ambient": "chimes",
-   "flavour": [
-    "threads",
-    "Hear the word",
-    "tick"
-   ],
-   "transition": {
-    "kind": "tiles",
-    "ms": 800
-   }
-  },
-  {
-   "id": "harmonia",
-   "name": "Harmonia",
-   "group": "money",
-   "accent": "#c8a24a",
-   "description": "The balance: what leans on the NQ bots, and what is left",
-   "glyph": "H",
-   "ambient": "coins",
-   "flavour": [
-    "bars",
-    "Weigh it up",
-    "tap"
-   ],
-   "transition": {
-    "kind": "waves",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "helios",
-   "name": "Helios",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "The morning briefing: today, drawdown, deals, plan",
-   "glyph": "S",
-   "ambient": "chimes",
-   "flavour": [
-    "rings",
-    "Rise and plan",
-    "tick"
-   ],
-   "transition": {
-    "kind": "sunburst",
-    "ms": 1000
-   }
-  },
-  {
-   "id": "ergasterion",
-   "name": "Ergasterion",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "The workshop: every AI worker, what it does and learns",
-   "glyph": "E",
-   "ambient": "chimes",
-   "flavour": [
-    "columns",
-    "Walk the workshop",
-    "tap"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 5
-   }
-  },
-  {
-   "id": "archive",
-   "name": "Archive",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "The library of everything we ever tested, searchable",
-   "glyph": "B",
-   "ambient": "chimes",
-   "flavour": [
-    "columns",
-    "Open the shelves",
-    "tap"
-   ],
-   "transition": {
-    "kind": "tiles",
-    "ms": 800
-   }
-  },
-  {
-   "id": "pinakes",
-   "name": "Pinakes",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "The catalogue: browse and query every table OLYMPUS keeps",
-   "glyph": "Κ",
-   "ambient": "scroll",
-   "flavour": [
-    "columns",
-    "Open the drawers",
-    "tap"
-   ],
-   "transition": {
-    "kind": "tiles",
-    "ms": 800
-   }
-  },
-  {
-   "id": "colosseum",
-   "name": "Colosseum",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "Where strategies fight: seven rounds on real stored numbers",
-   "glyph": "C",
-   "ambient": "chimes",
-   "flavour": [
-    "torches",
-    "Enter the arena",
-    "tap"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 5
-   }
-  },
-  {
-   "id": "nq",
-   "name": "NQ",
-   "group": "trading",
-   "accent": "#c8a24a",
-   "description": "The NQ bots, right now: status, drawdown left, last trades",
-   "glyph": "Ν",
-   "ambient": "chimes",
-   "flavour": [
-    "columns",
-    "The bots, right now",
-    "tick"
-   ],
-   "transition": {
-    "kind": "columns",
-    "ms": 1000,
-    "n": 3
-   }
-  },
-  {
-   "id": "symposium",
-   "name": "Symposium",
-   "group": "life",
-   "accent": "#d9b25a",
-   "description": "Meet everyone who works for you, and talk to them",
-   "glyph": "Σ",
-   "ambient": "chimes",
-   "flavour": [
-    "torches",
-    "Take a seat",
-    "tap"
-   ],
-   "transition": {
-    "kind": "curtain",
-    "ms": 900
-   }
-  }
- ],
- "pending": [],
- "_pending_note": "Listed by the lead but with no wiring section (and no folder) yet: add an entry here when their section lands."
+  "_about": "Every app built on the 2026-11-10 night sprint, copied from docs/NEW_APPS_WIRING.md. tools/wire_new_apps.py applies it idempotently, and only for apps whose folder tools/web_public/<id>/index.html exists. Add a new app by appending an entry (id, name, group, accent, glyph, description, ambient, flavour [scene, tagline, first sound], transition {kind, ms, n?}).",
+  "apps": [
+    {
+      "id": "delphi",
+      "name": "Delphi",
+      "group": "trading",
+      "accent": "#e0b060",
+      "description": "The oracle\\'s briefing: plan, target, go / no-go",
+      "glyph": "Φ",
+      "ambient": "chimes",
+      "flavour": [
+        "rings",
+        "Read the omens",
+        "tick"
+      ],
+      "transition": {
+        "kind": "sunburst",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "pnyx",
+      "name": "Pnyx",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "Prop-firm rules and risk calculator: stop to micros",
+      "glyph": "Π",
+      "ambient": "coins",
+      "flavour": [
+        "columns",
+        "Count the risk",
+        "tap"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 5
+      }
+    },
+    {
+      "id": "mint",
+      "name": "Mint",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "The money machine: five streams, one honest estimate",
+      "glyph": "M",
+      "ambient": "coins",
+      "flavour": [
+        "columns",
+        "Strike the coin",
+        "tap"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 5
+      }
+    },
+    {
+      "id": "mintcity",
+      "name": "Mint City",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "The five money machines as a marble city",
+      "glyph": "MC",
+      "ambient": "coins",
+      "flavour": [
+        "columns",
+        "Raise the city",
+        "tick"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 5
+      }
+    },
+    {
+      "id": "mercury",
+      "name": "Mercury",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "Deal watcher: sales, codes, free resets, rule changes",
+      "glyph": "☿",
+      "ambient": "coins",
+      "flavour": [
+        "coins",
+        "Find the saving",
+        "tap"
+      ],
+      "transition": {
+        "kind": "tiles",
+        "ms": 800
+      }
+    },
+    {
+      "id": "chrysos",
+      "name": "Chrysos",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "Prop-firm fleet planner: fees against payouts, break-even (estimate)",
+      "glyph": "X",
+      "ambient": "coins",
+      "flavour": [
+        "coins",
+        "Count the gold",
+        "tap"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 4
+      }
+    },
+    {
+      "id": "sibyl",
+      "name": "Sibyl",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "Prediction-market edges after fees: paper picks, ruin odds, what could go wrong",
+      "glyph": "Σ",
+      "ambient": "chimes",
+      "flavour": [
+        "rings",
+        "Read the odds",
+        "tick"
+      ],
+      "transition": {
+        "kind": "sunburst",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "oikos",
+      "name": "Oikos",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "The household: where money leaks, tax set-aside, buckets, reinvest or withdraw",
+      "glyph": "O",
+      "ambient": "coins",
+      "flavour": [
+        "coins",
+        "Keep what you make",
+        "tap"
+      ],
+      "transition": {
+        "kind": "waves",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "arbiter",
+      "name": "Arbiter",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "Paper-only spreads and funding: net yearly return after costs",
+      "glyph": "Ξ",
+      "ambient": "coins",
+      "flavour": [
+        "coins",
+        "Weigh the spread",
+        "tap"
+      ],
+      "transition": {
+        "kind": "tiles",
+        "ms": 800
+      }
+    },
+    {
+      "id": "stoa",
+      "name": "Stoa",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "The colonnade: what needs you right now",
+      "glyph": "Σ",
+      "ambient": "chimes",
+      "flavour": [
+        "columns",
+        "Light the columns",
+        "tick"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 6
+      }
+    },
+    {
+      "id": "aegis",
+      "name": "Aegis",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "Risk guard: drawdown left, a full-stop what-if, when to stop for the day",
+      "glyph": "A",
+      "ambient": "chimes",
+      "flavour": [
+        "columns",
+        "Raise the shield",
+        "tap"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 3
+      }
+    },
+    {
+      "id": "lyceum",
+      "name": "Lyceum",
+      "group": "life",
+      "accent": "#c8a24a",
+      "description": "The school: daily rules quiz, ranks, habits costing money",
+      "glyph": "Σ",
+      "ambient": "chimes",
+      "flavour": [
+        "columns",
+        "Learn your own rules",
+        "tap"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 6
+      }
+    },
+    {
+      "id": "nike",
+      "name": "Nike",
+      "group": "life",
+      "accent": "#c8a24a",
+      "description": "The trophy hall: milestones and wins from real numbers",
+      "glyph": "Ν",
+      "ambient": "chimes",
+      "flavour": [
+        "rings",
+        "Count your wins",
+        "tap"
+      ],
+      "transition": {
+        "kind": "sunburst",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "kronos",
+      "name": "Kronos",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "The calendar of money: daily P&L, best weekday and hour, a bad week",
+      "glyph": "K",
+      "ambient": "chimes",
+      "flavour": [
+        "rings",
+        "Read the shadow",
+        "tick"
+      ],
+      "transition": {
+        "kind": "sunburst",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "moirai",
+      "name": "Moirai",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "The three fates: pass, bust and time of an eval, simulated",
+      "glyph": "M",
+      "ambient": "chimes",
+      "flavour": [
+        "rings",
+        "Spin the threads",
+        "tick"
+      ],
+      "transition": {
+        "kind": "waves",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "epilogue",
+      "name": "Epilogue",
+      "group": "life",
+      "accent": "#c8a24a",
+      "description": "Your week in 60 seconds: the Sunday review",
+      "glyph": "Ω",
+      "ambient": "chimes",
+      "flavour": [
+        "rings",
+        "Read the week",
+        "tick"
+      ],
+      "transition": {
+        "kind": "tiles",
+        "ms": 800
+      }
+    },
+    {
+      "id": "argo",
+      "name": "Argo",
+      "group": "money",
+      "accent": "#4b7a99",
+      "description": "The voyage: your money goals as islands, honest ETA ranges",
+      "glyph": "Α",
+      "ambient": "sea",
+      "flavour": [
+        "rings",
+        "Set sail",
+        "tap"
+      ],
+      "transition": {
+        "kind": "waves",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "kratos",
+      "name": "Kratos",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "Discipline score 0-100 per day: plan, stop, size, hours, flat",
+      "glyph": "K",
+      "ambient": "chimes",
+      "flavour": [
+        "columns",
+        "Keep your own rules",
+        "tap"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 4
+      }
+    },
+    {
+      "id": "pythia",
+      "name": "Pythia",
+      "group": "trading",
+      "accent": "#e0b060",
+      "description": "The risk calendar: the next 14 days, and what the bots do around each event",
+      "glyph": "Ψ",
+      "ambient": "chimes",
+      "flavour": [
+        "rings",
+        "Read the calendar",
+        "tick"
+      ],
+      "transition": {
+        "kind": "sunburst",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "gallery",
+      "name": "Agora Gallery",
+      "group": "life",
+      "accent": "#c8a24a",
+      "description": "Every 3D shape of the Agora on a turning pedestal",
+      "glyph": "Γ",
+      "ambient": "chimes",
+      "flavour": [
+        "columns",
+        "Walk the Agora",
+        "tap"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 5
+      }
+    },
+    {
+      "id": "kairos",
+      "name": "Kairos",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "The right moment: the bots' day on a 24-hour ring, what they do now",
+      "glyph": "K",
+      "ambient": "chimes",
+      "flavour": [
+        "rings",
+        "Find the right moment",
+        "tick"
+      ],
+      "transition": {
+        "kind": "sunburst",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "compass",
+      "name": "Compass",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "The next best action: at most five things for today, with why",
+      "glyph": "C",
+      "ambient": "chimes",
+      "flavour": [
+        "rings",
+        "Find north",
+        "tick"
+      ],
+      "transition": {
+        "kind": "sunburst",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "pheme",
+      "name": "Pheme",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "The word on the street: releases, and NQ's past moves on them",
+      "glyph": "Ξ",
+      "ambient": "chimes",
+      "flavour": [
+        "threads",
+        "Hear the word",
+        "tick"
+      ],
+      "transition": {
+        "kind": "tiles",
+        "ms": 800
+      }
+    },
+    {
+      "id": "harmonia",
+      "name": "Harmonia",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "The balance: what leans on the NQ bots, and what is left",
+      "glyph": "H",
+      "ambient": "coins",
+      "flavour": [
+        "bars",
+        "Weigh it up",
+        "tap"
+      ],
+      "transition": {
+        "kind": "waves",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "helios",
+      "name": "Helios",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "The morning briefing: today, drawdown, deals, plan",
+      "glyph": "S",
+      "ambient": "chimes",
+      "flavour": [
+        "rings",
+        "Rise and plan",
+        "tick"
+      ],
+      "transition": {
+        "kind": "sunburst",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "ergasterion",
+      "name": "Ergasterion",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "The workshop: every AI worker, what it does and learns",
+      "glyph": "E",
+      "ambient": "chimes",
+      "flavour": [
+        "columns",
+        "Walk the workshop",
+        "tap"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 5
+      }
+    },
+    {
+      "id": "archive",
+      "name": "Archive",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "The library of everything we ever tested, searchable",
+      "glyph": "B",
+      "ambient": "chimes",
+      "flavour": [
+        "columns",
+        "Open the shelves",
+        "tap"
+      ],
+      "transition": {
+        "kind": "tiles",
+        "ms": 800
+      }
+    },
+    {
+      "id": "pinakes",
+      "name": "Pinakes",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "The catalogue: browse and query every table OLYMPUS keeps",
+      "glyph": "Κ",
+      "ambient": "scroll",
+      "flavour": [
+        "columns",
+        "Open the drawers",
+        "tap"
+      ],
+      "transition": {
+        "kind": "tiles",
+        "ms": 800
+      }
+    },
+    {
+      "id": "colosseum",
+      "name": "Colosseum",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "Where strategies fight: seven rounds on real stored numbers",
+      "glyph": "C",
+      "ambient": "chimes",
+      "flavour": [
+        "torches",
+        "Enter the arena",
+        "tap"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 5
+      }
+    },
+    {
+      "id": "nq",
+      "name": "NQ",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "The NQ bots, right now: status, drawdown left, last trades",
+      "glyph": "Ν",
+      "ambient": "chimes",
+      "flavour": [
+        "columns",
+        "The bots, right now",
+        "tick"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 3
+      }
+    },
+    {
+      "id": "symposium",
+      "name": "Symposium",
+      "group": "life",
+      "accent": "#d9b25a",
+      "description": "Meet everyone who works for you, and talk to them",
+      "glyph": "Σ",
+      "ambient": "chimes",
+      "flavour": [
+        "torches",
+        "Take a seat",
+        "tap"
+      ],
+      "transition": {
+        "kind": "curtain",
+        "ms": 900
+      }
+    },
+    {
+      "id": "herald",
+      "name": "Herald",
+      "group": "life",
+      "accent": "#c8a24a",
+      "description": "The daily paper: who built what, the day, the verdicts, all sourced",
+      "glyph": "Η",
+      "ambient": "scroll",
+      "flavour": [
+        "columns",
+        "Unroll the news",
+        "tap"
+      ],
+      "transition": {
+        "kind": "tiles",
+        "ms": 800
+      }
+    }
+  ],
+  "pending": [],
+  "_pending_note": "Listed by the lead but with no wiring section (and no folder) yet: add an entry here when their section lands."
 }
