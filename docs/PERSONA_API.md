@@ -72,6 +72,29 @@ Files (People agent): `olympus/people-voice.js` (voices + mouth timeline), `olym
 - Events: `olympus:people:say` `{ id, text, engine, bubble }`, `olympus:people:said` `{ id, cut }`, `olympus:people:show`, `olympus:people:walk` `{ id, app }`.
 - **Lip sync through Figure API v2**: `say()` fires `olympus:people:speak` `{ id, on }`, `olympus:people:viseme` `{ id, viseme, amount }` (v2 names: `rest A E O MBP smile frown`, mapped from the kit's finer timeline `rest A E O U M F L S K`) and `olympus:people:expression` `{ id, expr }` (v2 expressions from the mood); a scene that listens (Symposium's hall) moves that person's close-up. A figure handed to `say()` directly is driven with `setMouth` / `setExpression` / `play`. The sheet's portrait draws the same mouth (`portrait(id, size, { mouth, expr })`). Ducking: `OLYMPUS_SFX.speaking(true/false)` around real speech; the murmur plays through `OLYMPUS_SFX.bus('voices')`.
 
+## Figure API v3: the rigged cast (2026-11-11, owner: "like 5% done ... x200")
+The people are now real modelled, rigged and animated characters: the KayKit Character Pack Adventurers 1.0 (Kay Lousberg, CC0; `docs/ASSETS_LICENSES.md`)
+rebuilt by `tools/people_cast_build.mjs` into one shared file, `assets/people/cast.glb` (497 KB: 26 parts on one 23-bone skeleton, colours baked to
+vertex colours with a slot per vertex, 22 clips, meshopt), and dressed as OUR people by `olympus/people-rig.js`. The v2 API above is unchanged.
+- `figure(THREE, spec, opts)` returns the rigged character when the cast is loaded (sync), else the v2 figure as an instant placeholder that is upgraded
+  IN PLACE when the cast arrives (same object, same `userData` object, pose / face / look / talking carried over; `f.addEventListener('rig', fn)`).
+  No cast (node, `?rig=0`, `window.OLYMPUS_RIG = false`, a failed load, `opts.rig === false`) = the v2 figure. `loadRig()` -> Promise<bool>,
+  `rigStatus()` -> 'v3' | 'loading' | 'v2', `figureV2(...)` (the made-in-code figure), `rigInstall(module, cast)` (tests).
+- A person (deterministic from the seed): face (3), hair (swept, bob, long, bald, bun / topknot, hood, crested bronze helmet), body (armour, robe, tunic,
+  apron) with bare legs and sandals, cape, beard / moustache, earring, glasses; their own skin, hair, outfit and accent colours, bronze (gold for champions
+  and the Mind) metal; Greek accessories made in code on hand / head / chest bones: laurel, hammer, scroll, coin pouch, lantern staff + key, owl on the
+  shoulder, torch. 2 draw calls (body; face with 13 morphs: blink, wide, browUp / browSad / browAngry, eyeX / eyeY, A E O MBP smile frown), one shared
+  material (vertex colours, soft cool rim, bronze shine), about 4,500-6,700 triangles.
+- Poses (`POSE_NAMES`): the v2 names + `run`, `sit`, `interact`, `pickup`, `jump`, `surprised`. Clips from the pack (idle x2, walk x3, run, cheer, sit,
+  chop for `hammer`, interact, pick up, jump, hit) with crossfades; wave, talk, nod, shrug, think, slump and the work loops (write, read, weigh,
+  telescope, type, carry) are layers on top (arm aiming, head and chest turns). `opts.seated` sits them (the hall's couch height). The work props appear
+  per pose (built on demand), as in v2.
+- `userData` adds `rig: 3`, `character` (the controller), `outfit`, `faceMesh`, `info()`; `parts.head` is a point at the face (labels, bubbles, camera).
+- Crowds: `figureInstanced` keeps its v2 data and API; in a browser it photographs every person from their rigged self (at rest and talking) into one atlas
+  (`olympus/people-studio.js`) and draws the crowd as camera-facing sprites: 1 draw call, 2 triangles a person (`userData.impostors`, event 'impostors').
+- Portraits: `OLYMPUS_PEOPLE.portrait(id, size, opts)` still returns the SVG at once; in a browser with WebGL (not LITE) a photo of the 3D character (head
+  and shoulders, the same face and mouth) is laid over it when ready, cached in memory and IndexedDB (`olympus-people` / `photos`). `{ photo: false }` = SVG only.
+
 ## Scene direction: cameras, controls, the HUD and the opener (2026-11-11, `olympus/camera-rig.js`, `olympus/controls.js`)
 How it feels to be in a world on a phone. Shared, pure where possible (node-tested in `tests/test_scene_direction.py`, which also drives the three scenes live).
 - **Camera rig** `createRig(camera, { world, reduced, dist, pitch, radius, focus(p), near(alpha) })`: shots `follow` (third person behind your own character: swipe = `orbit(dAz, dPitch)`, pinch = `zoom(k)`, eases back behind you while you walk, frames a nearby person via `interest(p)`), `talk` (`{ a, b, side, two, lookDown, back }`: an over-the-shoulder two-shot, then a close-up of the speaker with a slow dolly in; `focus` gets the speaker's head for fx-cine), `establish` (`{ from, look, pivot, dur, to?, done }`: a wide glide down into the follow camera or into `to`), `tour`, `fixed`. Call `follow(target)` and `update(dt)` every frame. THE RULE: the camera is never inside geometry: every frame it is sphere-cast from a free pivot (your head, the speaker's head) against `makeWorld({ boxes, circles, walls, ground })` and pulled in front of the first hit; `inside()` says what it touches (tests: always '').

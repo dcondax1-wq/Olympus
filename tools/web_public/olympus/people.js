@@ -19,7 +19,7 @@ import * as SH from './people-show.js';
 const NS = 'http://www.w3.org/2000/svg';
 const REQ_KEY = 'olympus.requests.v1', ME_KEY = 'olympus.me.v1', MEM_KEY = 'olympus.people.mem.v1', SPEAK_KEY = 'olympus.people.speak';
 const D = createData();
-const S = { roster: C.normRoster(null), ready: null, facts: new Map(), provided: new Map(), mem: new Map(), sheet: null, cur: null, log: [], busy: false, anchor: null, blinkT: 0, rec: null, asked: new Map(), stage: null, saying: null, mouth: null, unlocked: false, p3: null };
+const S = { roster: C.normRoster(null), ready: null, facts: new Map(), provided: new Map(), mem: new Map(), sheet: null, cur: null, log: [], busy: false, anchor: null, blinkT: 0, rec: null, asked: new Map(), stage: null, saying: null, mouth: null, unlocked: false, p3: null, studio: null };
 const VO = V.createVoice();
 const safe = (f, d) => { try { return f(); } catch (_) { return d; } };
 const reduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; } };
@@ -72,7 +72,16 @@ function portrait(id, size, opts) {
   const tree = C.portraitTree(sp, { size: size || 44, mood: o.mood || sp.mood, expr: o.expr, mouth: o.mouth, blink: o.blink, talk: o.talk, ring: o.ring || (f ? C.STATUS_COLOUR[f.f.status] : '#9c6b3c'), label: o.label || (p ? p.name : 'portrait'), uid: o.uid });
   const el = svgNode(tree);
   el.setAttribute('class', 'pp-portrait');
+  if (o.photo !== false) photo(el, sp, { size: size || 44, expr: o.expr || (C.MOOD_EXPR && C.MOOD_EXPR[o.mood || sp.mood]) || 'neutral', mouth: o.talk ? 'A' : o.mouth });
   return el;
+}
+/** v3: the same person photographed from their rigged 3D character (olympus/people-studio.js), laid over the SVG when ready; the SVG stays without WebGL */
+function photo(el, sp, o) {
+  try {
+    if (typeof document === 'undefined' || typeof WebGLRenderingContext === 'undefined' || !document.createElementNS) return;
+    if (!S.studio) S.studio = import('./people-studio.js').then((m) => m, () => null);
+    S.studio.then((m) => { if (m) m.decorate(el, sp, o); });
+  } catch (_) { /* the SVG stays */ }
 }
 /** the same avatar as SVG text (for a canvas texture in a 3D scene) */
 function portraitText(id, size, opts) { const sp = specOf(id); return C.svgText(C.portraitTree(sp, { size: size || 128, mood: (opts && opts.mood) || sp.mood, ...(opts || {}) })); }

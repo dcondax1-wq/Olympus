@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>People lab</title>
 <meta name="theme-color" content="#14110e">
-<!-- PEOPLE LAB (v2): look at every person of the roster. A turntable of one person (drag to turn) with every pose, expression and mouth shape; a lineup of everyone
+<!-- PEOPLE LAB (v3: the rigged cast, people-rig.js; v2 when the cast cannot load): look at every person of the roster. A turntable of one person (drag to turn) with every pose, expression and mouth shape; a lineup of everyone
      (one crowd in 2 draw calls + close-up figures at work), with the measured draw calls and triangles; the 2D portraits. A checking page for the people kit
      (olympus/people.js, people3d.js); not an app. ?person=<id> ?pose=<pose> ?expr=<expression> ?mouth=<viseme> ?still=1 (one frame, no animation) ?lite=1 -->
 <link rel="stylesheet" href="agora.css?v=a1">
@@ -42,22 +42,24 @@
 <h2>Everyone (one crowd, close-ups at work)</h2>
 <canvas id="line" aria-label="Everyone in the roster, standing together"></canvas>
 <p class="meter" id="lmeter"></p>
-<h2>Portraits (96 px, then 44 px: calm, proud, sheepish, worried)</h2>
+<h2>Portraits (photographed from the 3D character; 96 px, then 44 px: calm, proud, sheepish, worried)</h2>
 <div class="grid" id="grid"></div>
+<p class="meter" id="credit">Bodies and animations: KayKit Character Pack Adventurers 1.0 by Kay Lousberg (kaylousberg.com), CC0. Faces, colours, Greek outfits, accessories and the extra moves (wave, talk, nod, shrug, think and the work loops) are our own. Licences: docs/ASSETS_LICENSES.md.</p>
 <script type="module">
 import P from './people.js?v=p2';
 import * as THREE from '../jarvis/three.module.min.js';
-import { spec, figure, figureInstanced, play, animate, lookAt, setMouth, setExpression, setTalking, POSE_NAMES, WORK_POSES, VISEMES, EXPRESSIONS } from './people3d.js?v=p2';
+import { spec, figure, figureInstanced, play, animate, lookAt, setMouth, setExpression, setTalking, POSE_NAMES, WORK_POSES, VISEMES, EXPRESSIONS, loadRig, rigStatus } from './people3d.js?v=p2';
 const q = new URLSearchParams(location.search), still = q.get('still') === '1', lite = q.get('lite') === '1';
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 await P.ready(); try { await P.warm(); } catch (_) { /* sample */ }
+await Promise.race([loadRig(), new Promise((r) => setTimeout(r, 15000))]);      // the rigged cast (v3); without it the v2 figures
 const people = P.list(), villagers = P.list({ kind: 'villager' }).slice(0, 8), all = people.concat(villagers);
 const $ = (id) => document.getElementById(id);
-const st = { i: Math.max(0, all.findIndex((p) => p.id === q.get('person'))), pose: POSE_NAMES.indexOf(q.get('pose')) >= 0 ? q.get('pose') : 'idle', expr: EXPRESSIONS.indexOf(q.get('expr')) >= 0 ? q.get('expr') : null, talk: false, look: true, spin: !still, fig: null, mouth: q.get('mouth'), mouthUntil: 0 };
-const info = { turn: {}, line: {} };
+const st = { seated: q.get('seated') === '1', close: q.get('close') === '1', i: Math.max(0, all.findIndex((p) => p.id === q.get('person'))), pose: POSE_NAMES.indexOf(q.get('pose')) >= 0 ? q.get('pose') : 'idle', expr: EXPRESSIONS.indexOf(q.get('expr')) >= 0 ? q.get('expr') : null, talk: false, look: true, spin: !still, fig: null, mouth: q.get('mouth'), mouthUntil: 0 };
+const info = { turn: {}, line: {}, rig: rigStatus() };
 function btn(row, label, on, pressed) { const b = document.createElement('button'); b.className = 'b'; b.type = 'button'; b.textContent = label; if (pressed != null) b.setAttribute('aria-pressed', String(!!pressed)); b.addEventListener('click', on); $(row).appendChild(b); return b; }
-function lights(scene) { scene.add(new THREE.HemisphereLight('#ffe9c4', '#4a3828', 1.35)); const sun = new THREE.DirectionalLight('#ffd9a0', 2.3); sun.position.set(2.5, 4, 3.5); scene.add(sun); const back = new THREE.DirectionalLight('#c9d6e0', 0.6); back.position.set(-3, 2.5, -3); scene.add(back); }
-function renderer(canvas) { const r = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'low-power' }); r.setPixelRatio(Math.min(2, devicePixelRatio || 1)); r.outputColorSpace = THREE.SRGBColorSpace; return r; }
+function lights(scene) { scene.add(new THREE.HemisphereLight('#fbf3e6', '#4a3d30', 1.25)); const sun = new THREE.DirectionalLight('#fff0dc', 2.2); sun.position.set(2.5, 4, 3.5); scene.add(sun); const back = new THREE.DirectionalLight('#c9d6e0', 0.6); back.position.set(-3, 2.5, -3); scene.add(back); }
+function renderer(canvas) { const r = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'low-power' }); r.setPixelRatio(Math.min(2, devicePixelRatio || 1)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; return r; }
 let turn = null, line = null;
 try {
   // ---- the turntable
@@ -69,18 +71,18 @@ try {
   function set(i) {
     st.i = (i + all.length) % all.length; const p = all[st.i];
     if (st.fig) st.fig.userData.dispose();
-    st.fig = figure(THREE, spec(p.id), { lite }); holder.add(st.fig);
+    st.fig = figure(THREE, spec(p.id), { lite, seated: !!st.seated }); holder.add(st.fig);
     play(st.fig, st.pose); if (st.expr) setExpression(st.fig, st.expr); setTalking(st.fig, st.talk);
-    $('pname').textContent = p.name; $('ptitle').textContent = p.title + ' (' + st.fig.userData.look.cut + ', ' + st.fig.userData.look.garb + ')';
+    $('pname').textContent = p.name; const ot = st.fig.userData.outfit; $('ptitle').textContent = p.title + ' (' + (ot ? [ot.body, (ot.hair || 'no hair').replace('hair_', ''), ot.cape ? 'cape' : '', ot.hood ? 'hood' : '', ot.accessory].filter(Boolean).join(', ') : st.fig.userData.look.cut + ', ' + st.fig.userData.look.garb) + ')';
     $('pp').replaceChildren(P.portrait(p.id, 44));
     info.turn.triangles = st.fig.userData.triangles;
   }
-  function fit() { const w = $('turn').clientWidth, h = $('turn').clientHeight; r.setSize(w, h, false); cam.aspect = w / h; cam.position.set(0, 0.72, 3.0); cam.lookAt(0, 0.55, 0); cam.updateProjectionMatrix(); }
+  function fit() { const w = $('turn').clientWidth, h = $('turn').clientHeight; r.setSize(w, h, false); cam.aspect = w / h; cam.position.set(0, st.close ? 0.72 : 0.68, st.close ? 1.45 : 2.9); cam.lookAt(0, st.close ? 0.66 : 0.5, 0); cam.updateProjectionMatrix(); }
   function frame(dt, t) {
     holder.rotation.y = angle; me.copy(cam.position);
     if (st.fig) { lookAt(st.fig, st.look ? me : null); if (st.mouth && (still || t < st.mouthUntil)) setMouth(st.fig, st.mouth, 1); st.fig.userData.tick(dt, t); }
     r.render(scene, cam); info.turn.calls = r.info.render.calls; info.turn.tris = r.info.render.triangles;
-    $('tmeter').textContent = 'This figure: ' + r.info.render.calls + ' draw calls with the floor, ' + (st.fig ? st.fig.userData.triangles.toLocaleString('en-US') : 0) + ' triangles (body ' + (st.fig ? st.fig.userData.bodyTriangles.toLocaleString('en-US') : 0) + ' + ink line).';
+    $('tmeter').textContent = 'This figure: ' + r.info.render.calls + ' draw calls with the floor, ' + (st.fig ? st.fig.userData.triangles.toLocaleString('en-US') : 0) + ' triangles' + (st.fig && st.fig.userData.rig ? ' (rigged v3: body + face, ' + st.fig.userData.info().bones + ' bones, ' + st.fig.userData.state().base + ').' : ' (v2: body ' + (st.fig ? st.fig.userData.bodyTriangles.toLocaleString('en-US') : 0) + ' + ink line).');
   }
   $('turn').addEventListener('pointerdown', (e) => { drag = { x: e.clientX, a: angle }; st.spin = false; $('turn').setPointerCapture(e.pointerId); });
   $('turn').addEventListener('pointermove', (e) => { if (drag) { angle = drag.a + (e.clientX - drag.x) * 0.012; if (still) frame(0, 1.3); } });
@@ -94,25 +96,28 @@ try {
   const tb = btn('toggles', 'Talk', () => { st.talk = !st.talk; setTalking(st.fig, st.talk); tb.setAttribute('aria-pressed', String(st.talk)); }, false);
   const lb = btn('toggles', 'Look at me', () => { st.look = !st.look; lb.setAttribute('aria-pressed', String(st.look)); }, true);
   const sb = btn('toggles', 'Spin', () => { st.spin = !st.spin; sb.setAttribute('aria-pressed', String(st.spin)); }, st.spin);
+  const seb = btn('toggles', 'Seated', () => { st.seated = !st.seated; seb.setAttribute('aria-pressed', String(st.seated)); set(st.i); }, false);
+  const cb = btn('toggles', 'Close-up', () => { st.close = !st.close; cb.setAttribute('aria-pressed', String(st.close)); fit(); if (still) frame(0.05, 1.3); }, false);
   fit(); addEventListener('resize', fit); set(st.i);
   turn = { frame, set, angle: (a) => { angle = a; }, step: (dt) => { if (st.spin && !reduced) angle += dt * 0.5; } };
   // ---- the lineup: everyone as one crowd, and a few close-ups at work in front
   const r2 = renderer($('line')), s2 = new THREE.Scene(); s2.background = new THREE.Color('#3a2c1e'); s2.fog = new THREE.Fog('#3a2c1e', 9, 22); lights(s2);
   const floor = new THREE.Mesh(new THREE.CircleGeometry(16, 48), new THREE.MeshStandardMaterial({ color: '#cdbf9f', roughness: 0.95 })); floor.rotation.x = -Math.PI / 2; s2.add(floor);
-  const cam2 = new THREE.PerspectiveCamera(38, 1, 0.1, 60);
-  const front = people.slice(0, 6), heroes = front.map((p, i) => { const f = figure(THREE, spec(p.id), { lite }); f.position.set((i - 2.5) * 0.66, 0, 1.25 - Math.abs(i - 2.5) * 0.12); f.rotation.y = -(i - 2.5) * 0.08; play(f, WORK_POSES[p.kind] || 'idle'); s2.add(f); return f; });
+  const cam2 = new THREE.PerspectiveCamera(34, 1, 0.1, 60);
+  const front = people.slice(0, 6); const heroes = front.map((p, i) => { const f = figure(THREE, spec(p.id), { lite }); f.position.set((i - 2.5) * 0.66, 0, 1.25 - Math.abs(i - 2.5) * 0.12); f.rotation.y = -(i - 2.5) * 0.08; play(f, WORK_POSES[p.kind] || 'idle'); s2.add(f); return f; });
   const rest = all.filter((p) => !front.includes(p)), crowd = figureInstanced(THREE, rest.map((p) => spec(p.id)), { lite: true });
   rest.forEach((p, i) => { const per = 10, row = Math.floor(i / per), k = i % per, n = Math.min(per, rest.length - row * per); crowd.userData.place(i, (k - (n - 1) / 2) * 0.62 + (row % 2) * 0.2, 0, -0.2 - row * 0.85, 0, 1); });
   s2.add(crowd);
-  function fit2() { const w = $('line').clientWidth, h = $('line').clientHeight; r2.setSize(w, h, false); cam2.aspect = w / h; const d = w < 600 ? 6.4 : 4.8; cam2.position.set(0, 1.55, d); cam2.lookAt(0, 0.5, -0.6); cam2.updateProjectionMatrix(); }
+  function fit2() { const w = $('line').clientWidth, h = $('line').clientHeight; r2.setSize(w, h, false); cam2.aspect = w / h; const d = w < 600 ? 7.4 : 5.0; cam2.position.set(0, 1.35, d); cam2.lookAt(0, 0.5, -0.9); cam2.updateProjectionMatrix(); }
   fit2(); addEventListener('resize', fit2);
   function frame2(dt, t) {
     for (const f of heroes) { lookAt(f, null); f.userData.tick(dt, t); }
     crowd.userData.lookAll(cam2.position); crowd.userData.tick(t);
-    r2.render(s2, cam2); info.line.calls = r2.info.render.calls; info.line.tris = r2.info.render.triangles; info.line.crowdCalls = crowd.userData.drawCalls; info.line.people = all.length;
-    $('lmeter').textContent = all.length + ' people on screen in ' + r2.info.render.calls + ' draw calls and ' + r2.info.render.triangles.toLocaleString('en-US') + ' triangles (the crowd of ' + rest.length + ' is ' + crowd.userData.drawCalls + ' draw calls).';
+    r2.render(s2, cam2); info.line.calls = r2.info.render.calls; info.line.tris = r2.info.render.triangles; info.line.crowdCalls = crowd.userData.drawCalls; info.line.impostors = !!crowd.userData.impostors; info.rig = rigStatus(); info.line.people = all.length;
+    $('lmeter').textContent = all.length + ' people on screen in ' + r2.info.render.calls + ' draw calls and ' + r2.info.render.triangles.toLocaleString('en-US') + ' triangles (the crowd of ' + rest.length + ' is ' + crowd.userData.drawCalls + ' draw calls' + (crowd.userData.impostors ? ': sprites photographed from their 3D selves' : '') + ').';
   }
   line = { frame: frame2 };
+  crowd.addEventListener('impostors', () => { if (still) frame2(0.05, 1.3); });      // the sprites arrive after the cast is photographed
 } catch (e) { $('status').textContent = 'No WebGL here: ' + (e && e.message ? e.message : e); }
 // ---- portraits
 for (const p of all) {

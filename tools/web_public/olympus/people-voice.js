@@ -190,6 +190,8 @@ export function createVoice(opts) {
 
   // the murmur: one soft vowel blip per mouth key, a little formant filter, quiet. Our own sound for "no voice on this device".
   function murmur(prof, tl, at0) {
+    const S = SFX();                                         // the shared engine's formant murmur (sfx.js murmur: pitch contour, vowels, breath) when it is there
+    if (S && typeof S.murmur === 'function') { const h = safe(() => S.murmur(prof, tl, { at0: at0 || 0 }), null); if (h) return h; }
     const A = audio(); if (!A) return null;
     const t0 = A.currentTime + 0.04, out = A.createGain(); out.gain.value = 0.055; out.connect(voiceOut(A));
     const F1 = { A: 820, E: 520, O: 560, U: 360, L: 420, K: 600, S: 480, F: 400, M: 300 }, nodes = [];

@@ -639,3 +639,12 @@ No new app. Wiring for the lead:
 - `tools/web_public/jarvis/index.html`: `./transitions.js?v=t2` -> `?v=t3` (door / scroll / flythrough kinds + `level()`).
 - `tools/web_public/sw.js`: bump `CACHE` (render.js, fx-cine.js, fx-ui.js, fx-text.js, fx-lab.html, symposium/hall.js, ergasterion/floor.js, colosseum/arena.js, cities/athens.js, cities/hellas.js changed).
 - `olympus/olympus.js` FXMAP (zero-edit wiring of the new UI effects): `press: 'ui', stagger: 'ui', goldFlash: 'text'`.
+
+## Characters v3 (the rigged cast, People kit; 2026-11-11)
+No new app. Wiring for the lead:
+- `tools/web_public/sw.js`: bump `CACHE` (people3d.js, people.js, people-lab.html, symposium/hall.js changed; new olympus/people-rig.js, olympus/people-studio.js,
+  olympus/three-addons/{GLTFLoader,SkeletonUtils,BufferGeometryUtils,meshopt_decoder.module}.js, assets/people/cast.glb). `assets/` is not in OTHER_APPS, so
+  `assets/people/cast.glb?v=3` (497 KB, versioned) is kept cache-first after the first visit (offline OK). Optional: precache it in SHELL for offline-first.
+- Any app service worker that precaches `olympus/people3d.js` should also list `olympus/people-rig.js`, `olympus/people-studio.js`, the four three-addons
+  files and `assets/people/cast.glb?v=3` (`olympus/` is an OTHER_APPS folder with its own caching).
+- Nothing to add to apps.js / olympus.js APPS / build_web_dashboard.py.
