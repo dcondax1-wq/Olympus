@@ -190,7 +190,7 @@
   ]
  },
  "writeups": {
-  "count": 143,
+  "count": 145,
   "latest": [
    {
     "date": "2026-11-04",
@@ -912,166 +912,166 @@
   "available": true,
   "commits": [
    {
-    "t": 1794321890,
-    "s": "Night brief round 2"
+    "t": 1794358699,
+    "s": "Cities test follows the drawn map for the continent fly and expects the absent site kalshi.json; Tyche: one A…"
    },
    {
-    "t": 1794288702,
-    "s": "Merge old-app phone-fit fixes (16 apps); worker v73"
+    "t": 1794357755,
+    "s": "Phone-fit layout: observatory columns slide in a strip under 380 px, Odeon ticks get a 44 px row over the scr…"
    },
    {
-    "t": 1794288675,
-    "s": "Phone-fit round 3: old-app fixes, results and what is left"
+    "t": 1794357606,
+    "s": "Hermes: a paused story rests (buttons take a tap; the suite runs to the end 112/116 - test accepts the site-f…"
    },
    {
-    "t": 1794288548,
-    "s": "Phone-fit old app: tyche (its 7 failing checks exist without this CSS)"
+    "t": 1794356792,
+    "s": "Round 3 fixes: atlas_ui prints [PASS] and exposes RES (gate counts it); cities test taps a district building…"
    },
    {
-    "t": 1794288548,
-    "s": "Phone-fit old app: oracle (its 4 failing checks exist without this CSS)"
+    "t": 1794356326,
+    "s": "Night brief round 3"
    },
    {
-    "t": 1794288547,
-    "s": "Phone-fit old app: argus (its 2 failing checks exist without this CSS)"
+    "t": 1794332272,
+    "s": "Worker v78"
    },
    {
-    "t": 1794288547,
-    "s": "Phone-fit old app: arena (its 3 failing checks exist without this CSS)"
+    "t": 1794329229,
+    "s": "tests: Kalshi readers' site-first fetch pinned (ledger, kalshicity, kalshi page)"
    },
    {
-    "t": 1794288529,
-    "s": "Phone-fit old app: observatory"
+    "t": 1794328781,
+    "s": "tyche test: pins follow the site-first feed read"
    },
    {
-    "t": 1794288529,
-    "s": "Phone-fit old app: tree"
+    "t": 1794328159,
+    "s": "docs: HOSTING_OPTIONS"
    },
    {
-    "t": 1794288528,
-    "s": "Phone-fit old app: ledger"
+    "t": 1794328141,
+    "s": "pc_publish: netlify accepts work kwarg"
    },
    {
-    "t": 1794288477,
-    "s": "Phone-fit old app: hephaestus"
+    "t": 1794328120,
+    "s": "pc_publish: scp provider, kalshi.json from site feed / default folder; tests"
    },
    {
-    "t": 1794288454,
-    "s": "Phone-fit old app: forum"
+    "t": 1794328102,
+    "s": "Kalshi feed: pages read the same-origin ../kalshi.json first, GitHub raw as fallback"
    },
    {
-    "t": 1794288402,
-    "s": "Phone-fit old app: bridge"
+    "t": 1794327276,
+    "s": "Jarvis: planner actions on Planner v2 (event, plan today), window.JARVIS_API for the home"
    },
    {
-    "t": 1794288343,
-    "s": "Phone-fit old app: plutus"
+    "t": 1794327136,
+    "s": "Merge branch 'worktree-agent-a1351957c8298b0e0' into agora-release"
    },
    {
-    "t": 1794288182,
-    "s": "Phone-fit old app: mind"
+    "t": 1794327133,
+    "s": "Wire Jarvis offline cache for brain + home (v30), cross-app core files"
    },
    {
-    "t": 1794287917,
-    "s": "Phone-fit old app: fates"
+    "t": 1794327095,
+    "s": "Kalshi edge team A: calibration walk-forward on public market quotes, no edge found"
    },
    {
-    "t": 1794287030,
-    "s": "Phone-fit old app: datacity"
+    "t": 1794327088,
+    "s": "Merge branch 'worktree-agent-a6e002b939ee7ee1c' into agora-release"
    },
    {
-    "t": 1794286885,
-    "s": "Phone-fit old app: labyrinth"
+    "t": 1794327064,
+    "s": "Jarvis home AGORA: test fixes, ring max 4, long-scroll to System panel, before/after screenshots"
    },
    {
-    "t": 1794286485,
-    "s": "Phone-fit old app: ares"
+    "t": 1794326812,
+    "s": "Worker v76 for the v6 build"
    },
    {
-    "t": 1794285867,
-    "s": "Merge agora-release"
+    "t": 1794326297,
+    "s": "Kalshi stop list: suggestions builder, Sibyl card, owner page, book recorder (not deployed)"
    },
    {
-    "t": 1794285861,
-    "s": "Merge phone-fit round 2 (iPhone profiles, text-safe tokens, new-app fixes)"
+    "t": 1794326102,
+    "s": "Merge branch 'worktree-agent-a1683cbeb359a2648' into agora-release"
    },
    {
-    "t": 1794285838,
-    "s": "Phone-fit round 2: iPhone mode, text-safe agora tokens, fixes in kairos gallery clio dionysus demeter hestia…"
+    "t": 1794326079,
+    "s": "Kalshi edge team B: structure/behaviour tests, no edge found, stop-doing list"
    },
    {
-    "t": 1794285645,
-    "s": "Merge Kalshi City clock chip fix (k16) and Data City walk checks"
+    "t": 1794325919,
+    "s": "Jarvis home AGORA: Today / bots / money / market-day cards, district orb ring, marble courtyard, slim What's…"
    },
    {
-    "t": 1794285625,
-    "s": "Kalshi City: cams row above the dock, short phones scroll above the dock; kalshicity page test runs to the en…"
+    "t": 1794325399,
+    "s": "Merge branch 'worktree-agent-ace41d8d484f75e7c' into agora-release"
    },
    {
-    "t": 1794285384,
-    "s": "Merge QA sweep fixes (resolved hub/wire tests, jarvis OLD list, kalshicity tags); sync web_next copies"
+    "t": 1794325362,
+    "s": "NQ reporting without GitHub: pc_publish (folder / netlify / none), GitHub-free bot mode, PUBLISH_NQ.bat, Kals…"
    }
   ],
   "branches": [
    {
-    "name": "worktree-agent-a0a9a87e7ec8491ef",
-    "t": 1794322211,
-    "s": "agora_audit: static + rendered theme audit"
+    "name": "worktree-agent-aa54c21090a103d33",
+    "t": 1794358699,
+    "s": "Cities test follows the drawn map for the continent fly and expects the absent site kalshi.json; Ty…"
    },
    {
-    "name": "worktree-agent-a1351957c8298b0e0",
-    "t": 1794321890,
-    "s": "Night brief round 2"
+    "name": "worktree-agent-a802da4078c305b1b",
+    "t": 1794358696,
+    "s": "Hellas: tree tint, veil reset"
    },
    {
-    "name": "worktree-agent-a1683cbeb359a2648",
-    "t": 1794321890,
-    "s": "Night brief round 2"
+    "name": "worktree-agent-a9fa9fcc5a553e79b",
+    "t": 1794358646,
+    "s": "Colosseum arena: larger champions, closer camera, stepped tier tones, terracotta podium wall, riche…"
    },
    {
-    "name": "worktree-agent-a1d6e613452093af6",
-    "t": 1794321890,
-    "s": "Night brief round 2"
+    "name": "worktree-agent-a545b014870ea708c",
+    "t": 1794358644,
+    "s": "NQ app: row in new_apps.json + wiring section (six rows, build lines, root page and PC kit notes)"
    },
    {
-    "name": "worktree-agent-a3fd8699bc82d314d",
-    "t": 1794321890,
-    "s": "Night brief round 2"
+    "name": "worktree-agent-a43a2daec19cf8666",
+    "t": 1794358595,
+    "s": "tests: test_jarvis_home_v2 (browser: first screen at three sizes, no overlap, orb hint once, states…"
    },
    {
-    "name": "worktree-agent-a5ca1b51d9fc9e0df",
-    "t": 1794321890,
-    "s": "Night brief round 2"
+    "name": "worktree-agent-a1d36b031da943214",
+    "t": 1794358550,
+    "s": "Ergasterion v2: Library stations nearer the entrance sightline, wider first-person view, walk-to di…"
    },
    {
-    "name": "worktree-agent-a6e002b939ee7ee1c",
-    "t": 1794321890,
-    "s": "Night brief round 2"
+    "name": "worktree-agent-aa29a7ded798881ae",
+    "t": 1794358510,
+    "s": "Kalshi edge C: weather main+rep snapshots, best-mix Brier, checks"
    },
    {
-    "name": "worktree-agent-a72f1240716b4b76f",
-    "t": 1794321890,
-    "s": "Night brief round 2"
+    "name": "worktree-agent-ab25b5ae6ac17c255",
+    "t": 1794358265,
+    "s": "Jarvis brain v3: safety tightened (notes, searches, 'the live feed', 'short answers' are not orders…"
    },
    {
-    "name": "worktree-agent-ace41d8d484f75e7c",
-    "t": 1794321890,
-    "s": "Night brief round 2"
+    "name": "worktree-agent-afc68d30fdf5b4f1b",
+    "t": 1794358023,
+    "s": "Pinakes: tests (static + node on tricky data and the real files), new_apps row, wiring section"
+   },
+   {
+    "name": "worktree-agent-a8fa04fb59e01df25",
+    "t": 1794357374,
+    "s": "Jarvis portal: bronze fallback colour"
+   },
+   {
+    "name": "worktree-agent-ace9572796f7ae004",
+    "t": 1794329229,
+    "s": "tests: Kalshi readers' site-first fetch pinned (ledger, kalshicity, kalshi page)"
    },
    {
     "name": "worktree-agent-afe94f2583c16b5ef",
-    "t": 1794321890,
-    "s": "Night brief round 2"
-   },
-   {
-    "name": "worktree-agent-ae49898dbc04700e7",
-    "t": 1794288675,
-    "s": "Phone-fit round 3: old-app fixes, results and what is left"
-   },
-   {
-    "name": "worktree-agent-a8942a8a57581e4e2",
-    "t": 1794285625,
-    "s": "Kalshi City: cams row above the dock, short phones scroll above the dock; kalshicity page test runs…"
+    "t": 1794327276,
+    "s": "Jarvis: planner actions on Planner v2 (event, plan today), window.JARVIS_API for the home"
    }
   ]
  }
