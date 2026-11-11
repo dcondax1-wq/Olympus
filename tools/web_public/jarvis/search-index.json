@@ -1,4 +1,4 @@
-{"v":1,"kinds":["app","writeup","run","rejected","event","quiz","money","kalshi","term","rule"],"counts":{"app":68,"writeup":154,"run":608,"rejected":60,"event":42,"quiz":20,"money":40,"kalshi":11,"term":46,"rule":11},"sha":"9f0d281460ae","docs":[
+{"v":1,"kinds":["app","writeup","run","rejected","event","quiz","money","kalshi","term","rule"],"counts":{"app":70,"writeup":154,"run":608,"rejected":60,"event":42,"quiz":20,"money":40,"kalshi":11,"term":46,"rule":11},"sha":"605ab617b615","docs":[
 [0,"Zenith","NQ bots · Zlarior · ATLAS · BLITZ. Market district, Trading","zenith","","the apps list + OLYMPUS_MAP.md"],
 [0,"Oracle","The market radar, live. Market district, Trading","oracle","","the apps list + OLYMPUS_MAP.md"],
 [0,"Odeon","Every trade, replayed in 3D. Market district, Trading","odeon","","the apps list + OLYMPUS_MAP.md"],
@@ -59,7 +59,9 @@
 [0,"Archive","The library of everything we ever tested, searchable. Market district, Trading","archive","","the apps list + OLYMPUS_MAP.md"],
 [0,"Pinakes","The catalogue: browse and query every table OLYMPUS keeps. Market district, Trading","pinakes","","the apps list + OLYMPUS_MAP.md"],
 [0,"Colosseum","Where strategies fight: seven rounds on real stored numbers. Market district, Trading","colosseum","","the apps list + OLYMPUS_MAP.md"],
-[0,"NQ","The NQ bots, right now: status, drawdown left, last trades, Trading","nq","","the apps list"],
+[0,"NQ","The NQ bots, right now: status, drawdown left, last trades. Market district, Trading","nq","","the apps list + OLYMPUS_MAP.md"],
+[0,"Symposium","Meet everyone who works for you, and talk to them. Life district, Life","symposium","","the apps list + OLYMPUS_MAP.md"],
+[0,"Herald","The daily paper: who built what, the day, the verdicts, all sourced. Life district, Life","herald","","the apps list + OLYMPUS_MAP.md"],
 [0,"Clio","The research library: every study in plain words. Research district, Trading","clio","","the apps list + OLYMPUS_MAP.md"],
 [0,"Atlas","A fast map of every Olympus dashboard. Command district, Life","atlas","","the apps list + OLYMPUS_MAP.md"],
 [0,"Athena","The library: strategy, rules, quiz. Life district, Life","athena","","the apps list + OLYMPUS_MAP.md"],

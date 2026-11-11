@@ -700,8 +700,8 @@
    "branch": "worktree-agent-a43a2daec19cf8666",
    "agent": "Jarvis home",
    "git": {
-    "t": 1794374019,
-    "s": "Merge agora-release (brain v3) into Jarvis home v2"
+    "t": 1794377525,
+    "s": "Jarvis home v2: the NQ bot cards stack below the fold (nothing past the right edge)"
    }
   },
   {
@@ -2779,8 +2779,31 @@
    "appName": "Symposium"
   },
   {
-   "id": "villager:clio",
+   "id": "villager:herald",
    "name": "Kosmas",
+   "title": "Lives in Herald",
+   "kind": "villager",
+   "area": "life",
+   "app": "herald",
+   "seed": 4111801969,
+   "temperament": "blunt",
+   "voice": {
+    "pitch": 0.81,
+    "rate": 0.99
+   },
+   "sources": [
+    "../herald/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "herald"
+   },
+   "bio": "The daily paper: who built what, the day, the verdicts, all sourced",
+   "appName": "Herald"
+  },
+  {
+   "id": "villager:clio",
+   "name": "Hero",
    "title": "Lives in Clio",
    "kind": "villager",
    "area": "trading",
@@ -2803,7 +2826,7 @@
   },
   {
    "id": "villager:atlas",
-   "name": "Hero",
+   "name": "Nike",
    "title": "Lives in Atlas",
    "kind": "villager",
    "area": "life",
@@ -2870,7 +2893,7 @@
   },
   {
    "id": "villager:tyche",
-   "name": "Nike",
+   "name": "Lykos",
    "title": "Lives in Tyche",
    "kind": "villager",
    "area": "money",
@@ -2893,7 +2916,7 @@
   },
   {
    "id": "villager:hermes",
-   "name": "Lykos",
+   "name": "Briseis Γ",
    "title": "Lives in Hermes",
    "kind": "villager",
    "area": "money",
