@@ -444,6 +444,7 @@ def test_page():
             p.locator("#fClear").click()
             p.wait_for_timeout(150)
             add_filter(p, "usd", "lt", "0")
+            p.evaluate("() => { document.querySelector('#fBox').open = true; }")
             tt = AK.taps(p)
             check("c. table view (Rows tab, a filter on, the builder open): every tap target is at least 44 x 44 px, no sideways scroll, Jarvis's corner is free", not tt and AK.no_sideways(p) and not AK.corner(p), tt[:6])
             p.evaluate("() => window.scrollTo(0, 0)")

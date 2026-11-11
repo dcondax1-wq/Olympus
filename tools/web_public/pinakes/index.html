@@ -88,6 +88,7 @@
       <div class="filters">
         <p class="words" id="fWords">No filter: every row is shown.</p>
         <ul class="chips" id="fChips"></ul>
+        <div class="seg" id="fBar"><button class="btn" id="fMode" type="button" aria-pressed="false" hidden>Match any</button><button class="btn" id="fClear" type="button" hidden>Clear all</button></div>
         <details id="fBox">
           <summary>Add a filter</summary>
           <div class="flds">
@@ -95,7 +96,7 @@
             <label class="fld"><span>Rule</span><select id="fOp"></select></label>
             <label class="fld" id="fValFld"><span id="fValLab">Value</span><input id="fVal" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
             <label class="fld" id="fVal2Fld" hidden><span>And</span><input id="fVal2" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
-            <div class="seg"><button class="btn primary" id="fAdd" type="button">Add this filter</button><button class="btn" id="fMode" type="button" aria-pressed="false">Match any</button><button class="btn" id="fClear" type="button">Clear all</button></div>
+            <div class="seg"><button class="btn primary" id="fAdd" type="button">Add this filter</button></div>
             <p class="note" id="fMsg"></p>
           </div>
         </details>
