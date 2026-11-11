@@ -98,6 +98,14 @@
     var y = g.getBoundingClientRect().top + window.pageYOffset - (bar ? bar.offsetHeight : 0) - (sample ? sample.offsetHeight + 6 : 0) - 10;
     try { window.scrollTo({ top: Math.max(0, y), behavior: motion() ? 'smooth' : 'auto' }); } catch (_) { window.scrollTo(0, Math.max(0, y)); }
     light(id);
+    // land it: the page can move under the glide (numbers rolling, a card redrawn, the bar sticking), so once the glide is over the heading
+    // is put just under the bar where the bar really is now (no heading hidden under it, no big gap)
+    var settle = function () {
+      var under = (bar && !bar.hidden ? bar.getBoundingClientRect().bottom : 0) + (sample ? sample.offsetHeight + 6 : 0) + 10, off = g.getBoundingClientRect().top - under;
+      if (Math.abs(off) > 4) window.scrollBy(0, off);
+    };
+    setTimeout(settle, motion() ? 650 : 60);
+    setTimeout(settle, motion() ? 1300 : 400);
   });
 
   // ------------------------------------------------------------------ a light 3D tilt under a mouse (never under a finger)
