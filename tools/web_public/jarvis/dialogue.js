@@ -91,7 +91,8 @@ export function timeRange(text, nowMs) {
 }
 /** the range to compare a range with, when he only said one side ("compare with last week" after "today") */
 export function partner(other, cur, nowMs) {
-  if (cur && cur.id !== other.id) return cur;
+  const span = (r) => (/week/.test(r.id) ? 'w' : /month/.test(r.id) ? 'm' : /^last_\d|^all$/.test(r.id) ? 'x' : 'd');
+  if (cur && cur.id !== other.id && span(cur) === span(other)) return cur;
   const pick = { last_week: 'this week', yesterday: 'today', last_month: 'this month', this_week: 'last week', today: 'yesterday', this_month: 'last month' }[other.id];
   return pick ? timeRange(pick, nowMs) : timeRange('this week', nowMs);
 }

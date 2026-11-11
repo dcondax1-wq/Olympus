@@ -65,7 +65,7 @@ function day({ S, now, H, J }) {
   if (kt) names.push(isObj(S.kalshi) ? 'kalshi' : 'kalshiEdges');
   // 6. what to do first (Helios' actions, the same rules as Compass)
   const a = m && m.actions && m.actions[0];
-  L.push(a ? `Do first: ${a.title}${/[.!?]$/.test(a.title) ? '' : '.'} ${first(a.why)}${a.usd ? ` About ${both(a.usd)} at stake (an estimate).` : ''}` : 'Do first: nothing needs you. Letting the bots work is the plan.');
+  L.push(a ? `Do first: ${a.title}${/[.!?]$/.test(a.title) ? '' : '.'} ${first(a.why)}${a.usd && first(a.why).indexOf('$') < 0 ? ` About ${both(a.usd)} at stake (an estimate).` : ''}` : 'Do first: nothing needs you. Letting the bots work is the plan.');
   return { lines: L, names, say: [L[0], L[1], L[2], L[5]].join(' '), plan: m ? m.plan : '' };
 }
 
@@ -78,7 +78,7 @@ function kalshi({ S, now, J, KB }) {
   const names = (f ? ['kalshi'] : []).concat(e ? ['kalshiEdges'] : []), L = [];
   L.push(`Kalshi bot: ${sn.paused ? 'paused' : sn.running ? 'running' : 'status unknown'}${sn.mode ? ', ' + sn.mode + ' money' : ''}${sn.live ? '' : ". This is the engine's copy: the live feed is not answering"}.`);
   L.push(sn.balance != null ? `Balance ${k(sn.balance)}; today ${sn.today != null ? k(sn.today, true) + R(sn.today) : 'not known'}.` : "Balance: I don't have it.");
-  L.push(`This week ${sn.week != null ? k(sn.week, true) : 'not known'}; all time ${sn.total != null ? k(sn.total, true) : 'not known'}${sn.ledger && sn.ledger.n != null ? ` over n=${sn.ledger.n} settled bets` : ''}.`);
+  L.push(`This week ${sn.week != null ? k(sn.week, true) : 'not known'}; all time ${sn.total != null ? k(sn.total, true) : 'not known'}${e && isObj(e.book) && J.num(e.book.bets_total) != null ? ` over n=${e.book.bets_total} bets` : ''}.`);
   const pos = (f ? f.positions : e && isObj(e.book) ? e.book.positions : []) || [], open = pos.filter(isObj), sum = open.reduce((a, p) => a + (J.num(p.pnl) || 0), 0);
   L.push(open.length ? `Open bets: ${open.length}, ${k(sum, true)} open P&L${R(sum)}.` : 'Open bets: none right now (n=0).');
   const bad = e && Array.isArray(e.edges) ? e.edges.filter((x) => isObj(x) && x.size === 1 && J.num(x.pnl) != null && x.pnl < 0 && (J.num(x.n) || 0) >= 30).sort((a, b) => a.pnl - b.pnl).slice(0, 2) : [];

@@ -42,9 +42,11 @@ export const V3_HELP = [
 export function createV3(c) {
   const { J, KB } = c, isObj = J.isObj, usd = J.usd;
   const dlg = createDialogue({ now: c.now });
-  let se = null, ex = null;
-  async function engine() { if (se) return se; try { const ix = typeof c.getIndex === 'function' ? await c.getIndex() : null; if (ix) { const e = createSearch(ix); if (e.ready) se = e; } } catch (_) { /* no index: said below */ } return se; }
-  async function explainer() { if (ex) return ex; try { const f = typeof c.getFacts === 'function' ? await c.getFacts() : null; if (f) { const e = createExplain(f); if (e.ready) ex = e; } } catch (_) { /* no facts: said below */ } return ex; }
+  let se = null, ex = null, seAt = 0, exAt = 0;
+  const RETRY_MS = 60000, clock = () => { const v = typeof c.now === 'function' ? c.now() : Date.now(); return v instanceof Date ? v.getTime() : Number(v) || Date.now(); };          // a missing file is asked for again after a minute, not on every phrase
+  async function engine() { if (se || (seAt && Math.abs(clock() - seAt) < RETRY_MS)) return se; seAt = clock(); try { const ix = typeof c.getIndex === 'function' ? await c.getIndex() : null; if (ix) { const e = createSearch(ix); if (e.ready) se = e; } } catch (_) { /* no index: said below */ } return se; }
+  async function explainer() { if (ex || (exAt && Math.abs(clock() - exAt) < RETRY_MS)) return ex; exAt = clock(); try { const f = typeof c.getFacts === 'function' ? await c.getFacts() : null; if (f) { const e = createExplain(f); if (e.ready) ex = e; } } catch (_) { /* no facts: said below */ } return ex; }
+  const EXPLAINISH = /^(?:please |pls |jarvis |hey jarvis |ok |okay |so |and |can you |could you |quickly |again |remind me |tell me )*(?:what|whats|what's|define|definition|meaning|the meaning|explain|describe|tell me|teach|remind|where|how|when|why|show me|give me|summari[sz]e)\b/;
   const clip = (s, n) => { const t = String(s || ''); return t.length > n ? t.slice(0, n - 1).replace(/[\s,;:]+$/, '') + '…' : t; };
   const firstLine = (t) => String(t || '').split('\n')[0];
   const keep = (st, over) => dlg.note({ ...st, ...over }, over && over.at);
@@ -57,7 +59,7 @@ export function createV3(c) {
     const total = e.size.toLocaleString('en-US');
     if (!hits.length) return c.reply(`I found nothing for "${p.q}" in the ${total} things I index (apps, tests, write-ups, rules, the calendar, the money machines). I will not guess.`, { intent: 'search', missing: true, hits: [], query: p.q });
     const head = p.tested ? `What we tested about "${p.q}": the best ${hits.length} of ${total} things I index.` : `Top ${hits.length} for "${p.q}" (of ${total} things I index):`;
-    const lines = hits.map((h, i) => `${i + 1}. ${h.label}: ${h.title}${h.text ? ' - ' + clip(h.text, 110) : ''} [${h.source}]`);
+    const lines = hits.map((h, i) => `${i + 1}. ${h.label}: ${h.title}${h.text ? ' - ' + clip(h.text, 90) : ''} [${h.source}]`);
     const rej = p.tested && hits.some((h) => h.kind === 'rejected') ? 'Careful: a "Rejected idea" was tested and did not hold up.' : '';
     const out = hits.map((h) => ({ ...h, action: { label: 'Open', open: h.open, route: h.route } }));
     const text = [head].concat(lines, [rej, `Say "open it" for the first, or "open the second".`]).filter(Boolean).join('\n');
@@ -95,7 +97,7 @@ export function createV3(c) {
   // ------------------------------------------------------------------------------------------------ briefing
   async function briefReply(kind, now, ctx) {
     let S = await c.sources();
-    if (ctx && ctx.account) { const f = filterAccount(S, ctx.account); if (f) S = f; }
+    if (ctx && ctx.account) S = filterAccount(S, ctx.account, true);
     let H = c.helios || null;
     if (!H && kind === 'day') { try { H = await import('../helios/helioscore.js'); } catch (_) { H = null; } }
     const b = compose(kind, { S, now, H, J, KB });
@@ -126,10 +128,10 @@ export function createV3(c) {
     if (!hit.length && !key) return null;
     return { names: hit, key, label: hit.length ? hit.join(' and ') : key.charAt(0).toUpperCase() + key.slice(1) };
   }
-  function filterAccount(S, acct) {
+  function filterAccount(S, acct, homeOnly) {
     const out = { ...S };
     if (isObj(S.home) && Array.isArray(S.home.accounts) && acct.names.length) out.home = { ...S.home, accounts: S.home.accounts.filter((a) => isObj(a) && acct.names.includes(J.str(a.name || a.id, 40) || 'Account')) };
-    if (isObj(S.odeon) && Array.isArray(S.odeon.trades) && acct.key && BOT_OF[acct.key]) out.odeon = { ...S.odeon, trades: S.odeon.trades.filter((t) => isObj(t) && BOT_OF[acct.key].test(String(t.bot || t.strat || ''))) };
+    if (!homeOnly && isObj(S.odeon) && Array.isArray(S.odeon.trades) && acct.key && BOT_OF[acct.key]) out.odeon = { ...S.odeon, trades: S.odeon.trades.filter((t) => isObj(t) && BOT_OF[acct.key].test(String(t.bot || t.strat || ''))) };
     return out;
   }
   const inRange = (day, r) => day >= r.from && day <= r.to;
@@ -164,6 +166,7 @@ export function createV3(c) {
       return c.withSrc(S, ['pythia'], now, [ev.length ? `${r.label}: ${ev.length} on the calendar.` : `${r.label}: nothing on the risk calendar.`].concat(ev.slice(0, 5).map((e) => `${e.date === today ? 'Today' : dayLabel(e.date)}${e.time ? ' ' + e.time + ' ET' : ''}: ${e.title}${e.impact ? ', ' + e.impact + ' impact' : ''}${e.verify ? ' (date not verified yet)' : ''}.`)), { intent: 'next_event', followup: 'range', range: r });
     }
     if (st.intent === 'plan_today' && (r.id === 'today' || r.id === 'tomorrow')) { keep(st, { range: r, args: { ...st.args, which: r.id }, at: now }); const x = await c.actions.plan('plan_today', { which: r.id }); return { ...x, intent: 'plan_today', followup: 'range' }; }
+    if (!RANGE_INTENTS.has(st.intent) && !HOME_INTENTS.has(st.intent)) return null;
     if (!RANGE_INTENTS.has(st.intent)) return c.reply(`I only have the current number for that, not what it was ${r.id === 'yesterday' ? 'yesterday' : 'then'}: the published file keeps no history. I can do ${r.label.split(' (')[0].toLowerCase()} for your results, your trades and Kalshi.`, { intent: st.intent, followup: 'range', ok: false });
     if (!isObj(S.odeon)) return { ...c.MISSING('your trades', 'odeon/trades.json'), intent: st.intent };
     const x = tradeStats(S, r), lines = [statLine(r.label + who, x, S)];
@@ -195,7 +198,7 @@ export function createV3(c) {
   // ------------------------------------------------------------------------------------------------ "why?" and "in plain words"
   async function why(st, now) {
     let S = await c.sources();
-    if (st.account) S = filterAccount(S, st.account);
+    if (st.account) S = filterAccount(S, st.account, HOME_INTENTS.has(st.intent));
     const done = (r, extra) => (r ? { ...r, followup: 'why', ...(extra || {}) } : null);
     const pre = (r, head) => (r && r.text && !r.missing ? { ...r, text: head + '\n' + r.text, speak: head + ' ' + (r.speak || '') } : r);
     switch (st.intent) {
@@ -216,7 +219,7 @@ export function createV3(c) {
   }
   async function plain(st, now) {
     let S = await c.sources();
-    if (st.account) S = filterAccount(S, st.account);
+    if (st.account) S = filterAccount(S, st.account, HOME_INTENTS.has(st.intent));
     const done = (r) => (r ? { ...r, followup: 'plain' } : null);
     const u = J.usualR(S);
     switch (st.intent) {
@@ -271,7 +274,7 @@ export function createV3(c) {
     const next = { ...st, ...over };
     let S = S0 || await c.sources();
     if (next.account) {
-      const f = filterAccount(S, next.account);
+      const f = filterAccount(S, next.account, HOME_INTENTS.has(next.intent));
       const emptyHome = HOME_INTENTS.has(next.intent) && !(isObj(f.home) && f.home.accounts.length);
       const emptyTrades = TRADE_INTENTS.has(next.intent) && !(isObj(f.odeon) && f.odeon.trades.length);
       if (emptyHome || emptyTrades) return c.reply(`I have no ${emptyHome ? 'account' : 'trades'} called ${next.account.label} in ${emptyHome ? 'home.json' : 'odeon/trades.json'}, so I will not guess.`, { intent: next.intent, followup: 'entity', missing: false, ok: false });
@@ -323,7 +326,7 @@ export function createV3(c) {
     const bk = briefKind(text);
     if (bk) return briefReply(bk, now);
     const sa = searchAsk(text);
-    const e = await explainer();
+    const e = EXPLAINISH.test(norm(text)) ? await explainer() : null;
     const ea = e ? e.parseAsk(text) : null;
     if (ea && !(sa && sa.tested)) { const r = await explainReply(ea, now); if (r) return r; }
     if (sa) return searchReply(sa, now);
@@ -331,7 +334,7 @@ export function createV3(c) {
   }
   /** skills.js tells us what it just answered, so a follow-up has something to refer to */
   function note(intent, args, out, raw, now) {
-    if (!out || out.missing || out.pending || typeof out.text !== 'string') return;
+    if (!out || (out.missing && intent !== 'next_event') || out.pending || typeof out.text !== 'string') return;
     if (/^(?:help_skills|remember|recall|memory_list|forget|export_data|import_data|copy_briefing|planner_goal|planner_task|planner_note|planner_event|compass_done|quiz_start)$/.test(intent)) { dlg.clear(); return; }
     const a = { ...(args || {}), q: raw };
     dlg.note({ intent, args: a, entity: a.target || a.district || a.day || null, text: out.text, why: out.why, link: out.open ? { open: out.open, route: out.route } : LINK[intent] ? { open: LINK[intent] } : null }, now);
