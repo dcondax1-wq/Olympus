@@ -9,6 +9,8 @@ import { Batch, PAL, unit } from './athens-geo.js';
 import { rng, hash32 } from './util.js';
 import { Interior } from './athens-interior.js';
 import { renderList, makeCollider, makeNpcs, npcAt, walkStep, HOUSE_TINT, EYE, TIER_NPC } from './athens-world.js';
+import { makeCrowd } from './people-fig.js';
+import { lookOf } from './people-talk.js';
 
 export const TIERS = { // house cap, trees, lamps, windows
   low: { houses: 520, trees: 150, lamps: 120, windows: 100, dpr: 1.25, ships: false, fps: 30 },
@@ -421,9 +423,11 @@ export class Athens {
     this.npcInit(world);
   }
   npcInit(world) {
-    if (this.npcMesh) { this.scene.remove(this.npcMesh); this.npcMesh.dispose(); this.npcMesh = null; }
+    if (this.npcMesh) { this.scene.remove(this.npcMesh); if (this.crowd) this.crowd.dispose(); else this.npcMesh.dispose(); this.npcMesh = null; this.crowd = null; }
     const n = TIER_NPC[this.tierName] || 0; this.npcs = n ? makeNpcs(world, this.col, n) : [];
     if (!this.npcs.length) return;
+    // the villagers are people: friendly toy-like figures, each with its own skin, hair and tunic, still ONE draw call (people-fig.js)
+    this.crowd = makeCrowd(this.npcs.map((q) => lookOf(`villager:${world.villages[q.a].id}:${q.i}`)), { lite: true }); this.npcMesh = this.crowd.mesh; this.scene.add(this.npcMesh); this.npcD = new THREE.Object3D(); this.npcT = 0; this.talkNpc = null; return;
     if (!this.npcGeo) { const b = new Batch(); b.cone(0, 0, 0, .36, 1.35, '#ffffff', 6); b.put(unit.sphere(6, 4), 0, 1.3, 0, .21, .21, .21, '#ffffff'); this.npcGeo = b.geometry(); this.dispose_.push(this.npcGeo); this.npcMat = new THREE.MeshLambertMaterial({ vertexColors: true }); this.dispose_.push(this.npcMat); }
     const m = this.npcMesh = new THREE.InstancedMesh(this.npcGeo, this.npcMat, this.npcs.length), c = new THREE.Color();
     this.npcs.forEach((q, i) => { m.setColorAt(i, c.set(q.colour)); }); m.instanceColor.needsUpdate = true; m.frustumCulled = false; this.scene.add(m); this.npcD = new THREE.Object3D(); this.npcT = 0;
@@ -432,10 +436,12 @@ export class Athens {
     const m = this.npcMesh; if (!m) return; const d = this.npcD, sc = this.walk ? 1 : 2.4, cp = this.camera.position;
     this.npcT = t; this.npcPos = this.npcPos || [];
     for (let i = 0; i < this.npcs.length; i++) {
-      const q = npcAt(this.npcs[i], t); this.npcPos[i] = q;
-      d.position.set(q.x, groundY(q.x, q.z), q.z); d.rotation.set(0, -q.yaw, 0); d.scale.setScalar(sc); d.updateMatrix(); m.setMatrixAt(i, d.matrix);
+      const talking = this.talkNpc === i && this.npcPos[i], q = talking ? this.npcPos[i] : npcAt(this.npcs[i], t); this.npcPos[i] = q;   // the one you talk to stops and turns to face you
+      const ry = talking ? Math.atan2(cp.x - q.x, cp.z - q.z) : Math.atan2(Math.sin(q.yaw), -Math.cos(q.yaw)); q.facing = !!talking;
+      if (this.crowd) this.crowd.place(i, q.x, groundY(q.x, q.z), q.z, ry, sc * 1.2, talking && !this.reduced ? 1 + .035 * Math.sin(t * 9) : 1);
+      else { d.position.set(q.x, groundY(q.x, q.z), q.z); d.rotation.set(0, -q.yaw, 0); d.scale.setScalar(sc); d.updateMatrix(); m.setMatrixAt(i, d.matrix); }
     }
-    m.instanceMatrix.needsUpdate = true; void cp;
+    m.instanceMatrix.needsUpdate = true;
   }
   /** a villager near a screen point: { npc, village, fact } or null */
   pickNpc(px, py, radius = 36) {

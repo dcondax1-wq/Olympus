@@ -586,3 +586,9 @@ Also: `jarvis/districts.js` / `atlas/atlas.js` district lists: add `'symposium'`
 
 Tests: `python -X utf8 -m tests.test_people` (node only, 83 checks) and `flock -w 2400 /tmp/olympus_browser.lock python -X utf8 -m tests.test_symposium_page` (`--static` needs no browser).
 After wiring also: `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+## Hellas (inside Cities, 2026-11-11): the world of 300+ cities above Athens, the desert, the people
+Not a new app: everything is in `tools/web_public/cities/` (`hellas*.js`, `hellas*.css`, `hellas-fixture.json`, `hellas-builders.json`, `people-talk.js`, `people-fig.js`, `people.css`), opened by the "Enter Hellas" button, `#hellas` or `?hellas=1`.
+1. `sw.js`: bump the worker version so phones fetch the new Cities files (no new OTHER_APPS row; no precache entry needed).
+2. Optional, at site build: refresh the caravan snapshot with `python -c "import json;a=json.load(open('handoff/agents_now.json'));json.dump({'v':1,'asof':a['asof'],'label':'Snapshot at build time: the build agents that were working when this page was built. Not live.','agents':[{k:x[k] for k in ('name','job','area','branch')} for x in a['agents']]},open('tools/web_public/cities/hellas-builders.json','w'),indent=1)"` (today it is a committed copy, labelled "Snapshot at build time").
+3. People kit: nothing to wire. When `olympus/people.js` / `people3d.js` land, Hellas and Athens load them by themselves (optional import, at most 1.5 s); until then they use their own chat card and figures.
