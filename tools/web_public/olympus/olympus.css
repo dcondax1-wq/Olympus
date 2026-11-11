@@ -74,6 +74,11 @@ html[data-fx="off"] .oly-glass::before, html[data-fx="off"] .oly-card::before { 
   box-shadow: var(--oly-shadow); touch-action: manipulation; }
 .oly-home-o { font: 600 18px/1 var(--oly-display); }
 html.framed .oly-home { display: none; }
+/* the seal steps aside while the page scrolls down and whenever text or a control sits under it (olympus.js seatWatch); back on a scroll up */
+.oly-home { transition: opacity var(--oly-dur-2) var(--oly-ease), transform var(--oly-dur-2) var(--oly-ease), visibility 0s linear 0s; }
+.oly-home.oly-away { opacity: 0; transform: translateY(12px) scale(.82); visibility: hidden; pointer-events: none;
+  transition: opacity var(--oly-dur-2) var(--oly-ease), transform var(--oly-dur-2) var(--oly-ease), visibility 0s linear var(--oly-dur-2); }
+@media (prefers-reduced-motion: reduce) { .oly-home, .oly-home.oly-away { transition: none; transform: none; } }
 
 /* ---------------------------------------------------------------- the loading veil (never takes a tap; lifts on the first frame) */
 .oly-veil { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; pointer-events: none;

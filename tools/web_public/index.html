@@ -994,7 +994,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 }
 </style>
 <link rel="stylesheet" href="space.css?v=1"><link rel="stylesheet" href="mission.css?v=1"><link rel="stylesheet" href="polish.css?v=2"><link rel="stylesheet" href="zenith.css?v=7">
-<link rel="stylesheet" href="zenith_agora.css?v=a3">
+<link rel="stylesheet" href="zenith_agora.css?v=a4">
 <!-- OLYMPUS theme (olympus/themes.js; the owner picks it in Jarvis: Look, OLYMPUS theme; key 'olympus.theme'): the shared --oly-*
      tokens, and on Zenith's own dark look its page and surfaces in the theme's colours (its accent stays Zenith's own). Loaded
      async, never waited on; the default theme changes nothing. -->
@@ -4667,5 +4667,8 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 <script src="zenith_pages.js?v=1" defer></script>
 <script src="zenith_nq.js?v=1" defer></script>
 <script src="embed.js?v=1" defer></script>
+<script src="olympus/polis-life.js?v=pl2" defer></script>
+<script>/* POLIS life on the Zenith home (QA round 6): the herald's banner under the status and the accounts, put back after every live redraw; hidden when the city file has no news */
+addEventListener('DOMContentLoaded', function () { var L = window.OLYMPUS_POLIS_LIFE, pg = document.getElementById('page'); if (L && L.keep && pg) L.keep(pg, 'herald', { label: 'The herald cries the latest news', when: function () { return typeof PAGE !== 'undefined' && PAGE === 'today'; } }); });</script>
 </body>
 </html>

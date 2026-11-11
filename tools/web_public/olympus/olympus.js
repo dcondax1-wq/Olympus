@@ -370,9 +370,53 @@
       var a = el('a', 'oly-home'); a.href = '../jarvis/'; a.setAttribute('aria-label', 'Back to Jarvis'); a.title = 'Back to Jarvis';
       a.appendChild(el('span', 'oly-home-o', 'Ο'));
       d.body.appendChild(a);
+      seatWatch(a);
     }
     if (state === 'failed') showErr();
   }
+  // the seal never covers what the owner reads or taps (QA round 6): it steps aside (.oly-away: faded, no taps) while the page scrolls
+  // down and whenever text, a button, a link, a field or a picture sits under its seat; it comes back on a scroll up or at the page's
+  // end (every app ends with clear space under the seat). A canvas (a 3D scene) or an empty card edge under it is fine.
+  var SEAT_HIT = 'button, a[href], input, select, textarea, summary, label, [role="button"], [role="tab"], [role="link"]';
+  function ownText(e) {
+    for (var n = e.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && /\S/.test(n.nodeValue)) return true;
+    return false;
+  }
+  function covers(a) {
+    if (!d.elementsFromPoint) return false;
+    var r = a.getBoundingClientRect(), P = [[0.5, 0.5], [0.2, 0.5], [0.8, 0.5], [0.5, 0.2], [0.5, 0.8]], i, j, list, e, t;
+    if (!r.width) return false;
+    for (i = 0; i < P.length; i++) {
+      list = d.elementsFromPoint(r.left + r.width * P[i][0], r.top + r.height * P[i][1]);
+      for (j = 0; j < list.length; j++) {
+        e = list[j];
+        if (e === a || a.contains(e)) continue;
+        t = e.tagName;
+        if (e === d.body || e === root || t === 'CANVAS' || t === 'MAIN') break;
+        if ((e.closest && e.closest(SEAT_HIT)) || ownText(e) || t === 'IMG' || t === 'VIDEO' || t === 'svg' || t === 'SVG') return true;
+      }
+    }
+    return false;
+  }
+  function seatWatch(a) {
+    var lastY = window.pageYOffset || 0, settle = 0, raf = 0;
+    function y() { return window.pageYOffset || root.scrollTop || 0; }
+    function away(on) { if (on && d.activeElement === a) on = false; a.classList.toggle('oly-away', !!on); }
+    function check() { raf = 0; away(covers(a)); }
+    function soon() { if (!raf) raf = (window.requestAnimationFrame || setTimeout)(check); }
+    window.addEventListener('scroll', function () {
+      var now = y(), dy = now - lastY; lastY = now;
+      if (dy > 4 && now > 48) away(true);                 // reading on: out of the way
+      else if (dy < -4) soon();                           // going back up: back, unless something sits under it
+      clearTimeout(settle); settle = setTimeout(soon, 180);
+    }, { passive: true });
+    window.addEventListener('resize', soon, { passive: true });
+    a.addEventListener('focus', function () { away(false); });
+    // the page fills in after load (data, the shell, a tab change): look again now and then, never while the tab is hidden
+    setTimeout(soon, 400); setTimeout(soon, 1500);
+    setInterval(function () { if (!d.hidden) soon(); }, 1600);
+  }
+  O.seatClear = function () { var a = d.querySelector('.oly-home'); return a ? !covers(a) : true; };
   function lift() {
     if (!veil) return;
     var v = veil; veil = null;

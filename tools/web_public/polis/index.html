@@ -36,7 +36,23 @@
 <script src="../olympus/polis-skyline.js?v=p1"></script>
 <script src="poliscore.js?v=p1"></script>
 <script src="../olympus/polis-life.js?v=pl1"></script>
-<script>(function () { function go() { var el = document.getElementById('polisLife'), L = window.OLYMPUS_POLIS_LIFE; if (!el || !L) return; try { L.load('../olympus/polis.json', function (d) { el.textContent = ''; L.all(el, d); }); } catch (e) { el.textContent = 'City life could not be drawn.'; } } if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go(); })();</script>
+<script>(function () {
+  // the life of the city right under the skyline: every piece with something to say (an empty piece stays out of the way);
+  // no polis.json on this site = the labelled DEMO file, so the street is never empty
+  function draw(el, L, d, demo) {
+    el.textContent = '';
+    var out = L.all(el, d), k, shown = 0;
+    for (k in out) if (out.hasOwnProperty(k) && out[k]) { if (L.has && !L.has(k, d)) out[k].hidden = true; else shown++; }
+    if (demo) { var p = document.createElement('p'); p.className = 'note lifedemo'; p.textContent = 'DEMO: no city file is published on this site yet, so these are made-up example numbers.'; el.insertBefore(p, el.firstChild); }
+    if (!shown) el.parentNode.hidden = true;
+  }
+  function go() {
+    var el = document.getElementById('polisLife'), L = window.OLYMPUS_POLIS_LIFE; if (!el || !L) return;
+    try { L.load('../olympus/polis.json', function (d) { if (d) draw(el, L, d, false); else L.load('../olympus/polis-demo.json', function (d2) { draw(el, L, d2, true); }); }); }
+    catch (e) { el.textContent = 'City life could not be drawn.'; }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+})();</script>
 </head>
 <body>
 <a class="skip" href="#directory">Skip the map: the list of every app</a>
@@ -64,6 +80,12 @@
   <div class="wrap">
     <div class="band" id="band" aria-hidden="true"></div>
     <p id="status" class="note status" role="status" aria-live="polite">Raising the city...</p>
+
+    <section class="lifesec" id="lifeCard" aria-labelledby="lifeH">
+      <p class="ag-eyebrow"><span class="ic" data-ag-icon="amphora"></span>From today's published files</p>
+      <h2 id="lifeH">Life in the city</h2>
+      <div id="polisLife" class="polis-life-host"><span class="lifelamp" data-polis-lamp="Lighting the lamps of the city"></span></div>
+    </section>
 
     <section class="ag-card card" id="harbourCard" aria-labelledby="harH">
       <p class="ag-eyebrow"><span class="ic" data-ag-icon="wave"></span>The harbour of the bots</p>
@@ -103,10 +125,6 @@
       <button type="button" class="btn more" id="rollMore" aria-expanded="false">Show every citizen</button>
     </section>
 
-    <section class="ag-card card" id="lifeCard" aria-labelledby="lifeH">
-      <h2 id="lifeH">Life in the city</h2>
-      <div id="polisLife" class="polis-life-host">Loading the herald, the oracle and the storeroom...</div>
-    </section>
     <section class="ag-card card" id="directory" aria-labelledby="dirH" tabindex="-1">
       <p class="ag-eyebrow"><span class="ic" data-ag-icon="map"></span>The city directory</p>
       <h2 id="dirH">Every building, as a list</h2>

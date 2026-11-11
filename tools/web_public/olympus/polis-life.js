@@ -900,6 +900,92 @@
     try { x.send(); } catch (e) { cb(null); }
   }
 
+  // ------------------------------------------------------------------------------------------------ placed in the apps (QA round 6)
+  // Zero code: <section class="pl-place" data-polis-life="grove" hidden></section> anywhere in an app, plus this script. The page loads
+  // polis.json (next to this script) once and draws each piece into its element. A piece with nothing to show stays hidden (an app
+  // never shows an empty civic card); data-polis-life-empty="show" keeps the quiet empty line instead. ?demo=1 reads polis-demo.json
+  // (labelled DEMO under the piece). data-polis-life-src="<url>" reads another file. place(root) runs it again after new markup.
+  var BASE = (function () { var s = doc.currentScript, src = s && s.getAttribute('src'); return src ? src.replace(/[^\/]*$/, '') : '../olympus/'; })();
+  function hasLife(kind, d) {
+    if (!d) return false;
+    switch (kind) {
+      case 'herald': return !!(d.herald && d.herald.length);
+      case 'oracle': return !!(d.oracle && d.oracle.src);
+      case 'festivals': return !!(d.festivals && d.festivals.items && d.festivals.items.length);
+      case 'torch': return !!(d.torch && ((d.torch.weeks && d.torch.weeks.rows && d.torch.weeks.rows.length) || (d.torch.days && d.torch.days.rows && d.torch.days.rows.length)));
+      case 'grove': return !!(d.grove && d.grove.trees && d.grove.trees.length);
+      case 'amphorae': return !!(d.amphorae && d.amphorae.n);
+      case 'statues': return !!(d.statues && d.statues.items && d.statues.items.length);
+      case 'stoic': return !!d.stoic;
+    }
+    return false;
+  }
+  var cache = {};
+  function fetchDoc(url, cb) {
+    if (cache[url]) { if (cache[url].done) cb(cache[url].doc); else cache[url].q.push(cb); return; }
+    var c = cache[url] = { done: false, doc: null, q: [cb] };
+    load(url, function (j) { c.done = true; c.doc = j; var q = c.q; c.q = []; for (var i = 0; i < q.length; i++) { try { q[i](j); } catch (e) {} } });
+  }
+  function place(rootEl) {
+    var els = (rootEl || doc).querySelectorAll ? (rootEl || doc).querySelectorAll('[data-polis-life]') : [], i;
+    var demo = /[?&]demo=1(&|$)/.test(root.location ? root.location.search : '');
+    for (i = 0; i < els.length; i++) (function (el) {
+      if (el.__plPlaced) return;
+      el.__plPlaced = true;
+      var kind = el.getAttribute('data-polis-life'), url = el.getAttribute('data-polis-life-src') || (BASE + (demo ? 'polis-demo.json' : 'polis.json'));
+      fetchDoc(url, function (d) {
+        if (!d && demo && !el.getAttribute('data-polis-life-src')) { fetchDoc(BASE + 'polis.json', function (d2) { draw(d2); }); return; }
+        draw(d);
+      });
+      function draw(d) {
+        var keep = el.getAttribute('data-polis-life-empty') === 'show';
+        if (!d || (!hasLife(kind, d) && !keep)) { el.hidden = true; return; }
+        el.hidden = false;
+        render(el, kind, d);
+        if (d.demo) H('p', 'pl-src pl-demo', 'DEMO: made-up example numbers, not real.', el);
+        el.classList.add('pl-placed');
+      }
+    })(els[i]);
+  }
+  // keep(host, kind, {when, label, before}): for a page that redraws itself (the Zenith home sets innerHTML on live data): the piece
+  // is put back as the host's last child (or before opts.before, a selector) after each redraw while when() is true, drawn from the
+  // one loaded file; a piece that was wiped stops its timer. Nothing is shown when the file has nothing for it.
+  function keep(host, kind, opts) {
+    if (!host || !PIECES[kind]) return null;
+    opts = opts || {};
+    var demo = /[?&]demo=1(&|$)/.test(root.location ? root.location.search : ''), d = null, ready = false, cur = null, busy = false;
+    function want() { try { return opts.when ? !!opts.when() : true; } catch (e) { return false; } }
+    function ensure() {
+      if (busy) return;
+      if (cur && cur.parentNode !== host) { if (cur.__plStop) cur.__plStop(); cur = null; }
+      var ok = ready && d && hasLife(kind, d) && want();
+      if (!ok) { if (cur) { busy = true; if (cur.__plStop) cur.__plStop(); host.removeChild(cur); cur = null; busy = false; } return; }
+      if (cur) return;
+      busy = true;
+      try {
+        var el = doc.createElement('section');
+        el.className = 'pl-kept pl-kept-' + kind;
+        if (opts.label) el.setAttribute('aria-label', opts.label);
+        render(el, kind, d);
+        if (d.demo) H('p', 'pl-src pl-demo', 'DEMO: made-up example numbers, not real.', el);
+        el.classList.add('pl-placed');
+        var ref = opts.before ? host.querySelector(opts.before) : null;
+        if (ref && ref.parentNode === host) host.insertBefore(el, ref); else host.appendChild(el);
+        cur = el;
+      } catch (e) { cur = null; }
+      busy = false;
+    }
+    fetchDoc(BASE + (demo ? 'polis-demo.json' : 'polis.json'), function (j) {
+      if (!j && demo) { fetchDoc(BASE + 'polis.json', function (j2) { d = j2; ready = true; ensure(); }); return; }
+      d = j; ready = true; ensure();
+    });
+    // the observer runs before the next paint, so a redraw never shows the page without the piece for a frame
+    if (root.MutationObserver) new root.MutationObserver(function () { ensure(); }).observe(host, { childList: true });
+    return { refresh: ensure };
+  }
+  function autoPlace() { try { if (doc.querySelector('[data-polis-life]')) place(doc); } catch (e) {} }
+  if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', autoPlace); else autoPlace();
+
   // ------------------------------------------------------------------------------------------------ the styles (scoped to .pl-*)
   function css() {
     if (doc.getElementById('pl-style')) return;
@@ -973,6 +1059,10 @@
       '.pl-tablet:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(115deg,transparent 30%,rgba(120,108,92,.16) 31%,transparent 33%,transparent 62%,rgba(120,108,92,.12) 63%,transparent 64.5%);pointer-events:none}',
       '.pl-inscr{margin:0;font:500 18px/1.45 var(--pl-serif);font-variant:small-caps;letter-spacing:.04em;color:#3b342c;text-shadow:0 1px 0 rgba(255,255,255,.55),0 -1px 0 rgba(60,45,30,.25)}',
       '.pl-tablet figcaption{margin-top:10px;font:italic 14px/1.35 var(--pl-serif);color:#4a4238}.pl-tr{font-style:normal;font-size:12px;color:#5c5246}',
+      /* placed in an app (data-polis-life): one of the page's AGORA v2 cards, same radius, edge, shadow and title size as its neighbours */
+      '.pl-placed{margin:0;border-radius:20px;border-color:rgba(243,236,224,.075);box-shadow:var(--ag-e2,0 6px 18px rgba(0,0,0,.35));padding:16px 16px 14px}',
+      '.pl-placed.pl-herald{border-color:rgba(200,162,74,.32)}.pl-placed .pl-title{font-size:var(--ag-fs-h3,18px)}.pl-placed .pl-head{margin-bottom:12px}',
+      '.pl-placed.pl-stoic{padding:12px}.pl-placed .pl-demo{color:#e0b060;margin-top:10px}',
       '@media (max-width:360px){.pl-hall{grid-template-columns:repeat(2,minmax(0,1fr))}}',
       '@media (prefers-reduced-motion:reduce){.pl-piece *{animation:none!important;transition:none!important}}',
       'html[data-oly-lite="1"] .pl-piece *{animation:none!important}'
@@ -985,5 +1075,5 @@
     festivals: function (el, d, o) { return render(el, 'festivals', d, o); }, torch: function (el, d, o) { return render(el, 'torch', d, o); },
     grove: function (el, d, o) { return render(el, 'grove', d, o); }, amphorae: function (el, d, o) { return render(el, 'amphorae', d, o); },
     statues: function (el, d, o) { return render(el, 'statues', d, o); }, stoic: function (el, d, o) { return render(el, 'stoic', d, o); },
-    amphora: amphora, tree: tree, statue: statue, glyph: glyph, money: money, usdR: usdR };
+    amphora: amphora, tree: tree, statue: statue, glyph: glyph, money: money, usdR: usdR, place: place, keep: keep, has: hasLife };
 })(window);
