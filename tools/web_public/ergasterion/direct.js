@@ -95,7 +95,7 @@ export function createDirector(floor, opts) {
       if (!moving) for (const pn of people()) { const q = where(pn.key); if (!q) continue; const d = Math.hypot(q.x - s.x, q.z - s.z); if (d < bd) { bd = d; best = q; } }
       rig.interest(best ? { x: best.x, y: best.y, z: best.z, h: 1.35 } : null);
     }
-    rig.update(dt);
+    rig.update(dt); S.frames = (S.frames || 0) + 1; if (rig.inside(0.1)) S.insideN = (S.insideN || 0) + 1;      // the tests read both: never inside
     if ((S.plateT += dt) > 0.05) { S.plateT = 0; plates(); }
     return true;
   }
@@ -216,7 +216,7 @@ export function createDirector(floor, opts) {
     start, walkTo, talkTo, talkCam, goTo, endTalk,
     move(m) { S.input = { fwd: (m && m.fwd) || 0, side: (m && m.side) || 0 }; if (S.input.fwd || S.input.side) { walker.stop(); if (S.mode === 'talk') endTalk(); hud.used('walk'); } },
     tap, rig: () => rig, world: () => world, grid: () => grid, hud: () => hud,
-    state() { const r = rig.state(), p = walker.pos; return { mode: S.mode, talk: S.talkKey, cam: r, me: { x: +p.x.toFixed(3), z: +p.z.toFixed(3), yaw: +p.yaw.toFixed(3) }, path: walker.path, inside: rig.inside(0.1), avatar: !!S.av, greeter: S.greeter, hello: S.hello || '', walks: S.walks, taps: S.taps, hint: hud.hinting(), ring: hud.ringOpen() }; },
+    state() { const r = rig.state(), p = walker.pos; return { mode: S.mode, talk: S.talkKey, cam: r, me: { x: +p.x.toFixed(3), z: +p.z.toFixed(3), yaw: +p.yaw.toFixed(3) }, path: walker.path, inside: rig.inside(0.1), avatar: !!S.av, greeter: S.greeter, hello: S.hello || '', walks: S.walks, taps: S.taps, hint: hud.hinting(), ring: hud.ringOpen(), frames: S.frames || 0, insideN: S.insideN || 0 }; },
     dispose() { S.gone = true; floor.drive(null); if (R.bubbles) R.bubbles.visible = true; G.off(); hud.dispose(); window.removeEventListener('olympus:people:close', onClose); if (S.joy) S.joy.remove(); if (S.av) { try { S.av.userData.dispose(); } catch (_) { R.scene.remove(S.av); } } },
   };
   return api;

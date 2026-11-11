@@ -63,7 +63,7 @@ export function createWalkDirector(scene, opts) {
       const near = !moving && S0.peopleNear ? S0.peopleNear(s.x, s.z, 1, 5)[0] : null;
       rig.interest(near ? { x: near.P.x, z: near.P.z, h: AV * 0.85 } : null);
     }
-    rig.update(dt);
+    rig.update(dt); D.frames = (D.frames || 0) + 1; if (rig.inside(0.12)) D.insideN = (D.insideN || 0) + 1;
     return true;
   }
   function ground(cx, cy) {
@@ -103,7 +103,7 @@ export function createWalkDirector(scene, opts) {
     tick, tap, talkCam, endTalk, walkTo,
     look(dx, dy) { rig.orbit(-dx * 0.0062, dy * 0.0042); hud.used('walk'); },
     zoom(k) { rig.zoom(k); },
-    state() { const r = rig.state(), p = walker.pos; return { greeter: D.greeter ? D.greeter.person.name : '', mode: D.mode, cam: r, me: { x: +p.x.toFixed(2), z: +p.z.toFixed(2) }, path: walker.path, inside: rig.inside(0.12), avatar: !!D.av, walks: D.walks }; },
+    state() { const r = rig.state(), p = walker.pos; return { greeter: D.greeter ? D.greeter.person.name : '', mode: D.mode, cam: r, me: { x: +p.x.toFixed(2), z: +p.z.toFixed(2) }, path: walker.path, inside: rig.inside(0.12), avatar: !!D.av, walks: D.walks, frames: D.frames || 0, insideN: D.insideN || 0 }; },
     rig: () => rig, world: () => world, grid: () => grid,
     dispose() { D.gone = true; hud.dispose(); if (D.av) { try { D.av.userData.dispose(); } catch (_) { /* gone */ } try { S0.scene.remove(D.av); } catch (_) { /* gone */ } } S0.camera.near = D.near0; S0.camera.updateProjectionMatrix(); },
   };

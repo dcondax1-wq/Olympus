@@ -181,7 +181,112 @@ def test_static():
     check("e. the speech bubble always shows the whole sentence (the words not yet spoken are dimmed, never invisible)", ".pp-sayoff { color: rgba(" in css and "color: transparent" not in css.split(".pp-sayoff")[1][:40])
 
 
+WAIT = "(f, ms) => new Promise((ok) => { const t0 = Date.now(), i = setInterval(() => { let v = null; try { v = f(); } catch (e) { v = null; } if (v || Date.now() - t0 > ms) { clearInterval(i); ok(v || null); } }, 150); })"
+
+
+def until(p, expr, ms=20000):
+    return p.evaluate(f"(() => ({WAIT})(() => {expr}, {ms}))()")
+
+
+def test_browser():
+    """f. Chromium 390 x 844 (one browser on the machine: flock -w 2400 /tmp/olympus_browser.lock): the directed scenes, live"""
+    try:
+        import playwright  # noqa: F401
+    except ImportError:
+        check("f. browser part skipped: no Playwright", True)
+        return
+    srv, origin = AK.serve()
+    try:
+        with AK.browser() as br:
+            # ---- ERGASTERION
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, "ergasterion", "?demo=1&q=high&clock=quiet", hook="ERGASTERION")
+            d0 = until(p, "window.ERG_DIRECTOR && window.ERG_DIRECTOR.state()", 30000)
+            ui = p.evaluate("() => ({ joy: document.querySelector('#joy').hidden, hint: document.querySelector('#hint').hidden, ocHint: !!document.querySelector('.oc-hint'), talkBtn: document.querySelector('#talkBtn').hidden })")
+            check("f. ERGASTERION opens directed: your own character on the floor, the old joystick and hint hidden, one quiet hint line, the establishing shot",
+                  bool(d0) and d0["avatar"] in (True, False) and ui["joy"] and ui["hint"] and ui["ocHint"] and d0["cam"]["mode"] in ("establish", "follow"), (d0 and d0["cam"]["mode"], ui))
+            hello = until(p, "window.ERG_DIRECTOR.state().hello", 40000)
+            cta = until(p, "document.querySelector('.oc-cta') && document.querySelector('.oc-cta').textContent", 10000)
+            st = p.evaluate("window.ERG_DIRECTOR.state()")
+            name = (cta or "").replace("Talk to ", "")
+            check("f. the first seconds: the nearest worker greets you by their real name and job with one fact and an invitation, and ONE button says what to do ('Talk to <name>')",
+                  bool(hello) and bool(name) and f"I am {name}, " in hello and hello.rstrip().endswith(("?", ".")) and st["greeter"].startswith("w:") and st["avatar"], (hello, cta, st["greeter"]))
+            box = p.evaluate("() => { const r = document.querySelector('#floor3d').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }")
+            w0 = p.evaluate("window.ERG_DIRECTOR.state()")
+            p.touchscreen.tap(box[0] + box[2] * 0.5, box[1] + box[3] * 0.82)
+            p.wait_for_timeout(1800)
+            w1 = p.evaluate("window.ERG_DIRECTOR.state()")
+            check("f. TAP-TO-WALK (a real touch on the floor): a path is planned and your character walks along it",
+                  w1["walks"] > w0["walks"] and (w1["path"] or abs(w1["me"]["x"] - w0["me"]["x"]) + abs(w1["me"]["z"] - w0["me"]["z"]) > 0.2), (w0["me"], w1["me"], w1["walks"]))
+            p.evaluate("(() => { const d = window.ERG_DIRECTOR; d.goTo(d.state().greeter); })()")
+            ring = until(p, "document.querySelectorAll('.oc-ring button').length === 4 && [...document.querySelectorAll('.oc-ring button')].map((b) => { const r = b.getBoundingClientRect(); return [b.textContent, Math.round(r.width), Math.round(r.height)]; })", 30000)
+            check("f. tap a person: you walk up to them and a ring offers Talk / Show work / Follow / Wave (each at least 44 px)",
+                  bool(ring) and [r[0] for r in ring] == ["Talk", "Show work", "Follow", "Wave"] and all(r[1] >= 44 and r[2] >= 44 for r in ring), ring)
+            p.evaluate("document.querySelector('.oc-ring button[data-act=talk]').click()")
+            p.wait_for_timeout(600)
+            t1 = p.evaluate("({ st: window.ERG_DIRECTOR.state(), open: !!(window.OLYMPUS_PEOPLE && window.OLYMPUS_PEOPLE.isOpen && window.OLYMPUS_PEOPLE.isOpen()) })")
+            ph = until(p, "window.ERG_DIRECTOR.state().cam.phase === 'close-up' && 'close-up'", 30000)
+            p.evaluate("window.OLYMPUS_PEOPLE && window.OLYMPUS_PEOPLE.close()")
+            back = until(p, "window.ERG_DIRECTOR.state().mode === 'walk' && window.ERG_DIRECTOR.state().cam.mode", 8000)
+            check("f. Talk: the chat opens and the camera cuts to the conversation (two-shot, then the close-up); closing the chat returns to following you",
+                  t1["st"]["mode"] == "talk" and t1["open"] and t1["st"]["cam"]["phase"] in ("two-shot", "close-up") and ph == "close-up" and back == "follow", (t1["st"]["cam"]["phase"], t1["open"], ph, back))
+            fin = p.evaluate("window.ERG_DIRECTOR.state()")
+            plates = p.evaluate("[...document.querySelectorAll('.oc-plate b')].map((b) => b.textContent)")
+            check(f"f. the camera was inside a collider in 0 of {fin['frames']} live frames; the name plates show at most 3 real names (never 'The' or 'Dev')",
+                  fin["insideN"] == 0 and fin["frames"] > 30 and len(plates) <= 3 and not any(n in ("The", "Dev") for n in plates), (fin["insideN"], fin["frames"], plates))
+            check("f. ERGASTERION directed: no page error", not errs, errs[:4])
+            AK.shot(p, "direction-ergasterion")
+            ctx.close()
+            # ---- SYMPOSIUM
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, "symposium", "?q=high", hook="SYMPOSIUM")
+            s0 = until(p, "window.SYM_DIRECTOR && window.SYM_DIRECTOR.state()", 30000)
+            sh = until(p, "window.SYM_DIRECTOR.state().hello", 40000)
+            cta = until(p, "document.querySelector('.oc-cta') && document.querySelector('.oc-cta').textContent", 10000)
+            check("f. SYMPOSIUM: an establishing shot over the colonnade lands at your place; the person across the table (real news first) greets you by name; one button 'Talk to <name>'",
+                  bool(s0) and bool(sh) and bool(cta) and ("I am " + cta.replace("Talk to ", "") + ",") in sh, (sh, cta))
+            p.evaluate("document.querySelector('.oc-cta').click()")
+            ph = until(p, "window.SYM_DIRECTOR.state().cam.phase === 'close-up' && window.SYM_DIRECTOR.state()", 30000)
+            p.evaluate("window.OLYMPUS_PEOPLE && window.OLYMPUS_PEOPLE.close()")
+            back = until(p, "window.SYM_DIRECTOR.state().mode === 'stand' && 'stand'", 8000)
+            fin = p.evaluate("window.SYM_DIRECTOR.state()")
+            check(f"f. SYMPOSIUM talk: the chat opens on the greeter, the camera goes to the close-up and back to your place; inside a collider in 0 of {fin['frames']} frames",
+                  bool(ph) and ph["mode"] == "talk" and back == "stand" and fin["insideN"] == 0 and fin["frames"] > 30 and not errs, (bool(ph), back, fin["insideN"], errs[:3]))
+            AK.shot(p, "direction-symposium")
+            ctx.close()
+            # ---- HELLAS walking
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            p.goto(f"{origin}/cities/?hellas=1&q=high&demo=1", wait_until="domcontentloaded")
+            p.wait_for_function("window.__hellas && window.__hellas.ready", timeout=170000)
+            p.evaluate("(() => { const u = window.__hellas.ui; u.enter(window.__hellas.world.poleis[0]); })()")
+            p.wait_for_timeout(4000)
+            p.evaluate("window.__hellas.ui.startWalk()")
+            h0 = until(p, "window.__hellasDirector && window.__hellasDirector.state()", 30000)
+            stick = p.evaluate("getComputedStyle(document.querySelector('.hel-stickzone')).display")
+            cta = until(p, "document.querySelector('.oc-cta') && document.querySelector('.oc-cta').textContent", 30000)
+            check("f. HELLAS walking is third person (your character), the thumb joystick is gone unless asked for, and the nearest townsperson is one tap away ('Talk to <name>')",
+                  bool(h0) and stick == "none" and bool(cta) and cta.startswith("Talk to "), (bool(h0), stick, cta))
+            p.evaluate("document.querySelector('.oc-cta').click()")
+            ht = until(p, "window.__hellasDirector.state().mode === 'talk' && window.__hellasDirector.state()", 40000)
+            card = p.evaluate("(() => { const c = document.querySelector('.hel-card'); return c && !c.hidden ? c.innerText : ''; })()")
+            check("f. HELLAS talk: you walk up, the talk card opens and the conversation camera frames them; the hello names them and gives the last result of their street",
+                  bool(ht) and ("Hello! I am " in card or "Welcome! I am " in card) and ("The last result here" in card or "quiet here" in card), card[:300])
+            p.evaluate("window.__hellas.ui.hideCard()")
+            hw = p.evaluate("window.__hellasDirector.state()")
+            p.touchscreen.tap(195, 560)
+            p.wait_for_timeout(1500)
+            hw2 = p.evaluate("window.__hellasDirector.state()")
+            check(f"f. HELLAS tap the street: you walk there; the camera was inside a house / the hill / the wall in 0 of {hw2['frames']} frames",
+                  hw2["walks"] > hw["walks"] and hw2["insideN"] == 0 and hw2["frames"] > 30 and not errs, (hw["walks"], hw2["walks"], hw2["insideN"], errs[:3]))
+            AK.shot(p, "direction-hellas")
+            ctx.close()
+    finally:
+        srv.shutdown()
+
+
 if __name__ == "__main__":
     test_node()
     test_static()
+    if "--static" not in sys.argv:
+        test_browser()
     AK.finish()

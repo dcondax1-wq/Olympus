@@ -32,7 +32,7 @@ export function createDirector(hall, opts) {
     const p = camera.position, L = R.look();
     S.stand.pos.x = p.x; S.stand.pos.y = p.y; S.stand.pos.z = p.z; S.stand.pivot.x = p.x; S.stand.pivot.y = p.y; S.stand.pivot.z = p.z; S.stand.look.x = L.x; S.stand.look.y = L.y; S.stand.look.z = L.z;
     if (S.mode === 'talk' && S.i >= 0) { const b = head(S.i); S.tp.b.x = b.x; S.tp.b.y = b.y; S.tp.b.z = b.z; }
-    rig.update(dt);
+    rig.update(dt); S.frames = (S.frames || 0) + 1; if (rig.inside(0.08)) S.insideN = (S.insideN || 0) + 1;
   }
   hall.drive(drive);
   function start() {
@@ -77,7 +77,7 @@ export function createDirector(hall, opts) {
   window.addEventListener('olympus:people:open', onOpen); window.addEventListener('olympus:people:close', onClose);
   return {
     start, talk, back, rig: () => rig, world: () => world,
-    state() { const r = rig.state(); return { mode: S.mode, i: S.i, cam: r, inside: rig.inside(0.08), greeter: S.greeter, hello: S.hello }; },
+    state() { const r = rig.state(); return { mode: S.mode, i: S.i, cam: r, inside: rig.inside(0.08), greeter: S.greeter, hello: S.hello, frames: S.frames || 0, insideN: S.insideN || 0 }; },
     spun() { hud.used('sym'); hud.clearCta(); },
     dispose() { S.gone = true; hall.drive(null); hud.dispose(); window.removeEventListener('olympus:people:open', onOpen); window.removeEventListener('olympus:people:close', onClose); },
   };
