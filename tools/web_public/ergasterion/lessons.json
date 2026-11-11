@@ -1,0 +1,205 @@
+{
+ "v": 1,
+ "name": "Ergasterion lessons",
+ "asof": "2026-11-10",
+ "say": "This week we wrote down 6 lessons. The strongest (2 files agree): No management change (partials, stair stops, stale exits, news exits, a later cut) and no entry-window or per-session change holds in both halves. What changed our mind: One pocket looked real (and replicated across two assets) until I ran it on two months of data it had never seen: it vanished.",
+ "week": [
+  {
+   "text": "No management change (partials, stair stops, stale exits, news exits, a later cut) and no entry-window or per-session change holds in both halves.",
+   "cat": "NQ strategy",
+   "d": "2026-11-04",
+   "strength": 2,
+   "sources": [
+    "research/writeups/2026-11-04_lit_ideas_night.md",
+    "research/writeups/atlas-blitz-edge-2026-10-30.md"
+   ]
+  },
+  {
+   "text": "None gives an edge that survives fees, a held-out block and a second asset.",
+   "cat": "Kalshi",
+   "d": "2026-11-10",
+   "strength": 1,
+   "sources": [
+    "research/writeups/kalshi_edge_B.md"
+   ]
+  },
+  {
+   "text": "No edge found. Out of the 38 cells that were big enough to test (and 7 pre-written textbook ideas), none beat the noise on training data, and none is positive with a confidence interval above zero on the held-out last 14 days.",
+   "cat": "Kalshi",
+   "d": "2026-11-10",
+   "strength": 1,
+   "sources": [
+    "research/writeups/kalshi_edge_A.md"
+   ]
+  },
+  {
+   "text": "Run all three accounts at once (LIT 50K, ATLAS 25K, BLITZ 25K): buying all three on day 1 beats every staggered order, and the fees are only $198. - Then: LIT on the 50K second: the biggest total ($6,549 in 12 months) b…",
+   "cat": "money",
+   "d": "2026-11-04",
+   "strength": 1,
+   "sources": [
+    "research/writeups/2026-11-04_money_roadmap.md"
+   ]
+  },
+  {
+   "text": "Part A closes the open items from the Plutus fix - lit_funded_firms.py rerun with today's live trades and the live presets (eval room 0.8, funded 60% / = $1,500 / winner = $2,000), the Builder 25K row refreshed, BLITZ g…",
+   "cat": "NQ strategy",
+   "d": "2026-11-04",
+   "strength": 1,
+   "sources": [
+    "research/writeups/2026-11-04_lit_ideas_round3.md"
+   ]
+  },
+  {
+   "text": "ATLAS (EMA + MACD + S/R) and BLITZ (noise-area scalp) re-tested for the 25K accounts with 43 BLITZ and 29 ATLAS versions (stop multiple, entry window, daily loss cap, trades a day, hold time, breakeven, trail, day filte…",
+   "cat": "NQ strategy",
+   "d": "2026-11-04",
+   "strength": 1,
+   "sources": [
+    "research/writeups/2026-11-04_second_strategies_night.md"
+   ]
+  }
+ ],
+ "top": [
+  {
+   "text": "ES traded as MES loses money in Jan-Jun (PF 0.75, -$4.5k) and NQ+ES together fails 17-29% of evals in 2 weeks. 15m setups add 2-6 trades a half and lift the 2-week pass rate in both halves (Jan-Jun 52.9% - 63.0%, Jul-Oc…",
+   "cat": "NQ strategy",
+   "d": "2026-10-19",
+   "strength": 9,
+   "sources": [
+    "research/writeups/2026-11-03-night-rnd.md",
+    "research/writeups/scalp-mean-reversion.md",
+    "research/writeups/sizing-caps.md"
+   ]
+  },
+  {
+   "text": "Four ideas never tested on LIT were scored by the LIT rule (2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ AND MFFU 50K 2-week passes under the live sizing, two_week then safe_eval, $…",
+   "cat": "NQ strategy",
+   "d": "2026-10-19",
+   "strength": 6,
+   "sources": [
+    "research/writeups/atlas-funded.md",
+    "research/writeups/lit-gap-audit.md",
+    "research/writeups/lit-bias-discretion.md"
+   ]
+  },
+  {
+   "text": "2,520 context variants were tested on today's live LIT trades and on the adopt-candidate combo (t_check + scale_in + be_off).",
+   "cat": "NQ strategy",
+   "d": "2026-10-20",
+   "strength": 5,
+   "sources": [
+    "research/writeups/lit-market-context.md",
+    "research/writeups/lit-gap-audit.md",
+    "research/writeups/lit-bias-discretion.md"
+   ]
+  },
+  {
+   "text": "At the same $ a trade it wins Jan-Jun and loses Jul-Oct: winners win less often (23% to 13%) because many turn into breakeven scratches, and 2021-25 loses money.",
+   "cat": "NQ strategy",
+   "d": "2026-10-18",
+   "strength": 4,
+   "sources": [
+    "research/writeups/lit-more-setups.md",
+    "research/writeups/lit-tight-stops-size.md",
+    "research/writeups/lit-funded-sizing.md"
+   ]
+  },
+  {
+   "text": "(1) The eval size solved state by state (dynamic programming on Jan-Jun 2026, checked on Jul-Oct and 2021-25) - a better pass / fail frontier than any room share (2-week fails 17.8 / 20.9 / 24.9% - 2.9 / 2.9 / 8.3% at a…",
+   "cat": "NQ strategy",
+   "d": "2026-11-03",
+   "strength": 3,
+   "sources": [
+    "research/writeups/2026-11-03-night-rnd.md",
+    "research/writeups/lit-more-setups.md",
+    "research/writeups/lit-funded-sizing.md"
+   ]
+  },
+  {
+   "text": "BLITZ - one sizing change holds - on the 25K eval, the day's FIRST band break on a side trades half size and a LATER same-side break 1.75 x today's size (never more than the room).",
+   "cat": "NQ strategy",
+   "d": "2026-10-30",
+   "strength": 3,
+   "sources": [
+    "research/writeups/2026-11-04_lit_ideas_night.md",
+    "research/writeups/atlas-blitz-edge-2026-10-30.md",
+    "research/writeups/cross-market-context.md"
+   ]
+  },
+  {
+   "text": "The best makes about +$270 to +$360 a month in each 2026 half at $100 risk a trade, but the same idea on 5m bars loses about $320 a month over 2021-25 and its eval pass rate is no better than a coin flip.",
+   "cat": "NQ strategy",
+   "d": "2026-10-28",
+   "strength": 3,
+   "sources": [
+    "research/writeups/scalp-mean-reversion.md",
+    "research/writeups/allday.md",
+    "research/writeups/lit-more-setups.md"
+   ]
+  },
+  {
+   "text": "Replayed on ATLAS's real trades under the account-B rules (no hedging against LIT, LIT's armed setups block it), with the live funded sizing (60% of the room, at most $750 a trade, a winner at most $1,000) and MFFU's pa…",
+   "cat": "NQ strategy",
+   "d": "2026-10-26",
+   "strength": 3,
+   "sources": [
+    "research/writeups/atlas-funded.md",
+    "research/writeups/lit-bias-discretion.md",
+    "research/writeups/lit-big-ideas.md"
+   ]
+  }
+ ],
+ "changed": [
+  {
+   "text": "One pocket looked real (and replicated across two assets) until I ran it on two months of data it had never seen: it vanished.",
+   "was": "",
+   "cat": "Kalshi",
+   "d": "2026-11-10",
+   "source": "research/writeups/kalshi_edge_B.md"
+  },
+  {
+   "text": "The earlier finding \"95c and above is +1.4% per $\" came from the bot's own bets (no market-wide data). On the market-wide data it is +0.1% (train) and -0.6% (test): that pocket is not an edge, it is the bot's entry timing plus luck.",
+   "was": "95c and above is +1.4% per $",
+   "cat": "Kalshi",
+   "d": "2026-11-10",
+   "source": "research/writeups/kalshi_edge_A.md"
+  },
+  {
+   "text": "The H2 gain of the pick (fail in 2 weeks 17.4% vs 21.7%) rests on 31 trades and does not hold in 2021-25.",
+   "was": "",
+   "cat": "NQ strategy",
+   "d": "2026-10-31",
+   "source": "research/writeups/blitz-streak-size-2026-10-31.md"
+  },
+  {
+   "text": "If shuffled outcomes do as well, the previous result carries no information.",
+   "was": "",
+   "cat": "NQ strategy",
+   "d": "2026-10-31",
+   "source": "research/writeups/blitz-streak-size-2026-10-31.md"
+  },
+  {
+   "text": "That does not hold afterwards: H2 +0.93 / +0.14 / +0.92, 2025 +0.04 / -0.03 / +0.28, 2021-24 +0.04 / +0.16 / -0.12.",
+   "was": "",
+   "cat": "NQ strategy",
+   "d": "2026-10-30",
+   "source": "research/writeups/discretion-score-2026-10-30.md"
+  },
+  {
+   "text": "A lead that did not hold: the other way round, years of memory and a later period as the check:",
+   "was": "",
+   "cat": "NQ strategy",
+   "d": "2026-10-29",
+   "source": "research/writeups/mind.md"
+  }
+ ],
+ "counts": {
+  "NQ strategy": 47,
+  "Kalshi": 2,
+  "money": 3,
+  "process": 8,
+  "app": 0
+ },
+ "note": "Every lesson is a sentence lifted from a file in the repo; strength = how many independent files agree. Research notes, never a trade signal."
+}
