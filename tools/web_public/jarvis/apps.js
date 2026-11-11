@@ -787,12 +787,12 @@ export const CARD_CSS = [
   '.jx-card { text-align: left; }',
   '.jx-card .kv.jx-n1 { grid-template-columns: minmax(0, 1fr); }',
   '.jx-card .kv.jx-n2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
-  '.jx-card .jx-delta { display: block; margin-top: 1px; font-style: normal; font-size: 11.5px; color: var(--mut, #7d7e85); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
-  '.jx-card .jx-delta.up { color: var(--ok, #46d79a); }',
-  '.jx-card .jx-delta.down { color: var(--bad, #ff6b7f); }',
+  '.jx-card .jx-delta { display: block; margin-top: 1px; font-style: normal; font-size: 11.5px; color: var(--mut, #9a8f7d); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+  '.jx-card .jx-delta.up { color: var(--ok, #7f8a52); }',
+  '.jx-card .jx-delta.down { color: var(--bad, #c96a4a); }',
   '.jx-card .list li span { white-space: normal; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }',
   '.jx-card.jx-stale { opacity: .82; }',
-  '.jx-card.jx-stale .pill { color: var(--warn, #f5b84a); }',
+  '.jx-card.jx-stale .pill { color: var(--warn, #e0b060); }',
 ].join('\n');
 function addCss(d) {
   try {
