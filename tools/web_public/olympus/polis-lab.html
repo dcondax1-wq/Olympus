@@ -48,8 +48,8 @@
   .icons svg { width: 100%; height: auto; filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)); }
   .mos { position: relative; height: 170px; border-radius: 14px; overflow: hidden; border: 1px solid var(--ag-line); display: flex; align-items: flex-end; padding: 12px; }
   .mos .polis-glass { padding: 8px 12px; font: 600 14px var(--ag-sans); color: var(--ag-text); }
-  .coins { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-end; }
-  .coinbox { display: grid; justify-items: center; gap: 4px; }
+  .coins { display: flex; flex-wrap: wrap; gap: 14px 10px; align-items: flex-end; }
+  .coinbox { display: grid; justify-items: center; gap: 4px; min-width: 72px; }
   .coinbox small { color: var(--ag-muted); font: 500 12px var(--ag-sans); }
   table.attic { width: 100%; border-collapse: collapse; font: 400 14px/1.3 var(--ag-sans); }
   table.attic th, table.attic td { text-align: left; padding: 9px 6px; border-bottom: 1px solid var(--ag-line); vertical-align: top; }
@@ -258,10 +258,11 @@
     P.mosaic($('mo4'), { pattern: 'meander' });
 
     /* 6 */
-    P.coin($('c1'), { value: 1240, seed: 'a', size: 76 });
-    P.coin($('c2'), { value: -380, seed: 'b', size: 76 });
-    P.coin($('c3'), { value: 0, seed: 'c', size: 76 });
-    var c4 = P.coin($('c4'), { value: 615, seed: 'd', animate: false, size: 76 }), c4v = 615;
+    var csz = window.innerWidth < 420 ? 70 : 84;
+    P.coin($('c1'), { value: 1240, seed: 'a', size: csz });
+    P.coin($('c2'), { value: -380, seed: 'b', size: csz });
+    P.coin($('c3'), { value: 0, seed: 'c', size: csz });
+    var c4 = P.coin($('c4'), { value: 615, seed: 'd', animate: false, size: csz }), c4v = 615;
     L.parts.coin = c4;
     $('c-win').addEventListener('click', function () { c4v = Math.abs(c4v) + 125; c4.set({ value: c4v }); });
     $('c-loss').addEventListener('click', function () { c4v = -Math.abs(c4v) + 40; c4.set({ value: c4v }); });
