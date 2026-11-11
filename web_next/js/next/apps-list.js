@@ -8,16 +8,16 @@
   var rows = [
   {"id": "zenith", "name": "Zenith", "glyph": "Z", "colour": "#9c6b3c", "group": "trading", "groupName": "Trading", "purpose": "NQ bots \u00b7 Zlarior \u00b7 ATLAS \u00b7 BLITZ", "path": "", "live": false},
   {"id": "oracle", "name": "Oracle", "glyph": "\u0398", "colour": "#7fb0a3", "group": "trading", "groupName": "Trading", "purpose": "The market radar, live", "path": "oracle/", "live": true},
-  {"id": "odeon", "name": "Odeon", "glyph": "\u039e", "colour": "#ff6b7f", "group": "trading", "groupName": "Trading", "purpose": "Every trade, replayed in 3D", "path": "odeon/", "live": true},
+  {"id": "odeon", "name": "Odeon", "glyph": "\u039e", "colour": "#d77a7a", "group": "trading", "groupName": "Trading", "purpose": "Every trade, replayed in 3D", "path": "odeon/", "live": true},
   {"id": "fates", "name": "Fates", "glyph": "\u03a6", "colour": "#ffcf5a", "group": "trading", "groupName": "Trading", "purpose": "Pass odds for each eval", "path": "fates/", "live": true},
   {"id": "datacity", "name": "Data City", "glyph": "\u0394", "colour": "#5f8ea6", "group": "trading", "groupName": "Trading", "purpose": "Every combo tested, as a city", "path": "datacity/", "live": true},
   {"id": "observatory", "name": "Observatory", "glyph": "\u25c9", "colour": "#a9bfd0", "group": "trading", "groupName": "Trading", "purpose": "Data health and research evidence", "path": "observatory/", "live": true},
   {"id": "tree", "name": "Daphne", "glyph": "\u03a8", "colour": "#6b9068", "group": "trading", "groupName": "Trading", "purpose": "The strategy tree search", "path": "tree/", "live": true},
   {"id": "prometheus", "name": "Prometheus", "glyph": "\u03a0", "colour": "#ff7a1a", "group": "trading", "groupName": "Trading", "purpose": "The Forge: strategies tested", "path": "prometheus/", "live": true},
   {"id": "pantheon", "name": "Pantheon", "glyph": "\u03a3", "colour": "#f2d68a", "group": "trading", "groupName": "Trading", "purpose": "The data gods: rates, liquidity, fear", "path": "pantheon/", "live": true},
-  {"id": "ares", "name": "Ares", "glyph": "\u039b", "colour": "#ff3b30", "group": "trading", "groupName": "Trading", "purpose": "The war room: GO, WAIT or HALT", "path": "ares/", "live": true},
-  {"id": "forum", "name": "Forum", "glyph": "\u0393", "colour": "#b8e04a", "group": "trading", "groupName": "Trading", "purpose": "Morning briefing at the real NY hour", "path": "forum/", "live": true},
-  {"id": "labyrinth", "name": "Labyrinth", "glyph": "\u039e", "colour": "#ff4d57", "group": "trading", "groupName": "Trading", "purpose": "The risk maze: size your eval", "path": "labyrinth/", "live": true},
+  {"id": "ares", "name": "Ares", "glyph": "\u039b", "colour": "#c8402e", "group": "trading", "groupName": "Trading", "purpose": "The war room: GO, WAIT or HALT", "path": "ares/", "live": true},
+  {"id": "forum", "name": "Forum", "glyph": "\u0393", "colour": "#8f9f3c", "group": "trading", "groupName": "Trading", "purpose": "Morning briefing at the real NY hour", "path": "forum/", "live": true},
+  {"id": "labyrinth", "name": "Labyrinth", "glyph": "\u039e", "colour": "#a8765a", "group": "trading", "groupName": "Trading", "purpose": "The risk maze: size your eval", "path": "labyrinth/", "live": true},
   {"id": "argus", "name": "Argus", "glyph": "\u0391", "colour": "#3f8a8a", "group": "trading", "groupName": "Trading", "purpose": "The hundred eyes: what to fix", "path": "argus/", "live": true},
   {"id": "nemesis", "name": "Nemesis", "glyph": "\u039d", "colour": "#b55c66", "group": "trading", "groupName": "Trading", "purpose": "The fallen trades: what went wrong", "path": "nemesis/", "live": true},
   {"id": "chronos", "name": "Chronos", "glyph": "\u03a7", "colour": "#d4a574", "group": "trading", "groupName": "Trading", "purpose": "Time and the session clock", "path": "chronos/", "live": true},
@@ -70,7 +70,7 @@
   {"id": "kalshi", "name": "Kalshi", "glyph": "K", "colour": "#8fa07a", "group": "money", "groupName": "Money", "purpose": "Kalshi bot \u00b7 from your PC", "path": "kalshi/", "live": false},
   {"id": "tyche", "name": "Tyche", "glyph": "\u03a4", "colour": "#cf8f7a", "group": "money", "groupName": "Money", "purpose": "The Kalshi bets as a 3D fortune wheel", "path": "tyche/", "live": true},
   {"id": "hermes", "name": "Hermes", "glyph": "\u0397", "colour": "#f7c948", "group": "money", "groupName": "Money", "purpose": "OLYMPUS Wrapped: your money", "path": "hermes/", "live": true},
-  {"id": "plutus", "name": "Plutus", "glyph": "\u03a1", "colour": "#9be84a", "group": "money", "groupName": "Money", "purpose": "The money plan: accounts and payouts", "path": "plutus/", "live": true}
+  {"id": "plutus", "name": "Plutus", "glyph": "\u03a1", "colour": "#a9b84f", "group": "money", "groupName": "Money", "purpose": "The money plan: accounts and payouts", "path": "plutus/", "live": true}
   ];
   var list = Object.freeze(rows.map(function (r) { return Object.freeze(r); }));
   g.OLYMPUS_APPS_LIST = list;

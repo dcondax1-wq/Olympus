@@ -72,16 +72,16 @@ const app = (id, name, group, accent, sub, more) => Object.freeze(Object.assign(
 export const BUILT_INS = Object.freeze([
   app('zenith', 'Zenith', 'trading', '#9c6b3c', 'NQ bots \u00b7 Zlarior \u00b7 ATLAS \u00b7 BLITZ', { url: '../', icon: '../icons/icon-192.png?v=p111030', live: false }),
   app('oracle', 'Oracle', 'trading', '#7fb0a3', 'The market radar, live', { glyph: '\u0398' }),
-  app('odeon', 'Odeon', 'trading', '#ff6b7f', 'Every trade, replayed in 3D', { glyph: '\u039e' }),
+  app('odeon', 'Odeon', 'trading', '#d77a7a', 'Every trade, replayed in 3D', { glyph: '\u039e' }),
   app('fates', 'Fates', 'trading', '#ffcf5a', 'Pass odds for each eval', { glyph: '\u03a6' }),
   app('datacity', 'Data City', 'trading', '#5f8ea6', 'Every combo tested, as a city', { glyph: '\u0394' }),
   app('observatory', 'Observatory', 'trading', '#a9bfd0', 'Data health and research evidence', { glyph: '\u25c9' }),
   app('tree', 'Daphne', 'trading', '#6b9068', 'The strategy tree search', { glyph: '\u03a8' }),
   app('prometheus', 'Prometheus', 'trading', '#ff7a1a', 'The Forge: strategies tested', { glyph: '\u03a0' }),
   app('pantheon', 'Pantheon', 'trading', '#f2d68a', 'The data gods: rates, liquidity, fear', { glyph: '\u03a3' }),
-  app('ares', 'Ares', 'trading', '#ff3b30', 'The war room: GO, WAIT or HALT', { glyph: '\u039b' }),
-  app('forum', 'Forum', 'trading', '#b8e04a', 'Morning briefing at the real NY hour', { glyph: '\u0393' }),
-  app('labyrinth', 'Labyrinth', 'trading', '#ff4d57', 'The risk maze: size your eval', { glyph: '\u039e' }),
+  app('ares', 'Ares', 'trading', '#c8402e', 'The war room: GO, WAIT or HALT', { glyph: '\u039b' }),
+  app('forum', 'Forum', 'trading', '#8f9f3c', 'Morning briefing at the real NY hour', { glyph: '\u0393' }),
+  app('labyrinth', 'Labyrinth', 'trading', '#a8765a', 'The risk maze: size your eval', { glyph: '\u039e' }),
   app('argus', 'Argus', 'trading', '#3f8a8a', 'The hundred eyes: what to fix', { glyph: '\u0391' }),
   app('nemesis', 'Nemesis', 'trading', '#b55c66', 'The fallen trades: what went wrong', { glyph: '\u039d' }),
   app('chronos', 'Chronos', 'trading', '#d4a574', 'Time and the session clock', { glyph: '\u03a7' }),
@@ -134,7 +134,7 @@ export const BUILT_INS = Object.freeze([
   app('kalshi', 'Kalshi', 'money', '#8fa07a', 'Kalshi bot \u00b7 from your PC', { glyph: 'K', live: false }),
   app('tyche', 'Tyche', 'money', '#cf8f7a', 'The Kalshi bets as a 3D fortune wheel', { glyph: '\u03a4' }),
   app('hermes', 'Hermes', 'money', '#f7c948', 'OLYMPUS Wrapped: your money', { glyph: '\u0397' }),
-  app('plutus', 'Plutus', 'money', '#9be84a', 'The money plan: accounts and payouts', { glyph: '\u03a1' }),
+  app('plutus', 'Plutus', 'money', '#a9b84f', 'The money plan: accounts and payouts', { glyph: '\u03a1' }),
 ]);
 const GROUP_IDS = GROUPS.map((g) => g.id);
 const groupRank = (g) => { const i = GROUP_IDS.indexOf(g); return i < 0 ? GROUP_IDS.length - 1 : i; };     // unknown: MORE
