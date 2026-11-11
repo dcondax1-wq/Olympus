@@ -141,7 +141,7 @@
       }
     }
     return { W: W0, H: H0, horizon: HORIZON, buildings: out, terraces: terr, districts: DISTRICTS.map(function (d) { return { id: d.id, name: d.name, group: d.group, x0: d.x0, x1: d.x1, cx: d.cx }; }),
-      berths: [[2500, 549], [2612, 551], [2724, 550], [2836, 548]], lanes: [[2590, 468, 0.66], [2720, 486, 0.72], [2480, 446, 0.58], [2810, 452, 0.6]] };
+      berths: [[2500, 549], [2612, 551], [2724, 550], [2836, 548]], lanes: [[2560, 470, 0.66], [2690, 492, 0.72], [2450, 448, 0.58], [2680, 446, 0.6]] };
   }
   function building(a, D, row, x, y, type, s, spacing) {
     var sz = SIZE[type] || SIZE.house, w = sz[0] * s, h = sz[1] * s;
@@ -609,7 +609,7 @@
     var ctx = cv.getContext('2d');
     var st = { apps: opts.apps || [], ships: opts.ships || [], fresh: {}, treasury: false, weather: opts.weather || {}, time: opts.time || Date.now(), timeFixed: !!opts.time,
       quality: opts.quality === 'low' ? 'low' : 'high', reduced: !!opts.reduced, pan: 0, panMax: 0, tiltX: 0, tiltY: 0, scrollY: 0, selected: null, hover: null,
-      seed: opts.seed || 20261111, frames: 0, fps: 0, lastBake: 0, star: null, starQueue: 0, motes: [], running: false, dirty: true, visible: true, bakes: 0, frameMs: 0 };
+      seed: opts.seed || 20261111, plates: [], frames: 0, fps: 0, lastBake: 0, star: null, starQueue: 0, motes: [], running: false, dirty: true, visible: true, bakes: 0, frameMs: 0 };
     var M = layout(st.apps), lay = {}, view = { w: 0, h: 0, k: 1, dpr: 1 }, L = null, F = null, sunNow = null, moonNow = null, sky = null, stars = null, mw = null, field = null, grain = null, clouds = [];
     var scroller = opts.scroller || null;
 
@@ -724,6 +724,7 @@
       drawLife(t);
       drawShips(t, false);
       drawLayer('fore', -ty * 2, -tx * 3);
+      drawPlates();
       // weather: rain streaks and fog
       if (L.rain > 0.02) { ctx.strokeStyle = 'rgba(200,206,220,' + (0.25 * L.rain).toFixed(3) + ')'; ctx.lineWidth = 1; ctx.beginPath(); var rr = rng(Math.floor(t * 20)); for (i = 0; i < 160 * L.rain; i++) { var rx = rr() * view.w, ry = rr() * view.h; ctx.moveTo(rx, ry); ctx.lineTo(rx - 3, ry + 12); } ctx.stroke(); }
       if (L.fog > 0.02) { var fg = ctx.createLinearGradient(0, hz - 60 * k, 0, view.h); fg.addColorStop(0, css(L.haze, 0)); fg.addColorStop(0.4, css(L.haze, 0.55 * L.fog)); fg.addColorStop(1, css(L.haze, 0.25 * L.fog)); ctx.fillStyle = fg; ctx.fillRect(0, 0, view.w, view.h); }
@@ -792,6 +793,11 @@
       }
     }
     // the ships of the bots: in port (moored, sail furled), under sail (out in the bay), returning (heading home with cargo)
+    function drawPlates() {
+      var k = view.k, P = st.plates; st.plates = [];
+      ctx.font = '600 ' + Math.round(11 * Math.max(0.95, Math.min(1.1, k))) + 'px -apple-system,system-ui,sans-serif'; ctx.textAlign = 'center';
+      for (var i = 0; i < P.length; i++) { var tw2 = ctx.measureText(P[i][0]).width + 12; ctx.fillStyle = 'rgba(29,25,20,0.8)'; ctx.fillRect(P[i][1] - tw2 / 2, P[i][2], tw2, 17); ctx.fillStyle = '#f3ece0'; ctx.fillText(P[i][0], P[i][1], P[i][2] + 12.5); }
+    }
     function drawShips(t, far) {
       var k = view.k, still = st.reduced || st.quality === 'low';
       for (var i = 0; i < st.ships.length && i < 4; i++) {
@@ -840,11 +846,8 @@
       if (L.night > 0.3) { c.fillStyle = css(L.torch, 0.9 * L.night); c.beginPath(); c.arc(-len / 2 + 2 * s, -hh - 12 * s, 1.8 * s, 0, Math.PI * 2); c.fill(); }
       c.restore();
       // its name plate
-      var label = S.label || S.name || '', k = view.k;
-      if (label) {
-        c.font = '600 ' + Math.round(11 * Math.max(0.95, Math.min(1.1, k))) + 'px -apple-system,system-ui,sans-serif'; c.textAlign = 'center';
-        var tw2 = c.measureText(label).width + 12; c.fillStyle = 'rgba(29,25,20,0.78)'; c.fillRect(x - tw2 / 2, y + 8 * s, tw2, 17); c.fillStyle = '#f3ece0'; c.fillText(label, x, y + 8 * s + 12.5);
-      }
+      var label = S.label || S.name || '';   // name plates are drawn last (over the mole and the trees): above the mast under sail, below the hull in port
+      if (label) st.plates.push([label, x, state === 'port' || state === 'returning' ? y + 8 * s : y - hh - mh - 22 * s]);
     }
     // the city's life: fresh-news banners and a warm halo, torches at night, smoke of the forges, gold motes over the treasury, the selected rim
     function drawLife(t) {
