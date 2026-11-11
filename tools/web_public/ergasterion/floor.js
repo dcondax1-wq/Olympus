@@ -1,5 +1,5 @@
 // ERGASTERION floor (ES module): the marble-and-bronze agent factory you walk in first person. Four halls (Money, Trading, Research, Library) around a cross of inner walls with a
-// door in each; one platform per worker with a marble figure DOING ITS JOB (turning the search wheel, writing at a desk, reading the tripod, hammering at the anvil, weighing on the
+// door in each; one platform per worker with a friendly cartoon PERSON (big round head, dot eyes, coloured tunic, mitten hands) DOING ITS JOB (turning the search wheel, writing at a desk, reading the tripod, hammering at the anvil, weighing on the
 // scales), a status lamp, a speech bubble with its latest finding, and a conveyor carrying its last outputs as labelled crates you can tap. The Learning board and "what changed our
 // mind" hang in the Library, the research pipeline wall in the Research hall. Built on the OLYMPUS render core (../olympus/render.js, three.js r160 from ../jarvis/). Warm light, bloom <= .2.
 // Outside the front door lies THE BUILDERS' CAMP: a desert caravan camp with one tent per build agent (a worker at a marble table, a banner with its name and job, a scroll that cycles
@@ -11,9 +11,13 @@
 // If WebGL, the render core or the tier (LITE / off) says no, ok is false and the page keeps its flat plan. Reduced motion: everything stands still and the camera jumps instead of gliding.
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
-import { walk, followCam, tourCam, ease, hallOf, resolveCollision, EYE, START, HALLS, DOORS, CAMP, CAMP_SPOTS } from './ergasterioncore.js';
+import { walk, followCam, tourCam, ease, hallOf, resolveCollision, EYE, START, HALLS, DOORS, CAMP, CAMP_SPOTS, personId, builderIds } from './ergasterioncore.js';
 
 const BUILD = { working: '#8fa05a', quiet: '#4b7a99', done: '#c8a24a', job: '#b8ad98' }, BWORD = { working: 'Working', quiet: 'Quiet', done: 'Done', job: 'Job only' }, NC = CAMP_SPOTS.length, CSTACK = 6, PUFF = 5;
+const HS = 9;                                                                              // head-batch parts of one person: head, hair, 2 eyes, 2 hands, shoulders, 2 feet
+const SKIN = ['#f1c9a5', '#e0ac7e', '#c68f5e', '#a56b43', '#f5d6b8', '#8a5a3c'], HAIR = ['#3a2a1c', '#6b4423', '#1f1a17', '#a0703a', '#c9b28a', '#7a2e1e', '#55524d'], OUTFIT = ['#c8a24a', '#7f8a52', '#c96a4a', '#4b7a99', '#e9dfc8', '#9c6b3c'];
+/** a seeded look: everyone is recognisably different (skin tone, hair colour, tunic in the AGORA colours) */
+const lookOf = (i) => ({ skin: SKIN[(i * 5 + 1) % SKIN.length], hair: HAIR[(i * 3 + 2) % HAIR.length], outfit: OUTFIT[(i * 7 + Math.floor(i / 6)) % OUTFIT.length] });
 const LAMP = { working: '#8fa05a', idle: '#4b7a99', stale: '#e0b060', failed: '#c96a4a', sample: '#b8ad98' };
 const WORD = { working: 'Working', idle: 'Idle', stale: 'Stale', failed: 'Failed', sample: 'Sample data' };
 const PACE = { working: 1, idle: 0.3, stale: 0, failed: 0, sample: 0.5 };          // how briskly a figure works (and its belt runs)
@@ -82,7 +86,8 @@ function build(rc, scene, camera, canvas, o) {
   }
   const boxG = new THREE.BoxGeometry(1, 1, 1), cylG = new THREE.CylinderGeometry(1, 1, 1, 20), robeG = new THREE.CylinderGeometry(0.72, 1, 1, 12), ballG = new THREE.SphereGeometry(1, 16, 12);
   const sBox = batch(boxG, stone), bBox = batch(boxG, metal), sCyl = batch(cylG, stone), bCyl = batch(cylG, metal);                     // static: the building and the furniture
-  const fig = batch(robeG, stone, true), head = batch(ballG, stone, true), dBox = batch(boxG, metal, true), dCyl = batch(cylG, metal, true);   // moving: the figures and their tools
+  const pplG = new THREE.SphereGeometry(1, 12, 8), toy = std(0.82, 0);
+  const fig = batch(robeG, toy, true), head = batch(pplG, toy, true), dBox = batch(boxG, metal, true), dCyl = batch(cylG, metal, true);   // moving: the figures and their tools
   const lamp = batch(ballG, new THREE.MeshBasicMaterial({ color: '#ffffff' }), true), crate = batch(boxG, std(0.7, 0.05), true);
   const tentG = new THREE.ConeGeometry(1, 1, 4); tentG.rotateY(Math.PI / 4);
   const tent = batch(tentG, std(0.85, 0), false), dune = batch(ballG, std(0.95, 0), false);                                          // the camp: tents and dunes
@@ -118,11 +123,11 @@ function build(rc, scene, camera, canvas, o) {
     bCyl.add(s.x + 0.95, 0.85, s.z - 0.62, 0.045, 1.7, 0.045, BRONZE);
     bBox.add(s.x, 0.1, s.z + 1.75, 2.7, 0.12, 0.5, BRONZE); bBox.add(s.x - 1.2, 0.03, s.z + 1.75, 0.1, 0.06, 0.6, '#6f4c2b'); bBox.add(s.x + 1.2, 0.03, s.z + 1.75, 0.1, 0.06, 0.6, '#6f4c2b');
     const px = s.x, pz = s.z + 0.5;
-    if (s.job === 'scribe') { sBox.add(px, Y0 + 0.62, pz, 0.95, 0.06, 0.5, MARBLE); bBox.add(px - 0.4, Y0 + 0.3, pz, 0.06, 0.6, 0.42, BRONZE); bBox.add(px + 0.4, Y0 + 0.3, pz, 0.06, 0.6, 0.42, BRONZE); sBox.add(px - 0.05, Y0 + 0.665, pz, 0.5, 0.025, 0.32, '#efe6d2'); }
-    else if (s.job === 'oracle') { for (let k = 0; k < 3; k++) { const a = k * 2.094 + 0.5; bCyl.add(px + Math.sin(a) * 0.17, Y0 + 0.42, pz + Math.cos(a) * 0.17, 0.022, 0.9, 0.022, BRONZE, Math.cos(a) * 0.36, 0, -Math.sin(a) * 0.36); } bCyl.add(px, Y0 + 0.88, pz, 0.27, 0.1, 0.27, GOLD); }
-    else if (s.job === 'smith') { sBox.add(px, Y0 + 0.3, pz, 0.34, 0.6, 0.3, MARBLE); bBox.add(px, Y0 + 0.69, pz, 0.6, 0.18, 0.26, '#7a5631'); }
-    else if (s.job === 'scales') { bCyl.add(px, Y0 + 0.55, pz, 0.03, 1.1, 0.03, BRONZE); bCyl.add(px, Y0 + 0.03, pz, 0.2, 0.06, 0.2, BRONZE); }
-    else { bBox.add(px + 0.62, Y0 + 0.36, pz - 0.04, 0.08, 0.72, 0.08, BRONZE); bBox.add(px + 0.62, Y0 + 0.03, pz - 0.04, 0.5, 0.06, 0.34, BRONZE); }
+    if (s.job === 'scribe') { sBox.add(px, Y0 + 0.5, pz, 0.95, 0.06, 0.5, MARBLE); bBox.add(px - 0.4, Y0 + 0.24, pz, 0.06, 0.48, 0.42, BRONZE); bBox.add(px + 0.4, Y0 + 0.24, pz, 0.06, 0.48, 0.42, BRONZE); sBox.add(px - 0.05, Y0 + 0.545, pz, 0.5, 0.025, 0.32, '#efe6d2'); }
+    else if (s.job === 'oracle') { for (let k = 0; k < 3; k++) { const a = k * 2.094 + 0.5; bCyl.add(px + Math.sin(a) * 0.15, Y0 + 0.33, pz + Math.cos(a) * 0.15, 0.022, 0.7, 0.022, BRONZE, Math.cos(a) * 0.36, 0, -Math.sin(a) * 0.36); } bCyl.add(px, Y0 + 0.68, pz, 0.26, 0.1, 0.26, GOLD); }
+    else if (s.job === 'smith') { sBox.add(px, Y0 + 0.2, pz, 0.34, 0.4, 0.3, MARBLE); bBox.add(px, Y0 + 0.47, pz, 0.6, 0.16, 0.26, '#7a5631'); }
+    else if (s.job === 'scales') { bCyl.add(px, Y0 + 0.43, pz, 0.03, 0.86, 0.03, BRONZE); bCyl.add(px, Y0 + 0.03, pz, 0.2, 0.06, 0.2, BRONZE); }
+    else { bBox.add(px + 0.62, Y0 + 0.28, pz - 0.04, 0.08, 0.56, 0.08, BRONZE); bBox.add(px + 0.62, Y0 + 0.03, pz - 0.04, 0.5, 0.06, 0.34, BRONZE); }
   });
   // ---- THE BUILDERS' CAMP outside the front door: sand, a path, dunes, the hearth, and for each build agent a tent, a banner pole, a marble work table and a small brazier
   const SAND = '#c9a66b', cz0 = (CAMP.z0 + CAMP.z1) / 2;
@@ -135,12 +140,13 @@ function build(rc, scene, camera, canvas, o) {
     tent.add(c.x, 1.0, c.z, 1.55, 2.0, 1.55, TENT[j % TENT.length]); tent.add(c.x, 2.12, c.z, 0.5, 0.5, 0.5, j % 2 ? '#9c6b3c' : '#c8a24a');
     sBox.add(c.x, 0.55, c.z - 1.02, 0.66, 1.1, 0.3, '#3a2c1c'); bCyl.add(c.x, 2.5, c.z, 0.025, 0.5, 0.025, GOLD);
     bCyl.add(c.x - 1.25, 1.3, c.z - 1.0, 0.035, 2.6, 0.035, BRONZE);
-    sBox.add(c.x, 0.62, c.z - 2.45, 0.95, 0.06, 0.5, MARBLE); bBox.add(c.x - 0.4, 0.3, c.z - 2.45, 0.06, 0.6, 0.42, BRONZE); bBox.add(c.x + 0.4, 0.3, c.z - 2.45, 0.06, 0.6, 0.42, BRONZE);
-    if (c.job === 'smith') bBox.add(c.x, 0.72, c.z - 2.45, 0.5, 0.14, 0.24, '#7a5631'); else sBox.add(c.x - 0.05, 0.665, c.z - 2.45, 0.5, 0.025, 0.32, '#efe6d2');
+    sBox.add(c.x, 0.5, c.z - 2.45, 0.95, 0.06, 0.5, MARBLE); bBox.add(c.x - 0.4, 0.24, c.z - 2.45, 0.06, 0.48, 0.42, BRONZE); bBox.add(c.x + 0.4, 0.24, c.z - 2.45, 0.06, 0.48, 0.42, BRONZE);
+    if (c.job === 'smith') bBox.add(c.x, 0.47, c.z - 2.45, 0.6, 0.16, 0.26, '#7a5631'); else sBox.add(c.x - 0.05, 0.545, c.z - 2.45, 0.5, 0.025, 0.32, '#efe6d2');
     bCyl.add(c.x + 1.15, 0.5, c.z - 1.7, 0.2, 0.12, 0.2, BRONZE); bCyl.add(c.x + 1.15, 0.22, c.z - 1.7, 0.03, 0.44, 0.03, BRONZE);
   });
   // moving parts: fixed slots per station (and per camp builder) so nothing is allocated while drawing
-  for (let i = 0; i < N + NC; i++) { fig.add(0, -9, 0, 1, 1, 1, MARBLE); fig.add(0, -9, 0, 1, 1, 1, MARBLE); fig.add(0, -9, 0, 1, 1, 1, MARBLE); head.add(0, -9, 0, 1, 1, 1, MARBLE);
+  for (let i = 0; i < N + NC; i++) { const lk = lookOf(i); for (let q = 0; q < 3; q++) fig.add(0, -9, 0, 1, 1, 1, lk.outfit);
+    [lk.skin, lk.hair, '#2a2018', '#2a2018', lk.skin, lk.skin, lk.outfit, '#5a4030', '#5a4030'].forEach((c) => head.add(0, -9, 0, 1, 1, 1, c));
     for (let k = 0; k < 3; k++) { dBox.add(0, -9, 0, 1, 1, 1, k === 2 ? GOLD : BRONZE); dCyl.add(0, -9, 0, 1, 1, 1, BRONZE); } }
   S.forEach(() => { lamp.add(0, -9, 0, 1, 1, 1, LAMP.stale); for (let k = 0; k < MAXC; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
   const EMBER0 = N, PUFF0 = N + 1 + NC, CR0 = N * MAXC;
@@ -148,6 +154,7 @@ function build(rc, scene, camera, canvas, o) {
   CAMP_SPOTS.forEach((c) => lamp.add(c.x + 1.15, 0.6, c.z - 1.7, 0.13, 0.09, 0.13, '#4a3a28'));
   CAMP_SPOTS.forEach(() => { for (let k = 0; k < PUFF; k++) lamp.add(0, -9, 0, 1, 1, 1, '#b3a58e'); });
   CAMP_SPOTS.forEach(() => { for (let k = 0; k < CSTACK; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
+  const SPOT = N + 1 + NC + NC * PUFF; lamp.add(0, -9, 0, 1, 1, 1, '#efe6d2');                              // the soft marble disc under the person you are talking to
   // board frames (the boards themselves are three canvases)
   const BOARDS = { board: { x: 10.35, y: 1.85, z: 0.17, w: 4.5, h: 2.5, ry: 0 }, changed: { x: 2.75, y: 1.85, z: 0.17, w: 4.5, h: 2.5, ry: 0 }, pipe: { x: -6.5, y: 1.85, z: 9.98, w: 9.2, h: 2.6, ry: Math.PI } };
   for (const k in BOARDS) { const b = BOARDS[k]; bBox.add(b.x, b.y, b.z - (b.ry ? -0.04 : 0.04), b.w + 0.24, b.h + 0.24, 0.06, BRONZE); }
@@ -262,11 +269,91 @@ function build(rc, scene, camera, canvas, o) {
   const pos = () => ({ x: cam.x, z: cam.z, yaw: cam.yaw, following, mode, hall: hallOf(mode === 'tour' ? { x: camera.position.x, z: camera.position.z } : cam).id });
   const nCrates = (w) => Math.max(0, Math.min(MAXC, w && w.crates ? w.crates.length : 0));
   // an arm: a cylinder from the shoulder, swung forward by `a` radians (0 = hanging down, 1.57 = straight ahead) and outward by `out`; returns the hand position
-  const hand = { x: 0, y: 0, z: 0 };
-  function arm(slot, sx, sy, sz, a, out) {
-    const L = 0.5, dx = Math.sin(out), dy = -Math.cos(a) * Math.cos(out), dz = Math.sin(a) * Math.cos(out);
-    put(fig.im, slot, sx + dx * L / 2, sy + dy * L / 2, sz + dz * L / 2, 0.06, L, 0.06, -a, 0, out);
-    hand.x = sx + dx * L; hand.y = sy + dy * L; hand.z = sz + dz * L;
+  // ---- A PERSON (the look of docs/PERSONA_API.md, our own instanced version): a friendly cartoon character with a big round head, dot eyes that blink, a cap of hair, a short rounded
+  // body in a coloured tunic, mitten hands and feet. Every part is an instance of the shared batches. A person does its job, waves when you come near, turns to face you and talks
+  // while you chat with it (a soft marble disc on the floor marks it: no glow), cheers when its work is merged and slumps when its run failed.
+  const hand = { x: 0, y: 0, z: 0 }, AXY = new THREE.Vector3(0, 1, 0), qT = new THREE.Quaternion(), thA = new Float32Array(N + NC), nearT = new Float32Array(N + NC).fill(-99), wasNear = new Uint8Array(N + NC);
+  let oX = 0, oZ = 0, cT = 1, sT = 0, focusKey = '';
+  for (let j = 0; j < NC; j++) thA[N + j] = Math.PI;
+  const pl = (im, slot, lx, ly, lz, sx, sy, sz, rx, ry, rz) => { EU.set(rx || 0, ry || 0, rz || 0, 'XYZ'); Q.setFromEuler(EU).premultiply(qT); M4.compose(P.set(oX + lx * cT + lz * sT, ly, oZ - lx * sT + lz * cT), Q, SC.set(sx, sy, sz)); im.setMatrixAt(slot, M4); };
+  const gone = (im, j) => put(im, j, 0, -9, 0, 0.001, 0.001, 0.001);
+  // when the shared people kit's 3D module is there (olympus/people3d.js, optional), each person takes the colours of its own spec(id): the same character as in the chat. Without it the seeded look above stays.
+  let specFn = null;
+  function dress() {
+    if (!specFn) return;
+    const paint = (i, id) => { try { const sp = id && specFn(id); if (!sp) return; const ok = (c) => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+      if (ok(sp.outfit)) { for (let q = 0; q < 3; q++) fig.im.setColorAt(i * 3 + q, colour.set(sp.outfit)); head.im.setColorAt(i * HS + 6, colour.set(sp.outfit)); }
+      if (ok(sp.skin)) [0, 4, 5].forEach((q) => head.im.setColorAt(i * HS + q, colour.set(sp.skin))); if (ok(sp.hair)) head.im.setColorAt(i * HS + 1, colour.set(sp.hair)); } catch (_) { /* its seeded look stays */ } };
+    S.forEach((st, i) => paint(i, personId(st.id))); camp.forEach((b, j) => { if (b) paint(N + j, builderIds(b.branch)[0]); });
+    fig.im.instanceColor.needsUpdate = true; head.im.instanceColor.needsUpdate = true;
+  }
+  import('../olympus/people3d.js').then((m) => { specFn = m && typeof m.spec === 'function' ? m.spec : null; dress(); }).catch(() => { /* optional */ });
+  function hideActor(i) { for (let q = 0; q < 3; q++) { gone(fig.im, i * 3 + q); gone(dBox.im, i * 3 + q); gone(dCyl.im, i * 3 + q); } for (let q = 0; q < HS; q++) gone(head.im, i * HS + q); }
+  // an arm from the shoulder (local x = sxl), swung forward by `a` (0 hangs down, 1.57 straight ahead, 3 overhead) and outward by `out`, ending in a mitten hand
+  function arm(i, side, sy, a, out) {
+    const AL = 0.4, sxl = side * 0.23, dx = Math.sin(out), dy = -Math.cos(a) * Math.cos(out), dz = Math.sin(a) * Math.cos(out);
+    pl(fig.im, i * 3 + (side > 0 ? 1 : 2), sxl + dx * AL / 2, sy + dy * AL / 2, 0.02 + dz * AL / 2, 0.055, AL, 0.055, -a, 0, out);
+    hand.x = sxl + dx * AL; hand.y = sy + dy * AL; hand.z = 0.02 + dz * AL;
+    pl(head.im, i * HS + (side > 0 ? 4 : 5), hand.x, hand.y, hand.z, 0.07, 0.07, 0.07);
+  }
+  function actor(i, job, fx, fz, yb, th0, pz, k, mood, key, dt, camP) {
+    const a = ang[i], b3 = i * 3, h0 = i * HS, dC = Math.hypot(camP.x - fx, camP.z - fz), talking = focusKey === key, close = mode === 'walk' && dC < 3.4;
+    if (close && !wasNear[i]) nearT[i] = t; wasNear[i] = close ? 1 : 0;
+    const pose = talking ? 'talk' : close && t - nearT[i] < 2.6 ? 'wave' : mood;
+    // turn: toward you while waving or talking, back to the work otherwise (eased; reduced motion turns at once)
+    let want = pose === 'talk' || pose === 'wave' ? Math.atan2(camP.x - fx, camP.z - fz) : th0, dth = want - thA[i]; while (dth > Math.PI) dth -= Math.PI * 2; while (dth < -Math.PI) dth += Math.PI * 2;
+    thA[i] = reduced ? want : thA[i] + dth * Math.min(1, dt * 6);
+    oX = fx; oZ = fz; cT = Math.cos(thA[i]); sT = Math.sin(thA[i]); qT.setFromAxisAngle(AXY, thA[i]);
+    const live = k > 0 || pose === 'talk' || pose === 'wave' || pose === 'cheer', bob = mot * (pose === 'cheer' ? Math.abs(Math.sin(t * 3 + i)) * 0.07 : live ? 0.012 * Math.sin(a * 2.1 + t * 1.3) : 0.006 * Math.sin(t * 1.1 + i));
+    const sl = pose === 'slump' ? 1 : 0, y = yb + bob, shY = y + 0.66 - sl * 0.04, hy = y + 1.0 - sl * 0.07 + (pose === 'talk' ? 0.012 * Math.sin(t * 5) * mot : 0), hz = sl * 0.07;
+    pl(fig.im, b3, 0, y + 0.3, 0, 0.23, 0.5, 0.21);                                                                 // the tunic
+    pl(head.im, h0 + 6, 0, y + 0.58, 0, 0.235 + 0.006 * Math.sin(t * 1.6 + i) * mot, 0.19, 0.2);                    // rounded shoulders (it breathes)
+    pl(head.im, h0, 0, hy, hz, 0.25, 0.24, 0.245, sl * 0.3, 0, 0);                                                  // the big round head
+    pl(head.im, h0 + 1, 0, hy + 0.055, hz - 0.05, 0.262, 0.235, 0.25, sl * 0.3, 0, 0);                              // hair
+    const blink = mot && ((t * 0.31 + i * 0.37) % 1) < 0.035 ? 0.006 : 0.042, look = pose === 'talk' || pose === 'wave' ? 0 : Math.sin(t * 0.5 + i * 2.1) * 0.02 * mot;
+    pl(head.im, h0 + 2, 0.085 + look, hy + 0.015 - sl * 0.02, hz + 0.228, 0.03, sl ? 0.012 : blink, 0.02); pl(head.im, h0 + 3, -0.085 + look, hy + 0.015 - sl * 0.02, hz + 0.228, 0.03, sl ? 0.012 : blink, 0.02);
+    pl(head.im, h0 + 7, 0.1, yb + 0.04, 0.05, 0.085, 0.05, 0.13); pl(head.im, h0 + 8, -0.1, yb + 0.04, 0.05, 0.085, 0.05, 0.13);   // feet
+    const toolsOff = () => { for (let q = 0; q < 3; q++) { gone(dBox.im, b3 + q); gone(dCyl.im, b3 + q); } };
+    if (pose === 'talk') { arm(i, 1, shY, 1.15 + 0.28 * Math.sin(t * 3.1) * mot, 0.25); arm(i, -1, shY, 0.5 + 0.12 * Math.sin(t * 2.3 + 1) * mot, -0.2); toolsOff(); return; }
+    if (pose === 'wave') { arm(i, 1, shY, 2.75, 0.45 + 0.4 * Math.sin(t * 8) * mot); arm(i, -1, shY, 0.2, -0.15); toolsOff(); return; }
+    if (pose === 'cheer') { arm(i, 1, shY, 2.8, 0.45 + 0.1 * Math.sin(t * 6) * mot); arm(i, -1, shY, 2.8, -0.45 - 0.1 * Math.sin(t * 6) * mot); toolsOff(); return; }
+    if (pose === 'slump') { arm(i, 1, shY, 0.08, 0.1); arm(i, -1, shY, 0.08, -0.1); toolsOff(); return; }
+    const ty = yb;                                                                                                   // the furniture stands on the same base as the person
+    if (job === 'wheel') {
+      const sp = a * 2.2, wy = ty + 0.56, wx = 0.62, wz = pz + 0.06;
+      pl(dCyl.im, b3, wx, wy, wz, 0.36, 0.05, 0.36, Math.PI / 2, sp, 0);
+      pl(dBox.im, b3, wx, wy, wz + 0.035, 0.7, 0.05, 0.03, 0, 0, sp); pl(dBox.im, b3 + 1, wx, wy, wz + 0.035, 0.7, 0.05, 0.03, 0, 0, sp + Math.PI / 2);
+      pl(dBox.im, b3 + 2, wx + Math.cos(sp) * 0.3, wy + Math.sin(sp) * 0.3, wz + 0.09, 0.07, 0.07, 0.12);
+      arm(i, 1, shY, 1.5 + Math.sin(sp) * 0.3, 0.75 + Math.cos(sp) * 0.2); arm(i, -1, shY, 0.35, -0.1);
+      gone(dCyl.im, b3 + 1); gone(dCyl.im, b3 + 2);
+    } else if (job === 'scribe') {
+      const wr = Math.sin(a * 5) * 0.16, dip = Math.sin(a * 10) * 0.03;
+      arm(i, 1, shY, 1.5 + dip, -0.2 + wr); pl(dCyl.im, b3, hand.x, hand.y + 0.06, hand.z + 0.04, 0.012, 0.24, 0.012, -0.5, 0, 0.3);
+      arm(i, -1, shY, 1.45, 0.2);
+      gone(dCyl.im, b3 + 1); gone(dCyl.im, b3 + 2); gone(dBox.im, b3); gone(dBox.im, b3 + 1); gone(dBox.im, b3 + 2);
+    } else if (job === 'oracle') {
+      const sw = Math.sin(a * 1.4) * 0.22;
+      arm(i, 1, shY, 2.3 + sw, 0.45); arm(i, -1, shY, 2.3 - sw, -0.45);
+      const fl = 0.07 + 0.025 * Math.sin(a * 6) * (k ? 1 : 0);
+      if (k <= 0) gone(dBox.im, b3 + 2); else pl(dBox.im, b3 + 2, 0, ty + 0.76 + fl, pz, fl, fl * 1.6, fl, 0, a * 1.5, 0.78);
+      gone(dBox.im, b3); gone(dBox.im, b3 + 1); gone(dCyl.im, b3); gone(dCyl.im, b3 + 1); gone(dCyl.im, b3 + 2);
+    } else if (job === 'smith') {
+      const c = Math.cos(a * 4), up = 1.6 + 0.45 * Math.max(-1, Math.min(1, c * 1.6));        // a quick blow, a slower lift
+      arm(i, 1, shY, up, 0.05);
+      const ha = Math.PI - (up + 1.2), hdy = Math.cos(ha), hdz = Math.sin(ha);                    // the hammer carries on past the hand, bent forward of the forearm
+      pl(dCyl.im, b3, hand.x, hand.y + hdy * 0.16, hand.z + hdz * 0.16, 0.02, 0.34, 0.02, ha, 0, 0);
+      pl(dBox.im, b3, hand.x, hand.y + hdy * 0.32, hand.z + hdz * 0.32, 0.2, 0.11, 0.11, ha, 0, 0);
+      arm(i, -1, shY, 1.3, 0.12);
+      pl(dBox.im, b3 + 2, -0.12, ty + 0.57, pz, 0.22, 0.03, 0.08);                                 // the gold piece on the anvil
+      gone(dBox.im, b3 + 1); gone(dCyl.im, b3 + 1); gone(dCyl.im, b3 + 2);
+    } else {
+      const tilt = Math.sin(a * 1.3) * 0.2 * (k ? 1 : 0), by = ty + 0.86, c = Math.cos(tilt), sn = Math.sin(tilt);
+      pl(dBox.im, b3, 0, by, pz, 0.92, 0.035, 0.045, 0, 0, tilt);
+      pl(dCyl.im, b3, -0.45 * c, by - 0.45 * sn - 0.24, pz, 0.15, 0.025, 0.15); pl(dCyl.im, b3 + 1, 0.45 * c, by + 0.45 * sn - 0.24, pz, 0.15, 0.025, 0.15);
+      pl(dBox.im, b3 + 1, -0.45 * c, by - 0.45 * sn - 0.12, pz, 0.012, 0.24, 0.012); pl(dBox.im, b3 + 2, 0.45 * c, by + 0.45 * sn - 0.12, pz, 0.012, 0.24, 0.012);
+      arm(i, 1, shY, 1.35 + sn * 0.5, 0.3); arm(i, -1, shY, 1.35 - sn * 0.5, -0.3);
+      gone(dCyl.im, b3 + 2);
+    }
   }
   // a camp builder: the same marble figure, facing north (toward the door you come from), writing or hammering at its table
   function campFrame(dt, camP) {
@@ -274,22 +361,8 @@ function build(rc, scene, camera, canvas, o) {
     CAMP_SPOTS.forEach((c, j) => {
       const b = camp[j], i = N + j, b3 = i * 3, st = b ? b.status : 'job', k = (st === 'working' ? 1 : st === 'quiet' ? 0.22 : 0) * mot;
       ang[i] += dt * k;
-      if (!b) { [0, 1, 2].forEach((q) => { hide(fig.im, b3 + q); hide(dBox.im, b3 + q); hide(dCyl.im, b3 + q); }); hide(head.im, i); for (let q = 0; q < PUFF; q++) hide(lamp.im, PUFF0 + j * PUFF + q); for (let q = 0; q < CSTACK; q++) hide(crate.im, CR0 + j * CSTACK + q); setQuad(campG, j, 0, -9, 0, 0, 0); return; }
-      const a = ang[i], fx = c.x, fz = c.z - 1.9, bob = 0.012 * Math.sin(a * 2.1) * (k ? 1 : 0), shY = 0.93 + bob, sit = st === 'done' ? 0.12 : 0;
-      put(fig.im, b3, fx, 0.5 + bob - sit, fz, 0.24, 1.0, 0.24); put(head.im, i, fx, 1.19 + bob - sit, fz - 0.04, 0.165, 0.175, 0.165);
-      const armN = (slot, sx, a2, out) => { const L = 0.5, dx = Math.sin(out), dy = -Math.cos(a2) * Math.cos(out), dz = -Math.sin(a2) * Math.cos(out); put(fig.im, slot, sx + dx * L / 2, shY - sit + dy * L / 2, fz - 0.04 + dz * L / 2, 0.06, L, 0.06, a2, 0, out); hand.x = sx + dx * L; hand.y = shY - sit + dy * L; hand.z = fz - 0.04 + dz * L; };
-      if (c.job === 'smith' && st !== 'done') {
-        const cc = Math.cos(a * 4), up = 1.45 + 0.55 * Math.max(-1, Math.min(1, cc * 1.6));
-        armN(b3 + 1, fx - 0.25, up, -0.05);
-        const ha = Math.PI - (up + 1.2), hdy = Math.cos(ha), hdz = -Math.sin(ha);
-        put(dCyl.im, b3, hand.x, hand.y + hdy * 0.18, hand.z + hdz * 0.18, 0.02, 0.38, 0.02, -ha, 0, 0); put(dBox.im, b3, hand.x, hand.y + hdy * 0.36, hand.z + hdz * 0.36, 0.2, 0.11, 0.11, -ha, 0, 0);
-        armN(b3 + 2, fx + 0.25, 0.85, -0.12); put(dBox.im, b3 + 2, c.x + 0.12, 0.81, c.z - 2.45, 0.22, 0.03, 0.08);
-      } else {
-        const wr = Math.sin(a * 5) * 0.16, dip = Math.sin(a * 10) * 0.03;
-        armN(b3 + 1, fx - 0.25, (st === 'done' ? 0.3 : 1.0) + dip, 0.22 - wr); if (st === 'done') hide(dCyl.im, b3); else put(dCyl.im, b3, hand.x, hand.y + 0.05, hand.z - 0.02, 0.012, 0.24, 0.012, 0.5, 0, -0.3);
-        armN(b3 + 2, fx + 0.25, st === 'done' ? 0.3 : 0.95, -0.2); hide(dBox.im, b3); hide(dBox.im, b3 + 2);
-      }
-      hide(dBox.im, b3 + 1); hide(dCyl.im, b3 + 1); hide(dCyl.im, b3 + 2);
+      if (!b) { hideActor(i); for (let q = 0; q < PUFF; q++) hide(lamp.im, PUFF0 + j * PUFF + q); for (let q = 0; q < CSTACK; q++) hide(crate.im, CR0 + j * CSTACK + q); setQuad(campG, j, 0, -9, 0, 0, 0); return; }
+      actor(i, c.job, c.x, c.z - 1.9, 0, Math.PI, 0.55, k, st === 'done' ? 'cheer' : '', 'b:' + b.id, dt, camP);
       // brazier smoke only while it is working; the ember glows then
       for (let q = 0; q < PUFF; q++) { const ph = ((t * 0.3 * (mot || 0) + q / PUFF + j * 0.37) % 1 + 1) % 1; if (st !== 'working') hide(lamp.im, PUFF0 + j * PUFF + q); else put(lamp.im, PUFF0 + j * PUFF + q, c.x + 1.15 + Math.sin(ph * 5 + j) * 0.18 * ph, 0.75 + ph * 2.0, c.z - 1.7, 0.05 + 0.11 * ph, 0.05 + 0.11 * ph, 0.05 + 0.11 * ph); }
       const eg = st === 'working' ? 1 + 0.15 * Math.sin(t * 7 + j) * mot : 0.8; put(lamp.im, EMBER0 + 1 + j, c.x + 1.15, 0.6, c.z - 1.7, 0.13 * eg, 0.09 * eg, 0.13 * eg);
@@ -309,45 +382,7 @@ function build(rc, scene, camera, canvas, o) {
     S.forEach((s, i) => {
       const w = workers[i], st = w ? w.status : 'stale', isHot = (hot[s.id] || 0) > t, k = Math.max(PACE[st] || 0, isHot ? 1 : 0) * mot;
       ang[i] += dt * k;
-      const a = ang[i], f = figAt[i], bob = 0.012 * Math.sin(a * 2.1) * (k ? 1 : 0), bow = st === 'failed' ? 0.07 : 0, px = s.x, pz = s.z + 0.5, b3 = i * 3;
-      put(fig.im, b3, f.x, Y0 + 0.5 + bob, f.z, 0.24, 1.0, 0.24);
-      put(head.im, i, f.x, Y0 + 1.19 + bob - bow, f.z + (s.job === 'scribe' ? 0.05 : 0) + bow, 0.165, 0.175, 0.165);
-      const shY = Y0 + 0.93 + bob, hide = (im, j) => put(im, j, 0, -9, 0, 0.001, 0.001, 0.001);
-      if (s.job === 'wheel') {
-        const sp = a * 2.2, wy = Y0 + 0.8, wx = px + 0.62, wz = pz + 0.06;
-        put(dCyl.im, b3, wx, wy, wz, 0.36, 0.05, 0.36, Math.PI / 2, sp, 0);
-        put(dBox.im, b3, wx, wy, wz + 0.035, 0.7, 0.05, 0.03, 0, 0, sp); put(dBox.im, b3 + 1, wx, wy, wz + 0.035, 0.7, 0.05, 0.03, 0, 0, sp + Math.PI / 2);
-        put(dBox.im, b3 + 2, wx + Math.cos(sp) * 0.3, wy + Math.sin(sp) * 0.3, wz + 0.09, 0.07, 0.07, 0.12);
-        arm(b3 + 1, f.x + 0.25, shY, f.z + 0.04, 1.0 + Math.sin(sp) * 0.3, 0.5 + Math.cos(sp) * 0.2); arm(b3 + 2, f.x - 0.25, shY, f.z + 0.04, 0.35, -0.1);
-        hide(dCyl.im, b3 + 1); hide(dCyl.im, b3 + 2);
-      } else if (s.job === 'scribe') {
-        const wr = Math.sin(a * 5) * 0.16, dip = Math.sin(a * 10) * 0.03;
-        arm(b3 + 1, f.x + 0.25, shY, f.z + 0.04, 1.0 + dip, -0.22 + wr); put(dCyl.im, b3, hand.x, hand.y + 0.05, hand.z + 0.02, 0.012, 0.24, 0.012, -0.5, 0, 0.3);
-        arm(b3 + 2, f.x - 0.25, shY, f.z + 0.04, 0.95, 0.2);
-        hide(dCyl.im, b3 + 1); hide(dCyl.im, b3 + 2); hide(dBox.im, b3); hide(dBox.im, b3 + 1); hide(dBox.im, b3 + 2);
-      } else if (s.job === 'oracle') {
-        const sw = Math.sin(a * 1.4) * 0.22;
-        arm(b3 + 1, f.x + 0.25, shY, f.z + 0.04, 2.15 + sw, 0.45); arm(b3 + 2, f.x - 0.25, shY, f.z + 0.04, 2.15 - sw, -0.45);
-        const fl = 0.07 + 0.025 * Math.sin(a * 6) * (k ? 1 : 0);
-        if (st === 'failed' || st === 'stale') hide(dBox.im, b3 + 2); else put(dBox.im, b3 + 2, px, Y0 + 1.0 + fl, pz, fl, fl * 1.6, fl, 0, a * 1.5, 0.78);
-        hide(dBox.im, b3); hide(dBox.im, b3 + 1); hide(dCyl.im, b3); hide(dCyl.im, b3 + 1); hide(dCyl.im, b3 + 2);
-      } else if (s.job === 'smith') {
-        const c = Math.cos(a * 4), up = 1.45 + 0.55 * Math.max(-1, Math.min(1, c * 1.6));        // a quick blow, a slower lift
-        arm(b3 + 1, f.x + 0.25, shY, f.z + 0.04, up, 0.05);
-        const ha = Math.PI - (up + 1.2), hdy = Math.cos(ha), hdz = Math.sin(ha);                    // the hammer carries on past the hand, bent forward of the forearm
-        put(dCyl.im, b3, hand.x, hand.y + hdy * 0.18, hand.z + hdz * 0.18, 0.02, 0.38, 0.02, ha, 0, 0);
-        put(dBox.im, b3, hand.x, hand.y + hdy * 0.36, hand.z + hdz * 0.36, 0.2, 0.11, 0.11, ha, 0, 0);
-        arm(b3 + 2, f.x - 0.25, shY, f.z + 0.04, 0.85, 0.12);
-        put(dBox.im, b3 + 2, px - 0.12, Y0 + 0.8, pz, 0.22, 0.03, 0.08);                                 // the gold piece on the anvil
-        hide(dBox.im, b3 + 1); hide(dCyl.im, b3 + 1); hide(dCyl.im, b3 + 2);
-      } else {
-        const tilt = Math.sin(a * 1.3) * 0.2 * (k ? 1 : 0) + (st === 'failed' ? 0.26 : 0), ty = Y0 + 1.1, c = Math.cos(tilt), sn = Math.sin(tilt);
-        put(dBox.im, b3, px, ty, pz, 0.92, 0.035, 0.045, 0, 0, tilt);
-        put(dCyl.im, b3, px - 0.45 * c, ty - 0.45 * sn - 0.24, pz, 0.15, 0.025, 0.15); put(dCyl.im, b3 + 1, px + 0.45 * c, ty + 0.45 * sn - 0.24, pz, 0.15, 0.025, 0.15);
-        put(dBox.im, b3 + 1, px - 0.45 * c, ty - 0.45 * sn - 0.12, pz, 0.012, 0.24, 0.012); put(dBox.im, b3 + 2, px + 0.45 * c, ty + 0.45 * sn - 0.12, pz, 0.012, 0.24, 0.012);
-        arm(b3 + 1, f.x + 0.25, shY, f.z + 0.04, 0.95 + sn * 0.5, 0.3); arm(b3 + 2, f.x - 0.25, shY, f.z + 0.04, 0.95 - sn * 0.5, -0.3);
-        hide(dCyl.im, b3 + 2);
-      }
+      actor(i, s.job, figAt[i].x, figAt[i].z, Y0, 0, 0.62, k, st === 'failed' ? 'slump' : '', 'w:' + s.id, dt, camP);
       const pulse = isHot && mot ? 1.25 + 0.2 * Math.sin(t * 6) : 1;
       put(lamp.im, i, s.x + 0.95, 1.78, s.z - 0.62, 0.15 * pulse, 0.15 * pulse, 0.15 * pulse);
       // the conveyor: crates drift left to right at the worker's pace; a stopped worker's belt stands still
@@ -388,7 +423,9 @@ function build(rc, scene, camera, canvas, o) {
     S.forEach((s, i) => { const d = Math.hypot(camP.x - s.x, camP.z - s.z), sc = big * (0.6 + 0.4 * Math.min(1, d / 6)); setQuad(bubG, i, figAt[i].x, Y0 + 1.95 + sc * 0.3, figAt[i].z, 2.5 * sc, 1.25 * sc); });
     const inHall = mode === 'tour' ? '' : hallOf({ x: camP.x, z: camP.z }).id;
     HALLS.forEach((h, k) => { if (h.id === inHall) setQuad(tagG, NT + k, 0, -9, 0, 0, 0); else setQuad(tagG, NT + k, (h.x0 + h.x1) / 2, mode === 'tour' ? 4.6 : 4.1, (h.z0 + h.z1) / 2, 3.4 * big, 0.85 * big); });
-    campLater(); [fig, head, dBox, dCyl, lamp, crate].forEach((b) => { b.im.instanceMatrix.needsUpdate = true; });
+    campLater();
+    { let fx = null, fz = 0, fy = 0; if (focusKey) { const si = S.findIndex((x) => 'w:' + x.id === focusKey), ci = camp.findIndex((b) => b && 'b:' + b.id === focusKey); if (si >= 0) { fx = figAt[si].x; fz = figAt[si].z; fy = Y0; } else if (ci >= 0) { fx = CAMP_SPOTS[ci].x; fz = CAMP_SPOTS[ci].z - 1.9; } }
+      if (fx == null) gone(lamp.im, SPOT); else put(lamp.im, SPOT, fx, fy + 0.012, fz, 0.78, 0.008, 0.78); } [fig, head, dBox, dCyl, lamp, crate].forEach((b) => { b.im.instanceMatrix.needsUpdate = true; });
     bubG.attributes.position.needsUpdate = true; tagG.attributes.position.needsUpdate = true;
     rc.render();
   }
@@ -405,7 +442,7 @@ function build(rc, scene, camera, canvas, o) {
       });
       if (lamp.im.instanceColor) lamp.im.instanceColor.needsUpdate = true; if (crate.im.instanceColor) crate.im.instanceColor.needsUpdate = true;
       if (extra) { drawLearn(extra.board || null); drawFlip(extra.board || null); drawPipe(extra.pipe || null); if (extra.camp) { camp = CAMP_SPOTS.map((_, j) => extra.camp[j] || null); lamp.im.setColorAt(EMBER0, colour.set('#e89a3c'));
-        camp.forEach((b, j) => { lamp.im.setColorAt(EMBER0 + 1 + j, colour.set(b && b.status === 'working' ? '#e8923a' : '#4a3a28')); for (let q = 0; q < CSTACK; q++) crate.im.setColorAt(CR0 + j * CSTACK + q, colour.set(q % 2 ? '#b08a52' : '#c49a5c')); }); lamp.im.instanceColor.needsUpdate = true; crate.im.instanceColor.needsUpdate = true; } }
+        camp.forEach((b, j) => { lamp.im.setColorAt(EMBER0 + 1 + j, colour.set(b && b.status === 'working' ? '#e8923a' : '#4a3a28')); for (let q = 0; q < CSTACK; q++) crate.im.setColorAt(CR0 + j * CSTACK + q, colour.set(q % 2 ? '#b08a52' : '#c49a5c')); }); lamp.im.instanceColor.needsUpdate = true; crate.im.instanceColor.needsUpdate = true; dress(); } }
       if (reduced) frame(0.016);
     },
     move(m) { mvT = { fwd: (m && m.fwd) || 0, side: (m && m.side) || 0 }; if (mode !== 'walk' && (mvT.fwd || mvT.side)) api.follow(null); },
@@ -414,6 +451,10 @@ function build(rc, scene, camera, canvas, o) {
     follow(id) { following = id || null; mode = following ? 'follow' : 'walk'; still(); },
     tour(on) { mode = on ? 'tour' : 'walk'; following = null; if (on) tourT = 0; still(); return mode === 'tour'; },
     /** the day replay lights up who was busy at the cursor: their lamps pulse and their figures work for a moment */
+    /** the person you are chatting with ('w:<station id>' | 'b:<builder id>' | null): it turns to face you, talks, and a soft marble disc marks it */
+    focus(key) { focusKey = key || ''; still(); },
+    focused() { return focusKey; },
+    facing(key) { const si = S.findIndex((x) => 'w:' + x.id === key), ci = camp.findIndex((b) => b && 'b:' + b.id === key); return si >= 0 ? thA[si] : ci >= 0 ? thA[N + ci] : null; },
     pulse(ids) { for (const id of ids || []) hot[id] = t + 1.6; still(); },
     teleport(x, z, yaw) { const q = resolveCollision(x, z, []); cam.x = q.x; cam.z = q.z; if (yaw != null) { cam.yaw = yaw; yawT = yaw; } following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; snapCam(); still(); },
     reset() { cam = { x: START.x, z: START.z, yaw: START.yaw, pitch: -0.06 }; yawT = cam.yaw; pitchT = cam.pitch; following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; mvT = { fwd: 0, side: 0 }; snapCam(); still(); },
