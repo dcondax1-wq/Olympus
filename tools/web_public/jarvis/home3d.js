@@ -405,6 +405,14 @@ export function attach(ext) {
 
   // =========================================================================================== constellation lines + badges (2D, over the stage)
   mountConstellation(home, ext);
+
+  // FX HOOK (olympus/fx-cine.js, optional; 2026-11-11 effects pass): the time-of-day colour grade (dawn / golden / day / dusk / night LUT
+  // in the one finish pass), birds wheeling behind the temple by day, warm fireflies by night. No light, shadow map or render target of its
+  // own (the GPU guard stays true); LITE / software GL keep only the grade. The home is the same without it.
+  import('../olympus/fx-cine.js').then((C) => {
+    home.cine = C.cinema(rc, { time: 'clock', sun: false, bursts: false, birds: lite() ? false : { center: [0, 0, -40], radius: 34, height: 16, size: 0.6, count: 10 },
+      fireflies: lite() ? false : { box: [24, 4, 12], center: [0, -1, -6], count: 40 } });
+  }).catch(() => { /* optional */ });
 }
 
 // ------------------------------------------------------------------------------------------------ lines from the core to its orbs

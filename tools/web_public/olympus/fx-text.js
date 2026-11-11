@@ -224,4 +224,36 @@
     ctl.start();
     return { set: function (v) { value = U.clamp(+v || 0, 0, 1); ctl.start(); } };
   }
+
+  // ---------------------------------------------------------------- goldFlash: a number that changes catches the light (2026-11-11)
+  FX.sheet('text-agora', [
+    '@keyframes oly-fx-gold { 0% { color: inherit; transform: none; } 22% { color: var(--gold-c, #e0c070); transform: translateY(-1px) scale(1.035); } 100% { color: inherit; transform: none; } }',
+    '@keyframes oly-fx-gold-lite { 0% { color: inherit; } 25% { color: var(--gold-c, #e0c070); } 100% { color: inherit; } }',
+    '.oly-fx-gold { display: inline-block; animation: oly-fx-gold .9s cubic-bezier(.2, .8, .2, 1) 1; }',
+    '.oly-fx-gold.lite { animation-name: oly-fx-gold-lite; animation-duration: .6s; }',
+  ].join('\n'));
+  FX.define('goldFlash', {
+    group: 'numbers', desc: 'when the number changes it warms to gold and settles back (terracotta when it falls, with direction: true); no glow',
+    demo: { to: ['$1,284', '$1,291', '$1,206'] },
+    make: function (el, o, ctx) {
+      var last = el.textContent, timer = 0;
+      var flash = function (down) {
+        el.classList.remove('oly-fx-gold'); void el.offsetWidth;
+        el.style.setProperty('--gold-c', down && o.direction ? '#c96a4a' : '#e0c070');
+        el.classList.add('oly-fx-gold'); if (ctx.tier === 'low') el.classList.add('lite');
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(function () { timer = 0; el.classList.remove('oly-fx-gold', 'lite'); }, 950);
+      };
+      var mo = new MutationObserver(function () {
+        if (el.querySelector('.oly-odo')) return;                 // an odometer is still rolling: flash when it lands
+        var now = el.textContent;
+        if (now === last || !/\d/.test(now)) { last = now; return; }
+        var a = parts(last), b = parts(now);
+        last = now; flash(!!(a && b && b.num < a.num));
+      });
+      mo.observe(el, { childList: true, characterData: true, subtree: true });
+      ctx.add(function () { mo.disconnect(); if (timer) clearTimeout(timer); el.classList.remove('oly-fx-gold', 'lite'); el.style.removeProperty('--gold-c'); });
+      return { pulse: function () { flash(false); } };
+    },
+  });
 })();

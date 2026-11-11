@@ -190,4 +190,49 @@
     },
     still: function (el, o, ctx) { ctx.cls(el, 'oly-fx-skel'); el.classList.add('still'); ctx.add(function () { el.classList.remove('still'); }); return {}; },
   });
+
+  // ---------------------------------------------------------------- AGORA press depth and page-enter stagger (2026-11-11, the effects pass)
+  FX.sheet('ui-agora', [
+    '.oly-fx-press { transition: transform .22s cubic-bezier(.2, .8, .2, 1), box-shadow .22s cubic-bezier(.2, .8, .2, 1), filter .22s ease-out; will-change: transform; }',
+    '.oly-fx-press.down { transform: translateY(1.5px) scale(var(--press-s, .985)); box-shadow: 0 2px 6px rgba(0, 0, 0, .38), inset 0 1px 0 rgba(0, 0, 0, .18) !important;',
+    '  filter: brightness(.96); transition-duration: .09s; }',
+    '.oly-fx-press.lite.down { transform: translateY(1px); filter: none; }',
+    '@keyframes oly-fx-enter { from { opacity: 0; transform: translateY(var(--enter-y, 10px)); } to { opacity: 1; transform: none; } }',
+    '@keyframes oly-fx-enter-lite { from { opacity: 0; } to { opacity: 1; } }',
+    '.oly-fx-enter { animation: oly-fx-enter .42s cubic-bezier(.2, .8, .2, 1) both; animation-delay: var(--enter-d, 0s); }',
+    '.oly-fx-enter.lite { animation-name: oly-fx-enter-lite; animation-duration: .25s; }',
+  ].join('\n'));
+
+  FX.define('press', {
+    group: 'cards', desc: 'the card or button sinks a little under the finger (depth, a closer shadow) and springs back; no glow', demo: {},
+    make: function (el, o, ctx) {
+      ctx.cls(el, 'oly-fx-press');
+      if (ctx.tier === 'low') ctx.cls(el, 'lite');
+      if (o.scale) ctx.style(el, { '--press-s': String(o.scale) });
+      var up = function () { el.classList.remove('down'); };
+      ctx.on(el, 'pointerdown', function (e) { if (e.button > 0) return; el.classList.add('down'); }, { passive: true });
+      ['pointerup', 'pointercancel', 'pointerleave', 'blur'].forEach(function (n) { ctx.on(el, n, up, { passive: true }); });
+      ctx.on(el, 'keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') el.classList.add('down'); });
+      ctx.on(el, 'keyup', up);
+      ctx.add(up);
+      return { pulse: function () { el.classList.add('down'); ctx.timeout(up, 140); } };
+    },
+  });
+
+  FX.define('stagger', {
+    group: 'cards', desc: 'page enter: the children rise into place one after another (40 ms apart, all in by 480 ms); reduced motion shows them at once',
+    demo: {},
+    make: function (el, o, ctx) {
+      var kids = o.selector ? el.querySelectorAll(o.selector) : el.children, n = Math.min(kids.length, o.max || 24), step = o.step || 40, cap = o.cap || 480;
+      for (var i = 0; i < n; i++) {
+        var k = kids[i];
+        ctx.cls(k, 'oly-fx-enter');
+        if (ctx.tier === 'low') ctx.cls(k, 'lite');
+        ctx.style(k, { '--enter-d': (Math.min(cap - 250, i * step) / 1000).toFixed(3) + 's' });
+      }
+      var last = n ? Math.min(cap, (n - 1) * step + 420) : 0;
+      ctx.timeout(function () { for (var j = 0; j < n; j++) kids[j].classList.remove('oly-fx-enter', 'lite'); }, last + 60);
+      return { play: function () { for (var j = 0; j < n; j++) { kids[j].classList.remove('oly-fx-enter'); void kids[j].offsetWidth; kids[j].classList.add('oly-fx-enter'); } } };
+    },
+  });
 })();
