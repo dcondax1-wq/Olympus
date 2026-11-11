@@ -563,7 +563,7 @@ export function character(THREE, cast, sp, opts) {
   function lookAt(v) { if (!v) st.look = null; else st.look = (st.look || new THREE.Vector3()).set(v.x, v.y, v.z); if (!st.ticked) snap(); }
   function setMouth(v, amount) { const n = VIS.includes(v) ? v : 'rest'; st.speech = { v: n, k: amount == null ? 1 : clamp(+amount || 0, 0, 1), t: st.t }; if (!st.ticked) snap(); }
   function setExpression(name, amount) { st.expr = C.EXPR_FACE[name] ? name : 'neutral'; st.exprSet = true; st.exprK = amount == null ? 1 : clamp(+amount || 0, 0, 1); if (!st.ticked) snap(); }
-  function setTalking(on) { st.talking = !!on; if (!on) st.speech = null; if (on && (st.pose === 'idle' || st.pose === 'sit') && st.name === st.pose) play('talk'); else if (!on && st.name === 'talk' && st.talkAuto) play('idle'); st.talkAuto = !!on; }
+  function setTalking(on) { st.talking = !!on; if (!on) st.speech = null; if (on && (st.pose === 'idle' || st.pose === 'sit') && st.name === st.pose) { st.talkAuto = st.pose; play('talk'); } else if (!on && st.talkAuto) { const back = st.talkAuto; st.talkAuto = null; if (st.name === 'talk') play(back); } }      // talking while idle brings the talk gestures; they stop with the talk (an explicit play('talk') stays)
   function setSeated(on) { st.seated = !!on; play(st.pose); }
   function dispose() {
     st.disposed = true; mixer.stopAllAction(); mixer.uncacheRoot(model);
