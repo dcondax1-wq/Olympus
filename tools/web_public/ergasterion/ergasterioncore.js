@@ -13,7 +13,7 @@ export const BOUNDS = { x: 12.4, z: 9.4 };
 export const STATION_R = 1.45;           // how close the walker may come to a station centre
 export const WALL_T = 0.5;               // how close the walker may come to the middle of an inner wall
 export const EYE = 1.6;
-export const START = { x: 6.5, z: 8.3, yaw: 0 };      // the front door, in the Library, looking north at the door to the Trading hall
+export const START = { x: 6.5, z: 9.0, yaw: 0 };      // the front door, in the Library, looking north at the door to the Trading hall
 
 // four halls around a cross of inner walls (x = 0 and z = 0); each inner wall has one door
 export const HALLS = [
@@ -46,8 +46,8 @@ export const STATIONS = [
   { id: 'prometheus', name: 'Prometheus', role: 'Breeds LIT settings, checks them on later months', group: 'Jobs', hall: 'research', job: 'smith', x: -2.9, z: 2.6 },
   { id: 'hephaestus', name: 'Hephaestus', role: 'Stored results of every LIT setting that was run', group: 'Jobs', hall: 'research', job: 'smith', x: -10.5, z: 6.8 },
   { id: 'cronos', name: 'Cronos', role: 'The night clock: refreshes every research app', group: 'Jobs', hall: 'research', job: 'wheel', x: -6.5, z: 5.2 },
-  { id: 'queue', name: 'The queue', role: 'ChatGPT / Claude task queue (handoff/QUEUE.md)', group: 'People and agents', hall: 'library', job: 'scribe', x: 3.2, z: 4.2 },
-  { id: 'dev', name: 'Dev agents', role: 'The coding agents of this project (branches, commits, write-ups)', group: 'People and agents', hall: 'library', job: 'scribe', x: 10.3, z: 4.4 },
+  { id: 'queue', name: 'The queue', role: 'ChatGPT / Claude task queue (handoff/QUEUE.md)', group: 'People and agents', hall: 'library', job: 'scribe', x: 4.3, z: 3.8 },
+  { id: 'dev', name: 'Dev agents', role: 'The coding agents of this project (branches, commits, write-ups)', group: 'People and agents', hall: 'library', job: 'scribe', x: 8.7, z: 3.8 },
 ];
 export const IDS = STATIONS.map((s) => s.id);
 export const STATUS_WORD = { working: 'Working', idle: 'Idle', stale: 'Stale', failed: 'Failed', sample: 'Sample data' };

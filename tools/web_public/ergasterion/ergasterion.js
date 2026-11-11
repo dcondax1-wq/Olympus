@@ -393,7 +393,7 @@ function wireControls() {
   $('resetBtn').addEventListener('click', () => { if (S.floor && S.floor.ok) { setFollow(''); setTour(false, true); S.floor.reset(); } });
   $('follow').addEventListener('change', (e) => setFollow(e.target.value));
   $('sheetFollow').addEventListener('click', () => { if (!S.sel) return; if (!(S.floor && S.floor.ok)) { say('Following needs the 3D floor. Tap "Walk the floor" first.'); return; } setFollow(S.follow === S.sel ? '' : S.sel); });
-  $('sheetWalk').addEventListener('click', () => { if (S.floor && S.floor.ok && S.sel) { const w = byId(S.sel); setFollow(''); setTour(false, true); S.floor.teleport(w.x, w.z + 3.4); S.floor.face(S.sel); say('Standing in front of ' + w.name + ', in the ' + C.hallOf(w).name + '.'); toView($('floorCard')); } });
+  $('sheetWalk').addEventListener('click', () => { if (S.floor && S.floor.ok && S.sel) { const w = byId(S.sel); setFollow(''); setTour(false, true); S.floor.teleport(w.x, Math.min(C.BOUNDS.z, w.z + 4.4)); S.floor.face(S.sel); say('Standing in front of ' + w.name + ', in the ' + C.hallOf(w).name + '.'); toView($('floorCard')); } });
   $('sheetClose').addEventListener('click', () => { S.sel = null; S.crate = -1; renderSheet(); renderWorkers(); drawPlan($('plan'), false); renderPlanSay(); });
   $('refresh').addEventListener('click', () => { say('Refreshing...'); load().then(render); });
   $('r24').addEventListener('click', () => setRange('24h')); $('r7').addEventListener('click', () => setRange('7d'));

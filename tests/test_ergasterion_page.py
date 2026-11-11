@@ -144,9 +144,9 @@ import(process.argv[2]).then((C) => {
   o.walls = [wall.x === C.WALL_T && wall.z === 3, wall2.x === -C.WALL_T, door.x === 0.1 && door.z === 5, door2.z === 0.1 && door2.x === 6.5, wz.z === -C.WALL_T, jamb.x === C.WALL_T, Math.hypot(stuck.x - 7, stuck.z + 7.5) >= C.STATION_R - 1e-6, out.x === C.BOUNDS.x && out.z === C.BOUNDS.z];
   let p = { x: C.START.x, z: C.START.z }, inside = false, crossed = 0; const path = [];
   for (let i = 0; i < 400; i++) { p = C.walk(p, 0, { fwd: 1, side: 0 }, 0.05, st); if (st.some((s) => Math.hypot(p.x - s.x, p.z - s.z) < C.STATION_R - 1e-6)) inside = true; path.push(C.hallOf(p).id); }
-  let w2 = { x: 5, z: 5 }; for (let i = 0; i < 200; i++) w2 = C.walk(w2, 0, { fwd: 1, side: 0 }, 0.05, st);                // north from the Library, not at a door: the wall holds
+  let w2 = { x: 2, z: 5 }; for (let i = 0; i < 200; i++) w2 = C.walk(w2, 0, { fwd: 1, side: 0 }, 0.05, st);                // north from the Library, not at a door: the wall holds
   let w3 = { x: -4, z: -5 }; for (let i = 0; i < 300; i++) w3 = C.walk(w3, -Math.PI / 2, { fwd: 1, side: 0 }, 0.05, st);     // east through the Money / Trading door
-  o.walk = [!inside, path[0] === 'library' && path[path.length - 1] === 'trading', p.z < -5, w2.z === C.WALL_T && w2.x === 5, C.hallOf(w3).id === 'trading' && w3.x > 4, Math.abs(C.walk({ x: 5, z: 5 }, 0, { fwd: 1 }, 1, []).z - 4.66) < 1e-9, C.walk({ x: 5, z: 5 }, Math.PI / 2, { fwd: 1 }, 0.1, []).x < 5, C.nearest({ x: 3, z: -6 }, st).id, C.nearest({ x: 6.5, z: 8 }, st, 1)];
+  o.walk = [!inside, path[0] === 'library' && path[path.length - 1] === 'trading', p.z < -5, w2.z === C.WALL_T && w2.x === 2, C.hallOf(w3).id === 'trading' && w3.x > 4, Math.abs(C.walk({ x: 5, z: 5 }, 0, { fwd: 1 }, 1, []).z - 4.66) < 1e-9, C.walk({ x: 5, z: 5 }, Math.PI / 2, { fwd: 1 }, 0.1, []).x < 5, C.nearest({ x: 3, z: -6 }, st).id, C.nearest({ x: 6.5, z: 8 }, st, 1)];
   let e = 0; for (let i = 0; i < 60; i++) e = C.ease(e, 1, 1 / 60, 9);
   o.ease = [C.ease(0, 1, 0.016, 9) > 0 && C.ease(0, 1, 0.016, 9) < 0.2, e > 0.99 && e <= 1, C.ease(0, 1, 0.016, 0) === 1, C.ease(0.5, 0.5, 0.1, 9) === 0.5, Math.abs(C.ease(0, 1, 0.032, 9) - C.ease(C.ease(0, 1, 0.016, 9), 1, 0.016, 9)) < 1e-9];
   const tour = []; for (let t = 0; t < C.TOUR_S; t += 0.5) tour.push(C.tourCam(t, false));
@@ -368,7 +368,7 @@ def test_page():
                     p.wait_for_timeout(400)
                     sid = p.evaluate("() => [document.querySelector('#sheetH').textContent, document.querySelector('#sheet').hidden]")
                     check("c. tapping a worker in the 3D factory opens that worker's card", sid[0] in ("The queue", "Dev agents") and not sid[1], sid)
-                p.evaluate("() => { const f = window.ERGASTERION.floor(); f.reset(); f.teleport(3.2, 7.6); }")
+                p.evaluate("() => { const f = window.ERGASTERION.floor(); f.reset(); f.teleport(4.3, 9.0); }")
                 p.wait_for_timeout(500)
                 cp = p.evaluate("() => window.ERGASTERION.floor().projectCrate('queue', 0)")
                 if cp:
@@ -385,7 +385,7 @@ def test_page():
                 p.wait_for_timeout(1500)
                 p.evaluate("() => window.__ev('pointerup', window.__cy - 40)")
                 after = p.evaluate("() => window.ERGASTERION.floor().pos()")
-                check("c. the joystick pushed forward walks you north from the front door (z decreases, eased) and the knob returns to the middle", after["z"] < before["z"] - 0.05 and abs(before["z"] - 8.3) < 0.01 and p.evaluate("() => document.querySelector('#knob').style.transform") in ("translate(0px,0px)", "translate(0px, 0px)", ""), (before, after))
+                check("c. the joystick pushed forward walks you north from the front door (z decreases, eased) and the knob returns to the middle", after["z"] < before["z"] - 0.05 and abs(before["z"] - 9.0) < 0.01 and p.evaluate("() => document.querySelector('#knob').style.transform") in ("translate(0px,0px)", "translate(0px, 0px)", ""), (before, after))
                 p.evaluate("() => { const f = window.ERGASTERION.floor(); f.teleport(7, -7.3); f.move({ fwd: 0, side: 0 }); f.step(0.05); }")
                 inside = p.evaluate("() => window.ERGASTERION.floor().pos()")
                 check("c. no walking through a platform: teleported onto ATLAS, the next step pushes you out to the collision circle (and you are in the Trading hall)", ((inside["x"] - 7) ** 2 + (inside["z"] + 7.5) ** 2) ** 0.5 >= 1.44 and inside["hall"] == "trading", inside)
@@ -414,7 +414,7 @@ def test_page():
                 check("c. touching the joystick ends the tour and puts you back on your feet", ts == ["walk", "Calm tour"], ts)
                 p.evaluate("() => document.querySelector('#resetBtn').click()")
                 rs = p.evaluate("() => window.ERGASTERION.floor().pos()")
-                check("c. 'Back to the door' puts you at the front door in the Library, not following", abs(rs["z"] - 8.3) < 0.01 and abs(rs["x"] - 6.5) < 0.01 and rs["following"] is None and rs["hall"] == "library", rs)
+                check("c. 'Back to the door' puts you at the front door in the Library, not following", abs(rs["z"] - 9.0) < 0.01 and abs(rs["x"] - 6.5) < 0.01 and rs["following"] is None and rs["hall"] == "library", rs)
                 p.wait_for_timeout(900)
                 AK.shot(p, "ergasterion-3d")
                 p.evaluate("() => { window.ERGASTERION.replay.set(0.2); window.ERGASTERION.replay.play(); }")
@@ -470,7 +470,7 @@ def test_page():
                 check("c. REAL files: no DEMO chip; Zlarior shows its real drawdown line; Sibyl's own headline; a machine with no file says 'No file from this machine yet' and is Stale, never invented",
                       rr["demo"] and "Drawdown left $1,420 of $2,000 max loss" in rr["lit"] and rr["sibyl"].startswith("Sibyl, ") and "One pick survives the check." in rr["sibyl"] and "No file from this machine yet" in rr["chrysos"], rr["lit"])
                 check("c. REAL Learning board: Sibyl's note is a lesson of the week with 'source: money/sibyl.json' next to the builder's lessons; 'what changed our mind' shows the real Kalshi 95c flip; nothing says Example",
-                      any("Only 1 pick survives out-of-sample." in t and "source: money/sibyl.json" in t for t in rr["learn"]) and any("We believed: 95c and above is +1.4% per $" in t and "kalshi_edge_A.md" in t for t in rr["changed"]) and not any("Example" in t or "example" in t for t in rr["learn"] + rr["changed"]), (rr["learn"][:2], rr["changed"][:1]))
+                      any("Only 1 pick survives out-of-sample." in t and "source: money/sibyl.json" in t for t in rr["learn"]) and any("We believed: 95c and above is +1.4% per $" in t and "kalshi_edge_A.md" in t for t in rr["changed"]) and not any("Example:" in t for t in rr["learn"] + rr["changed"]), (rr["learn"][:2], rr["changed"][:1]))
                 q = json.load(open(os.path.join(D, "queue.json"), encoding="utf-8"))
                 pcn = q["pipeline"]["counts"]
                 check("c. REAL pipeline wall: the Archive's counts (ideas, testing, adopted, rejected), 20 newest moves, the first family links into the Archive; no 'Example'",

@@ -22,7 +22,7 @@ export function createFloor(canvas, opts) {
   let rc = null;
   try {
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(64, 1.2, 0.1, 80);
+    const camera = new THREE.PerspectiveCamera(72, 1.2, 0.1, 80);
     scene.background = new THREE.Color('#2a2118');
     scene.fog = new THREE.Fog('#2a2118', 22, 60);
     rc = createRenderer({ canvas, scene, camera, maxDpr: 2, tint: '#c8a24a', env: 'night',
@@ -327,7 +327,7 @@ function build(rc, scene, camera, canvas, o) {
     pulse(ids) { for (const id of ids || []) hot[id] = t + 1.6; still(); },
     teleport(x, z) { cam.x = Math.max(-BOUNDS.x, Math.min(BOUNDS.x, x)); cam.z = Math.max(-BOUNDS.z, Math.min(BOUNDS.z, z)); following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; snapCam(); still(); },
     reset() { cam = { x: START.x, z: START.z, yaw: START.yaw, pitch: -0.06 }; yawT = cam.yaw; pitchT = cam.pitch; following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; mvT = { fwd: 0, side: 0 }; snapCam(); still(); },
-    face(id) { const s = S.find((a) => a.id === id); if (s) { let y = Math.atan2(-(s.x - cam.x), -(s.z - cam.z)); while (y - cam.yaw > Math.PI) y -= Math.PI * 2; while (y - cam.yaw < -Math.PI) y += Math.PI * 2; yawT = y; pitchT = -0.04; still(); } },
+    face(id) { const s = S.find((a) => a.id === id); if (s) { let y = Math.atan2(-(s.x - cam.x), -(s.z - cam.z)); while (y - cam.yaw > Math.PI) y -= Math.PI * 2; while (y - cam.yaw < -Math.PI) y += Math.PI * 2; yawT = y; pitchT = -0.16; still(); } },
     pos,
     stats() { const st = rc.stats(); return { calls: st.calls, triangles: st.triangles, quality: st.quality, batches: batches.length }; },
     project(id) { const s = S.find((a) => a.id === id); if (!s) return null; const v = new THREE.Vector3(s.x, 1.0, s.z).project(camera); if (v.z > 1) return null; return { x: (v.x * 0.5 + 0.5) * canvas.clientWidth, y: (-v.y * 0.5 + 0.5) * canvas.clientHeight }; },
