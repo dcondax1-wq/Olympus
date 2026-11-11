@@ -166,8 +166,8 @@ html[data-oly-lite="1"] .sheet-card { animation: none; }
 #app > header.top .tags canvas#scene { position: absolute; right: -4px; bottom: -8px; width: 76px; height: 76px; pointer-events: none; }
 #app > header.top .brand { padding-right: 76px; }
 
-#app > #tabs.ag-tabs { position: sticky; top: calc(var(--st) + 48px); z-index: 30; margin: 0 -16px; padding: 8px 16px; gap: 6px;
-  background: linear-gradient(180deg, rgba(20, 17, 14, .97) 70%, rgba(20, 17, 14, 0)); }
+#app > #tabs.ag-tabs { position: sticky; top: calc(var(--st) + 48px); z-index: 30; margin: 0; padding: 8px 0; gap: 6px;
+  background: rgba(20, 17, 14, .97); box-shadow: -16px 0 0 rgba(20, 17, 14, .97), 16px 0 0 rgba(20, 17, 14, .97); }   /* no bleed: nothing wider than the phone */
 #app > #tabs .ag-tab { min-height: 44px; padding: 0 15px; font-size: 15px; background: var(--ag-s1, #1b1713); border-color: rgba(243, 236, 224, .09); }
 #app > #tabs .ag-tab[aria-selected="true"] { background: linear-gradient(180deg, #d9b764, var(--ag-gold)); border-color: #e2c47a; color: #1b1610; }
 #app .tick { border-color: transparent; background: transparent; }
