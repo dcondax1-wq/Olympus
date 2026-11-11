@@ -233,5 +233,215 @@ class SfxEngineTest(unittest.TestCase):
         self.assertIn("url = smpBase() + stem + '.' + f", code)
 
 
+# ------------------------------------------------------------------------------------------------ the recorded layer (2026-11-11, CC0 recordings)
+AUDIO = ROOT / "tools/web_public/assets/audio"
+LIC = ROOT / "docs/ASSETS_LICENSES.md"
+SAMPLE_HARNESS = r"""
+const mod = require(process.argv[1]), fs = require('fs'), path = require('path'), dir = process.argv[2];
+function mk(opts) {
+  opts = opts || {};
+  const log = { nodes: 0, live: new Set(), starts: [], rates: [], fetched: [], decoded: 0 };
+  const param = (v) => ({ value: v || 0, setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {}, setTargetAtTime() {}, cancelScheduledValues() {}, setValueCurveAtTime() {} });
+  function node(kind) {
+    const n = { kind, outs: 0, connect(d) { if (!this.outs) log.live.add(this); this.outs++; return d; }, disconnect() { this.outs = 0; log.live.delete(this); },
+      start(t, off, dur) { if (kind === 'src' && this.buffer && this.buffer.fake) log.starts.push([off, dur]); }, stop() {},
+      gain: param(1), frequency: param(), detune: param(), Q: param(), playbackRate: param(1), pan: param(), type: '' };
+    if (kind === 'src') Object.defineProperty(n, 'rate', { get() { return n.playbackRate.value; } });
+    log.nodes++; return n;
+  }
+  class AC {
+    constructor() { this.state = 'running'; this.t0 = Date.now(); this.sampleRate = 8000; this.destination = { kind: 'dest' }; }
+    get currentTime() { return (Date.now() - this.t0) / 1000; }
+    resume() {} suspend() {}
+    createGain() { return node('gain'); } createOscillator() { return node('osc'); } createBiquadFilter() { return node('filter'); }
+    createDynamicsCompressor() { const n = node('comp'); n.threshold = param(); n.knee = param(); n.ratio = param(); n.attack = param(); n.release = param(); return n; }
+    createBufferSource() { const s = node('src'); return s; } createStereoPanner() { return node('stereo'); } createConvolver() { return node('conv'); }
+    createPanner() { const n = node('panner'); n.positionX = param(); n.positionY = param(); n.positionZ = param(); return n; }
+    createBuffer(c, n) { const ch = []; for (let i = 0; i < c; i++) ch.push(new Float32Array(n)); return { getChannelData: (i) => ch[i], duration: n / 8000 }; }
+    decodeAudioData(ab, ok, no) {                               // a real file's bytes in, a fake buffer out (its length from the manifest)
+      log.decoded++; const b = { fake: true, duration: 60, numberOfChannels: 1, length: 60 * 8000, bytes: ab.byteLength };
+      if (opts.badDecode) { const e = new Error('EncodingError'); if (no) no(e); return Promise.reject(e); }
+      if (ok) ok(b); return Promise.resolve(b);
+    }
+  }
+  const h = {};
+  const env = { AudioContext: AC, localStorage: { getItem: () => null, setItem() {} }, matchMedia: () => ({ matches: false }),
+    addEventListener: (e, f) => { (h[e] = h[e] || []).push(f); }, navigator: {}, document: { hidden: false, addEventListener() {}, createElement: () => ({ canPlayType: (t) => opts.noOgg && /ogg/.test(t) ? '' : 'probably' }) },
+    audioBase: opts.base || 'assets/audio/',
+    fetch: (url) => { log.fetched.push(url); if (opts.offline) return Promise.reject(new Error('offline'));
+      const f = path.join(dir, path.basename(url)); if (!fs.existsSync(f)) return Promise.resolve({ ok: false, status: 404 });
+      const b = fs.readFileSync(f); return Promise.resolve({ ok: true, status: 200, arrayBuffer: () => Promise.resolve(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength)) }); } };
+  const s = mod.create(env);
+  const tap = () => h.pointerdown.forEach(f => f());
+  return { s, log, tap, env };
+}
+const wait = (ms) => new Promise(r => setTimeout(r, ms));
+(async () => {
+  const out = {};
+  let t = mk({});
+  out.preFetch = t.log.fetched.length;                          // nothing fetched before the first tap
+  t.s.play('tap'); out.preFetch2 = t.log.fetched.length;
+  t.tap(); await t.s.preload(['ui', 'steps', 'forge', 'harp']);
+  out.fetched = t.log.fetched.slice(0, 4); out.state = t.s.samples();
+  // round robin: 40 stone steps never play the same take twice in a row, pitch jitter varies
+  const s0 = t.log.starts.length;
+  for (let i = 0; i < 40; i++) { t.s.at('step', { x: i, y: 0, z: -2 }, { x: 0, y: 0, z: 0 }, { surface: 'stone' }); await wait(32); }
+  const st = t.log.starts.slice(s0).map(x => x[0]);
+  out.steps = st.length; out.repeats = st.filter((x, i) => i && x === st[i - 1]).length; out.takes = new Set(st).size;
+  // a cue layers the real tap with the harp; the harp retunes
+  const s1 = t.log.starts.length; t.s.play('success'); out.successRec = t.log.starts.length - s1;
+  const s2 = t.log.starts.length; t.s.play('success', { synth: true }); out.successSynth = t.log.starts.length - s2;
+  const s3 = t.log.starts.length; t.s.play('hammer'); out.hammerRec = t.log.starts.length - s3;
+  out.played = t.s.samples().played; out.errors = t.s.state().errors;
+  await wait(3200); out.after = { voices: t.s.state().voices, nodes: t.s.state().nodes };
+  // a bed with its loops: the looper starts and the bed's files are fetched
+  t.s.ambience(true); t.s.ambient('harbour'); await wait(300); out.bedFetched = t.log.fetched.filter(u => /loop-sea|nature/.test(u)).length; out.bedPlayed = t.s.samples().played > out.played;
+  t.s.ambientStop();
+  // samples(false): synth only (the lab's A/B)
+  t.s.samples(false, false); const s4 = t.log.starts.length; t.s.play('success'); out.offRec = t.log.starts.length - s4; t.s.samples(true, false);
+  // the format: Opus first where it plays; m4a where it does not (iPhone); a failing format falls back to the other
+  let m = mk({ noOgg: true }); m.tap(); await m.s.preload(['ui']); out.m4a = [m.s.samples().fmt, m.log.fetched[0]];
+  // offline / missing files: the synth plays, nothing throws
+  let f = mk({ offline: true, base: 'offline/assets/audio/' });   // another page (the bytes cache is per page)
+   f.tap(); await f.s.preload(['ui', 'steps']); out.offline = { failed: f.s.samples().failed, play: f.s.play('success'), at: f.s.at('step', { x: 1, y: 0, z: -1 }), errors: f.s.state().errors, fetched: f.log.fetched.length };
+  let d = mk({ badDecode: true, base: 'bad/assets/audio/' }); d.tap(); await d.s.preload(['ui']); out.badDecode = { failed: d.s.samples().failed, tried: d.log.fetched, play: d.s.play('tap'), errors: d.s.state().errors };
+  // murmur + presence
+  t.s.duck(false);
+  const tl = { keys: [{ t: 0, v: 'A', a: 0.9 }, { t: 120, v: 'S', a: 0.3 }, { t: 220, v: 'O', a: 0.7 }, { t: 400, v: 'rest', a: 0 }] };
+  const mh = t.s.murmur({ timbre: { hz: 180, formant: 1, breath: 0.06, wave: 'sine' }, gender: 'f' }, tl, {});
+  out.murmur = !!(mh && mh.stop); if (mh) mh.stop();
+  out.presenceOf = [t.s.presenceOf({ accessory: 'key' }).jingle, t.s.presenceOf({ kind: 'scanner' }).jingle, t.s.presenceOf({ id: 'builder:x' }).jingle, t.s.presenceOf({}).jingle];
+  const w = t.s.walker({ kind: 'keeper', surface: 'wood' }); let ws = 0; for (let i = 0; i < 6; i++) { if (w.step({ x: i * 2, y: 0, z: -3 }, { x: 0, y: 0, z: 0 })) ws++; await wait(35); }
+  out.walker = ws; out.presence = t.s.presence({ accessory: 'pouch' }, { x: 1, y: 0, z: -1 }, { x: 0, y: 0, z: 0 });
+  out.jingles = t.s.jingles.map(k => t.s.play('jingle', { kind: k }));
+  let pre = mk({}); out.murmurPre = pre.s.murmur({ timbre: {} }, tl, {});
+  console.log(JSON.stringify(out));
+  setTimeout(() => process.exit(0), 20);
+})().catch(e => { console.error(e && e.stack || e); process.exit(1); });
+"""
+
+
+@unittest.skipUnless(shutil.which("node"), "node missing")
+class SampleLayerTest(unittest.TestCase):
+    """the recorded layer in node: lazy fetch after the tap, round robin + jitter, layering, the format choice, fallback to the synth, murmur, presence"""
+
+    @classmethod
+    def setUpClass(cls):
+        r = subprocess.run(["node", "-e", SAMPLE_HARNESS, str(JS), str(AUDIO)], capture_output=True, text=True, timeout=120)
+        assert r.returncode == 0, r.stderr
+        cls.o = json.loads(r.stdout.strip().splitlines()[-1])
+
+    def test_lazy_after_the_tap(self):
+        self.assertEqual((self.o["preFetch"], self.o["preFetch2"]), (0, 0))                     # no download before the first tap
+        self.assertTrue(all(u.startswith("assets/audio/") and u.endswith(".ogg") for u in self.o["fetched"]), self.o["fetched"])
+        st = self.o["state"]
+        self.assertEqual(st["fmt"], "ogg")
+        self.assertTrue({"ui", "steps", "forge", "harp"} <= set(st["loaded"]), st)
+        self.assertEqual(st["failed"], [])
+
+    def test_round_robin_and_jitter(self):
+        self.assertGreaterEqual(self.o["steps"], 30)
+        self.assertEqual(self.o["repeats"], 0)                  # never the same take twice in a row
+        self.assertGreaterEqual(self.o["takes"], 5)             # the stone bank has 7 takes
+
+    def test_layered_with_the_synth_and_released(self):
+        self.assertGreaterEqual(self.o["successRec"], 5)        # 4 harp notes + the cymbal: recordings
+        self.assertEqual(self.o["successSynth"], 0)             # {synth: true}: no recording at all
+        self.assertEqual(self.o["hammerRec"], 1)                # the real anvil (its ring tail is synthesised)
+        self.assertEqual(self.o["errors"], 0)
+        self.assertEqual(self.o["after"], {"voices": 0, "nodes": 0})
+        self.assertGreaterEqual(self.o["bedFetched"], 2)        # the harbour fetches its sea loop and its gulls
+        self.assertTrue(self.o["bedPlayed"])                    # the looper started
+        self.assertEqual(self.o["offRec"], 0)                   # samples(false): synth only
+
+    def test_format_and_fallback(self):
+        self.assertEqual(self.o["m4a"][0], "m4a")               # no Opus here (older iPhone): AAC
+        self.assertTrue(self.o["m4a"][1].endswith("ui.m4a"))
+        off = self.o["offline"]
+        self.assertEqual(sorted(off["failed"]), ["harp", "steps", "ui"])   # the tap asks for the UI taps and the harp; the test asked for steps
+        self.assertTrue(off["play"] and off["at"])              # the synth plays
+        self.assertEqual(off["errors"], 0)
+        self.assertEqual(off["fetched"], 6)                     # each file: the best format, then the other, then give up
+        bd = self.o["badDecode"]
+        self.assertEqual((sorted(bd["failed"]), len(bd["tried"]), bd["play"], bd["errors"]), (["harp", "ui"], 4, True, 0))   # a file that will not decode: both formats tried, then the synth
+
+    def test_murmur_and_presence(self):
+        self.assertTrue(self.o["murmur"])
+        self.assertIsNone(self.o["murmurPre"])                  # before the tap: nothing
+        self.assertEqual(self.o["presenceOf"], ["keys", "pouch", "metal", "beads"])
+        self.assertGreaterEqual(self.o["walker"], 5)
+        self.assertTrue(self.o["presence"])
+        self.assertEqual(self.o["jingles"], [True] * 7)
+
+
+class AssetFilesTest(unittest.TestCase):
+    """the committed files: both formats, sizes within the budget, measured levels and seams, licence rows, the manifest embedded in sfx.js"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.m = json.loads((AUDIO / "manifest.json").read_text(encoding="utf-8"))
+
+    def test_every_file_both_formats_and_budget(self):
+        tot = 0
+        for stem in self.m["files"]:
+            for ext in ("ogg", "m4a"):
+                p = AUDIO / (stem + "." + ext)
+                self.assertTrue(p.exists(), p)
+                tot += p.stat().st_size
+        self.assertLessEqual(tot, 8 * 1024 * 1024)              # the whole recorded layer, both formats
+        import re
+        files, js = self.m["files"], JS.read_text(encoding="utf-8")
+        bf = re.search(r"var BED_FILES = (\{.*?\});", js, re.S).group(1)
+        places = re.findall(r"(\w+): \[([^\]]*)\]", bf)
+        self.assertEqual(len(places), 11)
+        for place, stems in places:
+            used = {x.strip(" '") for x in stems.split(",")} | {"ui", "harp"}
+            for ext in ("ogg", "m4a"):
+                self.assertLess(sum(files[x]["kb"][ext] for x in used), 1024, (place, ext))   # a place's first load (one format) stays under 1 MB
+
+    def test_measured_levels_and_seams(self):
+        for r in self.m["measure"]:
+            self.assertLessEqual(r["ogg_peak"], -2.9, r["file"])   # peaks <= -3 dBFS after decoding (codec overshoot included)
+            self.assertLessEqual(r["m4a_peak"], -2.9, r["file"])
+            if r["kind"] == "loop":
+                self.assertTrue(-25 <= r["lufs"] <= -15.5, r)       # beds about -16 LUFS (crackly fire lower: its peaks rule)
+                self.assertLess(r["seam_jump"], 1.0, r)             # the loop's seam step is smaller than the file's own 99.9th percentile step
+                self.assertLess(r["m4a_seam_jump"], 1.5, r)
+                self.assertLess(r["seam_step_db"], 3.0, r)          # no level jump at the seam
+                self.assertLess(abs(r["m4a_pad_ms"]), 25, r)        # AAC's padding: < 25 ms (the engine loops the nominal length)
+            self.assertGreater(r["centroid"], 60, r["file"])        # spectral sanity: not DC / rumble only
+            self.assertLess(r["centroid"], 12000, r["file"])
+
+    def test_licence_row_for_every_file(self):
+        txt = LIC.read_text(encoding="utf-8")
+        block = txt.split("<!-- AUDIO:BEGIN")[1].split("<!-- AUDIO:END -->")[0]
+        rows = [l for l in block.splitlines() if l.startswith("| ") and "---" not in l and not l.startswith("| asset")]
+        self.assertGreaterEqual(len(rows), 20)
+        for l in rows:
+            cells = [c.strip() for c in l.strip("|").split("|")]
+            self.assertEqual(cells[3], "CC0", l)
+            self.assertTrue(cells[1] and cells[2].startswith(("https://opengameart.org/content/", "https://github.com/sgossner/VCSL")), l)
+        named = set()
+        for l in rows:
+            named |= {x.strip() for x in l.strip("|").split("|")[4].split(",")}
+        self.assertEqual(named, set(self.m["files"]))            # every committed file is covered by a CC0 row
+
+    def test_manifest_embedded_in_sfx_js(self):
+        import re
+        js = JS.read_text(encoding="utf-8")
+        emb = json.loads(re.search(r"/\*AUDIO\*/(.*?)/\*/AUDIO\*/", js, re.S).group(1))
+        self.assertEqual(emb["banks"], self.m["banks"])
+        self.assertEqual(emb["loops"], self.m["loops"])
+        self.assertEqual(set(emb["files"]), set(self.m["files"]))
+
+    @unittest.skipUnless(shutil.which("ffprobe"), "ffprobe missing")
+    def test_codecs(self):
+        for stem, f in self.m["files"].items():
+            for ext, codec in (("ogg", "opus"), ("m4a", "aac")):
+                r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_name,channels", "-of", "json", str(AUDIO / (stem + "." + ext))], capture_output=True, text=True)
+                s = json.loads(r.stdout)["streams"][0]
+                self.assertEqual((s["codec_name"], s["channels"]), (codec, f["ch"]), (stem, ext))
+
+
 if __name__ == "__main__":
     unittest.main()

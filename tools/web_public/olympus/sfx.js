@@ -70,7 +70,7 @@
     A5 = 880, B5 = 987.77, D6 = 1174.66, E6 = 1318.51, Fs6 = 1479.98;
   var CHIME = [A5, B5, D6, E6, Fs6];
   // the recorded layer (CC0 recordings, docs/ASSETS_LICENSES.md), written by tools/audio_build.py: files, banks of one-shots in sprites, bed loops
-  var AUDIO = /*AUDIO*/{"v":1,"files":{"ui":[1,148.5,148.9],"harp":[1,126.8,150.8],"harp-lo":[1,78.2,103.1],"steps":[1,32.8,55.2],"forge":[1,39.5,51.2],"scribe":[1,22.4,39.4],"house":[1,27.1,51.0],"gear":[1,52.7,82.8],"coins":[1,28.3,40.2],"nature":[1,63.3,109.9],"arena":[1,41.3,73.3],"bells":[1,83.3,96.7],"loop-crowd":[2,117.1,181.8],"loop-applause":[2,91.5,127.3],"loop-fire":[2,106.1,164.5],"loop-wind":[2,116.9,180.8],"loop-gusts":[2,113.1,198.8],"loop-sea":[2,116.6,198.8],"loop-crickets":[2,64.8,90.9],"loop-birds":[2,116.4,199.0],"loop-brook":[2,61.7,108.9]},"banks":{"tap":["ui",[[0.12,0.22],[0.46,0.22],[0.8,0.22]]],"tick":["ui",[[1.14,0.06],[1.32,0.0552]]],"toggle":["ui",[[1.4952,0.14],[1.7552,0.2],[2.0752,0.2]]],"paper":["ui",[[2.3952,0.75],[3.2652,0.7],[4.0852,0.55],[4.7552,0.5]]],"chime":["ui",[[5.3752,2.2,74],[7.6952,2.2,76],[10.0152,2.2,78],[12.3352,2.2,69],[14.6552,2.2,80]]],"shimmer":["ui",[[16.9752,1.8]]],"bell":["ui",[[18.8952,1.4],[20.4152,0.78]]],"coin":["ui",[[21.3152,0.5],[21.9352,0.29],[22.3452,0.3],[22.7652,0.21],[23.0952,0.19]]],"harp":["harp",[[0.12,1.9,62],[2.14,1.9,64],[4.16,1.9,66],[6.18,1.9,68],[8.2,1.9,70],[10.22,1.9,72],[12.24,1.9,74],[14.26,1.5,76],[15.88,1.5,78],[17.5,1.5,80],[19.12,1.5,82],[20.74,1.5,84],[22.36,1.5,86]]],"harplo":["harp-lo",[[0.12,2.6,50],[2.84,2.6,52],[5.56,2.6,54],[8.28,2.6,56],[11.0,2.6,58],[13.72,2.6,60]]],"step-stone":["steps",[[0.12,0.3],[0.54,0.3],[0.96,0.3],[1.38,0.3],[1.8,0.3],[2.22,0.3],[2.64,0.2505]]],"step-sand":["steps",[[3.0105,0.32],[3.4505,0.3164],[3.8869,0.2987],[4.3056,0.32],[4.7456,0.32],[5.1856,0.32]]],"step-wood":["steps",[[5.6256,0.2298],[5.9754,0.2106],[6.306,0.24]]],"step-leaves":["steps",[[6.666,0.38],[7.166,0.38]]],"anvil":["forge",[[0.12,0.99],[1.23,1.0],[2.35,1.0],[3.47,0.85],[4.44,0.51],[5.07,0.56]]],"smith":["forge",[[5.75,0.5]]],"tool":["forge",[[6.37,0.17],[6.66,0.3],[7.08,0.3]]],"quill":["scribe",[[0.12,0.62],[0.86,0.75]]],"page":["scribe",[[1.73,0.73],[2.58,0.9],[3.6,0.56],[4.28,0.56]]],"scroll":["scribe",[[4.96,0.94]]],"door":["house",[[0.12,0.65],[0.89,0.5],[1.51,0.85],[2.48,0.72],[3.32,0.54],[3.98,0.41]]],"crate":["house",[[4.51,0.22],[4.85,0.39],[5.36,0.4],[5.88,0.55]]],"whoosh":["house",[[6.55,0.4406]]],"keys":["gear",[[0.12,0.8],[1.04,0.76],[1.92,0.28],[2.32,0.41],[2.85,0.39]]],"metal":["gear",[[3.36,0.43],[3.91,0.47],[4.5,0.37]]],"beads":["gear",[[4.99,0.28]]],"cloth":["gear",[[5.39,0.32],[5.83,0.3]]],"pouch":["gear",[[6.25,0.6],[6.97,0.6]]],"jingle":["gear",[[7.69,0.9],[8.71,0.9]]],"rustle":["gear",[[9.73,0.62],[10.47,0.4137],[11.0037,0.7]]],"pour":["coins",[[0.12,1.7299],[1.9699,1.26]]],"count":["coins",[[3.3499,0.78],[4.2499,0.89],[5.2599,0.7]]],"gull":["nature",[[0.12,1.3],[1.54,1.07],[2.73,0.9],[3.75,0.79],[4.66,0.8816]]],"wave":["nature",[[5.6616,3.34],[9.1216,2.17],[11.4116,3.22]]],"chirp":["nature",[[14.7516,0.55],[15.4216,0.55],[16.0916,0.55],[16.7616,0.55]]],"clap":["arena",[[0.12,0.3],[0.54,0.3],[0.96,0.3],[1.38,0.3]]],"drum":["arena",[[1.8,0.9],[2.82,0.9],[3.84,0.9],[4.86,0.9]]],"cheer":["arena",[[5.88,2.6],[8.6,2.4]]],"camel":["bells",[[0.12,1.2],[1.44,0.78],[2.34,1.2],[3.66,0.9]]],"windchime":["bells",[[4.68,5.5],[10.3,5.0]]]},"loops":{"crowd":["loop-crowd",20.0],"applause":["loop-applause",14.0],"fire":["loop-fire",18.0],"wind":["loop-wind",20.0],"gusts":["loop-gusts",22.0],"sea":["loop-sea",22.0],"crickets":["loop-crickets",10.0],"birds":["loop-birds",22.0],"brook":["loop-brook",12.0]}}/*/AUDIO*/;
+  var AUDIO = /*AUDIO*/{"v":1,"files":{"ui":[1,147.6,148.5],"harp":[1,126.8,150.8],"harp-lo":[1,78.2,103.1],"steps":[1,32.3,53.0],"forge":[1,39.6,51.2],"scribe":[1,22.2,39.5],"house":[1,26.9,50.3],"gear":[1,52.3,83.7],"coins":[1,28.1,39.9],"nature":[1,63.0,110.2],"arena":[1,40.7,73.3],"bells":[1,83.3,96.7],"loop-crowd":[2,117.1,181.8],"loop-applause":[2,91.5,127.3],"loop-fire":[2,106.1,164.5],"loop-wind":[2,116.9,180.8],"loop-gusts":[2,113.1,198.8],"loop-sea":[2,116.6,198.8],"loop-crickets":[2,64.8,90.9],"loop-birds":[2,116.4,199.0],"loop-brook":[2,61.7,108.9]},"banks":{"tap":["ui",[[0.12,0.22],[0.46,0.22],[0.8,0.22]]],"tick":["ui",[[1.14,0.06],[1.32,0.0552]]],"toggle":["ui",[[1.4952,0.14],[1.7552,0.2],[2.0752,0.2]]],"paper":["ui",[[2.3952,0.75],[3.2652,0.7],[4.0852,0.55],[4.7552,0.5]]],"chime":["ui",[[5.3752,2.2,74],[7.6952,2.2,76],[10.0152,2.2,78],[12.3352,2.2,69],[14.6552,2.2,80]]],"shimmer":["ui",[[16.9752,1.8]]],"bell":["ui",[[18.8952,1.4],[20.4152,0.78]]],"coin":["ui",[[21.3152,0.5],[21.9352,0.29],[22.3452,0.3],[22.7652,0.21],[23.0952,0.19]]],"harp":["harp",[[0.12,1.9,62],[2.14,1.9,64],[4.16,1.9,66],[6.18,1.9,68],[8.2,1.9,70],[10.22,1.9,72],[12.24,1.9,74],[14.26,1.5,76],[15.88,1.5,78],[17.5,1.5,80],[19.12,1.5,82],[20.74,1.5,84],[22.36,1.5,86]]],"harplo":["harp-lo",[[0.12,2.6,50],[2.84,2.6,52],[5.56,2.6,54],[8.28,2.6,56],[11.0,2.6,58],[13.72,2.6,60]]],"step-stone":["steps",[[0.12,0.3],[0.54,0.3],[0.96,0.3],[1.38,0.3],[1.8,0.3],[2.22,0.3],[2.64,0.2505]]],"step-sand":["steps",[[3.0105,0.32],[3.4505,0.3164],[3.8869,0.2987],[4.3056,0.32],[4.7456,0.32],[5.1856,0.32]]],"step-wood":["steps",[[5.6256,0.2298],[5.9754,0.2106],[6.306,0.24]]],"step-leaves":["steps",[[6.666,0.38],[7.166,0.38]]],"anvil":["forge",[[0.12,0.99],[1.23,1.0],[2.35,1.0],[3.47,0.85],[4.44,0.51],[5.07,0.56]]],"smith":["forge",[[5.75,0.5]]],"tool":["forge",[[6.37,0.17],[6.66,0.3],[7.08,0.3]]],"quill":["scribe",[[0.12,0.62],[0.86,0.75]]],"page":["scribe",[[1.73,0.73],[2.58,0.9],[3.6,0.56],[4.28,0.56]]],"scroll":["scribe",[[4.96,0.94]]],"door":["house",[[0.12,0.65],[0.89,0.5],[1.51,0.85],[2.48,0.72],[3.32,0.54],[3.98,0.41]]],"crate":["house",[[4.51,0.22],[4.85,0.39],[5.36,0.4],[5.88,0.55]]],"whoosh":["house",[[6.55,0.4406]]],"keys":["gear",[[0.12,0.8],[1.04,0.76],[1.92,0.28],[2.32,0.41],[2.85,0.39]]],"metal":["gear",[[3.36,0.43],[3.91,0.47],[4.5,0.37]]],"beads":["gear",[[4.99,0.28]]],"cloth":["gear",[[5.39,0.32],[5.83,0.3]]],"pouch":["gear",[[6.25,0.6],[6.97,0.6]]],"jingle":["gear",[[7.69,0.9],[8.71,0.9]]],"rustle":["gear",[[9.73,0.62],[10.47,0.4137],[11.0037,0.7]]],"pour":["coins",[[0.12,1.7299],[1.9699,1.26]]],"count":["coins",[[3.3499,0.78],[4.2499,0.89],[5.2599,0.7]]],"gull":["nature",[[0.12,1.3],[1.54,1.07],[2.73,0.9],[3.75,0.79],[4.66,0.8816]]],"wave":["nature",[[5.6616,3.34],[9.1216,2.17],[11.4116,3.22]]],"chirp":["nature",[[14.7516,0.55],[15.4216,0.55],[16.0916,0.55],[16.7616,0.55]]],"clap":["arena",[[0.12,0.3],[0.54,0.3],[0.96,0.3],[1.38,0.3]]],"drum":["arena",[[1.8,0.9],[2.82,0.9],[3.84,0.9],[4.86,0.9]]],"cheer":["arena",[[5.88,2.6],[8.6,2.4]]],"camel":["bells",[[0.12,1.2],[1.44,0.78],[2.34,1.2],[3.66,0.9]]],"windchime":["bells",[[4.68,5.5],[10.3,5.0]]]},"loops":{"crowd":["loop-crowd",20.0],"applause":["loop-applause",14.0],"fire":["loop-fire",18.0],"wind":["loop-wind",20.0],"gusts":["loop-gusts",22.0],"sea":["loop-sea",22.0],"crickets":["loop-crickets",10.0],"birds":["loop-birds",22.0],"brook":["loop-brook",12.0]}}/*/AUDIO*/;
 
   // where the files are: next to this script, ../assets/audio/ (read once while the script runs; window.OLYMPUS_AUDIO_BASE or create({audioBase}) wins)
   var BASE0 = (function () {
@@ -447,16 +447,16 @@
     }
     /** the harp (VCSL folk harp, CC0): a real plucked note for the lyre's place, retuned at most 3 semitones; false = use the synthesised string */
     function harp(V, f, at, peak, o) {
-      if (o.synth) return false;
+      if (o.synth || !smpOn) return false;
       var m = 12 * Math.log(f / 440) / Math.LN2 + 69, bank = m < 61 ? 'harplo' : 'harp', B = AUDIO && AUDIO.banks[bank];
       if (!B || !ready[B[0]]) { if (B) want(B[0]); return false; }
       var segs = B[1], best = segs[0]; for (var k = 1; k < segs.length; k++) if (Math.abs(segs[k][2] - m) < Math.abs(best[2] - m)) best = segs[k];
       if (Math.abs(best[2] - m) > 3) return false;
       var br = o.bright === undefined ? 0.5 : o.bright, dur = o.dur || 1, t = V.t + at, rate = Math.pow(2, (m - best[2]) / 12), len = Math.min(best[1], dur * rate + 0.05);
-      var src = nd(V, ctx.createBufferSource()), lp = nd(V, ctx.createBiquadFilter()), g = nd(V, ctx.createGain()), pk = peak * 1.7;
+      var src = nd(V, ctx.createBufferSource()), lp = nd(V, ctx.createBiquadFilter()), g = nd(V, ctx.createGain()), pk = peak * 1.15;
       src.buffer = ready[B[0]]; if (src.playbackRate) src.playbackRate.value = rate;
       lp.type = 'lowpass'; lp.frequency.value = Math.min(16000, f * (4 + 14 * br)); lp.Q.value = 0.4;
-      g.gain.setValueAtTime(pk, t); g.gain.setValueAtTime(pk, t + dur * 0.55); g.gain.linearRampToValueAtTime(0.0001, t + Math.min(dur, len / rate));
+      g.gain.setValueAtTime(pk, t); g.gain.exponentialRampToValueAtTime(pk * 0.6, t + dur * 0.5); g.gain.exponentialRampToValueAtTime(0.0001, t + Math.min(dur, len / rate));
       src.connect(lp); lp.connect(g); g.connect(o.dest || V.g);
       src.start(t, best[0], len); src.stop(t + len / rate + 0.03); V.srcs.push(src); scheduled++; sampled++;
       return true;
@@ -473,6 +473,29 @@
       if (smpOn && unlocked) bootSamples();
       return smpState();
     }
+    /** sample(bank, {gain, rate, i}): play one recorded variation of a bank on its own (the lab lists every bank); false when not ready */
+    function sample(bank, o) {
+      try {
+        o = o || {};
+        var B = AUDIO && AUDIO.banks[bank];
+        if (!B || muted || !unlocked || !ctx) return false;
+        if (!ready[B[0]]) { want(B[0]); return false; }
+        var seg = B[1][o.i !== undefined ? Math.min(o.i, B[1].length - 1) : 0], V = grab(o.cat || 'world', seg[1] / (o.rate || 1) + 0.2);
+        if (!V) return false;
+        return sp(V, bank, 0, o.gain || 0.3, o);
+      } catch (e) { errors++; return false; }
+    }
+    var an = null, anBuf = null;
+    /** meter(): the output level now, { rms, peak } in dBFS (an analyser on the master, made on the first call) */
+    function meter() {
+      if (!ctx || !master || !ctx.createAnalyser) return { rms: -120, peak: -120 };
+      try {
+        if (!an) { an = ctx.createAnalyser(); an.fftSize = 2048; master.connect(an); anBuf = new Float32Array(an.fftSize); }
+        if (an.getFloatTimeDomainData) an.getFloatTimeDomainData(anBuf); else return { rms: -120, peak: -120 };
+        var s = 0, pk = 0; for (var i = 0; i < anBuf.length; i++) { var v = anBuf[i]; s += v * v; if (Math.abs(v) > pk) pk = Math.abs(v); }
+        return { rms: Math.max(-120, 20 * Math.log(Math.sqrt(s / anBuf.length) + 1e-9) / Math.LN10), peak: Math.max(-120, 20 * Math.log(pk + 1e-9) / Math.LN10) };
+      } catch (e) { return { rms: -120, peak: -120 }; }
+    }
     function bootSamples() {                                    // the first tap: the UI taps and the harp (small), then the place's own files
       if (!smpUse()) return;
       want('ui'); if (!lite()) want('harp');
@@ -484,7 +507,7 @@
     // synthesised version plays exactly as before. o.synth = true forces the synth (the lab's A/B).
     var SND = {
       tick: [0.12, 'ui', function (V, o) {                     // a tiny real click (Kenney, CC0); synth: a marble tick
-        if (sp(V, 'tick', 0, 0.07, merge(o, { jit: 1, vj: 0.2 }))) return;
+        if (sp(V, 'tick', 0, 0.18, merge(o, { jit: 1, vj: 0.2 }))) return;
         tone(V, 'triangle', 2400, 1700, 0, 0.035, 0.1, 0.001); tone(V, 'sine', 1175, 1100, 0, 0.06, 0.05, 0.002);
       }],
       tap: [0.5, 'ui', function (V, o) {                       // a soft wooden tap (VCSL woodblock, played softly) under a high harp touch
@@ -497,7 +520,7 @@
       }],
       close: [0.8, 'ui', function (V, o) {                     // the same, falling and shorter; the page settles
         pluck(V, Fs5, 0, 0.08, { dur: 0.4, bright: 0.35, synth: o.synth }); pluck(V, D5, 0.055, 0.09, { dur: 0.5, bright: 0.3, synth: o.synth });
-        if (!sp(V, 'paper', 0, 0.045, merge(o, { i: 1, dur: 0.45, rate: 1.1, hp: 700 }))) nz(V, 0, 0.2, 0.02, 'bandpass', 3000, 1400, 0.9, 0.03);
+        if (!sp(V, 'paper', 0, 0.03, merge(o, { i: 1, dur: 0.45, rate: 1.1, hp: 700 }))) nz(V, 0, 0.2, 0.02, 'bandpass', 3000, 1400, 0.9, 0.03);
       }],
       swipe: [0.6, 'ui', function (V, o) {                     // a page turned past + a faint string
         var up = o.dir !== 'back';
@@ -505,7 +528,7 @@
         pluck(V, up ? E5 : B4, 0.16, 0.035, { dur: 0.3, bright: 0.3, synth: o.synth });
       }],
       toggle: [0.55, 'ui', function (V, o) {                   // a real small switch; on: up a fifth; off: down, muted
-        var real = sp(V, 'toggle', 0, 0.07, merge(o, { jit: 0.5, rate: o.on !== false ? 1.06 : 0.92, lp: 7000 }));
+        var real = sp(V, 'toggle', 0, 0.02, merge(o, { jit: 0.5, rate: o.on !== false ? 1.06 : 0.92, lp: 7000 }));
         if (o.on !== false) { pluck(V, D5, 0, 0.08, { dur: 0.4, bright: 0.45, synth: o.synth }); pluck(V, A5, 0.06, 0.09, { dur: 0.5, bright: 0.5, synth: o.synth }); if (!real) tone(V, 'triangle', 1900, 0, 0, 0.02, 0.03, 0.001); }
         else { pluck(V, A5, 0, 0.07, { dur: 0.3, bright: 0.25, synth: o.synth }); pluck(V, D5, 0.06, 0.075, { dur: 0.35, bright: 0.2, synth: o.synth }); if (!real) tone(V, 'triangle', 1500, 0, 0, 0.02, 0.025, 0.001); }
       }],
@@ -523,11 +546,11 @@
         if (!sp(V, 'tap', 0, 0.12, merge(o, { rate: 0.62, lp: 1800 }))) tone(V, 'sine', 130, 90, 0, 0.18, 0.06, 0.004);
       }],
       notify: [2.3, 'ui', function (V, o) {                    // a real hand chime over a harp note
-        if (!sp(V, 'chime', 0, 0.09, merge(o, { midi: 81, dur: 2.0, rel: 1.0, vj: 0.1 }))) bell(V, A5, 0, 0.07, 1.7);
+        if (!sp(V, 'chime', 0, 0.15, merge(o, { midi: 81, dur: 2.0, rel: 1.0, vj: 0.1 }))) bell(V, A5, 0, 0.07, 1.7);
         pluck(V, D5, 0, 0.07, { dur: 1, bright: 0.4, synth: o.synth });
       }],
       money: [1.3, 'ui', function (V, o) {                     // real coins land, the harp answers up a fourth
-        if (sp(V, 'coin', 0, 0.12, merge(o, { jit: 1, vj: 0.2 }))) sp(V, 'coin', 0.09, 0.08, merge(o, { jit: 1.5, vj: 0.3 }));
+        if (sp(V, 'coin', 0, 0.09, merge(o, { jit: 1, vj: 0.2 }))) sp(V, 'coin', 0.09, 0.06, merge(o, { jit: 1.5, vj: 0.3 }));
         else { coin(V, 0, 1); coin(V, 0.09, 0.7); }
         pluck(V, A5, 0.05, 0.07, { dur: 0.8, bright: 0.55, synth: o.synth }); pluck(V, D6, 0.13, 0.08, { dur: 1, bright: 0.6, synth: o.synth });
       }],
@@ -544,51 +567,51 @@
       }],
       'step-stone': [0.42, 'world', function (V, o) {         // a real heel on stone (Fantozzi, TinyWorlds; CC0); synth: a thump, a click, a scuff
         var k = o.k || 1, j = rnd(0.9, 1.1), a = o.at || 0;
-        if (sp(V, 'step-stone', a, 0.32 * k, merge(o, { jit: 1.2, vj: 0.3 }))) return;
+        if (sp(V, 'step-stone', a, 0.11 * k, merge(o, { jit: 1.2, vj: 0.3 }))) return;
         tone(V, 'sine', 115 * j, 70 * j, a, 0.07, 0.09 * k, 0.003); nz(V, a, 0.025, 0.05 * k, 'bandpass', 1900 * j, 0, 1.2, 0.001); nz(V, a + 0.02, 0.09, 0.02 * k, 'bandpass', 700 * j, 500, 0.8, 0.02);
       }],
       'step-sand': [0.42, 'world', function (V, o) {          // real sand (or grass / leaves with {surface}); synth: a soft press and a few grains
         var k = o.k || 1, a = o.at || 0, lv = o.surface === 'leaves' || o.surface === 'grass';
-        if (sp(V, lv ? 'step-leaves' : 'step-sand', a, (lv ? 0.22 : 0.3) * k, merge(o, { jit: 1.2, vj: 0.3 }))) return;
+        if (sp(V, lv ? 'step-leaves' : 'step-sand', a, (lv ? 0.07 : 0.08) * k, merge(o, { jit: 1.2, vj: 0.3 }))) return;
         nz(V, a, 0.12, 0.04 * k, 'lowpass', 420, 200, 0.7, 0.02);
         for (var i = 0; i < 3; i++) nz(V, a + i * 0.02 + rnd(0, 0.015), 0.03, 0.03 * k, 'highpass', rnd(2500, 4000), 0, 0.7, 0.002);
       }],
       'step-wood': [0.42, 'world', function (V, o) {          // a real wooden board; synth: a hollow board
         var k = o.k || 1, j = rnd(0.92, 1.08), a = o.at || 0;
-        if (sp(V, 'step-wood', a, 0.3 * k, merge(o, { jit: 1.5, vj: 0.3 }))) return;
+        if (sp(V, 'step-wood', a, 0.11 * k, merge(o, { jit: 1.5, vj: 0.3 }))) return;
         tone(V, 'sine', 190 * j, 150 * j, a, 0.1, 0.09 * k, 0.002); tone(V, 'triangle', 430 * j, 0, a, 0.05, 0.03 * k, 0.001); nz(V, a, 0.06, 0.04 * k, 'bandpass', 900 * j, 0, 3, 0.001);
       }],
       hammer: [1.4, 'world', function (V, o) {                // a real hammer on a real anvil (VCSL) + a synthesised ring tail; synth: click, ring, thump
         var k = o.k || 1, a = o.at || 0, f = rnd(780, 880);
-        if (sp(V, 'anvil', a, 0.3 * k, merge(o, { jit: 0.6, vj: 0.2 }))) { bell(V, f, a + 0.01, 0.022 * k, 1.2, null, [1, 2.76, 5.4]); return; }
+        if (sp(V, 'anvil', a, 0.55 * k, merge(o, { jit: 0.6, vj: 0.2 }))) { bell(V, f, a + 0.01, 0.022 * k, 1.2, null, [1, 2.76, 5.4]); return; }
         nz(V, a, 0.02, 0.16 * k, 'highpass', 3000, 0, 0.7, 0.001); bell(V, f, a, 0.08 * k, 1.2, null, [1, 2.76, 5.4, 8.93]); tone(V, 'sine', 95, 60, a, 0.12, 0.1 * k, 0.002);
       }],
       quill: [0.95, 'world', function (V, o) {                // a real pencil on paper (a reed pen's place); synth: short scratches
         var k = o.k || 1, a = o.at || 0, n = 5 + Math.floor(Math.random() * 4);
-        if (sp(V, 'quill', a, 0.12 * k, merge(o, { jit: 0.8, vj: 0.2, lp: 9000 }))) return;
+        if (sp(V, 'quill', a, 0.045 * k, merge(o, { jit: 0.8, vj: 0.2, lp: 9000 }))) return;
         for (var i = 0; i < n; i++) nz(V, a + i * 0.09 + rnd(0, 0.03), rnd(0.03, 0.07), 0.07 * k, 'bandpass', rnd(3500, 6000), rnd(3000, 5000), 4, 0.005);
       }],
       scroll: [1.5, 'world', function (V, o) {                // a real map unfolds (a scroll's place); synth: a long rustle, the paper's ticks
         var k = o.k || 1, a = o.at || 0;
-        if (sp(V, 'scroll', a, 0.14 * k, merge(o, { jit: 0.6 }))) return;
+        if (sp(V, 'scroll', a, 0.18 * k, merge(o, { jit: 0.6 }))) return;
         nz(V, a, 0.8, 0.035 * k, 'bandpass', 1100, 2600, 0.9, 0.25);
         for (var i = 0; i < 6; i++) nz(V, a + 0.08 + i * 0.11, 0.012, 0.03 * k, 'highpass', 4000, 0, 1, 0.001);
         tone(V, 'sine', 160, 110, a + 0.8, 0.12, 0.05 * k, 0.005);
       }],
       coin: [0.6, 'world', function (V, o) {
         var k = o.k || 1, a = o.at || 0;
-        if (sp(V, 'coin', a, 0.16 * k, merge(o, { jit: 1.5, vj: 0.25 }))) return;
+        if (sp(V, 'coin', a, 0.3 * k, merge(o, { jit: 1.5, vj: 0.25 }))) return;
         coin(V, a, k); coin(V, a + 0.06, 0.5 * k, true);
       }],
       crate: [0.7, 'world', function (V, o) {                 // a real wooden crate set down; synth: a thump and the slats' rattle
         var k = o.k || 1, a = o.at || 0;
-        if (sp(V, 'crate', a, 0.3 * k, merge(o, { jit: 1, vj: 0.2 }))) { tone(V, 'sine', 75, 48, a, 0.25, 0.08 * k, 0.003); return; }
+        if (sp(V, 'crate', a, 0.34 * k, merge(o, { jit: 1, vj: 0.2 }))) { tone(V, 'sine', 75, 48, a, 0.25, 0.08 * k, 0.003); return; }
         tone(V, 'sine', 75, 48, a, 0.3, 0.2 * k, 0.003); nz(V, a, 0.2, 0.12 * k, 'lowpass', 500, 200, 1, 0.002);
         for (var i = 0; i < 3; i++) tone(V, 'triangle', rnd(280, 480), 0, a + 0.07 + i * rnd(0.05, 0.09), 0.05, 0.035 * k, 0.001);
       }],
       cheer: [2.8, 'world', function (V, o) {                 // a real crowd cheers and claps (CC0 recordings) on a synthesised swell
         var k = o.k || 1, a = o.at || 0;
-        if (sp(V, 'cheer', a, 0.28 * k, merge(o, { rel: 0.9, jit: 0.4 }))) { nz(V, a, 2.2, 0.03 * k, 'bandpass', 600, 750, 1.2, 0.35); return; }
+        if (sp(V, 'cheer', a, 0.14 * k, merge(o, { rel: 0.9, jit: 0.4 }))) { nz(V, a, 2.2, 0.03 * k, 'bandpass', 600, 750, 1.2, 0.35); return; }
         [[600, 0.09], [1400, 0.06], [2800, 0.025]].forEach(function (b) { nz(V, a, 2.2, b[1] * k, 'bandpass', b[0], b[0] * 1.25, 1.2, 0.35); });
         playBuf(V, clapBuf(), a + 0.15, 0.25 * k, 2200);
       }],
@@ -598,20 +621,20 @@
       }],
       door: [1.6, 'world', function (V, o) {                  // a real wooden door (qubodup, CC0); synth: the creak, the thud, the latch
         var k = o.k || 1, a = o.at || 0, t = V.t + a;
-        if (sp(V, 'door', a, 0.28 * k, merge(o, { jit: 0.7, vj: 0.15 }))) return;
+        if (sp(V, 'door', a, 0.5 * k, merge(o, { jit: 0.7, vj: 0.15 }))) return;
         var bp = nd(V, ctx.createBiquadFilter()); bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = 6; bp.connect(V.g);
         var c = tone(V, 'sawtooth', 80, 0, a, 0.8, 0.03 * k, 0.15, bp);
         for (var i = 1; i < 8; i++) c.frequency.setValueAtTime(rnd(70, 125), t + i * 0.1);
         tone(V, 'sine', 62, 40, a + 0.85, 0.35, 0.1 * k, 0.003); nz(V, a + 0.85, 0.25, 0.07 * k, 'lowpass', 300, 120, 0.8, 0.003); tone(V, 'triangle', 2100, 0, a + 1.05, 0.02, 0.04 * k, 0.001);
       }],
       fire: [1.2, 'world', function (V, o) {                  // a fire catches: a real whoosh over a synthesised roar and crackles
-        var k = o.k || 1, a = o.at || 0, real = sp(V, 'whoosh', a, 0.25 * k, merge(o, { jit: 1 }));
+        var k = o.k || 1, a = o.at || 0, real = sp(V, 'whoosh', a, 0.06 * k, merge(o, { jit: 1 }));
         nz(V, a, 0.9, (real ? 0.04 : 0.1) * k, 'bandpass', 300, 1800, 0.8, 0.25); nz(V, a, 1, (real ? 0.05 : 0.1) * k, 'lowpass', 160, 0, 0.7, 0.2);
         for (var i = 0; i < 4; i++) nz(V, a + rnd(0.1, 0.8), 0.02, 0.05 * k, 'highpass', rnd(2500, 6000), 0, 0.8, 0.001);
       }],
       page: [1.0, 'world', function (V, o) {                  // a real book page turns (StarNinjas, CC0); synth: a quick rustle
         var k = o.k || 1, a = o.at || 0;
-        if (sp(V, 'page', a, 0.14 * k, merge(o, { jit: 0.8, vj: 0.2 }))) return;
+        if (sp(V, 'page', a, 0.1 * k, merge(o, { jit: 0.8, vj: 0.2 }))) return;
         nz(V, a, rnd(0.18, 0.3), 0.035 * k, 'bandpass', rnd(2000, 3000), rnd(3500, 5000), 0.9, 0.06); nz(V, a + 0.2, 0.08, 0.02 * k, 'bandpass', 1500, 1000, 1, 0.01);
       }],
       chime: [2.4, 'world', function (V, o) {                 // a real hand chime (VCSL) at {midi}; synth: a small bronze bell
@@ -621,12 +644,12 @@
       }],
       drum: [0.9, 'world', function (V, o) {                  // a real frame drum (VCSL); synth: a soft low thump
         var k = o.k || 1, a = o.at || 0;
-        if (sp(V, 'drum', a, 0.3 * k, merge(o, { jit: 0.5, vj: 0.2 }))) return;
+        if (sp(V, 'drum', a, 0.07 * k, merge(o, { jit: 0.5, vj: 0.2 }))) return;
         tone(V, 'sine', 75, 50, a, 0.25, 0.06 * k, 0.004);
       }],
       jingle: [0.9, 'world', function (V, o) {                // a person's things as they move: keys, armour, beads, cloth, a coin pouch, small bells, leaves
         var k = o.k || 1, a = o.at || 0, kind = JINGLES.indexOf(o.kind) >= 0 ? o.kind : 'beads';
-        if (sp(V, kind, a, (kind === 'cloth' || kind === 'rustle' ? 0.14 : 0.1) * k, merge(o, { jit: 1.5, vj: 0.3, dur: 0.55 }))) return;
+        if (sp(V, kind, a, (kind === 'cloth' || kind === 'rustle' ? 0.2 : 0.16) * k, merge(o, { jit: 1.5, vj: 0.3, dur: 0.55 }))) return;
         if (kind === 'cloth' || kind === 'rustle') { nz(V, a, 0.22, 0.02 * k, 'bandpass', kind === 'cloth' ? 1400 : 3200, 0, 0.8, 0.05); return; }
         for (var i = 0; i < 3; i++) tone(V, 'sine', rnd(3200, 5200) * (kind === 'metal' ? 0.6 : 1), 0, a + i * rnd(0.03, 0.07), 0.12, 0.012 * k, 0.001);
       }]
@@ -634,7 +657,7 @@
     function levelup(V, k, o) {                                 // the harp runs D-F#-A-D-F#-A, a real chime crowns it, a soft swell under
       o = o || {};
       [D4, Fs4, A4, D5, Fs5, A5].forEach(function (f, i) { pluck(V, f, i * 0.075, (0.07 + i * 0.006) * k, { dur: 1.4, bright: 0.55, synth: o.synth }); });
-      if (!sp(V, 'chime', 0.5, 0.08 * k, merge(o, { midi: 86, dur: 2.0, rel: 1.1 }))) bell(V, D6, 0.5, 0.05 * k, 1.8);
+      if (!sp(V, 'chime', 0.5, 0.12 * k, merge(o, { midi: 86, dur: 2.0, rel: 1.1 }))) bell(V, D6, 0.5, 0.05 * k, 1.8);
       sp(V, 'shimmer', 0.52, 0.025 * k, merge(o, { dur: 1.6, rel: 0.9 }));
       tone(V, 'sine', D4, D4, 0, 1.6, 0.03 * k, 0.3); tone(V, 'sine', A4, A4, 0.1, 1.5, 0.02 * k, 0.3);
     }
@@ -833,7 +856,7 @@
       marble: function (B, o) {                                 // a marble hall: low room tone, moving air, a far crowd murmur, far footsteps, a water clock
         var rt = layer(B, 'lowpass', 170, 0.5, 0.38), air = layer(B, 'bandpass', 1300, 0.6, 0.05);
         drift(B, rt.g.gain, 0.26, 0.45, 4000, 9000); drift(B, air.f.frequency, 900, 1800, 6000, 12000); drift(B, air.g.gain, 0.03, 0.07, 5000, 10000);
-        var far = rec(B, 'crowd', { gain: 0.05, lp: 520, syn: 0.8 }); if (far) drift(B, far.sw.gain, 0.5, 1.2, 6000, 14000);
+        var far = rec(B, 'crowd', { gain: 0.1, lp: 520, syn: 0.8 }); if (far) drift(B, far.sw.gain, 0.5, 1.2, 6000, 14000);
         ev(B, 9000, 22000, function () { steps(B, 'step-stone', 3 + Math.floor(Math.random() * 5), 0.56, 0.3, rnd(-0.8, 0.8)); });
         ev(B, o.drip ? 4000 : 9000, o.drip ? 11000 : 20000, function () { var V = bv(B, 0.5, rnd(-0.6, 0.6)); if (V) tone(V, 'sine', rnd(1500, 2100), rnd(1000, 1300), 0, 0.09, 0.03, 0.002); });
         ev(B, 20000, 45000, function () { if (!sev(B, 'chime', rnd(-0.5, 0.5), 0.03, { midi: pick([78, 81, 86]), rel: 1.2 })) { var V = bv(B, 2.6, rnd(-0.5, 0.5)); if (V) bell(V, pick([Fs5, A5, D6]), 0, 0.012, 2.5); } });
@@ -843,8 +866,8 @@
         var m1 = layer(B, 'bandpass', 380, 1.4, 0.28), m2 = layer(B, 'bandpass', 1000, 2, 0.14), m3 = layer(B, 'bandpass', 2300, 2.5, 0.04), lo = layer(B, 'lowpass', 200, 0.5, 0.2);
         drift(B, m1.f.frequency, 320, 460, 3000, 7000); drift(B, m1.g.gain, 0.2, 0.34, 2000, 5000); drift(B, m2.f.frequency, 850, 1250, 3000, 7000);
         drift(B, m2.g.gain, 0.08, 0.18, 2000, 5000); drift(B, m3.g.gain, 0.02, 0.06, 3000, 6000); drift(B, lo.g.gain, 0.12, 0.25, 5000, 9000);
-        var cr = rec(B, 'crowd', { gain: o.far ? 0.08 : 0.11, lp: o.far ? 900 : 2200, syn: 0.45 }); if (cr) drift(B, cr.sw.gain, 0.6, 1.15, 4000, 10000);
-        if (!o.far) rec(B, 'birds', { gain: 0.035, hp: 1800 });
+        var cr = rec(B, 'crowd', { gain: o.far ? 0.2 : 0.27, lp: o.far ? 900 : 2200, syn: 0.45 }); if (cr) drift(B, cr.sw.gain, 0.6, 1.15, 4000, 10000);
+        if (!o.far) rec(B, 'birds', { gain: 0.07, hp: 1800 });
         ev(B, o.far ? 900 : 300, o.far ? 2400 : 1000, function () { chatter(B); });
         ev(B, 7000, 18000, function () { var V = bv(B, 0.5, rnd(-0.7, 0.7)); if (V) bell(V, rnd(1400, 2200), 0, 0.015, 0.35, null, [1, 2.3, 3.9]); });
         ev(B, 6000, 15000, function () { steps(B, 'step-stone', 2 + Math.floor(Math.random() * 3), 0.5, 0.25, rnd(-0.9, 0.9)); });
@@ -852,7 +875,7 @@
       workshop: function (B, o) {                               // the workshop: a real fire, its crackle, hammer on a real anvil, the quench, the bellows
         var h = o.hammer || 0, fire = layer(B, 'lowpass', 230, 0.7, 0.45), roar = layer(B, 'bandpass', 520, 0.8, 0.08);
         drift(B, fire.g.gain, 0.3, 0.55, 1500, 4000); drift(B, fire.f.frequency, 160, 320, 2000, 5000); drift(B, roar.g.gain, 0.04, 0.12, 2000, 5000);
-        var fr = rec(B, 'fire', { gain: 0.5, syn: 0.4 }); if (fr) drift(B, fr.sw.gain, 0.7, 1.2, 2000, 6000);
+        var fr = rec(B, 'fire', { gain: 1.0, syn: 0.4 }); if (fr) drift(B, fr.sw.gain, 0.7, 1.2, 2000, 6000);
         ev(B, 70, 380, function () { if (fr && fr.live && Math.random() < 0.6) return; var V = bv(B, 0.12, rnd(-0.4, 0.4)); if (V) nz(V, 0, rnd(0.006, 0.03), rnd(0.02, 0.08), 'highpass', rnd(2200, 6000), 0, 0.8, 0.001); });
         ev(B, h > 0.6 ? 5000 : 11000, h > 0.6 ? 11000 : 24000, function () {
           var n = 2 + Math.floor(Math.random() * 3), V = bv(B, n * 0.55 + 2.3, rnd(-0.5, 0.5)); if (!V) return;
@@ -865,7 +888,7 @@
         var w = layer(B, 'bandpass', 520, 0.7, 0.4), wh = layer(B, 'bandpass', 1800, 9, 0.015), hs = layer(B, 'highpass', 5500, 0.5, 0.018);
         drift(B, w.f.frequency, 280, 900, 3000, 8000); drift(B, w.g.gain, 0.2, 0.6, 2000, 6000); drift(B, wh.f.frequency, 1300, 2600, 4000, 9000);
         drift(B, wh.g.gain, 0.004, 0.025, 3000, 7000); drift(B, hs.g.gain, 0.008, 0.03, 3000, 7000);
-        var wd = rec(B, 'wind', { gain: 0.16, syn: 0.4 }), gu = rec(B, 'gusts', { gain: 0.12, base: 0.5 });
+        var wd = rec(B, 'wind', { gain: 0.24, syn: 0.4 }), gu = rec(B, 'gusts', { gain: 0.19, base: 0.5 });
         ev(B, 6000, 15000, function () { var up = rnd(1, 2), dn = rnd(2, 4), pk = rnd(1.5, 2.1); swell(w.sw.gain, pk, up, dn); if (gu) swell(gu.sw.gain, pk * 0.8, up, dn, 0.5); });
         if (wd) drift(B, wd.sw.gain, 0.6, 1.2, 4000, 9000);
         if (o.bells !== false) ev(B, 7000, 18000, function () {
@@ -878,7 +901,7 @@
       },
       harbour: function (B) {                                   // the harbour: real waves on the shore, swells breaking, real gulls, water lapping, a rope creaks
         var sea = layer(B, 'lowpass', 480, 0.5, 0.3), wash = layer(B, 'bandpass', 1100, 0.6, 0.08);
-        var rs = rec(B, 'sea', { gain: 0.2, syn: 0.4 });
+        var rs = rec(B, 'sea', { gain: 0.44, syn: 0.4 });
         ev(B, 4200, 9000, function () {
           var up = rnd(1.4, 2.4), dn = rnd(2.5, 4), t = ctx.currentTime;
           swell(sea.sw.gain, rnd(1.6, 2.3), up, dn); swell(wash.sw.gain, rnd(1.8, 2.8), up + 0.3, dn);
@@ -903,7 +926,7 @@
       },
       night: function (B, o) {                                  // a warm night: real crickets, the synth's crickets that come and go, a far owl, the stars' faint ring
         var air = layer(B, 'lowpass', 400, 0.5, o.stars ? 0.12 : 0.18); drift(B, air.g.gain, 0.08, 0.2, 4000, 9000);
-        var cr = rec(B, 'crickets', { gain: o.stars ? 0.035 : 0.07, syn: 0.7, lp: 9000 }); if (cr) drift(B, cr.sw.gain, 0.55, 1.1, 5000, 12000);
+        var cr = rec(B, 'crickets', { gain: o.stars ? 0.11 : 0.24, syn: 0.7, lp: 9000 }); if (cr) drift(B, cr.sw.gain, 0.55, 1.1, 5000, 12000);
         if (o.stars) {
           var dg = gain(1, B.inp); B.nodes.push(dg); drift(B, dg.gain, 0.5, 1, 5000, 12000);
           [[55, 0.03], [82.41, 0.015]].forEach(function (x) { var os = ctx.createOscillator(), g = gain(x[1], dg); os.type = 'sine'; os.frequency.value = x[0]; os.connect(g); os.start(0); scheduled++; B.osc.push(os); B.nodes.push(g); });
@@ -927,7 +950,7 @@
       colosseum: function (B) {                                 // the colosseum: a real crowd that swells into real applause and cheers, frame drums
         var c1 = layer(B, 'bandpass', 520, 0.6, 0.38), c2 = layer(B, 'bandpass', 1250, 0.8, 0.17), c3 = layer(B, 'bandpass', 2900, 1, 0.05), lo = layer(B, 'lowpass', 150, 0.5, 0.2);
         drift(B, c1.f.frequency, 450, 650, 3000, 7000); drift(B, c2.g.gain, 0.12, 0.22, 2000, 5000); drift(B, lo.g.gain, 0.12, 0.25, 4000, 8000);
-        var cr = rec(B, 'crowd', { gain: 0.16, syn: 0.4 }), ap = rec(B, 'applause', { gain: 0.2, base: 0.0001 });
+        var cr = rec(B, 'crowd', { gain: 0.38, syn: 0.4 }), ap = rec(B, 'applause', { gain: 0.2, base: 0.0001 });
         ev(B, 14000, 32000, function () {
           var up = rnd(1, 2), dn = rnd(3, 5), pk = rnd(1.6, 2.4); swell(c1.sw.gain, pk, up, dn); swell(c2.sw.gain, pk, up, dn); swell(c3.sw.gain, pk * 1.4, up, dn);
           if (cr) swell(cr.sw.gain, pk * 0.7, up, dn);
@@ -940,7 +963,7 @@
       grove: function (B) {                                     // an olive grove: real birdsong and a brook, leaves, single birds, a far dove
         var lv = layer(B, 'highpass', 2800, 0.5, 0.1), air = layer(B, 'lowpass', 300, 0.5, 0.1);
         drift(B, lv.g.gain, 0.05, 0.16, 2000, 5000); drift(B, lv.f.frequency, 2300, 3600, 3000, 7000); drift(B, air.g.gain, 0.06, 0.14, 4000, 9000);
-        var bd = rec(B, 'birds', { gain: 0.12, syn: 0.5 }); rec(B, 'brook', { gain: 0.025, lp: 6000 });
+        var bd = rec(B, 'birds', { gain: 0.27, syn: 0.5 }); rec(B, 'brook', { gain: 0.05, lp: 6000 });
         if (bd) drift(B, bd.sw.gain, 0.6, 1.1, 5000, 11000);
         ev(B, 3000, 10000, function () {
           if (Math.random() < 0.5 && sev(B, 'chirp', rnd(-0.8, 0.8), 0.04, { jit: 2, vj: 0.4 })) return;
@@ -954,7 +977,7 @@
         var ch = o.chimes || 0, w = layer(B, 'bandpass', 430, 0.8, 0.35), col = layer(B, 'bandpass', 820, 10, 0.02), lo = layer(B, 'lowpass', 140, 0.5, 0.15);
         drift(B, w.f.frequency, 300, 650, 4000, 9000); drift(B, w.g.gain, 0.22, 0.42, 3000, 7000); drift(B, col.f.frequency, 650, 1100, 5000, 11000);
         drift(B, col.g.gain, 0.008, 0.03, 4000, 9000); drift(B, lo.g.gain, 0.1, 0.2, 5000, 10000);
-        var wd = rec(B, 'wind', { gain: 0.12, lp: 1600, syn: 0.5 });
+        var wd = rec(B, 'wind', { gain: 0.25, lp: 1600, syn: 0.5 });
         function chimes(n) {
           if (Math.random() < 0.5 && sev(B, 'windchime', rnd(-0.7, 0.7), 0.04 * (0.6 + ch * 0.4), { rel: 1.5, jit: 0.5 }, 6)) return;
           var V = bv(B, 3.6, rnd(-0.7, 0.7)); if (!V) return;
@@ -1227,7 +1250,7 @@
       sound: sound, quiet: quiet, volume: volume, volumes: volumes, categories: CATS.slice(), duck: duck, speaking: duck,
       music: music, district: district, musicState: musicState, districts: Object.keys(DISTRICTS),
       room: roomFn, rooms: ROOMS.slice(), listener: listener, bus: bus, context: context, onUnlock: onUnlock,
-      samples: samples, preload: preload, audio: AUDIO, murmur: murmur, presence: presence, presenceOf: presenceOf, walker: walker, jingles: JINGLES.slice()
+      samples: samples, preload: preload, audio: AUDIO, sample: sample, meter: meter, banks: AUDIO ? Object.keys(AUDIO.banks) : [], murmur: murmur, presence: presence, presenceOf: presenceOf, walker: walker, jingles: JINGLES.slice()
     };
     /* OLYMPUS.sound.at(...): hang the new hooks on the kit's sound() function too (olympus.js stays untouched) */
     function attachHooks() {

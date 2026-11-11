@@ -279,6 +279,15 @@ def shot(src, s):
     return x / np.abs(x).max() * 10 ** (-3 / 20)
 
 
+def loud(x):
+    """the loudest 50 ms (RMS, dB): how loud a short hit sounds"""
+    n = int(0.05 * SR)
+    if len(x) <= n:
+        return db(np.sqrt((x ** 2).mean()))
+    c = np.cumsum(np.concatenate([[0.0], x ** 2]))
+    return db(np.sqrt(((c[n:] - c[:-n]) / n).max()))
+
+
 def limit(x, ceil_db=-3.0):
     """a lookahead peak limiter (5 ms attack, 80 ms release) so no sample passes the ceiling"""
     c = 10 ** (ceil_db / 20)
@@ -393,8 +402,14 @@ def build(src):
         harp = []
         for bank, segs in banks.items():
             lst = []
-            for s in segs:
-                x = shot(src, s)
+            xs = [shot(src, s) for s in segs]
+            if len(xs) > 1 and not segs[0].get("harp"):            # a family plays evenly: every variation at the bank's median loudness (+/- 6 dB at most)
+                ld = [loud(x) for x in xs]
+                med = float(np.median(ld))
+                xs = [x * 10 ** (float(np.clip(med - l, -6, 6)) / 20) for x, l in zip(xs, ld)]
+                pk = max(np.abs(x).max() for x in xs)
+                xs = [x / pk * 10 ** (-3 / 20) for x in xs]
+            for s, x in zip(segs, xs):
                 if s.get("harp"):
                     harp.append(x)
                 parts.append(x)
