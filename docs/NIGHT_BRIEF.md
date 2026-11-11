@@ -14,3 +14,9 @@ Every agent: FIRST `git merge agora-release` in your worktree (local branch with
 - New app = a folder + a row in `tools/new_apps.json` (id, name, group, accent, description < 80 chars, glyph, ambient bed, flavour triple from the EXISTING intro scenes: stars smoke coins embers neurons skyline torches threads streaks bars leaves columns shards rings maze, transition) + a wiring section in `docs/NEW_APPS_WIRING.md`; the lead runs `python tools/wire_new_apps.py --apply`. Never edit sw.js / build_web_dashboard.py / jarvis/apps.js / olympus.js APPS yourself.
 - HONESTY RULE for anything that claims an edge (Kalshi, NQ, money): walk-forward / out-of-sample only, fees and slippage in, sample size n shown, say 'no edge found' when that is the truth. A forgotten-looking edge that only works in-sample is not an edge. Never place orders; paper and suggestions only.
 - Git: commit locally; the lead merges. Several agents edit the same shared files rarely: keep your edits inside your own folder/files unless told otherwise.
+
+## Round 3 additions (2026-11-11)
+- COMMIT AFTER EVERY STEP (`git add -A; git commit`). Uncommitted work can be lost when disk is cleaned. Never leave a session with a dirty tree.
+- ONE BROWSER ON THE WHOLE MACHINE: wrap every Playwright/Chromium test or screenshot run as `flock -w 2400 /tmp/olympus_browser.lock <command>` (it waits its turn). Never run a browser without that lock; never `pkill` browsers. Static + node tests need no lock: run those first and often. If a test rewrites tracked files under research/ or data/, `git checkout -- research data` afterwards.
+- A failing test is only "not mine" if you ran the same test on a clean `agora-release` checkout (second worktree in the scratchpad, removed afterwards) and saw the same failure. Say which.
+- The owner's bar: "insane", beautiful, calm AGORA look, smooth on an iPhone, never blank, honest numbers. Quality over quantity inside your own app; no half-finished screens.
