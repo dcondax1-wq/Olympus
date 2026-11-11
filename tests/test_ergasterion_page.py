@@ -742,7 +742,7 @@ def test_page():
                 t1 = p.evaluate(f"() => [{F}.life().near, !!{F}.figureOf('w:hephaestus'), {F}.posOf('w:hephaestus'), {F}.stats(), window.__k.slice(), document.querySelector('#leadBtn').hidden, document.querySelector('#leadBtn').textContent]")
                 check(f"c. LIFE TALK: the person you talk to becomes the full shared figure (LOD: near = {t1[0]}, {t1[3]['calls']} calls <= 45), stays where it stood, and speaks through the kit's say(id, text, {{scene: 'ergasterion', figure}}) and show(id, work); 'Show me your work' appears",
                       ("w:hephaestus" in t1[0]) == t1[1] and (t1[1] or not p.evaluate(f"() => {F}.life().full")) and t1[2]["away"] and t1[3]["calls"] <= BUDGET["calls"]
-                      and ["say", "villager:hephaestus", "ergasterion", t1[1]] in [x[:4] for x in t1[4] if x[0] == "say"] and any(x[0] == "show" and x[1] == "villager:hephaestus" and x[2] == "work" for x in t1[4]) and t1[5] is False and t1[6].startswith("Show me your work"), t1)
+                      and ["say", "job:hephaestus", "ergasterion", t1[1]] in [x[:4] for x in t1[4] if x[0] == "say"] and any(x[0] == "show" and x[1] == "job:hephaestus" and x[2] == "work" for x in t1[4]) and t1[5] is False and t1[6].startswith("Show me your work"), t1)
                 p.evaluate("() => document.querySelector('#leadBtn').click()")
                 p.wait_for_timeout(300)
                 l0 = p.evaluate(f"() => [{F}.pos().mode, {F}.posOf('w:hephaestus').act]")
@@ -795,7 +795,7 @@ def test_page():
             check("c. 375 x 667, LITE (?q=low), reduced motion: the 2D plan with 15 buttons, no 3D, no 'Walk the floor' or tour button, the LITE chip", r["plan"] and r["stage"] and r["buttons"] == 15 and r["view"] and r["tour"] and r["lite"] and not r["floor"], r)
             p.locator('#plan g[data-id="oikos"]').click()
             c2 = p.evaluate("() => [document.querySelector('#sheetH').textContent, document.querySelector('#sheetPill').textContent, document.querySelector('#sheet').hidden, document.querySelector('#planSay').textContent]")
-            check("c. tapping a worker on the plan opens its card (Oikos: Stale in the demo) and it speaks under the plan ('Old news')", c2[:3] == ["Oikos", "Stale", False] and c2[3].startswith("Oikos says: Old news:"), c2)
+            check("c. tapping a worker on the plan opens its card (Oikos: Stale in the demo) and it speaks under the plan ('Old news')", c2[:3] == ["Pheidon · Oikos", "Stale", False] and c2[3].startswith("Oikos says: Old news:"), c2)
             sz = p.evaluate("() => { const r = document.querySelector('#plan g[data-id=oikos]').getBoundingClientRect(); return [r.width, r.height]; }")
             check("c. a plan button is at least 44 px (its hit square), no sideways scroll, every tap >= 44 px, no error", sz[0] >= 43.5 and sz[1] >= 43.5 and AK.no_sideways(p) and not AK.taps(p) and not errs, (sz, AK.taps(p)[:3], errs[:2]))
             p.evaluate("() => window.ERGASTERION.replay.set(0)")
@@ -822,7 +822,7 @@ def test_page():
                   lanes: [...document.querySelectorAll('#pipeLanes a .n')].map((e) => e.textContent), fam0: document.querySelector('#pipeFams a').getAttribute('href'), moves: document.querySelectorAll('#pipeMoves a').length, pipe: document.querySelector('#pipeLine').textContent,
                   rnote: document.querySelector('#replayNote').textContent, rlist: [...document.querySelectorAll('#replayList li')].map((e) => e.textContent), all: document.body.textContent }; }""")
                 check("c. REAL files: no DEMO chip; Zlarior shows its real drawdown line; Sibyl's own headline; a machine with no file says 'No file from this machine yet' and is Stale, never invented",
-                      rr["demo"] and "Drawdown left $1,420 of $2,000 max loss" in rr["lit"] and rr["sibyl"].startswith("Sibyl, ") and "One pick survives the check." in rr["sibyl"] and "No file from this machine yet" in rr["chrysos"], rr["lit"])
+                      rr["demo"] and "Drawdown left $1,420 of $2,000 max loss" in rr["lit"] and rr["sibyl"].startswith("Manto (Sibyl), ") and "One pick survives the check." in rr["sibyl"] and "No file from this machine yet" in rr["chrysos"], rr["lit"])
                 check("c. REAL Learning board: Sibyl's note is a lesson of the week with 'source: money/sibyl.json' next to the builder's lessons; 'what changed our mind' shows the real Kalshi 95c flip; nothing says Example",
                       any("Only 1 pick survives out-of-sample." in t and "source: money/sibyl.json" in t for t in rr["learn"]) and any("We believed: 95c and above is +1.4% per $" in t and "kalshi_edge_A.md" in t for t in rr["changed"]) and not any("Example:" in t for t in rr["learn"] + rr["changed"]), (rr["learn"][:2], rr["changed"][:1]))
                 q = json.load(open(os.path.join(D, "queue.json"), encoding="utf-8"))
@@ -835,7 +835,7 @@ def test_page():
                 bj = json.load(open(os.path.join(D, "builders.json"), encoding="utf-8"))
                 check("c. REAL Builders' camp: the agents of builders.json by name (never 'Example'), a tent each, and the note says where the activity comes from (git at build time, or job lines only)",
                       "Example" not in rc[0] and rc[1] == min(10, len(bj["agents"])) and sorted(rc[3]) == sorted(a["name"] for a in bj["agents"][:10]) and ("Read from git when the site was built" in rc[2] if bj["source"] == "git" else "no live activity" in rc[2]), rc[:3])
-                check("c. REAL files: Kalshi (mocked feed) is Working and Cronos is Working from its status.json; the dev agents read the real queue.json", "Kalshi bot, Working" in rr["kalshi"] and "Cronos, Working" in rr["cron"] and rr["dev"].startswith("Dev agents"), rr["kalshi"])
+                check("c. REAL files: Kalshi (mocked feed) is Working and Cronos is Working from its status.json; the dev agents read the real queue.json", "(Kalshi bot), Working" in rr["kalshi"] and "(Cronos), Working" in rr["cron"] and rr["dev"].startswith("Dev agents"), rr["kalshi"])
                 check("c. REAL run reads only the site's own files (the kalshi feed is the one outside address) and has no console error; every tap >= 44 px with the real lists", any("queue.json" in u for u in seen) and not errs and not [u for u in off if "kalshi" not in u] and not AK.taps(p) and AK.no_sideways(p), (off[:3], errs[:3], AK.taps(p)[:3]))
                 AK.shot(p, "ergasterion-real")
                 ctx.close()
