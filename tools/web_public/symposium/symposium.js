@@ -397,5 +397,5 @@ async function init() {
   setInterval(() => { if (!document.hidden && !P.isOpen() && !S.su.on) refresh(); }, 120000);
 }
 window.SYMPOSIUM = { ready: () => S.ready, state: () => ({ n: S.people.length, tab: S.tab, view: S.view, hall: !!(S.hall && S.hall.ok), why: S.why || '', head: S.head, lite: S.lite, table: S.table, debate: S.debate || null, standup: S.su.data, suOn: S.su.on, suI: S.su.i, tags: S.tagBtns.filter((b) => !b.hidden).length, calls: S.hall && S.hall.ok ? S.hall.drawCalls() : 0, turn: !!(S.turn && S.turn.ok), look: S.look }),
-  setTab, askTable, runDebate, playStandup, runTogether, trios: () => C.trios(S.people), together: () => S.together || null, card: () => C.jarvisCard(S.head, P.requests().length, Date.now() / 1000), people: () => S.people.map((p) => p.id) };
+  setTab, askTable, runDebate, playStandup, runTogether, speaking: () => (S.hall && S.hall.ok ? S.hall.speaking() : -1), trios: () => C.trios(S.people), together: () => S.together || null, card: () => C.jarvisCard(S.head, P.requests().length, Date.now() / 1000), people: () => S.people.map((p) => p.id) };
 init().catch((e) => { say('Something went wrong while loading the hall: ' + (e && e.message ? e.message : e)); S.ready = true; });
