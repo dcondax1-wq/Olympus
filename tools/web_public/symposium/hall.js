@@ -70,7 +70,7 @@ function build(rc, scene, camera, canvas, o) {
   const ray = new THREE.Raycaster(), v = new THREE.Vector3(), ndc = new THREE.Vector2();
   function placeCam() {
     const portrait = st.w / st.h < 0.95, dist = r + (portrait ? 6.6 + r * 0.55 : 5.2 + r * 0.2), hgt = portrait ? 4.6 + r * 0.42 : 3.4 + r * 0.2;
-    camera.position.set(Math.sin(st.yaw) * dist, hgt, Math.cos(st.yaw) * dist); camera.lookAt(0, 0.55, 0);
+    camera.position.set(Math.sin(st.yaw) * dist, hgt, Math.cos(st.yaw) * dist); camera.lookAt(-Math.sin(st.yaw) * r * 0.3, 0.55, -Math.cos(st.yaw) * r * 0.3);      // a little past the centre: the faces across the table read larger
   }
   function fit() { const w = canvas.clientWidth || 1, h = canvas.clientHeight || 1; if (w === st.w && h === st.h) return; st.w = w; st.h = h; camera.aspect = w / h; camera.updateProjectionMatrix(); }
   function frame(dt) {
