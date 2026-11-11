@@ -109,7 +109,17 @@ function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.c
 function short(t, n) { const s = String(t == null ? '' : t); if (s.length <= n) return s; const i = s.lastIndexOf(' ', n - 1); return (i > 3 ? s.slice(0, i) : s.slice(0, n - 1)).replace(/[\s,;:(]+$/, '') + '…'; }
 function sv(tag, at) { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); return e; }
 /** a small horizontal bar chart: each bar's value text is the fact's own text */
+function columnsSvg(ch) {                                     // the mini card: columns, no text (the full card in the chat has the numbers)
+  const bars = ch.bars, W = 190, H = 44, n = bars.length, gap = 6, bw = Math.min(30, (W - gap * (n + 1)) / n), base = ch.base != null ? ch.base : 0;
+  const lo = Math.min(base, ...bars.map((b) => b.v)), hi = Math.max(base, ...bars.map((b) => b.v)), span = hi - lo || 1, y0 = 2 + ((hi - base) / span) * (H - 4);
+  const s = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', class: 'pp-chart', preserveAspectRatio: 'xMidYMid meet' });
+  const t = sv('title', {}); t.textContent = ch.title + ': ' + bars.map((b) => b.label + ' ' + b.text).join(', '); s.appendChild(t);
+  bars.forEach((b, i) => { const y1 = 2 + ((hi - b.v) / span) * (H - 4), x = gap + i * (bw + gap) + (W - n * (bw + gap) - gap) / 2; s.appendChild(sv('rect', { x, y: Math.min(y0, y1), width: bw, height: Math.max(2, Math.abs(y1 - y0)), rx: 3, fill: b.v < base ? '#c96a4a' : '#8fa05a' })); });
+  s.appendChild(sv('line', { x1: 0, x2: W, y1: y0, y2: y0, stroke: '#6b5a40', 'stroke-width': 1 }));
+  return s;
+}
 function chartSvg(ch, mini) {
+  if (mini) return columnsSvg(ch);
   const bars = ch.bars, W = mini ? 190 : 300, rowH = mini ? 20 : 26, H = bars.length * rowH + 4, LW = mini ? 62 : 104, VW = mini ? 66 : 96, plot = W - LW - VW - 8;
   const vs = bars.map((b) => b.v), base = ch.base != null ? ch.base : 0, lo = Math.min(base, ...vs), hi = Math.max(base, ...vs), span = hi - lo || 1, x0 = LW + ((base - lo) / span) * plot;
   const s = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', class: 'pp-chart', preserveAspectRatio: 'xMinYMin meet' });
@@ -127,7 +137,7 @@ function chartSvg(ch, mini) {
 export function renderCard(c, opts) {
   const o = opts || {}, el = h('section', 'pp-card' + (o.mini ? ' pp-mini' : '')); el.setAttribute('aria-label', c.title + ', from ' + c.name);
   const head = h('div', 'pp-chead');
-  if (o.portrait) { const f = h('span', 'pp-cface'); f.appendChild(o.portrait(o.mini ? 32 : 40)); head.appendChild(f); }
+  if (o.portrait && !o.mini) { const f = h('span', 'pp-cface'); f.appendChild(o.portrait(40)); head.appendChild(f); }
   const tt = h('div', 'pp-ctt'); tt.append(h('h3', 'pp-ctitle', c.title), h('p', 'pp-cwho', c.name)); head.appendChild(tt);
   el.appendChild(head);
   if (c.verdict) el.appendChild(h('p', 'pp-verdict pp-' + c.verdict.tone, c.verdict.text));

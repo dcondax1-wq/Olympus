@@ -68,13 +68,20 @@ function build(rc, scene, camera, canvas, o) {
   L.seats.forEach((s, i) => crowd.userData.place(i, s.x, 0.29 - 0.215 * SC, s.z, s.ry, SC));
   scene.add(crowd);
 
-  const st = { yaw: 0, goal: null, vel: 0, auto: !reduced, active: -1, t: 0, idle: 0, w: 1, h: 1 };
+  const st = { yaw: 0, goal: null, vel: 0, auto: !reduced, active: -1, t: 0, idle: 0, w: 1, h: 1, z: 0, side: 0, sideGoal: 0 };
   const spk = { i: -1, fig: null, subs: [], walk: null };
   const seatY = 0.29 - 0.215 * SC;
   const ray = new THREE.Raycaster(), v = new THREE.Vector3(), ndc = new THREE.Vector2();
   function placeCam() {
     const portrait = st.w / st.h < 0.95, dist = r + (portrait ? 6.6 + r * 0.55 : 5.2 + r * 0.2), hgt = portrait ? 4.6 + r * 0.42 : 3.4 + r * 0.2;
-    camera.position.set(Math.sin(st.yaw) * dist, hgt, Math.cos(st.yaw) * dist); camera.lookAt(-Math.sin(st.yaw) * r * 0.3, 0.55, -Math.cos(st.yaw) * r * 0.3);      // a little past the centre: the faces across the table read larger
+    camera.position.set(Math.sin(st.yaw) * dist, hgt, Math.cos(st.yaw) * dist);
+    const lx = -Math.sin(st.yaw) * r * 0.3, lz = -Math.cos(st.yaw) * r * 0.3;      // a little past the centre: the faces across the table read larger
+    if (st.z > 0.001 && spk.fig) {                                                 // someone talks: the camera leans in towards them
+      const z = st.z * st.z * (3 - 2 * st.z), f = spk.fig.position, hy = f.y + (spk.fig.userData.height || 1) * 0.8;
+      camera.position.set(camera.position.x + (f.x - camera.position.x) * 0.5 * z, hgt + (hy + 1.3 - hgt) * 0.55 * z, camera.position.z + (f.z - camera.position.z) * 0.5 * z);
+      const rx = Math.cos(st.yaw) * st.side * 1.3, rz = -Math.sin(st.yaw) * st.side * 1.3;     // room for a work card: the speaker sits to one side
+      camera.lookAt(lx + (f.x + rx - lx) * z, 0.55 + (hy - 0.62 - 0.55) * z, lz + (f.z + rz - lz) * z);
+    } else camera.lookAt(lx, 0.55, lz);
   }
   function fit() { const w = canvas.clientWidth || 1, h = canvas.clientHeight || 1; if (w === st.w && h === st.h) return; st.w = w; st.h = h; camera.aspect = w / h; camera.updateProjectionMatrix(); }
   function frame(dt) {
@@ -82,6 +89,7 @@ function build(rc, scene, camera, canvas, o) {
     if (st.goal != null) { const dlt = turn(st.yaw, st.goal); if (Math.abs(dlt) < 0.004 || reduced) { st.yaw = st.goal; st.goal = null; } else st.yaw += dlt * Math.min(1, dt * 4.5); }
     else if (Math.abs(st.vel) > 0.0004) { st.yaw += st.vel; st.vel *= Math.pow(0.04, dt); }
     else if (st.auto && st.active < 0) { st.idle += dt; if (st.idle > 2.5) st.yaw += dt * 0.045; }
+    const zg = spk.fig && !spk.walk ? 1 : 0; st.z = reduced ? zg : st.z + (zg - st.z) * Math.min(1, dt * 2.6); st.side = reduced ? st.sideGoal : st.side + (st.sideGoal - st.side) * Math.min(1, dt * 2.6);
     placeCam();
     if (spk.fig) {
       if (spk.walk) { const w = spk.walk, k = Math.min(1, (st.t - w.t0) / w.dur), e = k * k * (3 - 2 * k); spk.fig.position.set(w.x0 + (w.x1 - w.x0) * e, w.y0 + (0 - w.y0) * Math.min(1, k * 3), w.z0 + (w.z1 - w.z0) * e); spk.fig.rotation.y = w.ry; if (k >= 1 && w.done) { const d = w.done; w.done = null; d(); } }
@@ -99,7 +107,7 @@ function build(rc, scene, camera, canvas, o) {
     yaw: () => st.yaw,
     setYaw(a) { st.yaw = a; st.goal = null; st.vel = 0; placeCam(); },
     spin(dx) { st.goal = null; st.idle = 0; st.yaw -= dx * 0.008; st.vel = -dx * 0.008 * 0.5; },
-    focus(i, off) { if (L.seats[i]) { st.goal = yawFor(L, i) + Math.PI + (off || 0); st.vel = 0; st.idle = 0; } },      // off: a little to one side (room for a work card)      // the camera goes to the far side, so this person faces it
+    focus(i, off) { if (L.seats[i]) { st.goal = yawFor(L, i) + Math.PI; st.sideGoal = off ? 1 : 0; st.vel = 0; st.idle = 0; } },      // off: the speaker a little to one side (room for a work card)      // the camera goes to the far side, so this person faces it
     active(i) { if (st.active >= 0) crowd.userData.setActive(st.active, false); st.active = i == null ? -1 : i; if (st.active >= 0) crowd.userData.setActive(st.active, true); if (reduced) crowd.userData.tick(0); },
     project(i) { crowd.userData.headWorld(i, v); const behind = v.clone().sub(camera.position).dot(camera.getWorldDirection(new THREE.Vector3())) <= 0; v.project(camera); return { x: (v.x * 0.5 + 0.5) * st.w, y: (-v.y * 0.5 + 0.5) * st.h, z: v.z, front: !behind }; },
     pick(cx, cy) { const b = canvas.getBoundingClientRect(); ndc.set(((cx - b.left) / b.width) * 2 - 1, -((cy - b.top) / b.height) * 2 + 1); ray.setFromCamera(ndc, camera); return crowd.userData.pick(ray); },
@@ -121,7 +129,7 @@ function build(rc, scene, camera, canvas, o) {
     release() {
       if (!spk.fig) return;
       const s = L.seats[spk.i]; if (s) crowd.userData.place(spk.i, s.x, seatY, s.z, s.ry, SC);
-      spk.fig.userData.dispose(); spk.fig = null; spk.i = -1; spk.walk = null; spk.subs.length = 0;
+      spk.fig.userData.dispose(); spk.fig = null; spk.i = -1; spk.walk = null; spk.subs.length = 0; st.sideGoal = 0;
     },
     walk(i) {
       const sp = api.speaker(i); if (!sp) return Promise.resolve(false);
