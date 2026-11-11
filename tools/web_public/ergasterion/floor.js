@@ -590,6 +590,7 @@ function build(rc, scene, camera, canvas, o) {
     rc.render();
   }
   const snapCam = () => { camera.position.set(cam.x, eye, cam.z); };
+  const moved = () => { if (typeof o.onMove === 'function') setTimeout(() => { try { o.onMove(); } catch (_) { /* the HUD catches up on its own timer */ } }, 0); };   // the page's HUD (Talk prompt, hall chip) updates at once
   const still = () => { if (reduced) frame(0.001); };
   const api = {
     ok: true, mode: '3d', rc,
@@ -651,8 +652,8 @@ function build(rc, scene, camera, canvas, o) {
     focused() { return focusKey; },
     facing(key) { const si = S.findIndex((x) => 'w:' + x.id === key), ci = camp.findIndex((b) => b && 'b:' + b.id === key); return si >= 0 ? thA[si] : ci >= 0 ? thA[N + ci] : null; },
     pulse(ids) { for (const id of ids || []) hot[id] = t + 1.6; still(); },
-    teleport(x, z, yaw) { const q = resolveCollision(x, z, []); cam.x = q.x; cam.z = q.z; if (yaw != null) { cam.yaw = yaw; yawT = yaw; } following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; snapCam(); still(); },
-    reset() { cam = { x: START.x, z: START.z, yaw: START.yaw, pitch: -0.06 }; yawT = cam.yaw; pitchT = cam.pitch; following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; mvT = { fwd: 0, side: 0 }; snapCam(); still(); },
+    teleport(x, z, yaw) { const q = resolveCollision(x, z, []); cam.x = q.x; cam.z = q.z; if (yaw != null) { cam.yaw = yaw; yawT = yaw; } following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; snapCam(); still(); moved(); },
+    reset() { cam = { x: START.x, z: START.z, yaw: START.yaw, pitch: -0.06 }; yawT = cam.yaw; pitchT = cam.pitch; following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; mvT = { fwd: 0, side: 0 }; snapCam(); still(); moved(); },
     face(id) { const s = S.find((a) => a.id === id); if (s) { let y = Math.atan2(-(s.x - cam.x), -(s.z - cam.z)); while (y - cam.yaw > Math.PI) y -= Math.PI * 2; while (y - cam.yaw < -Math.PI) y += Math.PI * 2; yawT = y; pitchT = -0.16; still(); } },
     pos,
     stats() { const st = rc.stats(); return { calls: st.calls, triangles: st.triangles, quality: st.quality, batches: batches.length }; },

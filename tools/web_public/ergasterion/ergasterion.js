@@ -538,7 +538,7 @@ function mountFloor() {
   if (!M) return false;
   S.stopMini && clearInterval(S.stopMini);
   $('stage').hidden = false;
-  const fl = M.createFloor($('floor3d'), { reduced, stations: C.STATIONS, onPick: (id, crate) => { open(id, true, crate); if (crate == null && byId(id)) talk('w:' + id); else if (typeof id === 'string' && id.indexOf('camp:') === 0) talk('b:' + id.slice(5)); } });
+  const fl = M.createFloor($('floor3d'), { reduced, stations: C.STATIONS, onMove: () => hud(), onPick: (id, crate) => { open(id, true, crate); if (crate == null && byId(id)) talk('w:' + id); else if (typeof id === 'string' && id.indexOf('camp:') === 0) talk('b:' + id.slice(5)); } });
   if (!fl || !fl.ok) { $('stage').hidden = true; S.floor = null; S.why = fl && fl.reason; return false; }
   S.floor = fl; S.view = '3d';
   { const cw = Life.clockWord(new URLSearchParams(location.search).get('clock')); if (cw != null && fl.clock) fl.clock(Life.atClock(cw), false); }   // ?clock=quiet | standup | HH:MM: a fixed moment of the day (tests, screenshots)
