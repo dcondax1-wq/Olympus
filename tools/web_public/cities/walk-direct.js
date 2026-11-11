@@ -73,7 +73,7 @@ export function createWalkDirector(scene, opts) {
   }
   function walkTo(x, z, then, face) {
     if (D.mode === 'talk') endTalk(true);
-    const p = walker.pos, path = findPath(grid, { x: p.x, z: p.z }, { x, z }, { reach: 6 });
+    const p = walker.pos, path = findPath(grid, { x: p.x, z: p.z }, { x, z }, { reach: 6, closest: true });
     if (!path) { hud.toast('No way through there.'); return false; }
     D.walks++; walker.go(path, then, face); hud.used('walk'); return true;
   }
@@ -95,7 +95,7 @@ export function createWalkDirector(scene, opts) {
   }
   function talkCam(P) {
     if (!P) return; const p = walker.pos; walker.stop(); walker.faceTo(Math.atan2(P.x - p.x, P.z - p.z));
-    D.mode = 'talk'; D.talkP = P; D.tp = { a: { x: p.x, y: 0, z: p.z, h: AV * 0.92 }, b: { x: P.x, y: 0, z: P.z, h: PH }, side: 1, two: 1.6, lookDown: 0.28, back: 1.5 };
+    D.mode = 'talk'; D.talkP = P; D.tp = { a: { x: p.x, y: 0, z: p.z, h: AV * 0.92 }, b: { x: P.x, y: 0, z: P.z, h: PH }, side: 1, two: 1.6, lookDown: 0.12, back: 2.5 };
     rig.shot('talk', D.tp);
   }
   function endTalk(quiet) { if (D.mode !== 'talk') return; D.mode = 'walk'; D.talkP = null; rig.shot('follow'); if (!quiet && o.onEndTalk) o.onEndTalk(); }

@@ -314,7 +314,7 @@ export function bigNews(p, now = Date.now()) {
   return fresh.length ? { n: fresh.length, text: `${plural(fresh.length, 'new run')} adopted here: ${clip(fresh[0].title, 70)}` } : null;
 }
 /** the opener's real fact (scene direction 2026-11-11): the last result of this place, in a whole sentence with its money, from the same rows as the answers */
-function lastNews(qa) { const a = qa && qa[1] ? String(qa[1][1]) : ''; return !a || /^There is no result/.test(a) ? 'It is quiet here today; nothing new on file.' : 'The last result here: ' + a.replace(/ History, not a forecast\.$/, '') + ' That is history, not a forecast.'; }
+function lastNews(qa) { const a = qa && qa[1] ? String(qa[1][1]) : ''; return !a || /^There is no result/.test(a) ? 'It is quiet here today; nothing new on file.' : 'The last result here: ' + a.replace(/ History, not a forecast\.$/, '').replace(/: no money figure\./, '.') + ' That is history, not a forecast.'; }
 export function keeperPerson(p) {
   const name = greekName('keeper:' + p.id), ruin = p.activity && p.activity.state === 'ruin', qa = sixAnswers(p, p.rows, 'this city');
   return { id: 'keeper:' + p.id, alt: [], kind: 'keeper', name: `${name}, keeper of ${p.name || p.label}`, short: name, title: `${ruin ? 'Keeper of the ruins' : 'Keeper of the gate'} · ${p.label}`, polis: p.id, mood: ruin ? 'sad' : 'calm',

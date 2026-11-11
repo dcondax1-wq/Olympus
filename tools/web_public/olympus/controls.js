@@ -42,16 +42,17 @@ export function lineFree(g, a, b) {
 export function findPath(g, a, b, opts) {
   const s0 = g.nearestFree(a.x, a.z, 3), e0 = g.nearestFree(b.x, b.z, (opts && opts.reach) || 4);
   if (!s0 || !e0) return null;
-  const W = g.w, start = s0.j * W + s0.i, goal = e0.j * W + e0.i, N = g.w * g.h;
+  const W = g.w, start = s0.j * W + s0.i, N = g.w * g.h; let goal = e0.j * W + e0.i;
   const gs = new Float32Array(N).fill(Infinity), from = new Int32Array(N).fill(-1), closed = new Uint8Array(N);
   const heap = [], hq = (n) => { const i = n % W, j = (n - i) / W, gi = goal % W, gj = (goal - gi) / W, dx = Math.abs(i - gi), dj = Math.abs(j - gj); return Math.max(dx, dj) + 0.4142 * Math.min(dx, dj); };
   const push = (n, f) => { heap.push([f, n]); let k = heap.length - 1; while (k > 0) { const p = (k - 1) >> 1; if (heap[p][0] <= heap[k][0]) break; [heap[p], heap[k]] = [heap[k], heap[p]]; k = p; } };
   const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let k = 0; for (;;) { const l = 2 * k + 1, r = l + 1; let m = k; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === k) break; [heap[m], heap[k]] = [heap[k], heap[m]]; k = m; } } return top; };
   gs[start] = 0; push(start, hq(start));
   const D = [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [1, 1, 1.4142], [1, -1, 1.4142], [-1, 1, 1.4142], [-1, -1, 1.4142]];
-  let found = start === goal, guard = 0;
+  let found = start === goal, guard = 0, near = start, nearH = Infinity;
   while (heap.length && !found && guard++ < N * 8) {
     const [, n] = pop(); if (closed[n]) continue; closed[n] = 1;
+    { const hn = hq(n); if (hn < nearH) { nearH = hn; near = n; } }
     if (n === goal) { found = true; break; }
     const i = n % W, j = (n - i) / W;
     for (const [di, dj, c] of D) {
@@ -60,10 +61,11 @@ export function findPath(g, a, b, opts) {
       const m = nj * W + ni, ng = gs[n] + c; if (ng < gs[m]) { gs[m] = ng; from[m] = n; push(m, ng + hq(m)); }
     }
   }
-  if (!found) return null;
+  let partial = false;
+  if (!found) { if (!(opts && opts.closest) || near === start) return null; goal = near; partial = true; }      // closest: walk as near as you can get (a corner nobody can reach)
   const cells = []; for (let n = goal; n >= 0; n = n === start ? -1 : from[n]) cells.push(g.toWorld(n % W, Math.floor(n / W)));
   cells.reverse();
-  const endFree = g.freeAt(b.x, b.z), pts = [{ x: a.x, z: a.z }].concat(cells.slice(1, -1), [endFree ? { x: b.x, z: b.z } : cells[cells.length - 1]]);
+  const endFree = !partial && g.freeAt(b.x, b.z), pts = [{ x: a.x, z: a.z }].concat(cells.slice(1, -1), [endFree ? { x: b.x, z: b.z } : cells[cells.length - 1]]);
   return smoothPath(g, pts);
 }
 /** string pulling: drop every waypoint you can see past */

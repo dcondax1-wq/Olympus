@@ -128,7 +128,7 @@ export function createDirector(floor, opts) {
   }
   function walkTo(x, z, then, face) {
     if (S.mode === 'talk') endTalk();
-    const me = walker.pos, path = findPath(grid, { x: me.x, z: me.z }, { x, z }, { reach: 5 });
+    const me = walker.pos, path = findPath(grid, { x: me.x, z: me.z }, { x, z }, { reach: 5, closest: true });
     if (!path) { hud.toast('No way through there.'); return false; }
     S.walks++; walker.go(path, then, face); return true;
   }
