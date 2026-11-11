@@ -1328,6 +1328,13 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         print(f"  people: people.json rc={rp.returncode}")
     except Exception as e:  # noqa: BLE001
         print(f"  people: skipped ({e})")
+    # POLIS life (tools/polis_build.py -> olympus/polis.json: herald, oracle, festivals, torch, grove, amphorae, statues, stoic line), from the built site: never fatal
+    try:
+        import subprocess
+        rpl = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "polis_build.py"), "--web", out], capture_output=True, text=True, timeout=120)
+        print(f"  polis: polis.json rc={rpl.returncode}")
+    except Exception as e:  # noqa: BLE001
+        print(f"  polis: skipped ({e})")
     # Ergasterion's queue / learnings index (tools/ergasterion_build.py): never fatal
     try:
         import subprocess
