@@ -7,6 +7,7 @@
 // Activity, from real data: a city at work burns a brazier and smokes, a quiet one rests, a ruin is low, broken mud brick.
 import * as THREE from '../jarvis/three.module.min.js';
 import { Batch, PAL, unit } from './athens-geo.js';
+import { envKit } from '../olympus/env-kit.js';
 import { rng, hash32 } from './util.js';
 import { walkStep, HOUSE_TINT, EYE } from './athens-world.js';
 import { planPolis, polisCollider, polisNpcs, npcOnLoop, builderAt, TIER, routinePlaces, fieldTo, routineAt, pathDown, pathLen, alongPath } from './hellas-plan.js';
@@ -71,7 +72,8 @@ export class Hellas {
     this.seaU = { uTime: this.u.uTime, uDeep: { value: C('#2f5f78') }, uShallow: { value: C('#5c97a2') }, uSun: { value: C('#ffd9a0') }, uSky: { value: C('#e6c79c') }, uFog: { value: C('#ecc998') }, uSunDir: { value: sunDir }, uFogD: { value: .00005 }, uMove: { value: this.reduced ? 0 : 1 }, uScale: { value: .12 }, uShimmer: { value: 1 } };
     const sea = new THREE.Mesh(own(new THREE.PlaneGeometry(30000, 30000).rotateX(-Math.PI / 2)), own(new THREE.ShaderMaterial({ vertexShader: SEA_VS, fragmentShader: SEA_FS, uniforms: this.seaU })));
     sea.position.y = -.3; sea.frustumCulled = false; scene.add(sea); this.sea = sea;
-    this.matVC = own(new THREE.MeshLambertMaterial({ vertexColors: true })); this.matPlain = own(new THREE.MeshLambertMaterial({ color: '#ffffff' }));
+    this.ek = envKit({ renderer: this.renderer, scene, tier: this.tierName });          // the scans (olympus/env-kit.js): stone and roof tiles on the cities
+    this.matVC = this.ek.mat('marble', { lambert: true, vertexColors: true, color: '#ffffff', dual: 'roof', scale: 0.5, scale2: 0.8 }); this.matPlain = own(new THREE.MeshLambertMaterial({ color: '#ffffff' }));
     this.matRing = own(new THREE.MeshBasicMaterial({ color: '#e8bb55', transparent: true, opacity: .92, depthWrite: false, fog: false }));
     this.ring = new THREE.Mesh(own(new THREE.TorusGeometry(1, .05, 6, 44).rotateX(Math.PI / 2)), this.matRing); this.ring.visible = false; this.ring.frustumCulled = false; scene.add(this.ring);
     const G = this.wg = new THREE.Group(); scene.add(G);
@@ -351,5 +353,5 @@ export class Hellas {
     this.renderer.render(this.scene, this.camera);
     this.calls = this.renderer.info.render.calls; this.trisDrawn = this.renderer.info.render.triangles;
   }
-  dispose() { this.dead = true; if (this.cine) this.cine.dispose(); this.disposePolis(); for (const o of this.keep) o.dispose && o.dispose(); for (const m of [this.base, this.blocks, this.acro, this.ships, this.shadows, this.flames, this.smoke, this.caravan]) m && m.dispose(); if (this.builderCrowd) this.builderCrowd.dispose(); this.renderer.dispose(); }
+  dispose() { this.dead = true; if (this.cine) this.cine.dispose(); this.disposePolis(); for (const o of this.keep) o.dispose && o.dispose(); for (const m of [this.base, this.blocks, this.acro, this.ships, this.shadows, this.flames, this.smoke, this.caravan]) m && m.dispose(); if (this.builderCrowd) this.builderCrowd.dispose(); if (this.ek) this.ek.dispose(); this.renderer.dispose(); }
 }

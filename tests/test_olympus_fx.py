@@ -646,16 +646,115 @@ def test_cinema(br, origin):
         ctx.close()
 
 
+# ------------------------------------------------------------------ env-kit (2026-11-11, the environment art pass)
+ASSETS = os.path.join(WEB, "assets")
+ENV_NODE = r"""
+import * as K from '%s';
+const out = {};
+const kit = K.envKit({ tier: 'high' }), lite = K.envKit({ tier: 'low' });
+const B = kit.builder();
+B.column({ x: 0, z: 0, h: 4, r: 0.3 }); B.column({ x: 2, z: 0, h: 4, r: 0.3 });
+B.steps({ x: 0, z: 0, w: 4, d: 3, h: 0.5, n: 3 }); B.entablature({ x: 0, z: 0, y: 4, w: 4 }); B.roof({ x: 0, z: 0, y: 5, w: 4, d: 3 });
+B.wall({ x0: -3, z0: 2, x1: 3, z1: 2, door: 0.5 }); B.kline({ x: 0, z: 3, color: '#c96a4a' }); B.table({ x: 1, z: 3 }); B.brazier({ x: -2, z: 3 }); B.anvil({ x: 2, z: 4 });
+const g = B.build(null);
+out.draws = g.children.length; out.tris = g.userData.stats.tris; out.mats = g.children.map((m) => m.name).sort();
+out.allMerged = g.children.every((m) => m.geometry.index && m.geometry.getAttribute('uv') && m.geometry.getAttribute('color'));
+const m = kit.mat('marble'), ml = lite.mat('marble'), mu = kit.mat('marble:uv');
+out.same = kit.mat('marble') === m; out.fallback = !!(m.userData.ek && m.userData.ek.tEkC.value && m.userData.ek.tEkC.value.image.width === 1);
+out.keys = [m.customProgramCacheKey(), ml.customProgramCacheKey(), mu.customProgramCacheKey()];
+out.defines = [Object.keys(m.defines || {}), Object.keys(ml.defines || {}), Object.keys(mu.defines || {})];
+out.lambert = kit.mat('plaster', { lambert: true, vertexColors: true, dual: 'roof' }).type;
+out.shaft = K.shaftGeo({ h: 4, r: 0.3 }).index.count / 3; out.shaftLite = K.shaftGeo({ h: 4, r: 0.3, lite: true }).index.count / 3;
+out.tex = K.TEX_NAMES; out.hdri = Object.keys(K.HDRI); out.packs = Object.keys(K.PACKS); out.heroes = Object.values(K.HEROES).map((h) => h.file);
+out.packFiles = Object.values(K.PACKS).map((p) => p.file); out.hdriFiles = Object.values(K.HDRI).map((h) => h.file);
+out.budget = K.BUDGET;
+console.log(JSON.stringify(out));
+"""
+
+
+def test_env_static():
+    import subprocess
+    import tempfile
+    ek = read(os.path.join(KIT, "env-kit.js"))
+    lic = read(os.path.join(ROOT, "docs", "ASSETS_LICENSES.md"))
+    files = sorted(os.path.relpath(f, WEB).replace(os.sep, "/") for f in glob.glob(os.path.join(ASSETS, "**", "*"), recursive=True) if os.path.isfile(f))
+    rows = [ln for ln in lic.splitlines() if ln.startswith("| ") and "| CC0 |" in ln]
+    missing = [f for f in files if not any(f.split("assets/", 1)[1].split("/")[-1] in r or f in r for r in rows)]
+    check(f"i. env-kit: every one of the {len(files)} files under assets/ has a CC0 row in docs/ASSETS_LICENSES.md (asset, author, source, licence, files)",
+          files and not missing and all(r.count("|") >= 6 for r in rows), missing[:8])
+    total = sum(os.path.getsize(os.path.join(WEB, f)) for f in files)
+    check(f"i. env-kit: the art stays inside the phone budget: {total / 1048576:.1f} MB for the whole site (<= 25 MB), no raw source packs (only .webp / .glb / .hdr / tex.json)",
+          total <= 25 * 1048576 and all(f.endswith((".webp", ".glb", ".hdr", "tex.json")) for f in files), total)
+    big = [f for f in files if os.path.getsize(os.path.join(WEB, f)) > 600 * 1024]
+    check("i. env-kit: no single file over 600 KB (textures 512 px webp, LITE 256 px; HDRIs 256 x 128; models meshopt + webp)", not big, big)
+    check("i. env-kit: CC0 sources only, loaders vendored (three r160, no CDN), the render core takes its HDRI through setEnvironment",
+          "polyhaven" in lic.lower() and "kaykit" in lic.lower() and "http" not in re.sub(r"(//[^\n]*|/\*.*?\*/)", "", ek, flags=re.S).replace("import.meta.url", "")
+          and all(os.path.exists(os.path.join(KIT, "three-addons", f)) for f in ("GLTFLoader.js", "RGBELoader.js", "BufferGeometryUtils.js", "meshopt_decoder.module.js"))
+          and "setEnvironment(tex)" in read(os.path.join(KIT, "render.js")))
+    with tempfile.TemporaryDirectory() as td:
+        h = os.path.join(td, "env.mjs")
+        with open(h, "w", encoding="utf-8") as fh:
+            fh.write(ENV_NODE % ("file://" + os.path.join(KIT, "env-kit.js").replace(os.sep, "/")))
+        r = subprocess.run(["node", h], capture_output=True, text=True, timeout=120)
+    try:
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception:
+        check("i. env-kit runs in node", False, (r.stdout[-400:], r.stderr[-800:]))
+        return
+    check(f"i. the builder merges a whole temple (columns, steps, entablature, roof, a wall with a door, a couch, a table, a brazier, an anvil) into ONE draw per material: {o['draws']} draws, {o['tris']} triangles",
+          o["draws"] == len(set(o["mats"])) <= 12 and o["tris"] < 12000 and o["allMerged"] and "ek:marble:uv" in o["mats"] and "ek:roof:uv" in o["mats"], o)
+    check("i. materials are cached per key, start on a 1 px fallback (never blank when a file fails), triplanar on HD, one tap + no normal map on LITE, mesh UVs on ':uv'",
+          o["same"] and o["fallback"] and not [d for d in o["defines"][0] if d.startswith("EK_")] and "EK_LITE" in o["defines"][1] and "EK_UV" in o["defines"][2] and len(set(o["keys"])) == 3 and o["lambert"] == "MeshLambertMaterial", o)
+    check(f"i. a fluted Doric shaft is {o['shaft']} triangles on HD, {o['shaftLite']} on LITE", o["shaft"] <= 600 and o["shaftLite"] <= 100, (o["shaft"], o["shaftLite"]))
+    exist = [f for f in o["packFiles"] + o["hdriFiles"] + o["heroes"] if not os.path.exists(os.path.join(ASSETS, f))]
+    texmiss = [t for t in o["tex"] for sfx in ("_c.webp", "_n.webp", "_l.webp") if not os.path.exists(os.path.join(ASSETS, "tex", t + sfx))]
+    check(f"i. every file the kit names exists: {len(o['tex'])} surfaces x 3, {len(o['hdri'])} HDRIs, {len(o['packs'])} prop packs, {len(o['heroes'])} hero models",
+          not exist and not texmiss, (exist, texmiss))
+    check("i. the budgets the scenes are held to: <= 45 draws / 160k triangles on high, <= 28 / 80k on LITE",
+          o["budget"]["high"]["draws"] == 45 and o["budget"]["high"]["tris"] == 160000 and o["budget"]["low"]["draws"] == 28 and o["budget"]["low"]["tris"] == 80000, o["budget"])
+
+
+def test_env(br, origin):
+    """the env lab on high, LITE and with no asset at all (the fallback): no error, the art loads, inside the budgets, never blank"""
+    for q, extra in (("high", ""), ("low", ""), ("high", "&noassets=1")):
+        ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True)
+        ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
+        ctx.add_init_script("try { localStorage.setItem('jfx', '%s'); } catch (e) {}" % q)
+        p = ctx.new_page()
+        errs: list = []
+        p.on("pageerror", lambda e: errs.append("pageerror: " + str(e)))
+        p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "GL Driver" not in m.text else None)
+        p.on("response", lambda r: errs.append(f"HTTP {r.status} {r.url}") if r.status >= 400 and "favicon" not in r.url else None)
+        p.goto(f"{origin}/olympus/env-lab.html?q={q}&time=golden{extra}")
+        try:
+            p.wait_for_function("() => window.ENV_LAB", timeout=60000)
+            p.evaluate("() => window.ENV_LAB.ready")
+            p.wait_for_timeout(2500)
+            m = p.evaluate("() => window.ENV_LAB.measure()")
+            import io
+            from PIL import Image, ImageStat
+            px = sum(ImageStat.Stat(Image.open(io.BytesIO(p.screenshot())).convert("L").resize((60, 130))).stddev)
+            lim = (45, 160000) if q == "high" else (28, 80000)
+            real = [e for e in errs if "favicon" not in e and "Failed to load resource" not in e]
+            check(f"i. env lab {q}{' (no assets: the fallback colours)' if extra else ''}: {m['draws']} draws, {m['tris']} triangles (<= {lim[0]} / {lim[1]}), {m['files']} files loaded, "
+                  f"texture memory about {m['texMB']} MB, env {m['env']}, not blank (contrast {px:.0f}), no error",
+                  m["draws"] <= lim[0] and m["tris"] <= lim[1] and not m["failed"] and px > 12 and not real and (m["files"] > 5 if not extra else True)
+                  and m["env"] == ("gradient" if q == "low" else "golden" if not extra else m["env"]) and m["texMB"] <= (40 if q == "high" else 12), (m, real[:3]))
+        finally:
+            ctx.close()
+
+
 def main():
     from playwright.sync_api import sync_playwright
     test_static()
     test_cinema_static()
+    test_env_static()
     srv, origin = serve()
     with sync_playwright() as pw:
         br = launch(pw)
-        # python -X utf8 -m tests.test_olympus_fx [every reduced hidden live visible marble elements wiring cinema]: run some sections only
+        # python -X utf8 -m tests.test_olympus_fx [every reduced hidden live visible marble elements wiring cinema env]: run some sections only
         want = [a for a in sys.argv[1:] if not a.startswith("-")]
-        for fn in (test_every_effect, test_reduced, test_hidden, test_live_tiers, test_visible, test_marble, test_elements, test_wiring, test_cinema):
+        for fn in (test_every_effect, test_reduced, test_hidden, test_live_tiers, test_visible, test_marble, test_elements, test_wiring, test_cinema, test_env):
             if want and fn.__name__.replace("test_", "").split("_")[0] not in want:
                 continue
             try:

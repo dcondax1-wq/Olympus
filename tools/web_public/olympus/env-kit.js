@@ -86,6 +86,9 @@ const VS_BODY = `
   ekP = modelMatrix * ekP; vEkPos = ekP.xyz; vEkN = normalize(mat3(modelMatrix) * ekN0); vEkUv = uv;`;
 const FS_HEAD = `varying vec3 vEkPos; varying vec3 vEkN; varying vec2 vEkUv;
 uniform sampler2D tEkC; uniform sampler2D tEkN; uniform float uEkScale, uEkGain, uEkNormal, uEkRough, uEkAO;
+#ifdef EK_DUAL
+uniform sampler2D tEkC2; uniform float uEkScale2;
+#endif
 vec3 ekW() { vec3 w = pow(abs(normalize(vEkN)), vec3(4.0)); return w / (w.x + w.y + w.z); }
 `;
 // albedo (+ AO): triplanar on HD, the dominant axis only on LITE (one tap), or the mesh UV
@@ -98,6 +101,12 @@ const FS_MAP = `
     #ifdef EK_LITE
       vec2 ekuv = ekw.x > ekw.y && ekw.x > ekw.z ? ekp.zy : (ekw.y > ekw.z ? ekp.xz : ekp.xy);
       ekAlb = texture2D(tEkC, ekuv);
+      #if defined(EK_DUAL) && defined(USE_COLOR)
+        // a second scan where the vertex colour is terracotta (roofs): the palette picks the surface, one more tap
+        float ekRoof = 1.0 - smoothstep(0.3, 0.48, vColor.g / max(vColor.r, 0.001));
+        vec3 ekq = vEkPos * uEkScale2; vec2 ekuv2 = ekw.x > ekw.y && ekw.x > ekw.z ? ekq.zy : (ekw.y > ekw.z ? ekq.zx : ekq.xy);
+        ekAlb = mix(ekAlb, texture2D(tEkC2, ekuv2), ekRoof);
+      #endif
     #else
       ekAlb = texture2D(tEkC, ekp.zy) * ekw.x + texture2D(tEkC, ekp.xz + 0.37) * ekw.y + texture2D(tEkC, ekp.xy + 0.71) * ekw.z;
     #endif
@@ -144,17 +153,20 @@ function pixel(key, r, g, b, a, srgb) {
 /** the patched material: o = { tex (a TEX name or null), color, scale, rough, metal, normal, ao, uv, lite, vertexColors, side, emissive, envI } */
 function surface(o) {
   const T = o.tex ? TEX[o.tex] : null, P = o.plain ? PLAIN[o.plain] : null;
-  const m = new THREE.MeshStandardMaterial({ color: C(o.color || (T && T.color) || (P && P.color) || '#ffffff'), roughness: o.rough ?? (T ? T.rough : P ? P.rough : 0.8),
-    metalness: o.metal ?? (P ? P.metal : 0), envMapIntensity: o.envI ?? 1, vertexColors: !!o.vertexColors, side: o.side || THREE.FrontSide,
-    emissive: o.emissive ? C(o.emissive) : C('#000000'), emissiveIntensity: o.emissiveIntensity ?? 1, transparent: !!o.transparent, opacity: o.opacity ?? 1 });
+  const base = { color: C(o.color || (T && T.color) || (P && P.color) || '#ffffff'), vertexColors: !!o.vertexColors, side: o.side || THREE.FrontSide,
+    emissive: o.emissive ? C(o.emissive) : C('#000000'), emissiveIntensity: o.emissiveIntensity ?? 1, transparent: !!o.transparent, opacity: o.opacity ?? 1, fog: o.fog !== false };
+  // lambert: a scene on its own plain renderer keeps its Lambert look and only gains the scan's albedo (flat mode)
+  const m = o.lambert ? new THREE.MeshLambertMaterial(base) : new THREE.MeshStandardMaterial(Object.assign(base, { roughness: o.rough ?? (T ? T.rough : P ? P.rough : 0.8),
+    metalness: o.metal ?? (P ? P.metal : 0), envMapIntensity: o.envI ?? 1 }));
   m.name = 'ek:' + (o.tex || o.plain || 'paint');
   if (!T) return m;
   const rough = o.rough ?? T.rough;
   const u = { tEkC: { value: pixel('c', 128, 128, 128, 255, true) }, tEkN: { value: pixel('n' + T.rough, 128, 128, Math.round(T.rough * 255), 255, false) },
     uEkScale: { value: o.scale ?? T.scale }, uEkGain: { value: 1 / SRGB_HALF }, uEkNormal: { value: o.normal ?? 1 }, uEkRough: { value: rough / Math.max(0.05, T.rough) },
     uEkAO: { value: o.lite ? 0 : o.ao ?? 0.8 } };
+  if (o.dual && TEX[o.dual]) { u.tEkC2 = { value: pixel('c', 128, 128, 128, 255, true) }; u.uEkScale2 = { value: o.scale2 ?? TEX[o.dual].scale }; }
   m.userData.ek = u;
-  m.defines = Object.assign(m.defines || {}, o.uv ? { EK_UV: '' } : {}, o.lite ? { EK_LITE: '' } : {});
+  m.defines = Object.assign(m.defines || {}, o.uv ? { EK_UV: '' } : {}, o.lite || o.flat || o.lambert ? { EK_LITE: '' } : {}, o.dual && TEX[o.dual] ? { EK_DUAL: '' } : {});
   m.onBeforeCompile = (s) => {
     Object.assign(s.uniforms, u);
     s.vertexShader = VS_HEAD + s.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>' + VS_BODY);
@@ -163,7 +175,8 @@ function surface(o) {
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>' + FS_ROUGH)
       .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>' + FS_NORMAL);
   };
-  m.customProgramCacheKey = () => 'ek' + (o.uv ? 'u' : 't') + (o.lite ? 'l' : 'h');
+  if (o.lambert) o.flat = true;
+  m.customProgramCacheKey = () => 'ek' + (o.uv ? 'u' : 't') + (o.lite || o.flat ? 'l' : 'h') + (o.dual ? 'd' : '') + (o.lambert ? 'L' : '');
   return m;
 }
 
@@ -346,7 +359,7 @@ function makeBuilder(kit) {
         B.add(o.pedMat || 'marble', pedimentGeo(o.d, h - 0.02, 0.16), mat4(o.x + lx * c, o.y, o.z - lx * sn, ry + Math.PI / 2), o.pedColor);
       }
       const ridge = new THREE.CylinderGeometry(0.09, 0.09, o.w + over * 2, 8); ridge.rotateZ(Math.PI / 2);      // the ridge runs along local x
-      return B.add(o.ridgeMat || 'roof', ridge, mat4(o.x, o.y + h + 0.03, o.z, ry), o.ridgeColor);
+      return B.add(o.ridgeMat || 'roof:uv', ridge, mat4(o.x, o.y + h + 0.03, o.z, ry), o.ridgeColor);
     },
     /** a wall from (x0, z0) to (x1, z1): plaster with a stone plinth and a stone band on top; an optional door gap at t (0..1) */
     wall(o) {
@@ -483,7 +496,8 @@ export function envKit(opts) {
       if (T) {
         const u = m.userData.ek;
         loadTex('tex/' + name + (lite ? '_l.webp' : '_c.webp'), true).then((t) => { if (t && !dead) { u.tEkC.value = t; if (lite) u.uEkAO.value = 0; } });
-        if (!lite) loadTex('tex/' + name + '_n.webp', false).then((t) => { if (t && !dead) u.tEkN.value = t; });
+        if (!lite && !m0.flat && !m0.lambert) loadTex('tex/' + name + '_n.webp', false).then((t) => { if (t && !dead) u.tEkN.value = t; });
+        if (u.tEkC2) loadTex('tex/' + m0.dual + (lite ? '_l.webp' : '_c.webp'), true).then((t) => { if (t && !dead) u.tEkC2.value = t; });
       }
       mats.set(k, m);
       return m;

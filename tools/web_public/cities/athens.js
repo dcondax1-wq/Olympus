@@ -6,6 +6,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { planAthens, groundY, COAST, RIVER, RIVER_W, WALL, insideWall, ACROPOLIS, isSea, LOT, WORLD } from './athens-plan.js';
 import { buildStatic } from './athens-build.js';
 import { Batch, PAL, unit } from './athens-geo.js';
+import { envKit } from '../olympus/env-kit.js';
 import { rng, hash32 } from './util.js';
 import { Interior } from './athens-interior.js';
 import { renderList, makeCollider, makeNpcs, npcAt, walkStep, HOUSE_TINT, EYE, TIER_NPC } from './athens-world.js';
@@ -94,6 +95,7 @@ export class Athens {
     this.cam = { tx: -20, ty: 8, tz: 40, yaw: 2.55, pitch: .5, dist: 980 };
     this.mode = this.reduced ? 'day' : 'auto'; this.autoT0 = performance.now(); this.live = null; this.shipAnch = [];
     this.fly = null; this.tour = null; this.anchors = []; this.sel = null; this.frameCount = 0; this.calls = 0;
+    this.ek = envKit({ renderer: this.renderer, scene: this.scene, tier: this.tierName });      // the scans (olympus/env-kit.js): stone, plaster, roof tiles, ground
     this.build();
     this.applyTime(); this.placeCamera();
     // FX HOOK (olympus/fx-cine.js, optional; 2026-11-11 effects pass): gulls over the harbour and the bay, one draw, no post pass (this
@@ -114,7 +116,7 @@ export class Athens {
     const sky = new THREE.Mesh(own(new THREE.SphereGeometry(3000, 24, 12)), own(new THREE.ShaderMaterial({ vertexShader: SKY_VS, fragmentShader: SKY_FS, uniforms: this.skyU, side: THREE.BackSide, depthWrite: false, fog: false })));
     sky.frustumCulled = false; sky.renderOrder = -10; scene.add(sky); this.sky = sky;
     // terrain
-    const tm = own(new THREE.MeshLambertMaterial({ vertexColors: true })); const ter = new THREE.Mesh(own(terrain(this.tierName)), tm); scene.add(ter);
+    const tm = this.ek.mat('ground', { lambert: true, vertexColors: true, color: '#ffffff', scale: 0.09 }); const ter = new THREE.Mesh(own(terrain(this.tierName)), tm); scene.add(ter);
     // water: the sea and the river share one material
     this.wU = { uTime: this.u.uTime, uDeep: { value: new THREE.Color('#2f5f78') }, uShallow: { value: new THREE.Color('#5c97a2') }, uSun: { value: new THREE.Color('#ffd9a0') }, uSky: { value: new THREE.Color('#d8c9a5') }, uFog: { value: new THREE.Color('#e8d2a4') }, uSunDir: { value: new THREE.Vector3(0, .5, -.8) }, uFogD: { value: .0004 }, uMove: { value: this.reduced ? 0 : 1 }, uShimmer: { value: this.ambient ? 1 : 0 } };
     const wm = own(new THREE.ShaderMaterial({ vertexShader: WATER_VS, fragmentShader: WATER_FS, uniforms: this.wU, transparent: true }));
@@ -124,7 +126,7 @@ export class Athens {
     const rg = own(new THREE.BufferGeometry()); rg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3)); rg.setIndex(ri); scene.add(new THREE.Mesh(rg, wm));
     // monuments in two draws
     const built = buildStatic(plan, this.tierName === 'low'); this.tris = built.tris;
-    const sm = own(new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+    const sm = this.ek.mat('marble', { lambert: true, vertexColors: true, color: '#ffffff', side: THREE.DoubleSide, dual: 'roof', scale: 0.32, scale2: 0.5 });       // scans: stone + roof tiles (env-kit)
     const mm = own(this.tierName === 'low' ? new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }) : new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 70, specular: new THREE.Color('#f0d9a0'), side: THREE.DoubleSide }));
     scene.add(new THREE.Mesh(own(built.stone), sm), new THREE.Mesh(own(built.metal), mm));
     this.houses(own, sm);
@@ -146,7 +148,7 @@ export class Athens {
     const tint = { trading: [1.02, .98, .86], research: [.94, .98, 1.04], money: [1.04, .94, .84], life: [.98, 1.02, .88] };
     for (const h of rows) { const key = `${Math.floor(h.x / size)}:${Math.floor(h.z / size)}`; (chunks.get(key) || chunks.set(key, []).get(key)).push(h); }
     if (this.chunks) for (const c of this.chunks) { this.scene.remove(c.a, c.b); c.a.dispose(); c.b.dispose(); }
-    const near = unit.house(), far = unit.houseFar(), mat = own(new THREE.MeshLambertMaterial({ vertexColors: true })), farMat = mat;
+    const near = unit.house(), far = unit.houseFar(), mat = this.ek.mat('plaster', { lambert: true, vertexColors: true, color: '#ffffff', dual: 'roof', scale: 0.3, scale2: 0.55 }), farMat = mat;
     const d = new THREE.Object3D(), color = new THREE.Color(); this.chunks = [];
     for (const [, list] of chunks) {
       const mk = (geo) => { const m = new THREE.InstancedMesh(geo, mat, list.length); m.frustumCulled = true; return m; };
@@ -484,5 +486,5 @@ export class Athens {
   }
   get walking() { return !!this.walk; }
 
-  dispose() { this.dead = true; if (this.cine) this.cine.dispose(); for (const o of this.dispose_) o.dispose && o.dispose(); this.renderer.dispose(); }
+  dispose() { this.dead = true; if (this.cine) this.cine.dispose(); for (const o of this.dispose_) o.dispose && o.dispose(); if (this.ek) this.ek.dispose(); this.renderer.dispose(); }
 }
