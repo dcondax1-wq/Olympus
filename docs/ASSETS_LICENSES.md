@@ -36,7 +36,7 @@ Licence checked on each source page (opengameart.org shows "License(s): CC0"; VC
 | 20 rustles dry leaves | qubodup | https://opengameart.org/content/20-rustles-dry-leaves | CC0 | gear |
 | VCSL: folk harp, anvil, hand chimes, bells, claps, frame drum, woodblock | Versilian Studios (VCSL, Versilian Community Sample Library) | https://github.com/sgossner/VCSL (README: CC0 1.0) | CC0 | arena, bells, forge, gear, harp, harp-lo, ui |
 <!-- AUDIO:END -->
-# Asset licences (OLYMPUS site, `tools/web_public/assets/`)
+## 3D models and images (`tools/web_public/assets/`)
 
 Only free assets: CC0 (public domain) art, or code under MIT. Every file under `tools/web_public/assets/` has a row here; `tests/test_people.py` checks
 that every file in `assets/people/` is listed. Raw source packs are never committed, only the optimised files we use.
