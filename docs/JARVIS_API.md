@@ -225,8 +225,8 @@ watch lists), the glossary and the strategy rules. Deterministic (no clock in th
 ## Wiring needed (not done here: the lead owns these files)
 
 - **v3 (2026-11-11)** `tools/web_public/jarvis/sw.js` SHELL (bump the worker): `./skills3.js`, `./search.js`, `./dialogue.js`, `./explain.js`,
-  `./tours.js`, `./safety.js`, `./jbrief.js`, `./strategy-facts.json`, `./search-index.json` (the brain loads them on first use; without
-  them offline, search / explain say "I don't have that").
+  `./tours.js`, `./safety.js`, `./jbrief.js`, `../helios/helioscore.js`, `./strategy-facts.json`, `./search-index.json` (the brain loads them on
+  first use; without them offline, search / explain say "I don't have that"). `tests.test_jarvis_shell` lists the eight scripts as missing until this is done.
 - **v3** `tools/build_web_dashboard.py`, after the site's JSON is published (Archive, Pythia, money, Kalshi City):
   `python tools/jarvis_facts_build.py --out <site>/jarvis` then `python tools/jarvis_search_build.py --site <site>` (in-process:
   `jarvis_search_build.main(["--site", out_dir])`). The repo copies are already built; `--check` is in `tests.test_jarvis_skills`.
