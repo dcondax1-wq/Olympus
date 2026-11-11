@@ -547,6 +547,15 @@ export function envKit(opts) {
       try { const L = cine.time(), sun = cine.pieces && cine.pieces.sun ? cine.pieces.sun.dir : null; return kit.env(lite ? 'gradient' : HDRI_FOR[L.k < 0.5 ? L.a : L.b] || 'golden', Object.assign({ sunDir: sun, top: L.top, horizon: L.horizon, ground: L.ground }, eo || {})); }
       catch (e) { return kit.env(lite ? 'gradient' : 'golden', eo); }
     },
+    /** keep the HDRI on fx-cine's clock: the time of day's sky (and its sun lined up) whenever the clock moves to another time of day */
+    follow(cine, eo) {
+      let last = '', tNext = 0;
+      const check = (dt, t) => { if (dead || t < tNext) return; tNext = t + 2; let L = null; try { L = cine.time(); } catch (e) { return; }
+        const key = lite ? 'gradient' + L.name : HDRI_FOR[L.k < 0.5 ? L.a : L.b] || 'golden'; if (key !== last) { last = key; kit.envFor(cine, eo); } };
+      if (o.rc && o.rc.onFrame) kit._offFollow = o.rc.onFrame(check);
+      check(0, 0);
+      return kit;
+    },
     builder() { return makeBuilder(kit); },
     /** KayKit props merged into ONE mesh per pack: list = [[propName, x, y, z, ry, scale], ...] (scale multiplies the pack's).
      *  The mesh is added to parent at once (empty) and filled when the pack arrives. -> Promise<Mesh | null> */
@@ -643,7 +652,7 @@ export function envKit(opts) {
       return { tier, lite, materials: mats.size, files: info.files, failed: info.failed.slice(), texMB: Math.round(texMB * 10) / 10, env: info.env };
     },
     dispose() {
-      if (dead) return; dead = true;
+      if (dead) return; dead = true; if (kit._offFollow) kit._offFollow();
       if (envTex) { if (o.rc && o.rc.setEnvironment) o.rc.setEnvironment(null); else if (scene && scene.environment === envTex) scene.environment = null; envTex.dispose(); envTex = null; }
       mats.forEach((m) => m.dispose()); mats.clear();
       texs.forEach((p) => p.then((t) => t && t.dispose())); texs.clear();

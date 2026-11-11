@@ -118,7 +118,7 @@ function build(rc, scene, camera, canvas, o) {
     rays: { to: [0, 0, 0], spread: [r * 1.5, 0, r * 1.5], length: 15, width: 1.8 }, dust: { box: [r * 2 + 6, 4, r * 2 + 6], center: [0, 2, 0] },
     fires: fires.map((p) => [p[0], 1.15, p[2]]), fireRange: r * 1.6,
     shadows: { casters: [shafts, frames], receivers: [floor, rug], box: r + 5 },      // the crowd: soft contact blobs (budget)
-    blobs: L.seats.map((x) => [x.x, x.z, 0.42]), blobsAlways: true, blobY: 0.006 }); room.kit.envFor(cine); }).catch(() => {});
+    blobs: L.seats.map((x) => [x.x, x.z, 0.42]), blobsAlways: true, blobY: 0.006 }); room.kit.follow(cine); }).catch(() => {});
   const api = {
     ok: true, layout: L, count: N,
     yaw: () => st.yaw,
