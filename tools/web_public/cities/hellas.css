@@ -68,7 +68,14 @@
 .hel-list .t small{display:block;font-weight:500;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hel-list .m{flex:none;text-align:right;font:600 12.5px/1.25 var(--num);font-variant-numeric:tabular-nums;color:var(--sub);white-space:pre}
 .hel-kv{margin:0 0 8px}.hel-kv dt{font:600 12px/1.2 var(--sans);color:var(--mute);margin-top:6px}.hel-kv dd{margin:1px 0 0;color:var(--text);font-size:14px}.hel-kv dd.fine{color:var(--mute);font-size:12.5px}
-.hel-stickzone,.hel-walkbar{display:none}
+.hel-stickzone,.hel-walkbar,.hel-people{display:none}
+.hel.walking .hel-people{display:flex;gap:6px;align-items:center;position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);overflow-x:auto;scrollbar-width:none;touch-action:pan-x}
+.hel-people::-webkit-scrollbar{display:none}
+.hel-people span{flex:none;font:600 11.5px/1 var(--sans);color:var(--sub);background:rgba(20,17,14,.7);padding:5px 8px;border-radius:9px}
+.hel-people button{flex:none;min-height:44px;padding:0 12px;border-radius:22px;border:1px solid var(--line);background:var(--panel);font:600 13px/1 var(--serif);white-space:nowrap}
+.hel-people button.keeper{border-color:var(--gold);color:#ffe9b0}
+.hel-walkbar button:disabled{opacity:.5}
+.hel-label.person{border-color:rgba(243,236,224,.55);border-radius:12px;font:600 12px/1 var(--sans)}.hel-label.person.keeper{border-color:var(--gold);color:#ffe9b0}
 .hel.walking .hel-find,.hel.walking .hel-dock,.hel.walking .hel-zoom{display:none}
 .hel.walking .hel-stickzone{display:block;position:absolute;left:0;bottom:0;width:50%;height:42%;pointer-events:none}
 .hel-stick{position:absolute;left:28px;bottom:calc(env(safe-area-inset-bottom,0px) + 96px);width:104px;height:104px;border-radius:50%;border:1px solid rgba(200,162,74,.6);background:rgba(29,25,20,.5)}
@@ -77,7 +84,7 @@
 .hel-where{flex:1;min-width:0;padding-left:8px;font:600 13px/1.25 var(--serif);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .hel-walkbar button{flex:none;min-height:50px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--raised);font:600 13px/1.1 var(--serif)}
 .hel-walkbar .go{border-color:var(--gold);color:#ffe9b0}
-.hel.walking .hel-card{bottom:calc(env(safe-area-inset-bottom,0px) + 214px);max-height:34%}
+.hel.walking .hel-card{bottom:calc(env(safe-area-inset-bottom,0px) + 136px);max-height:52%}
 .hel.nogl .hel-c,.hel.nogl .hel-labels{display:none}.hel.nogl .hel-map{display:block}
 .hellas-open body>*:not(.hel):not(.ath):not(script){visibility:hidden}
 @media (min-width:760px){.hel-dock,.hel-card,.hel-ticker{left:50%;right:auto;width:520px;transform:translateX(-50%)}.hel-top{max-width:560px}}

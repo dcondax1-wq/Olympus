@@ -1,7 +1,8 @@
 // HELLAS page layer: the header with the honest counter, breadcrumbs, the search box, the region list, the cards, the random voyage,
 // the 2D map (also the fallback when the device cannot draw 3D) and the walking controls. Plain words, AGORA look, 44 px targets.
 // Levels: Hellas (world) -> region -> polis -> district -> village -> house. READ ONLY: links open other apps, nothing trades.
-import { houseCard, searchPoleis, usd, STATE_WORD } from './hellas-data.js';
+import { houseCard, searchPoleis, usd, STATE_WORD, keeperPerson, builderPerson } from './hellas-data.js';
+import { talkTo, chatCard } from './people-talk.js';
 import { planPolis, voyage, whereInPolis } from './hellas-plan.js';
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; };
@@ -34,8 +35,9 @@ export class HellasUI {
     const dock = el('div', 'hel-dock'); this.dockB = { regions: btn('Regions', () => this.regionList()), voyage: btn('Random voyage', () => this.startVoyage()), walk: btn('Walk', () => this.startWalk()), map: btn('Map', () => this.toggleMap()) };
     this.dockB.walk.disabled = true; dock.append(...Object.values(this.dockB));
     const sz = el('div', 'hel-stickzone'); this.stick = el('div', 'hel-stick'); this.knob = el('i'); this.stick.append(this.knob); sz.append(this.stick);
-    const wb = el('div', 'hel-walkbar'); this.where = el('span', 'hel-where', ''); wb.append(this.where, btn('Look', () => this.lookHere(), 'go'), btn('Stop walking', () => this.stopWalk()));
-    r.append(this.canvas, this.map, this.labels, this.veil, top, zoom, this.load, this.ticker, this.card, dock, sz, wb); parent.append(r);
+    const wb = el('div', 'hel-walkbar'); this.where = el('span', 'hel-where', ''); this.talkB = btn('Talk', () => this.talkNearest(), 'go'); this.talkB.disabled = true; wb.append(this.where, this.talkB, btn('Look', () => this.lookHere()), btn('Stop', () => this.stopWalk()));
+    this.peopleStrip = el('div', 'hel-people'); this.peopleStrip.setAttribute('aria-label', 'People nearby');
+    r.append(this.canvas, this.map, this.labels, this.veil, top, zoom, this.load, this.ticker, this.card, dock, sz, this.peopleStrip, wb); parent.append(r);
     for (const c of [this.canvas, this.map]) { c.addEventListener('pointerdown', (e) => this.down(e)); c.addEventListener('pointermove', (e) => this.move(e)); c.addEventListener('pointerup', (e) => this.up(e)); c.addEventListener('pointercancel', (e) => this.up(e, true)); c.addEventListener('wheel', (e) => { e.preventDefault(); this.zoomBy(e.deltaY > 0 ? 1.12 : .89); }, { passive: false }); }
     this.onKey = (e) => this.key(e); addEventListener('keydown', this.onKey); addEventListener('keyup', this.onKey);
     this.renderCrumbs(); return this;
@@ -50,8 +52,9 @@ export class HellasUI {
     this.showCard(`The latest ${W.events.length} events`, [el('p', '', 'The newest things in your own files: the last runs added to the Archive and the last rebuild of each other source. History, not a forecast.'),
       this.list(W.events.map((e) => { const p = by.get(e.polis); return { title: e.text, sub: `${e.when} · ${p ? p.name : ''}`, tone: e.tone, fn: () => p && this.showPolis(p) }; }))]); }
   buildersCard(focus) { const W = this.world; if (!W || !W.builders.length) return; this.stopVoyage(); const by = new Map(W.poleis.map((p) => [p.id, p]));
-    if (focus && this.scene && this.scene.level === 'world') this.scene.flyTo(focus.tx, focus.tz, { dist: 330, pitch: .8 });
-    this.showCard(focus ? `Builder: ${focus.name}` : `The builders' caravan`, [focus ? el('p', '', `${focus.job}. Travelling to ${focus.site}.`) : null,
+    if (focus && this.scene && this.scene.level === 'world') { const q = (this.scene.builderPos || [])[focus.i] || { x: focus.tx, z: focus.tz }; this.scene.flyTo(q.x, q.z, { dist: 150, pitch: .6 }); }
+    if (focus) return this.talk(builderPerson(focus, W), { kind: 'builder', i: focus.i });
+    this.showCard(`The builders' caravan`, [
       el('p', '', `${W.builders.length} build agents were at work when this page was built. Each one walks from the camp by the harbour of Athens to the city it is building. ${W.buildersLabel}${W.buildersAsof ? ' (' + W.buildersAsof.slice(0, 16).replace('T', ' ') + ' UTC)' : ''}`),
       this.list(W.builders.map((b) => ({ title: `${b.name}: ${b.job}`, sub: 'to ' + b.site, tone: b.newSite ? 'info' : 'gold', fn: () => { const p = by.get(b.target); this.buildersCard(b); if (!this.scene && p) this.showPolis(p); } })))]); }
   step(text) { this.load.textContent = text; }
@@ -69,10 +72,21 @@ export class HellasUI {
     this.crumbs.scrollLeft = 9999; this.dockB.walk.disabled = !(a.polis && this.scene); this.backB.setAttribute('aria-label', this.level === 'world' ? 'Close Hellas' : 'Back one level');
   }
   showCard(title, nodes, tone) {
+    if (!this._chatting) this.endTalk(); this._chatting = false;
     const head = el('header'), h = el('h3', '', title), x = btn('×', () => this.hideCard(), 'hel-ic'); x.setAttribute('aria-label', 'Close this card'); head.append(h, x);
     const body = el('div', 'hel-body'); body.append(...nodes.filter(Boolean)); this.card.replaceChildren(head, body); this.card.hidden = false; this.card.dataset.tone = tone || ''; body.scrollTop = 0; if (this.mapMode) this.drawMap();
   }
-  hideCard() { this.card.hidden = true; if (this.mapMode) this.drawMap(); }
+  hideCard() { this.card.hidden = true; this.endTalk(); if (this.mapMode) this.drawMap(); }
+  endTalk() { if (this.chat) { this.chat = null; if (this.scene) this.scene.setTalk(null); } }
+  /** talk to a person: the shared People kit when it is loaded and knows them, else our own chat card (six questions, answers from this city's data) */
+  talk(person, ref) {
+    if (!person) return null; this.stopVoyage(); this.endTalk(); this.chat = person; if (this.scene && ref) this.scene.setTalk(ref);
+    const how = talkTo(person, { anchor: this.card }); this.lastTalk = { id: person.id, how };
+    if (how === 'kit') { this.card.hidden = true; return how; }
+    this._chatting = true; this.showCard(person.name, [chatCard(person), person.kind === 'builder' ? this.acts(btn('All the builders', () => this.buildersCard())) : null]); return how;
+  }
+  talkKeeper(p) { const S = this.scene, P = S && S.level === 'polis' && S.people ? S.people[0] : null; if (P && S.polis === p && !S.walking) S.flyTo(P.x, P.z, { dist: 34, pitch: .42, yaw: 0 }); return this.talk(P && S.polis === p ? P.person : keeperPerson(p), P && S.polis === p ? { kind: 'person', i: 0 } : null); }
+  talkNearest() { const S = this.scene; if (!S || !S.walk) return; const e = S.peopleNear(S.walk.x, S.walk.z, 1, 3)[0]; if (e) this.talk(e.P.person, { kind: 'person', i: e.P.i }); }
   list(items) { const ul = el('ul', 'hel-list'); for (const it of items) { const li = el('li'), b = btn('', it.fn), dot = el('span', 'dot ' + (it.tone || '')), t = el('span', 't', it.title); if (it.sub) t.append(el('small', '', it.sub)); b.append(dot, t); if (it.right) b.append(el('span', 'm', it.right)); li.append(b); ul.append(li); } return ul; }
   acts(...nodes) { const d = el('div', 'hel-acts'); d.append(...nodes.filter(Boolean)); return d; }
   link(l) { const a = el('a', '', l.text); a.href = l.href; return a; }
@@ -121,7 +135,7 @@ export class HellasUI {
       if (rel.length) nodes.push(el('p', '', 'Trade routes sail to its sister cities:'), this.list(rel.map((q) => this.polisItem(q))));
       if (o.also && o.also.length) nodes.push(el('p', '', 'Also found:'), this.list(o.also.map((q) => this.polisItem(q))));
       nodes.push(o.voy ? this.acts(btn('Next stop', () => this.voyNext(), 'go'), btn('Enter the city', () => this.enter(p)), btn('End the voyage', () => { this.stopVoyage(); this.showPolis(p); }))
-        : this.acts(btn(p.capital ? 'Enter Athens' : 'Enter the city', () => this.enter(p), 'go'), btn('Back to ' + (R ? R.name : 'Hellas'), () => (R ? this.goRegion(R) : this.goWorld()))));
+        : this.acts(btn(p.capital ? 'Enter Athens' : 'Enter the city', () => this.enter(p), 'go'), p.capital || !p.rows.length ? null : btn('Talk to the keeper', () => this.talkKeeper(p)), btn('Back to ' + (R ? R.name : 'Hellas'), () => (R ? this.goRegion(R) : this.goWorld()))));
       this.showCard(`${p.name} · ${p.label}`, nodes); this.drawMap();
     });
   }
@@ -145,7 +159,7 @@ export class HellasUI {
     const tags = el('p'); tags.append(el('span', 'hel-tag ' + STATE_TONE[p.activity.state], STATE_WORD[p.activity.state]), el('span', 'hel-tag', nice(p.rows.length, 'house')), el('span', 'hel-tag', nice(plan.villages.length, 'village')), el('span', 'hel-tag', nice(plan.districts.length, 'district'))); if (p.example) tags.append(el('span', 'hel-tag warn', 'Example data'));
     this.showCard(`${p.name} · ${p.label}`, [tags, el('p', 'hel-doing', p.activity.doing[0].toUpperCase() + p.activity.doing.slice(1) + '.'), el('p', '', `${plan.ruin ? 'These are ruins: roofless walls, one for every rejected run. ' : ''}Every house is one ${p.unit}: tap a house, or pick a district.`),
       this.list(plan.districts.map((D) => ({ title: D.name, sub: `${nice(D.houses, 'house')} in ${nice(D.villages.length, 'village')}`, tone: 'gold', fn: () => this.goDistrict(D) }))),
-      this.acts(this.scene ? btn('Walk the streets', () => this.startWalk(), 'go') : null, btn('Leave the city', () => this.showPolis(p)))]); this.drawMap();
+      this.acts(this.scene ? btn('Walk the streets', () => this.startWalk(), 'go') : null, btn('Talk to the keeper', () => this.talkKeeper(p)), btn('Leave the city', () => this.showPolis(p)))]); this.drawMap();
   }
   goDistrict(D) {
     const plan = this.at.plan; if (!plan) return; this.at.district = D; this.at.village = this.at.house = null; this.renderCrumbs(); this.select(null);
@@ -193,7 +207,7 @@ export class HellasUI {
     const V = this.at.village, at = V ? { x: V.x0 - 3, z: V.z, yaw: Math.PI / 2 } : plan.start; if (!S.startWalk(at.x, at.z, at.yaw)) return;
     this.root.classList.add('walking'); this.hideCard(); this.where.textContent = 'Walk with the left thumb, look with the right.';
   }
-  stopWalk(quiet) { if (!this.scene) return; this.scene.stopWalk(); this.root.classList.remove('walking'); this.knob.style.transform = ''; this.keys = {}; if (!quiet) this.polisCard(); }
+  stopWalk(quiet) { if (!this.scene) return; this.endTalk(); this.stripKey = ''; this.peopleStrip.replaceChildren(); this.scene.stopWalk(); this.root.classList.remove('walking'); this.knob.style.transform = ''; this.keys = {}; if (!quiet) this.polisCard(); }
   lookHere() { const S = this.scene; if (!S || !S.walk) return; const w = whereInPolis(this.at.plan, S.walk.x, S.walk.z); if (w.house) this.showHouse(w.house); else this.showCard('Nothing close', [el('p', '', 'Walk up to a house and tap Look, or tap a house on the screen.')]); }
   key(e) {
     if (!this.root.isConnected || document.documentElement.classList.contains('athens-open')) return;
@@ -226,7 +240,7 @@ export class HellasUI {
     if (!this.world) return null;
     if (this.mapMode || !this.scene) return this.mapTap(x, y);
     const S = this.scene;
-    if (S.level === 'polis') { const h = S.pickHouse(x, y); if (h) this.showHouse(h); return h; }
+    if (S.level === 'polis') { const P = S.pickPerson(x, y, S.walking ? 44 : 26); if (P) { this.talk(P.person, { kind: 'person', i: P.i }); return P; } const h = S.pickHouse(x, y); if (h) this.showHouse(h); return h; }
     if (S.cam.dist > 1100) { const L = S.labels().filter((l) => l.kind === 'region').map((l) => [Math.hypot(l.x - x, l.y - y), l]).sort((a, b) => a[0] - b[0])[0]; if (L && L[0] < 44) { this.goRegion(L[1].ref); return L[1].ref; } }
     const bd = S.cam.dist < 1100 ? S.pickBuilder(x, y, 26) : null; if (bd) { this.buildersCard(bd); return bd; }
     const p = S.pickPolis(x, y); if (p) this.showPolis(p); return p;
@@ -275,6 +289,9 @@ export class HellasUI {
     const L = this.tick % 2 ? null : S.labels(); if (L) { for (let i = 0; i < Math.max(L.length, this.labelPool.length); i++) { let d = this.labelPool[i]; if (!d) { d = this.labelPool[i] = el('div', 'hel-label'); this.labels.append(d); }
       const l = L[i]; if (!l || l.y < 182) { d.hidden = true; continue; } d.hidden = false; const key = l.text + '|' + (l.sub || ''); if (d.dataset.k !== key) { d.dataset.k = key; d.replaceChildren(el('b', '', l.text)); if (l.sub) d.append(el('small', '', l.sub)); } d.className = 'hel-label ' + l.kind + (l.sub ? ' wide' : ''); d.style.transform = `translate(${Math.round(l.x)}px,${Math.round(l.y)}px) translate(-50%,-100%)`; } }
     if (this.tick % 10 === 0 && this.world && this.world.events.length) this.ticker.hidden = !this.card.hidden || S.level !== 'world' || S.walking;
+    if (S.walking && this.tick % 10 === 0) { const near = S.peopleNear(S.walk.x, S.walk.z, 4, 30), key = near.map((e) => e.P.i + ':' + Math.round(e.d)).join(',');
+      if (key !== this.stripKey) { this.stripKey = key; this.peopleStrip.replaceChildren(...(near.length ? [el('span', '', 'People nearby')] : []), ...near.map((e) => { const b = btn(`${e.P.person.short} · ${Math.max(1, Math.round(e.d))} m`, () => this.talk(e.P.person, { kind: 'person', i: e.P.i })); if (e.P.kind === 'keeper') b.classList.add('keeper'); return b; })); }
+      this.talkB.disabled = !(near[0] && near[0].d <= 3); this.talkB.textContent = near[0] && near[0].d <= 3 ? 'Talk to ' + near[0].P.person.short : 'Talk'; }
     if (S.walking && this.tick % 12 === 0) { const w = whereInPolis(this.at.plan, S.walk.x, S.walk.z); this.where.textContent = w.agora ? 'The agora, under the acropolis' : w.village ? `${w.district.name} · ${w.village.name}${w.house ? ' · ' + w.house.row.title : ''}` : 'A street of ' + this.at.polis.name; }
   }
 }

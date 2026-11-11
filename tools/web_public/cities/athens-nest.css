@@ -27,9 +27,19 @@
 .ath-stickhint{position:absolute;left:14px;bottom:28px;width:130px;color:var(--sub);font:13px/1.35 var(--sans);pointer-events:none;text-shadow:0 1px 2px #000}
 .ath-stickbase{position:absolute;width:96px;height:96px;border-radius:50%;border:2px solid var(--bronze);background:rgba(29,25,20,.55);pointer-events:none}
 .ath-stickknob{position:absolute;left:26px;top:26px;width:44px;height:44px;border-radius:50%;background:var(--gold);border:2px solid #7d5530}
-.ath-walkbar{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:6px;border:1px solid var(--line);background:var(--panel);border-radius:18px}
+.ath-walkbar{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:6px;border:1px solid var(--line);background:var(--panel);border-radius:18px}
 .ath-walkbar button{min-height:50px;border:0;border-radius:12px;background:transparent;color:var(--sub);font:600 14px var(--sans)}
 .ath-walkbar button[aria-pressed=true],.ath-walkbar button:active{background:#26211b;color:var(--gold)}
 .ath.walking .ath-dock,.ath.walking .ath-mini,.ath.walking .ath-today,.ath.walking .ath-labels,.ath.walking .ath-tourbar{display:none}
 .ath.walking .ath-card{bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
 @media (min-width:700px){.ath-walkbar{left:50%;right:auto;width:520px;transform:translateX(-50%)}}
+
+/* people: the strip of villagers nearby (walking), the name over the nearest head, the Talk button */
+.ath-people{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none;touch-action:pan-x}
+.ath-people[hidden],.ath-plabel[hidden]{display:none}
+.ath-people::-webkit-scrollbar{display:none}
+.ath-people span{flex:none;font:600 11.5px/1 var(--sans);color:var(--sub);background:rgba(20,17,14,.7);padding:5px 8px;border-radius:9px}
+.ath-people button{flex:none;min-height:44px;padding:0 12px;border-radius:22px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:600 13px/1 var(--serif);white-space:nowrap}
+.ath-plabel{position:absolute;left:0;top:0;white-space:nowrap;font:600 12px/1 var(--sans);color:#fff6df;background:rgba(20,17,14,.8);border:1px solid rgba(243,236,224,.55);padding:5px 9px;border-radius:12px;pointer-events:none;will-change:transform}
+.ath-walkbar button:disabled{opacity:.45}
+.ath-card .ppl-chat{margin-top:10px;max-height:38vh;overflow-y:auto}

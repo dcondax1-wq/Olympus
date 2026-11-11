@@ -54,6 +54,7 @@ export function villagerPerson(v, k = 0) {
 
 /** our own chat card (DOM): portrait, name, six questions, one answer. onAsk(i) lets the scene react (the person nods). */
 export function chatCard(person, o = {}) {
+  if (typeof document !== 'undefined' && !document.querySelector('link[data-people-css]')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./people.css', import.meta.url).href; l.dataset.peopleCss = '1'; document.head.append(l); }
   const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
   const box = el('div', 'ppl-chat'), head = el('div', 'ppl-head'), K = typeof window !== 'undefined' ? window.OLYMPUS_PEOPLE : null; box.dataset.person = person.id;
   let face = null; try { if (K && typeof K.portrait === 'function') face = K.portrait(person.id, 44); } catch (e) { face = null; }

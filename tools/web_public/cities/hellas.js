@@ -10,6 +10,9 @@ import { Batch, PAL, unit } from './athens-geo.js';
 import { rng, hash32 } from './util.js';
 import { walkStep, HOUSE_TINT, EYE } from './athens-world.js';
 import { planPolis, polisCollider, polisNpcs, npcOnLoop, builderAt, TIER } from './hellas-plan.js';
+import { makeCrowd } from './people-fig.js';
+import { lookOf } from './people-talk.js';
+import { keeperPerson, townsPerson, builderPerson } from './hellas-data.js';
 
 const lerp = (a, b, t) => a + (b - a) * t, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const SKY_VS = `varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position.z = gl_Position.w; }`;
@@ -110,9 +113,10 @@ export class Hellas {
       if (!this.lite) { this.smoke = new THREE.InstancedMesh(own(new THREE.IcosahedronGeometry(1, 0)), own(new THREE.MeshBasicMaterial({ color: '#e9dcc6', transparent: true, opacity: .34, depthWrite: false })), this.working.length * 3); this.smoke.frustumCulled = false; this.smoke.renderOrder = 2; G.add(this.smoke); } }
     // caravans: camels on the desert routes (phone-high) and the builders travelling to the city each one is building (always)
     this.builders = W.builders || []; this.caravanRoutes = this.lite ? [] : W.routes.filter((r) => r.caravan).slice(0, 14);
-    const nc = this.caravanRoutes.length * 2 + this.builders.length;
+    const nc = this.caravanRoutes.length * 2;
+    if (this.builders.length) { this.builderCrowd = makeCrowd(this.builders.map((b) => lookOf(b.pid, 'builder')), { lite: this.lite }); G.add(this.builderCrowd.mesh); }
     if (nc) { const cb = new Batch(); cb.box(0, .9, 0, .7, .9, 1.9, '#ffffff'); cb.box(0, 1.5, .95, .32, .95, .36, '#ffffff'); cb.box(0, 2.3, 1.2, .34, .34, .6, '#ffffff'); for (const [x, z] of [[-.25, -.7], [.25, -.7], [-.25, .7], [.25, .7]]) cb.box(x, 0, z, .16, .9, .16, '#e8e0d0'); cb.box(0, 1.8, -.1, .9, .5, 1, '#c9a060');
-      this.caravan = new THREE.InstancedMesh(own(cb.geometry()), this.matVC, nc); this.caravan.frustumCulled = false; for (let i = 0; i < nc; i++) { col.set(i < this.builders.length ? '#f0c45c' : '#c79a62'); this.caravan.setColorAt(i, col); } this.caravan.instanceColor.needsUpdate = true; G.add(this.caravan); }
+      this.caravan = new THREE.InstancedMesh(own(cb.geometry()), this.matVC, nc); this.caravan.frustumCulled = false; for (let i = 0; i < nc; i++) { col.set('#c79a62'); this.caravan.setColorAt(i, col); } this.caravan.instanceColor.needsUpdate = true; G.add(this.caravan); }
     this.markerScale = 0; this.setMarkerScale(1); this.lifeTick(0, true);
     // trade routes: one line set; ships sail them (none in LITE, still in reduced motion)
     const rp = []; for (const R of W.routes) { const a = P[R.a], q = P[R.b]; rp.push(a.x, 1.6, a.z, q.x, 1.6, q.z); }
@@ -142,7 +146,9 @@ export class Hellas {
     if (this.flames) { this.working.forEach((p, i) => { const f = still ? 1 : 1 + .16 * Math.sin(t * 9 + i * 1.7) + .08 * Math.sin(t * 15.3 + i), s = p.mr * .13 * k; d.position.set(p.x + p.mr * .5 * k, 1.1 + 1.3 * k + p.mr * .12 * k, p.z + p.mr * .2 * k); d.rotation.set(0, 0, 0); d.scale.set(s, s * f, s); d.updateMatrix(); this.flames.setMatrixAt(i, d.matrix);
       if (this.smoke) for (let j = 0; j < 3; j++) { const u = still ? (j + .5) / 3 : (t * .11 + j / 3 + i * .37) % 1, s2 = p.mr * (.1 + u * .22) * k; d.position.set(p.x + p.mr * .5 * k + u * p.mr * .9 * k, 1.1 + 1.3 * k + p.mr * (.5 + u * 1.5) * k, p.z + p.mr * .2 * k + u * p.mr * .35 * k); d.scale.setScalar(s2 * (1 - u * .3)); d.updateMatrix(); this.smoke.setMatrixAt(i * 3 + j, d.matrix); } });
       this.flames.instanceMatrix.needsUpdate = true; if (this.smoke) this.smoke.instanceMatrix.needsUpdate = true; }
-    if (this.caravan) { const P = this.world.poleis, nb = this.builders.length; this.builderPos = this.builders.map((b, i) => { const q = builderAt(b, t, still); d.position.set(q.x, 1.2, q.z); d.rotation.set(0, q.yaw, 0); d.scale.setScalar(2.1 * k); d.updateMatrix(); this.caravan.setMatrixAt(i, d.matrix); return q; });
+    if (this.builderCrowd) { const cp = this.camera.position; this.builderPos = this.builders.map((b, i) => { const talking = this.talk && this.talk.kind === 'builder' && this.talk.i === i, q = talking && this.builderPos && this.builderPos[i] ? this.builderPos[i] : builderAt(b, t, still);
+      this.builderCrowd.place(i, q.x, 1.2, q.z, talking ? Math.atan2(cp.x - q.x, cp.z - q.z) : q.yaw, 4.4 * k, talking && !still ? 1 + .035 * Math.sin(t * 9) : 1); q.facing = !!talking; return q; }); this.builderCrowd.commit(); }
+    if (this.caravan) { const P = this.world.poleis, nb = 0;
       this.caravanRoutes.forEach((R, i) => { const a = P[R.a], b = P[R.b]; for (let j = 0; j < 2; j++) { let u = still ? .3 + j * .4 : (t * .008 + j * .5 + i * .23) % 2; const back = u > 1; if (back) u = 2 - u; const e = .14 + .72 * u; d.position.set(a.x + (b.x - a.x) * e, 1.2, a.z + (b.z - a.z) * e); d.rotation.set(0, Math.atan2(b.x - a.x, b.z - a.z) + (back ? Math.PI : 0), 0); d.scale.setScalar(1.7 * k); d.updateMatrix(); this.caravan.setMatrixAt(nb + i * 2 + j, d.matrix); } });
       this.caravan.instanceMatrix.needsUpdate = true; }
   }
@@ -155,7 +161,7 @@ export class Hellas {
 
   // ------------------------------------------------------------------ one polis (streamed: the one before is disposed)
   disposePolis() {
-    if (!this.pg) return; this.scene.remove(this.pg); for (const g of this.pKeep) g.dispose(); this.pg = null; this.pKeep = []; this.polis = null; this.plan = null; this.col = null; this.npcs = null; this.npcMesh = null; this.houseMesh = null; this.pFlames = null;
+    if (!this.pg) return; this.scene.remove(this.pg); for (const g of this.pKeep) g.dispose(); this.pg = null; this.pKeep = []; this.polis = null; this.plan = null; this.col = null; this.npcs = null; this.npcMesh = null; this.houseMesh = null; this.pFlames = null; this.people = null; this.crowd = null; this.talk = null;
   }
   buildPolis(p) {
     this.disposePolis(); const plan = planPolis(p), T = this.T, G = new THREE.Group(), keep = this.pKeep = [], own = (g) => { keep.push(g); return g; }, r = rng(hash32('look:' + p.id));
@@ -192,17 +198,34 @@ export class Hellas {
     for (let i = 0; i < nt; i++) { const inner = i % 5 === 0, a = r() * 6.283, rr = inner ? lerp(hr + 3, A - 6, r()) : R + 8 + r() * 62, s = 1.6 + r() * 1.6; if (!inner && Math.abs(a - Math.PI / 2) < .09) { d.scale.setScalar(0); } else d.scale.set(s, s * (inner ? 3.6 : 2 + r() * 2.4), s);
       d.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); d.rotation.set(0, 0, 0); d.updateMatrix(); tm.setMatrixAt(i, d.matrix); if (i % 3) col.setRGB(2.1, 2.3, 1.9); else col.setRGB(2.9, 2.6, 1.9); tm.setColorAt(i, col); }
     tm.instanceMatrix.needsUpdate = true; tm.instanceColor.needsUpdate = true; tm.frustumCulled = false; G.add(tm); own(tm); this.treeMesh = tm;
-    // villagers on the streets around the village blocks (phone-high only)
+    // the people (one instanced draw): the KEEPER at the south gate (always), townspeople on the streets around their village (phone-high only)
     this.col = polisCollider(plan); this.npcs = T.npcs && !this.reduced ? polisNpcs(plan, Math.min(T.npcs, plan.villages.length * 3)) : [];
-    if (this.npcs.length) { const nb2 = new Batch(); nb2.cyl(0, 0, 0, .28, 1.25, '#e9dcc0', 6, .7); nb2.put(unit.sphere(6, 4), 0, 1.25, 0, .2, .22, .2, '#c99a72');
-      this.npcMesh = new THREE.InstancedMesh(own(nb2.geometry()), this.matVC, this.npcs.length); this.npcMesh.frustumCulled = false; const tints = ['#ffffff', '#e8c9a0', '#c9d6c0', '#e0b7a0', '#c8d2e0'];
-      this.npcs.forEach((q, i) => { col.set(tints[i % tints.length]); this.npcMesh.setColorAt(i, col); }); this.npcMesh.instanceColor.needsUpdate = true; G.add(this.npcMesh); own(this.npcMesh); this.npcTick(0); }
+    this.people = [{ kind: 'keeper', id: 'keeper:' + p.id, x: 0, z: R - 8, ry: Math.PI, make: () => keeperPerson(p) }];
+    this.npcs.forEach((q, k) => { const V = plan.villages[q.village]; this.people.push({ kind: 'towns', id: `towns:${p.id}:${V.idx}:${k}`, loop: q, x: 0, z: 0, ry: 0, make: () => townsPerson(p, V, V.houses.map((h) => plan.houses[h].row), k) }); });
+    this.people.forEach((P, i) => { P.i = i; P.look = lookOf(P.id, P.kind === 'keeper' ? 'keeper' : ''); Object.defineProperty(P, 'person', { get() { return P._p || (P._p = P.make()); } }); });
+    this.crowd = makeCrowd(this.people.map((P) => P.look), { lite: this.lite }); own(this.crowd); this.npcMesh = this.crowd.mesh; G.add(this.npcMesh); this.talk = null; this.npcTick(0);
     // a city at work: a brazier burns on every district stele (one more draw call)
     if (work && plan.districts.length) { const fm = new THREE.InstancedMesh(own(new THREE.ConeGeometry(.55, 1.5, 5).translate(0, .75, 0)), this.flames ? this.flames.material : this.matRing, plan.districts.length); fm.frustumCulled = false;
       plan.districts.forEach((D, i) => { const l = Math.hypot(D.x, D.z) || 1; d.position.set(D.x / l * (A - 3), 5, D.z / l * (A - 3)); d.rotation.set(0, 0, 0); d.scale.setScalar(1); d.updateMatrix(); fm.setMatrixAt(i, d.matrix); }); fm.instanceMatrix.needsUpdate = true; G.add(fm); own(fm); this.pFlames = fm; } else this.pFlames = null;
     G.visible = false; this.scene.add(G); return plan;
   }
-  npcTick(t) { if (!this.npcMesh) return; const d = this._d || (this._d = new THREE.Object3D()); this.npcs.forEach((n, i) => { const q = npcOnLoop(n, t); d.position.set(q.x, .1, q.z); d.rotation.set(0, -q.yaw, 0); d.scale.setScalar(1.35); d.updateMatrix(); this.npcMesh.setMatrixAt(i, d.matrix); }); this.npcMesh.instanceMatrix.needsUpdate = true; }
+  /** everyone in the polis: townspeople walk their street, the keeper stands at the gate; whoever you talk to (or walk up to) stops and turns to face you */
+  npcTick(t) {
+    if (!this.crowd || !this.people) return; const cp = this.camera.position, sc = this.walk ? 1.3 : 2.5, me = this.walk;
+    for (const P of this.people) {
+      const talking = this.talk && this.talk.kind === 'person' && this.talk.i === P.i;
+      if (P.loop && !talking) { const q = npcOnLoop(P.loop, t); P.x = q.x; P.z = q.z; P.ry = Math.atan2(Math.sin(q.yaw), -Math.cos(q.yaw)); }
+      const near = me && Math.hypot(me.x - P.x, me.z - P.z) < (P.kind === 'keeper' ? 9 : 0); P.facing = talking || near;
+      const ry = P.facing ? Math.atan2(cp.x - P.x, cp.z - P.z) : P.kind === 'keeper' ? Math.PI : P.ry;
+      this.crowd.place(P.i, P.x, .1, P.z, ry, sc * (P.kind === 'keeper' ? 1.12 : P.look.height), talking && !this.reduced ? 1 + .035 * Math.sin(t * 9) : 1);
+    }
+    this.crowd.commit();
+  }
+  /** the person near a screen point (a tap), and the people around a spot (the walker), nearest first */
+  pickPerson(px, py, radius = 30) { if (!this.people || this.level !== 'polis') return null; const sc = this.walk ? 1.3 : 2.5; let best = null, bd = radius; for (const P of this.people) { const q = this.project(P.x, sc * .9, P.z); if (!q.vis) continue; const d = Math.hypot(q.x - px, q.y - py); if (d < bd) { bd = d; best = P; } } return best; }
+  peopleNear(x, z, max = 4, within = 30) { if (!this.people || this.level !== 'polis') return []; return this.people.map((P) => ({ P, d: Math.hypot(P.x - x, P.z - z) })).filter((e) => e.d <= within).sort((a, b) => a.d - b.d).slice(0, max); }
+  /** who is being talked to: { kind: 'person', i } in a polis, { kind: 'builder', i } on the world; null ends it */
+  setTalk(tk) { this.talk = tk || null; if (this.level === 'world') this.lifeTick(this.u.uTime.value, true); else this.npcTick(this.u.uTime.value); }
 
   setStage(level) {
     this.level = level; const world = level === 'world'; this.wg.visible = world; if (this.pg) this.pg.visible = !world;
@@ -243,12 +266,13 @@ export class Hellas {
   labels(max = 7) {
     const out = [], c = this.cam, near = (list, pos, n) => list.map((o) => [Math.hypot(pos(o)[0] - c.tx, pos(o)[1] - c.tz), o]).sort((a, b) => a[0] - b[0]).slice(0, n).map((e) => e[1]);
     const put = (x, y, z, text, kind, ref) => { const q = this.project(x, y, z); if (q.vis) out.push({ x: q.x, y: q.y, text, kind, ref }); };
-    if (this.walk) return out;
+    if (this.walk) { for (const e of this.peopleNear(this.walk.x, this.walk.z, 3, 24)) { put(e.P.x, 2.3, e.P.z, e.P.person.short, 'person ' + e.P.kind, e.P); } return out; }
     if (this.level === 'world') {
       if (c.dist > 1100) for (const R of this.world.regions) put(R.cx, 20, R.cz, R.name, 'region', R);
       else { near(this.world.poleis, (p) => [p.x, p.z], max).forEach((p, i) => { put(p.x, 8 + p.mr * .5, p.z, p.name, (p.capital ? 'capital' : 'polis') + ' ' + p.activity.state, p); if (i < 1 && c.dist < 560 && out.length && out[out.length - 1].ref === p) out[out.length - 1].sub = p.activity.doing; });
         if (c.dist < 900 && this.builderPos) near(this.builders, (b) => [this.builderPos[b.i].x, this.builderPos[b.i].z], 3).forEach((b) => { const q = this.builderPos[b.i]; put(q.x, 9, q.z, b.name, 'builder', b); if (out.length && out[out.length - 1].ref === b) out[out.length - 1].sub = (c.dist < 420 ? b.job + ' · ' : '') + 'to ' + b.site; }); }
     } else if (this.plan) {
+      if (c.dist < Math.max(170, this.plan.R * 1.3)) for (const e of this.peopleNear(c.tx, c.tz, 3, Math.max(60, c.dist * .5))) put(e.P.x, 5, e.P.z, e.P.person.short, 'person ' + e.P.kind, e.P);
       if (this.polis && this.polis.activity && c.dist > this.plan.R * .8) { put(0, (this.plan.topY || 20) + 6, 0, this.polis.name, 'banner ' + this.polis.activity.state, this.polis); if (out.length) out[out.length - 1].sub = this.polis.activity.doing; }
       if (c.dist > this.plan.R * 1.1 || this.plan.villages.length <= 1) for (const D of this.plan.districts) put(D.x, 12, D.z, D.name, 'district', D);
       else for (const V of near(this.plan.villages, (v) => [v.x, v.z], max)) put(V.x, 11, V.z, V.name, 'village', V);
@@ -279,5 +303,5 @@ export class Hellas {
     this.renderer.render(this.scene, this.camera);
     this.calls = this.renderer.info.render.calls; this.trisDrawn = this.renderer.info.render.triangles;
   }
-  dispose() { this.disposePolis(); for (const o of this.keep) o.dispose && o.dispose(); for (const m of [this.base, this.blocks, this.acro, this.ships, this.shadows, this.flames, this.smoke, this.caravan]) m && m.dispose(); this.renderer.dispose(); }
+  dispose() { this.disposePolis(); for (const o of this.keep) o.dispose && o.dispose(); for (const m of [this.base, this.blocks, this.acro, this.ships, this.shadows, this.flames, this.smoke, this.caravan]) m && m.dispose(); if (this.builderCrowd) this.builderCrowd.dispose(); this.renderer.dispose(); }
 }
