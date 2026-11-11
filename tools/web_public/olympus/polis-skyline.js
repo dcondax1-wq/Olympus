@@ -141,7 +141,7 @@
       }
     }
     return { W: W0, H: H0, horizon: HORIZON, buildings: out, terraces: terr, districts: DISTRICTS.map(function (d) { return { id: d.id, name: d.name, group: d.group, x0: d.x0, x1: d.x1, cx: d.cx }; }),
-      berths: [[2496, 560], [2604, 566], [2712, 562], [2820, 558]], lanes: [[2150, 368, 0.46], [2560, 440, 0.7], [1960, 372, 0.44], [2760, 470, 0.78]] };
+      berths: [[2500, 549], [2612, 551], [2724, 550], [2836, 548]], lanes: [[2150, 368, 0.46], [2560, 440, 0.7], [1960, 372, 0.44], [2760, 470, 0.78]] };
   }
   function building(a, D, row, x, y, type, s, spacing) {
     var sz = SIZE[type] || SIZE.house, w = sz[0] * s, h = sz[1] * s;
@@ -459,7 +459,7 @@
     var ag = c.createLinearGradient(0, 394, 0, H0); ag.addColorStop(0, css(shade([196, 178, 146], F.top, L, 0.08))); ag.addColorStop(1, css(shade([164, 146, 116], F.top * 0.8, L, 0)));
     c.fillStyle = ag; c.fill();
     c.strokeStyle = css(shade([150, 132, 104], F.top, L, 0.05), 0.35); c.lineWidth = 0.8;
-    for (var gy = 410; gy < H0; gy += 14) { c.beginPath(); c.moveTo(1680, gy); c.lineTo(2420, gy); c.stroke(); }
+    for (var gy = 410; gy < H0; gy += 14) { c.beginPath(); c.moveTo(1680, gy); c.lineTo(Math.min(2400, 2400 + (gy - 400) * 0.35), gy); c.stroke(); }
     // the quay: ashlar blocks with a lit top edge, and the mole out to the lighthouse
     rect(c, 2440, 552, 480, 12, css(shade(MAT.stone, F.top, L, 0.02)));
     rect(c, 2440, 564, 480, H0 - 564, css(shade(MAT.stone, F.front * 0.8, L, 0.02)));
@@ -473,6 +473,18 @@
     var rg = c.createLinearGradient(0, 210, 0, 560); rg.addColorStop(0, css(shade(MAT.rock, F.top * 0.9 + 0.1, L, 0.08))); rg.addColorStop(0.45, css(shade(MAT.rock2, F.front * 0.8 + 0.1, L, 0.05))); rg.addColorStop(1, css(shade([136, 120, 86], F.front * 0.6, L, 0)));
     c.fillStyle = rg; c.fill();
     c.save(); c.clip();
+    // the sheer limestone face under the walls (the Acropolis's own cliff), with vertical cracks and scree at its foot
+    var cliffBot = function (x) { return 284 + Math.sin(x * 0.031) * 10 + Math.sin(x * 0.11 + 2) * 5 + (n(x / 23) - 0.5) * 12; };
+    c.beginPath(); for (var cx2 = 846; cx2 <= 1454; cx2 += 4) c.lineTo(cx2, Math.max(rockY(cx2), 214) + 6); for (cx2 = 1454; cx2 >= 846; cx2 -= 4) c.lineTo(cx2, cliffBot(cx2) - Math.max(0, Math.abs(cx2 - 1150) - 250) * 0.9);
+    c.closePath();
+    var cf = c.createLinearGradient(0, 214, 0, 300); cf.addColorStop(0, css(shade([206, 184, 146], F.front * 0.95 + 0.08, L, 0.08))); cf.addColorStop(1, css(shade([150, 126, 96], F.front * 0.55, L, 0.08)));
+    c.fillStyle = cf; c.fill();
+    for (var ck = 0; ck < 70; ck++) {
+      var kx = 852 + r() * 596, ky = 224 + r() * 20, kl = 16 + r() * 50, dark = r() < 0.6;
+      c.strokeStyle = css(shade(dark ? [110, 90, 66] : [226, 208, 172], dark ? 0.3 : F.front + 0.1, L, 0.08), dark ? 0.45 : 0.35); c.lineWidth = dark ? 0.9 + r() * 1.4 : 0.8;
+      c.beginPath(); c.moveTo(kx, ky); c.lineTo(kx + (r() - 0.5) * 6, ky + kl * 0.5); c.lineTo(kx + (r() - 0.5) * 8, Math.min(ky + kl, cliffBot(kx))); c.stroke();
+    }
+    for (ck = 0; ck < 160; ck++) { var sx2 = 846 + r() * 610, sy2 = cliffBot(sx2) - 2 + r() * 14; c.fillStyle = css(shade(r() < 0.5 ? [196, 176, 140] : [140, 118, 88], F.top * 0.8 + 0.1, L, 0.06), 0.7); c.fillRect(sx2, sy2, 1.5 + r() * 2.5, 1 + r() * 1.5); }
     var lit = L.sunSx < 0 ? -1 : 1;   // the cliff face toward the sun
     var cliffG = c.createLinearGradient(780, 0, 1520, 0);
     cliffG.addColorStop(0, css(shade(MAT.rock, lit < 0 ? F.left + 0.1 : F.left * 0.2, L, 0.06), 0.7)); cliffG.addColorStop(0.5, 'rgba(0,0,0,0)'); cliffG.addColorStop(1, css(shade(MAT.rock, lit > 0 ? F.right + 0.1 : F.right * 0.2, L, 0.06), 0.7));
@@ -482,9 +494,13 @@
       c.strokeStyle = css(shade(r() < 0.5 ? [120, 100, 74] : [206, 186, 150], F.top * 0.8, L, 0.05), 0.35); c.lineWidth = 0.8 + r() * 1.6;
       c.beginPath(); c.moveTo(sx, sy); c.bezierCurveTo(sx + sl * 0.3, sy - 2, sx + sl * 0.7, sy + 3, sx + sl, sy + 1); c.stroke();
     }
+    for (s = 0; s < 70; s++) {   // soft green on the lower slopes: grass, terraces of herbs
+      var gx = 560 + r() * 1280, gyy = rockY(gx) + 50 + r() * 220; if (gyy > H0) continue;
+      c.beginPath(); c.ellipse(gx, gyy, 30 + r() * 60, 8 + r() * 14, 0, 0, Math.PI * 2); c.fillStyle = css(shade(r() < 0.6 ? MAT.olive2 : [150, 140, 90], 0.3 + F.top * 0.6, L, 0.04), 0.22); c.fill();
+    }
     for (s = 0; s < 120; s++) {   // scrub and small pines on the slopes
       var bx = 560 + r() * 1260, byy = rockY(bx) + 8 + r() * 200; if (byy > H0) continue;
-      c.beginPath(); c.ellipse(bx, byy, 3 + r() * 6, 2 + r() * 3, 0, 0, Math.PI * 2); c.fillStyle = css(shade(r() < 0.5 ? MAT.olive : MAT.cypress, 0.25 + F.top * 0.5, L, 0.04), 0.85); c.fill();
+      c.beginPath(); c.ellipse(bx, byy, 3 + r() * 6, 2 + r() * 3, 0, 0, Math.PI * 2); c.fillStyle = css(shade(r() < 0.7 ? MAT.olive2 : MAT.olive, 0.45 + F.top * 0.5, L, 0.04), 0.8); c.fill();
     }
     c.restore();
     // the walls along the rim of the plateau
@@ -571,14 +587,14 @@
   }
 
   function makeCloud(c, w, h, seed, L, sunSide) {
-    var r = rng(seed), puffs = 14 + Math.floor(r() * 10);
+    var r = rng(seed), puffs = 26 + Math.floor(r() * 14);
     var litC = mix(mix([255, 250, 240], L.light, 0.55 * (L.golden + 0.2)), L.horizon, 0.25), darkC = mix(L.shade, L.upper, 0.35);
     if (L.night > 0.5) { litC = mix([96, 104, 140], [150, 150, 170], L.cloud * 0.4); darkC = [40, 44, 72]; }
     for (var i = 0; i < puffs; i++) {
-      var px = w * (0.15 + r() * 0.7), py = h * (0.45 + (r() - 0.5) * 0.4) + Math.abs(px - w / 2) / w * h * 0.25, pr = h * (0.18 + r() * 0.22);
-      var g = c.createRadialGradient(px - sunSide * pr * 0.35, py - pr * 0.4, pr * 0.1, px, py, pr);
-      g.addColorStop(0, css(litC, 0.85)); g.addColorStop(0.6, css(mix(litC, darkC, 0.5), 0.6)); g.addColorStop(1, css(darkC, 0));
-      c.fillStyle = g; c.beginPath(); c.arc(px, py, pr, 0, Math.PI * 2); c.fill();
+      var u = r(), px = w * (0.1 + u * 0.8), dome = Math.sin(u * Math.PI), pr = h * (0.1 + r() * 0.16) * (0.6 + dome * 0.6), py = h * 0.78 - pr * 0.5 - r() * dome * h * 0.38;
+      var g = c.createRadialGradient(px - sunSide * pr * 0.3, py - pr * 0.45, pr * 0.05, px, py, pr * 1.25);
+      g.addColorStop(0, css(litC, 0.55)); g.addColorStop(0.55, css(mix(litC, darkC, 0.45), 0.34)); g.addColorStop(1, css(darkC, 0));
+      c.fillStyle = g; c.beginPath(); c.ellipse(px, py, pr * 1.6, pr * 1.0, 0, 0, Math.PI * 2); c.fill();
     }
   }
 
@@ -641,8 +657,8 @@
       // the clouds as sprites (weather adds more)
       clouds = []; var r = rng(st.seed + 51), nC = Math.round(3 + st.weather.cloud * 12 + (L.night > 0.6 ? 1 : 3));
       for (var i = 0; i < nC; i++) {
-        var cw = (90 + r() * 140) * view.k, ch = cw * (0.32 + r() * 0.12), spr = doc.createElement('canvas'); spr.width = Math.ceil(cw * 0.6); spr.height = Math.ceil(ch * 0.6);
-        var c2 = spr.getContext('2d'); c2.scale(0.6, 0.6); makeCloud(c2, cw, ch, st.seed + i * 17, L, L.sunSx < 0 ? -1 : 1);
+        var cw = (110 + r() * 170) * view.k, ch = cw * (0.3 + r() * 0.1), spr = doc.createElement('canvas'); spr.width = Math.ceil(cw * 0.35); spr.height = Math.ceil(ch * 0.35);
+        var c2 = spr.getContext('2d'); c2.scale(0.35, 0.35); makeCloud(c2, cw, ch, st.seed + i * 17, L, L.sunSx < 0 ? -1 : 1);
         clouds.push({ cv: spr, w: cw, h: ch, az: r() * 360, alt: 6 + r() * (st.weather.cloud > 0.5 ? 20 : 34), speed: (0.4 + r() * 0.8) * (r() < 0.5 ? 1 : 1) });
       }
       project(ms);
@@ -650,7 +666,7 @@
     }
     function project(ms) {
       stars = SKY.visible(ms); mw = SKY.milkyWay().map(function (p) { var h = SKY.altaz(p[0], p[1], ms); return [h.alt, h.az]; });
-      if (!field) field = SKY.field(st.quality === 'low' ? 220 : 420, st.seed);
+      if (!field) field = SKY.field(st.quality === 'low' ? 700 : 1700, st.seed);
       st.field = field.map(function (p) { var h = SKY.altaz(p[0], p[1], ms); return [h.alt, h.az, p[2]]; }).filter(function (p) { return p[0] > -2; });
       st.projected = ms;
     }

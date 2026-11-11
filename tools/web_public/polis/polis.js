@@ -102,7 +102,7 @@
     var world = $('world'), k = S.city.info().view.k, L = S.city.layout, list = harbour.ships;
     for (var i = 0; i < list.length; i++) {
       var s = list[i], id = 'ship-' + s.key, el = S.spots[id];
-      if (!el) { el = h('a', 'spot ship'); el.setAttribute('href', '../' + s.app + '/'); world.appendChild(el); S.spots[id] = el; }
+      if (!el) { el = h('a', 'spot boat'); el.setAttribute('href', '../' + s.app + '/'); world.appendChild(el); S.spots[id] = el; }
       el.setAttribute('aria-label', s.name + ' ship: ' + s.words + '. ' + s.why); el.textContent = s.name;
       var pos = s.state === 'port' ? L.berths[i] : s.state === 'returning' ? [2560, 506 + i * 8] : [L.lanes[i][0] * 1, L.lanes[i][1]];
       var factor = s.state === 'sail' ? 0.7 : 1, pan = S.city.info().pan, x = s.state === 'sail' ? (pos[0] * k - pan * factor + pan) : pos[0] * k;
