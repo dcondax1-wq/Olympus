@@ -218,8 +218,8 @@
 
   // ---------------------------------------------------------------- WebGL guard (QA round 6, 2026-11-11: the real-phone pass)
   // iOS drops WebGL contexts under memory pressure (and when too many are alive). A lost canvas is blank: the page would show a black
-  // hole where the hero was. Every WebGL canvas made on a kit page gets this guard on its first getContext (no app edit): on loss the canvas
-  // shows its last still (track() takes one small JPEG of a settled frame) or the AGORA dusk backdrop, html gets data-oly-gl="lost", and the
+  // hole where the hero was. Every WebGL canvas made on a kit page gets this guard on its first getContext (no app edit): on loss an overlay
+  // over the canvas shows its last still (track() takes one small JPEG of a settled frame) or the AGORA dusk backdrop, html gets data-oly-gl="lost", and the
   // loss is marked restorable (preventDefault); on restore the still goes and data-oly-gl="ok". Apps / the render core rebuild their GPU state.
   var glList = [], BACKDROP = 'radial-gradient(120% 75% at 50% 32%, #4a3b28 0%, #2a2219 46%, #14110e 100%)';
   function glState() {
@@ -228,7 +228,7 @@
   }
   function glGuard(cv) {
     if (cv.__olyGuard) return cv.__olyGuard;
-    var g = { cv: cv, lost: false, still: '', bg: null,
+    var g = { cv: cv, lost: false, still: '', ov: null, vis: undefined,
       snap: function () {                                 // a ~1/3 size JPEG of what is on the canvas now (call right after a draw to the screen)
         try {
           var w = cv.width, h = cv.height, k = Math.min(1, 360 / Math.max(1, w)), c = d.createElement('canvas');
@@ -241,17 +241,30 @@
         return g.still;
       } };
     cv.__olyGuard = g; glList.push(g);
+    // the still sits OVER the canvas (an overlay of the canvas's own box, no taps): a lost canvas is not always see-through (Chromium paints
+    // its own placeholder), so a background under it would not show
+    function cover() {
+      if (!cv.isConnected) return;
+      var o = g.ov || (g.ov = d.createElement('div')), fixed = !cv.offsetParent, host = fixed ? d.body : cv.offsetParent, st = o.style;
+      o.className = 'oly-gl-still'; o.setAttribute('aria-hidden', 'true');
+      st.cssText = 'position:' + (fixed ? 'fixed' : 'absolute') + ';pointer-events:none;z-index:1;background-color:#14110e;background-size:cover;background-position:center;';
+      st.backgroundImage = (g.still ? 'url("' + g.still + '"), ' : '') + BACKDROP;
+      if (fixed) { var r = cv.getBoundingClientRect(); st.left = r.left + 'px'; st.top = r.top + 'px'; st.width = r.width + 'px'; st.height = r.height + 'px'; }
+      else { st.left = cv.offsetLeft + 'px'; st.top = cv.offsetTop + 'px'; st.width = cv.offsetWidth + 'px'; st.height = cv.offsetHeight + 'px'; }
+      if (st.borderRadius !== (getComputedStyle(cv).borderRadius || '')) st.borderRadius = getComputedStyle(cv).borderRadius;
+      if (o.parentNode !== host) host.appendChild(o);
+      g.vis = cv.style.visibility; cv.style.visibility = 'hidden';
+    }
     cv.addEventListener('webglcontextlost', function (e) {
       try { e.preventDefault(); } catch (x) { /* nothing */ }         // ask the browser to give it back
       g.lost = true;
-      var s = cv.style; g.bg = [s.backgroundImage, s.backgroundSize, s.backgroundPosition, s.backgroundColor];
-      s.backgroundImage = (g.still ? 'url("' + g.still + '"), ' : '') + BACKDROP;
-      s.backgroundSize = 'cover'; s.backgroundPosition = 'center'; s.backgroundColor = '#14110e';
+      try { cover(); } catch (x) { /* the backdrop is never needed */ }
       glState();
     }, false);
     cv.addEventListener('webglcontextrestored', function () {
       g.lost = false;
-      if (g.bg) { var s = cv.style; s.backgroundImage = g.bg[0]; s.backgroundSize = g.bg[1]; s.backgroundPosition = g.bg[2]; s.backgroundColor = g.bg[3]; g.bg = null; }
+      if (g.ov && g.ov.parentNode) g.ov.parentNode.removeChild(g.ov);
+      if (g.vis !== undefined) { cv.style.visibility = g.vis; g.vis = undefined; }
       glState();
     }, false);
     return g;

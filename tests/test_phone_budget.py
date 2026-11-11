@@ -96,7 +96,7 @@ def test_static():
                                  "data-oly-auto", "auto: function"))
           and "var level = stored() || fallback();" in oly and "set(KEY, autoWhy" not in oly)
     check("a. olympus.js: every WebGL canvas gets the guard (getContext wrapped once), the loss is restorable (preventDefault), a still / backdrop shows, data-oly-gl",
-          all(k in oly for k in ("P.getContext = wrap", "webglcontextlost", "e.preventDefault()", "webglcontextrestored", "data-oly-gl", "toDataURL('image/jpeg'", "radial-gradient(")))
+          all(k in oly for k in ("P.getContext = wrap", "webglcontextlost", "e.preventDefault()", "oly-gl-still", "webglcontextrestored", "data-oly-gl", "toDataURL('image/jpeg'", "radial-gradient(")))
     check("a. render.js: a lost context draws nothing, a restore rebuilds environment + composer and draws; GPU buffers freed after 20 s hidden and on pagehide",
           all(k in rnd for k in ("webglcontextlost', onLost", "webglcontextrestored', onRestored", "environment(); build(); size(true);", "HIDE_MS = 20000",
                                  "'pagehide', onPageHide", "'pageshow', onPageShow", "removeEventListener('webglcontextlost', onLost)", "restores"))
@@ -199,7 +199,7 @@ def center_rgb(p, xy):
     im = Image.open(io.BytesIO(p.screenshot())).convert("RGB")
     k = im.width / 390.0
     box = (int((xy[0] - 40) * k), int((xy[1] - 40) * k), int((xy[0] + 40) * k), int((xy[1] + 40) * k))
-    px = list(im.crop(box).getdata())
+    px = [im.getpixel((x, y)) for x in range(box[0], box[2], 4) for y in range(box[1], box[3], 4)]
     return [round(sum(c[i] for c in px) / len(px)) for i in range(3)]
 
 
@@ -215,7 +215,7 @@ def test_context_loss(br, origin, shots=None):
     p.wait_for_function("document.documentElement.getAttribute('data-oly-gl') === 'lost'", timeout=10000)
     p.wait_for_timeout(400)
     lost = center_rgb(p, xy)
-    bg = p.evaluate("getComputedStyle(document.querySelector('canvas')).backgroundImage")
+    bg = p.evaluate("(() => { const o = document.querySelector('.oly-gl-still'); return o ? getComputedStyle(o).backgroundImage : ''; })()")
     if shots:
         p.screenshot(path=os.path.join(shots, "ctx_lost.jpg"), type="jpeg", quality=70)
     p.evaluate("window.__lx.restoreContext()")
@@ -225,7 +225,7 @@ def test_context_loss(br, origin, shots=None):
     after = center_rgb(p, xy)
     if shots:
         p.screenshot(path=os.path.join(shots, "ctx_restored.jpg"), type="jpeg", quality=70)
-    dark = lambda c: max(c) < 14
+    dark = lambda c: max(c) < 14 or min(c) > 240               # black, or the browser's own white "lost" placeholder
     check("c. render core, context lost: the canvas shows the still / AGORA backdrop (never black), html[data-oly-gl=lost]",
           not dark(lost) and ("url(" in bg or "radial-gradient" in bg), [before, lost, bg[:80]])
     check("c. render core, restored: the core rebuilt (restores >= 1) and draws again, the picture is back (not black)",
@@ -241,10 +241,16 @@ def test_context_loss(br, origin, shots=None):
     sel = "#scene3d canvas"
     p.evaluate("(s) => { window.__lx = document.querySelector(s).getContext('webgl2').getExtension('WEBGL_lose_context'); window.__lx.loseContext(); }", sel)
     p.wait_for_function("document.documentElement.getAttribute('data-oly-gl') === 'lost'", timeout=10000)
-    bg = p.evaluate("(s) => getComputedStyle(document.querySelector(s)).backgroundImage", sel)
+    bg = p.evaluate("(() => { const o = document.querySelector('.oly-gl-still'); return o ? getComputedStyle(o).backgroundImage : ''; })()")
+    xy = p.evaluate(CENTER_DARK, sel)
+    lost = center_rgb(p, xy)
+    if shots:
+        p.screenshot(path=os.path.join(shots, "ctx_lost_nq.jpg"), type="jpeg", quality=70)
     p.evaluate("window.__lx.restoreContext()")
     p.wait_for_function("document.documentElement.getAttribute('data-oly-gl') === 'ok'", timeout=15000)
-    check("c. bare three.js page (NQ): the guard shows the backdrop while lost and clears it on restore", "radial-gradient" in bg or "url(" in bg, bg[:80])
+    gone = p.evaluate("!document.querySelector('.oly-gl-still') && document.querySelector('#scene3d canvas').style.visibility !== 'hidden'")
+    check("c. bare three.js page (NQ): the guard's overlay shows the backdrop while lost (not black, not the browser's white placeholder) and goes on restore",
+          ("radial-gradient" in bg or "url(" in bg) and max(lost) >= 14 and min(lost) <= 240 and gone, [bg[:80], lost, gone])
     ctx.close()
 
 
