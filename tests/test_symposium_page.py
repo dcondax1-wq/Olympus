@@ -317,7 +317,7 @@ def test_page():
 
             # ---- 3. high quality: the 3D hall (when WebGL is there)
             ctx, p, errs, seen, off = AK.page(br, origin)
-            AK.open_app(p, origin, APP, "")
+            AK.open_app(p, origin, APP, "?q=high")
             p.wait_for_timeout(1500)
             st = p.evaluate(STATE)
             if st["hall"]:

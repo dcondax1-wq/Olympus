@@ -211,7 +211,8 @@ function buildSheet() {
   document.body.appendChild(root);
   const U = { root, back, sheet, face, name, title, dot, stText, close, log, chips, req, reqLab, reqText, reqCancel, tools, bWork, bReq, bShare, bVoice, form, input, mic, send, toast };
   back.addEventListener('click', closeSheet); close.addEventListener('click', closeSheet);
-  root.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); closeSheet(); } else if (e.key === 'Tab') trap(e, sheet); });
+  root.addEventListener('keydown', (e) => { if (e.key === 'Tab') trap(e, sheet); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !root.hidden) { e.stopPropagation(); closeSheet(); } }, true);
   form.addEventListener('submit', (e) => { e.preventDefault(); const v = input.value.trim(); if (v) { input.value = ''; sendText(v); } });
   bReq.addEventListener('click', () => showReq(true)); reqCancel.addEventListener('click', () => showReq(false));
   req.addEventListener('submit', (e) => { e.preventDefault(); const v = reqText.value.trim(); if (!v || !S.cur) return; const row = request(S.cur.id, v); reqText.value = ''; showReq(false); addBubble('me', 'Request: ' + v); addBubble('them', row ? 'Noted. It is in your request box; nothing was sent anywhere.' : 'I could not save that on this phone (storage is off).'); });
@@ -228,7 +229,7 @@ function buildSheet() {
 function micIcon() { const s = document.createElementNS(NS, 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('width', '22'); s.setAttribute('height', '22'); s.setAttribute('aria-hidden', 'true'); for (const [tag, at] of [['rect', { x: 9, y: 3, width: 6, height: 11, rx: 3, fill: 'currentColor' }], ['path', { d: 'M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.8, 'stroke-linecap': 'round' }]]) { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); s.appendChild(e); } return s; }
 function trap(e, box) { const f = Array.from(box.querySelectorAll('button, input, textarea, [tabindex="0"]')).filter((x) => !x.hidden && x.offsetParent !== null); if (!f.length) return; const a = f[0], z = f[f.length - 1]; if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); } }
 function paintVoice() { const U = S.sheet, on = speakOn(); U.bVoice.textContent = 'Voice: ' + (on ? 'on' : 'off'); U.bVoice.setAttribute('aria-pressed', on ? 'true' : 'false'); }
-function showReq(on) { const U = S.sheet; U.req.hidden = !on; U.tools.hidden = on; U.form.hidden = on; U.chips.hidden = on; if (on) { U.reqLab.textContent = 'A note for ' + S.cur.name + ' (Claude will read it for them)'; U.reqText.focus(); } U.log.scrollTop = U.log.scrollHeight; }
+function showReq(on) { const U = S.sheet; U.req.hidden = !on; U.tools.hidden = on; U.form.hidden = on; U.chips.hidden = on; if (on) { U.reqLab.textContent = 'A note for ' + S.cur.name + ' (Claude will read it for them)'; U.reqText.focus(); } else if (!U.root.hidden && !U.root.contains(document.activeElement)) { try { U.sheet.focus({ preventScroll: true }); } catch (_) { /* fine */ } } U.log.scrollTop = U.log.scrollHeight; }
 function toast(t) { const U = S.sheet; U.toast.textContent = t; clearTimeout(S.toastT); S.toastT = setTimeout(() => { U.toast.textContent = ''; }, 2600); }
 function openWork(p) { const url = '../' + p.app + '/'; fire('olympus:people:work', { id: p.id, app: p.app }); try { if (window.OLYMPUS && typeof window.OLYMPUS.go === 'function') { window.OLYMPUS.go(url); return; } } catch (_) { /* plain link */ } location.href = url; }
 function paintHead(extra) {
