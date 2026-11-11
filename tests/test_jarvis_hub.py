@@ -60,6 +60,9 @@ JV = os.path.join(ROOT, "tools", "web_public", "jarvis")
 KS = os.path.join(ROOT, "tools", "web_public", "kalshi")
 PARTS = ("brain.js", "core-visual.js", "apps.js", "zenith-mode.js")
 FONTS = ("orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2", "rajdhani-700.woff2")
+# the stylesheet tag the page loads (index.html `jarvis.css?v=jNN`): the worker must save that same file (SHELL, CORE); read here,
+# never typed, since every look change bumps it (j13 -> j16 on 2026-11-10, commit 3bd5d75, and the pins here went stale)
+JCSS = "jarvis.css?v=" + re.search(r'id="jcss" href="jarvis\.css\?v=(j\d+)"', open(os.path.join(JV, "index.html"), encoding="utf-8").read()).group(1)
 RES = []
 
 
@@ -222,6 +225,14 @@ def serve(root):
     return srv
 
 
+def _old_ok(sw):
+    """the worker's OLD list: every earlier Jarvis copy, newest first, from the one before CACHE down to jarvis-v4 (bump_versions
+    pushes the old name on; typing the list here went stale at jarvis-v26 while the worker moved on to v34)"""
+    cur = re.search(r"const CACHE = 'jarvis-v(\d+)';", sw)
+    old = re.search(r"const OLD = \[([^\]]*)\];", sw)
+    return bool(cur and old) and re.findall(r"'jarvis-v(\d+)'", old.group(1)) == [str(v) for v in range(int(cur.group(1)) - 1, 3, -1)]
+
+
 def part_a():
     for f in ("index.html", "manifest.webmanifest", "sw.js", "apple-touch-icon.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png",
               "data.js", "jarvis.css", "OFL.txt") + FONTS:
@@ -255,7 +266,7 @@ def part_a():
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
           "const CACHE = 'jarvis-v34';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
-          and "'./jarvis.css?v=j13'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
+          and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
     check("a. every file of SHELL is in the folder (a part the page loads is never left out of the saved copy, nor a saved file missing)",
@@ -268,7 +279,8 @@ def part_a():
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v26', 'jarvis-v25', 'jarvis-v24', 'jarvis-v23', 'jarvis-v22', 'jarvis-v21', 'jarvis-v20', 'jarvis-v19', 'jarvis-v18', 'jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          _old_ok(sw) and "for (const name of [CACHE, ...OLD])" in sw
+          and f"const CORE = ['./index.html', './{JCSS}', './data.js'];" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -823,12 +835,12 @@ def run_c(br, url):
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
           const c = await caches.open('jarvis-v34');
-          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j13', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
+          const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
         }
         return 'missing';
-    }""")
+    }""".replace("'./%s'", f"'./{JCSS}'"))
     check("j. the worker installs and saves the page, data.js, jarvis.css and the fonts (a part not on the site is skipped)", has == "ok", has)
     p.reload()
     ready(p)
@@ -1124,7 +1136,7 @@ def run_look(br, url):
 def _registry():
     """apps.js is the one source of truth (the list GROWS): its groups and BUILT_INS, read with node, so no count or name is typed here."""
     out = subprocess.run(["node", "--input-type=module", "-e",
-                          "Promise.all([import('./apps.js'), import('./districts.js')]).then(([m, d]) => console.log(JSON.stringify({ groups: m.GROUPS.map((g) => ({ id: g.id, name: g.name })), apps: m.BUILT_INS.map((a) => ({ id: a.id, name: a.name, group: a.group, dist: d.districtOf(a) })), dists: d.DISTRICTS.map((x) => ({ id: x.id, title: x.title })) })))"],
+                          "Promise.all([import('./apps.js'), import('./districts.js')]).then(([m, d]) => console.log(JSON.stringify({ groups: m.GROUPS.map((g) => ({ id: g.id, name: g.name })), apps: m.BUILT_INS.map((a) => ({ id: a.id, name: a.name, group: a.group, accent: a.accent || '', dist: d.districtOf(a) })), dists: d.DISTRICTS.map((x) => ({ id: x.id, title: x.title })) })))"],
                          cwd=JV, capture_output=True, text=True, timeout=60, check=True).stdout
     return json.loads(out)
 
@@ -1155,6 +1167,8 @@ D_NAMES_ORDER = [NX_LABEL.get(i, next((a["name"] for a in _REG["apps"] if a["id"
 D_ON = [i for i in D_ORDER if i in ON_SITE]
 D_MONEY_FIRST = next(a["id"] for a in D_SORTED if a["dist"] == "money")
 MONEY_FIRST = next(a["id"] for a in SORTED_APPS if a["group"] == "money")       # the first MONEY app: the group chip glides its card to the middle
+# each tile's colour: its accent in apps.js as "r,g,b" (read, never typed: the AGORA accents of 2026-11, commit 45637b2, replaced the old neon)
+ACR = {a["id"]: ",".join(str(int(a["accent"][k:k + 2], 16)) for k in (1, 3, 5)) for a in _REG["apps"] if re.fullmatch(r"#[0-9a-fA-F]{6}", a["accent"] or "")}
 
 
 def run_olympus(br, url):
@@ -1177,7 +1191,8 @@ def run_olympus(br, url):
     t = {x["id"]: x for x in g["tiles"]}
     check("p. the OLYMPUS grid: TRADING, LIFE, MONEY with every app in the orb's order (+ ADD), each tile in its own colour, 44 px+",
           g["heads"] == GROUP_HEADS and [x["id"] for x in g["tiles"]] == ORDER[1:] + ["add"]
-          and t["datacity"]["acr"] == "79,140,255" and t["tree"]["acr"] == "52,245,160" and all(x["h"] >= 44 for x in g["tiles"]), g)
+          and all(t[i]["acr"] == ACR[i] for i in ACR if i in t) and t["datacity"]["acr"] != t["tree"]["acr"] and all(x["h"] >= 44 for x in g["tiles"]),
+          (g["heads"], [(i, t.get(i, {}).get("acr"), ACR[i]) for i in ACR if t.get(i, {}).get("acr") != ACR[i]][:6]))
     check("p. live status on the tiles: Data City from its jarvis.json (19,942 · 25 pass the noise guard), NQ BOT and KALSHI from the shell's own feeds",
           t["datacity"]["v"] == "19,942" and "25 pass the noise guard" in t["datacity"]["s"] and t["zenith"]["name"] == "NQ BOT" and t["zenith"]["v"].startswith("+$")
           and t["kalshi"]["v"] and "Data City" in t["datacity"]["label"], g["tiles"])
@@ -1597,6 +1612,22 @@ SLOW_FRAMES = """(() => { const r = window.requestAnimationFrame.bind(window);
   window.requestAnimationFrame = (f) => r((t) => { const e = performance.now() + 80; while (performance.now() < e) { /* busy */ } f(t); }); })();"""
 NO_WEBGL = """HTMLCanvasElement.prototype.getContext = (function (g) {
   return function (t) { return /webgl/.test(t) ? null : g.apply(this, arguments); }; })(HTMLCanvasElement.prototype.getContext);"""
+# how long the page's main thread was blocked while the intro ran: the long tasks (Long Tasks API) overlapping the intro's own
+# window [end - ms, end], end = when its overlay left the page. Its fade runs on timers (0.32 s + 0.48 s), and a timer fires only
+# when the main thread is free, so on a slow machine Jarvis's own start (its scripts, data) makes the fade look longer. Measured
+# 2026-11-11 (headless Chromium, software GL, 4 cpus, load 3/4; 6 runs each, Chrome CPU throttling): x1 ms 1.79-2.06 s,
+# x2 3.35-3.61 s, x4 5.24-5.46 s, the intro's timers late by 0.8-0.96 / 2.1-2.3 / 4.6-4.8 s: the time follows the CPU, not the intro.
+# Less the blocked time it stays 0.28-0.44 s at x1, x2 and x4 (a timer's wait can pass inside a long task, so this is a floor of the
+# intro's own time; its length itself is pinned by st.len == 0.8).
+FADE_PROBE = """(() => {
+  const L = window.__lt = [];
+  try { new PerformanceObserver((l) => { for (const e of l.getEntries()) L.push([e.startTime, e.duration]); }).observe({ type: 'longtask', buffered: true }); } catch (e) { window.__ltOff = true; }
+  new MutationObserver((ms, mo) => { if (window.__olyIntro && window.__olyIntro.done && !document.getElementById('olyIntro')) { window.__introEnd = performance.now(); mo.disconnect(); } })
+    .observe(document, { childList: true, subtree: true });
+})();"""
+BLOCKED = """(() => { const st = window.__olyIntro || {}, end = window.__introEnd, a = end - st.ms;
+  if (window.__ltOff || !(end > 0)) return null;
+  return Math.round((window.__lt || []).reduce((t, [s, d]) => t + Math.max(0, Math.min(end, s + d) - Math.max(a, s)), 0)); })()"""
 PHASE_LOG = """(() => { const L = window.__phases = []; setInterval(() => { const x = window.__olyIntro && window.__olyIntro.phase; if (x && L[L.length - 1] !== x) L.push(x); }, 25); })();"""
 SFX_KIT = """window.__sfx = []; window.OLYMPUS_SFX = { play(n) { window.__sfx.push(n); } };"""
 INTRO_GONE = "!document.getElementById('olyIntro') && !document.documentElement.hasAttribute('data-intro')"
@@ -1714,10 +1745,17 @@ def run_intro(br, url):
     s = intro_state(p)
     check("o. an error in a frame removes it (state failed), no page error", s["st"]["state"] == "failed" and "frame" in s["st"]["err"] and not errs, (s, errs))
     ctx.close()
-    ctx, p, errs = intro_page(br, url, "full", init=[NO_WEBGL])
+    ctx, p, errs = intro_page(br, url, "full", init=[NO_WEBGL, FADE_PROBE])
     wait(p, INTRO_GONE)
     s = intro_state(p)
-    check("o. no WebGL: the still OLYMPUS word mark fades instead (< 1.6 s)", s["st"]["mode"] == "fade" and s["st"]["q"] == "still" and s["st"]["ms"] < BK.limit_ms(1600, "intro fade"), s)
+    blk = p.evaluate(BLOCKED)
+    s["blocked"] = blk
+    # its own time (what it is on the wall clock less the main thread's blocked time) < 1.6 s (0.8 s by design); on the wall clock
+    # < 4 s, still well short of the next version up (the 5 s lite film) and of the 11.2 s deadline that ends a film that hangs
+    own = s["st"]["ms"] - (blk or 0)
+    check("o. no WebGL: the still OLYMPUS word mark fades instead (its own time < 1.6 s, the wall clock < 4 s)",
+          s["st"]["mode"] == "fade" and s["st"]["q"] == "still" and s["st"].get("len") == 0.8 and blk is not None
+          and own < BK.limit_ms(1600, "intro fade") and s["st"]["ms"] < BK.limit_ms(4000, "intro fade wall", cap=4900), s)
     ctx.close()
     ctx, p, errs = intro_page(br, url, "full", block=True)
     ready_slow(p)
