@@ -23,6 +23,7 @@ import { createMemStore } from './memstore.js';
 import { createActions } from './actions.js';
 import { nudges as nudgeList } from './nudges.js';
 import * as J from './jdata.js';
+import { createV3 } from './skills3.js';
 
 const { usd, rtxt, num, str, isObj } = J;
 const MISSING = (what, file) => ({ text: `I don't have that: ${what}. ${file ? `${file} has not loaded, so I will not guess.` : 'I will not guess.'}`, speak: `I don't have that. ${what}.`, missing: true });
@@ -306,11 +307,13 @@ export function createSkills(opts) {
   function helpReply() {
     const T = helpTable(), lines = ['Here is what I can do. Every number comes with its dollars, its R and where it came from; anything that changes something asks you first.'];
     for (const g of T) { lines.push('', g.name); for (const it of g.items) lines.push(`• ${it.label}: ${it.examples.map((x) => '"' + x + '"').join(', ')}`); }
-    return reply(lines.join('\n'), { intent: 'skills_help', groups: T, speak: 'I can answer from your numbers, open any app, set a goal in the Planner, check Kalshi, and remember things for you. The full list is on screen.' });
+    lines.push('', 'Find, explain, tour'); for (const it of v3.help) lines.push(`• ${it.label}: ${it.ex.map((x) => '"' + x + '"').join(', ')}`);
+    lines.push('', 'I never place, arm or change a trade: paper and suggestions only.');
+    return reply(lines.join('\n'), { intent: 'skills_help', groups: T, more: v3.help, speak: 'I can answer from your numbers, open any app, set a goal in the Planner, check Kalshi, and remember things for you. The full list is on screen.' });
   }
   const AN = { weekday_worst: (S, n, a) => A.weekday(S, n, true, a.day), weekday_best: (S, n, a) => A.weekday(S, n, false, a.day) };
 
-  async function answerIntent(r, raw, now) {
+  async function answerIntent(r, raw, now, Sover) {
     const a = { ...r.args, q: raw };
     switch (r.intent) {
       case 'navigate': { const known = appsList(); if (known.length && !known.some((x) => x.id === a.target)) return reply(`I do not have an app called ${a.name || a.target}.`, { intent: 'navigate', missing: true }); return actions.plan('open_app', { app: a.target, route: a.route, name: a.name }); }
@@ -334,7 +337,7 @@ export function createSkills(opts) {
       case 'briefing': return null;               // the brain's own briefing
       default: break;
     }
-    const S = await sources();
+    const S = Sover || await sources();
     if (r.intent === 'next_action') return nextAction(S, now);
     const fn = AN[r.intent] || A[r.intent];
     return fn ? fn(S, now, a) : null;
@@ -342,15 +345,19 @@ export function createSkills(opts) {
   async function handle(raw, q, opt) {
     const text = String(raw == null ? '' : raw).slice(0, 500);
     if (!text.trim()) return null;
+    const now = nowMs(opt && opt.now);
+    try { const e = await v3.early(text, now); if (e) return { ...e, routed: e.intent, v3: true }; } catch (_) { /* the router carries on */ }
     const r = routeText(text, { apps: appsList() });
     if (!r) return null;
-    const now = nowMs(opt && opt.now);
     try {
       const out = await answerIntent(r, text, now);
       if (!out) return null;
+      v3.note(r.intent, r.args, out, text, now);
       return { intent: out.intent || r.intent, ...out, routed: r.intent, score: r.score };
     } catch (_) { return null; }
   }
+  // v3 (skills3.js): safety, follow-ups, tours, the six-line briefing, explain, search. It gets this module's own helpers.
+  const v3 = createV3({ J, KB, A: { ...A, weekday: A.weekday }, answerIntent, sources, appsList, actions, reply, withSrc, tag, MISSING, nextAction, now: o.now, getIndex: o.getIndex, getFacts: o.getFacts, helios: o.helios });
   async function contextFor(raw) {
     const r = routeText(String(raw || ''), { apps: appsList() }), now = nowMs(), S = await sources();
     const lines = [];
@@ -366,6 +373,8 @@ export function createSkills(opts) {
   async function nudgesFor(opt) { const S = await sources(); return nudgeList(S, { now: nowMs(), ...(opt || {}) }); }
   return {
     handle, contextFor, nudges: nudgesFor, mem, actions, route: (t) => routeText(t, { apps: appsList() }), examples: EXAMPLES.slice(),
+    early: (raw, opt) => v3.early(raw, nowMs(opt && opt.now)), heard: () => v3.heard(), context: (n) => v3.context(nowMs(n)), tours: () => v3.tours(), search: (q, n) => v3.search(q, n), brief: (kind, n) => v3.brief(kind, nowMs(n)),
+    explain: (w) => v3.explain(w), claims: (raw) => v3.claims(raw), guard: (raw) => v3.guard(raw),
     confirm: () => actions.confirm(), cancel: () => actions.cancel(), get pending() { return actions.pending; }, answer: (id, S, now, args) => (A[id] ? A[id](S, nowMs(now), args || {}) : null),
   };
 }
