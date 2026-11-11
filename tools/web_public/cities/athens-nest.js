@@ -70,7 +70,7 @@ export class Nest {
   /** talk to a villager: the shared People kit when it is loaded (villager:<app-id>), else the card with our own six questions */
   showNpc(hit) {
     const ui = this.ui, v = hit.village, g = GROUPS.find((x) => x.key === v.group) || GROUPS[4];
-    const person = villagerPerson(v, hit.npc.i); this.S.talkNpc = hit.npc.i; this.lastTalk = { id: person.id, how: talkTo(person, { anchor: ui.card }), voice: sayShow(person, 'athens') };
+    const person = villagerPerson(v, hit.npc.i); this.S.talkNpc = hit.npc.i; this.lastTalk = { id: person.id, how: talkTo(person, { anchor: ui.card }), voice: sayShow(person, 'athens', { anchor: ui.card, project: (() => { const S = this.S, i = hit.npc.i; return () => { const q = S.npcPos && S.npcPos[i]; if (!q) return { x: 0, y: 0, front: false }; const r = S.canvas ? S.canvas.getBoundingClientRect() : { left: 0, top: 0 }, v = S.project(q.x, (S.walk ? 1 : 2.4) * 1.9, q.z); return { x: r.left + v.x, y: r.top + v.y, front: !!v.vis }; }; })() }) };
     if (this.lastTalk.how === 'kit') { this.kitTalk = true; ui.card.hidden = true; return; }
     ui.card.innerHTML = `<button class="ath-x" data-a="cardx" aria-label="Close card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="ath-pill" style="--c:${esc(g.tint)}">Villager · ${esc(g.name)}</span><h3>${esc(v.name)} villager</h3><p class="ath-vfact">${esc(hit.fact)}</p>
       <div class="ath-btns"><a class="ath-go" href="${hrefOf(v.id)}">Open ${esc(v.name)}</a><button data-a="n-village" data-id="${esc(v.id)}">Visit the village</button></div>`;

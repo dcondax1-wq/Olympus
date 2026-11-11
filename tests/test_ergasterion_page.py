@@ -722,7 +722,7 @@ def test_page():
                 F = "window.ERGASTERION.floor()"
                 # the optional kits as recorders (the real people kit may be loaded: its say / show are wrapped, never replaced for good)
                 p.evaluate("""() => { window.__k = []; const K = window.OLYMPUS_PEOPLE || (window.OLYMPUS_PEOPLE = {});
-                  K.say = (id, text, o) => window.__k.push(['say', id, o && o.scene, !!(o && o.figure)]); K.show = (id, w) => window.__k.push(['show', id, w && w.kind, w && w.items ? w.items.length : -1]);
+                  K.say = (id, text, o) => window.__k.push(['say', id, o && o.scene && (o.scene.name || o.scene), !!(o && o.figure)]); K.show = (id, w) => window.__k.push(['show', id, w && w.kind, w && w.items ? w.items.length : -1]);
                   const FX = window.OLYMPUS_FX || (window.OLYMPUS_FX = {}); FX.burst = (k, at) => window.__k.push(['burst', k, !!(at && at.world)]);
                   const O = window.OLYMPUS; if (O && O.sound) O.sound.at = (n) => window.__k.push(['sound', n]); const X = window.OLYMPUS_SFX; if (X) X.at = (n) => window.__k.push(['sound', n]); }""")
                 p.wait_for_timeout(6500)

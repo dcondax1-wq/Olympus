@@ -21,7 +21,7 @@ let spec3d = null;
 let kitP = null;
 export function loadKit(base = import.meta.url, ms = 1500) {
   if (!kitP) kitP = Promise.all([
-    typeof window !== 'undefined' && window.OLYMPUS_PEOPLE ? Promise.resolve(true) : import(new URL('../olympus/people.js?v=p1', base).href).then(() => true, () => false),
+    typeof window !== 'undefined' && window.OLYMPUS_PEOPLE ? Promise.resolve(true) : import(new URL('../olympus/people.js?v=p2', base).href).then(() => true, () => false),
     loadLook(base),
   ]).then(async ([k, l]) => { const K = kit(); if (K && typeof K.ready === 'function') { try { await K.ready(); } catch (e) { /* the kit's own fallback */ } } return { kit: !!K || k, look: l }; });
   return Promise.race([kitP, new Promise((r) => setTimeout(() => r({ kit: !!kit(), look: !!spec3d, late: true }), ms))]);
@@ -49,11 +49,13 @@ export function talkTo(person, opts = {}) {
 
 /** the person speaks its hello (the kit's say(): a speech bubble, a voice, lips that move) and shows its work (the kit's show(): a card), when the kit has them.
  *  -> { say, show } booleans; never throws. Without them the chat card says it. */
-export function sayShow(person, scene, figure) {
-  const K = typeof window !== 'undefined' ? window.OLYMPUS_PEOPLE : null, out = { say: false, show: false }; if (!K || !person) return out;
+export function sayShow(person, scene, o = {}) {
+  const K = typeof window !== 'undefined' ? window.OLYMPUS_PEOPLE : null, out = { say: false, show: false, card: null }; if (!K || !person) return out;
   const id = kitId(person) || person.id, first = (person.qa || [])[0];
-  try { if (typeof K.say === 'function') { K.say(id, String(person.hello || (first && first[1]) || person.name).slice(0, 240), { scene, figure: figure || null }); out.say = true; } } catch (e) { /* our own card */ }
-  try { if (typeof K.show === 'function' && first) { K.show(id, { kind: 'work', title: person.title, text: first[1], items: (person.qa || []).slice(1, 4).map((x) => x[1]).filter(Boolean) }); out.show = true; } } catch (e) { /* our own card */ }
+  // say(id, text, { scene, figure | project | anchor }) (docs/PERSONA_API.md "Voices"): a speech bubble over the person (o.project = () => { x, y, front } in page pixels), its voice when on
+  try { if (typeof K.say === 'function') { K.say(id, String(person.hello || (first && first[1]) || person.name).slice(0, 240), { scene, figure: o.figure || null, project: o.project || null, anchor: o.project ? null : o.anchor || null, mood: person.mood === 'sad' ? 'worried' : undefined }); out.say = true; } } catch (e) { /* our own card */ }
+  // show(id, what) -> the work card element, built by the kit from the person's own facts; the caller places it (our chat card)
+  try { if (typeof K.show === 'function' && first) { const el = K.show(id, { kind: 'work', title: person.title, text: first[1], items: (person.qa || []).slice(1, 4).map((x) => x[1]).filter(Boolean) }, { mini: true }); out.show = true; if (el && el.nodeType === 1) out.card = el; } } catch (e) { /* our own card */ }
   return out;
 }
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);

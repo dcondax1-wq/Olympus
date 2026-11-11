@@ -55,6 +55,7 @@
     </div>
     <svg id="plan" class="plan" viewBox="0 0 360 292" role="group" aria-label="Plan of the factory: four halls, one button for each worker with its job and its status lamp"></svg>
     <p class="say" id="planSay"></p>
+    <div class="work" id="workCard" aria-live="polite" hidden></div>
     <div class="bar">
       <button class="btn" id="viewBtn" type="button" hidden>Plan view</button>
       <button class="btn" id="tourBtn" type="button" hidden aria-pressed="false">Calm tour</button>
@@ -169,7 +170,7 @@
   <p class="foot" id="foot">Ergasterion reads the site's own published files and sends nothing. It never starts a worker, never trades and never moves money: paper and suggestions only. A lamp is honest: green ran recently, blue is quiet, amber is old or missing data, red failed, grey is sample data. Every lesson is a sentence lifted from a file, with that file named.</p>
 </main>
 <!-- the shared people kit (docs/PERSONA_API.md) is optional: without it Ergasterion uses its own built-in chat card -->
-<script type="module" src="../olympus/people.js?v=p1"></script>
+<script type="module" src="../olympus/people.js?v=p2"></script>
 <script type="module" src="floorload.js?v=a5"></script>
 <script type="module" src="ergasterion.js?v=a5"></script>
 </body>

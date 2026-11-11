@@ -634,6 +634,10 @@ function build(rc, scene, camera, canvas, o) {
     },
     /** "show me your work": the person walks back to its station (if it is away) and the camera follows behind it. key = 'w:<id>' | 'b:<id>'. */
     lead(key) { const i = indexOf(key); if (i < 0) return null; const walking = sendHome(i); leadKey = key; following = i < N ? S[i].id : key; mode = 'follow'; still(); return { walking, to: { x: homeAt[i].x, z: homeAt[i].z } }; },
+    /** what the people kit's say() needs to place a bubble over this person: { figure (the near full figure, if any), camera, canvas, project() -> {x, y, front} (page pixels), P3 } */
+    sceneFor(key) { const i = indexOf(key); if (i < 0) return null; const F = full.get(key), V = new THREE.Vector3();
+      return { name: 'ergasterion', figure: F ? F.fig : null, camera, canvas, P3: P3 || null,
+        project: () => { const r = canvas.getBoundingClientRect(); V.set(at[i].x, (at[i].away ? 0 : Y0) + 1.45, at[i].z).project(camera); return { x: r.left + (V.x * 0.5 + 0.5) * r.width, y: r.top + (-V.y * 0.5 + 0.5) * r.height, front: V.z < 1 && Math.abs(V.x) < 1.05 && Math.abs(V.y) < 1.05 }; } }; },
     /** the full shared figure drawn for this person right now (near you), or null: for the kit's say(id, text, { figure }) lip sync */
     figureOf(key) { const F = full.get(key); return F ? F.fig : null; },
     /** where a person is right now (the schedule moves them): { x, z, act, pose, away } */

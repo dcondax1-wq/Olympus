@@ -1372,7 +1372,7 @@ def part_hellas():
     check("l. LIFE big news: a run adopted the day before makes a crowd gather; ten days later, example rows, or a city that is not the Archive: no",
           lf.get("news") is None or lf.get("news") == [True, None, None, None], lf.get("news"))
     check("l. LIFE say / show: without the kit nothing is called; with OLYMPUS_PEOPLE.say + show the keeper speaks its hello in the 'hellas' scene and shows its work",
-          lf.get("say", [None])[0] == {"say": False, "show": False} and lf.get("say", [None, None])[1] == {"say": True, "show": True} and [c[0] for c in lf.get("say", [0, 0, []])[2]] == ["say", "show"] and lf["say"][2][0][2] == "hellas", lf.get("say"))
+          {k: (lf.get("say") or [{}])[0].get(k) for k in ("say", "show")} == {"say": False, "show": False} and {k: (lf.get("say") or [{}, {}])[1].get(k) for k in ("say", "show")} == {"say": True, "show": True} and [c[0] for c in lf.get("say", [0, 0, []])[2]] == ["say", "show"] and lf["say"][2][0][2] == "hellas", lf.get("say"))
     check("l. deterministic: the same files give the same world twice (ids, names, places); every city has a unique real Greek place name from the bundled list",
           d.get("same") and d.get("uniqIds") and d.get("uniqNames") and d.get("names") and d.get("places", 0) >= 300, {k: d.get(k) for k in ("same", "uniqIds", "uniqNames", "names", "places")})
     check("l. layout: no two city markers touch, every city is inside the map, the regions never overlap, every city belongs to one region; trade routes join cities of the same family only",

@@ -133,3 +133,5 @@ html[data-oly-lite="1"] .campmap .smoke { animation: none; opacity: .6; }
 .workers .mini-face { width: 34px; height: 34px; border-radius: 50%; overflow: hidden; flex: none; display: inline-flex; position: relative; background: #2f271e; } .workers .mini-face svg { width: 34px; height: 34px; }
 .workers .mini-face + .lamp { margin-left: -14px; align-self: end; position: relative; }
 .workers button.person { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+
+.work { margin: 10px 0 0; } .work:empty { display: none; }

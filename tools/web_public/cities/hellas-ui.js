@@ -81,9 +81,11 @@ export class HellasUI {
   /** talk to a person: the shared People kit when it is loaded and knows them, else our own chat card (six questions, answers from this city's data) */
   talk(person, ref) {
     if (!person) return null; this.stopVoyage(); this.endTalk(); this.chat = person; if (this.scene && ref) this.scene.setTalk(ref);
-    const how = talkTo(person, { anchor: this.card }); this.lastTalk = { id: person.id, how, voice: sayShow(person, 'hellas') };
+    const how = talkTo(person, { anchor: this.card }), S = this.scene, P = S && ref && ref.kind === 'person' && S.people ? S.people[ref.i] : null;
+    const project = P ? () => { const r = S.canvas ? S.canvas.getBoundingClientRect() : { left: 0, top: 0 }, q = S.project(P.x, (S.walk ? 1.08 : 2.5) * 1.5, P.z); return { x: r.left + q.x, y: r.top + q.y, front: !!q.vis }; } : null;
+    const voice = sayShow(person, 'hellas', { project, anchor: this.card }); this.lastTalk = { id: person.id, how, voice: { say: voice.say, show: voice.show } };
     if (how === 'kit') { this.card.hidden = true; return how; }
-    this._chatting = true; this.showCard(person.name, [chatCard(person), person.kind === 'builder' ? this.acts(btn('All the builders', () => this.buildersCard())) : null]); return how;
+    this._chatting = true; this.showCard(person.name, [chatCard(person), voice.card, person.kind === 'builder' ? this.acts(btn('All the builders', () => this.buildersCard())) : null]); return how;
   }
   talkKeeper(p) { const S = this.scene, P = S && S.level === 'polis' && S.people ? S.people[0] : null; if (P && S.polis === p && !S.walking) S.flyTo(P.x, P.z, { dist: 34, pitch: .42, yaw: 0 }); return this.talk(P && S.polis === p ? P.person : keeperPerson(p), P && S.polis === p ? { kind: 'person', i: 0 } : null); }
   talkNearest() { const S = this.scene; if (!S || !S.walk) return; const e = S.peopleNear(S.walk.x, S.walk.z, 1, 3)[0]; if (e) this.talk(e.P.person, { kind: 'person', i: e.P.i }); }
