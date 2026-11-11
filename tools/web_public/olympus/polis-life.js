@@ -290,6 +290,14 @@
         if (g0 > 0.6) { branch(tx, ty + 10, ang - 1.15, L * 0.7, w1 * 0.55, depth - 2); branch(tx, ty + 10, ang + 1.15, L * 0.7, w1 * 0.55, depth - 2); }
       }
     }
+    if (!sap) {                               // olive crowns are full domes: a filler cluster between each tip and its nearest neighbour
+      var n0 = tips.length, ii, jj;
+      for (ii = 0; ii < n0; ii++) {
+        var best = -1, bd = 1e9;
+        for (jj = 0; jj < n0; jj++) { if (jj === ii) continue; var dd2 = Math.pow(tips[ii][0] - tips[jj][0], 2) + Math.pow(tips[ii][1] - tips[jj][1], 2); if (dd2 < bd) { bd = dd2; best = jj; } }
+        if (best >= 0 && bd > 64) tips.push([(tips[ii][0] + tips[best][0]) / 2, (tips[ii][1] + tips[best][1]) / 2 - 3, (tips[ii][2] + tips[best][2]) * 0.42]);
+      }
+    }
     // foliage: a dark mass behind every cluster, then the leaves: narrow pointed olive leaves, dark grey-green tops and silver undersides
     // (lit from the upper left). Leaves of one colour are ONE path (a few nodes per tree, not thousands).
     var dens = (lt ? 0.5 : 1) * (thirsty ? 0.6 : 1), DARK = thirsty ? ['#7d7550', '#6b6545', '#5f5a3e'] : ['#45512b', '#55633a', '#63723f', '#3b4626'],
@@ -323,9 +331,9 @@
     for (i = 0; i < ol && tips.length; i++) {
       var tp = tips[Math.floor(R() * tips.length)], a2 = R() * Math.PI * 2, r2 = Math.sqrt(R()) * tp[2] * 0.75;
       x = tp[0] + Math.cos(a2) * r2; y = tp[1] + Math.sin(a2) * r2 * 0.8 + 3;
-      var e = 'M' + (x - 2).toFixed(1) + ',' + y.toFixed(1) + 'a2,2.6 0 1,0 4,0a2,2.6 0 1,0 -4,0Z', rv = R();
+      var e = 'M' + (x - 2.5).toFixed(1) + ',' + y.toFixed(1) + 'a2.5,3.2 0 1,0 5,0a2.5,3.2 0 1,0 -5,0Z', rv = R();
       if (rv < 0.25) oGreen += e; else if (rv < 0.62) oPurple += e; else oDark += e;
-      glint += 'M' + (x - 0.4).toFixed(1) + ',' + (y - 1.1).toFixed(1) + 'a0.6,0.6 0 1,0 0.01,0Z';
+      glint += 'M' + (x - 0.9).toFixed(1) + ',' + (y - 1.3).toFixed(1) + 'a0.8,0.8 0 1,0 0.01,0Z';
     }
     if (oGreen) S('path', { d: oGreen, fill: '#848235', stroke: '#2e2a12', 'stroke-width': 0.35 }, layerFruit);
     if (oPurple) S('path', { d: oPurple, fill: '#4a2c45', stroke: '#1a1316', 'stroke-width': 0.35 }, layerFruit);
@@ -472,11 +480,11 @@
       var E = [], k;
       for (k = 0; k <= 12; k++) {                  // the leading edge: from the shoulder blade up and out to the tip
         var u = k / 12;
-        E.push([60 + side * (6 + 36 * u + 4 * Math.sin(u * Math.PI)), 94 - 58 * u + 14 * u * u]);
+        E.push([60 + side * (6 + 29 * u + 4 * Math.sin(u * Math.PI)), 94 - 60 * u + 14 * u * u]);
       }
       var fe = [];
       for (k = 2; k <= 12; k++) {                  // flight feathers, longest near the tip, tilted outwards
-        var p0 = E[k], u2 = k / 12, L = 20 + 34 * u2, th = (0.12 + 0.42 * u2) * side, tx = p0[0] + Math.sin(th) * L, ty = p0[1] + Math.cos(th) * L;
+        var p0 = E[k], u2 = k / 12, L = 20 + 32 * u2, th = (0.08 + 0.3 * u2) * side, tx = p0[0] + Math.sin(th) * L, ty = p0[1] + Math.cos(th) * L;
         var nx = Math.cos(th) * 3.2, ny = -Math.sin(th) * 3.2;
         fe.push('M' + (p0[0] - nx).toFixed(1) + ',' + (p0[1] - ny).toFixed(1) + ' L' + (tx - nx * 0.7).toFixed(1) + ',' + (ty - ny * 0.7).toFixed(1) +
           ' Q' + (tx + Math.sin(th) * 3).toFixed(1) + ',' + (ty + Math.cos(th) * 3).toFixed(1) + ' ' + (tx + nx * 0.7).toFixed(1) + ',' + (ty + ny * 0.7).toFixed(1) +
@@ -588,9 +596,13 @@
     var box = H('div', 'pl-hb', null, el), icon = S('svg', { viewBox: '0 0 48 48', 'class': 'pl-salpinx', 'aria-hidden': 'true' }, box);
     S('circle', { cx: 24, cy: 24, r: 23, fill: 'url(#pl-bronze)' }, icon);
     S('circle', { cx: 24, cy: 24, r: 20.6, fill: '#2a2119' }, icon);
-    S('path', { d: 'M9,27 L9,21 L26,22.6 L36,13.4 C38.4,19 38.4,29 36,34.6 L26,25.4 Z', fill: 'url(#pl-gold)', stroke: '#6b4f1c', 'stroke-width': 0.6 }, icon);
-    S('rect', { x: 6.4, y: 21.4, width: 3.6, height: 5.2, rx: 1, fill: '#8d6c25' }, icon);
-    S('path', { d: 'M39.4,18 C41.4,21 41.4,27 39.4,30 M42,15.6 C45,20 45,28 42,32.4', fill: 'none', stroke: C.gold, 'stroke-width': 1.2, 'stroke-linecap': 'round', opacity: 0.8 }, icon);
+    S('path', { d: 'M7,26.4 L30,23.2 L30,25.6 L7,27.8 Z', fill: 'url(#pl-gold)', stroke: '#6b4f1c', 'stroke-width': 0.5 }, icon);
+    S('path', { d: 'M29.4,23.3 C33,22.4 36.4,19.8 38.6,16.4 C40.6,21.4 40.8,27 39,32 C36.6,29 33,26.6 29.4,25.5 Z', fill: 'url(#pl-gold)', stroke: '#6b4f1c', 'stroke-width': 0.6 }, icon);
+    S('ellipse', { cx: 38.8, cy: 24.2, rx: 1.3, ry: 7.7, fill: '#8d6c25', transform: 'rotate(-6 38.8 24.2)' }, icon);
+    S('rect', { x: 15, y: 24.4, width: 2.2, height: 3.6, rx: 0.6, fill: '#8d6c25', transform: 'rotate(-8 16 26)' }, icon);
+    S('path', { d: 'M5.4,25.6 L8.6,25.2 L8.8,28.2 L5.6,28.4 Z', fill: '#8d6c25' }, icon);
+    S('path', { d: 'M17,30 C22,36 28,36 31,31', fill: 'none', stroke: '#c96a4a', 'stroke-width': 1.1, 'stroke-linecap': 'round' }, icon);
+    S('path', { d: 'M30.6,31.2 l2.6,3.4 l-3.6,0.4', fill: '#c96a4a' }, icon);
     var txt = H('div', 'pl-hb-text', null, box), kick = H('p', 'pl-kicker', '', txt), cry = H('p', 'pl-cry', '', txt), plain = H('p', 'pl-plain', '', txt);
     txt.setAttribute('aria-live', 'polite');
     border(el, opts);
