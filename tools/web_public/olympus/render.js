@@ -353,8 +353,10 @@ export function createRenderer(opts) {
   }
   let tier = tierOf(level);
 
+  let extEnv = null;                                  // an image-based environment made elsewhere (olympus/env-kit.js HDRI): used instead, never disposed here
   function environment() {
     if (envTex) { envTex.dispose(); envTex = null; }
+    if (extEnv) { scene.environment = extEnv; if (o.background) scene.background = extEnv; return; }
     if (o.env === 'none') return;
     envTex = makeEnvironment(renderer, o.env, palette(theme, o.tint));
     scene.environment = envTex;
@@ -507,6 +509,8 @@ export function createRenderer(opts) {
     passes: () => (composer ? composer.passes.map((p) => (p === bloom ? 'bloom' : p === finish ? 'finish' : p instanceof RenderPass ? 'scene' : 'app'))
       : ['direct']),
     setTheme(t) { theme = t || null; environment(); },
+    /** use this PMREM texture as the scene's environment (env-kit's HDRI; the caller owns it), or null to go back to the core's own */
+    setEnvironment(tex) { extEnv = tex || null; if (!dead && !asleep) { if (!extEnv && scene.environment && scene.environment !== envTex) scene.environment = null; environment(); } },
     /** release every GPU buffer (the composer's targets and the environment) while the view is not on screen; render() draws
      *  nothing until resume(). iPhone memory: a covered scene must not keep its multisampled buffer. */
     suspend() {
@@ -576,7 +580,7 @@ export function createRenderer(opts) {
       const i = renderer.info;
       return { quality: level, passes: api.passes().length, names: api.passes(), dpr, samples: composer ? tier.samples : 0,
         bloom: !!bloom, fxaa: !!(composer && tier.fxaa), hdr: bufferType === THREE.HalfFloatType, fps: perf.fps, steps: perf.steps,
-        targets: composer ? 2 : 0, calls: i.render.calls, triangles: i.render.triangles, programs: (i.programs || []).length, env: envTex ? o.env : 'none',
+        targets: composer ? 2 : 0, calls: i.render.calls, triangles: i.render.triangles, programs: (i.programs || []).length, env: extEnv ? 'external' : envTex ? o.env : 'none',
         bloomStrength: bloom ? bloom.strength : 0, grade: post.lutName || null, focus: post.focusOn, tone: post.tone, hooks: hooks.length };
     },
     dispose() {
