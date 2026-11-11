@@ -852,6 +852,12 @@ const [, , TMP, WEB] = process.argv;
   // a scene of 30: the crowd (v2 in node: no document for the sprites) + 4 rigged close-ups
   const sc = Rr.people.slice(0, 30).map((p) => C.spec(p)), cr = P3.figureInstanced(THREE, sc, { seated: true, lite: true }), cu = sc.slice(0, 4).map((s) => P3.figure(THREE, s, { seated: true }));
   o.scene30 = [cr.userData.drawCalls + cu.length * 2, cr.userData.totalTriangles + cu.reduce((n, x) => n + x.userData.triangles, 0)];
+  // the placeholder: before the cast arrives a scene gets the v2 figure; when it arrives the SAME object becomes the rigged one, its pose, face and scale kept
+  P3.rigInstall(R, null, new Promise((ok) => setTimeout(() => ok(cast), 30))); globalThis.window = { location: { search: '' }, dispatchEvent() { return true; } };
+  const ph = P3.figure(THREE, P3.spec('keeper:market'), {}), ud0 = ph.userData; ph.scale.multiplyScalar(1.5); P3.play(ph, 'think'); P3.setExpression(ph, 'happy', 1);
+  const before = [!!ph.userData.rig, ph.userData.v]; await new Promise((ok) => setTimeout(ok, 120)); P3.animate(ph, 0.05);
+  o.upgrade = [before, !!ph.userData.rig, ph.userData === ud0, ph.userData.state().pose, ph.userData.state().expression, +ph.scale.x.toFixed(3), +(1.5).toFixed(3)];
+  delete globalThis.window;
   // rig off: opts.rig === false and rigInstall(null) give the v2 figure again
   o.off = [!!P3.figure(THREE, P3.spec('bot:lit'), { rig: false }).userData.rig];
   P3.rigInstall(null); o.off.push(!!P3.figure(THREE, P3.spec('bot:lit'), {}).userData.rig, P3.rigStatus());
@@ -917,6 +923,9 @@ def test_rig():
     check(f"g3. deterministic: the same person is the same mesh every time; {o['det'][1]} of {o['det'][2]} people have a mesh of their own", o["det"][0] is True and o["det"][1] >= o["det"][2] - 2, o["det"])
     check(f"g3. budgets (Round 4): 30 people as one crowd + 4 rigged close-ups = {o['scene30'][0]} draw calls, {o['scene30'][1]:,} triangles", o["scene30"][0] <= 12 and o["scene30"][1] <= 100000, o["scene30"])
     check("g3. the rig can be switched off (opts.rig = false, no cast): the v2 figure", o["off"] == [False, False, "v2"], o["off"])
+    u = o["upgrade"]
+    check("g3. the light placeholder: a figure made before the cast loads is the v2 one, then turns into the rigged character in place (same object and userData; pose, face and the scene's scale kept)",
+          u[0] == [False, 2] and u[1] is True and u[2] is True and u[3] == "think" and u[4] == "happy" and u[5] == u[6], u)
 
 
 def test_assets():

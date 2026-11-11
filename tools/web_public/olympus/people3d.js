@@ -604,7 +604,7 @@ export function loadRig() {
   return RIG.p;
 }
 /** tests / tools: hand the module a rig module and a loaded cast (node has no fetch); rigInstall(null) goes back to v2 */
-export function rigInstall(mod, cast) { RIG.mod = mod || null; RIG.cast = cast || null; RIG.err = null; RIG.p = cast ? Promise.resolve(true) : null; }
+export function rigInstall(mod, cast, pending) { RIG.mod = mod || null; RIG.cast = cast || null; RIG.err = null; RIG.p = cast ? Promise.resolve(true) : pending ? Promise.resolve(pending).then((c) => { RIG.cast = c; return !!c; }) : null; }
 /** 'v3' when the rigged cast is loaded, 'loading', 'v2' (no cast: the made-in-code figures) */
 export function rigStatus() { return RIG.cast ? 'v3' : RIG.p && !RIG.err ? 'loading' : 'v2'; }
 export function rigCast() { return RIG.cast; }
@@ -636,7 +636,7 @@ function upgrade(THREE, root, s, o, W) {
   const old = { body: u.body, ink: u.ink, skel: u.skeleton };
   for (const c of root.children.slice()) root.remove(c);
   try { old.body.geometry.dispose(); old.ink.geometry.dispose(); old.skel.dispose(); } catch (_) { /* gone */ }
-  root.add(ch.object); root.scale.setScalar(o.scale || 1);
+  root.add(ch.object); root.scale.multiplyScalar(1 / (s.height || 1));      // v2 put the height in the root scale (and a scene may have scaled it since); v3 has it in the model
   const n = rigData(ch, s, o); for (const k of Object.keys(u)) if (!(k in n) && k !== 'dispose') delete u[k];
   for (const k of Object.keys(n)) { const d = Object.getOwnPropertyDescriptor(n, k); Object.defineProperty(u, k, { ...d, configurable: true, enumerable: true }); }
   u.dispose = () => { u.gone = true; ch.dispose(); if (root.parent) root.parent.remove(root); };
