@@ -320,3 +320,68 @@ export function card(v, t) {
     kpis: [{ label: 'Runs', value: (v ? v.total : 0).toLocaleString('en-US') }, { label: 'Contenders', value: String(T ? T.eligible : 0) }, { label: 'Champion', value: ch ? usd(ch.m26.pm) + '/mo' : 'n/a' }],
     lines: [ch ? `Champion: ${ch.id}.`.slice(0, 120) : 'No tournament yet.', 'Duels use stored numbers only. Not a promise.'], t: t || 0, open: '#', theme: '#14110e', stale_after: 604800 };
 }
+
+// ------------------------------------------------------------------------------------------------ every champion is a person (docs/PERSONA_API.md)
+// The shared People kit opens its own chat for these ids; without the kit the page shows this fallback: five questions answered ONLY from the stored numbers, always with $ and n.
+export const personId = (f) => (!f ? '' : f.kind === 'bot' ? f.id : 'champion:' + f.id);
+export const QUESTIONS = [['win', 'How did you win?'], ['weak', 'What is your weakness?'], ['trades', 'How many trades?'], ['eval', 'Would you pass an eval?'], ['rejected', 'Why were you rejected?']];
+const NOT_PROMISE = 'Backtest, not a promise.';
+function mainPeriod(f) { const per = f.m26 ? '26' : f.mold ? 'old' : f.mlive ? 'live' : null; return { per, m: mOf(f, per), word: PERIOD_WORD[per] || '' }; }
+/** the line every answer ends with: the money, the sample size and the honest label */
+function tail(f) { const { per, m, word } = mainPeriod(f); if (!m) return 'No result is stored for me, so I have no dollars and no trade count to show. ' + NOT_PROMISE; return `(${word}: ${usdS(m.net)}, n = ${m.n} trades. ${per === 'live' ? 'A short live record, not a promise.' : NOT_PROMISE})`; }
+/** one answer in the champion's own voice. d = the finished duel it fought in, if any. Never a number that is not stored. */
+export function answer(f, key, d) {
+  if (!f) return '';
+  const { per, m, word } = mainPeriod(f);
+  if (!m) return tail(f);
+  let s = '';
+  if (key === 'win') {
+    const mine = d && (d.a === f || d.b === f) ? (d.a === f ? 'a' : 'b') : null;
+    if (!mine) s = `I have not finished a duel yet. My record: ${usdS(m.net)}${m.pm !== null ? `, ${usd(m.pm)} a month` : ''}${m.pf !== null ? `, PF ${pf(m.pf)}` : ''}.`;
+    else {
+      const ok = mine === 'a' ? 'b' : 'a', other = mine === 'a' ? d.b : d.a, won = d.rounds.filter((r) => r.winner === mine).map((r) => r.name.toLowerCase());
+      if (!d.period) s = `Nobody won: ${short(other)} and I have no period in common.`;
+      else if (d.winner === mine) s = `I beat ${short(other)} ${d.score[mine]} to ${d.score[ok]}${d.decidedBy === 'money' ? ' on money, the rounds were level' : ''}. I took ${won.join(', ') || 'no single round'}.`;
+      else if (d.winner === 'draw') s = `I did not: it was a draw with ${short(other)}, ${d.score[mine]} to ${d.score[ok]}.`;
+      else s = `I did not win: ${short(other)} beat me ${d.score[ok]} to ${d.score[mine]}. I was better only on ${won.join(', ') || 'no round'}.`;
+    }
+  } else if (key === 'weak') {
+    const w = [];
+    if (m.n < N_FLOOR) w.push(`only ${m.n} trades stand behind me, too few to trust`);
+    if (f.m26 && f.mold && f.mold.net !== null && f.mold.net <= 0) w.push(`in 2021-25 I made ${usdS(f.mold.net)} over ${f.mold.n} trades, so I do not hold in both periods`);
+    if (m.tpw !== null && tpwDist(m.tpw) > 0) w.push(`I trade ${dec(m.tpw, 1)} times a week, outside the 2 to 4 rule`);
+    if (m.f10 !== null && m.p10 !== null && m.f10 > m.p10) w.push(`more of my evals failed (${pct(m.f10)}) than passed (${pct(m.p10)}) within 10 sessions`);
+    if (m.pf !== null && m.pf < 1) w.push(`I lose money: PF ${pf(m.pf)}`);
+    if (m.dd !== null) w.push(`my worst drop was ${usd(-Math.abs(m.dd))}`);
+    if (f.kind === 'run' && !f.mold) w.push('I have no 2021-25 result at all');
+    s = w.length ? `My weak spots: ${w.slice(0, 3).join('; ')}.` : 'Nothing weak is stored for me, which only means it was not measured.';
+  } else if (key === 'trades') {
+    s = `${m.n} trades in ${word}${m.tpw !== null ? `, ${dec(m.tpw, 1)} a week (${tpwDist(m.tpw) === 0 ? 'inside' : 'outside'} the 2 to 4 rule)` : ''}.`;
+    if (per === '26' && f.mold) s += ` And ${f.mold.n} trades in 2021-25.`;
+    if (m.n < N_FLOOR) s += ` Under ${N_FLOOR} trades is too few to trust.`;
+  } else if (key === 'eval') {
+    if (m.p10 === null || m.f10 === null) s = 'No eval pass or fail rate is stored for me, so I cannot say. I will not guess.';
+    else s = `In the backtest ${pct(m.p10)} of MFFU evals passed within 10 sessions and ${pct(m.f10)} failed${m.dec10 !== null ? `; ${pct(m.dec10)} were decided by then` : ''}${m.pass_med !== null ? `; a pass took ${dec(m.pass_med, 1)} sessions in the middle case` : ''}. Whether the next eval passes, nobody knows.`;
+  } else if (key === 'rejected') {
+    if (f.kind === 'bot') s = 'I am a live bot, not a run of the Archive, so there is no verdict on me.';
+    else if (f.verdict === 1) s = `I was rejected.${f.note ? ` The Archive's note: ${f.note}` : ' The Archive stores no note with the reason.'}`;
+    else if (f.verdict === 0) s = 'I was not rejected: I am an adopted run.';
+    else s = 'I am still open: neither adopted nor rejected.';
+  } else return '';
+  return s + ' ' + tail(f);
+}
+/** after a duel the winner and the loser each say one honest line -> [{ id, who, role, line }] (a, then b) */
+export function afterLines(d) {
+  if (!d) return [];
+  return [['a', d.a, d.b], ['b', d.b, d.a]].map(([k, f, other]) => {
+    const ok = k === 'a' ? 'b' : 'a', m = mOf(f, d.period), won = d.rounds.filter((r) => r.winner === k).map((r) => r.name.toLowerCase()), lost = d.rounds.filter((r) => r.winner === ok).map((r) => r.name.toLowerCase());
+    const money = m && m.net !== null ? `${usdS(m.net)} over n = ${m.n} trades` : 'no stored dollars';
+    const end = d.period === 'live' ? 'a short live record, not a promise.' : 'a backtest, not a promise.';
+    const role = !d.period ? 'none' : d.winner === 'draw' ? 'draw' : d.winner === k ? 'winner' : 'loser';
+    const line = role === 'none' ? `We could not be compared: no period in common. I have ${money}: ${end}`
+      : role === 'draw' ? `Level with ${short(other)} at ${d.score[k]} each. I have ${money}: ${end}`
+      : role === 'winner' ? `I won ${d.score[k]} to ${d.score[ok]}, but ${lost.length ? `${short(other)} was better on ${lost.join(' and ')}` : 'one duel proves little'}. ${money}: ${end}`
+      : `I lost ${d.score[k]} to ${d.score[ok]}${won.length ? `, though I was better on ${won.join(' and ')}` : ' and was better on no round'}. My record: ${money}: ${end}`;
+    return { id: personId(f), who: short(f), role, line };
+  });
+}
