@@ -35,10 +35,10 @@ function label(text, color, h = 0.32) {
   const c = document.createElement('canvas');
   const ctx = c.getContext('2d');
   const fs = 64;
-  ctx.font = `700 ${fs}px Orbitron, Rajdhani, system-ui, sans-serif`;
+  ctx.font = `700 ${fs}px Georgia, Georgia, system-ui, sans-serif`;
   const w = Math.ceil(ctx.measureText(text).width) + 40;
   c.width = w; c.height = fs + 32;
-  ctx.font = `700 ${fs}px Orbitron, Rajdhani, system-ui, sans-serif`;
+  ctx.font = `700 ${fs}px Georgia, Georgia, system-ui, sans-serif`;
   ctx.textBaseline = 'middle';
   ctx.shadowColor = color; ctx.shadowBlur = 18;
   ctx.fillStyle = color;

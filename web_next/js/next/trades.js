@@ -26,8 +26,8 @@ export function tcCss() {
   if (!document.getElementById('nx-tc-css')) {
     const c = document.createElement('style'); c.id = 'nx-tc-css';
     c.textContent = `.nx-sheet.nx-sheet-tc{width:min(980px,calc(100vw - 24px))}.nx-tcbox{flex:none;background:var(--surface-2,#161a23);border:1px solid var(--border,rgba(160,170,220,.12));border-radius:14px;padding:12px;min-height:120px;margin-bottom:6px}
-.nx-tcb{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:999px;font:600 12px var(--sans,system-ui);color:var(--ink,#eef1f8);cursor:pointer;background:color-mix(in srgb,var(--brand,#6d7cff) 16%,transparent);border:1px solid color-mix(in srgb,var(--brand,#6d7cff) 45%,transparent)}
-.nx-tcb svg{width:13px;height:13px}.nx-tcb:hover{background:color-mix(in srgb,var(--brand,#6d7cff) 28%,transparent)}`;
+.nx-tcb{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:999px;font:600 12px var(--sans,system-ui);color:var(--ink,#eef1f8);cursor:pointer;background:color-mix(in srgb,var(--brand,#7fa6bd) 16%,transparent);border:1px solid color-mix(in srgb,var(--brand,#7fa6bd) 45%,transparent)}
+.nx-tcb svg{width:13px;height:13px}.nx-tcb:hover{background:color-mix(in srgb,var(--brand,#7fa6bd) 28%,transparent)}`;
     document.head.appendChild(c);
   }
 }

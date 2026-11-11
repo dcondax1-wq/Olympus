@@ -21,10 +21,10 @@ const LETTERING = false;      // AGORA: the core has no HUD text ring, no projec
 const SUB = ['CORE ONLINE', 'VOICE IN', 'PROCESSING', 'VOICE OUT', 'ATTENTION'];
 const EFFECTS = ['off', 'low', 'high', 'ultra'];
 const DESIGNS = ['reactor', 'singularity'];
-const VIOLET = { c: '#a855f7', c2: '#7c3aed', c3: '#c084fc', tint: '#e9ddff' };      // Eclipse, the owner's violet
-const NAMED = { eclipse: VIOLET, reactor: { c: '#a95cff', c2: '#6d28d9', c3: '#22d3ee', tint: '#f5d0fe' },   // the old theme keys
-  'reactor-stark': { c: '#ffbe3d', c2: '#d6281f', c3: '#6fd8ff', tint: '#fff1d0' }, 'reactor-ice': { c: '#4fe3ff', c2: '#0284c7', c3: '#9d8cff', tint: '#e6fbff' },
-  'reactor-emerald': { c: '#1ff5a4', c2: '#059669', c3: '#b4ff3c', tint: '#dcfff0' } };
+const VIOLET = { c: '#9c6b3c', c2: '#9c6b3c', c3: '#c9a06a', tint: '#e9ddff' };      // Eclipse, the owner's violet
+const NAMED = { eclipse: VIOLET, reactor: { c: '#9c6b3c', c2: '#9c6b3c', c3: '#4b7a99', tint: '#f5d0fe' },   // the old theme keys
+  'reactor-stark': { c: '#ffbe3d', c2: '#d6281f', c3: '#7fa6bd', tint: '#fff1d0' }, 'reactor-ice': { c: '#4b7a99', c2: '#4b7a99', c3: '#7fa6bd', tint: '#e6fbff' },
+  'reactor-emerald': { c: '#7f8a52', c2: '#059669', c3: '#b4ff3c', tint: '#dcfff0' } };
 const themeOf = (th) => Object.assign({}, VIOLET, typeof th === 'string' ? NAMED[th] : th);
 const BAD = [255, 77, 109], WARN = [251, 191, 36], WHITE = [255, 255, 255];
 const TAU = Math.PI * 2;
@@ -253,7 +253,7 @@ export function mountCore(el, opts) {
     lg.setTransform(1, 0, 0, 1, 0, 0); lg.clearRect(0, 0, lab.width, lab.height);
     lg.setTransform(dpr, 0, 0, dpr, S * dpr / 2, S * dpr / 2);
     const fs = Math.max(7, R * 0.048);
-    lg.font = '600 ' + fs.toFixed(1) + 'px "Orbitron","Bahnschrift",ui-monospace,SFMono-Regular,Menlo,monospace';
+    lg.font = '600 ' + fs.toFixed(1) + 'px "Georgia","Bahnschrift",ui-monospace,SFMono-Regular,Menlo,monospace';
     lg.textAlign = 'center'; lg.textBaseline = 'middle'; lg.fillStyle = col(cc, 0.85);
     const r = R * 0.885;
     gaps = [0, curved(txt[0], r, 0, false, fs * 0.2), Math.PI / 2, curved(txt[1], r, Math.PI / 2, true, fs * 0.28),

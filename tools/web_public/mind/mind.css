@@ -330,7 +330,7 @@ html[data-fx="off"] *, html[data-fx="off"] *::before, html[data-fx="off"] *::aft
 }
 .day[hidden] { display: none; }
 .day header { display: flex; align-items: center; gap: 8px; }
-.day h2 { margin: 0; font: 600 13px/1 Orbitron, sans-serif; letter-spacing: .01em; text-transform: none; color: var(--cyan); }
+.day h2 { margin: 0; font: 600 13px/1 Georgia, sans-serif; letter-spacing: .01em; text-transform: none; color: var(--cyan); }
 .day-sum { flex: 1; font-size: 13px; color: var(--mut); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .day .close { position: static; }
 .day-strip { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; align-items: end; height: 34px; flex: none; }

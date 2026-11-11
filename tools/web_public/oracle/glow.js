@@ -66,7 +66,7 @@ export function setLabel(sprite, text, color) {
   L.text = text;
   if (color) L.color = color;
   const px = 44, g = L.c.getContext('2d');
-  const font = `${L.weight} ${px}px Rajdhani, -apple-system, system-ui, sans-serif`;
+  const font = `${L.weight} ${px}px Georgia, -apple-system, system-ui, sans-serif`;
   g.font = font;
   const w = Math.min(1024, Math.ceil(g.measureText(text).width) + 24), h = px + 16;
   if (L.c.width !== w || L.c.height !== h) L.tex.dispose();     // a new size needs a new GPU texture (three.js keeps it immutable)

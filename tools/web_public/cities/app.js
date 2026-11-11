@@ -18,7 +18,7 @@ import { AgoraMap } from './agoramap.js?v=g4';
 // Do not load/compile the 3D pipeline until this device has a usable context.
 let Stage, TIERS, BUDGETS, Rig, makePath, safeFlight, warmHex = (h) => h;
 
-const GROUPS = { trading: ['Trading', '#4f8cff'], research: ['Research', '#a68bff'], money: ['Money', '#ff9f43'], kalshi: ['Kalshi', '#ff6b9a'], life: ['Life', '#39e59a'], obsidian: ['Obsidian', '#9d8cff'] };
+const GROUPS = { trading: ['Trading', '#4b7a99'], research: ['Research', '#c9a06a'], money: ['Money', '#ff9f43'], kalshi: ['Kalshi', '#ff6b9a'], life: ['Life', '#7f8a52'], obsidian: ['Obsidian', '#7fa6bd'] };
 const GROUP_ORDER = Object.keys(GROUPS);
 const ICON = {
   tour: 'M7 4l13 8-13 8z', find: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-4.5-4.5', surprise: 'M12 2l2.6 6.3L21 9l-5 4.4L17.5 20 12 16.7 6.5 20 8 13.4 3 9l6.4-.7z',

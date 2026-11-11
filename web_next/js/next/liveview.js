@@ -21,8 +21,8 @@ const L = {
   view: { n: null, end: 0 }, hover: null, seen: 0, at: 0, geo: null, raf: 0, lastFx: 0, fast: false,
 };
 const PAL = {
-  dark: { lit: '#4f9bff', atlas: '#ff9a3d', scalp: '#b388ff', sys: '#94a3b8', structure: '#e2e8f0' },
-  light: { lit: '#2563eb', atlas: '#ea580c', scalp: '#7c3aed', sys: '#475569', structure: '#334155' },
+  dark: { lit: '#4b7a99', atlas: '#ff9a3d', scalp: '#c9a06a', sys: '#94a3b8', structure: '#e2e8f0' },
+  light: { lit: '#4b7a99', atlas: '#ea580c', scalp: '#9c6b3c', sys: '#475569', structure: '#334155' },
 };
 const NAMES = { lit: 'Zlarior', atlas: 'ATLAS', scalp: 'BLITZ', sys: 'Bot', structure: 'Structure' };
 const col = (k) => (PAL[L.theme][k] || PAL[L.theme].sys);

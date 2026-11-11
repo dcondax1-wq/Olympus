@@ -168,7 +168,7 @@ export function calendarView(ctx) {
       const c = d ? h('button', 'hc has') : h('i', 'hc' + (wd > 4 ? ' wk' : ''));
       if (d) {
         c.type = 'button'; c.dataset.day = key; const k = Math.min(1, Math.abs(d.usd) / maxAbs);
-        c.style.background = d.usd >= 0 ? `rgba(70,215,154,${0.25 + 0.7 * k})` : `rgba(255,90,102,${0.25 + 0.7 * k})`;
+        c.style.background = d.usd >= 0 ? `rgba(127,138,82,${0.25 + 0.7 * k})` : `rgba(255,90,102,${0.25 + 0.7 * k})`;
         c.title = `${prettyDay(key)}: ${sgn(d.usd)}`; c.setAttribute('aria-label', c.title); c.textContent = String(dd);
         c.addEventListener('click', () => { ctx.close(); ctx.pickDay(key, { play: true }); });
       } else c.textContent = String(dd);

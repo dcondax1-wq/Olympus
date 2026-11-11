@@ -161,8 +161,8 @@ async function renderDetail(el, id) {
     el.querySelector('.tbl td[data-tc]')?.closest('table')?.addEventListener('click', (e) => { const c = e.target.closest('td[data-tc]'); if (c && e.target.closest('[data-chart]')) openChart(by.get(c.dataset.tc)); });
   }).catch(() => null);
   el.querySelector('[data-wu]')?.addEventListener('click', (e) => { wst.sel = e.currentTarget.dataset.wu; go('writeups'); });
-  const series = [{ label: r.title, color: '#7c8cff', days: r.days.map(d => [d[0], d[1]]) }];
-  if (b) series.push({ label: bid === 'baseline' && liveStrat() === 'lit' ? 'Previous strategy (archive lock)' : 'Live strategy', color: '#3ee0c8', days: b.days.map(d => [d[0], d[1]]) });
+  const series = [{ label: r.title, color: '#7fa6bd', days: r.days.map(d => [d[0], d[1]]) }];
+  if (b) series.push({ label: bid === 'baseline' && liveStrat() === 'lit' ? 'Previous strategy (archive lock)' : 'Live strategy', color: '#7f8a52', days: b.days.map(d => [d[0], d[1]]) });
   $('#labEq').innerHTML = equitySvg(series);
   mount3d('lab-ribbon', $('#labRibbon'), 'ribbon', { series });
 }

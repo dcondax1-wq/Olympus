@@ -13,12 +13,12 @@ const AG_THEME = { sky: '#3a2c1e', fog: '#2a2118', emissive: '#c8a24a', bloom: '
 
 const TAU = Math.PI * 2;
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
-const TONE = { calm: '#aeb86e', watch: '#e0b060', storm: '#c96a4a', info: '#4b7a99' };
+const TONE = { calm: '#aeb86e', watch: '#e0b060', storm: '#c96a4a', info: '#8b7259' };
 const PIL = [[-3.4, 3], [3.4, 3], [-3.4, -3], [3.4, -3], [-3.4, -9], [3.4, -9]];     // x, z of the six pillars
 const ROSTRUM_Z = -14, TEMPLE_Z = -27;
 // [hour, top, middle, horizon]: the sky colours through the New York day
-const SKY = [[0, '#13100d', '#171410', '#2e2720'], [3, '#13100d', '#221d18', '#393028'], [5, '#302922', '#9c6b3c', '#c96a4a'], [7, '#4b7a99', '#4b7a99', '#e0b060'],
-  [10, '#4b7a99', '#4b7a99', '#f3ece0'], [15, '#4b7a99', '#4b7a99', '#f3ece0'], [17, '#4b7a99', '#c96a4a', '#e0b060'], [19, '#362e25', '#9c6b3c', '#c96a4a'], [21, '#13100d', '#221d18', '#393028'], [24, '#13100d', '#171410', '#2e2720']];
+const SKY = [[0, '#13100d', '#171410', '#2e2720'], [3, '#13100d', '#221d18', '#393028'], [5, '#302922', '#9c6b3c', '#c96a4a'], [7, '#8b7259', '#8b7259', '#e0b060'],
+  [10, '#8b7259', '#8b7259', '#f3ece0'], [15, '#8b7259', '#8b7259', '#f3ece0'], [17, '#8b7259', '#c96a4a', '#e0b060'], [19, '#362e25', '#9c6b3c', '#c96a4a'], [21, '#13100d', '#221d18', '#393028'], [24, '#13100d', '#171410', '#2e2720']];
 function skyAt(h) {
   let i = 0; while (i < SKY.length - 2 && h >= SKY[i + 1][0]) i++;
   const a = SKY[i], b = SKY[i + 1], t = Math.max(0, Math.min(1, (h - a[0]) / (b[0] - a[0])));
@@ -64,7 +64,7 @@ export function createForum(canvas, { O = null } = {}) {
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e3 = new THREE.Euler(), p3 = new THREE.Vector3(), s3 = new THREE.Vector3(1, 1, 1);
 
   // ---- lights + the sky
-  const hemi = new THREE.HemisphereLight('#4b7a99', '#26201a', 0.6); scene.add(hemi);
+  const hemi = new THREE.HemisphereLight('#8b7259', '#26201a', 0.6); scene.add(hemi);
   const sun = new THREE.DirectionalLight('#e0b060', 1.4); scene.add(sun);
   const skyU = { top: { value: new THREE.Color() }, mid: { value: new THREE.Color() }, hor: { value: new THREE.Color() }, sunDir: { value: new THREE.Vector3(0, 0.5, -1) }, sunCol: { value: new THREE.Color('#e0b060') }, glow: { value: 0.6 } };
   const dome = new THREE.Mesh(new THREE.SphereGeometry(300, 24, 16), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyU,
@@ -76,7 +76,7 @@ export function createForum(canvas, { O = null } = {}) {
   dome.renderOrder = -10; dome.frustumCulled = false; scene.add(dome);
   const sunDisc = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#e0b060', 2.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
   sunDisc.scale.set(46, 46, 1); scene.add(sunDisc);
-  const moon = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#4b7a99', 1.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+  const moon = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#8b7259', 1.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
   moon.scale.set(26, 26, 1); scene.add(moon);
   const stars = M.starfield({ count: 1300, radius: 250, size: 2.2, color: '#f0e2c4' }); scene.add(stars);
 
@@ -99,7 +99,7 @@ export function createForum(canvas, { O = null } = {}) {
     if (i % 2 === 0) {
       const f = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: hdr('#e0b060', 2.4), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
       f.position.set(x * 0.78, 2.7, z); f.scale.set(1.3, 1.8, 1); f.userData.ph = i * 1.9; scene.add(f); flames.push(f);
-      const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.14, 0.34, 10), M.metal({ kind: 'gunmetal', color: '#4b7a99' })); bowl.position.set(x * 0.78, 2.35, z); scene.add(bowl);
+      const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.14, 0.34, 10), M.metal({ kind: 'gunmetal', color: '#8b7259' })); bowl.position.set(x * 0.78, 2.35, z); scene.add(bowl);
     }
   }
   scene.add(cols, caps);
@@ -124,14 +124,14 @@ export function createForum(canvas, { O = null } = {}) {
     const base = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.45, 1.1), plinth); base.position.y = 0.22;
     const col = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 2.2, 16), stone); col.position.y = 1.5;
     const cap = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.2, 0.9), goldM); cap.position.y = 2.7;
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.75, 0.9, 40), new THREE.MeshBasicMaterial({ color: hdr('#4b7a99', 2), transparent: true, opacity: 0.9, side: THREE.DoubleSide, fog: true }));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.75, 0.9, 40), new THREE.MeshBasicMaterial({ color: hdr('#8b7259', 2), transparent: true, opacity: 0.9, side: THREE.DoubleSide, fog: true }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05;
     const tab = new THREE.Group(); tab.position.y = 4.1; tab.rotation.y = x < 0 ? 0.5 : -0.5;
     const frame = new THREE.Mesh(new THREE.BoxGeometry(2.75, 1.5, 0.12), goldM);
     const face = new THREE.Mesh(new THREE.PlaneGeometry(2.55, 1.28), new THREE.MeshBasicMaterial({ color: 0x14110e, toneMapped: true })); face.position.z = 0.07;
     const hit = new THREE.Mesh(new THREE.BoxGeometry(3.0, 1.8, 0.4), new THREE.MeshBasicMaterial({ visible: false })); hit.userData.scroll = i;
     tab.add(frame, face, hit);
-    const beam = M.energyBeam({ color: '#4b7a99', length: 1.35, radius: 0.1, intensity: 1.4, speed: 0.8 }); beam.position.y = 2.7;
+    const beam = M.energyBeam({ color: '#8b7259', length: 1.35, radius: 0.1, intensity: 1.4, speed: 0.8 }); beam.position.y = 2.7;
     g.add(base, col, cap, ring, tab, beam); scene.add(g);
     return { g, tab, face, ring, beam, hit, item: null };
   });
@@ -204,7 +204,7 @@ export function createForum(canvas, { O = null } = {}) {
   function setClock({ h, tone }) {
     st.h = h; if (tone) st.tone = tone;
     const [top, mid, hor] = skyAt(h);
-    const tint = new THREE.Color(st.tone === 'calm' ? '#e0b060' : st.tone === 'storm' ? '#9c6b3c' : '#4b7a99');
+    const tint = new THREE.Color(st.tone === 'calm' ? '#e0b060' : st.tone === 'storm' ? '#9c6b3c' : '#8b7259');
     hor.lerp(tint, h > 4 && h < 20 ? 0.22 : 0.08);
     skyU.top.value.copy(top); skyU.mid.value.copy(mid); skyU.hor.value.copy(hor);
     const t = (h - 6) / 12, up = t > 0 && t < 1, el = up ? Math.sin(Math.PI * t) : 0, az = Math.max(0, Math.min(1, t));

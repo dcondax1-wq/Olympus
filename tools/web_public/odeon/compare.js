@@ -4,7 +4,7 @@
 import { fmtUsd, fmtR, dayLabel, hhmm, heldLabel, exitLabel, outcomeOf } from './data.js';
 import { setupOf, hourOf, rPath } from './library.js';
 
-const COL = ['#7fb4ff', '#ffb547'];            // A is blue, B is amber (also the table's header colours)
+const COL = ['#7fa6bd', '#ffb547'];            // A is blue, B is amber (also the table's header colours)
 const $ = (root, s) => root.querySelector(s);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
@@ -33,7 +33,7 @@ function drawPaths(canvas, a, b) {
   const P = [rPath(a), rPath(b)], mMax = Math.max(1, ...P.map((p) => p[p.length - 1].m));
   const all = P.flat().map((p) => p.r), rMax = Math.max(1.2, ...all), rMin = Math.min(-1.2, ...all);
   const x = (m) => 28 + (m / mMax) * (W - 40), y = (r) => 10 + ((rMax - r) / (rMax - rMin)) * (H - 28);
-  g.font = '600 11px Rajdhani, system-ui, sans-serif'; g.textAlign = 'right';
+  g.font = '600 11px Georgia, system-ui, sans-serif'; g.textAlign = 'right';
   for (let r = Math.ceil(rMin); r <= Math.floor(rMax); r++) {
     g.strokeStyle = r === 0 ? 'rgba(255,255,255,.4)' : 'rgba(255,255,255,.1)'; g.lineWidth = 1;
     g.beginPath(); g.moveTo(28, y(r)); g.lineTo(W - 8, y(r)); g.stroke();
