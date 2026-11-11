@@ -81,17 +81,16 @@
     const L = 10, R = 10, T = 14, B = 18, n = pts.length;
     const X = (i) => L + (W - L - R) * (n === 1 ? 0.5 : i / (n - 1));
     const Y = (v) => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
-    const up = vs[n - 1] >= vs[0], c1 = up ? '46,229,157' : '255,90,122';
+    const up = vs[n - 1] >= vs[0], c1 = up ? '163,174,107' : '224,121,90';   // AGORA v2: olive up, terracotta down (was neon mint / pink)
     // the grid: three quiet lines
     ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(207,196,178,.08)';
     for (let g = 1; g <= 3; g++) { const y = T + (H - T - B) * g / 4; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(W - R, y); ctx.stroke(); }
     // the drawdown floor: a red band below the line, the line dashed with a glow
     if (floor != null) {
       const fy = Y(floor);
-      const g = ctx.createLinearGradient(0, fy, 0, H); g.addColorStop(0, 'rgba(255,70,100,.20)'); g.addColorStop(1, 'rgba(255,70,100,0)');
+      const g = ctx.createLinearGradient(0, fy, 0, H); g.addColorStop(0, 'rgba(201,106,74,.18)'); g.addColorStop(1, 'rgba(201,106,74,0)');
       ctx.fillStyle = g; ctx.fillRect(L, fy, W - L - R, Math.max(0, H - fy));
-      ctx.save(); ctx.setLineDash([6, 5]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,92,122,.95)';
-      if (!lite) { ctx.shadowColor = 'rgba(255,60,100,.8)'; ctx.shadowBlur = 8; }
+      ctx.save(); ctx.setLineDash([6, 5]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(224,138,107,.95)';
       ctx.beginPath(); ctx.moveTo(L, fy); ctx.lineTo(W - R, fy); ctx.stroke(); ctx.restore();
     }
     if (tgt != null && tgt <= hi) {
@@ -108,13 +107,13 @@
     ctx.fillStyle = fill; ctx.fill();
     const lg = ctx.createLinearGradient(L, 0, W - R, 0); lg.addColorStop(0, '#9c6b3c'); lg.addColorStop(1, up ? '#a3ae6b' : '#e0795a');
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-    if (!lite) { ctx.save(); path(); ctx.strokeStyle = lg; ctx.lineWidth = 6; ctx.globalAlpha = .22; ctx.shadowColor = `rgba(${c1},.9)`; ctx.shadowBlur = 16; ctx.stroke(); ctx.restore(); }
+    if (!lite) { ctx.save(); path(); ctx.strokeStyle = lg; ctx.lineWidth = 6; ctx.globalAlpha = .16; ctx.stroke(); ctx.restore(); }
     path(); ctx.strokeStyle = lg; ctx.lineWidth = 2.4; ctx.stroke();
     // the day dots
-    if (n <= 40) { ctx.fillStyle = 'rgba(230,236,255,.85)'; for (let i = 1; i < n - 1; i++) { ctx.beginPath(); ctx.arc(X(i), Y(vs[i]), 2, 0, 6.3); ctx.fill(); } }
+    if (n <= 40) { ctx.fillStyle = 'rgba(243,236,224,.8)'; for (let i = 1; i < n - 1; i++) { ctx.beginPath(); ctx.arc(X(i), Y(vs[i]), 2, 0, 6.3); ctx.fill(); } }
     // the labels of the two lines
-    ctx.font = '600 10px Inter, system-ui, sans-serif'; ctx.textBaseline = 'bottom';
-    if (floor != null) { ctx.fillStyle = 'rgba(255,130,150,.95)'; ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillText('Drawdown floor ' + usd(floor), W - R - 2, Math.min(H - 14, Y(floor) + 4)); }
+    ctx.font = '600 11px -apple-system, system-ui, sans-serif'; ctx.textBaseline = 'bottom';
+    if (floor != null) { ctx.fillStyle = 'rgba(224,138,107,.95)'; ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillText('Drawdown floor ' + usd(floor), W - R - 2, Math.min(H - 14, Y(floor) + 4)); }
     // the hover readout (finger scrub)
     let hx = X(n - 1), hy = Y(vs[n - 1]);
     if (hover != null) {
