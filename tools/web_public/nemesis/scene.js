@@ -157,9 +157,11 @@ export function createUnderworld(canvas, { O = null } = {}) {
   }
 
   // ---- camera: an orbit you can drag, a slow sway, and a drift toward the chosen figure
-  const cam = { th: 0.3, ph: 0.92, dist: 30, drag: null, target: new THREE.Vector3(), goal: new THREE.Vector3() };
+  const cam = { th: 0.3, ph: 0.92, dist: 30, drag: null, sway: 0, t0: 0, lastT: 0, target: new THREE.Vector3(), goal: new THREE.Vector3() };
   function placeCamera(t) {
-    const th = cam.th + (reduced() || cam.drag ? 0 : Math.sin(t * 0.12) * 0.12);
+    // the slow idle sway restarts from 0 after a touch (cam.t0) and is folded into th when a finger lands, so the scene never jumps under a tap
+    cam.sway = reduced() || cam.drag ? 0 : Math.sin((t - cam.t0) * 0.12) * 0.12; cam.lastT = t;
+    const th = cam.th + cam.sway;
     camera.position.set(cam.target.x + Math.sin(th) * Math.cos(cam.ph) * cam.dist, cam.target.y + Math.sin(cam.ph) * cam.dist, cam.target.z + Math.cos(th) * Math.cos(cam.ph) * cam.dist);
     camera.lookAt(cam.target);
   }
@@ -170,10 +172,13 @@ export function createUnderworld(canvas, { O = null } = {}) {
     camera.updateMatrixWorld(); ray.setFromCamera(ndc, camera);
     const hits = ray.intersectObjects([body, head, shield, pool], false);
     for (const h of hits) if (h.instanceId != null && h.instanceId < figs.length) return h.instanceId;
-    return -1;
+    // a finger is wider than a small figure: the nearest figure within 30 px of the tap counts too
+    let best = -1, bd = 30;
+    for (let i = 0; i < figs.length; i++) { const q = screenOf(figs[i].id); if (!q || !q.on) continue; const d = Math.hypot(q.x - clientX, q.y - clientY); if (d < bd) { bd = d; best = i; } }
+    return best;
   }
   let down = null;
-  canvas.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: performance.now(), th: cam.th, ph: cam.ph, moved: false }; cam.drag = down; });
+  canvas.addEventListener('pointerdown', (e) => { cam.th += cam.sway; cam.sway = 0; down = { x: e.clientX, y: e.clientY, t: performance.now(), th: cam.th, ph: cam.ph, moved: false }; cam.drag = down; });
   canvas.addEventListener('pointermove', (e) => {
     if (!down) return;
     const dx = e.clientX - down.x, dy = e.clientY - down.y;
@@ -182,7 +187,7 @@ export function createUnderworld(canvas, { O = null } = {}) {
     cam.th = down.th - dx * 0.006; cam.ph = Math.max(0.35, Math.min(1.35, down.ph + dy * 0.004)); dirty = true;
   });
   const up = (e) => {
-    const d = down; down = null; cam.drag = null;
+    const d = down; down = null; cam.drag = null; cam.t0 = cam.lastT;
     if (d && !d.moved && e.type === 'pointerup' && performance.now() - d.t < 600) {
       const i = pickAt(e.clientX, e.clientY);
       if (i >= 0 && pickcb) pickcb(figs[i].id);
