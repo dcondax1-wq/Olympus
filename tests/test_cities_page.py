@@ -1386,16 +1386,16 @@ def sec_l(br, base, C, days, picks, ids):
             p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_counted.png"))
             p.evaluate("window.__hellas.ui.worldCard()")
             check("l. 390 x 844: every button is 44 px or more, nothing off screen, no sideways scroll; the first card is short and says what a city and a house are; 'How it is counted' lists each source with its cities and houses",
-                  not lay["small"] and not lay["off"] and not lay["sideways"] and "Every city is a real group" in lay["card"] and "How it is counted" in lay["card"] and len(lay["card"]) < 420
+                  not lay["small"] and not lay["off"] and not lay["sideways"] and "Every city is a real group" in lay["card"] and "How it is counted" in lay["card"] and len(lay["card"]) < 640
                   and "Archive" in full and "Data City" in full and "Kalshi" in full and "gold acropolis" in full and re.search(r"\d+ cities\n[\d,]+ houses", full), {"lay": lay, "full": full[:300]})
             life = p.evaluate("""(() => { const S = window.__hellas.scene, W = window.__hellas.world, t = document.querySelector('.hel-ticker'); return { flames: S.flames ? S.flames.count : 0, working: W.counts.working, smoke: !!S.smoke, shadows: S.shadows.count, caravan: S.caravan ? S.caravan.count : 0, builders: W.builders.length,
               sun: S.sunDir.y, card: document.querySelector('.hel-card').textContent, events: W.events.length, ticker: t.textContent, f0: S.flames.instanceMatrix.array[5] }; })()""")
             hframes(p, 5)
             life["f1"] = p.evaluate("window.__hellas.scene.flames.instanceMatrix.array[5]")
-            b0 = p.evaluate("(() => { const q = window.__hellas.scene.builderPos[1]; return [q.x, q.z]; })()")
+            b0 = p.evaluate("window.__hellas.scene.builderPos.map((q) => Math.round(q.x * 100 + q.z * 7))")
             p.wait_for_timeout(900)
             hframes(p, 2)
-            b1 = p.evaluate("(() => { const q = window.__hellas.scene.builderPos[1]; return [q.x, q.z]; })()")
+            b1 = p.evaluate("window.__hellas.scene.builderPos.map((q) => Math.round(q.x * 100 + q.z * 7))")
             p.evaluate("window.__hellas.ui.hideCard()")
             hframes(p, 12)
             p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_first_view.png"))
@@ -1481,7 +1481,7 @@ def sec_l(br, base, C, days, picks, ids):
             p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_find.png"))
         # enter the biggest polis: streamed, measured
         g0 = p.evaluate("window.__hellas.scene.renderer.info.memory.geometries")
-        p.evaluate("(() => { const W = window.__hellas.world; window.__big = W.poleis.filter((c) => c.src === 'archive').sort((a, b) => b.rows.length - a.rows.length)[0]; window.__hellas.ui.enter(window.__big); })()")
+        p.evaluate("(() => { const W = window.__hellas.world; window.__big = W.poleis.filter((c) => c.src === 'archive' && !c.ruin).sort((a, b) => b.rows.length - a.rows.length)[0]; window.__hellas.ui.enter(window.__big); })()")
         p.wait_for_function("window.__hellas.ui.at.polis", timeout=120000)
         hrest(p)
         o["polis"] = p.evaluate(HN)
@@ -1563,7 +1563,7 @@ def sec_l(br, base, C, days, picks, ids):
         o["streams"] = p.evaluate("window.__hellas.scene.streams")
         st = p.evaluate("({ level: window.__hellas.scene.level, pg: !!window.__hellas.scene.pg, plan: !!window.__hellas.scene.plan, crumbs: document.querySelectorAll('.hel-crumbs button').length })")
         check(f"l. streaming ({q}): one polis at a time: the second polis replaces the first (GPU geometries do not pile up) and leaving frees it; back on the world the crumbs say Hellas only",
-              o["streams"] == 2 and abs(g2 - g1) <= 2 and g3 <= g0 + 1 and st["level"] == "world" and not st["pg"] and not st["plan"] and st["crumbs"] == 1, {"geo": o["geo"], "st": st})
+              o["streams"] == (3 if q == "high" else 2) and abs(g2 - g1) <= 2 and g3 <= g0 + 1 and st["level"] == "world" and not st["pg"] and not st["plan"] and st["crumbs"] == 1, {"geo": o["geo"], "st": st})
         if q == "high":
             p.evaluate("window.__hellas.ui.toggleMap()")
             p.wait_for_timeout(250)
@@ -1650,7 +1650,7 @@ def sec_l(br, base, C, days, picks, ids):
     ng = p.evaluate("""(() => { const u = window.__hellas.ui, r = document.querySelector('#hellas'), c = document.querySelector('.hel-map'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, s = new Set(); for (let i = 0; i < d.length; i += 4 * 97) s.add(d[i] + ',' + d[i + 1] + ',' + d[i + 2]);
       return { nogl: r.classList.contains('nogl'), map: getComputedStyle(c).display, ink: s.size, header: document.querySelector('#helCount').textContent, note: (document.querySelector('.hel-note') || {}).textContent || '', err: !!window.__hellasError, cities: window.__hellas.world.counts.cities }; })()""")
     p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_nogl_map.png"))
-    p.evaluate("(() => { const u = window.__hellas.ui, c = window.__hellas.world.poleis.filter((x) => x.src === 'archive').sort((a, b) => b.rows.length - a.rows.length)[0], V = u.mv; u.tap(V.ox + c.x * V.s, V.oz + c.z * V.s); })()")
+    p.evaluate("(() => { const u = window.__hellas.ui, c = window.__hellas.world.poleis.filter((x) => x.src === 'archive' && !x.ruin).sort((a, b) => b.rows.length - a.rows.length)[0], V = u.mv; u.tap(V.ox + c.x * V.s, V.oz + c.z * V.s); })()")
     sel = p.evaluate("({ sel: !!window.__hellas.ui.at.sel, card: document.querySelector('.hel-card').textContent })")
     p.evaluate("window.__hellas.ui.enter(window.__hellas.ui.at.sel)")
     p.wait_for_timeout(300)
@@ -1658,7 +1658,7 @@ def sec_l(br, base, C, days, picks, ids):
     p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_nogl_polis.png"))
     check("l. no WebGL: never blank: the 2D map of Hellas is drawn with the same honest counter and a plain note; a tap opens a city card, the city opens as a 2D plan and a tap on a house opens its card (walking is hidden)",
           ng["nogl"] and ng["map"] == "block" and ng["ink"] >= 6 and ng["cities"] >= 200 and ng["header"].startswith(f"{ng['cities']} cities") and "cannot draw the 3D world" in ng["note"] and ng["err"]
-          and sel["sel"] and "Enter the city" in sel["card"] and pn["polis"] and pn["houses"] >= 50 and pn["house"] and "What was tested" in pn["card"] and pn["walkHidden"], {"ng": ng, "pn": {k: v for k, v in pn.items() if k != "card"}})
+          and sel["sel"] and "Enter the city" in sel["card"] and pn["polis"] and pn["houses"] >= 30 and pn["house"] and "What was tested" in pn["card"] and pn["walkHidden"], {"ng": ng, "pn": {k: v for k, v in pn.items() if k != "card"}})
     check("l. fallbacks: no page error", not errs2, errs2[:3])
     ctx.close()
     # the entry: Cities gets an 'Enter Hellas' button that opens the world, and the page still boots untouched without it

@@ -20,12 +20,14 @@ void main(){ float h = clamp(vD.y, -.1, 1.); vec3 c = mix(uHor, uMid, smoothstep
 }`;
 const SEA_VS = `varying vec3 vW; void main(){ vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }`;
 const SEA_FS = `uniform float uTime, uFogD, uMove, uScale, uShimmer; uniform vec3 uDeep, uShallow, uSun, uSky, uFog, uSunDir; varying vec3 vW;
+float hsh(vec2 q){ return fract(sin(dot(q, vec2(127.1, 311.7)))*43758.5453); }
+float vn(vec2 q){ vec2 i = floor(q), f = fract(q); f = f*f*(3.-2.*f); return mix(mix(hsh(i), hsh(i+vec2(1.,0.)), f.x), mix(hsh(i+vec2(0.,1.)), hsh(i+vec2(1.,1.)), f.x), f.y); }
 void main(){ float t = uTime*uMove; vec2 p = vW.xz*uScale;
   vec3 n = normalize(vec3(sin(p.x*.09+t*1.1)*.06+sin(p.y*.15-t*1.4)*.05+sin((p.x+p.y)*.31+t*2.)*.02, 1., cos(p.y*.11+t)*.05+sin(p.x*.2-t*1.7)*.03));
   vec3 v = normalize(cameraPosition - vW); float fres = pow(1. - clamp(dot(v, n), 0., 1.), 3.);
   vec3 h = normalize(uSunDir + v); float spec = pow(max(dot(n, h), 0.), 90.);
   vec3 c = mix(uDeep, uShallow, .5 + .5*sin(p.x*.013 + p.y*.017)); c = mix(c, uSky, clamp(fres*.8, 0., .85)) + uSun*spec*.7;
-  c += uSun*pow(max(0., sin(p.x*.7+t*3.)*sin(p.y*.9-t*2.4)), 18.)*uShimmer*(.22 + .78*pow(max(-dot(normalize(vec3(v.x, 0., v.z)), normalize(vec3(uSunDir.x, 0., uSunDir.z))), 0.), 3.));
+  c += uSun*smoothstep(.4, .68, vn(p*.55 + vec2(t*.5, -t*.35))*vn(p*1.3 - vec2(t*.4, t*.3) + 7.))*.75*uShimmer*(.22 + .78*pow(max(-dot(normalize(vec3(v.x, 0., v.z)), normalize(vec3(uSunDir.x, 0., uSunDir.z))), 0.), 3.));
   float d = length(cameraPosition - vW); float f = 1. - exp(-d*d*uFogD*uFogD*3.);
   gl_FragColor = vec4(mix(c, uFog, clamp(f,0.,1.)), 1.);
   #include <colorspace_fragment>
@@ -39,7 +41,8 @@ export class Hellas {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace; this.renderer.toneMapping = THREE.NoToneMapping;
     this.scene = new THREE.Scene(); this.camera = new THREE.PerspectiveCamera(52, 1, 2, 16000);
     this.u = { uTime: { value: 0 } }; this.keep = []; this.level = 'world'; this.polis = null; this.plan = null; this.fly = null; this.walk = null; this.sel = null; this.frameCount = 0; this.calls = 0; this.trisDrawn = 0; this.streams = 0;
-    const B = world.bounds; this.home = { tx: B.cx, ty: 0, tz: B.cz + B.h * .04, yaw: 0, pitch: 1.02, dist: Math.max(B.w * 1.72, B.h * .98) };
+    const B = world.bounds; this.home = { tx: B.cx, ty: 0, tz: B.cz + B.h * .1, yaw: 0, pitch: .8,   // from over the southern desert, looking north to Greece into the low sun
+      dist: Math.max(B.w * 1.72, B.h * .98) };
     this.cam = { ...this.home }; this.wcam = { ...this.home };
     this.buildWorld();
     this.resize(); this.placeCamera();
@@ -50,11 +53,11 @@ export class Hellas {
     const W = this.world, T = this.T, scene = this.scene, own = (o) => this.own(o), sunDir = new THREE.Vector3(-.74, .34, -.36).normalize();   // golden hour: the sun low in the north-west, shadows fall long to the south-east
     this.sunDir = sunDir; this.hemi = new THREE.HemisphereLight('#ecd9bb', '#8a6f52', .92); this.sun = new THREE.DirectionalLight(new THREE.Color(1, .769, .537), 2.7); // 3500 K
     this.sun.position.copy(sunDir).multiplyScalar(100); scene.add(this.hemi, this.sun);
-    scene.fog = new THREE.FogExp2('#ecc998', .00009);
+    scene.fog = new THREE.FogExp2('#ecc998', .00005);
     const skyU = { uTop: { value: C('#5d82a8') }, uMid: { value: C('#e6b98c') }, uHor: { value: C('#f8d49a') }, uSun: { value: C('#ffd08a') }, uSunDir: { value: sunDir } };
     const sky = new THREE.Mesh(own(new THREE.SphereGeometry(9000, 20, 10)), own(new THREE.ShaderMaterial({ vertexShader: SKY_VS, fragmentShader: SKY_FS, uniforms: skyU, side: THREE.BackSide, depthWrite: false, fog: false })));
     sky.frustumCulled = false; sky.renderOrder = -10; scene.add(sky);
-    this.seaU = { uTime: this.u.uTime, uDeep: { value: C('#2f5f78') }, uShallow: { value: C('#5c97a2') }, uSun: { value: C('#ffd9a0') }, uSky: { value: C('#e6c79c') }, uFog: { value: C('#ecc998') }, uSunDir: { value: sunDir }, uFogD: { value: .00009 }, uMove: { value: this.reduced ? 0 : 1 }, uScale: { value: .12 }, uShimmer: { value: 1 } };
+    this.seaU = { uTime: this.u.uTime, uDeep: { value: C('#2f5f78') }, uShallow: { value: C('#5c97a2') }, uSun: { value: C('#ffd9a0') }, uSky: { value: C('#e6c79c') }, uFog: { value: C('#ecc998') }, uSunDir: { value: sunDir }, uFogD: { value: .00005 }, uMove: { value: this.reduced ? 0 : 1 }, uScale: { value: .12 }, uShimmer: { value: 1 } };
     const sea = new THREE.Mesh(own(new THREE.PlaneGeometry(30000, 30000).rotateX(-Math.PI / 2)), own(new THREE.ShaderMaterial({ vertexShader: SEA_VS, fragmentShader: SEA_FS, uniforms: this.seaU })));
     sea.position.y = -.3; sea.frustumCulled = false; scene.add(sea); this.sea = sea;
     this.matVC = own(new THREE.MeshLambertMaterial({ vertexColors: true })); this.matPlain = own(new THREE.MeshLambertMaterial({ color: '#ffffff' }));
@@ -187,7 +190,7 @@ export class Hellas {
     const nt = Math.round(Math.min(T.trees, 30 + Math.round(R * .9)) * (desert ? .25 : ruin ? .6 : 1)), tb = new Batch(); tb.cone(0, 0, 0, .5, 1, PAL.cypress, this.lite ? 5 : 6);
     const tg = own(tb.geometry()), tm = new THREE.InstancedMesh(tg, this.matVC, nt);
     for (let i = 0; i < nt; i++) { const inner = i % 5 === 0, a = r() * 6.283, rr = inner ? lerp(hr + 3, A - 6, r()) : R + 8 + r() * 62, s = 1.6 + r() * 1.6; if (!inner && Math.abs(a - Math.PI / 2) < .09) { d.scale.setScalar(0); } else d.scale.set(s, s * (inner ? 3.6 : 2 + r() * 2.4), s);
-      d.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); d.rotation.set(0, 0, 0); d.updateMatrix(); tm.setMatrixAt(i, d.matrix); if (i % 3) col.setRGB(1.35, 1.4, 1.25); else col.setRGB(2.1, 1.85, 1.4); tm.setColorAt(i, col); }
+      d.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); d.rotation.set(0, 0, 0); d.updateMatrix(); tm.setMatrixAt(i, d.matrix); if (i % 3) col.setRGB(2.1, 2.3, 1.9); else col.setRGB(2.9, 2.6, 1.9); tm.setColorAt(i, col); }
     tm.instanceMatrix.needsUpdate = true; tm.instanceColor.needsUpdate = true; tm.frustumCulled = false; G.add(tm); own(tm); this.treeMesh = tm;
     // villagers on the streets around the village blocks (phone-high only)
     this.col = polisCollider(plan); this.npcs = T.npcs && !this.reduced ? polisNpcs(plan, Math.min(T.npcs, plan.villages.length * 3)) : [];
@@ -203,7 +206,7 @@ export class Hellas {
 
   setStage(level) {
     this.level = level; const world = level === 'world'; this.wg.visible = world; if (this.pg) this.pg.visible = !world;
-    const fd = world ? .00009 : .0011; this.scene.fog.density = fd; this.seaU.uFogD.value = fd; this.seaU.uScale.value = world ? .12 : 1; this.select(null);
+    const fd = world ? .00005 : .0011; this.scene.fog.density = fd; this.seaU.uFogD.value = fd; this.seaU.uScale.value = world ? .12 : 1; this.select(null);
     this.camera.near = world ? 2 : 1; this.camera.far = world ? 16000 : 6000; this.camera.updateProjectionMatrix();
   }
   /** fly to the marker, swap the stage (onSwap lets the page dip a veil), come down over the new city. then() fires when the camera rests. */
@@ -229,7 +232,7 @@ export class Hellas {
   resize() {
     const w = this.canvas.clientWidth || 390, h = this.canvas.clientHeight || 844, O = window.OLYMPUS, dpr = Math.min(this.T.dpr, O && O.dpr ? O.dpr(this.lite) : (window.devicePixelRatio || 1));
     this.renderer.setPixelRatio(dpr); this.renderer.setSize(w, h, false); this.camera.aspect = w / h; this.camera.fov = h > w ? 62 : 50; this.camera.updateProjectionMatrix(); this.w = w; this.h = h;
-    const B = this.world.bounds, tv = Math.tan(this.camera.fov * Math.PI / 360), th = tv * this.camera.aspect; this.home.dist = Math.max(B.w / 2 / th, B.h / 2 / tv * .8) * 1.02; if (this.level === 'world' && !this.frameCount) this.cam.dist = this.home.dist;
+    const B = this.world.bounds, tv = Math.tan(this.camera.fov * Math.PI / 360), th = tv * this.camera.aspect; this.home.dist = Math.max(B.w / 2 / th * 1.08, B.h / 2 / tv * .62); if (this.level === 'world' && !this.frameCount) this.cam.dist = this.home.dist;
   }
   project(x, y, z) { const v = (this._v || (this._v = new THREE.Vector3())).set(x, y, z).project(this.camera); return { x: (v.x * .5 + .5) * this.w, y: (-v.y * .5 + .5) * this.h, vis: v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1 }; }
   pickPolis(px, py, radius = 34) { let best = null, bd = radius; for (const p of this.world.poleis) { const q = this.project(p.x, 3, p.z); if (!q.vis) continue; const d = Math.hypot(q.x - px, q.y - py) - (p.capital ? 8 : 0); if (d < bd) { bd = d; best = p; } } return best; }
@@ -243,7 +246,7 @@ export class Hellas {
     if (this.walk) return out;
     if (this.level === 'world') {
       if (c.dist > 1100) for (const R of this.world.regions) put(R.cx, 20, R.cz, R.name, 'region', R);
-      else { near(this.world.poleis, (p) => [p.x, p.z], max).forEach((p, i) => { put(p.x, 8 + p.mr * .5, p.z, p.name, (p.capital ? 'capital' : 'polis') + ' ' + p.activity.state, p); if (i < 2 && c.dist < 560 && out.length && out[out.length - 1].ref === p) out[out.length - 1].sub = p.activity.doing; });
+      else { near(this.world.poleis, (p) => [p.x, p.z], max).forEach((p, i) => { put(p.x, 8 + p.mr * .5, p.z, p.name, (p.capital ? 'capital' : 'polis') + ' ' + p.activity.state, p); if (i < 1 && c.dist < 560 && out.length && out[out.length - 1].ref === p) out[out.length - 1].sub = p.activity.doing; });
         if (c.dist < 900 && this.builderPos) near(this.builders, (b) => [this.builderPos[b.i].x, this.builderPos[b.i].z], 3).forEach((b) => { const q = this.builderPos[b.i]; put(q.x, 9, q.z, b.name, 'builder', b); if (out.length && out[out.length - 1].ref === b) out[out.length - 1].sub = (c.dist < 420 ? b.job + ' · ' : '') + 'to ' + b.site; }); }
     } else if (this.plan) {
       if (this.polis && this.polis.activity && c.dist > this.plan.R * .8) { put(0, (this.plan.topY || 20) + 6, 0, this.polis.name, 'banner ' + this.polis.activity.state, this.polis); if (out.length) out[out.length - 1].sub = this.polis.activity.doing; }

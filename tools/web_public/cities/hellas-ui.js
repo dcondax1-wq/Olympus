@@ -107,7 +107,8 @@ export class HellasUI {
     if (!o.voy) this.stopVoyage();
     this.leave(() => {
       const R = this.world.regions.find((x) => x.key === p.region); this.at = { region: R, sel: p }; this.renderCrumbs(); this.select({ x: p.x, z: p.z, selR: p.mr * 1.6 });
-      if (this.scene) this.scene.flyTo(p.x, p.z + p.mr, { dist: 300, pitch: .78, dur: o.voy ? 2.2 : 1.4 });
+      const arm = () => { const v = this.voy; if (o.voy && v && v.stops[v.i] === p && !this.reduced) { clearTimeout(v.timer); v.timer = setTimeout(() => this.voyNext(), 7000); } };   // the voyage waits at each stop, counted from the arrival
+      if (this.scene) this.scene.flyTo(p.x, p.z + p.mr, { dist: 300, pitch: .78, dur: o.voy ? 2.2 : 1.4, then: arm }); else arm();
       const nodes = [], tags = el('p'); tags.append(el('span', 'hel-tag', p.regionName), el('span', 'hel-tag', p.capital ? 'the capital' : nice(p.rows.length, p.unit)));
       tags.append(el('span', 'hel-tag ' + STATE_TONE[p.activity.state], STATE_WORD[p.activity.state]));
       if (p.gold) tags.append(el('span', 'hel-tag gold', 'Gold acropolis')); if (p.example) tags.append(el('span', 'hel-tag warn', 'Example data'));
@@ -182,7 +183,7 @@ export class HellasUI {
     this.showPolis(res[0], { also: res.slice(1) });
   }
   startVoyage() { if (!this.world) return; this.voyN = (this.voyN || 0) + 1; const stops = voyage(this.world, new Date().toISOString().slice(0, 10) + ':' + this.voyN, 6); if (!stops.length) return; this.voy = { stops, i: -1 }; this.dockB.voyage.classList.add('on'); this.voyNext(); }
-  voyNext() { const v = this.voy; if (!v) return; clearTimeout(v.timer); v.i++; if (v.i >= v.stops.length) { this.stopVoyage(); return this.goWorld(); } this.showPolis(v.stops[v.i], { voy: true }); if (!this.reduced) v.timer = setTimeout(() => this.voyNext(), 9000); }
+  voyNext() { const v = this.voy; if (!v) return; clearTimeout(v.timer); v.i++; if (v.i >= v.stops.length) { this.stopVoyage(); return this.goWorld(); } this.showPolis(v.stops[v.i], { voy: true }); }
   stopVoyage() { if (!this.voy) return; clearTimeout(this.voy.timer); this.voy = null; this.dockB.voyage.classList.remove('on'); }
 
   // ------------------------------------------------------------------ walking
@@ -272,7 +273,7 @@ export class HellasUI {
     const S = this.scene; if (!S) return; this.tick++;
     if (this.mapMode) return;
     const L = this.tick % 2 ? null : S.labels(); if (L) { for (let i = 0; i < Math.max(L.length, this.labelPool.length); i++) { let d = this.labelPool[i]; if (!d) { d = this.labelPool[i] = el('div', 'hel-label'); this.labels.append(d); }
-      const l = L[i]; if (!l) { d.hidden = true; continue; } d.hidden = false; const key = l.text + '|' + (l.sub || ''); if (d.dataset.k !== key) { d.dataset.k = key; d.replaceChildren(el('b', '', l.text)); if (l.sub) d.append(el('small', '', l.sub)); } d.className = 'hel-label ' + l.kind + (l.sub ? ' wide' : ''); d.style.transform = `translate(${Math.round(l.x)}px,${Math.round(l.y)}px) translate(-50%,-100%)`; } }
+      const l = L[i]; if (!l || l.y < 182) { d.hidden = true; continue; } d.hidden = false; const key = l.text + '|' + (l.sub || ''); if (d.dataset.k !== key) { d.dataset.k = key; d.replaceChildren(el('b', '', l.text)); if (l.sub) d.append(el('small', '', l.sub)); } d.className = 'hel-label ' + l.kind + (l.sub ? ' wide' : ''); d.style.transform = `translate(${Math.round(l.x)}px,${Math.round(l.y)}px) translate(-50%,-100%)`; } }
     if (this.tick % 10 === 0 && this.world && this.world.events.length) this.ticker.hidden = !this.card.hidden || S.level !== 'world' || S.walking;
     if (S.walking && this.tick % 12 === 0) { const w = whereInPolis(this.at.plan, S.walk.x, S.walk.z); this.where.textContent = w.agora ? 'The agora, under the acropolis' : w.village ? `${w.district.name} · ${w.village.name}${w.house ? ' · ' + w.house.row.title : ''}` : 'A street of ' + this.at.polis.name; }
   }
