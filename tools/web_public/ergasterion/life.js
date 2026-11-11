@@ -16,7 +16,7 @@ export const SPEAK = 14;                                             // seconds 
 export const SPEED = 0.9;                                            // metres a second, a calm walk
 export const REACT = { merge: 5, fail: 5, big: 9 };                  // how long a reaction lasts, seconds
 /** where each hall gathers (an open spot on its rug) and where its queue board stands (a small marble stele next to it, facing the room) */
-export const GATHER = { money: { x: -6.5, z: -3.4 }, trading: { x: 5.0, z: -3.4 }, research: { x: -4.4, z: 8.0 }, library: { x: 6.5, z: 7.2 }, camp: { x: 6.5, z: 13.3, r: 1.8 } };
+export const GATHER = { money: { x: -6.5, z: -3.4 }, trading: { x: 5.0, z: -3.4 }, research: { x: -4.4, z: 8.0 }, library: { x: 6.5, z: 2.2 }, camp: { x: 6.5, z: 13.3, r: 1.8 } };
 export const QBOARD = { money: { x: -8.5, z: -9.55, ry: 0, via: [{ x: -8.5, z: -4.6 }] }, trading: { x: 5.0, z: -9.55, ry: 0, via: [] }, research: { x: -0.95, z: 9.55, ry: Math.PI, via: [] }, library: { x: 12.55, z: 7.4, ry: -Math.PI / 2, via: [] } };
 /** the camp's cart: today's commits pile up on it */
 export const CART = { x: 6.5, z: 17.2, cap: 24 };
