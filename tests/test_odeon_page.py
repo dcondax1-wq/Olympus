@@ -449,7 +449,7 @@ def run_browser(fx, tj):
                     check(f"e. {tag}: applyTheme(tokens) recolours the page (accent, background)", r == {"accent": "#ff8800", "bg": "#020304"}
                           and p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--blue').trim()") == "#ff8800")
                     k0 = p.evaluate("window.__odeon.applyTheme({ id: 'olympus', accent: '#a855f7', bg: '#04050c', mix: 0, harmony: 0 })")
-                    check(f"e. {tag}: the OLYMPUS default theme leaves Odeon's own blue as it is", k0 == {"accent": "#7fb4ff", "bg": None}, k0)
+                    check(f"e. {tag}: the OLYMPUS default theme leaves Odeon's own accent as it is (AGORA gold, app.js OWN_ACCENT)", k0 == {"accent": "#c8a24a", "bg": None}, k0)
                     shot(p, f"{tag}_11_no_film_note.png")
                 check(f"d. {tag}: no console errors (real reels)", not errs, errs[:5])
                 ctx.close()
