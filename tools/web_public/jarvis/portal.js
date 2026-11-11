@@ -63,7 +63,7 @@ function css() {
   const s = document.createElement('style'); s.id = STYLE_ID; s.textContent = CSS; document.head.appendChild(s);
 }
 const toLinear = (h) => {
-  const n = parseInt(String(h || '#9c6b3c').replace('#', '').padEnd(6, '0').slice(0, 6), 16) || 0xa855f7;
+  const n = parseInt(String(h || '#9c6b3c').replace('#', '').padEnd(6, '0').slice(0, 6), 16) || 0x9c6b3c;
   return [n >> 16 & 255, n >> 8 & 255, n & 255].map((c) => Math.pow(c / 255, 2.2));
 };
 
