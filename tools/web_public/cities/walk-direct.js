@@ -9,7 +9,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRig, makeWorld } from '../olympus/camera-rig.js';
 import { createGrid, findPath, createWalker, approach, createHud } from '../olympus/controls.js';
 
-const AV = 1.65;                                          // your character's height in metres (the townspeople are about as tall)
+const AV = 1.25, PH = 1.05;                               // your character's height in metres and a townsperson's head height (the crowd figures are small, toy-like)
 /** the camera's colliders in a polis: every house (its real height), the acropolis hill, the city wall as a ring of segments */
 export function worldOf(plan) {
   const P = plan || {}, boxes = [], walls = [], circles = [];
@@ -26,7 +26,7 @@ const toH = (yaw) => Math.PI - yaw, toYaw = (h) => Math.PI - h;     // the polis
 export function createWalkDirector(scene, opts) {
   const S0 = scene, o = opts || {}, reduced = !!o.reduced, plan = S0.plan;
   const world = worldOf(plan), grid = navOf(plan, S0.col), walker = createWalker({ speed: 3.0, turn: 9 });
-  const rig = createRig(S0.camera, { world, reduced, radius: 0.3, dist: 5.8, pitch: 0.34, near: (a) => { if (D.av) D.av.visible = a > 0.35; } });
+  const rig = createRig(S0.camera, { world, reduced, radius: 0.3, dist: 4.8, pitch: 0.34, near: (a) => { if (D.av) D.av.visible = a > 0.35; } });
   const hud = createHud(o.container || document.body, { reduced, hintTop: true });
   const D = { av: null, P3: null, pose: '', mode: 'walk', talkP: null, gone: false, walks: 0, near0: S0.camera.near, waveT: 0, t: 0 };
   const K = () => { try { return window.OLYMPUS_PEOPLE || null; } catch (_) { return null; } };
@@ -95,7 +95,7 @@ export function createWalkDirector(scene, opts) {
   }
   function talkCam(P) {
     if (!P) return; const p = walker.pos; walker.stop(); walker.faceTo(Math.atan2(P.x - p.x, P.z - p.z));
-    D.mode = 'talk'; D.talkP = P; D.tp = { a: { x: p.x, y: 0, z: p.z, h: AV * 0.92 }, b: { x: P.x, y: 0, z: P.z, h: AV * 0.9 }, side: 1, two: 1.6, lookDown: 0.35, back: 1.7 };
+    D.mode = 'talk'; D.talkP = P; D.tp = { a: { x: p.x, y: 0, z: p.z, h: AV * 0.92 }, b: { x: P.x, y: 0, z: P.z, h: PH }, side: 1, two: 1.6, lookDown: 0.28, back: 1.5 };
     rig.shot('talk', D.tp);
   }
   function endTalk(quiet) { if (D.mode !== 'talk') return; D.mode = 'walk'; D.talkP = null; rig.shot('follow'); if (!quiet && o.onEndTalk) o.onEndTalk(); }

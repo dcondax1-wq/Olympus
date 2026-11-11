@@ -212,8 +212,8 @@ export class HellasUI {
     const news = bigNews(this.at.polis); if (news) { const n = S.celebrate(news.text); if (n) this.where.textContent = `${news.text}. The town gathers at the agora to cheer.`; }   // a big number: the crowd gathers and cheers
   }
   // SCENE DIRECTION (walk-direct.js + olympus/camera-rig.js + controls.js, 2026-11-11): third person, tap the street to walk, tap someone to walk up and talk,
-  // drag to look, pinch to zoom; the thumb joystick only as an option (?joy=1 or localStorage olympus.joystick = '1'); ?direct=0 keeps the first-person walker.
-  joyOn() { try { return new URLSearchParams(location.search).get('joy') === '1' || localStorage.getItem('olympus.joystick') === '1'; } catch (_) { return false; } }
+  // drag to look, pinch to zoom; the thumb joystick only as an option (?joy=1); ?direct=0 keeps the first-person walker.
+  joyOn() { try { return new URLSearchParams(location.search).get('joy') === '1'; } catch (_) { return false; } }
   direct() {
     const S = this.scene; this.undirect(); if (!S || new URLSearchParams(location.search).get('direct') === '0') return;
     this.root.classList.toggle('nojoy', !this.joyOn());

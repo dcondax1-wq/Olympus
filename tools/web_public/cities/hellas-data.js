@@ -313,15 +313,18 @@ export function bigNews(p, now = Date.now()) {
   const fresh = (p.rows || []).filter((r) => r.verdict === 'adopted' && dayNum(r.built) != null && today - dayNum(r.built) <= 2 && today - dayNum(r.built) >= 0);
   return fresh.length ? { n: fresh.length, text: `${plural(fresh.length, 'new run')} adopted here: ${clip(fresh[0].title, 70)}` } : null;
 }
+/** the opener's real fact (scene direction 2026-11-11): the last result of this place, in a whole sentence with its money, from the same rows as the answers */
+function lastNews(qa) { const a = qa && qa[1] ? String(qa[1][1]) : ''; return !a || /^There is no result/.test(a) ? 'It is quiet here today; nothing new on file.' : 'The last result here: ' + a.replace(/ History, not a forecast\.$/, '') + ' That is history, not a forecast.'; }
 export function keeperPerson(p) {
   const name = greekName('keeper:' + p.id), ruin = p.activity && p.activity.state === 'ruin', qa = sixAnswers(p, p.rows, 'this city');
   return { id: 'keeper:' + p.id, alt: [], kind: 'keeper', name: `${name}, keeper of ${p.name || p.label}`, short: name, title: `${ruin ? 'Keeper of the ruins' : 'Keeper of the gate'} · ${p.label}`, polis: p.id, mood: ruin ? 'sad' : 'calm',
-    hello: ruin ? `I am ${name}. I keep the ruins of ${p.name || p.label}. ${whyFell(p)}` : `I am ${name}, keeper of ${p.name || p.label}. Ask me what we do here.`, qa: ruin ? [['Why did it fall?', whyFell(p)]].concat(qa.slice(0, 5)) : qa };
+    hello: ruin ? `I am ${name}. I keep the ruins of ${p.name || p.label}. ${whyFell(p)}` : `Welcome! I am ${name}, keeper of ${p.name || p.label}. ${lastNews(qa)} Ask me what we do here.`, qa: ruin ? [['Why did it fall?', whyFell(p)]].concat(qa.slice(0, 5)) : qa };
 }
 /** a townsperson speaks for the village block it walks around */
 export function townsPerson(p, village, rows, k = 0) {
   const name = greekName(`towns:${p.id}:${village.idx}:${k}`);
-  return { id: `towns:${p.id}:${village.idx}`, alt: [], kind: 'villager', name: `${name} of ${village.name}`, short: name, title: `Lives in ${village.name}, ${p.name}`, polis: p.id, hello: `I am ${name}. I live in ${village.name}. Ask me about my street.`, qa: sixAnswers(p, rows, 'this village') };
+  const qa = sixAnswers(p, rows, 'this village');
+  return { id: `towns:${p.id}:${village.idx}`, alt: [], kind: 'villager', name: `${name} of ${village.name}`, short: name, title: `Lives in ${village.name}, ${p.name}`, polis: p.id, hello: `Hello! I am ${name}, from the ${village.name} street of ${p.name}. ${lastNews(qa)} Ask me about my street.`, qa };
 }
 /** a builder of the caravan: only the snapshot is known, and it says so */
 export function builderPerson(b, world) {
