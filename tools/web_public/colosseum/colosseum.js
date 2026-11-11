@@ -424,7 +424,7 @@ async function boot() {
   const extraP = forced ? Promise.resolve(null) : getJSON('./extra.json', 15000);
   const [fx, real, home] = await Promise.all([getJSON('./fixture.json'), forced ? null : getJSON('../archive/index.json', 15000), forced ? null : getJSON('../home.json')]);
   const data = C.chooseData(real, fx);
-  if (!data) { say('The arena is empty: neither the Archive nor the demo file could be read. Reload to try again.'); S.ready = true; return; }
+  if (!data) { say('The arena is empty: neither the Archive nor the demo file could be read. Reload to try again.'); S.ready = true; try { if (O && O.ready) O.ready(); } catch (_) { /* gone */ } return; }
   S.v = data.v; S.demo = data.src === 'demo'; S.fixture = fx; S.home = home; S.league = C.league(home, fx);
   $('demo').hidden = !S.demo;
   initStage();
@@ -433,6 +433,7 @@ async function boot() {
   setDuel(); renderPick(); tournamentNote(); renderLeague(); renderHall(); renderFallen();
   say(S.demo ? 'DEMO: invented example runs, because the Archive file did not answer. Nothing here is a real result.' : `${S.v.total.toLocaleString('en-US')} stored runs can fight. ${label(S.a)} against ${label(S.b)}: press "Start the duel".`);
   S.ready = true;
+  try { if (O && O.ready) O.ready(); } catch (_) { /* the kit lifts its loading veil by itself after 12 s */ }
   if (S.demo) { S.shardsLoaded = true; return; }
   loadRest(extraP);
 }

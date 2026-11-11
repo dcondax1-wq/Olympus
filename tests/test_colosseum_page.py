@@ -59,6 +59,7 @@ def test_static():
           "big round head" in st and "a small smile" in st and "crowdFrame" in st and "cheer = {" in st and st.count("bake(") >= 4)
     check("a. every champion is a person: a Talk button that uses the shared kit when it is loaded (no tag for a file that does not exist yet: the wiring section names it), the page's own five-question card as the fallback", ('olympus/people.js?v=' not in html or os.path.isfile(os.path.join(AK.WEB, "olympus", "people.js"))) and "people.js" in AK.read(os.path.join(AK.ROOT, "docs", "NEW_APPS_WIRING.md")).split("Wiring COLOSSEUM")[1] and 'id="talk"' in html and 'id="asks"' in html
           and "OLYMPUS_PEOPLE" in AK.read(os.path.join(D, "colosseum.js")) and "kit.open(id" in AK.read(os.path.join(D, "colosseum.js")))
+    check("a. the page tells the kit it is ready (OLYMPUS.ready()), so the loading veil lifts at once and not after its 12 s safety timer", AK.read(os.path.join(D, "colosseum.js")).count("O.ready()") >= 2)
     check("a. LITE is the flat SVG arena: on a low / off tier the 3D module steps aside", re.search(r"q0 === 'low' \|\| q0 === 'off'", st) is not None and "createFlat" in AK.read(os.path.join(D, "colosseum.js")))
     fx = json.load(open(os.path.join(D, "fixture.json"), encoding="utf-8"))
     check("a. the fixture: invented 'Example' runs, rejected ideas and three bot rows, with their own extras; never blank", all(x[1].startswith("Example") for x in fx["runs"]) and len(fx["runs"]) >= 12 and all(x["title"].startswith("Example") for x in fx["rejected"])
