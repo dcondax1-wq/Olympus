@@ -129,7 +129,7 @@ export function createSearch(index) {
       if (allow && !allow.has(kind)) continue;
       let bits = cover.get(i), c = 0; while (bits) { c += bits & 1; bits >>>= 1; }
       let s = s0 * Math.pow(c / qt.length, 2);
-      if (qt.length > 1 && phrase.length > 4 && normTitle[i].indexOf(phrase) >= 0) s *= 1.35;
+      if (qt.length > 1 && phrase.length > 4 && (normTitle[i].indexOf(phrase) >= 0 || (kind === 'app' && normAll[i].indexOf(phrase) >= 0))) s *= 1.35;      // the words in that order (an app: also in what people call it)
       if (normTitle[i] === phrase || normTitle[i] === full) s *= kind === 'app' ? 2.2 : 1.6;           // the thing is called exactly that
       if (rawW.length) s *= 1 + 0.25 * rawW.filter((w) => normAll[i].indexOf(' ' + w + ' ') >= 0).length / rawW.length;      // the very word, not only its stem
       if (kind === 'app') s *= 1.15; else if (kind === 'run') s *= 0.85;

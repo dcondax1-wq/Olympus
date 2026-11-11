@@ -347,8 +347,9 @@ export function createSkills(opts) {
     if (!text.trim()) return null;
     const now = nowMs(opt && opt.now);
     try { const e = await v3.early(text, now); if (e) return { ...e, routed: e.intent, v3: true }; } catch (_) { /* the router carries on */ }
-    const r = routeText(text, { apps: appsList() });
-    if (!r) return null;
+    // "and open kronos", "now what is my worst weekday": a leading joining word is not part of the question
+    const r = routeText(text, { apps: appsList() }) || routeText(text.replace(/^\s*(?:and|now|ok and|okay and|then|so|and then|and now)\s+/i, ''), { apps: appsList() });
+    if (!r) { try { return await v3.explainMissing(text); } catch (_) { return null; } }
     try {
       const out = await answerIntent(r, text, now);
       if (!out) return null;

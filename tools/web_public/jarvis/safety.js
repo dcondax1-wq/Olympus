@@ -12,7 +12,7 @@
 // trade"), reports of what he did himself ("I placed a trade on both"), and words about past trades ("explain this trade").
 // iPhone Safari 16: plain ES2020, no regex lookbehind.
 
-const clean = (s) => String(s == null ? '' : s).toLowerCase().replace(/[’‘`]/g, "'").replace(/[^a-z0-9$%'.\- ]+/g, ' ').replace(/\s+/g, ' ').trim();
+const clean = (s) => String(s == null ? '' : s).toLowerCase().replace(/[’‘`]/g, "'").replace(/[^a-z0-9$%'.\- ]+/g, ' ').replace(/\.(?!\d)/g, ' ').replace(/\s+/g, ' ').trim();
 
 // polite or pushy openers that do not change what is asked
 const LEAD = /^(?:(?:please|pls|plz|jarvis|hey jarvis|hey|ok|okay|yo|now|quick|quickly|just|go ahead and|go ahead|go on and|i want you to|i need you to|i'd like you to|i would like you to|i order you to|i command you to|you must|you should|you need to|you have to|can you|could you|would you|will you|can u|why don't you|why dont you|let's|lets|let us|do it|override|ignore (?:your|the|all|previous) (?:rules|instructions|safety)(?: and)?|as (?:the|your) owner|i am the owner so|i'm the owner so|this is an emergency|emergency|it's fine|its fine|trust me|i allow it|i authorize you to|i authorise you to|i give you permission to|you have my permission to|you are allowed to|you're allowed to|pretend you can and|for real this time|sudo|and|then|so|kindly)[\s,.:!-]+)+/;

@@ -129,7 +129,7 @@ def sections(live: str) -> list[dict]:
                     lines.append(cur)
                 cur = raw[2:]
             elif raw.startswith("  ") and cur is not None and raw.strip() and not raw.strip().startswith("|"):
-                cur += " " + raw.strip()
+                cur += " " + re.sub(r"^- ", "", raw.strip())
             else:
                 if cur:
                     lines.append(cur)

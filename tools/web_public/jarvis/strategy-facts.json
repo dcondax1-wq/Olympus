@@ -90,7 +90,7 @@
     "No cold-streak filter, no late-entry rule. Eval-safe switch, off: how_out: 0.5 (half size when the sweep extreme falls outside Tuesday 03:00 - Wednesday 11:30; LIT final numbers): 2026 +$27.8k instead of +$38.9k, max DD −$2.3k, no eval failed within 2 weeks.",
     "Two-week eval sizing (ON since 2026-10-18, \"lit_sizing\": {\"mode\": \"two_week\"}, config C of research/writeups/lit-two-week-eval.md, run lit_2wk_rec). Owner's order: an eval must be passed within 2 weeks (10 sessions). In plain words: \"one winner passes\". 1.",
     "Eval sizing (on 2026-10-18 until the two-week mode replaced it; \"mode\": \"eval\" switches back): $800 up to a 25-point stop, then 800 x 25 / stop (times the weekly stop's half, rounded down once), then never more than 60% of the room between the eval balance and the trailing max-loss floor.",
-    "Other sizing switches , off unless chosen: The PC bot and the cloud monitor's paper ledger apply them , with one rounding: - \"fast_eval\": $800 up to a 40-point stop, then 800 x 40 / stop (times the weekly stop's half, rounded down once)."
+    "Other sizing switches , off unless chosen: The PC bot and the cloud monitor's paper ledger apply them , with one rounding: \"fast_eval\": $800 up to a 40-point stop, then 800 x 40 / stop (times the weekly stop's half, rounded down once)."
    ]
   },
   {
@@ -527,5 +527,5 @@
   "weekly loss stop": "weekly stop",
   "winrate": "win rate"
  },
- "sha": "8089293abc6f"
+ "sha": "a4bbd891ca21"
 }

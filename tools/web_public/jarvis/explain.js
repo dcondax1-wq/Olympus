@@ -63,7 +63,7 @@ export function createExplain(facts) {
   function answer(name, opt) {
     const t = T[name], o = opt || {};
     if (!t) return null;
-    const rules = ruleLines(name, o.full ? 8 : 2), out = [], src = [];
+    const rules = ruleLines(name, o.full ? 8 : 3), out = [], src = [];
     const label = /^[a-z]/.test(name) && name.length > 3 ? name.charAt(0).toUpperCase() + name.slice(1) : name;
     if (o.plain) {
       const d = t.def ? firstSentence(t.def) : rules.length ? rules[0].lines[0] : '';

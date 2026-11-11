@@ -251,7 +251,7 @@ export function createV3(c) {
       if (st.intent === 'tour') return tourReply('money', now);
       return st.intent === 'briefing' ? briefReply('money', now) : rerun({ ...st, intent: 'streams', account: null, range: null, topic: 'money' }, {}, now, S);
     }
-    if (/^(?:nq|the bots?|trading|futures|the evals?|my accounts?|the accounts?|today|the day)$/.test(rest)) {
+    if (/^(?:the |my )?(?:nq|bots?|nq bots?|trading|futures|evals?|accounts?)$/.test(rest)) {
       if (st.intent === 'briefing') return briefReply('day', now);
       if (NQ_OF[st.intent]) return rerun({ ...st, intent: NQ_OF[st.intent], account: null, topic: null }, {}, now, S);
     }
@@ -349,6 +349,8 @@ export function createV3(c) {
     explain: async (word) => { const e = await explainer(), t = e && e.find(String(word || '')); return t ? e.answer(t) : null; },
     claims: (raw) => !!(guard(raw) || tourAsk(raw) || briefKind(raw) || searchAsk(raw) || (followUp(raw) && dlg.get())),
     help: V3_HELP,
+    /** the facts file is missing and this looks like "what is X": say so instead of nothing (asked only after the router had no answer) */
+    explainMissing: async (raw) => { const q = norm(raw); if (!/^(?:what is|whats|what's|what are|what does|define|explain|where does|how does|when does)\b/.test(q) || q.split(' ').length > 7 || /\b(?:my|i|me|today|now|you|we)\b/.test(q)) return null; return (await explainer()) ? null : { ...c.MISSING('the word list and your strategy rules', 'jarvis/strategy-facts.json'), intent: 'explain' }; },
   };
 }
 export default createV3;
