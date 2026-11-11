@@ -159,3 +159,20 @@ input::placeholder, textarea::placeholder { color: var(--ag-muted); }
 @media (prefers-reduced-motion: no-preference) { .sheet-card { animation: sheetup .28s ease-out; } @keyframes sheetup { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } } }
 @media (prefers-reduced-motion: reduce) { .sheet-card { animation: none; } }
 html[data-oly-lite="1"] .sheet-card { animation: none; }
+
+/* ---- AGORA v2 (2026-11-11): the temple sits beside the title (not in the chip row), the views stay reachable while scrolling
+   (a sticky scope bar under the compact bar), rows read as one list: a plain checkbox, the task, a quiet "Tomorrow" ---- */
+#app > header.top { position: relative; }
+#app > header.top .tags canvas#scene { position: absolute; right: -4px; bottom: -8px; width: 76px; height: 76px; pointer-events: none; }
+#app > header.top .brand { padding-right: 76px; }
+
+#app > #tabs.ag-tabs { position: sticky; top: calc(var(--st) + 48px); z-index: 30; margin: 0 -16px; padding: 8px 16px; gap: 6px;
+  background: linear-gradient(180deg, rgba(20, 17, 14, .97) 70%, rgba(20, 17, 14, 0)); }
+#app > #tabs .ag-tab { min-height: 44px; padding: 0 15px; font-size: 15px; background: var(--ag-s1, #1b1713); border-color: rgba(243, 236, 224, .09); }
+#app > #tabs .ag-tab[aria-selected="true"] { background: linear-gradient(180deg, #d9b764, var(--ag-gold)); border-color: #e2c47a; color: #1b1610; }
+#app .tick { border-color: transparent; background: transparent; }
+#app .rowbtn { background: rgba(33, 28, 22, .7); border-color: rgba(243, 236, 224, .07); }
+#app .rowbtn .slot { min-width: 44px; }
+#app .row .btn.small { min-width: 0; padding: 0 10px; background: transparent; border-color: transparent; box-shadow: none; color: var(--ag-gold); font-size: 13px; }
+#app .win { border-color: rgba(243, 236, 224, .07); border-left-width: 3px; }
+#app .botbox { border-color: rgba(243, 236, 224, .07); }

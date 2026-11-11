@@ -138,7 +138,7 @@ function startScene() {
   $('lite').hidden = !lite;
   if (!lite && !flat) { try { S.scene = createStand($('stand'), { O }); } catch (_) { S.scene = null; } }
   S.sceneMode = S.scene ? 'webgl' : 'flat';
-  $('stand').hidden = !S.scene; $('standFlat').hidden = !!S.scene;
+  $('stand').hidden = !S.scene; $('standFlat').toggleAttribute('hidden', !!S.scene);   // an <svg> has no .hidden property: the attribute itself
 }
 function render(ed) {
   S.ed = ed; S.answers = []; closeArticle(true);

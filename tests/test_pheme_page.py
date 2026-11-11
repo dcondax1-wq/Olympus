@@ -178,13 +178,13 @@ def test_page():
             t = AK.taps(p)
             check("c. every tap target is at least 44 x 44 px (chips, the 'see the last 8' buttons, the summaries)", not t, t[:5])
             check("c. no sideways scroll; Jarvis's corner is free; no console error; nothing off the origin", AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (errs[:3], off[:3]))
-            rk = p.evaluate("() => { const r = window.PHEME.rack; return r ? { n: r.count(), h: r.heights(), line: r.line(), shown: !document.querySelector('#stage').hidden && document.querySelector('#flat').hidden, size: [document.querySelector('#stage').clientWidth, document.querySelector('#stage').clientHeight] } : null }")
+            rk = p.evaluate("() => { const r = window.PHEME.rack; return r ? { n: r.count(), h: r.heights(), line: r.line(), shown: !document.querySelector('#stage').hidden && document.querySelector('#flat').hasAttribute('hidden'), size: [document.querySelector('#stage').clientWidth, document.querySelector('#stage').clientHeight] } : null }")
             if rk is None:
-                check("c. 3D: no WebGL here, so the flat rack is shown (the page still works)", p.evaluate("() => window.PHEME.flat === true && !document.querySelector('#flat').hidden"))
+                check("c. 3D: no WebGL here, so the flat rack is shown (the page still works)", p.evaluate("() => window.PHEME.flat === true && !document.querySelector('#flat').hasAttribute('hidden')"))
             else:
                 p.locator("#kinds button", has_text="CPI").click()
                 p.wait_for_timeout(400)
-                rk = p.evaluate("() => { const r = window.PHEME.rack; return { n: r.count(), h: r.heights(), line: r.line(), shown: !document.querySelector('#stage').hidden && document.querySelector('#flat').hidden, size: [document.querySelector('#stage').clientWidth, document.querySelector('#stage').clientHeight] } }")
+                rk = p.evaluate("() => { const r = window.PHEME.rack; return { n: r.count(), h: r.heights(), line: r.line(), shown: !document.querySelector('#stage').hidden && document.querySelector('#flat').hasAttribute('hidden'), size: [document.querySelector('#stage').clientWidth, document.querySelector('#stage').clientHeight] } }")
                 top = max(rk["h"] + [rk["line"]])
                 check("c. 3D: the marble rack is up with 8 columns whose heights follow the 8 day ranges (the tallest, 520 points, fills the rack; the gold line sits at an ordinary day, 290 / 520), the flat twin is hidden, the canvas has a real size",
                       rk["n"] == 8 and abs(max(rk["h"]) - 2.3) < 0.01 and abs(rk["line"] - 290 / 520 * 2.3) < 0.01 and rk["shown"] and rk["size"][0] > 200 and rk["size"][1] > 100 and top <= 2.31, rk)
@@ -197,7 +197,7 @@ def test_page():
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?demo=1&q=off")
-            q = p.evaluate("() => ({ flat: window.PHEME.flat, rack: !!window.PHEME.rack, svg: !document.querySelector('#flat').hidden, canvas: document.querySelector('#stage').hidden, bars: document.querySelectorAll('#flat rect').length })")
+            q = p.evaluate("() => ({ flat: window.PHEME.flat, rack: !!window.PHEME.rack, svg: !document.querySelector('#flat').hasAttribute('hidden'), canvas: document.querySelector('#stage').hidden, bars: document.querySelectorAll('#flat rect').length })")
             check("c. ?q=off (3D Off): the flat marble rack is drawn instead (8 columns + the base), the page works the same, no error", q["flat"] and not q["rack"] and q["svg"] and q["canvas"] and q["bars"] == 9 and not errs, (q, errs[:3]))
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin, w=375, h=667, reduced=True, lite=True)

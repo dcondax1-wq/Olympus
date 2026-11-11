@@ -86,7 +86,10 @@ function renderBots() {
     top.appendChild(h('span', 'pill ' + (b.status.level === 'off' ? '' : b.status.level), b.status.label)); a.appendChild(top);
     a.appendChild(h('p', 'note when', `${b.status.line} ${b.paper ? 'Paper only.' : ''}`.trim()));
     if (!b.has) { a.appendChild(h('p', 'lead', 'No numbers from this bot yet. They appear here the moment the PC reports it.')); box.appendChild(a); continue; }
-    a.appendChild(h('p', 'dd ag-num', b.ddLine));
+    if (b.room != null) {                                   // the same sentence, laid out as a hero number: label, the big $ left, then 'of $max max loss'
+      const dd = h('p', 'dd'); dd.appendChild(h('span', 'ddl', 'Drawdown left ')); dd.appendChild(h('b', 'ddv ag-num', C.money(b.room)));
+      dd.appendChild(h('span', 'ddo', ` of ${C.money(b.mll)} max loss`)); a.appendChild(dd);
+    } else a.appendChild(h('p', 'dd ag-num', b.ddLine));
     if (b.roomFrac != null) a.appendChild(bar(b.roomFrac, b.roomFrac < 0.25 ? 'bad' : b.roomFrac < 0.5 ? 'warn' : 'ok', `${Math.round(b.roomFrac * 100)} percent of the max loss is left`));
     const kv = h('dl', 'kv');
     kv.appendChild(h('dt', '', b.dayLabel)); kv.appendChild(h('dd', b.today > 0.5 ? 'pos' : b.today < -0.5 ? 'neg' : '', b.todayText));

@@ -350,7 +350,7 @@ def test_page():
             if mode == "webgl":
                 p.locator("#districts [data-d=Money]").click()
                 p.wait_for_timeout(900)
-                sc = p.evaluate("() => { const s = window.PINAKES.scene(); return [s.selected(), s.open(), s.frames(), !document.querySelector('#cab').hidden, document.querySelector('#cabFlat').hidden]; }")
+                sc = p.evaluate("() => { const s = window.PINAKES.scene(); return [s.selected(), s.open(), s.frames(), !document.querySelector('#cab').hidden, document.querySelector('#cabFlat').hasAttribute('hidden')]; }")
                 check("c. 3D: the marble cabinet is drawn (WebGL); tapping Money slides that drawer out (and only that one)", sc[0] == 2 and sc[1][2] == 1 and sum(sc[1]) == 1 and sc[2] > 3 and sc[3] and sc[4], sc)
                 f0 = p.evaluate("() => window.PINAKES.scene().frames()")
                 p.wait_for_timeout(700)
@@ -368,7 +368,7 @@ def test_page():
             else:
                 p.locator("#districts [data-d=Money]").click()
                 p.wait_for_timeout(300)
-                fb = p.evaluate("() => [document.querySelectorAll('#cabFlat .drawer').length, document.querySelectorAll('#cabFlat .drawer.on').length, !document.querySelector('#cabFlat').hidden]")
+                fb = p.evaluate("() => [document.querySelectorAll('#cabFlat .drawer').length, document.querySelectorAll('#cabFlat .drawer.on').length, !document.querySelector('#cabFlat').hasAttribute('hidden')]")
                 check("c. WebGL is not available here: the flat cabinet is drawn instead, with the Money drawer pulled out (never blank)", fb == [5, 1, True], fb)
             lst = p.evaluate("() => [window.PINAKES.S.district, [...document.querySelectorAll('#list .trow')].map((b) => b.dataset.id), document.querySelector('#foundPill').textContent, document.querySelector('#districts [data-d=Money]').getAttribute('aria-pressed')]")
             check("c. opening the Money drawer flips the list to its tables (2 of 7)", lst[0] == "Money" and sorted(lst[1]) == ["demo-deals", "demo-paper"] and lst[2] == "2 of 7" and lst[3] == "true", lst)
@@ -685,7 +685,7 @@ def test_page():
             p.locator("#asks [data-ask=weekday]").click()
             p.wait_for_function("() => window.PINAKES.S.ask && window.PINAKES.S.ask.id === 'weekday'", timeout=30000)
             p.wait_for_timeout(200)
-            aw = p.evaluate("() => [document.querySelector('#askWords').textContent, document.querySelector('#askSrc').textContent, [...document.querySelectorAll('#askTable tbody tr')].map((r) => [...r.children].map((c) => c.textContent)), document.querySelector('#askChart').hidden, document.querySelectorAll('#askChart rect.bar').length, [...document.querySelectorAll('#askTable thead th')].map((c) => c.textContent)]")
+            aw = p.evaluate("() => [document.querySelector('#askWords').textContent, document.querySelector('#askSrc').textContent, [...document.querySelectorAll('#askTable tbody tr')].map((r) => [...r.children].map((c) => c.textContent)), document.querySelector('#askChart').hasAttribute('hidden'), document.querySelectorAll('#askChart rect.bar').length, [...document.querySelectorAll('#askTable thead th')].map((c) => c.textContent)]")
             wd = {}
             for t_ in od:
                 k = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][dt.date.fromisoformat(t_["day"]).weekday()]
