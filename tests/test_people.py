@@ -298,6 +298,8 @@ const [, , TMP, WEB, QUEUE] = process.argv;
     mm: V.visemes('mama').keys.map((k) => k.v).join('') };
   const fakeMouth = { userData: { parts: { mouth: { scale: { x: 1, y: 1 } } } } }, v2 = { calls: [] }, P3v2 = { setMouth: (f, v, a) => v2.calls.push([v, a]) };
   o.drive = [V.drive(fakeMouth, { v: 'O', a: 1 }), fakeMouth.userData.parts.mouth.scale.y > 2, fakeMouth.userData.parts.mouth.scale.x < 1, V.drive({ userData: {} }, { v: 'A', a: 1 }), V.drive(fakeMouth, { v: 'E', a: 0.5 }, P3v2), JSON.stringify(v2.calls), V.drive(null, { v: 'A', a: 1 })];
+  const v2b = []; V.drive({ userData: {} }, { v: 'M', a: 0 }, { VISEMES: ['rest', 'A', 'E', 'O', 'MBP', 'smile', 'frown'], setMouth: (f, v, a) => v2b.push(v + ':' + a) });
+  o.toV2 = [['A', 'E', 'O', 'U', 'M', 'F', 'L', 'S', 'K', 'rest'].map((v) => V.toV2({ v, a: 0.6 })), V.toV2({ v: 'A', a: 0 }), V.toV2(null), v2b];
 
   console.log(JSON.stringify(o));
 })().catch((e) => { console.error(e && e.stack ? e.stack : e); process.exit(1); });
@@ -427,6 +429,9 @@ AC.prototype.createGain = node; AC.prototype.createOscillator = node; AC.prototy
   o.murmur = [r2.engine, osc > 0, r2.words.length];
   const v3 = V.createVoice({ storage, synth: null, AudioContext: null });
   o.bare = (await run(v3, 'Fine.')).engine;
+  const duckLog = []; globalThis.OLYMPUS_SFX = { speaking: (on) => duckLog.push(on), context: () => null, bus: () => null };
+  const v5 = V.createVoice({ storage, synth: null, AudioContext: AC }); await run(v5, 'Fine.'); await run(v1, 'Off now.', {});
+  o.duck = duckLog; delete globalThis.OLYMPUS_SFX;
   const v4 = V.createVoice({ storage: { getItem() { throw new Error('x'); }, setItem() { throw new Error('x'); } }, synth, AudioContext: AC });
   o.broken = [v4.on(), v4.set(true)];
   o.describe = [v1.describe(lit), v3.describe(lit)];
@@ -693,6 +698,8 @@ def test_show_and_voice():
     check("j. the word under a boundary event and at a time on the timeline", x["wordAt"] == [3, 4, 0], x["wordAt"])
     check("j. the mouth of a figure: Figure API v2 setMouth(fig, viseme, amount) when people3d.js has it, else the mouth mesh opens (round for O); no figure / no mouth = nothing, no error",
           o["drive"] == [True, True, True, False, True, '[["E",0.5]]', False], o["drive"])
+    check("j. the kit's mouth shapes map onto Figure API v2's visemes (rest A E O MBP): open A, wide E, round O / U, lips shut MBP; a closed mouth is rest",
+          o["toV2"] == [["A", "E", "O", "O", "MBP", "E", "E", "E", "A", "rest"], "rest", "rest", ["MBP:1"]], o["toV2"])
     r = run(VOICE_HARNESS)
     if r is None:
         return
@@ -703,6 +710,7 @@ def test_show_and_voice():
     check("j. one tap turns it on and it is remembered (olympus.people.speak = 1); the tap also sends the iPhone's silent unlock", r["unlock"] is True and r["on"] == [True, "1", True], (r["unlock"], r["on"]))
     check("j. with a phone voice: Jarvis's speaker says it in the person's own voice (their voice, pitch and rate), numbers said as words, word boundaries drive the words to the end",
           r["phone"][0] == "phone" and r["phone"][1] and r["phone"][2] == r["chosen"] and r["phone"][3] and r["phone"][4] == "8/9" and "dollars" in r["phone"][5] and r["phone"][6], r["phone"])
+    check("j. ducking: the place sounds dip while someone really speaks (OLYMPUS_SFX.speaking true, then false), once per line", r["duck"] == [True, False, True, False], r["duck"])
     check("j. a tap stops the voice at once; no voice on this device: a soft WebAudio murmur + captions; no audio at all: captions; a broken storage never throws (stays off)",
           r["cancel"] is True and r["murmur"][0] == "murmur" and r["murmur"][1] and r["bare"] == "captions" and r["broken"] == [False, False], (r["cancel"], r["murmur"], r["bare"], r["broken"]))
 
