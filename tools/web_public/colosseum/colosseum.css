@@ -75,6 +75,8 @@ html.framed #app { padding-top: 12px; }
 .sharetext { margin: 0; padding: 10px 12px; border-radius: 12px; background: #211c16; border: 1px dashed var(--ag-line); font-size: 13px; color: var(--ag-soft); user-select: all; -webkit-user-select: all; overflow-wrap: anywhere; }
 #verdict .seg .btn { flex: 1 1 130px; }
 
+#roundsTable td { font-size: 12px; overflow-wrap: normal; } #roundsTable th { font-size: 12px; }
+
 /* ---- pick */
 .slots { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .slot { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; min-height: 44px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-text); text-align: left; }

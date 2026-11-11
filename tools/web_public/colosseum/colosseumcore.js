@@ -280,7 +280,8 @@ export function tournament(runs, opts) {
 export function hall(runs, n) { return contenders(runs, 1).slice(0, n || 12); }
 /** notable rejected ideas with the reason: those with numbers or a write-up first, in the Archive's order */
 export function fallen(rejected, n) {
-  const xs = arr(rejected).filter((x) => x && x.title && x.text).map((x, i) => ({ title: x.title, reason: x.text, writeup: (x.writeups && x.writeups[0]) || '', w: ((x.writeups && x.writeups.length) ? 2 : 0) + (/\$|\bPF\b/.test(x.text) ? 1 : 0), i }));
+  const tidy = (x) => { const t = x.title.replace(/\s*\(.*$/, '').trim() || x.title; let r = x.text; if (r.indexOf(x.title) === 0) r = r.slice(x.title.length).replace(/^[\s:.,;-]+/, ''); return { t, r: r ? r.charAt(0).toUpperCase() + r.slice(1) : x.text }; };
+  const xs = arr(rejected).filter((x) => x && x.title && x.text).map((x, i) => ({ title: tidy(x).t, reason: tidy(x).r, writeup: (x.writeups && x.writeups[0]) || '', w: ((x.writeups && x.writeups.length) ? 2 : 0) + (/\$|\bPF\b/.test(x.text) ? 1 : 0), i }));
   xs.sort((p, q) => q.w - p.w || p.i - q.i);
   return xs.slice(0, n || 12).map(({ title, reason, writeup }) => ({ title, reason, writeup }));
 }

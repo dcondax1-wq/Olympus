@@ -194,7 +194,7 @@ export function createArena(canvas, opts) {
       for (let i = 0; i < 2; i++) { const mine = won === 'draw' || (i === 0 && won === 'a') || (i === 1 && won === 'b'); if (mine) st[i].raise = k; else { st[i].y = -0.22 * k; st[i].tilt = -0.42 * k; } }
       if (anim && e >= 1) anim = null;
       laurel.visible = won === 'a' || won === 'b';
-      if (laurel.visible) { const i = won === 'a' ? 0 : 1; laurel.position.set((i === 0 ? -1 : 1) * BASE_X, 3.3 + (1 - k) * 1.5, 0); laurel.rotation.y = RM ? 0.5 : now * 0.6; }
+      if (laurel.visible) { const i = won === 'a' ? 0 : 1; laurel.position.set((i === 0 ? -1 : 1) * BASE_X, 3.75 + (1 - k) * 1.5, 0); laurel.rotation.y = RM ? 0.5 : now * 0.6; }
     }
     if (pose !== 'verdict') laurel.visible = false;
     for (let i = 0; i < 2; i++) {
