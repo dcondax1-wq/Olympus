@@ -220,7 +220,7 @@ export function createVoice(opts) {
     function timed(extra) { begin(); timer = setTimeout(() => end(false), tl.ms + (extra || 120)); }
     cur = H;
     if (!shown) { setTimeout(() => end(false), 0); return H; }
-    if (!on()) { H.engine = engine = 'captions'; setTimeout(() => timed(), 0); return H; }      // voice off: the words still come word by word (captions)
+    if (!on() && !hd.force) { H.engine = engine = 'captions'; setTimeout(() => timed(), 0); return H; }      // voice off: the words still come word by word (captions)
     const vs = voices(), hasPhone = synth && typeof g.SpeechSynthesisUtterance === 'function' && vs.length;
     if (!hasPhone && !kokoroReady()) {                       // no voice here: the murmur + captions
       H.engine = engine = AC ? 'murmur' : 'captions';

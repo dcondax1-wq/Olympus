@@ -25,7 +25,7 @@ from tools import people_build as PB  # noqa: E402
 
 check = AK.check
 OLY = os.path.join(AK.WEB, "olympus")
-FILES = ["people.js", "people-core.js", "people-talk.js", "people-data.js", "people-brain.js", "people3d.js", "people.css", "people.json"]
+FILES = ["people.js", "people-core.js", "people-talk.js", "people-data.js", "people-brain.js", "people3d.js", "people-voice.js", "people-show.js", "people.css", "people.json"]
 
 
 def test_roster():
@@ -364,12 +364,17 @@ def stage(tmp, with_three=False):
     """The kit's modules as .mjs in tmp/olympus (node treats the site's .js as CommonJS), imports renamed to match."""
     d = os.path.join(tmp, "olympus")
     os.makedirs(d, exist_ok=True)
-    for f in ("people.js", "people-core.js", "people-talk.js", "people-data.js", "people-brain.js", "people3d.js"):
+    for f in ("people.js", "people-core.js", "people-talk.js", "people-data.js", "people-brain.js", "people3d.js", "people-voice.js", "people-show.js"):
         src = AK.read(os.path.join(OLY, f))
-        for g in ("people-core", "people-talk", "people-data", "people-brain"):
+        for g in ("people-core", "people-talk", "people-data", "people-brain", "people-voice", "people-show", "people3d"):
             src = src.replace(f"./{g}.js", f"./{g}.mjs")
+        src = src.replace("../jarvis/tts.js", "../jarvis/tts.mjs").replace("../jarvis/prosody.js", "../jarvis/prosody.mjs")
         with open(os.path.join(d, f.replace(".js", ".mjs")), "w", encoding="utf-8") as fh:
             fh.write(src)
+    j = os.path.join(tmp, "jarvis")
+    os.makedirs(j, exist_ok=True)
+    for f in ("tts.js", "prosody.js"):
+        shutil.copy(os.path.join(AK.WEB, "jarvis", f), os.path.join(j, f.replace(".js", ".mjs")))
     if with_three:
         shutil.copy(os.path.join(AK.WEB, "jarvis", "three.module.min.js"), os.path.join(tmp, "three.mjs"))
 
@@ -564,7 +569,7 @@ def test_static():
           css.count("min-height: 44px") + css.count("min-height: 46px") >= 5 and "safe-area-inset-bottom" in css and "prefers-reduced-motion" in css and 'data-oly-lite="1"' in css and not AK.BANNED_LOOK.search(css) and not AK.BANNED_LOOK.search(js["people.js"])
           and "Math.min(450" in js["people.js"])
     check("h. the sheet is a dialog (role, aria-modal, labelled), follows the visual viewport (iOS keyboard), has the mic (Web Speech when there), spoken replies off by default, request, open work, share",
-          all(x in js["people.js"] for x in ("'dialog'", "aria-modal", "visualViewport", "webkitSpeechRecognition", "speechSynthesis", "'Leave a request'", "'Open their work'", "navigator.share", "=== '1'")))
+          all(x in js["people.js"] + js["people-voice.js"] for x in ("'dialog'", "aria-modal", "visualViewport", "webkitSpeechRecognition", "speechSynthesis", "'Leave a request'", "'Open their work'", "navigator.share", "=== '1'")))
     check("h. the three events of the contract are fired on window", all(e in js["people.js"] for e in ("olympus:people:open", "olympus:people:close", "olympus:people:request")))
     doc = AK.read(os.path.join(ROOT, "docs", "PERSONA_API.md"))
     check("h. docs/PERSONA_API.md is the contract this kit implements (the ids, the API names)", all(x in doc for x in ("OLYMPUS_PEOPLE", "olympus.requests.v1", "people3d.js", "figureInstanced")))
