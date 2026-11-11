@@ -57,7 +57,10 @@ MEASURE = r"""() => {
   [...document.querySelectorAll('#hfirst .tile')].forEach((t, i) => { parts['tile' + i] = R(t); });
   const keys = Object.keys(parts).filter((k) => parts[k]), overlaps = [];
   const fixed = ['bar', 'dock', 'chip', 'fab', 'orb', 'tip', 'toast'];
-  for (let i = 0; i < keys.length; i++) for (let j = i + 1; j < keys.length; j++) if (hit(parts[keys[i]], parts[keys[j]])) overlaps.push(keys[i] + ' x ' + keys[j]);
+  if (parts.bar && home) parts.bar[3] = Math.min(parts.bar[3], home[1]);          // the bar's hairline shadow under its own edge is not a part
+  // what scrolls is clipped by its scroller (#home), so a part is measured where it can be seen
+  const seen = (k) => (fixed.includes(k) ? parts[k] : [parts[k][0], Math.max(parts[k][1], home[1]), parts[k][2], Math.min(parts[k][3], home[3])]);
+  for (let i = 0; i < keys.length; i++) for (let j = i + 1; j < keys.length; j++) { const a = seen(keys[i]), b = seen(keys[j]); if (a[3] > a[1] && b[3] > b[1] && hit(a, b)) overlaps.push(keys[i] + ' x ' + keys[j]); }
   const flow = keys.filter((k) => !fixed.includes(k));
   const below = flow.filter((k) => parts[k][3] > home[3] + 0.5 || parts[k][1] < home[1] - 0.5);
   const small = [];

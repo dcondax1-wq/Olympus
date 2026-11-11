@@ -34,10 +34,11 @@ export function skeleton() {
 }
 function tile(t, pending) {
   if (pending) return skTile(esc(t.kicker));
-  const body = t.big ? `<span class="t-v">${t.lead ? `<span class="t-l">${esc(t.lead)}</span> ` : ''}<b>${esc(t.big)}</b>${t.tail ? ` <span class="t-l">${esc(t.tail)}</span>` : ''}</span>` : `<span class="t-v t-w">${esc(t.text)}</span>`;
+  // "NQ bots · Drawdown left" / "$1,240 of $1,500 max loss": the owner's wording in reading order, and the number line never wraps
+  const body = t.big ? `<span class="t-v"><b>${esc(t.big)}</b>${t.tail ? ` <span class="t-l">${esc(t.tail)}</span>` : ''}</span>` : `<span class="t-v t-w">${esc(t.text)}</span>`;
   const meter = t.frac != null ? `<span class="t-m ${esc(t.tone || 'ok')}" aria-hidden="true"><i style="width:${Math.round(t.frac * 100)}%"></i></span>` : '';
   return `<button class="tile t-${esc(t.id)}${t.tone ? ' ' + esc(t.tone) : ''}" type="button" data-app="${esc(t.app)}" aria-label="${esc(t.aria)}. Opens ${esc(t.app)}">`
-    + `<span class="t-k">${dot(t.tone)}${esc(t.kicker)}</span>${body}${meter}<span class="t-s">${esc(t.sub || '')}</span>${chev}</button>`;
+    + `<span class="t-k">${dot(t.tone)}${esc(t.kicker)}${t.big && t.lead ? ` · <span class="t-kl">${esc(t.lead)}</span>` : ''}</span>${body}${meter}<span class="t-s">${esc(t.sub || '')}</span>${chev}</button>`;
 }
 function hero(m) {
   const h = m.hero, hl = $('heroLine'), hs = $('heroState');
