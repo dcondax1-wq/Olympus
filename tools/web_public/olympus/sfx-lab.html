@@ -1,31 +1,204 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8">
+<html lang="en" data-theme="agora"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="OLYMPUS Sound Lab: tap and hear every cue, place, world sound and lyre motif, with volume sliders.">
 <title>OLYMPUS Sound Lab</title>
+<link rel="stylesheet" href="agora.css">
 <style>
-:root{--bg:#0b0b10;--fg:#f1e8d0;--gold:#d4af37;--card:#16161f}
-@media (prefers-color-scheme:light){:root{--bg:#f4efe2;--fg:#1b1710;--card:#fff}}
-*{box-sizing:border-box}body{margin:0;padding:16px;background:var(--bg);color:var(--fg);font:16px/1.4 -apple-system,system-ui,sans-serif}
-h1{color:var(--gold);letter-spacing: .05em;font-size:20px}
-.g{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-button{min-height:56px;border:1px solid var(--gold);background:var(--card);color:var(--fg);border-radius:12px;font-size:16px}
-button:active{background:var(--gold);color:#000}
-label{display:block;margin:16px 0 4px}input[type=range]{width:100%}
-pre{background:var(--card);padding:10px;border-radius:8px;font-size:12px;overflow:auto}
+:root{--bg:#14110e;--panel:#1d1914;--raise:#26211b;--line:#3a3228;--text:#f3ece0;--soft:#cfc4b2;--muted:#9a8f7d;--gold:#c8a24a;--bronze:#9c6b3c;--olive:#7f8a52}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{padding:16px 16px calc(28px + env(safe-area-inset-bottom));font:16px/1.4 -apple-system,'SF Pro Text',system-ui,sans-serif;max-width:720px;margin:0 auto}
+h1{font:600 28px/1.1 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;margin:4px 0 0}
+h1::after{content:"";display:block;width:56px;height:2px;margin-top:8px;background:linear-gradient(90deg,var(--gold),transparent)}
+h2{font:600 18px 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;margin:0 0 4px}
+.sub{color:var(--soft);font-size:14px;margin:8px 0 0}
+.card{background:linear-gradient(180deg,var(--raise),var(--panel));border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:14px 0;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.note{color:var(--muted);font-size:13px;margin:0 0 10px}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+button{min-height:48px;border:1px solid var(--line);background:var(--raise);color:var(--text);border-radius:12px;font:600 15px -apple-system,system-ui,sans-serif;padding:6px 10px;cursor:pointer;touch-action:manipulation;transition:background .25s ease-out,border-color .25s ease-out}
+button small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+button:active{background:#33291d}
+button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold);background:#2a2217}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>button{flex:1 1 120px}
+.seg{display:flex;gap:6px}.seg button{flex:1}
+label.sl{display:grid;grid-template-columns:96px 1fr 44px;align-items:center;gap:10px;min-height:44px;color:var(--soft);font-size:14px}
+label.sl output{font-variant-numeric:tabular-nums;color:var(--text);text-align:right}
+input[type=range]{width:100%;accent-color:var(--gold);min-height:32px}
+#gate{border-color:var(--bronze)}
+#gate b{color:var(--gold)}
+#pad{display:block;width:100%;max-width:340px;aspect-ratio:1;margin:10px auto 6px;border-radius:50%;background:radial-gradient(circle,#2b241b 0%,#1a1611 70%);border:1px solid var(--line);touch-action:none}
+details summary{min-height:44px;display:flex;align-items:center;color:var(--soft);cursor:pointer}
+pre{background:var(--panel);border:1px solid var(--line);padding:10px;border-radius:10px;font-size:12px;overflow:auto;color:var(--soft);white-space:pre-wrap}
+.hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hd span{color:var(--muted);font-size:13px}
+a{color:var(--gold)}
 </style></head><body>
-<h1>OLYMPUS SOUND LAB</h1>
-<p>Tap anything first: sound starts only after a touch. On iPhone, turn the silent switch off.</p>
-<div class="g" id="g"></div>
-<label>Volume <input id="vol" type="range" min="0" max="1" step="0.01"></label>
-<button id="mu" style="width:100%">Mute</button>
-<pre id="st"></pre>
+<a href="../jarvis/" class="ag-back">&#8592; Jarvis</a>
+<h1>Sound Lab</h1>
+<p class="sub">Every OLYMPUS sound, made in code: lyre and bronze cues, places, world sounds and a quiet lyre for each district.</p>
+
+<div class="card" id="gate" role="status" aria-live="polite"><b id="gateT">Tap anything to start the sound.</b>
+  <p class="note" id="gateN" style="margin:4px 0 0">Sound stays off until your first tap. On iPhone, the silent switch silences it too.</p></div>
+
+<section class="card" aria-labelledby="hMix">
+  <h2 id="hMix">Mix</h2>
+  <label class="sl">Master <input id="vMaster" type="range" min="0" max="1" step="0.01" aria-label="Master volume"><output id="oMaster"></output></label>
+  <div id="cats"></div>
+  <div class="row" style="margin-top:8px">
+    <button id="mute" aria-pressed="false">Mute all</button>
+    <button id="quiet" aria-pressed="false">Quiet</button>
+    <button id="duck">Someone speaks <small>ducks the places 3 s</small></button>
+  </div>
+  <p class="note" style="margin:12px 0 6px">Sound switch (shared with every app)</p>
+  <div class="seg" role="radiogroup" aria-label="Sound" id="snd">
+    <button data-snd="auto" role="radio">Auto</button><button data-snd="on" role="radio">On</button><button data-snd="off" role="radio">Off</button>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="hCues">
+  <div class="hd"><h2 id="hCues">Taps and cues</h2><span>key of D</span></div>
+  <div class="g" id="gCues"></div>
+</section>
+
+<section class="card" aria-labelledby="hPlaces">
+  <div class="hd"><h2 id="hPlaces">Places</h2><span>one plays at a time</span></div>
+  <p class="note">Each bed is layered and keeps changing. Tap again to stop.</p>
+  <div class="g" id="gPlaces"></div>
+  <details><summary>Old names in the apps (they play the new places)</summary><div class="g" id="gOld"></div></details>
+  <p class="note" style="margin:12px 0 6px">Room (the shared echo)</p>
+  <div class="seg" id="rooms"></div>
+</section>
+
+<section class="card" aria-labelledby="hWorld">
+  <h2 id="hWorld">World sounds</h2>
+  <p class="note">Pick one, then tap the circle to place it around you (you are the dot in the middle, facing up). Headphones help.</p>
+  <div class="g" id="gWorld"></div>
+  <canvas id="pad" width="680" height="680" aria-label="Tap to place the chosen sound around you" role="img"></canvas>
+  <div class="row"><button id="walk">Someone walks around you</button></div>
+</section>
+
+<section class="card" aria-labelledby="hMusic">
+  <h2 id="hMusic">Music</h2>
+  <p class="note">A calm lyre that writes itself for each district. Off by default; very quiet.</p>
+  <div class="row"><button id="music" aria-pressed="false">Music: off</button></div>
+  <div class="seg" id="dist" style="margin-top:8px"></div>
+</section>
+
+<details class="card"><summary>Engine state</summary><pre id="st"></pre></details>
+
 <script src="sfx.js"></script>
 <script>
-var S=window.OLYMPUS_SFX,g=document.getElementById('g');
-S.names.forEach(function(n){var b=document.createElement('button');b.textContent=n;
- b.onclick=function(){if(n==='pad'){S.state().padOn?S.stop('pad'):S.play('pad');}else S.play(n);up();};g.appendChild(b);});
-var v=document.getElementById('vol');v.value=S.state().volume;v.oninput=function(){S.setVolume(v.value);up();};
-document.getElementById('mu').onclick=function(){S.mute();up();};
-function up(){var s=S.state();document.getElementById('mu').textContent=s.muted?'Unmute':'Mute';document.getElementById('st').textContent=JSON.stringify(s,null,1);}
-up();
+(function () {
+  var S = window.OLYMPUS_SFX, $ = function (id) { return document.getElementById(id); }, pick = 'step-stone', bed = '';
+  if (!S) { $('gateT').textContent = 'The sound kit did not load.'; return; }
+  var CUE_LABEL = { tick: ['Tick', 'marble'], tap: ['Tap', 'soft pluck'], open: ['Open', 'harp rises'], close: ['Close', 'harp falls'], swipe: ['Swipe', 'air'],
+    toggle: ['Toggle on', 'up a fifth'], 'toggle-off': ['Toggle off', 'down'], success: ['Success', 'D - A - D'], warning: ['Warning', 'two warm notes'],
+    error: ['Error', 'muted string'], notify: ['Notification', 'bronze bell'], money: ['Money in', 'coins + lyre'], levelup: ['Level up', 'lyre run'],
+    portal: ['Portal', 'app opens'], thunder: ['Thunder', 'over the hills'], rankup: ['Rank up', 'old name'], pad: ['Pad', 'warm drone'] };
+  var PLACE_LABEL = { marble: 'Marble hall', agora: 'Agora crowd', workshop: 'Workshop', desert: 'Desert + camels', harbour: 'Harbour', night: 'Night crickets',
+    library: 'Library hush', colosseum: 'Colosseum', grove: 'Olive grove', temple: 'Temple wind', treasury: 'Treasury' };
+  var WORLD_LABEL = { 'step-stone': 'Steps: stone', 'step-sand': 'Steps: sand', 'step-wood': 'Steps: wood', hammer: 'Hammer + anvil', quill: 'Quill', scroll: 'Scroll',
+    coin: 'Coin', crate: 'Crate', cheer: 'Cheer', groan: 'Groan', door: 'Door', fire: 'Fire' };
+  function btn(parent, label, sub, fn, attrs) {
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+    if (sub) { var s = document.createElement('small'); s.textContent = sub; b.appendChild(s); }
+    for (var k in (attrs || {})) b.setAttribute(k, attrs[k]);
+    b.addEventListener('click', function () { S.unlock(); fn(b); up(); }); parent.appendChild(b); return b;
+  }
+  ['tick', 'tap', 'open', 'close', 'swipe', 'toggle', 'toggle-off', 'success', 'warning', 'error', 'notify', 'money', 'levelup', 'portal', 'thunder', 'rankup', 'pad'].forEach(function (n) {
+    btn($('gCues'), CUE_LABEL[n][0], CUE_LABEL[n][1], function (b) {
+      if (n === 'pad') { if (S.state().padOn) S.stop('pad'); else S.play('pad'); b.setAttribute('aria-pressed', String(S.state().padOn)); return; }
+      if (!S.play(n)) say(n);
+    }, n === 'pad' ? { 'aria-pressed': 'false' } : null);
+  });
+  function setBed(n) {
+    bed = bed === n ? '' : n; S.ambience(true); S.ambient(bed);
+    document.querySelectorAll('[data-bed]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.getAttribute('data-bed') === bed)); });
+    if (bed && !S.ambientState().playing) say('bed');
+  }
+  S.beds.forEach(function (n) { btn($('gPlaces'), PLACE_LABEL[n] || n, '', function () { setBed(n); }, { 'data-bed': n, 'aria-pressed': 'false' }); });
+  S.ambients.filter(function (n) { return S.beds.indexOf(n) < 0; }).forEach(function (n) {
+    btn($('gOld'), n, '= ' + (PLACE_LABEL[S.bedOf(n)] || S.bedOf(n)), function () { setBed(n); }, { 'data-bed': n, 'aria-pressed': 'false' });
+  });
+  S.rooms.forEach(function (r) { btn($('rooms'), r[0].toUpperCase() + r.slice(1), '', function () { S.room(r); markRoom(); }, { 'data-room': r }); });
+  function markRoom() { var r = S.state().room; document.querySelectorAll('[data-room]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.getAttribute('data-room') === r)); }); }
+  S.worlds.forEach(function (n) {
+    btn($('gWorld'), WORLD_LABEL[n] || n, '', function (b) {
+      pick = n; document.querySelectorAll('[data-world]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      if (!S.play(n)) say(n);
+    }, { 'data-world': n, 'aria-pressed': String(n === pick) });
+  });
+  // the 3D pad: the listener at the centre facing up (-z); 1 px of the pad = 0.05 m, so the edge is 17 m away
+  var cv = $('pad'), g = cv.getContext('2d'), marks = [];
+  function draw() {
+    var w = cv.width, c = w / 2; g.clearRect(0, 0, w, w);
+    g.strokeStyle = '#3a3228'; g.lineWidth = 2; [0.33, 0.66, 0.98].forEach(function (k) { g.beginPath(); g.arc(c, c, c * k, 0, 7); g.stroke(); });
+    g.fillStyle = '#c8a24a'; g.beginPath(); g.arc(c, c, 14, 0, 7); g.fill();
+    g.beginPath(); g.moveTo(c, c - 34); g.lineTo(c - 10, c - 16); g.lineTo(c + 10, c - 16); g.fill();
+    var now = Date.now(); marks = marks.filter(function (m) { return now - m.t < 900; });
+    marks.forEach(function (m) { g.globalAlpha = 1 - (now - m.t) / 900; g.fillStyle = '#cfc4b2'; g.beginPath(); g.arc(m.x, m.y, 10 + (now - m.t) / 30, 0, 7); g.fill(); });
+    g.globalAlpha = 1; if (marks.length) requestAnimationFrame(draw);
+  }
+  function placeAt(px, py) {
+    var c = cv.width / 2, pos = { x: (px - c) * 0.05, y: 0, z: (py - c) * 0.05 };
+    marks.push({ x: px, y: py, t: Date.now() }); draw();
+    if (!S.at(pick, pos, { x: 0, y: 0, z: 0, yaw: 0 })) say(pick);
+  }
+  cv.addEventListener('pointerdown', function (e) {
+    S.unlock(); var r = cv.getBoundingClientRect(), k = cv.width / r.width; placeAt((e.clientX - r.left) * k, (e.clientY - r.top) * k); up();
+  });
+  var walking = 0;
+  $('walk').addEventListener('click', function () {
+    S.unlock(); if (walking) return; var i = 0, c = cv.width / 2;
+    walking = setInterval(function () {
+      var a = i * 0.32, px = c + Math.cos(a) * c * 0.6, py = c + Math.sin(a) * c * 0.6;
+      marks.push({ x: px, y: py, t: Date.now() }); draw();
+      S.at('step-stone', { x: (px - c) * 0.05, y: 0, z: (py - c) * 0.05 }, { x: 0, y: 0, z: 0, yaw: 0 });
+      if (++i > 20) { clearInterval(walking); walking = 0; }
+    }, 520);
+  });
+  // music
+  $('music').addEventListener('click', function () { S.unlock(); S.music(!S.musicState().on); up(); });
+  S.districts.forEach(function (d) { btn($('dist'), d[0].toUpperCase() + d.slice(1), '', function () { S.district(d); }, { 'data-d': d }); });
+  // mix
+  var vm = $('vMaster'); vm.value = S.state().volume; vm.addEventListener('input', function () { S.setVolume(+vm.value); up(); });
+  S.categories.forEach(function (c) {
+    var l = document.createElement('label'); l.className = 'sl'; l.textContent = { ui: 'Taps (UI)', ambience: 'Places', voices: 'Voices', world: 'World', music: 'Music' }[c] || c;
+    var r = document.createElement('input'); r.type = 'range'; r.min = 0; r.max = 1; r.step = 0.01; r.value = S.volume(c); r.setAttribute('aria-label', c + ' volume');
+    var o = document.createElement('output'); o.id = 'o_' + c;
+    r.addEventListener('input', function () { S.volume(c, +r.value); up(); });
+    r.addEventListener('change', function () { S.unlock(); S.play(c === 'world' ? 'coin' : c === 'music' ? 'notify' : 'tap'); });
+    l.appendChild(r); l.appendChild(o); $('cats').appendChild(l);
+  });
+  $('mute').addEventListener('click', function () { S.mute(); up(); });
+  $('quiet').addEventListener('click', function () { S.quiet(!S.quiet()); up(); });
+  $('duck').addEventListener('click', function () { S.unlock(); S.duck(true); S.play('notify'); setTimeout(function () { S.duck(false); up(); }, 3000); up(); });
+  $('snd').addEventListener('click', function (e) { var b = e.target.closest('[data-snd]'); if (!b) return; S.unlock(); var m = b.getAttribute('data-snd'); S.sound(m === 'auto' ? null : m === 'on'); up(); });
+  function say(what) {
+    var st = S.state(), am = S.ambientState(), t = st.muted ? 'Muted: tap Mute all to hear it.' : am.sound === false ? 'The Sound switch is Off: choose On or Auto.'
+      : !S.sound() ? 'Auto keeps cues quiet in LITE, reduced motion or battery saver: choose On.' : !st.unlocked ? 'Tap once more to start the sound.' : 'Skipped: too many sounds at once.';
+    $('gateN').textContent = t;
+  }
+  function up() {
+    var st = S.state(), am = S.ambientState(), ms = S.musicState(), v = S.volumes();
+    $('gateT').textContent = !st.unlocked ? 'Tap anything to start the sound.' : st.muted ? 'Muted.' : 'Sound is on. Room: ' + st.room + (am.playing ? ', place: ' + (PLACE_LABEL[am.bed] || am.bed) : '') + (ms.playing ? ', music: ' + ms.playing : '') + '.';
+    $('oMaster').textContent = Math.round(st.volume * 100);
+    S.categories.forEach(function (c) { var o = $('o_' + c); if (o) o.textContent = Math.round(v[c] * 100); });
+    $('mute').setAttribute('aria-pressed', String(st.muted)); $('mute').textContent = st.muted ? 'Unmute' : 'Mute all';
+    $('quiet').setAttribute('aria-pressed', String(st.quiet));
+    $('music').setAttribute('aria-pressed', String(ms.on)); $('music').textContent = 'Music: ' + (ms.on ? (ms.playing || 'on') : 'off');
+    document.querySelectorAll('[data-d]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.getAttribute('data-d') === (ms.district || ms.playing))); });
+    var sm = am.sound === true ? 'on' : am.sound === false ? 'off' : 'auto';
+    document.querySelectorAll('[data-snd]').forEach(function (x) { x.setAttribute('aria-checked', String(x.getAttribute('data-snd') === sm)); x.setAttribute('aria-pressed', String(x.getAttribute('data-snd') === sm)); });
+    markRoom();
+    $('st').textContent = JSON.stringify({ engine: st, place: am, music: ms }, null, 1);
+  }
+  S.onUnlock(function () { setTimeout(up, 50); });
+  document.addEventListener('pointerdown', function () { setTimeout(up, 60); }, true);
+  setInterval(function () { if (!document.hidden) up(); }, 2000);
+  draw(); up();
+})();
 </script></body></html>
