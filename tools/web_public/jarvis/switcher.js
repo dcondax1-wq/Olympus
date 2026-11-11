@@ -37,6 +37,7 @@
 const VERSION = 1;
 const POS_KEY = 'jarvis.orb';
 const TIP_KEY = 'jarvis.orb.tips';
+const DOCK_KEY = 'jarvis.orb.dock2';       // home v2: the orb went back to its place in the row above the Ask bar (once)
 const USE_KEY = 'jarvis.orb.use';
 const FAV_KEY = 'jarvis.orb.fav';          // favourites (long-press a card or a map tile)
 const REC_KEY = 'jarvis.orb.recent';       // the last apps opened, newest first
@@ -77,6 +78,7 @@ const CSS = `
   color:#f3ece0;font:600 13px/1.3 -apple-system,system-ui,sans-serif;letter-spacing:.04em;white-space:nowrap;pointer-events:none;
   opacity:0;transform:translateY(4px);transition:opacity .18s ease,transform .18s ease;box-shadow:0 6px 24px rgba(21,20,17,.5)}
 .nx-tip.on{opacity:1;transform:none}
+.nx-tip.row{height:44px;display:flex;align-items:center;gap:6px;box-sizing:border-box;padding:0 14px;border-radius:22px;background:#1d1914;border-color:#3a3228;box-shadow:none;font-size:14px;letter-spacing:0;overflow:hidden;text-overflow:ellipsis}
 .nx-tip b{font:700 13px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,-apple-system,system-ui,sans-serif;letter-spacing: .02em;color:#f3ece0}
 .nx-fan{position:fixed;inset:0;z-index:2147483099;pointer-events:none}
 .nx-fan.on{pointer-events:auto}
@@ -296,18 +298,29 @@ export function mountSwitcher(opts = {}) {
   const matches = (a, gname) => !query || (String(a.label || '') + ' ' + String(a.name || '') + ' ' + a.id + ' ' + plain(a) + ' ' + (gname || '')).toLowerCase().includes(query);
 
   // position: a side ('r' | 'l') and a height (fraction of the screen), kept on this phone
+  // Home v2 (2026-11-11): the orb's own place is the row above the Ask bar, at the right (side 'r', y 1): it never floats over the page. On the
+  // Jarvis home that row is clear for it (html[data-orb-dock="1"]: the search button moves over); the owner can still drag it anywhere.
   let pos = lsGet(POS_KEY, null);
-  if (!pos || (pos.side !== 'l' && pos.side !== 'r') || !(pos.y >= 0 && pos.y <= 1)) pos = { side: 'r', y: 0.66 };
+  if (!lsGet(DOCK_KEY, 0)) { pos = null; lsSet(DOCK_KEY, 1); lsSet(POS_KEY, { side: 'r', y: 1 }); }     // once: back to its place
+  if (!pos || (pos.side !== 'l' && pos.side !== 'r') || !(pos.y >= 0 && pos.y <= 1)) pos = { side: 'r', y: 1 };
+  const htmlEl = doc.documentElement;
   const geom = () => {
-    const W = win.innerWidth, H = win.innerHeight, cs = win.getComputedStyle(doc.documentElement);
+    const W = win.innerWidth, H = win.innerHeight, cs = win.getComputedStyle(htmlEl);
     const sb = parseFloat(cs.getPropertyValue('--sab')) || 0;
-    return { W, H, top: 70, bottom: H - 56 - 96 - sb };
+    let slot = null;                                          // the top of the orb when it sits in the row above the Ask bar (Jarvis home only)
+    const dock = doc.getElementById('dock');
+    if (dock && htmlEl.getAttribute('data-mode') === 'jarvis') { const r = dock.getBoundingClientRect(); if (r.height > 0 && r.top > H * 0.5) slot = Math.round(r.top - 5 - 56); }
+    return { W, H, top: 70, bottom: H - 56 - 96 - sb, slot };
   };
+  const setDock = (on) => { if (on) htmlEl.setAttribute('data-orb-dock', '1'); else htmlEl.removeAttribute('data-orb-dock'); };
   function place(x, y) {
     const g = geom();
     let left, top;
-    if (x == null) { left = pos.side === 'l' ? 8 : g.W - 56 - 8; top = g.top + pos.y * Math.max(0, g.bottom - g.top); }
-    else { left = Math.max(4, Math.min(g.W - 60, x - 28)); top = Math.max(g.top, Math.min(g.bottom, y - 28)); }
+    if (x == null) {
+      const docked = pos.side === 'r' && pos.y >= 0.999 && g.slot != null;
+      left = pos.side === 'l' ? 8 : g.W - 56 - 8; top = docked ? g.slot : g.top + pos.y * Math.max(0, g.bottom - g.top);
+      setDock(docked);
+    } else { left = Math.max(4, Math.min(g.W - 60, x - 28)); top = Math.max(g.top, Math.min(g.bottom, y - 28)); }
     orb.style.left = Math.round(left) + 'px'; orb.style.top = Math.round(top) + 'px';
   }
   place();
@@ -317,18 +330,28 @@ export function mountSwitcher(opts = {}) {
   const wake = () => { orb.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => orb.classList.add('idle'), 4000); };
   wake();
 
+  const isDocked = () => htmlEl.getAttribute('data-orb-dock') === '1';
+  const tipOff = () => { tip.classList.remove('on'); htmlEl.removeAttribute('data-orb-tip'); };
   function showTip(html, ms = 1100) {
     tip.innerHTML = html;
-    const r = orb.getBoundingClientRect(), W = win.innerWidth;
-    tip.style.top = Math.round(r.top + 16) + 'px';
-    tip.classList.add('on');
-    const w = tip.offsetWidth;
-    tip.style.left = Math.round(pos.side === 'l' ? Math.min(W - w - 6, r.right + 8) : Math.max(6, r.left - w - 8)) + 'px';
-    clearTimeout(showTip.t); showTip.t = setTimeout(() => tip.classList.remove('on'), ms);
+    const r = orb.getBoundingClientRect(), W = win.innerWidth, row = isDocked();
+    tip.classList.toggle('row', row);
+    if (row) {                                              // docked: the words take the place of the next chip and the search button in the orb's own row
+      htmlEl.setAttribute('data-orb-tip', '1');
+      tip.style.top = Math.round(r.top + 6) + 'px'; tip.style.left = '12px'; tip.style.maxWidth = Math.max(120, Math.round(r.left - 22)) + 'px';
+      tip.classList.add('on');
+    } else {
+      tip.style.maxWidth = '';
+      tip.style.top = Math.round(r.top + 16) + 'px';
+      tip.classList.add('on');
+      const w = tip.offsetWidth;
+      tip.style.left = Math.round(pos.side === 'l' ? Math.min(W - w - 6, r.right + 8) : Math.max(6, r.left - w - 8)) + 'px';
+    }
+    clearTimeout(showTip.t); showTip.t = setTimeout(tipOff, ms);
   }
-  // first uses: say what the orb does (three times at most)
+  // the first use: say what the orb does, ONCE, in the orb's own row (never over the page), gone by itself after 3 s
   const tips = +lsGet(TIP_KEY, 0) || 0;
-  if (tips < 3) setTimeout(() => { if (!hidden && !isOpen()) { lsSet(TIP_KEY, tips + 1); showTip('<b>APPS</b> · tap · swipe ← → · hold', 3200); } }, 1800);
+  if (tips < 1) setTimeout(() => { place(); if (!hidden && !isOpen() && isDocked()) { lsSet(TIP_KEY, tips + 1); showTip('<b>Apps</b> · tap, swipe or hold the orb', 3200); } }, 1800);
 
   // ---------------------------------------------------------------- icons, names, live text
   const label = (a) => String(a.label || a.name || a.id).toUpperCase();
@@ -632,6 +655,7 @@ export function mountSwitcher(opts = {}) {
   function snap() {
     const r = orb.getBoundingClientRect(), gm = geom();
     pos = { side: r.left + r.width / 2 < gm.W / 2 ? 'l' : 'r', y: Math.max(0, Math.min(1, (r.top - gm.top) / Math.max(1, gm.bottom - gm.top))) };
+    if (pos.side === 'r' && r.top >= gm.bottom - 14) pos.y = 1;                 // let go at the bottom right: back into its row
     lsSet(POS_KEY, pos);
     place();
   }
@@ -646,9 +670,10 @@ export function mountSwitcher(opts = {}) {
   function setHidden(on) {
     hidden = !!on;
     orb.classList.toggle('hide', hidden || openNow);
-    if (hidden) { hideFan(); tip.classList.remove('on'); }
+    if (hidden) { hideFan(); tipOff(); }
   }
-  function update() { if (openNow) { render(); tilt(); } else renderSys(); }
+  const dragging = () => !!(g && g.drag);
+  function update() { if (openNow) { render(); tilt(); } else { renderSys(); if (!dragging()) place(); } }
   function destroy() {
     for (const el of [orb, tip, fan, rootEl]) el.remove();
     doc.documentElement.removeAttribute('data-nexus');

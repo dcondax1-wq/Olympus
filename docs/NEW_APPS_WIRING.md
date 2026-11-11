@@ -612,3 +612,19 @@ It reads the built `site/` (so `home.json` and `money/*.json` stories appear) an
 6. `jarvis/transitions.js` REGISTRY: `herald: { kind: 'tiles', ms: 800 },`
 Then bump `sw.js` CACHE and the pinned strings, run `python tools/apps_list_build.py --check`, and `python tools/make_app_icons.py herald` (PNG icons are committed). After wiring, re-run `python tools/herald_build.py --date <today>` so the 'new apps' story compares against the new list.
 Tests after wiring: `tests.test_herald_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+## Jarvis home v2 (2026-11-11)
+
+No new files: every file the new home loads is already in `jarvis/sw.js` SHELL (`./jarvis.css?v=j16`, `./home-cards.js?v=hc1`,
+`./home-data.js`, `./districts.js`, `./courtyard.js?v=c1`, `./home3d.js`, `./switcher.js`, `./welcome.js?v=w1`).
+What changed inside them: `index.html`, `jarvis.css`, `home-cards.js`, `home-data.js`, `courtyard.js`, `home3d.js`, `switcher.js`.
+
+Wiring needed (lead only):
+- `tools/web_public/jarvis/sw.js`: bump the worker so phones pick the new home up: `const CACHE = 'jarvis-v32'` and add
+  `'jarvis-v31'` to the front of `OLD` (SHELL installs with `cache: 'reload'`, so the version strings can stay as they are).
+- Optional, same bump: `jarvis.css?v=j17`, `home-cards.js?v=hc2`, `courtyard.js?v=c2` in both `index.html` / `home3d.js` and SHELL
+  (then also update the `jarvis.css?v=j16` pin in `tests/test_jarvis_home_agora.py` part e).
+- Nothing for `apps.js`, `olympus.js` or the build.
+
+Tests: `tests.test_jarvis_home_agora` (static, 41 checks), `tests.test_jarvis_home_v2` (browser, under the lock),
+`tools/phone_fit_audit.py --apps jarvis` (+ `--iphone`).

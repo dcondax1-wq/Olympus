@@ -946,31 +946,35 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 
 <main>
   <section class="view" id="home" aria-label="Jarvis">
-    <div class="home-in">
-      <div class="hpanel">
-        <div class="htop"><span class="sdot" id="dot" title="System online"></span><img src="icon-192.png?v=j4" alt="OLYMPUS" width="96" height="96"><h1 class="title">OLYMPUS</h1><span class="clock" id="clock">--:--:--</span></div>
-        <p class="hsub"><b id="hello">Hello</b> · <span id="when">&nbsp;</span></p>
-        <div class="boxes">
-          <button class="kbox" type="button" data-app="kalshi" id="kbox" title="Kalshi account today"><small>Kalshi today</small><span id="kpct" class="m">--</span><em id="kusd" class="m">&nbsp;</em></button>
-          <button class="kbox" type="button" data-app="zenith" id="nbox" title="The NQ bots today"><small>NQ bots today</small><span id="npnl" class="m">--</span><em id="nsub">&nbsp;</em></button>
+    <div class="home-in" data-home="v2">
+      <!-- Jarvis home v2 (2026-11-11): ONE first screen = the hero (greeting, one sentence of what matters now), three tiles, the Ask bar and the orb.
+           Everything else lives in the named sections below the fold. Nothing overlaps: the orb and the search button sit in the row above the Ask bar. -->
+      <div class="ptr" id="ptr" data-state="idle" aria-hidden="true"><i class="ptr-i"></i><span id="ptrT">Pull to refresh</span></div>
+      <section class="hero" id="hero" aria-labelledby="hello">
+        <div class="court" id="court">
+          <!-- LITE / before the 3D scene is up: a painted golden-hour sky (CSS gradient) and five SVG doorways, one per rail column -->
+          <div class="court-art" id="courtArt" aria-hidden="true">
+            <svg class="c-defs" width="0" height="0" focusable="false"><defs><linearGradient id="caLight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0b060" stop-opacity=".3"/><stop offset="1" stop-color="#f6dfae" stop-opacity=".98"/></linearGradient></defs></svg>
+            <i class="c-sun"></i><i class="c-hill"></i>
+            <svg class="c-door" data-door="market" viewBox="0 0 60 96" preserveAspectRatio="xMidYMax meet" focusable="false"><rect class="d-l" x="14" y="22" width="32" height="74"/><path class="d-f" d="M8 96V16h44v80h-6V22H14v74z"/><rect class="d-g" x="5" y="10" width="50" height="6" rx="1"/></svg><svg class="c-door" data-door="research" viewBox="0 0 60 96" preserveAspectRatio="xMidYMax meet" focusable="false"><rect class="d-l" x="14" y="22" width="32" height="74"/><path class="d-f" d="M8 96V16h44v80h-6V22H14v74z"/><rect class="d-g" x="5" y="10" width="50" height="6" rx="1"/></svg><svg class="c-door" data-door="money" viewBox="0 0 60 96" preserveAspectRatio="xMidYMax meet" focusable="false"><rect class="d-l" x="14" y="22" width="32" height="74"/><path class="d-f" d="M8 96V16h44v80h-6V22H14v74z"/><rect class="d-g" x="5" y="10" width="50" height="6" rx="1"/></svg><svg class="c-door" data-door="command" viewBox="0 0 60 96" preserveAspectRatio="xMidYMax meet" focusable="false"><rect class="d-l" x="14" y="22" width="32" height="74"/><path class="d-f" d="M8 96V16h44v80h-6V22H14v74z"/><rect class="d-g" x="5" y="10" width="50" height="6" rx="1"/></svg><svg class="c-door" data-door="life" viewBox="0 0 60 96" preserveAspectRatio="xMidYMax meet" focusable="false"><rect class="d-l" x="14" y="22" width="32" height="74"/><path class="d-f" d="M8 96V16h44v80h-6V22H14v74z"/><rect class="d-g" x="5" y="10" width="50" height="6" rx="1"/></svg>
+          </div>
+          <div class="court-rail" role="group" aria-label="The five districts of OLYMPUS"><button class="dgate" type="button" data-district="market" data-app="atlas" data-open="../atlas/?hub=j14#zone=market" aria-label="Market district. Opens the map"><i aria-hidden="true"></i><span>Market</span></button><button class="dgate" type="button" data-district="research" data-app="atlas" data-open="../atlas/?hub=j14#zone=research" aria-label="Research district. Opens the map"><i aria-hidden="true"></i><span>Research</span></button><button class="dgate" type="button" data-district="money" data-app="atlas" data-open="../atlas/?hub=j14#zone=risk" aria-label="Money district. Opens the map"><i aria-hidden="true"></i><span>Money</span></button><button class="dgate" type="button" data-district="command" data-app="atlas" data-open="../atlas/?hub=j14#zone=command" aria-label="Command district. Opens the map"><i aria-hidden="true"></i><span>Command</span></button><button class="dgate" type="button" data-district="life" data-app="atlas" data-open="../atlas/?hub=j14#zone=life" aria-label="Life district. Opens the map"><i aria-hidden="true"></i><span>Life</span></button></div>
         </div>
-        <button class="sysbar" type="button" id="sysbar" aria-controls="p-system" title="Every system at a glance"><i class="sdot off" id="sysdot"></i><b id="sysv">CHECKING</b><span id="syst">Every system at a glance</span><span class="sysdots" id="sysdots" aria-hidden="true"></span></button>
-      </div>
+        <div class="hero-top">
+          <h1 class="hero-h" id="hello">Hello</h1>
+          <button class="sysbar" type="button" id="sysbar" aria-controls="p-system" title="Every system at a glance"><i class="sdot off" id="sysdot"></i><b id="sysv">CHECKING</b><span id="syst">Every system at a glance</span><span class="sysdots" id="sysdots" aria-hidden="true"></span></button>
+        </div>
+        <p class="hsub"><span id="when">&nbsp;</span></p>
+        <div class="hero-line" id="heroLine" aria-live="polite"></div>
+        <p class="hero-state" id="heroState" hidden></p>
+      </section>
+      <div class="tiles" id="hfirst" role="group" aria-label="What matters now" aria-busy="true"><div class="tile sk" aria-hidden="true"><span class="t-k">NQ bots</span><span class="sk-b w60"></span><span class="sk-b w80 s"></span></div><div class="tile sk" aria-hidden="true"><span class="t-k">Money</span><span class="sk-b w60"></span><span class="sk-b w80 s"></span></div><div class="tile sk" aria-hidden="true"><span class="t-k">Today</span><span class="sk-b w60"></span><span class="sk-b w80 s"></span></div></div>
 
+      <div class="hbody">
       <div class="hc" id="htoday" aria-label="Your day at a glance"></div>
 
-      <section class="hub-gate" aria-labelledby="hub-gate-title">
-        <div class="hub-gate-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><span></span></div>
-        <p class="hub-gate-kicker">Olympus · the map <span aria-hidden="true">✦</span></p>
-        <h2 id="hub-gate-title">Find your arena</h2>
-        <p class="hub-gate-copy">One map for every dashboard. Search, filter, and return to your favorites.</p>
-        <button class="hub-gate-primary" type="button" data-app="atlas" data-open="../atlas/?hub=j14" aria-label="Open Atlas, the Olympus arena hub">Open Atlas <span aria-hidden="true">↗</span></button>
-        <div class="hub-gate-doors" role="group" aria-label="Explore featured arenas">
-          <button type="button" data-app="cities">Cities <span aria-hidden="true">↗</span></button>
-          <button type="button" data-app="observatory">Observatory <span aria-hidden="true">↗</span></button>
-        </div>
-      </section>
-
+      <section class="hsec" id="sec-talk" aria-labelledby="secTalkH">
+      <h2 class="hsec-h" id="secTalkH">Talk to Jarvis</h2>
       <div class="stagebox">
       <div class="stage" id="stage" role="button" tabindex="0" aria-label="Talk to Jarvis">
         <div class="core" id="core" aria-hidden="true">
@@ -1007,21 +1011,55 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
       <div class="qa" id="qa" role="group" aria-label="Quick actions"></div>
-      <p class="sec-t">Today · timeline</p>
-      <section class="panel tl" id="p-today" aria-label="Today: the trading day and your plan"></section>
+      </section>
 
-      <p class="sec-t">Olympus · System</p>
+      <section class="hsec" id="sec-day" aria-labelledby="secDayH">
+      <h2 class="hsec-h" id="secDayH">Today's timeline</h2>
+      <section class="panel tl" id="p-today" aria-label="Today: the trading day and your plan"></section>
+      </section>
+
+      <section class="hsec" id="sec-system" aria-labelledby="secSysH">
+      <h2 class="hsec-h" id="secSysH">System</h2>
       <section class="panel sys" id="p-system" aria-label="System: every bot and app at a glance"></section>
-      <p class="sec-t">Your projects</p>
+      <div class="hpanel">
+        <div class="boxes">
+          <button class="kbox" type="button" data-app="kalshi" id="kbox" title="Kalshi account today"><small>Kalshi today</small><span id="kpct" class="m">--</span><em id="kusd" class="m">&nbsp;</em></button>
+          <button class="kbox" type="button" data-app="zenith" id="nbox" title="The NQ bots today"><small>NQ bots today</small><span id="npnl" class="m">--</span><em id="nsub">&nbsp;</em></button>
+        </div>
+      </div>
+      <h3 class="hsec-s">Your projects</h3>
       <div class="cards" id="cards"></div>
-      <p class="sec-t">Systems</p>
+      <h3 class="hsec-s">Details</h3>
       <div class="panels" id="panels"></div>
+      </section>
+
+      <section class="hsec" id="sec-apps" aria-labelledby="secAppsH">
+      <h2 class="hsec-h" id="secAppsH">Apps</h2>
+      <div class="hc" id="hfavs"></div>
+      <section class="hub-gate" aria-labelledby="hub-gate-title">
+        <div class="hub-gate-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><span></span></div>
+        <p class="hub-gate-kicker">Olympus · the map <span aria-hidden="true">✦</span></p>
+        <h2 id="hub-gate-title">Find your arena</h2>
+        <p class="hub-gate-copy">One map for every dashboard. Search, filter, and return to your favorites.</p>
+        <button class="hub-gate-primary" type="button" data-app="atlas" data-open="../atlas/?hub=j14" aria-label="Open Atlas, the Olympus arena hub">Open Atlas <span aria-hidden="true">↗</span></button>
+        <div class="hub-gate-doors" role="group" aria-label="Explore featured arenas">
+          <button type="button" data-app="cities">Cities <span aria-hidden="true">↗</span></button>
+          <button type="button" data-app="observatory">Observatory <span aria-hidden="true">↗</span></button>
+        </div>
+      </section>
       <details class="hub-directory" open>
         <summary>Your apps <span>Trading · Money · Life</span></summary>
         <div class="og-find" id="ogFindBox" hidden><input id="ogFind" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Find an app" aria-label="Find an app" aria-controls="olyApps"></div>
         <div class="og" id="olyApps" role="group" aria-label="OLYMPUS: every app"></div>
       </details>
-      <p class="foot">Read-only: Jarvis never places a trade. Every project keeps running on its own; Jarvis only switches what you see.</p>
+      </section>
+
+      <footer class="hfoot">
+        <div class="htop"><span class="sdot" id="dot" title="System online"></span><img src="icon-192.png?v=j4" alt="" width="40" height="40"><p class="title">OLYMPUS</p><span class="clock" id="clock">--:--:--</span></div>
+        <button class="hv-btn" type="button" id="hRefresh" data-hc="refresh"><span id="hUpdated">Not updated yet</span> · Refresh</button>
+        <p class="foot">Read-only: Jarvis never places a trade. Every project keeps running on its own; Jarvis only switches what you see.</p>
+      </footer>
+      </div>
     </div>
   </section>
   <section class="view zoff" id="zen" aria-label="Zenith" aria-hidden="true"></section>
@@ -1347,17 +1385,20 @@ ready.bots = load('bots', './bots.js', (m) => typeof m.createBots === 'function'
   return botsI;
 });
 ready.botsui = load('botsui', './bots-ui.js', (m) => typeof m.mountBots === 'function');
-// first open: one toast offers the Settings app's one-minute tour (once per phone: 'jarvis.tour.seen'; never when the tour was done there already)
+// first open: one slim note (in the flow, under the first screen) offers the Settings app's one-minute tour (once per phone: 'jarvis.tour.seen'; never when the tour was done there already)
 function tourHint(n = 0) {
   if (!FIRST_RUN || raw('jarvis.tour.seen') || raw('olympus.tour.done') || active !== 'home' || !visible() || n > 8) return;
   // The tour invitation must never cover the cinematic opening or its skip target.
   if (root.hasAttribute('data-intro')) { setTimeout(() => tourHint(n + 1), 4000); return; }
   const t = document.getElementById('toast');
   if (t && !t.hidden) { setTimeout(() => tourHint(n + 1), 4000); return; }        // the what's-new toast first
+  const wn = document.getElementById('wnb');
+  // one note at a time: on the very first open the tour replaces the What's new note in the same slot (What's new stays in the command palette)
+  if (wn && !wn.hidden && n < 2) { setTimeout(() => tourHint(n + 1), 4000); return; }
   const a = byId('settings');
   if (!a || notOnSite(a)) return;
   rawSet('jarvis.tour.seen', '1');
-  toast('New here? A one-minute tour shows what everything does.', 'Welcome', ['Take the tour', () => show('settings', { url: '../settings/?tour=1' })]);
+  banner('New here? A one-minute tour shows what everything does.', 'Welcome:', ['Take the tour', () => show('settings', { url: '../settings/?tour=1' })]);   // in the page flow (v2): never over the first screen
 }
 function botsTick() {
   if (!botsI) return;
@@ -2637,7 +2678,7 @@ ready.assistant.then((a) => { if (!a) return; bootDone.then(() => setTimeout(che
 document.addEventListener('visibilitychange', () => { if (visible()) setTimeout(checkReminders, 800); });
 // the "What's new" note (2026-11-10): a slim banner in the page flow under the header, never over content; one tap on x = gone; once per version
 function banner(text, label, action) {
-  const host = $('#home .home-in');
+  const host = $('#home .hbody') || $('#home .home-in');
   if (!host) return;
   let el = $('#wnb');
   if (!el) { el = document.createElement('div'); el.id = 'wnb'; el.className = 'wnb'; el.setAttribute('role', 'status'); host.insertBefore(el, host.firstChild); }
@@ -3354,7 +3395,7 @@ if (window.visualViewport) {
   const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; };
   visualViewport.addEventListener('resize', fitDock); visualViewport.addEventListener('scroll', fitDock);
 }
-window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setOlyTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
+window.__jarvis = { show, ask, facts: D.getFacts, refresh: () => Promise.resolve(D.refresh({ maxAge: 0 })).then(() => { greet(); safe(renderNext); }, () => null), active: () => active, setTheme, setOlyTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
   voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); },
   voice: () => (vo ? vo.stats() : null), talk: (t) => speak(String(t || ''), false),   // for tests and the console; read-only
   // for briefing.js (the morning briefing): what the rules think from, the one thing to do, and a quiet way to say a line

@@ -650,7 +650,8 @@ def run_a(br, url):
     p.wait_for_timeout(300)
     w = p.evaluate("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")
     check("f. phone width: no sideways scroll", w[0] <= w[1], w)
-    hw = p.evaluate("(() => { const h = document.querySelector('.home-in'); return [h.scrollWidth, h.clientWidth, Math.max(...[...h.children].map((c) => c.getBoundingClientRect().right))]; })()")
+    # home v2 (2026-11-11): the hero's courtyard runs edge to edge on purpose; everything else (the hero's words, the tiles, the sections) keeps the 16 px gutter
+    hw = p.evaluate("(() => { const h = document.querySelector('.home-in'); const kids = h.matches('[data-home=\"v2\"]') ? [...h.querySelectorAll(':scope > .hero > :not(.court), :scope > .tiles > *, :scope > .hbody > *')] : [...h.children]; return [h.scrollWidth, h.clientWidth, Math.max(...kids.map((c) => c.getBoundingClientRect().right))]; })()")
     check("f. phone width: the Jarvis screen fits inside its gutter (nothing clipped on the right)", hw[0] <= hw[1] and hw[2] <= 390 - 15.5, hw)
     check("f. no page errors", not errs, errs)
     ctx.close()

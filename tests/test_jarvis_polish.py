@@ -5,7 +5,7 @@
      headings of what matches; no match says so; clearing brings every tile back
   c. Settings sheet: "All settings" at the top opens the Settings app (the sheet closes)
   e. the quick ring (hold the orb) with every app on the site stays at 6 apps + 'All apps', on screen, none on another
-  d. first open: the tour is offered once (a toast with TAKE THE TOUR, 'jarvis.tour.seen' kept), opens the Settings app at ?tour=1; a second
+  d. first open: the tour is offered once (a slim note in the page flow with Take the tour, 'jarvis.tour.seen' kept), opens the Settings app at ?tour=1; a second
      open on the same phone does not offer it again; a phone that has opened Jarvis before is never offered it
     python -X utf8 -m tests.test_jarvis_polish      (Chromium; ~1-3 min on a calm machine)
 """
@@ -143,22 +143,23 @@ def main() -> int:
 
             # d. the tour
             ctx, p, errs = page(br, origin, first_run=True)
-            p.wait_for_function("(() => { const t = document.getElementById('toast'); return !!t && !t.hidden && /one-minute tour/.test(t.textContent); })()", timeout=120000, polling=300)
+            p.wait_for_function("(() => { const t = document.getElementById('wnb'); return !!t && !t.hidden && /one-minute tour/.test(t.textContent); })()", timeout=120000, polling=300)
             kept = p.evaluate("localStorage.getItem('jarvis.tour.seen')")
-            p.evaluate("document.getElementById('toastA').click()")
+            flow = p.evaluate("(() => { const b = document.getElementById('wnb').getBoundingClientRect(), t = document.getElementById('hfirst').getBoundingClientRect(); return getComputedStyle(document.getElementById('wnb')).position !== 'fixed' && b.top >= t.bottom - 1; })()")
+            p.evaluate("document.getElementById('wnbA').click()")
             p.wait_for_function("window.__jarvis.active() === 'settings'", timeout=60000, polling=300)
             src = p.evaluate("(document.querySelector('#v-settings iframe') || {src: ''}).src")
-            check("d. the very first open offers the tour once: a toast, TAKE THE TOUR opens the Settings app at ?tour=1, 'jarvis.tour.seen' kept", kept == "1" and "settings/?tour=1" in src, (kept, src))
+            check("d. the very first open offers the tour once: a slim note in the page flow under the first screen (home v2: never over it), Take the tour opens the Settings app at ?tour=1, 'jarvis.tour.seen' kept", kept == "1" and "settings/?tour=1" in src and flow, (kept, src, flow))
             check("d. no page errors", not errs, errs)
             ctx.close()
             ctx, p, errs = page(br, origin, "localStorage.setItem('jarvis.tour.seen', '1');", first_run=True)
             p.wait_for_timeout(11000)
-            shown = p.evaluate("(() => { const t = document.getElementById('toast'); return !!t && !t.hidden && /one-minute tour/.test(t.textContent); })()")
+            shown = p.evaluate("(() => { const t = document.getElementById('wnb'); return !!t && !t.hidden && /one-minute tour/.test(t.textContent); })()")
             check("d. a phone that has the tour mark is not offered it again", not shown)
             ctx.close()
             ctx, p, errs = page(br, origin)
             p.wait_for_timeout(11000)
-            shown = p.evaluate("(() => { const t = document.getElementById('toast'); return !!t && !t.hidden && /one-minute tour/.test(t.textContent); })()")
+            shown = p.evaluate("(() => { const t = document.getElementById('wnb'); return !!t && !t.hidden && /one-minute tour/.test(t.textContent); })()")
             check("d. a phone that has opened Jarvis before ('jarvis.seen') is never offered it", not shown)
             ctx.close()
             br.close()

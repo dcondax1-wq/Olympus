@@ -331,7 +331,7 @@ export function attach(ext) {
 
   // --- the frame hook: backdrop.js calls this after its own step
   ext.onStep.push((dt, t) => {
-    if (performance.now() - slowWall > 1500 || lastSlow < 0) { slowWall = performance.now(); slow(t); }       // on the wall clock: the frame clock slows with the phone
+    if (performance.now() - slowWall > 1500 || lastSlow < 0) { slowWall = performance.now(); slow(t); if (home.trim) home.trim(); }       // on the wall clock: the frame clock slows with the phone
     parallax(dt); reactive(dt, t);
     const mv = moving() && dt > 0;
     for (const m of shafts) if (m.visible) m.material.uniforms.uT.value = t;
@@ -356,7 +356,52 @@ export function attach(ext) {
   home.ready = true;
 
   // --- the courtyard: five marble doorways, one per Atlas district (courtyard.js; never stops the home if it fails)
-  import('./courtyard.js?v=c1').then((m) => { m.attach(ext, home); }).catch((e) => { home.courtyardError = String((e && e.message) || e); });
+  import('./courtyard.js?v=c1').then((m) => { m.attach(ext, home); home.trim(); frameCourt(); }).catch((e) => { home.courtyardError = String((e && e.message) || e); });
+
+  // --- home v2 (2026-11-11): the scene's budget. At most 25 draw calls for the whole scene (the post passes are the render core's own): what is
+  // counted is every visible mesh / points / sprite; when the count is over, the least important extras go first (far clouds, dust, mirrors, shafts).
+  const BUDGET = 25;
+  home.budget = BUDGET;
+  home.sceneDraws = () => { let n = 0; scene.traverseVisible((o) => { if (o.isMesh || o.isPoints || o.isLine || o.isSprite) n += Array.isArray(o.material) ? o.material.length : 1; }); return n; };
+  home.trim = () => {
+    const spare = [].concat(ext.nebula ? ext.nebula.children.slice(2).reverse() : [], [motes], shafts.slice(4).reverse(), mir.slice().reverse(), ext.nebula ? ext.nebula.children.slice(0, 2) : [],
+      shafts.slice(2, 4).reverse(), [ext.ringA, ext.horizon, ext.stars]).filter(Boolean);
+    let n = home.sceneDraws(), cut = 0;
+    for (const o of spare) { if (n <= BUDGET) break; if (o.visible) { o.visible = false; cut++; n = home.sceneDraws(); } }
+    home.draws = n; home.trimmed = (home.trimmed || 0) + cut;
+    return n;
+  };
+
+  // --- home v2: the courtyard stands in the hero's window. The lens is shifted (camera.view), so the perspective stays natural and nothing in the
+  // scene has to move; the doorways' feet land on the rail under the window (#court) and the whole world drifts at half the page's speed when the
+  // home scrolls (parallax). Reduced motion / effects off: one still frame, so no drift. A short phone has no window: the scene stays behind the scrim.
+  const lens = (home.lens = { s: 0, k: 1, feet: 0, on: false });
+  const homeEl = document.getElementById('home'), v3l = new T.Vector3();
+  let scrollTop = 0;
+  if (homeEl) homeEl.addEventListener('scroll', () => { scrollTop = homeEl.scrollTop; }, { passive: true });
+  const setLens = (sh) => {
+    if (Math.abs(sh - lens.s) < 0.0004 && lens.on) return;
+    lens.s = sh; lens.on = true;
+    camera.view = { enabled: true, fullWidth: 1, fullHeight: 1, offsetX: 0, offsetY: sh, width: 1, height: 1 };
+    camera.updateProjectionMatrix();
+  };
+  function frameCourt() {
+    const c = home.courtyard;
+    if (!c || c.lite || !c.group) return;
+    const Hpx = window.innerHeight || 1, el = document.getElementById('court'), r = el ? el.getBoundingClientRect() : null;
+    const win = r && r.height > 60;                                        // the window is there (a tall enough phone)
+    const feet0 = win ? r.bottom - 44 + scrollTop : Hpx * 0.30, art = win ? r.height - 44 : Hpx * 0.2;
+    camera.updateMatrixWorld();
+    const fy = (y) => { v3l.set(0, y, c.dims.z).project(camera); return (1 - (v3l.y - 2 * lens.s)) / 2; };          // where a height on the doorways' line falls on the screen (0 top .. 1 bottom), lens shift taken out
+    const feetF = fy(c.dims.floorY), topF = fy(c.dims.top), doorPx = Math.max(1, (feetF - topF) * Hpx);
+    const k = Math.max(0.4, Math.min(1, (art - 6) / doorPx));              // the doorways fit the window (scaled about their feet)
+    if (Math.abs(k - lens.k) > 0.002 || !lens.on) { lens.k = k; c.group.scale.setScalar(k); c.group.position.set(0, c.dims.floorY * (1 - k), c.dims.z * (1 - k)); }
+    const drift = moving() ? scrollTop * 0.5 : 0;
+    lens.feet = feet0 - drift;
+    setLens(Math.max(-0.2, Math.min(0.62, feetF - lens.feet / Hpx)));
+  }
+  ext.onStep.push(() => frameCourt());
+  window.addEventListener('resize', () => { try { frameCourt(); } catch (_) { /* the next frame */ } }, { passive: true });
 
   // =========================================================================================== constellation lines + badges (2D, over the stage)
   mountConstellation(home, ext);
