@@ -88,9 +88,9 @@ function build(rc, scene, camera, canvas, o) {
   const ray = new THREE.Raycaster(), v = new THREE.Vector3(), ndc = new THREE.Vector2(), look = new THREE.Vector3(), camPos = new THREE.Vector3();
   function placeCam() {
     // you stand at the table on the near side and look across it: the people over there face you
-    const portrait = st.w / st.h < 0.95, off = r * (portrait ? 0.36 : 0.46), hgt = portrait ? 1.95 : 1.8;
-    camera.fov = portrait ? 52 : 44; camera.updateProjectionMatrix();
-    camera.position.set(Math.sin(st.yaw) * off, hgt, Math.cos(st.yaw) * off); camera.lookAt(-Math.sin(st.yaw) * r, 0.95, -Math.cos(st.yaw) * r);
+    const portrait = st.w / st.h < 0.95, off = r * (portrait ? 0.3 : 0.42), hgt = portrait ? 1.55 : 1.5;
+    camera.fov = portrait ? 50 : 42; camera.updateProjectionMatrix();
+    camera.position.set(Math.sin(st.yaw) * off, hgt, Math.cos(st.yaw) * off); camera.lookAt(-Math.sin(st.yaw) * r, 1.02, -Math.cos(st.yaw) * r);
     face.position.copy(camera.position).add(v.set(0.6, 1.2, 0)); face.target.position.set(-Math.sin(st.yaw) * r, 1, -Math.cos(st.yaw) * r);
   }
   function fit() { const w = canvas.clientWidth || 1, h = canvas.clientHeight || 1; if (w === st.w && h === st.h) return; st.w = w; st.h = h; camera.aspect = w / h; camera.updateProjectionMatrix(); }

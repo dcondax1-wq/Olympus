@@ -693,7 +693,7 @@ export function figureInstanced(THREE, specs, opts) {
     }
     return best;
   }
-  function headWorld(i, out) { const sl = slots[i], o2 = out || new THREE.Vector3(); if (!sl) return o2.set(0, 0, 0); o2.set(sl.x, sl.y + (HEAD.y + R * 1.25) * sl.k, sl.z); return group.localToWorld(o2); }
+  function headWorld(i, out) { const sl = slots[i], o2 = out || new THREE.Vector3(); if (!sl) return o2.set(0, 0, 0); o2.set(sl.x, sl.y + (HEAD.y + 0.36) * sl.k, sl.z); return group.localToWorld(o2); }      // just above the hair: a label there leaves the face free
   function dispose() { if (geo) { geo.dispose(); lineGeo.dispose(); } tex.dispose(); M2.mat.dispose(); M2.line.dispose(); if (group.parent) group.parent.remove(group); }
   for (let i = 0; i < n; i++) writeSlot(i);
   tick(0);
