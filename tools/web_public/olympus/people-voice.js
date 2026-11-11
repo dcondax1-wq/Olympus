@@ -109,7 +109,7 @@ export function visemes(text, opts) {
 /** the mouth at time ms: the shape of the last key, opening eased towards the next one */
 export function frameAt(tl, ms) {
   const K = tl && tl.keys ? tl.keys : [];
-  if (!K.length || ms < 0 || ms >= tl.ms) return { v: 'rest', a: 0, w: ms >= (tl ? tl.ms : 0) ? (tl ? tl.words.length : 0) : -1 };
+  if (!K.length || ms < 0 || ms >= tl.ms) return { v: 'rest', a: 0, w: ms >= (tl ? tl.ms : 0) && tl ? tl.words.length - 1 : -1 };
   let lo = 0, hi = K.length - 1;
   while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (K[mid].t <= ms) lo = mid; else hi = mid - 1; }
   const k = K[lo], n = K[lo + 1], span = n ? Math.max(1, n.t - k.t) : 1, f = n ? clamp((ms - k.t) / span, 0, 1) : 1;

@@ -244,6 +244,60 @@ const [, , TMP, WEB, QUEUE] = process.argv;
   o.sent = [sent.u.indexOf('api.groq.com') > 0, sent.init.method, body.messages.map((x) => x.role).join(','), body.messages[body.messages.length - 1].content];
   const ctx = T.brainContext(lit, fl1);
   o.ctx = [/never invent a number/.test(ctx), /cannot place orders/.test(ctx), ctx.indexOf('Drawdown left $1,420 of $2,000 max loss') > 0, /SAMPLE DATA, NOT REAL/.test(T.brainContext(C.resolve(R, 'scanner:sibyl'), f['scanner:sibyl'])), ctx.length <= 5000];
+  // ---- 2026-11-11: work cards, the face of an answer, talking together, the voice profiles and the mouth timeline (pure parts)
+  const SH = await import(path.join(TMP, 'olympus', 'people-show.mjs')), V = await import(path.join(TMP, 'olympus', 'people-voice.mjs'));
+  const canon = (x) => x.replace(/,/g, '').replace(/\.0+$/, '');
+  let cards = 0, cardUng = [], cardNoSrc = 0, charts = 0, barBad = [], chartKinds = new Set();
+  for (const I of [{}, REAL]) for (const p of R.people.concat([C.resolve(R, 'villager:hestia'), C.resolve(R, 'keeper:sparta')])) {
+    const ff = C.buildFacts(p, I, now), corp = T.corpus(p, ff, []);
+    for (const what of ['work', 'numbers']) {
+      const c = SH.workCard(p, ff, what); cards++;
+      const u = T.ungrounded(SH.cardText(c), corp); if (u.length) cardUng.push(p.id + ' | ' + u.join(',') + ' | ' + SH.cardText(c).slice(0, 140));
+      if (!c.sources.length && p.kind !== 'keeper') cardNoSrc++;
+      if (c.chart) { charts++; chartKinds.add(p.id === 'bot:kalshi' ? 'kalshi' : p.kind); for (const b of c.chart.bars) { const nums = (b.text.match(/\d+(?:[.,]\d+)*/g) || []).map((x) => parseFloat(x.replace(/,/g, ''))); if (typeof b.v !== 'number' || !isFinite(b.v) || nums.indexOf(Math.abs(b.v)) < 0) barBad.push(p.id + ':' + b.label + '=' + b.v + '/' + b.text); } }
+    }
+  }
+  const card = (id) => SH.workCard(C.resolve(R, id), F(id), 'work');
+  const cLit = card('bot:lit'), cK = card('bot:kalshi'), cS = card('scanner:chrysos'), cB = SH.workCard(b0[0], fb0, 'work'), cC = SH.workCard(ch, fch, 'work'), cF = SH.workCard(fl, ffl, 'work'), cSib = SH.workCard(C.resolve(R, 'scanner:sibyl'), F('scanner:sibyl', {}), 'work');
+  o.cards = { n: cards, ung: cardUng.slice(0, 6), nung: cardUng.length, noSrc: cardNoSrc, charts, kinds: [...chartKinds].sort(), barBad: barBad.slice(0, 6),
+    lit: [cLit.chart ? cLit.chart.bars.map((b) => b.text) : null, cLit.lines.map((l) => l.label), cLit.sources[0]],
+    kalshi: [cK.verdict && cK.verdict.text, cK.verdict && cK.verdict.tone, cK.chart ? cK.chart.bars.map((b) => b.text) : null],
+    scanner: [cS.chart ? cS.chart.bars.map((b) => b.text) : null, cS.lines.map((l) => l.label + '=' + l.text).slice(0, 2), cS.sources[0]],
+    builder: [cB.title, cB.list.map((x) => x.text + '|' + x.day).slice(0, 1), cB.sources[0]],
+    champ: [cC.verdict && cC.verdict.text, cC.lines.map((l) => l.label + '=' + l.text).filter((x) => /net/.test(x)), cC.chart ? cC.chart.bars.map((b) => b.label) : null, cF.verdict && cF.verdict.tone, cF.list.some((x) => /did not hold|rejected by the rule/.test(x.text))],
+    sample: [cSib.sample, cSib.label] };
+  const row = (id, I) => ({ person: C.resolve(R, id), facts: F(id, I) });
+  const MF = (id, q) => { const r = row(id); return T.moodFor(T.answer(r.person, r.facts, q, null, env), r.facts); };
+  o.moodFor = [MF('bot:atlas', 'how much drawdown is left'), MF('bot:lit', 'buy it now'), T.moodFor(T.answer(fl, ffl, 'why were you rejected', null, env), ffl), MF('bot:lit', 'how much money'), MF('job:cronos', 'why did it fail'), MF('bot:lit', 'thanks')];
+  const tt = T.talkTogether([row('bot:lit'), row('bot:atlas'), row('mind')], 'How did yesterday go?', env), tt2 = T.talkTogether([row('bot:lit'), row('scanner:sibyl', {})], 'what did you find', env);
+  const tUng = [];
+  for (const x of [tt, tt2]) for (const turn of x.turns) { const rr = row(turn.id, x === tt2 && turn.id === 'scanner:sibyl' ? {} : undefined), u = T.ungrounded(turn.text, T.corpus(rr.person, rr.facts, [])); if (u.length) tUng.push(turn.id + ': ' + u.join(',') + ' | ' + turn.text.slice(0, 100)); }
+  o.together = { n: tt.turns.length, order: tt.turns.map((x) => x.id.split(':').pop().slice(0, 1)).join(''), ung: tUng, names: /Phoibos/.test(tt.turns[1].text) && /Telamon|ATLAS/.test(tt.turns[2].text + tt.turns[1].name + tt.turns[2].text),
+    ask: /what could go wrong/.test(tt.turns[3].text), summary: tt.summary, sampleNote: /sample data/.test(tt2.summary), one: T.talkTogether([row('bot:lit')], 'x', env).turns.length, moods: tt.turns.every((x) => ['calm', 'proud', 'busy', 'worried', 'sheepish'].indexOf(x.mood) >= 0) };
+  o.wants = [['what are you working on?', 'show me', 'Show me your work', 'how did it go', 'how did today go', 'let me see'].map(SH.wantsWork), ['how much drawdown is left', 'buy it now', 'hello'].map(SH.wantsWork),
+    ['walk with me', 'lead me there', 'take me there'].map(SH.wantsWalk), ['what did you find', 'walk'].map(SH.wantsWalk)];
+  o.sentences = SH.sentences('Net $1,234.50 today. Up 2.5%! Fine? yes');
+  // voice profiles
+  const PR = R.people.concat(R.villagers).map((p) => V.voiceProfile(p));
+  o.voice = { det: R.people.concat(R.villagers).every((p) => JSON.stringify(V.voiceProfile(p)) === JSON.stringify(V.voiceProfile(JSON.parse(JSON.stringify(p))))), n: PR.length,
+    distinct: new Set(PR.map((x) => x.pitch + '|' + x.rate + '|' + x.timbre.hz)).size, ranges: PR.every((x) => x.pitch >= 0.6 && x.pitch <= 1.5 && x.rate >= 0.86 && x.rate <= 1.14 && x.timbre.hz >= 100 && x.timbre.hz <= 240 && ['m', 'f'].indexOf(x.gender) >= 0),
+    genders: [V.voiceProfile({ id: 'a', name: 'Phoibos' }).gender, V.voiceProfile({ id: 'b', name: 'Manto' }).gender, V.voiceProfile({ id: 'c', name: 'Metis' }).gender], both: new Set(PR.map((x) => x.gender)).size,
+    kokoro: PR.filter((x) => x.gender === 'f').every((x) => V.KOKORO_VOICES.indexOf(x.kokoro) >= 0) && PR.filter((x) => x.gender === 'm').every((x) => x.kokoro === null), bare: V.voiceProfile('bot:lit').seed === C.seedOf('bot:lit') };
+  const VL = [{ name: 'Samantha', lang: 'en-US' }, { name: 'Daniel', lang: 'en-GB' }, { name: 'Zarvox', lang: 'en-US' }, { name: 'Ava (Premium)', lang: 'en-US' }, { name: 'Thomas', lang: 'fr-FR' }, { name: 'Aaron', lang: 'en-US' }, { name: 'Karen', lang: 'en-AU' }];
+  const pv = (n) => { const v = V.pickVoice(VL, V.voiceProfile({ id: 'x:' + n, name: n })); return v ? v.name : null; };
+  o.pick = { m: ['Phoibos', 'Telamon', 'Hermolaos'].map(pv), f: ['Manto', 'Metis', 'Alkmene'].map(pv), same: pv('Phoibos') === pv('Phoibos'), none: V.pickVoice([], V.voiceProfile('x')), french: V.pickVoice([{ name: 'Thomas', lang: 'fr-FR' }], V.voiceProfile('x')), novelty: V.pickVoice([{ name: 'Zarvox', lang: 'en-US' }], V.voiceProfile('x')) };
+  // the mouth timeline
+  const line = 'Drawdown left $1,420 of $2,000 max loss. Paper only, my friend.', tl = V.visemes(line, { rate: 1 }), tl2 = V.visemes(line, { rate: 2 });
+  const sorted = tl.keys.every((k, i) => i === 0 || k.t >= tl.keys[i - 1].t), known = tl.keys.every((k) => V.VISEMES.indexOf(k.v) >= 0 && k.a >= 0 && k.a <= 1);
+  const mKey = tl.keys.find((k) => k.v === 'M'), aKey = tl.keys.find((k) => k.v === 'A');
+  const stopAt = tl.words[6].t1, pauseRest = V.frameAt(tl, stopAt + 40);
+  o.visemes = { words: tl.words.map((w) => w.text), sorted, known, ms: tl.ms, half: Math.abs(tl2.ms * 2 - tl.ms) <= tl.words.length * 2, closed: mKey ? mKey.a : null, open: aKey ? aKey.a : null,
+    end: V.frameAt(tl, tl.ms + 10), before: V.frameAt(tl, -5).v, pause: [pauseRest.v, pauseRest.a], wordAt: [V.frameAt(tl, tl.words[3].t0 + 5).w, V.wordAtChar(tl, line.indexOf('$2,000')), V.wordAtChar(tl, 0)],
+    numBeats: tl.keys.filter((k) => k.t >= tl.words[2].t0 && k.t < tl.words[2].t1).length, det: JSON.stringify(V.visemes(line)) === JSON.stringify(V.visemes(line)), empty: V.visemes('').words.length, perSec: Math.round(tl.words.length / (tl.ms / 1000) * 10) / 10,
+    mm: V.visemes('mama').keys.map((k) => k.v).join('') };
+  const fakeMouth = { userData: { parts: { mouth: { scale: { x: 1, y: 1 } } } } }, v2 = { calls: [] }, P3v2 = { setMouth: (f, v, a) => v2.calls.push([v, a]) };
+  o.drive = [V.drive(fakeMouth, { v: 'O', a: 1 }), fakeMouth.userData.parts.mouth.scale.y > 2, fakeMouth.userData.parts.mouth.scale.x < 1, V.drive({ userData: {} }, { v: 'A', a: 1 }), V.drive(fakeMouth, { v: 'E', a: 0.5 }, P3v2), JSON.stringify(v2.calls), V.drive(null, { v: 'A', a: 1 })];
+
   console.log(JSON.stringify(o));
 })().catch((e) => { console.error(e && e.stack ? e.stack : e); process.exit(1); });
 """
@@ -266,7 +320,8 @@ globalThis.fetch = async (u, init) => {
 (async () => {
   const P = (await import(path.join(TMP, 'olympus', 'people.mjs'))).default, o = {};
   o.global = globalThis.window.OLYMPUS_PEOPLE === P;
-  o.api = ['ready', 'list', 'get', 'portrait', 'facts', 'ask', 'open', 'standup', 'request', 'requests', 'exportRequests', 'speak', 'me'].filter((k) => typeof P[k] !== 'function');
+  o.api = ['ready', 'list', 'get', 'portrait', 'facts', 'ask', 'open', 'standup', 'request', 'requests', 'exportRequests', 'speak', 'me', 'say', 'show', 'stage', 'walk', 'talkTogether', 'hush'].filter((k) => typeof P[k] !== 'function');
+  o.voiceApi = [P.voice.on(), JSON.stringify(P.voice.profile('bot:lit')) === JSON.stringify(P.voice.profile('lit')), P.voice.profile('bot:lit').pitch > 0, P.say('nonsense', 'hi'), P.say('bot:lit', ''), P.stage(null)];
   o.before = [P.list().length > 0, P.get('bot:lit').name];
   await P.ready();
   o.list = [P.list().length, P.list('scanner').length, P.list({ kind: 'villager' }).length > 40, P.list({ all: true }).length > P.list().length, P.get('lit').id, P.get('keeper:sparta').kind, P.get('nonsense')];
@@ -323,9 +378,61 @@ globalThis.fetch = async (u, init) => {
   const sp = await P.ask('keeper:sparta', 'what are you doing'), sp2 = await P.ask('keeper:sparta', 'give me a number');
   o.scene = [sp.text, sp2.text, sp.sources[0]];
   o.posted = posts.length;
+  const tt = await P.talkTogether(['bot:lit', 'mind', 'nonsense'], 'How did it go?');
+  o.together = [tt.turns.length, tt.turns[0].id, tt.turns.every((x) => typeof x.text === 'string' && x.text.length > 3)];
   console.log(JSON.stringify(o));
 })().catch((e) => { console.error(e && e.stack ? e.stack : e); process.exit(1); });
 """
+
+VOICE_HARNESS = r"""
+// the voice at run time in node: a fake phone voice (speechSynthesis with word boundaries), a fake WebAudio, a fake storage
+const path = require('path');
+const [, , TMP] = process.argv;
+const mem = new Map();
+const storage = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) };
+globalThis.window = globalThis;
+const spoken = [];
+globalThis.SpeechSynthesisUtterance = function (t) { this.text = t; this.rate = 1; this.pitch = 1; this.volume = 1; };
+const VOICES = [{ name: 'Samantha', lang: 'en-US' }, { name: 'Daniel', lang: 'en-GB' }, { name: 'Aaron', lang: 'en-US' }];
+const synth = { speaking: false, pending: false, paused: false, getVoices: () => VOICES, cancel() {}, resume() {},
+  speak(u) { spoken.push(u); if (u.volume === 0) { setTimeout(() => u.onend && u.onend({}), 1); return; }
+    setTimeout(() => { if (u.onstart) u.onstart({}); const re = /\S+/g; let m, k = 0; while ((m = re.exec(u.text))) { const ci = m.index; setTimeout(() => u.onboundary && u.onboundary({ name: 'word', charIndex: ci }), 2 + k * 3); k++; } setTimeout(() => u.onend && u.onend({}), 8 + k * 3); }, 2); } };
+let osc = 0;
+function AC() { this.currentTime = 0; this.state = 'running'; this.destination = {}; }
+const node = () => ({ connect() {}, disconnect() {}, gain: { value: 1, setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} }, frequency: { value: 0, setValueAtTime() {} }, Q: { value: 0 }, start() { osc++; }, stop() {} });
+AC.prototype.createGain = node; AC.prototype.createOscillator = node; AC.prototype.createBiquadFilter = node; AC.prototype.resume = () => {};
+(async () => {
+  const V = await import(path.join(TMP, 'olympus', 'people-voice.mjs')), o = {};
+  const lit = { id: 'bot:lit', name: 'Phoibos', seed: 4242, temperament: 'blunt' };
+  const run = (vo, text, h) => new Promise((ok) => { const words = []; let eng = ''; const hd = vo.speak(lit, text, Object.assign({ onword: (i, n) => words.push(i + '/' + n), onstart: (e) => { eng = e; } }, h || {})); hd.done.then((cut) => ok({ words, eng, engine: hd.engine, cut, said: hd.said, n: hd.tl.words.length })); });
+  // off by default: captions only, word by word, nothing said
+  const v1 = V.createVoice({ storage, synth, AudioContext: AC });
+  o.off = [v1.on(), mem.get('olympus.people.speak') || null];
+  const r0 = await run(v1, 'Paper only, my friend.');
+  o.captions = [r0.engine, r0.words.length, r0.words[r0.words.length - 1], spoken.length, r0.cut];
+  // one tap: on, remembered
+  v1.unlock(); o.unlock = spoken.length === 1 && spoken[0].volume === 0;
+  o.on = [v1.set(true), mem.get('olympus.people.speak'), V.createVoice({ storage, synth, AudioContext: AC }).on()];
+  const r1 = await run(v1, 'Drawdown left $1,420 of $2,000 max loss.');
+  const u = spoken.filter((x) => x.volume !== 0);
+  const prof = V.voiceProfile(lit);
+  o.phone = [r1.engine, u.length > 0, u.length ? u[0].voice && u[0].voice.name : null, u.length ? Math.abs(u[0].rate - prof.rate) < 0.08 && Math.abs(u[0].pitch - prof.pitch) < 0.08 : false, r1.words[r1.words.length - 1], r1.said, /dollars/.test(u.map((x) => x.text).join(' '))];
+  o.chosen = V.pickVoice(VOICES, prof).name;
+  // cancel mid-way
+  const c = v1.speak(lit, 'One two three four five six seven eight nine ten eleven twelve.', {}); c.cancel(); o.cancel = await c.done;
+  // no voice on this device: the murmur (WebAudio) + captions
+  const v2 = V.createVoice({ storage, synth: null, AudioContext: AC });
+  const r2 = await run(v2, 'Fine.');
+  o.murmur = [r2.engine, osc > 0, r2.words.length];
+  const v3 = V.createVoice({ storage, synth: null, AudioContext: null });
+  o.bare = (await run(v3, 'Fine.')).engine;
+  const v4 = V.createVoice({ storage: { getItem() { throw new Error('x'); }, setItem() { throw new Error('x'); } }, synth, AudioContext: AC });
+  o.broken = [v4.on(), v4.set(true)];
+  o.describe = [v1.describe(lit), v3.describe(lit)];
+  console.log(JSON.stringify(o));
+})().catch((e) => { console.error(e && e.stack ? e.stack : e); process.exit(1); });
+"""
+
 
 THREE_HARNESS = r"""
 const fs = require('fs'), path = require('path');
@@ -502,6 +609,60 @@ def test_core():
           o["sent"] == [True, "POST", "system,user,assistant,user", "question"] and o["ctx"] == [True, True, True, True, True], (o["sent"], o["ctx"]))
 
 
+def test_show_and_voice():
+    o = run(HARNESS, os.path.join(AK.WEB, "ergasterion", "queue.json"))
+    if o is None or "_error" in o:
+        check("i. the show / voice harness ran", o is None, (o or {}).get("_error"))
+        return
+    c = o["cards"]
+    check(f"i. WORK CARDS: {c['n']} cards (every person, sample and real-looking data): every number on every card exists in that person's facts, every card names its source",
+          c["nung"] == 0 and c["noSrc"] == 0, c["ung"])
+    check(f"i. {c['charts']} cards carry a mini chart (bots, scanners, the Kalshi bot, champions, keepers, the Mind); every bar's value is the very number written in its label text",
+          c["charts"] >= 20 and all(k in c["kinds"] for k in ("bot", "scanner", "kalshi", "champion")) and c["barBad"] == [], (c["kinds"], c["barBad"]))
+    check("i. LIT's card: the last trades as bars with $ and R, today / week / drawdown / target, from home.json",
+          c["lit"][0] == ["+$312 (+0.73R)", "-$437 (-1.03R)"] and c["lit"][1][:3] == ["Today", "This week", "Drawdown"] and c["lit"][2] == "home.json", c["lit"])
+    check("i. the Kalshi bot's card: the verdict over its settled paper bets after fees (-$81.77 over 1836, marked bad), its last bets as bars",
+          c["kalshi"][0] == "Over 1836 settled paper bets my total is -$81.77 after fees." and c["kalshi"][1] == "bad" and c["kalshi"][2] == ["+$1.80", "-$0.60"], c["kalshi"])
+    check("i. a scanner's card: its picks as estimate bars, the top pick and the monthly estimate (labelled estimates), from its own file",
+          c["scanner"][0] == ["$5,439 (an estimate)", "$2,528 (an estimate)"] and "an estimate" in c["scanner"][1][1] and c["scanner"][2] == "money/chrysos.json", c["scanner"])
+    check("i. a builder's card: its last commits with their day; a champion's: the verdict, net $ with $ a month, a chart; a rejected one says why; sample data says 'Sample data, not real numbers.'",
+          c["builder"][0] == "My last commits" and c["builder"][1] == ["Fix the phone layout of the cards|2026-11-11"] and c["champ"][0] == "Verdict: adopted" and c["champ"][1] and "a month" in c["champ"][1][0]
+          and c["champ"][2] and c["champ"][3] == "bad" and c["champ"][4] is True and c["sample"] == [True, "Sample data, not real numbers."], (c["builder"], c["champ"], c["sample"]))
+    check("i. the face of an answer: worried on a blocked drawdown, calm on an order (refused), sheepish on a rejected run and a failed job, proud on good money and thanks",
+          o["moodFor"] == ["worried", "calm", "sheepish", "proud", "sheepish", "proud"], o["moodFor"])
+    t = o["together"]
+    check("i. TALK TOGETHER: three people talk to each other (six turns, by name, one asks another what could go wrong), every number grounded in the SPEAKER's own facts, a neutral summary",
+          t["n"] == 6 and t["order"] == "lammla" and t["ung"] == [] and t["names"] and t["ask"] and t["summary"].startswith("Each of ") and "not a forecast" in t["summary"] and t["sampleNote"] and t["one"] == 0 and t["moods"], t)
+    check("i. 'what are you working on / show me / how did it go' asks for the work card; 'walk with me / lead me there' for a walk; other questions do not",
+          o["wants"] == [[True] * 6, [False] * 3, [True] * 3, [False, False]], o["wants"])
+    check("i. the bubble shows one sentence at a time; a number like $1,234.50 or 2.5% is never cut", o["sentences"] == ["Net $1,234.50 today.", "Up 2.5%!", "Fine?", "yes"], o["sentences"])
+    v = o["voice"]
+    check(f"j. VOICES: every one of {v['n']} people (and villagers) has a stable voice profile (the same every time), {v['distinct']} distinct (pitch, rate, timbre); men and women by their Greek names; Kokoro voices only for women",
+          v["det"] and v["distinct"] >= v["n"] * 0.9 and v["ranges"] and v["genders"] == ["m", "f", "f"] and v["both"] == 2 and v["kokoro"] and v["bare"], v)
+    pk = o["pick"]
+    check("j. the phone voice for a person: English only, never a novelty voice, a man's voice for a man when the phone has one, the same pick every time",
+          all(x in ("Daniel", "Aaron") for x in pk["m"]) and all(x in ("Samantha", "Ava (Premium)", "Karen") for x in pk["f"]) and pk["same"] and pk["none"] is None and pk["french"] is None and pk["novelty"] is None, pk)
+    x = o["visemes"]
+    check(f"j. LIP SYNC: a mouth timeline from the text ({x['perSec']} words a second): sorted keys, known visemes, lips shut on M, wide open on A, rest in a pause and at the end, numbers get several beats, rate 2 is twice as fast",
+          x["sorted"] and x["known"] and x["closed"] == 0 and x["open"] == 1 and x["end"]["v"] == "rest" and x["before"] == "rest" and x["pause"] == ["rest", 0] and x["numBeats"] >= 4 and x["half"] and x["det"] and x["empty"] == 0
+          and 1.8 <= x["perSec"] <= 3.6 and x["mm"] == "MAMArest" and x["words"][2] == "$1,420" and len(x["words"]) == 11, x)
+    check("j. the word under a boundary event and at a time on the timeline", x["wordAt"] == [3, 4, 0], x["wordAt"])
+    check("j. the mouth of a figure: Figure API v2 setMouth(fig, viseme, amount) when people3d.js has it, else the mouth mesh opens (round for O); no figure / no mouth = nothing, no error",
+          o["drive"] == [True, True, True, False, True, '[["E",0.5]]', False], o["drive"])
+    r = run(VOICE_HARNESS)
+    if r is None:
+        return
+    check("j. the voice harness ran", "_error" not in r, r.get("_error"))
+    if "_error" in r:
+        return
+    check("j. voice OFF by default: nothing is said, the words still come one by one (captions)", r["off"] == [False, None] and r["captions"][0] == "captions" and r["captions"][1] >= 4 and r["captions"][3] == 0 and r["captions"][4] is False, (r["off"], r["captions"]))
+    check("j. one tap turns it on and it is remembered (olympus.people.speak = 1); the tap also sends the iPhone's silent unlock", r["unlock"] is True and r["on"] == [True, "1", True], (r["unlock"], r["on"]))
+    check("j. with a phone voice: Jarvis's speaker says it in the person's own voice (their voice, pitch and rate), numbers said as words, word boundaries drive the words to the end",
+          r["phone"][0] == "phone" and r["phone"][1] and r["phone"][2] == r["chosen"] and r["phone"][3] and r["phone"][4] == "8/9" and "dollars" in r["phone"][5] and r["phone"][6], r["phone"])
+    check("j. a tap stops the voice at once; no voice on this device: a soft WebAudio murmur + captions; no audio at all: captions; a broken storage never throws (stays off)",
+          r["cancel"] is True and r["murmur"][0] == "murmur" and r["murmur"][1] and r["bare"] == "captions" and r["broken"] == [False, False], (r["cancel"], r["murmur"], r["bare"], r["broken"]))
+
+
 def test_api():
     o = run(API_HARNESS)
     if o is None:
@@ -510,6 +671,8 @@ def test_api():
     if "_error" in o:
         return
     check("f. window.OLYMPUS_PEOPLE is the module; every function of the contract is there; safe before ready() (the built-in cast)", o["global"] is True and o["api"] == [] and o["before"] == [True, "Phoibos"], (o["api"], o["before"]))
+    check("f. the voice API: off by default, a stable profile per person (alias or id), say() with nobody or nothing to say is null, no stage = false; talkTogether() through the API",
+          o["voiceApi"] == [False, True, True, None, None, False] and o["together"] == [5, "bot:lit", True], (o["voiceApi"], o["together"]))
     check("f. ready() loads olympus/people.json: list(), list('scanner'), villagers on request, get() with aliases and made-up keepers, null for nonsense",
           o["list"][0] >= 30 and o["list"][1] == 5 and o["list"][2:4] == [True, True] and o["list"][4:] == ["bot:lit", "keeper", None], o["list"])
     check("f. facts(id) reads the worker's real file (home.json here) and falls back to a labelled sample when there is none", o["facts"] == ["working", False, "Paper account Zlarior 50K: +$312 today. Drawdown left $1,420 of $2,000 max loss.", 7] and o["sample"] == [True, "idle"], (o["facts"], o["sample"]))
@@ -579,6 +742,7 @@ if __name__ == "__main__":
     test_roster()
     test_static()
     test_core()
+    test_show_and_voice()
     test_api()
     test_three()
     AK.finish()

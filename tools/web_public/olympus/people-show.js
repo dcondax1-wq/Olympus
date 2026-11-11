@@ -20,7 +20,12 @@ const WALK = /\b(walk with me|walk me|lead me|lead the way|take me (there|to (yo
 export const wantsWork = (t) => WORK.test(String(t || ''));
 export const wantsWalk = (t) => WALK.test(String(t || ''));
 /** sentences, for the bubble (a number like 1.2 stays whole) */
-export function sentences(text) { return (String(text || '').match(/[^.!?]+(?:[.!?]+(?=\s|$)|$)|[.!?]+/g) || []).map((s) => s.trim()).filter(Boolean); }
+export function sentences(text) {
+  const t = String(text || ''), out = []; let cur = '';
+  for (let i = 0; i < t.length; i++) { const ch = t.charAt(i); cur += ch; if ('.!?'.indexOf(ch) >= 0 && (i + 1 >= t.length || /\s/.test(t.charAt(i + 1)))) { out.push(cur.trim()); cur = ''; } }
+  if (cur.trim()) out.push(cur.trim());
+  return out.filter(Boolean);
+}
 
 const MONEY = /([+-]?\$[\d,]+(?:\.\d+)?)/;
 const moneyOf = (t) => { const m = MONEY.exec(String(t || '')); if (!m) return null; const v = parseFloat(m[1].replace(/[$,+]/g, '')); return isFinite(v) ? { v, text: m[1] } : null; };
@@ -41,6 +46,12 @@ export function workCard(person, facts, what) {
     card.lines = take(f, [/^2026 net$/, /^2026 profit factor$/, /^2026 trades a week$/, /^Earlier years, net$/, /^Earlier years, profit factor$/, /^2026 evals passed within ten/, /^2026 evals failed within ten/]);
     const a = f.metrics && f.metrics.pf, b = f.metrics && f.metrics.pf_old;
     if (a && b && num(a.v) != null && num(b.v) != null) card.chart = { title: 'Profit factor', bars: [{ label: '2026', v: a.v, text: String(a.text) }, { label: 'Earlier years', v: b.v, text: String(b.text) }], base: 1 };
+    else {
+      const bars = [], n26 = f.metrics && f.metrics.net, old = findNum(f, /^Earlier years, net$/), mo = old ? moneyOf(old.text) : null;
+      if (n26 && num(n26.v) != null) bars.push({ label: '2026', v: n26.v, text: String(n26.text) });
+      if (mo) bars.push({ label: 'Earlier years', v: mo.v, text: mo.text });
+      if (bars.length) card.chart = { title: 'Net after costs', bars, base: 0 };
+    }
     card.list = L.slice(0, 2).map((x) => ({ text: x.text, day: '' }));
     if (f.failed) card.list.push({ text: f.failed, day: '' });
   } else if (kind === 'builder') {
