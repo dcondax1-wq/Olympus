@@ -1,6 +1,6 @@
 // COLOSSEUM's marble amphitheatre (three.js r160 from ../jarvis/, the OLYMPUS render core, the shared AGORA shapes): seven instanced tiers of spectators round a sand oval, a top arcade with the
 // champions' busts, banners in the two fighters' colours, a warm low sun. Two marble champions (helmet and shield from olympus/shapes3d.js, crest colour = the strategy family) clash once a round.
-// Light by design: every repeated part is ONE InstancedMesh, each champion is three baked meshes; about 25 draw calls and 60,000 triangles (budget: <= 45 draws, <= 150,000 triangles), bloom <= .25,
+// Light by design: every repeated part is ONE InstancedMesh, each champion is three baked meshes; about 24 draw calls and 75,000 triangles (budget: <= 45 draws, <= 150,000 triangles), bloom <= .25,
 // a dpr cap of 1.5, no shadow maps, no frame while hidden or off screen. Eases of 200-450 ms, nothing shines. It holds no data: the page tells it who fights and who took the round.
 // LITE / no WebGL / a failed load: the page draws the flat SVG arena instead, so the stage is never blank.
 import * as THREE from '../jarvis/three.module.min.js';
@@ -11,18 +11,24 @@ export const BUDGET = Object.freeze({ draws: 45, tris: 150000 });
 const RX = 7, RZ = 5, GAP = 0.78, TIERS = 7, WALL = 0.9, WALK = 0.3, DEPTH = 0.62, RISE = 0.5, TOP = WALL + TIERS * RISE, DMAX = WALK + TIERS * DEPTH, COL_H = 1.9, N_COL = 34;
 const A0 = Math.PI / 2 + GAP, A1 = Math.PI / 2 - GAP + Math.PI * 2;       // the stands leave a gate open towards the camera
 const CLOTH = ['#e9e3d5', '#e6d7b2', '#c96a4a', '#7f8a52', '#9c6b3c', '#c8a24a', '#b98a6a', '#d9c7a0', '#8c5a3c'], SKIN = ['#d9b08c', '#c49a76', '#b98a6a'];
-const BASE_X = 1.7;
+const BASE_X = 2.0, HIT_X = 0.78, SCALE = 1.5;        // the champions are larger than life: marble statues that came to fight
 const ease = (t) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3), inOut = (t) => { t = Math.min(1, Math.max(0, t)); return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
 function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const ring = (a, d) => [Math.cos(a) * (RX + d), Math.sin(a) * (RZ + d)];
 
 /** sweep a profile [[d, y], ...] (d = metres outside the sand's edge) round the oval from a0 to a1: one flat-shaded geometry */
-function sweep(profile, a0, a1, seg) {
+function sweep(profile, a0, a1, seg, tones) {
   const pos = [], idx = [], n = profile.length;
   for (let i = 0; i <= seg; i++) { const a = a0 + ((a1 - a0) * i) / seg; for (const [d, y] of profile) { const [x, z] = ring(a, d); pos.push(x, y, z); } }
   for (let i = 0; i < seg; i++) for (let j = 0; j < n - 1; j++) { const p = i * n + j, q = p + n; idx.push(p, p + 1, q, p + 1, q + 1, q); }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
-  const flat = g.toNonIndexed(); g.dispose(); flat.computeVertexNormals(); return flat;
+  const flat = g.toNonIndexed(); g.dispose(); flat.computeVertexNormals();
+  if (tones) {                                           // one tone for each strip of the profile (risers darker than treads): 6 vertices a quad
+    const col = [], c = new THREE.Color();
+    for (let i = 0; i < seg; i++) for (let j = 0; j < n - 1; j++) { c.set(tones[j % tones.length]); for (let k = 0; k < 6; k++) col.push(c.r, c.g, c.b); }
+    flat.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  }
+  return flat;
 }
 function instances(geo, mat, list) {
   const im = new THREE.InstancedMesh(geo, mat, list.length), o = new THREE.Object3D(), c = new THREE.Color();
@@ -41,23 +47,23 @@ function shapeNoStand(id, M, cut) {
 export function createArena(canvas, opts) {
   const o = opts || {}, O = window.OLYMPUS || null, RM = o.reduced === true;
   const scene = new THREE.Scene(); scene.background = new THREE.Color('#c9906a');
-  const camera = new THREE.PerspectiveCamera(44, 1.15, 0.1, 200);
+  const camera = new THREE.PerspectiveCamera(48, 1.15, 0.1, 200);
   const rc = createRenderer({ canvas, scene, camera, maxDpr: 1.5, tint: '#c8a24a', theme: { sky: '#c9906a', fog: '#d8a878', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, bloom: { strength: 0.18, radius: 0.4, threshold: 1.05 } });
   const q0 = rc.quality();
   if (q0 === 'low' || q0 === 'off') { try { rc.dispose(); } catch (_) { /* gone */ } return null; }        // LITE is the flat SVG arena
-  scene.fog = new THREE.Fog('#d8a878', 34, 120);
+  scene.fog = new THREE.Fog('#d09a6c', 40, 150);
   const own = [];                                         // geometries and materials to free
   const G = (g) => { own.push(g); return g; }, std = (c, r, m, extra) => { const x = new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: r, metalness: m || 0 }, extra)); own.push(x); return x; };
   const add = (m) => { scene.add(m); return m; };
 
   // ---- light: a low warm sun from the camera's left, a soft sky fill (about 3000 K)
-  scene.add(new THREE.HemisphereLight(0xffe9c4, 0x6b5134, 1.15));
-  const sun = new THREE.DirectionalLight(0xffd9a0, 2.5); sun.position.set(-7, 9, 6); scene.add(sun);
-  const fill = new THREE.DirectionalLight(0xe9d6bd, 0.5); fill.position.set(6, 4, -5); scene.add(fill);
+  scene.add(new THREE.HemisphereLight(0xffe2b8, 0x5a4128, 0.7));
+  const sun = new THREE.DirectionalLight(0xffd29a, 2.9); sun.position.set(-9, 8, 5); scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xe9c9a8, 0.35); fill.position.set(6, 4, -5); scene.add(fill);
 
   // ---- sky: dusk indigo down to amber, and the sun
-  const skyGeo = G(new THREE.SphereGeometry(150, 24, 14)), sc = [], top = new THREE.Color('#54506e'), mid = new THREE.Color('#c98a6a'), low = new THREE.Color('#f0c383'), tmp = new THREE.Color();
-  for (let i = 0; i < skyGeo.attributes.position.count; i++) { const y = skyGeo.attributes.position.getY(i) / 150, t = Math.max(0, y); tmp.copy(low).lerp(mid, Math.min(1, t * 3.2)); if (t > 0.3) tmp.lerp(top, Math.min(1, (t - 0.3) / 0.6)); sc.push(tmp.r, tmp.g, tmp.b); }
+  const skyGeo = G(new THREE.SphereGeometry(150, 24, 14)), sc = [], top = new THREE.Color('#3f3c5c'), mid = new THREE.Color('#b9694f'), low = new THREE.Color('#f2bd7a'), tmp = new THREE.Color();
+  for (let i = 0; i < skyGeo.attributes.position.count; i++) { const y = skyGeo.attributes.position.getY(i) / 150, t = Math.max(0, y); tmp.copy(low).lerp(mid, Math.min(1, t * 7)); if (t > 0.14) tmp.lerp(top, Math.min(1, (t - 0.14) / 0.45)); sc.push(tmp.r, tmp.g, tmp.b); }
   skyGeo.setAttribute('color', new THREE.Float32BufferAttribute(sc, 3));
   const skyMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false }); own.push(skyMat);
   add(new THREE.Mesh(skyGeo, skyMat));
@@ -67,21 +73,21 @@ export function createArena(canvas, opts) {
   const haze = add(new THREE.Mesh(G(new THREE.CircleGeometry(17, 40)), hazeMat)); haze.position.set(-38, 26, -119); haze.lookAt(0, 4, 0);
 
   // ---- the sand, the podium wall, the tiers, the arcade
-  const marble = std('#e4dccb', 0.5, 0, { flatShading: true }), marble2 = std('#d6ccb8', 0.6), bronze = std('#9c6b3c', 0.5, 0.55), sand = std('#d9b36a', 0.95), sandDark = std('#c39a55', 0.95);
+  const marble = std('#ffffff', 0.55, 0, { flatShading: true, vertexColors: true }), marble2 = std('#d9cfba', 0.6), wallMat = std('#a65a3c', 0.8, 0, { flatShading: true }), bronze = std('#9c6b3c', 0.5, 0.55), sand = std('#cfa258', 0.95), sandDark = std('#a9803f', 0.95);
   const floor = add(new THREE.Mesh(G(new THREE.CircleGeometry(1, 72)), sand)); floor.rotation.x = -Math.PI / 2; floor.scale.set(RX, RZ, 1);
   const lane = add(new THREE.Mesh(G(new THREE.RingGeometry(0.56, 0.6, 72)), sandDark)); lane.rotation.x = -Math.PI / 2; lane.scale.set(RX, RZ, 1); lane.position.y = 0.01;
-  add(new THREE.Mesh(sweep([[0, 0], [0, WALL], [WALK, WALL]], 0, Math.PI * 2, 96), marble2));           // the podium wall, all the way round
+  add(new THREE.Mesh(sweep([[0, 0], [0, WALL - 0.14], [0, WALL], [WALK, WALL]], 0, Math.PI * 2, 96, ['#a65a3c', '#e4dccb', '#e4dccb']), marble));           // the podium wall, all the way round: terracotta with a marble coping
   own.push(scene.children[scene.children.length - 1].geometry);
   const prof = [[WALK, WALL]]; for (let k = 0; k < TIERS; k++) { prof.push([WALK + DEPTH * k, WALL + RISE * (k + 1)]); prof.push([WALK + DEPTH * (k + 1), WALL + RISE * (k + 1)]); }
-  const tiers = add(new THREE.Mesh(G(sweep(prof, A0, A1, 96)), marble));
-  add(new THREE.Mesh(G(sweep([[DMAX - 0.2, TOP + COL_H], [DMAX - 0.2, TOP + COL_H + 0.36], [DMAX + 0.36, TOP + COL_H + 0.36], [DMAX + 0.36, TOP + COL_H]], A0, A1, 96)), marble));   // the entablature
+  const tiers = add(new THREE.Mesh(G(sweep(prof, A0, A1, 96, ['#b3a68d', '#e9e1cf'])), marble));
+  add(new THREE.Mesh(G(sweep([[DMAX - 0.2, TOP + COL_H], [DMAX - 0.2, TOP + COL_H + 0.36], [DMAX + 0.36, TOP + COL_H + 0.36], [DMAX + 0.36, TOP + COL_H]], A0, A1, 96, ['#d9cfba', '#efe8d8', '#cfc4ae'])), marble));   // the entablature
 
   // ---- the crowd: bodies and heads, two draw calls for everyone
   const R = rng(o.seed || 1107), bodies = [], heads = [];
   for (let k = 0; k < TIERS; k++) {
-    const d = WALK + DEPTH * k + 0.34, y = WALL + RISE * (k + 1), step = 0.5 / ((RX + RZ) / 2 + d);
+    const d = WALK + DEPTH * k + 0.34, y = WALL + RISE * (k + 1), step = 0.4 / ((RX + RZ) / 2 + d);
     for (let a = A0 + 0.02; a < A1 - 0.02; a += step) {
-      if (R() < 0.14) continue;
+      if (R() < 0.1) continue;
       const aa = a + (R() - 0.5) * step * 0.4, [x, z] = ring(aa, d + (R() - 0.5) * 0.12), h = 0.86 + R() * 0.3, ry = Math.atan2(-x, -z);
       bodies.push({ p: [x, y + 0.19 * h, z], r: [0, ry, 0], s: [1, h, 1], c: CLOTH[Math.floor(R() * CLOTH.length)] });
       heads.push({ p: [x, y + 0.38 * h + 0.09, z], s: 1, c: SKIN[Math.floor(R() * SKIN.length)] });
@@ -149,7 +155,7 @@ export function createArena(canvas, opts) {
   const F = [null, null], colours = ['#c8a24a', '#c96a4a'];
   function setChampion(i, colour) {
     if (F[i]) { scene.remove(F[i].root); for (const k of ['body', 'arm', 'spear']) F[i][k].geometry.dispose(); }
-    const c = champion(colour); c.root.rotation.order = 'YXZ'; c.root.rotation.y =i === 0 ? Math.PI / 2 : -Math.PI / 2; c.root.position.set(i === 0 ? -BASE_X : BASE_X, 0, 0); scene.add(c.root); F[i] = c; colours[i] = colour;
+    const c = champion(colour); c.root.scale.setScalar(SCALE); c.root.rotation.order = 'YXZ'; c.root.rotation.y =i === 0 ? Math.PI / 2 : -Math.PI / 2; c.root.position.set(i === 0 ? -BASE_X : BASE_X, 0, 0); scene.add(c.root); F[i] = c; colours[i] = colour;
     const col = new THREE.Color(); flags.forEach((f, k) => { const mine = f.x < -0.6 ? colours[0] : f.x > 0.6 ? colours[1] : '#c8a24a'; banners.setColorAt(k, col.set(mine)); }); banners.instanceColor.needsUpdate = true;
   }
   setChampion(0, colours[0]); setChampion(1, colours[1]);
@@ -162,7 +168,7 @@ export function createArena(canvas, opts) {
   const dust = add(new THREE.InstancedMesh(G(new THREE.IcosahedronGeometry(0.12, 0)), dustMat, 12)); dust.visible = false; dust.frustumCulled = false;
   const dustDir = []; { const r2 = rng(7); for (let i = 0; i < 12; i++) dustDir.push([(r2() - 0.5) * 1.6, 0.3 + r2() * 1.1, (r2() - 0.5) * 1.6, 0.6 + r2() * 0.8]); }
   const lsrc = shapeNoStand('laurel', M, 0.2); const laurel = bake(lsrc); laurel.material = bustMat; freeShape(lsrc); own.push(laurel.geometry);
-  laurel.scale.setScalar(0.42); laurel.visible = false; scene.add(laurel);
+  laurel.scale.setScalar(0.6); laurel.visible = false; scene.add(laurel);
   sph.dispose(); cylG.dispose();
 
   // ---- the choreography (seconds). Every move is one 200-450 ms ease.
@@ -176,9 +182,9 @@ export function createArena(canvas, opts) {
       for (let i = 0; i < 2; i++) {
         const mine = (i === 0 && w === 'a') || (i === 1 && w === 'b'), s = st[i];
         if (w === 'none') { const k = e < 0.3 ? ease(e / 0.3) : 1 - ease((e - 0.45) / 0.35); s.tilt = -0.12 * Math.max(0, k); continue; }     // no contest: both lower their shields, nobody strikes
-        if (e < 0.32) { const k = ease(e / 0.32); s.x = BASE_X - (BASE_X - 0.6) * k; s.thrust = k; }
-        else if (e < 0.62) { const k = ease((e - 0.32) / 0.3); const back = w === 'draw' ? 1.5 : mine ? 0.75 : 2.35; s.x = 0.6 + (back - 0.6) * k; s.thrust = 1 - k; s.tilt = (w === 'draw' ? 0.12 : mine ? -0.05 : 0.3) * Math.sin(k * Math.PI * (mine ? 1 : 0.5)); }
-        else { const k = inOut((e - 0.62) / 0.43), back = w === 'draw' ? 1.5 : mine ? 0.75 : 2.35; s.x = back + (BASE_X - back) * k; s.tilt = (w === 'draw' || mine ? 0 : 0.3) * (1 - k); }
+        if (e < 0.32) { const k = ease(e / 0.32); s.x = BASE_X - (BASE_X - HIT_X) * k; s.thrust = k; }
+        else if (e < 0.62) { const k = ease((e - 0.32) / 0.3); const back = w === 'draw' ? 1.8 : mine ? 0.95 : 2.8; s.x = HIT_X + (back - HIT_X) * k; s.thrust = 1 - k; s.tilt = (w === 'draw' ? 0.12 : mine ? -0.05 : 0.3) * Math.sin(k * Math.PI * (mine ? 1 : 0.5)); }
+        else { const k = inOut((e - 0.62) / 0.43), back = w === 'draw' ? 1.8 : mine ? 0.95 : 2.8; s.x = back + (BASE_X - back) * k; s.tilt = (w === 'draw' || mine ? 0 : 0.3) * (1 - k); }
       }
       if (w !== 'none' && e >= 0.32 && e < 0.82) dustK = (e - 0.32) / 0.5;
       kick = w !== 'none' && e >= 0.32 && e < 0.72 ? Math.sin(((e - 0.32) / 0.4) * Math.PI) : 0;
@@ -188,7 +194,7 @@ export function createArena(canvas, opts) {
       for (let i = 0; i < 2; i++) { const mine = won === 'draw' || (i === 0 && won === 'a') || (i === 1 && won === 'b'); if (mine) st[i].raise = k; else { st[i].y = -0.22 * k; st[i].tilt = -0.42 * k; } }
       if (anim && e >= 1) anim = null;
       laurel.visible = won === 'a' || won === 'b';
-      if (laurel.visible) { const i = won === 'a' ? 0 : 1; laurel.position.set((i === 0 ? -1 : 1) * BASE_X, 2.25 + (1 - k) * 1.3, 0); laurel.rotation.y = RM ? 0.5 : now * 0.6; }
+      if (laurel.visible) { const i = won === 'a' ? 0 : 1; laurel.position.set((i === 0 ? -1 : 1) * BASE_X, 3.3 + (1 - k) * 1.5, 0); laurel.rotation.y = RM ? 0.5 : now * 0.6; }
     }
     if (pose !== 'verdict') laurel.visible = false;
     for (let i = 0; i < 2; i++) {
@@ -196,15 +202,15 @@ export function createArena(canvas, opts) {
       f.root.position.set(sgn * s.x, s.y + bob, 0); f.root.rotation.x = -s.tilt;          // order YXZ: a lean back (+) or a bow forward (-) about the champion's own shoulders
       f.arm.position.z = 0.02 + s.thrust * 0.26; f.arm.rotation.x = -s.thrust * 0.25 - s.raise * 0.2;
       f.spear.rotation.x = s.thrust * 0.5; f.spear.position.y = 1.0 + s.raise * 0.5; f.spear.rotation.z = -s.raise * 0.12;
-      obj.position.set(sgn * s.x, 0.02, 0); obj.rotation.set(0, 0, 0); obj.scale.set(1, 1, 0.8); obj.updateMatrix(); shadows.setMatrixAt(i, obj.matrix);
+      obj.position.set(sgn * s.x, 0.02, 0); obj.rotation.set(0, 0, 0); obj.scale.set(SCALE, 1, SCALE * 0.8); obj.updateMatrix(); shadows.setMatrixAt(i, obj.matrix);
     }
     shadows.instanceMatrix.needsUpdate = true;
     dust.visible = dustK >= 0 && dustK < 1;
-    if (dust.visible) { const k = ease(dustK); dustMat.opacity = 0.75 * (1 - dustK); dustDir.forEach((d, i) => { obj.position.set(d[0] * k, 0.5 + d[1] * k, d[2] * k * 0.7); obj.scale.setScalar(d[3] * (0.5 + k)); obj.updateMatrix(); dust.setMatrixAt(i, obj.matrix); }); dust.instanceMatrix.needsUpdate = true; }
+    if (dust.visible) { const k = ease(dustK); dustMat.opacity = 0.75 * (1 - dustK); dustDir.forEach((d, i) => { obj.position.set(d[0] * k * 1.3, 0.7 + d[1] * k * 1.4, d[2] * k); obj.scale.setScalar(d[3] * (0.7 + k * 1.3)); obj.updateMatrix(); dust.setMatrixAt(i, obj.matrix); }); dust.instanceMatrix.needsUpdate = true; }
   }
   function frameCamera(now) {
-    const asp = camera.aspect || 1.15, dist = Math.max(14, 16.5 / asp), sway = RM ? 0 : Math.sin(now * 0.11) * 0.13, push = 1 - 0.035 * kick;
-    camera.position.set(Math.sin(sway) * dist * push, 5.2, Math.cos(sway) * dist * push); camera.lookAt(0, 2.35, 0);
+    const asp = camera.aspect || 1.15, dist = Math.max(9.6, 11 / asp), sway = RM ? 0 : Math.sin(now * 0.11) * 0.13, push = 1 - 0.035 * kick;
+    camera.position.set(Math.sin(sway) * dist * push, 3.6, Math.cos(sway) * dist * push); camera.lookAt(0, 2.0, 0);
   }
   function resize() { const w = canvas.clientWidth || 320, h = canvas.clientHeight || 280; camera.aspect = w / h; camera.updateProjectionMatrix(); rc.resize(w, h); dirty = true; }
   const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : null; if (ro) ro.observe(canvas);
