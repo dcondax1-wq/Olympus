@@ -333,11 +333,15 @@
     track: function (r) {
       if (!r || typeof r.render !== 'function' || r.__oly) return r;
       renderer = r; r.__oly = true;
-      var draw = r.render, cv = r.domElement, g = cv ? glGuard(cv) : null, n = 0;
+      var draw = r.render, cv = r.domElement, g = cv ? glGuard(cv) : null, t0 = 0, shots = 0;
       r.render = function () {
         var out = draw.apply(r, arguments); frames++; if (state === 'loading') ready();
-        // the context-loss still: one small JPEG of the finished frame (drawn to the screen), taken once the scene has settled (frame 90)
-        if (g && ++n === 90 && !g.still) { try { if (!r.getRenderTarget || r.getRenderTarget() === null) g.snap(); else n--; } catch (e) { /* no still: the backdrop */ } }
+        // the context-loss still: a small JPEG of a finished frame (a draw to the screen), 1.5 s after the first frame and once more at 8 s
+        // when the scene has settled (two encodes in the page's life, ~360 px wide)
+        if (g && shots < 2) {
+          var now = performance.now(); if (!t0) t0 = now;
+          if (now - t0 > (shots ? 8000 : 1500)) { try { if (!r.getRenderTarget || r.getRenderTarget() === null) { g.snap(); shots++; } } catch (e) { shots = 2; /* no still: the backdrop */ } }
+        }
         return out;
       };
       return r;

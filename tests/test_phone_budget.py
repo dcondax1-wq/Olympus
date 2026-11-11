@@ -208,7 +208,7 @@ def test_context_loss(br, origin, shots=None):
     ctx, p = new_page(br, origin, [], None)
     p.goto(origin + "/olympus/render-lab.html?q=low")
     p.wait_for_function("window.__lab && window.__lab.rc && window.__lab.rc.stats().calls > 0", timeout=45000)
-    p.wait_for_timeout(2500)                                   # past frame 90: the still is taken
+    p.wait_for_timeout(2500)                                   # past 1.5 s of frames: the still is taken
     xy = p.evaluate(CENTER_DARK, "canvas")
     before = center_rgb(p, xy)
     p.evaluate("window.__lx = window.__lab.renderer.getContext().getExtension('WEBGL_lose_context'); window.__lx.loseContext()")
@@ -227,7 +227,7 @@ def test_context_loss(br, origin, shots=None):
         p.screenshot(path=os.path.join(shots, "ctx_restored.jpg"), type="jpeg", quality=70)
     dark = lambda c: max(c) < 14 or min(c) > 240               # black, or the browser's own white "lost" placeholder
     check("c. render core, context lost: the canvas shows the still / AGORA backdrop (never black), html[data-oly-gl=lost]",
-          not dark(lost) and ("url(" in bg or "radial-gradient" in bg), [before, lost, bg[:80]])
+          not dark(lost) and "url(\"data:image/jpeg" in bg and "radial-gradient" in bg, [before, lost, bg[:80]])
     check("c. render core, restored: the core rebuilt (restores >= 1) and draws again, the picture is back (not black)",
           st[0] is False and st[1] >= 1 and st[2] > 0 and not dark(after), [st, after])
     check("c. render core: no console error, no page error through the loss and the restore",
