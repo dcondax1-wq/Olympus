@@ -32,11 +32,11 @@ attribute vec4 aInfo;
 uniform float uTime;
 uniform vec4 uGrid;
 varying float vFade;`;
-function impostorMesh(A, n, tint) {
+function impostorMesh(A, n, tint, cellOf) {
   const tex = new THREE.CanvasTexture(A.canvas); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 2; tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.needsUpdate = true;
   const geo = new THREE.PlaneGeometry(1, 1); geo.translate(0, 0.5, 0);
   const cell = new THREE.InstancedBufferAttribute(new Float32Array(n * 2), 2), info = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4);
-  for (let i = 0; i < n; i++) cell.setXY(i, i * A.frames, A.frames >= 5 ? 1 : 0);
+  for (let i = 0; i < n; i++) cell.setXY(i, (cellOf ? cellOf[i] : i) * A.frames, A.frames >= 5 ? 1 : 0);
   geo.setAttribute('aCell', cell); geo.setAttribute('aInfo', info);
   const uni = { uTime: { value: 0 }, uGrid: { value: new THREE.Vector4(A.cols, A.rows, 0, 0) }, uTint: { value: new THREE.Color(tint || '#ffffff') } };
   const mat = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide });
@@ -78,17 +78,20 @@ export function makeTownCast(THREE_, people, opts) {
   const slots = people.map((p, i) => ({ i, id: p.id, x: 0, y: 0, z: 0, ry: 0, s: 1, sq: 1, lean: 0, act: 'idle', fig: null, phase: (i * 0.618) % 1, stride: 0, greeted: false, walker: null, spec: null, src: p }));
   const S = { P3: null, specs: null, far: null, gone: false, rig: false, talkI: -1, closeN: 0, sounds: 0, steps: 0, presence: 0, built: 0, status: 'toy', tint: new THREE.Color(o.tint || '#ffffff') };
   const spare = new Map();
+  function loadRig() { if (S.rigAsked || !S.P3) return; S.rigAsked = true; S.P3.loadRig().then((ok) => { if (!S.gone) S.rig = !!ok; }); }
   // load the cast (for the near figures) and photograph everyone (the far crowd); either may fail: the toys stay
   if (n && !rigOff()) people3d().then((P3) => {
     if (!P3 || S.gone) return; S.P3 = P3;
     S.specs = people.map((p) => { try { return P3.spec(p.spec || p.id); } catch (_) { return P3.spec('someone'); } });
     slots.forEach((sl, i) => { sl.spec = S.specs[i]; });
-    P3.loadRig().then((ok) => { if (!S.gone) S.rig = !!ok; });
+    if (!lite) loadRig();                               // LITE loads the cast (497 KB) only when someone comes close or you talk (tick)
     if (lite) return;                                   // LITE: no photo studio (a second WebGL context); the toys stay far, the rigged figures come close
     S.status = 'photographing';
-    studio().then((ST) => (ST && ST.atlas ? ST.atlas(S.specs, { views: true, cell: n > 40 ? [80, 100] : [96, 120] }) : null)).then((A) => {
+    // one photo set per look: villagers of one village share their village's look (Athens: 80 people, about 50 looks)
+    const uniq = new Map(), uspecs = [], cellOf = people.map((p, i) => { const key = String(p.id); if (!uniq.has(key)) { uniq.set(key, uspecs.length); uspecs.push(S.specs[i]); } return uniq.get(key); });
+    studio().then((ST) => (ST && ST.atlas ? ST.atlas(uspecs, { views: true, cell: uspecs.length > 40 ? [80, 100] : [96, 120] }) : null)).then((A) => {
       if (!A || S.gone) { S.status = 'toy'; return; }
-      S.far = impostorMesh(A, n, o.tint); S.far.uni.uTint.value.copy(S.tint); group.add(S.far.im); toy.mesh.visible = false; S.status = 'photos';
+      S.far = impostorMesh(A, n, o.tint, cellOf); S.looks = uspecs.length; S.far.uni.uTint.value.copy(S.tint); group.add(S.far.im); toy.mesh.visible = false; S.status = 'photos';
       for (let i = 0; i < n; i++) put(i);
       try { group.dispatchEvent({ type: 'photos' }); } catch (_) { /* fine */ }
     }).catch(() => { S.status = 'toy'; });
@@ -142,6 +145,7 @@ export function makeTownCast(THREE_, people, opts) {
     if (S.gone) return;
     if (S.far) S.far.uni.uTime.value = t || 0;
     const L = cam ? listenerOf(cam) : null;
+    if (!S.rig && S.P3 && !S.rigAsked && (S.talkI >= 0 || (focus && slots.some((sl) => Math.hypot(sl.x - focus.x, sl.z - focus.z) < closeR)))) loadRig();
     if (S.rig && S.P3) {
       const want = [];
       if (focus) for (const sl of slots) { const d = Math.hypot(sl.x - focus.x, sl.z - focus.z); if (d < (sl.fig ? closeR * 1.2 : closeR)) want.push([d, sl.i]); }
@@ -161,7 +165,7 @@ export function makeTownCast(THREE_, people, opts) {
     figureOf: (i) => (slots[i] ? slots[i].fig : null),
     /** the light of the scene (a dusk town is darker): multiplies the photos */
     setTint(c) { S.tint.set(c); if (S.far) S.far.uni.uTint.value.copy(S.tint); },
-    stats: () => ({ status: S.status, rig: S.rig, close: S.closeN, built: S.built, photos: !!S.far, steps: S.steps, presence: S.presence, drawCalls: (S.far ? 1 : toy.mesh.visible ? 1 : 0) + S.closeN * 2 }),
+    stats: () => ({ status: S.status, rig: S.rig, looks: S.looks || 0, close: S.closeN, built: S.built, photos: !!S.far, steps: S.steps, presence: S.presence, drawCalls: (S.far ? 1 : toy.mesh.visible ? 1 : 0) + S.closeN * 2 }),
     dispose() { S.gone = true; toy.dispose(); if (S.far) S.far.dispose(); for (const sl of slots) if (sl.fig) { try { sl.fig.userData.dispose(); } catch (_) { /* gone */ } } for (const f of spare.values()) { try { f.userData.dispose(); } catch (_) { /* gone */ } } spare.clear(); if (group.parent) group.parent.remove(group); },
   };
 }
