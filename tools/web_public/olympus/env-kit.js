@@ -59,7 +59,7 @@ export const HDRI = Object.freeze({
 export const HDRI_FOR = Object.freeze({ dawn: 'dusk', golden: 'golden', day: 'day', dusk: 'dusk', night: 'night' });
 /** prop packs: one .glb each; scale = metres per glTF unit */
 export const PACKS = Object.freeze({
-  dungeon: { file: 'env/kay_dungeon.glb', scale: 1, src: 'KayKit Dungeon Remastered 1.0 (Kay Lousberg)' },
+  dungeon: { file: 'env/kay_dungeon.glb', scale: 0.5, src: 'KayKit Dungeon Remastered 1.0 (Kay Lousberg)' },
   camp: { file: 'env/kay_camp.glb', scale: 4, src: 'KayKit Medieval Hexagon Pack 1.0 (Kay Lousberg)' },
 });
 /** hero models (Poly Haven), each its own .glb with 3 textures; h = the height in metres they are scaled to */
@@ -225,7 +225,7 @@ export function latheGeo(profile, seg) {
 }
 /** a Doric column shaft: `flutes` concave flutes with sharp arrises, entasis (a slight swell), UVs in metres */
 export function shaftGeo(o) {
-  const h = o.h ?? 4, r0 = o.r ?? 0.3, r1 = r0 * (o.taper ?? 0.8), fl = o.flutes ?? 20, per = o.lite ? 2 : 4, seg = fl * per, rows = o.lite ? 2 : 6, depth = o.depth ?? 0.07;
+  const h = o.h ?? 4, r0 = o.r ?? 0.3, r1 = r0 * (o.taper ?? 0.8), fl = o.flutes ?? 20, per = o.lite ? 2 : 4, seg = fl * per, rows = o.rows ?? (o.lite ? 1 : 3), depth = o.depth ?? 0.07;
   const pos = [], uvs = [], idx = [];
   for (let j = 0; j <= rows; j++) {
     const v = j / rows, y = v * h, swell = Math.sin(v * Math.PI) * 0.018 * r0, R = r0 + (r1 - r0) * v + swell;
@@ -281,6 +281,26 @@ export function cushionGeo(w, h, d, r) {
   s.lineTo(-x, d / 2); s.quadraticCurveTo(-w / 2, d / 2, -w / 2, z); s.lineTo(-w / 2, -z); s.quadraticCurveTo(-w / 2, -d / 2, -x, -d / 2);
   const g = new THREE.ExtrudeGeometry(s, { depth: Math.max(0.001, h - 2 * rr), bevelEnabled: true, bevelThickness: rr, bevelSize: rr * 0.6, bevelSegments: 2, curveSegments: 3 });
   g.rotateX(-Math.PI / 2); g.translate(0, rr, 0);
+  return g;
+}
+
+/** a flat ring on the ground (facing up) from r0 to r1, angles a0..a1; UVs in metres (u round the middle circle, v outward) */
+export function ringGeo(r0, r1, seg, a0, a1) {
+  const A0 = a0 ?? 0, A1 = a1 ?? Math.PI * 2, n = seg || 64, rm = (r0 + r1) / 2, pos = [], uv = [], idx = [];
+  for (let i = 0; i <= n; i++) { const a = A0 + ((A1 - A0) * i) / n; for (const r of [r0, r1]) { pos.push(Math.sin(a) * r, 0, Math.cos(a) * r); uv.push(a * rm, r - r0); } }
+  for (let i = 0; i < n; i++) { const k = i * 2; idx.push(k, k + 2, k + 1, k + 1, k + 2, k + 3); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+  g.computeVertexNormals(); if (g.getAttribute('normal').getY(0) < 0) { g.setIndex(idx.map((v, i) => idx[i - (i % 3) + (2 - (i % 3))])); g.computeVertexNormals(); }
+  return g;
+}
+/** a disc on the ground (facing up), UVs in metres */
+export function discGeo(r, seg) { const g = new THREE.CircleGeometry(r, seg || 48); g.rotateX(-Math.PI / 2); const p = g.getAttribute('position'), uv = g.getAttribute('uv'); for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i), p.getZ(i)); return g; }
+/** an upright round band (a curved wall face) of radius r from y0 to y0 + h, angles a0..a1, facing inward (in: true) or out; UVs in metres */
+export function bandGeo(r, y0, h, seg, inward, a0, a1) {
+  const A0 = a0 ?? 0, A1 = a1 ?? Math.PI * 2, n = seg || 64, pos = [], uv = [], nor = [], idx = [];
+  for (let i = 0; i <= n; i++) { const a = A0 + ((A1 - A0) * i) / n, sx = Math.sin(a), cz = Math.cos(a); for (const y of [y0, y0 + h]) { pos.push(sx * r, y, cz * r); uv.push((inward ? -a : a) * r, y - y0); nor.push(inward ? -sx : sx, 0, inward ? -cz : cz); } }
+  for (let i = 0; i < n; i++) { const k = i * 2; if (inward) idx.push(k, k + 1, k + 2, k + 2, k + 1, k + 3); else idx.push(k, k + 2, k + 1, k + 1, k + 2, k + 3); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
   return g;
 }
 
@@ -342,16 +362,17 @@ function makeBuilder(kit) {
       else seg(0, L);
       return B;
     },
-    /** a dining couch (kline): turned wooden legs, a frame, a linen mattress, a bolster and a cushion in `color` */
+    /** a dining couch (kline): turned wooden legs, a frame, a linen mattress (top at h + 0.16), a bolster and a headboard at the -x end,
+     *  a loose cushion (cushion: false for none) in `color` */
     kline(o) {
-      const w = o.w ?? 1.9, d = o.d ?? 0.8, hgt = o.h ?? 0.42, ry = o.ry || 0, c = Math.cos(ry), s = Math.sin(ry), seg = kit.lite ? 6 : 10;
+      const w = o.w ?? 1.9, d = o.d ?? 0.8, hgt = o.h ?? 0.42, ry = o.ry || 0, c = Math.cos(ry), s = Math.sin(ry), seg = kit.lite ? 5 : o.seg ?? 8, L = hgt - 0.05;
       const at = (lx, lz) => [o.x + lx * c + lz * s, o.z - lx * s + lz * c];
-      for (const lx of [-w / 2 + 0.1, w / 2 - 0.1]) for (const lz of [-d / 2 + 0.08, d / 2 - 0.08]) { const p = at(lx, lz); B.lathe('wood:uv', [[0.035, 0], [0.05, 0.05], [0.03, 0.12], [0.055, hgt * 0.55], [0.03, hgt * 0.75], [0.045, hgt - 0.08], [0.0001, hgt - 0.08]], p[0], 0, p[1], 1, seg, o.wood); }
-      let p = at(0, 0); B.box('wood', p[0], hgt - 0.05, p[1], w, 0.1, d, ry, o.wood);
-      B.add('cloth', cushionGeo(w - 0.06, 0.16, d - 0.06, 0.06), mat4(p[0], hgt, p[1], ry), o.linen || '#e8dfcc');
-      p = at(-w / 2 + 0.2, 0); B.add('cloth', new THREE.CylinderGeometry(0.11, 0.11, d - 0.12, seg), mat4(p[0], hgt + 0.25, p[1], ry, 1, Math.PI / 2), o.color || '#c96a4a');
-      p = at(-w / 2 + 0.06, 0); B.box('wood', p[0], hgt + 0.18, p[1], 0.08, 0.36, d, ry, o.wood);        // the headboard (fulcrum)
-      p = at(w * 0.18, -d * 0.05); B.add('cloth', cushionGeo(0.42, 0.1, 0.34, 0.05), mat4(p[0], hgt + 0.14, p[1], ry + 0.3), o.color2 || o.color || '#7f8a52');
+      for (const lx of [-w / 2 + 0.1, w / 2 - 0.1]) for (const lz of [-d / 2 + 0.08, d / 2 - 0.08]) { const p = at(lx, lz); B.lathe('wood:uv', [[0.03, 0], [0.045, L * 0.12], [0.026, L * 0.3], [0.05, L * 0.55], [0.028, L * 0.78], [0.042, L], [0.0001, L]], p[0], 0, p[1], 1, seg, o.wood); }
+      let p = at(0, 0); B.add('wood:uv', boxGeo(w, 0.1, d), mat4(p[0], hgt - 0.05, p[1], ry), o.wood);
+      B.add('cloth:uv', cushionGeo(w - 0.06, 0.16, d - 0.06, 0.06), mat4(p[0], hgt, p[1], ry), o.linen || '#e8dfcc');
+      p = at(-w / 2 + 0.17, 0); B.add('cloth:uv', new THREE.CylinderGeometry(0.1, 0.1, d - 0.14, seg), mat4(p[0], hgt + 0.24, p[1], ry, 1, Math.PI / 2), o.color || '#c96a4a');
+      p = at(-w / 2 + 0.05, 0); B.add('wood:uv', boxGeo(0.07, 0.42, d), mat4(p[0], hgt + 0.16, p[1], ry), o.wood);        // the headboard (fulcrum)
+      if (o.cushion !== false) { p = at(w * 0.18, -d * 0.05); B.add('cloth:uv', cushionGeo(0.42, 0.1, 0.34, 0.05), mat4(p[0], hgt + 0.14, p[1], ry + 0.3), o.color2 || o.color || '#7f8a52'); }
       return B;
     },
     /** a low three-legged table (trapeza) with a round top */
@@ -388,7 +409,7 @@ function makeBuilder(kit) {
         const g = mergeGeometries(list, false); list.forEach((x) => x.dispose());
         if (!g) continue;
         g.computeBoundingSphere();
-        const mesh = new THREE.Mesh(g, kit.mat(key, { vertexColors: true }));
+        const pm = String(key).startsWith('paint:') ? kit.paintMat(key) : null, mesh = new THREE.Mesh(g, pm || kit.mat(key, { vertexColors: true }));
         mesh.name = 'ek:' + key; mesh.matrixAutoUpdate = false; mesh.updateMatrix();
         grp.add(mesh); kit._own.push(g);
       }
@@ -590,7 +611,7 @@ export function envKit(opts) {
     },
     /** a canvas-painted texture (frieze bands, inlays, signs) as a 'uv' material: paint(g, w, h) */
     painted(key, w, h, paint, po) {
-      const k = 'paint:' + key;
+      const k = String(key).startsWith('paint:') ? key : 'paint:' + key;
       if (mats.has(k)) return mats.get(k);
       const cv = document.createElement('canvas'); cv.width = w; cv.height = h; paint(cv.getContext('2d'), w, h);
       const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = lite ? 1 : aniso;
@@ -599,6 +620,8 @@ export function envKit(opts) {
       info.texels += w * h; kit._own.push(t, m); mats.set(k, m);
       return m;
     },
+    /** a painted material made by painted() (vertex colours on, so builder tints work), or null */
+    paintMat(k) { const m = mats.get(k); if (m && !m.vertexColors) { m.vertexColors = true; m.needsUpdate = true; } return m || null; },
     /** set every kit material's env intensity (the HDRI's strength in this scene) */
     setEnvIntensity(v) { mats.forEach((m) => { m.envMapIntensity = v; }); },
     stats() {
