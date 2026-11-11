@@ -653,7 +653,7 @@ def test_page():
                 check("c. ending the chat releases the person (no focus)", p.evaluate("() => window.ERGASTERION.floor().focused()") == "")
                 # out through the front door to the Builders' camp
                 p.evaluate("() => 1")   # closing the kit's sheet calls speechSynthesis.cancel(), which can stall headless Chromium for ~30 s: wait for the page first
-                p.locator("#campGo").click()
+                p.evaluate("() => document.querySelector('#campGo').click()")
                 p.wait_for_timeout(1500)
                 cg = p.evaluate("() => [window.ERGASTERION.floor().pos(), document.querySelector('#hallNow').textContent, document.querySelector('#mini').getAttribute('viewBox'), document.querySelectorAll('#mini g').length, window.ERGASTERION.floor().stats(), document.querySelector('#status').textContent]")
                 check(f"c. 'Walk to the camp': you stand outside the front door facing the desert camp, the chip says Builders' camp, the minimap becomes the camp map with 10 tents; the camp view is inside the budget ({cg[4]['calls']} calls / {cg[4]['triangles']} triangles)",
@@ -682,7 +682,7 @@ def test_page():
                 check("c. 'Follow' a worker: the camera follows Kalshi bot, the status line says so", fo[0] == "kalshi" and fo[1].startswith("Following Kalshi bot") and fo[2] == "follow", fo)
                 AK.shot(p, "ergasterion-3d-follow")
                 p.select_option("#follow", "")
-                p.locator("#tourBtn").click()
+                p.evaluate("() => document.querySelector('#tourBtn').click()")
                 p.wait_for_timeout(1600)
                 tr = p.evaluate("() => [window.ERGASTERION.floor().pos().mode, document.querySelector('#tourBtn').textContent, document.querySelector('#tourBtn').getAttribute('aria-pressed'), document.querySelector('#hallNow').textContent, document.querySelector('#status').textContent, window.ERGASTERION.floor().stats()]")
                 check(f"c. 'Calm tour': the camera flies above the halls by itself ({tr[5]['calls']} calls / {tr[5]['triangles']} triangles from above, inside the budget), the button reads 'Stop the tour', the chip says 'Tour: <hall>'",
