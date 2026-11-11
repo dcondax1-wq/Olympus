@@ -689,13 +689,13 @@
       var par = st.reduced ? 0 : 1, tx = st.tiltX * par, ty = st.tiltY * par, sy = st.scrollY * par;
       // 1 the sky strip
       var sw = 360 * view.ppd, base = (azCentre() * view.ppd - view.w / 2), ox = -((base % sw) + sw) % sw + tx * 4, oy = ty * 3 + sy * 0.25;
-      for (var rep = 0; rep < 3; rep++) ctx.drawImage(sky, 0, 0, sky.width, sky.height, ox + rep * sw, oy, sw, sky.height * 2);
+      for (var rep = 0; rep < 3; rep++) ctx.drawImage(sky, 0, 0, sky.width - 1, sky.height, Math.floor(ox + rep * sw) - 1, oy, Math.ceil(sw) + 2, sky.height * 2);
       if (oy > 0) { ctx.fillStyle = css(L.zenith); ctx.fillRect(0, 0, view.w, oy + 1); }
       // 2 the night: the Milky Way, the field stars, the constellations
       if (L.stars > 0.02) {
         ctx.save(); ctx.translate(tx * 4, oy);
-        ctx.globalAlpha = L.stars * 0.16; ctx.strokeStyle = 'rgb(190,190,215)'; ctx.lineCap = 'round';
-        for (var wv = 0; wv < 2; wv++) { ctx.lineWidth = (wv ? 22 : 48) * k; ctx.beginPath(); var on = false; for (var i = 0; i < mw.length; i++) { var p = skyXY(mw[i][0], mw[i][1]); if (mw[i][0] < -6 || Math.abs(p[2]) > 170) { on = false; continue; } if (!on) { ctx.moveTo(p[0], p[1]); on = true; } else ctx.lineTo(p[0], p[1]); } ctx.stroke(); }
+        ctx.strokeStyle = 'rgb(196,194,214)'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        for (var wv = 0; wv < 3; wv++) { ctx.globalAlpha = L.stars * [0.03, 0.04, 0.05][wv]; ctx.lineWidth = [80, 44, 18][wv] * k; ctx.beginPath(); var on = false; for (var i = 0; i < mw.length; i++) { var p = skyXY(mw[i][0], mw[i][1]); if (mw[i][0] < -6 || Math.abs(p[2]) > 170) { on = false; continue; } if (!on) { ctx.moveTo(p[0], p[1]); on = true; } else ctx.lineTo(p[0], p[1]); } ctx.stroke(); }
         ctx.globalAlpha = 1;
         var fs = st.field;
         for (i = 0; i < fs.length; i++) { var q = skyXY(fs[i][0], fs[i][1]); if (q[0] < -2 || q[0] > view.w + 2) continue; var a = L.stars * clamp((6.4 - fs[i][2]) / 3, 0.15, 0.85) * (fs[i][0] < 8 ? fs[i][0] / 8 : 1); if (a <= 0.02) continue; ctx.fillStyle = 'rgba(236,232,222,' + a.toFixed(3) + ')'; var sz = fs[i][2] < 4.3 ? 1.6 : 1.1; ctx.fillRect(q[0], q[1], sz, sz); }
@@ -752,7 +752,7 @@
         if (n && c.mid.alt > 6) lab.push([c, sx / n, c.cluster ? maxY + 13 : maxY + 14]);
       }
       ctx.font = 'italic ' + Math.round(11.5 * Math.max(0.9, Math.min(1.15, k))) + "px 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif"; ctx.textAlign = 'center';
-      for (i = 0; i < lab.length; i++) { var lx = lab[i][1], ly = Math.min(lab[i][2], (HORIZON + PAD) * view.k - 30); if (lx < 30 || lx > view.w - 30) continue; ctx.fillStyle = 'rgba(232,214,170,' + (0.78 * L.stars).toFixed(3) + ')'; ctx.fillText(lab[i][0].name, lx, ly); }
+      for (i = 0; i < lab.length; i++) { var lx = lab[i][1], ly = Math.min(lab[i][2], (HORIZON + PAD) * view.k - 30); if (lx < 30 || lx > view.w - 30 || ly < 170) continue; ctx.fillStyle = 'rgba(232,214,170,' + (0.78 * L.stars).toFixed(3) + ')'; ctx.fillText(lab[i][0].name, lx, ly); }
     }
     function drawSun(tx, oy) {
       var p = skyXY(sunNow.alt, sunNow.az); if (Math.abs(p[2]) > 120) return;

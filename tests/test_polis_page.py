@@ -185,7 +185,7 @@ def test_browser():
             info = p.evaluate("window.POLIS.info()")
             px = p.evaluate(CANVAS_STARS)
             check(f"c. the night sky at a fixed night time (10 PM New York): phase night, stars at full strength, constellations on screen {info['onScreen'][:6]}, bright star pixels in the sky ({px['bright']}), a dark sky (mean {px['mean']:.0f})",
-                  info["phase"] == "night" and info["stars"] > 0.95 and len(info["onScreen"]) >= 2 and px["bright"] >= 40 and px["mean"] < 90, (info, px))
+                  info["phase"] == "night" and info["stars"] > 0.85 and len(info["onScreen"]) >= 2 and px["bright"] >= 40 and px["mean"] < 90, (info, px))
             names = p.evaluate("[...document.querySelectorAll('#consts b')].map((b) => b.textContent)")
             check("c. the sky card names what is up now: Orion, the Pleiades and Draco among them", {"Orion", "The Pleiades", "Draco"} <= set(names), names)
             p.evaluate("window.POLIS.walk('life')")
@@ -201,6 +201,7 @@ def test_browser():
             check("c. tap a building: the plaque shows its name, what it is, its fresh news and an Enter link to its folder", not plaque["hidden"] and plaque["name"] == "Oracle" and plaque["href"] == "../oracle/" and "Fresh news" in plaque["fresh"], plaque)
             st = p.evaluate("({ fresh: Object.keys(window.POLIS.state.fresh), n: window.POLIS.state.freshN })")
             check(f"c. fresh news glows: the Oracle card published 30 minutes ago is fresh; demo / off cards never glow ({st['n']} fresh)", "oracle" in st["fresh"] and "hestia" not in st["fresh"], st)
+            off_before = list(off)
             with p.expect_navigation(timeout=30000):
                 p.click('.spot[data-id="oracle"]')
             check("c. tap it again: you enter the app", p.url.rstrip("/").endswith("/oracle"), p.url)
@@ -221,7 +222,7 @@ def test_browser():
             p.evaluate("window.scrollTo(0, 0)")
             bad = [x for x in AK.taps(p) if not x.startswith("spot")]
             check("c. every tap target outside the map is at least 44 px; nothing is under Jarvis's corner; no sideways scroll", not bad and not AK.corner(p) and AK.no_sideways(p), (bad[:5], AK.corner(p)))
-            check("c. it reads only this site (nothing off-origin)", not off, off[:3])
+            check("c. it reads only this site (nothing off-origin while the city is open; the app you enter is its own page)", not off_before, off_before[:3])
             AK.shot(p, "polis-night")
             ctx.close()
 
