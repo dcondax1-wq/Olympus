@@ -71,6 +71,8 @@ export const REGISTRY = {
   archive:    { kind: 'tiles',         ms: 800 },
   pinakes:    { kind: 'tiles',         ms: 800 },
   colosseum:  { kind: 'columns',       ms: 1000, n: 5 },
+  nq:         { kind: 'columns',       ms: 1000, n: 3 },
+  symposium:  { kind: 'curtain',       ms: 900 },
   clio:       { kind: 'tiles',         ms: 820 },
   atlas:      { kind: 'sunburst',      ms: 900 },
   observatory:{ kind: 'sunburst',      ms: 950 },

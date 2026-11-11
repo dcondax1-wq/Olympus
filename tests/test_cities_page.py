@@ -17,7 +17,8 @@ Read-only: nothing here touches trading logic, orders or secrets.
      no WebGL -> the plain list
 Screenshots: CITIES_SHOTS=<dir> (default: a temp folder, nothing is written into the repo).
 
-    python -X utf8 -m tests.test_cities_page            (~15 min on a quiet machine; --no-browser: a and b only, ~3 s; --only=c|d|e|f|g|j|k runs one section; k = the Athens nested world)
+    python -X utf8 -m tests.test_cities_page            (~15 min on a quiet machine; --no-browser: a and b only, ~3 s; --only=c|d|e|f|g|j|k|l runs one section; k = the Athens nested world;
+     l = HELLAS, the world of 200+ cities above Athens: grouping, layout determinism, budgets, streaming, levels, search, voyage, walking, fallbacks)
 """
 from __future__ import annotations
 
@@ -1188,7 +1189,629 @@ def sec_k(br, base, C, days, picks, ids):
     print("       numbers:", json.dumps(out))
 
 
-SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f, "g": sec_g, "h": sec_h, "i": sec_i, "j": sec_j, "k": sec_k}
+# ------------------------------------------------------------------ l. HELLAS: hundreds of cities above Athens (cities/hellas*.js, 2026-11-11)
+# Round 2 (owner: "I want to visually see them and what they are working on"): the desert of what did not work, activity states, the ticker, the builders' caravan.
+HELLAS_JS = ("hellas-names.js", "hellas-data.js", "hellas-plan.js", "hellas.js", "hellas-ui.js", "hellas-entry.js", "people-talk.js", "people-fig.js")
+HELLAS_NODE = r"""
+import fs from 'fs';
+import * as D from './tools/web_public/cities/hellas-data.js';
+import * as P from './tools/web_public/cities/hellas-plan.js';
+import { PLACES, REGIONS } from './tools/web_public/cities/hellas-names.js';
+import { walkStep } from './tools/web_public/cities/athens-world.js';
+import * as PT from './tools/web_public/cities/people-talk.js';
+const R = './tools/web_public/', out = {}, J = (p) => { try { return JSON.parse(fs.readFileSync(R + p, 'utf8')); } catch (e) { return null; } };
+const index = J('archive/index.json'), runs = index.runs.concat(...index.shards.map((s) => J('archive/' + s).runs)), city = J('datacity/city.json'), edges = J('kalshicity/edges.json'), sugg = J('kalshicity/suggestions.json'), fx = J('cities/hellas-fixture.json');
+const inp = () => ({ builders: J('cities/hellas-builders.json'), archive: { index, runs }, datacity: city, edges, suggestions: sugg, money: J('money/index.json'), home: J('home.json') });
+const mk = (i, f) => { const W = D.buildPoleis(i, f); Object.assign(W, P.layoutWorld(W.poleis, 'hellas', W.builders)); return W; };
+const W = mk(inp(), fx), W2 = mk(inp(), fx), sig = (w) => JSON.stringify(w.poleis.map((p) => [p.id, p.name, p.x, p.z, p.rows.length]));
+out.counts = W.counts; out.header = W.header; out.sources = W.sources.map((s) => [s.key, s.cities, s.houses, s.example]);
+out.same = sig(W) === sig(W2); out.uniqIds = new Set(W.poleis.map((p) => p.id)).size === W.poleis.length; out.uniqNames = new Set(W.poleis.map((p) => p.name)).size === W.poleis.length;
+out.names = W.poleis.every((p) => p.capital ? p.name === 'Athens' : PLACES.includes(p.name)); out.places = PLACES.length; out.regionsDef = REGIONS.length;
+out.sumHouses = W.poleis.reduce((s, p) => s + p.rows.length, 0); out.runs = index.counts.runs; out.buildings = city.buildings.length;
+const aIds = W.poleis.filter((p) => p.src === 'archive').flatMap((p) => p.rows.map((r) => r.id)); out.archiveOnce = aIds.length === runs.length && new Set(aIds).size === new Set(runs.map((r) => r[0])).size;
+const dIds = W.poleis.filter((p) => p.src === 'datacity').flatMap((p) => p.rows.map((r) => r.id)); out.dcOnce = dIds.length === city.buildings.length;
+out.maxSize = Math.max(...W.poleis.map((p) => p.rows.length)); out.maxPolis = D.MAX_POLIS;
+const arch = W.poleis.filter((p) => p.src === 'archive'); out.archFamilies = new Set(arch.map((p) => p.family)).size;
+out.gold = arch.every((p) => p.gold === p.rows.some((r) => r.verdict === 'adopted')) && arch.some((p) => p.gold) && arch.some((p) => !p.gold);
+out.share = W.poleis.every((p) => p.share >= 0 && p.share <= 1) && arch.every((p) => p.good + p.bad + p.open === p.rows.length);
+out.labels = W.poleis.every((p) => p.label && p.say && p.regionName && Number.isFinite(p.x + p.z + p.mr));
+out.splitOk = arch.filter((p) => /\|ruin$/.test(p.id)).every((p) => p.rows.length >= 3 && arch.some((q) => q.id === p.id.replace(/\|ruin$/, '') && q.rows.length >= 3 && q.bad === 0)); out.kalshi = { kinds: [...new Set(W.poleis.filter((p) => p.src === 'kalshi').map((p) => p.family))].sort(), n: W.poleis.filter((p) => p.src === 'kalshi').length, verdicts: W.poleis.filter((p) => p.src === 'suggest').length };
+out.capital = W.poleis.filter((p) => p.capital).length; out.appDistricts = W.poleis.filter((p) => p.src === 'apps' && !p.capital).length;
+// round 2: biomes, activity, events, builders
+const des = new Set(W.regions.filter((r) => r.kind === 'desert').map((r) => r.key)), inDes = W.poleis.filter((p) => des.has(p.region));
+out.desert = { regions: [...des].sort(), cities: inDes.length, allRuins: inDes.every((p) => p.ruin && p.src === 'archive' && p.rows.every((r) => r.verdict === 'rejected') && p.activity.state === 'ruin' && p.biome === 'desert'),
+  noRuinInGreen: W.poleis.filter((p) => p.ruin).every((p) => des.has(p.region)), runs: W.counts.desertRuns, sum: inDes.reduce((s, p) => s + p.rows.length, 0), rejected: W.counts.rejectedRuns, ghost: W.counts.ghostTowns,
+  south: W.regions.filter((r) => r.kind === 'desert').every((d) => d.cz > Math.max(...W.regions.filter((r) => r.kind !== 'desert').map((r) => r.cz))), features: [...new Set(W.features.map((f) => f.kind))].sort(), nf: W.features.length, dunes: W.hills.filter((h) => h.dune).length,
+  featClear: W.features.every((f) => W.poleis.every((p) => Math.hypot(p.x - f.x, p.z - f.z) > p.mr + 8)), caravans: W.routes.filter((r) => r.caravan).length, caravanOk: W.routes.every((r) => !!r.caravan === (des.has(W.poleis[r.a].region) && des.has(W.poleis[r.b].region))) };
+const sts = W.poleis.map((p) => p.activity.state); out.activity = { all: W.poleis.every((p) => ['working', 'quiet', 'ruin'].includes(p.activity.state) && p.activity.doing.length > 8), working: W.counts.working, quiet: W.counts.quiet, ruins: W.counts.ruins, sum: W.counts.working + W.counts.quiet + W.counts.ruins,
+  recent: arch.filter((p) => p.activity.state === 'working').every((p) => !p.ruin && p.rows.some((r) => r.built >= '26-10-28')), notRecent: arch.filter((p) => p.activity.state === 'quiet').every((p) => p.rows.every((r) => r.built < '26-10-28')),
+  sample: arch.find((p) => p.activity.state === 'working').activity.doing, ruinSample: arch.find((p) => p.ruin).activity.doing, kal: W.poleis.find((p) => p.src === 'kalshi' && /XRP/.test(p.label)).activity.state, athens: W.poleis.find((p) => p.capital).activity.state };
+out.events = { n: W.events.length, sorted: W.events.filter((e) => e.day).every((e, i, a) => !i || a[i - 1].day >= e.day), money: W.events.filter((e) => e.day).every((e) => /\$[\d,]+ \([+-]?\$[\d,]+ a month\)|: (rejected|adopted|still open)$/.test(e.text)), real: W.events.every((e) => W.poleis.some((p) => p.id === e.polis)), first: W.events[0].when, same: JSON.stringify(W.events) === JSON.stringify(W2.events) };
+const bl = W.builders; out.builders = { n: bl.length, names: bl.map((b) => b.name), label: W.buildersLabel, asof: W.buildersAsof, jarvis: bl.filter((b) => b.area === 'jarvis').every((b) => b.target === 'apps:athens' && /Jarvis temple in Athens/.test(b.site)), colosseum: (bl.find((b) => b.name === 'Colosseum') || {}).newSite === true,
+  placed: bl.every((b) => Number.isFinite(b.sx + b.sz + b.tx + b.tz) && !/\{city\}|undefined/.test(b.site)), sites: W.sites.length, newSites: bl.filter((b) => b.newSite).length, kal: /Kalshi city/.test((bl.find((b) => /Kalshi/.test(b.name)) || {}).site || ''),
+  walk: (() => { const b = bl[0], a = P.builderAt(b, 0), c = P.builderAt(b, 3), s = P.builderAt(b, 0, true), s2 = P.builderAt(b, 50, true); return (a.x !== c.x || a.z !== c.z) && s.x === s2.x && [a, c, s].every((q) => Math.min(b.sx, b.tx) - .01 <= q.x && q.x <= Math.max(b.sx, b.tx) + .01); })(), none: mk({}, fx).builders.length };
+// round 3: the people you can talk to (own-chat answers; the kit path is tested in the browser with a stub)
+{ const ruinP = W.poleis.find((p) => p.ruin), busy = arch.find((p) => p.activity.state === 'working'), kr = D.keeperPerson(ruinP), kb = D.keeperPerson(busy), bp = D.builderPerson(W.builders[1], W), tp = D.townsPerson(busy, { idx: 0, name: 'Built 30 Oct 2026' }, busy.rows.slice(0, 3), 0);
+  const allK = W.poleis.filter((p) => p.rows.length).map((p) => D.keeperPerson(p)), ans = (k, i) => k.qa[i][1];
+  out.people = { ids: kr.id === 'keeper:' + ruinP.id && kb.id === 'keeper:' + busy.id, six: allK.every((k) => k.qa.length === 6 && k.qa.every(([q, a]) => q.endsWith('?') && a.length > 12 && !/undefined|NaN|null/.test(a))), names: new Set(allK.map((k) => k.short)).size, same: D.keeperPerson(ruinP).name === kr.name,
+    ruinWhy: /every one rejected/.test(ans(kr, 0)) && /were rejected\. A run is rejected when it does not beat the live baseline in 2026 AND in 2021-25/.test(ans(kr, 3)) && /this idea is closed/.test(ans(kr, 4)) && /keep the ruins/.test(kr.hello),
+    busy: /^We are at work: testing /.test(ans(kb, 0)) && /\$[\d,]+ after costs in 2026 \([+-]?\$[\d,]+ per month\)/.test(ans(kb, 1)) && /History, not a forecast/.test(ans(kb, 1)) && /one for every run/.test(ans(kb, 5)),
+    noOrders: allK.filter((k) => /cannot place orders/.test(ans(k, 4))).length > 50, builder: { id: bp.id, alt: bp.alt.length, snap: /snapshot/i.test(bp.qa[2][1]) && /Snapshot at build time/.test(bp.fine), job: bp.qa[0][1] === W.builders[1].job + '.', where: /Jarvis temple in Athens/.test(bp.qa[1][1]) },
+    towns: tp.qa.length === 6 && /Built 30 Oct 2026/.test(tp.name), look: (() => { const a = PT.lookOf('keeper:a', 'keeper'), b = PT.lookOf('keeper:a', 'keeper'), c = new Set(W.poleis.slice(0, 60).map((p) => { const l = PT.lookOf('x:' + p.id); return l.skin + l.hair + l.outfit; })).size; return JSON.stringify(a) === JSON.stringify(b) && /^#/.test(a.skin + '') && c >= 25; })(),
+    villager: (() => { const v = { id: 'kronos', name: 'Kronos', blurb: 'Time and the session clock', fact: 'Kronos: best weekday so far is Tuesday.', status: 'example', real: 2, rows: [{ label: 'Mon 3 Nov', say: '+$312 (+0.7 R)', tone: 'good' }, { label: 'Tue 4 Nov', say: '-$60 (-0.1 R)', tone: 'bad' }] }, q = PT.villagerPerson(v, 3), e = PT.villagerPerson({ ...v, rows: [], real: 0 }, 3);
+      return q.id === 'villager:kronos' && q.qa.length === 6 && /\+\$312/.test(q.qa[2][1]) && /-\$60/.test(q.qa[3][1]) && /example numbers/.test(q.qa[0][1]) && /cannot place orders/.test(q.qa[4][1]) && /no data today/.test(e.qa[1][1]) && / of Kronos$/.test(q.name); })(),
+    kitNone: PT.kit() === null && PT.talkTo(kr) === 'own' };
+}
+// layout: no two markers touch, regions keep apart, everything inside the bounds
+let gap = 1e9; for (let i = 0; i < W.poleis.length; i++) for (let j = i + 1; j < W.poleis.length; j++) { const a = W.poleis[i], b = W.poleis[j]; gap = Math.min(gap, Math.hypot(a.x - b.x, a.z - b.z) - a.mr - b.mr); }
+out.gap = Math.round(gap * 10) / 10; const B = W.bounds; out.inside = W.poleis.every((p) => p.x > B.x0 && p.x < B.x1 && p.z > B.z0 && p.z < B.z1); out.bounds = [Math.round(B.w), Math.round(B.h)];
+out.regions = W.regions.map((r) => [r.key, r.poleis.length]); out.regionSum = W.regions.reduce((s, r) => s + r.poleis.length, 0);
+out.regionsApart = W.regions.every((a, i) => W.regions.every((b, j) => j <= i || Math.abs(a.cx - b.cx) >= a.rx + b.rx || Math.abs(a.cz - b.cz) >= a.rz + b.rz));
+out.routes = { n: W.routes.length, family: W.routes.every((r) => W.poleis[r.a].family === W.poleis[r.b].family && W.poleis[r.a].src === W.poleis[r.b].src && r.a !== r.b) };
+// world-level draw budget by construction: instances, not meshes
+const T = P.TIER; out.tier = { lowNpc: T.low.npcs, lowShips: T.low.ships, hiBlocks: T.high.blocks, loBlocks: T.low.blocks }; out.budget = P.BUDGET;
+// fallbacks
+const F = mk({}, fx); out.fixture = { cities: F.counts.cities, example: F.counts.example, header: F.header, allMarked: F.poleis.every((p) => p.example || p.src === 'apps') };
+const E = mk({}, {}); out.empty = { cities: E.counts.cities, header: E.header };
+const junk = mk({ archive: { index: { cols: 7 }, runs: 'x' }, datacity: { buildings: [null, 3, {}] }, edges: { edges: [null, { kind: 'band' }] }, suggestions: { items: [1] }, money: { streams: [null] }, home: { accounts: [null, { error: 'x' }] } }, fx); out.junk = junk.counts.cities > 5;
+// search
+const top = (q) => { const r = D.searchPoleis(W, q, 5); return r.map((p) => p.label); };
+out.search = { vwap: top('find VWAP'), k90: top('find Kalshi 90c'), none: top('zzzzqqq').length, btc: top('bitcoin')[0], name: D.searchPoleis(W, W.poleis[40].name, 3)[0].id === W.poleis[40].id, empty: top('  ').length };
+// cards: plain words, $ and $ per month, a link
+const big = arch.slice().sort((a, b) => b.rows.length - a.rows.length)[0], withM = big.rows.find((r) => r.m), card = D.houseCard(big, withM), txt = card.lines.map((l) => l.join(': ')).join(' | ');
+out.card = { money: /\$[\d,]+ after costs, [+-]?\$[\d,]+ per month/.test(txt), verdict: /Verdict: (Adopted|Rejected|Still open)/.test(txt), what: txt.startsWith('What was tested'), link: card.link.text === 'Open in Archive' && card.link.href === '../archive/', hist: /History, not a forecast/.test(txt) };
+const dc = W.poleis.find((p) => p.src === 'datacity'), kc = W.poleis.find((p) => p.src === 'kalshi'), sc = W.poleis.find((p) => p.src === 'suggest'), ap = W.poleis.find((p) => p.src === 'apps' && !p.capital);
+out.cards2 = { dc: /per trade per micro after costs/.test(JSON.stringify(D.houseCard(dc, dc.rows[0]))), k: /nothing here places or changes a bet/.test(JSON.stringify(D.houseCard(kc, kc.rows[0]))), s: /Suggested rule/.test(JSON.stringify(D.houseCard(sc, sc.rows[0]))), app: D.houseCard(ap, ap.rows[0]).link.href.startsWith('../') };
+out.exampleCard = /Example/.test(JSON.stringify(D.houseCard(F.poleis.find((p) => p.src === 'accounts'), F.poleis.find((p) => p.src === 'accounts').rows[0])));
+// every polis: a deterministic plan, one house per row, no overlap, inside the wall, a free start, walkable
+let bad = [], houses = 0, maxR = 0, maxV = 0, maxD = 0;
+for (const p of W.poleis) { if (!p.rows.length) continue; const a = P.planPolis(p), b = P.planPolis(p); houses += a.houses.length; maxR = Math.max(maxR, a.R); maxV = Math.max(maxV, a.villages.length); maxD = Math.max(maxD, a.districts.length);
+  if (JSON.stringify(a.houses.map((h) => [h.x, h.z, h.h])) !== JSON.stringify(b.houses.map((h) => [h.x, h.z, h.h]))) bad.push('det ' + p.id);
+  if (a.houses.length !== p.rows.length || new Set(a.houses.map((h) => h.row)).size !== p.rows.length) bad.push('rows ' + p.id);
+  if (a.villages.reduce((s, v) => s + v.houses.length, 0) !== p.rows.length || a.districts.reduce((s, d) => s + d.houses, 0) !== p.rows.length) bad.push('nest ' + p.id);
+  for (let i = 0; i < a.houses.length; i++) { const h = a.houses[i]; if (Math.hypot(h.x, h.z) + Math.max(h.hx, h.hz) > a.R - 3 || Math.hypot(h.x, h.z) - Math.max(h.hx, h.hz) < a.agoraR) { bad.push('wall ' + p.id); break; }
+    for (let j = i + 1; j < a.houses.length; j++) { const q = a.houses[j]; if (Math.abs(h.x - q.x) < h.hx + q.hx && Math.abs(h.z - q.z) < h.hz + q.hz) { bad.push('overlap ' + p.id); i = 1e9; break; } } }
+  const col = P.polisCollider(a); if (col.hits(a.start.x, a.start.z)) bad.push('start ' + p.id); if (!col.hits(a.houses[0].x, a.houses[0].z)) bad.push('solid ' + p.id);
+  for (const n of P.polisNpcs(a, 12)) for (let t = 0; t < 300; t += 17) { const q = P.npcOnLoop(n, t); if (col.hits(q.x, q.z, .3)) { bad.push('npc ' + p.id); break; } }
+}
+out.plans = { bad: bad.slice(0, 5), houses, maxR: Math.round(maxR), maxV, maxD, capD: P.MAX_DISTRICTS };
+// the Athens walker inside a polis: moves about 2.6 m a second, stops at a house, cannot leave through the wall
+{ const a = P.planPolis(big), col = P.polisCollider(a); let w = { x: a.start.x, z: a.start.z, yaw: Math.PI }; for (let i = 0; i < 10; i++) w = walkStep(w, { fwd: 1 }, .1, col); out.walk = { speed: Math.round(Math.hypot(w.x - a.start.x, w.z - a.start.z) * 100) / 100 };
+  for (let i = 0; i < 4000; i++) w = walkStep(w, { fwd: 1, run: true }, .1, col); out.walk.inWall = Math.hypot(w.x, w.z) <= a.R; out.walk.notInHouse = !a.houses.some((h) => Math.abs(h.x - w.x) < h.hx - .01 && Math.abs(h.z - w.z) < h.hz - .01);
+  const wh = P.whereInPolis(a, a.houses[0].x + a.houses[0].hx + 1, a.houses[0].z); out.walk.where = !!(wh.village && wh.district && wh.house); }
+const v1 = P.voyage(W, 'k1'), v2 = P.voyage(W, 'k1'), v3 = P.voyage(W, 'k2'); out.voyage = { n: v1.length, same: v1.map((p) => p.id).join() === v2.map((p) => p.id).join(), other: v1.map((p) => p.id).join() !== v3.map((p) => p.id).join(), regions: new Set(v1.map((p) => p.region)).size };
+console.log(JSON.stringify(out));
+"""
+
+
+def part_hellas():
+    need = list(HELLAS_JS) + ["hellas.css", "hellas-btn.css", "hellas-fixture.json", "hellas-builders.json", "people.css"]
+    check("l. Hellas files are all there", all(os.path.isfile(os.path.join(PAGE, n)) for n in need), [n for n in need if not os.path.isfile(os.path.join(PAGE, n))])
+    srcs = {n: read(os.path.join(PAGE, n)) for n in HELLAS_JS}
+    html = read(os.path.join(PAGE, "index.html"))
+    css = read(os.path.join(PAGE, "hellas.css")) + read(os.path.join(PAGE, "hellas-btn.css"))
+    check("l. index.html loads only the small entry module; the world is imported on demand", "hellas-entry.js" in html and not re.search(r"hellas(-ui|-data|-plan)?\.js", html.replace("hellas-entry.js", "")))
+    allsrc = " ".join(srcs.values())
+    check("l. Hellas: no outside address, no CDN, no Math.random, no trade or order call; only the data loader reads files, each read has a time limit",
+          not re.findall(r"https?://", allsrc) and "Math.random" not in allsrc and "cdn" not in allsrc.lower() and not any(w in allsrc.lower() for w in ("placeorder", "/api/order", "arm_live", "localstorage"))
+          and all("fetch(" not in t for n, t in srcs.items() if n != "hellas-data.js") and "AbortController" in srcs["hellas-data.js"])
+    check("l. Hellas reads the real published files (Archive index + shards, Data City, Kalshi edges + suggestions, money, accounts) and its own fixture",
+          all(k in srcs["hellas-data.js"] for k in ("../archive/index.json", "index.shards", "../datacity/city.json", "../kalshicity/edges.json", "../kalshicity/suggestions.json", "../money/index.json", "../home.json", "./hellas-fixture.json")))
+    check("l. three.js from ../jarvis/ only; the Athens kit and the Athens walker are reused (Batch, unit, walkStep); one polis at a time (the one before is disposed)",
+          "../jarvis/three.module.min.js" in srcs["hellas.js"] and "from './athens-geo.js'" in srcs["hellas.js"] and "walkStep" in srcs["hellas.js"] and "from './athens-world.js'" in srcs["hellas.js"]
+          and "disposePolis()" in srcs["hellas.js"] and "InstancedMesh" in srcs["hellas.js"] and "preserveDrawingBuffer" not in allsrc)
+    check("l. AGORA look: serif headings, marble / bronze / gold tokens, no neon, no glow, no blur, no techno font, 3500 K sun, no bloom pass",
+          "Iowan Old Style" in css and "#c8a24a" in css and "#14110e" in css and not re.search(r"neon|text-shadow|backdrop-filter|Orbitron|Rajdhani|#000\b|#fff\b|letter-spacing:\.[1-9]", css)
+          and "3500 K" in srcs["hellas.js"] and "Bloom" not in allsrc and not re.search(r"cyber|neural|quantum|holograph|uplink|scanline", allsrc + css, re.I))
+    check("l. phone first: 44 px targets, safe areas, reduced motion honoured (CSS and scene), Athens opens above Hellas and Hellas sleeps under it",
+          "min-height:44px" in css and "min-height:48px" in css and "safe-area-inset-bottom" in css and "prefers-reduced-motion" in css and "this.reduced" in srcs["hellas.js"]
+          and "athens-open" in srcs["hellas-entry.js"] and "openAthens" in srcs["hellas-ui.js"] and "frameGap" in srcs["hellas-entry.js"])
+    fxj = json.loads(read(os.path.join(PAGE, "hellas-fixture.json")))
+    check("l. the fixture is small, marked as example data and covers every source", fxj.get("demo") is True and "EXAMPLE" in fxj.get("note", "") and os.path.getsize(os.path.join(PAGE, "hellas-fixture.json")) < 60_000
+          and all(k in fxj for k in ("archive", "datacity", "edges", "suggestions", "money", "home")) and "Snapshot at build time" in read(os.path.join(PAGE, "hellas-builders.json")))
+    r = subprocess.run(["node", "--input-type=module", "-e", HELLAS_NODE], cwd=ROOT, capture_output=True, text=True, timeout=120)
+    try:
+        d = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception:
+        d = {}
+        print(r.stdout[-500:], r.stderr[-1200:])
+    c = d.get("counts", {})
+    check("l. honest count: 200+ cities from the real files, the header says cities / houses / sources (and how many are example data), houses = the sum of every city's rows",
+          c.get("cities", 0) >= 200 and c.get("houses") == d.get("sumHouses") and c.get("sources", 0) >= 6
+          and re.fullmatch(r"\d[\d,]* cities, \d[\d,]* houses, from \d+ data sources(; \d+ (city|cities) on example data)?", d.get("header", "")) is not None
+          and f"{c.get('cities')} cities" in d.get("header", "") and (c.get("example", 0) == 0) == ("example" not in d.get("header", "")), {"counts": c, "header": d.get("header")})
+    check("l. grouping: every Archive run sits in exactly one city (2,273 runs), every Data City combo too; no city holds more than 120 rows; Archive cities over all 14 families (a cluster with 3+ rejected and 3+ living runs splits into a living city and a ghost town)",
+          d.get("archiveOnce") and d.get("dcOnce") and d.get("maxSize", 999) <= d.get("maxPolis", 0) == 120 and d.get("archFamilies") == 14
+          and d.get("splitOk") and 120 <= next((s[1] for s in d.get("sources", []) if s[0] == "archive"), 0) <= 260 and next((s[2] for s in d.get("sources", []) if s[0] == "archive"), 0) == d.get("runs")
+          and next((s[2] for s in d.get("sources", []) if s[0] == "datacity"), 0) == d.get("buildings"), {"sources": d.get("sources"), "max": d.get("maxSize")})
+    check("l. a gold acropolis only where a run was adopted; the wall colour is the adopted share (0..1); Kalshi: one city per strategy / market / band / hour / side + one per suggestion verdict; Athens is the one capital + 4 app districts",
+          d.get("gold") and d.get("share") and d.get("labels") and d.get("kalshi", {}).get("kinds") == ["Kalshi hour", "Kalshi market", "Kalshi price band", "Kalshi side", "Kalshi strategy"]
+          and d.get("kalshi", {}).get("n", 0) >= 20 and d.get("kalshi", {}).get("verdicts", 0) >= 3 and d.get("capital") == 1 and d.get("appDistricts") == 4, {"kalshi": d.get("kalshi"), "gold": d.get("gold"), "share": d.get("share")})
+    ds, ac, ev, bu = d.get("desert", {}), d.get("activity", {}), d.get("events", {}), d.get("builders", {})
+    check("l. biomes: three desert lands (Egypt, Libya, Persia) lie south of every green land and hold ONLY ghost towns (every run there was rejected); no ghost town stands on green land; the count is honest (desert runs = the sum, <= all rejected runs); dunes, pyramids, obelisks and oases never stand on a city; caravan routes join desert cities only",
+          ds.get("regions") == ["egypt", "libya", "persia"] and ds.get("cities", 0) >= 40 and ds.get("allRuins") and ds.get("noRuinInGreen") and ds.get("runs") == ds.get("sum") and 1000 <= ds.get("runs", 0) <= ds.get("rejected", 0) == 1665 and ds.get("ghost") == ds.get("cities")
+          and ds.get("south") and ds.get("features") == ["oasis", "obelisk", "pyramid"] and ds.get("nf", 0) >= 9 and ds.get("dunes", 0) >= 40 and ds.get("featClear") and ds.get("caravans", 0) >= 6 and ds.get("caravanOk"), ds)
+    check("l. activity from real data: every city is working / quiet / ruin with a plain 'doing' line; an Archive city is at work only when it has a run from the Archive's last 7 days, a ghost town is a ruin, a dead Kalshi market is a ruin, the capital is at work",
+          ac.get("all") and ac.get("sum") == c.get("cities") and ac.get("working", 0) >= 20 and ac.get("quiet", 0) >= 20 and ac.get("ruins", 0) >= 40 and ac.get("recent") and ac.get("notRecent") and ac.get("kal") == "ruin" and ac.get("athens") == "working"
+          and re.search(r"^testing .+ · \d+ runs? · last: (rejected|adopted|still open)(, PF [\d.]+)? \(\d+ (Oct|Nov)\)$", ac.get("sample", "")) and ac.get("ruinSample", "").startswith("ruins of "), ac)
+    check("l. the world ticker: the latest 12 events, newest first, each one a real row of a real city with its verdict and $ (and $ a month), deterministic",
+          ev.get("n") == 12 and ev.get("sorted") and ev.get("money") and ev.get("real") and ev.get("same") and re.match(r"\d+ (Oct|Nov)$", ev.get("first", "")), ev)
+    check("l. the builders' caravan: the 10 build agents of the snapshot file, each with a job and a destination (Jarvis -> the Jarvis temple in Athens, Colosseum -> a new building site, Kalshi team -> the biggest Kalshi city), labelled 'Snapshot at build time'; they walk their road and stand still with reduced motion; no file, no caravan",
+          bu.get("n") == 10 and "Jarvis home" in bu.get("names", []) and "Snapshot at build time" in bu.get("label", "") and bu.get("asof", "").startswith("2026-") and bu.get("jarvis") and bu.get("colosseum") and bu.get("placed") and bu.get("kal")
+          and bu.get("sites") == bu.get("newSites") >= 1 and bu.get("walk") and bu.get("none") == 0, bu)
+    pe = d.get("people", {})
+    check("l. people (own chat): every city has a keeper 'keeper:<polis-id>' with a Greek name and six questions answered only from the city's rows (no blanks); a keeper of ruins says plainly why the idea was rejected and that it is closed; a working city's keeper gives the last result with $ and $ per month; builders say they are a snapshot; an Athens villager answers from its village's rows (example numbers marked); nobody can place orders; without the kit talkTo() answers 'own'",
+          pe.get("ids") and pe.get("six") and pe.get("names", 0) >= 30 and pe.get("same") and pe.get("ruinWhy") and pe.get("busy") and pe.get("noOrders") and pe.get("towns") and pe.get("look") and pe.get("villager") and pe.get("kitNone")
+          and pe.get("builder", {}).get("id") == "builder:a43a2daec19cf8666" and pe.get("builder", {}).get("alt", 0) >= 3 and pe.get("builder", {}).get("snap") and pe.get("builder", {}).get("job") and pe.get("builder", {}).get("where"), pe)
+    check("l. deterministic: the same files give the same world twice (ids, names, places); every city has a unique real Greek place name from the bundled list",
+          d.get("same") and d.get("uniqIds") and d.get("uniqNames") and d.get("names") and d.get("places", 0) >= 300, {k: d.get(k) for k in ("same", "uniqIds", "uniqNames", "names", "places")})
+    check("l. layout: no two city markers touch, every city is inside the map, the regions never overlap, every city belongs to one region; trade routes join cities of the same family only",
+          d.get("gap", -1) > 4 and d.get("inside") and d.get("regionsApart") and d.get("regionSum") == c.get("cities") and len(d.get("regions", [])) >= 15 and d.get("routes", {}).get("family") and 40 <= d.get("routes", {}).get("n", 0) <= 110,
+          {"gap": d.get("gap"), "regions": d.get("regions"), "routes": d.get("routes"), "bounds": d.get("bounds")})
+    check("l. budgets are the brief's (phone-high 45 calls / 160k triangles, LITE 28 / 80k, world 30 calls) and LITE draws no villagers and no ships",
+          d.get("budget") == {"high": {"calls": 45, "tris": 160000}, "low": {"calls": 28, "tris": 80000}, "world": {"calls": 30}} and d.get("tier", {}).get("lowNpc") == 0 and d.get("tier", {}).get("lowShips") == 0
+          and d.get("tier", {}).get("loBlocks", 99) < d.get("tier", {}).get("hiBlocks", 0), {"budget": d.get("budget"), "tier": d.get("tier")})
+    f, e = d.get("fixture", {}), d.get("empty", {})
+    check("l. never blank: with no published file the fixture gives 20+ cities, all marked example, and the header says so; with nothing at all Athens and its app districts remain; junk files never throw",
+          f.get("cities", 0) >= 20 and f.get("allMarked") and "on example data" in f.get("header", "") and f.get("example", 0) >= 15 and e.get("cities") == 5 and d.get("junk"), {"fixture": f, "empty": e})
+    s = d.get("search", {})
+    check("l. search: 'find VWAP' gives VWAP cities, 'find Kalshi 90c' gives the 90-95c price band first, a place name finds its city, nonsense finds nothing",
+          len(s.get("vwap", [])) >= 3 and all("VWAP" in x for x in s.get("vwap", [])[:3]) and s.get("k90", [""])[0] == "Kalshi price band: at 90-95c" and s.get("none") == 0 and s.get("empty") == 0 and "Bitcoin" in s.get("btc", "") and s.get("name"), s)
+    check("l. the house card in plain words: what was tested, net $ after costs AND $ per month, the verdict, 'Open in Archive', 'History, not a forecast'; Data City / Kalshi / app cards keep their own honest lines; example data is marked",
+          all(d.get("card", {}).get(k) for k in ("money", "verdict", "what", "link", "hist")) and all(d.get("cards2", {}).get(k) for k in ("dc", "k", "s", "app")) and d.get("exampleCard"), {"card": d.get("card"), "cards2": d.get("cards2")})
+    pl = d.get("plans", {})
+    check("l. every polis is generated from its rows: one house per row, districts -> villages -> houses add up, deterministic, no two houses overlap, all inside the wall and off the agora, the start is free, villagers never walk through a house",
+          pl.get("bad") == [] and pl.get("houses") == c.get("houses") and pl.get("maxD", 99) <= pl.get("capD", 0) and pl.get("maxR", 9999) < 600, pl)
+    wk, vg = d.get("walk", {}), d.get("voyage", {})
+    check("l. the Athens walker works in a polis (about 2.6 m a second, stays inside the wall, never inside a house, 'where am I' names district / village / house); the voyage is seeded: 6 cities from 6 regions",
+          2.4 <= wk.get("speed", 0) <= 2.8 and wk.get("inWall") and wk.get("notInHouse") and wk.get("where") and vg.get("n") == 6 and vg.get("same") and vg.get("other") and vg.get("regions") == 6, {"walk": wk, "voyage": vg})
+
+
+def hshot(p, name):
+    """a screenshot is evidence, not a check: retry once, then go on (swiftshader can refuse a capture on a busy machine)"""
+    for k in range(2):
+        try:
+            p.screenshot(path=os.path.join(SHOTS, name), timeout=60000)
+            return True
+        except Exception as e:  # noqa: BLE001
+            if k:
+                print(f"       (screenshot {name} skipped: {str(e)[:80]})")
+            else:
+                time.sleep(1.5)
+    return False
+
+
+def hframes(p, n=3):
+    f = p.evaluate("window.__hellas.scene.frameCount")
+    p.wait_for_function(f"window.__hellas.scene.frameCount >= {f + n}", timeout=120000)
+
+
+def hrest(p):
+    p.wait_for_function("!window.__hellas.scene.fly", timeout=120000)
+    hframes(p, 3)
+
+
+def sec_l(br, base, C, days, picks, ids):
+    """Hellas in Chromium at 390 x 844: the honest counter, budgets at every level (measured), streaming, levels and crumbs, search, voyage, walking, the map, fallbacks."""
+    errs = []
+    out = {}
+    os.makedirs(SHOTS, exist_ok=True)
+    HN = "({ calls: window.__hellas.calls(), tris: window.__hellas.tris() })"
+    for q in ("high", "low"):
+        ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2 if q == "high" else 1, has_touch=True, is_mobile=True)
+        p = ctx.new_page()
+        p.on("pageerror", lambda e: errs.append(str(e)))
+        p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
+        p.goto(base + f"?hellas=1&q={q}", wait_until="domcontentloaded")
+        p.wait_for_function("window.__hellas && window.__hellas.ready", timeout=170000)
+        hframes(p, 4)
+        o = out[q] = {"err": p.evaluate("window.__hellasError || null"), "world": p.evaluate(HN), "header": p.evaluate("document.querySelector('#helCount').textContent"),
+                      "counts": p.evaluate("window.__hellas.world.counts"), "ships": p.evaluate("!!window.__hellas.scene.ships"), "instances": p.evaluate("window.__hellas.scene.base.count")}
+        if q == "high":
+            hshot(p, "hellas_390x844_world.png")
+            lay = p.evaluate("""(() => { const r = document.querySelector('#hellas'), vis = (e) => { const b = e.getBoundingClientRect(), s = getComputedStyle(e); return b.width > 0 && b.height > 0 && s.display !== 'none' && s.visibility !== 'hidden'; };
+              const small = [...r.querySelectorAll('button, a, input')].filter(vis).filter((e) => { const b = e.getBoundingClientRect(); return b.height < 43.5 || b.width < 43.5; }).map((e) => e.textContent.slice(0, 20) + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height));
+              const off = [...r.querySelectorAll('.hel-top, .hel-card, .hel-dock')].filter(vis).filter((e) => { const b = e.getBoundingClientRect(); return b.left < -1 || b.right > innerWidth + 1 || b.bottom > innerHeight + 1; }).length;
+              return { small, off, sideways: document.scrollingElement.scrollWidth > innerWidth, card: document.querySelector('.hel-card').textContent, hidden: getComputedStyle(document.querySelector('.atlas-actions') || document.body.firstElementChild).visibility }; })()""")
+            full = p.evaluate("(window.__hellas.ui.worldCard(true), document.querySelector('.hel-card').textContent)")
+            hshot(p, "hellas_390x844_counted.png")
+            p.evaluate("window.__hellas.ui.worldCard()")
+            check("l. 390 x 844: every button is 44 px or more, nothing off screen, no sideways scroll; the first card is short and says what a city and a house are; 'How it is counted' lists each source with its cities and houses",
+                  not lay["small"] and not lay["off"] and not lay["sideways"] and "Every city is a real group" in lay["card"] and "How it is counted" in lay["card"] and len(lay["card"]) < 640
+                  and "Archive" in full and "Data City" in full and "Kalshi" in full and "gold acropolis" in full and re.search(r"\d+ cities\n[\d,]+ houses", full), {"lay": lay, "full": full[:300]})
+            life = p.evaluate("""(() => { const S = window.__hellas.scene, W = window.__hellas.world, t = document.querySelector('.hel-ticker'); return { flames: S.flames ? S.flames.count : 0, working: W.counts.working, smoke: !!S.smoke, shadows: S.shadows.count, caravan: S.caravan ? S.caravan.count : 0, bcrowd: S.builderCrowd ? S.builderCrowd.count : 0, builders: W.builders.length,
+              sun: S.sunDir.y, card: document.querySelector('.hel-card').textContent, events: W.events.length, ticker: t.textContent, f0: S.flames.instanceMatrix.array[5] }; })()""")
+            hframes(p, 5)
+            life["f1"] = p.evaluate("window.__hellas.scene.flames.instanceMatrix.array[5]")
+            b0 = p.evaluate("window.__hellas.scene.builderPos.map((q) => Math.round(q.x * 100 + q.z * 7))")
+            p.wait_for_timeout(900)
+            hframes(p, 2)
+            b1 = p.evaluate("window.__hellas.scene.builderPos.map((q) => Math.round(q.x * 100 + q.z * 7))")
+            p.evaluate("window.__hellas.ui.hideCard()")
+            hframes(p, 12)
+            hshot(p, "hellas_390x844_first_view.png")
+            tk = p.evaluate("({ hidden: document.querySelector('.hel-ticker').hidden, text: document.querySelector('.hel-ticker').textContent, h: document.querySelector('.hel-ticker').getBoundingClientRect().height })")
+            p.evaluate("window.__hellas.ui.eventsCard()")
+            evc = p.evaluate("({ n: document.querySelectorAll('.hel-card .hel-list li').length, title: document.querySelector('.hel-card h3').textContent })")
+            hshot(p, "hellas_390x844_events.png")
+            check("l. you can SEE what each city is doing: one brazier flame per city at work (flickering) with smoke, a long golden-hour shadow under every city (low sun), the first card counts working / quiet / ruins and the desert; the ticker above the dock shows 'Latest n/12' and opens the list of 12 events",
+                  life["flames"] == life["working"] >= 20 and life["smoke"] and life["shadows"] == o["counts"]["cities"] and life["sun"] < .5 and life["f0"] != life["f1"] and "cities at work" in life["card"] and "ghost towns" in life["card"] and "rejected runs" in life["card"]
+                  and not tk["hidden"] and re.search(r"Latest \d+/12 · ", tk["text"]) and tk["h"] >= 44 and evc["n"] == 12 and "12 events" in evc["title"], {"life": {k: v for k, v in life.items() if k != "card"}, "tk": tk, "evc": evc})
+            # the desert and a ghost town
+            p.evaluate("window.__hellas.ui.goRegion(window.__hellas.world.regions.find((r) => r.key === 'egypt'))")
+            hrest(p)
+            o["desert"] = p.evaluate(HN)
+            dz = p.evaluate("({ card: document.querySelector('.hel-card').textContent, labels: [...document.querySelectorAll('.hel-label:not([hidden])')].map((l) => l.className).join(' ') })")
+            p.evaluate("window.__hellas.ui.hideCard()")
+            hframes(p, 4)
+            hshot(p, "hellas_390x844_desert.png")
+            p.evaluate("(() => { const W = window.__hellas.world, c = W.regions.find((r) => r.key === 'egypt').poleis[0]; window.__ghost = c; window.__hellas.ui.showPolis(c); })()")
+            hrest(p)
+            hframes(p, 4)
+            gh = p.evaluate("({ card: document.querySelector('.hel-card').textContent, wide: [...document.querySelectorAll('.hel-label.wide:not([hidden])')].map((l) => l.textContent), state: window.__ghost.activity.state })")
+            hshot(p, "hellas_390x844_ghost_town_card.png")
+            p.evaluate("window.__hellas.ui.enter(window.__ghost)")
+            p.wait_for_function("window.__hellas.ui.at.polis", timeout=120000)
+            hrest(p)
+            o["ruin"] = p.evaluate(HN)
+            rn = p.evaluate("({ ruin: window.__hellas.scene.plan.ruin, desert: window.__hellas.scene.plan.desert, houses: window.__hellas.scene.plan.houses.length, rows: window.__ghost.rows.length, card: document.querySelector('.hel-card').textContent, banner: [...document.querySelectorAll('.hel-label.banner:not([hidden])')].map((l) => l.textContent).join('|'), flames: !!window.__hellas.scene.pFlames })")
+            hshot(p, "hellas_390x844_ghost_town.png")
+            p.evaluate("window.__hellas.ui.showHouse(window.__hellas.ui.at.plan.houses[0])")
+            hrest(p)
+            why = p.evaluate("document.querySelector('.hel-card').textContent")
+            check("l. the desert of what did not work: Egypt's card says so, its cities are labelled as ruins; a ghost town's card says 'Ruins' and 'every run here was rejected', the floating label says what it was ('ruins of ... · N runs · last: rejected'); you can still enter it (one roofless house per rejected run, no brazier) and read why on a house card",
+                  "desert of what did not work" in dz["card"] and "ruin" in dz["labels"] and gh["state"] == "ruin" and "Ruins" in gh["card"] and "every run here was rejected" in gh["card"] and any("ruins of" in w and "last: rejected" in w for w in gh["wide"])
+                  and rn["ruin"] and rn["desert"] and rn["houses"] == rn["rows"] and "These are ruins" in rn["card"] and "ruins of" in rn["banner"] and not rn["flames"] and "Verdict" in why and "Rejected" in why and "What was tested" in why, {"dz": dz["labels"][:200], "gh": gh["wide"], "rn": {k: v for k, v in rn.items() if k != "card"}})
+            # a city at work, and the builders on the road
+            p.evaluate("(() => { const W = window.__hellas.world, c = W.poleis.filter((x) => x.src === 'archive' && x.activity.state === 'working').sort((a, b) => b.rows.length - a.rows.length)[0]; window.__busy = c; window.__hellas.ui.showPolis(c); })()")
+            hrest(p)
+            hframes(p, 4)
+            bz = p.evaluate("({ card: document.querySelector('.hel-card').textContent, wide: [...document.querySelectorAll('.hel-label.wide:not([hidden])')].map((l) => l.textContent), cls: [...document.querySelectorAll('.hel-label.working:not([hidden])')].length })")
+            p.evaluate("window.__hellas.ui.hideCard()")
+            hframes(p, 4)
+            hshot(p, "hellas_390x844_city_at_work.png")
+            p.evaluate("window.__hellas.ui.buildersCard()")
+            bc = p.evaluate("({ text: document.querySelector('.hel-card').textContent, n: document.querySelectorAll('.hel-card .hel-list li').length })")
+            p.evaluate("(() => { const u = window.__hellas.ui, S = window.__hellas.scene, b = window.__hellas.world.builders[1]; u.buildersCard(b); })()")
+            hrest(p)
+            hframes(p, 4)
+            p.evaluate("window.__hellas.ui.hideCard()")
+            hframes(p, 4)
+            bt = p.evaluate("(() => { const S = window.__hellas.scene, b = window.__hellas.world.builders[1], q = S.builderPos[1], v = S.project(q.x, 4, q.z), r = window.__hellas.ui.tap(v.x, v.y); return { vis: v.vis, hit: r && r.name, title: document.querySelector('.hel-card h3').textContent, chat: document.querySelectorAll('.hel-card .ppl-qs button').length, facing: !!(S.talk && S.talk.kind === 'builder' && S.builderPos[1].facing), labels: [...document.querySelectorAll('.hel-label.builder:not([hidden])')].map((l) => l.textContent) }; })()")
+            hshot(p, "hellas_390x844_builders.png")
+            check("l. a city at work says what it is working on: the 'At work' tag and the plain line on its card, a floating label on approach ('Name' + 'testing ... · N runs · last: ...')",
+                  "At work" in bz["card"] and re.search(r"Testing .+ · \d+ runs · last: ", bz["card"]) and any(re.search(r"testing .+ · \d+ runs · last: ", w) for w in bz["wide"]) and bz["cls"] >= 1, {"wide": bz["wide"], "cls": bz["cls"]})
+            check("l. the builders' caravan: the camels and the 10 builders are toy-like figures in one instanced draw and they move; the card lists every builder with its job and destination and says 'Snapshot at build time'; a builder on the map carries a banner with its name and where it is going, and a tap starts a talk with that builder (six questions; it stops and turns to you)",
+                  life["bcrowd"] == life["builders"] == 10 and b0 != b1 and bc["n"] == 10 and "Snapshot at build time" in bc["text"] and "Jarvis temple in Athens" in bc["text"] and "new building site" in bc["text"]
+                  and bt["hit"] and bt["title"] == bt["hit"] and bt["chat"] == 6 and bt["facing"] and any("to " in x for x in bt["labels"]), {"bc": bc["n"], "bt": bt, "move": [b0, b1]})
+            p.evaluate("window.__hellas.ui.goWorld()")
+            hrest(p)
+            # tap a city on the 3D map
+            p.evaluate("window.__hellas.ui.hideCard(); window.__hellas.ui.goRegion(window.__hellas.world.regions.find((r) => r.key === 'peloponnese'))")
+            hrest(p)
+            o["region"] = p.evaluate(HN)
+            reg = p.evaluate("({ crumbs: [...document.querySelectorAll('.hel-crumbs button')].map((b) => b.textContent), card: document.querySelector('.hel-card').textContent, n: document.querySelectorAll('.hel-card .hel-list li').length, labels: [...document.querySelectorAll('.hel-label:not([hidden])')].length })")
+            hshot(p, "hellas_390x844_region.png")
+            check("l. region level: the camera flies to the Peloponnese, the crumbs say Hellas > Peloponnese, the card lists its cities, city names float over the map", reg["crumbs"] == ["Hellas", "Peloponnese"] and reg["n"] >= 10 and "LIT research" in reg["card"] and "At work" in reg["card"] + "Quiet" and reg["labels"] >= 3, reg)
+            p.evaluate("window.__hellas.ui.hideCard()")
+            hframes(p, 3)
+            pt = p.evaluate("(() => { const S = window.__hellas.scene, W = window.__hellas.world; let best = null; for (const c of W.poleis) { const v = S.project(c.x, 3, c.z); if (v.vis && v.x > 60 && v.x < 330 && v.y > 260 && v.y < 600 && (!best || c.rows.length > best.c.rows.length)) best = { c, v }; } return { x: best.v.x, y: best.v.y, id: best.c.id, name: best.c.name }; })()")
+            p.touchscreen.tap(pt["x"], pt["y"])
+            p.wait_for_function("window.__hellas.ui.at.sel", timeout=30000)
+            hrest(p)
+            city = p.evaluate("({ id: window.__hellas.ui.at.sel.id, title: document.querySelector('.hel-card h3').textContent, card: document.querySelector('.hel-card').textContent, ring: window.__hellas.scene.ring.visible, crumbs: [...document.querySelectorAll('.hel-crumbs button')].map((b) => b.textContent) })")
+            hshot(p, "hellas_390x844_city.png")
+            check("l. a real tap on a city marker opens its card: 'Name · data label', the row count, the adopted / open / rejected share, sister cities, 'Enter the city'",
+                  city["id"] == pt["id"] and city["title"].startswith(pt["name"] + " · ") and city["ring"] and "Enter the city" in city["card"] and re.search(r"\d+ runs?", city["card"]) and "rejected" in city["card"] and any(w in city["card"] for w in ("At work", "Quiet", "Ruins")) and len(city["crumbs"]) == 3, city)
+            # search flies to the polis
+            p.fill(".hel-find input", "find Kalshi 90c")
+            p.evaluate("document.querySelector('.hel-find').requestSubmit()")
+            hrest(p)
+            fnd = p.evaluate("({ title: document.querySelector('.hel-card h3').textContent, x: window.__hellas.scene.cam.tx, px: window.__hellas.ui.at.sel.x, also: document.querySelector('.hel-card').textContent.includes('Also found') })")
+            check("l. the search box flies to the polis: 'find Kalshi 90c' lands on the 90-95c price band and offers the other matches", "Kalshi price band: at 90-95c" in fnd["title"] and abs(fnd["x"] - fnd["px"]) < 2 and fnd["also"], fnd)
+            hshot(p, "hellas_390x844_find.png")
+        # enter the biggest polis: streamed, measured
+        g0 = p.evaluate("window.__hellas.scene.renderer.info.memory.geometries")
+        p.evaluate("(() => { const W = window.__hellas.world; window.__big = W.poleis.filter((c) => c.src === 'archive' && !c.ruin).sort((a, b) => b.rows.length - a.rows.length)[0]; window.__hellas.ui.enter(window.__big); })()")
+        p.wait_for_function("window.__hellas.ui.at.polis", timeout=120000)
+        hrest(p)
+        o["polis"] = p.evaluate(HN)
+        o["houses"] = p.evaluate("window.__hellas.scene.plan.houses.length")
+        o["npcs"] = p.evaluate("(window.__hellas.scene.npcs || []).length")
+        pol = p.evaluate("({ level: window.__hellas.scene.level, worldHidden: !window.__hellas.scene.wg.visible, rows: window.__big.rows.length, crumbs: [...document.querySelectorAll('.hel-crumbs button')].map((b) => b.textContent), card: document.querySelector('.hel-card').textContent, walk: !document.querySelector('.hel-dock button:nth-child(3)').disabled, veil: document.querySelector('.hel-veil').classList.contains('on') })")
+        if q == "high":
+            hshot(p, "hellas_390x844_polis.png")
+            check("l. entering a polis: the world stage is hidden, one house per row is drawn, the crumbs grow to Hellas > region > city, the card lists the districts and offers 'Walk the streets'",
+                  pol["level"] == "polis" and pol["worldHidden"] and o["houses"] == pol["rows"] and len(pol["crumbs"]) == 3 and "Walk the streets" in pol["card"] and "quarter" in pol["card"] and pol["walk"] and not pol["veil"], pol)
+            p.evaluate("window.__hellas.ui.goDistrict(window.__hellas.ui.at.plan.districts[0])")
+            hrest(p)
+            p.evaluate("window.__hellas.ui.goVillage(window.__hellas.ui.at.plan.villages[0])")
+            hrest(p)
+            o["village"] = p.evaluate(HN)
+            vil = p.evaluate("({ crumbs: [...document.querySelectorAll('.hel-crumbs button')].length, items: document.querySelectorAll('.hel-card .hel-list li').length, n: window.__hellas.ui.at.village.houses.length, money: document.querySelector('.hel-card .hel-list .m') ? document.querySelector('.hel-card .hel-list .m').textContent : '' })")
+            hshot(p, "hellas_390x844_village.png")
+            p.evaluate("window.__hellas.ui.hideCard()")
+            hframes(p, 3)
+            hp = p.evaluate("(() => { const S = window.__hellas.scene, P = S.plan, V = window.__hellas.ui.at.village; let best = null; for (const i of V.houses) { const h = P.houses[i], v = S.project(h.x, h.h * .6, h.z); if (v.vis && v.y > 220 && v.y < 640 && (!best || Math.abs(v.x - 195) < Math.abs(best.v.x - 195))) best = { h, v }; } return { x: best.v.x, y: best.v.y, i: best.h.i }; })()")
+            p.touchscreen.tap(hp["x"], hp["y"])
+            p.wait_for_function("window.__hellas.ui.at.house", timeout=30000)
+            hrest(p)
+            o["house"] = p.evaluate(HN)
+            hs = p.evaluate("({ i: window.__hellas.ui.at.house.i, text: document.querySelector('.hel-card').textContent, link: document.querySelector('.hel-card a').getAttribute('href'), linkText: document.querySelector('.hel-card a').textContent, crumbs: [...document.querySelectorAll('.hel-crumbs button')].length, ring: window.__hellas.scene.ring.visible })")
+            hshot(p, "hellas_390x844_house.png")
+            check("l. district -> village -> house: the village card lists every house with its $ and $ a month; a real tap on a house opens the plain card (what was tested, 2026 result with $ per month, verdict) with 'Open in Archive'; six crumbs",
+                  vil["crumbs"] == 5 and vil["items"] == vil["n"] and "$" in vil["money"] and "a month" in vil["money"] and hs["crumbs"] == 6 and hs["ring"] and "What was tested" in hs["text"] and re.search(r"\$[\d,]+ per month", hs["text"])
+                  and "Verdict" in hs["text"] and hs["link"] == "../archive/" and hs["linkText"] == "Open in Archive", {"village": vil, "house": {k: v for k, v in hs.items() if k != "text"}, "text": hs["text"][:300]})
+            p.evaluate("window.__hellas.ui.back()")
+            lv = p.evaluate("window.__hellas.ui.level")
+            p.evaluate("window.__hellas.ui.back(); window.__hellas.ui.back()")
+            check("l. Back climbs one level at a time (house -> village -> district -> polis)", lv == "village" and p.evaluate("window.__hellas.ui.level") == "polis")
+            hrest(p)
+        if q == "high":
+            # people: tap the keeper at the gate -> our own chat (no kit loaded)
+            p.evaluate("window.__hellas.ui.talkKeeper(window.__hellas.ui.at.polis)")
+            hrest(p)
+            hframes(p, 3)
+            kp = p.evaluate("""(() => { const S = window.__hellas.scene, u = window.__hellas.ui, K = S.people[0], c = document.querySelector('.hel-card'); return { people: S.people.length, npcs: S.npcs.length, crowd: S.crowd.count, id: K.person.id, polis: u.at.polis.id, title: c.querySelector('h3').textContent, qs: [...c.querySelectorAll('.ppl-qs button')].map((b) => b.textContent),
+              hello: c.querySelector('.ppl-answer').textContent, face: !!c.querySelector('.ppl-face, .ppl-head svg'), how: u.lastTalk.how, talk: S.talk, facing: K.facing, small: [...c.querySelectorAll('.ppl-qs button')].filter((b) => b.getBoundingClientRect().height < 43.5).length, labels: [...document.querySelectorAll('.hel-label.person:not([hidden])')].map((l) => l.textContent) }; })()""")
+            p.evaluate("document.querySelectorAll('.hel-card .ppl-qs button')[1].click()")
+            a1 = p.evaluate("document.querySelector('.hel-card .ppl-answer').textContent")
+            p.evaluate("document.querySelectorAll('.hel-card .ppl-qs button')[3].click()")
+            a3 = p.evaluate("document.querySelector('.hel-card .ppl-answer').textContent")
+            hshot(p, "hellas_390x844_talk_keeper.png")
+            p.evaluate("window.__hellas.ui.hideCard()")
+            hframes(p, 3)
+            hshot(p, "hellas_390x844_people.png")
+            kq = p.evaluate("({ talk: window.__hellas.scene.talk, facing: window.__hellas.scene.people[0].facing })")
+            # a real tap on a townsperson
+            p.evaluate("(() => { const S = window.__hellas.scene, P = S.people[1]; S.flyTo(P.x, P.z, { dist: 46, pitch: .6, dur: .02 }); })()")
+            hrest(p)
+            tp = p.evaluate("(() => { const S = window.__hellas.scene, P = S.people[1], v = S.project(P.x, 2.2, P.z), r = window.__hellas.ui.tap(v.x, v.y); return r && r.kind ? { i: r.i } : null; })()")
+            tw = None
+            if tp:
+                p.wait_for_function("window.__hellas.ui.chat", timeout=30000)
+                hframes(p, 3)
+                tw = p.evaluate("(() => { const S = window.__hellas.scene, u = window.__hellas.ui; const P = S.people[S.talk.i], x0 = P.x; return { id: u.chat.id, kind: P.kind, facing: P.facing, title: document.querySelector('.hel-card h3').textContent, qs: document.querySelectorAll('.hel-card .ppl-qs button').length, x0 }; })()")
+                hframes(p, 6)
+                tw["x1"] = p.evaluate("window.__hellas.scene.people[window.__hellas.scene.talk.i].x")
+                p.evaluate("window.__hellas.ui.hideCard()")
+            check("l. people in a polis: the keeper stands at the gate plus the townspeople (toy-like figures, ONE instanced draw); 'Talk to the keeper' opens our own chat: name, face, a greeting and six 44 px questions; a tap on a question answers from the city's data ($ and $ per month, what failed); the keeper turns to face you while you talk and stops when the card closes; names float over the nearest people",
+                  kp["people"] == kp["npcs"] + 1 == kp["crowd"] and kp["id"] == "keeper:" + kp["polis"] and "keeper of" in kp["title"] and len(kp["qs"]) == 6 and kp["qs"][0].startswith("What is this city working on") and "Ask me" in kp["hello"] and kp["face"] and kp["how"] == "own"
+                  and kp["talk"] == {"kind": "person", "i": 0} and kp["facing"] and not kp["small"] and re.search(r"\$[\d,]+ after costs in 2026 \([+-]?\$[\d,]+ per month\)", a1) and ("rejected" in a3 or "Nothing failed" in a3) and kq["talk"] is None and not kq["facing"] and len(kp["labels"]) >= 1,
+                  {"kp": kp, "a1": a1[:160], "a3": a3[:160], "kq": kq})
+            check("l. a tap on a townsperson starts a talk with that person: it stops walking, turns to you, and answers for its own village",
+                  bool(tw) and tw["kind"] == "towns" and tw["id"].startswith("towns:") and tw["facing"] and tw["qs"] == 6 and tw["x0"] == tw["x1"] and " of " in tw["title"], tw)
+        # walking (the Athens walker), both tiers
+        p.evaluate("window.__hellas.ui.startWalk()")
+        hframes(p, 3)
+        w0 = p.evaluate("({ on: window.__hellas.scene.walking, cls: document.querySelector('#hellas').classList.contains('walking'), x: window.__hellas.scene.walk.x, z: window.__hellas.scene.walk.z, eye: window.__hellas.scene.camera.position.y, dock: getComputedStyle(document.querySelector('.hel-dock')).display, bar: getComputedStyle(document.querySelector('.hel-walkbar')).display })")
+        p.evaluate("(() => { const s = window.__hellas.scene; s.walk.input.fwd = 1; for (let i = 0; i < 40; i++) s.walkTick(.1); s.walk.input.fwd = 0; s.walkLook(-260, 0); })()")
+        hframes(p, 14)
+        o["walk"] = p.evaluate(HN)
+        w1 = p.evaluate("({ dist: window.__hellas.scene.walk.dist, where: document.querySelector('.hel-where').textContent, hit: window.__hellas.scene.col.hits(window.__hellas.scene.walk.x, window.__hellas.scene.walk.z) })")
+        hshot(p, f"hellas_390x844_walk_{q}.png")
+        # the joystick: a real touch drag on the left half walks
+        d0 = w1["dist"]
+        cdp = ctx.new_cdp_session(p)
+        cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": 80, "y": 700}]})
+        cdp.send("Input.dispatchTouchEvent", {"type": "touchMove", "touchPoints": [{"x": 80, "y": 660}]})
+        p.wait_for_function("window.__hellas.scene.walk.input.fwd > .5", timeout=30000)
+        p.wait_for_function(f"window.__hellas.scene.walk.dist > {d0} + .3 || window.__hellas.scene.col.hits(window.__hellas.scene.walk.x, window.__hellas.scene.walk.z - .6)", timeout=60000)
+        cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []})
+        stick = p.evaluate("window.__hellas.scene.walk.input.fwd")
+        # people nearby: stand 2 m from the keeper -> the strip lists him first, Talk is enabled and starts the chat
+        p.evaluate("(() => { const S = window.__hellas.scene, K = S.people[0]; S.walk.x = K.x; S.walk.z = K.z - 2; S.walk.yaw = Math.PI; })()")
+        p.wait_for_function("!document.querySelector('.hel-walkbar .go').disabled", timeout=60000)
+        hframes(p, 3)
+        ps = p.evaluate("({ chips: [...document.querySelectorAll('.hel-people button')].map((b) => b.textContent), lead: (document.querySelector('.hel-people span') || {}).textContent, talk: document.querySelector('.hel-walkbar .go').textContent, shown: getComputedStyle(document.querySelector('.hel-people')).display, h: Math.min(...[...document.querySelectorAll('.hel-people button')].map((b) => b.getBoundingClientRect().height)), label: [...document.querySelectorAll('.hel-label.person.keeper:not([hidden])')].length, facing: window.__hellas.scene.people[0].facing })")
+        hshot(p, f"hellas_390x844_walk_people_{q}.png")
+        p.evaluate("document.querySelector('.hel-walkbar .go').click()")
+        pt2 = p.evaluate("({ chat: window.__hellas.ui.chat && window.__hellas.ui.chat.id, qs: document.querySelectorAll('.hel-card .ppl-qs button').length, talk: window.__hellas.scene.talk, polis: window.__hellas.ui.at.polis.id })")
+        hshot(p, f"hellas_390x844_walk_talk_{q}.png")
+        p.evaluate("(() => { const S = window.__hellas.scene; window.__hellas.ui.hideCard(); S.walk.x = S.plan.start.x; S.walk.z = S.plan.start.z; })()")
+        p.wait_for_function("document.querySelector('.hel-walkbar .go').disabled", timeout=60000)
+        check(f"l. walking ({q}): the 'People nearby' strip lists who is around with the distance (44 px chips), the keeper's name floats over his head and he turns to you; within 3 m the Talk button says 'Talk to <name>' and opens the chat; far away it is disabled again",
+              ps["shown"] == "flex" and ps["lead"] == "People nearby" and len(ps["chips"]) >= 1 and re.search(r" · \d+ m$", ps["chips"][0]) and ps["h"] >= 44 and ps["talk"].startswith("Talk to ") and ps["label"] == 1 and ps["facing"]
+              and pt2["chat"] == "keeper:" + pt2["polis"] and pt2["qs"] == 6 and pt2["talk"] == {"kind": "person", "i": 0}, {"ps": ps, "pt2": pt2})
+        p.evaluate("window.__hellas.ui.stopWalk()")
+        hframes(p, 2)
+        w2 = p.evaluate("({ on: window.__hellas.scene.walking, cls: document.querySelector('#hellas').classList.contains('walking'), card: !document.querySelector('.hel-card').hidden })")
+        check(f"l. walking inside a polis ({q}): eye height 1.7 m, the dock gives way to the walk bar, the walker moves and never ends inside a house, the line says where you are, the left-thumb stick walks, Stop returns to the city card",
+              w0["on"] and w0["cls"] and abs(w0["eye"] - 1.7) < .2 and w0["dock"] == "none" and w0["bar"] == "flex" and w1["dist"] > 3 and not w1["hit"] and len(w1["where"]) > 5 and stick == 0 and not w2["on"] and not w2["cls"] and w2["card"],
+              {"w0": w0, "w1": w1, "w2": w2, "stick": stick})
+        # streaming: a second polis replaces the first (no geometry pile-up), leaving frees it
+        g1 = p.evaluate("window.__hellas.scene.renderer.info.memory.geometries")
+        p.evaluate("(() => { const W = window.__hellas.world, c = W.poleis.filter((x) => x.src === 'datacity').sort((a, b) => b.rows.length - a.rows.length)[0]; window.__hellas.ui.showPolis(c); window.__hellas.ui.enter(c); })()")
+        p.wait_for_function("window.__hellas.ui.at.polis && window.__hellas.ui.at.polis.src === 'datacity'", timeout=120000)
+        hrest(p)
+        o["polis2"] = p.evaluate(HN)
+        g2 = p.evaluate("window.__hellas.scene.renderer.info.memory.geometries")
+        if q == "high":
+            hshot(p, "hellas_390x844_polis_datacity.png")
+            p.evaluate("window.__hellas.ui.toggleMap()")
+            p.wait_for_timeout(250)
+            mp = p.evaluate("({ cls: document.querySelector('#hellas').classList.contains('map'), shown: getComputedStyle(document.querySelector('.hel-map')).display, btn: document.querySelector('.hel-dock button:nth-child(4)').textContent, ink: (() => { const c = document.querySelector('.hel-map'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, s = new Set(); for (let i = 0; i < d.length; i += 4 * 97) s.add(d[i] + ',' + d[i + 1] + ',' + d[i + 2]); return s.size; })() })")
+            hshot(p, "hellas_390x844_polis_map.png")
+            p.evaluate("window.__hellas.ui.toggleMap()")
+            check("l. the Map button swaps the 3D view for the 2D plan of the polis (houses coloured by verdict) and back", mp["cls"] and mp["shown"] == "block" and mp["btn"] == "3D view" and mp["ink"] >= 5 and not p.evaluate("document.querySelector('#hellas').classList.contains('map')"), mp)
+        p.evaluate("window.__hellas.ui.goWorld()")
+        hrest(p)
+        g3 = p.evaluate("window.__hellas.scene.renderer.info.memory.geometries")
+        o["back"] = p.evaluate(HN)
+        o["geo"] = [g0, g1, g2, g3]
+        o["streams"] = p.evaluate("window.__hellas.scene.streams")
+        st = p.evaluate("({ level: window.__hellas.scene.level, pg: !!window.__hellas.scene.pg, plan: !!window.__hellas.scene.plan, crumbs: document.querySelectorAll('.hel-crumbs button').length })")
+        check(f"l. streaming ({q}): one polis at a time: the second polis replaces the first (GPU geometries do not pile up) and leaving frees it; back on the world the crumbs say Hellas only",
+              o["streams"] == (3 if q == "high" else 2) and abs(g2 - g1) <= 2 and g3 <= g0 + 2 and st["level"] == "world" and not st["pg"] and not st["plan"] and st["crumbs"] == 1, {"geo": o["geo"], "st": st})
+        if q == "high":
+            p.evaluate("window.__hellas.ui.toggleMap()")
+            p.wait_for_timeout(250)
+            hshot(p, "hellas_390x844_world_map.png")
+            mt = p.evaluate("(() => { const u = window.__hellas.ui, c = window.__hellas.world.poleis.find((x) => x.capital), V = u.mv; const r = u.tap(V.ox + c.x * V.s, V.oz + c.z * V.s); return { id: r && r.id, card: document.querySelector('.hel-card').textContent }; })()")
+            p.evaluate("window.__hellas.ui.toggleMap(); window.__hellas.ui.goWorld()")
+            check("l. the 2D world map answers taps too: tapping Athens opens the capital's card with 'Enter Athens'", mt["id"] == "apps:athens" and "Enter Athens" in mt["card"] and "capital" in mt["card"], mt)
+            hrest(p)
+            # the voyage
+            p.evaluate("window.__hellas.ui.startVoyage()")
+            hrest(p)
+            v1 = p.evaluate("({ on: !!window.__hellas.ui.voy, n: window.__hellas.ui.voy.stops.length, card: document.querySelector('.hel-card').textContent, sel: window.__hellas.ui.at.sel.id, timer: !!window.__hellas.ui.voy.timer, btn: document.querySelector('.hel-dock button:nth-child(2)').classList.contains('on') })")
+            hshot(p, "hellas_390x844_voyage.png")
+            p.evaluate("window.__hellas.ui.voyNext()")
+            hrest(p)
+            v2 = p.evaluate("({ sel: window.__hellas.ui.at.sel.id, card: document.querySelector('.hel-card').textContent })")
+            p.evaluate("window.__hellas.ui.stopVoyage()")
+            check("l. the random voyage: six stops, 'Voyage stop 1 of 6' with Next / Enter / End, it moves on by itself and Next flies to another city",
+                  v1["on"] and v1["n"] == 6 and "Voyage stop 1 of 6" in v1["card"] and "Next stop" in v1["card"] and v1["timer"] and v1["btn"] and v2["sel"] != v1["sel"] and "Voyage stop 2 of 6" in v2["card"], {"v1": {k: v for k, v in v1.items() if k != "card"}, "v2": v2["sel"]})
+            # ships sail the trade routes
+            s0 = p.evaluate("(() => { const m = window.__hellas.scene.ships; return [m.count, m.instanceMatrix.array[12], m.instanceMatrix.array[14]]; })()")
+            hframes(p, 6)
+            s1 = p.evaluate("(() => { const m = window.__hellas.scene.ships; return [m.count, m.instanceMatrix.array[12], m.instanceMatrix.array[14]]; })()")
+            check("l. trade-route ships sail between related cities on phone-high (one instanced draw)", s0[0] >= 20 and (s0[1] != s1[1] or s0[2] != s1[2]) and p.evaluate("window.__hellas.world.routes.length") >= 40, [s0, s1])
+            # Athens keeps its hand-built form: the capital opens the Athens overlay above Hellas
+            p.evaluate("window.__hellas.ui.enter(window.__hellas.world.poleis.find((x) => x.capital))")
+            p.wait_for_function("window.__athens || window.__athensError", timeout=170000)
+            f0 = p.evaluate("window.__hellas.scene.frameCount")
+            p.wait_for_timeout(700)
+            ath = p.evaluate("({ athens: !!document.querySelector('#athens'), hellasHidden: getComputedStyle(document.querySelector('#hellas')).visibility, f: window.__hellas.scene.frameCount })")
+            p.evaluate("window.closeAthens()")
+            p.wait_for_timeout(300)
+            hframes(p, 2)
+            check("l. the capital opens the hand-built Athens above Hellas (Hellas sleeps underneath: no frame drawn) and closing Athens returns to Hellas",
+                  ath["athens"] and ath["hellasHidden"] == "hidden" and ath["f"] - f0 <= 1 and p.evaluate("!document.querySelector('#athens') && !!document.querySelector('#hellas') && getComputedStyle(document.querySelector('#hellas')).visibility === 'visible'"), ath)
+            p.evaluate("window.closeHellas()")
+            check("l. close leaves Cities as it was (overlay gone, no leftover renderer, the page visible again)", p.evaluate("!document.querySelector('#hellas') && !window.__hellas && !document.documentElement.classList.contains('hellas-open')"))
+        ctx.close()
+    hi, lo = out["high"], out["low"]
+    views = ("world", "polis", "polis2", "walk", "back")
+    check("l. budgets measured in every view: the world level <= 30 draw calls; phone-high <= 45 calls and <= 160k triangles (world, region, the desert, a ghost town, polis, village, house, walking); LITE <= 28 calls and <= 80k triangles",
+          not hi["err"] and not lo["err"] and hi["world"]["calls"] <= 30 and lo["world"]["calls"] <= 28 and hi["back"]["calls"] <= 30
+          and all(hi[v]["calls"] <= 45 and hi[v]["tris"] <= 160_000 for v in views + ("region", "village", "house", "desert", "ruin")) and all(lo[v]["calls"] <= 28 and lo[v]["tris"] <= 80_000 for v in views)
+          and all(hi[v]["tris"] > 500 for v in views), {q: {k: out[q].get(k) for k in views + ("region", "village", "house")} for q in out})
+    check("l. the header counter is the honest one: 200+ cities, the same text as the data ('N cities, M houses, from K data sources'), one instanced marker per city; LITE has no ships and no villagers, phone-high has both",
+          all(out[q]["counts"]["cities"] >= 200 and out[q]["header"].startswith(f"{out[q]['counts']['cities']} cities, ") and "data sources" in out[q]["header"] and out[q]["instances"] == out[q]["counts"]["cities"] for q in out)
+          and hi["ships"] and not lo["ships"] and lo["npcs"] == 0 and hi["npcs"] > 0, {q: {k: out[q].get(k) for k in ("header", "instances", "ships", "npcs", "houses")} for q in out})
+    check("l. no console error or page error", not errs, errs[:3])
+    print("       hellas numbers:", json.dumps({q: {k: out[q].get(k) for k in views + ("region", "village", "house", "houses", "npcs", "geo", "header")} for q in out}))
+    # fallbacks: example data only, reduced motion, no WebGL
+    errs2 = []
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, has_touch=True, is_mobile=True, reduced_motion="reduce")
+    p = ctx.new_page()
+    p.on("pageerror", lambda e: errs2.append(str(e)))
+    p.goto(base + "?hellas=1&q=high&demo=1", wait_until="domcontentloaded")
+    p.wait_for_function("window.__hellas && window.__hellas.ready", timeout=170000)
+    hframes(p, 3)
+    dm = p.evaluate("({ header: document.querySelector('#helCount').textContent, c: window.__hellas.world.counts, reduced: window.__hellas.scene.reduced })")
+    s0 = p.evaluate("(() => { const m = window.__hellas.scene.ships; return m ? [m.instanceMatrix.array[12], m.instanceMatrix.array[14]] : null; })()")
+    fl0 = p.evaluate("(() => { const S = window.__hellas.scene; return [S.flames ? S.flames.instanceMatrix.array[5] : 0, document.querySelector('.hel-ticker').textContent, !!window.__hellas.ui.tickT]; })()")
+    p.wait_for_timeout(600)
+    hframes(p, 3)
+    fl1 = p.evaluate("(() => { const S = window.__hellas.scene; return [S.flames ? S.flames.instanceMatrix.array[5] : 0, document.querySelector('.hel-ticker').textContent, !!window.__hellas.ui.tickT]; })()")
+    p.evaluate("window.__hellas.ui.startVoyage()")
+    hframes(p, 4)
+    rm = p.evaluate("({ fly: !!window.__hellas.scene.fly, timer: !!window.__hellas.ui.voy.timer, card: document.querySelector('.hel-card').textContent, s: (() => { const m = window.__hellas.scene.ships; return m ? [m.instanceMatrix.array[12], m.instanceMatrix.array[14]] : null; })() })")
+    p.evaluate("window.__hellas.ui.stopVoyage(); window.__hellas.ui.enter(window.__hellas.world.poleis.find((x) => x.src === 'accounts'))")
+    p.wait_for_function("window.__hellas.ui.at.polis", timeout=60000)
+    hframes(p, 3)
+    ex = p.evaluate("({ npcs: (window.__hellas.scene.npcs || []).length, veil: document.querySelector('.hel-veil').classList.contains('on'), card: document.querySelector('.hel-card').textContent })")
+    hshot(p, "hellas_390x844_example_reduced.png")
+    check("l. ?demo=1: every data city is example data and the header says so ('N cities on example data'); an example city's card is marked 'Example data'",
+          "on example data" in dm["header"] and dm["c"]["example"] >= 15 and dm["c"]["cities"] >= 20 and "Example data" in ex["card"], dm)
+    check("l. reduced motion: the camera jumps instead of flying, the voyage waits for 'Next stop' (no timer), ships, flames and villagers stand still, the ticker does not rotate, no veil",
+          dm["reduced"] and not rm["fly"] and not rm["timer"] and "Next stop" in rm["card"] and s0 == rm["s"] and fl0 == fl1 and not fl0[2] and "Latest 1/" in fl0[1] and ex["npcs"] == 0 and not ex["veil"], {"rm": {k: v for k, v in rm.items() if k != "card"}, "ex": ex["npcs"]})
+    ctx.close()
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, has_touch=True, is_mobile=True)
+    ctx.add_init_script(SPEC_NO_GL)
+    p = ctx.new_page()
+    p.on("pageerror", lambda e: errs2.append(str(e)))
+    p.goto(base + "?hellas=1&q=high", wait_until="domcontentloaded")
+    p.wait_for_function("window.__hellas && window.__hellas.ready", timeout=170000)
+    p.wait_for_timeout(400)
+    ng = p.evaluate("""(() => { const u = window.__hellas.ui, r = document.querySelector('#hellas'), c = document.querySelector('.hel-map'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, s = new Set(); for (let i = 0; i < d.length; i += 4 * 97) s.add(d[i] + ',' + d[i + 1] + ',' + d[i + 2]);
+      return { nogl: r.classList.contains('nogl'), map: getComputedStyle(c).display, ink: s.size, header: document.querySelector('#helCount').textContent, note: (document.querySelector('.hel-note') || {}).textContent || '', err: !!window.__hellasError, cities: window.__hellas.world.counts.cities }; })()""")
+    hshot(p, "hellas_390x844_nogl_map.png")
+    p.evaluate("(() => { const u = window.__hellas.ui, c = window.__hellas.world.poleis.filter((x) => x.src === 'archive' && !x.ruin).sort((a, b) => b.rows.length - a.rows.length)[0], V = u.mv; u.tap(V.ox + c.x * V.s, V.oz + c.z * V.s); })()")
+    sel = p.evaluate("({ sel: !!window.__hellas.ui.at.sel, card: document.querySelector('.hel-card').textContent })")
+    p.evaluate("window.__hellas.ui.enter(window.__hellas.ui.at.sel)")
+    p.wait_for_timeout(300)
+    pn = p.evaluate("(() => { const u = window.__hellas.ui, V = u.mv, h = u.at.plan.houses[3]; u.tap(V.ox + h.x * V.s, V.oz + h.z * V.s); return { polis: !!u.at.polis, houses: u.at.plan.houses.length, house: !!u.at.house, card: document.querySelector('.hel-card').textContent, walkHidden: document.querySelector('.hel-dock button:nth-child(3)').hidden }; })()")
+    hshot(p, "hellas_390x844_nogl_polis.png")
+    check("l. no WebGL: never blank: the 2D map of Hellas is drawn with the same honest counter and a plain note; a tap opens a city card, the city opens as a 2D plan and a tap on a house opens its card (walking is hidden)",
+          ng["nogl"] and ng["map"] == "block" and ng["ink"] >= 6 and ng["cities"] >= 200 and ng["header"].startswith(f"{ng['cities']} cities") and "cannot draw the 3D world" in ng["note"] and ng["err"]
+          and sel["sel"] and "Enter the city" in sel["card"] and pn["polis"] and pn["houses"] >= 30 and pn["house"] and "What was tested" in pn["card"] and pn["walkHidden"], {"ng": ng, "pn": {k: v for k, v in pn.items() if k != "card"}})
+    check("l. fallbacks: no page error", not errs2, errs2[:3])
+    ctx.close()
+    # the kit path: a stubbed window.OLYMPUS_PEOPLE takes the talk (keeper ids, builder branch ids), our own card stays closed; its portrait is used in our card when it does not know the person
+    STUB = """window.__opened = []; window.OLYMPUS_PEOPLE = { get: (id) => (/^keeper:|^builder:a43a2dae$|^villager:/.test(id) ? { id } : null), open: (id, o) => { window.__opened.push(id); }, portrait: (id, s) => { const e = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); e.setAttribute('data-stub', id); e.setAttribute('width', s); e.setAttribute('height', s); return e; } };"""
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, has_touch=True, is_mobile=True)
+    ctx.add_init_script(STUB)
+    p = ctx.new_page()
+    p.on("pageerror", lambda e: errs2.append(str(e)))
+    p.goto(base + "?hellas=1&q=low", wait_until="domcontentloaded")
+    p.wait_for_function("window.__hellas && window.__hellas.ready", timeout=170000)
+    hframes(p, 3)
+    kt = p.evaluate("""(() => { const u = window.__hellas.ui, W = window.__hellas.world, c = W.poleis.find((x) => x.ruin); const r1 = u.talkKeeper(c), hidden1 = document.querySelector('.hel-card').hidden; const r2 = u.buildersCard(W.builders[1]); const r3 = u.buildersCard(W.builders[0]);
+      return { r1, r2, r3, hidden1, opened: window.__opened.slice(), want: 'keeper:' + c.id, stubFace: !!document.querySelector('.hel-card .ppl-head svg[data-stub]'), ownQs: document.querySelectorAll('.hel-card .ppl-qs button').length, talk: window.__hellas.scene.talk }; })()""")
+    check("l. the kit path (stubbed OLYMPUS_PEOPLE): a keeper opens the kit's chat with 'keeper:<polis-id>' and our card stays closed; a builder is found under its branch-short id; a person the kit does not know falls back to our own chat card, with the kit's portrait in it",
+          kt["r1"] == "kit" and kt["hidden1"] and kt["r2"] == "kit" and kt["opened"] == [kt["want"], "builder:a43a2dae"] and kt["r3"] == "own" and kt["stubFace"] and kt["ownQs"] == 6 and kt["talk"] == {"kind": "builder", "i": 0}, kt)
+    p.evaluate("window.closeHellas()")
+    # Athens with the kit: a villager opens villager:<app-id>
+    p.goto(base + "?athens=1&first=0&q=high&light=day", wait_until="domcontentloaded")
+    p.wait_for_function("window.__athens && window.__athens.world && window.__athens.scene.npcPos && window.__athens.scene.npcPos.length", timeout=170000)
+    ak = p.evaluate("(() => { const n = window.__athens.nest, hit = n.npcHit(5); window.__opened.length = 0; n.showNpc(hit); return { opened: window.__opened.slice(), want: 'villager:' + hit.village.id, hidden: document.querySelector('.ath-card').hidden, talk: window.__athens.scene.talkNpc }; })()")
+    check("l. Athens, kit path: a villager opens the kit's chat with 'villager:<app-id>' (our card stays closed) and stops to talk", ak["opened"] == [ak["want"]] and ak["hidden"] and ak["talk"] == 5, ak)
+    ctx.close()
+    # Athens without the kit: figures, own chat on the villager card, people strip and Talk in walk mode
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    p = ctx.new_page()
+    p.on("pageerror", lambda e: errs2.append(str(e)))
+    p.goto(base + "?athens=1&first=0&q=high&light=day", wait_until="domcontentloaded")
+    p.wait_for_function("window.__athens && window.__athens.world && window.__athens.scene.npcPos && window.__athens.scene.npcPos.length", timeout=170000)
+    p.wait_for_timeout(1500)
+    an = p.evaluate("({ calls: window.__athens.calls(), tris: window.__athens.tris(), npcs: window.__athens.scene.npcs.length, crowd: window.__athens.scene.crowd ? window.__athens.scene.crowd.count : 0 })")
+    p.evaluate("(() => { const s = window.__athens.scene, q = s.npcPos[0]; s.flyTo(q.x, q.z, { dist: 26, pitch: .35, dur: .02 }); })()")
+    p.wait_for_function("!window.__athens.scene.fly", timeout=60000)
+    p.wait_for_timeout(500)
+    p.evaluate("window.__athens.nest.talkNpc(0)")
+    p.wait_for_timeout(400)
+    av = p.evaluate("""(() => { const c = document.querySelector('.ath-card'), s = window.__athens.scene, x0 = s.npcPos[0].x; return { text: c.textContent.slice(0, 200), qs: [...c.querySelectorAll('.ppl-qs button')].map((b) => b.textContent), small: [...c.querySelectorAll('.ppl-qs button')].filter((b) => b.getBoundingClientRect().height < 43.5).length, name: (c.querySelector('.ppl-who b') || {}).textContent, talk: s.talkNpc, facing: s.npcPos[0].facing, x0, how: window.__athens.nest.lastTalk }; })()""")
+    p.evaluate("document.querySelectorAll('.ath-card .ppl-qs button')[5].click()")
+    av["a5"] = p.evaluate("document.querySelector('.ath-card .ppl-answer').textContent")
+    p.wait_for_timeout(600)
+    av["x1"] = p.evaluate("window.__athens.scene.npcPos[0].x")
+    hshot(p, "athens_390x844_talk_villager.png")
+    p.evaluate("window.__athens.ui.hideCard()")
+    p.wait_for_function("window.__athens.scene.talkNpc == null", timeout=30000)
+    check("l. Athens, own chat: 80 villagers are toy-like figures in ONE instanced draw, inside Athens' own budgets (<= 42 calls / 150k triangles); a villager's card keeps its fact and gains a name and six 44 px questions answered from its village; it stops and turns to you while you talk and walks on when the card closes",
+          an["npcs"] == 80 == an["crowd"] and an["calls"] <= 42 and an["tris"] <= 150_000 and "Villager" in av["text"] and len(av["qs"]) == 6 and not av["small"] and " of " in (av["name"] or "") and av["talk"] == 0 and av["facing"] and av["x0"] == av["x1"]
+          and av["how"]["how"] == "own" and av["how"]["id"].startswith("villager:") and "house" in av["a5"], {"an": an, "av": av})
+    p.evaluate("(() => { const s = window.__athens.scene, v = s.world.villages.find((x) => x.id === 'kronos'); window.__athens.nest.walkAtVillage(v); })()")
+    p.wait_for_function("window.__athens.scene.walking", timeout=60000)
+    p.evaluate("(() => { const s = window.__athens.scene, q = s.npcPos[0]; s.walk.x = q.x + 1.5; s.walk.z = q.z; })()")
+    p.wait_for_function("!document.querySelector('.ath-walkbar [data-a=n-talk]').disabled && document.querySelectorAll('.ath-people button').length", timeout=60000)
+    aw = p.evaluate("({ chips: [...document.querySelectorAll('.ath-people button')].map((b) => b.textContent), h: Math.min(...[...document.querySelectorAll('.ath-people button, .ath-walkbar button')].map((b) => b.getBoundingClientRect().height)), w: Math.min(...[...document.querySelectorAll('.ath-walkbar button')].map((b) => b.getBoundingClientRect().width)) })")
+    p.evaluate("window.__athens.nest.act('n-talk', document.querySelector('[data-a=n-talk]'))")
+    aw["qs"] = p.evaluate("document.querySelectorAll('.ath-card .ppl-qs button').length")
+    aw["talk"] = p.evaluate("window.__athens.scene.talkNpc")
+    hshot(p, "athens_390x844_walk_people.png")
+    check("l. Athens, walking: the 'People nearby' strip names the villagers around with the distance, Talk (within 3 m) opens the chat with the nearest one; every button stays 44 px",
+          len(aw["chips"]) >= 1 and re.search(r" of .+ · \d+ m$", aw["chips"][0]) and aw["h"] >= 43.5 and aw["w"] >= 43.5 and aw["qs"] == 6 and aw["talk"] is not None, aw)
+    check("l. people: no page error", not errs2, errs2[:3])
+    ctx.close()
+    # the entry: Cities gets an 'Enter Hellas' button that opens the world, and the page still boots untouched without it
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, has_touch=True, is_mobile=True)
+    p = ctx.new_page()
+    p.goto(base + "?q=low&world=1", wait_until="domcontentloaded")
+    p.wait_for_function("['true','fallback'].includes(document.body.dataset.ready)", timeout=170000)
+    p.wait_for_function("document.querySelector('.hellas-fab')", timeout=30000)
+    b = p.evaluate("({ fab: !!document.querySelector('.hellas-fab'), open: !!window.__hellas, text: document.querySelector('.hellas-fab').textContent, h: document.querySelector('.hellas-fab').getBoundingClientRect().height, athens: !!document.querySelector('.athens-fab'), lap: (() => { const a = document.querySelector('.athens-fab'), c = document.querySelector('.hellas-fab'); if (!a) return false; const A = a.getBoundingClientRect(), B = c.getBoundingClientRect(); return A.width > 0 && B.width > 0 && A.top < B.bottom && A.bottom > B.top && A.left < B.right && A.right > B.left; })() })")
+    p.evaluate("window.openHellas()")
+    p.wait_for_function("window.__hellas && window.__hellas.ready", timeout=170000)
+    check("l. Cities shows an 'Enter Hellas' button (44 px, not on top of 'Enter Athens'); nothing of Hellas loads until it is asked for; the button opens the world",
+          b["fab"] and not b["open"] and b["text"] == "Enter Hellas" and b["h"] >= 44 and not b["lap"] and p.evaluate("!!document.querySelector('#hellas') && window.__hellas.world.counts.cities >= 200"), b)
+    ctx.close()
+
+
+SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f, "g": sec_g, "h": sec_h, "i": sec_i, "j": sec_j, "k": sec_k, "l": sec_l}
 
 def run_browser(C, days, picks):
     from playwright.sync_api import sync_playwright
@@ -1233,6 +1856,8 @@ def main():
         part_athens()
     if want("k"):
         part_nest()
+    if want("l"):
+        part_hellas()
     days, picks, seeds = part_b(C)
     if not no_browser:
         try:

@@ -21,14 +21,14 @@
     '@keyframes oly-odo-roll-dn { from { transform: translateY(calc(var(--odo-n, 1) * var(--odo-h, 1.2em) * -1)); } to { transform: translateY(0); } }',
     '.oly-fx-caret { display: inline-block; margin-left: 1px; animation: oly-fx-blink 1s steps(2, start) infinite; color: var(--oly-accent, currentColor); }',
     '@keyframes oly-fx-blink { to { visibility: hidden; } }',
-    '@keyframes oly-fx-gl { 0% { transform: translate(0); clip-path: inset(0 0 0 0); text-shadow: 2px 0 rgba(0, 255, 255, .8), -2px 0 rgba(255, 0, 110, .8); }',
-    '  25% { transform: translate(-2px, 1px); clip-path: inset(12% 0 55% 0); text-shadow: -3px 0 rgba(0, 255, 255, .8), 3px 0 rgba(255, 0, 110, .8); }',
-    '  50% { transform: translate(2px, -1px); clip-path: inset(58% 0 8% 0); text-shadow: 3px 0 rgba(0, 255, 255, .8), -3px 0 rgba(255, 0, 110, .8); }',
-    '  75% { transform: translate(-1px, 0); clip-path: inset(30% 0 30% 0); text-shadow: -2px 0 rgba(0, 255, 255, .8), 2px 0 rgba(255, 0, 110, .8); }',
+    '@keyframes oly-fx-gl { 0% { transform: translate(0); clip-path: inset(0 0 0 0); text-shadow: 2px 0 rgba(75,122,153, .8), -2px 0 rgba(201,106,74, .8); }',
+    '  25% { transform: translate(-2px, 1px); clip-path: inset(12% 0 55% 0); text-shadow: -3px 0 rgba(75,122,153, .8), 3px 0 rgba(201,106,74, .8); }',
+    '  50% { transform: translate(2px, -1px); clip-path: inset(58% 0 8% 0); text-shadow: 3px 0 rgba(75,122,153, .8), -3px 0 rgba(201,106,74, .8); }',
+    '  75% { transform: translate(-1px, 0); clip-path: inset(30% 0 30% 0); text-shadow: -2px 0 rgba(75,122,153, .8), 2px 0 rgba(201,106,74, .8); }',
     '  100% { transform: translate(0); clip-path: inset(0 0 0 0); text-shadow: none; } }',
     '.oly-fx-glitch.on { animation: oly-fx-gl .3s steps(1, end) 1; }',
     '.oly-fx-glitch.lite.on { animation-name: oly-fx-gl-lite; }',
-    '@keyframes oly-fx-gl-lite { 0%, 50% { text-shadow: 2px 0 rgba(0, 255, 255, .8), -2px 0 rgba(255, 0, 110, .8); } 100% { text-shadow: none; } }',
+    '@keyframes oly-fx-gl-lite { 0%, 50% { text-shadow: 2px 0 rgba(75,122,153, .8), -2px 0 rgba(201,106,74, .8); } 100% { text-shadow: none; } }',
   ].join('\n'));
 
   // ---------------------------------------------------------------- number parsing / formatting

@@ -1,0 +1,579 @@
+"""PEOPLE OF OLYMPUS, the shared kit (tools/people_build.py, tools/web_public/olympus/people*.js, docs/PERSONA_API.md), 2026-11-11. Node only: no browser, no lock.
+
+  a. the roster: tools/people_build.py --selftest, --check, the build with and without git (same people, the contract holds), the published people.json
+  b. the look: one deterministic cartoon character per person (same SVG every time, different people look different, safe SVG, four moods), seeds = the Python seeds
+  c. the talk engine: 100+ phrasings across the kinds (typos and synonyms), follow-ups with a short memory, refusals in character, the temperament changes wording only
+  d. grounding: every number in every answer, stand-up line, round-table answer and debate turn exists in that person's facts (sample data and real-looking data)
+  e. the facts: every kind from real-looking files, honest sample / stale / snapshot labels, every $ with its R, scene facts
+  f. the API in node (people.js with a tiny fake window): ready / list / get / ask / standup / requests store (olympus.requests.v1) / me (olympus.me.v1) / the owner's own model
+  g. 3D: people3d.js against three.js: <= 14 meshes and <= 900 triangles per figure (<= 350 LITE), every pose, the instanced crowd
+    python -X utf8 -m tests.test_people
+"""
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+from tests import agora_kit as AK  # noqa: E402
+from tools import people_build as PB  # noqa: E402
+
+check = AK.check
+OLY = os.path.join(AK.WEB, "olympus")
+FILES = ["people.js", "people-core.js", "people-talk.js", "people-data.js", "people-brain.js", "people3d.js", "people.css", "people.json"]
+
+
+def test_roster():
+    check("a. the files of the kit: " + ", ".join(FILES), all(os.path.isfile(os.path.join(OLY, f)) for f in FILES))
+    r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "people_build.py"), "--selftest"], capture_output=True, text=True, timeout=120)
+    check("a. tools/people_build.py --selftest passes", r.returncode == 0 and "ALL PASS" in r.stdout, r.stdout[-600:] + r.stderr[-300:])
+    r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "people_build.py"), "--check"], capture_output=True, text=True, timeout=120)
+    check("a. the published olympus/people.json is what the builder writes now (--check; the git part is ignored)", r.returncode == 0, r.stdout[-300:])
+    with_git, without = PB.build(with_git=True), PB.build(with_git=False)
+    check("a. the build with and without git: the same people, ids and looks; git only adds a commit note to a builder",
+          PB.stable(PB.dump(with_git)) == PB.stable(PB.dump(without)) and not any("git" in p for p in without["people"]) and PB.problems(with_git) == [] and PB.problems(without) == [])
+    doc = json.loads(AK.read(os.path.join(OLY, "people.json")))
+    ids = [p["id"] for p in doc["people"]]
+    kinds = {k: sum(1 for p in doc["people"] if p["kind"] == k) for k in ("builder", "scanner", "bot", "mind", "keeper", "champion")}
+    check("a. every real worker is a person: 5 scanners, LIT / ATLAS / BLITZ / Kalshi, the Mind, Prometheus / Hephaestus / Cronos / the queue, a keeper per district, the build agents, champions",
+          kinds["scanner"] == 5 and all(i in ids for i in ("bot:lit", "bot:atlas", "bot:blitz", "bot:kalshi", "mind", "job:prometheus", "job:hephaestus", "job:cronos", "job:queue"))
+          and kinds["keeper"] == 5 and kinds["builder"] >= 1 and kinds["champion"] >= 2 and any(p.get("fallen") for p in doc["people"]), kinds)
+    agents = json.loads(AK.read(os.path.join(ROOT, "handoff", "agents_now.json")))["agents"]
+    check("a. one builder per agent of handoff/agents_now.json, id builder:<first 8 of the branch>", sorted(i for i in ids if i.startswith("builder:")) == sorted("builder:" + PB.short_branch(a["branch"]) for a in agents))
+    check("a. every person: a Greek name with its meaning, a title, a one-line bio, a temperament, a voice, sources, a home; names are unique",
+          all(p["name"] and p["meaning"] and p["bio"] and p["temperament"] in PB.TEMPERS and 0.8 <= p["voice"]["pitch"] <= 1.3 and isinstance(p["sources"], list) and p["home"]["scene"] for p in doc["people"])
+          and len({p["name"] for p in doc["people"]}) == len(doc["people"]))
+    check("a. one villager per app of the app list; nothing in the roster looks like markup or a secret", len(doc["villagers"]) >= 50 and all(v["id"] == "villager:" + v["app"] for v in doc["villagers"])
+          and not any(x in json.dumps(doc) for x in ("<", ">", "api_key", "password", "sk-")))
+
+
+HARNESS = r"""
+const fs = require('fs'), path = require('path');
+const [, , TMP, WEB, QUEUE] = process.argv;
+(async () => {
+  const C = await import(path.join(TMP, 'olympus', 'people-core.mjs')), T = await import(path.join(TMP, 'olympus', 'people-talk.mjs')), B = await import(path.join(TMP, 'olympus', 'people-brain.mjs'));
+  const o = {}, rosterJson = JSON.parse(fs.readFileSync(path.join(WEB, 'olympus', 'people.json'), 'utf8'));
+  const R = C.normRoster(rosterJson), now = Date.parse('2026-11-11T15:00:00Z'), env = { now, hour: 9, roster: R.people };
+  // ---- roster
+  o.fixture = [C.normRoster(null).fixture, C.normRoster({ people: 'x' }).people.length, C.normRoster({ people: [{ id: 'bot:lit' }, { id: 'bot:lit' }, { nope: 1 }] }).people.length];
+  o.seeds = R.people.concat(R.villagers).every((p) => p.seed === C.seedOf(p.id));
+  const rid = (x) => { const p = C.resolve(R, x); return p ? p.id : null; };
+  o.resolve = [rid('scanner:chrysos'), rid('chrysos'), rid('worker:lit'), rid('station:mind'), rid('prometheus'), rid('KALSHI'), rid(R.people.find((p) => p.kind === 'builder').branch), rid('villager:hestia'), rid('villager:not-an-app'), rid('keeper:sparta'), rid('keeper:market'), rid('champion:zzz'), rid(''), rid('nonsense'), rid(null)];
+  o.made = [C.resolve(R, 'keeper:sparta').name === C.resolve(R, 'keeper:sparta').name, C.resolve(R, 'keeper:sparta').made, C.resolve(R, 'villager:not-an-app').made];
+  o.filter = [C.filterPeople(R.people, 'scanner').length, C.filterPeople(R.people, { kind: 'bot' }).length, C.filterPeople(R.people, { scene: 'colosseum' }).length, C.filterPeople(R.people, null).length === R.people.length];
+  // ---- the look
+  const specs = R.people.map((p) => C.spec(p)), svg = (p, m) => C.svgText(C.portraitTree(C.spec(p, m ? { mood: m } : null), { size: 44 }));
+  o.det = R.people.every((p) => svg(p) === svg(p) && JSON.stringify(C.spec(p)) === JSON.stringify(C.spec(p)));
+  o.distinct = new Set(R.people.map((p) => svg(p))).size;
+  o.n = R.people.length;
+  o.variety = [new Set(specs.map((s) => s.skin)).size, new Set(specs.map((s) => s.hairStyle)).size, new Set(specs.map((s) => s.outfit)).size, new Set(specs.map((s) => s.hair)).size];
+  o.acc = { champion: specs.filter((s, i) => R.people[i].kind === 'champion' && !R.people[i].fallen).every((s) => s.accessory === 'laurel'), bot: specs.filter((s, i) => R.people[i].kind === 'bot').every((s) => s.accessory === 'helmet'),
+    builder: specs.filter((s, i) => R.people[i].kind === 'builder').every((s) => s.accessory === 'hammer'), scanner: specs.filter((s, i) => R.people[i].kind === 'scanner').every((s) => s.accessory === 'pouch'), owl: C.spec(C.resolve(R, 'mind')).accessory, scribe: C.spec(C.resolve(R, 'job:queue')).accessory };
+  const all = R.people.map((p) => svg(p)).join('');
+  o.safe = !/<script|<foreignObject|<image|<filter|href=|style=|on[a-z]+=|url\((?!#pp)/i.test(all) && /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="0 0 100 100" width="44" height="44"/.test(svg(R.people[0]));
+  o.moods = new Set(['calm', 'proud', 'sheepish', 'worried'].map((m) => svg(R.people[0], m))).size;
+  o.size = [/width="160" height="160"/.test(C.svgText(C.portraitTree(specs[0], { size: 160 }))), svg(R.people[0]).length < 9000];
+  o.over = [C.spec({ id: 'me' }, { skin: '#7d5233', hairStyle: 'bun', face: { glasses: true }, mood: 'nope' }).skin, C.spec({ id: 'me' }, { hairStyle: 'bun', face: { glasses: true } }).face.glasses, C.spec({ id: 'me' }, { mood: 'nope' }).mood];
+  // ---- facts from real-looking files
+  const t = Math.round(now / 1000);
+  const REAL = {
+    '../home.json': { t: t - 300, accounts: [{ id: 'mffu50k_eval', name: 'Zlarior 50K', conn: { connected: true }, eval: { room: 1420, mll: 2000, to_target: 2580 }, pnl: { today: 312, week: 640 } },
+      { id: 'acctb', name: 'ATLAS 25K', conn: { connected: false }, eval: { room: 240, mll: 1000 }, pnl: { today: -60, week: 140 } }, { id: 'acct_c', name: 'BLITZ 25K', conn: { connected: true }, paused: true, eval: { room: 560, mll: 1000 }, pnl: { today: 0 } }] },
+    '../odeon/trades.json': { trades: [{ id: 'a', day: '2026-11-10', usd: 312, r: 0.73, side: 'LONG' }, { id: 'b', day: '2026-11-06', usd: -437, r: -1.03, side: 'short' }, { day: 'x' }] },
+    '../money/index.json': { streams: [{ id: 'mercury', status: 'ok', asof: '2026-11-11T12:00:00Z', headline: 'One prop-firm sale found.', items: [{ title: 'Sale on the 50K plan', usd: 28, score: 80, risk: 'low', expires: '2026-11-30' }], notes: ['A code can end without notice.'] },
+      { id: 'arbiter', status: 'error', asof: '2026-11-11T12:00:00Z', headline: '', items: [] }, { id: 'oikos', status: 'ok', asof: '2026-11-01T12:00:00Z', headline: 'About $38 a month to keep.', items: [{ title: 'Unused subscription', usd: 12, score: 77, risk: 'low' }] }] },
+    '../money/chrysos.json': { v: 1, id: 'chrysos', asof: '2026-11-11T13:00:00Z', status: 'ok', headline: { text: 'The next buy looks best, about $5,439 over 12 months (an estimate).', usd_month: 453.25 }, items: [{ title: 'Next buy: Builder 50K', detail: 'About 91% become funded in the base case.', usd: 5439, score: 89, risk: 'low' }, { title: 'Buy: the 25K plan', usd: 2528, score: 71, risk: 'low' }], notes: ['Break-even is about 1.4 months.'] },
+    '../kalshi.json': { t: t - 1200, running: true, today_pnl: 2.4, settled_n: 41, balance: 55.81, last_trades: [{ title: 'Rain in New York', pnl: 1.8, t: t - 4000 }, { ticker: 'INX-RANGE', pnl: -0.6 }] },
+    '../kalshicity/learned.json': { source: { bets: 1836, total_pnl: -81.77, generated_utc: '2026-11-04T02:49:05Z' } },
+    '../ergasterion/queue.json': JSON.parse(fs.readFileSync(QUEUE, 'utf8')),
+    '../cronos/status.json': { tasks: { archive: { last_run_t: t - 9 * 3600, ok: true, cadence: 'nightly' }, mind: { last_run_t: t - 20 * 3600, ok: false, error: 'bars file missing', cadence: 'nightly' }, prometheus: { last_run_t: t - 60 * 3600, ok: true, cadence: 'weekly', note: 'weekly' } } },
+    '../prometheus/forge.json': { built: '2026-11-09T03:00:00Z', gens_n: 12, pop: 40, verdict: { real_margin: false, h1_gain_pm: 310, h2_gain_pm: -45, survive_pct: 0 }, honesty: { genomes_checked: 480, beat_live_both: 3 } },
+    '../hephaestus/data.json': { built: '2026-11-08T03:00:00Z', dials: [{ label: 'Break-even trigger', options: [1, 2, 3] }, { label: 'Time cut', options: [1, 2] }] },
+    '../ergasterion/builders.json': { builders: R.people.filter((p) => p.kind === 'builder').slice(0, 2).map((p, i) => ({ branch: p.branch, t: t - 1800, n: 14 + i, files: 9, commits: [{ t: t - 1800, s: 'Fix the phone layout of the cards' }], blocked: i ? 'Waiting for the lead to wire the app' : '' })) },
+    '../archive/index.json': JSON.parse(fs.readFileSync(path.join(WEB, 'archive', 'index.json'), 'utf8')),
+  };
+  for (const p of R.people.filter((x) => x.kind === 'keeper')) for (const a of p.district.apps) { try { REAL['../' + a + '/jarvis.json'] = JSON.parse(fs.readFileSync(path.join(WEB, a, 'jarvis.json'), 'utf8')); } catch (_) { /* that app has no card */ } }
+  REAL['../hestia/jarvis.json'] = { v: 1, name: 'Hestia', status: { level: 'warn', label: 'BLITZ close to its limit' }, kpis: [{ label: 'Today', value: '+$252' }], lines: ['Hands off BLITZ.'], t };
+  const F = (id, I) => C.buildFacts(C.resolve(R, id), I || REAL, now), f = {};
+  for (const id of ['scanner:chrysos', 'scanner:mercury', 'scanner:arbiter', 'scanner:oikos', 'scanner:sibyl', 'bot:lit', 'bot:atlas', 'bot:blitz', 'bot:kalshi', 'mind', 'job:prometheus', 'job:hephaestus', 'job:cronos', 'job:queue', 'keeper:command']) f[id] = F(id);
+  const b0 = R.people.filter((p) => p.kind === 'builder'), ch = R.people.filter((p) => p.kind === 'champion' && !p.fallen)[0], fl = R.people.filter((p) => p.fallen)[0];
+  const fb0 = F(b0[0].id), fb1 = F(b0[1].id), fb2 = F(b0[b0.length - 1].id), fch = F(ch.id), ffl = F(fl.id), fchSnap = F(ch.id, {});
+  o.facts = {
+    shape: Object.keys(f['bot:lit']).sort().join(','),
+    chrysos: [f['scanner:chrysos'].status, f['scanner:chrysos'].sample, f['scanner:chrysos'].sources[0], f['scanner:chrysos'].numbers.map((n) => n.label + '=' + n.text).slice(0, 4), f['scanner:chrysos'].mood, f['scanner:chrysos'].details[0]],
+    mercury: [f['scanner:mercury'].status, f['scanner:mercury'].last[0].text, f['scanner:mercury'].sources[0]],
+    arbiter: [f['scanner:arbiter'].status, f['scanner:arbiter'].blocked, f['scanner:arbiter'].mood],
+    oikos: [f['scanner:oikos'].status, f['scanner:oikos'].blocked],
+    sibyl: [f['scanner:sibyl'].status, f['scanner:sibyl'].sample, f['scanner:sibyl'].missing, f['scanner:sibyl'].blocked, f['scanner:sibyl'].note],
+    lit: [f['bot:lit'].status, f['bot:lit'].doing, f['bot:lit'].numbers.map((n) => n.label + '=' + n.text), f['bot:lit'].last.map((x) => x.text), f['bot:lit'].mood],
+    atlas: [f['bot:atlas'].status, f['bot:atlas'].blocked, f['bot:atlas'].mood],
+    blitz: [f['bot:blitz'].status, f['bot:blitz'].doing],
+    kalshi: [f['bot:kalshi'].status, f['bot:kalshi'].doing, f['bot:kalshi'].last.map((x) => x.text), f['bot:kalshi'].learned[0].text, f['bot:kalshi'].numbers.map((n) => n.text)],
+    mind: [f.mind.status, f.mind.numbers[0].text, f.mind.last.length > 0, f.mind.blocked || ''],
+    prom: [f['job:prometheus'].status, f['job:prometheus'].last.map((x) => x.text), f['job:prometheus'].mood, f['job:prometheus'].learned[0].text],
+    heph: [f['job:hephaestus'].status, f['job:hephaestus'].numbers[0].text],
+    cron: [f['job:cronos'].status, f['job:cronos'].doing, f['job:cronos'].blocked, f['job:cronos'].mood],
+    queue: [f['job:queue'].status, /open task/.test(f['job:queue'].doing), f['job:queue'].numbers.length],
+    keeper: [f['keeper:command'].status, /need a look/.test(f['keeper:command'].doing), /Hestia \(BLITZ close to its limit\)/.test(f['keeper:command'].blocked || ''), f['keeper:command'].mood],
+    builder: [fb0.status, fb0.sources[0], fb0.last[0].text, fb0.numbers.map((n) => n.label).join('|'), fb1.blocked, fb1.mood, fb2.sources[0], /My job: /.test(fb2.doing)],
+    champ: [fch.status, fch.sources[0], fch.note, fch.mood, fch.numbers.length > 4, fchSnap.sources[0], fchSnap.note, fchSnap.numbers.length === fch.numbers.length, ffl.mood, /did not hold|rejected by the rule/.test(ffl.failed || '')],
+    villager: [C.buildFacts(C.resolve(R, 'villager:hestia'), REAL, now).status, C.buildFacts(C.resolve(R, 'villager:hestia'), REAL, now).numbers[0].text, C.buildFacts(C.resolve(R, 'villager:zzz'), {}, now).status],
+    made: [C.buildFacts(C.resolve(R, 'keeper:sparta'), {}, now).sample, /only know what its own page shows/.test(C.buildFacts(C.resolve(R, 'keeper:sparta'), {}, now).doing)],
+    junk: [C.buildFacts(C.resolve(R, 'bot:lit'), { '../home.json': 'x' }, now).sample, C.buildFacts(C.resolve(R, 'job:cronos'), { '../cronos/status.json': { tasks: 5 } }, now).sample, C.buildFacts(C.resolve(R, 'scanner:chrysos'), null, now).sample, C.buildFacts(C.resolve(R, 'mind'), { '../ergasterion/queue.json': [] }, now).status],
+    asofIso: /^\d{4}-\d{2}-\d{2}T/.test(f['bot:lit'].asof),
+  };
+  const sc = C.mergeSceneFacts(C.buildFacts(C.resolve(R, 'keeper:sparta'), {}, now), { doing: 'Sparta has 14 houses and 3 are stale.', numbers: [{ label: 'Houses', text: '14' }], last: [{ t: now, text: 'A house was added.' }], blocked: 'The east gate has no data.', source: 'hellas/world.json', mood: 'worried' });
+  o.scene = [sc.doing, sc.numbers[0].text, sc.last[0].text, sc.blocked, sc.sources[0], sc.mood, C.mergeSceneFacts(sc, null) === sc];
+  // ---- the talk engine: phrasings
+  const lit = C.resolve(R, 'bot:lit'), chrys = C.resolve(R, 'scanner:chrysos'), mind = C.resolve(R, 'mind'), keeper = C.resolve(R, 'keeper:market'), builder = b0[0];
+  const ALL = [
+    ['hi', 'greet'], ['hello there', 'greet'], ['good morning', 'greet'], ['kalimera', 'greet'], ['hey', 'greet'],
+    ['who are you', 'who'], ['what is your job', 'who'], ['introduce yourself', 'who'], ['tell me about yourself', 'who'], ['what do you do', 'who'],
+    ['what does your name mean', 'name'], ['why are you called that', 'name'],
+    ['what are you doing', 'doing'], ['wat r u doin', 'doing'], ['what are you working on', 'doing'], ['whats up', 'doing'], ['status?', 'doing'], ['what are you doing right now', 'doing'], ['hows it going', 'doing'],
+    ['what did you find', 'found'], ['wat did u find', 'found'], ['anything good?', 'found'], ['did you find anything', 'found'], ['any results?', 'found'], ['what have you got', 'found'],
+    ['what did you learn', 'learned'], ['what did u lern', 'learned'], ['any lessons?', 'learned'], ['what did you learnt', 'learned'], ['key takeaways', 'learned'],
+    ['why did it fail', 'failed'], ['what went wrong', 'failed'], ['why did it faill', 'failed'], ['any errors?', 'failed'], ['what happened?', 'failed'],
+    ['are you stuck', 'stuck'], ['are you blocked?', 'stuck'], ['any problems?', 'stuck'], ['r u stuk', 'stuck'], ['any blockers', 'stuck'], ['are you okay', 'stuck'],
+    ['what do you need from me', 'need'], ['need anything?', 'need'], ['can i help', 'need'], ['what should i do', 'need'], ['how can i help you', 'need'],
+    ['show me your last result', 'last'], ['your latest result', 'last'], ['show me the most recent one', 'last'], ['last output', 'last'],
+    ['explain it simply', 'simple'], ['explain like im five', 'simple'], ['in plain english please', 'simple'], ['i dont understand', 'simple'], ['eli5', 'simple'],
+    ['what would you do next', 'next'], ['whats next', 'next'], ['what is your plan', 'next'], ['next steps?', 'next'], ['what do you suggest', 'next'],
+    ['how sure are you', 'sure'], ['how confident are you', 'sure'], ['can i trust this', 'sure'], ['how reliable is that', 'sure'], ['are you certain', 'sure'],
+    ['what changed since yesterday', 'changed'], ['whats new', 'changed'], ['anything new today', 'changed'], ['what changed', 'changed'],
+    ['who do you work with', 'team'], ['who is on your team', 'team'], ['who else is here', 'team'], ['your colleagues?', 'team'],
+    ['how are you built', 'built'], ['how do you work', 'built'], ['what are you made of', 'built'], ['where does your data come from', 'sources'],
+    ['tell me something surprising', 'surprise'], ['tell me something suprising', 'surprise'], ['surprise me', 'surprise'], ['fun fact?', 'surprise'],
+    ['good news first', 'good'], ['whats the good news', 'good'], ['bad news first', 'bad'], ['give me the bad news', 'bad'], ['be honest', 'bad'],
+    ['give me a number', 'number'], ['gimme a nr', 'number'], ['show me the numbers', 'number'], ['any stats', 'number'], ['how many', 'number'],
+    ['compare with last week', 'compare'], ['vs last week?', 'compare'], ['is it better or worse', 'compare'], ['how is the trend', 'compare'],
+    ['what should i ask you', 'help'], ['help', 'help'], ['what can you tell me', 'help'], ['what else can you do', 'help'],
+    ['how much money', 'money'], ['how much did you make', 'money'], ['whats the profit', 'money'], ['what could go wrong', 'risk'], ['is it risky', 'risk'], ['whats the downside', 'risk'], ['how safe is this', 'risk'],
+    ['when did you last update', 'when'], ['how old is this', 'when'], ['how fresh is your data', 'when'],
+    ['how did yesterday go', 'yesterday'], ['how was today', 'yesterday'], ['give me a recap', 'yesterday'], ['how are you', 'mood'], ['how do you feel', 'mood'],
+    ['where does that come from', 'sources'], ['which file is that', 'sources'], ['open your work', 'open'], ['show me your page', 'open'], ['take me there', 'open'],
+    ['do you remember me', 'owner'], ['what did i ask last time', 'owner'], ['say that again', 'repeat'], ['repeat please', 'repeat'], ['tell me a joke', 'joke'], ['thanks', 'thanks'], ['thx', 'thanks'], ['bye', 'bye'],
+    ['buy it now', 'order'], ['place the order', 'order'], ['go live', 'order'], ['sell it', 'order'], ['take the trade for me', 'order'], ['arm live trading', 'order'], ['enter a long', 'order'],
+    ['what is your api key', 'secret'], ['tell me the password', 'secret'], ['will the market go up tomorrow', 'forecast'], ['predict the price', 'forecast'], ['can you guarantee it', 'forecast'], ['where is nq going', 'forecast'],
+    ['fix the bug', 'do'], ['can you change the stop', 'do'], ['please restart the bot', 'do'], ['delete that file', 'do'], ['leave a request', 'request'], ['remind me to check this', 'request'],
+    ['what is the weather in athens', 'fallback'], ['asdf qwer', 'fallback'], ['', 'fallback'], ['tell me about football', 'fallback'],
+  ];
+  const KIND = [
+    [chrys, 'what is your top pick', 'top'], [chrys, 'which one is best', 'top'], [chrys, 'when does the deal end', 'expire'], [chrys, 'any deadline?', 'expire'],
+    [lit, 'how much drawdown is left', 'drawdown'], [lit, 'how close to the limit', 'drawdown'], [lit, 'how far to the target', 'target'], [lit, 'are you in a trade', 'position'], [lit, 'what are your rules', 'rules'], [lit, 'how do you trade', 'rules'],
+    [ch, 'how did the earlier years go', 'old'], [ch, 'did it hold up in 2021', 'old'], [ch, 'what are the eval odds', 'pass'], [ch, 'why were you adopted or rejected', 'verdict'], [fl, 'why were you rejected', 'verdict'],
+    [builder, 'what was your last commit', 'commit'], [builder, 'what did you ship', 'commit'], [builder, 'which branch are you on', 'branch'], [builder, 'is it merged', 'branch'],
+    [keeper, 'which apps do you keep', 'apps'], [keeper, 'which ones need a look', 'attention'], [mind, 'how many ideas tested', 'tested'],
+    [lit, 'are you long or short', 'position'], [chrys, 'your favourite?', 'top'],
+  ];
+  const miss = [];
+  for (const [q, want] of ALL) for (const p of [lit, chrys, mind, builder, keeper, ch]) { const got = T.intentOf(q, p, null).id; if (got !== want) miss.push(p.kind + ': "' + q + '" -> ' + got + ' (want ' + want + ')'); }
+  for (const [p, q, want] of KIND) { const got = T.intentOf(q, p, null).id; if (got !== want) miss.push(p.kind + ': "' + q + '" -> ' + got + ' (want ' + want + ')'); }
+  o.phr = { n: ALL.length + KIND.length, tried: ALL.length * 6 + KIND.length, miss: miss.slice(0, 12), nmiss: miss.length };
+  o.intents = { n: T.INTENTS.length, common: T.INTENTS.filter((x) => !x.kinds).length, perKind: ['scanner', 'bot', 'mind', 'builder', 'keeper', 'champion'].map((k) => T.INTENTS.filter((x) => !x.kinds || x.kinds.indexOf(k) >= 0).length) };
+  // ---- grounding: every person, many questions, sample data and real-looking data, with a running memory
+  const QS = ALL.map((x) => x[0]).filter(Boolean).concat(KIND.map((x) => x[1]), ['another', 'tell me more', 'why?', 'more', 'and?']);
+  let asked = 0, ung = [], empty = 0, badFollow = [], fewFollow = 0, noSrc = 0;
+  for (const I of [{}, REAL]) for (const p of R.people.concat([C.resolve(R, 'villager:hestia'), C.resolve(R, 'keeper:sparta')])) {
+    const ff = C.buildFacts(p, I, now); let mem = { prevQ: 'what about 12345?' };
+    const corp = T.corpus(p, ff, ['what about 12345?']);
+    for (const q of QS) {
+      const a = T.answer(p, ff, q, mem, env); mem = a.mem; asked++;
+      const u = T.ungrounded(a.text, corp + ' ' + q);
+      if (u.length) ung.push(p.id + ' | ' + q + ' | ' + u.join(',') + ' | ' + a.text.slice(0, 120));
+      if (!a.text || a.text.length < 4) empty++;
+      if (a.followups.length < 2 || a.followups.length > 3) fewFollow++;
+      for (const fu of a.followups) if (fu !== 'Leave a request' && T.intentOf(fu, p, mem).id === 'fallback') badFollow.push(p.kind + ':' + a.intent + ':' + fu);
+      if (!Array.isArray(a.sources)) noSrc++;
+    }
+    const su = T.standupLine(p, ff), ug = T.ungrounded(su, corp); if (ug.length) ung.push(p.id + ' | standup | ' + ug.join(','));
+    const gr = T.greeting(p, ff, { lastQ: 'what about 12345?' }, env), ug2 = T.ungrounded(gr, corp); if (ug2.length) ung.push(p.id + ' | greeting | ' + ug2.join(','));
+  }
+  o.ground = { asked, ung: ung.slice(0, 8), nung: ung.length, empty, fewFollow, badFollow: [...new Set(badFollow)].slice(0, 8), noSrc };
+  o.ungroundedWorks = [T.ungrounded('I made $9,999 and 3.5R on 2026-11-10', 'net $1,234 on 2026-11-10'), T.ungrounded('net $1,234.00 today', 'net $1,234 today'), T.ungrounded('no digits here', '')];
+  // ---- answers: content, refusals, memory, temperament
+  const A = (p, ff, q, mem) => T.answer(p, ff, q, mem || null, env);
+  const fl1 = f['bot:lit'], fc = f['scanner:chrysos'];
+  o.ans = {
+    doing: A(lit, fl1, 'what are you doing').text, last: A(lit, fl1, 'show me your last result').text, dd: A(lit, fl1, 'how much drawdown is left').text, money: A(lit, fl1, 'how much money').text,
+    found: A(chrys, fc, 'what did you find').text, top: A(chrys, fc, 'what is your top pick').text, src: A(chrys, fc, 'what did you find').sources,
+    stuckNo: A(lit, fl1, 'are you stuck').text, stuckYes: A(C.resolve(R, 'bot:atlas'), f['bot:atlas'], 'are you stuck').text, fail: A(C.resolve(R, 'job:cronos'), f['job:cronos'], 'why did it fail').text,
+    sample: A(C.resolve(R, 'scanner:sibyl'), f['scanner:sibyl'], 'what did you find').text, sure: A(C.resolve(R, 'scanner:sibyl'), f['scanner:sibyl'], 'how sure are you').text,
+    stale: A(C.resolve(R, 'scanner:oikos'), f['scanner:oikos'], 'what are you doing').text, snap: A(ch, fchSnap, 'what did you find').text,
+    order: A(lit, fl1, 'buy it now').text, secret: A(lit, fl1, 'what is your api key').text, forecast: A(lit, fl1, 'will the market go up tomorrow').text, doit: A(lit, fl1, 'fix the bug'), need: A(lit, fl1, 'what do you need from me').actions,
+    open: A(chrys, fc, 'open your work').actions, fallback: A(lit, fl1, 'what is the weather in athens'), position: A(lit, fl1, 'are you in a trade').text, verdict: A(fl, ffl, 'why were you rejected').text, old: A(fl, ffl, 'how did the earlier years go').text,
+    team: A(chrys, fc, 'who do you work with').text, name: A(mind, f.mind, 'what does your name mean').text, hour: [T.answer(lit, fl1, 'hi', null, { ...env, hour: 9 }).text.slice(0, 13), T.answer(lit, fl1, 'hi', null, { ...env, hour: 20 }).text.slice(0, 13), T.greeting(lit, fl1, { lastQ: 'how much drawdown is left' }, { ...env, hour: 15, ownerName: 'Alex' })],
+  };
+  let m = null; const seq = [];
+  for (const q of ['give me a number', 'another', 'another', 'say that again', 'what did you learn', 'tell me more', 'why?', 'do you remember me']) { const a = T.answer(lit, fl1, q, m, env); m = a.mem; seq.push([a.intent, a.text]); }
+  o.mem = { seq: seq.map((x) => x[0]), distinct: new Set(seq.slice(0, 3).map((x) => x[1])).size, repeat: seq[3][1] === seq[2][1], turns: m.turns, lastQ: m.lastQ, owner: T.answer(lit, fl1, 'do you remember me', { prevQ: 'how much drawdown is left' }, env).text };
+  let m2 = null, run = []; for (let i = 0; i < 12; i++) { const a = T.answer(lit, fl1, i ? 'another' : 'give me a number', m2, env); m2 = a.mem; run.push(a.text); }
+  o.exhaust = [new Set(run).size <= fl1.numbers.length + 1, /That is all I have on that/.test(run[run.length - 1])];
+  const nums = (s) => (s.match(/\d+(?:[.,]\d+)*/g) || []).join(' ');
+  const temper = ['calm', 'blunt', 'curious', 'wry'].map((tp) => ({ ...lit, temperament: tp }));
+  o.temper = { same: ['what are you doing', 'show me your last result', 'give me a number', 'how much money', 'good news first', 'how much drawdown is left'].every((q) => new Set(temper.map((p) => nums(A(p, fl1, q).text))).size === 1),
+    differ: new Set(temper.map((p) => A(p, fl1, 'thanks').text)).size, differ2: new Set(temper.map((p) => A(p, fl1, 'good news first').text)).size, refusal: new Set(temper.map((p) => A(p, fl1, 'buy it now').text)).size };
+  // ---- stand-up, round table, debate
+  const rows = R.people.map((p) => ({ person: p, facts: C.buildFacts(p, REAL, now) }));
+  const su = T.standup(rows);
+  o.standup = { n: su.lines.length, shape: su.lines.every((l) => /^Yesterday: .+ Today: .+ Blocked: .+/.test(l.line)), blocked: su.blocked.map((b) => b.id).filter((x) => ['bot:atlas', 'job:cronos', 'scanner:arbiter'].indexOf(x) >= 0).sort(), summary: su.summary.slice(0, 9), none: T.standup(rows.filter((r) => !r.facts.blocked)).summary };
+  const rt = T.roundTable('How did yesterday go?', rows, env), rt2 = T.roundTable('what is the weather', rows, env), rt3 = T.roundTable('what are your rules', rows, env);
+  o.table = { n: rt.length, all: rt.length === rows.length, none: rt2.length, bots: rt3.filter((x) => !x.empty).map((x) => x.id).sort(), grounded: rt.every((x) => !T.ungrounded(x.text, T.corpus(C.resolve(R, x.id), rows.find((r) => r.person.id === x.id).facts)).length) };
+  const two = R.people.filter((p) => p.kind === 'champion' && !p.fallen), dA = two[0], dB = fl, fA = C.buildFacts(dA, REAL, now), fB = C.buildFacts(dB, REAL, now);
+  const db = T.debate(dA, fA, dB, fB, 'Who makes more money?', env), db2 = T.debate(chrys, fc, lit, fl1, 'What could go wrong?', env);
+  const corpAB = T.corpus(dA, fA) + ' ' + T.corpus(dB, fB);
+  o.debate = { turns: db.turns.map((x) => x.id === dA.id ? 'a' : 'b').join(''), shared: db.shared.length, grounded: !db.turns.some((x) => T.ungrounded(x.text, corpAB).length) && !T.ungrounded(db.summary, corpAB).length, neutral: /^Neutral summary\./.test(db.summary) && /not a forecast/.test(db.summary) && !/wins|winner|better than/.test(db.summary),
+    names: db.summary.indexOf(dA.name) >= 0 && db.summary.indexOf(dB.name) >= 0, apart: /measure different things/.test(db2.summary), apartTurns: db2.turns.length, admits: /did not hold|rejected by the rule/.test(db.turns[5].text) };
+  // ---- the optional model bridge
+  const st = (v) => ({ getItem: () => (v == null ? null : JSON.stringify(v)) });
+  const conn = B.connection(st({ on: true, provider: 'groq', keys: { groq: ' gsk_test ' } }));
+  o.brain = { off: [B.connection(st(null)), B.connection(st({ on: false, provider: 'groq', keys: { groq: 'k' } })), B.connection(st({ on: true, provider: 'groq', keys: {} })), B.connection(st({ on: true, provider: 'nope', keys: { nope: 'k' } })), B.connection({ getItem: () => '{bad' })],
+    on: [conn.provider, conn.name, conn.key, conn.model], model: B.connection(st({ on: true, provider: 'anthropic', keys: { anthropic: 'k' }, models: { anthropic: 'my-model' } })).model };
+  const wires = ['groq', 'gemini', 'openrouter', 'anthropic'].map((p) => B.wire({ provider: p, key: 'KEY', model: 'm' }, 'SYS', [{ role: 'user', content: 'q' }]));
+  o.wire = [wires[0].headers.Authorization === 'Bearer KEY' && wires[0].body.messages[0].role === 'system', /generateContent$/.test(wires[1].url) && wires[1].headers['x-goog-api-key'] === 'KEY', wires[2].headers['X-Title'] === 'Olympus people', wires[3].headers['x-api-key'] === 'KEY' && wires[3].body.system === 'SYS' && wires[3].body.max_tokens === 300];
+  o.parse = [B.parse('groq', { choices: [{ message: { content: ' hi ' } }] }), B.parse('anthropic', { content: [{ type: 'text', text: 'a' }, { type: 'tool_use' }] }), B.parse('anthropic', { stop_reason: 'refusal', content: [{ type: 'text', text: 'a' }] }), B.parse('gemini', { candidates: [{ content: { parts: [{ text: 'g' }, { text: 'x', thought: true }] } }] }), B.parse('groq', null)];
+  let sent = null;
+  o.model = [await B.askModel('SYS', [{ role: 'assistant', content: 'skip' }, { role: 'user', content: 'a' }, { role: 'assistant', content: 'b' }], 'question', { connection: conn, fetch: async (u, init) => { sent = { u, init }; return { ok: true, json: async () => ({ choices: [{ message: { content: 'An <b>answer</b>.' } }] }) }; } }),
+    await B.askModel('SYS', [], 'q', { connection: conn, fetch: async () => ({ ok: false }) }), await B.askModel('SYS', [], 'q', { connection: conn, fetch: async () => { throw new Error('net'); } }), await B.askModel('SYS', [], 'q', { connection: null, fetch: async () => { throw new Error('must not be called'); } })];
+  const body = JSON.parse(sent.init.body);
+  o.sent = [sent.u.indexOf('api.groq.com') > 0, sent.init.method, body.messages.map((x) => x.role).join(','), body.messages[body.messages.length - 1].content];
+  const ctx = T.brainContext(lit, fl1);
+  o.ctx = [/never invent a number/.test(ctx), /cannot place orders/.test(ctx), ctx.indexOf('Drawdown left $1,420 of $2,000 max loss') > 0, /SAMPLE DATA, NOT REAL/.test(T.brainContext(C.resolve(R, 'scanner:sibyl'), f['scanner:sibyl'])), ctx.length <= 5000];
+  console.log(JSON.stringify(o));
+})().catch((e) => { console.error(e && e.stack ? e.stack : e); process.exit(1); });
+"""
+
+API_HARNESS = r"""
+const fs = require('fs'), path = require('path'), url = require('url');
+const [, , TMP, WEB] = process.argv;
+const mem = new Map(); let broken = false, posts = [];
+globalThis.localStorage = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => { if (broken) throw new Error('quota'); mem.set(k, String(v)); }, removeItem: (k) => mem.delete(k) };
+const events = [];
+globalThis.window = { dispatchEvent: (e) => { events.push([e.type, e.detail]); return true; } };
+const root = url.pathToFileURL(TMP + path.sep).href;
+let modelReply = 'I only have what my file says: Drawdown left $1,420 of $2,000 max loss.';
+globalThis.fetch = async (u, init) => {
+  if (init && init.method === 'POST') { posts.push(u); return { ok: true, json: async () => ({ choices: [{ message: { content: modelReply } }] }) }; }
+  const rel = String(u).replace(root, '').split('?')[0], f = rel === 'home.json' ? null : path.join(WEB, rel);
+  if (rel === 'home.json') return { ok: true, json: async () => ({ t: Math.round(Date.now() / 1000) - 60, accounts: [{ id: 'mffu50k_eval', name: 'Zlarior 50K', conn: { connected: true }, eval: { room: 1420, mll: 2000 }, pnl: { today: 312 } }] }) };
+  try { const j = JSON.parse(fs.readFileSync(f, 'utf8')); return { ok: true, json: async () => j }; } catch (_) { return { ok: false, json: async () => null }; }
+};
+(async () => {
+  const P = (await import(path.join(TMP, 'olympus', 'people.mjs'))).default, o = {};
+  o.global = globalThis.window.OLYMPUS_PEOPLE === P;
+  o.api = ['ready', 'list', 'get', 'portrait', 'facts', 'ask', 'open', 'standup', 'request', 'requests', 'exportRequests', 'speak', 'me'].filter((k) => typeof P[k] !== 'function');
+  o.before = [P.list().length > 0, P.get('bot:lit').name];
+  await P.ready();
+  o.list = [P.list().length, P.list('scanner').length, P.list({ kind: 'villager' }).length > 40, P.list({ all: true }).length > P.list().length, P.get('lit').id, P.get('keeper:sparta').kind, P.get('nonsense')];
+  const f = await P.facts('bot:lit');
+  o.facts = [f.status, f.sample, f.doing, Object.keys(f).filter((k) => ['status', 'doing', 'last', 'learned', 'numbers', 'asof', 'sample'].indexOf(k) >= 0).length];
+  o.sample = [(await P.facts('scanner:chrysos')).sample, (await P.facts('nonsense')).status];
+  const a = await P.ask('bot:lit', 'how much drawdown is left');
+  o.ask = [a.text, a.via, a.followups.length, Array.isArray(a.sources), 'mem' in a];
+  const a2 = await P.ask('bot:lit', 'another one?'), a3 = await P.ask('nonsense', 'hi');
+  o.ask2 = [typeof a2.text, a3.intent];
+  o.kept = JSON.parse(mem.get('olympus.people.mem.v1'))['bot:lit'].q;
+  // the owner's own model: off -> nothing is posted; on -> an open question goes there; an invented number is dropped
+  const open1 = await P.ask('bot:lit', 'what is the weather in athens');
+  o.modelOff = [open1.via, open1.intent, posts.length, P.connected()];
+  mem.set('jarvis.smart', JSON.stringify({ on: true, provider: 'groq', keys: { groq: 'gsk_x' } }));
+  const open2 = await P.ask('bot:lit', 'what is the weather in athens');
+  o.modelOn = [open2.via, open2.text, posts.length, open2.sources[open2.sources.length - 1], P.connected().name];
+  modelReply = 'You made $99,999 today.';
+  const open3 = await P.ask('bot:lit', 'tell me about football');
+  o.modelLie = [open3.via, /don.t have that/i.test(open3.text), posts.length];
+  const known = await P.ask('bot:lit', 'what are you doing');
+  o.modelNotForKnown = [known.via, posts.length];
+  const smartAfter = mem.get('jarvis.smart');
+  o.keyUntouched = smartAfter === JSON.stringify({ on: true, provider: 'groq', keys: { groq: 'gsk_x' } });
+  mem.delete('jarvis.smart');
+  // stand-up, round table, debate
+  await P.warm();
+  const su = P.standup(['bot:lit', 'scanner:chrysos']), su2 = await P.standupAsync();
+  o.standup = [su.length, su[0].id, /^Yesterday: /.test(su[0].line), su2.lines.length === P.list().length, typeof su2.summary];
+  const rt = await P.roundTable('Are you stuck?', ['bot:lit', 'mind']);
+  o.table = [rt.length, rt[0].name];
+  const two = P.list('champion'), db = await P.debate(two[0].id, two[1].id, 'Who makes more money?');
+  o.debate = [db.turns.length, /^Neutral summary/.test(db.summary), await P.debate('nonsense', 'bot:lit', 'x')];
+  // requests
+  o.req0 = [P.requests().length, P.exportRequests()];
+  const r1 = P.request('bot:lit', '  Please show the stop distance on the card <b>  '), r2 = P.request('lit', 'Second note'), r3 = P.request('scanner:sibyl', 'Check the weather picks'), bad = [P.request('nonsense', 'x'), P.request('bot:lit', '   ')];
+  const stored = JSON.parse(mem.get('olympus.requests.v1'));
+  o.req = [P.requests().length, r1.id, r1.text, /^\d{4}-\d{2}-\d{2}T/.test(r1.time), stored.length, Object.keys(stored[0]).sort().join(','), bad, r2.id];
+  const ex = P.exportRequests();
+  o.export = [ex.indexOf('For Phoibos (bot:lit') > 0, ex.indexOf('For Manto (scanner:sibyl') > 0, ex.indexOf('- [') > 0 && ex.indexOf('Second note') > 0, ex.split('\nFor ').length - 1, /^Requests from the owner/.test(ex)];
+  o.reqEvents = events.filter((e) => e[0] === 'olympus:people:request').length;
+  o.reqRemove = [P.removeRequest(r1.rid).length, P.requests().map((r) => r.text)];
+  broken = true; o.reqBroken = P.request('bot:lit', 'no room'); broken = false;
+  mem.set('olympus.requests.v1', '{not json'); o.reqJunk = P.requests().length; mem.set('olympus.requests.v1', JSON.stringify([{ id: 'bot:lit', text: 'ok', time: 'x' }, { nope: 1 }, 'x'])); o.reqJunk2 = P.requests().length;
+  P.clearRequests(); o.reqClear = P.requests().length;
+  // me
+  o.me0 = [P.me().id, P.me().name, P.me().made, P.me().spec.accessory];
+  const me = P.setMe({ name: '  Alex <i> ', look: { skin: '#7d5233', hairStyle: 'bun', evil: 'x', face: { glasses: true, eyes: 'wide', onload: 'x' }, height: 9 } });
+  const kept = JSON.parse(mem.get('olympus.me.v1'));
+  o.me = [me.name, me.made, me.spec.skin, me.spec.hairStyle, me.spec.face.glasses, me.spec.face.eyes, me.spec.height, Object.keys(kept.look).sort().join(','), Object.keys(kept.look.face).sort().join(','), P.get('me').name];
+  o.spec = [JSON.stringify(P.spec('bot:lit')) === JSON.stringify(P.spec('bot:lit')), P.spec('bot:lit').accessory, P.spec('bot:lit').mood, P.spec('me').skin, /^<svg /.test(P.portraitText('bot:lit', 128)), P.portraitText('bot:lit', 128) === P.portraitText('bot:lit', 128)];
+  // a scene adds what it knows
+  P.provide('keeper:sparta', { doing: 'Sparta has 14 houses.', numbers: [{ label: 'Houses', text: '14' }], source: 'hellas/world.json' });
+  const sp = await P.ask('keeper:sparta', 'what are you doing'), sp2 = await P.ask('keeper:sparta', 'give me a number');
+  o.scene = [sp.text, sp2.text, sp.sources[0]];
+  o.posted = posts.length;
+  console.log(JSON.stringify(o));
+})().catch((e) => { console.error(e && e.stack ? e.stack : e); process.exit(1); });
+"""
+
+THREE_HARNESS = r"""
+const fs = require('fs'), path = require('path');
+const [, , TMP, WEB] = process.argv;
+(async () => {
+  const THREE = await import(path.join(TMP, 'three.mjs')), P3 = await import(path.join(TMP, 'olympus', 'people3d.mjs')), C = await import(path.join(TMP, 'olympus', 'people-core.mjs'));
+  const R = C.normRoster(JSON.parse(fs.readFileSync(path.join(WEB, 'olympus', 'people.json'), 'utf8'))), o = { maxHigh: 0, maxLite: 0, maxMeshes: 0, mats: new Set(), n: 0, bad: [] };
+  for (const p of R.people.concat(R.villagers)) for (const mood of ['calm', 'proud', 'sheepish', 'worried']) {
+    const s = C.spec(p, { mood }), f = P3.figure(THREE, s, {}), l = P3.figure(THREE, s, { lite: true }), st = P3.figure(THREE, s, { seated: true });
+    let meshes = 0; f.traverse((x) => { if (x.isMesh) { meshes++; o.mats.add(x.material.uuid); } });
+    o.maxHigh = Math.max(o.maxHigh, f.userData.triangles, st.userData.triangles); o.maxLite = Math.max(o.maxLite, l.userData.triangles); o.maxMeshes = Math.max(o.maxMeshes, meshes); o.n++;
+    for (const n of P3.POSE_NAMES) { f.userData.pose(n); f.userData.tick(0.016, 1.2); if (!isFinite(f.userData.parts.armR.rotation.z)) o.bad.push(n); }
+    f.userData.dispose(); l.userData.dispose(); st.userData.dispose();
+  }
+  o.mats = o.mats.size;
+  const s0 = P3.spec('bot:lit'), f = P3.figure(THREE, s0, {});
+  o.spec = [JSON.stringify(P3.spec('bot:lit')) === JSON.stringify(s0), ['skin', 'hair', 'hairStyle', 'outfit', 'accent', 'accessory', 'height', 'build', 'face', 'mood'].every((k) => k in s0), ['eyes', 'brows', 'mouth'].every((k) => k in s0.face), s0.accessory, P3.spec(s0) === s0, P3.spec(s0, { mood: 'proud' }).mood];
+  o.poses = P3.POSE_NAMES;
+  f.userData.pose('wave'); const up = f.userData.parts.armR.rotation.z; f.userData.pose('idle'); const down = f.userData.parts.armR.rotation.z; f.userData.pose('slump'); const slump = f.userData.parts.head.rotation.x; f.userData.pose('cheer'); const cheer = [f.userData.parts.armL.rotation.z, f.userData.parts.armR.rotation.z];
+  f.userData.pose('idle'); f.userData.lookAt(new THREE.Vector3(3, 0.77, 3)); const yaw = f.userData.parts.head.rotation.y; f.userData.lookAt(new THREE.Vector3(-3, 0.77, 3)); const yaw2 = f.userData.parts.head.rotation.y; f.userData.pose('nope');
+  o.pose = [up > 2, Math.abs(down) < 0.4, slump > 0.3, cheer[0] < -2 && cheer[1] > 2, yaw > 0.5, yaw2 < -0.5, typeof f.userData.tick, f.userData.height > 0.8 && f.userData.height < 1.3];
+  const box = new THREE.Box3().setFromObject(f); o.box = [Math.round(box.min.y * 100) / 100, box.max.y > 0.9 && box.max.y < 1.25];
+  const specs = R.people.map((p) => C.spec(p)), crowd = P3.figureInstanced(THREE, specs, { seated: true }), liteCrowd = P3.figureInstanced(THREE, specs, { lite: true });
+  crowd.userData.place(3, 2, 0, -1, 0.5, 1.5); crowd.userData.setActive(3, true); crowd.userData.tick(1.3);
+  const ray = new THREE.Raycaster(new THREE.Vector3(2, 0.9, 5), new THREE.Vector3(0, 0, -1)), miss = new THREE.Raycaster(new THREE.Vector3(40, 0.9, 5), new THREE.Vector3(0, 0, -1));
+  let im = 0; crowd.traverse((x) => { if (x.isInstancedMesh) im++; });
+  o.crowd = [crowd.userData.count, crowd.userData.drawCalls, im, crowd.userData.pick(ray), crowd.userData.pick(miss), crowd.userData.headWorld(3).y > 1, liteCrowd.userData.triangles < crowd.userData.triangles, crowd.userData.triangles];
+  crowd.userData.dispose(); liteCrowd.userData.dispose();
+  o.empty = P3.figureInstanced(THREE, [], {}).userData.count;
+  console.log(JSON.stringify(o));
+})().catch((e) => { console.error(e && e.stack ? e.stack : e); process.exit(1); });
+"""
+
+
+def stage(tmp, with_three=False):
+    """The kit's modules as .mjs in tmp/olympus (node treats the site's .js as CommonJS), imports renamed to match."""
+    d = os.path.join(tmp, "olympus")
+    os.makedirs(d, exist_ok=True)
+    for f in ("people.js", "people-core.js", "people-talk.js", "people-data.js", "people-brain.js", "people3d.js"):
+        src = AK.read(os.path.join(OLY, f))
+        for g in ("people-core", "people-talk", "people-data", "people-brain"):
+            src = src.replace(f"./{g}.js", f"./{g}.mjs")
+        with open(os.path.join(d, f.replace(".js", ".mjs")), "w", encoding="utf-8") as fh:
+            fh.write(src)
+    if with_three:
+        shutil.copy(os.path.join(AK.WEB, "jarvis", "three.module.min.js"), os.path.join(tmp, "three.mjs"))
+
+
+def run(harness, *args, with_three=False):
+    exe = shutil.which("node")
+    if not exe:
+        return None
+    tmp = tempfile.mkdtemp(prefix="people-")
+    try:
+        stage(tmp, with_three)
+        h = os.path.join(tmp, "harness.cjs")
+        with open(h, "w", encoding="utf-8") as fh:
+            fh.write(harness)
+        r = subprocess.run([exe, h, tmp, AK.WEB, *map(str, args)], capture_output=True, text=True, timeout=300)
+        if r.returncode:
+            print(r.stderr[-2500:])
+            return {"_error": r.stderr[-900:]}
+        return json.loads(r.stdout)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def test_core():
+    o = run(HARNESS, os.path.join(AK.WEB, "ergasterion", "queue.json"))
+    if o is None:
+        check("b. node is not installed: the kit's node tests are skipped", True)
+        return
+    check("b. no error in the harness", "_error" not in o, o.get("_error"))
+    if "_error" in o:
+        return
+    check("a. a missing or broken people.json gives the built-in cast (never blank); duplicate ids and junk rows are dropped", o["fixture"] == [True, 14, 1], o["fixture"])
+    check("a. the seed of every person is the same number in Python and in the browser", o["seeds"] is True)
+    r = o["resolve"]
+    check("a. get(id): the exact id, the bare name, worker: / station: ids, any case, a branch name; any villager:<app> and keeper:<place> gets a person; nonsense gives null",
+          r[:6] == ["scanner:chrysos", "scanner:chrysos", "bot:lit", "mind", "job:prometheus", "bot:kalshi"] and str(r[6]).startswith("builder:") and r[7:12] == ["villager:hestia", "villager:not-an-app", "keeper:sparta", "keeper:market", "champion:zzz"] and r[12:] == [None, None, None]
+          and o["made"] == [True, True, True], (r, o["made"]))
+    check("a. list(filter): by kind, by object, by scene", o["filter"][0] == 5 and o["filter"][1] == 4 and o["filter"][2] >= 2 and o["filter"][3] is True, o["filter"])
+    check(f"b. portraits are deterministic (the same SVG every time) and {o['distinct']} of {o['n']} people look different from everyone else", o["det"] is True and o["distinct"] == o["n"], (o["distinct"], o["n"]))
+    check("b. recognisably different: at least 5 skin tones, 6 hair styles, 6 outfits, 5 hair colours across the roster", o["variety"][0] >= 5 and o["variety"][1] >= 6 and o["variety"][2] >= 6 and o["variety"][3] >= 5, o["variety"])
+    check("b. one accessory by kind: laurel (champions), helmet (bots), hammer (builders), coin pouch (scanners), the owl (the Mind), a scroll (the scribe)",
+          o["acc"] == {"champion": True, "bot": True, "builder": True, "scanner": True, "owl": "owl", "scribe": "scroll"}, o["acc"])
+    check("b. the SVG is safe and small: no script / image / filter / link / style / handlers, viewBox 0 0 100 100 at the asked size (44 and 160), under 9 KB; four moods draw four faces",
+          o["safe"] is True and o["moods"] == 4 and o["size"] == [True, True], (o["safe"], o["moods"], o["size"]))
+    check("b. the owner's own choices replace the seeded ones (skin, hair, glasses); an unknown mood falls back to calm", o["over"] == ["#7d5233", True, "calm"], o["over"])
+    f = o["facts"]
+    check("e. facts() has the contract's shape: status, doing, last, learned, numbers, asof, sample (+ sources, mood, metrics)", all(k in f["shape"].split(",") for k in ("status", "doing", "last", "learned", "numbers", "asof", "sample", "sources", "mood")) and f["asofIso"], f["shape"])
+    check("e. a scanner from its own file: working, real, top pick with its score, the estimate labelled an estimate, proud",
+          f["chrysos"][0] == "working" and f["chrysos"][1] is False and f["chrysos"][2] == "money/chrysos.json" and f["chrysos"][3] == ["Picks on the table=2", "Estimate per month=$453 (an estimate, not a promise)", "Top pick=Next buy: Builder 50K, about $5,439 (an estimate)", "Its score=89 of 100"]
+          and f["chrysos"][4] == "proud" and "91%" in f["chrysos"][5], f["chrysos"])
+    check("e. a scanner from the index: its pick with the end date; a failed scan is failed + blocked + sheepish; an old file is stale and says how to refresh",
+          f["mercury"] == ["working", "Sale on the 50K plan: about $28 (an estimate), risk low, ends 2026-11-30", "money/index.json"] and f["arbiter"] == ["failed", "My last scan failed.", "sheepish"] and f["oikos"][0] == "stale" and "RUN_MONEY.bat" in f["oikos"][1], (f["mercury"], f["arbiter"], f["oikos"]))
+    check("e. no file at all: labelled SAMPLE (status sample, sample true), blocked says which file is missing, 'not real' in the note", f["sibyl"][:3] == ["sample", True, True] and "money/sibyl.json is not published" in f["sibyl"][3] and "not real" in f["sibyl"][4], f["sibyl"])
+    check("e. LIT: 'Drawdown left $1,420 of $2,000 max loss', today, week, target, and the last trade with its R: +$312 (+0.73R)",
+          f["lit"][0] == "working" and f["lit"][1] == "Paper account Zlarior 50K: +$312 today. Drawdown left $1,420 of $2,000 max loss." and "Drawdown=Drawdown left $1,420 of $2,000 max loss" in f["lit"][2] and "Last trade=+$312 (+0.73R) on 2026-11-10" in f["lit"][2]
+          and "Trade on 2026-11-06, short: -$437 (-1.03R)" in f["lit"][3] and f["lit"][4] == "proud", f["lit"])
+    check("e. ATLAS not connected: stale, blocked, worried; BLITZ paused: idle and says so", f["atlas"] == ["stale", "I am not connected right now (NinjaTrader or the PC is off).", "worried"] and f["blitz"][0] == "idle" and "I am paused" in f["blitz"][1], (f["atlas"], f["blitz"]))
+    check("e. the Kalshi bot: cents kept (+$2.40), its trades, and what it learned over 1836 paper bets (-$81.77 after fees)",
+          f["kalshi"][0] == "working" and f["kalshi"][1] == "Running on paper. Today +$2.40." and f["kalshi"][2] == ["Rain in New York +$1.80", "INX-RANGE -$0.60"] and "1836 settled paper bets my total is -$81.77" in f["kalshi"][3] and "$55.81" in f["kalshi"][4], f["kalshi"])
+    check("e. the Mind from the real queue.json: ideas tested, notes; Prometheus says 'no real margin' and is sheepish about it; Hephaestus counts its dials",
+          f["mind"][1].isdigit() and f["mind"][2] is True and f["prom"][0] == "idle" and "3 of 480 candidates beat live on both halves." in f["prom"][1] and f["prom"][2] == "sheepish" and "no real margin" in f["prom"][3] and f["heph"] == ["idle", "2"], (f["mind"], f["prom"], f["heph"]))
+    check("e. Cronos: a failed job makes it failed, blocked names the job, sheepish; the scribe reads the real task queue",
+          f["cron"][0] == "failed" and f["cron"][1] == "I run 3 scheduled jobs: 2 fine, 1 failed." and f["cron"][2] == "Failed: mind." and f["cron"][3] == "sheepish" and f["queue"][1] is True and f["queue"][2] >= 4, (f["cron"], f["queue"]))
+    check("e. a keeper adds up its district's status cards and names the app that needs a look", f["keeper"] == ["stale", True, True, "worried"], f["keeper"])
+    b = f["builder"]
+    check("e. a builder from builders.json: working, its last commit, commit count, branch; a blocked one is worried; without that file: its job description, honestly labelled",
+          b[0] == "working" and b[1] == "ergasterion/builders.json" and b[2] == "Commit: Fix the phone layout of the cards" and "Commits on my branch" in b[3] and "Branch" in b[3] and b[4] == "Waiting for the lead to wire the app" and b[5] == "worried"
+          and b[6] in ("git (snapshot at build time)", "handoff/agents_now.json") and b[7] is True, b)
+    c = f["champ"]
+    check("e. a champion from the live Archive index, or (no file) its snapshot from build time with the same numbers, labelled a snapshot; a rejected run is sheepish and says why",
+          c[0] == "idle" and c[1] == "archive/index.json" and c[2] == "" and c[3] == "proud" and c[4] is True and c[5] == "archive/index.json (snapshot at build time)" and c[6] == "snapshot at build time" and c[7] is True and c[8] == "sheepish" and c[9] is True, c)
+    check("e. a villager reads its app's status card; a made-up keeper has no file and says so (no sample numbers); junk files never throw",
+          f["villager"][0] == "stale" and f["villager"][1] == "+$252" and f["villager"][2] == "idle" and f["made"] == [False, True] and f["junk"][:3] == [True, True, True], (f["villager"], f["made"], f["junk"]))
+    check("e. a scene may add what it knows about its own person (doing, numbers, results, blocked, source, mood)",
+          o["scene"] == ["Sparta has 14 houses and 3 are stale.", "14", "A house was added.", "The east gate has no data.", "hellas/world.json", "worried", True], o["scene"])
+    p = o["phr"]
+    check(f"c. {p['n']} phrasings ({p['tried']} checks across six kinds, typos and synonyms included) land on the right question", p["n"] >= 100 and p["nmiss"] == 0, p["miss"])
+    i = o["intents"]
+    check(f"c. {i['n']} kinds of question; every kind of person understands at least 20 (here {min(i['perKind'])} to {max(i['perKind'])})", i["common"] >= 20 and min(i["perKind"]) >= 40, i)
+    g = o["ground"]
+    check(f"d. GROUNDING: {g['asked']} answers (every person, sample and real-looking data, with memory), every stand-up line and greeting: every number exists in that person's facts",
+          g["asked"] > 5000 and g["nung"] == 0, g["ung"])
+    check("d. no answer is ever empty; every answer offers 2 or 3 follow-up questions and each one is a question the person understands; sources are always a list",
+          g["empty"] == 0 and g["fewFollow"] == 0 and g["badFollow"] == [] and g["noSrc"] == 0, (g["empty"], g["fewFollow"], g["badFollow"]))
+    check("d. the grounding check itself catches an invented number and ignores formatting", o["ungroundedWorks"] == [["9999", "3.5"], [], []], o["ungroundedWorks"])
+    a = o["ans"]
+    check("c. answers quote the facts: doing, the last result, the drawdown sentence, money with its R",
+          a["doing"].startswith("Paper account Zlarior 50K: +$312 today. Drawdown left $1,420 of $2,000 max loss.") and "+$312" in a["last"] and a["dd"].startswith("Drawdown left $1,420 of $2,000 max loss.") and "+$312 (+0.73R)" in a["money"], a)
+    check("c. a scanner lists its picks as estimates with its source file; the top pick comes with its score and detail",
+          "about $5,439 (an estimate)" in a["found"] and a["src"] == ["money/chrysos.json"] and "89 of 100" in a["top"] and "91%" in a["top"], (a["found"], a["top"], a["src"]))
+    check("c. stuck: 'No' when nothing blocks, 'Yes' + the reason when blocked; why did it fail names the failed job",
+          a["stuckNo"].startswith("No.") and "Nothing is blocking me" in a["stuckNo"] and "not connected" in a["stuckYes"] and "Failed: mind." in a["fail"], (a["stuckNo"], a["stuckYes"], a["fail"]))
+    check("c. honest labels in the answers: '(Sample data, not real.)', 'My data is old', 'A snapshot from when the site was built'",
+          a["sample"].endswith("(Sample data, not real.)") and "sample data, not real numbers" in a["sure"] and "(My data is old.)" in a["stale"] and "A snapshot from when the site was built" in a["snap"], (a["sample"], a["sure"], a["stale"], a["snap"]))
+    check("c. refusals in character: 'I can't place orders: paper and suggestions only', no secrets, no forecasts, no changes (offers 'Leave a request')",
+          a["order"].startswith("I can't place orders: paper and suggestions only.") and a["secret"].startswith("I don't have that") and a["forecast"].startswith("I can't know that.") and a["doit"]["text"].startswith("I can't change anything from here")
+          and a["doit"]["actions"] == [{"label": "Leave a request", "request": True}] and a["need"] == [{"label": "Leave a request", "request": True}], (a["order"], a["secret"], a["forecast"], a["doit"]))
+    check("c. 'Open their work' is a deep link to the person's app; an unknown question says 'I don't have that' and is marked open (for the owner's own model)",
+          a["open"] == [{"label": "Open their work", "open": "../chrysos/"}] and a["fallback"]["open"] is True and a["fallback"]["intent"] == "fallback" and "I don't have that" in a["fallback"]["text"] and "I don't have that" in a["position"], (a["open"], a["fallback"]))
+    check("c. a rejected idea explains itself with its own earlier-years numbers; the team answer names colleagues; the name answer gives the meaning",
+          ("did not hold" in a["verdict"] or "rejected by the rule" in a["verdict"]) and a["old"].startswith(("In the five years before", "I have no numbers")) and "Hermolaos" in a["team"] and 'Metis means "wise counsel"' in a["name"], (a["verdict"], a["old"], a["team"]))
+    check("c. the greeting follows the time of day, uses the owner's name and remembers his last question",
+          a["hour"][0] == "Good morning." and a["hour"][1] == "Good evening." and a["hour"][2].startswith("Good afternoon. Alex,") and 'Last time you asked: "how much drawdown is left".' in a["hour"][2], a["hour"])
+    m = o["mem"]
+    check("c. memory: 'another' walks the numbers, 'say that again' repeats, 'tell me more' continues the lessons, 'why?' follows the context, the last question is remembered",
+          m["seq"][:4] == ["number", "number", "number", "repeat"] and m["distinct"] == 3 and m["repeat"] is True and m["seq"][4:6] == ["learned", "learned"] and m["seq"][6] in ("sure", "risk", "failed") and m["turns"] == 8
+          and 'Last time you asked me: "how much drawdown is left".' in m["owner"] and o["exhaust"] == [True, True], (m, o["exhaust"]))
+    t = o["temper"]
+    check("c. the temperament changes WORDING only: the same numbers from calm, blunt, curious and wry; four different ways to say thanks; one refusal for all", t["same"] is True and t["differ"] == 4 and t["differ2"] == 4 and t["refusal"] == 1, t)
+    s = o["standup"]
+    check("d. stand-up: one 'Yesterday / Today / Blocked' line per person, and the blocked list names the ones that are (ATLAS, Cronos, Arbiter)",
+          s["n"] == o["n"] and s["shape"] is True and s["blocked"] == ["bot:atlas", "job:cronos", "scanner:arbiter"] and s["summary"] == "Blocked: " and s["none"].startswith("Nobody is blocked."), s)
+    tb = o["table"]
+    check("d. round table: 'How did yesterday go?' is answered by everyone from their own data (grounded); a question nobody can answer gets nobody; a bot question gets the four bots",
+          tb["all"] is True and tb["none"] == 0 and tb["bots"] == ["bot:atlas", "bot:blitz", "bot:kalshi", "bot:lit"] and tb["grounded"] is True, tb)
+    d = o["debate"]
+    check("d. debate: six turns in turn, shared numbers side by side, every number grounded, the loser admits its weakness, the summary is neutral (names both, no winner, 'not a forecast')",
+          d["turns"] == "ababab" and d["shared"] >= 1 and d["grounded"] is True and d["neutral"] is True and d["names"] is True and d["admits"] is True and d["apart"] is True and d["apartTurns"] == 6, d)
+    br = o["brain"]
+    check("f. the owner's model is used only when Jarvis's smart mode is on with a key (off / no key / unknown provider / junk -> nothing)",
+          br["off"] == [None, None, None, None, None] and br["on"] == ["groq", "Groq", "gsk_test", "openai/gpt-oss-120b"] and br["model"] == "my-model", br)
+    check("f. the four wire formats (Groq, Gemini, OpenRouter, Anthropic) and their replies; markup is stripped; any failure gives '' (the offline answer stays)",
+          o["wire"] == [True, True, True, True] and o["parse"] == ["hi", "a", "", "g", ""] and o["model"] == ["An banswer/b.", "", "", ""], (o["wire"], o["parse"], o["model"]))
+    check("f. what is sent: one POST to the provider, the persona + facts as the system text, the question last; the context says 'never invent a number' and 'cannot place orders'",
+          o["sent"] == [True, "POST", "system,user,assistant,user", "question"] and o["ctx"] == [True, True, True, True, True], (o["sent"], o["ctx"]))
+
+
+def test_api():
+    o = run(API_HARNESS)
+    if o is None:
+        return
+    check("f. no error in the API harness", "_error" not in o, o.get("_error"))
+    if "_error" in o:
+        return
+    check("f. window.OLYMPUS_PEOPLE is the module; every function of the contract is there; safe before ready() (the built-in cast)", o["global"] is True and o["api"] == [] and o["before"] == [True, "Phoibos"], (o["api"], o["before"]))
+    check("f. ready() loads olympus/people.json: list(), list('scanner'), villagers on request, get() with aliases and made-up keepers, null for nonsense",
+          o["list"][0] >= 30 and o["list"][1] == 5 and o["list"][2:4] == [True, True] and o["list"][4:] == ["bot:lit", "keeper", None], o["list"])
+    check("f. facts(id) reads the worker's real file (home.json here) and falls back to a labelled sample when there is none", o["facts"] == ["working", False, "Paper account Zlarior 50K: +$312 today. Drawdown left $1,420 of $2,000 max loss.", 7] and o["sample"] == [True, "idle"], (o["facts"], o["sample"]))
+    check("f. ask(id, text): the offline answer with sources and follow-ups; an unknown person is handled; the last question is kept on this phone only",
+          o["ask"][0].startswith("Drawdown left $1,420 of $2,000 max loss.") and o["ask"][1:] == ["offline", 3, True, False] and o["ask2"] == ["string", "fallback"] and o["kept"] == "another one?", (o["ask"], o["ask2"], o["kept"]))
+    check("f. 'Connect my brain' off: an open question stays offline and NOTHING is posted", o["modelOff"] == ["offline", "fallback", 0, None], o["modelOff"])
+    check("f. 'Connect my brain' on: an open question goes to the owner's own model with the facts, and the answer says so",
+          o["modelOn"][0] == "model" and "Drawdown left $1,420 of $2,000 max loss" in o["modelOn"][1] and o["modelOn"][2] == 1 and o["modelOn"][3] == "your own model (Groq), from my facts" and o["modelOn"][4] == "Groq", o["modelOn"])
+    check("f. a model reply with a number that is not in the facts is thrown away ('I don't have that'); known questions never go to the model; the key is never rewritten",
+          o["modelLie"] == ["offline", True, 2] and o["modelNotForKnown"] == ["offline", 2] and o["keyUntouched"] is True and o["posted"] == 2, (o["modelLie"], o["modelNotForKnown"]))
+    check("f. standup(ids) gives [{id, line}] at once; standupAsync / roundTable / debate work through the API", o["standup"] == [2, "bot:lit", True, True, "string"] and o["table"] == [2, "Phoibos"] and o["debate"] == [6, True, None], (o["standup"], o["table"], o["debate"]))
+    check("f. the request box starts empty", o["req0"] == [0, "Request box: empty."], o["req0"])
+    check("f. request(id, text) saves {id, text, time} in localStorage olympus.requests.v1 (markup stripped, aliases resolved); an unknown person or an empty note saves nothing",
+          o["req"][0] == 3 and o["req"][1] == "bot:lit" and o["req"][2] == "Please show the stop distance on the card b" and o["req"][3] is True and o["req"][4] == 3 and o["req"][5] == "id,name,rid,text,time" and o["req"][6] == [None, None] and o["req"][7] == "bot:lit", o["req"])
+    check("f. exportRequests(): one text block for Claude, grouped per person with name, id and title; an event fires per request",
+          o["export"] == [True, True, True, 2, True] and o["reqEvents"] >= 3, (o["export"], o["reqEvents"]))
+    check("f. remove one, clear all; a full or broken storage never throws", o["reqRemove"] == [2, ["Second note", "Check the weather picks"]] and o["reqBroken"] is None and o["reqJunk"] == 0 and o["reqJunk2"] == 1 and o["reqClear"] == 0,
+          (o["reqRemove"], o["reqBroken"], o["reqJunk"], o["reqJunk2"], o["reqClear"]))
+    check("f. me(): 'You' until the owner makes a character; setMe keeps only known fields (olympus.me.v1), clamps the height, strips markup",
+          o["me0"] == ["me", "You", False, "none"] and o["me"][:6] == ["Alex i", True, "#7d5233", "bun", True, "wide"] and o["me"][6] == 1.15 and o["me"][7] == "face,hairStyle,height,skin" and o["me"][8] == "eyes,glasses" and o["me"][9] == "Alex i", (o["me0"], o["me"]))
+    check("f. spec(id) is deterministic and carries the mood of the data (LIT is up today: proud); portraitText gives the same SVG text for a texture", o["spec"] == [True, "helmet", "proud", "#7d5233", True, True], o["spec"])
+    check("f. provide(id, facts): a scene's own keeper answers from what the scene gave it", o["scene"][0].startswith("Sparta has 14 houses.") and "Houses: 14." in o["scene"][1] and o["scene"][2] == "hellas/world.json", o["scene"])
+
+
+def test_three():
+    o = run(THREE_HARNESS, with_three=True)
+    if o is None:
+        return
+    check("g. no error in the 3D harness", "_error" not in o, o.get("_error"))
+    if "_error" in o:
+        return
+    check(f"g. {o['n']} figures built (everyone, four moods): at most {o['maxMeshes']} meshes and {o['maxHigh']} triangles each ({o['maxLite']} on LITE), one shared material",
+          o["maxMeshes"] <= 14 and o["maxHigh"] <= 900 and o["maxLite"] <= 350 and o["mats"] == 1 and o["bad"] == [], o)
+    check("g. spec(id) is plain data with the contract's fields (skin, hair, hairStyle, outfit, accent, accessory, height, build, face{eyes, brows, mouth}, mood)", o["spec"] == [True, True, True, "helmet", True, "proud"], o["spec"])
+    check("g. poses idle / wave / talk / cheer / slump (+ nod, shrug): the arm goes up to wave, both up to cheer, the head drops to slump; lookAt turns the head; an unknown pose is idle",
+          all(n in o["poses"] for n in ("idle", "wave", "talk", "cheer", "slump")) and o["pose"] == [True, True, True, True, True, True, "function", True], (o["poses"], o["pose"]))
+    check("g. a figure stands on y = 0 and is about one unit tall", abs(o["box"][0]) < 0.03 and o["box"][1] is True, o["box"])
+    c = o["crowd"]
+    check(f"g. the instanced crowd: {c[0]} people in {c[1]} draw calls, a ray picks the right person and misses empty air, LITE is lighter", c[0] >= 30 and c[1] == c[2] and c[1] <= 12 and c[3] == 3 and c[4] == -1 and c[5] is True and c[6] is True and o["empty"] == 0, c)
+
+
+def test_static():
+    js = {f: AK.read(os.path.join(OLY, f)) for f in FILES if f.endswith(".js")}
+    allj = "".join(js.values())
+    bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function") if __import__("re").search(p, allj)]
+    check("h. no markup is ever built from data in the kit (no innerHTML / outerHTML / insertAdjacentHTML / document.write / eval)", not bad, bad)
+    import re
+    web = re.findall(r"https://[a-z0-9.\-]+", allj)
+    check("h. the only web addresses are the four model providers, and only in people-brain.js; the rest of the kit reads this site's JSON and sends nothing",
+          sorted(set(web)) == ["https://api.anthropic.com", "https://api.groq.com", "https://generativelanguage.googleapis.com", "https://openrouter.ai"] and not any("https://" in js[f] for f in js if f != "people-brain.js")
+          and not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|document\.cookie", allj) and "method: 'POST'" not in "".join(v for k, v in js.items() if k != "people-brain.js"), sorted(set(web)))
+    core = re.sub(r"//[^\n]*", "", js["people-core.js"] + js["people-talk.js"])
+    check("h. people-core.js and people-talk.js are pure (no document / window / fetch / localStorage) and Safari 16 safe (no lookbehind, no .at())", not re.search(r"\bdocument\.|\bwindow\.|\bfetch\(|\blocalStorage\b|\(\?<[=!]|\.at\(", core))
+    check("h. storage keys: olympus.requests.v1, olympus.me.v1; the Jarvis key 'jarvis.smart' is only ever read", "'olympus.requests.v1'" in js["people.js"] and "'olympus.me.v1'" in js["people.js"] and "setItem" not in js["people-brain.js"] and "jarvis.smart" not in js["people.js"])
+    css = AK.read(os.path.join(OLY, "people.css"))
+    check("h. the chat sheet: 44 px taps, safe areas, reduced motion, LITE, no neon / glow / techno font; the typing dots never wait longer than 600 ms",
+          css.count("min-height: 44px") + css.count("min-height: 46px") >= 5 and "safe-area-inset-bottom" in css and "prefers-reduced-motion" in css and 'data-oly-lite="1"' in css and not AK.BANNED_LOOK.search(css) and not AK.BANNED_LOOK.search(js["people.js"])
+          and "Math.min(450" in js["people.js"])
+    check("h. the sheet is a dialog (role, aria-modal, labelled), follows the visual viewport (iOS keyboard), has the mic (Web Speech when there), spoken replies off by default, request, open work, share",
+          all(x in js["people.js"] for x in ("'dialog'", "aria-modal", "visualViewport", "webkitSpeechRecognition", "speechSynthesis", "'Leave a request'", "'Open their work'", "navigator.share", "=== '1'")))
+    check("h. the three events of the contract are fired on window", all(e in js["people.js"] for e in ("olympus:people:open", "olympus:people:close", "olympus:people:request")))
+    doc = AK.read(os.path.join(ROOT, "docs", "PERSONA_API.md"))
+    check("h. docs/PERSONA_API.md is the contract this kit implements (the ids, the API names)", all(x in doc for x in ("OLYMPUS_PEOPLE", "olympus.requests.v1", "people3d.js", "figureInstanced")))
+
+
+if __name__ == "__main__":
+    test_roster()
+    test_static()
+    test_core()
+    test_api()
+    test_three()
+    AK.finish()

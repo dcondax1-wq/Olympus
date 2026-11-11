@@ -533,6 +533,43 @@
     "ms": 1000,
     "n": 5
    }
+  },
+  {
+   "id": "nq",
+   "name": "NQ",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The NQ bots, right now: status, drawdown left, last trades",
+   "glyph": "Ν",
+   "ambient": "chimes",
+   "flavour": [
+    "columns",
+    "The bots, right now",
+    "tick"
+   ],
+   "transition": {
+    "kind": "columns",
+    "ms": 1000,
+    "n": 3
+   }
+  },
+  {
+   "id": "symposium",
+   "name": "Symposium",
+   "group": "life",
+   "accent": "#d9b25a",
+   "description": "Meet everyone who works for you, and talk to them",
+   "glyph": "Σ",
+   "ambient": "chimes",
+   "flavour": [
+    "torches",
+    "Take a seat",
+    "tap"
+   ],
+   "transition": {
+    "kind": "curtain",
+    "ms": 900
+   }
   }
  ],
  "pending": [],

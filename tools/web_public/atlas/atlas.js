@@ -4,9 +4,9 @@
   const $ = (s) => document.querySelector(s);
   const rows = (window.OLYMPUS_APPS_LIST || []).filter((a) => a && /^[a-z0-9-]+$/.test(a.id) && /^(trading|money|life)$/.test(a.group));
   const fallback = [
-    { id:'zenith',name:'Zenith',glyph:'Z',colour:'#a855f7',group:'trading',purpose:'NQ bot dashboard',path:'' },
-    { id:'oracle',name:'Oracle',glyph:'Θ',colour:'#7fe9ff',group:'trading',purpose:'Market radar',path:'oracle/' },
-    { id:'cities',name:'Cities',glyph:'◈',colour:'#a68bff',group:'trading',purpose:'Explore the city worlds',path:'cities/' },
+    { id:'zenith',name:'Zenith',glyph:'Z',colour:'#9c6b3c',group:'trading',purpose:'NQ bot dashboard',path:'' },
+    { id:'oracle',name:'Oracle',glyph:'Θ',colour:'#7fa6bd',group:'trading',purpose:'Market radar',path:'oracle/' },
+    { id:'cities',name:'Cities',glyph:'◈',colour:'#c9a06a',group:'trading',purpose:'Explore the city worlds',path:'cities/' },
     { id:'jarvis',name:'Jarvis',glyph:'J',colour:'#e5be83',group:'life',purpose:'Your assistant',path:'jarvis/' }
   ];
   const apps = rows.length ? rows : fallback;

@@ -83,7 +83,7 @@
     const Y = (v) => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
     const up = vs[n - 1] >= vs[0], c1 = up ? '46,229,157' : '255,90,122';
     // the grid: three quiet lines
-    ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(150,160,230,.07)';
+    ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(207,196,178,.08)';
     for (let g = 1; g <= 3; g++) { const y = T + (H - T - B) * g / 4; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(W - R, y); ctx.stroke(); }
     // the drawdown floor: a red band below the line, the line dashed with a glow
     if (floor != null) {
@@ -95,7 +95,7 @@
       ctx.beginPath(); ctx.moveTo(L, fy); ctx.lineTo(W - R, fy); ctx.stroke(); ctx.restore();
     }
     if (tgt != null && tgt <= hi) {
-      const ty = Y(tgt); ctx.save(); ctx.setLineDash([2, 5]); ctx.strokeStyle = 'rgba(46,229,157,.45)'; ctx.lineWidth = 1;
+      const ty = Y(tgt); ctx.save(); ctx.setLineDash([2, 5]); ctx.strokeStyle = 'rgba(200,162,74,.55)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(L, ty); ctx.lineTo(W - R, ty); ctx.stroke(); ctx.restore();
     }
     // the area under the curve, then the curve (smooth), then the bloom pass
@@ -106,7 +106,7 @@
     path(); ctx.lineTo(X(n - 1), H - B); ctx.lineTo(X(0), H - B); ctx.closePath();
     const fill = ctx.createLinearGradient(0, T, 0, H - B); fill.addColorStop(0, `rgba(${c1},.34)`); fill.addColorStop(1, `rgba(${c1},0)`);
     ctx.fillStyle = fill; ctx.fill();
-    const lg = ctx.createLinearGradient(L, 0, W - R, 0); lg.addColorStop(0, '#7b8cff'); lg.addColorStop(1, up ? '#3dffb0' : '#ff6b88');
+    const lg = ctx.createLinearGradient(L, 0, W - R, 0); lg.addColorStop(0, '#9c6b3c'); lg.addColorStop(1, up ? '#a3ae6b' : '#e0795a');
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     if (!lite) { ctx.save(); path(); ctx.strokeStyle = lg; ctx.lineWidth = 6; ctx.globalAlpha = .22; ctx.shadowColor = `rgba(${c1},.9)`; ctx.shadowBlur = 16; ctx.stroke(); ctx.restore(); }
     path(); ctx.strokeStyle = lg; ctx.lineWidth = 2.4; ctx.stroke();
@@ -120,7 +120,7 @@
     if (hover != null) {
       const i = Math.max(0, Math.min(n - 1, Math.round(((hover - L) / (W - L - R)) * (n - 1))));
       hx = X(i); hy = Y(vs[i]);
-      ctx.strokeStyle = 'rgba(210,220,255,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(hx, T); ctx.lineTo(hx, H - B); ctx.stroke();
+      ctx.strokeStyle = 'rgba(243,236,224,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(hx, T); ctx.lineTo(hx, H - B); ctx.stroke();
       ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(hx, hy, 4, 0, 6.3); ctx.fill();
       return { i, p: pts[i], x: hx, y: hy };
     }
@@ -141,10 +141,10 @@
   function html(H) {
     const pills = H.As.map((a) => {
       const st = a.placeholder ? 'off' : a.state;
-      return `<span class="zh-bot st-${st}" style="--c:${esc(a.color || '#8aa0ff')}"><i aria-hidden="true"></i><span><em>${esc(a.name)}</em><b>${a.placeholder ? 'Paper only' : STATE[st] || st}</b></span>`
+      return `<span class="zh-bot st-${st}" style="--c:${esc(a.color || '#c8a24a')}"><i aria-hidden="true"></i><span><em>${esc(a.name)}</em><b>${a.placeholder ? 'Paper only' : STATE[st] || st}</b></span>`
         + `<u class="${cls(a.today)}" data-zn-num="zh-${esc(a.key)}">${a.placeholder ? '' : sUsd(a.today)}</u></span>`;
     }).join('');
-    const tabs = H.withCurve.length > 1 ? `<div class="zh-tabs" role="tablist">${H.withCurve.map((a) => `<button type="button" role="tab" aria-selected="${a.key === ST.sel}" class="${a.key === ST.sel ? 'on' : ''}" data-zh="${esc(a.key)}" style="--c:${esc(a.color || '#8aa0ff')}">${esc(a.name)}</button>`).join('')}</div>` : '';
+    const tabs = H.withCurve.length > 1 ? `<div class="zh-tabs" role="tablist">${H.withCurve.map((a) => `<button type="button" role="tab" aria-selected="${a.key === ST.sel}" class="${a.key === ST.sel ? 'on' : ''}" data-zh="${esc(a.key)}" style="--c:${esc(a.color || '#c8a24a')}">${esc(a.name)}</button>`).join('')}</div>` : '';
     return `<div class="zh-top"><div class="zh-big"><em>Today · all bots</em><b class="${cls(H.today)}" data-zn-num="zh-today">${sUsd(H.today)}</b>
         <small>${H.trades ? H.trades + (H.trades === 1 ? ' trade' : ' trades') + ' closed or open' : 'No trade yet today'}</small></div>
       <div class="zh-next" data-zh-next></div></div>

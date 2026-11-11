@@ -444,6 +444,12 @@ App `ergasterion` in `tools/web_public/ergasterion/` ("the workshop where every 
 (the committed `tools/web_public/ergasterion/queue.json` is the fallback; rebuild it with `python tools/ergasterion_build.py` when QUEUE.md or a write-up changes, `--check` fails when it is stale). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`. The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `E`, ambient `chimes`, flavour `['columns', 'Walk the workshop', 'tap']`, transition `{ kind: 'columns', ms: 1000, n: 5 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files), adds `"ergasterion"` to the `build_web_dashboard.py` app tuple (that copies the folder, `queue.json` included), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and runs `python tools/apps_list_build.py --check`.
 Tests after wiring: `tests.test_ergasterion_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
 
+**ERGASTERION people (2026-11-11):** `index.html` loads the shared kit as an optional module (`../olympus/people.js?v=p1`) and `floor.js` tries `import('../olympus/people3d.js')` for `spec(id)` colours; both may be absent (404 is fine: built-in chat and seeded cartoon look). Person ids used: `scanner:<chrysos|mercury|sibyl|oikos|arbiter>`, `bot:<lit|atlas|blitz|kalshi>`, `mind`, `villager:<prometheus|hephaestus|cronos|queue|dev>`, `builder:<branch without worktree-agent->` (also tried: its first 8 characters). If the People roster spells any of these differently, `kit.get(id)` returns null and Ergasterion quietly uses its own chat for that person: tell the People agent the ids above or change `personId()` / `builderIds()` in `ergasterioncore.js`. The 3D persons are Ergasterion's own instanced version (25 people in 2 batches); `people3d.figure()` is not used because 25 separate figures would break the draw-call budget.
+
+**ERGASTERION Builders' camp (2026-11-11):** the same build line also writes `<site>/ergasterion/builders.json` = `handoff/agents_now.json` joined with git (`git log agora-release..<branch>`: last 8 commits with times, files, folders, merged work). It needs the local agent branches, so run it where they exist (this machine); on a machine without git or the branches every agent is honestly 'job only, no live activity'. The committed `builders.json` is a snapshot of build time: rerun `python tools/ergasterion_build.py` right before publishing so 'working' (a commit in the last 15 minutes) is fresh. `--check` does not compare it (it is git). Keep `handoff/agents_now.json` current: the camp shows at most 10 tents.
+
+**ERGASTERION v2 (2026-11-11), wiring for the lead:** no new row and NO new build line: the existing `python tools/ergasterion_build.py --out <site>/ergasterion/queue.json` now also writes `<site>/ergasterion/lessons.json` next to it (Jarvis: "what did we learn this week" = its `say` sentence, `week`, `top`, `changed`) and reads `<site>/money/<id>.json` asof times when they are there, so run it AFTER the money files are copied into the site. Rebuild the committed pair with `python tools/ergasterion_build.py` when QUEUE.md, a write-up, a research run or `archive/index.json` changes (run it after `tools/archive_build.py`; `--check` covers both files). New page assets are only versions of files that already exist (`ergasterion.js`, `ergasterioncore.js`, `floor.js`, `ergasterion.css`, `?v=a2`): bump the `sw.js` CACHE. Optional, in the lead's files: add `ergasterion/lessons.json` where Jarvis reads app cards; the Archive only understands `?find=<text>` today, so the pipeline lanes link with `?find=open|adopt|rejected|<family>`: a real `?family=` / `?verdict=` parameter in `archive/archive.js` would make those links exact.
+
 # Wiring ARCHIVE (the library of everything we ever tested, 2026-11-10)
 
 App `archive` in `tools/web_public/archive/` (3D marble bookcases via the render core: `archivestage.js`, its own module tag; flat twin without WebGL). Reads `./index.json` (first load about 300 KB: facets, write-ups, the rejected list, datasets, every adopted / open run) and, after the first paint, `./runs-0.json` .. `runs-3.json` (the rejected runs); falls back to `fixture.json` (DEMO). Built OFFLINE by `python tools/archive_build.py` (stdlib; `--check`, `--selftest`) from `research/runs/*.json`, `research/writeups/*.md`, the "Tested and rejected" section of `docs/CLAUDE_REFERENCE.md` and `data/`. Test `tests/test_archive_page.py`.
@@ -507,3 +513,82 @@ Tests after wiring: `tests.test_colosseum_page`, `tests.test_apps_list`, `tests.
 3. `tools/build_web_dashboard.py` app tuple: add `"colosseum"`.  4. `sw.js` OTHER_APPS: `'colosseum/'`.
 5. `olympus/intro-app.js` FLAVOUR: `colosseum: ['torches', 'Enter the arena', 'tap'],`
 6. `jarvis/transitions.js` REGISTRY: `colosseum: { kind: 'columns', ms: 1000, n: 5 },`
+
+# Wiring NQ (the NQ bots, right now, 2026-11-11)
+
+App `nq` in `tools/web_public/nq/` ("the NQ bots, right now": Zlarior / LIT 50K, ATLAS 25K, BLITZ 25K; status with the exact age of the last report, drawdown left, the day's P&L in $ with R, eval progress, the last 10 trades and the rule that closed each, the plan, the backtest facts, the honest banner, the 5-step sheet). 3D: `nqscene.js`, its own module tag (three marble columns, a flame only for a bot that reported in the last 20 minutes; 2D columns without WebGL / in LITE). Reads `../home.json` only (never the 8 MB `data.json`), `./howto.json` and `./fixture.json` (DEMO).
+The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `Ν` (Greek Nu), ambient `chimes`, flavour `['columns', 'The bots, right now', 'tick']`, transition `{ kind: 'columns', ms: 1000, n: 3 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files; dry run checked, `tests.test_apps_list --static` is 14/14 with it applied), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`. Not touched by the agent: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+## Site build lines
+1. `tools/build_web_dashboard.py`: the app tuple gets `"nq"` (the folder is copied whole, `howto.json` rides along). Nothing else: the page reads the build's own `home.json`.
+2. `nq/howto.json` is `docs/NQ_BOT_BACK.md` bundled: after editing that doc run `python tools/nq_howto_build.py` (`--check` exits 1 when stale; `tests.test_nq_page` runs it). Worth one line in the release gate next to the other `--check` builders.
+3. Optional, for a live Jarvis card: the build may write `nq/jarvis.json` from `home.json` (status level + "Last report N ago"); the committed card is a static "open for the live status".
+
+## Root page (Zenith) changes that ride with it (already in the tree, no wiring, but the worker must be bumped)
+- `index.html` now loads `zenith_nq.js?v=1` (after `zenith_pages.js`, before `embed.js`), `zenith_hero.js?v=3`, `zenith_money.js?v=3`, `zenith_agora.css?v=a2`: bump `sw.js` `CACHE` (`le-public-v78` today) so phones take the new `index.html`.
+- New root file `tools/web_public/zenith_nq.js` (the build copies every root file; `sw.js` precaches only SHELL, so nothing to add there).
+
+## PC update kit (no wiring in the site)
+- New owner files: `UPDATE_FROM_ZIP.bat`, `UNDO_UPDATE.bat`, `tools/update_from_zip.py`. Add both `.bat` names to `BATS` in `tests/test_win_scripts.py` (the agent did not edit that shared test; `tests/test_update_from_zip.py` lints them with the same `lint_bat`) and, if wanted, to `scripts/make_shortcuts.ps1`.
+- `docs/CLAUDE_REFERENCE.md` "Infrastructure" and "PC tools" should get one line each (update from zip; `UPDATE.bat` / `engine.autoupdate` need GitHub and no longer work).
+
+## The six rows (what `wire_new_apps.py --apply` writes for NQ)
+1. `jarvis/apps.js` BUILT_INS: `app('nq', 'NQ', 'trading', '#c8a24a', 'The NQ bots, right now: status, drawdown left, last trades', { glyph: 'Ν' }),`
+2. `olympus/olympus.js`: APPS `nq: ['NQ', 'Ν', '#c8a24a'],` and AMBIENT `nq: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"nq"`.  4. `sw.js` OTHER_APPS: `'nq/'`.
+5. `olympus/intro-app.js` FLAVOUR: `nq: ['columns', 'The bots, right now', 'tick'],`
+6. `jarvis/transitions.js` REGISTRY: `nq: { kind: 'columns', ms: 1000, n: 3 },`
+Tests after wiring: `tests.test_nq_page`, `tests.test_zenith_nq`, `tests.test_update_from_zip`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, `tests.test_zenith_shell`, `tests.test_zenith_pages`, `tests.test_zenith_mode`.
+
+# Wiring SYMPOSIUM and the PEOPLE kit (talk to any worker, 2026-11-11)
+
+Two things land together: the shared **people kit** in `tools/web_public/olympus/` (contract: `docs/PERSONA_API.md`) and the app `symposium` in `tools/web_public/symposium/` (the hall where you meet everyone).
+Nothing in `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`, Jarvis, Ergasterion or Cities was touched.
+
+## 1. The roster builder (new, needs ONE line in the site build)
+`tools/people_build.py` (stdlib, `--selftest`, `--check`, `--no-git`) turns every real worker into a named person: the build agents of `handoff/agents_now.json` (+ their git branch when git is there, never required,
+never part of `--check`), the five money scanners, LIT / ATLAS / BLITZ / Kalshi, the Mind, Prometheus / Hephaestus / Cronos / the task queue, one keeper per district of `jarvis/districts.js`, the top adopted runs of
+`archive/index.json` (+ two rejected runs for debates) and one villager per app of `olympus/apps-list.js`. The exact build line (put it AFTER `python tools/archive_build.py` and `python tools/apps_list_build.py`, because it reads their files):
+
+`python tools/people_build.py --out <site>/olympus/people.json`
+
+The committed `tools/web_public/olympus/people.json` is the fallback (rebuild with `python tools/people_build.py` when `agents_now.json`, the Archive or the app list changes; `--check` fails when it is stale).
+Without any `people.json` the kit still shows its built-in cast of 14 (never blank).
+
+## 2. Files for `sw.js`
+- precache (small, needed offline for every page that shows a person): `olympus/people.js`, `olympus/people-core.js`, `olympus/people-talk.js`, `olympus/people-data.js`, `olympus/people-brain.js`, `olympus/people.css`, `olympus/people.json`
+- precache only if the 3D scenes are precached: `olympus/people3d.js`
+- `OTHER_APPS`: `'symposium/'` (its files: `index.html`, `symposium.css`, `symposium.js`, `symposiumcore.js`, `hall.js`, `hallload.js`, `fixture.json`, `icon.svg`, the PNG icons, `manifest.webmanifest`, `jarvis.json`)
+- `olympus/people-lab.html` is a checking page (every portrait and 3D figure); it does not need to be precached.
+- `people.json` changes with the build: serve it network-first (or bump CACHE with the build), like `ergasterion/queue.json`.
+
+## 3. The six rows (what `python tools/wire_new_apps.py --apply` writes for Symposium; the row is already in `tools/new_apps.json`)
+1. `jarvis/apps.js` BUILT_INS: `app('symposium', 'Symposium', 'life', '#d9b25a', 'Meet everyone who works for you, and talk to them', { glyph: 'Σ' }),`
+2. `olympus/olympus.js`: APPS `symposium: ['Symposium', 'Σ', '#d9b25a'],` and AMBIENT `symposium: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"symposium"`.  4. `sw.js` OTHER_APPS: `'symposium/'`.
+5. `olympus/intro-app.js` FLAVOUR: `symposium: ['torches', 'Take a seat', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `symposium: { kind: 'curtain', ms: 900 },`
+Also: `jarvis/districts.js` / `atlas/atlas.js` district lists: add `'symposium'` to **Command** (it is where you talk to your workers); `python tools/make_app_icons.py symposium` if the PNG icons are regenerated.
+
+## 4. How any page or 3D scene uses a person (for the Ergasterion, Hellas, Athens and Colosseum agents)
+- `<script type="module" src="../olympus/people.js?v=p1"></script>` then `if (window.OLYMPUS_PEOPLE) OLYMPUS_PEOPLE.open(id, { anchor, facts })`. The kit loads its own stylesheet.
+- Ids: `scanner:chrysos|mercury|sibyl|oikos|arbiter`, `bot:lit|atlas|blitz|kalshi`, `mind`, `job:prometheus|hephaestus|cronos|queue`, `keeper:market|research|money|command|life`, `builder:<first 8 of the branch>`,
+  `champion:<run-id>`, `villager:<app-id>`. `get()` is forgiving: the bare name (`'chrysos'`, `'lit'`), `worker:<station>` / `station:<station>` (the Ergasterion station ids), a whole branch name, `builder:<agent-name-slug>`.
+  ANY `keeper:<polis-id>` and `villager:<app-id>` gives a stable person even when it is not in the roster; give such a person something to say with `OLYMPUS_PEOPLE.provide(id, { doing, numbers: [{label, text}], last: [{t, text}], blocked, source })`
+  or `open(id, { facts: {...} })`. Without it a made-up keeper honestly says it only knows what the scene shows.
+- 2D: `OLYMPUS_PEOPLE.portrait(id, 44)` (SVG element; the ring colour is the status), `portraitText(id, 128)` (SVG text for a canvas texture).
+- 3D: `import { spec, figure, figureInstanced } from '../olympus/people3d.js'` (THREE is passed in). `figure(THREE, spec(id), { lite, seated, scale })` = 7 meshes, one shared material, <= 900 triangles (<= 350 lite), about 1 unit tall, feet at y = 0, facing +z;
+  `.userData.pose('idle'|'wave'|'talk'|'cheer'|'slump'|'nod'|'shrug')`, `.userData.lookAt(vec3)`, `.userData.tick(dt, t)` each frame (skip it under reduced motion), `.userData.dispose()`.
+  `figureInstanced(THREE, specs, { lite, seated })` = any crowd in 11 draw calls: `.userData.place(i, x, y, z, ry, scale)`, `.setActive(i, on)`, `.tick(t)`, `.pick(raycaster)`, `.headWorld(i)`.
+- ME: `OLYMPUS_PEOPLE.me()` -> `{ name, made, spec }` (the owner's own character, made in Symposium, stored in `olympus.me.v1`); `figure(THREE, OLYMPUS_PEOPLE.me().spec)` is his body in first person. Event `olympus:people:me` when he changes it.
+- Events on `window`: `olympus:people:open` / `close` / `request` / `me` / `ready`. Requests live in `localStorage` `olympus.requests.v1`; Symposium's Request box has "Copy for Claude".
+- "Connect my brain": the kit only READS Jarvis's `jarvis.smart`; when smart mode is on, a question the offline engine cannot answer goes to the owner's own provider with the persona + facts, and a reply containing a number that is not in the facts is dropped.
+
+Tests: `python -X utf8 -m tests.test_people` (node only, 83 checks) and `flock -w 2400 /tmp/olympus_browser.lock python -X utf8 -m tests.test_symposium_page` (`--static` needs no browser).
+After wiring also: `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+## Hellas (inside Cities, 2026-11-11): the world of 300+ cities above Athens, the desert, the people
+Not a new app: everything is in `tools/web_public/cities/` (`hellas*.js`, `hellas*.css`, `hellas-fixture.json`, `hellas-builders.json`, `people-talk.js`, `people-fig.js`, `people.css`), opened by the "Enter Hellas" button, `#hellas` or `?hellas=1`.
+1. `sw.js`: bump the worker version so phones fetch the new Cities files (no new OTHER_APPS row; no precache entry needed).
+2. Optional, at site build: refresh the caravan snapshot with `python -c "import json;a=json.load(open('handoff/agents_now.json'));json.dump({'v':1,'asof':a['asof'],'label':'Snapshot at build time: the build agents that were working when this page was built. Not live.','agents':[{k:x[k] for k in ('name','job','area','branch')} for x in a['agents']]},open('tools/web_public/cities/hellas-builders.json','w'),indent=1)"` (today it is a committed copy, labelled "Snapshot at build time").
+3. People kit: nothing to wire. When `olympus/people.js` / `people3d.js` land, Hellas and Athens load them by themselves (optional import, at most 1.5 s); until then they use their own chat card and figures.

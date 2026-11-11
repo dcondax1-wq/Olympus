@@ -213,6 +213,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 /* phone-fit 2026-11-10 (text contrast) */
 .verdict b.r { color: var(--ag-terra-text, #e08a6b); }
-.verdict b.v { color: #c9b8ee; }
+.verdict b.v { color: #c9a06a; }
 .gauge [data-warn="1"] .v, .gauge [data-id="dd"][data-warn="1"] .v, .gauge [data-id="odds"][data-warn="1"] .v { color: var(--ag-terra-text, #e08a6b); }
-.verdict b.v, .cap .k.v { color: #c9b8ee; }
+.verdict b.v, .cap .k.v { color: #c9a06a; }

@@ -2,6 +2,7 @@
 // breadcrumbs, the house card, villagers you can tap, and the street-level WALK mode (joystick, look, compass, tour guide).
 // Read only: it opens Olympus apps by link and never calls a trading or money function. AGORA look (athens-nest.css).
 import { GROUPS } from './athens-plan.js';
+import { talkTo, chatCard, villagerPerson } from './people-talk.js';
 import { whereAmI, compassName, headingTo, angDiff, route, doorOf } from './athens-world.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -20,9 +21,12 @@ export class Nest {
     this.root.insertAdjacentHTML('beforeend', `
       <div class="ath-compass" hidden aria-hidden="true"><i></i></div><div class="ath-where" hidden aria-live="polite"></div><span class="ath-hlabel" hidden></span>
       <div class="ath-stickzone" hidden><div class="ath-stickhint">Drag here to walk. Drag the other side to look.</div><div class="ath-stickbase" hidden><div class="ath-stickknob"></div></div></div>
-      <nav class="ath-walkbar" hidden aria-label="Walk tools"><button data-a="n-exit">Leave</button><button data-a="n-guide" aria-pressed="false">Guide</button><button data-a="n-run" aria-pressed="false">Run</button><button data-a="n-places">Places</button></nav>`);
+      <nav class="ath-walkbar" hidden aria-label="Walk tools"><button data-a="n-exit">Leave</button><button data-a="n-guide" aria-pressed="false">Guide</button><button data-a="n-run" aria-pressed="false">Run</button><button data-a="n-places">Places</button><button data-a="n-talk" disabled>Talk</button></nav>
+      <div class="ath-people" hidden aria-label="People nearby"></div><span class="ath-plabel" hidden></span>`);
     this.compass = this.root.querySelector('.ath-compass'); this.where = this.root.querySelector('.ath-where'); this.hlabel = this.root.querySelector('.ath-hlabel');
-    this.zone = this.root.querySelector('.ath-stickzone'); this.walkbar = this.root.querySelector('.ath-walkbar');
+    this.zone = this.root.querySelector('.ath-stickzone'); this.walkbar = this.root.querySelector('.ath-walkbar'); this.people = this.root.querySelector('.ath-people'); this.plabel = this.root.querySelector('.ath-plabel'); this.talkB = this.walkbar.querySelector('[data-a=n-talk]');
+    this.people.addEventListener('click', (e) => { const b = e.target.closest('button[data-i]'); if (b) this.talkNpc(+b.dataset.i); });
+    this.onPeopleClose = () => { if (this.S) this.S.talkNpc = null; this.kitTalk = false; }; addEventListener('olympus:people:close', this.onPeopleClose);
     this.marks = DIRS.map(([n]) => { const s = el('span', null, n); this.compass.append(s); return s; });
     this.bindStick();
     this.onKey = (e) => { if (!this.S || !this.S.walk) return; const k = e.key.toLowerCase(), on = e.type === 'keydown'; if ('wasd'.includes(k) && k.length === 1 || k.startsWith('arrow')) { this.keys[k] = on; this.guideOff(); this.applyKeys(); e.preventDefault(); } if (k === 'shift') { this.keys.shift = on; this.applyKeys(); } };
@@ -60,11 +64,17 @@ export class Nest {
     ui.card.hidden = false; ui.cur = { x: h.x, z: h.z, y: h.h, kind: 'house' }; this.root.classList.add('has-card'); this.lv = { level: 'house', d: v.group, v, h };
     S.select({ x: h.x, y: h.h + (h.y || 0), z: h.z, r: 8, major: false }); window.OLYMPUS?.cue?.('tap');
   }
+  /** the villager with index i, as a tap would find it */
+  npcHit(i) { const S = this.S, n = S.npcs[i], q = S.npcPos && S.npcPos[i]; if (!n || !q) return null; const v = this.world.villages[q.near === 'a' ? n.a : n.b]; return { npc: n, village: v, fact: v.fact }; }
+  talkNpc(i) { const hit = this.npcHit(i); if (hit) this.showNpc(hit); }
+  /** talk to a villager: the shared People kit when it is loaded (villager:<app-id>), else the card with our own six questions */
   showNpc(hit) {
     const ui = this.ui, v = hit.village, g = GROUPS.find((x) => x.key === v.group) || GROUPS[4];
+    const person = villagerPerson(v, hit.npc.i); this.S.talkNpc = hit.npc.i; this.lastTalk = { id: person.id, how: talkTo(person, { anchor: ui.card }) };
+    if (this.lastTalk.how === 'kit') { this.kitTalk = true; ui.card.hidden = true; return; }
     ui.card.innerHTML = `<button class="ath-x" data-a="cardx" aria-label="Close card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="ath-pill" style="--c:${esc(g.tint)}">Villager · ${esc(g.name)}</span><h3>${esc(v.name)} villager</h3><p class="ath-vfact">${esc(hit.fact)}</p>
       <div class="ath-btns"><a class="ath-go" href="${hrefOf(v.id)}">Open ${esc(v.name)}</a><button data-a="n-village" data-id="${esc(v.id)}">Visit the village</button></div>`;
-    ui.card.hidden = false; ui.cur = null; this.root.classList.add('has-card'); window.OLYMPUS?.cue?.('tap');
+    ui.card.append(chatCard(person)); ui.card.hidden = false; ui.cur = null; this.root.classList.add('has-card'); window.OLYMPUS?.cue?.('tap');
   }
   /** a tap on the 3D view: true when a villager or a house took it */
   tap(px, py) {
@@ -120,6 +130,7 @@ export class Nest {
     if (a === 'n-walkto') { const v = w.byId.get(id); return v && this.walkAtVillage(v); }
     if (a === 'n-walkhouse') { const h = vv.houses[+b.dataset.k]; return this.walkAtVillage(vv, h); }
     if (a === 'n-exit') return this.exitWalk();
+    if (a === 'n-talk') { const S = this.S, me = S.walk; if (!me || !S.npcPos) return; let best = -1, bd = 3; S.npcPos.forEach((q, i) => { const d = Math.hypot(q.x - me.x, q.z - me.z); if (d <= bd) { bd = d; best = i; } }); if (best >= 0) this.talkNpc(best); return; }
     if (a === 'n-guide') return this.guide ? this.guideOff() : this.guideOn();
     if (a === 'n-run') { this.run = !this.run; b.setAttribute('aria-pressed', String(this.run)); this.applyInput(); }
   }
@@ -143,7 +154,7 @@ export class Nest {
   }
   exitWalk() {
     const S = this.S; if (!S || !S.walk) return; this.guideOff(); S.stopWalk(); this.root.classList.remove('walking');
-    for (const e of [this.compass, this.where, this.zone, this.walkbar, this.hlabel]) e.hidden = true; this.keys = {};
+    for (const e of [this.compass, this.where, this.zone, this.walkbar, this.hlabel, this.people, this.plabel]) e.hidden = true; this.keys = {}; this.peopleKey = '';
   }
 
   // ------------------------------------------------------------------ the thumb stick (left half) and keys
@@ -191,7 +202,8 @@ export class Nest {
 
   // ------------------------------------------------------------------ every frame
   frame() {
-    const S = this.S; if (!S || !S.walk) return; const now = performance.now(), dt = Math.min(.1, (now - this.t0) / 1000); this.t0 = now; this.tick++;
+    const S = this.S; if (S && S.talkNpc != null && !this.kitTalk && this.ui.card.hidden) S.talkNpc = null;   // the chat card closed: the villager walks on
+    if (!S || !S.walk) return; const now = performance.now(), dt = Math.min(.1, (now - this.t0) / 1000); this.t0 = now; this.tick++;
     this.guideFrame(dt); if (this.tick % 2) return;
     const me = S.walk, yaw = me.yaw, W = whereAmI(this.world, me.x, me.z), cw = this.compass.clientWidth || 340;
     DIRS.forEach(([n, deg], k) => { const diff = angDiff(yaw, deg * Math.PI / 180) * 180 / Math.PI, s = this.marks[k]; if (Math.abs(diff) > 62) { s.style.display = 'none'; return; } s.style.display = ''; s.style.left = (50 + diff / 124 * 100) + '%'; });
@@ -199,5 +211,11 @@ export class Nest {
     const h = W.house; let show = false;
     if (h && W.houseDist < 26) { const p = S.project(h.x, (h.y || 0) + h.h + 1.6, h.z), dx = angDiff(yaw, headingTo(me.x, me.z, h.x, h.z)); if (p.vis && Math.abs(dx) < 1.1 && p.y > 120 && p.y < S.h - 110) { show = true; this.hlabel.textContent = h.row ? h.row.label : 'Empty plot'; this.hlabel.style.transform = `translate(${p.x.toFixed(0)}px,${p.y.toFixed(0)}px) translate(-50%,-100%)`; this.hlabel.style.setProperty('--c', TONE_HEX[h.row ? h.row.tone : 'none']); this.near = h; } }
     this.hlabel.hidden = !show; void cw;
+    // people nearby: a strip of the nearest villagers (tap one to talk), their name over the nearest head, Talk within 3 m
+    if (this.tick % 6 === 0 && S.npcPos && S.npcs) { const near = S.npcPos.map((q, i) => [Math.hypot(q.x - me.x, q.z - me.z), i]).filter((e) => e[0] <= 30).sort((a, b) => a[0] - b[0]).slice(0, 4), key = near.map((e) => e[1] + ':' + Math.round(e[0])).join(',');
+      const who = (i) => { const h = this.npcHit(i); return h ? villagerPerson(h.village, i).name : 'Villager'; };
+      if (key !== this.peopleKey) { this.peopleKey = key; this.people.innerHTML = near.length ? '<span>People nearby</span>' + near.map((e) => `<button data-i="${e[1]}">${esc(who(e[1]))} · ${Math.max(1, Math.round(e[0]))} m</button>`).join('') : ''; this.people.hidden = !near.length; }
+      const n0 = near[0]; this.talkB.disabled = !(n0 && n0[0] <= 3); this.nearNpc = n0 && n0[0] <= 14 ? n0[1] : -1; if (this.nearNpc >= 0) this.plabel.textContent = who(this.nearNpc); }
+    if (this.nearNpc >= 0 && S.npcPos && S.npcPos[this.nearNpc]) { const q = S.npcPos[this.nearNpc], p = S.project(q.x, (S.walk ? S.walk.y - 1.7 : 0) + 2.2, q.z); this.plabel.hidden = !(p.vis && p.y > 110 && p.y < S.h - 150); this.plabel.style.transform = `translate(${p.x.toFixed(0)}px,${p.y.toFixed(0)}px) translate(-50%,-100%)`; } else if (this.plabel) this.plabel.hidden = true;
   }
 }

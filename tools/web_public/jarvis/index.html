@@ -100,11 +100,11 @@ window.addEventListener('error', function (e) {
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
-.boot{position:fixed;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:95;padding:12px 14px;border-radius:14px;background:rgba(20,14,32,.96);border:1px solid rgba(168,85,247,.5);color:#ece9f2;font:15px/1.35 -apple-system,system-ui,sans-serif;display:flex;gap:10px;align-items:center;justify-content:space-between}
-.boot small{display:block;margin-top:4px;color:#8a8499;font-size:12px;word-break:break-word}
+.boot{position:fixed;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:95;padding:12px 14px;border-radius:14px;background:rgba(29,25,20,.96);border:1px solid rgba(200,162,74,.5);color:#f3ece0;font:15px/1.35 -apple-system,system-ui,sans-serif;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.boot small{display:block;margin-top:4px;color:#9a8f7d;font-size:12px;word-break:break-word}
 .boot .boot-b{display:flex;gap:8px;flex:none}
-.boot button{height:44px;padding:0 14px;border-radius:11px;border:0;background:#a855f7;color:#fff;font:700 15px -apple-system,system-ui,sans-serif}
-.boot button.alt{background:transparent;border:1px solid #a855f7}
+.boot button{height:44px;padding:0 14px;border-radius:11px;border:0;background:#c8a24a;color:#14110e;font:700 15px -apple-system,system-ui,sans-serif}
+.boot button.alt{background:transparent;border:1px solid #c8a24a;color:#f3ece0}
 /* the OLYMPUS intro's overlay (the olympus-intro script below it). Built into the page, so it never waits for a file, and it goes
    away by itself: gone by 0.95 s when the script never gets going; the script swaps in its own deadline (olyEnd) and removes the
    overlay when it ends, skips or fails */
@@ -670,7 +670,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     };
     x.globalCompositeOperation = 'lighter';
     var pass = function (style, blur) { draw('OLYMPUS', fontOk ? 118 : 112, 800, 26, 112, 900, style, blur); draw('Welcome back', 46, 600, 5, 262, 560, style, blur * 0.5); };
-    pass('#0000ff', 34); pass('#00ff00', 10); x.shadowBlur = 0; x.shadowOffsetX = 0; pass('#ff0000', 0);
+    /* channel mask, never shown: blue = wide halo, green = near halo, red = the letters */ pass('blue', 34); pass('lime', 10); x.shadowBlur = 0; x.shadowOffsetX = 0; pass('red', 0);
     var px2 = x.getImageData(0, 0, 1024, 320).data, pts = [];
     for (var yy = 0; yy < 224; yy += 2) for (var xx = 0; xx < 1024; xx += 2) if (px2[(yy * 1024 + xx) * 4] > 140) pts.push(xx / 1024, 1 - yy / 320);
     return { canvas: c, pts: pts };
@@ -751,7 +751,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         nPts = np ? N : 0; st.n = nPts;
       } catch (e) { tex = null; /* the intro still plays without the word */ }
     };
-    // Orbitron is Jarvis's own font (saved by its worker): the word is needed at ~7 s, so wait for it up to 1.8 s while the film plays
+    // the heading font may still be loading: the word is needed at ~7 s, so wait for it up to 1.8 s while the film plays
     var fontT = setTimeout(function () { buildText(false); }, mode === 'short' ? 150 : 1800);
     try {
       if (doc.fonts && doc.fonts.load) doc.fonts.load('700 100px Georgia').then(function (f) { clearTimeout(fontT); buildText(true); }, function () { /* the timer */ });
@@ -2830,7 +2830,7 @@ function renderLook() {
   $('#setGrain').checked = !!(TH() && TH().grain());
   $('#olyNote').textContent = olyOn() ? `${(TH() && TH().get(olyId()).name) || 'This theme'} colours Jarvis and every app. Jarvis colour below goes back to the OLYMPUS default.`
     : 'The whole system: Jarvis now, and each app the next time it opens. Jarvis colour below tunes the default.';
-  $('#themes').innerHTML = THEMES.map(([k, n, tag, a, b]) => `<button class="th" type="button" data-theme-k="${k}" aria-pressed="${!olyOn() && root.dataset.theme === k}"><i style="background:${k === 'custom' ? 'conic-gradient(#f43f5e,#f59e0b,#22c55e,#06b6d4,#6366f1,#d946ef,#f43f5e)' : `radial-gradient(circle at 40% 38%, #fff 0 8%, ${a} 26%, ${b} 62%, #000 100%)`}"></i>${esc(n)}<small>${esc(tag)}</small></button>`).join('');
+  $('#themes').innerHTML = THEMES.map(([k, n, tag, a, b]) => `<button class="th" type="button" data-theme-k="${k}" aria-pressed="${!olyOn() && root.dataset.theme === k}"><i style="background:${k === 'custom' ? 'conic-gradient(#c8a24a,#c96a4a,#9c6b3c,#7f8a52,#4b7a99,#e0b060,#c8a24a)' : `radial-gradient(circle at 40% 38%, #fff 0 8%, ${a} 26%, ${b} 62%, #000 100%)`}"></i>${esc(n)}<small>${esc(tag)}</small></button>`).join('');
   for (const b of $('#fxSeg').children) b.setAttribute('aria-pressed', String(b.dataset.fx === root.dataset.fx));
   $('#coreSeg').innerHTML = CORE_DESIGNS.map(([k, n]) => `<button type="button" data-core-k="${k}" aria-pressed="${coreDesign() === k}">${esc(n)}</button>`).join('');
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);

@@ -61,7 +61,7 @@ void main() {
 }`;
 def('aurora', 'aurora borealis curtains rippling across the sky, in the theme\'s colours', (t, o, ctx) => {
   const p = parts(t, o), n = ctx.pick(4, 3, 2), pl = pal(), r = rng(o.seed || 8), W = o.width || 90, H = o.height || 22;
-  const cols = o.colors ? o.colors.map((c) => new THREE.Color(c)) : [new THREE.Color('#3dffa6'), pl.bloom.clone(), pl.accent.clone()];
+  const cols = o.colors ? o.colors.map((c) => new THREE.Color(c)) : [new THREE.Color('#7f8a52'), pl.bloom.clone(), pl.accent.clone()];
   const mats = [], g = new THREE.Group();
   for (let i = 0; i < n; i++) {
     const geo = new THREE.PlaneGeometry(W, H, ctx.pick(120, 90, 40), 1), mat = new THREE.ShaderMaterial(Object.assign({ side: THREE.DoubleSide, fog: false,
@@ -187,7 +187,7 @@ def('lensFlare', 'a bright glare with a chain of ghost rings across the screen (
   };
   const core = mk(glow, 0.42, 2.4), halo = mk(glow, 1.2, 0.55);
   const streakS = mk(streak, 1.6, 1.1); streakS.scale.set(1.6, 0.12, 1);
-  const stops = [0.65, 0.3, -0.25, -0.6, -1.0, -1.5].slice(0, ctx.pick(6, 4, 2)), cs = ['#9fd0ff', '#ffb0e0', '#aaffd0', '#ffd890', '#b0b8ff', '#ffffff'];
+  const stops = [0.65, 0.3, -0.25, -0.6, -1.0, -1.5].slice(0, ctx.pick(6, 4, 2)), cs = ['#7fa6bd', '#e08a6b', '#aaffd0', '#ffd890', '#7fa6bd', '#ffffff'];
   const ghosts = stops.map((k, i) => ({ k, s: mk(i % 2 ? ring : glow, 0.12 + 0.14 * ((i * 5) % 4) / 3, 0.5, new THREE.Color(cs[i % cs.length])) }));
   g.userData.sprites = [core, halo, streakS].concat(ghosts.map((x) => x.s));
   ctx.scene(p.scene, g);

@@ -24,8 +24,8 @@
 <script src="../olympus/fx-core.js?v=f1"></script>
 <script src="../olympus/fx-burst.js?v=f1"></script>
 <style>
-:root{--bg:#050814;--panel:rgba(9,13,30,.9);--line:rgba(170,182,224,.2);--text:#f4f4f8;--sub:#b0b3c8;--gold:#ffc94a;--green:#39e59a;--red:#ff6b7f;--cyan:#3fd8ff;
---accent:var(--oly-accent,#a68bff);--st:env(safe-area-inset-top,0px);--sr:env(safe-area-inset-right,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);
+:root{--bg:#050814;--panel:rgba(9,13,30,.9);--line:rgba(170,182,224,.2);--text:#f4f4f8;--sub:#b0b3c8;--gold:#ffc94a;--green:#7f8a52;--red:#ff6b7f;--cyan:#4b7a99;
+--accent:var(--oly-accent,#c9a06a);--st:env(safe-area-inset-top,0px);--sr:env(safe-area-inset-right,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);
 --top-h:92px;--dock-h:44px;--sheet-bottom:168px;-webkit-text-size-adjust:100%}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:500 15px/1.35 var(--oly-ui,-apple-system,system-ui,"Segoe UI",Roboto,sans-serif);
@@ -37,7 +37,7 @@ button{font-family:inherit;color:inherit}
 border-radius:var(--oly-r-card,16px);background:linear-gradient(180deg,rgba(10,8,26,.8),rgba(10,8,26,.54));border:1px solid var(--line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .top .row{display:flex;align-items:center;gap:6px;min-height:44px}
 .top h1{margin:0;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:800 14px/1.2 var(--oly-display,sans-serif);
-letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(90deg,#fff,#d9c9ff 45%,#7fe9ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+letter-spacing: .05em;text-transform:uppercase;background:linear-gradient(90deg,#fff,#c9a06a 45%,#7fa6bd);-webkit-background-clip:text;background-clip:text;color:transparent}
 .ic{width:44px;height:44px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer;
 font:700 11px/1 var(--oly-ui,inherit);padding:0;pointer-events:auto;flex:0 0 auto}
 .ic svg{width:20px;height:20px}
@@ -57,19 +57,19 @@ button.chip{cursor:pointer;min-height:30px}
   background:linear-gradient(180deg,rgba(8,10,25,.94),rgba(7,9,22,.82));box-shadow:0 9px 28px rgba(0,0,0,.38);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:auto}
 .network-key,.network-apps,.network-strip button{flex:0 0 auto;min-height:44px;border:1px solid rgba(176,187,226,.19);border-radius:12px;
-  color:#d4d8e8;background:rgba(255,255,255,.035);font:800 9px/1 var(--oly-display,sans-serif);letter-spacing:.09em;cursor:pointer;touch-action:manipulation}
+  color:#d4d8e8;background:rgba(255,255,255,.035);font:800 9px/1 var(--oly-display,sans-serif);letter-spacing: .05em;cursor:pointer;touch-action:manipulation}
 .network-key{width:44px;color:#ffe1a1;border-color:rgba(255,201,74,.45);background:linear-gradient(145deg,rgba(255,201,74,.17),rgba(255,201,74,.04))}
-.network-apps{width:54px;color:#a9eaff}
+.network-apps{width:54px;color:#7fa6bd}
 .network-strip{display:flex;align-items:center;gap:4px;min-width:0;flex:1;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;touch-action:pan-x}
 .network-strip::-webkit-scrollbar{display:none}
 .network-strip button{min-width:44px;padding:0 11px}
-.network-bar button[aria-pressed=true]{color:#fff;border-color:rgba(255,201,74,.65);background:linear-gradient(145deg,rgba(255,201,74,.16),rgba(35,38,60,.62));box-shadow:0 0 14px rgba(255,190,75,.1)}
+.network-bar button[aria-pressed=true]{color:#f3ece0;border-color:rgba(255,201,74,.65);background:linear-gradient(145deg,rgba(255,201,74,.16),rgba(35,38,60,.62));box-shadow:0 0 14px rgba(255,190,75,.1)}
 .network-bar button:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .actions a{display:inline-flex;align-items:center;text-decoration:none}
 .city-network-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 12px}
-.city-network-destination{display:flex;min-width:0;min-height:64px;flex-direction:column;justify-content:center;gap:3px;padding:10px 11px;border:1px solid rgba(168,184,230,.22);border-radius:13px;
+.city-network-destination{display:flex;min-width:0;min-height:64px;flex-direction:column;justify-content:center;gap:3px;padding:10px 11px;border:1px solid rgba(127,166,189,.22);border-radius:13px;
   color:#f2f5ff;text-decoration:none;background:linear-gradient(145deg,rgba(61,75,120,.23),rgba(8,11,26,.72));touch-action:manipulation}
-.city-network-destination b{font:800 11px/1.1 var(--oly-display,sans-serif);letter-spacing:.08em;text-transform:uppercase}
+.city-network-destination b{font:800 11px/1.1 var(--oly-display,sans-serif);letter-spacing: .05em;text-transform:uppercase}
 .city-network-destination small{color:#aeb8d2;font:600 11px/1.2 var(--oly-ui,sans-serif)}
 .city-network-destination[aria-current=page]{border-color:rgba(255,201,74,.58);box-shadow:inset 0 0 20px rgba(255,201,74,.07)}
 .city-network-destination:focus-visible{outline:2px solid #fff;outline-offset:2px}
@@ -134,19 +134,19 @@ input[type=search]{width:100%;font-size:16px;padding:10px 12px;border-radius:12p
 /* --- cameras (a city), labels, tag, caption, toast, veil */
 .cams{position:fixed;left:calc(10px + var(--sl));top:calc(var(--top-h) + 62px + var(--st));z-index:3;display:none;flex-direction:column;gap:6px}
 body[data-mode=city] .cams{display:flex}
-.cams button{width:56px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font:700 10px/1 var(--oly-display,inherit);letter-spacing:.12em;cursor:pointer;touch-action:manipulation}
+.cams button{width:56px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font:700 10px/1 var(--oly-display,inherit);letter-spacing: .05em;cursor:pointer;touch-action:manipulation}
 .cams button.on{color:var(--gold);border-color:rgba(255,201,74,.45);background:rgba(255,201,74,.10)}
 #labels{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
 body[data-mode=hub] #labels{display:none}
-#labels i{position:absolute;left:0;top:0;font:700 11.5px/1.2 var(--oly-display,inherit);letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:8px;background:rgba(7,5,15,.62);
-border:1px solid rgba(255,255,255,.18);color:#fff;white-space:nowrap;display:none;text-shadow:0 1px 6px #000;font-style:normal;will-change:transform}
+#labels i{position:absolute;left:0;top:0;font:700 11.5px/1.2 var(--oly-display,inherit);letter-spacing: .05em;text-transform:uppercase;padding:4px 8px;border-radius:8px;background:rgba(7,5,15,.62);
+border:1px solid rgba(255,255,255,.18);color:#f3ece0;white-space:nowrap;display:none;text-shadow:0 1px 6px #000;font-style:normal;will-change:transform}
 #labels i.sel{border-color:var(--gold);color:var(--gold)}
 .tag{position:fixed;left:0;top:0;z-index:3;pointer-events:none;display:none;padding:5px 9px;border-radius:10px;background:rgba(8,6,20,.84);border:1px solid rgba(255,201,74,.45);
 font:600 12px/1.25 var(--oly-ui,inherit);color:var(--text);white-space:nowrap;max-width:220px;box-shadow:0 4px 18px rgba(0,0,0,.5)}
 .tag b{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis}
 .caption{position:fixed;left:50%;bottom:calc(var(--sheet-bottom) + 10px + var(--sb));transform:translateX(-50%);width:min(560px,calc(100% - 28px));z-index:4;pointer-events:none;opacity:0;
-text-align:center;font:600 15px/1.35 var(--oly-ui,inherit);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.9);transition:opacity .4s}
-.caption small{display:block;font:700 10px/1 var(--oly-display,inherit);letter-spacing:.2em;color:var(--gold);margin-bottom:6px}
+text-align:center;font:600 15px/1.35 var(--oly-ui,inherit);color:#f3ece0;text-shadow:0 2px 12px rgba(0,0,0,.9);transition:opacity .4s}
+.caption small{display:block;font:700 10px/1 var(--oly-display,inherit);letter-spacing: .05em;color:var(--gold);margin-bottom:6px}
 .caption.on{opacity:1}
 body[data-mode=city] .caption.on{padding:10px 14px;border:1px solid rgba(255,201,74,.27);border-radius:15px;background:linear-gradient(150deg,rgba(5,9,22,.92),rgba(9,14,31,.84));box-shadow:0 12px 30px rgba(0,0,0,.46);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 body[data-mode=hub] .caption{bottom:calc(252px + var(--sb));font-size:12px;max-width:350px}
@@ -157,19 +157,19 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;bac
 .veil{position:fixed;inset:0;z-index:7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:24px;pointer-events:none;opacity:0;
 background:radial-gradient(90% 70% at 50% 45%,rgba(24,14,52,.94),#05030c);transition:opacity .38s ease}
 .veil.on{opacity:1}
-.veil b{font:800 20px/1.2 var(--oly-display,inherit);letter-spacing:.14em;text-transform:uppercase;color:#fff}
+.veil b{font:800 20px/1.2 var(--oly-display,inherit);letter-spacing: .05em;text-transform:uppercase;color:#f3ece0}
 .veil small{font-size:13px;color:var(--sub);max-width:320px}
-.loading{position:fixed;inset:0;display:grid;place-items:center;color:var(--sub);font:600 13px var(--oly-display,inherit);letter-spacing:.2em;z-index:2;pointer-events:none}
+.loading{position:fixed;inset:0;display:grid;place-items:center;color:var(--sub);font:600 13px var(--oly-display,inherit);letter-spacing: .05em;z-index:2;pointer-events:none}
 .err{position:fixed;left:16px;right:16px;top:30%;z-index:9;text-align:center;color:var(--sub)}
 .fallback{position:fixed;inset:calc(var(--top-h) + 20px + var(--st)) 12px calc(110px + var(--sb)) 12px;overflow:auto;z-index:3;touch-action:pan-y}
 .oly-fx-toasts{top:calc(var(--top-h) + 16px + var(--st))!important}
 .badge.seen{background:#2c4b3b;color:#c8f5dc}
-.say{font:600 14.5px/1.4 var(--oly-ui,inherit);color:#fff;margin:8px 0 4px;padding:8px 10px;border-left:3px solid var(--gold);background:rgba(255,201,74,.07);border-radius:0 10px 10px 0}
+.say{font:600 14.5px/1.4 var(--oly-ui,inherit);color:#f3ece0;margin:8px 0 4px;padding:8px 10px;border-left:3px solid var(--gold);background:rgba(255,201,74,.07);border-radius:0 10px 10px 0}
 .bars{margin:4px 0}.barrow{display:grid;grid-template-columns:minmax(0,92px) minmax(0,1fr) auto;gap:8px;align-items:center;padding:5px 0;font-size:12.5px}
 .barrow span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--sub)}.barrow .track{height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}.barrow .track i{display:block;height:100%;border-radius:4px}
 .cmp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cmpcol h3{margin:6px 0 4px;font-size:12px}.cmpcol canvas{width:100%;aspect-ratio:1;border-radius:10px;border:1px solid var(--line);display:block}
 .cmpcol .say{font-size:12px}.cmpcol .grid4{grid-template-columns:1fr}.cmpcol .pill{width:100%}
-#labels i.cont{font-size:13px;letter-spacing:.16em;padding:6px 12px;background:rgba(7,5,15,.7);border-width:1.5px}
+#labels i.cont{font-size:13px;letter-spacing: .05em;padding:6px 12px;background:rgba(7,5,15,.7);border-width:1.5px}
 .photobar{position:fixed;left:calc(10px + var(--sl));bottom:calc(14px + var(--sb));right:calc(104px + var(--sr));z-index:6;display:none;gap:8px}
 body.photo .photobar{display:flex}
 body[data-ready=true] .network-bar,body[data-ready=fallback] .network-bar{display:flex}
@@ -179,28 +179,28 @@ body.photo .photobar .pill{flex:1}
 
 /* An immediate, readable atlas over the navigable 3D world. The world stays visible above it. */
 .atlas{position:fixed;z-index:4;left:calc(10px + var(--sl));right:calc(10px + var(--sr));bottom:calc(74px + var(--sb));max-width:620px;
-  padding:12px;border:1px solid rgba(180,157,255,.3);border-radius:20px;background:linear-gradient(145deg,rgba(19,17,43,.94),rgba(7,10,27,.91));
+  padding:12px;border:1px solid rgba(201,160,106,.3);border-radius:20px;background:linear-gradient(145deg,rgba(19,17,43,.94),rgba(7,10,27,.91));
   box-shadow:0 18px 55px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.1);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 /* The mounted world lobby owns hub navigation; do not stack this early boot atlas over its portals. */
 body[data-mode=hub][data-ready=true] .atlas,body[data-mode=city] .atlas,body[data-ready=fallback] .atlas,.atlas.behind{display:none}
-.atlas-kicker{display:flex;align-items:center;gap:7px;color:#dac9ff;font:800 10px/1.2 var(--oly-display,inherit);letter-spacing:.18em;text-transform:uppercase}
-.atlas-kicker:before{content:"";height:7px;width:7px;border-radius:50%;background:#9cffd6;box-shadow:0 0 13px #51e7be}
+.atlas-kicker{display:flex;align-items:center;gap:7px;color:#c9a06a;font:800 10px/1.2 var(--oly-display,inherit);letter-spacing: .05em;text-transform:uppercase}
+.atlas-kicker:before{content:"";height:7px;width:7px;border-radius:50%;background:#a0ac6e;box-shadow:0 0 13px #7f8a52}
 .atlas-head{display:flex;align-items:center;gap:10px;margin:4px 0 9px}
 .atlas-head strong{font:800 clamp(18px,5vw,25px)/1.1 var(--oly-display,inherit);letter-spacing:.015em}
 .atlas-head span{font-size:11px;color:#d0cce2;margin-left:auto;text-align:right;max-width:110px}
 .atlas-rail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 .atlas-card{position:relative;min-width:0;min-height:91px;padding:11px 8px 8px;text-align:left;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.15);
   border-radius:13px;background:radial-gradient(circle at 75% -10%,color-mix(in srgb,var(--city) 32%,transparent),transparent 70%),linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.025));
-  color:#fff;box-shadow:inset 0 1px rgba(255,255,255,.1)}
+  color:#f3ece0;box-shadow:inset 0 1px rgba(255,255,255,.1)}
 .atlas-card:before{content:"";position:absolute;right:11px;bottom:0;width:30px;height:37px;border:2px solid var(--city);border-bottom:0;opacity:.42;
   box-shadow:-13px 8px 0 -4px var(--city),11px 10px 0 -3px var(--city);transform:skewY(-6deg)}
 .atlas-card b,.atlas-card small{position:relative;z-index:1;display:block;text-shadow:0 2px 8px #05050c}
 .atlas-card b{font-size:12px;line-height:1.14}.atlas-card small{font-size:10px;color:#dad7e8;margin-top:5px;line-height:1.2}
 .atlas-card:hover,.atlas-card:focus-visible{border-color:var(--city);transform:translateY(-2px);outline:none}
 .atlas-actions{display:flex;gap:7px;margin-top:9px}
-.atlas-actions button{flex:1;min-height:44px;border-radius:11px;border:1px solid rgba(205,189,255,.26);background:rgba(128,101,211,.15);
+.atlas-actions button{flex:1;min-height:44px;border-radius:11px;border:1px solid rgba(201,160,106,.26);background:rgba(156,107,60,.15);
   color:#f5efff;font:750 12px/1 var(--oly-ui,inherit);cursor:pointer}
-.atlas-actions button:first-child{background:linear-gradient(110deg,#e6c77a,#9e83ee);color:#151126;border:0}
+.atlas-actions button:first-child{background:linear-gradient(110deg,#e6c77a,#c9a06a);color:#151126;border:0}
 @media (min-width:720px){.atlas{left:24px;bottom:24px;width:440px;right:auto}}
 @media (max-height:650px){.atlas{bottom:calc(63px + var(--sb));padding:8px}.atlas-card{min-height:58px;padding:8px}.atlas-card small{display:none}.atlas-head{margin:2px 0 5px}}
 @media (prefers-reduced-motion:reduce){.atlas-card{transition:none}}
@@ -208,17 +208,17 @@ body[data-mode=hub][data-ready=true] .atlas,body[data-mode=city] .atlas,body[dat
 body[data-mode=city] .top{background:linear-gradient(145deg,rgba(7,10,26,.94),rgba(13,17,39,.86));
   border-color:rgba(167,179,223,.27);box-shadow:0 16px 40px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.08)}
 body[data-mode=city] .top h1{background:linear-gradient(90deg,#fff 5%,#e4e9ff 52%,#f4c867);
-  -webkit-background-clip:text;background-clip:text;letter-spacing:.15em}
+  -webkit-background-clip:text;background-clip:text;letter-spacing: .05em}
 body[data-mode=city] .top .row{min-height:48px}
 body[data-mode=city] .chip{background:rgba(92,106,148,.14);border-color:rgba(175,187,225,.18)}
 body[data-mode=city] .chip:first-child{border-color:rgba(255,201,74,.44);color:#ffe3a1}
-body[data-mode=city] .mini{width:112px;height:112px;border-color:rgba(103,184,249,.35);
-  background:rgba(3,9,24,.82);box-shadow:0 12px 36px rgba(0,0,0,.62),0 0 22px rgba(39,166,245,.14),inset 0 0 0 5px rgba(5,9,24,.45)}
+body[data-mode=city] .mini{width:112px;height:112px;border-color:rgba(75,122,153,.35);
+  background:rgba(3,9,24,.82);box-shadow:0 12px 36px rgba(0,0,0,.62),0 0 22px rgba(75,122,153,.14),inset 0 0 0 5px rgba(5,9,24,.45)}
 body[data-mode=city] .cams button{width:62px;min-height:46px;border-radius:13px;background:rgba(9,13,30,.9);
-  box-shadow:0 9px 22px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.05);letter-spacing:.1em}
+  box-shadow:0 9px 22px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.05);letter-spacing: .05em}
 body[data-mode=city] .cams button.on{background:linear-gradient(150deg,rgba(255,199,78,.2),rgba(39,38,64,.88));
   border-color:rgba(255,201,74,.7);box-shadow:0 0 20px rgba(255,180,53,.18),inset 0 1px rgba(255,241,194,.18)}
-body[data-mode=city] .tab{background:rgba(9,13,30,.92);border-color:rgba(166,180,228,.25);
+body[data-mode=city] .tab{background:rgba(9,13,30,.92);border-color:rgba(127,166,189,.25);
   box-shadow:0 8px 20px rgba(0,0,0,.46),inset 0 1px rgba(255,255,255,.07)}
 body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.2),rgba(9,13,30,.94))}
 @media (max-width:360px){body[data-mode=city] .mini{width:96px;height:96px}}
@@ -234,8 +234,8 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
   <div class="atlas-kicker">Olympus world atlas</div>
   <div class="atlas-head"><strong>Explore the living data</strong><span id="atlasCount">173 cities · 1 network · 6 districts</span></div>
   <div class="atlas-rail">
-    <button class="atlas-card" style="--city:#69aaff" data-city="trades-city"><b>Trades City</b><small>Each trade becomes a tower</small></button>
-    <button class="atlas-card" style="--city:#c7a5ff" data-city="sessions-city"><b>Sessions City</b><small>Fly through trading days</small></button>
+    <button class="atlas-card" style="--city:#7fa6bd" data-city="trades-city"><b>Trades City</b><small>Each trade becomes a tower</small></button>
+    <button class="atlas-card" style="--city:#c9a06a" data-city="sessions-city"><b>Sessions City</b><small>Fly through trading days</small></button>
     <button class="atlas-card" style="--city:#ffb67f" data-city="canyon"><b>Drawdown Canyon</b><small>See the shape of risk</small></button>
   </div>
   <div class="atlas-actions"><button data-atlas="tour">Fly the world</button><button data-atlas="find">Find a city</button></div>
@@ -301,6 +301,7 @@ setTimeout(recover, 18000);
 import('./app.js?v=o21').catch(recover);
 </script>
 <script type="module" src="./athens-entry.js?v=t3"></script>
+<script type="module" src="./hellas-entry.js?v=h1"></script>
 </body>
 </html>
 

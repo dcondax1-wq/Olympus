@@ -138,8 +138,8 @@ def part_olympus():
     bd = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     sw = open(os.path.join(WEB, "sw.js"), encoding="utf-8").read()
     jsw = open(os.path.join(WEB, "jarvis", "sw.js"), encoding="utf-8").read()
-    check("c. Bridge is a built-in Olympus app: apps.js (Trading, #34d399, glyph Beta) and olympus.js",
-          "app('bridge', 'Bridge', 'trading', '#34d399'" in apps and "\\u0392" in apps and "bridge: ['Bridge', 'Β', '#34d399']" in oly)
+    check("c. Bridge is a built-in Olympus app: apps.js (Trading, #8c7a5a, glyph Beta) and olympus.js",
+          "app('bridge', 'Bridge', 'trading', '#8c7a5a'" in apps and "\\u0392" in apps and "bridge: ['Bridge', 'Β', '#8c7a5a']" in oly)
     i = bd.index("_bridge_sync") if "_bridge_sync" in bd else bd.index("_bridge")
     check("c. build_web_dashboard.py publishes status.json inside try/except (a failure never stops the publish)",
           "from tools import bridge_sync as _bridge" in bd and "_bridge.publish(out)" in bd and bd.rfind("try:", 0, i) > bd.rfind("\n    for app in", 0, i) and "except Exception" in bd[i:i + 400])

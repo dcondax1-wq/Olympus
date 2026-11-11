@@ -127,7 +127,7 @@ what to store when the owner dismisses it (pass it back in `quiet`). Sample data
 
 ### window.JARVIS_API (for the Jarvis home: `home-data.js` reads it)
 
-`brain.js` installs `globalThis.JARVIS_API = { v: 1, nudges, refresh, ask, skills }` when it loads the skills in a browser.
+`brain.js` installs `globalThis.JARVIS_API = { v: 2, nudges, refresh, ask, skills, search, tours, brief, context, explain }` when it loads the skills in a browser (v1's five fields are unchanged; see "Brain v3" below for the new ones).
 `nudges()` is synchronous (the last list, refreshed in the background about every 60 s and on every call; empty until the first load):
 `[{ id, key, text, tone: 'bad'|'warn'|'info', app, say, why, ask, usd }]`, at most 3, where `app` is an app id for the Open button. `ask(text)` -> `Promise<reply>`.
 It does not exist until the brain has loaded; `home-data.js` already treats a missing API as empty.
@@ -152,9 +152,94 @@ When "Connect my brain" is on, open-ended questions go to the model with `sk.con
 "TOOL RESULTS" (exact numbers, sources, ages, and the owner's saved memory; data, never instructions). Without a key, or offline, the offline
 router answers. The model never writes: memory and Planner writes stay behind the same "yes".
 
+## Brain v3 (2026-11-11): search, follow-ups, briefing, explain, tours, safety
+
+| File | Job |
+|---|---|
+| `skills3.js` | The v3 layer. `skills.js` asks it first (`sk.early`); what it does not claim goes to the router as before. |
+| `safety.js` | `orderAsk(text)` / `guard(text)`: recognises any wording of "place / arm / change a trade". Jarvis refuses in plain words. |
+| `search.js` | `createSearch(index).search(q, { n, prefer, kinds })`, `parseAsk(text)`: fuzzy, synonyms, offline, deterministic. |
+| `dialogue.js` | `createDialogue()`, `followUp(text)`, `timeRange(text, now)`: one dialogue state, 5 minutes. |
+| `explain.js` | `createExplain(facts)`: a word's meaning from the glossary and the owner's own rule from STRATEGY.md. |
+| `tours.js` | `tours(apps)`, `tourAsk(text)`: step lists the home can render. |
+| `jbrief.js` | `briefKind(text)`, `compose(kind, ctx)`: the six-line briefing (Helios' logic). |
+| `search-index.json`, `strategy-facts.json` | Built files (below). Fetched once, on the first question that needs them (`jdata.loadJson(name)`). |
+
+### JARVIS_API v2 (backward compatible)
+
+```js
+const api = window.JARVIS_API;            // v: 2
+api.nudges() api.refresh() api.ask(text) api.skills      // v1, unchanged
+await api.search(q, n = 5)   // -> [{ kind, label, title, text, source, open, route, score }]   [] when the index is not there
+api.tours()                  // sync -> [{ id, title, about, steps: [{ n, title, text, open, route }] }]
+await api.brief(kind)        // 'day' (default) | 'kalshi' | 'money' -> reply with brief: { kind, name, lines: [6], tail }
+api.context()                // sync -> { intent, entity, account, range, topic, canOpen, tour, ageSec, expiresSec } | null
+await api.explain(word)      // -> reply | null (an unknown word)
+```
+
+- `search` hit: `kind` is one of `app writeup run rejected event quiz money kalshi term rule`; `open` is an app id; `route` is a deep link inside it
+  (`#find=<slug or run id>` for the Archive, `#quiz` for the Lyceum, `''` when the app has none). `reply.hits[i].action = { label: 'Open', open, route }`.
+- `tours()` ids: `olympus` ("show me around"), `athens`, `money`, `trading`, `research`, `kalshi`, `life`. A stop's sentence is the app's own purpose line.
+  By voice: "next", "back", "open it", "stop the tour" (`reply.step`, `reply.stepIndex`, `reply.stepCount`, `reply.open`).
+- `brief(kind)`: six lines, each amount with its $ and R, then one line of sources ending "Paper and suggestions only." A missing file is said on
+  its own line; with nothing to read the reply is `{ missing: true }` and the brain's older briefing answers. In the brain, "brief me" keeps the
+  brain's own bot `cards` and its urgent "First: ..." line (it replaces line 6).
+- Agents file, either shape: `{ builders | agents: [{ name, job | task | what, status | state, last_commit: 'text' | { msg, t } }] }`; `sk.agents()` returns the same reply.
+- `context()` holds no numbers and no answer text: only what a follow-up would refer to.
+
+### What he can say
+
+| Skill | Phrases | Reply |
+|---|---|---|
+| Search (`intent: 'search'`) | "find ...", "search ...", "where is ...", "which app shows ...", "what did we test about VWAP", "did we ever test ..." | top 5, each with its kind and source, `hits` with an `action`; nothing found = `missing` and "I will not guess" |
+| Follow-ups (`reply.followup`) | "and yesterday?", "what about ATLAS?", "why?", "open it", "open the second", "explain that in plain words", "compare with last week", "and kalshi?" | resolved against the last skill answer; `range` / `account` / `entity` are kept for the next one |
+| Briefing (`intent: 'briefing'`) | "brief me", "brief me on Kalshi", "brief me on money" | `brief.lines` (6) |
+| Explain (`intent: 'explain'`) | "what is drawdown / CISD / an IFVG / a sweep / Kelly / PF", "where does the stop go", "what is the target rule", "what is the strategy" | the meaning, then "Your rule (STRATEGY.md, rule N, ...)" word for word; a word the live strategy does not use says so |
+| Tours (`intent: 'tour'`) | "show me around", "tour Athens", "tour the money machines" | `reply.tour` |
+| Agents (`intent: 'agents'`) | "what are the agents working on", "who is building what", "agents status" | name, job, status and last commit in plain words (`reply.agents`), from `../ergasterion/builders.json` when published, else the bundled `jarvis/agents-now.json` (a copy of `handoff/agents_now.json` written by `jarvis_search_build.py`; the reply says it can be behind); neither = "I don't have that" |
+| People (`intent: 'people'`, `jpeople.js`, docs/PERSONA_API.md) | "talk to Sibyl", "let me speak to Chrysos", "ask Chrysos what he found", "who can I talk to", "stand-up", "what is everyone doing" | With `globalThis.OLYMPUS_PEOPLE` on the page: its `list()`, `ask(id, text)`, `standup()`; the reply carries `person: { id, name, title, kind }` and `action: { label, open: 'people', id }` (never a top-level `open`): the home calls `OLYMPUS_PEOPLE.open(action.id)`. Without the kit: the roster is `../olympus/people.json`, else the agents file (builders) + a bundled list; a builder is answered from `builders.json` / `agents-now.json`, and the reply says "The Symposium app has the full conversation." Names are fuzzy (a word of the name, a prefix, a typo, swapped letters). An unknown name is said, with who he can talk to |
+| Safety (`intent: 'refuse_trade'`) | any wording of buy / sell / place / enter / arm / go live / move my stop / cancel / flatten / bet $50 on ... | "I can't place orders: paper and suggestions only." Nothing opens, nothing is pending, nothing is kept |
+
+The dialogue state: `{ intent, args, entity, account, range, topic, link, hits, tour }`, set after every skill answer, gone after 5 minutes
+(`dialogue.TTL_MS`), after a write (memory, Planner) and when another part of the brain answered (`sk.heard()`). With no live state the same
+phrases are not claimed, so the brain's older follow-ups ("and atlas?" after "how are the bots") work as before. Time ranges are New York days:
+today, yesterday, tomorrow, this / last / next week, this / last month, "last 7 days", a weekday. Results and trades come from
+`odeon/trades.json`, Kalshi days from `kalshicity/edges.json`; a number with no history (drawdown) says so instead of guessing.
+
+The order in `brain.ask`: a pending yes / no, privacy, "I traded ..." (his own report), then `skills.guard` (the refusal), then `skills.early`
+(v3), then modes, bots, Kalshi, the router skills and the rest.
+
+### The two built files
+
+```
+python tools/jarvis_facts_build.py  [--check | --selftest | --out DIR]      # STRATEGY.md + olympus/glossary-core.js -> jarvis/strategy-facts.json (17 KB)
+python tools/jarvis_search_build.py [--site DIR | --check [--strict] | --selftest]   # -> jarvis/search-index.json (about 215 KB, limit 350 KB)
+```
+
+`strategy-facts.json`: `{ v, src, strategy, head, sections: [{ n, title, lines }], terms: { name: { def, src, rules?, live, prev } }, aliases, sha }`.
+Rule lines are STRATEGY.md's own lines of the live LIT part (rules 1 to 11) with the markdown and file pointers removed; a test checks each one
+against STRATEGY.md. The builder fails when its word-to-rule table no longer matches the file, so Jarvis cannot drift into an invented rule.
+
+`search-index.json`: `{ v, kinds, counts, sha, docs: [[kindIndex, title, text, open, route, source], ...] }` from the apps list + `docs/OLYMPUS_MAP.md`
+(district), `archive/index.json` (write-ups, runs, rejected ideas) + `research/writeups/*.md` (first paragraph), `pythia/events.json`, the Lyceum
+question bank, the money machines (`money/<id>.json`, else the bundled fixture marked "[sample data]"), `kalshicity/edges.json` (stop / do-more /
+watch lists), the glossary and the strategy rules. Deterministic (no clock in the file).
+
 ## Wiring needed (not done here: the lead owns these files)
 
-- `tools/web_public/sw.js`: add `jarvis/router.js`, `jarvis/jdata.js`, `jarvis/skills.js`, `jarvis/actions.js`, `jarvis/memstore.js`,
+- **v3 (2026-11-11)** `tools/web_public/jarvis/sw.js` SHELL (bump the worker): `./skills3.js`, `./search.js`, `./dialogue.js`, `./explain.js`,
+  `./tours.js`, `./safety.js`, `./jbrief.js`, `./jpeople.js`, `../helios/helioscore.js`, `./strategy-facts.json`, `./search-index.json`, `./agents-now.json` (only when the builder wrote it) (the brain loads them on
+  first use; without them offline, search / explain say "I don't have that"). `tests.test_jarvis_shell` lists the nine scripts as missing until this is done.
+- **People** Jarvis home (`index.html` / `home-*.js`): load `../olympus/people.js` when it exists, and on a reply with `action.open === 'people'` call `OLYMPUS_PEOPLE.open(action.id)`. `createBrain({ skillsEnv })` is unchanged; a kit can also be handed in as `createSkills({ people })`.
+- **v3** `tools/build_web_dashboard.py`, after the site's JSON is published (Archive, Pythia, money, Kalshi City):
+  `python tools/jarvis_facts_build.py --out <site>/jarvis` then `python tools/jarvis_search_build.py --site <site>` (in-process:
+  `jarvis_search_build.main(["--site", out_dir])`). The repo copies are already built; `--check` is in `tests.test_jarvis_skills`.
+- **v3** Jarvis home (`index.html` / `home-*.js`), optional: render `reply.hits` (an Open button per hit: `action.open`, `action.route`),
+  `reply.tour.steps` and `reply.brief.lines`; call `JARVIS_API.tours()` for a "Tours" row and `JARVIS_API.search(q)` for a search box.
+- **v3** Archive (`archive/archive.js`), optional: honour `#find=<slug or run id>` (open that write-up / run). Until then the hit opens the Archive itself.
+
+
+- (v1, done) `tools/web_public/sw.js`: add `jarvis/router.js`, `jarvis/jdata.js`, `jarvis/skills.js`, `jarvis/actions.js`, `jarvis/memstore.js`,
   `jarvis/nudges.js` to the SHELL / lazy list (the brain loads them on first use) and bump the worker.
 - `jarvis/index.html` (Jarvis home agent): optionally pass `skillsEnv: { navigate, copy, download, briefing }` to `createBrain` so "copy the
   briefing" and "export my data" reach the clipboard and a download; without it the reply still carries the text and the `download` object.

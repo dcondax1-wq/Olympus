@@ -1,0 +1,21 @@
+{
+ "v": 1,
+ "team": "C (weather, economics, daily index, other recurring series; outside signals)",
+ "asof": "2026-11-11",
+ "status": "no_edge_found",
+ "mode": "paper",
+ "note": "Nothing survived the multiple-testing bar plus the held-out block, so there are NO rules to follow. Sibyl must not read this as a pick.",
+ "rules": [],
+ "cells_looked_at": 262,
+ "forward_paper_test": {
+  "start": "2026-11-11",
+  "stake_usd_per_bet": 1.0,
+  "max_open": 5,
+  "entry": "taker buy at the ask (no: 1 - yes bid), only when ask - bid <= 4c, one bet per market",
+  "fee": "0.07*p*(1-p) per contract",
+  "min_n_before_any_claim": 1000,
+  "kill_rule": "stop a rule when the cluster-bootstrap 95% upper bound of its edge per $ is below 0 after n >= 300, or after 60 days without n >= 300",
+  "orders": "NONE: paper ledger only, never routed to the live bot",
+  "active_rules": 0
+ }
+}

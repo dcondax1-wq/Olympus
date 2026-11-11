@@ -347,7 +347,7 @@ def test_jarvis(br, origin, shots=None):
         return { attr: d.dataset.olyTheme, theme: w.OLYMPUS.theme() && w.OLYMPUS.theme().id, glass: w.getComputedStyle(d).getPropertyValue('--glass').trim(),
                  accent: w.getComputedStyle(d).getPropertyValue('--oly-accent').trim() }; }""")
     check("d. the app framed in Jarvis (Oracle) follows through the storage event: its theme, its glass, its accent harmonised",
-          fr["attr"] == "zeus" and fr["theme"] == "zeus" and fr["glass"] == "rgba(6, 14, 34, .74)" and fr["accent"] not in ("", "#7fe9ff"), fr)
+          fr["attr"] == "zeus" and fr["theme"] == "zeus" and fr["glass"] == "rgba(6, 14, 34, .74)" and fr["accent"] not in ("", "#7fb0a3"), fr)
     # the scanline option
     p.click("#setGrain")
     p.wait_for_timeout(200)

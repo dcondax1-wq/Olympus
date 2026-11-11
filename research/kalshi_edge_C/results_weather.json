@@ -1,0 +1,3647 @@
+{
+ "generated": "2026-11-11 04:48 UTC",
+ "families": {
+  "main": {
+   "family": "weather main (7 cities)",
+   "cells_defined": 60,
+   "cells_eligible": 50,
+   "null_max_t_p95": 2.07,
+   "null_max_t_median": 0.897,
+   "carried": [],
+   "survive": [],
+   "cells": [
+    {
+     "cell": "mos model says underpriced by >= 2c | E | buy yes",
+     "n_train_all": 1430,
+     "train_n": 1430,
+     "train_days": 122,
+     "train_edge": -0.0952,
+     "train_t": -1.42,
+     "train_win": 0.1154,
+     "train_price": 0.1203,
+     "carried": false,
+     "test_n": 600,
+     "test_days": 41,
+     "test_edge": -0.3014,
+     "test_t": -2.73,
+     "test_ci95": [
+      -0.5062,
+      -0.0883
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 5c | E | buy yes",
+     "n_train_all": 1006,
+     "train_n": 1006,
+     "train_days": 122,
+     "train_edge": -0.0667,
+     "train_t": -0.85,
+     "train_win": 0.1252,
+     "train_price": 0.1268,
+     "carried": false,
+     "test_n": 459,
+     "test_days": 41,
+     "test_edge": -0.3302,
+     "test_t": -2.67,
+     "test_ci95": [
+      -0.5398,
+      -0.1048
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 10c | E | buy yes",
+     "n_train_all": 571,
+     "train_n": 571,
+     "train_days": 121,
+     "train_edge": -0.1334,
+     "train_t": -1.25,
+     "train_win": 0.1138,
+     "train_price": 0.1233,
+     "carried": false,
+     "test_n": 287,
+     "test_days": 41,
+     "test_edge": -0.3742,
+     "test_t": -2.21,
+     "test_ci95": [
+      -0.6283,
+      -0.0851
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 15c | E | buy yes",
+     "n_train_all": 280,
+     "train_n": 280,
+     "train_days": 114,
+     "train_edge": 0.0517,
+     "train_t": 0.32,
+     "train_win": 0.1393,
+     "train_price": 0.1257,
+     "carried": false,
+     "test_n": 180,
+     "test_days": 41,
+     "test_edge": -0.3472,
+     "test_t": -1.69,
+     "test_ci95": [
+      -0.6738,
+      0.0217
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 2c | E | buy yes",
+     "n_train_all": 2023,
+     "train_n": 2023,
+     "train_days": 122,
+     "train_edge": -0.2955,
+     "train_t": -3.68,
+     "train_win": 0.0479,
+     "train_price": 0.0629,
+     "carried": false,
+     "test_n": 789,
+     "test_days": 41,
+     "test_edge": -0.3182,
+     "test_t": -2.3,
+     "test_ci95": [
+      -0.5514,
+      -0.053
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 5c | E | buy yes",
+     "n_train_all": 1628,
+     "train_n": 1628,
+     "train_days": 122,
+     "train_edge": -0.2859,
+     "train_t": -3.23,
+     "train_win": 0.0491,
+     "train_price": 0.0637,
+     "carried": false,
+     "test_n": 632,
+     "test_days": 41,
+     "test_edge": -0.2674,
+     "test_t": -1.73,
+     "test_ci95": [
+      -0.5286,
+      0.03
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 10c | E | buy yes",
+     "n_train_all": 1114,
+     "train_n": 1114,
+     "train_days": 122,
+     "train_edge": -0.2523,
+     "train_t": -2.38,
+     "train_win": 0.0521,
+     "train_price": 0.0647,
+     "carried": false,
+     "test_n": 420,
+     "test_days": 41,
+     "test_edge": -0.147,
+     "test_t": -0.81,
+     "test_ci95": [
+      -0.4602,
+      0.1702
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 15c | E | buy yes",
+     "n_train_all": 813,
+     "train_n": 813,
+     "train_days": 122,
+     "train_edge": -0.2504,
+     "train_t": -2.04,
+     "train_win": 0.0529,
+     "train_price": 0.0656,
+     "carried": false,
+     "test_n": 287,
+     "test_days": 41,
+     "test_edge": -0.0785,
+     "test_t": -0.34,
+     "test_ci95": [
+      -0.5162,
+      0.3524
+     ]
+    },
+    {
+     "cell": "price band 1-10c | E | buy yes",
+     "n_train_all": 2474,
+     "train_n": 2474,
+     "train_days": 122,
+     "train_edge": -0.6347,
+     "train_t": -6.03,
+     "train_win": 0.015,
+     "train_price": 0.0346,
+     "carried": false,
+     "test_n": 929,
+     "test_days": 41,
+     "test_edge": -0.4376,
+     "test_t": -2.33,
+     "test_ci95": [
+      -0.707,
+      -0.1219
+     ]
+    },
+    {
+     "cell": "price band 10-30c | E | buy yes",
+     "n_train_all": 1161,
+     "train_n": 1161,
+     "train_days": 122,
+     "train_edge": -0.1176,
+     "train_t": -1.95,
+     "train_win": 0.1766,
+     "train_price": 0.1882,
+     "carried": false,
+     "test_n": 353,
+     "test_days": 41,
+     "test_edge": -0.3253,
+     "test_t": -2.96,
+     "test_ci95": [
+      -0.4839,
+      -0.15
+     ]
+    },
+    {
+     "cell": "price band 30-50c | E | buy yes",
+     "n_train_all": 898,
+     "train_n": 898,
+     "train_days": 122,
+     "train_edge": -0.0412,
+     "train_t": -1.0,
+     "train_win": 0.392,
+     "train_price": 0.3917,
+     "carried": false,
+     "test_n": 256,
+     "test_days": 41,
+     "test_edge": -0.0624,
+     "test_t": -0.8,
+     "test_ci95": [
+      -0.1736,
+      0.043
+     ]
+    },
+    {
+     "cell": "price band 50-70c | E | buy yes",
+     "n_train_all": 312,
+     "train_n": 312,
+     "train_days": 119,
+     "train_edge": -0.0403,
+     "train_t": -0.78,
+     "train_win": 0.5545,
+     "train_price": 0.56,
+     "carried": false,
+     "test_n": 148,
+     "test_days": 40,
+     "test_edge": 0.0947,
+     "test_t": 1.37,
+     "test_ci95": [
+      -0.0366,
+      0.2172
+     ]
+    },
+    {
+     "cell": "price band 70-90c | E | buy yes",
+     "n_train_all": 29,
+     "test_n": 25,
+     "test_days": 18,
+     "test_edge": 0.087,
+     "test_t": 0.72,
+     "test_ci95": [
+      -0.1743,
+      0.2974
+     ]
+    },
+    {
+     "cell": "price band 90-95c | E | buy yes",
+     "n_train_all": 1
+    },
+    {
+     "cell": "price band 95-99c | E | buy yes",
+     "n_train_all": 0
+    },
+    {
+     "cell": "mos model says underpriced by >= 2c | E | buy no",
+     "n_train_all": 1312,
+     "train_n": 1312,
+     "train_days": 122,
+     "train_edge": -0.018,
+     "train_t": -0.97,
+     "train_win": 0.6585,
+     "train_price": 0.6568,
+     "carried": false,
+     "test_n": 475,
+     "test_days": 41,
+     "test_edge": -0.0694,
+     "test_t": -2.03,
+     "test_ci95": [
+      -0.1154,
+      -0.0242
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 5c | E | buy no",
+     "n_train_all": 979,
+     "train_n": 979,
+     "train_days": 122,
+     "train_edge": -0.0228,
+     "train_t": -0.94,
+     "train_win": 0.6108,
+     "train_price": 0.6098,
+     "carried": false,
+     "test_n": 390,
+     "test_days": 41,
+     "test_edge": -0.0805,
+     "test_t": -1.96,
+     "test_ci95": [
+      -0.1433,
+      -0.0126
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 10c | E | buy no",
+     "n_train_all": 609,
+     "train_n": 609,
+     "train_days": 120,
+     "train_edge": -0.0176,
+     "train_t": -0.52,
+     "train_win": 0.5731,
+     "train_price": 0.5673,
+     "carried": false,
+     "test_n": 292,
+     "test_days": 41,
+     "test_edge": -0.0798,
+     "test_t": -1.52,
+     "test_ci95": [
+      -0.1657,
+      0.0155
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 15c | E | buy no",
+     "n_train_all": 336,
+     "train_n": 336,
+     "train_days": 116,
+     "train_edge": -0.0407,
+     "train_t": -0.81,
+     "train_win": 0.5179,
+     "train_price": 0.5229,
+     "carried": false,
+     "test_n": 212,
+     "test_days": 41,
+     "test_edge": -0.1504,
+     "test_t": -2.25,
+     "test_ci95": [
+      -0.2547,
+      -0.0375
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 2c | E | buy no",
+     "n_train_all": 1864,
+     "train_n": 1864,
+     "train_days": 122,
+     "train_edge": -0.0278,
+     "train_t": -1.8,
+     "train_win": 0.6631,
+     "train_price": 0.6678,
+     "carried": false,
+     "test_n": 632,
+     "test_days": 41,
+     "test_edge": -0.0474,
+     "test_t": -1.71,
+     "test_ci95": [
+      -0.078,
+      -0.0143
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 5c | E | buy no",
+     "n_train_all": 1619,
+     "train_n": 1619,
+     "train_days": 122,
+     "train_edge": -0.0277,
+     "train_t": -1.56,
+     "train_win": 0.6374,
+     "train_price": 0.6405,
+     "carried": false,
+     "test_n": 563,
+     "test_days": 41,
+     "test_edge": -0.0572,
+     "test_t": -1.81,
+     "test_ci95": [
+      -0.0971,
+      -0.0132
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 10c | E | buy no",
+     "n_train_all": 1302,
+     "train_n": 1302,
+     "train_days": 122,
+     "train_edge": -0.033,
+     "train_t": -1.54,
+     "train_win": 0.606,
+     "train_price": 0.6106,
+     "carried": false,
+     "test_n": 492,
+     "test_days": 41,
+     "test_edge": -0.0747,
+     "test_t": -2.06,
+     "test_ci95": [
+      -0.1206,
+      -0.0234
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 15c | E | buy no",
+     "n_train_all": 1049,
+     "train_n": 1049,
+     "train_days": 122,
+     "train_edge": -0.038,
+     "train_t": -1.5,
+     "train_win": 0.5767,
+     "train_price": 0.5828,
+     "carried": false,
+     "test_n": 412,
+     "test_days": 41,
+     "test_edge": -0.1002,
+     "test_t": -2.35,
+     "test_ci95": [
+      -0.1593,
+      -0.0388
+     ]
+    },
+    {
+     "cell": "price band 1-10c | E | buy no",
+     "n_train_all": 1
+    },
+    {
+     "cell": "price band 10-30c | E | buy no",
+     "n_train_all": 19
+    },
+    {
+     "cell": "price band 30-50c | E | buy no",
+     "n_train_all": 242,
+     "train_n": 242,
+     "train_days": 109,
+     "train_edge": -0.1111,
+     "train_t": -1.52,
+     "train_win": 0.4008,
+     "train_price": 0.4318,
+     "carried": false,
+     "test_n": 136,
+     "test_days": 39,
+     "test_edge": -0.2906,
+     "test_t": -2.85,
+     "test_ci95": [
+      -0.4583,
+      -0.1283
+     ]
+    },
+    {
+     "cell": "price band 50-70c | E | buy no",
+     "n_train_all": 870,
+     "train_n": 870,
+     "train_days": 122,
+     "train_edge": -0.0442,
+     "train_t": -1.61,
+     "train_win": 0.592,
+     "train_price": 0.602,
+     "carried": false,
+     "test_n": 232,
+     "test_days": 41,
+     "test_edge": -0.0317,
+     "test_t": -0.6,
+     "test_ci95": [
+      -0.094,
+      0.0268
+     ]
+    },
+    {
+     "cell": "price band 70-90c | E | buy no",
+     "n_train_all": 1103,
+     "train_n": 1103,
+     "train_days": 122,
+     "train_edge": -0.018,
+     "train_t": -1.22,
+     "train_win": 0.7987,
+     "train_price": 0.8023,
+     "carried": false,
+     "test_n": 339,
+     "test_days": 41,
+     "test_edge": 0.0291,
+     "test_t": 1.08,
+     "test_ci95": [
+      -0.0139,
+      0.0704
+     ]
+    },
+    {
+     "cell": "price band 90-95c | E | buy no",
+     "n_train_all": 426,
+     "train_n": 426,
+     "train_days": 118,
+     "train_edge": 0.007,
+     "train_t": 0.5,
+     "train_win": 0.9343,
+     "train_price": 0.9229,
+     "carried": false,
+     "test_n": 148,
+     "test_days": 40,
+     "test_edge": -0.0072,
+     "test_t": -0.3,
+     "test_ci95": [
+      -0.0522,
+      0.0308
+     ]
+    },
+    {
+     "cell": "price band 95-99c | E | buy no",
+     "n_train_all": 1624,
+     "train_n": 1624,
+     "train_days": 122,
+     "train_edge": 0.0078,
+     "train_t": 2.04,
+     "train_win": 0.9858,
+     "train_price": 0.9766,
+     "carried": false,
+     "test_n": 554,
+     "test_days": 41,
+     "test_edge": 0.002,
+     "test_t": 0.34,
+     "test_ci95": [
+      -0.0082,
+      0.0111
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 2c | M | buy yes",
+     "n_train_all": 1527,
+     "train_n": 1527,
+     "train_days": 122,
+     "train_edge": 0.0331,
+     "train_t": 0.47,
+     "train_win": 0.112,
+     "train_price": 0.1029,
+     "carried": false,
+     "test_n": 576,
+     "test_days": 41,
+     "test_edge": -0.374,
+     "test_t": -3.21,
+     "test_ci95": [
+      -0.5123,
+      -0.2219
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 5c | M | buy yes",
+     "n_train_all": 1140,
+     "train_n": 1140,
+     "train_days": 122,
+     "train_edge": 0.0993,
+     "train_t": 1.24,
+     "train_win": 0.1237,
+     "train_price": 0.1071,
+     "carried": false,
+     "test_n": 418,
+     "test_days": 41,
+     "test_edge": -0.3156,
+     "test_t": -2.3,
+     "test_ci95": [
+      -0.5301,
+      -0.0972
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 10c | M | buy yes",
+     "n_train_all": 672,
+     "train_n": 672,
+     "train_days": 122,
+     "train_edge": 0.0773,
+     "train_t": 0.68,
+     "train_win": 0.119,
+     "train_price": 0.105,
+     "carried": false,
+     "test_n": 280,
+     "test_days": 41,
+     "test_edge": -0.349,
+     "test_t": -2.07,
+     "test_ci95": [
+      -0.5966,
+      -0.0944
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 15c | M | buy yes",
+     "n_train_all": 404,
+     "train_n": 404,
+     "train_days": 118,
+     "train_edge": 0.2076,
+     "train_t": 1.28,
+     "train_win": 0.1287,
+     "train_price": 0.1017,
+     "carried": false,
+     "test_n": 188,
+     "test_days": 41,
+     "test_edge": -0.5588,
+     "test_t": -2.64,
+     "test_ci95": [
+      -0.8342,
+      -0.2193
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 2c | M | buy yes",
+     "n_train_all": 2309,
+     "train_n": 2309,
+     "train_days": 122,
+     "train_edge": -0.1333,
+     "train_t": -1.54,
+     "train_win": 0.045,
+     "train_price": 0.0487,
+     "carried": false,
+     "test_n": 820,
+     "test_days": 41,
+     "test_edge": -0.4535,
+     "test_t": -3.11,
+     "test_ci95": [
+      -0.6892,
+      -0.1809
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 5c | M | buy yes",
+     "n_train_all": 1878,
+     "train_n": 1878,
+     "train_days": 122,
+     "train_edge": -0.1405,
+     "train_t": -1.47,
+     "train_win": 0.0447,
+     "train_price": 0.0487,
+     "carried": false,
+     "test_n": 657,
+     "test_days": 41,
+     "test_edge": -0.4358,
+     "test_t": -2.67,
+     "test_ci95": [
+      -0.7146,
+      -0.0989
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 10c | M | buy yes",
+     "n_train_all": 1235,
+     "train_n": 1235,
+     "train_days": 122,
+     "train_edge": -0.1882,
+     "train_t": -1.59,
+     "train_win": 0.0421,
+     "train_price": 0.0484,
+     "carried": false,
+     "test_n": 431,
+     "test_days": 41,
+     "test_edge": -0.3612,
+     "test_t": -1.83,
+     "test_ci95": [
+      -0.721,
+      0.0251
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 15c | M | buy yes",
+     "n_train_all": 872,
+     "train_n": 872,
+     "train_days": 122,
+     "train_edge": -0.107,
+     "train_t": -0.77,
+     "train_win": 0.047,
+     "train_price": 0.0494,
+     "carried": false,
+     "test_n": 282,
+     "test_days": 41,
+     "test_edge": -0.263,
+     "test_t": -1.1,
+     "test_ci95": [
+      -0.6808,
+      0.1391
+     ]
+    },
+    {
+     "cell": "price band 1-10c | M | buy yes",
+     "n_train_all": 2779,
+     "train_n": 2779,
+     "train_days": 122,
+     "train_edge": -0.4757,
+     "train_t": -4.34,
+     "train_win": 0.0169,
+     "train_price": 0.0286,
+     "carried": false,
+     "test_n": 973,
+     "test_days": 41,
+     "test_edge": -0.7043,
+     "test_t": -3.59,
+     "test_ci95": [
+      -0.9083,
+      -0.437
+     ]
+    },
+    {
+     "cell": "price band 10-30c | M | buy yes",
+     "n_train_all": 868,
+     "train_n": 868,
+     "train_days": 122,
+     "train_edge": -0.1196,
+     "train_t": -1.68,
+     "train_win": 0.1705,
+     "train_price": 0.1821,
+     "carried": false,
+     "test_n": 309,
+     "test_days": 41,
+     "test_edge": -0.3261,
+     "test_t": -2.78,
+     "test_ci95": [
+      -0.4678,
+      -0.1845
+     ]
+    },
+    {
+     "cell": "price band 30-50c | M | buy yes",
+     "n_train_all": 740,
+     "train_n": 740,
+     "train_days": 122,
+     "train_edge": -0.0712,
+     "train_t": -1.58,
+     "train_win": 0.3838,
+     "train_price": 0.3954,
+     "carried": false,
+     "test_n": 199,
+     "test_days": 40,
+     "test_edge": -0.0206,
+     "test_t": -0.24,
+     "test_ci95": [
+      -0.144,
+      0.1083
+     ]
+    },
+    {
+     "cell": "price band 50-70c | M | buy yes",
+     "n_train_all": 464,
+     "train_n": 464,
+     "train_days": 122,
+     "train_edge": -0.0542,
+     "train_t": -1.36,
+     "train_win": 0.5603,
+     "train_price": 0.5745,
+     "carried": false,
+     "test_n": 156,
+     "test_days": 41,
+     "test_edge": 0.0992,
+     "test_t": 1.52,
+     "test_ci95": [
+      -0.0148,
+      0.1964
+     ]
+    },
+    {
+     "cell": "price band 70-90c | M | buy yes",
+     "n_train_all": 50,
+     "test_n": 32,
+     "test_days": 23,
+     "test_edge": 0.1091,
+     "test_t": 1.07,
+     "test_ci95": [
+      -0.1162,
+      0.2832
+     ]
+    },
+    {
+     "cell": "price band 90-95c | M | buy yes",
+     "n_train_all": 5
+    },
+    {
+     "cell": "price band 95-99c | M | buy yes",
+     "n_train_all": 4
+    },
+    {
+     "cell": "mos model says underpriced by >= 2c | M | buy no",
+     "n_train_all": 1257,
+     "train_n": 1257,
+     "train_days": 122,
+     "train_edge": -0.0095,
+     "train_t": -0.45,
+     "train_win": 0.6126,
+     "train_price": 0.604,
+     "carried": false,
+     "test_n": 416,
+     "test_days": 41,
+     "test_edge": -0.0661,
+     "test_t": -1.71,
+     "test_ci95": [
+      -0.1151,
+      -0.0158
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 5c | M | buy no",
+     "n_train_all": 994,
+     "train_n": 994,
+     "train_days": 122,
+     "train_edge": -0.0248,
+     "train_t": -0.94,
+     "train_win": 0.5644,
+     "train_price": 0.563,
+     "carried": false,
+     "test_n": 338,
+     "test_days": 41,
+     "test_edge": -0.0564,
+     "test_t": -1.18,
+     "test_ci95": [
+      -0.1234,
+      0.0113
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 10c | M | buy no",
+     "n_train_all": 680,
+     "train_n": 680,
+     "train_days": 122,
+     "train_edge": -0.0408,
+     "train_t": -1.15,
+     "train_win": 0.5118,
+     "train_price": 0.5167,
+     "carried": false,
+     "test_n": 256,
+     "test_days": 41,
+     "test_edge": -0.1232,
+     "test_t": -2.0,
+     "test_ci95": [
+      -0.223,
+      -0.0205
+     ]
+    },
+    {
+     "cell": "mos model says underpriced by >= 15c | M | buy no",
+     "n_train_all": 429,
+     "train_n": 429,
+     "train_days": 120,
+     "train_edge": -0.0049,
+     "train_t": -0.1,
+     "train_win": 0.5012,
+     "train_price": 0.4873,
+     "carried": false,
+     "test_n": 195,
+     "test_days": 41,
+     "test_edge": -0.1898,
+     "test_t": -2.45,
+     "test_ci95": [
+      -0.3303,
+      -0.0489
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 2c | M | buy no",
+     "n_train_all": 1653,
+     "train_n": 1653,
+     "train_days": 122,
+     "train_edge": -0.0222,
+     "train_t": -1.23,
+     "train_win": 0.6195,
+     "train_price": 0.6188,
+     "carried": false,
+     "test_n": 558,
+     "test_days": 41,
+     "test_edge": -0.0695,
+     "test_t": -2.22,
+     "test_ci95": [
+      -0.1032,
+      -0.033
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 5c | M | buy no",
+     "n_train_all": 1475,
+     "train_n": 1475,
+     "train_days": 122,
+     "train_edge": -0.0234,
+     "train_t": -1.14,
+     "train_win": 0.5925,
+     "train_price": 0.5912,
+     "carried": false,
+     "test_n": 509,
+     "test_days": 41,
+     "test_edge": -0.0843,
+     "test_t": -2.42,
+     "test_ci95": [
+      -0.1232,
+      -0.0402
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 10c | M | buy no",
+     "n_train_all": 1270,
+     "train_n": 1270,
+     "train_days": 122,
+     "train_edge": -0.0275,
+     "train_t": -1.16,
+     "train_win": 0.563,
+     "train_price": 0.5626,
+     "carried": false,
+     "test_n": 431,
+     "test_days": 41,
+     "test_edge": -0.1094,
+     "test_t": -2.62,
+     "test_ci95": [
+      -0.1607,
+      -0.0507
+     ]
+    },
+    {
+     "cell": "naive model says underpriced by >= 15c | M | buy no",
+     "n_train_all": 1101,
+     "train_n": 1101,
+     "train_days": 122,
+     "train_edge": -0.0141,
+     "train_t": -0.53,
+     "train_win": 0.5495,
+     "train_price": 0.541,
+     "carried": false,
+     "test_n": 378,
+     "test_days": 41,
+     "test_edge": -0.1375,
+     "test_t": -2.89,
+     "test_ci95": [
+      -0.1954,
+      -0.0718
+     ]
+    },
+    {
+     "cell": "price band 1-10c | M | buy no",
+     "n_train_all": 6
+    },
+    {
+     "cell": "price band 10-30c | M | buy no",
+     "n_train_all": 40,
+     "test_n": 22,
+     "test_days": 16,
+     "test_edge": -0.4599,
+     "test_t": -1.19,
+     "test_ci95": [
+      -1.0526,
+      0.2447
+     ]
+    },
+    {
+     "cell": "price band 30-50c | M | buy no",
+     "n_train_all": 384,
+     "train_n": 384,
+     "train_days": 120,
+     "train_edge": -0.045,
+     "train_t": -0.72,
+     "train_win": 0.4193,
+     "train_price": 0.4213,
+     "carried": false,
+     "test_n": 152,
+     "test_days": 41,
+     "test_edge": -0.2998,
+     "test_t": -3.03,
+     "test_ci95": [
+      -0.4426,
+      -0.1268
+     ]
+    },
+    {
+     "cell": "price band 50-70c | M | buy no",
+     "n_train_all": 741,
+     "train_n": 741,
+     "train_days": 121,
+     "train_edge": -0.0044,
+     "train_t": -0.15,
+     "train_win": 0.61,
+     "train_price": 0.596,
+     "carried": false,
+     "test_n": 187,
+     "test_days": 40,
+     "test_edge": -0.1089,
+     "test_t": -1.83,
+     "test_ci95": [
+      -0.1815,
+      -0.0289
+     ]
+    },
+    {
+     "cell": "price band 70-90c | M | buy no",
+     "n_train_all": 777,
+     "train_n": 777,
+     "train_days": 122,
+     "train_edge": -0.0392,
+     "train_t": -2.22,
+     "train_win": 0.7812,
+     "train_price": 0.8018,
+     "carried": false,
+     "test_n": 282,
+     "test_days": 41,
+     "test_edge": 0.0571,
+     "test_t": 1.95,
+     "test_ci95": [
+      0.0225,
+      0.0946
+     ]
+    },
+    {
+     "cell": "price band 90-95c | M | buy no",
+     "n_train_all": 418,
+     "train_n": 418,
+     "train_days": 120,
+     "train_edge": -0.0044,
+     "train_t": -0.31,
+     "train_win": 0.9234,
+     "train_price": 0.9225,
+     "carried": false,
+     "test_n": 131,
+     "test_days": 40,
+     "test_edge": 0.0054,
+     "test_t": 0.21,
+     "test_ci95": [
+      -0.0424,
+      0.0474
+     ]
+    },
+    {
+     "cell": "price band 95-99c | M | buy no",
+     "n_train_all": 1364,
+     "train_n": 1364,
+     "train_days": 122,
+     "train_edge": 0.0004,
+     "train_t": 0.1,
+     "train_win": 0.9795,
+     "train_price": 0.9775,
+     "carried": false,
+     "test_n": 420,
+     "test_days": 41,
+     "test_edge": 0.0058,
+     "test_t": 0.81,
+     "test_ci95": [
+      -0.0066,
+      0.0158
+     ]
+    }
+   ],
+   "units": 23822,
+   "brier": {
+    "train E": {
+     "n": 4875,
+     "brier_market_mid": 0.10056,
+     "brier_mos_model": 0.11127,
+     "brier_naive_model": 0.15105,
+     "best_mix_weight_on_forecast_(train)": 0.05,
+     "brier_best_mix": 0.10054
+    },
+    "test E": {
+     "n": 1712,
+     "brier_market_mid": 0.08906,
+     "brier_mos_model": 0.1165,
+     "brier_naive_model": 0.16761,
+     "best_mix_weight_on_forecast_(train)": 0.05,
+     "brier_best_mix": 0.08939
+    },
+    "train M": {
+     "n": 4910,
+     "brier_market_mid": 0.09418,
+     "brier_mos_model": 0.10662,
+     "brier_naive_model": 0.14883,
+     "best_mix_weight_on_forecast_(train)": 0.1,
+     "brier_best_mix": 0.09403
+    },
+    "test M": {
+     "n": 1680,
+     "brier_market_mid": 0.07884,
+     "brier_mos_model": 0.10962,
+     "brier_naive_model": 0.16725,
+     "best_mix_weight_on_forecast_(train)": 0.1,
+     "brier_best_mix": 0.07962
+    }
+   }
+  },
+  "rep": {
+   "units": 17667,
+   "days": 67,
+   "brier": {
+    "train E": {
+     "n": 1878,
+     "brier_market_mid": 0.09851,
+     "brier_mos_model": 0.11345,
+     "brier_naive_model": 0.15373,
+     "best_mix_weight_on_forecast_(train)": 0.0,
+     "brier_best_mix": 0.09851
+    },
+    "test E": {
+     "n": 3091,
+     "brier_market_mid": 0.08983,
+     "brier_mos_model": 0.11729,
+     "brier_naive_model": 0.16913,
+     "best_mix_weight_on_forecast_(train)": 0.0,
+     "brier_best_mix": 0.08983
+    },
+    "train M": {
+     "n": 1857,
+     "brier_market_mid": 0.08685,
+     "brier_mos_model": 0.10265,
+     "brier_naive_model": 0.1453,
+     "best_mix_weight_on_forecast_(train)": 0.0,
+     "brier_best_mix": 0.08685
+    },
+    "test M": {
+     "n": 2988,
+     "brier_market_mid": 0.08175,
+     "brier_mos_model": 0.11178,
+     "brier_naive_model": 0.16669,
+     "best_mix_weight_on_forecast_(train)": 0.0,
+     "brier_best_mix": 0.08175
+    }
+   },
+   "frozen_cells": [
+    {
+     "cell": "mos model says underpriced by >= 2c | E | buy yes",
+     "all_days": {
+      "n": 1880,
+      "days": 67,
+      "edge": -0.3219,
+      "t": -4.65,
+      "ci95": [
+       -0.4372,
+       -0.2035
+      ],
+      "lo": -0.4186,
+      "win": 0.067,
+      "price": 0.0911
+     },
+     "test_days_only": {
+      "n": 1248,
+      "days": 41,
+      "edge": -0.2806,
+      "t": -3.1,
+      "ci95": [
+       -0.4233,
+       -0.13
+      ],
+      "lo": -0.4008,
+      "win": 0.0633,
+      "price": 0.0814
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 5c | E | buy yes",
+     "all_days": {
+      "n": 1360,
+      "days": 67,
+      "edge": -0.2529,
+      "t": -3.05,
+      "ci95": [
+       -0.3942,
+       -0.1006
+      ],
+      "lo": -0.3718,
+      "win": 0.0721,
+      "price": 0.0894
+     },
+     "test_days_only": {
+      "n": 940,
+      "days": 41,
+      "edge": -0.2576,
+      "t": -2.45,
+      "ci95": [
+       -0.4257,
+       -0.0709
+      ],
+      "lo": -0.4022,
+      "win": 0.0649,
+      "price": 0.081
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 10c | E | buy yes",
+     "all_days": {
+      "n": 741,
+      "days": 67,
+      "edge": -0.3219,
+      "t": -2.82,
+      "ci95": [
+       -0.5032,
+       -0.1225
+      ],
+      "lo": -0.4781,
+      "win": 0.0648,
+      "price": 0.0878
+     },
+     "test_days_only": {
+      "n": 563,
+      "days": 41,
+      "edge": -0.36,
+      "t": -2.63,
+      "ci95": [
+       -0.5793,
+       -0.1294
+      ],
+      "lo": -0.5476,
+      "win": 0.0568,
+      "price": 0.0812
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 15c | E | buy yes",
+     "all_days": {
+      "n": 357,
+      "days": 64,
+      "edge": -0.272,
+      "t": -1.62,
+      "ci95": [
+       -0.541,
+       0.0201
+      ],
+      "lo": -0.501,
+      "win": 0.0672,
+      "price": 0.0853
+     },
+     "test_days_only": {
+      "n": 295,
+      "days": 41,
+      "edge": -0.3699,
+      "t": -1.91,
+      "ci95": [
+       -0.6588,
+       -0.0451
+      ],
+      "lo": -0.6162,
+      "win": 0.0542,
+      "price": 0.0785
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 2c | E | buy yes",
+     "all_days": {
+      "n": 2304,
+      "days": 67,
+      "edge": -0.402,
+      "t": -4.41,
+      "ci95": [
+       -0.5578,
+       -0.2489
+      ],
+      "lo": -0.5273,
+      "win": 0.0304,
+      "price": 0.046
+     },
+     "test_days_only": {
+      "n": 1486,
+      "days": 41,
+      "edge": -0.4041,
+      "t": -3.3,
+      "ci95": [
+       -0.6062,
+       -0.2072
+      ],
+      "lo": -0.5746,
+      "win": 0.0262,
+      "price": 0.0399
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 5c | E | buy yes",
+     "all_days": {
+      "n": 1882,
+      "days": 67,
+      "edge": -0.4014,
+      "t": -3.9,
+      "ci95": [
+       -0.5683,
+       -0.244
+      ],
+      "lo": -0.5378,
+      "win": 0.0292,
+      "price": 0.0443
+     },
+     "test_days_only": {
+      "n": 1209,
+      "days": 41,
+      "edge": -0.4354,
+      "t": -3.14,
+      "ci95": [
+       -0.6362,
+       -0.2481
+      ],
+      "lo": -0.6044,
+      "win": 0.024,
+      "price": 0.0383
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 10c | E | buy yes",
+     "all_days": {
+      "n": 1300,
+      "days": 67,
+      "edge": -0.324,
+      "t": -2.55,
+      "ci95": [
+       -0.5362,
+       -0.116
+      ],
+      "lo": -0.5056,
+      "win": 0.0308,
+      "price": 0.0417
+     },
+     "test_days_only": {
+      "n": 839,
+      "days": 41,
+      "edge": -0.3066,
+      "t": -1.8,
+      "ci95": [
+       -0.5797,
+       -0.0545
+      ],
+      "lo": -0.5341,
+      "win": 0.0274,
+      "price": 0.0363
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 15c | E | buy yes",
+     "all_days": {
+      "n": 881,
+      "days": 67,
+      "edge": -0.3211,
+      "t": -2.13,
+      "ci95": [
+       -0.5932,
+       -0.0321
+      ],
+      "lo": -0.5513,
+      "win": 0.0318,
+      "price": 0.043
+     },
+     "test_days_only": {
+      "n": 564,
+      "days": 41,
+      "edge": -0.3015,
+      "t": -1.49,
+      "ci95": [
+       -0.658,
+       0.0563
+      ],
+      "lo": -0.5964,
+      "win": 0.0284,
+      "price": 0.0374
+     }
+    },
+    {
+     "cell": "price band 1-10c | E | buy yes",
+     "all_days": {
+      "n": 2669,
+      "days": 67,
+      "edge": -0.5607,
+      "t": -5.3,
+      "ci95": [
+       -0.6883,
+       -0.426
+      ],
+      "lo": -0.6681,
+      "win": 0.0161,
+      "price": 0.0318
+     },
+     "test_days_only": {
+      "n": 1737,
+      "days": 41,
+      "edge": -0.4757,
+      "t": -3.47,
+      "ci95": [
+       -0.6555,
+       -0.2955
+      ],
+      "lo": -0.6287,
+      "win": 0.0173,
+      "price": 0.0292
+     }
+    },
+    {
+     "cell": "price band 10-30c | E | buy yes",
+     "all_days": {
+      "n": 1106,
+      "days": 67,
+      "edge": -0.1959,
+      "t": -3.14,
+      "ci95": [
+       -0.3033,
+       -0.0877
+      ],
+      "lo": -0.2866,
+      "win": 0.1591,
+      "price": 0.1851
+     },
+     "test_days_only": {
+      "n": 604,
+      "days": 41,
+      "edge": -0.2172,
+      "t": -2.59,
+      "ci95": [
+       -0.3654,
+       -0.0487
+      ],
+      "lo": -0.3476,
+      "win": 0.1573,
+      "price": 0.1876
+     }
+    },
+    {
+     "cell": "price band 30-50c | E | buy yes",
+     "all_days": {
+      "n": 735,
+      "days": 67,
+      "edge": -0.0519,
+      "t": -1.13,
+      "ci95": [
+       -0.1287,
+       0.0269
+      ],
+      "lo": -0.1176,
+      "win": 0.3864,
+      "price": 0.3902
+     },
+     "test_days_only": {
+      "n": 420,
+      "days": 41,
+      "edge": -0.0832,
+      "t": -1.37,
+      "ci95": [
+       -0.1975,
+       0.0351
+      ],
+      "lo": -0.1796,
+      "win": 0.3738,
+      "price": 0.3898
+     }
+    },
+    {
+     "cell": "price band 50-70c | E | buy yes",
+     "all_days": {
+      "n": 421,
+      "days": 67,
+      "edge": 0.0579,
+      "t": 1.4,
+      "ci95": [
+       -0.0259,
+       0.1331
+      ],
+      "lo": -0.0115,
+      "win": 0.6295,
+      "price": 0.5791
+     },
+     "test_days_only": {
+      "n": 297,
+      "days": 41,
+      "edge": 0.0635,
+      "t": 1.31,
+      "ci95": [
+       -0.0236,
+       0.1522
+      ],
+      "lo": -0.0134,
+      "win": 0.6397,
+      "price": 0.5858
+     }
+    },
+    {
+     "cell": "price band 70-90c | E | buy yes",
+     "all_days": {
+      "n": 35,
+      "days": 26,
+      "edge": 0.0353,
+      "t": 0.37,
+      "ci95": [
+       -0.1457,
+       0.2023
+      ],
+      "lo": -0.1142,
+      "win": 0.8,
+      "price": 0.7606
+     },
+     "test_days_only": {
+      "n": 30,
+      "days": 21,
+      "edge": 0.0308,
+      "t": 0.31,
+      "ci95": [
+       -0.1678,
+       0.2132
+      ],
+      "lo": -0.1301,
+      "win": 0.8,
+      "price": 0.764
+     }
+    },
+    {
+     "cell": "price band 90-95c | E | buy yes",
+     "all_days": {
+      "n": 3
+     },
+     "test_days_only": {
+      "n": 3
+     }
+    },
+    {
+     "cell": "price band 95-99c | E | buy yes",
+     "all_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 2c | E | buy no",
+     "all_days": {
+      "n": 1285,
+      "days": 67,
+      "edge": -0.0749,
+      "t": -3.57,
+      "ci95": [
+       -0.1046,
+       -0.0448
+      ],
+      "lo": -0.099,
+      "win": 0.5743,
+      "price": 0.6051
+     },
+     "test_days_only": {
+      "n": 798,
+      "days": 41,
+      "edge": -0.0786,
+      "t": -2.79,
+      "ci95": [
+       -0.1162,
+       -0.0394
+      ],
+      "lo": -0.1107,
+      "win": 0.5489,
+      "price": 0.5796
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 5c | E | buy no",
+     "all_days": {
+      "n": 1045,
+      "days": 67,
+      "edge": -0.0863,
+      "t": -3.36,
+      "ci95": [
+       -0.1277,
+       -0.046
+      ],
+      "lo": -0.1201,
+      "win": 0.5321,
+      "price": 0.5654
+     },
+     "test_days_only": {
+      "n": 680,
+      "days": 41,
+      "edge": -0.0891,
+      "t": -2.71,
+      "ci95": [
+       -0.1362,
+       -0.0401
+      ],
+      "lo": -0.1284,
+      "win": 0.5162,
+      "price": 0.5496
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 10c | E | buy no",
+     "all_days": {
+      "n": 756,
+      "days": 67,
+      "edge": -0.1348,
+      "t": -3.99,
+      "ci95": [
+       -0.1944,
+       -0.0734
+      ],
+      "lo": -0.1853,
+      "win": 0.463,
+      "price": 0.5164
+     },
+     "test_days_only": {
+      "n": 528,
+      "days": 41,
+      "edge": -0.1429,
+      "t": -3.5,
+      "ci95": [
+       -0.2119,
+       -0.075
+      ],
+      "lo": -0.2003,
+      "win": 0.4527,
+      "price": 0.5095
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 15c | E | buy no",
+     "all_days": {
+      "n": 549,
+      "days": 67,
+      "edge": -0.1612,
+      "t": -3.76,
+      "ci95": [
+       -0.236,
+       -0.0843
+      ],
+      "lo": -0.2242,
+      "win": 0.4208,
+      "price": 0.4821
+     },
+     "test_days_only": {
+      "n": 399,
+      "days": 41,
+      "edge": -0.1679,
+      "t": -3.3,
+      "ci95": [
+       -0.2546,
+       -0.08
+      ],
+      "lo": -0.2403,
+      "win": 0.411,
+      "price": 0.4744
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 2c | E | buy no",
+     "all_days": {
+      "n": 1845,
+      "days": 67,
+      "edge": -0.0356,
+      "t": -2.22,
+      "ci95": [
+       -0.0538,
+       -0.018
+      ],
+      "lo": -0.051,
+      "win": 0.6396,
+      "price": 0.6487
+     },
+     "test_days_only": {
+      "n": 1123,
+      "days": 41,
+      "edge": -0.0375,
+      "t": -1.77,
+      "ci95": [
+       -0.0596,
+       -0.0167
+      ],
+      "lo": -0.0562,
+      "win": 0.6215,
+      "price": 0.6311
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 5c | E | buy no",
+     "all_days": {
+      "n": 1635,
+      "days": 67,
+      "edge": -0.042,
+      "t": -2.3,
+      "ci95": [
+       -0.0641,
+       -0.0211
+      ],
+      "lo": -0.0603,
+      "win": 0.6092,
+      "price": 0.6206
+     },
+     "test_days_only": {
+      "n": 1017,
+      "days": 41,
+      "edge": -0.0435,
+      "t": -1.83,
+      "ci95": [
+       -0.0699,
+       -0.0181
+      ],
+      "lo": -0.0655,
+      "win": 0.5939,
+      "price": 0.6055
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 10c | E | buy no",
+     "all_days": {
+      "n": 1358,
+      "days": 67,
+      "edge": -0.0636,
+      "t": -2.91,
+      "ci95": [
+       -0.0924,
+       -0.0348
+      ],
+      "lo": -0.0877,
+      "win": 0.5633,
+      "price": 0.585
+     },
+     "test_days_only": {
+      "n": 864,
+      "days": 41,
+      "edge": -0.0584,
+      "t": -2.09,
+      "ci95": [
+       -0.094,
+       -0.0234
+      ],
+      "lo": -0.0883,
+      "win": 0.5556,
+      "price": 0.5736
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 15c | E | buy no",
+     "all_days": {
+      "n": 1113,
+      "days": 67,
+      "edge": -0.0648,
+      "t": -2.48,
+      "ci95": [
+       -0.1022,
+       -0.0271
+      ],
+      "lo": -0.0969,
+      "win": 0.531,
+      "price": 0.5506
+     },
+     "test_days_only": {
+      "n": 711,
+      "days": 41,
+      "edge": -0.0617,
+      "t": -1.84,
+      "ci95": [
+       -0.1103,
+       -0.0167
+      ],
+      "lo": -0.1008,
+      "win": 0.519,
+      "price": 0.536
+     }
+    },
+    {
+     "cell": "price band 1-10c | E | buy no",
+     "all_days": {
+      "n": 1
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "price band 10-30c | E | buy no",
+     "all_days": {
+      "n": 32,
+      "days": 24,
+      "edge": -0.2622,
+      "t": -0.83,
+      "ci95": [
+       -0.8197,
+       0.3796
+      ],
+      "lo": -0.77,
+      "win": 0.1875,
+      "price": 0.2372
+     },
+     "test_days_only": {
+      "n": 28,
+      "days": 20,
+      "edge": -0.2872,
+      "t": -0.84,
+      "ci95": [
+       -0.8917,
+       0.4061
+      ],
+      "lo": -0.8641,
+      "win": 0.1786,
+      "price": 0.2332
+     }
+    },
+    {
+     "cell": "price band 30-50c | E | buy no",
+     "all_days": {
+      "n": 360,
+      "days": 67,
+      "edge": -0.1991,
+      "t": -3.23,
+      "ci95": [
+       -0.3077,
+       -0.077
+      ],
+      "lo": -0.292,
+      "win": 0.3528,
+      "price": 0.4194
+     },
+     "test_days_only": {
+      "n": 255,
+      "days": 41,
+      "edge": -0.2214,
+      "t": -2.97,
+      "ci95": [
+       -0.3468,
+       -0.0871
+      ],
+      "lo": -0.3268,
+      "win": 0.3373,
+      "price": 0.4116
+     }
+    },
+    {
+     "cell": "price band 50-70c | E | buy no",
+     "all_days": {
+      "n": 703,
+      "days": 67,
+      "edge": -0.0613,
+      "t": -2.01,
+      "ci95": [
+       -0.1094,
+       -0.0151
+      ],
+      "lo": -0.1023,
+      "win": 0.5818,
+      "price": 0.6021
+     },
+     "test_days_only": {
+      "n": 411,
+      "days": 41,
+      "edge": -0.0478,
+      "t": -1.2,
+      "ci95": [
+       -0.1114,
+       0.014
+      ],
+      "lo": -0.1012,
+      "win": 0.5888,
+      "price": 0.601
+     }
+    },
+    {
+     "cell": "price band 70-90c | E | buy no",
+     "all_days": {
+      "n": 1016,
+      "days": 67,
+      "edge": -0.0003,
+      "t": -0.02,
+      "ci95": [
+       -0.0249,
+       0.0238
+      ],
+      "lo": -0.0207,
+      "win": 0.815,
+      "price": 0.8044
+     },
+     "test_days_only": {
+      "n": 573,
+      "days": 41,
+      "edge": 0.0115,
+      "t": 0.56,
+      "ci95": [
+       -0.0267,
+       0.0443
+      ],
+      "lo": -0.019,
+      "win": 0.8237,
+      "price": 0.8037
+     }
+    },
+    {
+     "cell": "price band 90-95c | E | buy no",
+     "all_days": {
+      "n": 435,
+      "days": 67,
+      "edge": 0.005,
+      "t": 0.36,
+      "ci95": [
+       -0.0207,
+       0.0289
+      ],
+      "lo": -0.0164,
+      "win": 0.931,
+      "price": 0.9214
+     },
+     "test_days_only": {
+      "n": 228,
+      "days": 41,
+      "edge": -0.0019,
+      "t": -0.1,
+      "ci95": [
+       -0.0403,
+       0.0332
+      ],
+      "lo": -0.0335,
+      "win": 0.9254,
+      "price": 0.9222
+     }
+    },
+    {
+     "cell": "price band 95-99c | E | buy no",
+     "all_days": {
+      "n": 1752,
+      "days": 67,
+      "edge": 0.0049,
+      "t": 1.4,
+      "ci95": [
+       -0.0006,
+       0.0098
+      ],
+      "lo": 0.0004,
+      "win": 0.9852,
+      "price": 0.9789
+     },
+     "test_days_only": {
+      "n": 1138,
+      "days": 41,
+      "edge": 0.0025,
+      "t": 0.59,
+      "ci95": [
+       -0.0039,
+       0.0085
+      ],
+      "lo": -0.003,
+      "win": 0.9842,
+      "price": 0.9804
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 2c | M | buy yes",
+     "all_days": {
+      "n": 1932,
+      "days": 67,
+      "edge": -0.2855,
+      "t": -3.85,
+      "ci95": [
+       -0.4048,
+       -0.153
+      ],
+      "lo": -0.3879,
+      "win": 0.06,
+      "price": 0.0777
+     },
+     "test_days_only": {
+      "n": 1215,
+      "days": 41,
+      "edge": -0.3648,
+      "t": -3.8,
+      "ci95": [
+       -0.4986,
+       -0.2271
+      ],
+      "lo": -0.4764,
+      "win": 0.051,
+      "price": 0.0736
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 5c | M | buy yes",
+     "all_days": {
+      "n": 1440,
+      "days": 67,
+      "edge": -0.2428,
+      "t": -2.85,
+      "ci95": [
+       -0.3885,
+       -0.0853
+      ],
+      "lo": -0.3653,
+      "win": 0.0653,
+      "price": 0.08
+     },
+     "test_days_only": {
+      "n": 928,
+      "days": 41,
+      "edge": -0.3148,
+      "t": -2.87,
+      "ci95": [
+       -0.4949,
+       -0.1384
+      ],
+      "lo": -0.4611,
+      "win": 0.056,
+      "price": 0.0753
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 10c | M | buy yes",
+     "all_days": {
+      "n": 840,
+      "days": 67,
+      "edge": -0.2609,
+      "t": -2.23,
+      "ci95": [
+       -0.4293,
+       -0.0747
+      ],
+      "lo": -0.4067,
+      "win": 0.0595,
+      "price": 0.0745
+     },
+     "test_days_only": {
+      "n": 581,
+      "days": 41,
+      "edge": -0.2417,
+      "t": -1.68,
+      "ci95": [
+       -0.4632,
+       0.0093
+      ],
+      "lo": -0.4289,
+      "win": 0.0585,
+      "price": 0.0715
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 15c | M | buy yes",
+     "all_days": {
+      "n": 455,
+      "days": 66,
+      "edge": -0.3124,
+      "t": -1.99,
+      "ci95": [
+       -0.5582,
+       -0.0429
+      ],
+      "lo": -0.5159,
+      "win": 0.0571,
+      "price": 0.0765
+     },
+     "test_days_only": {
+      "n": 332,
+      "days": 41,
+      "edge": -0.2886,
+      "t": -1.55,
+      "ci95": [
+       -0.5729,
+       0.0314
+      ],
+      "lo": -0.5332,
+      "win": 0.0572,
+      "price": 0.0742
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 2c | M | buy yes",
+     "all_days": {
+      "n": 2457,
+      "days": 67,
+      "edge": -0.4044,
+      "t": -4.19,
+      "ci95": [
+       -0.5597,
+       -0.2474
+      ],
+      "lo": -0.5375,
+      "win": 0.0252,
+      "price": 0.0384
+     },
+     "test_days_only": {
+      "n": 1540,
+      "days": 41,
+      "edge": -0.437,
+      "t": -3.42,
+      "ci95": [
+       -0.6545,
+       -0.2268
+      ],
+      "lo": -0.6215,
+      "win": 0.0221,
+      "price": 0.0353
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 5c | M | buy yes",
+     "all_days": {
+      "n": 2051,
+      "days": 67,
+      "edge": -0.4206,
+      "t": -3.87,
+      "ci95": [
+       -0.5819,
+       -0.2518
+      ],
+      "lo": -0.558,
+      "win": 0.0234,
+      "price": 0.0365
+     },
+     "test_days_only": {
+      "n": 1272,
+      "days": 41,
+      "edge": -0.5262,
+      "t": -3.66,
+      "ci95": [
+       -0.7257,
+       -0.3375
+      ],
+      "lo": -0.6916,
+      "win": 0.0181,
+      "price": 0.0337
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 10c | M | buy yes",
+     "all_days": {
+      "n": 1396,
+      "days": 67,
+      "edge": -0.4893,
+      "t": -3.67,
+      "ci95": [
+       -0.7013,
+       -0.27
+      ],
+      "lo": -0.6638,
+      "win": 0.0201,
+      "price": 0.0351
+     },
+     "test_days_only": {
+      "n": 864,
+      "days": 41,
+      "edge": -0.5009,
+      "t": -2.88,
+      "ci95": [
+       -0.777,
+       -0.2292
+      ],
+      "lo": -0.7325,
+      "win": 0.0185,
+      "price": 0.0331
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 15c | M | buy yes",
+     "all_days": {
+      "n": 909,
+      "days": 67,
+      "edge": -0.4708,
+      "t": -2.92,
+      "ci95": [
+       -0.7134,
+       -0.2138
+      ],
+      "lo": -0.6726,
+      "win": 0.0209,
+      "price": 0.0356
+     },
+     "test_days_only": {
+      "n": 566,
+      "days": 41,
+      "edge": -0.4879,
+      "t": -2.35,
+      "ci95": [
+       -0.7821,
+       -0.1893
+      ],
+      "lo": -0.7414,
+      "win": 0.0194,
+      "price": 0.0341
+     }
+    },
+    {
+     "cell": "price band 1-10c | M | buy yes",
+     "all_days": {
+      "n": 2895,
+      "days": 67,
+      "edge": -0.5062,
+      "t": -4.59,
+      "ci95": [
+       -0.6575,
+       -0.3501
+      ],
+      "lo": -0.633,
+      "win": 0.0152,
+      "price": 0.0271
+     },
+     "test_days_only": {
+      "n": 1816,
+      "days": 41,
+      "edge": -0.4743,
+      "t": -3.33,
+      "ci95": [
+       -0.6534,
+       -0.2875
+      ],
+      "lo": -0.6276,
+      "win": 0.0154,
+      "price": 0.026
+     }
+    },
+    {
+     "cell": "price band 10-30c | M | buy yes",
+     "all_days": {
+      "n": 820,
+      "days": 67,
+      "edge": -0.1809,
+      "t": -2.48,
+      "ci95": [
+       -0.3129,
+       -0.0429
+      ],
+      "lo": -0.293,
+      "win": 0.1598,
+      "price": 0.1826
+     },
+     "test_days_only": {
+      "n": 475,
+      "days": 41,
+      "edge": -0.193,
+      "t": -2.01,
+      "ci95": [
+       -0.349,
+       -0.0399
+      ],
+      "lo": -0.3243,
+      "win": 0.1579,
+      "price": 0.183
+     }
+    },
+    {
+     "cell": "price band 30-50c | M | buy yes",
+     "all_days": {
+      "n": 606,
+      "days": 67,
+      "edge": -0.1078,
+      "t": -2.14,
+      "ci95": [
+       -0.1844,
+       -0.0282
+      ],
+      "lo": -0.1727,
+      "win": 0.3647,
+      "price": 0.3904
+     },
+     "test_days_only": {
+      "n": 352,
+      "days": 41,
+      "edge": -0.0662,
+      "t": -1.0,
+      "ci95": [
+       -0.1597,
+       0.0333
+      ],
+      "lo": -0.1458,
+      "win": 0.3807,
+      "price": 0.3901
+     }
+    },
+    {
+     "cell": "price band 50-70c | M | buy yes",
+     "all_days": {
+      "n": 427,
+      "days": 67,
+      "edge": 0.0096,
+      "t": 0.24,
+      "ci95": [
+       -0.0699,
+       0.087
+      ],
+      "lo": -0.0561,
+      "win": 0.6042,
+      "price": 0.5818
+     },
+     "test_days_only": {
+      "n": 269,
+      "days": 41,
+      "edge": -0.017,
+      "t": -0.33,
+      "ci95": [
+       -0.1079,
+       0.074
+      ],
+      "lo": -0.0932,
+      "win": 0.5911,
+      "price": 0.5842
+     }
+    },
+    {
+     "cell": "price band 70-90c | M | buy yes",
+     "all_days": {
+      "n": 85,
+      "days": 49,
+      "edge": 0.1078,
+      "t": 1.8,
+      "ci95": [
+       0.0132,
+       0.1931
+      ],
+      "lo": 0.0283,
+      "win": 0.8588,
+      "price": 0.764
+     },
+     "test_days_only": {
+      "n": 65,
+      "days": 35,
+      "edge": 0.1782,
+      "t": 2.57,
+      "ci95": [
+       0.095,
+       0.2545
+      ],
+      "lo": 0.1093,
+      "win": 0.9077,
+      "price": 0.7597
+     }
+    },
+    {
+     "cell": "price band 90-95c | M | buy yes",
+     "all_days": {
+      "n": 4
+     },
+     "test_days_only": {
+      "n": 3
+     }
+    },
+    {
+     "cell": "price band 95-99c | M | buy yes",
+     "all_days": {
+      "n": 8
+     },
+     "test_days_only": {
+      "n": 8
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 2c | M | buy no",
+     "all_days": {
+      "n": 1123,
+      "days": 67,
+      "edge": -0.0574,
+      "t": -2.33,
+      "ci95": [
+       -0.0935,
+       -0.0214
+      ],
+      "lo": -0.0879,
+      "win": 0.5405,
+      "price": 0.5577
+     },
+     "test_days_only": {
+      "n": 707,
+      "days": 41,
+      "edge": -0.0869,
+      "t": -2.78,
+      "ci95": [
+       -0.1282,
+       -0.0453
+      ],
+      "lo": -0.1215,
+      "win": 0.5163,
+      "price": 0.5494
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 5c | M | buy no",
+     "all_days": {
+      "n": 958,
+      "days": 67,
+      "edge": -0.071,
+      "t": -2.44,
+      "ci95": [
+       -0.1189,
+       -0.0246
+      ],
+      "lo": -0.111,
+      "win": 0.501,
+      "price": 0.5227
+     },
+     "test_days_only": {
+      "n": 608,
+      "days": 41,
+      "edge": -0.0997,
+      "t": -2.68,
+      "ci95": [
+       -0.1527,
+       -0.0465
+      ],
+      "lo": -0.145,
+      "win": 0.4753,
+      "price": 0.5109
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 10c | M | buy no",
+     "all_days": {
+      "n": 742,
+      "days": 67,
+      "edge": -0.082,
+      "t": -2.26,
+      "ci95": [
+       -0.1439,
+       -0.0195
+      ],
+      "lo": -0.1336,
+      "win": 0.4582,
+      "price": 0.4819
+     },
+     "test_days_only": {
+      "n": 485,
+      "days": 41,
+      "edge": -0.1097,
+      "t": -2.41,
+      "ci95": [
+       -0.1823,
+       -0.0371
+      ],
+      "lo": -0.171,
+      "win": 0.4371,
+      "price": 0.4733
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 15c | M | buy no",
+     "all_days": {
+      "n": 563,
+      "days": 67,
+      "edge": -0.0902,
+      "t": -2.0,
+      "ci95": [
+       -0.1766,
+       -0.0028
+      ],
+      "lo": -0.1627,
+      "win": 0.421,
+      "price": 0.4452
+     },
+     "test_days_only": {
+      "n": 386,
+      "days": 41,
+      "edge": -0.1018,
+      "t": -1.86,
+      "ci95": [
+       -0.202,
+       -0.0017
+      ],
+      "lo": -0.1845,
+      "win": 0.4119,
+      "price": 0.441
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 2c | M | buy no",
+     "all_days": {
+      "n": 1583,
+      "days": 67,
+      "edge": -0.0384,
+      "t": -2.08,
+      "ci95": [
+       -0.061,
+       -0.0177
+      ],
+      "lo": -0.0568,
+      "win": 0.6033,
+      "price": 0.6127
+     },
+     "test_days_only": {
+      "n": 984,
+      "days": 41,
+      "edge": -0.05,
+      "t": -2.11,
+      "ci95": [
+       -0.078,
+       -0.0237
+      ],
+      "lo": -0.0736,
+      "win": 0.5884,
+      "price": 0.6045
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 5c | M | buy no",
+     "all_days": {
+      "n": 1417,
+      "days": 67,
+      "edge": -0.0434,
+      "t": -2.07,
+      "ci95": [
+       -0.069,
+       -0.0191
+      ],
+      "lo": -0.0651,
+      "win": 0.5745,
+      "price": 0.585
+     },
+     "test_days_only": {
+      "n": 879,
+      "days": 41,
+      "edge": -0.0581,
+      "t": -2.16,
+      "ci95": [
+       -0.0911,
+       -0.0292
+      ],
+      "lo": -0.0853,
+      "win": 0.5563,
+      "price": 0.5749
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 10c | M | buy no",
+     "all_days": {
+      "n": 1215,
+      "days": 67,
+      "edge": -0.0448,
+      "t": -1.82,
+      "ci95": [
+       -0.0754,
+       -0.0135
+      ],
+      "lo": -0.0702,
+      "win": 0.5407,
+      "price": 0.5498
+     },
+     "test_days_only": {
+      "n": 764,
+      "days": 41,
+      "edge": -0.0562,
+      "t": -1.79,
+      "ci95": [
+       -0.0935,
+       -0.0208
+      ],
+      "lo": -0.0877,
+      "win": 0.5262,
+      "price": 0.5412
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 15c | M | buy no",
+     "all_days": {
+      "n": 1025,
+      "days": 67,
+      "edge": -0.0545,
+      "t": -1.89,
+      "ci95": [
+       -0.096,
+       -0.0134
+      ],
+      "lo": -0.0892,
+      "win": 0.5044,
+      "price": 0.5166
+     },
+     "test_days_only": {
+      "n": 653,
+      "days": 41,
+      "edge": -0.0725,
+      "t": -1.98,
+      "ci95": [
+       -0.1223,
+       -0.0219
+      ],
+      "lo": -0.1144,
+      "win": 0.487,
+      "price": 0.508
+     }
+    },
+    {
+     "cell": "price band 1-10c | M | buy no",
+     "all_days": {
+      "n": 12
+     },
+     "test_days_only": {
+      "n": 11
+     }
+    },
+    {
+     "cell": "price band 10-30c | M | buy no",
+     "all_days": {
+      "n": 59,
+      "days": 42,
+      "edge": -0.4663,
+      "t": -1.97,
+      "ci95": [
+       -0.8098,
+       -0.0494
+      ],
+      "lo": -0.7557,
+      "win": 0.1356,
+      "price": 0.231
+     },
+     "test_days_only": {
+      "n": 43,
+      "days": 30,
+      "edge": -0.6543,
+      "t": -2.38,
+      "ci95": [
+       -0.9588,
+       -0.2326
+      ],
+      "lo": -0.9466,
+      "win": 0.093,
+      "price": 0.2333
+     }
+    },
+    {
+     "cell": "price band 30-50c | M | buy no",
+     "all_days": {
+      "n": 378,
+      "days": 67,
+      "edge": -0.2101,
+      "t": -3.43,
+      "ci95": [
+       -0.3157,
+       -0.1018
+      ],
+      "lo": -0.3016,
+      "win": 0.3413,
+      "price": 0.4108
+     },
+     "test_days_only": {
+      "n": 253,
+      "days": 41,
+      "edge": -0.2273,
+      "t": -3.02,
+      "ci95": [
+       -0.3565,
+       -0.0916
+      ],
+      "lo": -0.3349,
+      "win": 0.332,
+      "price": 0.4081
+     }
+    },
+    {
+     "cell": "price band 50-70c | M | buy no",
+     "all_days": {
+      "n": 582,
+      "days": 67,
+      "edge": 0.0148,
+      "t": 0.44,
+      "ci95": [
+       -0.0373,
+       0.0658
+      ],
+      "lo": -0.0293,
+      "win": 0.6237,
+      "price": 0.5983
+     },
+     "test_days_only": {
+      "n": 332,
+      "days": 41,
+      "edge": 0.018,
+      "t": 0.4,
+      "ci95": [
+       -0.0496,
+       0.0853
+      ],
+      "lo": -0.0389,
+      "win": 0.6265,
+      "price": 0.5991
+     }
+    },
+    {
+     "cell": "price band 70-90c | M | buy no",
+     "all_days": {
+      "n": 766,
+      "days": 67,
+      "edge": -0.0109,
+      "t": -0.62,
+      "ci95": [
+       -0.0459,
+       0.0223
+      ],
+      "lo": -0.0406,
+      "win": 0.8055,
+      "price": 0.8035
+     },
+     "test_days_only": {
+      "n": 450,
+      "days": 41,
+      "edge": -0.0039,
+      "t": -0.17,
+      "ci95": [
+       -0.0442,
+       0.0343
+      ],
+      "lo": -0.0374,
+      "win": 0.8111,
+      "price": 0.8034
+     }
+    },
+    {
+     "cell": "price band 90-95c | M | buy no",
+     "all_days": {
+      "n": 381,
+      "days": 67,
+      "edge": -0.0091,
+      "t": -0.6,
+      "ci95": [
+       -0.0399,
+       0.0204
+      ],
+      "lo": -0.0344,
+      "win": 0.9186,
+      "price": 0.922
+     },
+     "test_days_only": {
+      "n": 228,
+      "days": 41,
+      "edge": -0.0309,
+      "t": -1.37,
+      "ci95": [
+       -0.077,
+       0.0104
+      ],
+      "lo": -0.069,
+      "win": 0.8991,
+      "price": 0.9226
+     }
+    },
+    {
+     "cell": "price band 95-99c | M | buy no",
+     "all_days": {
+      "n": 1376,
+      "days": 67,
+      "edge": 0.0002,
+      "t": 0.05,
+      "ci95": [
+       -0.0073,
+       0.0071
+      ],
+      "lo": -0.0061,
+      "win": 0.9804,
+      "price": 0.9787
+     },
+     "test_days_only": {
+      "n": 825,
+      "days": 41,
+      "edge": 0.0024,
+      "t": 0.47,
+      "ci95": [
+       -0.0065,
+       0.0104
+      ],
+      "lo": -0.005,
+      "win": 0.983,
+      "price": 0.9793
+     }
+    }
+   ]
+  },
+  "low": {
+   "units": 2229,
+   "days": 67,
+   "brier": {
+    "train E": {
+     "n": 470,
+     "brier_market_mid": 0.04805,
+     "brier_mos_model": 0.05698,
+     "brier_naive_model": 0.09202,
+     "best_mix_weight_on_forecast_(train)": 0.0,
+     "brier_best_mix": 0.04805
+    },
+    "test E": {
+     "n": 829,
+     "brier_market_mid": 0.03389,
+     "brier_mos_model": 0.04853,
+     "brier_naive_model": 0.08927,
+     "best_mix_weight_on_forecast_(train)": 0.0,
+     "brier_best_mix": 0.03389
+    }
+   },
+   "frozen_cells": [
+    {
+     "cell": "mos model says underpriced by >= 2c | E | buy yes",
+     "all_days": {
+      "n": 365,
+      "days": 67,
+      "edge": -0.3264,
+      "t": -1.99,
+      "ci95": [
+       -0.5915,
+       -0.0653
+      ],
+      "lo": -0.549,
+      "win": 0.0548,
+      "price": 0.0755
+     },
+     "test_days_only": {
+      "n": 242,
+      "days": 41,
+      "edge": -0.3759,
+      "t": -1.89,
+      "ci95": [
+       -0.6792,
+       -0.0751
+      ],
+      "lo": -0.6355,
+      "win": 0.0496,
+      "price": 0.0736
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 5c | E | buy yes",
+     "all_days": {
+      "n": 272,
+      "days": 67,
+      "edge": -0.395,
+      "t": -1.94,
+      "ci95": [
+       -0.7348,
+       -0.0449
+      ],
+      "lo": -0.6811,
+      "win": 0.0478,
+      "price": 0.0722
+     },
+     "test_days_only": {
+      "n": 184,
+      "days": 41,
+      "edge": -0.3358,
+      "t": -1.32,
+      "ci95": [
+       -0.7512,
+       0.0792
+      ],
+      "lo": -0.6934,
+      "win": 0.0489,
+      "price": 0.0678
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 10c | E | buy yes",
+     "all_days": {
+      "n": 167,
+      "days": 61,
+      "edge": -0.4709,
+      "t": -1.8,
+      "ci95": [
+       -0.8778,
+       -0.027
+      ],
+      "lo": -0.8109,
+      "win": 0.0419,
+      "price": 0.0715
+     },
+     "test_days_only": {
+      "n": 119,
+      "days": 39,
+      "edge": -0.4524,
+      "t": -1.45,
+      "ci95": [
+       -0.934,
+       0.1016
+      ],
+      "lo": -0.9097,
+      "win": 0.042,
+      "price": 0.0696
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 15c | E | buy yes",
+     "all_days": {
+      "n": 97,
+      "days": 51,
+      "edge": -0.379,
+      "t": -1.17,
+      "ci95": [
+       -0.9252,
+       0.2931
+      ],
+      "lo": -0.8965,
+      "win": 0.0515,
+      "price": 0.0763
+     },
+     "test_days_only": {
+      "n": 69,
+      "days": 35,
+      "edge": -0.1388,
+      "t": -0.34,
+      "ci95": [
+       -0.8757,
+       0.675
+      ],
+      "lo": -0.81,
+      "win": 0.0725,
+      "price": 0.0793
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 2c | E | buy yes",
+     "all_days": {
+      "n": 613,
+      "days": 67,
+      "edge": -0.6682,
+      "t": -4.13,
+      "ci95": [
+       -0.856,
+       -0.4669
+      ],
+      "lo": -0.8256,
+      "win": 0.0196,
+      "price": 0.0504
+     },
+     "test_days_only": {
+      "n": 426,
+      "days": 41,
+      "edge": -0.7029,
+      "t": -3.53,
+      "ci95": [
+       -0.9071,
+       -0.465
+      ],
+      "lo": -0.8898,
+      "win": 0.0164,
+      "price": 0.0467
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 5c | E | buy yes",
+     "all_days": {
+      "n": 498,
+      "days": 67,
+      "edge": -0.6877,
+      "t": -3.67,
+      "ci95": [
+       -0.8978,
+       -0.4358
+      ],
+      "lo": -0.8652,
+      "win": 0.0181,
+      "price": 0.0486
+     },
+     "test_days_only": {
+      "n": 349,
+      "days": 41,
+      "edge": -0.7312,
+      "t": -3.08,
+      "ci95": [
+       -0.9913,
+       -0.4146
+      ],
+      "lo": -0.9364,
+      "win": 0.0143,
+      "price": 0.0436
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 10c | E | buy yes",
+     "all_days": {
+      "n": 355,
+      "days": 67,
+      "edge": -0.8274,
+      "t": -3.76,
+      "ci95": [
+       -1.0041,
+       -0.592
+      ],
+      "lo": -0.9998,
+      "win": 0.0113,
+      "price": 0.0487
+     },
+     "test_days_only": {
+      "n": 256,
+      "days": 41,
+      "edge": -0.881,
+      "t": -3.25,
+      "ci95": [
+       -1.0603,
+       -0.5933
+      ],
+      "lo": -1.0591,
+      "win": 0.0078,
+      "price": 0.0441
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 15c | E | buy yes",
+     "all_days": {
+      "n": 241,
+      "days": 64,
+      "edge": -0.8129,
+      "t": -3.13,
+      "ci95": [
+       -1.0588,
+       -0.5221
+      ],
+      "lo": -0.9941,
+      "win": 0.0124,
+      "price": 0.0508
+     },
+     "test_days_only": {
+      "n": 170,
+      "days": 40,
+      "edge": -0.9261,
+      "t": -2.84,
+      "ci95": [
+       -1.0623,
+       -0.6283
+      ],
+      "lo": -1.0612,
+      "win": 0.0059,
+      "price": 0.0449
+     }
+    },
+    {
+     "cell": "price band 1-10c | E | buy yes",
+     "all_days": {
+      "n": 1092,
+      "days": 67,
+      "edge": -0.7766,
+      "t": -4.66,
+      "ci95": [
+       -0.9274,
+       -0.5983
+      ],
+      "lo": -0.9161,
+      "win": 0.0092,
+      "price": 0.0315
+     },
+     "test_days_only": {
+      "n": 712,
+      "days": 41,
+      "edge": -0.7751,
+      "t": -3.59,
+      "ci95": [
+       -0.9709,
+       -0.5404
+      ],
+      "lo": -0.9324,
+      "win": 0.0084,
+      "price": 0.0288
+     }
+    },
+    {
+     "cell": "price band 10-30c | E | buy yes",
+     "all_days": {
+      "n": 98,
+      "days": 53,
+      "edge": -0.1145,
+      "t": -0.54,
+      "ci95": [
+       -0.4495,
+       0.2486
+      ],
+      "lo": -0.3949,
+      "win": 0.1735,
+      "price": 0.1843
+     },
+     "test_days_only": {
+      "n": 50,
+      "days": 32,
+      "edge": -0.3155,
+      "t": -1.09,
+      "ci95": [
+       -0.7334,
+       0.1268
+      ],
+      "lo": -0.6836,
+      "win": 0.14,
+      "price": 0.1892
+     }
+    },
+    {
+     "cell": "price band 30-50c | E | buy yes",
+     "all_days": {
+      "n": 78,
+      "days": 41,
+      "edge": 0.2156,
+      "t": 1.56,
+      "ci95": [
+       -0.0212,
+       0.4754
+      ],
+      "lo": 0.0131,
+      "win": 0.5,
+      "price": 0.3977
+     },
+     "test_days_only": {
+      "n": 43,
+      "days": 24,
+      "edge": 0.265,
+      "t": 1.4,
+      "ci95": [
+       -0.0618,
+       0.6574
+      ],
+      "lo": -0.0094,
+      "win": 0.5116,
+      "price": 0.3914
+     }
+    },
+    {
+     "cell": "price band 50-70c | E | buy yes",
+     "all_days": {
+      "n": 20,
+      "days": 17,
+      "edge": -0.3186,
+      "t": -1.62,
+      "ci95": [
+       -0.7163,
+       0.0483
+      ],
+      "lo": -0.6434,
+      "win": 0.4,
+      "price": 0.562
+     },
+     "test_days_only": {
+      "n": 16
+     }
+    },
+    {
+     "cell": "price band 70-90c | E | buy yes",
+     "all_days": {
+      "n": 6
+     },
+     "test_days_only": {
+      "n": 3
+     }
+    },
+    {
+     "cell": "price band 90-95c | E | buy yes",
+     "all_days": {
+      "n": 1
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "price band 95-99c | E | buy yes",
+     "all_days": {
+      "n": 4
+     },
+     "test_days_only": {
+      "n": 4
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 2c | E | buy no",
+     "all_days": {
+      "n": 137,
+      "days": 62,
+      "edge": 0.0044,
+      "t": 0.1,
+      "ci95": [
+       -0.0836,
+       0.0899
+      ],
+      "lo": -0.067,
+      "win": 0.7445,
+      "price": 0.7308
+     },
+     "test_days_only": {
+      "n": 94,
+      "days": 39,
+      "edge": -0.012,
+      "t": -0.22,
+      "ci95": [
+       -0.1011,
+       0.0779
+      ],
+      "lo": -0.0858,
+      "win": 0.734,
+      "price": 0.7326
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 5c | E | buy no",
+     "all_days": {
+      "n": 78,
+      "days": 47,
+      "edge": -0.0509,
+      "t": -0.6,
+      "ci95": [
+       -0.2152,
+       0.1154
+      ],
+      "lo": -0.1916,
+      "win": 0.5897,
+      "price": 0.606
+     },
+     "test_days_only": {
+      "n": 58,
+      "days": 33,
+      "edge": -0.0442,
+      "t": -0.46,
+      "ci95": [
+       -0.1927,
+       0.1311
+      ],
+      "lo": -0.1707,
+      "win": 0.6034,
+      "price": 0.6164
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 10c | E | buy no",
+     "all_days": {
+      "n": 52,
+      "days": 38,
+      "edge": 0.0024,
+      "t": 0.02,
+      "ci95": [
+       -0.2089,
+       0.2228
+      ],
+      "lo": -0.1725,
+      "win": 0.5962,
+      "price": 0.5796
+     },
+     "test_days_only": {
+      "n": 39,
+      "days": 27,
+      "edge": 0.0233,
+      "t": 0.18,
+      "ci95": [
+       -0.2027,
+       0.2506
+      ],
+      "lo": -0.1677,
+      "win": 0.6154,
+      "price": 0.5867
+     }
+    },
+    {
+     "cell": "mos model says underpriced by >= 15c | E | buy no",
+     "all_days": {
+      "n": 31,
+      "days": 25,
+      "edge": 0.0623,
+      "t": 0.39,
+      "ci95": [
+       -0.2456,
+       0.3786
+      ],
+      "lo": -0.2019,
+      "win": 0.5806,
+      "price": 0.5316
+     },
+     "test_days_only": {
+      "n": 24,
+      "days": 19,
+      "edge": 0.1579,
+      "t": 0.85,
+      "ci95": [
+       -0.2022,
+       0.5366
+      ],
+      "lo": -0.1474,
+      "win": 0.625,
+      "price": 0.5258
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 2c | E | buy no",
+     "all_days": {
+      "n": 166,
+      "days": 63,
+      "edge": -0.1051,
+      "t": -2.33,
+      "ci95": [
+       -0.175,
+       -0.0369
+      ],
+      "lo": -0.1625,
+      "win": 0.6446,
+      "price": 0.707
+     },
+     "test_days_only": {
+      "n": 92,
+      "days": 39,
+      "edge": -0.1071,
+      "t": -1.67,
+      "ci95": [
+       -0.2166,
+       -0.0028
+      ],
+      "lo": -0.1984,
+      "win": 0.6196,
+      "price": 0.6801
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 5c | E | buy no",
+     "all_days": {
+      "n": 122,
+      "days": 53,
+      "edge": -0.1599,
+      "t": -2.5,
+      "ci95": [
+       -0.2622,
+       -0.0561
+      ],
+      "lo": -0.2457,
+      "win": 0.5492,
+      "price": 0.6368
+     },
+     "test_days_only": {
+      "n": 75,
+      "days": 35,
+      "edge": -0.1442,
+      "t": -1.73,
+      "ci95": [
+       -0.2878,
+       -0.0008
+      ],
+      "lo": -0.2644,
+      "win": 0.5467,
+      "price": 0.6223
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 10c | E | buy no",
+     "all_days": {
+      "n": 93,
+      "days": 46,
+      "edge": -0.2054,
+      "t": -2.49,
+      "ci95": [
+       -0.375,
+       -0.0506
+      ],
+      "lo": -0.3447,
+      "win": 0.4839,
+      "price": 0.5896
+     },
+     "test_days_only": {
+      "n": 57,
+      "days": 29,
+      "edge": -0.2021,
+      "t": -1.87,
+      "ci95": [
+       -0.4066,
+       0.0014
+      ],
+      "lo": -0.3725,
+      "win": 0.4737,
+      "price": 0.5744
+     }
+    },
+    {
+     "cell": "naive model says underpriced by >= 15c | E | buy no",
+     "all_days": {
+      "n": 75,
+      "days": 42,
+      "edge": -0.2067,
+      "t": -2.11,
+      "ci95": [
+       -0.404,
+       -0.0253
+      ],
+      "lo": -0.3711,
+      "win": 0.4667,
+      "price": 0.5685
+     },
+     "test_days_only": {
+      "n": 48,
+      "days": 29,
+      "edge": -0.1719,
+      "t": -1.31,
+      "ci95": [
+       -0.4295,
+       0.0814
+      ],
+      "lo": -0.3897,
+      "win": 0.4792,
+      "price": 0.56
+     }
+    },
+    {
+     "cell": "price band 1-10c | E | buy no",
+     "all_days": {
+      "n": 5
+     },
+     "test_days_only": {
+      "n": 5
+     }
+    },
+    {
+     "cell": "price band 10-30c | E | buy no",
+     "all_days": {
+      "n": 4
+     },
+     "test_days_only": {
+      "n": 2
+     }
+    },
+    {
+     "cell": "price band 30-50c | E | buy no",
+     "all_days": {
+      "n": 17
+     },
+     "test_days_only": {
+      "n": 14
+     }
+    },
+    {
+     "cell": "price band 50-70c | E | buy no",
+     "all_days": {
+      "n": 76,
+      "days": 41,
+      "edge": -0.2105,
+      "t": -2.32,
+      "ci95": [
+       -0.3791,
+       -0.0621
+      ],
+      "lo": -0.3535,
+      "win": 0.5,
+      "price": 0.6125
+     },
+     "test_days_only": {
+      "n": 42,
+      "days": 24,
+      "edge": -0.2178,
+      "t": -1.81,
+      "ci95": [
+       -0.4352,
+       -0.0319
+      ],
+      "lo": -0.397,
+      "win": 0.5,
+      "price": 0.6183
+     }
+    },
+    {
+     "cell": "price band 70-90c | E | buy no",
+     "all_days": {
+      "n": 78,
+      "days": 49,
+      "edge": -0.057,
+      "t": -1.03,
+      "ci95": [
+       -0.1575,
+       0.0407
+      ],
+      "lo": -0.1418,
+      "win": 0.7692,
+      "price": 0.8042
+     },
+     "test_days_only": {
+      "n": 42,
+      "days": 30,
+      "edge": -0.0058,
+      "t": -0.08,
+      "ci95": [
+       -0.1338,
+       0.1143
+      ],
+      "lo": -0.1094,
+      "win": 0.8095,
+      "price": 0.8033
+     }
+    },
+    {
+     "cell": "price band 90-95c | E | buy no",
+     "all_days": {
+      "n": 52,
+      "days": 34,
+      "edge": -0.0038,
+      "t": -0.09,
+      "ci95": [
+       -0.0816,
+       0.0605
+      ],
+      "lo": -0.0695,
+      "win": 0.9231,
+      "price": 0.9215
+     },
+     "test_days_only": {
+      "n": 24,
+      "days": 16,
+      "edge": 0.0326,
+      "t": 0.55,
+      "ci95": [
+       -0.0784,
+       0.084
+      ],
+      "lo": -0.0625,
+      "win": 0.9583,
+      "price": 0.9233
+     }
+    },
+    {
+     "cell": "price band 95-99c | E | buy no",
+     "all_days": {
+      "n": 698,
+      "days": 67,
+      "edge": 0.0087,
+      "t": 1.61,
+      "ci95": [
+       0.0009,
+       0.0154
+      ],
+      "lo": 0.0023,
+      "win": 0.99,
+      "price": 0.9801
+     },
+     "test_days_only": {
+      "n": 452,
+      "days": 41,
+      "edge": 0.0062,
+      "t": 0.97,
+      "ci95": [
+       -0.0039,
+       0.0148
+      ],
+      "lo": -0.0022,
+      "win": 0.9889,
+      "price": 0.9815
+     }
+    }
+   ]
+  }
+ },
+ "quoted_days": 163,
+ "first_day": "2026-05-31",
+ "last_day": "2026-11-09",
+ "test_from": "2026-09-30",
+ "forecast_quality": {
+  "main": {
+   "days": 2163,
+   "mos_evening_mae_F": 2.06,
+   "mos_evening_n": 2163,
+   "mos_morning_mae_F": 1.87,
+   "mos_morning_n": 2163,
+   "naive_mae_F": 4.82,
+   "naive_n": 2145
+  },
+  "rep": {
+   "days": 3695,
+   "mos_evening_mae_F": 2.0,
+   "mos_evening_n": 3695,
+   "mos_morning_mae_F": 1.87,
+   "mos_morning_n": 3695,
+   "naive_mae_F": 4.32,
+   "naive_n": 3496
+  },
+  "low": {
+   "days": 2214,
+   "mos_evening_mae_F": 2.33,
+   "mos_evening_n": 2214,
+   "mos_morning_mae_F": 2.33,
+   "mos_morning_n": 2214,
+   "naive_mae_F": 3.79,
+   "naive_n": 2146
+  }
+ },
+ "headline_rule_mos_5c": {
+  "main": {
+   "train": {
+    "n": 4119,
+    "days": 122,
+    "edge": -0.017,
+    "t": -0.72,
+    "ci95": [
+     -0.0624,
+     0.0299
+    ],
+    "lo": -0.0551,
+    "win": 0.3462,
+    "price": 0.3414
+   },
+   "test": {
+    "n": 1605,
+    "days": 41,
+    "edge": -0.117,
+    "t": -3.27,
+    "ci95": [
+     -0.1887,
+     -0.0446
+    ],
+    "lo": -0.1772,
+    "win": 0.281,
+    "price": 0.307
+   },
+   "all_buys_control_test": {
+    "n": 6022,
+    "days": 41,
+    "edge": -0.0324,
+    "t": -3.39,
+    "ci95": [
+     -0.033,
+     -0.0317
+    ],
+    "lo": -0.0329,
+    "win": 0.4367,
+    "price": 0.4435
+   }
+  },
+  "rep": {
+   "train": {
+    "n": 1647,
+    "days": 26,
+    "edge": -0.079,
+    "t": -1.93,
+    "ci95": [
+     -0.1594,
+     -0.0028
+    ],
+    "lo": -0.1471,
+    "win": 0.2884,
+    "price": 0.3024
+   },
+   "test": {
+    "n": 3156,
+    "days": 41,
+    "edge": -0.1275,
+    "t": -4.39,
+    "ci95": [
+     -0.1822,
+     -0.0709
+    ],
+    "lo": -0.1734,
+    "win": 0.2386,
+    "price": 0.2631
+   },
+   "all_buys_control_test": {
+    "n": 10855,
+    "days": 41,
+    "edge": -0.0318,
+    "t": -4.6,
+    "ci95": [
+     -0.0325,
+     -0.0312
+    ],
+    "lo": -0.0324,
+    "win": 0.4402,
+    "price": 0.4471
+   }
+  },
+  "low": {
+   "train": {
+    "n": 108,
+    "days": 26,
+    "edge": -0.2351,
+    "t": -0.92,
+    "ci95": [
+     -0.7587,
+     0.2287
+    ],
+    "lo": -0.6801,
+    "win": 0.1389,
+    "price": 0.173
+   },
+   "test": {
+    "n": 242,
+    "days": 41,
+    "edge": -0.1197,
+    "t": -1.23,
+    "ci95": [
+     -0.286,
+     0.0529
+    ],
+    "lo": -0.2586,
+    "win": 0.1818,
+    "price": 0.1993
+   },
+   "all_buys_control_test": {
+    "n": 1410,
+    "days": 41,
+    "edge": -0.0326,
+    "t": -2.29,
+    "ci95": [
+     -0.0344,
+     -0.0307
+    ],
+    "lo": -0.0341,
+    "win": 0.4121,
+    "price": 0.4222
+   }
+  }
+ }
+}
