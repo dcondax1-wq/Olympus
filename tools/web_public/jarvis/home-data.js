@@ -5,10 +5,13 @@
 // and ?demo=1 (or no source at all) fills each part from FAKE so the home is never blank. Read only: nothing here trades, arms or sends.
 //
 //   buildHome({ facts, snap, api, money, events, kairos, now, demo, favs, recent, apps }) -> model (pure; runs in node, tests.test_jarvis_home_agora)
-//   loadHome({ demo, api, win })  -> Promise<model>   fetches what it needs (timeouts 5 s), then buildHome
+//   loadHome({ demo, api, win, quick, districtOf })  -> Promise<model>   fetches what it needs (timeouts 5 s; quick = no network), then buildHome
 //   model = { demo, online, asof, today: { items: [{ id, text, tone, app?, say? }], more }, bots: [{ id, name, size, level, pnl, room, mll, text, app }],
 //             money: { low, base, high, live, text, note }, day: { now: {label, text, until, entries}, next: { title, when, impact } | null },
 //             asks: [string], favs: [{ id, name, glyph }], recent: [{ id, name, glyph }] }
+//   v2 (2026-11-11, the first screen): model.state = { kind: 'demo'|'offline'|'waiting'|'stale'|'live', text, age } in plain words,
+//             model.hero = { text, tone, app?, say?, more } (ONE sentence: what matters now), model.tiles = [bots, money, today] (the three tiles),
+//             model.needs = { market, research, money, command, life } ('' | 'warn' | 'bad': which district doorway glows)
 // Plain ES2020, no imports (the optional kairoscore.js is imported dynamically), iPhone Safari 16.
 
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -47,7 +50,7 @@ export function nudgesFrom(facts, api) {
   if (tasks.length) out.push({ id: 'tasks', text: `${tasks.length} ${tasks.length === 1 ? 'task is' : 'tasks are'} due today: ${str(tasks[0].title, 50)}${tasks.length > 1 ? ' and more' : ''}`, tone: 'info', app: 'planner' });
   const seen = new Set(), uniq = out.filter((x) => !seen.has(x.text) && seen.add(x.text));
   uniq.sort((a, b) => (a.tone === 'bad' ? 0 : a.tone === 'warn' ? 1 : 2) - (b.tone === 'bad' ? 0 : b.tone === 'warn' ? 1 : 2));
-  return { items: uniq.slice(0, 3), more: Math.max(0, uniq.length - 3) };
+  return { items: uniq.slice(0, 3), more: Math.max(0, uniq.length - 3), all: uniq.slice(0, 12) };
 }
 
 export function botsFrom(snap, facts) {
@@ -106,6 +109,84 @@ export function appsLookup(apps) {
 }
 const pickIds = (list, lookup, n) => arr(list).filter((id) => typeof id === 'string' && lookup.has(id)).slice(0, n).map((id) => lookup.get(id));
 
+
+// ------------------------------------------------------------------------------------------------ v2: the first screen in plain words
+export const WORDS = {
+  waiting: 'The bots have not reported yet: your accounts are not affected',
+  offline: 'You are offline: these are the last saved numbers',
+  demo: 'Example numbers (demo). Nothing here is real.',
+  calm: 'Nothing needs you right now.',
+};
+/** "6 min", "2 h 10 min", "3 days": an age in plain words (seconds in). */
+export function ageText(sec) {
+  const s = num(sec); if (s == null || s < 0) return '';
+  const m = Math.round(s / 60);
+  if (m < 1) return 'under a minute';
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60), r = m % 60;
+  if (h < 48) return r && h < 6 ? `${h} h ${r} min` : `${h} h`;
+  return `${Math.round(h / 24)} days`;
+}
+export const STALE_S = 20 * 60;       // a bot report older than this is said to be old, with its age
+/** What the numbers on the screen are: demo, the phone offline, no bot report yet, an old report (with its age), or live. Never blank, never alarming. */
+export function stateFrom(o) {
+  o = o || {};
+  const facts = isObj(o.facts) ? o.facts : null, now = num(o.now) != null ? +o.now : Date.now();
+  if (o.demo) return { kind: 'demo', text: WORDS.demo, age: null };
+  const live = facts && isObj(facts.live) ? facts.live : null, t = live && num(live.t) != null && +live.t > 0 ? +live.t : null;
+  const age = t != null ? Math.max(0, now / 1000 - t) : null;
+  if (o.online === false) return { kind: 'offline', text: WORDS.offline + (age != null ? ` (the bots reported ${ageText(age)} ago)` : ''), age };
+  if (!live) return { kind: 'waiting', text: WORDS.waiting, age: null };
+  if (age != null && age > STALE_S) return { kind: 'stale', text: `The last bot report is ${ageText(age)} old: your accounts are not affected`, age };
+  return { kind: 'live', text: age != null ? `Bots reported ${ageText(age)} ago` : 'Bots reporting', age };
+}
+const APP_DISTRICT = { zenith: 'market', oracle: 'market', kairos: 'market', pythia: 'market', odeon: 'market', mint: 'money', kalshi: 'money', ledger: 'money', sibyl: 'money', planner: 'life', journal: 'life', compass: 'life', settings: 'command', bridge: 'command', argus: 'command' };
+/** Which of the five district doorways should glow: the worst tone of the things that need the owner, by the district of the app they open. */
+export function needsFrom(items, districtOf) {
+  const out = { market: '', research: '', money: '', command: '', life: '' };
+  for (const x of arr(items)) {
+    if (!isObj(x) || !(x.tone === 'bad' || x.tone === 'warn')) continue;
+    let d = '';
+    try { d = typeof districtOf === 'function' && x.app ? districtOf({ id: x.app }) : ''; } catch (_) { d = ''; }
+    if (!d || !(d in out) || (d === 'command' && APP_DISTRICT[x.app] && APP_DISTRICT[x.app] !== 'command')) d = APP_DISTRICT[x.app] || (x.app ? d || 'command' : 'command');
+    if (!(d in out)) d = 'command';
+    if (x.tone === 'bad' || !out[d]) out[d] = x.tone;
+  }
+  return out;
+}
+/** The tightest account first: the one with the least drawdown left as a share of its max loss. */
+export function tightest(bots) {
+  const list = arr(bots).filter((b) => isObj(b) && num(b.room) != null);
+  if (!list.length) return null;
+  const frac = (b) => (num(b.mll) != null && b.mll > 0 ? b.room / b.mll : 9);
+  return list.slice().sort((a, b) => frac(a) - frac(b) || a.room - b.room)[0];
+}
+/** The three tiles of the first screen, in order: NQ bots (drawdown left), Money (the Mint estimate with its range), Today (the window now / the next event). */
+export function tilesFrom(m) {
+  const st = m.state || { kind: 'live' }, t = tightest(m.bots), n = arr(m.bots).length;
+  const bots = t ? { id: 'bots', app: t.app || 'zenith', kicker: 'NQ bots', tone: t.level || '', lead: 'Drawdown left', big: usd(t.room), tail: num(t.mll) != null && t.mll > 0 ? `of ${usd(t.mll)} max loss` : '',
+    sub: `${t.name}${t.size ? ' ' + t.size : ''}${n > 1 ? `, the tighter of ${n}` : ''}${t.pnl != null ? ` · ${usd(t.pnl, true)} today` : ''}`, frac: num(t.mll) != null && t.mll > 0 ? Math.max(0, Math.min(1, t.room / t.mll)) : null, aria: `NQ bots. ${t.name}: ${drawdownLine(t)}` }
+    : { id: 'bots', app: 'zenith', kicker: 'NQ bots', tone: '', lead: '', big: '', tail: '', frac: null,
+      text: st.kind === 'offline' ? 'You are offline' : 'The bots have not reported yet', sub: st.kind === 'offline' ? 'The bots keep running on the PC on their own.' : 'Your accounts are not affected.', aria: 'NQ bots. ' + WORDS.waiting };
+  const k = m.money;
+  const money = k ? { id: 'money', app: 'mint', kicker: 'Money', tone: '', lead: '', big: usd(k.base), tail: 'a month, estimate', frac: null,
+    sub: `Range ${usd(k.low)} to ${usd(k.high)}${k.live ? '' : ' · example numbers'}`, aria: `Money. Mint estimate ${usd(k.base)} a month, range ${usd(k.low)} to ${usd(k.high)}. An estimate, not income.` }
+    : { id: 'money', app: 'mint', kicker: 'Money', tone: '', lead: '', big: '', tail: '', frac: null, text: 'No estimate yet', sub: 'Waiting for the money machines to publish.', aria: 'Money. No estimate yet.' };
+  const w = m.day && m.day.now, e = m.day && m.day.next;
+  const today = w ? { id: 'today', app: 'kairos', kicker: 'Today', tone: w.entries ? 'ok' : '', text: w.label, sub: [w.until, e ? `Next: ${e.title}, ${e.when}` : ''].filter(Boolean).join(' · ') || w.text, aria: `Today. ${w.label}. ${w.until || ''}${e ? ` Next: ${e.title}, ${e.when}` : ''}` }
+    : e ? { id: 'today', app: 'pythia', kicker: 'Today', tone: e.impact === 'high' ? 'warn' : '', text: `Next: ${e.title}`, sub: `${e.when}${e.impact ? ' · ' + e.impact + ' impact' : ''}`, aria: `Today. Next: ${e.title}, ${e.when}` }
+      : { id: 'today', app: 'planner', kicker: 'Today', tone: '', text: 'Nothing on the calendar I can read', sub: 'Open the Planner for your day.', aria: 'Today. Nothing on the calendar I can read.' };
+  return [bots, money, today];
+}
+/** ONE sentence for the hero: the first thing that needs the owner, else the state in plain words, else calm. */
+export function heroFrom(m) {
+  const it = m.today && arr(m.today.items)[0], st = m.state || { kind: 'live' };
+  const extra = m.today ? Math.max(0, arr(m.today.items).length - 1) + (num(m.today.more) || 0) : 0;
+  if (it) return { text: it.text, tone: it.tone || 'info', app: it.app || '', say: it.say || '', more: extra };
+  if (st.kind === 'waiting' || st.kind === 'offline' || st.kind === 'stale') return { text: st.text + '.', tone: 'info', app: '', say: 'How are my bots?', more: 0 };
+  return { text: WORDS.calm, tone: 'ok', app: '', say: 'What should I do today?', more: 0 };
+}
+
 export function buildHome(o) {
   o = o || {};
   const now = num(o.now) != null ? +o.now : Date.now(), demo = !!o.demo, facts = isObj(o.facts) ? o.facts : null;
@@ -129,6 +210,11 @@ export function buildHome(o) {
   const favIds = arr(o.favs).length ? o.favs : [];
   m.favs = pickIds(favIds, lookup, 8);
   m.recent = pickIds(arr(o.recent).filter((id) => favIds.indexOf(id) < 0), lookup, 4);
+  // v2: the first screen
+  try { m.state = stateFrom({ demo, online, facts, now }); } catch (_) { m.state = { kind: 'waiting', text: WORDS.waiting, age: null }; }
+  try { m.needs = needsFrom(m.today.all || m.today.items, o.districtOf); } catch (_) { m.needs = { market: '', research: '', money: '', command: '', life: '' }; }
+  try { m.tiles = tilesFrom(m); } catch (_) { m.tiles = []; }
+  try { m.hero = heroFrom(m); } catch (_) { m.hero = { text: WORDS.calm, tone: 'ok', app: '', say: '', more: 0 }; }
   return m;
 }
 
@@ -152,13 +238,15 @@ export async function loadHome(opts) {
   try { apps = facts && Array.isArray(facts.apps) ? facts.apps : []; } catch (_) { apps = []; }
   if (!apps.length && Array.isArray(win.OLYMPUS_APPS_LIST)) apps = win.OLYMPUS_APPS_LIST;
   if (!demo && facts && facts.live) { try { const B = await import('./bots.js'); snap = B.snapshot(facts.live, now); } catch (_) { snap = null; } }
-  if (!cache || now - cache.t > 5 * 60e3) {
+  const quick = !!opts.quick;                 // quick: what Jarvis already has, no network (the first paint); the published files follow
+  if (!quick && (!cache || now - cache.t > 5 * 60e3)) {
     const [money, sample, events] = demo ? [null, null, null] : await Promise.all([getJSON('../money/index.json'), getJSON('../mint/fixture.json'), getJSON('../pythia/events.json')]);
     cache = { t: now, money, sample, events };
   }
+  const c = cache || { money: null, sample: null, events: null };
   const kairos = await kairosNow(now);
   let favs = null; for (const k of FAV_KEYS) { favs = lsRead(k); if (favs && favs.length) break; }
-  const home = buildHome({ demo, facts, snap, api: win.JARVIS_API || null, money: cache.money, sampleMoney: cache.sample, events: cache.events, kairos, now, apps,
+  const home = buildHome({ demo, facts, snap, districtOf: opts.districtOf, api: win.JARVIS_API || null, money: c.money, sampleMoney: c.sample, events: c.events, kairos, now, apps,
     favs: favs || [], recent: lsRead(REC_KEY) || [], online: win.navigator ? win.navigator.onLine !== false : true });
   return home;
 }
