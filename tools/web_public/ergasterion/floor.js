@@ -153,7 +153,7 @@ function build(rc, scene, camera, canvas, o) {
     for (let k = 0; k < 3; k++) { dBox.add(0, -9, 0, 1, 1, 1, k === 2 ? GOLD : BRONZE); dCyl.add(0, -9, 0, 1, 1, 1, BRONZE); } }
   S.forEach(() => { lamp.add(0, -9, 0, 1, 1, 1, LAMP.stale); for (let k = 0; k < MAXC; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
   const EMBER0 = N, PUFF0 = N + 1 + NC, CR0 = N * MAXC;
-  lamp.add(CAMP.fire.x, 0.64, CAMP.fire.z, 0.22, 0.15, 0.22, '#e89a3c');
+  lamp.add(CAMP.fire.x, 0.6, CAMP.fire.z, 0.26, 0.06, 0.26, '#c2561f');
   CAMP_SPOTS.forEach((c) => lamp.add(c.x + 1.15, 0.6, c.z - 1.7, 0.13, 0.09, 0.13, '#4a3a28'));
   CAMP_SPOTS.forEach(() => { for (let k = 0; k < PUFF; k++) lamp.add(0, -9, 0, 1, 1, 1, '#b3a58e'); });
   CAMP_SPOTS.forEach(() => { for (let k = 0; k < CSTACK; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
@@ -523,7 +523,7 @@ function build(rc, scene, camera, canvas, o) {
       const d = Math.hypot(camP.x - c.x, camP.z - c.z), sc = (mode === 'tour' ? 1.15 : 1) * (0.62 + 0.38 * Math.min(1, d / 6.5));
       setQuad(campG, j, c.x, 2.85 + sc * 0.75 + (mot ? Math.sin(t * 0.9 + j) * 0.03 : 0), c.z - 0.9, 2.7 * sc, 1.35 * sc);
     });
-    const fp = 1 + 0.1 * Math.sin(t * 6) * mot; put(lamp.im, EMBER0, CAMP.fire.x, 0.64, CAMP.fire.z, 0.22 * fp, 0.15 * fp, 0.22 * fp);
+    const fp = 1 + 0.1 * Math.sin(t * 6) * mot; put(lamp.im, EMBER0, CAMP.fire.x, 0.6, CAMP.fire.z, 0.26 * fp, 0.06 * fp, 0.26 * fp);      // a bed of coals, low in the bowl (the flames are fx-cine's)
     campG.attributes.position.needsUpdate = true;
   }
   function frame(dt) {
@@ -606,7 +606,7 @@ function build(rc, scene, camera, canvas, o) {
         for (let c = 0; c < MAXC; c++) { const cr = w && w.crates && w.crates[c]; drawTag(i * MAXC + c, cr ? cr.tag : '', w ? w.status : 'stale'); crate.im.setColorAt(i * MAXC + c, colour.set(w && w.status === 'failed' ? '#a8573d' : w && w.status === 'sample' ? '#a39a88' : '#b08a52')); }
       });
       if (lamp.im.instanceColor) lamp.im.instanceColor.needsUpdate = true; if (crate.im.instanceColor) crate.im.instanceColor.needsUpdate = true;
-      if (extra) { drawLearn(extra.board || null); drawFlip(extra.board || null); drawPipe(extra.pipe || null); if (extra.camp) { camp = CAMP_SPOTS.map((_, j) => extra.camp[j] || null); lamp.im.setColorAt(EMBER0, colour.set('#e89a3c'));
+      if (extra) { drawLearn(extra.board || null); drawFlip(extra.board || null); drawPipe(extra.pipe || null); if (extra.camp) { camp = CAMP_SPOTS.map((_, j) => extra.camp[j] || null); lamp.im.setColorAt(EMBER0, colour.set('#c2561f'));
         camp.forEach((b, j) => { lamp.im.setColorAt(EMBER0 + 1 + j, colour.set(b && b.status === 'working' ? '#e8923a' : '#4a3a28')); for (let q = 0; q < CSTACK; q++) crate.im.setColorAt(CR0 + j * CSTACK + q, colour.set(q % 2 ? '#b08a52' : '#c49a5c')); }); lamp.im.instanceColor.needsUpdate = true; crate.im.instanceColor.needsUpdate = true; dress(); } }
       if (extra && extra.camp) { const cc = L.cartCount(camp.filter(Boolean)); cc.sample = camp.some((b) => b && b.sample); drawCartSign(cc); life.cart = cc;
         for (let q = 0; q < L.CART.cap; q++) { if (q >= cc.shown) put(crate.im, CART0 + q, 0, -9, 0, 0.001, 0.001, 0.001); else put(crate.im, CART0 + q, L.CART.x - 0.6 + (q % 4) * 0.4, 0.8 + Math.floor(q / 12) * 0.26, L.CART.z - 0.3 + (Math.floor(q / 4) % 3) * 0.3, 0.27, 0.25, 0.27, 0, (q * 0.7) % 0.5, 0); } }
