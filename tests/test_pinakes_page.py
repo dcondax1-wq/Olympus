@@ -297,7 +297,7 @@ def test_core():
 
 
 def big_doc(n=10000):
-    return {"asof": "2026-11-11T08:00:00Z", "rows": [{"i": i, "day": f"20{21 + i % 6}-{1 + i % 12:02d}-{1 + i % 28:02d}", "usd": ((i * 37) % 1001) - 500, "r": round((((i * 37) % 1001) - 500) / 250, 2), "grp": f"g{i % 7}",
+    return {"asof": "2026-11-11T08:00:00Z", "rows": [{"i": i, "day": f"20{21 + (i // 12) % 6}-{1 + i % 12:02d}-{1 + i % 28:02d}", "usd": ((i * 37) % 1001) - 500, "r": round((((i * 37) % 1001) - 500) / 250, 2), "grp": f"g{i % 7}",
                                                       "txt": None if i % 13 == 0 else f"row {i}" + (" ünï ✓" if i % 500 == 0 else ""), "ok": i % 3 == 0} for i in range(n)]}
 
 
@@ -374,13 +374,13 @@ def test_page():
             check("c. opening the Money drawer flips the list to its tables (2 of 7)", lst[0] == "Money" and sorted(lst[1]) == ["demo-deals", "demo-paper"] and lst[2] == "2 of 7" and lst[3] == "true", lst)
             AK.shot(p, "pinakes-demo")
             p.locator("#districts [data-d=All]").click()
-            p.fill("#q", "habit café")
+            p.fill("#q", "HABIT log")
             p.wait_for_timeout(200)
             sr = p.evaluate("() => [[...document.querySelectorAll('#list .trow')].map((b) => b.dataset.id), document.querySelector('#foundPill').textContent]")
             p.fill("#q", "zzzz")
             p.wait_for_timeout(150)
             none = p.evaluate("() => document.querySelector('#list').textContent")
-            check("c. search: 'habit café' finds the habits table (through a unicode sample word in its description / fields or its name); a word that matches nothing says so", sr[0] == ["demo-habits"] or (p.fill("#q", "habits") or True) and "No table matches" in none, (sr, none))
+            check("c. search: 'HABIT log' finds the habits table (every word, any case, 1 of 7); a word that matches nothing says so", sr == [["demo-habits"], "1 of 7"] and 'No table matches "zzzz"' in none, (sr, none))
             p.fill("#q", "")
             font = p.evaluate("() => [getComputedStyle(document.querySelector('h1')).fontFamily, getComputedStyle(document.body).backgroundColor]")
             check("c. AGORA look: serif title, warm dark body", any(f in font[0] for f in ("Palatino", "Iowan", "Georgia")) and font[1] == "rgb(20, 17, 14)", font)
@@ -571,7 +571,10 @@ def test_page():
             p.locator("#more").click()
             p.wait_for_timeout(150)
             check("c. 'Show more' adds the next 30", p.evaluate("() => document.querySelectorAll('#list .trow').length") == 60, None)
-            badges = p.evaluate("() => { window.PINAKES.S.shown = 500; document.querySelector('#q').dispatchEvent(new Event('input')); const m = {}; for (const b of document.querySelectorAll('#list .trow')) { const t = b.querySelector('.pill').textContent.split(' · ')[0]; m[t] = (m[t] || 0) + 1; } return m; }")
+            for _ in range(4):
+                p.locator("#more").click()
+                p.wait_for_timeout(80)
+            badges = p.evaluate("() => { const m = {}; for (const b of document.querySelectorAll('#list .trow')) { const t = b.querySelector('.pill').textContent.split(' · ')[0]; m[t] = (m[t] || 0) + 1; } return m; }")
             n_demo = sum(1 for c in cat["tables"] if c["label"] == "demo")
             check("c. every card has an honest badge: DEMO for the fixtures, 'Site build' for files not built here, 'On the PC' for research data, Published / STALE (by its own date stamp) for the rest",
                   badges.get("DEMO") == n_demo and badges.get("Site build") == cat["totals"]["build_tables"] and badges.get("On the PC") == cat["totals"]["research_tables"] and badges.get("Published", 0) + badges.get("STALE", 0) + badges.get("SAMPLE", 0) == n_all - n_demo - cat["totals"]["build_tables"] - cat["totals"]["research_tables"], badges)
@@ -583,14 +586,15 @@ def test_page():
             p.wait_for_timeout(300)
             od = json.load(open(os.path.join(AK.WEB, "odeon", "trades.json"), encoding="utf-8"))["trades"]
             ro = p.evaluate("() => { const o = window.PINAKES.S.open; return [o.view.length, o.cols.length, window.PINAKES.G.cols.length, document.querySelector('#colSum').textContent, document.querySelector('#tSrc').textContent, [...document.querySelectorAll('#tPills .pill')].map((x) => x.textContent)]; }")
-            check("c. 'Trades (Odeon)' loads from its real file odeon/trades.json (never a copy): every trade, 14 fields shown of the many it has (the rest one tap away)",
-                  ro[0] == len(od) and ro[1] > 30 and ro[2] == 14 and ro[3] == f"Fields shown: 14 of {ro[1]}" and "odeon/trades.json" in ro[4] and any("odeon/trades.json" in u for u in seen) and f"{len(od)} rows" in ro[5], ro)
+            shown = p.evaluate("() => window.PINAKES.G.cols.map((c) => c.k)")
+            check("c. 'Trades (Odeon)' loads from its real file odeon/trades.json (never a copy): every trade, 14 fields shown of the many it has, dates / $ / R first (day, usd, r are in; the bar arrays are one tap away)",
+                  ro[0] == len(od) and ro[1] > 30 and ro[2] == 14 and {"day", "usd", "r", "risk_usd"} <= set(shown) and "bars.c" not in shown and ro[3] == f"Fields shown: 14 of {ro[1]}" and "odeon/trades.json" in ro[4] and any("odeon/trades.json" in u for u in seen) and f"{len(od)} rows" in ro[5], ro)
             p.evaluate("() => { document.querySelector('#colBox').open = true; }")
             p.locator("#colChips .btn[data-k=usd]").click()
             p.wait_for_timeout(150)
             hc = p.evaluate("() => [window.PINAKES.G.cols.map((c) => c.k).includes('usd'), document.querySelector('#colChips .btn[data-k=usd]').getAttribute('aria-pressed')]")
             p.locator("#colChips .btn[data-k=usd]").click()
-            check("c. 'Fields shown': tapping a field hides or shows its column", hc in ([True, "true"], [False, "false"]), hc)
+            check("c. 'Fields shown': tapping the 'usd' field hides its column (tap again and it is back)", hc == [False, "false"] and p.evaluate("() => window.PINAKES.G.cols.map((c) => c.k).includes('usd')"), hc)
             # ---------------------------------------------------------------- 3. ten thousand rows
             p.evaluate("() => window.PINAKES.open('zz-big', null)")
             p.wait_for_function("() => window.PINAKES.S.open && window.PINAKES.S.open.view && window.PINAKES.S.open.card.id === 'zz-big'", timeout=60000)

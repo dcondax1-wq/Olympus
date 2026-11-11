@@ -528,6 +528,13 @@ export function docLabel(card, doc) {
   if (isObj(doc)) { if (doc.demo === true) return 'demo'; if (String(doc.status || '').toLowerCase() === 'sample' || doc.sample === true) return 'sample'; }
   return card.label === 'build' ? 'live' : card.label;
 }
+/** which fields a phone shows first when a table has many: dates, $ and R, then text and yes / no, then other numbers, nested ones last; the file's own order is kept */
+export function defaultShown(cols, n) {
+  const rank = (t) => (t === 'date' || t === 'usd' || t === 'R' ? 0 : t === 'text' || t === 'bool' ? 1 : t === 'number' ? 2 : 3), max = n || 14;
+  if (cols.length <= max) return cols.map((c) => c.k);
+  const keep = new Set(cols.map((c, i) => [rank(c.t), i, c.k]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, max).map((x) => x[2]));
+  return cols.filter((c) => keep.has(c.k)).map((c) => c.k);
+}
 export const KIND_WORDS = { rows: 'a list of records', matrix: 'a grid of values', map: 'named records', values: 'a plain list', kv: 'the top-level fields', csv: 'a CSV file', auto: 'a list' };
 
 // ------------------------------------------------------------------ Ask: built-in questions that join known tables

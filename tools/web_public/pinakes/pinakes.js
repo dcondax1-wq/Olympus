@@ -50,7 +50,7 @@ function metaWords(c) {
   if (c.bytes) bits.push(C.bytesWords(c.bytes));
   return bits.join(' · ');
 }
-function pillFor(c, fresh) { const l = C.labelOf(c, S.now, fresh), p = h('span', 'pill ' + l.cls, l.age && c.label !== 'research' ? `${l.text} · ${l.age}` : l.text); return p; }
+function pillFor(c, fresh) { const l = C.labelOf(c, S.now, fresh); return h('span', 'pill ' + l.cls, l.age ? `${l.text} · ${l.age}` : l.text); }
 function renderDistricts() {
   const t = C.totals(S.cat.tables), box = $('districts'); clear(box);
   const mk = (name, n) => { const b = h('button', 'btn', name); b.type = 'button'; b.dataset.d = name; b.setAttribute('aria-pressed', String(S.district === name)); b.appendChild(h('small', '', n)); b.addEventListener('click', () => pickDistrict(S.district === name && name !== 'All' ? 'All' : name)); return b; };
@@ -134,6 +134,7 @@ function head(card, fresh, label, rows, kind) {
   if (card.bytes) pills.appendChild(h('span', 'pill', C.bytesWords(card.bytes)));
   const where = card.inline ? 'inside the demo file (fixture.json)' : card.url ? card.url.replace(/^\.\.\//, '') : card.file;
   const f = fresh || card.fresh;
+  if (card.source === 'research') { $('tSrc').textContent = `Kept on the PC in ${card.file}${card.span ? `, from ${card.span.first} to ${card.span.last}` : ''}. Not published.`; return; }
   $('tSrc').textContent = `From ${where}${kind ? `, ${C.KIND_WORDS[kind] || 'a list'}` : ''}. ${f ? `Its own stamp "${f.field}" says ${C.fmt(f.value, 'date')}.` : 'The file carries no date stamp, so its age is not known.'}`;
 }
 async function openTable(id, view) {
@@ -177,7 +178,7 @@ function usePath(path, view) {
   // defaults for the chart: the first $ (or number) field against the first date (or text) field
   const numc = t.cols.filter((c) => C.isNumeric(c.t)), firstOf = (...ts) => { for (const ty of ts) { const c = t.cols.filter((x) => x.t === ty)[0]; if (c) return c.k; } return ''; };
   o.chart.y = (numc.filter((c) => c.t === 'usd')[0] || numc[0] || { k: '' }).k; o.chart.by = firstOf('date', 'text', 'bool') || (t.cols[0] ? t.cols[0].k : '');
-  if (t.cols.length > 14) o.hidden = t.cols.slice(14).map((c) => c.k);                 // a phone shows the first 14 fields; the rest are one tap away under "Fields shown"
+  const shown = C.defaultShown(t.cols, 14); o.hidden = t.cols.filter((c) => shown.indexOf(c.k) < 0).map((c) => c.k);   // a phone shows 14 fields (dates, $ and R first); the rest are one tap away under "Fields shown"
   if (view) applyView(view);
   fillControls(); refresh(true);
   say(`${card.name}: ${C.plural(o.rows.length, 'row')}, ${C.plural(o.cols.length, 'field')}${label === 'demo' ? ' (DEMO data)' : label === 'sample' ? ' (SAMPLE data)' : ''}${t.moved ? '. The saved list was not found, so the biggest list is shown' : ''}.`);
@@ -377,6 +378,7 @@ function setTab(tab) {
 /** filters or sort changed: recompute the rows in view and redraw the open tab */
 function refresh(first) {
   const o = S.open;
+  if (o.filters.length < 2) o.mode = 'all';                                  // 'match any' only means something with two filters or more
   const kept = C.applyFilters(o.rows, o.filters, o.cols, S.today, o.mode);
   o.view = o.sort ? C.sortRows(kept, o.sort[0], o.sort[1], colOf(o.sort[0]).t) : kept;
   G.sel = -1; $('rowCard').hidden = true;
@@ -392,7 +394,7 @@ function refresh(first) {
 function fileStem() { return S.open.card.id.replace(/[^a-z0-9]+/g, '-') + (S.open.filters.length ? '-filtered' : ''); }
 function exportRows(kind) {
   const o = S.open; if (!o || !o.view) return;
-  if (kind === 'csv') download(fileStem() + '.csv', '﻿' + C.toCSV(o.view, o.cols), 'text/csv;charset=utf-8'); else download(fileStem() + '.json', C.toJSON(o.view, o.cols), 'application/json');
+  if (kind === 'csv') download(fileStem() + '.csv', '\ufeff' + C.toCSV(o.view, o.cols), 'text/csv;charset=utf-8'); else download(fileStem() + '.json', C.toJSON(o.view, o.cols), 'application/json');
   say(`Exported ${C.plural(o.view.length, 'row')} as ${kind.toUpperCase()}${o.label === 'demo' ? ' (DEMO data)' : ''}.`);
 }
 function shareLink() {
