@@ -87,7 +87,7 @@
     var id = p.getAttribute('data-id'), b = find(id); if (!b) return;
     var r = S.city.screenOf(b), hero = $('hero'), W0 = hero.clientWidth, pw = p.offsetWidth, ph = p.offsetHeight;
     var x = Math.max(12, Math.min(W0 - pw - 12, r.x - pw / 2)), y = r.y - r.h - ph - 14, below = false;
-    if (y < 64) { y = r.y + 12; below = true; }
+    if (y < 156) { y = r.y + 12; below = true; }
     if (y + ph > hero.clientHeight - 64) y = hero.clientHeight - 64 - ph;
     p.style.left = Math.round(x) + 'px'; p.style.top = Math.round(y) + 'px';
     p.className = 'plaque' + (below ? ' below' : '');

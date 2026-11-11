@@ -477,7 +477,7 @@
     var cliffBot = function (x) { return 284 + Math.sin(x * 0.031) * 10 + Math.sin(x * 0.11 + 2) * 5 + (n(x / 23) - 0.5) * 12; };
     c.beginPath(); for (var cx2 = 846; cx2 <= 1454; cx2 += 4) c.lineTo(cx2, Math.max(rockY(cx2), 214) + 6); for (cx2 = 1454; cx2 >= 846; cx2 -= 4) c.lineTo(cx2, cliffBot(cx2) - Math.max(0, Math.abs(cx2 - 1150) - 250) * 0.9);
     c.closePath();
-    var cf = c.createLinearGradient(0, 214, 0, 300); cf.addColorStop(0, css(shade([206, 184, 146], F.front * 0.95 + 0.08, L, 0.08))); cf.addColorStop(1, css(shade([150, 126, 96], F.front * 0.55, L, 0.08)));
+    var cf = c.createLinearGradient(0, 214, 0, 300); cf.addColorStop(0, css(shade([226, 206, 168], F.front + 0.15, L, 0.06))); cf.addColorStop(0.7, css(shade([180, 156, 120], F.front * 0.75, L, 0.07))); cf.addColorStop(1, css(shade([120, 100, 76], F.front * 0.4, L, 0.08)));
     c.fillStyle = cf; c.fill();
     for (var ck = 0; ck < 70; ck++) {
       var kx = 852 + r() * 596, ky = 224 + r() * 20, kl = 16 + r() * 50, dark = r() < 0.6;
@@ -726,7 +726,7 @@
       if (L.rain > 0.02) { ctx.strokeStyle = 'rgba(200,206,220,' + (0.25 * L.rain).toFixed(3) + ')'; ctx.lineWidth = 1; ctx.beginPath(); var rr = rng(Math.floor(t * 20)); for (i = 0; i < 160 * L.rain; i++) { var rx = rr() * view.w, ry = rr() * view.h; ctx.moveTo(rx, ry); ctx.lineTo(rx - 3, ry + 12); } ctx.stroke(); }
       if (L.fog > 0.02) { var fg = ctx.createLinearGradient(0, hz - 60 * k, 0, view.h); fg.addColorStop(0, css(L.haze, 0)); fg.addColorStop(0.4, css(L.haze, 0.55 * L.fog)); fg.addColorStop(1, css(L.haze, 0.25 * L.fog)); ctx.fillStyle = fg; ctx.fillRect(0, 0, view.w, view.h); }
       // the bottom melts into the page (night colour of the cards)
-      var bf = ctx.createLinearGradient(0, view.h * 0.86, 0, view.h); bf.addColorStop(0, 'rgba(20,17,14,0)'); bf.addColorStop(1, 'rgba(20,17,14,1)'); ctx.fillStyle = bf; ctx.fillRect(0, view.h * 0.86, view.w, view.h * 0.14 + 1);
+      var bf = ctx.createLinearGradient(0, view.h * 0.93, 0, view.h); bf.addColorStop(0, 'rgba(20,17,14,0)'); bf.addColorStop(1, 'rgba(20,17,14,1)'); ctx.fillStyle = bf; ctx.fillRect(0, view.h * 0.93, view.w, view.h * 0.07 + 1);
       var vg = ctx.createRadialGradient(view.w / 2, view.h * 0.45, view.h * 0.3, view.w / 2, view.h * 0.5, view.h * 0.95); vg.addColorStop(0, 'rgba(20,17,14,0)'); vg.addColorStop(1, 'rgba(20,17,14,' + (0.32 + night * 0.15).toFixed(2) + ')'); ctx.fillStyle = vg; ctx.fillRect(0, 0, view.w, view.h);
       st.frames++;
     }
