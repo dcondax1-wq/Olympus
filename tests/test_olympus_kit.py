@@ -195,7 +195,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
         p = path.split("?")[0].split("#")[0]
         top = p.lstrip("/").split("/")[0]
-        if top in APPS or top in MORE or top in ("jarvis", "olympus"):
+        if top in APPS or top in MORE or top in ("jarvis", "olympus", "assets"):      # assets/: the shared CC0 art (olympus/env-kit.js)
             q = p.lstrip("/")
             if q.endswith("/"):
                 q += "index.html"
