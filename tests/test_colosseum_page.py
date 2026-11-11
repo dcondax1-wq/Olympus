@@ -53,8 +53,12 @@ def test_static():
     check("a. the 3D arena is its own module tag (a failed load can never stop the page) and the flat SVG arena exists", 'src="arena.js' in html and "COLOSSEUM_ARENA_FAIL" in html and 'id="flat"' in html and html.index('src="arena.js') < html.index('src="colosseum.js'))
     st = AK.read(os.path.join(D, "arena.js"))
     check("a. the arena is light by design: the render core + the shared shapes (helmet, shield), every repeated part instanced, a budget of 45 draws / 150,000 triangles, bloom <= .25, a dpr cap <= 1.5, no shadow maps, no data, no network, idle rules",
-          "olympus/render.js" in st and "olympus/shapes3d.js" in st and "'helmet'" in st and "'shield'" in st and st.count("InstancedMesh") >= 4 and "draws: 45, tris: 150000" in st and re.search(r"strength:\s*0\.(?:[0-2]\d?)\b", st)
+          "olympus/render.js" in st and "olympus/shapes3d.js" in st and "'shield'" in st and "'bust'" in st and st.count("InstancedMesh") >= 4 and "draws: 45, tris: 150000" in st and re.search(r"strength:\s*0\.(?:[0-2]\d?)\b", st)
           and "maxDpr: 1.5" in st and "O.hidden()" in st and "frameGap" in st and "RM" in st and "shadowMap" not in st and not re.search(r"fetch\(|XMLHttpRequest|innerHTML|WebSocket", st) and not AK.BANNED_LOOK.search(st))
+    check("a. the champions are friendly toy-like people (a big round head with a face, a crested cap, mitten hands), not statues; the crowd is instanced round heads that cheer a round win; three baked meshes a champion",
+          "big round head" in st and "a small smile" in st and "crowdFrame" in st and "cheer = {" in st and st.count("bake(") >= 4)
+    check("a. every champion is a person: the optional shared kit tag (olympus/people.js) with an onerror guard, a Talk button, the page's own five-question card as the fallback", '../olympus/people.js?v=p1' in html and "OLYMPUS_PEOPLE_MISSING" in html and 'id="talk"' in html and 'id="asks"' in html
+          and "OLYMPUS_PEOPLE" in AK.read(os.path.join(D, "colosseum.js")) and "kit.open(id" in AK.read(os.path.join(D, "colosseum.js")))
     check("a. LITE is the flat SVG arena: on a low / off tier the 3D module steps aside", re.search(r"q0 === 'low' \|\| q0 === 'off'", st) is not None and "createFlat" in AK.read(os.path.join(D, "colosseum.js")))
     fx = json.load(open(os.path.join(D, "fixture.json"), encoding="utf-8"))
     check("a. the fixture: invented 'Example' runs, rejected ideas and three bot rows, with their own extras; never blank", all(x[1].startswith("Example") for x in fx["runs"]) and len(fx["runs"]) >= 12 and all(x["title"].startswith("Example") for x in fx["rejected"])
@@ -159,6 +163,13 @@ import(process.argv[2]).then((C) => {
   const evil = C.rowObj(['ok_id', '<img src=x onerror=1>`boom`', '<b>fam</b>', 1, 0, 'x', '', 1, [40, 2, 2, 1, 1, 1, 1], 0, 'BAD SLUG', '<i>n</i>']);
   o.junk = [C.rowObj(null), C.rowObj(['<x>']), C.rowObj([5]), evil.name, evil.family, evil.writeup, C.duel(null, a), JSON.stringify(C.duel(evil, a)).indexOf('<') < 0, C.normIndex({ runs: [[1], null, 'x'] }), C.rowObj(['n', 'n', 'f', 0, 0, '', '', 1, ['12', 'x', NaN, Infinity, 1, 1, 1], 0, '', '']).m26];
   o.rounds = [C.ROUNDS.map((r) => r.key), C.ROUNDS.length];
+  // ---- every champion is a person
+  const rj = R('atlas_gpt_a02p'), pd = C.duel(a, rj), keys = C.QUESTIONS.map((x) => x[0]);
+  o.person = { ids: [C.personId(a), C.personId(L.rows[0]), C.personId(null)], q: C.QUESTIONS.map((x) => x[1]), a: keys.map((k) => C.answer(a, k, pd)), r: keys.map((k) => C.answer(rj, k, pd)), pre: C.answer(a, 'win', null),
+    all: [a, rj, F('demo_small'), F('demo_old_only'), L.rows[0]].every((f) => keys.every((k) => { const t = C.answer(f, k, null); return t.indexOf('$') >= 0 && t.indexOf('n = ') >= 0 && /not a promise/i.test(t); })),
+    small: C.answer(F('demo_small'), 'weak', null), old: C.answer(F('demo_old_only'), 'eval', null), bot: [C.answer(L.rows[0], 'rejected', null), C.answer(L.rows[0], 'trades', null), C.answer(L.rows[2], 'win', null)],
+    junk: [C.answer(null, 'win'), C.answer(a, 'nonsense'), C.answer(bare, 'win', null)], say: C.afterLines(pd), sayDraw: C.afterLines(tw).map((x) => x.role), sayNone: C.afterLines(nope).map((x) => [x.role, x.line]), sayNull: C.afterLines(null),
+    sayBots: C.afterLines(bdl).map((x) => [x.id, x.role, x.line]) };
   console.log(JSON.stringify(o));
 }).catch((e) => { console.error(e); process.exit(1); });
 """
@@ -230,6 +241,22 @@ def test_maths():
     check("b. the crest colour is the family's: gold for LIT research, aegean for ATLAS, a stable warm pick for an unknown family, every real family has one", o["crest"][0] == "#c8a24a" and o["crest"][1] == "#4b7a99" and re.match(r"^#[0-9a-f]{6}$", o["crest"][2]) and o["crest"][3] and re.match(r"^#[0-9a-f]{6}$", o["crest"][4]) and o["crest"][5], o["crest"])
     check("b. the Jarvis card follows the contract and matches the committed jarvis.json; the demo card says so", not AK.jarvis_problems(o["card"]) and o["card"] == json.loads(AK.read(os.path.join(D, "jarvis.json"))) and o["cardFx"] == {"level": "off", "label": "Demo data"} and o["cardNone"] == ["0", "0", "n/a"], o["card"])
     check("b. a fighter's plate is money first: '2026: +$43,820, $4,467 a month, PF 4.19, n = 120'", o["plate"] == ["2026: +$43,820, $4,467 a month, PF 4.19, n = 120", "Empty", "live so far: +$913, PF 2.40, n = 6", "No result stored"], o["plate"])
+    ps = o["person"]
+    check("b. PEOPLE: a champion's id is champion:<run-id>, a bot's is bot:<key> (docs/PERSONA_API.md); five questions", ps["ids"] == ["champion:lit_live", "bot:lit", ""] and ps["q"] == ["How did you win?", "What is your weakness?", "How many trades?", "Would you pass an eval?", "Why were you rejected?"], (ps["ids"], ps["q"]))
+    check("b. PEOPLE: every answer of every kind of fighter (adopted, rejected, tiny sample, old-only, live bot) carries $ and n and 'not a promise'", ps["all"] is True)
+    check("b. PEOPLE: the winner answers from the stored numbers: 'I beat atlas_gpt_a02p 7 to 0', its worst drop -$2,196, 120 trades at 2.9 a week (and 511 in 2021-25), 31.6% pass / 1% fail in 10 sessions, 'I am an adopted run'; before a duel it says it has not fought",
+          "I beat atlas_gpt_a02p 7 to 0" in ps["a"][0] and "-$2,196" in ps["a"][1] and "120 trades in 2026, 2.9 a week (inside the 2 to 4 rule). And 511 trades in 2021-25" in ps["a"][2] and "31.6% of MFFU evals passed within 10 sessions and 1% failed" in ps["a"][3]
+          and "nobody knows" in ps["a"][3] and "I am an adopted run" in ps["a"][4] and all("(2026: +$43,820, n = 120 trades. Backtest, not a promise.)" in x for x in ps["a"]) and ps["pre"].startswith("I have not finished a duel yet"), ps["a"])
+    check("b. PEOPLE: the rejected loser is honest: 'lit_live beat me 7 to 0', outside the 2 to 4 rule, more evals failed than passed, PF 0.88, 'I was rejected' with the Archive's note",
+          "lit_live beat me 7 to 0" in ps["r"][0] and "outside the 2 to 4 rule" in ps["r"][1] and "more of my evals failed (12.1%) than passed (1.9%)" in ps["r"][1] and "PF 0.88" in ps["r"][1] and ps["r"][4].startswith("I was rejected. The Archive's note:") and "-$5,099, n = 193" in ps["r"][4], ps["r"])
+    check("b. PEOPLE: a tiny sample says so (14 trades, too few; no 2021-25 result); missing eval rates are 'not stored, I will not guess'; a bot is 'a live bot, not a run'; a bot with no trades has nothing to show; junk gives no text",
+          "only 14 trades" in ps["small"] and "no 2021-25 result" in ps["small"] and "I will not guess" in ps["old"] and "live bot" in ps["bot"][0] and "6 trades in live so far" in ps["bot"][1] and "A short live record, not a promise" in ps["bot"][1]
+          and ps["bot"][2].startswith("No result is stored for me") and ps["junk"][:2] == ["", ""] and "$" in ps["junk"][2], (ps["small"], ps["old"], ps["bot"], ps["junk"]))
+    sy = ps["say"]
+    check("b. PEOPLE: after a duel the winner and the loser each say one honest line with $ and n ('I won 7 to 0, but one duel proves little' / 'I lost 0 to 7 ... My record: -$5,099 over n = 193 trades: a backtest, not a promise'); a draw, no shared period, bots and no duel are covered",
+          [x["role"] for x in sy] == ["winner", "loser"] and sy[0]["id"] == "champion:lit_live" and sy[0]["line"] == "I won 7 to 0, but one duel proves little. +$43,820 over n = 120 trades: a backtest, not a promise."
+          and sy[1]["line"] == "I lost 0 to 7 and was better on no round. My record: -$5,099 over n = 193 trades: a backtest, not a promise." and ps["sayDraw"] == ["draw", "draw"] and all(x[0] == "none" and "no period in common" in x[1] for x in ps["sayNone"]) and ps["sayNull"] == []
+          and ps["sayBots"][0][0] == "bot:lit" and ps["sayBots"][0][1] == "winner" and "a short live record, not a promise" in ps["sayBots"][0][2] and "ATLAS was better on max drawdown" in ps["sayBots"][0][2], (sy, ps["sayBots"]))
     j = o["junk"]
     check("b. junk never breaks it and no markup survives: bad rows are dropped, angle brackets and backticks are stripped, a bad write-up slug is emptied, NaN / Infinity / text numbers become null",
           j[0] is None and j[1] is None and j[2] is None and "<" not in j[3] and "`" not in j[3] and j[4] == "bfam/b" and j[5] == "" and j[6] is None and j[7] is True and j[8] is None and j[9] is None, j)
@@ -282,7 +309,26 @@ def test_page():
                   and len(v["cav"]) >= 5 and any("not a promise" in c for c in v["cav"]) and any("n = 120 trades" in c and "n = 79 trades" in c for c in v["cav"]) and any("Costs are in" in c for c in v["cav"]), v)
             check("c. the result can be shared and opened: the share line, 'Open ... in the Archive' links for both, the link holds the two fighters (#a=lit_live&b=atlas_base), the champion's pose in 3D",
                   v["share"].startswith("COLOSSEUM: lit_live beat atlas_base 6-1") and v["openA"] == "../archive/?q=lit_live" and "atlas_base" in v["openB"] and v["hash"] == "#a=lit_live&b=atlas_base" and v["fight"] == "Fight again" and v["pose"] in ("verdict", "flat"), v)
+            sy = p.evaluate("() => [...document.querySelectorAll('#says .say')].map((q) => [q.className, q.dataset.person, q.textContent])")
+            check("c. after the duel both champions say one honest line: the winner 'I won 6 to 1, but atlas_base was better on max drawdown' and the loser 'I lost 1 to 6 ...', each with $ and n and 'not a promise'",
+                  len(sy) == 2 and "winner" in sy[0][0] and sy[0][1] == "champion:lit_live" and "I won 6 to 1, but atlas_base was better on max drawdown" in sy[0][2] and "+$43,820 over n = 120 trades" in sy[0][2] and "loser" in sy[1][0] and "I lost 1 to 6" in sy[1][2] and "+$10,914 over n = 79 trades: a backtest, not a promise" in sy[1][2], sy)
             AK.shot(p, "colosseum-verdict")
+            p.locator("#plateB").click()
+            p.wait_for_timeout(150)
+            pc = p.evaluate("() => [!document.querySelector('#person').hidden, document.querySelector('#pName').textContent, document.querySelector('#pPlate').textContent, document.querySelector('#talk').textContent, document.querySelector('#askBox').hidden, document.querySelectorAll('#face *').length > 5, document.querySelector('#plateB').getAttribute('aria-expanded')]")
+            check("c. a champion is a person: a tap on the name plate opens its card (a face, the name, the money line, 'Talk to atlas_base')", pc[0] and "ATLAS" in pc[1] and "+$10,914" in pc[2] and "n = 79" in pc[2] and pc[3] == "Talk to atlas_base" and pc[4] is True and pc[5] and pc[6] == "true", pc)
+            p.locator("#talk").click()
+            p.wait_for_timeout(150)
+            qa = p.evaluate("() => [[...document.querySelectorAll('#asks button')].map((b) => b.textContent), document.querySelector('#answer').textContent]")
+            p.locator("#asks [data-ask=weak]").click()
+            p.wait_for_timeout(100)
+            qa.append(p.evaluate("() => document.querySelector('#answer').textContent"))
+            p.locator("#asks [data-ask=eval]").click()
+            p.wait_for_timeout(100)
+            qa.append(p.evaluate("() => document.querySelector('#answer').textContent"))
+            check("c. Talk without the shared kit: the page's own card with five tappable questions; the loser answers honestly ('lit_live beat me 6 to 1'), its weakness (1.9 trades a week, outside the rule), its eval rates; every answer ends with $, n and 'not a promise'",
+                  len(qa[0]) == 5 and qa[0][0] == "How did you win?" and "lit_live beat me 6 to 1" in qa[1] and "1.9 times a week, outside the 2 to 4 rule" in qa[2] and "5.8% of MFFU evals passed" in qa[3] and all("(2026: +$10,914, n = 79 trades. Backtest, not a promise.)" in x for x in qa[1:]), qa)
+            AK.shot(p, "colosseum-talk")
             # search a rejected run that lives in a shard, send it in as B
             p.fill("#q", "atlas_gpt_a02p")
             p.wait_for_timeout(300)
@@ -331,11 +377,17 @@ def test_page():
 
             # ---- 2. a deep link on the real data: a run that only exists in a shard
             ctx, p, errs, seen, off = AK.page(br, origin)
+            ctx.add_init_script("window.__opened = []; window.OLYMPUS_PEOPLE = { open: (id, opts) => { window.__opened.push([id, !!(opts && opts.anchor)]); } };")
             AK.open_app(p, origin, APP, "?flat=1#a=atlas_gpt_a02p&b=lit_live", hook="COLOSSEUM")
             p.wait_for_function("window.COLOSSEUM.shards()", timeout=90000)
             p.wait_for_timeout(300)
             dl = p.evaluate("() => [document.querySelector('#nameA').textContent, document.querySelector('#nameB').textContent, window.COLOSSEUM.mode, !document.querySelector('#flat').hasAttribute('hidden'), document.querySelectorAll('#flat .champ-a, #flat .champ-b').length]")
             check("c. a deep link (#a=atlas_gpt_a02p&b=lit_live) opens that duel once the shard with the rejected run has loaded; ?flat=1 draws the flat arena with both champions", dl == ["atlas_gpt_a02p", "lit_live", "flat", True, 2] and not errs, (dl, errs[:2]))
+            p.locator("#plateA").click()
+            p.locator("#talk").click()
+            p.wait_for_timeout(150)
+            kt = p.evaluate("() => [window.__opened, document.querySelector('#askBox').hidden]")
+            check("c. Talk with the shared kit loaded (a stub): the page calls OLYMPUS_PEOPLE.open('champion:atlas_gpt_a02p', { anchor }) and keeps its own card closed", kt == [[["champion:atlas_gpt_a02p", True]], True], kt)
             ctx.close()
 
             # ---- 3. 375 x 667, LITE, reduced motion, DEMO
@@ -348,6 +400,12 @@ def test_page():
             l1 = p.evaluate("() => [window.COLOSSEUM.S.done, document.querySelector('#verHead').textContent, [...document.querySelectorAll('#caveats li')].map((l) => l.textContent).join(' | '), document.querySelector('#roundRows').textContent, document.querySelector('#flat').getAttribute('class')]")
             check("c. reduced motion: the duel goes straight to the verdict (no animation); the caveats say DEMO, under 30 trades, and which round was no contest; the winner wears the laurel in the flat arena",
                   l1[0] is True and l1[1].endswith("wins") and "DEMO numbers" in l1[2] and "Under 30 trades (demo_small)" in l1[2] and "no contest because a number is not stored" in l1[2] and "Holds in both periodsnot storednot storedNo contest" in l1[3] and "crown-" in (l1[4] or ""), l1)
+            p.locator("#modes [data-mode=bots]").click()
+            p.locator("#plateA").click()
+            p.locator("#talk").click()
+            p.wait_for_timeout(150)
+            lb = p.evaluate("() => [document.querySelector('#pName').textContent, document.querySelector('#answer').textContent, document.querySelectorAll('#flat .skin').length]")
+            check("c. a bot is a person too (bot:lit): its fallback answer is from the demo account row with $, n and 'not a promise'; the flat champions have round heads with skin tones", lb[0].startswith("LIT") and "$" in lb[1] and "n = 14 trades" in lb[1] and "not a promise" in lb[1] and lb[2] >= 8, lb)
             p.locator("#tGo").click()
             p.wait_for_timeout(300)
             l2 = p.evaluate("() => [document.querySelectorAll('#bracket .tround').length, document.querySelector('#tShareText').textContent, document.querySelector('#tPill').textContent]")

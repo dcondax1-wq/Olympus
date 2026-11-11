@@ -354,7 +354,7 @@ export function answer(f, key, d) {
     if (m.pf !== null && m.pf < 1) w.push(`I lose money: PF ${pf(m.pf)}`);
     if (m.dd !== null) w.push(`my worst drop was ${usd(-Math.abs(m.dd))}`);
     if (f.kind === 'run' && !f.mold) w.push('I have no 2021-25 result at all');
-    s = w.length ? `My weak spots: ${w.slice(0, 3).join('; ')}.` : 'Nothing weak is stored for me, which only means it was not measured.';
+    s = w.length ? `My weak spots: ${w.slice(0, 4).join('; ')}.` : 'Nothing weak is stored for me, which only means it was not measured.';
   } else if (key === 'trades') {
     s = `${m.n} trades in ${word}${m.tpw !== null ? `, ${dec(m.tpw, 1)} a week (${tpwDist(m.tpw) === 0 ? 'inside' : 'outside'} the 2 to 4 rule)` : ''}.`;
     if (per === '26' && f.mold) s += ` And ${f.mold.n} trades in 2021-25.`;

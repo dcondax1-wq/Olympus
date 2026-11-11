@@ -25,18 +25,23 @@ const title = (f) => (f ? (f.kind === 'bot' ? `${f.name} (${f.account})` : f.nam
 
 // ------------------------------------------------------------------ the flat arena (LITE, no WebGL, ?flat=1): the same stage as a drawing
 function drawFigure(g, colour) {
+  // a friendly toy-like champion: a big round head with a simple face, a bronze cap with a crest, a short rounded body in the family colour
   sv('ellipse', { cx: 0, cy: 1, rx: 12, ry: 3, fill: '#3a2a18', opacity: 0.3 }, g);
-  sv('line', { x1: -9, y1: -2, x2: -9, y2: -58, stroke: '#9c6b3c', 'stroke-width': 1.5, 'stroke-linecap': 'round' }, g);
-  sv('path', { d: 'M -11 -57 L -9 -64 L -7 -57 Z', fill: '#c8a24a' }, g);
-  sv('rect', { x: -5, y: -16, width: 4, height: 16, rx: 1.5, fill: '#e4dccb' }, g); sv('rect', { x: 1, y: -16, width: 4, height: 16, rx: 1.5, fill: '#e4dccb' }, g);
-  sv('path', { d: 'M -5 -28 L 5 -28 L 7.5 -15 L -7.5 -15 Z', fill: colour, class: 'tint' }, g);
-  sv('rect', { x: -6, y: -39, width: 12, height: 12, rx: 3, fill: '#e9e3d5' }, g);
-  sv('circle', { cx: 0, cy: -43.5, r: 5, fill: '#e9e3d5' }, g);
-  sv('path', { d: 'M -5.6 -43 A 5.6 5.6 0 0 1 5.6 -43 L 5.6 -41 L 2 -41 L 2 -43.5 L -5.6 -43.5 Z', fill: '#9c6b3c' }, g);
-  sv('path', { d: 'M -6 -48.5 Q 0 -57 6 -48.5 L 4.6 -47.4 Q 0 -52.5 -4.6 -47.4 Z', fill: colour, class: 'tint' }, g);
-  sv('circle', { cx: 8, cy: -28, r: 9, fill: '#9c6b3c', stroke: '#c8a24a', 'stroke-width': 1.4 }, g);
-  sv('circle', { cx: 8, cy: -28, r: 5.4, fill: 'none', stroke: colour, 'stroke-width': 2, class: 'ring' }, g);
-  sv('circle', { cx: 8, cy: -28, r: 1.8, fill: '#c8a24a' }, g);
+  sv('line', { x1: -11, y1: -4, x2: -11, y2: -52, stroke: '#7b5a3a', 'stroke-width': 1.5, 'stroke-linecap': 'round' }, g);
+  sv('path', { d: 'M -13 -51 L -11 -58 L -9 -51 Z', fill: '#c8a24a' }, g);
+  sv('rect', { x: -5.5, y: -9, width: 4.5, height: 9, rx: 2, fill: '#e6b58c', class: 'skin' }, g); sv('rect', { x: 1, y: -9, width: 4.5, height: 9, rx: 2, fill: '#e6b58c', class: 'skin' }, g);
+  sv('rect', { x: -8.5, y: -25, width: 17, height: 18, rx: 8, fill: colour, class: 'tint' }, g);
+  sv('rect', { x: -8.5, y: -15, width: 17, height: 2.2, fill: '#c8a24a' }, g);
+  sv('circle', { cx: -10.5, cy: -15, r: 2.6, fill: '#e6b58c', class: 'skin' }, g);
+  sv('circle', { cx: 0, cy: -35, r: 10.5, fill: '#e6b58c', class: 'skin' }, g);
+  sv('ellipse', { cx: 1.5, cy: -34.5, rx: 1.1, ry: 1.8, fill: '#2b2118' }, g); sv('ellipse', { cx: 6.5, cy: -34.5, rx: 1.1, ry: 1.8, fill: '#2b2118' }, g);
+  sv('path', { d: 'M 2 -30.5 Q 4.5 -28.5 7 -30.5', fill: 'none', stroke: '#2b2118', 'stroke-width': 0.9, 'stroke-linecap': 'round' }, g);
+  sv('path', { d: 'M -10.8 -37 A 10.8 10.8 0 0 1 10.8 -37 Z', fill: '#9c6b3c' }, g);
+  sv('rect', { x: -10.8, y: -38, width: 21.6, height: 1.6, fill: '#c8a24a' }, g);
+  sv('path', { d: 'M -9 -45 Q 0 -57 9 -45 L 7 -43.6 Q 0 -51 -7 -43.6 Z', fill: colour, class: 'tint' }, g);
+  sv('circle', { cx: 10, cy: -17, r: 8.5, fill: '#9c6b3c', stroke: '#c8a24a', 'stroke-width': 1.4 }, g);
+  sv('circle', { cx: 10, cy: -17, r: 5, fill: 'none', stroke: colour, 'stroke-width': 2, class: 'ring' }, g);
+  sv('circle', { cx: 10, cy: -17, r: 1.7, fill: '#c8a24a' }, g);
 }
 function drawWreath(g) {
   for (const s of [-1, 1]) for (let i = 0; i < 5; i++) { const a = (-0.35 - i * 0.5) * s, x = Math.sin(a) * 9 * 1, y = -Math.cos(a) * 9; sv('ellipse', { cx: x, cy: y, rx: 3.2, ry: 1.5, fill: i % 2 ? '#7f8a52' : '#c8a24a', transform: `rotate(${(a * 180) / Math.PI + s * 55} ${x} ${y})` }, g); }
@@ -73,11 +78,11 @@ function createFlat(svg) {
   const stop = () => { timers.forEach(clearTimeout); timers = []; };
   const at = (ms, fn) => timers.push(setTimeout(fn, ms));
   const move = (ax, bx, ay, by) => { A.outer.style.transform = `translate(${ax}px, ${ay || 0}px)`; B.outer.style.transform = `translate(${-bx}px, ${by || 0}px)`; };
-  const tint = (F, c) => { for (const e of F.inner.querySelectorAll('.tint')) e.setAttribute('fill', c); for (const e of F.inner.querySelectorAll('.ring')) e.setAttribute('stroke', c); };
+  const tint = (F, c, id) => { for (const e of F.inner.querySelectorAll('.tint')) e.setAttribute('fill', c); for (const e of F.inner.querySelectorAll('.ring')) e.setAttribute('stroke', c); const sk = SKINS[seedOf(id) % SKINS.length]; for (const e of F.inner.querySelectorAll('.skin')) e.setAttribute('fill', sk); };
   const cols = ['#c8a24a', '#c8a24a'];
   return {
     ok: true, quality: () => 'flat', colours: () => cols.slice(),
-    setFighters(a, b) { if (a && a.crest) { cols[0] = a.crest; tint(A, a.crest); } if (b && b.crest) { cols[1] = b.crest; tint(B, b.crest); } flags.forEach(([el, x]) => el.setAttribute('fill', x < 150 ? cols[0] : x > 170 ? cols[1] : '#c8a24a')); },
+    setFighters(a, b) { if (a && a.crest) { cols[0] = a.crest; tint(A, a.crest, a.id); } if (b && b.crest) { cols[1] = b.crest; tint(B, b.crest, b.id); } flags.forEach(([el, x]) => el.setAttribute('fill', x < 150 ? cols[0] : x > 170 ? cols[1] : '#c8a24a')); },
     clash(w, done) {
       stop(); svg.classList.remove('hit', 'crown-a', 'crown-b'); move(0, 0);
       if (reduced()) { if (done) done(); return; }
@@ -106,7 +111,7 @@ function stopPlay() { clearTimeout(S.timer); clearTimeout(S.guard); S.timer = 0;
 function setDuel() {
   stopPlay();
   S.duel = S.a && S.b ? C.duel(S.a, S.b, { demo: S.demo }) : null; S.shown = 0; S.done = false;
-  const st = stage(); if (st) { st.reset(); st.setFighters({ crest: C.crest(S.a && S.a.family) }, { crest: C.crest(S.b && S.b.family) }); }
+  const st = stage(); if (st) { st.reset(); st.setFighters({ crest: C.crest(S.a && S.a.family), id: S.a ? S.a.id : 'a' }, { crest: C.crest(S.b && S.b.family), id: S.b ? S.b.id : 'b' }); }
   for (const [k, f] of [['A', S.a], ['B', S.b]]) {
     const col = C.crest(f && f.family);
     $('name' + k).textContent = label(f); $('fam' + k).textContent = f ? f.family : ''; $('crest' + k).style.background = col;
@@ -114,7 +119,7 @@ function setDuel() {
   }
   const d = S.duel;
   $('periodPill').textContent = !d ? 'Pick two fighters' : d.period === 'live' ? 'Live so far' : d.period ? `${d.periodWord} backtest` : 'No shared period';
-  $('verdict').hidden = true;
+  $('verdict').hidden = true; closePerson();
   paintIntro(); paintScore(); paintControls();
   try { const hs = C.makeHash(S.a && S.a.id, S.b && S.b.id); if (!S.want && hs && hs !== location.hash) history.replaceState(null, '', hs); } catch (_) { /* a sandboxed frame */ }
 }
@@ -196,11 +201,52 @@ function renderVerdict() {
     rows.appendChild(tr);
   }
   const cav = $('caveats'); clear(cav); for (const s of d.caveats) cav.appendChild(h('li', '', s));
+  renderSays();
   $('shareText').textContent = d.share;
   for (const [id, f] of [['openA', S.a], ['openB', S.b]]) { const a = $(id); a.hidden = !f || f.kind !== 'run'; if (f && f.kind === 'run') { a.href = '../archive/?q=' + encodeURIComponent(f.id); a.textContent = `Open ${f.id} in the Archive`; } }
 }
 async function copy(text, okWord) {
   try { await navigator.clipboard.writeText(text); say(okWord); } catch (_) { say('Copy is not allowed here: press and hold the text to copy it.'); }
+}
+
+// ------------------------------------------------------------------ every champion is a person: a name plate, Talk, and (without the shared kit) five honest answers
+const SKINS = ['#f1c9a5', '#e6b58c', '#d39c6e', '#b97f52', '#96643f'];
+function seedOf(s) { let x = 7; const str = String(s || ''); for (let i = 0; i < str.length; i++) x = (x * 31 + str.charCodeAt(i)) % 100003; return x; }
+function drawFace(svg, f) {
+  clear(svg); const skin = SKINS[seedOf(f.id) % SKINS.length], col = C.crest(f.family);
+  sv('circle', { cx: 24, cy: 24, r: 23, fill: '#2a2217', stroke: '#3a3228' }, svg);
+  sv('path', { d: 'M 8 47 Q 8 35 24 35 Q 40 35 40 47 Z', fill: col }, svg);
+  sv('circle', { cx: 24, cy: 23, r: 12, fill: skin }, svg);
+  sv('ellipse', { cx: 19.5, cy: 23.5, rx: 1.3, ry: 2.1, fill: '#2b2118' }, svg); sv('ellipse', { cx: 28.5, cy: 23.5, rx: 1.3, ry: 2.1, fill: '#2b2118' }, svg);
+  sv('path', { d: 'M 20.5 28.5 Q 24 31 27.5 28.5', fill: 'none', stroke: '#2b2118', 'stroke-width': 1.1, 'stroke-linecap': 'round' }, svg);
+  sv('path', { d: 'M 11.6 21 A 12.4 12.4 0 0 1 36.4 21 Z', fill: '#9c6b3c' }, svg); sv('rect', { x: 11.6, y: 20, width: 24.8, height: 1.8, fill: '#c8a24a' }, svg);
+  sv('path', { d: 'M 14 12 Q 24 -1 34 12 L 32 13.6 Q 24 5 16 13.6 Z', fill: col }, svg);
+}
+function openPerson(k) {
+  const f = k === 'a' ? S.a : S.b; if (!f) return;
+  S.person = k; $('person').hidden = false; drawFace($('face'), f);
+  $('pName').textContent = title(f); $('pPlate').textContent = `${f.kind === 'bot' ? 'Live bot' : `${f.id} \u00b7 ${f.family} \u00b7 ${C.VERDICT_WORD[f.verdict]}`}. ${C.plate(f)}`;
+  $('talk').textContent = `Talk to ${label(f)}`; $('askBox').hidden = true; $('answer').textContent = '';
+  $('plateA').setAttribute('aria-expanded', k === 'a' ? 'true' : 'false'); $('plateB').setAttribute('aria-expanded', k === 'b' ? 'true' : 'false');
+  cue('tap');
+}
+function closePerson() { S.person = null; $('person').hidden = true; $('plateA').setAttribute('aria-expanded', 'false'); $('plateB').setAttribute('aria-expanded', 'false'); }
+function ask(key) {
+  const f = S.person === 'a' ? S.a : S.b; if (!f) return;
+  $('answer').textContent = C.answer(f, key, S.done ? S.duel : null);
+  for (const b of $('asks').children) b.setAttribute('aria-pressed', b.dataset.ask === key ? 'true' : 'false');
+}
+function talk() {
+  const f = S.person === 'a' ? S.a : S.b; if (!f) return;
+  const kit = window.OLYMPUS_PEOPLE, id = C.personId(f);
+  if (kit && typeof kit.open === 'function') { try { kit.open(id, { anchor: $('talk') }); S.talked = id; return; } catch (_) { /* the kit failed: the page's own card answers */ } }
+  const box = $('asks'); clear(box);
+  for (const [key, text] of C.QUESTIONS) { const b = h('button', 'ag-chip', text); b.type = 'button'; b.dataset.ask = key; b.setAttribute('aria-pressed', 'false'); b.addEventListener('click', () => ask(key)); box.appendChild(b); }
+  $('askBox').hidden = false; ask('win');
+}
+function renderSays() {
+  const box = $('says'); clear(box);
+  for (const x of C.afterLines(S.duel)) { const q = h('blockquote', 'say ' + x.role); q.dataset.person = x.id; q.appendChild(h('b', '', x.who)); q.appendChild(h('p', '', x.line)); box.appendChild(q); }
 }
 
 // ------------------------------------------------------------------ pick the fighters
@@ -392,6 +438,10 @@ async function boot() {
 }
 
 $('fight').addEventListener('click', fight);
+$('plateA').addEventListener('click', () => (S.person === 'a' ? closePerson() : openPerson('a')));
+$('plateB').addEventListener('click', () => (S.person === 'b' ? closePerson() : openPerson('b')));
+$('pClose').addEventListener('click', closePerson);
+$('talk').addEventListener('click', talk);
 $('next').addEventListener('click', () => step(false));
 $('skip').addEventListener('click', finish);
 $('slotA').addEventListener('click', () => { if (S.mode !== 'champ') { S.slot = 'a'; renderPick(); } });
@@ -405,6 +455,6 @@ $('tShare').addEventListener('click', () => { if (S.tour) copy(S.tour.share, 'Th
 $('tFinal').addEventListener('click', watchFinal);
 window.addEventListener('hashchange', () => { if (S.ready && S.v && applyHash()) { setDuel(); renderPick(); } });
 
-window.COLOSSEUM = { S, C, ready: () => S.ready, shards: () => !!S.shardsLoaded, fight, step, finish, pick: (id, slot) => pick(resolve(id), slot), setMode, playTournament, watchFinal,
+window.COLOSSEUM = { S, C, ready: () => S.ready, shards: () => !!S.shardsLoaded, fight, step, finish, openPerson, talk, ask, pick: (id, slot) => pick(resolve(id), slot), setMode, playTournament, watchFinal,
   get stage() { return stage(); }, get mode() { return S.stageMode; } };
 boot();

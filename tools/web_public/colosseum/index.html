@@ -17,7 +17,8 @@
 <!-- COLOSSEUM (OLYMPUS, AGORA look, 2026-11-11): where strategies fight. colosseumcore.js = the pure duel maths and words (node-tested, deterministic); colosseum.js = the page (ES module);
      arena.js = the marble amphitheatre in 3D (its own module tag: if it fails, or on LITE, the page draws the flat SVG arena).
      Reads ../archive/index.json (+ its runs-<k>.json shards after the first paint), ./extra.json (max drawdown, dec10, pass_med: built offline by tools/colosseum_build.py), ../home.json (the three bots)
-     and fixture.json (DEMO, never blank); sends nothing, stores nothing. Text only through textContent / createElementNS. A number that is not stored is "no contest", never guessed. -->
+     and fixture.json (DEMO, never blank); sends nothing, stores nothing. Text only through textContent / createElementNS. A number that is not stored is "no contest",      A number that is not stored is "no contest", never guessed. Every champion is a person (docs/PERSONA_API.md): tap a name plate, then Talk. With the shared kit (olympus/people.js, optional) that opens its chat;
+     without it the page answers five questions from the run's stored numbers. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o4">
 <link rel="stylesheet" href="../olympus/agora.css?v=a1">
@@ -40,13 +41,18 @@
   <section class="ag-card card hero" aria-labelledby="duelH">
     <div class="row"><h2 id="duelH">The duel</h2><span class="pill info" id="periodPill">...</span></div>
     <div class="stage">
-      <canvas id="arena" role="img" aria-label="A marble amphitheatre with seven tiers of spectators, a sand floor, a low warm sun and banners in the colours of the two fighters. Two marble champions with helmet and shield stand in the middle: the left one is fighter A, the right one fighter B. They clash once for every round."></canvas>
+      <canvas id="arena" role="img" aria-label="A marble amphitheatre with seven tiers of round-headed spectators who cheer the winner of a round, a sand floor, a low warm sun and banners in the colours of the two fighters. Two friendly round-headed champions with a crested bronze cap and a shield stand in the middle: the left one is fighter A, the right one fighter B. They clash once for every round."></canvas>
       <svg id="flat" viewBox="0 0 320 240" role="img" aria-label="A flat drawing of the arena: tiers of seats, a sand floor and the two champions, A on the left and B on the right" hidden></svg>
     </div>
     <div class="board" id="board">
-      <div class="plate a"><span class="crest" id="crestA"></span><b id="nameA">...</b><small id="famA"></small></div>
+      <button class="plate a" id="plateA" type="button" aria-expanded="false" aria-controls="person"><span class="crest" id="crestA"></span><b id="nameA">...</b><small id="famA"></small></button>
       <div class="score" aria-label="Rounds won"><b class="ag-num" id="score">0 - 0</b><small>rounds</small></div>
-      <div class="plate b"><span class="crest" id="crestB"></span><b id="nameB">...</b><small id="famB"></small></div>
+      <button class="plate b" id="plateB" type="button" aria-expanded="false" aria-controls="person"><span class="crest" id="crestB"></span><b id="nameB">...</b><small id="famB"></small></button>
+    </div>
+    <div class="person" id="person" hidden>
+      <div class="who"><svg id="face" viewBox="0 0 48 48" role="img" aria-label="The champion's face"></svg><div><b id="pName"></b><small id="pPlate"></small></div><button class="btn" id="pClose" type="button" aria-label="Close this champion's card">Close</button></div>
+      <button class="btn gold" id="talk" type="button">Talk</button>
+      <div id="askBox" hidden><p class="note">Ask a question. Every answer comes from the stored numbers of this run, nothing else.</p><div class="seg" id="asks" role="group" aria-label="Questions"></div><p class="lead" id="answer" aria-live="polite"></p></div>
     </div>
     <ol class="pips" id="pips" aria-label="The seven rounds"></ol>
     <div class="round" id="roundBox" aria-live="polite">
@@ -71,6 +77,7 @@
     <div class="row"><h2 id="verH">The verdict</h2><span class="pill ok" id="verPill">...</span></div>
     <p class="lead big" id="verHead"></p>
     <ol class="plain" id="why"></ol>
+    <div class="says" id="says"></div>
     <table class="lad" id="roundsTable"><caption class="note">The seven rounds</caption><thead><tr><th scope="col">Round</th><th scope="col">A</th><th scope="col">B</th><th scope="col">Won by</th></tr></thead><tbody id="roundRows"></tbody></table>
     <h3>Read this before you trust it</h3>
     <ul class="plain cav" id="caveats"></ul>
@@ -139,6 +146,7 @@
 
   <p class="foot" id="foot">Colosseum reads the Archive's own files (built offline from the saved research) and the published account numbers; it sends nothing and stores nothing. Stored backtests are history, not a forecast and not a promise. Money is after costs; 1 MNQ micro = $2 a point.</p>
 </main>
+<script type="module" src="../olympus/people.js?v=p1" onerror="window.OLYMPUS_PEOPLE_MISSING = 1"></script>
 <script type="module" src="arena.js?v=c1" onerror="window.COLOSSEUM_ARENA_FAIL = 1"></script>
 <script type="module" src="colosseum.js?v=c1"></script>
 </body>
