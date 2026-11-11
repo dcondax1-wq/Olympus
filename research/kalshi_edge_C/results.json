@@ -1,0 +1,527 @@
+{
+ "generated": "2026-11-11 04:48 UTC",
+ "status": "no_edge_found",
+ "cells_looked_at": 262,
+ "cells_carried": 0,
+ "survivors": [],
+ "table": [
+  {
+   "candidate": "Weather: buy when the NWS forecast model says the price is 5c+ too cheap (7 big cities)",
+   "n_train": 4119,
+   "n_test": 1605,
+   "test_edge_per_usd": -0.117,
+   "test_ci95": [
+    -0.1887,
+    -0.0446
+   ],
+   "replication": "13 other cities: -12.8% (n 3156, -18.2% to -7.1%); daily lows: -12.0% (n 242, -28.6% to +5.3%)",
+   "verdict": "No edge",
+   "note": "train -1.7%"
+  },
+  {
+   "candidate": "Weather: best cell on training data (price band 95-99c | E | buy no)",
+   "n_train": 1624,
+   "n_test": 554,
+   "test_edge_per_usd": 0.002,
+   "test_ci95": [
+    -0.0082,
+    0.0111
+   ],
+   "replication": "13 other cities: +0.2% (n 1138); daily lows: +0.6% (n 452)",
+   "verdict": "Below the multiple-testing bar (t 2.04 vs 2.07 needed): noise",
+   "note": "train +0.8%"
+  },
+  {
+   "candidate": "Weather: buy everything (control)",
+   "n_train": "",
+   "n_test": 6022,
+   "test_edge_per_usd": -0.0324,
+   "test_ci95": [
+    -0.033,
+    -0.0317
+   ],
+   "replication": "",
+   "verdict": "Taker cost",
+   "note": ""
+  },
+  {
+   "candidate": "S&P 500 daily close range: buy when the realised-vol model says 6c+ too cheap",
+   "n_train": 139,
+   "n_test": 18,
+   "test_edge_per_usd": null,
+   "test_ci95": null,
+   "replication": "Nasdaq-100: train days +19.1% (n 61), test days n/a (n 10, n/a)",
+   "verdict": "No edge",
+   "note": "train -7.7%"
+  },
+  {
+   "candidate": "S&P 500: best cell on training data (price band 10-30c | 6h before close | buy yes)",
+   "n_train": 205,
+   "n_test": 45,
+   "test_edge_per_usd": -0.2214,
+   "test_ci95": [
+    -0.6769,
+    0.2467
+   ],
+   "replication": "Nasdaq-100 test days: +38.1% (n 39)",
+   "verdict": "Below the bar (t 1.14 vs 1.953): noise",
+   "note": "train +16.9%"
+  },
+  {
+   "candidate": "S&P 500 daily: buy everything (control)",
+   "n_train": "",
+   "n_test": 4066,
+   "test_edge_per_usd": -0.1194,
+   "test_ci95": [
+    -0.133,
+    -0.1061
+   ],
+   "replication": "",
+   "verdict": "Taker cost",
+   "note": ""
+  },
+  {
+   "candidate": "Gas / FX / Rotten Tomatoes: best cell on training data (gas daily | price band 95-99c | 3h before close | buy no)",
+   "n_train": 128,
+   "n_test": 31,
+   "test_edge_per_usd": 0.0184,
+   "test_ci95": [
+    0.0151,
+    0.0215
+   ],
+   "replication": "n/a",
+   "verdict": "Below the bar (t 1.48 vs 1.719): noise",
+   "note": "train +1.8%"
+  },
+  {
+   "candidate": "US gas price: best momentum-model cell (gas momentum model says underpriced by >= 3c | 12h before close | buy no)",
+   "n_train": 178,
+   "n_test": 52,
+   "test_edge_per_usd": 0.5063,
+   "test_ci95": [
+    -0.5843,
+    1.7793
+   ],
+   "replication": "n/a",
+   "verdict": "No edge (negative in training)",
+   "note": "train -10.0%"
+  }
+ ],
+ "weather": {
+  "quoted_days": 163,
+  "first_day": "2026-05-31",
+  "last_day": "2026-11-09",
+  "test_from": "2026-09-30",
+  "forecast_quality": {
+   "main": {
+    "days": 2163,
+    "mos_evening_mae_F": 2.06,
+    "mos_evening_n": 2163,
+    "mos_morning_mae_F": 1.87,
+    "mos_morning_n": 2163,
+    "naive_mae_F": 4.82,
+    "naive_n": 2145
+   },
+   "rep": {
+    "days": 3695,
+    "mos_evening_mae_F": 2.0,
+    "mos_evening_n": 3695,
+    "mos_morning_mae_F": 1.87,
+    "mos_morning_n": 3695,
+    "naive_mae_F": 4.32,
+    "naive_n": 3496
+   },
+   "low": {
+    "days": 2214,
+    "mos_evening_mae_F": 2.33,
+    "mos_evening_n": 2214,
+    "mos_morning_mae_F": 2.33,
+    "mos_morning_n": 2214,
+    "naive_mae_F": 3.79,
+    "naive_n": 2146
+   }
+  },
+  "brier_main": {
+   "train E": {
+    "n": 4875,
+    "brier_market_mid": 0.10056,
+    "brier_mos_model": 0.11127,
+    "brier_naive_model": 0.15105,
+    "best_mix_weight_on_forecast_(train)": 0.05,
+    "brier_best_mix": 0.10054
+   },
+   "test E": {
+    "n": 1712,
+    "brier_market_mid": 0.08906,
+    "brier_mos_model": 0.1165,
+    "brier_naive_model": 0.16761,
+    "best_mix_weight_on_forecast_(train)": 0.05,
+    "brier_best_mix": 0.08939
+   },
+   "train M": {
+    "n": 4910,
+    "brier_market_mid": 0.09418,
+    "brier_mos_model": 0.10662,
+    "brier_naive_model": 0.14883,
+    "best_mix_weight_on_forecast_(train)": 0.1,
+    "brier_best_mix": 0.09403
+   },
+   "test M": {
+    "n": 1680,
+    "brier_market_mid": 0.07884,
+    "brier_mos_model": 0.10962,
+    "brier_naive_model": 0.16725,
+    "best_mix_weight_on_forecast_(train)": 0.1,
+    "brier_best_mix": 0.07962
+   }
+  },
+  "null_max_t_p95": 2.07,
+  "cells_eligible": 50
+ },
+ "index": {
+  "days": 175,
+  "first_day": "2026-03-02",
+  "last_day": "2026-11-09",
+  "test_from": "2026-09-09",
+  "days_with_futures_model": 159,
+  "vol_scale": {
+   "1": 0.965,
+   "2": 0.852,
+   "4": 0.784,
+   "6": 0.792
+  },
+  "brier": {
+   "train 1h": {
+    "n": 805,
+    "brier_market_mid": 0.04923,
+    "brier_vol_model": 0.05098
+   },
+   "train 2h": {
+    "n": 813,
+    "brier_market_mid": 0.06596,
+    "brier_vol_model": 0.06688
+   },
+   "train 4h": {
+    "n": 743,
+    "brier_market_mid": 0.07097,
+    "brier_vol_model": 0.07183
+   },
+   "train 6h": {
+    "n": 574,
+    "brier_market_mid": 0.09418,
+    "brier_vol_model": 0.09095
+   },
+   "test 1h": {
+    "n": 587,
+    "brier_market_mid": 0.00712,
+    "brier_vol_model": 0.00691
+   },
+   "test 2h": {
+    "n": 578,
+    "brier_market_mid": 0.00525,
+    "brier_vol_model": 0.00474
+   },
+   "test 4h": {
+    "n": 635,
+    "brier_market_mid": 0.00863,
+    "brier_vol_model": 0.00949
+   },
+   "test 6h": {
+    "n": 393,
+    "brier_market_mid": 0.01361,
+    "brier_vol_model": 0.01448
+   }
+  },
+  "null_max_t_p95": 1.953,
+  "cells_eligible": 10
+ },
+ "other": {
+  "series": {
+   "KXAAAGASD": {
+    "class": "gas daily",
+    "settled_markets": 4094,
+    "with_quotes": 1213,
+    "events": 230,
+    "used": true
+   },
+   "KXDIESELD": {
+    "class": "gas daily",
+    "settled_markets": 2254,
+    "with_quotes": 1527,
+    "events": 100,
+    "used": true
+   },
+   "KXAAAGASW": {
+    "class": "gas weekly/monthly",
+    "settled_markets": 1023,
+    "with_quotes": 276,
+    "events": 54,
+    "used": false
+   },
+   "KXAAAGASM": {
+    "class": "gas weekly/monthly",
+    "settled_markets": 344,
+    "with_quotes": 56,
+    "events": 12,
+    "used": false
+   },
+   "KXTNOTED": {
+    "class": "rates+fx",
+    "settled_markets": 1935,
+    "with_quotes": 0,
+    "events": 129,
+    "used": false
+   },
+   "KXTNOTEW": {
+    "class": "rates+fx",
+    "settled_markets": 480,
+    "with_quotes": 0,
+    "events": 32,
+    "used": false
+   },
+   "KXUSDJPY": {
+    "class": "rates+fx",
+    "settled_markets": 3825,
+    "with_quotes": 675,
+    "events": 255,
+    "used": true
+   },
+   "KXEURUSD": {
+    "class": "rates+fx",
+    "settled_markets": 3840,
+    "with_quotes": 675,
+    "events": 256,
+    "used": true
+   },
+   "KXSPOTIFYD": {
+    "class": "media charts",
+    "settled_markets": 3607,
+    "with_quotes": 0,
+    "events": 230,
+    "used": false
+   },
+   "KXNETFLIXRANKSHOW": {
+    "class": "media charts",
+    "settled_markets": 676,
+    "with_quotes": 121,
+    "events": 54,
+    "used": false
+   },
+   "KXRT": {
+    "class": "media charts",
+    "settled_markets": 1445,
+    "with_quotes": 413,
+    "events": 91,
+    "used": true
+   },
+   "KXTSAW": {
+    "class": "tsa+rain",
+    "settled_markets": 1114,
+    "with_quotes": 175,
+    "events": 53,
+    "used": false
+   },
+   "KXRAINNYC": {
+    "class": "tsa+rain",
+    "settled_markets": 254,
+    "with_quotes": 0,
+    "events": 254,
+    "used": false
+   }
+  },
+  "econ_descriptive": [
+   {
+    "series": "KXFEDDECISION",
+    "events": 8,
+    "markets": 40,
+    "24h": {
+     "events_quoted": 8,
+     "favourite_avg_ask": 0.574,
+     "favourite_won": 0.625,
+     "edge_per_$_buying_favourite": 0.0832,
+     "brier_mid_all_markets": 0.0037,
+     "markets_quoted": 37
+    },
+    "3h": {
+     "events_quoted": 8,
+     "favourite_avg_ask": 0.45,
+     "favourite_won": 0.5,
+     "edge_per_$_buying_favourite": 0.1033,
+     "brier_mid_all_markets": 0.0046,
+     "markets_quoted": 36
+    }
+   },
+   {
+    "series": "KXFED",
+    "events": 8,
+    "markets": 88,
+    "24h": {
+     "events_quoted": 8,
+     "favourite_avg_ask": 0.28,
+     "favourite_won": 0.25,
+     "edge_per_$_buying_favourite": -0.12,
+     "brier_mid_all_markets": 0.0017,
+     "markets_quoted": 39
+    },
+    "3h": {
+     "events_quoted": 8,
+     "favourite_avg_ask": 0.161,
+     "favourite_won": 0.125,
+     "edge_per_$_buying_favourite": -0.2485,
+     "brier_mid_all_markets": 0.002,
+     "markets_quoted": 45
+    }
+   },
+   {
+    "series": "KXCPI",
+    "events": 13,
+    "markets": 130,
+    "24h": {
+     "events_quoted": 13,
+     "favourite_avg_ask": 0.958,
+     "favourite_won": 0.923,
+     "edge_per_$_buying_favourite": -0.0389,
+     "brier_mid_all_markets": 0.0596,
+     "markets_quoted": 70
+    },
+    "3h": {
+     "events_quoted": 12,
+     "favourite_avg_ask": 0.973,
+     "favourite_won": 0.917,
+     "edge_per_$_buying_favourite": -0.0601,
+     "brier_mid_all_markets": 0.0527,
+     "markets_quoted": 64
+    }
+   },
+   {
+    "series": "KXCPIYOY",
+    "events": 12,
+    "markets": 207,
+    "24h": {
+     "events_quoted": 12,
+     "favourite_avg_ask": 0.976,
+     "favourite_won": 0.833,
+     "edge_per_$_buying_favourite": -0.1477,
+     "brier_mid_all_markets": 0.0681,
+     "markets_quoted": 111
+    },
+    "3h": {
+     "events_quoted": 12,
+     "favourite_avg_ask": 0.917,
+     "favourite_won": 0.833,
+     "edge_per_$_buying_favourite": -0.0958,
+     "brier_mid_all_markets": 0.0527,
+     "markets_quoted": 90
+    }
+   },
+   {
+    "series": "KXCPICORE",
+    "events": 13,
+    "markets": 116,
+    "24h": {
+     "events_quoted": 12,
+     "favourite_avg_ask": 0.941,
+     "favourite_won": 0.917,
+     "edge_per_$_buying_favourite": -0.0297,
+     "brier_mid_all_markets": 0.0391,
+     "markets_quoted": 81
+    },
+    "3h": {
+     "events_quoted": 11,
+     "favourite_avg_ask": 0.914,
+     "favourite_won": 0.909,
+     "edge_per_$_buying_favourite": -0.0101,
+     "brier_mid_all_markets": 0.0576,
+     "markets_quoted": 65
+    }
+   },
+   {
+    "series": "KXPAYROLLS",
+    "events": 13,
+    "markets": 181,
+    "24h": {
+     "events_quoted": 13,
+     "favourite_avg_ask": 0.958,
+     "favourite_won": 0.846,
+     "edge_per_$_buying_favourite": -0.1194,
+     "brier_mid_all_markets": 0.2267,
+     "markets_quoted": 180
+    },
+    "3h": {
+     "events_quoted": 13,
+     "favourite_avg_ask": 0.958,
+     "favourite_won": 0.846,
+     "edge_per_$_buying_favourite": -0.1194,
+     "brier_mid_all_markets": 0.2203,
+     "markets_quoted": 161
+    }
+   },
+   {
+    "series": "KXU3",
+    "events": 13,
+    "markets": 145,
+    "24h": {
+     "events_quoted": 13,
+     "favourite_avg_ask": 0.968,
+     "favourite_won": 1.0,
+     "edge_per_$_buying_favourite": 0.0312,
+     "brier_mid_all_markets": 0.0641,
+     "markets_quoted": 100
+    },
+    "3h": {
+     "events_quoted": 13,
+     "favourite_avg_ask": 0.876,
+     "favourite_won": 0.923,
+     "edge_per_$_buying_favourite": 0.048,
+     "brier_mid_all_markets": 0.0711,
+     "markets_quoted": 79
+    }
+   },
+   {
+    "series": "KXGDP",
+    "events": 4,
+    "markets": 42,
+    "24h": {
+     "events_quoted": 4,
+     "favourite_avg_ask": 0.972,
+     "favourite_won": 1.0,
+     "edge_per_$_buying_favourite": 0.0264,
+     "brier_mid_all_markets": 0.1356,
+     "markets_quoted": 35
+    },
+    "3h": {
+     "events_quoted": 4,
+     "favourite_avg_ask": 0.982,
+     "favourite_won": 1.0,
+     "edge_per_$_buying_favourite": 0.0166,
+     "brier_mid_all_markets": 0.1578,
+     "markets_quoted": 32
+    }
+   },
+   {
+    "series": "KXJOBLESSCLAIMS",
+    "events": 47,
+    "markets": 490,
+    "24h": {
+     "events_quoted": 47,
+     "favourite_avg_ask": 0.855,
+     "favourite_won": 0.766,
+     "edge_per_$_buying_favourite": -0.1099,
+     "brier_mid_all_markets": 0.1073,
+     "markets_quoted": 277
+    },
+    "3h": {
+     "events_quoted": 43,
+     "favourite_avg_ask": 0.758,
+     "favourite_won": 0.698,
+     "edge_per_$_buying_favourite": -0.0856,
+     "brier_mid_all_markets": 0.0815,
+     "markets_quoted": 209
+    }
+   }
+  ],
+  "null_max_t_p95": 1.719,
+  "cells_eligible": 24,
+  "test_from": "2026-10-25"
+ }
+}
