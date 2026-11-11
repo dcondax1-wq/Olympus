@@ -32,6 +32,11 @@ function shadeHex(hex, k) { const n = parseInt(String(hex).slice(1), 16), f = (c
 export function palette(THREE, s, L) {
   const kind = String(s.kind || ''), gold = s.accessory === 'laurel' || s.accessory === 'owl' || kind === 'champion';
   const dark = (h, k) => lin(THREE, shadeHex(h, k));
+  // the clothes must read against the skin: an outfit too close to the skin tone swaps with the accent (or turns to linen)
+  const rgb = (h) => { const n = parseInt(String(h).slice(1), 16); return [(n >> 16) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]; }, dist = (a, b) => { const x = rgb(a), y = rgb(b); return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]); };
+  let outHex = s.outfit, accHex = s.accent;
+  if (dist(outHex, s.skin) < 0.2) { if (dist(accHex, s.skin) >= 0.2) { outHex = s.accent; accHex = s.outfit; } else outHex = IVORY; }
+  s = { ...s, outfit: outHex, accent: accHex };
   return {
     skin: lin(THREE, s.skin), hair: lin(THREE, s.hair), brow: lin(THREE, L.browCol || shadeHex(s.hair, -0.3)), eye: lin(THREE, '#1e1712'),
     outfit: lin(THREE, s.outfit), outfit2: dark(s.outfit, -0.42), accent: lin(THREE, s.accent), leather: lin(THREE, LEATHER), metal: lin(THREE, gold ? GOLD : BRONZE),
@@ -341,7 +346,7 @@ const ease = (u) => u * u * (3 - 2 * u);
 // a layer: (t, O, k) with O.arm(side 'l'|'r', upper dir, fore dir) in the person's own space (+z forward, +y up, +x their left), O.rot(bone, x, y, z) radians
 // about their own axes, O.hips(dy); k = the fade (0..1) for one-shots
 const LAYERS = {
-  relax: (t, O) => { const b = 0.04 * sin(t * 1.3); O.arm('r', [-0.2, -1, 0.06 + b], [-0.04, -0.9, 0.42]); O.arm('l', [0.2, -1, 0.06 - b], [0.04, -0.9, 0.42]); },
+  relax: (t, O) => { const b = 0.04 * sin(t * 1.3); O.arm('r', [-0.34, -1, 0.02 + b], [-0.14, -1, 0.16]); O.arm('l', [0.34, -1, 0.02 - b], [0.14, -1, 0.16]); },
   wave: (t, O, k) => { const s = sin(t * 9); O.arm('r', [-0.5, 0.82, 0.18], [-0.12 + 0.5 * s, 1, 0.28]); O.rot('head', 0, 0, -0.1 * k); O.rot('chest', 0, 0.06, -0.05); },
   talk: (t, O) => { O.arm('r', [-0.3, -0.84, 0.42 + 0.1 * sin(t * 2.3)], [0.15 + 0.3 * sin(t * 3.1), 0.25 + 0.25 * sin(t * 2.6 + 1), 1]); O.arm('l', [0.32, -0.88, 0.3 + 0.08 * sin(t * 1.7 + 1)], [-0.12, 0.05 + 0.18 * sin(t * 1.9 + 1), 1]); O.rot('head', 0.04 * sin(t * 4.2), 0.06 * sin(t * 1.3), 0.03 * sin(t * 0.9)); O.rot('chest', 0, 0.06 * sin(t * 1.1), 0); },
   cheerSeated: (t, O, k) => { const b = 0.15 * sin(t * 8) * k; O.arm('r', [-0.35, 1, 0.1], [-0.2 - b, 1, 0.05]); O.arm('l', [0.35, 1, 0.1], [0.2 + b, 1, 0.05]); O.rot('head', -0.2 * k, 0, 0); },

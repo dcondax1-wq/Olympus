@@ -38,10 +38,13 @@ function build(rc, scene, camera, canvas, o) {
   const marble = new THREE.MeshStandardMaterial({ color: '#d9cfbb', roughness: 0.82 }), warm = new THREE.MeshStandardMaterial({ color: '#b9a888', roughness: 0.9 }), bronze = new THREE.MeshStandardMaterial({ color: '#9c6b3c', roughness: 0.5, metalness: 0.55 });
   const wood = new THREE.MeshStandardMaterial({ color: '#6b4a2a', roughness: 0.85 }), cloth = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.95 }), terra = new THREE.MeshStandardMaterial({ color: '#b5563c', roughness: 0.8 });
   const flame = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffb860').multiplyScalar(1.5) });
-  scene.add(new THREE.HemisphereLight('#ffe6bf', '#4a3622', 1.2));
-  const sun = new THREE.DirectionalLight('#ffd29a', 2.0); sun.position.set(6, 9, 5); scene.add(sun);
-  const fill = new THREE.PointLight('#ffb060', 14, r * 3.2, 1.6); fill.position.set(0, 2.2, 0); scene.add(fill);
-  const face = new THREE.DirectionalLight('#ffe2b8', 1.1); scene.add(face); scene.add(face.target);      // a soft key light from where you stand: faces always read
+  // characters v3 (2026-11-11): calmer, more neutral light so skin reads as skin (no orange cast): an ivory sky, a warm-white sun, a small fire glow,
+  // a soft key light from where you stand (faces always read) and a cool rim from behind the people
+  scene.add(new THREE.HemisphereLight('#fbf3e6', '#5a4a3a', 0.95));
+  const sun = new THREE.DirectionalLight('#ffeedd', 1.45); sun.position.set(6, 9, 5); scene.add(sun);
+  const fill = new THREE.PointLight('#ffc888', 5, r * 3.2, 1.6); fill.position.set(0, 2.2, 0); scene.add(fill);
+  const face = new THREE.DirectionalLight('#fff6ec', 1.05); scene.add(face); scene.add(face.target);
+  const rimL = new THREE.DirectionalLight('#e4ecff', 0.55); scene.add(rimL); scene.add(rimL.target);
   const add = (m) => { scene.add(m); return m; };
   const floor = add(new THREE.Mesh(new THREE.CircleGeometry(r + 6.5, 56), marble)); floor.rotation.x = -Math.PI / 2;
   const rug = add(new THREE.Mesh(new THREE.RingGeometry(r - 1.25, r + 1.1, 56), new THREE.MeshStandardMaterial({ color: '#7d5a36', roughness: 1 }))); rug.rotation.x = -Math.PI / 2; rug.position.y = 0.006;
@@ -71,7 +74,7 @@ function build(rc, scene, camera, canvas, o) {
   const nB = 4, bowls = add(new THREE.InstancedMesh(new THREE.CylinderGeometry(0.26, 0.1, 0.9, 10), bronze, nB)), fires = add(new THREE.InstancedMesh(new THREE.ConeGeometry(0.17, 0.4, 7), flame, nB));
   for (let i = 0; i < nB; i++) { const a = (i / nB) * Math.PI * 2 + Math.PI / 4; put(bowls, i, Math.sin(a) * (r + 1.9), 0.45, Math.cos(a) * (r + 1.9)); put(fires, i, Math.sin(a) * (r + 1.9), 1.08, Math.cos(a) * (r + 1.9)); }
   // the people: one crowd for everyone, close-up figures for the few in view
-  const crowd = figureInstanced(THREE, specs, { seated: true, lite: N > 24 });
+  const crowd = figureInstanced(THREE, specs, { seated: true, lite: N > 24, impostorTint: '#f4e7d6' });
   const seatY = (i) => SEAT_Y - BUTT * SC * ((specs[i] && specs[i].height) || 1);
   L.seats.forEach((s, i) => crowd.userData.place(i, s.x, seatY(i), s.z, s.ry, SC));
   scene.add(crowd);
@@ -88,12 +91,28 @@ function build(rc, scene, camera, canvas, o) {
 
   const st = { yaw: 0, goal: null, vel: 0, auto: !reduced, active: -1, activeT: 0, voice: false, t: 0, idle: 0, w: 1, h: 1, walk: null };
   const ray = new THREE.Raycaster(), v = new THREE.Vector3(), ndc = new THREE.Vector2(), look = new THREE.Vector3(), camPos = new THREE.Vector3();
+  const camLook = new THREE.Vector3(), camAt = new THREE.Vector3(), headV = new THREE.Vector3();
   function placeCam() {
-    // you stand at the table on the near side and look across it: the people over there face you
-    const portrait = st.w / st.h < 0.95, off = r * (portrait ? 0.3 : 0.42), hgt = portrait ? 1.55 : 1.5;
-    camera.fov = portrait ? 50 : 42; camera.updateProjectionMatrix();
-    camera.position.set(Math.sin(st.yaw) * off, hgt, Math.cos(st.yaw) * off); camera.lookAt(-Math.sin(st.yaw) * r, 1.02, -Math.cos(st.yaw) * r);
-    face.position.copy(camera.position).add(v.set(0.6, 1.2, 0)); face.target.position.set(-Math.sin(st.yaw) * r, 1, -Math.cos(st.yaw) * r);
+    // you stand just past the middle of the table and look across it: the people over there face you, big enough to see their faces.
+    // When someone talks the camera dollies in on them (a cinematic close-up), and back out when they are done.
+    const portrait = st.w / st.h < 0.95, off = r * (portrait ? 0.02 : 0.2), hgt = portrait ? 1.3 : 1.36;
+    camera.fov = portrait ? 46 : 40;
+    camAt.set(Math.sin(st.yaw) * off, hgt, Math.cos(st.yaw) * off); camLook.set(-Math.sin(st.yaw) * r, 0.92, -Math.cos(st.yaw) * r);
+    const z = st.zoom || 0;
+    if (z > 0.001 && st.active >= 0 && L.seats[st.active]) {
+      const s = L.seats[st.active], f = close.get(st.active);
+      headV.set(s.x, seatY(st.active) + 1.08 * SC * ((specs[st.active] && specs[st.active].height) || 1) * 0.66, s.z);
+      if (f) { f.updateWorldMatrix(true, true); const hb = f.userData.parts && f.userData.parts.head; if (hb && hb.getWorldPosition) hb.getWorldPosition(headV); }
+      const dx = -s.x, dz = -s.z, dl = Math.hypot(dx, dz) || 1, side = st.cardOff || 0;
+      const nearX = s.x + (dx / dl) * 1.55 + (-dz / dl) * side * 0.9, nearZ = s.z + (dz / dl) * 1.55 + (dx / dl) * side * 0.9;
+      const e = z * z * (3 - 2 * z) * 0.85;
+      camAt.lerp(v.set(nearX, headV.y + 0.08, nearZ), e); camLook.lerp(headV.clone().add(v.set((-dz / dl) * side * 0.35, -0.06, (dx / dl) * side * 0.35)), e);
+      camera.fov += (34 - camera.fov) * e;
+    }
+    camera.updateProjectionMatrix();
+    camera.position.copy(camAt); camera.lookAt(camLook);
+    face.position.copy(camera.position).add(v.set(0.6, 1.2, 0)); face.target.position.copy(camLook);
+    rimL.position.copy(camLook).add(v.set(-camLook.x * 0.6, 2.5, -camLook.z * 0.6)); rimL.target.position.copy(camLook);
   }
   function fit() { const w = canvas.clientWidth || 1, h = canvas.clientHeight || 1; if (w === st.w && h === st.h) return; st.w = w; st.h = h; camera.aspect = w / h; camera.updateProjectionMatrix(); }
   function want() { const k = new Set(front(L, st.yaw + Math.PI, Math.min(CLOSE, N))); if (st.active >= 0) k.add(st.active); return k; }
@@ -103,6 +122,7 @@ function build(rc, scene, camera, canvas, o) {
     if (st.goal != null) { const dlt = turn(st.yaw, st.goal); if (Math.abs(dlt) < 0.004 || reduced) { st.yaw = st.goal; st.goal = null; } else st.yaw += dlt * Math.min(1, dt * 4.5); }
     else if (Math.abs(st.vel) > 0.0004) { st.yaw += st.vel; st.vel *= Math.pow(0.04, dt); }
     else if (st.auto && st.active < 0) { st.idle += dt; if (st.idle > 2.5) st.yaw += dt * 0.045; }
+    const zGoal = st.active >= 0 && !reduced && st.activeT > 0.6 ? 1 : 0; st.zoom = (st.zoom || 0) + (zGoal - (st.zoom || 0)) * Math.min(1, dt * 1.6); if (reduced) st.zoom = 0;
     placeCam(); syncClose(); camPos.copy(camera.position);
     // who looks where: everyone looks at the one who talks; with nobody talking the close-ups notice you, the crowd looks around
     const talker = st.active >= 0 ? crowd.userData.headWorld(st.active, look) : null;
@@ -112,7 +132,8 @@ function build(rc, scene, camera, canvas, o) {
         lookAt(f, camPos);
         const s = L.seats[i], want2 = Math.atan2(camPos.x - s.x, camPos.z - s.z), dy = turn(f.rotation.y, want2);
         f.rotation.y += Math.max(-0.5, Math.min(0.5, dy)) * Math.min(1, dt * 3);       // turn on the couch towards you
-        if (!st.voice) { st.activeT += dt; const talking = st.activeT > 1.2 && (st.activeT % 7) < 3.6; setTalking(f, talking); }
+        st.activeT += dt;
+        if (!st.voice) { const talking = st.activeT > 1.2 && (st.activeT % 7) < 3.6; setTalking(f, talking); }
       } else { lookAt(f, talker || camPos); const s = L.seats[i]; f.rotation.y += turn(f.rotation.y, s.ry) * Math.min(1, dt * 2); }
       if (st.walk && st.walk.i === i) {                                   // walk with me: they get up and walk out between the columns
         const w = st.walk, k = Math.min(1, (st.t - w.t0) / w.dur), e = k * k * (3 - 2 * k);
@@ -149,7 +170,7 @@ function build(rc, scene, camera, canvas, o) {
     yaw: () => st.yaw,
     setYaw(a) { st.yaw = a; st.goal = null; st.vel = 0; placeCam(); },
     spin(dx) { st.goal = null; st.idle = 0; st.yaw -= dx * 0.008; st.vel = -dx * 0.008 * 0.5; },
-    focus(i, off) { if (L.seats[i]) { st.goal = yawFor(L, i) + Math.PI + (off || 0); st.vel = 0; st.idle = 0; } },      // turn so this person sits across the table, facing you
+    focus(i, off) { if (L.seats[i]) { st.goal = yawFor(L, i) + Math.PI + (off || 0); st.vel = 0; st.idle = 0; st.cardOff = off ? Math.sign(off) : 0; } },      // turn so this person sits across the table, facing you
     active(i) {
       const prev = st.active; st.active = i == null || !L.seats[i] ? -1 : i; st.activeT = 0; st.voice = false;
       if (prev >= 0 && close.has(prev)) { const f = close.get(prev); setTalking(f, false); play(f, 'idle'); }
