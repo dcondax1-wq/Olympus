@@ -329,7 +329,7 @@ function makeBuilder(kit) {
     lathe(mat, profile, x, y, z, s, seg, color) { return B.add(mat, latheGeo(profile, seg), mat4(x, y, z, 0, s), color); },
     /** a Doric column standing on (x, y, z): fluted shaft, echinus, abacus; h = total height */
     column(o) {
-      const h = o.h ?? 4, r = o.r ?? 0.3, mat = o.mat || 'marble:uv', capH = r * 0.9, lite = kit.lite;
+      const h = o.h ?? 4, r = o.r ?? 0.3, mat = o.mat || 'marble:uv', capH = r * 0.9, lite = kit.geoLite;
       B.add(mat, shaftGeo({ h: h - capH, r, flutes: o.flutes ?? 20, lite }), mat4(o.x, o.y || 0, o.z, o.ry || 0), o.color);
       const y = (o.y || 0) + h - capH;
       B.add(mat, latheGeo([[r * 0.82, 0], [r * 0.86, capH * 0.12], [r * 1.0, capH * 0.3], [r * 1.22, capH * 0.52], [r * 1.3, capH * 0.6], [0.0001, capH * 0.6]], lite ? 12 : 24), mat4(o.x, y, o.z, 0), o.color);
@@ -471,9 +471,10 @@ export function envKit(opts) {
   // a fraction of the cost; ?gpu=1 keeps the full surfaces there
   let soft = false; try { const gl = renderer && renderer.getContext(), e = gl && gl.getExtension('WEBGL_debug_renderer_info');
     soft = !!e && /swiftshader|llvmpipe|software/i.test(String(gl.getParameter(e.UNMASKED_RENDERER_WEBGL))) && !/[?&]gpu=1/.test(location.search); } catch (err) { soft = false; }
+  const aniso = renderer && renderer.capabilities && !soft ? Math.min(4, renderer.capabilities.getMaxAnisotropy()) : 1;
   const mats = new Map(), texs = new Map(), info = { files: 0, failed: [], bytes: 0, texels: 0, env: null };
   let dead = false, envTex = null, envSig = '';
-  const aniso = renderer && renderer.capabilities ? Math.min(4, renderer.capabilities.getMaxAnisotropy()) : 1;
+
   const loadTex = (rel, srgb) => {
     if (texs.has(rel)) return texs.get(rel);
     const p = new Promise((ok) => {
@@ -488,7 +489,9 @@ export function envKit(opts) {
     return p;
   };
   const kit = {
-    tier, lite, _own: [],
+    tier, lite, soft, _own: [],
+    /** lighter geometry (fewer flutes and segments): LITE, and a software GL */
+    get geoLite() { return lite || soft; },
     /** a material by key: 'marble' (triplanar), 'marble:uv' (mesh UVs in metres), a PLAIN name ('bronze'), or anything else = paint.
      *  opts: { color, scale, rough, metal, normal, vertexColors, side, envI } (same key + same opts -> the same material) */
     mat(key, mo) {
@@ -598,7 +601,7 @@ export function envKit(opts) {
     async hero(parent, name, list, ho) {
       const H = HEROES[name]; if (!H || !list || !list.length) return null;
       const grp = new THREE.Group(); grp.name = 'ek-hero:' + name; if (parent) parent.add(grp);
-      if (lite && !(ho && ho.lite)) return grp;                       // LITE: fewer props (the hero models stay home)
+      if ((lite || soft) && !(ho && ho.lite)) return grp;             // LITE (and a software GL): fewer props (the hero models stay home)
       try {
         const gl = await loadGltf(H.file); if (dead) return null;
         info.files++;
