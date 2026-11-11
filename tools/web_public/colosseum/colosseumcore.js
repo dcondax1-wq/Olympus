@@ -328,7 +328,7 @@ export const QUESTIONS = [['win', 'How did you win?'], ['weak', 'What is your we
 const NOT_PROMISE = 'Backtest, not a promise.';
 function mainPeriod(f) { const per = f.m26 ? '26' : f.mold ? 'old' : f.mlive ? 'live' : null; return { per, m: mOf(f, per), word: PERIOD_WORD[per] || '' }; }
 /** the line every answer ends with: the money, the sample size and the honest label */
-function tail(f) { const { per, m, word } = mainPeriod(f); if (!m) return 'No result is stored for me, so I have no dollars and no trade count to show. ' + NOT_PROMISE; return `(${word}: ${usdS(m.net)}, n = ${m.n} trades. ${per === 'live' ? 'A short live record, not a promise.' : NOT_PROMISE})`; }
+function tail(f) { const { per, m, word } = mainPeriod(f); if (!m) return 'No result is stored for me, so I have no dollars and no trade count to show. ' + NOT_PROMISE; return `(${word}: ${m.net === null ? 'no dollars stored' : usdS(m.net)}, n = ${m.n} trades. ${per === 'live' ? 'A short live record, not a promise.' : NOT_PROMISE})`; }
 /** one answer in the champion's own voice. d = the finished duel it fought in, if any. Never a number that is not stored. */
 export function answer(f, key, d) {
   if (!f) return '';
@@ -337,7 +337,7 @@ export function answer(f, key, d) {
   let s = '';
   if (key === 'win') {
     const mine = d && (d.a === f || d.b === f) ? (d.a === f ? 'a' : 'b') : null;
-    if (!mine) s = `I have not finished a duel yet. My record: ${usdS(m.net)}${m.pm !== null ? `, ${usd(m.pm)} a month` : ''}${m.pf !== null ? `, PF ${pf(m.pf)}` : ''}.`;
+    if (!mine) s = `I have not finished a duel yet. My record: ${m.net === null ? 'no dollars stored' : usdS(m.net)}${m.pm !== null ? `, ${usd(m.pm)} a month` : ''}${m.pf !== null ? `, PF ${pf(m.pf)}` : ''}.`;
     else {
       const ok = mine === 'a' ? 'b' : 'a', other = mine === 'a' ? d.b : d.a, won = d.rounds.filter((r) => r.winner === mine).map((r) => r.name.toLowerCase());
       if (!d.period) s = `Nobody won: ${short(other)} and I have no period in common.`;

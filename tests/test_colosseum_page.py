@@ -251,7 +251,7 @@ def test_maths():
           "lit_live beat me 7 to 0" in ps["r"][0] and "outside the 2 to 4 rule" in ps["r"][1] and "more of my evals failed (12.1%) than passed (1.9%)" in ps["r"][1] and "PF 0.88" in ps["r"][1] and ps["r"][4].startswith("I was rejected. The Archive's note:") and "-$5,099, n = 193" in ps["r"][4], ps["r"])
     check("b. PEOPLE: a tiny sample says so (14 trades, too few; no 2021-25 result); missing eval rates are 'not stored, I will not guess'; a bot is 'a live bot, not a run'; a bot with no trades has nothing to show; junk gives no text",
           "only 14 trades" in ps["small"] and "no 2021-25 result" in ps["small"] and "I will not guess" in ps["old"] and "live bot" in ps["bot"][0] and "6 trades in live so far" in ps["bot"][1] and "A short live record, not a promise" in ps["bot"][1]
-          and ps["bot"][2].startswith("No result is stored for me") and ps["junk"][:2] == ["", ""] and "$" in ps["junk"][2], (ps["small"], ps["old"], ps["bot"], ps["junk"]))
+          and ps["bot"][2].startswith("No result is stored for me") and ps["junk"][:2] == ["", ""] and "no dollars stored, n = 50 trades" in ps["junk"][2], (ps["small"], ps["old"], ps["bot"], ps["junk"]))
     sy = ps["say"]
     check("b. PEOPLE: after a duel the winner and the loser each say one honest line with $ and n ('I won 7 to 0, but one duel proves little' / 'I lost 0 to 7 ... My record: -$5,099 over n = 193 trades: a backtest, not a promise'); a draw, no shared period, bots and no duel are covered",
           [x["role"] for x in sy] == ["winner", "loser"] and sy[0]["id"] == "champion:lit_live" and sy[0]["line"] == "I won 7 to 0, but one duel proves little. +$43,820 over n = 120 trades: a backtest, not a promise."
