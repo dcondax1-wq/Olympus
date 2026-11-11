@@ -231,6 +231,15 @@ async function start() {
   render(ed);
   say(why || `${ed.masthead.title}, ${ed.masthead.date_words}: edition ${ed.number}, ${C.allArticles(ed).length} stories.`);
   S.ready = true;
+  setTimeout(loadPeople, 1500);
+}
+/** the optional people kit (portraits): added after the first paint so a missing file is never a load failure; the interviews are redrawn when it arrives */
+function loadPeople() {
+  if (window.OLYMPUS_PEOPLE) return;
+  const s = document.createElement('script'); s.type = 'module'; s.src = '../olympus/people.js?v=p1';
+  s.addEventListener('load', () => { S.people = 'loaded'; if (S.ed && window.OLYMPUS_PEOPLE) renderBoxes(S.ed); });
+  s.addEventListener('error', () => { S.people = 'missing'; });                 // no kit: initials stay
+  document.body.appendChild(s);
 }
 window.HERALD = { ready: () => S.ready, S, C, scene: () => S.scene, go, open: openArticle };
 start();

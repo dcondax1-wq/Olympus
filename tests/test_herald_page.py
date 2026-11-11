@@ -52,7 +52,7 @@ def test_static():
     check("a. a real newspaper grid that falls to one column on a phone: CSS columns with rules, a drop cap, a double rule under the masthead, serif headlines", "column-width: 270px" in css and "column-rule: 1px solid" in css and "::first-letter" in css
           and "3px double" in css and "var(--ag-serif)" in css and "break-inside: avoid" in css, None)
     check("a. 'Read it to me' is off by default and uses the phone's own voice (speechSynthesis); portraits come from the optional people kit, with initials as the fallback",
-          'aria-pressed="false">Read it to me: off' in html and "speechSynthesis" in js and "voice: false" in js and "OLYMPUS_PEOPLE" in js and "portrait(id, 44)" in js and "C.initials(name)" in js and "../olympus/people.js" in html, None)
+          'aria-pressed="false">Read it to me: off' in html and "speechSynthesis" in js and "voice: false" in js and "OLYMPUS_PEOPLE" in js and "portrait(id, 44)" in js and "C.initials(name)" in js and "../olympus/people.js" in js and "people.js" not in html.split("-->")[-1], None)
     src = AK.read(os.path.join(ROOT, "tools", "herald_build.py"))
     check("a. the builder is stdlib only and offline (no network module, no engine / bot import); git is optional and only feeds the 'shipped' list",
           not re.search(r"^\s*(?:import|from)\s+(?:urllib|requests|http|socket|ccxt|ninja|engine|numpy|pandas)", src, re.M) and "git is never required" in src and 'e.pop("press", None)' in src, None)
