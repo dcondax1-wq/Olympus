@@ -311,7 +311,8 @@ function mountHall() {
 function direct(hl) {
   if (S.dir) { try { S.dir.dispose(); } catch (_) { /* gone */ } } S.dir = null;
   if (QS.get('direct') === '0' || !hl.drive) return;
-  import('./direct.js?v=d1').then((D) => { if (S.hall !== hl) return; S.dir = D.createDirector(hl, { box: $('stage'), people: () => S.people, kit: () => P, onTalk: (id) => talk(id, $('viewBtn')) }); window.SYM_DIRECTOR = S.dir; S.dir.start(); }).catch(() => {});
+  const go = () => { const D = window.__symDirect; if (!D || S.hall !== hl || S.dir) return; S.dir = D.createDirector(hl, { box: $('stage'), people: () => S.people, kit: () => P, onTalk: (id) => talk(id, $('viewBtn')) }); window.SYM_DIRECTOR = S.dir; S.dir.start(); };
+  if (window.__symDirect) go(); else window.addEventListener('sym-direct', go, { once: true });      // hallload.js loads direct.js
 }
 function wireHall() {
   const cv = $('hall3d'); let down = null;

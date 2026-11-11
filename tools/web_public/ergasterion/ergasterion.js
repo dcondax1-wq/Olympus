@@ -563,21 +563,22 @@ function mountFloor() {
 }
 // ------------------------------------------------------------------------------------------------ SCENE DIRECTION (direct.js + olympus/camera-rig.js + controls.js, 2026-11-11)
 // third person (your own character), tap-to-walk, tap a person for the ring (Talk / Show work / Follow / Wave), the conversation camera, the first 5 seconds.
-// The old joystick stays only as an option (?joy=1 or localStorage olympus.joystick = '1'). ?direct=0 keeps the first-person floor (tests that drive it by hand).
-function joyOn() { try { return new URLSearchParams(location.search).get('joy') === '1' || localStorage.getItem('olympus.joystick') === '1'; } catch (_) { return false; } }
+// The old joystick stays only as an option (?joy=1). ?direct=0 keeps the first-person floor (tests that drive it by hand). floorload.js loads direct.js (window.__ergDirect).
+function joyOn() { try { return new URLSearchParams(location.search).get('joy') === '1'; } catch (_) { return false; } }
 function direct(fl) {
   S.dir = null; $('joy').hidden = !joyOn();
   if (new URLSearchParams(location.search).get('direct') === '0' || !fl.drive) { $('joy').hidden = false; return; }
   $('hint').hidden = true;
-  import('./direct.js?v=d1').then((D) => {
-    if (S.floor !== fl) return;
+  const go = () => {
+    const D = window.__ergDirect; if (!D || S.floor !== fl || S.dir) return;
     S.dir = D.createDirector(fl, { box: $('stage'), canvas: $('floor3d'), reduced, people: () => S.people, kit,
       onTalk: (key) => talk(key),
       onShow: (key) => { const K = kit(), pn = personOf(key), id = pn && kitId(pn); talk(key); if (K && id && typeof K.open === 'function') { try { K.open(id, { anchor: $('floorCard'), question: 'Show me your work' }); } catch (_) { /* the card under the floor */ } } },
       onOther: (hit) => { open(hit.id, true, hit.crate); } });
     window.ERG_DIRECTOR = S.dir;
     S.dir.start();
-  }).catch(() => { $('joy').hidden = false; $('hint').hidden = false; });
+  };
+  if (window.__ergDirect) go(); else window.addEventListener('erg-direct', go, { once: true });
 }
 function tryFloor() {
   if (S.tried || !S.ready) return;
