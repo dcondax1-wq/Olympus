@@ -102,7 +102,7 @@ function build(rc, scene, camera, canvas, o) {
   function placeCam() {
     // you stand just past the middle of the table and look across it: the people over there face you, big enough to see their faces.
     // When someone talks the camera dollies in on them (a cinematic close-up), and back out when they are done.
-    const portrait = st.w / st.h < 0.95, off = r * (portrait ? 0.14 : 0.24), hgt = portrait ? 1.34 : 1.4;
+    const portrait = st.w / st.h < 0.95, off = r * (portrait ? 0.27 : 0.34), hgt = portrait ? 1.36 : 1.42;
     camera.fov = portrait ? 46 : 40;
     camAt.set(Math.sin(st.yaw) * off, hgt, Math.cos(st.yaw) * off); camLook.set(-Math.sin(st.yaw) * r, 0.92, -Math.cos(st.yaw) * r);
     const z = st.zoom || 0;

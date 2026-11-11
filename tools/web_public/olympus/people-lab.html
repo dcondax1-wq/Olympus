@@ -108,7 +108,7 @@ try {
   const rest = all.filter((p) => !front.includes(p)), crowd = figureInstanced(THREE, rest.map((p) => spec(p.id)), { lite: true });
   rest.forEach((p, i) => { const per = 10, row = Math.floor(i / per), k = i % per, n = Math.min(per, rest.length - row * per); crowd.userData.place(i, (k - (n - 1) / 2) * 0.62 + (row % 2) * 0.2, 0, -0.2 - row * 0.85, 0, 1); });
   s2.add(crowd);
-  function fit2() { const w = $('line').clientWidth, h = $('line').clientHeight; r2.setSize(w, h, false); cam2.aspect = w / h; const d = w < 600 ? 8.2 : 5.2; cam2.position.set(0, 2.1, d); cam2.lookAt(0, 0.35, -0.9); cam2.updateProjectionMatrix(); }
+  function fit2() { const w = $('line').clientWidth, h = $('line').clientHeight; r2.setSize(w, h, false); cam2.aspect = w / h; const d = w < 600 ? 7.4 : 5.0; cam2.position.set(0, 1.35, d); cam2.lookAt(0, 0.5, -0.9); cam2.updateProjectionMatrix(); }
   fit2(); addEventListener('resize', fit2);
   function frame2(dt, t) {
     for (const f of heroes) { lookAt(f, null); f.userData.tick(dt, t); }
