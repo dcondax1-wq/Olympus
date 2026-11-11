@@ -463,3 +463,26 @@ Tests after wiring: `tests.test_archive_page`, `tests.test_apps_list`, `tests.te
 3. `tools/build_web_dashboard.py` app tuple: add `"archive"`.  4. `sw.js` OTHER_APPS: `'archive/'`.
 5. `olympus/intro-app.js` FLAVOUR: `archive: ['columns', 'Open the shelves', 'tap'],`
 6. `jarvis/transitions.js` REGISTRY: `archive: { kind: 'tiles', ms: 800 },`
+
+---
+# Wiring COLOSSEUM (where strategies fight, 2026-11-11)
+
+App `colosseum` in `tools/web_public/colosseum/`: a marble amphitheatre in 3D (`arena.js` on the render core + `olympus/shapes3d.js`, its own module tag; LITE / no WebGL / `?flat=1` = a flat SVG arena) where two stored runs duel over seven rounds on their real numbers (net $, $ a month, PF, max drawdown $, trades a week, MFFU eval speed, holds in both periods). A number that is not stored makes the round "no contest". Plus a seeded tournament of the top 16 adopted runs, the league of LIT / ATLAS / BLITZ, the hall of champions and the fallen. Deep link `colosseum/#a=<runId>&b=<runId>`.
+Reads `../archive/index.json` (+ `../archive/runs-<k>.json` after the first paint), `./extra.json`, `../home.json`; falls back to `fixture.json` (DEMO). Sends nothing, stores nothing. Test `tests/test_colosseum_page.py` (`--static` = no browser).
+The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `C`, ambient `chimes`, flavour `['torches', 'Enter the arena', 'tap']`, transition `{ kind: 'columns', ms: 1000, n: 5 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and runs `python tools/apps_list_build.py --check`.
+
+## Site build lines (needed, otherwise `colosseum/extra.json` goes stale on the site)
+1. `tools/build_web_dashboard.py`: the app tuple gets `"colosseum"` (the folder is copied whole, so `extra.json` rides along). The Archive must be on the site too (it already is): Colosseum reads `archive/index.json` and `archive/runs-*.json`.
+2. `.github/workflows/cloud-monitor.yml`, step "Publish web dashboard": directly BELOW the `python tools/archive_build.py` line add
+   `          python tools/colosseum_build.py   # Colosseum extras: max drawdown, dec10, pass_med per run (stdlib, ~2 s)`
+   (rewrites `tools/web_public/colosseum/extra.json` from `research/runs/`; `--check` fails when it is stale, `--selftest` needs nothing). If the checkout lacks `research/runs/`, skip it: the committed file is still valid.
+3. `tools/web_public/sw.js`: `OTHER_APPS` add `'colosseum/'`; do NOT precache `colosseum/extra.json` (about 130 KB).
+4. Home Screen PNG icons: `flock -w 2400 /tmp/olympus_browser.lock python tools/make_app_icons.py colosseum` (already run; add `colosseum` to its `APPS` list if you want `--check` to cover it).
+Tests after wiring: `tests.test_colosseum_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+## The six rows (what `wire_new_apps.py --apply` writes for Colosseum)
+1. `jarvis/apps.js` BUILT_INS: `app('colosseum', 'Colosseum', 'trading', '#c8a24a', 'Where strategies fight: seven rounds on real stored numbers', { glyph: 'C' }),`
+2. `olympus/olympus.js`: APPS `colosseum: ['Colosseum', 'C', '#c8a24a'],` and AMBIENT `colosseum: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"colosseum"`.  4. `sw.js` OTHER_APPS: `'colosseum/'`.
+5. `olympus/intro-app.js` FLAVOUR: `colosseum: ['torches', 'Enter the arena', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `colosseum: { kind: 'columns', ms: 1000, n: 5 },`
