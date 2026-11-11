@@ -114,15 +114,17 @@ export async function atlas(specs, opts) {
   const FW = 1.0, FH = 1.25, foot = -0.04;      // the frame in figure units (height 1): x -0.5..0.5, y foot..foot + FH
   for (let i = 0; i < n; i++) {
     const sp = specs[i];
-    for (let f = 0; f < frames; f++) {
-      try {
-        const ch = person(sp, { seated: !!o.seated, pose: f ? 'talk' : 'idle', mouth: f ? 'A' : null, frames: f ? 14 : 8, look: new THREE.Vector3(0, 0.7, 4) });
-        // an orthographic-ish photo: a long lens far away
-        const d = 24; S.cam.fov = 2 * Math.atan((FH / 2) / d) * 180 / Math.PI; S.cam.position.set(0, foot + FH / 2, d); S.cam.lookAt(0, foot + FH / 2, 0);
+    let ch = null;
+    try {
+      // one character, two photos: at rest, then talking (the talk gestures and an open mouth). An orthographic-ish photo: a long lens far away.
+      ch = person(sp, { seated: !!o.seated, pose: 'idle', frames: 8, look: new THREE.Vector3(0, 0.7, 4) });
+      const d = 24; S.cam.fov = 2 * Math.atan((FH / 2) / d) * 180 / Math.PI; S.cam.position.set(0, foot + FH / 2, d); S.cam.lookAt(0, foot + FH / 2, 0);
+      for (let f = 0; f < frames; f++) {
+        if (f) { ch.play('talk'); for (let t = 0; t < 14; t++) { ch.setMouth('A', 1); ch.tick(0.03); } }
         const c = shoot(cw, chh), k = i * frames + f; g2.drawImage(c, (k % cols) * cw, Math.floor(k / cols) * chh, cw, chh);
-        ch.dispose();
-      } catch (e) { /* that cell stays empty */ }
-    }
+      }
+    } catch (e) { /* those cells stay empty */ }
+    if (ch) ch.dispose();
     if (i % 4 === 3) await new Promise((r) => setTimeout(r, 0));
   }
   return { canvas: cv, cols, rows, cellW: cw, cellH: chh, frames, frame: [FW, FH], foot, n };
