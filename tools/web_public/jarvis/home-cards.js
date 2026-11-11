@@ -22,7 +22,6 @@ const $ = (id) => document.getElementById(id);
 
 const dot = (lv) => `<i class="hc-dot ${lv === 'ok' || lv === 'warn' || lv === 'bad' ? lv : 'off'}" aria-hidden="true"></i>`;
 const pnlHtml = (v) => (v == null ? '<span class="hc-n">no P&amp;L yet</span>' : `<span class="hc-n ${v > 0 ? 'up' : v < 0 ? 'dn' : ''}">${esc(usd(v, true))} today</span>`);
-const noteDemo = (m) => (m.demo ? '<p class="hc-note">Example numbers (demo). Nothing here is real.</p>' : '');
 const chev = '<svg class="hv-go" width="9" height="16" viewBox="0 0 9 16" fill="none" aria-hidden="true"><path d="m1.5 1.5 6 6.5-6 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const TONE_WORD = { bad: 'needs you', warn: 'heads up' };
 
