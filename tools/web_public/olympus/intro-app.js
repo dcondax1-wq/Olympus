@@ -30,6 +30,7 @@
 
   // ------------------------------------------------------------------ the per-app flavour: [scene, tagline, first sound]
   var FLAVOUR = {
+    herald: ['columns', 'Unroll the news', 'tap'],
     symposium: ['torches', 'Take a seat', 'tap'],
     nq: ['columns', 'The bots, right now', 'tick'],
     colosseum: ['torches', 'Enter the arena', 'tap'],

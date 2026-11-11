@@ -1209,7 +1209,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # it opens; published with every build so a publish never drops them
     # 2026-11-03: the OLYMPUS apps Jarvis opens full screen: Data City, Mind (the Obsidian brain), the strategy tree ...;
     # olympus/ is their shared kit (tokens, fonts, the loading veil, the one 3D-quality setting: docs/OLYMPUS_DESIGN.md)
-    for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "atlascity", "pc", "delphi", "pnyx", "planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos", "compass", "pheme", "harmonia", "helios", "ergasterion", "archive", "pinakes", "colosseum", "nq", "symposium"):
+    for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "atlascity", "pc", "delphi", "pnyx", "planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos", "compass", "pheme", "harmonia", "helios", "ergasterion", "archive", "pinakes", "colosseum", "nq", "symposium", "herald"):
         src_dir = os.path.join(WEB, app)
         if os.path.isdir(src_dir):
             os.makedirs(os.path.join(out, app), exist_ok=True)
@@ -1336,6 +1336,13 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         print(f"  ergasterion: queue.json rc={r3.returncode}")
     except Exception as e:  # noqa: BLE001
         print(f"  ergasterion: skipped ({e})")
+    # The Olympus Herald: today's edition from the built site (tools/herald_build.py --web <site>); never fatal
+    try:
+        import subprocess
+        rh = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "herald_build.py"), "--web", out], capture_output=True, text=True, timeout=120)
+        print(f"  herald: edition rc={rh.returncode}")
+    except Exception as e:  # noqa: BLE001
+        print(f"  herald: skipped ({e})")
     # Pinakes: catalogue every table in the built site (tools/pinakes_build.py --web <site>): must run after everything else; never fatal
     try:
         import subprocess
