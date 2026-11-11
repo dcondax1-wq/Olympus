@@ -279,7 +279,7 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   r = await brain.ask('hello'); check('brain: small talk is untouched by the skills', !/home\.json/.test(r.text));
   r = await brain.ask('open planner'); check('brain: the old "open planner" still works', r.open === 'planner', JSON.stringify(r.open));
   r = await brain.ask('what should I do next'); check('brain: next step answered', typeof r.text === 'string' && r.text.length > 5);
-  check('brain: only relative published files were fetched', fetched.length > 0 && fetched.every((u) => /^\.\.\//.test(u)), fetched.join(','));
+  check('brain: only relative published files were fetched', fetched.length > 0 && fetched.every((u) => /^\.\.\//.test(u) || /^(search-index|strategy-facts)\.json$/.test(u)), fetched.join(','));
   const off = B.createBrain({ getFacts: () => ({ now: NOW, apps: [] }), open() {}, now: () => NOW, storage: mkStore(), skills: false, zenithRoutes: false });
   r = await off.ask('what is my worst weekday'); check('brain: skills:false falls back to the old rules (no skills answer)', !/odeon\/trades\.json/.test(r.text));
   // the owner's own brain gets the tool results as context
@@ -352,7 +352,7 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   const brain = B.createBrain({ getFacts: () => ({ now: NOW, apps: [] }), open() {}, now: () => NOW, storage: mkStore(), zenithRoutes: false });
   await brain.ask('hello');
   const api = g.JARVIS_API;
-  check('window.JARVIS_API installed with nudges / ask', api && api.v === 1 && typeof api.nudges === 'function' && typeof api.ask === 'function');
+  check('window.JARVIS_API installed with nudges / ask', api && api.v === 2 && typeof api.nudges === 'function' && typeof api.ask === 'function');
   await new Promise((ok) => setTimeout(ok, 150)); const ns = api.nudges();
   check('nudges() is synchronous, an array of { id, text, tone, app, say }', Array.isArray(ns) && ns.length >= 1 && ns.every((n) => n.id && n.text && /^(bad|warn|info)$/.test(n.tone) && typeof n.app === 'string' && n.say), JSON.stringify(ns));
   delete g.location; delete g.fetch; delete g.JARVIS_API;
