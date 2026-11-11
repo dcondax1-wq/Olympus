@@ -16,6 +16,16 @@ const SKIN = ['#f1c9a5', '#e2b08a', '#c98f66', '#a9714b', '#f6d7b8', '#8a5a3c'],
 const OUTFIT = ['#c8a24a', '#7f8a52', '#c96a4a', '#4b7a99', '#f3ece0', '#9c6b3c'], STYLES = ['short', 'bun', 'long', 'bald', 'curly'];
 let spec3d = null;
 /** optional: the shared 3D look kit. Never throws; without it our own seeded look is used. */
+/** the shared People kit (olympus/people.js sets window.OLYMPUS_PEOPLE) and its 3D look (people3d.js), both optional: loaded once, never throws.
+ *  Waits at most ms; when they are missing everything here keeps working on our own chat card and our own look. */
+let kitP = null;
+export function loadKit(base = import.meta.url, ms = 1500) {
+  if (!kitP) kitP = Promise.all([
+    typeof window !== 'undefined' && window.OLYMPUS_PEOPLE ? Promise.resolve(true) : import(new URL('../olympus/people.js?v=p1', base).href).then(() => true, () => false),
+    loadLook(base),
+  ]).then(async ([k, l]) => { const K = kit(); if (K && typeof K.ready === 'function') { try { await K.ready(); } catch (e) { /* the kit's own fallback */ } } return { kit: !!K || k, look: l }; });
+  return Promise.race([kitP, new Promise((r) => setTimeout(() => r({ kit: !!kit(), look: !!spec3d, late: true }), ms))]);
+}
 export async function loadLook(base = import.meta.url) { try { const m = await import(new URL('../olympus/people3d.js', base).href); if (m && typeof m.spec === 'function') spec3d = m.spec; } catch (e) { spec3d = null; } return !!spec3d; }
 export function lookOf(id, kind = '') {
   const r = rng(hash32('look:' + id)), own = { skin: SKIN[Math.floor(r() * SKIN.length)], hair: HAIR[Math.floor(r() * HAIR.length)], hairStyle: STYLES[Math.floor(r() * STYLES.length)], outfit: OUTFIT[Math.floor(r() * OUTFIT.length)], height: .92 + r() * .2, kind };

@@ -18,11 +18,13 @@ export async function openHellas() {
   document.documentElement.classList.add('hellas-open'); if (O() && O().covered) O().covered(true);
   window.__hellas = { ui, tier, world: null, scene: null, ready: false, calls: () => (S.scene ? S.scene.calls : 0), tris: () => (S.scene ? S.scene.trisDrawn : 0) };
   // the data first (the header counter is honest from the first frame), then the scene
+  const people = import('./people-talk.js').then((m) => m.loadKit()).catch(() => null);   // the shared People kit, optional (docs/PERSONA_API.md)
   let loaded; try { loaded = await D.loadSources(import.meta.url, { demo: q.get('demo') === '1', onStep: (t) => ui.step(t) }); } catch (e) { loaded = { inp: {}, fixture: {} }; }
   if (S.closed) return S;
   const world = D.buildPoleis(loaded.inp, loaded.fixture); Object.assign(world, P.layoutWorld(world.poleis, 'hellas', world.builders)); S.world = world; window.__hellas.world = world;
   try {
     if (q.get('gl') === '0') throw new Error('3D switched off');
+    await people;   // at most 1.5 s: their own look and chat when the kit is there, ours when it is not
     const { Hellas } = await import('./hellas.js'); if (S.closed) return S;
     const scene = new Hellas(ui.canvas, world, { tier, reduced }); S.scene = scene; ui.attach(scene); window.__hellas.scene = scene;
     addEventListener('resize', onResize);

@@ -6,6 +6,7 @@ const O = () => window.OLYMPUS || null;
 export async function openAthens() {
   if (session) return session;
   const [{ AthensUI }, { Athens }, { loadLive }] = await Promise.all([import('./athens-ui.js?v=n1'), import('./athens.js?v=n1'), import('./athens-data.js?v=t3')]);
+  import('./people-talk.js').then((m) => m.loadKit()).catch(() => null);   // the shared People kit, optional: villagers talk through it when it is there
   const [{ Nest }, { buildWorld }, { loadFiles }] = await Promise.all([import('./athens-nest.js?v=n1'), import('./athens-world.js'), import('./athens-villages.js')]);
   if (!document.querySelector('link[data-athens-css]')) {
     const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens.css?v=t1', import.meta.url).href; l.dataset.athensCss = '1'; document.head.append(l);
