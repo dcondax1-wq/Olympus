@@ -64,5 +64,5 @@ The rules use `#app` so they dress the base block each app copied; an app that n
 Opt out of the shell: `<html data-ag-noshell>`.
 
 **Rules of thumb.** One hero number per screen (the $ that matters, rounded figures, 30-44 px). Labels above values, muted, 13 px. Every number tabular.
-Every R next to its $. Status = a badge with a dot, never a coloured stripe across a card. "Demo" is one small chip, not a banner on every card.
+Every R next to its $. Status = a badge with a dot, never a coloured stripe across a card. "Demo" is one small chip, not a banner on every card. Text in olive or terracotta uses `--ag-olive-text` / `--ag-terra-text` (the fills `--ag-olive` / `--ag-terra` are 3-4:1 as text: bars only); the shell maps `.pos / .up / .neg / .dn` and the status pills to the text-safe ink.
 An `<svg>` has no `.hidden` property: toggle the attribute (`toggleAttribute('hidden', ...)`), or the flat fallback stays invisible.
