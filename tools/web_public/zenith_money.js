@@ -58,7 +58,7 @@
     const rows = As.map((A) => {
       const n = nets(A);
       const tile = (k, l, v) => `<div class="zm-t"><em>${l}</em><b class="${cls(v)}" data-zn-num="zm-${esc(A.key)}-${k}">${sUsd(v)}</b></div>`;
-      return `<div class="zm-acct" style="--c:${esc(A.color || '#8aa0ff')}"><div class="zm-an"><i aria-hidden="true"></i><b>${esc(A.name)}</b><span>${esc(A.size || '')}</span></div>
+      return `<div class="zm-acct" style="--c:${esc(A.color || '#c8a24a')}"><div class="zm-an"><i aria-hidden="true"></i><b>${esc(A.name)}</b><span>${esc(A.size || '')}</span></div>
         <div class="zm-tiles">${tile('today', 'Today', n.today)}${tile('week', 'This week', n.week)}${tile('month', 'This month', n.month)}${tile('all', 'Since start', n.all)}</div></div>`;
     }).join('');
     return `<section class="card zm-card" id="zmNow"><div class="card-h"><h3>Money now</h3><span class="meta">net $ per account, costs in</span></div>${rows}</section>`;
