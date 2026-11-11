@@ -102,3 +102,14 @@ How it feels to be in a world on a phone. Shared, pure where possible (node-test
 - **HUD** `createHud(container, { reduced, maxPlates, hintTop })`: `hint(key, text)` (fades; never again after `used(key)`), `plates(list)` (name + role for at most 3 near people, overlapping ones dropped), `ring(x, y, who, actions, onPick)` (Talk / Show work / Follow / Wave in an arc under the person, 56 px buttons, above the speech bubbles), `cta(text, onTap)` (one call to action), `toast`, `mark`.
 - **Scenes**: `ergasterion/direct.js` (floor.js `drive / refs / setPlayer`), `symposium/direct.js` (hall.js `drive / refs / front`), `cities/walk-direct.js` (hellas.js `walkDirector`). Loaded by the scene loaders (`floorload.js`, `hallload.js`, on demand in `hellas-ui.js`); `?direct=0` keeps the old controls.
 - **The opener** (`people-talk.js`): `opener(person, facts, env) -> { hello, intro ('I am <name>, <role>.'), mood (a whole sentence), fact (one real fact from their data: money with its R), invite, text }`, `highlight(person, facts)`, `roleShort(person)` (for name plates). `greeting()` is the opener + the remembered question. Every sentence is whole (a bubble shows one at a time), every number grounded.
+
+## The town cast (QA round 6, 2026-11-11, `cities/town-cast.js`)
+Hellas, Athens and the Polis skyline show the rigged cast instead of the toy figures. `makeTownCast(THREE, [{ id }], { lite, looks, surface(x, z), tint, closeMax, closeR })`
+keeps the old `makeCrowd` calls (`place(i, x, y, z, ry, s, squash, lean)`, `commit()`) and adds `act(i, name)` (walk / stroll / greet / look / talk / shop / trade / pray / sad / cheer),
+`tick(dt, t, camera, focus)`, `talk(i)`, `figureOf(i)`, `setTint(c)`, `stats()`. Far: one draw call of photos from `people-studio.js atlas(specs, { views: true })` (5 frames a
+person: rest, talk, back, two walking profiles; the shader picks front / back / profile from where the person faces and where the camera is, mirrored, with a walking
+bob). Near (walking: within 13 m, 4 on high, 2 on LITE) and whoever you talk to: full rigged figures (2 draw calls each) that walk, wave, bow, cheer, look at you and
+talk. LITE takes no photo studio (the toys stay far). Until the photos are ready, or with `?rig=0` / no WebGL: the toy figures (never blank). Footsteps:
+`OLYMPUS_SFX.walker(spec).step(pos, listener, { surface })` for the near people and for you (walk-direct.js, athens-direct.js); `presence(spec, ...)` when someone greets you.
+Athens walking (`cities/athens-direct.js`): the Hellas director on the terrain (`groundY`): local colliders rebuilt as you walk, a local A* grid, feet on the ground;
+tested by `tests/test_town_walk.py`. Polis: `city.setCitizens(atlas, list)` in `olympus/polis-skyline.js` draws a few citizens of the rolls walking the Acropolis streets.
