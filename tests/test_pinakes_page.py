@@ -594,6 +594,10 @@ def test_page():
             shown = p.evaluate("() => window.PINAKES.G.cols.map((c) => c.k)")
             check("c. 'Trades (Odeon)' loads from its real file odeon/trades.json (never a copy): every trade, 14 fields shown of the many it has, dates / $ / R first (day, usd, r are in; the bar arrays are one tap away)",
                   ro[0] == len(od) and ro[1] > 30 and ro[2] == 14 and {"day", "usd", "r", "risk_usd"} <= set(shown) and "bars.c" not in shown and ro[3] == f"Fields shown: 14 of {ro[1]}" and "odeon/trades.json" in ro[4] and any("odeon/trades.json" in u for u in seen) and f"{len(od)} rows" in ro[5], ro)
+            if os.environ.get("AGORA_SHOTS"):
+                p.evaluate("() => document.querySelector('#count').scrollIntoView()")
+                view_shot(p, "pinakes-grid-view")
+                p.evaluate("() => window.scrollTo(0, 0)")
             p.evaluate("() => { document.querySelector('#colBox').open = true; }")
             p.locator("#colChips .btn[data-k=usd]").click()
             p.wait_for_timeout(150)
