@@ -84,17 +84,26 @@ function build(rc, scene, camera, canvas, o) {
   }
   fit(); placeCam();
   rc.start(frame);
+  // FX HOOK (olympus/fx-cine.js, optional; 2026-11-11 effects pass): the clock's light, a sky over the open ring, sun shafts, dust, brazier
+  // embers + smoke + a breathing fire light, soft shadows on high (contact blobs on LITE), the speaker focus. The hall is the same without it.
+  let cine = null, gone = false; const fHead = new THREE.Vector3();
+  if (o.cinema !== false) import('../olympus/fx-cine.js').then((C) => { if (gone) return; cine = C.cinema(rc, { time: 'clock', sky: true, fog: 0.4, birds: { radius: r + 14, height: 16 },
+    rays: { to: [0, 0, 0], spread: [r * 1.5, 0, r * 1.5], length: 15, width: 1.8 }, dust: { box: [r * 2 + 6, 4, r * 2 + 6], center: [0, 2, 0] },
+    fires: [0, 1, 2, 3].map((i) => { const a = (i / nB) * Math.PI * 2 + Math.PI / 4; return [Math.sin(a) * (r + 1.9), 1.15, Math.cos(a) * (r + 1.9)]; }), fireRange: r * 1.6,
+    shadows: { casters: [shafts, krater, top, foot, frames, crowd], receivers: [floor, rug, top], box: r + 5 } }); }).catch(() => {});
   const api = {
     ok: true, layout: L, count: N,
     yaw: () => st.yaw,
     setYaw(a) { st.yaw = a; st.goal = null; st.vel = 0; placeCam(); },
     spin(dx) { st.goal = null; st.idle = 0; st.yaw -= dx * 0.008; st.vel = -dx * 0.008 * 0.5; },
     focus(i) { if (L.seats[i]) { st.goal = yawFor(L, i) + Math.PI; st.vel = 0; st.idle = 0; } },      // the camera goes to the far side, so this person faces it
-    active(i) { if (st.active >= 0) crowd.userData.setActive(st.active, false); st.active = i == null ? -1 : i; if (st.active >= 0) crowd.userData.setActive(st.active, true); if (reduced) crowd.userData.tick(0); },
+    active(i) { if (st.active >= 0) crowd.userData.setActive(st.active, false); st.active = i == null ? -1 : i; if (st.active >= 0) crowd.userData.setActive(st.active, true); if (reduced) crowd.userData.tick(0);
+      const k = st.active; if (cine) cine.focus(k >= 0 ? () => crowd.userData.headWorld(k, fHead) : null, { r: 0.2, amount: 4 }); },      // FX HOOK: focus on the speaker
     project(i) { crowd.userData.headWorld(i, v); const behind = v.clone().sub(camera.position).dot(camera.getWorldDirection(new THREE.Vector3())) <= 0; v.project(camera); return { x: (v.x * 0.5 + 0.5) * st.w, y: (-v.y * 0.5 + 0.5) * st.h, z: v.z, front: !behind }; },
     pick(cx, cy) { const b = canvas.getBoundingClientRect(); ndc.set(((cx - b.left) / b.width) * 2 - 1, -((cy - b.top) / b.height) * 2 + 1); ray.setFromCamera(ndc, camera); return crowd.userData.pick(ray); },
     drawCalls: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && x.visible) n++; }); return n; },      // one draw per mesh: every repeated thing is instanced
-    dispose() { try { rc.dispose(); } catch (_) { /* gone */ } crowd.userData.dispose(); },
+    cine: () => cine,
+    dispose() { gone = true; try { if (cine) cine.dispose(); rc.dispose(); } catch (_) { /* gone */ } crowd.userData.dispose(); },
   };
   return api;
 }

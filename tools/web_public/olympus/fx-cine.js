@@ -570,8 +570,8 @@ function buildSun(h, o) {
     sun.castShadow = true; sun.shadow.mapSize.set(size, size); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02; sun.shadow.radius = 3;
     const b = sh.box || 14, cam = sun.shadow.camera;
     cam.left = -b; cam.right = b; cam.top = b; cam.bottom = -b; cam.near = 0.5; cam.far = dist + b * 3; cam.updateProjectionMatrix();
-    (sh.casters || []).forEach((x) => { if (x) x.castShadow = true; });
-    (sh.receivers || []).forEach((x) => { if (x) x.receiveShadow = true; });
+    (sh.casters || []).forEach((x) => { if (x && x.traverse) x.traverse((m) => { if (m.isMesh) m.castShadow = true; }); });       // a group: every mesh in it
+    (sh.receivers || []).forEach((x) => { if (x && x.traverse) x.traverse((m) => { if (m.isMesh) m.receiveShadow = true; }); });
     shadowOn = true;
   }
   const every = h.T.shadowEvery || 3;
@@ -600,6 +600,8 @@ function buildSun(h, o) {
 }
 
 // ------------------------------------------------------------------ the whole stack on a render core (or a plain renderer)
+const ACTIVE = [];
+if (typeof window !== 'undefined') window.__olyCine = { list: () => ACTIVE.map((c) => c.stats()) };     // tests and the perf probe read it
 /**
  * cinema(rc | { scene, camera, renderer, tier }, opts) -> { burst(kind, at, o), focus(target, o), setTime(t), time(), frame(dt, t),
  *   stats(), dispose(), pieces }   Every option is optional; a scene works the same without the hook (or when it throws).
@@ -613,6 +615,8 @@ export function cinema(rcOrParts, opts) {
   let H = null, P = {}, timeMode = o.time === undefined ? 'golden' : o.time, minute = resolveTime(timeMode), L = timeAt(minute), lastClock = 0;
   let fade = null, focusT = null, focusO = {}, focusK = 0, dead = false, offFrame = null, offTier = null;
   const tmp = new THREE.Vector3(), info = { bursts: 0, skipped: 0 };
+  // fog: k (0..1) leans the scene's fog (and a plain colour background) toward the time of day's horizon, so the sky and the ground meet
+  const refFog = scene.fog && scene.fog.color ? scene.fog.color.clone() : null, refBg = scene.background && scene.background.isColor ? scene.background.clone() : null;
 
   function build() {
     if (H) teardown();
@@ -646,6 +650,8 @@ export function cinema(rcOrParts, opts) {
   function teardown() {
     if (P.sun) P.sun.restore();
     if (H) H.dispose();
+    if (dead && refFog && scene.fog) scene.fog.color.copy(refFog);
+    if (dead && refBg && scene.background && scene.background.isColor) scene.background.copy(refBg);
     H = null; P = {};
   }
   function applyTime(now) {
@@ -654,6 +660,11 @@ export function cinema(rcOrParts, opts) {
     if (P.sun) P.sun.setTime(L);
     ['sky', 'sea', 'rays', 'birds', 'fireLights'].forEach((k) => { if (P[k] && P[k].setTime) P[k].setTime(L, dir); });
     if (P.fireflies) P.fireflies.setStrength(L.night);
+    if (o.fog) {
+      const k = o.fog === true ? 0.5 : o.fog, hz = C(L.horizon).lerp(C(L.top), 0.25).multiplyScalar(0.75);
+      if (refFog) scene.fog.color.copy(refFog).lerp(hz, k);
+      if (refBg && scene.background && scene.background.isColor) scene.background.copy(refBg).lerp(hz, k);
+    }
     if (rc && o.grade !== false && rc.setGrade) rc.setGrade({ lut: L.a, to: L.b, k: L.k });
     if (now) fade = null;
   }
@@ -676,6 +687,7 @@ export function cinema(rcOrParts, opts) {
 
   build();
   if (rc) {
+    if (rc.stats) { const st0 = rc.stats; info.calls = () => st0().calls; }
     offFrame = rc.onFrame(frame);
     offTier = rc.onTier ? rc.onTier((l) => { if (!dead && l !== level) { level = l; build(); } }) : null;
   }
@@ -712,16 +724,18 @@ export function cinema(rcOrParts, opts) {
       ['hot', 'solid'].forEach((k) => { if (P[k]) { pools += P[k].slots; live += P[k].live; } });
       return { tier: level, time: L.name, minute: Math.round(minute), objects: H ? H.objects : 0, particles: H ? H.particles : 0, poolSlots: pools, live,
         shadows: !!(P.sun && P.sun.shadows()), shadowMap: P.sun ? P.sun.mapSize : 0, pieces: Object.keys(P).filter((k) => P[k]), bursts: info.bursts, skipped: info.skipped,
-        focus: !!focusT, error: info.error || null, reduced };
+        focus: !!focusT, error: info.error || null, reduced, calls: info.calls ? info.calls() : null };
     },
     dispose() {
       if (dead) return;
       dead = true;
+      const ai = ACTIVE.indexOf(api); if (ai >= 0) ACTIVE.splice(ai, 1);
       if (offFrame) offFrame(); if (offTier) offTier();
       if (rc && rc.setFocus) rc.setFocus(null);
       teardown();
     },
   };
+  ACTIVE.push(api);
   return api;
 }
 

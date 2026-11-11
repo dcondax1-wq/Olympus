@@ -96,6 +96,13 @@ export class Athens {
     this.fly = null; this.tour = null; this.anchors = []; this.sel = null; this.frameCount = 0; this.calls = 0;
     this.build();
     this.applyTime(); this.placeCamera();
+    // FX HOOK (olympus/fx-cine.js, optional; 2026-11-11 effects pass): gulls over the harbour and the bay, one draw, no post pass (this
+    // scene keeps its own day / dusk cycle and draws straight to the screen). Athens is the same without it.
+    this.cine = null;
+    import('../olympus/fx-cine.js').then((C) => { if (this.dead) return;
+      this.cine = C.cinema({ scene: this.scene, camera: this.camera, renderer: this.renderer, tier: this.tierName }, { sun: false, bursts: false, reduced: this.reduced,
+        birds: { center: [0, 0, 260], radius: 260, height: 110, size: 3.2, count: 16 } });
+    }).catch(() => { /* optional */ });
   }
 
   build() {
@@ -407,6 +414,7 @@ export class Athens {
     if (this.sel) { const s = 1 + Math.sin(t * 3) * .04; this.ring.scale.setScalar((this.sel.r || (this.sel.major ? 16 : 11)) * s); }
     this.lifeTick(t); this.npcTick(t);
     if (this.interior) this.interior.frame(dt, t);
+    if (this.cine && !this.interior) this.cine.frame(dt, t);                     // FX HOOK: the gulls fly
     this.renderCurrent();
     this.calls = this.renderer.info.render.calls; this.trisDrawn = this.renderer.info.render.triangles;
   }
@@ -473,5 +481,5 @@ export class Athens {
   }
   get walking() { return !!this.walk; }
 
-  dispose() { for (const o of this.dispose_) o.dispose && o.dispose(); this.renderer.dispose(); }
+  dispose() { this.dead = true; if (this.cine) this.cine.dispose(); for (const o of this.dispose_) o.dispose && o.dispose(); this.renderer.dispose(); }
 }

@@ -49,6 +49,14 @@ export class Hellas {
     this.cam = { ...this.home }; this.wcam = { ...this.home };
     this.buildWorld();
     this.resize(); this.placeCamera();
+    // FX HOOK (olympus/fx-cine.js, optional; 2026-11-11 effects pass): gulls wheeling over the Aegean and sand blowing off the southern
+    // desert, one draw each, no post pass (this scene draws straight to the screen). Hellas is the same without it.
+    this.cine = null;
+    import('../olympus/fx-cine.js').then((C) => { if (this.dead) return; const B = world.bounds, k = Math.max(B.w, B.h);
+      this.cine = C.cinema({ scene: this.scene, camera: this.camera, renderer: this.renderer, tier: this.tierName }, { sun: false, bursts: false, reduced: this.reduced,
+        birds: { center: [B.cx, 0, B.cz - B.h * 0.1], radius: k * 0.09, height: k * 0.035, size: k * 0.0028, count: 14 },
+        sand: { box: [B.w * 0.7, k * 0.012, B.h * 0.18], center: [B.cx, k * 0.004, B.cz + B.h * 0.38], vel: [k * 0.02, 0, k * 0.004], size: k * 0.0016, count: 500 } });
+    }).catch(() => { /* optional */ });
   }
   own(o) { this.keep.push(o); return o; }
 
@@ -300,8 +308,9 @@ export class Hellas {
     if (this.level === 'world') { this.setMarkerScale(clamp(this.cam.dist / 1100, 1, 1.75)); if (!this.reduced) { this.shipsTick(t); this.lifeTick(t); } if (this.ships) this.ships.visible = this.cam.dist < 2600; }
     else { const far = !this.walk && this.cam.dist > this.plan.R * 3.2; if (this.npcMesh) { this.npcMesh.visible = !far; if (!far) this.npcTick(t); } if (this.treeMesh) this.treeMesh.visible = !(this.lite && far); if (this.pFlames && !this.reduced) this.pFlames.scale.y = 1 + .14 * Math.sin(t * 9); }
     if (this.sel && !this.reduced) this.ring.scale.setScalar((this.sel.selR || 10) * (1 + Math.sin(t * 3) * .04));
+    if (this.cine) this.cine.frame(dt, t);                                        // FX HOOK: the gulls and the sand move
     this.renderer.render(this.scene, this.camera);
     this.calls = this.renderer.info.render.calls; this.trisDrawn = this.renderer.info.render.triangles;
   }
-  dispose() { this.disposePolis(); for (const o of this.keep) o.dispose && o.dispose(); for (const m of [this.base, this.blocks, this.acro, this.ships, this.shadows, this.flames, this.smoke, this.caravan]) m && m.dispose(); if (this.builderCrowd) this.builderCrowd.dispose(); this.renderer.dispose(); }
+  dispose() { this.dead = true; if (this.cine) this.cine.dispose(); this.disposePolis(); for (const o of this.keep) o.dispose && o.dispose(); for (const m of [this.base, this.blocks, this.acro, this.ships, this.shadows, this.flames, this.smoke, this.caravan]) m && m.dispose(); if (this.builderCrowd) this.builderCrowd.dispose(); this.renderer.dispose(); }
 }
