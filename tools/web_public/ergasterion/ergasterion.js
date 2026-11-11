@@ -5,6 +5,7 @@
 // floorload.js); the flat plan (LITE) is always drawn first. window.ERGASTERION is the test hook.
 import * as C from './ergasterioncore.js';
 import * as Life from './life.js';
+import * as T from '../olympus/truth.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -655,7 +656,8 @@ async function load() {
   const q = new URLSearchParams(location.search); S.forced = q.get('demo') === '1';
   const [builders, fx, queue, home, money, kalshi, cron, forge, heph] = await Promise.all([S.forced ? null : getJSON('./builders.json'), getJSON('./fixture.json'), S.forced ? null : getJSON('./queue.json'), S.forced ? null : getJSON('../home.json'), S.forced ? null : getJSON('../money/index.json'),
     S.forced ? null : getFeed(5000), S.forced ? null : getJSON('../cronos/status.json'), S.forced ? null : getJSON('../prometheus/forge.json'), S.forced ? null : getJSON('../hephaestus/data.json')]);
-  S.fixture = fx; S.inputs = { home, money, kalshi, cron, forge, heph, queue, builders };
+  // home.json through the shared truth (olympus/truth.js): ATLAS and BLITZ live in the board / second / live.pc blocks, not in accounts[]
+  S.fixture = fx; S.inputs = { home: home ? T.canonHome(home) : home, money, kalshi, cron, forge, heph, queue, builders };
 }
 async function boot() {
   wireControls();

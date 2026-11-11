@@ -420,7 +420,10 @@ function fBot(p, I, now, f) {
   const ev = isObj(a.eval) ? a.eval : {}, pnl = isObj(a.pnl) ? a.pnl : {}, conn = isObj(a.conn) ? a.conn : {}, last = home.t != null ? toMs(home.t) : toMs(home.asof);
   const today = num(pnl.today) != null ? pnl.today : num(ev.today), paused = !!(a.paused || ev.paused);
   f.asof = last;
-  f.status = conn.connected === false ? 'stale' : paused ? 'idle' : 'working';
+  // honest about age (QA round 6): a report older than 36 h is stale, and one older than 20 minutes (olympus/truth.js conn.stale) is not "working"
+  const age = ageH(last, now);
+  f.status = conn.connected === false || (age != null && age > 36) ? 'stale' : paused || conn.stale === true ? 'idle' : 'working';
+  if (age != null && age > 36) f.blocked = 'My last report is ' + agoText(last, now) + ': the PC has not reported since.';
   const dd = num(ev.room) != null && num(ev.mll) != null ? 'Drawdown left ' + money(ev.room) + ' of ' + money(ev.mll) + ' max loss' : '';
   f.doing = 'Paper account ' + clean(a.name || id, 30) + ': ' + (today != null ? moneyS(today) + ' today' : 'no P&L yet today') + (dd ? '. ' + dd : '') + (paused ? '. I am paused' : '') + '.';
   if (today != null) { f.numbers.push(N2('Today', moneyS(today))); f.metrics.today = { label: 'today', v: today, text: moneyS(today) }; }

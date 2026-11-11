@@ -415,7 +415,6 @@
     "rate": 0.95
    },
    "sources": [
-    "../zenith/jarvis.json",
     "../oracle/jarvis.json",
     "../ares/jarvis.json",
     "../forum/jarvis.json",
@@ -519,7 +518,6 @@
     "../pnyx/jarvis.json",
     "../demeter/jarvis.json",
     "../labyrinth/jarvis.json",
-    "../kalshi/jarvis.json",
     "../kalshicity/jarvis.json",
     "../tyche/jarvis.json",
     "../dionysus/jarvis.json",

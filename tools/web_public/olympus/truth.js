@@ -117,7 +117,7 @@ export function canonHome(home, nowS) {
     const a = A[key]; if (!a.has) continue;
     const row = rowOf(home, key), conn = obj(row && row.conn);
     const fresh = a.t == null || now - a.t <= FRESH_S;     // a "connected" from a report we know is old is not news: unknown, not green
-    rows.push({ id: a.id, name: a.name, strategy: a.bot.toLowerCase(), plan: `MFFU Builder ${a.size}`, kind: a.kind, source: a.src, badge: a.paper ? 'PAPER' : 'LIVE',
+    rows.push({ id: a.id, name: `${a.name} ${a.size}`, strategy: a.bot.toLowerCase(), plan: `MFFU Builder ${a.size}`, kind: a.kind, source: a.src, badge: a.paper ? 'PAPER' : 'LIVE',
       eval: { start_balance: a.start, balance: a.balance, floor: a.floor, room: a.room, mll: a.mll, dll: a.dll, dll_used: a.dllUsed, today: a.today, to_target: a.toTarget, target: a.target, profit: a.profit, status: a.status },
       pnl: { today: a.today, week: a.week }, stats: row && isObj(row.stats) ? row.stats : undefined,
       conn: { t: a.t, connected: fresh && typeof conn.connected === 'boolean' ? conn.connected : null, stale: !fresh }, paused: !!(row && row.paused) });

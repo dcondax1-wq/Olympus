@@ -523,9 +523,9 @@ def stage(tmp, with_three=False):
     """The kit's modules as .mjs in tmp/olympus (node treats the site's .js as CommonJS), imports renamed to match."""
     d = os.path.join(tmp, "olympus")
     os.makedirs(d, exist_ok=True)
-    for f in ("people.js", "people-core.js", "people-talk.js", "people-data.js", "people-brain.js", "people3d.js", "people-voice.js", "people-show.js"):
+    for f in ("people.js", "people-core.js", "people-talk.js", "people-data.js", "people-brain.js", "people3d.js", "people-voice.js", "people-show.js", "truth.js"):
         src = AK.read(os.path.join(OLY, f))
-        for g in ("people-core", "people-talk", "people-data", "people-brain", "people-voice", "people-show", "people3d"):
+        for g in ("people-core", "people-talk", "people-data", "people-brain", "people-voice", "people-show", "people3d", "truth"):
             src = src.replace(f"./{g}.js", f"./{g}.mjs")
         src = src.replace("../jarvis/tts.js", "../jarvis/tts.mjs").replace("../jarvis/prosody.js", "../jarvis/prosody.mjs")
         with open(os.path.join(d, f.replace(".js", ".mjs")), "w", encoding="utf-8") as fh:
