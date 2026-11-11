@@ -21,6 +21,30 @@ from tools.cronos import fresh, registry
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BRANCHES = ("cronos", "datacity", "kalshicity")
+EMPTY_STATUS = {"v": 1, "published": False, "tasks": None, "note": "No job log yet: the cronos branch was not readable when this site was built."}
+# optional research files the pages ask for (QA round 6): when no branch brought them, an honest "not published yet" file instead of a 404 in
+# the console. Each reader checks a kind / list it will not find here, so it behaves exactly as for a missing file (kalshi.js: kind
+# 'kalshi-forward' / 'kalshi-scan'; hermes/data.js: a discoveries list). A real file from a branch is never overwritten.
+PLACEHOLDERS = {
+    "kalshicity/forward.json": {"v": 1, "kind": "none", "published": False, "status": {"level": "warn", "label": "Not published yet"},
+                                "note": "The Kalshi forward test has not been published yet (tools/kalshi_forward.py on the kalshicity branch)."},
+    "kalshicity/scan.json": {"v": 1, "kind": "none", "published": False, "status": {"level": "warn", "label": "Not published yet"},
+                             "note": "The Kalshi market scan has not been published yet (tools/kalshi_scan.py on the kalshicity branch)."},
+    "datacity/discoveries.json": {"v": 1, "published": False, "discoveries": [], "note": "No Data City discoveries published yet."},
+}
+
+
+def placeholders(out: str) -> list:
+    """Write the honest empty files that are missing (only inside an app folder the site has). Returns the paths written."""
+    done = []
+    for rel, doc in PLACEHOLDERS.items():
+        path = os.path.join(out, *rel.split("/"))
+        if os.path.exists(path) or not os.path.isdir(os.path.dirname(path)):
+            continue
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(doc, fh, separators=(",", ":"))
+        done.append(rel)
+    return done
 
 
 def want_fetch() -> bool:
@@ -146,10 +170,17 @@ def pull(out: str, readers: dict, log=print) -> tuple:
                 fh.write(raw)
         more = f" (+{', '.join(os.path.basename(d) for d in extra)})" if extra else ""
         notes[task.name] = (f"pulled from {task.branch} ({fresh.when(new_t)})" if blobs else "page copy is as new") + more
+    path = os.path.join(out, "cronos", "status.json")
     if status is not None:
         os.makedirs(os.path.join(out, "cronos"), exist_ok=True)
-        with open(os.path.join(out, "cronos", "status.json"), "w", encoding="utf-8") as fh:
+        with open(path, "w", encoding="utf-8") as fh:
             json.dump({k: v for k, v in status.items() if not k.startswith("_")}, fh, separators=(",", ":"))
+    elif not os.path.exists(path):
+        # no branch to read: publish an honest "nothing yet" so the pages that ask for it get a file, not a 404 in the console
+        # (QA round 6). tasks = null: every reader (people-core, ergasterioncore, arguscore) already treats that as "not published".
+        os.makedirs(os.path.join(out, "cronos"), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(EMPTY_STATUS, fh, separators=(",", ":"))
     return notes, status
 
 
@@ -178,6 +209,7 @@ def apply(out: str, now: float | None = None, readers: dict | None = None, log=p
     readers = default_readers() if readers is None else readers
     readers = {k: v for k, v in readers.items() if v}
     notes, status = pull(out, readers, log)
+    placeholders(out)
     states = stamp_all(out, status, now)
     res = {name: f"{states.get(name, 'not stamped')}; {notes.get(name, '-')}" for name in registry.STAMPED}
     log("  cronos: " + "; ".join(f"{k} {v}" for k, v in res.items()))

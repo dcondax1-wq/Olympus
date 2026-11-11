@@ -266,8 +266,11 @@ def build(root=ROOT, with_git=True):
             nm, meaning = pick(POOL_BUILDER, seed_of("keeper:" + d["id"]), used)
         have = {a["id"] for a in app_rows}
         ids = [i for i in d["ids"] if i in have] or d["ids"]
+        # a status card is read only from apps that publish one (live, with a folder): Kalshi (its own server) and Zenith (the root page)
+        # have none, and asking for them put two 404s in the console of every page that shows the people (QA round 6)
+        cards = {a["id"] for a in app_rows if a.get("live") and a.get("path")}
         people.append(person("keeper:" + d["id"], nm, meaning, "Keeper of the " + d["title"] + " district", "keeper", d["id"], "atlas", temper,
-                             ["../" + i + "/jarvis.json" for i in ids[:24]], ("hellas", d["id"]), "Looks after the " + str(len(ids)) + " apps of the " + d["title"] + " district and knows which ones need you.",
+                             ["../" + i + "/jarvis.json" for i in ids[:24] if not app_rows or i in cards], ("hellas", d["id"]), "Looks after the " + str(len(ids)) + " apps of the " + d["title"] + " district and knows which ones need you.",
                              district={"id": d["id"], "title": d["title"], "colour": d["colour"], "apps": ids[:24]}))
     b, asof_b = builders(root, used, with_git)
     people += b

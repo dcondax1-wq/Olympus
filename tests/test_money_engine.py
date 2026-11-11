@@ -178,7 +178,8 @@ def test_real_scanners():
         check("g. Stoa reads the REAL index with a negative Chrysos low end: six cards, no crash, no '$-' in any card", "_error" not in so and so["n"] == 6 and not so.get("dollarMinus", False), so)
     P.publish(out, os.path.join(out, "site"), True)
     pub = os.listdir(os.path.join(out, "site", "money"))
-    check("g. publish copies the five whole scanner files and the index, not the state file", sorted(pub) == sorted([i + ".json" for i in M.IDS] + ["index.json"]), pub)
+    check("g. publish copies the five whole scanner files, the index and Sibyl's ledger (or its honest 'not started' file), not the state file",
+          sorted(pub) == sorted([i + ".json" for i in M.IDS] + ["index.json", "sibyl_forward.json"]), pub)
 
 
 def test_paper_only():

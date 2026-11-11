@@ -775,6 +775,21 @@ def selftest():
     return 1 if bad else 0
 
 
+SKY_EMPTY = {"v": 1, "t": None, "published": False, "cloud": 0, "rain": 0, "fog": 0, "text": "",
+             "note": "No weather source is published yet: the Polis page draws a clear sky (poliscore weather(): no t = clear)."}
+
+
+def sky_placeholder(site):
+    """QA round 6: the Polis page asks for polis/sky.json (optional weather) and nothing publishes it yet, so every visit put a 404 in the
+    console. In a built site (never in tools/web_public) write an honest empty one when it is missing; a real sky.json is never touched."""
+    path = os.path.join(site, "polis", "sky.json")
+    if os.path.isdir(os.path.dirname(path)) and not os.path.exists(path):
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(SKY_EMPTY, fh, separators=(",", ":"))
+        return True
+    return False
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--date", default=None, help="YYYY-MM-DD (default: today, UTC)")
@@ -805,6 +820,8 @@ def main(argv=None):
     if with_demo:
         with open(os.path.join(WEB, DEMO_REL), "w", encoding="utf-8", newline="\n") as fh:
             fh.write(dump(fixture()))
+    else:
+        sky_placeholder(a.web)
     print(f"polis: {date}: {len(doc['herald'])} herald lines, oracle {'yes' if doc['oracle']['facts'] else 'silent'}, {len(doc['festivals']['items'])} festivals"
           f"{' (built-in table)' if doc['festivals']['builtin'] else ''}, torch {doc['torch']['weeks']['streak']} weeks / {doc['torch']['days']['streak']} days, "
           f"{len(doc['grove']['trees'])} trees, {doc['amphorae']['n']} amphorae, {len(doc['statues']['items'])} statues, stoic: {doc['stoic']['author']}"

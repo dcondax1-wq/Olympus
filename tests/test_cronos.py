@@ -391,9 +391,24 @@ def test_site(tmp):
     before = rjson(os.path.join(out, "fates", "jarvis.json"))
     site.apply(out, now=now, readers={}, log=lambda *a: None)
     after = rjson(os.path.join(out, "fates", "jarvis.json"))
-    check("d. no branch at all: nothing pulled, the page's cards still stamped (fresh or amber), nothing raised",
-          not os.path.exists(os.path.join(out, "fates", "fates.json")) and not os.path.exists(os.path.join(out, "cronos"))
+    empty = rjson(os.path.join(out, "cronos", "status.json")) if os.path.exists(os.path.join(out, "cronos", "status.json")) else None
+    check("d. no branch at all: nothing pulled, the page's cards still stamped (fresh or amber), nothing raised; cronos/status.json is an honest "
+          "'nothing yet' (tasks null, so no 404 in the console and every reader still says 'not published')",
+          not os.path.exists(os.path.join(out, "fates", "fates.json")) and os.listdir(os.path.join(out, "cronos")) == ["status.json"]
+          and isinstance(empty, dict) and empty.get("tasks") is None and empty.get("published") is False
           and after["cronos"]["data_t"] == before["t"] and after["t"] == int(now))
+    has_kc = os.path.isdir(os.path.join(out, "kalshicity"))
+    fw = rjson(os.path.join(out, "kalshicity", "forward.json")) if has_kc else {"published": False, "kind": "none"}
+    os.makedirs(os.path.join(out, "kalshicity"), exist_ok=True)
+    for name in ("forward.json", "scan.json"):
+        if os.path.exists(os.path.join(out, "kalshicity", name)):
+            os.remove(os.path.join(out, "kalshicity", name))
+    with open(os.path.join(out, "kalshicity", "scan.json"), "w", encoding="utf-8") as fh:
+        json.dump({"kind": "kalshi-scan", "test": [], "avoid": []}, fh)
+    wrote = site.placeholders(out)
+    check("d. optional files nobody published get an honest 'not published yet' file (no console 404); a real file is never overwritten",
+          fw.get("published") is False and fw.get("kind") == "none" and wrote == ["kalshicity/forward.json"]
+          and rjson(os.path.join(out, "kalshicity", "scan.json"))["kind"] == "kalshi-scan", [fw, wrote])
     check("d. readers stay off outside Actions unless asked (CRONOS_FETCH / CRONOS_DIR unset)",
           site.default_readers() == {} if not (os.environ.get("CRONOS_DIR") or site.want_fetch()) else True)
 
