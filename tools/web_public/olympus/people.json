@@ -700,8 +700,8 @@
    "branch": "worktree-agent-a43a2daec19cf8666",
    "agent": "Jarvis home",
    "git": {
-    "t": 1794362790,
-    "s": "Jarvis home v2: 3D doorways always readable (lamplit marble, golden-hour haze), browser test fixes"
+    "t": 1794374019,
+    "s": "Merge agora-release (brain v3) into Jarvis home v2"
    }
   },
   {
@@ -797,8 +797,8 @@
    "branch": "worktree-agent-a1d36b031da943214",
    "agent": "Ergasterion",
    "git": {
-    "t": 1794363138,
-    "s": "Merge branch 'agora-release' into worktree-agent-a1d36b031da943214"
+    "t": 1794365040,
+    "s": "Ergasterion tests: Talk prompt checked from the queue's west side, facing compared modulo a turn"
    }
   },
   {
@@ -2687,8 +2687,100 @@
    "appName": "Archive"
   },
   {
-   "id": "villager:clio",
+   "id": "villager:pinakes",
+   "name": "Damon",
+   "title": "Lives in Pinakes",
+   "kind": "villager",
+   "area": "trading",
+   "app": "pinakes",
+   "seed": 3754457726,
+   "temperament": "curious",
+   "voice": {
+    "pitch": 0.88,
+    "rate": 0.93
+   },
+   "sources": [
+    "../pinakes/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "pinakes"
+   },
+   "bio": "The catalogue: browse and query every table OLYMPUS keeps",
+   "appName": "Pinakes"
+  },
+  {
+   "id": "villager:colosseum",
+   "name": "Kyra",
+   "title": "Lives in Colosseum",
+   "kind": "villager",
+   "area": "trading",
+   "app": "colosseum",
+   "seed": 1932641631,
+   "temperament": "wry",
+   "voice": {
+    "pitch": 1.28,
+    "rate": 0.96
+   },
+   "sources": [
+    "../colosseum/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "colosseum"
+   },
+   "bio": "Where strategies fight: seven rounds on real stored numbers",
+   "appName": "Colosseum"
+  },
+  {
+   "id": "villager:nq",
    "name": "Sophia",
+   "title": "Lives in NQ",
+   "kind": "villager",
+   "area": "trading",
+   "app": "nq",
+   "seed": 2126488794,
+   "temperament": "curious",
+   "voice": {
+    "pitch": 1.16,
+    "rate": 0.97
+   },
+   "sources": [
+    "../nq/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "nq"
+   },
+   "bio": "The NQ bots, right now: status, drawdown left, last trades",
+   "appName": "NQ"
+  },
+  {
+   "id": "villager:symposium",
+   "name": "Thekla",
+   "title": "Lives in Symposium",
+   "kind": "villager",
+   "area": "life",
+   "app": "symposium",
+   "seed": 1792090213,
+   "temperament": "blunt",
+   "voice": {
+    "pitch": 1.2,
+    "rate": 0.99
+   },
+   "sources": [
+    "../symposium/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "symposium"
+   },
+   "bio": "Meet everyone who works for you, and talk to them",
+   "appName": "Symposium"
+  },
+  {
+   "id": "villager:clio",
+   "name": "Kosmas",
    "title": "Lives in Clio",
    "kind": "villager",
    "area": "trading",
@@ -2711,7 +2803,7 @@
   },
   {
    "id": "villager:atlas",
-   "name": "Damon",
+   "name": "Hero",
    "title": "Lives in Atlas",
    "kind": "villager",
    "area": "life",
@@ -2778,7 +2870,7 @@
   },
   {
    "id": "villager:tyche",
-   "name": "Thekla",
+   "name": "Nike",
    "title": "Lives in Tyche",
    "kind": "villager",
    "area": "money",
@@ -2801,7 +2893,7 @@
   },
   {
    "id": "villager:hermes",
-   "name": "Kosmas",
+   "name": "Lykos",
    "title": "Lives in Hermes",
    "kind": "villager",
    "area": "money",
@@ -2824,7 +2916,7 @@
   },
   {
    "id": "villager:plutus",
-   "name": "Hero",
+   "name": "Timaios Ζ",
    "title": "Lives in Plutus",
    "kind": "villager",
    "area": "money",

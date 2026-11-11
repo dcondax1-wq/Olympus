@@ -76,8 +76,9 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Mind (`mind`) | Life | life | Your vault as a living 3D brain | bundled fixture / its own files | `tests.test_mind_page` |
 | Nike (`nike`) | Life | life | The trophy hall: milestones and wins from real | `fixture.json`, `../home.json`, `../ledger/rules.json`, `../odeon/trades.json`, `../kalshicity/edges.json` | `tests.test_nike_page` |
 | Planner (`planner`) | Life | life | Day and week plan: session windows, tasks, habits | `../pythia/events.json`, `../home.json`, `fixture.json` | `tests.test_planner_page` |
+| Symposium (`symposium`) | Life | life | Meet everyone who works for you, and talk | `fixture.json` | `tests.test_symposium_page` |
 
-68 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+69 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 
