@@ -105,11 +105,13 @@ export function decorate(svg, sp, opts) {
 }
 
 // ------------------------------------------------------------------------------------------------ the crowd's impostors
-/** every person photographed whole (front, 3/4 turned towards the middle), at rest (frame 0) and talking (frame 1), in one canvas atlas */
+/** every person photographed whole (front, 3/4 turned towards the middle), at rest (frame 0) and talking (frame 1), in one canvas atlas.
+ *  opts.views (2026-11-11, the towns): 5 frames a person instead of 2: + 2 from behind, 3 and 4 walking seen from the side (facing screen right, two strides),
+ *  so a town crowd of sprites can show a back or a walking profile (layout: ['rest', 'talk', 'back', 'sideA', 'sideB']). */
 export async function atlas(specs, opts) {
   const o = opts || {};
   if (!(await ready())) return null;
-  const n = specs.length, cw = (o.cell && o.cell[0]) || 128, chh = (o.cell && o.cell[1]) || 160, frames = 2, cols = Math.max(1, Math.min(16, Math.floor(2048 / cw))), rows = Math.ceil((n * frames) / cols);
+  const n = specs.length, cw = (o.cell && o.cell[0]) || 128, chh = (o.cell && o.cell[1]) || 160, frames = o.views ? 5 : 2, cols = Math.max(1, Math.min(16, Math.floor(2048 / cw))), rows = Math.ceil((n * frames) / cols);
   const cv = document.createElement('canvas'); cv.width = cols * cw; cv.height = rows * chh; const g2 = cv.getContext('2d');
   const FW = 1.0, FH = 1.25, foot = -0.04;      // the frame in figure units (height 1): x -0.5..0.5, y foot..foot + FH
   for (let i = 0; i < n; i++) {
@@ -120,14 +122,17 @@ export async function atlas(specs, opts) {
       ch = person(sp, { seated: !!o.seated, pose: 'idle', frames: 8, look: new THREE.Vector3(0, 0.7, 4) });
       const d = 24; S.cam.fov = 2 * Math.atan((FH / 2) / d) * 180 / Math.PI; S.cam.position.set(0, foot + FH / 2, d); S.cam.lookAt(0, foot + FH / 2, 0);
       for (let f = 0; f < frames; f++) {
-        if (f) { ch.play('talk'); for (let t = 0; t < 14; t++) { ch.setMouth('A', 1); ch.tick(0.03); } }
+        if (f === 1) { ch.play('talk'); for (let t = 0; t < 14; t++) { ch.setMouth('A', 1); ch.tick(0.03); } }
+        if (f === 2) { ch.setTalking(false); ch.play('idle'); ch.lookAt(null); for (let t = 0; t < 12; t++) { ch.setMouth('rest', 0); ch.tick(0.03); } ch.object.rotation.y = Math.PI; }
+        if (f === 3) { ch.object.rotation.y = Math.PI / 2; ch.play('walk'); for (let t = 0; t < 12; t++) ch.tick(0.03); }
+        if (f === 4) { const b = S.cast.clips[ch.state().base], half = b ? b.duration / 2 : 0.5; for (let t = 0; t < 10; t++) ch.tick(half / 10); }
         const c = shoot(cw, chh), k = i * frames + f; g2.drawImage(c, (k % cols) * cw, Math.floor(k / cols) * chh, cw, chh);
       }
     } catch (e) { /* those cells stay empty */ }
     if (ch) ch.dispose();
     if (i % 4 === 3) await new Promise((r) => setTimeout(r, 0));
   }
-  return { canvas: cv, cols, rows, cellW: cw, cellH: chh, frames, frame: [FW, FH], foot, n };
+  return { canvas: cv, cols, rows, cellW: cw, cellH: chh, frames, frame: [FW, FH], foot, n, layout: o.views ? ['rest', 'talk', 'back', 'sideA', 'sideB'] : ['rest', 'talk'] };
 }
 
 // ------------------------------------------------------------------------------------------------ IndexedDB (best effort)

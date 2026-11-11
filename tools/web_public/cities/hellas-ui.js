@@ -83,7 +83,8 @@ export class HellasUI {
     if (!person) return null; this.stopVoyage(); this.endTalk(); this.chat = person; if (this.scene && ref) this.scene.setTalk(ref);
     const how = talkTo(person, { anchor: this.card }), S = this.scene, P = S && ref && ref.kind === 'person' && S.people ? S.people[ref.i] : null;
     const project = P ? () => { const r = S.canvas ? S.canvas.getBoundingClientRect() : { left: 0, top: 0 }, q = S.project(P.x, (S.walk ? 1.08 : 2.5) * 1.5, P.z); return { x: r.left + q.x, y: r.top + q.y, front: !!q.vis }; } : null;
-    const voice = sayShow(person, 'hellas', { project, anchor: this.card }); this.lastTalk = { id: person.id, how, voice: { say: voice.say, show: voice.show } };
+    const fig = P && S.crowd && S.crowd.figureOf ? S.crowd.figureOf(ref.i) : null;      // QA6: the rigged figure you talk to (town-cast.js) moves its lips with the voice
+    const voice = sayShow(person, 'hellas', { project, anchor: this.card, figure: fig }); this.lastTalk = { id: person.id, how, voice: { say: voice.say, show: voice.show } };
     if (how === 'kit') { this.card.hidden = true; return how; }
     this._chatting = true; this.showCard(person.name, [chatCard(person), voice.card, person.kind === 'builder' ? this.acts(btn('All the builders', () => this.buildersCard())) : null]); return how;
   }
