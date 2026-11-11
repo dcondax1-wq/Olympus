@@ -86,7 +86,7 @@ export function createRig(camera, opts) {
   const S = {
     world: o.world || makeWorld({}), mode: 'follow', t: 0, shotT: 0, params: {},
     target: { x: 0, y: 0, z: 0, h: 1.5, yaw: 0, moving: false },
-    az: 0, pitch: FOLLOW.pitch, dist: FOLLOW.dist, userT: -99, interest: null,
+    az: 0, pitch: o.pitch || FOLLOW.pitch, dist: o.dist || FOLLOW.dist, userT: -99, interest: null,
     pos: v3(0, 3, 6), look: v3(0, 1.4, 0), vel: { x: { v: 0 }, y: { v: 0 }, z: { v: 0 }, lx: { v: 0 }, ly: { v: 0 }, lz: { v: 0 } }, pulled: 0, cut: true, pivot: v3(0, 1.4, 0), last: null,
   };
   const head = (p) => v3(p.x, (p.y || 0) + (p.h || 1.5), p.z);

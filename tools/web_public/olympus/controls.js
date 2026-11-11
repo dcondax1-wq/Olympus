@@ -168,8 +168,8 @@ export function gestures(el, h, opts) {
 // ------------------------------------------------------------------------------------------------ the HUD (DOM)
 const CSS = `
 .oc-hud{position:absolute;inset:0;pointer-events:none;z-index:6;font:500 14px/1.3 -apple-system,"Segoe UI",system-ui,sans-serif;color:#2c2116;overflow:hidden}
-.oc-hint{position:absolute;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:min(88%,340px);padding:9px 14px;border-radius:999px;background:rgba(233,223,201,.92);border:1px solid rgba(156,107,60,.55);box-shadow:0 4px 14px rgba(0,0,0,.28);text-align:center;transition:opacity .6s ease,transform .6s ease;font-size:13.5px}
-.oc-hint.out{opacity:0;transform:translate(-50%,8px)}
+.oc-hint{position:absolute;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));margin:0 auto;width:max-content;max-width:calc(100% - 20px);box-sizing:border-box;padding:7px 12px;border-radius:12px;background:rgba(36,28,20,.78);color:#f3ead8;border:1px solid rgba(200,162,74,.45);box-shadow:0 3px 10px rgba(0,0,0,.25);text-align:center;transition:opacity .6s ease,transform .6s ease;font:500 12.5px/1.3 -apple-system,'Segoe UI',system-ui,sans-serif}
+.oc-hint.out{opacity:0;transform:translateY(8px)}
 .oc-plate{position:absolute;left:0;top:0;padding:3px 10px 4px;border-radius:999px;background:rgba(36,28,20,.72);color:#f3ead8;border:1px solid rgba(200,162,74,.5);white-space:nowrap;text-align:center;transform-origin:50% 100%;will-change:transform;transition:opacity .25s ease}
 .oc-plate b{display:block;font:600 13.5px/1.15 "Iowan Old Style",Palatino,Georgia,serif;letter-spacing:.02em}
 .oc-plate i{display:block;font-style:normal;font-size:10.5px;opacity:.82;max-width:150px;overflow:hidden;text-overflow:ellipsis}
@@ -180,7 +180,7 @@ const CSS = `
 .oc-ring button:focus-visible{outline:2px solid #c8a24a;outline-offset:3px}
 .oc-ring .oc-who{position:absolute;transform:translate(-50%,-100%);padding:4px 12px;border-radius:999px;background:rgba(36,28,20,.86);color:#f3ead8;font:600 14px/1.2 "Iowan Old Style",Palatino,Georgia,serif;white-space:nowrap}
 @keyframes oc-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
-.oc-cta{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);pointer-events:auto;min-height:48px;padding:0 20px;border-radius:999px;border:1.5px solid #9c6b3c;background:#c8a24a;color:#2a1d10;font:600 15px/1 "Iowan Old Style",Palatino,Georgia,serif;letter-spacing:.02em;box-shadow:0 6px 18px rgba(0,0,0,.35);animation:oc-pop .3s ease-out both;white-space:nowrap}
+.oc-cta{position:absolute;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:2;pointer-events:auto;min-height:48px;padding:0 20px;border-radius:999px;border:1.5px solid #9c6b3c;background:#c8a24a;color:#2a1d10;font:600 15px/1 "Iowan Old Style",Palatino,Georgia,serif;letter-spacing:.02em;box-shadow:0 6px 18px rgba(0,0,0,.35);animation:oc-pop .3s ease-out both;white-space:nowrap}
 .oc-toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(36,28,20,.82);color:#f3ead8;font-size:13px;transition:opacity .4s ease;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
 .oc-toast.out{opacity:0}
 .oc-mark{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:2px solid rgba(239,229,207,.95);box-shadow:0 0 0 2px rgba(156,107,60,.6);animation:oc-mark .7s ease-out forwards}
