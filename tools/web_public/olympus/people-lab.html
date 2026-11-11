@@ -12,7 +12,7 @@
   html { background: #14110e; } body { margin: 0; padding: 14px 14px 60px; font: 500 14px/1.4 -apple-system, system-ui, sans-serif; color: #f3ece0; }
   h1 { font: 600 24px 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; margin: 0 0 4px; } h2 { font: 600 17px 'Iowan Old Style', Palatino, Georgia, serif; margin: 18px 0 8px; }
   p { margin: 0 0 8px; color: #cfc4b2; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 8px; }
   .cell { display: grid; justify-items: center; gap: 4px; padding: 8px 4px; min-height: 44px; border-radius: 14px; border: 1px solid #3a3228; background: #1d1914; color: inherit; font: inherit; cursor: pointer; text-align: center; }
   .cell b { font-size: 13px; } .cell small { font-size: 11px; color: #9a8f7d; }
   .moods { display: flex; gap: 3px; }
@@ -54,7 +54,7 @@ try {
   const crowd = figureInstanced(THREE, people.map((p) => spec(p.id)), { seated: true });
   people.forEach((p, i) => crowd.userData.place(i, ((i % 13) - 6) * 0.56, 0.0, -1.5 - Math.floor(i / 13) * 0.75, 0, 1)); scene.add(crowd);
   let tris = 0; for (const f of figs.slice(0, shown.length)) tris = Math.max(tris, f.userData.triangles);
-  const fit = () => { const w = canvas.clientWidth, h = canvas.clientHeight; r.setSize(w, h, false); cam.aspect = w / h; const d = w < 600 ? 9.5 : 6.2; cam.position.set(0, 2.1, d); cam.lookAt(0, 0.55, 0); cam.updateProjectionMatrix(); };
+  const fit = () => { const w = canvas.clientWidth, h = canvas.clientHeight; r.setSize(w, h, false); cam.aspect = w / h; const d = w < 600 ? 8.6 : 5.4; cam.position.set(0, 1.7, d); cam.lookAt(0, 0.45, -0.4); cam.updateProjectionMatrix(); };
   fit(); addEventListener('resize', fit);
   const t0 = performance.now(); let last = t0;
   const frame = (now) => { const t = (now - t0) / 1000, dt = (now - last) / 1000; last = now; if (!still) { for (const f of figs) f.userData.tick(dt, t); crowd.userData.tick(t); } r.render(scene, cam); window.__labCalls = r.info.render.calls; if (!still) requestAnimationFrame(frame); };
