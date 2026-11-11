@@ -147,12 +147,14 @@ def pick(c, ct):
     return q
 
 
-def backfill(series, since):
+def backfill(series, since, near=0.0):
     """the batch endpoint does not serve markets older than the live cutoff: fetch those one by one from /historical (slow)."""
     import concurrent.futures as cf
     fn = os.path.join(kc.DATA, f"snap_{series}.jsonl.gz")
     rows = [json.loads(l) for l in gzip.open(fn, "rt")]
     todo = [r for r in rows if not r["q"] and r["ct"] >= since and not r.get("bf")]
+    if near:   # index ladders: only strikes within `near` of the final value (far strikes sit at 0 / 100 and never pass the spread filter)
+        todo = [r for r in todo if r["ev"] and any(x is not None and abs(x / r["ev"] - 1) <= near for x in (r["fs"], r["cs"]))]
     t0 = time.time()
 
     def one(r):
@@ -178,6 +180,7 @@ def main():
     ap.add_argument("--since", default="2025-11-01")
     ap.add_argument("--series", default="")
     ap.add_argument("--group", default="")
+    ap.add_argument("--near", type=float, default=0.0)
     ap.add_argument("--backfill-since", default="", help="fetch hourly quotes of pre-cutoff markets one by one from /historical, back to this date")
     a = ap.parse_args()
     os.makedirs(kc.DATA, exist_ok=True)
@@ -188,7 +191,7 @@ def main():
         try:
             harvest(s, lo, hi)
             if a.backfill_since:
-                backfill(s, kc.ts(a.backfill_since + "T00:00:00"))
+                backfill(s, kc.ts(a.backfill_since + "T00:00:00"), a.near)
         except Exception as e:  # keep going: one bad series must not stop the night
             print(s, "FAILED", repr(e), flush=True)
 
