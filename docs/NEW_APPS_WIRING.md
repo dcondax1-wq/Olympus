@@ -639,3 +639,14 @@ No new app. Wiring for the lead:
 - `tools/web_public/jarvis/index.html`: `./transitions.js?v=t2` -> `?v=t3` (door / scroll / flythrough kinds + `level()`).
 - `tools/web_public/sw.js`: bump `CACHE` (render.js, fx-cine.js, fx-ui.js, fx-text.js, fx-lab.html, symposium/hall.js, ergasterion/floor.js, colosseum/arena.js, cities/athens.js, cities/hellas.js changed).
 - `olympus/olympus.js` FXMAP (zero-edit wiring of the new UI effects): `press: 'ui', stagger: 'ui', goldFlash: 'text'`.
+
+## Environment art (olympus/env-kit.js, 2026-11-11)
+
+No new app. Wiring the lead does:
+- `tools/web_public/sw.js`: add `assets/` to OTHER_APPS (or precache / runtime-cache it), so the CC0 art (`assets/tex/*.webp`,
+  `assets/env/*.glb`, `assets/env/hdri/*.hdr`, about 4.9 MB, lazy-loaded per scene) works offline after the first visit. Every
+  scene still builds with plain colours when a file is missing.
+- `tools/build_web_dashboard.py`: copy `tools/web_public/assets/` with the site if the build copies folders by name.
+- Bump the workers of symposium, ergasterion, cities, colosseum and jarvis (new files: `olympus/env-kit.js`, `olympus/env-lab.html`,
+  `olympus/three-addons/GLTFLoader.js`, `RGBELoader.js`, `BufferGeometryUtils.js`, `meshopt_decoder.module.js`,
+  `symposium/hall-room.js`, `ergasterion/floor-art.js`).
