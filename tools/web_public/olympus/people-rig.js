@@ -377,7 +377,8 @@ export function character(THREE, cast, sp, opts) {
   for (const p of o.props || []) want.add(p);
   const st = { pose: 'idle', name: 'idle', then: null, t: 0, start: 0, expr: C.MOOD_EXPR[s.mood] || 'neutral', exprK: 1, talking: false, speech: null, look: null, lookCur: [0, 0], seated: !!o.seated,
     blinkAt: 1.2 + ((s.seed >>> 4) % 300) / 100, blink: 0, rng: C.rng(((s.seed >>> 0) ^ 0x51ed27) >>> 0), syl: { t: 0, v: 'rest', k: 0 }, glance: [0, 0], glanceAt: 2, mouth: VIS.map(() => 0),
-    morph: MORPHS.map(() => 0), layers: [], base: null, baseName: '', props: {}, disposed: false, idleVar: ((s.seed >>> 7) % 2) ? 'Unarmed_Idle' : 'Idle', walkVar: ['Walking_A', 'Walking_B', 'Walking_C'][(s.seed >>> 9) % 3] };
+    morph: MORPHS.map(() => 0), layers: [], base: null, baseName: '', props: {}, disposed: false, idleVar: o.idle || 'Unarmed_Idle',      // the pack's 'Idle' is a turned fighting stance: ours face you
+    walkVar: ['Walking_A', 'Walking_B', 'Walking_C'][(s.seed >>> 9) % 3] };
   const model = new THREE.Group(); model.name = 'olympus-person-rig';
   const mat = o.material || rigMaterial(THREE, lite);
   let body = null, face = null, skel = null, built = null;

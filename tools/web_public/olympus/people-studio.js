@@ -30,7 +30,7 @@ export function ready() {
     const key = new THREE.DirectionalLight('#fff3e2', 2.1); key.position.set(1.6, 2.4, 3.2); scene.add(key);
     const fill = new THREE.DirectionalLight('#dfe7f5', 0.7); fill.position.set(-2.5, 1.2, 1.5); scene.add(fill);
     const rim = new THREE.DirectionalLight('#fff1dc', 1.3); rim.position.set(-1.0, 2.0, -2.6); scene.add(rim);
-    S.r = r; S.scene = scene; S.cam = new THREE.PerspectiveCamera(22, 1, 0.05, 20); S.ok = true;
+    S.r = r; S.scene = scene; S.cam = new THREE.PerspectiveCamera(22, 1, 0.05, 60); S.ok = true;
     return true;
   })().catch(() => { S.ok = false; return false; });
   return S.p;
@@ -39,7 +39,7 @@ export function status() { return S.ok ? 'ready' : S.p ? 'loading' : 'off'; }
 
 // ------------------------------------------------------------------------------------------------ taking a photo
 function person(sp, o) {
-  const ch = R.character(THREE, S.cast, sp, { seated: !!o.seated, work: false, pose: o.pose || 'idle' });
+  const ch = R.character(THREE, S.cast, sp, { seated: !!o.seated, work: false, pose: o.pose || 'idle', idle: 'Unarmed_Idle' });
   S.scene.add(ch.object);
   if (o.pose && o.pose !== 'idle') ch.play(o.pose, { loop: true });
   if (o.expr) ch.setExpression(o.expr, 1);
@@ -72,7 +72,7 @@ async function pump() {
         const sp = j.sp, o = j.o, h = sp.height || 1;
         const ch = person(sp, { expr: o.expr, mouth: o.mouth, blink: o.blink, look: new THREE.Vector3(0.25, 0.75 * h, 3) });
         const hy = 0.735 * h;
-        S.cam.position.set(0.16, hy + 0.04, 1.32 * Math.max(0.9, h)); S.cam.lookAt(0, hy - 0.035, 0); S.cam.fov = 21;
+        S.cam.position.set(0.18, hy + 0.05, 1.72 * Math.max(0.9, h)); S.cam.lookAt(0, hy - 0.075 * h, 0); S.cam.fov = 21;
         shoot(o.px, o.px); url = S.r.domElement.toDataURL('image/png');
         ch.dispose();
       } catch (e) { url = null; }

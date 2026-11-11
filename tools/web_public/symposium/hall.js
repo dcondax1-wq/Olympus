@@ -102,7 +102,7 @@ function build(rc, scene, camera, canvas, o) {
   function placeCam() {
     // you stand just past the middle of the table and look across it: the people over there face you, big enough to see their faces.
     // When someone talks the camera dollies in on them (a cinematic close-up), and back out when they are done.
-    const portrait = st.w / st.h < 0.95, off = r * (portrait ? 0.02 : 0.2), hgt = portrait ? 1.3 : 1.36;
+    const portrait = st.w / st.h < 0.95, off = r * (portrait ? 0.14 : 0.24), hgt = portrait ? 1.34 : 1.4;
     camera.fov = portrait ? 46 : 40;
     camAt.set(Math.sin(st.yaw) * off, hgt, Math.cos(st.yaw) * off); camLook.set(-Math.sin(st.yaw) * r, 0.92, -Math.cos(st.yaw) * r);
     const z = st.zoom || 0;
@@ -111,10 +111,10 @@ function build(rc, scene, camera, canvas, o) {
       headV.set(s.x, seatY(st.active) + 1.08 * SC * ((specs[st.active] && specs[st.active].height) || 1) * 0.66, s.z);
       if (f) { f.updateWorldMatrix(true, true); const hb = f.userData.parts && f.userData.parts.head; if (hb && hb.getWorldPosition) hb.getWorldPosition(headV); }
       const dx = -s.x, dz = -s.z, dl = Math.hypot(dx, dz) || 1, side = st.cardOff || 0;
-      const nearX = s.x + (dx / dl) * 1.55 + (-dz / dl) * side * 0.9, nearZ = s.z + (dz / dl) * 1.55 + (dx / dl) * side * 0.9;
+      const D = 2.5, nearX = s.x + (dx / dl) * D + (-dz / dl) * side * 0.9, nearZ = s.z + (dz / dl) * D + (dx / dl) * side * 0.9;
       const e = z * z * (3 - 2 * z) * 0.85;
-      camAt.lerp(v.set(nearX, headV.y + 0.08, nearZ), e); camLook.lerp(headV.clone().add(v.set((-dz / dl) * side * 0.35, -0.06, (dx / dl) * side * 0.35)), e);
-      camera.fov += (34 - camera.fov) * e;
+      camAt.lerp(v.set(nearX, headV.y + 0.12, nearZ), e); camLook.lerp(headV.clone().add(v.set((-dz / dl) * side * 0.35, -0.24, (dx / dl) * side * 0.35)), e);
+      camera.fov += (38 - camera.fov) * e;
     }
     camera.updateProjectionMatrix();
     camera.position.copy(camAt); camera.lookAt(camLook);
