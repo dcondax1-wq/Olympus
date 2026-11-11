@@ -496,6 +496,24 @@
     "kind": "tiles",
     "ms": 800
    }
+  },
+  {
+   "id": "pinakes",
+   "name": "Pinakes",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The catalogue: browse and query every table OLYMPUS keeps",
+   "glyph": "Κ",
+   "ambient": "scroll",
+   "flavour": [
+    "columns",
+    "Open the drawers",
+    "tap"
+   ],
+   "transition": {
+    "kind": "tiles",
+    "ms": 800
+   }
   }
  ],
  "pending": [],
