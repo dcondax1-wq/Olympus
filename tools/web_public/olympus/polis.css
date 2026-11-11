@@ -50,16 +50,17 @@
   background: linear-gradient(180deg, rgba(255, 252, 245, .4), rgba(120, 104, 84, .18)), var(--polis-marble-light) center / 240px 240px, #e9e1d2;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 -2px 4px rgba(60, 45, 30, .28), inset 0 0 0 1px rgba(90, 76, 58, .25), 0 6px 18px rgba(0, 0, 0, .35); }
 .polis-inscribed { font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; line-height: 1.15; }
-.polis-plaque.polis-inscribed, .polis-plaque .polis-inscribed {
-  color: #5a4e40; background-image: linear-gradient(180deg, #2f271e 0%, #4f4335 45%, #8b7d69 78%, #b3a68f 100%);
+.polis-cut, .polis-plaque .polis-inscribed:not(.polis-plaque) {
+  display: inline-block; color: #5a4e40; background-image: linear-gradient(180deg, #2f271e 0%, #4f4335 45%, #8b7d69 78%, #b3a68f 100%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 1px 0 rgba(255, 252, 244, .85)) drop-shadow(0 -1px 0 rgba(40, 30, 20, .25)); }
-.polis-plaque.polis-inscribed { background-image: linear-gradient(180deg, #2f271e 0%, #4f4335 45%, #8b7d69 78%, #b3a68f 100%), var(--polis-marble-light); -webkit-background-clip: text, padding-box; background-clip: text, padding-box; }
+  filter: drop-shadow(0 1px 0 rgba(255, 252, 244, .9)) drop-shadow(0 -1px 0 rgba(40, 30, 20, .22)); }
+.polis-cut .polis-num, .polis-gilt .polis-num, .polis-plaque .polis-inscribed .polis-num { background-image: inherit; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.polis-cut .polis-num > span, .polis-gilt .polis-num > span { background-image: inherit; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .polis-gilt { color: #d9b153; background-image: linear-gradient(100deg, #7a5718 0%, #c8a24a 20%, #f6dc8c 34%, #fff6d6 40%, #e2bd62 46%, #a77a28 64%, #e7c46e 82%, #8a6420 100%);
   background-size: 260% 100%; background-position: 100% 0; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 1px 0 rgba(30, 20, 8, .9)) drop-shadow(0 2px 3px rgba(0, 0, 0, .35)); animation: polis-gilt 7s ease-in-out infinite; }
 @keyframes polis-gilt { 0%, 55% { background-position: 100% 0; } 85%, 100% { background-position: 0 0; } }
-.polis-num { position: relative; display: inline-grid; cursor: help; border-radius: 3px; outline-offset: 2px; -webkit-text-fill-color: inherit; }
+.polis-num { position: relative; display: inline-grid; cursor: help; border-radius: 3px; outline-offset: 2px; }
 .polis-num > span { grid-area: 1 / 1; transition: opacity .3s ease-out, transform .3s ease-out; }
 .polis-num .pn-g { opacity: 0; transform: translateY(3px); text-transform: none; letter-spacing: .02em; }
 .polis-num:hover .pn-a, .polis-num:focus-visible .pn-a, .polis-num.on .pn-a { opacity: 0; transform: translateY(-3px); }

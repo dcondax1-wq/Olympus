@@ -974,7 +974,15 @@
     marbleVars();
     el.classList.add('polis-inscribed');
     if (opts.gild) el.classList.add('polis-gilt');
-    if (opts.plaque) el.classList.add('polis-plaque');
+    if (opts.plaque) {
+      el.classList.add('polis-plaque');
+      if (!el.querySelector('.polis-cut')) {                // the cut letters live in their own box so their light lip draws over the marble
+        var cut = D.createElement('span');
+        cut.className = 'polis-cut';
+        while (el.firstChild) cut.appendChild(el.firstChild);
+        el.appendChild(cut);
+      }
+    }
     if (opts.numerals !== false && !el.getAttribute('data-polis-num')) {
       el.setAttribute('data-polis-num', '1');
       wrapNumbers(el);
