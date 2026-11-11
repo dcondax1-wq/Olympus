@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-11 01:31 UTC",
+ "generated": "2026-11-11 04:48 UTC",
  "series": {
   "KXAAAGASD": {
    "class": "gas daily",
@@ -99,20 +99,20 @@
    "events": 8,
    "markets": 40,
    "24h": {
-    "events_quoted": 2,
-    "favourite_avg_ask": 0.905,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.0984,
-    "brier_mid_all_markets": 0.0045,
-    "markets_quoted": 10
+    "events_quoted": 8,
+    "favourite_avg_ask": 0.574,
+    "favourite_won": 0.625,
+    "edge_per_$_buying_favourite": 0.0832,
+    "brier_mid_all_markets": 0.0037,
+    "markets_quoted": 37
    },
    "3h": {
-    "events_quoted": 2,
-    "favourite_avg_ask": 0.915,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.087,
-    "brier_mid_all_markets": 0.0035,
-    "markets_quoted": 10
+    "events_quoted": 8,
+    "favourite_avg_ask": 0.45,
+    "favourite_won": 0.5,
+    "edge_per_$_buying_favourite": 0.1033,
+    "brier_mid_all_markets": 0.0046,
+    "markets_quoted": 36
    }
   },
   {
@@ -120,20 +120,20 @@
    "events": 8,
    "markets": 88,
    "24h": {
-    "events_quoted": 2,
-    "favourite_avg_ask": 0.48,
-    "favourite_won": 0.5,
-    "edge_per_$_buying_favourite": 0.0298,
-    "brier_mid_all_markets": 0.0037,
-    "markets_quoted": 5
+    "events_quoted": 8,
+    "favourite_avg_ask": 0.28,
+    "favourite_won": 0.25,
+    "edge_per_$_buying_favourite": -0.12,
+    "brier_mid_all_markets": 0.0017,
+    "markets_quoted": 39
    },
    "3h": {
-    "events_quoted": 2,
-    "favourite_avg_ask": 0.47,
-    "favourite_won": 0.5,
-    "edge_per_$_buying_favourite": 0.0518,
-    "brier_mid_all_markets": 0.0021,
-    "markets_quoted": 9
+    "events_quoted": 8,
+    "favourite_avg_ask": 0.161,
+    "favourite_won": 0.125,
+    "edge_per_$_buying_favourite": -0.2485,
+    "brier_mid_all_markets": 0.002,
+    "markets_quoted": 45
    }
   },
   {
@@ -141,20 +141,20 @@
    "events": 13,
    "markets": 130,
    "24h": {
-    "events_quoted": 3,
-    "favourite_avg_ask": 0.973,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.0256,
-    "brier_mid_all_markets": 0.0692,
-    "markets_quoted": 18
+    "events_quoted": 13,
+    "favourite_avg_ask": 0.958,
+    "favourite_won": 0.923,
+    "edge_per_$_buying_favourite": -0.0389,
+    "brier_mid_all_markets": 0.0596,
+    "markets_quoted": 70
    },
    "3h": {
-    "events_quoted": 3,
-    "favourite_avg_ask": 0.95,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.0492,
-    "brier_mid_all_markets": 0.0818,
-    "markets_quoted": 16
+    "events_quoted": 12,
+    "favourite_avg_ask": 0.973,
+    "favourite_won": 0.917,
+    "edge_per_$_buying_favourite": -0.0601,
+    "brier_mid_all_markets": 0.0527,
+    "markets_quoted": 64
    }
   },
   {
@@ -162,20 +162,20 @@
    "events": 12,
    "markets": 207,
    "24h": {
-    "events_quoted": 2,
-    "favourite_avg_ask": 0.98,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.019,
-    "brier_mid_all_markets": 0.0223,
-    "markets_quoted": 23
+    "events_quoted": 12,
+    "favourite_avg_ask": 0.976,
+    "favourite_won": 0.833,
+    "edge_per_$_buying_favourite": -0.1477,
+    "brier_mid_all_markets": 0.0681,
+    "markets_quoted": 111
    },
    "3h": {
-    "events_quoted": 2,
-    "favourite_avg_ask": 0.805,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.2316,
-    "brier_mid_all_markets": 0.0305,
-    "markets_quoted": 17
+    "events_quoted": 12,
+    "favourite_avg_ask": 0.917,
+    "favourite_won": 0.833,
+    "edge_per_$_buying_favourite": -0.0958,
+    "brier_mid_all_markets": 0.0527,
+    "markets_quoted": 90
    }
   },
   {
@@ -183,20 +183,20 @@
    "events": 13,
    "markets": 116,
    "24h": {
-    "events_quoted": 3,
-    "favourite_avg_ask": 0.937,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.0634,
-    "brier_mid_all_markets": 0.052,
-    "markets_quoted": 16
+    "events_quoted": 12,
+    "favourite_avg_ask": 0.941,
+    "favourite_won": 0.917,
+    "edge_per_$_buying_favourite": -0.0297,
+    "brier_mid_all_markets": 0.0391,
+    "markets_quoted": 81
    },
    "3h": {
-    "events_quoted": 3,
-    "favourite_avg_ask": 0.99,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.0094,
-    "brier_mid_all_markets": 0.0512,
-    "markets_quoted": 19
+    "events_quoted": 11,
+    "favourite_avg_ask": 0.914,
+    "favourite_won": 0.909,
+    "edge_per_$_buying_favourite": -0.0101,
+    "brier_mid_all_markets": 0.0576,
+    "markets_quoted": 65
    }
   },
   {
@@ -204,20 +204,20 @@
    "events": 13,
    "markets": 181,
    "24h": {
-    "events_quoted": 2,
-    "favourite_avg_ask": 0.965,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.0338,
-    "brier_mid_all_markets": 0.2541,
-    "markets_quoted": 26
+    "events_quoted": 13,
+    "favourite_avg_ask": 0.958,
+    "favourite_won": 0.846,
+    "edge_per_$_buying_favourite": -0.1194,
+    "brier_mid_all_markets": 0.2267,
+    "markets_quoted": 180
    },
    "3h": {
-    "events_quoted": 2,
-    "favourite_avg_ask": 0.95,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.0491,
-    "brier_mid_all_markets": 0.2297,
-    "markets_quoted": 25
+    "events_quoted": 13,
+    "favourite_avg_ask": 0.958,
+    "favourite_won": 0.846,
+    "edge_per_$_buying_favourite": -0.1194,
+    "brier_mid_all_markets": 0.2203,
+    "markets_quoted": 161
    }
   },
   {
@@ -225,20 +225,20 @@
    "events": 13,
    "markets": 145,
    "24h": {
-    "events_quoted": 2,
-    "favourite_avg_ask": 0.99,
+    "events_quoted": 13,
+    "favourite_avg_ask": 0.968,
     "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.0094,
-    "brier_mid_all_markets": 0.0613,
-    "markets_quoted": 18
+    "edge_per_$_buying_favourite": 0.0312,
+    "brier_mid_all_markets": 0.0641,
+    "markets_quoted": 100
    },
    "3h": {
-    "events_quoted": 2,
-    "favourite_avg_ask": 0.855,
-    "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.1609,
-    "brier_mid_all_markets": 0.0568,
-    "markets_quoted": 17
+    "events_quoted": 13,
+    "favourite_avg_ask": 0.876,
+    "favourite_won": 0.923,
+    "edge_per_$_buying_favourite": 0.048,
+    "brier_mid_all_markets": 0.0711,
+    "markets_quoted": 79
    }
   },
   {
@@ -246,20 +246,20 @@
    "events": 4,
    "markets": 42,
    "24h": {
-    "events_quoted": 1,
-    "favourite_avg_ask": 0.99,
+    "events_quoted": 4,
+    "favourite_avg_ask": 0.972,
     "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.0094,
-    "brier_mid_all_markets": 0.0442,
-    "markets_quoted": 7
+    "edge_per_$_buying_favourite": 0.0264,
+    "brier_mid_all_markets": 0.1356,
+    "markets_quoted": 35
    },
    "3h": {
-    "events_quoted": 1,
-    "favourite_avg_ask": 0.97,
+    "events_quoted": 4,
+    "favourite_avg_ask": 0.982,
     "favourite_won": 1.0,
-    "edge_per_$_buying_favourite": 0.0288,
-    "brier_mid_all_markets": 0.0007,
-    "markets_quoted": 3
+    "edge_per_$_buying_favourite": 0.0166,
+    "brier_mid_all_markets": 0.1578,
+    "markets_quoted": 32
    }
   },
   {
@@ -267,20 +267,20 @@
    "events": 47,
    "markets": 490,
    "24h": {
-    "events_quoted": 9,
-    "favourite_avg_ask": 0.641,
-    "favourite_won": 0.444,
-    "edge_per_$_buying_favourite": -0.3173,
-    "brier_mid_all_markets": 0.0813,
-    "markets_quoted": 44
+    "events_quoted": 47,
+    "favourite_avg_ask": 0.855,
+    "favourite_won": 0.766,
+    "edge_per_$_buying_favourite": -0.1099,
+    "brier_mid_all_markets": 0.1073,
+    "markets_quoted": 277
    },
    "3h": {
-    "events_quoted": 9,
-    "favourite_avg_ask": 0.777,
-    "favourite_won": 0.778,
-    "edge_per_$_buying_favourite": -0.0025,
-    "brier_mid_all_markets": 0.077,
-    "markets_quoted": 51
+    "events_quoted": 43,
+    "favourite_avg_ask": 0.758,
+    "favourite_won": 0.698,
+    "edge_per_$_buying_favourite": -0.0856,
+    "brier_mid_all_markets": 0.0815,
+    "markets_quoted": 209
    }
   }
  ],
@@ -288,8 +288,8 @@
   "family": "other recurring series",
   "cells_defined": 144,
   "cells_eligible": 24,
-  "null_max_t_p95": 1.763,
-  "null_max_t_median": 0.969,
+  "null_max_t_p95": 1.719,
+  "null_max_t_median": 1.036,
   "carried": [],
   "survive": [],
   "cells": [
@@ -306,7 +306,11 @@
     "test_n": 363,
     "test_days": 17,
     "test_edge": -0.8912,
-    "test_t": -2.15
+    "test_t": -2.15,
+    "test_ci95": [
+     -1.0684,
+     -0.5313
+    ]
    },
    {
     "cell": "gas daily | price band 10-30c | 3h before close | buy yes",
@@ -334,7 +338,11 @@
     "test_n": 27,
     "test_days": 15,
     "test_edge": 0.0205,
-    "test_t": 0.72
+    "test_t": 0.72,
+    "test_ci95": [
+     0.017,
+     0.0247
+    ]
    },
    {
     "cell": "gas daily | price band 1-10c | 3h before close | buy no",
@@ -349,7 +357,11 @@
     "test_n": 195,
     "test_days": 17,
     "test_edge": -1.0681,
-    "test_t": -1.96
+    "test_t": -1.96,
+    "test_ci95": [
+     -1.0685,
+     -1.0677
+    ]
    },
    {
     "cell": "gas daily | price band 10-30c | 3h before close | buy no",
@@ -384,7 +396,11 @@
     "test_n": 31,
     "test_days": 16,
     "test_edge": 0.0184,
-    "test_t": 0.73
+    "test_t": 0.73,
+    "test_ci95": [
+     0.0151,
+     0.0215
+    ]
    },
    {
     "cell": "gas daily | price band 1-10c | 12h before close | buy yes",
@@ -399,7 +415,11 @@
     "test_n": 330,
     "test_days": 17,
     "test_edge": -1.0676,
-    "test_t": -2.63
+    "test_t": -2.63,
+    "test_ci95": [
+     -1.068,
+     -1.0672
+    ]
    },
    {
     "cell": "gas daily | price band 10-30c | 12h before close | buy yes",
@@ -407,7 +427,11 @@
     "test_n": 25,
     "test_days": 17,
     "test_edge": -0.8311,
-    "test_t": -1.96
+    "test_t": -1.96,
+    "test_ci95": [
+     -1.0576,
+     -0.2767
+    ]
    },
    {
     "cell": "gas daily | price band 30-50c | 12h before close | buy yes",
@@ -438,7 +462,11 @@
     "test_n": 34,
     "test_days": 16,
     "test_edge": -0.0367,
-    "test_t": -1.01
+    "test_t": -1.01,
+    "test_ci95": [
+     -0.1073,
+     0.0242
+    ]
    },
    {
     "cell": "gas daily | price band 1-10c | 12h before close | buy no",
@@ -453,7 +481,11 @@
     "test_n": 178,
     "test_days": 17,
     "test_edge": -0.5167,
-    "test_t": -1.0
+    "test_t": -1.0,
+    "test_ci95": [
+     -1.0678,
+     0.1702
+    ]
    },
    {
     "cell": "gas daily | price band 10-30c | 12h before close | buy no",
@@ -477,7 +509,11 @@
     "test_n": 21,
     "test_days": 14,
     "test_edge": 0.0814,
-    "test_t": 1.27
+    "test_t": 1.27,
+    "test_ci95": [
+     0.0773,
+     0.087
+    ]
    },
    {
     "cell": "gas daily | price band 95-99c | 12h before close | buy no",
@@ -492,7 +528,11 @@
     "test_n": 46,
     "test_days": 17,
     "test_edge": 0.0216,
-    "test_t": 0.97
+    "test_t": 0.97,
+    "test_ci95": [
+     0.0184,
+     0.0248
+    ]
    },
    {
     "cell": "gas daily | price band 1-10c | 24h before close | buy yes",
@@ -556,7 +596,11 @@
     "test_n": 44,
     "test_days": 3,
     "test_edge": -1.0692,
-    "test_t": -0.73
+    "test_t": -0.73,
+    "test_ci95": [
+     -1.0693,
+     -1.0692
+    ]
    },
    {
     "cell": "media charts | price band 10-30c | 3h before close | buy yes",
@@ -588,7 +632,11 @@
     "test_n": 84,
     "test_days": 3,
     "test_edge": -1.0686,
-    "test_t": -1.08
+    "test_t": -1.08,
+    "test_ci95": [
+     -1.0693,
+     -1.0679
+    ]
    },
    {
     "cell": "media charts | price band 10-30c | 3h before close | buy no",
@@ -620,7 +668,11 @@
     "test_n": 48,
     "test_days": 3,
     "test_edge": -1.0689,
-    "test_t": -0.82
+    "test_t": -0.82,
+    "test_ci95": [
+     -1.0691,
+     -1.0686
+    ]
    },
    {
     "cell": "media charts | price band 10-30c | 12h before close | buy yes",
@@ -652,7 +704,11 @@
     "test_n": 94,
     "test_days": 3,
     "test_edge": -1.069,
-    "test_t": -1.11
+    "test_t": -1.11,
+    "test_ci95": [
+     -1.0693,
+     -1.0689
+    ]
    },
    {
     "cell": "media charts | price band 10-30c | 12h before close | buy no",
@@ -684,7 +740,11 @@
     "test_n": 46,
     "test_days": 3,
     "test_edge": -1.0674,
-    "test_t": -0.97
+    "test_t": -0.97,
+    "test_ci95": [
+     -1.0689,
+     -1.0664
+    ]
    },
    {
     "cell": "media charts | price band 10-30c | 24h before close | buy yes",
@@ -716,7 +776,11 @@
     "test_n": 91,
     "test_days": 3,
     "test_edge": -1.0684,
-    "test_t": -1.2
+    "test_t": -1.2,
+    "test_ci95": [
+     -1.0688,
+     -1.0681
+    ]
    },
    {
     "cell": "media charts | price band 10-30c | 24h before close | buy no",
@@ -755,7 +819,11 @@
     "test_n": 175,
     "test_days": 12,
     "test_edge": -0.783,
-    "test_t": -1.49
+    "test_t": -1.49,
+    "test_ci95": [
+     -1.0682,
+     -0.1933
+    ]
    },
    {
     "cell": "rates+fx | price band 10-30c | 3h before close | buy yes",
@@ -818,7 +886,11 @@
     "test_n": 25,
     "test_days": 6,
     "test_edge": -0.0237,
-    "test_t": -0.57
+    "test_t": -0.57,
+    "test_ci95": [
+     -0.1845,
+     0.0207
+    ]
    },
    {
     "cell": "rates+fx | price band 1-10c | 12h before close | buy yes",
@@ -833,7 +905,11 @@
     "test_n": 111,
     "test_days": 12,
     "test_edge": -0.744,
-    "test_t": -1.33
+    "test_t": -1.33,
+    "test_ci95": [
+     -1.0679,
+     -0.2053
+    ]
    },
    {
     "cell": "rates+fx | price band 10-30c | 12h before close | buy yes",
@@ -903,7 +979,11 @@
     "test_n": 42,
     "test_days": 4,
     "test_edge": -0.0091,
-    "test_t": -0.46
+    "test_t": -0.46,
+    "test_ci95": [
+     -0.0387,
+     0.0142
+    ]
    },
    {
     "cell": "rates+fx | price band 1-10c | 24h before close | buy yes",
@@ -974,7 +1054,11 @@
     "test_n": 111,
     "test_days": 17,
     "test_edge": -0.2774,
-    "test_t": -0.8
+    "test_t": -0.8,
+    "test_ci95": [
+     -0.828,
+     0.331
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 6c | 3h before close | buy yes",
@@ -989,7 +1073,11 @@
     "test_n": 95,
     "test_days": 17,
     "test_edge": -0.3784,
-    "test_t": -0.69
+    "test_t": -0.69,
+    "test_ci95": [
+     -1.0654,
+     0.5314
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 10c | 3h before close | buy yes",
@@ -1004,7 +1092,11 @@
     "test_n": 82,
     "test_days": 17,
     "test_edge": -0.6504,
-    "test_t": -1.06
+    "test_t": -1.06,
+    "test_ci95": [
+     -1.0661,
+     0.3367
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 3c | 3h before close | buy no",
@@ -1019,7 +1111,11 @@
     "test_n": 53,
     "test_days": 16,
     "test_edge": -1.0634,
-    "test_t": -1.21
+    "test_t": -1.21,
+    "test_ci95": [
+     -1.0686,
+     -1.0581
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 6c | 3h before close | buy no",
@@ -1034,7 +1130,11 @@
     "test_n": 43,
     "test_days": 14,
     "test_edge": -1.0627,
-    "test_t": -1.15
+    "test_t": -1.15,
+    "test_ci95": [
+     -1.0685,
+     -1.0576
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 10c | 3h before close | buy no",
@@ -1049,7 +1149,11 @@
     "test_n": 30,
     "test_days": 12,
     "test_edge": -1.0615,
-    "test_t": -1.05
+    "test_t": -1.05,
+    "test_ci95": [
+     -1.0684,
+     -1.0564
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 3c | 12h before close | buy yes",
@@ -1064,7 +1168,11 @@
     "test_n": 106,
     "test_days": 17,
     "test_edge": -0.4908,
-    "test_t": -1.85
+    "test_t": -1.85,
+    "test_ci95": [
+     -0.8322,
+     -0.0983
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 6c | 12h before close | buy yes",
@@ -1079,7 +1187,11 @@
     "test_n": 91,
     "test_days": 17,
     "test_edge": -0.3886,
-    "test_t": -1.3
+    "test_t": -1.3,
+    "test_ci95": [
+     -0.7671,
+     0.0187
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 10c | 12h before close | buy yes",
@@ -1094,7 +1206,11 @@
     "test_n": 81,
     "test_days": 17,
     "test_edge": -0.3758,
-    "test_t": -1.25
+    "test_t": -1.25,
+    "test_ci95": [
+     -0.7607,
+     0.0353
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 3c | 12h before close | buy no",
@@ -1109,7 +1225,11 @@
     "test_n": 52,
     "test_days": 15,
     "test_edge": 0.5063,
-    "test_t": 0.89
+    "test_t": 0.89,
+    "test_ci95": [
+     -0.5843,
+     1.7793
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 6c | 12h before close | buy no",
@@ -1124,7 +1244,11 @@
     "test_n": 38,
     "test_days": 13,
     "test_edge": -0.1455,
-    "test_t": -0.24
+    "test_t": -0.24,
+    "test_ci95": [
+     -1.062,
+     0.5046
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 10c | 12h before close | buy no",
@@ -1139,7 +1263,11 @@
     "test_n": 27,
     "test_days": 12,
     "test_edge": -0.3544,
-    "test_t": -0.46
+    "test_t": -0.46,
+    "test_ci95": [
+     -1.0664,
+     0.5682
+    ]
    },
    {
     "cell": "gas momentum model says underpriced by >= 3c | 24h before close | buy yes",
