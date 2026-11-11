@@ -86,6 +86,7 @@ function build(rc, scene, camera, canvas, o) {
   }
   function dropClose(i) { const f = close.get(i); if (!f) return; f.userData.dispose(); close.delete(i); crowd.userData.setVisible(i, true); }
 
+  let driver = null;     // SCENE DIRECTION HOOK (symposium/direct.js): after the hall places its standing camera, the director may move it (establishing shot, conversation close-ups)
   const st = { yaw: 0, goal: null, vel: 0, auto: !reduced, active: -1, activeT: 0, voice: false, t: 0, idle: 0, w: 1, h: 1, walk: null };
   const ray = new THREE.Raycaster(), v = new THREE.Vector3(), ndc = new THREE.Vector2(), look = new THREE.Vector3(), camPos = new THREE.Vector3();
   function placeCam() {
@@ -103,7 +104,7 @@ function build(rc, scene, camera, canvas, o) {
     if (st.goal != null) { const dlt = turn(st.yaw, st.goal); if (Math.abs(dlt) < 0.004 || reduced) { st.yaw = st.goal; st.goal = null; } else st.yaw += dlt * Math.min(1, dt * 4.5); }
     else if (Math.abs(st.vel) > 0.0004) { st.yaw += st.vel; st.vel *= Math.pow(0.04, dt); }
     else if (st.auto && st.active < 0) { st.idle += dt; if (st.idle > 2.5) st.yaw += dt * 0.045; }
-    placeCam(); syncClose(); camPos.copy(camera.position);
+    placeCam(); if (driver) { try { driver(dt, st); } catch (_) { /* the hall's own camera stays */ } } syncClose(); camPos.copy(camera.position);
     // who looks where: everyone looks at the one who talks; with nobody talking the close-ups notice you, the crowd looks around
     const talker = st.active >= 0 ? crowd.userData.headWorld(st.active, look) : null;
     crowd.userData.lookAll(talker);
@@ -165,6 +166,10 @@ function build(rc, scene, camera, canvas, o) {
     drawCalls: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && x.visible) n++; }); return n; },      // one draw per mesh: every repeated thing is instanced
     triangles: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && x.visible && x.geometry) { const g = x.geometry, c = g.index ? g.index.count : g.getAttribute('position').count; n += (c / 3) * (x.isInstancedMesh ? x.count : 1); } }); return Math.round(n); },
     closeUps: () => [...close.keys()],
+    // ---- SCENE DIRECTION HOOKS (symposium/direct.js + olympus/camera-rig.js)
+    drive(fn) { driver = typeof fn === 'function' ? fn : null; return !!driver; },
+    front: () => front(L, st.yaw + Math.PI, Math.min(5, N)),
+    refs() { return { THREE, scene, camera, canvas, rc, r, tr, layout: L, reduced, head: (i, out) => crowd.userData.headWorld(i, out || new THREE.Vector3()), cine: () => cine, look: () => ({ x: -Math.sin(st.yaw) * r, y: 1.02, z: -Math.cos(st.yaw) * r }) }; },
     stageFor(i) { if (!L.seats[i]) return null; if (st.active !== i) { api.focus(i); api.active(i); } closeUp(i); return { seat: i, project: () => api.project(i) }; },
     release() { if (st.walk) { const w = st.walk; st.walk = null; if (w.done) w.done(false); } api.active(-1); },
     speaking: () => st.active,

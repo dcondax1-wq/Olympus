@@ -335,7 +335,7 @@ const role = (p) => {
   if (p.kind === 'champion') return p.fallen ? 'a rejected idea from the Archive' : 'an adopted run from the Archive';
   const t = String(p.title || '').trim();
   if (p.kind === 'villager' || /^Lives in /.test(t)) return 'the voice of the ' + (p.appName || t.replace(/^Lives in /, '') || 'local') + ' app';
-  if (p.kind === 'builder' && / builder$/i.test(t)) return 'a builder: my job is the ' + lowerFirst(t.replace(/ builder$/i, ''));
+  if (p.kind === 'builder' && / builder$/i.test(t)) return 'one of the builders, on the ' + t.replace(/ builder$/i, '') + ' job';
   if (/^[^:]{2,30}: /.test(t)) { const m = /^([^:]+): (.+)$/.exec(t); return 'the worker behind ' + m[1] + ' (' + lowerFirst(m[2]) + ')'; }
   return /^(The|A|An) /.test(t) ? lowerFirst(t) : 'the ' + lowerFirst(t || 'keeper of this place');
 };
@@ -370,7 +370,7 @@ export function highlight(person, facts) {
     const net = numT(f, /^2026 net$/), pf = numT(f, /^2026 profit factor$/), old = numT(f, /^Earlier years, net$/);
     if (net) return 'In 2026 I made ' + net + (pf ? ' with a profit factor of ' + pf : '') + ', after costs.' + (old ? ' In the earlier years: ' + old + '.' : '');
   }
-  if (p.kind === 'builder') { const n = numT(f, /^Commits on my branch$/); if (lastLine || n) return (lastLine || '') + (n ? ' I have ' + n + ' commits on my branch.' : ''); }
+  if (p.kind === 'builder') { const n = numT(f, /^Commits on my branch$/); if (lastLine || n) return (lastLine || '') + (n ? ' I have ' + n + ' commits on my branch.' : ''); if (/^My job: /.test(f.doing || '')) return sentence(String(f.doing).replace(/^My job: (.)/, (m, c) => 'My job is ' + c.toLowerCase())); }
   if (p.kind === 'mind') { const n = numT(f, /^Ideas tested$/); if (n) return 'So far I have tested ' + n + ' ideas, and I only suggest.'; }
   if (id === 'job:queue') { const a = numT(f, /^Open tasks$/), b = numT(f, /^Done tasks$/); if (a) return 'There are ' + a + ' open tasks on my list' + (b ? ' and ' + b + ' done' : '') + '.'; }
   if (id === 'job:prometheus') { const b = numT(f, /^Beat live on both halves$/); if (b) return b + ' of my candidates beat live on both halves.'; }

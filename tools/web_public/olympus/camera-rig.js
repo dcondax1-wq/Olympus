@@ -105,11 +105,11 @@ export function createRig(camera, opts) {
       const side = P.side || 1, close = S.shotT > (P.two == null ? 1.8 : P.two) || P.closeOnly;
       if (!close) {
         const pos = v3(hA.x - fx * 1.05 + rx * 0.55 * side, hA.y + 0.18, hA.z - fz * 1.05 + rz * 0.55 * side);
-        return { pos, look: v3(lerp(hA.x, hB.x, 0.72), hB.y - 0.12, lerp(hA.z, hB.z, 0.72)), pivot: hA, smooth: 0.45, phase: 'two-shot' };
+        return { pos, look: v3(lerp(hA.x, hB.x, 0.72), hB.y - 0.12 - (P.lookDown || 0) * 0.6, lerp(hA.z, hB.z, 0.72)), pivot: hA, smooth: 0.45, phase: 'two-shot' };
       }
-      const k = reduced ? 0 : smooth((S.shotT - (P.two == null ? 1.8 : P.two)) / 7), back = 1.75 - 0.3 * k;
+      const k = reduced ? 0 : smooth((S.shotT - (P.two == null ? 1.8 : P.two)) / 7), back = (P.back || 1.6) - 0.28 * k;
       const pos = v3(hB.x - fx * back + rx * 0.42 * side, hB.y + 0.05, hB.z - fz * back + rz * 0.42 * side);
-      return { pos, look: v3(hB.x, hB.y - 0.06, hB.z), pivot: hB, smooth: 0.65, phase: 'close-up' };
+      return { pos, look: v3(hB.x, hB.y - 0.06 - (P.lookDown || 0), hB.z), pivot: hB, smooth: 0.65, phase: 'close-up' };      // lookDown: the face sits higher in the frame (a chat sheet covers the bottom)
     }
     // follow (and the end of an establishing shot)
     const hp = head(T);
@@ -122,9 +122,10 @@ export function createRig(camera, opts) {
     const cp = Math.cos(S.pitch), pos = v3(look.x - Math.sin(S.az) * cp * dist, look.y + Math.sin(S.pitch) * dist, look.z - Math.cos(S.az) * cp * dist);
     let out = { pos, look, pivot: hp, smooth: 0.28 };
     if (S.mode === 'establish') {
-      const E = P, k = reduced ? 1 : smooth(S.shotT / (E.dur || 3)), a = E.from || pos, la = E.look || look;
-      out = { pos: v3(lerp(a.x, pos.x, k), lerp(a.y, pos.y, k), lerp(a.z, pos.z, k)), look: v3(lerp(la.x, look.x, k), lerp(la.y, look.y, k), lerp(la.z, look.z, k)), pivot: E.pivot && k < 0.6 ? v3(E.pivot.x, E.pivot.y, E.pivot.z) : hp, smooth: 0.08, phase: k >= 1 ? 'landed' : 'gliding' };
-      if (k >= 1 && S.shotT > (E.dur || 3)) { S.mode = 'follow'; if (typeof E.done === 'function') { const d = E.done; E.done = null; try { d(); } catch (_) { /* fine */ } } }
+      // from a wide pose (E.from, E.look) down into the follow camera, or into E.to = { pos, look, pivot } (a scene with no player: Symposium's place at the table)
+      const E = P, k = reduced ? 1 : smooth(S.shotT / (E.dur || 3)), a = E.from || pos, la = E.look || look, ep = E.to ? E.to.pos : pos, el = E.to ? E.to.look : look, epv = E.to ? (E.to.pivot || E.to.pos) : hp;
+      out = { pos: v3(lerp(a.x, ep.x, k), lerp(a.y, ep.y, k), lerp(a.z, ep.z, k)), look: v3(lerp(la.x, el.x, k), lerp(la.y, el.y, k), lerp(la.z, el.z, k)), pivot: E.pivot && k < 0.6 ? v3(E.pivot.x, E.pivot.y, E.pivot.z) : v3(epv.x, epv.y, epv.z), smooth: 0.08, phase: k >= 1 ? 'landed' : 'gliding' };
+      if (k >= 1 && S.shotT > (E.dur || 3)) { if (E.to && E.next) { S.mode = E.next; S.params = E.nextParams || E.to; S.shotT = 0; } else S.mode = 'follow'; if (typeof E.done === 'function') { const d = E.done; E.done = null; try { d(); } catch (_) { /* fine */ } } }
     }
     return out;
   }

@@ -167,7 +167,7 @@ export function createDirector(floor, opts) {
     hud.closeRing(); hud.clearCta(); S.mode = 'talk'; S.talkKey = key; walker.stop();
     const me = walker.pos; walker.faceTo(Math.atan2(q.x - me.x, q.z - me.z));
     const side = ((q.x - me.x) * Math.cos(rig.state().az) - (q.z - me.z) * Math.sin(rig.state().az)) > 0 ? -1 : 1;
-    rig.shot('talk', { a: { x: me.x, y: 0, z: me.z, h: 1.3 }, b: { x: q.x, y: q.y, z: q.z, h: 1.4 }, side, two: 1.9 });
+    rig.shot('talk', { a: { x: me.x, y: 0, z: me.z, h: 1.3 }, b: { x: q.x, y: q.y, z: q.z, h: 1.4 }, side, two: 1.9, lookDown: 0.3 });
     return true;
   }
   function endTalk() { if (S.mode !== 'talk') return; S.mode = 'walk'; S.talkKey = ''; rig.shot('follow'); }

@@ -301,21 +301,27 @@ function mountHall() {
   $('stage').hidden = false;
   const hl = M.createHall($('hall3d'), { reduced, people: S.people.map((p) => P.spec(p.id)), onFrame: () => { placeTags(); if (S.cardPlace) S.cardPlace(); const st = $('stage'), on = !!st.querySelector('.pp-say'); if (on !== st.classList.contains('speaking')) st.classList.toggle('speaking', on); } });      // the name tags step aside while a bubble is up
   if (!hl || !hl.ok) { $('stage').hidden = true; S.hall = null; S.why = hl && hl.reason; return false; }
-  S.hall = hl; S.view = 'hall'; mountStage();
+  S.hall = hl; S.view = 'hall'; mountStage(); direct(hl);
   const box = $('hallTags'); clear(box); S.tagBtns = [];
   S.people.forEach((p) => { const b = h('button', 'htag'); b.type = 'button'; b.hidden = true; b.setAttribute('aria-label', 'Talk to ' + p.name + ', ' + p.title); b.appendChild(P.portrait(p.id, 44, { uid: 'h3' })); b.appendChild(h('span', 'htagname', p.name)); b.addEventListener('click', () => talk(p.id, b)); box.appendChild(b); S.tagBtns.push(b); });
   placeTags();
   return true;
 }
+// SCENE DIRECTION (direct.js + olympus/camera-rig.js, 2026-11-11): the establishing shot, the greeter, the conversation camera. ?direct=0 keeps the plain hall.
+function direct(hl) {
+  if (S.dir) { try { S.dir.dispose(); } catch (_) { /* gone */ } } S.dir = null;
+  if (QS.get('direct') === '0' || !hl.drive) return;
+  import('./direct.js?v=d1').then((D) => { if (S.hall !== hl) return; S.dir = D.createDirector(hl, { box: $('stage'), people: () => S.people, kit: () => P, onTalk: (id) => talk(id, $('viewBtn')) }); window.SYM_DIRECTOR = S.dir; S.dir.start(); }).catch(() => {});
+}
 function wireHall() {
   const cv = $('hall3d'); let down = null;
   cv.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, last: e.clientX, moved: 0, id: e.pointerId }; try { cv.setPointerCapture(e.pointerId); } catch (_) { /* fine */ } });
-  cv.addEventListener('pointermove', (e) => { if (!down || down.id !== e.pointerId || !S.hall) return; const dx = e.clientX - down.last; down.last = e.clientX; down.moved += Math.abs(dx); if (down.moved > 6) S.hall.spin(dx); });
+  cv.addEventListener('pointermove', (e) => { if (!down || down.id !== e.pointerId || !S.hall) return; const dx = e.clientX - down.last; down.last = e.clientX; down.moved += Math.abs(dx); if (down.moved > 6) { S.hall.spin(dx); if (S.dir) S.dir.spun(); } });
   const up = (e) => { if (!down || down.id !== e.pointerId) return; const tap = down.moved <= 6 && Math.abs(e.clientY - down.y) <= 8; down = null; if (tap && S.hall && S.hall.ok) { const i = S.hall.pick(e.clientX, e.clientY); if (i >= 0 && S.people[i]) talk(S.people[i].id, cv); } };
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', () => { down = null; });
   cv.addEventListener('keydown', (e) => { if (!S.hall || !S.hall.ok) return; if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); S.hall.setYaw(S.hall.yaw() + (e.key === 'ArrowLeft' ? -0.2 : 0.2)); placeTags(); } });
   $('viewBtn').addEventListener('click', () => {
-    if (S.view === 'hall') { P.stage(null); if (S.hall) { try { S.hall.dispose(); } catch (_) { /* gone */ } } S.hall = null; S.view = 'wall'; S.canTry = true; $('stage').hidden = true; }
+    if (S.view === 'hall') { P.stage(null); if (S.dir) { try { S.dir.dispose(); } catch (_) { /* gone */ } S.dir = null; } if (S.hall) { try { S.hall.dispose(); } catch (_) { /* gone */ } } S.hall = null; S.view = 'wall'; S.canTry = true; $('stage').hidden = true; }
     else if (!mountHall()) { S.canTry = false; say('3D is not available on this device; the list stays.'); }
     paintView();
   });
