@@ -514,6 +514,24 @@
     "kind": "tiles",
     "ms": 800
    }
+  },
+  {
+   "id": "herald",
+   "name": "Herald",
+   "group": "life",
+   "accent": "#c8a24a",
+   "description": "The daily paper: who built what, the day, the verdicts, all sourced",
+   "glyph": "Η",
+   "ambient": "scroll",
+   "flavour": [
+    "columns",
+    "Unroll the news",
+    "tap"
+   ],
+   "transition": {
+    "kind": "tiles",
+    "ms": 800
+   }
   }
  ],
  "pending": [],
