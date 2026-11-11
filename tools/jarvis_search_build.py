@@ -164,7 +164,7 @@ def runs(src: Src) -> list:
 
 def rejected(src: Src) -> list:
     idx = src.json("archive/index.json") or {}
-    return [["rejected", one(r.get("title"), 90), one(r.get("text"), 220), "archive", "#find=" + one(r.get("title"), 40), one(r.get("src") or "archive/index.json", 40)]
+    return [["rejected", one(r.get("title"), 90), one(r.get("text"), 220), "archive", "#find=" + (str((r.get("writeups") or [""])[0]) or one(r.get("title"), 40).rstrip("…")), one(r.get("src") or "archive/index.json", 40)]
             for r in idx.get("rejected") or [] if isinstance(r, dict) and r.get("title")]
 
 
