@@ -41,8 +41,8 @@
 // v17 (2026-11-03 evening): smart-mode tools (tools.js), Jarvis talks by default (voice-out.js, jarvis.css?v=j13).
 // v24 (2026-11-04, bug hunt): bots.js + bots-ui.js (Jarvis x the bots), transitions.js?v=t1, briefing.js?v=r1, home3d.js + home3d.css?v=h1, the voice engines (voice-engines.js, prosody.js, kokoro-engine.js, kalshi-brain.js: the 115 MB model is never in this cache) and olympus/themes.js join the saved parts.
 // v22 (2026-11-04): the Bridge is a built-in app; Jarvis opens the ChatGPT wizard (brain.js, modes.js, apps.js).
-const CACHE = 'jarvis-v31';
-const OLD = ['jarvis-v30', 'jarvis-v29', 'jarvis-v28', 'jarvis-v27', 'jarvis-v26', 'jarvis-v25', 'jarvis-v24', 'jarvis-v23', 'jarvis-v22', 'jarvis-v21', 'jarvis-v20', 'jarvis-v19', 'jarvis-v18', 'jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
+const CACHE = 'jarvis-v32';
+const OLD = ['jarvis-v31', 'jarvis-v30', 'jarvis-v29', 'jarvis-v28', 'jarvis-v27', 'jarvis-v26', 'jarvis-v25', 'jarvis-v24', 'jarvis-v23', 'jarvis-v22', 'jarvis-v21', 'jarvis-v20', 'jarvis-v19', 'jarvis-v18', 'jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j5', './apple-touch-icon.png?v=j4', './icon-192.png?v=j4', './icon-512.png?v=j4',
