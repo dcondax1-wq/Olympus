@@ -286,10 +286,15 @@ def launch(pw):
                               **({"executable_path": exe[-1]} if exe else {}))
 
 
-def measure(br, url, cpu=4, net="fast3g", timeout_s=90):
+LOWEND = "Object.defineProperty(Navigator.prototype, 'deviceMemory', { get: () => 2, configurable: true });"
+
+
+def measure(br, url, cpu=4, net="fast3g", timeout_s=90, lowend=False):
     ctx = br.new_context(viewport={"width": W, "height": H}, device_scale_factor=2, is_mobile=True, has_touch=True,
                          service_workers="block")
     ctx.add_init_script(INIT)
+    if lowend:      # a 2 GB device: the kit's LITE auto-detection starts it on low
+        ctx.add_init_script(LOWEND)
     pg = ctx.new_page()
     try:
         cdp = ctx.new_cdp_session(pg)
@@ -316,6 +321,7 @@ def main(argv=None):
     ap.add_argument("--json")
     ap.add_argument("--cpu", type=float, default=4)
     ap.add_argument("--net", default="fast3g")
+    ap.add_argument("--lowend", action="store_true", help="report navigator.deviceMemory = 2 (a low-end device: LITE by itself)")
     ap.add_argument("--extra", nargs="*", default=[], help="extra single .html files served next to the site (e.g. olympus-live.html)")
     a = ap.parse_args(argv)
     from playwright.sync_api import sync_playwright
@@ -337,7 +343,7 @@ def main(argv=None):
             else:
                 url = page_url(base, name)
             t = time.time()
-            r = measure(br, url, a.cpu, a.net)
+            r = measure(br, url, a.cpu, a.net, lowend=a.lowend)
             r["wall_s"] = round(time.time() - t, 1)
             rows.append((name, r))
             print(name, json.dumps(r), flush=True)
@@ -346,7 +352,7 @@ def main(argv=None):
     print("\n".join(table_lines(rows)))
     if a.json:
         with open(a.json, "w") as fh:
-            json.dump({"cpu": a.cpu, "net": a.net, "rows": dict(rows)}, fh, indent=1)
+            json.dump({"cpu": a.cpu, "net": a.net, "lowend": a.lowend, "rows": dict(rows)}, fh, indent=1)
     return 0
 
 
