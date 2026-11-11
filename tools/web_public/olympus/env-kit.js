@@ -387,17 +387,17 @@ function makeBuilder(kit) {
       const h = o.h ?? 1.0, r = o.r ?? 0.32, seg = kit.lite ? 10 : 18;
       for (let k = 0; k < 3; k++) { const a = k * 2.094; B.add('bronze', new THREE.CylinderGeometry(0.022, 0.03, h, 6), mat4(o.x + Math.sin(a) * r * 0.55, h / 2, o.z + Math.cos(a) * r * 0.55, 0, 1, -Math.cos(a) * 0.2, Math.sin(a) * 0.2)); }
       B.lathe('bronze', [[0.0001, 0], [r * 0.45, 0.02], [r * 0.85, r * 0.3], [r, r * 0.55], [r * 1.08, r * 0.6], [r * 0.95, r * 0.6]], o.x, h - 0.05, o.z, 1, seg);
-      B.cyl('ink', o.x, h - 0.05 + r * 0.5, o.z, r * 0.88, r * 0.7, 0.06, seg, 0, '#3a2418');
+      B.cyl('bronze', o.x, h - 0.05 + r * 0.5, o.z, r * 0.88, r * 0.7, 0.06, seg, 0, '#2a1a10');
       return B;
     },
     /** a blacksmith's anvil on a wooden stump */
     anvil(o) {
-      const s = o.s ?? 1, ry = o.ry || 0;
-      B.cyl('wood', o.x, 0.28 * s, o.z, 0.22 * s, 0.25 * s, 0.56 * s, 12, ry, o.wood);
+      const s = o.s ?? 1, ry = o.ry || 0, y0 = o.y || 0;
+      B.cyl(o.stump || 'wood', o.x, y0 + 0.28 * s, o.z, 0.22 * s, 0.25 * s, 0.56 * s, 12, ry, o.wood);
       const sh = new THREE.Shape(); sh.moveTo(-0.32, 0); sh.lineTo(0.2, 0); sh.lineTo(0.22, 0.06); sh.lineTo(0.12, 0.1); sh.lineTo(0.12, 0.2); sh.lineTo(0.3, 0.22);
       sh.quadraticCurveTo(0.44, 0.26, 0.5, 0.32); sh.lineTo(0.22, 0.34); sh.lineTo(-0.3, 0.34); sh.lineTo(-0.34, 0.26); sh.lineTo(-0.18, 0.2); sh.lineTo(-0.18, 0.1); sh.lineTo(-0.34, 0.06); sh.closePath();
       const g = new THREE.ExtrudeGeometry(sh, { depth: 0.18, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.012, bevelSegments: 1 }); g.translate(0, 0, -0.09);
-      B.add('iron', g, mat4(o.x, 0.56 * s, o.z, ry, s));
+      B.add('iron', g, mat4(o.x, y0 + 0.56 * s, o.z, ry, s));
       return B;
     },
     /** a scroll (rolled papyrus) lying at (x, y, z) */

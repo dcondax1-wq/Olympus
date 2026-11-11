@@ -95,8 +95,8 @@ export function buildRoom(scene, rc, Lay, o) {
     B.add('plaster:uv', bandGeo(R3, 3.77, CH + 0.88 - 3.77, seg, true, a0, a1), null, '#c7b08a');
     // the doorway: two ashlar posts and a lintel
     const dA = doors[k], cx = Math.sin(dA) * R3, cz = Math.cos(dA) * R3, tx = Math.cos(dA), tz = -Math.sin(dA);
-    for (const s of [-1, 1]) B.add('ashlar', boxGeo(0.34, 3.0, 0.5), mat4(cx + tx * s * 1.0, 1.5, cz + tz * s * 1.0, dA), '#cdbd9f');
-    B.add('ashlar', boxGeo(2.4, 0.4, 0.56), mat4(cx, 3.2, cz, dA), '#cdbd9f');
+    for (const s of [-1, 1]) B.add('ashlar:uv', boxGeo(0.34, 3.0, 0.5), mat4(cx + tx * s * 1.0, 1.5, cz + tz * s * 1.0, dA), '#cdbd9f');
+    B.add('ashlar:uv', boxGeo(2.4, 0.4, 0.56), mat4(cx, 3.2, cz, dA), '#cdbd9f');
     B.add('plaster:uv', boxGeo(2.0, CH + 0.88 - 3.4, 0.3), mat4(cx, 3.4 + (CH + 0.88 - 3.4) / 2, cz, dA), '#e3d6c0');
   }
   // frescoes between the doorways: Pompeian red panels with a black frame and a small painted vignette; a bronze shield above every other one
