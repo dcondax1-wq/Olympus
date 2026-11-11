@@ -157,7 +157,7 @@ def test_static():
     check("1. UNDO_UPDATE.bat: runs the updater with --undo from a temp copy of the tool (the undo may remove the tool itself)", "--undo" in undo.decode() and 'le_update_from_zip.py" --undo' in undo.decode())
     src = rb(TOOL).decode("utf-8")
     imports = set(re.findall(r"^(?:import|from)\s+([a-zA-Z_][\w.]*)", src, re.M)) - {"__future__"}
-    std = {"argparse", "datetime", "fnmatch", "glob", "hashlib", "json", "os", "re", "shutil", "socket", "subprocess", "sys", "time", "zipfile"}
+    std = {"argparse", "datetime", "glob", "hashlib", "json", "os", "re", "shutil", "socket", "subprocess", "sys", "time", "zipfile"}
     check("1. the tool is stdlib only and does not import the bot (it also runs from %TEMP%, outside the repo)", imports <= std, imports - std)
     code = re.sub(r'""".*?"""', "", src, flags=re.S)
     check("1. the tool has no network client, never kills a process, never runs git, never deletes a folder outside its own backups, no zoneinfo",
@@ -198,6 +198,13 @@ def test_units():
                              "backups/2026/x.json", "data/live_state_fleet7.json", "data/pc_publish/site/index.html", "PC_REPORT-1.txt", "data/brain/2026-11-10.jsonl", "data/x_pause.json"))
           and not any(m(x) for x in ("engine/lit.py", "live_model.json", "data/NQ_5m.csv", "docs/logs.md", "tools/env.py", "data/alerts.example.json", "research/lit/lit_final.json", "UPDATE_FROM_ZIP.bat", "data/nt_bars.md")),
           [x for x in ("engine/lit.py", "live_model.json", "data/NQ_5m.csv", "docs/logs.md", "tools/env.py", "data/nt_bars.md") if m(x)])
+    check("2. a * stays inside one folder, as git reads it: data/clean/NQ.csv is ignored, the tracked data/clean/audit/x.csv is not; ** crosses folders; [ab] and ? work",
+          m("data/clean/NQ.csv") and not m("data/clean/audit/x.csv") and not m("data/clean/raw/NQ_5m_unadjusted.csv") and bool(U.matches("a/b/c/d.txt", ["a/**/d.txt"])) and not U.matches("a/b/c/d.txt", ["a/*/d.txt"])
+          and bool(U.matches("x/file1.log", ["file[12].lo?"])) and not U.matches("x/file3.log", ["file[12].lo?"]) and not U.matches("x/file13log", ["file[12].lo?"]))
+    tracked = subprocess.run(["git", "ls-files"], capture_output=True, text=True, cwd=ROOT).stdout.split("\n")
+    tracked = [t for t in tracked if t]
+    wrong = [t for t in tracked if U.matches(t, pats) or U.matches(t, U.HARD_LOCAL)]
+    check(f"2. not one of the repo's {len(tracked)} tracked files is taken for a local-only file (so every file of a real code zip can be updated)", len(tracked) > 1000 and not wrong, wrong[:8])
     hm = lambda rel: bool(U.matches(rel, U.HARD_LOCAL))  # noqa: E731
     check("2. the hard list: the owner's files and folders, in any letter case, and nothing of the code",
           all(hm(x) for x in ("data/alerts.json", "DATA/Alerts.json", "data/tv_device.json", "data/live_state.json", "data/live_state_acctc.json", "data/memory.db", "data/memory.db-shm", ".env", ".env.prod", "x/.env", "data/nt_bars/x.csv",
@@ -284,8 +291,8 @@ def test_flows():
               not any(k in after for k in ("logs/evil.log", "data/nt_bars/evil.csv", ".git/config", "data/live_state_atlas_v2.json")) and not os.path.exists(os.path.join(bot, "backups", "x.txt")))
         check("3. zip paths that try to leave the folder were skipped and said so: nothing in the parent folder, at the drive root or anywhere else",
               not os.path.exists(os.path.join(base, "evil_parent.txt")) and not os.path.exists(os.path.join(base, "evil_dots.txt")) and not os.path.exists("/abs_evil.txt") and not any("evil" in k for k in after) and "4 odd paths skipped" in lines[3], lines[3])
-        check("3. live_model_lit.json differs from the zip's: the LOCAL one is kept (room_f 0.6) and line 4 says 'live_model_lit.json differ from the zip: YOURS kept'",
-              rb(os.path.join(bot, "live_model_lit.json")).decode() == MODEL_LIT_LOCAL and "live_model_lit.json differ from the zip: YOURS kept" in lines[3], lines[3])
+        check("3. live_model_lit.json differs from the zip's: the LOCAL one is kept (room_f 0.6) and line 4 says 'live_model_lit.json: your values differ from the zip, YOURS kept'",
+              rb(os.path.join(bot, "live_model_lit.json")).decode() == MODEL_LIT_LOCAL and "live_model_lit.json: your values differ from the zip, YOURS kept" in lines[3], lines[3])
         check("3. live_model.json has the same values (other spacing, CRLF): not touched and not reported as different", after["live_model.json"] == before["live_model.json"] and "live_model.json " not in lines[3])
         check("3. nothing was deleted: the old folder's extra file (tools/old_tool.py) is still there", all(k in after for k in before), [k for k in before if k not in after])
         bdirs = sorted(os.listdir(os.path.join(bot, "backups", "update_from_zip")))

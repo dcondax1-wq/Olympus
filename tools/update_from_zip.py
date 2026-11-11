@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import fnmatch
 import glob
 import hashlib
 import json
@@ -117,8 +116,43 @@ def ignore_patterns(*texts: str) -> list[str]:
     return out
 
 
+_RX: dict = {}
+
+
+def _pat_regex(p: str):
+    """A gitignore glob as a regex: * and ? stay inside one path part, ** crosses parts."""
+    rx = _RX.get(p)
+    if rx is None:
+        out, i = "", 0
+        while i < len(p):
+            c = p[i]
+            if c == "*":
+                if p[i:i + 2] == "**":
+                    out += ".*"
+                    i += 2
+                    if p[i:i + 1] == "/":
+                        i += 1
+                    continue
+                out += "[^/]*"
+            elif c == "?":
+                out += "[^/]"
+            elif c == "[":
+                j = p.find("]", i + 2)
+                if j < 0:
+                    out += re.escape(c)
+                else:
+                    body = p[i + 1:j]
+                    out += "[" + ("^" + body[1:] if body[:1] == "!" else body).replace("\\", "\\\\") + "]"
+                    i = j
+            else:
+                out += re.escape(c)
+            i += 1
+        rx = _RX[p] = re.compile(out + r"\Z")
+    return rx
+
+
 def matches(rel: str, patterns) -> str | None:
-    """The first pattern (gitignore style) that names `rel` (forward slashes) or one of its parent folders."""
+    """The first pattern (gitignore style) that names `rel` (forward slashes) or one of its parent folders. Letter case is ignored (Windows)."""
     parts = rel.split("/")
     prefixes = ["/".join(parts[:i]) for i in range(1, len(parts) + 1)]
     low = [p.lower() for p in prefixes]
@@ -128,15 +162,16 @@ def matches(rel: str, patterns) -> str | None:
         if not p:
             continue
         anchored = "/" in p or pat.startswith("/")
+        rx = _pat_regex(p)
         cands = low[:-1] if dir_only else low
         for c in cands:
-            if fnmatch.fnmatchcase(c if anchored else c.rsplit("/", 1)[-1], p):
+            if rx.match(c if anchored else c.rsplit("/", 1)[-1]):
                 return pat
     return None
 
 
 def is_model(rel: str) -> bool:
-    return "/" not in rel and any(fnmatch.fnmatchcase(rel.lower(), p) for p in KEEP_IF_CHANGED)
+    return "/" not in rel and any(_pat_regex(p).match(rel.lower()) for p in KEEP_IF_CHANGED)
 
 
 def safe_rel(name: str) -> str | None:
@@ -391,7 +426,7 @@ def update(a) -> int:
         n_change = len(plan["add"]) + len(plan["replace"])
         kept_words = []
         if plan["kept_model"]:
-            kept_words.append(f"{short(plan['kept_model'])} differ from the zip: YOURS kept")
+            kept_words.append(f"{short(plan['kept_model'])}: your values differ from the zip, YOURS kept")
         kept_words.append(f"{len(plan['kept_local'])} local-only file{'s' if len(plan['kept_local']) != 1 else ''} in the zip left alone" if plan["kept_local"] else "your local-only files untouched")
         if plan["skipped"]:
             kept_words.append(f"{len(plan['skipped'])} odd path{'s' if len(plan['skipped']) != 1 else ''} skipped")
