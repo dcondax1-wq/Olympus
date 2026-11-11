@@ -103,8 +103,9 @@ const wait = (ms) => new Promise(r => setTimeout(r, ms));
   let m = mk({}); m.tap();
   out.musicDefault = m.s.musicState();
   m.s.ambient('coins'); m.s.music(true); out.musicBed = m.s.musicState().playing;
+  const st0 = m.log.starts;                                  // counted from the district switch: its first note is scheduled at once (a phrase never starts on a rest)
   m.s.district('research'); out.musicDistrict = m.s.musicState().playing; out.musicBad = m.s.district('jazz');
-  const st0 = m.log.starts; await wait(1500); out.musicNotes = m.log.starts - st0;
+  await wait(1500); out.musicNotes = m.log.starts - st0;
   out.musicStored = JSON.parse(m.store['olympus.sfx']).mu;
   m.s.music(false); out.musicOff = m.s.musicState().playing; m.s.ambientStop();
   // 11. sound('tap') plays a cue and leaves the switch alone; sound(false) silences world sounds and cues
@@ -224,7 +225,12 @@ class SfxEngineTest(unittest.TestCase):
         import re
         code = re.sub(r"/\*.*?\*/|//[^\n]*", "", JS.read_text(encoding="utf-8"), flags=re.S)
         self.assertFalse(re.search(r"=>|\blet\s|\bconst\s|`|\bclass\s|\basync\b", code))     # a classic ES5 script (old iPhones)
-        self.assertFalse(re.search(r"fetch\(|XMLHttpRequest|\.mp3|\.ogg|\.wav|https?:", code))   # all synthesised: no files, no network
+        # 2026-11-11 the recorded layer: the only network call is env.fetch(url) of our own assets/audio/ files (same origin, relative to sfx.js);
+        # no other host, no CDN, no XMLHttpRequest, no .mp3 / .wav
+        self.assertFalse(re.search(r"XMLHttpRequest|\.mp3\b|\.wav\b|https?:|cdn", code))
+        self.assertEqual(re.findall(r"\bfetch\(", code), ["fetch("])
+        self.assertIn("env.fetch(url)", code)
+        self.assertIn("url = smpBase() + stem + '.' + f", code)
 
 
 if __name__ == "__main__":

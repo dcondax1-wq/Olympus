@@ -27,12 +27,13 @@
   var KEY = 'olympus.sfx';
   var LEGACY = ['tick', 'tap', 'portal', 'thunder', 'rankup', 'pad'];                        // follow mute only (as before)
   var CUES = ['open', 'close', 'success', 'warning', 'swipe', 'toggle', 'notify', 'error', 'money', 'levelup'];   // follow the Sound switch
-  var WORLD = ['step-stone', 'step-sand', 'step-wood', 'hammer', 'quill', 'scroll', 'coin', 'crate', 'cheer', 'groan', 'door', 'fire'];
+  var WORLD = ['step-stone', 'step-sand', 'step-wood', 'hammer', 'quill', 'scroll', 'coin', 'crate', 'cheer', 'groan', 'door', 'fire', 'page', 'chime', 'drum', 'jingle'];
   var NAMES = LEGACY.concat(CUES, WORLD);
   var ALIAS = { notification: 'notify', ping: 'notify', bell: 'notify', 'money-in': 'money', moneyin: 'money', cash: 'money', 'level-up': 'levelup',
     levelUp: 'levelup', fail: 'error', alert: 'warning', ok: 'success', done: 'success', 'toggle-on': 'toggle', 'toggle-off': ['toggle', { on: false }],
-    'swipe-back': ['swipe', { dir: 'back' }], step: 'step-stone', footstep: 'step-stone', 'step-grass': 'step-sand', anvil: 'hammer', whoosh: 'fire',
-    unroll: 'scroll', clink: 'coin', drop: 'crate', applause: 'cheer', sigh: 'groan', gate: 'door' };
+    'swipe-back': ['swipe', { dir: 'back' }], step: 'step-stone', footstep: 'step-stone', 'step-grass': ['step-sand', { surface: 'grass' }], 'step-leaves': ['step-sand', { surface: 'leaves' }], anvil: 'hammer', whoosh: 'fire',
+    unroll: 'scroll', clink: 'coin', drop: 'crate', applause: 'cheer', sigh: 'groan', gate: 'door', 'page-turn': 'page', book: 'page', drums: 'drum',
+    'jingle-keys': ['jingle', { kind: 'keys' }], 'jingle-coins': ['jingle', { kind: 'pouch' }], 'jingle-metal': ['jingle', { kind: 'metal' }], keys: ['jingle', { kind: 'keys' }], rustle: ['jingle', { kind: 'rustle' }] };
   var CATS = ['ui', 'ambience', 'voices', 'world', 'music'];
   var DEFAULT_CAT = { ui: 1, ambience: 0.8, voices: 1, world: 0.9, music: 0.6 };
   var SEND = { ui: 0.16, ambience: 0.3, voices: 0.1, world: 0.32, music: 0.5 };          // how much of each category goes to the shared reverb
@@ -71,6 +72,24 @@
   // the recorded layer (CC0 recordings, docs/ASSETS_LICENSES.md), written by tools/audio_build.py: files, banks of one-shots in sprites, bed loops
   var AUDIO = /*AUDIO*/{"v":1,"files":{"ui":[1,148.5,148.9],"harp":[1,126.8,150.8],"harp-lo":[1,78.2,103.1],"steps":[1,32.8,55.2],"forge":[1,39.5,51.2],"scribe":[1,22.4,39.4],"house":[1,27.1,51.0],"gear":[1,52.7,82.8],"coins":[1,28.3,40.2],"nature":[1,63.3,109.9],"arena":[1,41.3,73.3],"bells":[1,83.3,96.7],"loop-crowd":[2,117.1,181.8],"loop-applause":[2,91.5,127.3],"loop-fire":[2,106.1,164.5],"loop-wind":[2,116.9,180.8],"loop-gusts":[2,113.1,198.8],"loop-sea":[2,116.6,198.8],"loop-crickets":[2,64.8,90.9],"loop-birds":[2,116.4,199.0],"loop-brook":[2,61.7,108.9]},"banks":{"tap":["ui",[[0.12,0.22],[0.46,0.22],[0.8,0.22]]],"tick":["ui",[[1.14,0.06],[1.32,0.0552]]],"toggle":["ui",[[1.4952,0.14],[1.7552,0.2],[2.0752,0.2]]],"paper":["ui",[[2.3952,0.75],[3.2652,0.7],[4.0852,0.55],[4.7552,0.5]]],"chime":["ui",[[5.3752,2.2,74],[7.6952,2.2,76],[10.0152,2.2,78],[12.3352,2.2,69],[14.6552,2.2,80]]],"shimmer":["ui",[[16.9752,1.8]]],"bell":["ui",[[18.8952,1.4],[20.4152,0.78]]],"coin":["ui",[[21.3152,0.5],[21.9352,0.29],[22.3452,0.3],[22.7652,0.21],[23.0952,0.19]]],"harp":["harp",[[0.12,1.9,62],[2.14,1.9,64],[4.16,1.9,66],[6.18,1.9,68],[8.2,1.9,70],[10.22,1.9,72],[12.24,1.9,74],[14.26,1.5,76],[15.88,1.5,78],[17.5,1.5,80],[19.12,1.5,82],[20.74,1.5,84],[22.36,1.5,86]]],"harplo":["harp-lo",[[0.12,2.6,50],[2.84,2.6,52],[5.56,2.6,54],[8.28,2.6,56],[11.0,2.6,58],[13.72,2.6,60]]],"step-stone":["steps",[[0.12,0.3],[0.54,0.3],[0.96,0.3],[1.38,0.3],[1.8,0.3],[2.22,0.3],[2.64,0.2505]]],"step-sand":["steps",[[3.0105,0.32],[3.4505,0.3164],[3.8869,0.2987],[4.3056,0.32],[4.7456,0.32],[5.1856,0.32]]],"step-wood":["steps",[[5.6256,0.2298],[5.9754,0.2106],[6.306,0.24]]],"step-leaves":["steps",[[6.666,0.38],[7.166,0.38]]],"anvil":["forge",[[0.12,0.99],[1.23,1.0],[2.35,1.0],[3.47,0.85],[4.44,0.51],[5.07,0.56]]],"smith":["forge",[[5.75,0.5]]],"tool":["forge",[[6.37,0.17],[6.66,0.3],[7.08,0.3]]],"quill":["scribe",[[0.12,0.62],[0.86,0.75]]],"page":["scribe",[[1.73,0.73],[2.58,0.9],[3.6,0.56],[4.28,0.56]]],"scroll":["scribe",[[4.96,0.94]]],"door":["house",[[0.12,0.65],[0.89,0.5],[1.51,0.85],[2.48,0.72],[3.32,0.54],[3.98,0.41]]],"crate":["house",[[4.51,0.22],[4.85,0.39],[5.36,0.4],[5.88,0.55]]],"whoosh":["house",[[6.55,0.4406]]],"keys":["gear",[[0.12,0.8],[1.04,0.76],[1.92,0.28],[2.32,0.41],[2.85,0.39]]],"metal":["gear",[[3.36,0.43],[3.91,0.47],[4.5,0.37]]],"beads":["gear",[[4.99,0.28]]],"cloth":["gear",[[5.39,0.32],[5.83,0.3]]],"pouch":["gear",[[6.25,0.6],[6.97,0.6]]],"jingle":["gear",[[7.69,0.9],[8.71,0.9]]],"rustle":["gear",[[9.73,0.62],[10.47,0.4137],[11.0037,0.7]]],"pour":["coins",[[0.12,1.7299],[1.9699,1.26]]],"count":["coins",[[3.3499,0.78],[4.2499,0.89],[5.2599,0.7]]],"gull":["nature",[[0.12,1.3],[1.54,1.07],[2.73,0.9],[3.75,0.79],[4.66,0.8816]]],"wave":["nature",[[5.6616,3.34],[9.1216,2.17],[11.4116,3.22]]],"chirp":["nature",[[14.7516,0.55],[15.4216,0.55],[16.0916,0.55],[16.7616,0.55]]],"clap":["arena",[[0.12,0.3],[0.54,0.3],[0.96,0.3],[1.38,0.3]]],"drum":["arena",[[1.8,0.9],[2.82,0.9],[3.84,0.9],[4.86,0.9]]],"cheer":["arena",[[5.88,2.6],[8.6,2.4]]],"camel":["bells",[[0.12,1.2],[1.44,0.78],[2.34,1.2],[3.66,0.9]]],"windchime":["bells",[[4.68,5.5],[10.3,5.0]]]},"loops":{"crowd":["loop-crowd",20.0],"applause":["loop-applause",14.0],"fire":["loop-fire",18.0],"wind":["loop-wind",20.0],"gusts":["loop-gusts",22.0],"sea":["loop-sea",22.0],"crickets":["loop-crickets",10.0],"birds":["loop-birds",22.0],"brook":["loop-brook",12.0]}}/*/AUDIO*/;
 
+  // where the files are: next to this script, ../assets/audio/ (read once while the script runs; window.OLYMPUS_AUDIO_BASE or create({audioBase}) wins)
+  var BASE0 = (function () {
+    try {
+      var d = typeof document !== 'undefined' ? document : null, s = d && d.currentScript, src = s && s.src;
+      if (!src && d && d.querySelector) { var q = d.querySelector('script[src*="sfx.js"]'); src = q && q.src; }
+      return src ? String(src).replace(/[^\/]*\/sfx\.js(\?.*)?$/, 'assets/audio/') : '';
+    } catch (e) { return ''; }
+  })();
+  var RAW = {};                                                 // url -> promise of the file's bytes, shared by every engine on the page (one download)
+  // which recorded files each place uses (lazy: fetched when the place starts, after the first tap)
+  var BED_FILES = { marble: ['loop-crowd', 'steps', 'ui'], agora: ['loop-crowd', 'loop-birds', 'steps'], workshop: ['loop-fire', 'forge'], desert: ['loop-wind', 'loop-gusts', 'bells'],
+    harbour: ['loop-sea', 'nature'], night: ['loop-crickets'], library: ['scribe', 'steps'], colosseum: ['loop-crowd', 'loop-applause', 'arena'],
+    grove: ['loop-birds', 'loop-brook', 'nature', 'gear'], temple: ['loop-wind', 'bells', 'ui'], treasury: ['coins', 'ui'] };
+  // what a person's accessory or kind sounds like when they move (presence): docs/SOUND_API.md "Voices and presence"
+  var JINGLE_OF = { hammer: 'metal', helmet: 'metal', pouch: 'pouch', key: 'keys', scroll: 'cloth', owl: 'cloth', torch: 'cloth', laurel: 'rustle',
+    builder: 'metal', bot: 'metal', scanner: 'pouch', keeper: 'keys', mind: 'cloth', champion: 'jingle', villager: 'beads' };
+  var JINGLES = ['keys', 'metal', 'beads', 'cloth', 'pouch', 'jingle', 'rustle'];
+
   function rnd(a, b) { return a + Math.random() * (b - a); }
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
   function clamp(x, lo, hi) { x = +x; if (isNaN(x)) x = 0; lo = lo === undefined ? 0 : lo; hi = hi === undefined ? 1 : hi; return Math.max(lo, Math.min(hi, x)); }
@@ -85,6 +104,7 @@
     var ambWant = '', ambPlay = null, padNode = null, musWant = '', musPlay = null;
     var whiteB = null, pinkB = null, clapB = null, ks = {}, ksOrder = [];
     var active = [], lastAt = {}, duckN = 0, autoDuck = false, duckTimer = 0, hearL = null, unlockCbs = [];
+    var smpOn = true, ready = {}, loading = {}, failed = {}, waiters = {}, rrLast = {}, sampled = 0, loadedKb = 0, fmtUsed = '', loopUse = [];
 
     /* ---------------------------------------------------------------- settings */
     function ls() { try { return env.localStorage || null; } catch (e) { return null; } }
@@ -97,6 +117,7 @@
         ambOn = typeof o.a === 'boolean' ? o.a : null;
         soundOn = typeof o.s === 'boolean' ? o.s : null;
         musicOn = o.mu === true; quietOn = o.q === true;
+        smpOn = o.sm !== false;
         if (o.c && typeof o.c === 'object') CATS.forEach(function (c) { if (typeof o.c[c] === 'number') catVol[c] = clamp(o.c[c]); });
       } catch (e) {}
     }
@@ -109,6 +130,7 @@
         if (soundOn !== null) o.s = soundOn; else delete o.s;
         if (musicOn) o.mu = true; else delete o.mu;
         if (quietOn) o.q = true; else delete o.q;
+        if (!smpOn) o.sm = false; else delete o.sm;
         var c = {}, any = false; CATS.forEach(function (k) { if (catVol[k] !== DEFAULT_CAT[k]) { c[k] = catVol[k]; any = true; } });
         if (any) o.c = c; else delete o.c;
         s.setItem(KEY, JSON.stringify(o));
@@ -203,6 +225,7 @@
           var b = c.createBuffer(1, 1, c.sampleRate || 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0);   // iOS: one silent sample
         }
       } catch (e) { errors++; }
+      try { bootSamples(); } catch (e) { errors++; }
       ambRefresh();
       unlockCbs.splice(0).forEach(function (cb) { try { cb(api); } catch (e) {} });
       return !!c;
@@ -300,6 +323,7 @@
     }
     function pluck(V, f, at, peak, o) {
       o = o || {};
+      if (harp(V, f, at, peak, o)) return;                    // the recorded folk harp when it is loaded, else the synthesised string
       var t = V.t + at, dur = o.dur || 1, br = o.bright === undefined ? 0.5 : o.bright, b = ksBuf(f, br);
       var src = nd(V, ctx.createBufferSource()), lp = nd(V, ctx.createBiquadFilter()), g = nd(V, ctx.createGain());
       src.buffer = b.buf; if (src.playbackRate) src.playbackRate.value = f / b.f;
@@ -333,117 +357,293 @@
       src.connect(fl); fl.connect(g); g.connect(V.g); src.start(t); src.stop(t + 1.7); V.srcs.push(src); scheduled++;
     }
 
+    /* ---------------------------------------------------------------- the recorded layer: CC0 recordings, decoded on demand, cached, layered with the synth
+       Files: assets/audio/<stem>.ogg (Opus) or .m4a (AAC, every iPhone), the format this browser plays best; a failed file tries the other format, then
+       the synth plays alone (always). One-shots live in sprites (one file per family); sp() plays one variation (never the same twice in a row) with a
+       little pitch and level jitter. Beds loop recordings with a crossfading looper that starts each pass at a new place (it never repeats exactly). */
+    function smpBase() { var b = env.audioBase || env.OLYMPUS_AUDIO_BASE || BASE0; return b ? String(b).replace(/\/?$/, '/') : ''; }
+    function fmts() {
+      if (fmtUsed) return [fmtUsed, fmtUsed === 'ogg' ? 'm4a' : 'ogg'];
+      var a = null; try { a = env.document && env.document.createElement && env.document.createElement('audio'); } catch (e) {}
+      var ogg = '', mp4 = '';
+      try { if (a && a.canPlayType) { ogg = a.canPlayType('audio/ogg; codecs="opus"'); mp4 = a.canPlayType('audio/mp4; codecs="mp4a.40.2"'); } } catch (e) {}
+      return ogg === 'probably' || (ogg && !mp4) ? ['ogg', 'm4a'] : ['m4a', 'ogg'];
+    }
+    function smpUse() { return smpOn && !!AUDIO && !!ctx && !!ctx.decodeAudioData && typeof env.fetch === 'function' && !!smpBase(); }
+    function saveData() { try { var c = env.navigator && env.navigator.connection; return !!(c && c.saveData); } catch (e) { return false; } }
+    function decode(ab) {
+      return new Promise(function (ok, no) {
+        try { var p = ctx.decodeAudioData(ab, ok, no); if (p && p.then) p.then(ok, no); } catch (e) { no(e); }
+      });
+    }
+    function bytes(url) {
+      if (!RAW[url]) RAW[url] = env.fetch(url).then(function (r) { if (!r || !r.ok) throw new Error('http ' + (r && r.status)); return r.arrayBuffer(); });
+      return RAW[url];
+    }
+    /** want(stem): start loading a file (once); cb(buffer) when it is ready (or never, when it fails: the synth plays instead) */
+    function want(stem, cb) {
+      if (ready[stem]) { if (cb) cb(ready[stem]); return true; }
+      if (cb) (waiters[stem] = waiters[stem] || []).push(cb);
+      if (loading[stem] || failed[stem] || !smpUse() || !AUDIO.files[stem]) return false;
+      var order = fmts(), i = 0, c0 = ctx;
+      function tryNext() {
+        if (i >= order.length) { failed[stem] = true; delete loading[stem]; waiters[stem] = []; return null; }
+        var f = order[i++], url = smpBase() + stem + '.' + f;
+        return bytes(url).then(function (ab) { return decode(ab.slice(0)); }).then(function (buf) {
+          if (c0 !== ctx) return null;
+          if (!fmtUsed) fmtUsed = f;
+          ready[stem] = buf; delete loading[stem]; loadedKb += AUDIO.files[stem][f === 'ogg' ? 1 : 2] || 0;
+          (waiters[stem] || []).splice(0).forEach(function (w) { try { w(buf); } catch (e) {} });
+          return buf;
+        }, function () { delete RAW[url]; return tryNext(); });
+      }
+      loading[stem] = tryNext();
+      return false;
+    }
+    /** preload(['ui', 'loop-sea', ...] | 'all'): a promise that settles when those files are ready (or failed) */
+    function preload(list) {
+      if (!smpUse()) return Promise.resolve(false);
+      var stems = list === 'all' ? Object.keys(AUDIO.files) : [].concat(list || []);
+      return Promise.all(stems.map(function (s) {
+        if (BED_FILES[s]) return preload(BED_FILES[s]);
+        if (ready[s] || failed[s] || !AUDIO.files[s]) return !!ready[s];
+        want(s); return loading[s] ? loading[s].then(function () { return !!ready[s]; }) : false;
+      })).then(function (r) { return r.every(Boolean); });
+    }
+    function forgetLoops(keep) {                                // a decoded bed loop is big (20 s of stereo floats): keep the four latest
+      loopUse = loopUse.filter(function (s) { return keep.indexOf(s) < 0; }).concat(keep);
+      while (loopUse.length > 4) delete ready[loopUse.shift()];
+    }
+    function rr(bank, n) {                                      // a random variation, never the one before
+      if (n < 2) return 0;
+      var i = Math.floor(Math.random() * (n - 1)); if (i >= rrLast[bank]) i++;
+      rrLast[bank] = i; return i;
+    }
+    /** sp(V, bank, at, peak, o): one recorded variation in a voice. o: i (which), midi (nearest note, retuned), rate, jit (semitones), vj (level
+        jitter 0..1), dur (cut), lp / hp (Hz), dest, rel (fade-out s). Returns false when the file is not ready (the caller plays the synth). */
+    function sp(V, bank, at, peak, o) {
+      o = o || {};
+      if (o.synth || !AUDIO || !smpOn) return false;
+      var B = AUDIO.banks[bank]; if (!B) return false;
+      var buf = ready[B[0]]; if (!buf) { want(B[0]); return false; }
+      var segs = B[1], i = o.i !== undefined ? Math.min(segs.length - 1, o.i) : rr(bank, segs.length), rate = o.rate || 1;
+      if (o.midi !== undefined && segs[0].length > 2) {
+        var best = 0; for (var k = 1; k < segs.length; k++) if (Math.abs(segs[k][2] - o.midi) < Math.abs(segs[best][2] - o.midi)) best = k;
+        i = best; rate *= Math.pow(2, (o.midi - segs[i][2]) / 12);
+      }
+      if (o.jit) rate *= Math.pow(2, rnd(-o.jit, o.jit) / 12);
+      var s = segs[i], len = Math.min(s[1], o.dur || s[1]), t = V.t + (at || 0), real = len / rate, rel = Math.min(o.rel || 0.04, real * 0.5);
+      var src = nd(V, ctx.createBufferSource()), g = nd(V, ctx.createGain()), head = g, pk = peak * (o.vj ? 1 - Math.random() * o.vj : 1);
+      src.buffer = buf; if (src.playbackRate) src.playbackRate.value = rate;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(pk, t + 0.003);
+      g.gain.setValueAtTime(pk, t + Math.max(0.004, real - rel)); g.gain.linearRampToValueAtTime(0.0001, t + real);
+      if (o.lp || o.hp) {
+        var fl = nd(V, ctx.createBiquadFilter()); fl.type = o.lp ? 'lowpass' : 'highpass'; fl.frequency.value = o.lp || o.hp; fl.Q.value = 0.6;
+        src.connect(fl); fl.connect(g);
+      } else src.connect(g);
+      head.connect(o.dest || V.g);
+      src.start(t, s[0], len + 0.005); src.stop(t + real + 0.03); V.srcs.push(src); scheduled++; sampled++;
+      return true;
+    }
+    /** the harp (VCSL folk harp, CC0): a real plucked note for the lyre's place, retuned at most 3 semitones; false = use the synthesised string */
+    function harp(V, f, at, peak, o) {
+      if (o.synth) return false;
+      var m = 12 * Math.log(f / 440) / Math.LN2 + 69, bank = m < 61 ? 'harplo' : 'harp', B = AUDIO && AUDIO.banks[bank];
+      if (!B || !ready[B[0]]) { if (B) want(B[0]); return false; }
+      var segs = B[1], best = segs[0]; for (var k = 1; k < segs.length; k++) if (Math.abs(segs[k][2] - m) < Math.abs(best[2] - m)) best = segs[k];
+      if (Math.abs(best[2] - m) > 3) return false;
+      var br = o.bright === undefined ? 0.5 : o.bright, dur = o.dur || 1, t = V.t + at, rate = Math.pow(2, (m - best[2]) / 12), len = Math.min(best[1], dur * rate + 0.05);
+      var src = nd(V, ctx.createBufferSource()), lp = nd(V, ctx.createBiquadFilter()), g = nd(V, ctx.createGain()), pk = peak * 1.7;
+      src.buffer = ready[B[0]]; if (src.playbackRate) src.playbackRate.value = rate;
+      lp.type = 'lowpass'; lp.frequency.value = Math.min(16000, f * (4 + 14 * br)); lp.Q.value = 0.4;
+      g.gain.setValueAtTime(pk, t); g.gain.setValueAtTime(pk, t + dur * 0.55); g.gain.linearRampToValueAtTime(0.0001, t + Math.min(dur, len / rate));
+      src.connect(lp); lp.connect(g); g.connect(o.dest || V.g);
+      src.start(t, best[0], len); src.stop(t + len / rate + 0.03); V.srcs.push(src); scheduled++; sampled++;
+      return true;
+    }
+    function smpState() {
+      var st = { on: smpOn, use: smpUse(), fmt: fmtUsed || (ctx ? fmts()[0] : ''), base: smpBase(), loaded: Object.keys(ready), failed: Object.keys(failed),
+        pending: Object.keys(loading), played: sampled, kb: Math.round(loadedKb), files: AUDIO ? Object.keys(AUDIO.files).length : 0 };
+      return st;
+    }
+    /** samples(true | false): the recorded layer on (default) or off (synth only: the A/B in the lab); samples() = its state */
+    function samples(on, keep) {
+      if (on === undefined) return smpState();
+      smpOn = !!on; if (keep !== false) save();
+      if (smpOn && unlocked) bootSamples();
+      return smpState();
+    }
+    function bootSamples() {                                    // the first tap: the UI taps and the harp (small), then the place's own files
+      if (!smpUse()) return;
+      want('ui'); if (!lite()) want('harp');
+      if (ambPlay) preload(BED_FILES[BED[ambPlay.name][0]] || []);
+    }
+
     /* ---------------------------------------------------------------- every sound: [duration s (or fn(o)), category, build(V, o)] */
+    // every cue and world sound layers a real recording (sp) with the synth; when the recording is not loaded (or failed, or samples(false)) the
+    // synthesised version plays exactly as before. o.synth = true forces the synth (the lab's A/B).
     var SND = {
-      tick: [0.12, 'ui', function (V) { tone(V, 'triangle', 2400, 1700, 0, 0.035, 0.1, 0.001); tone(V, 'sine', 1175, 1100, 0, 0.06, 0.05, 0.002); }],   // marble tick
-      tap: [0.5, 'ui', function (V) {                          // a soft high pluck with a wood touch
+      tick: [0.12, 'ui', function (V, o) {                     // a tiny real click (Kenney, CC0); synth: a marble tick
+        if (sp(V, 'tick', 0, 0.07, merge(o, { jit: 1, vj: 0.2 }))) return;
+        tone(V, 'triangle', 2400, 1700, 0, 0.035, 0.1, 0.001); tone(V, 'sine', 1175, 1100, 0, 0.06, 0.05, 0.002);
+      }],
+      tap: [0.5, 'ui', function (V, o) {                       // a soft wooden tap (VCSL woodblock, played softly) under a high harp touch
+        if (sp(V, 'tap', 0, 0.16, merge(o, { jit: 0.8, vj: 0.15, lp: 6500 }))) { pluck(V, D6, 0.004, 0.045, { dur: 0.3, bright: 0.3, synth: o.synth }); return; }
         pluck(V, D6, 0, 0.13, { dur: 0.35, bright: 0.35 }); tone(V, 'sine', D5, D5, 0, 0.08, 0.04, 0.003); nz(V, 0, 0.02, 0.02, 'bandpass', 3200, 0, 1.5, 0.001);
       }],
-      open: [0.85, 'ui', function (V) {                        // a harp rises A-D-F#, a breath of air
-        pluck(V, A4, 0, 0.09, { dur: 0.6, bright: 0.45 }); pluck(V, D5, 0.045, 0.1, { dur: 0.6, bright: 0.5 }); pluck(V, Fs5, 0.09, 0.11, { dur: 0.7, bright: 0.55 });
-        nz(V, 0, 0.28, 0.025, 'bandpass', 1600, 3600, 0.9, 0.08);
+      open: [0.85, 'ui', function (V, o) {                     // a harp rises A-D-F#, a page lifts
+        pluck(V, A4, 0, 0.09, { dur: 0.6, bright: 0.45, synth: o.synth }); pluck(V, D5, 0.045, 0.1, { dur: 0.6, bright: 0.5, synth: o.synth }); pluck(V, Fs5, 0.09, 0.11, { dur: 0.7, bright: 0.55, synth: o.synth });
+        if (!sp(V, 'paper', 0, 0.05, merge(o, { i: 0, dur: 0.5, rate: 1.15, hp: 900 }))) nz(V, 0, 0.28, 0.025, 'bandpass', 1600, 3600, 0.9, 0.08);
       }],
-      close: [0.6, 'ui', function (V) {                        // the same, falling and shorter
-        pluck(V, Fs5, 0, 0.08, { dur: 0.4, bright: 0.35 }); pluck(V, D5, 0.055, 0.09, { dur: 0.5, bright: 0.3 }); nz(V, 0, 0.2, 0.02, 'bandpass', 3000, 1400, 0.9, 0.03);
+      close: [0.8, 'ui', function (V, o) {                     // the same, falling and shorter; the page settles
+        pluck(V, Fs5, 0, 0.08, { dur: 0.4, bright: 0.35, synth: o.synth }); pluck(V, D5, 0.055, 0.09, { dur: 0.5, bright: 0.3, synth: o.synth });
+        if (!sp(V, 'paper', 0, 0.045, merge(o, { i: 1, dur: 0.45, rate: 1.1, hp: 700 }))) nz(V, 0, 0.2, 0.02, 'bandpass', 3000, 1400, 0.9, 0.03);
       }],
-      swipe: [0.45, 'ui', function (V, o) {                    // air moving past + a faint string
+      swipe: [0.6, 'ui', function (V, o) {                     // a page turned past + a faint string
         var up = o.dir !== 'back';
-        nz(V, 0, 0.26, 0.06, 'bandpass', up ? 700 : 2600, up ? 2600 : 700, 1.1, 0.09); pluck(V, up ? E5 : B4, 0.16, 0.035, { dur: 0.3, bright: 0.3 });
+        if (!sp(V, 'paper', 0, 0.05, merge(o, { i: up ? 2 : 3, rate: up ? 1.25 : 1.1, hp: 1200, dur: 0.42 }))) nz(V, 0, 0.26, 0.06, 'bandpass', up ? 700 : 2600, up ? 2600 : 700, 1.1, 0.09);
+        pluck(V, up ? E5 : B4, 0.16, 0.035, { dur: 0.3, bright: 0.3, synth: o.synth });
       }],
-      toggle: [0.55, 'ui', function (V, o) {                   // on: up a fifth; off: down, muted
-        if (o.on !== false) { pluck(V, D5, 0, 0.08, { dur: 0.4, bright: 0.45 }); pluck(V, A5, 0.06, 0.09, { dur: 0.5, bright: 0.5 }); tone(V, 'triangle', 1900, 0, 0, 0.02, 0.03, 0.001); }
-        else { pluck(V, A5, 0, 0.07, { dur: 0.3, bright: 0.25 }); pluck(V, D5, 0.06, 0.075, { dur: 0.35, bright: 0.2 }); tone(V, 'triangle', 1500, 0, 0, 0.02, 0.025, 0.001); }
+      toggle: [0.55, 'ui', function (V, o) {                   // a real small switch; on: up a fifth; off: down, muted
+        var real = sp(V, 'toggle', 0, 0.07, merge(o, { jit: 0.5, rate: o.on !== false ? 1.06 : 0.92, lp: 7000 }));
+        if (o.on !== false) { pluck(V, D5, 0, 0.08, { dur: 0.4, bright: 0.45, synth: o.synth }); pluck(V, A5, 0.06, 0.09, { dur: 0.5, bright: 0.5, synth: o.synth }); if (!real) tone(V, 'triangle', 1900, 0, 0, 0.02, 0.03, 0.001); }
+        else { pluck(V, A5, 0, 0.07, { dur: 0.3, bright: 0.25, synth: o.synth }); pluck(V, D5, 0.06, 0.075, { dur: 0.35, bright: 0.2, synth: o.synth }); if (!real) tone(V, 'triangle', 1500, 0, 0, 0.02, 0.025, 0.001); }
       }],
-      success: [1.5, 'ui', function (V) {                      // D - A - D on the lyre, a crotale's shimmer: it worked
-        pluck(V, D4, 0, 0.05, { dur: 1, bright: 0.4 }); pluck(V, D5, 0, 0.1, { dur: 1, bright: 0.5 }); pluck(V, A5, 0.07, 0.075, { dur: 1, bright: 0.55 });
-        pluck(V, D6, 0.14, 0.08, { dur: 1.1, bright: 0.55 }); bell(V, 2349.3, 0.2, 0.016, 1.1, null, [1, 2.0, 2.76]);
+      success: [2.1, 'ui', function (V, o) {                   // D - A - D on the harp, a finger cymbal's shimmer: it worked
+        pluck(V, D4, 0, 0.05, { dur: 1, bright: 0.4, synth: o.synth }); pluck(V, D5, 0, 0.1, { dur: 1, bright: 0.5, synth: o.synth }); pluck(V, A5, 0.07, 0.075, { dur: 1, bright: 0.55, synth: o.synth });
+        pluck(V, D6, 0.14, 0.08, { dur: 1.1, bright: 0.55, synth: o.synth });
+        if (!sp(V, 'shimmer', 0.2, 0.035, merge(o, { dur: 1.6, rel: 0.8 }))) bell(V, 2349.3, 0.2, 0.016, 1.1, null, [1, 2.0, 2.76]);
       }],
-      warning: [1.0, 'ui', function (V) {                      // two warm falling notes: look at this (never harsh)
-        pluck(V, B4, 0, 0.11, { dur: 0.6, bright: 0.3 }); pluck(V, G4, 0.2, 0.12, { dur: 0.8, bright: 0.25 }); tone(V, 'sine', G3, G3, 0.2, 0.4, 0.03, 0.02);
+      warning: [1.0, 'ui', function (V, o) {                   // two warm falling notes and a low hand chime: look at this (never harsh)
+        pluck(V, B4, 0, 0.11, { dur: 0.6, bright: 0.3, synth: o.synth }); pluck(V, G4, 0.2, 0.12, { dur: 0.8, bright: 0.25, synth: o.synth });
+        if (!sp(V, 'chime', 0.2, 0.035, merge(o, { midi: 67, dur: 0.75, rel: 0.4 }))) tone(V, 'sine', G3, G3, 0.2, 0.4, 0.03, 0.02);
       }],
-      error: [0.8, 'ui', function (V) {                        // a muted string, low: it did not work (soft, not a buzzer)
-        pluck(V, G4, 0, 0.12, { dur: 0.25, bright: 0.15 }); pluck(V, E4, 0.13, 0.13, { dur: 0.45, bright: 0.12 }); tone(V, 'sine', 130, 90, 0, 0.18, 0.06, 0.004);
+      error: [0.8, 'ui', function (V, o) {                     // a muted low string and a dull wooden knock: it did not work (soft, never a buzzer)
+        pluck(V, G4, 0, 0.12, { dur: 0.25, bright: 0.15, synth: o.synth }); pluck(V, E4, 0.13, 0.13, { dur: 0.45, bright: 0.12, synth: o.synth });
+        if (!sp(V, 'tap', 0, 0.12, merge(o, { rate: 0.62, lp: 1800 }))) tone(V, 'sine', 130, 90, 0, 0.18, 0.06, 0.004);
       }],
-      notify: [2.0, 'ui', function (V) {                       // a small bronze bell over a lyre note
-        bell(V, A5, 0, 0.07, 1.7); pluck(V, D5, 0, 0.07, { dur: 1, bright: 0.4 });
+      notify: [2.3, 'ui', function (V, o) {                    // a real hand chime over a harp note
+        if (!sp(V, 'chime', 0, 0.09, merge(o, { midi: 81, dur: 2.0, rel: 1.0, vj: 0.1 }))) bell(V, A5, 0, 0.07, 1.7);
+        pluck(V, D5, 0, 0.07, { dur: 1, bright: 0.4, synth: o.synth });
       }],
-      money: [1.3, 'ui', function (V) {                        // coins land, the lyre answers up a fourth
-        coin(V, 0, 1); coin(V, 0.09, 0.7); pluck(V, A5, 0.05, 0.07, { dur: 0.8, bright: 0.55 }); pluck(V, D6, 0.13, 0.08, { dur: 1, bright: 0.6 });
+      money: [1.3, 'ui', function (V, o) {                     // real coins land, the harp answers up a fourth
+        if (sp(V, 'coin', 0, 0.12, merge(o, { jit: 1, vj: 0.2 }))) sp(V, 'coin', 0.09, 0.08, merge(o, { jit: 1.5, vj: 0.3 }));
+        else { coin(V, 0, 1); coin(V, 0.09, 0.7); }
+        pluck(V, A5, 0.05, 0.07, { dur: 0.8, bright: 0.55, synth: o.synth }); pluck(V, D6, 0.13, 0.08, { dur: 1, bright: 0.6, synth: o.synth });
       }],
-      levelup: [2.6, 'ui', function (V) { levelup(V, 1); }],
-      rankup: [2.6, 'ui', function (V) { levelup(V, 1.15); }],
-      portal: [1.8, 'ui', function (V) {                       // wind through a doorway and a harp run up the pentatonic
+      levelup: [2.8, 'ui', function (V, o) { levelup(V, 1, o); }],
+      rankup: [2.8, 'ui', function (V, o) { levelup(V, 1.15, o); }],
+      portal: [1.8, 'ui', function (V, o) {                    // wind through a doorway and a harp run up the pentatonic
         nz(V, 0, 1.2, 0.09, 'bandpass', 300, 3200, 1.2, 0.5); tone(V, 'sine', 180, 540, 0, 1.1, 0.03, 0.5);
-        [D4, E4, Fs4, A4, B4, D5, E5].forEach(function (f, i) { pluck(V, f, 0.25 + i * 0.06, 0.04 + i * 0.004, { dur: 0.8, bright: 0.5 }); });
+        [D4, E4, Fs4, A4, B4, D5, E5].forEach(function (f, i) { pluck(V, f, 0.25 + i * 0.06, 0.04 + i * 0.004, { dur: 0.8, bright: 0.5, synth: o.synth }); });
       }],
       thunder: [function () { return reduced() ? 2 : 3.6; }, 'world', function (V) {   // crack, then the long roll over the hills
         var long = reduced() ? 1.6 : 3.2;
         nz(V, 0, 0.14, 0.5, 'highpass', 1500, 600, 0.7, 0.003); nz(V, 0.05, long, 0.7, 'lowpass', 420, 60, 0.8, 0.15);
         tone(V, 'sine', 62, 34, 0.05, long, 0.35, 0.15); if (!reduced()) nz(V, 0.9, long * 0.7, 0.25, 'lowpass', 220, 70, 0.8, 0.4);
       }],
-      'step-stone': [0.25, 'world', function (V, o) {         // heel on marble: a thump, a click, a scuff
+      'step-stone': [0.42, 'world', function (V, o) {         // a real heel on stone (Fantozzi, TinyWorlds; CC0); synth: a thump, a click, a scuff
         var k = o.k || 1, j = rnd(0.9, 1.1), a = o.at || 0;
+        if (sp(V, 'step-stone', a, 0.32 * k, merge(o, { jit: 1.2, vj: 0.3 }))) return;
         tone(V, 'sine', 115 * j, 70 * j, a, 0.07, 0.09 * k, 0.003); nz(V, a, 0.025, 0.05 * k, 'bandpass', 1900 * j, 0, 1.2, 0.001); nz(V, a + 0.02, 0.09, 0.02 * k, 'bandpass', 700 * j, 500, 0.8, 0.02);
       }],
-      'step-sand': [0.3, 'world', function (V, o) {           // sand: a soft press and a few grains
-        var k = o.k || 1, a = o.at || 0;
+      'step-sand': [0.42, 'world', function (V, o) {          // real sand (or grass / leaves with {surface}); synth: a soft press and a few grains
+        var k = o.k || 1, a = o.at || 0, lv = o.surface === 'leaves' || o.surface === 'grass';
+        if (sp(V, lv ? 'step-leaves' : 'step-sand', a, (lv ? 0.22 : 0.3) * k, merge(o, { jit: 1.2, vj: 0.3 }))) return;
         nz(V, a, 0.12, 0.04 * k, 'lowpass', 420, 200, 0.7, 0.02);
         for (var i = 0; i < 3; i++) nz(V, a + i * 0.02 + rnd(0, 0.015), 0.03, 0.03 * k, 'highpass', rnd(2500, 4000), 0, 0.7, 0.002);
       }],
-      'step-wood': [0.25, 'world', function (V, o) {          // a hollow board
+      'step-wood': [0.42, 'world', function (V, o) {          // a real wooden board; synth: a hollow board
         var k = o.k || 1, j = rnd(0.92, 1.08), a = o.at || 0;
+        if (sp(V, 'step-wood', a, 0.3 * k, merge(o, { jit: 1.5, vj: 0.3 }))) return;
         tone(V, 'sine', 190 * j, 150 * j, a, 0.1, 0.09 * k, 0.002); tone(V, 'triangle', 430 * j, 0, a, 0.05, 0.03 * k, 0.001); nz(V, a, 0.06, 0.04 * k, 'bandpass', 900 * j, 0, 3, 0.001);
       }],
-      hammer: [1.4, 'world', function (V, o) {                // hammer on anvil: a hard click, a bright ring, a low thump
+      hammer: [1.4, 'world', function (V, o) {                // a real hammer on a real anvil (VCSL) + a synthesised ring tail; synth: click, ring, thump
         var k = o.k || 1, a = o.at || 0, f = rnd(780, 880);
+        if (sp(V, 'anvil', a, 0.3 * k, merge(o, { jit: 0.6, vj: 0.2 }))) { bell(V, f, a + 0.01, 0.022 * k, 1.2, null, [1, 2.76, 5.4]); return; }
         nz(V, a, 0.02, 0.16 * k, 'highpass', 3000, 0, 0.7, 0.001); bell(V, f, a, 0.08 * k, 1.2, null, [1, 2.76, 5.4, 8.93]); tone(V, 'sine', 95, 60, a, 0.12, 0.1 * k, 0.002);
       }],
-      quill: [0.95, 'world', function (V, o) {                // a reed pen on papyrus: short scratches
+      quill: [0.95, 'world', function (V, o) {                // a real pencil on paper (a reed pen's place); synth: short scratches
         var k = o.k || 1, a = o.at || 0, n = 5 + Math.floor(Math.random() * 4);
+        if (sp(V, 'quill', a, 0.12 * k, merge(o, { jit: 0.8, vj: 0.2, lp: 9000 }))) return;
         for (var i = 0; i < n; i++) nz(V, a + i * 0.09 + rnd(0, 0.03), rnd(0.03, 0.07), 0.07 * k, 'bandpass', rnd(3500, 6000), rnd(3000, 5000), 4, 0.005);
       }],
-      scroll: [1.1, 'world', function (V, o) {                // a scroll unrolls: a long rustle, the paper's ticks, it settles
+      scroll: [1.5, 'world', function (V, o) {                // a real map unfolds (a scroll's place); synth: a long rustle, the paper's ticks
         var k = o.k || 1, a = o.at || 0;
+        if (sp(V, 'scroll', a, 0.14 * k, merge(o, { jit: 0.6 }))) return;
         nz(V, a, 0.8, 0.035 * k, 'bandpass', 1100, 2600, 0.9, 0.25);
         for (var i = 0; i < 6; i++) nz(V, a + 0.08 + i * 0.11, 0.012, 0.03 * k, 'highpass', 4000, 0, 1, 0.001);
         tone(V, 'sine', 160, 110, a + 0.8, 0.12, 0.05 * k, 0.005);
       }],
-      coin: [0.5, 'world', function (V, o) { var k = o.k || 1, a = o.at || 0; coin(V, a, k); coin(V, a + 0.06, 0.5 * k, true); }],
-      crate: [0.7, 'world', function (V, o) {                 // a wooden crate set down hard, its slats rattle
+      coin: [0.6, 'world', function (V, o) {
         var k = o.k || 1, a = o.at || 0;
+        if (sp(V, 'coin', a, 0.16 * k, merge(o, { jit: 1.5, vj: 0.25 }))) return;
+        coin(V, a, k); coin(V, a + 0.06, 0.5 * k, true);
+      }],
+      crate: [0.7, 'world', function (V, o) {                 // a real wooden crate set down; synth: a thump and the slats' rattle
+        var k = o.k || 1, a = o.at || 0;
+        if (sp(V, 'crate', a, 0.3 * k, merge(o, { jit: 1, vj: 0.2 }))) { tone(V, 'sine', 75, 48, a, 0.25, 0.08 * k, 0.003); return; }
         tone(V, 'sine', 75, 48, a, 0.3, 0.2 * k, 0.003); nz(V, a, 0.2, 0.12 * k, 'lowpass', 500, 200, 1, 0.002);
         for (var i = 0; i < 3; i++) tone(V, 'triangle', rnd(280, 480), 0, a + 0.07 + i * rnd(0.05, 0.09), 0.05, 0.035 * k, 0.001);
       }],
-      cheer: [2.4, 'world', function (V, o) {                 // a crowd cheers and claps
+      cheer: [2.8, 'world', function (V, o) {                 // a real crowd cheers and claps (CC0 recordings) on a synthesised swell
         var k = o.k || 1, a = o.at || 0;
+        if (sp(V, 'cheer', a, 0.28 * k, merge(o, { rel: 0.9, jit: 0.4 }))) { nz(V, a, 2.2, 0.03 * k, 'bandpass', 600, 750, 1.2, 0.35); return; }
         [[600, 0.09], [1400, 0.06], [2800, 0.025]].forEach(function (b) { nz(V, a, 2.2, b[1] * k, 'bandpass', b[0], b[0] * 1.25, 1.2, 0.35); });
         playBuf(V, clapBuf(), a + 0.15, 0.25 * k, 2200);
       }],
-      groan: [1.8, 'world', function (V, o) {                 // a crowd's "ohh", falling
+      groan: [1.8, 'world', function (V, o) {                 // a crowd's "ohh", falling (synthesised: no free recording fits)
         var k = o.k || 1, a = o.at || 0, lp = nd(V, ctx.createBiquadFilter()); lp.type = 'lowpass'; lp.frequency.value = 600; lp.connect(V.g);
         nz(V, a, 1.6, 0.08 * k, 'bandpass', 700, 430, 3, 0.2); nz(V, a, 1.5, 0.05 * k, 'bandpass', 1150, 800, 4, 0.2); tone(V, 'sawtooth', 150, 105, a, 1.5, 0.015 * k, 0.2, lp);
       }],
-      door: [1.6, 'world', function (V, o) {                  // a heavy wooden door: the creak, the thud, the latch
-        var k = o.k || 1, a = o.at || 0, t = V.t + a, bp = nd(V, ctx.createBiquadFilter()); bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = 6; bp.connect(V.g);
+      door: [1.6, 'world', function (V, o) {                  // a real wooden door (qubodup, CC0); synth: the creak, the thud, the latch
+        var k = o.k || 1, a = o.at || 0, t = V.t + a;
+        if (sp(V, 'door', a, 0.28 * k, merge(o, { jit: 0.7, vj: 0.15 }))) return;
+        var bp = nd(V, ctx.createBiquadFilter()); bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = 6; bp.connect(V.g);
         var c = tone(V, 'sawtooth', 80, 0, a, 0.8, 0.03 * k, 0.15, bp);
         for (var i = 1; i < 8; i++) c.frequency.setValueAtTime(rnd(70, 125), t + i * 0.1);
         tone(V, 'sine', 62, 40, a + 0.85, 0.35, 0.1 * k, 0.003); nz(V, a + 0.85, 0.25, 0.07 * k, 'lowpass', 300, 120, 0.8, 0.003); tone(V, 'triangle', 2100, 0, a + 1.05, 0.02, 0.04 * k, 0.001);
       }],
-      fire: [1.2, 'world', function (V, o) {                  // a fire catches: whoosh, low roar, a few crackles
-        var k = o.k || 1, a = o.at || 0;
-        nz(V, a, 0.9, 0.1 * k, 'bandpass', 300, 1800, 0.8, 0.25); nz(V, a, 1, 0.1 * k, 'lowpass', 160, 0, 0.7, 0.2);
+      fire: [1.2, 'world', function (V, o) {                  // a fire catches: a real whoosh over a synthesised roar and crackles
+        var k = o.k || 1, a = o.at || 0, real = sp(V, 'whoosh', a, 0.25 * k, merge(o, { jit: 1 }));
+        nz(V, a, 0.9, (real ? 0.04 : 0.1) * k, 'bandpass', 300, 1800, 0.8, 0.25); nz(V, a, 1, (real ? 0.05 : 0.1) * k, 'lowpass', 160, 0, 0.7, 0.2);
         for (var i = 0; i < 4; i++) nz(V, a + rnd(0.1, 0.8), 0.02, 0.05 * k, 'highpass', rnd(2500, 6000), 0, 0.8, 0.001);
+      }],
+      page: [1.0, 'world', function (V, o) {                  // a real book page turns (StarNinjas, CC0); synth: a quick rustle
+        var k = o.k || 1, a = o.at || 0;
+        if (sp(V, 'page', a, 0.14 * k, merge(o, { jit: 0.8, vj: 0.2 }))) return;
+        nz(V, a, rnd(0.18, 0.3), 0.035 * k, 'bandpass', rnd(2000, 3000), rnd(3500, 5000), 0.9, 0.06); nz(V, a + 0.2, 0.08, 0.02 * k, 'bandpass', 1500, 1000, 1, 0.01);
+      }],
+      chime: [2.4, 'world', function (V, o) {                 // a real hand chime (VCSL) at {midi}; synth: a small bronze bell
+        var k = o.k || 1, a = o.at || 0, m = o.midi || pick([74, 78, 81, 83, 86]);
+        if (sp(V, 'chime', a, 0.1 * k, merge(o, { midi: m, rel: 1.0, vj: 0.1 }))) return;
+        bell(V, mtof(m), a, 0.03 * k, 2.2);
+      }],
+      drum: [0.9, 'world', function (V, o) {                  // a real frame drum (VCSL); synth: a soft low thump
+        var k = o.k || 1, a = o.at || 0;
+        if (sp(V, 'drum', a, 0.3 * k, merge(o, { jit: 0.5, vj: 0.2 }))) return;
+        tone(V, 'sine', 75, 50, a, 0.25, 0.06 * k, 0.004);
+      }],
+      jingle: [0.9, 'world', function (V, o) {                // a person's things as they move: keys, armour, beads, cloth, a coin pouch, small bells, leaves
+        var k = o.k || 1, a = o.at || 0, kind = JINGLES.indexOf(o.kind) >= 0 ? o.kind : 'beads';
+        if (sp(V, kind, a, (kind === 'cloth' || kind === 'rustle' ? 0.14 : 0.1) * k, merge(o, { jit: 1.5, vj: 0.3, dur: 0.55 }))) return;
+        if (kind === 'cloth' || kind === 'rustle') { nz(V, a, 0.22, 0.02 * k, 'bandpass', kind === 'cloth' ? 1400 : 3200, 0, 0.8, 0.05); return; }
+        for (var i = 0; i < 3; i++) tone(V, 'sine', rnd(3200, 5200) * (kind === 'metal' ? 0.6 : 1), 0, a + i * rnd(0.03, 0.07), 0.12, 0.012 * k, 0.001);
       }]
     };
-    function levelup(V, k) {                                    // the lyre runs D-F#-A-D-F#-A, a bell crowns it, a soft swell under
-      [D4, Fs4, A4, D5, Fs5, A5].forEach(function (f, i) { pluck(V, f, i * 0.075, (0.07 + i * 0.006) * k, { dur: 1.4, bright: 0.55 }); });
-      bell(V, D6, 0.5, 0.05 * k, 1.8); tone(V, 'sine', D4, D4, 0, 1.6, 0.03 * k, 0.3); tone(V, 'sine', A4, A4, 0.1, 1.5, 0.02 * k, 0.3);
+    function levelup(V, k, o) {                                 // the harp runs D-F#-A-D-F#-A, a real chime crowns it, a soft swell under
+      o = o || {};
+      [D4, Fs4, A4, D5, Fs5, A5].forEach(function (f, i) { pluck(V, f, i * 0.075, (0.07 + i * 0.006) * k, { dur: 1.4, bright: 0.55, synth: o.synth }); });
+      if (!sp(V, 'chime', 0.5, 0.08 * k, merge(o, { midi: 86, dur: 2.0, rel: 1.1 }))) bell(V, D6, 0.5, 0.05 * k, 1.8);
+      sp(V, 'shimmer', 0.52, 0.025 * k, merge(o, { dur: 1.6, rel: 0.9 }));
+      tone(V, 'sine', D4, D4, 0, 1.6, 0.03 * k, 0.3); tone(V, 'sine', A4, A4, 0.1, 1.5, 0.02 * k, 0.3);
     }
 
     /* ---------------------------------------------------------------- play / at / world */
     function resolve(name, opts) {
       name = String(name || ''); var a = ALIAS[name], r = !a ? [name, null] : typeof a === 'string' ? [a, null] : a;
       if (r[0] === 'step-stone' && opts && SND['step-' + opts.surface]) r = ['step-' + opts.surface, r[1]];   // step + {surface: 'sand' | 'wood' | 'stone'}
+      else if (r[0] === 'step-stone' && opts && (opts.surface === 'grass' || opts.surface === 'leaves')) r = ['step-sand', r[1]];   // grass / leaves: the leaves recording
       return r;
     }
     function gated(n) { return CUES.indexOf(n) >= 0 || WORLD.indexOf(n) >= 0; }
@@ -543,8 +743,9 @@
       for (i = 0; i < n; i++) d[i] = i < F ? tmp[i] * (i / F) + tmp[n + i] * (1 - i / F) : tmp[i];
       return (pinkB = b);
     }
+    function synIn(B) { if (!B.syn) { B.syn = gain(1, B.inp); B.nodes.push(B.syn); } return B.syn; }   // the synthesised texture's own gain (steps back for a recording)
     function layer(B, type, f, q, g0) {                         // pink loop -> filter -> drift gain -> swell gain -> bed
-      var src = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = gain(g0), sw = gain(1, B.inp);
+      var src = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = gain(g0), sw = gain(1, synIn(B));
       src.buffer = pink(); src.loop = true; if (src.playbackRate) src.playbackRate.value = rnd(0.9, 1.1);
       fl.type = type; fl.frequency.value = f; fl.Q.value = q || 0.7;
       src.connect(fl); fl.connect(g); g.connect(sw);
@@ -562,17 +763,64 @@
       param.value = (lo + hi) / 2;
       ev(B, min, max, function () { param.setTargetAtTime(rnd(lo, hi), ctx.currentTime, (min + max) / 6000); });
     }
-    function swell(param, peak, up, down) {
-      var t = ctx.currentTime; param.cancelScheduledValues(t); param.setTargetAtTime(peak, t, up / 3); param.setTargetAtTime(1, t + up, down / 3);
+    function swell(param, peak, up, down, base) {
+      var t = ctx.currentTime; param.cancelScheduledValues(t); param.setTargetAtTime(peak, t, up / 3); param.setTargetAtTime(base === undefined ? 1 : base, t + up, down / 3);
     }
     function bv(B, dur, pan) {                                  // an event voice inside a bed (panned), or null when the bed is busy
       var dest = B.inp, ex = [];
-      if (pan && ctx.createStereoPanner) { var sp = ctx.createStereoPanner(); sp.pan.value = clamp(pan, -1, 1); sp.connect(B.inp); dest = sp; ex = [sp]; }
+      if (pan && ctx.createStereoPanner) { var pn = ctx.createStereoPanner(); pn.pan.value = clamp(pan, -1, 1); pn.connect(B.inp); dest = pn; ex = [pn]; }
       return grab('ambience', dur, dest, ex);
     }
-    function steps(B, kind, n, gap, k, pan) {
-      var V = bv(B, n * gap + 0.4, pan); if (!V) return;
-      for (var i = 0; i < n; i++) SND[kind][2](V, { at: i * gap * rnd(0.94, 1.06), k: k });
+    /** a recorded event inside a bed: sev(B, 'gull', pan, peak, o) -> true when the recording played (else the caller plays its synth) */
+    function sev(B, bank, pan, peak, o, dur) {
+      var b = AUDIO && AUDIO.banks[bank];
+      if (!b || !ready[b[0]] || !smpOn) { if (b) want(b[0]); return false; }
+      var V = bv(B, dur || 3.5, pan); if (!V) return true;      // busy: skip the event (as the synth does)
+      return sp(V, bank, 0, peak, o || {});
+    }
+    var XF_CURVE = null;
+    function xfCurve(up) {                                      // equal-power fade (a quarter sine): two textures crossfaded never dip
+      if (!XF_CURVE) { XF_CURVE = [new Float32Array(64), new Float32Array(64)]; for (var i = 0; i < 64; i++) { XF_CURVE[0][i] = Math.sin(i / 63 * Math.PI / 2) * 0.999 + 0.0001; XF_CURVE[1][i] = Math.cos(i / 63 * Math.PI / 2) * 0.999 + 0.0001; } }
+      return XF_CURVE[up ? 0 : 1];
+    }
+    /** rec(B, 'sea', {gain, lp, hp, syn, pan, rate}): a recorded loop under the bed. A crossfading looper plays passes of 45-80 % of the file from a
+        random place (2 s equal-power crossfades, +/- 1.5 % speed), so the bed never repeats. It fades in when the file is ready; the synth texture
+        steps back to o.syn (default 0.35). Skipped in LITE and with Data Saver. Returns { sw } (a gain the bed can swell) or null. */
+    function rec(B, name, o) {
+      o = o || {};
+      var L = AUDIO && AUDIO.loops[name];
+      if (!L || !smpOn || lite() || saveData()) return null;
+      var R = { sw: gain(o.base === undefined ? 1 : o.base), g: gain(0.0001), on: true }, head = R.sw;
+      B.nodes.push(R.sw, R.g);
+      if (o.lp || o.hp) { var fl = ctx.createBiquadFilter(); fl.type = o.lp ? 'lowpass' : 'highpass'; fl.frequency.value = o.lp || o.hp; fl.Q.value = 0.5; R.sw.connect(fl); head = fl; B.nodes.push(fl); }
+      if (o.lp && o.hp) { var f2 = ctx.createBiquadFilter(); f2.type = 'highpass'; f2.frequency.value = o.hp; head.connect(f2); head = f2; B.nodes.push(f2); }
+      head.connect(R.g); R.g.connect(B.inp);
+      B.recs = (B.recs || []).concat([L[0]]);
+      want(L[0], function (buf) {
+        if (B.dead || !ctx) return;
+        R.live = true;
+        var t = ctx.currentTime, len = Math.min(L[1], buf.duration), XF = Math.min(2, len * 0.15);
+        R.g.gain.setValueAtTime(0.0001, t); R.g.gain.linearRampToValueAtTime(o.gain || 0.3, t + 2.5);
+        if (B.syn) B.syn.gain.setTargetAtTime(o.syn === undefined ? 0.35 : o.syn, t, 1.2);
+        function pass(at) {
+          if (B.dead || !ctx) return;
+          var seg = len * rnd(0.45, 0.8), off = Math.random() * Math.max(0, len - seg), src = ctx.createBufferSource(), g = ctx.createGain();
+          src.buffer = buf; if (src.playbackRate) src.playbackRate.value = o.rate === false ? 1 : rnd(0.985, 1.015);
+          try { g.gain.setValueAtTime(0.0001, at); g.gain.setValueCurveAtTime(xfCurve(true), at, XF); g.gain.setValueAtTime(1, at + seg - XF); g.gain.setValueCurveAtTime(xfCurve(false), at + seg - XF, XF); }
+          catch (e) { g.gain.setValueAtTime(0.0001, at); g.gain.linearRampToValueAtTime(1, at + XF); g.gain.setValueAtTime(1, at + seg - XF); g.gain.linearRampToValueAtTime(0.0001, at + seg); }
+          src.connect(g); g.connect(R.sw); src.start(at, off, seg + 0.05); src.stop(at + seg + 0.1); scheduled++; sampled++;
+          B.srcs.push(src); B.nodes.push(g);
+          src.onended = function () { try { g.disconnect(); src.disconnect(); } catch (e) {} var k = B.srcs.indexOf(src); if (k >= 0) B.srcs.splice(k, 1); k = B.nodes.indexOf(g); if (k >= 0) B.nodes.splice(k, 1); };
+          var h = { on: true, id: 0 }; B.timers.push(h);
+          h.id = setTimeout(function () { var i = B.timers.indexOf(h); if (i >= 0) B.timers.splice(i, 1); if (h.on) pass(at + seg - XF); }, Math.max(50, (at + seg - XF - ctx.currentTime - 1.5) * 1000));
+        }
+        pass(t + 0.05);
+      });
+      return R;
+    }
+    function steps(B, kind, n, gap, k, pan, surf) {
+      var V = bv(B, n * gap + 0.5, pan); if (!V) return;
+      for (var i = 0; i < n; i++) SND[kind][2](V, { at: i * gap * rnd(0.94, 1.06), k: k, surface: surf });
     }
     function chatter(B) {
       var V = bv(B, 0.45, rnd(-0.8, 0.8)); if (!V) return;
@@ -582,26 +830,30 @@
       }
     }
     var BUILD = {
-      marble: function (B, o) {                                 // a marble hall: low room tone, moving air, far footsteps, a water clock
+      marble: function (B, o) {                                 // a marble hall: low room tone, moving air, a far crowd murmur, far footsteps, a water clock
         var rt = layer(B, 'lowpass', 170, 0.5, 0.38), air = layer(B, 'bandpass', 1300, 0.6, 0.05);
         drift(B, rt.g.gain, 0.26, 0.45, 4000, 9000); drift(B, air.f.frequency, 900, 1800, 6000, 12000); drift(B, air.g.gain, 0.03, 0.07, 5000, 10000);
+        var far = rec(B, 'crowd', { gain: 0.05, lp: 520, syn: 0.8 }); if (far) drift(B, far.sw.gain, 0.5, 1.2, 6000, 14000);
         ev(B, 9000, 22000, function () { steps(B, 'step-stone', 3 + Math.floor(Math.random() * 5), 0.56, 0.3, rnd(-0.8, 0.8)); });
         ev(B, o.drip ? 4000 : 9000, o.drip ? 11000 : 20000, function () { var V = bv(B, 0.5, rnd(-0.6, 0.6)); if (V) tone(V, 'sine', rnd(1500, 2100), rnd(1000, 1300), 0, 0.09, 0.03, 0.002); });
-        ev(B, 20000, 45000, function () { var V = bv(B, 2.6, rnd(-0.5, 0.5)); if (V) bell(V, pick([Fs5, A5, D6]), 0, 0.012, 2.5); });
+        ev(B, 20000, 45000, function () { if (!sev(B, 'chime', rnd(-0.5, 0.5), 0.03, { midi: pick([78, 81, 86]), rel: 1.2 })) { var V = bv(B, 2.6, rnd(-0.5, 0.5)); if (V) bell(V, pick([Fs5, A5, D6]), 0, 0.012, 2.5); } });
       },
-      agora: function (B, o) {                                  // the agora: three moving voice formants, chatter, a pottery clink, feet
+      agora: function (B, o) {                                  // the agora: a real crowd, three moving voice formants, chatter, birds over the roofs, a pottery clink, feet
         if (o.far) { var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1300; lp.connect(B.inp); B.nodes.push(lp); B.inp = lp; }
         var m1 = layer(B, 'bandpass', 380, 1.4, 0.28), m2 = layer(B, 'bandpass', 1000, 2, 0.14), m3 = layer(B, 'bandpass', 2300, 2.5, 0.04), lo = layer(B, 'lowpass', 200, 0.5, 0.2);
         drift(B, m1.f.frequency, 320, 460, 3000, 7000); drift(B, m1.g.gain, 0.2, 0.34, 2000, 5000); drift(B, m2.f.frequency, 850, 1250, 3000, 7000);
         drift(B, m2.g.gain, 0.08, 0.18, 2000, 5000); drift(B, m3.g.gain, 0.02, 0.06, 3000, 6000); drift(B, lo.g.gain, 0.12, 0.25, 5000, 9000);
+        var cr = rec(B, 'crowd', { gain: o.far ? 0.08 : 0.11, lp: o.far ? 900 : 2200, syn: 0.45 }); if (cr) drift(B, cr.sw.gain, 0.6, 1.15, 4000, 10000);
+        if (!o.far) rec(B, 'birds', { gain: 0.035, hp: 1800 });
         ev(B, o.far ? 900 : 300, o.far ? 2400 : 1000, function () { chatter(B); });
         ev(B, 7000, 18000, function () { var V = bv(B, 0.5, rnd(-0.7, 0.7)); if (V) bell(V, rnd(1400, 2200), 0, 0.015, 0.35, null, [1, 2.3, 3.9]); });
         ev(B, 6000, 15000, function () { steps(B, 'step-stone', 2 + Math.floor(Math.random() * 3), 0.5, 0.25, rnd(-0.9, 0.9)); });
       },
-      workshop: function (B, o) {                               // the workshop: the fire, its crackle, hammer on anvil, the quench, the bellows
+      workshop: function (B, o) {                               // the workshop: a real fire, its crackle, hammer on a real anvil, the quench, the bellows
         var h = o.hammer || 0, fire = layer(B, 'lowpass', 230, 0.7, 0.45), roar = layer(B, 'bandpass', 520, 0.8, 0.08);
         drift(B, fire.g.gain, 0.3, 0.55, 1500, 4000); drift(B, fire.f.frequency, 160, 320, 2000, 5000); drift(B, roar.g.gain, 0.04, 0.12, 2000, 5000);
-        ev(B, 70, 380, function () { var V = bv(B, 0.12, rnd(-0.4, 0.4)); if (V) nz(V, 0, rnd(0.006, 0.03), rnd(0.02, 0.08), 'highpass', rnd(2200, 6000), 0, 0.8, 0.001); });
+        var fr = rec(B, 'fire', { gain: 0.5, syn: 0.4 }); if (fr) drift(B, fr.sw.gain, 0.7, 1.2, 2000, 6000);
+        ev(B, 70, 380, function () { if (fr && fr.live && Math.random() < 0.6) return; var V = bv(B, 0.12, rnd(-0.4, 0.4)); if (V) nz(V, 0, rnd(0.006, 0.03), rnd(0.02, 0.08), 'highpass', rnd(2200, 6000), 0, 0.8, 0.001); });
         ev(B, h > 0.6 ? 5000 : 11000, h > 0.6 ? 11000 : 24000, function () {
           var n = 2 + Math.floor(Math.random() * 3), V = bv(B, n * 0.55 + 2.3, rnd(-0.5, 0.5)); if (!V) return;
           for (var i = 0; i < n; i++) SND.hammer[2](V, { at: i * 0.55 * rnd(0.95, 1.05), k: i === n - 1 ? 0.6 : 0.45 });
@@ -609,25 +861,33 @@
         });
         ev(B, 9000, 22000, function () { var V = bv(B, 2, 0); if (V) nz(V, 0, 1.6, 0.06, 'lowpass', 380, 620, 0.7, 0.6); });
       },
-      desert: function (B, o) {                                 // desert wind in gusts, a whistle over the dunes, camel bells passing
+      desert: function (B, o) {                                 // real desert wind and gusts, a whistle over the dunes, real camel bells passing
         var w = layer(B, 'bandpass', 520, 0.7, 0.4), wh = layer(B, 'bandpass', 1800, 9, 0.015), hs = layer(B, 'highpass', 5500, 0.5, 0.018);
         drift(B, w.f.frequency, 280, 900, 3000, 8000); drift(B, w.g.gain, 0.2, 0.6, 2000, 6000); drift(B, wh.f.frequency, 1300, 2600, 4000, 9000);
         drift(B, wh.g.gain, 0.004, 0.025, 3000, 7000); drift(B, hs.g.gain, 0.008, 0.03, 3000, 7000);
-        ev(B, 6000, 15000, function () { swell(w.sw.gain, rnd(1.5, 2.1), rnd(1, 2), rnd(2, 4)); });
+        var wd = rec(B, 'wind', { gain: 0.16, syn: 0.4 }), gu = rec(B, 'gusts', { gain: 0.12, base: 0.5 });
+        ev(B, 6000, 15000, function () { var up = rnd(1, 2), dn = rnd(2, 4), pk = rnd(1.5, 2.1); swell(w.sw.gain, pk, up, dn); if (gu) swell(gu.sw.gain, pk * 0.8, up, dn, 0.5); });
+        if (wd) drift(B, wd.sw.gain, 0.6, 1.2, 4000, 9000);
         if (o.bells !== false) ev(B, 7000, 18000, function () {
-          var n = 2 + Math.floor(Math.random() * 4), f = rnd(380, 520), V = bv(B, n * 0.75 + 1, rnd(-0.7, 0.7)); if (!V) return;
-          for (var i = 0, a = 0; i < n; i++, a += rnd(0.32, 0.75)) { var k = rnd(0.6, 1); bell(V, f, a, 0.03 * k, 0.9, null, [1, 1.86, 2.71]); tone(V, 'triangle', f * 0.5, 0, a, 0.06, 0.01 * k, 0.002); }
+          var n = 2 + Math.floor(Math.random() * 4), f = rnd(380, 520), pan = rnd(-0.7, 0.7), V = bv(B, n * 0.75 + 1.5, pan); if (!V) return;
+          for (var i = 0, a = 0; i < n; i++, a += rnd(0.32, 0.75)) {
+            var k = rnd(0.6, 1);
+            if (!sp(V, 'camel', a, 0.05 * k, { jit: 1, rel: 0.5 })) { bell(V, f, a, 0.03 * k, 0.9, null, [1, 1.86, 2.71]); tone(V, 'triangle', f * 0.5, 0, a, 0.06, 0.01 * k, 0.002); }
+          }
         });
       },
-      harbour: function (B) {                                   // the harbour: waves that swell and break, water lapping, gulls, a rope creaks
+      harbour: function (B) {                                   // the harbour: real waves on the shore, swells breaking, real gulls, water lapping, a rope creaks
         var sea = layer(B, 'lowpass', 480, 0.5, 0.3), wash = layer(B, 'bandpass', 1100, 0.6, 0.08);
+        var rs = rec(B, 'sea', { gain: 0.2, syn: 0.4 });
         ev(B, 4200, 9000, function () {
           var up = rnd(1.4, 2.4), dn = rnd(2.5, 4), t = ctx.currentTime;
           swell(sea.sw.gain, rnd(1.6, 2.3), up, dn); swell(wash.sw.gain, rnd(1.8, 2.8), up + 0.3, dn);
           sea.f.frequency.setTargetAtTime(rnd(650, 900), t, up / 3); sea.f.frequency.setTargetAtTime(480, t + up, dn / 3);
+          if (rs && rs.live && Math.random() < 0.5) setTimeout(function () { if (ambPlay && ambPlay.B === B) sev(B, 'wave', rnd(-0.5, 0.5), 0.09, { jit: 1, rel: 1.2 }); }, up * 600);
         });
         ev(B, 900, 2800, function () { var V = bv(B, 0.3, rnd(-0.6, 0.6)); if (!V) return; nz(V, 0, rnd(0.06, 0.14), rnd(0.02, 0.045), 'lowpass', rnd(400, 800), rnd(200, 300), 2, 0.01); tone(V, 'sine', rnd(260, 420), 200, 0, 0.06, 0.01, 0.005); });
         ev(B, 7000, 22000, function () {
+          if (sev(B, 'gull', rnd(-0.8, 0.8), 0.06, { jit: 1.5, vj: 0.4, lp: 7000 })) return;
           var n = 1 + Math.floor(Math.random() * 3), V = bv(B, n * 0.6 + 0.6, rnd(-0.8, 0.8)); if (!V) return;
           for (var i = 0; i < n; i++) {
             var a = V.t + i * rnd(0.35, 0.6), f = rnd(1300, 1800), o = nd(V, ctx.createOscillator()), bp = nd(V, ctx.createBiquadFilter()), g = nd(V, ctx.createGain());
@@ -641,69 +901,88 @@
           var bp = nd(V, ctx.createBiquadFilter()); bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = 5; bp.connect(V.g); tone(V, 'sawtooth', 80, 120, 0, 0.6, 0.012, 0.2, bp);
         });
       },
-      night: function (B, o) {                                  // a warm night: crickets that come and go, a far owl, the stars' faint ring
+      night: function (B, o) {                                  // a warm night: real crickets, the synth's crickets that come and go, a far owl, the stars' faint ring
         var air = layer(B, 'lowpass', 400, 0.5, o.stars ? 0.12 : 0.18); drift(B, air.g.gain, 0.08, 0.2, 4000, 9000);
+        var cr = rec(B, 'crickets', { gain: o.stars ? 0.035 : 0.07, syn: 0.7, lp: 9000 }); if (cr) drift(B, cr.sw.gain, 0.55, 1.1, 5000, 12000);
         if (o.stars) {
           var dg = gain(1, B.inp); B.nodes.push(dg); drift(B, dg.gain, 0.5, 1, 5000, 12000);
           [[55, 0.03], [82.41, 0.015]].forEach(function (x) { var os = ctx.createOscillator(), g = gain(x[1], dg); os.type = 'sine'; os.frequency.value = x[0]; os.connect(g); os.start(0); scheduled++; B.osc.push(os); B.nodes.push(g); });
           ev(B, 15000, 35000, function () { var V = bv(B, 3.2, rnd(-0.7, 0.7)); if (V) bell(V, pick([A5, D6, E6]), 0, 0.008, 3); });
         }
-        for (var c = 0; c < (o.stars ? 1 : 3); c++) (function () {
-          var cr = { f: rnd(4200, 4900), pan: rnd(-0.85, 0.85), k: rnd(0.5, 1), on: Math.random() < 0.7 }, rate = rnd(600, 1100);
-          ev(B, rate * 0.9, rate * 1.1, function () { if (!cr.on) return; var V = bv(B, 0.25, cr.pan); if (!V) return; for (var i = 0, n = 3 + (Math.random() < 0.5 ? 1 : 0); i < n; i++) tone(V, 'sine', cr.f, 0, i * 0.045, 0.022, 0.012 * cr.k, 0.004); });
-          ev(B, 4000, 14000, function () { cr.on = !cr.on; });
+        for (var c = 0; c < (o.stars ? 1 : 2); c++) (function () {
+          var cr2 = { f: rnd(4200, 4900), pan: rnd(-0.85, 0.85), k: rnd(0.5, 1), on: Math.random() < 0.7 }, rate = rnd(600, 1100);
+          ev(B, rate * 0.9, rate * 1.1, function () { if (!cr2.on) return; var V = bv(B, 0.25, cr2.pan); if (!V) return; for (var i = 0, n = 3 + (Math.random() < 0.5 ? 1 : 0); i < n; i++) tone(V, 'sine', cr2.f, 0, i * 0.045, 0.022, 0.012 * cr2.k * (cr && cr.live ? 0.6 : 1), 0.004); });
+          ev(B, 4000, 14000, function () { cr2.on = !cr2.on; });
         })();
         ev(B, 25000, 60000, function () { var V = bv(B, 1.6, rnd(-0.7, 0.7)); if (!V) return; tone(V, 'sine', 380, 355, 0, 0.38, 0.03, 0.12); tone(V, 'sine', 372, 350, 0.55, 0.6, 0.035, 0.15); });
       },
-      library: function (B) {                                   // a library hush: pages turn, a reed pen scratches, a scroll unrolls
+      library: function (B) {                                   // a library hush: real pages turn, a pen scratches, a map unfolds, far steps
         var hush = layer(B, 'lowpass', 160, 0.5, 0.22), air = layer(B, 'highpass', 4500, 0.5, 0.01);
         drift(B, hush.g.gain, 0.15, 0.28, 5000, 10000); drift(B, air.g.gain, 0.005, 0.015, 5000, 10000);
-        ev(B, 6000, 16000, function () { var V = bv(B, 0.5, rnd(-0.6, 0.6)); if (!V) return; nz(V, 0, rnd(0.18, 0.3), 0.035, 'bandpass', rnd(2000, 3000), rnd(3500, 5000), 0.9, 0.06); nz(V, 0.2, 0.08, 0.02, 'bandpass', 1500, 1000, 1, 0.01); });
-        ev(B, 10000, 25000, function () { var V = bv(B, 1.2, rnd(-0.5, 0.5)); if (V) SND.quill[2](V, { k: 0.6 }); });
-        ev(B, 25000, 55000, function () { var V = bv(B, 1.4, rnd(-0.5, 0.5)); if (V) SND.scroll[2](V, { k: 0.5 }); });
+        ev(B, 6000, 16000, function () { var V = bv(B, 1.1, rnd(-0.6, 0.6)); if (V) SND.page[2](V, { k: 0.45 }); });
+        ev(B, 10000, 25000, function () { var V = bv(B, 1.2, rnd(-0.5, 0.5)); if (V) SND.quill[2](V, { k: 0.55 }); });
+        ev(B, 25000, 55000, function () { var V = bv(B, 1.6, rnd(-0.5, 0.5)); if (V) SND.scroll[2](V, { k: 0.45 }); });
         ev(B, 20000, 45000, function () { steps(B, 'step-stone', 2 + Math.floor(Math.random() * 3), 0.6, 0.2, rnd(-0.9, 0.9)); });
       },
-      colosseum: function (B) {                                 // the colosseum: a big crowd that swells into cheers and claps, drums now and then
+      colosseum: function (B) {                                 // the colosseum: a real crowd that swells into real applause and cheers, frame drums
         var c1 = layer(B, 'bandpass', 520, 0.6, 0.38), c2 = layer(B, 'bandpass', 1250, 0.8, 0.17), c3 = layer(B, 'bandpass', 2900, 1, 0.05), lo = layer(B, 'lowpass', 150, 0.5, 0.2);
         drift(B, c1.f.frequency, 450, 650, 3000, 7000); drift(B, c2.g.gain, 0.12, 0.22, 2000, 5000); drift(B, lo.g.gain, 0.12, 0.25, 4000, 8000);
+        var cr = rec(B, 'crowd', { gain: 0.16, syn: 0.4 }), ap = rec(B, 'applause', { gain: 0.2, base: 0.0001 });
         ev(B, 14000, 32000, function () {
           var up = rnd(1, 2), dn = rnd(3, 5), pk = rnd(1.6, 2.4); swell(c1.sw.gain, pk, up, dn); swell(c2.sw.gain, pk, up, dn); swell(c3.sw.gain, pk * 1.4, up, dn);
-          var V = bv(B, 2.4, rnd(-0.3, 0.3)); if (V) playBuf(V, clapBuf(), up * 0.5, 0.06, 2200);
+          if (cr) swell(cr.sw.gain, pk * 0.7, up, dn);
+          if (ap && ap.live) swell(ap.sw.gain, rnd(0.7, 1), up, dn + 1, 0.0001);
+          else { var V = bv(B, 2.4, rnd(-0.3, 0.3)); if (V) playBuf(V, clapBuf(), up * 0.5, 0.06, 2200); }
         });
-        ev(B, 20000, 40000, function () { var n = 4 + Math.floor(Math.random() * 5), V = bv(B, n * 0.5 + 0.5, rnd(-0.3, 0.3)); if (!V) return; for (var i = 0; i < n; i++) tone(V, 'sine', 75, 50, i * 0.5, 0.25, i % 2 ? 0.035 : 0.06, 0.004); });
-        ev(B, 700, 1800, function () { chatter(B); });
+        ev(B, 20000, 40000, function () { var n = 4 + Math.floor(Math.random() * 5), V = bv(B, n * 0.5 + 1, rnd(-0.3, 0.3)); if (!V) return; for (var i = 0; i < n; i++) SND.drum[2](V, { at: i * 0.5, k: i % 2 ? 0.35 : 0.6 }); });
+        ev(B, 700, 1800, function () { if (cr && cr.live && Math.random() < 0.6) return; chatter(B); });
       },
-      grove: function (B) {                                     // an olive grove: leaves, birdsong, a far dove
+      grove: function (B) {                                     // an olive grove: real birdsong and a brook, leaves, single birds, a far dove
         var lv = layer(B, 'highpass', 2800, 0.5, 0.1), air = layer(B, 'lowpass', 300, 0.5, 0.1);
         drift(B, lv.g.gain, 0.05, 0.16, 2000, 5000); drift(B, lv.f.frequency, 2300, 3600, 3000, 7000); drift(B, air.g.gain, 0.06, 0.14, 4000, 9000);
+        var bd = rec(B, 'birds', { gain: 0.12, syn: 0.5 }); rec(B, 'brook', { gain: 0.025, lp: 6000 });
+        if (bd) drift(B, bd.sw.gain, 0.6, 1.1, 5000, 11000);
         ev(B, 3000, 10000, function () {
+          if (Math.random() < 0.5 && sev(B, 'chirp', rnd(-0.8, 0.8), 0.04, { jit: 2, vj: 0.4 })) return;
           var V = bv(B, 1.2, rnd(-0.8, 0.8)); if (!V) return;
           for (var i = 0, n = 2 + Math.floor(Math.random() * 4), base = rnd(2300, 3800); i < n; i++) { var f = base * pick([1, 1.12, 1.26, 0.89, 1.5]); tone(V, 'sine', f, f * rnd(0.85, 1.2), i * rnd(0.09, 0.16), rnd(0.05, 0.12), 0.018, 0.01); }
         });
+        ev(B, 9000, 20000, function () { sev(B, 'rustle', rnd(-0.8, 0.8), 0.05, { jit: 1, vj: 0.4, lp: 8000 }); });
         ev(B, 20000, 45000, function () { var V = bv(B, 1.4, rnd(-0.7, 0.7)); if (!V) return; tone(V, 'sine', 520, 480, 0, 0.3, 0.02, 0.08); tone(V, 'sine', 470, 440, 0.45, 0.5, 0.022, 0.1); });
       },
-      temple: function (B, o) {                                 // temple wind through the columns; bronze chimes stir when a gust comes
+      temple: function (B, o) {                                 // real wind through the columns; real chimes (mark trees, hand chimes) stir when a gust comes
         var ch = o.chimes || 0, w = layer(B, 'bandpass', 430, 0.8, 0.35), col = layer(B, 'bandpass', 820, 10, 0.02), lo = layer(B, 'lowpass', 140, 0.5, 0.15);
         drift(B, w.f.frequency, 300, 650, 4000, 9000); drift(B, w.g.gain, 0.22, 0.42, 3000, 7000); drift(B, col.f.frequency, 650, 1100, 5000, 11000);
         drift(B, col.g.gain, 0.008, 0.03, 4000, 9000); drift(B, lo.g.gain, 0.1, 0.2, 5000, 10000);
-        function chimes(n) { var V = bv(B, 3.6, rnd(-0.7, 0.7)); if (!V) return; for (var i = 0; i < n; i++) bell(V, pick(CHIME), i * rnd(0.15, 0.45), 0.02, 2.8, null, [1, 2.0, 3.01, 4.1]); }
+        var wd = rec(B, 'wind', { gain: 0.12, lp: 1600, syn: 0.5 });
+        function chimes(n) {
+          if (Math.random() < 0.5 && sev(B, 'windchime', rnd(-0.7, 0.7), 0.04 * (0.6 + ch * 0.4), { rel: 1.5, jit: 0.5 }, 6)) return;
+          var V = bv(B, 3.6, rnd(-0.7, 0.7)); if (!V) return;
+          for (var i = 0; i < n; i++) if (!sp(V, 'chime', i * rnd(0.15, 0.45), 0.03, { midi: pick([81, 83, 86, 88, 90]), dur: 2, rel: 1 })) bell(V, pick(CHIME), i * rnd(0.15, 0.45), 0.02, 2.8, null, [1, 2.0, 3.01, 4.1]);
+        }
         ev(B, 7000, 16000, function () {
-          swell(w.sw.gain, rnd(1.4, 1.9), rnd(1.2, 2.2), rnd(2.5, 4));
+          swell(w.sw.gain, rnd(1.4, 1.9), rnd(1.2, 2.2), rnd(2.5, 4)); if (wd) swell(wd.sw.gain, rnd(1.3, 1.7), rnd(1.2, 2.2), rnd(2.5, 4));
           if (Math.random() < ch) setTimeout(function () { if (ambPlay && ambPlay.B === B) chimes(1 + Math.floor(Math.random() * (1 + ch * 2))); }, rnd(600, 1600));
         });
         if (ch > 0.5) ev(B, 9000, 20000, function () { chimes(1); });
       },
-      treasury: function (B) {                                  // the treasury: a hush, coins counted, now and then a pour
+      treasury: function (B) {                                  // the treasury: a hush, real coins counted, now and then a real pour
         var h = layer(B, 'lowpass', 200, 0.5, 0.12); drift(B, h.g.gain, 0.08, 0.16, 4000, 9000);
-        ev(B, 5000, 14000, function () { var V = bv(B, 0.8, rnd(-0.6, 0.6)); if (!V) return; for (var i = 0, n = 1 + Math.floor(Math.random() * 3); i < n; i++) coin(V, i * rnd(0.06, 0.16), rnd(0.4, 0.8)); });
-        ev(B, 30000, 65000, function () { var n = 8 + Math.floor(Math.random() * 7), V = bv(B, 1.8, rnd(-0.4, 0.4)); if (!V) return; for (var i = 0; i < n; i++) coin(V, i * 0.07 * rnd(0.7, 1.3), (1 - i / n) * 0.6 + 0.2, true); });
+        ev(B, 5000, 14000, function () {
+          if (Math.random() < 0.4 && sev(B, 'count', rnd(-0.6, 0.6), 0.05, { jit: 1, vj: 0.3 })) return;
+          var V = bv(B, 0.9, rnd(-0.6, 0.6)); if (!V) return; for (var i = 0, n = 1 + Math.floor(Math.random() * 3); i < n; i++) SND.coin[2](V, { at: i * rnd(0.06, 0.16), k: rnd(0.25, 0.5) });
+        });
+        ev(B, 30000, 65000, function () {
+          if (sev(B, 'pour', rnd(-0.4, 0.4), 0.06, { jit: 1 })) return;
+          var n = 8 + Math.floor(Math.random() * 7), V = bv(B, 1.8, rnd(-0.4, 0.4)); if (!V) return; for (var i = 0; i < n; i++) coin(V, i * 0.07 * rnd(0.7, 1.3), (1 - i / n) * 0.6 + 0.2, true);
+        });
       }
     };
     function ambStop() {
       var p = ambPlay; ambPlay = null;
       if (!p || !ctx) return;
       try {
-        var B = p.B, t = ctx.currentTime;
+        var B = p.B, t = ctx.currentTime; B.dead = true;
         B.timers.forEach(function (h) { h.on = false; clearTimeout(h.id); });
         B.bus.gain.cancelScheduledValues(t); B.bus.gain.setValueAtTime(B.bus.gain.value || AMB_LEVEL, t); B.bus.gain.linearRampToValueAtTime(0.0001, t + 0.8);
         setTimeout(function () {
@@ -727,7 +1006,9 @@
           bus.gain.setValueAtTime(0.0001, t); bus.gain.linearRampToValueAtTime(AMB_LEVEL, t + 3);
           var B = { bus: bus, inp: bus, srcs: [], osc: [], nodes: [bus], timers: [] };
           ambPlay = { name: want, B: B };
+          if (smpUse()) preload((BED_FILES[spec[0]] || []).filter(function (f) { return f.indexOf('loop-') !== 0 || (!lite() && !saveData()); }));
           BUILD[spec[0]](B, spec[1]);
+          if (B.recs) forgetLoops(B.recs);
           setRoom(spec[2]);
         }
       } catch (e) { errors++; ambStop(); }
@@ -795,6 +1076,7 @@
       }
     }
     function musStart(name) {
+      want('harp'); want('harp-lo');                            // the real harp for the composer (the string synth plays until it is ready)
       var D = DISTRICTS[name], t = ctx.currentTime, bus = gain(0, CB.music.bus), lp = ctx.createBiquadFilter(), dg = gain(1, bus);
       bus.gain.setValueAtTime(0.0001, t); bus.gain.linearRampToValueAtTime(MUS_LEVEL, t + 4);
       lp.type = 'lowpass'; lp.frequency.value = 500; lp.connect(dg);
@@ -833,6 +1115,64 @@
     function musicState() { return { on: musicOn, allowed: musicAllowed(), playing: musPlay ? musPlay.name : '', district: musWant, districts: Object.keys(DISTRICTS) }; }
 
     /* ---------------------------------------------------------------- controls */
+    /* ---------------------------------------------------------------- voices: the murmur (no phone voice) and a person's presence */
+    // vowel formants (F1, F2 Hz) for the mouth shapes of people-voice.js visemes(): a voice heard through a curtain, our own sound
+    var FORM = { A: [780, 1250], E: [480, 1850], O: [520, 880], U: [360, 760], L: [420, 1350], M: [260, 950], F: [420, 1550], S: [460, 1750], K: [560, 1500] };
+    /** murmur(profile, timeline, {at0, gain}): a soft formant voice that follows the mouth timeline (people-voice.js visemes) on the voices bus.
+        profile = voiceProfile(person) ({timbre:{hz, formant, breath, wave}, gender}); timeline = {keys:[{t ms, v, a}]}. -> { stop() } or null (before the tap). */
+    function murmur(prof, tl, o) {
+      o = o || {};
+      if (!unlocked || !ctx || muted || !tl || !tl.keys || !tl.keys.length) return null;
+      var tb = (prof && prof.timbre) || {}, hz = tb.hz || 150, fk = (tb.formant || 1) * (prof && prof.gender === 'f' ? 1.12 : prof && prof.gender === 'm' ? 0.94 : 1);
+      var t0 = ctx.currentTime + 0.04, at0 = o.at0 || 0, keys = tl.keys, last = keys[keys.length - 1], end = t0 + Math.max(0.2, (last.t - at0) / 1000 + 0.15);
+      var out = gain(0.0001, CB.voices.bus), lp = ctx.createBiquadFilter(), env = ctx.createGain(), f1 = ctx.createBiquadFilter(), f2 = ctx.createBiquadFilter();
+      var osc = ctx.createOscillator(), sub = ctx.createOscillator(), sg = gain(0.35), br = ctx.createBufferSource(), bf = ctx.createBiquadFilter(), bg = gain((tb.breath || 0.06) * 2.2);
+      var g1 = gain(1), g2 = gain(0.45), nodes = [out, lp, env, f1, f2, osc, sub, sg, br, bf, bg, g1, g2];
+      lp.type = 'lowpass'; lp.frequency.value = 3200; lp.Q.value = 0.5; lp.connect(out);
+      env.gain.value = 0.0001; env.connect(lp);
+      f1.type = 'bandpass'; f1.Q.value = 5; f2.type = 'bandpass'; f2.Q.value = 7; f1.connect(g1); f2.connect(g2); g1.connect(env); g2.connect(env);
+      osc.type = 'sawtooth'; sub.type = tb.wave === 'sine' ? 'sine' : 'triangle'; osc.connect(f1); osc.connect(f2); sub.connect(sg); sg.connect(env);
+      br.buffer = white(); br.loop = true; bf.type = 'bandpass'; bf.frequency.value = 2600; bf.Q.value = 0.8; br.connect(bf); bf.connect(bg); bg.connect(f1); bg.connect(f2);
+      out.gain.setValueAtTime(0.0001, t0); out.gain.linearRampToValueAtTime(o.gain || 0.09, t0 + 0.05); out.gain.setValueAtTime(o.gain || 0.09, end - 0.06); out.gain.linearRampToValueAtTime(0.0001, end);
+      // the tune of a sentence: it starts a little high, drifts down (declination), lifts on stressed vowels, falls at the end (or rises for a question)
+      var q = o.question === true, n = keys.length;
+      for (var i = 0; i < n; i++) {
+        var k = keys[i], t = t0 + Math.max(0, (k.t - at0) / 1000), x = i / Math.max(1, n - 1), F = FORM[k.v];
+        var p = hz * (1.08 - 0.14 * x + (k.a > 0.7 ? 0.05 : 0) + (q && x > 0.85 ? 0.18 * (x - 0.85) / 0.15 : 0) + 0.02 * Math.sin(i * 1.7));
+        osc.frequency.setTargetAtTime(p, t, 0.03); sub.frequency.setTargetAtTime(p, t, 0.03);
+        if (F) { f1.frequency.setTargetAtTime(F[0] * fk, t, 0.025); f2.frequency.setTargetAtTime(F[1] * fk, t, 0.025); }
+        var open = k.v === 'rest' ? 0.0001 : k.v === 'M' ? 0.18 : 0.3 + 0.7 * (k.a || 0.5);
+        env.gain.setTargetAtTime(open, t, k.v === 'rest' ? 0.04 : 0.018);
+        if (k.v === 'S' || k.v === 'F') { bf.frequency.setTargetAtTime(k.v === 'S' ? 5200 : 3000, t, 0.01); bg.gain.setTargetAtTime(0.25, t, 0.01); bg.gain.setTargetAtTime((tb.breath || 0.06) * 2.2, t + 0.06, 0.02); }
+      }
+      env.gain.setTargetAtTime(0.0001, end - 0.05, 0.03);
+      osc.start(t0); sub.start(t0); br.start(t0, Math.random()); osc.stop(end + 0.1); sub.stop(end + 0.1); br.stop(end + 0.1); scheduled += 3;
+      var done = false, h = { stop: function () {
+        if (done) return; done = true;
+        try { var t = ctx.currentTime; out.gain.cancelScheduledValues(t); out.gain.setTargetAtTime(0.0001, t, 0.02); [osc, sub, br].forEach(function (x) { try { x.stop(t + 0.1); } catch (e) {} }); } catch (e) {}
+        setTimeout(function () { nodes.forEach(function (x) { try { x.disconnect(); } catch (e) {} }); released++; }, 200);
+      }, end: end };
+      h.timer = setTimeout(h.stop, (end - ctx.currentTime + 0.2) * 1000);
+      return h;
+    }
+    /** presenceOf(person or spec): what they sound like moving: { jingle: keys | metal | beads | cloth | pouch | jingle | rustle, surface } */
+    function presenceOf(p) {
+      p = p || {};
+      var kind = String(p.kind || String(p.id || '').split(':')[0] || ''), j = JINGLE_OF[p.accessory] || JINGLE_OF[kind] || 'beads';
+      return { jingle: p.jingle && JINGLES.indexOf(p.jingle) >= 0 ? p.jingle : j, surface: p.surface || 'stone' };
+    }
+    /** presence(person, pos, listener?, opts?): their accessory's soft sound, placed in 3D (a hook for people3d.js / scenes) */
+    function presence(p, pos, lis, o) { var P = presenceOf(p); return at('jingle', pos || {}, lis, merge({ kind: P.jingle, k: 0.5 }, o)); }
+    /** walker(person) -> { step(pos, listener?, opts?) }: a footstep on their surface; every few steps their things answer, very softly */
+    function walker(p) {
+      var P = presenceOf(p), n = Math.floor(Math.random() * 3);
+      return { presence: P, step: function (pos, lis, o) {
+        o = o || {}; var ok = at('step', pos || {}, lis, merge({ surface: o.surface || P.surface, k: o.k || 0.55 }, o));
+        if (++n % 3 === 0 && Math.random() < 0.6) at('jingle', pos || {}, lis, { kind: P.jingle, k: (o.k || 0.55) * 0.55 });
+        return ok;
+      } };
+    }
+
     function haptic(name) {
       try {
         if (muted || reduced() || !HAPTIC[name]) return false;
@@ -876,7 +1216,7 @@
         unlocked: unlocked, muted: muted, volume: vol, reducedMotion: reduced(), errors: errors, scheduled: scheduled, released: released,
         haptics: !!(env.navigator && typeof env.navigator.vibrate === 'function'), padOn: !!padNode, ctxState: ctx ? ctx.state : 'none',
         voices: active.length, nodes: nodes, room: room, quiet: quietOn, ducked: duckN > 0 || autoDuck, volumes: volumes(),
-        music: musPlay ? musPlay.name : '', bed: ambPlay ? ambPlay.name : '', reverb: !!conv, lite: lite()
+        music: musPlay ? musPlay.name : '', bed: ambPlay ? ambPlay.name : '', reverb: !!conv, lite: lite(), samples: smpState()
       };
     }
     var api = {
@@ -886,14 +1226,15 @@
       beds: Object.keys(BUILD), bedOf: function (n) { return BED[n] ? BED[n][0] : ''; },
       sound: sound, quiet: quiet, volume: volume, volumes: volumes, categories: CATS.slice(), duck: duck, speaking: duck,
       music: music, district: district, musicState: musicState, districts: Object.keys(DISTRICTS),
-      room: roomFn, rooms: ROOMS.slice(), listener: listener, bus: bus, context: context, onUnlock: onUnlock
+      room: roomFn, rooms: ROOMS.slice(), listener: listener, bus: bus, context: context, onUnlock: onUnlock,
+      samples: samples, preload: preload, audio: AUDIO, murmur: murmur, presence: presence, presenceOf: presenceOf, walker: walker, jingles: JINGLES.slice()
     };
     /* OLYMPUS.sound.at(...): hang the new hooks on the kit's sound() function too (olympus.js stays untouched) */
     function attachHooks() {
       try {
         var O = env.OLYMPUS, f = O && O.sound;
         if (typeof f !== 'function' || f.at === at) return;
-        ['at', 'world', 'cue', 'music', 'district', 'duck', 'speaking', 'quiet', 'volume', 'room', 'listener', 'bus', 'onUnlock'].forEach(function (k) { f[k] = api[k]; });
+        ['at', 'world', 'cue', 'music', 'district', 'duck', 'speaking', 'quiet', 'volume', 'room', 'listener', 'bus', 'onUnlock', 'samples', 'preload', 'presence', 'walker', 'murmur'].forEach(function (k) { f[k] = api[k]; });
       } catch (e) {}
     }
     load(); listen(); attachHooks();
