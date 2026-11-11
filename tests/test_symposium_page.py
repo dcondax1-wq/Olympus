@@ -149,6 +149,56 @@ def ask(p, text):
     return p.evaluate(SHEET)
 
 
+def pixel_spread(p, sel):
+    """How much the pixels of an element differ (a blank or one-colour canvas is ~0)."""
+    import io
+    try:
+        from PIL import Image, ImageStat
+    except ImportError:
+        return 99
+    im = Image.open(io.BytesIO(p.query_selector(sel).screenshot())).convert("L")
+    return round(ImageStat.Stat(im).stddev[0], 1)
+
+
+def test_people_lab():
+    """The people lab (olympus/people-lab.html): every person on a turntable, every pose / face / mouth, the lineup within budget, non-blank at 390 x 844."""
+    try:
+        import playwright  # noqa: F401
+    except ImportError:
+        check("d. people lab skipped: no Playwright", True)
+        return
+    srv, origin = AK.serve()
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            p.goto(f"{origin}/olympus/people-lab.html?still=1")
+            p.wait_for_function("window.PEOPLE_LAB && window.PEOPLE_LAB.ready()", timeout=120000, polling=300)
+            p.wait_for_timeout(800)
+            info = p.evaluate("window.PEOPLE_LAB.info()")
+            if not info.get("turn"):
+                check("d. people lab: no WebGL here, the portraits stay", p.evaluate("document.querySelectorAll('#grid .cell').length") > 30)
+                return
+            ln = info["line"]
+            check(f"d. the lab's lineup: {ln['people']} people in {ln['calls']} draw calls and {ln['tris']} triangles (<= 45 / 160k; the crowd is {ln['crowdCalls']} draw calls)",
+                  ln["calls"] <= 45 and ln["tris"] <= 160000 and ln["crowdCalls"] == 2, ln)
+            ids = p.evaluate("window.PEOPLE_LAB.ids()")
+            states = []
+            for k, pose in enumerate(["wave", "think", "hammer", "write", "read", "weigh", "telescope", "type", "carry", "cheer", "shrug", "slump"]):
+                r = p.evaluate("(o) => window.PEOPLE_LAB.show(o)", {"id": ids[k % len(ids)], "pose": pose, "expr": "happy" if k % 2 else "thinking", "angle": 0.3, "frames": 14 if pose in ("wave", "cheer", "shrug") else 40})
+                states.append((pose, r["state"]["pose"], r["triangles"]))
+            check("d. every pose plays on a real person (the lab's turntable), within the figure budget", all(a == b and t <= 12000 for a, b, t in states), states)
+            spreads = []
+            for e in ["neutral", "happy", "surprised"]:
+                p.evaluate("(o) => window.PEOPLE_LAB.show(o)", {"id": ids[0], "pose": "idle", "expr": e, "mouth": "O" if e == "surprised" else None, "angle": 0})
+                spreads.append(pixel_spread(p, "#turn"))
+            check(f"d. the turntable at 390 x 844 is not blank (pixel spread {spreads})", min(spreads) > 12, spreads)
+            AK.shot(p, "people-lab-390")
+            check("d. the lab's buttons are >= 44 px taps; no sideways scroll; no console error, nothing off origin", AK.taps(p) == [] and AK.no_sideways(p) and errs == [] and off == [], (AK.taps(p)[:4], errs[:3], off[:3]))
+            ctx.close()
+    finally:
+        srv.shutdown()
+
+
 def test_page():
     try:
         import playwright  # noqa: F401
@@ -324,11 +374,19 @@ def test_page():
                 check(f"c. high: the 3D hall is up: everyone on couches around the table in {st['calls']} draw calls (<= 40), {st['tags']} tappable portraits over the people facing you",
                       0 < st["calls"] <= 40 and 1 <= st["tags"] <= 7 and p.is_visible("#hall3d") and not p.is_visible("#wall") and p.inner_text("#viewBtn") == "Show as a list", st)
                 check("c. the portraits over the hall are >= 44 px taps and the page has no sideways scroll", AK.taps(p) == [] and AK.no_sideways(p), AK.taps(p))
+                hv = p.evaluate("() => { const h = window.SYMPOSIUM_HALL; return h ? { close: h.closeUps().length, tris: h.triangles(), calls: h.drawCalls() } : null; }")
+                check(f"c. people v2 in the hall: {hv and hv['close']} close-up figures across the table (the rest one crowd), {hv and hv['tris']} triangles (<= 160k), {hv and hv['calls']} draw calls (<= 40)",
+                      hv is not None and 1 <= hv["close"] <= 5 and hv["tris"] <= 160000 and hv["calls"] <= 40, hv)
+                spread = pixel_spread(p, "#hall3d")
+                check(f"c. the hall at 390 x 844 is not blank (pixel spread {spread})", spread > 12, spread)
                 AK.shot(p, "symposium-hall-390")
                 p.evaluate("window.scrollTo(0, 0)")
                 p.evaluate("() => document.querySelector('#hallTags .htag:not([hidden])').click()")
                 p.wait_for_function("() => document.querySelectorAll('.pp-them .pp-text').length > 0", timeout=15000)
                 check("c. tapping a portrait in the hall opens that person's chat", p.evaluate(SHEET)["name"] != "")
+                p.wait_for_timeout(1800)
+                sp = p.evaluate("() => window.SYMPOSIUM_HALL && window.SYMPOSIUM_HALL.speaker()")
+                check("c. the one you talk to is a close-up figure that waves, then talks to you (pose wave / talk)", sp is not None and sp["pose"] in ("wave", "talk"), sp)
                 AK.shot(p, "symposium-hall-chat-390")
                 p.keyboard.press("Escape")
                 p.click("#viewBtn")
@@ -350,4 +408,5 @@ if __name__ == "__main__":
     test_maths()
     if "--static" not in sys.argv:
         test_page()
+        test_people_lab()
     AK.finish()
