@@ -238,7 +238,7 @@ function propGeo(THREE, name, pal, s) {
     case 'crate': add(box(0.52, 0.36, 0.38), M(0, -0.12, 0.42), WOOD); for (const x of [-0.2, 0.2]) add(box(0.06, 0.38, 0.4), M(x, -0.12, 0.42), '#6b4a2a'); add(sph(0.07, 8, 6), M(0.08, 0.08, 0.42), lin(THREE, '#9c3b2f')); add(sph(0.06, 8, 6), M(-0.06, 0.07, 0.38), lin(THREE, '#c8a24a')); break;
     case 'anvil': add(box(0.36, 0.1, 0.2), M(0, 0.5, 0.7), IRON, 1); add(new THREE.ConeGeometry(0.1, 0.18, 4), M(0.24, 0.5, 0.7, 0, Math.PI / 4, -Math.PI / 2, 1, 1, 0.6), IRON, 1); add(box(0.14, 0.3, 0.14), M(0, 0.3, 0.7), IRON, 1); add(cyl(0.2, 0.24, 0.16, 10), M(0, 0.08, 0.7), WOOD); break;
     case 'owl': {      // on the left shoulder (the person's +x), facing forward
-      const x = 0.33, y = 0.36, z = -0.02, br = lin(THREE, '#8a6a48'), cream = lin(THREE, '#e9dcc0');
+      const x = 0.52, y = 0.3, z = -0.06, br = lin(THREE, '#8a6a48'), cream = lin(THREE, '#e9dcc0');
       add(sph(0.12, 12, 10), M(x, y, z, 0, 0, 0, 1, 1.15, 0.95), br); add(sph(0.075, 10, 8), M(x, y + 0.02, z + 0.06, 0, 0, 0, 1, 1.2, 0.7), cream);
       add(sph(0.1, 12, 10), M(x, y + 0.17, z + 0.01), br);
       for (const e of [-1, 1]) { add(sph(0.038, 10, 8), M(x + e * 0.042, y + 0.18, z + 0.085, 0, 0, 0, 1, 1, 0.5), GOLD); add(sph(0.018, 8, 6), M(x + e * 0.042, y + 0.18, z + 0.103), INK); add(new THREE.ConeGeometry(0.025, 0.06, 4), M(x + e * 0.06, y + 0.27, z, 0, 0, -e * 0.3), br); add(sph(0.06, 8, 6), M(x + e * 0.1, y - 0.01, z - 0.01, 0, 0, e * 0.2, 0.45, 1.1, 0.9), lin(THREE, '#6f5238')); }
@@ -347,7 +347,7 @@ const ease = (u) => u * u * (3 - 2 * u);
 // about their own axes, O.hips(dy); k = the fade (0..1) for one-shots
 const LAYERS = {
   relax: (t, O) => { const b = 0.04 * sin(t * 1.3); O.arm('r', [-0.34, -1, 0.02 + b], [-0.14, -1, 0.16]); O.arm('l', [0.34, -1, 0.02 - b], [0.14, -1, 0.16]); },
-  wave: (t, O, k) => { const s = sin(t * 9); O.arm('r', [-0.5, 0.82, 0.18], [-0.12 + 0.5 * s, 1, 0.28]); O.rot('head', 0, 0, -0.1 * k); O.rot('chest', 0, 0.06, -0.05); },
+  wave: (t, O, k) => { const s = sin(t * 9); O.arm('r', [-0.5, 0.82, 0.18], [-0.12 + 0.5 * s, 1, 0.28]); O.rot('head', 0, 0, -0.08 * k); O.rot('chest', 0, 0.05, 0); },
   talk: (t, O) => { O.arm('r', [-0.3, -0.84, 0.42 + 0.1 * sin(t * 2.3)], [0.15 + 0.3 * sin(t * 3.1), 0.25 + 0.25 * sin(t * 2.6 + 1), 1]); O.arm('l', [0.32, -0.88, 0.3 + 0.08 * sin(t * 1.7 + 1)], [-0.12, 0.05 + 0.18 * sin(t * 1.9 + 1), 1]); O.rot('head', 0.04 * sin(t * 4.2), 0.06 * sin(t * 1.3), 0.03 * sin(t * 0.9)); O.rot('chest', 0, 0.06 * sin(t * 1.1), 0); },
   cheerSeated: (t, O, k) => { const b = 0.15 * sin(t * 8) * k; O.arm('r', [-0.35, 1, 0.1], [-0.2 - b, 1, 0.05]); O.arm('l', [0.35, 1, 0.1], [0.2 + b, 1, 0.05]); O.rot('head', -0.2 * k, 0, 0); },
   slump: (t, O) => { O.rot('chest', 0.3, 0, 0); O.rot('head', 0.38 + 0.03 * sin(t * 0.8), 0, 0); O.arm('r', [-0.05, -1, 0.25], [0, -1, 0.35]); O.arm('l', [0.05, -1, 0.25], [0, -1, 0.35]); },
@@ -370,6 +370,9 @@ export function character(THREE, cast, sp, opts) {
   // ---- bones: a fresh copy of the cast's skeleton + one hide-able bone per prop
   const root = cast.rootBone.clone(true), byName = {}; root.traverse((b) => { if (b.isBone) byName[b.name] = b; });
   const bones = cast.bindNames.map((n) => byName[n]), ibm = cast.ibm.map((m) => m.clone()), J = (name) => cast.bindNames.indexOf(name);
+  // the rest pose: every frame starts from it, so a bone a clip does not move (the head and chest in some clips) never collects the layers' turns
+  const restPose = bones.map((b) => [b, b.position.clone(), b.quaternion.clone()]);
+  const toRest = () => { for (const [b, p, q] of restPose) { b.position.copy(p); b.quaternion.copy(q); } };
   const propBone = {}, rest = cast.restWorld;
   // ---- what this person carries now (more are built on demand)
   const want = new Set(IDLE_PROPS[ot.accessory] || []); if (ot.bun) want.add('bun'); if (ot.topknot) want.add('topknot'); if (ot.glasses) want.add('glasses');
@@ -457,7 +460,7 @@ export function character(THREE, cast, sp, opts) {
     const layer = seatedNow && def.seatedOver ? def.seatedOver : def.over || (n === 'idle' && !seatedNow ? 'relax' : null);
     for (const l of st.layers) l.goal = 0;
     if (layer) st.layers.push({ name: layer, w: 0, goal: 1, t0: st.t, dur: isOne ? (def.dur || 1) : 0 });
-    if (!st.ticked) { mixer.update(0); applyLayers(0, true); }
+    if (!st.ticked) { toRest(); mixer.update(0); applyLayers(0, true); }
     const clip = cast.clips[clipOf(baseName)], len = isOne ? (def.dur || (clip ? clip.duration : 1)) : 0;
     st.oneEnd = isOne ? st.t + len : 0;
     return len;
@@ -555,12 +558,12 @@ export function character(THREE, cast, sp, opts) {
     if (st.oneEnd && st.t >= st.oneEnd) { st.oneEnd = 0; const nx = st.then || st.pose || 'idle'; st.then = null; play(nx); }
     const def = poseDef(st.name), seatedNow = st.seated && !def.stand;
     if (st.seatedNow !== seatedNow) { st.seatedNow = seatedNow; }
-    mixer.update(dt); st.ticked = true;
+    toRest(); mixer.update(dt); st.ticked = true;
     model.position.y = seatedNow ? seatY() : 0;
     applyLayers(dt, false); applyLook(dt, false); faceTick(dt, false); propsTick(dt, false);
   }
   function seatY() { return (SEAT_BUTT - (seatOff - 0.24) * UNIT) * (s.height || 1); }
-  function snap() { mixer.update(0); const def = poseDef(st.name); model.position.y = st.seated && !def.stand ? seatY() : 0; applyLayers(0, true); applyLook(0, true); faceTick(0, true); propsTick(0, true); }
+  function snap() { toRest(); mixer.update(0); const def = poseDef(st.name); model.position.y = st.seated && !def.stand ? seatY() : 0; applyLayers(0, true); applyLook(0, true); faceTick(0, true); propsTick(0, true); }
   function lookAt(v) { if (!v) st.look = null; else st.look = (st.look || new THREE.Vector3()).set(v.x, v.y, v.z); if (!st.ticked) snap(); }
   function setMouth(v, amount) { const n = VIS.includes(v) ? v : 'rest'; st.speech = { v: n, k: amount == null ? 1 : clamp(+amount || 0, 0, 1), t: st.t }; if (!st.ticked) snap(); }
   function setExpression(name, amount) { st.expr = C.EXPR_FACE[name] ? name : 'neutral'; st.exprSet = true; st.exprK = amount == null ? 1 : clamp(+amount || 0, 0, 1); if (!st.ticked) snap(); }
@@ -577,7 +580,7 @@ export function character(THREE, cast, sp, opts) {
   const HOLD = { lantern: [0.05, 1, 0.12], torch: [0.05, 1, 0.2], hammer: [0, -1, 0.25], scroll: [0, 0.25, 1] };
   function orientHeld() {
     if (st.seated) return;
-    const was = st.layers.slice(); st.layers = [{ name: 'relax', w: 1, goal: 1, t0: st.t, dur: 0 }]; mixer.update(0); applyLayers(0, true); st.layers = was;
+    const was = st.layers.slice(); st.layers = [{ name: 'relax', w: 1, goal: 1, t0: st.t, dur: 0 }]; toRest(); mixer.update(0); applyLayers(0, true); st.layers = was;
     model.updateWorldMatrix(true, true); model.getWorldQuaternion(mq);
     for (const p of Object.keys(HOLD)) {
       const pb = propBone[p]; if (!pb) continue;
