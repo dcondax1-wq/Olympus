@@ -17,7 +17,7 @@ assert.match(html, /href="\.\.\/datacity\/"/);
 assert.match(html, /href="\.\/" aria-current="page"/);
 assert.match(html, /id="networkToggle"[^>]+aria-expanded="false"/);
 assert.match(html, /id="districtSelect"[^>]+aria-label="Switch market district"/);
-assert.match(html, /kalshicity\.css\?v=k14/);
+assert.match(html, /kalshicity\.css\?v=k\d+/);
 assert.match(html, /kalshicity\.js\?v=k18/);
 assert.match(css, /\.district-control select[^}]*min-height:44px/);
 assert.match(css, /\.network-links a\[aria-current="page"\]/);

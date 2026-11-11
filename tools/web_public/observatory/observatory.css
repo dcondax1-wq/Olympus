@@ -58,3 +58,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold2);outline-offs
 
 /* phone-fit 2026-11-10 (tap targets on a 320 px screen) */
 .back { flex: 0 0 48px; min-width: 48px; }
+
+/* phone-fit 2026-11-11: seven columns cannot each be 44 px wide on a 320 px iPhone, so under 380 px the row becomes a strip you slide sideways:
+   every column is 48 px wide, its name stays under it, the ground and horizon stay still behind (layout only) */
+@media(max-width:380px){
+  .towers{inset:8% 0 0 0;bottom:0;display:flex;justify-content:flex-start;gap:16px;padding:14px 16px 122px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none}
+  .towers::-webkit-scrollbar{display:none}
+  .tower{flex:0 0 48px;width:48px;min-width:48px}
+}

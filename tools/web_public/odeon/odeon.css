@@ -339,3 +339,14 @@ body[data-reduced] .flare, body[data-lite] .f-ring { display: none; }
 .vignette { background: radial-gradient(120% 90% at 50% 45%, transparent 60%, rgba(20, 17, 14, 0.6) 100%); }
 .title-card b { font-weight: 600; text-shadow: none; }
 #flash { background: radial-gradient(80% 70% at 50% 45%, rgba(200, 162, 74, 0.28), transparent 70%); }
+
+/* phone-fit 2026-11-11: the event ticks get their own 44 px row above the scrubber (each tick is a 44 x 44 px button, its dot sits just over the track),
+   so a tick is easy to hit and no longer covers the scrubber. Upright phones only; the landscape bar keeps its one row. */
+@media (min-height: 501px), (orientation: portrait) {
+  .scrub-wrap { height: 88px; align-items: flex-end; }
+  .ticks { bottom: auto; height: 44px; }
+  .tick { top: 0; width: 44px; height: 44px; margin-left: -22px; border-radius: 12px; }
+  .tick::before { left: 19px; top: 32px; }
+  .tick.k-entry::before { left: 18px; top: 31px; }
+  .tick::after { content: none; }
+}
