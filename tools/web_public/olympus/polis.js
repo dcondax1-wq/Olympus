@@ -1034,6 +1034,7 @@
   function paintMosaic(g, w, h, pattern, dense, opts, lite, dprNow) {
     var pal = dense ? MOS.dense : MOS.quiet, T = opts.tile || (lite ? (dense ? 8 : 10) : (dense ? 6 : 8)), rnd = prng(hash(pattern + w + 'x' + h));
     if (pattern === 'meander' && !opts.tile) T = Math.max(3, Math.min(T, Math.min(w, h) / 34));
+    if (pattern === 'dolphins' && !opts.tile) T = Math.min(T, lite ? 7 : 5);
     g.fillStyle = dense ? '#120e0b' : '#100d0a';
     g.fillRect(0, 0, w, h);
     var dol = null, dolT = [];
@@ -1270,6 +1271,7 @@
       s += tag('circle', { cx: C, cy: C, r: R, fill: mUrl ? 'url(#' + id + 'p)' : 'url(#' + id + 'f)' });
       s += tag('circle', { cx: C, cy: C, r: R, fill: 'url(#' + id + 'f)', opacity: mUrl ? 0.55 : 1 });
       var day = null;
+      function inArc(x, a0, a1) { var span = ((a1 - a0) % 360 + 360) % 360, d = ((x - a0) % 360 + 360) % 360; return d > 0 && d < span; }
       if (rs) {
         var ar = ang(rs.rise), as = ang(rs.set);
         day = { rise: rs.rise, set: rs.set, ar: ar, as: as };
@@ -1291,7 +1293,7 @@
         ticks += 'M' + pt(q0[0], q0[1]) + 'L' + pt(q1[0], q1[1]);
         if (hour && (mn / 60) % 3 === 0) {
           var hh = mn / 60, lp = xy(a, R - 24);
-          lab += tag('text', { x: r2(lp[0]), y: r2(lp[1] + 4.2), 'text-anchor': 'middle', 'class': 'polis-sd-num' }, String(hh === 0 ? 24 : hh));
+          lab += tag('text', { x: r2(lp[0]), y: r2(lp[1] + 4.2), 'text-anchor': 'middle', 'class': 'polis-sd-num' + (day && inArc(a, day.as, day.ar) ? ' night' : '') }, String(hh === 0 ? 24 : hh));
           var h0 = xy(a, 18), h1 = xy(a, R - 30);
           hl += 'M' + pt(h0[0], h0[1]) + 'L' + pt(h1[0], h1[1]);
         }

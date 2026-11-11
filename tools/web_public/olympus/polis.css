@@ -51,10 +51,11 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 -2px 4px rgba(60, 45, 30, .28), inset 0 0 0 1px rgba(90, 76, 58, .25), 0 6px 18px rgba(0, 0, 0, .35); }
 .polis-inscribed { font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; line-height: 1.15; }
 .polis-cut, .polis-plaque .polis-inscribed:not(.polis-plaque) {
-  display: inline-block; color: #5a4e40; background-image: linear-gradient(180deg, #2f271e 0%, #4f4335 45%, #8b7d69 78%, #b3a68f 100%);
+  display: inline-block; line-height: 1.15em; color: #5a4e40; background-image: linear-gradient(180deg, #2f271e 0%, #4f4335 45%, #8b7d69 78%, #b3a68f 100%);
+  background-size: 100% 1.15em; background-repeat: repeat-y;   /* one cut per line of text */
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 1px 0 rgba(255, 252, 244, .9)) drop-shadow(0 -1px 0 rgba(40, 30, 20, .22)); }
-.polis-cut .polis-num, .polis-gilt .polis-num, .polis-plaque .polis-inscribed .polis-num { background-image: inherit; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.polis-cut .polis-num, .polis-gilt .polis-num, .polis-plaque .polis-inscribed .polis-num { background-image: inherit; background-size: 100% 1.15em; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .polis-cut .polis-num > span, .polis-gilt .polis-num > span { background-image: inherit; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .polis-gilt { color: #d9b153; background-image: linear-gradient(100deg, #7a5718 0%, #c8a24a 20%, #f6dc8c 34%, #fff6d6 40%, #e2bd62 46%, #a77a28 64%, #e7c46e 82%, #8a6420 100%);
   background-size: 260% 100%; background-position: 100% 0; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
@@ -100,6 +101,7 @@
 .polis-sd-face { width: min(100%, 300px); aspect-ratio: 1 / 1; }
 .polis-sd-face svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .5)); }
 .polis-sd-num { font: 600 11px 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; fill: #4a4033; }
+.polis-sd-num.night { fill: #e6dcc6; }
 .polis-sd-hand { transition: transform 1.2s var(--polis-ease); }
 .polis-sd-cap { text-align: center; }
 .polis-sd-time { font: 700 20px/1.2 'SF Pro Rounded', -apple-system, system-ui, sans-serif; font-variant-numeric: tabular-nums; color: #f3ece0; }
