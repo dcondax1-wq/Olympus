@@ -257,6 +257,7 @@ function setTier(t) {
 document.getElementById('tiers').addEventListener('click', (e) => { const b = e.target.closest('button[data-t]'); if (b) setTier(b.dataset.t); });
 
 window.__fxLab = { rc, scene, camera, THREE, orb, run: start, stop, setTier, handles, hosts, ready: false, bare, cine: cineStack, cineState: () => (cine ? cine.stats() : null), readout,
+  cineBurst: (k, at) => (cine ? cine.burst(k, at) : 0), cineFocus: (t) => (cine ? cine.focus(t) : false), cineSetTime: (n) => (cine ? cine.setTime(n, 0) : ''),
   names: () => (window.OLYMPUS_FX ? window.OLYMPUS_FX.names() : []), stopAll: () => { Object.keys(handles).forEach(stop); } };
 build().then(() => {
   if (!bare && !q.get('fx')) document.querySelectorAll('#tiers button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === window.OLYMPUS_FX.tier())));

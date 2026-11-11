@@ -87,7 +87,11 @@ def test_static():
     check("a. the other files never schedule frames themselves (they use ctx.tick on the shared loop)",
           not any("requestAnimationFrame" in src[n] for n in names if n != "fx-core.js"))
     total = sum(len(v.encode()) for v in src.values())
-    check("a. the whole library is small (%d KB, limit 160 KB; the 2D / UI part loads without any three.js)" % (total // 1024), total < 160 * 1024
+    ui = sum(len(src[n].encode()) for n in ("fx-core.js", "fx-ui.js", "fx-text.js", "fx-burst.js"))
+    # 2026-11-11: the cinema stack (fx-cine.js, only ever loaded by a 3D scene) joined: the whole library <= 200 KB, the 2D / UI part a page
+    # pays for on its own <= 80 KB, fx-cine.js <= 60 KB
+    check("a. the library is small (all %d KB <= 200; the 2D / UI part %d KB <= 80 and loads without any three.js; fx-cine.js %d KB <= 60)" % (total // 1024, ui // 1024, len(src.get("fx-cine.js", "").encode()) // 1024),
+          total < 200 * 1024 and ui < 80 * 1024 and len(src.get("fx-cine.js", "").encode()) < 60 * 1024
           and not any("THREE" in src[n] or "import " in src[n] for n in ("fx-core.js", "fx-ui.js", "fx-text.js", "fx-burst.js")))
     js, css = read(os.path.join(KIT, "olympus.js")), read(os.path.join(KIT, "olympus.css"))
     check("a. olympus.js wiring: data-oly-fx scan, lazy files, observer, OLYMPUS.fxUI, opt-out (element / ancestor / html attribute / meta)",
@@ -505,15 +509,153 @@ def test_wiring(br, origin):
     ctx.close()
 
 
+# ------------------------------------------------------------------ h. the cinema stack (olympus/fx-cine.js + the render core's post, 2026-11-11)
+SCENE_HOOKS = {"symposium/hall.js": "focus", "ergasterion/floor.js": "sparks", "colosseum/arena.js": "laurel", "cities/athens.js": "birds",
+               "cities/hellas.js": "sand", "jarvis/home3d.js": "fireflies"}
+# Round 4 budgets per scene: high <= 45 draw calls / 160k triangles, LITE <= 28 / 80k (measured on the lab stage with the whole stack on)
+BUDGET = {"ultra": (45, 160_000), "high": (45, 160_000), "low": (28, 80_000)}
+
+
+def hexes(text):
+    return [h for h in re.findall(r"['\"]#([0-9a-fA-F]{6})['\"]", text)]
+
+
+def neon(h):
+    """a neon colour: very saturated AND very bright in the cool / acid hues (green, cyan, blue, violet, magenta); warm fire hues are allowed"""
+    import colorsys
+    r, g, b = (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    hue, s, v = colorsys.rgb_to_hsv(r, g, b)
+    return s > 0.75 and v > 0.8 and 75 <= hue * 360 <= 335
+
+
+def test_cinema_static():
+    cine = read(os.path.join(KIT, "fx-cine.js"))
+    render = read(os.path.join(KIT, "render.js"))
+    check("h. fx-cine.js: the stack (cinema, burst, focus, setTime) with ultra / high / low / off tiers, fixed pools, every piece one draw",
+          all(x in cine for x in ("export function cinema(", "burst(kind, at, bo)", "focus(target, fo)", "setTime(t, ms)", "export const TIER", "export const POOL",
+                                  "ultra:", "high:", "low:", "off:", "InstancedBufferGeometry", "PCFSoftShadowMap")))
+    tier = {m.group(1): m.group(2) for m in re.finditer(r"^\s+(ultra|high|low|off): \{ (shadow: .*?) \},?$", cine, re.M)}
+    nums = {k: dict((a, float(b)) for a, b in re.findall(r"(\w+): ([0-9.]+)", v)) for k, v in tier.items()}
+    check("h. tiers: shadow maps only on high / ultra (2048 / 1024), LITE has none and no focus blur, off has no particles / birds / pool",
+          nums.get("ultra", {}).get("shadow") == 2048 and nums.get("high", {}).get("shadow") == 1024 and nums.get("low", {}).get("shadow") == 0
+          and nums.get("low", {}).get("focus") == 0 and nums.get("off", {}).get("particles") == 0 and nums.get("off", {}).get("pool") == 0
+          and nums.get("off", {}).get("birds") == 0 and nums["ultra"]["pool"] >= nums["high"]["pool"] >= nums["low"]["pool"], nums)
+    pool = re.search(r"POOL = Object\.freeze\(\{ particles: (\d+), burst: (\d+) \}\)", cine)
+    check("h. the pools are bounded: <= 2000 particles a piece, <= 420 burst slots a draw, and every tier's pool fits under it",
+          pool and int(pool.group(1)) <= 2000 and int(pool.group(2)) <= 420 and all(v.get("pool", 0) <= int(pool.group(2)) for v in nums.values()), pool and pool.groups())
+    bad = [h for h in hexes(cine) + hexes(render.split("export const GRADES")[1].split("export function makeEnvironment")[0]) if neon(h)]
+    check("h. no neon colour in the cinema stack or the colour grades (AGORA: gold, bronze, olive, terracotta, aegean, fire)", not bad, bad)
+    m = re.search(r"BLOOM_MAX = ([0-9.]+)", render)
+    strengths = [float(x) for x in re.findall(r"bloom: \{ strength: ([0-9.]+)", render)]
+    check("h. render core: bloom capped at .25 (BLOOM_MAX, every tier, setBloom and app overrides go through capBloom)",
+          m and float(m.group(1)) <= 0.25 and strengths and max(strengths) <= 0.25 and render.count("capBloom(") >= 2, (m and m.group(1), strengths))
+    check("h. render core: the post stays ONE finish pass (LUT grade, focus blur, AgX are defines in it, no new Pass class)",
+          "#ifdef LUT" in render and "#ifdef DOF" in render and "AGX_TONE_MAPPING" in render and render.count("extends Pass") == 1
+          and "setGrade(gr)" in render and "setFocus(f)" in render and "onFrame(fn)" in render and "onTier(fn)" in render)
+    miss = []
+    for f, word in SCENE_HOOKS.items():
+        s = read(os.path.join(WEB, f))
+        if "FX HOOK" not in s or "import('../olympus/fx-cine.js')" not in s or ".catch(" not in s.split("import('../olympus/fx-cine.js')")[1][:1400] or word not in s:
+            miss.append(f)
+    check("h. the scene hooks are in (Symposium, Ergasterion, Colosseum, Athens, Hellas, Jarvis home), marked FX HOOK, loaded lazily and optional (.catch)", not miss, miss)
+    tr = read(os.path.join(WEB, "jarvis", "transitions.js"))
+    lm = re.search(r"LEVEL_MS = (\d+)", tr)
+    check("h. transitions: marble door, scroll unroll and camera fly-through kinds, level() for in-app levels in <= 600 ms, reduced motion = the fade",
+          all(f"  {k}: {{" in tr for k in ("door", "scroll", "flythrough")) and "export function level(" in tr and lm and int(lm.group(1)) <= 600
+          and "clamp(entry.ms, 300, 600)" in tr and "FADE_STATIC" in tr)
+
+
+CINE_RUN = """async ([tier, extra]) => {
+  const L = __fxLab, rc = L.rc, frames = %s;
+  const count = (o) => { let n = 0; o.traverse(() => n++); return n; };
+  rc.render(); await frames(2);
+  const b = { kids: count(L.scene), g: rc.renderer.info.memory.geometries };
+  const st = L.cine(true, extra || {});
+  for (let i = 0; i < 4; i++) { rc.render(); await frames(1); }
+  let worst = { calls: 0, triangles: 0 };
+  for (let i = 0; i < 8; i++) { rc.render(); const s = rc.stats(); if (s.calls > worst.calls) worst = { calls: s.calls, triangles: s.triangles }; await frames(1); }
+  const cs = L.cineState(), lab = window.__olyCine.list();
+  return { b, st, cs, worst, rs: rc.stats(), post: rc.post(), lab };
+}""" % FRAMES
+
+
+def lum_stats(p):
+    return p.evaluate("""() => { const c = document.getElementById('stage'); __fxLab.rc.render(); const g = document.createElement('canvas'); g.width = 78; g.height = 60;
+      const x = g.getContext('2d', { willReadFrequently: true }); x.drawImage(c, 0, 0, 78, 60); const d = x.getImageData(0, 0, 78, 60).data; let s = 0, s2 = 0, n = d.length / 4;
+      for (let i = 0; i < d.length; i += 4) { const l = (d[i] + d[i + 1] + d[i + 2]) / 3; s += l; s2 += l * l; } const m = s / n; return [m, Math.sqrt(Math.max(0, s2 / n - m * m))]; }""")
+
+
+def test_cinema(br, origin):
+    shots = os.path.join(ROOT, "docs", "shots", "effects")
+    os.makedirs(shots, exist_ok=True)
+    for tier in ("high", "low", "ultra", "off"):
+        ctx, p, errs, off, _ = new_page(br, origin, f"?q={tier}&time=golden", fx=tier)
+        r = p.evaluate(CINE_RUN, [tier, {}])
+        cs, worst = r["cs"], r["worst"]
+        if tier in BUDGET:
+            calls, tris = BUDGET[tier]
+            check(f"h. {tier}: the whole stack inside the Round 4 budget ({worst['calls']} draw calls <= {calls}, {worst['triangles']:,} triangles <= {tris:,}; post passes included)",
+                  0 < worst["calls"] <= calls and worst["triangles"] <= tris, (worst, cs))
+        check(f"h. {tier}: the stack follows the tier (shadow map {cs['shadowMap']}, {cs['particles']} particles, {cs['poolSlots']} burst slots), grade '{r['rs']['grade']}'",
+              cs["tier"] == tier and cs["shadowMap"] == {"ultra": 2048, "high": 1024}.get(tier, 0) and cs["particles"] <= 4000
+              and cs["poolSlots"] <= 840 and (cs["poolSlots"] == 0) == (tier == "off") and r["rs"]["grade"] == "golden" and not cs["error"], cs)
+        if tier in ("high", "low"):
+            spam = p.evaluate("""async () => { const L = __fxLab; let n = 0; const c = window.__olyCine; for (let i = 0; i < 60; i++) n += (L.cineBurst || ((k, a) => 0))('coins', [0, 1, 0]);
+              for (let i = 0; i < 6; i++) { L.rc.render(); await new Promise((r) => setTimeout(r, 16)); } return c.list()[0]; }""")
+            check(f"h. {tier}: 60 coin bursts in a row stay inside the fixed pool ({spam['live']} live <= {spam['poolSlots']} slots), no allocation grows it",
+                  spam["live"] <= spam["poolSlots"] and spam["bursts"] >= 60, spam)
+            f = p.evaluate("""async () => { const L = __fxLab; const ok = L.cineFocus(L.orb); for (let i = 0; i < 30; i++) { L.rc.render(); await new Promise((r) => setTimeout(r, 16)); }
+              return [ok, L.rc.post()]; }""")
+            check(f"h. {tier}: the speaker focus {'blurs the background (dof ' + str(round(f[1]['dof'], 2)) + ')' if tier == 'high' else 'is off on LITE (no blur pass, no cost)'}",
+                  (f[0] is True and f[1]["dof"] > 0.5) if tier == "high" else (f[0] is False and f[1]["dof"] == 0), f)
+            t = p.evaluate("() => { const c = __fxLab.cineSetTime('night'); __fxLab.rc.render(); return [__fxLab.rc.stats().grade, window.__olyCine.list()[0].time]; }")
+            check(f"h. {tier}: setTime('night') moves the light and the grade to night", t == ["night", "night"], t)
+            b = p.evaluate("() => { __fxLab.rc.setBloom({ strength: 0.9 }); return __fxLab.rc.stats().bloomStrength; }")
+            check(f"h. {tier}: an app asking for bloom .9 gets <= .25 ({b})", b <= 0.25, b)
+            p.evaluate("() => __fxLab.cineSetTime('golden')")
+            m, sd = lum_stats(p)
+            p.screenshot(path=os.path.join(shots, f"lab-{tier}-golden.jpg"), type="jpeg", quality=60)
+            check(f"h. {tier}: 390 x 844 screenshot is not blank (mean {m:.0f}, contrast {sd:.0f}) -> docs/shots/effects/lab-{tier}-golden.jpg", m > 25 and sd > 8, (m, sd))
+        a = p.evaluate("""async () => { const L = __fxLab; L.cine(false); L.rc.render(); await new Promise((r) => setTimeout(r, 30)); L.rc.render();
+          let n = 0; L.scene.traverse(() => n++); return { kids: n, g: L.rc.renderer.info.memory.geometries, live: window.__olyCine.list().length }; }""")
+        check(f"h. {tier}: dispose() leaves nothing (scene objects {r['b']['kids']} -> {a['kids']}, geometries {r['b']['g']} -> {a['g']})",
+              a["kids"] == r["b"]["kids"] and a["g"] <= r["b"]["g"] and a["live"] == 0, (r["b"], a))
+        check(f"h. {tier}: no page error, console error or warning, nothing off the site", not errs and not off, (errs[:4], off[:3]))
+        ctx.close()
+    # reduced motion: the look stays, nothing moves, no burst
+    ctx, p, errs, off, _ = new_page(br, origin, "?q=high&time=golden", reduced=True)
+    r = p.evaluate(CINE_RUN, ["high", {}])
+    z = p.evaluate("() => [__fxLab.cineBurst('sparks', [0, 1, 0]), window.__olyCine.list()[0]]")
+    check("h. reduced motion: the stack keeps its still look (sky, light, grade) but no burst pool, no burst, nothing moves",
+          r["cs"]["reduced"] is True and "sky" in r["cs"]["pieces"] and r["cs"]["poolSlots"] == 0 and z[0] == 0 and r["rs"]["grade"] == "golden", (r["cs"], z))
+    check("h. reduced motion: no error", not errs, errs[:4])
+    ctx.close()
+    # transitions: the cinematic three play under 600 ms and end clear; reduced motion gets the flat fade
+    for reduced in (False, True):
+        ctx, p, errs, off, _ = new_page(br, origin, "?bare=1", reduced=reduced)
+        res = p.evaluate("""async () => { const T = await import('../jarvis/transitions.js'); document.documentElement.dataset.fx = 'high'; const out = {};
+          for (const k of T.LEVEL_KINDS) { const m = T.level(k, { glyph: 'Σ' }); await new Promise((r) => setTimeout(r, 1100));
+            out[k] = { mode: m, dur: window.__jarvisTransitions.dur, ms: window.__jarvisTransitions.ms, active: window.__jarvisTransitions.active, err: window.__jarvisTransitions.error,
+              left: !!document.querySelector('.jtrans, .jtrans-fade') }; }
+          return out; }""")
+        if not reduced:
+            check("h. transitions door / scroll / flythrough: each plays for <= 600 ms (560) and ends fully clear, no error",
+                  all(v["mode"] == "warp" and v["dur"] <= 600 and 0 < v["ms"] <= 600 + 900 and not v["active"] and not v["err"] and not v["left"] for v in res.values()), res)
+        else:
+            check("h. transitions with reduced motion: the 200 ms flat fade for every level kind", all(v["mode"] == "fade" and v["dur"] == 200 and not v["left"] for v in res.values()), res)
+        ctx.close()
+
+
 def main():
     from playwright.sync_api import sync_playwright
     test_static()
+    test_cinema_static()
     srv, origin = serve()
     with sync_playwright() as pw:
         br = launch(pw)
-        # python -X utf8 -m tests.test_olympus_fx [every reduced hidden live visible marble elements wiring]: run some sections only
+        # python -X utf8 -m tests.test_olympus_fx [every reduced hidden live visible marble elements wiring cinema]: run some sections only
         want = [a for a in sys.argv[1:] if not a.startswith("-")]
-        for fn in (test_every_effect, test_reduced, test_hidden, test_live_tiers, test_visible, test_marble, test_elements, test_wiring):
+        for fn in (test_every_effect, test_reduced, test_hidden, test_live_tiers, test_visible, test_marble, test_elements, test_wiring, test_cinema):
             if want and fn.__name__.replace("test_", "").split("_")[0] not in want:
                 continue
             try:
