@@ -451,13 +451,13 @@ def test_page():
             pe = p.evaluate("""() => ({ kit: !!window.OLYMPUS_PEOPLE, places: [...document.querySelectorAll('#places button')].map((b) => b.textContent), here: [...document.querySelectorAll('#peopleList button')].map((b) => b.getAttribute('aria-label')),
               faces: document.querySelectorAll('#peopleList .mini-face svg').length, chat: document.querySelector('#chatCard').hidden, talk: document.querySelector('#talkBtn').hidden })""")
             check("c. PEOPLE HERE (no kit loaded): 5 places with head counts, the Library's two people each with a face, a status dot and 'Talk to ...'; no chat open yet",
-                  pe["places"] == ["Money hall (5)", "Trading hall (4)", "Research hall (4)", "Library (2)", "Builders' camp (10)"] and len(pe["here"]) == 2 and pe["here"][0].startswith("Talk to The queue, Working.") and pe["faces"] == 2 and pe["chat"] and pe["talk"], pe)
+                  pe["places"] == ["Money hall (5)", "Trading hall (4)", "Research hall (4)", "Library (2)", "Builders' camp (10)"] and len(pe["here"]) == 2 and pe["here"][0].startswith("Talk to Kalamos, Working.") and pe["faces"] == 2 and pe["chat"] and pe["talk"], pe)
             if not pe["kit"]:
                 p.locator('#places button[data-place="research"]').click()
                 p.locator('#peopleList button[data-key="w:cronos"]').click()
                 c0 = p.evaluate("() => ({ hidden: document.querySelector('#chatCard').hidden, h: document.querySelector('#chatH').textContent, pill: document.querySelector('#chatPill').textContent, who: document.querySelector('#chatWho').textContent, log: [...document.querySelectorAll('#chatLog li')].map((e) => e.textContent), qs: [...document.querySelectorAll('#chatQs button')].map((b) => b.textContent), face: document.querySelector('#chatFace').dataset.kit, svg: !!document.querySelector('#chatFace svg') })")
                 check("c. TALK (fallback): tapping a person opens the built-in chat: its own face, name, status, 'Built-in answers ... only from its own data' with its person id, its one-liner, and six questions to tap",
-                      not c0["hidden"] and c0["h"] == "Cronos" and c0["pill"] == "Failed" and "Built-in answers" in c0["who"] and "job:cronos" in c0["who"] and "cannot place orders" in c0["who"] and c0["log"] == ["Blocked: My last run failed. Failed: datacity."]
+                      not c0["hidden"] and c0["h"] == "Horaios" and c0["pill"] == "Failed" and "Built-in answers" in c0["who"] and "job:cronos" in c0["who"] and "cannot place orders" in c0["who"] and c0["log"] == ["Blocked: My last run failed. Failed: datacity."]
                       and c0["qs"] == ["What are you doing?", "What was your last result?", "What did you learn?", "Are you stuck?", "What is next?", "How sure are you?"] and c0["face"] == "0" and c0["svg"], c0)
                 for qid in ("doing", "last", "learned", "stuck", "next", "sure"):
                     p.locator(f'#chatQs button[data-q="{qid}"]').click()
@@ -537,14 +537,14 @@ def test_page():
             c = p.evaluate("""() => ({ h: document.querySelector('#sheetH').textContent, pill: document.querySelector('#sheetPill').textContent, doing: document.querySelector('#sheetDoing').textContent, outs: document.querySelectorAll('#sheetOut li').length, role: document.querySelector('#sheetRole').textContent, say: document.querySelector('#sheetSay').textContent,
               tags: [...document.querySelectorAll('#sheetOut .crate .tag')].map((e) => e.textContent), health: document.querySelector('#sheetHealth').textContent, hidden: document.querySelector('#sheet').hidden, status: document.querySelector('#status').textContent, planSay: document.querySelector('#planSay').textContent })""")
             check("c. a worker card: name, the status word, its hall and job, what it SAYS ('My last run failed'), what it is doing, its crates (at most 5, each with a short tag), the health line; the status line is spoken",
-                  not c["hidden"] and c["h"] == "Cronos" and c["pill"] == "Failed" and "1 failed" in c["doing"] and 1 <= c["outs"] <= 5 and c["health"].startswith("Example data.") and c["status"].startswith("Cronos: Failed.") and "Research hall" in c["role"] and "turning the search wheel" in c["role"]
+                  not c["hidden"] and c["h"] == "Horaios · Cronos" and c["pill"] == "Failed" and "1 failed" in c["doing"] and 1 <= c["outs"] <= 5 and c["health"].startswith("Example data.") and c["status"].startswith("Cronos: Failed.") and "Research hall" in c["role"] and "turning the search wheel" in c["role"]
                   and c["say"].startswith("Says: My last run failed.") and "datacity" in c["tags"] and c["planSay"].startswith("Cronos says: "), c)
             p.locator('#sheetOut .crate[data-i="0"]').click()
             cr = p.evaluate("() => [document.querySelector('#sheetOut .crate[data-i=\"0\"]').getAttribute('aria-expanded'), getComputedStyle(document.querySelector('#sheetOut .crate[data-i=\"0\"] .full')).whiteSpace, document.querySelectorAll('#sheetOut .crate[aria-expanded=true]').length]")
             check("c. tapping a crate opens it (its full text, when it was made); one crate open at a time", cr == ["true", "normal", 1], cr)
             p.locator('#workers button[data-id="mind"]').click()
             m = p.evaluate("() => [document.querySelector('#sheetH').textContent, [...document.querySelectorAll('#sheetLearn li')].map((e) => e.textContent), document.querySelectorAll('#sheetOut li').length]")
-            check("c. the Mind card lists its notes as crates and keeps the 'context only: not predictive' lesson with its source file", m[0] == "Mind" and m[2] == 2 and any("context only" in t and "source: docs/CLAUDE_REFERENCE.md" in t for t in m[1]), m)
+            check("c. the Mind card lists its notes as crates and keeps the 'context only: not predictive' lesson with its source file", m[0] == "Metis · Mind" and m[2] == 2 and any("context only" in t and "source: docs/CLAUDE_REFERENCE.md" in t for t in m[1]), m)
             p.locator("#sheetClose").click()
             check("c. Close hides the card", p.evaluate("() => document.querySelector('#sheet').hidden"))
             p.evaluate("() => { document.querySelector('#movesBox').open = true; }")
@@ -607,7 +607,7 @@ def test_page():
                     p.evaluate(tap, [pt["x"], pt["y"]])
                     p.wait_for_timeout(400)
                     sid = p.evaluate("() => [document.querySelector('#sheetH').textContent, document.querySelector('#sheet').hidden]")
-                    check("c. tapping a worker in the 3D factory opens that worker's card", sid[0] in ("The queue", "Dev agents") and not sid[1], sid)
+                    check("c. tapping a worker in the 3D factory opens that worker's card", sid[0] in ("Kalamos · The queue", "Epistates · Dev agents") and not sid[1], sid)
                 p.evaluate("() => { const f = window.ERGASTERION.floor(); f.reset(); f.teleport(4.3, 9.0); }")
                 p.wait_for_timeout(500)
                 cp = p.evaluate("() => window.ERGASTERION.floor().projectCrate('queue', 0)")
@@ -615,7 +615,7 @@ def test_page():
                     p.evaluate(tap, [cp["x"], cp["y"]])
                     p.wait_for_timeout(400)
                     cs = p.evaluate("() => [document.querySelector('#sheetH').textContent, document.querySelectorAll('#sheetOut .crate[aria-expanded=true]').length, document.querySelector('#status').textContent]")
-                    check("c. tapping a crate on a conveyor opens the worker's card with THAT crate open and reads it out", cs[0] == "The queue" and cs[1] == 1 and "Crate: " in cs[2], cs)
+                    check("c. tapping a crate on a conveyor opens the worker's card with THAT crate open and reads it out", cs[0] == "Kalamos · The queue" and cs[1] == 1 and "Crate: " in cs[2], cs)
                 else:
                     check("c. a crate of the queue's conveyor projects on screen from in front of it", False, cp)
                 p.evaluate("() => window.ERGASTERION.floor().reset()")
@@ -643,7 +643,7 @@ def test_page():
                 p.evaluate("() => window.ERGASTERION.floor().teleport(2.1, 3.68, -Math.PI / 2)")
                 p.wait_for_timeout(2600)
                 tk = p.evaluate("() => [document.querySelector('#talkBtn').hidden, document.querySelector('#talkBtn').textContent, Math.cos(window.ERGASTERION.floor().facing('w:queue') + Math.PI / 2)]")
-                check("c. the Talk prompt: nobody within 3 m = no button; 2.2 m from the queue's scribe = 'Talk to The queue', and it has turned to wave at you (it faces -x, toward where you stand)", far and tk[0] is False and tk[1] == "Talk to The queue" and tk[2] > 0.93, (far, tk))
+                check("c. the Talk prompt: nobody within 3 m = no button; 2.2 m from the queue's scribe = 'Talk to Kalamos', and it has turned to wave at you (it faces -x, toward where you stand)", far and tk[0] is False and tk[1] == "Talk to Kalamos" and tk[2] > 0.93, (far, tk))
                 p.locator("#talkBtn").click()
                 p.wait_for_timeout(900)
                 tf = p.evaluate("() => [window.ERGASTERION.floor().focused(), document.querySelector('#chatCard').hidden || !!window.OLYMPUS_PEOPLE, document.querySelector('#sheetH').textContent, Math.cos(window.ERGASTERION.floor().facing('w:queue') + Math.PI / 2), window.ERGASTERION.floor().stats()]")
