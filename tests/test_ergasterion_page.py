@@ -413,8 +413,8 @@ def test_life():
     check("b. LIFE hammer: one blow (sparks + clank) per quarter turn, none in between; the near-figure picker takes the nearest within 4.6 m, honours the cap and keeps a shown figure a little longer",
           o["hits"] == [1, 4, 0] and o["lod"] == ["b,a", "b", "a", 0, 0], (o["hits"], o["lod"]))
     check("b. LIFE kits are optional: with no window nothing is called and nothing throws", o["noKit"] == [False, False, False, False], o["noKit"])
-    check("b. LIFE with the new kits: fx.burst('sparks', {x, y, world}), OLYMPUS.sound.at('clank'), OLYMPUS_PEOPLE.say(id, text, {scene}) and show(id, {kind}) are each called once",
-          o["kit"][:4] == ["burst", "at", True, True] and o["kit"][4] == "burst:sparks:3|at:clank|say:mind:ergasterion|show:mind:work", o["kit"])
+    check("b. LIFE with the new kits: fx.burst('sparks', {x, y, world}), OLYMPUS.sound.at('hammer') (the anvil of docs/SOUND_API.md), OLYMPUS_PEOPLE.say(id, text, {scene}) and show(id, {kind}) are each called once",
+          o["kit"][:4] == ["burst", "at", True, True] and o["kit"][4] == "burst:sparks:3|at:hammer|say:mind:ergasterion|show:mind:work", o["kit"])
     check("b. LIFE with today's kits: confetti -> FX.confetti, sparks -> FX.sparkleBurst, a big moment -> the 'success' cue, a clank without sound.at -> silence, a say() that throws -> our own bubble",
           o["old"] == ["confetti", "sparkleBurst", "cue", False, False], o["old"])
 
@@ -723,7 +723,7 @@ def test_page():
                 p.evaluate("""() => { window.__k = []; const K = window.OLYMPUS_PEOPLE || (window.OLYMPUS_PEOPLE = {});
                   K.say = (id, text, o) => window.__k.push(['say', id, o && o.scene, !!(o && o.figure)]); K.show = (id, w) => window.__k.push(['show', id, w && w.kind, w && w.items ? w.items.length : -1]);
                   const FX = window.OLYMPUS_FX || (window.OLYMPUS_FX = {}); FX.burst = (k, at) => window.__k.push(['burst', k, !!(at && at.world)]);
-                  const O = window.OLYMPUS; if (O && O.sound) O.sound.at = (n) => window.__k.push(['sound', n]); }""")
+                  const O = window.OLYMPUS; if (O && O.sound) O.sound.at = (n) => window.__k.push(['sound', n]); const X = window.OLYMPUS_SFX; if (X) X.at = (n) => window.__k.push(['sound', n]); }""")
                 p.wait_for_timeout(6500)
                 lf = p.evaluate(f"() => {F}.life()")
                 hall = {k: v for k, v in lf["acts"].items() if k in ("w:mind", "w:prometheus", "w:hephaestus", "w:cronos")}
@@ -775,7 +775,7 @@ def test_page():
                 p.wait_for_timeout(450)
                 hd = p.evaluate(f"() => Object.entries({F}.life().acts).filter(([k, v]) => ['w:mind', 'w:prometheus', 'w:hephaestus', 'w:cronos'].includes(k)).map(([k, v]) => v.pose)")
                 p.wait_for_timeout(8000)
-                sp = p.evaluate(f"() => [{F}.life().sparks, window.__k.filter((x) => x[0] === 'burst' && x[1] === 'sparks').length, window.__k.filter((x) => x[0] === 'sound' && x[1] === 'clank').length]")
+                sp = p.evaluate(f"() => [{F}.life().sparks, window.__k.filter((x) => x[0] === 'burst' && x[1] === 'sparks').length, window.__k.filter((x) => x[0] === 'sound' && x[1] === 'hammer').length]")
                 check(f"c. LIFE: walking into the Research hall turns heads ({hd}); Prometheus' hammer throws sparks off the anvil with a clank as it strikes ({sp[0]} blows seen)",
                       sum(1 for x in hd if x in ("look", "wave")) >= 2 and sp[0] >= 1 and sp[1] == sp[0] and sp[2] == sp[0], (hd, sp))
                 AK.shot(p, "ergasterion-life-smith")

@@ -310,6 +310,7 @@ function build(rc, scene, camera, canvas, o) {
   // body in a coloured tunic, mitten hands and feet. Every part is an instance of the shared batches. A person does its job, waves when you come near, turns to face you and talks
   // while you chat with it (a soft marble disc on the floor marks it: no glow), cheers when its work is merged and slumps when its run failed.
   const hand = { x: 0, y: 0, z: 0 }, AXY = new THREE.Vector3(0, 1, 0), qT = new THREE.Quaternion(), thA = new Float32Array(N + NC), nearT = new Float32Array(N + NC).fill(-99), wasNear = new Uint8Array(N + NC);
+  const stepS = new Int8Array(N + NC), dropS = new Uint8Array(NC);
   const reactT = new Float32Array(N + NC).fill(-99), reactP = new Array(N + NC).fill(''), lookT = new Float32Array(N + NC).fill(-99), holdT = new Float32Array(N + NC).fill(-99);
   // where everyone is now (the schedule moves them), and what they are doing: read by posOf(), the bubbles, the follow camera and the LOD figures
   const hallK = S.map((s, i) => S.filter((x, j) => j < i && x.hall === s.hall).length), hallN = S.map((s) => S.filter((x) => x.hall === s.hall).length);
@@ -356,6 +357,7 @@ function build(rc, scene, camera, canvas, o) {
     thA[i] = reduced ? want : thA[i] + dth * Math.min(1, dt * (pose === 'walk' || pose === 'carry' ? 9 : 6));
     oX = fx; oZ = fz; cT = Math.cos(thA[i]); sT = Math.sin(thA[i]); qT.setFromAxisAngle(AXY, thA[i]);
     const moving = pose === 'walk' || pose === 'carry', stride = moving && mot ? Math.sin(t * 7.5 + i) : 0;
+    if (moving && mot) { const sg = stride > 0 ? 1 : -1; if (sg !== stepS[i]) { stepS[i] = sg; if (dC < 7 && mode !== 'tour') L.soundAt('step', { x: fx, y: 0, z: fz }, null, camera, { surface: i >= N ? 'sand' : 'stone', k: 0.45 }); } }   // footsteps near you
     const live = k > 0 || pose !== '' , bob = mot * (pose === 'cheer' ? Math.abs(Math.sin(t * 3 + i)) * 0.07 : moving ? Math.abs(stride) * 0.035 : live ? 0.012 * Math.sin(a * 2.1 + t * 1.3) : 0.006 * Math.sin(t * 1.1 + i));
     const sl = pose === 'slump' ? 1 : 0, y = yb + bob, shY = y + 0.66 - sl * 0.04, hy = y + 1.0 - sl * 0.07 + (pose === 'talk' || pose === 'speak' ? 0.012 * Math.sin(t * 5) * mot : 0), hz = sl * 0.07;
     pl(fig.im, b3, 0, y + 0.3, 0, 0.23, 0.5, 0.21);                                                                 // the tunic
@@ -439,7 +441,7 @@ function build(rc, scene, camera, canvas, o) {
   function spark(i, s, camP) {
     if (!mot || mode === 'tour' || t - sparkT[i] < 0.6) return; if (Math.hypot(camP.x - s.x, camP.z - s.z) > 8) return;
     const wx = s.x - 0.12, wy = Y0 + 0.6, wz = s.z + 0.5, sc = screenOf(wx, wy, wz); if (!sc) return; sparkT[i] = t; life.sparks++;
-    if (L.burst('sparks', sc, [wx, wy, wz])) life.bursts++; if (L.soundAt('clank', { x: wx, y: wy, z: wz })) life.sounds++;
+    if (L.burst('sparks', sc, [wx, wy, wz])) life.bursts++; if (L.soundAt('clank', { x: wx, y: wy, z: wz }, null, camera)) life.sounds++;
   }
   // FULL FIGURES near you (LOD): the far crowd is the instanced toy above; the 1-2 people closest to you are the shared figures of olympus/people3d.js
   // (v2: play(fig, pose) with the work poses, lookAt, setExpression; v1: userData.pose / lookAt / tick). How many is MEASURED: the frame's draw calls without
@@ -502,6 +504,7 @@ function build(rc, scene, camera, canvas, o) {
       const keyB = 'b:' + b.id, sc0 = focusKey === keyB || holdT[i] > t ? { act: 'work', x: at[i].x, z: at[i].z, yaw: null, crate: false, away: at[i].away } : L.campAt(j, homeAt[i], st, sod, { reduced, gatherAt: gatherHall === 'camp' ? gatherAt : null, gatherLen, n: camp.filter(Boolean).length });
       if (ret[i]) { const lp = leadStep(i); sc0.x = lp.x; sc0.z = lp.z; sc0.yaw = lp.yaw; sc0.act = lp.act; sc0.away = lp.away; } else catchUp(i, sc0, dt);
       at[i].x = sc0.x; at[i].z = sc0.z; at[i].act = sc0.act; at[i].away = !!sc0.away;
+      if (sc0.act === 'drop' && !dropS[j]) { dropS[j] = 1; if (Math.hypot(camP.x - sc0.x, camP.z - sc0.z) < 12 && mot) L.soundAt('crate', { x: L.CART.x, y: 0.8, z: L.CART.z }, null, camera, { k: 0.7 }); } else if (sc0.act !== 'drop') dropS[j] = 0;   // the crate lands on the cart
       AC = sc0.act; AW = !!sc0.away; HX = homeAt[i].x; HZ = homeAt[i].z; HT = Math.PI; CARRY = CARRY0 + j;
       at[i].pose = actor(i, c.job, sc0.x, sc0.z, 0, sc0.yaw == null ? Math.PI : sc0.yaw, 0.55, AW ? 0 : k, st === 'done' && sc0.act === 'cheer' ? 'cheer' : '', keyB, dt, camP);
       CARRY = -1; AC = 'work'; AW = false;
@@ -623,7 +626,7 @@ function build(rc, scene, camera, canvas, o) {
       if (party || big) {
         const G = L.GATHER[camH] || L.GATHER.library, sc = screenOf(G.x, 1.2, G.z) || { x: (canvas.getBoundingClientRect().left + canvas.clientWidth / 2), y: canvas.getBoundingClientRect().top + canvas.clientHeight * 0.4 };
         out.burst = !!L.burst(big ? 'confetti' : 'confetti', sc, [G.x, 1.2, G.z]); if (out.burst) life.bursts++;
-        out.sound = !!L.soundAt(big ? 'fanfare' : 'cheer', { x: G.x, y: 1.2, z: G.z }, 'success'); if (out.sound) life.sounds++;
+        out.sound = !!L.soundAt(big ? 'fanfare' : 'cheer', { x: G.x, y: 1.2, z: G.z }, 'success', camera); if (out.sound) life.sounds++;
       }
       still(); return out;
     },

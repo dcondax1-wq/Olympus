@@ -166,12 +166,17 @@ export function burst(kind, screen, world) {
   } catch (_) { /* effects are never needed */ }
   return false;
 }
-/** a sound placed in the world (OLYMPUS.sound.at), else a plain UI cue for the big moments only, else silence. Silent before the first tap: the kit decides. */
-export function soundAt(name, pos, cue) {
+/** the world-sound names of docs/SOUND_API.md for what happens on the floor */
+export const SOUND = { clank: 'hammer', fanfare: 'cheer', cheer: 'cheer', crate: 'crate', step: 'step', groan: 'groan' };
+/** a sound placed in the world: OLYMPUS_SFX.at(name, pos, listener, opts) (docs/SOUND_API.md), else OLYMPUS.sound.at, else a plain UI cue for the big moments only,
+ *  else silence. Nothing sounds before the first tap: the engine decides. */
+export function soundAt(name, pos, cue, listener, opts) {
+  const nm = SOUND[name] || name;
   try {
-    const O = W0().OLYMPUS; if (!O) return false;
-    if (O.sound && typeof O.sound.at === 'function') { O.sound.at(name, pos); return 'at'; }
-    if (cue && typeof O.cue === 'function') { O.cue(cue); return 'cue'; }
+    const W = W0(), X = W.OLYMPUS_SFX, O = W.OLYMPUS;
+    if (X && typeof X.at === 'function') { X.at(nm, pos, listener || undefined, opts || {}); return 'at'; }
+    if (O && O.sound && typeof O.sound.at === 'function') { O.sound.at(nm, pos, listener || undefined, opts || {}); return 'at'; }
+    if (cue && O && typeof O.cue === 'function') { O.cue(cue); return 'cue'; }
   } catch (_) { /* sound is never needed */ }
   return false;
 }
