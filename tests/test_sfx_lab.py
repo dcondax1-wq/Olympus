@@ -179,7 +179,10 @@ def main():
         mt = p.evaluate("document.getElementById('mOut').textContent")
         p.locator("[data-ab='synth']").tap(); ab1 = p.evaluate("OLYMPUS_SFX.samples().on"); p.locator("[data-ab='rec']").tap(); ab2 = p.evaluate("OLYMPUS_SFX.samples().on")
         check("g. the lab has a button for every recording family and loop; A/B turns the layer off and on; the meter reads a level",
-              nb[0] == nb[1] and nb[2] == 9 and ab1 is False and ab2 is True and "dBFS" in mt and not mt.startswith("-"), (nb, ab1, ab2, mt))
+              nb[0] == nb[1] and nb[2] == 9 and ab1 is False and ab2 is True and "dBFS" in mt and not mt.startswith("- "), (nb, ab1, ab2, mt))
+        if shots:
+            p.locator("section[aria-labelledby=hRec]").screenshot(path=os.path.join(ROOT, "docs/shots/sound/after-recorded.jpg"), type="jpeg", quality=70)
+            p.locator("section[aria-labelledby=hBanks]").screenshot(path=os.path.join(ROOT, "docs/shots/sound/after-recordings.jpg"), type="jpeg", quality=70)
         # d. phone fit
         fit = p.evaluate("({ small: [...document.querySelectorAll('button')].filter(b => b.offsetParent && b.getBoundingClientRect().height < 44).map(b => b.textContent.trim()).slice(0, 6), sw: document.documentElement.scrollWidth })")
         check("d. every visible button >= 44 px tall; no horizontal scroll at 390 px", not fit["small"] and fit["sw"] <= 390, fit)
