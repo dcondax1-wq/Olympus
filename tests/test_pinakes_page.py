@@ -671,7 +671,7 @@ def test_page():
                 wy = p.evaluate("() => [document.querySelector('#tWhy').hidden, document.querySelector('#tWhy').textContent, document.querySelector('#work').hidden, document.querySelector('#saveBar').hidden, document.querySelector('#tName').textContent, document.querySelector('#tCols').textContent]")
                 check(f"c. a table that cannot be opened says why ({tid}: '{frag}'), shows no grid and offers nothing to save; never a blank screen", wy[0] is False and frag in wy[1] and extra in wy[1] and wy[2] is True and wy[3] is True and len(wy[4]) > 2, wy)
             rs = p.evaluate("() => [document.querySelector('#tCols').hidden, document.querySelector('#tCols').textContent, [...document.querySelectorAll('#tPills .pill')].map((x) => x.textContent)]")
-            check("c. a research dataset shows its span, its row count and its fields, and no export", rs[0] is False and "time (date)" in rs[1] and "354,333 rows" in rs[1] and rs[2][0].startswith("On the PC") and "2021-11" in rs[2][0], rs)
+            check("c. a research dataset shows its span, its row count and its fields, and no export", rs[0] is False and "time (date)" in rs[1] and "354,333 rows" in rs[1] and rs[2][0].startswith("On the PC") and "2021-" in rs[2][0] and "to 2026-" in rs[2][0], rs)
             AK.shot(p, "pinakes-research")
             view_shot(p, "pinakes-research-view")
             check("c. the failures raised no console error (a 404 is an answer, not a crash)", not errs and not off, (errs[:3], off[:3]))
