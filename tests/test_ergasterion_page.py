@@ -652,6 +652,7 @@ def test_page():
                 p.evaluate("() => window.ERGASTERION.endTalk()")
                 check("c. ending the chat releases the person (no focus)", p.evaluate("() => window.ERGASTERION.floor().focused()") == "")
                 # out through the front door to the Builders' camp
+                p.evaluate("() => 1")   # closing the kit's sheet calls speechSynthesis.cancel(), which can stall headless Chromium for ~30 s: wait for the page first
                 p.locator("#campGo").click()
                 p.wait_for_timeout(1500)
                 cg = p.evaluate("() => [window.ERGASTERION.floor().pos(), document.querySelector('#hallNow').textContent, document.querySelector('#mini').getAttribute('viewBox'), document.querySelectorAll('#mini g').length, window.ERGASTERION.floor().stats(), document.querySelector('#status').textContent]")
