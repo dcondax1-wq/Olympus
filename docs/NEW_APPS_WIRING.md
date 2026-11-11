@@ -650,8 +650,8 @@ New app `tools/web_public/polis/` (index.html, polis.css, polis.js, poliscore.js
 5. `olympus/intro-app.js` FLAVOUR: `polis: ['skyline', 'Enter the city', 'tap'],`
 6. `jarvis/transitions.js` REGISTRY: `polis: { kind: 'skyline', ms: 1000 },`
 Then bump `sw.js` CACHE, run `python tools/apps_list_build.py` (Polis then shows itself in its own map: the gardens have room), and `python tools/make_app_icons.py polis` (writes only `polis/*.png` and fills the icon tags).
-Optional, when the Polis kit / Polis life files land: add `<script src="../olympus/polis.js" defer></script>` / `polis-life.js` to `polis/index.html`; the page calls
-`OLYMPUS_POLIS.decorate(main)` and `OLYMPUS_POLIS_LIFE.mount(main, {app: 'polis'})` when they exist (nothing else is assumed about them).
+The page already loads the Polis kit (`olympus/polis.js` + `polis.css`: Greek key band, owl coin for today's $, gold laurel on a record, the Attic date, a red-figure trireme) and
+AGORA v2 (`agora-ui.js` icons); precache those with the kit. When `olympus/polis-life.js` lands, add its tag to `polis/index.html`: the page then calls `OLYMPUS_POLIS_LIFE.mount(main, {app: 'polis'})`.
 Optional data: a build may publish `polis/sky.json` = `{"v": 1, "t": unix, "cloud": 0-1, "rain": 0-1, "fog": 0-1, "text": "Light rain"}` (New York weather); without it the sky is fair. `?wx=clear|cloud|rain|fog`, `?phase=dawn|day|dusk|night`, `?t=ISO`, `?pan=life|trading|money|harbour|<app id>` for demos.
 Reads (all optional, the page is never blank): `olympus/apps-list.js`, `../home.json` (bots + the Mind's proposals at `live.pc.mind.proposals`), `../kalshi.json`, `../olympus/people.json`, `../ergasterion/queue.json`, each app's `jarvis.json` (fresh = level ok / warn / bad and t in the last 24 h).
 Tests after wiring: `tests.test_polis_page` (static + node: `--static`; browser under the lock), `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, `tests.test_wire_new_apps`.
