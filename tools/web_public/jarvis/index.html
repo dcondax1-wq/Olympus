@@ -1393,7 +1393,8 @@ function tourHint(n = 0) {
   const t = document.getElementById('toast');
   if (t && !t.hidden) { setTimeout(() => tourHint(n + 1), 4000); return; }        // the what's-new toast first
   const wn = document.getElementById('wnb');
-  if (wn && !wn.hidden) { setTimeout(() => tourHint(n + 1), 4000); return; }      // one note at a time: What's new first
+  // one note at a time: on the very first open the tour replaces the What's new note in the same slot (What's new stays in the command palette)
+  if (wn && !wn.hidden && n < 2) { setTimeout(() => tourHint(n + 1), 4000); return; }
   const a = byId('settings');
   if (!a || notOnSite(a)) return;
   rawSet('jarvis.tour.seen', '1');
