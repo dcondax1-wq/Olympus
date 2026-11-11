@@ -113,6 +113,9 @@ def build(series, px, kappa=None, cutoff=None):
 def make_cells(U):
     c = U.col
     cells = {}
+    for side in ("yes", "no"):   # all four decision times pooled (the per-time cells are too thin: model and market mostly agree)
+        for th in THETAS:
+            cells[f"vol model says underpriced by >= {int(th*100)}c | any time 1-6h before close | buy {side}"] = (c["side"] == side) & (np.nan_to_num(c["e_vol"], nan=-9) >= th)
     for off in OFFS:
         mT = c["T"] == str(off)
         for side in ("yes", "no"):
