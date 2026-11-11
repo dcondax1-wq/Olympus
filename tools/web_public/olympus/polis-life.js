@@ -325,6 +325,20 @@
         leaves++;
       }
     }
+    if (!sap && tips.length > 2) {             // one crown, not stacked clusters: a shaded dome behind, and leaves scattered through it
+      var cx0 = (minX + maxX) / 2, rx0 = (maxX - minX) / 2 * 0.92, top0 = minY + 4, bot0 = 0;
+      for (i = 0; i < tips.length; i++) bot0 = Math.max(bot0, tips[i][1] + tips[i][2] * 0.5);
+      var ry0 = (bot0 - top0) / 2, cy0 = top0 + ry0;
+      layerBack.insertBefore(S('ellipse', { cx: cx0.toFixed(1), cy: cy0.toFixed(1), rx: rx0.toFixed(1), ry: (ry0 * 0.92).toFixed(1), fill: thirsty ? '#4d4930' : '#2c3720', opacity: 0.85 }), layerBack.firstChild);
+      var nf = Math.round(rx0 * ry0 * 0.16 * dens);
+      for (i = 0; i < nf; i++) {
+        var fa = R() * Math.PI * 2, fr = Math.sqrt(R()), fx = cx0 + Math.cos(fa) * fr * rx0, fy = cy0 + Math.sin(fa) * fr * ry0 * 0.9;
+        var fup = (fx - 100) / 110 + (fy - top0) / (ry0 * 2.2);
+        var fpal = R() < (fup < 0.35 ? 0.55 : fup < 0.8 ? 0.32 : 0.12) ? SILV : DARK;
+        leaf(fpal[Math.floor(R() * fpal.length)], fx, fy, fa + (R() - 0.5) * 1.4, 2.5 + R() * 1.4, 0.5 + R() * 0.3);
+        leaves++;
+      }
+    }
     for (i = 0; i < cols.length; i++) S('path', { d: bucket[cols[i]].join(''), fill: cols[i] }, layerLeaf);
     // the olives: one per winning trade (the file's count), ripe purple-black and a few still green, each with a glint
     var ol = Math.max(0, Math.min(60, o.olives | 0)), oDark = '', oPurple = '', oGreen = '', glint = '';
