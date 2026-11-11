@@ -7,13 +7,14 @@
 import { clean, arr, isObj, num, dayOf, toMs, STATUS_WORD, H } from './people-core.js';
 
 const FIX = { u: 'you', ur: 'your', r: 'are', wat: 'what', wut: 'what', whats: 'what', wats: 'what', doin: 'doing', yday: 'yesterday', yesturday: 'yesterday', tmrw: 'tomorrow', tommorow: 'tomorrow', pls: 'please', plz: 'please', thx: 'thanks', ty: 'thanks',
+  ok: 'okay', alrite: 'alright',
   learnt: 'learned', lern: 'learn', hows: 'how', whos: 'who', wheres: 'where', im: 'i', ive: 'i', dont: 'not', cant: 'cannot', gimme: 'give', lemme: 'let', wanna: 'want', gonna: 'going', bout: 'about', nr: 'number', num: 'number', nums: 'numbers', stats: 'numbers', figures: 'numbers',
   results: 'result', findings: 'find', finds: 'find', found: 'find', discovered: 'find', discover: 'find', lessons: 'learned', lesson: 'learned', takeaways: 'learned', takeaway: 'learned', learn: 'learned', failed: 'fail', failure: 'fail', failing: 'fail', fails: 'fail', broke: 'fail', broken: 'fail', errors: 'error',
   blocked: 'stuck', blocker: 'stuck', blockers: 'stuck', blocking: 'stuck', colleagues: 'team', coworkers: 'team', teammates: 'team', friends: 'team', neighbours: 'team', neighbors: 'team', surprising: 'surprise', interesting: 'surprise', confident: 'sure', confidence: 'sure', certain: 'sure',
   latest: 'last', newest: 'last', recent: 'last', previous: 'last', simply: 'simple', simpler: 'simple', plainly: 'simple', eli5: 'simple', profit: 'money', profits: 'money', pnl: 'money', earnings: 'money', earn: 'money', earned: 'money', dollars: 'money', cash: 'money', income: 'money',
   risks: 'risk', risky: 'risk', downside: 'risk', danger: 'risk', dangerous: 'risk', hello: 'hi', hey: 'hi', hiya: 'hi', yo: 'hi', kalimera: 'hi', yassou: 'hi', greetings: 'hi', thank: 'thanks', cheers: 'thanks', goodbye: 'bye', cya: 'bye', later: 'bye',
   working: 'doing', busy: 'doing', status: 'doing', update: 'doing', updates: 'doing', news: 'new', feeling: 'feel', trades: 'trade', orders: 'order', bets: 'bet', picks: 'pick', deals: 'pick', ideas: 'idea', commits: 'commit', apps: 'app', questions: 'ask', question: 'ask' };
-const STOP = new Set(['a', 'an', 'the', 'to', 'of', 'is', 'are', 'am', 'was', 'were', 'be', 'so', 'then', 'just', 'really', 'well', 'ok', 'okay', 'hmm', 'um']);
+const STOP = new Set(['a', 'an', 'the', 'to', 'of', 'is', 'are', 'am', 'was', 'were', 'be', 'so', 'then', 'just', 'well', 'hmm', 'um']);
 export function tokens(text) {
   const raw = String(text == null ? '' : text).toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9$%]+/g, ' ').trim().split(' ').filter(Boolean);
   return raw.map((w) => FIX[w] || w).map((w) => FIX[w] || w).filter((w) => !STOP.has(w));
@@ -30,7 +31,7 @@ function lev(a, b, max) {
   }
   return prev[b.length];
 }
-const near = (tok, w) => tok === w || (w.length >= 5 && tok.length >= 4 && tok[0] === w[0] && lev(tok, w, w.length >= 9 ? 2 : 1) <= (w.length >= 9 ? 2 : 1));
+const near = (tok, w) => tok === w || (tok[0] === w[0] && ((w.length >= 5 && tok.length >= 4) || (w.length === 4 && tok.length === 5)) && lev(tok, w, w.length >= 9 ? 2 : 1) <= (w.length >= 9 ? 2 : 1));
 const has = (toks, w) => toks.some((t) => near(t, w));
 
 // id, patterns ("word word|alt": every word must be there), kinds it belongs to (none = everyone), priority
@@ -52,19 +53,19 @@ export const INTENTS = [
   I('need', ['what need', 'need from me', 'need anything|help|something', 'can i help', 'how help', 'what should i do', 'what can i do', 'what want from me'], null, 3),
   I('last', ['last result|output|run|thing|one|trade|find|pick|commit|job', 'show last', 'show result', 'most last'], null, 2),
   I('simple', ['explain simple', 'simple', 'plain words|english', 'like five|child|kid', 'not understand', 'explain', 'what does that mean', 'in short', 'short version'], null, 1),
-  I('next', ['what next', 'do next', 'next step|steps|move', 'your plan', 'what plan', 'what tomorrow', 'what would you do', 'what now', 'suggest', 'recommend', 'advice', 'what should'], null, 0),
+  I('next', ['what next', 'do next', 'next step|steps|move', 'your plan', 'what plan', 'what tomorrow', 'what would you do', 'what you suggest|recommend|advise', 'suggest', 'recommend', 'advice', 'what should'], null, 0),
   I('sure', ['how sure', 'sure', 'trust', 'reliable', 'how accurate|honest|good|solid|real', 'can believe', 'is real|true|legit', 'proof'], null, 1),
   I('changed', ['what changed', 'changed since|yesterday|today', 'since yesterday', 'what new', 'anything new', 'any new', 'new today'], null, 3),
   I('compare', ['compare', 'last week', 'this week', 'better worse', 'versus|vs', 'trend', 'improving', 'week'], null, 1),
   I('team', ['who work with', 'work with', 'team', 'who else', 'who help|helps', 'who know'], null, 1),
-  I('built', ['how built|made|work|works|coded', 'what made of', 'your code|files|file|data|source', 'where live|from', 'how do you know', 'what read', 'under hood'], null, 1),
+  I('built', ['how built|made|work|works|coded', 'what you made', 'your code|files|file|data|source', 'where live|from', 'how do you know', 'what read', 'under hood'], null, 1),
   I('surprise', ['surprise', 'fun fact', 'something cool|odd|strange|weird|funny', 'did not expect', 'tell me something'], null, 1),
   I('good', ['good new', 'best new', 'good part|thing|first', 'what went well', 'any win|wins', 'cheer me'], null, 4),
-  I('bad', ['bad new', 'worst new', 'bad part|thing|first', 'worst', 'hard truth', 'be honest'], null, 4),
+  I('bad', ['bad new', 'worst new', 'bad part|thing|first', 'worst', 'hard truth', 'honest'], null, 4),
   I('number', ['give number', 'a number', 'key number', 'numbers', 'how many', 'one number', 'show number', 'your number', 'score'], null, 1),
   I('money', ['how much', 'money', 'what worth', 'how much make|made|month'], null, 1),
   I('risk', ['risk', 'what could go wrong', 'could wrong', 'worst case', 'what if fail', 'catch', 'how safe', 'safe'], null, 2),
-  I('when', ['when last|run|update|updated', 'how old|fresh|stale', 'what time|date', 'how long ago', 'up date', 'when'], null, 0),
+  I('when', ['when last|run|update|updated', 'how old|fresh|stale', 'what time|date', 'how long ago', 'up date', 'when'], null, 2),
   I('yesterday', ['how yesterday', 'yesterday', 'how today', 'how did it go', 'how was day|night|session|today', 'recap', 'summary', 'report', 'stand up|standup'], null, 1),
   I('mood', ['how you', 'how feel', 'you happy|sad|proud|tired|worried', 'your mood', 'how you today'], null, -4),
   I('help', ['what ask', 'what can you tell|say|answer', 'help', 'what can you do', 'options', 'menu', 'what else'], null, 2),
@@ -78,18 +79,18 @@ export const INTENTS = [
   I('bye', ['bye', 'good night', 'see you', 'that all'], null, -4),
   // by kind
   I('top', ['top pick', 'best pick|idea|find|one|deal', 'your favourite|favorite', 'which one', 'what buy|pick'], ['scanner'], 6),
-  I('expire', ['expire|expires|expiry', 'deadline', 'ends|ending', 'how long left', 'until when'], ['scanner'], 6),
+  I('expire', ['expire|expires|expiry', 'deadline', 'end|ends|ending', 'how long left', 'until when'], ['scanner'], 6),
   I('drawdown', ['drawdown', 'room', 'how much lose', 'max loss', 'how close limit', 'cushion'], ['bot'], 6),
   I('target', ['target', 'how far', 'pass eval', 'eval', 'when pass'], ['bot'], 5),
-  I('position', ['in trade', 'position', 'open trade', 'are you long|short|flat'], ['bot'], 6),
-  I('rules', ['your rules|strategy|setup|plan|method|edge', 'how trade', 'how do you trade', 'what strategy'], ['bot'], 6),
+  I('position', ['in trade', 'position', 'open trade', 'you long|short|flat'], ['bot'], 6),
+  I('rules', ['your rules|strategy|setup|method|edge', 'how trade', 'how do you trade', 'what strategy'], ['bot'], 6),
   I('old', ['2021', 'earlier years', 'five years', 'before 2026', 'out sample', 'hold up', 'other years', 'long run', 'history'], ['champion'], 6),
   I('pass', ['pass', 'eval', 'odds', 'two weeks', 'ten sessions'], ['champion'], 5),
   I('verdict', ['why adopted|rejected|champion|here', 'verdict', 'adopted', 'rejected', 'are you live'], ['champion'], 6),
-  I('commit', ['commit', 'pushed', 'shipped', 'what built|made|shipped|finished', 'done yet', 'finished'], ['builder'], 6),
+  I('commit', ['commit', 'pushed', 'shipped', 'what built|ship|shipped|finished', 'done yet', 'finished'], ['builder'], 6),
   I('branch', ['branch', 'where your work', 'merged', 'merge'], ['builder'], 6),
   I('apps', ['which app', 'your app', 'district', 'what keep|guard', 'your people'], ['keeper', 'villager'], 6),
-  I('attention', ['need look', 'which fail|red|stale|old', 'what attention', 'where look', 'what check'], ['keeper'], 7),
+  I('attention', ['need look', 'which fail|red|stale|old', 'what attention', 'where look', 'what check'], ['keeper', 'villager'], 7),
   I('tested', ['how many idea|tested|candidates|jobs|tasks', 'tested', 'idea'], ['mind'], 5),
 ];
 const BY_ID = {}; for (const x of INTENTS) BY_ID[x.id] = x;
@@ -105,7 +106,7 @@ export function intentOf(text, person, mem) {
     for (const pat of it.pats) {
       if (pat.every((alts) => alts.some((w) => has(toks, w)))) {
         const exact = pat.every((alts) => alts.some((w) => toks.indexOf(w) >= 0));
-        const s = pat.length * 10 + it.pri + (exact ? 1.5 : 0) + (it.kinds ? 2 : 0);
+        const s = pat.length * 10 + it.pri + (exact ? 1.5 : 0) + (it.kinds ? 12 : 0);
         if (s > best.score) best = { id: it.id, score: s };
       }
     }
@@ -277,7 +278,7 @@ export function answer(person, facts, text, mem0, env0) {
       R.text = it === 'good' ? say(w.good, goodBit, 'The other side: ' + badBit, lab) : say(w.bad, badBit, 'The other side: ' + goodBit, lab);
       break; }
     case 'number': R.text = say(list(NU, 'number', 1, numLine, say(w.none, 'I have no number on file yet.')), lab); break;
-    case 'money': { const m = NU.filter((n) => /\$/.test(n.text)); R.text = m.length ? say(m.slice(0, 3).map(numLine).join(' '), /estimate/.test(m.map((n) => n.text).join(' ')) ? '' : p.kind === 'champion' ? 'History, not a forecast.' : 'Paper, not real money.', lab) : say(w.none, 'No dollar figure is on my file.', lab); break; }
+    case 'money': { const m = NU.filter((n) => /\$/.test(n.text) && !/^Drawdown|target/i.test(n.label)); R.text = m.length ? say(m.slice(0, 3).map(numLine).join(' '), /estimate/.test(m.map((n) => n.text).join(' ')) ? '' : p.kind === 'champion' ? 'History, not a forecast.' : 'Paper, not real money.', lab) : say(w.none, 'No dollar figure is on my file.', lab); break; }
     case 'when': R.text = f.asof ? say('My data is dated ' + day(f.asof) + '.', (getNum(f, /^(Updated|Built|Stored|Last research|Newest run|Last commit)$/) ? numLine(getNum(f, /^(Updated|Built|Stored|Last research|Newest run|Last commit)$/)) : ''), lab) : say(w.none, 'There is no time on my file.', lab); break;
     case 'yesterday': { const lines = L.slice(0, 2).map(withDay); R.text = lines.length ? say(lines.join(' '), f.blocked ? 'Blocked: ' + dot(f.blocked) : 'Nothing is blocking me.', lab) : say(dot(firstSentence(f.doing)), 'I have no dated result on file.', lab); break; }
     case 'mood': R.text = say((w.mood[f.mood] || w.mood.calm), MOOD_WHY[f.mood] || '', dot(firstSentence(f.doing)) + lab); break;
