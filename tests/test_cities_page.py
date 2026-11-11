@@ -780,14 +780,15 @@ def sec_h(br, base, C, days, picks, ids):
 
 
 def sec_i(br, base, C, days, picks, ids):
-    """Default is navigable WebGL; the atlas stays the unsupported/off fallback."""
+    """Default is the drawn map of every city (the AGORA front screen, owner 2026-11-09); a city entered from it is the navigable WebGL city. The atlas stays the unsupported/off fallback."""
     pg = Page(br, base, q="high", world=False, extra="&demo=1").open()
-    pg.p.wait_for_function("window.__cities.info().mode === 'city' && window.__cities.info().id === 'trades-city'", timeout=120000)
-    check("i. normal HD entrance lands in the NQ Trades City with four flight cameras", pg.p.locator('#cams button').count() == 4 and not pg.p.locator('.district-world').count())
+    m = pg.p.evaluate("window.__cities.map()")
+    check("i. normal HD entrance is the drawn map with every catalogue city on it (not the flat fallback atlas)", pg.info()["mode"] == "hub" and m and m["cities"] == len(C)
+          and pg.p.evaluate("document.body.dataset.ready") == "true" and not pg.p.locator('.district-world').count(), (pg.info()["mode"], m))
+    inf = pg.enter("trades-city", settle=1.5)
+    check("i. a city entered from the map is the genuine WebGL city with four flight cameras, not a flat drilldown", inf['id'] == 'trades-city' and pg.p.locator('#cams button').count() == 4 and not pg.p.locator('.district-world').count())
     pg.back()
-    pg.p.locator('.atlas-portal').first.click()
-    pg.p.wait_for_function("window.__cities.info().mode === 'city'", timeout=120000)
-    check("i. world portals enter the genuine WebGL city, not a flat drilldown", pg.info()['id'] == 'trades-city' and not pg.p.locator('.district-world').count())
+    check("i. Back returns to the map", pg.info()["mode"] == "hub")
     pg.close()
 
 
