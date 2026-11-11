@@ -636,7 +636,7 @@ def test_core():
     check("c. a rejected idea explains itself with its own earlier-years numbers; the team answer names colleagues; the name answer gives the meaning",
           ("did not hold" in a["verdict"] or "rejected by the rule" in a["verdict"]) and a["old"].startswith(("In the five years before", "I have no numbers")) and "Hermolaos" in a["team"] and 'Metis means "wise counsel"' in a["name"], (a["verdict"], a["old"], a["team"]))
     check("c. the greeting follows the time of day, uses the owner's name and remembers his last question",
-          a["hour"][0] == "Good morning." and a["hour"][1] == "Good evening." and a["hour"][2].startswith("Good afternoon. Alex,") and 'Last time you asked: "how much drawdown is left".' in a["hour"][2], a["hour"])
+          a["hour"][0] == "Good morning." and a["hour"][1] == "Good evening." and a["hour"][2].startswith("Good afternoon, Alex. I am ") and 'Last time you asked: "how much drawdown is left".' in a["hour"][2], a["hour"])
     m = o["mem"]
     check("c. memory: 'another' walks the numbers, 'say that again' repeats, 'tell me more' continues the lessons, 'why?' follows the context, the last question is remembered",
           m["seq"][:4] == ["number", "number", "number", "repeat"] and m["distinct"] == 3 and m["repeat"] is True and m["seq"][4:6] == ["learned", "learned"] and m["seq"][6] in ("sure", "risk", "failed") and m["turns"] == 8

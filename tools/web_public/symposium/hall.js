@@ -96,6 +96,7 @@ function build(rc, scene, camera, canvas, o) {
     while (spare.size > SPARE) { const [k, g] = spare.entries().next().value; spare.delete(k); g.userData.dispose(); }
   }
 
+  let driver = null;     // SCENE DIRECTION HOOK (symposium/direct.js): after the hall places its standing camera, the director may move it (establishing shot, conversation close-ups)
   const st = { yaw: 0, goal: null, vel: 0, auto: !reduced, active: -1, activeT: 0, voice: false, t: 0, idle: 0, w: 1, h: 1, walk: null };
   const ray = new THREE.Raycaster(), v = new THREE.Vector3(), ndc = new THREE.Vector2(), look = new THREE.Vector3(), camPos = new THREE.Vector3();
   const camLook = new THREE.Vector3(), camAt = new THREE.Vector3(), headV = new THREE.Vector3();
@@ -130,7 +131,7 @@ function build(rc, scene, camera, canvas, o) {
     else if (Math.abs(st.vel) > 0.0004) { st.yaw += st.vel; st.vel *= Math.pow(0.04, dt); }
     else if (st.auto && st.active < 0) { st.idle += dt; if (st.idle > 2.5) st.yaw += dt * 0.045; }
     const zGoal = st.active >= 0 && !reduced && st.activeT > 0.6 ? 1 : 0; st.zoom = (st.zoom || 0) + (zGoal - (st.zoom || 0)) * Math.min(1, dt * 1.6); if (reduced) st.zoom = 0;
-    placeCam(); syncClose(); camPos.copy(camera.position);
+    placeCam(); if (driver) { try { driver(dt, st); } catch (_) { /* the hall's own camera stays */ } } syncClose(); camPos.copy(camera.position);
     // who looks where: everyone looks at the one who talks; with nobody talking the close-ups notice you, the crowd looks around
     const talker = st.active >= 0 ? crowd.userData.headWorld(st.active, look) : null;
     crowd.userData.lookAll(talker);
@@ -196,6 +197,10 @@ function build(rc, scene, camera, canvas, o) {
     closeUps: () => [...close.keys()],
     rigged: () => [...close.values()].filter((f) => f.userData && f.userData.rig).length,      // characters v3: close-ups that are the rigged cast
     crowdInfo: () => ({ impostors: !!crowd.userData.impostors, calls: crowd.userData.drawCalls }),
+    // ---- SCENE DIRECTION HOOKS (symposium/direct.js + olympus/camera-rig.js)
+    drive(fn) { driver = typeof fn === 'function' ? fn : null; return !!driver; },
+    front: () => front(L, st.yaw + Math.PI, Math.min(5, N)),
+    refs() { return { THREE, scene, camera, canvas, rc, r, tr, layout: L, reduced, head: (i, out) => crowd.userData.headWorld(i, out || new THREE.Vector3()), cine: () => cine, look: () => ({ x: -Math.sin(st.yaw) * r, y: 1.02, z: -Math.cos(st.yaw) * r }) }; },
     stageFor(i) { if (!L.seats[i]) return null; if (st.active !== i) { api.focus(i); api.active(i); } closeUp(i); return { seat: i, project: () => api.project(i) }; },
     release() { if (st.walk) { const w = st.walk; st.walk = null; if (w.done) w.done(false); } api.active(-1); },
     speaking: () => st.active,
