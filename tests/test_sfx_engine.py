@@ -59,6 +59,7 @@ const wait = (ms) => new Promise(r => setTimeout(r, ms));
   out.playAll = t.s.names.filter(n => n !== 'pad').filter(n => !t.s.play(n));
   await wait(40);
   out.aliases = ['notification', 'money-in', 'level-up', 'toggle-off', 'swipe-back', 'footstep', 'anvil', 'clink'].filter(n => !t.s.play(n));
+  await wait(40); out.surface = [t.s.at('step', { x: 1, y: 0, z: -1 }, null, { surface: 'sand' }), t.s.play('footstep', { surface: 'wood' })];
   out.bad = t.s.play('nope'); out.badAt = t.s.at('nope', { x: 0, y: 0, z: 0 });
   out.capped = t.s.state().voices;
   let ui = 0; for (const v of [t.s.state()]) ui = v.voices;
@@ -148,6 +149,7 @@ class SfxEngineTest(unittest.TestCase):
             self.assertIn(x, n["worlds"])
         self.assertEqual(self.o["playAll"], [])                # every name sounds after the tap
         self.assertEqual(self.o["aliases"], [])                # notification, money-in, level-up, toggle-off ... resolve
+        self.assertEqual(self.o["surface"], [True, True])      # step + {surface}
         self.assertFalse(self.o["bad"])
         self.assertFalse(self.o["badAt"])
         self.assertEqual(self.o["errors1"], 0)

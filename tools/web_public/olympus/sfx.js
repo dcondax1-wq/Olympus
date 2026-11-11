@@ -439,7 +439,11 @@
     }
 
     /* ---------------------------------------------------------------- play / at / world */
-    function resolve(name) { name = String(name || ''); var a = ALIAS[name]; if (!a) return [name, null]; return typeof a === 'string' ? [a, null] : a; }
+    function resolve(name, opts) {
+      name = String(name || ''); var a = ALIAS[name], r = !a ? [name, null] : typeof a === 'string' ? [a, null] : a;
+      if (r[0] === 'step-stone' && opts && SND['step-' + opts.surface]) r = ['step-' + opts.surface, r[1]];   // step + {surface: 'sand' | 'wood' | 'stone'}
+      return r;
+    }
     function gated(n) { return CUES.indexOf(n) >= 0 || WORLD.indexOf(n) >= 0; }
     function fire(n, o, dest, extra, cat, key) {
       var d = SND[n], now = Date.now(), k = key || n;
@@ -453,7 +457,7 @@
     }
     function play(name, opts) {
       try {
-        var r = resolve(name), n = r[0], o = merge(r[1], opts);
+        var r = resolve(name, opts), n = r[0], o = merge(r[1], opts);
         if (NAMES.indexOf(n) < 0) return false;
         if (muted) return false;
         if (gated(n) && !soundAllowed()) return false;          // cues and world sounds follow the Sound switch
@@ -490,7 +494,7 @@
     /** at('step-stone', {x,y,z}, listener?, opts?): a sound placed in the scene. listener = {x,y,z,yaw} | {position, rotation} (a three.js camera) | {x,y,z, forward} */
     function at(name, pos, lis, opts) {
       try {
-        var r = resolve(name), n = r[0], o = merge(r[1], opts);
+        var r = resolve(name, opts), n = r[0], o = merge(r[1], opts);
         if (NAMES.indexOf(n) < 0 || n === 'pad') return false;
         if (muted || !soundAllowed() || !unlocked || !ctx) return false;
         var rel = toLocal(pos || {}, lis || hearL || {}), dist = Math.sqrt(rel.x * rel.x + rel.y * rel.y + rel.z * rel.z), maxD = o.max || MAXD;
