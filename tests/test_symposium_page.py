@@ -135,7 +135,7 @@ def home_json():
 
 WALL = "() => document.querySelectorAll('#wall .who').length"
 STATE = "() => window.SYMPOSIUM.state()"
-SHEET = """() => { const r = document.querySelector('.pp-root'); if (!r || r.hidden) return null; const s = r.querySelector('.pp-sheet').getBoundingClientRect(), i = r.querySelector('.pp-in').getBoundingClientRect();
+SHEET = """() => { const r = document.querySelector('.pp-root'); if (!r || r.hidden) return null; document.getAnimations().forEach((x) => { try { x.finish(); } catch (e) {} }); const s = r.querySelector('.pp-sheet').getBoundingClientRect(), i = r.querySelector('.pp-in').getBoundingClientRect();
   return { name: r.querySelector('.pp-name').textContent, title: r.querySelector('.pp-title').textContent, status: r.querySelector('.pp-sttext').textContent, them: [...r.querySelectorAll('.pp-them:not(.pp-typing) .pp-text')].map((e) => e.textContent), me: [...r.querySelectorAll('.pp-me .pp-text')].map((e) => e.textContent),
     chips: [...r.querySelectorAll('.pp-chip')].map((e) => e.textContent), src: [...r.querySelectorAll('.pp-src')].map((e) => e.textContent), face: !!r.querySelector('.pp-face svg'), bottom: Math.round(s.bottom), top: Math.round(s.top), inputBottom: Math.round(i.bottom), vh: innerHeight, mic: !r.querySelector('.pp-mic').hidden,
     voice: r.querySelector('.pp-tools .pp-btn:nth-child(4)').textContent, modal: r.querySelector('.pp-sheet').getAttribute('aria-modal'), typing: r.querySelectorAll('.pp-typing').length }; }"""
