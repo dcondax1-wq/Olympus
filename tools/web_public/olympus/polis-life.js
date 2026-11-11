@@ -787,7 +787,6 @@
       card.appendChild(tree({ id: t.id, growth: t.growth, olives: t.olives, thirsty: t.thirsty, title: t.name + ': ' + t.line }, opts));
       var cap = H('figcaption', null, null, card), top = H('div', 'pl-tree-top', null, cap);
       H('b', 'pl-tree-name', t.name, top);
-      if (t.stage === 'funded') laurelMark(top, 'olive', opts);
       H('span', 'pl-chip pl-chip-' + t.stage, t.stage === 'funded' ? 'Funded' : t.stage === 'paper' ? 'Paper' : 'Eval', top);
       if (num(t.balance)) H('p', 'pl-tree-bal pl-num', money(t.balance, false) + (num(t.profit) ? ' · ' : ''), cap).appendChild(span(money(t.profit), tone(t.profit)));
       H('p', 'pl-tree-line', t.line, cap);
@@ -795,6 +794,7 @@
       if (num(t.payouts) && t.payouts > 0) H('p', 'pl-tree-dd', 'Paid out ' + money(t.payouts, false), cap);
       var meta = H('div', 'pl-tree-meta', null, cap);
       meta.appendChild(rings(t.rings));
+      if (t.stage === 'funded') laurelMark(meta, 'olive', opts);
       H('span', null, t.rings + ' ring' + (t.rings === 1 ? '' : 's') + ' · ' + t.olives + ' olive' + (t.olives === 1 ? '' : 's'), meta);
     }
     srcLine(el, g.rule);

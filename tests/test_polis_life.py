@@ -185,7 +185,7 @@ def browser_lock(wait=2400):
         os.close(fd)
 
 
-ANIMS = "() => document.getAnimations().filter(a => a.playState === 'running').length"
+ANIMS = "() => document.getAnimations().filter(a => a.playState === 'running' && a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.pl-piece')).length"
 
 
 def part_e():
@@ -223,14 +223,14 @@ def part_e():
             p.goto(origin + "/olympus/polis-life-lab.html?demo=1")
             p.wait_for_function("window.POLIS_LIFE_LAB.ready()", timeout=60000)
             p.wait_for_timeout(400)
-            check("e. reduced motion: nothing animates, no error", p.evaluate(ANIMS) == 0 and not errs, (p.evaluate(ANIMS), errs))
+            check("e. reduced motion: nothing of POLIS life animates (the loading veil belongs to olympus.js), no error", p.evaluate(ANIMS) == 0 and not errs, (p.evaluate(ANIMS), errs))
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin, lite=True)
             p.goto(origin + "/olympus/polis-life-lab.html?demo=1")
             p.wait_for_function("window.POLIS_LIFE_LAB.ready()", timeout=60000)
             p.wait_for_timeout(400)
             lv = p.evaluate("() => +document.querySelectorAll('.pl-tree')[1].getAttribute('data-leaves')")
-            run = p.evaluate("() => document.getAnimations().filter(a => a.playState === 'running').map(a => (a.animationName || a.constructor.name) + ' ' + ((a.effect && a.effect.target && a.effect.target.getAttribute && a.effect.target.getAttribute('class')) || ''))")
+            run = p.evaluate("() => document.getAnimations().filter(a => a.playState === 'running' && a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.pl-piece')).map(a => (a.animationName || a.constructor.name) + ' ' + ((a.effect && a.effect.target && a.effect.target.getAttribute && a.effect.target.getAttribute('class')) || ''))")
             check("e. LITE: nothing animates and the trees draw fewer leaves", not run and lv < n["leaves"][1] and not errs, (run[:5], lv, n["leaves"][1], errs))
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin)
