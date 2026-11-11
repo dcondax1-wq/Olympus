@@ -21,6 +21,10 @@ What it indexes (everything is plain text out of files the repo already has; not
   * changed : "what changed our mind": sentences where a write-up says an earlier belief did not hold (e.g. the 95c+ Kalshi pocket), with the file.
   * pipeline: Idea -> Testing -> Verdict counts per strategy family and the newest 20 moves, from tools/web_public/archive/index.json (or research/runs when it is missing)
   * gaps    : data sets that end well before the newest research date (for the "what next" planner)
+  * builders: builders.json, THE BUILDERS' CAMP: handoff/agents_now.json (the build agents working right now: branch, name, job, area) joined with git when git and the branch are there
+              (`git log agora-release..<branch>`: the last 8 commit subjects with times, how many files changed, the top folders touched, the time of the last commit, whether it is
+              merged, and what it shipped = the commits its merges brought into agora-release). Without git or the branch an agent is the file alone, labelled "job only, no live activity".
+              Volatile by nature (it is git), so --check does not compare it.
 It also writes lessons.json next to queue.json (for Jarvis: "what did we learn this week").
 `asof` is the newest date found in the sources (not the clock), so the files are reproducible.
 """
@@ -450,6 +454,83 @@ def git_block(root=ROOT):
     return {"available": bool(commits), "commits": commits[:25], "branches": branches[:12]}
 
 
+BASE = "agora-release"
+
+
+def builders_block(root=ROOT, with_git=True):
+    """builders.json: who is building right now. The file gives name / job / area; git (when it is there) gives the live part."""
+    try:
+        doc = json.loads(read(os.path.join(root, "handoff", "agents_now.json")) or "null")
+    except ValueError:
+        doc = None
+    rows = [a for a in (doc.get("agents") if isinstance(doc, dict) else None) or [] if isinstance(a, dict) and a.get("name")]
+
+    def run(*args):
+        return subprocess.run(["git", "-C", root, *args], capture_output=True, text=True, timeout=20, check=True).stdout
+
+    def commits(*args):
+        out = []
+        for ln in run("log", "--pretty=%ct|%s", *args).splitlines():
+            a = ln.split("|", 1)
+            if len(a) == 2 and a[0].isdigit() and not a[1].startswith("Merge "):
+                out.append({"t": int(a[0]), "s": clean(a[1], 120)})
+        return out
+    git_ok = False
+    if with_git and rows:
+        try:
+            run("rev-parse", "--verify", "--quiet", BASE)
+            git_ok = True
+        except Exception:  # noqa: BLE001 - git is never required
+            git_ok = False
+    merges = []
+    if git_ok:
+        try:
+            for ln in run("log", BASE, "--merges", "-n", "400", "--pretty=%H|%ct|%s").splitlines():
+                a = ln.split("|", 2)
+                if len(a) == 3:
+                    merges.append(a)
+        except Exception:  # noqa: BLE001
+            merges = []
+    agents, newest = [], 0
+    for i, a in enumerate(rows[:16]):
+        br = str(a.get("branch") or "")
+        row = {"id": "b%d" % (i + 1), "branch": clean(br, 60), "name": clean(a.get("name"), 40), "job": clean(a.get("job"), 140), "area": clean(a.get("area"), 20), "live": False, "merged": False,
+               "ahead": 0, "files": 0, "folders": [], "commits": [], "last_t": 0, "shipped": [], "shipped_n": 0, "note": "job only, no live activity"}
+        if git_ok and re.match(r"^[\w./-]+$", br):
+            try:
+                run("rev-parse", "--verify", "--quiet", br)
+                row["ahead"] = int(run("rev-list", "--count", f"{BASE}..{br}").strip() or 0)
+                row["commits"] = commits("-n", "8", f"{BASE}..{br}")
+                names = [n for n in run("diff", "--name-only", f"{BASE}...{br}").splitlines() if n]
+                row["files"] = len(names)
+                top = {}
+                for n in names:
+                    parts = n.split("/")
+                    key = "/".join(parts[:3]) if parts[0] == "tools" and len(parts) > 3 and parts[1] == "web_public" else "/".join(parts[:2]) if len(parts) > 2 else parts[0] if len(parts) > 1 else "(top folder)"
+                    top[key] = top.get(key, 0) + 1
+                row["folders"] = [{"name": clean(k, 50), "n": v} for k, v in sorted(top.items(), key=lambda kv: (-kv[1], kv[0]))[:4]]
+                mine = [m for m in merges if br in m[2]]
+                ship = []
+                for m in mine[:3]:
+                    try:
+                        ship += commits("-n", "6", f"{m[0]}^1..{m[0]}^2")
+                    except Exception:  # noqa: BLE001
+                        pass
+                row["shipped"], row["shipped_n"] = ship[:8], len(mine)
+                last = int(run("log", "-n", "1", "--pretty=%ct", br).strip() or 0)
+                row["last_t"] = row["commits"][0]["t"] if row["commits"] else (ship[0]["t"] if ship else last)
+                row["merged"] = row["ahead"] == 0 and bool(mine)
+                row["live"] = True
+                row["note"] = "merged into the release" if row["merged"] else "from git: its branch against the release"
+                newest = max(newest, row["last_t"])
+            except Exception:  # noqa: BLE001 - a missing branch is not an error: the agent keeps its job line
+                pass
+        agents.append(row)
+    return {"v": 1, "asof": clean(doc.get("asof"), 25) if isinstance(doc, dict) else "", "source": "git" if any(r["live"] for r in agents) else "file", "base": BASE, "newest_t": newest,
+            "note": "The build agents from handoff/agents_now.json" + (", joined with git at build time (commits not yet in the release, files, folders, what was merged)." if any(r["live"] for r in agents) else ": job lines only, git was not available at build time, so there is no live activity."),
+            "agents": agents}
+
+
 def build(root=ROOT, with_git=True, out_path=None):
     q = queue_tasks(read(os.path.join(root, "handoff", "QUEUE.md")))
     wu = writeup_rows(os.path.join(root, "research", "writeups"))
@@ -552,6 +633,10 @@ def main(argv=None):
         fh.write(dump(cur))
     with open(lpath, "w", encoding="utf-8") as fh:
         fh.write(dump(lessons_file(cur)))
+    bl = builders_block()
+    with open(os.path.join(os.path.dirname(lpath), "builders.json"), "w", encoding="utf-8") as fh:
+        fh.write(dump(bl))
+    print(f"wrote builders.json: {len(bl['agents'])} build agents, source {bl['source']}, {sum(1 for x in bl['agents'] if x['live'])} with live git activity")
     print(f"wrote {a.out} (+ lessons.json): {cur['queue']['open']} open tasks, {cur['writeups']['count']} write-ups, {len(cur['lessons'])} lessons ({len(cur['changed'])} changed our mind), "
           f"{len(cur['events'])} events, {cur['pipeline']['counts']['ideas']} ideas in the pipeline, git {'yes' if cur['git']['available'] else 'no'}")
     return 0
@@ -618,6 +703,57 @@ def selftest():
         json.dump({"asof": "2026-11-10T06:30:00Z", "status": "sample", "headline": {"text": "3 picks"}}, fh)
     mr = money_runs(os.path.join(d, "site", "ergasterion", "queue.json"))
     ck("money machines: asof times are read from <site>/money next to the output, sample is flagged", len(mr) == 1 and mr[0]["who"] == "sibyl" and mr[0]["sample"] and mr[0]["t"] == iso_t("2026-11-10 06:30") and mr[0]["text"] == "3 picks", mr)
+    # the builders' camp: without git, then with a real little repo
+    with open(os.path.join(d, "handoff", "agents_now.json"), "w", encoding="utf-8") as fh:
+        json.dump({"v": 1, "asof": "2026-11-11T01:10:00Z", "agents": [{"branch": "agent-one", "name": "One", "job": "Builds <b>one</b> thing", "area": "design"}, {"branch": "agent-gone", "name": "Gone", "job": "Its branch is not here", "area": "x"},
+                                                                    {"branch": "agent-done", "name": "Done", "job": "Already merged", "area": "y"}, {"branch": "bad branch; rm", "name": "Odd", "job": "j", "area": "z"}, {"job": "no name"}, 7]}, fh)
+    b0 = builders_block(d, with_git=False)
+    ck("builders.json without git: every agent of the file with its name and job, honestly labelled 'job only, no live activity', no commits invented, markup cleaned",
+       b0["source"] == "file" and [a["name"] for a in b0["agents"]] == ["One", "Gone", "Done", "Odd"] and all(a["note"] == "job only, no live activity" and not a["live"] and not a["commits"] and a["last_t"] == 0 for a in b0["agents"]) and b0["agents"][0]["job"] == "Builds bone/b thing" and "no live activity" in b0["note"], b0)
+    ck("builders.json in a folder that is not a git repo never raises (same file-only answer)", builders_block(d, with_git=True)["source"] == "file")
+    try:
+        g = tempfile.mkdtemp()
+        os.makedirs(os.path.join(g, "handoff"))
+        os.makedirs(os.path.join(g, "tools", "web_public", "app1"))
+        import shutil
+        shutil.copy(os.path.join(d, "handoff", "agents_now.json"), os.path.join(g, "handoff", "agents_now.json"))
+        env = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@example.com", GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@example.com")
+
+        def gi(*a, when=None):
+            e = dict(env, GIT_AUTHOR_DATE=when, GIT_COMMITTER_DATE=when) if when else env
+            subprocess.run(["git", "-C", g, *a], capture_output=True, text=True, check=True, env=e)
+
+        def wr(rel, text):
+            with open(os.path.join(g, rel), "w", encoding="utf-8") as fh:
+                fh.write(text)
+        gi("init", "-q", "-b", BASE)
+        gi("add", "-A")
+        gi("commit", "-q", "-m", "base", when="2026-11-10T00:00:00Z")
+        gi("checkout", "-q", "-b", "agent-done")
+        wr("done.txt", "x")
+        gi("add", "-A")
+        gi("commit", "-q", "-m", "Shipped the done thing", when="2026-11-10T02:00:00Z")
+        gi("checkout", "-q", BASE)
+        gi("merge", "-q", "--no-ff", "-m", "Merge branch 'agent-done'", "agent-done", when="2026-11-10T03:00:00Z")
+        gi("checkout", "-q", "-b", "agent-one")
+        wr("tools/web_public/app1/a.js", "1")
+        wr("tools/web_public/app1/b.js", "1")
+        gi("add", "-A")
+        gi("commit", "-q", "-m", "First step: the page", when="2026-11-11T00:30:00Z")
+        wr("top.txt", "1")
+        gi("add", "-A")
+        gi("commit", "-q", "-m", "Second step: <i>tests</i>", when="2026-11-11T01:00:00Z")
+        gi("checkout", "-q", BASE)
+        b1 = builders_block(g)
+        one, gone, done = b1["agents"][0], b1["agents"][1], b1["agents"][2]
+        ck("builders.json WITH git: the branch's commits that are not in the release yet (newest first, with times), files changed, top folders, the time of the last commit",
+           b1["source"] == "git" and one["live"] and one["ahead"] == 2 and [c["s"] for c in one["commits"]] == ["Second step: itests/i", "First step: the page"] and one["commits"][0]["t"] == iso_t("2026-11-11 01:00") and one["last_t"] == one["commits"][0]["t"]
+           and one["files"] == 3 and one["folders"][0] == {"name": "tools/web_public/app1", "n": 2} and not one["merged"] and b1["newest_t"] == one["last_t"], one)
+        ck("builders.json WITH git: a merged branch is 'merged' with what it shipped (the commits its merge brought in); a missing or unsafe branch name falls back to 'job only, no live activity'",
+           done["merged"] and done["ahead"] == 0 and done["shipped_n"] == 1 and [c["s"] for c in done["shipped"]] == ["Shipped the done thing"] and done["note"] == "merged into the release"
+           and not gone["live"] and gone["note"] == "job only, no live activity" and not b1["agents"][3]["live"], (done, gone))
+    except (OSError, subprocess.CalledProcessError) as e:
+        print("[note] git is not usable here, the with-git builders check is skipped:", e)
     print("ALL PASS" if all(ok) else "SOME FAILED")
     return 0 if all(ok) else 1
 

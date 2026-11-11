@@ -4085,6 +4085,42 @@
   "available": true,
   "commits": [
    {
+    "t": 1794359313,
+    "s": "Merge branch 'agora-release' into worktree-agent-a1d36b031da943214"
+   },
+   {
+    "t": 1794359239,
+    "s": "handoff/agents_now.json: the build agents and their jobs (for Ergasterion's builders hall)"
+   },
+   {
+    "t": 1794358864,
+    "s": "Ergasterion v2: tour starts over the Library"
+   },
+   {
+    "t": 1794358852,
+    "s": "Ergasterion v2: dusk sky, wheel beside the worker, calmer tags and signs, higher tour"
+   },
+   {
+    "t": 1794358550,
+    "s": "Ergasterion v2: Library stations nearer the entrance sightline, wider first-person view, walk-to distance"
+   },
+   {
+    "t": 1794358454,
+    "s": "Ergasterion v2: wiring note for the lead (no new build line; lessons.json rides on the existing one)"
+   },
+   {
+    "t": 1794358437,
+    "s": "Ergasterion v2 step 4: tests rewritten for v2 (builder, halls/walls/doors, replay, pipeline, learning board,…"
+   },
+   {
+    "t": 1794357983,
+    "s": "Ergasterion v2 step 3 (WIP): 3D factory rewritten (4 halls, doors, job figures, bubbles, crates, boards, tour…"
+   },
+   {
+    "t": 1794357453,
+    "s": "Ergasterion v2 step 2 (WIP): core has 4 halls with doors and wall collision, worker jobs, speech bubbles, cra…"
+   },
+   {
     "t": 1794357171,
     "s": "Ergasterion v2 step 1: builder emits a dated event stream, distilled lessons (dedupe + strength), what change…"
    },
@@ -4147,94 +4183,58 @@
    {
     "t": 1794326812,
     "s": "Worker v76 for the v6 build"
-   },
-   {
-    "t": 1794326297,
-    "s": "Kalshi stop list: suggestions builder, Sibyl card, owner page, book recorder (not deployed)"
-   },
-   {
-    "t": 1794326102,
-    "s": "Merge branch 'worktree-agent-a1683cbeb359a2648' into agora-release"
-   },
-   {
-    "t": 1794326079,
-    "s": "Kalshi edge team B: structure/behaviour tests, no edge found, stop-doing list"
-   },
-   {
-    "t": 1794325919,
-    "s": "Jarvis home AGORA: Today / bots / money / market-day cards, district orb ring, marble courtyard, slim What's…"
-   },
-   {
-    "t": 1794325399,
-    "s": "Merge branch 'worktree-agent-ace41d8d484f75e7c' into agora-release"
-   },
-   {
-    "t": 1794325362,
-    "s": "NQ reporting without GitHub: pc_publish (folder / netlify / none), GitHub-free bot mode, PUBLISH_NQ.bat, Kals…"
-   },
-   {
-    "t": 1794324447,
-    "s": "Merge branch 'worktree-agent-a5ca1b51d9fc9e0df' into agora-release"
-   },
-   {
-    "t": 1794324427,
-    "s": "Wire archive; worker v75"
-   },
-   {
-    "t": 1794324397,
-    "s": "Merge Archive app and 9 new Data City families"
    }
   ],
   "branches": [
    {
-    "name": "worktree-agent-a8fa04fb59e01df25",
-    "t": 1794357374,
-    "s": "Jarvis portal: bronze fallback colour"
-   },
-   {
-    "name": "worktree-agent-a545b014870ea708c",
-    "t": 1794357367,
-    "s": "NQ app: the NQ bots, right now (status with exact age, drawdown left, P&L in $ with R, last 10 trad…"
-   },
-   {
-    "name": "worktree-agent-afc68d30fdf5b4f1b",
-    "t": 1794357274,
-    "s": "Pinakes: the pure core (inference, filters, stats, group, CSV, share link, Ask) and the demo catalo…"
+    "name": "worktree-agent-ab25b5ae6ac17c255",
+    "t": 1794359539,
+    "s": "Jarvis brain v3: 'what are the agents working on' (ergasterion/builders.json, else the bundled jarv…"
    },
    {
     "name": "worktree-agent-a802da4078c305b1b",
-    "t": 1794357261,
-    "s": "Hellas: data (poleis from the Archive, Data City, Kalshi, money, accounts, apps), world + polis pla…"
-   },
-   {
-    "name": "worktree-agent-a43a2daec19cf8666",
-    "t": 1794357239,
-    "s": "Jarvis home v2: one first screen in index.html (hero, district doorways, three tiles), named sectio…"
-   },
-   {
-    "name": "worktree-agent-a1d36b031da943214",
-    "t": 1794357171,
-    "s": "Ergasterion v2 step 1: builder emits a dated event stream, distilled lessons (dedupe + strength), w…"
-   },
-   {
-    "name": "worktree-agent-ab25b5ae6ac17c255",
-    "t": 1794357111,
-    "s": "Jarvis brain v3: search.js (fuzzy, synonyms, offline, deterministic)"
-   },
-   {
-    "name": "worktree-agent-a9fa9fcc5a553e79b",
-    "t": 1794357074,
-    "s": "Colosseum: the duel core (seven rounds on stored numbers, no contest when missing, seeded tournamen…"
+    "t": 1794359351,
+    "s": "Merge branch 'agora-release' into worktree-agent-a802da4078c305b1b"
    },
    {
     "name": "worktree-agent-aa54c21090a103d33",
-    "t": 1794356792,
-    "s": "Round 3 fixes: atlas_ui prints [PASS] and exposes RES (gate counts it); cities test taps a district…"
+    "t": 1794359350,
+    "s": "Data City test: the City menu has 10 doors (All districts was added to the app)"
    },
    {
     "name": "worktree-agent-aa29a7ded798881ae",
-    "t": 1794356326,
-    "s": "Night brief round 3"
+    "t": 1794359348,
+    "s": "Kalshi edge C: more weather snapshots, resumable harvest script"
+   },
+   {
+    "name": "worktree-agent-a1d36b031da943214",
+    "t": 1794359313,
+    "s": "Merge branch 'agora-release' into worktree-agent-a1d36b031da943214"
+   },
+   {
+    "name": "worktree-agent-a545b014870ea708c",
+    "t": 1794358975,
+    "s": "update_from_zip: SHA-256 still checked for a second download ('name (1).zip' / '.sha256 (1).txt');…"
+   },
+   {
+    "name": "worktree-agent-afc68d30fdf5b4f1b",
+    "t": 1794358811,
+    "s": "Pinakes: Home Screen icons"
+   },
+   {
+    "name": "worktree-agent-a9fa9fcc5a553e79b",
+    "t": 1794358646,
+    "s": "Colosseum arena: larger champions, closer camera, stepped tier tones, terracotta podium wall, riche…"
+   },
+   {
+    "name": "worktree-agent-a43a2daec19cf8666",
+    "t": 1794358595,
+    "s": "tests: test_jarvis_home_v2 (browser: first screen at three sizes, no overlap, orb hint once, states…"
+   },
+   {
+    "name": "worktree-agent-a8fa04fb59e01df25",
+    "t": 1794357374,
+    "s": "Jarvis portal: bronze fallback colour"
    },
    {
     "name": "worktree-agent-ace9572796f7ae004",

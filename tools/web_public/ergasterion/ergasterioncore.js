@@ -30,6 +30,13 @@ export const DOORS = [
   { id: 'trading-library', axis: 'z', at: 0, c: 6.5, half: 1.2, a: 'trading', b: 'library' },
 ];
 /** the job a figure is seen doing: wheel = turning a scanner wheel, scribe = writing at a desk, oracle = reading the tripod, smith = hammering at the anvil, scales = weighing risk against reward */
+/** THE BUILDERS' CAMP: a desert caravan camp outside the front door (south of the factory), one tent per build agent. You walk out through the front door (x = 6.5, z = 10). */
+export const CAMP = { id: 'camp', name: "Builders' camp", x0: -3.5, x1: 16.5, z0: 10.6, z1: 23, door: { x: 6.5, half: 0.9, z0: 9.4, z1: 10.6 }, fire: { x: 6.5, z: 12.6 }, enter: { x: 6.5, z: 11.0, yaw: Math.PI }, tone: '#c9a66b' };
+/** ten tent spots: a near row of 4 and a far row of 6, every worker in front of its tent facing the door you come from */
+export const CAMP_SPOTS = [[0.5, 15.8], [4.5, 15.8], [8.5, 15.8], [12.5, 15.8], [-1.5, 20.4], [1.7, 20.4], [4.9, 20.4], [8.1, 20.4], [11.3, 20.4], [14.5, 20.4]].map((a, i) => ({ i, x: a[0], z: a[1], job: i % 2 ? 'scribe' : 'smith' }));
+export const BUILD_WORD = { working: 'Working', quiet: 'Quiet', done: 'Done', job: 'Job only' };
+export const BUILD_HELP = { working: 'a commit in the last 15 minutes', quiet: 'no commit for a while', done: 'merged into the release', job: 'job only, no live activity' };
+export const WORK_MIN = 15;
 export const JOB_WORD = { wheel: 'turning the search wheel', scribe: 'writing it down', oracle: 'reading the tripod', smith: 'hammering at the anvil', scales: 'weighing risk against reward' };
 
 export const STATIONS = [
@@ -391,12 +398,17 @@ export function resolveDemo(fx, now) {
 export function haveReal(inp) { return isObj(inp) && ['home', 'money', 'kalshi', 'cron', 'forge', 'heph'].some((k) => isObj(inp[k])); }
 
 // ------------------------------------------------------------------ walking the floor (pure, so it is tested)
-export function hallOf(p) { if (!p) return HALLS[3]; const x = p && isFinite(p.x) ? p.x : 0, z = p && isFinite(p.z) ? p.z : 0; return HALLS.find((h) => x >= h.x0 && x <= h.x1 && z >= h.z0 && z <= h.z1) || HALLS[3]; }
+export function hallOf(p) { if (!p) return HALLS[3]; const x = p && isFinite(p.x) ? p.x : 0, z = p && isFinite(p.z) ? p.z : 0; if (z > 9.7) return CAMP; return HALLS.find((h) => x >= h.x0 && x <= h.x1 && z >= h.z0 && z <= h.z1) || HALLS[3]; }
 const inDoor = (axis, c) => DOORS.some((d) => d.axis === axis && Math.abs(c - d.c) <= d.half - 0.3);
 /** keep a point inside the factory, out of the inner walls (except through a door) and out of every station's circle */
 export function resolveCollision(x, z, stations, r) {
   const R = r == null ? STATION_R : r;
-  x = Math.max(-BOUNDS.x, Math.min(BOUNDS.x, x)); z = Math.max(-BOUNDS.z, Math.min(BOUNDS.z, z));
+  if (z > BOUNDS.z) {                                   // south of the factory: the front doorway, then the camp
+    const d = CAMP.door;
+    if (z < d.z1) { if (Math.abs(x - d.x) > d.half) { if (z < (d.z0 + d.z1) / 2) z = BOUNDS.z; else z = d.z1; } }
+    if (z >= d.z1) { x = Math.max(CAMP.x0 + 0.6, Math.min(CAMP.x1 - 0.6, x)); z = Math.min(CAMP.z1 - 0.6, z); }
+  }
+  if (z <= BOUNDS.z) { x = Math.max(-BOUNDS.x, Math.min(BOUNDS.x, x)); z = Math.max(-BOUNDS.z, z); }
   const nearX = Math.abs(x) < WALL_T && !inDoor('x', z), nearZ = Math.abs(z) < WALL_T && !inDoor('z', x);
   if (nearX) x = x >= 0 ? WALL_T : -WALL_T;
   if (nearZ) z = z >= 0 ? WALL_T : -WALL_T;
@@ -431,6 +443,43 @@ export function tourCam(t, reduced) {
   const a = Math.PI / 4 + 0.5 - (t / TOUR_S) * Math.PI * 2, b = a - 0.8;
   const x = Math.cos(a) * 10.4, z = Math.sin(a) * 8.2, lx = Math.cos(b) * 5.2, lz = Math.sin(b) * 4.0;
   return { x, y: 9.2, z, look: { x: lx, y: 0.6, z: lz }, hall: hallOf({ x: lx, z: lz }).id };
+}
+
+// ------------------------------------------------------------------ the builders' camp (builders.json: handoff/agents_now.json joined with git by the builder)
+/** one row per build agent: its tent spot, status (working = a commit in the last 15 minutes, quiet, done = merged, job = the file alone: no live activity), its commits with times,
+ *  the scroll lines above its tent, how many commits today (its stack of crates), folders, what it shipped. Nothing is invented: no git means status 'job'. */
+export function builders(doc, now, demo) {
+  const d = isObj(doc) ? doc : {}, rows = (Array.isArray(d.agents) ? d.agents : []).filter((a) => isObj(a) && a.name).slice(0, CAMP_SPOTS.length);
+  const day0 = isFinite(now) ? now - (now % D) : 0;
+  return rows.map((a, i) => {
+    const sp = CAMP_SPOTS[i], cm = (Array.isArray(a.commits) ? a.commits : []).filter((c) => isObj(c) && c.s && toMs(c.t) != null).slice(0, 8).map((c) => ({ t: toMs(c.t), text: clean(c.s, 120) }));
+    const ship = (Array.isArray(a.shipped) ? a.shipped : []).filter((c) => isObj(c) && c.s).slice(0, 8).map((c) => ({ t: toMs(c.t), text: clean(c.s, 120) }));
+    const last = toMs(a.last_t), live = a.live === true && last != null, mins = live && isFinite(now) ? Math.max(0, Math.round((now - last) / 60000)) : null;
+    const status = !live ? 'job' : a.merged === true ? 'done' : mins != null && mins <= WORK_MIN ? 'working' : 'quiet';
+    const today = cm.filter((c) => c.t >= day0 && c.t <= now + H).length;
+    const scroll = cm.length ? cm.map((c) => c.text) : ship.length ? ship.map((c) => 'Shipped: ' + c.text) : ['No commits to show: ' + BUILD_HELP.job + '.'];
+    return { id: 'camp' + (i + 1), i, name: clean(a.name, 40), job: clean(a.job, 140), area: clean(a.area, 20), branch: clean(a.branch, 60), x: sp.x, z: sp.z, figJob: sp.job, status, live, mins, last: live ? last : null,
+      ahead: Math.max(0, Math.round(num(a.ahead) || 0)), files: Math.max(0, Math.round(num(a.files) || 0)), folders: (Array.isArray(a.folders) ? a.folders : []).filter((f) => isObj(f) && f.name).slice(0, 4).map((f) => ({ name: clean(f.name, 50), n: Math.max(0, Math.round(num(f.n) || 0)) })),
+      commits: cm, shipped: ship, shippedN: Math.max(0, Math.round(num(a.shipped_n) || 0)), today, crates: Math.min(6, today), scroll, sample: !!demo,
+      line: status === 'job' ? 'Job only, no live activity.' : status === 'done' ? 'Done: its work is merged into the release.' : (status === 'working' ? 'Working: ' : 'Quiet: ') + 'last commit ' + agoText(last, now) + '.' };
+  });
+}
+/** the 'All hands' overview: counts by status, one plain sentence, the agents ordered working first */
+export function allHands(rows, doc, demo) {
+  const c = { working: 0, quiet: 0, done: 0, job: 0 }, R = Array.isArray(rows) ? rows : [];
+  for (const r of R) c[r.status]++;
+  const order = { working: 0, quiet: 1, done: 2, job: 3 }, list = R.slice().sort((a, b) => order[a.status] - order[b.status] || (b.last || 0) - (a.last || 0) || a.i - b.i);
+  const parts = []; if (c.working) parts.push(c.working + ' working now'); if (c.quiet) parts.push(c.quiet + ' quiet'); if (c.done) parts.push(c.done + ' done'); if (c.job) parts.push(c.job + ' with a job line only');
+  const git = isObj(doc) && doc.source === 'git';
+  return { n: R.length, counts: c, list, commits: R.reduce((s2, r) => s2 + r.ahead, 0), today: R.reduce((s2, r) => s2 + r.today, 0),
+    line: !R.length ? 'No build agents are listed yet (handoff/agents_now.json).' : R.length + ' build agent' + (R.length === 1 ? '' : 's') + ': ' + parts.join(', ') + '.' + (demo ? ' Example agents, not the real ones.' : ''),
+    note: !R.length ? '' : demo ? 'Sample camp.' : git ? 'Read from git when the site was built: "working" means a commit in the 15 minutes before now, so an old build shows everyone quiet.' : 'Git was not available when the site was built: these are the job lines only, no live activity.' };
+}
+/** the fixture's builders (ago_min) -> real times */
+export function resolveBuilders(doc, now) {
+  const f = JSON.parse(JSON.stringify(isObj(doc) ? doc : {}));
+  for (const a of Array.isArray(f.agents) ? f.agents : []) { if (!isObj(a)) continue; for (const c of (a.commits || []).concat(a.shipped || [])) if (num(c.ago_min) != null) c.t = Math.round((now - c.ago_min * 60000) / 1000); if (num(a.last_ago_min) != null) a.last_t = Math.round((now - a.last_ago_min * 60000) / 1000); }
+  return f;
 }
 
 // ------------------------------------------------------------------ the day replay (one dated stream across every worker)
