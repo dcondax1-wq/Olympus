@@ -358,12 +358,14 @@ class SampleLayerTest(unittest.TestCase):
         self.assertEqual(self.o["m4a"][0], "m4a")               # no Opus here (older iPhone): AAC
         self.assertTrue(self.o["m4a"][1].endswith("ui.m4a"))
         off = self.o["offline"]
-        self.assertEqual(sorted(off["failed"]), ["harp", "steps", "ui"])   # the tap asks for the UI taps and the harp; the test asked for steps
+        # QA round 6 (real-phone pass): the format is found out on the first file while the others wait; when neither format of it works the
+        # recorded layer stops for the session (synth only), so offline costs 2 requests, not 2 per file
+        self.assertEqual(sorted(off["failed"]), ["ui"])         # the tap asks for the UI taps and the harp; the test asked for steps: never fetched
         self.assertTrue(off["play"] and off["at"])              # the synth plays
         self.assertEqual(off["errors"], 0)
-        self.assertEqual(off["fetched"], 6)                     # each file: the best format, then the other, then give up
+        self.assertEqual(off["fetched"], 2)                     # the first file: the best format, then the other, then give up for the session
         bd = self.o["badDecode"]
-        self.assertEqual((sorted(bd["failed"]), len(bd["tried"]), bd["play"], bd["errors"]), (["harp", "ui"], 4, True, 0))   # a file that will not decode: both formats tried, then the synth
+        self.assertEqual((sorted(bd["failed"]), len(bd["tried"]), bd["play"], bd["errors"]), (["ui"], 2, True, 0))   # a file that will not decode: both formats tried, then the synth
 
     def test_murmur_and_presence(self):
         self.assertTrue(self.o["murmur"])

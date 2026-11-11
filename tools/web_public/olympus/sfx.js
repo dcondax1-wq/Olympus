@@ -104,7 +104,7 @@
     var ambWant = '', ambPlay = null, padNode = null, musWant = '', musPlay = null;
     var whiteB = null, pinkB = null, clapB = null, ks = {}, ksOrder = [];
     var active = [], lastAt = {}, duckN = 0, autoDuck = false, duckTimer = 0, hearL = null, unlockCbs = [];
-    var smpOn = true, ready = {}, loading = {}, failed = {}, waiters = {}, rrLast = {}, sampled = 0, loadedKb = 0, fmtUsed = '', loopUse = [], smpDead = false;
+    var smpOn = true, ready = {}, loading = {}, failed = {}, waiters = {}, rrLast = {}, sampled = 0, loadedKb = 0, fmtUsed = '', loopUse = [], smpDead = false, fmtProbe = null;
 
     /* ---------------------------------------------------------------- settings */
     function ls() { try { return env.localStorage || null; } catch (e) { return null; } }
@@ -399,6 +399,14 @@
       if (ready[stem]) { if (cb) cb(ready[stem]); return true; }
       if (cb) (waiters[stem] = waiters[stem] || []).push(cb);
       if (loading[stem] || failed[stem] || !smpUse() || !AUDIO.files[stem]) return false;
+      if (!fmtUsed && fmtProbe) {                               // the format is still being found out on another file: wait for it, so a host
+        loading[stem] = fmtProbe.then(function () {             // without one format costs one failed request, not one per file
+          delete loading[stem];
+          if (!smpDead && !failed[stem] && !ready[stem]) want(stem);
+          return loading[stem] || ready[stem] || null;
+        });
+        return false;
+      }
       var order = fmts(), i = 0, c0 = ctx;
       function tryNext() {
         if (i >= order.length) {
@@ -418,6 +426,7 @@
         }, function () { delete RAW[url]; return tryNext(); });
       }
       loading[stem] = tryNext();
+      if (!fmtUsed && !fmtProbe) fmtProbe = loading[stem];
       return false;
     }
     /** preload(['ui', 'loop-sea', ...] | 'all'): a promise that settles when those files are ready (or failed) */
