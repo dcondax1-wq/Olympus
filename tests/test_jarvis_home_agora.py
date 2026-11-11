@@ -208,7 +208,7 @@ console.log(JSON.stringify(out));
     gates = re.findall(r'<button class="dgate" type="button" data-district="(\w+)" data-app="atlas" data-open="\.\./atlas/\?hub=j14#zone=(\w+)" aria-label="(\w+) district', home)
     check("f. the five district doorways, in Atlas order, each a labelled button that opens the map on its district (Atlas calls Money 'risk'); the painted courtyard (LITE) has one doorway each",
           gates == [("market", "market", "Market"), ("research", "research", "Research"), ("money", "risk", "Money"), ("command", "command", "Command"), ("life", "life", "Life")]
-          and re.findall(r'<g data-door="(\w+)">', home) == ["market", "research", "money", "command", "life"] and 'id="courtArt"' in home and "linearGradient" in home, gates)
+          and re.findall(r'<svg class="c-door" data-door="(\w+)"', home) == ["market", "research", "money", "command", "life"] and 'id="courtArt"' in home and "linearGradient" in home, gates)
     check("f. never blank: the three tiles are skeletons in the page itself (before any script), aria-busy, and a Refresh button for those who cannot pull",
           home.count('class="tile sk"') == 3 and 'id="hfirst" role="group" aria-label="What matters now" aria-busy="true"' in home and 'id="hRefresh" data-hc="refresh"' in home and 'id="ptr"' in home)
     css = read(JV, "jarvis.css")

@@ -26,6 +26,7 @@ const chev = '<svg class="hv-go" width="9" height="16" viewBox="0 0 9 16" fill="
 const TONE_WORD = { bad: 'needs you', warn: 'heads up' };
 
 // ------------------------------------------------------------------------------------------------ the first screen
+const set = (el, html) => { if (el && el.__html !== html) { el.innerHTML = html; el.__html = html; } };     // no repaint (and no lost press state) when nothing changed
 const skTile = (k) => `<div class="tile sk" aria-hidden="true"><span class="t-k">${k}</span><span class="sk-b w60"></span><span class="sk-b w80 s"></span></div>`;
 export function skeleton() {
   if (first) { first.innerHTML = skTile('NQ bots') + skTile('Money') + skTile('Today'); first.setAttribute('aria-busy', 'true'); }
@@ -42,8 +43,8 @@ function hero(m) {
   const h = m.hero, hl = $('heroLine'), hs = $('heroState');
   if (hl && h) {
     const attr = h.app ? `data-app="${esc(h.app)}"` : `data-say="${esc(h.say || 'What should I do today?')}"`;
-    hl.innerHTML = `<button class="hero-now ${esc(h.tone)}" id="heroNow" type="button" ${attr}><span>${esc(h.text)}</span>${chev}</button>`
-      + (h.more ? `<button class="hero-more" type="button" data-hc="needs" aria-label="${h.more} more ${h.more === 1 ? 'thing needs' : 'things need'} you: show the list">+${h.more} more</button>` : '');
+    set(hl, `<button class="hero-now ${esc(h.tone)}" id="heroNow" type="button" ${attr}><span>${esc(h.text)}</span>${chev}</button>`
+      + (h.more ? `<button class="hero-more" type="button" data-hc="needs" aria-label="${h.more} more ${h.more === 1 ? 'thing needs' : 'things need'} you: show the list">+${h.more} more</button>` : ''));
   }
   if (hs) {
     const st = m.state || { kind: 'live', text: '' }, show = st.kind === 'demo' || st.kind === 'offline' || st.kind === 'stale';
@@ -103,7 +104,6 @@ function favs(m) {
   return fav + rec;
 }
 
-const set = (el, html) => { if (el && el.__html !== html) { el.innerHTML = html; el.__html = html; } };     // no repaint (and no lost press state) when nothing changed
 export function render(m) {
   if (!host) return '';
   const p = m.pending || {};
