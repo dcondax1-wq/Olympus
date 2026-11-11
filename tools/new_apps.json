@@ -533,6 +533,25 @@
     "ms": 1000,
     "n": 5
    }
+  },
+  {
+   "id": "nq",
+   "name": "NQ",
+   "group": "trading",
+   "accent": "#c8a24a",
+   "description": "The NQ bots, right now: status, drawdown left, last trades",
+   "glyph": "Ν",
+   "ambient": "chimes",
+   "flavour": [
+    "columns",
+    "The bots, right now",
+    "tick"
+   ],
+   "transition": {
+    "kind": "columns",
+    "ms": 1000,
+    "n": 3
+   }
   }
  ],
  "pending": [],

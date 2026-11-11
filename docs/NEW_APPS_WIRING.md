@@ -513,3 +513,29 @@ Tests after wiring: `tests.test_colosseum_page`, `tests.test_apps_list`, `tests.
 3. `tools/build_web_dashboard.py` app tuple: add `"colosseum"`.  4. `sw.js` OTHER_APPS: `'colosseum/'`.
 5. `olympus/intro-app.js` FLAVOUR: `colosseum: ['torches', 'Enter the arena', 'tap'],`
 6. `jarvis/transitions.js` REGISTRY: `colosseum: { kind: 'columns', ms: 1000, n: 5 },`
+
+# Wiring NQ (the NQ bots, right now, 2026-11-11)
+
+App `nq` in `tools/web_public/nq/` ("the NQ bots, right now": Zlarior / LIT 50K, ATLAS 25K, BLITZ 25K; status with the exact age of the last report, drawdown left, the day's P&L in $ with R, eval progress, the last 10 trades and the rule that closed each, the plan, the backtest facts, the honest banner, the 5-step sheet). 3D: `nqscene.js`, its own module tag (three marble columns, a flame only for a bot that reported in the last 20 minutes; 2D columns without WebGL / in LITE). Reads `../home.json` only (never the 8 MB `data.json`), `./howto.json` and `./fixture.json` (DEMO).
+The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `Ν` (Greek Nu), ambient `chimes`, flavour `['columns', 'The bots, right now', 'tick']`, transition `{ kind: 'columns', ms: 1000, n: 3 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files; dry run checked, `tests.test_apps_list --static` is 14/14 with it applied), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`. Not touched by the agent: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+## Site build lines
+1. `tools/build_web_dashboard.py`: the app tuple gets `"nq"` (the folder is copied whole, `howto.json` rides along). Nothing else: the page reads the build's own `home.json`.
+2. `nq/howto.json` is `docs/NQ_BOT_BACK.md` bundled: after editing that doc run `python tools/nq_howto_build.py` (`--check` exits 1 when stale; `tests.test_nq_page` runs it). Worth one line in the release gate next to the other `--check` builders.
+3. Optional, for a live Jarvis card: the build may write `nq/jarvis.json` from `home.json` (status level + "Last report N ago"); the committed card is a static "open for the live status".
+
+## Root page (Zenith) changes that ride with it (already in the tree, no wiring, but the worker must be bumped)
+- `index.html` now loads `zenith_nq.js?v=1` (after `zenith_pages.js`, before `embed.js`), `zenith_hero.js?v=3`, `zenith_money.js?v=3`, `zenith_agora.css?v=a2`: bump `sw.js` `CACHE` (`le-public-v78` today) so phones take the new `index.html`.
+- New root file `tools/web_public/zenith_nq.js` (the build copies every root file; `sw.js` precaches only SHELL, so nothing to add there).
+
+## PC update kit (no wiring in the site)
+- New owner files: `UPDATE_FROM_ZIP.bat`, `UNDO_UPDATE.bat`, `tools/update_from_zip.py`. Add both `.bat` names to `BATS` in `tests/test_win_scripts.py` (the agent did not edit that shared test; `tests/test_update_from_zip.py` lints them with the same `lint_bat`) and, if wanted, to `scripts/make_shortcuts.ps1`.
+- `docs/CLAUDE_REFERENCE.md` "Infrastructure" and "PC tools" should get one line each (update from zip; `UPDATE.bat` / `engine.autoupdate` need GitHub and no longer work).
+
+## The six rows (what `wire_new_apps.py --apply` writes for NQ)
+1. `jarvis/apps.js` BUILT_INS: `app('nq', 'NQ', 'trading', '#c8a24a', 'The NQ bots, right now: status, drawdown left, last trades', { glyph: 'Ν' }),`
+2. `olympus/olympus.js`: APPS `nq: ['NQ', 'Ν', '#c8a24a'],` and AMBIENT `nq: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"nq"`.  4. `sw.js` OTHER_APPS: `'nq/'`.
+5. `olympus/intro-app.js` FLAVOUR: `nq: ['columns', 'The bots, right now', 'tick'],`
+6. `jarvis/transitions.js` REGISTRY: `nq: { kind: 'columns', ms: 1000, n: 3 },`
+Tests after wiring: `tests.test_nq_page`, `tests.test_zenith_nq`, `tests.test_update_from_zip`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, `tests.test_zenith_shell`, `tests.test_zenith_pages`, `tests.test_zenith_mode`.

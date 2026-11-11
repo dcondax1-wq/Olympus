@@ -994,7 +994,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 }
 </style>
 <link rel="stylesheet" href="space.css?v=1"><link rel="stylesheet" href="mission.css?v=1"><link rel="stylesheet" href="polish.css?v=2"><link rel="stylesheet" href="zenith.css?v=7">
-<link rel="stylesheet" href="zenith_agora.css?v=a1">
+<link rel="stylesheet" href="zenith_agora.css?v=a2">
 <!-- OLYMPUS theme (olympus/themes.js; the owner picks it in Jarvis: Look, OLYMPUS theme; key 'olympus.theme'): the shared --oly-*
      tokens, and on Zenith's own dark look its page and surfaces in the theme's colours (its accent stays Zenith's own). Loaded
      async, never waited on; the default theme changes nothing. -->
@@ -1948,13 +1948,13 @@ function reactorFb(el, d) {
   const r = Math.min(W * .4, H * (mini ? .66 : .48)), cx = W / 2, cy = mini ? H * .86 : H * .62, sw = mini ? 12 : 18;
   const pt = (t, rr = r) => { const a = Math.PI * (1 - t); return [cx + rr * Math.cos(a), cy - rr * Math.sin(a)]; };
   const arc = (t0, t1) => { const [x0, y0] = pt(t0), [x1, y1] = pt(t1); return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`; };
-  const tb = k(d.balance), [bx, by] = pt(tb), col = d.status === 'failed' ? '#ff5a7a' : d.status === 'passed' ? '#2ee59d' : tb < .3 ? '#ff5a7a' : tb > .75 ? '#2ee59d' : '#8f9bff';
+  const tb = k(d.balance), [bx, by] = pt(tb), col = d.status === 'failed' ? '#e0795a' : d.status === 'passed' ? '#a3ae6b' : tb < .3 ? '#e0795a' : tb > .75 ? '#a3ae6b' : '#c8a24a';
   const tick = (v, label, below) => { const t = k(v), [x0, y0] = pt(t, r - sw * .9), [x1, y1] = pt(t, r + sw * .9), [lx, ly] = pt(t, r + sw * (below ? -2.3 : 2.1));
     return `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/>${mini ? '' : `<text x="${lx}" y="${ly}" text-anchor="middle" class="ax" fill="var(--ink-2)">${label}</text>`}`; };
   const st = { passed: ['PASSED', 'up'], failed: ['FAILED', 'dn'], stopped: ['DAY STOPPED', 'wn'], active: ['IN PROGRESS', ''] }[d.status] || ['', ''];
   const dayW = Math.min(1, Math.abs(Math.min(0, d.dayPnl)) / d.dayLimit);
   el.innerHTML = `<div class="fbx" style="padding:0"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" aria-hidden="true">
-    <defs><linearGradient id="${id}" x1="${cx - r}" x2="${cx + r}" y1="0" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff5a7a"/><stop offset=".5" stop-color="#8f9bff"/><stop offset="1" stop-color="#2ee59d"/></linearGradient>
+    <defs><linearGradient id="${id}" x1="${cx - r}" x2="${cx + r}" y1="0" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#e0795a"/><stop offset=".5" stop-color="#c8a24a"/><stop offset="1" stop-color="#a3ae6b"/></linearGradient>
       <filter id="${id}b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${mini ? 5 : 8}"/></filter></defs>
     <path d="${arc(0, 1)}" fill="none" stroke="rgba(238,241,248,.08)" stroke-width="${sw}" stroke-linecap="round"/>
     <path d="${arc(0, Math.max(.002, tb))}" fill="none" stroke="url(#${id})" stroke-width="${sw}" stroke-linecap="round" opacity=".95"/>
@@ -4527,7 +4527,7 @@ let splashGone = false;
   const cv = $('#spCv'), g = cv.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1);
   const W = innerWidth, H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; g.scale(dpr, dpr);
   const cx = W / 2, cy = H / 2 - 40, R = Math.hypot(W, H) / 2;
-  const S = Array.from({ length: Math.min(320, Math.round(W * H / 2200)) }, () => ({ a: Math.random() * 6.283, z: Math.random(), s: 0.5 + Math.random() * 1.4, c: Math.random() < 0.12 ? '#9fc2ff' : Math.random() < 0.2 ? '#ffd9b0' : '#ffffff' }));
+  const S = Array.from({ length: Math.min(320, Math.round(W * H / 2200)) }, () => ({ a: Math.random() * 6.283, z: Math.random(), s: 0.5 + Math.random() * 1.4, c: Math.random() < 0.12 ? '#e0b060' : Math.random() < 0.2 ? '#ffd9b0' : '#f3ece0' }));
   const t0 = performance.now();
   (function frame(now) {
     if (!el.isConnected || el.classList.contains('out')) return;
@@ -4540,7 +4540,7 @@ let splashGone = false;
       g.globalAlpha = Math.min(1, 0.25 + p.z); g.strokeStyle = p.c; g.lineWidth = p.s * (0.6 + p.z);
       g.beginPath(); g.moveTo(x1, y1); g.lineTo(x0 + 0.01, y0); g.stroke();
     }
-    const halo = g.createRadialGradient(cx, cy, 0, cx, cy, 190); halo.addColorStop(0, `rgba(120,140,255,${0.22 * Math.min(1, t)})`); halo.addColorStop(1, 'rgba(0,0,0,0)');
+    const halo = g.createRadialGradient(cx, cy, 0, cx, cy, 190); halo.addColorStop(0, `rgba(224,176,96,${0.22 * Math.min(1, t)})`); halo.addColorStop(1, 'rgba(0,0,0,0)');
     g.globalAlpha = 1; g.fillStyle = halo; g.fillRect(0, 0, W, H);
     requestAnimationFrame(frame);
   })(t0);
@@ -4656,15 +4656,16 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 <script src="pro.js?v=1" defer></script>
 <script src="zenithcore.js?v=1" defer></script>
 <script src="zenith.js?v=1" defer></script>
-<script src="zenith_hero.js?v=2" defer></script>
+<script src="zenith_hero.js?v=3" defer></script>
 <script src="launcher.js?v=l5" defer></script>
-<script src="zenith_money.js?v=2" defer></script>
+<script src="zenith_money.js?v=3" defer></script>
 <script src="moneynowcore.js?v=1" defer></script>
 <script src="moneynow.js?v=1" defer></script>
 <script src="sessioncore.js?v=1" defer></script>
 <script src="sessionday.js?v=1" defer></script>
 <script src="zenpagescore.js?v=1" defer></script>
 <script src="zenith_pages.js?v=1" defer></script>
+<script src="zenith_nq.js?v=1" defer></script>
 <script src="embed.js?v=1" defer></script>
 </body>
 </html>
