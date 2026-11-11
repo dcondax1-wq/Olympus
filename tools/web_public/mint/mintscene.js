@@ -1,84 +1,100 @@
-// MINT 3D scene (optional ES module): five golden pillars on a marble floor, one per money stream, height = the stream's estimated dollars a month.
-// Warm sun, warm fog, marble and bronze, no glow. It registers window.MINT3D = { mount(box, pillars), update(pillars), dispose() } and fires 'mint3d'.
+// MINT 3D scene (optional ES module): five fluted marble pillars on a round marble plinth, one per money stream, height = the stream's
+// estimated dollars a month (the tallest = the biggest stream), each crowned with a gilded capital (gold 0xc8a24a = an ok stream, bronze =
+// stale, plain stone = no monthly number) and a bronze tablet with its dollars. Owl coins lie on the plinth, a laurel rests at the foot of
+// the tallest, dust drifts in the light. Round 6 (QA bug 8): real CC0 marble / paving scans and the golden HDRI from olympus/env-kit.js via
+// olympus/hero-stage.js (painted dusk sky, warm key light, soft shadows on a GPU). No bloom, no neon, no network.
+// It registers window.MINT3D = { mount(box, pillars), update(pillars), dispose() } and fires 'mint3d'.
 // mint.js draws the 2D pillars first and only hides them when mount() returns true (WebGL present); any failure here leaves the 2D picture in place.
 import * as THREE from '../jarvis/three.module.min.js';
+import { createStage, shaftGeo, latheGeo, boxGeo, mergeParts, mat4 } from '../olympus/hero-stage.js';
 
-const GOLD = 0xc8a24a, BRONZE = 0x9c6b3c, MARBLE = 0xcfc4b2, SUN = 0xffd9a0;
-const MAXH = 4.2, MINH = 0.35;
+const GOLD = 0xc8a24a, BRONZE = 0x9c6b3c, STONE = 0xb8ad9a;
+const MAXH = 3.3, MINH = 0.3, R0 = 0.3;
 let R = null;
 
-function webgl() { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (_) { return false; } }
-const colorFor = (st) => (st === 'ok' ? GOLD : st === 'stale' ? BRONZE : 0xb39345);
-
-function pillar(x, mat) {
-  const g = new THREE.Group(); g.position.x = x;
-  const base = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.2, 1.15), new THREE.MeshStandardMaterial({ color: BRONZE, roughness: 0.5, metalness: 0.4 })); base.position.y = 0.1; g.add(base);
-  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.42, 1, 24), mat); g.add(shaft);
-  const cap = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.16, 1.0), new THREE.MeshStandardMaterial({ color: 0xe0b060, roughness: 0.4, metalness: 0.5 })); g.add(cap);
-  g.userData = { shaft, cap, h: MINH, to: MINH };
-  return g;
-}
-function place(g) { const h = g.userData.h; g.userData.shaft.scale.y = h; g.userData.shaft.position.y = 0.2 + h / 2; g.userData.cap.position.y = 0.2 + h + 0.08; }
+const CAPC = new THREE.Color('#d4ae58'), ratio = (hex) => { const c = new THREE.Color(hex); return new THREE.Color(c.r / CAPC.r, c.g / CAPC.g, c.b / CAPC.b); };
+const tintFor = (st) => (st === 'ok' ? new THREE.Color(1, 1, 1) : ratio(st === 'stale' ? BRONZE : STONE));
 const target = (p) => MINH + Math.max(0.02, Math.min(1, p.h)) * MAXH;
+const money = (v) => (v == null || !isFinite(v) ? 'no estimate' : '$' + Math.round(v).toLocaleString('en-US'));
+// the tallest stands in the middle at the back, the next two either side, the smallest in front at the ends: a podium arc open to the camera
+const SLOTS = [[0, -0.55], [-1.35, -0.2], [1.35, -0.2], [-2.45, 0.55], [2.45, 0.55]];
+let ORDER = [0, 1, 2, 3, 4];
+const rankOrder = (list) => { const r = list.map((p, i) => [p.to != null ? p.to : target(p), i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]); const o = []; r.forEach((e, k) => { o[e[1]] = k; }); return o; };
+const spot = (i) => SLOTS[ORDER[i] != null ? ORDER[i] : i] || SLOTS[0];
 
 function mount(box, pillars) {
   if (R) dispose();
-  if (!box || !webgl()) return false;
-  let renderer;
-  try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' }); } catch (_) { return false; }
-  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  box.appendChild(renderer.domElement);
-  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x2a2016); scene.fog = new THREE.Fog(0x2a2016, 12, 26);
-  const camera = new THREE.PerspectiveCamera(36, 1.8, 0.1, 60);
-  scene.add(new THREE.HemisphereLight(0xffe2b8, 0x3a2a1c, 0.85));
-  const sun = new THREE.DirectionalLight(SUN, 1.5); sun.position.set(5, 9, 6); scene.add(sun);
-  const warm = new THREE.PointLight(0xffc477, 0.9, 16); warm.position.set(0, 6, 3); scene.add(warm);
-  const floor = new THREE.Mesh(new THREE.CylinderGeometry(7, 7.3, 0.3, 56), new THREE.MeshStandardMaterial({ color: MARBLE, roughness: 0.55, metalness: 0.05 })); floor.position.y = -0.15; scene.add(floor);
-  const step = new THREE.Mesh(new THREE.CylinderGeometry(6.2, 6.3, 0.12, 56), new THREE.MeshStandardMaterial({ color: 0xe6dccb, roughness: 0.6 })); step.position.y = 0.06; scene.add(step);
-  const groups = [], mats = [];
-  (pillars || []).slice(0, 5).forEach((p, i, a) => {
-    const m = new THREE.MeshStandardMaterial({ color: colorFor(p.status), roughness: 0.36, metalness: 0.55 }); mats.push(m);
-    const g = pillar((i - (a.length - 1) / 2) * 2.1, m); g.userData.to = target(p); g.userData.h = reduce ? g.userData.to : MINH; place(g); scene.add(g); groups.push(g);
-  });
-  R = { renderer, scene, camera, groups, mats, box, frames: 0, raf: 0, t0: performance.now(), reduce, ro: null, dead: false };
-  const size = () => {
-    const w = Math.max(160, box.clientWidth || 320), h = Math.max(90, box.clientHeight || 180);
-    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-    const k = w / h < 1.5 ? 1.35 : 1; R.r = 12.5 * k; R.y = 4.2 * k; camera.position.set(0, R.y, R.r); camera.lookAt(0, 1.5, 0);
+  const list = (pillars || []).slice(0, 5), n = list.length;
+  ORDER = rankOrder(list);
+  const H = createStage(box, { palette: 'golden', hdri: 'golden', fit: { center: [0, 2.3, 0.2], size: [9.0, 4.7, 6.0], pitch: 0.17, margin: 1.0 }, fov: 32, sway: 0.2, sunDir: [0.6, 0.55, 0.62], shadowExt: 5, sky: { sunX: 0.78, sunY: 0.8, templeX: 0.16, horizon: 0.6 }, fogNear: 18, fogFar: 46 });
+  if (!H) return false;
+  const { kit, B } = H;
+  H.ground({ mat: 'paving', color: '#a39176' });
+  const top = H.plinth({ r: 3.55, steps: 3, stepH: 0.14, run: 0.34, drum: 0.36 });
+  // an inlaid ring of darker marble and a key band on the plinth top
+  B.add('marble:uv', new THREE.RingGeometry(2.95, 3.25, 64).rotateX(-Math.PI / 2), mat4(0, top + 0.004, 0), '#a89a84');
+  H.build(H.root);
+  // the pillars: three instanced draws (fluted marble shafts, gilded capitals, bronze bases), scaled to the dollars
+  const shaft = new THREE.InstancedMesh(shaftGeo({ h: 1, r: R0, flutes: 20, lite: kit.geoLite, rows: 1 }), kit.mat('marble', { color: '#efe8da' }), Math.max(1, n));
+  const capG = mergeParts([[latheGeo([[R0 * 0.82, 0], [R0 * 0.86, 0.04], [R0 * 1.02, 0.1], [R0 * 1.24, 0.17], [R0 * 1.32, 0.2], [0.0001, 0.2]], kit.geoLite ? 12 : 24)], [boxGeo(R0 * 2.8, 0.11, R0 * 2.8), mat4(0, 0.255, 0)]]);
+  const cap = new THREE.InstancedMesh(capG, kit.mat('gold', { color: '#d4ae58' }), Math.max(1, n));
+  const baseG = latheGeo([[0.0001, 0], [R0 * 1.42, 0], [R0 * 1.42, 0.06], [R0 * 1.26, 0.1], [R0 * 1.3, 0.15], [R0 * 1.08, 0.2], [0.0001, 0.2]], kit.geoLite ? 12 : 24);
+  const base = new THREE.InstancedMesh(baseG, kit.mat('bronze'), Math.max(1, n));
+  [shaft, cap, base].forEach((m) => { m.frustumCulled = false; m.castShadow = H.shadows; m.receiveShadow = H.shadows; H.root.add(m); });
+  for (let i = 0; i < n; i++) { const p = spot(i); base.setMatrixAt(i, mat4(p[0], top, p[1])); }
+  base.instanceMatrix.needsUpdate = true;
+  // owl coins on the plinth (one draw) and a gold laurel at the foot of the tallest pillar
+  const coinMat = H.paint('coin');
+  const coins = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.17, 0.17, 0.035, kit.geoLite ? 16 : 28), coinMat, 9);
+  [[-1.3, 1.7, 0.3], [-1.05, 1.95, 1.9], [-0.7, 1.55, 0.9], [1.2, 1.75, 2.4], [1.45, 1.5, 0.2], [0.9, 2.05, 1.1], [0.15, 2.5, 0.7], [-0.4, 2.35, 2.6], [0.45, 2.75, 1.7]]
+    .forEach((c, i) => coins.setMatrixAt(i, mat4(c[0], top + 0.03 + (i % 3 === 2 ? 0.035 : 0), c[1], c[2], 1, (i % 4) * 0.04, 0)));
+  coins.instanceMatrix.needsUpdate = true; coins.castShadow = H.shadows; H.root.add(coins);
+  // the bronze tablets with each stream's dollars, and the stream's name
+  const labels = list.map((p, i) => { const s = H.label(money(p.usd), { sub: p.name || '', scale: 0.46, w: 256, h: 112 }); H.root.add(s); return s; });
+  const blobs = []; for (let i = 0; i < n; i++) { const p = spot(i); blobs.push([p[0], p[1], 0.62, 1, top + 0.016]); }
+  H.blobs(blobs, { opacity: 0.45 });
+  const motes = H.motes({ n: 46, center: [0, 2.6, 0.6], box: [8, 4.4, 5], size: 4.5, alpha: 0.42 });
+  const g = { shaft, cap, base, labels, coins, top, list: list.map((p) => ({ to: target(p), h: H.reduce ? target(p) : MINH, st: p.status, usd: p.usd, name: p.name })) };
+  const place = () => {
+    for (let i = 0; i < n; i++) {
+      const u = g.list[i], p = spot(i), h = u.h;
+      shaft.setMatrixAt(i, mat4(p[0], top + 0.2, p[1], i * 0.4, [1, h, 1]));
+      cap.setMatrixAt(i, mat4(p[0], top + 0.2 + h, p[1], i * 0.4));
+      g.labels[i].position.set(p[0], top + 0.2 + h + 0.72, p[1]);
+    }
+    shaft.instanceMatrix.needsUpdate = true; cap.instanceMatrix.needsUpdate = true;
   };
-  size();
-  if (typeof ResizeObserver === 'function') { R.ro = new ResizeObserver(() => { size(); frame(performance.now(), true); }); R.ro.observe(box); }
-  const frame = (now, once) => {
-    if (!R || R.dead) return;
-    const t = (now - R.t0) / 1000;
+  const tint = () => { for (let i = 0; i < n; i++) cap.setColorAt(i, tintFor(g.list[i].st)); if (cap.instanceColor) cap.instanceColor.needsUpdate = true; };
+  tint(); place();
+  R = { H, g, n, dead: false };
+  H.start((dt, t) => {
     let moving = false;
-    for (const g of groups) { const u = g.userData, d = u.to - u.h; if (Math.abs(d) > 0.004) { u.h += d * 0.08; moving = true; } else u.h = u.to; place(g); }
-    if (!R.reduce) { const a = Math.sin(t * 0.18) * 0.28; camera.position.x = Math.sin(a) * R.r; camera.position.z = Math.cos(a) * R.r; camera.lookAt(0, 1.5, 0); }
-    renderer.render(scene, camera); R.frames++;
-    if (once) return;
-    if (!R.reduce || moving) R.raf = requestAnimationFrame(frame);
-  };
-  R.frame = frame;
-  const vis = () => { if (!R) return; cancelAnimationFrame(R.raf); if (!document.hidden) R.raf = requestAnimationFrame(frame); };
-  document.addEventListener('visibilitychange', vis); R.vis = vis;
-  R.raf = requestAnimationFrame(frame);
+    for (const u of g.list) { const d = u.to - u.h; if (Math.abs(d) > 0.004) { u.h += d * Math.min(1, dt * 3.2); moving = true; } else u.h = u.to; }
+    place(); motes.tick(t);
+    return moving;
+  });
   return true;
 }
 
 function update(pillars) {
   if (!R) return;
-  (pillars || []).slice(0, 5).forEach((p, i) => { const g = R.groups[i]; if (!g) return; g.userData.to = target(p); R.mats[i].color.setHex(colorFor(p.status)); });
-  cancelAnimationFrame(R.raf); R.raf = requestAnimationFrame(R.frame);
+  (pillars || []).slice(0, 5).forEach((p, i) => {
+    const u = R.g.list[i]; if (!u) return;
+    u.to = target(p); u.st = p.status; u.usd = p.usd; u.name = p.name;
+    R.g.labels[i].userData.set(money(p.usd), p.name || '');
+    R.g.cap.setColorAt(i, tintFor(p.status));
+  });
+  if (R.g.cap.instanceColor) R.g.cap.instanceColor.needsUpdate = true;
+  R.H.poke(2500);
 }
 
 function dispose() {
   if (!R) return;
-  R.dead = true; cancelAnimationFrame(R.raf);
-  try { document.removeEventListener('visibilitychange', R.vis); if (R.ro) R.ro.disconnect(); R.scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); R.renderer.dispose(); if (R.renderer.domElement.parentNode) R.renderer.domElement.parentNode.removeChild(R.renderer.domElement); } catch (_) { /* nothing */ }
+  R.dead = true;
+  try { R.H.dispose(); } catch (_) { /* nothing */ }
   R = null;
 }
 
-window.MINT3D = { mount, update, dispose, frames: () => (R ? R.frames : 0), pillars: () => (R ? R.groups.map((g) => Math.round(g.userData.to * 100) / 100) : []) };
+window.MINT3D = { mount, update, dispose, frames: () => (R ? R.H.frames : 0), pillars: () => (R ? R.g.list.map((u) => Math.round(u.to * 100) / 100) : []), stats: () => (R ? R.H.stats() : null), gold: GOLD, stone: STONE };
+window.__heroStats = () => (R ? R.H.stats() : null);
 window.dispatchEvent(new Event('mint3d'));
