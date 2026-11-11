@@ -53,7 +53,7 @@
         el = h('button', 'spot'); el.type = 'button'; el.setAttribute('data-id', b.id); el.setAttribute('aria-label', b.name + ': ' + (b.purpose || 'an app of OLYMPUS'));
         el.textContent = b.name; bindSpot(el, b); world.appendChild(el); S.spots[b.id] = el;
       }
-      var w = Math.max(44, b.w * k), hh = Math.max(44, b.h * k * 1.05), x = b.x * k - w / 2, y = b.y * k - hh;
+      var w = Math.max(44, b.w * k), hh = Math.max(44, b.h * k * 1.05), x = b.x * k - w / 2, y = (b.y + SK.PAD) * k - hh;
       el.style.left = Math.round(x) + 'px'; el.style.top = Math.round(y) + 'px'; el.style.width = Math.round(w) + 'px'; el.style.height = Math.round(hh) + 'px';
     }
   }
@@ -106,7 +106,7 @@
       el.setAttribute('aria-label', s.name + ' ship: ' + s.words + '. ' + s.why); el.textContent = s.name;
       var pos = s.state === 'port' ? L.berths[i] : s.state === 'returning' ? [2560, 506 + i * 8] : [L.lanes[i][0] * 1, L.lanes[i][1]];
       var factor = s.state === 'sail' ? 0.7 : 1, pan = S.city.info().pan, x = s.state === 'sail' ? (pos[0] * k - pan * factor + pan) : pos[0] * k;
-      el.style.left = Math.round(x - 40) + 'px'; el.style.top = Math.round(pos[1] * k - 64 * k) + 'px'; el.style.width = '80px'; el.style.height = Math.round(Math.max(44, 66 * k)) + 'px';
+      el.style.left = Math.round(x - 40) + 'px'; el.style.top = Math.round((pos[1] + SK.PAD) * k - 64 * k) + 'px'; el.style.width = '80px'; el.style.height = Math.round(Math.max(44, 66 * k)) + 'px';
       el.setAttribute('data-state', s.state);
     }
   }
@@ -266,6 +266,7 @@
       $('rollMore').addEventListener('click', function () { var b = $('rollMore'); b.setAttribute('aria-expanded', b.getAttribute('aria-expanded') === 'true' ? 'false' : 'true'); renderRolls(R); });
       if (rec.on) setTimeout(function () { if (S.city) S.city.shootingStar(); }, 1200);
       S.ready = true;
+      try { if (O && O.ready) O.ready(); } catch (e) { /* the veil lifts by itself */ }
       say(S.apps.length + ' buildings in the city. ' + C.skyWords(info.phase, nyTime(nowMs())) + '.');
       // fresh news: each app's status card, six at a time
       loadCards();

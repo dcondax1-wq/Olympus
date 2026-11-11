@@ -21,7 +21,7 @@
   'use strict';
   var SKY = root && root.OLYMPUS_POLIS_SKY ? root.OLYMPUS_POLIS_SKY : (typeof require === 'function' ? require('./polis-skyline-sky.js') : null);
   var D2R = Math.PI / 180;
-  var H0 = 620, HORIZON = 282;
+  var H0 = 620, HORIZON = 282, PAD = 150;   // PAD: extra sky above the design (the hero shows 770 units: sky ~45%)
 
   // ------------------------------------------------------------------------------------------------ small helpers
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -84,7 +84,7 @@
     athena: 'temple', mind: 'tholos', symposium: 'villa', planner: 'villa', lyceum: 'stoa', gallery: 'stoa', nike: 'shrine', atlas: 'shrine', arena: 'theatre', herald: 'stoa'
   };
   var GENERIC = { trading: ['house', 'temple', 'house2', 'stoa', 'house', 'shrine', 'house2'], money: ['house', 'stoa', 'house2', 'treasury', 'house'], life: ['villa', 'house', 'shrine', 'house2', 'villa'] };
-  var SIZE = { parthenon: [236, 94], propylaea: [118, 58], erechtheion: [96, 56], nike: [50, 42], temple: [74, 56], tholos: [52, 58], stoa: [92, 40], house: [54, 40], house2: [46, 50], shrine: [42, 44],
+  var SIZE = { parthenon: [184, 78], propylaea: [104, 52], erechtheion: [96, 56], nike: [50, 42], temple: [74, 56], tholos: [52, 58], stoa: [92, 40], house: [54, 40], house2: [46, 50], shrine: [42, 44],
     windtower: [32, 66], watchtower: [34, 72], fort: [62, 52], library: [80, 48], odeon: [86, 52], theatre: [100, 42], forge: [58, 44], mint: [74, 56], treasury: [58, 48], villa: [70, 42], houses: [72, 44], shipshed: [80, 44] };
   // the hill surface y(x) of each district (design units): the Acropolis rock, the agora plain, the garden hill
   function rockY(x) {
@@ -104,7 +104,7 @@
 
   /** apps: [{id, name, group, colour, glyph, purpose, path}] -> buildings with x / y (base), w / h, type, district, row */
   function layout(apps) {
-    var list = (apps || []).filter(function (a) { return a && a.id; }), out = [], byG = { trading: [], money: [], life: [] };
+    var list = (apps || []).filter(function (a) { return a && a.id; }), out = [], terr = [], byG = { trading: [], money: [], life: [] };
     for (var i = 0; i < list.length; i++) { var g = byG[list[i].group] ? list[i].group : 'life'; byG[g].push(list[i]); }
     var plateau = { zenith: [1150, 214], bridge: [905, 216], oracle: [990, 214], pantheon: [1372, 215] };
     for (var di = 0; di < DISTRICTS.length; di++) {
@@ -130,6 +130,7 @@
       var idx = 0;
       for (r = 0; r < rows.length; r++) {
         var R = rows[r], nr = counts[r];
+        terr.push({ district: D.id, cx: D.cx, half: R.half, row: R.row, xa: R.xa - 34, xb: R.xb + 34, n: nr, y: R.row[0] });
         for (var s = 0; s < nr; s++) {
           var ap = rest[idx++]; if (!ap) break;
           var xx = nr === 1 ? (R.xa + R.xb) / 2 : lerp(R.xa, R.xb, (s + 0.5) / nr);
@@ -139,7 +140,7 @@
         }
       }
     }
-    return { W: W0, H: H0, horizon: HORIZON, buildings: out, districts: DISTRICTS.map(function (d) { return { id: d.id, name: d.name, group: d.group, x0: d.x0, x1: d.x1, cx: d.cx }; }),
+    return { W: W0, H: H0, horizon: HORIZON, buildings: out, terraces: terr, districts: DISTRICTS.map(function (d) { return { id: d.id, name: d.name, group: d.group, x0: d.x0, x1: d.x1, cx: d.cx }; }),
       berths: [[2496, 560], [2604, 566], [2712, 562], [2820, 558]], lanes: [[2150, 368, 0.46], [2560, 440, 0.7], [1960, 372, 0.44], [2760, 470, 0.78]] };
   }
   function building(a, D, row, x, y, type, s, spacing) {
@@ -200,7 +201,7 @@
     var r = rng(seed), gx = w / nx, gy = h / ny, on = L.night;
     for (var i = 0; i < nx; i++) for (var j = 0; j < ny; j++) {
       var wx = x + i * gx + gx * 0.32, wy = y + j * gy + gy * 0.3, ww = gx * 0.36, wh = gy * 0.46, lightUp = r() < 0.72;
-      rect(c, wx, wy, ww, wh, css(shade([60, 46, 36], lit * 0.3, L, 0)));
+      rect(c, wx, wy, ww, wh, css(shade([128, 96, 70], 0.25 + lit * 0.35, L, 0)));
       if (on > 0.05 && lightUp) { rect(c, wx, wy, ww, wh, css(L.window, on * (0.7 + r() * 0.3))); }
     }
   }
@@ -348,6 +349,20 @@
     if (dx < 0) poly(c, [x - 2, rt, x + w / 2, rt - rh, x + w / 2 + dx, rt - rh + dy, x - 2 + dx, rt + dy], css(shade(MAT.terracotta, F.top * 0.6 + F.left * 0.4, L, depth)));
   }
 
+  // a stone retaining wall along a terrace (the row's arc), its top edge catching the light
+  function paintTerrace(c, T, L, F, x0, x1) {
+    var a = Math.max(T.xa, x0 - 20), b = Math.min(T.xb, x1 + 20); if (a >= b) return;
+    var hgt = T.district === 'money' ? 3 : 9;
+    c.beginPath(); var x;
+    for (x = a; x <= b; x += 6) c.lineTo(x, rowY(T.row, x, T.cx, T.half) + 1);
+    for (x = b; x >= a; x -= 6) c.lineTo(x, rowY(T.row, x, T.cx, T.half) + 1 + hgt);
+    c.closePath(); c.fillStyle = css(shade(MAT.stone, F.front * 0.85, L, 0.05)); c.fill();
+    c.beginPath(); for (x = a; x <= b; x += 6) c.lineTo(x, rowY(T.row, x, T.cx, T.half) + 1);
+    c.strokeStyle = css(shade(MAT.marble, F.top, L, 0.05)); c.lineWidth = 1.4; c.stroke();
+    c.strokeStyle = css(shade([120, 100, 76], 0.3, L, 0.05), 0.5); c.lineWidth = 0.6;
+    for (x = a; x < b; x += 13) { var y = rowY(T.row, x, T.cx, T.half); c.beginPath(); c.moveTo(x, y + 2); c.lineTo(x, y + hgt); c.stroke(); }
+  }
+
   // ------------------------------------------------------------------------------------------------ trees and scenery
   function cypress(c, x, by, h, L, depth, k) {
     var w = h * 0.2, col = shade(MAT.cypress, 0.35 + (k || 0) * 0.3, L, depth), hi = shade([70, 88, 54], 0.7, L, depth);
@@ -410,7 +425,7 @@
   /** the middle hills: olive groves and far white houses, hazy */
   function paintMid(c, Wl, L, F, seed) {
     var n = noise1(seed + 5), hz = HORIZON, r = rng(seed + 9), depth = 0.36;
-    var top = function (x) { var u = x / Wl, land = smooth((0.71 - u) / 0.09); return hz + 46 - land * (34 + 44 * fbm(n, x / 120, 4)) + (1 - land) * 60; };
+    var top = function (x) { var u = x / Wl, land = smooth((0.71 - u) / 0.09); return land < 0.01 ? H0 + 4 : hz + 46 - land * (34 + 44 * fbm(n, x / 120, 4)) + (1 - land) * (H0 - hz); };
     c.beginPath(); c.moveTo(0, H0);
     for (var x = 0; x <= Wl; x += 5) c.lineTo(x, top(x));
     c.lineTo(Wl, H0); c.closePath();
@@ -491,8 +506,27 @@
     c.beginPath(); c.moveTo(ax - 3, ay - 8); c.lineTo(ax - 2, ay - 34); c.lineTo(ax + 2, ay - 34); c.lineTo(ax + 3, ay - 8); c.closePath(); c.fillStyle = css(shade(MAT.bronze, F.front, L, 0.1)); c.fill();
     c.beginPath(); c.arc(ax, ay - 37, 3, 0, Math.PI * 2); c.fill(); rect(c, ax + 4, ay - 52, 1, 46, css(shade(MAT.bronze, F.front, L, 0.1))); rect(c, ax + 3.4, ay - 56, 2.2, 5, css(shade(MAT.gold, 1, L, 0)));
     // the buildings, back to front (by base y)
-    var bs = M.buildings.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x; });
-    for (var i = 0; i < bs.length; i++) { var b = bs[i]; if (b.x + b.w < x0 - 40 || b.x - b.w > x1 + 40) continue; paintBuilding(c, b, L, F); }
+    var items = [], T = M.terraces || [];
+    for (var i = 0; i < M.buildings.length; i++) items.push({ k: M.buildings[i].y, b: M.buildings[i] });
+    for (i = 0; i < T.length; i++) {
+      items.push({ k: T[i].row[0] - 0.5, wall: T[i] });
+      var rf = rng(seed + 900 + i), xs = M.buildings.filter(function (b) { return b.district === T[i].district && Math.abs(b.y - rowY(T[i].row, b.x, T[i].cx, T[i].half)) < 2; }).map(function (b) { return [b.x, b.w]; }).sort(function (a, b) { return a[0] - b[0]; });
+      for (var fx = T[i].xa + 6; fx < T[i].xb - 6; fx += 15 + rf() * 16) {   // the town between the apps: small houses and trees just behind the row
+        var clash = false; for (var q = 0; q < xs.length; q++) if (Math.abs(fx - xs[q][0]) < xs[q][1] * 0.42) clash = true;
+        var fy = rowY(T[i].row, fx, T[i].cx, T[i].half) - 7 - rf() * 6, kind = rf();
+        if (clash && kind < 0.75) continue;
+        items.push({ k: fy - 0.2, fill: { x: fx, y: fy, kind: kind, w: 18 + rf() * 16, h: 16 + rf() * 12, seed: Math.floor(rf() * 1e9) } });
+      }
+    }
+    items.sort(function (a, b) { return a.k - b.k; });
+    for (i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it.b) { if (it.b.x + it.b.w < x0 - 40 || it.b.x - it.b.w > x1 + 40) continue; paintBuilding(c, it.b, L, F); }
+      else if (it.wall) paintTerrace(c, it.wall, L, F, x0, x1);
+      else { var f2 = it.fill; if (f2.x < x0 - 40 || f2.x > x1 + 40) continue;
+        if (f2.kind < 0.62) paintHouse(c, f2.x - f2.w / 2, f2.y, f2.w, f2.h, (f2.x < 1150 ? 1 : -1) * f2.w * 0.18, -f2.w * 0.08, F, L, 0.07, f2.seed, f2.x < 1150 ? F.right : F.left, f2.kind < 0.2);
+        else if (f2.kind < 0.85) cypress(c, f2.x, f2.y + 6, 18 + f2.h * 0.8, L, 0.05, 0.4); else olive(c, f2.x, f2.y + 6, 9 + f2.w * 0.25, L, 0.05, f2.seed); }
+    }
     // trees in front of the bottom row
     for (tr = 0; tr < 26; tr++) {
       var fx2 = r() * 2440, fy2 = 572 + r() * 40; if (fx2 < x0 - 60 || fx2 > x1 + 60) continue;
@@ -519,10 +553,15 @@
     c.fillStyle = g; c.fillRect(0, 0, w, hz + 2);
     // the warm glow on the Sun's side of the sky, strongest at the horizon at dawn and dusk
     var glow = clamp(1 - Math.abs(sun.alt - 1) / 14, 0, 1) * (1 - L.cloud * 0.6);
+    if (glow > 0.01) {   // the belt of Venus: a rose band low in the sky all round, above the blue shadow of the earth
+      var bv = c.createLinearGradient(0, hz - 60 * ppd / 4, 0, hz);
+      bv.addColorStop(0, css([214, 150, 170], 0)); bv.addColorStop(0.55, css([222, 160, 168], 0.32 * glow)); bv.addColorStop(0.85, css([150, 140, 180], 0.28 * glow)); bv.addColorStop(1, css([120, 120, 170], 0.2 * glow));
+      c.fillStyle = bv; c.fillRect(0, hz - 60 * ppd / 4, w, 60 * ppd / 4 + 2);
+    }
     if (glow > 0.01) {
       for (var rep = -1; rep <= 1; rep++) {
         var sx = sun.az * ppd + rep * w, sy = hz - Math.max(sun.alt, -4) * ppd;
-        var rg = c.createRadialGradient(sx, sy, 2, sx, sy, 75 * ppd);
+        var rg = c.createRadialGradient(sx, sy, 2, sx, sy, 110 * ppd);
         rg.addColorStop(0, css([255, 214, 150], 0.75 * glow)); rg.addColorStop(0.25, css([248, 164, 104], 0.42 * glow)); rg.addColorStop(1, css([200, 110, 110], 0));
         c.fillStyle = rg; c.fillRect(0, 0, w, hz + 2);
       }
@@ -566,8 +605,8 @@
 
     function size() {
       var r = host.getBoundingClientRect(), dpr = Math.min(win.devicePixelRatio || 1, st.quality === 'low' ? 1.5 : 2);
-      view.w = Math.max(320, Math.round(r.width)); view.h = Math.max(380, Math.round(r.height)); view.k = view.h / H0; view.dpr = dpr;
-      view.ppd = view.k * HORIZON / 66;   // px per degree: the horizon sits ~66 deg below the top
+      view.w = Math.max(320, Math.round(r.width)); view.h = Math.max(380, Math.round(r.height)); view.k = view.h / (H0 + PAD); view.dpr = dpr;
+      view.ppd = view.k * (HORIZON + PAD) / 70;   // px per degree: the horizon sits ~66 deg below the top
       cv.width = Math.round(view.w * dpr); cv.height = Math.round(view.h * dpr); cv.style.width = view.w + 'px'; cv.style.height = view.h + 'px';
       st.panMax = Math.max(0, M.W * view.k - view.w);
       st.pan = clamp(st.pan, 0, st.panMax);
@@ -578,10 +617,10 @@
       for (var i = 0; i < nT; i++) {
         var t = doc.createElement('canvas'), cssW = Math.min(tileW, Wl * view.k - i * tileW);
         t.width = Math.max(1, Math.ceil(cssW * res)); t.height = Math.ceil(view.h * res);
-        var c = t.getContext('2d'); c.setTransform(kp, 0, 0, kp, -i * tileW * res, 0);
+        var c = t.getContext('2d'); c.setTransform(kp, 0, 0, kp, -i * tileW * res, PAD * kp);
         var x0 = i * tileW / view.k, x1 = x0 + cssW / view.k;
         painter(c, Wl, x0, x1);
-        if (grain && name !== 'far') { c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'overlay'; c.globalAlpha = name === 'main' ? 0.16 : 0.12; c.fillStyle = c.createPattern(grain, 'repeat'); c.fillRect(0, 0, t.width, t.height); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
+        if (grain && name !== 'far') { c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-atop'; c.globalAlpha = name === 'main' ? 0.07 : 0.05; c.fillStyle = c.createPattern(grain, 'repeat'); c.fillRect(0, 0, t.width, t.height); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
         tiles.push({ cv: t, x: i * tileW, w: cssW });
       }
       lay[name] = { factor: factor, tiles: tiles, Wl: Wl };
@@ -596,7 +635,7 @@
       makeLayer('main', 1, M.W, Math.min(res, 2), function (c, Wl, x0, x1) { paintMain(c, M, L, F, st.seed, x0, x1); });
       makeLayer('fore', 1.25, vwD + panD * 1.25 + 40, Math.min(res, 1.5), function (c, Wl) { paintFore(c, Wl, L, F, st.seed); });
       // the sky strip (360 deg), at a low resolution: gradients only
-      var sw = Math.ceil(360 * view.ppd), shz = Math.round(HORIZON * view.k);
+      var sw = Math.ceil(360 * view.ppd), shz = Math.round((HORIZON + PAD) * view.k);
       sky = doc.createElement('canvas'); sky.width = Math.ceil(sw * 0.5); sky.height = Math.ceil((shz + 2) * 0.5);
       var sc = sky.getContext('2d'); sc.scale(0.5, 0.5); paintSkyStrip(sc, 360, view.ppd, shz, L, sunNow);
       // the clouds as sprites (weather adds more)
@@ -618,7 +657,7 @@
     // azimuth at the screen centre: the Acropolis view faces south-south-east; the sky turns at half the pan speed
     function azCentre() { return SKY.n360(150 + (st.pan - centrePan()) * 0.5 / view.ppd); }
     function centrePan() { return clamp(1150 * view.k - view.w / 2, 0, st.panMax); }
-    function skyXY(alt, az) { var d = wrap180(az - azCentre()); return [view.w / 2 + d * view.ppd, HORIZON * view.k - alt * view.ppd, d]; }
+    function skyXY(alt, az) { var d = wrap180(az - azCentre()); return [view.w / 2 + d * view.ppd, (HORIZON + PAD) * view.k - alt * view.ppd, d]; }
 
     function drawLayer(name, oy, ox) {
       var Ly = lay[name]; if (!Ly) return;
@@ -629,7 +668,7 @@
       }
     }
     function frame(tms) {
-      var t = (tms || 0) / 1000, k = view.k, dpr = view.dpr, night = L.night, hz = HORIZON * k;
+      var t = (tms || 0) / 1000, k = view.k, dpr = view.dpr, night = L.night, hz = (HORIZON + PAD) * k;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       var par = st.reduced ? 0 : 1, tx = st.tiltX * par, ty = st.tiltY * par, sy = st.scrollY * par;
       // 1 the sky strip
@@ -697,7 +736,7 @@
         if (n && c.mid.alt > 6) lab.push([c, sx / n, c.cluster ? maxY + 13 : maxY + 14]);
       }
       ctx.font = 'italic ' + Math.round(11.5 * Math.max(0.9, Math.min(1.15, k))) + "px 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif"; ctx.textAlign = 'center';
-      for (i = 0; i < lab.length; i++) { var lx = lab[i][1], ly = Math.min(lab[i][2], HORIZON * view.k - 30); if (lx < 30 || lx > view.w - 30) continue; ctx.fillStyle = 'rgba(232,214,170,' + (0.78 * L.stars).toFixed(3) + ')'; ctx.fillText(lab[i][0].name, lx, ly); }
+      for (i = 0; i < lab.length; i++) { var lx = lab[i][1], ly = Math.min(lab[i][2], (HORIZON + PAD) * view.k - 30); if (lx < 30 || lx > view.w - 30) continue; ctx.fillStyle = 'rgba(232,214,170,' + (0.78 * L.stars).toFixed(3) + ')'; ctx.fillText(lab[i][0].name, lx, ly); }
     }
     function drawSun(tx, oy) {
       var p = skyXY(sunNow.alt, sunNow.az); if (Math.abs(p[2]) > 120) return;
@@ -746,8 +785,8 @@
         else { bx = lane[0] + (still ? 0 : Math.sin(t * 0.05 + i * 2) * 60); by = lane[1]; s = lane[2]; }
         var factor = state === 'port' || state === 'returning' ? 1 : 0.7, sx = bx * k - st.pan * factor, bob = still ? 0 : Math.sin(t * 1.6 + i * 1.3) * 1.2 * s;
         if (sx < -120 || sx > view.w + 120) { S._hit = null; continue; }
-        paintShip(ctx, sx, by * k + bob * k, s * k, S, state, i, t, still);
-        S._hit = { x: sx, y: by * k - 60 * s * k, w: 96 * s * k, h: 66 * s * k };
+        paintShip(ctx, sx, (by + PAD) * k + bob * k, s * k, S, state, i, t, still);
+        S._hit = { x: sx, y: (by + PAD) * k - 60 * s * k, w: 96 * s * k, h: 66 * s * k };
       }
     }
     function paintShip(c, x, y, s, S, state, i, t, still) {
@@ -793,7 +832,7 @@
     function drawLife(t) {
       var k = view.k, still = st.reduced || st.quality === 'low', bs = M.buildings, night = L.night;
       for (var i = 0; i < bs.length; i++) {
-        var b = bs[i], x = b.x * k - st.pan, y = b.y * k; if (x < -80 || x > view.w + 80) continue;
+        var b = bs[i], x = b.x * k - st.pan, y = (b.y + PAD) * k; if (x < -80 || x > view.w + 80) continue;
         var f = st.fresh[b.id] || 0, top = y - b.h * k;
         if (f > 0) {   // fresh published data: a warm halo and a gold banner on a pole
           var pulse = still ? 0.8 : 0.72 + 0.28 * Math.sin(t * 1.4 + i);
@@ -807,7 +846,7 @@
         if (night > 0.15) {   // torches
           var sp = torchSpots(b);
           for (var j = 0; j < sp.length; j++) {
-            var tx2 = sp[j][0] * k - st.pan, ty2 = sp[j][1] * k, fl = still ? 1 : 0.8 + 0.2 * Math.sin(t * 9 + i * 7 + j * 3) * Math.sin(t * 5.3 + i);
+            var tx2 = sp[j][0] * k - st.pan, ty2 = (sp[j][1] + PAD) * k, fl = still ? 1 : 0.8 + 0.2 * Math.sin(t * 9 + i * 7 + j * 3) * Math.sin(t * 5.3 + i);
             var tg = ctx.createRadialGradient(tx2, ty2 - 5 * k, 0, tx2, ty2 - 5 * k, 16 * k * fl);
             tg.addColorStop(0, 'rgba(255,190,110,' + (0.25 * night * fl).toFixed(3) + ')'); tg.addColorStop(1, 'rgba(255,150,80,0)'); ctx.fillStyle = tg; ctx.fillRect(tx2 - 16 * k, ty2 - 21 * k, 32 * k, 32 * k);
             ctx.fillStyle = 'rgba(90,62,40,0.9)'; ctx.fillRect(tx2 - 0.6, ty2 - 5 * k, 1.2, 5 * k);
@@ -825,7 +864,7 @@
       // gold motes over the treasury when today's money is up
       var tre = treasury();
       if (st.treasury && tre) {
-        var cx = tre.x * k - st.pan, cy = (tre.y - tre.h) * k;
+        var cx = tre.x * k - st.pan, cy = (tre.y - tre.h + PAD) * k;
         if (!still) { if (st.motes.length < 34 && Math.random() < 0.5) st.motes.push({ x: cx + (Math.random() - 0.5) * tre.w * k, y: cy + 4 * k, vx: (Math.random() - 0.5) * 0.25, vy: -(0.35 + Math.random() * 0.5), life: 1 }); }
         else if (!st.motes.length) { for (var mm = 0; mm < 14; mm++) st.motes.push({ x: cx + (mm % 7 - 3) * 6 * k, y: cy - (mm * 5) * k, vx: 0, vy: 0, life: 0.85 - mm * 0.04 }); }
         for (var mi = st.motes.length - 1; mi >= 0; mi--) {
@@ -875,11 +914,11 @@
       setQuality: function (q, reduced) { st.quality = q === 'low' ? 'low' : 'high'; st.reduced = !!reduced; size(); kick(); },
       select: function (id) { st.selected = id || null; kick(); },
       hover: function (id) { st.hover = id || null; kick(); },
-      shootingStar: function () { var r = Math.random(); st.star = { x: view.w * (0.25 + r * 0.5), y: HORIZON * view.k * (0.12 + Math.random() * 0.2), dx: -view.w * 0.32 * (r < 0.5 ? -1 : 1), dy: HORIZON * view.k * 0.22 }; st.starShown = (st.starShown || 0) + 1; if (!animated()) { st.star.still = true; frame(0); } else kick(); },
-      screenOf: function (b) { return { x: b.x * view.k - st.pan, y: b.y * view.k, w: b.w * view.k, h: b.h * view.k }; },
+      shootingStar: function () { var r = Math.random(); st.star = { x: view.w * (0.25 + r * 0.5), y: (HORIZON + PAD) * view.k * (0.12 + Math.random() * 0.2), dx: -view.w * 0.32 * (r < 0.5 ? -1 : 1), dy: (HORIZON + PAD) * view.k * 0.22 }; st.starShown = (st.starShown || 0) + 1; if (!animated()) { st.star.still = true; frame(0); } else kick(); },
+      screenOf: function (b) { return { x: b.x * view.k - st.pan, y: (b.y + PAD) * view.k, w: b.w * view.k, h: b.h * view.k }; },
       ships: function () { return st.ships; },
       info: function () { return { phase: st.phase, sunAlt: sunNow ? sunNow.alt : null, sunAz: sunNow ? sunNow.az : null, moon: moonNow ? { alt: moonNow.alt, frac: moonNow.frac } : null, night: L ? L.night : 0, stars: L ? L.stars : 0,
-        up: stars ? stars.up : [], azCentre: azCentre(), view: { w: view.w, h: view.h, k: view.k, ppd: view.ppd }, pan: st.pan, panMax: st.panMax, frames: st.frames, fps: st.fps, frameMs: Math.round(st.frameMs * 10) / 10, bakeMs: st.bakeMs, bakes: st.bakes,
+        up: stars ? stars.up : [], azCentre: azCentre(), view: { w: view.w, h: view.h, k: view.k, ppd: view.ppd, pad: PAD }, pan: st.pan, panMax: st.panMax, frames: st.frames, fps: st.fps, frameMs: Math.round(st.frameMs * 10) / 10, bakeMs: st.bakeMs, bakes: st.bakes,
         onScreen: stars ? stars.list.filter(function (c) { var p = skyXY(c.mid.alt, c.mid.az); return c.mid.alt > 3 && p[0] > 0 && p[0] < view.w; }).map(function (c) { return c.name; }) : [] }; },
       onScroll: onScroll,
       destroy: function () { api.stop(); if (cv.parentNode) cv.parentNode.removeChild(cv); lay = {}; }
@@ -888,7 +927,7 @@
     return api;
   }
 
-  var API = { layout: layout, palette: palette, faces: faces, DISTRICTS: DISTRICTS, SPECIAL: SPECIAL, W: W0, H: H0, HORIZON: HORIZON, create: create, _shade: shade, _hash: hash };
+  var API = { layout: layout, palette: palette, faces: faces, DISTRICTS: DISTRICTS, SPECIAL: SPECIAL, W: W0, H: H0, HORIZON: HORIZON, PAD: PAD, create: create, _shade: shade, _hash: hash };
   if (typeof module === 'object' && module.exports) module.exports = API;
   if (root) root.OLYMPUS_POLIS_SKYLINE = API;
 })(typeof self !== 'undefined' ? self : this);
