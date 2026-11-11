@@ -81,13 +81,20 @@ function build(rc, scene, camera, canvas, o) {
   const close = new Map();      // seat -> figure
   function closeUp(i) {
     let f = close.get(i); if (f) return f;
-    const s = L.seats[i]; f = figure(THREE, specs[i], { seated: true });
-    f.position.set(s.x, seatY(i), s.z); f.rotation.y = s.ry; f.scale.multiplyScalar(SC); f.userData.seat = i;
-    scene.add(f); close.set(i, f); crowd.userData.setVisible(i, false);
+    const s = L.seats[i]; f = spare.get(i);
+    if (f) { spare.delete(i); f.visible = true; play(f, 'idle'); }      // a figure that left the view a moment ago: no rebuild (v3 characters cost a few ms to dress)
+    else { f = figure(THREE, specs[i], { seated: true }); f.scale.multiplyScalar(SC); f.userData.seat = i; scene.add(f); }
+    f.position.set(s.x, seatY(i), s.z); f.rotation.y = s.ry;
+    close.set(i, f); crowd.userData.setVisible(i, false);
     if (reduced) f.userData.tick(0, 1);
     return f;
   }
-  function dropClose(i) { const f = close.get(i); if (!f) return; f.userData.dispose(); close.delete(i); crowd.userData.setVisible(i, true); }
+  const spare = new Map(), SPARE = 6;      // seat -> a hidden close-up kept for when it comes back into view (oldest dropped first)
+  function dropClose(i) {
+    const f = close.get(i); if (!f) return; close.delete(i); crowd.userData.setVisible(i, true);
+    f.visible = false; spare.set(i, f);
+    while (spare.size > SPARE) { const [k, g] = spare.entries().next().value; spare.delete(k); g.userData.dispose(); }
+  }
 
   const st = { yaw: 0, goal: null, vel: 0, auto: !reduced, active: -1, activeT: 0, voice: false, t: 0, idle: 0, w: 1, h: 1, walk: null };
   const ray = new THREE.Raycaster(), v = new THREE.Vector3(), ndc = new THREE.Vector2(), look = new THREE.Vector3(), camPos = new THREE.Vector3();
@@ -165,6 +172,7 @@ function build(rc, scene, camera, canvas, o) {
     fires: [0, 1, 2, 3].map((i) => { const a = (i / nB) * Math.PI * 2 + Math.PI / 4; return [Math.sin(a) * (r + 1.9), 1.15, Math.cos(a) * (r + 1.9)]; }), fireRange: r * 1.6,
     shadows: { casters: [shafts, frames], receivers: [floor, rug], box: r + 5 },      // the crowd: soft contact blobs (budget)
     blobs: L.seats.map((x) => [x.x, x.z, 0.42]), blobsAlways: true, blobY: 0.006 }); }).catch(() => {});
+  const shown = (x) => { for (let y = x; y; y = y.parent) if (!y.visible) return false; return true; };
   const api = {
     ok: true, layout: L, count: N,
     yaw: () => st.yaw,
@@ -183,9 +191,11 @@ function build(rc, scene, camera, canvas, o) {
     mouth(i, vis, amount) { const f = close.get(i); if (f) { st.voice = true; setMouth(f, vis, amount); } },
     project(i) { crowd.userData.headWorld(i, v); const behind = v.clone().sub(camera.position).dot(camera.getWorldDirection(new THREE.Vector3())) <= 0; v.project(camera); return { x: (v.x * 0.5 + 0.5) * st.w, y: (-v.y * 0.5 + 0.5) * st.h, z: v.z, front: !behind }; },
     pick(cx, cy) { const b = canvas.getBoundingClientRect(); ndc.set(((cx - b.left) / b.width) * 2 - 1, -((cy - b.top) / b.height) * 2 + 1); ray.setFromCamera(ndc, camera); return crowd.userData.pick(ray, true); },
-    drawCalls: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && x.visible) n++; }); return n; },      // one draw per mesh: every repeated thing is instanced
-    triangles: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && x.visible && x.geometry) { const g = x.geometry, c = g.index ? g.index.count : g.getAttribute('position').count; n += (c / 3) * (x.isInstancedMesh ? x.count : 1); } }); return Math.round(n); },
+    drawCalls: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && shown(x)) n++; }); return n; },      // one draw per mesh: every repeated thing is instanced
+    triangles: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && shown(x) && x.geometry) { const g = x.geometry, c = g.index ? g.index.count : g.getAttribute('position').count; n += (c / 3) * (x.isInstancedMesh ? x.count : 1); } }); return Math.round(n); },
     closeUps: () => [...close.keys()],
+    rigged: () => [...close.values()].filter((f) => f.userData && f.userData.rig).length,      // characters v3: close-ups that are the rigged cast
+    crowdInfo: () => ({ impostors: !!crowd.userData.impostors, calls: crowd.userData.drawCalls }),
     stageFor(i) { if (!L.seats[i]) return null; if (st.active !== i) { api.focus(i); api.active(i); } closeUp(i); return { seat: i, project: () => api.project(i) }; },
     release() { if (st.walk) { const w = st.walk; st.walk = null; if (w.done) w.done(false); } api.active(-1); },
     speaking: () => st.active,
@@ -199,7 +209,7 @@ function build(rc, scene, camera, canvas, o) {
     },
     speaker: () => (st.active >= 0 && close.has(st.active) ? { seat: st.active, ...close.get(st.active).userData.state() } : null),
     cine: () => cine,
-    dispose() { gone = true; if (cine) cine.dispose(); window.removeEventListener('olympus:people:expression', onExpr); window.removeEventListener('olympus:people:open', onOpen); window.removeEventListener('olympus:people:close', onClose); window.removeEventListener('olympus:people:speak', onSpeak); window.removeEventListener('olympus:people:viseme', onViseme); try { rc.dispose(); } catch (_) { /* gone */ } for (const i of [...close.keys()]) dropClose(i); crowd.userData.dispose(); },
+    dispose() { gone = true; for (const g of spare.values()) g.userData.dispose(); spare.clear(); if (cine) cine.dispose(); window.removeEventListener('olympus:people:expression', onExpr); window.removeEventListener('olympus:people:open', onOpen); window.removeEventListener('olympus:people:close', onClose); window.removeEventListener('olympus:people:speak', onSpeak); window.removeEventListener('olympus:people:viseme', onViseme); try { rc.dispose(); } catch (_) { /* gone */ } for (const i of [...close.keys()]) dropClose(i); crowd.userData.dispose(); },
   };
   try { window.SYMPOSIUM_HALL = api; } catch (_) { /* no window */ }      // read-only hook for the page test
   return api;
