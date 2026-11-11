@@ -135,11 +135,11 @@
     S('path', { d: 'M13.2,22.4 C15,25 15.4,27 14.6,28.4 L16.4,31.2', fill: 'none', 'stroke-width': 2.2 }, g);
     S('path', { d: 'M10.4,21.6 C9.4,25.4 9.8,27.4 10.8,28.6 L9.4,31.4', fill: 'none', 'stroke-width': 2.2 }, g);
     S('path', { d: 'M9,15.6 C4.6,15.4 2.6,19.4 3.4,25.6 C4.8,22 6.2,19.8 8.6,18.6', 'stroke-width': 0.6 }, g);
-    g = S('g', { fill: 'none', stroke: 'var(--pl-inc)', 'stroke-width': 0.45, 'stroke-linecap': 'round' }, s);
+    g = S('g', { style: 'fill:none;stroke:var(--pl-inc)', 'stroke-width': 0.45, 'stroke-linecap': 'round' }, s);
     S('path', { d: 'M23.4,9.8 C24.8,6.6 27,4.2 29.4,3' }, g);
     S('path', { d: 'M19.4,12.6 C21.6,14 22,16.6 20.8,18.8' }, g);
     S('path', { d: 'M12.2,15.6 C13.8,17.4 14,19.6 13.2,21.6' }, g);
-    S('circle', { cx: 31.6, cy: 3.6, r: 0.55, fill: 'var(--pl-inc)', stroke: 'none' }, g);
+    S('circle', { cx: 31.6, cy: 3.6, r: 0.55, style: 'fill:var(--pl-inc);stroke:none' }, g);
     S('path', { d: 'M5,21 C5.6,19.4 6.6,18.4 8,17.8' }, g);
     // a dolphin diving, head down to the right, in a 40 x 32 box, with two wave curls
     s = S('symbol', { id: 'pl-dolphin', viewBox: '0 0 40 32' }, d);
@@ -151,9 +151,9 @@
     g = S('g', { fill: 'none', stroke: 'currentColor', 'stroke-width': 1.1, 'stroke-linecap': 'round' }, s);
     S('path', { d: 'M23,30.4 C25,28.4 27.4,28.4 29.2,30.2 C30.6,31.4 32.8,31 34,29.6' }, g);
     S('path', { d: 'M3,28.6 C4.8,26.6 7.4,26.6 9,28.4 C10.4,29.8 12.6,29.6 13.6,28' }, g);
-    g = S('g', { fill: 'none', stroke: 'var(--pl-inc)', 'stroke-width': 0.45, 'stroke-linecap': 'round' }, s);
+    g = S('g', { style: 'fill:none;stroke:var(--pl-inc)', 'stroke-width': 0.45, 'stroke-linecap': 'round' }, s);
     S('path', { d: 'M12,9.4 C18,6.6 25,8 29.4,14.6' }, g);
-    S('circle', { cx: 31.6, cy: 21.6, r: 0.7, fill: 'var(--pl-inc)', stroke: 'none' }, g);
+    S('circle', { cx: 31.6, cy: 21.6, r: 0.7, style: 'fill:var(--pl-inc);stroke:none' }, g);
     S('path', { d: 'M30,23.6 C31.2,24.4 32.4,25.6 33.2,27' }, g);
     // a torch runner (Panathenaic style), running right, torch hand at (33, 8), in a 40 x 48 box
     s = S('symbol', { id: 'pl-runner', viewBox: '0 0 40 48' }, d);
@@ -165,7 +165,7 @@
     S('path', { d: 'M19.6,26.4 L26.8,32.6 L28.6,42.6 L32,43.6', fill: 'none', 'stroke-width': 2.5 }, g);
     S('path', { d: 'M18.6,26.6 L13.2,35 L6.4,37.6 L4.6,35.6', fill: 'none', 'stroke-width': 2.5 }, g);
     S('path', { d: 'M32.6,9.6 L34.6,2.2', fill: 'none', 'stroke-width': 1.4 }, g);
-    g = S('g', { fill: 'none', stroke: 'var(--pl-inc)', 'stroke-width': 0.45, 'stroke-linecap': 'round' }, s);
+    g = S('g', { style: 'fill:none;stroke:var(--pl-inc)', 'stroke-width': 0.45, 'stroke-linecap': 'round' }, s);
     S('path', { d: 'M23.4,15.4 C24.6,17.4 24,20.4 22.4,23' }, g);
     S('path', { d: 'M24,5.8 C25.4,4.6 27.4,4.8 28.4,6.2' }, g);
   }
@@ -267,13 +267,13 @@
     for (i = 0; i < 4; i++) S('ellipse', { cx: 30 + R() * 140, cy: 198 + R() * 10, rx: 2 + R() * 2.4, ry: 1.2 + R(), fill: '#6e6150', opacity: 0.8 }, svg);
     if (thirsty) for (i = 0; i < 4; i++) { x = 60 + R() * 80; y = 200 + R() * 6; S('path', { d: 'M' + x + ',' + y + ' l6,1.4 l3,-2 l5,1.2', stroke: '#2a1f16', 'stroke-width': 0.7, fill: 'none' }, svg); }
     var baseX = 100, baseY = 198, H0 = sap ? 46 + g0 * 60 : 54 + g0 * 46;
-    var layerBranch = S('g', null, svg), layerTrunk = S('g', null, svg), layerBack = S('g', null, svg), layerLeaf = S('g', null, svg), layerFruit = S('g', null, svg);
+    var treeG = S('g', null, svg), layerBranch = S('g', null, treeG), layerTrunk = S('g', null, treeG), layerBack = S('g', null, treeG), layerLeaf = S('g', null, treeG), layerFruit = S('g', null, treeG);
     var tips = [];
     if (sap) {                                // a sapling tied to a stake
-      S('rect', { x: 112, y: baseY - H0 - 14, width: 3.2, height: H0 + 16, rx: 1, fill: 'url(#pl-wood)' }, svg);
+      S('rect', { x: 112, y: baseY - H0 - 14, width: 3.2, height: H0 + 16, rx: 1, fill: 'url(#pl-wood)' }, treeG);
       var top = [baseX + 2, baseY - H0];
       S('path', { d: 'M' + baseX + ',' + baseY + ' C' + (baseX - 3) + ',' + (baseY - H0 * 0.4) + ' ' + (baseX + 5) + ',' + (baseY - H0 * 0.7) + ' ' + top[0] + ',' + top[1], stroke: '#5d4b39', 'stroke-width': 3.4, fill: 'none', 'stroke-linecap': 'round' }, layerTrunk);
-      S('path', { d: 'M' + (baseX + 1) + ',' + (baseY - H0 * 0.55) + ' L113,' + (baseY - H0 * 0.6) + ' M' + (baseX + 2) + ',' + (baseY - H0 * 0.85) + ' L113,' + (baseY - H0 * 0.88), stroke: '#b7a47c', 'stroke-width': 1.1, fill: 'none' }, svg);
+      S('path', { d: 'M' + (baseX + 1) + ',' + (baseY - H0 * 0.55) + ' L113,' + (baseY - H0 * 0.6) + ' M' + (baseX + 2) + ',' + (baseY - H0 * 0.85) + ' L113,' + (baseY - H0 * 0.88), stroke: '#b7a47c', 'stroke-width': 1.1, fill: 'none' }, treeG);
       branch(top[0], top[1], -0.5, 16, 2, 1); branch(top[0], top[1], 0.55, 15, 2, 1); branch(top[0] - 1, top[1] + 8, -1.1, 12, 1.6, 0);
       tips.push([top[0], top[1] - 4, 11]);
     } else {
@@ -289,30 +289,50 @@
         if (g0 > 0.45) branch(tx, ty + 6, ang + (R() - 0.5) * 0.3, L * 0.85, w1 * 0.7, depth - 1);
       }
     }
-    // foliage: a dark mass behind every cluster, then the leaves: dark grey-green tops and silver undersides (lit from the upper left)
-    var dens = (lt ? 0.55 : 1) * (thirsty ? 0.6 : 1), DARK = thirsty ? ['#7d7550', '#6b6545', '#5f5a3e'] : ['#4f5d33', '#5b6a3c', '#66753f', '#46522d'],
-      SILV = thirsty ? ['#b3a978', '#a29a6c'] : ['#a3ad87', '#b6bd9b', '#929e78', '#c2c7a8'];
-    for (i = 0; i < tips.length; i++) S('ellipse', { cx: tips[i][0], cy: tips[i][1], rx: tips[i][2] * 1.15, ry: tips[i][2] * 0.82, fill: thirsty ? '#4d4930' : '#34402a', opacity: 0.55 }, layerBack);
-    var leaves = 0;
+    // foliage: a dark mass behind every cluster, then the leaves: narrow pointed olive leaves, dark grey-green tops and silver undersides
+    // (lit from the upper left). Leaves of one colour are ONE path (a few nodes per tree, not thousands).
+    var dens = (lt ? 0.5 : 1) * (thirsty ? 0.6 : 1), DARK = thirsty ? ['#7d7550', '#6b6545', '#5f5a3e'] : ['#45512b', '#55633a', '#63723f', '#3b4626'],
+      SILV = thirsty ? ['#b3a978', '#a29a6c'] : ['#9aa57f', '#b2b996', '#c4c9ab', '#8a9670'];
     for (i = 0; i < tips.length; i++) {
-      var t = tips[i], n = Math.round(t[2] * 2.1 * dens), k;
+      S('ellipse', { cx: tips[i][0], cy: tips[i][1] + 1, rx: tips[i][2] * 1.12, ry: tips[i][2] * 0.86, fill: thirsty ? '#4d4930' : '#2e3922', opacity: 0.6 }, layerBack);
+      S('ellipse', { cx: tips[i][0] - tips[i][2] * 0.25, cy: tips[i][1] - tips[i][2] * 0.2, rx: tips[i][2] * 0.8, ry: tips[i][2] * 0.6, fill: thirsty ? '#6b6545' : '#4a5833', opacity: 0.45 }, layerBack);
+    }
+    var leaves = 0, bucket = {}, cols = [], minY = 999, minX = 999, maxX = -999;
+    function leaf(c, lx, ly, ang, h, w) {
+      var ux = Math.cos(ang), uy = Math.sin(ang), nx = -uy, ny = ux;
+      var d = 'M' + (lx - ux * h).toFixed(1) + ',' + (ly - uy * h).toFixed(1) + 'Q' + (lx + nx * w * 2).toFixed(1) + ',' + (ly + ny * w * 2).toFixed(1) + ' ' + (lx + ux * h).toFixed(1) + ',' + (ly + uy * h).toFixed(1) +
+        'Q' + (lx - nx * w * 2).toFixed(1) + ',' + (ly - ny * w * 2).toFixed(1) + ' ' + (lx - ux * h).toFixed(1) + ',' + (ly - uy * h).toFixed(1) + 'Z';
+      if (!bucket[c]) { bucket[c] = []; cols.push(c); }
+      bucket[c].push(d);
+    }
+    for (i = 0; i < tips.length; i++) {
+      var t = tips[i], n = Math.round(t[2] * t[2] * 0.42 * dens), k;
+      minY = Math.min(minY, t[1] - t[2] * 0.9); minX = Math.min(minX, t[0] - t[2] * 1.2); maxX = Math.max(maxX, t[0] + t[2] * 1.2);
       for (k = 0; k < n; k++) {
-        var a = R() * Math.PI * 2, rr = Math.sqrt(R()) * t[2], lx = t[0] + Math.cos(a) * rr * 1.2, ly = t[1] + Math.sin(a) * rr * 0.85;
-        var rot = (a * 180 / Math.PI) + (R() - 0.5) * 70 + 25, lightSide = (lx - 100) / 100 - (ly - 80) / 160 < 0.05;
-        var pal = R() < (lightSide ? 0.58 : 0.3) ? SILV : DARK, len = 3.6 + R() * 2.2;
-        S('ellipse', { cx: lx.toFixed(1), cy: ly.toFixed(1), rx: len.toFixed(2), ry: (0.95 + R() * 0.5).toFixed(2), fill: pal[Math.floor(R() * pal.length)], transform: 'rotate(' + rot.toFixed(0) + ' ' + lx.toFixed(1) + ' ' + ly.toFixed(1) + ')' }, layerLeaf);
+        var a = R() * Math.PI * 2, rr = Math.sqrt(R()) * t[2], lx = t[0] + Math.cos(a) * rr * 1.15, ly = t[1] + Math.sin(a) * rr * 0.85;
+        var ang = a + (R() - 0.5) * 1.3 + (Math.sin(a) > 0 ? 0.5 : -0.2), up = (lx - 100) / 110 + (ly - (t[1] - t[2])) / (t[2] * 2.2);
+        var pal = R() < (up < 0.35 ? 0.62 : up < 0.8 ? 0.38 : 0.16) ? SILV : DARK, h = 2.6 + R() * 1.5;
+        leaf(pal[Math.floor(R() * pal.length)], lx, ly, ang, h, 0.55 + R() * 0.3);
         leaves++;
       }
     }
-    // the olives: one per winning trade (the file's count), ripe purple-black and a few still green
-    var ol = Math.max(0, Math.min(60, o.olives | 0));
+    for (i = 0; i < cols.length; i++) S('path', { d: bucket[cols[i]].join(''), fill: cols[i] }, layerLeaf);
+    // the olives: one per winning trade (the file's count), ripe purple-black and a few still green, each with a glint
+    var ol = Math.max(0, Math.min(60, o.olives | 0)), oDark = '', oPurple = '', oGreen = '', glint = '';
     for (i = 0; i < ol && tips.length; i++) {
-      var tp = tips[Math.floor(R() * tips.length)], a2 = R() * Math.PI * 2, r2 = Math.sqrt(R()) * tp[2] * 0.7;
-      x = tp[0] + Math.cos(a2) * r2; y = tp[1] + Math.sin(a2) * r2 * 0.8 + 2;
-      var green = R() < 0.25;
-      S('ellipse', { cx: x.toFixed(1), cy: y.toFixed(1), rx: 1.9, ry: 2.5, fill: green ? '#7f7d3a' : (R() < 0.5 ? '#3b2838' : '#2b2129'), transform: 'rotate(' + Math.round((R() - 0.5) * 50) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')', stroke: '#1a1316', 'stroke-width': 0.3 }, layerFruit);
-      S('circle', { cx: (x - 0.6).toFixed(1), cy: (y - 0.9).toFixed(1), r: 0.55, fill: '#fff6e8', opacity: 0.45 }, layerFruit);
+      var tp = tips[Math.floor(R() * tips.length)], a2 = R() * Math.PI * 2, r2 = Math.sqrt(R()) * tp[2] * 0.75;
+      x = tp[0] + Math.cos(a2) * r2; y = tp[1] + Math.sin(a2) * r2 * 0.8 + 3;
+      var e = 'M' + (x - 2).toFixed(1) + ',' + y.toFixed(1) + 'a2,2.6 0 1,0 4,0a2,2.6 0 1,0 -4,0Z', rv = R();
+      if (rv < 0.25) oGreen += e; else if (rv < 0.62) oPurple += e; else oDark += e;
+      glint += 'M' + (x - 0.4).toFixed(1) + ',' + (y - 1.1).toFixed(1) + 'a0.6,0.6 0 1,0 0.01,0Z';
     }
+    if (oGreen) S('path', { d: oGreen, fill: '#848235', stroke: '#2e2a12', 'stroke-width': 0.35 }, layerFruit);
+    if (oPurple) S('path', { d: oPurple, fill: '#4a2c45', stroke: '#1a1316', 'stroke-width': 0.35 }, layerFruit);
+    if (oDark) S('path', { d: oDark, fill: '#2b2129', stroke: '#120d10', 'stroke-width': 0.35 }, layerFruit);
+    if (glint) S('path', { d: glint, fill: '#fff6e8', opacity: 0.55 }, layerFruit);
+    // keep the whole crown inside the picture: shrink about the foot of the trunk if it would leave the frame
+    var fit = Math.min(1, (baseY - 8) / Math.max(1, baseY - minY), 94 / Math.max(1, baseX - minX), 94 / Math.max(1, maxX - baseX));
+    if (fit < 0.999) treeG.setAttribute('transform', 'translate(' + (baseX * (1 - fit)).toFixed(2) + ',' + (baseY * (1 - fit)).toFixed(2) + ') scale(' + fit.toFixed(4) + ')');
     svg.setAttribute('data-leaves', String(leaves));
     svg.setAttribute('data-olives', String(ol));
     return svg;
@@ -350,8 +370,8 @@
     function branch(x0, y0, a, len, w, depth) {
       var bend = (R() - 0.5) * 0.5, x1 = x0 + Math.sin(a) * len, y1 = y0 - Math.cos(a) * len, mx = x0 + Math.sin(a + bend) * len * 0.55, my = y0 - Math.cos(a + bend) * len * 0.55;
       S('path', { d: 'M' + x0.toFixed(1) + ',' + y0.toFixed(1) + ' Q' + mx.toFixed(1) + ',' + my.toFixed(1) + ' ' + x1.toFixed(1) + ',' + y1.toFixed(1), stroke: '#4e4032', 'stroke-width': Math.max(0.8, w).toFixed(2), fill: 'none', 'stroke-linecap': 'round' }, layerBranch);
-      if (depth <= 0 || len < 8) { tips.push([x1, y1, 9 + len * 0.35 + R() * 4]); return; }
-      if (depth <= 1 && R() < 0.6) tips.push([mx, my, 7 + R() * 4]);
+      if (depth <= 0 || len < 8) { tips.push([x1, y1, 11 + len * 0.4 + R() * 5]); return; }
+      if (depth <= 1 && R() < 0.7) tips.push([mx, my, 9 + R() * 5]);
       var k = R() < 0.35 ? 3 : 2, j;
       for (j = 0; j < k; j++) branch(x1, y1, a + (j - (k - 1) / 2) * (0.5 + R() * 0.35) + (R() - 0.5) * 0.2, len * (0.66 + R() * 0.14), w * 0.62, depth - 1);
     }
@@ -378,6 +398,7 @@
     S('path', { d: 'M12,62 A48,48 0 0 1 108,62', fill: 'none', stroke: 'url(#pl-gold)', 'stroke-width': 1.4, opacity: o.record ? 0.95 : 0.4 }, svg);
     var M = marbleGroup(svg, id), g = M.g, cp = M.cp;
     if (fig === 'nike') nike(g, cp); else athlete(g, cp, fig === 'victor');
+    if (o.mirror && fig === 'athlete') { g.setAttribute('transform', 'translate(120,0) scale(-1,1)'); cp.setAttribute('transform', 'translate(120,0) scale(-1,1)'); }
     // marble veins, clipped to the figure, and a soft shade down its right side
     var v = S('g', { 'clip-path': 'url(#' + id + ')', fill: 'none' }, svg), R = rng(hashStr(id + fig));
     for (i = 0; i < 6; i++) {
@@ -436,28 +457,38 @@
       limb(g, cp, 'M71.6,87.6 C76,89 77.6,95 77.2,102 C77,108 77.8,114 78.4,120 C78.8,126 78.4,131 77.2,134 L74.6,133.6 C74.6,128 74,122 73.6,117 C72.8,110 72.4,104 72.6,98 Z');
       S('ellipse', { cx: 76, cy: 136.4, rx: 2.4, ry: 3, fill: 'url(#pl-marble)', stroke: '#7e766a', 'stroke-width': 0.4 }, g);
       limb(g, cp, 'M48.4,87.6 C44,89 42.4,95 42.6,102 C42.6,108 41.6,114 40.6,120 C40,125 40.2,129 41,132 L43.8,132.4 C44,127 45,122 45.8,117 C47,110 47.4,104 47.2,98 Z');
-      S('ellipse', { cx: 40.6, cy: 138.4, rx: 7, ry: 7, fill: 'url(#pl-marble)', stroke: '#7e766a', 'stroke-width': 0.5 }, g);
-      S('ellipse', { cx: 40.6, cy: 138.4, rx: 4.6, ry: 4.6, fill: 'none', stroke: '#9a9184', 'stroke-width': 0.5 }, g);
-      S('ellipse', { cx: 40.6, cy: 138.4, rx: 7, ry: 7 }, cp);
+      S('ellipse', { cx: 42.4, cy: 134.4, rx: 2.3, ry: 2.9, fill: 'url(#pl-marble)', stroke: '#7e766a', 'stroke-width': 0.4 }, g);
+      var fr = 'M42.4,133 C40,124 38.6,114 39.6,104', j;
+      for (j = 0; j < 7; j++) { var yy = 128 - j * 3.6, xx = 41.6 - j * 0.32; fr += ' M' + xx.toFixed(1) + ',' + yy.toFixed(1) + ' l-5,-3.2 M' + xx.toFixed(1) + ',' + yy.toFixed(1) + ' l4.2,-3.6'; }
+      S('path', { d: fr, fill: 'none', stroke: 'url(#pl-bronze)', 'stroke-width': 1.1, 'stroke-linecap': 'round' }, g);
       head(g, cp, 60, 71.6, false);
     }
   }
   function nike(g, cp) {
-    // two wings of feathers, fanned up and out from the shoulders
-    var side, i, row;
+    // two wings raised behind the shoulders: long flight feathers hanging from a curved leading edge, a covert band over their roots
+    var side, i;
     for (side = -1; side <= 1; side += 2) {
-      for (row = 0; row < 3; row++) {
-        var n = [9, 8, 6][row], L = [52, 36, 22][row], wdt = [3.4, 3.8, 4.2][row];
-        for (i = 0; i < n; i++) {
-          var a = (-168 + i * (62 / (n - 1))) * Math.PI / 180, ox = 60 + side * 7, oy = 92;
-          var dx = Math.cos(a) * L * (0.8 + 0.2 * Math.sin(i)), dy = Math.sin(a) * L * (0.8 + 0.2 * Math.sin(i));
-          if (side > 0) dx = -dx;
-          var tx = ox + dx, ty = oy + dy, nx = -dy / L * wdt, ny = dx / L * wdt;
-          var d = 'M' + ox.toFixed(1) + ',' + oy.toFixed(1) + ' Q' + (ox + dx * 0.5 + nx).toFixed(1) + ',' + (oy + dy * 0.5 + ny).toFixed(1) + ' ' + tx.toFixed(1) + ',' + ty.toFixed(1) +
-            ' Q' + (ox + dx * 0.5 - nx * 0.3).toFixed(1) + ',' + (oy + dy * 0.5 - ny * 0.3).toFixed(1) + ' ' + ox.toFixed(1) + ',' + oy.toFixed(1) + 'Z';
-          S('path', { d: d, fill: row === 0 ? '#d9d1c4' : row === 1 ? '#e4ddd1' : '#ece6dc', stroke: '#857c70', 'stroke-width': 0.4 }, g);
-        }
+      var E = [], k;
+      for (k = 0; k <= 12; k++) {                  // the leading edge: from the shoulder blade up and out to the tip
+        var u = k / 12;
+        E.push([60 + side * (6 + 36 * u + 4 * Math.sin(u * Math.PI)), 94 - 58 * u + 14 * u * u]);
       }
+      var fe = [];
+      for (k = 2; k <= 12; k++) {                  // flight feathers, longest near the tip, tilted outwards
+        var p0 = E[k], u2 = k / 12, L = 20 + 34 * u2, th = (0.12 + 0.42 * u2) * side, tx = p0[0] + Math.sin(th) * L, ty = p0[1] + Math.cos(th) * L;
+        var nx = Math.cos(th) * 3.2, ny = -Math.sin(th) * 3.2;
+        fe.push('M' + (p0[0] - nx).toFixed(1) + ',' + (p0[1] - ny).toFixed(1) + ' L' + (tx - nx * 0.7).toFixed(1) + ',' + (ty - ny * 0.7).toFixed(1) +
+          ' Q' + (tx + Math.sin(th) * 3).toFixed(1) + ',' + (ty + Math.cos(th) * 3).toFixed(1) + ' ' + (tx + nx * 0.7).toFixed(1) + ',' + (ty + ny * 0.7).toFixed(1) +
+          ' L' + (p0[0] + nx).toFixed(1) + ',' + (p0[1] + ny).toFixed(1) + 'Z');
+      }
+      for (k = fe.length - 1; k >= 0; k--) S('path', { d: fe[k], fill: 'url(#pl-marble)', stroke: '#7e766a', 'stroke-width': 0.4 }, g);
+      var cov = 'M' + E[0][0].toFixed(1) + ',' + E[0][1].toFixed(1), q;
+      for (q = 1; q <= 12; q++) cov += ' L' + E[q][0].toFixed(1) + ',' + E[q][1].toFixed(1);
+      for (q = 12; q >= 0; q--) { var uu = q / 12, dd = 7 + 10 * Math.sin(uu * Math.PI * 0.9); cov += ' L' + (E[q][0] + side * 1.2).toFixed(1) + ',' + (E[q][1] + dd).toFixed(1); }
+      S('path', { d: cov + 'Z', fill: 'url(#pl-marble-v)', stroke: '#7e766a', 'stroke-width': 0.45 }, g);
+      var sc = '';
+      for (q = 1; q < 12; q++) { var u3 = q / 12, d3 = 7 + 10 * Math.sin(u3 * Math.PI * 0.9); sc += 'M' + E[q][0].toFixed(1) + ',' + (E[q][1] + d3 * 0.55).toFixed(1) + ' q' + (side * 2).toFixed(1) + ',3 ' + (side * 4).toFixed(1) + ',0 '; }
+      S('path', { d: sc, fill: 'none', stroke: '#9a9184', 'stroke-width': 0.45 }, g);
     }
     // the chiton: a long gown blown back by the wind, with its folds
     limb(g, cp, 'M50,86 C55,84 65,84 70,86 C72,96 71,104 70.4,110 C74,130 80,158 86,183 C72,186 52,186 37,182 C42,160 47,132 50,110 C49,102 48.4,94 50,86 Z');
@@ -561,6 +592,7 @@
     S('path', { d: 'M39.4,18 C41.4,21 41.4,27 39.4,30 M42,15.6 C45,20 45,28 42,32.4', fill: 'none', stroke: C.gold, 'stroke-width': 1.2, 'stroke-linecap': 'round', opacity: 0.8 }, icon);
     var txt = H('div', 'pl-hb-text', null, box), kick = H('p', 'pl-kicker', '', txt), cry = H('p', 'pl-cry', '', txt), plain = H('p', 'pl-plain', '', txt);
     txt.setAttribute('aria-live', 'polite');
+    border(el, opts);
     var nav = H('div', 'pl-hb-nav', null, el), prev = H('button', 'pl-btn', '‹', nav), cnt = H('span', 'pl-count', '', nav), next = H('button', 'pl-btn', '›', nav);
     prev.type = next.type = 'button'; prev.setAttribute('aria-label', 'Previous herald line'); next.setAttribute('aria-label', 'Next herald line');
     var KIND = { pass: 'Eval passed', payout: 'Payout', trade: 'Trade closed', kalshi: 'Kalshi (paper)', money: 'Money estimate', festival: 'Festival', torch: 'Torch relay' };
@@ -775,7 +807,7 @@
     var hall = H('div', 'pl-hall', null, el);
     for (i = 0; i < it.length; i++) {
       var x = it[i], f = H('figure', 'pl-niche' + (x.record ? ' pl-record' : ''), null, hall);
-      f.appendChild(statue({ figure: x.figure, record: x.record, title: x.title + ', ' + x.plaque }));
+      f.appendChild(statue({ figure: x.figure, record: x.record, mirror: i % 2 === 1, title: x.title + ', ' + x.plaque }));
       var cap = H('figcaption', 'pl-plaque', null, f);
       if (x.record) H('span', 'pl-chip pl-chip-record', 'Record', cap);
       H('b', null, x.title, cap);
@@ -872,7 +904,7 @@
       '.pl-svgtext{font:600 11px var(--pl-sans);fill:#f3ece0}.pl-svgtext.pl-dark{fill:#1c130e}.pl-svgtext.pl-small{font-size:10px;font-weight:500}.pl-svgtext.pl-num{font:700 11.5px var(--pl-num)}',
       '.pl-move .pl-flame{transform-box:fill-box;animation:pl-sway 2.6s ease-in-out infinite alternate}.pl-move .pl-flame-lead path{animation:pl-breathe 3.2s ease-in-out infinite alternate;transform-origin:50% 100%;transform-box:fill-box}',
       '@keyframes pl-sway{from{opacity:.92}to{opacity:1}}@keyframes pl-breathe{from{transform:scale(.94,.96)}to{transform:scale(1.04,1.06)}}@keyframes pl-smoke{from{opacity:.55;transform:translateY(1px)}to{opacity:1;transform:translateY(-2px)}}',
-      '.pl-lamps{display:flex;flex-wrap:wrap;gap:4px 2px;margin-top:10px}.pl-lamp{width:16px;height:18px}.pl-lamp.pl-out{opacity:.7}',
+      '.pl-lamps{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px 4px;margin-top:12px;justify-items:center}.pl-lamp{width:100%;max-width:30px;height:auto}.pl-lamp.pl-out{opacity:.7}',
       /* grove */
       '.pl-grove{background:linear-gradient(180deg,#2a2530 0%,#3a2f2d 30%,#5a4232 52%,#2c251d 72%,#1d1914 100%)}',
       '.pl-grove-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pl-tree-card{margin:0;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(60,48,58,.55),rgba(122,86,56,.35) 55%,rgba(29,25,20,.9) 78%);border:1px solid rgba(255,240,210,.08)}',
