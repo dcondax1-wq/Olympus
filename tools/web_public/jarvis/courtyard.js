@@ -1,13 +1,16 @@
-// The OLYMPUS courtyard (2026-11-10, AGORA): a small marble forecourt in the Jarvis home scene. Five doorways stand in a shallow arc, one for each
-// district of the Atlas map (Market, Research, Money, Command, Life), each a marble frame with a soft warm light inside it; a paved floor and
-// four short columns around them. Added by home3d.js to THAT scene (no renderer, composer or render target of its own: the GPU guard stays true).
+// The OLYMPUS courtyard (2026-11-10, AGORA; v2 2026-11-11: the hero of the Jarvis home). Five tall marble doorways stand in a shallow arc on the
+// horizon, one for each district of the Atlas map (Market, Research, Money, Command, Life), each with a soft warm light inside it that grows
+// stronger when that district needs the owner (setNeeds). A paved floor and four columns around them. Added by home3d.js to THAT scene (no
+// renderer, composer or render target of its own: the GPU guard stays true). home3d.js frames it in the hero's window (a lens shift).
 //
-//   attach(ext, home)   builds it and returns { doors, count, draws, lite }; also stored as ext.state.home.courtyard
+//   attach(ext, home)   builds it and returns { doors, count, draws, lite, dims, setNeeds(needs) }; also stored as ext.state.home.courtyard
 //   DISTRICTS           the five districts and their soft tints (the same order and names as Atlas and the orb's ring menu)
 //
-// Cost: instanced meshes only (frames, lintels, lights, paving, columns: at most 6 draw calls). LITE (data-fx low / software GL): frames and lights only.
-// Off / reduced motion: still (no per-frame work). Light is warm (about 3000 K) and additive at low strength: nothing here reaches the bloom threshold (0.9).
-// iPhone Safari 16: plain ES2020, no optional chaining.
+// Cost: instanced meshes only (frames, lintels, gold fillets, lights, paving, columns, capitals: 7 draw calls).
+// LITE (data-fx low / off, software GL): nothing is built; the painted courtyard in the page (index.html #courtArt: a gradient sky and SVG
+// doorways) stands in, and <html data-court> says which one is showing ('3d' | 'lite').
+// Off / reduced motion: still (no per-frame work). Light is warm (about 3000 K) and additive at low strength: 0.16 at rest and at most 0.42 for a
+// doorway that needs you, so nothing here reaches the bloom threshold (0.9). iPhone Safari 16: plain ES2020, no optional chaining.
 
 export const DISTRICTS = [
   { id: 'market', name: 'Market', tint: '#d9b25a' },
@@ -16,71 +19,104 @@ export const DISTRICTS = [
   { id: 'command', name: 'Command', tint: '#c98a6a' },
   { id: 'life', name: 'Life', tint: '#e0b060' },
 ];
+export const NEED_GAIN = { '': 1, warn: 2.1, bad: 2.6 };          // how much stronger a doorway's light is when its district needs you
+export const NEED_TINT = { warn: '#ffcf7a', bad: '#f08a60' };
 
 export function attach(ext, home) {
   const T = ext.T, M = ext.M, scene = ext.scene, root = ext.root;
   const lite = !!(home && home.soft) || root.dataset.fx === 'low' || root.dataset.fx === 'off';
-  const FLOOR_Y = -2.6, Z = -9, N = DISTRICTS.length;
+  const FLOOR_Y = -2.6, Z = -28, N = DISTRICTS.length;
+  const W = 2.5, H = 5.6, SP = 3.7;                    // a doorway: opening width and height, the spacing between doorways (tall: they cross the horizon)
+  const xs = []; for (let i = 0; i < N; i++) xs.push((i - (N - 1) / 2) * SP);
+  const zOf = (i) => Z - Math.abs(i - (N - 1) / 2) * 0.5;   // the outer doorways stand a little farther back: a shallow arc
+  const out = { doors: DISTRICTS.map((d, i) => ({ id: d.id, name: d.name, x: xs[i] })), count: N, draws: 0, lite, group: null,
+    dims: { floorY: FLOOR_Y, z: Z, top: FLOOR_Y + H + 0.78 }, needs: {}, setNeeds() {} };
+  if (home) home.courtyard = out;
+  if (lite) { root.dataset.court = 'lite'; return out; }           // LITE: the painting in the page is the courtyard
+
   const moving = () => root.dataset.fx !== 'off' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const marble = M && typeof M.marble === 'function' ? M.marble({ color: '#efe6d4', vein: '#8a7a60', scale: 0.6 }) : new T.MeshStandardMaterial({ color: '#e6dccb', roughness: 0.5 });
   const gold = M && typeof M.metal === 'function' ? M.metal({ kind: 'gold', roughness: 0.3 }) : new T.MeshStandardMaterial({ color: '#c8a24a', metalness: 0.8, roughness: 0.35 });
-  const group = new T.Group(); group.name = 'courtyard'; scene.add(group);
+  // the hero is never lost in the haze or the night: no fog on it, and a little warm light of its own (lamplit marble, far under the bloom threshold)
+  for (const m of [marble, gold]) { m.fog = false; if (m.emissive) { m.emissive.set(m === gold ? '#5a4420' : '#5e4a32'); m.emissiveIntensity = 0.5; } }
+  const group = new T.Group(); group.name = 'courtyard'; scene.add(group); out.group = group;
   const at = new T.Object3D(), warm = new T.Color('#ffd9a0'), tmp = new T.Color();
-  const W = 1.25, H = 2.7, SP = 1.85;                  // a doorway: opening width and height, the spacing between doorways
-  const xs = []; for (let i = 0; i < N; i++) xs.push((i - (N - 1) / 2) * SP);
-  const zOf = (i) => Z - Math.abs(i - (N - 1) / 2) * 0.25;   // the outer doorways stand a little farther back: a shallow arc
   let draws = 0;
   const inst = (geo, mat, n, order) => { const m = new T.InstancedMesh(geo, mat, n); m.frustumCulled = false; if (order != null) m.renderOrder = order; group.add(m); draws++; return m; };
 
   // jambs (two per doorway) and the lintel with its gold fillet
-  const jambs = inst(new T.BoxGeometry(0.24, H, 0.4), marble, N * 2);
-  const lintels = inst(new T.BoxGeometry(W + 0.74, 0.3, 0.46), marble, N);
-  const fillets = inst(new T.BoxGeometry(W + 0.5, 0.06, 0.5), gold, N);
+  const jambs = inst(new T.BoxGeometry(0.48, H, 0.8), marble, N * 2);
+  const lintels = inst(new T.BoxGeometry(W + 1.48, 0.6, 0.92), marble, N);
+  const fillets = inst(new T.BoxGeometry(W + 1.0, 0.12, 1.0), gold, N);
   for (let i = 0; i < N; i++) {
     const x = xs[i], z = zOf(i);
     at.rotation.set(0, 0, 0); at.scale.set(1, 1, 1);
-    at.position.set(x - (W / 2 + 0.12), FLOOR_Y + H / 2, z); at.updateMatrix(); jambs.setMatrixAt(i * 2, at.matrix);
-    at.position.set(x + (W / 2 + 0.12), FLOOR_Y + H / 2, z); at.updateMatrix(); jambs.setMatrixAt(i * 2 + 1, at.matrix);
-    at.position.set(x, FLOOR_Y + H + 0.15, z); at.updateMatrix(); lintels.setMatrixAt(i, at.matrix);
-    at.position.set(x, FLOOR_Y + H + 0.33, z); at.updateMatrix(); fillets.setMatrixAt(i, at.matrix);
+    at.position.set(x - (W / 2 + 0.24), FLOOR_Y + H / 2, z); at.updateMatrix(); jambs.setMatrixAt(i * 2, at.matrix);
+    at.position.set(x + (W / 2 + 0.24), FLOOR_Y + H / 2, z); at.updateMatrix(); jambs.setMatrixAt(i * 2 + 1, at.matrix);
+    at.position.set(x, FLOOR_Y + H + 0.3, z); at.updateMatrix(); lintels.setMatrixAt(i, at.matrix);
+    at.position.set(x, FLOOR_Y + H + 0.66, z); at.updateMatrix(); fillets.setMatrixAt(i, at.matrix);
   }
-  // the light inside each doorway: a soft warm panel that is brightest low and fades upward, tinted a little by the district (mostly warm white)
+  // the light inside each doorway: a soft warm panel that is brightest low and fades upward, tinted a little by the district (mostly warm white);
+  // iAmp is its strength per doorway (1 at rest, more when the district needs you)
   const lightMat = new T.ShaderMaterial({
     uniforms: { uI: { value: 0.16 } }, transparent: true, depthWrite: false, blending: T.AdditiveBlending, fog: false,
-    vertexShader: 'attribute vec3 iCol; varying vec2 vU; varying vec3 vC; void main(){ vU = uv; vC = iCol; gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0); }',
+    vertexShader: 'attribute vec3 iCol; attribute float iAmp; varying vec2 vU; varying vec3 vC; void main(){ vU = uv; vC = iCol * iAmp; gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0); }',
     fragmentShader: 'uniform float uI; varying vec2 vU; varying vec3 vC; void main(){ float x = abs(vU.x - 0.5) * 2.0; float a = (1.0 - pow(x, 3.0)) * (0.35 + 0.65 * pow(1.0 - vU.y, 1.4)); gl_FragColor = vec4(vC * a * uI, 1.0); }',
   });
   const lights = inst(new T.PlaneGeometry(W, H), lightMat, N, 5);
-  const iCol = new Float32Array(N * 3);
+  const iCol = new Float32Array(N * 3), iAmp = new Float32Array(N).fill(1), want = new Float32Array(N).fill(1);
+  const restCol = (i) => tmp.set(DISTRICTS[i].tint).lerp(warm, 0.55);
   for (let i = 0; i < N; i++) {
-    tmp.set(DISTRICTS[i].tint).lerp(warm, 0.55); iCol.set([tmp.r, tmp.g, tmp.b], i * 3);
-    at.position.set(xs[i], FLOOR_Y + H / 2, zOf(i) - 0.05); at.updateMatrix(); lights.setMatrixAt(i, at.matrix);
+    restCol(i); iCol.set([tmp.r, tmp.g, tmp.b], i * 3);
+    at.position.set(xs[i], FLOOR_Y + H / 2, zOf(i) - 0.1); at.updateMatrix(); lights.setMatrixAt(i, at.matrix);
   }
-  lights.geometry.setAttribute('iCol', new T.InstancedBufferAttribute(iCol, 3));
+  const colAttr = new T.InstancedBufferAttribute(iCol, 3), ampAttr = new T.InstancedBufferAttribute(iAmp, 1);
+  lights.geometry.setAttribute('iCol', colAttr); lights.geometry.setAttribute('iAmp', ampAttr);
 
-  // the paving and the four short columns: skipped in LITE
-  if (!lite) {
-    const COLS = 9, ROWS = 3, slabs = inst(new T.BoxGeometry(1.4, 0.05, 1.4), marble, COLS * ROWS);
-    let k = 0;
-    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
-      at.position.set((c - (COLS - 1) / 2) * 1.46, FLOOR_Y + 0.03, Z + 1.2 - r * 1.46); at.updateMatrix(); slabs.setMatrixAt(k, at.matrix);
-      tmp.set('#e8dec9').multiplyScalar(0.82 + 0.18 * (((c * 7 + r * 13) % 5) / 4)); slabs.setColorAt(k, tmp); k++;
-    }
-    slabs.instanceColor.needsUpdate = true;
-    const colGeo = new T.CylinderGeometry(0.26, 0.3, 4.2, 20, 1), capGeo = new T.BoxGeometry(0.8, 0.2, 0.8);
-    const cols = inst(colGeo, marble, 4), caps = inst(capGeo, gold, 4);
-    [[-4.4, Z + 1.6], [4.4, Z + 1.6], [-4.9, Z - 1.4], [4.9, Z - 1.4]].forEach((p, i) => {
-      at.position.set(p[0], FLOOR_Y + 2.1, p[1]); at.updateMatrix(); cols.setMatrixAt(i, at.matrix);
-      at.position.set(p[0], FLOOR_Y + 4.3, p[1]); at.updateMatrix(); caps.setMatrixAt(i, at.matrix);
-    });
+  // the paving and the four columns
+  const COLS = 9, ROWS = 3, slabs = inst(new T.BoxGeometry(2.8, 0.08, 2.8), marble, COLS * ROWS);
+  let k = 0;
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    at.position.set((c - (COLS - 1) / 2) * 2.92, FLOOR_Y + 0.04, Z + 2.6 - r * 2.92); at.updateMatrix(); slabs.setMatrixAt(k, at.matrix);
+    tmp.set('#e8dec9').multiplyScalar(0.82 + 0.18 * (((c * 7 + r * 13) % 5) / 4)); slabs.setColorAt(k, tmp); k++;
   }
+  slabs.instanceColor.needsUpdate = true;
+  const cols = inst(new T.CylinderGeometry(0.5, 0.58, 8.4, 20, 1), marble, 4), caps = inst(new T.BoxGeometry(1.5, 0.36, 1.5), gold, 4);
+  [[-8.4, Z + 3.2], [8.4, Z + 3.2], [-10.4, Z - 2.8], [10.4, Z - 2.8]].forEach((p, i) => {
+    at.position.set(p[0], FLOOR_Y + 4.2, p[1]); at.updateMatrix(); cols.setMatrixAt(i, at.matrix);
+    at.position.set(p[0], FLOOR_Y + 8.58, p[1]); at.updateMatrix(); caps.setMatrixAt(i, at.matrix);
+  });
   for (const m of [jambs, lintels, fillets, lights]) m.instanceMatrix.needsUpdate = true;
 
-  // slow breathing of the doorway light (0.9 to 1.0 of its strength): still when motion is off
-  let t0 = 0;
-  const hook = (dt, t) => { if (!moving()) { lightMat.uniforms.uI.value = 0.16; return; } t0 = t; lightMat.uniforms.uI.value = 0.16 * (0.95 + 0.05 * Math.sin(t0 * 0.35)); };
-  ext.onStep.push(hook);
-  const out = { doors: DISTRICTS.map((d, i) => ({ id: d.id, name: d.name, x: xs[i] })), count: N, draws, lite, group };
-  if (home) home.courtyard = out;
+  // which doorways need the owner: { market: '' | 'warn' | 'bad', ... } (home-cards.js). The light eases to its new strength; with motion off it is set at once.
+  function setNeeds(needs) {
+    needs = needs && typeof needs === 'object' ? needs : {};
+    out.needs = needs;
+    let changed = false;
+    for (let i = 0; i < N; i++) {
+      const lv = needs[DISTRICTS[i].id] === 'bad' ? 'bad' : needs[DISTRICTS[i].id] === 'warn' ? 'warn' : '';
+      const g = NEED_GAIN[lv];
+      if (want[i] !== g) changed = true;
+      want[i] = g;
+      if (lv) tmp.set(NEED_TINT[lv]); else restCol(i);
+      iCol.set([tmp.r, tmp.g, tmp.b], i * 3);
+      if (!moving()) iAmp[i] = g;
+    }
+    colAttr.needsUpdate = true; ampAttr.needsUpdate = true;
+    if (changed && !moving()) { try { root.style.setProperty('--court-n', String(Date.now() % 1000)); } catch (_) { /* the next frame shows it */ } }   // a still backdrop redraws on a style change
+  }
+  out.setNeeds = setNeeds;
+
+  // slow breathing of the doorway light (0.9 to 1.0 of its strength) and the ease toward a new strength: still when motion is off
+  ext.onStep.push((dt, t) => {
+    if (!moving()) { lightMat.uniforms.uI.value = 0.16; return; }
+    lightMat.uniforms.uI.value = 0.16 * (0.95 + 0.05 * Math.sin(t * 0.35));
+    let dirty = false;
+    for (let i = 0; i < N; i++) { const d = want[i] - iAmp[i]; if (Math.abs(d) > 0.004) { iAmp[i] += d * Math.min(1, dt * 2.5); dirty = true; } }
+    if (dirty) ampAttr.needsUpdate = true;
+  });
+  out.draws = draws;
+  root.dataset.court = '3d';
+  try { if (window.__jarvisNeeds) setNeeds(window.__jarvisNeeds); } catch (_) { /* the cards set it later */ }
   return out;
 }
