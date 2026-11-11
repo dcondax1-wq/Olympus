@@ -161,6 +161,8 @@ def main():
         info = {"units": U.n, "days": len(days), "first_day": days[0], "last_day": days[-1], "test_from": cutoff,
                 "days_with_futures_model": len(set(b[0] for b in brier)), "vol_scale": {str(k): round(v, 3) for k, v in kappa.items()},
                 "brier": brier_table(brier, cutoff)}
+        hm = np.nan_to_num(U.col["e_vol"], nan=-9) >= 0.06   # pre-registered headline rule: the vol model says the ask is >= 6c too cheap
+        info["headline_rule_vol_6c"] = {"train": L.frozen(U, hm & tr), "test": L.frozen(U, hm & ~tr), "all_buys_control_test": L.frozen(U, ~tr)}
         if series == "KXINX":
             R = L.run_family(U, cells, tr, n_sims=a.sims, label="S&P 500 daily range (discovery)")
             R.update(info)

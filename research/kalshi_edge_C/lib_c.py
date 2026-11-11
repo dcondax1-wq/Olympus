@@ -163,6 +163,7 @@ def run_family(U, cells, train_mask, n_sims=300, min_n=100, min_cl=25, label="")
         if len(j) >= 20:
             n, ncl, e, t = cell_stats(pnl[j], cost[j], cl[j])
             rec.update(test_n=n, test_days=ncl, test_edge=round(e, 4), test_t=round(t, 2))
+            rec["test_ci95"] = [round(x, 4) for x in boot(pnl[j], cost[j], cl[j], B=1000)[1]]
             if name in carried:
                 lo_b, ci = boot(pnl[j], cost[j], cl[j], alpha=0.05 / max(1, len(carried)))
                 rec.update(test_ci95=[round(x, 4) for x in ci], test_lo_bonf=round(lo_b, 4), survives=bool(e > 0 and lo_b > 0))
