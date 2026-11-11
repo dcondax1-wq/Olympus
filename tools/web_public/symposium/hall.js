@@ -46,7 +46,7 @@ function build(rc, scene, camera, canvas, o) {
   const tr = Math.max(0.9, r * 0.32);
   const top = add(new THREE.Mesh(new THREE.CylinderGeometry(tr, tr, 0.07, 36), marble)); top.position.y = 0.42;
   const foot = add(new THREE.Mesh(new THREE.CylinderGeometry(tr * 0.3, tr * 0.42, 0.4, 20), warm)); foot.position.y = 0.2;
-  const krater = add(new THREE.Mesh(new THREE.LatheGeometry([[0.1, 0], [0.16, 0.04], [0.09, 0.12], [0.2, 0.3], [0.3, 0.52], [0.34, 0.62], [0.3, 0.64]].map((p) => new THREE.Vector2(p[0], p[1])), 18), terra)); krater.position.y = 0.455;
+  const krater = add(new THREE.Mesh(new THREE.LatheGeometry([[0.1, 0], [0.16, 0.04], [0.09, 0.12], [0.2, 0.3], [0.3, 0.52], [0.34, 0.62], [0.3, 0.64]].map((p) => new THREE.Vector2(p[0], p[1])), 18), terra)); krater.position.y = 0.455; krater.scale.setScalar(0.55);      // small: you stand right behind it
   const nCup = Math.min(10, Math.max(4, Math.round(N / 4))), cups = add(new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.035, 0.07, 10), bronze, nCup));
   const d = new THREE.Object3D(), put = (im, i, x, y, z, ry, sx, sy, sz) => { d.position.set(x, y, z); d.rotation.set(0, ry || 0, 0); d.scale.set(sx == null ? 1 : sx, sy == null ? 1 : sy, sz == null ? 1 : sz); d.updateMatrix(); im.setMatrixAt(i, d.matrix); };
   for (let i = 0; i < nCup; i++) { const a = (i / nCup) * Math.PI * 2 + 0.3; put(cups, i, Math.sin(a) * tr * 0.72, 0.49, Math.cos(a) * tr * 0.72); }
