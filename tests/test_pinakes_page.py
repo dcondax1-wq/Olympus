@@ -373,10 +373,7 @@ def test_page():
             lst = p.evaluate("() => [window.PINAKES.S.district, [...document.querySelectorAll('#list .trow')].map((b) => b.dataset.id), document.querySelector('#foundPill').textContent, document.querySelector('#districts [data-d=Money]').getAttribute('aria-pressed')]")
             check("c. opening the Money drawer flips the list to its tables (2 of 7)", lst[0] == "Money" and sorted(lst[1]) == ["demo-deals", "demo-paper"] and lst[2] == "2 of 7" and lst[3] == "true", lst)
             AK.shot(p, "pinakes-demo")
-            if os.environ.get("AGORA_SHOTS"):                       # the cabinet alone, once the intro has gone (for the owner's eyes)
-                p.wait_for_timeout(2600)
-                p.evaluate("() => window.scrollTo(0, 0)")
-                p.screenshot(path=os.path.join(os.environ["AGORA_SHOTS"], "pinakes-cabinet.png"))
+            view_shot(p, "pinakes-cabinet", top=True)
             p.locator("#districts [data-d=All]").click()
             p.fill("#q", "HABIT log")
             p.wait_for_timeout(200)
@@ -493,7 +490,7 @@ def test_page():
             ch = p.evaluate("() => [document.querySelectorAll('#chart rect.bar').length, [...document.querySelectorAll('#groupTable tbody tr')].reduce((s, r) => s + +r.children[2].textContent, 0), document.querySelector('#cByFld').hidden, document.querySelector('#chartWords').textContent]")
             check("c. a histogram of 'usd': 12 ranges that hold every filtered row", ch[0] == 12 and ch[1] == len(neg) and ch[2] is True and "spread" in ch[3], ch)
             AK.shot(p, "pinakes-chart")
-            p.screenshot(path=os.path.join(os.environ["AGORA_SHOTS"], "pinakes-chart-view.png")) if os.environ.get("AGORA_SHOTS") else None
+            view_shot(p, "pinakes-chart-view")
             tc = AK.taps(p)
             check("c. Chart tab: every tap target is at least 44 x 44 px, no sideways scroll", not tc and AK.no_sideways(p), tc[:5])
             # saved views
@@ -676,7 +673,7 @@ def test_page():
             rs = p.evaluate("() => [document.querySelector('#tCols').hidden, document.querySelector('#tCols').textContent, [...document.querySelectorAll('#tPills .pill')].map((x) => x.textContent)]")
             check("c. a research dataset shows its span, its row count and its fields, and no export", rs[0] is False and "time (date)" in rs[1] and "354,333 rows" in rs[1] and rs[2][0].startswith("On the PC") and "2021-11" in rs[2][0], rs)
             AK.shot(p, "pinakes-research")
-            p.screenshot(path=os.path.join(os.environ["AGORA_SHOTS"], "pinakes-research-view.png")) if os.environ.get("AGORA_SHOTS") else None
+            view_shot(p, "pinakes-research-view")
             check("c. the failures raised no console error (a 404 is an answer, not a crash)", not errs and not off, (errs[:3], off[:3]))
             # ---------------------------------------------------------------- 5. Ask on the real files
             p.locator("#back").click()
@@ -706,7 +703,7 @@ def test_page():
             check("c. Ask 'deals ending this week': money/mercury.json is not built here, so it says so and uses a stand-in clearly labelled DEMO (never passed off as real)",
                   adl[0].startswith("DEMO data (not real).") and "written by the site build" in adl[0] and "labelled stand-in" in adl[0] and adl[1] is True and adl[2] == ["mercury-fixture"] and all(0 <= x <= 7 for x in adl[3]) and adl[3] == sorted(adl[3]), adl)
             AK.shot(p, "pinakes-ask")
-            p.screenshot(path=os.path.join(os.environ["AGORA_SHOTS"], "pinakes-ask-view.png")) if os.environ.get("AGORA_SHOTS") else None
+            view_shot(p, "pinakes-ask-view")
             ta = AK.taps(p)
             check("c. catalogue view with an answer open: every tap target is at least 44 x 44 px, no sideways scroll, no console error, nothing off the origin", not ta and AK.no_sideways(p) and not errs and not off, (ta[:5], errs[:3], off[:3]))
             ctx.close()
@@ -768,7 +765,7 @@ def test_page():
             p.wait_for_timeout(200)
             check("c. 375 x 667 Stats and Chart tabs: no sideways scroll, every tap >= 44 px, no error", AK.no_sideways(p) and not AK.taps(p) and not errs, (AK.taps(p)[:3], errs[:2]))
             AK.shot(p, "pinakes-375")
-            p.screenshot(path=os.path.join(os.environ["AGORA_SHOTS"], "pinakes-375-view.png")) if os.environ.get("AGORA_SHOTS") else None
+            view_shot(p, "pinakes-375-view")
             ctx.close()
             # ?flat=1 at full quality, and storage blocked
             ctx, p, errs, seen, off = AK.page(br, origin)
@@ -783,6 +780,19 @@ def test_page():
             ctx.close()
     finally:
         srv.shutdown()
+
+
+def view_shot(p, name, top=False):
+    """What the phone shows right now (only when AGORA_SHOTS=<dir> is set); any full-screen overlay of the kit is hidden for the picture only."""
+    d = os.environ.get("AGORA_SHOTS")
+    if not d:
+        return
+    os.makedirs(d, exist_ok=True)
+    if top:
+        p.evaluate("() => window.scrollTo(0, 0)")
+    p.evaluate("() => { for (const e of document.querySelectorAll('body *')) { const cs = getComputedStyle(e); if (cs.position === 'fixed' && e.getBoundingClientRect().height >= innerHeight * 0.9 && !e.closest('#app')) e.style.visibility = 'hidden'; } }")
+    p.wait_for_timeout(600)
+    p.screenshot(path=os.path.join(d, name + ".png"))
 
 
 def money(v):
