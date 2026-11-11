@@ -69,6 +69,10 @@ def cell_stats(pnl, cost, cl):
     u, inv = np.unique(cl, return_inverse=True)
     resid = np.bincount(inv, weights=pnl - edge * cost, minlength=len(u))
     se = math.sqrt(float((resid ** 2).sum())) / C
+    # floor: the binomial SE at the prices paid (as if every bet were independent). Without it a cell of 99c favourites that
+    # happened to win every time has zero sample variance and an absurd t.
+    p = np.clip(cost, 0.01, 0.99)
+    se = max(se, math.sqrt(float((p * (1 - p)).sum())) / C)
     return n, len(u), edge, (edge / se if se > 0 else 0.0)
 
 
