@@ -70,7 +70,7 @@ function outlineMaterial(THREE, width, extra) {
 /** the shared toon + outline materials of the hero figures (exported so a scene can tune the rim colour or the line width in one place) */
 export function materials(THREE) {
   let m = MATS.get(THREE);
-  if (!m) { m = { toon: toonMaterial(THREE), line: outlineMaterial(THREE, 0.0068) }; m.toon.name = 'olympus-person'; m.line.name = 'olympus-person-ink'; MATS.set(THREE, m); }
+  if (!m) { m = { toon: toonMaterial(THREE), line: outlineMaterial(THREE, 0.0085) }; m.toon.name = 'olympus-person'; m.line.name = 'olympus-person-ink'; MATS.set(THREE, m); }
   return m;
 }
 
@@ -153,7 +153,7 @@ function gen(THREE, s, L, ctx) {
   add('g:armour', () => [lathe(THREE, [[0.118, 0.37], [0.124, 0.4], [0.138, 0.46], [0.142, 0.495], [0.133, 0.53], [0.108, 0.55], [0.08, 0.557]], seg), M(THREE, 0, 0, 0, 0, 0, 0, fat, 1, fat * 0.88)], 'chest', BRONZE);
   if (!lo && ctx.want('g:armour')) for (let i = 0; i < (d.lite ? 6 : 10); i++) { const a = (i / (d.lite ? 6 : 10)) * Math.PI * 2; add('g:armour', () => [new THREE.BoxGeometry(0.05, 0.085, 0.012), M(THREE, Math.sin(a) * 0.137 * fat, 0.33, Math.cos(a) * 0.137 * fat * 0.88, 0.1, a, 0)], 'hips', LEATHER); }
   for (const e of [-1, 1]) add('g:armour', () => [sphere(THREE, 0.064, d.small, d.smallH, 0, Math.PI * 2, 0, Math.PI / 2), M(THREE, 0, 0.005, 0, 0, 0, e * 0.35)], e < 0 ? 'shoulderL' : 'shoulderR', BRONZE);
-  add('g:sash', () => [new THREE.TorusGeometry(0.152 * fat, 0.03, lo ? 3 : 5, seg + 4), M(THREE, 0, 0.43, 0.0, Math.PI / 2, 0.0, 0, 1, 0.82, 1).premultiply(M(THREE, 0, 0, 0, 0, 0, 0.62)).premultiply(M(THREE, -0.01, 0.17, 0))], 'chest', AC(1.04));
+  add('g:sash', () => [new THREE.TorusGeometry(0.15 * fat, 0.028, lo ? 3 : 5, seg + 4), M(THREE, 0, 0, 0, Math.PI / 2, 0, 0, 1, 0.84, 1).premultiply(M(THREE, 0, 0, 0, 0, 0, 0.62)).premultiply(M(THREE, 0, 0.44, 0.0))], 'chest', AC(1.04));
   if (!lo) add('g:sash', () => [sphere(THREE, 0.05, d.small, d.smallH), M(THREE, -0.1 * fat, 0.53, 0.0, 0, 0, 0.4, 1.0, 0.7, 1.2)], 'chest', AC(1.04));
   // ---- arms: a sleeve, the upper arm, the forearm, a soft mitten hand with a thumb
   for (const e of [-1, 1]) {
@@ -182,7 +182,7 @@ function gen(THREE, s, L, ctx) {
   for (let i = 0; i < (lo ? 4 : 7); i++) { const a = (i / (lo ? 4 : 7)) * Math.PI * 2, rr = i === 0 ? 0 : 0.11; H('h:spikes', () => [new THREE.ConeGeometry(0.045, 0.11, 5), M(THREE, Math.sin(a) * rr * 0.8, HEAD.ry * 0.98 + (i ? -0.03 : 0.01), Math.cos(a) * rr * 0.6 - 0.03, -0.5 + Math.cos(a) * 0.5 * (i ? 1 : 0), 0, -Math.sin(a) * 0.55 * (i ? 1 : 0))], HR(i % 2 ? 1 : 1.1)); }
   for (let i = 0; i < (lo ? 6 : 11); i++) { const a = -2.6 + (i / (lo ? 5 : 10)) * 5.2, el = i % 2 ? 0.55 : 0.32, v = wrap(a, el, 0.08); H('h:puffs', () => [sphere(THREE, 0.062, d.small, d.smallH), M(THREE, v.p[0], v.p[1], v.p[2])], HR(i % 3 === 0 ? 1.1 : i % 3 === 1 ? 0.94 : 1)); }
   H('h:puffs', () => [sphere(THREE, 0.075, d.small, d.smallH), M(THREE, 0, HEAD.ry * 0.98, -0.02)], HR(1.05));
-  H('h:afro', () => [sphere(THREE, 1, d.hw, d.hh), M(THREE, 0, 0.055, -0.035, 0, 0, 0, HEAD.rx * 1.42, HEAD.ry * 1.25, HEAD.rz * 1.32)]);
+  H('h:afro', () => [sphere(THREE, 1, d.hw, d.hh), M(THREE, 0, 0.075, -0.065, 0, 0, 0, HEAD.rx * 1.38, HEAD.ry * 1.2, HEAD.rz * 1.12)]);
   H('h:bun', () => [sphere(THREE, 0.082, d.small + 2, d.smallH + 1), M(THREE, 0, HEAD.ry * 0.95, -HEAD.rz * 0.55)]);
   if (!lo) H('h:bun', () => [new THREE.TorusGeometry(0.06, 0.012, 3, 10), M(THREE, 0, HEAD.ry * 0.86, -HEAD.rz * 0.48, -0.95, 0, 0)], AC());
   H('h:knot', () => [sphere(THREE, 0.06, d.small, d.smallH), M(THREE, 0, HEAD.ry * 1.18, -0.025, 0, 0, 0, 0.85, 1.25, 0.85)]);
@@ -271,7 +271,7 @@ function tongueShapes(w0, sh) {
 }
 function faceGen(THREE, s, L, ctx) {
   const n = ctx.det.face, FS = (a, b, c2, d2, e2, f2) => faceStrip(THREE, a, b, c2, d2, e2, f2, ctx.det.rows), hy = HEAD.y, F = (bone, g, col, at) => ctx.add({ g, m: new THREE.Matrix4().makeTranslation(0, hy, 0), bone, col, key: null, face: true, at });
-  const beard = L.beard === 'short' || L.beard === 'full', mlift = beard ? 0.075 : 0.012;
+  const mlift = L.beard === 'full' ? 0.11 : L.beard === 'short' ? 0.08 : 0.012;
   for (const e of [-1, 1]) {
     const S = e < 0 ? 'L' : 'R', cx = e * L.eyeX, cy = L.eyeY, E = L.eye;
     F('head', FS(n, E.rx + 0.022, cx, cy, 0.008, [ell(E.rx + 0.022, E.ry + 0.022)]), INK);
@@ -508,7 +508,7 @@ export function figure(THREE, sp, opts) {
     });
     // mouth: expression base + speech on top
     const sp = speechMouth(dt), inf = body.morphTargetInfluences;
-    if (inf) MORPHS.forEach((m, i) => { const base0 = F.mouth[m] || 0, tg = sp ? (sp.m[m] || 0) + base0 * 0.25 : base0; st.mouth[i] += (tg - st.mouth[i]) * Math.min(1, a * (sp ? 2.2 : 1)); inf[i] = st.mouth[i]; });
+    if (inf) MORPHS.forEach((m, i) => { const base0 = F.mouth[m] || 0, tg = sp ? (sp.m[m] || 0) + base0 * 0.25 : base0; st.mouth[i] += (Math.min(1, tg) - st.mouth[i]) * Math.min(1, a * (sp ? 2.2 : 1)); inf[i] = st.mouth[i]; });
   }
   function lookAngles() {
     const D = poseDef(), w = D.look == null ? 1 : D.look; if (!st.look || w <= 0) return [0, 0, 0];
@@ -613,7 +613,7 @@ function crowdMaterials(THREE, uni) {
     if (outline) sh.vertexShader = sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvec3 cP = position; vec3 cN = normal; crowdPose(cP, cN); transformed = crowdOn() ? cP + normalize(cN) * uOutline * pD(1).x : vec3(0.0);');
     else sh.vertexShader = sh.vertexShader.replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\nvec3 cP = position; vec3 cN = normal; crowdPose(cP, cN); objectNormal = cN;').replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed = crowdOn() ? cP : vec3(0.0);');
   };
-  const mat = toonMaterial(THREE, (sh) => inject(sh, false)), line = outlineMaterial(THREE, 0.0068, (sh) => inject(sh, true));
+  const mat = toonMaterial(THREE, (sh) => inject(sh, false)), line = outlineMaterial(THREE, 0.0082, (sh) => inject(sh, true));
   mat.customProgramCacheKey = () => 'olympus-crowd-v2'; line.customProgramCacheKey = () => 'olympus-crowd-ink-v2'; mat.name = 'olympus-crowd'; line.name = 'olympus-crowd-ink';
   return { mat, line };
 }

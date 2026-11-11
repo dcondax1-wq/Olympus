@@ -259,7 +259,7 @@ export function portraitTree(sp, opts) {
   // eyes: ring, white, iris, pupil, highlights, then the lids from the expression
   const E = L.eye, K = 32, ex = 9.6, ey = cy + 1.5, erx = f1(E.rx * K), ery = f1(E.ry * K * 1.02);
   for (const e of [-1, 1]) {
-    const x = 50 + e * ex, lu = Math.max(0, Math.min(1, F.lid[0])), ll = Math.max(0, Math.min(1, F.lid[1])), cid = id + (e < 0 ? 'l' : 'r');
+    const x = 50 + e * ex, lu = F.lid[0] < 0.15 ? 0 : Math.max(0, Math.min(1, F.lid[0])), ll = Math.max(0, Math.min(1, F.lid[1])), cid = id + (e < 0 ? 'l' : 'r');
     hg.push(N('path', { d: ellD(x, ey, erx + 0.9, ery + 0.9), fill: INKC }));
     const eg = [N('path', { d: ellD(x, ey, erx, ery), fill: IVC }), N('path', { d: ellD(x + e * 0.3, ey + 0.4, E.ir * K, E.iry * K), fill: E.iris })];
     if (E.pupil) eg.push(N('path', { d: ellD(x + e * 0.3, ey + 0.4, E.pupil * K, E.pupil * K * 1.1), fill: INKC }));
