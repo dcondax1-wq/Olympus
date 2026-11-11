@@ -587,12 +587,25 @@
     border(h, opts);
     return h;
   }
-  function border(el, opts) {
-    var k = kit('meander'), n = null;
-    if (k) { try { n = k({ height: 8, color: C.gold, animate: !still(opts) }); } catch (e) { n = null; } }
-    if (n && n.nodeType === 1) { n.classList.add('pl-meander'); el.appendChild(n); return; }
+  function border(el, opts) {                // the POLIS kit's meander band when olympus/polis.js is on the page, else a simple patterned band
+    var k = kit('meander');
+    if (k) {
+      var box = H('div', 'pl-meander pl-meander-kit', null, el), r = null;
+      box.setAttribute('aria-hidden', 'true');
+      try { r = k(box, { sides: 'band', size: 12, color: 'gold', inset: 0, draw: !still(opts) }); } catch (e) { r = null; }
+      if (r && box.firstChild) return;
+      el.removeChild(box);
+    }
     var svg = S('svg', { 'class': 'pl-meander', viewBox: '0 0 160 8', preserveAspectRatio: 'none', 'aria-hidden': 'true' }, el);
     S('rect', { x: 0, y: 0, width: 160, height: 8, fill: 'url(#pl-mea-gold)', opacity: 0.75 }, svg);
+  }
+  function laurelMark(el, kind, opts) {      // the kit's gold laurel wreath / olive sprig, when the kit is there (nothing otherwise)
+    var k = kit('laurel');
+    if (!k) return null;
+    var box = H('span', 'pl-laurel pl-laurel-' + kind, null, el);
+    try { k(box, { kind: kind, gold: kind === 'laurel', size: 30, animate: !still(opts) }); } catch (e) { el.removeChild(box); return null; }
+    if (!box.firstChild) { el.removeChild(box); return null; }
+    return box;
   }
   function empty(el, text) { var p = H('p', 'pl-empty', text, el); return p; }
   function srcLine(el, text) { if (text) H('p', 'pl-src', text, el); }
@@ -774,6 +787,7 @@
       card.appendChild(tree({ id: t.id, growth: t.growth, olives: t.olives, thirsty: t.thirsty, title: t.name + ': ' + t.line }, opts));
       var cap = H('figcaption', null, null, card), top = H('div', 'pl-tree-top', null, cap);
       H('b', 'pl-tree-name', t.name, top);
+      if (t.stage === 'funded') laurelMark(top, 'olive', opts);
       H('span', 'pl-chip pl-chip-' + t.stage, t.stage === 'funded' ? 'Funded' : t.stage === 'paper' ? 'Paper' : 'Eval', top);
       if (num(t.balance)) H('p', 'pl-tree-bal pl-num', money(t.balance, false) + (num(t.profit) ? ' · ' : ''), cap).appendChild(span(money(t.profit), tone(t.profit)));
       H('p', 'pl-tree-line', t.line, cap);
@@ -836,6 +850,7 @@
       var x = it[i], f = H('figure', 'pl-niche' + (x.record ? ' pl-record' : ''), null, hall);
       f.appendChild(statue({ figure: x.figure, record: x.record, mirror: i % 2 === 1, title: x.title + ', ' + x.plaque }));
       var cap = H('figcaption', 'pl-plaque', null, f);
+      if (x.record || x.kind === 'pass') laurelMark(cap, 'laurel', opts);
       if (x.record) H('span', 'pl-chip pl-chip-record', 'Record', cap);
       H('b', null, x.title, cap);
       H('span', 'pl-plaque-line', x.day || '', cap);
@@ -894,7 +909,8 @@
       '.pl-piece{--pl-serif:var(--ag-serif,"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif);--pl-sans:var(--ag-sans,-apple-system,system-ui,sans-serif);--pl-num:var(--ag-num,"SF Pro Rounded",-apple-system,sans-serif);',
       'display:block;position:relative;margin:0 0 16px;padding:14px 14px 12px;border-radius:16px;border:1px solid #3a3228;background:linear-gradient(180deg,#26211b,#1d1914);color:#f3ece0;box-shadow:0 6px 18px rgba(0,0,0,.35);font-family:var(--pl-sans);overflow:hidden}',
       '.pl-head{margin:0 0 10px}.pl-title{margin:0;font:600 20px/1.2 var(--pl-serif);color:#f3ece0;letter-spacing:.01em}.pl-sub{margin:3px 0 0;color:#cfc4b2;font-size:13.5px;line-height:1.35}',
-      '.pl-meander{display:block;width:100%;height:8px;margin-top:8px}',
+      '.pl-meander{display:block;width:100%;height:8px;margin-top:8px}.pl-meander-kit{position:relative;height:14px;overflow:hidden}.pl-meander-kit svg{position:absolute;left:0;top:0}',
+      '.pl-laurel{display:inline-block;width:30px;height:30px;line-height:0;flex:0 0 30px;align-self:center}.pl-laurel .polis-laurel{width:30px!important;height:30px!important}.pl-laurel svg{width:100%;height:100%;display:block}',
       '.pl-kicker{margin:0 0 2px;color:#c8a24a;font-size:12.5px;font-weight:600;letter-spacing:.02em}.pl-eyebrow{margin:12px 0 4px;color:#c8a24a;font-size:12.5px;font-weight:600}',
       '.pl-empty{margin:6px 0;color:#cfc4b2;font:italic 15px/1.4 var(--pl-serif)}.pl-src{margin:10px 0 0;color:#a89c88;font-size:12px;line-height:1.4}.pl-note{margin:8px 0 0;color:#cfc4b2;font-size:13px;line-height:1.4}',
       '.pl-num{font-family:var(--pl-num);font-variant-numeric:tabular-nums}.pl-up{color:#a0ac6e}.pl-down{color:#e08a6b}.pl-even{color:#cfc4b2}',
