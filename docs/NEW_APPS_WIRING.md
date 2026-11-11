@@ -507,3 +507,9 @@ Tests after wiring: `tests.test_colosseum_page`, `tests.test_apps_list`, `tests.
 3. `tools/build_web_dashboard.py` app tuple: add `"colosseum"`.  4. `sw.js` OTHER_APPS: `'colosseum/'`.
 5. `olympus/intro-app.js` FLAVOUR: `colosseum: ['torches', 'Enter the arena', 'tap'],`
 6. `jarvis/transitions.js` REGISTRY: `colosseum: { kind: 'columns', ms: 1000, n: 5 },`
+
+## Hellas (inside Cities, 2026-11-11): the world of 300+ cities above Athens, the desert, the people
+Not a new app: everything is in `tools/web_public/cities/` (`hellas*.js`, `hellas*.css`, `hellas-fixture.json`, `hellas-builders.json`, `people-talk.js`, `people-fig.js`, `people.css`), opened by the "Enter Hellas" button, `#hellas` or `?hellas=1`.
+1. `sw.js`: bump the worker version so phones fetch the new Cities files (no new OTHER_APPS row; no precache entry needed).
+2. Optional, at site build: refresh the caravan snapshot with `python -c "import json;a=json.load(open('handoff/agents_now.json'));json.dump({'v':1,'asof':a['asof'],'label':'Snapshot at build time: the build agents that were working when this page was built. Not live.','agents':[{k:x[k] for k in ('name','job','area','branch')} for x in a['agents']]},open('tools/web_public/cities/hellas-builders.json','w'),indent=1)"` (today it is a committed copy, labelled "Snapshot at build time").
+3. People kit: nothing to wire. When `olympus/people.js` / `people3d.js` land, Hellas and Athens load them by themselves (optional import, at most 1.5 s); until then they use their own chat card and figures.
