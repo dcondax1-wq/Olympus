@@ -331,6 +331,7 @@ async function init() {
   $('meSave').addEventListener('click', saveMe);
   await refresh();
   S.ready = true;
+  try { if (O && O.ready) O.ready(); } catch (_) { /* the kit lifts its loading veil by itself after 12 s */ }
   S.canTry = !S.lite;
   paintView();
   tryHall();
