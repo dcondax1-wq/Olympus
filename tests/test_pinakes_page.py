@@ -510,7 +510,7 @@ def test_page():
             # export
             with p.expect_download(timeout=20000) as dl:
                 p.locator("#csvBtn").click()
-            csv = open(dl.value.path(), encoding="utf-8-sig").read()
+            csv = open(dl.value.path(), encoding="utf-8-sig", newline="").read()
             check("c. Export CSV: the filtered rows only (a header + the losing trades), every field, unicode intact, named after the table", csv.count("\r\n") == len(neg) + 1 and csv.startswith("day,side,strat,qty,r,usd,risk_usd,held_min,win,entry.px,entry.hour,note")
                   and dl.value.suggested_filename == "demo-trades-filtered.csv" and ("Café" in csv or not any(t_["usd"] < 0 and t_["note"] and "Café" in t_["note"] for t_ in fxt)), csv[:160])
             with p.expect_download(timeout=20000) as dl:
@@ -577,7 +577,9 @@ def test_page():
             p.locator("#more").click()
             p.wait_for_timeout(150)
             check("c. 'Show more' adds the next 30", p.evaluate("() => document.querySelectorAll('#list .trow').length") == 60, None)
-            for _ in range(4):
+            for _ in range(10):
+                if p.evaluate("() => document.querySelector('#more').hidden"):
+                    break
                 p.locator("#more").click()
                 p.wait_for_timeout(80)
             badges = p.evaluate("() => { const m = {}; for (const b of document.querySelectorAll('#list .trow')) { const t = b.querySelector('.pill').textContent.split(' · ')[0]; m[t] = (m[t] || 0) + 1; } return m; }")
@@ -645,7 +647,7 @@ def test_page():
             p.locator("#tabRows").click()
             with p.expect_download(timeout=30000) as dl:
                 p.locator("#csvBtn").click()
-            big_csv = open(dl.value.path(), encoding="utf-8-sig").read()
+            big_csv = open(dl.value.path(), encoding="utf-8-sig", newline="").read()
             check("c. export all 10,000 rows as CSV: 10,001 lines, unicode intact", big_csv.count("\r\n") == 10001 and "ünï ✓" in big_csv, big_csv[:80])
             check("c. no console error through the big-table run", not errs and not off, (errs[:3], off[:3]))
             # the biggest real table: 37,000 rows from datacity/city.json
