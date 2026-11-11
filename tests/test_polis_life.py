@@ -17,10 +17,10 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
-import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -165,16 +165,19 @@ def part_d():
 def browser_lock(wait=2400):
     """The machine's ONE browser at a time (docs/NIGHT_BRIEF.md round 3): the same lock file `flock -w 2400 /tmp/olympus_browser.lock` takes."""
     fd = os.open(LOCK, os.O_CREAT | os.O_RDWR, 0o666)
-    t0 = time.time()
-    while True:
-        try:
-            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            break
-        except BlockingIOError:
-            if time.time() - t0 > wait:
-                os.close(fd)
-                raise TimeoutError("the browser lock stayed busy")
-            time.sleep(2)
+
+    def late(*_):
+        raise TimeoutError("the browser lock stayed busy")
+    old = signal.signal(signal.SIGALRM, late)
+    signal.alarm(wait)                       # a blocking wait queues fairly behind the other flock(1) waiters (a polling one starves)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+    except TimeoutError:
+        os.close(fd)
+        raise
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old)
     try:
         yield
     finally:
