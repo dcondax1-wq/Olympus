@@ -499,3 +499,168 @@ const fx = OLYMPUS_FX.lightTrails(scene, { count: 70, area: [44, 7, 14] });
 // streaks of light sliding past like traffic or data
 fx.stop();
 ```
+
+## UI, AGORA (3, 2026-11-11)
+
+### `press`
+The card or button sinks a little under the finger (1.5 px down, a closer shadow) and springs back in 220 ms; no glow. (element)
+
+```js
+const fx = OLYMPUS_FX.press(cardEl);   // or <div data-oly-fx="press"> once the lead adds press: 'ui' to FXMAP in olympus.js
+fx.pulse();   // press it from code (a keyboard shortcut, a demo)
+fx.stop();
+```
+
+### `stagger`
+Page enter: the children rise into place one after another, 40 ms apart and all in by 480 ms; LITE fades them, off / reduced motion shows them at once. (element)
+
+```js
+const fx = OLYMPUS_FX.stagger(listEl, { selector: '.card' });   // the cards of a page
+fx.play();   // again, after a re-render
+fx.stop();
+```
+
+### `goldFlash`
+A number that changes warms to gold and settles back (terracotta when it falls, with direction: true); works with odometer (it flashes when the roll lands). (element)
+
+```js
+const fx = OLYMPUS_FX.goldFlash(numberEl, { direction: true });
+numberEl.textContent = '$1,291';   // the app's normal write: the number catches the light
+fx.stop();
+```
+
+# Cinema: the golden-hour stack (olympus/fx-cine.js, 2026-11-11)
+
+One ES module (three r160 only) that makes a 3D scene cinematic in the AGORA look: golden-hour light that follows the clock, sky, sea,
+light shafts, fire, dust, sand, sea spray, fireflies, birds, pooled bursts and the speaker focus. It rides the scene's own frame loop
+(the render core's `rc.onFrame`), so it never schedules a frame of its own. Every piece is ONE draw call; a scene works the same without it.
+
+```js
+import { cinema } from '../olympus/fx-cine.js';
+const cine = cinema(rc, { time: 'clock', sky: true, fires: [[x, y, z]], dust: true, shadows: { casters: [columns, crowd], receivers: [floor] } });
+cine.burst('sparks', [x, y, z]);        // sparks | embers | coins | laurel | confetti (pooled, no allocation)
+cine.focus(() => speakerHead);           // blur the background, keep the speaker sharp (high / ultra); cine.focus(null) clears
+cine.setTime('dusk');                    // 'clock' | 'dawn' | 'golden' | 'day' | 'dusk' | 'night' | a minute; ?time=dusk in the address
+```
+
+| Tier | Shadows | Shafts | Particles | Clouds | Birds | Burst pool | Fire lights | Focus blur |
+|---|---|---|---|---|---|---|---|---|
+| ultra | soft 2048 map | 6 | 100 % | 4 octaves | 24 | 420 | 3 | 8 taps |
+| high | soft 1024 map, updated every 3rd frame | 4 | 75 % | 3 | 16 | 300 | 2 | 8 taps |
+| low (LITE) | none: baked contact blobs | 2 | 33 % | 2 | 8 | 120 | 1 | none |
+| off / reduced motion | none | still | none (reduced: still) | still | none | none | none | none |
+
+The post stack lives in the render core's ONE finish pass (no extra pass): ACES or AgX (`tone: 'agx'`), a 16^3 colour-grade LUT per time of
+day (`rc.setGrade({ lut: 'golden' })`, blended by the clock), the focus blur (`rc.setFocus`), vignette and very low grain. Bloom is capped
+at .25 whatever an app asks (`BLOOM_MAX`). Hooks (marked `FX HOOK`): Symposium hall, Ergasterion floor, Colosseum arena, Athens, Hellas,
+the Jarvis home. Measured cost: `docs/shots/effects/README.md`.
+
+## Cinema (12)
+
+### `cineSky`
+A golden-hour sky dome: sun disc and halo, drifting clouds, stars at night; opts.time follows the clock or a name. (3D)
+
+```js
+const fx = OLYMPUS_FX.cineSky(scene, { time: 'clock' });   // or 'dawn' | 'golden' | 'day' | 'dusk' | 'night'
+fx.inner.setTime('dusk');
+fx.stop();
+```
+
+### `cineSea`
+A calm sea: rolling swell, wind ripples, sun glitter and foam on the crests (one draw). (3D)
+
+```js
+const fx = OLYMPUS_FX.cineSea(scene, { size: 60, y: -0.35 });
+// the waves are in the vertex shader: nothing to call per frame
+fx.stop();
+```
+
+### `cineLight`
+The time-of-day light: the sun and sky light set by the clock (dawn, golden hour, day, dusk, night) with soft light shafts. (3D)
+
+```js
+const fx = OLYMPUS_FX.cineLight(scene, { time: 'golden', to: [0, 0, 0] });
+// one sun, one sky light, one draw of shafts
+fx.stop();
+```
+
+### `cineFire`
+A brazier: hot embers rising, soft smoke above, a warm light that breathes (two draws and a light). (3D)
+
+```js
+const fx = OLYMPUS_FX.cineFire(scene, { fires: [[-3, 0.2, 2], [3, 0.2, 2]] });
+// up to 8 fires share the two draws
+fx.stop();
+```
+
+### `cineDust`
+Dust motes drifting slowly through the sunlight (warm, twinkling, one draw). (3D)
+
+```js
+const fx = OLYMPUS_FX.cineDust(scene, { box: [18, 7, 12], center: [0, 3, 0] });
+// the motes wrap inside the box
+fx.stop();
+```
+
+### `cineSand`
+Sand blowing low across the desert on the wind (one draw). (3D)
+
+```js
+const fx = OLYMPUS_FX.cineSand(scene, { box: [30, 3, 20], vel: [5, 0.2, 1] });
+// vel = the wind, in world units per second
+fx.stop();
+```
+
+### `cineSpray`
+Sea spray thrown up along a shore line and falling back (one draw). (3D)
+
+```js
+const fx = OLYMPUS_FX.cineSpray(scene, { box: [22, 1, 3], center: [0, -0.3, 3] });
+// box.x = the length of the shore line
+fx.stop();
+```
+
+### `cineFireflies`
+Warm fireflies drifting and pulsing at night (gold, never neon; one draw). (3D)
+
+```js
+const fx = OLYMPUS_FX.cineFireflies(scene, { box: [18, 4, 12] });
+// cinema() fades them in only at night
+fx.stop();
+```
+
+### `cineBirds`
+A flock of birds wheeling overhead, wings flapping (one instanced draw). (3D)
+
+```js
+const fx = OLYMPUS_FX.cineBirds(scene, { radius: 14, height: 7, size: 0.35 });
+// the flight and the flapping are in the vertex shader
+fx.stop();
+```
+
+### `cineSparks`
+Sparks from a hammer hit: hot, fast, falling (pooled; cinema().burst("sparks", pos) in a scene). (3D)
+
+```js
+const fx = OLYMPUS_FX.cineSparks(scene, { position: [0, 1, 0], every: 1.4 });
+fx.burst();   // one more hit now
+fx.stop();
+```
+
+### `cineCoins`
+Gold coins bursting up and spinning down on a money event (pooled). (3D)
+
+```js
+const fx = OLYMPUS_FX.cineCoins(scene, { position: [0, 1.2, 0] });
+fx.burst();   // a payout
+fx.stop();
+```
+
+### `cineLaurel`
+Laurel leaves and gold confetti for a success: a merge, an eval passed (pooled). (3D)
+
+```js
+const fx = OLYMPUS_FX.cineLaurel(scene, { position: [0, 3, 0] });
+fx.burst();   // another shower
+fx.stop();
+```

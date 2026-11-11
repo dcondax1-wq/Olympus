@@ -136,6 +136,14 @@ function build(rc, scene, camera, canvas, o) {
   window.addEventListener('olympus:people:open', onOpen); window.addEventListener('olympus:people:close', onClose);
   fit(); placeCam(); syncClose();
   rc.start(frame);
+  // FX HOOK (olympus/fx-cine.js, optional; 2026-11-11 effects pass): the clock's light, a sky over the open ring, sun shafts, dust, brazier
+  // embers + smoke + a breathing fire light, soft shadows on high (contact blobs on LITE), the speaker focus. The hall is the same without it.
+  let cine = null, gone = false; const fHead = new THREE.Vector3();
+  if (o.cinema !== false) import('../olympus/fx-cine.js').then((C) => { if (gone) return; cine = C.cinema(rc, { time: 'clock', sky: true, fog: 0.4, neutral: 0.45, fireLight: 2.2,
+    rays: { to: [0, 0, 0], spread: [r * 1.5, 0, r * 1.5], length: 15, width: 1.8 }, dust: { box: [r * 2 + 6, 4, r * 2 + 6], center: [0, 2, 0] },
+    fires: [0, 1, 2, 3].map((i) => { const a = (i / nB) * Math.PI * 2 + Math.PI / 4; return [Math.sin(a) * (r + 1.9), 1.15, Math.cos(a) * (r + 1.9)]; }), fireRange: r * 1.6,
+    shadows: { casters: [shafts, frames], receivers: [floor, rug], box: r + 5 },      // the crowd: soft contact blobs (budget)
+    blobs: L.seats.map((x) => [x.x, x.z, 0.42]), blobsAlways: true, blobY: 0.006 }); }).catch(() => {});
   const api = {
     ok: true, layout: L, count: N,
     yaw: () => st.yaw,
@@ -148,6 +156,7 @@ function build(rc, scene, camera, canvas, o) {
       crowd.userData.setActive(prev, false);
       if (st.active >= 0) { const f = closeUp(st.active); play(f, 'wave', { then: 'talk' }); }
       if (reduced) { syncClose(); crowd.userData.tick(0); }
+      const k = st.active; if (cine) cine.focus(k >= 0 ? () => crowd.userData.headWorld(k, fHead) : null, { r: 0.2, amount: 4 });      // FX HOOK: focus on the speaker
     },
     talking(i, on) { if (i !== st.active) api.active(i); st.voice = true; const f = close.get(i); if (f) { setTalking(f, !!on); if (on) play(f, 'talk'); } },
     mouth(i, vis, amount) { const f = close.get(i); if (f) { st.voice = true; setMouth(f, vis, amount); } },
@@ -168,7 +177,8 @@ function build(rc, scene, camera, canvas, o) {
       return new Promise((ok) => { st.walk = { i, t0: st.t, dur: 1.6, x0: f.position.x, y0: f.position.y, z0: f.position.z, x1: s.x * k, z1: s.z * k, ry: Math.atan2(s.x, s.z), done: ok }; });
     },
     speaker: () => (st.active >= 0 && close.has(st.active) ? { seat: st.active, ...close.get(st.active).userData.state() } : null),
-    dispose() { window.removeEventListener('olympus:people:expression', onExpr); window.removeEventListener('olympus:people:open', onOpen); window.removeEventListener('olympus:people:close', onClose); window.removeEventListener('olympus:people:speak', onSpeak); window.removeEventListener('olympus:people:viseme', onViseme); try { rc.dispose(); } catch (_) { /* gone */ } for (const i of [...close.keys()]) dropClose(i); crowd.userData.dispose(); },
+    cine: () => cine,
+    dispose() { gone = true; if (cine) cine.dispose(); window.removeEventListener('olympus:people:expression', onExpr); window.removeEventListener('olympus:people:open', onOpen); window.removeEventListener('olympus:people:close', onClose); window.removeEventListener('olympus:people:speak', onSpeak); window.removeEventListener('olympus:people:viseme', onViseme); try { rc.dispose(); } catch (_) { /* gone */ } for (const i of [...close.keys()]) dropClose(i); crowd.userData.dispose(); },
   };
   try { window.SYMPOSIUM_HALL = api; } catch (_) { /* no window */ }      // read-only hook for the page test
   return api;

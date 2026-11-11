@@ -694,6 +694,17 @@ function build(rc, scene, camera, canvas, o) {
     drag = null;
   };
   canvas.addEventListener('pointerdown', down); canvas.addEventListener('pointermove', move); canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', () => { drag = null; });
+  // FX HOOK (olympus/fx-cine.js, optional; 2026-11-11 effects pass): the clock's light, sun shafts and dust in the halls, the camp hearth's
+  // embers + smoke + firelight, sand blowing over the camp, birds over the desert, sparks off a WORKING smith's anvil. Same floor without it.
+  let cine = null, cineOff = false, sparkAt = 2, sparkJ = 0;
+  if (o.cinema !== false) import('../olympus/fx-cine.js').then((C) => { if (cineOff) return; cine = C.cinema(rc, { time: 'clock', fog: 0.3,
+    rays: { to: [0, 0, 0], spread: [22, 0, 16], length: 16, width: 2 }, dust: { box: [24, 4, 18], center: [0, 2, 0] },
+    fires: [[CAMP.fire.x, 0.7, CAMP.fire.z]], fireRange: 7, smokeCount: 0, sand: { box: [26, 2, 14], center: [CAMP.fire.x, 0.4, 17], vel: [3.2, 0.1, 0.8], count: 260 } });   // budget: no birds / blobs / extra smoke here
+    rc.onFrame((dt, t) => { if (!cine || reduced || t < sparkAt) return; sparkAt = t + 0.9 + Math.random() * 0.9;
+      for (let n = 0; n < CAMP_SPOTS.length; n++) { const j = (sparkJ++) % CAMP_SPOTS.length, c = CAMP_SPOTS[j], b = camp[j];
+        if (c.job === 'smith' && b && b.status === 'working') { cine.burst('sparks', [c.x, 0.85, c.z - 2.45], { count: 12 }); break; } } }); }).catch(() => {});
+  api.cine = () => cine;
+  const dispose0 = api.dispose; api.dispose = () => { cineOff = true; if (cine) cine.dispose(); dispose0(); };
   snapCam();
   rc.start((dt) => { frame(Math.min(dt, 0.1)); });
   if (reduced) frame(0.016);

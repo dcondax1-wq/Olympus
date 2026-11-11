@@ -288,7 +288,7 @@
   // alone; the ones that need script (ripple's origin, tilt, odometer, ...) load olympus/fx-core.js + the file that holds them on the
   // first use (never on a page that has no data-oly-fx), and follow the tier (OLYMPUS.fx()) and prefers-reduced-motion.
   // Opt out: data-oly-fx-off on the element or any ancestor, <html data-oly-fx-ui="off">, or OLYMPUS.fxUI(false).
-  var FXMAP = { tilt: 'ui', magnetic: 'ui', ripple: 'ui', gradientBorder: 'ui', glassSpecular: 'ui', neonPulse: 'ui', skeleton: 'ui',
+  var FXMAP = { press: 'ui', stagger: 'ui', goldFlash: 'text', tilt: 'ui', magnetic: 'ui', ripple: 'ui', gradientBorder: 'ui', glassSpecular: 'ui', neonPulse: 'ui', skeleton: 'ui',
     odometer: 'text', countUp: 'text', typewriter: 'text', glitch: 'text', progressRing: 'text' };
   var fxBase = me && me.src ? me.src.replace(/olympus\.js.*$/, '') : '', fxFiles = {}, fxTimer = 0, fxObs = null;
   function fxUiOff() { return root.getAttribute('data-oly-fx-ui') === 'off' || (d.querySelector && !!d.querySelector('meta[name="olympus-fx-ui"][content="off"]')); }

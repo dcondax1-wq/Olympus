@@ -11,7 +11,10 @@
 //     soft light strips in the theme's colours, the default) or 'room' (three's RoomEnvironment studio) or 'none';
 //   - bloom on what is brighter than 1 (UnrealBloomPass at half resolution): emissive / neon parts glow, matte parts do not;
 //   - anti-aliasing: 4x MSAA on HD (WebGL2), FXAA folded into the finishing pass on LITE;
-//   - one finishing pass: tone mapping + sRGB + vignette + film grain + a touch of chromatic aberration (one draw);
+//   - one finishing pass: tone mapping (ACES, or AgX with tone:'agx') + sRGB + a time-of-day colour grade LUT (lut:'golden' | setGrade)
+//     + a speaker focus blur (setFocus) + vignette + very low film grain (one draw, 2026-11-11 effects pass);
+//   - AGORA: bloom strength is capped at .25 (BLOOM_MAX) whatever an app asks; onFrame(fn) / onTier(fn) let shared effects
+//     (olympus/fx-cine.js) ride the scene's own frame loop and follow its tier;
 //   - quality tiers from OLYMPUS.fx() (ultra / high / low / off), followed live, stepped down on slow frames when the owner has
 //     not chosen a level; pixel ratio <= 2 (<= 1.5 on low, 1 when off); no frame while the tab is hidden.
 //
@@ -24,10 +27,12 @@ import { UnrealBloomPass } from './three-addons/UnrealBloomPass.js';
 import { Pass, FullScreenQuad } from './three-addons/Pass.js';
 import { RoomEnvironment } from './three-addons/RoomEnvironment.js';
 
+// AGORA (2026-11-11, the effects pass): bloom only on hot spots (fire, gold), never above .25 (docs/DESIGN_AGORA.md); grain very low.
+export const BLOOM_MAX = 0.25;
 export const TIERS = Object.freeze({
-  ultra: { dpr: 2, samples: 4, fxaa: false, bloom: { strength: 0.95, radius: 0.62, threshold: 0.82 }, grade: { grain: 0.05, vignette: 0.34, aberration: 0.004, saturation: 1.1 } },
-  high: { dpr: 2, samples: 4, fxaa: false, bloom: { strength: 0.85, radius: 0.55, threshold: 0.85 }, grade: { grain: 0.04, vignette: 0.3, aberration: 0.0025, saturation: 1.1 } },
-  low: { dpr: 1.5, samples: 0, fxaa: true, bloom: null, grade: { grain: 0.03, vignette: 0.28, aberration: 0, saturation: 1.1 } },
+  ultra: { dpr: 2, samples: 4, fxaa: false, bloom: { strength: 0.25, radius: 0.5, threshold: 0.9 }, grade: { grain: 0.03, vignette: 0.3, aberration: 0.0015, saturation: 1.08 } },
+  high: { dpr: 2, samples: 4, fxaa: false, bloom: { strength: 0.22, radius: 0.5, threshold: 0.92 }, grade: { grain: 0.025, vignette: 0.28, aberration: 0.001, saturation: 1.08 } },
+  low: { dpr: 1.5, samples: 0, fxaa: true, bloom: null, grade: { grain: 0.02, vignette: 0.26, aberration: 0, saturation: 1.06 } },
   off: { dpr: 1, samples: 0, fxaa: false, bloom: null, grade: null },
 });
 export const LEVELS = Object.freeze(['ultra', 'high', 'low', 'off']);
@@ -51,6 +56,12 @@ uniform mat4 modelViewMatrix; uniform mat4 projectionMatrix; attribute vec3 posi
 void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const FINISH_FS = `precision highp float;
 uniform sampler2D tDiffuse; uniform vec2 uTexel; uniform float uTime, uGrain, uVignette, uAberration, uSaturation;
+#ifdef LUT
+uniform sampler2D tLut; uniform float uLutMix;
+#endif
+#ifdef DOF
+uniform vec3 uFocus; uniform float uDof, uAspect;
+#endif
 varying vec2 vUv;
 #include <tonemapping_pars_fragment>
 #include <colorspace_pars_fragment>
@@ -72,6 +83,28 @@ vec4 fxaa(vec2 uv) {                     // FXAA 3.11 "lite" (5 + 4 taps): an ed
   return (lb < lo || lb > hi) ? a : b;
 }
 #endif
+#ifdef LUT
+vec3 grade(vec3 c) {                     // a 16 x 16 x 16 colour LUT laid out as a 256 x 16 strip (blue = the slice): two taps
+  c = clamp(c, 0.0, 1.0);
+  float b = c.b * 15.0, b0 = floor(b), b1 = min(b0 + 1.0, 15.0);
+  float x = c.r * 15.0 + 0.5, y = (c.g * 15.0 + 0.5) / 16.0;
+  vec3 l0 = texture2D(tLut, vec2((b0 * 16.0 + x) / 256.0, y)).rgb, l1 = texture2D(tLut, vec2((b1 * 16.0 + x) / 256.0, y)).rgb;
+  return mix(c, mix(l0, l1, b - b0), uLutMix);
+}
+#endif
+#ifdef DOF
+vec4 focusBlur(vec2 uv, vec4 c) {         // depth of field without a depth buffer: sharp around the speaker, a soft disc blur away from them
+  vec2 dd = (uv - uFocus.xy) * vec2(uAspect, 1.0);
+  float k = smoothstep(uFocus.z, uFocus.z * 2.2 + 0.08, length(dd)) * uDof;
+  if (k < 0.35) return c;
+  vec4 s = c;
+  for (int i = 0; i < DOF; i++) {          // a golden-angle disc
+    float fi = float(i) + 0.5, a = fi * 2.39996, r = sqrt(fi / float(DOF)) * k;
+    s += tap(uv + vec2(cos(a), sin(a)) * r * uTexel);
+  }
+  return s / float(DOF + 1);
+}
+#endif
 float hash(vec2 p) { p = fract(p * vec2(443.897, 441.423)); p += dot(p, p.yx + 19.19); return fract((p.x + p.y) * p.x); }
 void main() {
   vec2 d = vUv - 0.5;
@@ -80,17 +113,25 @@ void main() {
 #else
   vec4 c = tap(vUv);
 #endif
+#ifdef DOF
+  c = focusBlur(vUv, c);
+#endif
 #ifdef ABERRATION
   vec2 o = d * uAberration * (0.5 + 2.0 * dot(d, d));     // grows toward the corners, zero in the middle
   c.r = tap(vUv - o).r; c.b = tap(vUv + o).b;
 #endif
-#ifdef ACES_FILMIC_TONE_MAPPING
+#ifdef AGX_TONE_MAPPING
+  c.rgb = AgXToneMapping(c.rgb);
+#elif defined(ACES_FILMIC_TONE_MAPPING)
   c.rgb = ACESFilmicToneMapping(c.rgb);
 #endif
 #ifdef SRGB_TRANSFER
   c = sRGBTransferOETF(c);
 #endif
   c.rgb = max(mix(vec3(dot(c.rgb, vec3(0.299, 0.587, 0.114))), c.rgb, uSaturation), 0.0);   // ACES greys bright colours: give some back
+#ifdef LUT
+  c.rgb = grade(c.rgb);                   // the time-of-day colour grade (dawn, golden hour, day, dusk, night)
+#endif
   c.rgb *= 1.0 - uVignette * smoothstep(0.12, 0.62, dot(d, d) * 1.6);
   float l = dot(c.rgb, vec3(0.299, 0.587, 0.114));
   c.rgb += (hash(gl_FragCoord.xy + fract(uTime) * vec2(97.0, 57.0)) - 0.5) * uGrain * (0.35 + 0.65 * (1.0 - l));
@@ -102,24 +143,29 @@ class FinishPass extends Pass {
     super();
     this.needsSwap = false;                         // it draws to the screen: the scene buffer stays the composer's read buffer
     this.uniforms = { tDiffuse: { value: null }, toneMappingExposure: { value: 1 }, uTexel: { value: new THREE.Vector2(1, 1) },
-      uTime: { value: 0 }, uGrain: { value: 0 }, uVignette: { value: 0 }, uAberration: { value: 0 }, uSaturation: { value: 1 } };
+      uTime: { value: 0 }, uGrain: { value: 0 }, uVignette: { value: 0 }, uAberration: { value: 0 }, uSaturation: { value: 1 },
+      tLut: { value: null }, uLutMix: { value: 0 }, uFocus: { value: new THREE.Vector3(0.5, 0.45, 0.2) }, uDof: { value: 0 }, uAspect: { value: 1 } };
     this.material = new THREE.RawShaderMaterial({ name: 'OlympusFinish', uniforms: this.uniforms, vertexShader: FINISH_VS,
       fragmentShader: FINISH_FS, depthTest: false, depthWrite: false });
     this.quad = new FullScreenQuad(this.material);
     this.key = '';
   }
-  configure(renderer, grade, fxaa, display) {
-    const u = this.uniforms, g = grade || { grain: 0, vignette: 0, aberration: 0, saturation: 1 };
+  /** post = { lut: DataTexture | null, dof: blur taps (0 = no focus blur), tone: 'aces' | 'agx' } */
+  configure(renderer, grade, fxaa, display, post) {
+    const u = this.uniforms, g = grade || { grain: 0, vignette: 0, aberration: 0, saturation: 1 }, x = post || {};
     u.uGrain.value = g.grain; u.uVignette.value = g.vignette; u.uAberration.value = g.aberration; u.uSaturation.value = g.saturation;
     const defines = {};
     if (fxaa) defines.FXAA = '';
-    else if (g.aberration > 0) defines.ABERRATION = '';
-    if (!display && renderer.toneMapping === THREE.ACESFilmicToneMapping) defines.ACES_FILMIC_TONE_MAPPING = '';
+    else if (g.aberration > 0 && !x.dof) defines.ABERRATION = '';
+    if (x.lut) { defines.LUT = ''; u.tLut.value = x.lut; }
+    if (x.dof) defines.DOF = String(x.dof | 0);
+    if (!display && x.tone === 'agx') defines.AGX_TONE_MAPPING = '';
+    else if (!display && renderer.toneMapping === THREE.ACESFilmicToneMapping) defines.ACES_FILMIC_TONE_MAPPING = '';
     if (!display && THREE.ColorManagement.getTransfer(renderer.outputColorSpace) === THREE.SRGBTransfer) defines.SRGB_TRANSFER = '';
-    const key = Object.keys(defines).join();
+    const key = Object.keys(defines).map((k) => k + defines[k]).join();
     if (key !== this.key) { this.key = key; this.material.defines = defines; this.material.needsUpdate = true; }
   }
-  setSize(w, h) { this.uniforms.uTexel.value.set(1 / Math.max(1, w), 1 / Math.max(1, h)); }
+  setSize(w, h) { this.uniforms.uTexel.value.set(1 / Math.max(1, w), 1 / Math.max(1, h)); this.uniforms.uAspect.value = Math.max(1, w) / Math.max(1, h); }
   render(renderer, writeBuffer, readBuffer) {
     this.uniforms.tDiffuse.value = readBuffer.texture;
     this.uniforms.toneMappingExposure.value = renderer.toneMappingExposure;
@@ -127,6 +173,61 @@ class FinishPass extends Pass {
     this.quad.render(renderer);
   }
   dispose() { this.material.dispose(); this.quad.dispose(); }
+}
+
+// ------------------------------------------------------------------ the colour grade (a 16^3 LUT per time of day, made in code)
+// Each grade works on display colours 0..1: white balance, split toning (shadows / highlights), lift / gain, contrast, saturation.
+// AGORA: warm and calm; night = indigo shadows with warm torch highlights, never black-blue, never neon.
+export const GRADES = Object.freeze({
+  // skin: how much the orange / amber mid-tones are calmed (faces under warm light read as people, not as oranges; 2026-11-11)
+  dawn:   { wb: [1.03, 0.995, 0.98], shadow: [0.92, 0.84, 1.04], high: [1.0, 0.92, 0.84], split: 0.12, lift: 0.025, gain: 1.0, contrast: 0.04, sat: 1.0, skin: 0.3 },
+  golden: { wb: [1.035, 1.0, 0.95], shadow: [0.96, 0.9, 0.92], high: [1.0, 0.93, 0.8], split: 0.12, lift: 0.018, gain: 1.02, contrast: 0.08, sat: 1.0, skin: 0.38 },
+  day:    { wb: [1.01, 1.0, 0.985], shadow: [0.98, 0.96, 0.96], high: [1.0, 0.97, 0.92], split: 0.05, lift: 0.012, gain: 1.0, contrast: 0.05, sat: 1.02, skin: 0.2 },
+  dusk:   { wb: [1.03, 0.98, 0.96], shadow: [0.82, 0.78, 1.06], high: [1.0, 0.86, 0.72], split: 0.15, lift: 0.02, gain: 0.99, contrast: 0.07, sat: 0.96, skin: 0.35 },
+  night:  { wb: [0.98, 0.98, 1.02], shadow: [0.66, 0.68, 1.0], high: [1.0, 0.86, 0.66], split: 0.18, lift: 0.03, gain: 0.97, contrast: 0.06, sat: 0.88, skin: 0.3 },
+});
+export const GRADE_NAMES = Object.freeze(Object.keys(GRADES));
+/** a blend of two grades (k 0..1): the slow drift from one time of day to the next */
+export function mixGrade(a, b, k) {
+  const A = typeof a === 'string' ? GRADES[a] : a, B = typeof b === 'string' ? GRADES[b] : b, out = {};
+  if (!A || !B) return A || B || GRADES.golden;
+  Object.keys(A).forEach((key) => { const x = A[key], y = B[key]; out[key] = Array.isArray(x) ? x.map((v, i) => v + (y[i] - v) * k) : x + (y - x) * k; });
+  return out;
+}
+/** grade one display colour [r, g, b] 0..1 (the LUT's formula, also usable on a CSS colour) */
+export function gradeColor(c, gr) {
+  const G = (typeof gr === 'string' ? GRADES[gr] : gr) || GRADES.golden, o = [0, 0, 0];
+  const l0 = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2], ws = Math.max(0, 1 - l0 * 2), wh = Math.max(0, l0 * 2 - 1);
+  for (let i = 0; i < 3; i++) {
+    let v = c[i] * G.wb[i];
+    v += (v * G.shadow[i] - v) * G.split * ws + (v * G.high[i] - v) * G.split * wh;   // split toning: shadows lean one way, highlights another
+    v = G.lift + v * (G.gain - G.lift);
+    v += (v - 0.5) * G.contrast * 4 * v * (1 - v);                                     // a soft S-curve around middle grey
+    o[i] = v;
+  }
+  const l = 0.299 * o[0] + 0.587 * o[1] + 0.114 * o[2];
+  // skin protection: an orange / amber mid-tone (red > green > blue, clearly coloured) loses part of its chroma and its red lead
+  let sat = G.sat;
+  if (G.skin && o[0] > o[1] && o[1] > o[2] && l > 0.12 && l < 0.9) {
+    const chroma = o[0] - o[2], hueK = Math.min(1, (o[1] - o[2]) / Math.max(1e-4, chroma) * 2.2);           // orange-yellow, not pure red
+    const w = G.skin * Math.min(1, chroma / 0.25) * hueK * Math.min(1, (l - 0.12) / 0.15) * Math.min(1, (0.9 - l) / 0.15);
+    sat *= 1 - w * 0.55; o[0] -= (o[0] - o[1]) * w * 0.25;
+  }
+  for (let i = 0; i < 3; i++) o[i] = Math.min(1, Math.max(0, l + (o[i] - l) * sat));
+  return o;
+}
+/** the 256 x 16 RGBA LUT texture of a grade (16 KB, ~1 ms to rebuild); pass the old texture to refill it in place */
+export function gradeLut(gr, tex) {
+  const data = tex ? tex.image.data : new Uint8Array(256 * 16 * 4), c = [0, 0, 0];
+  for (let g = 0; g < 16; g++) for (let b = 0; b < 16; b++) for (let r = 0; r < 16; r++) {
+    c[0] = r / 15; c[1] = g / 15; c[2] = b / 15;
+    const o = gradeColor(c, gr), i = (g * 256 + b * 16 + r) * 4;
+    data[i] = Math.round(o[0] * 255); data[i + 1] = Math.round(o[1] * 255); data[i + 2] = Math.round(o[2] * 255); data[i + 3] = 255;
+  }
+  const t = tex || new THREE.DataTexture(data, 256, 16, THREE.RGBAFormat);
+  if (!tex) { t.magFilter = t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; t.colorSpace = THREE.NoColorSpace; t.name = 'olympus.lut'; }
+  t.needsUpdate = true;
+  return t;
 }
 
 // ------------------------------------------------------------------ environments (image-based light for reflections)
@@ -225,6 +326,18 @@ export function createRenderer(opts) {
   let level = levelOf(o.quality) || forced || capSoft(O ? O.fx() : prefersReduced() ? 'low' : 'high');
   let theme = o.theme !== undefined ? o.theme : O ? O.theme() : null;
   let composer = null, bloom = null, finish = null, envTex = null, dead = false, extra = [];
+  // the cinematic post (fx-cine.js drives it; an app may set it too): a time-of-day LUT, a speaker focus blur, the tone curve
+  const post = { lut: null, lutName: '', mix: 1, tone: o.tone === 'agx' ? 'agx' : 'aces', focusOn: false, fx: 0.5, fy: 0.45, fr: 0.16, amount: 0 };
+  function syncPost() {                                // the post's uniforms into the (possibly rebuilt) finish pass
+    if (!finish) return;
+    const u = finish.uniforms;
+    u.uLutMix.value = post.lut ? post.mix : 0;
+    u.uFocus.value.set(post.fx, 1 - post.fy, post.fr);
+    u.uDof.value = post.amount * dpr;
+  }
+  const hooks = [], tierSubs = [];
+  let tHook = 0;
+  const capBloom = (b) => { if (b && b.strength > BLOOM_MAX) b.strength = BLOOM_MAX; return b; };     // AGORA: bloom <= .25, always
   let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true, asleep = false, tDraw = 0;
   const bloomTint = new THREE.Color(1, 1, 1);
   const perf = { last: 0, n: 0, sum: 0, warm: 0, fps: 0, steps: 0 };
@@ -236,7 +349,7 @@ export function createRenderer(opts) {
     const msaa = gl2 && o.msaa !== false;              // msaa:false (a soft backdrop): no multisampled buffer, FXAA instead
     return { dpr: base.dpr, samples: msaa ? base.samples : 0, fxaa: base.fxaa || (!msaa && l !== 'off'),
       // an app's overrides tune the tier's bloom and grade, never switch them on for low / off
-      bloom: base.bloom && Object.assign({}, base.bloom, o.bloom), grade: base.grade && Object.assign({}, base.grade, o.grade) };
+      bloom: base.bloom && capBloom(Object.assign({}, base.bloom, o.bloom)), grade: base.grade && Object.assign({}, base.grade, o.grade) };
   }
   let tier = tierOf(level);
 
@@ -284,8 +397,9 @@ export function createRenderer(opts) {
     }
     extra.forEach((p) => composer.addPass(p));
     finish = new FinishPass();
-    finish.configure(renderer, tier.grade, tier.fxaa, display);
+    finish.configure(renderer, tier.grade, tier.fxaa, display, { lut: post.lut, dof: post.focusOn ? (level === 'low' ? 4 : 8) : 0, tone: post.tone });
     composer.addPass(finish);
+    syncPost();
   }
 
   function size(force) {
@@ -299,6 +413,7 @@ export function createRenderer(opts) {
     renderer.setSize(w, h, false);
     if (camera.isPerspectiveCamera && o.fitCamera !== false) { camera.aspect = w / h; camera.updateProjectionMatrix(); }
     if (composer) { composer.setPixelRatio(d); composer.setSize(w, h); }   // every pass gets the buffer size (finish: its texel)
+    syncPost();                                                            // the focus blur is in device pixels
   }
 
   // slow frames step the quality down one tier (never below low, never stored: the owner's choice stays theirs)
@@ -325,6 +440,7 @@ export function createRenderer(opts) {
     level = l; tier = tierOf(l); perf.warm = 0; perf.sum = perf.n = 0;
     build(); size(true);
     if (typeof o.onQuality === 'function') o.onQuality(l);
+    tierSubs.slice().forEach((fn) => { try { fn(l); } catch (e) { /* one listener never stops the rest */ } });
   }
 
   /** draw one frame (nothing while the tab is hidden or covered, nothing sooner than the kit's frame gap); returns true when it drew */
@@ -339,6 +455,11 @@ export function createRenderer(opts) {
     tDraw = now;
     adapt(now);
     if (o.autoSize) size(false);
+    if (hooks.length) {                                // shared effects (fx-cine.js): one update per drawn frame, before the draw
+      const dt = tHook ? Math.min(0.1, (now - tHook) / 1000) : 1 / 60, ts = (now - t0) / 1000;
+      tHook = now;
+      for (let i = 0; i < hooks.length; i++) { try { hooks[i](dt, ts); } catch (e) { hooks.splice(i--, 1); } }
+    }
     renderer.info.reset();
     if (composer) {
       composer.readBuffer = composer.renderTarget2; composer.writeBuffer = composer.renderTarget1;   // an app pass may swap
@@ -405,6 +526,7 @@ export function createRenderer(opts) {
     setBloom(b) {
       if (!b) return;
       const { tint, ...rest } = b, changed = Object.keys(rest).length > 0;
+      capBloom(rest);
       if (changed) { o.bloom = Object.assign({}, o.bloom, rest); tier = tierOf(level); }
       if (tint !== undefined) bloomTint.set(tint);           // a per-frame tint is cheap: five vector writes
       if (!bloom) return;
@@ -415,11 +537,47 @@ export function createRenderer(opts) {
     addPass(p) { if (p && extra.indexOf(p) < 0) { extra.push(p); build(); size(true); } return p; },
     start(cb) { loop = typeof cb === 'function' ? cb : () => {}; onVisible(); return api; },
     stop() { loop = null; if (raf) cancelAnimationFrame(raf); raf = 0; },
+    /** the colour grade: { lut: 'dawn' | 'golden' | 'day' | 'dusk' | 'night' | a grade object | null, mix (0..1, default 1), tone: 'aces' | 'agx' }.
+     *  A new grade refills the same 16 KB LUT (no shader rebuild); switching the LUT on / off or the tone curve rebuilds the finish once. */
+    setGrade(gr) {
+      const g = gr || {}, before = (post.lut ? 'L' : '') + post.tone;
+      if (g.tone === 'agx' || g.tone === 'aces') post.tone = g.tone;
+      if (g.lut === null) { if (post.lut) post.lut.dispose(); post.lut = null; post.lutName = ''; post.sig = ''; }
+      else if (g.lut) {
+        // { lut: 'dusk', to: 'night', k: .3 } blends two grades (the slow drift of the clock)
+        const blend = typeof g.lut === 'string' && GRADES[g.to] && typeof g.k === 'number' && g.to !== g.lut;
+        const src = blend ? mixGrade(g.lut, g.to, Math.max(0, Math.min(1, g.k))) : typeof g.lut === 'string' ? GRADES[g.lut] : g.lut;
+        const name = blend ? (g.k < 0.5 ? g.lut : g.to) : typeof g.lut === 'string' ? g.lut : 'mix';
+        const sig = blend ? g.lut + g.to + Math.round(g.k * 200) : typeof g.lut === 'string' ? name : null;   // a grade object always refills
+        if (src && (sig === null || sig !== post.sig)) { post.lut = gradeLut(src, post.lut || undefined); post.sig = sig; }
+        if (src) post.lutName = name;
+      }
+      if (typeof g.mix === 'number') post.mix = Math.max(0, Math.min(1, g.mix));
+      if ((post.lut ? 'L' : '') + post.tone !== before && composer) { build(); size(true); }
+      syncPost();
+      return post.lutName;
+    },
+    /** depth-of-field focus without a depth buffer: { x, y (0..1 of the screen, y down), r (sharp radius, 0..1 of the height),
+     *  amount (blur radius in CSS pixels, 0 = sharp) }, or null to stop. The first call compiles the blur into the finish (one rebuild). */
+    setFocus(f) {
+      if (!f) { post.amount = 0; syncPost(); return false; }
+      if (!post.focusOn) { post.focusOn = true; if (composer) { build(); size(true); } }
+      post.fx = f.x === undefined ? 0.5 : f.x; post.fy = f.y === undefined ? 0.45 : f.y; post.fr = f.r === undefined ? 0.16 : f.r;
+      post.amount = Math.max(0, Math.min(12, f.amount === undefined ? 5 : f.amount));
+      syncPost();
+      return true;
+    },
+    post: () => ({ lut: post.lutName || null, mix: post.lut ? post.mix : 0, dof: post.focusOn ? post.amount : 0, tone: post.tone, focus: post.focusOn ? [post.fx, post.fy, post.fr] : null }),
+    /** fn(dt, t) runs once per drawn frame, before the draw (shared effects ride the scene's own loop: no second rAF); -> off() */
+    onFrame(fn) { if (typeof fn === 'function') hooks.push(fn); return () => { const i = hooks.indexOf(fn); if (i >= 0) hooks.splice(i, 1); }; },
+    /** fn(level) after every tier change; -> off() */
+    onTier(fn) { if (typeof fn === 'function') tierSubs.push(fn); return () => { const i = tierSubs.indexOf(fn); if (i >= 0) tierSubs.splice(i, 1); }; },
     stats() {
       const i = renderer.info;
       return { quality: level, passes: api.passes().length, names: api.passes(), dpr, samples: composer ? tier.samples : 0,
         bloom: !!bloom, fxaa: !!(composer && tier.fxaa), hdr: bufferType === THREE.HalfFloatType, fps: perf.fps, steps: perf.steps,
-        targets: composer ? 2 : 0, calls: i.render.calls, triangles: i.render.triangles, programs: (i.programs || []).length, env: envTex ? o.env : 'none' };
+        targets: composer ? 2 : 0, calls: i.render.calls, triangles: i.render.triangles, programs: (i.programs || []).length, env: envTex ? o.env : 'none',
+        bloomStrength: bloom ? bloom.strength : 0, grade: post.lutName || null, focus: post.focusOn, tone: post.tone, hooks: hooks.length };
     },
     dispose() {
       if (dead) return;
@@ -427,12 +585,14 @@ export function createRenderer(opts) {
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('olympus:theme-default', backToDefault);
       freeComposer(); extra.forEach((p) => p.dispose && p.dispose());
+      if (post.lut) { post.lut.dispose(); post.lut = null; } hooks.length = 0; tierSubs.length = 0;
       if (envTex) { if (scene.environment === envTex) scene.environment = null; if (scene.background === envTex) scene.background = null; envTex.dispose(); }
       if (owned) renderer.dispose();
     },
   };
 
   environment();
+  if (o.lut && GRADES[o.lut]) { post.lut = gradeLut(GRADES[o.lut]); post.lutName = o.lut; }   // lut: 'golden' etc. from the start
   build();
   size(true);
   if (O && O.track && owned) O.track(renderer);

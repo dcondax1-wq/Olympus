@@ -29,7 +29,7 @@ export const REGISTRY = {
   odeon:      { kind: 'curtain',       ms: 1000, cues: [[0.34, 'tick']] },
   fates:      { kind: 'threads',       ms: 960,  cues: [[0.5, 'tick']] },
   datacity:   { kind: 'skyline',       ms: 900 },
-  cities:     { kind: 'skyline',       ms: 880 },
+  cities:     { kind: 'flythrough',    ms: 600 },
   kalshicity: { kind: 'chart',         ms: 880 },
   ledger:     { kind: 'coins',         ms: 940,  cues: [[0.4, 'rankup']] },
   journal:    { kind: 'constellation', ms: 940 },
@@ -68,13 +68,13 @@ export const REGISTRY = {
   harmonia:   { kind: 'waves',         ms: 1000 },
   helios:     { kind: 'sunburst',      ms: 1000 },
   ergasterion:{ kind: 'columns',       ms: 1000, n: 5 },
-  archive:    { kind: 'tiles',         ms: 800 },
+  archive:    { kind: 'scroll',        ms: 600 },
   pinakes:    { kind: 'tiles',         ms: 800 },
   colosseum:  { kind: 'columns',       ms: 1000, n: 5 },
   nq:         { kind: 'columns',       ms: 1000, n: 3 },
-  symposium:  { kind: 'curtain',       ms: 900 },
+  symposium:  { kind: 'door',          ms: 600 },
   herald:     { kind: 'tiles',         ms: 800 },
-  clio:       { kind: 'tiles',         ms: 820 },
+  clio:       { kind: 'scroll',        ms: 600 },
   atlas:      { kind: 'sunburst',      ms: 900 },
   observatory:{ kind: 'sunburst',      ms: 950 },
   delphi:     { kind: 'sunburst',      ms: 1000 },
@@ -472,6 +472,116 @@ export const KINDS = {
         gl.addColorStop(0, col(E.rgb, 0, 1, 0.3)); gl.addColorStop(0.5, col(E.rgb, 0.5 * (1 - Math.abs(inP - 0.5) * 0.4), 1, 0.5)); gl.addColorStop(1, col(E.rgb, 0, 1, 0.3));
         g.fillStyle = gl; g.fillRect(i * cw, lead - 40, cw, 80); norm(E);
       }
+    },
+  },
+
+  // ---- the cinematic three (2026-11-11, the effects pass): each made to read in under 600 ms ----
+  // DOOR: two tall marble doors close over the screen, a thin gold seam, then swing open toward us in perspective with warm light
+  // spilling through the widening gap (no glow: a soft gold wash that fades)
+  door: {
+    init: (E) => ({ veins: Array.from({ length: 6 }, () => ({ x: E.rnd(), y: E.rnd(), a: (E.rnd() - 0.5) * 1.4, l: 0.3 + E.rnd() * 0.5 })) }),
+    draw(E, S, t) {
+      const { g } = E, close = eo(t / 0.24), open = ss(0.36, 0.96, t), ang = open * 1.45;            // the swing angle (radians, 0 = shut)
+      if (close <= 0.01) return;
+      const half = E.W / 2 + 1, cosA = Math.cos(ang), grow = 1 + Math.sin(ang) * 0.22;           // the free edge comes nearer: taller
+      // the light behind the doors: warm, strongest as the gap opens, gone by the end
+      const spill = open > 0 ? bell(open, 0.35, 0.3) * (1 - ss(0.8, 1, t)) : 0;
+      for (const side of [0, 1]) {
+        g.save();
+        if (side) { g.translate(E.W, 0); g.scale(-1, 1); }
+        const x1 = half * cosA, top1 = -E.H * (grow - 1) / 2, bot1 = E.H + E.H * (grow - 1) / 2;
+        g.globalAlpha = close;
+        g.beginPath(); g.moveTo(0, 0); g.lineTo(x1, top1); g.lineTo(x1, bot1); g.lineTo(0, E.H); g.closePath();
+        const shade = 0.55 + 0.45 * cosA, gr = g.createLinearGradient(0, 0, Math.max(2, x1), 0);
+        gr.addColorStop(0, col([214, 204, 182], 1, 0.62 * shade)); gr.addColorStop(0.6, col([232, 222, 200], 1, 0.82 * shade)); gr.addColorStop(1, col([240, 230, 208], 1, 0.95 * shade));
+        g.fillStyle = gr; g.fill();
+        if (x1 > 6) {
+          // two inset panels and the veins, mapped onto the leaf (u across, v down)
+          const P = (u, v) => [u * x1, lerp(v * E.H, lerp(top1, bot1, v), u)];
+          g.strokeStyle = 'rgba(90,70,45,.28)'; g.lineWidth = 1.4;
+          for (const [v0, v1] of [[0.08, 0.46], [0.54, 0.92]]) {
+            const a = P(0.16, v0), b = P(0.84, v0), c = P(0.84, v1), d = P(0.16, v1);
+            g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.lineTo(c[0], c[1]); g.lineTo(d[0], d[1]); g.closePath(); g.stroke();
+          }
+          g.strokeStyle = 'rgba(120,100,80,.16)'; g.lineWidth = 1; g.beginPath();
+          for (const v of S.veins) { const a = P(v.x * 0.9, v.y), b = P(Math.min(1, v.x * 0.9 + v.l * 0.4), v.y + v.a * 0.12); g.moveTo(a[0], a[1]); g.quadraticCurveTo((a[0] + b[0]) / 2, a[1] + 18, b[0], b[1]); }
+          g.stroke();
+          const ring = P(0.86, 0.5);                                                                    // a bronze ring pull
+          g.strokeStyle = col([156, 107, 60], 0.9); g.lineWidth = 2.2 * grow; g.beginPath(); g.arc(ring[0], ring[1], 9 * grow * Math.max(0.3, cosA), 0, TAU); g.stroke();
+          g.fillStyle = col(GOLD, 0.9 * (1 - open)); g.fillRect(x1 - 2, top1, 2, bot1 - top1);          // the gold seam while shut
+        }
+        g.restore();
+      }
+      if (spill > 0.01) {
+        const gap = half * (1 - cosA), wash = g.createLinearGradient(E.cx - gap - 80, 0, E.cx + gap + 80, 0);
+        wash.addColorStop(0, 'rgba(224,176,96,0)'); wash.addColorStop(0.5, col([255, 214, 150], 0.32 * spill)); wash.addColorStop(1, 'rgba(224,176,96,0)');
+        g.globalCompositeOperation = 'lighter'; g.fillStyle = wash; g.fillRect(0, 0, E.W, E.H); norm(E);
+      }
+    },
+  },
+
+  // SCROLL: a papyrus scroll unrolls down over the screen (a shaded roller leads), the glyph is inked in the middle, then it rolls up
+  scroll: {
+    init: (E) => ({ fib: Array.from({ length: 26 }, () => ({ y: E.rnd(), a: 0.04 + E.rnd() * 0.08 })) }),
+    draw(E, S, t) {
+      const { g } = E, down = eo(t / 0.36), up = ei((t - 0.52) / 0.44);
+      const top = E.H * up, bottom = E.H * down * 1.02;
+      if (bottom - top < 1) return;
+      const paper = g.createLinearGradient(0, 0, E.W, 0);
+      paper.addColorStop(0, '#cdbb94'); paper.addColorStop(0.08, '#e6d6b2'); paper.addColorStop(0.5, '#efe2c2'); paper.addColorStop(0.92, '#e6d6b2'); paper.addColorStop(1, '#cdbb94');
+      g.fillStyle = paper; g.fillRect(0, top, E.W, bottom - top);
+      g.strokeStyle = 'rgba(120,96,60,.10)'; g.lineWidth = 1; g.beginPath();                          // the papyrus fibres
+      for (const f of S.fib) { const y = f.y * E.H; if (y > top && y < bottom) { g.moveTo(0, y); g.lineTo(E.W, y + E.W * f.a * 0.2); } }
+      g.stroke();
+      g.fillStyle = col([201, 106, 74], 0.75); g.fillRect(14, top, 2, bottom - top); g.fillRect(E.W - 16, top, 2, bottom - top);   // terracotta margin rules
+      const ink = ss(0.22, 0.4, t) * (1 - ss(0.5, 0.62, t));
+      if (ink > 0.01 && E.glyph) {
+        g.save(); g.globalAlpha = ink; g.fillStyle = '#3a2a1c'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.font = `700 ${Math.round(E.u * 0.2)}px 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif`; g.fillText(E.glyph, E.cx, E.cy);
+        g.restore();
+      }
+      const roller = (y) => {                                                                          // a wooden roller with bronze ends
+        const rg = g.createLinearGradient(0, y - 9, 0, y + 9);
+        rg.addColorStop(0, '#5a3d24'); rg.addColorStop(0.45, '#9c6b3c'); rg.addColorStop(1, '#3e2a18');
+        g.fillStyle = rg; g.fillRect(0, y - 9, E.W, 18);
+        g.fillStyle = col(GOLD, 0.95); g.fillRect(0, y - 11, 10, 22); g.fillRect(E.W - 10, y - 11, 10, 22);
+        g.fillStyle = 'rgba(0,0,0,.22)'; g.fillRect(0, y + 9, E.W, 6);
+      };
+      if (down < 1 || up <= 0) roller(Math.min(E.H - 9, bottom));
+      if (up > 0) roller(Math.max(9, top));
+    },
+  },
+
+  // FLYTHROUGH: the camera rushes down a colonnade toward a sunlit doorway; the doorway opens into the app
+  flythrough: {
+    init: (E) => ({ n: 6 }),
+    draw(E, S, t) {
+      const { g } = E, fade = ss(0, 0.14, t) * (1 - ss(0.84, 0.98, t));
+      if (fade <= 0.01) return;
+      g.globalAlpha = fade;
+      const sky = g.createLinearGradient(0, 0, 0, E.H);
+      sky.addColorStop(0, '#3a2c22'); sky.addColorStop(0.45, '#8a5c3a'); sky.addColorStop(0.55, '#5a4030'); sky.addColorStop(1, '#2a2018');
+      g.fillStyle = sky; g.fillRect(0, 0, E.W, E.H);
+      const travel = ei(t * 0.9) * 2.6;                                                              // the camera's distance along the colonnade
+      const hy = E.cy, focal = E.u * 0.9;
+      for (let i = S.n - 1; i >= 0; i--) {                                                              // far to near, both sides
+        const z = i + 1.2 - (travel % 1);
+        if (z <= 0.12) continue;
+        const s = focal / (z * 3.2), w = 0.55 * s, h = 7 * s, x = 1.9 * s, depthFade = clamp(1.25 - z / S.n);
+        for (const dir of [-1, 1]) {
+          const cx = E.cx + dir * x;
+          g.globalAlpha = fade * depthFade;
+          marble(E, cx - w / 2, hy - h * 0.55, w, h);
+        }
+        g.globalAlpha = fade * depthFade * 0.9; g.fillStyle = '#d9cfbb'; g.fillRect(E.cx - x - w, hy - h * 0.55 - s * 0.35, x * 2 + w * 2, s * 0.35);   // the beam
+      }
+      g.globalAlpha = 1;
+      const R = E.R * 1.15 * Math.pow(ss(0.42, 0.96, t), 1.4);                                          // the sunlit doorway: the app shows through it
+      const door = E.u * 0.08 * (1 + travel * 0.6);
+      add(E); const lg = g.createRadialGradient(E.cx, hy, 0, E.cx, hy, door * 3);
+      lg.addColorStop(0, col([255, 222, 170], 0.55 * fade)); lg.addColorStop(1, 'rgba(255,222,170,0)'); g.fillStyle = lg; g.fillRect(0, 0, E.W, E.H); norm(E);
+      iris(E, E.cx, hy, Math.max(R, door * ss(0.1, 0.3, t)), 0.25);
+      g.globalAlpha = 1;
     },
   },
 
@@ -987,7 +1097,8 @@ export function play(app, opts) {
     if (!document.body) return (state.mode = 'none');
     finish();                                                        // a second transition replaces the first
     state.tier = tier();
-    entry = REGISTRY[id] || DEFAULT; state.kind = entry.kind;
+    // o.kind / o.ms: a level change inside an app (level() below): one of the KINDS, 300-600 ms
+    entry = o.kind && KINDS[o.kind] ? { kind: o.kind, ms: o.ms || LEVEL_MS, label: o.label === undefined ? false : o.label } : REGISTRY[id] || DEFAULT; state.kind = entry.kind;
     if (state.tier !== 'full' || !KINDS[entry.kind] || !setup()) { fade(color, state.tier === 'static' ? 'static' : 'lite'); return (state.mode = 'fade'); }
     css();
     const W = innerWidth, H = innerHeight, d = Math.min(MAX_DPR, window.devicePixelRatio || 1);
@@ -998,7 +1109,7 @@ export function play(app, opts) {
       dust: true, rgb: rgbOf(color), from: o.from && o.from.color ? warmRgb(rgbOf(o.from.color)) : null, glyph: a.glyph || (a.name || '').slice(0, 1), name: a.name || '', rnd: seeded(id || 'x'),
     };
     S = KINDS[entry.kind].init(E);
-    dur = clamp(entry.ms || DEFAULT.ms, 600, 1100); state.dur = dur;
+    dur = o.kind && KINDS[o.kind] ? clamp(entry.ms, 300, 600) : clamp(entry.ms || DEFAULT.ms, 600, 1100); state.dur = dur;
     wrap = document.createElement('div');
     wrap.className = 'jportal jtrans'; wrap.setAttribute('aria-hidden', 'true'); wrap.style.setProperty('--jt-c', color); wrap.style.setProperty('--jt-ms', dur + 'ms');
     wrap.appendChild(canvas);
@@ -1029,4 +1140,12 @@ export function play(app, opts) {
 
 document.addEventListener('keydown', (e) => { if (state.active && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) skip(e); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) finish(); });
-window.jarvisTransitions = { play, skip: () => skip(), has: (id) => !!REGISTRY[id], ids: () => Object.keys(REGISTRY), registry: REGISTRY, kinds: Object.keys(KINDS), tier };
+/** a level change INSIDE an app (a hall to the next, the hub to a city, a scroll of records): 'door' | 'scroll' | 'flythrough' (or any
+ *  kind), 300-600 ms (default 560), no name card; LITE = the 250 ms fade, reduced motion = the 200 ms flat fade. Never throws. */
+export const LEVEL_MS = 560, LEVEL_KINDS = Object.freeze(['door', 'scroll', 'flythrough']);
+export function level(kind, opts) {
+  const o = opts || {};
+  return play({ id: o.id || 'level', name: o.name || '', color: o.color || '#c8a24a', glyph: o.glyph || '' },
+    { kind: KINDS[kind] ? kind : 'door', ms: o.ms || LEVEL_MS, at: o.at, done: o.done, from: o.from, label: o.label });
+}
+window.jarvisTransitions = { play, level, skip: () => skip(), has: (id) => !!REGISTRY[id], ids: () => Object.keys(REGISTRY), registry: REGISTRY, kinds: Object.keys(KINDS), levelKinds: LEVEL_KINDS, tier };

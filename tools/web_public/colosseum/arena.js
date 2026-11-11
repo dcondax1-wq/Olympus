@@ -255,15 +255,23 @@ export function createArena(canvas, opts) {
   }
   draw();
   requestAnimationFrame(loop);
+  // FX HOOK (olympus/fx-cine.js, optional; 2026-11-11 effects pass): the golden-hour grade, dust hanging in the low sun, birds over the
+  // rim, sparks when the shields clash, laurel leaves and confetti over the winner. The arena keeps its own sky and sun ('fixed').
+  let cine = null;
+  if (o.cinema !== false) import('../olympus/fx-cine.js').then((C) => { if (!disposed) cine = C.cinema(rc, { time: 'golden', sun: 'fixed',
+    dust: { box: [26, 6, 14], center: [0, 3, 0], count: 300 }, birds: { center: [0, 0, -20], radius: 26, height: 20, count: 10 } }); }).catch(() => {});
+  const burst = (k, at, n) => { if (cine && !disposed) cine.burst(k, at, n ? { count: n } : undefined); };
 
   return {
     ok: true, quality: () => rc.quality(), frames: () => frames,
     /** who fights: { crest } for the left (a) and the right (b) champion; the banners follow */
     setFighters(a, b) { if (a && a.crest && (a.crest !== colours[0] || a.id !== seeds[0])) setChampion(0, a.crest, a.id); if (b && b.crest && (b.crest !== colours[1] || b.id !== seeds[1])) setChampion(1, b.crest, b.id); dirty = true; },
     /** one round: w = 'a' | 'b' | 'draw' | 'none' (no contest: nobody strikes). done() is called when the champions are back in place (at once on reduced motion). */
-    clash(w, done) { pose = 'idle'; won = null; if (RM) { anim = null; dirty = true; if (done) done(); return; } anim = { kind: 'clash', w, t0: t, done }; },
+    clash(w, done) { pose = 'idle'; won = null; if (RM) { anim = null; dirty = true; if (done) done(); return; } anim = { kind: 'clash', w, t0: t, done };
+      if (w !== 'none') setTimeout(() => burst('sparks', [0, 1.7, 0.2], 30), 320); },                  // FX HOOK: sparks as the shields meet
     /** the end: the winner raises the spear under a laurel, the other kneels ('draw': both raise) */
-    verdict(w) { pose = 'verdict'; won = w; anim = RM ? null : { kind: 'verdict', t0: t }; if (!RM) cheer = { t0: t, side: w === 'a' ? -1 : w === 'b' ? 1 : 0 }; dirty = true; },
+    verdict(w) { pose = 'verdict'; won = w; anim = RM ? null : { kind: 'verdict', t0: t }; if (!RM) cheer = { t0: t, side: w === 'a' ? -1 : w === 'b' ? 1 : 0 }; dirty = true;
+      if (w === 'a' || w === 'b') { const x = (w === 'a' ? -1 : 1) * BASE_X; burst('laurel', [x, 3.8, 0]); burst('confetti', [x, 3.4, 0.3]); } },   // FX HOOK: the winner's laurel rain
     cheering: () => !!cheer,
     reset() { pose = 'idle'; won = null; anim = null; kick = 0; dirty = true; },
     busy: () => !!anim, pose: () => pose, colours: () => colours.slice(),
@@ -274,8 +282,9 @@ export function createArena(canvas, opts) {
       const laurelTris = (laurel.geometry.index ? laurel.geometry.index.count : laurel.geometry.attributes.position.count) / 3;
       return { draws: draws + (laurel.visible ? 0 : 1) + (dust.visible ? 0 : 1), tris: Math.round(tris + (laurel.visible ? 0 : laurelTris) + (dust.visible ? 0 : 12 * 20)), crowd: bodies.length, busts: bustAt.length, banners: flags.length, tiers: TIERS };
     },
+    cine: () => cine,
     dispose() {
-      disposed = true; if (ro) ro.disconnect();
+      disposed = true; if (ro) ro.disconnect(); if (cine) cine.dispose();
       try { for (const f of F) if (f) for (const k of ['body', 'arm', 'spear']) f[k].geometry.dispose(); for (const x of own) x.dispose(); tiers.geometry.dispose(); busts.dispose(); banners.dispose(); shadows.dispose(); dust.dispose(); M.dispose(); rc.dispose(); } catch (_) { /* gone */ }
     },
   };

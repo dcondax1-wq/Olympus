@@ -80,7 +80,7 @@ def test_static():
     check("a. one canvas, reused, released after (1 x 1) and a scratch canvas that never joins the page",
           "canvas.width = canvas.height = 1" in js and "scratch.width = scratch.height = 1" in js and js.count("createElement('canvas')") == 2)
     check("a. index.html loads transitions.js after portal.js and tells it the app we leave; show() still plays the portal sound",
-          html.index("./portal.js?v=p2") < html.index("./transitions.js?v=t2") and "{ from: fr ? { id: fr.id, color: fr.accent } : null }" in html and "olySfx('portal'); window.jarvisPortal.jump" in html)
+          html.index("./portal.js?v=p2") < html.index("./transitions.js?v=t3") and "{ from: fr ? { id: fr.id, color: fr.accent } : null }" in html and "olySfx('portal'); window.jarvisPortal.jump" in html)
     check("a. portal.js hands the jump to transitions.js (the old warp stays as the fallback) and keeps no GL context when it is here",
           "window.jarvisTransitions" in portal and "T.play(a," in portal and "!window.jarvisTransitions) setup()" in portal)
 
