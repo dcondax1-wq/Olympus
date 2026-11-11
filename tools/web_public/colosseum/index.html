@@ -17,7 +17,7 @@
 <!-- COLOSSEUM (OLYMPUS, AGORA look, 2026-11-11): where strategies fight. colosseumcore.js = the pure duel maths and words (node-tested, deterministic); colosseum.js = the page (ES module);
      arena.js = the marble amphitheatre in 3D (its own module tag: if it fails, or on LITE, the page draws the flat SVG arena).
      Reads ../archive/index.json (+ its runs-<k>.json shards after the first paint), ./extra.json (max drawdown, dec10, pass_med: built offline by tools/colosseum_build.py), ../home.json (the three bots)
-     and fixture.json (DEMO, never blank); sends nothing, stores nothing. Text only through textContent / createElementNS. A number that is not stored is "no contest",      A number that is not stored is "no contest", never guessed. Every champion is a person (docs/PERSONA_API.md): tap a name plate, then Talk. With the shared kit (olympus/people.js, optional) that opens its chat;
+     and fixture.json (DEMO, never blank); sends nothing, stores nothing. Text only through textContent / createElementNS. A number that is not stored is "no contest",      A number that is not stored is "no contest", never guessed. Every champion is a person (docs/PERSONA_API.md): tap a name plate, then Talk. With the shared kit loaded (window.OLYMPUS_PEOPLE; its script tag is added by the lead once olympus/people.js exists: a missing file would raise the kit's 'could not load' banner) that opens its chat;
      without it the page answers five questions from the run's stored numbers. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o4">
@@ -146,7 +146,6 @@
 
   <p class="foot" id="foot">Colosseum reads the Archive's own files (built offline from the saved research) and the published account numbers; it sends nothing and stores nothing. Stored backtests are history, not a forecast and not a promise. Money is after costs; 1 MNQ micro = $2 a point.</p>
 </main>
-<script type="module" src="../olympus/people.js?v=p1" onerror="window.OLYMPUS_PEOPLE_MISSING = 1"></script>
 <script type="module" src="arena.js?v=c1" onerror="window.COLOSSEUM_ARENA_FAIL = 1"></script>
 <script type="module" src="colosseum.js?v=c1"></script>
 </body>

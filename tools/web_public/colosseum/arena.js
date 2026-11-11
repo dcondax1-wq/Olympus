@@ -225,7 +225,7 @@ export function createArena(canvas, opts) {
       const f = F[i], s = st[i], sgn = i === 0 ? -1 : 1, bob = RM || anim ? 0 : Math.sin(now * 1.4 + i * 1.7) * 0.012;
       f.root.position.set(sgn * s.x, s.y + bob, 0); f.root.rotation.x = -s.tilt;          // order YXZ: a lean back (+) or a bow forward (-) about the champion's own shoulders
       const hop = s.raise && !RM ? Math.abs(Math.sin(now * 5 + i)) * 0.1 * s.raise : 0; f.root.position.y += hop;      // cheer: the winner hops with shield and spear up
-      f.arm.position.z = 0.02 + s.thrust * 0.2; f.arm.position.y = f.armY + s.raise * 0.12; f.arm.rotation.x = -s.thrust * 0.25 - s.raise * 1.9;
+      f.arm.position.z = 0.02 + s.thrust * 0.2; f.arm.position.y = f.armY + s.raise * 0.3; f.arm.rotation.x = -s.thrust * 0.25 - s.raise * 0.7;
       f.spear.rotation.x = s.thrust * 0.5; f.spear.position.y = f.spearY + s.raise * 0.35; f.spear.rotation.z = -s.raise * 0.12;
       obj.position.set(sgn * s.x, 0.02, 0); obj.rotation.set(0, 0, 0); obj.scale.set(SCALE, 1, SCALE * 0.8); obj.updateMatrix(); shadows.setMatrixAt(i, obj.matrix);
     }

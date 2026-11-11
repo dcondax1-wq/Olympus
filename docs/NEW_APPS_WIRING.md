@@ -478,6 +478,7 @@ The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, gl
    (rewrites `tools/web_public/colosseum/extra.json` from `research/runs/`; `--check` fails when it is stale, `--selftest` needs nothing). If the checkout lacks `research/runs/`, skip it: the committed file is still valid.
 3. `tools/web_public/sw.js`: `OTHER_APPS` add `'colosseum/'`; do NOT precache `colosseum/extra.json` (about 130 KB).
 4. Home Screen PNG icons: `flock -w 2400 /tmp/olympus_browser.lock python tools/make_app_icons.py colosseum` (already run; add `colosseum` to its `APPS` list if you want `--check` to cover it).
+5. People kit (docs/PERSONA_API.md): once `tools/web_public/olympus/people.js` exists, add `<script type="module" src="../olympus/people.js?v=p1"></script>` to `colosseum/index.html` directly above the `arena.js` tag. The Talk button then calls `window.OLYMPUS_PEOPLE.open('champion:<run-id>' | 'bot:lit' | 'bot:atlas' | 'bot:blitz', { anchor })`; until then the page's own five-question card answers. (The tag is NOT in the page yet: a missing file makes the kit show "could not load".) The 3D champions are the app's own toy-like figures; `olympus/people3d.js` can replace `champion()` in `arena.js` later.
 Tests after wiring: `tests.test_colosseum_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
 
 ## The six rows (what `wire_new_apps.py --apply` writes for Colosseum)
