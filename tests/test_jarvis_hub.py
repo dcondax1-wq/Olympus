@@ -254,7 +254,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v32';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v33';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and "'./jarvis.css?v=j13'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -822,7 +822,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v32');
+          const c = await caches.open('jarvis-v33');
           const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j13', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
@@ -1544,9 +1544,9 @@ def part_intro_files():
     sfxw = open(os.path.join(JV, "switcher.js"), encoding="utf-8").read()
     check("o. the OLYMPUS sound layer in Jarvis: sfx.js loaded async and in SHELL, ticks on taps (dock / cards / orb), the portal sound on an app open, a tap in the switcher, "
           "quiet while speaking / listening / over the intro, a toggle + volume in the settings sheet",
-          all(x in page for x in ('src="../olympus/sfx.js?v=s2" id="olySfxJs" async', "function olyQuiet()", "root.hasAttribute('data-intro') || listening || speaking", "window.OLYMPUS_QUIET = olyQuiet",
+          all(x in page for x in ('src="../olympus/sfx.js?v=s3" id="olySfxJs" async', "function olyQuiet()", "root.hasAttribute('data-intro') || listening || speaking", "window.OLYMPUS_QUIET = olyQuiet",
                                   "olySfx('portal'); window.jarvisPortal.jump", "{ haptic(); olySfx('tick'); }", "#nxOrb", 'id="setOlySfx"', 'id="setOlyVol"', "k.mute(!$('#setOlySfx').checked)", "k.setVolume("))
-          and "'../olympus/sfx.js?v=s2'" in open(os.path.join(JV, "sw.js"), encoding="utf-8").read() and "win.jarvisSfx('tap')" in sfxw)
+          and "'../olympus/sfx.js?v=s3'" in open(os.path.join(JV, "sw.js"), encoding="utf-8").read() and "win.jarvisSfx('tap')" in sfxw)
     logo = os.path.join(JV, "intro-logo.webp")
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     head = open(logo, "rb").read(12) if os.path.exists(logo) else b""

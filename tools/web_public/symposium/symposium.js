@@ -80,7 +80,7 @@ function setTab(t, focus) {
   if (t === 'requests') drawRequests();
   if (t === 'me') enterMe();
   if (t === 'standup') drawStandup();
-  if (O && O.sound) { try { O.sound('tap'); } catch (_) { /* quiet */ } }
+  if (O && O.sound) { try { O.cue('tap'); } catch (_) { /* quiet */ } }
 }
 function wireTabs() {
   for (const k of TABS) $('tab-' + k).addEventListener('click', () => setTab(k));

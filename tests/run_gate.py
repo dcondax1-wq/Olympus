@@ -86,6 +86,7 @@ def plan() -> list:
     add("safari_webkit", "test_safari_smoke", ["--webkit"], fast=None, budget=2400)
     add("olympus_a11y", "test_olympus_a11y", fast=["--static"], budget=600)
     add("olympus_sfx", "test_olympus_sfx", budget=300, kind="static")
+    add("sfx_engine", "test_sfx_engine", budget=300, kind="static")
     add("olympus_kit", "test_olympus_kit", ["power", "tiers"], fast="static", budget=1200)
     add("olympus_themes", "test_olympus_themes", fast=None, budget=1500)
     add("olympus_render", "test_olympus_render", fast="static", budget=1200)

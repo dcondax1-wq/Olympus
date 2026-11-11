@@ -119,7 +119,7 @@ def test_static():
     js, css = read(os.path.join(KIT, "olympus.js")), read(os.path.join(KIT, "olympus.css"))
     arena = read(os.path.join(os.path.dirname(KIT), "arena", "main.js"))
     check("a. OLYMPUS.sfx(name): loads olympus/sfx.js lazily, never throws, no-op when missing or when the host says it is quiet (OLYMPUS_QUIET); Arena plays rankup through it, guarded",
-          all(x in js for x in ("sfx: function (name)", "window.OLYMPUS_QUIET", "'sfx.js?v=s2'", "k.play(name)")) and "O.sfx('rankup')" in arena and "O && O.sfx" in arena)
+          all(x in js for x in ("sfx: function (name)", "window.OLYMPUS_QUIET", "'sfx.js?v=s3'", "k.play(name)")) and "O.sfx('rankup')" in arena and "O && O.sfx" in arena)
     check("a. the kit: olympus.js reads and writes 'jfx' (Jarvis's key), caps the pixel ratio, pauses on a hidden tab",
           "KEY = 'jfx'" in js and "level === 'off' ? 1 : l ? 1.5 : 2" in js and "visibilityState" in js)
     render = read(os.path.join(KIT, "render.js"))
