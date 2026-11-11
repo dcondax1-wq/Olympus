@@ -130,6 +130,7 @@ export const BUILT_INS = Object.freeze([
   app('archive', 'Archive', 'trading', '#c8a24a', 'The library of everything we ever tested, searchable', { glyph: 'B' }),
   app('pinakes', 'Pinakes', 'trading', '#c8a24a', 'The catalogue: browse and query every table OLYMPUS keeps', { glyph: 'Κ' }),
   app('colosseum', 'Colosseum', 'trading', '#c8a24a', 'Where strategies fight: seven rounds on real stored numbers', { glyph: 'C' }),
+  app('nq', 'NQ', 'trading', '#c8a24a', 'The NQ bots, right now: status, drawdown left, last trades', { glyph: 'Ν' }),
   app('clio', 'Clio', 'trading', '#d8c9a8', 'The research library: every study in plain words', { glyph: 'Κ' }),
   app('atlas', 'Atlas', 'life', '#efc979', 'A fast map of every Olympus dashboard', { glyph: '\u25c8' }),
   app('athena', 'Athena', 'life', '#7f8a52', 'The library: strategy, rules, quiz', { glyph: '\ud83e\udd89' }),

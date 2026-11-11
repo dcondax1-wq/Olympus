@@ -15,11 +15,12 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Colosseum (`colosseum`) | Market | trading | Where strategies fight: seven rounds on real stored | `extra.json`, `fixture.json`, `../archive/index.json`, `../home.json` | `tests.test_colosseum_page` |
 | Compass (`compass`) | Market | trading | The next best action: at most five things | `fixture.json`, `../home.json`, `../money/index.json`, `../ledger/rules.json`, `../odeon/trades.json` | `tests.test_compass_page` |
 | Delphi (`delphi`) | Market | trading | The oracle's briefing: plan, target, go / no-go | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_delphi_page` |
-| Ergasterion (`ergasterion`) | Market | trading | The workshop: every AI worker, what it does | `fixture.json`, `queue.json`, `../home.json`, `../money/index.json`, `../cronos/status.json`, ... | `tests.test_ergasterion_page` |
+| Ergasterion (`ergasterion`) | Market | trading | The workshop: every AI worker, what it does | `builders.json`, `fixture.json`, `queue.json`, `../home.json`, `../money/index.json`, ... | `tests.test_ergasterion_page` |
 | Forum (`forum`) | Market | trading | Morning briefing at the real NY hour | `../pantheon/pantheon.json`, `../home.json`, `fixture.json` | `tests.test_forum_page` |
 | Helios (`helios`) | Market | trading | The morning briefing: today, drawdown, deals, plan | `fixture.json`, `../pythia/events.json`, `../home.json`, `../money/index.json` | `tests.test_helios_page` |
 | Kairos (`kairos`) | Market | trading | The right moment: the bots' day on a | `fixture.json`, `../odeon/trades.json`, `../home.json` | `tests.test_kairos_page` |
 | Kronos (`kronos`) | Market | money | The calendar of money: daily P&L, best weekday | `fixture.json`, `../odeon/trades.json` | `tests.test_kronos_page` |
+| NQ (`nq`) | Market | trading | The NQ bots, right now: status, drawdown left | `../home.json`, `fixture.json`, `howto.json` | `tests.test_nq_page` |
 | Odeon (`odeon`) | Market | trading | Every trade, replayed in 3D | `trades.json` | `tests.test_odeon_page` |
 | Oracle (`oracle`) | Market | trading | The market radar, live | bundled fixture / its own files | `tests.test_oracle_page` |
 | Pantheon (`pantheon`) | Market | trading | The data gods: rates, liquidity, fear | `jarvis.json`, `pantheon.json`, `fixture.json` | `tests.test_pantheon` |
@@ -76,7 +77,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Nike (`nike`) | Life | life | The trophy hall: milestones and wins from real | `fixture.json`, `../home.json`, `../ledger/rules.json`, `../odeon/trades.json`, `../kalshicity/edges.json` | `tests.test_nike_page` |
 | Planner (`planner`) | Life | life | Day and week plan: session windows, tasks, habits | `../pythia/events.json`, `../home.json`, `fixture.json` | `tests.test_planner_page` |
 
-67 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+68 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 
