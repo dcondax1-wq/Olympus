@@ -21,7 +21,7 @@
 (function (root, factory) {
   var api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  if (root && !root.OLYMPUS_SFX) root.OLYMPUS_SFX = api.create(root);
+  if (root && !root.OLYMPUS_SFX) { root.OLYMPUS_SFX = api.create(root); root.OLYMPUS_SFX.create = api.create; }   // create(env): a second engine (tests render one offline)
 })(typeof window !== 'undefined' ? window : globalThis, function () {
   'use strict';
   var KEY = 'olympus.sfx';
@@ -197,7 +197,7 @@
       var c = ensureCtx();
       try {
         if (c) {
-          if (c.state !== 'running' && c.resume) c.resume();
+          if (c.state !== 'running' && c.resume) quietly(c.resume());
           var b = c.createBuffer(1, 1, c.sampleRate || 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0);   // iOS: one silent sample
         }
       } catch (e) { errors++; }
@@ -205,7 +205,8 @@
       unlockCbs.splice(0).forEach(function (cb) { try { cb(api); } catch (e) {} });
       return !!c;
     }
-    function resumeIfNeeded() { try { if (ctx && ctx.state !== 'running' && !hidden() && ctx.resume) ctx.resume(); } catch (e) {} }
+    function quietly(pr) { try { if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} }     // resume / suspend promises: a refusal is not an error
+    function resumeIfNeeded() { try { if (ctx && ctx.state !== 'running' && !hidden() && ctx.resume) quietly(ctx.resume()); } catch (e) {} }
     function listen() {
       if (listening || !env.addEventListener) return;
       listening = true;
@@ -219,7 +220,7 @@
       if (env.document && env.document.addEventListener) {
         env.document.addEventListener('visibilitychange', function () {
           if (!ctx) return;
-          try { if (hidden()) { ctx.suspend && ctx.suspend(); } else if (unlocked) { ctx.resume && ctx.resume(); } } catch (e) {}
+          try { if (hidden()) { if (ctx.suspend) quietly(ctx.suspend()); } else if (unlocked && ctx.resume) quietly(ctx.resume()); } catch (e) {}
           ambRefresh();
         });
       }
@@ -397,11 +398,11 @@
       }],
       quill: [0.95, 'world', function (V, o) {                // a reed pen on papyrus: short scratches
         var k = o.k || 1, a = o.at || 0, n = 5 + Math.floor(Math.random() * 4);
-        for (var i = 0; i < n; i++) nz(V, a + i * 0.09 + rnd(0, 0.03), rnd(0.03, 0.07), 0.03 * k, 'bandpass', rnd(3500, 6000), rnd(3000, 5000), 4, 0.005);
+        for (var i = 0; i < n; i++) nz(V, a + i * 0.09 + rnd(0, 0.03), rnd(0.03, 0.07), 0.07 * k, 'bandpass', rnd(3500, 6000), rnd(3000, 5000), 4, 0.005);
       }],
       scroll: [1.1, 'world', function (V, o) {                // a scroll unrolls: a long rustle, the paper's ticks, it settles
         var k = o.k || 1, a = o.at || 0;
-        nz(V, a, 0.8, 0.05 * k, 'bandpass', 1100, 2600, 0.9, 0.25);
+        nz(V, a, 0.8, 0.035 * k, 'bandpass', 1100, 2600, 0.9, 0.25);
         for (var i = 0; i < 6; i++) nz(V, a + 0.08 + i * 0.11, 0.012, 0.03 * k, 'highpass', 4000, 0, 1, 0.001);
         tone(V, 'sine', 160, 110, a + 0.8, 0.12, 0.05 * k, 0.005);
       }],
@@ -424,7 +425,7 @@
         var k = o.k || 1, a = o.at || 0, t = V.t + a, bp = nd(V, ctx.createBiquadFilter()); bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = 6; bp.connect(V.g);
         var c = tone(V, 'sawtooth', 80, 0, a, 0.8, 0.03 * k, 0.15, bp);
         for (var i = 1; i < 8; i++) c.frequency.setValueAtTime(rnd(70, 125), t + i * 0.1);
-        tone(V, 'sine', 62, 40, a + 0.85, 0.35, 0.14 * k, 0.003); nz(V, a + 0.85, 0.25, 0.1 * k, 'lowpass', 300, 120, 0.8, 0.003); tone(V, 'triangle', 2100, 0, a + 1.05, 0.02, 0.04 * k, 0.001);
+        tone(V, 'sine', 62, 40, a + 0.85, 0.35, 0.1 * k, 0.003); nz(V, a + 0.85, 0.25, 0.07 * k, 'lowpass', 300, 120, 0.8, 0.003); tone(V, 'triangle', 2100, 0, a + 1.05, 0.02, 0.04 * k, 0.001);
       }],
       fire: [1.2, 'world', function (V, o) {                  // a fire catches: whoosh, low roar, a few crackles
         var k = o.k || 1, a = o.at || 0;
@@ -576,8 +577,8 @@
     }
     var BUILD = {
       marble: function (B, o) {                                 // a marble hall: low room tone, moving air, far footsteps, a water clock
-        var rt = layer(B, 'lowpass', 170, 0.5, 0.5), air = layer(B, 'bandpass', 1300, 0.6, 0.05);
-        drift(B, rt.g.gain, 0.35, 0.6, 4000, 9000); drift(B, air.f.frequency, 900, 1800, 6000, 12000); drift(B, air.g.gain, 0.03, 0.07, 5000, 10000);
+        var rt = layer(B, 'lowpass', 170, 0.5, 0.38), air = layer(B, 'bandpass', 1300, 0.6, 0.05);
+        drift(B, rt.g.gain, 0.26, 0.45, 4000, 9000); drift(B, air.f.frequency, 900, 1800, 6000, 12000); drift(B, air.g.gain, 0.03, 0.07, 5000, 10000);
         ev(B, 9000, 22000, function () { steps(B, 'step-stone', 3 + Math.floor(Math.random() * 5), 0.56, 0.3, rnd(-0.8, 0.8)); });
         ev(B, o.drip ? 4000 : 9000, o.drip ? 11000 : 20000, function () { var V = bv(B, 0.5, rnd(-0.6, 0.6)); if (V) tone(V, 'sine', rnd(1500, 2100), rnd(1000, 1300), 0, 0.09, 0.03, 0.002); });
         ev(B, 20000, 45000, function () { var V = bv(B, 2.6, rnd(-0.5, 0.5)); if (V) bell(V, pick([Fs5, A5, D6]), 0, 0.012, 2.5); });
