@@ -51,6 +51,7 @@ STOP = set("""about above after again against also among because been before bei
 FLIP = re.compile(r"earlier (finding|result|belief|claim)|previous(ly)? (finding|belief|result|thought)|we (had )?thought|looked real|used to (think|believe)|vanished|did not hold|does not hold"
                   r"|no longer holds|turned out (to be )?(noise|wrong|false|luck)|was (only )?luck", re.I)
 NEG = re.compile(r"reject|no edge|not an edge|worse|loses|lose money|no gain|nothing (survives|to switch|adopt)|does not|did not|fails\b|failed|vanish|noise|none (beats|of|gives|is|beat)|no real|not predictive", re.I)
+NOEDGE = re.compile(r"no edge|not an edge|edge that survives|none (beat|beats|gives)|nothing survives|loses (money )?after (fees|costs)", re.I)
 POS = re.compile(r"adopt|better|holds|improv|beats|survives|raises|gain", re.I)
 WHO = (("kalshi", "kalshi"), ("atlas", "atlas"), ("blitz", "blitz"), ("prometheus", "prometheus"), ("hephaestus", "hephaestus"), ("cronos", "cronos"),
        ("mind", "mind"), ("sibyl", "sibyl"), ("chrysos", "chrysos"), ("mercury", "mercury"), ("oikos", "oikos"), ("arbiter", "arbiter"),
@@ -234,7 +235,7 @@ def distil(cands, limit=60):
     for t in toks:
         for w in t:
             df[w] = df.get(w, 0) + 1
-    common = {w for w, n in df.items() if n > max(4, len(cands) * 0.2)}
+    common = {w for w, n in df.items() if n > max(3, len(cands) * 0.08)}
     rare = [t - common for t in toks]
     groups = []                                           # each: the index of the representative first, then the indexes merged into it
     for i in range(len(cands)):
@@ -256,10 +257,11 @@ def distil(cands, limit=60):
         src = {}
         for i in g:
             src.setdefault(cands[i]["src"], cands[i].get("d") or "")
-        for j, c in enumerate(cands):                    # supporters: another file, same category, same direction, at least 3 uncommon words shared
+        for j, c in enumerate(cands):                    # supporters: another file, same category, same direction, at least 3 uncommon words shared, or both say "no edge" about the same worker
             if j in g or c["src"] in src:
                 continue
-            if len(rare[g[0]] & rare[j]) >= 3 and category(c.get("who", ""), c["text"]) == cat and polarity(c["text"]) == pol:
+            same = category(c.get("who", ""), c["text"]) == cat and polarity(c["text"]) == pol
+            if same and (len(rare[g[0]] & rare[j]) >= 3 or (NOEDGE.search(rep["text"]) and NOEDGE.search(c["text"]) and c.get("who") == rep.get("who"))):
                 src[c["src"]] = c.get("d") or ""
         srcs = sorted(({"src": k, "d": v} for k, v in src.items()), key=lambda x: (x["d"], x["src"]), reverse=True)
         out.append({"text": rep["text"], "cat": cat, "who": rep.get("who") or "dev", "d": rep.get("d") or "", "kind": rep.get("kind") or "", "strength": len(srcs), "merged": len(g),

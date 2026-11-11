@@ -342,6 +342,352 @@
     "text": "Example: similar-setup memory is context only, not predictive.",
     "src": "research/mind/calibration.json"
    }
+  ],
+  "events": [
+   {
+    "ago_h": 1.5,
+    "who": "dev",
+    "kind": "run",
+    "ok": true,
+    "text": "Example: 6 research runs stored (filters): 5 rejected, 1 open.",
+    "src": "research/runs"
+   },
+   {
+    "ago_h": 3,
+    "who": "lit",
+    "kind": "writeup",
+    "ok": true,
+    "text": "Example write-up (rejected): a filter that did not hold",
+    "src": "research/writeups/example.md"
+   },
+   {
+    "ago_h": 7,
+    "who": "atlas",
+    "kind": "run",
+    "ok": true,
+    "text": "Example: 3 research runs stored (ATLAS): 1 adopted, 2 rejected.",
+    "src": "research/runs"
+   },
+   {
+    "ago_h": 14,
+    "who": "kalshi",
+    "kind": "writeup",
+    "ok": true,
+    "text": "Example write-up (rejected): the favourite pocket did not hold market-wide",
+    "src": "research/writeups/example3.md"
+   },
+   {
+    "ago_h": 20,
+    "who": "mind",
+    "kind": "mind",
+    "ok": true,
+    "text": "Example: nightly research, 22 ideas tested, 2 notes about recent trades.",
+    "src": "research/mind/proposals_seed.json"
+   },
+   {
+    "ago_h": 30,
+    "who": "queue",
+    "kind": "task",
+    "ok": true,
+    "text": "Example: done, ledger-headline",
+    "src": "handoff/QUEUE.md"
+   },
+   {
+    "ago_h": 52,
+    "who": "dev",
+    "kind": "run",
+    "ok": true,
+    "text": "Example: 12 research runs stored (risk): 2 adopted, 10 rejected.",
+    "src": "research/runs"
+   },
+   {
+    "ago_h": 75,
+    "who": "blitz",
+    "kind": "run",
+    "ok": true,
+    "text": "Example: 4 research runs stored (other tests): 4 rejected.",
+    "src": "research/runs"
+   },
+   {
+    "ago_h": 100,
+    "who": "chrysos",
+    "kind": "writeup",
+    "ok": true,
+    "text": "Example write-up (finding): which account to buy first",
+    "src": "research/writeups/example4.md"
+   },
+   {
+    "ago_h": 130,
+    "who": "dev",
+    "kind": "run",
+    "ok": true,
+    "text": "Example: 9 research runs stored (targets): 9 rejected.",
+    "src": "research/runs"
+   }
+  ],
+  "money_runs": [
+   {
+    "ago_h": 0.5,
+    "who": "chrysos",
+    "kind": "money",
+    "ok": true,
+    "sample": true,
+    "text": "Example: the next buy looks best.",
+    "src": "money/chrysos.json"
+   },
+   {
+    "ago_h": 26,
+    "who": "arbiter",
+    "kind": "money",
+    "ok": false,
+    "sample": true,
+    "text": "Example: could not read one price list.",
+    "src": "money/arbiter.json"
+   }
+  ],
+  "lessons": [
+   {
+    "text": "Example: the 95c and above favourite pocket did not hold on market-wide data once spread and fees were paid.",
+    "cat": "Kalshi",
+    "who": "kalshi",
+    "d_ago": 1,
+    "strength": 3,
+    "kind": "rejected",
+    "sources": [
+     {
+      "src": "research/writeups/example3.md",
+      "d_ago": 1
+     },
+     {
+      "src": "research/writeups/example5.md",
+      "d_ago": 1
+     },
+     {
+      "src": "research/writeups/example6.md",
+      "d_ago": 7
+     }
+    ]
+   },
+   {
+    "text": "Example: a filter that lowered the trades per week did not hold in both periods.",
+    "cat": "NQ strategy",
+    "who": "lit",
+    "d_ago": 3,
+    "strength": 2,
+    "kind": "rejected",
+    "sources": [
+     {
+      "src": "research/writeups/example.md",
+      "d_ago": 3
+     },
+     {
+      "src": "research/writeups/example7.md",
+      "d_ago": 20
+     }
+    ]
+   },
+   {
+    "text": "Example: holding the second account's trade made 2021-25 worse.",
+    "cat": "NQ strategy",
+    "who": "atlas",
+    "d_ago": 4,
+    "strength": 1,
+    "kind": "rejected",
+    "sources": [
+     {
+      "src": "research/writeups/example2.md",
+      "d_ago": 4
+     }
+    ]
+   },
+   {
+    "text": "Example: buying all three accounts on day one beats every staggered order.",
+    "cat": "money",
+    "who": "chrysos",
+    "d_ago": 5,
+    "strength": 1,
+    "kind": "finding",
+    "sources": [
+     {
+      "src": "research/writeups/example4.md",
+      "d_ago": 5
+     }
+    ]
+   },
+   {
+    "text": "Example: a wide stop with fewer micros kept the dollar risk the same and passed more evals.",
+    "cat": "NQ strategy",
+    "who": "lit",
+    "d_ago": 16,
+    "strength": 4,
+    "kind": "adopt-candidate",
+    "sources": [
+     {
+      "src": "research/writeups/example8.md",
+      "d_ago": 16
+     },
+     {
+      "src": "research/writeups/example9.md",
+      "d_ago": 18
+     },
+     {
+      "src": "research/writeups/example10.md",
+      "d_ago": 25
+     },
+     {
+      "src": "docs/CLAUDE_REFERENCE.md",
+      "d_ago": 30
+     }
+    ]
+   },
+   {
+    "text": "Example: saving the work after every step kept a whole night of it when the disk was cleaned.",
+    "cat": "process",
+    "who": "dev",
+    "d_ago": 2,
+    "strength": 1,
+    "kind": "finding",
+    "sources": [
+     {
+      "src": "docs/NIGHT_BRIEF.md",
+      "d_ago": 2
+     }
+    ]
+   },
+   {
+    "text": "Example: a page that falls back to a labelled sample is never blank on a new phone.",
+    "cat": "app",
+    "who": "dev",
+    "d_ago": 9,
+    "strength": 2,
+    "kind": "finding",
+    "sources": [
+     {
+      "src": "docs/DESIGN_AGORA.md",
+      "d_ago": 9
+     },
+     {
+      "src": "docs/NEW_APPS_WIRING.md",
+      "d_ago": 12
+     }
+    ]
+   }
+  ],
+  "changed": [
+   {
+    "text": "Example: the earlier finding \"95c and above is +1.4% per $\" came from the bot's own bets. On market-wide data that pocket is not an edge.",
+    "was": "95c and above is +1.4% per $",
+    "d_ago": 1,
+    "who": "kalshi",
+    "cat": "Kalshi",
+    "src": "research/writeups/example3.md"
+   },
+   {
+    "text": "Example: one filter looked real on Jan-Jun until it was run on Jul-Oct: it vanished.",
+    "was": "",
+    "d_ago": 3,
+    "who": "lit",
+    "cat": "NQ strategy",
+    "src": "research/writeups/example.md"
+   }
+  ],
+  "pipeline": {
+   "src": "example",
+   "built": "",
+   "counts": {
+    "ideas": 240,
+    "testing": 52,
+    "adopted": 14,
+    "rejected": 174
+   },
+   "families": [
+    {
+     "name": "LIT research",
+     "runs": 90,
+     "adopted": 6,
+     "rejected": 64,
+     "open": 20
+    },
+    {
+     "name": "filters",
+     "runs": 60,
+     "adopted": 1,
+     "rejected": 52,
+     "open": 7
+    },
+    {
+     "name": "risk",
+     "runs": 50,
+     "adopted": 5,
+     "rejected": 30,
+     "open": 15
+    },
+    {
+     "name": "ATLAS",
+     "runs": 25,
+     "adopted": 2,
+     "rejected": 18,
+     "open": 5
+    },
+    {
+     "name": "targets",
+     "runs": 15,
+     "adopted": 0,
+     "rejected": 10,
+     "open": 5
+    }
+   ],
+   "moves": [
+    {
+     "id": "ex_filter_a",
+     "title": "Example: skip the first hour",
+     "family": "filters",
+     "verdict": "rejected",
+     "d_ago": 1
+    },
+    {
+     "id": "ex_risk_b",
+     "title": "Example: smaller size after a loss",
+     "family": "risk",
+     "verdict": "open",
+     "d_ago": 1
+    },
+    {
+     "id": "ex_lit_c",
+     "title": "Example: a wider 1m window",
+     "family": "LIT research",
+     "verdict": "adopted",
+     "d_ago": 2
+    },
+    {
+     "id": "ex_atlas_d",
+     "title": "Example: no trade on Thursdays",
+     "family": "ATLAS",
+     "verdict": "rejected",
+     "d_ago": 3
+    },
+    {
+     "id": "ex_target_e",
+     "title": "Example: a nearer target",
+     "family": "targets",
+     "verdict": "rejected",
+     "d_ago": 4
+    }
+   ]
+  },
+  "gaps": [
+   {
+    "name": "Example_vol_1d.csv",
+    "d_ago": 54,
+    "days": 53,
+    "file": "data/Example_vol_1d.csv"
+   },
+   {
+    "name": "Example_5m.csv",
+    "d_ago": 25,
+    "days": 24,
+    "file": "data/Example_5m.csv"
+   }
   ]
  }
 }

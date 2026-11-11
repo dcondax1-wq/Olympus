@@ -1,32 +1,53 @@
-// ERGASTERION core (pure, node-tested): the workshop where every worker is visible.
+// ERGASTERION core (pure, node-tested): the AI agent factory where you can see, first person, what every worker is doing, then what was learned from it.
 // Inputs (every one optional): home (home.json: accounts), money (money/index.json: streams), kalshi (the public kalshi.json feed), cron (cronos/status.json: tasks),
-// forge (prometheus/forge.json), heph (hephaestus/data.json), queue (queue.json built by tools/ergasterion_build.py: queue, writeups, rejected, learnings, mind, git).
-// Output: one station per real worker with a status lamp (working / idle / stale / failed / sample), what it is doing, its last five outputs, what it LEARNED (dated, with its source file) and its health.
+// forge (prometheus/forge.json), heph (hephaestus/data.json), queue (queue.json built by tools/ergasterion_build.py: queue, writeups, rejected, learnings, lessons, changed,
+// events, pipeline, gaps, mind, git, money_runs).
+// Output: one station per real worker (status lamp, what it is doing, what it SAYS, its crates = last outputs, what it learned, health), a dated event stream for the day replay,
+// the research pipeline (Idea -> Testing -> Verdict), the Learning board (strength = independent files that agree, what changed our mind) and a ranked "what next" plan.
 // Honest by rule: a missing file says "no file yet" (stale), a fixture says "sample", nothing is invented. Nothing here trades or sends anything.
 
 export const H = 3600000, D = 24 * H;
 export const OLD_H = 36;                 // a nightly worker is stale after this many hours (weekends are quiet, so not shorter)
 export const WEEK_D = 7;
-export const BOUNDS = { x: 11.4, z: 8.6 };
+export const BOUNDS = { x: 12.4, z: 9.4 };
 export const STATION_R = 1.45;           // how close the walker may come to a station centre
+export const WALL_T = 0.5;               // how close the walker may come to the middle of an inner wall
 export const EYE = 1.6;
+export const START = { x: 6.5, z: 8.3, yaw: 0 };      // the front door, in the Library, looking north at the door to the Trading hall
+
+// four halls around a cross of inner walls (x = 0 and z = 0); each inner wall has one door
+export const HALLS = [
+  { id: 'money', name: 'Money hall', x0: -13, x1: 0, z0: -10, z1: 0, tone: '#c8a24a' },
+  { id: 'trading', name: 'Trading hall', x0: 0, x1: 13, z0: -10, z1: 0, tone: '#9c6b3c' },
+  { id: 'research', name: 'Research hall', x0: -13, x1: 0, z0: 0, z1: 10, tone: '#7f8a52' },
+  { id: 'library', name: 'Library', x0: 0, x1: 13, z0: 0, z1: 10, tone: '#4b7a99' },
+];
+/** axis 'x': the wall is the plane x = at and the door is centred on z = c; axis 'z': the wall is z = at, the door is centred on x = c */
+export const DOORS = [
+  { id: 'money-trading', axis: 'x', at: 0, c: -5, half: 1.2, a: 'money', b: 'trading' },
+  { id: 'research-library', axis: 'x', at: 0, c: 5, half: 1.2, a: 'research', b: 'library' },
+  { id: 'money-research', axis: 'z', at: 0, c: -6.5, half: 1.2, a: 'money', b: 'research' },
+  { id: 'trading-library', axis: 'z', at: 0, c: 6.5, half: 1.2, a: 'trading', b: 'library' },
+];
+/** the job a figure is seen doing: wheel = turning a scanner wheel, scribe = writing at a desk, oracle = reading the tripod, smith = hammering at the anvil, scales = weighing risk against reward */
+export const JOB_WORD = { wheel: 'turning the search wheel', scribe: 'writing it down', oracle: 'reading the tripod', smith: 'hammering at the anvil', scales: 'weighing risk against reward' };
 
 export const STATIONS = [
-  { id: 'chrysos', name: 'Chrysos', role: 'Prop-firm eval and payout planner', group: 'Money machines', x: -8, z: -6 },
-  { id: 'mercury', name: 'Mercury', role: 'Deal finder (prop-firm sales and codes)', group: 'Money machines', x: -4, z: -6 },
-  { id: 'sibyl', name: 'Sibyl', role: 'Prediction-market pick finder', group: 'Money machines', x: 0, z: -6 },
-  { id: 'oikos', name: 'Oikos', role: 'Household savings finder', group: 'Money machines', x: 4, z: -6 },
-  { id: 'arbiter', name: 'Arbiter', role: 'Price-gap checker', group: 'Money machines', x: 8, z: -6 },
-  { id: 'lit', name: 'Zlarior (LIT)', role: 'The live NQ strategy, paper account', group: 'NQ bots', x: -7.5, z: -1.2 },
-  { id: 'atlas', name: 'ATLAS', role: 'Second NQ strategy, 25K account', group: 'NQ bots', x: -4.5, z: -1.2 },
-  { id: 'blitz', name: 'BLITZ', role: 'Third NQ strategy, 25K account', group: 'NQ bots', x: -1.5, z: -1.2 },
-  { id: 'mind', name: 'Mind', role: 'Nightly self-research and game plans', group: 'Thinkers', x: 2, z: -1.2 },
-  { id: 'kalshi', name: 'Kalshi bot', role: 'Prediction-market trading bot (paper)', group: 'Thinkers', x: 5, z: -1.2 },
-  { id: 'prometheus', name: 'Prometheus', role: 'Breeds LIT settings, checks them on later months', group: 'Jobs', x: -7.5, z: 3.6 },
-  { id: 'hephaestus', name: 'Hephaestus', role: 'Stored results of every LIT setting that was run', group: 'Jobs', x: -4.5, z: 3.6 },
-  { id: 'cronos', name: 'Cronos', role: 'The night clock: refreshes every research app', group: 'Jobs', x: -1.5, z: 3.6 },
-  { id: 'queue', name: 'The queue', role: 'ChatGPT / Claude task queue (handoff/QUEUE.md)', group: 'People and agents', x: 2, z: 3.6 },
-  { id: 'dev', name: 'Dev agents', role: 'The coding agents of this project (branches, commits, write-ups)', group: 'People and agents', x: 5.5, z: 3.6 },
+  { id: 'chrysos', name: 'Chrysos', role: 'Prop-firm eval and payout planner', group: 'Money machines', hall: 'money', job: 'scribe', x: -10.5, z: -7.5 },
+  { id: 'mercury', name: 'Mercury', role: 'Deal finder (prop-firm sales and codes)', group: 'Money machines', hall: 'money', job: 'wheel', x: -6.5, z: -7.5 },
+  { id: 'sibyl', name: 'Sibyl', role: 'Prediction-market pick finder', group: 'Money machines', hall: 'money', job: 'oracle', x: -2.5, z: -7.5 },
+  { id: 'oikos', name: 'Oikos', role: 'Household savings finder', group: 'Money machines', hall: 'money', job: 'wheel', x: -9.6, z: -3 },
+  { id: 'arbiter', name: 'Arbiter', role: 'Price-gap checker', group: 'Money machines', hall: 'money', job: 'scales', x: -3.4, z: -3 },
+  { id: 'lit', name: 'Zlarior (LIT)', role: 'The live NQ strategy, paper account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 3, z: -7.5 },
+  { id: 'atlas', name: 'ATLAS', role: 'Second NQ strategy, 25K account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 7, z: -7.5 },
+  { id: 'blitz', name: 'BLITZ', role: 'Third NQ strategy, 25K account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 11, z: -7.5 },
+  { id: 'mind', name: 'Mind', role: 'Nightly self-research and game plans', group: 'Thinkers', hall: 'research', job: 'oracle', x: -10.5, z: 2.8 },
+  { id: 'kalshi', name: 'Kalshi bot', role: 'Prediction-market trading bot (paper)', group: 'Thinkers', hall: 'trading', job: 'oracle', x: 10, z: -3 },
+  { id: 'prometheus', name: 'Prometheus', role: 'Breeds LIT settings, checks them on later months', group: 'Jobs', hall: 'research', job: 'smith', x: -2.9, z: 2.6 },
+  { id: 'hephaestus', name: 'Hephaestus', role: 'Stored results of every LIT setting that was run', group: 'Jobs', hall: 'research', job: 'smith', x: -10.5, z: 6.8 },
+  { id: 'cronos', name: 'Cronos', role: 'The night clock: refreshes every research app', group: 'Jobs', hall: 'research', job: 'wheel', x: -6.5, z: 5.2 },
+  { id: 'queue', name: 'The queue', role: 'ChatGPT / Claude task queue (handoff/QUEUE.md)', group: 'People and agents', hall: 'library', job: 'scribe', x: 3.2, z: 4.2 },
+  { id: 'dev', name: 'Dev agents', role: 'The coding agents of this project (branches, commits, write-ups)', group: 'People and agents', hall: 'library', job: 'scribe', x: 10.3, z: 4.4 },
 ];
 export const IDS = STATIONS.map((s) => s.id);
 export const STATUS_WORD = { working: 'Working', idle: 'Idle', stale: 'Stale', failed: 'Failed', sample: 'Sample data' };
@@ -55,7 +76,7 @@ export function agoText(ms, now) {
   return Math.round(a / 24) + ' days ago';
 }
 
-function base(s) { return { id: s.id, name: s.name, role: s.role, group: s.group, x: s.x, z: s.z, status: 'stale', doing: '', last: null, outputs: [], learned: [], health: '', n: null, items: 0, demo: false, missing: false, src: '' }; }
+function base(s) { return { id: s.id, name: s.name, role: s.role, group: s.group, hall: s.hall, job: s.job, x: s.x, z: s.z, say: '', crates: [], status: 'stale', doing: '', last: null, outputs: [], learned: [], health: '', n: null, items: 0, demo: false, missing: false, src: '' }; }
 const out = (t, text) => ({ t: t == null ? null : t, text: clean(text, 150) });
 
 function learnedFrom(queue, id, extra) {
@@ -213,6 +234,22 @@ function dev1(inp, now, w) {
   w.learned = learnedFrom(q, 'dev', []).concat(rej);
 }
 
+/** the speech bubble: the worker's latest finding in plain words (its newest dated lesson, else what it is doing); a failure or a missing file is said first */
+export function sayOf(w) {
+  if (w.status === 'failed') return clean('My last run failed. ' + (w.health || '').replace(/^Example data\. /, ''), 110);
+  if (w.missing) return 'No file from me yet, so I have nothing to show.';
+  const dated = (w.learned || []).filter((l) => l && l.text && l.d).sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : 0));
+  const t = dated.length ? dated[0].text : w.doing || (w.learned && w.learned[0] && w.learned[0].text) || '';
+  return clean((w.status === 'stale' ? 'Old news: ' : '') + (t || 'Nothing to report yet.'), 110);
+}
+/** a crate's label: the first few words of an output, short enough to read on a small box */
+export function crateTag(text) {
+  const t = clean(String(text || '').replace(/^(Example|Commit):\s*/i, '').replace(/^(Example |Dial|Write-up|Today|Best candidate|Done|commit):?\s*/i, '').split(/[:(;]|, | - /)[0], 40), words = t.split(' ');
+  let out = '';
+  for (const w of words) { if ((out + ' ' + w).trim().length > 16) break; out = (out + ' ' + w).trim(); }
+  return out || t.slice(0, 16) || 'output';
+}
+
 export function buildWorkers(inp0, now) {
   const inp = isObj(inp0) ? inp0 : {};
   const W = STATIONS.map((s) => {
@@ -232,6 +269,8 @@ export function buildWorkers(inp0, now) {
     if (inp.demo) { w.demo = true; w.health = 'Example data. ' + w.health; }
     w.outputs = w.outputs.slice(0, 5);
     w.learned = w.learned.slice(0, 8);
+    w.say = sayOf(w);
+    w.crates = w.outputs.map((o, i) => ({ i, tag: crateTag(o.text), text: o.text, t: o.t }));
     return w;
   });
   return W;
@@ -264,21 +303,42 @@ export function lessons(workers, now, limit) {
   return pick;
 }
 
-/** ranked "what should we research next?": from data gaps (sample / missing / stale / failed / small samples / the queue) */
+/** ranked "what next": research suggestions from data gaps, small samples, stale feeds, open runs and the queue. Each has a why, what it is worth in plain words (ev) and a first step.
+ *  No dollar value is invented: `ev` says how much a fix can change what we know, and what it costs. */
 export function suggestions(workers, queueBlock, now) {
-  const S = [], q = isObj(queueBlock) && isObj(queueBlock.queue) ? queueBlock.queue : null;
+  const S = [], qb = isObj(queueBlock) ? queueBlock : {}, q = isObj(qb.queue) ? qb.queue : null;
   for (const w of workers) {
     const money = ['chrysos', 'mercury', 'sibyl', 'oikos', 'arbiter'].includes(w.id);
-    if (w.status === 'failed') S.push({ w: 100, who: w.id, title: w.name + ' failed its last run', why: w.health || w.doing, next: w.id === 'kalshi' ? 'Check the Oracle VM and restart the bot there.' : 'Open its log, fix the cause, run it once by hand.' });
-    else if (w.missing) S.push({ w: 80, who: w.id, title: w.name + ' has no file here', why: w.health, next: money ? 'Run RUN_MONEY.bat on the PC, then publish the site.' : w.id === 'cronos' ? 'Run python -m tools.cronos once, or wait for the nightly job.' : 'Rebuild the site so its file is published.' });
-    else if (w.status === 'sample') S.push({ w: 70, who: w.id, title: w.name + ' is in demo mode', why: 'Its numbers are a sample, so nothing it shows is a real finding.', next: money ? 'Run RUN_MONEY.bat so ' + w.name + ' reads real public data.' : 'Connect its real feed; until then treat everything as an example.' });
-    else if (w.status === 'stale') S.push({ w: 60, who: w.id, title: w.name + ' is stale', why: w.health, next: 'Refresh it (' + (money ? 'RUN_MONEY.bat' : w.id === 'mind' ? 'wait for the nightly research, or python -X utf8 tools/mind_build.py' : 'the next site build') + ') and look again.' });
-    if (w.n != null && w.n < 30 && ['kalshi'].includes(w.id) && w.status !== 'sample') S.push({ w: 50, who: w.id, title: w.name + ' has only ' + w.n + ' settled trades', why: 'Too few to call any edge real.', next: 'Keep it running on paper; test nothing new until there are 30 or more.' });
+    if (w.status === 'failed') S.push({ w: 100, kind: 'failed', who: w.id, title: w.name + ' failed its last run', why: w.health || w.doing, ev: 'High: a broken worker finds nothing, and everything that reads its file goes stale with it. Cheap to fix.', next: w.id === 'kalshi' ? 'Check the Oracle VM and restart the bot there.' : 'Open its log, fix the cause, run it once by hand.' });
+    else if (w.missing) S.push({ w: 80, kind: 'gap', who: w.id, title: w.name + ' has no file here', why: w.health, ev: 'High: without its file this station is blind, so nothing it could find is seen.', next: money ? 'Run RUN_MONEY.bat on the PC, then publish the site.' : w.id === 'cronos' ? 'Run python -m tools.cronos once, or wait for the nightly job.' : 'Rebuild the site so its file is published.' });
+    else if (w.status === 'sample') S.push({ w: 70, kind: 'sample', who: w.id, title: w.name + ' is in demo mode', why: 'Its numbers are a sample, so nothing it shows is a real finding.', ev: 'Medium: real data turns a demo into findings; one run is enough.', next: money ? 'Run RUN_MONEY.bat so ' + w.name + ' reads real public data.' : 'Connect its real feed; until then treat everything as an example.' });
+    else if (w.status === 'stale') S.push({ w: 60, kind: 'stale', who: w.id, title: w.name + ' is stale', why: w.health, ev: 'Medium: old numbers can point the wrong way; a refresh costs minutes.', next: 'Refresh it (' + (money ? 'RUN_MONEY.bat' : w.id === 'mind' ? 'wait for the nightly research, or python -X utf8 tools/mind_build.py' : 'the next site build') + ') and look again.' });
+    if (w.n != null && w.n < 30 && ['kalshi'].includes(w.id) && w.status !== 'sample') S.push({ w: 50, kind: 'sample-size', who: w.id, title: w.name + ' has only ' + w.n + ' settled trades', why: 'Too few to call any edge real.', ev: 'High for its cost: waiting is free, and it stops us acting on luck.', next: 'Keep it running on paper; test nothing new until there are 30 or more.' });
   }
-  if (q && (num(q.open) || 0) > 0) { const t = Array.isArray(q.tasks) && q.tasks[0]; S.push({ w: 40, who: 'queue', title: 'The queue has ' + q.open + ' open tasks', why: 'Nobody has ticked them yet.', next: t ? 'Start with ' + clean(t.id, 40) + '.' : 'Open handoff/QUEUE.md.' }); }
+  const gaps = (Array.isArray(qb.gaps) ? qb.gaps : []).filter((g) => isObj(g) && g.name && g.last);
+  if (gaps.length) {
+    const worst = gaps[0], same = gaps.filter((g) => g.last === worst.last).length;
+    S.push({ w: 56, kind: 'data', who: 'hephaestus', title: gaps.length + ' data set' + (gaps.length === 1 ? ' ends' : 's end') + ' weeks before the newest research', why: clean(worst.name, 40) + ' stops on ' + clean(worst.last, 10) + ' (' + (num(worst.days) || '?') + ' days behind)' + (gaps.length > 1 ? '; ' + (gaps.length - same > 0 ? 'the others stop later' : 'the others stop the same day') : '') + '.',
+      ev: 'Medium: every backtest stops where its data stops, so the newest weeks are untested. A fresh export is one manual step.', next: 'Export the newest bars from TradingView into data/ (futures data only), then rerun the live replay.' });
+  }
+  const pipe = isObj(qb.pipeline) ? qb.pipeline : null, fams = pipe && Array.isArray(pipe.families) ? pipe.families.filter((f) => isObj(f) && num(f.open) > 0).slice().sort((a, b) => b.open - a.open) : [];
+  if (fams.length) S.push({ w: 45, kind: 'open-runs', who: 'dev', title: clean(fams[0].name, 30) + ' has ' + fams[0].open + ' runs with no verdict', why: 'They were run and stored, but nobody wrote adopted or rejected on them' + (fams.length > 1 ? ' (next: ' + clean(fams[1].name, 30) + ', ' + fams[1].open + ')' : '') + '.',
+    ev: 'Medium: the work is already done; a verdict costs one read and stops the same idea being run twice.', next: 'Open the Archive on ' + clean(fams[0].name, 30) + ', sort by date, and mark the oldest open runs.' });
+  const ch = (Array.isArray(qb.changed) ? qb.changed : []).filter((c) => isObj(c) && c.text);
+  if (ch.length) S.push({ w: 42, kind: 'flip', who: clean(ch[0].who || 'dev', 12), title: 'A belief changed: check what else leaned on it', why: clean(ch[0].text, 170), ev: 'High when a live rule rests on the old belief, otherwise small: reading is cheap.', next: 'Read ' + clean(ch[0].src || 'the write-up', 80) + ' and list any rule or setting that assumed the old belief.' });
+  const mind = isObj(qb.mind) ? qb.mind : null, small = mind && Array.isArray(mind.observations) ? mind.observations.filter((o) => isObj(o) && / of (the|its) last (\d+)/.test(String(o.text)) && Number(/ of (?:the|its) last (\d+)/.exec(String(o.text))[1]) < 30) : [];
+  if (small.length) S.push({ w: 38, kind: 'sample-size', who: 'mind', title: 'The Mind has ' + small.length + ' note' + (small.length === 1 ? '' : 's') + ' built on fewer than 30 trades', why: clean(small[0].text, 150), ev: 'Small today, bigger later: a pattern in 20 trades is a question, not an answer.', next: 'Leave the rules alone; look again when each note rests on 30 or more trades.' });
+  if (q && (num(q.open) || 0) > 0) { const t = Array.isArray(q.tasks) && q.tasks[0]; S.push({ w: 40, kind: 'queue', who: 'queue', title: 'The queue has ' + q.open + ' open tasks', why: 'Nobody has ticked them yet.', ev: 'Depends on the task: the top of the list was put there first for a reason.', next: t ? 'Start with ' + clean(t.id, 40) + '.' : 'Open handoff/QUEUE.md.' }); }
+  const miss = S.filter((x) => x.kind === 'gap');
+  if (miss.length > 2) {                      // many stations with no file is ONE finding (the site has no worker files), not eight rows
+    const names = miss.map((x) => nameOf(x.who));
+    for (const m of miss) S.splice(S.indexOf(m), 1);
+    S.push({ w: 80, kind: 'gap', who: miss[0].who, title: miss.length + ' workers have no file here', why: clean(names.join(', '), 150) + ': their files are not published on this site.', ev: 'High: without their files these stations are blind, so nothing they could find is seen.', next: 'Run RUN_MONEY.bat and the site build on the PC, then publish; the stations fill in by themselves.' });
+  }
   S.sort((a, b) => b.w - a.w || (a.who < b.who ? -1 : 1));
-  const top = S.slice(0, 6);
-  if (!top.length) top.push({ w: 0, who: '', title: 'Nothing is waiting', why: 'Every worker has fresh, real data.', next: 'Pick the next idea from the "Tested and rejected" list only if you have a new reason.' });
+  const top = S.slice(0, 8);
+  if (!top.length) top.push({ w: 0, kind: 'none', who: '', title: 'Nothing is waiting', why: 'Every worker has fresh, real data.', ev: 'Nothing to gain right now.', next: 'Pick the next idea from the "Tested and rejected" list only if you have a new reason.' });
+  top.forEach((x, i) => { x.rank = i + 1; });
   return top;
 }
 
@@ -315,6 +375,11 @@ export function resolveDemo(fx, now) {
     if (isObj(q.mind) && num(q.mind.ago_h) != null) q.mind.t = Math.round((now - q.mind.ago_h * H) / 1000);
     if (isObj(q.git)) for (const c of q.git.commits || []) if (num(c.ago_h) != null) c.t = Math.round((now - c.ago_h * H) / 1000);
     if (isObj(q.writeups)) for (const x of q.writeups.latest || []) if (num(x.d_ago) != null) x.date = day(x.d_ago);
+    for (const e of (q.events || []).concat(q.money_runs || [])) if (num(e.ago_h) != null) e.t = Math.round((now - e.ago_h * H) / 1000);
+    for (const l of q.lessons || []) { if (num(l.d_ago) != null) l.d = day(l.d_ago); for (const sc of l.sources || []) if (num(sc.d_ago) != null) sc.d = day(sc.d_ago); }
+    for (const c of q.changed || []) if (num(c.d_ago) != null) c.d = day(c.d_ago);
+    if (isObj(q.pipeline)) for (const m of q.pipeline.moves || []) if (num(m.d_ago) != null) m.d = day(m.d_ago);
+    for (const g of q.gaps || []) if (num(g.d_ago) != null) g.last = day(g.d_ago);
   }
   f.demo = true;
   return f;
@@ -324,10 +389,16 @@ export function resolveDemo(fx, now) {
 export function haveReal(inp) { return isObj(inp) && ['home', 'money', 'kalshi', 'cron', 'forge', 'heph'].some((k) => isObj(inp[k])); }
 
 // ------------------------------------------------------------------ walking the floor (pure, so it is tested)
+export function hallOf(p) { const x = p && isFinite(p.x) ? p.x : 0, z = p && isFinite(p.z) ? p.z : 0; return HALLS.find((h) => x >= h.x0 && x <= h.x1 && z >= h.z0 && z <= h.z1) || HALLS[3]; }
+const inDoor = (axis, c) => DOORS.some((d) => d.axis === axis && Math.abs(c - d.c) <= d.half - 0.3);
+/** keep a point inside the factory, out of the inner walls (except through a door) and out of every station's circle */
 export function resolveCollision(x, z, stations, r) {
   const R = r == null ? STATION_R : r;
   x = Math.max(-BOUNDS.x, Math.min(BOUNDS.x, x)); z = Math.max(-BOUNDS.z, Math.min(BOUNDS.z, z));
-  for (const s of stations) {
+  const nearX = Math.abs(x) < WALL_T && !inDoor('x', z), nearZ = Math.abs(z) < WALL_T && !inDoor('z', x);
+  if (nearX) x = x >= 0 ? WALL_T : -WALL_T;
+  if (nearZ) z = z >= 0 ? WALL_T : -WALL_T;
+  for (const s of stations || []) {
     const dx = x - s.x, dz = z - s.z, d = Math.hypot(dx, dz);
     if (d < R) { const k = d < 1e-6 ? 1 : R / d; x = s.x + (d < 1e-6 ? R : dx * k); z = s.z + (d < 1e-6 ? 0 : dz * k); }
   }
@@ -339,6 +410,8 @@ export function walk(p, yaw, move, dt, stations, speed) {
   const nx = p.x + (-Math.sin(yaw) * f + Math.cos(yaw) * s) * sp, nz = p.z + (-Math.cos(yaw) * f - Math.sin(yaw) * s) * sp;
   return resolveCollision(nx, nz, stations);
 }
+/** smooth controls: move `v` toward `target` so that it gets about 63% of the way in 1 / rate seconds (frame-rate independent); reduced motion passes rate 0 = jump */
+export function ease(v, target, dt, rate) { return !rate || rate <= 0 ? target : v + (target - v) * (1 - Math.exp(-rate * Math.max(0, Math.min(dt, 0.25)))); }
 export function nearest(p, stations, maxD) {
   let best = null, bd = maxD == null ? 3.2 : maxD;
   for (const s of stations) { const d = Math.hypot(p.x - s.x, p.z - s.z); if (d < bd) { bd = d; best = s; } }
@@ -349,11 +422,134 @@ export function followCam(s, t, reduced) {
   const a = reduced ? 0 : t * 0.35, fx = s.x + Math.sin(a) * 0.5, fz = s.z + Math.cos(a) * 0.5;
   return { x: fx, z: fz + 3.2, y: 2.2, look: { x: fx, y: 1.25, z: fz } };
 }
+export const TOUR_S = 80;                 // one calm lap of the four halls
+/** the calm overview flythrough for people who do not want to walk: a slow oval above the four halls, always looking down at the floor ahead. Reduced motion: one still view of everything. */
+export function tourCam(t, reduced) {
+  if (reduced) return { x: 0, y: 21, z: 15, look: { x: 0, y: 0, z: 0.5 }, hall: null };
+  const a = Math.PI / 4 - (t / TOUR_S) * Math.PI * 2, b = a - 0.55;
+  const x = Math.cos(a) * 9.2, z = Math.sin(a) * 7.2, lx = Math.cos(b) * 5.6, lz = Math.sin(b) * 4.3;
+  return { x, y: 7.4, z, look: { x: lx, y: 0.9, z: lz }, hall: hallOf({ x: lx, z: lz }).id };
+}
+
+// ------------------------------------------------------------------ the day replay (one dated stream across every worker)
+const nameOf = (id) => { const s = STATIONS.find((x) => x.id === id); return s ? s.name : id; };
+/** everything that has a time, oldest first: the builder's stream (research runs, write-ups, the Mind, done tasks), git commits, the money machines' own run times,
+ *  every night job of Cronos and each worker's own dated outputs. { t (ms), who, name, text, ok, kind, src, sample } */
+export function stream(inp0, workers, now) {
+  const inp = isObj(inp0) ? inp0 : {}, q = isObj(inp.queue) ? inp.queue : {}, E = [], seen = new Set(), demo = !!inp.demo;
+  const add = (t, who, text, ok, kind, src, sample) => {
+    const ms = toMs(t), id = IDS.includes(who) ? who : 'dev', txt = clean(text, 150);
+    if (ms == null || !txt || (isFinite(now) && ms > now + H)) return;
+    const key = id + '|' + Math.round(ms / 60000) + '|' + txt.toLowerCase();
+    if (seen.has(key)) return; seen.add(key);
+    E.push({ t: ms, who: id, name: nameOf(id), text: txt, ok: ok !== false, kind: clean(kind || 'run', 12), src: clean(src || '', 90), sample: !!sample || demo });
+  };
+  for (const e of Array.isArray(q.events) ? q.events : []) if (isObj(e)) add(e.t, e.who, e.text, e.ok, e.kind, e.src, false);
+  for (const e of Array.isArray(q.money_runs) ? q.money_runs : []) if (isObj(e)) add(e.t, e.who, e.text, e.ok, 'money', e.src, e.sample);
+  for (const c of isObj(q.git) && Array.isArray(q.git.commits) ? q.git.commits : []) if (isObj(c)) add(c.t, 'dev', 'Commit: ' + clean(c.s, 120), true, 'commit', 'git log', false);
+  const tasks = isObj(inp.cron) && isObj(inp.cron.tasks) ? inp.cron.tasks : {};
+  for (const k of Object.keys(tasks)) { const e = tasks[k]; if (isObj(e)) add(e.last_run_t, 'cronos', clean(k, 30) + ': ' + (e.ok === false ? 'FAILED ' + clean(e.error || '', 70) : 'ran fine'), e.ok !== false, 'job', 'cronos/status.json', false); }
+  for (const w of Array.isArray(workers) ? workers : []) {
+    if (w.id === 'cronos' || w.id === 'dev') continue;                       // their rows are above, one by one
+    if (w.last != null) add(w.last, w.id, w.status === 'failed' ? 'FAILED: ' + (w.health || 'its last run failed') : clean(w.doing, 140) || 'ran', w.status !== 'failed', 'run', w.src, w.status === 'sample');
+  }
+  E.sort((a, b) => a.t - b.t || (a.who < b.who ? -1 : a.who > b.who ? 1 : 0));
+  return E;
+}
+export const RANGES = { '24h': { ms: D, label: 'Last 24 hours' }, '7d': { ms: 7 * D, label: 'Last 7 days' } };
+/** the replay window. It ends now; when nothing at all happened in it, it honestly moves back to end on the newest event and says so (shifted). */
+export function replayWindow(E, now, range) {
+  const span = (RANGES[range] || RANGES['24h']).ms, all = Array.isArray(E) ? E : [];
+  let t1 = now, shifted = false, ev = all.filter((e) => e.t > t1 - span && e.t <= t1);
+  if (!ev.length && all.length) { t1 = all[all.length - 1].t; shifted = true; ev = all.filter((e) => e.t > t1 - span && e.t <= t1); }
+  const fails = ev.filter((e) => !e.ok);
+  return { range: RANGES[range] ? range : '24h', t0: t1 - span, t1, span, events: ev, shifted, fails: fails.length, workers: new Set(ev.map((e) => e.who)).size,
+    note: !all.length ? 'No dated events at all yet.' : shifted ? 'Nothing ran in the ' + (RANGES[range] || RANGES['24h']).label.toLowerCase() + '. Showing the same span ending at the newest event, ' + dayOf(t1) + '.' : ev.length + ' event' + (ev.length === 1 ? '' : 's') + ' from ' + new Set(ev.map((e) => e.who)).size + ' workers' + (fails.length ? ', ' + fails.length + ' failed' : ', none failed') + '.' };
+}
+/** the state of the factory at the cursor (0..1 through the window): what just happened, who is busy, how much is done */
+export function replayAt(win, f) {
+  const k = Math.max(0, Math.min(1, isFinite(f) ? f : 1)), t = win.t0 + win.span * k, past = win.events.filter((e) => e.t <= t), slice = win.span / 24;
+  const active = [...new Set(past.filter((e) => e.t > t - slice).map((e) => e.who))], counts = {};
+  for (const e of past) counts[e.who] = (counts[e.who] || 0) + 1;
+  return { t, f: k, done: past.length, total: win.events.length, recent: past.slice(-6).reverse(), active, failing: [...new Set(past.filter((e) => !e.ok && e.t > t - slice).map((e) => e.who))], counts };
+}
+/** 'jump to last failure': the newest failed event at or before the cursor in the window, else the newest failure of the window; null when nothing failed */
+export function lastFailure(win, f) {
+  const t = win.t0 + win.span * (isFinite(f) ? Math.max(0, Math.min(1, f)) : 1), bad = win.events.filter((e) => !e.ok);
+  if (!bad.length) return null;
+  const before = bad.filter((e) => e.t < t - 1), e = before.length ? before[before.length - 1] : bad[bad.length - 1];
+  return { e, f: Math.max(0, Math.min(1, (e.t - win.t0) / win.span)) };
+}
+/** the next event after the cursor (reduced motion plays event by event) */
+export function nextEvent(win, f) { const t = win.t0 + win.span * f, e = win.events.find((x) => x.t > t + 1); return e ? Math.min(1, (e.t - win.t0) / win.span) : 1; }
+/** lane strip: one row per worker that did something, each event a tick at 0..1 */
+export function lanes(win) {
+  const rows = [];
+  for (const s of STATIONS) { const ev = win.events.filter((e) => e.who === s.id); if (ev.length) rows.push({ id: s.id, name: s.name, ticks: ev.map((e) => ({ f: (e.t - win.t0) / win.span, ok: e.ok })) }); }
+  return rows;
+}
+export function clockText(ms, span) {
+  if (ms == null || !isFinite(ms)) return '';
+  const d = new Date(ms), p = (n) => String(n).padStart(2, '0'), day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getUTCDay()];
+  return day + ' ' + dayOf(ms).slice(5) + ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ' UTC';
+}
+
+// ------------------------------------------------------------------ the research pipeline wall: Idea -> Testing -> Verdict
+/** from queue.pipeline (the builder reads the Archive's index): four lanes with counts, the families, the newest 20 moves, and a link into the Archive for each */
+export function pipeline(queueBlock, demo) {
+  const p = isObj(queueBlock) && isObj(queueBlock.pipeline) ? queueBlock.pipeline : null, c = p && isObj(p.counts) ? p.counts : {};
+  const n = (v) => Math.max(0, Math.round(num(v) || 0));
+  const link = (find) => '../archive/' + (find ? '?find=' + encodeURIComponent(find) : '');
+  const lanesL = [
+    { id: 'ideas', label: 'Idea', n: n(c.ideas), help: 'every run that was stored: each began as an idea', href: link('') },
+    { id: 'testing', label: 'Testing', n: n(c.testing), help: 'run, but no verdict written yet (open)', href: link('open') },
+    { id: 'adopted', label: 'Adopted', n: n(c.adopted), help: 'held up and was adopted or is a candidate', href: link('adopt') },
+    { id: 'rejected', label: 'Rejected', n: n(c.rejected), help: 'tested and rejected', href: link('rejected') },
+  ];
+  const fams = (p && Array.isArray(p.families) ? p.families : []).filter((f) => isObj(f) && f.name).map((f) => {
+    const runs = Math.max(1, n(f.runs));
+    return { name: clean(f.name, 40), runs: n(f.runs), adopted: n(f.adopted), rejected: n(f.rejected), open: n(f.open), pa: n(f.adopted) / runs, pr: n(f.rejected) / runs, po: n(f.open) / runs, href: link(clean(f.name, 40)) };
+  });
+  const moves = (p && Array.isArray(p.moves) ? p.moves : []).filter((m) => isObj(m) && m.id).slice(0, 20).map((m) => ({ id: clean(m.id, 50), title: clean(m.title || m.id, 110), family: clean(m.family, 40), d: clean(m.d, 10),
+    verdict: ['adopted', 'rejected', 'open'].includes(m.verdict) ? m.verdict : 'open', href: link(clean(m.id, 50)) }));
+  const total = lanesL[0].n, decided = lanesL[2].n + lanesL[3].n;
+  return { ok: !!p && total > 0, sample: !!demo, lanes: lanesL, families: fams, moves, built: p ? clean(p.built, 10) : '', src: p ? clean(p.src, 40) : '',
+    line: !p || !total ? 'No pipeline counts are published yet.' : total.toLocaleString('en-US') + ' ideas were tested and stored. ' + decided.toLocaleString('en-US') + ' have a verdict: ' + lanesL[2].n.toLocaleString('en-US') + ' adopted, ' + lanesL[3].n.toLocaleString('en-US') + ' rejected. ' + lanesL[1].n.toLocaleString('en-US') + ' are still open.' };
+}
+
+// ------------------------------------------------------------------ the learning board (the builder's distilled lessons + each worker's own notes)
+export const CATS = ['NQ strategy', 'Kalshi', 'money', 'process', 'app'];
+const CAT_OF = { kalshi: 'Kalshi', sibyl: 'Kalshi', chrysos: 'money', mercury: 'money', oikos: 'money', arbiter: 'money', lit: 'NQ strategy', atlas: 'NQ strategy', blitz: 'NQ strategy', prometheus: 'NQ strategy', hephaestus: 'NQ strategy', mind: 'NQ strategy' };
+/** { all, week (top lessons of the last 7 days, strongest first), top (strongest overall), changed (what changed our mind), cats (counts), note } */
+export function board(queueBlock, workers, now, demo) {
+  const q = isObj(queueBlock) ? queueBlock : {}, all = [], seen = new Set();
+  const push = (l) => { const key = l.text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); if (!l.text || seen.has(key)) return; seen.add(key); all.push(l); };
+  for (const l of Array.isArray(q.lessons) ? q.lessons : []) {
+    if (!isObj(l) || !l.text) continue;
+    const src = (Array.isArray(l.sources) ? l.sources : []).filter((x) => isObj(x) && x.src).map((x) => ({ src: clean(x.src, 90), d: clean(x.d, 10) })), ms = toMs(String(l.d || ''));
+    if (!src.length) continue;                                                // no lesson without its source
+    push({ text: clean(l.text, 240), cat: CATS.includes(l.cat) ? l.cat : 'process', who: IDS.includes(l.who) ? l.who : 'dev', name: nameOf(IDS.includes(l.who) ? l.who : 'dev'), d: clean(l.d, 10), ms,
+      strength: Math.max(1, Math.round(num(l.strength) || src.length)), sources: src.slice(0, 5), week: ms != null && now - ms <= WEEK_D * D && ms <= now + D, sample: !!demo });
+  }
+  for (const w of Array.isArray(workers) ? workers : []) for (const l of w.learned || []) {       // a worker's own notes (a money machine's caveats, the forge's count): one source each
+    if (!l || !l.text || !l.src || /^(research\/writeups|docs\/)/.test(l.src) && Array.isArray(q.lessons) && q.lessons.length) continue;
+    const ms = toMs(l.d);
+    push({ text: l.text, cat: CAT_OF[w.id] || 'process', who: w.id, name: w.name, d: l.d || '', ms, strength: 1, sources: [{ src: l.src, d: l.d || '' }], week: ms != null && now - ms <= WEEK_D * D && ms <= now + D, sample: !!demo || w.status === 'sample' });
+  }
+  const byStrength = (a, b) => b.strength - a.strength || (b.ms == null ? -1 : b.ms) - (a.ms == null ? -1 : a.ms) || (a.text < b.text ? -1 : 1);
+  const week = all.filter((l) => l.week).sort(byStrength).slice(0, 8), top = all.slice().sort(byStrength).slice(0, 8);
+  const changed = (Array.isArray(q.changed) ? q.changed : []).filter((c) => isObj(c) && c.text && c.src).slice(0, 8).map((c) => ({ text: clean(c.text, 300), was: clean(c.was, 160), d: clean(c.d, 10), cat: CATS.includes(c.cat) ? c.cat : 'process', who: IDS.includes(c.who) ? c.who : 'dev', src: clean(c.src, 90), sample: !!demo }));
+  const cats = {}; for (const c of CATS) cats[c] = all.filter((l) => l.cat === c).length;
+  const newest = all.reduce((m, l) => (l.ms != null && (m == null || l.ms > m) ? l.ms : m), null);
+  return { all, week, top, changed, cats, newest,
+    note: !all.length ? 'No lessons are written down yet.' : (week.length ? week.length + ' lesson' + (week.length === 1 ? '' : 's') + ' from the last 7 days, the strongest first.' : 'No new lesson in the last 7 days; the newest is from ' + (dayOf(newest) || 'an undated note') + '.') + ' Strength counts the independent files that agree.' + (demo ? ' Example lessons.' : '') };
+}
+export function strengthWord(n) { return n >= 4 ? n + ' files agree' : n === 3 ? '3 files agree' : n === 2 ? '2 files agree' : '1 file so far'; }
 
 export function jarvisCard(workers, queueBlock, now, demo) {
   const hd = headline(workers), q = isObj(queueBlock) && isObj(queueBlock.queue) ? queueBlock.queue : {};
   const need = hd.counts.failed + hd.counts.stale;
   return { v: 1, name: 'Ergasterion', status: { level: demo ? 'off' : hd.level === 'bad' ? 'bad' : need || hd.counts.sample ? 'warn' : 'ok', label: demo ? 'Demo data' : need ? need + ' need a look' : 'All fine' },
     kpis: [{ label: 'Working', value: String(hd.counts.working) }, { label: 'Need a look', value: String(need) }, { label: 'Open tasks', value: String(num(q.open) || 0) }],
-    lines: [clean(hd.title + '. ' + hd.line, 118)], t: Math.round(now / 1000), open: '#', theme: '#14110e', stale_after: 86400 };
+    lines: [clean(hd.title + '. ' + hd.line, 118)].concat(isObj(queueBlock) && Array.isArray(queueBlock.lessons) && isObj(queueBlock.lessons[0]) ? [clean('Newest lesson: ' + queueBlock.lessons[0].text, 118)] : []), t: Math.round(now / 1000), open: '#', theme: '#14110e', stale_after: 86400 };
 }
