@@ -3,7 +3,8 @@ person, what everyone is doing, then researching and learning from it for everyt
 machines, 3 NQ bots, Mind, the Kalshi bot, Prometheus, Hephaestus, Cronos, the task queue, the dev agents): a marble figure doing its job, a status lamp, a speech bubble with its latest
 finding, a conveyor of labelled crates; a day replay (24 h / 7 days, play, speed, jump to last failure); the research pipeline wall (Idea -> Testing -> Verdict from the Archive index);
 the learning engine (lessons with dedupe, a strength score, sources, categories, 'what changed our mind', lessons.json for Jarvis); a 'what next' planner; first person with eased
-joystick + look, collision with walls and doors, a minimap with you-are-here, follow a worker, a calm tour. Read only: it never starts a worker and never trades.
+joystick + look, collision with walls and doors, a minimap with you-are-here, follow a worker, a calm tour; and THE BUILDERS' CAMP outside the front door: a desert caravan camp with a tent,
+a worker, a banner, a cycling scroll of commit messages, a crate stack and brazier smoke for each build agent (builders.json = handoff/agents_now.json joined with git). Read only: it never starts a worker and never trades.
 
   a. static: the builder's selftest, --check and determinism, queue.json / lessons.json against the raw files, the files, the kit lines, the AGORA look, read-only, the DEMO fixture
   b. the maths in node (ergasterioncore.js): statuses, halls / walls / doors, bubbles and crates, the replay stream, the pipeline, the learning board, the planner, junk input
@@ -30,7 +31,7 @@ D = os.path.join(AK.WEB, APP)
 BUILD = os.path.join(AK.ROOT, "tools", "ergasterion_build.py")
 KALSHI = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
 SCENES = {"stars", "smoke", "coins", "embers", "neurons", "skyline", "torches", "threads", "streaks", "bars", "leaves", "columns", "shards", "rings", "maze"}
-READS = ("./queue.json", "../home.json", "../money/index.json", "../cronos/status.json", "../prometheus/forge.json", "../hephaestus/data.json")
+READS = ("./builders.json", "./queue.json", "../home.json", "../money/index.json", "../cronos/status.json", "../prometheus/forge.json", "../hephaestus/data.json")
 BUDGET = {"calls": 45, "triangles": 150000}        # the high tier's budget for the whole factory (floor.js draws about 15 calls / 40k triangles before post-processing)
 
 
@@ -79,6 +80,12 @@ def test_static():
     check("a. lessons.json for Jarvis ('what did we learn this week'): one plain sentence to say, the week's lessons, the strongest, what changed, counts per category, under 16 KB, no markup",
           lj["v"] == 1 and 40 < len(lj["say"]) <= 520 and isinstance(lj["week"], list) and lj["top"] and lj["changed"] and set(lj["counts"]) == {"NQ strategy", "Kalshi", "money", "process", "app"} and lj["asof"] == q["asof"]
           and all(x["sources"] and x["text"] for x in lj["week"] + lj["top"]) and os.path.getsize(os.path.join(D, "lessons.json")) < 16384 and not re.search(r"[<>]", json.dumps(lj)), lj["say"][:200])
+    bj = json.load(open(os.path.join(D, "builders.json"), encoding="utf-8"))
+    an = json.load(open(os.path.join(AK.ROOT, "handoff", "agents_now.json"), encoding="utf-8"))
+    check("a. builders.json (the Builders' camp): one row per agent of handoff/agents_now.json with its name, job, area and branch; an agent with git activity has dated commits, a last-commit time, files and folders; one without is labelled 'job only, no live activity' and has none; no markup",
+          bj["v"] == 1 and bj["source"] in ("git", "file") and [a["name"] for a in bj["agents"]] == [a["name"] for a in an["agents"]][:16] and all(a["job"] and a["id"] and isinstance(a["commits"], list) for a in bj["agents"])
+          and all((a["last_t"] > 0 and all(c["t"] > 0 and c["s"] for c in a["commits"]) and len(a["commits"]) <= 8 and isinstance(a["folders"], list)) if a["live"] else (a["note"] == "job only, no live activity" and not a["commits"] and a["last_t"] == 0) for a in bj["agents"])
+          and (bj["source"] == "git") == any(a["live"] for a in bj["agents"]) and not re.search(r"[<>]", json.dumps(bj)), bj["source"])
     check("a. no secrets or markup in queue.json", not re.search(r"[<>]|api[_-]?key|password|secret|ghp_|sk-[a-z0-9]{10}", json.dumps(q), re.I))
     AK.static_kit(APP, NAME, reads=READS, allow_urls=(KALSHI,))
     js = AK.read(os.path.join(D, "ergasterion.js")) + AK.read(os.path.join(D, "ergasterioncore.js"))
@@ -88,14 +95,16 @@ def test_static():
     check("a. floor.js: on the OLYMPUS render core, AGORA look, bloom <= .25, no network / markup from data, LITE falls back (ok false), reduced motion zeroes the animation",
           "../olympus/render.js" in fl and "../jarvis/three.module.min.js" in fl and not AK.BANNED_LOOK.search(fl) and not re.search(r"fetch\(|innerHTML|XMLHttpRequest|https?://", fl)
           and all(float(x) <= 0.25 for x in re.findall(r"bloom: \{ strength: ([\d.]+)", fl)) and "q === 'low' || q === 'off'" in fl and "const mot = reduced ? 0 : 1" in fl)
-    check("a. floor.js is light: every repeated part goes through batch() into ONE InstancedMesh per batch (10 batches), the 15 bubbles are one mesh on one atlas, the crate tags and hall signs another; no per-worker sprites or meshes",
-          fl.count("new THREE.InstancedMesh") == 1 and len(re.findall(r"= batch\(|, \w+ = batch\(", fl)) >= 5 and fl.count("batch(") >= 11 and "THREE.Sprite" not in fl and fl.count("atlas(2048, 1024)") == 2 and fl.count("new THREE.Mesh(") <= 5)
+    check("a. floor.js is light: every repeated part goes through batch() into ONE InstancedMesh per batch (12 batches), the 15 bubbles are one mesh on one atlas, the crate tags and hall signs another; no per-worker sprites or meshes",
+          fl.count("new THREE.InstancedMesh") == 1 and len(re.findall(r"= batch\(|, \w+ = batch\(", fl)) >= 6 and fl.count("batch(") >= 13 and "THREE.Sprite" not in fl and fl.count("atlas(2048, 1024)") == 3 and fl.count("new THREE.Mesh(") <= 6)
+    check("a. floor.js has the Builders' camp: tents and dunes are two more batches, the banners and scrolls ONE mesh on a third atlas, the figures reuse the factory's batches; smoke only for a working builder; the scroll cycles commit messages and stands still under reduced motion",
+          all(k in fl for k in ("CAMP_SPOTS", "campFrame(", "drawCamp(", "tent = batch(", "dune = batch(", "'camp:' + camp[j].id", "b.scroll[idx]")) and "if (st !== 'working') hide(lamp.im, PUFF0" in fl and "mot ? Math.floor((t + j * 1.7) / 5.5) % n : 0" in fl)
     check("a. floor.js: first person from the core (walk with wall and station collision, eased joystick and look, follow camera, the calm tour, the hall you are in), a figure for each job, crates and boards you can tap",
           all(k in fl for k in ("walk(", "followCam", "tourCam(", "ease(", "hallOf(", "DOORS", "HALLS", "pulse(", "projectCrate")) and all("'" + j + "'" in fl for j in ("wheel", "scribe", "oracle", "smith", "scales")) and "o.onPick(hit.id, hit.crate)" in fl)
     html = AK.read(os.path.join(D, "index.html"))
-    check("a. floorload.js before ergasterion.js; the 3D stage AND the flat plan exist; page order: hero, floor, worker card, replay, workers, ticker, pipeline, learning board, what next",
+    check("a. floorload.js before ergasterion.js; the 3D stage AND the flat plan exist; page order: hero, floor, worker card, the Builders' camp, builder card, replay, workers, ticker, pipeline, learning board, what next",
           html.index("floorload.js") < html.index('src="ergasterion.js') and 'id="stage"' in html and 'id="plan"' in html and 'id="mini"' in html
-          and html.index('id="hero"') < html.index('id="floorCard"') < html.index('id="sheet"') < html.index('id="replayCard"') < html.index('id="workersCard"') < html.index('id="tickerCard"') < html.index('id="pipeCard"') < html.index('id="boardCard"') < html.index('id="nextCard"'))
+          and html.index('id="hero"') < html.index('id="floorCard"') < html.index('id="sheet"') < html.index('id="campCard"') < html.index('id="bsheet"') < html.index('id="replayCard"') < html.index('id="workersCard"') < html.index('id="tickerCard"') < html.index('id="pipeCard"') < html.index('id="boardCard"') < html.index('id="nextCard"'))
     check("a. the replay controls are real controls: a range slider, Play, Speed, 'Jump to last failure', 24 hours / 7 days; the tour and follow controls exist",
           all(k in html for k in ('id="scrub"', 'type="range"', 'id="playBtn"', 'id="speedBtn"', 'id="failBtn"', 'id="r24"', 'id="r7"', 'id="tourBtn"', 'id="follow"', 'id="lanes"')))
     na = json.load(open(os.path.join(AK.ROOT, "tools", "new_apps.json"), encoding="utf-8"))
@@ -107,6 +116,8 @@ def test_static():
     check("a. the fixture covers all 15 workers' inputs and the v2 blocks (events, money runs, lessons with sources, what changed, pipeline, data gaps), every text says Example, times are counted back from now",
           len(fx["money"]["streams"]) == 5 and len(fx["home"]["accounts"]) == 3 and fx["cron"]["tasks"] and fq["learnings"] and fq["git"]["commits"] and len(fq["events"]) >= 8 and fq["money_runs"] and len(fq["lessons"]) >= 6 and fq["changed"] and fq["pipeline"]["families"] and fq["gaps"]
           and all(x["text"].startswith("Example") for x in fq["events"] + fq["lessons"] + fq["changed"] + fq["money_runs"]) and all("ago_h" in e for e in fq["events"]) and all("d_ago" in x and x["sources"] for x in fq["lessons"]))
+    fb = fx["builders"]["agents"]
+    check("a. the fixture has an example Builders' camp: 10 agents named Example, with working / quiet / merged / job-only cases, times counted back from now", len(fb) == 10 and all(a["name"].startswith("Example") and a["job"].startswith("Example") for a in fb) and any(a["merged"] for a in fb) and any(not a["live"] for a in fb) and all("ago_min" in c for a in fb for c in a["commits"]))
 
 
 HARNESS = r"""
@@ -140,8 +151,26 @@ import(process.argv[2]).then((C) => {
     Math.min(...st.flatMap((a, i) => st.slice(i + 1).map((b) => Math.hypot(a.x - b.x, a.z - b.z)))) >= 2 * C.STATION_R + 0.9, C.hallOf({ x: -3, z: -3 }).id + C.hallOf({ x: 3, z: -3 }).id + C.hallOf({ x: -3, z: 3 }).id + C.hallOf({ x: 3, z: 3 }).id, C.hallOf(C.START).id, C.hallOf(null).id];
   o.say = [by(W, 'cronos').say, by(real1, 'chrysos').say, by(W, 'sibyl').say, by(W, 'oikos').say, W.every((w) => w.say && w.say.length <= 110), W.every((w) => w.crates.length <= 5 && w.crates.every((c) => c.tag && c.tag.length <= 16 && c.text)), by(W, 'queue').crates.map((c) => c.tag).join('|'), C.crateTag('Example commit: a new app page'), C.crateTag(''), by(W, 'sibyl').crates.length === by(W, 'sibyl').outputs.length];
   // collision: walls, doors, stations; walking; easing; the tour
-  const wall = C.resolveCollision(0.1, 3, st), wall2 = C.resolveCollision(-0.2, -8, st), door = C.resolveCollision(0.1, 5, st), door2 = C.resolveCollision(6.5, 0.1, st), wz = C.resolveCollision(3, -0.2, st), jamb = C.resolveCollision(0.1, 6.15, st), stuck = C.resolveCollision(7.1, -7.3, st), out = C.resolveCollision(99, 99, st);
-  o.walls = [wall.x === C.WALL_T && wall.z === 3, wall2.x === -C.WALL_T, door.x === 0.1 && door.z === 5, door2.z === 0.1 && door2.x === 6.5, wz.z === -C.WALL_T, jamb.x === C.WALL_T, Math.hypot(stuck.x - 7, stuck.z + 7.5) >= C.STATION_R - 1e-6, out.x === C.BOUNDS.x && out.z === C.BOUNDS.z];
+  const wall = C.resolveCollision(0.1, 3, st), wall2 = C.resolveCollision(-0.2, -8, st), door = C.resolveCollision(0.1, 5, st), door2 = C.resolveCollision(6.5, 0.1, st), wz = C.resolveCollision(3, -0.2, st), jamb = C.resolveCollision(0.1, 6.15, st), stuck = C.resolveCollision(7.1, -7.3, st), out = C.resolveCollision(99, -99, st);
+  o.walls = [wall.x === C.WALL_T && wall.z === 3, wall2.x === -C.WALL_T, door.x === 0.1 && door.z === 5, door2.z === 0.1 && door2.x === 6.5, wz.z === -C.WALL_T, jamb.x === C.WALL_T, Math.hypot(stuck.x - 7, stuck.z + 7.5) >= C.STATION_R - 1e-6, out.x === C.BOUNDS.x && out.z === -C.BOUNDS.z];
+  // the camp outside the front door
+  const cst = st.concat(C.CAMP_SPOTS), cOut = C.resolveCollision(99, 99, cst), cW = C.resolveCollision(-99, 15, cst), wallS = C.resolveCollision(3, 9.8, cst), wallS2 = C.resolveCollision(3, 10.4, cst), doorS = C.resolveCollision(6.5, 10, cst), tentIn = C.resolveCollision(4.6, 15.9, cst);
+  let ps = { x: C.START.x, z: C.START.z }, trail = []; for (let i = 0; i < 70; i++) { ps = C.walk(ps, Math.PI, { fwd: 1, side: 0 }, 0.05, cst); trail.push(C.hallOf(ps).id); }
+  let pb = { x: 6.5, z: 14 }; for (let i = 0; i < 200; i++) pb = C.walk(pb, 0, { fwd: 1, side: 0 }, 0.05, cst);
+  o.camp = [cOut.x === C.CAMP.x1 - 0.6 && cOut.z === C.CAMP.z1 - 0.6, cW.x === C.CAMP.x0 + 0.6, wallS.z === C.BOUNDS.z, wallS2.z === C.CAMP.door.z1, doorS.x === 6.5 && doorS.z === 10, Math.hypot(tentIn.x - 4.5, tentIn.z - 15.8) >= C.STATION_R - 1e-6,
+    trail[0] === 'library' && trail[trail.length - 1] === 'camp', ps.z > 12 && Math.abs(ps.x - 6.5) < 1e-9, C.hallOf(pb).id === 'library' || C.hallOf(pb).id === 'trading', C.CAMP_SPOTS.length, C.hallOf({ x: 6.5, z: 15 }).name,
+    C.CAMP_SPOTS.every((c) => c.x > C.CAMP.x0 + 1.5 && c.x < C.CAMP.x1 - 1.5 && c.z - 2.6 > C.CAMP.z0 && c.z < C.CAMP.z1 - 1.5), Math.min(...C.CAMP_SPOTS.flatMap((a, i) => C.CAMP_SPOTS.slice(i + 1).map((b) => Math.hypot(a.x - b.x, a.z - b.z)))) >= 3,
+    C.HALLS.length];
+  const bnow = Date.parse('2026-11-11T02:00:00Z'), BD = C.builders(C.resolveBuilders(fx.builders, bnow), bnow, true), HD = C.allHands(BD, fx.builders, true), realB = JSON.parse(fs.readFileSync(process.argv[5], 'utf8'));
+  const BRl = C.builders(realB, bnow, false), fileOnly = C.builders({ source: 'file', agents: realB.agents.map((a) => ({ name: a.name, job: a.job, area: a.area, branch: a.branch, live: false, commits: [], last_t: 0 })) }, bnow, false);
+  const one = (x) => C.builders({ agents: [Object.assign({ name: 'A', job: 'J', live: true }, x)] }, bnow)[0];
+  o.builders = [BD.length, BD.map((b) => b.status).join(), BD.every((b) => b.sample && b.scroll.length >= 1 && b.id && b.line), HD.line, HD.list.map((b) => b.status).join(), HD.counts.working + HD.counts.quiet + HD.counts.done + HD.counts.job === 10,
+    BD[0].crates === 3 && BD[0].commits.length === 3 && BD[0].commits[0].t > BD[0].commits[1].t, BD[7].shipped.length === 2 && BD[7].scroll[0].startsWith('Shipped: '), BD[9].status === 'job' && BD[9].line === 'Job only, no live activity.' && BD[9].scroll[0].indexOf('no live activity') > 0 && BD[9].commits.length === 0 && BD[9].mins === null,
+    BD.every((b, i) => b.x === C.CAMP_SPOTS[i].x && b.z === C.CAMP_SPOTS[i].z)];
+  o.buildersReal = [BRl.length === realB.agents.length, BRl.every((b) => ['working', 'quiet', 'done', 'job'].includes(b.status) && b.name && b.job && !b.sample), BRl.every((b) => (b.status === 'job') === !b.live), fileOnly.every((b) => b.status === 'job' && !b.commits.length && b.crates === 0), C.allHands(fileOnly, { source: 'file' }).note,
+    /job line only/.test(C.allHands(fileOnly, { source: 'file' }).line), one({ last_t: bnow / 1000 - 5 * 60 }).status, one({ last_t: bnow / 1000 - 16 * 60 }).status, one({ last_t: bnow / 1000 - 60, merged: true }).status, one({ live: false, last_t: bnow / 1000 }).status, one({ last_t: 'x' }).status,
+    C.builders(null, bnow).length, C.allHands([], null).line, !/[<>]/.test(JSON.stringify(C.builders({ agents: [null, 5, { name: '<b>n</b>', job: '<i>j</i>', live: true, last_t: bnow / 1000, commits: [null, { t: bnow / 1000, s: '<s>c</s>' }, { s: 'no time' }], folders: [{ name: '<f>', n: 'x' }], shipped: 'x' }] }, bnow))),
+    C.builders({ agents: new Array(14).fill({ name: 'x', job: 'y' }) }, bnow).length];
   let p = { x: C.START.x, z: C.START.z }, inside = false, crossed = 0; const path = [];
   for (let i = 0; i < 400; i++) { p = C.walk(p, 0, { fwd: 1, side: 0 }, 0.05, st); if (st.some((s) => Math.hypot(p.x - s.x, p.z - s.z) < C.STATION_R - 1e-6)) inside = true; path.push(C.hallOf(p).id); }
   let w2 = { x: 2, z: 5 }; for (let i = 0; i < 200; i++) w2 = C.walk(w2, 0, { fwd: 1, side: 0 }, 0.05, st);                // north from the Library, not at a door: the wall holds
@@ -200,7 +229,7 @@ import(process.argv[2]).then((C) => {
 
 
 def test_maths():
-    out = AK.node(APP, HARNESS, os.path.join(D, "fixture.json"), os.path.join(D, "queue.json"))
+    out = AK.node(APP, HARNESS, os.path.join(D, "fixture.json"), os.path.join(D, "queue.json"), os.path.join(D, "builders.json"))
     if out is None:
         check("b. node is not installed: the maths checks are skipped", True)
         return
@@ -227,6 +256,14 @@ def test_maths():
           out["say"][0].startswith("My last run failed.") and out["say"][1].startswith("No file from me yet") and out["say"][2] == "Example: only 1 pick survives out-of-sample." and out["say"][3].startswith("Old news: ") and out["say"][4] and out["say"][5]
           and out["say"][6] == "cities-layout|inbox-noise|ledger-headline|gate-full-run" and out["say"][7] == "a new app page" and out["say"][8] == "output" and out["say"][9], out["say"])
     check("b. collision: an inner wall pushes you back to its face on your side, a door lets you through, a door jamb does not, a platform is solid, the outer walls hold", out["walls"] == [True] * 8, out["walls"])
+    check("b. THE BUILDERS' CAMP lies outside the front door: the south wall still holds except in the doorway, the camp has its own bounds, a tent is solid, walking south from the front door takes you out into the camp, 10 tent spots with room between them, the factory keeps its 4 halls",
+          out["camp"][:9] == [True] * 9 and out["camp"][9] == 10 and out["camp"][10] == "Builders' camp" and out["camp"][11] and out["camp"][12] and out["camp"][13] == 4, out["camp"])
+    check("b. builders (demo): 10 example agents: working (a commit in the last 15 minutes), quiet, done (merged, its scroll reads 'Shipped: ...'), job only (no git: 'Job only, no live activity', no commits invented); crates = commits today; All hands orders working first and counts add up",
+          out["builders"][0] == 10 and out["builders"][1] == "working,working,working,working,quiet,quiet,quiet,done,quiet,job" and out["builders"][2] and out["builders"][3] == "10 build agents: 4 working now, 4 quiet, 1 done, 1 with a job line only. Example agents, not the real ones."
+          and out["builders"][4].startswith("working,working,working,working,quiet") and out["builders"][4].endswith("done,job") and out["builders"][5:] == [True] * 5, out["builders"])
+    check("b. builders (the repo's builders.json, and the same agents WITHOUT git): real rows are never flagged sample; without git every agent is 'job only' with no commits and the note says so; 5 min = working, 16 min = quiet, merged = done, not live or no time = job; junk is cleaned; at most 10 tents",
+          out["buildersReal"][:4] == [True] * 4 and "no live activity" in out["buildersReal"][4] and out["buildersReal"][5] and out["buildersReal"][6:11] == ["working", "quiet", "done", "job", "job"] and out["buildersReal"][11] == 0
+          and out["buildersReal"][12].startswith("No build agents are listed") and out["buildersReal"][13] and out["buildersReal"][14] == 10, out["buildersReal"])
     check("b. walking: straight ahead from the front door you cross the Library and go THROUGH the door into the Trading hall without ever entering a platform; away from a door the wall stops you; east from the Money hall you reach the Trading hall; forward is -z, yaw turns",
           out["walk"][:7] == [True] * 7 and out["walk"][7] == "lit" and out["walk"][8] is None, out["walk"])
     check("b. smooth controls: easing moves part of the way each frame, arrives, is frame-rate independent (two half frames = one frame), and jumps at once under reduced motion (rate 0)", out["ease"] == [True] * 5, out["ease"])
@@ -291,6 +328,25 @@ def test_page():
             check("c. the floor is 3D or the flat plan, never nothing; the LITE plan names the 4 halls, draws each worker's job as a small icon and lets a worker speak under the plan", d["mode"] in ("3d", "plan") and p.evaluate("() => document.querySelector('#stage').hidden !== document.querySelector('#plan').hidden")
                   and d["halls"] == ["Money hall", "Trading hall", "Research hall", "Library"] and d["icons"] == 30 and " says: " in d["planSay"], (d["mode"], d["halls"], d["icons"], d["planSay"]))
             AK.shot(p, "ergasterion-demo")
+            # the Builders' camp (2D camp map, All hands, a builder card)
+            cm = p.evaluate("""() => ({ line: document.querySelector('#handsLine').textContent, pill: document.querySelector('#campPill').textContent, tents: document.querySelectorAll('#campMap g[role=button]').length, smoke: document.querySelectorAll('#campMap .smoke').length,
+              hands: [...document.querySelectorAll('#hands button')].map((b) => b.getAttribute('aria-label')), scroll: document.querySelector('#campScroll').textContent, note: document.querySelector('#campNote').textContent, go: document.querySelector('#campGo').hidden, bs: document.querySelector('#bsheet').hidden,
+              crates: document.querySelectorAll('#campMap g[role=button] rect[rx="0.8"]').length, today: window.ERGASTERION.S.builders.reduce((s, b) => s + b.crates, 0) })""")
+            check("c. THE BUILDERS' CAMP (2D camp map): '10 build agents: 4 working now ...' flagged example, 10 tents you can tap, smoke only over the 4 working builders' braziers, a crate per commit today, the scroll reads a commit message, All hands lists all 10 working first",
+                  cm["line"].startswith("10 build agents: 4 working now, 4 quiet, 1 done, 1 with a job line only.") and "Example agents" in cm["line"] and cm["pill"] == "4 working" and cm["tents"] == 10 and cm["smoke"] == 8 and len(cm["hands"]) == 10 and ", Working. " in cm["hands"][0] and ", Job only. " in cm["hands"][-1]
+                  and ": Example: " in cm["scroll"] and cm["crates"] == cm["today"] > 0 and cm["go"] and cm["bs"], cm)
+            p.locator('#campMap g[data-id="camp8"]').click()
+            b8 = p.evaluate("""() => ({ h: document.querySelector('#bsheetH').textContent, pill: document.querySelector('#bsheetPill').textContent, job: document.querySelector('#bsheetJob').textContent, line: document.querySelector('#bsheetLine').textContent, hidden: document.querySelector('#bsheet').hidden,
+              commits: [...document.querySelectorAll('#bsheetCommits li')].map((e) => e.textContent), folders: document.querySelectorAll('#bsheetFolders li').length, shipped: [...document.querySelectorAll('#bsheetShipped li')].map((e) => e.textContent), status: document.querySelector('#status').textContent })""")
+            check("c. tapping a tent opens the builder's card: name, status (Done), its job, 'merged into the release', what it shipped (merged work with times)", not b8["hidden"] and b8["h"] == "Example gladiator" and b8["pill"] == "Done" and b8["job"].startswith("Job: Example:") and "merged into the release" in b8["line"]
+                  and len(b8["shipped"]) == 2 and "merged work" in b8["shipped"][0] and b8["commits"] == ["No commits waiting on its branch."] and b8["status"].startswith("Example gladiator: Done."), b8)
+            p.locator('#hands button[data-id="camp1"]').click()
+            b1 = p.evaluate("() => [document.querySelector('#bsheetH').textContent, document.querySelector('#bsheetPill').textContent, [...document.querySelectorAll('#bsheetCommits li')].map((e) => e.textContent), document.querySelectorAll('#bsheetFolders li').length, document.querySelector('#bsheetLine').textContent]")
+            check("c. a working builder's card (from All hands): 'Working: last commit 4 min ago', its last commits with times, the folders it touched, files changed and commits today", b1[0] == "Example mason" and b1[1] == "Working" and len(b1[2]) == 3 and "min ago" in b1[2][0] and "UTC" in b1[2][0] and b1[3] == 2 and "Working: last commit 4 min ago." in b1[4] and "commits today" in b1[4], b1)
+            p.locator('#hands button[data-id="camp10"]').click()
+            b10 = p.evaluate("() => [document.querySelector('#bsheetPill').textContent, document.querySelector('#bsheetLine').textContent, document.querySelector('#bsheetCommits').textContent]")
+            check("c. an agent with no git activity is honest: 'Job only', 'no live activity', no commits shown", b10[0] == "Job only" and "Job only, no live activity." in b10[1] and "only its job line is known" in b10[1] and b10[2] == "No live activity to show.", b10)
+            p.locator("#bsheetClose").click()
             # the day replay
             rp = p.evaluate("""() => ({ note: document.querySelector('#replayNote').textContent, rows: document.querySelectorAll('#lanes text').length, marks: document.querySelectorAll('#lanes rect').length, bad: [...document.querySelectorAll('#lanes rect')].filter((r) => r.getAttribute('fill') === '#c96a4a').length,
               scrub: document.querySelector('#scrub').value, now: document.querySelector('#replayNow').textContent, list: document.querySelectorAll('#replayList li').length, p24: document.querySelector('#r24').getAttribute('aria-pressed'), total: window.ERGASTERION.S.win.events.length })""")
@@ -358,7 +414,7 @@ def test_page():
                 check("c. 3D factory: the stage shows, the plan hides, 'Plan view', 'Calm tour' and 'Back to the door' are there, the hall chip says Library, the minimap has 15 platforms and the you-are-here arrow",
                       p.evaluate("() => !document.querySelector('#stage').hidden && document.querySelector('#plan').hidden && !document.querySelector('#viewBtn').hidden && document.querySelector('#viewBtn').textContent === 'Plan view' && !document.querySelector('#resetBtn').hidden && !document.querySelector('#tourBtn').hidden && document.querySelector('#hallNow').textContent === 'Library' && document.querySelectorAll('#mini g').length === 15 && document.querySelectorAll('#mini path').length === 1"))
                 st = p.evaluate("() => window.ERGASTERION.floor().stats()")
-                check(f"c. the budget on the high tier: {st['calls']} draw calls (<= {BUDGET['calls']}) and {st['triangles']} triangles (<= {BUDGET['triangles']}) for the whole factory from the front door", 0 < st["calls"] <= BUDGET["calls"] and 0 < st["triangles"] <= BUDGET["triangles"] and st["batches"] == 10, st)
+                check(f"c. the budget on the high tier: {st['calls']} draw calls (<= {BUDGET['calls']}) and {st['triangles']} triangles (<= {BUDGET['triangles']}) for the whole factory from the front door", 0 < st["calls"] <= BUDGET["calls"] and 0 < st["triangles"] <= BUDGET["triangles"] and st["batches"] == 12, st)
                 pt = p.evaluate("() => window.ERGASTERION.floor().project('queue')")
                 box = p.evaluate("() => { const r = document.querySelector('#floor3d').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }")
                 check("c. the first view from the front door sees the Library's workers (the queue's platform projects on screen)", pt is not None and 0 <= pt["x"] <= box[2] and 0 <= pt["y"] <= box[3], pt)
@@ -396,6 +452,30 @@ def test_page():
                 check("c. no walking through a wall: inside the wall between the Research hall and the Library you are pushed to its face; in the doorway you may stand", abs(w1["x"]) >= 0.499 and abs(w2["x"] - 0.1) < 1e-6, (w1, w2))
                 p.wait_for_timeout(400)
                 check("c. the hall chip follows you (Money hall after a teleport there)", p.evaluate("() => { window.ERGASTERION.floor().teleport(-6, -5); return true; }") and (p.wait_for_timeout(600) or True) and p.evaluate("() => document.querySelector('#hallNow').textContent") == "Money hall")
+                # out through the front door to the Builders' camp
+                p.locator("#campGo").click()
+                p.wait_for_timeout(1500)
+                cg = p.evaluate("() => [window.ERGASTERION.floor().pos(), document.querySelector('#hallNow').textContent, document.querySelector('#mini').getAttribute('viewBox'), document.querySelectorAll('#mini g').length, window.ERGASTERION.floor().stats(), document.querySelector('#status').textContent]")
+                check(f"c. 'Walk to the camp': you stand outside the front door facing the desert camp, the chip says Builders' camp, the minimap becomes the camp map with 10 tents; the camp view is inside the budget ({cg[4]['calls']} calls / {cg[4]['triangles']} triangles)",
+                      cg[0]["hall"] == "camp" and abs(cg[0]["z"] - 11.0) < 0.01 and abs(abs(cg[0]["yaw"]) - 3.14159) < 0.01 and cg[1] == "Builders' camp" and cg[2] == "0 0 360 250" and cg[3] == 10 and 0 < cg[4]["calls"] <= BUDGET["calls"] and cg[4]["triangles"] <= BUDGET["triangles"] and "camp" in cg[5], cg)
+                AK.shot(p, "ergasterion-3d-camp")
+                tp = p.evaluate("() => window.ERGASTERION.floor().projectCamp(1)")
+                if tp:
+                    p.evaluate(tap, [box[0] + tp["x"], box[1] + tp["y"]])
+                    p.wait_for_timeout(400)
+                    tb = p.evaluate("() => [document.querySelector('#bsheet').hidden, document.querySelector('#bsheetH').textContent, document.querySelector('#bsheetWalk').hidden]")
+                    check("c. tapping a tent in the 3D camp opens that builder's card (with 'Walk to its tent')", tb[0] is False and tb[1].startswith("Example ") and tb[2] is False, tb)
+                else:
+                    check("c. a tent projects on screen from the camp entrance", False, tp)
+                p.evaluate("() => { const f = window.ERGASTERION.floor(); f.reset(); f.look(Math.PI, 0); }")
+                p.wait_for_timeout(700)
+                p.evaluate("""() => { const j = document.querySelector('#joy'), r = j.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2; const ev = (t, y) => j.dispatchEvent(new PointerEvent(t, { bubbles: true, pointerId: 5, clientX: cx, clientY: y, pointerType: 'touch' })); ev('pointerdown', cy); ev('pointermove', cy - 44); window.__ev = ev; window.__cy = cy; }""")
+                p.wait_for_timeout(1800)
+                p.evaluate("() => window.__ev('pointerup', window.__cy - 44)")
+                wk = p.evaluate("() => window.ERGASTERION.floor().pos()")
+                check("c. the first-person path: from inside the factory, turn round and walk: you go out through the front door into the camp", wk["hall"] == "camp" and wk["z"] > 10.6 and abs(wk["x"] - 6.5) < 0.9, wk)
+                p.evaluate("() => { const f = window.ERGASTERION.floor(); f.teleport(3, 9.3); f.step(0.05); f.teleport(3, 9.9); f.step(0.05); }")
+                check("c. the factory's south wall is still a wall away from the doorway", abs(p.evaluate("() => window.ERGASTERION.floor().pos().z") - 9.4) < 1e-6)
                 p.select_option("#follow", "kalshi")
                 p.wait_for_timeout(500)
                 fo = p.evaluate("() => [window.ERGASTERION.floor().pos().following, document.querySelector('#status').textContent, window.ERGASTERION.floor().pos().mode]")
@@ -477,6 +557,10 @@ def test_page():
                       [int(x.replace(",", "")) for x in rr["lanes"]] == [pcn["ideas"], pcn["testing"], pcn["adopted"], pcn["rejected"]] and rr["moves"] == 20 and rr["fam0"].startswith("../archive/?find=") and "Example" not in rr["pipe"], (rr["lanes"], rr["fam0"]))
                 check("c. REAL replay: the stream is real (the mocked Kalshi run, Sibyl's run, the Cronos job and the commits are in the last 24 hours), not flagged Example; the planner names the missing machines as ONE row",
                       re.search(r"\d+ events? from \d+ workers", rr["rnote"]) and "Example" not in rr["rnote"] and rr["rlist"] and any(re.search(r"workers? ha(ve|s) no file here", t) for t in rr["next"]), (rr["rnote"], rr["next"]))
+                rc = p.evaluate("() => [document.querySelector('#handsLine').textContent, document.querySelectorAll('#campMap g[role=button]').length, document.querySelector('#campNote').textContent, [...document.querySelectorAll('#hands .nm')].map((e) => e.textContent)]")
+                bj = json.load(open(os.path.join(D, "builders.json"), encoding="utf-8"))
+                check("c. REAL Builders' camp: the agents of builders.json by name (never 'Example'), a tent each, and the note says where the activity comes from (git at build time, or job lines only)",
+                      "Example" not in rc[0] and rc[1] == min(10, len(bj["agents"])) and sorted(rc[3]) == sorted(a["name"] for a in bj["agents"][:10]) and ("Read from git when the site was built" in rc[2] if bj["source"] == "git" else "no live activity" in rc[2]), rc[:3])
                 check("c. REAL files: Kalshi (mocked feed) is Working and Cronos is Working from its status.json; the dev agents read the real queue.json", "Kalshi bot, Working" in rr["kalshi"] and "Cronos, Working" in rr["cron"] and rr["dev"].startswith("Dev agents"), rr["kalshi"])
                 check("c. REAL run reads only the site's own files (the kalshi feed is the one outside address) and has no console error; every tap >= 44 px with the real lists", any("queue.json" in u for u in seen) and not errs and not [u for u in off if "kalshi" not in u] and not AK.taps(p) and AK.no_sideways(p), (off[:3], errs[:3], AK.taps(p)[:3]))
                 AK.shot(p, "ergasterion-real")
@@ -485,12 +569,12 @@ def test_page():
                 srv2.shutdown()
 
             # no worker files at all: the demo, never blank
-            srv3, origin3 = AK.serve(overrides={"/ergasterion/queue.json": None, "/prometheus/forge.json": None, "/hephaestus/data.json": None, "/home.json": None, "/money/index.json": None, "/cronos/status.json": None, "/kalshi.json": None})
+            srv3, origin3 = AK.serve(overrides={"/ergasterion/queue.json": None, "/ergasterion/builders.json": None, "/prometheus/forge.json": None, "/hephaestus/data.json": None, "/home.json": None, "/money/index.json": None, "/cronos/status.json": None, "/kalshi.json": None})
             try:
                 ctx, p, errs, seen, off = AK.page(br, origin3)
                 AK.open_app(p, origin3, APP, "?q=low", hook="ERGASTERION")
-                z = p.evaluate("() => [!document.querySelector('#demo').hidden, document.querySelectorAll('#workers button').length, document.querySelector('#heroTitle').textContent, document.querySelectorAll('#lessons li').length, document.querySelectorAll('#pipeLanes a').length, document.querySelectorAll('#lanes rect').length]")
-                check("c. nothing published (no home, money, queue ...): the DEMO fixture fills the floor, the replay, the pipeline and the board, labelled DEMO, never blank", z[0] and z[1] == 15 and z[2] == "1 worker failed" and z[3] >= 5 and z[4] == 4 and z[5] >= 10, z)
+                z = p.evaluate("() => [!document.querySelector('#demo').hidden, document.querySelectorAll('#workers button').length, document.querySelector('#heroTitle').textContent, document.querySelectorAll('#lessons li').length, document.querySelectorAll('#pipeLanes a').length, document.querySelectorAll('#lanes rect').length, document.querySelectorAll('#campMap g[role=button]').length, document.querySelector('#handsLine').textContent]")
+                check("c. nothing published (no home, money, queue ...): the DEMO fixture fills the floor, the camp, the replay, the pipeline and the board, labelled DEMO, never blank", z[0] and z[1] == 15 and z[2] == "1 worker failed" and z[3] >= 5 and z[4] == 4 and z[5] >= 10 and z[6] == 10 and "Example agents" in z[7], z)
                 ctx.close()
             finally:
                 srv3.shutdown()
