@@ -484,3 +484,24 @@ In `.github/workflows/cloud-monitor.yml`, step "Publish web dashboard", add this
 6. `jarvis/transitions.js` REGISTRY: `pinakes: { kind: 'tiles', ms: 800 },`
 Then bump `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, run `python tools/apps_list_build.py --check`, and `python tools/make_app_icons.py pinakes` is already done (PNG icons are in the folder).
 Tests after wiring: `tests.test_pinakes_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+---
+# Wiring HERALD (the daily newspaper, 2026-11-11)
+
+App `herald` in `tools/web_public/herald/` ("The Olympus Herald"): a broadsheet in the AGORA palette written ONLY from published files. A small marble newsstand whose scroll unrolls the lead headline (three.js direct in `heraldscene.js`, flat SVG scroll on LITE / no WebGL / `?flat=1`, draws only while the scroll moves). Lead + up to 10 stories (drop caps, column rules; one column on a phone, 3 on a wide screen), tap a story to read it with "where every number comes from", share as text, "Read it to me" (speechSynthesis, off by default), Older / Newer and swipe between the last 14 editions, boxes: by the numbers, market weather (calm / busy / careful from Pythia), corrections (flipped beliefs), classifieds (Mercury), a mini quiz (Lyceum's bank), 3 interviews (persona ids, portraits via the optional `../olympus/people.js`, initials otherwise), "just shipped" (git) and "not in today's paper" (stories skipped because a file is missing). Reads `./edition.json`, `./editions/index.json`, `./editions/<date>.json`, falls back to `fixture.json` (DEMO edition). Test `tests/test_herald_page.py`.
+
+**The builder (new):** `tools/herald_build.py` (stdlib, `--check`, `--selftest`, `--date YYYY-MM-DD`, `--web <site>`). Deterministic for a given date (the clock only picks today's date). Every number in a story is a "fact" read from a named file (value at a path, a quote, or a recount); a story whose file is missing is NOT written and is listed under `skipped`. Sources: `handoff/agents_now.json`, `research/writeups/kalshi_edge_*.md`, and in the site folder `ergasterion/queue.json`, `kalshicity/suggestions.json`, `pythia/events.json`, `archive/index.json`, `money/index.json`, `money/mercury.json` (else `mercury/fixture.json`, marked sample), `home.json`, `jarvis/apps.js` (new apps since the last edition), `lyceum/lyceumcore.js`. Writes `herald/edition.json`, `herald/editions/<date>.json` (last 14 kept) + `editions/index.json`, `herald/jarvis.json`.
+
+## The exact build line
+In `.github/workflows/cloud-monitor.yml`, step "Publish web dashboard", directly BELOW the `python tools/build_web_dashboard.py ... --out site` line and below the Pinakes line:
+`          python tools/herald_build.py --web site   # The Olympus Herald: today's edition from the built site (stdlib, ~1 s)`
+It reads the built `site/` (so `home.json` and `money/*.json` stories appear) and writes only `site/herald/`. To keep the 14-edition archive across publishes, copy the previous `herald/editions/` from the published `dashboard` branch into `site/herald/editions/` before that line if the workflow has it (`cp -r dash_prev/herald/editions site/herald/ 2>/dev/null || true`); without it each publish starts the archive again from the committed copy (no error). Repo copy: `python tools/herald_build.py --date <date>`; `--check` fails when it is stale.
+
+## The six rows (what `wire_new_apps.py --apply` writes for Herald; the row is already in `tools/new_apps.json`)
+1. `jarvis/apps.js` BUILT_INS: `app('herald', 'Herald', 'life', '#c8a24a', 'The daily paper: who built what, the day, the verdicts, all sourced', { glyph: 'Η' }),`
+2. `olympus/olympus.js`: APPS `herald: ['Herald', 'Η', '#c8a24a'],` and AMBIENT `herald: 'scroll',`
+3. `tools/build_web_dashboard.py` app tuple: add `"herald"` (folder copied whole).  4. `sw.js` OTHER_APPS: `'herald/'` (do not precache `herald/editions/*`).
+5. `olympus/intro-app.js` FLAVOUR: `herald: ['columns', 'Unroll the news', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `herald: { kind: 'tiles', ms: 800 },`
+Then bump `sw.js` CACHE and the pinned strings, run `python tools/apps_list_build.py --check`, and `python tools/make_app_icons.py herald` (PNG icons are committed). After wiring, re-run `python tools/herald_build.py --date <today>` so the 'new apps' story compares against the new list.
+Tests after wiring: `tests.test_herald_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
