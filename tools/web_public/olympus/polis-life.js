@@ -320,8 +320,8 @@
       for (k = 0; k < n; k++) {
         var a = R() * Math.PI * 2, rr = Math.sqrt(R()) * t[2], lx = t[0] + Math.cos(a) * rr * 1.15, ly = t[1] + Math.sin(a) * rr * 0.85;
         var ang = a + (R() - 0.5) * 1.3 + (Math.sin(a) > 0 ? 0.5 : -0.2), up = (lx - 100) / 110 + (ly - (t[1] - t[2])) / (t[2] * 2.2);
-        var pal = R() < (up < 0.35 ? 0.62 : up < 0.8 ? 0.38 : 0.16) ? SILV : DARK, h = 2.6 + R() * 1.5;
-        leaf(pal[Math.floor(R() * pal.length)], lx, ly, ang, h, 0.55 + R() * 0.3);
+        var pal = R() < (up < 0.35 ? 0.62 : up < 0.8 ? 0.38 : 0.16) ? SILV : DARK, h = 3.3 + R() * 1.8;
+        leaf(pal[Math.floor(R() * pal.length)], lx, ly, ang, h, 0.72 + R() * 0.35);
         leaves++;
       }
     }
@@ -335,7 +335,7 @@
         var fa = R() * Math.PI * 2, fr = Math.sqrt(R()), fx = cx0 + Math.cos(fa) * fr * rx0, fy = cy0 + Math.sin(fa) * fr * ry0 * 0.9;
         var fup = (fx - 100) / 110 + (fy - top0) / (ry0 * 2.2);
         var fpal = R() < (fup < 0.35 ? 0.55 : fup < 0.8 ? 0.32 : 0.12) ? SILV : DARK;
-        leaf(fpal[Math.floor(R() * fpal.length)], fx, fy, fa + (R() - 0.5) * 1.4, 2.5 + R() * 1.4, 0.5 + R() * 0.3);
+        leaf(fpal[Math.floor(R() * fpal.length)], fx, fy, fa + (R() - 0.5) * 1.4, 3.2 + R() * 1.6, 0.7 + R() * 0.35);
         leaves++;
       }
     }
