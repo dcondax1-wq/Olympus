@@ -3,7 +3,7 @@
 
 It never copies data. Each card says where the table lives (its real URL on the site) and what is in it; the page loads the rows from that URL when you open it.
 
-    python tools/pinakes_build.py                 rewrite tools/web_public/pinakes/catalog.json
+    python tools/pinakes_build.py                 rewrite tools/web_public/pinakes/catalog.json (and the demo catalogue fixture.json)
     python tools/pinakes_build.py --check         exit 1 when catalog.json is not what this script writes now
     python tools/pinakes_build.py --selftest      the inference rules on tricky data (nulls, mixed types, unicode, maps, matrices)
     python tools/pinakes_build.py --web <site>    read another site folder (the BUILT site: then home.json, data.json, money/*.json ... are read too)
@@ -456,15 +456,15 @@ def card_for(rel, doc, path, kind, name, desc, groups, size, label, others, opts
     rows, kind = table_at(doc, path, kind, opts)
     cols = infer_columns(rows)
     app = rel.split("/")[0] if "/" in rel else "site"
-    keys = [c["k"] for c in cols[:8]]
-    sample = [{k: short(flatten(r).get(k), 60) for k in keys} for r in rows[:2] if isinstance(r, dict)]
+    keys = [c["k"] for c in cols[:6]]
+    sample = [{k: short(flatten(r).get(k), 40) for k in keys} for r in rows[:2] if isinstance(r, dict)]
     card = {"id": slug(rel) if first else slug(rel, path), "name": name or auto_name(rel, path, app), "app": app, "district": district_of(app, groups), "url": "../" + rel, "path": path, "kind": kind,
             "desc": desc or auto_desc(rel, path, cols, len(rows), kind, label), "rows": len(rows), "bytes": size, "cols": cols, "sample": sample, "label": label, "source": "site"}
     fr = find_fresh(doc)
     if fr:
         card["fresh"] = fr
     if others:
-        card["paths"] = others
+        card["arrays"] = len(others)                             # how many arrays the file holds (the page finds them itself when it opens the file)
     if opts:
         card["opts"] = opts
     return card
@@ -566,6 +566,67 @@ def build(web=WEB, data_dir=DATA):
             "skipped": skipped, "tables": cards}
 
 
+# ------------------------------------------------------------------------------------------------ the demo catalogue (fixture.json: the page is never blank)
+def fixture():
+    """A small made-up catalogue with its tables inside the file. Deterministic (no clock, no random module)."""
+    seed = [20261111]
+
+    def rnd():
+        seed[0] = (seed[0] * 1103515245 + 12345) % 2147483648
+        return seed[0] / 2147483648
+
+    def day(n):                       # n days after 2026-08-03 (a Monday), weekdays only
+        import datetime as dt
+        d = dt.date(2026, 8, 3) + dt.timedelta(days=n + 2 * (n // 5))
+        return d.isoformat()
+
+    trades = []
+    for i in range(160):
+        win = rnd() < 0.42
+        r = round(1.0 + rnd() * 5.0, 2) if win else (0.0 if rnd() < 0.25 else -round(0.6 + rnd() * 0.45, 2))
+        risk = 150 + int(rnd() * 6) * 50
+        trades.append({"day": day(i // 2), "side": "LONG" if rnd() < 0.5 else "SHORT", "strat": ("LIT", "LIT", "ATLAS", "BLITZ")[int(rnd() * 4)], "qty": 1 + int(rnd() * 5), "r": r, "usd": round(r * risk, 2),
+                       "risk_usd": risk, "held_min": int(4 + rnd() * 70), "win": win, "entry": {"px": round(29000 + rnd() * 900, 2), "hour": 3 + int(rnd() * 12)},
+                       "note": None if rnd() < 0.7 else ("Sweep of the Asia low", "Café session ☕", "News spike: cut early", "日本語 note ✓")[int(rnd() * 4)]})
+    fams = ("LIT research", "filters", "risk", "management", "ATLAS", "timing")
+    runs = []
+    for i in range(60):
+        v = "adopted" if rnd() < 0.1 else "rejected" if rnd() < 0.7 else "open"
+        net = round((rnd() - 0.35) * 30000)
+        runs.append({"id": f"demo_run_{i + 1:02d}", "family": fams[int(rnd() * len(fams))], "verdict": v, "pf": round(0.7 + rnd() * 2.6, 2), "net": net, "per_month": round(net / 10), "tpw": round(1.5 + rnd() * 2.5, 2),
+                     "built": day(i)})
+    deals = [{"title": t, "detail": d, "usd": u, "score": sc, "risk": rk, **({"expires": e} if e else {})} for t, d, u, sc, rk, e in (
+        ("30% off an eval (example)", "Example code, ends soon.", 27.54, 80, "low", "2026-11-13"), ("Free reset (example)", "Example offer.", 22.95, 62, "low", "2026-11-17"),
+        ("20% off a data feed (example)", "Example offer.", 20.0, 55, "low", "2026-12-05"), ("Flash sale (example)", "Example, one day only.", 73.44, 88, "med", "2026-11-12"),
+        ("Rule change (example)", "No date on this one.", None, 40, "med", None), ("10% off charts (example)", "Already over.", 3.0, 20, "low", "2026-11-09"),
+        ("Bundle (example)", "Example bundle.", 41.0, 58, "med", "2026-11-18"), ("Loyalty credit (example)", "No end date.", 12.0, 35, "low", None))]
+    paper = []
+    for i in range(40):
+        s_ = ("Late favourite", "Range fade", "News drift")[int(rnd() * 3)]
+        paper.append({"t": 1793000000 + i * 21600, "s": s_, "sd": "yes" if rnd() < 0.5 else "no", "p": round(0.5 + rnd() * 0.48, 2), "pnl": round((rnd() - 0.45) * 8, 2)})
+    queue = {"asof": "2026-11-10T12:00:00Z", "queue": {"tasks": [{"id": f"task-{i + 1}", "text": f"Example task {i + 1}", "section": ("P0", "P1", "P2")[i % 3], "done": i % 4 == 0} for i in range(12)]},
+             "learnings": [{"d": day(i * 3), "who": ("lit", "atlas", "mind")[i % 3], "text": f"Example lesson {i + 1}", "kind": ("adopted", "rejected")[i % 2]} for i in range(8)]}
+    habits = [{"date": day(i), "habit": ("Journal", "Walk", "Review trades", "Café ☕ reading")[i % 4], "done": rnd() < 0.7, "minutes": None if i % 7 == 6 else int(10 + rnd() * 50)} for i in range(30)]
+    cal = [{"date": day(60 + i * 2), "name": ("CPI", "FOMC", "Jobs report", "PPI", "Retail sales", "GDP")[i % 6], "importance": 1 + i % 3} for i in range(12)]
+    docs = {
+        "trades": ("demo-trades", "Demo trades", "Market", "odeon", {"asof": "2026-11-10T12:00:00Z", "trades": trades}, "Made-up trades (not real): day, side, strategy, result in R and in $."),
+        "calendar": ("demo-calendar", "Demo calendar", "Market", "pythia", {"updated": "2026-11-10", "events": cal}, "Made-up market events (not real)."),
+        "runs": ("demo-runs", "Demo research runs", "Research", "archive", {"built": "2026-11-10", "runs": runs}, "Made-up research runs (not real): family, verdict, PF, net $."),
+        "deals": ("demo-deals", "Demo deals", "Money", "mercury", {"asof": "2026-11-10T12:00:00Z", "status": "sample", "items": deals}, "Made-up deals (not real) with an end date."),
+        "paper": ("demo-paper", "Demo paper ledger", "Money", "kalshicity", {"trades": paper}, "Made-up paper trades (not real) with a time stamp and a $ result."),
+        "queue": ("demo-queue", "Demo task queue", "Command", "ergasterion", queue, "A made-up file (not real) with two lists inside: try the list picker."),
+        "habits": ("demo-habits", "Demo habits", "Life", "planner", {"days": habits}, "Made-up habit log (not real) with yes / no and empty cells."),
+    }
+    cards = []
+    for key, (cid, name, district, app, doc, desc) in docs.items():
+        found = find_tables(doc)
+        c = card_for(f"{app}/{key}.json", doc, found[0]["path"], found[0]["kind"], name, desc, {}, len(json.dumps(doc, ensure_ascii=False)), "demo", found if len(found) > 1 else None)
+        c.update({"id": cid, "district": district, "url": None, "inline": key})
+        cards.append(c)
+    return {"v": 1, "demo": True, "note": "Demo catalogue: made-up tables so the page is never empty. These are not real numbers.",
+            "catalog": {"v": 1, "demo": True, "built": "2026-11-10", "tables": cards}, "data": {k: v[4] for k, v in docs.items()}}
+
+
 def dumps(doc):
     return json.dumps(doc, ensure_ascii=False, separators=(",", ":"), sort_keys=False) + "\n"
 
@@ -628,16 +689,20 @@ def selftest():
         by = {c["id"]: c for c in doc["tables"]}
         t("build: the hand-named trades table, a demo fixture (biggest array, with a path picker), the build-only files, a research dataset; jarvis.json, icons and broken JSON are left out (broken is reported)",
           "odeon-trades" in ids and by["odeon-trades"]["name"] == "Trades (Odeon)" and by["odeon-trades"]["district"] == "Market" and by["odeon-trades"]["path"] == "trades" and by["odeon-trades"]["rows"] == 2
-          and by["zeta-fixture"]["label"] == "demo" and by["zeta-fixture"]["path"] == "more" and len(by["zeta-fixture"]["paths"]) == 2 and by["zeta-fixture"]["id"] == "zeta-fixture" and by["zeta-fixture"]["district"] == "Life"
+          and by["zeta-fixture"]["label"] == "demo" and by["zeta-fixture"]["path"] == "more" and by["zeta-fixture"]["arrays"] == 2 and by["zeta-fixture"]["id"] == "zeta-fixture" and by["zeta-fixture"]["district"] == "Life"
           and "home" in ids and by["home"]["source"] == "build" and by["home"]["rows"] is None and by["money-chrysos"]["cols"][2] == {"k": "usd", "t": "usd"}
           and by["research-nq-5m"]["rows"] == 2 and by["research-nq-5m"]["url"] is None and by["research-nq-5m"]["span"] == {"first": "2023-11-14", "last": "2023-11-14"}
           and not any("jarvis" in i or "icon" in i or "broken" in i for i in ids) and doc["skipped"] == [{"file": "zeta/broken.json", "why": "not readable JSON (JSONDecodeError)"}], (ids, doc["skipped"]))
         t("build: no rows are copied (3 short sample rows at most), counts add up, ids are unique, the file is small",
-          all(len(c["sample"]) <= 3 for c in doc["tables"]) and doc["totals"]["tables"] == len(ids) == len(set(ids)) and sum(v["tables"] for v in doc["counts"].values()) == len(ids)
+          all(len(c["sample"]) <= 2 for c in doc["tables"]) and doc["totals"]["tables"] == len(ids) == len(set(ids)) and sum(v["tables"] for v in doc["counts"].values()) == len(ids)
           and doc["totals"]["rows"] == sum(c["rows"] or 0 for c in doc["tables"]) and by["odeon-trades"]["fresh"] == {"field": "asof", "value": "2026-11-01"} and len(dumps(doc)) < 20000, doc["totals"])
         out = os.path.join(tmp, "catalog.json")
         open(out, "w", encoding="utf-8", newline="\n").write(dumps(doc))
         t("--check passes on what was written and fails after an edit", check(out, doc) and not check(out, {**doc, "v": 2}))
+        fx = fixture()
+        t("the demo catalogue: labelled demo and 'not real', 7 tables in all 5 districts, every table inside the file, the same twice (deterministic), under 80 KB",
+          fx["demo"] is True and "not real" in fx["note"] and len(fx["catalog"]["tables"]) == 7 and {c["district"] for c in fx["catalog"]["tables"]} == set(DISTRICTS)
+          and all(c["inline"] in fx["data"] and c["label"] == "demo" and c["url"] is None for c in fx["catalog"]["tables"]) and dumps(fx) == dumps(fixture()) and len(dumps(fx).encode()) < 80000, len(dumps(fx).encode()))
         # once the site is built, the build-only files are measured like any other
         os.makedirs(os.path.join(tmp, "money"))
         json.dump({"v": 1, "id": "chrysos", "asof": "2026-11-10T08:00:00Z", "status": "sample", "items": [{"title": "Deal", "detail": "d", "usd": 12.5, "score": 60, "risk": "low", "expires": "2026-11-14"}]},
@@ -672,13 +737,17 @@ def main():
         return selftest()
     out = a.out or os.path.join(a.web, "pinakes", "catalog.json")
     doc = build(a.web, a.data)
+    fx_path = os.path.join(WEB, "pinakes", "fixture.json")
     if a.check:
-        ok = check(out, doc)
+        ok = check(out, doc) and (a.out is not None or a.web != WEB or check(fx_path, fixture()))
         print("pinakes: catalog.json is up to date" if ok else "pinakes: catalog.json is STALE (run python tools/pinakes_build.py)")
         return 0 if ok else 1
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(dumps(doc))
+    if a.out is None and a.web == WEB:                        # the demo catalogue rides along in the repo copy only
+        with open(fx_path, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(dumps(fixture()))
     t = doc["totals"]
     print(f"pinakes: {t['tables']} tables, {t['rows']:,} rows ({t['site_tables']} on the site with {t['site_rows']:,} rows, {t['build_tables']} written by the site build, "
           f"{t['research_tables']} research datasets with {t['research_rows']:,} rows) -> {os.path.relpath(out, ROOT)} ({os.path.getsize(out):,} bytes)")
