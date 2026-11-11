@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -106,7 +107,7 @@ def test_static():
           html.index("floorload.js") < html.index('src="ergasterion.js') and 'id="stage"' in html and 'id="plan"' in html and 'id="mini"' in html
           and html.index('id="hero"') < html.index('id="floorCard"') < html.index('id="sheet"') < html.index('id="campCard"') < html.index('id="bsheet"') < html.index('id="replayCard"') < html.index('id="workersCard"') < html.index('id="tickerCard"') < html.index('id="pipeCard"') < html.index('id="boardCard"') < html.index('id="nextCard"'))
     check("a. PEOPLE: the shared kit is an optional module tag (olympus/people.js) before the page; a Talk prompt in the stage, 'People here' with a Stand-up button, the built-in chat card, Talk buttons and a face in both cards",
-          html.index("../olympus/people.js?v=p1") < html.index('src="ergasterion.js') and all(k in html for k in ('id="talkBtn"', 'id="peopleCard"', 'id="standBtn"', 'id="chatCard"', 'id="chatQs"', 'id="sheetTalk"', 'id="bsheetTalk"', 'id="sheetFace"', 'id="bsheetFace"'))
+          html.index("../olympus/people.js?v=p2") < html.index('src="ergasterion.js') and all(k in html for k in ('id="talkBtn"', 'id="peopleCard"', 'id="standBtn"', 'id="chatCard"', 'id="chatQs"', 'id="sheetTalk"', 'id="bsheetTalk"', 'id="sheetFace"', 'id="bsheetFace"'))
           and html.index('id="floorCard"') < html.index('id="peopleCard"') < html.index('id="chatCard"') < html.index('id="sheet"'))
     check("a. floor.js: the workers are cartoon PERSONS, not statues: a seeded look per person (skin, hair, tunic) from the core, eyes that blink, mitten hands; poses wave (on approach) / talk (chat open) / cheer / slump; the person turns to face you and a marble disc marks it; olympus/people3d.js is an optional import for its spec() colours",
           all(k in fl for k in ("lookOf(i)", "'wave'", "'talk'", "'cheer'", "'slump'", "focus(key)", "Math.atan2(camP.x - fx, camP.z - fz)", "import('../olympus/people3d.js')", ".catch(", "blink", "HS = 9")) and "MARBLE); fig.add" not in fl)
@@ -326,6 +327,97 @@ def test_maths():
           and out["junk"][16] and out["junk"][17:] == [0, 0], out["junk"])
     check("b. the Jarvis card: Ergasterion, 'off' in demo, 3 kpis, the headline and the newest lesson, an integer t, under 8 KB", out["card"][:3] == ["Ergasterion", "off", "Demo data"] and out["card"][3] == 3 and out["card"][4] == "2" and out["card"][5] in (1, 2) and out["card"][6] and out["card"][7], out["card"])
 
+# ------------------------------------------------------------------------------------------------ LIFE on the floor (life.js, 2026-11-11 world director): the day, the events, the kits
+LIFE_HARNESS = r"""
+const url = require('url');
+Promise.all([import(url.pathToFileURL(process.argv[2]).href), import(url.pathToFileURL(process.argv[3]).href)]).then(([L, C]) => {
+  const o = {}, S = C.STATIONS, byHall = {}; S.forEach((s, i) => { (byHall[s.hall] = byHall[s.hall] || []).push(i); });
+  const who = (i) => ({ i, hall: S[i].hall, home: { x: S[i].x, z: S[i].z - 0.12 }, k: byHall[S[i].hall].indexOf(i), n: byHall[S[i].hall].length });
+  const day = (sod, opt) => S.map((s, i) => L.scheduleAt(who(i), sod, opt || {}));
+  o.clock = [L.secOfDay(Date.UTC(2026, 10, 11, 9, 33, 0), 0), L.secOfDay(Date.UTC(2026, 10, 11, 9, 33, 0), -120), L.clockWord('quiet'), L.clockWord('09:30'), L.clockWord('25:00'), L.secOfDay(L.atClock(L.QUIET))];
+  o.same = JSON.stringify(day(34380)) === JSON.stringify(day(34380)) && JSON.stringify(day(40000)) === JSON.stringify(day(40000));
+  const su = day(34380, {});                                          // 09:33: the stand-up
+  o.standup = Object.keys(byHall).map((h) => { const A = byHall[h].map((i) => su[i]); const G = L.GATHER[h]; return [h, A.filter((a) => a.act === 'speak').length, A.every((a) => a.act === 'standup' || a.act === 'speak'), Math.max(...A.map((a) => Math.hypot(a.x - G.x, a.z - G.z)))]; });
+  const sf = S.map((s, i) => L.scheduleAt(who(i), 34380, { failed: i === 12 }));
+  o.failedStays = [sf[12].act, sf[12].x === S[12].x, day(34380, { reduced: true }).every((a) => a.act === 'work' && !a.away)];
+  o.quiet = day(L.QUIET).every((a) => a.act === 'work' && !a.away);
+  // the whole day at 2 s: nobody leaves its hall or walks through another worker's spot; every worker reads its board ~48 times; a hall is never empty
+  let out = 0, through = 0, empty = 0; const visits = S.map(() => 0), prev = S.map(() => 'work');
+  for (let sod = 0; sod < 86400; sod += 2) { const D = day(sod);
+    D.forEach((a, i) => { const h = C.HALLS.find((x) => x.id === S[i].hall); if (a.x < h.x0 + 0.4 || a.x > h.x1 - 0.4 || a.z < h.z0 + 0.4 || a.z > h.z1 - 0.4) out++;
+      S.forEach((q, j) => { if (j !== i && Math.hypot(q.x - a.x, q.z - 0.12 - a.z) < 0.8) through++; }); if (a.act === 'board' && prev[i] !== 'board') visits[i]++; prev[i] = a.act; });
+    if (!(sod >= 34200 && sod < 34560)) for (const h in byHall) if (!byHall[h].some((i) => D[i].act === 'work')) empty++; }
+  o.dayWalk = [out, through, Math.min(...visits), Math.max(...visits), empty];
+  // the camp: a working builder carries a crate to the cart and walks back; quiet ones less often; done / job stay
+  const home = { x: C.CAMP_SPOTS[1].x, z: C.CAMP_SPOTS[1].z - 1.9 }, seen = new Set(); let minD = 99;
+  for (let s = 0; s < 80; s += 0.25) { const a = L.campAt(1, home, 'working', s, {}); seen.add(a.act + (a.crate ? '+crate' : '')); if (a.act === 'drop') minD = Math.min(minD, Math.hypot(a.x - L.CART.x, a.z - L.CART.z)); }
+  let quietTrips = 0; for (let s = 0; s < 300; s += 1) if (L.campAt(1, home, 'quiet', s, {}).act === 'carry') quietTrips++;
+  o.camp = [[...seen].sort().join(','), +minD.toFixed(2), quietTrips > 0 && quietTrips < 30, L.campAt(1, home, 'job', 10, {}).act, L.campAt(1, home, 'working', 10, { reduced: true }).act, L.cartCount([{ today: 3 }, { today: 30 }, { today: null }, null])];
+  const g = L.campAt(2, home, 'job', 1000 + 6, { gatherAt: 1000, n: 10 }); o.campGather = [g.act, Math.hypot(g.x - L.GATHER.camp.x, g.z - L.GATHER.camp.z) < 2.2];
+  // events: only real changes; nothing without a previous snapshot; a sample pipeline never celebrates
+  const snap0 = L.snapshot([{ id: 'lit', status: 'working' }], [{ branch: 'b1', status: 'quiet', today: 2 }], { lanes: [{ id: 'adopted', n: 3 }] }, { accounts: [{ id: 'mffu', eval: { room: 1 } }] });
+  const snap1 = L.snapshot([{ id: 'lit', status: 'failed' }], [{ branch: 'b1', status: 'done', today: 4 }], { lanes: [{ id: 'adopted', n: 4 }] }, { accounts: [{ id: 'mffu', eval: { passed: true } }] });
+  o.events = [L.diffEvents(null, snap1).length, L.diffEvents(snap0, snap1).map((e) => e.kind).join(), L.diffEvents(snap1, snap1).length, L.diffEvents(snap0, { ...snap1, sample: true }).map((e) => e.kind).includes('adopted'), L.diffEvents(snap0, snap1).filter(L.isBig).length];
+  const now = Date.parse('2026-11-11T12:00:00Z');
+  o.recent = [L.recentMerges([{ status: 'done', branch: 'x', name: 'X', shipped: [{ t: now - 10 * 60000 }] }, { status: 'done', branch: 'y', name: 'Y', shipped: [{ t: now - 90 * 60000 }] }, { status: 'done', sample: true, branch: 'z', name: 'Z', shipped: [{ t: now - 60000 }] }], now, 30).map((e) => e.who).join()];
+  // the hammer: one hit per quarter turn of 2 pi; the LOD picker: nearest first, capped, the shown one kept a little longer
+  o.hits = [L.hits(0, Math.PI / 2), L.hits(0, 2 * Math.PI), L.hits(1, 1.01) + L.hits(1.01, 1.02)];
+  o.lod = [L.nearSet([{ key: 'a', d: 3 }, { key: 'b', d: 1 }, { key: 'c', d: 9 }], 2, 4.6, []).join(), L.nearSet([{ key: 'a', d: 3 }, { key: 'b', d: 1 }], 1, 4.6, []).join(), L.nearSet([{ key: 'a', d: 5.2 }], 1, 4.6, ['a']).join(), L.nearSet([{ key: 'a', d: 5.2 }], 1, 4.6, []).length, L.nearSet(null, 2, 4).length];
+  // the optional kits: no window = nothing happens, nothing throws; a stub window gets the calls
+  o.noKit = [L.burst('sparks', { x: 1, y: 2 }, [0, 0, 0]), L.soundAt('clank', { x: 0, y: 0, z: 0 }, 'success'), L.sayLine('mind', 'hi'), L.showWork('mind', {})];
+  const calls = []; global.window = { OLYMPUS_FX: { burst: (k, at) => calls.push('burst:' + k + ':' + (at.world ? at.world.length : 0)) }, OLYMPUS: { sound: Object.assign(() => true, { at: (n) => calls.push('at:' + n) }), cue: (n) => calls.push('cue:' + n) },
+    OLYMPUS_PEOPLE: { say: (id, t, op) => calls.push('say:' + id + ':' + op.scene), show: (id, w) => calls.push('show:' + id + ':' + w.kind) } };
+  o.kit = [L.burst('sparks', { x: 1, y: 2 }, [1, 2, 3]), L.soundAt('clank', {}, 'success'), L.sayLine('mind', 'hello', { scene: 'ergasterion' }), L.showWork('mind', { kind: 'work' }), calls.join('|')];
+  global.window = { OLYMPUS_FX: { confetti: () => calls.push('confetti'), sparkleBurst: () => calls.push('sparkle') }, OLYMPUS: { cue: (n) => calls.push('cue:' + n) }, OLYMPUS_PEOPLE: { say: () => { throw new Error('x'); } } };
+  o.old = [L.burst('confetti', { x: 1, y: 2 }), L.burst('sparks', { x: 1, y: 2 }), L.soundAt('fanfare', {}, 'success'), L.soundAt('clank', {}), L.sayLine('mind', 'hi')];
+  console.log(JSON.stringify(o));
+}).catch((e) => { console.error(e && e.stack || e); process.exit(1); });
+"""
+
+
+def test_life():
+    exe = shutil.which("node")
+    if not exe:
+        check("b. node is not installed: the LIFE checks are skipped", True)
+        return
+    tmp = tempfile.mkdtemp(prefix="ag-erg-life-")
+    try:
+        life, core = os.path.join(tmp, "life.mjs"), os.path.join(tmp, "core.mjs")
+        shutil.copy(os.path.join(D, "life.js"), life)
+        shutil.copy(os.path.join(D, "ergasterioncore.js"), core)
+        h = os.path.join(tmp, "h.cjs")
+        with open(h, "w", encoding="utf-8") as fh:
+            fh.write(LIFE_HARNESS)
+        r = subprocess.run([exe, h, life, core], capture_output=True, text=True, timeout=120)
+        if r.returncode:
+            check("b. LIFE: the node harness runs", False, r.stderr[-800:])
+            return
+        o = json.loads(r.stdout)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("b. LIFE clock: 09:33 UTC is second 34380 of the day (and 2 h later two hours east), '?clock=quiet' = 10:05:20, '09:30' reads, '25:00' does not; atClock round-trips",
+          o["clock"] == [34380, 34380 + 7200, 36320, 34200, None, 36320], o["clock"])
+    check("b. LIFE is deterministic: the same clock gives the same scene, to the centimetre", o["same"])
+    check("b. LIFE 09:33 STAND-UP: in each of the four halls everyone is in the ring (<= 1.6 m from the hall's middle) and exactly ONE person speaks",
+          all(x[1] == 1 and x[2] and x[3] <= 1.6 for x in o["standup"]) and len(o["standup"]) == 4, o["standup"])
+    check("b. LIFE: a worker whose run FAILED stays slumped at its station (no stand-up for it); reduced motion = everyone stays at work", o["failedStays"] == ["work", True, True], o["failedStays"])
+    check("b. LIFE '?clock=quiet': at 10:05:20 every worker is at its own station (the moment the 3D tests use)", o["quiet"])
+    check(f"b. LIFE over a whole day (2 s steps): nobody leaves its hall ({o['dayWalk'][0]}), nobody walks through another worker's spot ({o['dayWalk'][1]}), every worker reads its queue board {o['dayWalk'][2]}-{o['dayWalk'][3]} times, and no hall is ever left with nobody at work outside the stand-up ({o['dayWalk'][4]})",
+          o["dayWalk"][0] == 0 and o["dayWalk"][1] == 0 and o["dayWalk"][2] >= 40 and o["dayWalk"][4] == 0, o["dayWalk"])
+    check("b. LIFE camp: a working builder works, carries a crate (crate in its arms) to the cart, sets it down beside it (< 1.2 m) and walks back; a quiet one carries less often; a 'job only' one and reduced motion stay at the table; the cart counts the real commits (33, 24 shown)",
+          o["camp"][0] == "carry+crate,drop,walk,work" and o["camp"][1] < 1.2 and o["camp"][2] and o["camp"][3] == "work" and o["camp"][4] == "work" and o["camp"][5] == {"n": 33, "shown": 24}, o["camp"])
+    check("b. LIFE camp gathering: for a big number the builders gather round the fire and cheer", o["campGather"] == ["cheer", True], o["campGather"])
+    check("b. LIFE events from real data only: no previous snapshot = nothing; a failed run, a merge, new commits, a new adopted run and a passed eval are found; the same snapshot twice = nothing; a SAMPLE pipeline never celebrates an adopted run; 2 big numbers",
+          o["events"] == [0, "fail,merge,commit,adopted,eval", 0, False, 2], o["events"])
+    check("b. LIFE: a fresh merge (10 min ago) is cheered on the first visit, an old one (90 min) and a sample one are not", o["recent"] == ["x"], o["recent"])
+    check("b. LIFE hammer: one blow (sparks + clank) per quarter turn, none in between; the near-figure picker takes the nearest within 4.6 m, honours the cap and keeps a shown figure a little longer",
+          o["hits"] == [1, 4, 0] and o["lod"] == ["b,a", "b", "a", 0, 0], (o["hits"], o["lod"]))
+    check("b. LIFE kits are optional: with no window nothing is called and nothing throws", o["noKit"] == [False, False, False, False], o["noKit"])
+    check("b. LIFE with the new kits: fx.burst('sparks', {x, y, world}), OLYMPUS.sound.at('hammer') (the anvil of docs/SOUND_API.md), OLYMPUS_PEOPLE.say(id, text, {scene}) and show(id, {kind}) are each called once",
+          o["kit"][:4] == ["burst", "at", True, True] and o["kit"][4] == "burst:sparks:3|at:hammer|say:mind:ergasterion|show:mind:work", o["kit"])
+    check("b. LIFE with today's kits: confetti -> FX.confetti, sparks -> FX.sparkleBurst, a big moment -> the 'success' cue, a clank without sound.at -> silence, a say() that throws -> our own bubble",
+          o["old"] == ["confetti", "sparkleBurst", "cue", False, False], o["old"])
+
 
 def test_page():
     try:
@@ -497,7 +589,7 @@ def test_page():
 
             # 3D factory: pick, walk, walls, follow, tour, budget (only when the machine can draw it; ERG_NO3D=1 skips it when 3D is impossible)
             ctx, p, errs, seen, off = AK.page(br, origin)
-            AK.open_app(p, origin, APP, "?demo=1&q=high" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
             p.wait_for_timeout(2500)
             mode = p.evaluate("() => window.ERGASTERION.floor() ? '3d' : 'plan'")
             if no3d:
@@ -560,7 +652,8 @@ def test_page():
                 p.evaluate("() => window.ERGASTERION.endTalk()")
                 check("c. ending the chat releases the person (no focus)", p.evaluate("() => window.ERGASTERION.floor().focused()") == "")
                 # out through the front door to the Builders' camp
-                p.locator("#campGo").click()
+                p.evaluate("() => 1")   # closing the kit's sheet calls speechSynthesis.cancel(), which can stall headless Chromium for ~30 s: wait for the page first
+                p.evaluate("() => document.querySelector('#campGo').click()")
                 p.wait_for_timeout(1500)
                 cg = p.evaluate("() => [window.ERGASTERION.floor().pos(), document.querySelector('#hallNow').textContent, document.querySelector('#mini').getAttribute('viewBox'), document.querySelectorAll('#mini g').length, window.ERGASTERION.floor().stats(), document.querySelector('#status').textContent]")
                 check(f"c. 'Walk to the camp': you stand outside the front door facing the desert camp, the chip says Builders' camp, the minimap becomes the camp map with 10 tents; the camp view is inside the budget ({cg[4]['calls']} calls / {cg[4]['triangles']} triangles)",
@@ -589,7 +682,7 @@ def test_page():
                 check("c. 'Follow' a worker: the camera follows Kalshi bot, the status line says so", fo[0] == "kalshi" and fo[1].startswith("Following Kalshi bot") and fo[2] == "follow", fo)
                 AK.shot(p, "ergasterion-3d-follow")
                 p.select_option("#follow", "")
-                p.locator("#tourBtn").click()
+                p.evaluate("() => document.querySelector('#tourBtn').click()")
                 p.wait_for_timeout(1600)
                 tr = p.evaluate("() => [window.ERGASTERION.floor().pos().mode, document.querySelector('#tourBtn').textContent, document.querySelector('#tourBtn').getAttribute('aria-pressed'), document.querySelector('#hallNow').textContent, document.querySelector('#status').textContent, window.ERGASTERION.floor().stats()]")
                 check(f"c. 'Calm tour': the camera flies above the halls by itself ({tr[5]['calls']} calls / {tr[5]['triangles']} triangles from above, inside the budget), the button reads 'Stop the tour', the chip says 'Tour: <hall>'",
@@ -619,6 +712,80 @@ def test_page():
                 print("[note] 3D factory not available on this machine: the plan is checked instead (" + str(p.evaluate("() => window.ERGASTERION.S.why || ''")) + ")", flush=True)
                 check("c. no 3D here: the flat plan is shown, 'Walk the floor' is offered only when 3D can be tried", p.evaluate("() => !document.querySelector('#plan').hidden && document.querySelector('#stage').hidden"))
             check("c. the 3D run has no console error", not errs, errs[:3])
+            ctx.close()
+
+            # LIFE in 3D (life.js, 2026-11-11): a fixed clock = a fixed scene; the 09:30 stand-up ring, reactions to real events, the near full figure, "show me your work", say / show
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=standup" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            p.wait_for_timeout(2500)
+            if not no3d and p.evaluate("() => !!(window.ERGASTERION.floor() && window.ERGASTERION.floor().life)"):
+                F = "window.ERGASTERION.floor()"
+                # the optional kits as recorders (the real people kit may be loaded: its say / show are wrapped, never replaced for good)
+                p.evaluate("""() => { window.__k = []; const K = window.OLYMPUS_PEOPLE || (window.OLYMPUS_PEOPLE = {});
+                  K.say = (id, text, o) => window.__k.push(['say', id, o && o.scene && (o.scene.name || o.scene), !!(o && o.figure)]); K.show = (id, w) => window.__k.push(['show', id, w && w.kind, w && w.items ? w.items.length : -1]);
+                  const FX = window.OLYMPUS_FX || (window.OLYMPUS_FX = {}); FX.burst = (k, at) => window.__k.push(['burst', k, !!(at && at.world)]);
+                  const O = window.OLYMPUS; if (O && O.sound) O.sound.at = (n) => window.__k.push(['sound', n]); const X = window.OLYMPUS_SFX; if (X) X.at = (n) => window.__k.push(['sound', n]); }""")
+                p.wait_for_timeout(6500)
+                lf = p.evaluate(f"() => {F}.life()")
+                hall = {k: v for k, v in lf["acts"].items() if k in ("w:mind", "w:prometheus", "w:hephaestus", "w:cronos")}
+                st = p.evaluate(f"() => {F}.stats()")
+                check(f"c. LIFE '?clock=standup' (09:32:30): the Research hall stands in its ring at the pipeline wall, one speaks ({[v['pose'] for v in hall.values()]}), Cronos (failed) stays slumped at its station; {st['calls']} calls / {st['triangles']} triangles",
+                      [hall[k]["act"] for k in ("w:mind", "w:prometheus", "w:hephaestus")].count("speak") + [hall[k]["act"] for k in ("w:mind", "w:prometheus", "w:hephaestus")].count("standup") == 3
+                      and sum(1 for v in hall.values() if v["pose"] == "speak") == 1 and hall["w:cronos"]["pose"] == "slump" and not hall["w:cronos"]["away"]
+                      and all(((v["x"] + 4.4) ** 2 + (v["z"] - 8.0) ** 2) ** 0.5 < 1.7 for k, v in hall.items() if k != "w:cronos") and 0 < st["calls"] <= BUDGET["calls"] and st["triangles"] <= BUDGET["triangles"], (hall, st))
+                p.evaluate(f"() => {F}.teleport(-4.4, 4.4, Math.PI)")
+                p.wait_for_timeout(900)
+                AK.shot(p, "ergasterion-life-standup")
+                # talk to someone in the ring: it stops, faces you; "show me your work" walks it back to its station with the camera behind it
+                p.evaluate("() => window.ERGASTERION.talk('w:hephaestus')")
+                p.wait_for_timeout(1200)
+                t1 = p.evaluate(f"() => [{F}.life().near, !!{F}.figureOf('w:hephaestus'), {F}.posOf('w:hephaestus'), {F}.stats(), window.__k.slice(), document.querySelector('#leadBtn').hidden, document.querySelector('#leadBtn').textContent]")
+                check(f"c. LIFE TALK: the person you talk to becomes the full shared figure (LOD: near = {t1[0]}, {t1[3]['calls']} calls <= 45), stays where it stood, and speaks through the kit's say(id, text, {{scene: 'ergasterion', figure}}) and show(id, work); 'Show me your work' appears",
+                      ("w:hephaestus" in t1[0]) == t1[1] and (t1[1] or not p.evaluate(f"() => {F}.life().full")) and t1[2]["away"] and t1[3]["calls"] <= BUDGET["calls"]
+                      and ["say", "villager:hephaestus", "ergasterion", t1[1]] in [x[:4] for x in t1[4] if x[0] == "say"] and any(x[0] == "show" and x[1] == "villager:hephaestus" and x[2] == "work" for x in t1[4]) and t1[5] is False and t1[6].startswith("Show me your work"), t1)
+                p.evaluate("() => document.querySelector('#leadBtn').click()")
+                p.wait_for_timeout(300)
+                l0 = p.evaluate(f"() => [{F}.pos().mode, {F}.posOf('w:hephaestus').act]")
+                try: p.wait_for_function(f"() => {F}.posOf('w:hephaestus').act === 'work'", timeout=60000)   # the scene's clock runs at the frame rate: a slow machine walks slower
+                except Exception: pass
+                l1 = p.evaluate(f"() => [{F}.pos().mode, {F}.posOf('w:hephaestus'), document.querySelector('#status').textContent]")
+                check("c. LIFE LEAD ('Show me your work'): it walks back to its station (act walk), the camera follows behind it (mode follow), and it arrives at work at its own spot",
+                      l0 == ["follow", "walk"] and l1[0] == "follow" and l1[1]["act"] == "work" and abs(l1[1]["x"] + 10.5) < 0.01 and abs(l1[1]["z"] - 6.68) < 0.01 and "walks you back" in l1[2], (l0, l1))
+                p.evaluate("() => { window.ERGASTERION.endTalk(); try { window.OLYMPUS_PEOPLE.close && window.OLYMPUS_PEOPLE.close(); } catch (e) {} }")
+                p.keyboard.press("Escape")
+                # reactions to real events: a merge -> the camp cheers with confetti + a sound; a failed run -> its hall slumps; a big number -> your hall gathers and cheers
+                p.evaluate(f"() => {{ const f = {F}, L = window.ERGASTERION.Life; f.clock(L.atClock(L.QUIET), true); f.teleport(6.5, 9.0, 0); }}")
+                p.wait_for_timeout(1500)
+                r1 = p.evaluate(f"() => {{ window.__k.length = 0; return {F}.react([{{ kind: 'merge', who: 'b1', text: 'Merged' }}]); }}")
+                p.wait_for_timeout(500)
+                a1 = p.evaluate(f"() => {F}.life().acts")
+                r2 = p.evaluate(f"() => {F}.react([{{ kind: 'fail', who: 'lit', text: 'A run failed' }}])")
+                p.wait_for_timeout(500)
+                a2 = p.evaluate(f"() => [{F}.life().acts, window.__k.slice()]")
+                check(f"c. LIFE REACT: a merge makes the camp builders and your hall cheer ({r1['cheer']}) with confetti (fx.burst) and a placed sound; a failed LIT run makes the Trading hall slump ({r2['slump']})",
+                      r1["cheer"] >= 12 and r1["burst"] and r1["sound"] and a1["w:queue"]["pose"] == "cheer" and a1["b:camp1"]["pose"] == "cheer" and r2["slump"] == 4
+                      and a2[0]["w:atlas"]["pose"] == "slump" and (["burst", "confetti", True] in a2[1] or r1["burst"] == "confetti") and ["sound", "cheer"] in a2[1], (r1, r2, a1.get("w:queue"), a2[0].get("w:atlas"), a2[1]))
+                r3 = p.evaluate(f"() => {F}.react([{{ kind: 'adopted', n: 1, text: 'A new run was adopted' }}])")
+                try: p.wait_for_function(f"() => ['w:queue', 'w:dev'].every((k) => {F}.life().acts[k].act === 'cheer')", timeout=60000)
+                except Exception: pass
+                a3 = p.evaluate(f"() => [{F}.life(), {F}.stats()]")
+                lib = [a3[0]["acts"][k] for k in ("w:queue", "w:dev")]
+                check(f"c. LIFE BIG NUMBER (a new adopted run): the Library gathers in a ring at its middle and cheers, confetti + fanfare; inside the budget ({a3[1]['calls']} calls / {a3[1]['triangles']} triangles)",
+                      r3["gather"] == "library" and all(v["pose"] == "cheer" and ((v["x"] - 6.5) ** 2 + (v["z"] - 2.2) ** 2) ** 0.5 < 1.3 for v in lib) and a3[1]["calls"] <= BUDGET["calls"] and a3[1]["triangles"] <= BUDGET["triangles"], (r3, lib, a3[1]))
+                AK.shot(p, "ergasterion-life-gather")
+                # heads turn when you walk into a hall; sparks fly off the anvil when the smith strikes near you
+                p.evaluate(f"() => {F}.teleport(-2.9, 5.6, 0)")
+                p.wait_for_timeout(450)
+                hd = p.evaluate(f"() => Object.entries({F}.life().acts).filter(([k, v]) => ['w:mind', 'w:prometheus', 'w:hephaestus', 'w:cronos'].includes(k)).map(([k, v]) => v.pose)")
+                try: p.wait_for_function(f"() => {F}.life().sparks >= 1", timeout=90000)
+                except Exception: pass
+                sp = p.evaluate(f"() => [{F}.life().sparks, {F}.life().bursts, {F}.life().sounds]")
+                check(f"c. LIFE: walking into the Research hall turns heads ({hd}); Prometheus' hammer throws sparks off the anvil with a clank as it strikes ({sp[0]} blows seen)",
+                      sum(1 for x in hd if x in ("look", "wave")) >= 2 and sp[0] >= 1 and sp[1] >= sp[0] and sp[2] >= sp[0], (hd, sp))
+                AK.shot(p, "ergasterion-life-smith")
+                check("c. LIFE: the 3D run has no console error", not errs, errs[:3])
+            elif not no3d:
+                print("[note] no 3D here: the LIFE checks are skipped", flush=True)
             ctx.close()
 
             # the flat plan: tap a worker on the plan (LITE, 375 x 667, reduced motion)
@@ -688,7 +855,7 @@ def test_page():
 
             # reduced motion with 3D: still, no error
             ctx, p, errs, seen, off = AK.page(br, origin, reduced=True)
-            AK.open_app(p, origin, APP, "?demo=1&q=high" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
+            AK.open_app(p, origin, APP, "?demo=1&q=high&clock=quiet" if not no3d else "?demo=1&flat=1", hook="ERGASTERION")
             p.wait_for_timeout(1500)
             mode = p.evaluate("() => window.ERGASTERION.floor() ? '3d' : 'plan'")
             if mode == "3d":
@@ -709,6 +876,7 @@ def test_page():
 if __name__ == "__main__":
     test_static()
     test_maths()
+    test_life()
     if "--static" not in sys.argv:
         test_page()
     AK.finish()

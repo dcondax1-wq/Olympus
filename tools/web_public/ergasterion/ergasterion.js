@@ -4,6 +4,7 @@
 // Read only and paper only: it sends nothing and starts nothing. Text only through textContent / createElementNS. The 3D factory comes from floor.js (optional, loaded by
 // floorload.js); the flat plan (LITE) is always drawn first. window.ERGASTERION is the test hook.
 import * as C from './ergasterioncore.js';
+import * as Life from './life.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -194,11 +195,40 @@ function talk(key) {
   const pn = personOf(key); if (!pn) return;
   const K = kit(), id = kitId(pn);
   if (K && id) {
-    try { K.open(id, { anchor: $('floorCard') }); S.chat = null; renderChat(); focus(key); S.kitTalk = key; say('Talking to ' + pn.name + '.'); return; } catch (_) { /* the kit failed: our own chat card */ }
+    try { K.open(id, { anchor: $('floorCard') }); S.chat = null; renderChat(); focus(key); S.kitTalk = key; say('Talking to ' + pn.name + '.'); greet(key, pn, id); leadUi(); return; } catch (_) { /* the kit failed: our own chat card */ }
   }
-  S.kitTalk = ''; S.chat = { key, log: [] }; renderChat(); focus(key); say('Talking to ' + pn.name + '. Tap a question.'); toView($('chatCard'), 'nearest');
+  S.kitTalk = ''; S.chat = { key, log: [] }; renderChat(); focus(key); say('Talking to ' + pn.name + '. Tap a question.'); greet(key, pn, id); leadUi(); toView($('chatCard'), 'nearest');
 }
-function endTalk() { S.chat = null; S.kitTalk = ''; renderChat(); focus(null); }
+/** the person speaks its line (the kit's say(): a bubble, a voice, lips that move) and shows its work (the kit's show(): a card). Both optional: without them the chat card says it. */
+function greet(key, pn, id) {
+  const pid = id || pn.pid, F = S.floor && S.floor.ok ? S.floor : null, sc = F && F.sceneFor ? F.sceneFor(key) : null;
+  // the kit's say(id, text, { scene, figure }) (docs/PERSONA_API.md "Voices"): a bubble over the person in 3D (its voice when on); on the plan it sits above the floor card
+  S.said = Life.sayLine(pid, pn.line, sc ? { scene: sc, figure: sc.figure, key } : { anchor: $('floorCard'), key }) ? key : '';
+  const row = rowOf(key); let what = null;
+  if (row && key.slice(0, 2) === 'w:') what = { kind: 'work', title: pn.name + ': latest work', items: (row.crates || []).map((c) => c.tag).filter(Boolean).slice(0, 5), text: row.say || row.doing || '', src: row.src || '', status: row.status };
+  else if (row) what = { kind: 'work', title: pn.name + ': commits', items: (row.commits || []).map((c) => c.text).slice(0, 5), text: row.line || '', src: 'builders.json', status: row.status };
+  // the kit's show(id, what) returns its work card: it goes under the floor (our own chat keeps its six questions)
+  const box = $('workCard'); clear(box); box.hidden = true; let el = null;
+  try { const K = kit(); if (what && K && typeof K.show === 'function') el = K.show(pid, what, { mini: true }); } catch (_) { el = null; }
+  if (el && el.nodeType === 1) { box.appendChild(el); box.hidden = false; }
+  S.shown = el ? key : '';
+}
+/** this floor lends its people to the kit (stage): figure(id) for bubbles, walk(id) = "show me your work", card(id, el) places a work card */
+function lendStage(on) {
+  const K = kit(); if (!K || typeof K.stage !== 'function') return;
+  const keyOf = (id) => { const pn = S.people.find((x) => x.pids.includes(id) || kitId(x) === id); return pn ? pn.key : null; };
+  try { K.stage(on && S.floor && S.floor.ok ? { figure: (id) => { const k = keyOf(id); return k && S.floor && S.floor.sceneFor ? S.floor.sceneFor(k) : null; }, release: () => {},
+    walk: (id) => { const k = keyOf(id); const r = k ? leadMe(k) : null; return Promise.resolve(!!r); },
+    card: (id, el) => { const box = $('workCard'); clear(box); if (el && el.nodeType === 1) { box.appendChild(el); box.hidden = false; } } } : null); } catch (_) { /* the kit keeps its own placement */ }
+}
+function leadUi() { const k = S.chat ? S.chat.key : S.kitTalk, on = !!(k && S.floor && S.floor.ok && S.view === '3d' && S.floor.lead); $('leadBtn').hidden = !on; $('chatLead').hidden = !on; if (on) { $('leadBtn').dataset.key = k; const pn = personOf(k); $('leadBtn').textContent = 'Show me your work, ' + (pn ? pn.name.split(' (')[0] : ''); } }
+/** follow mode: the person walks you back to its station (it may be at the board or in the stand-up) and the camera follows behind it */
+function leadMe(key) {
+  if (!key || !(S.floor && S.floor.ok && S.floor.lead)) { say('This needs the 3D floor. Tap "Walk the floor" first.'); return null; }
+  const pn = personOf(key), r = S.floor.lead(key); if (!r) return null; S.follow = key.slice(0, 2) === 'w:' ? key.slice(2) : ''; try { $('follow').value = S.follow; } catch (_) { /* fine */ }
+  say((pn ? pn.name : 'They') + (r.walking ? ' walks you back to its station. Touch the joystick to walk on your own.' : ' shows you its station. Touch the joystick to walk on your own.')); return r;
+}
+function endTalk() { const K = kit(), was = S.kitTalk; clear($('workCard')); $('workCard').hidden = true; S.chat = null; S.kitTalk = ''; renderChat(); focus(null); leadUi(); if (was && K && typeof K.close === 'function') { try { K.close(); } catch (_) { /* its sheet closes itself */ } } }   // ending the chat also closes the kit's sheet
 function askQ(qid) {
   if (!S.chat) return; const row = rowOf(S.chat.key), q = C.QUESTIONS.find((x) => x[0] === qid); if (!row || !q) return;
   const a = C.answer(row, qid, S.now, S.next); S.chat.log.push({ q: q[1], a: a.text, src: a.sources }); if (S.chat.log.length > 12) S.chat.log.shift(); renderChat();
@@ -230,7 +260,8 @@ function renderPeople() {
 let standTimer = 0;
 /** the stand-up: everyone in this hall says its one line in turn (the kit's standup() when it is loaded, our own lines otherwise) */
 function standUp() {
-  clearInterval(standTimer); const here = C.peopleHere(S.people, S.place), ol = $('standList'); clear(ol);
+  clearInterval(standTimer);
+  if (S.floor && S.floor.ok && S.floor.standup && S.place !== 'camp') { try { S.floor.standup(S.place); } catch (_) { /* the list below still reads out */ } } const here = C.peopleHere(S.people, S.place), ol = $('standList'); clear(ol);
   if (!here.length) { ol.appendChild(h('li', '', 'Nobody is here to speak.')); return; }
   const lines = here.map((pn) => ({ pn, line: pn.line, kit: false })), K = kit();
   if (K && typeof K.standup === 'function') { try { const ids = here.map((pn) => kitId(pn)), got = K.standup(ids.filter(Boolean)); if (Array.isArray(got)) lines.forEach((x, i) => { const g = got.find((y) => y && y.id === ids[i] && y.line); if (g) { x.line = C.clean(g.line, 200); x.kit = true; } }); } catch (_) { /* our own lines */ } }
@@ -484,11 +515,24 @@ function render() {
   model();
   $('demo').hidden = !S.demo; try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
   renderHero(); renderLegend(); renderFollow(); renderWorkers(); renderSheet(); renderTicker(); renderPeople(); renderChat(); renderCamp(); renderReplay(); renderPipe(); renderBoard(); renderNext(); renderScene();
+  lifeEvents();
   say(S.head.title + '. ' + S.head.line);
   S.ready = true;
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   tryFloor();
 }
+
+// ------------------------------------------------------------------------------------------------ the floor reacts to real events (life.js)
+// The snapshot of the last load is kept in memory; what changed since (a merge, a failed run, new commits, a new adopted run, an eval passed) makes the 3D floor
+// cheer, slump or gather. The demo never celebrates. A fresh merge (last 30 min) is cheered once when the page opens. Nothing is stored in the browser.
+function lifeEvents() {
+  const snap = Life.snapshot(S.demo ? [] : S.workers, S.bdemo ? [] : S.builders, S.demo ? null : S.pipe, S.demo ? null : S.inp && S.inp.home), prev = S.snap || null;   // example data never counts
+  const ev = prev ? Life.diffEvents(prev, snap) : S.bdemo ? [] : Life.recentMerges(S.builders, S.now, 30);
+  S.snap = snap; S.lifeEv = ev;
+  if (ev.length) { say(ev.map((e) => e.text).slice(0, 3).join('. ') + '.'); S.pendingEv = ev; }
+  flushEvents();
+}
+function flushEvents() { if (!S.pendingEv || !(S.floor && S.floor.ok && S.floor.react)) return; try { S.lastReact = S.floor.react(S.pendingEv); } catch (_) { /* reactions are never needed */ } S.pendingEv = null; }
 
 // ------------------------------------------------------------------------------------------------ the optional 3D factory
 function hud() {
@@ -497,7 +541,8 @@ function hud() {
   if (p.hall === 'camp' && p.mode !== 'tour') { $('mini').setAttribute('viewBox', '0 0 360 250'); drawCamp($('mini'), true); } else { $('mini').setAttribute('viewBox', '0 0 360 292'); drawPlan($('mini'), true); }
   $('hallNow').textContent = p.mode === 'tour' ? 'Tour: ' + (hl ? hl.name : '') : p.mode === 'follow' ? 'Following' : hl ? hl.name : '';
   if (S.tour && p.mode !== 'tour') setTour(false, true);
-  const near = p.mode === 'walk' ? C.talkTarget(p, S.people, 3) : null, tb = $('talkBtn');
+  const live = (S.floor.posOf ? S.people.map((pn) => { const q = S.floor.posOf(pn.key); return q ? { ...pn, x: q.x, z: q.z } : pn; }) : S.people).filter((pn) => C.hallOf(pn).id === p.hall);   // people walk about: talk to where they are now, on your side of the wall
+  const near = p.mode === 'walk' ? C.talkTarget(p, live, 3) : null, tb = $('talkBtn');
   tb.hidden = !near; if (near) { tb.textContent = 'Talk to ' + near.name.split(' (')[0]; tb.dataset.key = near.key; }
   if (p.mode !== 'tour' && p.hall !== S.hallSeen) { S.hallSeen = p.hall; S.place = p.hall; renderPeople(); }
 }
@@ -506,10 +551,12 @@ function mountFloor() {
   if (!M) return false;
   S.stopMini && clearInterval(S.stopMini);
   $('stage').hidden = false;
-  const fl = M.createFloor($('floor3d'), { reduced, stations: C.STATIONS, onPick: (id, crate) => { open(id, true, crate); if (crate == null && byId(id)) talk('w:' + id); else if (typeof id === 'string' && id.indexOf('camp:') === 0) talk('b:' + id.slice(5)); } });
+  const fl = M.createFloor($('floor3d'), { reduced, stations: C.STATIONS, onMove: () => hud(), onPick: (id, crate) => { open(id, true, crate); if (crate == null && byId(id)) talk('w:' + id); else if (typeof id === 'string' && id.indexOf('camp:') === 0) talk('b:' + id.slice(5)); } });
   if (!fl || !fl.ok) { $('stage').hidden = true; S.floor = null; S.why = fl && fl.reason; return false; }
-  S.floor = fl; S.view = '3d';
+  S.floor = fl; S.view = '3d'; lendStage(true);
+  { const cw = Life.clockWord(new URLSearchParams(location.search).get('clock')); if (cw != null && fl.clock) fl.clock(Life.atClock(cw), false); }   // ?clock=quiet | standup | HH:MM: a fixed moment of the day (tests, screenshots)
   S.stopMini = setInterval(hud, 250);
+  setTimeout(flushEvents, 600);
   return true;
 }
 function tryFloor() {
@@ -526,7 +573,7 @@ function tryFloor() {
 window.addEventListener('erg-floor', tryFloor);
 
 function toggleView() {
-  if (S.view === '3d') { $('talkBtn').hidden = true; if (S.floor) { try { S.floor.dispose(); } catch (_) { /* nothing */ } } S.floor = null; S.view = 'plan'; S.canTry = true; clearInterval(S.stopMini); S.follow = ''; S.tour = false; $('follow').value = ''; renderScene(); renderSheet(); return; }
+  if (S.view === '3d') { lendStage(false); $('talkBtn').hidden = true; $('leadBtn').hidden = true; $('chatLead').hidden = true; if (S.floor) { try { S.floor.dispose(); } catch (_) { /* nothing */ } } S.floor = null; S.view = 'plan'; S.canTry = true; clearInterval(S.stopMini); S.follow = ''; S.tour = false; $('follow').value = ''; renderScene(); renderSheet(); return; }
   try { mountFloor(); } catch (_) { S.floor = null; }
   if (!S.floor) { S.canTry = false; say('3D is not available on this device; the plan stays.'); }
   renderScene(); renderSheet(); hud();
@@ -572,8 +619,10 @@ function wireControls() {
   $('sheetTalk').addEventListener('click', () => { if (S.sel) talk('w:' + S.sel); });
   $('bsheetTalk').addEventListener('click', () => { if (S.bsel) talk('b:' + S.bsel); });
   $('chatClose').addEventListener('click', endTalk);
+  $('chatLead').addEventListener('click', () => { const k = S.chat ? S.chat.key : S.kitTalk; if (k) leadMe(k); });
+  $('leadBtn').addEventListener('click', () => { const k = $('leadBtn').dataset.key; if (k) leadMe(k); });
   $('standBtn').addEventListener('click', standUp);
-  window.addEventListener('olympus:people:close', () => { S.kitTalk = ''; if (!S.chat) focus(null); });
+  window.addEventListener('olympus:people:close', () => { S.kitTalk = ''; if (!S.chat) focus(null); leadUi(); });
   $('bsheetWalk').addEventListener('click', () => goCamp(S.builders.find((x) => x.id === S.bsel)));
   $('bsheetClose').addEventListener('click', () => { S.bsel = null; renderCamp(); });
   if (!reduced) setInterval(() => { if (!document.hidden && S.ready) { S.scrollI++; renderCampScroll(); } }, 4500);                                  // the camp's scroll reads on
@@ -592,6 +641,6 @@ async function boot() {
   render();
   setInterval(() => { if (!document.hidden) load().then(render); }, 5 * 60 * 1000);
 }
-window.ERGASTERION = { S, C, ready: () => S.ready, render, open, openBuilder, goCamp, talk, endTalk, standUp, setFollow, setTour, floor: () => S.floor,
+window.ERGASTERION = { S, C, Life, ready: () => S.ready, render, open, openBuilder, goCamp, talk, endTalk, standUp, setFollow, setTour, leadMe, lifeEvents, floor: () => S.floor,
   replay: { set: (f) => { setPlaying(false); S.cur = Math.max(0, Math.min(1, f)); updateCursor(true); }, play: () => setPlaying(true), pause: () => setPlaying(false), fail: jumpFail, range: setRange } };
 boot();

@@ -24,6 +24,8 @@
 <script src="../olympus/intro-app.js?v=i5" defer></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/sfx.js?v=s3" defer></script>
+<script src="../olympus/fx-core.js?v=f1" defer></script>
+<script src="../olympus/fx-burst.js?v=f1" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
 <link rel="stylesheet" href="ergasterion.css?v=a4">
 </head>
@@ -49,9 +51,11 @@
       <svg id="mini" class="mini" viewBox="0 0 360 292" aria-hidden="true"></svg>
       <div class="joy" id="joy" aria-hidden="true"><i id="knob"></i></div>
       <button class="btn talk" id="talkBtn" type="button" hidden>Talk</button>
+      <button class="btn talk lead" id="leadBtn" type="button" hidden>Show me your work</button>
     </div>
     <svg id="plan" class="plan" viewBox="0 0 360 292" role="group" aria-label="Plan of the factory: four halls, one button for each worker with its job and its status lamp"></svg>
     <p class="say" id="planSay"></p>
+    <div class="work" id="workCard" aria-live="polite" hidden></div>
     <div class="bar">
       <button class="btn" id="viewBtn" type="button" hidden>Plan view</button>
       <button class="btn" id="tourBtn" type="button" hidden aria-pressed="false">Calm tour</button>
@@ -76,7 +80,7 @@
     <p class="note" id="chatWho"></p>
     <ul class="list chatlog" id="chatLog" aria-live="polite"></ul>
     <div class="chips" id="chatQs" role="group" aria-label="Questions you can ask"></div>
-    <div class="acts"><button class="btn" id="chatClose" type="button">End the chat</button></div>
+    <div class="acts"><button class="btn" id="chatLead" type="button" hidden>Show me your work</button><button class="btn" id="chatClose" type="button">End the chat</button></div>
   </section>
 
   <section class="ag-card card sheet" id="sheet" aria-labelledby="sheetH" hidden>
@@ -166,8 +170,8 @@
   <p class="foot" id="foot">Ergasterion reads the site's own published files and sends nothing. It never starts a worker, never trades and never moves money: paper and suggestions only. A lamp is honest: green ran recently, blue is quiet, amber is old or missing data, red failed, grey is sample data. Every lesson is a sentence lifted from a file, with that file named.</p>
 </main>
 <!-- the shared people kit (docs/PERSONA_API.md) is optional: without it Ergasterion uses its own built-in chat card -->
-<script type="module" src="../olympus/people.js?v=p1"></script>
-<script type="module" src="floorload.js?v=a4"></script>
-<script type="module" src="ergasterion.js?v=a4"></script>
+<script type="module" src="../olympus/people.js?v=p2"></script>
+<script type="module" src="floorload.js?v=a5"></script>
+<script type="module" src="ergasterion.js?v=a5"></script>
 </body>
 </html>
