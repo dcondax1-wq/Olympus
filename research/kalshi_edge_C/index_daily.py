@@ -74,7 +74,7 @@ def build(series, px, kappa=None, cutoff=None):
                 if h:
                     hist += h
             v = [np.mean(np.square(x)) for x in (today, hist) if x and len(x) >= 6]
-            if v:
+            if v and px.get(t) and today:   # needs today's futures bars: no stale-vol forecasts after the data ends
                 sd = math.sqrt(off * 12 * float(np.mean(v)))
                 a, b = px.get(t), px.get(ct)
                 if a and b:
