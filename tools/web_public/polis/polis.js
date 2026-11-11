@@ -30,6 +30,19 @@
   }
 
   function nowMs() { return S.nowFixed != null ? S.nowFixed : Date.now(); }
+  // QA6: a few citizens of the rolls walk the Acropolis streets: photos of their rigged 3D selves (olympus/people-studio.js, the KayKit cast dressed as
+  // our people). Phone-high only: LITE, reduced motion, ?rig=0 or no WebGL = the painted city as before. Loaded after the first paint, never blocks it.
+  function citizensWalk(city, R) {
+    if (lite() || !city || !city.setCitizens) return;
+    var list = (R && R.list ? R.list : []).filter(function (c) { return c.id; }).slice(0, 9);
+    if (list.length < 3) list = [{ id: 'citizen:a' }, { id: 'citizen:b' }, { id: 'citizen:c' }, { id: 'citizen:d' }, { id: 'citizen:e' }, { id: 'citizen:f' }];
+    setTimeout(function () {
+      Promise.all([import('../olympus/people3d.js'), import('../olympus/people-studio.js')]).then(function (m) {
+        var specs = list.map(function (c) { try { return m[0].spec(c.id); } catch (e) { return m[0].spec('someone'); } });
+        return m[1].atlas(specs, { views: true, cell: [72, 90] });
+      }).then(function (A) { if (A && S.city === city) { city.setCitizens(A, list); S.citizens = list.length; } }).catch(function () { /* the painted city stays */ });
+    }, 900);
+  }
   function lite() { try { return !!(O && O.lite && O.lite()); } catch (e) { return false; } }
   function reduced() { try { if (O && O.reduced && O.reduced()) return true; } catch (e) { /* */ } return !!(W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   function nyTime(ms) { try { return new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }).format(new Date(ms)); } catch (e) { return ''; } }
@@ -258,6 +271,7 @@
       var city = SK.create($('hero'), { apps: S.apps.map(function (a) { return { id: a.id, name: a.name, group: a.group, colour: a.colour, glyph: a.glyph, purpose: a.purpose, path: a.path }; }),
         ships: H.ships, weather: wx, time: S.nowFixed, quality: lite() ? 'low' : 'high', reduced: reduced(), scroller: $('pan') });
       S.city = city; city.setTreasury(T.up); city.start();
+      citizensWalk(city, R);
       placeSpots(); placeShipSpots(H);
       var start = q.pan && /^(life|trading|money|harbour|[a-z0-9]+)$/.test(q.pan) ? city.panFor(q.pan) : city.panFor('trading');
       $('pan').scrollLeft = start; city.setPan(start); markDistrict();

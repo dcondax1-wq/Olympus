@@ -125,7 +125,7 @@ export function createAthensDirector(scene, opts) {
   }
   function talkCam(i) {
     const q = S0.npcPos && S0.npcPos[i]; if (!q) return; const p = walker.pos; walker.stop(); walker.faceTo(Math.atan2(q.x - p.x, q.z - p.z));
-    D.mode = 'talk'; D.talkI = i; D.tp = { a: { x: p.x, y: gy(p.x, p.z), z: p.z, h: AV * 0.92 }, b: { x: q.x, y: gy(q.x, q.z), z: q.z, h: PH }, side: 1, two: 1.5, lookDown: 0.42, back: 1.9 };
+    D.mode = 'talk'; D.talkI = i; D.tp = { a: { x: p.x, y: gy(p.x, p.z), z: p.z, h: AV * 0.92 }, b: { x: q.x, y: gy(q.x, q.z), z: q.z, h: PH }, side: 1, two: 1.5, lookDown: 0.5, back: 2.4 };
     rig.shot('talk', D.tp);
   }
   function endTalk(quiet) { if (D.mode !== 'talk') return; D.mode = 'walk'; D.talkI = -1; if (D.av) D.av.visible = true; rig.shot('follow'); if (!quiet && o.onEndTalk) o.onEndTalk(); }

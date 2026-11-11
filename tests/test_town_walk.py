@@ -72,7 +72,7 @@ const plan = AP.planAthens(), world = AW.buildWorld(plan, {}), houses = AW.rende
   let talks = 0;
   for (const [bx, bz] of [[A.x + A.base - 20, A.z], [A.x, A.z + A.base - 18], [A.x - A.base + 22, A.z + 6], [310 - 120, -470 + 10], [starts[0].x, starts[0].z]]) for (const side of [1, -1]) {
     const b = { x: bx, y: AP.groundY(bx, bz), z: bz, h: AD.PH }, ap = K.approach({ x: bx + 6, z: bz + 3 }, b, 1.7), aa = { x: ap.x, y: AP.groundY(ap.x, ap.z), z: ap.z, h: AD.AV * 0.92 };
-    const rig = R.createRig(cam(), { world: AD.worldNear(col, houses, bx, bz), radius: 0.3 }); rig.shot('talk', { a: aa, b, side, two: 1.5, lookDown: 0.42, back: 1.9 }, { cut: true });
+    const rig = R.createRig(cam(), { world: AD.worldNear(col, houses, bx, bz), radius: 0.3 }); rig.shot('talk', { a: aa, b, side, two: 1.5, lookDown: 0.5, back: 2.4 }, { cut: true });
     for (let i = 0; i < 150; i++) { const st = rig.update(1 / 30); talks++; const t = rig.inside(0.08); if (t) { inside++; worst = 'talk ' + t + ' at ' + JSON.stringify(st.pos); } }
   }
   o.athens = { frames, inside, fresh, worst, reached, tried, feet, maxGrid, rebuilt, minClear: +minClear.toFixed(2), pulled, climbed, talks, legs: legs.length };
