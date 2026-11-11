@@ -147,17 +147,24 @@ def make_cells(U, times):
 
 
 def brier_table(brier, cutoff):
+    """Brier score (lower = better forecaster) of the market mid, the models, and the best market+MOS mix (weight picked on TRAIN only)."""
     out = {}
-    for blk, f in (("train", lambda d: d < cutoff), ("test", lambda d: d >= cutoff)):
-        for T in ("E", "M"):
+    for T in ("E", "M"):
+        blk = {}
+        for name, f in (("train", lambda d: d < cutoff), ("test", lambda d: d >= cutoff)):
             rows = [b for b in brier if f(b[0]) and b[1] == T and not np.isnan(b[3]) and not np.isnan(b[4])]
-            if len(rows) < 50:
-                continue
-            a = np.array([b[2:] for b in rows], dtype=float)
-            out[f"{blk} {T}"] = {"n": len(rows), "brier_market_mid": round(float(((a[:, 0] - a[:, 3]) ** 2).mean()), 5),
-                                 "brier_mos_model": round(float(((a[:, 1] - a[:, 3]) ** 2).mean()), 5),
-                                 "brier_naive_model": round(float(((a[:, 2] - a[:, 3]) ** 2).mean()), 5),
-                                 "brier_50/50_market+mos": round(float(((0.5 * a[:, 0] + 0.5 * a[:, 1] - a[:, 3]) ** 2).mean()), 5)}
+            if len(rows) >= 50:
+                blk[name] = np.array([b[2:] for b in rows], dtype=float)
+        w_best = None
+        if "train" in blk:
+            a = blk["train"]
+            w_best = min((float((((1 - w) * a[:, 0] + w * a[:, 1] - a[:, 3]) ** 2).mean()), w) for w in np.arange(0, 1.01, 0.05))[1]
+        for name, a in blk.items():
+            out[f"{name} {T}"] = {"n": len(a), "brier_market_mid": round(float(((a[:, 0] - a[:, 3]) ** 2).mean()), 5),
+                                  "brier_mos_model": round(float(((a[:, 1] - a[:, 3]) ** 2).mean()), 5),
+                                  "brier_naive_model": round(float(((a[:, 2] - a[:, 3]) ** 2).mean()), 5),
+                                  "best_mix_weight_on_forecast_(train)": round(float(w_best), 2),
+                                  "brier_best_mix": round(float((((1 - w_best) * a[:, 0] + w_best * a[:, 1] - a[:, 3]) ** 2).mean()), 5)}
     return out
 
 
