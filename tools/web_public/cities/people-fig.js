@@ -14,8 +14,9 @@ function figureGeo(lite) {
   put(unit.cyl(lite ? 6 : 9, .7), 0, .22, 0, .3, .5, .26, O);                                                   // the tunic, wider at the hem
   put(unit.box(), -.35, .4, 0, .11, .13, .11, S); put(unit.box(), .35, .4, 0, .11, .13, .11, S);                // mitten hands
   b.geo(new THREE.SphereGeometry(1, lite ? 7 : 10, lite ? 5 : 8).translate(0, 1, 0), 0, .68, 0, S, 0, .31, .3, .31, 0);   // the big round head
-  put(unit.sphere(lite ? 7 : 10, lite ? 3 : 4), 0, 1.0, -.03, .335, .3, .335, H);                              // hair
-  put(unit.box(), -.105, .95, .27, .055, .08, .05, D); put(unit.box(), .105, .95, .27, .055, .08, .05, D);      // eyes
+  put(unit.sphere(lite ? 7 : 10, lite ? 3 : 4), 0, 1.08, -.035, .33, .23, .33, H);                              // hair
+  put(unit.box(), -.1, .97, .275, .04, .065, .04, D); put(unit.box(), .1, .97, .275, .04, .065, .04, D);          // eyes
+  put(unit.box(), 0, .845, .285, .1, .018, .03, D);                                                              // a small calm mouth
   const g = b.geometry(); g.userData.tris = b.tris; return (proto[key] = g);
 }
 function patch(shader) {

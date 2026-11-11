@@ -287,7 +287,7 @@ function sixAnswers(p, rows, scope) {
   const withNet = rows.filter((r) => r.net != null), best = withNet.slice().sort((a, b) => b.net - a.net)[0], good = rows.filter((r) => r.tone === 'good'), bad = rows.filter((r) => r.tone === 'bad'), open = rows.filter((r) => r.tone === 'warn');
   const money = (r) => (r.net == null ? 'no money figure' : isRun ? `${usd(r.net)} after costs in 2026 (${usd(r.perMonth)} per month)` : p.src === 'datacity' ? `${usd(r.net, 1)} per trade per micro after costs` : `${usd(r.net, 2)} in total`);
   const lr = isRun ? rows.slice().sort((a, b) => (dayNum(b.built) || 0) - (dayNum(a.built) || 0))[0] : rows[0];
-  const why = (r) => (r && r.note ? ` The note says: ${clip(r.note, 150)}` : '');
+  const why = (r) => (r && r.note ? ` The note says: ${clip(r.note, 150).replace(/[\s,;:(]+$/, '').replace(/([^.…!?])$/, '$1…')}` : '');
   const ruin = A.state === 'ruin';
   return [
     [`What is ${scope} working on?`, ruin ? `Nothing any more. These are the ruins of ${p.label.replace(/ \(rejected.*\)$/, '')}: ${plural(n, unit)}, every one rejected.` : A.state === 'working' ? `We are at work: ${A.doing}.` : `It is quiet here: ${A.doing}.`],

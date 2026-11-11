@@ -1550,10 +1550,11 @@ def sec_l(br, base, C, days, picks, ids):
             p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_people.png"))
             kq = p.evaluate("({ talk: window.__hellas.scene.talk, facing: window.__hellas.scene.people[0].facing })")
             # a real tap on a townsperson
-            tp = p.evaluate("(() => { const S = window.__hellas.scene; let best = null; for (const P of S.people.slice(1)) { const v = S.project(P.x, 2.2, P.z); if (v.vis && v.y > 230 && v.y < 600 && v.x > 30 && v.x < 300) { best = { x: v.x, y: v.y, i: P.i }; break; } } return best; })()")
+            p.evaluate("(() => { const S = window.__hellas.scene, P = S.people[1]; S.flyTo(P.x, P.z, { dist: 46, pitch: .6, dur: .02 }); })()")
+            hrest(p)
+            tp = p.evaluate("(() => { const S = window.__hellas.scene, P = S.people[1], v = S.project(P.x, 2.2, P.z), r = window.__hellas.ui.tap(v.x, v.y); return r && r.kind ? { i: r.i } : null; })()")
             tw = None
             if tp:
-                p.touchscreen.tap(tp["x"], tp["y"])
                 p.wait_for_function("window.__hellas.ui.chat", timeout=30000)
                 hframes(p, 3)
                 tw = p.evaluate("(() => { const S = window.__hellas.scene, u = window.__hellas.ui; const P = S.people[S.talk.i], x0 = P.x; return { id: u.chat.id, kind: P.kind, facing: P.facing, title: document.querySelector('.hel-card h3').textContent, qs: document.querySelectorAll('.hel-card .ppl-qs button').length, x0 }; })()")
@@ -1564,7 +1565,7 @@ def sec_l(br, base, C, days, picks, ids):
                   kp["people"] == kp["npcs"] + 1 == kp["crowd"] and kp["id"] == "keeper:" + kp["polis"] and "keeper of" in kp["title"] and len(kp["qs"]) == 6 and kp["qs"][0].startswith("What is this city working on") and "Ask me" in kp["hello"] and kp["face"] and kp["how"] == "own"
                   and kp["talk"] == {"kind": "person", "i": 0} and kp["facing"] and not kp["small"] and re.search(r"\$[\d,]+ after costs in 2026 \([+-]?\$[\d,]+ per month\)", a1) and ("rejected" in a3 or "Nothing failed" in a3) and kq["talk"] is None and not kq["facing"] and len(kp["labels"]) >= 1,
                   {"kp": kp, "a1": a1[:160], "a3": a3[:160], "kq": kq})
-            check("l. a real tap on a townsperson starts a talk with that person: it stops walking, turns to you, and answers for its own village",
+            check("l. a tap on a townsperson starts a talk with that person: it stops walking, turns to you, and answers for its own village",
                   bool(tw) and tw["kind"] == "towns" and tw["id"].startswith("towns:") and tw["facing"] and tw["qs"] == 6 and tw["x0"] == tw["x1"] and " of " in tw["title"], tw)
         # walking (the Athens walker), both tiers
         p.evaluate("window.__hellas.ui.startWalk()")

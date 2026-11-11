@@ -211,7 +211,7 @@ export class Hellas {
   }
   /** everyone in the polis: townspeople walk their street, the keeper stands at the gate; whoever you talk to (or walk up to) stops and turns to face you */
   npcTick(t) {
-    if (!this.crowd || !this.people) return; const cp = this.camera.position, sc = this.walk ? 1.3 : 2.5, me = this.walk;
+    if (!this.crowd || !this.people) return; const cp = this.camera.position, sc = this.walk ? 1.08 : 2.5, me = this.walk;
     for (const P of this.people) {
       const talking = this.talk && this.talk.kind === 'person' && this.talk.i === P.i;
       if (P.loop && !talking) { const q = npcOnLoop(P.loop, t); P.x = q.x; P.z = q.z; P.ry = Math.atan2(Math.sin(q.yaw), -Math.cos(q.yaw)); }
@@ -222,7 +222,7 @@ export class Hellas {
     this.crowd.commit();
   }
   /** the person near a screen point (a tap), and the people around a spot (the walker), nearest first */
-  pickPerson(px, py, radius = 30) { if (!this.people || this.level !== 'polis') return null; const sc = this.walk ? 1.3 : 2.5; let best = null, bd = radius; for (const P of this.people) { const q = this.project(P.x, sc * .9, P.z); if (!q.vis) continue; const d = Math.hypot(q.x - px, q.y - py); if (d < bd) { bd = d; best = P; } } return best; }
+  pickPerson(px, py, radius = 30) { if (!this.people || this.level !== 'polis') return null; const sc = this.walk ? 1.08 : 2.5; let best = null, bd = radius; for (const P of this.people) { const q = this.project(P.x, sc * .9, P.z); if (!q.vis) continue; const d = Math.hypot(q.x - px, q.y - py); if (d < bd) { bd = d; best = P; } } return best; }
   peopleNear(x, z, max = 4, within = 30) { if (!this.people || this.level !== 'polis') return []; return this.people.map((P) => ({ P, d: Math.hypot(P.x - x, P.z - z) })).filter((e) => e.d <= within).sort((a, b) => a.d - b.d).slice(0, max); }
   /** who is being talked to: { kind: 'person', i } in a polis, { kind: 'builder', i } on the world; null ends it */
   setTalk(tk) { this.talk = tk || null; if (this.level === 'world') this.lifeTick(this.u.uTime.value, true); else this.npcTick(this.u.uTime.value); }
@@ -266,7 +266,7 @@ export class Hellas {
   labels(max = 7) {
     const out = [], c = this.cam, near = (list, pos, n) => list.map((o) => [Math.hypot(pos(o)[0] - c.tx, pos(o)[1] - c.tz), o]).sort((a, b) => a[0] - b[0]).slice(0, n).map((e) => e[1]);
     const put = (x, y, z, text, kind, ref) => { const q = this.project(x, y, z); if (q.vis) out.push({ x: q.x, y: q.y, text, kind, ref }); };
-    if (this.walk) { for (const e of this.peopleNear(this.walk.x, this.walk.z, 3, 24)) { put(e.P.x, 2.3, e.P.z, e.P.person.short, 'person ' + e.P.kind, e.P); } return out; }
+    if (this.walk) { for (const e of this.peopleNear(this.walk.x, this.walk.z, 3, 24)) { put(e.P.x, 1.85, e.P.z, e.P.person.short, 'person ' + e.P.kind, e.P); } return out; }
     if (this.level === 'world') {
       if (c.dist > 1100) for (const R of this.world.regions) put(R.cx, 20, R.cz, R.name, 'region', R);
       else { near(this.world.poleis, (p) => [p.x, p.z], max).forEach((p, i) => { put(p.x, 8 + p.mr * .5, p.z, p.name, (p.capital ? 'capital' : 'polis') + ' ' + p.activity.state, p); if (i < 1 && c.dist < 560 && out.length && out[out.length - 1].ref === p) out[out.length - 1].sub = p.activity.doing; });
