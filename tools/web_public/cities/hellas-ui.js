@@ -19,7 +19,7 @@ export class HellasUI {
     this.labels = el('div', 'hel-labels'); this.veil = el('div', 'hel-veil'); this.labelPool = [];
     const top = el('header', 'hel-top'), bar = el('div', 'hel-bar'), title = el('div', 'hel-title');
     this.backB = btn('‹', () => this.back(), 'hel-ic'); this.backB.setAttribute('aria-label', 'Back one level');
-    const h2 = el('h2', '', 'Hellas'); this.count = el('small', '', 'Reading the files'); this.count.id = 'helCount'; title.append(h2, this.count); title.onclick = () => this.worldCard();
+    const h2 = el('h2', '', 'Hellas'); this.count = el('small', '', 'Reading the files'); this.count.id = 'helCount'; title.append(h2, this.count); title.onclick = () => this.worldCard(true);
     const x = btn('×', () => this.o.onClose && this.o.onClose(), 'hel-ic'); x.setAttribute('aria-label', 'Close Hellas');
     bar.append(this.backB, title, x);
     this.crumbs = el('nav', 'hel-crumbs'); this.crumbs.setAttribute('aria-label', 'Where you are');
@@ -65,12 +65,14 @@ export class HellasUI {
   acts(...nodes) { const d = el('div', 'hel-acts'); d.append(...nodes.filter(Boolean)); return d; }
   link(l) { const a = el('a', '', l.text); a.href = l.href; return a; }
 
-  worldCard() {
+  /** the first card is short (the map is the show); the counter in the header opens the full count, source by source */
+  worldCard(full) {
     const W = this.world; if (!W) return;
+    const lead = el('p', '', `${W.header}. Every city is a real group of your own rows, and every house is one row: one tested run, one combo, one bet fact, one deal, one app.`);
+    if (!full) return this.showCard('Hellas, the world of cities', [lead, this.acts(btn('Random voyage', () => this.startVoyage(), 'go'), btn('Regions', () => this.regionList()), btn('How it is counted', () => this.worldCard(true)))]);
     const src = this.list(W.sources.filter((s) => s.ok).map((s) => ({ title: s.name, sub: s.example ? 'Example data: the real file was not found' : 'Read from the published file', tone: s.example ? 'warn' : 'good', right: `${nice(s.cities, 'city')}\n${nice(s.houses, 'house')}`, fn: () => this.find(s.name.split(' ')[0]) })));
-    for (const m of src.querySelectorAll('.m')) m.style.whiteSpace = 'pre';
-    this.showCard('Hellas, the world of cities', [el('p', '', `${W.header}. Every city is a real group of your own rows, and every house is one row: one tested run, one combo, one bet fact, one deal, one app.`), src,
-      el('p', '', 'Walls turn olive when more was adopted than rejected and terracotta when most was rejected. A gold acropolis means something there was adopted or kept. Tap a city, or use Find.'),
+    this.showCard('How Hellas is counted', [lead, src,
+      el('p', '', 'A city grows with its rows. Its walls turn olive when more was adopted than rejected and terracotta when most was rejected. A gold acropolis means something there was adopted or kept. Trade routes join cities of the same family.'),
       this.acts(btn('Random voyage', () => this.startVoyage(), 'go'), btn('Regions', () => this.regionList()))]);
   }
   goWorld() { this.stopVoyage(); this.leave(() => { this.at = {}; this.renderCrumbs(); this.select(null); if (this.scene) this.scene.goHome(); this.worldCard(); this.drawMap(); }); }
@@ -145,7 +147,7 @@ export class HellasUI {
     const c = houseCard(p, h.row), dl = el('dl', 'hel-kv'); for (const [k, v] of c.lines) { if (k) dl.append(el('dt', '', k)); dl.append(el('dd', k ? '' : 'fine', v)); }
     const tag = el('p'); tag.append(el('span', 'hel-tag ' + (h.tone === 'plain' ? '' : h.tone), h.row.verdict ? String(h.row.verdict) : 'A fact'), el('span', 'hel-tag', this.at.village.name));
     this.showCard(c.title.length > 90 ? c.title.slice(0, 88) + '…' : c.title, [tag, dl, this.acts(this.link(c.link), btn('Back to the village', () => this.goVillage(this.at.village)))], h.tone);
-    for (const m of this.card.querySelectorAll('.m')) m.style.whiteSpace = 'pre'; this.drawMap();
+    this.drawMap();
   }
   back() {
     const a = this.at;
@@ -193,7 +195,7 @@ export class HellasUI {
     const p = this.ptr.get(e.pointerId); if (!p) return; const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY; p.moved += Math.abs(dx) + Math.abs(dy);
     const S = this.scene; if (!S || this.mapMode) return;
     if (S.walking) { if (p.stick) { const ox = Math.max(-50, Math.min(50, p.x - p.x0)), oy = Math.max(-50, Math.min(50, p.y - p.y0)); S.walk.input.side = ox / 50; S.walk.input.fwd = -oy / 50; S.walk.input.run = Math.hypot(ox, oy) > 46; this.knob.style.transform = `translate(${ox * .6}px,${oy * .6}px)`; } else S.walkLook(dx, dy); return; }
-    if (this.ptr.size >= 2) { const [a, b] = [...this.ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (this.pinch) S.zoom(this.pinch / d); this.pinch = d; S.orbit(dx * .25, 0); return; }
+    if (this.ptr.size >= 2) { const [a, b] = [...this.ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (this.pinch) S.zoom(this.pinch / d); this.pinch = d; S.pan(dx * .5, dy * .5); return; }
     if (p.moved > 6) { if (S.level === 'world') S.pan(dx, dy); else S.orbit(dx, dy); }
   }
   up(e, cancel) {

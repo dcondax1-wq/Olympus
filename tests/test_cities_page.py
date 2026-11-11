@@ -1356,8 +1356,12 @@ def sec_l(br, base, C, days, picks, ids):
               const small = [...r.querySelectorAll('button, a, input')].filter(vis).filter((e) => { const b = e.getBoundingClientRect(); return b.height < 43.5 || b.width < 43.5; }).map((e) => e.textContent.slice(0, 20) + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height));
               const off = [...r.querySelectorAll('.hel-top, .hel-card, .hel-dock')].filter(vis).filter((e) => { const b = e.getBoundingClientRect(); return b.left < -1 || b.right > innerWidth + 1 || b.bottom > innerHeight + 1; }).length;
               return { small, off, sideways: document.scrollingElement.scrollWidth > innerWidth, card: document.querySelector('.hel-card').textContent, hidden: getComputedStyle(document.querySelector('.atlas-actions') || document.body.firstElementChild).visibility }; })()""")
-            check("l. 390 x 844: every button is 44 px or more, nothing off screen, no sideways scroll; the first card explains the world and lists each source with its cities and houses",
-                  not lay["small"] and not lay["off"] and not lay["sideways"] and "Every city is a real group" in lay["card"] and "Archive" in lay["card"] and "Data City" in lay["card"] and "gold acropolis" in lay["card"], lay)
+            full = p.evaluate("(window.__hellas.ui.worldCard(true), document.querySelector('.hel-card').textContent)")
+            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_counted.png"))
+            p.evaluate("window.__hellas.ui.worldCard()")
+            check("l. 390 x 844: every button is 44 px or more, nothing off screen, no sideways scroll; the first card is short and says what a city and a house are; 'How it is counted' lists each source with its cities and houses",
+                  not lay["small"] and not lay["off"] and not lay["sideways"] and "Every city is a real group" in lay["card"] and "How it is counted" in lay["card"] and len(lay["card"]) < 420
+                  and "Archive" in full and "Data City" in full and "Kalshi" in full and "gold acropolis" in full and re.search(r"\d+ cities\n[\d,]+ houses", full), {"lay": lay, "full": full[:300]})
             # tap a city on the 3D map
             p.evaluate("window.__hellas.ui.hideCard(); window.__hellas.ui.goRegion(window.__hellas.world.regions.find((r) => r.key === 'peloponnese'))")
             hrest(p)
