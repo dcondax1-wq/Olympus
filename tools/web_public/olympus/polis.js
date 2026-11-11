@@ -838,8 +838,8 @@
         }
         return tag('path', { d: o, fill: cls, stroke: '#7d6a45', 'stroke-width': 0.45 }) + tag('path', { d: l, fill: 'none', stroke: '#6d5a36', 'stroke-width': 0.5, opacity: 0.8 });
       }
-      body += acanthus(H * 0.78, H * 0.42, 3, W0 * 0.32, gd);
-      body += acanthus(H, H * 0.4, 3, W0 * 0.3, m);
+      body += acanthus(H * 0.74, H * 0.4, 3, W0 * 0.26, gd);
+      body += acanthus(H, H * 0.38, 4, W0 * 0.2, m);
       [[W0 * 0.12, -1], [W0 * 0.88, 1]].forEach(function (v) {
         var sp = '', t;
         for (t = 0; t <= 2 * Math.PI; t += 0.22) { var rr = W0 * 0.09 * (1 - t / (2.4 * Math.PI)); sp += (t ? 'L' : 'M') + pt(v[0] + v[1] * rr * Math.cos(t), top + W0 * 0.07 + rr * Math.sin(t)); }
@@ -1143,7 +1143,7 @@
       '<feComposite in="df" in2="SourceAlpha" operator="in" result="d2"/>' +
       '<feBlend in="SourceGraphic" in2="d2" mode="multiply" result="m"/>' +
       '<feComposite in="m" in2="s2" operator="arithmetic" k1="0" k2="1" k3="0.6" k4="0"/></filter>';
-    var defs = silver + relief + bevel + shine + emb + tag('clipPath', { id: id + 'k' }, tag('path', { d: d }));
+    var defs = silver + relief + bevel + shine + emb + '<filter id="' + id + 'pb" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter>' + tag('clipPath', { id: id + 'k' }, tag('path', { d: d }));
     var owlSil = owl.sil.slice(0, 3).join('');
     var sprig = leafD(22, 30, 9, 2.6, -60, 0.04) + leafD(22, 30, 8, 2.4, -128, -0.04) + leafD(22, 30, 7, 2.2, -94, 0) + circD(27.4, 33.2, 1.8);
     var moon = 'M30,20a6,6 0 1,0 6,9a5,5 0 1,1 -6,-9Z';
@@ -1155,11 +1155,11 @@
         tag('path', { d: owlSil, fill: 'url(#' + id + 'r)' }) + tag('path', { d: owl.white.join(''), fill: '#e9e9e3' })) +
       tag('g', { transform: 'translate(13.4,17.4) scale(0.6)', opacity: 0.55 }, tag('path', { d: inc, fill: 'none', stroke: '#4d4f4a', 'stroke-width': 1.1, 'stroke-linecap': 'round' }) + tag('path', { d: owl.top.join(''), fill: '#3a3c38' })) +
       tag('g', { filter: 'url(#' + id + 'e)' }, tag('path', { d: sprig + moon, fill: 'url(#' + id + 'r)' }) +
-        tag('text', { x: 70, y: 56, 'text-anchor': 'middle', 'font-family': "'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif", 'font-size': 13, 'font-weight': 700, fill: 'url(#' + id + 'r)', 'letter-spacing': 0.5 }, 'ΑΘΕ')) +
+        tag('text', { x: 75, y: 57, 'text-anchor': 'middle', 'font-family': "'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif", 'font-size': 12, 'font-weight': 700, fill: 'url(#' + id + 'r)', 'letter-spacing': 0.3 }, 'ΑΘΕ')) +
       tag('path', { d: d, fill: 'none', stroke: '#2f302c', 'stroke-width': 1, opacity: 0.55 }) +
       tag('g', { 'clip-path': 'url(#' + id + 'k)' },
         tag('g', { 'class': 'polis-coin-bronze' }, tag('path', { d: d, fill: '#a5683a', style: 'mix-blend-mode:multiply' }) + tag('path', { d: d, fill: '#3b2412', opacity: 0.25 }) +
-          tag('path', { d: circD(28, 70, 7) + circD(74, 30, 5) + circD(66, 78, 4), fill: '#6f8a6a', opacity: 0.35 })) +
+          tag('path', { d: circD(26, 72, 8) + circD(76, 28, 6) + circD(64, 80, 5) + circD(82, 64, 3.5), fill: '#6f8a6a', opacity: 0.22, filter: 'url(#' + id + 'pb)' })) +
         tag('rect', { 'class': 'polis-coin-shine', x: -120, y: -20, width: 120, height: 140, fill: 'url(#' + id + 'h)' }));
     return '<svg xmlns="' + NS + '" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><defs>' + defs + '</defs>' + body + '</svg>';
   }
@@ -1336,38 +1336,13 @@
   function lamp(el, opts) {
     opts = opts || {};
     if (!el || !D) return null;
-    var st = still(), id = uid('l');
+    var st = still();
     clearSafe(el, 'polis-lamp');
     var root = D.createElement('div');
     root.className = 'polis-lamp' + (opts.progress === undefined || opts.progress === null ? ' indet' : '');
     root.setAttribute('role', 'status');
     root.setAttribute('aria-live', 'polite');
-    var defs = grad(id + 'c', [[0, '#e7a36d'], [0.35, '#c8703f'], [0.75, '#94471f'], [1, '#5e2c12']], { a: { x1: 0.2, y1: 0, x2: 0.5, y2: 1 } }) +
-      grad(id + 'f1', [[0, '#fff6d6'], [0.35, '#ffd98a'], [0.75, '#f0a53e'], [1, '#c8642a', 0]], { radial: true, a: { cx: '50%', cy: '78%', r: '70%' } }) +
-      grad(id + 'f2', [[0, '#ffffff'], [0.5, '#fff1c2'], [1, '#ffd27a', 0]], { radial: true, a: { cx: '50%', cy: '80%', r: '60%' } }) +
-      grad(id + 'h', [[0, '#ffd690', 0.42], [0.5, '#e0a050', 0.12], [1, '#e0a050', 0]], { radial: true, a: { cx: '50%', cy: '50%', r: '50%' } }) +
-      grad(id + 't', [[0, '#ffe2b0', 0.55], [1, '#ffe2b0', 0]], { a: { x1: 1, y1: 0, x2: 0.3, y2: 0.8 } });
-    var dots = '', i;
-    for (i = 0; i < 11; i++) { var a = Math.PI * (1.08 + i * 0.084); dots += circD(78 + 34 * Math.cos(a), 63 + 9 * Math.sin(a) - 2, 1.15); }
-    var svg = '<svg xmlns="' + NS + '" viewBox="0 0 160 104" aria-hidden="true" focusable="false"><defs>' + defs + '</defs>' +
-      tag('ellipse', { 'class': 'polis-lamp-halo', cx: 126, cy: 46, rx: 46, ry: 40, fill: 'url(#' + id + 'h)' }) +
-      tag('ellipse', { cx: 80, cy: 92, rx: 50, ry: 5, fill: '#000', opacity: 0.35 }) +
-      tag('path', { d: 'M40,66C40,52 58,46 78,46C92,46 104,49 112,53L126,55C131,55.6 133,58.6 132,61.6C131,64.4 128,65.6 125,65.4L113,66C107,76 94,82 78,82C58,82 40,78 40,66Z', fill: 'url(#' + id + 'c)' }) +
-      tag('path', { d: 'M27,60C21,60 18,65 20,70C22,75 30,76 41,71L42,66C34,69 27,69 26,66C25,63 28,62 32,63L36,60Z', fill: 'url(#' + id + 'c)' }) +
-      tag('path', { d: 'M62,82L94,82L92,88L64,88Z', fill: '#7a3a1a' }) +
-      tag('ellipse', { cx: 78, cy: 53, rx: 20, ry: 4.6, fill: '#8a4220' }) +
-      tag('ellipse', { cx: 78, cy: 52.4, rx: 16, ry: 3.4, fill: '#b2643a' }) +
-      tag('circle', { cx: 78, cy: 52.4, r: 2.2, fill: '#3a1a0a' }) +
-      tag('path', { d: dots, fill: '#e9b081', opacity: 0.55 }) +
-      tag('path', { d: 'M44,66C50,72 62,75 78,75C92,75 104,72 110,66', fill: 'none', stroke: '#5a2810', 'stroke-width': 0.9, opacity: 0.55 }) +
-      tag('path', { 'class': 'polis-lamp-lit', d: 'M96,48C104,49 110,51 116,54L126,55.4C129,55.8 131,57.6 131.4,60', fill: 'none', stroke: 'url(#' + id + 't)', 'stroke-width': 3, 'stroke-linecap': 'round' }) +
-      tag('path', { d: 'M124.4,55.6L127.6,54.6L128,57.6Z', fill: '#2a1408' }) +
-      '<g class="polis-lamp-flame" transform="translate(126.4,55.4)"><g class="polis-lamp-grow"><g class="polis-lamp-flick">' +
-      tag('path', { d: 'M0,0C-7.5,-3 -8,-13 -4,-21C-2,-25.5 -1,-30 0,-36C2,-29 5.5,-25 7,-19C9.6,-10 6.8,-2.6 0,0Z', fill: 'url(#' + id + 'f1)' }) +
-      tag('path', { d: 'M0,-1.2C-4,-3 -4.6,-9 -2.2,-13.6C-1,-16 -0.4,-18.6 0,-22C1.4,-18 3.4,-15.4 4,-12C4.8,-6.8 3.4,-2.4 0,-1.2Z', fill: 'url(#' + id + 'f2)' }) +
-      tag('ellipse', { cx: 0, cy: -2.2, rx: 1.6, ry: 2.6, fill: '#5a7fb0', opacity: 0.55 }) +
-      '</g></g></g></svg>';
-    var art = D.createElement('div'); art.className = 'polis-lamp-art'; art.innerHTML = svg;
+    var art = D.createElement('div'); art.className = 'polis-lamp-art'; art.innerHTML = lampSVG(uid('l'));     // generated SVG only
     var lab = D.createElement('div'); lab.className = 'polis-lamp-label'; lab.textContent = opts.label || 'Lighting the lamp…';
     root.appendChild(art); root.appendChild(lab);
     el.appendChild(root);
@@ -1393,13 +1368,38 @@
       stop: function () { if (root.parentNode) root.parentNode.removeChild(root); }
     };
   }
+  function lampSVG(id) {
+    var defs = grad(id + 'c', [[0, '#e7a36d'], [0.35, '#c8703f'], [0.75, '#94471f'], [1, '#5e2c12']], { a: { x1: 0.2, y1: 0, x2: 0.5, y2: 1 } }) +
+      grad(id + 'f1', [[0, '#fff6d6'], [0.35, '#ffd98a'], [0.75, '#f0a53e'], [1, '#c8642a', 0]], { radial: true, a: { cx: '50%', cy: '78%', r: '70%' } }) +
+      grad(id + 'f2', [[0, '#ffffff'], [0.5, '#fff1c2'], [1, '#ffd27a', 0]], { radial: true, a: { cx: '50%', cy: '80%', r: '60%' } }) +
+      grad(id + 'h', [[0, '#ffd690', 0.42], [0.5, '#e0a050', 0.12], [1, '#e0a050', 0]], { radial: true, a: { cx: '50%', cy: '50%', r: '50%' } }) +
+      grad(id + 't', [[0, '#ffe2b0', 0.55], [1, '#ffe2b0', 0]], { a: { x1: 1, y1: 0, x2: 0.3, y2: 0.8 } });
+    var dots = '', i;
+    for (i = 0; i < 11; i++) { var a = Math.PI * (1.08 + i * 0.084); dots += circD(78 + 34 * Math.cos(a), 63 + 9 * Math.sin(a) - 2, 1.15); }
+    return '<svg xmlns="' + NS + '" viewBox="0 0 160 104" aria-hidden="true" focusable="false"><defs>' + defs + '</defs>' +
+      tag('ellipse', { 'class': 'polis-lamp-halo', cx: 126, cy: 46, rx: 46, ry: 40, fill: 'url(#' + id + 'h)' }) +
+      tag('ellipse', { cx: 80, cy: 92, rx: 50, ry: 5, fill: '#000', opacity: 0.35 }) +
+      tag('path', { d: 'M40,66C40,52 58,46 78,46C92,46 104,49 112,53L126,55C131,55.6 133,58.6 132,61.6C131,64.4 128,65.6 125,65.4L113,66C107,76 94,82 78,82C58,82 40,78 40,66Z', fill: 'url(#' + id + 'c)' }) +
+      tag('path', { d: 'M27,60C21,60 18,65 20,70C22,75 30,76 41,71L42,66C34,69 27,69 26,66C25,63 28,62 32,63L36,60Z', fill: 'url(#' + id + 'c)' }) +
+      tag('path', { d: 'M62,82L94,82L92,88L64,88Z', fill: '#7a3a1a' }) +
+      tag('ellipse', { cx: 78, cy: 53, rx: 20, ry: 4.6, fill: '#8a4220' }) +
+      tag('ellipse', { cx: 78, cy: 52.4, rx: 16, ry: 3.4, fill: '#b2643a' }) +
+      tag('circle', { cx: 78, cy: 52.4, r: 2.2, fill: '#3a1a0a' }) +
+      tag('path', { d: dots, fill: '#e9b081', opacity: 0.55 }) +
+      tag('path', { d: 'M44,66C50,72 62,75 78,75C92,75 104,72 110,66', fill: 'none', stroke: '#5a2810', 'stroke-width': 0.9, opacity: 0.55 }) +
+      tag('path', { 'class': 'polis-lamp-lit', d: 'M96,48C104,49 110,51 116,54L126,55.4C129,55.8 131,57.6 131.4,60', fill: 'none', stroke: 'url(#' + id + 't)', 'stroke-width': 3, 'stroke-linecap': 'round' }) +
+      tag('path', { d: 'M124.4,55.6L127.6,54.6L128,57.6Z', fill: '#2a1408' }) +
+      '<g class="polis-lamp-flame" transform="translate(126.4,55.4)"><g class="polis-lamp-grow"><g class="polis-lamp-flick">' +
+      tag('path', { d: 'M0,0C-7.5,-3 -8,-13 -4,-21C-2,-25.5 -1,-30 0,-36C2,-29 5.5,-25 7,-19C9.6,-10 6.8,-2.6 0,0Z', fill: 'url(#' + id + 'f1)' }) +
+      tag('path', { d: 'M0,-1.2C-4,-3 -4.6,-9 -2.2,-13.6C-1,-16 -0.4,-18.6 0,-22C1.4,-18 3.4,-15.4 4,-12C4.8,-6.8 3.4,-2.4 0,-1.2Z', fill: 'url(#' + id + 'f2)' }) +
+      tag('ellipse', { cx: 0, cy: -2.2, rx: 1.6, ry: 2.6, fill: '#5a7fb0', opacity: 0.55 }) +
+      '</g></g></g></svg>';
+  }
   P.lamp = lamp;
 
   /* ------------------------------------------------------------------ 10. laurel wreaths and olive sprigs (gold leaf) */
-  function laurel(el, opts) {
-    opts = opts || {};
-    if (!el || !D) return null;
-    var st = still(), kind = opts.kind === 'olive' ? 'olive' : 'laurel', form = opts.form || (kind === 'olive' ? 'sprig' : 'wreath'), gold = !!opts.gold, id = uid('w');
+  function laurelSVG(opts, id) {
+    var kind = opts.kind === 'olive' ? 'olive' : 'laurel', form = opts.form || (kind === 'olive' ? 'sprig' : 'wreath'), gold = !!opts.gold, id = uid('w');
     var parts;
     if (form === 'wreath') parts = wreathParts(60, 56, 36, kind);
     else {
@@ -1430,13 +1430,19 @@
       (fruit ? tag('path', { d: fruit, fill: fruitFill, 'class': 'polis-fruit' }) + (gold ? '' : tag('path', { d: parts.fruit.map(function (f) { return circD(f[0] - 0.8, f[1] - 1, 0.6); }).join(''), fill: '#fff', opacity: 0.35 })) : '') +
       (parts.ribbon ? tag('path', { d: parts.ribbon, fill: ribbonFill }) + tag('path', { d: parts.ribbonLines, fill: 'none', stroke: '#e9b8a0', 'stroke-width': 0.5, opacity: 0.5 }) : '');
     if (gold) body += tag('g', { 'clip-path': 'url(#' + id + 'k)' }, tag('rect', { 'class': 'polis-sweep', x: -140, y: -10, width: 140, height: 150, fill: 'url(#' + id + 'sw)' }));
+    return { kind: kind, form: form, gold: gold, svg: '<svg xmlns="' + NS + '" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs>' + defs + '</defs>' + body + '</svg>' };
+  }
+  function laurel(el, opts) {
+    opts = opts || {};
+    if (!el || !D) return null;
+    var st = still(), L = laurelSVG(opts, uid('w')), kind = L.kind, form = L.form, gold = L.gold;
     var label = opts.label || (gold ? 'Gold ' : '') + (kind === 'olive' ? 'olive ' : 'laurel ') + (form === 'wreath' ? 'wreath' : 'sprig');
     clearSafe(el, 'polis-laurel');
     var root = D.createElement('span');
     root.className = 'polis-laurel ' + kind + ' ' + form + (gold ? ' gold' : '') + (opts.animate === false || st ? '' : ' grow');
     root.setAttribute('role', 'img');
     root.setAttribute('aria-label', label);
-    root.innerHTML = '<svg xmlns="' + NS + '" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><defs>' + defs + '</defs>' + body + '</svg>';
+    root.innerHTML = L.svg;                         // generated SVG only, no data
     if (opts.size) root.style.setProperty('--polis-laurel', opts.size + 'px');
     el.appendChild(root);
     return { el: root, replay: function () { if (still()) return; root.classList.remove('grow'); root.getBoundingClientRect(); root.classList.add('grow'); } };
@@ -1462,6 +1468,7 @@
   };
   P.still = still;
   P.lite = isLite;
+  P._svg = { coin: coinSVG, capital: capitalSVG, base: baseSVG, entab: entabSVG, steps: stepsSVG, laurel: laurelSVG, lamp: lampSVG };   // the raw builders (tests, previews)
   P.version = 'polis-1';
 
   W.OLYMPUS_POLIS = P;
