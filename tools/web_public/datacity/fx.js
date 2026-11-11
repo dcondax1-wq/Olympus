@@ -268,13 +268,13 @@ export class Billboards {
     const it = this.items[b.at % this.items.length], g = b.canvas.getContext('2d');
     g.clearRect(0, 0, 512, 256);
     g.fillStyle = it.color || '#daa56f';
-    g.font = '700 22px Orbitron, Rajdhani, system-ui, sans-serif';
+    g.font = '700 22px Georgia, Georgia, system-ui, sans-serif';
     g.fillText(it.title, 22, 40);
-    g.font = '600 25px Rajdhani, system-ui, sans-serif';
+    g.font = '600 25px Georgia, system-ui, sans-serif';
     g.fillStyle = '#b2cadc';
     let y = 82;
     for (const line of wrap(g, it.lines.join(' '), 468).slice(0, 4)) { g.fillText(line, 22, y); y += 30; }
-    g.font = '800 34px Orbitron, Rajdhani, system-ui, sans-serif';
+    g.font = '800 34px Georgia, Georgia, system-ui, sans-serif';
     g.fillStyle = it.color || '#ddac7b';
     g.fillText(it.big || '', 22, 230);
     b.tex.needsUpdate = true;

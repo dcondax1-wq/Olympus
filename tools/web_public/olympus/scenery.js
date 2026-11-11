@@ -182,7 +182,7 @@ export function banners(scene, { items = [], w = 1.5, h = 4, glyph = 'Α', color
     g.fillStyle = color; g.fillRect(0, 0, n, n);
     const gr = g.createLinearGradient(0, 0, 0, n); gr.addColorStop(0, 'rgba(255,255,255,.08)'); gr.addColorStop(1, 'rgba(0,0,0,.35)'); g.fillStyle = gr; g.fillRect(0, 0, n, n);
     g.strokeStyle = trim; g.lineWidth = 8; g.strokeRect(10, 10, n - 20, n - 20); g.lineWidth = 2; g.strokeRect(24, 24, n - 48, n - 48);
-    g.fillStyle = trim; g.font = '700 150px Orbitron, serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(glyph, n / 2, n / 2 + 6);
+    g.fillStyle = trim; g.font = '700 150px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(glyph, n / 2, n / 2 + 6);
   }, { srgb: true });
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
   const uT = { value: 0 };

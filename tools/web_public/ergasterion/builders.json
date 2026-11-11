@@ -1,0 +1,592 @@
+{
+ "v": 1,
+ "asof": "2026-11-11T01:10:00Z",
+ "source": "git",
+ "base": "agora-release",
+ "newest_t": 1794359539,
+ "note": "The build agents from handoff/agents_now.json, joined with git at build time (commits not yet in the release, files, folders, what was merged).",
+ "agents": [
+  {
+   "id": "b1",
+   "branch": "worktree-agent-a8fa04fb59e01df25",
+   "name": "Theme finisher",
+   "job": "One calm AGORA look in every app; a unique accent per app",
+   "area": "design",
+   "live": true,
+   "merged": false,
+   "ahead": 43,
+   "files": 126,
+   "folders": [
+    {
+     "name": "tools/web_public/olympus",
+     "n": 18
+    },
+    {
+     "name": "web_next/js",
+     "n": 11
+    },
+    {
+     "name": "web_next/css",
+     "n": 10
+    },
+    {
+     "name": "tools/web_public/datacity",
+     "n": 9
+    }
+   ],
+   "commits": [
+    {
+     "t": 1794357374,
+     "s": "Jarvis portal: bronze fallback colour"
+    },
+    {
+     "t": 1794357354,
+     "s": "AGORA audit sees colours with alpha (#rrggbbaa): Data City no-3D view + map and Cities lobby warmed (163 leftover cyan…"
+    },
+    {
+     "t": 1794357254,
+     "s": "AGORA accents: arena / argo / pythia pre-paint follows the table; test_agora_audit pins one accent per app"
+    },
+    {
+     "t": 1794357201,
+     "s": "AGORA accents: Ares, Plutus, Forum, Labyrinth, Odeon tiles off hot red / lime; the Athens plan follows the one accent t…"
+    },
+    {
+     "t": 1794357065,
+     "s": "Jarvis app cards: warm fallback colours"
+    },
+    {
+     "t": 1794357017,
+     "s": "AGORA accents: one warm accent per legacy app (19 apps: apps.js, olympus.js APPS, page pre-paint, apps-list rebuilt), t…"
+    },
+    {
+     "t": 1794356741,
+     "s": "AGORA: Jarvis leftovers (start note, light-scheme text, theme tile, comments): audit hard FAILs 12 - 0"
+    }
+   ],
+   "last_t": 1794357374,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "from git: its branch against the release"
+  },
+  {
+   "id": "b2",
+   "branch": "worktree-agent-a43a2daec19cf8666",
+   "name": "Jarvis home",
+   "job": "A clean, beautiful Jarvis first screen with a golden-hour courtyard",
+   "area": "jarvis",
+   "live": true,
+   "merged": false,
+   "ahead": 6,
+   "files": 16,
+   "folders": [
+    {
+     "name": "tools/web_public/jarvis",
+     "n": 7
+    },
+    {
+     "name": "docs/shots",
+     "n": 6
+    },
+    {
+     "name": "tests",
+     "n": 3
+    }
+   ],
+   "commits": [
+    {
+     "t": 1794358595,
+     "s": "tests: test_jarvis_home_v2 (browser: first screen at three sizes, no overlap, orb hint once, states, pull to refresh, r…"
+    },
+    {
+     "t": 1794358497,
+     "s": "Jarvis home v2: painted courtyard = CSS golden-hour sky + one SVG doorway per rail column (aligned at every width)"
+    },
+    {
+     "t": 1794358395,
+     "s": "Jarvis home v2: tests (the first-screen model, page order, CSS, orb dock), courtyard pins follow v2"
+    },
+    {
+     "t": 1794357677,
+     "s": "Jarvis home v2: CSS (hero, tiles, sections, solid bottom stack), orb docked in its row with a one-time hint, courtyard…"
+    },
+    {
+     "t": 1794357239,
+     "s": "Jarvis home v2: one first screen in index.html (hero, district doorways, three tiles), named sections below the fold; t…"
+    },
+    {
+     "t": 1794357166,
+     "s": "Jarvis home v2: first-screen model (state, hero sentence, three tiles, district needs) + cards rewrite (skeletons, pull…"
+    }
+   ],
+   "last_t": 1794358595,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "from git: its branch against the release"
+  },
+  {
+   "id": "b3",
+   "branch": "worktree-agent-ab25b5ae6ac17c255",
+   "name": "Jarvis brain",
+   "job": "Search everything, follow-up questions, briefings, tours",
+   "area": "jarvis",
+   "live": true,
+   "merged": false,
+   "ahead": 11,
+   "files": 18,
+   "folders": [
+    {
+     "name": "tools/web_public/jarvis",
+     "n": 12
+    },
+    {
+     "name": "tests",
+     "n": 3
+    },
+    {
+     "name": "tools",
+     "n": 2
+    },
+    {
+     "name": "docs",
+     "n": 1
+    }
+   ],
+   "commits": [
+    {
+     "t": 1794359539,
+     "s": "Jarvis brain v3: 'what are the agents working on' (ergasterion/builders.json, else the bundled jarvis/agents-now.json,…"
+    },
+    {
+     "t": 1794358265,
+     "s": "Jarvis brain v3: safety tightened (notes, searches, 'the live feed', 'short answers' are not orders), wiring notes"
+    },
+    {
+     "t": 1794358131,
+     "s": "Jarvis brain v3: tests.test_jarvis_skills grows (builders, v3 node tests), docs/JARVIS_API.md v2 + wiring"
+    },
+    {
+     "t": 1794358066,
+     "s": "Jarvis brain v3: node tests (60 search queries, 25 dialogue scripts, 50+ refused phrasings, briefing, explain, tours, J…"
+    },
+    {
+     "t": 1794357844,
+     "s": "Jarvis brain v3: brain.js wiring (safety first, v3 skills before the older rules, JARVIS_API v2), jdata.loadJson"
+    },
+    {
+     "t": 1794357744,
+     "s": "Jarvis brain v3: skills3.js (follow-ups, tours, six-line briefing, explain, search, safety) wired into skills.js"
+    },
+    {
+     "t": 1794357441,
+     "s": "Jarvis brain v3: explain.js, tours.js, dialogue.js"
+    },
+    {
+     "t": 1794357385,
+     "s": "Jarvis brain v3: safety.js (recognises any request to place / arm / change a trade)"
+    }
+   ],
+   "last_t": 1794359539,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "from git: its branch against the release"
+  },
+  {
+   "id": "b4",
+   "branch": "worktree-agent-a802da4078c305b1b",
+   "name": "Hellas",
+   "job": "A world of 200+ cities built from the real research data",
+   "area": "cities",
+   "live": true,
+   "merged": false,
+   "ahead": 6,
+   "files": 11,
+   "folders": [
+    {
+     "name": "tools/web_public/cities",
+     "n": 10
+    },
+    {
+     "name": "tests",
+     "n": 1
+    }
+   ],
+   "commits": [
+    {
+     "t": 1794358696,
+     "s": "Hellas: tree tint, veil reset"
+    },
+    {
+     "t": 1794358649,
+     "s": "Hellas: short first card + 'How it is counted', two-finger pan"
+    },
+    {
+     "t": 1794358589,
+     "s": "Hellas: tests (section l: grouping, determinism, layout, budgets, plans, walker, search, cards + browser part)"
+    },
+    {
+     "t": 1794357697,
+     "s": "Hellas: 3D world + streamed polis scene, page layer (counter, crumbs, search, regions, voyage, map, walking), entry but…"
+    },
+    {
+     "t": 1794357261,
+     "s": "Hellas: data (poleis from the Archive, Data City, Kalshi, money, accounts, apps), world + polis plan, names, fixture"
+    }
+   ],
+   "last_t": 1794358696,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "from git: its branch against the release"
+  },
+  {
+   "id": "b5",
+   "branch": "worktree-agent-a1d36b031da943214",
+   "name": "Ergasterion",
+   "job": "The agent factory: watch every worker and what it learned",
+   "area": "factory",
+   "live": true,
+   "merged": false,
+   "ahead": 9,
+   "files": 11,
+   "folders": [
+    {
+     "name": "tools/web_public/ergasterion",
+     "n": 8
+    },
+    {
+     "name": "docs",
+     "n": 1
+    },
+    {
+     "name": "tests",
+     "n": 1
+    },
+    {
+     "name": "tools",
+     "n": 1
+    }
+   ],
+   "commits": [
+    {
+     "t": 1794358864,
+     "s": "Ergasterion v2: tour starts over the Library"
+    },
+    {
+     "t": 1794358852,
+     "s": "Ergasterion v2: dusk sky, wheel beside the worker, calmer tags and signs, higher tour"
+    },
+    {
+     "t": 1794358550,
+     "s": "Ergasterion v2: Library stations nearer the entrance sightline, wider first-person view, walk-to distance"
+    },
+    {
+     "t": 1794358454,
+     "s": "Ergasterion v2: wiring note for the lead (no new build line; lessons.json rides on the existing one)"
+    },
+    {
+     "t": 1794358437,
+     "s": "Ergasterion v2 step 4: tests rewritten for v2 (builder, halls/walls/doors, replay, pipeline, learning board, planner, p…"
+    },
+    {
+     "t": 1794357983,
+     "s": "Ergasterion v2 step 3 (WIP): 3D factory rewritten (4 halls, doors, job figures, bubbles, crates, boards, tour), page wi…"
+    },
+    {
+     "t": 1794357453,
+     "s": "Ergasterion v2 step 2 (WIP): core has 4 halls with doors and wall collision, worker jobs, speech bubbles, crates, the r…"
+    }
+   ],
+   "last_t": 1794358864,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "from git: its branch against the release"
+  },
+  {
+   "id": "b6",
+   "branch": "worktree-agent-a545b014870ea708c",
+   "name": "NQ bot",
+   "job": "The NQ page and the kit that updates the PC's bot folder",
+   "area": "trading",
+   "live": true,
+   "merged": false,
+   "ahead": 9,
+   "files": 30,
+   "folders": [
+    {
+     "name": "tools/web_public/nq",
+     "n": 14
+    },
+    {
+     "name": "tools/web_public",
+     "n": 5
+    },
+    {
+     "name": "docs",
+     "n": 3
+    },
+    {
+     "name": "tests",
+     "n": 3
+    }
+   ],
+   "commits": [
+    {
+     "t": 1794358975,
+     "s": "update_from_zip: SHA-256 still checked for a second download ('name (1).zip' / '.sha256 (1).txt'); 65 checks"
+    },
+    {
+     "t": 1794358935,
+     "s": "NQ sheet: keyboard focus stays on Close while the sheet is open"
+    },
+    {
+     "t": 1794358910,
+     "s": "CLAUDE_REFERENCE: one Infrastructure line for the NQ app, the root-page banner and the zip update kit"
+    },
+    {
+     "t": 1794358890,
+     "s": "update_from_zip: gitignore-faithful matcher (a stays in one folder; no tracked file is taken for local-only), real-size…"
+    },
+    {
+     "t": 1794358644,
+     "s": "NQ app: row in new_apps.json + wiring section (six rows, build lines, root page and PC kit notes)"
+    },
+    {
+     "t": 1794358572,
+     "s": "Zenith root page, NQ pass: honest 'last report' banner + 'Open the new NQ page' link above Home (zenith_nq.js), last co…"
+    },
+    {
+     "t": 1794358345,
+     "s": "Update kit without GitHub: UPDATE_FROM_ZIP.bat, UNDO_UPDATE.bat, tools/update_from_zip.py + tests (61 checks); NQ_BOT_B…"
+    },
+    {
+     "t": 1794358107,
+     "s": "NQ app icons; update_from_zip.py first cut (zip update of the bot folder without GitHub)"
+    }
+   ],
+   "last_t": 1794358975,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "from git: its branch against the release"
+  },
+  {
+   "id": "b7",
+   "branch": "worktree-agent-afc68d30fdf5b4f1b",
+   "name": "Pinakes",
+   "job": "A browser for every table of data OLYMPUS has",
+   "area": "data",
+   "live": true,
+   "merged": false,
+   "ahead": 6,
+   "files": 18,
+   "folders": [
+    {
+     "name": "tools/web_public/pinakes",
+     "n": 14
+    },
+    {
+     "name": "tools",
+     "n": 2
+    },
+    {
+     "name": "docs",
+     "n": 1
+    },
+    {
+     "name": "tests",
+     "n": 1
+    }
+   ],
+   "commits": [
+    {
+     "t": 1794358811,
+     "s": "Pinakes: Home Screen icons"
+    },
+    {
+     "t": 1794358762,
+     "s": "Pinakes: dates / $ / R shown first, match-any resets, research card words, test fixes"
+    },
+    {
+     "t": 1794358023,
+     "s": "Pinakes: tests (static + node on tricky data and the real files), new_apps row, wiring section"
+    },
+    {
+     "t": 1794357649,
+     "s": "Pinakes: the page (catalogue, windowed grid, filters, stats, chart, saved views, export, share, Ask), the marble cabine…"
+    },
+    {
+     "t": 1794357274,
+     "s": "Pinakes: the pure core (inference, filters, stats, group, CSV, share link, Ask) and the demo catalogue"
+    },
+    {
+     "t": 1794356987,
+     "s": "Pinakes: the catalogue builder (tools/pinakes_build.py, --check, --selftest) and its first catalog.json"
+    }
+   ],
+   "last_t": 1794358811,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "from git: its branch against the release"
+  },
+  {
+   "id": "b8",
+   "branch": "worktree-agent-aa29a7ded798881ae",
+   "name": "Kalshi team C",
+   "job": "Hunting for a real Kalshi edge in weather and index markets",
+   "area": "research",
+   "live": true,
+   "merged": false,
+   "ahead": 5,
+   "files": 36,
+   "folders": [
+    {
+     "name": "research/kalshi_edge_C",
+     "n": 36
+    }
+   ],
+   "commits": [
+    {
+     "t": 1794359348,
+     "s": "Kalshi edge C: more weather snapshots, resumable harvest script"
+    },
+    {
+     "t": 1794358510,
+     "s": "Kalshi edge C: weather main+rep snapshots, best-mix Brier, checks"
+    },
+    {
+     "t": 1794357837,
+     "s": "Kalshi edge C: index daily (realised-vol model) and other-series studies"
+    },
+    {
+     "t": 1794357733,
+     "s": "Kalshi edge C: weather study (real MOS forecast vs market), shared stats lib, harvest backfill"
+    },
+    {
+     "t": 1794357498,
+     "s": "Kalshi edge C: public-API harvester (hourly bid/ask, batch) + real archived NWS MOS forecasts (IEM)"
+    }
+   ],
+   "last_t": 1794359348,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "from git: its branch against the release"
+  },
+  {
+   "id": "b9",
+   "branch": "worktree-agent-a9fa9fcc5a553e79b",
+   "name": "Colosseum",
+   "job": "A 3D arena where two strategies duel on real numbers",
+   "area": "arena",
+   "live": true,
+   "merged": false,
+   "ahead": 5,
+   "files": 14,
+   "folders": [
+    {
+     "name": "tools/web_public/colosseum",
+     "n": 10
+    },
+    {
+     "name": "tools",
+     "n": 2
+    },
+    {
+     "name": "docs",
+     "n": 1
+    },
+    {
+     "name": "tests",
+     "n": 1
+    }
+   ],
+   "commits": [
+    {
+     "t": 1794358646,
+     "s": "Colosseum arena: larger champions, closer camera, stepped tier tones, terracotta podium wall, richer dusk sky, denser c…"
+    },
+    {
+     "t": 1794358478,
+     "s": "Colosseum: tests (static + node maths: stored numbers, no contest, seeding, bracket, determinism), demo fighters flagged"
+    },
+    {
+     "t": 1794357642,
+     "s": "Colosseum: page, 3D amphitheatre, flat SVG arena, css, icon, manifest, new_apps row, wiring section (untested in a brow…"
+    },
+    {
+     "t": 1794357074,
+     "s": "Colosseum: the duel core (seven rounds on stored numbers, no contest when missing, seeded tournament, league, hall, fal…"
+    },
+    {
+     "t": 1794356878,
+     "s": "Colosseum: extras builder (max drawdown, dec10, pass_med per run, copied as stored)"
+    }
+   ],
+   "last_t": 1794358646,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "from git: its branch against the release"
+  },
+  {
+   "id": "b10",
+   "branch": "worktree-agent-aa54c21090a103d33",
+   "name": "Fixer",
+   "job": "Fixing the broken tests and phone-layout bugs in old apps",
+   "area": "quality",
+   "live": true,
+   "merged": false,
+   "ahead": 7,
+   "files": 60,
+   "folders": [
+    {
+     "name": "research/handoff",
+     "n": 33
+    },
+    {
+     "name": "tests",
+     "n": 7
+    },
+    {
+     "name": "tools/web_public/datacity",
+     "n": 3
+    },
+    {
+     "name": "tools/web_public/hermes",
+     "n": 3
+    }
+   ],
+   "commits": [
+    {
+     "t": 1794359350,
+     "s": "Data City test: the City menu has 10 doors (All districts was added to the app)"
+    },
+    {
+     "t": 1794358726,
+     "s": "Ergasterion test: the knob's resting transform is compared without spaces (the browser writes 'translate(0px, 0px)')"
+    },
+    {
+     "t": 1794358712,
+     "s": "Ergasterion: queue.json rebuilt (67 open tasks, 145 write-ups): static part 45/45"
+    },
+    {
+     "t": 1794358699,
+     "s": "Cities test follows the drawn map for the continent fly and expects the absent site kalshi.json; Tyche: one AGORA night…"
+    },
+    {
+     "t": 1794357755,
+     "s": "Phone-fit layout: observatory columns slide in a strip under 380 px, Odeon ticks get a 44 px row over the scrubber, Kal…"
+    },
+    {
+     "t": 1794357606,
+     "s": "Hermes: a paused story rests (buttons take a tap; the suite runs to the end 112/116 - test accepts the site-first kalsh…"
+    },
+    {
+     "t": 1794356792,
+     "s": "Round 3 fixes: atlas_ui prints [PASS] and exposes RES (gate counts it); cities test taps a district building by touch a…"
+    }
+   ],
+   "last_t": 1794359350,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "from git: its branch against the release"
+  }
+ ]
+}

@@ -649,8 +649,8 @@ def today_checks(br, origin, j_now):
           and p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()") == "#ff8800")
     k0 = p.evaluate("oracle.applyTheme({ id: 'olympus', accent: '#a855f7', bg: '#04050c', mix: 0, harmony: 0 })")
     k1 = p.evaluate("oracle.applyTheme({ id: 'zeus', accent: '#6fb8ff', bg: '#06142e', mix: 0.55, harmony: 0.3 })")
-    check("g. an OLYMPUS kit theme: the default leaves Oracle's cyan as it is; another leans it toward the theme accent by its harmony",
-          k0 == {"accent": "#7fe9ff", "bg": None} and k1["accent"] not in ("#7fe9ff", "#6fb8ff") and k1["bg"] is None, [k0, k1])
+    check("g. an OLYMPUS kit theme: the default leaves Oracle's own gold as it is; another leans it toward the theme accent by its harmony",
+          k0 == {"accent": "#ebc775", "bg": None} and k1["accent"] not in ("#ebc775", "#6fb8ff") and k1["bg"] is None, [k0, k1])
     errs = real_errors(log)
     check("g. no console errors in Replay today", not errs, errs)
     SITE["home"] = None

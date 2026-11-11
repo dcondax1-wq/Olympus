@@ -9,7 +9,7 @@ const usd = (v) => (v == null ? '' : `${v < 0 ? '-' : '+'}$${Math.abs(Math.round
 const CSS = `.pz-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
 .pz-big{font:700 15px var(--sans);padding:12px 22px;border-radius:12px}
 .pz-line{font:600 14px var(--sans);margin:4px 0 2px}.pz-mut{color:var(--muted);font-size:12.5px}
-.pz-score{font:750 40px var(--sans);line-height:1}.pz-ok{color:var(--good,#3ecf8e)}.pz-warn{color:var(--warn,#e9b44c)}.pz-bad{color:var(--bad,#ff6b6b)}
+.pz-score{font:750 40px var(--sans);line-height:1}.pz-ok{color:var(--good,#7f8a52)}.pz-warn{color:var(--warn,#e9b44c)}.pz-bad{color:var(--bad,#ff6b6b)}
 .pz-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}.pz-item{display:grid;grid-template-columns:auto 1fr auto;gap:8px;font-size:13px;align-items:baseline}
 .pz-item small{grid-column:2/4;color:var(--muted)}.pz-weeks{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
 .pz-tab{width:100%;border-collapse:collapse;font-size:12.5px}.pz-tab td,.pz-tab th{padding:4px 6px;border-bottom:1px solid var(--line,#2a2f3a);text-align:left}

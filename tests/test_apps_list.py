@@ -152,7 +152,7 @@ def test_phone(br, origin):
     g = p.evaluate("[...document.querySelectorAll('.oly-l section')].map((s) => [s.dataset.group, s.querySelectorAll('.oly-tile').length])")
     check("c. phone: three groups (Trading, Life, Money) with their apps; Zenith itself is not in it", [x[0] for x in g] == ["trading", "life", "money"] and sum(x[1] for x in g) == NTILES and p.locator('.oly-l .oly-tile[data-app=zenith]').count() == 0, g)
     t = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-tile[data-app=oracle]'); return { href: a.getAttribute('href'), name: a.querySelector('b').textContent, purpose: a.querySelector('small').textContent, glyph: a.querySelector('.oly-g').textContent, c: a.style.getPropertyValue('--c') }; })()")
-    check("c. phone: a tile = its glyph in its colour, its name and one plain line, and opens <app>/ in this tab", t["href"] == "oracle/" and t["name"] == "Oracle" and t["c"] == "#7fe9ff" and len(t["purpose"]) > 8, t)
+    check("c. phone: a tile = its glyph in its colour, its name and one plain line, and opens <app>/ in this tab", t["href"] == "oracle/" and t["name"] == "Oracle" and t["c"] == "#7fb0a3" and len(t["purpose"]) > 8, t)
     p.wait_for_timeout(4000)
     dots = p.evaluate("[...document.querySelectorAll('.oly-l .oly-tile')].map((t) => t.dataset.status).filter(Boolean)")
     check("c. phone: the status dots come from each app's jarvis.json (ok / warn / bad / stale / off), cached in localStorage", len(dots) >= 10 and set(dots) <= {"ok", "warn", "bad", "stale", "off", "none"}

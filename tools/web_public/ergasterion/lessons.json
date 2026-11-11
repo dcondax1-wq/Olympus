@@ -1,0 +1,197 @@
+{
+ "v": 1,
+ "name": "Ergasterion lessons",
+ "asof": "2026-11-10",
+ "say": "This week we wrote down 6 lessons. The strongest (2 files agree): None gives an edge that survives fees, a held-out block and a second asset. What changed our mind: One pocket looked real (and replicated across two assets) until I ran it on two months of data it had never seen: it vanished.",
+ "week": [
+  {
+   "text": "None gives an edge that survives fees, a held-out block and a second asset.",
+   "cat": "Kalshi",
+   "d": "2026-11-10",
+   "strength": 2,
+   "sources": [
+    "research/writeups/kalshi_edge_B.md",
+    "research/writeups/kalshi_edge_A.md"
+   ]
+  },
+  {
+   "text": "No edge found. Out of the 38 cells that were big enough to test (and 7 pre-written textbook ideas), none beat the noise on training data, and none is positive with a confidence interval above zero on the held-out last 14 days.",
+   "cat": "Kalshi",
+   "d": "2026-11-10",
+   "strength": 2,
+   "sources": [
+    "research/writeups/kalshi_edge_B.md",
+    "research/writeups/kalshi_edge_A.md"
+   ]
+  },
+  {
+   "text": "Run all three accounts at once (LIT 50K, ATLAS 25K, BLITZ 25K): buying all three on day 1 beats every staggered order, and the fees are only $198. - Then: LIT on the 50K second: the biggest total ($6,549 in 12 months) b…",
+   "cat": "money",
+   "d": "2026-11-04",
+   "strength": 1,
+   "sources": [
+    "research/writeups/2026-11-04_money_roadmap.md"
+   ]
+  },
+  {
+   "text": "Part A closes the open items from the Plutus fix - lit_funded_firms.py rerun with today's live trades and the live presets (eval room 0.8, funded 60% / = $1,500 / winner = $2,000), the Builder 25K row refreshed, BLITZ g…",
+   "cat": "NQ strategy",
+   "d": "2026-11-04",
+   "strength": 1,
+   "sources": [
+    "research/writeups/2026-11-04_lit_ideas_round3.md"
+   ]
+  },
+  {
+   "text": "No management change (partials, stair stops, stale exits, news exits, a later cut) and no entry-window or per-session change holds in both halves.",
+   "cat": "NQ strategy",
+   "d": "2026-11-04",
+   "strength": 1,
+   "sources": [
+    "research/writeups/2026-11-04_lit_ideas_night.md"
+   ]
+  },
+  {
+   "text": "ATLAS (EMA + MACD + S/R) and BLITZ (noise-area scalp) re-tested for the 25K accounts with 43 BLITZ and 29 ATLAS versions (stop multiple, entry window, daily loss cap, trades a day, hold time, breakeven, trail, day filte…",
+   "cat": "NQ strategy",
+   "d": "2026-11-04",
+   "strength": 1,
+   "sources": [
+    "research/writeups/2026-11-04_second_strategies_night.md"
+   ]
+  }
+ ],
+ "top": [
+  {
+   "text": "2,520 context variants were tested on today's live LIT trades and on the adopt-candidate combo (t_check + scale_in + be_off).",
+   "cat": "NQ strategy",
+   "d": "2026-10-20",
+   "strength": 5,
+   "sources": [
+    "research/writeups/lit-market-context.md",
+    "research/writeups/lit-gap-audit.md",
+    "research/writeups/lit-bias-discretion.md"
+   ]
+  },
+  {
+   "text": "None gives an edge that survives fees, a held-out block and a second asset.",
+   "cat": "Kalshi",
+   "d": "2026-11-10",
+   "strength": 2,
+   "sources": [
+    "research/writeups/kalshi_edge_B.md",
+    "research/writeups/kalshi_edge_A.md"
+   ]
+  },
+  {
+   "text": "No edge found. Out of the 38 cells that were big enough to test (and 7 pre-written textbook ideas), none beat the noise on training data, and none is positive with a confidence interval above zero on the held-out last 14 days.",
+   "cat": "Kalshi",
+   "d": "2026-11-10",
+   "strength": 2,
+   "sources": [
+    "research/writeups/kalshi_edge_B.md",
+    "research/writeups/kalshi_edge_A.md"
+   ]
+  },
+  {
+   "text": "(1m for 2026, 5m for 2021-25), costs in ($1.90 a micro, 1 tick on every market and stop fill, limits only when traded through, every same-bar tie booked against us), picked on 2026 Jan-Jun, checked on Jul-Oct, 2021-25 o…",
+   "cat": "NQ strategy",
+   "d": "2026-10-28",
+   "strength": 2,
+   "sources": [
+    "research/writeups/scalp-momentum.md",
+    "research/writeups/lit-gap-audit.md"
+   ]
+  },
+  {
+   "text": "Four ideas never tested on LIT were scored by the LIT rule (2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ AND MFFU 50K 2-week passes under the live sizing, two_week then safe_eval, $…",
+   "cat": "NQ strategy",
+   "d": "2026-10-19",
+   "strength": 2,
+   "sources": [
+    "research/writeups/lit-bias-discretion.md",
+    "research/writeups/lit-big-ideas.md"
+   ]
+  },
+  {
+   "text": "At the same $ a trade it wins Jan-Jun and loses Jul-Oct: winners win less often (23% to 13%) because many turn into breakeven scratches, and 2021-25 loses money.",
+   "cat": "NQ strategy",
+   "d": "2026-10-18",
+   "strength": 2,
+   "sources": [
+    "research/writeups/lit-tight-stops-size.md",
+    "research/writeups/lit-all-hours.md"
+   ]
+  },
+  {
+   "text": "Run all three accounts at once (LIT 50K, ATLAS 25K, BLITZ 25K): buying all three on day 1 beats every staggered order, and the fees are only $198. - Then: LIT on the 50K second: the biggest total ($6,549 in 12 months) b…",
+   "cat": "money",
+   "d": "2026-11-04",
+   "strength": 1,
+   "sources": [
+    "research/writeups/2026-11-04_money_roadmap.md"
+   ]
+  },
+  {
+   "text": "Part A closes the open items from the Plutus fix - lit_funded_firms.py rerun with today's live trades and the live presets (eval room 0.8, funded 60% / = $1,500 / winner = $2,000), the Builder 25K row refreshed, BLITZ g…",
+   "cat": "NQ strategy",
+   "d": "2026-11-04",
+   "strength": 1,
+   "sources": [
+    "research/writeups/2026-11-04_lit_ideas_round3.md"
+   ]
+  }
+ ],
+ "changed": [
+  {
+   "text": "One pocket looked real (and replicated across two assets) until I ran it on two months of data it had never seen: it vanished.",
+   "was": "",
+   "cat": "Kalshi",
+   "d": "2026-11-10",
+   "source": "research/writeups/kalshi_edge_B.md"
+  },
+  {
+   "text": "The earlier finding \"95c and above is +1.4% per $\" came from the bot's own bets (no market-wide data). On the market-wide data it is +0.1% (train) and -0.6% (test): that pocket is not an edge, it is the bot's entry timing plus luck.",
+   "was": "95c and above is +1.4% per $",
+   "cat": "Kalshi",
+   "d": "2026-11-10",
+   "source": "research/writeups/kalshi_edge_A.md"
+  },
+  {
+   "text": "The H2 gain of the pick (fail in 2 weeks 17.4% vs 21.7%) rests on 31 trades and does not hold in 2021-25.",
+   "was": "",
+   "cat": "NQ strategy",
+   "d": "2026-10-31",
+   "source": "research/writeups/blitz-streak-size-2026-10-31.md"
+  },
+  {
+   "text": "If shuffled outcomes do as well, the previous result carries no information.",
+   "was": "",
+   "cat": "NQ strategy",
+   "d": "2026-10-31",
+   "source": "research/writeups/blitz-streak-size-2026-10-31.md"
+  },
+  {
+   "text": "That does not hold afterwards: H2 +0.93 / +0.14 / +0.92, 2025 +0.04 / -0.03 / +0.28, 2021-24 +0.04 / +0.16 / -0.12.",
+   "was": "",
+   "cat": "NQ strategy",
+   "d": "2026-10-30",
+   "source": "research/writeups/discretion-score-2026-10-30.md"
+  },
+  {
+   "text": "A lead that did not hold: the other way round, years of memory and a later period as the check:",
+   "was": "",
+   "cat": "NQ strategy",
+   "d": "2026-10-29",
+   "source": "research/writeups/mind.md"
+  }
+ ],
+ "counts": {
+  "NQ strategy": 47,
+  "Kalshi": 2,
+  "money": 3,
+  "process": 8,
+  "app": 0
+ },
+ "note": "Every lesson is a sentence lifted from a file in the repo; strength = how many independent files agree. Research notes, never a trade signal."
+}

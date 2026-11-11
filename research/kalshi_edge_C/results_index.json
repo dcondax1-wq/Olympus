@@ -1,0 +1,1350 @@
+{
+ "generated": "2026-11-11 02:05 UTC",
+ "families": {
+  "spx": {
+   "family": "S&P 500 daily range (discovery)",
+   "cells_defined": 58,
+   "cells_eligible": 10,
+   "null_max_t_p95": 1.953,
+   "null_max_t_median": 0.776,
+   "carried": [],
+   "survive": [],
+   "cells": [
+    {
+     "cell": "vol model says underpriced by >= 3c | any time 1-6h before close | buy yes",
+     "n_train_all": 178,
+     "train_n": 178,
+     "train_days": 79,
+     "train_edge": 0.1439,
+     "train_t": 0.65,
+     "train_win": 0.1629,
+     "train_price": 0.1361,
+     "carried": false
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | any time 1-6h before close | buy yes",
+     "n_train_all": 63
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | any time 1-6h before close | buy yes",
+     "n_train_all": 17
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | any time 1-6h before close | buy no",
+     "n_train_all": 166,
+     "train_n": 166,
+     "train_days": 85,
+     "train_edge": -0.0068,
+     "train_t": -0.11,
+     "train_win": 0.6024,
+     "train_price": 0.5925,
+     "carried": false,
+     "test_n": 21,
+     "test_days": 10,
+     "test_edge": 0.0239,
+     "test_t": 0.16,
+     "test_ci95": [
+      -0.3197,
+      0.5562
+     ]
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | any time 1-6h before close | buy no",
+     "n_train_all": 76
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | any time 1-6h before close | buy no",
+     "n_train_all": 40
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 1h before close | buy yes",
+     "n_train_all": 52
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 1h before close | buy yes",
+     "n_train_all": 24
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 1h before close | buy yes",
+     "n_train_all": 6
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 1h before close | buy no",
+     "n_train_all": 42
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 1h before close | buy no",
+     "n_train_all": 18
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 1h before close | buy no",
+     "n_train_all": 13
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 2h before close | buy yes",
+     "n_train_all": 55
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 2h before close | buy yes",
+     "n_train_all": 23
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 2h before close | buy yes",
+     "n_train_all": 9
+    },
+    {
+     "cell": "price band 1-10c | 2h before close | buy yes",
+     "n_train_all": 567,
+     "train_n": 567,
+     "train_days": 130,
+     "train_edge": -0.8144,
+     "train_t": -3.71,
+     "train_win": 0.0088,
+     "train_price": 0.0349,
+     "carried": false,
+     "test_n": 862,
+     "test_days": 44,
+     "test_edge": -1.001,
+     "test_t": -3.92,
+     "test_ci95": [
+      -1.0682,
+      -0.8517
+     ]
+    },
+    {
+     "cell": "price band 10-30c | 2h before close | buy yes",
+     "n_train_all": 114,
+     "train_n": 114,
+     "train_days": 73,
+     "train_edge": 0.1117,
+     "train_t": 0.58,
+     "train_win": 0.2193,
+     "train_price": 0.1879,
+     "carried": false
+    },
+    {
+     "cell": "price band 30-50c | 2h before close | buy yes",
+     "n_train_all": 90
+    },
+    {
+     "cell": "price band 50-70c | 2h before close | buy yes",
+     "n_train_all": 34
+    },
+    {
+     "cell": "price band 70-90c | 2h before close | buy yes",
+     "n_train_all": 8
+    },
+    {
+     "cell": "price band 90-95c | 2h before close | buy yes",
+     "n_train_all": 0
+    },
+    {
+     "cell": "price band 95-99c | 2h before close | buy yes",
+     "n_train_all": 0
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 2h before close | buy no",
+     "n_train_all": 43
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 2h before close | buy no",
+     "n_train_all": 22
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 2h before close | buy no",
+     "n_train_all": 13
+    },
+    {
+     "cell": "price band 1-10c | 2h before close | buy no",
+     "n_train_all": 0
+    },
+    {
+     "cell": "price band 10-30c | 2h before close | buy no",
+     "n_train_all": 5
+    },
+    {
+     "cell": "price band 30-50c | 2h before close | buy no",
+     "n_train_all": 27
+    },
+    {
+     "cell": "price band 50-70c | 2h before close | buy no",
+     "n_train_all": 80
+    },
+    {
+     "cell": "price band 70-90c | 2h before close | buy no",
+     "n_train_all": 104,
+     "train_n": 104,
+     "train_days": 73,
+     "train_edge": -0.0452,
+     "train_t": -0.91,
+     "train_win": 0.7692,
+     "train_price": 0.7938,
+     "carried": false
+    },
+    {
+     "cell": "price band 90-95c | 2h before close | buy no",
+     "n_train_all": 51
+    },
+    {
+     "cell": "price band 95-99c | 2h before close | buy no",
+     "n_train_all": 227,
+     "train_n": 227,
+     "train_days": 113,
+     "train_edge": 0.0074,
+     "train_t": 0.74,
+     "train_win": 0.9868,
+     "train_price": 0.9781,
+     "carried": false,
+     "test_n": 72,
+     "test_days": 38,
+     "test_edge": 0.0052,
+     "test_t": 0.31,
+     "test_ci95": [
+      -0.0313,
+      0.0221
+     ]
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 4h before close | buy yes",
+     "n_train_all": 42
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 4h before close | buy yes",
+     "n_train_all": 10
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 4h before close | buy yes",
+     "n_train_all": 1
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 4h before close | buy no",
+     "n_train_all": 44
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 4h before close | buy no",
+     "n_train_all": 23
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 4h before close | buy no",
+     "n_train_all": 10
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 6h before close | buy yes",
+     "n_train_all": 29
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 6h before close | buy yes",
+     "n_train_all": 6
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 6h before close | buy yes",
+     "n_train_all": 1
+    },
+    {
+     "cell": "price band 1-10c | 6h before close | buy yes",
+     "n_train_all": 320,
+     "train_n": 320,
+     "train_days": 113,
+     "train_edge": -0.458,
+     "train_t": -1.81,
+     "train_win": 0.0281,
+     "train_price": 0.0462,
+     "carried": false,
+     "test_n": 618,
+     "test_days": 40,
+     "test_edge": -0.9307,
+     "test_t": -3.62,
+     "test_ci95": [
+      -1.0676,
+      -0.7214
+     ]
+    },
+    {
+     "cell": "price band 10-30c | 6h before close | buy yes",
+     "n_train_all": 205,
+     "train_n": 205,
+     "train_days": 92,
+     "train_edge": 0.1694,
+     "train_t": 1.14,
+     "train_win": 0.2195,
+     "train_price": 0.1791,
+     "carried": false,
+     "test_n": 45,
+     "test_days": 25,
+     "test_edge": -0.2214,
+     "test_t": -0.72,
+     "test_ci95": [
+      -0.6769,
+      0.2467
+     ]
+    },
+    {
+     "cell": "price band 30-50c | 6h before close | buy yes",
+     "n_train_all": 49
+    },
+    {
+     "cell": "price band 50-70c | 6h before close | buy yes",
+     "n_train_all": 0
+    },
+    {
+     "cell": "price band 70-90c | 6h before close | buy yes",
+     "n_train_all": 0
+    },
+    {
+     "cell": "price band 90-95c | 6h before close | buy yes",
+     "n_train_all": 0
+    },
+    {
+     "cell": "price band 95-99c | 6h before close | buy yes",
+     "n_train_all": 0
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 6h before close | buy no",
+     "n_train_all": 37
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 6h before close | buy no",
+     "n_train_all": 13
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 6h before close | buy no",
+     "n_train_all": 4
+    },
+    {
+     "cell": "price band 1-10c | 6h before close | buy no",
+     "n_train_all": 0
+    },
+    {
+     "cell": "price band 10-30c | 6h before close | buy no",
+     "n_train_all": 0
+    },
+    {
+     "cell": "price band 30-50c | 6h before close | buy no",
+     "n_train_all": 0
+    },
+    {
+     "cell": "price band 50-70c | 6h before close | buy no",
+     "n_train_all": 26
+    },
+    {
+     "cell": "price band 70-90c | 6h before close | buy no",
+     "n_train_all": 181,
+     "train_n": 181,
+     "train_days": 87,
+     "train_edge": -0.088,
+     "train_t": -2.49,
+     "train_win": 0.7514,
+     "train_price": 0.8124,
+     "carried": false,
+     "test_n": 41,
+     "test_days": 25,
+     "test_edge": 0.0313,
+     "test_t": 0.4,
+     "test_ci95": [
+      -0.0924,
+      0.1499
+     ]
+    },
+    {
+     "cell": "price band 90-95c | 6h before close | buy no",
+     "n_train_all": 82
+    },
+    {
+     "cell": "price band 95-99c | 6h before close | buy no",
+     "n_train_all": 182,
+     "train_n": 182,
+     "train_days": 100,
+     "train_edge": -0.013,
+     "train_t": -0.9,
+     "train_win": 0.9615,
+     "train_price": 0.9723,
+     "carried": false,
+     "test_n": 70,
+     "test_days": 36,
+     "test_edge": 0.0095,
+     "test_t": 0.5,
+     "test_ci95": [
+      -0.0289,
+      0.0265
+     ]
+    }
+   ],
+   "units": 8883,
+   "days": 175,
+   "first_day": "2026-03-02",
+   "last_day": "2026-11-09",
+   "test_from": "2026-09-09",
+   "days_with_futures_model": 159,
+   "vol_scale": {
+    "1": 0.965,
+    "2": 0.852,
+    "4": 0.784,
+    "6": 0.792
+   },
+   "brier": {
+    "train 1h": {
+     "n": 805,
+     "brier_market_mid": 0.04923,
+     "brier_vol_model": 0.05098
+    },
+    "train 2h": {
+     "n": 813,
+     "brier_market_mid": 0.06596,
+     "brier_vol_model": 0.06688
+    },
+    "train 4h": {
+     "n": 743,
+     "brier_market_mid": 0.07097,
+     "brier_vol_model": 0.07183
+    },
+    "train 6h": {
+     "n": 574,
+     "brier_market_mid": 0.09418,
+     "brier_vol_model": 0.09095
+    },
+    "test 1h": {
+     "n": 587,
+     "brier_market_mid": 0.00712,
+     "brier_vol_model": 0.00691
+    },
+    "test 2h": {
+     "n": 578,
+     "brier_market_mid": 0.00525,
+     "brier_vol_model": 0.00474
+    },
+    "test 4h": {
+     "n": 635,
+     "brier_market_mid": 0.00863,
+     "brier_vol_model": 0.00949
+    },
+    "test 6h": {
+     "n": 393,
+     "brier_market_mid": 0.01361,
+     "brier_vol_model": 0.01448
+    }
+   },
+   "headline_rule_vol_6c": {
+    "train": {
+     "n": 139,
+     "days": 59,
+     "edge": -0.0774,
+     "t": -0.59,
+     "ci95": [
+      -0.3243,
+      0.1922
+     ],
+     "lo": -0.2929,
+     "win": 0.3165,
+     "price": 0.3306
+    },
+    "test": {
+     "n": 18
+    },
+    "all_buys_control_test": {
+     "n": 4066,
+     "days": 44,
+     "edge": -0.1194,
+     "t": -5.95,
+     "ci95": [
+      -0.133,
+      -0.1061
+     ],
+     "lo": -0.1311,
+     "win": 0.1212,
+     "price": 0.1353
+    }
+   }
+  },
+  "ndx": {
+   "units": 6763,
+   "days": 170,
+   "first_day": "2026-03-02",
+   "last_day": "2026-11-09",
+   "test_from": "2026-09-09",
+   "days_with_futures_model": 155,
+   "vol_scale": {
+    "1": 0.952,
+    "2": 0.795,
+    "4": 0.716,
+    "6": 0.711
+   },
+   "brier": {
+    "train 1h": {
+     "n": 541,
+     "brier_market_mid": 0.04382,
+     "brier_vol_model": 0.04327
+    },
+    "train 2h": {
+     "n": 513,
+     "brier_market_mid": 0.04676,
+     "brier_vol_model": 0.04757
+    },
+    "train 4h": {
+     "n": 436,
+     "brier_market_mid": 0.07418,
+     "brier_vol_model": 0.07197
+    },
+    "train 6h": {
+     "n": 293,
+     "brier_market_mid": 0.08309,
+     "brier_vol_model": 0.07872
+    },
+    "test 1h": {
+     "n": 444,
+     "brier_market_mid": 0.00314,
+     "brier_vol_model": 0.00304
+    },
+    "test 2h": {
+     "n": 550,
+     "brier_market_mid": 0.00656,
+     "brier_vol_model": 0.00635
+    },
+    "test 4h": {
+     "n": 529,
+     "brier_market_mid": 0.01158,
+     "brier_vol_model": 0.0115
+    },
+    "test 6h": {
+     "n": 404,
+     "brier_market_mid": 0.01444,
+     "brier_vol_model": 0.01476
+    }
+   },
+   "headline_rule_vol_6c": {
+    "train": {
+     "n": 61,
+     "days": 39,
+     "edge": 0.1913,
+     "t": 1.31,
+     "ci95": [
+      -0.062,
+      0.5269
+     ],
+     "lo": -0.0231,
+     "win": 0.5082,
+     "price": 0.4162
+    },
+    "test": {
+     "n": 10
+    },
+    "all_buys_control_test": {
+     "n": 3599,
+     "days": 43,
+     "edge": -0.1222,
+     "t": -6.52,
+     "ci95": [
+      -0.1335,
+      -0.112
+     ],
+     "lo": -0.1318,
+     "win": 0.1406,
+     "price": 0.1577
+    }
+   },
+   "frozen_cells": [
+    {
+     "cell": "vol model says underpriced by >= 3c | any time 1-6h before close | buy yes",
+     "train_days": {
+      "n": 86,
+      "days": 46,
+      "edge": 1.5705,
+      "t": 2.72,
+      "ci95": [
+       0.4935,
+       2.7889
+      ],
+      "lo": 0.6336,
+      "win": 0.2326,
+      "price": 0.0884
+     },
+     "test_days_only": {
+      "n": 9
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | any time 1-6h before close | buy yes",
+     "train_days": {
+      "n": 21,
+      "days": 18,
+      "edge": 1.5414,
+      "t": 1.52,
+      "ci95": [
+       -0.2378,
+       3.6981
+      ],
+      "lo": -0.0267,
+      "win": 0.2381,
+      "price": 0.0914
+     },
+     "test_days_only": {
+      "n": 4
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | any time 1-6h before close | buy yes",
+     "train_days": {
+      "n": 4
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | any time 1-6h before close | buy no",
+     "train_days": {
+      "n": 83,
+      "days": 46,
+      "edge": 0.0066,
+      "t": 0.08,
+      "ci95": [
+       -0.1476,
+       0.1633
+      ],
+      "lo": -0.1249,
+      "win": 0.6747,
+      "price": 0.6559
+     },
+     "test_days_only": {
+      "n": 18
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | any time 1-6h before close | buy no",
+     "train_days": {
+      "n": 40,
+      "days": 29,
+      "edge": 0.0808,
+      "t": 0.63,
+      "ci95": [
+       -0.1396,
+       0.325
+      ],
+      "lo": -0.1042,
+      "win": 0.65,
+      "price": 0.5867
+     },
+     "test_days_only": {
+      "n": 6
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | any time 1-6h before close | buy no",
+     "train_days": {
+      "n": 20,
+      "days": 16,
+      "edge": -0.1162,
+      "t": -0.53,
+      "ci95": [
+       -0.523,
+       0.3199
+      ],
+      "lo": -0.4598,
+      "win": 0.5,
+      "price": 0.547
+     },
+     "test_days_only": {
+      "n": 4
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 1h before close | buy yes",
+     "train_days": {
+      "n": 30,
+      "days": 22,
+      "edge": 0.1567,
+      "t": 0.23,
+      "ci95": [
+       -1.0626,
+       1.6401
+      ],
+      "lo": -0.7239,
+      "win": 0.1,
+      "price": 0.082
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 1h before close | buy yes",
+     "train_days": {
+      "n": 14
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 1h before close | buy yes",
+     "train_days": {
+      "n": 2
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 1h before close | buy no",
+     "train_days": {
+      "n": 20,
+      "days": 19,
+      "edge": 0.1128,
+      "t": 0.54,
+      "ci95": [
+       -0.2714,
+       0.505
+      ],
+      "lo": -0.2027,
+      "win": 0.6,
+      "price": 0.524
+     },
+     "test_days_only": {
+      "n": 2
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 1h before close | buy no",
+     "train_days": {
+      "n": 12
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 1h before close | buy no",
+     "train_days": {
+      "n": 7
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 2h before close | buy yes",
+     "train_days": {
+      "n": 28,
+      "days": 20,
+      "edge": 1.2665,
+      "t": 1.87,
+      "ci95": [
+       -0.0102,
+       2.6577
+      ],
+      "lo": 0.1669,
+      "win": 0.25,
+      "price": 0.1075
+     },
+     "test_days_only": {
+      "n": 4
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 2h before close | buy yes",
+     "train_days": {
+      "n": 3
+     },
+     "test_days_only": {
+      "n": 2
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 2h before close | buy yes",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 1-10c | 2h before close | buy yes",
+     "train_days": {
+      "n": 404,
+      "days": 112,
+      "edge": -0.8221,
+      "t": -3.4,
+      "ci95": [
+       -1.0085,
+       -0.5549
+      ],
+      "lo": -1.0061,
+      "win": 0.0099,
+      "price": 0.0405
+     },
+     "test_days_only": {
+      "n": 827,
+      "days": 42,
+      "edge": -1.0076,
+      "t": -4.17,
+      "ci95": [
+       -1.068,
+       -0.8751
+      ],
+      "lo": -1.068,
+      "win": 0.0012,
+      "price": 0.0201
+     }
+    },
+    {
+     "cell": "price band 10-30c | 2h before close | buy yes",
+     "train_days": {
+      "n": 70,
+      "days": 44,
+      "edge": -0.16,
+      "t": -0.62,
+      "ci95": [
+       -0.5442,
+       0.233
+      ],
+      "lo": -0.4896,
+      "win": 0.1571,
+      "price": 0.1753
+     },
+     "test_days_only": {
+      "n": 13
+     }
+    },
+    {
+     "cell": "price band 30-50c | 2h before close | buy yes",
+     "train_days": {
+      "n": 30,
+      "days": 27,
+      "edge": 0.1716,
+      "t": 0.74,
+      "ci95": [
+       -0.2773,
+       0.6464
+      ],
+      "lo": -0.2145,
+      "win": 0.4667,
+      "price": 0.3843
+     },
+     "test_days_only": {
+      "n": 6
+     }
+    },
+    {
+     "cell": "price band 50-70c | 2h before close | buy yes",
+     "train_days": {
+      "n": 9
+     },
+     "test_days_only": {
+      "n": 4
+     }
+    },
+    {
+     "cell": "price band 70-90c | 2h before close | buy yes",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 90-95c | 2h before close | buy yes",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 95-99c | 2h before close | buy yes",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 2h before close | buy no",
+     "train_days": {
+      "n": 25,
+      "days": 23,
+      "edge": -0.165,
+      "t": -1.05,
+      "ci95": [
+       -0.4492,
+       0.1281
+      ],
+      "lo": -0.4073,
+      "win": 0.52,
+      "price": 0.604
+     },
+     "test_days_only": {
+      "n": 6
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 2h before close | buy no",
+     "train_days": {
+      "n": 17
+     },
+     "test_days_only": {
+      "n": 3
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 2h before close | buy no",
+     "train_days": {
+      "n": 10
+     },
+     "test_days_only": {
+      "n": 3
+     }
+    },
+    {
+     "cell": "price band 1-10c | 2h before close | buy no",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 10-30c | 2h before close | buy no",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 30-50c | 2h before close | buy no",
+     "train_days": {
+      "n": 5
+     },
+     "test_days_only": {
+      "n": 4
+     }
+    },
+    {
+     "cell": "price band 50-70c | 2h before close | buy no",
+     "train_days": {
+      "n": 31,
+      "days": 27,
+      "edge": -0.0948,
+      "t": -0.68,
+      "ci95": [
+       -0.3564,
+       0.1626
+      ],
+      "lo": -0.3118,
+      "win": 0.5806,
+      "price": 0.6235
+     },
+     "test_days_only": {
+      "n": 5
+     }
+    },
+    {
+     "cell": "price band 70-90c | 2h before close | buy no",
+     "train_days": {
+      "n": 56,
+      "days": 37,
+      "edge": -0.0162,
+      "t": -0.26,
+      "ci95": [
+       -0.1204,
+       0.0853
+      ],
+      "lo": -0.1034,
+      "win": 0.8214,
+      "price": 0.8248
+     },
+     "test_days_only": {
+      "n": 11
+     }
+    },
+    {
+     "cell": "price band 90-95c | 2h before close | buy no",
+     "train_days": {
+      "n": 30,
+      "days": 26,
+      "edge": -0.0664,
+      "t": -0.97,
+      "ci95": [
+       -0.2117,
+       0.0439
+      ],
+      "lo": -0.185,
+      "win": 0.8667,
+      "price": 0.923
+     },
+     "test_days_only": {
+      "n": 4
+     }
+    },
+    {
+     "cell": "price band 95-99c | 2h before close | buy no",
+     "train_days": {
+      "n": 275,
+      "days": 106,
+      "edge": 0.0084,
+      "t": 0.97,
+      "ci95": [
+       -0.006,
+       0.0192
+      ],
+      "lo": -0.0028,
+      "win": 0.9891,
+      "price": 0.9794
+     },
+     "test_days_only": {
+      "n": 92,
+      "days": 39,
+      "edge": 0.0112,
+      "t": 0.69,
+      "ci95": [
+       -0.0149,
+       0.0246
+      ],
+      "lo": -0.0115,
+      "win": 0.9891,
+      "price": 0.9766
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 4h before close | buy yes",
+     "train_days": {
+      "n": 14
+     },
+     "test_days_only": {
+      "n": 3
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 4h before close | buy yes",
+     "train_days": {
+      "n": 1
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 4h before close | buy yes",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 4h before close | buy no",
+     "train_days": {
+      "n": 22,
+      "days": 19,
+      "edge": 0.0477,
+      "t": 0.37,
+      "ci95": [
+       -0.1826,
+       0.2776
+      ],
+      "lo": -0.139,
+      "win": 0.7727,
+      "price": 0.7245
+     },
+     "test_days_only": {
+      "n": 8
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 4h before close | buy no",
+     "train_days": {
+      "n": 6
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 4h before close | buy no",
+     "train_days": {
+      "n": 3
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 6h before close | buy yes",
+     "train_days": {
+      "n": 14
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 6h before close | buy yes",
+     "train_days": {
+      "n": 3
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 6h before close | buy yes",
+     "train_days": {
+      "n": 2
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 1-10c | 6h before close | buy yes",
+     "train_days": {
+      "n": 172,
+      "days": 78,
+      "edge": -0.5028,
+      "t": -1.54,
+      "ci95": [
+       -0.9466,
+       -0.0047
+      ],
+      "lo": -0.8526,
+      "win": 0.0291,
+      "price": 0.0516
+     },
+     "test_days_only": {
+      "n": 572,
+      "days": 40,
+      "edge": -0.9554,
+      "t": -4.12,
+      "ci95": [
+       -1.0673,
+       -0.776
+      ],
+      "lo": -1.0672,
+      "win": 0.0035,
+      "price": 0.0313
+     }
+    },
+    {
+     "cell": "price band 10-30c | 6h before close | buy yes",
+     "train_days": {
+      "n": 120,
+      "days": 54,
+      "edge": 0.1249,
+      "t": 0.61,
+      "ci95": [
+       -0.1922,
+       0.4497
+      ],
+      "lo": -0.1541,
+      "win": 0.1917,
+      "price": 0.1621
+     },
+     "test_days_only": {
+      "n": 39,
+      "days": 22,
+      "edge": 0.3808,
+      "t": 1.12,
+      "ci95": [
+       -0.2105,
+       1.0078
+      ],
+      "lo": -0.1164,
+      "win": 0.2564,
+      "price": 0.1785
+     }
+    },
+    {
+     "cell": "price band 30-50c | 6h before close | buy yes",
+     "train_days": {
+      "n": 1
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "price band 50-70c | 6h before close | buy yes",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 70-90c | 6h before close | buy yes",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 90-95c | 6h before close | buy yes",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 95-99c | 6h before close | buy yes",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 3c | 6h before close | buy no",
+     "train_days": {
+      "n": 16
+     },
+     "test_days_only": {
+      "n": 2
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 6c | 6h before close | buy no",
+     "train_days": {
+      "n": 5
+     },
+     "test_days_only": {
+      "n": 1
+     }
+    },
+    {
+     "cell": "vol model says underpriced by >= 10c | 6h before close | buy no",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 1-10c | 6h before close | buy no",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 10-30c | 6h before close | buy no",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 30-50c | 6h before close | buy no",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 50-70c | 6h before close | buy no",
+     "train_days": {
+      "n": 0
+     },
+     "test_days_only": {
+      "n": 0
+     }
+    },
+    {
+     "cell": "price band 70-90c | 6h before close | buy no",
+     "train_days": {
+      "n": 85,
+      "days": 47,
+      "edge": -0.0165,
+      "t": -0.35,
+      "ci95": [
+       -0.1037,
+       0.0678
+      ],
+      "lo": -0.0903,
+      "win": 0.8353,
+      "price": 0.8399
+     },
+     "test_days_only": {
+      "n": 27,
+      "days": 15,
+      "edge": -0.1447,
+      "t": -1.57,
+      "ci95": [
+       -0.3239,
+       0.0253
+      ],
+      "lo": -0.2934,
+      "win": 0.7037,
+      "price": 0.8104
+     }
+    },
+    {
+     "cell": "price band 90-95c | 6h before close | buy no",
+     "train_days": {
+      "n": 58,
+      "days": 33,
+      "edge": -0.1085,
+      "t": -2.34,
+      "ci95": [
+       -0.2058,
+       -0.02
+      ],
+      "lo": -0.1885,
+      "win": 0.8276,
+      "price": 0.9228
+     },
+     "test_days_only": {
+      "n": 15
+     }
+    },
+    {
+     "cell": "price band 95-99c | 6h before close | buy no",
+     "train_days": {
+      "n": 111,
+      "days": 62,
+      "edge": -0.0021,
+      "t": -0.14,
+      "ci95": [
+       -0.0362,
+       0.0249
+      ],
+      "lo": -0.0301,
+      "win": 0.973,
+      "price": 0.9732
+     },
+     "test_days_only": {
+      "n": 110,
+      "days": 39,
+      "edge": 0.0046,
+      "t": 0.31,
+      "ci95": [
+       -0.024,
+       0.0248
+      ],
+      "lo": -0.0181,
+      "win": 0.9818,
+      "price": 0.9756
+     }
+    }
+   ]
+  }
+ }
+}

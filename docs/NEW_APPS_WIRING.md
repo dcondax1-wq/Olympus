@@ -444,6 +444,12 @@ App `ergasterion` in `tools/web_public/ergasterion/` ("the workshop where every 
 (the committed `tools/web_public/ergasterion/queue.json` is the fallback; rebuild it with `python tools/ergasterion_build.py` when QUEUE.md or a write-up changes, `--check` fails when it is stale). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`. The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `E`, ambient `chimes`, flavour `['columns', 'Walk the workshop', 'tap']`, transition `{ kind: 'columns', ms: 1000, n: 5 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files), adds `"ergasterion"` to the `build_web_dashboard.py` app tuple (that copies the folder, `queue.json` included), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and runs `python tools/apps_list_build.py --check`.
 Tests after wiring: `tests.test_ergasterion_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
 
+**ERGASTERION people (2026-11-11):** `index.html` loads the shared kit as an optional module (`../olympus/people.js?v=p1`) and `floor.js` tries `import('../olympus/people3d.js')` for `spec(id)` colours; both may be absent (404 is fine: built-in chat and seeded cartoon look). Person ids used: `scanner:<chrysos|mercury|sibyl|oikos|arbiter>`, `bot:<lit|atlas|blitz|kalshi>`, `mind`, `villager:<prometheus|hephaestus|cronos|queue|dev>`, `builder:<branch without worktree-agent->` (also tried: its first 8 characters). If the People roster spells any of these differently, `kit.get(id)` returns null and Ergasterion quietly uses its own chat for that person: tell the People agent the ids above or change `personId()` / `builderIds()` in `ergasterioncore.js`. The 3D persons are Ergasterion's own instanced version (25 people in 2 batches); `people3d.figure()` is not used because 25 separate figures would break the draw-call budget.
+
+**ERGASTERION Builders' camp (2026-11-11):** the same build line also writes `<site>/ergasterion/builders.json` = `handoff/agents_now.json` joined with git (`git log agora-release..<branch>`: last 8 commits with times, files, folders, merged work). It needs the local agent branches, so run it where they exist (this machine); on a machine without git or the branches every agent is honestly 'job only, no live activity'. The committed `builders.json` is a snapshot of build time: rerun `python tools/ergasterion_build.py` right before publishing so 'working' (a commit in the last 15 minutes) is fresh. `--check` does not compare it (it is git). Keep `handoff/agents_now.json` current: the camp shows at most 10 tents.
+
+**ERGASTERION v2 (2026-11-11), wiring for the lead:** no new row and NO new build line: the existing `python tools/ergasterion_build.py --out <site>/ergasterion/queue.json` now also writes `<site>/ergasterion/lessons.json` next to it (Jarvis: "what did we learn this week" = its `say` sentence, `week`, `top`, `changed`) and reads `<site>/money/<id>.json` asof times when they are there, so run it AFTER the money files are copied into the site. Rebuild the committed pair with `python tools/ergasterion_build.py` when QUEUE.md, a write-up, a research run or `archive/index.json` changes (run it after `tools/archive_build.py`; `--check` covers both files). New page assets are only versions of files that already exist (`ergasterion.js`, `ergasterioncore.js`, `floor.js`, `ergasterion.css`, `?v=a2`): bump the `sw.js` CACHE. Optional, in the lead's files: add `ergasterion/lessons.json` where Jarvis reads app cards; the Archive only understands `?find=<text>` today, so the pipeline lanes link with `?find=open|adopt|rejected|<family>`: a real `?family=` / `?verdict=` parameter in `archive/archive.js` would make those links exact.
+
 # Wiring ARCHIVE (the library of everything we ever tested, 2026-11-10)
 
 App `archive` in `tools/web_public/archive/` (3D marble bookcases via the render core: `archivestage.js`, its own module tag; flat twin without WebGL). Reads `./index.json` (first load about 300 KB: facets, write-ups, the rejected list, datasets, every adopted / open run) and, after the first paint, `./runs-0.json` .. `runs-3.json` (the rejected runs); falls back to `fixture.json` (DEMO). Built OFFLINE by `python tools/archive_build.py` (stdlib; `--check`, `--selftest`) from `research/runs/*.json`, `research/writeups/*.md`, the "Tested and rejected" section of `docs/CLAUDE_REFERENCE.md` and `data/`. Test `tests/test_archive_page.py`.
@@ -463,3 +469,73 @@ Tests after wiring: `tests.test_archive_page`, `tests.test_apps_list`, `tests.te
 3. `tools/build_web_dashboard.py` app tuple: add `"archive"`.  4. `sw.js` OTHER_APPS: `'archive/'`.
 5. `olympus/intro-app.js` FLAVOUR: `archive: ['columns', 'Open the shelves', 'tap'],`
 6. `jarvis/transitions.js` REGISTRY: `archive: { kind: 'tiles', ms: 800 },`
+
+---
+# Wiring PINAKES (the catalogue of every table, 2026-11-11)
+
+App `pinakes` in `tools/web_public/pinakes/` ("the catalogue": a universal data browser). A marble card cabinet whose five drawers are the districts (Market, Research, Money, Command, Life; three.js direct in `pinakesscene.js`, flat SVG cabinet on LITE / no WebGL / `?flat=1`, draws only while a drawer moves). Search the catalogue, open any table in a windowed grid (only the rows in view exist: 37,000 rows scroll like 30), sort, plain-word filters, quick stats, bar / line / histogram chart with group-by, list picker for nested files, saved views (this phone only, `pinakes.v1`, export / import), CSV + JSON export, share link (`#v=...` restores table + filters + sort + chart), and "Ask": 4 built-in questions that join known tables with the query in plain words. Reads `./catalog.json` (about 105 KB: one card per table, never the rows), then each table from its own URL when opened; falls back to `fixture.json` (DEMO with its tables inside). Test `tests/test_pinakes_page.py`.
+
+**The builder (new):** `tools/pinakes_build.py` (stdlib, `--check`, `--selftest`) walks the site folder and writes `pinakes/catalog.json` + `pinakes/jarvis.json` (and, for the repo copy, the demo `fixture.json`). The committed catalogue covers the files in `tools/web_public/` and lists the build-only files (`home.json`, `data.json`, `intel.json`, `kalshi.json`, `alerts.json`, `money/*.json`, `cronos/status.json`, `datacity/discoveries.json`, `kalshicity/forward.json`, `kalshicity/scan.json`, `writeups/index.json`) as "Site build: measured when opened". Research CSVs under `data/` are listed with span and rows only (no URL, not downloadable).
+
+## The exact build line (needed so the published catalogue also measures the build-only files)
+In `.github/workflows/cloud-monitor.yml`, step "Publish web dashboard", add this line directly BELOW `python tools/build_web_dashboard.py --state dash/state.json --chart dash/chart.png --out site` (it must run after every other file is in `site/`):
+`          python tools/pinakes_build.py --web site   # Pinakes: catalogue every table in the built site (stdlib, ~2 s)`
+(or call the same thing as the last step inside `build_web_dashboard.py`: `subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pinakes_build.py"), "--web", out])`). It reads `site/**.json` + `data/*.csv`, writes only `site/pinakes/catalog.json` and `site/pinakes/jarvis.json`. If it is skipped, the committed `catalog.json` is still valid (build-only tables are then measured when the owner opens them). After adding or changing any app's JSON in the repo: `python tools/pinakes_build.py` (and `--check` fails when the committed catalogue is stale).
+
+## The six rows (what `wire_new_apps.py --apply` writes for Pinakes; the row is already in `tools/new_apps.json`)
+1. `jarvis/apps.js` BUILT_INS: `app('pinakes', 'Pinakes', 'trading', '#c8a24a', 'The catalogue: browse and query every table OLYMPUS keeps', { glyph: 'Κ' }),`
+2. `olympus/olympus.js`: APPS `pinakes: ['Pinakes', 'Κ', '#c8a24a'],` and AMBIENT `pinakes: 'scroll',`
+3. `tools/build_web_dashboard.py` app tuple: add `"pinakes"` (the folder is copied whole: `catalog.json`, `fixture.json`, `jarvis.json` ride along).  4. `sw.js` OTHER_APPS: `'pinakes/'` (precache `pinakes/catalog.json` if wanted; never the tables it points at).
+5. `olympus/intro-app.js` FLAVOUR: `pinakes: ['columns', 'Open the drawers', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `pinakes: { kind: 'tiles', ms: 800 },`
+Then bump `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, run `python tools/apps_list_build.py --check`, and `python tools/make_app_icons.py pinakes` is already done (PNG icons are in the folder).
+Tests after wiring: `tests.test_pinakes_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+# Wiring COLOSSEUM (where strategies fight, 2026-11-11)
+
+App `colosseum` in `tools/web_public/colosseum/`: a marble amphitheatre in 3D (`arena.js` on the render core + `olympus/shapes3d.js`, its own module tag; LITE / no WebGL / `?flat=1` = a flat SVG arena) where two stored runs duel over seven rounds on their real numbers (net $, $ a month, PF, max drawdown $, trades a week, MFFU eval speed, holds in both periods). A number that is not stored makes the round "no contest". Plus a seeded tournament of the top 16 adopted runs, the league of LIT / ATLAS / BLITZ, the hall of champions and the fallen. Deep link `colosseum/#a=<runId>&b=<runId>`.
+Reads `../archive/index.json` (+ `../archive/runs-<k>.json` after the first paint), `./extra.json`, `../home.json`; falls back to `fixture.json` (DEMO). Sends nothing, stores nothing. Test `tests/test_colosseum_page.py` (`--static` = no browser).
+The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `C`, ambient `chimes`, flavour `['torches', 'Enter the arena', 'tap']`, transition `{ kind: 'columns', ms: 1000, n: 5 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and runs `python tools/apps_list_build.py --check`.
+
+## Site build lines (needed, otherwise `colosseum/extra.json` goes stale on the site)
+1. `tools/build_web_dashboard.py`: the app tuple gets `"colosseum"` (the folder is copied whole, so `extra.json` rides along). The Archive must be on the site too (it already is): Colosseum reads `archive/index.json` and `archive/runs-*.json`.
+2. `.github/workflows/cloud-monitor.yml`, step "Publish web dashboard": directly BELOW the `python tools/archive_build.py` line add
+   `          python tools/colosseum_build.py   # Colosseum extras: max drawdown, dec10, pass_med per run (stdlib, ~2 s)`
+   (rewrites `tools/web_public/colosseum/extra.json` from `research/runs/`; `--check` fails when it is stale, `--selftest` needs nothing). If the checkout lacks `research/runs/`, skip it: the committed file is still valid.
+3. `tools/web_public/sw.js`: `OTHER_APPS` add `'colosseum/'`; do NOT precache `colosseum/extra.json` (about 130 KB).
+4. Home Screen PNG icons: `flock -w 2400 /tmp/olympus_browser.lock python tools/make_app_icons.py colosseum` (already run; add `colosseum` to its `APPS` list if you want `--check` to cover it).
+5. People kit (docs/PERSONA_API.md): once `tools/web_public/olympus/people.js` exists, add `<script type="module" src="../olympus/people.js?v=p1"></script>` to `colosseum/index.html` directly above the `arena.js` tag. The Talk button then calls `window.OLYMPUS_PEOPLE.open('champion:<run-id>' | 'bot:lit' | 'bot:atlas' | 'bot:blitz', { anchor })`; until then the page's own five-question card answers. (The tag is NOT in the page yet: a missing file makes the kit show "could not load".) The 3D champions are the app's own toy-like figures; `olympus/people3d.js` can replace `champion()` in `arena.js` later.
+Tests after wiring: `tests.test_colosseum_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+## The six rows (what `wire_new_apps.py --apply` writes for Colosseum)
+1. `jarvis/apps.js` BUILT_INS: `app('colosseum', 'Colosseum', 'trading', '#c8a24a', 'Where strategies fight: seven rounds on real stored numbers', { glyph: 'C' }),`
+2. `olympus/olympus.js`: APPS `colosseum: ['Colosseum', 'C', '#c8a24a'],` and AMBIENT `colosseum: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"colosseum"`.  4. `sw.js` OTHER_APPS: `'colosseum/'`.
+5. `olympus/intro-app.js` FLAVOUR: `colosseum: ['torches', 'Enter the arena', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `colosseum: { kind: 'columns', ms: 1000, n: 5 },`
+
+# Wiring NQ (the NQ bots, right now, 2026-11-11)
+
+App `nq` in `tools/web_public/nq/` ("the NQ bots, right now": Zlarior / LIT 50K, ATLAS 25K, BLITZ 25K; status with the exact age of the last report, drawdown left, the day's P&L in $ with R, eval progress, the last 10 trades and the rule that closed each, the plan, the backtest facts, the honest banner, the 5-step sheet). 3D: `nqscene.js`, its own module tag (three marble columns, a flame only for a bot that reported in the last 20 minutes; 2D columns without WebGL / in LITE). Reads `../home.json` only (never the 8 MB `data.json`), `./howto.json` and `./fixture.json` (DEMO).
+The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `Ν` (Greek Nu), ambient `chimes`, flavour `['columns', 'The bots, right now', 'tick']`, transition `{ kind: 'columns', ms: 1000, n: 3 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files; dry run checked, `tests.test_apps_list --static` is 14/14 with it applied), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`. Not touched by the agent: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, `olympus.js`, `intro-app.js`, `transitions.js`.
+
+## Site build lines
+1. `tools/build_web_dashboard.py`: the app tuple gets `"nq"` (the folder is copied whole, `howto.json` rides along). Nothing else: the page reads the build's own `home.json`.
+2. `nq/howto.json` is `docs/NQ_BOT_BACK.md` bundled: after editing that doc run `python tools/nq_howto_build.py` (`--check` exits 1 when stale; `tests.test_nq_page` runs it). Worth one line in the release gate next to the other `--check` builders.
+3. Optional, for a live Jarvis card: the build may write `nq/jarvis.json` from `home.json` (status level + "Last report N ago"); the committed card is a static "open for the live status".
+
+## Root page (Zenith) changes that ride with it (already in the tree, no wiring, but the worker must be bumped)
+- `index.html` now loads `zenith_nq.js?v=1` (after `zenith_pages.js`, before `embed.js`), `zenith_hero.js?v=3`, `zenith_money.js?v=3`, `zenith_agora.css?v=a2`: bump `sw.js` `CACHE` (`le-public-v78` today) so phones take the new `index.html`.
+- New root file `tools/web_public/zenith_nq.js` (the build copies every root file; `sw.js` precaches only SHELL, so nothing to add there).
+
+## PC update kit (no wiring in the site)
+- New owner files: `UPDATE_FROM_ZIP.bat`, `UNDO_UPDATE.bat`, `tools/update_from_zip.py`. Add both `.bat` names to `BATS` in `tests/test_win_scripts.py` (the agent did not edit that shared test; `tests/test_update_from_zip.py` lints them with the same `lint_bat`) and, if wanted, to `scripts/make_shortcuts.ps1`.
+- `docs/CLAUDE_REFERENCE.md` "Infrastructure" and "PC tools" should get one line each (update from zip; `UPDATE.bat` / `engine.autoupdate` need GitHub and no longer work).
+
+## The six rows (what `wire_new_apps.py --apply` writes for NQ)
+1. `jarvis/apps.js` BUILT_INS: `app('nq', 'NQ', 'trading', '#c8a24a', 'The NQ bots, right now: status, drawdown left, last trades', { glyph: 'Ν' }),`
+2. `olympus/olympus.js`: APPS `nq: ['NQ', 'Ν', '#c8a24a'],` and AMBIENT `nq: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"nq"`.  4. `sw.js` OTHER_APPS: `'nq/'`.
+5. `olympus/intro-app.js` FLAVOUR: `nq: ['columns', 'The bots, right now', 'tick'],`
+6. `jarvis/transitions.js` REGISTRY: `nq: { kind: 'columns', ms: 1000, n: 3 },`
+Tests after wiring: `tests.test_nq_page`, `tests.test_zenith_nq`, `tests.test_update_from_zip`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`, `tests.test_zenith_shell`, `tests.test_zenith_pages`, `tests.test_zenith_mode`.

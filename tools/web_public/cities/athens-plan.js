@@ -13,19 +13,19 @@ export const GROUPS = [
 
 // The 40 Olympus apps, in their district: [id, name, colour, one plain line].
 export const APPS = {
-  trading: [['zenith', 'Zenith', '#a855f7', 'NQ bots, Zlarior, ATLAS, BLITZ'], ['oracle', 'Oracle', '#7fe9ff', 'The market radar, live'], ['odeon', 'Odeon', '#ff6b7f', 'Every trade, replayed in 3D'],
-    ['fates', 'Fates', '#ffcf5a', 'Pass odds for each eval'], ['ares', 'Ares', '#ff3b30', 'The war room: GO, WAIT or HALT'], ['forum', 'Forum', '#b8e04a', 'Morning briefing at the NY hour'],
-    ['nemesis', 'Nemesis', '#8a6bff', 'The fallen trades: what went wrong'], ['chronos', 'Chronos', '#d4a574', 'Time and the session clock'], ['journal', 'Mnemosyne', '#f09bd8', 'A 10-second trade journal'],
+  trading: [['zenith', 'Zenith', '#9c6b3c', 'NQ bots, Zlarior, ATLAS, BLITZ'], ['oracle', 'Oracle', '#7fb0a3', 'The market radar, live'], ['odeon', 'Odeon', '#d77a7a', 'Every trade, replayed in 3D'],
+    ['fates', 'Fates', '#ffcf5a', 'Pass odds for each eval'], ['ares', 'Ares', '#c8402e', 'The war room: GO, WAIT or HALT'], ['forum', 'Forum', '#8f9f3c', 'Morning briefing at the NY hour'],
+    ['nemesis', 'Nemesis', '#b55c66', 'The fallen trades: what went wrong'], ['chronos', 'Chronos', '#d4a574', 'Time and the session clock'], ['journal', 'Mnemosyne', '#e08a6b', 'A 10-second trade journal'],
     ['hestia', 'Hestia', '#c8a24a', 'Today at home: what to do now'], ['demeter', 'Demeter', '#9aa564', 'Account health and payout rules'], ['apollo', 'Apollo', '#e0b060', 'Your weekly review, one rule'],
-    ['delphi', 'Delphi', '#e0b060', 'The briefing: plan, target, go / no-go'], ['hephaestus', 'Hephaestus', '#d96bff', 'The forge: tune the dials']],
-  research: [['observatory', 'Observatory', '#6eeaff', 'Data health and research evidence'], ['tree', 'Daphne', '#34f5a0', 'The strategy tree search'], ['prometheus', 'Prometheus', '#ff7a1a', 'The Forge: strategies tested'],
-    ['pantheon', 'Pantheon', '#f2d68a', 'The data gods: rates, liquidity, fear'], ['labyrinth', 'Labyrinth', '#ff4d57', 'The risk maze: size your eval'], ['argus', 'Argus', '#3ad7ff', 'The hundred eyes: what to fix'],
-    ['clio', 'Clio', '#d8c9a8', 'The research library in plain words'], ['athena', 'Athena', '#5ea8ff', 'The library: strategy, rules, quiz'], ['datacity', 'Data City', '#4f8cff', 'Every combo tested, as a city'],
-    ['mind', 'Mind', '#5eead4', 'Your vault as a living 3D brain'], ['cities', 'Cities', '#a68bff', 'A world of city islands']],
-  money: [['kalshicity', 'Kalshi City', '#2ef2d0', 'The Kalshi bot as a night city'], ['ledger', 'Ledger', '#ffcf5a', 'Real money: fees, payouts, net'], ['hera', 'Hera', '#c96a4a', 'The 12-month money plan'],
-    ['dionysus', 'Dionysus', '#b77a8a', 'The Kalshi desk. Suggestions only'], ['pnyx', 'Pnyx', '#c8a24a', 'Prop-firm rules and risk calculator'], ['kalshi', 'Kalshi', '#2ef2d0', 'Kalshi bot, from your PC'],
-    ['tyche', 'Tyche', '#e879f9', 'The Kalshi bets as a fortune wheel'], ['hermes', 'Hermes', '#f7c948', 'OLYMPUS Wrapped: your money'], ['plutus', 'Plutus', '#9be84a', 'The money plan: accounts, payouts']],
-  life: [['inbox', 'Inbox', '#7fd0ff', 'Everything that needs a look'], ['settings', 'Settings', '#b79bff', 'Look, voice, storage, the tour'], ['bridge', 'Bridge', '#34d399', 'Link ChatGPT: 3 steps'],
+    ['delphi', 'Delphi', '#e0b060', 'The briefing: plan, target, go / no-go'], ['hephaestus', 'Hephaestus', '#c7773f', 'The forge: tune the dials']],
+  research: [['observatory', 'Observatory', '#a9bfd0', 'Data health and research evidence'], ['tree', 'Daphne', '#6b9068', 'The strategy tree search'], ['prometheus', 'Prometheus', '#ff7a1a', 'The Forge: strategies tested'],
+    ['pantheon', 'Pantheon', '#f2d68a', 'The data gods: rates, liquidity, fear'], ['labyrinth', 'Labyrinth', '#a8765a', 'The risk maze: size your eval'], ['argus', 'Argus', '#3f8a8a', 'The hundred eyes: what to fix'],
+    ['clio', 'Clio', '#d8c9a8', 'The research library in plain words'], ['athena', 'Athena', '#7f8a52', 'The library: strategy, rules, quiz'], ['datacity', 'Data City', '#5f8ea6', 'Every combo tested, as a city'],
+    ['mind', 'Mind', '#d9b8a8', 'Your vault as a living 3D brain'], ['cities', 'Cities', '#b88a50', 'A world of city islands']],
+  money: [['kalshicity', 'Kalshi City', '#b5a642', 'The Kalshi bot as a night city'], ['ledger', 'Ledger', '#c2b280', 'Real money: fees, payouts, net'], ['hera', 'Hera', '#c96a4a', 'The 12-month money plan'],
+    ['dionysus', 'Dionysus', '#b77a8a', 'The Kalshi desk. Suggestions only'], ['pnyx', 'Pnyx', '#c8a24a', 'Prop-firm rules and risk calculator'], ['kalshi', 'Kalshi', '#8fa07a', 'Kalshi bot, from your PC'],
+    ['tyche', 'Tyche', '#cf8f7a', 'The Kalshi bets as a fortune wheel'], ['hermes', 'Hermes', '#f7c948', 'OLYMPUS Wrapped: your money'], ['plutus', 'Plutus', '#a9b84f', 'The money plan: accounts, payouts']],
+  life: [['inbox', 'Inbox', '#9aa3a8', 'Everything that needs a look'], ['settings', 'Settings', '#a39883', 'Look, voice, storage, the tour'], ['bridge', 'Bridge', '#8c7a5a', 'Link ChatGPT: 3 steps'],
     ['planner', 'Planner', '#7fa7c2', 'Day and week plan'], ['arena', 'Arena', '#ffb547', 'Olympian ranks: XP for discipline'], ['atlas', 'Atlas', '#efc979', 'A fast map of every dashboard']],
 };
 

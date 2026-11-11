@@ -535,7 +535,11 @@ export function createBrain(opts) {
           cache = { ...S, ...jd.readLocal(store()) }; at = Date.now(); return { ...cache, kalshi: isObj(lastFacts.kalshi) ? lastFacts.kalshi : null };
         };
         const apps = () => { try { const l = (typeof globalThis !== 'undefined' && globalThis.OLYMPUS_APPS_LIST) || (ap && ap.BUILT_INS) || (lastFacts && lastFacts.apps) || []; return Array.isArray(l) ? l : []; } catch (_) { return []; } };
-        skills = sk.createSkills({ getSources, apps, storage: store(), now: () => (nowFn ? nowFn() : Date.now()), assistant, env: isObj(o.skillsEnv) ? o.skillsEnv : {} });
+        // v3: the search index and the strategy facts (built at site-build time), fetched once, on the first question that needs them
+        const lazy = (name) => { let p = null; return () => { if (!p) p = Promise.resolve(typeof jd.loadJson === 'function' ? jd.loadJson(name, { fetch: (...a) => fetch(...a) }) : null).then((j) => { if (!j) p = null; return j; }).catch(() => { p = null; return null; }); return p; }; };
+        skills = sk.createSkills({ getSources, apps, storage: store(), now: () => (nowFn ? nowFn() : Date.now()), assistant, env: isObj(o.skillsEnv) ? o.skillsEnv : {}, getIndex: lazy('search-index.json'), getFacts: lazy('strategy-facts.json'), getPeople: lazy('../olympus/people.json'),
+          // "what are the agents working on": the workshop's builders.json when it is published, else the copy the search builder bundled; read fresh, at most once a minute
+          getAgents: (() => { let v = null, at = 0; return async () => { if (v && Date.now() - at < 60000) return v; const ld = (n) => (typeof jd.loadJson === 'function' ? jd.loadJson(n, { fetch: (...a) => fetch(...a) }) : null); const live = await ld(jd.BUILDERS_FILE || '../ergasterion/builders.json'); const j = live || await ld('agents-now.json'); v = j ? { data: j, file: live ? 'ergasterion/builders.json' : 'jarvis/agents-now.json', at: Date.now() } : null; at = Date.now(); return v; }; })() });
         installApi();
       }).catch(() => null).then(() => { skillsWait = null; });
     } catch (_) { skillsWait = null; }
@@ -545,7 +549,7 @@ export function createBrain(opts) {
   function installApi() {
     try {
       const g = typeof globalThis !== 'undefined' ? globalThis : null;
-      if (!g || !skills || typeof skills.nudges !== 'function' || (g.JARVIS_API && g.JARVIS_API.v === 1)) return;
+      if (!g || !skills || typeof skills.nudges !== 'function' || (g.JARVIS_API && g.JARVIS_API.v >= 1 && g.JARVIS_API.skills === skills)) return;
       let list = [], at = 0, busy = false;
       const refresh = () => {
         if (busy || Date.now() - at < 60000) return;
@@ -553,7 +557,15 @@ export function createBrain(opts) {
         Promise.resolve(skills.nudges({ max: 3 })).then((n) => { list = arr(n).filter(isObj).map((x) => ({ id: x.id, key: x.key, text: x.text, tone: x.level === 'bad' ? 'bad' : x.level === 'warn' ? 'warn' : 'info', app: x.open || '', say: x.text, why: x.why, ask: x.ask, usd: x.usd })); at = Date.now(); })
           .catch(() => null).then(() => { busy = false; });
       };
-      g.JARVIS_API = { v: 1, nudges: () => { refresh(); return list.slice(); }, refresh: () => { at = 0; refresh(); }, ask: (text, opt) => ask(text, opt), skills };
+      // v2 (2026-11-11, backward compatible: everything v1 had is unchanged): search(q, n?) -> Promise<[hit]>, tours() -> [tour] (sync),
+      // brief(kind?) -> Promise<reply> ('day' | 'kalshi' | 'money'), context() -> the follow-up state or null (sync), explain(word) -> Promise<reply | null>
+      const has = (k) => typeof skills[k] === 'function';
+      g.JARVIS_API = { v: 2, nudges: () => { refresh(); return list.slice(); }, refresh: () => { at = 0; refresh(); }, ask: (text, opt) => ask(text, opt), skills,
+        search: async (q, n) => { try { return has('search') ? arr(await skills.search(q, n)) : []; } catch (_) { return []; } },
+        tours: () => { try { return has('tours') ? arr(skills.tours()) : []; } catch (_) { return []; } },
+        brief: async (kind) => { try { const x = has('brief') ? await skills.brief(kind) : null; return x ? finish(x) : null; } catch (_) { return null; } },
+        context: () => { try { return has('context') ? skills.context() : null; } catch (_) { return null; } },
+        explain: async (w) => { try { return has('explain') ? await skills.explain(w) : null; } catch (_) { return null; } } };
       refresh();
     } catch (_) { /* the home works without it */ }
   }
@@ -2134,6 +2146,24 @@ export function createBrain(opts) {
     return { text: g + '\n' + t.text, speak: toSpeech(g + (top ? ' First: ' + top.say : ''), 320), control: 'mode', mode: id, items: t.items, intent: 'mode' };
   }
   const oops = () => ({ text: 'Something in the data tripped me up. Ask me again in a moment.', speak: 'Something in the data tripped me up. Ask me again in a moment.', intent: 'error' });
+  // v3 (skills3.js): the six-line briefing keeps this brain's own bot cards and its urgent "First: ..." line (a quiet eval near MFFU's limit)
+  function briefMerge(x, V) {
+    try {
+      if (!isObj(x) || x.intent !== 'briefing' || !isObj(x.brief) || x.brief.kind !== 'day' || !Array.isArray(x.brief.lines)) return x;
+      const b = briefingReply(V), first = String(b.text || '').split('\n').find((l) => /^First: /.test(l)), L = x.brief.lines.slice();
+      if (first) L[5] = 'Do first: ' + first.replace(/^First: /, '');
+      return { ...x, text: L.join('\n') + '\n' + str(x.brief.tail, 400), speak: first ? [L[0], L[1], L[2], L[5]].join(' ') : x.speak, cards: b.cards, brief: { ...x.brief, lines: L } };
+    } catch (_) { return x; }
+  }
+  async function earlyAsk(raw, V) {
+    try {
+      if (!skills || typeof skills.early !== 'function') return null;
+      const x = await skills.early(raw, { now: V.now });
+      if (!x || typeof x.text !== 'string') return null;
+      if (x.missing) { missedSkill = x; return null; }
+      return briefMerge(x, V);
+    } catch (_) { return null; }
+  }
   async function skillsAsk(raw, q, V) {
     try {
       const x = await skills.handle(raw, q, { now: V.now });
@@ -2152,7 +2182,7 @@ export function createBrain(opts) {
       const V = view(f);
       const q = norm(raw);
       curMode = modes ? safeCall(() => modes.effective(q)) || 'auto' : 'auto';
-      let sr = null;
+      let sr = null, bySkill = false;
       if (skillsWait) await Promise.race([skillsWait, new Promise((ok) => setTimeout(ok, 1200))]);
       if (skills && skills.pending) { try { sr = YES_RX.test(q) ? await skills.confirm() : NO_RX.test(q) ? skills.cancel() : null; } catch (_) { sr = null; } }
       missedSkill = null;
@@ -2160,6 +2190,8 @@ export function createBrain(opts) {
       else if (/^(hide|mask) (my |the )?(balances?|money|numbers|figures|p&l)$|^privacy (mode )?on$/.test(q)) { setHide(true); r = { text: 'Balances hidden. Say "show my balance" to bring them back.', speak: 'Balances hidden.', control: 'hide_balance', intent: 'control' }; }
       else if (/^(show|unhide|unmask) (my |the )?(balances?|money|numbers|figures|p&l)$|^privacy (mode )?off$/.test(q)) { setHide(false); r = { text: 'Balances visible again.', speak: 'Balances visible again.', control: 'show_balance', intent: 'control' }; }
       else if (MANUAL_RX.test(q)) r = manualTrade(q, V);
+      else if (skills && typeof skills.guard === 'function' && (sr = safeCall(() => skills.guard(raw)))) { r = sr; bySkill = true; }          // "buy ...", "arm ...", "move my stop": refused in plain words, whatever the wording
+      else if (skills && (sr = await earlyAsk(raw, V))) { r = sr; bySkill = true; }           // v3: follow-ups, tours, the briefing, explain, search (skills3.js)
       else if (modes && safeCall(() => modes.parseSwitch(raw))) r = modeReply(modes.parseSwitch(raw), V);
       else if (modes && THINK_RX.test(q)) r = await thinkReply(V, modes.mode, true);
       else if (modes && typeof modes.answer === 'function' && (mr0 = safeCall(() => modes.answer(raw, digest(V))))) {     // the modes' quick asks (modes.js)
@@ -2168,7 +2200,7 @@ export function createBrain(opts) {
       }
       else if (bots && (mr0 = safeCall(() => bots.answer(raw, q, V.f && V.f.live, V.now)))) r = { text: mr0.text, speak: mr0.speak, intent: mr0.intent, cards: mr0.cards };     // the bots' own asks (bots.js)
       else if (kb && (mr0 = safeCall(() => kb.answer(raw, q, V.f && V.f.kalshi, V.now)))) r = { text: mr0.text, speak: mr0.speak, intent: mr0.intent, cards: mr0.cards };     // KALSHI-BRAIN: the Kalshi bot's edges (kalshi-brain.js)
-      else if (skills && (sr = await skillsAsk(raw, q, V))) r = sr;                       // the skills: published data, actions, memory (skills.js)
+      else if (skills && (sr = await skillsAsk(raw, q, V))) { r = sr; bySkill = true; }                       // the skills: published data, actions, memory (skills.js)
       else if (SETUP_RX.test(q)) r = { text: smartOn() ? `Smart mode is on (${PROVIDERS[S.provider].name}). Opening the key setup in case you want another one.` : 'Opening the free smart mode setup: three steps, about a minute, no card.', speak: 'Opening the smart mode setup.', control: 'ai_setup', intent: 'control' };
       else {
         // order: a "yes" / "no" to a pending save (memory.js) -> the assistant (facts, reminders, to-dos, notes, recall, maths) ->
@@ -2200,6 +2232,7 @@ export function createBrain(opts) {
           }
         }
       }
+      if (skills && !bySkill && r && r.intent !== 'fallback' && typeof skills.heard === 'function') safeCall(() => skills.heard());        // another part answered: a follow-up no longer refers to the skills' last answer
       if (r && r.intent === 'fallback' && missedSkill && !(S.on && S.keys[S.provider])) r = missedSkill;       // a skill's honest "I don't have that" beats the generic line
       if (!r && assistant) r = await chatReply(raw, V, voice);                       // anything else: open conversation
       if (!r && tools && !smartOn()) { const lk = await tools.local(raw, q, toolEnv(V), { late: true }).catch(() => null); if (isObj(lk) && lk.text) r = offerOnce(lk); }

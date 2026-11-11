@@ -85,6 +85,15 @@ export async function loadSources(opts) {
   await Promise.all(Object.keys(FILES).map(async (k) => { const j = await getJson(fetchFn, base + FILES[k]); if (j) { S[k] = j; S.at[k] = now; } }));
   return S;
 }
+export const PEOPLE_FILE = '../olympus/people.json';               // the roster of the People kit (docs/PERSONA_API.md), when it is built
+export const BUILDERS_FILE = '../ergasterion/builders.json';       // who is building what (the workshop's own file, when it is published)
+/** one of Jarvis' own built files, next to the page (search-index.json, strategy-facts.json): a bare file name only, null when missing */
+export async function loadJson(name, opts) {
+  const o = isObj(opts) ? opts : {};
+  const fetchFn = typeof o.fetch === 'function' ? o.fetch : (typeof fetch === 'function' ? fetch : null);
+  if (!fetchFn || !(/^[a-z0-9][a-z0-9-]{0,40}\.json$/.test(String(name)) || name === BUILDERS_FILE || name === PEOPLE_FILE)) return null;
+  return getJson(fetchFn, (typeof o.base === 'string' ? o.base : '') + name);
+}
 /** what this phone keeps (read only): planner, journal, ledger, compass state */
 export function readLocal(storage) {
   const out = { planner: null, journal: null, ledger: null, compassState: null };

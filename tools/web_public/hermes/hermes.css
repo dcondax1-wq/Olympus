@@ -206,7 +206,7 @@ blockquote.lesson small { display: block; font: 700 11px/1.2 var(--font); letter
 .heat { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 0 0 10px; }
 .hc { display: block; aspect-ratio: 1; border-radius: 9px; background: rgba(243, 236, 224, .07); border: 1px solid rgba(243, 236, 224, .06); transform: scale(.2); opacity: 0;
   transition: transform .5s cubic-bezier(.2, 1.5, .3, 1) calc(var(--i) * 28ms + 500ms), opacity .4s ease calc(var(--i) * 28ms + 500ms); }
-.hc.up { background: rgba(94, 242, 168, var(--a)); box-shadow: 0 4px 14px rgba(0, 0, 0, .3); border-color: rgba(155, 171, 99, .5); }
+.hc.up { background: rgba(127,138,82, var(--a)); box-shadow: 0 4px 14px rgba(0, 0, 0, .3); border-color: rgba(155, 171, 99, .5); }
 .hc.down { background: rgba(255, 122, 138, var(--a)); border-color: rgba(224, 144, 122, .5); }
 .card.on .hc { transform: none; opacity: 1; }
 /* a foil sheen sweeps across the numbers of a card once it is open (motion only) */

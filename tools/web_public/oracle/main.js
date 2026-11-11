@@ -369,7 +369,7 @@ window.oracle = {
 };
 
 (async () => {
-  try { await Promise.race([document.fonts.load('600 44px Rajdhani'), new Promise((r) => setTimeout(r, 1500))]); } catch (_) { /* system font */ }
+  try { await Promise.race([document.fonts.load('600 44px Georgia'), new Promise((r) => setTimeout(r, 1500))]); } catch (_) { /* system font */ }
   if (forced) await startDemo();
   else await refresh(true);
   loop();

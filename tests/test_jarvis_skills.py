@@ -18,7 +18,9 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JV = os.path.join(ROOT, "tools", "web_public", "jarvis")
 RES: list = []
-NEW = ["router.js", "jdata.js", "skills.js", "actions.js", "memstore.js", "nudges.js"]  # (skills.js also imports kalshi-brain.js)
+NEW = ["router.js", "jdata.js", "skills.js", "actions.js", "memstore.js", "nudges.js",  # (skills.js also imports kalshi-brain.js)
+       "skills3.js", "search.js", "dialogue.js", "explain.js", "tours.js", "safety.js", "jbrief.js", "jpeople.js"]  # BRAIN v3 (2026-11-11)
+V3 = NEW[6:]
 
 
 def check(name, ok, info=""):
@@ -46,6 +48,7 @@ def main() -> int:
         check(f"{f}: no DOM, no eval", not re.search(r"\bdocument\.|\bwindow\.|\beval\(|new Function", src))
     core = read(os.path.join(JV, "router.js")) + read(os.path.join(JV, "nudges.js"))
     check("router and nudges have no fetch at all", "fetch(" not in core)
+    check("the v3 modules never fetch (the index and the facts are handed in)", not any("fetch(" in read(os.path.join(JV, f)) for f in V3))
     check("only jdata.js fetches, and only relative files", "fetchFn(" in read(os.path.join(JV, "jdata.js")) and not re.search(r"fetch\(\s*['\"]https?", read(os.path.join(JV, "jdata.js"))))
     check("actions never mention an order or arming", not re.search(r"place_order|armLive|go_live|submitOrder", read(os.path.join(JV, "actions.js"))))
     brain = read(os.path.join(JV, "brain.js"))
@@ -64,6 +67,8 @@ def main() -> int:
         d = read(doc_p)
         names = ["route(", "createSkills", "handle(", "contextFor", "nudges(", "createActions", "createMemStore", "loadSources", "jarvis.memory.v1", "planner.agora.v2", "compass.state.v1",
                  "exportJson", "importJson", "plan(", "confirm(", "cancel()", "#zone=", "#quiz", "pttDown", "jarvis.vmPtt", "sw.js", "JARVIS_API", "planner_event", "plan_today"]
+        names += ["search(", "tours()", "brief(", "context()", "explain(", "search-index.json", "strategy-facts.json", "jarvis_search_build.py", "jarvis_facts_build.py", "skills3.js", "safety.js",
+                  "dialogue.js", "refuse_trade", "#find=", "v: 2", "jpeople.js", "OLYMPUS_PEOPLE", "agents-now.json", "builders.json", "people.json"]
         miss = [n for n in names if n not in d]
         check("JARVIS_API.md names every export, key and the wiring", not miss, ", ".join(miss))
     r = subprocess.run(["node", os.path.join(ROOT, "tests", "test_jarvis_skills.mjs")], capture_output=True, text=True, timeout=120, env={**os.environ, "TZ": "America/New_York"})
@@ -72,6 +77,21 @@ def main() -> int:
     m = re.search(r"(\d+) passed, (\d+) failed", out)
     if m:
         print(f"   node unit tests: {m.group(1)} passed, {m.group(2)} failed")
+    # BRAIN v3 (2026-11-11): the two builders and their files, then the v3 node tests
+    py = sys.executable
+    for tool, args in (("jarvis_facts_build.py", ["--selftest"]), ("jarvis_facts_build.py", ["--check"]), ("jarvis_search_build.py", ["--selftest"]), ("jarvis_search_build.py", ["--check"])):
+        b = subprocess.run([py, "-X", "utf8", os.path.join(ROOT, "tools", tool)] + args, capture_output=True, text=True, timeout=120)
+        check(f"tools/{tool} {args[0]}", b.returncode == 0, (b.stdout + b.stderr)[-600:])
+    ix = os.path.join(JV, "search-index.json")
+    check("jarvis/search-index.json is under 350 KB", os.path.exists(ix) and os.path.getsize(ix) < 350_000, os.path.getsize(ix) if os.path.exists(ix) else "missing")
+    check("brain.js: safety first, the v3 skills before the older rules, JARVIS_API v2", all(x in brain for x in ["skills.guard(raw)", "earlyAsk(raw, V)", "v: 2", "skills.heard()", "search-index.json", "strategy-facts.json"]))
+    check("brain.js asks the guard before modes, bots and Kalshi", 0 < brain.find("skills.guard(raw)") < brain.find("modes.parseSwitch(raw))) r = modeReply"))
+    r3 = subprocess.run(["node", os.path.join(ROOT, "tests", "test_jarvis_brain3.mjs")], capture_output=True, text=True, timeout=180, env={**os.environ, "TZ": "America/New_York"})
+    out3 = (r3.stdout + r3.stderr).strip()
+    check("node v3: search (60 queries), dialogue (25 scripts), briefing, explain, tours, safety (30+ phrasings), JARVIS_API v2", r3.returncode == 0, out3[-1500:])
+    m3 = re.search(r"(\d+) passed, (\d+) failed", out3)
+    if m3:
+        print(f"   node v3 unit tests: {m3.group(1)} passed, {m3.group(2)} failed")
     bad = [n for n, ok, _ in RES if not ok]
     print(f"\njarvis skills: {len(RES) - len(bad)}/{len(RES)} {'ALL PASS' if not bad else 'FAILED: ' + '; '.join(bad)}")
     return 1 if bad else 0

@@ -2,7 +2,7 @@
    scale and the shared patterns (chip, card, close, the orb's seat, the loading veil, the error line) for the 3D apps. Linked BEFORE
    each app's own sheet, so an app keeps its colour identity and overrides what it must; only the structure is shared.
    Fonts: none to download. Headings use the system serif (Iowan Old Style / Palatino / Georgia), text the system sans, numbers the
-   rounded system face. The old Orbitron / Rajdhani files stay in ../jarvis/ for compatibility, but nothing loads them any more. */
+   rounded system face. The old techno font files stay in ../jarvis/ for compatibility, but nothing loads them any more. */
 
 :root {
   /* type: a serif for names and headings, the system sans for everything you read, rounded figures for numbers */

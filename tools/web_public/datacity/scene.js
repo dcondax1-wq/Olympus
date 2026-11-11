@@ -42,7 +42,7 @@ export function textSprite(text, color, size = 1) {
   tex.colorSpace = THREE.SRGBColorSpace;
   const draw = () => {
     g.clearRect(0, 0, 512, 96);
-    g.font = '800 44px Orbitron, Rajdhani, -apple-system, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = '800 44px Georgia, Georgia, -apple-system, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.shadowColor = color; g.shadowBlur = 18; g.fillStyle = color;
     g.fillText(text.split('').join(String.fromCharCode(8202)), 256, 50);
     tex.needsUpdate = true;
@@ -396,7 +396,7 @@ export class CityScene {
     return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), p) ? p : null;
   }
 
-  /** Redraw every canvas text once the HUD fonts (Orbitron / Rajdhani) are in: the first draw used a fallback. */
+  /** Redraw every canvas text once the HUD fonts (Georgia / Georgia) are in: the first draw used a fallback. */
   refreshText() {
     for (const s of this.nameSprites) s.userData.redraw?.();
     this.towerName?.userData.redraw?.();

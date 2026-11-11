@@ -9,7 +9,7 @@
 html.framed { --st: 0px; }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg2); color: var(--text);
-  font: 500 15px/1.35 var(--oly-ui, 'Rajdhani', -apple-system, system-ui, sans-serif); -webkit-text-size-adjust: 100%; }
+  font: 500 15px/1.35 var(--oly-ui, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif, -apple-system, system-ui, sans-serif); -webkit-text-size-adjust: 100%; }
 body { background: radial-gradient(120% 60% at 50% 28%, #2c251f 0%, #15120f 50%, var(--bg2) 100%); }
 #vault { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
 .nogl { position: fixed; top: 80px; left: 16px; right: 16px; color: var(--dim); font-size: 13px; }
@@ -30,14 +30,14 @@ h1 { margin: 0; font: 800 22px/1.1 var(--oly-display, sans-serif); letter-spacin
 .pane[hidden] { display: none; }
 .row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
 .seg button { flex: 1 1 28%; }
-button { font: 700 14px var(--oly-ui, 'Rajdhani', sans-serif); color: var(--text); background: rgba(36, 30, 25, .85); border: 1px solid var(--line);
+button { font: 700 14px var(--oly-ui, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif, sans-serif); color: var(--text); background: rgba(36, 30, 25, .85); border: 1px solid var(--line);
   border-radius: 12px; min-height: 44px; min-width: 44px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
 button:disabled { opacity: .35; }
 button[aria-pressed="true"], .seg button.on { background: rgba(127, 138, 82, .2); border-color: var(--lime); color: #f3ece0; }
 label { display: block; font-size: 12px; letter-spacing: .01em; color: var(--dim); }
 label b { color: var(--text); }
-input[inputmode] { width: 100%; min-height: 44px; margin-top: 3px; padding: 6px 10px; font: 600 16px var(--oly-ui, 'Rajdhani', sans-serif);
+input[inputmode] { width: 100%; min-height: 44px; margin-top: 3px; padding: 6px 10px; font: 600 16px var(--oly-ui, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif, sans-serif);
   color: var(--text); background: rgba(0, 0, 0, .35); border: 1px solid var(--line); border-radius: 10px; font-variant-numeric: tabular-nums; }
 .slide { margin-top: 6px; }
 input[type="range"] { width: 100%; min-height: 44px; accent-color: var(--lime); }
@@ -46,7 +46,7 @@ input[type="range"] { width: 100%; min-height: 44px; accent-color: var(--lime); 
 .acct .nm { flex: 1 1 auto; min-width: 0; }
 .acct .nm b { display: block; font-size: 15px; }
 .acct .nm span { font-size: 12px; color: var(--dim); }
-.acct .ct { width: 28px; text-align: center; font: 700 22px var(--oly-ui, 'Rajdhani', sans-serif); }
+.acct .ct { width: 28px; text-align: center; font: 700 22px var(--oly-ui, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif, sans-serif); }
 .acct button { flex: 0 0 44px; font-size: 20px; }
 .warn { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--gold); background: rgba(224, 176, 96, .08); font-size: 13px; }
 
@@ -68,7 +68,7 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .headline { display: flex; align-items: baseline; gap: 10px; width: 100%; padding: 4px 12px; min-height: 48px; border-width: 2px; border-color: var(--lime); text-align: left; box-shadow: none; }
 .hk { font: 800 22px/1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--lime); }
 .headline[data-neg="1"] { border-color: var(--bad); box-shadow: none; } .headline[data-neg="1"] .hk { color: var(--bad); }
-.hs { font: 700 13px var(--oly-ui, 'Rajdhani', sans-serif); color: var(--dim); margin-left: auto; text-align: right; }
+.hs { font: 700 13px var(--oly-ui, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif, sans-serif); color: var(--dim); margin-left: auto; text-align: right; }
 .vline { margin: 0; font-size: 12.5px; color: var(--dim); line-height: 1.25; max-height: 2.6em; overflow: hidden; }
 .tabs { display: flex; gap: 4px; }
 .tabs button { flex: 1 1 0; padding: 0 2px; font-size: 13px; min-width: 0; }

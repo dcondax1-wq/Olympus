@@ -29,9 +29,9 @@
   var KEY = 'jfx', LEVELS = ['ultra', 'high', 'low', 'off'];
   // the nine apps: name, glyph and colour exactly as Jarvis's switcher shows them (jarvis/apps.js BUILT_INS)
   var APPS = {
-    datacity: ['Data City', 'Δ', '#4f8cff'], mind: ['Mind', 'Ω', '#5eead4'], tree: ['Daphne', 'Ψ', '#34f5a0'],
-    oracle: ['Oracle', 'Θ', '#7fe9ff'], odeon: ['Odeon', 'Ξ', '#ff6b7f'], fates: ['Fates', 'Φ', '#ffcf5a'],
-    hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#e879f9'],
+    datacity: ['Data City', 'Δ', '#4b7a99'], mind: ['Mind', 'Ω', '#7f8a52'], tree: ['Daphne', 'Ψ', '#7f8a52'],
+    oracle: ['Oracle', 'Θ', '#7fa6bd'], odeon: ['Odeon', 'Ξ', '#ff6b7f'], fates: ['Fates', 'Φ', '#ffcf5a'],
+    hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#c9a06a'],
     pantheon: ['Pantheon', 'Σ', '#f2d68a'], arena: ['Arena', 'Α', '#ffb547'],
   };
   // each app's own CSS tokens -> the theme token they take under any theme but the default (bg = the app's own page colour
@@ -47,7 +47,7 @@
     prometheus: { '--bg': 'bg', '--bg2': 'bg', '--panel': 'glass', '--line': 'line', '--text': 'text', '--dim': 'dim' },
     tyche: { '--bg': 'bg', '--glass': 'glass', '--line': 'line', '--text': 'text', '--dim': 'dim' },
   };
-  var id = (me && me.getAttribute('data-app')) || '', info = APPS[id] || [id || 'OLYMPUS', 'Ο', '#a855f7'];
+  var id = (me && me.getAttribute('data-app')) || '', info = APPS[id] || [id || 'OLYMPUS', 'Ο', '#9c6b3c'];
   var TH = window.OLYMPUS_THEMES || null, own = info[2];
   var get = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var set = function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode: this visit only */ } };

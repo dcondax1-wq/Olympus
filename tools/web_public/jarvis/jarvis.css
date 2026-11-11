@@ -1,6 +1,6 @@
 /* Jarvis (2026-11-01), AGORA look since 2026-11-09 (docs/DESIGN_AGORA.md): marble, bronze and gold, calm. Theme tokens on <html data-theme>
    (one theme: Agora; the old neon themes were removed 2026-11-10), serif headings, system sans text, no neon, no scanlines,
-   no HUD frames. The old Orbitron / Rajdhani files stay in this folder for compatibility but nothing loads them any more.
+   no HUD frames. The old techno font files stay in this folder for compatibility but nothing loads them any more.
    Effects levels on <html data-fx>: ultra / high (phone default) / low (static) / off. Nothing moves with scrolling.
    Safari 16 safe: no CSS nesting, no registered custom properties, prefixed backdrop-filter and masks. */
 
@@ -621,7 +621,7 @@ html[data-oly-scheme="light"] { color-scheme: light; --ok: #166534; --warn: #924
 html[data-oly-scheme="light"] body { background: radial-gradient(ellipse at 50% 30%, var(--bg2) 0%, var(--bg) 70%) var(--bg); }
 html[data-oly-scheme="light"] .bar { background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(var(--pr), .86)); box-shadow: 0 8px 24px rgba(60,58,40,.12); }
 html[data-oly-scheme="light"] .pm[aria-current="page"], html[data-oly-scheme="light"] .btn.solid, html[data-oly-scheme="light"] .seg3 button[aria-pressed="true"] {
-  color: #fff; background: linear-gradient(180deg, var(--c), var(--c2)); text-shadow: none; }
+  color: #fbf6ea; background: linear-gradient(180deg, var(--c), var(--c2)); text-shadow: none; }
 html[data-oly-scheme="light"] .title { text-shadow: none; }
 html[data-oly-scheme="light"] .says, html[data-oly-scheme="light"] .msg.j, html[data-oly-scheme="light"] .qt { color: var(--txt); }
 html[data-oly-scheme="light"] .pline.ok { color: #166534; } html[data-oly-scheme="light"] .pline.warn { color: #854d0e; } html[data-oly-scheme="light"] .pline.bad { color: #9f1239; }
@@ -629,7 +629,7 @@ html[data-oly-scheme="light"] .kv div, html[data-oly-scheme="light"] .pill, html
 html[data-oly-scheme="light"] .sheet-in input[type="text"], html[data-oly-scheme="light"] .sheet-in input[type="url"], html[data-oly-scheme="light"] .sheet-in input[type="password"],
 html[data-oly-scheme="light"] .sheet-in input[type="search"], html[data-oly-scheme="light"] .sheet-in select, html[data-oly-scheme="light"] .row-t input[type="checkbox"] { background: rgba(52,58,42,.07); }
 html[data-oly-scheme="light"] .sysbar, html[data-oly-scheme="light"] .stodo, html[data-oly-scheme="light"] .srow { background: rgba(255,255,255,.72); }
-html[data-oly-scheme="light"] .sysdots i.off { background: #d6d8cb; color: #4f5648; } html[data-oly-scheme="light"] .sysdots i { color: #fff; }
+html[data-oly-scheme="light"] .sysdots i.off { background: #d6d8cb; color: #4f5648; } html[data-oly-scheme="light"] .sysdots i { color: #fbf6ea; }
 html[data-oly-scheme="light"] .stodo.warn { color: #854d0e; } html[data-oly-scheme="light"] .stodo.bad { color: #9f1239; background: rgba(255,228,232,.8); }
 html[data-oly-scheme="light"] .key, html[data-oly-scheme="light"] .btn { box-shadow: 0 2px 0 rgba(var(--cr2), .25), 0 6px 14px rgba(60,58,40,.14), inset 0 1px 0 rgba(255,255,255,.8); }
 html[data-oly-scheme="light"] .dock { box-shadow: 0 4px 14px rgba(0,0,0,.32); }
@@ -708,7 +708,7 @@ html[data-vpending="1"]:not([data-state="speaking"]) .vstop::after { content: "T
 .pillb { border: 1px solid var(--dim2); background: var(--dim); color: var(--txt); font: 600 14px/1 var(--fb); letter-spacing: 0; }
 .pillb.on { border-color: var(--ok); color: #d9e0b9; box-shadow: none; }
 .bigmic { border: 1.5px solid var(--c); background: linear-gradient(180deg, #2f271c, var(--dim)); color: var(--c3); box-shadow: 0 6px 18px rgba(0,0,0,.35); }
-.bigmic.on { border-color: var(--bad); color: #fff; background: radial-gradient(circle, rgba(192,96,63,.55), var(--dim) 72%); box-shadow: none; }
+.bigmic.on { border-color: var(--bad); color: #f3ece0; background: radial-gradient(circle, rgba(192,96,63,.55), var(--dim) 72%); box-shadow: none; }
 .sug { border: 1px solid var(--dim2); background: var(--dim); color: #cfc4b2; font-size: 15px; letter-spacing: 0; }
 /* panels and cards: marble, rounded, a thin gold rule at the top left */
 .panel, .jx-card { border: 1px solid var(--dim2); border-radius: 16px; clip-path: none; background: linear-gradient(180deg, var(--dim), var(--bg2)); box-shadow: 0 6px 18px rgba(0,0,0,.35); padding: 16px 16px 18px; }
@@ -800,7 +800,7 @@ html[data-state] .dock { box-shadow: 0 -4px 18px rgba(0,0,0,.4); }
 .tl-row strong { font-size: 16px; } .tl-row small { font-size: 13.5px; }
 .tl-now { box-shadow: none; } .tl-row.next .tl-dot { box-shadow: none; }
 .sat i { background: var(--bg2); color: var(--c3); border: 1.5px solid var(--ok); box-shadow: none; font: 600 13px var(--fh); }
-.sat.warn i { border-color: var(--warn); background: var(--bg2); } .sat.bad i { border-color: var(--bad); background: var(--bad); color: #fff; } .sat.off i { border-color: var(--dim3); background: var(--dim); color: var(--mut); }
+.sat.warn i { border-color: var(--warn); background: var(--bg2); } .sat.bad i { border-color: var(--bad); background: var(--bad); color: #f3ece0; } .sat.off i { border-color: var(--dim3); background: var(--dim); color: var(--mut); }
 /* the entrance card (Atlas) and the apps grid: calm marble tiles, grouped Trading / Life / Money */
 .hub-gate { border: 1px solid var(--dim2); border-radius: 18px; margin: 4px 0 6px; min-height: 0; padding: 18px 18px 16px; background: linear-gradient(180deg, #2a241c, var(--bg2)); box-shadow: 0 6px 18px rgba(0,0,0,.35); }
 .hub-gate::before { opacity: .5; background-image: radial-gradient(circle, rgba(224,176,96,.7) 1px, transparent 1.5px); background-size: 59px 61px; background-position: 14px 20px; -webkit-mask-image: linear-gradient(180deg, #000, transparent 70%); mask-image: linear-gradient(180deg, #000, transparent 70%); }
