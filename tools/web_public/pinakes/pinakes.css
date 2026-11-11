@@ -88,16 +88,16 @@ details > summary { min-height: 44px; display: flex; align-items: center; cursor
 .chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .chip i { font-style: normal; color: var(--ag-soft); }
 #colChips .btn { min-height: 44px; padding: 0 12px; font-size: 13px; }
 /* the grid: one scroller, a sticky header, and only the rows in view exist (windowing), so 37,000 rows cost the same as 30 */
-.grid { position: relative; height: min(62vh, 520px); min-height: 280px; overflow: auto; -webkit-overflow-scrolling: touch; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: #1b1712; contain: strict; }
+.grid { margin-bottom: 4px; position: relative; height: min(62vh, 520px); min-height: 280px; overflow: auto; -webkit-overflow-scrolling: touch; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: #1b1712; contain: strict; }
 .ghead { position: sticky; top: 0; z-index: 2; display: flex; height: 44px; background: #2a2217; border-bottom: 1px solid var(--ag-line); }
-.gh { flex: none; display: flex; align-items: center; gap: 4px; min-height: 44px; height: 44px; min-width: 44px; padding: 0 10px; border: 0; border-right: 1px solid var(--ag-line); background: transparent; color: var(--ag-soft); font: 700 13px var(--ag-sans); text-align: left; overflow: hidden; }
+.gh { flex: none; display: flex; align-items: center; gap: 4px; min-height: 44px; height: 44px; min-width: 44px; padding: 0 8px; border: 0; border-right: 1px solid var(--ag-line); background: transparent; color: var(--ag-soft); font: 700 13px var(--ag-sans); text-align: left; overflow: hidden; }
 .gh span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .gh i { font-style: normal; color: var(--ag-gold); flex: none; }
 .gh.n { justify-content: flex-end; }
 .gh[aria-sort="ascending"], .gh[aria-sort="descending"] { color: var(--ag-gold); }
 .gbody { position: relative; }
 .grow { position: absolute; left: 0; top: 0; display: flex; height: 40px; border-bottom: 1px solid #2b251d; contain: layout style; cursor: pointer; }
 .grow.alt { background: #1f1a14; } .grow.sel { background: #2a2217; box-shadow: inset 2px 0 0 var(--ag-gold); }
-.gc { flex: none; padding: 0 10px; height: 40px; line-height: 40px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gc { flex: none; padding: 0 8px; height: 40px; line-height: 40px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gc.n { text-align: right; font-family: var(--ag-num); font-variant-numeric: tabular-nums; } .gc.e { color: #6b5f4d; }
 .rowcard { display: grid; gap: 8px; padding: 12px; border-radius: var(--ag-radius-s, 12px); background: #211c16; border: 1px solid var(--ag-line); }
 .stats { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }

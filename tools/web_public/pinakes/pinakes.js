@@ -237,7 +237,7 @@ function renderFilters() {
 }
 
 // ------------------------------------------------------------------ the grid (windowed: only the rows in view exist)
-const widthOf = (c) => ({ usd: 104, R: 88, number: 96, bool: 76, date: 150, json: 190, text: 170 }[c.t] || 170);
+const widthOf = (c) => ({ usd: 96, R: 80, number: 88, bool: 68, date: 124, json: 160, text: 140 }[c.t] || 140);
 function buildGrid() {
   const o = S.open, grid = $('grid'), headEl = $('ghead'), body = $('gbody');
   G.cols = o.cols.filter((c) => o.hidden.indexOf(c.k) < 0); G.widths = G.cols.map(widthOf); G.total = G.widths.reduce((a, b) => a + b, 0);
