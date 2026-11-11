@@ -549,6 +549,21 @@ function fQueue(p, I, now, f) {
   f.mood = (num(q.open) || 0) > 20 ? 'worried' : 'busy';
 }
 
+/** job:dev (Epistates, the foreman of the coding agents, 2026-11-11 scene direction): the builders' camp in numbers, from ergasterion/builders.json only */
+function fDev(p, I, now, f) {
+  const bj = I['../ergasterion/builders.json'], rows = isObj(bj) ? arr(bj.agents).filter(isObj) : [];
+  f.sources = ['ergasterion/builders.json'];
+  f.risk = 'I only see what git said when the site was built; work on a PC that was not published is invisible to me.';
+  if (!rows.length) { f.missing = true; f.doing = 'I have no list of the coding agents yet.'; f.blocked = 'ergasterion/builders.json is not published (python tools/ergasterion_build.py).'; return; }
+  const t = toMs(bj.newest_t != null ? bj.newest_t : bj.asof), merged = rows.filter((a) => a.merged).length, ahead = rows.reduce((s, a) => s + (num(a.ahead) || 0), 0);
+  f.asof = t; f.status = rows.some((a) => a.live && !a.merged) ? 'working' : 'idle';
+  f.doing = rows.length + ' coding agents are on my list: ' + merged + ' merged into the release, ' + (rows.length - merged) + ' still on their own branch.';
+  for (const a of rows.slice(0, 6)) f.last.push(out(toMs(a.last_t), clean(a.name, 40) + ': ' + clean(a.job, 110)));
+  f.numbers.push(N2('Coding agents', rows.length)); f.numbers.push(N2('Merged', merged)); f.numbers.push(N2('Commits waiting for the lead', ahead));
+  f.metrics.agents = { label: 'coding agents', v: rows.length, text: String(rows.length) };
+  f.mood = rows.length - merged > 0 ? 'busy' : 'proud';
+}
+
 function fBuilder(p, I, now, f) {
   const bj = I['../ergasterion/builders.json'], qj = I['../ergasterion/queue.json'];
   const rows = Array.isArray(bj) ? bj : isObj(bj) ? arr(bj.builders || bj.agents || bj.people) : [];
@@ -678,6 +693,7 @@ export function buildFacts(person, inputs, now) {
     else if (p.id === 'job:hephaestus') fHeph(p, I, now, f);
     else if (p.id === 'job:cronos') fCron(p, I, now, f);
     else if (p.id === 'job:queue') fQueue(p, I, now, f);
+    else if (p.id === 'job:dev') fDev(p, I, now, f);
     else if (p.kind === 'builder') fBuilder(p, I, now, f);
     else if (p.kind === 'champion') fChampion(p, I, now, f);
     else if (p.kind === 'villager') fVillager(p, I, now, f);

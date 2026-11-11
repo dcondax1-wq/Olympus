@@ -104,7 +104,7 @@ function startScene() {
   if (S.scene) { S.scene.dispose(); S.scene = null; }
   if (!lite && !flat) { try { S.scene = createCabinet($('cab'), { O, districts: C.DISTRICTS.map((d) => ({ name: d, tables: t.by[d].tables })), onPick: (i) => pickDistrict(S.district === C.DISTRICTS[i] ? 'All' : C.DISTRICTS[i]) }); } catch (_) { S.scene = null; } }
   S.sceneMode = S.scene ? 'webgl' : 'flat';
-  $('cab').hidden = !S.scene; $('cabFlat').hidden = !!S.scene;
+  $('cab').hidden = !S.scene; $('cabFlat').toggleAttribute('hidden', !!S.scene);   // an <svg> has no .hidden property: the attribute itself
   if (S.scene) S.scene.select(C.DISTRICTS.indexOf(S.district)); else drawFlat();
 }
 
@@ -445,7 +445,7 @@ async function rowsOfCard(card) {
 }
 async function runAsk(a) {
   $('askOut').hidden = false; $('askTitle').textContent = a.title; $('askWords').textContent = a.words; $('askSrc').textContent = 'Reading the tables...'; $('askNote').textContent = '';
-  $('askChart').hidden = true; fillTable($('askTable'), [], []);
+  $('askChart').setAttribute('hidden', ''); fillTable($('askTable'), [], []);
   for (const b of $('asks').children) b.setAttribute('aria-pressed', String(b.dataset.ask === a.id));
   const missed = []; let used = null;
   for (const ids of a.tries) {
@@ -460,7 +460,7 @@ async function runAsk(a) {
   const res = a.run(used.map((u) => u.rows), S.today), labels = used.map((u) => u.label), demo = labels.some((l) => l === 'demo'), sample = labels.some((l) => l === 'sample');
   $('askSrc').textContent = `${demo ? 'DEMO data (not real). ' : sample ? 'SAMPLE data. ' : ''}Read from: ${used.map((u) => `${u.card.name} (${C.plural(u.rows.length, 'row')})`).join(', ')}.${missed.length ? ` ${missed[0]} So a labelled stand-in is used.` : ''}`;
   fillTable($('askTable'), res.cols, res.rows, 30);
-  if (res.chart && res.rows.length) { const yc = res.cols.filter((c) => c.k === res.chart.y)[0]; drawChart($('askChart'), res.rows.slice(0, 24).map((r) => ({ label: String(r[res.chart.x]), value: r[res.chart.y] || 0 })), 'bar', yc ? yc.t : 'number'); $('askChart').hidden = false; }
+  if (res.chart && res.rows.length) { const yc = res.cols.filter((c) => c.k === res.chart.y)[0]; drawChart($('askChart'), res.rows.slice(0, 24).map((r) => ({ label: String(r[res.chart.x]), value: r[res.chart.y] || 0 })), 'bar', yc ? yc.t : 'number'); $('askChart').removeAttribute('hidden'); }
   $('askNote').textContent = res.note + (res.rows.length > 30 ? ` Showing the first 30 of ${res.rows.length}.` : '');
   S.ask = { id: a.id, ok: true, rows: res.rows, demo, sample, from: used.map((u) => u.card.id) };
   say(`${a.title}: ${C.plural(res.rows.length, 'line')}${demo ? ' (DEMO data)' : ''}.`);

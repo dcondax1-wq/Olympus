@@ -899,3 +899,11 @@ html.framed .note.sample { top: 56px; }
 .pill.ok::before, .pill.warn::before, .pill.bad::before { box-shadow: none; }
 .secnav b.bad { box-shadow: none; }
 @media (max-width: 459px) { .top h1 { font-size: clamp(22px, 6.4vw, 26px); letter-spacing: .01em; } }
+/* AGORA v2 (2026-11-11): the no-feed card is a calm empty state (a seal with the wave mark, one sentence, one button), never a bare grey box */
+.card.err { display: grid; justify-items: center; text-align: center; gap: 10px; padding: 28px 20px 24px; border-radius: 20px; }
+.card.err::before { content: ""; width: 56px; height: 56px; border-radius: 50%; border: 1px solid rgba(200, 162, 74, .38); margin-bottom: 4px;
+  background: no-repeat center / 26px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8a24a' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9c2 0 2-2 4.5-2S10 9 12 9s2-2 4.5-2S19 9 21 9M3 15c2 0 2-2 4.5-2s2.5 2 4.5 2 2-2 4.5-2 2.5 2 4.5 2'/%3E%3C/svg%3E"),
+  radial-gradient(circle at 50% 35%, #3a2f20, #221d17 78%); }
+.card.err p { margin: 0; max-width: 30ch; font-size: 15px; line-height: 1.45; }
+.card.err .btn { min-height: 44px; padding: 0 22px; border-radius: 13px; }
+@media (prefers-reduced-motion: no-preference) { .card.err { animation: k-err-in .32s cubic-bezier(.2, .8, .2, 1) both; } @keyframes k-err-in { from { opacity: 0; transform: translateY(8px); } } }

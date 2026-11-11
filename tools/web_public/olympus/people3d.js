@@ -399,14 +399,22 @@ const POSES = {
   type: { loop: true, work: true, props: { L: 'p_slate', R: false }, expr: 'thinking', fn: (t, P) => { const tap = max(0, sin(t * 10)), tap2 = max(0, sin(t * 10 + 2)); P.shoulderL = [-0.55, 0, 0.15]; P.elbowL = [-1.2, 0, 0]; P.handL = [-0.25, 0, -0.1]; P.shoulderR = [-0.5, 0, -0.18]; P.elbowR = [-1.25 + 0.1 * tap - 0.06 * tap2, 0, 0]; P.handR = [0.35 * tap, 0, 0]; P.head[0] = 0.32; P.chest[0] = 0.05; }, look: 0.2, eyes: (t) => [0.25 * sin(t * 0.8), -0.75] },
   carry: { loop: true, work: true, props: { chest: 'p_crate', L: false, R: false }, expr: 'neutral', fn: (t, P) => { const ph = t * 2 * Math.PI * 1.3; legsWalk(P, ph, 0.75); P.shoulderL = [-0.95, 0, 0.22]; P.elbowL = [-0.55, 0, 0]; P.shoulderR = [-0.95, 0, -0.22]; P.elbowR = [-0.55, 0, 0]; P.handL = [0, 0, -0.4]; P.handR = [0, 0, 0.4]; P.chest[0] = -0.07; P.head[0] = -0.04; }, seatedOk: false },
 };
+// v3 pose names (people-rig.js plays them from the cast's clips); the v2 figure draws something close
+POSES.run = { loop: true, fn: (t, P) => { POSES.walk.fn(t * 1.7, P); P.chest[0] = 0.14; }, seatedOk: false };
+POSES.sit = { loop: true, fn: POSES.idle.fn, wander: 1 };
+POSES.interact = { loop: false, dur: 1.3, fn: (t, P) => { const k = ease(min(1, t * 3)) * (t > 1.0 ? max(0, 1 - (t - 1.0) * 3.3) : 1); P.shoulderR = [-1.2 * k, 0, 0.15]; P.elbowR = [-0.3 * k, 0, 0]; P.chest[0] = 0.12 * k; } };
+POSES.pickup = { loop: false, dur: 1.3, fn: (t, P) => { const k = sin(min(1, t / 1.3) * Math.PI); P.chest[0] = 0.5 * k; P.spine[0] = 0.3 * k; P.shoulderR = [-0.9 * k, 0, 0.13]; P.shoulderL = [-0.9 * k, 0, -0.13]; P.kneeL[0] = 0.6 * k; P.kneeR[0] = 0.6 * k; P.thighL[0] = -0.5 * k; P.thighR[0] = -0.5 * k; P.hipY = -0.05 * k; }, seatedOk: false };
+POSES.jump = { loop: false, dur: 1.2, expr: 'happy', fn: (t, P) => { POSES.cheer.fn(t * 2, P); P.hipY = 0.09 * max(0, sin(min(1, t / 1.2) * Math.PI)); } };
+POSES.surprised = { loop: false, dur: 0.9, expr: 'surprised', fn: (t, P) => { const k = sin(min(1, t / 0.9) * Math.PI); P.chest[0] = -0.12 * k; P.head[0] = -0.12 * k; P.shoulderL = [-0.3 * k, 0, -0.13 - 0.4 * k]; P.shoulderR = [-0.3 * k, 0, 0.13 + 0.4 * k]; } };
 export const POSE_NAMES = Object.keys(POSES);
 export const WORK_POSE_NAMES = POSE_NAMES.filter((n) => POSES[n].work);
 
 const EXPR = C.EXPR_FACE, MOOD_EXPR = C.MOOD_EXPR, RESTING_MOUTH = C.RESTING_MOUTH;
 
 // ------------------------------------------------------------------------------------------------ the hero figure
-/** one character: a SkinnedMesh with a face, its ink outline, and the animation state. opts: { lite, seated, scale, work (true: build the work props now; false: never; default: on the first work pose), material } */
-export function figure(THREE, sp, opts) {
+/** one v2 character (made in code): a SkinnedMesh with a face, its ink outline, and the animation state. opts: { lite, seated, scale, work (true: build the work props now; false: never; default: on the first work pose), material }.
+ *  figure() below returns this as the instant placeholder (and the fallback when the v3 cast cannot load). */
+export function figureV2(THREE, sp, opts) {
   const o = opts || {}, s = spec(sp), lite = !!o.lite, L = look(s), mats = materials(THREE);
   const det = lite ? DET.lite : DET.high;
   // bones
@@ -571,6 +579,90 @@ export function figure(THREE, sp, opts) {
   return root;
 }
 
+// ------------------------------------------------------------------------------------------------ figure v3: the rigged cast (people-rig.js + assets/people/cast.glb)
+// figure() returns a real modelled, rigged, animated character (KayKit Adventurers 1.0, CC0, dressed as our people) when the cast is loaded; the first time,
+// it returns the v2 figure as an instant placeholder and swaps the rigged one in when the cast arrives (the same object: scenes keep their reference, every
+// call keeps working, the state carries over). No cast (node, ?rig=0, window.OLYMPUS_RIG = false, a failed load, opts.rig === false) = the v2 figure, as before.
+const RIG = { p: null, mod: null, cast: null, err: null, deps: null };
+const CAST_URL = (() => { try { return new URL('../assets/people/cast.glb?v=3', import.meta.url).href; } catch (_) { return '../assets/people/cast.glb?v=3'; } })();
+function rigOff(o) {
+  if (o && o.rig === false) return true;
+  if (RIG.err) return true;
+  try { if (typeof window !== 'undefined' && (window.OLYMPUS_RIG === false || /[?&]rig=0\b/.test(window.location.search))) return true; } catch (_) { /* no window */ }
+  return false;
+}
+/** load the cast once (browser): resolves to true when the rigged people are ready, false when they cannot be (the v2 figures stay) */
+export function loadRig() {
+  if (RIG.cast) return Promise.resolve(true);
+  if (RIG.err || typeof fetch !== 'function' || typeof window === 'undefined') return Promise.resolve(false);
+  if (!RIG.p) {
+    RIG.p = Promise.all([import('./people-rig.js'), import('../jarvis/three.module.min.js'), import('./three-addons/GLTFLoader.js'), import('./three-addons/meshopt_decoder.module.js')])
+      .then(([R, T, G, M]) => { RIG.mod = R; RIG.deps = { THREE: T, GLTFLoader: G.GLTFLoader, MeshoptDecoder: M.MeshoptDecoder }; return R.loadCast(RIG.deps, CAST_URL, CAST_URL); })
+      .then((c) => { RIG.cast = c; try { window.dispatchEvent(new CustomEvent('olympus:people:rig', { detail: { ok: true } })); } catch (_) { /* no window */ } return true; },
+        (e) => { RIG.err = e || new Error('cast'); try { window.dispatchEvent(new CustomEvent('olympus:people:rig', { detail: { ok: false, reason: String(e && e.message || e) } })); } catch (_) { /* no window */ } return false; });
+  }
+  return RIG.p;
+}
+/** tests / tools: hand the module a rig module and a loaded cast (node has no fetch); rigInstall(null) goes back to v2 */
+export function rigInstall(mod, cast, pending) { RIG.mod = mod || null; RIG.cast = cast || null; RIG.err = null; RIG.p = cast ? Promise.resolve(true) : pending ? Promise.resolve(pending).then((c) => { RIG.cast = c; return !!c; }) : null; }
+/** 'v3' when the rigged cast is loaded, 'loading', 'v2' (no cast: the made-in-code figures) */
+export function rigStatus() { return RIG.cast ? 'v3' : RIG.p && !RIG.err ? 'loading' : 'v2'; }
+export function rigCast() { return RIG.cast; }
+
+/** the v3 userData of a rigged character (the same calls as v2) */
+function rigData(ch, s, o) {
+  const sc = o.scale || 1, b = ch.bones;
+  return {
+    spec: s, look: ch.look, outfit: ch.outfit, character: ch, rig: 3, v: 2, lite: !!o.lite,
+    pose: (n) => { ch.pose(n); return ch.object.parent || ch.object; }, play: (n, po) => ch.play(n, po), lookAt: (v) => ch.lookAt(v), tick: (dt) => ch.tick(dt), animate: (dt) => ch.tick(dt),
+    setMouth: (v, a) => ch.setMouth(v, a), setExpression: (n, a) => ch.setExpression(n, a), setTalking: (on) => ch.setTalking(on), setSeated: (on) => ch.setSeated(on),
+    parts: { head: ch.anchor, torso: b.chest, armL: b.upperarml, armR: b.upperarmr, eyes: ch.anchor, mouth: ch.anchor, bones: b },
+    get skeleton() { return ch.skeleton(); }, get body() { return ch.bodyMesh(); }, get ink() { return null; }, get faceMesh() { return ch.face(); },
+    meshes: 2, drawCalls: 2, get triangles() { return ch.info().tris; }, get bodyTriangles() { return ch.info().tris; }, height: ch.height() * sc, headY: ch.headY() * sc,
+    state: () => ch.state(), info: () => ch.info(),
+  };
+}
+function rigFigure(THREE, s, o) {
+  const ch = RIG.mod.character(THREE, RIG.cast, s, { lite: !!o.lite, seated: !!o.seated, work: o.work, workPose: workPose(s), material: o.rigMaterial, pose: s.mood === 'sheepish' ? 'slump' : 'idle' });
+  const root = new THREE.Group(); root.name = 'person'; root.add(ch.object); root.scale.setScalar(o.scale || 1);
+  const u = rigData(ch, s, o); u.dispose = () => { ch.dispose(); if (root.parent) root.parent.remove(root); };
+  root.userData = u;
+  return root;
+}
+/** swap a v2 placeholder for the rigged character in place (same object, same userData object, the state carried over) */
+function upgrade(THREE, root, s, o, W) {
+  const u = root.userData; if (!u || u.rig || u.gone) return;
+  let ch; try { ch = RIG.mod.character(THREE, RIG.cast, s, { lite: !!o.lite, seated: !!o.seated, work: o.work, workPose: workPose(s), material: o.rigMaterial, pose: W.pose || 'idle' }); } catch (e) { return; }
+  const old = { body: u.body, ink: u.ink, skel: u.skeleton };
+  for (const c of root.children.slice()) root.remove(c);
+  try { old.body.geometry.dispose(); old.ink.geometry.dispose(); old.skel.dispose(); } catch (_) { /* gone */ }
+  root.add(ch.object); root.scale.multiplyScalar(1 / (s.height || 1));      // v2 put the height in the root scale (and a scene may have scaled it since); v3 has it in the model
+  const n = rigData(ch, s, o); for (const k of Object.keys(u)) if (!(k in n) && k !== 'dispose') delete u[k];
+  for (const k of Object.keys(n)) { const d = Object.getOwnPropertyDescriptor(n, k); Object.defineProperty(u, k, { ...d, configurable: true, enumerable: true }); }
+  u.dispose = () => { u.gone = true; ch.dispose(); if (root.parent) root.parent.remove(root); };
+  if (W.expr) ch.setExpression(W.expr[0], W.expr[1]);
+  if (W.pose && W.pose !== 'idle') ch.play(W.pose, W.poseOpts || {});
+  if (W.look) ch.lookAt(W.look);
+  if (W.talking) ch.setTalking(true);
+  try { if (typeof root.dispatchEvent === 'function') root.dispatchEvent({ type: 'rig' }); } catch (_) { /* nothing */ }
+}
+/** one person (Figure API v2 calls; docs/PERSONA_API.md). The rigged v3 character when the cast is loaded, else the v2 figure (upgraded in place when the cast arrives). */
+export function figure(THREE, sp, opts) {
+  const o = opts || {}, s = spec(sp);
+  if (!rigOff(o) && RIG.cast && RIG.mod) { try { return rigFigure(THREE, s, o); } catch (e) { /* fall back to v2 */ } }
+  const f = figureV2(THREE, s, o);
+  if (rigOff(o) || typeof window === 'undefined') return f;
+  // remember what the scene asks for while the cast loads, then swap
+  const u = f.userData, W = { pose: null, expr: null, look: null, talking: false }, wrap = (k, fn) => { const orig = u[k]; u[k] = (...a) => { if (!u.rig) fn(...a); return orig(...a); }; };
+  wrap('play', (n, po) => { if (POSE_NAMES.includes(n)) { const one = POSES[n] && POSES[n].loop === false; if (!one) W.pose = n; W.poseOpts = po; } });
+  wrap('pose', (n) => { W.pose = n; });
+  wrap('setExpression', (n, a) => { W.expr = [n, a]; });
+  wrap('lookAt', (v) => { W.look = v ? { x: v.x, y: v.y, z: v.z } : null; });
+  wrap('setTalking', (on) => { W.talking = !!on; });
+  const d0 = u.dispose; u.dispose = () => { u.gone = true; d0(); };
+  loadRig().then((ok) => { if (ok && !u.gone) upgrade(THREE, f, s, o, W); });
+  return f;
+}
 // ------------------------------------------------------------------------------------------------ the v2 API (works on a figure; safe to call with anything)
 const ud = (f) => (f && f.userData && f.userData.v === 2 ? f.userData : null);
 export function setMouth(fig, viseme, amount) { const u = ud(fig); if (u) u.setMouth(viseme, amount); return fig; }
@@ -698,6 +790,52 @@ export function figureInstanced(THREE, specs, opts) {
   for (let i = 0; i < n; i++) writeSlot(i);
   tick(0);
   const tri = geo ? geo.userData.triangles + lineGeo.userData.triangles : 0;
-  group.userData = { count: n, specs: SP, place, setActive, setTalking, setVisible, setPose, lookAt, lookAll, tick, pick, headWorld, dispose, drawCalls: geo ? 2 : 0, triangles: n ? Math.round(tri / n) : 0, totalTriangles: tri, slots };
+  group.userData = { count: n, specs: SP, place, setActive, setTalking, setVisible, setPose, lookAt, lookAll, tick, pick, headWorld, dispose, drawCalls: geo ? 2 : 0, triangles: n ? Math.round(tri / n) : 0, totalTriangles: tri, slots, impostors: false };
+  if (n && o.impostors !== false && !rigOff(o) && typeof document !== 'undefined') impostors(THREE, group, SP, o);
   return group;
+}
+
+// ------------------------------------------------------------------------------------------------ v3 crowd: impostors photographed from the rigged characters
+// The crowd keeps its v2 data (places, picks, heads); when the cast and the studio (people-studio.js) are ready, every person is photographed (at rest and
+// talking) into one atlas, and the crowd is drawn as camera-facing sprites of their real 3D selves: 1 draw call for everyone, 2 triangles a person.
+const IMP_VS_HEAD = 'attribute vec2 aCell;\nuniform float uTime;\nuniform vec4 uGrid;\n';
+function impostors(THREE, group, SP, o) {
+  const u = group.userData, n = SP.length;
+  import('./people-studio.js').then((ST) => ST.atlas(SP, { seated: !!o.seated, cell: o.lite ? [96, 120] : [128, 160] })).then((A) => {
+    if (!A || u.gone) return;
+    const tex = new THREE.CanvasTexture(A.canvas); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 2; tex.needsUpdate = true;
+    const geo = new THREE.PlaneGeometry(1, 1); geo.translate(0, 0.5, 0);
+    const cell = new THREE.InstancedBufferAttribute(new Float32Array(n * 2), 2); for (let i = 0; i < n; i++) cell.setXY(i, i * A.frames, 0); geo.setAttribute('aCell', cell);
+    const uni = { uTime: { value: 0 }, uGrid: { value: new THREE.Vector4(A.cols, A.rows, 0, 0) }, uTint: { value: new THREE.Color(o.impostorTint || '#ffffff') } };
+    const mat = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide });
+    mat.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, uni);
+      sh.vertexShader = IMP_VS_HEAD + sh.vertexShader
+        .replace('#include <uv_vertex>', `#include <uv_vertex>
+  float fr = aCell.y > 0.5 ? step(0.5, fract(uTime * 4.5 + aCell.x * 0.37)) : 0.0;
+  float k = aCell.x + fr; float col = mod(k, uGrid.x), row = floor(k / uGrid.x);
+  vMapUv = vec2((col + uv.x) / uGrid.x, 1.0 - (row + 1.0 - uv.y) / uGrid.y);`)
+        .replace('#include <project_vertex>', `vec3 inst = (instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz; float sx = length(instanceMatrix[0].xyz), sy = length(instanceMatrix[1].xyz);
+  vec3 camR = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]); camR.y = 0.0; camR = normalize(camR + vec3(1e-5, 0.0, 0.0));
+  float breathe = 1.0 + 0.012 * sin(uTime * 1.7 + aCell.x * 1.3) + (aCell.y > 0.5 ? 0.02 * abs(sin(uTime * 5.0 + aCell.x)) : 0.0);
+  vec4 wpos = modelMatrix * vec4(inst, 1.0) + vec4(camR * position.x * sx + vec3(0.0, position.y * sy * breathe, 0.0), 0.0);
+  vec4 mvPosition = viewMatrix * wpos; gl_Position = projectionMatrix * mvPosition;`);
+      sh.fragmentShader = 'uniform vec3 uTint;\n' + sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\ndiffuseColor.rgb *= uTint;');
+    };
+    mat.customProgramCacheKey = () => 'olympus-impostor-v3';
+    const im = new THREE.InstancedMesh(geo, mat, n); im.name = 'people-impostors'; im.frustumCulled = false;
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), pv = new THREE.Vector3(), sv = new THREE.Vector3();
+    const put = (i) => { const sl = u.slots[i]; if (!sl) return; const k = sl.k; pv.set(sl.x, sl.y + A.foot * k, sl.z); sv.set(sl.visible ? A.frame[0] * k : 0, sl.visible ? A.frame[1] * k : 0, 1); im.setMatrixAt(i, m4.compose(pv, q, sv)); im.instanceMatrix.needsUpdate = true; };
+    const act = (i) => { const sl = u.slots[i]; if (!sl) return; cell.setY(i, sl.active || sl.talk || sl.pose === 'talk' ? 1 : 0); cell.needsUpdate = true; };
+    for (let i = 0; i < n; i++) { put(i); act(i); }
+    for (const c of group.children) c.visible = false;
+    group.add(im);
+    const wrap = (k, after) => { const f = u[k]; u[k] = (...a) => { const r = f(...a); after(...a); return r; }; };
+    wrap('place', (i) => put(i)); wrap('setVisible', (i) => put(i)); wrap('setActive', (i) => act(i)); wrap('setTalking', (i) => act(i)); wrap('setPose', (i) => act(i));
+    wrap('tick', (t) => { uni.uTime.value = t || 0; });
+    wrap('dispose', () => { geo.dispose(); mat.dispose(); tex.dispose(); });
+    u.drawCalls = 1; u.triangles = 2; u.totalTriangles = 2 * n; u.impostors = true; u.atlas = { w: A.canvas.width, h: A.canvas.height, cell: [A.cellW, A.cellH] };
+    try { group.dispatchEvent({ type: 'impostors' }); } catch (_) { /* nothing */ }
+  }).catch(() => { /* the v2 crowd stays */ });
+  const d0 = u.dispose; u.dispose = (...a) => { u.gone = true; return d0(...a); };
 }

@@ -61,6 +61,8 @@ CAST = (
      ["../cronos/status.json"], ("ergasterion", "cronos"), "Runs the nightly jobs and tells you which ones failed or are late."),
     ("job:queue", "Kalamos", "the reed pen", "Scribe of the task queue", "mind", "factory", "ergasterion", "wry",
      ["../ergasterion/queue.json"], ("ergasterion", "queue"), "Keeps the list of open tasks and write-ups, and the ideas that were tested and rejected."),
+    ("job:dev", "Epistates", "the overseer", "Foreman of the coding agents", "mind", "factory", "ergasterion", "calm",
+     ["../ergasterion/builders.json"], ("ergasterion", "dev"), "Watches over the coding agents in the builders' camp: who is building what, and what was merged."),
 )
 KEEPERS = {"market": ("Agoraios", "of the marketplace", "calm"), "research": ("Zetes", "the seeker", "curious"), "money": ("Tamias", "the treasurer", "blunt"),
            "command": ("Hegemon", "the leader", "calm"), "life": ("Eirene", "peace", "wry")}

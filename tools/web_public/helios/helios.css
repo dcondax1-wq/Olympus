@@ -77,3 +77,12 @@ details > summary { min-height: 44px; }
 @media (prefers-reduced-motion: reduce) { .stage canvas { transition: none; } }
 html[data-oly-lite="1"] .stage { background: #2a2118; }
 /* the page ends 176px above the bottom so Jarvis keeps its corner */
+
+/* AGORA v2 (2026-11-11): each account leads with its $ of drawdown left, the sentence follows small */
+#app .acc-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+#app .acc-n { font: 600 16px/1.2 var(--ag-serif); color: var(--ag-text); }
+#app .acc-v { font: 700 24px/1.1 var(--ag-num); font-variant-numeric: tabular-nums; color: var(--ag-text); white-space: nowrap; }
+#app .acc-v small { font: 500 13px var(--ag-sans); color: var(--ag-muted); }
+#app .acc.warn .acc-v { color: var(--ag-sun); } #app .acc.bad .acc-v { color: var(--ag-terra-text); }
+#app .acc p { font-size: 13px; color: var(--ag-muted); }
+#app .item { background: rgba(33, 28, 22, .7); border-color: rgba(243, 236, 224, .07); padding: 12px 14px; }

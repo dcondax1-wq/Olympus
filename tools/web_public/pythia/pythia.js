@@ -79,13 +79,13 @@ function renderFlat() {
 }
 async function startWheel() {
   const q = new URLSearchParams(location.search).get('q'), canvas = $('stage');
-  const flat = () => { S.flat = true; $('flat').hidden = false; canvas.hidden = true; renderFlat(); };
+  const flat = () => { S.flat = true; $('flat').removeAttribute('hidden'); canvas.hidden = true; renderFlat(); };
   if (q === 'off' || q === 'flat') { flat(); return; }
   try {
     for (let k = 0; k < 25 && !window.PYTHIA_WHEEL && !window.PYTHIA_WHEEL_FAIL; k++) await new Promise((r) => setTimeout(r, 100));
     if (!window.PYTHIA_WHEEL) throw new Error('the 3D module did not load');
     S.wheel = window.PYTHIA_WHEEL.createWheel(canvas, S.cal, { reduced: RM(), onPick: (i) => select(i) }); if (O && O.mode) O.mode(S.wheel.lite);
-    $('flat').hidden = true; S.wheel.select(S.sel);
+    $('flat').setAttribute('hidden', ''); S.wheel.select(S.sel);
   } catch (_) { S.wheel = null; flat(); }
 }
 
@@ -98,7 +98,7 @@ function build() {
 }
 function shift(n) {
   S.start = C.addDays(S.start, n); build();
-  if (S.wheel) { S.wheel.dispose(); S.wheel = null; $('flat').hidden = true; $('stage').hidden = false; startWheel(); }
+  if (S.wheel) { S.wheel.dispose(); S.wheel = null; $('flat').setAttribute('hidden', ''); $('stage').hidden = false; startWheel(); }
   say(`${$('range').textContent}.`);
 }
 
@@ -110,7 +110,7 @@ async function boot() {
   const nowIso = at && Number.isFinite(Date.parse(at)) ? at : data.demo && fx && fx.now ? fx.now : null;
   S.now = nowIso ? Date.parse(nowIso) / 1000 : Date.now() / 1000; S.today = C.etParts(S.now).ymd; S.start = S.today;
   build();
-  $('prevW').addEventListener('click', () => shift(-7)); $('nextW').addEventListener('click', () => shift(7)); $('todayBtn').addEventListener('click', () => { S.start = S.today; build(); if (S.wheel) { S.wheel.dispose(); S.wheel = null; $('flat').hidden = true; $('stage').hidden = false; startWheel(); } say('Back to today.'); });
+  $('prevW').addEventListener('click', () => shift(-7)); $('nextW').addEventListener('click', () => shift(7)); $('todayBtn').addEventListener('click', () => { S.start = S.today; build(); if (S.wheel) { S.wheel.dispose(); S.wheel = null; $('flat').setAttribute('hidden', ''); $('stage').hidden = false; startWheel(); } say('Back to today.'); });
   await startWheel(); S.ready = true; say(`Pythia: ${C.RISKWORD[(S.cal[0] || {}).risk || 'calm']} today in New York. ${C.dayLong(S.today)}.`);
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
 }

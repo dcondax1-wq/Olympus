@@ -184,14 +184,14 @@ function build(rc, scene, camera, canvas, o) {
   S.forEach((_, i) => { const cx = (i % 4) * BW, cy = Math.floor(i / 4) * BH; setUV(bubG, i, cx / 2048, 1 - (cy + BH) / 1024, (cx + BW) / 2048, 1 - cy / 1024); });
   const bubKey = S.map(() => '');
   function drawBubble(i, w) {
-    const key = w ? w.name + '|' + w.status + '|' + w.say : S[i].name;
+    const key = w ? (S[i].who || w.name) + '|' + w.status + '|' + w.say : S[i].name;
     if (bubKey[i] === key) return; bubKey[i] = key;
     const g = A.g, x = (i % 4) * BW, y = Math.floor(i / 4) * BH, st = w ? w.status : 'stale';
     g.clearRect(x, y, BW, BH);
     g.fillStyle = 'rgba(29,25,20,0.9)'; g.strokeStyle = BRONZE; g.lineWidth = 4; panel(g, x + 6, y + 6, BW - 12, BH - 40, 22);
     g.beginPath(); g.moveTo(x + BW / 2 - 18, y + BH - 36); g.lineTo(x + BW / 2, y + BH - 8); g.lineTo(x + BW / 2 + 18, y + BH - 36); g.closePath(); g.fillStyle = 'rgba(29,25,20,0.9)'; g.fill(); g.stroke();
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-    g.fillStyle = '#f3ece0'; g.font = '600 38px Georgia, serif'; g.fillText(S[i].name, x + 26, y + 54);
+    g.fillStyle = '#f3ece0'; g.font = '600 38px Georgia, serif'; g.fillText(S[i].who || S[i].name, x + 26, y + 54);
     g.fillStyle = LAMP[st] || LAMP.stale; g.font = '700 26px -apple-system, "Segoe UI", sans-serif'; g.textAlign = 'right'; g.fillText(w ? WORD[st] : '...', x + BW - 26, y + 52); g.textAlign = 'left';
     g.fillStyle = BRONZE; g.fillRect(x + 26, y + 68, BW - 52, 2);
     g.fillStyle = '#e8dfcf'; g.font = '500 30px -apple-system, "Segoe UI", sans-serif'; wrap(g, w ? w.say || w.doing || '' : 'Waiting for its file...', x + 26, y + 108, BW - 52, 38, 3);
@@ -301,6 +301,7 @@ function build(rc, scene, camera, canvas, o) {
   drawLearn(null); drawFlip(null); drawPipe(null);
 
   // ---- state
+  let driver = null, driverInput = false;     // SCENE DIRECTION HOOK (direct.js): when set, the director places the camera in walk mode and owns the taps
   let workers = [], cam = { x: START.x, z: START.z, yaw: START.yaw, pitch: -0.06 }, yawT = cam.yaw, pitchT = cam.pitch, mv = { fwd: 0, side: 0 }, mvT = { fwd: 0, side: 0 }, mode = 'walk', following = null, t = 0, tourT = 0;
   const ray = new THREE.Raycaster(), ang = S.map((_, i) => i * 1.7).concat(CAMP_SPOTS.map((_, j) => j * 2.3)), COLL = S.concat(CAMP_SPOTS, CAMP_SPOTS.map((c) => ({ x: c.x, z: c.z - 2.1 })), [{ x: L.CART.x, z: L.CART.z }]), hot = {}, cratePos = new Float32Array(N * MAXC * 3);
   const pos = () => ({ x: cam.x, z: cam.z, yaw: cam.yaw, following, mode, hall: hallOf(mode === 'tour' ? { x: camera.position.x, z: camera.position.z } : cam).id });
@@ -558,7 +559,8 @@ function build(rc, scene, camera, canvas, o) {
     const campLater = () => campFrame(dt, camP);
     // the camera: walking (eased joystick and look), following a worker, or the calm tour above the halls
     const rate = reduced ? 0 : 1;
-    if (mode === 'tour') {
+    if (driver && driver(dt, mode)) { /* the scene director (direct.js) placed the camera: third person, collision-safe */ }
+    else if (mode === 'tour') {
       tourT += dt * mot;
       const tc = tourCam(tourT, reduced), k = reduced ? 1 : Math.min(1, dt * 1.6);
       camP.x += (tc.x - camP.x) * k; camP.y += (tc.y - camP.y) * k; camP.z += (tc.z - camP.z) * k; camera.lookAt(tc.look.x, tc.look.y, tc.look.z);
@@ -664,6 +666,11 @@ function build(rc, scene, camera, canvas, o) {
     reset() { cam = { x: START.x, z: START.z, yaw: START.yaw, pitch: -0.06 }; yawT = cam.yaw; pitchT = cam.pitch; following = null; mode = 'walk'; mv = { fwd: 0, side: 0 }; mvT = { fwd: 0, side: 0 }; snapCam(); still(); moved(); },
     face(id) { const s = S.find((a) => a.id === id); if (s) { let y = Math.atan2(-(s.x - cam.x), -(s.z - cam.z)); while (y - cam.yaw > Math.PI) y -= Math.PI * 2; while (y - cam.yaw < -Math.PI) y += Math.PI * 2; yawT = y; pitchT = -0.16; still(); } },
     pos,
+    // ---- SCENE DIRECTION HOOKS (ergasterion/direct.js, olympus/camera-rig.js + controls.js): the director drives the camera in walk mode and moves YOU (your own character)
+    drive(fn, opt) { driver = typeof fn === 'function' ? fn : null; driverInput = !!(driver && opt && opt.input === false); still(); return !!driver; },
+    refs() { return { THREE, scene, camera, canvas, rc, P3: () => P3, cine: () => cine, reduced, bubbles }; },
+    setPlayer(x, z, yaw) { cam.x = x; cam.z = z; if (yaw != null) { cam.yaw = yaw; yawT = yaw; } },
+    modeNow: () => mode,
     stats() { const st = rc.stats(); return { calls: st.calls, triangles: st.triangles, quality: st.quality, batches: batches.length }; },
     projectCamp(j) { const c = CAMP_SPOTS[j]; if (!c) return null; const v = new THREE.Vector3(c.x, 1.3, c.z - 1.2).project(camera); if (v.z > 1) return null; return { x: (v.x * 0.5 + 0.5) * canvas.clientWidth, y: (-v.y * 0.5 + 0.5) * canvas.clientHeight }; },
     project(id) { const i = S.findIndex((a) => a.id === id); if (i < 0) return null; const v = new THREE.Vector3(at[i].x, 1.0, at[i].z).project(camera); if (v.z > 1) return null; return { x: (v.x * 0.5 + 0.5) * canvas.clientWidth, y: (-v.y * 0.5 + 0.5) * canvas.clientHeight }; },
@@ -691,9 +698,10 @@ function build(rc, scene, camera, canvas, o) {
   };
   // drag to look; a short tap with no drag picks a crate, a station or a board
   let drag = null;
-  const down = (e) => { drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY }; try { canvas.setPointerCapture(e.pointerId); } catch (_) { /* nothing */ } };
-  const move = (e) => { if (!drag) return; if (mode === 'walk') api.look((e.clientX - drag.x) * 0.0055, (e.clientY - drag.y) * 0.0045); drag.x = e.clientX; drag.y = e.clientY; };
+  const down = (e) => { if (driverInput) return; drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY }; try { canvas.setPointerCapture(e.pointerId); } catch (_) { /* nothing */ } };
+  const move = (e) => { if (driverInput || !drag) return; if (mode === 'walk') api.look((e.clientX - drag.x) * 0.0055, (e.clientY - drag.y) * 0.0045); drag.x = e.clientX; drag.y = e.clientY; };
   const up = (e) => {
+    if (driverInput) { drag = null; return; }
     if (drag && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 8 && typeof o.onPick === 'function') { const hit = api.pick(e.clientX, e.clientY); if (hit) o.onPick(hit.id, hit.crate); }
     drag = null;
   };

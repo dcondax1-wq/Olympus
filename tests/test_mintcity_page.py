@@ -132,8 +132,8 @@ def test_page():
               rows: [...document.querySelectorAll('#list b')].map((b) => b.textContent), links: [...document.querySelectorAll('#list a')].map((a) => a.getAttribute('href')), labels: [...document.querySelectorAll('#list a')].map((a) => a.getAttribute('aria-label')),
               groups: document.querySelectorAll('#map g').length, chips: [...document.querySelectorAll('#chips button')].map((b) => b.textContent), scene: window.MINTCITY.S.scene, sheet: !document.querySelector('#sheet').hidden,
               map: getComputedStyle(document.querySelector('#mapWrap')).visibility, font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor })""")
-            check("c. DEMO (the fixture, flat): the chip, the golden pillar says $1,495 a month, EXAMPLE ESTIMATE, five districts in the list with their dollars and an Open link each to the right app, the 2D map with five tappable districts, five district chips (no tours without 3D)",
-                  d["demo"] and d["base"] == "$1,495" and d["pill"] == "EXAMPLE ESTIMATE" and "you could lose about $42 a month" in d["text"] and "$2,547" in d["text"] and d["rows"] == ["Chrysos", "$1,339", "Mercury", "no estimate", "Sibyl", "$8", "Oikos", "$111", "Arbiter", "$37"]
+            check("c. DEMO (the fixture, flat): the chip, the golden pillar says $1,495 a month, Example estimate (sentence case, AGORA v2), five districts in the list with their dollars and an Open link each to the right app, the 2D map with five tappable districts, five district chips (no tours without 3D)",
+                  d["demo"] and d["base"] == "$1,495" and d["pill"] == "Example estimate" and "you could lose about $42 a month" in d["text"] and "$2,547" in d["text"] and d["rows"] == ["Chrysos", "$1,339", "Mercury", "no estimate", "Sibyl", "$8", "Oikos", "$111", "Arbiter", "$37"]
                   and d["links"] == [f"../{i}/" for i in IDS] and d["labels"][0] == "Open the Chrysos app" and d["groups"] == 5 and d["chips"] == ["Chrysos", "Mercury", "Sibyl", "Oikos", "Arbiter"] and d["scene"] == "2d" and not d["sheet"] and d["map"] == "visible", d)
             check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
             AK.shot(p, "mintcity-2d")
@@ -156,8 +156,8 @@ def test_page():
             ctx, p, errs, seen, off = AK.page(br, origin2)
             AK.open_app(p, origin2, APP, "?flat=1&district=mercury")
             r = p.evaluate("() => ({ demo: !document.querySelector('#demo').hidden, base: document.querySelector('#heroBase').textContent, pill: document.querySelector('#heroPill').textContent, rows: [...document.querySelectorAll('#list li b.ag-num')].map((b) => b.textContent), sheet: document.querySelector('#shName').textContent, kv: document.querySelector('#shKv').textContent })")
-            check("c. a real money/index.json: no DEMO chip, ESTIMATE, $360 a month, no number for Sibyl ('no estimate'), ?district=mercury opens that sheet with 'Live'",
-                  not r["demo"] and r["base"] == "$360" and r["pill"] == "ESTIMATE" and r["rows"] == ["$100", "$200", "no estimate", "$40", "$20"] and r["sheet"].startswith("Mercury") and "Live" in r["kv"], r)
+            check("c. a real money/index.json: no DEMO chip, Estimate, $360 a month, no number for Sibyl ('no estimate'), ?district=mercury opens that sheet with 'Live'",
+                  not r["demo"] and r["base"] == "$360" and r["pill"] == "Estimate" and r["rows"] == ["$100", "$200", "no estimate", "$40", "$20"] and r["sheet"].startswith("Mercury") and "Live" in r["kv"], r)
             check("c. it read the site's own file and no console error", any("money/index.json" in u for u in seen) and not errs and not off, (errs[:3], off[:3]))
             ctx.close()
             srv2.shutdown()

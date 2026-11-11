@@ -8,6 +8,9 @@
   f. the API in node (people.js with a tiny fake window): ready / list / get / ask / standup / requests store (olympus.requests.v1) / me (olympus.me.v1) / the owner's own model
   g. 3D: people3d.js against three.js: 2 draw calls and <= 10,000 triangles per figure (<= 6,000 LITE), every pose, the crowd (2 draw calls)
   g2. figure API v2: visemes, expressions, talking, blinking, lookAt, work poses and their props, determinism, variety, scene budgets, the portrait's faces
+  g3. figure v3, the rigged cast (people-rig.js + assets/people/cast.glb, KayKit Adventurers 1.0, CC0): the cast loads in node, figure() gives everyone a
+      rigged character (2 draw calls, triangle budget, the same API), every pose plays (clips + layers), faces (visemes, expressions, blink, glance), lookAt,
+      work props, seated, determinism, variety, a bad cast falls back to v2, the licence file lists every asset file, asset sizes within the budgets
     python -X utf8 -m tests.test_people
 """
 from __future__ import annotations
@@ -26,7 +29,7 @@ from tools import people_build as PB  # noqa: E402
 
 check = AK.check
 OLY = os.path.join(AK.WEB, "olympus")
-FILES = ["people.js", "people-core.js", "people-talk.js", "people-data.js", "people-brain.js", "people3d.js", "people-voice.js", "people-show.js", "people.css", "people.json"]
+FILES = ["people.js", "people-core.js", "people-talk.js", "people-data.js", "people-brain.js", "people3d.js", "people-rig.js", "people-studio.js", "people-voice.js", "people-show.js", "people.css", "people.json"]
 
 
 def test_roster():
@@ -633,7 +636,7 @@ def test_core():
     check("c. a rejected idea explains itself with its own earlier-years numbers; the team answer names colleagues; the name answer gives the meaning",
           ("did not hold" in a["verdict"] or "rejected by the rule" in a["verdict"]) and a["old"].startswith(("In the five years before", "I have no numbers")) and "Hermolaos" in a["team"] and 'Metis means "wise counsel"' in a["name"], (a["verdict"], a["old"], a["team"]))
     check("c. the greeting follows the time of day, uses the owner's name and remembers his last question",
-          a["hour"][0] == "Good morning." and a["hour"][1] == "Good evening." and a["hour"][2].startswith("Good afternoon. Alex,") and 'Last time you asked: "how much drawdown is left".' in a["hour"][2], a["hour"])
+          a["hour"][0] == "Good morning." and a["hour"][1] == "Good evening." and a["hour"][2].startswith("Good afternoon, Alex. I am ") and 'Last time you asked: "how much drawdown is left".' in a["hour"][2], a["hour"])
     m = o["mem"]
     check("c. memory: 'another' walks the numbers, 'say that again' repeats, 'tell me more' continues the lessons, 'why?' follows the context, the last question is remembered",
           m["seq"][:4] == ["number", "number", "number", "repeat"] and m["distinct"] == 3 and m["repeat"] is True and m["seq"][4:6] == ["learned", "learned"] and m["seq"][6] in ("sure", "risk", "failed") and m["turns"] == 8
@@ -783,6 +786,168 @@ def test_three():
     check(f"g2. the portrait draws the same faces: {o['pexpr']} expressions and {o['pvis']} mouth shapes are all different, a blink shuts the eyes", o["pexpr"] == 7 and o["pvis"] == 7 and o["pblink"] is True, (o["pexpr"], o["pvis"], o["pblink"]))
 
 
+RIG_HARNESS = r"""
+const fs = require('fs'), path = require('path');
+const [, , TMP, WEB] = process.argv;
+(async () => {
+  const imp = (f) => import(path.join(TMP, f));
+  const THREE = await imp('three.mjs'), R = await imp('olympus/people-rig.mjs'), P3 = await imp('olympus/people3d.mjs'), C = await imp('olympus/people-core.mjs');
+  const { GLTFLoader } = await imp('olympus/three-addons/GLTFLoader.mjs'), { MeshoptDecoder } = await imp('olympus/three-addons/meshopt_decoder.module.mjs');
+  const buf = fs.readFileSync(path.join(WEB, 'assets', 'people', 'cast.glb')), ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+  const o = {};
+  // a broken cast is refused (the v2 figures stay)
+  let bad = false; try { await R.loadCast({ THREE, GLTFLoader, MeshoptDecoder }, new ArrayBuffer(64), 'bad'); } catch (e) { bad = true; }
+  o.badCast = [bad, P3.rigStatus(), !!P3.figure(THREE, P3.spec('bot:lit'), {}).userData.rig];
+  const t0 = Date.now(), cast = await R.loadCast({ THREE, GLTFLoader, MeshoptDecoder }, ab, 'test');
+  o.cast = [Date.now() - t0, Object.keys(cast.parts).length, Object.keys(cast.clips).length, cast.bindNames.length];
+  P3.rigInstall(R, cast);
+  o.status = P3.rigStatus();
+  const Rr = C.normRoster(JSON.parse(fs.readFileSync(path.join(WEB, 'olympus', 'people.json'), 'utf8'))), everyone = Rr.people.concat(Rr.villagers);
+  let maxHigh = 0, maxLite = 0, maxMeshes = 0, minMeshes = 9, mats = new Set(), allRig = true, combos = new Set(), bad2 = [];
+  for (const p of everyone) {
+    const s = C.spec(p), f = P3.figure(THREE, s, {}), l = P3.figure(THREE, s, { lite: true }), st = P3.figure(THREE, s, { seated: true });
+    let m = 0; f.traverse((x) => { if (x.isMesh) { m++; mats.add(x.material.uuid); } });
+    maxMeshes = Math.max(maxMeshes, m); minMeshes = Math.min(minMeshes, m); allRig = allRig && f.userData.rig === 3 && l.userData.rig === 3 && st.userData.rig === 3;
+    maxHigh = Math.max(maxHigh, f.userData.triangles, st.userData.triangles); maxLite = Math.max(maxLite, l.userData.triangles);
+    const ot = f.userData.outfit; combos.add([ot.face, ot.hair, ot.body, ot.cape, ot.hood, ot.accessory, s.outfit, s.skin].join('|'));
+    P3.animate(f, 0.05); f.updateWorldMatrix(true, true); const bn = f.userData.character.bones, top = f.userData.parts.head.getWorldPosition(new THREE.Vector3()).y, foot = Math.min(bn.toesl.getWorldPosition(new THREE.Vector3()).y, bn.footl.getWorldPosition(new THREE.Vector3()).y); if (!(foot > -0.08 && foot < 0.12 && top > 0.55 && top < 1.1)) bad2.push([p.id, foot, top]);
+    f.userData.dispose(); l.userData.dispose(); st.userData.dispose();
+  }
+  o.all = [everyone.length, allRig, minMeshes, maxMeshes, maxHigh, maxLite, mats.size, combos.size, bad2.slice(0, 3)];
+  // every pose plays: the state names it, the base clip is the cast's, nothing is NaN
+  const f = P3.figure(THREE, P3.spec(Rr.people.find((p) => p.kind === 'builder')), {}), poses = {};
+  const finite = () => { let ok = true; f.traverse((b) => { if (b.isBone && !(isFinite(b.quaternion.x) && isFinite(b.position.y))) ok = false; }); return ok; };
+  for (const n of P3.POSE_NAMES) { P3.play(f, n); for (let i = 0; i < 12; i++) P3.animate(f, 0.05); const st = f.userData.state(); poses[n] = [st.pose === n, st.base, finite()]; }
+  o.poses = poses;
+  // the wave raises the right hand above the head; a one-shot returns to the last loop
+  const g = P3.figure(THREE, P3.spec('scanner:chrysos'), {}), B = g.userData.character.bones, wy = () => { g.updateWorldMatrix(true, true); return B.handr.getWorldPosition(new THREE.Vector3()).y; };
+  P3.animate(g, 0.05); const y0 = wy(); const dur = P3.play(g, 'wave'); for (let i = 0; i < 12; i++) P3.animate(g, 0.05); const y1 = wy(); const hy = B.head.getWorldPosition(new THREE.Vector3()).y;
+  for (let i = 0; i < 60; i++) P3.animate(g, 0.05);
+  o.wave = [y1 > hy, y1 - y0 > 0.2, dur > 1, g.userData.state().pose];
+  // faces: visemes, expressions, talking, blink, glance, lookAt turns the head
+  const h = P3.figure(THREE, P3.spec('scanner:sibyl'), {}), fm = h.userData.faceMesh, dict = fm.morphTargetDictionary, inf = () => fm.morphTargetInfluences;
+  o.morphs = Object.keys(dict).join(',');
+  const vis = {}; for (const v of ['A', 'E', 'O', 'MBP', 'smile', 'frown']) { for (let i = 0; i < 8; i++) { P3.setMouth(h, v, 1); P3.animate(h, 0.03); } vis[v] = +inf()[dict[v]].toFixed(2); }
+  o.visemes = vis;
+  for (let i = 0; i < 20; i++) P3.animate(h, 0.05);
+  const faces = {}; for (const e of P3.EXPRESSIONS) { P3.setExpression(h, e, 1); for (let i = 0; i < 20; i++) P3.animate(h, 0.05); const m = h.userData.state().morph; faces[e] = JSON.stringify(['browUp', 'browSad', 'browAngry', 'wide', 'smile', 'frown', 'O', 'MBP'].map((k) => Math.round(m[k] * 10))); }
+  o.exprDistinct = new Set(Object.values(faces)).size;
+  P3.setExpression(h, 'neutral', 1); P3.setTalking(h, true); let open = 0; for (let i = 0; i < 60; i++) { P3.animate(h, 0.05); open = Math.max(open, ...h.userData.state().mouth); }
+  P3.setTalking(h, false); let blink = 0, gx = 0; for (let i = 0; i < 220; i++) { P3.animate(h, 0.04); const m = h.userData.state().morph; blink = Math.max(blink, m.blink); gx = Math.max(gx, Math.abs(m.eyeX)); }
+  P3.lookAt(h, new THREE.Vector3(4, 0.8, 1)); for (let i = 0; i < 30; i++) P3.animate(h, 0.05); const lk = h.userData.state().look[0];
+  P3.lookAt(h, new THREE.Vector3(-4, 0.8, 1)); for (let i = 0; i < 30; i++) P3.animate(h, 0.05); const lk2 = h.userData.state().look[0];
+  o.alive = [open > 0.4, blink > 0.9, gx > 0.05, lk > 0.5, lk2 < -0.5];
+  // work: the builder's idle hammer; each work pose shows its own props (built on demand)
+  const b = P3.figure(THREE, P3.spec(Rr.people.find((p) => p.kind === 'builder')), {}); P3.animate(b, 0.05);
+  const idleProps = b.userData.state().props.join(','), t0b = b.userData.triangles, wp = {};
+  for (const n of P3.WORK_POSE_NAMES) { P3.play(b, n); for (let i = 0; i < 20; i++) P3.animate(b, 0.05); wp[n] = b.userData.state().props.filter((x) => R.WORK_PROPS[n].includes(x)).sort().join(','); }
+  o.work = [idleProps, wp, b.userData.triangles > t0b, b.userData.triangles];
+  // seated: the seat (the hall's couches) is under them, at the v2 height
+  const sf = P3.figure(THREE, P3.spec('bot:lit'), { seated: true }); for (let i = 0; i < 4; i++) P3.animate(sf, 0.05); sf.updateWorldMatrix(true, true);
+  o.seated = [sf.userData.state().base, +sf.userData.character.bones.hips.getWorldPosition(new THREE.Vector3()).y.toFixed(3)];
+  // determinism: same person -> same geometry and colours
+  const sig = (x) => { const a = x.userData.body.geometry.getAttribute('position').array, c = x.userData.body.geometry.getAttribute('color').array; let k = 0; for (let i = 0; i < a.length; i += 5) k = (k * 31 + Math.round(a[i] * 1000) + Math.round(c[i] * 1000)) >>> 0; return k + ':' + a.length; };
+  const d1 = P3.figure(THREE, P3.spec('bot:lit'), {}), d2 = P3.figure(THREE, P3.spec('bot:lit'), {});
+  o.det = [sig(d1) === sig(d2), new Set(Rr.people.map((p) => { const x = P3.figure(THREE, C.spec(p), {}), k = sig(x); x.userData.dispose(); return k; })).size, Rr.people.length];
+  // a scene of 30: the crowd (v2 in node: no document for the sprites) + 4 rigged close-ups
+  const sc = Rr.people.slice(0, 30).map((p) => C.spec(p)), cr = P3.figureInstanced(THREE, sc, { seated: true, lite: true }), cu = sc.slice(0, 4).map((s) => P3.figure(THREE, s, { seated: true }));
+  o.scene30 = [cr.userData.drawCalls + cu.length * 2, cr.userData.totalTriangles + cu.reduce((n, x) => n + x.userData.triangles, 0)];
+  // the placeholder: before the cast arrives a scene gets the v2 figure; when it arrives the SAME object becomes the rigged one, its pose, face and scale kept
+  P3.rigInstall(R, null, new Promise((ok) => setTimeout(() => ok(cast), 30))); globalThis.window = { location: { search: '' }, dispatchEvent() { return true; } };
+  const ph = P3.figure(THREE, P3.spec('keeper:market'), {}), ud0 = ph.userData; ph.scale.multiplyScalar(1.5); P3.play(ph, 'think'); P3.setExpression(ph, 'happy', 1);
+  const before = [!!ph.userData.rig, ph.userData.v]; await new Promise((ok) => setTimeout(ok, 120)); P3.animate(ph, 0.05);
+  o.upgrade = [before, !!ph.userData.rig, ph.userData === ud0, ph.userData.state().pose, ph.userData.state().expression, +ph.scale.x.toFixed(3), +(1.5).toFixed(3)];
+  delete globalThis.window;
+  // rig off: opts.rig === false and rigInstall(null) give the v2 figure again
+  o.off = [!!P3.figure(THREE, P3.spec('bot:lit'), { rig: false }).userData.rig];
+  P3.rigInstall(null); o.off.push(!!P3.figure(THREE, P3.spec('bot:lit'), {}).userData.rig, P3.rigStatus());
+  console.log(JSON.stringify(o));
+})().catch((e) => { console.error(e && e.stack ? e.stack : e); process.exit(1); });
+"""
+
+
+def stage_rig(tmp):
+    """people-core / people-rig / people3d and the three.js add-ons as .mjs (imports renamed), three.js at the root."""
+    def fix(t):
+        return (t.replace("./people-core.js", "./people-core.mjs").replace("./people-rig.js", "./people-rig.mjs")
+                .replace("'../../jarvis/three.module.min.js'", "'../../three.mjs'").replace("'./BufferGeometryUtils.js'", "'./BufferGeometryUtils.mjs'"))
+    os.makedirs(os.path.join(tmp, "olympus", "three-addons"), exist_ok=True)
+    for f in ("people-core", "people-rig", "people3d"):
+        with open(os.path.join(tmp, "olympus", f + ".mjs"), "w", encoding="utf-8") as fh:
+            fh.write(fix(AK.read(os.path.join(OLY, f + ".js"))))
+    for f in ("GLTFLoader", "BufferGeometryUtils", "meshopt_decoder.module"):
+        with open(os.path.join(tmp, "olympus", "three-addons", f + ".mjs"), "w", encoding="utf-8") as fh:
+            fh.write(fix(AK.read(os.path.join(OLY, "three-addons", f + ".js"))))
+    shutil.copy(os.path.join(AK.WEB, "jarvis", "three.module.min.js"), os.path.join(tmp, "three.mjs"))
+
+
+def test_rig():
+    exe = shutil.which("node")
+    if not exe:
+        check("g3. node is not installed: the rig tests are skipped", True)
+        return
+    tmp = tempfile.mkdtemp(prefix="people-rig-")
+    try:
+        stage_rig(tmp)
+        h = os.path.join(tmp, "harness.cjs")
+        with open(h, "w", encoding="utf-8") as fh:
+            fh.write(RIG_HARNESS)
+        r = subprocess.run([exe, h, tmp, AK.WEB], capture_output=True, text=True, timeout=600)
+        if r.returncode:
+            print(r.stderr[-2500:])
+        o = json.loads(r.stdout) if not r.returncode else {"_error": r.stderr[-900:]}
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("g3. no error in the rig harness", "_error" not in o, o.get("_error"))
+    if "_error" in o:
+        return
+    check("g3. a broken cast is refused and the figures stay v2 (the fallback when the asset fails to load)", o["badCast"] == [True, "v2", False], o["badCast"])
+    c = o["cast"]
+    check(f"g3. the cast loads in node in {c[0]} ms: {c[1]} parts, {c[2]} animation clips, {c[3]} bones (one shared skeleton)", c[1] >= 24 and c[2] >= 20 and 20 <= c[3] <= 30 and o["status"] == "v3", c)
+    a = o["all"]
+    check(f"g3. all {a[0]} people and villagers are rigged characters: {a[2]}-{a[3]} meshes (2 draw calls: body + face), at most {a[4]:,} triangles ({a[5]:,} LITE), one shared material, standing on y = 0 (feet), the face 0.55-1.1 up (about 1 unit tall)",
+          a[1] is True and a[2] == a[3] == 2 and a[4] <= 10000 and a[5] <= 8000 and a[6] <= 2 and a[8] == [], a)
+    check(f"g3. variety: {a[7]} different looks (face, hair, body, cape / hood, accessory, colours) for {a[0]} people", a[7] >= a[0] * 0.9, a[7])
+    ps = o["poses"]
+    check(f"g3. every pose plays ({len(ps)}: the v2 names + run, sit, interact, pickup, jump, surprised), each on a cast clip, the bones stay finite",
+          all(v[0] and v[1] and v[2] for v in ps.values()) and len(ps) >= 22 and ps["hammer"][1] == "1H_Melee_Attack_Chop" and ps["walk"][1].startswith("Walking_") and ps["cheer"][1] == "Cheer", ps)
+    check("g3. wave: the right hand goes up over the head, one-shot (> 1 s), then back to the loop it came from", o["wave"][:3] == [True, True, True] and o["wave"][3] == "idle", o["wave"])
+    check("g3. the face mesh has 13 morphs (blink, wide, brows x3, eyes x2, the 6 visemes)", o["morphs"] == "blink,wide,browUp,browSad,browAngry,eyeX,eyeY,A,E,O,MBP,smile,frown", o["morphs"])
+    check("g3. setMouth drives each viseme (morph weight > 0.8 within 0.25 s)", all(v > 0.8 for v in o["visemes"].values()), o["visemes"])
+    check(f"g3. the 7 expressions make {o['exprDistinct']} different faces (brows, eyes, mouth)", o["exprDistinct"] == 7, o["exprDistinct"])
+    check("g3. alive: talking opens the mouth in syllables, the eyes blink and glance by themselves, lookAt turns the head both ways", o["alive"] == [True] * 5, o["alive"])
+    w = o["work"]
+    check("g3. work: a builder holds a hammer when idle; every work pose shows its own props (built on demand, more triangles after)",
+          "hammer" in w[0] and w[1] == {"hammer": "anvil,whammer", "write": "quill,tablet", "read": "scrollOpen", "weigh": "coin,scales", "telescope": "telescope", "type": "slate", "carry": "crate"} and w[2] is True and w[3] <= 12000, w)
+    check(f"g3. seated: the sitting clip, the hips at the couch height of v2 ({o['seated'][1]})", o["seated"][0] == "Sit_Chair_Idle" and 0.2 < o["seated"][1] < 0.42, o["seated"])
+    check(f"g3. deterministic: the same person is the same mesh every time; {o['det'][1]} of {o['det'][2]} people have a mesh of their own", o["det"][0] is True and o["det"][1] >= o["det"][2] - 2, o["det"])
+    check(f"g3. budgets (Round 4): 30 people as one crowd + 4 rigged close-ups = {o['scene30'][0]} draw calls, {o['scene30'][1]:,} triangles", o["scene30"][0] <= 12 and o["scene30"][1] <= 100000, o["scene30"])
+    check("g3. the rig can be switched off (opts.rig = false, no cast): the v2 figure", o["off"] == [False, False, "v2"], o["off"])
+    u = o["upgrade"]
+    check("g3. the light placeholder: a figure made before the cast loads is the v2 one, then turns into the rigged character in place (same object and userData; pose, face and the scene's scale kept)",
+          u[0] == [False, 2] and u[1] is True and u[2] is True and u[3] == "think" and u[4] == "happy" and u[5] == u[6], u)
+
+
+def test_assets():
+    lic = AK.read(os.path.join(ROOT, "docs", "ASSETS_LICENSES.md"))
+    d = os.path.join(AK.WEB, "assets", "people")
+    files = sorted(f for f in os.listdir(d) if not f.startswith(".")) if os.path.isdir(d) else []
+    rows = [ln for ln in lic.splitlines() if ln.startswith("|") and "CC0" in ln]
+    missing = [f for f in files if not any(f in r for r in rows)]
+    check(f"g3. docs/ASSETS_LICENSES.md has a CC0 row (author, source URL, licence) for every file in assets/people ({len(files)} files)", bool(files) and not missing and all("http" in r for r in rows), missing)
+    sizes = {f: os.path.getsize(os.path.join(d, f)) for f in files}
+    total = 0
+    for root, _, fs in os.walk(os.path.join(AK.WEB, "assets")):
+        total += sum(os.path.getsize(os.path.join(root, f)) for f in fs)
+    check(f"g3. asset budgets (Round 5): people {sum(sizes.values()) / 1e6:.2f} MB (<= 1.5 MB, one file the whole site shares), all assets {total / 1e6:.1f} MB (<= 25 MB)",
+          sum(sizes.values()) <= 1_500_000 and total <= 25_000_000, sizes)
+    rig = AK.read(os.path.join(OLY, "people-rig.js")) + AK.read(os.path.join(OLY, "people3d.js")) + AK.read(os.path.join(OLY, "people-studio.js"))
+    check("g3. the cast is loaded from this site only (assets/people/cast.glb via the vendored loader), never from a CDN", "../assets/people/cast.glb" in rig and "cdn.jsdelivr" not in rig and "unpkg" not in rig
+          and os.path.isfile(os.path.join(OLY, "three-addons", "GLTFLoader.js")) and os.path.isfile(os.path.join(OLY, "three-addons", "meshopt_decoder.module.js")))
+    lab = AK.read(os.path.join(OLY, "people-lab.html"))
+    check("g3. the lab credits Kay Lousberg (KayKit, CC0) and points at the licence file", "Kay Lousberg" in lab and "CC0" in lab and "ASSETS_LICENSES.md" in lab)
+
+
 def test_static():
     js = {f: AK.read(os.path.join(OLY, f)) for f in FILES if f.endswith(".js")}
     allj = "".join(js.values())
@@ -814,4 +979,6 @@ if __name__ == "__main__":
     test_show_and_voice()
     test_api()
     test_three()
+    test_rig()
+    test_assets()
     AK.finish()

@@ -20,23 +20,23 @@ html.framed #app { padding-top: 12px; }
 .brand h1 { margin: 0; font: 800 20px/1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--j-acc);  }
 .brand .sub { margin: 4px 0 0; font-size: var(--oly-t-micro, 10.5px); letter-spacing: .01em; text-transform: none; color: var(--oly-dim, #c4bbac); }
 .tags { display: flex; gap: 6px; align-items: center; }
-.tag { padding: 4px 9px; border-radius: 999px; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line, rgba(255,255,255,.14)); color: var(--oly-dim, #c4bbac); }
+.tag { padding: 4px 9px; border-radius: 999px; font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line, rgba(255,255,255,.14)); color: var(--oly-dim, #c4bbac); }
 .tag.demo { color: #302922; background: var(--warn); border-color: transparent; }
 .card { position: relative; padding: 14px; border-radius: var(--oly-r-card, 16px); display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0;
   background: var(--oly-glass, rgba(25, 21, 18, .76));
   border: 1px solid var(--oly-line, rgba(255,255,255,.14)); border-top-color: rgba(255,255,255,.22); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 14px 34px rgba(0,0,0,.35);
   -webkit-backdrop-filter: blur(var(--oly-blur, 14px)) saturate(1.3); backdrop-filter: blur(var(--oly-blur, 14px)) saturate(1.3); }
-.card h2 { margin: 0; font: 700 12px/1.3 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--j-acc); }
+.card h2 { margin: 0; font: 700 12px/1.3 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--j-acc); }
 .hint { margin: 0; color: var(--oly-dim, #c4bbac); font-size: 14px; }
 .lead { margin: 0; font-size: 15.5px; }
 .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .tile { padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,.05); border: 1px solid var(--oly-line, rgba(255,255,255,.14)); display: grid; gap: 2px; min-width: 0; }
-.tile small { font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim, #c4bbac); }
+.tile small { font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim, #c4bbac); }
 .tile b { font: 800 28px/1.1 var(--oly-display, sans-serif); font-variant-numeric: tabular-nums; }
 .tile span { font-size: 13px; color: var(--oly-dim, #c4bbac); }
 .tile.bad b { color: var(--bad); } .tile.good b { color: var(--good); }
 .bars { width: 100%; height: 74px; display: block; }
-.go, .mini { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid rgba(var(--j-rgb), .7); background: rgba(var(--j-rgb), .16); font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; }
+.go, .mini { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid rgba(var(--j-rgb), .7); background: rgba(var(--j-rgb), .16); font: 700 12px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; }
 .go { width: 100%; }
 .go[aria-pressed="true"] { background: rgba(200, 162, 74, .2); border-color: rgba(200, 162, 74, .7); }
 .mini { padding: 0 12px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
@@ -46,7 +46,7 @@ html.framed #app { padding-top: 12px; }
 .filebtn { position: relative; overflow: hidden; cursor: pointer; }
 .filebtn input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; font-size: 16px; }
 .rule { padding: 12px; border-radius: 14px; background: rgba(var(--j-rgb), .1); border: 1px solid rgba(var(--j-rgb), .4); display: grid; gap: 4px; }
-.rule small { font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--j-acc); }
+.rule small { font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--j-acc); }
 .rule p { margin: 0; font-size: 16px; line-height: 1.35; }
 .rule .why { font-size: 13.5px; color: var(--oly-dim, #c4bbac); }
 #weekLines p { margin: 0 0 6px; font-size: 15px; }
@@ -54,7 +54,7 @@ html.framed #app { padding-top: 12px; }
 .trade { display: grid; gap: 8px; padding: 12px; border-radius: 14px; min-width: 0; background: rgba(255,255,255,.04); border: 1px solid var(--oly-line, rgba(255,255,255,.14)); border-left: 3px solid var(--c, var(--j-acc)); }
 .trade.win { --c: var(--good); } .trade.loss { --c: var(--bad); }
 .thead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.thead .what { font: 700 13px/1.3 var(--oly-display, sans-serif); letter-spacing: .01em; min-width: 0; overflow-wrap: anywhere; }
+.thead .what { font: 700 13px/1.3 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; min-width: 0; overflow-wrap: anywhere; }
 .thead .usd { font: 800 20px/1 var(--oly-display, sans-serif); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .trade.win .usd { color: var(--good); } .trade.loss .usd { color: var(--bad); }
 .tmeta { color: var(--oly-dim, #c4bbac); font-size: 13px; }
@@ -71,7 +71,7 @@ html.framed #app { padding-top: 12px; }
 .mrow { display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 44px; }
 .mrow .nm { font-weight: 700; } .mrow .bar { height: 10px; border-radius: 5px; background: rgba(255,255,255,.07); position: relative; overflow: hidden; }
 .mrow .bar i { position: absolute; top: 0; bottom: 0; border-radius: 5px; }
-.mrow .v { font: 700 14px var(--oly-display, sans-serif); font-variant-numeric: tabular-nums; text-align: right; }
+.mrow .v { font: 700 14px var(--oly-ui, -apple-system, system-ui, sans-serif); font-variant-numeric: tabular-nums; text-align: right; }
 .pos { color: var(--good); } .neg { color: var(--bad); }
 .streak { margin: 4px 0 0; display: flex; align-items: baseline; gap: 10px; }
 .streak b { font: 800 34px/1 var(--oly-display, sans-serif); color: var(--j-acc);  }
@@ -92,7 +92,7 @@ html.sheeted, html.sheeted body { overflow: hidden; }
 .qt { margin: 0; font-weight: 700; font-size: 15px; }
 .qh { margin: 0; font-size: 13px; color: var(--oly-dim, #c4bbac); }
 .verdict { padding: 12px; border-radius: 14px; display: grid; gap: 4px; background: rgba(255,255,255,.05); border: 1px solid var(--oly-line, rgba(255,255,255,.14)); }
-.verdict small { font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim, #c4bbac); }
+.verdict small { font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim, #c4bbac); }
 .verdict .vhead { margin: 0; font: 800 20px/1.25 var(--oly-display, sans-serif); }
 .verdict .why { margin: 0; font-size: 14px; color: var(--oly-dim, #dcd1c2); }
 .verdict[data-level="fine"] { background: rgba(200, 162, 74, .14); border-color: rgba(200, 162, 74, .6); } .verdict[data-level="fine"] .vhead { color: var(--good); }

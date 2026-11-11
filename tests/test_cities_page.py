@@ -1432,7 +1432,7 @@ def sec_l(br, base, C, days, picks, ids):
         p = ctx.new_page()
         p.on("pageerror", lambda e: errs.append(str(e)))
         p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
-        p.goto(base + f"?hellas=1&q={q}", wait_until="domcontentloaded")
+        p.goto(base + f"?hellas=1&q={q}&direct=0", wait_until="domcontentloaded")
         p.wait_for_function("window.__hellas && window.__hellas.ready", timeout=170000)
         hframes(p, 4)
         o = out[q] = {"err": p.evaluate("window.__hellasError || null"), "world": p.evaluate(HN), "header": p.evaluate("document.querySelector('#helCount').textContent"),

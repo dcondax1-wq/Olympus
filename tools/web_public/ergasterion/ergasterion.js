@@ -93,7 +93,7 @@ function drawPlan(svg, mini) {
       g.appendChild(sv('circle', { cx: x + 11, cy: y - 14, r: 5, fill: LAMPC[w.status] || LAMPC.stale, stroke: '#1d1914', 'stroke-width': 1.5 }));
       g.appendChild(sv('rect', { x: x - 15, y: y + 11, width: 30, height: 4, rx: 2, fill: '#9c6b3c' }));               // its conveyor, one small crate per output
       for (let c = 0; c < Math.min(5, w.crates.length); c++) g.appendChild(sv('rect', { x: x - 14 + c * 6, y: y + 8, width: 4.5, height: 4.5, rx: 1, fill: w.status === 'failed' ? '#c96a4a' : '#e0b060' }));
-      g.appendChild(sv('text', { x, y: y + 26, 'text-anchor': 'middle', fill: sel ? '#e0b060' : '#f3ece0', 'font-size': 9.5, 'font-weight': 600 }, w.name.split(' ')[0].slice(0, 10)));
+      g.appendChild(sv('text', { x, y: y + 26, 'text-anchor': 'middle', fill: sel ? '#e0b060' : '#f3ece0', 'font-size': 9.5, 'font-weight': 600 }, C.displayName(w).slice(0, 10)));
       g.addEventListener('click', () => open(w.id)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(w.id); } });
     }
     svg.appendChild(g);
@@ -131,16 +131,16 @@ function renderWorkers() {
   for (const w of S.workers) {
     if (w.group !== grp) { grp = w.group; ul.appendChild(h('li', 'grp', grp)); }
     const li = h('li'), b = h('button'); b.type = 'button'; b.dataset.id = w.id; b.setAttribute('aria-pressed', String(S.sel === w.id));
-    b.setAttribute('aria-label', w.name + ', ' + C.STATUS_WORD[w.status] + '. ' + w.doing);
+    b.setAttribute('aria-label', C.displayName(w) + ' (' + w.name + '), ' + C.STATUS_WORD[w.status] + '. ' + w.doing);
     const l = lampSpan(w.status); l.style.marginRight = '0';
-    const mid = h('span'); mid.appendChild(h('span', 'nm', w.name)); mid.appendChild(h('span', 'sm', w.doing));
+    const mid = h('span'); mid.appendChild(h('span', 'nm', C.displayName(w) + ' · ' + w.name)); mid.appendChild(h('span', 'sm', w.doing));
     b.appendChild(l); b.appendChild(mid); b.appendChild(h('span', pillOf(w.status), C.STATUS_WORD[w.status]));
     b.addEventListener('click', () => open(w.id)); li.appendChild(b); ul.appendChild(li);
   }
 }
 function renderSheet() {
   const w = S.sel && byId(S.sel); $('sheet').hidden = !w; if (!w) return;
-  $('sheetH').textContent = w.name; face($('sheetFace'), personOf('w:' + w.id), 44); $('sheetTalk').textContent = 'Talk to ' + w.name.split(' (')[0]; const p = $('sheetPill'); p.textContent = C.STATUS_WORD[w.status]; p.className = pillOf(w.status);
+  $('sheetH').textContent = C.displayName(w) + ' · ' + w.name; face($('sheetFace'), personOf('w:' + w.id), 44); $('sheetTalk').textContent = 'Talk to ' + C.displayName(w); const p = $('sheetPill'); p.textContent = C.STATUS_WORD[w.status]; p.className = pillOf(w.status);
   $('sheetRole').textContent = w.role + (w.demo ? ' (example data)' : '') + '. In the ' + C.hallOf(w).name + ', ' + C.JOB_WORD[w.job] + '.';
   const sy2 = $('sheetSay'); clear(sy2); sy2.appendChild(h('b', '', 'Says: ')); sy2.appendChild(document.createTextNode(w.say));
   $('sheetDoing').textContent = w.doing || 'Nothing recorded.';
@@ -193,6 +193,7 @@ function face(el, pn, size) {
 function focus(key) { if (S.floor && S.floor.ok && S.floor.focus) S.floor.focus(key || null); }
 function talk(key) {
   const pn = personOf(key); if (!pn) return;
+  if (S.dir) { try { S.dir.talkCam(key); } catch (_) { /* the floor's own camera */ } }
   const K = kit(), id = kitId(pn);
   if (K && id) {
     try { K.open(id, { anchor: $('floorCard') }); S.chat = null; renderChat(); focus(key); S.kitTalk = key; say('Talking to ' + pn.name + '.'); greet(key, pn, id); leadUi(); return; } catch (_) { /* the kit failed: our own chat card */ }
@@ -505,7 +506,7 @@ function renderScene() {
   $('stage').hidden = !in3; $('plan').hidden = !!in3; $('planSay').hidden = !!in3;
   $('viewBtn').hidden = !f && !S.canTry; $('viewBtn').textContent = S.view === '3d' ? 'Plan view' : 'Walk the floor';
   $('resetBtn').hidden = !in3; $('tourBtn').hidden = !in3; $('hallNow').hidden = !in3;
-  $('sceneNote').textContent = in3 ? 'First person: drag to look, joystick (or arrow keys) to walk through the doors between the four halls. Tap a worker, a crate on its belt or a wall board. "Calm tour" flies you around instead.'
+  $('sceneNote').textContent = in3 ? 'You are the figure in the middle. Tap the floor to walk there (through the doors between the four halls), tap a worker to walk up and talk, swipe to look, pinch to zoom. Tap a crate on a belt or a wall board to read it. "Calm tour" flies you around instead.'
     : 'Plan of the four halls: each worker shows its job, its lamp and the crates on its belt. Tap one to open its card.' + (S.canTry ? ' "Walk the floor" shows the 3D factory.' : '');
   if (f) S.floor.set(S.workers, { board: S.board, pipe: S.pipe, camp: S.builders });
   $('campGo').hidden = !in3; $('bsheetWalk').hidden = !in3;
@@ -543,7 +544,7 @@ function hud() {
   if (S.tour && p.mode !== 'tour') setTour(false, true);
   const live = (S.floor.posOf ? S.people.map((pn) => { const q = S.floor.posOf(pn.key); return q ? { ...pn, x: q.x, z: q.z } : pn; }) : S.people).filter((pn) => C.hallOf(pn).id === p.hall);   // people walk about: talk to where they are now, on your side of the wall
   const near = p.mode === 'walk' ? C.talkTarget(p, live, 3) : null, tb = $('talkBtn');
-  tb.hidden = !near; if (near) { tb.textContent = 'Talk to ' + near.name.split(' (')[0]; tb.dataset.key = near.key; }
+  tb.hidden = !near || !!S.dir; if (near) { tb.textContent = 'Talk to ' + near.name.split(' (')[0]; tb.dataset.key = near.key; }
   if (p.mode !== 'tour' && p.hall !== S.hallSeen) { S.hallSeen = p.hall; S.place = p.hall; renderPeople(); }
 }
 function mountFloor() {
@@ -554,10 +555,30 @@ function mountFloor() {
   const fl = M.createFloor($('floor3d'), { reduced, stations: C.STATIONS, onMove: () => hud(), onPick: (id, crate) => { open(id, true, crate); if (crate == null && byId(id)) talk('w:' + id); else if (typeof id === 'string' && id.indexOf('camp:') === 0) talk('b:' + id.slice(5)); } });
   if (!fl || !fl.ok) { $('stage').hidden = true; S.floor = null; S.why = fl && fl.reason; return false; }
   S.floor = fl; S.view = '3d'; lendStage(true);
+  direct(fl);
   { const cw = Life.clockWord(new URLSearchParams(location.search).get('clock')); if (cw != null && fl.clock) fl.clock(Life.atClock(cw), false); }   // ?clock=quiet | standup | HH:MM: a fixed moment of the day (tests, screenshots)
   S.stopMini = setInterval(hud, 250);
   setTimeout(flushEvents, 600);
   return true;
+}
+// ------------------------------------------------------------------------------------------------ SCENE DIRECTION (direct.js + olympus/camera-rig.js + controls.js, 2026-11-11)
+// third person (your own character), tap-to-walk, tap a person for the ring (Talk / Show work / Follow / Wave), the conversation camera, the first 5 seconds.
+// The old joystick stays only as an option (?joy=1). ?direct=0 keeps the first-person floor (tests that drive it by hand). floorload.js loads direct.js (window.__ergDirect).
+function joyOn() { try { return new URLSearchParams(location.search).get('joy') === '1'; } catch (_) { return false; } }
+function direct(fl) {
+  S.dir = null; $('joy').hidden = !joyOn();
+  if (new URLSearchParams(location.search).get('direct') === '0' || !fl.drive) { $('joy').hidden = false; return; }
+  $('hint').hidden = true;
+  const go = () => {
+    const D = window.__ergDirect; if (!D || S.floor !== fl || S.dir) return;
+    S.dir = D.createDirector(fl, { box: $('stage'), canvas: $('floor3d'), reduced, people: () => S.people, kit,
+      onTalk: (key) => talk(key),
+      onShow: (key) => { const K = kit(), pn = personOf(key), id = pn && kitId(pn); talk(key); if (K && id && typeof K.open === 'function') { try { K.open(id, { anchor: $('floorCard'), question: 'Show me your work' }); } catch (_) { /* the card under the floor */ } } },
+      onOther: (hit) => { open(hit.id, true, hit.crate); } });
+    window.ERG_DIRECTOR = S.dir;
+    S.dir.start();
+  };
+  if (window.__ergDirect) go(); else window.addEventListener('erg-direct', go, { once: true });
 }
 function tryFloor() {
   if (S.tried || !S.ready) return;
@@ -573,7 +594,7 @@ function tryFloor() {
 window.addEventListener('erg-floor', tryFloor);
 
 function toggleView() {
-  if (S.view === '3d') { lendStage(false); $('talkBtn').hidden = true; $('leadBtn').hidden = true; $('chatLead').hidden = true; if (S.floor) { try { S.floor.dispose(); } catch (_) { /* nothing */ } } S.floor = null; S.view = 'plan'; S.canTry = true; clearInterval(S.stopMini); S.follow = ''; S.tour = false; $('follow').value = ''; renderScene(); renderSheet(); return; }
+  if (S.view === '3d') { if (S.dir) { try { S.dir.dispose(); } catch (_) { /* gone */ } S.dir = null; } lendStage(false); $('talkBtn').hidden = true; $('leadBtn').hidden = true; $('chatLead').hidden = true; if (S.floor) { try { S.floor.dispose(); } catch (_) { /* nothing */ } } S.floor = null; S.view = 'plan'; S.canTry = true; clearInterval(S.stopMini); S.follow = ''; S.tour = false; $('follow').value = ''; renderScene(); renderSheet(); return; }
   try { mountFloor(); } catch (_) { S.floor = null; }
   if (!S.floor) { S.canTry = false; say('3D is not available on this device; the plan stays.'); }
   renderScene(); renderSheet(); hud();
@@ -587,13 +608,13 @@ function wireControls() {
   const seen = () => { $('hint').hidden = true; };
   joy.addEventListener('pointerdown', seen, { once: true }); $('floor3d').addEventListener('pointerdown', seen, { once: true });
   const walkOn = () => { if (S.follow) setFollow(''); if (S.tour) setTour(false, true); };
-  const push = (v) => { if (!S.floor || !S.floor.ok) return; walkOn(); S.floor.move({ fwd: -v.uy, side: v.ux }); if (reduced) S.floor.step(0.06); };
+  const push = (v) => { if (!S.floor || !S.floor.ok) return; walkOn(); if (S.dir) { S.dir.move({ fwd: -v.uy, side: v.ux }); return; } S.floor.move({ fwd: -v.uy, side: v.ux }); if (reduced) S.floor.step(0.06); };
   joy.addEventListener('pointerdown', (e) => { act = e.pointerId; try { joy.setPointerCapture(e.pointerId); } catch (_) { /* nothing */ } knob.style.transition = 'none'; const v = vec(e); setKnob(v.dx, v.dy); push(v); e.preventDefault(); });
   joy.addEventListener('pointermove', (e) => { if (act !== e.pointerId) return; const v = vec(e); setKnob(v.dx, v.dy); push(v); });
-  const end = (e) => { if (act !== e.pointerId) return; act = null; knob.style.transition = ''; setKnob(0, 0); if (S.floor && S.floor.ok) S.floor.move({ fwd: 0, side: 0 }); };
+  const end = (e) => { if (act !== e.pointerId) return; act = null; knob.style.transition = ''; setKnob(0, 0); if (S.dir) S.dir.move({ fwd: 0, side: 0 }); else if (S.floor && S.floor.ok) S.floor.move({ fwd: 0, side: 0 }); };
   joy.addEventListener('pointerup', end); joy.addEventListener('pointercancel', end);
   const keys = new Set();
-  const upd = () => { if (!S.floor || !S.floor.ok) return; S.floor.move({ fwd: (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0), side: (keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0) }); if (reduced) S.floor.step(0.1); };
+  const upd = () => { if (!S.floor || !S.floor.ok) return; if (S.dir) { S.dir.move({ fwd: (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0), side: (keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0) }); return; } S.floor.move({ fwd: (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0), side: (keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0) }); if (reduced) S.floor.step(0.1); };
   window.addEventListener('keydown', (e) => {
     if (S.view !== '3d' || !S.floor || !S.floor.ok || /^(INPUT|SELECT|TEXTAREA|BUTTON|A|SUMMARY)$/.test((e.target && e.target.tagName) || '')) return;
     const k = String(e.key).toLowerCase();
@@ -609,6 +630,7 @@ function wireControls() {
   $('sheetWalk').addEventListener('click', () => { if (S.floor && S.floor.ok && S.sel) { const w = byId(S.sel); setFollow(''); setTour(false, true); S.floor.teleport(w.x, Math.min(C.BOUNDS.z, w.z + 4.4)); S.floor.face(S.sel); say('Standing in front of ' + w.name + ', in the ' + C.hallOf(w).name + '.'); toView($('floorCard')); } });
   $('sheetClose').addEventListener('click', () => { S.sel = null; S.crate = -1; renderSheet(); renderWorkers(); drawPlan($('plan'), false); renderPlanSay(); });
   $('refresh').addEventListener('click', () => { say('Refreshing...'); load().then(render); });
+  if (window.AGORA && window.AGORA.pull) window.AGORA.pull(() => load().then(render));   // pull down = Refresh (olympus/agora-ui.js)
   $('r24').addEventListener('click', () => setRange('24h')); $('r7').addEventListener('click', () => setRange('7d'));
   $('scrub').addEventListener('input', (e) => { setPlaying(false); S.cur = Number(e.target.value) / 1000; updateCursor(false); });
   $('playBtn').addEventListener('click', () => setPlaying(!S.playing));
