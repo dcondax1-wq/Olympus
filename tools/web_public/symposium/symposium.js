@@ -299,7 +299,7 @@ function mountHall() {
   const M = window.__symHall;
   if (!M || !S.people.length) return false;
   $('stage').hidden = false;
-  const hl = M.createHall($('hall3d'), { reduced, people: S.people.map((p) => P.spec(p.id)), onFrame: () => { placeTags(); if (S.cardPlace) S.cardPlace(); } });
+  const hl = M.createHall($('hall3d'), { reduced, people: S.people.map((p) => P.spec(p.id)), onFrame: () => { placeTags(); if (S.cardPlace) S.cardPlace(); const st = $('stage'), on = !!st.querySelector('.pp-say'); if (on !== st.classList.contains('speaking')) st.classList.toggle('speaking', on); } });      // the name tags step aside while a bubble is up
   if (!hl || !hl.ok) { $('stage').hidden = true; S.hall = null; S.why = hl && hl.reason; return false; }
   S.hall = hl; S.view = 'hall'; mountStage();
   const box = $('hallTags'); clear(box); S.tagBtns = [];
@@ -375,8 +375,6 @@ async function init() {
   $('suPlay').addEventListener('click', playStandup); $('suNext').addEventListener('click', () => stepStandup()); $('suStop').addEventListener('click', () => stopStandup(false));
   drawDebateSetup(); $('dbGo').addEventListener('click', runDebate); drawTogether();
   paintVoices(); $('voiceBtn').addEventListener('click', () => { P.voice.set(!P.voice.on()); paintVoices(); if (P.voice.on()) $('status').textContent = 'Voices on. Each person speaks with their own voice; tap Voices again to stop.'; else P.hush(); });
-  window.addEventListener('olympus:people:say', (e) => { if (e.detail && e.detail.bubble) $('stage').classList.add('speaking'); });
-  window.addEventListener('olympus:people:said', () => { $('stage').classList.remove('speaking'); });
   window.addEventListener('olympus:people:close', () => { clear($('hallCards')); S.card = null; S.cardPlace = null; paintVoices(); });
   fillSelect($('reqWho'), S.people.map((p) => [p.id, p.name + ' · ' + K.clean(p.title, 34)]));
   $('reqForm').addEventListener('submit', (e) => { e.preventDefault(); const t = $('reqText').value.trim(); if (!t) { $('reqNote').textContent = 'Write the request first.'; return; } const row = P.request($('reqWho').value, t); $('reqText').value = ''; $('reqNote').textContent = row ? 'Added.' : 'This phone would not store it.'; drawRequests(); });
