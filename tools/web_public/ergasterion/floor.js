@@ -477,7 +477,7 @@ function build(rc, scene, camera, canvas, o) {
         const i = indexOf(key); if (i < 0) continue;
         try {
           const pid = i < N ? personId(S[i].id) : builderIds(camp[i - N].branch)[0] || 'builder:' + camp[i - N].id, fg = P3.figure(THREE, P3.spec(pid), { scale: 1.25 });
-          let m = 0; fg.traverse((x) => { if (x.isMesh) m++; }); perFig = Math.max(perFig, m || 7);
+          let m = 0; fg.traverse((x) => { if (x.isMesh || x.isLineSegments) m++; }); perFig = m || 7;   // measured: v2 = 2 draws (body + ink line), v1 = 7
           scene.add(fg); full.set(key, { fig: fg, i, pose: '' });
         } catch (_) { lodFail = true; break; }
       }
