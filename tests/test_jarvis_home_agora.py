@@ -129,8 +129,8 @@ def part_d():
     c = read(JV, "courtyard.js")
     d = node("import('./courtyard.js').then((m) => console.log(JSON.stringify(m.DISTRICTS.map((x) => x.id))))")
     check("d. courtyard.js: five doorways, one per Atlas district, in order", d == ["market", "research", "money", "command", "life"], d)
-    check("d. courtyard.js: instanced meshes only (7 draw calls), no renderer / composer / render target / texture of its own, a still frame with reduced motion; LITE builds nothing (the painted courtyard in the page stands in)",
-          c.count("inst(") >= 7 and not re.search(r"new T\.(?:WebGLRenderer|WebGLRenderTarget|EffectComposer|CanvasTexture)", c) and "matchMedia('(prefers-reduced-motion: reduce)')" in c
+    check("d. courtyard.js: instanced meshes only (8 draw calls), no renderer / composer / render target / texture of its own, a still frame with reduced motion; LITE builds nothing (the painted courtyard in the page stands in)",
+          c.count("inst(") >= 8 and not re.search(r"new T\.(?:WebGLRenderer|WebGLRenderTarget|EffectComposer|CanvasTexture)", c) and "matchMedia('(prefers-reduced-motion: reduce)')" in c
           and "if (lite) { root.dataset.court = 'lite'; return out; }" in c and "root.dataset.court = '3d'" in c and "AdditiveBlending" in c)
     g = node("import('./courtyard.js').then((m) => console.log(JSON.stringify(m.NEED_GAIN)))")
     check("d. courtyard.js: warm light, additive and faint: 0.16 at rest, at most 0.42 for a doorway whose district needs you (nothing reaches the bloom threshold 0.9)",

@@ -6,7 +6,7 @@
 //   attach(ext, home)   builds it and returns { doors, count, draws, lite, dims, setNeeds(needs) }; also stored as ext.state.home.courtyard
 //   DISTRICTS           the five districts and their soft tints (the same order and names as Atlas and the orb's ring menu)
 //
-// Cost: instanced meshes only (frames, lintels, gold fillets, lights, paving, columns, capitals: 7 draw calls).
+// Cost: instanced meshes only (a golden-hour haze, frames, lintels, gold fillets, lights, paving, columns, capitals: 8 draw calls).
 // LITE (data-fx low / off, software GL): nothing is built; the painted courtyard in the page (index.html #courtArt: a gradient sky and SVG
 // doorways) stands in, and <html data-court> says which one is showing ('3d' | 'lite').
 // Off / reduced motion: still (no per-frame work). Light is warm (about 3000 K) and additive at low strength: 0.16 at rest and at most 0.42 for a
@@ -35,14 +35,20 @@ export function attach(ext, home) {
   if (lite) { root.dataset.court = 'lite'; return out; }           // LITE: the painting in the page is the courtyard
 
   const moving = () => root.dataset.fx !== 'off' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const marble = M && typeof M.marble === 'function' ? M.marble({ color: '#efe6d4', vein: '#8a7a60', scale: 0.6 }) : new T.MeshStandardMaterial({ color: '#e6dccb', roughness: 0.5 });
-  const gold = M && typeof M.metal === 'function' ? M.metal({ kind: 'gold', roughness: 0.3 }) : new T.MeshStandardMaterial({ color: '#c8a24a', metalness: 0.8, roughness: 0.35 });
-  // the hero is never lost in the haze or the night: no fog on it, and a little warm light of its own (lamplit marble, far under the bloom threshold)
-  for (const m of [marble, gold]) { m.fog = false; if (m.emissive) { m.emissive.set(m === gold ? '#5a4420' : '#5e4a32'); m.emissiveIntensity = 0.5; } }
+  // the hero is never lost in the haze or the night: plain marble and gold with no fog and a warm light of their own (lamplit, always readable,
+  // far under the bloom threshold); the scene's sun still shades them by day
+  const marble = new T.MeshStandardMaterial({ color: '#d8ccb4', roughness: 0.62, metalness: 0, emissive: '#8f7b5c', emissiveIntensity: 0.62, fog: false });
+  const gold = new T.MeshStandardMaterial({ color: '#c8a24a', roughness: 0.4, metalness: 0.5, emissive: '#7a5a20', emissiveIntensity: 0.7, fog: false });
   const group = new T.Group(); group.name = 'courtyard'; scene.add(group); out.group = group;
   const at = new T.Object3D(), warm = new T.Color('#ffd9a0'), tmp = new T.Color();
   let draws = 0;
   const inst = (geo, mat, n, order) => { const m = new T.InstancedMesh(geo, mat, n); m.frustumCulled = false; if (order != null) m.renderOrder = order; group.add(m); draws++; return m; };
+
+  // golden hour behind the doorways, whatever the clock says: one soft amber haze on the horizon (additive, 0.4 at most: no bloom)
+  const haze = inst(new T.PlaneGeometry(64, 13), new T.ShaderMaterial({ transparent: true, depthWrite: false, blending: T.AdditiveBlending, fog: false,
+    vertexShader: 'varying vec2 vU; void main(){ vU = uv; gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'varying vec2 vU; void main(){ float x = abs(vU.x - 0.5) * 2.0; float a = pow(1.0 - vU.y, 1.7) * (1.0 - x * x); gl_FragColor = vec4(vec3(1.0, 0.60, 0.26) * a * 0.4, 1.0); }' }), 1, -10);
+  at.position.set(0, FLOOR_Y + 6.5, Z - 4); at.updateMatrix(); haze.setMatrixAt(0, at.matrix); haze.instanceMatrix.needsUpdate = true;
 
   // jambs (two per doorway) and the lintel with its gold fillet
   const jambs = inst(new T.BoxGeometry(0.48, H, 0.8), marble, N * 2);

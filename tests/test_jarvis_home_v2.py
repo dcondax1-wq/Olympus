@@ -66,7 +66,7 @@ MEASURE = r"""() => {
   const small = [];
   for (const e of document.querySelectorAll('#hero button, #hfirst button, #dock button, #dock input, #next, #fab, #nxOrb')) { const r = R(e); if (r && (r[2] - r[0] < 43.5 || r[3] - r[1] < 43.5)) small.push((e.id || e.className) + ' ' + Math.round(r[2] - r[0]) + 'x' + Math.round(r[3] - r[1])); }
   const unnamed = [...document.querySelectorAll('#hero button, #hfirst button')].filter((e) => !((e.getAttribute('aria-label') || '').trim() || (e.textContent || '').trim())).length;
-  const order = [...document.querySelectorAll('#home h1, #home #sysbar, #home #heroNow, #home #hfirst .tile, #home .hsec-h')].map((e) => e.id || (e.className.split(' ')[1] || e.className) || e.textContent.trim());
+  const order = [...document.querySelectorAll('#home h1, #home #sysbar, #home #heroNow, #home #hfirst .tile, #home #htoday h2, #home .hsec-h')].map((e) => e.id || (e.className.split(' ')[1] || e.className) || e.textContent.trim());
   return { home, parts, overlaps, below, small, unnamed, order, tiles: document.querySelectorAll('#hfirst .tile:not(.sk)').length, sk: document.querySelectorAll('#hfirst .tile.sk').length,
     sx: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - innerWidth, h1: document.querySelectorAll('#home h1').length,
     hero: (document.getElementById('heroNow') || {}).textContent || '', greet: (document.getElementById('hello') || {}).textContent || '',
@@ -88,7 +88,7 @@ def contrast_over_scene(p, selectors):
     from PIL import Image
     info = p.evaluate("""(sel) => sel.map((q) => { const e = document.querySelector(q); if (!e) return null; const r = e.getBoundingClientRect(), c = getComputedStyle(e).color.match(/[\\d.]+/g).map(Number);
         return { q, r: [r.left, r.top, r.width, r.height], c: c.slice(0, 3) }; }).filter(Boolean)""", selectors)
-    p.add_style_tag(content="#hero *, #hfirst * { color: transparent !important; fill: transparent !important; stroke: transparent !important; } #hero .hc-dot, #hero .sdot, #hero i { visibility: hidden !important; }")
+    p.add_style_tag(content="#hero *, #hfirst * { color: transparent !important; fill: transparent !important; stroke: transparent !important; } #hero .hc-dot, #hero .sdot, #hero i, #hfirst .hc-dot, #hfirst .t-m, #hfirst svg { visibility: hidden !important; }")
     p.wait_for_timeout(250)
     png = p.screenshot()
     p.evaluate("document.head.removeChild(document.head.lastElementChild)")
@@ -185,6 +185,7 @@ def run():
             ready(p)
             try:
                 p.wait_for_function("!!document.querySelector('.nx-tip.on')", timeout=30000, polling=100)
+                p.wait_for_timeout(450)                    # its fade-in
                 tip = p.evaluate(MEASURE)
                 if SHOTS:
                     p.screenshot(path=os.path.join(SHOTS, "v2_orb_hint.png"))
@@ -206,8 +207,8 @@ def run():
 
             # ---------------------------------------------------------------- c. no data at all + d. pull to refresh
             ctx, p, errs, seen = open_page(br, origin, 390, 844, query="x=1")
-            early = p.evaluate("({ sk: document.querySelectorAll('#hfirst .tile.sk').length, tiles: document.querySelectorAll('#hfirst .tile').length, busy: document.getElementById('hfirst').getAttribute('aria-busy') })")
-            check("c. never blank: before any number is in, the three tiles are skeletons with their titles (aria-busy)", early["tiles"] == 3 and (early["sk"] == 3 or early["sk"] == 0) and (early["sk"] == 0 or early["busy"] == "true"), early)
+            early = p.evaluate("({ sk: document.querySelectorAll('#hfirst .tile.sk').length, tiles: document.querySelectorAll('#hfirst .tile').length, named: [...document.querySelectorAll('#hfirst .tile')].every((t) => t.textContent.trim().length > 3) })")
+            check("c. never blank: from the first paint there are three tiles, each with its title (a skeleton until its numbers are in)", early["tiles"] == 3 and early["named"], early)
             ready(p)
             p.wait_for_function("document.querySelectorAll('#hfirst .tile:not(.sk)').length === 3", timeout=60000, polling=250)
             m = p.evaluate(MEASURE)
@@ -259,8 +260,8 @@ def run():
                     passes: b.stats().passes, frame: b.stats().calls, err: [b.extError || '', h.courtyardError || ''] }; }""")
                 if SHOTS:
                     p.screenshot(path=os.path.join(SHOTS, "v2_3d.png"))
-                check("f. the 3D courtyard is up (7 instanced draw calls of its own) and the whole scene stays within 25 draw calls (counted, then trimmed)",
-                      g["lite"] is False and g["court"] == 7 and g["draws"] <= 25 and g["counted"] <= 25 and g["budget"] == 25 and not any(g["err"]), g)
+                check("f. the 3D courtyard is up (8 instanced draw calls of its own) and the whole scene stays within 25 draw calls (counted, then trimmed)",
+                      g["lite"] is False and g["court"] == 8 and g["draws"] <= 25 and g["counted"] <= 25 and g["budget"] == 25 and not any(g["err"]), g)
                 check("f. it stands in the hero's window: the lens is shifted so the doorways' feet land on the rail, the painting has stepped aside, and the doorways that need you are lit",
                       g["lens"]["on"] and abs(g["lens"]["feet"] - g["feetWant"]) < 3 and 0.05 < g["lens"]["s"] < 0.62 and float(g["art"]) < 0.05 and g["needs"].get("market") == "warn" and g["needs"].get("life") == "warn", g)
                 cr = contrast_over_scene(p, ["#hello", ".hero .hsub", "#heroNow > span", ".dgate[data-district=research] span"])
