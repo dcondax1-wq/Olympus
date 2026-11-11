@@ -161,6 +161,8 @@ async function boot() {
   S.fixture = fx; S.index = idx;
   render();
   setInterval(() => { if (!document.hidden) getJSON('../money/index.json').then((i) => { if (i && !S.forced) { S.index = i; render(); } }); }, 300000);
+  const A = window.AGORA;                       // pull down = read the money files again (olympus/agora-ui.js); the demo says so honestly
+  if (A && A.pull) A.pull(() => S.forced ? Promise.resolve(A.toast && A.toast('Example numbers: nothing to refresh')) : getJSON('../money/index.json').then((i) => { if (i) { S.index = i; render(); } if (A.toast) A.toast(i ? 'Up to date' : 'Could not read the money files'); }));
 }
 window.MINT = { S, C, ready: () => S.ready, render };
 boot().catch((e) => { say('Something went wrong: ' + (e && e.message ? e.message : e)); try { if (O && O.fail) O.fail('Mint could not start'); } catch (_) { /* nothing */ } });
