@@ -44,7 +44,7 @@ SHOTS = os.environ.get("CITIES_SHOTS") or os.path.join(tempfile.gettempdir(), "c
 RES = []
 ONLY = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)   # e.g. --only=c  or  --only=a,b,g: one section at a time (the machine is slow)
 want = lambda k: ONLY is None or k in ONLY  # noqa: E731
-BAD_ORIGINS = ("githubusercontent",)          # the Kalshi feed: blocked on purpose in the offline runs
+BAD_ORIGINS = ("githubusercontent", "/kalshi.json")          # the Kalshi feed: the site copy (tried first, absent on the test server) and the raw file, blocked on purpose in the offline runs
 
 
 def check(name, ok, info=""):
@@ -639,9 +639,9 @@ def sec_g(br, base, C, days, picks, ids):
     labels = p.evaluate("[...document.querySelectorAll('#labels i.cont')].filter(e => e.style.display !== 'none').map(e => e.textContent)")
     check("g. the world map has six continents with their cities (%s), drawn as labels when zoomed out (%d visible)" % (", ".join(f"{c['name']} {c['count']}" for c in cont), len(labels)),
           [c["key"] for c in cont] == ["trading", "research", "money", "kalshi", "life", "obsidian"] and sum(c["count"] for c in cont) == len(C) and len(labels) >= 2, (cont, labels))
-    d0 = p.evaluate("window.__cities.rig().dist")
+    m0 = p.evaluate("window.__cities.map()")                      # the hub is the drawn map now (agoramap.js): a fly is the map zooming in on that district
     p.evaluate("window.__cities.contTap('kalshi')")
-    p.wait_for_function(f"window.__cities.rig().dist < {d0 * 0.75}", timeout=240000)
+    p.wait_for_function(f"(() => {{ const m = window.__cities.map(); return m.scale > {m0['scale'] * 1.15} || Math.abs(m.x - {m0['x']}) + Math.abs(m.y - {m0['y']}) > 40; }})()", timeout=240000)
     cap = p.evaluate("document.querySelector('#caption').textContent")
     check("g. tap a continent: the camera flies to it and says what is there", "KALSHI" in cap.upper() and "cities" in cap, cap)
     # favourites + visited, persisted
