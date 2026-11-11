@@ -23,6 +23,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Oracle (`oracle`) | Market | trading | The market radar, live | bundled fixture / its own files | `tests.test_oracle_page` |
 | Pantheon (`pantheon`) | Market | trading | The data gods: rates, liquidity, fear | `jarvis.json`, `pantheon.json`, `fixture.json` | `tests.test_pantheon` |
 | Pheme (`pheme`) | Market | trading | The word on the street: releases, and NQ's | `fixture.json`, `stats.json` | `tests.test_pheme_page` |
+| Pinakes (`pinakes`) | Market | trading | The catalogue: browse and query every table OLYMPUS | `catalog.json`, `fixture.json`, `pinakes-views.json` | `tests.test_pinakes_page` |
 | Pythia (`pythia`) | Market | trading | The risk calendar: the next 14 days, and | `fixture.json`, `events.json`, `../home.json` | `tests.test_pythia_page` |
 | Zenith (`zenith`) | Market | trading | NQ bots · Zlarior · ATLAS · BLITZ | data.json, home.json, live.json (the bot feeds) | `tests.test_zenith_mode` |
 | Clio (`clio`) | Research | trading | The research library: every study in plain words | `fixture.json`, `../writeups/index.json`, `../data.json` | `tests.test_clio_page` |
@@ -52,7 +53,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Oikos (`oikos`) | Money | money | The household: where money leaks, tax set-aside, buckets | `fixture.json`, `../money/oikos.json`, `../ledger/rules.json`, `oikos-${S.today}.json` | `tests.test_oikos_page` |
 | Plutus (`plutus`) | Money | money | The money plan: accounts and payouts | `../data.json`, `jarvis.json`, `plans.json` | `tests.test_plutus_page` |
 | Pnyx (`pnyx`) | Money | money | Prop-firm rules and risk calculator: stop to micros | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_pnyx_page` |
-| Sibyl (`sibyl`) | Money | money | Prediction-market edges after fees: paper picks, ruin odds | `fixture.json`, `../money/sibyl.json`, `../money/sibyl_forward.json` | `tests.test_sibyl_page` |
+| Sibyl (`sibyl`) | Money | money | Prediction-market edges after fees: paper picks, ruin odds | `fixture.json`, `../money/sibyl.json`, `../money/sibyl_forward.json`, `../kalshicity/suggestions.json`, `suggestions_fixture.json` | `tests.test_sibyl_page` |
 | Tyche (`tyche`) | Money | money | The Kalshi bets as a 3D fortune wheel | bundled fixture / its own files | `tests.test_tyche_page` |
 | Argo (`argo`) | Command | money | The voyage: your money goals as islands, honest | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_argo_page` |
 | Argus (`argus`) | Command | trading | The hundred eyes: what to fix | bundled fixture / its own files | `tests.test_argus_page` |
@@ -74,7 +75,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Nike (`nike`) | Life | life | The trophy hall: milestones and wins from real | `fixture.json`, `../home.json`, `../ledger/rules.json`, `../odeon/trades.json`, `../kalshicity/edges.json` | `tests.test_nike_page` |
 | Planner (`planner`) | Life | life | Day and week plan: session windows, tasks, habits | `../pythia/events.json`, `../home.json`, `fixture.json` | `tests.test_planner_page` |
 
-65 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+66 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 
