@@ -30,7 +30,7 @@ function renderHero() {
   const t = S.total;
   $('heroBase').textContent = t.n ? C.money(t.base) : '-';
   $('heroText').textContent = t.text; $('heroWhy').textContent = t.why;
-  const p = $('heroPill'); p.textContent = t.allSample ? 'EXAMPLE ESTIMATE' : 'ESTIMATE'; p.className = 'pill ' + (t.allSample ? 'info' : 'ok');
+  const p = $('heroPill'); p.textContent = t.allSample ? 'Example estimate' : 'Estimate'; p.className = 'pill ' + (t.allSample ? 'info' : 'ok');
 }
 
 function renderMap() {

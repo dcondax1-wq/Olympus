@@ -400,6 +400,7 @@ async function init() {
   const want = (location.hash || '').replace('#', ''); if (TABS.indexOf(want) >= 0) setTab(want);
   const who = QS.get('talk'); if (who && P.get(who)) talk(who, $('viewBtn'));
   setInterval(() => { if (!document.hidden && !P.isOpen() && !S.su.on) refresh(); }, 120000);
+  if (window.AGORA && window.AGORA.pull) window.AGORA.pull(() => refresh());   // pull down = refresh the hall (olympus/agora-ui.js)
 }
 window.SYMPOSIUM = { ready: () => S.ready, state: () => ({ n: S.people.length, tab: S.tab, view: S.view, hall: !!(S.hall && S.hall.ok), why: S.why || '', head: S.head, lite: S.lite, table: S.table, debate: S.debate || null, standup: S.su.data, suOn: S.su.on, suI: S.su.i, tags: S.tagBtns.filter((b) => !b.hidden).length, calls: S.hall && S.hall.ok ? S.hall.drawCalls() : 0, turn: !!(S.turn && S.turn.ok), look: S.look }),
   setTab, askTable, runDebate, playStandup, runTogether, speaking: () => (S.hall && S.hall.ok ? S.hall.speaking() : -1), trios: () => C.trios(S.people), together: () => S.together || null, card: () => C.jarvisCard(S.head, P.requests().length, Date.now() / 1000), people: () => S.people.map((p) => p.id) };

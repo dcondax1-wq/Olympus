@@ -152,15 +152,15 @@ def test_page():
             t = AK.taps(p)
             check("c. every tap target is at least 44 x 44 px (the month buttons, the chips)", not t, t[:5])
             check("c. no sideways scroll; Jarvis's corner is free; no console error; nothing off the origin", AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (errs[:3], off[:3]))
-            dial = p.evaluate("() => { const d = window.KRONOS.dial; return d ? { q: d.quality(), lite: d.lite, shown: !document.querySelector('#stage').hidden && document.querySelector('#flat').hidden, size: [document.querySelector('#stage').clientWidth, document.querySelector('#stage').clientHeight] } : null }")
+            dial = p.evaluate("() => { const d = window.KRONOS.dial; return d ? { q: d.quality(), lite: d.lite, shown: !document.querySelector('#stage').hidden && document.querySelector('#flat').hasAttribute('hidden'), size: [document.querySelector('#stage').clientWidth, document.querySelector('#stage').clientHeight] } : null }")
             if dial is None:
-                check("c. 3D: no WebGL here, so the flat sundial is shown (the page still works)", p.evaluate("() => window.KRONOS.flat === true && !document.querySelector('#flat').hidden"))
+                check("c. 3D: no WebGL here, so the flat sundial is shown (the page still works)", p.evaluate("() => window.KRONOS.flat === true && !document.querySelector('#flat').hasAttribute('hidden')"))
             else:
                 check("c. 3D: the marble sundial is up, the flat twin is hidden, the canvas has a real size", dial["shown"] and dial["size"][0] > 200 and dial["size"][1] > 100, dial)
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?demo=1&q=off")
-            q = p.evaluate("() => ({ flat: window.KRONOS.flat, dial: !!window.KRONOS.dial, svg: !document.querySelector('#flat').hidden, canvas: document.querySelector('#stage').hidden, lines: document.querySelectorAll('#flat line').length })")
+            q = p.evaluate("() => ({ flat: window.KRONOS.flat, dial: !!window.KRONOS.dial, svg: !document.querySelector('#flat').hasAttribute('hidden'), canvas: document.querySelector('#stage').hidden, lines: document.querySelectorAll('#flat line').length })")
             check("c. ?q=off (3D Off): the flat marble sundial is drawn instead (12 hour marks and the shadow), the page works the same, no error", q["flat"] and not q["dial"] and q["svg"] and q["canvas"] and q["lines"] == 13 and not errs, (q, errs[:3]))
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin, w=375, h=667, reduced=True, lite=True)

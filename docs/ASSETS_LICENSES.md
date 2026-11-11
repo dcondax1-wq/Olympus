@@ -55,3 +55,9 @@ that every file in `assets/people/` is listed. Raw source packs are never commit
   Kay Lousberg, www.kaylousberg.com (this is not mandatory)". We credit Kay Lousberg in the People lab and here.
 - Code: three.js r160 add-ons vendored in `olympus/three-addons/` (GLTFLoader.js, SkeletonUtils.js, BufferGeometryUtils.js: MIT, three.js authors;
   meshopt_decoder.module.js: MIT, Arseny Kapoulkine). See `olympus/three-addons/LICENSE`.
+
+## UI icons (AGORA v2 design system, olympus/agora-ui.js)
+
+| asset | author | source | licence | files |
+|---|---|---|---|---|
+| AGORA line icons (68: back, chevron, temple, column, laurel, amphora, owl, lyre, wave, chart, wallet, ...) | OLYMPUS (drawn for this project, 2026-11-11) | original work, `window.AGORA.ICONS` | our own work, dedicated CC0 | `tools/web_public/olympus/agora-ui.js` (path data inline, no files) |

@@ -23,7 +23,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 .brand h1 { margin: 0; font: 800 18px/1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--n-acc);  }
 .brand .sub { margin: 3px 0 0; font-size: var(--oly-t-micro, 10.5px); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
 .tags { display: flex; gap: 6px; }
-.tag { padding: 3px 8px; border-radius: 999px; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line); color: var(--oly-dim); background: var(--oly-glass); }
+.tag { padding: 3px 8px; border-radius: 999px; font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; border: 1px solid var(--oly-line); color: var(--oly-dim); background: var(--oly-glass); }
 .tag.demo { color: #e0b060; border-color: rgba(224, 176, 96, .5); }
 .tag[hidden] { display: none; }
 
@@ -53,7 +53,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 .dock .wk .all { min-width: 44px; padding: 0 10px; font: 700 12px/1 var(--oly-ui); letter-spacing: .01em; }
 .dock .wk .all[aria-pressed="true"] { border-color: rgba(var(--n-acc-rgb), .8); color: var(--n-acc); }
 .dock .wl { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.dock .wl b { font: 700 13px/1.1 var(--oly-display, sans-serif); letter-spacing: .01em; white-space: nowrap; }
+.dock .wl b { font: 700 13px/1.1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; white-space: nowrap; }
 .dock .wl span { font-size: 12px; color: var(--oly-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .dock .help { margin: 0; font-size: 12px; color: var(--oly-dim); display: flex; flex-wrap: wrap; align-items: center; gap: 2px 5px; }
 .d { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 2px; }
@@ -65,9 +65,9 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
   border-radius: var(--oly-r-card, 16px); border: 1px solid var(--oly-line); background: rgba(19, 16, 13, .93); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: var(--oly-shadow); }
 .sheet[hidden] { display: none; }
 .sheet header { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 0 14px; gap: 6px; }
-.sheet h2 { margin: 0; font: 700 12.5px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--n-acc); min-width: 0; overflow-wrap: anywhere; }
+.sheet h2 { margin: 0; font: 700 12.5px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--n-acc); min-width: 0; overflow-wrap: anywhere; }
 .sheet .body { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 12px 12px; }
-.sheet h3 { margin: 10px 0 6px; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
+.sheet h3 { margin: 10px 0 6px; font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
 .sheet p { margin: 6px 0; font-size: 12.5px; color: var(--oly-dim); overflow-wrap: anywhere; }
 .sheet p.strong { color: var(--oly-text); font-size: 13px; }
 .btnrow { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 2px; }
@@ -81,9 +81,9 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 .list .when { display: flex; flex-direction: column; min-width: 0; }
 .list .when b { font-size: 13px; font-weight: 700; }
 .list .when span { font-size: 12px; color: var(--oly-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.list .amt { font: 800 14px/1 var(--oly-display, sans-serif); color: var(--n-plan); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.list .amt { font: 800 14px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); color: var(--n-plan); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .list button[aria-current="true"] { background: rgba(var(--n-acc-rgb), .12); }
-.badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font: 800 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; border: 1px solid; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font: 800 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; border: 1px solid; }
 .badge.plan { color: var(--n-plan); border-color: rgba(224, 176, 96, .6); } .badge.soft { color: var(--n-soft); border-color: rgba(224, 176, 96, .6); } .badge.break { color: var(--n-break); border-color: rgba(224, 176, 96, .7); }
 .who { margin-left: 8px; font-size: 12px; color: var(--oly-dim); }
 
@@ -92,18 +92,18 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 .rows .st { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font: 800 12px/1 var(--oly-ui); margin-top: 1px; }
 .rows .st.ok { background: rgba(200, 162, 74, .18); color: var(--n-ok); } .rows .st.bad { background: rgba(224, 176, 96, .2); color: var(--n-break); }
 .rows .st.warn { background: rgba(224, 176, 96, .18); color: var(--n-soft); } .rows .st.na { background: rgba(255, 255, 255, .08); color: var(--oly-dim); } .rows .st.info { background: rgba(var(--n-acc-rgb), .2); color: #4b7a99; }
-.rows .l { display: block; font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-text); margin-bottom: 2px; }
+.rows .l { display: block; font: 700 12px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-text); margin-bottom: 2px; }
 .rows .t { margin: 0; font-size: 12.5px; color: var(--oly-dim); }
 .lesson { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(var(--n-acc-rgb), .5); background: rgba(var(--n-acc-rgb), .12); }
-.lesson b { display: block; font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--n-acc); margin-bottom: 4px; }
+.lesson b { display: block; font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--n-acc); margin-bottom: 4px; }
 .lesson p { margin: 0; color: var(--oly-text); font-size: 13px; }
 
 .leaklist { list-style: none; margin: 8px 0 0; padding: 0; }
 .leaklist li { padding: 8px 0; border-top: 1px solid rgba(255, 255, 255, .07); }
 .leaklist .hd { display: flex; align-items: baseline; gap: 8px; }
-.leaklist .rk { flex: none; width: 20px; font: 800 13px/1 var(--oly-display, sans-serif); color: var(--n-acc); }
+.leaklist .rk { flex: none; width: 20px; font: 800 13px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); color: var(--n-acc); }
 .leaklist .nm { flex: 1; min-width: 0; font-weight: 700; font-size: 13px; }
-.leaklist .cost { flex: none; font: 800 14px/1 var(--oly-display, sans-serif); color: var(--n-break); font-variant-numeric: tabular-nums; }
+.leaklist .cost { flex: none; font: 800 14px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); color: var(--n-break); font-variant-numeric: tabular-nums; }
 .leaklist .bar { height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .08); margin: 6px 0 4px; overflow: hidden; }
 .leaklist .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--n-acc), var(--n-break)); }
 .leaklist .sub { margin: 0; font-size: 12px; color: var(--oly-dim); }
@@ -125,8 +125,8 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 
 /* ---- 2026-11-04 (JOB 10+11): the deeper reads under Autopsy, Leaks and Vow */
 .rec { margin-top: 14px; padding: 12px; border-radius: 14px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); }
-.rec h3 { margin: 0 0 8px; font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--n-acc); }
-.rec h4 { margin: 10px 0 4px; font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
+.rec h3 { margin: 0 0 8px; font: 700 12px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--n-acc); }
+.rec h4 { margin: 10px 0 4px; font: 700 12px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
 .rec .note { margin: 8px 0 0; font-size: 12px; color: var(--oly-dim); overflow-wrap: anywhere; }
 .tl { list-style: none; margin: 0; padding: 0 0 0 4px; display: flex; flex-direction: column; gap: 0; border-left: 2px solid rgba(255, 255, 255, .1); }
 .tl li { position: relative; padding: 6px 0 6px 14px; }
@@ -150,7 +150,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 .pat li { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 70px; align-items: center; gap: 6px; font-size: 12px; }
 .pat .pbar { display: block; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, .08); overflow: hidden; }
 .pat .pbar i { display: block; height: 100%; background: var(--n-plan); }
-.pat .pv { text-align: right; font: 700 12px/1 var(--oly-display, sans-serif); }
+.pat .pv { text-align: right; font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); }
 .vstreak { display: flex; align-items: baseline; gap: 8px; }
 .vstreak .vnum { font: 800 30px/1 var(--oly-display, sans-serif); color: var(--n-acc);  }
 .vstreak .vbest { margin-left: auto; font-size: 12px; color: var(--oly-dim); }

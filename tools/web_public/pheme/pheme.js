@@ -63,13 +63,13 @@ function renderFlat() {
 }
 async function startRack() {
   const q = new URLSearchParams(location.search).get('q'), canvas = $('stage');
-  const flat = () => { S.flat = true; $('flat').hidden = false; canvas.hidden = true; renderFlat(); };
+  const flat = () => { S.flat = true; $('flat').removeAttribute('hidden'); canvas.hidden = true; renderFlat(); };
   if (q === 'off' || q === 'flat') { flat(); return; }
   try {
     for (let k = 0; k < 25 && !window.PHEME_RACK && !window.PHEME_RACK_FAIL; k++) await new Promise((r) => setTimeout(r, 100));
     if (!window.PHEME_RACK) throw new Error('the 3D module did not load');
     S.rack = window.PHEME_RACK.createRack(canvas, { reduced: RM(), onPick: (slot) => { const n = (C.rackBars(S.v, S.kind).values || []).length; selectRow(n - 1 - slot); } }); if (O && O.mode) O.mode(S.rack.lite);
-    $('flat').hidden = true; pushRack();
+    $('flat').setAttribute('hidden', ''); pushRack();
   } catch (_) { S.rack = null; flat(); }
 }
 function pushRack() { const B = C.rackBars(S.v, S.kind), n = B.values.length; if (S.rack) { S.rack.set(B.values, B.typical); S.rack.select(S.row >= 0 ? n - 1 - S.row : -1); } if (S.flat) renderFlat(); }

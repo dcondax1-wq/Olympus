@@ -20,7 +20,7 @@ body { background: radial-gradient(120% 60% at 50% 22%, #453b31 0%, #2c251f 46%,
 h1 { margin: 0; font: 800 22px/1.1 var(--oly-display, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif, sans-serif); letter-spacing: .01em; color: #e0b060;
    }
 .sub { margin: 3px 0 0; color: var(--dim); font-size: 13px; }
-.tag { font: 700 12px var(--oly-display, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif, sans-serif); letter-spacing: .01em; padding: 2px 7px; border-radius: 6px; color: #1b1713; background: var(--warn); }
+.tag { font: 700 12px var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; padding: 2px 7px; border-radius: 6px; color: #1b1713; background: var(--warn); }
 .pick { position: fixed; left: calc(16px + var(--sl)); right: 96px; top: calc(var(--sheet-top) - 30px); margin: 0; font: 700 13px var(--oly-ui, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif, sans-serif); color: var(--text);
    pointer-events: none; }
 .pick b { color: var(--accent); }
@@ -41,7 +41,7 @@ button[aria-pressed="true"] { background: rgba(224, 176, 96, .2); border-color: 
 .fixrow.warn, .lrow.warn { border-left-color: var(--warn); background: rgba(224, 176, 96, .08); }
 .lrow.ok { border-left-color: var(--ok); }
 .fixrow.sel, .lrow.sel { border-color: var(--accent); }
-.num { flex: 0 0 auto; font: 800 14px/1.2 var(--oly-display, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif, sans-serif); width: 22px; color: var(--dim); }
+.num { flex: 0 0 auto; font: 800 14px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); width: 22px; color: var(--dim); }
 .fixrow .t, .lrow .t { flex: 1 1 auto; min-width: 0; }
 .fixrow b, .lrow b { display: block; font-weight: 700; }
 .fixrow .w { display: block; color: var(--text); font-weight: 600; }
@@ -53,7 +53,7 @@ button[aria-pressed="true"] { background: rgba(224, 176, 96, .2); border-color: 
 .lrow.bad .dot { background: var(--bad); box-shadow: none; }
 .lrow .more { display: none; color: var(--dim); font-size: 12.5px; font-weight: 500; margin-top: 3px; }
 .lrow.open .more { display: block; }
-.grp { margin: 10px 0 6px; font: 700 12px var(--oly-display, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif, sans-serif); letter-spacing: .01em; color: var(--accent); }
+.grp { margin: 10px 0 6px; font: 700 12px var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; color: var(--accent); }
 .empty { margin: 4px 0; font-size: 15px; color: var(--ok); font-weight: 700; }
 
 /* the dock: verdict + tabs (the right 88 px belong to Jarvis's orb) */
@@ -90,13 +90,13 @@ code { display: block; padding: 8px 10px; border-radius: 8px; background: rgba(0
 
 /* ---- 2026-11-04 (JOB 10+11): uptime streak, incident history, status card, the per-system drawer */
 .xcard { margin-top: 12px; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255, 255, 255, .03); }
-.xh { margin: 0 0 8px; font: 700 12px/1.2 var(--oly-display, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--accent); }
+.xh { margin: 0 0 8px; font: 700 12px/1.2 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--accent); }
 .xrow { display: flex; align-items: baseline; gap: 8px; }
 .xbig { font: 800 34px/1 var(--oly-display, sans-serif); color: var(--ok);  }
 .xstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 8px; }
 .xstat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: 10px; border: 1px solid var(--line); text-align: center; }
-.xstat b { font: 700 13px/1.1 var(--oly-display, sans-serif); } .xstat span { font-size: 12px; letter-spacing: .01em; text-transform: none; color: var(--dim); }
-.xday { margin-top: 8px; } .xday > b { font: 700 12px var(--oly-display, sans-serif); color: var(--dim); letter-spacing: .01em; }
+.xstat b { font: 700 13px/1.1 var(--oly-ui, -apple-system, system-ui, sans-serif); } .xstat span { font-size: 12px; letter-spacing: .01em; text-transform: none; color: var(--dim); }
+.xday { margin-top: 8px; } .xday > b { font: 700 12px var(--oly-ui, -apple-system, system-ui, sans-serif); color: var(--dim); letter-spacing: .01em; }
 .xinc { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; font-size: 12.5px; border-top: 1px solid rgba(255, 255, 255, .06); }
 .xinc .xd { color: var(--dim); text-align: right; } .xinc.now .xd { color: var(--bad); font-weight: 700; }
 .xbtns { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -109,7 +109,7 @@ code { display: block; padding: 8px 10px; border-radius: 8px; background: rgba(0
 .drawer .oly-close { position: absolute; top: 6px; right: 6px; }
 .dhead { display: flex; align-items: center; gap: 8px; padding-right: 48px; } .dhead b { font: 700 15px var(--oly-ui, sans-serif); flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dhead .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--idle); } .dhead.ok .dot { background: var(--ok); box-shadow: none; } .dhead.warn .dot { background: var(--warn); box-shadow: none; } .dhead.bad .dot { background: var(--bad); box-shadow: none; }
-.dhead .dv { font: 700 12px var(--oly-display, sans-serif); color: var(--dim); }
+.dhead .dv { font: 700 12px var(--oly-ui, -apple-system, system-ui, sans-serif); color: var(--dim); }
 .dsub { margin: 2px 0 6px; font-size: 12px; letter-spacing: .01em; text-transform: none; color: var(--dim); } .dd { margin: 0 0 8px; font-size: 13px; overflow-wrap: anywhere; }
 .dfix { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: rgba(224, 176, 96, .1); border: 1px solid rgba(224, 176, 96, .4); margin-bottom: 8px; font-size: 13px; }
 .drawer code { display: block; margin: 6px 0; padding: 8px; border-radius: 8px; background: rgba(0, 0, 0, .4); font: 12px/1.4 ui-monospace, monospace; overflow-wrap: anywhere; }
