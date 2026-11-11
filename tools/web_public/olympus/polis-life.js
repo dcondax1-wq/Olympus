@@ -315,7 +315,7 @@
       bucket[c].push(d);
     }
     for (i = 0; i < tips.length; i++) {
-      var t = tips[i], n = Math.round(t[2] * t[2] * 0.42 * dens), k;
+      var t = tips[i], n = Math.round(t[2] * t[2] * 0.16 * dens), k;
       minY = Math.min(minY, t[1] - t[2] * 0.9); minX = Math.min(minX, t[0] - t[2] * 1.2); maxX = Math.max(maxX, t[0] + t[2] * 1.2);
       for (k = 0; k < n; k++) {
         var a = R() * Math.PI * 2, rr = Math.sqrt(R()) * t[2], lx = t[0] + Math.cos(a) * rr * 1.15, ly = t[1] + Math.sin(a) * rr * 0.85;
@@ -330,7 +330,7 @@
       for (i = 0; i < tips.length; i++) bot0 = Math.max(bot0, tips[i][1] + tips[i][2] * 0.5);
       var ry0 = (bot0 - top0) / 2, cy0 = top0 + ry0;
       layerBack.insertBefore(S('ellipse', { cx: cx0.toFixed(1), cy: cy0.toFixed(1), rx: rx0.toFixed(1), ry: (ry0 * 0.92).toFixed(1), fill: thirsty ? '#4d4930' : '#2c3720', opacity: 0.85 }), layerBack.firstChild);
-      var nf = Math.round(rx0 * ry0 * 0.16 * dens);
+      var nf = Math.round(rx0 * ry0 * 0.1 * dens);
       for (i = 0; i < nf; i++) {
         var fa = R() * Math.PI * 2, fr = Math.sqrt(R()), fx = cx0 + Math.cos(fa) * fr * rx0, fy = cy0 + Math.sin(fa) * fr * ry0 * 0.9;
         var fup = (fx - 100) / 110 + (fy - top0) / (ry0 * 2.2);
