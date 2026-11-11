@@ -1,6 +1,7 @@
 // KRATOS page (ES module): the discipline score. Reads ../odeon/trades.json (the bot's trades), the journal ratings kept on this phone by Mnemosyne (localStorage 'journal.v1', READ ONLY) and fixture.json (DEMO, never blank).
 // Read only: it sends nothing and keeps nothing. Text only through textContent / createElementNS. window.KRATOS is the test hook. ?today=2026-11-10&day=2026-11-03&demo=1 opens a given view.
 import * as C from './kratoscore.js';
+import * as HF from '../olympus/hero-flat.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -20,14 +21,16 @@ function readStore() { try { return C.parseStore(localStorage.getItem('journal.v
 function nyToday() { try { const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); if (/^\d{4}-\d{2}-\d{2}$/.test(p)) return p; } catch (_) { /* below */ } return new Date().toISOString().slice(0, 10); }
 
 function renderFlat(score) {
+  // the painted twin of the 3D column (olympus/hero-flat.js): a fluted bronze column on stepped marble at golden hour, olive marks at 55 and 75
   const svg = $('flat'); clear(svg);
+  const P = HF.paint(svg, { w: 200, h: 230, sky: 'golden', horizon: 0.82, sunX: 0.78, sunY: 0.6, templeX: 0.2 });
   const base = 206, top = 24, H = base - top - 24, h = Math.max(3, (score == null ? 0 : score) / 100 * H);
-  svg.appendChild(sv('rect', { x: 0, y: base, width: 200, height: 4, fill: '#8f8574' }));
-  svg.appendChild(sv('rect', { x: 54, y: base - 8, width: 92, height: 8, rx: 2, fill: '#d9d2c3' }));
-  svg.appendChild(sv('rect', { x: 66, y: base - 14, width: 68, height: 6, rx: 2, fill: '#cfc4b2' }));
-  svg.appendChild(sv('rect', { x: 80, y: base - 14 - h, width: 40, height: h, rx: 2, fill: '#9c6b3c', class: 'shaft' }));
-  svg.appendChild(sv('rect', { x: 70, y: base - 14 - h - 9, width: 60, height: 9, rx: 2, fill: '#e0b868' }));
-  for (const m of [55, 75]) svg.appendChild(sv('line', { x1: 60, x2: 140, y1: base - 14 - m / 100 * H, y2: base - 14 - m / 100 * H, stroke: '#7f8a52', 'stroke-width': 1, 'stroke-dasharray': '3 2' }));
+  P.shadow(104, base + 6, 64, 6);
+  P.steps(100, base - 14, 68, 3, { stepH: 6, run: 6, band: true });
+  const sh = P.column(100, base - 14, h, 40, { mat: 'bronze', cls: 'shaft', capMat: 'gold' });
+  sh.setAttribute('rx', 2);
+  for (const m of [55, 75]) { const y = base - 14 - m / 100 * H; svg.appendChild(sv('line', { x1: 60, x2: 140, y1: y, y2: y, stroke: '#7f8a52', 'stroke-width': 1.5, 'stroke-dasharray': '3 2' })); P.laurel(150, y, 6, { color: '#7f8a52', leaves: 4 }); }
+  P.vignette();
 }
 
 function renderHero(d) {

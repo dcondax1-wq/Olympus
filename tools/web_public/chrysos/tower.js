@@ -4,6 +4,8 @@
 // createTower(canvas) -> { ok, set(model), tick settled, dispose() }. If WebGL or the render core is not there, ok is false and the page shows its flat tower drawing instead.
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
+import { dress, shaftGeo, latheGeo, mergeParts, mat4 } from '../olympus/hero-stage.js';
+// QA Round 6 bug 8: env-kit marble / bronze, owl-coin gold, the golden HDRI and a painted sky (olympus/hero-stage.js dress), soft shadows on a GPU.
 
 const COIN_H = 0.16, MAX_COINS = 40, COL_R = 0.38, GAP = 1.9;
 
@@ -28,20 +30,21 @@ export function createTower(canvas, opts) {
 
 function build(rc, scene, camera, canvas, o) {
   const reduced = !!o.reduced;
-  scene.add(new THREE.HemisphereLight(0xf0dcb8, 0x4a3a28, 1.1));
-  const sun = new THREE.DirectionalLight(0xffd9a0, 2.4); sun.position.set(5, 9, 6); scene.add(sun);        // about 3000 K afternoon sun
-  const fill = new THREE.PointLight(0xe0a060, 14, 18, 1.5); fill.position.set(-4, 3, 4); scene.add(fill);
-  const marble = new THREE.MeshStandardMaterial({ color: '#d9d2c3', roughness: 0.42, metalness: 0.02 });
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(14, 64), new THREE.MeshStandardMaterial({ color: '#8f8574', roughness: 0.6, metalness: 0 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -0.02; scene.add(floor);
-  const bronzeM = new THREE.MeshStandardMaterial({ color: '#9c6b3c', roughness: 0.45, metalness: 0.7 });
-  const goldM = new THREE.MeshStandardMaterial({ color: '#e0b868', roughness: 0.35, metalness: 0.6, emissive: new THREE.Color('#6a5014'), emissiveIntensity: 0.5 });
+  const D = dress({ rc, scene, camera, palette: 'golden', hdri: 'golden', envI: 0.85, sunDir: [0.55, 0.6, 0.6], key: 2.5, shadowExt: 7, metalEnv: 1.8, sky: { sunX: 0.8, sunY: 0.78, templeX: 0.16, horizon: 0.6 }, fogNear: 18, fogFar: 44 });
+  const { kit } = D;
+  D.ground({ mat: 'paving', color: '#8a7860', r: 30 }); D.build(scene);
+  const marble = kit.mat('marble', { color: '#e6ddcc' });
+  const bronzeM = kit.mat('bronze', { color: '#a87445' });
+  const goldM = D.paint('coin'); goldM.metalness = 0.9; goldM.envMapIntensity = 1.8;
   const oliveM = new THREE.MeshStandardMaterial({ color: '#7f8a52', roughness: 0.5, metalness: 0.1 });
   const coinG = new THREE.CylinderGeometry(COL_R, COL_R, COIN_H * 0.86, 28);
-  const colG = new THREE.CylinderGeometry(COL_R, COL_R * 1.04, 1, 28);
-  const plinthG = new THREE.CylinderGeometry(0.95, 1.05, 0.22, 36);
-  const ringG = new THREE.TorusGeometry(COL_R * 1.5, 0.025, 8, 40);
+  const colG = mergeParts([[shaftGeo({ h: 1, r: COL_R * 1.02, flutes: 16, lite: kit.geoLite, rows: 1, taper: 0.95 })]]);
+  const plinthG = mergeParts([[latheGeo([[0.0001, 0], [1.12, 0], [1.12, 0.07], [1.0, 0.09], [1.0, 0.18], [0.95, 0.2], [0.0001, 0.2]], 40), mat4(0, -0.1, 0)]]);
+  const ringG = new THREE.TorusGeometry(COL_R * 1.5, 0.03, 8, 40);
+  D.tune();
   const group = new THREE.Group(); scene.add(group);
-  let items = [], target = { unit: 100, towers: [] }, yaw = 0.35, drag = null, settled = true;
+  let items = [], target = { unit: 100, towers: [] }, yaw = 0.35, drag = null, settled = true, lastW = 0, lastH = 0;
+  window.__heroStats = () => Object.assign(D.stats(), { calls: rc.renderer.info.render.calls });
 
   function clear() { for (const it of items) { group.remove(it.g); } items = []; }
   function layout(n) {
@@ -50,10 +53,10 @@ function build(rc, scene, camera, canvas, o) {
     for (let i = 0; i < n; i++) {
       const g = new THREE.Group(); g.position.set(i * GAP - w / 2, 0, 0);
       const plinth = new THREE.Mesh(plinthG, marble); plinth.position.set(0, 0.09, 0); g.add(plinth);
-      const bronze = new THREE.Mesh(colG, bronzeM); bronze.position.set(-0.46, 0.2, 0); g.add(bronze);
+      const bronze = new THREE.Mesh(colG, bronzeM); bronze.position.set(-0.46, 0.2, 0); g.add(bronze);   // fluted, base at y
       const coins = new THREE.InstancedMesh(coinG, goldM, MAX_COINS); coins.position.set(0.46, 0.2, 0); coins.count = 0; g.add(coins);
       const ring = new THREE.Mesh(ringG, oliveM); ring.rotation.x = Math.PI / 2; ring.position.set(-0.46, 0.2, 0); g.add(ring);
-      group.add(g); items.push({ g, bronze, coins, ring, h: 0, c: 0, dummy: new THREE.Object3D() });
+      D.shade(g); group.add(g); items.push({ g, bronze, coins, ring, h: 0, c: 0, dummy: new THREE.Object3D() });
     }
     const span = Math.max(4.2, w + 3.2);
     camera.userData.dist = span * 1.25 + 2.5;
@@ -74,7 +77,8 @@ function build(rc, scene, camera, canvas, o) {
     get settled() { return settled; },
     get towers() { return items.length; },
     get yaw() { return yaw; },
-    dispose() { try { rc.stop(); rc.dispose(); } catch (_) { /* nothing */ } },
+    stats: () => D.stats(),
+    dispose() { try { rc.stop(); D.dispose(); rc.dispose(); } catch (_) { /* nothing */ } },
   };
 
   // drag to turn the plinths; the page still scrolls up and down (touch-action: pan-y)
@@ -91,7 +95,7 @@ function build(rc, scene, camera, canvas, o) {
       const hGoal = Math.max(0.05, Math.min(7, (t.fees / target.unit) * COIN_H)), cGoal = Math.min(MAX_COINS, t.coins);
       it.h += (hGoal - it.h) * k; it.c += (cGoal - it.c) * k;
       if (Math.abs(hGoal - it.h) > 0.004 || Math.abs(cGoal - it.c) > 0.04) moving = true; else { it.h = hGoal; it.c = cGoal; }
-      it.bronze.scale.y = it.h; it.bronze.position.y = 0.2 + it.h / 2;
+      it.bronze.scale.y = it.h; it.bronze.position.y = 0.2;
       it.ring.position.y = 0.2 + it.h; it.ring.visible = it.c > 0;
       const n = Math.round(it.c); it.coins.count = n;
       for (let j = 0; j < n; j++) { it.dummy.position.set(0, j * COIN_H + COIN_H / 2, 0); it.dummy.rotation.y = j * 0.7; it.dummy.updateMatrix(); it.coins.setMatrixAt(j, it.dummy.matrix); }
@@ -101,7 +105,8 @@ function build(rc, scene, camera, canvas, o) {
     if (reduced && !moving) { /* still */ }
     settled = !moving;
     frame();
-    camera.aspect = (canvas.clientWidth || 1) / (canvas.clientHeight || 1); camera.updateProjectionMatrix();
+    const cw = canvas.clientWidth || 1, ch = canvas.clientHeight || 1; if (cw !== lastW || ch !== lastH) { lastW = cw; lastH = ch; D.backdrop(cw, ch); }
+    camera.aspect = cw / ch; camera.updateProjectionMatrix();
     rc.render();
   });
   layout(1); frame();

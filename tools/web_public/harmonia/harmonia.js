@@ -1,6 +1,7 @@
 // HARMONIA page (ES module): the balance. Reads ../home.json (the accounts) and ../money/index.json (the money machines) and fixture.json (DEMO, never blank). Read only: it sends nothing and keeps nothing.
 // Text only through textContent / createElementNS. window.HARMONIA is the test hook. ?demo=1&stop=1 opens a given view.
 import * as C from './harmoniacore.js';
+import * as HF from '../olympus/hero-flat.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -21,22 +22,26 @@ function say(t) { $('status').textContent = t; }
 
 // ------------------------------------------------------------------------------------------------ pictures
 function renderFlat(b) {
+  // the painted twin of the 3D balance (olympus/hero-flat.js): golden-hour sky, a fluted marble column, owl-coin weights
   const svg = $('flat'); clear(svg);
+  const P = HF.paint(svg, { w: 320, h: 200, sky: 'golden', horizon: 0.86, sunX: 0.84, sunY: 0.5, templeX: 0.12 });
   const cx = 160, cy = 52, half = 112, c = Math.cos(b.tilt), s = Math.sin(b.tilt), lx = cx - half * c, ly = cy - half * s, rx = cx + half * c, ry = cy + half * s, drop = 78;
-  svg.appendChild(sv('rect', { x: 0, y: 186, width: 320, height: 4, fill: '#8f8574' }));
-  svg.appendChild(sv('rect', { x: 122, y: 176, width: 76, height: 10, rx: 3, fill: '#d9d2c3' }));
-  svg.appendChild(sv('rect', { x: 154, y: cy, width: 12, height: 126, rx: 3, fill: '#d9d2c3' }));
+  P.shadow(160, 190, 70, 5);
+  P.steps(160, 176, 70, 2, { stepH: 6, run: 8, band: true });
+  P.column(160, 176, 176 - cy - 4, 14, { capMat: 'gold' });
   const pan = (x, y, items, nq) => {
     svg.appendChild(sv('line', { x1: x, y1: y, x2: x - 30, y2: y + drop, stroke: '#9c6b3c', 'stroke-width': 1.5 })); svg.appendChild(sv('line', { x1: x, y1: y, x2: x + 30, y2: y + drop, stroke: '#9c6b3c', 'stroke-width': 1.5 }));
-    svg.appendChild(sv('rect', { x: x - 38, y: y + drop, width: 76, height: 7, rx: 3, fill: '#9c6b3c' }));
+    svg.appendChild(sv('path', { d: `M${x - 40} ${y + drop} Q${x} ${y + drop + 16} ${x + 40} ${y + drop} Z`, fill: P.F.bronze, stroke: '#4a3018', 'stroke-width': 1 }));
     let top = y + drop; const tot = items.reduce((a, i) => a + i.usd, 0) || 1;
-    items.filter((i) => i.usd > 0).forEach((i, k) => { const hh = 8 + 20 * Math.sqrt(i.usd / tot), w = 22 + 24 * Math.sqrt(i.usd / tot); top -= hh; svg.appendChild(sv('rect', { x: x - w / 2, y: top, width: w, height: hh - 1, rx: 3, fill: nq ? (k % 2 ? '#e0b868' : '#c8a24a') : '#7f8a52', class: 'weight' })); });
+    items.filter((i) => i.usd > 0).forEach((i, k) => { const hh = 8 + 20 * Math.sqrt(i.usd / tot), w = 22 + 24 * Math.sqrt(i.usd / tot); top -= hh; svg.appendChild(sv('rect', { x: x - w / 2, y: top, width: w, height: hh - 1, rx: 3, fill: nq ? P.F.gold : P.F.marble, stroke: nq ? '#7a5418' : '#8a7e6c', 'stroke-width': 0.8, class: 'weight' })); for (let q = top + 3; q < top + hh - 2; q += 3) P.el('line', { x1: x - w / 2 + 1, x2: x + w / 2 - 1, y1: q, y2: q, stroke: nq ? '#7a5418' : '#8a7e6c', 'stroke-opacity': 0.4, 'stroke-width': 0.6 }); });
   };
   pan(lx, ly, b.left, true); pan(rx, ry, b.right, false);
   svg.appendChild(sv('line', { x1: lx, y1: ly, x2: rx, y2: ry, stroke: '#9c6b3c', 'stroke-width': 7, 'stroke-linecap': 'round', class: 'beam' }));
+  for (const [ex, ey] of [[lx, ly], [rx, ry]]) P.el('circle', { cx: ex, cy: ey, r: 5, fill: P.F.coin });
   svg.appendChild(sv('circle', { cx, cy, r: 9, fill: '#c8a24a', stroke: '#7a5a22', 'stroke-width': 2 }));
-  svg.appendChild(sv('text', { x: 20, y: 22, 'font-size': 11, fill: '#cfc4b2' }, 'NQ bots'));
-  svg.appendChild(sv('text', { x: 300, y: 22, 'font-size': 11, fill: '#cfc4b2', 'text-anchor': 'end' }, 'Everything else'));
+  P.vignette();
+  svg.appendChild(sv('text', { x: 20, y: 22, 'font-size': 11, fill: '#f4e8d0' }, 'NQ bots'));
+  svg.appendChild(sv('text', { x: 300, y: 22, 'font-size': 11, fill: '#f4e8d0', 'text-anchor': 'end' }, 'Everything else'));
 }
 
 function renderDonut(slices) {

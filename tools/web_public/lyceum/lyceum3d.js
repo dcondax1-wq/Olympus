@@ -1,93 +1,112 @@
-// LYCEUM scene (ES module, optional): a marble lecture hall seen from the door. Eight column places stand in two rows; the hall starts with two columns and every rank adds one
-// (the empty places show a bare bronze base), and from the fourth rank each new column gets an olive laurel. A lectern waits at the far end. Warm 3000 K light, warm fog, plain lit materials.
-// If WebGL is missing the canvas is hidden and the page works without it. Reduced motion or LITE draws one still frame; a hidden tab draws nothing. three.js is Jarvis's copy.
+// LYCEUM scene (ES module, optional): the peripatos, Aristotle's covered walk, seen from the door at golden hour. Eight column places stand in two
+// rows on a marble walk with a mosaic runner; the hall starts with two columns and every rank adds one (the empty places show a bare bronze
+// ring), each standing row carries its architrave, and from the fourth rank each new column wears an olive laurel. At the far end a lectern with an
+// open scroll waits on marble steps before a plastered wall with an oxblood dado and a painted Greek key, braziers either side.
+// QA Round 6 bug 8: env-kit marble / mosaic / plaster scans, HDRI light and a painted golden sky via olympus/hero-stage.js (createStage on the page's
+// canvas). If WebGL is missing the canvas is hidden and the page works without it. Reduced motion or LITE draws still frames only; a hidden tab or
+// an off-screen canvas draws (almost) nothing. three.js is Jarvis's copy.
 import * as THREE from '../jarvis/three.module.min.js';
-import { build as shape, bake, dispose } from '../olympus/shapes3d.js';       // the AGORA shapes library: the Doric column (fluted shaft, echinus, abacus) baked into one mesh per column
+import { createStage, shaftGeo, latheGeo, boxGeo, laurelGeo, mergeParts, mat4 } from '../olympus/hero-stage.js';
 
 const O = window.OLYMPUS || null;
 const cv = document.getElementById('stage'), box = cv ? cv.parentElement : null;
-const st = { scene: null, renderer: null, camera: null, slots: [], beam: null, raf: 0, t0: performance.now(), still: false, dead: false, ready: false, columns: -1, laurels: 0, rise: [] };
+const st = { H: null, slots: [], beams: [], still: false, dead: false, ready: false, columns: -1, laurels: 0 };
+const CH = 3.4, R0 = 0.3, XS = 2.4, Z0 = 2.2, DZ = 2.6;
 
 function build() {
   const lite = !!(O && O.lite && O.lite()), reduced = !!(O && O.reduced && O.reduced());
   st.still = lite || reduced;
-  const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: !lite, alpha: true, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lite ? 1 : 2)); renderer.outputColorSpace = THREE.SRGBColorSpace;
-  const scene = new THREE.Scene(); scene.fog = new THREE.Fog(0x1a1611, 9, 22);
-  const camera = new THREE.PerspectiveCamera(46, 1.8, 0.1, 50); camera.position.set(0, 2.4, 9.5); camera.lookAt(0, 1.7, 0);
-  const sun = new THREE.DirectionalLight(0xffd7a0, 2.3); sun.position.set(-5, 8, 6); scene.add(sun);
-  scene.add(new THREE.HemisphereLight(0xffe6c4, 0x3a2e22, 0.95));
-  const marble = new THREE.MeshStandardMaterial({ color: 0xf1e9db, roughness: 0.45 }), warm = new THREE.MeshStandardMaterial({ color: 0xd9cdb8, roughness: 0.6 });
-  const bronze = new THREE.MeshStandardMaterial({ color: 0x9c6b3c, roughness: 0.45, metalness: 0.6 });
-  // floor and steps
-  const floor = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.2, 14), warm); floor.position.set(0, -0.1, -2); scene.add(floor);
-  const step = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.14, 1.6), marble); step.position.set(0, 0.07, -7.4); scene.add(step);
-  // the back wall: a plain marble panel with a gold band
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(7.2, 4.6, 0.2), new THREE.MeshStandardMaterial({ color: 0xcfc3ad, roughness: 0.8 })); wall.position.set(0, 2.3, -9.1); scene.add(wall);
-  const band = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.12, 0.24), new THREE.MeshStandardMaterial({ color: 0xc8a24a, roughness: 0.4, metalness: 0.7 })); band.position.set(0, 3.3, -9.0); scene.add(band);
-  // the lectern
-  const lec = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.6), marble); lec.position.set(0, 0.69, -7.6); scene.add(lec);
-  const top = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.08, 0.8), bronze); top.position.set(0, 1.28, -7.6); top.rotation.x = -0.18; scene.add(top);
-  // eight column places: four rows deep, left and right; the order of the ranks goes front to back, left then right
-  const H = 3.4, laurel = new THREE.MeshStandardMaterial({ color: 0x7f8a52, roughness: 0.7 });
-  const lib = shape('doric', { lite, steps: false, shaft: 3.2 }), colGeo = bake(lib).geometry, colMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, metalness: 0.02 }); dispose(lib);   // ONE geometry, eight columns
-  for (let n = 0; n < 8; n++) {
-    const row = n >> 1, x = (n & 1 ? 1 : -1) * 2.5, z = 2.2 - row * 2.6, g = new THREE.Group(); g.position.set(x, 0, z);
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.5, 0.18, 24), bronze); base.position.y = 0.09; g.add(base);
-    const col = new THREE.Group();
-    const shaft = new THREE.Mesh(colGeo, colMat); shaft.position.y = 0.18; shaft.scale.set(1.25, 1, 1.25); col.add(shaft);           // fluted shaft + capital from the library
-    const wreath = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.06, 6, 16), laurel); wreath.rotation.x = Math.PI / 2; wreath.position.y = 0.18 + H - 0.35; col.add(wreath);
-    g.add(col); scene.add(g);
-    st.slots.push({ g, col, wreath, k: 1 });
-  }
-  const beam = new THREE.Mesh(new THREE.BoxGeometry(6.2, 0.3, 0.7), marble); beam.position.set(0, 0.18 + H + 0.35, 2.2); scene.add(beam); st.beam = beam;
-  Object.assign(st, { scene, renderer, camera });
-  size();
+  const H = createStage(box, { canvas: cv, reduce: st.still, tier: lite ? 'low' : undefined, palette: 'golden', hdri: 'golden', target: [0, 1.75, -2.2], dist: 11.2, height: 0.75, fov: 44, sway: 0.07, swayPeriod: 52, aspectK: 0.7,
+    sunDir: [-0.55, 0.55, 0.62], shadowExt: 9, key: 2.6, sky: { sunX: 0.3, sunY: 0.75, templeX: 0.85, horizon: 0.66 }, fogNear: 20, fogFar: 46 });
+  if (!H) throw new Error('no WebGL');
+  const { kit, B } = H;
+  H.key.color.setHex(0xffd7a0);                                   // the warm (about 3000 K) key light
+  H.scene.fog = new THREE.Fog(H.scene.fog.color.getHex(), 20, 46);     // warm fog into the painted sky
+  H.ground({ mat: 'paving', color: '#8f7d64', r: 30 });
+  // the walk: a marble floor with a mosaic runner and key borders
+  B.box('marble:uv', 0, 0.06, -2.4, 6.6, 0.12, 15, 0, '#d9cfbd');
+  B.box('mosaic:uv', 0, 0.125, -2.4, 2.2, 0.01, 14.4, 0, '#8a6a52');
+  H.paint('meander', { bg: '#e2d4b6', fg: '#7a3a22' });
+  for (const sx of [-1.18, 1.18]) { const g = new THREE.PlaneGeometry(0.2, 14.4).rotateX(-Math.PI / 2); const uv = g.getAttribute('uv'); for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i) * 14.4 / (0.2 * 8), uv.getX(i)); B.add('paint:meander', g, mat4(sx, 0.132, -2.4, Math.PI / 2 * 0)); }
+  // the far end: steps, the lectern with an open scroll, the wall
+  B.steps({ x: 0, z: -8.0, w: 3.0, d: 1.3, n: 3, h: 0.42, run: 0.26, mat: 'marble:uv', color: '#e2d9c8' });
+  B.lathe('marble:uv', [[0.32, 0], [0.32, 0.08], [0.2, 0.16], [0.16, 0.9], [0.24, 0.98], [0.34, 1.02], [0.0001, 1.02]], 0, 0.42, -8.0, 1, 20, '#ece4d6');
+  B.add('wood:uv', boxGeo(0.95, 0.06, 0.62), mat4(0, 1.5, -7.98, 0, 1, -0.28), '#6b4a2a');
+  B.add('cloth:uv', boxGeo(0.74, 0.012, 0.44), mat4(0, 1.54, -7.97, 0, 1, -0.28), '#efe3c4');
+  for (const sx of [-1, 1]) B.add('cloth:uv', new THREE.CylinderGeometry(0.045, 0.045, 0.5, 10), mat4(sx * 0.39, 1.56, -7.97, 0, 1, -0.28 + Math.PI / 2, 0), '#e6d6b0');
+  const wz = -9.2;
+  B.box('ashlar:uv', 0, 0.25, wz, 7.4, 0.5, 0.4, 0, '#c4b398');
+  B.box('plaster:uv', 0, 0.5 + 0.6, wz, 7.4, 1.2, 0.36, 0, '#7a3122');
+  B.box('plaster:uv', 0, 1.7 + 1.45, wz, 7.4, 2.9, 0.36, 0, '#d8c6a2');
+  B.box('ashlar:uv', 0, 4.75, wz, 7.6, 0.3, 0.5, 0, '#c4b398');
+  { const g = new THREE.PlaneGeometry(7.4, 0.32); const uv = g.getAttribute('uv'); for (let i = 0; i < uv.count; i++) uv.setX(i, uv.getX(i) * 7.4 / (0.32 * 8)); B.add('paint:meander', g, mat4(0, 1.88, wz + 0.185)); }
+  for (const sx of [-1, 1]) B.brazier({ x: sx * 1.55, z: -7.4, h: 1.0, r: 0.24 });
+  // the eight column places: a bronze ring (always), the column (fluted marble shaft, capital), a gold laurel
+  for (let n = 0; n < 8; n++) { const row = n >> 1, x = (n & 1 ? 1 : -1) * XS, z = Z0 - row * DZ; B.lathe('bronze', [[0.0001, 0], [R0 * 1.55, 0], [R0 * 1.55, 0.08], [R0 * 1.3, 0.14], [0.0001, 0.14]], x, 0.12, z, 1, 24); }
+  H.build(H.root);
+  const geo = kit.geoLite;
+  const colG = mergeParts([[shaftGeo({ h: CH - 0.32, r: R0, flutes: 20, lite: geo, rows: 2 }), mat4(0, 0, 0)],
+    [latheGeo([[R0 * 0.82, 0], [R0 * 0.86, 0.04], [R0 * 1.02, 0.1], [R0 * 1.24, 0.17], [R0 * 1.3, 0.2], [0.0001, 0.2]], geo ? 12 : 24), mat4(0, CH - 0.32, 0)],
+    [boxGeo(R0 * 2.75, 0.12, R0 * 2.75), mat4(0, CH - 0.06, 0)]]);
+  const cols = new THREE.InstancedMesh(colG, kit.mat('marble', { color: '#eee7d9' }), 8);
+  const lg = mergeParts(laurelGeo(0.36, { leaves: 22, gap: 0.7 }).map((g) => [g, null]));
+  const laurels = new THREE.InstancedMesh(lg, new THREE.MeshStandardMaterial({ color: 0x7f8a52, roughness: 0.6, metalness: 0.05 }), 8);      // olive laurels
+  const beamG = boxGeo(0.62, 0.42, 1);
+  const beams = new THREE.InstancedMesh(beamG, kit.mat('marble', { color: '#e8e0d0' }), 2);
+  [cols, laurels, beams].forEach((m) => { m.frustumCulled = false; H.shade(m); H.root.add(m); });
+  for (let n = 0; n < 8; n++) { const row = n >> 1, x = (n & 1 ? 1 : -1) * XS, z = Z0 - row * DZ; st.slots.push({ x, z, k: 1, on: false, wreath: false }); }
+  st.cols = cols; st.laurelM = laurels; st.beamM = beams;
+  H.blobs(st.slots.map((s) => [s.x, s.z, 0.55, 0.9, 0.135]), { opacity: 0.4 });
+  st.motes = H.motes({ n: 40, center: [0, 2.2, -2], box: [6, 3.6, 12], size: 4, alpha: 0.4 });
+  st.H = H;
 }
 
-function size() {
-  if (!st.renderer || !box) return;
-  const w = Math.max(160, box.clientWidth || 340), hh = Math.max(110, box.clientHeight || 200);
-  st.renderer.setSize(w, hh, false); st.camera.aspect = w / hh; st.camera.updateProjectionMatrix();
+function place() {
+  const { cols, laurelM, beamM } = st;
+  st.slots.forEach((s, n) => {
+    const k = s.on ? Math.max(0.01, s.k) : 0.0001;
+    cols.setMatrixAt(n, mat4(s.x, 0.26, s.z, n * 0.37, [s.on ? 1 : 0.0001, k, s.on ? 1 : 0.0001]));
+    laurelM.setMatrixAt(n, mat4(s.x + (s.x < 0 ? 0.31 : -0.31), 0.26 + CH * 0.72 * k, s.z, s.x < 0 ? Math.PI / 2 : -Math.PI / 2, s.wreath && s.k > 0.98 ? 1 : 0.0001));
+  });
+  // each side's architrave spans its standing columns (front to back)
+  [0, 1].forEach((side) => {
+    const n = st.slots.filter((s, i) => (i & 1) === side && s.on && s.k > 0.98).length, x = (side ? 1 : -1) * XS;
+    if (n < 1) { beamM.setMatrixAt(side, mat4(x, -5, 0, 0, 0.0001)); return; }
+    const z0 = Z0 + 0.45, z1 = Z0 - (n - 1) * DZ - 0.45, len = z0 - z1;
+    beamM.setMatrixAt(side, mat4(x, 0.26 + CH + 0.21, (z0 + z1) / 2, 0, [1, 1, len]));
+  });
+  cols.instanceMatrix.needsUpdate = true; laurelM.instanceMatrix.needsUpdate = true; beamM.instanceMatrix.needsUpdate = true;
 }
 
 /** columns = how many stand (2..8), laurels = how many of them wear a laurel */
 function setHall(columns, laurels) {
-  if (!st.scene) return;
+  if (!st.H) return;
   const first = st.columns < 0, was = st.columns;
   st.columns = Math.max(0, Math.min(8, columns | 0)); st.laurels = Math.max(0, Math.min(8, laurels | 0));
   st.slots.forEach((s, n) => {
     const on = n < st.columns;
-    s.col.visible = on; s.wreath.visible = on && n < st.laurels;
-    if (on && !first && n >= was && !st.still) { s.k = 0; st.rise.push(s); } else s.k = 1;
-    s.col.scale.y = s.k || 0.01;
+    s.on = on; s.wreath = on && n < st.laurels;
+    s.k = on && !first && n >= was && !st.still ? 0 : 1;
   });
-  // the architrave spans the front pairs that are complete
-  const rows = Math.floor(st.columns / 2); st.beam.visible = rows >= 1; st.beam.scale.set(1, 1, 1);
-  if (st.still) frame(0); else if (!st.raf) st.raf = requestAnimationFrame(frame);
-}
-
-function frame(ts) {
-  if (st.dead || !st.renderer) return;
-  const t = st.still ? 0 : (ts - st.t0) / 1000;
-  for (const s of st.rise) { s.k = Math.min(1, s.k + 0.025); s.col.scale.y = Math.max(0.01, s.k); }
-  st.rise = st.rise.filter((s) => s.k < 1);
-  st.camera.position.x = Math.sin(t * 0.12) * 0.9; st.camera.lookAt(0, 1.7, 0);
-  st.renderer.render(st.scene, st.camera);
-  if (!st.ready) { st.ready = true; document.documentElement.setAttribute('data-stage', 'on'); }
-  if (!st.still) st.raf = requestAnimationFrame(frame);
+  place(); st.H.poke(2500);
 }
 
 function start() {
   if (!cv || !box) return;
   try { build(); } catch (_) { box.classList.add('off'); return; }
-  window.addEventListener('lyceum:model', (e) => { try { const d = e.detail || {}; setHall(d.columns, d.laurels); if (!st.still && !st.raf) st.raf = requestAnimationFrame(frame); } catch (_) { /* keep the last picture */ } });
-  window.addEventListener('resize', () => { size(); if (st.still) frame(0); });
-  document.addEventListener('visibilitychange', () => { cancelAnimationFrame(st.raf); st.raf = 0; if (!document.hidden && !st.still) st.raf = requestAnimationFrame(frame); });
-  window.addEventListener('pagehide', () => { st.dead = true; cancelAnimationFrame(st.raf); try { st.renderer.dispose(); } catch (_) { /* gone */ } });
+  st.H.start((dt, t) => {
+    let moving = false;
+    for (const s of st.slots) if (s.on && s.k < 1) { s.k = Math.min(1, s.k + dt * 1.5); moving = true; }
+    if (moving) place();
+    st.motes.tick(t);
+    if (!st.ready) { st.ready = true; document.documentElement.setAttribute('data-stage', 'on'); }
+    return moving;
+  });
+  window.addEventListener('lyceum:model', (e) => { try { const d = e.detail || {}; setHall(d.columns, d.laurels); } catch (_) { /* keep the last picture */ } });
+  window.addEventListener('pagehide', () => { st.dead = true; try { st.H.dispose(); } catch (_) { /* gone */ } });
   const m = window.LYCEUM;
   if (m && m.S && m.S.ready) { const hall = m.C.hallFor(m.C.rankFor(m.C.totalXp(m.S.prog)).index); setHall(hall.columns, hall.laurels); } else setHall(2, 0);
-  if (!st.still) st.raf = requestAnimationFrame(frame);
-  window.LYCEUM3D = { ready: () => st.ready, columns: () => st.columns, laurels: () => st.laurels, still: () => st.still };
+  window.LYCEUM3D = { ready: () => st.ready, columns: () => st.columns, laurels: () => st.laurels, still: () => st.still, stats: () => (st.H ? st.H.stats() : null) };
+  window.__heroStats = () => (st.H ? st.H.stats() : null);
 }
 start();
