@@ -213,7 +213,7 @@ function buildSea(h, o) {
   const size = o.size || 260, seg = h.T.sea, center = v3(o.center, [0, 0, 0]);
   const fog = h.scene.fog;
   const u = { uTime: { value: 0 }, uAmp: { value: o.amplitude || 1 }, uGlitter: { value: h.tier === 'off' ? 0.4 : 1 },
-    uDeep: { value: C(o.deep || '#1f4a5e') }, uShallow: { value: C(o.shallow || '#4f8c94') }, uSky: { value: C('#e6c79c') }, uSun: { value: C('#ffd9a0') },
+    uDeep: { value: C(o.deep || '#1f4a5e') }, uShallow: { value: C(o.shallow || '#3f7480') }, uSky: { value: C('#e6c79c') }, uSun: { value: C('#ffd9a0') },
     uSunDir: { value: new THREE.Vector3(-0.6, 0.3, -0.7) }, uFog: { value: C(fog && fog.color ? '#' + fog.color.getHexString() : '#e8cfa4') },
     uFogD: { value: o.fogDensity || (fog && fog.density ? fog.density : 0.004) } };
   const mat = new THREE.ShaderMaterial({ uniforms: u, vertexShader: SEA_VS, fragmentShader: SEA_FS, fog: false, defines: { OCT: 2 } });
