@@ -184,7 +184,7 @@ def test_people_lab():
             ids = p.evaluate("window.PEOPLE_LAB.ids()")
             states = []
             for k, pose in enumerate(["wave", "think", "hammer", "write", "read", "weigh", "telescope", "type", "carry", "cheer", "shrug", "slump"]):
-                r = p.evaluate("(o) => window.PEOPLE_LAB.show(o)", {"id": ids[k % len(ids)], "pose": pose, "expr": "happy" if k % 2 else "thinking", "angle": 0.3})
+                r = p.evaluate("(o) => window.PEOPLE_LAB.show(o)", {"id": ids[k % len(ids)], "pose": pose, "expr": "happy" if k % 2 else "thinking", "angle": 0.3, "frames": 14 if pose in ("wave", "cheer", "shrug") else 40})
                 states.append((pose, r["state"]["pose"], r["triangles"]))
             check("d. every pose plays on a real person (the lab's turntable), within the figure budget", all(a == b and t <= 12000 for a, b, t in states), states)
             spreads = []

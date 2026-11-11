@@ -5,7 +5,7 @@
 // Draw calls: floor, rug, table (2), krater, cups, columns (2), ring beam, couches (3), braziers (2) = 14, the crowd 2, each close-up 2 (at most 5) = at most 26.
 //   createHall(canvas, { people: [spec], reduced, onPick(i) }) -> { ok, yaw(), setYaw(a), spin(dx), focus(i), active(i|-1), talking(i, on), mouth(i, viseme, amount),
 //                                                                  project(i) -> {x, y, front}, pick(clientX, clientY), drawCalls(), triangles(), dispose() }
-// Voice (optional): window events 'olympus:people:speak' {id, on} and 'olympus:people:viseme' {id, viseme, amount} move that person's mouth.
+// The chat sheet's 'olympus:people:open' / 'close' make that person turn, wave and talk. Voice (optional): window events 'olympus:people:speak' {id, on} and 'olympus:people:viseme' {id, viseme, amount} move that person's mouth.
 // If WebGL, the render core or the tier (LITE / off) says no, ok is false and the page keeps its portrait grid.
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
@@ -122,7 +122,9 @@ function build(rc, scene, camera, canvas, o) {
   const idx = (id) => { try { const P = window.OLYMPUS_PEOPLE; const s = P && P.spec ? P.spec(id) : null; return s ? (bySeed.has(s.seed >>> 0) ? bySeed.get(s.seed >>> 0) : -1) : -1; } catch (_) { return -1; } };
   const onSpeak = (e) => { const dd = e && e.detail || {}, i = idx(dd.id); if (i >= 0) api.talking(i, dd.on !== false); };
   const onViseme = (e) => { const dd = e && e.detail || {}, i = idx(dd.id); if (i >= 0) api.mouth(i, dd.viseme, dd.amount); };
+  const onOpen = (e) => { const i = idx(e && e.detail && e.detail.id); if (i >= 0) { api.focus(i); api.active(i); } }, onClose = () => api.active(-1);      // the 1:1 chat sheet
   window.addEventListener('olympus:people:speak', onSpeak); window.addEventListener('olympus:people:viseme', onViseme);
+  window.addEventListener('olympus:people:open', onOpen); window.addEventListener('olympus:people:close', onClose);
   fit(); placeCam(); syncClose();
   rc.start(frame);
   const api = {
@@ -146,7 +148,7 @@ function build(rc, scene, camera, canvas, o) {
     triangles: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && x.visible && x.geometry) { const g = x.geometry, c = g.index ? g.index.count : g.getAttribute('position').count; n += (c / 3) * (x.isInstancedMesh ? x.count : 1); } }); return Math.round(n); },
     closeUps: () => [...close.keys()],
     speaker: () => (st.active >= 0 && close.has(st.active) ? { seat: st.active, ...close.get(st.active).userData.state() } : null),
-    dispose() { window.removeEventListener('olympus:people:speak', onSpeak); window.removeEventListener('olympus:people:viseme', onViseme); try { rc.dispose(); } catch (_) { /* gone */ } for (const i of [...close.keys()]) dropClose(i); crowd.userData.dispose(); },
+    dispose() { window.removeEventListener('olympus:people:open', onOpen); window.removeEventListener('olympus:people:close', onClose); window.removeEventListener('olympus:people:speak', onSpeak); window.removeEventListener('olympus:people:viseme', onViseme); try { rc.dispose(); } catch (_) { /* gone */ } for (const i of [...close.keys()]) dropClose(i); crowd.userData.dispose(); },
   };
   try { window.SYMPOSIUM_HALL = api; } catch (_) { /* no window */ }      // read-only hook for the page test
   return api;
