@@ -31,12 +31,13 @@ QUERY = "?demo=1&q=low&welcome=0&intro=0"
 W, H = 390, 844
 MIN_TEXT = 40                 # characters of visible text below which a page counts as empty
 MIN_PAINTED = 0.01            # share of pixels that differ from the page's main colour below which a page with little text counts as unpainted
+VEIL_SLOW_MS = 8000           # the kit's loading veil lifts by itself after 12 s: lasting longer than this means the app never said it is ready
 NOTHING = 0.003               # below this share nothing at all is on the screen, whatever the text says (hidden text, a stuck cover)
 CODE_EXT = (".js", ".mjs", ".css", ".html", ".htm", ".wasm")
 # console noise that is not a defect of the page: the request list already carries failed loads, and software GL warns about itself
 IGNORE_CONSOLE = re.compile(r"Failed to load resource|net::ERR_|GPU stall|WebGL.*(software|fallback|deprecated)|GL_INVALID|swiftshader|Automatic fallback to software|"
                             r"the server responded with a status of 404", re.I)
-HARD = ("status", "exception", "console", "request", "blank", "timeout", "intro")
+HARD = ("status", "exception", "console", "request", "blank", "timeout", "intro", "veil")
 
 
 # ------------------------------------------------------------------------------------------------ pure analysis (unit-tested)
@@ -105,6 +106,9 @@ def classify(rec):
             warnings.append(f"missing data: {short} ({code or 'no answer'})")
     if st == 200 and not rec.get("timeout"):
         text, painted, canvases = rec.get("text_len") or 0, rec.get("painted"), rec.get("canvases") or 0
+        veil = rec.get("veil_ms")
+        if rec.get("veil_stuck") or (isinstance(veil, (int, float)) and veil > VEIL_SLOW_MS):
+            problems.append(f"veil: the loading cover stayed {'over 14' if rec.get('veil_stuck') else round(veil / 1000)} s (the app never calls OLYMPUS.ready(), so the kit waits for its 12 s safety lift)")
         if rec.get("intro_stuck"):
             problems.append("intro: the intro film did not end within 15 s (it covers the app)")
         if painted is not None and (painted < NOTHING or (painted < MIN_PAINTED and text < MIN_TEXT and not canvases)):
@@ -216,6 +220,7 @@ PROBE = """() => { const d = document, b = d.body; const err = d.querySelector('
   return { text_len: b ? (b.innerText || '').replace(/\\s+/g, ' ').trim().length : 0, canvases: d.querySelectorAll('canvas, svg').length, title: (d.title || '').trim(),
     kit: !!d.querySelector('script[data-app], [data-oly-app]'), overflow_px: Math.max(0, d.documentElement.scrollWidth - innerWidth - 1),
     err_banner: err && err.offsetParent !== null ? err.textContent : '', intro: window.__olyAppIntro ? window.__olyAppIntro.state : 'none' }; }"""
+VEIL_UP = "() => !!document.querySelector('.oly-veil:not(.out)')"
 INTRO_OVER = "() => { const s = window.__olyAppIntro; return !s || ['done', 'skipped', 'off', 'failed'].indexOf(s.state) >= 0; }"
 
 
@@ -263,6 +268,12 @@ def visit(br, origin, app, out, limit_s=40, query=QUERY):
             p.wait_for_function(INTRO_OVER, timeout=min(15.0, left()) * 1000, polling=200)
         except Exception:
             rec["intro_stuck"] = True
+        if p.evaluate(VEIL_UP):                                # the kit's loading veil: wait for it to lift so the screenshot shows the app, and time it
+            try:
+                p.wait_for_function("() => !document.querySelector('.oly-veil:not(.out)')", timeout=min(14.0, left()) * 1000, polling=100)
+            except Exception:
+                rec["veil_stuck"] = True
+        rec["veil_ms"] = int((time.time() - t0) * 1000) if not rec.get("veil_stuck") else None
         p.wait_for_timeout(int(min(1.5, left()) * 1000))
         rec.update(p.evaluate(PROBE))
         shot = p.screenshot(timeout=min(20.0, left()) * 1000)

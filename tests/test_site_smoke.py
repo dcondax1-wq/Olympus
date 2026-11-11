@@ -75,6 +75,8 @@ def main():
         ("a page with almost no text and no canvas is blank", good(text_len=3, canvases=0, painted=0.2), "blank"),
         ("a page where nothing is painted is blank, whatever its text", good(text_len=5000, painted=0.001), "blank"),
         ("a page with little text and almost nothing painted is blank", good(text_len=20, canvases=0, painted=0.006), "blank"),
+        ("the kit's loading veil that stays 12 s (the app never said ready) is a hard failure", good(veil_ms=12150), "veil"),
+        ("a loading veil that never lifts is a hard failure", good(veil_stuck=True), "veil"),
         ("an intro film that never ends is a hard failure (it covers the app)", good(intro_stuck=True), "intro"),
         ("a timeout is a hard failure", good(timeout=True, status=None), "timeout"),
         ("the kit's own 'could not load' banner is a hard failure", good(err_banner="colosseum could not load: people.js is missing"), "console"),
@@ -94,6 +96,9 @@ def main():
     for name, rec, text in soft:
         ok, pr, wa = S.classify(rec)
         check(f"classify: {name}", ok is True and pr == [] and wa == [text], (pr, wa))
+    ok, pr, wa = S.classify(good(veil_ms=1400))
+    check("a veil that lifts in 1.4 s is fine", ok and not pr, pr)
+    check("the veil message names the cause and the fix", S.classify(good(veil_ms=12150))[1][0] == "veil: the loading cover stayed 12 s (the app never calls OLYMPUS.ready(), so the kit waits for its 12 s safety lift)", S.classify(good(veil_ms=12150))[1])
     ok, pr, wa = S.classify(good(text_len=101, canvases=0, painted=0.0077))
     check("a short page of plain text on a dark background (0.8% painted, 101 characters) is NOT blank", ok and not pr, pr)
     ok, pr, wa = S.classify(good(text_len=0, canvases=3, painted=0.3))
