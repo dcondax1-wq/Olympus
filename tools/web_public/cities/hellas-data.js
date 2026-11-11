@@ -8,6 +8,7 @@
 // poleis are marked "example". READ ONLY: nothing here trades, places an order or changes a file.
 import { hash32 } from './util.js';
 import { allApps, DISTRICT_NAME } from './athens-villages.js';
+import { greekName } from './people-talk.js';
 
 export const MAX_POLIS = 120, MIN_CLUSTER = 3, MIN_DC = 6;
 const isObj = (v) => v != null && typeof v === 'object' && !Array.isArray(v);
@@ -275,8 +276,45 @@ export function buildersOf(json, poleis) {
     else if (area === 'cities') { target = 'apps:athens'; site = 'Hellas itself, from the walls of Athens'; }
     else if (app) { target = 'apps:' + app.group; site = `the ${app.name} house in ${DISTRICT_NAME[app.group] || 'Athens'}`; }
     else if (area === 'design' || area === 'quality') { target = 'apps:athens'; site = 'every street of Athens'; }
-    return { i, name, job: String(a.job || '').slice(0, 120), area, target, site, newSite: !target };
+    const short = String(a.branch || '').replace(/^worktree-agent-/, ''), slug = low.replace(/[^a-z0-9]+/g, '-');
+    return { i, name, job: String(a.job || '').slice(0, 120), area, target, site, newSite: !target, pid: 'builder:' + (short || slug), alt: short ? ['builder:' + short.slice(0, 8), 'builder:' + short.slice(0, 7), 'builder:worktree-agent-' + short, 'builder:' + slug] : [] };
   });
+}
+// ------------------------------------------------------------------ the people you can talk to (docs/PERSONA_API.md; the own-chat answers)
+const NO_ORDERS = 'I cannot place orders: paper and suggestions only.';
+function sixAnswers(p, rows, scope) {
+  const A = p.activity || { state: 'quiet', doing: p.label, last: '' }, n = rows.length, unit = p.unit, isRun = p.src === 'archive';
+  const withNet = rows.filter((r) => r.net != null), best = withNet.slice().sort((a, b) => b.net - a.net)[0], good = rows.filter((r) => r.tone === 'good'), bad = rows.filter((r) => r.tone === 'bad'), open = rows.filter((r) => r.tone === 'warn');
+  const money = (r) => (r.net == null ? 'no money figure' : isRun ? `${usd(r.net)} after costs in 2026 (${usd(r.perMonth)} per month)` : p.src === 'datacity' ? `${usd(r.net, 1)} per trade per micro after costs` : `${usd(r.net, 2)} in total`);
+  const lr = isRun ? rows.slice().sort((a, b) => (dayNum(b.built) || 0) - (dayNum(a.built) || 0))[0] : rows[0];
+  const why = (r) => (r && r.note ? ` The note says: ${clip(r.note, 150)}` : '');
+  const ruin = A.state === 'ruin';
+  return [
+    [`What is ${scope} working on?`, ruin ? `Nothing any more. These are the ruins of ${p.label.replace(/ \(rejected.*\)$/, '')}: ${plural(n, unit)}, every one rejected.` : A.state === 'working' ? `We are at work: ${A.doing}.` : `It is quiet here: ${A.doing}.`],
+    ['What was the last result?', lr ? `${clip(lr.title, 90)}: ${lr.verdict ? (V_WORD[lr.verdict] || lr.verdict) + ', ' : ''}${money(lr)}${isRun && lr.m ? `, profit factor ${lr.m[2]}, built ${dayName(lr.built)}` : ''}. History, not a forecast.` : 'There is no result here yet.'],
+    ['What did you learn?', good.length ? `${plural(good.length, unit)} of ${n} ${isRun ? 'were adopted' : 'came out good'}. The best: ${clip((best || good[0]).title, 80)}, ${money(best || good[0])}.` : best ? `Nothing was adopted here. The best number was ${clip(best.title, 80)}: ${money(best)}, but it did not pass the checks.` : 'Nothing I can put a number on.'],
+    ['What failed here?', bad.length ? `${plural(bad.length, unit)} of ${n} ${isRun ? 'were rejected' : 'lost money or were stopped'}. ${isRun ? 'A run is rejected when it does not beat the live baseline in 2026 AND in 2021-25, or trades too rarely. ' : ''}Example: ${clip(bad[0].title, 80)}, ${money(bad[0])}.${why(bad[0])}` : 'Nothing failed in the rows I keep.'],
+    ['What next?', ruin ? 'Nothing: this idea is closed. Do not test it again without a new idea.' : open.length ? `${plural(open.length, unit)} still ${open.length === 1 ? 'waits' : 'wait'} for a verdict. ${NO_ORDERS}` : `Nothing is planned here. ${NO_ORDERS}`],
+    ['How many houses, and why?', `${plural(n, 'house')}: one for every ${unit}. ${isRun ? 'The districts are the verdicts (adopted, open, rejected) and the villages are the build days.' : 'The districts and villages group rows that belong together.'}${p.example ? ' These are example rows: the real file was not found.' : ''}`],
+  ];
+}
+/** the keeper stands at the gate of a polis and speaks for the whole city */
+export function keeperPerson(p) {
+  const name = greekName('keeper:' + p.id), ruin = p.activity && p.activity.state === 'ruin';
+  return { id: 'keeper:' + p.id, alt: [], kind: 'keeper', name: `${name}, keeper of ${p.name}`, short: name, title: `${ruin ? 'Keeper of the ruins' : 'Keeper of the gate'} · ${p.label}`, polis: p.id,
+    hello: ruin ? `I am ${name}. I keep the ruins of ${p.name}. Ask me why it fell.` : `I am ${name}, keeper of ${p.name}. Ask me what we do here.`, qa: sixAnswers(p, p.rows, 'this city') };
+}
+/** a townsperson speaks for the village block it walks around */
+export function townsPerson(p, village, rows, k = 0) {
+  const name = greekName(`towns:${p.id}:${village.idx}:${k}`);
+  return { id: `towns:${p.id}:${village.idx}`, alt: [], kind: 'villager', name: `${name} of ${village.name}`, short: name, title: `Lives in ${village.name}, ${p.name}`, polis: p.id, hello: `I am ${name}. I live in ${village.name}. Ask me about my street.`, qa: sixAnswers(p, rows, 'this village') };
+}
+/** a builder of the caravan: only the snapshot is known, and it says so */
+export function builderPerson(b, world) {
+  const snap = `${world.buildersLabel || 'Snapshot at build time'}${world.buildersAsof ? ' (' + world.buildersAsof.slice(0, 16).replace('T', ' ') + ' UTC)' : ''}`, unknown = `I am a snapshot taken when this page was built, so I cannot tell you that. Ergasterion shows the workers live.`;
+  return { id: b.pid, alt: b.alt || [], kind: 'builder', name: b.name, short: b.name, title: `Builder · on the road to ${b.site}`, builder: b.i, hello: `I am the ${b.name} builder. Ask me what I am building.`, fine: snap, qa: [
+    ['What are you working on?', `${b.job}.`], ['Where are you going?', `To ${b.site}${b.newSite ? ': it is not built yet, so I carry the first stones' : ''}.`], ['What was the last result?', unknown], ['What did you learn?', unknown],
+    ['What next?', `I finish this job and report to the lead. ${NO_ORDERS}`], ['How many builders are there, and why?', `${world.builders.length} builders were at work when this page was built: one for each job the owner asked for that night.`]] };
 }
 export const headerLine = (c) => `${plural(c.cities, 'city').replace('citys', 'cities')}, ${plural(c.houses, 'house')}, from ${plural(c.sources, 'data source')}${c.example ? `; ${plural(c.example, 'city').replace('citys', 'cities')} on example data` : ''}`;
 
