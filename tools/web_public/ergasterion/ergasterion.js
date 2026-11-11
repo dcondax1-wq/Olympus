@@ -93,7 +93,7 @@ function drawPlan(svg, mini) {
       g.appendChild(sv('circle', { cx: x + 11, cy: y - 14, r: 5, fill: LAMPC[w.status] || LAMPC.stale, stroke: '#1d1914', 'stroke-width': 1.5 }));
       g.appendChild(sv('rect', { x: x - 15, y: y + 11, width: 30, height: 4, rx: 2, fill: '#9c6b3c' }));               // its conveyor, one small crate per output
       for (let c = 0; c < Math.min(5, w.crates.length); c++) g.appendChild(sv('rect', { x: x - 14 + c * 6, y: y + 8, width: 4.5, height: 4.5, rx: 1, fill: w.status === 'failed' ? '#c96a4a' : '#e0b060' }));
-      g.appendChild(sv('text', { x, y: y + 26, 'text-anchor': 'middle', fill: sel ? '#e0b060' : '#f3ece0', 'font-size': 9.5, 'font-weight': 600 }, w.name.split(' ')[0].slice(0, 10)));
+      g.appendChild(sv('text', { x, y: y + 26, 'text-anchor': 'middle', fill: sel ? '#e0b060' : '#f3ece0', 'font-size': 9.5, 'font-weight': 600 }, C.displayName(w).slice(0, 10)));
       g.addEventListener('click', () => open(w.id)); g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(w.id); } });
     }
     svg.appendChild(g);
@@ -131,16 +131,16 @@ function renderWorkers() {
   for (const w of S.workers) {
     if (w.group !== grp) { grp = w.group; ul.appendChild(h('li', 'grp', grp)); }
     const li = h('li'), b = h('button'); b.type = 'button'; b.dataset.id = w.id; b.setAttribute('aria-pressed', String(S.sel === w.id));
-    b.setAttribute('aria-label', w.name + ', ' + C.STATUS_WORD[w.status] + '. ' + w.doing);
+    b.setAttribute('aria-label', C.displayName(w) + ' (' + w.name + '), ' + C.STATUS_WORD[w.status] + '. ' + w.doing);
     const l = lampSpan(w.status); l.style.marginRight = '0';
-    const mid = h('span'); mid.appendChild(h('span', 'nm', w.name)); mid.appendChild(h('span', 'sm', w.doing));
+    const mid = h('span'); mid.appendChild(h('span', 'nm', C.displayName(w) + ' · ' + w.name)); mid.appendChild(h('span', 'sm', w.doing));
     b.appendChild(l); b.appendChild(mid); b.appendChild(h('span', pillOf(w.status), C.STATUS_WORD[w.status]));
     b.addEventListener('click', () => open(w.id)); li.appendChild(b); ul.appendChild(li);
   }
 }
 function renderSheet() {
   const w = S.sel && byId(S.sel); $('sheet').hidden = !w; if (!w) return;
-  $('sheetH').textContent = w.name; face($('sheetFace'), personOf('w:' + w.id), 44); $('sheetTalk').textContent = 'Talk to ' + w.name.split(' (')[0]; const p = $('sheetPill'); p.textContent = C.STATUS_WORD[w.status]; p.className = pillOf(w.status);
+  $('sheetH').textContent = C.displayName(w) + ' · ' + w.name; face($('sheetFace'), personOf('w:' + w.id), 44); $('sheetTalk').textContent = 'Talk to ' + C.displayName(w); const p = $('sheetPill'); p.textContent = C.STATUS_WORD[w.status]; p.className = pillOf(w.status);
   $('sheetRole').textContent = w.role + (w.demo ? ' (example data)' : '') + '. In the ' + C.hallOf(w).name + ', ' + C.JOB_WORD[w.job] + '.';
   const sy2 = $('sheetSay'); clear(sy2); sy2.appendChild(h('b', '', 'Says: ')); sy2.appendChild(document.createTextNode(w.say));
   $('sheetDoing').textContent = w.doing || 'Nothing recorded.';

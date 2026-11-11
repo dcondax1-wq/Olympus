@@ -40,21 +40,21 @@ export const WORK_MIN = 15;
 export const JOB_WORD = { wheel: 'turning the search wheel', scribe: 'writing it down', oracle: 'reading the tripod', smith: 'hammering at the anvil', scales: 'weighing risk against reward' };
 
 export const STATIONS = [
-  { id: 'chrysos', name: 'Chrysos', role: 'Prop-firm eval and payout planner', group: 'Money machines', hall: 'money', job: 'scribe', x: -10.5, z: -7.5 },
-  { id: 'mercury', name: 'Mercury', role: 'Deal finder (prop-firm sales and codes)', group: 'Money machines', hall: 'money', job: 'wheel', x: -6.5, z: -7.5 },
-  { id: 'sibyl', name: 'Sibyl', role: 'Prediction-market pick finder', group: 'Money machines', hall: 'money', job: 'oracle', x: -2.5, z: -7.5 },
-  { id: 'oikos', name: 'Oikos', role: 'Household savings finder', group: 'Money machines', hall: 'money', job: 'wheel', x: -9.6, z: -3 },
-  { id: 'arbiter', name: 'Arbiter', role: 'Price-gap checker', group: 'Money machines', hall: 'money', job: 'scales', x: -3.4, z: -3 },
-  { id: 'lit', name: 'Zlarior (LIT)', role: 'The live NQ strategy, paper account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 3, z: -7.5 },
-  { id: 'atlas', name: 'ATLAS', role: 'Second NQ strategy, 25K account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 7, z: -7.5 },
-  { id: 'blitz', name: 'BLITZ', role: 'Third NQ strategy, 25K account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 10.8, z: -7.5 },
-  { id: 'mind', name: 'Mind', role: 'Nightly self-research and game plans', group: 'Thinkers', hall: 'research', job: 'oracle', x: -10.5, z: 2.8 },
-  { id: 'kalshi', name: 'Kalshi bot', role: 'Prediction-market trading bot (paper)', group: 'Thinkers', hall: 'trading', job: 'oracle', x: 10, z: -3 },
-  { id: 'prometheus', name: 'Prometheus', role: 'Breeds LIT settings, checks them on later months', group: 'Jobs', hall: 'research', job: 'smith', x: -2.9, z: 2.6 },
-  { id: 'hephaestus', name: 'Hephaestus', role: 'Stored results of every LIT setting that was run', group: 'Jobs', hall: 'research', job: 'smith', x: -10.5, z: 6.8 },
-  { id: 'cronos', name: 'Cronos', role: 'The night clock: refreshes every research app', group: 'Jobs', hall: 'research', job: 'wheel', x: -6.5, z: 5.2 },
-  { id: 'queue', name: 'The queue', role: 'ChatGPT / Claude task queue (handoff/QUEUE.md)', group: 'People and agents', hall: 'library', job: 'scribe', x: 4.3, z: 3.8 },
-  { id: 'dev', name: 'Dev agents', role: 'The coding agents of this project (branches, commits, write-ups)', group: 'People and agents', hall: 'library', job: 'scribe', x: 8.7, z: 3.8 },
+  { id: 'chrysos', who: 'Chrysanthe', name: 'Chrysos', role: 'Prop-firm eval and payout planner', group: 'Money machines', hall: 'money', job: 'scribe', x: -10.5, z: -7.5 },
+  { id: 'mercury', who: 'Hermolaos', name: 'Mercury', role: 'Deal finder (prop-firm sales and codes)', group: 'Money machines', hall: 'money', job: 'wheel', x: -6.5, z: -7.5 },
+  { id: 'sibyl', who: 'Manto', name: 'Sibyl', role: 'Prediction-market pick finder', group: 'Money machines', hall: 'money', job: 'oracle', x: -2.5, z: -7.5 },
+  { id: 'oikos', who: 'Pheidon', name: 'Oikos', role: 'Household savings finder', group: 'Money machines', hall: 'money', job: 'wheel', x: -9.6, z: -3 },
+  { id: 'arbiter', who: 'Dikaios', name: 'Arbiter', role: 'Price-gap checker', group: 'Money machines', hall: 'money', job: 'scales', x: -3.4, z: -3 },
+  { id: 'lit', who: 'Phoibos', name: 'Zlarior (LIT)', role: 'The live NQ strategy, paper account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 3, z: -7.5 },
+  { id: 'atlas', who: 'Telamon', name: 'ATLAS', role: 'Second NQ strategy, 25K account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 7, z: -7.5 },
+  { id: 'blitz', who: 'Asterope', name: 'BLITZ', role: 'Third NQ strategy, 25K account', group: 'NQ bots', hall: 'trading', job: 'scales', x: 10.8, z: -7.5 },
+  { id: 'mind', who: 'Metis', name: 'Mind', role: 'Nightly self-research and game plans', group: 'Thinkers', hall: 'research', job: 'oracle', x: -10.5, z: 2.8 },
+  { id: 'kalshi', who: 'Eutychos', name: 'Kalshi bot', role: 'Prediction-market trading bot (paper)', group: 'Thinkers', hall: 'trading', job: 'oracle', x: 10, z: -3 },
+  { id: 'prometheus', who: 'Pyrrhos', name: 'Prometheus', role: 'Breeds LIT settings, checks them on later months', group: 'Jobs', hall: 'research', job: 'smith', x: -2.9, z: 2.6 },
+  { id: 'hephaestus', who: 'Chalkeus', name: 'Hephaestus', role: 'Stored results of every LIT setting that was run', group: 'Jobs', hall: 'research', job: 'smith', x: -10.5, z: 6.8 },
+  { id: 'cronos', who: 'Horaios', name: 'Cronos', role: 'The night clock: refreshes every research app', group: 'Jobs', hall: 'research', job: 'wheel', x: -6.5, z: 5.2 },
+  { id: 'queue', who: 'Kalamos', name: 'The queue', role: 'ChatGPT / Claude task queue (handoff/QUEUE.md)', group: 'People and agents', hall: 'library', job: 'scribe', x: 4.3, z: 3.8 },
+  { id: 'dev', who: 'Epistates', name: 'Dev agents', role: 'The coding agents of this project (branches, commits, write-ups)', group: 'People and agents', hall: 'library', job: 'scribe', x: 8.7, z: 3.8 },
 ];
 export const IDS = STATIONS.map((s) => s.id);
 export const STATUS_WORD = { working: 'Working', idle: 'Idle', stale: 'Stale', failed: 'Failed', sample: 'Sample data' };
@@ -83,7 +83,7 @@ export function agoText(ms, now) {
   return Math.round(a / 24) + ' days ago';
 }
 
-function base(s) { return { id: s.id, name: s.name, role: s.role, group: s.group, hall: s.hall, job: s.job, x: s.x, z: s.z, say: '', crates: [], status: 'stale', doing: '', last: null, outputs: [], learned: [], health: '', n: null, items: 0, demo: false, missing: false, src: '' }; }
+function base(s) { return { id: s.id, who: s.who || '', name: s.name, role: s.role, group: s.group, hall: s.hall, job: s.job, x: s.x, z: s.z, say: '', crates: [], status: 'stale', doing: '', last: null, outputs: [], learned: [], health: '', n: null, items: 0, demo: false, missing: false, src: '' }; }
 const out = (t, text) => ({ t: t == null ? null : t, text: clean(text, 150) });
 
 function learnedFrom(queue, id, extra) {
@@ -484,14 +484,17 @@ export function resolveBuilders(doc, now) {
 
 // ------------------------------------------------------------------ people: every worker and every builder is an individual you can talk to (docs/PERSONA_API.md)
 const SCANNERS = ['chrysos', 'mercury', 'sibyl', 'oikos', 'arbiter'], BOTS = ['lit', 'atlas', 'blitz', 'kalshi'];
-/** the shared person id of a station worker: scanner:chrysos, bot:lit, mind, villager:<id> for the jobs and the queue */
-export function personId(id) { return SCANNERS.includes(id) ? 'scanner:' + id : BOTS.includes(id) ? 'bot:' + id : id === 'mind' ? 'mind' : 'villager:' + clean(id, 20); }
+/** the shared person id of a station worker: scanner:chrysos, bot:lit, mind, job:<id> for the jobs, the queue and the dev agents (the roster's own people) */
+const JOBS = ['prometheus', 'hephaestus', 'cronos', 'queue', 'dev'];
+export function personId(id) { return SCANNERS.includes(id) ? 'scanner:' + id : BOTS.includes(id) ? 'bot:' + id : id === 'mind' ? 'mind' : JOBS.includes(id) ? 'job:' + id : 'villager:' + clean(id, 20); }
+/** the name a person is shown with: their own Greek name (the roster's, e.g. Kalamos), never a machine word like "The" or "Dev" */
+export function displayName(w) { return w ? (w.who || String(w.name || '').split(' (')[0]) : ''; }
 /** builder:<branch-short>: the branch without its 'worktree-agent-' prefix (the whole short name first, its first 8 characters as a second spelling the kit may use) */
 export function builderIds(branch) { const b = clean(branch, 60).replace(/^worktree-agent-/, '').replace(/[^A-Za-z0-9._-]/g, ''); return b ? ['builder:' + b, 'builder:' + b.slice(0, 8)].filter((x, i, a2) => a2.indexOf(x) === i) : []; }
 /** everyone: { key ('w:<id>' | 'b:<id>'), pid, pids, name, title, status, word, place (hall id), x, z, line (its one-liner for the stand-up) } */
 export function people(workers, buildersRows) {
   const P = [];
-  for (const w of Array.isArray(workers) ? workers : []) P.push({ look: Math.max(0, IDS.indexOf(w.id)), key: 'w:' + w.id, pid: personId(w.id), pids: [personId(w.id)], name: w.name, title: w.role, status: w.status, word: STATUS_WORD[w.status], place: w.hall, x: w.x, z: w.z - 0.12, kind: 'worker',
+  for (const w of Array.isArray(workers) ? workers : []) P.push({ look: Math.max(0, IDS.indexOf(w.id)), key: 'w:' + w.id, pid: personId(w.id), pids: [personId(w.id)], name: displayName(w), title: w.role, station: w.name, status: w.status, word: STATUS_WORD[w.status], place: w.hall, x: w.x, z: w.z - 0.12, kind: 'worker',
     line: clean(w.status === 'failed' ? 'Blocked: ' + w.say : w.missing ? 'Nothing to report: no file from me yet.' : w.say, 140) });
   for (const b of Array.isArray(buildersRows) ? buildersRows : []) { const ids = builderIds(b.branch); P.push({ look: STATIONS.length + b.i, key: 'b:' + b.id, pid: ids[0] || 'builder:' + b.id, pids: ids.length ? ids : ['builder:' + b.id], name: b.name, title: b.job, status: b.status, word: BUILD_WORD[b.status], place: 'camp', x: b.x, z: b.z - 1.9, kind: 'builder',
     line: clean(b.status === 'job' ? 'My job: ' + b.job + '. No live activity to report.' : b.commits.length ? (b.status === 'working' ? 'Just now: ' : 'Last: ') + b.commits[0].text : b.shipped.length ? 'Shipped: ' + b.shipped[0].text : 'My job: ' + b.job, 140) }); }

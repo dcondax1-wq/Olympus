@@ -65,7 +65,7 @@ html.pp-open, html.pp-open body { overflow: hidden; }
 .pp-say::after { content: ""; position: absolute; left: var(--tail, 50%); bottom: -9px; width: 16px; height: 16px; margin-left: -8px; background: #e9dfc9; border-right: 1.5px solid #9c6b3c; border-bottom: 1.5px solid #9c6b3c; transform: rotate(45deg); border-bottom-right-radius: 4px; }
 .pp-sayname { display: block; font: 600 12.5px/1.2 var(--ag-serif, 'Iowan Old Style', Palatino, Georgia, serif); letter-spacing: .04em; color: #7a4f2a; margin-bottom: 2px; }
 .pp-saytext { display: block; overflow-wrap: anywhere; }
-.pp-sayoff { color: transparent; }
+.pp-sayoff { color: rgba(58, 42, 28, .42); }      /* the whole sentence is always readable (never a lone word like "Quietly"); the spoken words are in full ink */
 .pp-say:focus-visible { outline: 2px solid var(--ag-gold, #c8a24a); outline-offset: 2px; }
 /* the work card (show): marble panel, gold rule, a small bar chart drawn from the person's own numbers, the source under it */
 .pp-cardrow { justify-content: flex-start; }

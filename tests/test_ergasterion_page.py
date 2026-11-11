@@ -282,8 +282,8 @@ def test_maths():
     check("b. builders (the repo's builders.json, and the same agents WITHOUT git): real rows are never flagged sample; without git every agent is 'job only' with no commits and the note says so; 5 min = working, 16 min = quiet, merged = done, not live or no time = job; junk is cleaned; at most 10 tents",
           out["buildersReal"][:4] == [True] * 4 and "no live activity" in out["buildersReal"][4] and out["buildersReal"][5] and out["buildersReal"][6:11] == ["working", "quiet", "done", "job", "job"] and out["buildersReal"][11] == 0
           and out["buildersReal"][12].startswith("No build agents are listed") and out["buildersReal"][13] and out["buildersReal"][14] == 10, out["buildersReal"])
-    check("b. PEOPLE: 25 individuals (15 workers + 10 builders), each with a stable person id (scanner:chrysos, bot:lit, bot:kalshi, mind, villager:cronos, builder:<branch-short>), a one-liner and its hall; 'People here' = 5 / 4 / 4 / 2 and 10 in the camp; the Talk prompt needs you within 3 m; looks differ",
-          out["people"][0] == 25 and out["people"][1] == "scanner:chrysos|bot:lit|bot:kalshi|mind|villager:cronos" and out["people"][2] == "builder:a8fa04fb59e01df25|builder:a8fa04fb" and out["people"][3] == 0 and out["people"][4] and out["people"][5] == "5,4,4,2,10" and out["people"][6]
+    check("b. PEOPLE: 25 individuals (15 workers + 10 builders), each with a stable person id (scanner:chrysos, bot:lit, bot:kalshi, mind, job:cronos, builder:<branch-short>), a one-liner and its hall; 'People here' = 5 / 4 / 4 / 2 and 10 in the camp; the Talk prompt needs you within 3 m; looks differ",
+          out["people"][0] == 25 and out["people"][1] == "scanner:chrysos|bot:lit|bot:kalshi|mind|job:cronos" and out["people"][2] == "builder:a8fa04fb59e01df25|builder:a8fa04fb" and out["people"][3] == 0 and out["people"][4] and out["people"][5] == "5,4,4,2,10" and out["people"][6]
           and out["people"][7] == "w:queue" and out["people"][8] is None and out["people"][9] == "b:camp1" and out["people"][10] and out["people"][11] == "doing,last,learned,stuck,next,sure", out["people"])
     a = out["answers"]
     check("b. the built-in chat answers six questions from the worker's own row only: a failed worker says 'Yes' it is stuck and names its planner step; a lesson comes with its source; sample data is 'not at all' sure; nothing invented when there is no file",
@@ -457,7 +457,7 @@ def test_page():
                 p.locator('#peopleList button[data-key="w:cronos"]').click()
                 c0 = p.evaluate("() => ({ hidden: document.querySelector('#chatCard').hidden, h: document.querySelector('#chatH').textContent, pill: document.querySelector('#chatPill').textContent, who: document.querySelector('#chatWho').textContent, log: [...document.querySelectorAll('#chatLog li')].map((e) => e.textContent), qs: [...document.querySelectorAll('#chatQs button')].map((b) => b.textContent), face: document.querySelector('#chatFace').dataset.kit, svg: !!document.querySelector('#chatFace svg') })")
                 check("c. TALK (fallback): tapping a person opens the built-in chat: its own face, name, status, 'Built-in answers ... only from its own data' with its person id, its one-liner, and six questions to tap",
-                      not c0["hidden"] and c0["h"] == "Cronos" and c0["pill"] == "Failed" and "Built-in answers" in c0["who"] and "villager:cronos" in c0["who"] and "cannot place orders" in c0["who"] and c0["log"] == ["Blocked: My last run failed. Failed: datacity."]
+                      not c0["hidden"] and c0["h"] == "Cronos" and c0["pill"] == "Failed" and "Built-in answers" in c0["who"] and "job:cronos" in c0["who"] and "cannot place orders" in c0["who"] and c0["log"] == ["Blocked: My last run failed. Failed: datacity."]
                       and c0["qs"] == ["What are you doing?", "What was your last result?", "What did you learn?", "Are you stuck?", "What is next?", "How sure are you?"] and c0["face"] == "0" and c0["svg"], c0)
                 for qid in ("doing", "last", "learned", "stuck", "next", "sure"):
                     p.locator(f'#chatQs button[data-q="{qid}"]').click()
@@ -553,7 +553,7 @@ def test_page():
 
             # PEOPLE, kit path: a stubbed window.OLYMPUS_PEOPLE (the real module is optional and may be absent)
             STUB = """window.__opened = []; window.__kitMode = 'ok';
-              window.OLYMPUS_PEOPLE = { get: (id) => (/^(scanner:|bot:|mind$|villager:cronos|builder:example-1$)/.test(id) ? { id } : null),
+              window.OLYMPUS_PEOPLE = { get: (id) => (/^(scanner:|bot:|mind$|job:cronos|builder:example-1$)/.test(id) ? { id } : null),
                 open: (id, o) => { if (window.__kitMode === 'throw') throw new Error('kit broke'); window.__opened.push(id); },
                 portrait: (id, size) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('data-kit-face', id); s.setAttribute('width', size); s.setAttribute('height', size); return s; },
                 standup: (ids) => ids.map((id) => ({ id, line: 'KIT says ' + id })) };"""

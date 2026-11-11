@@ -184,14 +184,14 @@ function build(rc, scene, camera, canvas, o) {
   S.forEach((_, i) => { const cx = (i % 4) * BW, cy = Math.floor(i / 4) * BH; setUV(bubG, i, cx / 2048, 1 - (cy + BH) / 1024, (cx + BW) / 2048, 1 - cy / 1024); });
   const bubKey = S.map(() => '');
   function drawBubble(i, w) {
-    const key = w ? w.name + '|' + w.status + '|' + w.say : S[i].name;
+    const key = w ? (S[i].who || w.name) + '|' + w.status + '|' + w.say : S[i].name;
     if (bubKey[i] === key) return; bubKey[i] = key;
     const g = A.g, x = (i % 4) * BW, y = Math.floor(i / 4) * BH, st = w ? w.status : 'stale';
     g.clearRect(x, y, BW, BH);
     g.fillStyle = 'rgba(29,25,20,0.9)'; g.strokeStyle = BRONZE; g.lineWidth = 4; panel(g, x + 6, y + 6, BW - 12, BH - 40, 22);
     g.beginPath(); g.moveTo(x + BW / 2 - 18, y + BH - 36); g.lineTo(x + BW / 2, y + BH - 8); g.lineTo(x + BW / 2 + 18, y + BH - 36); g.closePath(); g.fillStyle = 'rgba(29,25,20,0.9)'; g.fill(); g.stroke();
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-    g.fillStyle = '#f3ece0'; g.font = '600 38px Georgia, serif'; g.fillText(S[i].name, x + 26, y + 54);
+    g.fillStyle = '#f3ece0'; g.font = '600 38px Georgia, serif'; g.fillText(S[i].who || S[i].name, x + 26, y + 54);
     g.fillStyle = LAMP[st] || LAMP.stale; g.font = '700 26px -apple-system, "Segoe UI", sans-serif'; g.textAlign = 'right'; g.fillText(w ? WORD[st] : '...', x + BW - 26, y + 52); g.textAlign = 'left';
     g.fillStyle = BRONZE; g.fillRect(x + 26, y + 68, BW - 52, 2);
     g.fillStyle = '#e8dfcf'; g.font = '500 30px -apple-system, "Segoe UI", sans-serif'; wrap(g, w ? w.say || w.doing || '' : 'Waiting for its file...', x + 26, y + 108, BW - 52, 38, 3);

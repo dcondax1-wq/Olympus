@@ -121,15 +121,15 @@ export function intentOf(text, person, mem) {
 // ------------------------------------------------------------------------------------------------ wording by temperament (never a fact, never a number)
 const W = {
   calm: { hi: 'Good {tod}.', none: 'I don\'t have that.', good: 'The good part first.', bad: 'The hard part first.', also: 'Also:', done: 'That is all I have on that.', thanks: 'Gladly.', bye: 'Go well.', sure: 'Honestly:', idk: 'I only know what my own files say.', yes: 'Yes.', no: 'No.',
-    joke: 'I count slowly so that I only have to count once. That is the whole joke.', mood: { calm: 'Steady.', proud: 'Quietly pleased.', busy: 'Occupied, in a good way.', worried: 'A little uneasy.', sheepish: 'Humbled today.' } },
+    joke: 'I count slowly so that I only have to count once. That is the whole joke.', mood: { calm: 'I am steady today.', proud: 'I am quietly pleased today.', busy: 'I am busy, in a good way.', worried: 'I am a little uneasy today.', sheepish: 'I am a bit humbled today.' } },
   blunt: { hi: '{Tod}.', none: 'Don\'t have that.', good: 'Good news:', bad: 'Bad news:', also: 'And:', done: 'Nothing more on that.', thanks: 'Fine.', bye: 'Right. Back to work.', sure: 'Straight answer:', idk: 'I say what my files say. Nothing else.', yes: 'Yes.', no: 'No.',
-    joke: 'I don\'t do jokes. I do numbers, and some of them are funny enough.', mood: { calm: 'Fine.', proud: 'Good. It worked.', busy: 'Busy.', worried: 'Not happy.', sheepish: 'Not my best day.' } },
+    joke: 'I don\'t do jokes. I do numbers, and some of them are funny enough.', mood: { calm: 'All fine here.', proud: 'It worked, and I am glad.', busy: 'I am busy.', worried: 'I am not happy today.', sheepish: 'It is not my best day.' } },
   curious: { hi: 'Oh, hello! Good {tod}.', none: 'Hm, I don\'t have that.', good: 'Ooh, the good part:', bad: 'The awkward part, since you ask:', also: 'And look:', done: 'That is everything I have on that, I checked twice.', thanks: 'Any time, I like questions.', bye: 'Come back with more questions!',
     sure: 'Good question. Honestly:', idk: 'I only know what is in my own files, and I wish I knew more.', yes: 'Yes!', no: 'No, actually.',
-    joke: 'Why did the scroll go to the agora? To get a second opinion. I am still working on my material.', mood: { calm: 'Content, and wondering about things.', proud: 'Delighted, honestly.', busy: 'Happily buried in it.', worried: 'Puzzled, and a bit worried.', sheepish: 'Embarrassed, but I learned something.' } },
+    joke: 'Why did the scroll go to the agora? To get a second opinion. I am still working on my material.', mood: { calm: 'I am content, and wondering about things.', proud: 'I am delighted, honestly.', busy: 'I am happily buried in work.', worried: 'I am puzzled, and a bit worried.', sheepish: 'I am embarrassed, but I learned something.' } },
   wry: { hi: 'Ah, there you are. Good {tod}.', none: 'That I don\'t have, sadly.', good: 'The good news, such as it is:', bad: 'The bad news, since you insist:', also: 'Oh, and:', done: 'And that is the bottom of the amphora.', thanks: 'I live to serve. Figuratively.', bye: 'Off you go. I will be here, obviously.',
     sure: 'Between us:', idk: 'I know what my files know, which keeps me humble.', yes: 'Indeed.', no: 'Not this time.',
-    joke: 'A backtest walks into a bar. It had already been there, and it knew exactly how the evening ended.', mood: { calm: 'Unbothered.', proud: 'Smug, within reason.', busy: 'Swamped, thanks for asking.', worried: 'Mildly alarmed.', sheepish: 'Let us not dwell on it.' } },
+    joke: 'A backtest walks into a bar. It had already been there, and it knew exactly how the evening ended.', mood: { calm: 'I am unbothered, as ever.', proud: 'I am smug today, within reason.', busy: 'I am swamped, thanks for asking.', worried: 'I am mildly alarmed today.', sheepish: 'It was not my day; let us not dwell on it.' } },
 };
 const SIMPLE = {
   'bot:kalshi': 'Simply: I place practice bets on yes-or-no questions and keep score. No real money moves because of me.',
@@ -237,7 +237,7 @@ export function answer(person, facts, text, mem0, env0) {
     return part.map(render).join(' ');
   };
   switch (it) {
-    case 'greet': R.text = say(w.hi.replace('{tod}', tod(num(env.hour) != null ? env.hour : 12)).replace('{Tod}', 'Good ' + tod(num(env.hour) != null ? env.hour : 12)), 'I am ' + p.name + ', ' + role(p) + '.', dot(firstSentence(f.doing)) + lab); break;
+    case 'greet': { const op = opener(p, f, { hour: env.hour }); R.text = say(op.hello, op.intro, op.fact || dot(firstSentence(f.doing)) + lab); break; }
     case 'who': R.text = say('I am ' + p.name + (p.meaning ? ' ("' + p.meaning + '")' : '') + ': ' + role(p) + '.', dot(p.bio), 'I speak only from my own files and I cannot place orders.'); break;
     case 'name': R.text = p.meaning ? say(p.name + ' means "' + p.meaning + '" in Greek.', 'It fits: I am ' + role(p) + '.') : say(w.none, 'Nobody wrote down what ' + p.name + ' means.'); break;
     case 'doing': R.text = say(dot(f.doing), 'Status: ' + STATUS_WORD[f.status].toLowerCase() + '.' + lab); break;
@@ -326,16 +326,74 @@ const LISTY = ['found', 'last', 'learned', 'number', 'surprise'];
 const MOOD_WHY = { proud: 'Something went right.', sheepish: 'Something did not go my way.', worried: 'Something needs a look.', busy: 'There is work on my table.', calm: '' };
 const KIND_HELP = { scanner: 'Also: my top pick, and when a deal ends.', bot: 'Also: my drawdown, my target and my rules.', champion: 'Also: how the earlier years went, the eval odds, and why I was adopted or rejected.', builder: 'Also: my last commit and my branch.', keeper: 'Also: which apps I keep and which need a look.', mind: 'Also: how many ideas were tested.', villager: '' };
 const lowerFirst = (s) => { const t = String(s || ''); return /^[A-Z][a-z]/.test(t) && !/^(LIT|ATLAS|BLITZ|Kalshi|Prometheus|Hephaestus|Cronos|Hellas|Jarvis|Ergasterion|Pinakes|Colosseum|NQ|Champion|Rejected)/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t; };
-const role = (p) => (p.kind === 'champion' ? (p.fallen ? 'a rejected idea from the Archive' : 'an adopted run from the Archive') : /^(The|A|An) /.test(p.title) ? lowerFirst(p.title) : 'the ' + lowerFirst(p.title));
+/** what a person IS, as the end of "I am <name>, ..." (a real role, never a bare title like "Lives in Queue" or "Prometheus: ...") */
+const ROLE = { mind: 'the Mind of this project: I research every night', 'job:prometheus': 'the smith of Prometheus, where LIT settings are bred and checked', 'job:hephaestus': 'the keeper of Hephaestus, the shelf of every LIT setting that was run',
+  'job:cronos': 'the night clock: I start the nightly jobs', 'job:queue': 'the scribe of the task queue', 'job:dev': 'the foreman of the coding agents', 'bot:lit': 'the LIT bot, trading the Zlarior 50K on paper',
+  'bot:atlas': 'the ATLAS bot, trading a 25K account on paper', 'bot:blitz': 'the BLITZ bot, trading a 25K account on paper', 'bot:kalshi': 'the Kalshi bot: I place practice bets on paper' };
+const role = (p) => {
+  if (ROLE[p.id]) return ROLE[p.id];
+  if (p.kind === 'champion') return p.fallen ? 'a rejected idea from the Archive' : 'an adopted run from the Archive';
+  const t = String(p.title || '').trim();
+  if (p.kind === 'villager' || /^Lives in /.test(t)) return 'the voice of the ' + (p.appName || t.replace(/^Lives in /, '') || 'local') + ' app';
+  if (p.kind === 'builder' && / builder$/i.test(t)) return 'a builder: my job is the ' + lowerFirst(t.replace(/ builder$/i, ''));
+  if (/^[^:]{2,30}: /.test(t)) { const m = /^([^:]+): (.+)$/.exec(t); return 'the worker behind ' + m[1] + ' (' + lowerFirst(m[2]) + ')'; }
+  return /^(The|A|An) /.test(t) ? lowerFirst(t) : 'the ' + lowerFirst(t || 'keeper of this place');
+};
+/** the short role for a name plate ("Scribe of the task queue", "Voice of the Zenith app") */
+export function roleShort(p) {
+  const r = role(p || {}).replace(/^(the|a|an) /i, '').replace(/[:,(].*$/, '').trim();
+  return r ? r.charAt(0).toUpperCase() + r.slice(1) : '';
+}
 const joinAnd = (a) => (a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]);
 const uniq = (a) => a.filter((x, i) => a.indexOf(x) === i);
 
-/** the first thing a person says when the sheet opens: the time of day, who they are, their mood from their data, and your last question if they remember one */
+// ------------------------------------------------------------------------------------------------ the opener (2026-11-11 scene direction: "greeting with their name and job,
+// then one interesting real fact from their data with $ and R, then an invitation"). Every sentence is whole (a speech bubble shows one at a time, never a
+// fragment like "Quietly"), every number is the facts' own text (the grounding check reads it).
+const HELLO = { calm: (t, n) => 'Good ' + t + (n ? ', ' + n : '') + '.', blunt: (t, n) => (n ? n + ', good ' : 'Good ') + t + '.', curious: (t, n) => 'Oh, hello' + (n ? ' ' + n : '') + '! Good ' + t + '.', wry: (t, n) => 'Ah, there you are' + (n ? ', ' + n : '') + '. Good ' + t + '.' };
+const INVITE = { bot: 'Want to see my last trades?', scanner: 'Want to see what I found?', builder: 'Want to see my last commits?', champion: 'Shall I show you my run, year by year?', keeper: 'Ask me which apps need you.', mind: 'Ask me what I learned last night.', villager: 'Ask me how my app is doing.' };
+const INVITE_ID = { 'bot:kalshi': 'Want to see my last paper bets?', 'job:queue': 'Ask me what is next on the list.', 'job:cronos': 'Ask me which job failed.', 'job:prometheus': 'Ask me whether anything beat live.', 'job:hephaestus': 'Ask me for a number.', 'job:dev': 'Ask me who is building what.' };
+const sentence = (t) => { const s = String(t || '').replace(/\s+/g, ' ').trim(); if (!s) return ''; return dot(s.charAt(0).toUpperCase() + s.slice(1)); };
+const numT = (f, re) => { const n = getNum(f, re); return n ? String(n.text) : ''; };
+/** one interesting real fact from this person's data, as one or two whole sentences (money with its R where both exist). '' when there is nothing. */
+export function highlight(person, facts) {
+  const p = person || {}, f = facts || {}, L = arr(f.last), id = p.id || '';
+  const lastLine = L[0] ? sentence(L[0].text.replace(/^Commit: (.*)$/, 'My last commit: "$1"')) : '';
+  if (p.kind === 'bot' && id !== 'bot:kalshi') {
+    const lt = numT(f, /^Last trade$/), td = numT(f, /^Today$/), wk = numT(f, /^This week$/);
+    if (lt) return 'My last paper trade made ' + lt + '.' + (wk ? ' This week I am at ' + wk + '.' : '');
+    if (td) return 'Today my paper account is at ' + td + '.' + (wk ? ' This week: ' + wk + '.' : '');
+  }
+  if (id === 'bot:kalshi') { const td = numT(f, /^Today$/), n = numT(f, /^Settled paper bets$/); if (td || n) return (td ? 'Today my paper bets are at ' + td + '.' : '') + (n ? ' I have ' + n + ' settled paper bets on file.' : ''); }
+  if (p.kind === 'scanner') { const tp = numT(f, /^Top pick$/), um = numT(f, /^Estimate per month$/); if (tp) return 'My best find: ' + dot(tp) + (um ? ' Altogether about ' + um.replace(/ \(an estimate, not a promise\)/, '') + ' a month, an estimate, not a promise.' : ''); }
+  if (p.kind === 'champion') {
+    const net = numT(f, /^2026 net$/), pf = numT(f, /^2026 profit factor$/), old = numT(f, /^Earlier years, net$/);
+    if (net) return 'In 2026 I made ' + net + (pf ? ' with a profit factor of ' + pf : '') + ', after costs.' + (old ? ' In the earlier years: ' + old + '.' : '');
+  }
+  if (p.kind === 'builder') { const n = numT(f, /^Commits on my branch$/); if (lastLine || n) return (lastLine || '') + (n ? ' I have ' + n + ' commits on my branch.' : ''); }
+  if (p.kind === 'mind') { const n = numT(f, /^Ideas tested$/); if (n) return 'So far I have tested ' + n + ' ideas, and I only suggest.'; }
+  if (id === 'job:queue') { const a = numT(f, /^Open tasks$/), b = numT(f, /^Done tasks$/); if (a) return 'There are ' + a + ' open tasks on my list' + (b ? ' and ' + b + ' done' : '') + '.'; }
+  if (id === 'job:prometheus') { const b = numT(f, /^Beat live on both halves$/); if (b) return b + ' of my candidates beat live on both halves.'; }
+  if (id === 'job:dev' && f.doing && !f.missing) return sentence(f.doing);
+  if (id === 'job:hephaestus') { const d = numT(f, /^Dials$/); if (d) return 'I keep the results for ' + d + ' dials of LIT, every one really run.'; }
+  if (p.kind === 'keeper') { const a = numT(f, /^Apps reporting$/), w = numT(f, /^Need a look$/); if (a) return a + ' of my apps report in' + (w ? ', and ' + w + ' need a look.' : '.'); }
+  if (lastLine && !/^No /.test(lastLine)) return lastLine;
+  return sentence(firstSentence(f.doing));
+}
+/** the opener, in parts: { hello, intro, mood, fact, invite, text } (text = the parts joined; the bubble shows them one by one) */
+export function opener(person, facts, env) {
+  const p = person, f = facts || {}, e = env || {}, h = num(e.hour) != null ? e.hour : 12, temp = HELLO[p.temperament] ? p.temperament : 'calm', w = W[temp];
+  const hello = HELLO[temp](tod(h), e.ownerName ? clean(e.ownerName, 24) : '');
+  const intro = 'I am ' + p.name + ', ' + role(p) + '.';
+  const mood = f.mood && f.mood !== 'calm' && w.mood[f.mood] ? w.mood[f.mood] : '';
+  const fact = (highlight(p, f) + label(f)).trim();
+  const invite = f.missing ? 'Ask me what I need from you.' : INVITE_ID[p.id] || INVITE[p.kind] || INVITE.keeper;
+  return { hello, intro, mood, fact, invite, text: [hello, intro, mood, fact, invite].filter(Boolean).join(' ').replace(/\s+/g, ' ') };
+}
+/** the first thing a person says when the sheet opens: hello (time of day, the owner's name), who they are, one real fact, an invitation; and your last question if they remember one */
 export function greeting(person, facts, mem, env) {
-  const w = W[person.temperament] || W.calm, e = env || {}, h = num(e.hour) != null ? e.hour : 12;
-  const hi = w.hi.replace('{tod}', tod(h)).replace('{Tod}', 'Good ' + tod(h));
-  const me = e.ownerName ? ' ' + clean(e.ownerName, 24) + ',' : '';
-  return [hi + me, 'I am ' + person.name + ', ' + role(person) + '.', (w.mood[facts.mood] || ''), dot(firstSentence(facts.doing)) + label(facts), mem && mem.lastQ ? 'Last time you asked: "' + clean(mem.lastQ, 70) + '".' : ''].filter(Boolean).join(' ').replace(/\s+/g, ' ');
+  const o = opener(person, facts, env);
+  return [o.hello, o.intro, o.mood, o.fact, mem && mem.lastQ ? 'Last time you asked: "' + clean(mem.lastQ, 70) + '".' : '', o.invite].filter(Boolean).join(' ').replace(/\s+/g, ' ');
 }
 
 /** "Yesterday / today / blocked" in one line */
