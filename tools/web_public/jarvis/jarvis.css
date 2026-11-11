@@ -1069,3 +1069,5 @@ html[data-oly-scheme="light"] .hero .hsub, html[data-oly-scheme="light"] .tile .
 html[data-oly-scheme="light"] .tile.is-press, html[data-oly-scheme="light"] .hc-row.is-press, html[data-oly-scheme="light"] .hc-bot.is-press { background-color: rgba(var(--cr), .16); }
 /* the smallest iPhone (320 px): the next chip may use two lines beside the search button and the orb (never cut) */
 @media (max-width: 350px) { html[data-orb-dock="1"] .nextchip { display: flex; align-items: center; white-space: normal; overflow: visible; text-overflow: clip; text-align: left; font-size: 13px; line-height: 1.15; padding: 4px 12px; } }
+/* the smallest iPhone (320 px): the numbers in the timeline and the project cards wrap instead of being cut */
+@media (max-width: 350px) { .kv strong, .tl-row strong { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; } }
