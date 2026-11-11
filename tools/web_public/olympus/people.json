@@ -2828,8 +2828,31 @@
    "appName": "Herald"
   },
   {
-   "id": "villager:clio",
+   "id": "villager:polis",
    "name": "Hero",
+   "title": "Lives in Polis",
+   "kind": "villager",
+   "area": "life",
+   "app": "polis",
+   "seed": 3539234790,
+   "temperament": "curious",
+   "voice": {
+    "pitch": 1.1,
+    "rate": 0.96
+   },
+   "sources": [
+    "../polis/jarvis.json"
+   ],
+   "home": {
+    "scene": "athens",
+    "place": "polis"
+   },
+   "bio": "The city of OLYMPUS: every app a building under the real New York sky",
+   "appName": "Polis"
+  },
+  {
+   "id": "villager:clio",
+   "name": "Nike",
    "title": "Lives in Clio",
    "kind": "villager",
    "area": "trading",
@@ -2852,7 +2875,7 @@
   },
   {
    "id": "villager:atlas",
-   "name": "Nike",
+   "name": "Ourania",
    "title": "Lives in Atlas",
    "kind": "villager",
    "area": "life",
@@ -2875,7 +2898,7 @@
   },
   {
    "id": "villager:athena",
-   "name": "Ourania",
+   "name": "Kalliope",
    "title": "Lives in Athena",
    "kind": "villager",
    "area": "life",
@@ -2898,7 +2921,7 @@
   },
   {
    "id": "villager:kalshi",
-   "name": "Kalliope",
+   "name": "Lykos",
    "title": "Lives in Kalshi",
    "kind": "villager",
    "area": "money",
@@ -2919,7 +2942,7 @@
   },
   {
    "id": "villager:tyche",
-   "name": "Lykos",
+   "name": "Thekla Θ",
    "title": "Lives in Tyche",
    "kind": "villager",
    "area": "money",

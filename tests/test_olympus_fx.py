@@ -679,12 +679,15 @@ def test_env_static():
     lic = read(os.path.join(ROOT, "docs", "ASSETS_LICENSES.md"))
     files = sorted(os.path.relpath(f, WEB).replace(os.sep, "/") for f in glob.glob(os.path.join(ASSETS, "**", "*"), recursive=True) if os.path.isfile(f))
     rows = [ln for ln in lic.splitlines() if ln.startswith("| ") and "| CC0 |" in ln]
-    missing = [f for f in files if not any(f.split("assets/", 1)[1].split("/")[-1] in r or f in r for r in rows)]
+    import re as _re
+    _stem = lambda f: f.rsplit("/", 1)[-1].rsplit(".", 1)[0]      # the audio block names files by family (arena = arena.ogg + arena.m4a)
+    missing = [f for f in files if not any(f.split("assets/", 1)[1].split("/")[-1] in r or f in r
+               or (f.startswith("assets/audio/") and (_stem(f) == "manifest" or _re.search(r"[|,] *" + _re.escape(_stem(f)) + r" *(,|\|)", r))) for r in rows)]
     check(f"i. env-kit: every one of the {len(files)} files under assets/ has a CC0 row in docs/ASSETS_LICENSES.md (asset, author, source, licence, files)",
           files and not missing and all(r.count("|") >= 6 for r in rows), missing[:8])
     total = sum(os.path.getsize(os.path.join(WEB, f)) for f in files)
-    check(f"i. env-kit: the art stays inside the phone budget: {total / 1048576:.1f} MB for the whole site (<= 25 MB), no raw source packs (only .webp / .glb / .hdr / tex.json)",
-          total <= 25 * 1048576 and all(f.endswith((".webp", ".glb", ".hdr", "tex.json")) for f in files), total)
+    check(f"i. env-kit: the art stays inside the phone budget: {total / 1048576:.1f} MB for the whole site (<= 25 MB), no raw source packs (only .webp / .glb / .hdr / tex.json, and the sound .ogg / .m4a)",
+          total <= 25 * 1048576 and all(f.endswith((".webp", ".glb", ".hdr", "tex.json", ".ogg", ".m4a", "audio/manifest.json")) for f in files), total)
     big = [f for f in files if os.path.getsize(os.path.join(WEB, f)) > 600 * 1024]
     check("i. env-kit: no single file over 600 KB (textures 512 px webp, LITE 256 px; HDRIs 256 x 128; models meshopt + webp)", not big, big)
     check("i. env-kit: CC0 sources only, loaders vendored (three r160, no CDN), the render core takes its HDRI through setEnvironment",
