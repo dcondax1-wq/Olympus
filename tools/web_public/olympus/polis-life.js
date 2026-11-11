@@ -19,7 +19,7 @@
   var C = { night: '#14110e', panel: '#1d1914', raise: '#26211b', line: '#3a3228', text: '#f3ece0', soft: '#cfc4b2', muted: '#a89c88',
     gold: '#c8a24a', bronze: '#9c6b3c', olive: '#7f8a52', terra: '#c96a4a', aegean: '#4b7a99', sun: '#e0b060', oliveText: '#a0ac6e', terraText: '#e08a6b',
     glaze: '#1c130e', clay: '#c4683f', clayHi: '#e09a68' };
-  var uid = 0;
+  var uid = 0, MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   // ------------------------------------------------------------------------------------------------ small helpers
   function S(tag, a, p) {
@@ -750,7 +750,7 @@
         var sm = S('g', { 'class': 'pl-smoke' }, svg);
         S('path', { d: 'M' + fx.toFixed(1) + ',' + fy.toFixed(1) + ' c-3,-4 3,-7 0,-11 c-2,-3 1,-5 0,-7', fill: 'none', stroke: '#3a2e26', 'stroke-width': 1.2, 'stroke-linecap': 'round', opacity: 0.6 }, sm);
       }
-      T(S('text', { x: cx, y: 93, 'text-anchor': 'middle', 'class': 'pl-svgtext pl-dark pl-small' }, svg), 'wk ' + r.week.slice(5));
+      T(S('text', { x: cx, y: 93, 'text-anchor': 'middle', 'class': 'pl-svgtext pl-dark pl-small' }, svg), MON[+r.week.slice(5, 7) - 1] + ' ' + (+r.week.slice(8, 10)));
       T(S('text', { x: cx, y: 109, 'text-anchor': 'middle', 'class': 'pl-svgtext pl-num pl-dark' }, svg), money(Math.round(r.net)));
     }
     if (rows.length > 1) S('path', { d: 'M' + (x0 + gap / 2 + 18) + ',30 H' + (x0 + gap * (rows.length - 0.5) - 4), stroke: C.glaze, 'stroke-width': 0.6, 'stroke-dasharray': '2 3', opacity: 0.6 }, svg);
