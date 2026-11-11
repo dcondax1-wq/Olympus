@@ -678,7 +678,7 @@ def test_env_static():
     ek = read(os.path.join(KIT, "env-kit.js"))
     lic = read(os.path.join(ROOT, "docs", "ASSETS_LICENSES.md"))
     files = sorted(os.path.relpath(f, WEB).replace(os.sep, "/") for f in glob.glob(os.path.join(ASSETS, "**", "*"), recursive=True) if os.path.isfile(f))
-    rows = [ln for ln in lic.splitlines() if ln.startswith("| ") and "| CC0 |" in ln]
+    rows = [ln for ln in lic.splitlines() if ln.startswith("| ") and ("| CC0 |" in ln or "| CC0 1.0 " in ln)]      # the cast row spells out "CC0 1.0 (url)"
     import re as _re
     _stem = lambda f: f.rsplit("/", 1)[-1].rsplit(".", 1)[0]      # the audio block names files by family (arena = arena.ogg + arena.m4a)
     missing = [f for f in files if not any(f.split("assets/", 1)[1].split("/")[-1] in r or f in r
