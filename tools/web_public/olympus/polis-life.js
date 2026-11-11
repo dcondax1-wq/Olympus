@@ -284,9 +284,10 @@
         var bx = baseX + off * 8, tx = bx + Math.sin(ang) * hh * 0.9 + (R() - 0.5) * 6, ty = baseY - hh;
         var w0 = (13 + g0 * 10) / Math.pow(nStem, 0.45), w1 = w0 * 0.42;
         stem(bx, baseY, tx, ty, w0, w1, s === 0 && g0 > 0.6);
-        var depth = 2 + Math.round(g0 * 2), L = 22 + g0 * 22, spread = 0.55 + R() * 0.25;
-        branch(tx, ty, ang - spread, L, w1 * 0.8, depth); branch(tx, ty, ang + spread, L * 0.95, w1 * 0.78, depth);
-        if (g0 > 0.45) branch(tx, ty + 6, ang + (R() - 0.5) * 0.3, L * 0.85, w1 * 0.7, depth - 1);
+        var depth = 2 + Math.round(g0 * 2), L = 20 + g0 * 20, spread = 0.42 + R() * 0.2;
+        branch(tx, ty, ang - spread - (off < 0 ? 0.25 : 0), L, w1 * 0.8, depth); branch(tx, ty, ang + spread + (off > 0 ? 0.25 : 0), L * 0.95, w1 * 0.78, depth);
+        if (g0 > 0.3) branch(tx, ty + 4, ang * 0.5 + (R() - 0.5) * 0.2, L * 1.05, w1 * 0.75, depth - 1);
+        if (g0 > 0.6) { branch(tx, ty + 10, ang - 1.15, L * 0.7, w1 * 0.55, depth - 2); branch(tx, ty + 10, ang + 1.15, L * 0.7, w1 * 0.55, depth - 2); }
       }
     }
     // foliage: a dark mass behind every cluster, then the leaves: narrow pointed olive leaves, dark grey-green tops and silver undersides
@@ -373,7 +374,7 @@
       if (depth <= 0 || len < 8) { tips.push([x1, y1, 11 + len * 0.4 + R() * 5]); return; }
       if (depth <= 1 && R() < 0.7) tips.push([mx, my, 9 + R() * 5]);
       var k = R() < 0.35 ? 3 : 2, j;
-      for (j = 0; j < k; j++) branch(x1, y1, a + (j - (k - 1) / 2) * (0.5 + R() * 0.35) + (R() - 0.5) * 0.2, len * (0.66 + R() * 0.14), w * 0.62, depth - 1);
+      for (j = 0; j < k; j++) branch(x1, y1, a * 0.85 + (j - (k - 1) / 2) * (0.45 + R() * 0.3) + (R() - 0.5) * 0.2, len * (0.66 + R() * 0.14), w * 0.62, depth - 1);
     }
   }
 
@@ -775,7 +776,7 @@
     var a = (d && d.amphorae) || { shelves: [], n: 0 }, sh = a.shelves || [], i, j;
     head2(el, 'The storeroom', (a.n || 0) + ' amphora' + (a.n === 1 ? '' : 'e') + ', one for every closed trade', opts);
     if (!sh.length) { empty(el, 'No closed trade is published yet. The shelves are swept and ready.'); srcLine(el, a.rule); return el; }
-    var detail = H('p', 'pl-amph-detail', 'Tap an amphora to read it.', null), w = el.clientWidth || 358, per = Math.max(5, Math.min(9, Math.floor((w - 16) / 48)));
+    var detail = H('p', 'pl-amph-detail', 'Tap an amphora to read it.', null), w = el.clientWidth || 358, per = Math.max(5, Math.min(9, Math.floor((w - 16) / 54)));
     detail.setAttribute('aria-live', 'polite');
     for (i = 0; i < sh.length; i++) {
       var s = sh[i], box = H('section', 'pl-shelf', null, el), hd = H('div', 'pl-shelf-head', null, box);
@@ -914,10 +915,10 @@
       /* amphorae */
       '.pl-amphorae{background:linear-gradient(180deg,#2a221a,#1d1914 40%,#1a1612)}',
       '.pl-shelf{margin:12px 0 4px}.pl-shelf-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;color:#cfc4b2}.pl-shelf-head b{font:600 15px var(--pl-serif);color:#f3ece0}',
-      '.pl-shelf-row{display:flex;align-items:flex-end;gap:4px;padding:8px 4px 0;min-height:96px;background:linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,.18) 100%)}',
+      '.pl-shelf-row{display:flex;align-items:flex-end;gap:4px;padding:8px 4px 0;min-height:104px;background:linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,.18) 100%)}',
       '.pl-plank{height:10px;margin:0 -2px 6px;border-radius:2px;background:linear-gradient(180deg,#9a6a40 0,#7a5230 30%,#5a3b22 70%,#3a2716 100%);box-shadow:0 4px 6px rgba(0,0,0,.45)}',
-      '.pl-jar{flex:0 0 44px;width:44px;min-height:44px;padding:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;cursor:pointer;touch-action:manipulation;color:inherit}',
-      '.pl-amph{display:block;width:40px;height:66px}.pl-jar-usd{font:600 10.5px/1.1 var(--pl-num);margin:1px 0 2px;white-space:nowrap}.pl-amph-detail{margin:6px 0 0;min-height:36px;color:#f3ece0;font-size:13.5px;line-height:1.4}',
+      '.pl-jar{flex:0 0 50px;width:50px;min-height:44px;padding:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;cursor:pointer;touch-action:manipulation;color:inherit}',
+      '.pl-amph{display:block;width:46px;height:76px}.pl-jar-usd{font:600 10.5px/1.1 var(--pl-num);margin:1px 0 2px;white-space:nowrap}.pl-amph-detail{margin:6px 0 0;min-height:36px;color:#f3ece0;font-size:13.5px;line-height:1.4}',
       /* statues */
       '.pl-statues{background:linear-gradient(180deg,#2a241d 0%,#1f1a15 70%,#26201a 100%)}.pl-hall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
       '.pl-niche{margin:0;display:flex;flex-direction:column;align-items:stretch}.pl-statue{display:block;width:100%;height:auto}',
