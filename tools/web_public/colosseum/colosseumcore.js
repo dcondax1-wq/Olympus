@@ -82,7 +82,9 @@ export function normIndex(idx) {
 /** the real index wins; a missing, empty or broken one falls back to the labelled demo; null when both are unusable */
 export function chooseData(real, fx) {
   const r = normIndex(real); if (r) return r.demo ? { src: 'demo', v: r } : { src: 'file', v: r };
-  const f = normIndex(fx); return f ? { src: 'demo', v: { ...f, demo: true } } : null;
+  const f = normIndex(fx); if (!f) return null;
+  for (const x of f.runs) x.demo = true;                // every duel of a demo fighter says so in its caveats
+  return { src: 'demo', v: { ...f, demo: true } };
 }
 /** add the runs of a shard (never twice) */
 export function addShard(v, shard) {
