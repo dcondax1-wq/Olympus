@@ -324,8 +324,8 @@ function paintVoices() { const on = P.voice.on(), b = $('voiceBtn'); b.textConte
 function stageCard(id, el) {
   const box = $('hallCards'); clear(box); if (!el || !S.hall || !S.hall.ok) return;
   const i = S.people.findIndex((p) => p.id === id); if (i < 0) return;
-  box.appendChild(el); S.card = { i, el };
-  const place = () => { if (!S.card || S.card.el !== el || !el.parentNode) return; const q = S.hall.speaking() === i ? S.hall.speaker(i).project() : S.hall.project(i), W = box.clientWidth, w = el.offsetWidth || 200, x = q.x < W / 2 ? Math.min(W - w - 8, q.x + 34) : Math.max(8, q.x - w - 34); el.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(Math.max(8, q.y - 10)) + 'px)'; };
+  box.appendChild(el); S.card = { i, el }; S.hall.focus(i, 0.34);
+  const place = () => { if (!S.card || S.card.el !== el || !el.parentNode || !S.hall) return; const q = S.hall.speaking() === i ? S.hall.speaker(i).project() : S.hall.project(i), W = box.clientWidth, H = box.clientHeight, w = el.offsetWidth || 176, hh = el.offsetHeight || 120, x = q.x < W / 2 ? Math.min(W - w - 6, q.x + 30) : Math.max(6, q.x - w - 30); el.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(Math.max(6, Math.min(H - hh - 6, q.y + 6))) + 'px)'; };
   place(); S.cardPlace = place;
 }
 function mountStage() {
@@ -375,6 +375,8 @@ async function init() {
   $('suPlay').addEventListener('click', playStandup); $('suNext').addEventListener('click', () => stepStandup()); $('suStop').addEventListener('click', () => stopStandup(false));
   drawDebateSetup(); $('dbGo').addEventListener('click', runDebate); drawTogether();
   paintVoices(); $('voiceBtn').addEventListener('click', () => { P.voice.set(!P.voice.on()); paintVoices(); if (P.voice.on()) $('status').textContent = 'Voices on. Each person speaks with their own voice; tap Voices again to stop.'; else P.hush(); });
+  window.addEventListener('olympus:people:say', (e) => { if (e.detail && e.detail.bubble) $('stage').classList.add('speaking'); });
+  window.addEventListener('olympus:people:said', () => { $('stage').classList.remove('speaking'); });
   window.addEventListener('olympus:people:close', () => { clear($('hallCards')); S.card = null; S.cardPlace = null; paintVoices(); });
   fillSelect($('reqWho'), S.people.map((p) => [p.id, p.name + ' · ' + K.clean(p.title, 34)]));
   $('reqForm').addEventListener('submit', (e) => { e.preventDefault(); const t = $('reqText').value.trim(); if (!t) { $('reqNote').textContent = 'Write the request first.'; return; } const row = P.request($('reqWho').value, t); $('reqText').value = ''; $('reqNote').textContent = row ? 'Added.' : 'This phone would not store it.'; drawRequests(); });

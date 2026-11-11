@@ -47,6 +47,8 @@ select.field { appearance: none; -webkit-appearance: none; background-image: lin
 .stage { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--ag-line); background: #3b2a1c; }
 #hall3d { display: block; width: 100%; height: min(58vh, 430px); min-height: 300px; touch-action: pan-y; outline-offset: -2px; }
 .tagsover { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.stage.speaking .tagsover { opacity: 0; } .stage.speaking .htag { visibility: hidden; }
+.tagsover { transition: opacity .2s ease-out; }
 .rowbtns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .subh { margin: 18px 0 6px; font-family: var(--ag-serif); font-size: 16px; }
 /* speech bubbles (olympus/people.css .pp-say) live in the stage over the hall; a small work card sits beside the speaker */

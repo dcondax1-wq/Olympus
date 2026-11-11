@@ -110,16 +110,16 @@ function short(t, n) { const s = String(t == null ? '' : t); if (s.length <= n) 
 function sv(tag, at) { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); return e; }
 /** a small horizontal bar chart: each bar's value text is the fact's own text */
 function chartSvg(ch, mini) {
-  const bars = ch.bars, W = 300, rowH = mini ? 22 : 26, H = bars.length * rowH + 4, LW = mini ? 92 : 104, VW = mini ? 72 : 96, plot = W - LW - VW - 8;
+  const bars = ch.bars, W = mini ? 190 : 300, rowH = mini ? 20 : 26, H = bars.length * rowH + 4, LW = mini ? 62 : 104, VW = mini ? 66 : 96, plot = W - LW - VW - 8;
   const vs = bars.map((b) => b.v), base = ch.base != null ? ch.base : 0, lo = Math.min(base, ...vs), hi = Math.max(base, ...vs), span = hi - lo || 1, x0 = LW + ((base - lo) / span) * plot;
   const s = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', class: 'pp-chart', preserveAspectRatio: 'xMinYMin meet' });
   const t = sv('title', {}); t.textContent = ch.title + ': ' + bars.map((b) => b.label + ' ' + b.text).join(', '); s.appendChild(t);
   s.appendChild(sv('line', { x1: x0, x2: x0, y1: 0, y2: H, stroke: '#6b5a40', 'stroke-width': 1 }));
   bars.forEach((b, i) => {
     const y = i * rowH + 3, x1 = LW + ((b.v - lo) / span) * plot, left = Math.min(x0, x1), w = Math.max(2, Math.abs(x1 - x0));
-    const lab = sv('text', { x: LW - 6, y: y + rowH / 2 + 4, 'text-anchor': 'end', class: 'pp-chl' }); lab.textContent = short(b.label, mini ? 13 : 16); s.appendChild(lab);
+    const lab = sv('text', { x: LW - 6, y: y + rowH / 2 + 4, 'text-anchor': 'end', class: 'pp-chl' }); lab.textContent = short(b.label, mini ? 10 : 16); s.appendChild(lab);
     s.appendChild(sv('rect', { x: left, y: y + 4, width: w, height: rowH - 10, rx: 3, fill: b.v < base ? '#c96a4a' : '#8fa05a' }));
-    const val = sv('text', { x: W - 2, y: y + rowH / 2 + 4, 'text-anchor': 'end', class: 'pp-chv' }); val.textContent = short(b.text, mini ? 12 : 18); s.appendChild(val);
+    const val = sv('text', { x: W - 2, y: y + rowH / 2 + 4, 'text-anchor': 'end', class: 'pp-chv' }); val.textContent = short(b.text, mini ? 11 : 18); s.appendChild(val);
   });
   return s;
 }

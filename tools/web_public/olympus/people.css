@@ -70,7 +70,8 @@ html.pp-open, html.pp-open body { overflow: hidden; }
 /* the work card (show): marble panel, gold rule, a small bar chart drawn from the person's own numbers, the source under it */
 .pp-cardrow { justify-content: flex-start; }
 .pp-card { width: 100%; max-width: 360px; padding: 12px 13px; border-radius: 16px; background: linear-gradient(180deg, #2f281f, #241f18); border: 1px solid #5a4a26; box-shadow: 0 4px 14px rgba(0, 0, 0, .3); color: var(--ag-text, #f3ece0); }
-.pp-card.pp-mini { max-width: 220px; padding: 9px 10px; font-size: 13px; }
+.pp-card.pp-mini { width: 176px; max-width: 176px; padding: 8px 9px; font-size: 12px; }
+.pp-mini .pp-cl { font-size: 12px; } .pp-mini .pp-src { font-size: 11px; margin-top: 4px; } .pp-mini .pp-verdict { font-size: 12px; padding: 4px 7px; }
 .pp-chead { display: flex; align-items: center; gap: 9px; }
 .pp-cface { flex: none; }
 .pp-ctt { min-width: 0; }
@@ -86,7 +87,7 @@ html.pp-open, html.pp-open body { overflow: hidden; }
 .pp-chl { font: 500 11px var(--ag-sans, system-ui); fill: #cfc4b2; } .pp-chv { font: 600 11px var(--ag-sans, system-ui); fill: #f3ece0; }
 .pp-clines { margin: 9px 0 0; display: grid; gap: 4px; }
 .pp-cl { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; border-bottom: 1px solid #3a3228; padding-bottom: 3px; }
-.pp-cl dt { color: var(--ag-soft, #cfc4b2); min-width: 0; } .pp-cl dd { margin: 0; text-align: right; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.pp-cl dt { color: var(--ag-soft, #cfc4b2); flex: none; white-space: nowrap; } .pp-cl dd { margin: 0; text-align: right; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
 .pp-clist { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--ag-soft, #cfc4b2); display: grid; gap: 3px; }
 .pp-cday { color: var(--ag-muted, #9a8f7d); font-size: 12px; }
 @keyframes pp-fade { from { opacity: 0; } to { opacity: 1; } }

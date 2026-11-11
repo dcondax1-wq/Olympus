@@ -99,7 +99,7 @@ function build(rc, scene, camera, canvas, o) {
     yaw: () => st.yaw,
     setYaw(a) { st.yaw = a; st.goal = null; st.vel = 0; placeCam(); },
     spin(dx) { st.goal = null; st.idle = 0; st.yaw -= dx * 0.008; st.vel = -dx * 0.008 * 0.5; },
-    focus(i) { if (L.seats[i]) { st.goal = yawFor(L, i) + Math.PI; st.vel = 0; st.idle = 0; } },      // the camera goes to the far side, so this person faces it
+    focus(i, off) { if (L.seats[i]) { st.goal = yawFor(L, i) + Math.PI + (off || 0); st.vel = 0; st.idle = 0; } },      // off: a little to one side (room for a work card)      // the camera goes to the far side, so this person faces it
     active(i) { if (st.active >= 0) crowd.userData.setActive(st.active, false); st.active = i == null ? -1 : i; if (st.active >= 0) crowd.userData.setActive(st.active, true); if (reduced) crowd.userData.tick(0); },
     project(i) { crowd.userData.headWorld(i, v); const behind = v.clone().sub(camera.position).dot(camera.getWorldDirection(new THREE.Vector3())) <= 0; v.project(camera); return { x: (v.x * 0.5 + 0.5) * st.w, y: (-v.y * 0.5 + 0.5) * st.h, z: v.z, front: !behind }; },
     pick(cx, cy) { const b = canvas.getBoundingClientRect(); ndc.set(((cx - b.left) / b.width) * 2 - 1, -((cy - b.top) / b.height) * 2 + 1); ray.setFromCamera(ndc, camera); return crowd.userData.pick(ray); },
