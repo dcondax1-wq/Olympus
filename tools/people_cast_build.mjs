@@ -30,7 +30,7 @@ const CELLS = {
   common: { '0,0': 'skin', '1,0': 'hair', '2,0': 'eye' },
   Knight: { '3,0': 'metal', '7,0': 'metal', '4,0': 'metal', '6,0': 'leather', '7,1': 'outfit2', '2,1': 'metal', '0,1': 'accent', '1,1': 'linen', '3,1': 'metal', '5,1': 'leather', '6,1': 'leather', '2,2': 'accent' },
   Mage: { '0,1': 'outfit', '7,1': 'outfit2', '5,0': 'accent', '3,0': 'metal', '4,0': 'metal', '2,2': 'leather', '0,2': 'linen', '3,2': 'boots', '7,2': 'skin', '1,1': 'accent', '2,1': 'accent', '1,2': 'accent', '5,1': 'leather', '3,1': 'metal' },
-  Rogue: { '0,1': 'outfit', '1,1': 'accent', '5,0': 'leather', '6,0': 'leather', '5,2': 'leather', '3,0': 'metal', '7,1': 'outfit2', '3,2': 'boots' },
+  Rogue: { '0,1': 'outfit', '1,1': 'accent', '5,0': 'leather', '6,0': 'leather', '5,2': 'skin', '3,0': 'metal', '7,1': 'outfit2', '3,2': 'boots' },
   Barbarian: { '0,1': 'outfit', '1,1': 'outfit', '6,0': 'leather', '2,1': 'linen', '7,1': 'outfit2', '7,0': 'leather', '3,0': 'metal', '3,2': 'boots', '7,2': 'leather', '5,1': 'fixed', '3,1': 'metal', '1,3': 'fixed', '4,1': 'leather', '0,2': 'linen', '2,2': 'accent', '6,1': 'leather' },
 };
 CELLS.Rogue_Hooded = CELLS.Rogue;
