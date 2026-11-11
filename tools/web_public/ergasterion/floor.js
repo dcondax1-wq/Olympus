@@ -336,7 +336,7 @@ function build(rc, scene, camera, canvas, o) {
     S.forEach((st, i) => paint(i, personId(st.id))); camp.forEach((b, j) => { if (b) paint(N + j, builderIds(b.branch)[0]); });
     fig.im.instanceColor.needsUpdate = true; head.im.instanceColor.needsUpdate = true;
   }
-  import('../olympus/people3d.js').then((m) => { specFn = m && typeof m.spec === 'function' ? m.spec : null; P3 = m && typeof m.figure === 'function' && typeof m.spec === 'function' && !o.noFull ? m : null; if (P3 && typeof P3.play === 'function' && !full.size) perFig = 2; dress();      // a v2 figure is 2 draws (measured again once one is up) }).catch(() => { /* optional */ });
+  import('../olympus/people3d.js').then((m) => { specFn = m && typeof m.spec === 'function' ? m.spec : null; P3 = m && typeof m.figure === 'function' && typeof m.spec === 'function' && !o.noFull ? m : null; if (P3 && typeof P3.play === 'function' && !full.size) perFig = 2; /* a v2 figure is 2 draws (measured again once one is up) */ dress(); }).catch(() => { /* optional */ });
   function hideActor(i) { for (let q = 0; q < 3; q++) { gone(fig.im, i * 3 + q); gone(dBox.im, i * 3 + q); gone(dCyl.im, i * 3 + q); } for (let q = 0; q < HS; q++) gone(head.im, i * HS + q); }
   // an arm from the shoulder (local x = sxl), swung forward by `a` (0 hangs down, 1.57 straight ahead, 3 overhead) and outward by `out`, ending in a mitten hand
   function arm(i, side, sy, a, out) {
