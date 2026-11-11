@@ -69,6 +69,7 @@
   {"id": "nq", "name": "NQ", "glyph": "\u039d", "colour": "#c8a24a", "group": "trading", "groupName": "Trading", "purpose": "The NQ bots, right now: status, drawdown left, last trades", "path": "nq/", "live": true},
   {"id": "symposium", "name": "Symposium", "glyph": "\u03a3", "colour": "#d9b25a", "group": "life", "groupName": "Life", "purpose": "Meet everyone who works for you, and talk to them", "path": "symposium/", "live": true},
   {"id": "herald", "name": "Herald", "glyph": "\u0397", "colour": "#c8a24a", "group": "life", "groupName": "Life", "purpose": "The daily paper: who built what, the day, the verdicts, all sourced", "path": "herald/", "live": true},
+  {"id": "polis", "name": "Polis", "glyph": "\u03a0\u03bb", "colour": "#e0b060", "group": "life", "groupName": "Life", "purpose": "The city of OLYMPUS: every app a building under the real New York sky", "path": "polis/", "live": true},
   {"id": "clio", "name": "Clio", "glyph": "\u039a", "colour": "#d8c9a8", "group": "trading", "groupName": "Trading", "purpose": "The research library: every study in plain words", "path": "clio/", "live": true},
   {"id": "atlas", "name": "Atlas", "glyph": "\u25c8", "colour": "#efc979", "group": "life", "groupName": "Life", "purpose": "A fast map of every Olympus dashboard", "path": "atlas/", "live": true},
   {"id": "athena", "name": "Athena", "glyph": "\ud83e\udd89", "colour": "#7f8a52", "group": "life", "groupName": "Life", "purpose": "The library: strategy, rules, quiz", "path": "athena/", "live": true},
