@@ -93,7 +93,7 @@ function setTab(t, focus) {
   if (t === 'requests') drawRequests();
   if (t === 'me') enterMe();
   if (t === 'standup') drawStandup();
-  if (O && O.sound) { try { O.sound('tap'); } catch (_) { /* quiet */ } }
+  if (O && O.sound) { try { O.cue('tap'); } catch (_) { /* quiet */ } }
 }
 function wireTabs() {
   for (const k of TABS) $('tab-' + k).addEventListener('click', () => setTab(k));
@@ -324,14 +324,14 @@ function paintVoices() { const on = P.voice.on(), b = $('voiceBtn'); b.textConte
 function stageCard(id, el) {
   const box = $('hallCards'); clear(box); if (!el || !S.hall || !S.hall.ok) return;
   const i = S.people.findIndex((p) => p.id === id); if (i < 0) return;
-  box.appendChild(el); S.card = { i, el }; S.hall.focus(i, 0.34);
-  const place = () => { if (!S.card || S.card.el !== el || !el.parentNode || !S.hall) return; const q = S.hall.speaking() === i ? S.hall.speaker(i).project() : S.hall.project(i), W = box.clientWidth, H = box.clientHeight, w = el.offsetWidth || 176, hh = el.offsetHeight || 120, x = q.x < W / 2 ? Math.min(W - w - 6, q.x + 30) : Math.max(6, q.x - w - 30); el.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(Math.max(6, Math.min(H - hh - 6, q.y - 4))) + 'px)'; };
+  box.appendChild(el); S.card = { i, el }; S.hall.focus(i, 0.2);
+  const place = () => { if (!S.card || S.card.el !== el || !el.parentNode || !S.hall) return; const q = S.hall.project(i), W = box.clientWidth, H = box.clientHeight, w = el.offsetWidth || 176, hh = el.offsetHeight || 120, x = q.x < W / 2 ? Math.min(W - w - 6, q.x + 30) : Math.max(6, q.x - w - 30); el.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(Math.max(6, Math.min(H - hh - 6, q.y - 4))) + 'px)'; };
   place(); S.cardPlace = place;
 }
 function mountStage() {
   P.stage({
-    figure(id) { if (!S.hall || !S.hall.ok) return null; const i = S.people.findIndex((p) => p.id === id); if (i < 0) return null; if (S.hall.speaking() !== i) spot(id); const sp = S.hall.speaker(i); return sp ? { figure: sp.figure, project: sp.project, onTick: sp.onTick, container: $('stage') } : null; },
-    release() { if (S.hall && S.hall.ok) S.hall.release(); clear($('hallCards')); S.card = null; unspot(); },
+    figure(id) { if (!S.hall || !S.hall.ok) return null; const i = S.people.findIndex((p) => p.id === id); if (i < 0) return null; const sp = S.hall.stageFor(i); return sp ? { project: sp.project, container: $('stage') } : null; },      // the hall moves the mouth itself (the kit's speak / viseme events)
+    release() { if (S.hall && S.hall.ok) S.hall.release(); clear($('hallCards')); S.card = null; S.cardPlace = null; },
     walk(id) { const i = S.people.findIndex((p) => p.id === id); return S.hall && S.hall.ok && i >= 0 ? S.hall.walk(i) : Promise.resolve(false); },
     card: stageCard,
   });

@@ -175,7 +175,7 @@
     ambLoading = true;
     var tries = 0, wait = function () { if (window.OLYMPUS_SFX) { cb(window.OLYMPUS_SFX); } else if (++tries < 12) setTimeout(wait, 500); };
     if (!d.getElementById('olySfxJs')) {
-      var sc = d.createElement('script'); sc.id = 'olySfxJs'; sc.async = true; sc.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s2'); sc.onerror = function () { ambLoading = false; };
+      var sc = d.createElement('script'); sc.id = 'olySfxJs'; sc.async = true; sc.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s3'); sc.onerror = function () { ambLoading = false; };
       (d.head || root).appendChild(sc);
     }
     wait();
@@ -269,7 +269,7 @@
         var k = window.OLYMPUS_SFX;
         if (k) return !!k.play(name);
         if (me && me.src && !d.getElementById('olySfxJs')) {
-          var s = d.createElement('script'); s.id = 'olySfxJs'; s.async = true; s.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s2');
+          var s = d.createElement('script'); s.id = 'olySfxJs'; s.async = true; s.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s3');
           (d.head || root).appendChild(s);
         }
       } catch (e) { /* the sound is never needed */ }

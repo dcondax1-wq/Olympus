@@ -69,7 +69,7 @@ function specOf(id, over) {
 /** a round avatar (head and shoulders) as an SVG element; the same character as the 3D figure. opts: { mood, blink, talk, ring, label } */
 function portrait(id, size, opts) {
   const o = opts || {}, p = C.isObj(id) && id.hairStyle ? null : get(id), sp = specOf(id), f = p ? S.facts.get(p.id) : null;
-  const tree = C.portraitTree(sp, { size: size || 44, mood: o.mood || sp.mood, blink: o.blink, talk: o.talk, ring: o.ring || (f ? C.STATUS_COLOUR[f.f.status] : '#9c6b3c'), label: o.label || (p ? p.name : 'portrait'), uid: o.uid });
+  const tree = C.portraitTree(sp, { size: size || 44, mood: o.mood || sp.mood, expr: o.expr, mouth: o.mouth, blink: o.blink, talk: o.talk, ring: o.ring || (f ? C.STATUS_COLOUR[f.f.status] : '#9c6b3c'), label: o.label || (p ? p.name : 'portrait'), uid: o.uid });
   const el = svgNode(tree);
   el.setAttribute('class', 'pp-portrait');
   return el;
@@ -183,9 +183,11 @@ function figProject(fig, camera, canvas) {
 /** the sheet's own portrait talks: the round mouth opens and closes with the words */
 function faceTalk(on, mood, fr) {
   const U = S.sheet; if (!U || !S.cur) return;
-  if (on === true) { clear(U.face); U.face.appendChild(portrait(S.cur.id, 64, { talk: true, mood, uid: 'h' })); S.mouth = U.face.querySelector('ellipse[fill="#5a2a22"]'); return; }
   if (on === false) { S.mouth = null; paintHead({ mood }); return; }
-  if (S.mouth && fr) { S.mouth.setAttribute('ry', (0.7 + fr.a * 3.4).toFixed(2)); S.mouth.setAttribute('rx', (2.9 * ({ E: 1.3, A: 1.1, O: 0.85, U: 0.7, M: 1.2, S: 1.25 }[fr.v] || 1)).toFixed(2)); }
+  const v = on === true ? 'A' : V.toV2(fr), now = Date.now();
+  if (on !== true && (!S.mouth || (S.mouth.v === v || now - S.mouth.t < 70))) return;      // repaint only when the shape changes (at most ~14 a second)
+  S.mouth = { v, t: now };
+  clear(U.face); U.face.appendChild(portrait(S.cur.id, 64, { mood, expr: C.MOOD_EXPR ? C.MOOD_EXPR[mood] : undefined, mouth: v === 'rest' ? undefined : v, uid: 'h' }));
 }
 /** a speech bubble over a person in a scene, the words appearing as they are spoken, the figure's mouth and face following. opts: { scene, figure, anchor, container, project, mood, work, voice } */
 function say(id, text, opts) {
@@ -208,10 +210,14 @@ function say(id, text, opts) {
   const h = VO.speak(p, t, { force: o.voice === true, onword: (i, n) => { if (b && !red) b.words(i + 1, n); } });
   if (fig) { V.express(fig, mood, P3); V.pose(fig, o.work ? 'work' : V.MOOD_POSE[mood] === 'cheer' ? 'cheer' : 'talk', P3); if (!o.work && V.MOOD_POSE[mood] === 'cheer') setTimeout(() => { if (!over) V.pose(fig, 'talk', P3); }, 900); }
   if (inSheet() && !red) faceTalk(true, mood);
+  fire('olympus:people:expression', { id: p.id, expr: (C.MOOD_EXPR && C.MOOD_EXPR[mood]) || 'neutral', mood });
+  fire('olympus:people:speak', { id: p.id, on: true });
+  let lastV = '';
   const frame = () => {
     if (over) return;
     const fr = V.frameAt(h.tl, h.clock());
     if (fig && !red) V.drive(fig, fr, P3);
+    if (!red) { const v2 = V.toV2(fr), key = v2 + Math.round(fr.a * 5); if (key !== lastV) { lastV = key; fire('olympus:people:viseme', { id: p.id, viseme: v2, amount: v2 === 'rest' ? 0 : Math.max(0.25, fr.a) }); } }
     if (inSheet() && !red) faceTalk(null, mood, fr);
     if (b && project) { const q = safe(project, null); if (q) b.place(q.x, q.y, q.front); }
   };
@@ -223,6 +229,7 @@ function say(id, text, opts) {
     if (over) return; over = true;
     cancelAnimationFrame(raf); if (typeof off === 'function') safe(off);
     if (fig) { V.drive(fig, { v: 'rest', a: 0 }, P3); V.pose(fig, mood === 'sheepish' ? 'slump' : 'idle', P3); }
+    fire('olympus:people:viseme', { id: p.id, viseme: 'rest', amount: 0 }); fire('olympus:people:speak', { id: p.id, on: false });
     if (inSheet()) faceTalk(false, mood);
     if (b) { if (cut) b.remove(); else { b.full(); setTimeout(() => b.remove(), red ? 2500 : 1800); } }
     if (S.saying === H) S.saying = null;

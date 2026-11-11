@@ -6,7 +6,8 @@
   d. grounding: every number in every answer, stand-up line, round-table answer and debate turn exists in that person's facts (sample data and real-looking data)
   e. the facts: every kind from real-looking files, honest sample / stale / snapshot labels, every $ with its R, scene facts
   f. the API in node (people.js with a tiny fake window): ready / list / get / ask / standup / requests store (olympus.requests.v1) / me (olympus.me.v1) / the owner's own model
-  g. 3D: people3d.js against three.js: <= 14 meshes and <= 900 triangles per figure (<= 350 LITE), every pose, the instanced crowd
+  g. 3D: people3d.js against three.js: 2 draw calls and <= 10,000 triangles per figure (<= 6,000 LITE), every pose, the crowd (2 draw calls)
+  g2. figure API v2: visemes, expressions, talking, blinking, lookAt, work poses and their props, determinism, variety, scene budgets, the portrait's faces
     python -X utf8 -m tests.test_people
 """
 from __future__ import annotations
@@ -458,10 +459,53 @@ const [, , TMP, WEB] = process.argv;
   const specs = R.people.map((p) => C.spec(p)), crowd = P3.figureInstanced(THREE, specs, { seated: true }), liteCrowd = P3.figureInstanced(THREE, specs, { lite: true });
   crowd.userData.place(3, 2, 0, -1, 0.5, 1.5); crowd.userData.setActive(3, true); crowd.userData.tick(1.3);
   const ray = new THREE.Raycaster(new THREE.Vector3(2, 0.9, 5), new THREE.Vector3(0, 0, -1)), miss = new THREE.Raycaster(new THREE.Vector3(40, 0.9, 5), new THREE.Vector3(0, 0, -1));
-  let im = 0; crowd.traverse((x) => { if (x.isInstancedMesh) im++; });
+  let im = 0; crowd.traverse((x) => { if (x.isMesh) im++; });
   o.crowd = [crowd.userData.count, crowd.userData.drawCalls, im, crowd.userData.pick(ray), crowd.userData.pick(miss), crowd.userData.headWorld(3).y > 1, liteCrowd.userData.triangles < crowd.userData.triangles, crowd.userData.triangles];
   crowd.userData.dispose(); liteCrowd.userData.dispose();
   o.empty = P3.figureInstanced(THREE, [], {}).userData.count;
+
+  // ---- v2: the API, faces, visemes, expressions, work poses, determinism, budgets of a scene
+  o.v2api = ['setMouth', 'setExpression', 'setTalking', 'animate', 'play', 'lookAt', 'workPose', 'materials'].filter((k) => typeof P3[k] !== 'function');
+  o.lists = [P3.VISEMES.join(','), P3.EXPRESSIONS.join(','), P3.WORK_POSE_NAMES.join(','), P3.WORK_POSES.builder, P3.WORK_POSES.scanner, P3.workPose(P3.spec('bot:lit'))];
+  const h = P3.figure(THREE, P3.spec('scanner:chrysos'), {}), inf = h.userData.body.morphTargetInfluences, dict = h.userData.body.morphTargetDictionary;
+  P3.setMouth(h, 'A', 1); const mA = inf[dict.A]; P3.setMouth(h, 'O', 0.7); const mO = [inf[dict.O], inf[dict.A]];
+  P3.setMouth(h, 'rest', 1); const mRest = Array.from(inf).every((x) => x === 0);
+  o.visemes = [Object.keys(dict).sort().join(','), mA, mO, mRest];
+  const faces = {}; for (const e of P3.EXPRESSIONS) { P3.setExpression(h, e); const st = h.userData.state(); faces[e] = JSON.stringify([st.lids, st.mouth.map((x) => Math.round(x * 100))]); }
+  o.exprDistinct = new Set(Object.values(faces)).size;
+  // talking makes syllables; blinking closes the lids now and then; lookAt moves the eyes
+  P3.setExpression(h, 'neutral'); P3.setTalking(h, true); let open = 0; for (let i = 0; i < 60; i++) { P3.animate(h, 0.05); open = Math.max(open, ...h.userData.state().mouth); }
+  P3.setTalking(h, false); let shut = 1; for (let i = 0; i < 160; i++) { P3.animate(h, 0.05); shut = Math.min(shut, ...h.userData.state().mouth.map((x) => -x)); }
+  let blink = 0; for (let i = 0; i < 200; i++) { P3.animate(h, 0.04); blink = Math.max(blink, h.userData.state().lids[0][0]); }
+  const eye0 = h.userData.parts.bones.eyeR.position.clone(); P3.lookAt(h, new THREE.Vector3(4, 0.8, 1)); for (let i = 0; i < 30; i++) P3.animate(h, 0.05);
+  o.alive = [open > 0.4, blink > 0.9, h.userData.parts.bones.eyeR.position.distanceTo(eye0) > 0.0005, h.userData.parts.head.rotation.y > 0.4];
+  // work poses: their props appear (built on demand), the idle prop of the kind is in the hand
+  const b = P3.figure(THREE, P3.spec(R.people.find((p) => p.kind === 'builder')), {}), t0 = b.userData.triangles; P3.animate(b, 0.05);
+  const idleProps = b.userData.state().props.join(','); P3.play(b, 'hammer'); for (let i = 0; i < 30; i++) P3.animate(b, 0.05);
+  const workProps = b.userData.state().props.join(','), t1 = b.userData.triangles;
+  const wp = {}; for (const n of P3.WORK_POSE_NAMES) { P3.play(b, n); for (let i = 0; i < 30; i++) P3.animate(b, 0.05); wp[n] = b.userData.state().props.join(','); }
+  P3.play(b, 'wave'); const dur = P3.play(b, 'wave'); for (let i = 0; i < 80; i++) P3.animate(b, 0.05); const after = b.userData.state().pose;
+  o.work = [idleProps, workProps, t1 > t0, wp, dur > 1, after];
+  // determinism: the same person gives the same geometry; different people differ
+  const sig = (f) => { const a = f.userData.body.geometry.getAttribute('position').array, c = f.userData.body.geometry.getAttribute('color').array; let x = 0; for (let i = 0; i < a.length; i += 7) x = (x * 31 + Math.round(a[i] * 1e4) + Math.round(c[i % c.length] * 1e3)) % 1e9; return a.length + ':' + x; };
+  const g1 = P3.figure(THREE, P3.spec('bot:lit'), {}), g2 = P3.figure(THREE, P3.spec('bot:lit'), {});
+  o.det3d = [sig(g1) === sig(g2), new Set(R.people.map((p) => { const f = P3.figure(THREE, C.spec(p), { lite: true }), x = sig(f); f.userData.dispose(); return x; })).size, R.people.length];
+  const looks = R.people.concat(R.villagers).map((p) => C.drawLook(C.spec(p)));
+  o.variety3d = [new Set(looks.map((l) => l.cut)).size, new Set(looks.map((l) => l.garb)).size];
+  // a scene of 30 people: one crowd + 4 close-ups (what Symposium does)
+  const sc = R.people.slice(0, 30).map((p) => C.spec(p)), cr = P3.figureInstanced(THREE, sc, { seated: true, lite: true }), cu = sc.slice(0, 4).map((s) => P3.figure(THREE, s, { seated: true }));
+  o.scene30 = [cr.userData.drawCalls + cu.length * 2, cr.userData.totalTriangles + cu.reduce((n, f) => n + f.userData.triangles, 0)];
+  const lc = P3.figureInstanced(THREE, sc, { lite: true });
+  o.crowdBudget = [cr.userData.triangles, lc.userData.triangles, P3.figureInstanced(THREE, sc, {}).userData.triangles];
+  // crowd v2 extras
+  cr.userData.place(2, 1, 0, 0, 0, 1); cr.userData.setVisible(2, false); const hid = cr.userData.pick(new THREE.Raycaster(new THREE.Vector3(1, 0.6, 5), new THREE.Vector3(0, 0, -1))), any = cr.userData.pick(new THREE.Raycaster(new THREE.Vector3(1, 0.6, 5), new THREE.Vector3(0, 0, -1)), true);
+  cr.userData.lookAll(new THREE.Vector3(0, 1, 5)); cr.userData.setActive(0, true); cr.userData.setPose(1, 'cheer'); cr.userData.tick(1); cr.userData.tick(1.5);
+  o.crowd2 = [hid, any, ['lookAt', 'lookAll', 'setVisible', 'setTalking', 'setPose'].every((k) => typeof cr.userData[k] === 'function')];
+  // the portrait shows the same faces: seven expressions and the visemes draw different SVGs
+  const ps = C.spec(R.people[0]);
+  o.pexpr = new Set(P3.EXPRESSIONS.map((e) => C.svgText(C.portraitTree(ps, { size: 44, expr: e })))).size;
+  o.pvis = new Set(P3.VISEMES.map((m) => C.svgText(C.portraitTree(ps, { size: 44, expr: 'neutral', mouth: m })))).size;
+  o.pblink = C.svgText(C.portraitTree(ps, { blink: true })) !== C.svgText(C.portraitTree(ps, {}));
   console.log(JSON.stringify(o));
 })().catch((e) => { console.error(e && e.stack ? e.stack : e); process.exit(1); });
 """
@@ -704,14 +748,31 @@ def test_three():
     check("g. no error in the 3D harness", "_error" not in o, o.get("_error"))
     if "_error" in o:
         return
-    check(f"g. {o['n']} figures built (everyone, four moods): at most {o['maxMeshes']} meshes and {o['maxHigh']} triangles each ({o['maxLite']} on LITE), one shared material",
-          o["maxMeshes"] <= 14 and o["maxHigh"] <= 900 and o["maxLite"] <= 350 and o["mats"] == 1 and o["bad"] == [], o)
+    check(f"g. {o['n']} figures built (everyone, four moods): {o['maxMeshes']} meshes (2 draw calls: body + ink line), at most {o['maxHigh']:,} triangles each ({o['maxLite']:,} on LITE), 2 shared materials",
+          o["maxMeshes"] == 2 and o["maxHigh"] <= 10000 and o["maxLite"] <= 6000 and o["mats"] == 2 and o["bad"] == [], {k: o[k] for k in ("maxMeshes", "maxHigh", "maxLite", "mats", "bad")})
     check("g. spec(id) is plain data with the contract's fields (skin, hair, hairStyle, outfit, accent, accessory, height, build, face{eyes, brows, mouth}, mood)", o["spec"] == [True, True, True, "helmet", True, "proud"], o["spec"])
     check("g. poses idle / wave / talk / cheer / slump (+ nod, shrug): the arm goes up to wave, both up to cheer, the head drops to slump; lookAt turns the head; an unknown pose is idle",
           all(n in o["poses"] for n in ("idle", "wave", "talk", "cheer", "slump")) and o["pose"] == [True, True, True, True, True, True, "function", True], (o["poses"], o["pose"]))
     check("g. a figure stands on y = 0 and is about one unit tall", abs(o["box"][0]) < 0.03 and o["box"][1] is True, o["box"])
     c = o["crowd"]
-    check(f"g. the instanced crowd: {c[0]} people in {c[1]} draw calls, a ray picks the right person and misses empty air, LITE is lighter", c[0] >= 30 and c[1] == c[2] and c[1] <= 12 and c[3] == 3 and c[4] == -1 and c[5] is True and c[6] is True and o["empty"] == 0, c)
+    check(f"g. the crowd: {c[0]} people in {c[1]} draw calls (meshes {c[2]}), a ray picks the right person and misses empty air, LITE is lighter, nobody = nothing drawn", c[0] >= 30 and c[1] == c[2] == 2 and c[3] == 3 and c[4] == -1 and c[5] is True and c[6] is True and o["empty"] == 0, c)
+    check("g2. figure API v2: setMouth / setExpression / setTalking / animate / play / lookAt / workPose / materials, the lists of visemes, expressions and work poses",
+          o["v2api"] == [] and o["lists"][0] == "rest,A,E,O,MBP,smile,frown" and o["lists"][1] == "neutral,happy,proud,worried,thinking,surprised,sheepish"
+          and o["lists"][2] == "hammer,write,read,weigh,telescope,type,carry" and o["lists"][3:] == ["hammer", "weigh", "type"], (o["v2api"], o["lists"]))
+    v = o["visemes"]
+    check("g2. the mouth has the 6 viseme morphs (rest = none): setMouth('A', 1) opens A fully, O at 0.7 replaces it, rest closes it", v[0] == "A,E,MBP,O,frown,smile" and v[1] == 1 and v[2] == [0.7, 0] and v[3] is True, v)
+    check(f"g2. the 7 expressions make {o['exprDistinct']} different faces (lids, brows, mouth)", o["exprDistinct"] == 7, o["exprDistinct"])
+    check("g2. alive: talking opens the mouth in syllables, the eyes blink by themselves, lookAt turns the eyes and the head", o["alive"] == [True, True, True, True], o["alive"])
+    w = o["work"]
+    check("g2. work poses: a builder holds his hammer when idle; 'hammer' brings the work hammer and the anvil (built on demand: more triangles after); every work pose shows its own props; a wave returns to the last loop",
+          w[0] == "p_hammer" and w[1] == "p_whammer,p_anvil" and w[2] is True and w[3] == {"hammer": "p_whammer,p_anvil", "write": "p_quill,p_tablet", "read": "p_scrollOpen", "weigh": "p_coin,p_scales", "telescope": "p_telescope", "type": "p_slate", "carry": "p_crate"}
+          and w[4] is True and w[5] == "carry", w)
+    check(f"g2. deterministic 3D: the same person is the same mesh every time; {o['det3d'][1]} of {o['det3d'][2]} people have a mesh of their own", o["det3d"][0] is True and o["det3d"][1] == o["det3d"][2], o["det3d"])
+    check(f"g2. variety: {o['variety3d'][0]} hair cuts and {o['variety3d'][1]} garbs across the people and villagers", o["variety3d"][0] >= 10 and o["variety3d"][1] == 5, o["variety3d"])
+    check(f"g2. budgets (Round 4: <= 45 draw calls, <= 160k triangles): 30 people as a crowd + 4 close-ups = {o['scene30'][0]} draw calls, {o['scene30'][1]:,} triangles; crowd per person {o['crowdBudget']} (seated LITE, LITE, high)",
+          o["scene30"][0] <= 12 and o["scene30"][1] <= 100000 and o["crowdBudget"][0] <= 2000 and o["crowdBudget"][1] <= 2000 and o["crowdBudget"][2] <= 3000, (o["scene30"], o["crowdBudget"]))
+    check("g2. crowd v2: a hidden person (swapped for a close-up) is not picked unless asked; lookAll / setActive / setPose / setVisible / setTalking", o["crowd2"] == [-1, 2, True], o["crowd2"])
+    check(f"g2. the portrait draws the same faces: {o['pexpr']} expressions and {o['pvis']} mouth shapes are all different, a blink shuts the eyes", o["pexpr"] == 7 and o["pvis"] == 7 and o["pblink"] is True, (o["pexpr"], o["pvis"], o["pblink"]))
 
 
 def test_static():

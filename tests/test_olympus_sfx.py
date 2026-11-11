@@ -115,15 +115,17 @@ class SfxTest(unittest.TestCase):
 
     def test_ui_cues_and_the_sound_switch(self):
         o = self.o
-        self.assertEqual(o["cues"], ["open", "close", "success", "warning"])
-        self.assertEqual(o["cuesPlay"], [True] * 4)                       # after the first tap they sound
-        self.assertEqual(o["liteCues"], [False] * 4)                      # LITE: silent by default ...
+        self.assertEqual(o["cues"][:4], ["open", "close", "success", "warning"])     # the four first cues, then the 2026-11-11 set
+        self.assertEqual(o["cues"][4:], ["swipe", "toggle", "notify", "error", "money", "levelup"])
+        n = len(o["cues"])
+        self.assertEqual(o["cuesPlay"], [True] * n)                       # after the first tap they sound
+        self.assertEqual(o["liteCues"], [False] * n)                      # LITE: silent by default ...
         self.assertTrue(o["liteTap"])                                     # ... but the old sounds are untouched
         self.assertEqual((o["liteBed"], o["liteSound"]), ("", False))     # a bed wanted in LITE stays silent
-        self.assertEqual(o["liteOnCues"], [True] * 4)                     # the owner turned Sound on: they play
+        self.assertEqual(o["liteOnCues"], [True] * n)                     # the owner turned Sound on: they play
         self.assertEqual((o["liteOnBed"], o["liteStored"]), ("smithy", True))
         self.assertEqual(o["liteAuto"], "")                               # null = automatic again
-        self.assertEqual(o["redCues"], [False] * 4)                       # reduced motion: silent by default
+        self.assertEqual(o["redCues"], [False] * n)                       # reduced motion: silent by default
         self.assertEqual((o["redBed"], o["redOnBed"], o["redOnCue"]), ("", "lab", True))
         self.assertEqual((o["offBefore"], o["offBed"], o["offCue"], o["offTap"], o["offAllowed"]), ("coins", "", False, True, False))   # Sound off: bed and cues stop
         self.assertEqual(o["offBack"], "coins")

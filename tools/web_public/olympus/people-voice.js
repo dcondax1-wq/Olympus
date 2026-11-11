@@ -121,14 +121,19 @@ export function frameAt(tl, ms) {
 export function wordAtChar(tl, ci) { let w = 0; for (const x of (tl && tl.words) || []) { if (x.c0 <= ci + 1) w = x.i; else break; } return w; }
 
 // ------------------------------------------------------------------------------------------------ moving a figure's mouth
+/** the Figure API v2 mouth (people3d.js VISEMES: rest A E O MBP smile frown) for a frame of this finer timeline */
+export const TO_V2 = { rest: 'rest', A: 'A', E: 'E', O: 'O', U: 'O', M: 'MBP', F: 'E', L: 'E', S: 'E', K: 'A' };
+export function toV2(fr) { if (!fr || fr.a <= 0.02 && fr.v !== 'M') return 'rest'; return TO_V2[fr.v] || 'rest'; }
 const WIDE = { E: 1.22, A: 1.05, O: 0.74, U: 0.62, M: 1.04, F: 1.08, L: 1, S: 1.15, K: 1, rest: 1 };
 /** Figure API v2 (people3d.js setMouth(fig, viseme, amount)) when the artist's module has it, else the figure's own userData.setMouth, else the mouth mesh */
 export function drive(fig, fr, P3) {
   if (!fig || !fr) return false;
   try {
-    if (P3 && typeof P3.setMouth === 'function') { P3.setMouth(fig, fr.v, fr.a); return true; }
+    const v2 = (P3 && Array.isArray(P3.VISEMES) && P3.VISEMES.indexOf('MBP') >= 0) || (fig.userData && fig.userData.v === 2);
+    const vis = v2 ? toV2(fr) : fr.v, amt = v2 && vis === 'MBP' ? 1 : fr.a;
+    if (P3 && typeof P3.setMouth === 'function') { P3.setMouth(fig, vis, amt); return true; }
     const u = fig.userData || {};
-    if (typeof u.setMouth === 'function') { u.setMouth(fr.v, fr.a); return true; }
+    if (typeof u.setMouth === 'function') { u.setMouth(vis, amt); return true; }
     const m = u.parts && u.parts.mouth;
     if (m && m.scale) { m.scale.y = 0.55 + fr.a * 1.7; m.scale.x = WIDE[fr.v] || 1; return true; }
   } catch (_) { /* a figure from another version: no mouth */ }
@@ -169,7 +174,11 @@ export function createVoice(opts) {
   let ac = null, cur = null, kokoro = null;
   const on = () => safe(() => store.getItem(VOICE_KEY) === '1', false);
   function set(v) { safe(() => store.setItem(VOICE_KEY, v ? '1' : '0')); if (!v) stop(); return on(); }
-  function audio() { if (!ac && AC) ac = safe(() => new AC(), null); if (ac && ac.state === 'suspended') safe(() => ac.resume()); return ac; }
+  const SFX = () => (o.sfx !== undefined ? o.sfx : g.OLYMPUS_SFX) || null;            // the shared sound engine (docs/SOUND_API.md): ducking + the voices bus
+  function audio() { const S = SFX(), shared = S && typeof S.context === 'function' ? safe(() => S.context(), null) : null; if (shared) return shared; if (!ac && AC) ac = safe(() => new AC(), null); if (ac && ac.state === 'suspended') safe(() => ac.resume()); return ac; }
+  const voiceOut = (A) => { const S = SFX(), b = S && typeof S.bus === 'function' ? safe(() => S.bus('voices'), null) : null; return b && b.context === A ? b : A.destination; };
+  let ducked = 0;
+  const duck = (on) => { const S = SFX(); if (!S || typeof S.speaking !== 'function') return; if (on) { ducked++; safe(() => S.speaking(true)); } else if (ducked > 0) { ducked--; safe(() => S.speaking(false)); } };
   /** call inside a tap: lifts the iPhone's tap-only rule for speech and audio */
   function unlock() {
     audio();
@@ -182,7 +191,7 @@ export function createVoice(opts) {
   // the murmur: one soft vowel blip per mouth key, a little formant filter, quiet. Our own sound for "no voice on this device".
   function murmur(prof, tl, at0) {
     const A = audio(); if (!A) return null;
-    const t0 = A.currentTime + 0.04, out = A.createGain(); out.gain.value = 0.055; out.connect(A.destination);
+    const t0 = A.currentTime + 0.04, out = A.createGain(); out.gain.value = 0.055; out.connect(voiceOut(A));
     const F1 = { A: 820, E: 520, O: 560, U: 360, L: 420, K: 600, S: 480, F: 400, M: 300 }, nodes = [];
     for (let i = 0; i < tl.keys.length; i++) {
       const k = tl.keys[i], nx = tl.keys[i + 1]; if (k.v === 'rest' || k.v === 'M' || !nx) continue;
@@ -211,12 +220,13 @@ export function createVoice(opts) {
     function end(cut) {
       if (done) return; done = true; clearTimeout(timer); clearInterval(H.tick);
       if (stopper) safe(() => stopper.stop());
+      if (H.ducked) { H.ducked = false; duck(false); }
       if (cur === H) cur = null;
       word(tl.words.length - 1);
       if (hd.onend) safe(() => hd.onend(!!cut));
       resolve(!!cut);
     }
-    function begin() { if (start) return; start = Date.now(); if (hd.onstart) safe(() => hd.onstart(engine)); clearInterval(H.tick); H.tick = setInterval(() => { if (done) return; const f = frameAt(tl, H.clock()); if (f.w >= 0) word(f.w); }, 60); }
+    function begin() { if (start) return; start = Date.now(); if (engine !== 'captions' && !H.ducked) { H.ducked = true; duck(true); } if (hd.onstart) safe(() => hd.onstart(engine)); clearInterval(H.tick); H.tick = setInterval(() => { if (done) return; const f = frameAt(tl, H.clock()); if (f.w >= 0) word(f.w); }, 60); }
     function timed(extra) { begin(); timer = setTimeout(() => end(false), tl.ms + (extra || 120)); }
     cur = H;
     if (!shown) { setTimeout(() => end(false), 0); return H; }
