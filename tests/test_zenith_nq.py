@@ -164,6 +164,8 @@ def part_c(tmp, shots):
                     d["board"]["data_t"] = old
                 json.dump(d, open(os.path.join(s, n), "w"), default=str)
             ctx, pg = TB.phone_ctx(br, F, lvp, "off", errs)
+            for pat in ("**/api.github.com/**", "**/raw.githubusercontent.com/**"):      # the old phone live feed is gone too (it would overlay a fresh PC report)
+                pg.route(pat, lambda r: r.fulfill(status=404, body="{}"))
             pg.goto(base + "#/today")
             pg.wait_for_selector("#znNq", timeout=30000)
             pg.wait_for_function("() => document.getElementById('znNq').dataset.level === 'bad'", timeout=20000)
