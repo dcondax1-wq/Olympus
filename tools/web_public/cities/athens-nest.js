@@ -2,7 +2,7 @@
 // breadcrumbs, the house card, villagers you can tap, and the street-level WALK mode (joystick, look, compass, tour guide).
 // Read only: it opens Olympus apps by link and never calls a trading or money function. AGORA look (athens-nest.css).
 import { GROUPS } from './athens-plan.js';
-import { talkTo, chatCard, villagerPerson } from './people-talk.js';
+import { talkTo, chatCard, villagerPerson, sayShow } from './people-talk.js';
 import { whereAmI, compassName, headingTo, angDiff, route, doorOf } from './athens-world.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -70,7 +70,7 @@ export class Nest {
   /** talk to a villager: the shared People kit when it is loaded (villager:<app-id>), else the card with our own six questions */
   showNpc(hit) {
     const ui = this.ui, v = hit.village, g = GROUPS.find((x) => x.key === v.group) || GROUPS[4];
-    const person = villagerPerson(v, hit.npc.i); this.S.talkNpc = hit.npc.i; this.lastTalk = { id: person.id, how: talkTo(person, { anchor: ui.card }) };
+    const person = villagerPerson(v, hit.npc.i); this.S.talkNpc = hit.npc.i; this.lastTalk = { id: person.id, how: talkTo(person, { anchor: ui.card }), voice: sayShow(person, 'athens') };
     if (this.lastTalk.how === 'kit') { this.kitTalk = true; ui.card.hidden = true; return; }
     ui.card.innerHTML = `<button class="ath-x" data-a="cardx" aria-label="Close card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="ath-pill" style="--c:${esc(g.tint)}">Villager · ${esc(g.name)}</span><h3>${esc(v.name)} villager</h3><p class="ath-vfact">${esc(hit.fact)}</p>
       <div class="ath-btns"><a class="ath-go" href="${hrefOf(v.id)}">Open ${esc(v.name)}</a><button data-a="n-village" data-id="${esc(v.id)}">Visit the village</button></div>`;

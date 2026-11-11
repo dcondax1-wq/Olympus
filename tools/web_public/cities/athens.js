@@ -437,8 +437,11 @@ export class Athens {
     this.npcT = t; this.npcPos = this.npcPos || [];
     for (let i = 0; i < this.npcs.length; i++) {
       const talking = this.talkNpc === i && this.npcPos[i], q = talking ? this.npcPos[i] : npcAt(this.npcs[i], t); this.npcPos[i] = q;   // the one you talk to stops and turns to face you
-      const ry = talking ? Math.atan2(cp.x - q.x, cp.z - q.z) : Math.atan2(Math.sin(q.yaw), -Math.cos(q.yaw)); q.facing = !!talking;
-      if (this.crowd) this.crowd.place(i, q.x, groundY(q.x, q.z), q.z, ry, sc * 1.2, talking && !this.reduced ? 1 + .035 * Math.sin(t * 9) : 1);
+      // walking among them: heads turn as you arrive (2.6 s, within 45 m) and anyone within 5 m faces you with a little hop: hello
+      const dMe = this.walk ? Math.hypot(this.walk.x - q.x, this.walk.z - q.z) : 1e9, greet = !talking && dMe < 5, look = !talking && this.lookUntil && t < this.lookUntil && dMe < 45;
+      const ry = talking || greet || look ? Math.atan2(cp.x - q.x, cp.z - q.z) : Math.atan2(Math.sin(q.yaw), -Math.cos(q.yaw)); q.facing = !!(talking || greet || look); q.act = talking ? 'talk' : greet ? 'greet' : look ? 'look' : 'walk';
+      const hop = greet && !this.reduced ? Math.max(0, Math.sin(t * 7 + i)) * .14 * sc : 0;
+      if (this.crowd) this.crowd.place(i, q.x, groundY(q.x, q.z) + hop, q.z, ry, sc * 1.2, talking && !this.reduced ? 1 + .035 * Math.sin(t * 9) : 1);
       else { d.position.set(q.x, groundY(q.x, q.z), q.z); d.rotation.set(0, -q.yaw, 0); d.scale.setScalar(sc); d.updateMatrix(); m.setMatrixAt(i, d.matrix); }
     }
     m.instanceMatrix.needsUpdate = true;
@@ -458,7 +461,7 @@ export class Athens {
   // walking at street level: eye 1.7 m, drag to look, a joystick moves
   startWalk(x, z, yaw = 0) {
     if (!this.col) return false; this.tour = null; this.fly = null; this.camera.near = .35; this.camera.updateProjectionMatrix();
-    this.walk = { x, z, yaw, pitch: -.03, input: { fwd: 0, side: 0, run: false }, bob: 0, y: groundY(x, z) + EYE, dist: 0 }; return true;
+    this.walk = { x, z, yaw, pitch: -.03, input: { fwd: 0, side: 0, run: false }, bob: 0, y: groundY(x, z) + EYE, dist: 0 }; this.lookUntil = (this.npcT || 0) + 2.6; return true;
   }
   stopWalk() {
     if (!this.walk) return; const w = this.walk; this.walk = null; this.camera.near = 1.5; this.camera.updateProjectionMatrix();
