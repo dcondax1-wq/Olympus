@@ -219,7 +219,9 @@ def test_browser():
             check("f. TAP-TO-WALK (a real touch on the floor): a path is planned and your character walks along it",
                   w1["walks"] > w0["walks"] and (w1["path"] or abs(w1["me"]["x"] - w0["me"]["x"]) + abs(w1["me"]["z"] - w0["me"]["z"]) > 0.2), (w0["me"], w1["me"], w1["walks"]))
             p.evaluate("(() => { const d = window.ERG_DIRECTOR; d.goTo(d.state().greeter); })()")
-            ring = until(p, "document.querySelectorAll('.oc-ring button').length === 4 && [...document.querySelectorAll('.oc-ring button')].map((b) => { const r = b.getBoundingClientRect(); return [b.textContent, Math.round(r.width), Math.round(r.height)]; })", 30000)
+            until(p, "document.querySelectorAll('.oc-ring button').length === 4", 30000)
+            p.wait_for_timeout(600)      # the buttons pop in (scale .6 -> 1 in 0.22 s)
+            ring = p.evaluate("[...document.querySelectorAll('.oc-ring button')].map((b) => { const r = b.getBoundingClientRect(); return [b.textContent, Math.round(r.width), Math.round(r.height)]; })")
             check("f. tap a person: you walk up to them and a ring offers Talk / Show work / Follow / Wave (each at least 44 px)",
                   bool(ring) and [r[0] for r in ring] == ["Talk", "Show work", "Follow", "Wave"] and all(r[1] >= 44 and r[2] >= 44 for r in ring), ring)
             p.evaluate("document.querySelector('.oc-ring button[data-act=talk]').click()")
