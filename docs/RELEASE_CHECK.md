@@ -14,13 +14,16 @@ Steps 1 and 5 open a browser: only ONE browser may run on the machine, so they g
 ## Step 5 in detail (`tools/site_smoke.py`)
 - It serves `<site>` on a free local port (read only) and opens the root page and every folder with an `index.html` at 390 x 844 with `?demo=1&q=low&welcome=0&intro=0`, one page at a time, at most 40 s a page (`--timeout`).
 - Per page it records: HTTP status, console errors, uncaught exceptions, failed same-site requests, whether the page is visibly not blank (text length and painted pixels), sideways overflow, a title and the app marker, the time to first content.
-- **Hard failures (exit 1):** a bad HTTP status, an uncaught exception, a console error, a failed script / style / page request, a blank page, a timeout, the kit's own "could not load" banner.
+- **Hard failures (exit 1):** a bad HTTP status, an uncaught exception, a console error, a failed script / style / page request, a blank page, a timeout, the kit's own "could not load" banner, an intro film that never ends, and the kit's loading veil left up for its 12 s safety lift (the app never calls `OLYMPUS.ready()`: on LITE the owner sees only the logo for 12 s).
 - **Warnings (exit 0, still listed):** sideways overflow, no title or app marker, a missing optional data file (a JSON that answers 404), a request that tried to leave the site.
 - Output folder: one `<app>.png` per page (`_root.png` for the root), `sheet-01.jpg` ... (contact sheets, 12 pages each, a failed page has a red name bar) and `smoke.json` with everything.
 - One or a few apps only: `--apps colosseum,archive,root`.
 - The table it prints is the report: app / ok / first content / problem.
 
 ## Notes
+- Build and smoke in your OWN temp folder (for example `<scratchpad>/<your-id>/site`) and delete only that folder afterwards, by its exact path.
+- A new app passes the veil check when it calls `OLYMPUS.ready()` once its first screen is drawn (`try { if (O && O.ready) O.ready(); } catch (_) {}`); a three.js scene tracked by the render core does it on its first frame.
+- Expected warnings on a local build: the live feeds (`live.json`, `kalshi.json` from GitHub) are not in the folder and off-site requests are blocked, so pages that read them fall back to their demo data.
 - Step 1 without `--fast` is the full gate: run it on a quiet machine before a real release, not for every zip.
 - If step 2 fails: `python tools/wire_new_apps.py --dry-run` shows the diff, `--apply` writes it; then bump the `sw.js` CACHE.
 - If step 3 fails: `python tools/apps_list_build.py` rewrites the two lists.
