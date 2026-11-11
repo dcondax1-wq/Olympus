@@ -25,7 +25,7 @@ export class Nest {
       <div class="ath-people" hidden aria-label="People nearby"></div><span class="ath-plabel" hidden></span>`);
     this.compass = this.root.querySelector('.ath-compass'); this.where = this.root.querySelector('.ath-where'); this.hlabel = this.root.querySelector('.ath-hlabel');
     this.zone = this.root.querySelector('.ath-stickzone'); this.walkbar = this.root.querySelector('.ath-walkbar'); this.people = this.root.querySelector('.ath-people'); this.plabel = this.root.querySelector('.ath-plabel'); this.talkB = this.walkbar.querySelector('[data-a=n-talk]');
-    this.people.addEventListener('click', (e) => { const b = e.target.closest('button[data-i]'); if (b) this.talkNpc(+b.dataset.i); });
+    this.people.addEventListener('click', (e) => { const b = e.target.closest('button[data-i]'); if (b) { if (this.dir && this.S && this.S.walk) this.dir.goTalk(+b.dataset.i); else this.talkNpc(+b.dataset.i); } });     // QA6: walking directed, you walk up to them first
     this.onPeopleClose = () => { if (this.S) this.S.talkNpc = null; this.kitTalk = false; if (this.dir) this.dir.endTalk(true); }; addEventListener('olympus:people:close', this.onPeopleClose);
     this.marks = DIRS.map(([n]) => { const s = el('span', null, n); this.compass.append(s); return s; });
     this.bindStick();
@@ -131,7 +131,7 @@ export class Nest {
     if (a === 'n-walkto') { const v = w.byId.get(id); return v && this.walkAtVillage(v); }
     if (a === 'n-walkhouse') { const h = vv.houses[+b.dataset.k]; return this.walkAtVillage(vv, h); }
     if (a === 'n-exit') return this.exitWalk();
-    if (a === 'n-talk') { const S = this.S, me = S.walk; if (!me || !S.npcPos) return; let best = -1, bd = 3; S.npcPos.forEach((q, i) => { const d = Math.hypot(q.x - me.x, q.z - me.z); if (d <= bd) { bd = d; best = i; } }); if (best >= 0) this.talkNpc(best); return; }
+    if (a === 'n-talk') { const S = this.S, me = S.walk; if (!me || !S.npcPos) return; let best = -1, bd = 3; S.npcPos.forEach((q, i) => { const d = Math.hypot(q.x - me.x, q.z - me.z); if (d <= bd) { bd = d; best = i; } }); if (best >= 0) { if (this.dir) this.dir.goTalk(best); else this.talkNpc(best); } return; }
     if (a === 'n-guide') return this.guide ? this.guideOff() : this.guideOn();
     if (a === 'n-run') { this.run = !this.run; b.setAttribute('aria-pressed', String(this.run)); this.applyInput(); }
   }
