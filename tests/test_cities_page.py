@@ -1367,6 +1367,20 @@ def part_hellas():
           2.4 <= wk.get("speed", 0) <= 2.8 and wk.get("inWall") and wk.get("notInHouse") and wk.get("where") and vg.get("n") == 6 and vg.get("same") and vg.get("other") and vg.get("regions") == 6, {"walk": wk, "voyage": vg})
 
 
+def hshot(p, name):
+    """a screenshot is evidence, not a check: retry once, then go on (swiftshader can refuse a capture on a busy machine)"""
+    for k in range(2):
+        try:
+            p.screenshot(path=os.path.join(SHOTS, name), timeout=60000)
+            return True
+        except Exception as e:  # noqa: BLE001
+            if k:
+                print(f"       (screenshot {name} skipped: {str(e)[:80]})")
+            else:
+                time.sleep(1.5)
+    return False
+
+
 def hframes(p, n=3):
     f = p.evaluate("window.__hellas.scene.frameCount")
     p.wait_for_function(f"window.__hellas.scene.frameCount >= {f + n}", timeout=120000)
@@ -1394,13 +1408,13 @@ def sec_l(br, base, C, days, picks, ids):
         o = out[q] = {"err": p.evaluate("window.__hellasError || null"), "world": p.evaluate(HN), "header": p.evaluate("document.querySelector('#helCount').textContent"),
                       "counts": p.evaluate("window.__hellas.world.counts"), "ships": p.evaluate("!!window.__hellas.scene.ships"), "instances": p.evaluate("window.__hellas.scene.base.count")}
         if q == "high":
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_world.png"))
+            hshot(p, "hellas_390x844_world.png")
             lay = p.evaluate("""(() => { const r = document.querySelector('#hellas'), vis = (e) => { const b = e.getBoundingClientRect(), s = getComputedStyle(e); return b.width > 0 && b.height > 0 && s.display !== 'none' && s.visibility !== 'hidden'; };
               const small = [...r.querySelectorAll('button, a, input')].filter(vis).filter((e) => { const b = e.getBoundingClientRect(); return b.height < 43.5 || b.width < 43.5; }).map((e) => e.textContent.slice(0, 20) + ':' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height));
               const off = [...r.querySelectorAll('.hel-top, .hel-card, .hel-dock')].filter(vis).filter((e) => { const b = e.getBoundingClientRect(); return b.left < -1 || b.right > innerWidth + 1 || b.bottom > innerHeight + 1; }).length;
               return { small, off, sideways: document.scrollingElement.scrollWidth > innerWidth, card: document.querySelector('.hel-card').textContent, hidden: getComputedStyle(document.querySelector('.atlas-actions') || document.body.firstElementChild).visibility }; })()""")
             full = p.evaluate("(window.__hellas.ui.worldCard(true), document.querySelector('.hel-card').textContent)")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_counted.png"))
+            hshot(p, "hellas_390x844_counted.png")
             p.evaluate("window.__hellas.ui.worldCard()")
             check("l. 390 x 844: every button is 44 px or more, nothing off screen, no sideways scroll; the first card is short and says what a city and a house are; 'How it is counted' lists each source with its cities and houses",
                   not lay["small"] and not lay["off"] and not lay["sideways"] and "Every city is a real group" in lay["card"] and "How it is counted" in lay["card"] and len(lay["card"]) < 640
@@ -1415,11 +1429,11 @@ def sec_l(br, base, C, days, picks, ids):
             b1 = p.evaluate("window.__hellas.scene.builderPos.map((q) => Math.round(q.x * 100 + q.z * 7))")
             p.evaluate("window.__hellas.ui.hideCard()")
             hframes(p, 12)
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_first_view.png"))
+            hshot(p, "hellas_390x844_first_view.png")
             tk = p.evaluate("({ hidden: document.querySelector('.hel-ticker').hidden, text: document.querySelector('.hel-ticker').textContent, h: document.querySelector('.hel-ticker').getBoundingClientRect().height })")
             p.evaluate("window.__hellas.ui.eventsCard()")
             evc = p.evaluate("({ n: document.querySelectorAll('.hel-card .hel-list li').length, title: document.querySelector('.hel-card h3').textContent })")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_events.png"))
+            hshot(p, "hellas_390x844_events.png")
             check("l. you can SEE what each city is doing: one brazier flame per city at work (flickering) with smoke, a long golden-hour shadow under every city (low sun), the first card counts working / quiet / ruins and the desert; the ticker above the dock shows 'Latest n/12' and opens the list of 12 events",
                   life["flames"] == life["working"] >= 20 and life["smoke"] and life["shadows"] == o["counts"]["cities"] and life["sun"] < .5 and life["f0"] != life["f1"] and "cities at work" in life["card"] and "ghost towns" in life["card"] and "rejected runs" in life["card"]
                   and not tk["hidden"] and re.search(r"Latest \d+/12 · ", tk["text"]) and tk["h"] >= 44 and evc["n"] == 12 and "12 events" in evc["title"], {"life": {k: v for k, v in life.items() if k != "card"}, "tk": tk, "evc": evc})
@@ -1430,18 +1444,18 @@ def sec_l(br, base, C, days, picks, ids):
             dz = p.evaluate("({ card: document.querySelector('.hel-card').textContent, labels: [...document.querySelectorAll('.hel-label:not([hidden])')].map((l) => l.className).join(' ') })")
             p.evaluate("window.__hellas.ui.hideCard()")
             hframes(p, 4)
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_desert.png"))
+            hshot(p, "hellas_390x844_desert.png")
             p.evaluate("(() => { const W = window.__hellas.world, c = W.regions.find((r) => r.key === 'egypt').poleis[0]; window.__ghost = c; window.__hellas.ui.showPolis(c); })()")
             hrest(p)
             hframes(p, 4)
             gh = p.evaluate("({ card: document.querySelector('.hel-card').textContent, wide: [...document.querySelectorAll('.hel-label.wide:not([hidden])')].map((l) => l.textContent), state: window.__ghost.activity.state })")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_ghost_town_card.png"))
+            hshot(p, "hellas_390x844_ghost_town_card.png")
             p.evaluate("window.__hellas.ui.enter(window.__ghost)")
             p.wait_for_function("window.__hellas.ui.at.polis", timeout=120000)
             hrest(p)
             o["ruin"] = p.evaluate(HN)
             rn = p.evaluate("({ ruin: window.__hellas.scene.plan.ruin, desert: window.__hellas.scene.plan.desert, houses: window.__hellas.scene.plan.houses.length, rows: window.__ghost.rows.length, card: document.querySelector('.hel-card').textContent, banner: [...document.querySelectorAll('.hel-label.banner:not([hidden])')].map((l) => l.textContent).join('|'), flames: !!window.__hellas.scene.pFlames })")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_ghost_town.png"))
+            hshot(p, "hellas_390x844_ghost_town.png")
             p.evaluate("window.__hellas.ui.showHouse(window.__hellas.ui.at.plan.houses[0])")
             hrest(p)
             why = p.evaluate("document.querySelector('.hel-card').textContent")
@@ -1455,7 +1469,7 @@ def sec_l(br, base, C, days, picks, ids):
             bz = p.evaluate("({ card: document.querySelector('.hel-card').textContent, wide: [...document.querySelectorAll('.hel-label.wide:not([hidden])')].map((l) => l.textContent), cls: [...document.querySelectorAll('.hel-label.working:not([hidden])')].length })")
             p.evaluate("window.__hellas.ui.hideCard()")
             hframes(p, 4)
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_city_at_work.png"))
+            hshot(p, "hellas_390x844_city_at_work.png")
             p.evaluate("window.__hellas.ui.buildersCard()")
             bc = p.evaluate("({ text: document.querySelector('.hel-card').textContent, n: document.querySelectorAll('.hel-card .hel-list li').length })")
             p.evaluate("(() => { const u = window.__hellas.ui, S = window.__hellas.scene, b = window.__hellas.world.builders[1]; u.buildersCard(b); })()")
@@ -1464,7 +1478,7 @@ def sec_l(br, base, C, days, picks, ids):
             p.evaluate("window.__hellas.ui.hideCard()")
             hframes(p, 4)
             bt = p.evaluate("(() => { const S = window.__hellas.scene, b = window.__hellas.world.builders[1], q = S.builderPos[1], v = S.project(q.x, 4, q.z), r = window.__hellas.ui.tap(v.x, v.y); return { vis: v.vis, hit: r && r.name, title: document.querySelector('.hel-card h3').textContent, chat: document.querySelectorAll('.hel-card .ppl-qs button').length, facing: !!(S.talk && S.talk.kind === 'builder' && S.builderPos[1].facing), labels: [...document.querySelectorAll('.hel-label.builder:not([hidden])')].map((l) => l.textContent) }; })()")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_builders.png"))
+            hshot(p, "hellas_390x844_builders.png")
             check("l. a city at work says what it is working on: the 'At work' tag and the plain line on its card, a floating label on approach ('Name' + 'testing ... · N runs · last: ...')",
                   "At work" in bz["card"] and re.search(r"Testing .+ · \d+ runs · last: ", bz["card"]) and any(re.search(r"testing .+ · \d+ runs · last: ", w) for w in bz["wide"]) and bz["cls"] >= 1, {"wide": bz["wide"], "cls": bz["cls"]})
             check("l. the builders' caravan: the camels and the 10 builders are toy-like figures in one instanced draw and they move; the card lists every builder with its job and destination and says 'Snapshot at build time'; a builder on the map carries a banner with its name and where it is going, and a tap starts a talk with that builder (six questions; it stops and turns to you)",
@@ -1477,7 +1491,7 @@ def sec_l(br, base, C, days, picks, ids):
             hrest(p)
             o["region"] = p.evaluate(HN)
             reg = p.evaluate("({ crumbs: [...document.querySelectorAll('.hel-crumbs button')].map((b) => b.textContent), card: document.querySelector('.hel-card').textContent, n: document.querySelectorAll('.hel-card .hel-list li').length, labels: [...document.querySelectorAll('.hel-label:not([hidden])')].length })")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_region.png"))
+            hshot(p, "hellas_390x844_region.png")
             check("l. region level: the camera flies to the Peloponnese, the crumbs say Hellas > Peloponnese, the card lists its cities, city names float over the map", reg["crumbs"] == ["Hellas", "Peloponnese"] and reg["n"] >= 10 and "LIT research" in reg["card"] and "At work" in reg["card"] + "Quiet" and reg["labels"] >= 3, reg)
             p.evaluate("window.__hellas.ui.hideCard()")
             hframes(p, 3)
@@ -1486,7 +1500,7 @@ def sec_l(br, base, C, days, picks, ids):
             p.wait_for_function("window.__hellas.ui.at.sel", timeout=30000)
             hrest(p)
             city = p.evaluate("({ id: window.__hellas.ui.at.sel.id, title: document.querySelector('.hel-card h3').textContent, card: document.querySelector('.hel-card').textContent, ring: window.__hellas.scene.ring.visible, crumbs: [...document.querySelectorAll('.hel-crumbs button')].map((b) => b.textContent) })")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_city.png"))
+            hshot(p, "hellas_390x844_city.png")
             check("l. a real tap on a city marker opens its card: 'Name · data label', the row count, the adopted / open / rejected share, sister cities, 'Enter the city'",
                   city["id"] == pt["id"] and city["title"].startswith(pt["name"] + " · ") and city["ring"] and "Enter the city" in city["card"] and re.search(r"\d+ runs?", city["card"]) and "rejected" in city["card"] and any(w in city["card"] for w in ("At work", "Quiet", "Ruins")) and len(city["crumbs"]) == 3, city)
             # search flies to the polis
@@ -1495,7 +1509,7 @@ def sec_l(br, base, C, days, picks, ids):
             hrest(p)
             fnd = p.evaluate("({ title: document.querySelector('.hel-card h3').textContent, x: window.__hellas.scene.cam.tx, px: window.__hellas.ui.at.sel.x, also: document.querySelector('.hel-card').textContent.includes('Also found') })")
             check("l. the search box flies to the polis: 'find Kalshi 90c' lands on the 90-95c price band and offers the other matches", "Kalshi price band: at 90-95c" in fnd["title"] and abs(fnd["x"] - fnd["px"]) < 2 and fnd["also"], fnd)
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_find.png"))
+            hshot(p, "hellas_390x844_find.png")
         # enter the biggest polis: streamed, measured
         g0 = p.evaluate("window.__hellas.scene.renderer.info.memory.geometries")
         p.evaluate("(() => { const W = window.__hellas.world; window.__big = W.poleis.filter((c) => c.src === 'archive' && !c.ruin).sort((a, b) => b.rows.length - a.rows.length)[0]; window.__hellas.ui.enter(window.__big); })()")
@@ -1506,7 +1520,7 @@ def sec_l(br, base, C, days, picks, ids):
         o["npcs"] = p.evaluate("(window.__hellas.scene.npcs || []).length")
         pol = p.evaluate("({ level: window.__hellas.scene.level, worldHidden: !window.__hellas.scene.wg.visible, rows: window.__big.rows.length, crumbs: [...document.querySelectorAll('.hel-crumbs button')].map((b) => b.textContent), card: document.querySelector('.hel-card').textContent, walk: !document.querySelector('.hel-dock button:nth-child(3)').disabled, veil: document.querySelector('.hel-veil').classList.contains('on') })")
         if q == "high":
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_polis.png"))
+            hshot(p, "hellas_390x844_polis.png")
             check("l. entering a polis: the world stage is hidden, one house per row is drawn, the crumbs grow to Hellas > region > city, the card lists the districts and offers 'Walk the streets'",
                   pol["level"] == "polis" and pol["worldHidden"] and o["houses"] == pol["rows"] and len(pol["crumbs"]) == 3 and "Walk the streets" in pol["card"] and "quarter" in pol["card"] and pol["walk"] and not pol["veil"], pol)
             p.evaluate("window.__hellas.ui.goDistrict(window.__hellas.ui.at.plan.districts[0])")
@@ -1515,7 +1529,7 @@ def sec_l(br, base, C, days, picks, ids):
             hrest(p)
             o["village"] = p.evaluate(HN)
             vil = p.evaluate("({ crumbs: [...document.querySelectorAll('.hel-crumbs button')].length, items: document.querySelectorAll('.hel-card .hel-list li').length, n: window.__hellas.ui.at.village.houses.length, money: document.querySelector('.hel-card .hel-list .m') ? document.querySelector('.hel-card .hel-list .m').textContent : '' })")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_village.png"))
+            hshot(p, "hellas_390x844_village.png")
             p.evaluate("window.__hellas.ui.hideCard()")
             hframes(p, 3)
             hp = p.evaluate("(() => { const S = window.__hellas.scene, P = S.plan, V = window.__hellas.ui.at.village; let best = null; for (const i of V.houses) { const h = P.houses[i], v = S.project(h.x, h.h * .6, h.z); if (v.vis && v.y > 220 && v.y < 640 && (!best || Math.abs(v.x - 195) < Math.abs(best.v.x - 195))) best = { h, v }; } return { x: best.v.x, y: best.v.y, i: best.h.i }; })()")
@@ -1524,7 +1538,7 @@ def sec_l(br, base, C, days, picks, ids):
             hrest(p)
             o["house"] = p.evaluate(HN)
             hs = p.evaluate("({ i: window.__hellas.ui.at.house.i, text: document.querySelector('.hel-card').textContent, link: document.querySelector('.hel-card a').getAttribute('href'), linkText: document.querySelector('.hel-card a').textContent, crumbs: [...document.querySelectorAll('.hel-crumbs button')].length, ring: window.__hellas.scene.ring.visible })")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_house.png"))
+            hshot(p, "hellas_390x844_house.png")
             check("l. district -> village -> house: the village card lists every house with its $ and $ a month; a real tap on a house opens the plain card (what was tested, 2026 result with $ per month, verdict) with 'Open in Archive'; six crumbs",
                   vil["crumbs"] == 5 and vil["items"] == vil["n"] and "$" in vil["money"] and "a month" in vil["money"] and hs["crumbs"] == 6 and hs["ring"] and "What was tested" in hs["text"] and re.search(r"\$[\d,]+ per month", hs["text"])
                   and "Verdict" in hs["text"] and hs["link"] == "../archive/" and hs["linkText"] == "Open in Archive", {"village": vil, "house": {k: v for k, v in hs.items() if k != "text"}, "text": hs["text"][:300]})
@@ -1544,10 +1558,10 @@ def sec_l(br, base, C, days, picks, ids):
             a1 = p.evaluate("document.querySelector('.hel-card .ppl-answer').textContent")
             p.evaluate("document.querySelectorAll('.hel-card .ppl-qs button')[3].click()")
             a3 = p.evaluate("document.querySelector('.hel-card .ppl-answer').textContent")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_talk_keeper.png"))
+            hshot(p, "hellas_390x844_talk_keeper.png")
             p.evaluate("window.__hellas.ui.hideCard()")
             hframes(p, 3)
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_people.png"))
+            hshot(p, "hellas_390x844_people.png")
             kq = p.evaluate("({ talk: window.__hellas.scene.talk, facing: window.__hellas.scene.people[0].facing })")
             # a real tap on a townsperson
             p.evaluate("(() => { const S = window.__hellas.scene, P = S.people[1]; S.flyTo(P.x, P.z, { dist: 46, pitch: .6, dur: .02 }); })()")
@@ -1575,7 +1589,7 @@ def sec_l(br, base, C, days, picks, ids):
         hframes(p, 14)
         o["walk"] = p.evaluate(HN)
         w1 = p.evaluate("({ dist: window.__hellas.scene.walk.dist, where: document.querySelector('.hel-where').textContent, hit: window.__hellas.scene.col.hits(window.__hellas.scene.walk.x, window.__hellas.scene.walk.z) })")
-        p.screenshot(path=os.path.join(SHOTS, f"hellas_390x844_walk_{q}.png"))
+        hshot(p, f"hellas_390x844_walk_{q}.png")
         # the joystick: a real touch drag on the left half walks
         d0 = w1["dist"]
         cdp = ctx.new_cdp_session(p)
@@ -1590,10 +1604,10 @@ def sec_l(br, base, C, days, picks, ids):
         p.wait_for_function("!document.querySelector('.hel-walkbar .go').disabled", timeout=60000)
         hframes(p, 3)
         ps = p.evaluate("({ chips: [...document.querySelectorAll('.hel-people button')].map((b) => b.textContent), lead: (document.querySelector('.hel-people span') || {}).textContent, talk: document.querySelector('.hel-walkbar .go').textContent, shown: getComputedStyle(document.querySelector('.hel-people')).display, h: Math.min(...[...document.querySelectorAll('.hel-people button')].map((b) => b.getBoundingClientRect().height)), label: [...document.querySelectorAll('.hel-label.person.keeper:not([hidden])')].length, facing: window.__hellas.scene.people[0].facing })")
-        p.screenshot(path=os.path.join(SHOTS, f"hellas_390x844_walk_people_{q}.png"))
+        hshot(p, f"hellas_390x844_walk_people_{q}.png")
         p.evaluate("document.querySelector('.hel-walkbar .go').click()")
         pt2 = p.evaluate("({ chat: window.__hellas.ui.chat && window.__hellas.ui.chat.id, qs: document.querySelectorAll('.hel-card .ppl-qs button').length, talk: window.__hellas.scene.talk, polis: window.__hellas.ui.at.polis.id })")
-        p.screenshot(path=os.path.join(SHOTS, f"hellas_390x844_walk_talk_{q}.png"))
+        hshot(p, f"hellas_390x844_walk_talk_{q}.png")
         p.evaluate("(() => { const S = window.__hellas.scene; window.__hellas.ui.hideCard(); S.walk.x = S.plan.start.x; S.walk.z = S.plan.start.z; })()")
         p.wait_for_function("document.querySelector('.hel-walkbar .go').disabled", timeout=60000)
         check(f"l. walking ({q}): the 'People nearby' strip lists who is around with the distance (44 px chips), the keeper's name floats over his head and he turns to you; within 3 m the Talk button says 'Talk to <name>' and opens the chat; far away it is disabled again",
@@ -1613,11 +1627,11 @@ def sec_l(br, base, C, days, picks, ids):
         o["polis2"] = p.evaluate(HN)
         g2 = p.evaluate("window.__hellas.scene.renderer.info.memory.geometries")
         if q == "high":
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_polis_datacity.png"))
+            hshot(p, "hellas_390x844_polis_datacity.png")
             p.evaluate("window.__hellas.ui.toggleMap()")
             p.wait_for_timeout(250)
             mp = p.evaluate("({ cls: document.querySelector('#hellas').classList.contains('map'), shown: getComputedStyle(document.querySelector('.hel-map')).display, btn: document.querySelector('.hel-dock button:nth-child(4)').textContent, ink: (() => { const c = document.querySelector('.hel-map'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, s = new Set(); for (let i = 0; i < d.length; i += 4 * 97) s.add(d[i] + ',' + d[i + 1] + ',' + d[i + 2]); return s.size; })() })")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_polis_map.png"))
+            hshot(p, "hellas_390x844_polis_map.png")
             p.evaluate("window.__hellas.ui.toggleMap()")
             check("l. the Map button swaps the 3D view for the 2D plan of the polis (houses coloured by verdict) and back", mp["cls"] and mp["shown"] == "block" and mp["btn"] == "3D view" and mp["ink"] >= 5 and not p.evaluate("document.querySelector('#hellas').classList.contains('map')"), mp)
         p.evaluate("window.__hellas.ui.goWorld()")
@@ -1632,7 +1646,7 @@ def sec_l(br, base, C, days, picks, ids):
         if q == "high":
             p.evaluate("window.__hellas.ui.toggleMap()")
             p.wait_for_timeout(250)
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_world_map.png"))
+            hshot(p, "hellas_390x844_world_map.png")
             mt = p.evaluate("(() => { const u = window.__hellas.ui, c = window.__hellas.world.poleis.find((x) => x.capital), V = u.mv; const r = u.tap(V.ox + c.x * V.s, V.oz + c.z * V.s); return { id: r && r.id, card: document.querySelector('.hel-card').textContent }; })()")
             p.evaluate("window.__hellas.ui.toggleMap(); window.__hellas.ui.goWorld()")
             check("l. the 2D world map answers taps too: tapping Athens opens the capital's card with 'Enter Athens'", mt["id"] == "apps:athens" and "Enter Athens" in mt["card"] and "capital" in mt["card"], mt)
@@ -1641,7 +1655,7 @@ def sec_l(br, base, C, days, picks, ids):
             p.evaluate("window.__hellas.ui.startVoyage()")
             hrest(p)
             v1 = p.evaluate("({ on: !!window.__hellas.ui.voy, n: window.__hellas.ui.voy.stops.length, card: document.querySelector('.hel-card').textContent, sel: window.__hellas.ui.at.sel.id, timer: !!window.__hellas.ui.voy.timer, btn: document.querySelector('.hel-dock button:nth-child(2)').classList.contains('on') })")
-            p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_voyage.png"))
+            hshot(p, "hellas_390x844_voyage.png")
             p.evaluate("window.__hellas.ui.voyNext()")
             hrest(p)
             v2 = p.evaluate("({ sel: window.__hellas.ui.at.sel.id, card: document.querySelector('.hel-card').textContent })")
@@ -1699,7 +1713,7 @@ def sec_l(br, base, C, days, picks, ids):
     p.wait_for_function("window.__hellas.ui.at.polis", timeout=60000)
     hframes(p, 3)
     ex = p.evaluate("({ npcs: (window.__hellas.scene.npcs || []).length, veil: document.querySelector('.hel-veil').classList.contains('on'), card: document.querySelector('.hel-card').textContent })")
-    p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_example_reduced.png"))
+    hshot(p, "hellas_390x844_example_reduced.png")
     check("l. ?demo=1: every data city is example data and the header says so ('N cities on example data'); an example city's card is marked 'Example data'",
           "on example data" in dm["header"] and dm["c"]["example"] >= 15 and dm["c"]["cities"] >= 20 and "Example data" in ex["card"], dm)
     check("l. reduced motion: the camera jumps instead of flying, the voyage waits for 'Next stop' (no timer), ships, flames and villagers stand still, the ticker does not rotate, no veil",
@@ -1714,13 +1728,13 @@ def sec_l(br, base, C, days, picks, ids):
     p.wait_for_timeout(400)
     ng = p.evaluate("""(() => { const u = window.__hellas.ui, r = document.querySelector('#hellas'), c = document.querySelector('.hel-map'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, s = new Set(); for (let i = 0; i < d.length; i += 4 * 97) s.add(d[i] + ',' + d[i + 1] + ',' + d[i + 2]);
       return { nogl: r.classList.contains('nogl'), map: getComputedStyle(c).display, ink: s.size, header: document.querySelector('#helCount').textContent, note: (document.querySelector('.hel-note') || {}).textContent || '', err: !!window.__hellasError, cities: window.__hellas.world.counts.cities }; })()""")
-    p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_nogl_map.png"))
+    hshot(p, "hellas_390x844_nogl_map.png")
     p.evaluate("(() => { const u = window.__hellas.ui, c = window.__hellas.world.poleis.filter((x) => x.src === 'archive' && !x.ruin).sort((a, b) => b.rows.length - a.rows.length)[0], V = u.mv; u.tap(V.ox + c.x * V.s, V.oz + c.z * V.s); })()")
     sel = p.evaluate("({ sel: !!window.__hellas.ui.at.sel, card: document.querySelector('.hel-card').textContent })")
     p.evaluate("window.__hellas.ui.enter(window.__hellas.ui.at.sel)")
     p.wait_for_timeout(300)
     pn = p.evaluate("(() => { const u = window.__hellas.ui, V = u.mv, h = u.at.plan.houses[3]; u.tap(V.ox + h.x * V.s, V.oz + h.z * V.s); return { polis: !!u.at.polis, houses: u.at.plan.houses.length, house: !!u.at.house, card: document.querySelector('.hel-card').textContent, walkHidden: document.querySelector('.hel-dock button:nth-child(3)').hidden }; })()")
-    p.screenshot(path=os.path.join(SHOTS, "hellas_390x844_nogl_polis.png"))
+    hshot(p, "hellas_390x844_nogl_polis.png")
     check("l. no WebGL: never blank: the 2D map of Hellas is drawn with the same honest counter and a plain note; a tap opens a city card, the city opens as a 2D plan and a tap on a house opens its card (walking is hidden)",
           ng["nogl"] and ng["map"] == "block" and ng["ink"] >= 6 and ng["cities"] >= 200 and ng["header"].startswith(f"{ng['cities']} cities") and "cannot draw the 3D world" in ng["note"] and ng["err"]
           and sel["sel"] and "Enter the city" in sel["card"] and pn["polis"] and pn["houses"] >= 30 and pn["house"] and "What was tested" in pn["card"] and pn["walkHidden"], {"ng": ng, "pn": {k: v for k, v in pn.items() if k != "card"}})
@@ -1764,7 +1778,7 @@ def sec_l(br, base, C, days, picks, ids):
     av["a5"] = p.evaluate("document.querySelector('.ath-card .ppl-answer').textContent")
     p.wait_for_timeout(600)
     av["x1"] = p.evaluate("window.__athens.scene.npcPos[0].x")
-    p.screenshot(path=os.path.join(SHOTS, "athens_390x844_talk_villager.png"))
+    hshot(p, "athens_390x844_talk_villager.png")
     p.evaluate("window.__athens.ui.hideCard()")
     p.wait_for_function("window.__athens.scene.talkNpc == null", timeout=30000)
     check("l. Athens, own chat: 80 villagers are toy-like figures in ONE instanced draw, inside Athens' own budgets (<= 42 calls / 150k triangles); a villager's card keeps its fact and gains a name and six 44 px questions answered from its village; it stops and turns to you while you talk and walks on when the card closes",
@@ -1778,7 +1792,7 @@ def sec_l(br, base, C, days, picks, ids):
     p.evaluate("window.__athens.nest.act('n-talk', document.querySelector('[data-a=n-talk]'))")
     aw["qs"] = p.evaluate("document.querySelectorAll('.ath-card .ppl-qs button').length")
     aw["talk"] = p.evaluate("window.__athens.scene.talkNpc")
-    p.screenshot(path=os.path.join(SHOTS, "athens_390x844_walk_people.png"))
+    hshot(p, "athens_390x844_walk_people.png")
     check("l. Athens, walking: the 'People nearby' strip names the villagers around with the distance, Talk (within 3 m) opens the chat with the nearest one; every button stays 44 px",
           len(aw["chips"]) >= 1 and re.search(r" of .+ · \d+ m$", aw["chips"][0]) and aw["h"] >= 43.5 and aw["w"] >= 43.5 and aw["qs"] == 6 and aw["talk"] is not None, aw)
     check("l. people: no page error", not errs2, errs2[:3])
