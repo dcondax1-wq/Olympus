@@ -5,15 +5,23 @@
 // the offline engine cannot answer goes to his own model with the persona and the facts (people-brain.js), and a reply with an invented number is dropped.
 // A person cannot place orders, change files or predict prices. Requests are notes kept on this phone (localStorage olympus.requests.v1) for the owner to copy to Claude.
 // Text only through textContent / createElementNS: no markup is ever built from data.
+// 2026-11-11 (owner: "characters I can see, talk to, they talk and show work"): every person has their own voice (people-voice.js: off until one tap,
+// remembered), the mouth moves with the words (the sheet's portrait, and a 3D figure through Figure API v2 setMouth when a scene gives one), say() puts a
+// speech bubble over the figure in a scene with the words appearing as they are spoken, show() is the work card (people-show.js: only that person's
+// facts, each with its source), and "walk with me" leads you to the app their work lives in. stage(provider): a scene lends its figures to the kit.
 import * as C from './people-core.js';
 import * as T from './people-talk.js';
 import { createData } from './people-data.js';
 import { connection, askModel } from './people-brain.js';
+import * as V from './people-voice.js';
+import * as SH from './people-show.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const REQ_KEY = 'olympus.requests.v1', ME_KEY = 'olympus.me.v1', MEM_KEY = 'olympus.people.mem.v1', SPEAK_KEY = 'olympus.people.speak';
 const D = createData();
-const S = { roster: C.normRoster(null), ready: null, facts: new Map(), provided: new Map(), mem: new Map(), sheet: null, cur: null, log: [], busy: false, anchor: null, blinkT: 0, rec: null };
+const S = { roster: C.normRoster(null), ready: null, facts: new Map(), provided: new Map(), mem: new Map(), sheet: null, cur: null, log: [], busy: false, anchor: null, blinkT: 0, rec: null, asked: new Map(), stage: null, saying: null, mouth: null, unlocked: false, p3: null };
+const VO = V.createVoice();
+const safe = (f, d) => { try { return f(); } catch (_) { return d; } };
 const reduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; } };
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (_) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (_) { return false; } } };
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
@@ -61,7 +69,7 @@ function specOf(id, over) {
 /** a round avatar (head and shoulders) as an SVG element; the same character as the 3D figure. opts: { mood, blink, talk, ring, label } */
 function portrait(id, size, opts) {
   const o = opts || {}, p = C.isObj(id) && id.hairStyle ? null : get(id), sp = specOf(id), f = p ? S.facts.get(p.id) : null;
-  const tree = C.portraitTree(sp, { size: size || 44, mood: o.mood || sp.mood, blink: o.blink, talk: o.talk, ring: o.ring || (f ? C.STATUS_COLOUR[f.f.status] : '#9c6b3c'), label: o.label || (p ? p.name : 'portrait'), uid: o.uid });
+  const tree = C.portraitTree(sp, { size: size || 44, mood: o.mood || sp.mood, expr: o.expr, mouth: o.mouth, blink: o.blink, talk: o.talk, ring: o.ring || (f ? C.STATUS_COLOUR[f.f.status] : '#9c6b3c'), label: o.label || (p ? p.name : 'portrait'), uid: o.uid });
   const el = svgNode(tree);
   el.setAttribute('class', 'pp-portrait');
   return el;
@@ -150,29 +158,119 @@ function exportRequests() {
   return lines.join('\n');
 }
 
-// ------------------------------------------------------------------------------------------------ voice
-const speakOn = () => { try { return localStorage.getItem(SPEAK_KEY) === '1'; } catch (_) { return false; } };
+// ------------------------------------------------------------------------------------------------ voice, speech bubbles and the work card
+const speakOn = () => VO.on();
+const hasSpeech = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
+/** say it out loud in this person's own voice (even when the switch is off: an explicit call). false = nothing to say */
 function speak(id, text) {
   const p = get(id), t = String(text || '').replace(/\[[^\]]*\]/g, '').slice(0, 500);
-  if (!t) return false;
-  try {
-    const jv = window.JARVIS_VOICE || (window.JARVIS && window.JARVIS.voice);
-    if (jv && typeof jv.speak === 'function') { jv.speak(t); return true; }
-    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance !== 'function') return false;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(t);
-    u.pitch = p && p.voice ? Math.max(0.5, Math.min(1.6, p.voice.pitch)) : 1; u.rate = p && p.voice ? Math.max(0.8, Math.min(1.2, p.voice.rate)) : 1; u.lang = 'en-US';
-    window.speechSynthesis.speak(u);
-    return true;
-  } catch (_) { return false; }
+  if (!p || !t) return false;
+  VO.speak(p, t, { force: true });
+  return true;
 }
-function hush() { try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (_) { /* nothing */ } }
+function hush() { VO.stop(); if (S.saying) S.saying.cancel(); }
+/** a scene lends the kit its figures: { figure(id) -> { figure, project() -> {x, y, front}, container, onTick(fn) -> off, P3 } | null, release(id), walk(id) -> Promise, card(id, el) } */
+function stage(provider) { S.stage = C.isObj(provider) ? provider : null; return !!S.stage; }
+function p3() { if (!S.p3) S.p3 = import('./people3d.js').then((m) => m, () => null); return S.p3; }
+const anchorProject = (el) => () => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top, front: r.bottom > 0 && r.top < innerHeight && r.width > 0 }; };
+function figProject(fig, camera, canvas) {
+  return () => {
+    const v = fig.getWorldPosition(fig.position.clone()); v.y += (fig.userData && fig.userData.height) || 1;
+    const behind = v.clone().sub(camera.position).dot(camera.getWorldDirection(fig.position.clone())) <= 0; v.project(camera);
+    return { x: (v.x * 0.5 + 0.5) * (canvas.clientWidth || 1), y: (-v.y * 0.5 + 0.5) * (canvas.clientHeight || 1), front: !behind };
+  };
+}
+/** the sheet's own portrait talks: the round mouth opens and closes with the words */
+function faceTalk(on, mood, fr) {
+  const U = S.sheet; if (!U || !S.cur) return;
+  if (on === false) { S.mouth = null; paintHead({ mood }); return; }
+  const v = on === true ? 'A' : V.toV2(fr), now = Date.now();
+  if (on !== true && (!S.mouth || (S.mouth.v === v || now - S.mouth.t < 70))) return;      // repaint only when the shape changes (at most ~14 a second)
+  S.mouth = { v, t: now };
+  clear(U.face); U.face.appendChild(portrait(S.cur.id, 64, { mood, expr: C.MOOD_EXPR ? C.MOOD_EXPR[mood] : undefined, mouth: v === 'rest' ? undefined : v, uid: 'h' }));
+}
+/** a speech bubble over a person in a scene, the words appearing as they are spoken, the figure's mouth and face following. opts: { scene, figure, anchor, container, project, mood, work, voice } */
+function say(id, text, opts) {
+  const o = opts || {}, p = get(id), t = C.clean(text, 600);
+  if (!p || p.id === 'me' || !t) return null;
+  ensureCss();
+  if (S.saying) S.saying.cancel();
+  const f = factsNow(p.id) || {}, mood = o.mood || f.mood || 'calm', red = reduced();
+  let sc = C.isObj(o.scene) ? o.scene : null;
+  if (!sc && !o.anchor && !o.figure && !o.project && S.stage && typeof S.stage.figure === 'function') sc = safe(() => S.stage.figure(p.id), null);
+  const fig = o.figure || (sc && sc.figure) || null;
+  let project = o.project || (sc && sc.project) || null, container = o.container || (sc && sc.container) || null;
+  if (!project && o.anchor && o.anchor.getBoundingClientRect) { project = anchorProject(o.anchor); container = null; }
+  if (!project && fig && sc && sc.camera && sc.canvas) { project = figProject(fig, sc.camera, sc.canvas); container = container || sc.canvas.parentElement; }
+  const b = project ? SH.bubble({ name: p.name, text: t, container, hidden: !!(S.sheet && !S.sheet.root.hidden), onTap: () => { if (!(S.sheet && !S.sheet.root.hidden && S.cur === p)) open(p.id); } }) : null;
+  if (b && red) b.full();
+  const inSheet = () => S.sheet && !S.sheet.root.hidden && S.cur === p;
+  let P3 = (sc && sc.P3) || null, off = null, raf = 0, over = false;
+  if (fig && !P3) p3().then((m) => { P3 = m; if (!over) { V.express(fig, mood, P3); V.pose(fig, o.work ? 'work' : 'talk', P3); } });
+  const h = VO.speak(p, t, { force: o.voice === true, onword: (i, n) => { if (b && !red) b.words(i + 1, n); } });
+  if (fig) { V.express(fig, mood, P3); V.pose(fig, o.work ? 'work' : V.MOOD_POSE[mood] === 'cheer' ? 'cheer' : 'talk', P3); if (!o.work && V.MOOD_POSE[mood] === 'cheer') setTimeout(() => { if (!over) V.pose(fig, 'talk', P3); }, 900); }
+  if (inSheet() && !red) faceTalk(true, mood);
+  fire('olympus:people:expression', { id: p.id, expr: (C.MOOD_EXPR && C.MOOD_EXPR[mood]) || 'neutral', mood });
+  fire('olympus:people:speak', { id: p.id, on: true });
+  let lastV = '';
+  const frame = () => {
+    if (over) return;
+    const fr = V.frameAt(h.tl, h.clock());
+    if (fig && !red) V.drive(fig, fr, P3);
+    if (!red) { const v2 = V.toV2(fr), key = v2 + Math.round(fr.a * 5); if (key !== lastV) { lastV = key; fire('olympus:people:viseme', { id: p.id, viseme: v2, amount: v2 === 'rest' ? 0 : Math.max(0.25, fr.a) }); } }
+    if (inSheet() && !red) faceTalk(null, mood, fr);
+    if (b && project) { const q = safe(project, null); if (q) b.place(q.x, q.y, q.front); }
+  };
+  if (sc && typeof sc.onTick === 'function') off = sc.onTick(frame);
+  else { const loop = () => { frame(); if (!over) raf = requestAnimationFrame(loop); }; raf = requestAnimationFrame(loop); }
+  frame();
+  const H = { el: b ? b.el : null, voice: h, person: p.id, text: t, done: null, cancel() { h.cancel(); finish(true); } };
+  function finish(cut) {
+    if (over) return; over = true;
+    cancelAnimationFrame(raf); if (typeof off === 'function') safe(off);
+    if (fig) { V.drive(fig, { v: 'rest', a: 0 }, P3); V.pose(fig, mood === 'sheepish' ? 'slump' : 'idle', P3); }
+    fire('olympus:people:viseme', { id: p.id, viseme: 'rest', amount: 0 }); fire('olympus:people:speak', { id: p.id, on: false });
+    if (inSheet()) faceTalk(false, mood);
+    if (b) { if (cut) b.remove(); else { b.full(); setTimeout(() => b.remove(), red ? 2500 : 1800); } }
+    if (S.saying === H) S.saying = null;
+    fire('olympus:people:said', { id: p.id, cut: !!cut });
+  }
+  H.done = h.done.then((cut) => { finish(cut); return !cut; });
+  S.saying = H;
+  fire('olympus:people:say', { id: p.id, text: t, engine: h.engine, bubble: !!b });
+  return H;
+}
+/** the work card of a person: an element the scene places (opts: { mini, what }); it fills in again when the person's files arrive */
+function show(id, what, opts) {
+  const o = opts || {}, p = get(id);
+  if (!p || p.id === 'me') return null;
+  ensureCss();
+  let n = 0;
+  const build = (f) => SH.renderCard(SH.workCard(p, f, what), { mini: !!o.mini, portrait: (sz) => portrait(p.id, sz, { uid: 'c' + (n++) }), onOpen: () => openWork(p) });
+  const f0 = factsNow(p.id) || {}, el = build(f0);
+  el.card = SH.workCard(p, f0, what);
+  el.ready = facts(p.id).then((f) => { const c = SH.workCard(p, f, what); if (JSON.stringify(c) !== JSON.stringify(el.card)) { const nu = build(f); clear(el); while (nu.firstChild) el.appendChild(nu.firstChild); el.card = c; } return el; }, () => el);
+  fire('olympus:people:show', { id: p.id, what: what || 'work' });
+  return el;
+}
+/** "walk with me": they say where their work lives, the scene may walk them there, then you go */
+async function walk(id) {
+  const p = get(id); if (!p || !p.app) return false;
+  fire('olympus:people:walk', { id: p.id, app: p.app });
+  let ok = true;
+  if (S.stage && typeof S.stage.walk === 'function') { try { await Promise.race([S.stage.walk(p.id), new Promise((r) => setTimeout(r, 2600))]); } catch (_) { ok = true; } }
+  else if (!reduced()) await new Promise((r) => setTimeout(r, 1100));
+  openWork(p);
+  return ok;
+}
+async function talkTogether(ids, topic) { await ready(); const ps = arr(ids).map(get).filter((x) => x && x.id !== 'me').slice(0, 3), rows = []; for (const p of ps) rows.push({ person: p, facts: await facts(p.id) }); return T.talkTogether(rows, topic, env()); }
+const arr = C.arr;
 
 // ------------------------------------------------------------------------------------------------ the chat sheet
 function ensureCss() {
   if (document.querySelector('link[data-pp-css]')) return;
   const l = document.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('data-pp-css', '1');
-  try { l.href = new URL('./people.css?v=p1', import.meta.url).href; } catch (_) { l.href = '../olympus/people.css?v=p1'; }
+  try { l.href = new URL('./people.css?v=p2', import.meta.url).href; } catch (_) { l.href = '../olympus/people.css?v=p2'; }
   document.head.appendChild(l);
 }
 function buildSheet() {
@@ -218,7 +316,8 @@ function buildSheet() {
   req.addEventListener('submit', (e) => { e.preventDefault(); const v = reqText.value.trim(); if (!v || !S.cur) return; const row = request(S.cur.id, v); reqText.value = ''; showReq(false); addBubble('me', 'Request: ' + v); addBubble('them', row ? 'Noted. It is in your request box; nothing was sent anywhere.' : 'I could not save that on this phone (storage is off).'); });
   bWork.addEventListener('click', () => { if (S.cur && S.cur.app) openWork(S.cur); });
   bShare.addEventListener('click', share);
-  bVoice.addEventListener('click', () => { const on = !speakOn(); try { localStorage.setItem(SPEAK_KEY, on ? '1' : '0'); } catch (_) { /* not kept */ } if (!on) hush(); paintVoice(); if (on && S.cur) speak(S.cur.id, 'Voice is on.'); });
+  bVoice.addEventListener('click', () => { const on = !speakOn(); if (on) { VO.unlock(); S.unlocked = true; } VO.set(on); if (!on) hush(); paintVoice(); if (on && S.cur) { say(S.cur.id, 'Voice is on. This is how I sound.', { mood: 'proud' }); note(hasSpeech() && VO.voices().length ? 'Voice on: ' + VO.describe(S.cur) + '.' : 'No voice on this device: a soft murmur and the words on screen.'); } });
+  root.addEventListener('pointerdown', () => { if (!S.unlocked && speakOn()) { S.unlocked = true; VO.unlock(); } }, true);
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) mic.hidden = true;
   else mic.addEventListener('click', () => listen(SR));
@@ -230,6 +329,7 @@ function micIcon() { const s = document.createElementNS(NS, 'svg'); s.setAttribu
 function trap(e, box) { const f = Array.from(box.querySelectorAll('button, input, textarea, [tabindex="0"]')).filter((x) => !x.hidden && x.offsetParent !== null); if (!f.length) return; const a = f[0], z = f[f.length - 1]; if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); } }
 function paintVoice() { const U = S.sheet, on = speakOn(); U.bVoice.textContent = 'Voice: ' + (on ? 'on' : 'off'); U.bVoice.setAttribute('aria-pressed', on ? 'true' : 'false'); }
 function showReq(on) { const U = S.sheet; U.req.hidden = !on; U.tools.hidden = on; U.form.hidden = on; U.chips.hidden = on; if (on) { U.reqLab.textContent = 'A note for ' + S.cur.name + ' (Claude will read it for them)'; U.reqText.focus(); } else if (!U.root.hidden && !U.root.contains(document.activeElement)) { try { U.sheet.focus({ preventScroll: true }); } catch (_) { /* fine */ } } U.log.scrollTop = U.log.scrollHeight; }
+function note(t) { toast(t); }      // (inside buildSheet `toast` is the element)
 function toast(t) { const U = S.sheet; U.toast.textContent = t; clearTimeout(S.toastT); S.toastT = setTimeout(() => { U.toast.textContent = ''; }, 2600); }
 function openWork(p) { const url = '../' + p.app + '/'; fire('olympus:people:work', { id: p.id, app: p.app }); try { if (window.OLYMPUS && typeof window.OLYMPUS.go === 'function') { window.OLYMPUS.go(url); return; } } catch (_) { /* plain link */ } location.href = url; }
 function paintHead(extra) {
@@ -253,13 +353,14 @@ function addBubble(who, text, meta) {
 }
 function setChips(items) {
   const U = S.sheet; clear(U.chips);
-  for (const q of items.slice(0, 4)) { const b = h('button', 'pp-chip', q); b.type = 'button'; b.addEventListener('click', () => { if (q === 'Leave a request') showReq(true); else sendText(q); }); U.chips.appendChild(b); }
+  for (const q of items.filter((x, i) => items.indexOf(x) === i).slice(0, 6)) { const b = h('button', 'pp-chip', q); b.type = 'button'; b.addEventListener('click', () => { if (q === 'Leave a request') showReq(true); else sendText(q); }); U.chips.appendChild(b); }
 }
 async function sendText(text) {
   if (S.busy || !S.cur) return;
   S.busy = true;
   const U = S.sheet, p = S.cur, t0 = Date.now();
   addBubble('me', text);
+  if (SH.wantsWalk(text) && p.app) { await walkLine(p); S.busy = false; return; }
   const typing = h('div', 'pp-row pp-them pp-typing'); const av = h('span', 'pp-ava'); av.appendChild(portrait(p.id, 32, { talk: true, uid: 't' })); const tb = h('div', 'pp-bub'); tb.setAttribute('aria-label', p.name + ' is thinking'); for (let i = 0; i < 3; i++) tb.appendChild(h('i', 'pp-tdot')); typing.append(av, tb);
   U.log.appendChild(typing); U.log.scrollTop = U.log.scrollHeight;
   let a;
@@ -268,10 +369,14 @@ async function sendText(text) {
   if (wait) await new Promise((ok) => setTimeout(ok, wait));
   if (typing.parentNode) typing.parentNode.removeChild(typing);
   if (S.cur !== p) { S.busy = false; return; }
-  S.curFacts = factsNow(p.id) || S.curFacts; paintHead();
+  S.curFacts = factsNow(p.id) || S.curFacts;
+  const mood = T.moodFor(a, S.curFacts), work = SH.wantsWork(text);
+  paintHead({ mood });
   addBubble('them', a.text, { sources: a.sources, actions: a.actions });
-  setChips(a.followups || []);
-  if (speakOn()) speak(p.id, a.text);
+  if (a.intent !== 'fallback' && T.TOPIC[a.intent]) { const l = S.asked.get(p.id) || []; if (l.indexOf(T.TOPIC[a.intent]) < 0) l.push(T.TOPIC[a.intent]); S.asked.set(p.id, l.slice(-4)); }
+  if (work) addCard(p);
+  setChips((a.followups || []).concat(work ? [] : ['Show me your work']));
+  say(p.id, a.text, { mood, work });
   S.busy = false;
 }
 function listen(SR) {
@@ -320,15 +425,35 @@ async function open(id, opts) {
   const f = await facts(p.id, o.facts ? { facts: o.facts } : null);
   if (S.cur !== p) return true;
   S.curFacts = f; paintHead();
-  const mem = memOf(p.id);
-  addBubble('them', T.greeting(p, f, { lastQ: mem.prevQ }, env()), { sources: f.sources.slice(0, 2) });
-  setChips((START[p.kind] || START.keeper));
+  const mem = memOf(p.id), earlier = S.asked.get(p.id) || [];
+  const hello = T.greeting(p, f, { lastQ: earlier.length ? '' : mem.prevQ }, env()) + (earlier.length ? ' Earlier you asked me about ' + earlier.slice(-2).join(' and ') + '.' : '');
+  addBubble('them', hello, { sources: f.sources.slice(0, 2) });
+  setChips((START[p.kind] || START.keeper).concat(['Show me your work'], p.app ? ['Walk with me'] : []));
+  if (S.stage) U.root.classList.add('pp-staged'); else U.root.classList.remove('pp-staged');
+  say(p.id, hello, { mood: f.mood });
   if (connection()) toast('Open questions can go to your own model (' + connection().name + ').');
   clearInterval(S.blinkT);
-  if (!reduced()) S.blinkT = setInterval(() => { if (!S.cur || U.root.hidden || document.hidden) return; paintHead({ blink: true }); setTimeout(() => { if (S.cur && !U.root.hidden) paintHead(); }, 130); }, 4200);
+  if (!reduced()) S.blinkT = setInterval(() => { if (!S.cur || U.root.hidden || document.hidden || S.mouth) return; paintHead({ blink: true }); setTimeout(() => { if (S.cur && !U.root.hidden) paintHead(); }, 130); }, 4200);
   if (o.request) showReq(true);
   else if (o.question) sendText(String(o.question));
   return true;
+}
+/** the work card in the conversation, and a small one beside the figure when the scene places it */
+function addCard(p) {
+  const U = S.sheet, row = h('div', 'pp-row pp-them pp-cardrow'), card = show(p.id, 'work');
+  if (!card) return null;
+  row.appendChild(card); U.log.appendChild(row); U.log.scrollTop = U.log.scrollHeight;
+  card.ready.then(() => { U.log.scrollTop = U.log.scrollHeight; });
+  if (S.stage && typeof S.stage.card === 'function') { const mini = show(p.id, 'work', { mini: true }); safe(() => S.stage.card(p.id, mini)); }
+  return card;
+}
+async function walkLine(p) {
+  const where = p.appName || (p.app.charAt(0).toUpperCase() + p.app.slice(1));
+  const line = 'Walk with me. My work lives in ' + where + '. Follow me.';
+  addBubble('them', line, { sources: [] });
+  say(p.id, line, { mood: 'busy', work: true });
+  await new Promise((r) => setTimeout(r, reduced() ? 0 : 500));
+  return walk(p.id);
 }
 const START = { scanner: ['What did you find?', 'What is your top pick?', 'How sure are you?', 'Are you stuck?'], bot: ['How did today go?', 'How much drawdown is left?', 'What did you learn?', 'Are you stuck?'], mind: ['What are you doing?', 'What did you find?', 'What did you learn?', 'Are you stuck?'],
   builder: ['What are you doing?', 'What was your last commit?', 'Are you stuck?', 'What do you need from me?'], keeper: ['What are you doing?', 'Which ones need a look?', 'Good news first', 'Give me a number'], champion: ['What did you find?', 'How did the earlier years go?', 'Why were you adopted or rejected?', 'How sure are you?'], villager: ['What are you doing?', 'Give me a number', 'Are you stuck?', 'What should I ask you?'] };
@@ -336,7 +461,7 @@ function closeSheet() {
   const U = S.sheet; if (!U || U.root.hidden) return;
   const id = S.cur ? S.cur.id : null;
   U.root.hidden = true; document.documentElement.classList.remove('pp-open'); U.root.style.height = ''; U.root.style.top = '';
-  clearInterval(S.blinkT); hush(); if (S.rec) { try { S.rec.abort(); } catch (_) { /* gone */ } S.rec = null; }
+  clearInterval(S.blinkT); hush(); U.root.classList.remove('pp-staged'); if (S.stage && typeof S.stage.release === 'function') safe(() => S.stage.release(id)); if (S.rec) { try { S.rec.abort(); } catch (_) { /* gone */ } S.rec = null; }
   S.cur = null;
   try { if (S.anchor && S.anchor.focus && document.contains(S.anchor)) S.anchor.focus({ preventScroll: true }); } catch (_) { /* nothing */ }
   fire('olympus:people:close', { id });
@@ -344,7 +469,8 @@ function closeSheet() {
 
 const API = { v: 1, ready, list, get, portrait, portraitText, spec: specOf, facts, factsNow, provide, warm, ask, open, close: closeSheet, isOpen: () => !!(S.sheet && !S.sheet.root.hidden), standup, standupAsync, roundTable, debate,
   request, requests, removeRequest, clearRequests, exportRequests, speak, me, setMe, transcript, connected: () => { const c = connection(); return c ? { provider: c.provider, name: c.name } : null; },
-  roster: () => S.roster, core: C, talk: T };
+  say, show, stage, walk, talkTogether, hush, voice: { on: () => VO.on(), set: (v) => { if (v) VO.unlock(); const r = VO.set(!!v); if (S.sheet) paintVoice(); return r; }, unlock: () => VO.unlock(), profile: (id) => V.voiceProfile(get(id) || { id: String(id) }), describe: (id) => VO.describe(get(id) || { id: String(id) }), speaking: () => VO.speaking() },
+  roster: () => S.roster, core: C, talk: T, showKit: SH, voiceKit: V };
 if (typeof window !== 'undefined') { window.OLYMPUS_PEOPLE = API; ready().then(() => fire('olympus:people:ready', { n: S.roster.people.length })); }
 export default API;
-export { ready, list, get, portrait, portraitText, specOf as spec, facts, factsNow, provide, warm, ask, open, closeSheet as close, standup, standupAsync, roundTable, debate, request, requests, removeRequest, clearRequests, exportRequests, speak, me, setMe };
+export { ready, list, get, portrait, portraitText, specOf as spec, facts, factsNow, provide, warm, ask, open, closeSheet as close, standup, standupAsync, roundTable, debate, request, requests, removeRequest, clearRequests, exportRequests, speak, me, setMe, say, show, stage, walk, talkTogether };
