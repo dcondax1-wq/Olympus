@@ -304,8 +304,8 @@ def test_page():
             ctx, p, errs, seen, off = AK.page(br, origin, w=375, h=667, reduced=True, lite=True)
             AK.open_app(p, origin, APP, "?demo=1&q=low&silent=90m")
             s = p.evaluate("() => [window.NQ.S.scene, !document.querySelector('#lite').hidden, document.querySelector('#bannerTitle').textContent, document.querySelector('#banner').dataset.level]")
-            check("c. 375 x 667, LITE, reduced motion, 90 minutes silent: 2D columns only, LITE chip, the banner in its calmer tone with the exact age, no sideways scroll, every tap >= 44 px, no error",
-                  s == ["2d", True, "Last report from your PC: 1 hour 30 minutes ago.", "warn"] and AK.no_sideways(p) and not AK.taps(p) and not errs, (s, AK.taps(p)[:3], errs[:2]))
+            check("c. 375 x 667, LITE, reduced motion, 90 minutes silent (the example report is 4 minutes older): 2D columns only, LITE chip, the banner in its calmer tone with the exact age, no sideways scroll, every tap >= 44 px, no error",
+                  s == ["2d", True, "Last report from your PC: 1 hour 34 minutes ago.", "warn"] and AK.no_sideways(p) and not AK.taps(p) and not errs, (s, AK.taps(p)[:3], errs[:2]))
             AK.shot(p, "nq-lite")
             ctx.close()
     finally:
