@@ -101,7 +101,7 @@ try {
   const floor = new THREE.Mesh(new THREE.CircleGeometry(16, 48), new THREE.MeshStandardMaterial({ color: '#cdbf9f', roughness: 0.95 })); floor.rotation.x = -Math.PI / 2; s2.add(floor);
   const cam2 = new THREE.PerspectiveCamera(38, 1, 0.1, 60);
   const front = people.slice(0, 6), heroes = front.map((p, i) => { const f = figure(THREE, spec(p.id), { lite }); f.position.set((i - 2.5) * 0.66, 0, 1.25 - Math.abs(i - 2.5) * 0.12); f.rotation.y = -(i - 2.5) * 0.08; play(f, WORK_POSES[p.kind] || 'idle'); s2.add(f); return f; });
-  const rest = all.filter((p) => !front.includes(p)), crowd = figureInstanced(THREE, rest.map((p) => spec(p.id)), { lite });
+  const rest = all.filter((p) => !front.includes(p)), crowd = figureInstanced(THREE, rest.map((p) => spec(p.id)), { lite: true });
   rest.forEach((p, i) => { const per = 10, row = Math.floor(i / per), k = i % per, n = Math.min(per, rest.length - row * per); crowd.userData.place(i, (k - (n - 1) / 2) * 0.62 + (row % 2) * 0.2, 0, -0.2 - row * 0.85, 0, 1); });
   s2.add(crowd);
   function fit2() { const w = $('line').clientWidth, h = $('line').clientHeight; r2.setSize(w, h, false); cam2.aspect = w / h; const d = w < 600 ? 6.4 : 4.8; cam2.position.set(0, 1.55, d); cam2.lookAt(0, 0.5, -0.6); cam2.updateProjectionMatrix(); }
