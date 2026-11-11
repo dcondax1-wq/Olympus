@@ -463,3 +463,47 @@ Tests after wiring: `tests.test_archive_page`, `tests.test_apps_list`, `tests.te
 3. `tools/build_web_dashboard.py` app tuple: add `"archive"`.  4. `sw.js` OTHER_APPS: `'archive/'`.
 5. `olympus/intro-app.js` FLAVOUR: `archive: ['columns', 'Open the shelves', 'tap'],`
 6. `jarvis/transitions.js` REGISTRY: `archive: { kind: 'tiles', ms: 800 },`
+
+---
+# Wiring PINAKES (the catalogue of every table, 2026-11-11)
+
+App `pinakes` in `tools/web_public/pinakes/` ("the catalogue": a universal data browser). A marble card cabinet whose five drawers are the districts (Market, Research, Money, Command, Life; three.js direct in `pinakesscene.js`, flat SVG cabinet on LITE / no WebGL / `?flat=1`, draws only while a drawer moves). Search the catalogue, open any table in a windowed grid (only the rows in view exist: 37,000 rows scroll like 30), sort, plain-word filters, quick stats, bar / line / histogram chart with group-by, list picker for nested files, saved views (this phone only, `pinakes.v1`, export / import), CSV + JSON export, share link (`#v=...` restores table + filters + sort + chart), and "Ask": 4 built-in questions that join known tables with the query in plain words. Reads `./catalog.json` (about 105 KB: one card per table, never the rows), then each table from its own URL when opened; falls back to `fixture.json` (DEMO with its tables inside). Test `tests/test_pinakes_page.py`.
+
+**The builder (new):** `tools/pinakes_build.py` (stdlib, `--check`, `--selftest`) walks the site folder and writes `pinakes/catalog.json` + `pinakes/jarvis.json` (and, for the repo copy, the demo `fixture.json`). The committed catalogue covers the files in `tools/web_public/` and lists the build-only files (`home.json`, `data.json`, `intel.json`, `kalshi.json`, `alerts.json`, `money/*.json`, `cronos/status.json`, `datacity/discoveries.json`, `kalshicity/forward.json`, `kalshicity/scan.json`, `writeups/index.json`) as "Site build: measured when opened". Research CSVs under `data/` are listed with span and rows only (no URL, not downloadable).
+
+## The exact build line (needed so the published catalogue also measures the build-only files)
+In `.github/workflows/cloud-monitor.yml`, step "Publish web dashboard", add this line directly BELOW `python tools/build_web_dashboard.py --state dash/state.json --chart dash/chart.png --out site` (it must run after every other file is in `site/`):
+`          python tools/pinakes_build.py --web site   # Pinakes: catalogue every table in the built site (stdlib, ~2 s)`
+(or call the same thing as the last step inside `build_web_dashboard.py`: `subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pinakes_build.py"), "--web", out])`). It reads `site/**.json` + `data/*.csv`, writes only `site/pinakes/catalog.json` and `site/pinakes/jarvis.json`. If it is skipped, the committed `catalog.json` is still valid (build-only tables are then measured when the owner opens them). After adding or changing any app's JSON in the repo: `python tools/pinakes_build.py` (and `--check` fails when the committed catalogue is stale).
+
+## The six rows (what `wire_new_apps.py --apply` writes for Pinakes; the row is already in `tools/new_apps.json`)
+1. `jarvis/apps.js` BUILT_INS: `app('pinakes', 'Pinakes', 'trading', '#c8a24a', 'The catalogue: browse and query every table OLYMPUS keeps', { glyph: 'Κ' }),`
+2. `olympus/olympus.js`: APPS `pinakes: ['Pinakes', 'Κ', '#c8a24a'],` and AMBIENT `pinakes: 'scroll',`
+3. `tools/build_web_dashboard.py` app tuple: add `"pinakes"` (the folder is copied whole: `catalog.json`, `fixture.json`, `jarvis.json` ride along).  4. `sw.js` OTHER_APPS: `'pinakes/'` (precache `pinakes/catalog.json` if wanted; never the tables it points at).
+5. `olympus/intro-app.js` FLAVOUR: `pinakes: ['columns', 'Open the drawers', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `pinakes: { kind: 'tiles', ms: 800 },`
+Then bump `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, run `python tools/apps_list_build.py --check`, and `python tools/make_app_icons.py pinakes` is already done (PNG icons are in the folder).
+Tests after wiring: `tests.test_pinakes_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+# Wiring COLOSSEUM (where strategies fight, 2026-11-11)
+
+App `colosseum` in `tools/web_public/colosseum/`: a marble amphitheatre in 3D (`arena.js` on the render core + `olympus/shapes3d.js`, its own module tag; LITE / no WebGL / `?flat=1` = a flat SVG arena) where two stored runs duel over seven rounds on their real numbers (net $, $ a month, PF, max drawdown $, trades a week, MFFU eval speed, holds in both periods). A number that is not stored makes the round "no contest". Plus a seeded tournament of the top 16 adopted runs, the league of LIT / ATLAS / BLITZ, the hall of champions and the fallen. Deep link `colosseum/#a=<runId>&b=<runId>`.
+Reads `../archive/index.json` (+ `../archive/runs-<k>.json` after the first paint), `./extra.json`, `../home.json`; falls back to `fixture.json` (DEMO). Sends nothing, stores nothing. Test `tests/test_colosseum_page.py` (`--static` = no browser).
+The row is already in `tools/new_apps.json` (group trading, accent `#c8a24a`, glyph `C`, ambient `chimes`, flavour `['torches', 'Enter the arena', 'tap']`, transition `{ kind: 'columns', ms: 1000, n: 5 }`): the lead runs `python tools/wire_new_apps.py --apply` (six files), then bumps `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, and runs `python tools/apps_list_build.py --check`.
+
+## Site build lines (needed, otherwise `colosseum/extra.json` goes stale on the site)
+1. `tools/build_web_dashboard.py`: the app tuple gets `"colosseum"` (the folder is copied whole, so `extra.json` rides along). The Archive must be on the site too (it already is): Colosseum reads `archive/index.json` and `archive/runs-*.json`.
+2. `.github/workflows/cloud-monitor.yml`, step "Publish web dashboard": directly BELOW the `python tools/archive_build.py` line add
+   `          python tools/colosseum_build.py   # Colosseum extras: max drawdown, dec10, pass_med per run (stdlib, ~2 s)`
+   (rewrites `tools/web_public/colosseum/extra.json` from `research/runs/`; `--check` fails when it is stale, `--selftest` needs nothing). If the checkout lacks `research/runs/`, skip it: the committed file is still valid.
+3. `tools/web_public/sw.js`: `OTHER_APPS` add `'colosseum/'`; do NOT precache `colosseum/extra.json` (about 130 KB).
+4. Home Screen PNG icons: `flock -w 2400 /tmp/olympus_browser.lock python tools/make_app_icons.py colosseum` (already run; add `colosseum` to its `APPS` list if you want `--check` to cover it).
+5. People kit (docs/PERSONA_API.md): once `tools/web_public/olympus/people.js` exists, add `<script type="module" src="../olympus/people.js?v=p1"></script>` to `colosseum/index.html` directly above the `arena.js` tag. The Talk button then calls `window.OLYMPUS_PEOPLE.open('champion:<run-id>' | 'bot:lit' | 'bot:atlas' | 'bot:blitz', { anchor })`; until then the page's own five-question card answers. (The tag is NOT in the page yet: a missing file makes the kit show "could not load".) The 3D champions are the app's own toy-like figures; `olympus/people3d.js` can replace `champion()` in `arena.js` later.
+Tests after wiring: `tests.test_colosseum_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
+
+## The six rows (what `wire_new_apps.py --apply` writes for Colosseum)
+1. `jarvis/apps.js` BUILT_INS: `app('colosseum', 'Colosseum', 'trading', '#c8a24a', 'Where strategies fight: seven rounds on real stored numbers', { glyph: 'C' }),`
+2. `olympus/olympus.js`: APPS `colosseum: ['Colosseum', 'C', '#c8a24a'],` and AMBIENT `colosseum: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: add `"colosseum"`.  4. `sw.js` OTHER_APPS: `'colosseum/'`.
+5. `olympus/intro-app.js` FLAVOUR: `colosseum: ['torches', 'Enter the arena', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `colosseum: { kind: 'columns', ms: 1000, n: 5 },`
