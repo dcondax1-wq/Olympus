@@ -65,6 +65,7 @@
   {"id": "ergasterion", "name": "Ergasterion", "glyph": "E", "colour": "#c8a24a", "group": "trading", "groupName": "Trading", "purpose": "The workshop: every AI worker, what it does and learns", "path": "ergasterion/", "live": true},
   {"id": "archive", "name": "Archive", "glyph": "B", "colour": "#c8a24a", "group": "trading", "groupName": "Trading", "purpose": "The library of everything we ever tested, searchable", "path": "archive/", "live": true},
   {"id": "pinakes", "name": "Pinakes", "glyph": "\u039a", "colour": "#c8a24a", "group": "trading", "groupName": "Trading", "purpose": "The catalogue: browse and query every table OLYMPUS keeps", "path": "pinakes/", "live": true},
+  {"id": "colosseum", "name": "Colosseum", "glyph": "C", "colour": "#c8a24a", "group": "trading", "groupName": "Trading", "purpose": "Where strategies fight: seven rounds on real stored numbers", "path": "colosseum/", "live": true},
   {"id": "clio", "name": "Clio", "glyph": "\u039a", "colour": "#d8c9a8", "group": "trading", "groupName": "Trading", "purpose": "The research library: every study in plain words", "path": "clio/", "live": true},
   {"id": "atlas", "name": "Atlas", "glyph": "\u25c8", "colour": "#efc979", "group": "life", "groupName": "Life", "purpose": "A fast map of every Olympus dashboard", "path": "atlas/", "live": true},
   {"id": "athena", "name": "Athena", "glyph": "\ud83e\udd89", "colour": "#5ea8ff", "group": "life", "groupName": "Life", "purpose": "The library: strategy, rules, quiz", "path": "athena/", "live": true},

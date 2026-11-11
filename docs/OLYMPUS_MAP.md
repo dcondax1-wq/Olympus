@@ -12,6 +12,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Ares (`ares`) | Market | trading | The war room: GO, WAIT or HALT | `../data.json`, `jarvis.json`, `rules.json`, `../home.json` | `tests.test_ares_page` |
 | Chronos (`chronos`) | Market | trading | Time and the session clock | `../odeon/trades.json`, `fixture.json` | `tests.test_chronos_page` |
 | Cities (`cities`) | Market | trading | A world of city islands | `fixture.json` | `tests.test_cities_page` |
+| Colosseum (`colosseum`) | Market | trading | Where strategies fight: seven rounds on real stored | `extra.json`, `fixture.json`, `../archive/index.json`, `../home.json` | `tests.test_colosseum_page` |
 | Compass (`compass`) | Market | trading | The next best action: at most five things | `fixture.json`, `../home.json`, `../money/index.json`, `../ledger/rules.json`, `../odeon/trades.json` | `tests.test_compass_page` |
 | Delphi (`delphi`) | Market | trading | The oracle's briefing: plan, target, go / no-go | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_delphi_page` |
 | Ergasterion (`ergasterion`) | Market | trading | The workshop: every AI worker, what it does | `fixture.json`, `queue.json`, `../home.json`, `../money/index.json`, `../cronos/status.json`, ... | `tests.test_ergasterion_page` |
@@ -75,7 +76,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Nike (`nike`) | Life | life | The trophy hall: milestones and wins from real | `fixture.json`, `../home.json`, `../ledger/rules.json`, `../odeon/trades.json`, `../kalshicity/edges.json` | `tests.test_nike_page` |
 | Planner (`planner`) | Life | life | Day and week plan: session windows, tasks, habits | `../pythia/events.json`, `../home.json`, `fixture.json` | `tests.test_planner_page` |
 
-66 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+67 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 
