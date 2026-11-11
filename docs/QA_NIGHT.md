@@ -44,3 +44,21 @@ None of these four touches a new app or the wiring, so I left them; the two `cp`
 - Tests and tools: `tests/gate_static.py`, `tests/test_jarvis_hub.py`, `tests/test_jarvis_kalshi.py`, `tests/test_wire_new_apps.py`.
 - CSS: font size 16px on text fields in `oikos`, `moirai`, `kairos`, `argo`, `epilogue`.
 - Doc: Argo scene in `docs/NEW_APPS_WIRING.md`.
+
+---
+# Round 3 (2026-11-11): fixing what was still broken
+
+Behaviour, layout and stale tests only (no colour or font work: the theme finisher has that). Browser runs one at a time under the machine lock.
+
+| Item | Before | After | What was wrong |
+|---|---|---|---|
+| 1. test_hermes | crash at 64 checks (click timeout) | runs to the end, 112/116, then the 4 left fixed in the test (rerun: see below) | APP: the card kept swaying while paused, so its buttons never held still. A paused story now rests. TEST: the page now asks the site for `../kalshi.json` first; the test did not expect that optional file |
+| 1. test_cities_page | crash in section d (`reading 'ui'`) | past it: 113 pass, then two stale checks fixed (rerun: see below) | TEST: a district tap was sent to the Athens hook, which only exists inside Athens. TEST: the hub is a drawn map now, the continent fly was still measured on the old 3D camera; the optional site `kalshi.json` was not expected |
+| 2. cities, hermes, nemesis at 320 px | title / story name / week line cut | phone-fit audit clean at 390 and 320 | CSS wraps (layout only) |
+| 2. kalshicity | live line cut (1162 px in 332), 6 view buttons 38 px, 4 camera buttons 43 px, 2 top buttons 40 px | see below | view buttons slide sideways (52 px each), cameras and top buttons 44 px, live line two full lines |
+| 3. observatory | 7 columns 38 px wide at 320 px | see below | under 380 px the columns are a strip you slide (48 px each) |
+| 3. odeon | timeline ticks 14 x 14 px | see below | the ticks have their own 44 px row over the scrubber (44 x 44 px each); landscape keeps one row |
+| 5. test_tyche_page | 105/112 | see below | TEST: old neon values (theme, gold, text, 2 px ring). APP: three different theme values (page, jarvis.json, live card) made one: `#14110e` |
+| 5. test_ergasterion_page | 68/71 | static 45/45; browser see below | `queue.json` rebuilt (it also fixes the write-up index). TEST: the knob check compared `translate(0px,0px)` with the browser's `translate(0px, 0px)` |
+| 6. test_datacity | 180/188 | see below | `city.js` 69.8 KB split (`city-acts.js`): 56.6 KB. The menu really has 10 doors (All districts): test updated |
+| 8. gate: atlas_ui | "0/0" | 2/2 counted | the test now prints `[PASS]` and keeps `RES` |
