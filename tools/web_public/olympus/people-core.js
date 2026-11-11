@@ -175,108 +175,152 @@ export function drawLook(s) {
     browCol: light ? '#8a7a5a' : shade(s.hair, -0.3), blush: mix(s.skin, '#c96a4a', 0.42), lidBias: f.eyes === 'smile' ? 0.38 : 0, beard, freckles: !!f.freckles };
 }
 
+// ---- the face tables shared by the 3D figure and the portrait (so both make the same faces)
+/** expression -> face targets. brow: [up, tilt (+ = inner end up)], lid: [upper cover 0..1, lower cover 0..1], mouth: {viseme: weight}, head: [pitch, roll] */
+export const EXPR_FACE = {
+  neutral: { brow: [0, 0], lid: [0.12, 0.0], mouth: {}, head: [0, 0] },
+  happy: { brow: [0.012, 0.04], lid: [0.06, 0.42], mouth: { smile: 0.85 }, head: [-0.04, 0.05] },
+  proud: { brow: [0.01, -0.06], lid: [0.34, 0.2], mouth: { smile: 0.45 }, head: [-0.14, 0] },
+  worried: { brow: [0.008, 0.38], lid: [0.06, 0.0], mouth: { frown: 0.75 }, head: [0.06, 0] },
+  thinking: { brow: [0.006, -0.1], lid: [0.28, 0.12], mouth: { MBP: 0.5, frown: 0.2 }, head: [0, 0.06], browSplit: 0.022 },
+  surprised: { brow: [0.034, 0.12], lid: [0.0, 0.0], mouth: { O: 0.85 }, head: [-0.06, 0] },
+  sheepish: { brow: [0.01, 0.3], lid: [0.22, 0.12], mouth: { smile: 0.25, MBP: 0.2 }, head: [0.1, 0.14] },
+};
+export const MOOD_EXPR = { calm: 'neutral', busy: 'thinking', proud: 'proud', worried: 'worried', sheepish: 'sheepish' };
+export const RESTING_MOUTH = { smile: { smile: 0.12 }, grin: { smile: 0.42 }, small: { O: 0.12 }, flat: {} };
+export const VISEME_LIST = ['rest', 'A', 'E', 'O', 'MBP', 'smile', 'frown'];
+/** the mouth shapes (angles on the face, around the mouth centre): viseme -> [top(x), bottom(x), half width], x in [-1, 1] */
+export function mouthShapes(w0) {
+  const q = (x) => x * x, line = (curve, w) => [(x) => curve * q(x) + 0.008 * (1 - q(x)) - 0.004, (x) => curve * q(x) - 0.012 * (1 - q(x)) - 0.004, w];
+  return {
+    rest: line(0.045, w0), A: [(x) => 0.03 + 0.03 * q(x), (x) => 0.03 * q(x) - 0.17 * Math.pow(1 - q(x), 0.7), w0 * 0.95], E: [(x) => 0.022 + 0.035 * q(x), (x) => 0.035 * q(x) - 0.075 * Math.pow(1 - q(x), 0.8), w0 * 1.3],
+    O: [(x) => 0.055 * Math.sqrt(1 - q(x)), (x) => -0.085 * Math.sqrt(1 - q(x)), w0 * 0.62], MBP: [(x) => 0.006 - 0.004 * q(x), (x) => -0.006 + 0.004 * q(x), w0 * 0.92],
+    smile: [(x) => 0.05 * q(x) + 0.004, (x) => 0.05 * q(x) - 0.105 * Math.pow(1 - q(x), 0.9), w0 * 1.45], frown: line(-0.045, w0 * 0.95),
+  };
+}
+/** the face of a spec for an expression (or its mood): brows, lids, mouth weights. Shared so the chat portrait matches the 3D figure. */
+export function faceOf(s, opts) {
+  const o = opts || {}, name = o.expr && EXPR_FACE[o.expr] ? o.expr : MOOD_EXPR[o.mood || s.mood] || 'neutral', E = EXPR_FACE[name], L = drawLook(s), rest = RESTING_MOUTH[s.face && s.face.mouth] || {};
+  const mouth = {}; for (const v of VISEME_LIST.slice(1)) mouth[v] = (E.mouth[v] || 0) + (Object.keys(E.mouth).length ? 0 : rest[v] || 0);
+  if (o.talk) { for (const v in mouth) mouth[v] *= 0.25; mouth.A = Math.max(mouth.A || 0, 0.8); }
+  if (o.mouth && VISEME_LIST.indexOf(o.mouth) > 0) { for (const v in mouth) mouth[v] *= 0.25; mouth[o.mouth] = 1; }
+  return { name, brow: E.brow, split: E.browSplit || 0, lid: [o.blink ? 1 : E.lid[0], o.blink ? 0 : E.lid[1] + L.lidBias * (name === 'neutral' ? 1 : 0.5)], mouth, head: E.head };
+}
+
 const N = (tag, attrs, children) => ({ tag, attrs: attrs || {}, children: children || [] });
 const f1 = (v) => Math.round(v * 10) / 10;
-/** head and shoulders in a round frame, viewBox 0 0 100 100. Bold enough to read at 44 px; no filters, no gradients, no images. */
+const INKC = '#2a2019', IVC = '#f6efe2';
+/** a closed path through points [[x, y], ...] with smooth (quadratic midpoint) corners */
+function blob(pts) { let d = 'M' + f1((pts[0][0] + pts[1][0]) / 2) + ' ' + f1((pts[0][1] + pts[1][1]) / 2); for (let i = 1; i <= pts.length; i++) { const p = pts[i % pts.length], nx = pts[(i + 1) % pts.length]; d += 'Q' + f1(p[0]) + ' ' + f1(p[1]) + ' ' + f1((p[0] + nx[0]) / 2) + ' ' + f1((p[1] + nx[1]) / 2); } return d + 'Z'; }
+const ellD = (cx, cy, rx, ry) => `M${f1(cx - rx)} ${f1(cy)}a${f1(rx)} ${f1(ry)} 0 1 0 ${f1(rx * 2)} 0a${f1(rx)} ${f1(ry)} 0 1 0 ${f1(-rx * 2)} 0Z`;
+/** v2 portrait: head and shoulders in a round frame, viewBox 0 0 100 100, the same face, cut, garb and accessory as the 3D figure; cel shading and an ink line.
+ *  opts: { size, mood, expr, mouth (viseme), talk, blink, ring, bg, label, uid }. No filters, no images, no text; only #pp… references. */
 export function portraitTree(sp, opts) {
-  const o = opts || {}, s = sp, mood = o.mood || s.mood || 'calm', id = 'pp' + (s.seed >>> 0).toString(36) + (o.uid || '');
-  const skinD = shade(s.skin, -0.16), hairD = shade(s.hair, -0.25), ink = '#2a2019', outD = shade(s.outfit, -0.2), bg = o.bg || mix(s.accent, '#2a231b', 0.72);
-  const rx = s.build === 'round' ? 26 : s.build === 'slim' ? 22.5 : 24.5, cy = 43, hs = s.accessory === 'helmet' ? 'helmet' : s.hairStyle;
-  const g = [];
+  const o = opts || {}, s = sp, L = drawLook(s), F = faceOf(s, o), id = 'pp' + (s.seed >>> 0).toString(36) + (o.uid || '');
+  const skinD = shade(s.skin, -0.14), hairD = shade(s.hair, -0.22), outD = shade(s.outfit, -0.18), bg = o.bg || mix(s.accent, '#2a231b', 0.72), sw = 1.7;
+  const ink = (a) => ({ ...a, stroke: INKC, 'stroke-width': a['stroke-width'] || sw, 'stroke-linejoin': 'round' });
+  const rx = s.build === 'round' ? 26 : s.build === 'slim' ? 23 : 24.6, cy = 45 + F.head[0] * 8, top = cy - 25.5, roll = f1(F.head[1] * 40), cut = L.cut, g = [];
+  // the head outline: an egg with a softer jaw (the 3D head seen from the front)
+  const headD = blob([[50, top - 0.5], [50 + rx * 0.98, top + 2], [50 + rx * 1.04, cy - 4], [50 + rx * 0.98, cy + 9], [50 + rx * 0.62, cy + 21.5], [50, cy + 25.5], [50 - rx * 0.62, cy + 21.5], [50 - rx * 0.98, cy + 9], [50 - rx * 1.04, cy - 4], [50 - rx * 0.98, top + 2]]);
   g.push(N('circle', { cx: 50, cy: 50, r: 50, fill: bg }));
-  g.push(N('circle', { cx: 50, cy: 50, r: 43, fill: shade(bg, 0.07) }));
+  g.push(N('circle', { cx: 50, cy: 56, r: 41, fill: shade(bg, 0.07) }));
   // hair behind the head
-  if (hs === 'long') g.push(N('path', { d: 'M22 44 C18 8 82 8 78 44 L81 80 C70 86 30 86 19 80 Z', fill: s.hair }));
-  if (hs === 'bob') g.push(N('path', { d: 'M22 42 C19 10 81 10 78 42 L78 60 C72 66 28 66 22 60 Z', fill: s.hair }));
-  if (hs === 'bun') g.push(N('circle', { cx: 50, cy: 12, r: 9, fill: s.hair }));
-  if (hs === 'topknot') g.push(N('ellipse', { cx: 50, cy: 12, rx: 6, ry: 8, fill: s.hair }));
-  // shoulders, neck
-  const sw = s.build === 'broad' ? 40 : s.build === 'slim' ? 33 : 37;
-  g.push(N('path', { d: `M${50 - sw} 101 C${50 - sw} 80 ${50 - sw / 2} 71 50 71 C${50 + sw / 2} 71 ${50 + sw} 80 ${50 + sw} 101 Z`, fill: s.outfit }));
-  g.push(N('path', { d: `M${50 - sw} 101 C${50 - sw} 88 ${50 - sw / 2 - 4} 80 ${50 - sw / 2 + 2} 76 L${50 - sw / 2 + 8} 101 Z`, fill: outD, opacity: 0.45 }));
-  g.push(N('rect', { x: 43, y: 60, width: 14, height: 15, rx: 5, fill: skinD }));
-  g.push(N('path', { d: 'M37 72 Q50 88 63 72 Q50 77 37 72 Z', fill: s.skin }));
-  g.push(N('path', { d: 'M36 72 Q50 89 64 72', fill: 'none', stroke: s.accent, 'stroke-width': 3.2, 'stroke-linecap': 'round' }));
-  g.push(N('circle', { cx: 65, cy: 75, r: 3, fill: '#c8a24a', stroke: '#8a6a2a', 'stroke-width': 0.8 }));
-  // ears, head
-  g.push(N('circle', { cx: 50 - rx - 0.5, cy: cy + 3, r: 4.4, fill: skinD }));
-  g.push(N('circle', { cx: 50 + rx + 0.5, cy: cy + 3, r: 4.4, fill: skinD }));
-  g.push(N('ellipse', { cx: 50, cy, rx, ry: 25.5, fill: s.skin }));
-  // beard under the face features
-  const bd = s.face.beard;
-  if (bd === 'short') g.push(N('path', { d: `M${50 - rx + 1} 47 C${50 - rx + 2} 71 ${50 + rx - 2} 71 ${50 + rx - 1} 47 C${50 + rx - 6} 58 60 60 50 60 C40 60 ${50 - rx + 6} 58 ${50 - rx + 1} 47 Z`, fill: s.hair, opacity: 0.92 }));
-  if (bd === 'full') g.push(N('path', { d: `M${50 - rx + 1} 45 C${50 - rx - 1} 80 ${50 + rx + 1} 80 ${50 + rx - 1} 45 C${50 + rx - 6} 56 60 57 50 57 C40 57 ${50 - rx + 6} 56 ${50 - rx + 1} 45 Z`, fill: s.hair }));
-  // cheeks
-  g.push(N('circle', { cx: 50 - rx + 8, cy: cy + 9, r: 4.4, fill: '#c96a4a', opacity: mood === 'sheepish' ? 0.5 : 0.24 }));
-  g.push(N('circle', { cx: 50 + rx - 8, cy: cy + 9, r: 4.4, fill: '#c96a4a', opacity: mood === 'sheepish' ? 0.5 : 0.24 }));
-  if (s.face.freckles) for (const [x, y] of [[36, 50], [39, 52.5], [61, 52.5], [64, 50]]) g.push(N('circle', { cx: x, cy: y, r: 0.9, fill: skinD }));
-  // hair on top
-  const top = cy - 25.5;
-  if (hs === 'short' || hs === 'bun' || hs === 'topknot') g.push(N('path', { d: `M${50 - rx - 1} ${cy - 2} C${50 - rx - 3} ${top - 6} ${50 + rx + 3} ${top - 6} ${50 + rx + 1} ${cy - 2} C${50 + rx - 6} ${top + 9} 60 ${top + 7} 50 ${top + 7} C40 ${top + 7} ${50 - rx + 6} ${top + 9} ${50 - rx - 1} ${cy - 2} Z`, fill: s.hair }));
-  if (hs === 'wavy') g.push(N('path', { d: `M${50 - rx - 1} ${cy} C${50 - rx - 4} ${top - 8} ${50 + rx + 4} ${top - 9} ${50 + rx + 1} ${cy} C${50 + rx - 3} ${top + 12} 62 ${top + 13} 44 ${top + 5} C38 ${top + 10} ${50 - rx + 3} ${top + 13} ${50 - rx - 1} ${cy} Z`, fill: s.hair }));
-  if (hs === 'long' || hs === 'bob') g.push(N('path', { d: `M${50 - rx - 1} ${cy + 2} C${50 - rx - 3} ${top - 6} ${50 + rx + 3} ${top - 6} ${50 + rx + 1} ${cy + 2} C${50 + rx - 4} ${top + 10} 58 ${top + 6} 50 ${top + 9} C42 ${top + 6} ${50 - rx + 4} ${top + 10} ${50 - rx - 1} ${cy + 2} Z`, fill: s.hair }));
-  if (hs === 'curly') for (let i = 0; i < 8; i++) { const a = Math.PI * (1.04 + i * 0.132), cx = 50 + Math.cos(a) * (rx + 1), y = cy - 3 + Math.sin(a) * 25; g.push(N('circle', { cx: f1(cx), cy: f1(y), r: 7.6, fill: i % 2 ? s.hair : shade(s.hair, 0.06) })); }
-  if (hs === 'bald') { g.push(N('path', { d: `M${50 - rx} ${cy - 4} q-2 6 1 10`, fill: 'none', stroke: s.hair, 'stroke-width': 3.4, 'stroke-linecap': 'round' })); g.push(N('path', { d: `M${50 + rx} ${cy - 4} q2 6 -1 10`, fill: 'none', stroke: s.hair, 'stroke-width': 3.4, 'stroke-linecap': 'round' })); }
-  if (hs === 'helmet') {
-    g.push(N('path', { d: 'M34 16 C38 0 62 0 66 16 C58 9 42 9 34 16 Z', fill: '#c96a4a' }));
-    g.push(N('path', { d: `M${50 - rx - 2} ${cy + 1} C${50 - rx - 5} ${top - 7} ${50 + rx + 5} ${top - 7} ${50 + rx + 2} ${cy + 1} L${50 + rx + 2} ${cy - 5} C${50 + rx - 8} ${top + 12} ${50 - rx + 8} ${top + 12} ${50 - rx - 2} ${cy - 5} Z`, fill: '#b98a4a' }));
-    g.push(N('path', { d: `M${50 - rx - 2} ${cy - 5} C${50 - rx + 8} ${top + 12} ${50 + rx - 8} ${top + 12} ${50 + rx + 2} ${cy - 5}`, fill: 'none', stroke: '#8a6a2a', 'stroke-width': 1.6 }));
-    g.push(N('rect', { x: 48.2, y: top + 9, width: 3.6, height: 9, rx: 1.6, fill: '#b98a4a' }));
+  if (cut === 'afro') g.push(N('path', ink({ d: ellD(50, cy - 6, rx + 11, 27), fill: s.hair })));
+  if (cut === 'long') g.push(N('path', ink({ d: `M${50 - rx - 2} ${cy - 6}C${50 - rx - 6} ${top - 8} ${50 + rx + 6} ${top - 8} ${50 + rx + 2} ${cy - 6}L${50 + rx + 5} ${cy + 30}Q50 ${cy + 36} ${50 - rx - 5} ${cy + 30}Z`, fill: hairD })));
+  if (cut === 'bob') g.push(N('path', ink({ d: `M${50 - rx - 3} ${cy - 4}C${50 - rx - 6} ${top - 8} ${50 + rx + 6} ${top - 8} ${50 + rx + 3} ${cy - 4}L${50 + rx + 3} ${cy + 15}Q${50 + rx - 4} ${cy + 19} ${50 + rx - 8} ${cy + 14}L${50 - rx + 8} ${cy + 14}Q${50 - rx + 4} ${cy + 19} ${50 - rx - 3} ${cy + 15}Z`, fill: hairD })));
+  if (cut === 'ponytail') g.push(N('path', ink({ d: `M${50 + rx - 4} ${cy - 10}C${50 + rx + 12} ${cy - 6} ${50 + rx + 12} ${cy + 22} ${50 + rx + 4} ${cy + 32}C${50 + rx} ${cy + 22} ${50 + rx + 2} ${cy} ${50 + rx - 6} ${cy - 4}Z`, fill: s.hair })));
+  if (cut === 'bun') { g.push(N('circle', ink({ cx: 50, cy: top - 4, r: 9.5, fill: s.hair }))); g.push(N('path', { d: `M42 ${f1(top + 2.5)}Q50 ${f1(top + 5.5)} 58 ${f1(top + 2.5)}`, fill: 'none', stroke: s.accent, 'stroke-width': 2.4, 'stroke-linecap': 'round' })); }
+  if (cut === 'topknot') { g.push(N('ellipse', ink({ cx: 50, cy: top - 6, rx: 6.5, ry: 8.5, fill: s.hair }))); g.push(N('rect', ink({ x: 45.5, y: f1(top - 0.5), width: 9, height: 4, rx: 1.5, fill: '#d9b25a', 'stroke-width': 1.2 }))); }
+  // shoulders and the garb
+  const shw = s.build === 'broad' ? 41 : s.build === 'slim' ? 34 : s.build === 'round' ? 40 : 37.5, by = 74;
+  const bodyD = `M${50 - shw} 102C${50 - shw} ${by + 6} ${50 - shw / 2} ${by - 2} 50 ${by - 2}C${50 + shw / 2} ${by - 2} ${50 + shw} ${by + 6} ${50 + shw} 102Z`;
+  g.push(N('path', ink({ d: bodyD, fill: s.outfit })));
+  g.push(N('path', { d: `M${50 + shw} 102C${50 + shw} ${by + 9} ${50 + shw / 2 + 3} ${by + 2} ${50 + shw / 2 - 1} ${by}L${50 + shw / 2 - 7} 102Z`, fill: outD }));
+  const gb = L.garb;
+  if (gb === 'cloak') { g.push(N('path', ink({ d: `M${50 - shw} 102C${50 - shw} ${by + 5} ${50 - shw / 2} ${by - 3} 50 ${by - 3}C${50 + shw / 2} ${by - 3} ${50 + shw} ${by + 5} ${50 + shw} 102L${50 + shw - 9} 102C${50 + shw - 12} ${by + 10} 58 ${by + 4} 50 ${by + 9}C42 ${by + 4} ${50 - shw + 12} ${by + 10} ${50 - shw + 9} 102Z`, fill: s.accent }))); g.push(N('circle', ink({ cx: 50, cy: by + 8, r: 3.2, fill: '#d9b25a', 'stroke-width': 1.1 }))); }
+  if (gb === 'apron') { g.push(N('path', ink({ d: `M37 102L39 ${by + 8}Q50 ${by + 11} 61 ${by + 8}L63 102Z`, fill: '#7a5230' }))); g.push(N('path', { d: `M39 ${by + 8}L36 ${by - 1}M61 ${by + 8}L64 ${by - 1}`, stroke: '#7a5230', 'stroke-width': 2.6, 'stroke-linecap': 'round', fill: 'none' })); }
+  if (gb === 'armour') { g.push(N('path', ink({ d: `M${50 - shw + 6} 102C${50 - shw + 6} ${by + 8} 42 ${by + 2} 50 ${by + 2}C58 ${by + 2} ${50 + shw - 6} ${by + 8} ${50 + shw - 6} 102Z`, fill: '#b98a4a' }))); g.push(N('path', { d: `M42 ${by + 15}Q50 ${by + 19} 58 ${by + 15}M50 ${by + 6}L50 102`, stroke: '#8e6a36', 'stroke-width': 1.5, fill: 'none' })); for (const e of [-1, 1]) g.push(N('path', ink({ d: ellD(50 + e * (shw - 5), by + 9, 7.5, 6), fill: '#b98a4a' }))); }
+  if (gb === 'toga') g.push(N('path', ink({ d: `M${50 - shw / 2 - 4} ${by + 1}C${50 - shw / 2} ${by + 12} 56 ${by + 22} ${50 + shw / 2 + 4} 102L${50 + shw / 2 - 8} 102C52 ${by + 24} ${50 - shw / 2 + 4} ${by + 14} ${50 - shw / 2 - 4} ${by + 8}Z`, fill: shade(s.accent, 0.06) })));
+  // neck
+  g.push(N('path', ink({ d: `M43.5 ${cy + 16}L43 ${by + 3}Q50 ${by + 8} 57 ${by + 3}L56.5 ${cy + 16}Z`, fill: skinD })));
+  if (gb === 'chiton' || gb === 'apron') g.push(N('circle', ink({ cx: 50 + shw / 2 - 1, cy: by + 5, r: 2.8, fill: '#d9b25a', 'stroke-width': 1.1 })));
+  // the head (tilted with the expression), ears, the cel shadow
+  const hg = [];
+  for (const e of [-1, 1]) hg.push(N('path', ink({ d: ellD(50 + e * (rx + 0.6), cy + 2.5, 4, 5.4), fill: skinD, 'stroke-width': 1.5 })));
+  hg.push(N('path', { d: headD, fill: skinD }));
+  hg.push(N('path', { d: ellD(48.4, cy - 2.4, rx * 0.93, 24.5), fill: s.skin, 'clip-path': `url(#${id}h)` }));
+  hg.push(N('path', { d: headD, fill: 'none', stroke: INKC, 'stroke-width': sw }));
+  // beards sit under the face features
+  if (L.beard === 'short') hg.push(N('path', ink({ d: `M${50 - rx + 1} ${cy + 3}C${50 - rx + 2} ${cy + 26} ${50 + rx - 2} ${cy + 26} ${50 + rx - 1} ${cy + 3}C${50 + rx - 5} ${cy + 15} 58 ${cy + 17} 50 ${cy + 17}C42 ${cy + 17} ${50 - rx + 5} ${cy + 15} ${50 - rx + 1} ${cy + 3}Z`, fill: s.hair, 'stroke-width': 1.4 })));
+  if (L.beard === 'full') hg.push(N('path', ink({ d: `M${50 - rx} ${cy}C${50 - rx - 2} ${cy + 34} ${50 + rx + 2} ${cy + 34} ${50 + rx} ${cy}C${50 + rx - 5} ${cy + 13} 59 ${cy + 15} 50 ${cy + 15}C41 ${cy + 15} ${50 - rx + 5} ${cy + 13} ${50 - rx} ${cy}Z`, fill: s.hair, 'stroke-width': 1.4 })));
+  // blush, freckles
+  for (const e of [-1, 1]) hg.push(N('ellipse', { cx: 50 + e * (rx - 8.5), cy: cy + 9, rx: 4.6, ry: 2.8, fill: L.blush, opacity: F.name === 'sheepish' ? 0.95 : 0.7 }));
+  if (L.freckles) for (const [x, y] of [[36, 51], [39, 53], [61, 53], [64, 51]]) hg.push(N('circle', { cx: x, cy: f1(y + cy - 45), r: 0.9, fill: skinD }));
+  // eyes: ring, white, iris, pupil, highlights, then the lids from the expression
+  const E = L.eye, K = 32, ex = 9.6, ey = cy + 1.5, erx = f1(E.rx * K), ery = f1(E.ry * K * 1.02);
+  for (const e of [-1, 1]) {
+    const x = 50 + e * ex, lu = Math.max(0, Math.min(1, F.lid[0])), ll = Math.max(0, Math.min(1, F.lid[1])), cid = id + (e < 0 ? 'l' : 'r');
+    hg.push(N('path', { d: ellD(x, ey, erx + 0.9, ery + 0.9), fill: INKC }));
+    const eg = [N('path', { d: ellD(x, ey, erx, ery), fill: IVC }), N('path', { d: ellD(x + e * 0.3, ey + 0.4, E.ir * K, E.iry * K), fill: E.iris })];
+    if (E.pupil) eg.push(N('path', { d: ellD(x + e * 0.3, ey + 0.4, E.pupil * K, E.pupil * K * 1.1), fill: INKC }));
+    eg.push(N('circle', { cx: f1(x + E.ir * K * 0.4), cy: f1(ey - E.iry * K * 0.35), r: f1(E.hl * K * 0.95), fill: '#fffaf0' }));
+    // upper lid: skin from the top down to its cover, with a dark lash line; lower lid: skin from the bottom up (happy squint)
+    const yU = ey - ery + lu * ery * 2.05, yL = ey + ery - ll * ery * 2;
+    if (lu > 0.03) eg.push(N('path', { d: `M${f1(x - erx - 1)} ${f1(ey - ery - 1.2)}L${f1(x + erx + 1)} ${f1(ey - ery - 1.2)}L${f1(x + erx + 1)} ${f1(yU - 1)}Q${f1(x)} ${f1(yU + 1.8 * (1 - lu))} ${f1(x - erx - 1)} ${f1(yU - 1)}Z`, fill: s.skin }));
+    eg.push(N('path', { d: `M${f1(x - erx - 0.6)} ${f1(Math.max(yU - 1, ey - ery))}Q${f1(x)} ${f1(Math.max(yU - 1, ey - ery) + (lu > 0.6 ? 1 : -1.2))} ${f1(x + erx + 0.6)} ${f1(Math.max(yU - 1, ey - ery))}`, fill: 'none', stroke: INKC, 'stroke-width': lu > 0.6 ? 1.9 : 1.3, 'stroke-linecap': 'round' }));
+    if (ll > 0.05) eg.push(N('path', { d: `M${f1(x - erx - 1)} ${f1(ey + ery + 1.2)}L${f1(x + erx + 1)} ${f1(ey + ery + 1.2)}L${f1(x + erx + 1)} ${f1(yL + 1)}Q${f1(x)} ${f1(yL - 2.4)} ${f1(x - erx - 1)} ${f1(yL + 1)}Z`, fill: s.skin }));
+    hg.push(N('g', { 'clip-path': `url(#${cid})` }, eg));
+    // brows: up, tilt (inner end up = worried), split for "thinking"
+    const bu = F.brow[0] * 160 + (e < 0 ? F.split : -F.split) * 160, bt = F.brow[1] * 9 + L.browSlant * -6, by0 = ey - ery - 4.2 - bu, bw = L.browThick > 0.04 ? 2.9 : 2.1, ar = -(L.browArch * 70 + 0.8);
+    const yIn = f1(by0 - bt), yOut = f1(by0 + bt * 0.4), xi = x - e * 4.6, xo = x + e * 4.8;
+    hg.push(N('path', { d: `M${f1(xi)} ${yIn}Q${f1(x)} ${f1((+yIn + +yOut) / 2 + ar)} ${f1(xo)} ${yOut}`, fill: 'none', stroke: L.browCol, 'stroke-width': bw, 'stroke-linecap': 'round' }));
   }
-  // brows
-  const by = cy - 6.5 + (mood === 'worried' || mood === 'sheepish' ? -1.5 : 0), bw = s.face.brows === 'thick' ? 3 : 2.1, bc = s.hair === '#e6e0d2' || s.hair === '#d9c08a' ? '#8a7a5a' : hairD;
-  const brow = (x, dir) => {
-    const k = s.face.brows, tilt = mood === 'worried' || mood === 'sheepish' ? -2.2 : k === 'slant' ? 1.6 : 0, arch = k === 'arched' || mood === 'proud' ? -2.4 : -0.6;
-    const yIn = f1(by + tilt * 0.6), yOut = f1(by - tilt * 0.5);
-    return N('path', { d: `M${x - 4.6} ${dir < 0 ? yOut : yIn} Q${x} ${f1(by + arch)} ${x + 4.6} ${dir < 0 ? yIn : yOut}`, fill: 'none', stroke: bc, 'stroke-width': bw, 'stroke-linecap': 'round' });
-  };
-  g.push(brow(40, -1)); g.push(brow(60, 1));
-  // eyes
-  const eye = (x) => {
-    const k = mood === 'proud' && s.face.eyes !== 'wide' ? 'smile' : s.face.eyes, y = cy + 1;
-    if (o.blink) return [N('path', { d: `M${x - 3.6} ${y} L${x + 3.6} ${y}`, stroke: ink, 'stroke-width': 2.2, 'stroke-linecap': 'round', fill: 'none' })];
-    if (k === 'smile') return [N('path', { d: `M${x - 3.8} ${y + 1.4} Q${x} ${y - 4} ${x + 3.8} ${y + 1.4}`, fill: 'none', stroke: ink, 'stroke-width': 2.4, 'stroke-linecap': 'round' })];
-    if (k === 'wide') return [N('circle', { cx: x, cy: y, r: 5, fill: '#f6efe2' }), N('circle', { cx: x + (mood === 'sheepish' ? 1.2 : 0), cy: y + 0.4, r: 2.9, fill: ink }), N('circle', { cx: x + 1, cy: y - 1, r: 0.9, fill: '#f6efe2' })];
-    if (k === 'oval') return [N('ellipse', { cx: x, cy: y, rx: 3, ry: 4.3, fill: ink }), N('circle', { cx: x + 0.9, cy: y - 1.5, r: 1, fill: '#f6efe2' })];
-    return [N('circle', { cx: x, cy: y, r: 3.3, fill: ink }), N('circle', { cx: x + 0.9, cy: y - 1.1, r: 0.9, fill: '#f6efe2' })];
-  };
-  for (const e of eye(40).concat(eye(60))) g.push(e);
-  if (s.face.glasses) {
-    g.push(N('circle', { cx: 40, cy: cy + 1, r: 6.6, fill: 'none', stroke: '#6b4a2a', 'stroke-width': 1.7 })); g.push(N('circle', { cx: 60, cy: cy + 1, r: 6.6, fill: 'none', stroke: '#6b4a2a', 'stroke-width': 1.7 }));
-    g.push(N('path', { d: `M46.6 ${cy + 0.4} Q50 ${cy - 1.6} 53.4 ${cy + 0.4}`, fill: 'none', stroke: '#6b4a2a', 'stroke-width': 1.7 }));
+  if (s.face.glasses) for (const e of [-1, 1]) hg.push(N('circle', { cx: 50 + e * ex, cy: ey, r: f1(erx + 2.6), fill: 'none', stroke: '#6b4a2a', 'stroke-width': 1.6 }));
+  if (s.face.glasses) hg.push(N('path', { d: `M${f1(50 - ex + erx + 2.6)} ${f1(ey)}Q50 ${f1(ey - 2)} ${f1(50 + ex - erx - 2.6)} ${f1(ey)}`, fill: 'none', stroke: '#6b4a2a', 'stroke-width': 1.6 }));
+  // nose, moustache, mouth (the same shapes as the 3D visemes, mixed by weight)
+  hg.push(N('path', { d: `M48 ${f1(cy + 8.4)}Q50 ${f1(cy + 10.6)} 52 ${f1(cy + 8.4)}`, fill: 'none', stroke: skinD, 'stroke-width': 1.8, 'stroke-linecap': 'round' }));
+  if (L.beard === 'moustache') hg.push(N('path', ink({ d: `M41.5 ${cy + 13}Q45.5 ${cy + 9.5} 50 ${cy + 12}Q54.5 ${cy + 9.5} 58.5 ${cy + 13}Q54.5 ${cy + 15} 50 ${cy + 13.6}Q45.5 ${cy + 15} 41.5 ${cy + 13}Z`, fill: s.hair, 'stroke-width': 1.1 })));
+  const SH = mouthShapes(0.13), W = Object.entries(F.mouth).filter(([, w]) => w > 0.01), my = cy + 14.6 + (L.beard === 'moustache' ? 1.2 : 0), MX = 48, MY = 52, n = 9;
+  const pt = (u, side) => { let x = u * SH.rest[2], y = (side ? SH.rest[0] : SH.rest[1])(u), tw = 0; for (const [v, w] of W) { const k = Math.min(1, w); tw += k; } const a = Math.max(0, 1 - tw); x *= a; y *= a; for (const [v, w] of W) { const k = Math.min(1, w); x += u * SH[v][2] * k; y += (side ? SH[v][0] : SH[v][1])(u) * k; } return [50 + x * MX, my - y * MY]; };
+  const topP = [], botP = []; for (let i = 0; i < n; i++) { const u = -Math.cos((Math.PI * i) / (n - 1)); topP.push(pt(u, 1)); botP.push(pt(u, 0)); }
+  const open = Math.max(...topP.map((p, i) => botP[i][1] - p[1]));
+  let md = 'M' + topP.map((p) => f1(p[0]) + ' ' + f1(p[1])).join('L') + 'L' + botP.reverse().map((p) => f1(p[0]) + ' ' + f1(p[1])).join('L') + 'Z';
+  hg.push(N('path', { d: md, fill: '#5a2a22', stroke: '#5a2a22', 'stroke-width': open < 2 ? 1.9 : 1.1, 'stroke-linejoin': 'round' }));
+  if (open > 3.2) { const t0 = topP[2], t1 = topP[6]; hg.push(N('path', { d: `M${f1(t0[0])} ${f1(t0[1] + 0.3)}Q50 ${f1(topP[4][1] + 0.4)} ${f1(t1[0])} ${f1(t1[1] + 0.3)}L${f1(t1[0])} ${f1(t1[1] + Math.min(2.6, open * 0.3))}Q50 ${f1(topP[4][1] + Math.min(3.2, open * 0.36))} ${f1(t0[0])} ${f1(t0[1] + Math.min(2.6, open * 0.3))}Z`, fill: IVC })); hg.push(N('ellipse', { cx: 50, cy: f1(my - (SH.A[1](0) * (F.mouth.A || 0) + SH.smile[1](0) * (F.mouth.smile || 0) + SH.O[1](0) * (F.mouth.O || 0)) * MY * 0.78), rx: f1(Math.min(4.2, open * 0.55)), ry: f1(Math.min(2.4, open * 0.3)), fill: '#c46a5c' })); }
+  if (F.name === 'sheepish') hg.push(N('path', { d: `M${50 + rx - 2} ${f1(cy - 13)}q3 5 0 7q-3 -2 0 -7Z`, fill: '#9fc3d6', stroke: INKC, 'stroke-width': 0.8 }));
+  // hair on top (the cut), then head accessories
+  const hl = top + 9.5;      // the hairline
+  const capD = `M${50 - rx - 1.2} ${cy - 1}C${50 - rx - 3.5} ${top - 7.5} ${50 + rx + 3.5} ${top - 7.5} ${50 + rx + 1.2} ${cy - 1}C${50 + rx - 2} ${hl + 1} ${50 + rx - 9} ${hl - 3} 50 ${hl - 2}C${50 - rx + 9} ${hl - 3} ${50 - rx + 2} ${hl + 1} ${50 - rx - 1.2} ${cy - 1}Z`;
+  const capped = ['crop', 'sidepart', 'spiky', 'curly', 'long', 'ponytail', 'wavy', 'swept', 'bob', 'bun', 'topknot', 'afro'];
+  if (capped.indexOf(cut) >= 0) { hg.push(N('path', ink({ d: capD, fill: s.hair }))); hg.push(N('path', { d: `M${50 - rx + 3} ${top + 3}C44 ${top - 2} 56 ${top - 2} ${50 + rx - 6} ${top + 1}`, fill: 'none', stroke: shade(s.hair, 0.16), 'stroke-width': 2.2, 'stroke-linecap': 'round' })); }
+  if (cut === 'crop' || cut === 'long' || cut === 'bob' || cut === 'ponytail') for (let i = 0; i < 5; i++) { const x = 50 + (i - 2) * 8.4; hg.push(N('path', ink({ d: ellD(x, hl - 0.6 + Math.abs(i - 2) * 1.3, 5.4, 3.6), fill: i % 2 ? s.hair : shade(s.hair, 0.06), 'stroke-width': 1.2 }))); }
+  if (cut === 'sidepart') hg.push(N('path', ink({ d: `M${50 - rx - 0.5} ${cy - 3}C${50 - rx - 2} ${top - 3} 60 ${top - 5} ${50 + rx - 1} ${top + 8}C60 ${top + 4} 47 ${hl - 1} ${50 - rx + 4} ${cy - 2}Z`, fill: shade(s.hair, 0.05), 'stroke-width': 1.3 })));
+  if (cut === 'spiky') for (let i = 0; i < 6; i++) { const x = 50 + (i - 2.5) * 7.6, y = top + Math.abs(i - 2.5) * 2.2; hg.push(N('path', ink({ d: `M${f1(x - 4.6)} ${f1(y + 5)}L${f1(x + (i - 2.5) * 0.9)} ${f1(y - 8)}L${f1(x + 4.6)} ${f1(y + 5)}Z`, fill: i % 2 ? s.hair : shade(s.hair, 0.08), 'stroke-width': 1.2 }))); }
+  if (cut === 'curly' || cut === 'afro') for (let i = 0; i < 8; i++) { const a = Math.PI * (1.06 + i * 0.126), x = 50 + Math.cos(a) * (rx + 1), y = cy - 4 + Math.sin(a) * 25.5; hg.push(N('circle', ink({ cx: f1(x), cy: f1(y), r: 6.8, fill: i % 2 ? s.hair : shade(s.hair, 0.07), 'stroke-width': 1.2 }))); }
+  if (cut === 'wavy') for (const e of [-1, 1]) for (let i = 0; i < 3; i++) hg.push(N('path', ink({ d: ellD(50 + e * (rx + 0.5 - i * 0.6), cy - 3 + i * 7, 4.2, 4.8), fill: i % 2 ? shade(s.hair, 0.07) : s.hair, 'stroke-width': 1.2 })));
+  if (cut === 'swept') hg.push(N('path', ink({ d: `M38 ${top + 6}C36 ${top - 10} 64 ${top - 13} 66 ${top + 3}C60 ${top - 3} 46 ${top - 2} 38 ${top + 6}Z`, fill: shade(s.hair, 0.06), 'stroke-width': 1.3 })));
+  if (cut === 'shaved' || cut === 'bald') for (const e of [-1, 1]) hg.push(N('path', { d: `M${50 + e * rx} ${cy - 6}q${e * 2} 6 ${e * -1} 11`, fill: 'none', stroke: s.hair, 'stroke-width': cut === 'shaved' ? 4 : 3, 'stroke-linecap': 'round' }));
+  if (cut === 'helmet') {
+    hg.push(N('path', ink({ d: `M38 ${top - 2}C40 ${top - 14} 60 ${top - 14} 62 ${top - 2}C57 ${top - 6} 43 ${top - 6} 38 ${top - 2}Z`, fill: '#c96a4a' })));
+    hg.push(N('path', ink({ d: `M${50 - rx - 2.5} ${cy + 8}C${50 - rx - 5} ${top - 8} ${50 + rx + 5} ${top - 8} ${50 + rx + 2.5} ${cy + 8}L${50 + rx - 3} ${cy + 8}L${50 + rx - 4} ${cy - 3}C${50 + rx - 9} ${hl - 2} ${50 - rx + 9} ${hl - 2} ${50 - rx + 4} ${cy - 3}L${50 - rx + 3} ${cy + 8}Z`, fill: '#b98a4a' })));
+    hg.push(N('path', { d: `M${50 - rx + 2} ${top + 4}C44 ${top - 2} 56 ${top - 2} ${50 + rx - 2} ${top + 4}`, fill: 'none', stroke: '#d9b25a', 'stroke-width': 1.8, 'stroke-linecap': 'round' }));
   }
-  // nose, mouth
-  g.push(N('path', { d: `M48.4 ${cy + 6.6} Q50 ${cy + 8.6} 51.6 ${cy + 6.6}`, fill: 'none', stroke: skinD, 'stroke-width': 1.7, 'stroke-linecap': 'round' }));
-  if (bd === 'moustache') g.push(N('path', { d: `M41 ${cy + 11.5} Q45.5 ${cy + 8} 50 ${cy + 10.6} Q54.5 ${cy + 8} 59 ${cy + 11.5} Q54.5 ${cy + 13.6} 50 ${cy + 12} Q45.5 ${cy + 13.6} 41 ${cy + 11.5} Z`, fill: s.hair }));
-  const my = cy + 13.2 + (bd === 'moustache' ? 1.6 : 0), mk = o.talk ? 'o' : mood === 'proud' ? 'grin' : mood === 'sheepish' ? 'wobble' : mood === 'worried' ? 'frown' : s.face.mouth;
-  const mcol = bd === 'full' || bd === 'short' ? '#f6efe2' : ink;
-  if (mk === 'grin') { g.push(N('path', { d: `M43 ${my - 1.4} Q50 ${my + 8.5} 57 ${my - 1.4} Z`, fill: '#5a2a22' })); g.push(N('path', { d: `M44.6 ${my - 0.8} Q50 ${my + 1.6} 55.4 ${my - 0.8} Z`, fill: '#f6efe2' })); }
-  else if (mk === 'o') g.push(N('ellipse', { cx: 50, cy: my + 1, rx: 2.9, ry: 3.6, fill: '#5a2a22' }));
-  else if (mk === 'wobble') g.push(N('path', { d: `M44 ${my + 1} Q47 ${my - 2} 50 ${my + 1} T56 ${my + 1}`, fill: 'none', stroke: mcol, 'stroke-width': 2.1, 'stroke-linecap': 'round' }));
-  else if (mk === 'frown') g.push(N('path', { d: `M45 ${my + 2.4} Q50 ${my - 1.6} 55 ${my + 2.4}`, fill: 'none', stroke: mcol, 'stroke-width': 2.1, 'stroke-linecap': 'round' }));
-  else if (mk === 'flat') g.push(N('path', { d: `M45.4 ${my + 0.6} Q50 ${my + 1.8} 54.6 ${my + 0.6}`, fill: 'none', stroke: mcol, 'stroke-width': 2.1, 'stroke-linecap': 'round' }));
-  else if (mk === 'small') g.push(N('path', { d: `M46.6 ${my} Q50 ${my + 3.6} 53.4 ${my}`, fill: 'none', stroke: mcol, 'stroke-width': 2.1, 'stroke-linecap': 'round' }));
-  else g.push(N('path', { d: `M43.6 ${my - 0.6} Q50 ${my + 6} 56.4 ${my - 0.6}`, fill: 'none', stroke: mcol, 'stroke-width': 2.2, 'stroke-linecap': 'round' }));
-  if (mood === 'sheepish') g.push(N('path', { d: `M${50 + rx - 3} ${cy - 14} q3 5 0 7 q-3 -2 0 -7 Z`, fill: '#9fc3d6' }));
-  // the accessory of the kind
+  if (s.accessory === 'laurel') for (let side = -1; side <= 1; side += 2) for (let i = 0; i < 5; i++) {
+    const a = (Math.PI / 180) * (200 + i * 16), x = 50 + side * Math.cos(a) * -(rx + 2), y = cy - 5 + Math.sin(a) * 25;
+    hg.push(N('ellipse', ink({ cx: f1(x), cy: f1(y), rx: 5, ry: 2.4, fill: i % 2 ? '#d9b25a' : '#8f9a4a', 'stroke-width': 0.9, transform: `rotate(${f1(side * (-62 + i * 16))} ${f1(x)} ${f1(y)})` })));
+  }
+  g.push(N('g', roll ? { transform: `rotate(${roll} 50 ${f1(cy + 20)})` } : {}, hg));
+  // the accessory of the kind, in front
   const ac = s.accessory;
-  if (ac === 'laurel') for (let side = -1; side <= 1; side += 2) for (let i = 0; i < 5; i++) {
-    const a = (Math.PI / 180) * (198 + i * 17), x = 50 + side * Math.cos(a) * -(rx + 2.5), y = cy - 4 + Math.sin(a) * 26;
-    g.push(N('ellipse', { cx: f1(x), cy: f1(y), rx: 5.2, ry: 2.5, fill: i % 2 ? '#c8a24a' : '#8fa05a', transform: `rotate(${f1(side * (-62 + i * 17))} ${f1(x)} ${f1(y)})` }));
-  }
-  if (ac === 'owl') {
-    g.push(N('ellipse', { cx: 80, cy: 73, rx: 8.5, ry: 10, fill: '#9c6b3c' })); g.push(N('ellipse', { cx: 80, cy: 76, rx: 5, ry: 6, fill: '#d9c08a' }));
-    g.push(N('path', { d: 'M72.5 65 l3 -5 l3 4 Z M87.5 65 l-3 -5 l-3 4 Z', fill: '#9c6b3c' }));
-    g.push(N('circle', { cx: 76.6, cy: 69.5, r: 3.1, fill: '#f6efe2' })); g.push(N('circle', { cx: 83.4, cy: 69.5, r: 3.1, fill: '#f6efe2' }));
-    g.push(N('circle', { cx: 76.9, cy: 69.7, r: 1.5, fill: ink })); g.push(N('circle', { cx: 83.1, cy: 69.7, r: 1.5, fill: ink })); g.push(N('path', { d: 'M78.8 72.4 L81.2 72.4 L80 75 Z', fill: '#c8a24a' }));
-  }
-  if (ac === 'hammer') { g.push(N('rect', { x: 14, y: 68, width: 3.6, height: 26, rx: 1.6, fill: '#9c6b3c', transform: 'rotate(-18 16 80)' })); g.push(N('rect', { x: 5.5, y: 62.5, width: 17, height: 9, rx: 2.4, fill: '#8c867c', stroke: '#5c574f', 'stroke-width': 1, transform: 'rotate(-18 16 80)' })); }
-  if (ac === 'pouch') { g.push(N('path', { d: 'M72 82 C68 96 92 96 88 82 C86 78 74 78 72 82 Z', fill: '#9c6b3c' })); g.push(N('path', { d: 'M74.5 80 L77 75 L83 75 L85.5 80 Z', fill: '#7a5230' })); g.push(N('path', { d: 'M74 80.2 L86 80.2', stroke: '#e9dfc9', 'stroke-width': 1.5, 'stroke-linecap': 'round' })); g.push(N('circle', { cx: 80, cy: 87, r: 3.4, fill: '#d9b25a', stroke: '#8a6a2a', 'stroke-width': 0.9 })); }
-  if (ac === 'scroll') { g.push(N('rect', { x: 9, y: 76, width: 22, height: 13, rx: 2, fill: '#e9dfc9', transform: 'rotate(-12 20 82)' })); g.push(N('rect', { x: 6.5, y: 74.5, width: 4.6, height: 16, rx: 2.3, fill: '#cdbf9f', transform: 'rotate(-12 20 82)' })); g.push(N('rect', { x: 28.6, y: 74.5, width: 4.6, height: 16, rx: 2.3, fill: '#cdbf9f', transform: 'rotate(-12 20 82)' })); g.push(N('path', { d: 'M14 81 L26 78.6 M14.6 84.6 L24 82.8', stroke: '#9a8f7d', 'stroke-width': 1.1, 'stroke-linecap': 'round', fill: 'none' })); }
-  if (ac === 'key') { g.push(N('circle', { cx: 80, cy: 79, r: 4.8, fill: 'none', stroke: '#d9b25a', 'stroke-width': 2.6 })); g.push(N('path', { d: 'M80 84 L80 97 M80 91 L84.5 91 M80 95 L83.5 95', fill: 'none', stroke: '#d9b25a', 'stroke-width': 2.6, 'stroke-linecap': 'round' })); }
-  if (ac === 'torch') { g.push(N('rect', { x: 16, y: 74, width: 4.4, height: 24, rx: 2, fill: '#9c6b3c' })); g.push(N('path', { d: 'M18.2 60 C24 67 24.5 72 18.2 75.5 C11.9 72 12.4 67 18.2 60 Z', fill: '#e0b060' })); g.push(N('path', { d: 'M18.2 66 C21 69.5 21 72.4 18.2 74.4 C15.4 72.4 15.4 69.5 18.2 66 Z', fill: '#c96a4a' })); }
+  if (ac === 'owl') { g.push(N('path', ink({ d: ellD(80, 74, 8.5, 10), fill: '#9c6b3c' }))); g.push(N('path', { d: ellD(80, 77, 5, 6), fill: '#d9c08a' })); g.push(N('path', ink({ d: 'M72.5 66l3 -5l3 4ZM87.5 66l-3 -5l-3 4Z', fill: '#9c6b3c', 'stroke-width': 1 }))); for (const e of [-1, 1]) { g.push(N('circle', { cx: 80 + e * 3.4, cy: 70.5, r: 3.1, fill: IVC })); g.push(N('circle', { cx: 80 + e * 3.1, cy: 70.7, r: 1.5, fill: INKC })); } g.push(N('path', { d: 'M78.8 73.4L81.2 73.4L80 76Z', fill: '#d9b25a' })); }
+  if (ac === 'hammer') { g.push(N('rect', ink({ x: 14, y: 68, width: 3.6, height: 26, rx: 1.6, fill: '#8a5a32', 'stroke-width': 1.1, transform: 'rotate(-18 16 80)' }))); g.push(N('rect', ink({ x: 5.5, y: 62.5, width: 17, height: 9, rx: 2.4, fill: '#8c867c', 'stroke-width': 1.2, transform: 'rotate(-18 16 80)' }))); }
+  if (ac === 'pouch') { g.push(N('path', ink({ d: 'M72 83C68 97 92 97 88 83C86 79 74 79 72 83Z', fill: '#7a5230' }))); g.push(N('path', { d: 'M74 81.2L86 81.2', stroke: '#e9dfc9', 'stroke-width': 1.5, 'stroke-linecap': 'round' })); g.push(N('circle', ink({ cx: 80, cy: 88, r: 3.4, fill: '#d9b25a', 'stroke-width': 1 }))); }
+  if (ac === 'scroll') { g.push(N('rect', ink({ x: 9, y: 76, width: 22, height: 13, rx: 2, fill: '#e9dfc9', 'stroke-width': 1.1, transform: 'rotate(-12 20 82)' }))); g.push(N('path', { d: 'M14 81L26 78.6M14.6 84.6L24 82.8', stroke: '#9a8f7d', 'stroke-width': 1.1, 'stroke-linecap': 'round', fill: 'none', transform: 'rotate(-12 20 82)' })); }
+  if (ac === 'key') { g.push(N('path', ink({ d: 'M74 78h12v13q-6 4 -12 0Z', fill: '#f0d79a', 'stroke-width': 1.2 }))); g.push(N('path', ink({ d: 'M73 78l7 -5l7 5Z', fill: '#b98a4a', 'stroke-width': 1.1 }))); g.push(N('path', { d: 'M80 72v-4', stroke: '#b98a4a', 'stroke-width': 1.6, 'stroke-linecap': 'round' })); }
+  if (ac === 'torch') { g.push(N('rect', ink({ x: 16, y: 74, width: 4.4, height: 24, rx: 2, fill: '#8a5a32', 'stroke-width': 1.1 }))); g.push(N('path', ink({ d: 'M18.2 60C24 67 24.5 72 18.2 75.5C11.9 72 12.4 67 18.2 60Z', fill: '#e0b060', 'stroke-width': 1.1 }))); g.push(N('path', { d: 'M18.2 66C21 69.5 21 72.4 18.2 74.4C15.4 72.4 15.4 69.5 18.2 66Z', fill: '#c96a4a' })); }
+  const eyeClip = (e) => N('clipPath', { id: id + (e < 0 ? 'l' : 'r') }, [N('path', { d: ellD(50 + e * ex, ey, erx, ery) })]);
   return N('svg', { xmlns: 'http://www.w3.org/2000/svg', viewBox: '0 0 100 100', width: o.size || 44, height: o.size || 44, role: 'img', 'aria-label': o.label || 'portrait' },
-    [N('defs', {}, [N('clipPath', { id }, [N('circle', { cx: 50, cy: 50, r: 50 })])]), N('g', { 'clip-path': `url(#${id})` }, g), N('circle', { cx: 50, cy: 50, r: 48.6, fill: 'none', stroke: o.ring || '#9c6b3c', 'stroke-width': 2.8 })]);
+    [N('defs', {}, [N('clipPath', { id }, [N('circle', { cx: 50, cy: 50, r: 50 })]), N('clipPath', { id: id + 'h' }, [N('path', { d: headD })]), eyeClip(-1), eyeClip(1)]), N('g', { 'clip-path': `url(#${id})` }, g), N('circle', { cx: 50, cy: 50, r: 48.6, fill: 'none', stroke: o.ring || '#9c6b3c', 'stroke-width': 2.8 })]);
 }
 function mix(a, b, k) { const x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16), m = (s) => Math.round(((x >> s) & 255) * (1 - k) + ((y >> s) & 255) * k); return '#' + ((1 << 24) | (m(16) << 16) | (m(8) << 8) | m(0)).toString(16).slice(1); }
 export { mix };

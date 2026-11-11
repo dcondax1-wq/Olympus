@@ -135,11 +135,11 @@ function gen(THREE, s, L, ctx) {
   const up = [[0.112, 0.37], [0.116, 0.41], [0.128, 0.46], [0.133, 0.495], [0.125, 0.525], [0.098, 0.553], [0.05, 0.572], [0.0, 0.58]];
   add(null, () => [lathe(THREE, up, seg), M(THREE, 0, 0, 0, 0, 0, 0, fat, 1, fat * 0.86)], 'chest', OU());
   if (!lo && s.build === 'round') add(null, () => [sphere(THREE, 0.11, d.small, d.smallH), M(THREE, 0, 0.39, 0.025, 0, 0, 0, 1.05, 0.95, 0.9)], 'spine', OU());
-  const skirt = (hem, rHem) => [[0.112, 0.44], [0.115, 0.4], [0.122, 0.35], [0.135, 0.3], [0.15, 0.24], [rHem - 0.005, hem + 0.02], [rHem, hem]];
+  const skirt = (hem, rHem) => [[rHem, hem], [rHem - 0.005, hem + 0.02], [0.15, 0.24], [0.135, 0.3], [0.122, 0.35], [0.115, 0.4], [0.112, 0.44]];
   add('g:skirt', () => [lathe(THREE, skirt(0.165, 0.163), seg), M(THREE, 0, 0, 0, 0, 0, 0, fat, 1, fat * 0.88)], 'hips', OU());
-  add('g:skirt', () => [lathe(THREE, [[0.164, 0.18], [0.168, 0.168], [0.163, 0.155]], seg), M(THREE, 0, 0, 0, 0, 0, 0, fat, 1, fat * 0.88)], 'hips', AC());
+  add('g:skirt', () => [lathe(THREE, [[0.163, 0.155], [0.168, 0.168], [0.164, 0.18]], seg), M(THREE, 0, 0, 0, 0, 0, 0, fat, 1, fat * 0.88)], 'hips', AC());
   add('g:long', () => [lathe(THREE, skirt(0.06, 0.17), seg), M(THREE, 0, 0, 0, 0, 0, 0, fat, 1, fat * 0.88)], 'hips', OU());
-  add('g:long', () => [lathe(THREE, [[0.17, 0.074], [0.174, 0.062], [0.169, 0.05]], seg), M(THREE, 0, 0, 0, 0, 0, 0, fat, 1, fat * 0.88)], 'hips', AC());
+  add('g:long', () => [lathe(THREE, [[0.169, 0.05], [0.174, 0.062], [0.17, 0.074]], seg), M(THREE, 0, 0, 0, 0, 0, 0, fat, 1, fat * 0.88)], 'hips', AC());
   add(null, () => [new THREE.TorusGeometry(0.117, 0.013, 3, seg + 2), M(THREE, 0, 0.405, 0, Math.PI / 2, 0, 0, fat, fat * 0.87, 1)], 'spine', AC(0.92), ni);
   if (!lo) add(null, () => [sphere(THREE, 0.014, 6, 4), M(THREE, 0.07 * fat, 0.525, 0.085 * fat)], 'chest', GOLD, ni);
   // ---- garb extras
@@ -262,15 +262,7 @@ function gen(THREE, s, L, ctx) {
 }
 
 // ------------------------------------------------------------------------------------------------ the face of a hero: eyes with lids, brows, a mouth with visemes (one bone each)
-function mouthShapes(w0) {
-  const q = (x) => x * x;
-  const line = (curve, w) => [(x) => curve * q(x) + 0.008 * (1 - q(x)) - 0.004, (x) => curve * q(x) - 0.012 * (1 - q(x)) - 0.004, w];
-  return {
-    rest: line(0.045, w0), A: [(x) => 0.03 + 0.03 * q(x), (x) => 0.03 * q(x) - 0.17 * Math.pow(1 - q(x), 0.7), w0 * 0.95], E: [(x) => 0.022 + 0.035 * q(x), (x) => 0.035 * q(x) - 0.075 * Math.pow(1 - q(x), 0.8), w0 * 1.3],
-    O: [(x) => 0.055 * Math.sqrt(1 - q(x)), (x) => -0.085 * Math.sqrt(1 - q(x)), w0 * 0.62], MBP: [(x) => 0.006 - 0.004 * q(x), (x) => -0.006 + 0.004 * q(x), w0 * 0.92],
-    smile: [(x) => 0.05 * q(x) + 0.004, (x) => 0.05 * q(x) - 0.105 * Math.pow(1 - q(x), 0.9), w0 * 1.45], frown: line(-0.045, w0 * 0.95),
-  };
-}
+const mouthShapes = (w0) => C.mouthShapes(w0);
 function teethShapes(w0, sh) {
   return VISEMES.map((v) => { const [t, b, w] = sh[v], k = w / w0, open = t(0) - b(0); const th = v === 'A' || v === 'E' || v === 'smile' ? Math.min(0.034, open * 0.32) : 0; return [(x) => t(x * 0.62) - 0.004, (x) => t(x * 0.62) - 0.004 - th * (1 - 0.3 * x * x), w * 0.62 / k * k]; });
 }
@@ -410,18 +402,7 @@ const POSES = {
 export const POSE_NAMES = Object.keys(POSES);
 export const WORK_POSE_NAMES = POSE_NAMES.filter((n) => POSES[n].work);
 
-// expression -> face targets. brow: [up, tilt (+ = inner end up)], lids: [upper cover, lower cover], mouth: {viseme: weight}, head: [pitch, roll]
-const EXPR = {
-  neutral: { brow: [0, 0], lid: [0.12, 0.0], mouth: {}, head: [0, 0] },
-  happy: { brow: [0.012, 0.04], lid: [0.06, 0.42], mouth: { smile: 0.85 }, head: [-0.04, 0.05] },
-  proud: { brow: [0.01, -0.06], lid: [0.34, 0.2], mouth: { smile: 0.45 }, head: [-0.14, 0] },
-  worried: { brow: [0.008, 0.38], lid: [0.06, 0.0], mouth: { frown: 0.75 }, head: [0.06, 0] },
-  thinking: { brow: [0.006, -0.1], lid: [0.28, 0.12], mouth: { MBP: 0.5, frown: 0.2 }, head: [0, 0.06], browSplit: 0.022 },
-  surprised: { brow: [0.034, 0.12], lid: [0.0, 0.0], mouth: { O: 0.85 }, head: [-0.06, 0] },
-  sheepish: { brow: [0.01, 0.3], lid: [0.22, 0.12], mouth: { smile: 0.25, MBP: 0.2 }, head: [0.1, 0.14] },
-};
-const MOOD_EXPR = { calm: 'neutral', busy: 'thinking', proud: 'proud', worried: 'worried', sheepish: 'sheepish' };
-const RESTING_MOUTH = { smile: { smile: 0.12 }, grin: { smile: 0.42 }, small: { O: 0.12 }, flat: {} };
+const EXPR = C.EXPR_FACE, MOOD_EXPR = C.MOOD_EXPR, RESTING_MOUTH = C.RESTING_MOUTH;
 
 // ------------------------------------------------------------------------------------------------ the hero figure
 /** one character: a SkinnedMesh with a face, its ink outline, and the animation state. opts: { lite, seated, scale, work (true: build the work props now; false: never; default: on the first work pose), material } */
@@ -583,7 +564,7 @@ export function figure(THREE, sp, opts) {
   root.userData = {
     spec: s, look: L, pose, play, lookAt, tick, animate: (dt) => tick(dt), setMouth, setExpression, setTalking, dispose, parts: parts0, skeleton: skel, body, ink: line,
     meshes: 2, drawCalls: 2, triangles: geo.userData.triangles + lineGeo.userData.triangles, bodyTriangles: geo.userData.triangles, height: k * (HEAD.y + HEAD.ry * 1.15), headY: k * HEAD.y, lite, v: 2,
-    state: () => ({ pose: st.name, expression: st.expr, talking: st.talking, mouth: st.mouth.slice(), lids: [st.face.lidU.slice(), st.face.lidL.slice()], props: PROPS.filter((p) => st.props[p] > 0.5) }),
+    state: () => ({ pose: st.name, expression: st.expr, talking: st.talking, mouth: st.mouth.slice(), lids: [[byName.lidUL.scale.y, byName.lidUR.scale.y], [byName.lidLL.scale.y, byName.lidLR.scale.y]], props: PROPS.filter((p) => st.props[p] > 0.5) }),
   };
   play(s.mood === 'sheepish' ? 'slump' : 'idle', {});
   snap();
@@ -671,7 +652,7 @@ export function figureInstanced(THREE, specs, opts) {
   function setTalking(i, on) { if (slots[i]) slots[i].talk = !!on; }
   function setVisible(i, on) { if (!slots[i]) return; slots[i].visible = !!on; writeSlot(i); }
   function setPose(i, name) { if (slots[i]) slots[i].pose = name || 'idle'; }
-  function lookAt(i, p) { if (slots[i]) slots[i].look = p ? new THREE.Vector3(p.x, p.y, p.z) : null; }
+  function lookAt(i, p) { const sl = slots[i]; if (sl) sl.look = p ? (sl.look || new THREE.Vector3()).set(p.x, p.y, p.z) : null; }
   function lookAll(p) { for (let i = 0; i < n; i++) lookAt(i, p); }
   const tmp = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
   let lastT = null;
@@ -696,14 +677,14 @@ export function figureInstanced(THREE, specs, opts) {
     }
     tex.needsUpdate = true;
   }
-  /** the person under a ray: each person is a soft capsule (no per-vertex test: the shader poses the mesh) */
+  /** the person under a ray: each person is a soft capsule (no per-vertex test: the shader poses the mesh). any: also people hidden for a close-up figure */
   const inv = new THREE.Matrix4(), ro = new THREE.Vector3(), rd = new THREE.Vector3(), A0 = new THREE.Vector3(), A1 = new THREE.Vector3(), w0 = new THREE.Vector3(), u = new THREE.Vector3(), pr = new THREE.Vector3(), pc = new THREE.Vector3();
-  function pick(raycaster) {
+  function pick(raycaster, any) {
     group.updateWorldMatrix(true, false); inv.copy(group.matrixWorld).invert();
     ro.copy(raycaster.ray.origin).applyMatrix4(inv); rd.copy(raycaster.ray.direction).transformDirection(inv);
     let best = -1, bd = Infinity;
     for (let i = 0; i < n; i++) {
-      const sl = slots[i]; if (!sl.visible) continue;
+      const sl = slots[i]; if (!sl.visible && !any) continue;
       A0.set(sl.x, sl.y + 0.18 * sl.k, sl.z); A1.set(sl.x, sl.y + 0.92 * sl.k, sl.z); u.copy(A1).sub(A0); w0.copy(ro).sub(A0);
       const aa = rd.dot(rd), bb = rd.dot(u), cc2 = u.dot(u), dd = rd.dot(w0), ee = u.dot(w0), den = aa * cc2 - bb * bb;
       const tc = clamp(den > 1e-9 ? (aa * ee - bb * dd) / den : 0, 0, 1), sc = Math.max(0, (bb * tc - dd) / aa);
