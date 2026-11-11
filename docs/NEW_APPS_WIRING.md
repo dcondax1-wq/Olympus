@@ -463,3 +463,24 @@ Tests after wiring: `tests.test_archive_page`, `tests.test_apps_list`, `tests.te
 3. `tools/build_web_dashboard.py` app tuple: add `"archive"`.  4. `sw.js` OTHER_APPS: `'archive/'`.
 5. `olympus/intro-app.js` FLAVOUR: `archive: ['columns', 'Open the shelves', 'tap'],`
 6. `jarvis/transitions.js` REGISTRY: `archive: { kind: 'tiles', ms: 800 },`
+
+---
+# Wiring PINAKES (the catalogue of every table, 2026-11-11)
+
+App `pinakes` in `tools/web_public/pinakes/` ("the catalogue": a universal data browser). A marble card cabinet whose five drawers are the districts (Market, Research, Money, Command, Life; three.js direct in `pinakesscene.js`, flat SVG cabinet on LITE / no WebGL / `?flat=1`, draws only while a drawer moves). Search the catalogue, open any table in a windowed grid (only the rows in view exist: 37,000 rows scroll like 30), sort, plain-word filters, quick stats, bar / line / histogram chart with group-by, list picker for nested files, saved views (this phone only, `pinakes.v1`, export / import), CSV + JSON export, share link (`#v=...` restores table + filters + sort + chart), and "Ask": 4 built-in questions that join known tables with the query in plain words. Reads `./catalog.json` (about 105 KB: one card per table, never the rows), then each table from its own URL when opened; falls back to `fixture.json` (DEMO with its tables inside). Test `tests/test_pinakes_page.py`.
+
+**The builder (new):** `tools/pinakes_build.py` (stdlib, `--check`, `--selftest`) walks the site folder and writes `pinakes/catalog.json` + `pinakes/jarvis.json` (and, for the repo copy, the demo `fixture.json`). The committed catalogue covers the files in `tools/web_public/` and lists the build-only files (`home.json`, `data.json`, `intel.json`, `kalshi.json`, `alerts.json`, `money/*.json`, `cronos/status.json`, `datacity/discoveries.json`, `kalshicity/forward.json`, `kalshicity/scan.json`, `writeups/index.json`) as "Site build: measured when opened". Research CSVs under `data/` are listed with span and rows only (no URL, not downloadable).
+
+## The exact build line (needed so the published catalogue also measures the build-only files)
+In `.github/workflows/cloud-monitor.yml`, step "Publish web dashboard", add this line directly BELOW `python tools/build_web_dashboard.py --state dash/state.json --chart dash/chart.png --out site` (it must run after every other file is in `site/`):
+`          python tools/pinakes_build.py --web site   # Pinakes: catalogue every table in the built site (stdlib, ~2 s)`
+(or call the same thing as the last step inside `build_web_dashboard.py`: `subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pinakes_build.py"), "--web", out])`). It reads `site/**.json` + `data/*.csv`, writes only `site/pinakes/catalog.json` and `site/pinakes/jarvis.json`. If it is skipped, the committed `catalog.json` is still valid (build-only tables are then measured when the owner opens them). After adding or changing any app's JSON in the repo: `python tools/pinakes_build.py` (and `--check` fails when the committed catalogue is stale).
+
+## The six rows (what `wire_new_apps.py --apply` writes for Pinakes; the row is already in `tools/new_apps.json`)
+1. `jarvis/apps.js` BUILT_INS: `app('pinakes', 'Pinakes', 'trading', '#c8a24a', 'The catalogue: browse and query every table OLYMPUS keeps', { glyph: 'Κ' }),`
+2. `olympus/olympus.js`: APPS `pinakes: ['Pinakes', 'Κ', '#c8a24a'],` and AMBIENT `pinakes: 'scroll',`
+3. `tools/build_web_dashboard.py` app tuple: add `"pinakes"` (the folder is copied whole: `catalog.json`, `fixture.json`, `jarvis.json` ride along).  4. `sw.js` OTHER_APPS: `'pinakes/'` (precache `pinakes/catalog.json` if wanted; never the tables it points at).
+5. `olympus/intro-app.js` FLAVOUR: `pinakes: ['columns', 'Open the drawers', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `pinakes: { kind: 'tiles', ms: 800 },`
+Then bump `sw.js` CACHE and the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`, run `python tools/apps_list_build.py --check`, and `python tools/make_app_icons.py pinakes` is already done (PNG icons are in the folder).
+Tests after wiring: `tests.test_pinakes_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`, `tests.test_app_intro`.
