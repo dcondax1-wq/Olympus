@@ -141,7 +141,7 @@
       }
     }
     return { W: W0, H: H0, horizon: HORIZON, buildings: out, terraces: terr, districts: DISTRICTS.map(function (d) { return { id: d.id, name: d.name, group: d.group, x0: d.x0, x1: d.x1, cx: d.cx }; }),
-      berths: [[2500, 549], [2612, 551], [2724, 550], [2836, 548]], lanes: [[2150, 368, 0.46], [2560, 440, 0.7], [1960, 372, 0.44], [2760, 470, 0.78]] };
+      berths: [[2500, 549], [2612, 551], [2724, 550], [2836, 548]], lanes: [[2590, 468, 0.66], [2720, 486, 0.72], [2480, 446, 0.58], [2810, 452, 0.6]] };
   }
   function building(a, D, row, x, y, type, s, spacing) {
     var sz = SIZE[type] || SIZE.house, w = sz[0] * s, h = sz[1] * s;
@@ -182,7 +182,7 @@
   }
   function groundShadow(c, x, by, w, h, depth, F, L, a) {
     if (!F.len) return;
-    var vx = F.sx * h * F.len, vy = -F.sy * h * F.len * 0.32, d = depth;
+    var vx = F.sx * h * F.len, vy = F.sy * h * F.len * 0.32, d = depth;   // away from the sun: toward the viewer when the sun is in the south
     c.beginPath(); c.moveTo(x, by); c.lineTo(x + w, by); c.lineTo(x + w + vx * 0.98, by + vy); c.lineTo(x + vx, by + vy);
     if (d) { c.lineTo(x + vx + d * 0.6, by + vy - d * 0.25); }
     c.closePath(); c.fillStyle = css(mix(L.shade, [20, 18, 30], 0.45), a == null ? 0.26 * smooth(L.strength * 1.3) : a); c.fill();
@@ -213,7 +213,9 @@
     var front = function (m, k) { return css(shade(m, F.front * (k == null ? 1 : k), L, depth)); };
     var side = function (m) { return css(shade(m, sideLit * 0.9, L, depth)); };
     var top = function (m) { return css(shade(m, F.top, L, depth)); };
+    if (b.row < 0) { c.save(); c.beginPath(); c.rect(860, 150, 580, 160); c.clip(); }   // hilltop shadows stay on the rock
     groundShadow(c, x, by, w, h * (t === 'parthenon' ? 0.9 : 1), Math.abs(dx), F, L);
+    if (b.row < 0) c.restore();
     if (t === 'parthenon' || t === 'temple' || t === 'nike' || t === 'mint' || t === 'treasury' || t === 'library' || t === 'shrine' || t === 'erechtheion' || t === 'propylaea') {
       var steps = t === 'shrine' || t === 'nike' ? 2 : 3, sh = h * 0.05, ww = w;
       for (var i = 0; i < steps; i++) { box(c, x + i * sh * 0.8, by - i * sh, ww - i * sh * 1.6, sh, dx, dy, front(MAT.stone, 0.95), side(MAT.stone), top(MAT.marble)); }
@@ -695,7 +697,7 @@
       if (L.stars > 0.02) {
         ctx.save(); ctx.translate(tx * 4, oy);
         ctx.strokeStyle = 'rgb(196,194,214)'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-        for (var wv = 0; wv < 3; wv++) { ctx.globalAlpha = L.stars * [0.03, 0.04, 0.05][wv]; ctx.lineWidth = [80, 44, 18][wv] * k; ctx.beginPath(); var on = false; for (var i = 0; i < mw.length; i++) { var p = skyXY(mw[i][0], mw[i][1]); if (mw[i][0] < -6 || Math.abs(p[2]) > 170) { on = false; continue; } if (!on) { ctx.moveTo(p[0], p[1]); on = true; } else ctx.lineTo(p[0], p[1]); } ctx.stroke(); }
+        for (var wv = 0; wv < 7; wv++) { ctx.globalAlpha = L.stars * 0.014; ctx.lineWidth = (96 - wv * 13) * k; ctx.beginPath(); var on = false; for (var i = 0; i < mw.length; i++) { var p = skyXY(mw[i][0], mw[i][1]); if (mw[i][0] < -6 || Math.abs(p[2]) > 170) { on = false; continue; } if (!on) { ctx.moveTo(p[0], p[1]); on = true; } else ctx.lineTo(p[0], p[1]); } ctx.stroke(); }
         ctx.globalAlpha = 1;
         var fs = st.field;
         for (i = 0; i < fs.length; i++) { var q = skyXY(fs[i][0], fs[i][1]); if (q[0] < -2 || q[0] > view.w + 2) continue; var a = L.stars * clamp((6.4 - fs[i][2]) / 3, 0.15, 0.85) * (fs[i][0] < 8 ? fs[i][0] / 8 : 1); if (a <= 0.02) continue; ctx.fillStyle = 'rgba(236,232,222,' + a.toFixed(3) + ')'; var sz = fs[i][2] < 4.3 ? 1.6 : 1.1; ctx.fillRect(q[0], q[1], sz, sz); }
@@ -797,9 +799,9 @@
         if (isFar !== far) continue;
         var bx, by, s, lane = M.lanes[i % M.lanes.length];
         if (state === 'port') { bx = M.berths[i][0]; by = M.berths[i][1]; s = 1; }
-        else if (state === 'returning') { var lt = still ? 0.5 : (t * 0.01 + i * 0.25) % 1; bx = lerp(2440, 2680, 0.5 + 0.5 * Math.sin(lt * Math.PI * 2)); by = 506 + i * 8; s = 0.86; }
+        else if (state === 'returning') { var lt = still ? 0.5 : (t * 0.01 + i * 0.25) % 1; bx = lerp(2470, 2700, 0.5 + 0.5 * Math.sin(lt * Math.PI * 2)); by = 494 + i * 6; s = 0.82; }
         else { bx = lane[0] + (still ? 0 : Math.sin(t * 0.05 + i * 2) * 60); by = lane[1]; s = lane[2]; }
-        var factor = state === 'port' || state === 'returning' ? 1 : 0.7, sx = bx * k - st.pan * factor, bob = still ? 0 : Math.sin(t * 1.6 + i * 1.3) * 1.2 * s;
+        var factor = 1, sx = bx * k - st.pan * factor, bob = still ? 0 : Math.sin(t * 1.6 + i * 1.3) * 1.2 * s;
         if (sx < -120 || sx > view.w + 120) { S._hit = null; continue; }
         paintShip(ctx, sx, (by + PAD) * k + bob * k, s * k, S, state, i, t, still);
         S._hit = { x: sx, y: (by + PAD) * k - 60 * s * k, w: 96 * s * k, h: 66 * s * k };
