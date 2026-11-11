@@ -670,3 +670,13 @@ No new app. Wiring for the lead:
 - New shared file `olympus/agora-ui.js?v=1` (icons, charts, toast, sheet, states, pull to refresh, the back row + compact bar). Loaded by the 39 apps on the AGORA app base (one deferred tag after `a11y.js`); covered by `olympus/` in `OTHER_APPS`. New lab page `olympus/agora-lab.html`.
 - Re-versioned in their pages (no lead action): `zenith_agora.css?v=a3`, `zenith_hero.js?v=4` (root), `nq.css?v=a2`, `nq.js?v=a2`, `planner.css?v=b2`, `pinakes.css?v=a2`, `kalshi.css?v=k24`.
 - No change to `apps.js`, the APPS table, `build_web_dashboard.py`.
+## Environment art (olympus/env-kit.js, 2026-11-11)
+
+No new app. Wiring the lead does:
+- `tools/web_public/sw.js`: add `assets/` to OTHER_APPS (or precache / runtime-cache it), so the CC0 art (`assets/tex/*.webp`,
+  `assets/env/*.glb`, `assets/env/hdri/*.hdr`, about 4.9 MB, lazy-loaded per scene) works offline after the first visit. Every
+  scene still builds with plain colours when a file is missing.
+- `tools/build_web_dashboard.py`: copy `tools/web_public/assets/` with the site if the build copies folders by name.
+- Bump the workers of symposium, ergasterion, cities, colosseum and jarvis (new files: `olympus/env-kit.js`, `olympus/env-lab.html`,
+  `olympus/three-addons/GLTFLoader.js`, `RGBELoader.js`, `BufferGeometryUtils.js`, `meshopt_decoder.module.js`,
+  `symposium/hall-room.js`, `ergasterion/floor-art.js`).

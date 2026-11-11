@@ -121,6 +121,17 @@ export function attach(ext, home) {
     for (let i = 0; i < N; i++) { const d = want[i] - iAmp[i]; if (Math.abs(d) > 0.004) { iAmp[i] += d * Math.min(1, dt * 2.5); dirty = true; } }
     if (dirty) ampAttr.needsUpdate = true;
   });
+  // ENV ART (olympus/env-kit.js, 2026-11-11): the doorways and the paving wear the marble scan, the four columns become fluted Doric shafts.
+  // The same draws (materials and geometry are swapped in place); a failed load keeps the plain marble.
+  import('../olympus/env-kit.js').then((K) => {
+    const kit = K.envKit({ rc: ext.rc, renderer: ext.rc && ext.rc.renderer, scene, tier: root.dataset.fx === 'ultra' ? 'ultra' : 'high' });
+    const em = kit.mat('marble', { color: '#d8ccb4', emissive: '#8f7b5c', emissiveIntensity: 0.55, fog: false, scale: 0.55 });
+    const pave = kit.mat('paving', { color: '#e8dec9', emissive: '#6f604a', emissiveIntensity: 0.45, fog: false, scale: 0.45 });
+    jambs.material = em; lintels.material = em; slabs.material = pave;
+    const fl = K.shaftGeo({ h: 8.4, r: 0.56, taper: 0.86, flutes: 20 }); fl.translate(0, -4.2, 0);
+    const oldG = cols.geometry; cols.geometry = fl; oldG.dispose(); cols.material = kit.mat('marble:uv', { color: '#e2d7c2', emissive: '#8f7b5c', emissiveIntensity: 0.55, fog: false });
+    out.kit = kit;
+  }).catch(() => { /* the plain marble stays */ });
   out.draws = draws;
   root.dataset.court = '3d';
   try { if (window.__jarvisNeeds) setNeeds(window.__jarvisNeeds); } catch (_) { /* the cards set it later */ }

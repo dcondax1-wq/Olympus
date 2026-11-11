@@ -1,3 +1,4 @@
+// three.js r160 examples/jsm (MIT), vendored 2026-11-11 for olympus/env-kit.js; import path rewritten to the site's own three.
 // This file is part of meshoptimizer library and is distributed under the terms of MIT License.
 // Copyright (C) 2016-2022, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)
 var MeshoptDecoder = (function() {

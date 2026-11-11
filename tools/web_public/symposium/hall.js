@@ -13,6 +13,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import { figureInstanced, figure, play, lookAt, setTalking, setMouth, setExpression, animate, POSE_NAMES } from '../olympus/people3d.js?v=p2';
 import { seats, couchAt, turn, yawFor, front } from './symposiumcore.js';
+import { buildRoom } from './hall-room.js';
 
 export function createHall(canvas, opts) {
   const o = opts || {};
@@ -35,9 +36,6 @@ const SEAT_Y = 0.29, BUTT = 0.226, SC = 1.5;
 
 function build(rc, scene, camera, canvas, o) {
   const specs = o.people || [], N = specs.length, L = seats(N), r = L.r, reduced = !!o.reduced;
-  const marble = new THREE.MeshStandardMaterial({ color: '#d9cfbb', roughness: 0.82 }), warm = new THREE.MeshStandardMaterial({ color: '#b9a888', roughness: 0.9 }), bronze = new THREE.MeshStandardMaterial({ color: '#9c6b3c', roughness: 0.5, metalness: 0.55 });
-  const wood = new THREE.MeshStandardMaterial({ color: '#6b4a2a', roughness: 0.85 }), cloth = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.95 }), terra = new THREE.MeshStandardMaterial({ color: '#b5563c', roughness: 0.8 });
-  const flame = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffb860').multiplyScalar(1.5) });
   // characters v3 (2026-11-11): calmer, more neutral light so skin reads as skin (no orange cast): an ivory sky, a warm-white sun, a small fire glow,
   // a soft key light from where you stand (faces always read) and a cool rim from behind the people
   scene.add(new THREE.HemisphereLight('#fbf3e6', '#5a4a3a', 0.95));
@@ -45,34 +43,12 @@ function build(rc, scene, camera, canvas, o) {
   const fill = new THREE.PointLight('#ffc888', 5, r * 3.2, 1.6); fill.position.set(0, 2.2, 0); scene.add(fill);
   const face = new THREE.DirectionalLight('#fff6ec', 1.05); scene.add(face); scene.add(face.target);
   const rimL = new THREE.DirectionalLight('#e4ecff', 0.55); scene.add(rimL); scene.add(rimL.target);
-  const add = (m) => { scene.add(m); return m; };
-  const floor = add(new THREE.Mesh(new THREE.CircleGeometry(r + 6.5, 56), marble)); floor.rotation.x = -Math.PI / 2;
-  const rug = add(new THREE.Mesh(new THREE.RingGeometry(r - 1.25, r + 1.1, 56), new THREE.MeshStandardMaterial({ color: '#7d5a36', roughness: 1 }))); rug.rotation.x = -Math.PI / 2; rug.position.y = 0.006;
-  const tr = Math.max(0.9, r * 0.32);
-  const top = add(new THREE.Mesh(new THREE.CylinderGeometry(tr, tr, 0.07, 36), marble)); top.position.y = 0.42;
-  const foot = add(new THREE.Mesh(new THREE.CylinderGeometry(tr * 0.3, tr * 0.42, 0.4, 20), warm)); foot.position.y = 0.2;
-  const krater = add(new THREE.Mesh(new THREE.LatheGeometry([[0.1, 0], [0.16, 0.04], [0.09, 0.12], [0.2, 0.3], [0.3, 0.52], [0.34, 0.62], [0.3, 0.64]].map((p) => new THREE.Vector2(p[0], p[1])), 18), terra)); krater.position.y = 0.455; krater.scale.setScalar(0.55);      // small: you stand right behind it
-  const nCup = Math.min(10, Math.max(4, Math.round(N / 4))), cups = add(new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.035, 0.07, 10), bronze, nCup));
+  const tr = Math.max(0.9, r * 0.32);      // the table's radius (the room builds it; scene direction reads it)
   const d = new THREE.Object3D(), put = (im, i, x, y, z, ry, sx, sy, sz) => { d.position.set(x, y, z); d.rotation.set(0, ry || 0, 0); d.scale.set(sx == null ? 1 : sx, sy == null ? 1 : sy, sz == null ? 1 : sz); d.updateMatrix(); im.setMatrixAt(i, d.matrix); };
-  for (let i = 0; i < nCup; i++) { const a = (i / nCup) * Math.PI * 2 + 0.3; put(cups, i, Math.sin(a) * tr * 0.72, 0.49, Math.cos(a) * tr * 0.72); }
-  // the colonnade
-  const nCol = Math.max(10, Math.min(22, Math.round((r + 3.4) * 1.9))), R2 = r + 3.3;
-  const shafts = add(new THREE.InstancedMesh(new THREE.CylinderGeometry(0.26, 0.31, 4.2, 12), marble, nCol)), caps = add(new THREE.InstancedMesh(new THREE.BoxGeometry(0.82, 0.22, 0.82), marble, nCol));
-  for (let i = 0; i < nCol; i++) { const a = (i / nCol) * Math.PI * 2 + Math.PI / nCol; put(shafts, i, Math.sin(a) * R2, 2.1, Math.cos(a) * R2); put(caps, i, Math.sin(a) * R2, 4.31, Math.cos(a) * R2, a); }
-  const beam = add(new THREE.Mesh(new THREE.TorusGeometry(R2, 0.3, 4, 48), warm)); beam.rotation.x = Math.PI / 2; beam.position.y = 4.72; beam.scale.z = 0.9;
-  // couches: a wooden frame, a cushion in the pair's own colour, a headrest
-  const nC = L.couches, frames = add(new THREE.InstancedMesh(new THREE.BoxGeometry(1.36, 0.2, 0.62), wood, nC)), cush = add(new THREE.InstancedMesh(new THREE.BoxGeometry(1.26, 0.09, 0.56), cloth, nC)), rests = add(new THREE.InstancedMesh(new THREE.BoxGeometry(1.36, 0.36, 0.1), wood, nC));
-  const CUSH = ['#b5563c', '#7f8a52', '#4b7a99', '#c8a24a', '#a9764c'], col = new THREE.Color();
-  for (let c = 0; c < nC; c++) {
-    const k = couchAt(L, c), w = k.wide ? 1 : 0.56;
-    put(frames, c, k.x, 0.1, k.z, k.ry, w, 1, 1); put(cush, c, k.x, 0.245, k.z, k.ry, w, 1, 1);
-    put(rests, c, k.x - Math.sin(k.ry) * 0.3, 0.3, k.z - Math.cos(k.ry) * 0.3, k.ry, w, 1, 1);
-    cush.setColorAt(c, col.set(CUSH[c % CUSH.length]));
-  }
-  if (cush.instanceColor) cush.instanceColor.needsUpdate = true;
-  // braziers between the columns
-  const nB = 4, bowls = add(new THREE.InstancedMesh(new THREE.CylinderGeometry(0.26, 0.1, 0.9, 10), bronze, nB)), fires = add(new THREE.InstancedMesh(new THREE.ConeGeometry(0.17, 0.4, 7), flame, nB));
-  for (let i = 0; i < nB; i++) { const a = (i / nB) * Math.PI * 2 + Math.PI / 4; put(bowls, i, Math.sin(a) * (r + 1.9), 0.45, Math.cos(a) * (r + 1.9)); put(fires, i, Math.sin(a) * (r + 1.9), 1.08, Math.cos(a) * (r + 1.9)); }
+  // THE ROOM (symposium/hall-room.js, olympus/env-kit.js): marble, mosaic, fluted columns, a painted frieze, the coffered ceiling, the wall, couches, the table, braziers, busts
+  const room = buildRoom(scene, rc, L, { couchAt });
+  const { floor, rug, nB, fires } = room, shafts = room.columns, frames = room.couches;
+  const firePos = (i) => room.fires[i];
   // the people: one crowd for everyone, close-up figures for the few in view
   const crowd = figureInstanced(THREE, specs, { seated: true, lite: N > 24, impostorTint: '#f4e7d6' });
   const seatY = (i) => SEAT_Y - BUTT * SC * ((specs[i] && specs[i].height) || 1);
@@ -150,7 +126,7 @@ function build(rc, scene, camera, canvas, o) {
       }
       if (!reduced) animate(f, dt);
     }
-    if (!reduced) { crowd.userData.tick(st.t); for (let i = 0; i < nB; i++) { const a = (i / nB) * Math.PI * 2 + Math.PI / 4, k = 1 + Math.sin(st.t * 9 + i * 2) * 0.12; put(fires, i, Math.sin(a) * (r + 1.9), 1.08, Math.cos(a) * (r + 1.9), st.t * 2 + i, 1, k, 1); } fires.instanceMatrix.needsUpdate = true; }
+    if (!reduced) { crowd.userData.tick(st.t); for (let i = 0; i < nB; i++) { const p = firePos(i), k = 1 + Math.sin(st.t * 9 + i * 2) * 0.12; put(room.flames, i, p[0], p[1], p[2], st.t * 2 + i, 1, k, 1); } room.flames.instanceMatrix.needsUpdate = true; }
     if (o.onFrame) o.onFrame();
   }
   // voice: the chat sheet (or Jarvis) may say who is speaking and which mouth shape
@@ -170,9 +146,9 @@ function build(rc, scene, camera, canvas, o) {
   let cine = null, gone = false; const fHead = new THREE.Vector3();
   if (o.cinema !== false) import('../olympus/fx-cine.js').then((C) => { if (gone) return; cine = C.cinema(rc, { time: 'clock', sky: true, fog: 0.4, neutral: 0.45, fireLight: 2.2,
     rays: { to: [0, 0, 0], spread: [r * 1.5, 0, r * 1.5], length: 15, width: 1.8 }, dust: { box: [r * 2 + 6, 4, r * 2 + 6], center: [0, 2, 0] },
-    fires: [0, 1, 2, 3].map((i) => { const a = (i / nB) * Math.PI * 2 + Math.PI / 4; return [Math.sin(a) * (r + 1.9), 1.15, Math.cos(a) * (r + 1.9)]; }), fireRange: r * 1.6,
+    fires: fires.map((p) => [p[0], 1.15, p[2]]), fireRange: r * 1.6,
     shadows: { casters: [shafts, frames], receivers: [floor, rug], box: r + 5 },      // the crowd: soft contact blobs (budget)
-    blobs: L.seats.map((x) => [x.x, x.z, 0.42]), blobsAlways: true, blobY: 0.006 }); }).catch(() => {});
+    blobs: L.seats.map((x) => [x.x, x.z, 0.42]), blobsAlways: true, blobY: 0.006 }); room.kit.follow(cine); }).catch(() => {});
   const shown = (x) => { for (let y = x; y; y = y.parent) if (!y.visible) return false; return true; };
   const api = {
     ok: true, layout: L, count: N,
@@ -214,7 +190,8 @@ function build(rc, scene, camera, canvas, o) {
     },
     speaker: () => (st.active >= 0 && close.has(st.active) ? { seat: st.active, ...close.get(st.active).userData.state() } : null),
     cine: () => cine,
-    dispose() { gone = true; for (const g of spare.values()) g.userData.dispose(); spare.clear(); if (cine) cine.dispose(); window.removeEventListener('olympus:people:expression', onExpr); window.removeEventListener('olympus:people:open', onOpen); window.removeEventListener('olympus:people:close', onClose); window.removeEventListener('olympus:people:speak', onSpeak); window.removeEventListener('olympus:people:viseme', onViseme); try { rc.dispose(); } catch (_) { /* gone */ } for (const i of [...close.keys()]) dropClose(i); crowd.userData.dispose(); },
+    room: () => room,
+    dispose() { gone = true; for (const g of spare.values()) g.userData.dispose(); spare.clear(); if (cine) cine.dispose(); room.dispose(); window.removeEventListener('olympus:people:expression', onExpr); window.removeEventListener('olympus:people:open', onOpen); window.removeEventListener('olympus:people:close', onClose); window.removeEventListener('olympus:people:speak', onSpeak); window.removeEventListener('olympus:people:viseme', onViseme); try { rc.dispose(); } catch (_) { /* gone */ } for (const i of [...close.keys()]) dropClose(i); crowd.userData.dispose(); },
   };
   try { window.SYMPOSIUM_HALL = api; } catch (_) { /* no window */ }      // read-only hook for the page test
   return api;

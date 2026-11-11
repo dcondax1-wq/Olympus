@@ -1,3 +1,4 @@
+// three.js r160 examples/jsm (MIT), vendored 2026-11-11 for olympus/env-kit.js; import path rewritten to the site's own three.
 import {
 	AnimationClip,
 	Bone,

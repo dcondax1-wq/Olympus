@@ -17,6 +17,8 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import { walk, followCam, tourCam, ease, hallOf, resolveCollision, EYE, START, HALLS, DOORS, CAMP, CAMP_SPOTS, personId, builderIds, lookOf } from './ergasterioncore.js';
 import * as L from './life.js';
+import { envKit } from '../olympus/env-kit.js';
+import * as ART from './floor-art.js';
 
 const BUILD = { working: '#8fa05a', quiet: '#4b7a99', done: '#c8a24a', job: '#b8ad98' }, BWORD = { working: 'Working', quiet: 'Quiet', done: 'Done', job: 'Job only' }, NC = CAMP_SPOTS.length, CSTACK = 6, PUFF = 5;
 const HS = 9;                                                                              // head-batch parts of one person: head, hair, 2 eyes, 2 hands, shoulders, 2 feet
@@ -70,7 +72,9 @@ function build(rc, scene, camera, canvas, o) {
   skyG.setAttribute('color', new THREE.BufferAttribute(skyC, 3));
   const sky = new THREE.Mesh(skyG, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false })); sky.frustumCulled = false; sky.renderOrder = -1; scene.add(sky);
   const std = (r, m) => new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: r, metalness: m });
-  const stone = std(0.5, 0.02), metal = std(0.38, 0.55);
+  // ENV ART (ergasterion/floor-art.js, olympus/env-kit.js): the batches wear Poly Haven scans; the HDRI lights them
+  const kit = envKit({ rc, tier: rc.quality(), envI: 0.45 }), AM = ART.materials(kit);
+  const stone = AM.stone, metal = AM.metal;
   const colour = new THREE.Color(), M4 = new THREE.Matrix4(), Q = new THREE.Quaternion(), EU = new THREE.Euler(), P = new THREE.Vector3(), SC = new THREE.Vector3();
   const put = (im, i, x, y, z, sx, sy, sz, rx, ry, rz) => { EU.set(rx || 0, ry || 0, rz || 0, 'XYZ'); Q.setFromEuler(EU); M4.compose(P.set(x, y, z), Q, SC.set(sx, sy, sz)); im.setMatrixAt(i, M4); };
   // a batch = one InstancedMesh (one draw call): list the parts, then build it once; dynamic batches are rewritten every frame
@@ -90,9 +94,10 @@ function build(rc, scene, camera, canvas, o) {
   const sBox = batch(boxG, stone), bBox = batch(boxG, metal), sCyl = batch(cylG, stone), bCyl = batch(cylG, metal);                     // static: the building and the furniture
   const pplG = new THREE.SphereGeometry(1, 12, 8), toy = std(0.82, 0);
   const fig = batch(robeG, toy, true), head = batch(pplG, toy, true), dBox = batch(boxG, metal, true), dCyl = batch(cylG, metal, true);   // moving: the figures and their tools
-  const lamp = batch(ballG, new THREE.MeshBasicMaterial({ color: '#ffffff' }), true), crate = batch(boxG, std(0.7, 0.05), true);
+  const lamp = batch(ballG, new THREE.MeshBasicMaterial({ color: '#ffffff' }), true), crate = batch(boxG, AM.wood, true);
   const tentG = new THREE.ConeGeometry(1, 1, 4); tentG.rotateY(Math.PI / 4);
-  const tent = batch(tentG, std(0.85, 0), false), dune = batch(ballG, std(0.95, 0), false);                                          // the camp: tents and dunes
+  const sandB = batch(boxG, AM.sand, false), dune = batch(ballG, AM.sand, false);                    // the camp: the sand and the dunes (the tents are KayKit's, floor-art.js)
+  void tentG;
 
   // ---- the building: floor, four rugs (one tone per hall), outer walls, the cross of inner walls with a bronze door frame in each, columns along the outer walls
   sBox.add(0, -0.1, 0, 26.8, 0.2, 20.8, '#bdb29d');
@@ -111,10 +116,7 @@ function build(rc, scene, camera, canvas, o) {
   }
   bBox.add(0, 0.02, -9.95, 26.4, 0.1, 0.16, BRONZE); bBox.add(-4.0, 0.02, 9.95, 18.4, 0.1, 0.16, BRONZE); bBox.add(10.5, 0.02, 9.95, 5.4, 0.1, 0.16, BRONZE); bBox.add(-12.95, 0.02, 0, 0.16, 0.1, 20, BRONZE); bBox.add(12.95, 0.02, 0, 0.16, 0.1, 20, BRONZE);
   bBox.add(START.x - 1.25, 1.3, 9.95, 0.16, 2.6, 0.2, BRONZE); bBox.add(START.x + 1.25, 1.3, 9.95, 0.16, 2.6, 0.2, BRONZE); bBox.add(START.x, 2.7, 9.95, 2.66, 0.22, 0.2, BRONZE);   // the front door behind you
-  const colAt = (x, z) => { sCyl.add(x, WH / 2, z, 0.27, WH, 0.27, MARBLE); sBox.add(x, WH + 0.1, z, 0.8, 0.2, 0.8, MARBLE); sBox.add(x, 0.1, z, 0.74, 0.2, 0.74, MARBLE); };
-  for (const x of [-11, -6.5, -2, 2, 11]) { colAt(x, -9.7); colAt(x, 9.7); }
-  colAt(6.5, -9.7);
-  for (const z of [-5, 5]) { colAt(-12.7, z); colAt(12.7, z); }
+  // the columns along the walls are fluted Doric columns now (floor-art.js)
 
   // ---- stations: platform, bronze rim, lamp post, conveyor belt, and the furniture of the job
   const figAt = S.map((s) => ({ x: s.x, z: s.z - 0.12 }));
@@ -127,23 +129,22 @@ function build(rc, scene, camera, canvas, o) {
     const px = s.x, pz = s.z + 0.5;
     if (s.job === 'scribe') { sBox.add(px, Y0 + 0.5, pz, 0.95, 0.06, 0.5, MARBLE); bBox.add(px - 0.4, Y0 + 0.24, pz, 0.06, 0.48, 0.42, BRONZE); bBox.add(px + 0.4, Y0 + 0.24, pz, 0.06, 0.48, 0.42, BRONZE); sBox.add(px - 0.05, Y0 + 0.545, pz, 0.5, 0.025, 0.32, '#efe6d2'); }
     else if (s.job === 'oracle') { for (let k = 0; k < 3; k++) { const a = k * 2.094 + 0.5; bCyl.add(px + Math.sin(a) * 0.15, Y0 + 0.33, pz + Math.cos(a) * 0.15, 0.022, 0.7, 0.022, BRONZE, Math.cos(a) * 0.36, 0, -Math.sin(a) * 0.36); } bCyl.add(px, Y0 + 0.68, pz, 0.26, 0.1, 0.26, GOLD); }
-    else if (s.job === 'smith') { sBox.add(px, Y0 + 0.2, pz, 0.34, 0.4, 0.3, MARBLE); bBox.add(px, Y0 + 0.47, pz, 0.6, 0.16, 0.26, '#7a5631'); }
+    else if (s.job === 'smith') { /* a forged anvil on a stump (floor-art.js) */ }
     else if (s.job === 'scales') { bCyl.add(px, Y0 + 0.43, pz, 0.03, 0.86, 0.03, BRONZE); bCyl.add(px, Y0 + 0.03, pz, 0.2, 0.06, 0.2, BRONZE); }
     else { bBox.add(px + 0.62, Y0 + 0.28, pz - 0.04, 0.08, 0.56, 0.08, BRONZE); bBox.add(px + 0.62, Y0 + 0.03, pz - 0.04, 0.5, 0.06, 0.34, BRONZE); }
   });
   // ---- THE BUILDERS' CAMP outside the front door: sand, a path, dunes, the hearth, and for each build agent a tent, a banner pole, a marble work table and a small brazier
   const SAND = '#c9a66b', cz0 = (CAMP.z0 + CAMP.z1) / 2;
-  sBox.add(6.5, -0.12, cz0, 30, 0.2, CAMP.z1 - CAMP.z0 + 6, SAND); sBox.add(START.x, 0.0, 11.4, 2.2, 0.04, 3.4, '#dcc391'); sBox.add(START.x, 0.0, 16.9, 1.5, 0.04, 7.6, '#d6bb85');
+  sandB.add(6.5, -0.12, cz0, 30, 0.2, CAMP.z1 - CAMP.z0 + 6, SAND); sandB.add(START.x, 0.0, 11.4, 2.2, 0.04, 3.4, '#dcc391'); sandB.add(START.x, 0.0, 16.9, 1.5, 0.04, 7.6, '#d6bb85');
   [[-6, 13, 4.5], [-7.5, 20, 6], [19.5, 14, 5], [20.5, 21, 6.5], [1, 25.5, 6], [8, 26.5, 7], [15, 25.5, 5.5], [-4.5, 25, 4.5]].forEach((dn) => dune.add(dn[0], -0.25, dn[1], dn[2], dn[2] * 0.3, dn[2] * 0.8, '#bf9a5e'));
   dune.add(-2.6, 0, 12.2, 0.5, 0.32, 0.45, '#a89a80'); dune.add(15.6, 0, 12.6, 0.6, 0.36, 0.5, '#a89a80'); dune.add(15.9, 0, 17.8, 0.4, 0.26, 0.4, '#a89a80');
   bCyl.add(CAMP.fire.x, 0.5, CAMP.fire.z, 0.36, 0.14, 0.36, BRONZE); for (let k = 0; k < 3; k++) { const a = k * 2.094; bCyl.add(CAMP.fire.x + Math.sin(a) * 0.28, 0.24, CAMP.fire.z + Math.cos(a) * 0.28, 0.03, 0.52, 0.03, BRONZE, Math.cos(a) * 0.4, 0, -Math.sin(a) * 0.4); }
   const TENT = ['#e6d9bd', '#c98f6a', '#d8c9a3', '#a9b07a', '#e0cfa8'];
   CAMP_SPOTS.forEach((c, j) => {
-    tent.add(c.x, 1.0, c.z, 1.55, 2.0, 1.55, TENT[j % TENT.length]); tent.add(c.x, 2.12, c.z, 0.5, 0.5, 0.5, j % 2 ? '#9c6b3c' : '#c8a24a');
-    sBox.add(c.x, 0.55, c.z - 1.02, 0.66, 1.1, 0.3, '#3a2c1c'); bCyl.add(c.x, 2.5, c.z, 0.025, 0.5, 0.025, GOLD);
+    void TENT; bCyl.add(c.x, 2.95, c.z + 0.2, 0.025, 0.5, 0.025, GOLD);
     bCyl.add(c.x - 1.25, 1.3, c.z - 1.0, 0.035, 2.6, 0.035, BRONZE);
     sBox.add(c.x, 0.5, c.z - 2.45, 0.95, 0.06, 0.5, MARBLE); bBox.add(c.x - 0.4, 0.24, c.z - 2.45, 0.06, 0.48, 0.42, BRONZE); bBox.add(c.x + 0.4, 0.24, c.z - 2.45, 0.06, 0.48, 0.42, BRONZE);
-    if (c.job === 'smith') bBox.add(c.x, 0.47, c.z - 2.45, 0.6, 0.16, 0.26, '#7a5631'); else sBox.add(c.x - 0.05, 0.545, c.z - 2.45, 0.5, 0.025, 0.32, '#efe6d2');
+    if (c.job !== 'smith') sBox.add(c.x - 0.05, 0.545, c.z - 2.45, 0.5, 0.025, 0.32, '#efe6d2');
     bCyl.add(c.x + 1.15, 0.5, c.z - 1.7, 0.2, 0.12, 0.2, BRONZE); bCyl.add(c.x + 1.15, 0.22, c.z - 1.7, 0.03, 0.44, 0.03, BRONZE);
   });
   // moving parts: fixed slots per station (and per camp builder) so nothing is allocated while drawing
@@ -152,7 +153,7 @@ function build(rc, scene, camera, canvas, o) {
     for (let k = 0; k < 3; k++) { dBox.add(0, -9, 0, 1, 1, 1, k === 2 ? GOLD : BRONZE); dCyl.add(0, -9, 0, 1, 1, 1, BRONZE); } }
   S.forEach(() => { lamp.add(0, -9, 0, 1, 1, 1, LAMP.stale); for (let k = 0; k < MAXC; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
   const EMBER0 = N, PUFF0 = N + 1 + NC, CR0 = N * MAXC;
-  lamp.add(CAMP.fire.x, 0.64, CAMP.fire.z, 0.22, 0.15, 0.22, '#e89a3c');
+  lamp.add(CAMP.fire.x, 0.6, CAMP.fire.z, 0.26, 0.06, 0.26, '#c2561f');
   CAMP_SPOTS.forEach((c) => lamp.add(c.x + 1.15, 0.6, c.z - 1.7, 0.13, 0.09, 0.13, '#4a3a28'));
   CAMP_SPOTS.forEach(() => { for (let k = 0; k < PUFF; k++) lamp.add(0, -9, 0, 1, 1, 1, '#b3a58e'); });
   CAMP_SPOTS.forEach(() => { for (let k = 0; k < CSTACK; k++) crate.add(0, -9, 0, 1, 1, 1, '#b08a52'); });
@@ -171,6 +172,8 @@ function build(rc, scene, camera, canvas, o) {
   const BOARDS = { board: { x: 10.35, y: 1.85, z: 0.17, w: 4.5, h: 2.5, ry: 0 }, changed: { x: 2.75, y: 1.85, z: 0.17, w: 4.5, h: 2.5, ry: 0 }, pipe: { x: -6.5, y: 1.85, z: 9.98, w: 9.2, h: 2.6, ry: Math.PI } };
   for (const k in BOARDS) { const b = BOARDS[k]; bBox.add(b.x, b.y, b.z - (b.ry ? -0.04 : 0.04), b.w + 0.24, b.h + 0.24, 0.06, BRONZE); }
   batches.forEach((b) => b.make());
+  const art = ART.dress(scene, kit, { S, Y0, CAMP_SPOTS, CAMP, MARBLE });
+  kit.env('golden');
 
   // ---- one canvas atlas for the 15 speech bubbles (name, status, what it says): ONE mesh, turned to the camera on the CPU
   const BW = 512, BH = 256, A = atlas(2048, 1024), quads = (n) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 12), 3).setUsage(THREE.DynamicDrawUsage));
@@ -334,7 +337,7 @@ function build(rc, scene, camera, canvas, o) {
     S.forEach((st, i) => paint(i, personId(st.id))); camp.forEach((b, j) => { if (b) paint(N + j, builderIds(b.branch)[0]); });
     fig.im.instanceColor.needsUpdate = true; head.im.instanceColor.needsUpdate = true;
   }
-  import('../olympus/people3d.js').then((m) => { specFn = m && typeof m.spec === 'function' ? m.spec : null; P3 = m && typeof m.figure === 'function' && typeof m.spec === 'function' && !o.noFull ? m : null; dress(); }).catch(() => { /* optional */ });
+  import('../olympus/people3d.js').then((m) => { specFn = m && typeof m.spec === 'function' ? m.spec : null; P3 = m && typeof m.figure === 'function' && typeof m.spec === 'function' && !o.noFull ? m : null; if (P3 && typeof P3.play === 'function' && !full.size) perFig = 2; /* a v2 figure is 2 draws (measured again once one is up) */ dress(); }).catch(() => { /* optional */ });
   function hideActor(i) { for (let q = 0; q < 3; q++) { gone(fig.im, i * 3 + q); gone(dBox.im, i * 3 + q); gone(dCyl.im, i * 3 + q); } for (let q = 0; q < HS; q++) gone(head.im, i * HS + q); }
   // an arm from the shoulder (local x = sxl), swung forward by `a` (0 hangs down, 1.57 straight ahead, 3 overhead) and outward by `out`, ending in a mitten hand
   function arm(i, side, sy, a, out) {
@@ -521,7 +524,7 @@ function build(rc, scene, camera, canvas, o) {
       const d = Math.hypot(camP.x - c.x, camP.z - c.z), sc = (mode === 'tour' ? 1.15 : 1) * (0.62 + 0.38 * Math.min(1, d / 6.5));
       setQuad(campG, j, c.x, 2.85 + sc * 0.75 + (mot ? Math.sin(t * 0.9 + j) * 0.03 : 0), c.z - 0.9, 2.7 * sc, 1.35 * sc);
     });
-    const fp = 1 + 0.1 * Math.sin(t * 6) * mot; put(lamp.im, EMBER0, CAMP.fire.x, 0.64, CAMP.fire.z, 0.22 * fp, 0.15 * fp, 0.22 * fp);
+    const fp = 1 + 0.1 * Math.sin(t * 6) * mot; put(lamp.im, EMBER0, CAMP.fire.x, 0.6, CAMP.fire.z, 0.26 * fp, 0.06 * fp, 0.26 * fp);      // a bed of coals, low in the bowl (the flames are fx-cine's)
     campG.attributes.position.needsUpdate = true;
   }
   function frame(dt) {
@@ -605,7 +608,7 @@ function build(rc, scene, camera, canvas, o) {
         for (let c = 0; c < MAXC; c++) { const cr = w && w.crates && w.crates[c]; drawTag(i * MAXC + c, cr ? cr.tag : '', w ? w.status : 'stale'); crate.im.setColorAt(i * MAXC + c, colour.set(w && w.status === 'failed' ? '#a8573d' : w && w.status === 'sample' ? '#a39a88' : '#b08a52')); }
       });
       if (lamp.im.instanceColor) lamp.im.instanceColor.needsUpdate = true; if (crate.im.instanceColor) crate.im.instanceColor.needsUpdate = true;
-      if (extra) { drawLearn(extra.board || null); drawFlip(extra.board || null); drawPipe(extra.pipe || null); if (extra.camp) { camp = CAMP_SPOTS.map((_, j) => extra.camp[j] || null); lamp.im.setColorAt(EMBER0, colour.set('#e89a3c'));
+      if (extra) { drawLearn(extra.board || null); drawFlip(extra.board || null); drawPipe(extra.pipe || null); if (extra.camp) { camp = CAMP_SPOTS.map((_, j) => extra.camp[j] || null); lamp.im.setColorAt(EMBER0, colour.set('#c2561f'));
         camp.forEach((b, j) => { lamp.im.setColorAt(EMBER0 + 1 + j, colour.set(b && b.status === 'working' ? '#e8923a' : '#4a3a28')); for (let q = 0; q < CSTACK; q++) crate.im.setColorAt(CR0 + j * CSTACK + q, colour.set(q % 2 ? '#b08a52' : '#c49a5c')); }); lamp.im.instanceColor.needsUpdate = true; crate.im.instanceColor.needsUpdate = true; dress(); } }
       if (extra && extra.camp) { const cc = L.cartCount(camp.filter(Boolean)); cc.sample = camp.some((b) => b && b.sample); drawCartSign(cc); life.cart = cc;
         for (let q = 0; q < L.CART.cap; q++) { if (q >= cc.shown) put(crate.im, CART0 + q, 0, -9, 0, 0.001, 0.001, 0.001); else put(crate.im, CART0 + q, L.CART.x - 0.6 + (q % 4) * 0.4, 0.8 + Math.floor(q / 12) * 0.26, L.CART.z - 0.3 + (Math.floor(q / 4) % 3) * 0.3, 0.27, 0.25, 0.27, 0, (q * 0.7) % 0.5, 0); } }
@@ -694,7 +697,8 @@ function build(rc, scene, camera, canvas, o) {
       if (ray.intersectObject(bPipe.m, false)[0]) return { id: 'pipe' };
       return null;
     },
-    dispose() { try { rc.stop(); rc.dispose(); A.t.dispose(); T.t.dispose(); CA.t.dispose(); [bLearn, bFlip, bPipe].forEach((b) => b.C.t.dispose()); } catch (_) { /* nothing */ } },
+    art: () => art,
+    dispose() { try { kit.dispose(); rc.stop(); rc.dispose(); A.t.dispose(); T.t.dispose(); CA.t.dispose(); [bLearn, bFlip, bPipe].forEach((b) => b.C.t.dispose()); } catch (_) { /* nothing */ } },
   };
   // drag to look; a short tap with no drag picks a crate, a station or a board
   let drag = null;
@@ -712,6 +716,7 @@ function build(rc, scene, camera, canvas, o) {
   if (o.cinema !== false) import('../olympus/fx-cine.js').then((C) => { if (cineOff) return; cine = C.cinema(rc, { time: 'clock', fog: 0.3,
     rays: { to: [0, 0, 0], spread: [22, 0, 16], length: 16, width: 2 }, dust: { box: [24, 4, 18], center: [0, 2, 0] },
     fires: [[CAMP.fire.x, 0.7, CAMP.fire.z]], fireRange: 7, smokeCount: 0, sand: { box: [26, 2, 14], center: [CAMP.fire.x, 0.4, 17], vel: [3.2, 0.1, 0.8], count: 260 } });   // budget: no birds / blobs / extra smoke here
+    kit.follow(cine);
     rc.onFrame((dt, t) => { if (!cine || reduced || t < sparkAt) return; sparkAt = t + 0.9 + Math.random() * 0.9;
       for (let n = 0; n < CAMP_SPOTS.length; n++) { const j = (sparkJ++) % CAMP_SPOTS.length, c = CAMP_SPOTS[j], b = camp[j];
         if (c.job === 'smith' && b && b.status === 'working') { cine.burst('sparks', [c.x, 0.85, c.z - 2.45], { count: 12 }); break; } } }); }).catch(() => {});

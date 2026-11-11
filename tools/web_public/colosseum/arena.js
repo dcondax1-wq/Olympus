@@ -5,6 +5,7 @@
 // LITE / no WebGL / a failed load: the page draws the flat SVG arena instead, so the stage is never blank.
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
+import { envKit } from '../olympus/env-kit.js';
 import { build, bake, materials, dispose as freeShape } from '../olympus/shapes3d.js';
 
 export const BUDGET = Object.freeze({ draws: 45, tris: 150000 });
@@ -73,7 +74,11 @@ export function createArena(canvas, opts) {
   const haze = add(new THREE.Mesh(G(new THREE.CircleGeometry(17, 40)), hazeMat)); haze.position.set(-38, 26, -119); haze.lookAt(0, 4, 0);
 
   // ---- the sand, the podium wall, the tiers, the arcade
-  const marble = std('#ffffff', 0.55, 0, { flatShading: true, vertexColors: true }), marble2 = std('#d9cfba', 0.6), wallMat = std('#a65a3c', 0.8, 0, { flatShading: true }), bronze = std('#9c6b3c', 0.5, 0.55), sand = std('#cfa258', 0.95), sandDark = std('#a9803f', 0.95);
+  // ENV ART (olympus/env-kit.js): the stands of sandstone ashlar, raked sand, plaster and marble scans; the golden HDRI lights them
+  const ek = envKit({ rc, tier: rc.quality(), envI: 0.4 });
+  const marble = ek.mat('ashlar', { color: '#ffffff', vertexColors: true, scale: 0.9 }), marble2 = ek.mat('marble', { color: '#d9cfba' }), wallMat = ek.mat('plaster', { color: '#a65a3c', scale: 0.9 }), bronze = ek.mat('bronze'),
+    sand = ek.mat('sand', { color: '#cfa560', scale: 0.55 }), sandDark = ek.mat('sand', { color: '#a9803f', scale: 0.55 });
+  ek.env('golden');
   const floor = add(new THREE.Mesh(G(new THREE.CircleGeometry(1, 72)), sand)); floor.rotation.x = -Math.PI / 2; floor.scale.set(RX, RZ, 1);
   const lane = add(new THREE.Mesh(G(new THREE.RingGeometry(0.56, 0.6, 72)), sandDark)); lane.rotation.x = -Math.PI / 2; lane.scale.set(RX, RZ, 1); lane.position.y = 0.01;
   add(new THREE.Mesh(sweep([[0, 0], [0, WALL - 0.14], [0, WALL], [WALK, WALL]], 0, Math.PI * 2, 96, ['#a65a3c', '#e4dccb', '#e4dccb']), marble));           // the podium wall, all the way round: terracotta with a marble coping
@@ -284,7 +289,7 @@ export function createArena(canvas, opts) {
     },
     cine: () => cine,
     dispose() {
-      disposed = true; if (ro) ro.disconnect(); if (cine) cine.dispose();
+      disposed = true; if (ro) ro.disconnect(); if (cine) cine.dispose(); ek.dispose();
       try { for (const f of F) if (f) for (const k of ['body', 'arm', 'spear']) f[k].geometry.dispose(); for (const x of own) x.dispose(); tiers.geometry.dispose(); busts.dispose(); banners.dispose(); shadows.dispose(); dust.dispose(); M.dispose(); rc.dispose(); } catch (_) { /* gone */ }
     },
   };
