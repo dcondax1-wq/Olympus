@@ -26,15 +26,15 @@ const mix3 = (a, b, t) => [mixN(a[0], b[0], t), mixN(a[1], b[1], t), mixN(a[2], 
 const KF = [
   [0, '#0d0b12', '#241a1c', '#7a4a2a', 1.0, 0.5, 1.0],
   [240, '#0e0c16', '#2a1e20', '#8a5230', 1.0, 0.5, 1.0],
-  [330, '#1a1b3a', '#6b4a52', '#e0a060', 0.5, 0.45, 1.0],     // pre-dawn: indigo to amber
-  [390, '#2b3566', '#c8845e', '#f0b870', 0.2, 0.35, 1.02],    // dawn, 6:30
-  [480, '#3d5f98', '#e8b890', '#ffd9a0', 0.05, 0.3, 1.05],    // pre-market morning, 8:00
-  [570, '#3a679d', '#a6bcc8', '#ffe7b8', 0.02, 0.25, 1.05],   // the open, 9:30
-  [720, '#33639c', '#a3bccb', '#fff0cc', 0.02, 0.2, 1.05],    // midday
-  [900, '#3a5f94', '#b3b3b0', '#ffe2a8', 0.02, 0.25, 1.05],   // afternoon
-  [960, '#3a4678', '#d29a70', '#ffbe70', 0.1, 0.3, 1.03],     // the close, 16:00
-  [1050, '#2e2a58', '#c27a62', '#f09a58', 0.25, 0.4, 1.0],    // dusk, 17:30
-  [1110, '#1b1a3a', '#6a4458', '#d08a5a', 0.5, 0.45, 1.0],    // 18:30, the Globex evening
+  [330, '#332a21', '#6b4a52', '#e0a060', 0.5, 0.45, 1.0],     // pre-dawn: indigo to amber
+  [390, '#584839', '#c8845e', '#f0b870', 0.2, 0.35, 1.02],    // dawn, 6:30
+  [480, '#826a53', '#e8b890', '#ffd9a0', 0.05, 0.3, 1.05],    // pre-market morning, 8:00
+  [570, '#836c54', '#a6bcc8', '#ffe7b8', 0.02, 0.25, 1.05],   // the open, 9:30
+  [720, '#8b7259', '#a3bccb', '#fff0cc', 0.02, 0.2, 1.05],    // midday
+  [900, '#7e6750', '#b3b3b0', '#ffe2a8', 0.02, 0.25, 1.05],   // afternoon
+  [960, '#6d5945', '#d29a70', '#ffbe70', 0.1, 0.3, 1.03],     // the close, 16:00
+  [1050, '#4f4133', '#c27a62', '#f09a58', 0.25, 0.4, 1.0],    // dusk, 17:30
+  [1110, '#332a21', '#6a4458', '#d08a5a', 0.5, 0.45, 1.0],    // 18:30, the Globex evening
   [1200, '#100e1c', '#2a1e24', '#8a5230', 0.9, 0.5, 1.0],
   [1440, '#0d0b12', '#241a1c', '#7a4a2a', 1.0, 0.5, 1.0],
 ].map((k) => ({ m: k[0], z: hex(k[1]), h: hex(k[2]), g: hex(k[3]), stars: k[4], neb: k[5], ex: k[6] }));
@@ -91,7 +91,7 @@ export function findVix(f) {
 
 // ------------------------------------------------------------------------------------------------ the reactor: state, voice, mode
 export const STATE_TINT = { idle: null, listening: '#c96a4a', thinking: '#e0b060', speaking: null, alert: '#c96a4a' };
-export const MODE_TINT = { auto: null, trading: '#4b7a99', research: '#9c8f6a', business: '#e0b060', life: '#b8714a' };
+export const MODE_TINT = { auto: null, trading: '#8b7259', research: '#9c8f6a', business: '#e0b060', life: '#b8714a' };
 export const modeTint = (m) => (Object.prototype.hasOwnProperty.call(MODE_TINT, m) ? MODE_TINT[m] : null);
 // the energy 0..1 the world should have now
 export function reactFor(state, level) {

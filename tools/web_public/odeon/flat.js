@@ -67,9 +67,9 @@ export class FlatStage {
     g.fillRect(0, 0, this.w, this.h);
     const line = (y, color, x0, label) => {
       g.strokeStyle = color; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x0, y); g.lineTo(this.w - 16, y); g.stroke();
-      if (label) { g.fillStyle = color; g.font = '600 12px Rajdhani, system-ui, sans-serif'; g.fillText(label, x0 + 4, y - 4); }
+      if (label) { g.fillStyle = color; g.font = '600 12px Georgia, system-ui, sans-serif'; g.fillText(label, x0 + 4, y - 4); }
     };
-    for (const lv of tr.levels || []) if (lv.t == null || T >= lv.t + 300) line(this._y(lv.px), '#7fb4ff', 16, lv.name || lv.label);
+    for (const lv of tr.levels || []) if (lv.t == null || T >= lv.t + 300) line(this._y(lv.px), '#7fa6bd', 16, lv.name || lv.label);
     if (T >= tr.entry.t) {
       const x0 = Math.max(16, this._x(tr.entry.t));
       line(this._y(tr.entry.px), '#e8f3ff', x0, 'ENTRY');
@@ -81,13 +81,13 @@ export class FlatStage {
     const draw = (i, o, h, l, c) => {
       const x = this._x(B.t[i] + B.s / 2);
       if (x < 0 || x > this.w) return;
-      g.strokeStyle = g.fillStyle = c >= o ? '#46d79a' : '#ff6b7f';
+      g.strokeStyle = g.fillStyle = c >= o ? '#7f8a52' : '#ff6b7f';
       g.beginPath(); g.moveTo(x, this._y(h)); g.lineTo(x, this._y(l)); g.stroke();
       g.fillRect(x - w / 2, this._y(Math.max(o, c)), w, Math.max(1, this._y(Math.min(o, c)) - this._y(Math.max(o, c))));
     };
     for (let i = 0; i < st.done; i++) draw(i, B.o[i], B.h[i], B.l[i], B.c[i]);
     if (st.forming >= 0) { const f = formingBar(tr, st.forming, st.frac); draw(st.forming, f.o, f.h, f.l, f.c); }
-    if (this.flash > 0) { g.fillStyle = `rgba(200,220,255,${(this.flash * 0.25).toFixed(3)})`; g.fillRect(0, 0, this.w, this.h); }
+    if (this.flash > 0) { g.fillStyle = `rgba(127,166,189,${(this.flash * 0.25).toFixed(3)})`; g.fillRect(0, 0, this.w, this.h); }
   }
 
   bounds() { return {}; }

@@ -424,12 +424,12 @@ export function clockSVG(C) {
   css();
   const D = clockData(C), cx = 120, cy = 120, tau = Math.PI * 2, T = (m) => (((m - 1080) % 1440 + 1440) % 1440) / 1440, tt = (t) => (t - C.S) / 86400;
   const arc = (r, a0, a1) => { if (a1 <= a0) a1 += 1; const p = (a) => [cx + r * Math.sin(a * tau), cy - r * Math.cos(a * tau)], [x0, y0] = p(a0), [x1, y1] = p(a1); return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 ${a1 - a0 > 0.5 ? 1 : 0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`; };
-  const KC = { asia: '#b49bff', london: '#67e8f9', pre: '#ffc777', ny: '#ffb27a', rth: 'var(--accent)' };
+  const KC = { asia: '#c9a06a', london: '#4b7a99', pre: '#ffc777', ny: '#ffb27a', rth: 'var(--accent)' };
   let s = `<circle cx="${cx}" cy="${cy}" r="98" stroke="var(--surface-3)" stroke-width="16" fill="none"/><circle cx="${cx}" cy="${cy}" r="78" stroke="var(--surface-3)" stroke-width="8" fill="none"/>`;
   s += `<path d="${arc(98, 23 / 24, 0.99999)}" stroke="var(--bad)" stroke-opacity=".25" stroke-width="16" fill="none"/>`;
   for (const b of D.boxes) s += `<path d="${arc(b.kind === 'rth' || b.kind === 'pre' ? 92 : 98, T(b.a), T(b.b === 1440 ? 1439.99 : b.b))}" stroke="${KC[b.kind] || 'var(--ink-2)'}" stroke-width="${b.kind === 'rth' || b.kind === 'pre' ? 4 : 14}" stroke-opacity="${b.hiTaken && b.loTaken ? 0.35 : 0.9}" fill="none"/>`;
   for (const [a, b] of D.windows) s += `<path d="${arc(78, T(a), T(b))}" stroke="var(--good)" stroke-width="8" fill="none" stroke-opacity=".85"/>`;
-  for (const [a, b] of D.blackouts) { const x = tt(a), y = tt(b); if (x >= 0 && x < 1) s += `<path d="${arc(78, x, Math.min(0.9999, y))}" stroke="#ff7ad9" stroke-width="10" fill="none"/>`; }
+  for (const [a, b] of D.blackouts) { const x = tt(a), y = tt(b); if (x >= 0 && x < 1) s += `<path d="${arc(78, x, Math.min(0.9999, y))}" stroke="#e08a6b" stroke-width="10" fill="none"/>`; }
   for (const e of D.events) { const a = tt(e.t); if (a < 0 || a >= 1) continue; const r = 78, x = cx + r * Math.sin(a * tau), y = cy - r * Math.cos(a * tau); s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${e.impact === 'high' ? 4.5 : 3}" fill="${e.impact === 'high' ? 'var(--bad)' : e.impact === 'medium' ? 'var(--warn)' : 'var(--ink-2)'}"/>`; }
   for (const x of D.trades) { const a0 = tt(x.t), a1 = x.exit_t ? tt(x.exit_t) : tt(C.now); if (a0 < 0 || a0 >= 1) continue; s += `<path d="${arc(64, a0, Math.max(a0 + 0.004, Math.min(0.9999, a1)))}" stroke="${x.open ? 'var(--accent-2)' : x.pnl >= 0 ? 'var(--good)' : 'var(--bad)'}" stroke-width="6" stroke-linecap="round" fill="none"/>`; }
   for (let h = 0; h < 24; h += 3) { const a = T(h * 60), x = cx + 114 * Math.sin(a * tau), y = cy - 114 * Math.cos(a * tau); s += `<text x="${x.toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="650" fill="var(--muted)" font-family="Inter, system-ui">${pad2(h)}</text>`; }
@@ -493,14 +493,14 @@ export function weekHTML(C) {
 export function replay3d(t, { iSweep = -1, iEntry = 0, iExit = -1 } = {}) {
   const marks = [], zones = [], e = N(t.entry), st = N(t.stop), tg = N(t.target);
   if (iSweep >= 0 && ok(t.sweep_ext)) marks.push({ p: +t.sweep_ext, color: '#ff9b5c', label: `sweep ${px(t.sweep_ext)}${t.pools?.length ? ' · ' + t.pools.slice(0, 2).join(', ') : ''}`, i: Math.max(0, iSweep - 8), from: iSweep });
-  if (ok(t.cisd_level)) marks.push({ p: +t.cisd_level, color: '#c084fc', label: `CISD ${px(t.cisd_level)}`, i: Math.max(0, (iSweep >= 0 ? iSweep : iEntry) - 2), from: iSweep >= 0 ? iSweep : iEntry });
+  if (ok(t.cisd_level)) marks.push({ p: +t.cisd_level, color: '#c9a06a', label: `CISD ${px(t.cisd_level)}`, i: Math.max(0, (iSweep >= 0 ? iSweep : iEntry) - 2), from: iSweep >= 0 ? iSweep : iEntry });
   if (ok(e)) {
-    marks.push({ p: e, color: '#8fa0ff', label: `entry ${px(e)}${t.entry_kind ? ' · ' + t.entry_kind : ''}`, i: iEntry, from: iEntry });
+    marks.push({ p: e, color: '#7fa6bd', label: `entry ${px(e)}${t.entry_kind ? ' · ' + t.entry_kind : ''}`, i: iEntry, from: iEntry });
     const to = iExit >= 0 ? iExit : undefined;
     if (ok(st)) zones.push({ a: e, b: st, from: iEntry, to, color: '#ff5a7a', label: `risk ${Math.abs(e - st).toFixed(1)} pts` });
-    if (ok(tg)) zones.push({ a: e, b: tg, from: iEntry, to, color: '#2ee59d', label: `reward ${ok(t.plan_rr) ? (+t.plan_rr).toFixed(1) + 'R' : Math.abs(tg - e).toFixed(0) + ' pts'}` });
+    if (ok(tg)) zones.push({ a: e, b: tg, from: iEntry, to, color: '#7f8a52', label: `reward ${ok(t.plan_rr) ? (+t.plan_rr).toFixed(1) + 'R' : Math.abs(tg - e).toFixed(0) + ' pts'}` });
     if (ok(st)) marks.push({ p: st, color: '#ff5a7a', label: `stop ${px(st)}`, i: iEntry, from: iEntry });
-    if (ok(tg)) marks.push({ p: tg, color: '#2ee59d', label: `target ${px(tg)}${t.target_label ? ' · ' + t.target_label : ''}`, i: iEntry, from: iEntry });
+    if (ok(tg)) marks.push({ p: tg, color: '#7f8a52', label: `target ${px(tg)}${t.target_label ? ' · ' + t.target_label : ''}`, i: iEntry, from: iEntry });
   }
   return { marks, zones, windows: [[120, 930]] };
 }
@@ -510,7 +510,7 @@ let _css = false;
 export function css() {
   if (_css || typeof document === 'undefined') return; _css = true;
   const s = document.createElement('style'); s.id = 'litkit-css';
-  s.textContent = `.lk{--lk-asia:#b49bff;--lk-lon:#67e8f9;--lk-pre:#ffc777;--lk-ny:#ffb27a;font-variant-numeric:tabular-nums;min-width:0}
+  s.textContent = `.lk{--lk-asia:#c9a06a;--lk-lon:#4b7a99;--lk-pre:#ffc777;--lk-ny:#ffb27a;font-variant-numeric:tabular-nums;min-width:0}
 .lk-up{color:var(--good-ink,var(--good))}.lk-dn{color:var(--bad)}.lk-wn{color:var(--warn)}
 .lk-k{display:block;font-size:10.5px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .lk-pill{display:inline-flex;align-items:center;gap:.3em;height:20px;padding:0 8px;border-radius:99px;font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.02em;color:var(--ink-2);border:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
@@ -552,7 +552,7 @@ export function css() {
 .lk-st.open{color:var(--accent-2);border-color:color-mix(in srgb,var(--accent-2) 40%,transparent)}.lk-st.pass{color:var(--gold,#f2c35b);border-color:currentColor}
 .lk-st.fail{color:var(--bad);border-color:currentColor}.lk-st.halt{color:var(--warn);border-color:currentColor}
 .lk-g{margin:0 0 12px}.lk-gb{height:8px;border-radius:99px;background:var(--surface-3);overflow:hidden}.lk-gb i{display:block;height:100%;border-radius:99px;background:var(--accent);transition:width .8s cubic-bezier(.2,.8,.2,1)}
-.lk-g.good .lk-gb i{background:linear-gradient(90deg,color-mix(in srgb,var(--good) 55%,transparent),var(--good))}.lk-g.room .lk-gb i{background:linear-gradient(90deg,#8b5cf6,var(--accent-2))}
+.lk-g.good .lk-gb i{background:linear-gradient(90deg,color-mix(in srgb,var(--good) 55%,transparent),var(--good))}.lk-g.room .lk-gb i{background:linear-gradient(90deg,#9c6b3c,var(--accent-2))}
 .lk-g.day .lk-gb i{background:linear-gradient(90deg,var(--warn),color-mix(in srgb,var(--warn) 60%,var(--good)))}.lk-g.bad .lk-gb i{background:var(--bad)}
 .lk-gl{display:flex;justify-content:space-between;gap:10px;margin-top:5px;font-size:12px;color:var(--muted)}.lk-gl b{color:var(--ink);font-weight:700;white-space:nowrap}
 .lk-3{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:4px}.lk-4{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
@@ -571,7 +571,7 @@ export function css() {
 .lk-plan li.past{opacity:.5}.lk-plan li.next b,.lk-plan li.now b{color:var(--ink)}.lk-plan li.next>i,.lk-plan li.now>i{animation:lkp 1.6s ease-in-out infinite}
 @keyframes lkp{50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--c,var(--accent)) 10%,transparent)}}
 @media (prefers-reduced-motion:reduce){.lk-plan li>i{animation:none!important}}
-.k-acc{--c:var(--accent)}.k-asia{--c:var(--lk-asia)}.k-lon{--c:var(--lk-lon)}.k-pre{--c:var(--lk-pre)}.k-ny{--c:var(--lk-ny)}.k-go{--c:var(--good)}.k-bad{--c:var(--bad)}.k-news{--c:#ff7ad9}.k-trade{--c:var(--accent-2)}.k-mut{--c:var(--muted)}
+.k-acc{--c:var(--accent)}.k-asia{--c:var(--lk-asia)}.k-lon{--c:var(--lk-lon)}.k-pre{--c:var(--lk-pre)}.k-ny{--c:var(--lk-ny)}.k-go{--c:var(--good)}.k-bad{--c:var(--bad)}.k-news{--c:#e08a6b}.k-trade{--c:var(--accent-2)}.k-mut{--c:var(--muted)}
 .lk-clock{display:grid;grid-template-columns:minmax(0,240px) 1fr;gap:14px;align-items:center}.lk-clock svg{width:100%;height:auto;max-width:240px;display:block;margin:0 auto}
 .lk-cr{display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-width:0}.lk-cr>b{font-size:24px;font-weight:800;letter-spacing:-.01em}.lk-cr>span{font-size:12.5px;color:var(--ink-2)}
 @media (max-width:520px){.lk-clock{grid-template-columns:1fr}.lk-cr{align-items:center;text-align:center}}

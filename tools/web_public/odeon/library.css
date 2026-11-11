@@ -1,7 +1,7 @@
 /* ODEON: the trade library, the numbers on the stage, the comparison (2026-11-04). Same tokens as odeon.css; every tap is 44 px. */
 .reel-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
 .reel-actions .btn { flex: 1 1 0; min-width: 96px; }
-.reel-actions .btn[aria-pressed='true'] { background: rgba(255, 181, 71, 0.18); border-color: rgba(255, 181, 71, 0.6); color: #fff; }
+.reel-actions .btn[aria-pressed='true'] { background: rgba(255, 181, 71, 0.18); border-color: rgba(255, 181, 71, 0.6); color: #f3ece0; }
 .more { display: grid; gap: 2px; }
 .chips.mini { gap: 6px; margin-bottom: 4px; align-items: center; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
 .chips.mini::-webkit-scrollbar { display: none; }
@@ -16,7 +16,7 @@
 .hb span { text-align: center; font: 600 9.5px/1.15 var(--ui, system-ui); color: var(--dim); overflow-wrap: anywhere; }
 .hb.t-loss { --c: #d06a48; } .hb.t-be { --c: #b8a07c; } .hb.t-win { --c: #8a9a5a; }
 .hb[aria-pressed='true'] { border-color: var(--c); background: rgba(255, 255, 255, 0.08); }
-.hb:focus-visible { outline: 2px solid var(--cyan, #7fe9ff); outline-offset: 1px; }
+.hb:focus-visible { outline: 2px solid var(--cyan, #7fa6bd); outline-offset: 1px; }
 .reels.comparing .reel { outline: 1px dashed rgba(255, 181, 71, 0.5); outline-offset: -3px; }
 .reel[data-pick] { outline: 2px solid #ffb547; outline-offset: -2px; }
 .reel[data-pick='A'] { outline-color: #c8a24a; }

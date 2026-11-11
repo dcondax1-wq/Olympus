@@ -46,13 +46,13 @@
     compass: ['Compass', 'C', '#c8a24a'],
     kairos: ['Kairos', 'K', '#c8a24a'],
     mint: ['Mint', 'M', '#c8a24a'], mintcity: ['Mint City', 'MC', '#c8a24a'], mercury: ['Mercury', '☿', '#c8a24a'], chrysos: ['Chrysos', 'X', '#c8a24a'], sibyl: ['Sibyl', 'Σ', '#c8a24a'], oikos: ['Oikos', 'O', '#c8a24a'], arbiter: ['Arbiter', 'Ξ', '#c8a24a'], stoa: ['Stoa', 'Σ', '#c8a24a'], aegis: ['Aegis', 'A', '#c8a24a'], lyceum: ['Lyceum', 'Σ', '#c8a24a'], nike: ['Nike', 'Ν', '#c8a24a'], kronos: ['Kronos', 'K', '#c8a24a'], moirai: ['Moirai', 'M', '#c8a24a'], epilogue: ['Epilogue', 'Ω', '#c8a24a'], argo: ['Argo', 'Α', '#4b7a99'], kratos: ['Kratos', 'K', '#c8a24a'], pythia: ['Pythia', 'Ψ', '#e0b060'], gallery: ['Agora Gallery', 'Γ', '#c8a24a'],
-    datacity: ['Data City', 'Δ', '#4f8cff'], mind: ['Mind', 'Ω', '#5eead4'], tree: ['Daphne', 'Ψ', '#34f5a0'],
-    oracle: ['Oracle', 'Θ', '#7fe9ff'], odeon: ['Odeon', 'Ξ', '#ff6b7f'], fates: ['Fates', 'Φ', '#ffcf5a'],
-    hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#e879f9'],
+    datacity: ['Data City', 'Δ', '#5f8ea6'], mind: ['Mind', 'Ω', '#d9b8a8'], tree: ['Daphne', 'Ψ', '#6b9068'],
+    oracle: ['Oracle', 'Θ', '#7fb0a3'], odeon: ['Odeon', 'Ξ', '#d77a7a'], fates: ['Fates', 'Φ', '#ffcf5a'],
+    hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#cf8f7a'],
     pantheon: ['Pantheon', 'Σ', '#f2d68a'], arena: ['Arena', 'Α', '#ffb547'],
-    ares: ['Ares', 'Λ', '#ff3b30'], plutus: ['Plutus', 'Ρ', '#9be84a'], athena: ['Athena', '🦉', '#5ea8ff'],
-    cities: ['Cities', '◈', '#a68bff'], settings: ['Settings', '⚙', '#b79bff'], inbox: ['Inbox', '✉', '#7fd0ff'], ledger: ['Ledger', 'L', '#ffcf5a'], planner: ['Planner', 'Π', '#7fa7c2'], delphi: ['Delphi', 'Φ', '#e0b060'], pnyx: ['Pnyx', 'Π', '#c8a24a'], hestia: ['Hestia', 'Η', '#c8a24a'], demeter: ['Demeter', 'Δ', '#9aa564'], apollo: ['Apollo', 'Α', '#e0b060'], hera: ['Hera', 'Ω', '#c96a4a'], dionysus: ['Dionysus', 'Σ', '#b77a8a'], clio: ['Clio', 'Κ', '#d8c9a8'], journal: ['Mnemosyne', 'Μ', '#f09bd8'], kalshicity: ['Kalshi City', 'K', '#2ef2d0'], forum: ['Forum', 'Γ', '#b8e04a'], labyrinth: ['Labyrinth', 'Ξ', '#ff4d57'], argus: ['Argus', 'Α', '#3ad7ff'], nemesis: ['Nemesis', 'Ν', '#8a6bff'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#d96bff'],
-    bridge: ['Bridge', 'Β', '#34d399'], observatory: ['Observatory', '◉', '#6eeaff'], atlas: ['Atlas', '◈', '#efc979'],
+    ares: ['Ares', 'Λ', '#c8402e'], plutus: ['Plutus', 'Ρ', '#a9b84f'], athena: ['Athena', '🦉', '#7f8a52'],
+    cities: ['Cities', '◈', '#b88a50'], settings: ['Settings', '⚙', '#a39883'], inbox: ['Inbox', '✉', '#9aa3a8'], ledger: ['Ledger', 'L', '#c2b280'], planner: ['Planner', 'Π', '#7fa7c2'], delphi: ['Delphi', 'Φ', '#e0b060'], pnyx: ['Pnyx', 'Π', '#c8a24a'], hestia: ['Hestia', 'Η', '#c8a24a'], demeter: ['Demeter', 'Δ', '#9aa564'], apollo: ['Apollo', 'Α', '#e0b060'], hera: ['Hera', 'Ω', '#c96a4a'], dionysus: ['Dionysus', 'Σ', '#b77a8a'], clio: ['Clio', 'Κ', '#d8c9a8'], journal: ['Mnemosyne', 'Μ', '#e08a6b'], kalshicity: ['Kalshi City', 'K', '#b5a642'], forum: ['Forum', 'Γ', '#8f9f3c'], labyrinth: ['Labyrinth', 'Ξ', '#a8765a'], argus: ['Argus', 'Α', '#3f8a8a'], nemesis: ['Nemesis', 'Ν', '#b55c66'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#c7773f'],
+    bridge: ['Bridge', 'Β', '#8c7a5a'], observatory: ['Observatory', '◉', '#a9bfd0'], atlas: ['Atlas', '◈', '#efc979'],
   };
   // each app's own CSS tokens -> the theme token they take under any theme but the default (bg = the app's own page colour
   // blended toward the theme's by its 'mix', so every app keeps a trace of its own sky)

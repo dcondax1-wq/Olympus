@@ -69,7 +69,7 @@ async function morning() {
 
 // ================================================================== 4. Live chart with the LIT levels
 const LC = { tf: store.get('nx.lc.tf', '5m'), d: null, busy: false, hover: null, offList: true };
-const LVL_C = { H: 'var(--bsl, #ff5a7a)', L: 'var(--ssl, #2ee59d)' };
+const LVL_C = { H: 'var(--bsl, #ff5a7a)', L: 'var(--ssl, #7f8a52)' };
 function chartSVG(d, W, H) {
   const bars = d.bars || [];
   if (!bars.length) return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" class="op-svg"><text x="${W / 2}" y="${H / 2}" text-anchor="middle" class="op-mut">no bars yet</text></svg>`;
@@ -257,7 +257,7 @@ async function ntpanel() {
 }
 
 // ================================================================== 7. Session timeline
-const TL_C = { entry: 'var(--accent)', exit: 'var(--good)', kill: 'var(--bad)', stale: 'var(--warn)', feed: 'var(--warn)', fresh: 'var(--good)', restart: 'var(--accent-2, #3ee0c8)', update: 'var(--gold)', error: 'var(--bad)', signal: 'var(--gold)' };
+const TL_C = { entry: 'var(--accent)', exit: 'var(--good)', kill: 'var(--bad)', stale: 'var(--warn)', feed: 'var(--warn)', fresh: 'var(--good)', restart: 'var(--accent-2, #7f8a52)', update: 'var(--gold)', error: 'var(--bad)', signal: 'var(--gold)' };
 const LANE = { entry: 0, exit: 0, kill: 0, signal: 1, stale: 2, feed: 2, fresh: 2, error: 2, restart: 3, update: 3 };
 const LANES = ['Trades', 'Setups', 'Feed / errors', 'Restarts / updates'];
 async function timeline() {

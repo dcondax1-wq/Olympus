@@ -80,7 +80,7 @@ export function planCityNetwork(specs, groups, hqId = 'trades-city') {
       extent = Math.max(extent, Math.hypot(x - cx, z - cz) + R);
     });
 
-    const group = groups[key] || [key, '#a68bff'];
+    const group = groups[key] || [key, '#c9a06a'];
     outDistricts.push({
       key, name: group[0], color: group[1], x: cx, z: cz,
       r: Math.max(48, extent), count: ids.length,

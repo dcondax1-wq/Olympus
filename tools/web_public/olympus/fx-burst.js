@@ -10,10 +10,10 @@
   FX.sheet('burst', [
     '.oly-fx-toasts { position: fixed; left: calc(12px + var(--oly-sl, 0px)); right: calc(12px + var(--oly-sr, 0px)); top: calc(10px + var(--oly-st, 0px)); z-index: 70;',
     '  display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }',
-    '.oly-fx-toast { --tc: rgba(var(--oly-accent-rgb, 168, 85, 247), .7); display: flex; align-items: center; gap: 10px; max-width: min(92vw, 420px); padding: 10px 14px 10px 10px;',
+    '.oly-fx-toast { --tc: rgba(var(--oly-accent-rgb, 156, 107, 60), .7); display: flex; align-items: center; gap: 10px; max-width: min(92vw, 420px); padding: 10px 14px 10px 10px;',
     '  border-radius: 14px; background: var(--oly-glass, rgba(9, 11, 22, .82)); border: 1px solid var(--tc); color: var(--oly-text, #f3f5fb);',
     '  font: 600 14px/1.25 var(--oly-ui, system-ui, sans-serif); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);',
-    '  box-shadow: 0 8px 28px rgba(0, 0, 0, .45), 0 0 16px rgba(var(--oly-accent-rgb, 168, 85, 247), .3); animation: oly-fx-toast-in .38s cubic-bezier(.34, 1.56, .64, 1) both; }',
+    '  box-shadow: 0 8px 28px rgba(0, 0, 0, .45), 0 0 16px rgba(var(--oly-accent-rgb, 156, 107, 60), .3); animation: oly-fx-toast-in .38s cubic-bezier(.34, 1.56, .64, 1) both; }',
     '.oly-fx-toast.ok { --tc: rgba(74, 222, 128, .75); } .oly-fx-toast.bad { --tc: rgba(255, 77, 109, .8); } .oly-fx-toast.warn { --tc: rgba(251, 191, 36, .8); }',
     '.oly-fx-toast.out { animation: oly-fx-toast-out .26s ease-in both; } .oly-fx-toast.still { animation: none; }',
     '.oly-fx-ti { width: 22px; height: 22px; flex: none; border-radius: 50%; display: grid; place-items: center; font: 700 13px/1 var(--oly-display, system-ui, sans-serif);',
@@ -22,7 +22,7 @@
     '@keyframes oly-fx-toast-out { to { opacity: 0; transform: translateY(-10px) scale(.96); } }',
   ].join('\n'));
 
-  var PALETTE = ['#a855f7', '#ffcf5a', '#7fe9ff', '#ff6b7f', '#4ade80', '#ffffff'];
+  var PALETTE = ['#9c6b3c', '#ffcf5a', '#7fa6bd', '#ff6b7f', '#4ade80', '#ffffff'];
   var rect = function (el) {
     if (!el || el === document.body || el === document.documentElement) return { x: window.innerWidth / 2, y: window.innerHeight * 0.35 };
     var r = el.getBoundingClientRect();                  // an element scrolled out of view bursts from the nearest screen edge

@@ -180,7 +180,7 @@ class Hall {
     const gold = metal({ kind: 'gold' }), slab = wood, dark = woodLight;
     const geo = { back: new THREE.BoxGeometry(4.5, 3.4, 0.18), plank: new THREE.BoxGeometry(4.5, 0.1, 0.62), post: new THREE.BoxGeometry(0.14, 3.5, 0.66), book: new THREE.BoxGeometry(1, 1, 1), scroll: new THREE.CylinderGeometry(0.11, 0.11, 0.5, 14), cap: new THREE.CylinderGeometry(0.125, 0.125, 0.04, 14), strip: new THREE.BoxGeometry(1, 1, 1) };
     const c = counts(S.lib);
-    const leathers = ['#502b1e', '#243b4a', '#3e4428', '#50371e', '#483327', '#213644'].map((h, n) => leatherTex(h, 40 + n));
+    const leathers = ['#502b1e', '#43372b', '#3e4428', '#50371e', '#483327', '#3e3327'].map((h, n) => leatherTex(h, 40 + n));
     // the books, scrolls, glowing spines and caps of a shelf are INSTANCED (2026-11-04, docs/OLYMPUS_PERF.md: ~35 meshes a shelf became ~11):
     // one leather material per shelf (the six leathers rotate across shelves; each book keeps its own tint through instanceColor)
     const bookMats = leathers.map((map) => new THREE.MeshPhysicalMaterial({ map, color: 0xf3ece0, roughness: 0.5, metalness: 0.1, clearcoat: 0.4 }));
@@ -199,7 +199,7 @@ class Hall {
       const n = Math.min(c[t.id] || 0, 18), planks = [0.2, 1.25, 2.3];
       for (const y of planks.slice(1)) { const p = new THREE.Mesh(geo.plank, slab); p.position.set(0, y, 0); g.add(p); }
       let seed = 11 + i * 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-      const cols = [new THREE.Color(t.color).multiplyScalar(0.55), new THREE.Color(t.color).lerp(new THREE.Color('#192832'), 0.55), new THREE.Color('#263f4f')];
+      const cols = [new THREE.Color(t.color).multiplyScalar(0.55), new THREE.Color(t.color).lerp(new THREE.Color('#2e261d'), 0.55), new THREE.Color('#473b2e')];
       const nScroll = Math.floor(n / 3), nBook = n - nScroll;           // k % 3 === 2 are scrolls
       const books = inst(g, geo.book, bookMats[i % bookMats.length], nBook), strips = inst(g, geo.strip, mat, nBook);
       const scrolls = inst(g, geo.scroll, parch, nScroll), caps = inst(g, geo.cap, mat, nScroll * 2);
