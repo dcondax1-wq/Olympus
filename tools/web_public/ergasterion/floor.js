@@ -496,8 +496,7 @@ function build(rc, scene, camera, canvas, o) {
   let cine = null, cineOff = false, sparkAt = 2, sparkJ = 0;
   if (o.cinema !== false) import('../olympus/fx-cine.js').then((C) => { if (cineOff) return; cine = C.cinema(rc, { time: 'clock', fog: 0.3,
     rays: { to: [0, 0, 0], spread: [22, 0, 16], length: 16, width: 2 }, dust: { box: [24, 4, 18], center: [0, 2, 0] },
-    fires: [[CAMP.fire.x, 0.7, CAMP.fire.z]], fireRange: 7, sand: { box: [26, 2, 14], center: [CAMP.fire.x, 0.4, 17], vel: [3.2, 0.1, 0.8], count: 260 },
-    birds: { center: [CAMP.fire.x, 0, 18], radius: 14, height: 12, count: 10 }, blobs: [[CAMP.fire.x, CAMP.fire.z, 0.9]] });
+    fires: [[CAMP.fire.x, 0.7, CAMP.fire.z]], fireRange: 7, smokeCount: 0, sand: { box: [26, 2, 14], center: [CAMP.fire.x, 0.4, 17], vel: [3.2, 0.1, 0.8], count: 260 } });   // budget: no birds / blobs / extra smoke here
     rc.onFrame((dt, t) => { if (!cine || reduced || t < sparkAt) return; sparkAt = t + 0.9 + Math.random() * 0.9;
       for (let n = 0; n < CAMP_SPOTS.length; n++) { const j = (sparkJ++) % CAMP_SPOTS.length, c = CAMP_SPOTS[j], b = camp[j];
         if (c.job === 'smith' && b && b.status === 'working') { cine.burst('sparks', [c.x, 0.85, c.z - 2.45], { count: 12 }); break; } } }); }).catch(() => {});

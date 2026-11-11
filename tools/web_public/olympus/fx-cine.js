@@ -634,7 +634,7 @@ export function cinema(rcOrParts, opts) {
         const fires = o.fires || [];
         if (fires.length) {
           P.embers = buildParticles(H, 'embers', { fires, count: o.emberCount || 70 * Math.min(4, fires.length) });
-          P.smoke = buildParticles(H, 'smoke', { fires, count: o.smokeCount || 22 * Math.min(4, fires.length) });
+          if (o.smokeCount !== 0) P.smoke = buildParticles(H, 'smoke', { fires, count: o.smokeCount || 22 * Math.min(4, fires.length) });
           P.fireLights = buildFireLights(H, fires, o);
         }
         if (o.dust) P.dust = buildParticles(H, 'dust', o.dust === true ? {} : o.dust);
