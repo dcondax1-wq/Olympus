@@ -900,7 +900,7 @@
     function makeCitizens(A, list) {
       if (!A || !A.canvas || !list.length || (A.frames || 0) < 5) return null;
       var rows = [[352, 640, 1640], [414, 700, 1600], [476, 740, 1560]], r = rng(hash('citizens:' + list.length)), walkers = [];
-      for (var i = 0; i < list.length; i++) { var row = rows[i % rows.length], span = row[2] - row[1]; walkers.push({ id: list[i].id || String(i), i: i, x0: row[1], span: span, y: row[0] + 3 + (i % 2) * 3, ph: r(), v: 9 + r() * 6, dir: r() < 0.5 ? -1 : 1, x: row[1] + r() * span }); }
+      for (var i = 0; i < Math.max(list.length, 15); i++) { var row = rows[i % rows.length], span = row[2] - row[1], li = i % list.length; walkers.push({ id: list[li].id || String(li), i: li, x0: row[1], span: span, y: row[0] + 3 + (i % 2) * 3, ph: r(), v: 9 + r() * 6, dir: r() < 0.5 ? -1 : 1, x: row[1] + r() * span }); }
       return { A: A, walkers: walkers, tinted: null };
     }
     function citTint() {

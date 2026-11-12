@@ -112,4 +112,4 @@ bob). Near (walking: within 13 m, 4 on high, 2 on LITE) and whoever you talk to:
 talk. LITE takes no photo studio (the toys stay far). Until the photos are ready, or with `?rig=0` / no WebGL: the toy figures (never blank). Footsteps:
 `OLYMPUS_SFX.walker(spec).step(pos, listener, { surface })` for the near people and for you (walk-direct.js, athens-direct.js); `presence(spec, ...)` when someone greets you.
 Athens walking (`cities/athens-direct.js`): the Hellas director on the terrain (`groundY`): local colliders rebuilt as you walk, a local A* grid, feet on the ground;
-tested by `tests/test_town_walk.py`. Polis: `city.setCitizens(atlas, list)` in `olympus/polis-skyline.js` draws a few citizens of the rolls walking the Acropolis streets.
+tested by `tests/test_town_walk.py`. Polis: `city.setCitizens(atlas, list)` in `olympus/polis-skyline.js` draws citizens of the rolls walking the Acropolis streets; `olympus/polis-citizens.js` (its own module on the Polis page) builds the atlas, phone-high only.
