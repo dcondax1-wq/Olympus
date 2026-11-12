@@ -244,15 +244,17 @@
     // the still sits OVER the canvas (an overlay of the canvas's own box, no taps): a lost canvas is not always see-through (Chromium paints
     // its own placeholder), so a background under it would not show
     function cover() {
-      if (!cv.isConnected) return;
-      var o = g.ov || (g.ov = d.createElement('div')), fixed = !cv.offsetParent, host = fixed ? d.body : cv.offsetParent, st = o.style;
+      if (!cv.isConnected || !cv.parentNode || !cv.getClientRects().length) return;      // not on screen (display:none): nothing to cover
+      // right after the canvas in the page, with the canvas's own stacking (z-index): it sits exactly where the canvas was and never over
+      // the page's own text and buttons above it
+      var o = g.ov || (g.ov = d.createElement('div')), cs = getComputedStyle(cv), fixed = cs.position === 'fixed' || !cv.offsetParent, st = o.style;
       o.className = 'oly-gl-still'; o.setAttribute('aria-hidden', 'true');
-      st.cssText = 'position:' + (fixed ? 'fixed' : 'absolute') + ';pointer-events:none;z-index:1;background-color:#14110e;background-size:cover;background-position:center;';
+      st.cssText = 'position:' + (fixed ? 'fixed' : 'absolute') + ';pointer-events:none;margin:0;background-color:#14110e;background-size:cover;background-position:center;';
+      st.zIndex = cs.zIndex; st.borderRadius = cs.borderRadius;
       st.backgroundImage = (g.still ? 'url("' + g.still + '"), ' : '') + BACKDROP;
       if (fixed) { var r = cv.getBoundingClientRect(); st.left = r.left + 'px'; st.top = r.top + 'px'; st.width = r.width + 'px'; st.height = r.height + 'px'; }
       else { st.left = cv.offsetLeft + 'px'; st.top = cv.offsetTop + 'px'; st.width = cv.offsetWidth + 'px'; st.height = cv.offsetHeight + 'px'; }
-      if (st.borderRadius !== (getComputedStyle(cv).borderRadius || '')) st.borderRadius = getComputedStyle(cv).borderRadius;
-      if (o.parentNode !== host) host.appendChild(o);
+      if (o.previousSibling !== cv) cv.parentNode.insertBefore(o, cv.nextSibling);
       g.vis = cv.style.visibility; cv.style.visibility = 'hidden';
     }
     cv.addEventListener('webglcontextlost', function (e) {

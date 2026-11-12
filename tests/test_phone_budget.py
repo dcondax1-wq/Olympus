@@ -216,6 +216,8 @@ def test_context_loss(br, origin, shots=None):
     p.wait_for_timeout(400)
     lost = center_rgb(p, xy)
     bg = p.evaluate("(() => { const o = document.querySelector('.oly-gl-still'); return o ? getComputedStyle(o).backgroundImage : ''; })()")
+    place = p.evaluate("""(() => { const o = document.querySelector('.oly-gl-still'), c = document.querySelector('canvas'), a = o.getBoundingClientRect(), b = c.getBoundingClientRect();
+      return [o.previousSibling === c, Math.abs(a.left - b.left) + Math.abs(a.top - b.top) + Math.abs(a.width - b.width) + Math.abs(a.height - b.height)]; })()""")
     if shots:
         p.screenshot(path=os.path.join(shots, "ctx_lost.jpg"), type="jpeg", quality=70)
     p.evaluate("window.__lx.restoreContext()")
@@ -228,6 +230,8 @@ def test_context_loss(br, origin, shots=None):
     dark = lambda c: max(c) < 14 or min(c) > 240               # black, or the browser's own white "lost" placeholder
     check("c. render core, context lost: the canvas shows the still / AGORA backdrop (never black), html[data-oly-gl=lost]",
           not dark(lost) and "url(\"data:image/jpeg" in bg and "radial-gradient" in bg, [before, lost, bg[:80]])
+    check("c. the still sits right after the canvas in the page (its own stacking: never over the page's text) and exactly over its box",
+          place[0] is True and place[1] < 2, place)
     check("c. render core, restored: the core rebuilt (restores >= 1) and draws again, the picture is back (not black)",
           st[0] is False and st[1] >= 1 and st[2] > 0 and not dark(after), [st, after])
     check("c. render core: no console error, no page error through the loss and the restore",
