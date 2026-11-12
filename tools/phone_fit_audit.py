@@ -95,7 +95,7 @@ JS = r"""
     const e = t.parentElement; if (!e || seen.has(e) || kit(e) || !vis(e) || e.closest('svg, canvas, script, style, noscript, [aria-hidden=true], [hidden]') || e.closest(':disabled')) continue;
     seen.add(e);
     const cs = getComputedStyle(e); let op = 1; for (let n = e; n && n.nodeType === 1; n = n.parentElement) op *= parseFloat(getComputedStyle(n).opacity);
-    const fg0 = parse(cs.color); if (!fg0) continue;
+    const fg0 = parse(cs.color); if (!fg0 || fg0.a === 0) continue;   // transparent text is not shown text (a building's invisible tap area keeps its name for screen readers)
     const bg = bgOf(e); if (!bg) continue;
     const fg = mix({ ...fg0, a: fg0.a * op }, bg), a = lum(fg), b = lum(bg), ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
     const px = parseFloat(cs.fontSize), large = px >= 24 || (px >= 18.66 && parseInt(cs.fontWeight, 10) >= 700), need = large ? 3 : 4.5;
