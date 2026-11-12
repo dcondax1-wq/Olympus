@@ -887,6 +887,7 @@
           ctx.beginPath(); ctx.ellipse(x, y + 1, b.w * k * 0.62, Math.max(5, b.w * k * 0.12), 0, 0, Math.PI * 2); ctx.stroke();
         }
       }
+      drawCitizens(t, still);
       // gold motes over the treasury when today's money is up
       var tre = treasury();
       if (st.treasury && tre) {
@@ -898,6 +899,35 @@
           ctx.fillStyle = 'rgba(240,198,96,' + (m.life * 0.85).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(m.x, m.y, 1.7 * k, 0, Math.PI * 2); ctx.fill();
         }
       } else st.motes.length = 0;
+    }
+    // ---- QA6 the citizens: a few people of OLYMPUS (photos of their rigged 3D selves) walk the two front streets of the Acropolis (nothing baked stands in front of them), side-on with a
+    // two-stride walk, mirrored by direction; at dusk and night the photos are darkened to the light. Still (no walking) with reduced motion / LITE.
+    function makeCitizens(A, list) {
+      if (!A || !A.canvas || !list.length || (A.frames || 0) < 5) return null;
+      var rows = [[478, 880, 1430], [546, 860, 1450], [548, 900, 1400]], r = rng(hash('citizens:' + list.length)), walkers = [];
+      for (var i = 0; i < Math.max(list.length, 15); i++) { var row = rows[i % rows.length], span = row[2] - row[1], li = i % list.length; walkers.push({ id: list[li].id || String(li), i: li, x0: row[1], span: span, y: row[0] + 3 + (i % 2) * 3, ph: r(), v: 9 + r() * 6, dir: r() < 0.5 ? -1 : 1, x: row[1] + r() * span }); }
+      return { A: A, walkers: walkers, tinted: null };
+    }
+    function citTint() {
+      var C = st.cit, A = C.A, key = Math.round(L.night * 20) + ':' + Math.round((L.light ? L.light[0] : 255) / 16);
+      if (C.tinted && st.citTint === key) return C.tinted;
+      var cv2 = C.tinted || doc.createElement('canvas'); cv2.width = A.canvas.width; cv2.height = A.canvas.height; var g = cv2.getContext('2d');
+      g.clearRect(0, 0, cv2.width, cv2.height); g.drawImage(A.canvas, 0, 0); g.globalCompositeOperation = 'source-atop';
+      var dark = clamp(L.night * 0.42, 0, 0.42); g.fillStyle = 'rgba(28,22,40,' + dark.toFixed(3) + ')'; g.fillRect(0, 0, cv2.width, cv2.height);
+      if (L.night < 0.5) { g.fillStyle = 'rgba(255,196,120,' + (0.10 * (1 - L.night * 2)).toFixed(3) + ')'; g.fillRect(0, 0, cv2.width, cv2.height); }
+      g.globalCompositeOperation = 'source-over'; C.tinted = cv2; st.citTint = key; return cv2;
+    }
+    function drawCitizens(t, still) {
+      var C = st.cit; if (!C) return; var A = C.A, k = view.k, src = citTint(), hgt = 19 * k, wdt = hgt * A.frame[0] / A.frame[1];
+      for (var i = 0; i < C.walkers.length; i++) {
+        var w = C.walkers[i];
+        if (!still) { var d = (t * w.v + w.ph * w.span * 2) % (w.span * 2); w.dir = d < w.span ? 1 : -1; w.x = w.x0 + (d < w.span ? d : w.span * 2 - d); }
+        var x = w.x * k - st.pan, y = (w.y + PAD) * k; if (x < -20 || x > view.w + 20) continue;
+        var fr = still ? 0 : 3 + (Math.floor(t * 2.2 + w.ph * 7) % 2), cell = w.i * A.frames + fr, sx = (cell % A.cols) * A.cellW, sy = Math.floor(cell / A.cols) * A.cellH, bob = still ? 0 : Math.abs(Math.sin(t * 4.4 + w.ph * 9)) * 0.6 * k;
+        ctx.fillStyle = 'rgba(30,22,14,0.22)'; ctx.beginPath(); ctx.ellipse(x, y, wdt * 0.32, 1.6 * k, 0, 0, Math.PI * 2); ctx.fill();     // a small shadow under their feet
+        ctx.save(); ctx.translate(x, y - bob); if (w.dir < 0 && !still) ctx.scale(-1, 1);
+        ctx.drawImage(src, sx, sy, A.cellW, A.cellH, -wdt / 2, -hgt * (1 + (A.foot || 0) / A.frame[1]), wdt, hgt); ctx.restore();
+      }
     }
     function treasury() { for (var i = 0; i < M.buildings.length; i++) if (M.buildings[i].type === 'mint') return M.buildings[i]; return null; }
 
@@ -934,6 +964,9 @@
       setFresh: function (map) { st.fresh = map || {}; kick(); },
       setShips: function (s) { st.ships = s || []; kick(); },
       setTreasury: function (up) { st.treasury = !!up; kick(); },
+      /** QA6: the citizens walking the Acropolis streets: photos of the rigged cast (olympus/people-studio.js atlas with views), [{ id, name }] */
+      setCitizens: function (atlas, list) { st.cit = makeCitizens(atlas, list || []); st.citTint = -1; kick(); return st.cit ? st.cit.walkers.length : 0; },
+      citizens: function () { return st.cit ? st.cit.walkers.map(function (w) { return { id: w.id, x: Math.round(w.x), y: w.y, dir: w.dir }; }) : []; },
       setTilt: function (x, y) { st.tiltX = clamp(x, -1, 1) * 3; st.tiltY = clamp(y, -1, 1) * 2; kick(); },
       setScroll: function (y) { st.scrollY = clamp(y, 0, 400); kick(); },
       setVisible: function (v) { st.visible = !!v; if (v) kick(); },

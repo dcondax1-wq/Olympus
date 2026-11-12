@@ -394,8 +394,15 @@ export function attach(ext) {
     camera.updateMatrixWorld();
     const fy = (y) => { v3l.set(0, y, c.dims.z).project(camera); return (1 - (v3l.y - 2 * lens.s)) / 2; };          // where a height on the doorways' line falls on the screen (0 top .. 1 bottom), lens shift taken out
     const feetF = fy(c.dims.floorY), topF = fy(c.dims.top), doorPx = Math.max(1, (feetF - topF) * Hpx);
-    const k = Math.max(0.4, Math.min(1, (art - 6) / doorPx));              // the doorways fit the window (scaled about their feet)
+    const k = Math.max(0.4, Math.min(1, (art - (win ? 16 : 6)) / doorPx));    // the doorways fit the window (scaled about their feet), with a little sky above them
     if (Math.abs(k - lens.k) > 0.002 || !lens.on) { lens.k = k; c.group.scale.setScalar(k); c.group.position.set(0, c.dims.floorY * (1 - k), c.dims.z * (1 - k)); }
+    // QA6: each doorway stands over its own name on the rail (five equal columns): the row is spread sideways to the rail's spacing (a phone at 390 px
+    // showed five thin pale bars squeezed into the middle); the columns then stand in the gaps
+    if (win && c.spread && c.doors && c.doors.length > 1) {
+      const sx = (x) => { v3l.set(x * k, 0, c.dims.z).project(camera); return (v3l.x + 1) / 2 * (window.innerWidth || 1); };
+      const now = Math.abs(sx(c.doors[1].x * (c.dims.spread || 1)) - sx(c.doors[0].x * (c.dims.spread || 1))), want = r.width / c.doors.length;
+      if (now > 1) c.spread((c.dims.spread || 1) * want / now);
+    }
     const drift = moving() ? scrollTop * 0.5 : 0;
     lens.feet = feet0 - drift;
     setLens(Math.max(-0.2, Math.min(0.62, feetF - lens.feet / Hpx)));

@@ -180,6 +180,16 @@ export function soundAt(name, pos, cue, listener, opts) {
   } catch (_) { /* sound is never needed */ }
   return false;
 }
+/** QA6: a person's footstep on a surface (OLYMPUS_SFX.walker(person).step: the step and, now and then, their things answering softly); one walker per key.
+ *  person = a people3d spec (accessory / kind) or { kind }. The engine honours mute, LITE, reduced motion and the first tap. */
+const WALKERS = new Map();
+export function stepAt(key, person, pos, listener, opts) {
+  try { const X = W0().OLYMPUS_SFX; if (!X || typeof X.walker !== 'function') return soundAt('step', pos, null, listener, opts);
+    let w = WALKERS.get(key); if (!w) { w = X.walker(person || {}); WALKERS.set(key, w); if (WALKERS.size > 64) WALKERS.delete(WALKERS.keys().next().value); }
+    return w.step(pos, listener || undefined, opts || {}) ? 'walker' : false; } catch (_) { return false; }
+}
+/** QA6: a person's presence (their keys, coins, bronze or beads) placed in the world, when they notice you */
+export function presenceAt(person, pos, listener, opts) { try { const X = W0().OLYMPUS_SFX; return X && typeof X.presence === 'function' && X.presence(person || {}, pos, listener || undefined, opts || { k: 0.4 }) ? 'presence' : false; } catch (_) { return false; } }
 /** say a line with a speech bubble + voice when the people kit has say(); returns false so the caller keeps its own bubble */
 export function sayLine(id, text, opts) { try { const K = W0().OLYMPUS_PEOPLE; if (K && typeof K.say === 'function' && id && text) { K.say(id, String(text).slice(0, 240), opts || {}); return true; } } catch (_) { /* our own bubble */ } return false; }
 /** show a work card (what this person made) when the kit has show() */

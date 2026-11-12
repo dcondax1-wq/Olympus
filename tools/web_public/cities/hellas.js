@@ -12,6 +12,7 @@ import { rng, hash32 } from './util.js';
 import { walkStep, HOUSE_TINT, EYE } from './athens-world.js';
 import { planPolis, polisCollider, polisNpcs, npcOnLoop, builderAt, TIER, routinePlaces, fieldTo, routineAt, pathDown, pathLen, alongPath } from './hellas-plan.js';
 import { makeCrowd } from './people-fig.js';
+import { makeTownCast } from './town-cast.js';
 import { lookOf } from './people-talk.js';
 import { keeperPerson, townsPerson, builderPerson } from './hellas-data.js';
 
@@ -206,7 +207,7 @@ export class Hellas {
     const nt = Math.round(Math.min(T.trees, 30 + Math.round(R * .9)) * (desert ? .25 : ruin ? .6 : 1)), tb = new Batch(); tb.cone(0, 0, 0, .5, 1, PAL.cypress, this.lite ? 5 : 6);
     const tg = own(tb.geometry()), tm = new THREE.InstancedMesh(tg, this.matVC, nt);
     for (let i = 0; i < nt; i++) { const inner = i % 5 === 0, a = r() * 6.283, rr = inner ? lerp(hr + 3, A - 6, r()) : R + 8 + r() * 62, s = 1.6 + r() * 1.6; if (!inner && Math.abs(a - Math.PI / 2) < .09) { d.scale.setScalar(0); } else d.scale.set(s, s * (inner ? 3.6 : 2 + r() * 2.4), s);
-      d.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); d.rotation.set(0, 0, 0); d.updateMatrix(); tm.setMatrixAt(i, d.matrix); if (i % 3) col.setRGB(2.1, 2.3, 1.9); else col.setRGB(2.9, 2.6, 1.9); tm.setColorAt(i, col); }
+      d.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); d.rotation.set(0, 0, 0); d.updateMatrix(); tm.setMatrixAt(i, d.matrix); if (inner) (plan.trees || (plan.trees = [])).push({ x: Math.cos(a) * rr, z: Math.sin(a) * rr, r: .5 * s, h: s * 3.6 }); /* QA6: the walk camera and the walker go round the cypresses */ if (i % 3) col.setRGB(2.1, 2.3, 1.9); else col.setRGB(2.9, 2.6, 1.9); tm.setColorAt(i, col); }
     tm.instanceMatrix.needsUpdate = true; tm.instanceColor.needsUpdate = true; tm.frustumCulled = false; G.add(tm); own(tm); this.treeMesh = tm;
     // the people (one instanced draw): the KEEPER at the south gate (always), townspeople on the streets around their village (phone-high only)
     this.col = polisCollider(plan); this.npcs = T.npcs && !this.reduced ? polisNpcs(plan, Math.min(T.npcs, plan.villages.length * 3)) : [];
@@ -216,7 +217,9 @@ export class Hellas {
     this.people = [{ kind: 'keeper', id: 'keeper:' + p.id, x: 0, z: R - 8, ry: Math.PI, make: () => keeperPerson(p) }];
     this.npcs.forEach((q, k) => { const V = plan.villages[q.village]; this.people.push({ kind: 'towns', id: `towns:${p.id}:${V.idx}:${k}`, loop: q, x: 0, z: 0, ry: 0, make: () => townsPerson(p, V, V.houses.map((h) => plan.houses[h].row), k) }); });
     this.people.forEach((P, i) => { P.i = i; P.look = lookOf(P.id, P.kind === 'keeper' ? 'keeper' : ''); Object.defineProperty(P, 'person', { get() { return P._p || (P._p = P.make()); } }); });
-    this.crowd = makeCrowd(this.people.map((P) => P.look), { lite: this.lite }); own(this.crowd); this.npcMesh = this.crowd.mesh; G.add(this.npcMesh); this.talk = null; this.npcTick(0);
+    // QA6: the rigged cast (town-cast.js): photos of the real 3D people far away, full rigged figures near you; the toy figures only until the photos are ready
+    this.crowd = makeTownCast(THREE, this.people.map((P) => ({ id: P.id })), { lite: this.lite, looks: this.people.map((P) => P.look), reduced: this.reduced, tint: desert ? '#f6e0bf' : '#f1dcc2',
+      surface: (x, z) => (Math.hypot(x, z) < A + 1 ? 'stone' : desert || ruin ? 'sand' : 'stone') }); own(this.crowd); this.npcMesh = this.crowd.mesh; G.add(this.npcMesh); this.talk = null; this.npcTick(0);
     // a city at work: a brazier burns on every district stele (one more draw call)
     if (work && plan.districts.length) { const fm = new THREE.InstancedMesh(own(new THREE.ConeGeometry(.55, 1.5, 5).translate(0, .75, 0)), this.flames ? this.flames.material : this.matRing, plan.districts.length); fm.frustumCulled = false;
       plan.districts.forEach((D, i) => { const l = Math.hypot(D.x, D.z) || 1; d.position.set(D.x / l * (A - 3), 5, D.z / l * (A - 3)); d.rotation.set(0, 0, 0); d.scale.setScalar(1); d.updateMatrix(); fm.setMatrixAt(i, d.matrix); }); fm.instanceMatrix.needsUpdate = true; G.add(fm); own(fm); this.pFlames = fm; } else this.pFlames = null;
@@ -251,9 +254,11 @@ export class Hellas {
       else if (P.act === 'trade') { ryj = Math.sin(t * 1.6 + ph) * .3 * w; sq = 1 + .03 * Math.sin(t * 8 + ph) * w; }
       else if (P.act === 'cheer') { y += Math.abs(Math.sin(t * 6 + ph)) * .3 * w * sc; sq = 1.05; lean = -.12; }
       else if (P.act === 'sad') { lean = .3; sq = .94; }                                                              // the keeper of the ruins hangs its head
+      if (this.crowd.act) this.crowd.act(P.i, P.act);
       this.crowd.place(P.i, P.x, y, P.z, ry + (P.facing ? 0 : ryj), sc * (P.kind === 'keeper' ? 1.12 : P.look.height), sq, lean);
     }
     this.crowd.commit();
+    if (this.crowd.tick) this.crowd.tick(dt, t, this.camera, me ? { x: me.x, z: me.z } : null);     // the near ones become full rigged figures (and their feet sound)
   }
   /** the life of the polis for the tests and the HUD: clock, how many do what, the gathering */
   lifeState() { const acts = {}; for (const P of this.people || []) acts[P.act || 'stroll'] = (acts[P.act || 'stroll'] || 0) + 1; return { sod: this.sod, clock: this.clockMs == null ? null : this.clockMs, acts, routine: !!this.routine, gathering: !!(this.gathering && this.u.uTime.value < this.gathering.until), people: (this.people || []).length }; }
@@ -274,7 +279,7 @@ export class Hellas {
   pickPerson(px, py, radius = 30) { if (!this.people || this.level !== 'polis') return null; const sc = this.walk ? 1.08 : 2.5; let best = null, bd = radius; for (const P of this.people) { const q = this.project(P.x, sc * .9, P.z); if (!q.vis) continue; const d = Math.hypot(q.x - px, q.y - py); if (d < bd) { bd = d; best = P; } } return best; }
   peopleNear(x, z, max = 4, within = 30) { if (!this.people || this.level !== 'polis') return []; return this.people.map((P) => ({ P, d: Math.hypot(P.x - x, P.z - z) })).filter((e) => e.d <= within).sort((a, b) => a.d - b.d).slice(0, max); }
   /** who is being talked to: { kind: 'person', i } in a polis, { kind: 'builder', i } on the world; null ends it */
-  setTalk(tk) { this.talk = tk || null; if (this.level === 'world') this.lifeTick(this.u.uTime.value, true); else this.npcTick(this.u.uTime.value); }
+  setTalk(tk) { this.talk = tk || null; if (this.crowd && this.crowd.talk) this.crowd.talk(tk && tk.kind === 'person' ? tk.i : -1); if (this.level === 'world') this.lifeTick(this.u.uTime.value, true); else this.npcTick(this.u.uTime.value); }
 
   setStage(level) {
     this.level = level; const world = level === 'world'; this.wg.visible = world; if (this.pg) this.pg.visible = !world;

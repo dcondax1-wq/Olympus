@@ -98,6 +98,19 @@ function build(rc, scene, camera, canvas, o) {
     face.position.copy(camera.position).add(v.set(0.6, 1.2, 0)); face.target.position.copy(camLook);
     rimL.position.copy(camLook).add(v.set(-camLook.x * 0.6, 2.5, -camLook.z * 0.6)); rimL.target.position.copy(camLook);
   }
+  // QA6 footsteps + presence (olympus/sfx.js walker / presence; the engine honours mute, LITE, reduced motion and the first tap): your own steps on the
+  // marble when you walk around the table, the steps of someone who walks out with you, and a soft jingle of their things when someone turns to greet you
+  const SFXo = () => { try { return window.OLYMPUS_SFX || null; } catch (_) { return null; } };
+  const ear = () => { camera.getWorldDirection(v); return { position: camera.position, forward: { x: v.x, y: v.y, z: v.z } }; };
+  const steps = { me: null, d: 0, last: null, n: 0, walkT: 0, them: new Map(), jingles: 0 };
+  function stepSounds(dt, user) {
+    const X = SFXo(); if (!X || typeof X.walker !== 'function') return;
+    const p = camera.position; if (!steps.last) steps.last = p.clone();
+    const moved = Math.hypot(p.x - steps.last.x, p.z - steps.last.z); steps.last.copy(p);
+    if (user && moved > 0 && moved < 1) { steps.d += moved; if (steps.d > 0.7) { steps.d = 0; steps.me = steps.me || X.walker((() => { try { const k = window.OLYMPUS_PEOPLE; return k && k.me ? k.me().spec : null; } catch (_) { return null; } })() || { kind: 'owner' }); if (steps.me.step({ x: p.x, y: 0, z: p.z }, ear(), { surface: 'stone', k: 0.45 })) steps.n++; } }
+    if (st.walk && close.has(st.walk.i)) { steps.walkT += dt; if (steps.walkT > 0.36) { steps.walkT = 0; const f = close.get(st.walk.i), w = steps.them.get(st.walk.i) || X.walker(specs[st.walk.i] || {}); steps.them.set(st.walk.i, w); if (w.step({ x: f.position.x, y: 0, z: f.position.z }, ear(), { surface: 'stone', k: 0.4 })) steps.n++; } }
+  }
+  function presenceOf(i) { const X = SFXo(), s = L.seats[i]; if (!X || typeof X.presence !== 'function' || !s) return; if (X.presence(specs[i] || {}, { x: s.x, y: 0.9, z: s.z }, ear(), { k: 0.4 })) steps.jingles++; }
   function fit() { const w = canvas.clientWidth || 1, h = canvas.clientHeight || 1; if (w === st.w && h === st.h) return; st.w = w; st.h = h; camera.aspect = w / h; camera.updateProjectionMatrix(); }
   function want() { const k = new Set(front(L, st.yaw + Math.PI, Math.min(CLOSE, N))); if (st.active >= 0) k.add(st.active); return k; }
   function syncClose() { const k = want(); for (const i of [...close.keys()]) if (!k.has(i)) dropClose(i); for (const i of k) closeUp(i); }
@@ -108,6 +121,7 @@ function build(rc, scene, camera, canvas, o) {
     else if (st.auto && st.active < 0) { st.idle += dt; if (st.idle > 2.5) st.yaw += dt * 0.045; }
     const zGoal = st.active >= 0 && !reduced && st.activeT > 0.6 ? 1 : 0; st.zoom = (st.zoom || 0) + (zGoal - (st.zoom || 0)) * Math.min(1, dt * 1.6); if (reduced) st.zoom = 0;
     placeCam(); if (driver) { try { driver(dt, st); } catch (_) { /* the hall's own camera stays */ } } syncClose(); camPos.copy(camera.position);
+    if (!reduced) stepSounds(dt, st.goal != null || Math.abs(st.vel) > 0.0004);
     // who looks where: everyone looks at the one who talks; with nobody talking the close-ups notice you, the crowd looks around
     const talker = st.active >= 0 ? crowd.userData.headWorld(st.active, look) : null;
     crowd.userData.lookAll(talker);
@@ -160,7 +174,7 @@ function build(rc, scene, camera, canvas, o) {
       const prev = st.active; st.active = i == null || !L.seats[i] ? -1 : i; st.activeT = 0; st.voice = false;
       if (prev >= 0 && close.has(prev)) { const f = close.get(prev); setTalking(f, false); play(f, 'idle'); }
       crowd.userData.setActive(prev, false);
-      if (st.active >= 0) { const f = closeUp(st.active); play(f, 'wave', { then: 'talk' }); }
+      if (st.active >= 0) { const f = closeUp(st.active); play(f, 'wave', { then: 'talk' }); if (st.active !== prev) presenceOf(st.active); }
       if (reduced) { syncClose(); crowd.userData.tick(0); }
       const k = st.active; if (cine) cine.focus(k >= 0 ? () => crowd.userData.headWorld(k, fHead) : null, { r: 0.2, amount: 4 });      // FX HOOK: focus on the speaker
     },
@@ -171,6 +185,7 @@ function build(rc, scene, camera, canvas, o) {
     drawCalls: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && shown(x)) n++; }); return n; },      // one draw per mesh: every repeated thing is instanced
     triangles: () => { let n = 0; scene.traverse((x) => { if (x.isMesh && shown(x) && x.geometry) { const g = x.geometry, c = g.index ? g.index.count : g.getAttribute('position').count; n += (c / 3) * (x.isInstancedMesh ? x.count : 1); } }); return Math.round(n); },
     closeUps: () => [...close.keys()],
+    sounds: () => ({ steps: steps.n, jingles: steps.jingles }),
     rigged: () => [...close.values()].filter((f) => f.userData && f.userData.rig).length,      // characters v3: close-ups that are the rigged cast
     crowdInfo: () => ({ impostors: !!crowd.userData.impostors, calls: crowd.userData.drawCalls }),
     // ---- SCENE DIRECTION HOOKS (symposium/direct.js + olympus/camera-rig.js)

@@ -103,6 +103,7 @@ export class AthensUI {
       const p = ptr.get(e.pointerId); if (!p) return; const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
       if (down) down.moved += Math.abs(dx) + Math.abs(dy);
       if (S.interior) { S.interior.look(dx, dy); return; }
+      if (S.walk && S.walkDirector) { if (ptr.size === 1) { if (down && down.moved > 6) S.walkDirector.look(dx, dy); } else if (ptr.size === 2) { const [a, b] = [...ptr.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch && pinch.d) S.walkDirector.zoom(d / Math.max(10, pinch.d)); pinch = { d, mx: 0, my: 0 }; } return; }     // QA6: the directed walk (athens-direct.js)
       if (S.walk) { if (ptr.size === 1) S.walkLook(dx, dy); return; }
       if (ptr.size === 1) { if (down.moved > 4) stopTour(); S.orbit(dx, dy); }
       else if (ptr.size === 2 && pinch) {

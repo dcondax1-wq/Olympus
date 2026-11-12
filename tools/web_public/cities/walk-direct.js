@@ -9,18 +9,19 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRig, makeWorld } from '../olympus/camera-rig.js';
 import { createGrid, findPath, createWalker, approach, createHud } from '../olympus/controls.js';
 
-const AV = 1.25, PH = 1.05;                               // your character's height in metres and a townsperson's head height (the crowd figures are small, toy-like)
+const AV = 1.25, PH = 1.0;                                // your character's height in metres and a townsperson's head height (the rigged cast, town-cast.js)
 /** the camera's colliders in a polis: every house (its real height), the acropolis hill, the city wall as a ring of segments */
 export function worldOf(plan) {
   const P = plan || {}, boxes = [], walls = [], circles = [];
   for (const h of P.houses || []) boxes.push({ x0: h.x - h.hx, x1: h.x + h.hx, z0: h.z - h.hz, z1: h.z + h.hz, y0: 0, y1: Math.max(3, (h.h || 5) + 1.2), tag: 'house' });
   if (P.hillR) circles.push({ x: 0, z: 0, r: P.hillR, y1: Math.max(10, P.hillR * 0.55), tag: 'acropolis hill' });
+  for (const t of P.trees || []) circles.push({ x: t.x, z: t.z, r: t.r + 0.15, y1: t.h, tag: 'cypress' });     // QA6: the talk close-up once stood inside a cypress
   const R = P.R || 0;
   if (R) for (let i = 0; i < 48; i++) { const a = (i / 48) * Math.PI * 2, b = ((i + 1) / 48) * Math.PI * 2; walls.push({ ax: Math.sin(a) * (R + 1), az: Math.cos(a) * (R + 1), bx: Math.sin(b) * (R + 1), bz: Math.cos(b) * (R + 1), t: 0.8, y1: 7, tag: 'city wall' }); }
   return makeWorld({ boxes, walls, circles, ground: 0 });
 }
 /** where you may walk: the polis's own walking collider (streets, not houses, not the hill, inside the wall), on a 0.6 m grid with 0.3 m of room */
-export function navOf(plan, col) { const R = (plan && plan.R) || 80; return createGrid({ x0: -R, x1: R, z0: -R, z1: R, cell: 0.6 }, (x, z) => col.hits(x, z, 0.05), { pad: 0.3 }); }
+export function navOf(plan, col) { const R = (plan && plan.R) || 80, T = (plan && plan.trees) || []; return createGrid({ x0: -R, x1: R, z0: -R, z1: R, cell: 0.6 }, (x, z) => col.hits(x, z, 0.05) || T.some((t) => Math.hypot(x - t.x, z - t.z) < t.r), { pad: 0.3 }); }
 const toH = (yaw) => Math.PI - yaw, toYaw = (h) => Math.PI - h;     // the polis walker's yaw (forward = (sin, -cos)) <-> a heading (forward = (sin, cos))
 
 export function createWalkDirector(scene, opts) {
@@ -28,7 +29,15 @@ export function createWalkDirector(scene, opts) {
   const world = worldOf(plan), grid = navOf(plan, S0.col), walker = createWalker({ speed: 3.0, turn: 9 });
   const rig = createRig(S0.camera, { world, reduced, radius: 0.3, dist: 4.8, pitch: 0.34, near: (a) => { if (D.av) D.av.visible = a > 0.35; } });
   const hud = createHud(o.container || document.body, { reduced, hintTop: true });
-  const D = { av: null, P3: null, pose: '', mode: 'walk', talkP: null, gone: false, walks: 0, near0: S0.camera.near, waveT: 0, t: 0 };
+  const D = { av: null, P3: null, pose: '', mode: 'walk', talkP: null, gone: false, walks: 0, near0: S0.camera.near, waveT: 0, t: 0, stride: 0, steps: 0, feet: null };
+  // QA6 footsteps: your own feet on the street (OLYMPUS_SFX.walker: stone in the agora, sand in a desert town or a ruin); the engine honours mute and LITE
+  const surfaceAt = o.surface || ((x, z) => (plan && Math.hypot(x, z) < (plan.agoraR || 0) + 1 ? 'stone' : plan && (plan.desert || plan.ruin) ? 'sand' : 'stone'));
+  const fwd = new THREE.Vector3();
+  function footstep(x, z) {
+    let X = null; try { X = window.OLYMPUS_SFX || null; } catch (_) { X = null; } if (!X || typeof X.walker !== 'function') return;
+    if (!D.feet) { let sp = null; try { const k = K(); sp = k && k.me ? k.me().spec : null; } catch (_) { sp = null; } D.feet = X.walker(sp || { kind: 'owner', accessory: 'scroll' }); }
+    S0.camera.getWorldDirection(fwd); if (D.feet.step({ x, y: 0, z }, { position: S0.camera.position, forward: { x: fwd.x, y: fwd.y, z: fwd.z } }, { surface: surfaceAt(x, z), k: 0.5 })) D.steps++;
+  }
   const K = () => { try { return window.OLYMPUS_PEOPLE || null; } catch (_) { return null; } };
   const w0 = S0.walk;
   // the first view: toward the nearest townsperson (they will greet you), else away from the acropolis hill, down a street
@@ -55,7 +64,8 @@ export function createWalkDirector(scene, opts) {
       if (m > 0.05) { walker.stop(); const p = walker.pos, sp = (inp.run ? 4.4 : 2.8) * Math.min(1, m) * Math.min(dt, 0.1), r = S0.col.move(p.x, p.z, (dx / m) * sp, (dz / m) * sp); walker.place(r[0], r[1], Math.atan2(dx, dz)); }
     }
     const s = walker.tick(dt), moving = s.moving || !!(inp.fwd || inp.side);
-    w.dist += Math.hypot(s.x - w.x, s.z - w.z); w.x = s.x; w.z = s.z; w.yaw = toYaw(s.yaw);
+    const moved = Math.hypot(s.x - w.x, s.z - w.z); w.dist += moved; w.x = s.x; w.z = s.z; w.yaw = toYaw(s.yaw);
+    if (moving && moved > 0) { D.stride += moved; if (D.stride >= 0.62) { D.stride -= 0.62; footstep(s.x, s.z); } } else D.stride = 0.45;
     if (D.av) { D.av.position.set(s.x, 0, s.z); D.av.rotation.y = s.yaw; if (D.t > D.waveT) pose(moving ? 'walk' : 'idle'); if (!reduced && D.P3) D.P3.animate(D.av, dt); }
     if (D.mode === 'talk' && D.talkP) { const P = D.talkP; D.tp.b.x = P.x; D.tp.b.z = P.z; }
     else {
@@ -63,7 +73,8 @@ export function createWalkDirector(scene, opts) {
       const near = !moving && S0.peopleNear ? S0.peopleNear(s.x, s.z, 1, 5)[0] : null;
       rig.interest(near ? { x: near.P.x, z: near.P.z, h: AV * 0.85 } : null);
     }
-    rig.update(dt); D.frames = (D.frames || 0) + 1; if (rig.inside(0.12)) D.insideN = (D.insideN || 0) + 1;
+    const rs = rig.update(dt); D.frames = (D.frames || 0) + 1; if (rig.inside(0.12)) D.insideN = (D.insideN || 0) + 1;
+    if (D.av && D.mode === 'talk') D.av.visible = rs.phase !== 'close-up';              // the close-up is from beside your shoulder: your own character steps out of the frame
     return true;
   }
   function ground(cx, cy) {
@@ -91,19 +102,19 @@ export function createWalkDirector(scene, opts) {
     const p = walker.pos, d = Math.hypot(P.x - p.x, P.z - p.z), arrive = () => { walker.faceTo(Math.atan2(P.x - walker.pos.x, P.z - walker.pos.z)); if (o.onTalk) o.onTalk(P); talkCam(P); };
     hud.used('walk');
     if (d <= 2.6) { arrive(); return; }
-    const a = approach(p, P, 1.7); walkTo(a.x, a.z, arrive, Math.atan2(P.x - p.x, P.z - p.z));
+    const a = approach(p, P, 1.6); walkTo(a.x, a.z, arrive, Math.atan2(P.x - p.x, P.z - p.z));
   }
   function talkCam(P) {
     if (!P) return; const p = walker.pos; walker.stop(); walker.faceTo(Math.atan2(P.x - p.x, P.z - p.z));
-    D.mode = 'talk'; D.talkP = P; D.tp = { a: { x: p.x, y: 0, z: p.z, h: AV * 0.92 }, b: { x: P.x, y: 0, z: P.z, h: PH }, side: 1, two: 1.6, lookDown: 0.8, back: 3.0 };
+    D.mode = 'talk'; D.talkP = P; D.tp = { a: { x: p.x, y: 0, z: p.z, h: AV * 0.92 }, b: { x: P.x, y: 0, z: P.z, h: PH }, side: 1, two: 1.5, lookDown: 0.5, back: 2.1 };
     rig.shot('talk', D.tp);
   }
-  function endTalk(quiet) { if (D.mode !== 'talk') return; D.mode = 'walk'; D.talkP = null; rig.shot('follow'); if (!quiet && o.onEndTalk) o.onEndTalk(); }
+  function endTalk(quiet) { if (D.mode !== 'talk') return; D.mode = 'walk'; D.talkP = null; if (D.av) D.av.visible = true; rig.shot('follow'); if (!quiet && o.onEndTalk) o.onEndTalk(); }
   return {
     tick, tap, talkCam, endTalk, walkTo,
     look(dx, dy) { rig.orbit(-dx * 0.0062, dy * 0.0042); hud.used('walk'); },
     zoom(k) { rig.zoom(k); },
-    state() { const r = rig.state(), p = walker.pos; return { greeter: D.greeter ? D.greeter.person.name : '', mode: D.mode, cam: r, me: { x: +p.x.toFixed(2), z: +p.z.toFixed(2) }, path: walker.path, inside: rig.inside(0.12), avatar: !!D.av, walks: D.walks, frames: D.frames || 0, insideN: D.insideN || 0 }; },
+    state() { const r = rig.state(), p = walker.pos; return { greeter: D.greeter ? D.greeter.person.name : '', mode: D.mode, cam: r, me: { x: +p.x.toFixed(2), z: +p.z.toFixed(2) }, path: walker.path, inside: rig.inside(0.12), avatar: !!D.av, walks: D.walks, frames: D.frames || 0, insideN: D.insideN || 0, steps: D.steps }; },
     rig: () => rig, world: () => world, grid: () => grid,
     dispose() { D.gone = true; hud.dispose(); if (D.av) { try { D.av.userData.dispose(); } catch (_) { /* gone */ } try { S0.scene.remove(D.av); } catch (_) { /* gone */ } } S0.camera.near = D.near0; S0.camera.updateProjectionMatrix(); },
   };

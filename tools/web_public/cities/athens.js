@@ -11,6 +11,7 @@ import { rng, hash32 } from './util.js';
 import { Interior } from './athens-interior.js';
 import { renderList, makeCollider, makeNpcs, npcAt, walkStep, HOUSE_TINT, EYE, TIER_NPC } from './athens-world.js';
 import { makeCrowd } from './people-fig.js';
+import { makeTownCast } from './town-cast.js';
 import { lookOf } from './people-talk.js';
 
 export const TIERS = { // house cap, trees, lamps, windows
@@ -436,8 +437,11 @@ export class Athens {
     if (this.npcMesh) { this.scene.remove(this.npcMesh); if (this.crowd) this.crowd.dispose(); else this.npcMesh.dispose(); this.npcMesh = null; this.crowd = null; }
     const n = TIER_NPC[this.tierName] || 0; this.npcs = n ? makeNpcs(world, this.col, n) : [];
     if (!this.npcs.length) return;
-    // the villagers are people: friendly toy-like figures, each with its own skin, hair and tunic, still ONE draw call (people-fig.js)
-    this.crowd = makeCrowd(this.npcs.map((q) => lookOf(`villager:${world.villages[q.a].id}:${q.i}`)), { lite: true }); this.npcMesh = this.crowd.mesh; this.scene.add(this.npcMesh); this.npcD = new THREE.Object3D(); this.npcT = 0; this.talkNpc = null; return;
+    // QA6: the villagers are the rigged cast (town-cast.js): one photo sprite each far away (one draw call), full rigged figures near you. A villager
+    // wears their village's look (villager:<app-id>, the same face as in the chat sheet); the toy figures (people-fig.js) only until the photos are ready
+    this.crowd = makeTownCast(THREE, this.npcs.map((q) => ({ id: `villager:${world.villages[q.a].id}` })), { lite: this.tierName === 'low', reduced: this.reduced, looks: this.npcs.map((q) => lookOf(`villager:${world.villages[q.a].id}:${q.i}`)), tint: '#f0dcc4',
+      surface: (x, z) => (groundY(x, z) > 20 || (x > -40 && x < 160 && z > -108 && z < 30) ? 'stone' : 'sand') });
+    this.npcMesh = this.crowd.mesh; this.scene.add(this.npcMesh); this.npcD = new THREE.Object3D(); this.npcT = 0; this.talkNpc = null; return;
     if (!this.npcGeo) { const b = new Batch(); b.cone(0, 0, 0, .36, 1.35, '#ffffff', 6); b.put(unit.sphere(6, 4), 0, 1.3, 0, .21, .21, .21, '#ffffff'); this.npcGeo = b.geometry(); this.dispose_.push(this.npcGeo); this.npcMat = new THREE.MeshLambertMaterial({ vertexColors: true }); this.dispose_.push(this.npcMat); }
     const m = this.npcMesh = new THREE.InstancedMesh(this.npcGeo, this.npcMat, this.npcs.length), c = new THREE.Color();
     this.npcs.forEach((q, i) => { m.setColorAt(i, c.set(q.colour)); }); m.instanceColor.needsUpdate = true; m.frustumCulled = false; this.scene.add(m); this.npcD = new THREE.Object3D(); this.npcT = 0;
@@ -450,11 +454,15 @@ export class Athens {
       // walking among them: heads turn as you arrive (2.6 s, within 45 m) and anyone within 5 m faces you with a little hop: hello
       const dMe = this.walk ? Math.hypot(this.walk.x - q.x, this.walk.z - q.z) : 1e9, greet = !talking && dMe < 5, look = !talking && this.lookUntil && t < this.lookUntil && dMe < 45;
       const ry = talking || greet || look ? Math.atan2(cp.x - q.x, cp.z - q.z) : Math.atan2(Math.sin(q.yaw), -Math.cos(q.yaw)); q.facing = !!(talking || greet || look); q.act = talking ? 'talk' : greet ? 'greet' : look ? 'look' : 'walk';
-      const hop = greet && !this.reduced ? Math.max(0, Math.sin(t * 7 + i)) * .14 * sc : 0;
-      if (this.crowd) this.crowd.place(i, q.x, groundY(q.x, q.z) + hop, q.z, ry, sc * 1.2, talking && !this.reduced ? 1 + .035 * Math.sin(t * 9) : 1);
+      const hop = greet && !this.reduced && !(this.crowd && this.crowd.figureOf && this.crowd.figureOf(i)) ? Math.max(0, Math.sin(t * 7 + i)) * .14 * sc : 0;     // a full figure waves instead of hopping
+      if (this.crowd && this.crowd.act) this.crowd.act(i, q.act);
+      if (this.crowd) this.crowd.place(i, q.x, groundY(q.x, q.z) + hop, q.z, ry, sc * 1.16, talking && !this.reduced && !this.crowd.act ? 1 + .035 * Math.sin(t * 9) : 1);
       else { d.position.set(q.x, groundY(q.x, q.z), q.z); d.rotation.set(0, -q.yaw, 0); d.scale.setScalar(sc); d.updateMatrix(); m.setMatrixAt(i, d.matrix); }
     }
-    m.instanceMatrix.needsUpdate = true;
+    if (this.crowd && this.crowd.commit) { this.crowd.commit(); const dt = Math.min(.25, Math.max(0, t - (this._npcT == null ? t : this._npcT))); this._npcT = t;
+      if (this.crowd.talk) this.crowd.talk(this.talkNpc == null ? -1 : this.talkNpc);
+      this.crowd.tick(dt, t, this.camera, this.walk ? { x: this.walk.x, z: this.walk.z } : null); }     // the near ones become full rigged figures (and their feet sound)
+    else m.instanceMatrix.needsUpdate = true;
   }
   /** a villager near a screen point: { npc, village, fact } or null */
   pickNpc(px, py, radius = 36) {
@@ -479,6 +487,7 @@ export class Athens {
   }
   walkLook(dx, dy) { const w = this.walk; if (!w) return; w.yaw += dx * .0055; w.pitch = Math.max(-1, Math.min(.9, w.pitch - dy * .0045)); }
   walkTick(dt) {
+    if (this.walkDirector && this.walkDirector.tick(dt)) return;     // SCENE DIRECTION HOOK (athens-direct.js, QA6): third person on the terrain, tap-to-walk, the conversation camera
     const w = this.walk, r = walkStep(w, w.input, dt, this.col); w.x = r.x; w.z = r.z; w.dist += r.moved; w.bob += r.moved * 2.1;
     const gy = groundY(w.x, w.z) + EYE; w.y += (gy - w.y) * Math.min(1, dt * 8);
     const bob = this.reduced ? 0 : Math.sin(w.bob) * .035, cp = Math.cos(w.pitch);
@@ -486,5 +495,5 @@ export class Athens {
   }
   get walking() { return !!this.walk; }
 
-  dispose() { this.dead = true; if (this.cine) this.cine.dispose(); for (const o of this.dispose_) o.dispose && o.dispose(); if (this.ek) this.ek.dispose(); this.renderer.dispose(); }
+  dispose() { this.dead = true; if (this.walkDirector) { try { this.walkDirector.dispose(); } catch (e) { /* gone */ } this.walkDirector = null; } if (this.crowd && this.crowd.dispose) { try { this.crowd.dispose(); } catch (e) { /* gone */ } this.crowd = null; } if (this.cine) this.cine.dispose(); for (const o of this.dispose_) o.dispose && o.dispose(); if (this.ek) this.ek.dispose(); this.renderer.dispose(); }
 }
