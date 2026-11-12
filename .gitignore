@@ -164,3 +164,7 @@ data/pc_publish/
 logs/pc_hb/
 netlify.json
 .olympus/
+# BOTS BACK (tools/pc_report.py, scripts/bots_back.ps1): local report state and the private ntfy alert topic
+data/pc_report/
+data/bots_back.json
+ntfy.json
