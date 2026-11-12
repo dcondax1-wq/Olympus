@@ -411,10 +411,18 @@
     var lastY = window.pageYOffset || 0, settle = 0, raf = 0;
     function y() { return window.pageYOffset || root.scrollTop || 0; }
     function away(on) { if (on && d.activeElement === a) on = false; a.classList.toggle('oly-away', !!on); }
-    function check() { raf = 0; away(covers(a)); }
+    var late = 0;
+    function check() { raf = 0; clearTimeout(late); late = 0; away(covers(a)); }
     // look right after a frame is painted (rAF, then a task): the layout is fresh then, so the look never forces an extra layout
-    // (a 3D app moving its labels every frame keeps its layouts-per-frame budget)
-    function soon() { if (!raf) raf = (window.requestAnimationFrame || setTimeout)(function () { setTimeout(check, 0); }); }
+    // (a 3D app moving its labels every frame keeps its layouts-per-frame budget); a busy page that paints no frame for 700 ms
+    // is looked at anyway
+    function soon() {
+      if (raf) return;
+      raf = (window.requestAnimationFrame || setTimeout)(function () { setTimeout(function () { if (raf) check(); }, 0); }) || 1;
+      late = setTimeout(function () { if (raf) check(); }, 700);
+    }
+    // it starts aside and shows itself once the first look finds its seat clear: it never flashes over a page's text while it loads
+    away(true);
     window.addEventListener('scroll', function () {
       var now = y(), dy = now - lastY; lastY = now;
       if (dy > 4 && now > 48) away(true);                 // reading on: out of the way
