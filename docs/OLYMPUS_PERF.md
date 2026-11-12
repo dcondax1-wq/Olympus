@@ -233,7 +233,8 @@ first part only).
   owner's choice wins. iPhone Safari exposes none of these signals: there the render core's slow-frame step-down is still what protects it.
 - **Lazy 3D** (`olympus/lazy3d.js`): a page's optional 3D module is imported after the first paint, never while hidden, and not at all on LITE
   (loaded the moment the owner picks HD); a skipped / failed 3D fires the page's own ready event so the page goes straight to its 2D picture.
-  Used by nq, mint, helios, aegis, chrysos, symposium, ergasterion (three.js is no longer in their eager graph).
+  Used by nq, mint, helios, aegis, chrysos, symposium (three.js is no longer in the eager graph of the first five; Symposium still pulls it
+  through the people kit). Ergasterion keeps its module tag: its floor LOD calibrates on draw calls in the first seconds after it mounts.
 - **Deferred libraries**: Polis's six POLIS scripts and Cities' fx-core / fx-burst no longer block the first paint.
 - **WebGL guard** (`olympus.js`): every WebGL canvas on a kit page; on context loss the canvas shows a still (one small JPEG of a settled
   frame, for renderers the kit tracks) or the AGORA dusk backdrop, `html[data-oly-gl=lost]`; the render core rebuilds environment, composer

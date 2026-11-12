@@ -31,7 +31,7 @@ import phone_budget as PB  # noqa: E402
 
 RES: list = []
 LAZY = {"nq": ("nqscene.js", "nq3d"), "mint": ("mintscene.js", "mint3d"), "helios": ("sunload.js", "helios-sun"), "aegis": ("shieldload.js", "aegis-shield"),
-        "chrysos": ("towerload.js", "chrysos-tower"), "symposium": ("hallload.js", "sym-hall"), "ergasterion": ("floorload.js", "erg-floor")}
+        "chrysos": ("towerload.js", "chrysos-tower"), "symposium": ("hallload.js", "sym-hall")}
 # blocking bytes (raw, before gzip) / files before the first paint, per page, on the source tree; root and jarvis are the lead's shells:
 # held at today's size so they never grow (root = 528 kB of inline HTML, see the report)
 BLOCK_KB, BLOCK_N = 300, 9
