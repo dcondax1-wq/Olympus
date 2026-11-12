@@ -73,6 +73,7 @@
   <p class="foot" id="foot">Mint reads the five money streams' published files and sends nothing. Every dollar here is an ESTIMATE with a range, never a promise of income. Streams marked Example show sample numbers, not real finds. Paper only: Mint never trades or moves money.</p>
 </main>
 <script type="module" src="mint.js?v=a1"></script>
-<script type="module" src="mintscene.js?v=q6c"></script>
+<!-- QA round 6: the 3D loads after the first paint, and not at all on LITE (olympus/lazy3d.js) -->
+<script src="../olympus/lazy3d.js?v=l1" data-src="mintscene.js?v=q6c" data-skip="lite" data-event="mint3d" defer></script>
 </body>
 </html>

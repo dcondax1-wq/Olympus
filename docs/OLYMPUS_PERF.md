@@ -223,3 +223,21 @@ checks that depend on it. The same checks were run against a temp copy of the si
 `olympus.js` / `render.js` / `sfx.js` and old apps) and against the current tree: **OLD 9/10, 6/10, 6/10; NEW 9/10, 7/10, 9/10** passing, the same
 checks failing in both (`c. veil lifted`, `b. jfx=low`, `b. reduced motion`, `c. Retry`). Mind: OLD 7/11 failing the same two checks the current code fails.
 Tree reaches `ready` in 1.9 s when loaded alone.
+
+## Real-phone budget pass (QA round 6, 2026-11-11)
+Measured with `tools/phone_budget.py <built site>` (390 x 844 touch, CPU x4, DevTools "Fast 3G", gzip like GitHub Pages, service worker off =
+a first visit); `--lowend` reports a 2 GB device. Checked by `tests/test_phone_budget.py` (static budgets + browser checks, `--static` for the
+first part only).
+- **LITE auto-detection** (`olympus.js`): with no stored level, Save-Data, `prefers-reduced-data`, a 2g line, deviceMemory <= 2 GB, <= 4 GB with
+  <= 4 cores, or <= 2 cores (never cores alone on Apple) start the kit on low (`html[data-oly-auto]`, `OLYMPUS.auto()`); never stored, the
+  owner's choice wins. iPhone Safari exposes none of these signals: there the render core's slow-frame step-down is still what protects it.
+- **Lazy 3D** (`olympus/lazy3d.js`): a page's optional 3D module is imported after the first paint, never while hidden, and not at all on LITE
+  (loaded the moment the owner picks HD); a skipped / failed 3D fires the page's own ready event so the page goes straight to its 2D picture.
+  Used by nq, mint, helios, aegis, chrysos, symposium (three.js is no longer in the eager graph of the first five; Symposium still pulls it
+  through the people kit). Ergasterion keeps its module tag: its floor LOD calibrates on draw calls in the first seconds after it mounts.
+- **Deferred libraries**: Polis's six POLIS scripts and Cities' fx-core / fx-burst no longer block the first paint.
+- **WebGL guard** (`olympus.js`): every WebGL canvas on a kit page; on context loss the canvas shows a still (one small JPEG of a settled
+  frame, for renderers the kit tracks) or the AGORA dusk backdrop, `html[data-oly-gl=lost]`; the render core rebuilds environment, composer
+  and grade on restore and draws again (`stats().restores`). The core also frees its GPU buffers after 20 s hidden and on `pagehide`.
+- **Audio**: a host with no `.m4a` falls back to `.ogg`; with neither, the synth plays for the session after at most one failed request per
+  format; an HTML answer for an audio file is never decoded; a tap on iOS resumes with a silent sample.

@@ -17,6 +17,8 @@
 //     (olympus/fx-cine.js) ride the scene's own frame loop and follow its tier;
 //   - quality tiers from OLYMPUS.fx() (ultra / high / low / off), followed live, stepped down on slow frames when the owner has
 //     not chosen a level; pixel ratio <= 2 (<= 1.5 on low, 1 when off); no frame while the tab is hidden.
+//   - the real phone (QA round 6): a tab hidden 20 s or a page put in the back-forward cache gives its GPU buffers back (suspend) and
+//     rebuilds on return; a lost WebGL context draws nothing and everything is rebuilt on restore (olympus.js shows a still meanwhile).
 //
 // Passes per frame: ultra / high = 3 (scene, bloom, finish) · low = 2 (scene, finish + FXAA) · off = 1 (straight to screen).
 
@@ -447,7 +449,7 @@ export function createRenderer(opts) {
 
   /** draw one frame (nothing while the tab is hidden or covered, nothing sooner than the kit's frame gap); returns true when it drew */
   function render() {
-    if (dead || asleep || pageHidden()) return false;
+    if (dead || asleep || lost || pageHidden()) return false;
     const g = frameGap();
     if (g && tDraw && performance.now() - tDraw < g - 3) return false;
     return drawNow();
@@ -477,7 +479,7 @@ export function createRenderer(opts) {
 
   function tick(now) {
     raf = 0;
-    if (dead || asleep || !loop || pageHidden()) return;          // hidden: no new frame is asked for until the tab is back
+    if (dead || asleep || lost || !loop || pageHidden()) return;  // hidden (or a lost context): no new frame is asked for until the tab is back
     const g = frameGap();
     if (g && tPrev && now - tPrev < g - 3) { raf = requestAnimationFrame(tick); return; }      // idle / saver: skip the frame (no JS, no draw)
     const dt = tPrev ? Math.min(0.1, (now - tPrev) / 1000) : 1 / 60;
@@ -488,6 +490,42 @@ export function createRenderer(opts) {
   }
   const onVisible = () => { if (!pageHidden() && loop && !raf && !dead && !asleep) { tPrev = 0; perf.last = 0; raf = requestAnimationFrame(tick); } };
   document.addEventListener('visibilitychange', onVisible);
+
+  // ---- the real-phone pass (QA round 6, 2026-11-11): GPU memory and context loss
+  // A tab hidden for 20 s, or a page going into the back-forward cache, gives its GPU buffers back (suspend: the composer's targets and
+  // the environment; the canvas keeps its last picture); it rebuilds on the way back. A lost context draws nothing (no errors, no
+  // black flash: olympus.js shows the still); once restored every buffer, the environment and the grade are rebuilt and a frame drawn.
+  const HIDE_MS = 20000;
+  let hideTimer = 0, sleptHidden = false, lost = false, restores = 0;
+  const onHide = () => {
+    if (dead) return;
+    if (document.hidden) {
+      if (!hideTimer && !asleep) hideTimer = setTimeout(() => { hideTimer = 0; if (document.hidden && !asleep && !dead) { api.suspend(); sleptHidden = true; } }, HIDE_MS);
+    } else {
+      if (hideTimer) { clearTimeout(hideTimer); hideTimer = 0; }
+      if (sleptHidden) { sleptHidden = false; api.resume(); }
+    }
+  };
+  const onPageHide = () => { if (!dead && !asleep) { api.suspend(); sleptHidden = true; } };
+  const onPageShow = (e) => { if (!dead && sleptHidden && !document.hidden) { sleptHidden = false; api.resume(); } };
+  document.addEventListener('visibilitychange', onHide);
+  window.addEventListener('pagehide', onPageHide);
+  window.addEventListener('pageshow', onPageShow);
+  const onLost = () => { lost = true; if (raf) cancelAnimationFrame(raf); raf = 0; };
+  const onRestored = () => {
+    if (dead) return;
+    lost = false; restores++;
+    if (post.lut) post.lut.needsUpdate = true;
+    if (!asleep) {
+      // the PMREM environment and the composer's targets were GPU memory: make them again (an external HDRI is its owner's to remake)
+      if (extEnv) { try { window.dispatchEvent(new CustomEvent('olympus:gl-restored', { detail: { renderer } })); } catch (e) { /* old browsers */ } }
+      environment(); build(); size(true);
+      perf.warm = 0; perf.last = 0;
+      if (loop) onVisible(); else drawNow();
+    }
+  };
+  canvas.addEventListener('webglcontextlost', onLost, false);
+  canvas.addEventListener('webglcontextrestored', onRestored, false);
 
   if (O && O.onPower) O.onPower(() => { if (!dead) size(true); });
   const followFx = (l) => { if (!forced && !dead && levelOf(l) && capSoft(l) !== level) apply(capSoft(l)); };
@@ -524,6 +562,7 @@ export function createRenderer(opts) {
       if (dead || !asleep) return;
       asleep = false; perf.warm = 0; perf.last = 0;
       environment(); build(); size(true); onVisible();
+      if (!loop && !lost && !pageHidden()) drawNow();          // an on-demand scene: its picture again
     },
     asleep: () => asleep,
     /** live bloom changes, kept across tier changes: { strength, radius, threshold, tint (a THREE.Color, '#hex' or 0xhex) } */
@@ -581,12 +620,15 @@ export function createRenderer(opts) {
       return { quality: level, passes: api.passes().length, names: api.passes(), dpr, samples: composer ? tier.samples : 0,
         bloom: !!bloom, fxaa: !!(composer && tier.fxaa), hdr: bufferType === THREE.HalfFloatType, fps: perf.fps, steps: perf.steps,
         targets: composer ? 2 : 0, calls: i.render.calls, triangles: i.render.triangles, programs: (i.programs || []).length, env: extEnv ? 'external' : envTex ? o.env : 'none',
-        bloomStrength: bloom ? bloom.strength : 0, grade: post.lutName || null, focus: post.focusOn, tone: post.tone, hooks: hooks.length };
+        bloomStrength: bloom ? bloom.strength : 0, grade: post.lutName || null, focus: post.focusOn, tone: post.tone, hooks: hooks.length,
+        lost, restores, asleep };
     },
     dispose() {
       if (dead) return;
       dead = true; api.stop();
-      document.removeEventListener('visibilitychange', onVisible);
+      document.removeEventListener('visibilitychange', onVisible); document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', onPageHide); window.removeEventListener('pageshow', onPageShow); if (hideTimer) clearTimeout(hideTimer);
+      canvas.removeEventListener('webglcontextlost', onLost); canvas.removeEventListener('webglcontextrestored', onRestored);
       window.removeEventListener('olympus:theme-default', backToDefault);
       freeComposer(); extra.forEach((p) => p.dispose && p.dispose());
       if (post.lut) { post.lut.dispose(); post.lut = null; } hooks.length = 0; tierSubs.length = 0;

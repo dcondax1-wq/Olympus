@@ -31,12 +31,13 @@
 <script src="../olympus/agora-ui.js?v=1" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#e0b060'); r.setProperty('--oly-accent-rgb', '224, 176, 96'); })();</script>
 <link rel="stylesheet" href="polis.css?v=p1">
-<script src="../olympus/apps-list.js"></script>
-<script src="../olympus/polis.js?v=p1"></script>
-<script src="../olympus/polis-skyline-sky.js?v=p1"></script>
-<script src="../olympus/polis-skyline.js?v=p2"></script>
-<script src="poliscore.js?v=p1"></script>
-<script src="../olympus/polis-life.js?v=pl2"></script>
+<!-- QA round 6 (real-phone pass): the POLIS libraries are deferred (they ran in order before the first paint) -->
+<script src="../olympus/apps-list.js" defer></script>
+<script src="../olympus/polis.js?v=p1" defer></script>
+<script src="../olympus/polis-skyline-sky.js?v=p1" defer></script>
+<script src="../olympus/polis-skyline.js?v=p2" defer></script>
+<script src="poliscore.js?v=p1" defer></script>
+<script src="../olympus/polis-life.js?v=pl2" defer></script>
 <script>(function () {
   // the life of the city right under the skyline: every piece with something to say (an empty piece stays out of the way);
   // no polis.json on this site = the labelled DEMO file, so the street is never empty

@@ -78,7 +78,26 @@
   var mq = function (q) { try { return !!(window.matchMedia && window.matchMedia(q).matches); } catch (e) { return false; } };
   var framed = (function () { try { return window.top !== window; } catch (e) { return true; } })();
   var stored = function () { var v = get(KEY); return LEVELS.indexOf(v) >= 0 ? v : null; };
-  var level = stored() || (mq('(prefers-reduced-motion: reduce)') ? 'low' : 'high');
+  // LITE auto-detection (QA round 6, 2026-11-11): a low-end device or a data-saving line starts on low when the owner has not picked a
+  // level (never stored, so the owner's choice always wins). Signals: Save-Data, prefers-reduced-data, a 2g line, deviceMemory <= 2 GB,
+  // <= 4 GB with <= 4 cores, or <= 2 cores off Apple (iOS Safari reports no memory and a capped core count, so cores alone never flip an iPhone).
+  function lowEnd() {
+    try {
+      var n = navigator, c = n.connection || {}, dm = +n.deviceMemory || 0, hc = +n.hardwareConcurrency || 0;
+      var apple = /iP(hone|ad|od)|Macintosh/.test(n.userAgent || '') && !/Chrome|Android/.test(n.userAgent || '');
+      if (c.saveData === true) return 'save-data';
+      if (mq('(prefers-reduced-data: reduce)')) return 'reduced-data';
+      if (/(^|-)2g$/.test(String(c.effectiveType || ''))) return 'slow-line';
+      if (dm && dm <= 2) return 'memory';
+      if (dm && dm <= 4 && hc && hc <= 4) return 'memory+cores';
+      if (!apple && hc && hc <= 2) return 'cores';
+    } catch (e) { /* no signal: the default */ }
+    return '';
+  }
+  var autoWhy = lowEnd();
+  var fallback = function () { return mq('(prefers-reduced-motion: reduce)') || autoWhy ? 'low' : 'high'; };
+  var level = stored() || fallback();
+  if (!stored() && autoWhy) root.setAttribute('data-oly-auto', autoWhy);
   var subs = [], renderer = null, frames = 0, state = 'loading', veil = null, err = null, timer = 0;
 
   root.setAttribute('data-fx', level);
@@ -197,6 +216,75 @@
   fxOnLoad(function () { setTimeout(ambApply, 400); });
   function fxOnLoad(fn) { if (d.readyState === 'complete') fn(); else window.addEventListener('load', fn); }
 
+  // ---------------------------------------------------------------- WebGL guard (QA round 6, 2026-11-11: the real-phone pass)
+  // iOS drops WebGL contexts under memory pressure (and when too many are alive). A lost canvas is blank: the page would show a black
+  // hole where the hero was. Every WebGL canvas made on a kit page gets this guard on its first getContext (no app edit): on loss an overlay
+  // over the canvas shows its last still (track() takes one small JPEG of a settled frame) or the AGORA dusk backdrop, html gets data-oly-gl="lost", and the
+  // loss is marked restorable (preventDefault); on restore the still goes and data-oly-gl="ok". Apps / the render core rebuild their GPU state.
+  var glList = [], BACKDROP = 'radial-gradient(120% 75% at 50% 32%, #4a3b28 0%, #2a2219 46%, #14110e 100%)';
+  function glState() {
+    var lost = 0; for (var i = 0; i < glList.length; i++) if (glList[i].lost && glList[i].cv.isConnected) lost++;
+    root.setAttribute('data-oly-gl', lost ? 'lost' : 'ok');
+  }
+  function glGuard(cv) {
+    if (cv.__olyGuard) return cv.__olyGuard;
+    var g = { cv: cv, lost: false, still: '', ov: null, vis: undefined,
+      snap: function () {                                 // a ~1/3 size JPEG of what is on the canvas now (call right after a draw to the screen)
+        try {
+          var w = cv.width, h = cv.height, k = Math.min(1, 360 / Math.max(1, w)), c = d.createElement('canvas');
+          if (!w || !h) return '';
+          c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+          c.getContext('2d').drawImage(cv, 0, 0, c.width, c.height);
+          g.still = c.toDataURL('image/jpeg', 0.72);
+          c.width = c.height = 0;
+        } catch (e) { g.still = ''; }
+        return g.still;
+      } };
+    cv.__olyGuard = g; glList.push(g);
+    // the still sits OVER the canvas (an overlay of the canvas's own box, no taps): a lost canvas is not always see-through (Chromium paints
+    // its own placeholder), so a background under it would not show
+    function cover() {
+      if (!cv.isConnected || !cv.parentNode || !cv.getClientRects().length) return;      // not on screen (display:none): nothing to cover
+      // right after the canvas in the page, with the canvas's own stacking (z-index): it sits exactly where the canvas was and never over
+      // the page's own text and buttons above it
+      var o = g.ov || (g.ov = d.createElement('div')), cs = getComputedStyle(cv), fixed = cs.position === 'fixed' || !cv.offsetParent, st = o.style;
+      o.className = 'oly-gl-still'; o.setAttribute('aria-hidden', 'true');
+      st.cssText = 'position:' + (fixed ? 'fixed' : 'absolute') + ';pointer-events:none;margin:0;background-color:#14110e;background-size:cover;background-position:center;';
+      st.zIndex = cs.zIndex; st.borderRadius = cs.borderRadius;
+      st.backgroundImage = (g.still ? 'url("' + g.still + '"), ' : '') + BACKDROP;
+      if (fixed) { var r = cv.getBoundingClientRect(); st.left = r.left + 'px'; st.top = r.top + 'px'; st.width = r.width + 'px'; st.height = r.height + 'px'; }
+      else { st.left = cv.offsetLeft + 'px'; st.top = cv.offsetTop + 'px'; st.width = cv.offsetWidth + 'px'; st.height = cv.offsetHeight + 'px'; }
+      if (o.previousSibling !== cv) cv.parentNode.insertBefore(o, cv.nextSibling);
+      g.vis = cv.style.visibility; cv.style.visibility = 'hidden';
+    }
+    cv.addEventListener('webglcontextlost', function (e) {
+      try { e.preventDefault(); } catch (x) { /* nothing */ }         // ask the browser to give it back
+      g.lost = true;
+      try { cover(); } catch (x) { /* the backdrop is never needed */ }
+      glState();
+    }, false);
+    cv.addEventListener('webglcontextrestored', function () {
+      g.lost = false;
+      if (g.ov && g.ov.parentNode) g.ov.parentNode.removeChild(g.ov);
+      if (g.vis !== undefined) { cv.style.visibility = g.vis; g.vis = undefined; }
+      glState();
+    }, false);
+    return g;
+  }
+  (function () {                                          // every WebGL context on a kit page gets the guard
+    try {
+      var P = window.HTMLCanvasElement && HTMLCanvasElement.prototype, gc = P && P.getContext;
+      if (!gc || gc.__oly) return;
+      var wrap = function (kind) {
+        var c = gc.apply(this, arguments);
+        try { if (c && /^(webgl2?|experimental-webgl)$/.test(String(kind)) && !this.__olyGuard) glGuard(this); } catch (e) { /* never in the way */ }
+        return c;
+      };
+      wrap.__oly = true;
+      P.getContext = wrap;
+    } catch (e) { /* an old browser: no guard */ }
+  })();
+
   var O = {
     KEY: KEY, app: id, name: info[0], glyph: info[1], color: info[2], framed: framed,
     /** 'ultra' | 'high' | 'low' | 'off' */
@@ -247,10 +335,29 @@
     track: function (r) {
       if (!r || typeof r.render !== 'function' || r.__oly) return r;
       renderer = r; r.__oly = true;
-      var draw = r.render;
-      r.render = function () { var out = draw.apply(r, arguments); frames++; if (state === 'loading') ready(); return out; };
+      var draw = r.render, cv = r.domElement, g = cv ? glGuard(cv) : null, t0 = 0, shots = 0;
+      r.render = function () {
+        var out = draw.apply(r, arguments); frames++; if (state === 'loading') ready();
+        // the context-loss still: a small JPEG of a finished frame (a draw to the screen), 1.5 s after the first frame and once more at 8 s
+        // when the scene has settled (two encodes in the page's life, ~360 px wide)
+        if (g && shots < 2) {
+          var now = performance.now(); if (!t0) t0 = now;
+          if (now - t0 > (shots ? 8000 : 1500)) { try { if (!r.getRenderTarget || r.getRenderTarget() === null) { g.snap(); shots++; } } catch (e) { shots = 2; /* no still: the backdrop */ } }
+        }
+        return out;
+      };
       return r;
     },
+    /** guard(canvas): context loss never leaves a black page (every WebGL canvas on a kit page gets it on its first getContext) */
+    glGuard: function (cv) { return cv ? glGuard(cv) : null; },
+    /** the WebGL contexts this page made: { made, live (not lost, still in the page), lost } */
+    gl: function () {
+      var live = 0, lost = 0;
+      for (var i = 0; i < glList.length; i++) { var x = glList[i]; if (x.lost) lost++; else if (x.cv.isConnected) live++; }
+      return { made: glList.length, live: live, lost: lost };
+    },
+    /** why the kit started on low by itself ('save-data' | 'reduced-data' | 'slow-line' | 'memory' | 'memory+cores' | 'cores'), '' when it did not */
+    auto: function () { return stored() ? '' : autoWhy; },
     stats: function () {
       var i = renderer && renderer.info;
       if (!i) return { frames: frames, three: false };
@@ -491,7 +598,7 @@
   // cross-tab: the owner changed the level in Jarvis or another app
   window.addEventListener('storage', function (e) {
     if (e.key !== KEY) return;
-    var v = stored() || (mq('(prefers-reduced-motion: reduce)') ? 'low' : 'high');
+    var v = stored() || fallback();
     if (v !== level) { level = v; root.setAttribute('data-fx', v); emit(); }
   });
   // the theme changed (Jarvis's Look sheet, another tab, the frame around this app): the engine repainted the tokens

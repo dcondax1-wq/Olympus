@@ -104,7 +104,7 @@
     var ambWant = '', ambPlay = null, padNode = null, musWant = '', musPlay = null;
     var whiteB = null, pinkB = null, clapB = null, ks = {}, ksOrder = [];
     var active = [], lastAt = {}, duckN = 0, autoDuck = false, duckTimer = 0, hearL = null, unlockCbs = [];
-    var smpOn = true, ready = {}, loading = {}, failed = {}, waiters = {}, rrLast = {}, sampled = 0, loadedKb = 0, fmtUsed = '', loopUse = [];
+    var smpOn = true, ready = {}, loading = {}, failed = {}, waiters = {}, rrLast = {}, sampled = 0, loadedKb = 0, fmtUsed = '', loopUse = [], smpDead = false, fmtProbe = null;
 
     /* ---------------------------------------------------------------- settings */
     function ls() { try { return env.localStorage || null; } catch (e) { return null; } }
@@ -231,7 +231,15 @@
       return !!c;
     }
     function quietly(pr) { try { if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} }     // resume / suspend promises: a refusal is not an error
-    function resumeIfNeeded() { try { if (ctx && ctx.state !== 'running' && !hidden() && ctx.resume) quietly(ctx.resume()); } catch (e) {} }
+    function resumeIfNeeded() {
+      try {
+        if (!ctx || ctx.state === 'running' || hidden()) return;
+        if (ctx.resume) quietly(ctx.resume());
+        // iOS: a context made on a pointerdown that did not count as a gesture (or interrupted by a call) is unlocked by a sound started
+        // inside touchend / click: one silent sample with the resume
+        var b = ctx.createBuffer(1, 1, ctx.sampleRate || 22050), s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0);
+      } catch (e) {}
+    }
     function listen() {
       if (listening || !env.addEventListener) return;
       listening = true;
@@ -369,7 +377,7 @@
       try { if (a && a.canPlayType) { ogg = a.canPlayType('audio/ogg; codecs="opus"'); mp4 = a.canPlayType('audio/mp4; codecs="mp4a.40.2"'); } } catch (e) {}
       return ogg === 'probably' || (ogg && !mp4) ? ['ogg', 'm4a'] : ['m4a', 'ogg'];
     }
-    function smpUse() { return smpOn && !!AUDIO && !!ctx && !!ctx.decodeAudioData && typeof env.fetch === 'function' && !!smpBase(); }
+    function smpUse() { return smpOn && !smpDead && !!AUDIO && !!ctx && !!ctx.decodeAudioData && typeof env.fetch === 'function' && !!smpBase(); }
     function saveData() { try { var c = env.navigator && env.navigator.connection; return !!(c && c.saveData); } catch (e) { return false; } }
     function decode(ab) {
       return new Promise(function (ok, no) {
@@ -377,7 +385,13 @@
       });
     }
     function bytes(url) {
-      if (!RAW[url]) RAW[url] = env.fetch(url).then(function (r) { if (!r || !r.ok) throw new Error('http ' + (r && r.status)); return r.arrayBuffer(); });
+      if (!RAW[url]) RAW[url] = env.fetch(url).then(function (r) {
+        if (!r || !r.ok) throw new Error('http ' + (r && r.status));
+        // a host that answers a missing file with a page (an artifact copy, a captive portal): not audio, never decoded
+        var ct = ''; try { ct = String((r.headers && r.headers.get && r.headers.get('content-type')) || ''); } catch (e) {}
+        if (/text\/html/i.test(ct)) throw new Error('not audio');
+        return r.arrayBuffer();
+      });
       return RAW[url];
     }
     /** want(stem): start loading a file (once); cb(buffer) when it is ready (or never, when it fails: the synth plays instead) */
@@ -385,9 +399,23 @@
       if (ready[stem]) { if (cb) cb(ready[stem]); return true; }
       if (cb) (waiters[stem] = waiters[stem] || []).push(cb);
       if (loading[stem] || failed[stem] || !smpUse() || !AUDIO.files[stem]) return false;
+      if (!fmtUsed && fmtProbe) {                               // the format is still being found out on another file: wait for it, so a host
+        loading[stem] = fmtProbe.then(function () {             // without one format costs one failed request, not one per file
+          delete loading[stem];
+          if (!smpDead && !failed[stem] && !ready[stem]) want(stem);
+          return loading[stem] || ready[stem] || null;
+        });
+        return false;
+      }
       var order = fmts(), i = 0, c0 = ctx;
       function tryNext() {
-        if (i >= order.length) { failed[stem] = true; delete loading[stem]; waiters[stem] = []; return null; }
+        if (i >= order.length) {
+          failed[stem] = true; delete loading[stem]; waiters[stem] = [];
+          // neither format of the first file worked (no .m4a on this host and no Opus decoder, offline, ...): the synth plays for the
+          // session and nothing more is fetched (one failed request per format, not one per file: a quiet console)
+          if (!fmtUsed) smpDead = true;
+          return null;
+        }
         var f = order[i++], url = smpBase() + stem + '.' + f;
         return bytes(url).then(function (ab) { return decode(ab.slice(0)); }).then(function (buf) {
           if (c0 !== ctx) return null;
@@ -398,6 +426,7 @@
         }, function () { delete RAW[url]; return tryNext(); });
       }
       loading[stem] = tryNext();
+      if (!fmtUsed && !fmtProbe) fmtProbe = loading[stem];
       return false;
     }
     /** preload(['ui', 'loop-sea', ...] | 'all'): a promise that settles when those files are ready (or failed) */
@@ -462,7 +491,7 @@
       return true;
     }
     function smpState() {
-      var st = { on: smpOn, use: smpUse(), fmt: fmtUsed || (ctx ? fmts()[0] : ''), base: smpBase(), loaded: Object.keys(ready), failed: Object.keys(failed),
+      var st = { on: smpOn, use: smpUse(), dead: smpDead, fmt: fmtUsed || (ctx ? fmts()[0] : ''), base: smpBase(), loaded: Object.keys(ready), failed: Object.keys(failed),
         pending: Object.keys(loading), played: sampled, kb: Math.round(loadedKb), files: AUDIO ? Object.keys(AUDIO.files).length : 0 };
       return st;
     }
