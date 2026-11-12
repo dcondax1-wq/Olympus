@@ -192,10 +192,17 @@ def test_page():
                 check("c. the Golden pillar tour circles the pillar from 20 m", pl[0] == "pillar" and abs(pl[1] - 20) < 0.5, pl)
                 p.locator("#chips button", has_text="Overview").click()
                 p.wait_for_timeout(1500)
+                # QA Round 7: the chip taps leave the city half scrolled under the app bar; a tap there hit the bar's back link and left the page.
+                # Bring the city into view and only tap points where the city's own canvas is the top element.
+                p.evaluate("() => document.querySelector('#city').scrollIntoView({ block: 'center' })")
+                p.wait_for_timeout(400)
                 box = p.locator("#city").bounding_box()
                 got = None
-                for fy in (0.4, 0.5, 0.6, 0.3, 0.7, 0.45, 0.55):
+                for fy in (0.4, 0.5, 0.6, 0.3, 0.7, 0.45, 0.55, 0.75, 0.8):
                     for fx in (0.5, 0.3, 0.7, 0.2, 0.8, 0.4, 0.6):
+                        if not p.evaluate("([x, y]) => { const e = document.elementFromPoint(x, y); return !!e && e.tagName === 'CANVAS' && !!e.closest('#city'); }",
+                                          [box["x"] + box["width"] * fx, box["y"] + box["height"] * fy]):
+                            continue
                         p.evaluate("() => { document.querySelector('#sheet').hidden = true; }")
                         p.mouse.click(box["x"] + box["width"] * fx, box["y"] + box["height"] * fy)
                         p.wait_for_timeout(60)
