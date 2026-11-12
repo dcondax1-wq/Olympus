@@ -126,7 +126,7 @@ export function cityPlan(streams, tier) {
   const districts = streams.map((s, i) => {
     const ctr = districtCenter(i, streams.length), rot = ctr.a + Math.PI / 2, co = Math.cos(rot), si = Math.sin(rot);
     const parts = districtPlan(s.id, Hs[i], keep).map((b) => ({ ...b, x: +(ctr.x + b.x * co - b.z * si).toFixed(2), z: +(ctr.z + b.x * si + b.z * co).toFixed(2), ry: +(b.ry - rot).toFixed(3) }));
-    return { id: s.id, cx: +ctr.x.toFixed(2), cz: +ctr.z.toFixed(2), H: +Hs[i].toFixed(2), parts };
+    return { id: s.id, cx: +ctr.x.toFixed(2), cz: +ctr.z.toFixed(2), H: +Hs[i].toFixed(2), base: s.base == null ? null : s.base, parts };   // base: the 3D tablet's dollars
   });
   return { districts, filler: fillerPlan(260, keep), pillar: { h: +pillarHeight(c.base).toFixed(2), base: c.base } };
 }

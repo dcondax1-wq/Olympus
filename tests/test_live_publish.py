@@ -283,7 +283,7 @@ def main(argv=None) -> int:
         check("server.py: Publisher made with the heartbeat, started next to it, in the status API",
               "_lp.Publisher(BOT, HEARTBEAT" in srv and "LIVEPUB.start()" in srv and '"live_publish": LIVEPUB.status()' in srv)
         check(".gitignore: the scratch git dir is ignored", "data/live_pub.git/" in read(".gitignore"))
-        lj, idx, sw, more = read("tools/web_public/live.js"), read("tools/web_public/index.html"), read("tools/web_public/sw.js"), read("tools/web_public/more.js")
+        lj, idx, sw, more = read("tools/web_public/live.js"), read("tools/web_public/index.html") + read("tools/web_public/main.js"), read("tools/web_public/sw.js"), read("tools/web_public/more.js")   # main.js: the page's own script (QA Round 7)
         check("phone: live.js polls the API (raw fallback), 30-60 s, on focus, merges into D / HOMEJ, redraws Home",
               "contents/live.json?ref=live" in lj and "raw.githubusercontent.com" in lj and "visibilitychange" in lj
               and "LIVE.every = rem > 30 ? 30 : 60" in lj and "LIVE.apply(D)" in lj and "render(true)" in lj)

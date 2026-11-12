@@ -232,11 +232,22 @@ async function start() {
   say(why || `${ed.masthead.title}, ${ed.masthead.date_words}: edition ${ed.number}, ${C.allArticles(ed).length} stories.`);
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
   S.ready = true;
-  setTimeout(loadPeople, 1500);
+  whenNear($('talkBox'), loadPeople);
 }
+/** run fn once when el comes within ~1.5 screens of the view (an IntersectionObserver; without one: 1.5 s after the first paint).
+ *  QA Round 7: the kit used to come on a fixed 1.5 s timer, so on a busy phone (the 3D newsstand compiling) the interviews switched from
+ *  initials to portraits at a random moment; now they change only when the reader scrolls towards them, and a reader who never does saves the download. */
+function whenNear(el, fn) {
+  let done = false; const go = () => { if (!done) { done = true; fn(); } };
+  if (!el || typeof IntersectionObserver !== 'function') { setTimeout(go, 1500); return; }
+  const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '0px 0px 150% 0px' });
+  io.observe(el);
+}
+let peopleAsked = false;
 /** the optional people kit (portraits): added after the first paint so a missing file is never a load failure; the interviews are redrawn when it arrives */
 function loadPeople() {
-  if (window.OLYMPUS_PEOPLE) return;
+  if (window.OLYMPUS_PEOPLE || peopleAsked) return;
+  peopleAsked = true;
   const s = document.createElement('script'); s.type = 'module'; s.src = '../olympus/people.js?v=p2';
   s.addEventListener('load', () => { S.people = 'loaded'; if (S.ed && window.OLYMPUS_PEOPLE) renderBoxes(S.ed); });
   s.addEventListener('error', () => { S.people = 'missing'; });                 // no kit: initials stay

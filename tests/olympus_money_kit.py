@@ -39,6 +39,7 @@ def site(tmp, app, name, data=True, drop=()):
         src = os.path.join(WEB, "jarvis", f)
         if os.path.exists(src):
             shutil.copy(src, os.path.join(base, "jarvis", f))
+    link_assets(base)
     if data:
         shutil.copy(FIX, os.path.join(base, "data.json"))
     for f in drop:
@@ -46,6 +47,19 @@ def site(tmp, app, name, data=True, drop=()):
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(_Quiet, directory=base))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return srv, f"http://127.0.0.1:{srv.server_address[1]}/{app}/"
+
+
+def link_assets(base):
+    """The built site always publishes assets/ (the CC0 sounds, scans and HDRIs the shared kit uses; tools/build_web_dashboard.py copies it).
+    QA Round 7: without it the kit's first-tap UI sound asked for assets/audio/ui.m4a and ui.ogg and got two 404 console lines on every tap
+    test of these throw-away sites, which no real visitor ever sees. A link (a copy where links are not allowed) keeps the copy cheap."""
+    dst = os.path.join(base, "assets")
+    if os.path.exists(dst):
+        return
+    try:
+        os.symlink(os.path.join(WEB, "assets"), dst, target_is_directory=True)
+    except OSError:
+        shutil.copytree(os.path.join(WEB, "assets"), dst)
 
 
 def browser(pw):

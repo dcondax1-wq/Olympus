@@ -1,0 +1,130 @@
+{
+ "what": "QA Round 7 team W: console 404 audit",
+ "money_kit_test_sites_before": {
+  "ares": {
+   "/assets/audio/ui.ogg": 2,
+   "/assets/audio/ui.m4a": 2
+  },
+  "argus": {
+   "/assets/audio/ui.ogg": 4,
+   "/assets/audio/ui.m4a": 4
+  },
+  "athena": {
+   "/assets/audio/ui.ogg": 5,
+   "/assets/audio/ui.m4a": 4
+  }
+ },
+ "money_kit_test_sites_after": "test_ares_page 92/92, test_athena_page 132/132, test_argus_page 100/102 (the 2 left: render-core pass count on software GL, pre-existing): no 404 lines",
+ "site_smoke_on_tools_web_public_demo1": {
+  "root": [
+   "icons/icon-512.png",
+   "icons/icon-192.png",
+   "home.json",
+   "data.json",
+   "icons/icon.svg"
+  ],
+  "ares": [
+   "data.json",
+   "home.json"
+  ],
+  "atlas": [
+   "home.json"
+  ],
+  "atlascity": [
+   "home.json"
+  ],
+  "forum": [
+   "home.json"
+  ],
+  "hermes": [
+   "datacity/discoveries.json",
+   "kalshi.json"
+  ],
+  "inbox": [
+   "kalshi.json"
+  ],
+  "jarvis": [
+   "kalshi.json",
+   "home.json",
+   "money/index.json"
+  ],
+  "kalshi": [
+   "kalshi.json",
+   "kalshi/kit.json",
+   "kalshicity/forward.json",
+   "kalshicity/scan.json"
+  ],
+  "kalshicity": [
+   "kalshi.json"
+  ],
+  "labyrinth": [
+   "home.json"
+  ],
+  "ledger": [
+   "home.json",
+   "kalshi.json"
+  ],
+  "nemesis": [
+   "home.json"
+  ],
+  "observatory": [
+   "kalshicity/scan.json"
+  ],
+  "oikos": [
+   "money/oikos.json"
+  ],
+  "plutus": [
+   "data.json"
+  ],
+  "symposium": [
+   "home.json",
+   "kalshi.json",
+   "money/index.json",
+   "money/chrysos.json",
+   "money/mercury.json",
+   "money/sibyl.json",
+   "money/oikos.json",
+   "money/arbiter.json",
+   "cronos/status.json"
+  ]
+ },
+ "always_published_by_the_build": [
+  "cronos/status.json",
+  "data.json",
+  "home.json",
+  "icons/icon-192.png",
+  "icons/icon-512.png",
+  "icons/icon.svg",
+  "kalshi/kit.json"
+ ],
+ "optional_files_that_can_be_missing_on_a_built_site": [
+  "datacity/discoveries.json",
+  "kalshi.json",
+  "kalshicity/forward.json",
+  "kalshicity/scan.json",
+  "money/arbiter.json",
+  "money/chrysos.json",
+  "money/index.json",
+  "money/mercury.json",
+  "money/oikos.json",
+  "money/sibyl.json"
+ ],
+ "herald_people_kit_race_cpu_x6": {
+  "old": {
+   "version": "old",
+   "at_test_read": "initials,initials,initials",
+   "plus_3s_no_scroll": "portrait,portrait,portrait",
+   "after_scroll": "portrait,portrait,portrait",
+   "people": "loaded",
+   "errs": []
+  },
+  "new": {
+   "version": "new",
+   "at_test_read": "initials,initials,initials",
+   "plus_3s_no_scroll": "initials,initials,initials",
+   "after_scroll": "portrait,portrait,portrait",
+   "people": "loaded",
+   "errs": []
+  }
+ }
+}

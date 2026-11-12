@@ -28,7 +28,7 @@ from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
-from tests.olympus_money_kit import JARVIS_FILES, RES, WEB, _Quiet, browser, check, open_page, orb_hits, tidy_errors  # noqa: E402
+from tests.olympus_money_kit import JARVIS_FILES, RES, WEB, _Quiet, browser, check, link_assets, open_page, orb_hits, tidy_errors  # noqa: E402
 
 PAGE = os.path.join(WEB, "argus")
 NOW_ISO = "2026-11-04T10:30:00-05:00"           # a Wednesday, 10:30 ET (EST: daylight saving ended 2026-11-01)
@@ -77,6 +77,7 @@ def mksite(tmp, name, h, c, k):
     base = os.path.join(tmp, name)
     shutil.copytree(PAGE, os.path.join(base, "argus"))
     shutil.copytree(os.path.join(WEB, "olympus"), os.path.join(base, "olympus"))
+    link_assets(base)                                  # the built site's assets/ (the kit's sounds): no 404 on the first tap
     os.makedirs(os.path.join(base, "jarvis"))
     for f in JARVIS_FILES:
         src = os.path.join(WEB, "jarvis", f)
