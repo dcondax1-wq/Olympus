@@ -354,10 +354,3 @@ html[data-fx="off"] *, html[data-fx="off"] *::before, html[data-fx="off"] *::aft
 
 /* phone-fit 2026-11-10 (clipped text on a 320 px screen: wrap instead of cutting) */
 .stream button span { white-space: normal; overflow: visible; text-overflow: clip; }
-
-/* the stoic line at the end of "Learned today" (olympus/polis-life.js, QA round 6): a compact marble tablet inside the glass sheet,
-   no second card frame; it never takes the list's room (flex: none, the list scrolls) */
-.day > .pl-placed { flex: none; margin: 2px 0 0; padding: 0; border: 0; background: none; box-shadow: none; }
-.day > .pl-placed .pl-tablet { padding: 12px 14px 10px; }
-.day > .pl-placed .pl-inscr { font-size: 15px; line-height: 1.4; }
-.day > .pl-placed .pl-note { display: none; }

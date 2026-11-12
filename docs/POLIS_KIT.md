@@ -134,7 +134,7 @@ the piece is put back after every redraw, before the next paint, and a wiped her
 | Helios, Aegis | grove | after Drawdown left; after All three shields |
 | Nike, Kronos | amphorae | after The shelves; after the month |
 | Colosseum | statues | after Hall of champions |
-| Journal, Mind | stoic | after the hero; at the end of Learned today |
+| Journal | stoic | after the hero (Mind keeps no stoic line: its contract is that the page fetches nothing, and the line lives in `polis.json`) |
 | Polis | all eight | right under the skyline (empty pieces hidden; no file = the labelled demo) |
 
 Kit pieces placed the same round: the gold laurel beside Nike's "Your wins", the oil lamp while Polis's city life loads.
