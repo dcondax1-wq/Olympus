@@ -207,7 +207,7 @@ export class Hellas {
     const nt = Math.round(Math.min(T.trees, 30 + Math.round(R * .9)) * (desert ? .25 : ruin ? .6 : 1)), tb = new Batch(); tb.cone(0, 0, 0, .5, 1, PAL.cypress, this.lite ? 5 : 6);
     const tg = own(tb.geometry()), tm = new THREE.InstancedMesh(tg, this.matVC, nt);
     for (let i = 0; i < nt; i++) { const inner = i % 5 === 0, a = r() * 6.283, rr = inner ? lerp(hr + 3, A - 6, r()) : R + 8 + r() * 62, s = 1.6 + r() * 1.6; if (!inner && Math.abs(a - Math.PI / 2) < .09) { d.scale.setScalar(0); } else d.scale.set(s, s * (inner ? 3.6 : 2 + r() * 2.4), s);
-      d.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); d.rotation.set(0, 0, 0); d.updateMatrix(); tm.setMatrixAt(i, d.matrix); if (i % 3) col.setRGB(2.1, 2.3, 1.9); else col.setRGB(2.9, 2.6, 1.9); tm.setColorAt(i, col); }
+      d.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr); d.rotation.set(0, 0, 0); d.updateMatrix(); tm.setMatrixAt(i, d.matrix); if (inner) (plan.trees || (plan.trees = [])).push({ x: Math.cos(a) * rr, z: Math.sin(a) * rr, r: .5 * s, h: s * 3.6 }); /* QA6: the walk camera and the walker go round the cypresses */ if (i % 3) col.setRGB(2.1, 2.3, 1.9); else col.setRGB(2.9, 2.6, 1.9); tm.setColorAt(i, col); }
     tm.instanceMatrix.needsUpdate = true; tm.instanceColor.needsUpdate = true; tm.frustumCulled = false; G.add(tm); own(tm); this.treeMesh = tm;
     // the people (one instanced draw): the KEEPER at the south gate (always), townspeople on the streets around their village (phone-high only)
     this.col = polisCollider(plan); this.npcs = T.npcs && !this.reduced ? polisNpcs(plan, Math.min(T.npcs, plan.villages.length * 3)) : [];

@@ -908,12 +908,12 @@
       if (C.tinted && st.citTint === key) return C.tinted;
       var cv2 = C.tinted || doc.createElement('canvas'); cv2.width = A.canvas.width; cv2.height = A.canvas.height; var g = cv2.getContext('2d');
       g.clearRect(0, 0, cv2.width, cv2.height); g.drawImage(A.canvas, 0, 0); g.globalCompositeOperation = 'source-atop';
-      var dark = clamp(L.night * 0.62, 0, 0.62); g.fillStyle = 'rgba(28,22,40,' + dark.toFixed(3) + ')'; g.fillRect(0, 0, cv2.width, cv2.height);
+      var dark = clamp(L.night * 0.42, 0, 0.42); g.fillStyle = 'rgba(28,22,40,' + dark.toFixed(3) + ')'; g.fillRect(0, 0, cv2.width, cv2.height);
       if (L.night < 0.5) { g.fillStyle = 'rgba(255,196,120,' + (0.10 * (1 - L.night * 2)).toFixed(3) + ')'; g.fillRect(0, 0, cv2.width, cv2.height); }
       g.globalCompositeOperation = 'source-over'; C.tinted = cv2; st.citTint = key; return cv2;
     }
     function drawCitizens(t, still) {
-      var C = st.cit; if (!C) return; var A = C.A, k = view.k, src = citTint(), hgt = 15 * k, wdt = hgt * A.frame[0] / A.frame[1];
+      var C = st.cit; if (!C) return; var A = C.A, k = view.k, src = citTint(), hgt = 19 * k, wdt = hgt * A.frame[0] / A.frame[1];
       for (var i = 0; i < C.walkers.length; i++) {
         var w = C.walkers[i];
         if (!still) { var d = (t * w.v + w.ph * w.span * 2) % (w.span * 2); w.dir = d < w.span ? 1 : -1; w.x = w.x0 + (d < w.span ? d : w.span * 2 - d); }

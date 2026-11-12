@@ -15,12 +15,13 @@ export function worldOf(plan) {
   const P = plan || {}, boxes = [], walls = [], circles = [];
   for (const h of P.houses || []) boxes.push({ x0: h.x - h.hx, x1: h.x + h.hx, z0: h.z - h.hz, z1: h.z + h.hz, y0: 0, y1: Math.max(3, (h.h || 5) + 1.2), tag: 'house' });
   if (P.hillR) circles.push({ x: 0, z: 0, r: P.hillR, y1: Math.max(10, P.hillR * 0.55), tag: 'acropolis hill' });
+  for (const t of P.trees || []) circles.push({ x: t.x, z: t.z, r: t.r + 0.15, y1: t.h, tag: 'cypress' });     // QA6: the talk close-up once stood inside a cypress
   const R = P.R || 0;
   if (R) for (let i = 0; i < 48; i++) { const a = (i / 48) * Math.PI * 2, b = ((i + 1) / 48) * Math.PI * 2; walls.push({ ax: Math.sin(a) * (R + 1), az: Math.cos(a) * (R + 1), bx: Math.sin(b) * (R + 1), bz: Math.cos(b) * (R + 1), t: 0.8, y1: 7, tag: 'city wall' }); }
   return makeWorld({ boxes, walls, circles, ground: 0 });
 }
 /** where you may walk: the polis's own walking collider (streets, not houses, not the hill, inside the wall), on a 0.6 m grid with 0.3 m of room */
-export function navOf(plan, col) { const R = (plan && plan.R) || 80; return createGrid({ x0: -R, x1: R, z0: -R, z1: R, cell: 0.6 }, (x, z) => col.hits(x, z, 0.05), { pad: 0.3 }); }
+export function navOf(plan, col) { const R = (plan && plan.R) || 80, T = (plan && plan.trees) || []; return createGrid({ x0: -R, x1: R, z0: -R, z1: R, cell: 0.6 }, (x, z) => col.hits(x, z, 0.05) || T.some((t) => Math.hypot(x - t.x, z - t.z) < t.r), { pad: 0.3 }); }
 const toH = (yaw) => Math.PI - yaw, toYaw = (h) => Math.PI - h;     // the polis walker's yaw (forward = (sin, -cos)) <-> a heading (forward = (sin, cos))
 
 export function createWalkDirector(scene, opts) {
