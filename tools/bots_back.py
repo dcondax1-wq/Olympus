@@ -78,7 +78,13 @@ def wait_server(seconds, port=PORT, sleep=time.sleep) -> bool:
 
 
 def safe_mode(cfg) -> str | None:
-    """'paper' | 'demo' (Sim) | 'live' | None. Conservative: Tradovate counts as live, an unreadable record as live."""
+    """'paper' | 'demo' (Sim) | 'live' | None. Conservative: Tradovate counts as live, an unreadable record as live, and a
+    NinjaTrader start without its own account name too (the server would take the account from .env.local.ps1, which this
+    process does not see: it could be the real eval)."""
+    if not isinstance(cfg, dict):
+        return "live"
+    if cfg.get("adapter") == "ninjatrader" and not str(cfg.get("nt_account") or "").strip():
+        return "live"
     try:
         from engine import watchdog
         return watchdog.mode_of(cfg, "live")
