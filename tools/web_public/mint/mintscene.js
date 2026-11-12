@@ -9,7 +9,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createStage, shaftGeo, latheGeo, boxGeo, mergeParts, mat4 } from '../olympus/hero-stage.js';
 
 const GOLD = 0xc8a24a, BRONZE = 0x9c6b3c, STONE = 0xb8ad9a;
-const MAXH = 3.3, MINH = 0.3, R0 = 0.3;
+const MAXH = 3.3, MINH = 0.5, R0 = 0.3;
 let R = null;
 
 const CAPC = new THREE.Color('#d4ae58'), ratio = (hex) => { const c = new THREE.Color(hex); return new THREE.Color(c.r / CAPC.r, c.g / CAPC.g, c.b / CAPC.b); };
@@ -26,13 +26,15 @@ function mount(box, pillars) {
   if (R) dispose();
   const list = (pillars || []).slice(0, 5), n = list.length;
   ORDER = rankOrder(list);
-  const H = createStage(box, { palette: 'golden', hdri: 'golden', fit: { center: [0, 2.3, 0.2], size: [9.0, 4.7, 6.0], pitch: 0.17, margin: 1.0 }, fov: 32, sway: 0.2, sunDir: [0.6, 0.55, 0.62], shadowExt: 5, sky: { sunX: 0.78, sunY: 0.8, templeX: 0.16, horizon: 0.6 }, fogNear: 18, fogFar: 46 });
+  const H = createStage(box, { palette: 'golden', hdri: 'golden', fit: { center: [0, 2.2, 0.2], size: [8.2, 4.6, 5.4], pitch: 0.16, margin: 1.0 }, fov: 32, sway: 0.2, sunDir: [0.6, 0.55, 0.62], shadowExt: 5, sky: { sunX: 0.78, sunY: 0.8, templeX: 0.16, horizon: 0.6 }, fogNear: 18, fogFar: 46 });
   if (!H) return false;
   const { kit, B } = H;
   H.ground({ mat: 'paving', color: '#a39176' });
-  const top = H.plinth({ r: 3.55, steps: 3, stepH: 0.14, run: 0.34, drum: 0.36 });
+  const top = H.plinth({ r: 3.2, steps: 2, stepH: 0.14, run: 0.3, drum: 0.34 });
+  H.amphora({ x: -4.6, z: 0.6, s: 1.3, ry: 0.5 }); H.amphora({ x: 4.5, z: 0.9, s: 1.1, ry: -0.4 });
+  for (const sx of [-1, 1]) B.brazier({ x: sx * 4.4, z: -1.8, h: 1.1, r: 0.3 });
   // an inlaid ring of darker marble and a key band on the plinth top
-  B.add('marble:uv', new THREE.RingGeometry(2.95, 3.25, 64).rotateX(-Math.PI / 2), mat4(0, top + 0.004, 0), '#a89a84');
+  B.add('marble:uv', new THREE.RingGeometry(2.9, 3.15, 64).rotateX(-Math.PI / 2), mat4(0, top + 0.004, 0), '#a89a84');
   H.build(H.root);
   // the pillars: three instanced draws (fluted marble shafts, gilded capitals, bronze bases), scaled to the dollars
   const shaft = new THREE.InstancedMesh(shaftGeo({ h: 1, r: R0, flutes: 20, lite: kit.geoLite, rows: 1 }), kit.mat('marble', { color: '#efe8da' }), Math.max(1, n));

@@ -86,8 +86,8 @@ function build(rc, scene, camera, canvas, o) {
     needle.rotation.y = -shown * Math.PI / 180 + (reduced || !settled ? 0 : Math.sin(t * 1.3) * 0.02);       // a tiny settle wobble once it has arrived
     const w = canvas.clientWidth || 1, h = canvas.clientHeight || 1; if (w !== lastW || h !== lastH) { lastW = w; lastH = h; D.backdrop(w, h); }
     camera.aspect = w / h; camera.updateProjectionMatrix();
-    const vf = (camera.fov * Math.PI) / 180, hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect), dd = Math.max(2.6 / Math.tan(vf / 2), 3.5 / Math.tan(hf / 2)) + 0.6;
-    const pitch = 0.98 - tilt; camera.position.set(0, Math.sin(pitch) * dd, Math.cos(pitch) * dd); camera.lookAt(0, -0.1, 0.2);
+    const vf = (camera.fov * Math.PI) / 180, hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect), dd = Math.max(3.0 / Math.tan(vf / 2), 3.75 / Math.tan(hf / 2)) + 0.8;
+    const pitch = 0.9 - tilt; camera.position.set(0, Math.sin(pitch) * dd, Math.cos(pitch) * dd); camera.lookAt(0, -0.1, 0.2);
     rc.render();
   });
   return api;

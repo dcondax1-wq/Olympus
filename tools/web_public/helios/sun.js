@@ -70,7 +70,7 @@ function build(rc, scene, camera, canvas, o) {
   D.blobs([-4.4, -2.2, 0, 2.2, 4.4].map((x) => [x, 0.4, 0.5, 1, top + 0.012]), { opacity: 0.4 });
   let want = { rise: 0.5, rays: 0 }, shown = { rise: reduced ? 0.5 : 0, rays: 0 }, yaw = 0, drag = null, settled = true, lastW = 0, lastH = 0;
   function place() {
-    sun.position.y = -1.0 + shown.rise * 4.0;                              // below the floor line at 0, fully up (over the frieze) at 1
+    sun.position.y = -0.8 + shown.rise * 6.0;                              // below the floor line at 0, clear over the frieze at 1
     const n = Math.round(shown.rays);
     rays.forEach((g, i) => { g.visible = i < n; });
     halo.set(0, 0.6 + shown.rise * 0.6, 0); halo.glow.geometry.attributes.position.setY(0, sun.position.y - 0.35); halo.commit();
@@ -98,8 +98,8 @@ function build(rc, scene, camera, canvas, o) {
     }
     const w = canvas.clientWidth || 1, h = canvas.clientHeight || 1; if (w !== lastW || h !== lastH) { lastW = w; lastH = h; D.backdrop(w, h); }
     camera.aspect = w / h; camera.updateProjectionMatrix();
-    const vf = (camera.fov * Math.PI) / 180, hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect), d = Math.max(2.6 / Math.tan(vf / 2), 5.7 / Math.tan(hf / 2)) + 1.0;
-    camera.position.set(Math.sin(yaw) * d, 1.9 + d * 0.06, Math.cos(yaw) * d); camera.lookAt(0, 1.75, 0);
+    const vf = (camera.fov * Math.PI) / 180, hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect), d = Math.max(3.4 / Math.tan(vf / 2), 5.7 / Math.tan(hf / 2)) + 1.0;
+    camera.position.set(Math.sin(yaw) * d, 2.6 + d * 0.04, Math.cos(yaw) * d); camera.lookAt(0, 2.75, 0);
     rc.render();
   });
   return api;

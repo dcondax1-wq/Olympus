@@ -37,11 +37,11 @@ export function paint(svg, o) {
   for (const m in MATS) { const c = MATS[m]; F[m] = lin(m, [[0, c[0]], [0.3, c[1]], [0.55, c[2]], [1, c[3]]], { x1: 0, y1: 0, x2: 1, y2: 0 }); F[m + 'Top'] = lin(m + 'Top', [[0, c[1]], [1, c[2]]]); }
   const hz = h * (opt.horizon ?? 0.7), sx = w * (opt.sunX ?? 0.72), sy = opt.sunY != null ? h * opt.sunY : hz * 0.8;
   if (opt.sky !== false) {
-    el('rect', { x: 0, y: 0, width: w, height: hz + 1, fill: F.sky });
+    el('rect', { x: -w, y: -h, width: w * 3, height: hz + h + 1, fill: F.sky });        // bleeds past the viewBox: a wider stage shows sky, not bars
     el('circle', { cx: sx, cy: sy, r: Math.max(w, h) * 0.55, fill: F.glow });
     if (opt.disc !== false) el('circle', { cx: sx, cy: sy, r: Math.max(3, w * 0.022), fill: S.glow, opacity: 0.9 });
     // far hills, a temple, near hills, cypresses
-    const ridge = (base, amp, col, seed) => { let s = seed, y = base, d = 'M0 ' + h + ' L0 ' + base; for (let x = 0; x <= w; x += 10) { s = (s * 1664525 + 1013904223) >>> 0; y = Math.max(base - amp, Math.min(base + amp * 0.3, y + ((s / 4294967296) - 0.5) * amp * 0.6)); d += ' L' + x + ' ' + y.toFixed(1); } el('path', { d: d + ' L' + w + ' ' + h + ' Z', fill: col }); };
+    const ridge = (base, amp, col, seed) => { let s = seed, y = base, d = 'M' + -w + ' ' + h * 2 + ' L' + -w + ' ' + base; for (let x = -w; x <= 2 * w; x += 10) { s = (s * 1664525 + 1013904223) >>> 0; y = Math.max(base - amp, Math.min(base + amp * 0.3, y + ((s / 4294967296) - 0.5) * amp * 0.6)); d += ' L' + x + ' ' + y.toFixed(1); } el('path', { d: d + ' L' + 2 * w + ' ' + h * 2 + ' Z', fill: col }); };
     ridge(hz - h * 0.04, h * 0.05, S.hills2, 7);
     if (opt.temple !== false) {
       const tx = w * (opt.templeX ?? 0.2), ty = hz - h * 0.035, tw = w * 0.1, th = tw * 0.45, g = el('g', { fill: S.glow, opacity: 0.45 });
@@ -50,8 +50,8 @@ export function paint(svg, o) {
       el('path', { d: `M${tx - tw * 0.55} ${ty - th * 0.7} L${tx} ${ty - th * 1.05} L${tx + tw * 0.55} ${ty - th * 0.7} Z` }, g);
     }
     ridge(hz + h * 0.005, h * 0.03, S.hills, 19);
-    for (let i = 0; i < 6; i++) { const x = ((i * 97 + 31) % 100) / 100 * w, ch = h * (0.05 + (i % 3) * 0.02); el('ellipse', { cx: x, cy: hz - ch / 2 + h * 0.01, rx: ch * 0.13, ry: ch / 2, fill: '#1a1008', opacity: 0.5 }); }
-    el('rect', { x: 0, y: hz, width: w, height: h - hz, fill: F.ground });
+    for (let i = 0; i < 9; i++) { const x = (((i * 97 + 31) % 100) / 100) * w * 2 - w * 0.5, ch = h * (0.05 + (i % 3) * 0.02); el('ellipse', { cx: x, cy: hz - ch / 2 + h * 0.01, rx: ch * 0.13, ry: ch / 2, fill: '#1a1008', opacity: 0.5 }); }
+    el('rect', { x: -w, y: hz, width: w * 3, height: h - hz + h, fill: F.ground });
   }
   const P = {
     svg, el, F, w, h, hz,
@@ -89,7 +89,7 @@ export function paint(svg, o) {
     },
     /** an owl coin seen from the front */
     coin(cx, cy, r, co) { const g = el('g', {}); el('circle', { cx, cy, r, fill: co && co.silver ? F.silver : F.coin, stroke: '#6a4a14', 'stroke-width': Math.max(0.6, r * 0.08) }, g); el('circle', { cx, cy, r: r * 0.72, fill: 'none', stroke: '#6a4a14', 'stroke-opacity': 0.4, 'stroke-width': Math.max(0.5, r * 0.05) }, g); return g; },
-    vignette() { return el('rect', { x: 0, y: 0, width: w, height: h, fill: F.vig, 'pointer-events': 'none' }); },
+    vignette() { return el('rect', { x: -w * 0.25, y: -h * 0.1, width: w * 1.5, height: h * 1.2, fill: F.vig, 'pointer-events': 'none' }); },
   };
   return P;
 }

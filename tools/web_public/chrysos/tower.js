@@ -59,7 +59,7 @@ function build(rc, scene, camera, canvas, o) {
       D.shade(g); group.add(g); items.push({ g, bronze, coins, ring, h: 0, c: 0, dummy: new THREE.Object3D() });
     }
     const span = Math.max(4.2, w + 3.2);
-    camera.userData.dist = span * 1.25 + 2.5;
+    camera.userData.dist = span * 1.0 + 1.8;
   }
   function frame() {
     const d = camera.userData.dist || 9;

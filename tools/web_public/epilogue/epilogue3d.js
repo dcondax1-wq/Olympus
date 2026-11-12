@@ -17,8 +17,8 @@ function paintPaper(g, w, h) {
   g.fillStyle = 'rgba(140,100,50,0.07)'; for (let i = 0; i < 1600; i++) g.fillRect((i * 97) % w, (i * 61) % h, 8, 1);
   g.strokeStyle = 'rgba(120,80,30,0.45)'; g.lineWidth = 3; g.strokeRect(20, 18, w - 40, h - 36);
   g.fillStyle = '#4a3218'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '600 ' + Math.round(h * 0.085) + 'px Georgia, "Times New Roman", serif';
-  DAYS.forEach((d, i) => { const x = w * 0.06 + (w * 0.88 * i) / 6; g.fillText(d, x, h * 0.26); });
-  g.fillStyle = 'rgba(74,50,24,0.35)'; for (let r = 0; r < 3; r++) for (let i = 0; i < 7; i++) { const x = w * 0.06 + (w * 0.88 * i) / 6; g.fillRect(x - w * 0.045, h * (0.68 + r * 0.07), w * 0.09 * (0.5 + ((i * 7 + r * 3) % 5) / 10), 3); }
+  DAYS.forEach((d, i) => { const x = w * 0.1 + (w * 0.8 * i) / 6; g.fillText(d, x, h * 0.26); });
+  g.fillStyle = 'rgba(74,50,24,0.35)'; for (let r = 0; r < 3; r++) for (let i = 0; i < 7; i++) { const x = w * 0.1 + (w * 0.8 * i) / 6; g.fillRect(x - w * 0.045, h * (0.68 + r * 0.07), w * 0.09 * (0.5 + ((i * 7 + r * 3) % 5) / 10), 3); }
 }
 
 function build() {
@@ -66,7 +66,7 @@ function layout(k) {
   st.paper.scale.x = Math.max(0.001, W * e); st.paper.position.x = -half + (W * e) / 2;
   const map = st.paper.material.map; if (map) { map.repeat.set(Math.max(0.001, e), 1); map.offset.set(0, 0); }
   st.ribbon.scale.x = Math.max(0.001, W * e * 0.94); st.ribbon.position.set(-half + (W * e) / 2, 0, 0.03);
-  st.knots.forEach((m, i) => { const x = -half + W * 0.06 + (W * 0.88 * i) / 6; m.visible = x <= -half + W * e - 0.05; m.position.set(x, 0, 0.08); });
+  st.knots.forEach((m, i) => { const x = -half + W * 0.1 + (W * 0.8 * i) / 6; m.visible = x <= -half + W * e - 0.05; m.position.set(x, 0, 0.08); });
 }
 
 function paint(days) {

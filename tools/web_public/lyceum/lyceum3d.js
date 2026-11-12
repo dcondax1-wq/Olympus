@@ -16,7 +16,7 @@ const CH = 3.4, R0 = 0.3, XS = 2.4, Z0 = 2.2, DZ = 2.6;
 function build() {
   const lite = !!(O && O.lite && O.lite()), reduced = !!(O && O.reduced && O.reduced());
   st.still = lite || reduced;
-  const H = createStage(box, { canvas: cv, reduce: st.still, tier: lite ? 'low' : undefined, palette: 'golden', hdri: 'golden', target: [0, 1.75, -2.2], dist: 11.2, height: 0.75, fov: 44, sway: 0.07, swayPeriod: 52, aspectK: 0.7,
+  const H = createStage(box, { canvas: cv, reduce: st.still, tier: lite ? 'low' : undefined, palette: 'golden', hdri: 'golden', target: [0, 2.0, -2.6], dist: 13.6, height: 1.0, fov: 44, sway: 0.07, swayPeriod: 52, aspectK: 0.7,
     sunDir: [-0.55, 0.55, 0.62], shadowExt: 9, key: 2.6, sky: { sunX: 0.3, sunY: 0.75, templeX: 0.85, horizon: 0.66 }, fogNear: 20, fogFar: 46 });
   if (!H) throw new Error('no WebGL');
   const { kit, B } = H;
