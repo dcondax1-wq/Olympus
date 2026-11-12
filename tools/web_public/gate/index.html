@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en" data-theme="agora">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Olympus</title>
+<meta name="description" content="The OLYMPUS Gate: one front door. Right now in plain words, the three places you need most in one tap, every other app in two taps, and a search.">
+<meta name="theme-color" content="#14110e">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Olympus">
+<!-- THE GATE (OLYMPUS, AGORA look, 2026-11-12). Owner: "When I click the dashboard link there's just a shit ton of buttons ... make something that's very easy
+     on how to get to things." One front door: a "Right now" card (bots on / off and how old the numbers are, drawdown left, today's $, the next trade window),
+     three big Start-here tiles (Today, Bots, Jarvis: 1 tap), four district doors (Trading, Money, Life, Worlds) that open a short sheet, most useful first
+     (2 taps to any app), a search by name / purpose / plain words, the last 4 apps opened, and the labs under a small Workshop link.
+     Works at gate/ AND copied to the site root as olympus-live.html: the line below finds the site root (GATE_BASE) and every link is built from it.
+     Read only: it reads ../home.json (and olympus/truth.js) and sends nothing; when they 404 it says so in plain words. -->
+<style>html, body { background: #14110e; color: #f3ece0; margin: 0; }</style>
+<script>(function () {
+  var p = location.pathname || '', b = /\/gate\/(index\.html)?$/.test(p) ? '../' : '';
+  window.GATE_BASE = b;
+  var d = document, h = d.head || d.getElementsByTagName('head')[0];
+  try { if (window.top !== window) d.documentElement.className += ' framed'; } catch (e) { d.documentElement.className += ' framed'; }
+  var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = b + 'gate/gate.css?v=g1'; h.appendChild(l);
+  var i = d.createElement('link'); i.rel = 'icon'; i.href = b + 'gate/icon.svg'; h.appendChild(i);
+  ['olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g1'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
+})();</script>
+</head>
+<body>
+<main id="gate" class="g-main">
+  <header class="g-head">
+    <h1 class="g-title">Olympus</h1>
+    <p class="g-sub">Everything in two taps.</p>
+  </header>
+
+  <section class="g-card g-now" id="now" aria-labelledby="nowH" data-state="loading">
+    <div class="g-nowhead"><h2 id="nowH">Right now</h2><span class="g-badge" id="nowBadge">Checking</span></div>
+    <p class="g-nowline" id="nowLine" role="status" aria-live="polite">Looking for the bots' numbers...</p>
+    <dl class="g-facts" id="nowFacts" hidden></dl>
+    <a class="g-btn primary" id="bringBack" data-to="nq/index.html?howto=1" href="nq/index.html?howto=1" hidden>Bring the bots back</a>
+    <p class="g-nowfoot" id="nowFoot"></p>
+  </section>
+
+  <section class="g-start" aria-labelledby="startH">
+    <h2 class="g-h2" id="startH">Start here</h2>
+    <div class="g-tiles">
+      <a class="g-tile" id="tile-today" data-app="today" data-to="index.html" href="index.html"><svg class="g-ticon" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 27a12 12 0 0 1 24 0"/><path d="M20 7v4M8.5 12.5l2.8 2.8M31.5 12.5l-2.8 2.8M3 27h34M7 32h26"/></svg><b>Today</b><small>The full dashboard</small></a>
+      <a class="g-tile" id="tile-nq" data-app="nq" data-to="nq/index.html" href="nq/index.html"><svg class="g-ticon" viewBox="0 0 40 40" aria-hidden="true"><path d="M7 15h26M9 33h22M11 15v18M20 15v18M29 15v18"/><path d="M11 6c-2 2 0 3.5-1.2 6h2.4c-.8-2.3.8-3.4-1.2-6zM20 4.5c-2.2 2.2 0 4-1.4 7.5h2.8c-.9-2.8.9-4.1-1.4-7.5zM29 6c-2 2 0 3.5-1.2 6h2.4c-.8-2.3.8-3.4-1.2-6z"/></svg><b>Bots</b><small>On or off, drawdown</small></a>
+      <a class="g-tile" id="tile-jarvis" data-app="jarvis" data-to="jarvis/index.html" href="jarvis/index.html"><svg class="g-ticon" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="6"/><path d="M20 3v3M20 34v3M3 20h3M34 20h3"/></svg><b>Jarvis</b><small>Ask anything</small></a>
+    </div>
+  </section>
+
+  <section class="g-recent" id="recentSec" aria-labelledby="recentH" hidden>
+    <h2 class="g-h2" id="recentH">Recent</h2>
+    <div class="g-chips" id="recent"></div>
+  </section>
+
+  <section class="g-districts" aria-labelledby="distH">
+    <h2 class="g-h2" id="distH">Everything else</h2>
+    <div class="g-doors" id="doors">
+      <a class="g-door" data-district="trading" data-to="atlas/index.html" href="atlas/index.html"><svg class="g-dicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M10 7v26M20 4v32M30 9v22"/><rect x="7" y="12" width="6" height="13" rx="1"/><rect x="17" y="9" width="6" height="17" rx="1"/><rect x="27" y="14" width="6" height="10" rx="1"/></svg><b>Trading</b><small>Bots, risk, the day, research</small></a>
+      <a class="g-door" data-district="money" data-to="atlas/index.html" href="atlas/index.html"><svg class="g-dicon" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="9.5"/><path d="M20 13.5v13M23 16.8c-.3-1.2-1.5-1.9-3-1.9-1.7 0-3 .9-3 2.3 0 3.2 6 1.9 6 5.1 0 1.4-1.3 2.4-3 2.4-1.6 0-2.8-.7-3.1-1.9"/></svg><b>Money</b><small>Real money, plans, Kalshi</small></a>
+      <a class="g-door" data-district="life" data-to="atlas/index.html" href="atlas/index.html"><svg class="g-dicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 35V9"/><path d="M20 15c-4-.6-6.5-3.3-6.5-7.2 4.2.3 6.5 3 6.5 7.2zM20 15c4-.6 6.5-3.3 6.5-7.2-4.2.3-6.5 3-6.5 7.2zM20 24c-5-.6-8.3-3.8-8.3-8.4 5.2.3 8.3 3.6 8.3 8.4zM20 24c5-.6 8.3-3.8 8.3-8.4-5.2.3-8.3 3.6-8.3 8.4z"/></svg><b>Life</b><small>Plan, inbox, paper, settings</small></a>
+      <a class="g-door" data-district="worlds" data-to="atlas/index.html" href="atlas/index.html"><svg class="g-dicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M5 14 20 6l15 8zM7 14h26M9.5 17.5v12M16 17.5v12M24 17.5v12M30.5 17.5v12M6 30h28M4 34h32"/></svg><b>Worlds</b><small>The 3D city, workers, duels</small></a>
+    </div>
+  </section>
+
+  <section class="g-find" aria-labelledby="findH">
+    <h2 class="g-h2" id="findH"><label for="q">Find an app</label></h2>
+    <div class="g-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+      <input id="q" type="search" placeholder="money, risk, kalshi, journal..." autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-controls="results" aria-describedby="findHint"></div>
+    <p class="g-hint" id="findHint">Search by name or by what it does.</p>
+    <div class="g-list" id="results" aria-live="polite"></div>
+  </section>
+
+  <footer class="g-foot">
+    <button type="button" class="g-quiet" id="workshopBtn" data-district="workshop">Workshop (labs and test pages)</button>
+    <p>Read only: nothing here can trade or change a bot.</p>
+  </footer>
+</main>
+
+<div class="g-scrim" id="scrim" hidden></div>
+<section class="g-sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetH" hidden>
+  <div class="g-grab" aria-hidden="true"></div>
+  <div class="g-sheethead"><div><h2 id="sheetH">Trading</h2><p class="g-sheetsub" id="sheetSub"></p></div><button type="button" class="g-close" id="sheetClose" aria-label="Close">Close</button></div>
+  <div class="g-sheetbody" id="sheetBody"></div>
+</section>
+<script>(function () { var b = window.GATE_BASE || '', a = document.querySelectorAll('[data-to]'), i;
+  for (i = 0; i < a.length; i++) a[i].setAttribute('href', b + a[i].getAttribute('data-to'));
+})();</script>
+</body>
+</html>
