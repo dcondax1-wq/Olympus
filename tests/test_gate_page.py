@@ -169,6 +169,7 @@ def serve(over):
                 return
             super().do_HEAD()
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(H, directory=AK.WEB))
+    srv.handle_error = lambda request, client_address: None     # a page left mid-download (Enter -> Aegis) is not an error
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return srv, f"http://127.0.0.1:{srv.server_address[1]}"
 
