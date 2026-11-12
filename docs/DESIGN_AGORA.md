@@ -66,3 +66,9 @@ Opt out of the shell: `<html data-ag-noshell>`.
 **Rules of thumb.** One hero number per screen (the $ that matters, rounded figures, 30-44 px). Labels above values, muted, 13 px. Every number tabular.
 Every R next to its $. Status = a badge with a dot, never a coloured stripe across a card. "Demo" is one small chip, not a banner on every card. Text in olive or terracotta uses `--ag-olive-text` / `--ag-terra-text` (the fills `--ag-olive` / `--ag-terra` are 3-4:1 as text: bars only); the shell maps `.pos / .up / .neg / .dn` and the status pills to the text-safe ink.
 An `<svg>` has no `.hidden` property: toggle the attribute (`toggleAttribute('hidden', ...)`), or the flat fallback stays invisible.
+
+**The orb's seat (QA round 6).** Opened alone, the OLYMPUS seal (`.oly-home`, bottom-right, 44 px, 18 px in) steps aside (`.oly-away`: faded, no taps)
+while the page scrolls down and whenever text, a control, a picture or a card sits under it (only the page background or a 3D canvas may be under it); it comes back on a scroll up and at the page end. It starts aside and shows itself once its seat is clear; the look runs right after a painted frame (no forced layout).
+Every page still ends with room for it: the app's own bottom padding (176 px + safe area in the base block) and `tools/phone_fit_audit.py`
+checks it (`orb`: nothing readable or tappable under the seat at the end of the scroll). `OLYMPUS.seatClear()` says whether the seat is clear now.
+Pages that size inputs to `width: 100%` need `box-sizing: border-box` (`.ag-field` has it), or they scroll sideways at 375 / 390.

@@ -75,3 +75,8 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .ctl .btn { flex: 1 1 96px; }
 .selt { margin: 0; font: 600 18px/1.3 var(--ag-serif); }
 .when { margin: 0; font-size: 13px; color: var(--ag-gold); font-variant-numeric: tabular-nums; }
+
+/* Nike holds the victor's wreath: a small gold laurel beside the hero title (POLIS kit, QA round 6) */
+#app .winhead { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+#app .winlaurel { flex: none; width: 34px; height: 34px; --polis-laurel: 34px; line-height: 0; }
+#app .winlaurel .polis-laurel { width: 34px; height: 34px; }

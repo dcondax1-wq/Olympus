@@ -20,14 +20,17 @@
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o4">
 <link rel="stylesheet" href="../olympus/agora.css?v=a1">
+<link rel="stylesheet" href="../olympus/polis.css?v=p1">
 <script src="../olympus/themes.js?v=o4"></script>
 <script src="../olympus/olympus.js?v=o4" data-app="nike"></script>
 <script src="../olympus/intro-app.js?v=i5" defer></script>
+<script src="../olympus/polis.js?v=p1" defer></script>
+<script src="../olympus/polis-life.js?v=pl2" defer></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/agora-ui.js?v=1" defer></script>
 <script src="../olympus/sfx.js?v=s3" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
-<link rel="stylesheet" href="nike.css?v=a1">
+<link rel="stylesheet" href="nike.css?v=a2">
 </head>
 <body>
 <main id="app">
@@ -38,7 +41,7 @@
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
 
   <section class="ag-card card hero" aria-labelledby="heroH">
-    <div class="row"><h2 id="heroH">Your wins</h2><span class="pill" id="count">...</span></div>
+    <div class="row"><span class="winhead"><span class="winlaurel" data-polis-laurel="laurel gold wreath" aria-hidden="true"></span><h2 id="heroH">Your wins</h2></span><span class="pill" id="count">...</span></div>
     <p class="lead" id="headline"></p>
     <p class="note" id="demoNote" hidden></p>
   </section>
@@ -48,6 +51,7 @@
     <div id="hall" class="hall"></div>
     <p class="note">Gold is earned. Grey stone is still to win: tap it to see what it needs.</p>
   </section>
+  <section class="pl-place" data-polis-life="amphorae" aria-label="The storeroom: one amphora per trade" hidden></section>
 
   <section class="ag-card card" id="inspect" aria-labelledby="inspH">
     <div class="row"><h2 id="inspH">Look closer</h2><span class="pill" id="tPill">...</span></div>

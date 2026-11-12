@@ -106,3 +106,6 @@ html.sheeted, html.sheeted body { overflow: hidden; }
 @keyframes rise { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
 
 .ifplan { margin: 0; padding: 10px 12px; border-radius: 12px; background: #2a2217; border: 1px solid #c8a24a; color: #c8a24a; font-weight: 600; }
+
+/* the stoic line (olympus/polis-life.js, QA round 6): one of the journal's own cards, same radius */
+#app > .pl-placed { border-radius: var(--oly-r-card, 16px); }

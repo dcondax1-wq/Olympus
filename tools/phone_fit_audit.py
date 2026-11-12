@@ -9,6 +9,8 @@ at 390 x 844 and 375 x 667 with ?demo=1&q=low and checks what a phone user would
   console   no console errors, no failed requests, no off-origin requests (a missing optional *.json is a WARN: the app falls back to its fixture)
   fixed     no heading hidden under a fixed / sticky bar at the top
   contrast  body text at least 4.5:1 (3:1 for large text) against its real background (muted tokens included)
+  orb       at the end of the scroll nothing you read or tap sits under the orb's seat (the bottom-right 44 px seal, 18 px from the edges):
+            every page ends with clear room for it (QA round 6)
 
     python tools/phone_fit_audit.py                       all apps, both sizes, table, screenshots in <tmp>/phone_fit
     python tools/phone_fit_audit.py --apps nike,argo --out shots --timeout 90 --json report.json
@@ -32,7 +34,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
 APPS = ["delphi", "pnyx", "planner", "mint", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kairos", "kratos", "pythia", "mintcity", "gallery"]
 SIZES = [(390, 844), (375, 667)]
-CHECKS = ["scroll", "wide", "clip", "tap", "console", "fixed", "contrast"]
+CHECKS = ["scroll", "wide", "clip", "tap", "console", "fixed", "contrast", "orb"]
 
 JS = r"""
 () => {
@@ -93,7 +95,7 @@ JS = r"""
     const e = t.parentElement; if (!e || seen.has(e) || kit(e) || !vis(e) || e.closest('svg, canvas, script, style, noscript, [aria-hidden=true], [hidden]') || e.closest(':disabled')) continue;
     seen.add(e);
     const cs = getComputedStyle(e); let op = 1; for (let n = e; n && n.nodeType === 1; n = n.parentElement) op *= parseFloat(getComputedStyle(n).opacity);
-    const fg0 = parse(cs.color); if (!fg0) continue;
+    const fg0 = parse(cs.color); if (!fg0 || fg0.a === 0) continue;   // transparent text is not shown text (a building's invisible tap area keeps its name for screen readers)
     const bg = bgOf(e); if (!bg) continue;
     const fg = mix({ ...fg0, a: fg0.a * op }, bg), a = lum(fg), b = lum(bg), ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
     const px = parseFloat(cs.fontSize), large = px >= 24 || (px >= 18.66 && parseInt(cs.fontWeight, 10) >= 700), need = large ? 3 : 4.5;
@@ -101,6 +103,29 @@ JS = r"""
     if (ratio < need) out.contrast.push(`${label(e)} ${ratio.toFixed(2)}:1 "${txt.slice(0, 22)}"`);
   }
   return out;
+}
+"""
+
+# the orb's seat at the end of the scroll: the seal itself (or, framed / without the kit, the same 44 px square) is left out; a canvas (3D scene)
+# or an empty stretch of a card under it is fine, text, a control or a picture is not
+ORB_JS = r"""
+() => {
+  window.scrollTo(0, document.documentElement.scrollHeight);
+  const a = document.querySelector('.oly-home'), W = innerWidth, H = innerHeight;
+  const r = a && a.getBoundingClientRect().width ? a.getBoundingClientRect() : { left: W - 62, top: H - 62, width: 44, height: 44 };
+  const HIT = 'button, a[href], input, select, textarea, summary, label, [role=button], [role=tab], [role=link]';
+  const own = (e) => [...e.childNodes].some((n) => n.nodeType === 3 && /\S/.test(n.textContent));
+  const surf = (e) => { const cs = getComputedStyle(e), bg = cs.backgroundColor; if (cs.backgroundImage === 'none' && (!bg || bg === 'transparent' || /,\s*0\)$/.test(bg))) return false; const q = e.getBoundingClientRect(); return !(q.width >= W - 1 && q.height >= H - 1); };
+  const out = [];
+  for (const [fx, fy] of [[.5, .5], [.2, .5], [.8, .5], [.5, .2], [.5, .8]]) {
+    for (const e of document.elementsFromPoint(r.left + r.width * fx, r.top + r.height * fy)) {
+      if (a && (e === a || a.contains(e))) continue;
+      if (e === document.body || e === document.documentElement || e.tagName === 'CANVAS' || e.tagName === 'MAIN') break;
+      if (e.closest(HIT) || own(e) || /^(IMG|VIDEO|svg)$/i.test(e.tagName) || surf(e)) { const t = (e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/)[0] : '')); if (!out.includes(t)) out.push(t); break; }
+    }
+  }
+  window.scrollTo(0, 0);
+  return out.map((t) => 'under the orb at the scroll end: ' + t);
 }
 """
 
@@ -170,6 +195,7 @@ def audit_one(br, origin, app, w, h, timeout, shots, q="low", device=None):
         if time.time() - t0 > timeout:
             raise TimeoutError("timeout")
         r = p.evaluate(JS)
+        res["orb"] = p.evaluate(ORB_JS)
         for k in ("scroll", "wide", "clip", "tap", "fixed", "contrast"):
             res[k] = r[k]
         res["minContrast"] = r["minContrast"]

@@ -179,12 +179,20 @@ function aboutView() {
     h('p', '', 'The tower clock shows New York time. Violet lines are LIT levels, the green line is the entry, red the stop, gold the target. Jewels mark the sweep, inducement, CISD and the other steps.'),
     h('p', '', 'Best possible = a perfect exit on the same entry, from the best price the trade ever reached at the size traded. It is hindsight, not a promise.'),
     S.demo ? h('p', '', 'DEMO: the site data was not reachable, so this is a recorded copy of a few trades.') : null,
-    h('p', '', 'Read-only. It never places or changes an order.')];
+    h('p', '', 'Read-only. It never places or changes an order.'),
+    festivalPlace()];
+}
+// the festival calendar (olympus/polis-life.js): the market days ahead, as the city keeps them; stays hidden when nothing is published
+function festivalPlace() {
+  const el = h('section', 'pl-place chronos-fest');
+  el.setAttribute('data-polis-life', 'festivals'); el.setAttribute('aria-label', 'Festival calendar: the market days ahead'); el.hidden = true;
+  return el;
 }
 function openSheet(view) {
   S.view = view;
   $('sheetTitle').textContent = TITLES[view];
   kids($('sheetBody'), view === 'steps' ? stepsView() : view === 'verdict' ? verdictView() : view === 'lab' ? labBody() : aboutView());
+  if (view === 'about' && window.OLYMPUS_POLIS_LIFE && window.OLYMPUS_POLIS_LIFE.place) window.OLYMPUS_POLIS_LIFE.place($('sheetBody'));
   $('sheet').hidden = false;
   document.querySelectorAll('#pills button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
   history.replaceState(null, '', '#' + view);

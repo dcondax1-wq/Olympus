@@ -84,7 +84,7 @@ select.field { appearance: none; -webkit-appearance: none; background-image: lin
 .ptxt { display: grid; gap: 2px; min-width: 0; flex: 1; }
 .ptop { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .pname { font: 600 17px/1.15 var(--ag-serif); }
-.ptitle { font-size: 12.5px; color: var(--ag-gold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ptitle { font-size: 12.5px; line-height: 1.3; color: var(--ag-gold); overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }   /* the whole role on a phone (two lines), not a cut-off one */
 .pdoing { font-size: 13px; color: var(--ag-soft); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 
 /* talk bubbles (round table, debate, stand-up) */

@@ -110,3 +110,31 @@ Each app adds the two lines above, then:
 | Every app | replace spinners with `lamp`; `pottery(name, {frame:'tile'})` for empty states; `data-polis-attic` on dates |
 | Polis home (agent C) / Polis life (agent B) | the skyline and civic modules can call `pottery`, `laurel`, `coin`, `atticDate`, `meander` directly |
 | `sw.js` | add `olympus/polis.js`, `olympus/polis.css` (and `olympus/polis-lab.html` if the lab should work offline) to the precache list |
+
+## Polis life in the apps (QA round 6, 2026-11-11)
+
+`olympus/polis-life.js` draws the city's civic pieces from `olympus/polis.json`. An app places one with zero code:
+
+```html
+<script src="../olympus/polis-life.js?v=pl2" defer></script>
+<section class="pl-place" data-polis-life="grove" aria-label="The olive grove: one tree per account" hidden></section>
+```
+
+The file is loaded once per page; each piece is drawn as one AGORA v2 card (`.pl-placed`: radius 20, `--ag-e2`, 18 px title). A piece with
+nothing to show stays hidden (no empty civic cards); `data-polis-life-empty="show"` keeps the quiet line. `?demo=1` reads `polis-demo.json`
+and says DEMO under the piece. A page that redraws itself (the Zenith home) uses `OLYMPUS_POLIS_LIFE.keep(host, kind, {when, label, before})`:
+the piece is put back after every redraw, before the next paint, and a wiped herald stops its timer. `place(root)` runs the zero-code pass again.
+
+| App | Piece | Where |
+|---|---|---|
+| Zenith home (root `index.html`) | herald | under the status and the accounts (`zenith_agora.css` orders it, keeps it out of the fold) |
+| Herald | herald | between the newsstand and the paper |
+| Pythia | oracle, festivals | after Today; after Coming up |
+| Chronos | festivals | in the About sheet |
+| Helios, Aegis | grove | after Drawdown left; after All three shields |
+| Nike, Kronos | amphorae | after The shelves; after the month |
+| Colosseum | statues | after Hall of champions |
+| Journal | stoic | after the hero (Mind keeps no stoic line: its contract is that the page fetches nothing, and the line lives in `polis.json`) |
+| Polis | all eight | right under the skyline (empty pieces hidden; no file = the labelled demo) |
+
+Kit pieces placed the same round: the gold laurel beside Nike's "Your wins", the oil lamp while Polis's city life loads.

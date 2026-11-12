@@ -370,9 +370,76 @@
       var a = el('a', 'oly-home'); a.href = '../jarvis/'; a.setAttribute('aria-label', 'Back to Jarvis'); a.title = 'Back to Jarvis';
       a.appendChild(el('span', 'oly-home-o', 'Ο'));
       d.body.appendChild(a);
+      seatWatch(a);
     }
     if (state === 'failed') showErr();
   }
+  // the seal never covers what the owner reads or taps (QA round 6): it steps aside (.oly-away: faded, no taps) while the page scrolls
+  // down and whenever text, a button, a link, a field, a picture or a card sits under its seat; it comes back on a scroll up or at the
+  // page's end (every app ends with clear space under the seat). Only the page's own background or a canvas (a 3D scene) may be under it.
+  var SEAT_HIT = 'button, a[href], input, select, textarea, summary, label, [role="button"], [role="tab"], [role="link"]';
+  function ownText(e) {
+    for (var n = e.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && /\S/.test(n.nodeValue)) return true;
+    return false;
+  }
+  // a card, a panel, a band: anything with its own painted surface that is not the page itself (a page-size wrapper is the page)
+  function surface(e) {
+    var cs = window.getComputedStyle(e), bg = cs.backgroundColor, rr;
+    if (cs.backgroundImage === 'none' && (!bg || bg === 'transparent' || /,\s*0\)$/.test(bg))) return false;
+    rr = e.getBoundingClientRect();
+    return !(rr.width >= window.innerWidth - 1 && rr.height >= window.innerHeight - 1);
+  }
+  function covers(a) {
+    if (!d.elementsFromPoint) return false;
+    // the seat itself, not the seal's current box: offset* ignore the step-aside transform (a shrunk, lowered seal must not read as clear)
+    var r = { left: a.offsetLeft, top: a.offsetTop, width: a.offsetWidth, height: a.offsetHeight },
+      P = [[0.5, 0.5], [0.15, 0.5], [0.85, 0.5], [0.5, 0.15], [0.5, 0.85]], i, j, list, e, t;
+    if (!r.width) return false;
+    for (i = 0; i < P.length; i++) {
+      list = d.elementsFromPoint(r.left + r.width * P[i][0], r.top + r.height * P[i][1]);
+      for (j = 0; j < list.length; j++) {
+        e = list[j];
+        if (e === a || a.contains(e)) continue;
+        t = e.tagName;
+        if (e === d.body || e === root || t === 'CANVAS' || t === 'MAIN') break;
+        if ((e.closest && e.closest(SEAT_HIT)) || ownText(e) || t === 'IMG' || t === 'VIDEO' || t === 'svg' || t === 'SVG' || surface(e)) return true;
+      }
+    }
+    return false;
+  }
+  function seatWatch(a) {
+    var lastY = window.pageYOffset || 0, settle = 0, raf = 0;
+    function y() { return window.pageYOffset || root.scrollTop || 0; }
+    function away(on) { if (on && d.activeElement === a) on = false; a.classList.toggle('oly-away', !!on); }
+    var late = 0;
+    function check() { raf = 0; clearTimeout(late); late = 0; away(covers(a)); }
+    // look right after a frame is painted (rAF, then a task): the layout is fresh then, so the look never forces an extra layout
+    // (a 3D app moving its labels every frame keeps its layouts-per-frame budget); a busy page that paints no frame for 700 ms
+    // is looked at anyway
+    function soon() {
+      if (raf) return;
+      raf = (window.requestAnimationFrame || setTimeout)(function () { setTimeout(function () { if (raf) check(); }, 0); }) || 1;
+      late = setTimeout(function () { if (raf) check(); }, 700);
+    }
+    // it starts aside and shows itself once the first look finds its seat clear: it never flashes over a page's text while it loads
+    away(true);
+    window.addEventListener('scroll', function () {
+      var now = y(), dy = now - lastY; lastY = now;
+      if (dy > 4 && now > 48) away(true);                 // reading on: out of the way
+      else if (dy < -4) soon();                           // going back up: back, unless something sits under it
+      clearTimeout(settle); settle = setTimeout(soon, 180);
+    }, { passive: true });
+    window.addEventListener('resize', soon, { passive: true });
+    a.addEventListener('focus', function () { away(false); });
+    // the page fills in after load (data, the shell, a tab change): look again when the page's markup changes (at most every 400 ms)
+    // and now and then anyway (a layout that moved without new markup), never while the tab is hidden
+    var mo = 0;
+    if (window.MutationObserver && d.body) new MutationObserver(function () { if (!mo) mo = setTimeout(function () { mo = 0; if (!d.hidden) soon(); }, 400); })
+      .observe(d.body, { childList: true, subtree: true });
+    setTimeout(soon, 400); setTimeout(soon, 1500);
+    setInterval(function () { if (!d.hidden) soon(); }, 2000);
+  }
+  O.seatClear = function () { var a = d.querySelector('.oly-home'); return a ? !covers(a) : true; };
   function lift() {
     if (!veil) return;
     var v = veil; veil = null;

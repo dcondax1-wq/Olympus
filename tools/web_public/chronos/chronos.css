@@ -73,6 +73,11 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #43392
 .sheet h2 { margin: 0; font: 700 13px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--c-acc); }
 .sheet .body { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 12px 12px; }
 .sheet p { margin: 6px 0; font-size: 12.5px; color: var(--oly-dim); overflow-wrap: anywhere; }
+/* the festival calendar in the About sheet (olympus/polis-life.js, QA round 6): its own header and title, not the sheet's */
+.sheet .body > .pl-placed { margin: 14px 0 4px; }
+.sheet .body > .pl-placed header.pl-head { display: block; padding: 0; }
+.sheet .body > .pl-placed h2.pl-title { font: 600 18px/1.2 var(--ag-serif, "Iowan Old Style", Palatino, Georgia, serif); color: #f3ece0; }
+.sheet .body > .pl-placed p.pl-sub { margin: 3px 0 0; font-size: 13.5px; }
 .sheet p.strong { color: var(--oly-text); font-size: 13px; }
 .sheet .head { margin: 6px 0 4px; font: 800 17px/1.25 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--c-gold);  overflow-wrap: anywhere; }
 .sheet .head.loss { color: var(--c-bad);  }
