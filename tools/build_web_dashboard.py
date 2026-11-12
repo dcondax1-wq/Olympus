@@ -1030,6 +1030,17 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     lab, run_skipped, run_extra = _runs(out, runs_dir, lm)
     docs, doc_skipped, left_out, code_dropped = _docs(out, writeups_dir)
     unknown_runs = _link(lab, docs)
+    # QA Round 6: Clio reads writeups/index.json (it 404'd and fell back to data.json); Stoa reads ../alerts.json (site file only,
+    # never data/alerts.json): an honest empty one when the build has none. Never fatal.
+    try:
+        os.makedirs(os.path.join(out, "writeups"), exist_ok=True)
+        with open(os.path.join(out, "writeups", "index.json"), "w", encoding="utf-8") as fh:
+            json.dump({"v": 1, "writeups": docs["writeups"]}, fh, separators=(",", ":"))
+        if not os.path.exists(os.path.join(out, "alerts.json")):
+            with open(os.path.join(out, "alerts.json"), "w", encoding="utf-8") as fh:
+                json.dump({"v": 1, "alerts": []}, fh)
+    except Exception as e:  # noqa: BLE001
+        print(f"  writeups/alerts index: skipped ({e})")
     replays = _load(os.path.join(LAB, "replays.json"), {}) or {}
     charts = _charts(out, replays)
     data = {
