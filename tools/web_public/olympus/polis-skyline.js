@@ -153,7 +153,7 @@
   // ------------------------------------------------------------------------------------------------ materials
   // a phone frame: the moored ships stand wider apart (their berths spread a little) so they can be drawn larger; polis.js
   // places the ships' tap targets with the same numbers (SK.berthX)
-  var BERTH_MID = 2640, BERTH_SPREAD = 1.08;   // round the middle of the harbour view, so the four plates stay on a 375 px screen
+  var BERTH_MID = 2836, BERTH_SPREAD = 1.08;   // anchored on the last berth: the ships spread to the left, so the four plates stay on a 375 / 390 px screen
   var MAT = { marble: [236, 226, 208], marble2: [222, 210, 190], stone: [198, 180, 150], rock: [176, 152, 118], rock2: [150, 124, 94], terracotta: [178, 92, 58], tile: [160, 78, 50], plaster: [232, 218, 194],
     wood: [104, 70, 44], bronze: [156, 107, 60], gold: [214, 172, 82], olive: [96, 108, 62], olive2: [128, 136, 86], cypress: [44, 58, 40], grass: [128, 128, 72], sea: [58, 104, 136], deep: [34, 70, 100], path: [214, 196, 160], paint: [70, 98, 140], red: [150, 64, 48] };
 
