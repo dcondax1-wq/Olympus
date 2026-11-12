@@ -6,7 +6,9 @@
  *   - a failure (404, 401/403 incl. the rate limit, 5xx, timeout, network) is remembered for this browser session (sessionStorage, at most 6 h,
  *     shared by every app page of the site), and later asks get an immediate 404 Response made here: no network, no console line, no retry storm;
  *   - optional files of this site that nothing may have published (kalshi.json: the PC's copy of the Kalshi feed) are asked once a session too:
- *     a 404 is remembered the same way.
+ *     a 404 is remembered the same way;
+ *   - the owner can always ask again: a fetch within 3 s of a tap / click / key (Refresh, pull to refresh) goes to the real source, and a page
+ *     can name sources it asks afresh on every load (data-fresh="raw:kalshi-feed,..." on its script tag: the Kalshi page).
  * Every other request goes through untouched. Read-only: it never sends anything new, never changes a request, never stores a response.
  * window.OLYMPUS_NET: state() -> { id: { ok, at, status, why, label } } · line(id) -> "Kalshi feed: offline since 22:04 (404), asked once" ·
  * forget() clears the memory · 'olympus-net' event on window when a source changes. Safari 15 safe (no ??, no top-level await).
@@ -24,9 +26,18 @@
     { id: 'site:kalshi.json', label: "this site's kalshi.json", local: /\/kalshi\.json$/, optional: true },
   ];
   var mem = {};
+  // the owner asked (a tap, a click, a key, a pull to refresh): a fetch within 3 s of it tries the real source again, whatever is remembered
+  var touchedAt = 0, GESTURE_MS = 3000;
+  ['pointerdown', 'click', 'keydown', 'touchend'].forEach(function (t) { try { window.addEventListener(t, function () { touchedAt = Date.now(); }, true); } catch (_) { /* no events (a test) */ } });
   function load() { try { var j = JSON.parse(sessionStorage.getItem(KEY) || '{}'); return j && typeof j === 'object' ? j : {}; } catch (_) { return {}; } }
   function save(all) { try { sessionStorage.setItem(KEY, JSON.stringify(all)); } catch (_) { /* private mode: memory only */ } }
   function get(id) { var all = load(), e = all[id] || mem[id]; return e && Date.now() - (e.at || 0) < TTL ? e : null; }
+  // <script src="quiet-net.js" data-fresh="raw:kalshi-feed,site:kalshi.json">: a source's OWN page asks it afresh once per page load
+  // (the Kalshi page must notice the bot the moment it is linked); the page's own polls are still remembered after that one answer
+  try {
+    var me = document.currentScript, fresh = me && me.getAttribute('data-fresh');
+    if (fresh) { var all0 = load(); fresh.split(',').forEach(function (id) { delete all0[id.trim()]; }); save(all0); }
+  } catch (_) { /* no document (a test) */ }
   function put(id, e) { mem[id] = e; var all = load(); all[id] = e; save(all); try { window.dispatchEvent(new CustomEvent('olympus-net', { detail: { id: id, entry: e } })); } catch (_) { /* old browser */ } }
 
   function sourceOf(u) {
@@ -67,7 +78,8 @@
     var s = sourceOf(u);
     if (!s || (init && init.method && String(init.method).toUpperCase() !== 'GET')) return raw(input, init);
     var e = get(s.id);
-    if (e && e.ok === false) return Promise.resolve(gone(s, e));
+    if (e && e.ok === false && Date.now() - touchedAt > GESTURE_MS) return Promise.resolve(gone(s, e));
+    if (e && e.ok === false) return attempt(s, input, init);   // the owner just asked: one real try
     if (e && e.ok === true) return attempt(s, input, init);    // it answered this session: a normal request, still watched (a later failure is remembered)
     if (flight[s.id]) return flight[s.id].then(function () { var x = get(s.id); return x && x.ok === false ? gone(s, x) : raw(input, init); });
     var p = attempt(s, input, init);

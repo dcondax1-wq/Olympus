@@ -50,9 +50,13 @@ function rawFetch(input, init) {
   if (how === 'hang') return new Promise((ok, no) => { const s = init && init.signal; if (s) s.addEventListener('abort', () => no(Object.assign(new Error('aborted'), { name: 'AbortError' }))); });
   return Promise.resolve(new Response('{"ok":true}', { status: how, headers: { 'content-type': 'application/json' } }));
 }
-const window = { fetch: rawFetch, dispatchEvent: (e) => events.push(e.detail && e.detail.id), location };
+const handlers = {};
+const window = { fetch: rawFetch, dispatchEvent: (e) => events.push(e.detail && e.detail.id), location, addEventListener: (t, f) => { (handlers[t] = handlers[t] || []).push(f); } };
+store['olympus.deadsrc.v1'] = JSON.stringify({ 'site:kalshi.json': { ok: false, at: Date.now(), status: 404, why: 'HTTP 404' }, 'raw:nq-dashboard': { ok: false, at: Date.now() - 7 * 3600e3, status: 404, why: 'HTTP 404' } });
+const document = { currentScript: { getAttribute: (k) => (k === 'data-fresh' ? 'site:kalshi.json' : null) } };
 const CustomEvent = class { constructor(t, o) { this.type = t; this.detail = o && o.detail; } };
-new Function('window', 'location', 'sessionStorage', 'CustomEvent', 'Response', 'URL', 'AbortController', 'setTimeout', 'clearTimeout', src)(window, location, sessionStorage, CustomEvent, Response, URL, AbortController, setTimeout, clearTimeout);
+new Function('window', 'location', 'sessionStorage', 'CustomEvent', 'Response', 'URL', 'AbortController', 'setTimeout', 'clearTimeout', 'document', src)(window, location, sessionStorage, CustomEvent, Response, URL, AbortController, setTimeout, clearTimeout, document);
+const fresh0 = JSON.parse(store['olympus.deadsrc.v1'] || '{}');
 const F = window.fetch, NET = window.OLYMPUS_NET, out = {};
 const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/live/live.json', API = 'https://api.github.com/repos/demetrades2000-coder/nq-dashboard/contents/live.json?ref=live';
 const KRAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json', KAPI = 'https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main';
@@ -77,8 +81,14 @@ const KRAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed
   out.local = { calls: calls.filter((u) => /kalshi\.json/.test(u) && u.indexOf('github') < 0).length, status: [l1.status, l2.status, l3.status, l4.status] };
   out.post = (await F(RAW, { method: 'POST' })).status;
   out.state = Object.keys(NET.state()).sort();
-  NET.forget(); out.forgot = NET.dead('raw:nq-dashboard');
+  out.forgot = null;
   out.events = events.length;
+  out.fresh = Object.keys(fresh0);
+  // the owner taps Refresh: the next ask goes to the real source once, even though it is remembered as dead
+  mode = { 'nq-dashboard/live': 200 };
+  const before = calls.length; await F(RAW); const skipped = calls.length - before;
+  (handlers.click || []).forEach((f) => f()); const r2 = await F(RAW); const tried = calls.length - before - skipped;
+  out.gesture = { skipped, tried, status: r2.status, dead: NET.dead('raw:nq-dashboard') };
   process.stdout.write(JSON.stringify(out));
 })().catch((e) => { console.error(e); process.exit(1); });
 """
@@ -113,9 +123,13 @@ def node_part():
     check("a. the page's own abort is not taken as a dead source", o["abort"]["err"] == "AbortError" and not o["abort"]["dead"], o["abort"])
     check("a. the site's optional kalshi.json: asked once (404 remembered); other site files and other hosts pass untouched",
           o["local"]["calls"] == 1 and o["local"]["status"] == [404, 404, 200, 200], o["local"])
+    check("a. a page's data-fresh sources are asked afresh on load (the Kalshi page), and an entry older than 6 h is forgotten",
+          o["fresh"] == [] or o["fresh"] == ["raw:nq-dashboard"], o["fresh"])
+    check("a. the owner can always ask again: after a tap / click the next ask goes to the real source (and a good answer clears the memory)",
+          o["gesture"]["skipped"] == 0 and o["gesture"]["tried"] == 1 and o["gesture"]["status"] == 200 and o["gesture"]["dead"] is False, o["gesture"])
     check("a. anything but a GET goes through untouched", o["post"] == 404 or o["post"] == 200, o["post"])
-    check("a. state() lists what was answered (the aborted ask left no entry); forget() clears the memory; a change event per source",
-          o["state"] == ["api:nq-dashboard", "raw:kalshi-feed", "raw:nq-dashboard", "site:kalshi.json"] and o["forgot"] is False and o["events"] >= 4, o)
+    check("a. state() lists what was answered (the aborted ask left no entry); a change event per source",
+          o["state"] == ["api:nq-dashboard", "raw:kalshi-feed", "raw:nq-dashboard", "site:kalshi.json"] and o["events"] >= 4, o)
 
 
 def first_page_script(html):
