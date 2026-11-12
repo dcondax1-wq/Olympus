@@ -29,7 +29,7 @@ export function paint(svg, o) {
     sky: lin('sky', [[0, S.top], [0.6, S.mid], [1, S.hor]]),
     glow: rad('glow', [[0, S.glow, 0.95], [0.12, S.glow, 0.6], [0.45, S.glow, 0.12], [1, S.glow, 0]]),
     ground: lin('ground', [[0, S.ground2], [1, S.ground]]),
-    vig: rad('vig', [[0.55, '#000', 0], [1, '#0a0603', 0.55]], { cx: 0.5, cy: 0.48, r: 0.75 }),
+    vig: rad('vig', [[0.4, '#000', 0], [1, '#0a0603', 0.6]], { cx: 0.5, cy: 0.48, r: 0.62 }),
     shadow: rad('shadow', [[0, '#1a1008', 0.55], [1, '#1a1008', 0]]),
     coin: rad('coin', [[0, '#fff0b8'], [0.6, '#d8b050'], [1, '#7a5a18']], { cx: 0.38, cy: 0.35, r: 0.75 }),
     silver: rad('silver', [[0, '#ffffff'], [0.6, '#b8b4ac'], [1, '#5a5650']], { cx: 0.38, cy: 0.35, r: 0.75 }),
@@ -89,7 +89,7 @@ export function paint(svg, o) {
     },
     /** an owl coin seen from the front */
     coin(cx, cy, r, co) { const g = el('g', {}); el('circle', { cx, cy, r, fill: co && co.silver ? F.silver : F.coin, stroke: '#6a4a14', 'stroke-width': Math.max(0.6, r * 0.08) }, g); el('circle', { cx, cy, r: r * 0.72, fill: 'none', stroke: '#6a4a14', 'stroke-opacity': 0.4, 'stroke-width': Math.max(0.5, r * 0.05) }, g); return g; },
-    vignette() { return el('rect', { x: -w * 0.25, y: -h * 0.1, width: w * 1.5, height: h * 1.2, fill: F.vig, 'pointer-events': 'none' }); },
+    vignette() { return el('rect', { x: -w * 0.6, y: -h * 0.15, width: w * 2.2, height: h * 1.3, fill: F.vig, 'pointer-events': 'none' }); },
   };
   return P;
 }
