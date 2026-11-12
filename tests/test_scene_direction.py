@@ -174,7 +174,7 @@ def test_static():
     check("e. hooks: floor.js drive / refs / setPlayer, hall.js drive / refs / front, hellas.js walkDirector (each in a marked SCENE DIRECTION section)",
           all(x in fl for x in ("drive(fn, opt)", "refs()", "setPlayer(x, z, yaw)", "SCENE DIRECTION HOOK")) and all(x in hall for x in ("drive(fn)", "refs()", "front:")) and "this.walkDirector && this.walkDirector.tick(dt)" in hel)
     check("e. the pages load the directors on demand (?direct=0 keeps the old controls) and the joystick is only an option (?joy=1)",
-          "import('./direct.js?v=d1')" in rd("ergasterion/floorload.js") and "import('./direct.js?v=d1')" in rd("symposium/hallload.js") and "__ergDirect" in erg and "__symDirect" in sym and "import('./walk-direct.js?v=d1')" in hui and "get('direct') === '0'" in erg and "joyOn()" in erg and "joyOn()" in hui and ".hel.walking.nojoy .hel-stickzone{display:none}" in rd("cities/hellas.css"))
+          "import('./direct.js?v=d2')" in rd("ergasterion/floorload.js") and "import('./direct.js?v=d2')" in rd("symposium/hallload.js") and "__ergDirect" in erg and "__symDirect" in sym and "import('./walk-direct.js?v=d2')" in hui and "get('direct') === '0'" in erg and "joyOn()" in erg and "joyOn()" in hui and ".hel.walking.nojoy .hel-stickzone{display:none}" in rd("cities/hellas.css"))
     rig, ctl = rd("olympus/camera-rig.js"), rd("olympus/controls.js")
     check("e. the shared kit: no network, no random, no orders; text only through textContent", not re.search(r"fetch\(|XMLHttpRequest|Math\.random|innerHTML|placeorder", rig + ctl, re.I))
     css = rd("olympus/people.css")

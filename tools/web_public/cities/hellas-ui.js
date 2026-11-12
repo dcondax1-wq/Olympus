@@ -218,7 +218,7 @@ export class HellasUI {
   direct() {
     const S = this.scene; this.undirect(); if (!S || new URLSearchParams(location.search).get('direct') === '0') return;
     this.root.classList.toggle('nojoy', !this.joyOn());
-    import('./walk-direct.js?v=d1').then((D) => { if (!S.walking || this.dir) return;
+    import('./walk-direct.js?v=d2').then((D) => { if (!S.walking || this.dir) return;
       this.dir = D.createWalkDirector(S, { container: this.root, canvas: this.canvas, reduced: this.reduced, onTalk: (P) => this.talk(P.person, { kind: 'person', i: P.i }), onHouse: (h) => this.showHouse(h) });
       S.walkDirector = this.dir; this.where.textContent = 'Tap the street to walk, tap someone to talk.'; window.__hellasDirector = this.dir; }).catch(() => { this.root.classList.remove('nojoy'); });
   }

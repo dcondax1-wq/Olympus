@@ -356,7 +356,7 @@ export function attach(ext) {
   home.ready = true;
 
   // --- the courtyard: five marble doorways, one per Atlas district (courtyard.js; never stops the home if it fails)
-  import('./courtyard.js?v=c1').then((m) => { m.attach(ext, home); home.trim(); frameCourt(); }).catch((e) => { home.courtyardError = String((e && e.message) || e); });
+  import('./courtyard.js?v=q6d').then((m) => { m.attach(ext, home); home.trim(); frameCourt(); }).catch((e) => { home.courtyardError = String((e && e.message) || e); });
 
   // --- home v2 (2026-11-11): the scene's budget. At most 25 draw calls for the whole scene (the post passes are the render core's own): what is
   // counted is every visible mesh / points / sprite; when the count is over, the least important extras go first (far clouds, dust, mirrors, shafts).
