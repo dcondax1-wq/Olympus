@@ -68,7 +68,7 @@ def part_a():
     head = idx[:idx.index("</head>")]
     check("a. index.html: the inside-Jarvis check in the head (frame + same site), embed.js loaded last, no intro inside Jarvis",
           "window.frameElement" in head and "data-jarvis" in head and "--jz-sa-" in head
-          and idx.index('src="polish.js?v=') < idx.index('src="embed.js?v=') and "window.LE_JARVIS)) { el.remove();" in idx)
+          and idx.index('src="polish.js?v=') < idx.index('src="embed.js?v=') and "window.LE_JARVIS)) { el.remove();" in idx + rd("tools", "web_public", "main.js"))   # main.js: the page's own script (QA Round 7)
     carry = em[em.index("const CARRY = {"):em.index("const GROUP_NAME")]
     check("a. the settings code lists no secret or device state (le.jarvis.*, push, seen, gyro, remote drafts)",
           not any(k in carry for k in ("le.jarvis", "le.push", "act.seen", "le.gyro", "rcCmd", "levels_posted", "plus.acked", "intro.day")))

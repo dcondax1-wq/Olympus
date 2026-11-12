@@ -1,0 +1,22 @@
+{
+ "cpu": 4,
+ "net": "fast3g",
+ "lowend": false,
+ "rows": {
+  "root": {
+   "fcp_ms": 2756,
+   "kb_fcp": 208.4,
+   "req_fcp": 11,
+   "req": 77,
+   "kb": 805.2,
+   "js_kb": 1555.1,
+   "three": false,
+   "gl": 0,
+   "gl_page": 0,
+   "lcp_ms": 8152,
+   "ready_ms": 0,
+   "heap_mb": 8.4,
+   "wall_s": 15.5
+  }
+ }
+}

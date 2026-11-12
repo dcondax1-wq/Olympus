@@ -171,7 +171,7 @@ def part_a():
           "fx-space" in fx and "shoot" in fx and kb < 1200, f"{kb:.0f} KB")
     check("a. space.js: WebGL scene with the eclipse, satellites, 30 fps phones, reduced-motion still frame, DPR caps 1.5 / 2",
           "uShC" in src and "BOTS" in src and "1 / 31" in src and "Q.reduced" in src and "dprMax: Q.phone ? 1.5 : 2" in src)
-    pidx, psw, sw = rd("tools", "web_public", "index.html"), rd("tools", "web_public", "sw.js"), rd("web_next", "sw.js")
+    pidx, psw, sw = rd("tools", "web_public", "index.html") + rd("tools", "web_public", "main.js"), rd("tools", "web_public", "sw.js"), rd("web_next", "sw.js")   # main.js: the page's own script (QA Round 7)
     check("a. phone index: space.css + mission.css, the CSS sky, missioncore.js then mission.js after liveview.js, 3D on by default",
           'href="space.css?v=' in pidx and 'href="mission.css?v=' in pidx and 'class="space-css"' in pidx
           and pidx.index('liveview.js?v=') < pidx.index('missioncore.js?v=') < pidx.index('mission.js?v=') and "navigator.webdriver ? 'off' : 'max'" in pidx)

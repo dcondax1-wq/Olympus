@@ -14,7 +14,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ALLOW = ("handoff/", "docs/", "tests/", "research/writeups/", "tools/web_public/", "web_next/js/next/", "web_next/css/")
 DENY_EXACT = {"tools/build_web_dashboard.py", "tools/web_public/jarvis/apps.js", "tools/web_public/olympus/olympus.js",
-              "tools/web_public/index.html", "tools/web_public/olympus/apps-list.js", "web_next/js/next/apps-list.js",
+              "tools/web_public/index.html", "tools/web_public/main.js", "tools/web_public/olympus/apps-list.js", "web_next/js/next/apps-list.js",
               "CLAUDE.md", "AGENTS.md", "live_model.json", "live_model_lit.json"}
 DENY_PREFIX = ("engine/", ".github/", "data/", "cache/", "tools/cronos/", "tools/planner_patches/", "scripts/")
 DENY_NAME = re.compile(r"(^|/)(sw\.js|\.env[^/]*|tv(_device)?\.json|alerts\.json|autostart\.json|live_state\.json|memory\.db|.*\.pem|.*\.key)$")
