@@ -594,7 +594,9 @@ def card(snap: dict, cfg: dict | None = None, last: dict | None = None) -> list:
         for key in ("atlas", "blitz"):
             c = _d(bd.get(key))
             st = str(c.get("status") or "")
-            others.append(f"{BOT_NAME[key]} " + ("not set up" if st in ("not set up", "off", "") else (c.get("badge") or "paper").lower()))
+            badge = str(c.get("badge") or "paper").upper()
+            others.append(f"{BOT_NAME[key]} " + ("not set up" if st in ("not set up", "off", "") else
+                                                  {"SIM": "on Sim", "PAPER": "paper", "LIVE": "LIVE"}.get(badge, badge.lower())))
         txt = ("LIT running" if run else "LIT STOPPED") + f" ({'LIVE, armed by you' if mode == 'LIVE' else mode})" + "; " + "; ".join(others)
         if snap.get("hb_age") is not None and snap["hb_age"] > HB_STALE_S:
             rows.append(("FIX" if mo else "..", "BOTS", f"last report {ago(snap['hb_age'])}: {txt}"))
