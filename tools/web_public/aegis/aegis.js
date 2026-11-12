@@ -148,7 +148,7 @@ async function boot() {
   const q = new URLSearchParams(location.search); S.forced = q.get('demo') === '1';
   const [fx, home, rules] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('../ledger/rules.json')]);
   // the account numbers and their age come from the shared truth (olympus/truth.js: home.json's board first, the same as Home and NQ)
-  const canon = !S.forced && home ? T.canonHome(home) : null;
+  const canon = !S.forced && home ? T.canonHome(await T.withPcFeed(home)) : null;
   S.fixture = fx; S.home = canon; S.rules = rules; S.ages = canon ? canon.truth.ages : null;
   S.built = C.buildAccounts(canon, fx, rules); S.demo = S.built.demo || S.forced;
   const k = q.get('acct'); if (C.ORDER.includes(k)) S.key = k;

@@ -2,7 +2,7 @@
 //   const D = createData();  await D.roster();  await D.inputs(person)  -> { '<relative url>': json | null }   D.peek(person) (what is already in memory, no network)
 // The roster's source paths are written as an app page sees them ('../home.json'); here they are resolved against the site root, so the kit works from any folder.
 import { isObj, arr } from './people-core.js';
-import { canonHome } from './truth.js';
+import { canonHome, withPcFeed } from './truth.js';
 
 const ROOT = (() => { try { return new URL('../', import.meta.url).href; } catch (_) { return '../'; } })();
 const TTL = 60000;
@@ -27,8 +27,8 @@ export function createData(opts) {
     const e = { t: now, done: false, v: undefined, p: null };
     // home.json goes through the shared truth (olympus/truth.js): the bots' numbers are the same as on Home, NQ and Aegis (ATLAS and BLITZ
     // live in the board / second / live.pc blocks, which the people kit did not read before QA round 6)
-    const fix = rel === '../home.json' ? (v) => (isObj(v) ? canonHome(v) : v) : (v) => v;
-    e.p = get(siteUrl(rel), o.timeout || 6000).then((v) => { v = fix(v); e.v = v; e.done = true; e.t = Date.now(); return v; }, () => { e.v = null; e.done = true; return null; });
+    const fix = rel === '../home.json' ? (v) => (isObj(v) ? withPcFeed(v).then(canonHome) : v) : (v) => v;
+    e.p = get(siteUrl(rel), o.timeout || 6000).then(async (v) => { v = await fix(v); e.v = v; e.done = true; e.t = Date.now(); return v; }, () => { e.v = null; e.done = true; return null; });
     cache.set(rel, e);
     return e.p;
   }

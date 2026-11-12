@@ -657,7 +657,7 @@ async function load() {
   const [builders, fx, queue, home, money, kalshi, cron, forge, heph] = await Promise.all([S.forced ? null : getJSON('./builders.json'), getJSON('./fixture.json'), S.forced ? null : getJSON('./queue.json'), S.forced ? null : getJSON('../home.json'), S.forced ? null : getJSON('../money/index.json'),
     S.forced ? null : getFeed(5000), S.forced ? null : getJSON('../cronos/status.json'), S.forced ? null : getJSON('../prometheus/forge.json'), S.forced ? null : getJSON('../hephaestus/data.json')]);
   // home.json through the shared truth (olympus/truth.js): ATLAS and BLITZ live in the board / second / live.pc blocks, not in accounts[]
-  S.fixture = fx; S.inputs = { home: home ? T.canonHome(home) : home, money, kalshi, cron, forge, heph, queue, builders };
+  S.fixture = fx; S.inputs = { home: home ? T.canonHome(await T.withPcFeed(home)) : home, money, kalshi, cron, forge, heph, queue, builders };
 }
 async function boot() {
   wireControls();

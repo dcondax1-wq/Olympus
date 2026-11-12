@@ -127,3 +127,30 @@ export function canonHome(home, nowS) {
   // t = the PC report the numbers come from (cores that judge "how old are the account numbers" read home.t), unless home.json has its own
   return { ...home, t: num(home.t) != null ? home.t : ages.pc.t, accounts: rows, board, truth: { accounts: A, ages } };
 }
+
+// Round 7 (no GitHub): the PC posts a small live status every 15 minutes (tools/pc_report.py -> ntfy; site/status_feed.json names the
+// topic; pc_feed.js reads it). withPcFeed(home) lays the newest PC status over home.json before canonHome, so every app shows the PC's
+// own time and numbers. Never throws, never waits more than ~3 s, returns home unchanged when there is no feed.
+let pcFeedP = null;
+function loadPcFeed() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return Promise.resolve(null);
+  if (window.PC_FEED) return Promise.resolve(window.PC_FEED);
+  if (!pcFeedP) {
+    pcFeedP = new Promise((res) => {
+      try {
+        const s = document.createElement('script'); s.src = new URL('../pc_feed.js?v=1', import.meta.url).href; s.async = true;
+        s.onload = () => res(window.PC_FEED || null); s.onerror = () => res(null); document.head.appendChild(s);
+      } catch (e) { res(null); }
+    });
+  }
+  return pcFeedP;
+}
+export async function withPcFeed(home) {
+  try {
+    if (!home || typeof home !== 'object') return home;
+    const F = await loadPcFeed(); if (!F) return home;
+    const feedUrl = new URL('../status_feed.json', import.meta.url).href;
+    const lite = await Promise.race([F.fetchLatest({ feedUrl }), new Promise((r) => setTimeout(() => r(null), 3000))]);
+    return lite ? F.overlayHome(home, lite) : home;
+  } catch (e) { return home; }
+}

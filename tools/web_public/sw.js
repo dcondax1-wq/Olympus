@@ -89,7 +89,7 @@
 // v54 (2026-11-03 night, owner: "room to floor should be directly what the drawdown is"): every eval card shows "Drawdown left
 // $X of $max loss" (the real MFFU account first, not the cloud paper ledger) and no "session X of 10" bars (boardcore, realcore,
 // missioncore, goals, hub, more, extras, litkit, second, statuscore, procore, blitzcore, fleet, launch, hermes/cards).
-const CACHE = 'le-public-v95';
+const CACHE = 'le-public-v96';
 const NAV_WAIT_MS = 3500;
 let SLOW_UNTIL = 0;       // the site was just slow (the page waited NAV_WAIT_MS): data.json / home.json then wait 0.4 s, not 3.5 s
 const COPY_CLIENTS = new Map();   // a page (client id) answered from the saved copy -> until when its data.json / home.json are too
@@ -117,7 +117,7 @@ self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
   // live.json (live.js: the PC's minute-by-minute file on api.github.com / raw.githubusercontent.com) is network-only:
   // never cached, never answered from a cache (an old copy would look live). Cross-origin requests are not touched anyway.
-  if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.endsWith('live.json')) return;
+  if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.endsWith('live.json') || url.pathname.endsWith('status_feed.json')) return;
   const home = new URL(self.registration.scope).pathname, rel = url.pathname.slice(home.length);
   if (OTHER_APPS.some((d) => rel === d.slice(0, -1) || rel.startsWith(d))) return;
   const put = (key, res) => { if (res && res.ok) { const c = res.clone(); caches.open(CACHE).then((x) => x.put(key, c)).catch(() => null); } return res; };

@@ -65,6 +65,11 @@
 
   async function get(url, opts) { const r = await fetch(url, opts); if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; e.r = r; throw e; } return r; }
   async function fetchLive() {
+    // Round 7 (no GitHub): the PC's 15-minute status through ntfy (pc_feed.js) comes first; the GitHub sources stay as a fallback
+    try {
+      const lj = window.PC_FEED && await window.PC_FEED.fetchLatest();
+      if (lj) return { j: window.PC_FEED.toLive(lj, (window.HOMEJ || {}).board), src: 'ntfy' };
+    } catch (e) { /* fall through to the old sources */ }
     let r = null, src = 'api';
     if (Date.now() >= LIVE.apiUntil) {
       try {
@@ -120,7 +125,7 @@
     if (!el) { el = document.createElement('span'); el.id = 'liveChip'; el.className = 'status live-chip'; st.after(el); }
     const txt = a < 90 ? Math.round(a) + ' s' : Math.round(a / 60) + ' min';
     el.innerHTML = `<span class="dot ${a < 180 ? '' : 'warn'}"></span><span class="lbl">live · </span>${txt} ago`;
-    el.title = `From the PC (${LIVE.j.host || 'Surface'}) via ${LIVE.src === 'raw' ? 'raw.githubusercontent.com' : 'the GitHub API'}; checked ${new Date(LIVE.at).toLocaleTimeString()}`;
+    el.title = `From the PC (${LIVE.j.host || 'Surface'}) via ${LIVE.src === 'ntfy' ? 'the PC status feed (ntfy)' : LIVE.src === 'raw' ? 'raw.githubusercontent.com' : 'the GitHub API'}; checked ${new Date(LIVE.at).toLocaleTimeString()}`;
   }
   const css = document.createElement('style');
   css.textContent = '.live-chip{margin-left:6px}.live-chip .dot{background:var(--good)}.live-chip .dot.warn{background:var(--warn)}';

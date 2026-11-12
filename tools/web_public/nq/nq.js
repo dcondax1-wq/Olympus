@@ -184,7 +184,7 @@ window.addEventListener('nq3d', tryScene);
 
 async function refresh() {
   if (S.forced || document.hidden) return;
-  const home = await getJSON('../home.json');
+  const home = await T.withPcFeed(await getJSON('../home.json'));
   if (home && C.hasData(home)) S.home = home;
   render();
 }
@@ -197,6 +197,8 @@ async function boot() {
   const [fx, home, howto] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json')]);
   S.fixture = fx; S.home = home; S.howto = howto;
   render();
+  // the PC's 15-minute status (no GitHub): laid over home.json when it arrives
+  if (home) T.withPcFeed(home).then((h) => { if (h !== home && !S.forced) { S.home = h; render(); } });
   if (q.get('howto') === '1') openSheet($('howBtn'));
   setInterval(() => { if (!document.hidden) render(); }, 60000);        // the ages keep counting
   setInterval(refresh, 5 * 60000);                                       // a newer report, when the PC sends one

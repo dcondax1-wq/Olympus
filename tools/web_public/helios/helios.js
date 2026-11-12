@@ -136,7 +136,7 @@ async function boot() {
   const real = !S.forced && (!!home || !!money);
   S.demo = !real;
   // the accounts and their age come from the shared truth (olympus/truth.js: home.json's board first, the same numbers as Home, NQ and Aegis)
-  const canon = home ? T.canonHome(home, S.now / 1000) : null; S.ages = canon ? canon.truth.ages : null;
+  const canon = home ? T.canonHome(await T.withPcFeed(home), S.now / 1000) : null; S.ages = canon ? canon.truth.ages : null;
   S.inp = real ? { events, home: canon, money, lyceum: readLS('lyceum.v1') } : C.demoInputs(fx, S.now);
   $('copy').addEventListener('click', copyText);
   render();
