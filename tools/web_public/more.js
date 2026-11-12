@@ -57,13 +57,13 @@
     const T = window.OLYMPUS_TRUTH, pcA = T && T.agesOf ? T.agesOf(MD(), nowS()).pc : null, pcTxt = pcA && pcA.t ? ` · PC report ${pcA.short}` : '';
     // olympus/quiet-net.js: the PC's live feed (live.json on GitHub) was asked once this session and did not answer -> say so, plainly
     const NETS = window.OLYMPUS_NET, feedOff = !!(NETS && NETS.dead && NETS.dead('raw:nq-dashboard') && NETS.dead('api:nq-dashboard'));
-    const feedTxt = feedOff ? ' The live feed (GitHub) is offline, so these numbers come from the cloud copy.' : '';
+    const feedTxt = feedOff ? ' Live feed offline: this is the cloud copy.' : '';
     // live.js: the PC's live.json (every minute) keeps Home current between cloud runs; then old cloud data is no alarm
     const la = window.LIVE && window.LIVE.age ? window.LIVE.age() : null, liveOn = la != null && la < 10 * 60;
     if (off) ban = `<div class="mo-ban off" role="status">${icon('sources')}<span><b>Offline — showing ${hm}${day} data</b><em>The last copy this phone saw. It refreshes by itself when you are back online.</em></span></div>`;
     else if (age > STALE_S && !liveOn) {
       const mkt = marketHours();
-      ban = `<div class="mo-ban ${mkt ? 'bad' : 'warn'}" role="status">${icon('clock')}<span><b>Cloud copy is ${fmtAge(age)} old</b><em>${pcA && pcA.t ? `The PC's last report: ${pcA.words} ago.${feedTxt} ` : feedTxt ? feedTxt.trim() + ' ' : ''}${mkt
+      ban = `<div class="mo-ban ${mkt ? 'bad' : 'warn'}" role="status">${icon('clock')}<span><b>Cloud copy is ${fmtAge(age)} old</b><em>${feedTxt ? feedTxt.trim() + ' ' : ''}${mkt
         ? 'The cloud monitor should publish every 30 min in the session. Pull down to retry; if it stays old, check GitHub → Actions → cloud-monitor.'
         : 'Normal outside market hours: the cloud monitor runs on market days from 01:30 to 16:30 ET.'}</em></span></div>`;
     }
