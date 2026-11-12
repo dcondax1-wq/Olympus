@@ -334,11 +334,23 @@ def test_switch_memory(br, origin):
         if i in (1, len(apps) - 1):
             gc(p)
             heaps.append(p.evaluate(ALIVE)["heap"])
+    # a light 2D app last (Jarvis keeps the last app loaded for a quick return, by design), then home; V8 frees a removed frame's realm
+    # only after a few full collections, so GC until nothing more goes (at most 6 rounds)
+    p.evaluate("window.__jarvis.show('planner')")
+    p.wait_for_function("() => { const f = document.querySelector('#v-planner iframe'); return f && f.contentDocument && f.contentDocument.readyState === 'complete'; }", timeout=60000)
+    p.wait_for_timeout(1500)
     p.evaluate("window.__jarvis.show('home')")
     p.wait_for_timeout(1500)
-    gc(p, 8)
-    alive = p.evaluate(ALIVE)
-    kept = "/" + apps[-1] + "/"                                # Jarvis keeps the last app loaded for a quick return (by design)
+    n0 = None
+    for _ in range(6):
+        gc(p, 4)
+        p.wait_for_timeout(1000)
+        alive = p.evaluate(ALIVE)
+        n = len(alive["ac"]) + len(alive["cv"])
+        if n == n0:
+            break
+        n0 = n
+    kept = "/planner/"
     stray = [x for x in alive["ac"] + alive["cv"] if not x.startswith("/jarvis/") and x != kept]
     grow = (heaps[-1] - heaps[0]) / 1048576.0 if len(heaps) == 2 else None
     check(f"e. 10 app switches in Jarvis: at most one app frame kept (now {alive['frames']})", alive["frames"] <= 1, alive)
