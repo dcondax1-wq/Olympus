@@ -391,7 +391,9 @@
   }
   function covers(a) {
     if (!d.elementsFromPoint) return false;
-    var r = a.getBoundingClientRect(), P = [[0.5, 0.5], [0.15, 0.5], [0.85, 0.5], [0.5, 0.15], [0.5, 0.85]], i, j, list, e, t;
+    // the seat itself, not the seal's current box: offset* ignore the step-aside transform (a shrunk, lowered seal must not read as clear)
+    var r = { left: a.offsetLeft, top: a.offsetTop, width: a.offsetWidth, height: a.offsetHeight },
+      P = [[0.5, 0.5], [0.15, 0.5], [0.85, 0.5], [0.5, 0.15], [0.5, 0.85]], i, j, list, e, t;
     if (!r.width) return false;
     for (i = 0; i < P.length; i++) {
       list = d.elementsFromPoint(r.left + r.width * P[i][0], r.top + r.height * P[i][1]);
