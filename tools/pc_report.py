@@ -1,0 +1,809 @@
+"""PC report: the bots' reporting to the phone without GitHub (owner 2026-11-12, "we need to get these bots running again").
+Runs ON THE MAIN PC every 15 minutes (Task Scheduler task "OlympusPCReport", installed by BOTS_BACK.bat), stdlib only on top of
+the repo's own engine code (read-only use: engine/live_publish.build, engine/go.market_open). Free: ntfy.sh, no account.
+
+  1. read     the bot's own last heartbeat on this PC (logs/pc_hb/heartbeat.json in GitHub-free mode, else the copy the bot keeps
+              in logs/heartbeat_last.json), whether the bot server answers (http://127.0.0.1:8766), NinjaTrader and the bar feed.
+  2. status   the live.json the phone already reads (engine/live_publish.build: kind "le-live", pc, pc_verdict, board.lit /
+              atlas / blitz, accounts), cut to a LITE copy under 4 KB, posted to the public ntfy status topic of
+              tools/web_public/status_feed.json (the site reads it with tools/web_public/pc_feed.js). Its "t" is the bot's own
+              heartbeat time (never "now"), so an old report always looks old; "reporter" says what this PC saw just now.
+  3. alerts   phone pushes on YOUR private ntfy topic (made here once, kept in %USERPROFILE%\\.olympus\\ntfy.json, never in the
+              repo): trade opened, trade closed ($ and R), FEED STALE, bot down, NinjaTrader closed, and "back to normal".
+              Once per event; a problem repeats at most every 3 hours. The first run only records what is already there.
+Nothing here starts, stops, arms or routes anything; no order, no live_model*.json, no engine/ file is changed. Every failure is
+soft (logged, exit 0). Tests: tests/test_bots_back.py (fake http, fake files, never the real network).
+
+  python tools/pc_report.py              one run (read, status, alerts) and the six-line card
+  python tools/pc_report.py --card       only the six-line card (reads, sends nothing)
+  python tools/pc_report.py --dry-run    one run that sends nothing: prints what it would send
+  python tools/pc_report.py --setup      make your alert topic when there is none, print it
+  python tools/pc_report.py --test       send one test push to your alert topic
+Local files (gitignored): data/pc_report/ (last.json, state.json, status.json, live.json, report_log.jsonl).
+"""
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import json
+import os
+import secrets
+import sys
+import time
+import urllib.error
+import urllib.request
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+WORK_DEFAULT = os.path.join(ROOT, "data", "pc_report")
+STATUS_FEED = os.path.join(ROOT, "tools", "web_public", "status_feed.json")
+NTFY_DEFAULT = "https://ntfy.sh"
+PORT_DEFAULT = int(os.environ.get("PORT") or 8766)
+MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a file attachment: stay under it
+HB_STALE_S = 900                 # the bot beats every 5 min: older than 15 min = the bot is not reporting
+BAR_STALE_S = 300                # the last 1-minute bar older than 5 min while the market is open = FEED STALE
+REMIND_S = 3 * 3600
+OLD_EVENT_S = 6 * 3600           # a trade older than this when first seen is recorded, not pushed (the PC was off)
+SEEN_KEEP = 400
+LOG_KEEP = 500
+HTTP_TIMEOUT_S = 15
+UA = "olympus-pc-report/1"
+CARD_KEYS = ("id", "name", "plan", "method", "badge", "source", "configured", "balance", "floor", "room", "mll", "to_target",
+             "target_balance", "profit", "today_pnl", "week_pnl", "status", "session", "sessions", "dll", "dll_used", "trades_today",
+             "max_day", "room_frac", "paused", "off")
+POS_KEYS = ("side", "qty", "entry", "stop", "target", "be", "entry_t", "unrealized_r")
+TRADE_KEYS = ("acct", "day", "entry_t", "exit_t", "side", "qty", "exit", "r", "usd", "open")
+WORDS = ("amber", "anchor", "apple", "arrow", "aspen", "atlas", "autumn", "badger", "bamboo", "banjo", "basil", "beacon", "birch",
+         "bison", "blaze", "breeze", "brook", "cactus", "camel", "canyon", "cedar", "cobalt", "comet", "coral", "cotton", "crane",
+         "crystal", "dahlia", "delta", "desert", "dolphin", "dove", "eagle", "ember", "falcon", "fern", "fjord", "flint", "forest",
+         "fox", "galaxy", "garnet", "glacier", "granite", "harbor", "hazel", "heron", "hickory", "honey", "indigo", "iris", "island",
+         "ivory", "jade", "jasmine", "juniper", "kayak", "kestrel", "lagoon", "lantern", "lemon", "lily", "lotus", "lynx", "maple",
+         "marble", "meadow", "mesa", "meteor", "mint", "moose", "nectar", "nova", "oak", "ocean", "olive", "onyx", "orchid", "otter",
+         "panda", "pearl", "pepper", "pine", "planet", "plum", "polar", "poppy", "prairie", "quartz", "rain", "raven", "reef",
+         "ridge", "river", "robin", "ruby", "saffron", "sage", "salmon", "sapphire", "sequoia", "shadow", "sierra", "silver",
+         "sparrow", "spruce", "storm", "summit", "sunset", "swan", "thunder", "tiger", "topaz", "tulip", "tundra", "velvet",
+         "violet", "walnut", "willow", "winter", "wolf", "zephyr")
+
+
+# ------------------------------------------------------------------------------------------------ small helpers
+def now_s() -> int:
+    return int(time.time())
+
+
+def read_json(path, default=None):
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:
+        return default
+
+
+def write_json(path, obj, compact=False):
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        if compact:
+            json.dump(obj, fh, separators=(",", ":"), default=str, ensure_ascii=False)
+        else:
+            json.dump(obj, fh, indent=1, default=str, ensure_ascii=False)
+    os.replace(tmp, path)
+
+
+def num(x):
+    try:
+        v = float(x)
+        return v if v == v else None
+    except (TypeError, ValueError):
+        return None
+
+
+def money(x) -> str:
+    v = num(x)
+    if v is None:
+        return "-"
+    return ("-" if v < 0 else "") + "${:,.0f}".format(abs(v))
+
+
+def signed_money(x) -> str:
+    v = num(x)
+    if v is None:
+        return "-"
+    return ("+" if v >= 0 else "-") + "${:,.0f}".format(abs(v))
+
+
+def ago(sec) -> str:
+    s = num(sec)
+    if s is None:
+        return "never"
+    s = max(0, int(s))
+    if s < 90:
+        return "just now"
+    if s < 5400:
+        return f"{s // 60} min ago"
+    if s < 172800:
+        return f"{s // 3600} h ago"
+    return f"{s // 86400} days ago"
+
+
+def span(sec) -> str:
+    """'40 s', '7 min', '3 h', '5 days' (a duration, no 'ago')."""
+    s = num(sec)
+    if s is None:
+        return "?"
+    s = max(0, int(s))
+    if s < 90:
+        return f"{s} s"
+    if s < 5400:
+        return f"{s // 60} min"
+    if s < 172800:
+        return f"{s // 3600} h"
+    return f"{s // 86400} days"
+
+
+def et_text(t) -> str:
+    """'Thu 10:12 ET' (zoneinfo with the tzdata package from requirements.txt; UTC when it is missing)."""
+    v = num(t)
+    if v is None:
+        return "-"
+    try:
+        from zoneinfo import ZoneInfo
+        return dt.datetime.fromtimestamp(v, ZoneInfo("America/New_York")).strftime("%a %H:%M ET")
+    except Exception:
+        return dt.datetime.fromtimestamp(v, dt.timezone.utc).strftime("%a %H:%M UTC")
+
+
+def ascii_only(s) -> str:
+    """HTTP header values (the ntfy Title) must be plain ASCII."""
+    return str(s or "").encode("ascii", "replace").decode("ascii").replace("?", "-")[:120]
+
+
+def olympus_dir(env=None) -> str:
+    try:
+        from engine import nogithub
+        return nogithub.olympus_dir(env)
+    except Exception:
+        env = os.environ if env is None else env
+        return env.get("OLYMPUS_HOME") or os.path.join(env.get("USERPROFILE") or os.path.expanduser("~"), ".olympus")
+
+
+def inside_repo(path: str) -> bool:
+    try:
+        a, b = os.path.realpath(path), os.path.realpath(ROOT)
+        return os.path.commonpath([a, b]) == b
+    except ValueError:
+        return False
+
+
+# ------------------------------------------------------------------------------------------------ config (outside the repo)
+def make_topic(rng=None) -> str:
+    """Your private alert topic: three words and four digits, easy to type on the phone ('nq-amber-falcon-river-7291').
+    About 36 bits: unguessable in practice for a paper bot's alerts (anyone who knows it can read and post to it)."""
+    rng = rng or secrets.SystemRandom()
+    return "nq-" + "-".join(rng.choice(WORDS) for _ in range(3)) + "-" + "".join(str(rng.randrange(10)) for _ in range(4))
+
+
+def status_feed(path: str | None = None) -> dict:
+    """The public status channel the site reads: {"ntfy", "topic"} from tools/web_public/status_feed.json."""
+    d = read_json(path or STATUS_FEED, {}) or {}
+    return {"ntfy": str(d.get("ntfy") or NTFY_DEFAULT).rstrip("/"), "topic": str(d.get("topic") or "").strip()}
+
+
+def load_cfg(env=None, feed_path: str | None = None) -> dict:
+    """{"ntfy", "topic" (alerts, private), "status_topic" (public), "path", "on"}. Never raises."""
+    d = olympus_dir(env)
+    p = os.path.join(d, "ntfy.json")
+    c = read_json(p, {}) or {}
+    feed = status_feed(feed_path)
+    return {"ntfy": str(c.get("ntfy") or feed["ntfy"] or NTFY_DEFAULT).rstrip("/"), "topic": str(c.get("topic") or "").strip(),
+            "status_topic": str(c.get("status_topic") or feed["topic"] or "").strip(), "path": p,
+            "on": c.get("on", True) is not False, "tested": c.get("tested"), "dir": d}
+
+
+def ensure_topic(env=None, rng=None, feed_path: str | None = None) -> dict:
+    cfg = load_cfg(env, feed_path)
+    if cfg["topic"]:
+        return cfg
+    if inside_repo(cfg["dir"]):
+        raise RuntimeError("the ntfy settings folder must be outside the repo")
+    os.makedirs(cfg["dir"], exist_ok=True)
+    cur = read_json(cfg["path"], {}) or {}
+    cur.update(topic=make_topic(rng), ntfy=cur.get("ntfy") or NTFY_DEFAULT, made=now_s())
+    write_json(cfg["path"], cur)
+    try:
+        os.chmod(cfg["path"], 0o600)
+    except OSError:
+        pass
+    return load_cfg(env, feed_path)
+
+
+def mark_tested(cfg: dict):
+    cur = read_json(cfg["path"], {}) or {}
+    cur["tested"] = {"topic": cfg.get("topic"), "t": now_s()}
+    write_json(cfg["path"], cur)
+
+
+# ------------------------------------------------------------------------------------------------ network (one place, fakeable)
+def default_http(method, url, body=None, headers=None, timeout=HTTP_TIMEOUT_S):
+    """-> (status, text). Never raises."""
+    if os.environ.get("LE_PR_NO_NET") == "1":
+        return 0, "network off (LE_PR_NO_NET=1)"
+    req = urllib.request.Request(url, data=body, method=method)
+    req.add_header("User-Agent", UA)
+    for k, v in (headers or {}).items():
+        req.add_header(k, v)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status, r.read(20000).decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        return e.code, ""
+    except Exception as e:
+        return 0, e.__class__.__name__
+
+
+def ntfy_post(base, topic, body, title=None, priority=None, tags=None, http=None) -> tuple:
+    """POST a message to an ntfy topic. -> (ok, why)."""
+    if not topic:
+        return False, "no topic"
+    h = {"Content-Type": "text/plain; charset=utf-8"}
+    if title:
+        h["Title"] = ascii_only(title)
+    if priority:
+        h["Priority"] = str(priority)
+    if tags:
+        h["Tags"] = ascii_only(tags)
+    st, txt = (http or default_http)("POST", f"{base.rstrip('/')}/{topic}", str(body).encode("utf-8"), h)
+    if 200 <= int(st or 0) < 300:
+        return True, "ok"
+    if st == 429:
+        return False, "ntfy.sh rate limit (too many messages today): next run tries again"
+    return False, f"ntfy answered {st or 'nothing'} {str(txt)[:60]}".strip()
+
+
+def server_up(port=PORT_DEFAULT, http=None) -> bool:
+    st, txt = (http or default_http)("GET", f"http://127.0.0.1:{port}/api/health/ping", None, None, 4)
+    if st != 200:
+        return False
+    try:
+        return bool(json.loads(txt).get("ok"))
+    except Exception:
+        return False
+
+
+# ------------------------------------------------------------------------------------------------ what the PC sees
+def read_heartbeat(root: str = ROOT) -> tuple:
+    """(payload or None, last push {"at", "ok"} or None, source "pc_hb" | "last" | None): the newest of the two copies."""
+    cands = []
+    local = read_json(os.path.join(root, "logs", "pc_hb", "heartbeat.json"), None)
+    if isinstance(local, dict) and num(local.get("t")):
+        cands.append((num(local["t"]), local, "pc_hb"))
+    last = read_json(os.path.join(root, "logs", "heartbeat_last.json"), {}) or {}
+    pl = last.get("payload") if isinstance(last, dict) else None
+    if isinstance(pl, dict) and num(pl.get("t")):
+        cands.append((num(pl["t"]), pl, "last"))
+    push = last.get("push") if isinstance(last, dict) and isinstance(last.get("push"), dict) else None
+    if not cands:
+        return None, push, None
+    _t, pl, src = max(cands, key=lambda x: x[0])
+    return pl, push, src
+
+
+def nt_running(env=None):
+    """True / False on Windows (tasklist), None elsewhere. LE_PR_T_NT=1|0 for tests."""
+    env = os.environ if env is None else env
+    if env.get("LE_PR_T_NT") in ("0", "1"):
+        return env["LE_PR_T_NT"] == "1"
+    if os.name != "nt":
+        return None
+    try:
+        import subprocess
+        r = subprocess.run(["tasklist", "/FI", "IMAGENAME eq NinjaTrader.exe", "/NH"], capture_output=True, text=True, timeout=20)
+        return "NinjaTrader.exe" in (r.stdout or "")
+    except Exception:
+        return None
+
+
+def market_open(now=None, env=None) -> bool:
+    env = os.environ if env is None else env
+    if env.get("LE_PR_T_MARKET") in ("0", "1"):
+        return env["LE_PR_T_MARKET"] == "1"
+    try:
+        from engine import go
+        from zoneinfo import ZoneInfo
+        t = dt.datetime.fromtimestamp(now or time.time(), ZoneInfo("America/New_York"))
+        return bool(go.market_open(t))
+    except Exception:
+        return True
+
+
+def entry_hours(now=None) -> bool:
+    """Weekday 01:50-15:30 ET: the bots' entry hours (a stopped bot then matters)."""
+    try:
+        from zoneinfo import ZoneInfo
+        t = dt.datetime.fromtimestamp(now or time.time(), ZoneInfo("America/New_York"))
+        return t.weekday() < 5 and 110 <= t.hour * 60 + t.minute <= 930
+    except Exception:
+        return False
+
+
+def _d(x) -> dict:
+    return x if isinstance(x, dict) else {}
+
+
+def mode_of(hb: dict | None) -> str | None:
+    """'paper' | 'Sim' | 'LIVE' from the heartbeat (the bot's own account block). None without a heartbeat."""
+    if not isinstance(hb, dict):
+        return None
+    acct = _d(_d(hb.get("health")).get("account"))
+    if (hb.get("adapter") or acct.get("adapter")) in (None, "paper"):
+        return "paper"
+    return "LIVE" if acct.get("is_live") else "Sim"
+
+
+def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, feed_problem=None) -> dict:
+    """One look at the PC. Never raises. feed_problem() -> None (fresh) or why (tests pass a fake; default
+    engine/go.feed_problem reads LE_BarFeed's files)."""
+    now = int(now or time.time())
+    hb, push, src = read_heartbeat(root)
+    hb_t = int(num(_d(hb).get("t")) or 0) or None
+    snap = {"t": now, "hb": hb, "hb_t": hb_t, "hb_age": (now - hb_t) if hb_t else None, "hb_src": src, "hb_push": push,
+            "server": server_up(port, http), "nt": nt_running(env), "market_open": market_open(now, env),
+            "entry_hours": entry_hours(now), "mode": mode_of(hb)}
+    feed = _d(_d(_d(hb).get("health")).get("feed"))
+    bar_age = num(feed.get("age_1m_s"))
+    snap["bar_age"] = (bar_age + snap["hb_age"]) if (bar_age is not None and snap["hb_age"] is not None) else None
+    snap["feed_flag"] = bool(feed.get("stale")) or bool(feed.get("entries_blocked") and "stale" in str(feed.get("block") or "").lower())
+    fresh_hb = snap["hb_age"] is not None and snap["hb_age"] <= HB_STALE_S
+    snap["local_feed"] = None
+    if not fresh_hb:                       # no fresh word from the bot: look at LE_BarFeed's own files
+        try:
+            if feed_problem is None:
+                from engine import go
+                feed_problem = go.feed_problem
+            snap["local_feed"] = feed_problem() or "fresh"
+        except Exception as e:
+            snap["local_feed"] = f"not readable ({e.__class__.__name__})"
+    snap["live"] = None
+    if hb:
+        try:
+            from engine import live_publish
+            snap["live"] = live_publish.build(hb, now=hb_t or now, hb_last=push, every_s=num(hb.get("every_s")) or 300)
+        except Exception as e:
+            snap["live_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
+    snap["alerts_pc"] = _telegram_on(root)
+    return snap
+
+
+def _telegram_on(root) -> bool:
+    c = read_json(os.path.join(root, "data", "alerts.json"), {}) or {}
+    return bool((c.get("telegram_token") and c.get("telegram_chat")) or c.get("discord_webhook"))
+
+
+# ------------------------------------------------------------------------------------------------ the lite status (site shape)
+def _card(c) -> dict | None:
+    if not isinstance(c, dict) or c.get("error"):
+        return None
+    out = {k: c.get(k) for k in CARD_KEYS if c.get(k) is not None}
+    w = c.get("window")
+    if isinstance(w, dict):
+        out["window"] = {"open": bool(w.get("open")), "text": str(w.get("text") or "")[:60]}
+    p = c.get("position")
+    if isinstance(p, dict):
+        out["position"] = {k: p.get(k) for k in POS_KEYS if p.get(k) is not None}
+    if isinstance(c.get("waiting"), str):
+        out["waiting"] = c["waiting"][:80]
+    return out
+
+
+def _size(o) -> int:
+    return len(json.dumps(o, separators=(",", ":"), default=str, ensure_ascii=False).encode("utf-8"))
+
+
+def conditions(snap: dict) -> dict:
+    """{code: plain sentence} of what is wrong right now (only what matters at this hour)."""
+    out = {}
+    mo, hb_age = snap.get("market_open"), snap.get("hb_age")
+    if mo and not snap.get("server"):
+        out["bot_down"] = "The bot server on the PC is not answering. Double-click BOTS_BACK.bat on the PC."
+    elif mo and (hb_age is None or hb_age > HB_STALE_S):
+        out["bot_down"] = ("The bot has not reported for " + (span(hb_age) if hb_age is not None else "a long time")
+                           + ". Double-click BOTS_BACK.bat on the PC.")
+    elif snap.get("entry_hours") and snap.get("hb") is not None and not _d(snap["hb"]).get("running"):
+        out["bot_stopped"] = "The bot server runs but the bot is stopped in entry hours. Double-click BOTS_BACK.bat on the PC."
+    if mo and snap.get("nt") is False:
+        out["nt_down"] = "NinjaTrader is not running on the PC: open it and log in."
+    elif mo and "bot_down" not in out and (snap.get("feed_flag") or (snap.get("bar_age") is not None and snap["bar_age"] > BAR_STALE_S)):
+        out["feed_stale"] = ("FEED STALE: no fresh NinjaTrader bars" + (f" (last 1-minute bar {span(snap['bar_age'])} old)"
+                             if snap.get("bar_age") is not None else "") + ", no new entries. Re-add LE_BarFeed on the MNQ 5-minute chart.")
+    return out
+
+
+def verdict_now(snap: dict, base: dict | None) -> dict | None:
+    """The heartbeat's verdict, cut; DOWN / FEED when the reporter sees worse right now (its own t)."""
+    v = {k: (base or {}).get(k) for k in ("code", "label", "level", "reason", "in_session", "hb_age_s", "t")} if isinstance(base, dict) else None
+    if v and isinstance(v.get("reason"), str):
+        v["reason"] = v["reason"][:140]
+    cond = conditions(snap)
+    if "bot_down" in cond:
+        return {"code": "DOWN", "label": "BOT DOWN", "level": "bad", "reason": cond["bot_down"][:140], "t": snap["t"]}
+    if "nt_down" in cond or "feed_stale" in cond:
+        return {"code": "FEED", "label": "FEED STALE", "level": "bad", "reason": (cond.get("nt_down") or cond["feed_stale"])[:140], "t": snap["t"]}
+    return v
+
+
+def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
+    """The live.json the site reads (tools/web_public/live.js LIVE.apply, board.js, truth.js), cut to under max_bytes:
+    kind "le-live", lite True, t = the bot's own heartbeat time (None when the PC bot never reported), pc, pc_verdict,
+    board.lit / atlas / blitz cards + the last trades, accounts (no trade lists), reporter (what this PC saw at reporter.t)."""
+    L = snap.get("live") if isinstance(snap.get("live"), dict) else {}
+    pc = _d(L.get("pc"))
+    bd = _d(L.get("board"))
+    hb = _d(snap.get("hb"))
+    out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": snap.get("hb_t"), "every_s": L.get("every_s") or hb.get("every_s"),
+           "host": L.get("host") or hb.get("host"), "model_state": L.get("model_state"), "price": L.get("price"), "day_pnl": L.get("day_pnl"),
+           "pc_verdict": verdict_now(snap, L.get("pc_verdict")),
+           "pc": {k: pc.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "present", "t", "age_s", "silent", "every_s")
+                  if pc.get(k) is not None} if pc else {"present": False},
+           "reporter": {"t": snap["t"], "server": bool(snap.get("server")), "nt": snap.get("nt"), "market_open": snap.get("market_open"),
+                        "mode": snap.get("mode"), "hb_src": snap.get("hb_src"), "problems": sorted(conditions(snap))}}
+    if bd and not bd.get("error"):
+        b = {k: bd.get(k) for k in ("v", "kind", "t", "data_t", "where", "today", "host", "running", "level") if bd.get(k) is not None}
+        for key in ("lit", "atlas", "blitz"):
+            c = _card(bd.get(key))
+            if c:
+                b[key] = c
+        b["lines"] = [{"level": x.get("level"), "text": str(x.get("text") or "")[:120]} for x in (bd.get("lines") or [])[:3] if isinstance(x, dict)]
+        b["trades"] = [{k: t.get(k) for k in TRADE_KEYS if t.get(k) is not None} for t in (bd.get("trades") or [])[:3] if isinstance(t, dict)]
+        out["board"] = b
+    accts = []
+    for a in L.get("accounts") or []:
+        if not isinstance(a, dict) or not a.get("id"):
+            continue
+        ev = {k: _d(a.get("eval")).get(k) for k in ("start_balance", "balance", "profit", "to_target", "target_balance", "floor", "room", "mll",
+                                                     "dll", "dll_used", "today", "session", "status") if _d(a.get("eval")).get(k) is not None}
+        accts.append({"id": a["id"], "name": a.get("name"), "plan": a.get("plan"), "kind": a.get("kind"), "source": a.get("source"),
+                      "badge": a.get("badge"), "conn": {k: _d(a.get("conn")).get(k) for k in ("present", "t", "running", "connected", "host")},
+                      "eval": ev, "pnl": a.get("pnl"), "running": a.get("running"), "trades": [], "days": []})
+    if accts:
+        out["accounts"] = accts
+    out = {k: v for k, v in out.items() if v is not None}
+    # too big: drop the least needed parts first
+    steps = [lambda o: _d(o.get("board")).pop("lines", None), lambda o: o.pop("accounts", None),
+             lambda o: _d(o.get("board")).__setitem__("trades", _d(o.get("board")).get("trades", [])[:1]) if o.get("board") else None,
+             lambda o: [_d(_d(o.get("board")).get(k)).pop("waiting", None) for k in ("lit", "atlas", "blitz")],
+             lambda o: [_d(_d(o.get("board")).get(k)).pop("window", None) for k in ("atlas", "blitz")],
+             lambda o: _d(o.get("board")).pop("trades", None)]
+    for st in steps:
+        if _size(out) <= max_bytes:
+            break
+        st(out)
+        out["trimmed"] = True
+    if _size(out) > max_bytes:                     # last resort: the essentials only
+        bb = _d(out.get("board"))
+        out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": out.get("t"), "trimmed": True, "pc": out.get("pc"),
+               "pc_verdict": {k: _d(out.get("pc_verdict")).get(k) for k in ("code", "label", "level")},
+               "reporter": out.get("reporter"),
+               "board": {"t": bb.get("t"), "data_t": bb.get("data_t"),
+                         **{k: {x: _d(bb.get(k)).get(x) for x in ("id", "name", "room", "mll", "balance", "today_pnl", "status")}
+                            for k in ("lit", "atlas", "blitz") if bb.get(k)}}}
+    return out
+
+
+# ------------------------------------------------------------------------------------------------ alerts (events)
+BOT_NAME = {"lit": "LIT", "atlas": "ATLAS", "blitz": "BLITZ"}
+
+
+def _mode_note(snap) -> str:
+    m = snap.get("mode")
+    return {"paper": "Paper.", "Sim": "Sim account.", "LIVE": "Real account (you armed it)."}.get(m, "")
+
+
+def _trade_events(snap: dict) -> list:
+    """[(key, t, title, body)] for every trade the PC knows: opens (board.<bot>.position, open trades) and closes."""
+    bd = _d(_d(snap.get("live")).get("board"))
+    out = []
+    for key in ("lit", "atlas", "blitz"):
+        p = _d(_d(bd.get(key)).get("position"))
+        if num(p.get("entry_t")):
+            out.append(_open_event(key, p, snap))
+    for t in bd.get("trades") or []:
+        if not isinstance(t, dict) or not num(t.get("entry_t")):
+            continue
+        acct = str(t.get("acct") or t.get("key") or "lit")
+        if t.get("open"):
+            out.append(_open_event(acct, t, snap))
+            continue
+        name = BOT_NAME.get(acct, acct.upper())
+        r = num(t.get("r"))
+        body = (f"{name} closed {t.get('side') or ''} {t.get('qty') or ''}: {t.get('exit') or 'exit'} {signed_money(t.get('usd'))}"
+                + (f" ({r:+.1f}R)" if r is not None else "") + f", {et_text(t.get('exit_t') or t.get('entry_t'))}. " + (_mode_note(snap) if acct == "lit" else "Paper / Sim."))
+        out.append((f"close:{acct}:{int(num(t['entry_t']))}", int(num(t.get("exit_t")) or num(t["entry_t"])),
+                    f"{name} trade closed {signed_money(t.get('usd'))}", " ".join(body.split())))
+    return out
+
+
+def _open_event(acct, p, snap=None) -> tuple:
+    name = BOT_NAME.get(acct, str(acct).upper())
+    body = (f"{name} opened {p.get('side') or ''} {p.get('qty') or ''} at {p.get('entry')}"
+            + (f", stop {p.get('stop')}" if p.get("stop") is not None else "") + (f", target {p.get('target')}" if p.get("target") is not None else "")
+            + f", {et_text(p.get('entry_t'))}. " + (_mode_note(snap or {}) if acct == "lit" else "Paper / Sim."))
+    return (f"open:{acct}:{int(num(p['entry_t']))}", int(num(p["entry_t"])), f"{name} trade opened", " ".join(body.split()))
+
+
+COND_TITLE = {"bot_down": "Bot down", "bot_stopped": "Bot stopped", "nt_down": "NinjaTrader closed", "feed_stale": "FEED STALE"}
+COND_BACK = {"bot_down": "The bot reports again.", "bot_stopped": "The bot runs again.", "nt_down": "NinjaTrader runs again.",
+             "feed_stale": "NinjaTrader bars are fresh again."}
+
+
+def events(state: dict, snap: dict) -> tuple:
+    """(new state, [push messages]). state: {"seen": {key: t}, "cond": {code: {"since", "alert_t"}}, "seeded": bool}."""
+    st = {"seen": dict(_d(state.get("seen"))), "cond": {k: dict(v) for k, v in _d(state.get("cond")).items() if isinstance(v, dict)},
+          "seeded": bool(state.get("seeded"))}
+    now = snap["t"]
+    msgs = []
+    for key, t, title, body in _trade_events(snap):
+        if key in st["seen"]:
+            continue
+        st["seen"][key] = now
+        if st["seeded"] and now - t <= OLD_EVENT_S:
+            msgs.append({"key": key, "title": title, "body": body, "priority": "high" if key.startswith("open") else "default",
+                         "tags": "chart_with_upwards_trend" if key.startswith("open") else "checkered_flag"})
+    cond = conditions(snap)
+    for code, text in cond.items():
+        c = st["cond"].get(code)
+        if c is None:
+            st["cond"][code] = {"since": now, "alert_t": now}
+            msgs.append({"key": f"cond:{code}:{now}", "title": COND_TITLE.get(code, code), "body": text, "priority": "high", "tags": "warning"})
+        elif snap.get("market_open") and now - int(c.get("alert_t") or 0) >= REMIND_S and code != "bot_stopped":
+            c["alert_t"] = now
+            msgs.append({"key": f"cond:{code}:{now}", "title": COND_TITLE.get(code, code) + " (still)",
+                         "body": text + f" Since {et_text(c.get('since'))}.", "priority": "high", "tags": "warning"})
+    for code in [k for k in st["cond"] if k not in cond]:
+        st["cond"].pop(code, None)
+        msgs.append({"key": f"back:{code}:{now}", "title": "Back to normal", "body": COND_BACK.get(code, "Back to normal."),
+                     "priority": "default", "tags": "white_check_mark"})
+    if not st["seeded"]:                # the first run: what is already there is only recorded, never pushed
+        st["seeded"] = True
+        msgs = [m for m in msgs if m["key"].startswith("cond:")]
+    if len(st["seen"]) > SEEN_KEEP:
+        for k in sorted(st["seen"], key=st["seen"].get)[: len(st["seen"]) - SEEN_KEEP]:
+            st["seen"].pop(k, None)
+    return st, msgs
+
+
+# ------------------------------------------------------------------------------------------------ the six-line card
+def card(snap: dict, cfg: dict | None = None, last: dict | None = None) -> list:
+    """[(kind OK|FIX|SKIP|.., label, text)] x6 + the NEXT sentence as the 7th item (kind NEXT)."""
+    cfg = cfg or {}
+    last = last or {}
+    hb, L = _d(snap.get("hb")), _d(snap.get("live"))
+    bd = _d(L.get("board"))
+    cond = conditions(snap)
+    mo = snap.get("market_open")
+    rows = []
+    # 1 BOTS
+    if not snap.get("server"):
+        rows.append(("FIX" if mo else "..", "BOTS", "the bot server is not answering" + ("" if mo else " (market closed)")))
+    elif not hb:
+        rows.append(("SKIP", "BOTS", "the server answers but the bot has not reported yet (give it 5 minutes)"))
+    else:
+        mode = snap.get("mode") or "?"
+        run = bool(hb.get("running"))
+        others = []
+        for key in ("atlas", "blitz"):
+            c = _d(bd.get(key))
+            st = str(c.get("status") or "")
+            badge = str(c.get("badge") or "paper").upper()
+            others.append(f"{BOT_NAME[key]} " + ("not set up" if st in ("not set up", "off", "") else
+                                                  {"SIM": "on Sim", "PAPER": "paper", "LIVE": "LIVE"}.get(badge, badge.lower())))
+        txt = ("LIT running" if run else "LIT STOPPED") + f" ({'LIVE, armed by you' if mode == 'LIVE' else mode})" + "; " + "; ".join(others)
+        if snap.get("hb_age") is not None and snap["hb_age"] > HB_STALE_S:
+            rows.append(("FIX" if mo else "..", "BOTS", f"last report {ago(snap['hb_age'])}: {txt}"))
+        elif not run:
+            rows.append(("FIX" if snap.get("entry_hours") else "SKIP", "BOTS", txt))
+        else:
+            rows.append(("OK", "BOTS", txt))
+    # 2 FEED
+    if snap.get("nt") is False:
+        rows.append(("FIX" if mo else "..", "FEED", "NinjaTrader is not running" + ("" if mo else " (market closed)")))
+    elif "feed_stale" in cond:
+        rows.append(("FIX", "FEED", cond["feed_stale"].split(". Re-add")[0]))
+    elif snap.get("bar_age") is not None and snap.get("hb_age") is not None and snap["hb_age"] <= HB_STALE_S:
+        rows.append(("OK" if mo else "..", "FEED", f"last 1-minute bar {span(snap['bar_age'])} old" + ("" if mo else " (market closed)")))
+    elif snap.get("local_feed"):
+        lf = snap["local_feed"]
+        rows.append(("OK" if lf == "fresh" else ("FIX" if mo else ".."), "FEED", "LE_BarFeed bars fresh" if lf == "fresh" else f"LE_BarFeed: {str(lf)[:90]}"))
+    else:
+        rows.append(("..", "FEED", "unknown (no report from the bot)"))
+    # 3 TRADE
+    pos = next(((k, _d(bd.get(k)).get("position")) for k in ("lit", "atlas", "blitz") if isinstance(_d(bd.get(k)).get("position"), dict)), None)
+    closed = [t for t in bd.get("trades") or [] if isinstance(t, dict) and not t.get("open")]
+    closed.sort(key=lambda t: num(t.get("exit_t")) or num(t.get("entry_t")) or 0, reverse=True)
+    if pos:
+        p = pos[1]
+        rows.append(("OK", "TRADE", f"{BOT_NAME.get(pos[0])} in a trade: {p.get('side')} {p.get('qty') or ''} at {p.get('entry')}, since {et_text(p.get('entry_t'))}"))
+    elif closed:
+        t = closed[0]
+        r = num(t.get("r"))
+        rows.append(("OK", "TRADE", f"last: {BOT_NAME.get(t.get('acct'), str(t.get('acct') or '').upper())} {t.get('side') or ''} "
+                     f"{t.get('exit') or ''} {signed_money(t.get('usd'))}" + (f" ({r:+.1f}R)" if r is not None else "") + f", {et_text(t.get('exit_t'))}"))
+    else:
+        rows.append(("..", "TRADE", "no trade on record yet" if hb else "unknown (no report from the bot)"))
+    # 4 ROOM (drawdown left)
+    parts = []
+    for key in ("lit", "atlas", "blitz"):
+        c = _d(bd.get(key))
+        if num(c.get("room")) is not None:
+            parts.append(f"{BOT_NAME[key]} {money(c['room'])} of {money(c.get('mll'))}")
+    low = any((num(_d(bd.get(k)).get("room")) or 1e9) < 0.25 * (num(_d(bd.get(k)).get("mll")) or 0) for k in ("lit", "atlas", "blitz"))
+    rows.append((("SKIP" if low else "OK") if parts else "..", "ROOM", ("drawdown left: " + ", ".join(parts)) if parts else "unknown (no report from the bot)"))
+    # 5 REPORT
+    rp = []
+    if cfg.get("topic"):
+        lp = _d(last.get("alerts_last"))
+        rp.append(f"phone alerts on ntfy topic {cfg['topic']}" + (f" (last push {ago(snap['t'] - lp['t'])})" if num(lp.get("t")) else ""))
+    if num(last.get("status_t")):
+        rp.append(f"site status sent {ago(snap['t'] - int(last['status_t']))}")
+    gh = _github_off()
+    if gh and snap.get("server") and snap.get("hb_src") == "last" and snap.get("hb_age") is not None and snap["hb_age"] <= HB_STALE_S:
+        rp.append("GitHub-free mode set, the running bot still tries GitHub (restart it once when flat)")
+    else:
+        rp.append("GitHub off" if gh else "GitHub pushes still on (double-click BOTS_BACK.bat)")
+    if snap.get("alerts_pc"):
+        rp.append("Telegram on")
+    rep_ok = bool(cfg.get("topic")) and last.get("ok") is not False
+    rows.append(("OK" if rep_ok else "SKIP", "REPORT", "; ".join(rp)))
+    # 6 NEXT window
+    w = _d(_d(bd.get("lit")).get("window"))
+    rows.append(("OK" if w.get("text") else "..", "WINDOW", f"LIT {w['text']}" if w.get("text") else "next entry window: weekdays 02:00-15:30 ET"))
+    fixes = [r for r in rows if r[0] == "FIX"]
+    nxt = {"BOTS": "Double-click BOTS_BACK.bat again; if it stays red, double-click HEALTH_CHECK.bat and send Claude a photo.",
+           "FEED": "In NinjaTrader: log in, open the MNQ 5-minute chart, right-click > Indicators > LE_BarFeed > Add.",
+           "TRADE": "", "ROOM": "", "REPORT": "", "WINDOW": ""}
+    if fixes:
+        rows.append(("NEXT", "NEXT", nxt.get(fixes[0][1]) or "Send Claude a photo of this window."))
+    elif not cfg.get("topic"):
+        rows.append(("NEXT", "NEXT", "Double-click BOTS_BACK.bat once to make your phone alert topic."))
+    else:
+        rows.append(("NEXT", "NEXT", "nothing to do."))
+    return rows
+
+
+def _github_off() -> bool:
+    try:
+        from engine import nogithub
+        return nogithub.active()
+    except Exception:
+        return False
+
+
+def card_text(rows) -> str:
+    out = []
+    for kind, label, text in rows:
+        out.append(f"  NEXT: {text}" if kind == "NEXT" else f"  [{kind}] {label:<6} {text}")
+    return "\n".join(out)
+
+
+# ------------------------------------------------------------------------------------------------ one run
+def log_line(work, rec):
+    try:
+        p = os.path.join(work, "report_log.jsonl")
+        with open(p, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(rec, separators=(",", ":"), default=str) + "\n")
+        with open(p, "r", encoding="utf-8") as fh:
+            lines = fh.readlines()
+        if len(lines) > LOG_KEEP * 1.2:
+            with open(p, "w", encoding="utf-8") as fh:
+                fh.writelines(lines[-LOG_KEEP:])
+    except Exception:
+        pass
+
+
+def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, now=None, root: str = ROOT, port=PORT_DEFAULT,
+             feed_problem=None, say=print, feed_path: str | None = None) -> dict:
+    os.makedirs(work, exist_ok=True)
+    cfg = load_cfg(env, feed_path)
+    snap = gather(now, root=root, env=env, http=http, port=port, feed_problem=feed_problem)
+    last = read_json(os.path.join(work, "last.json"), {}) or {}
+    rec = {"t": snap["t"], "ok": True, "hb_t": snap.get("hb_t"), "server": snap.get("server"), "problems": sorted(conditions(snap)),
+           "status_t": last.get("status_t"), "alerts_last": last.get("alerts_last"), "errors": []}
+    status = lite(snap)
+    write_json(os.path.join(work, "status.json"), status, compact=True)
+    if snap.get("live"):
+        write_json(os.path.join(work, "live.json"), snap["live"], compact=True)
+    # status -> the public status topic (the site)
+    if cfg["status_topic"] and status.get("t"):
+        body = json.dumps(status, separators=(",", ":"), default=str, ensure_ascii=False)
+        if dry:
+            say(f"[dry] status ({len(body.encode('utf-8'))} bytes) -> {cfg['ntfy']}/{cfg['status_topic']}")
+        else:
+            ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], body, priority="min", http=http)
+            if ok:
+                rec["status_t"] = snap["t"]
+            else:
+                rec["errors"].append("status: " + why)
+    elif not status.get("t"):
+        rec["errors"].append("status: the bot has never reported on this PC (nothing to show)")
+    # alerts -> your private topic
+    state = read_json(os.path.join(work, "state.json"), {}) or {}
+    new_state, msgs = events(state, snap)
+    sent = 0
+    for m in msgs:
+        if not cfg["topic"] or not cfg["on"]:
+            break
+        if dry:
+            say(f"[dry] push -> {cfg['topic']}: {m['title']}: {m['body']}")
+            continue
+        ok, why = ntfy_post(cfg["ntfy"], cfg["topic"], m["body"], title=m["title"], priority=m.get("priority"), tags=m.get("tags"), http=http)
+        if ok:
+            sent += 1
+            rec["alerts_last"] = {"t": snap["t"], "title": m["title"]}
+        else:
+            rec["errors"].append("alert: " + why)
+            # not sent: forget it so the next run tries again (conditions keep their state; a trade key is retried)
+            if m["key"].startswith(("open:", "close:")):
+                new_state["seen"].pop(m["key"], None)
+    if not dry:
+        write_json(os.path.join(work, "state.json"), new_state)
+    rec.update(sent=sent, queued=len(msgs), ok=not rec["errors"])
+    if not dry:
+        write_json(os.path.join(work, "last.json"), rec)
+        log_line(work, {k: rec.get(k) for k in ("t", "ok", "hb_t", "server", "problems", "sent", "errors")})
+    rec["card"] = card(snap, cfg, rec)
+    return rec
+
+
+def send_test(cfg: dict, http=None) -> tuple:
+    return ntfy_post(cfg["ntfy"], cfg["topic"], "Reporting is back: this phone gets the bots' alerts from the PC (trade opened / closed, "
+                     "FEED STALE, bot down).", title="Bots back: test", priority="default", tags="white_check_mark", http=http)
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description="Report the PC bots to the phone without GitHub (ntfy.sh, free).")
+    ap.add_argument("--work", default=WORK_DEFAULT)
+    ap.add_argument("--port", type=int, default=PORT_DEFAULT)
+    ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--card", action="store_true")
+    ap.add_argument("--setup", action="store_true")
+    ap.add_argument("--test", action="store_true")
+    ap.add_argument("--quiet", action="store_true", help="no card (the scheduled task)")
+    ap.add_argument("--again", action="store_true", help="with --test: send the test push again")
+    a = ap.parse_args(argv)
+    if a.setup or a.test:
+        try:
+            cfg = ensure_topic()
+        except Exception as e:
+            print(f"  [FIX] could not save the alert topic: {e.__class__.__name__}: {e}")
+            return 0
+        print(f"  [OK]  your phone alert topic: {cfg['topic']}   (saved in {cfg['path']}, outside the repo)")
+        if a.test:
+            if (cfg.get("tested") or {}).get("topic") == cfg["topic"] and not a.again:
+                print("  [OK]  test push was sent before for this topic (nothing sent now)")
+                return 0
+            ok, why = send_test(cfg)
+            print("  [OK]  test push sent: it shows on the phone once you subscribed to the topic" if ok else f"  [SKIP] test push not sent: {why}")
+            if ok:
+                mark_tested(cfg)
+        return 0
+    if a.card:
+        cfg = load_cfg()
+        snap = gather(port=a.port)
+        print(card_text(card(snap, cfg, read_json(os.path.join(a.work, "last.json"), {}) or {})))
+        return 0
+    rec = run_once(work=a.work, dry=a.dry_run, port=a.port)
+    if not a.quiet:
+        print(card_text(rec["card"]))
+        for e in rec.get("errors") or []:
+            print(f"  [..] {e}")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except SystemExit:
+        raise
+    except BaseException as e:                         # the scheduled task never shows a crash
+        print("PC report failed softly:", f"{e.__class__.__name__}: {str(e)[:200]}")
+        sys.exit(0)
