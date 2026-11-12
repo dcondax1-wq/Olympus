@@ -242,7 +242,7 @@ class BumpVersions(unittest.TestCase):
         self.assertIn("fresh.js?v=n1", read(self.root, "tools/web_public/fresh/index.html"))        # new file: untouched
         self.assertIn("new since", out)
         self.assertIn("sfx.js?v=s2", read(self.root, "tools/web_public/jarvis/index.html"))         # an old page still carries it: bumped once
-        self.assertNotIn("sfx.js?v=s3", read(self.root, "tools/web_public/jarvis/index.html"))
+        self.assertNotIn("sfx.js?v=s4", read(self.root, "tools/web_public/jarvis/index.html"))
 
     def test_i_the_real_tree_is_not_what_the_tests_touch(self):
         self.assertNotEqual(os.path.abspath(self.root), ROOT)
