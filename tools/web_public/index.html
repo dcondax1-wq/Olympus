@@ -998,6 +998,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 <!-- OLYMPUS theme (olympus/themes.js; the owner picks it in Jarvis: Look, OLYMPUS theme; key 'olympus.theme'): the shared --oly-*
      tokens, and on Zenith's own dark look its page and surfaces in the theme's colours (its accent stays Zenith's own). Loaded
      async, never waited on; the default theme changes nothing. -->
+<script src="olympus/quiet-net.js?v=1"></script>
 <script>(function () {
   var Z = { '--page': '#14110e', '--surface': '#1d1914', '--surface-2': '#26211b', '--surface-3': '#302a22' };
   function go() {
@@ -4619,9 +4620,10 @@ applyLook(); nav(); route(); load('boot'); schedule(); loadFX(); loadLK();
 setInterval(() => FX && D && FX.mood(moodNow()), 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => null);
 </script>
+<script type="module">import * as T from "./olympus/truth.js?v=1"; window.OLYMPUS_TRUTH = T;</script><!-- one source for drawdown / balance / data age (QA round 6) -->
 <script src="extras.js?v=2" defer></script>
 <script src="hub.js?v=9" defer></script>
-<script src="more.js?v=5" defer></script>
+<script src="more.js?v=6" defer></script>
 <script src="live.js?v=2" defer></script>
 <script src="intel.js?v=1" defer></script>
 <script src="tradepics.js?v=3" defer></script>
@@ -4659,7 +4661,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 <script src="zenith_hero.js?v=4" defer></script>
 <script src="launcher.js?v=l5" defer></script>
 <script src="zenith_money.js?v=3" defer></script>
-<script src="moneynowcore.js?v=1" defer></script>
+<script src="moneynowcore.js?v=2" defer></script>
 <script src="moneynow.js?v=1" defer></script>
 <script src="sessioncore.js?v=1" defer></script>
 <script src="sessionday.js?v=1" defer></script>

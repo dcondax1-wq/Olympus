@@ -58,9 +58,9 @@ export function accountView(key, a, rules) {
   if (!isObj(a)) return base;
   const ev = isObj(a.eval) ? a.eval : isObj(a.funded_eval) ? a.funded_eval : a, pnl = isObj(a.pnl) ? a.pnl : {}, st = isObj(a.stats) ? a.stats : {};
   const loss = num(st.avg_loss) || num(a.risk), mll = num(ev.mll) || L.mll, room = num(ev.room);
-  const funded = String(a.kind || '').toLowerCase() === 'funded';
+  const kind0 = String(a.kind || '').toLowerCase(), funded = kind0 === 'funded';
   const today = num(pnl.today) != null ? num(pnl.today) : num(ev.today) != null ? num(ev.today) : num(a.today) || 0;
-  return { ...base, has: true, kind: funded ? 'funded' : 'eval', mll, room: room == null ? null : Math.max(0, Math.min(mll, room)), floor: num(ev.floor), balance: num(ev.balance), today,
+  return { ...base, has: true, kind: funded ? 'funded' : kind0 === 'paper' ? 'paper' : 'eval', mll, room: room == null ? null : Math.max(0, Math.min(mll, room)), floor: num(ev.floor), balance: num(ev.balance), today,
     week: num(pnl.week) != null ? num(pnl.week) : num(a.week) || 0, dll: num(ev.dll) || L.dll, dllUsed: Math.max(0, num(ev.dll_used) != null ? num(ev.dll_used) : num(a.dllUsed) || 0), risk: loss ? Math.abs(loss) : P.risk, est: !loss,
     target: num(ev.target) || L.target, toTarget: num(ev.to_target) != null ? num(ev.to_target) : num(a.toTarget), connected: isObj(a.conn) && typeof a.conn.connected === 'boolean' ? a.conn.connected : typeof a.connected === 'boolean' ? a.connected : null };
 }

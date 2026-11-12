@@ -1844,6 +1844,15 @@ The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" 
 `tools/release_manifest.py` did not land (there is no such file); the release check is `tests/run_gate.py`. Tests are run as `python -X utf8 -m tests.test_<name>`.
 
 ### Shared kit and the new engines
+- **Data truth (QA round 6, 2026-11-11):** `olympus/truth.js` (ES module, pure) is the ONE place for drawdown left / balance / data age:
+  `accountsOf(home)` (home.board first, then the PC's own accounts row, never the cloud paper twin; ATLAS from second.account_b, BLITZ from
+  live.pc.blitz), `agesOf(home)` ("Numbers from the PC report 5 days ago (cloud copy 59 minutes old)."), `canonHome(home)` for older cores.
+  Used by Aegis, Helios, NQ, Ergasterion, the people kit (`people-data.js`), the Agora lab and the root strip (`window.OLYMPUS_TRUTH`, `more.js`).
+  A new page that shows account numbers reads them through it. Test `tests.test_truth` (same numbers in Aegis, Helios, NQ and Home).
+- **Quiet net:** `olympus/quiet-net.js` (classic, first script in `<head>`) asks the suspended GitHub sources (nq-dashboard, kalshi-feed) and
+  the optional `kalshi.json` once per browser session (4 s limit), then answers 404 locally (`window.OLYMPUS_NET`). A page that calls them
+  loads it first. Optional files get honest empty copies from their builders (`tools/cronos/site.py` PLACEHOLDERS + cronos status,
+  `tools/polis_build.py` sky, `tools/money_publish.py` Sibyl ledger). Test `tests.test_quiet_data`.
 - **Kit** (`olympus/`): `olympus.js` + `olympus.css` (veil, tiers, per-app name / glyph / colour, `data-oly-fx` wiring), `render.js` + `materials.js` (real
   materials, bloom), `themes.js`, `sfx.js` (`docs/OLYMPUS_SFX.md`), `a11y.js` + `a11y.css`, `apps-list.js` (generated), `intro-app.js`, `scenery.js`. Rules and budgets:
   `docs/OLYMPUS_DESIGN.md`; tests `test_olympus_kit`, `test_olympus_render`, `test_olympus_themes`, `test_olympus_sfx`, `test_olympus_a11y`, `test_apps_list`.

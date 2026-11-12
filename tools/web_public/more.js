@@ -44,6 +44,7 @@
   };
   addEventListener('online', () => { strip(); if (typeof load === 'function') load(); });
   addEventListener('offline', () => { NET.offline = true; strip(); });
+  addEventListener('olympus-net', () => strip());                       // quiet-net.js: a live source just answered or went offline
 
   // the line under the header on every page: updated time + age, the stale and offline banners
   function stripHTML() {
@@ -52,16 +53,21 @@
     const age = Math.max(0, (Date.now() - b) / 1000), off = NET.offline || navigator.onLine === false;
     const hm = hmLocal(b), day = new Date(b).toDateString() === new Date().toDateString() ? '' : ' ' + new Date(b).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     let ban = '';
+    // the PC's own report age next to the cloud copy's (olympus/truth.js, the same words NQ / Aegis / Helios use): two clocks, both named
+    const T = window.OLYMPUS_TRUTH, pcA = T && T.agesOf ? T.agesOf(MD(), nowS()).pc : null, pcTxt = pcA && pcA.t ? ` · PC report ${pcA.short}` : '';
+    // olympus/quiet-net.js: the PC's live feed (live.json on GitHub) was asked once this session and did not answer -> say so, plainly
+    const NETS = window.OLYMPUS_NET, feedOff = !!(NETS && NETS.dead && NETS.dead('raw:nq-dashboard') && NETS.dead('api:nq-dashboard'));
+    const feedTxt = feedOff ? ' Live feed offline: this is the cloud copy.' : '';
     // live.js: the PC's live.json (every minute) keeps Home current between cloud runs; then old cloud data is no alarm
     const la = window.LIVE && window.LIVE.age ? window.LIVE.age() : null, liveOn = la != null && la < 10 * 60;
     if (off) ban = `<div class="mo-ban off" role="status">${icon('sources')}<span><b>Offline — showing ${hm}${day} data</b><em>The last copy this phone saw. It refreshes by itself when you are back online.</em></span></div>`;
     else if (age > STALE_S && !liveOn) {
       const mkt = marketHours();
-      ban = `<div class="mo-ban ${mkt ? 'bad' : 'warn'}" role="status">${icon('clock')}<span><b>Data is ${fmtAge(age)} old</b><em>${mkt
+      ban = `<div class="mo-ban ${mkt ? 'bad' : 'warn'}" role="status">${icon('clock')}<span><b>Cloud copy is ${fmtAge(age)} old</b><em>${feedTxt ? feedTxt.trim() + ' ' : ''}${mkt
         ? 'The cloud monitor should publish every 30 min in the session. Pull down to retry; if it stays old, check GitHub → Actions → cloud-monitor.'
         : 'Normal outside market hours: the cloud monitor runs on market days from 01:30 to 16:30 ET.'}</em></span></div>`;
     }
-    return `${ban}<button type="button" class="mo-upd" id="moUpd" aria-label="Refresh data">${icon('refresh')}<span>${liveOn ? `<b class="up">Live</b> · ${fmtAge(la)} ago · cloud data ${hm}${day}` : `Updated <b>${hm}${day}</b> · ${fmtAge(age)} ago`}</span><em>${'ontouchstart' in window ? 'pull down to refresh' : 'tap to refresh'}</em></button>`;
+    return `${ban}<button type="button" class="mo-upd" id="moUpd" aria-label="Refresh data">${icon('refresh')}<span>${liveOn ? `<b class="up">Live</b> · ${fmtAge(la)} ago · cloud data ${hm}${day}` : `Cloud copy <b>${hm}${day}</b> · ${fmtAge(age)} ago${pcTxt}`}</span><em>${'ontouchstart' in window ? 'pull down to refresh' : 'tap to refresh'}</em></button>`;
   }
   function marketHours(ts = nowS()) { const e = et(ts), m = e.h * 60 + e.mi; return !['Sat', 'Sun'].includes(e.wd) && m >= 90 && m < 990; }
   function strip() {

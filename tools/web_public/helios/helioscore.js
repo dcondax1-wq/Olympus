@@ -176,7 +176,8 @@ export function build(inp, nowMs, slotKey) {
   const signs = [
     { id: 'day', ok: look.look === 'calm', text: look.look === 'calm' ? 'The day looks calm' : `The day looks ${look.look}` },
     { id: 'dd', ok: accOk.length > 0 && accOk.every((a) => health(a) === 'ok'), text: accOk.length ? (accOk.every((a) => health(a) === 'ok') ? 'Drawdown is a safe distance on every account' : 'An account is getting close to its floor') : 'No live account numbers yet' },
-    { id: 'bots', ok: accOk.length > 0 && !acc.accounts.some((a) => a.has && (a.connected === false || a.paused)), text: acc.accounts.some((a) => a.has && a.connected === false) ? 'A bot is not connected' : 'The bots are connected' },
+    // a "connected" is only news when the report is fresh: olympus/truth.js leaves it null for an old PC report, and null is no good sign
+    { id: 'bots', ok: accOk.length > 0 && !acc.accounts.some((a) => a.has && (a.connected === false || a.paused)) && acc.accounts.some((a) => a.has && a.connected !== null), text: acc.accounts.some((a) => a.has && a.connected === false) ? 'A bot is not connected' : acc.accounts.some((a) => a.has && a.connected !== null) ? 'The bots are connected' : 'No fresh word from the bots' },
     { id: 'feeds', ok: !acts.some((a) => a.id === 'feeds_old') && acc.have, text: acts.some((a) => a.id === 'feeds_old') || !acc.have ? 'The feeds are old or missing' : 'The feeds are fresh' },
     { id: 'quiz', ok: quiz.done, text: quiz.done ? `Today's quiz is done (${quiz.score} of 5)` : quiz.known ? 'Today\'s quiz is not done yet' : 'No quiz progress on this phone yet' },
     { id: 'calm', ok: acts.length > 0 && acts[0].tone === 'ok', text: acts.length && acts[0].tone === 'ok' ? 'Nothing needs you: waiting is the action' : 'Something needs you' },

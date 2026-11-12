@@ -54,6 +54,7 @@
     if (/failed|lost/.test(A.status || '')) return { text: 'Eval ended', edge: 'bad' };
     if (A.state === 'off') return { text: 'Off', edge: 'warn' };
     if (botEdge === 'bad') return { text: 'Not running', edge: 'bad' };
+    if (botEdge === 'warn') return { text: 'No fresh report', edge: 'warn' };   // QA6: a quiet PC (5 days) is not "Running"
     if (A.doneToday) return { text: 'Done for today', edge: 'good' };
     if (A.armed) return { text: 'Armed', edge: 'good' };
     return { text: 'Running', edge: 'good' };
