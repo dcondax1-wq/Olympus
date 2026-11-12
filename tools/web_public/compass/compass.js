@@ -2,6 +2,7 @@
 // ('journal.v1') and the Ledger ('ledger.v1') and keeps only its own Done / Snooze ('compass.state.v1'). Sends nothing; it only suggests. Text only through textContent / createElementNS. window.COMPASS is the test hook.
 // ?demo=1&now=2026-11-10T14:00:00Z opens a given view.
 import * as C from './compasscore.js';
+import * as HF from '../olympus/hero-flat.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -23,15 +24,20 @@ function saveState(v) { try { localStorage.setItem(SKEY, JSON.stringify(v)); } c
 function readLS(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
 
 function renderFlat(deg) {
+  // the painted twin of the 3D rose (olympus/hero-flat.js): a marble dial with a sixteen-point wind rose, degree ticks, a bronze ring, gold north
   const svg = $('flat'); clear(svg);
-  svg.appendChild(sv('circle', { cx: 100, cy: 100, r: 92, fill: '#d9d2c3', stroke: '#9c6b3c', 'stroke-width': 5 }));
+  const P = HF.paint(svg, { w: 200, h: 200, sky: false });
+  P.el('circle', { cx: 103, cy: 104, r: 94, fill: '#1a1008', opacity: 0.35 });
+  P.el('circle', { cx: 100, cy: 100, r: 92, fill: P.F.marbleTop, stroke: P.F.bronze, 'stroke-width': 6 });
+  for (let i = 0; i < 72; i++) { const a = (i / 72) * Math.PI * 2, r0 = i % 9 === 0 ? 76 : 80; P.el('line', { x1: 100 + Math.sin(a) * r0, y1: 100 - Math.cos(a) * r0, x2: 100 + Math.sin(a) * 86, y2: 100 - Math.cos(a) * 86, stroke: '#6a4a24', 'stroke-opacity': 0.6, 'stroke-width': i % 9 === 0 ? 1.4 : 0.7 }); }
   svg.appendChild(sv('circle', { cx: 100, cy: 100, r: 56, fill: 'none', stroke: '#9c6b3c', 'stroke-width': 1.5 }));
-  [[0, '#c8a24a'], [90, '#9c6b3c'], [180, '#9c6b3c'], [270, '#9c6b3c']].forEach(([a, col]) => svg.appendChild(sv('path', { d: 'M100 12 L112 78 L100 100 L88 78 Z', fill: col, transform: `rotate(${a} 100 100)` })));
+  for (let i = 0; i < 16; i++) if (i % 4) { const L = i % 2 ? 40 : 58, W = i % 2 ? 5 : 8; svg.appendChild(sv('path', { d: `M100 ${100 - L} L${100 + W} ${100 - W * 1.2} L100 100 L${100 - W} ${100 - W * 1.2} Z`, fill: i % 2 ? '#b89060' : '#8a6038', opacity: 0.7, transform: `rotate(${i * 22.5} 100 100)` })); }
+  [[0, P.F.gold], [90, P.F.bronze], [180, P.F.bronze], [270, P.F.bronze]].forEach(([a, col]) => svg.appendChild(sv('path', { d: 'M100 12 L112 78 L100 100 L88 78 Z', fill: col, stroke: '#4a3018', 'stroke-width': 0.8, transform: `rotate(${a} 100 100)` })));
   [['N', 100, 24], ['E', 178, 104], ['S', 100, 184], ['W', 22, 104]].forEach(([t, x, y]) => svg.appendChild(sv('text', { x, y, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 700, fill: '#5a4326' }, t)));
   const g = sv('g', { class: 'needle', style: `transform: rotate(${deg}deg)` }); g.dataset.deg = String(deg);
   g.appendChild(sv('path', { d: 'M100 22 L108 100 L100 108 L92 100 Z', fill: '#e0b868', stroke: '#7a5a22', 'stroke-width': 1.5 }));
   g.appendChild(sv('path', { d: 'M100 178 L108 100 L100 92 L92 100 Z', fill: '#c96a4a', stroke: '#7a3a24', 'stroke-width': 1.5 }));
-  g.appendChild(sv('circle', { cx: 100, cy: 100, r: 7, fill: '#9c6b3c', stroke: '#4a3a28', 'stroke-width': 2 }));
+  g.appendChild(sv('circle', { cx: 100, cy: 100, r: 7, fill: P.F.coin, stroke: '#4a3a28', 'stroke-width': 2 }));
   svg.appendChild(g);
 }
 

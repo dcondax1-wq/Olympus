@@ -5,6 +5,8 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import { marble, metal } from '../olympus/materials.js';
 import { tokenLayout } from './sibylcore.js';
+import { dress } from '../olympus/hero-stage.js';
+// QA Round 6 bug 8: the oracle's hall at night (painted sky, the env-kit HDRI for reflections on the marble ball and gold tokens, a mosaic floor) via olympus/hero-stage.js dress.
 
 const GOLD = '#c8a24a', BRONZE = '#9c6b3c', TERRA = '#c96a4a', OLIVE = '#7f8a52';
 
@@ -27,8 +29,7 @@ function createBall(canvas, items, opts) {
   const lite = rc.quality() === 'low' || rc.quality() === 'off';
 
   // warm light, 3000 K feel: a low sun, a soft hemisphere
-  scene.add(new THREE.HemisphereLight(0xf0cf9a, 0x3a2a1a, 1.5));
-  const sun = new THREE.DirectionalLight(0xffd9a0, 2.1); sun.position.set(-3, 4, 4); scene.add(sun);
+  const D = dress({ rc, scene, camera, palette: 'night', hdri: 'dusk', envI: 1.0, sunDir: [-0.55, 0.6, 0.6], key: 2.2, hemi: 0.7, rim: 1.0, shadows: false, metalEnv: 1.8, sky: { sunX: 0.8, sunY: 0.3, templeX: 0.2, horizon: 0.78 }, fogNear: 10, fogFar: 26 });
   if (!lite) { const warm = new THREE.PointLight(0xe0a060, 12, 14, 1.4); warm.position.set(2.5, 1.2, 3); scene.add(warm); }
 
   const ball = new THREE.Mesh(new THREE.SphereGeometry(1, lite ? 36 : 64, lite ? 24 : 40), marble({ color: '#e8e1d2', vein: '#6d6252', roughness: 0.22, clearcoat: 0.8 }));
@@ -59,7 +60,9 @@ function createBall(canvas, items, opts) {
       const want = g.userData.base * (g.userData.i === sel ? 1.35 : 1); g.scale.setScalar(g.scale.x + (want - g.scale.x) * 0.25);
     }
   }
-  function resize() { const w = canvas.clientWidth || 320, h = canvas.clientHeight || 220; camera.aspect = w / h; camera.updateProjectionMatrix(); rc.resize(w, h); dirty = true; }
+  function resize() { const w = canvas.clientWidth || 320, h = canvas.clientHeight || 220; camera.aspect = w / h; camera.updateProjectionMatrix(); rc.resize(w, h); D.backdrop(w, h); dirty = true; }
+  D.tune(); D.envReady.then(() => { dirty = true; });
+  window.__heroStats = () => Object.assign(D.stats(), { calls: rc.renderer.info.render.calls });
   function pick(ev) {
     const r = canvas.getBoundingClientRect(); ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -(((ev.clientY - r.top) / r.height) * 2 - 1)); ray.setFromCamera(ptr, camera);
     const hit = ray.intersectObjects(toks, true)[0]; if (!hit) return;
@@ -87,7 +90,8 @@ function createBall(canvas, items, opts) {
     lite, count: toks.length, quality: () => rc.quality(), passes: () => rc.passes(),
     select(i) { sel = i; dirty = true; }, get selected() { return sel; },
     screenOf(i) { const g = toks.find((x) => x.userData.i === i); if (!g) return null; const v = g.position.clone().project(camera); const r = canvas.getBoundingClientRect(); return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height, front: v.z < 1 }; },
-    dispose() { disposed = true; canvas.removeEventListener('pointerup', pick); if (ro) ro.disconnect(); try { rc.dispose(); } catch (_) { /* gone */ } },
+    stats: () => D.stats(),
+    dispose() { disposed = true; canvas.removeEventListener('pointerup', pick); if (ro) ro.disconnect(); try { D.dispose(); rc.dispose(); } catch (_) { /* gone */ } },
   };
 }
 window.SIBYL_BALL = { createBall };   // read by sibyl.js (a second module tag, so a failed 3D load never stops the page)

@@ -2,6 +2,7 @@
 // Read only: it warns and never blocks or places anything; it sends nothing and keeps nothing. Text only through textContent. window.AEGIS is the test hook.
 // ?acct=zlarior|atlas|blitz&risk=300&demo=1 opens a given view.
 import * as C from './aegiscore.js';
+import * as HF from '../olympus/hero-flat.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -29,11 +30,20 @@ function renderChips() {
 }
 
 function renderFlat(f) {
+  // the painted twin of the 3D aspis (olympus/hero-flat.js): a round bronze shield on a marble stand at golden hour; the gold rim is the drawdown left
   const svg = $('flat'); clear(svg);
-  const d = 'M100 22 C140 42 175 44 190 44 C190 122 165 188 100 218 C35 188 10 122 10 44 C25 44 60 42 100 22 Z';
-  svg.appendChild(sv('path', { d, fill: '#9c6b3c', stroke: '#4a3a28', 'stroke-width': 9, 'stroke-linejoin': 'round', pathLength: 100 }));
-  svg.appendChild(sv('path', { d, fill: 'none', stroke: '#e0b868', 'stroke-width': 7, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 100, 'stroke-dasharray': `${Math.round(f * 100 * 10) / 10} 100`, class: 'rim' }));
-  svg.appendChild(sv('circle', { cx: 100, cy: 100, r: 22, fill: '#c8a24a', stroke: '#7a5a22', 'stroke-width': 3 }));
+  const P = HF.paint(svg, { w: 200, h: 230, sky: 'golden', horizon: 0.8, sunX: 0.8, sunY: 0.55, templeX: 0.16 });
+  P.shadow(100, 214, 70, 7);
+  P.steps(100, 200, 120, 2, { stepH: 7, run: 8, band: true });
+  const cx = 100, cy = 112, R = 80, d = `M${cx} ${cy - R} A${R} ${R} 0 1 1 ${cx - 0.01} ${cy - R} Z`;
+  P.el('circle', { cx: cx + 3, cy: cy + 4, r: R + 2, fill: '#1a1008', opacity: 0.35 });
+  svg.appendChild(sv('path', { d, fill: P.F.bronze, stroke: '#3e2c1c', 'stroke-width': 9, 'stroke-linejoin': 'round', pathLength: 100 }));
+  P.el('circle', { cx: cx - 18, cy: cy - 20, r: R * 0.62, fill: '#ffe2b0', opacity: 0.16 });
+  P.el('circle', { cx, cy, r: R * 0.78, fill: 'none', stroke: '#4a2c14', 'stroke-opacity': 0.45, 'stroke-width': 1.5 });
+  P.el('circle', { cx, cy, r: R * 0.64, fill: 'none', stroke: '#4a2c14', 'stroke-opacity': 0.45, 'stroke-width': 1.5 });
+  svg.appendChild(sv('path', { d, fill: 'none', stroke: '#f0c860', 'stroke-width': 7, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', pathLength: 100, 'stroke-dasharray': `${Math.round(f * 100 * 10) / 10} 100`, class: 'rim' }));
+  P.coin(cx, cy, 24);
+  P.vignette();
 }
 
 function renderShield(a) {

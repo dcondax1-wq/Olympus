@@ -1,6 +1,7 @@
 // CHRYSOS page (ES module): the gold. Fees against payouts for the prop-firm fleet. Reads ../money/chrysos.json (written by tools/money/chrysos.py) and fixture.json (DEMO, never blank).
 // Read only: it sends nothing and keeps nothing. Text only through textContent. window.CHRYSOS is the test hook. ?case=conservative|base|optimistic&month=0..12&demo=1 opens a given view.
 import * as C from './chrysoscore.js';
+import * as HF from '../olympus/hero-flat.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -41,18 +42,21 @@ function renderHero() {
 
 // ------------------------------------------------------------------------------------------------ towers
 function renderFlat(m) {
+  // the painted twin of the 3D towers (olympus/hero-flat.js): golden-hour sky, marble plinths, fluted bronze columns (fees), stacks of owl coins (payouts)
   const svg = $('flat'); clear(svg);
   const n = m.towers.length, W = 360, base = 196, ch = 5.2, step = Math.min(110, (W - 20) / n);
-  svg.appendChild(sv('rect', { x: 0, y: base, width: W, height: 4, fill: '#8f8574' }));
+  const P = HF.paint(svg, { w: W, h: 220, sky: 'golden', horizon: 0.86, sunX: 0.86, sunY: 0.45, templeX: 0.12 });
   m.towers.forEach((t, i) => {
     const cx = 10 + step * i + step / 2, bh = Math.min(170, Math.max(3, (t.fees / m.unit) * ch));
-    svg.appendChild(sv('rect', { x: cx - 30, y: base - 5, width: 60, height: 5, rx: 2, fill: '#d9d2c3' }));
-    svg.appendChild(sv('rect', { x: cx - 24, y: base - 5 - bh, width: 18, height: bh, rx: 2, fill: '#9c6b3c' }));
+    P.shadow(cx + 4, base + 2, 34, 4);
+    svg.appendChild(sv('rect', { x: cx - 30, y: base - 5, width: 60, height: 5, rx: 2, fill: P.F.marble }));
+    P.column(cx - 15, base - 5, bh, 18, { mat: 'bronze', capital: false, base: false });
     svg.appendChild(sv('line', { x1: cx - 28, x2: cx + 28, y1: base - 5 - bh, y2: base - 5 - bh, stroke: '#7f8a52', 'stroke-width': 1.5, 'stroke-dasharray': '3 2' }));
     const coins = Math.min(34, t.coins);
-    for (let j = 0; j < coins; j++) svg.appendChild(sv('rect', { x: cx + 4, y: base - 5 - (j + 1) * ch, width: 20, height: ch - 1, rx: 2, fill: j % 2 ? '#c8a24a' : '#e0b060' }));
-    svg.appendChild(sv('text', { x: cx, y: base + 16, 'text-anchor': 'middle', 'font-size': 11, fill: t.paidBack ? '#7f8a52' : '#cfc4b2' }, String(i + 1)));
+    for (let j = 0; j < coins; j++) svg.appendChild(sv('rect', { x: cx + 4 + (j % 3 === 1 ? 1 : 0), y: base - 5 - (j + 1) * ch, width: 20, height: ch - 1, rx: 2, fill: P.F.gold, stroke: '#7a5418', 'stroke-width': 0.5 }));
+    svg.appendChild(sv('text', { x: cx, y: base + 16, 'text-anchor': 'middle', 'font-size': 11, fill: t.paidBack ? '#a8b870' : '#f4e8d0' }, String(i + 1)));
   });
+  P.vignette();
 }
 
 function renderLegend(m) {

@@ -2,6 +2,7 @@
 // progress ('lyceum.v1') and never writes it. Sends nothing; it only informs. Text only through textContent / createElementNS. window.HELIOS is the test hook.
 // ?demo=1&now=2026-11-10T12:45:00Z&slot=pre|morning|ny opens a given view.
 import * as C from './helioscore.js';
+import * as HF from '../olympus/hero-flat.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -21,16 +22,24 @@ function say(t) { $('status').textContent = t; }
 function readLS(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
 
 function renderFlat(m) {
+  // the painted twin of the 3D sun (olympus/hero-flat.js): a dusk sky, the gilded sun rising behind a marble colonnade, one gold ray per good sign
   const svg = $('flat'); clear(svg);
-  const cx = 160, base = 138, r = 46, y = base + 30 - m.rise * 118;
+  const P = HF.paint(svg, { w: 320, h: 180, sky: 'dusk', horizon: 0.8, sunX: 0.5, sunY: 0.78, temple: false, disc: false });
+  const cx = 160, base = 138, r = 40, y = base + 30 - m.rise * 118;
   const n = m.good, pos = [];
   for (let i = 0; i < C_MAX; i++) pos.push(Math.PI * (0.12 + 0.76 * i / (C_MAX - 1)));
-  for (let i = 0; i < n; i++) { const a = pos[i], x1 = cx - Math.cos(a) * (r + 6), y1 = y - Math.sin(a) * (r + 6), x2 = cx - Math.cos(a) * (r + 30), y2 = y - Math.sin(a) * (r + 30); svg.appendChild(sv('line', { x1, y1, x2, y2, stroke: '#e0b868', 'stroke-width': 5, 'stroke-linecap': 'round', class: 'ray' })); }
-  svg.appendChild(sv('circle', { cx, cy: y, r, fill: '#d9d2c3', stroke: '#c8a24a', 'stroke-width': 6 }));
-  svg.appendChild(sv('circle', { cx, cy: y, r: 22, fill: '#c8a24a' }));
-  svg.appendChild(sv('rect', { x: 0, y: base, width: 320, height: 42, fill: '#2a2118' }));
-  svg.appendChild(sv('rect', { x: 20, y: base - 6, width: 280, height: 8, fill: '#d9d2c3' }));
-  [40, 100, 160, 220, 280].forEach((x) => { svg.appendChild(sv('rect', { x: x - 7, y: base + 2, width: 14, height: 36, fill: '#d9d2c3' })); svg.appendChild(sv('rect', { x: x - 11, y: base - 2, width: 22, height: 6, fill: '#cfc4b2' })); });
+  P.el('circle', { cx, cy: y, r: r * 2.4, fill: P.F.glow, opacity: 0.8 });
+  for (let i = 0; i < n; i++) { const a = pos[i], x1 = cx - Math.cos(a) * (r + 6), y1 = y - Math.sin(a) * (r + 6), x2 = cx - Math.cos(a) * (r + 34), y2 = y - Math.sin(a) * (r + 34); svg.appendChild(sv('line', { x1, y1, x2, y2, stroke: '#e8c068', 'stroke-width': 6, 'stroke-linecap': 'round', class: 'ray' })); }
+  P.el('circle', { cx, cy: y, r, fill: P.F.coin, stroke: '#b0802a', 'stroke-width': 5 });
+  for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; P.el('line', { x1: cx + Math.cos(a) * 12, y1: y + Math.sin(a) * 12, x2: cx + Math.cos(a) * (r - 6), y2: y + Math.sin(a) * (r - 6), stroke: '#8a5a14', 'stroke-opacity': 0.35, 'stroke-width': 2 }); }
+  P.el('circle', { cx, cy: y, r: 11, fill: '#fff4cc', opacity: 0.85 });
+  P.el('rect', { x: 0, y: base + 30, width: 320, height: 12, fill: P.F.ground });
+  P.steps(160, base + 32, 290, 2, { stepH: 5, run: 8 });
+  [40, 100, 160, 220, 280].forEach((x) => { P.shadow(x + 6, base + 33, 14, 3); P.column(x, base + 32, 30, 14); });
+  P.el('rect', { x: 18, y: base - 4, width: 284, height: 6, fill: P.F.marble });
+  P.band(20, base - 10, 280, 6);
+  P.el('rect', { x: 14, y: base - 14, width: 292, height: 4, fill: P.F.marbleTop });
+  P.vignette();
 }
 const C_MAX = 6;
 

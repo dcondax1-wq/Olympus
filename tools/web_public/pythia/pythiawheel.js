@@ -4,6 +4,8 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import { marble, metal } from '../olympus/materials.js';
+import { dress, shaftGeo } from '../olympus/hero-stage.js';
+// QA Round 6 bug 8: a painted dusk sky, the env-kit HDRI light and a paved ground (olympus/hero-stage.js dress); fluted pillars; soft shadows on a GPU.
 
 const GOLD = '#c8a24a', BRONZE = '#9c6b3c';
 const COL = { high: '#c96a4a', med: '#e0b060', low: '#7f8a52', calm: '#9c6b3c', closed: '#4b7a99' };
@@ -15,8 +17,8 @@ function createWheel(canvas, days, opts) {
   const camera = new THREE.PerspectiveCamera(36, 1.5, 0.1, 40); camera.position.set(0, 4.3, 5.9); camera.lookAt(0, 0.35, 0);
   const rc = createRenderer({ canvas, scene, camera, maxDpr: 1.5, tint: GOLD, theme: { sky: '#2b2018', fog: '#2a2018', emissive: GOLD, bloom: '#e0b060', accent: GOLD }, bloom: { strength: 0.2, radius: 0.4, threshold: 1.0 } });
   const lite = rc.quality() === 'low' || rc.quality() === 'off';
-  scene.add(new THREE.HemisphereLight(0xf0cf9a, 0x3a2a1a, 1.5));
-  const sun = new THREE.DirectionalLight(0xffd9a0, 2.2); sun.position.set(-3, 5, 3); scene.add(sun);
+  const D = dress({ rc, scene, camera, palette: 'dusk', hdri: 'dusk', envI: 0.9, sunDir: [-0.5, 0.65, 0.45], key: 2.4, hemi: 0.6, shadowExt: 4, metalEnv: 1.7, sky: { sunX: 0.2, sunY: 0.8, templeX: 0.8, horizon: 0.42 }, fogNear: 9, fogFar: 22 });
+  D.ground({ mat: 'paving', color: '#7a6852', y: -0.37, r: 22 }); D.build(scene);
   const root = new THREE.Group(); scene.add(root);
 
   const plinth = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.8, 0.3, lite ? 40 : 72), metal({ kind: 'gold', color: BRONZE })); plinth.position.y = -0.22; root.add(plinth);
@@ -26,19 +28,22 @@ function createWheel(canvas, days, opts) {
   const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 0.16, 20), goldMat); hub.position.y = 0.06; root.add(hub);
 
   const N = days.length, R = 1.85, pillars = [];
-  const base = new THREE.CylinderGeometry(0.2, 0.2, 1, lite ? 12 : 20);
+  const base = shaftGeo({ h: 1, r: 0.2, flutes: 12, lite, rows: 1, taper: 0.92 }).translate(0, -0.5, 0);
   days.forEach((d, i) => {
     const a = (i / N) * Math.PI * 2, x = Math.sin(a) * R, z = -Math.cos(a) * R;
-    const mat = new THREE.MeshStandardMaterial({ color: COL[d.risk] || COL.calm, roughness: 0.45, metalness: 0.25 });
+    const mat = new THREE.MeshStandardMaterial({ color: COL[d.risk] || COL.calm, roughness: 0.4, metalness: 0.35, envMapIntensity: 1.3 });
     const m = new THREE.Mesh(base, mat); const h = HEIGHT[d.risk] || 0.2; m.scale.set(1, h, 1); m.position.set(x, 0.04 + h / 2, z); m.userData = { i, h, x, z };
-    root.add(m); pillars.push(m);
+    m.castShadow = D.shadows; root.add(m); pillars.push(m);
     const foot = new THREE.Mesh(new THREE.RingGeometry(0.24, 0.3, 24), new THREE.MeshBasicMaterial({ color: i === 0 ? GOLD : '#6d6252', side: THREE.DoubleSide })); foot.rotation.x = -Math.PI / 2; foot.position.set(x, 0.045, z); root.add(foot);
   });
 
   let sel = -1, spin = 0, dirty = true, disposed = false;
   const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
   function apply() { root.rotation.y = spin; for (const p of pillars) { const up = p.userData.i === sel ? 0.28 : 0; p.position.y += (0.04 + p.userData.h / 2 + up - p.position.y) * (RM ? 1 : 0.25); } }
-  function resize() { const w = canvas.clientWidth || 320, h = canvas.clientHeight || 210; camera.aspect = w / h; camera.updateProjectionMatrix(); rc.resize(w, h); dirty = true; }
+  function resize() { const w = canvas.clientWidth || 320, h = canvas.clientHeight || 210; camera.aspect = w / h; camera.updateProjectionMatrix(); rc.resize(w, h); D.backdrop(w, h); dirty = true; }
+  D.blobs([[0, 0, 3.2, 0.7, -0.36]], { opacity: 0.45 }); D.shade(plinth, true, true); disc.receiveShadow = D.shadows; D.tune();
+  D.envReady.then(() => { dirty = true; });
+  window.__heroStats = () => Object.assign(D.stats(), { calls: rc.renderer.info.render.calls });
   function pick(ev) {
     const r = canvas.getBoundingClientRect(); ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -(((ev.clientY - r.top) / r.height) * 2 - 1)); ray.setFromCamera(ptr, camera);
     const hit = ray.intersectObjects(pillars, false)[0]; if (hit && o.onPick) o.onPick(hit.object.userData.i);
@@ -63,7 +68,8 @@ function createWheel(canvas, days, opts) {
     lite, count: pillars.length, quality: () => rc.quality(), passes: () => rc.passes(),
     select(i) { sel = i; dirty = true; }, get selected() { return sel; },
     screenOf(i) { const p = pillars.find((x) => x.userData.i === i); if (!p) return null; root.updateMatrixWorld(true); const v = p.getWorldPosition(new THREE.Vector3()); v.project(camera); const r = canvas.getBoundingClientRect(); return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height, front: v.z < 1 }; },
-    dispose() { disposed = true; canvas.removeEventListener('pointerup', pick); if (ro) ro.disconnect(); try { rc.dispose(); } catch (_) { /* gone */ } },
+    stats: () => D.stats(),
+    dispose() { disposed = true; canvas.removeEventListener('pointerup', pick); if (ro) ro.disconnect(); try { D.dispose(); rc.dispose(); } catch (_) { /* gone */ } },
   };
 }
 window.PYTHIA_WHEEL = { createWheel };   // read by pythia.js (a second module tag, so a failed 3D load never stops the page)

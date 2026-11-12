@@ -3,6 +3,8 @@
 // Registers window.MINTCITY3D = { mount, setPlan, flyTo, tour, stop, state, dispose } and fires 'mintcity3d'. mintcity.js draws the 2D map and list first and only hides the map when mount() returns true.
 import * as THREE from '../jarvis/three.module.min.js';
 import * as C from './mintcitycore.js';
+import { dress } from '../olympus/hero-stage.js';
+// QA Round 6 bug 8: plaster / marble / paving scans, the golden HDRI and a painted golden-hour sky (olympus/hero-stage.js dress), a gilded pillar.
 
 const COLORS = { marble: 0xd8cfbd, gold: 0xc8a24a, bronze: 0x9c6b3c, terra: 0xb9694b, olive: 0x7f8a52, aegean: 0x4b7a99 };
 let R = null;
@@ -46,9 +48,9 @@ function build(plan) {
     return { id: d.id, cx: d.cx, cz: d.cz, detail, proxy, hit, lab, on: true, i };
   });
   R.filler = instanced(plan.filler, R.geoms, mat); root.add(R.filler);
-  const ph = plan.pillar.h, gold = new THREE.MeshStandardMaterial({ color: 0xc8a24a, roughness: 0.32, metalness: 0.6 });
+  const ph = plan.pillar.h, gold = new THREE.MeshStandardMaterial({ color: 0xc8a24a, roughness: 0.28, metalness: 0.95, envMapIntensity: 1.8 });
   const pil = new THREE.Group();
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.8, 0.8, 32), new THREE.MeshStandardMaterial({ color: 0xe6dccb, roughness: 0.5 })); base.position.y = 0.4;
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.8, 0.8, 32), R.D.kit.mat('marble', { color: '#e6dccb' })); base.position.y = 0.4;
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, ph, 28), gold); shaft.position.y = 0.8 + ph / 2;
   const cap = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 1.4, 0.9, 28), gold); cap.position.y = 0.8 + ph + 0.45;
   const sun = new THREE.Mesh(new THREE.SphereGeometry(0.9, 20, 14), new THREE.MeshBasicMaterial({ color: 0xe0b060 })); sun.position.y = 0.8 + ph + 1.9;
@@ -92,15 +94,15 @@ function mount(box, plan, opts) {
   box.appendChild(renderer.domElement); renderer.domElement.style.touchAction = 'none';
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0x3b2c1e); scene.fog = new THREE.Fog(0x3b2c1e, 90, 230);
   const camera = new THREE.PerspectiveCamera(46, 1.2, 0.5, 400);
-  scene.add(new THREE.HemisphereLight(0xffe2b8, 0x3a2a1c, 0.9));
-  const sun = new THREE.DirectionalLight(0xffd9a0, 1.5); sun.position.set(40, 70, 30); scene.add(sun);
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(150, 64), new THREE.MeshStandardMaterial({ color: 0xcfc4b2, roughness: 0.7 })); ground.rotation.x = -Math.PI / 2; scene.add(ground);
-  const plaza = new THREE.Mesh(new THREE.CylinderGeometry(9, 9.4, 0.3, 48), new THREE.MeshStandardMaterial({ color: 0xe6dccb, roughness: 0.55 })); plaza.position.y = 0.15; scene.add(plaza);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+  const D = dress({ renderer, scene, camera, tier: tier === 'low' ? 'low' : 'high', palette: 'golden', hdri: 'golden', envI: 0.8, sunDir: [0.5, 0.7, 0.4], key: 2.4, hemi: 0.6, shadows: false, sky: { sunX: 0.78, sunY: 0.75, templeX: 0.15, horizon: 0.45 }, fogNear: 120, fogFar: 300 });
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(150, 64), D.kit.mat('paving', { color: '#b8aa92' })); ground.rotation.x = -Math.PI / 2; scene.add(ground);
+  const plaza = new THREE.Mesh(new THREE.CylinderGeometry(9, 9.4, 0.3, 48), D.kit.mat('marble', { color: '#e6dccb' })); plaza.position.y = 0.15; scene.add(plaza);
   for (let i = 0; i < 5; i++) { const c = C.districtCenter(i, 5), len = C.RING - 12, road = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.12, len), new THREE.MeshStandardMaterial({ color: 0xb8ad98, roughness: 0.8 })); road.position.set(c.x * 0.5, 0.06, c.z * 0.5); road.rotation.y = Math.atan2(c.x, c.z); scene.add(road); }
   const geoms = { box: new THREE.BoxGeometry(1, 1, 1), cyl: new THREE.CylinderGeometry(0.5, 0.5, 1, tier === 'low' ? 8 : 14), roof: prism() };
-  R = { renderer, scene, camera, box, geoms, mat: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6, metalness: 0.05 }), tier, reduce, frames: 0, raf: 0, dead: false, districts: [], root: null, pose: Object.assign({}, C.OVERVIEW), onPick: opts.onPick || null, touched: false, fly: null, tourName: null, ptr: new Map(), last: 0 };
+  R = { renderer, scene, camera, box, geoms, mat: D.kit.mat('plaster', { color: '#ffffff' }), D, tier, reduce, frames: 0, raf: 0, dead: false, districts: [], root: null, pose: Object.assign({}, C.OVERVIEW), onPick: opts.onPick || null, touched: false, fly: null, tourName: null, ptr: new Map(), last: 0 };
   build(plan);
-  const size = () => { const w = Math.max(200, box.clientWidth || 320), h = Math.max(160, box.clientHeight || 300); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); if (!R.raf) { applyPose(R.pose); renderer.render(scene, camera); } };
+  const size = () => { const w = Math.max(200, box.clientWidth || 320), h = Math.max(160, box.clientHeight || 300); renderer.setSize(w, h, false); D.backdrop(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); if (!R.raf) { applyPose(R.pose); renderer.render(scene, camera); } };
   applyPose(R.pose); size();
   if (typeof ResizeObserver === 'function') { R.ro = new ResizeObserver(size); R.ro.observe(box); }
   // drag = turn, two fingers / wheel = zoom, a short tap on a district = pick it
@@ -145,6 +147,7 @@ function dispose() {
   R.dead = true; cancelAnimationFrame(R.raf);
   try {
     document.removeEventListener('visibilitychange', R.vis); if (R.ro) R.ro.disconnect();
+    if (R.D) R.D.dispose();
     const el = R.renderer.domElement; for (const [k, f] of R.listeners || []) el.removeEventListener(k, f);
     clearRoot(); R.scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.dispose) o.material.dispose(); });
     R.renderer.dispose(); if (el.parentNode) el.parentNode.removeChild(el);
@@ -153,4 +156,5 @@ function dispose() {
 }
 
 window.MINTCITY3D = { mount, setPlan, flyTo, tour, stop, state, dispose };
+window.__heroStats = () => (R && R.D ? Object.assign(R.D.stats(), { calls: R.renderer.info.render.calls }) : null);
 window.dispatchEvent(new Event('mintcity3d'));
