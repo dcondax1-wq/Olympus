@@ -72,3 +72,15 @@ while the page scrolls down and whenever text, a control, a picture or a card si
 Every page still ends with room for it: the app's own bottom padding (176 px + safe area in the base block) and `tools/phone_fit_audit.py`
 checks it (`orb`: nothing readable or tappable under the seat at the end of the scroll). `OLYMPUS.seatClear()` says whether the seat is clear now.
 Pages that size inputs to `width: 100%` need `box-sizing: border-box` (`.ag-field` has it), or they scroll sideways at 375 / 390.
+
+## The Gate and gate-nav (2026-11-12)
+Owner: "When I click the dashboard link there's just a shit ton of buttons ... make something that's very easy on how to get to things."
+- **The Gate** (`tools/web_public/gate/`): the one front door. "Right now" (bots on / quiet / old numbers with the age, drawdown left, today's $, the next trade window; older than 6 h = one
+  "Bring the bots back" button), three Start-here tiles (Today = the dashboard, Bots = `nq/`, Jarvis: 1 tap), four district doors (Trading, Money, Life, Worlds) that open a sheet,
+  most useful first (any app in 2 taps), a search (name, purpose, plain words), Recent (last 4 opened), the labs under a small Workshop link. It works at `gate/` and copied to the
+  site root as `olympus-live.html` (one base-path line; every link is built from `GATE_BASE`), and when `home.json` is missing.
+- **The list** is `olympus/gate-catalog.js` (plain label, Greek name, one-line purpose, district, synonyms). A new app = one row there (`tests.test_gate_page` fails when an app
+  folder or an `apps-list.js` row is missing from it).
+- **gate-nav** (`olympus/gate-nav.js`): one line in an app's `<head>`, after `agora-ui.js`: `<script src="../olympus/gate-nav.js?v=g1" defer></script>`. The back link becomes
+  "< Gate", and "Go to" (a search sheet: the Gate, Recent, Start here, the districts) sits on the right of the same top row and in the compact bar. In the page flow, never over
+  content, never in the orb's corner; nothing when framed inside Jarvis. In: nq, helios, aegis, mint, polis, symposium, ergasterion, cities, kalshi, herald.
