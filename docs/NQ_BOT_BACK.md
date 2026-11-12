@@ -1,4 +1,4 @@
-# NQ bots, reporting without GitHub (2026-11-11)
+# NQ bots, back without GitHub (2026-11-12)
 
 The bots (LIT / ATLAS / BLITZ) never needed GitHub to trade. Only their reporting did. This puts the reporting on your main PC.
 
@@ -8,15 +8,12 @@ The bots (LIT / ATLAS / BLITZ) never needed GitHub to trade. Only their reportin
 | Reporting | The PC builds the site every 15 minutes and sends it out (Netlify, or a folder). |
 | Check-ins to GitHub | Off (bot writes its status to its own folder instead). |
 
-## Do this (5 steps, once)
-1. **Update the bot folder from the zip.** Stop the bot (STOP_BOT.bat). Put the code zip and its `.sha256.txt` in Downloads on the PC, open the zip, copy `UPDATE_FROM_ZIP.bat` into the bot folder and double-click it.
-   It checks the zip, keeps your settings and every local file, and shows six lines. Best time: 17:00-18:00 ET or the weekend.
-2. **Make a free Netlify site and a token.** Site: app.netlify.com/drop, drop any file, note the **Site ID** (Site configuration, "Site ID").
-   Token: Netlify > your avatar > User settings > Applications > Personal access tokens > New access token > copy it.
-3. **Save both on the PC.** In the bot folder, one line, then paste the token and press Enter (it is typed hidden, never shown or uploaded):
-   `python tools\pc_publish.py --setup netlify --site-id YOUR_SITE_ID --token-stdin`
-4. **Double-click `PUBLISH_NQ.bat`.** It sets up the 15-minute task, switches the bot to GitHub-free mode and publishes once.
-5. **Start the bot again.** Double-click `START_BOT.bat` while the market is closed. `STATUS.bat` any time shows the last publish.
+## Do this (3 steps, once)
+1. **Update the bot folder from the zip.** Double-click `STOP_BOT.bat`. Put the code zip and its `.sha256.txt` in Downloads on the PC, open the zip, copy `UPDATE_FROM_ZIP.bat` into the bot folder and double-click it (type Y if it asks).
+2. **Double-click `BOTS_BACK.bat`** in the bot folder. It checks NinjaTrader and its bars, starts the bots on Sim / paper (never a real account), turns the GitHub pushes off and ends with six lines. Note the phone alert topic it shows.
+3. **iPhone:** install the free **ntfy** app, tap **+**, type that topic, tap **Subscribe**. A test push arrives; after that every trade, a stale feed or a stopped bot pushes to your phone, and this site shows the PC's status every 15 minutes.
+
+Optional, for the whole site from the PC once a day: make a free Netlify site and token, then `python tools\pc_publish.py --setup netlify --site-id YOUR_SITE_ID --token-stdin` and double-click `PUBLISH_NQ.bat`.
 
 Undo: `UNDO_UPDATE.bat` puts the old files back; `UNDO_PUBLISH_NQ.bat` removes the publish task.
 

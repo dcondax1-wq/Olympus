@@ -1,35 +1,24 @@
 {
  "v": 1,
  "source": "docs/NQ_BOT_BACK.md",
- "updated": "2026-11-11",
- "title": "How to bring reporting back",
+ "updated": "2026-11-12",
+ "title": "Bring the bots back",
  "intro": "The bots (LIT / ATLAS / BLITZ) never needed GitHub to trade. Only their reporting did. This puts the reporting on your main PC.",
  "steps": [
   {
    "n": 1,
    "title": "Update the bot folder from the zip",
-   "text": "Stop the bot (STOP_BOT.bat). Put the code zip and its .sha256.txt in Downloads on the PC, open the zip, copy UPDATE_FROM_ZIP.bat into the bot folder and double-click it. It checks the zip, keeps your settings and every local file, and shows six lines. Best time: 17:00-18:00 ET or the weekend."
+   "text": "Double-click STOP_BOT.bat. Put the code zip and its .sha256.txt in Downloads on the PC, open the zip, copy UPDATE_FROM_ZIP.bat into the bot folder and double-click it (type Y if it asks)."
   },
   {
    "n": 2,
-   "title": "Make a free Netlify site and a token",
-   "text": "Site: app.netlify.com/drop, drop any file, note the Site ID (Site configuration, \"Site ID\"). Token: Netlify > your avatar > User settings > Applications > Personal access tokens > New access token > copy it."
+   "title": "Double-click BOTS_BACK.bat",
+   "text": "in the bot folder. It checks NinjaTrader and its bars, starts the bots on Sim / paper (never a real account), turns the GitHub pushes off and ends with six lines. Note the phone alert topic it shows."
   },
   {
    "n": 3,
-   "title": "Save both on the PC",
-   "text": "In the bot folder, one line, then paste the token and press Enter (it is typed hidden, never shown or uploaded):",
-   "code": "python tools\\pc_publish.py --setup netlify --site-id YOUR_SITE_ID --token-stdin"
-  },
-  {
-   "n": 4,
-   "title": "Double-click PUBLISH_NQ.bat",
-   "text": "It sets up the 15-minute task, switches the bot to GitHub-free mode and publishes once."
-  },
-  {
-   "n": 5,
-   "title": "Start the bot again",
-   "text": "Double-click START_BOT.bat while the market is closed. STATUS.bat any time shows the last publish."
+   "title": "iPhone:",
+   "text": "install the free ntfy app, tap +, type that topic, tap Subscribe. A test push arrives; after that every trade, a stale feed or a stopped bot pushes to your phone, and this site shows the PC's status every 15 minutes."
   }
  ],
  "undo": "Undo: UNDO_UPDATE.bat puts the old files back; UNDO_PUBLISH_NQ.bat removes the publish task.",

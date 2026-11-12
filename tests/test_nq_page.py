@@ -38,15 +38,15 @@ def test_static():
     check("a. the page order: the banner, the three columns, the plan, the bots, the trades, the backtest facts, more",
           html.index('id="banner"') < html.index('id="sceneCard"') < html.index('id="planCard"') < html.index('id="bots"') < html.index('id="tradesCard"') < html.index('id="factsCard"') < html.index('id="moreCard"'))
     check("a. the honest words are on the page: the banner sentence, 'Backtest, not a promise', the 5-step button twice (banner + More), the link to the full dashboard",
-          SILENT in html and SILENT in core and "Backtest, not a promise" in html and html.count("How to bring reporting back (5 steps)") == 2 and 'href="../"' in html)
+          SILENT in html and SILENT in core and "Backtest, not a promise" in html and html.count("Bring the bots back (3 steps)") == 2 and 'href="../"' in html)
     check("a. the sheet is a labelled dialog with a Close button; Escape and the veil close it", 'role="dialog"' in html and 'aria-modal="true"' in html and 'id="sheetClose"' in html and "'Escape'" in js and "veil" in js)
     check("a. paper only is said in plain words (never places an order; cannot start, stop or change a bot)", "never places an order" in html and "cannot start, stop or change a bot" in html)
     # howto.json = docs/NQ_BOT_BACK.md
     r = subprocess.run([sys.executable, os.path.join(AK.ROOT, "tools", "nq_howto_build.py"), "--check"], capture_output=True, text=True)
     hw = json.loads(AK.read(os.path.join(d, "howto.json")))
-    check("a. howto.json is the doc's steps (tools/nq_howto_build.py --check passes): 5 numbered steps, step 1 is the zip update, one copy-paste line, the undo line, no markup",
-          r.returncode == 0 and [s["n"] for s in hw["steps"]] == [1, 2, 3, 4, 5] and "UPDATE_FROM_ZIP.bat" in hw["steps"][0]["text"] and sum(1 for s in hw["steps"] if s.get("code")) == 1
-          and hw["steps"][2]["code"].startswith("python tools\\pc_publish.py --setup netlify") and "UNDO_UPDATE.bat" in hw["undo"] and "<" not in json.dumps(hw) and "**" not in json.dumps(hw), (r.stdout, hw["steps"][:1]))
+    check("a. howto.json is the doc's steps (tools/nq_howto_build.py --check passes): 3 numbered steps (owner 2026-11-12: BOTS_BACK), step 1 is the zip update, step 2 BOTS_BACK.bat, step 3 the ntfy app, the undo line, no markup",
+          r.returncode == 0 and [s["n"] for s in hw["steps"]] == [1, 2, 3] and "UPDATE_FROM_ZIP.bat" in hw["steps"][0]["text"] and "BOTS_BACK.bat" in hw["steps"][1]["title"]
+          and "ntfy" in json.dumps(hw["steps"][2]) and "UNDO_UPDATE.bat" in hw["undo"] and "<" not in json.dumps(hw) and "**" not in json.dumps(hw), (r.stdout, hw["steps"][:1]))
     doc = AK.read(os.path.join(AK.ROOT, "docs", "NQ_BOT_BACK.md"))
     steps = re.findall(r"^\d+\. \*\*", doc.split("## Do this")[1].split("\n## ")[0], re.M)
     check("a. docs/NQ_BOT_BACK.md has at most 5 steps and the update step is folded in", 1 <= len(steps) <= 5 and "UPDATE_FROM_ZIP.bat" in doc and "UNDO_UPDATE.bat" in doc, len(steps))
@@ -217,8 +217,8 @@ def test_page():
             s = p.evaluate("""() => ({ open: !document.querySelector('#sheet').hidden, h: document.querySelector('#sheetH').textContent, steps: [...document.querySelectorAll('#sheetBody .steps li b')].map((e) => e.textContent),
               code: [...document.querySelectorAll('#sheetBody .cmd')].map((e) => e.textContent), undo: document.querySelector('#sheetBody').textContent.includes('UNDO_UPDATE.bat'), focus: document.activeElement.id,
               exp: document.querySelector('#howBtn').getAttribute('aria-expanded'), fits: document.querySelector('#sheet').getBoundingClientRect().height <= innerHeight })""")
-            check("c. tap 'How to bring reporting back (5 steps)': the sheet opens with the doc's five steps (the zip update first), the one copy line, the undo line; focus moves to Close",
-                  s["open"] and s["h"] == "How to bring reporting back (5 steps)" and len(s["steps"]) == 5 and s["steps"][0] == "Update the bot folder from the zip" and len(s["code"]) == 1 and s["code"][0].startswith("python tools\\pc_publish.py")
+            check("c. tap 'Bring the bots back (3 steps)': the sheet opens with the doc's three steps (the zip update first, then BOTS_BACK.bat), at most one copy line, the undo line; focus moves to Close",
+                  s["open"] and s["h"] == "Bring the bots back (3 steps)" and len(s["steps"]) == 3 and s["steps"][0] == "Update the bot folder from the zip" and s["steps"][1].startswith("Double-click BOTS_BACK.bat") and len(s["code"]) <= 1
                   and s["undo"] and s["focus"] == "sheetClose" and s["exp"] == "true" and s["fits"], s)
             check("c. the open sheet: every tap target >= 44 px, no sideways scroll", not AK.taps(p) and AK.no_sideways(p), AK.taps(p)[:4])
             AK.shot(p, "nq-sheet")

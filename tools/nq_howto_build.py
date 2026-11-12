@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bundle docs/NQ_BOT_BACK.md for the NQ app's "How to bring reporting back (5 steps)" sheet (tools/web_public/nq/).
+"""Bundle docs/NQ_BOT_BACK.md for the NQ app's "Bring the bots back (3 steps)" sheet (tools/web_public/nq/).
 
     python tools/nq_howto_build.py            write tools/web_public/nq/howto.json
     python tools/nq_howto_build.py --check    exit 1 when the file is missing or no longer matches the doc (no write)
@@ -67,7 +67,7 @@ def build(md: str) -> dict:
         out_steps.append(step)
     undo = next((plain(ln) for ln in body.split("\n") if ln.startswith("Undo")), "")
     limits = [first_sentences(plain(ln[2:]), MAX_LIMIT) for ln in section(md, "Honest limits").split("\n") if ln.startswith("- ")][:N_LIMITS]
-    return {"v": 1, "source": "docs/NQ_BOT_BACK.md", "updated": date.group(1) if date else "", "title": "How to bring reporting back",
+    return {"v": 1, "source": "docs/NQ_BOT_BACK.md", "updated": date.group(1) if date else "", "title": "Bring the bots back",
             "intro": plain(intro), "steps": out_steps, "undo": undo, "limits": limits}
 
 
