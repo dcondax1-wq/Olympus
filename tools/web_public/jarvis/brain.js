@@ -2241,7 +2241,7 @@ export function createBrain(opts) {
         r = { text: FALLBACK, speak: 'Pardon me, I did not catch that. Try asking how the bots are doing, or what is on today.', intent: 'fallback' };
         if (S.on && S.keys[S.provider]) r = await smartAnswer(raw, V, r, voice);
         else if (tools || assistant) r = offerOnce(r);
-      } else if (/^(should i|should we|is it worth|would it be wise|do you think|what do you think|would you)\b/.test(q) && !r.control && !r.open && r.intent !== 'refuse_trade' && !r.smart && !/^(chat|assistant_|know)/.test(r.intent || '')) {
+      } else if (/^(should i|should we|is it worth|would it be wise|do you think|what do you think|would you)\b/.test(q) && !r.control && !r.open && r.intent !== 'refuse_trade' && !r.smart && !/^(chat|assistant_|know|copilot_)/.test(r.intent || '')) {     // copilot_*: the GO / CAREFUL / SIT OUT read already ends "your decision"
         if (S.on && S.keys[S.provider]) r = await smartAnswer(raw, V, r, voice);           // a decision: the model, with these numbers as its fallback
         else r = { ...r, text: 'Your call, sir. The numbers I have:\n' + r.text, speak: 'Your call, sir. ' + (r.speak || '') };
       }
