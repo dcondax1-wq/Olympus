@@ -56,14 +56,16 @@ def ecfg(plan):
     return U.ecfg_of({}, plan=plan)
 
 
-def flows(BY, seq, key, start, horizon, breaker=False):
+def flows(BY, seq, key, start, horizon, breaker=False, zombie=True):
     """Cash per session for one slot on one path (owner payouts +, eval purchases -), the slot bought at session `start`.
-    Same state machine as uprisk.life (checked by `check`)."""
+    Same state machine as uprisk.life (checked by `check` with zombie=False). zombie=True adds the owner's rule found in
+    this study: a funded account whose room to its floor is under the eval's 'stuck' line ($200 / $100) cannot fit a
+    micro on LIT's stops and would sit for years (seen on 10-year paths): close it and buy the next eval."""
     s = SLOTS[key]
     plan, fc, price = s["plan"], s["fcfg"], s["price"]
     ec = ecfg(plan)
     cash = np.zeros(horizon)
-    st = {"evals": 0, "funded": 0, "lost": 0, "grads": 0, "paid": 0.0, "fees": 0.0}
+    st = {"evals": 0, "funded": 0, "lost": 0, "grads": 0, "paid": 0.0, "fees": 0.0, "zombies": 0}
     if start >= horizon:
         return cash, st
     cash[start] -= price
@@ -103,6 +105,11 @@ def flows(BY, seq, key, start, horizon, breaker=False):
             if ev in ("paid", "grad"):
                 cash[k] += x
                 st["paid"] += x
+            if zombie and ev is None and f.state == "on":
+                b, _ = f._fast_state()
+                if b["balance"] - b["floor"] < U.EPLAN[plan]["stuck"]:
+                    ev = "lost"            # a funded account too close to its floor to fit 1 micro: close it, buy the next eval
+                    st["zombies"] += 1
             if ev in ("lost", "grad"):
                 st["lost" if ev == "lost" else "grads"] += 1
                 f = None
@@ -220,6 +227,7 @@ def run(n=500, months=120, spans=SPANS, breakers=(False, True), live=True):
                 res[str(N)]["evals_y1"] = round(float(np.mean([sum(stats[j][i]["evals"] for j in range(N)) for i in range(n)])) * 12 / months, 1)
                 res[str(N)]["fees_total"] = round(float(np.mean([sum(stats[j][i]["fees"] for j in range(N)) for i in range(n)])))
                 res[str(N)]["funded_total"] = round(float(np.mean([sum(stats[j][i]["funded"] for j in range(N)) for i in range(n)])), 1)
+                res[str(N)]["zombies_total"] = round(float(np.mean([sum(stats[j][i]["zombies"] for j in range(N)) for i in range(n)])), 2)
                 res[str(N)]["per_dollar_fee"] = round(float(cum[:, -1].mean()) / max(1.0, res[str(N)]["fees_total"]), 1)
                 print(f"{tag:12s} {N:>2} accts  ${res[str(N)]['pm_y1']:>6}/mo y1  ${res[str(N)]['pm_y2_3']:>6}/mo y2-3  "
                       f"ruin {res[str(N)]['ruin_1']:>5}% need p95 ${res[str(N)]['cash_needed_p95']:>5}  100K med {res[str(N)]['to_100000']['med']}  "
@@ -305,7 +313,7 @@ def check(n=60):
             U.PRICE[s["plan"]] = s["price"]
             L = U.life(BY, P, ecfg(s["plan"]), s["fcfg"], plan=s["plan"], raw=True)
             for i, seq in enumerate(P):
-                c, st = flows(BY, seq, key, 0, U.LEN)
+                c, st = flows(BY, seq, key, 0, U.LEN, zombie=False)
                 assert abs(c.sum() - L[i]["net"]) < 1e-6, (sp, key, i, c.sum(), L[i]["net"])
                 assert st["evals"] == L[i]["evals"] and st["funded"] == L[i]["funded"], (sp, key, i)
     U.PRICE.update({"builder50k": 91.80, "builder25k": 63.0})
