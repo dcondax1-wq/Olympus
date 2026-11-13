@@ -22,4 +22,4 @@ Claude got everything ready. **You arm the eval yourself** (MFFU requires you to
 
 If step 2 says "the bot is already running": double-click `STOP_BOT.bat`, then `GO_LIVE_EVAL.bat` again.
 Checked before sending: `tests.test_go` 65/65, `engine.ninjatrader --selftest` PASS, `tests.test_bots_back` 80/80,
-`tests.test_lit_live` (every 2026 session through the live loop) identical.
+`tests.test_lit_live` (every 2026 session through the live loop): 120/120 replay trades identical, session by session 0 differences so far.
