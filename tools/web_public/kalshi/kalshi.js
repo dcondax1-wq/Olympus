@@ -1192,6 +1192,43 @@
       + `<div class="gd-h"><span class="lab">The guard · ${n ? n + ' open bet' + (n === 1 ? '' : 's') : 'no open bets'}</span><h3>${esc(head || 'Check a bet')}</h3></div></div><p class="gd-s">${sub}</p>${rows}${more}${chk}</section>`;
   }
 
+  // ================================================================== 2026-11-13 the risk guard on the VM (kalshi_guard.py, team K2)
+  // kalshi.json `risk` (only when the guard is installed): the mode it enforces, today's room under the owner's limits, the kill
+  // switch, what it blocked and the orders the bot asked about. Read-only: this page never arms, changes or places anything.
+  const RK_MODE = { paper: 'Paper', dry_run: 'Dry run', live: 'Live' };
+  function riskHtml(k) {
+    const r = k && isObj(k.risk) ? k.risk : null;
+    if (!r) return '';
+    const lim = isObj(r.limits) ? r.limits : {}, td = isObj(r.today) ? r.today : {}, rm = isObj(r.room) ? r.room : {};
+    const mode = RK_MODE[r.mode] || 'Paper', bad = !!(r.kill || r.stopped || num(r.unguarded) > 0);
+    const lvl = bad ? 'bad' : r.connected === false ? 'warn' : r.mode === 'live' ? 'ok' : 'warn';
+    const head = r.kill ? 'Kill switch on: no orders' : num(r.unguarded) > 0 ? `${fmtN(num(r.unguarded))} real order${num(r.unguarded) === 1 ? '' : 's'} went around the guard`
+      : r.stopped ? 'Daily stop hit: no new buys until tomorrow (ET)' : r.connected === false ? 'Installed: the bot has not asked it about an order yet'
+        : r.mode === 'live' ? 'Live: real orders, inside your limits' : r.mode === 'dry_run' ? 'Dry run: every order logged, none sent' : 'Paper: no real orders';
+    const m = (x) => (num(x) == null ? '—' : usd(num(x)));
+    const cell = (lab, val, of) => `<div><span class="lab">${esc(lab)}</span><b>${esc(val)}</b>${of ? `<span class="muted small"> of ${esc(of)}</span>` : ''}</div>`;
+    const grid = '<div class="rk-g">'
+      + cell('Loss room today', m(rm.stop), num(lim.daily_stop_usd) != null ? usd(num(lim.daily_stop_usd)) : '')
+      + cell('Spent today', m(td.spend), num(lim.max_day_usd) != null ? usd(num(lim.max_day_usd)) : '')
+      + cell('Open now', m(r.open), num(lim.max_open_usd) != null ? usd(num(lim.max_open_usd)) : '')
+      + cell('Orders today', `${fmtN(num(td.sent) || 0)} let through · ${fmtN(num(td.blocked) || 0)} blocked`, '') + '</div>';
+    const rules = [num(lim.max_order_usd) != null ? `${usd(num(lim.max_order_usd))} per order` : '', num(lim.max_market_usd) != null ? `${usd(num(lim.max_market_usd))} per market` : '',
+      num(lim.no_trade_last_s) != null ? `no buys in the last ${fmtN(num(lim.no_trade_last_s))} s` : '', num(lim.min_edge_cents) != null ? `edge after Kalshi's fee ≥ ${num(lim.min_edge_cents)}¢` : '']
+      .filter(Boolean).join(' · ');
+    const rows = arr(r.intended).filter(isObj).slice(0, 5).map((x) => {
+      const px = num(x.price), what = `${String(x.action || 'buy').toUpperCase()} ${fmtN(num(x.contracts) || 0)} ${String(x.side || '').toUpperCase()}${px != null ? ' @ ' + Math.round(px * 100) + '¢' : ''}`;
+      const verdict = x.send ? '<b class="up">sent</b>' : x.why ? `<span class="down">blocked</span>: ${esc(String(x.why).slice(0, 100))}` : `not sent (${esc(mode.toLowerCase())})`;
+      return `<li><span>${esc(what)} <span class="muted small">${esc(String(x.ticker || '').slice(0, 40))}</span></span><span class="small">${verdict}</span></li>`;
+    }).join('');
+    const lb = isObj(r.last_block) && r.last_block.text ? `<p class="muted small">Last block${parseT(r.last_block.t) ? ' ' + esc(ago(parseT(r.last_block.t))) : ''}: ${esc(String(r.last_block.text).slice(0, 160))}</p>` : '';
+    const go = r.mode !== 'live' && typeof r.go_live === 'string' && /^GO LIVE \d{4}-\d{2}-\d{2} STOP [\d.]+$/.test(r.go_live)
+      ? `<p class="muted small">Real money only when you type, on the bot's server: <code>${esc(r.go_live)}</code> (docs/KALSHI_VM_UPDATE.md).</p>` : '';
+    return `<section class="card rk ${lvl}" id="sec-risk" aria-label="Risk guard"><div class="card-h"><h2>Risk guard</h2><span class="pill ${lvl}">${esc(mode)}</span>`
+      + `${r.why ? `<span class="r muted">${esc(String(r.why).slice(0, 80))}</span>` : ''}</div><p class="rk-h">${esc(head)}</p>${grid}`
+      + (rules ? `<p class="muted small">${esc(rules)}</p>` : '') + lb + (rows ? `<ul class="rk-o" aria-label="Orders the bot asked about">${rows}</ul>` : '') + go
+      + '<p class="muted small">Read-only: this page never arms, changes or places anything.</p></section>';
+  }
+
   // ================================================================== 2026-11-04 "If you change the bot" and "Why am I losing"
   // The research turned into the owner's money decision, from the numbers the bot publishes (the price bands carry every settled bet in
   // totals). Same maths as tools/kalshi_whatif.py (a test holds the two equal). A BACKTEST of past bets, suggestions only: it never
@@ -1823,7 +1860,7 @@
       // one clean hierarchy (owner 2026-11-03 "more organized"): Today -> Edge -> Performance -> Alerts
       const eq = safe('equity', () => eqHtml(v));              // first: the stats read its series (max drawdown)
       html = (pv ? previewBar() : notesHtml(k))
-        + groupHtml('today', 'Today', todaySum(k), [safe('why', () => whyHtml(k, v)), safe('guard', () => guardHtml(k, v)), safe('verdict', () => verdictHtml(k, v)), safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v)), safe('rest', () => restHtml(k, v))])
+        + groupHtml('today', 'Today', todaySum(k), [safe('risk guard', () => riskHtml(k)), safe('why', () => whyHtml(k, v)), safe('guard', () => guardHtml(k, v)), safe('verdict', () => verdictHtml(k, v)), safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v)), safe('rest', () => restHtml(k, v))])
         + groupHtml('edge', 'Edge', edgeSum(v), [safe('what-if', () => whatifHtml(k, v)), safe('where the money is', () => scanHtml(k, v)), safe('edge wait', () => edgeWaitHtml(k, v)), safe('live edge', () => edgeHtml(k, v)), safe('edge map', () => edgeMapHtml(k, v)), safe('sizing', () => kellyHtml(k, v)), safe('risk of ruin', () => ruinHtml(k, v))])
         + groupHtml('perf', 'Performance', perfSum(k), [eq, safe('race', () => raceHtml(v)), safe('heat map', () => heatHtml(v)), safe('calendar', () => calHtml(v)), safe('daily P&L', () => barsHtml(v)), safe('stats', () => statsHtml(v, k)),
           safe('battle', () => battleHtml(k, v)), safe('strategies', () => stratHtml(v)), safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('markets', () => catHtml(k, v)), safe('journal', () => journalHtml(v))])

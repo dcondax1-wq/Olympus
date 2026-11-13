@@ -11,6 +11,7 @@ Kalshi bot passes on its VM. No network, no keys, temp folders only. Checks:
   g. phone alerts: fills, losses, kill switch, daily stop, mode changes, orders around the guard; first round silent,
      each alert once, a failed post retried
   h. no network: the checks run with sockets switched off
+  i. the status feed (kalshi_status_vm.py) with the guard: risk block, alerts, the mode shown, redaction, alerts end to end
     python -X utf8 -m tests.test_kalshi_guard
 """
 from __future__ import annotations
@@ -466,6 +467,88 @@ def part_h():
           "portfolio/orders" not in src and "PRIVATE KEY" not in src and "KALSHI_API_KEY" not in src)
 
 
+def part_i(tmp):
+    """The status feed (kalshi_status_vm.py) with the guard: the risk block, its alerts, the mode the phone shows."""
+    if ROOT not in sys.path:
+        sys.path.insert(0, ROOT)
+    from tests import test_kalshi_publish as TP
+    kit = TP.KIT
+    bot = TP.make_bot(os.path.join(tmp, "ibot"))
+    t = TP.NOW
+    p0 = kit.bot_payload(bot, now=t, units=(), guard=os.path.join(tmp, "no_such_guard"))
+    check("i. no guard folder: kalshi.json exactly as before (no risk key, the bot's own mode)", "risk" not in p0 and p0["mode"] == "live")
+    home = os.path.join(tmp, "iguard")
+    g = G.Guard(home, bot_dir=bot, clock=lambda: t).init()
+    p1 = kit.bot_payload(bot, now=t, units=(), guard=home)
+    r1 = p1.get("risk") or {}
+    check("i. guard installed, bot not connected yet: risk block, the bot's mode kept (it may still trade without the guard), a warning",
+          r1.get("mode") == "paper" and r1.get("connected") is False and p1["mode"] == "live"
+          and any("has not asked" in a["text"] for a in p1["alerts"]), (r1, p1["alerts"]))
+    g.check({**GOOD, "close_ts": t + 3600}, balance=60, now=t)
+    p2 = kit.bot_payload(bot, now=t, units=(), guard=home)
+    check("i. connected, paper: the phone shows PAPER, the note says no real orders, live strategies shown as paper",
+          p2["mode"] == "paper" and "no real orders" in p2["note"] and all(s.get("mode") != "live" for s in p2["strategies"])
+          and p2["risk"]["connected"] and p2["risk"]["intended"][0]["ticker"] == GOOD["ticker"], (p2["mode"], p2["note"], p2["strategies"]))
+    g.set_mode("dry_run", now=t)
+    check("i. dry run -> mode 'dry-run' (fits the page's 12-letter pill)", kit.bot_payload(bot, now=t, units=(), guard=home)["mode"] == "dry-run")
+    g.set_mode("live", phrase=G.phrase_for(G.et_day(t), 10), now=t)
+    p3 = kit.bot_payload(bot, now=t, units=(), guard=home)
+    check("i. live armed: mode live, the guard's limits and room in the block, no GO LIVE line",
+          p3["mode"] == "live" and p3["risk"]["limits"]["daily_stop_usd"] == 10 and "stop" in p3["risk"]["room"]
+          and "go_live" not in p3["risk"], p3["risk"])
+    g.kill("test", now=t)
+    p4 = kit.bot_payload(bot, now=t, units=(), guard=home)
+    check("i. kill switch: Paused (the page's pill), a 'bad' alert first, mode paper", p4["running"] is False and p4["status"].startswith("Paused")
+          and p4["alerts"][0]["level"] == "bad" and "Kill switch" in p4["alerts"][0]["text"] and p4["mode"] == "paper",
+          (p4["status"], p4["alerts"][:2]))
+    g.unkill()
+    blob = json.dumps(p4)
+    check("i. the published block holds no folder path, no phrase field, no state file names", home not in blob and '"phrase"' not in blob
+          and "limits_sha" not in blob and "orders.jsonl" not in blob)
+    g5 = G.Guard(os.path.join(tmp, "iguard_early"), bot_dir=bot, clock=lambda: t - 7200).init()
+    g5.check({**GOOD, "close_ts": t + 3600}, now=t - 7000)
+    p5 = kit.bot_payload(bot, now=t, units=(), guard=g5.home)
+    check("i. a real order in trades.db the guard never approved -> unguarded count and a 'bad' alert",
+          p5["risk"]["unguarded"] >= 1 and any("did not go through the risk guard" in a["text"] and a["level"] == "bad" for a in p5["alerts"]),
+          (p5["risk"].get("unguarded"), p5["alerts"][:3]))
+    junk = kit.clean_risk({"mode": "LIVE!!", "why": "see /home/ubuntu/kalshi/.env token=abc123", "limits": {"max_order_usd": "5", "api_key": "x"},
+                           "today": {"day": "not-a-day", "spend": "nan"}, "go_live": "GO LIVE now",
+                           "intended": [{"ticker": "a b c", "price": 7, "why": "https://x.example/t?k=1"}] * 30, "secret": "s"})
+    check("i. clean_risk: unknown mode -> paper, texts redacted, junk numbers / days / phrases / keys dropped, rows capped",
+          junk["mode"] == "paper" and "/home/" not in junk["why"] and "abc123" not in junk["why"] and junk["limits"] == {"max_order_usd": 5.0}
+          and "day" not in junk["today"] and "go_live" not in junk and len(junk["intended"]) == 10 and "price" not in junk["intended"][0]
+          and "secret" not in junk and "example" not in junk["intended"][0]["why"], junk)
+    c = kit.clean({**kit.SAMPLE_V3, "risk": {"mode": "paper", "connected": True}}, now=t)
+    check("i. clean() keeps a risk block and leaves v1-v3 as they were", c["risk"]["mode"] == "paper" and c["v"] == 3
+          and kit.clean(kit.SAMPLE_V3, now=t) == {k: v for k, v in c.items() if k != "risk"})
+    env = {**os.environ, "KALSHI_GUARD_HOME": home}
+    r = subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(GUARD_FILE), "kalshi_status_vm.py"), "--from-bot", bot,
+                        "--units", "none", "--check"], capture_output=True, text=True, env=env, timeout=120)
+    try:
+        out = json.loads(r.stdout)
+    except ValueError:
+        out = {}
+    check("i. the standalone script (python -I) finds the guard beside it and prints the risk block",
+          out.get("risk", {}).get("connected") is True, r.stdout[-300:] + r.stderr[-300:])
+    feed1 = kit.bot_payload(bot, now=t, units=(), guard=home)
+    nt = os.path.join(tmp, "inotify")
+    os.makedirs(nt)
+    json.dump({"topic": "olympus-test-topic-2"}, open(os.path.join(nt, "ntfy.json"), "w"))
+    sent = []
+
+    def post(base, topic, body, **k):
+        sent.append(k.get("title"))
+        return True, "ok"
+
+    G.notify(feed1, home=nt, post=post, say=lambda *_: None)
+    g.kill("again", now=t + 60)
+    feed2 = kit.bot_payload(bot, now=t + 60, units=(), guard=home)
+    G.notify(feed2, home=nt, post=post, say=lambda *_: None)
+    G.notify(feed2, home=nt, post=post, say=lambda *_: None)
+    check("i. end to end: the real feed -> notify -> 'Kalshi KILL SWITCH ON' pushed once", sent.count("Kalshi KILL SWITCH ON") == 1, sent)
+    g.unkill()
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="kguard_")
     try:
@@ -478,6 +561,7 @@ def main():
         part_f(tmp)
         part_g(tmp)
         part_h()
+        part_i(tmp)
     finally:
         for d, _, fs in os.walk(tmp):
             try:

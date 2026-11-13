@@ -972,12 +972,14 @@ def _load_status_module(here=None):
     return mod
 
 
-def notify(feed, home=None, post=None, dry=False, say=print):
+def notify(feed, home=None, post=None, dry=False, say=print, topic=None, base=None):
     """One alert round on a kalshi.json payload: compare with the last payload alerted on, send what is new.
-    The first round only records (no flood of old trades). -> number sent."""
-    g = Guard(home)
+    The first round only records (no flood of old trades). -> number sent. topic / base override guard/ntfy.json
+    (the PC passes its own topic)."""
+    g = Guard(home, bot_dir="")
     cfg = _jload(g.p["ntfy"]) or {}
-    topic, base = str(cfg.get("topic") or "").strip(), str(cfg.get("ntfy") or "https://ntfy.sh")
+    topic = str(topic if topic is not None else cfg.get("topic") or "").strip()
+    base = str(base or cfg.get("ntfy") or "https://ntfy.sh")
     st = _jload(g.p["notify"]) or {}
     prev = st.get("prev")
     now = time.time()

@@ -445,8 +445,9 @@ def run_browser(url, tmp):
     with sync_playwright() as pw:
         exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
         br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
-        if "--only=guard" in sys.argv or "--only=whatif" in sys.argv or "--only=scan" in sys.argv:        # just the guard / what-if / scan cards (2026-11-04), for a quick run
-            (part_guard if "--only=guard" in sys.argv else part_scan if "--only=scan" in sys.argv else part_whatif)(br, url, tmp)
+        if "--only=guard" in sys.argv or "--only=whatif" in sys.argv or "--only=scan" in sys.argv or "--only=risk" in sys.argv:   # one card, for a quick run
+            (part_guard if "--only=guard" in sys.argv else part_scan if "--only=scan" in sys.argv else part_risk if "--only=risk" in sys.argv
+             else part_whatif)(br, url, tmp)
             br.close()
             return
         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
@@ -1131,6 +1132,7 @@ def run_browser(url, tmp):
         part_kit(br, url, tmp)
         part_v4(br, url, tmp)
         part_guard(br, url, tmp)
+        part_risk(br, url, tmp)
         part_whatif(br, url, tmp)
         part_scan(br, url, tmp)
         br.close()
@@ -1694,6 +1696,77 @@ def part_guard(br, url, tmp):
     check("g6. 375 x 667: the guard fits (no sideways scroll, nothing past the right edge)", sw[0] <= sw[1] and sw[2] <= sw[1] + 0.5, sw)
     ctx2.close()
     check("g7. no page errors and no failed section on the guard", not errs and "could not be shown" not in p.inner_text("#body"), errs[:3])
+    ctx.close()
+
+
+def risk_bot(now, **risk):
+    """The guard bot's feed plus the VM risk guard's block (kalshi_guard.py, 2026-11-13)."""
+    raw = guard_bot(now)
+    r = {"v": 1, "mode": "paper", "why": "not armed (paper is the default)", "kill": False, "connected": True, "stopped": False,
+         "unguarded": 0, "limits": {"max_order_usd": 5, "max_market_usd": 10, "max_day_usd": 25, "daily_stop_usd": 10, "max_open_usd": 25,
+                                     "no_trade_last_s": 60, "min_edge_cents": 1, "fee_rate": 0.07},
+         "today": {"day": "2026-11-14", "spend": 4.2, "pnl": -1.5, "orders": 3, "sent": 2, "blocked": 1}, "open": 4.2,
+         "room": {"day": 20.8, "stop": 8.5, "open": 20.8}, "last_block": {"t": int(now) - 120, "text": "price above fair value (41 c > fair 39.0 c + 0)"},
+         "intended": [{"t": int(now) - 60, "ticker": "KXBTCD-26NOV1417-T99500", "side": "yes", "action": "buy", "contracts": 5, "price": 0.4,
+                       "cost": 2.1, "send": False}],
+         "go_live": "GO LIVE 2026-11-14 STOP 10"}
+    r.update(risk)
+    raw["risk"] = r
+    return raw
+
+
+def part_risk(br, url, tmp):
+    """The risk guard card (2026-11-13): shown only when kalshi.json has `risk`, first in Today; the mode, the room, the kill switch,
+    orders around the guard; read-only (no form, no POST)."""
+    page_url = url + "kalshi/"
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
+    ctx.route("https://raw.githubusercontent.com/**", feed)
+    ctx.route("https://api.github.com/**", feed)
+    p = ctx.new_page()
+    p.set_default_timeout(120000)
+    errs, posts = [], []
+    p.on("pageerror", lambda e: errs.append(str(e)))
+    p.on("request", lambda r: posts.append(r.method + " " + r.url) if r.method not in ("GET", "HEAD") else None)
+
+    def open_(j, sel="#sec-guard"):
+        FEED["mode"], FEED["j"] = "ok", j
+        p.goto(page_url)
+        p.evaluate("localStorage.clear()")
+        p.goto(page_url)
+        ready(p, 20000)
+        p.wait_for_selector(sel)
+
+    now = time.time()
+    open_(guard_bot(now))
+    check("r1. no risk block in the feed: no risk card (the page as before)", p.locator("#sec-risk").count() == 0)
+    open_(risk_bot(now), "#sec-risk")
+    t = p.inner_text("#sec-risk")
+    first = p.evaluate("[...document.querySelectorAll('#g-today > .card')].slice(0, 2).map((c) => c.id)")
+    check("r1. the risk card is first in Today, then the 'why' line", first == ["sec-risk", "sec-why"], first)
+    check("r1. paper: 'Paper: no real orders', the room ($8.50 of $10.00), spend, open, orders, the limits, the last block, the order asked about",
+          "Paper: no real orders" in t and "$8.50" in t and "$10.00" in t and "$4.20" in t and "2 let through" in t and "1 blocked" in t
+          and "$5.00 per order" in t and "price above fair" in t and "BUY 5 YES @ 40¢" in t and "not sent (paper)" in t, t[:600])
+    check("r1. paper shows the phrase the owner types on the server, and says the page is read-only", "GO LIVE 2026-11-14 STOP 10" in t
+          and "never arms, changes or places anything" in t)
+    check("r1. the mode pill: amber in paper", "warn" in p.get_attribute("#sec-risk .pill", "class"))
+    open_(risk_bot(now, mode="live", why="armed by you", go_live=None, intended=[{**risk_bot(now)["risk"]["intended"][0], "send": True}]), "#sec-risk")
+    t = p.inner_text("#sec-risk")
+    check("r2. live: 'Live: real orders, inside your limits', green pill, the order 'sent', no phrase line", "Live: real orders" in t
+          and "ok" in p.get_attribute("#sec-risk .pill", "class") and "sent" in t and "GO LIVE" not in t, t[:400])
+    open_(risk_bot(now, mode="paper", kill=True), "#sec-risk")
+    t = p.inner_text("#sec-risk")
+    check("r3. kill switch: red card, 'Kill switch on: no orders'", "Kill switch on" in t and "bad" in p.get_attribute("#sec-risk", "class"), t[:200])
+    open_(risk_bot(now, mode="live", unguarded=2), "#sec-risk")
+    check("r3. orders around the guard: red, '2 real orders went around the guard'", "2 real orders went around the guard" in p.inner_text("#sec-risk"))
+    open_(risk_bot(now, mode="live", stopped=True, room={"stop": 0, "day": 10, "open": 10}), "#sec-risk")
+    check("r3. daily stop: 'Daily stop hit'", "Daily stop hit" in p.inner_text("#sec-risk"))
+    open_(risk_bot(now, connected=False), "#sec-risk")
+    check("r4. installed but not connected: says so", "has not asked it about an order yet" in p.inner_text("#sec-risk"))
+    open_(risk_bot(now, mode="weird", limits="junk", today=[1], room=None, intended="x", last_block=5, go_live="<b>x</b>"), "#sec-risk")
+    check("r4. a junk block still renders (paper, dashes), no script error, a junk phrase is not shown", "Paper" in p.inner_text("#sec-risk") and "<b>x</b>" not in p.inner_html("#sec-risk") and "GO LIVE" not in p.inner_text("#sec-risk")
+          and not errs, errs[:3])
+    wide = p.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1")
+    check("r4. phone width: no sideways scroll, and nothing was posted", wide and not posts, posts[:3])
     ctx.close()
 
 

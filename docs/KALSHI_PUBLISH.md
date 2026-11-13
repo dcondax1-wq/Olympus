@@ -132,6 +132,7 @@ writes `"v": 1`, `"v": 2` when `strategies` or `equity` is present, `"v": 3` whe
 |---|---|
 | `kelly` | `fraction` (0-1), `bankroll`, `max_bet`, `min_edge` (0-1) |
 | `stats` | `trades`, `wins`, `losses`, `staked`, `pnl`, `avg_price`: all settled buys |
+| `risk` (2026-11-13) | the VM risk guard (`kalshi_guard.py`, `docs/KALSHI_VM_UPDATE.md`): `mode` (`paper`/`dry_run`/`live`), `why`, `kill`, `connected`, `stopped`, `unguarded`, `alerts_vm`, `limits` {max_order_usd, max_market_usd, max_day_usd, daily_stop_usd, max_open_usd, max_orders_day, no_trade_last_s, min_edge_cents, fee_rate ...}, `today` {day, spend, pnl, orders, sent, blocked}, `open`, `room` {day, stop, open}, `last_block` {t, text}, `intended` (<= 10: t, ticker, side, action, contracts, price, cost, send, why), `go_live` (the phrase, only when not live). Cleaned by `clean_risk()`. With it, the top-level `mode` is the guard's once the bot is connected (`dry-run` for dry run), and kill / daily stop show as Paused. |
 
 Rows of `positions` and `trades` may also carry `category` and `prob` (0-1, the bot's own chance for the side held;
 outside 0-1 it is dropped). v3 rows that mean nothing (no name, a bucket with lo >= hi, a calibration point with n < 1, an
