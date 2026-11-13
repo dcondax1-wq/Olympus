@@ -796,6 +796,13 @@ def main(argv=None) -> int:
         print(card_text(rec["card"]))
         for e in rec.get("errors") or []:
             print(f"  [..] {e}")
+    # the Sunday money report (tools/weekly_money_report.py): once a week, Sunday from 17:00 ET, on your private topic; soft, never stops this run
+    if not a.dry_run:
+        try:
+            from tools import weekly_money_report as _wmr
+            _wmr.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
     return 0
 
 
