@@ -18,7 +18,7 @@ team K1's angles (index fair value, weather vs NWS forecast, market making).
 | 2b. Cleveland Fed nowcast vs the CPI ladders (1 day out) | 144 train / 126 test | +3.7% (-12 to +21) at the train-picked threshold | +5.1% (-18 to +29) | - | No edge: the nowcast forecasts worse than the market (Brier 0.17 vs 0.09 train, 0.12 vs 0.10 test) |
 | 2c. Jobless claims vs last week's print + 2015-24 week-on-week history | 63 weekly events, 355 train / 271 test units | best rule -8.6% (-30 to +15) | +7.9% (-9 to +25) | - | No edge: every train threshold loses; the model ties the market in test (Brier 0.105 vs 0.105) |
 | 3a. Late resolution, temperature buckets: buy the known side after the METAR that kills a bucket, taker | 2,744 crossings, 57 days | before publication: +5 to +10% (looks great) | after publication (3+ min): known side under 99c in 0.1-0.4% of cases, losers among them | about $0 | No edge for a public-data bot: the price moves before the METAR is public |
-| 3b. Same, resting maker order at 98c on the known side, filled by late wrong-side buyers (upper bound) | MAKER_N | - | MAKER_TE | MAKER_CAP | MAKER_VERDICT |
+| 3b. Same, resting maker order at 98c on the known side, filled by late wrong-side buyers (upper bound) | not finished (the run stopped before this row) | - | - | - | not tested |
 
 All numbers are after Kalshi's fee (0.07 x p x (1-p) per contract, rounded up per 100-lot order; maker fee 0.0175 x p x (1-p))
 and after the spread (taker buys at the ask). 95% ranges are cluster bootstraps (by event, or by day for weather).
