@@ -725,6 +725,12 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   over 2021-25 but 0.22 in 2026; the plain gap fade loses; 2026 stops ~145 pts = 1 micro, so its own 25K / 50K passes 0-7%
   in 2 weeks and the slot is ~$0 a month; on LIT's funded 50K +$23 H1 / -$16 H2. BLITZ gap-aware band (Zarattini) H1 / H2
   $936 / $771 vs $912 / $577 but 2021-25 -$15 vs +$89; implied-vol band worse: BLITZ unchanged. No new eval account.
+- **E3 same edge, more markets (2026-11-13, `es-and-sessions-2026-11-13.md`, `tools/e3_es_sessions.py`, runs `e3_*`):** live LIT and
+  the 3 ATLAS members unchanged on ES1! as MES (points x 0.28, BE 0.75 ES pts; ES = 5m only, 2025-04+, no 1m, no 2021-24), each on
+  its own MFFU eval. ES LIT H1 -$3.8k / H2 +$12.7k / 2025 -$15.9k (NQ 5m-exec +$6.6k / +$1.5k / -$0.5k), 50K 2-week 27.7/10.9 and
+  44.9/15.9, corr LIT 0.14. ES ATLAS -$6.3k / +$2.2k / -$2.8k (NQ ATLAS +$47.3k / +$12.1k / +$13.0k): positive before costs, but
+  costs are 7-13% of R on ES vs 2.5-5% on NQ (same tick, ~0.19x the points). NQ LIT NY-only slot as its own account +$12.8k /
+  -$1.2k / -$2.6k at 1/wk; ES London / NY slots lose a span. Asia not redone. Nothing adopted; the 2nd stream stays NQ ATLAS.
 
 ## Key commands (run from the repo root)
 - **Numbers audit (2026-11-04):** `python tools/numbers_audit.py` (`--check` exits 1 on any 'wrong'; `--all` shows skipped history; `--json`; test `tests.test_numbers_audit`).
