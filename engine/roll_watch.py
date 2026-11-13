@@ -18,6 +18,9 @@ tests/test_nt_roll_guard.py) and pcbars.merge_basis back-adjusts the older bars 
   late_notice(st, now)      on and after the roll day while the chart is still on the old contract (once a trading day)
   cloud_notices(pc, now)    what the cloud monitor pushes (tools/cloud_monitor.py): the reminders and the late alarm, only
                             when the PC's own 5-minute helper (engine/ops_checks --tick) is not running (no double push)
+  countdown(st, now)        the phone pushes of the GitHub-free PC report (tools/pc_guard.py -> ntfy): one a day from 3 days
+                            before the roll to the eve (Mon Dec 7 .. Wed Dec 9), "chart already switched", the late alarm
+                            (late_notice) and "roll done" once. Read-only, like everything here.
 """
 from __future__ import annotations
 
@@ -227,4 +230,59 @@ def cloud_notices(pc: dict | None, now=None) -> list:
         n = late_notice(st, now)
         if n:
             out.append(n)
+    return out
+
+
+# ---------------------------------------------------------------------------------- the countdown (PC report, ntfy)
+WARN_FROM_DAYS = 3                      # Thu Dec 10 roll -> one push a day on Mon Dec 7, Tue Dec 8, Wed Dec 9
+DONE_DAYS = 4                           # "roll done" is said once, within 4 days after the roll day
+ROLL_BAT = "ROLL.bat"
+
+
+def countdown(st: dict | None, now=None) -> list:
+    """[{"key", "title", "body", "priority"}] for the PC report's phone pushes (tools/pc_guard.py sends each key once).
+    st = state() / fact() of this PC's chart. Never raises."""
+    try:
+        return _countdown(st or {}, int(now if now is not None else time.time()))
+    except Exception:
+        return []
+
+
+def _countdown(st: dict, now: int) -> list:
+    from .ninjatrader import contract_expiry
+    today = _et(now).date()
+    out = []
+    lvl = st.get("level")
+    nr = next_roll(today)
+    if nr:
+        day, old, new = nr
+        n = (day - today).days
+        eve = day - dt.timedelta(days=1)
+        if lvl == "early":
+            out.append({"key": f"roll:ready:{new}", "title": f"Roll ready: chart on {st.get('chart')}",
+                        "body": f"The chart is already on {st.get('chart')}. Orders follow at 00:00 ET {day:%a %b %d} by themselves. "
+                                "Nothing else to do.", "priority": "default"})
+        elif 1 <= n <= WARN_FROM_DAYS:
+            title = (f"Contract roll tonight: {old} -> {new}" if n == 1 else
+                     f"Contract roll in {n} days: {old} -> {new}")
+            when = "Tonight" if n == 1 else f"On {eve:%a %b %d}"
+            unknown = (" (The PC cannot see the chart's contract right now: open NinjaTrader with the LE_BarFeed chart.)"
+                       if lvl in ("unknown", "continuous", None) else "")
+            body = (f"On {day:%a %b %d} at 00:00 ET the orders switch to {new} by themselves (every bot is flat then). "
+                    f"{when} after 16:00 ET: double-click {ROLL_BAT} on the PC. It waits until every bot is flat, tells you the "
+                    f"one NinjaTrader click (chart > Instrument > {new}) and checks it.{unknown}")
+            out.append({"key": f"roll:soon:{new}:{today.isoformat()}", "title": title, "body": body,
+                        "priority": "high" if n == 1 else "default"})
+    ln = late_notice(st, now)
+    if ln:
+        out.append({"key": ln["key"], "title": ln["title"],
+                    "body": f"{ln['body']} Or double-click {ROLL_BAT} on the PC: it shows the click and checks it.",
+                    "priority": "high"})
+    lr = last_roll(today)
+    if lr and lvl == "ok" and 0 <= (today - lr[0]).days <= DONE_DAYS:
+        ce, oe = contract_expiry(st.get("chart")), contract_expiry(lr[2])
+        if ce and ce == oe:
+            out.append({"key": f"roll:done:{lr[2]}", "title": f"Roll done: chart and orders on the {_month(lr[2])} contract",
+                        "body": f"Chart {st.get('chart')}, orders {st.get('orders')}. The bot trades the new contract as usual.",
+                        "priority": "default"})
     return out

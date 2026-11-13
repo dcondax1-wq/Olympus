@@ -7,12 +7,22 @@ contract trades about 1% higher (~300 pts). That one number is what the roll cha
 
 ## Your steps (3)
 
-1. **Wed Dec 9, after 16:00 ET** (the phone reminds you on Thu Dec 3 and again on Wed Dec 9): in NinjaTrader,
-   right-click the chart with LE_BarFeed > Instrument > **MNQ 03-27** (the NQ chart too, if you use one: NQ 03-27),
-   Days to load 30, OK, then save the workspace.
-2. Copy-paste on the PC: `python tools/roll_check.py` (it should end with OK).
-3. **Thu Dec 10 morning**: the Start page / launch checklist line **Chart contract (roll)** is green. If it is red
-   (or a push "Chart still on MNQ 12-26: no new entries" came), do step 1 now; the bot goes on by itself.
+1. **Wed Dec 9, after 16:00 ET** (the ntfy app reminds you Mon Dec 7, Tue Dec 8 and Wed Dec 9): double-click
+   **`ROLL.bat`** in the bot folder. It checks every bot is flat, shows the one NinjaTrader click (chart > Instrument >
+   **MNQ 03-27**, Days to load 30, save the workspace), waits for it and checks it. It ends with **Roll ready**.
+2. **Thu Dec 10 morning**: the phone says **Roll done**. Nothing else to do.
+3. If a push **"Chart still on MNQ 12-26: no new entries"** comes instead, double-click `ROLL.bat` again.
+
+| What | Who switches it | When |
+|---|---|---|
+| Order contract (LIT, ATLAS, BLITZ) | the bot, by the date (`engine/ninjatrader.nt_instrument`) | Thu Dec 10 00:00 ET; every bot is flat (15:55 flat) |
+| LE_Feed add-on (no-chart mode) | the bot rewrites `le_feed\feed_instruments.txt`; ROLL.bat fixes it if the bot was off | within 3 min of 00:00 ET |
+| LE_BarFeed chart (chart mode) | you, one click (NinjaTrader has no way to switch a chart from outside) | Wed Dec 9 after 16:00 ET, ROLL.bat shows it |
+| A contract pinned in the saved start (`data/autostart.json` `nt_instrument`) | ROLL.bat removes an old pin (backup kept) | when you run it, flat only |
+| Phone pushes (ntfy, `tools/pc_guard.py` in the 15-min PC report) | automatic | Mon Dec 7 - Wed Dec 9 daily, "ready", the late alarm from 01:40 ET, "done" |
+
+ROLL.bat never places or changes an order and never arms anything. Before Wed 15:56 ET or with a position open it says
+"not now" and changes nothing. `python tools/roll_now.py --check` only looks. Tests: `python -X utf8 -m tests.test_roll_now`.
 
 What the bot does by itself: orders move to MNQ 03-27 at Thu 00:00 ET; until the chart is on 03-27 it sends no new
 entry (the roll guard, `tests/test_nt_roll_guard.py`); once the chart is on 03-27 it shifts every older bar onto March

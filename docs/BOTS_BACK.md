@@ -52,6 +52,7 @@ Undo: `UNDO_BOTS_BACK.bat` removes the report task, the `no_github` file and the
 | Channel | What | Cost / limit |
 |---|---|---|
 | ntfy.sh alert topic (yours, made on the PC, shown on the card, stored in `%USERPROFILE%\.olympus\ntfy.json`, never in the repo) | phone pushes: trade opened, trade closed with $ and R, FEED STALE, bot down, NinjaTrader closed, back to normal | free, no account; the ntfy iPhone app (free) |
+| Guard pushes on the same alert topic (`tools/pc_guard.py`, read-only, 2026-11-13) | per eval account (Zlarior 50K, ATLAS 25K, BLITZ 25K): 50% and 75% of the drawdown used, daily loss limit near (70%), no trade for 5+ days, the 16:05 ET day summary ($ today, trades, drawdown left); the contract roll (daily Mon Dec 7 - Wed Dec 9, late alarm, done) | free; quiet 23:00-07:00 ET except 75% / daily loss / the roll's late alarm |
 | ntfy.sh status topic (`tools/web_public/status_feed.json`, public like the site) | every 15 min a small status in the live.json shape the site already reads (`kind: "le-live"`, `pc`, `pc_verdict`, `board.lit/atlas/blitz`, `accounts`) | free; ntfy keeps it 12 hours; under 4 KB a message |
 | Netlify (`PUBLISH_NQ.bat`, existing) | the whole site | free plan about 20 deploys a month: daily |
 </content>
