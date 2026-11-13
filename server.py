@@ -1207,6 +1207,15 @@ if os.environ.get("LE_PREWARM", "1") != "0":
         except Exception as e:
             print(f"[lit_dash] prewarm failed: {e}")
     threading.Thread(target=_prewarm_lit, name="lit-prewarm", daemon=True).start()
+# ---- LIVE SITE ---- (engine/live_site.py, docs/LIVE_DASHBOARD.md): the whole phone site at /site/ (the Gate, the dashboard, every
+# OLYMPUS app) with the bot's live numbers, for the private Tailscale link (LIVE_LINK.bat). Read-only over the link: a proxied
+# request may only GET / HEAD (POST etc. refused before any route), Funnel refused. Before the static mount: its routes win.
+try:
+    from engine import live_site as _ls
+    _ls.install(app, live=LIVEPUB.payload)
+except Exception as _ls_err:
+    print(f"[live_site] /site disabled: {_ls_err.__class__.__name__}: {_ls_err}", flush=True)
+# ---- END LIVE SITE ----
 _static = StaticFiles(directory=WEB)
 _static.all_directories = list(UI_DIRS)       # first directory that has the file wins
 app.mount("/", _static, name="web")
