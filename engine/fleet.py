@@ -184,7 +184,7 @@ def _normalize(spec: dict, seen_ids=(), seen_names=(), reserved: dict | None = N
            "sizing": str(s.get("sizing") or "plan"), "risk_usd": _num(s.get("risk_usd")),
            "payouts": {str(k): float(v) for k, v in (s.get("payouts") or {}).items() if _num(v) is not None},
            "rules": dict(s.get("rules") or {}), "live": dict(s.get("live") or {}), "problem": None,
-           "own": dict(s.get("own") or {}), "stop_day": str(s.get("stop_day") or ""), "armed_for": str(s.get("armed_for") or "")}
+           "own": dict(s["own"]) if isinstance(s.get("own"), dict) else {}, "stop_day": str(s.get("stop_day") or ""), "armed_for": str(s.get("armed_for") or "")}
     if out["stage"] == "live":
         out["plan"] = "live"
         out["sizing"] = "fixed"
