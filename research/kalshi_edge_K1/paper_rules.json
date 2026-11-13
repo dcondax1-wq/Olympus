@@ -3,9 +3,26 @@
  "frozen": "2026-11-13",
  "note": "Frozen before any forward data. tools/kalshi_paper.py reads this. PAPER ONLY: no rule here is approved for real money (docs/KALSHI_GO_LIVE.md has the bar).",
  "rules": {
-  "wx_lock": {"on": true, "margin": 1, "max_cost": 98, "from_hour": 10,
-              "why": "control: research found the market already prices thermometer locks at 99-100c; a forward signal here would be news"},
-  "idx_model": {"on": false, "why": "set after the index study; needs --bars (NinjaTrader 1-minute NQ bars)"},
-  "forecast_log": {"on": true, "why": "no money: NWS next-day forecast high next to the market's quotes, settled with the official high"}
+  "wx_lock": {
+   "on": true,
+   "margin": 1,
+   "max_cost": 98,
+   "from_hour": 10,
+   "why": "control: research found the market already prices thermometer locks at 99-100c; a forward signal here would be news"
+  },
+  "idx_model": {
+   "on": false,
+   "a_imp": 0.0,
+   "b_rv": 1.5,
+   "nu": 3,
+   "thr_c": 4,
+   "min_minutes": 8,
+   "max_minutes": 32,
+   "why": "OFF: the futures fair-value model lost on held-out Jul-Oct 2026 (Nasdaq 10 min -5.7%/$1, 30 min -12.1%/$1; S&P -3.3%/-2.3%). Params are the train fit (realised vol x1.5, t with 3 df), kept so a paper run can be switched on with --bars for forward evidence only."
+  },
+  "forecast_log": {
+   "on": true,
+   "why": "no money: NWS next-day forecast high next to the market's quotes, settled with the official high"
+  }
  }
 }
