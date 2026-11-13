@@ -18,7 +18,8 @@
      three big Start-here tiles (Today, Bots, Jarvis: 1 tap), four district doors (Trading, Money, Life, Worlds) that open a short sheet, most useful first
      (2 taps to any app), a search by name / purpose / plain words, the last 4 apps opened, and the labs under a small Workshop link.
      Works at gate/ AND copied to the site root as olympus-live.html: the line below finds the site root (GATE_BASE) and every link is built from it.
-     Read only: it reads ../home.json (and olympus/truth.js) and sends nothing; when they 404 it says so in plain words. -->
+     Read only: it reads ../home.json (and olympus/truth.js) and sends nothing; when they 404 it says so in plain words.
+     Served from the PC (/site/, LIVE_LINK.bat) it also reads the bot's /api/site/live.json through ../pc_feed.js, every minute. -->
 <style>html, body { background: #14110e; color: #f3ece0; margin: 0; }</style>
 <script>(function () {
   var p = location.pathname || '', b = /\/gate\/(index\.html)?$/.test(p) ? '../' : '';
@@ -27,7 +28,7 @@
   try { if (window.top !== window) d.documentElement.className += ' framed'; } catch (e) { d.documentElement.className += ' framed'; }
   var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = b + 'gate/gate.css?v=g1'; h.appendChild(l);
   var i = d.createElement('link'); i.rel = 'icon'; i.href = b + 'gate/icon.svg'; h.appendChild(i);
-  ['olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g1'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
+  ['pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g2'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
 })();</script>
 </head>
 <body>

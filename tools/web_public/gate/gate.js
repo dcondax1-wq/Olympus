@@ -3,6 +3,8 @@
  *   does not load. Bots on / quiet / old numbers with the exact age, drawdown left, today's $, the next trade window. Older than 6 h: one button "Bring the bots back".
  * - Start here (1 tap), the four district doors (a sheet, most useful first: 2 taps), the search (name, purpose, plain words), Recent (last 4 opened, this phone only).
  * - GATE_BASE ('' at the site root as olympus-live.html, '../' at gate/) prefixes every link. Apps missing from a partial copy are marked "not in this link".
+ * - Served from the PC (/site/, the private Tailscale link, docs/LIVE_DASHBOARD.md): "Right now" reads the bot's own /api/site/live.json
+ *   over home.json (pc_feed.js overlayHome) and refreshes every minute. Any other copy never asks it.
  * Text only through textContent / createElementNS. Storage: 'gate.recent.v1' (ids) and 'gate.now.v1' (the last numbers seen), both in try / catch. */
 (function () {
   'use strict';
@@ -239,23 +241,48 @@
     btn.hidden = !(st[0] === 'stale');
     if (from === 'none') foot.textContent = 'This copy of the site has no live numbers. Bots shows the full status where it can.';
     else if (from === 'cache') foot.textContent = 'Saved on this phone ' + ageWords(nowS() - (N.saved || nowS())) + ' ago.';
+    else if (from === 'pc') foot.textContent = 'Live from your PC. Updates every minute.';
     else foot.textContent = old ? '' : (N.cloudAge != null ? 'Cloud copy ' + ageWords(N.cloudAge) + ' old.' : '');
     S.now = { state: st[0], label: st[2], from: from || 'live', truth: !!N.truth };
   }
+  /* served by the PC's own bot server through the private Tailscale link (engine/live_site.py serves the site at /site/): the bot's live
+     numbers from /api/site/live.json, laid over home.json with pc_feed.js (the same rules as every app), refreshed every minute */
+  var ON_PC = /^\/site\//.test(w.location.pathname || ''), LIVE_API = '/api/site/live.json', LIVE_EVERY_MS = 60000;
+  function liveOver(home, live) {
+    if (!live || live.kind !== 'le-live' || num(live.t) == null) return null;
+    var h = home && typeof home === 'object' && !(home instanceof Array) ? home : {};
+    if (w.PC_FEED && w.PC_FEED.overlayHome) return w.PC_FEED.overlayHome(h, live, nowS());
+    var lv = obj(h.live), pc = {}, k, src = obj(live.pc), out = {};   /* pc_feed.js missing: the essentials only */
+    for (k in obj(lv.pc)) pc[k] = lv.pc[k];
+    for (k in src) pc[k] = src[k];
+    pc.present = true; pc.t = num(live.t); pc.live = true;
+    for (k in h) out[k] = h[k];
+    out.live = {}; for (k in lv) out.live[k] = lv[k];
+    out.live.pc = pc; if (live.pc_verdict) out.live.pc_verdict = live.pc_verdict;
+    if (live.board && !live.board.error) out.board = live.board;
+    return out;
+  }
   function loadNow() {
+    var liveP = ON_PC ? getJSON(LIVE_API) : null;
     getJSON(base + 'home.json').then(function (home) {
-      if (!home || typeof home !== 'object' || home instanceof Array) {
-        var c = lsGet(LS_NOW);
-        if (c && c.N) { c.N.saved = c.saved; c.N.win = null; drawNow(c.N, 'cache'); } else drawNow({ accts: [], today: 0, pcT: null, pcAge: null }, 'none');
-        S.nowDone = true; return;
-      }
-      getTruth(function (T) {
-        var N = summarize(home, T);
-        drawNow(N, 'live');
-        var keep = { pcT: N.pcT, pcAge: N.pcAge, running: N.running, accts: N.accts, today: N.today };
-        lsSet(LS_NOW, { saved: nowS(), N: keep });
-        S.nowDone = true;
-      });
+      if (!liveP) return show(home, null);
+      liveP.then(function (live) { show(home, live); });
+    });
+  }
+  function show(home, live) {
+    var over = liveOver(home, live);
+    if (over) home = over;
+    if (!home || typeof home !== 'object' || home instanceof Array) {
+      var c = lsGet(LS_NOW);
+      if (c && c.N) { c.N.saved = c.saved; c.N.win = null; drawNow(c.N, 'cache'); } else drawNow({ accts: [], today: 0, pcT: null, pcAge: null }, 'none');
+      S.nowDone = true; return;
+    }
+    getTruth(function (T) {
+      var N = summarize(home, T);
+      drawNow(N, over ? 'pc' : 'live');
+      var keep = { pcT: N.pcT, pcAge: N.pcAge, running: N.running, accts: N.accts, today: N.today };
+      lsSet(LS_NOW, { saved: nowS(), N: keep });
+      S.nowDone = true;
     });
   }
 
@@ -288,6 +315,7 @@
     swipe();
     w.addEventListener('pageshow', function (e) { if (e.persisted) { drawRecent(); closeSheet(); } });
     loadNow();
+    if (ON_PC && w.setInterval) w.setInterval(function () { if (d.visibilityState !== 'hidden' && !S.sheet) loadNow(); }, LIVE_EVERY_MS);
     if (Q.d && C) openSheet(Q.d, null);
   }
 
