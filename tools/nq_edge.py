@@ -44,6 +44,7 @@ from tools import runlib as rl  # noqa: E402
 OUT_L = os.path.join(ROOT, "research", "lit", "nq_edge_lit.json")
 OUT_A = os.path.join(ROOT, "research", "second", "nq_edge_atlas.json")
 N_MC = int(os.environ.get("NQE_N", "1000"))
+SEED = int(os.environ.get("NQE_SEED", "23"))          # uprisk's Monte Carlo seed (23 = every earlier study); 41 = the re-check
 
 # ================================================================================================ the room guard (research)
 PROTECT: dict = {}
@@ -140,9 +141,9 @@ _P = {}
 
 
 def paths(sp, length):
-    k = (sp, length, N_MC)
+    k = (sp, length, N_MC, SEED)
     if k not in _P:
-        _P[k] = UP.mc_paths(E.ctx()["S_up"], sp, N_MC, length=length)
+        _P[k] = UP.mc_paths(E.ctx()["S_up"], sp, N_MC, length=length, seed=SEED)
     return _P[k]
 
 
@@ -191,7 +192,9 @@ def z_score(U=None, mfn=None, ecfg_var=None, P=None, fund=True, state=True, slot
         o, U, L = E.evaluate(mfn=mfn, fund=fund, eval_cfg=cfg if ecfg_var else None, U=U)
         BY = E.funded_by(U)
         ec = UP.ecfg_of(ecfg_var or {})
-        o["mc"] = {sp: UP.eval_mc(BY, paths(sp, 60), ec) for sp in ("H1", "H2", "REF")}
+        if mfn is not None:          # uprisk.Eval sizes without the tilt (idm_m): its Monte Carlo / slot / state would be today's
+            slot = state = False
+        o["mc"] = {sp: UP.eval_mc(BY, paths(sp, 60), ec) for sp in ("H1", "H2", "REF")} if mfn is None else None
         if slot:
             o["slot"] = {sp: UP.life(BY, paths(sp, UP.LEN), ec, E.FUND_LIVE) for sp in ("H1", "H2", "REF")}
         if state:
@@ -203,8 +206,10 @@ def z_line(nm, o, b=None):
     ev, mc = o["eval"], o["mc"]
     t = (f"{nm:28s} LIT $/mo {o['lit']['H1']['per_month']:>5}/{o['lit']['H2']['per_month']:>5}/{o['lit']['2021-25']['per_month']:>4} | "
          f"evalpath $/mo {ev['H1']['per_month']:>5}/{ev['H2']['per_month']:>5} win2w {ev['H1']['p10']}/{ev['H1']['f10']} "
-         f"{ev['H2']['p10']}/{ev['H2']['f10']} | MC2w {mc['H1']['p10']}/{mc['H1']['f10']} {mc['H2']['p10']}/{mc['H2']['f10']} "
-         f"{mc['REF']['p10']}/{mc['REF']['f10']} med {mc['H1']['pass_med']}/{mc['H2']['pass_med']}")
+         f"{ev['H2']['p10']}/{ev['H2']['f10']} (MC {ev['H1']['mc']['p10']}/{ev['H1']['mc']['f10']} {ev['H2']['mc']['p10']}/{ev['H2']['mc']['f10']})")
+    if mc:
+        t += (f" | MC2w {mc['H1']['p10']}/{mc['H1']['f10']} {mc['H2']['p10']}/{mc['H2']['f10']} "
+              f"{mc['REF']['p10']}/{mc['REF']['f10']} med {mc['H1']['pass_med']}/{mc['H2']['pass_med']}")
     if "slot" in o:
         t += f" | slot $/mo {o['slot']['H1']['net_m']}/{o['slot']['H2']['net_m']}/{o['slot']['REF']['net_m']}"
     if "fund" in o:
@@ -306,6 +311,45 @@ def cmd_lit():
     print(f"done in {time.time() - t0:.0f}s -> {OUT_L}", flush=True)
 
 
+COMBO = [(r0, x) for r0 in (1000.0, 1200.0, 1500.0) for x in (0.4, 0.5, 0.6)]
+
+
+def combo_pick(rows, base):
+    """Pre-registered pick on H1 only: among two_week-all-the-way + room guard (r0, x), the most H1 slot $ a month with the
+    H1 Monte Carlo 2-week fail at most half of today's and the H1 2-week pass within 1 point of today's."""
+    ok = [(nm, o) for nm, o in rows.items() if o["mc"]["H1"]["f10"] <= 0.5 * base["mc"]["H1"]["f10"]
+          and o["mc"]["H1"]["p10"] >= base["mc"]["H1"]["p10"] - 1.0]
+    return max(ok, key=lambda kv: kv[1]["slot"]["H1"]["net_m"])[0] if ok else None
+
+
+def cmd_lit2(only=None):
+    """L1 + L2 together: two_week kept after session 10 + the room guard, 9 settings; pick on H1 (combo_pick), check H2 and
+    2021-25. NQE_SEED=41 re-runs it on a second Monte Carlo draw; `only` = a list of (r0, x) to run."""
+    t0 = time.time()
+    out = OUT_L.replace(".json", f"_combo_s{SEED}.json")
+    res = {"built": time.strftime("%Y-%m-%d %H:%M"), "n_mc": N_MC, "seed": SEED, "rows": {}}
+    base, U0, _ = z_score(fund=False)
+    res["rows"]["base"] = z_compact(base)
+    print(z_line("today", base), flush=True)
+    o, _, _ = z_score(U=U0, ecfg_var={"two_week_until": 999}, fund=False)
+    res["rows"]["tw_until_999"] = z_compact(o)
+    print(z_line("tw_until_999", o), flush=True)
+    raw = {}
+    for r0, x in (only or COMBO):
+        o, _, _ = z_score(U=U0, ecfg_var={"two_week_until": 999}, P={"r0": r0, "x": x, "mode": "floor1"}, fund=False)
+        nm = f"tw999+guard_r{int(r0)}_x{x}"
+        raw[nm] = o
+        c = z_compact(o)
+        c["gate"] = z_gate_size(o, base)
+        res["rows"][nm] = c
+        print(z_line(nm, o) + ("  GATE" if c["gate"] else ""), flush=True)
+        json.dump(res, open(out, "w"), indent=1, default=float)
+    res["pick"] = combo_pick(raw, base)
+    print("H1 pick:", res["pick"], flush=True)
+    json.dump(res, open(out, "w"), indent=1, default=float)
+    print(f"done in {time.time() - t0:.0f}s -> {out}", flush=True)
+
+
 # ================================================================================================ ATLAS
 A_STATES = {"a_room822_s8": {"bal": -178.0, "peak": 0.0, "s": 8}}
 
@@ -364,7 +408,8 @@ def a_state(V, st, sp, horizon=40, n=None, seed=29):
 
 
 A_KEYS = ("p10", "f10", "dead10", "dec10", "p15", "f15", "pass_med", "slow_pass", "mp_net_less_fees", "mp_per_eval",
-          "mp_passes", "net", "per_month", "pf", "dd", "tpw", "sig_tpw", "sig_wk2", "wk2", "n", "fund_paid_3m")
+          "mp_passes", "mp_bought", "mp_pass_per_eval", "mp_pass_per_month", "net", "per_month", "pf", "dd", "tpw", "sig_tpw",
+          "sig_wk2", "wk2", "n", "fund_paid_3m", "fund_lost_3m")
 
 
 def a_run(V, P=None, state=True):
@@ -389,27 +434,53 @@ def a_line(nm, c, v=None):
     return t
 
 
+N_SLOT = int(os.environ.get("NQE_NSLOT", "300"))
+
+
+def a_full(V, P=None, state=True):
+    """tools/atx_edge.full (eval numbers per span incl. the 2021-25 join + the whole 25K slot $ a month to the owner, 300
+    paths x 6 months) under the room guard P, + today's-state odds."""
+    from tools import atx_edge as AX
+    AX.libs()
+    with guard(P):
+        o = AX.full(V, n=N_SLOT)
+        if state:
+            o["state"] = {nm: {sp: a_state(V, st, sp) for sp in ("H1", "H2", "2025", "2021-24")} for nm, st in A_STATES.items()}
+    return o
+
+
+def ax_line(nm, o, g=None):
+    from tools import atx_edge as AX
+    t = AX.line(nm, o, g)
+    if "state" in o:
+        for k, s in o["state"].items():
+            t += " | state " + " ".join(f"{sp} {s[sp]['p10']}/{s[sp]['f10']}" for sp in s)
+    return t
+
+
 def cmd_atlas():
     t0 = time.time()
     AE, V2, A, M, EAB = a_libs()
+    from tools import atx_edge as AX
+    AX.libs()
     V0 = V2.V_()
-    res = {"built": time.strftime("%Y-%m-%d %H:%M"), "rows": {}}
-    ob, cb = a_run(V0)
-    res["rows"]["base"] = cb
-    print(a_line("today", cb), flush=True)
+    res = {"built": time.strftime("%Y-%m-%d %H:%M"), "n_slot": N_SLOT, "rows": {}}
+    ob = a_full(V0)
+    res["rows"]["base"] = ob
+    print(ax_line("today", ob), flush=True)
 
-    def put(nm, o, c, fam=""):
-        v = V2.verdict(o, ob, fam)
-        c["verdict"] = v
-        res["rows"][nm] = c
-        print(a_line(nm, c, v), flush=True)
-        json.dump(res, open(OUT_A, "w"), indent=1, default=float)
+    def put(nm, o, extra=None):
+        g = AX.gate(o, ob)
+        o["gate"] = g
+        o.update(extra or {})
+        res["rows"][nm] = o
+        print(ax_line(nm, o, g), flush=True)
+        AE.dump(res, OUT_A)
 
     # ---- A1 room guard on the 25K (half the 50K's dollars; the 25K's live room share is already 0.5, so x < 0.5)
     for r0 in (500.0, 600.0, 750.0):
         for x in (0.25, 0.33, 0.4):
-            o, c = a_run(V0, {"r0": r0, "x": x, "mode": "floor1"})
-            put(f"guard_r{int(r0)}_x{x}", o, c)
+            put(f"guard_r{int(r0)}_x{x}", a_full(V0, {"r0": r0, "x": x, "mode": "floor1"}))
     # ---- A2 calendar size x0.5 (multipliers through ab_edge's member-unit hook)
     C = cal_facts(M.units()["sessions"])
     allu = A.account_units(V0)
@@ -418,21 +489,141 @@ def cmd_atlas():
         key = f"nqe_cal_{tag}"
         AE._UM[key] = um
         V = {**V0, "um": key}
-        o, c = a_run(V, state=False)
-        c["n_tilted"] = len(um)
-        c["placebo"] = AE.a_placebo(V0, um, n=40)
-        put(f"cal_{tag}_x0.5", o, c)
+        o = a_full(V, state=False)
+        put(f"cal_{tag}_x0.5", o, {"n_tilted": len(um), "placebo": AE.a_placebo(V0, um, n=40)})
     print(f"done in {time.time() - t0:.0f}s -> {OUT_A}", flush=True)
+
+
+# ================================================================================================ run library
+Q_ = ("Owner 2026-11-12 night: build everything so that it's profitable, find every edge, make me money, mainly NQ "
+      "(NQ edge sprint: room guard, two_week after session 10, expiry calendar size, ATLAS agreement, from today's eval state)")
+
+
+def _clean(L):
+    return [{k: (v.item() if isinstance(v, np.generic) else v) for k, v in l.items()} for l in L]
+
+
+def _eval_path_trades(U, ecfg_var=None, P=None):
+    """The back-to-back eval path per 2026 half (a new eval after a pass, a fail or 10 sessions) as run-library trades."""
+    cfg = copy.deepcopy(E.A.CFG)
+    for k, v in (ecfg_var or {}).items():
+        cfg[k] = v
+    keep = E.A.CFG
+    E.A.CFG = cfg
+    Tp = []
+    try:
+        with guard(P):
+            U26 = [u for u in U if u["day"] >= "2026"]
+            for sp in ("H1", "H2"):
+                Tp += E.R.b2b10(U26, sp)[0]
+    finally:
+        E.A.CFG = keep
+    for t in Tp:
+        t["risk_pts"] = t["risk"]
+        t["r"] = round(t["pnl"] / t["risk_usd"], 3) if t["risk_usd"] else 0.0
+        t.update(half=False, trigger="LIT-1m", mfe=None, mae=None, bars_held=None, regime="", mult=None, tgt_pts=t["tgt"])
+    return _clean(Tp)
+
+
+def _zver(c):
+    ev, mc = c["eval"], c.get("mc")
+    s = (f"Eval path (live two_week, real order) H1 PF {ev['H1']['pf']} ${ev['H1']['per_month']:,}/mo 2-week pass/fail "
+         f"{ev['H1']['p10']}/{ev['H1']['f10']}, H2 PF {ev['H2']['pf']} ${ev['H2']['per_month']:,}/mo {ev['H2']['p10']}/{ev['H2']['f10']}.")
+    if mc:
+        s += (f" Monte Carlo 2-week pass/fail H1 {mc['H1']['p10']}/{mc['H1']['f10']}, H2 {mc['H2']['p10']}/{mc['H2']['f10']}, 2021-25 "
+              f"{mc['REF']['p10']}/{mc['REF']['f10']}, median pass {mc['H1']['pass_med']}/{mc['H2']['pass_med']} sessions, slow passes "
+              f"{mc['H1']['slow_pass']}/{mc['H2']['slow_pass']}%.")
+    if "slot" in c:
+        s += f" Account slot $ a month to the owner (net of evals) H1 {c['slot']['H1']['net_m']} / H2 {c['slot']['H2']['net_m']} / 2021-25 {c['slot']['REF']['net_m']}."
+    if "state" in c:
+        for k, v in c["state"].items():
+            s += f" From {k}: pass/fail in 10 more sessions H1 {v['H1']['p10']}/{v['H1']['f10']}, H2 {v['H2']['p10']}/{v['H2']['f10']}, 2021-25 {v['REF']['p10']}/{v['REF']['f10']}."
+    if "placebo" in c:
+        s += f" Shuffle placebo (share of shuffled tilts with more LIT-size $): {c['placebo']}."
+    return s
+
+
+def cmd_save():
+    R1 = json.load(open(OUT_L))["rows"]
+    R2 = json.load(open(OUT_L.replace(".json", "_combo_s23.json")))
+    pick = R2["pick"]
+    U0 = E.trades({})
+    sizing = [("nq_edge_guard_r1200_x05", R1["guard_r1200_x0.5"], None, {"r0": 1200.0, "x": 0.5, "mode": "floor1"}, "rejected",
+               "room guard (owner's idea): room < $1,200 -> a trade risks at most 50% of the room"),
+              ("nq_edge_tw_until_999", R1["tw_until_999"], {"two_week_until": 999}, None, "adopt-candidate",
+               "two_week sizing kept after eval session 10 (two_week_until 999)")]
+    if pick:
+        r0, x = pick.split("_r")[1].split("_x")
+        sizing.append(("nq_edge_tw999_guard_pick", R2["rows"][pick], {"two_week_until": 999},
+                       {"r0": float(r0), "x": float(x), "mode": "floor1"}, "adopt-candidate",
+                       f"two_week kept after session 10 + room guard (room < ${float(r0):,.0f} -> at most {float(x) * 100:.0f}% of the room), H1 pick"))
+    for rid, c, ev, P, st, title in sizing:
+        Tp = _eval_path_trades(U0, ev, P)
+        rl.save(rid, "NQ edge: " + title, "risk", Q_, params={**E.LIVE, "x_nq_edge": {"eval": ev, "guard": P}},
+                sizing={"mode": "two_week", **{k: v for k, v in E.A.CFG.items() if not k.startswith("_")}, **(ev or {}),
+                        "room_guard": P}, trades=Tp, scored=rl.score(Tp, E.A.S26), status=st, verdict=_zver(c),
+                notes="tools/nq_edge.py: live LIT trades (== lit_live), live two_week eval sizing ($1.90) + the research room "
+                      "guard wrapper; Monte Carlo + slot = tools/uprisk (1,000 paths, seed 23); stored trades = the "
+                      "back-to-back eval path per 2026 half.",
+                writeup="nq-edge-2026-11-13", tags=["lit", "nq_edge"])
+        print("saved", rid, flush=True)
+    F = E.F
+    C = cal_facts(F.SESS)
+    tilts = [(f"nq_edge_cal_{tg}", f"cal_{tg}_x0.5", (lambda g: (lambda t, r: 0.5 if g in C.get(t["day"], ()) else 1.0))(tg),
+              f"expiry calendar size: {tg} x0.5") for tg in CAL_TAGS]
+    tilts += [("nq_edge_atlas_agree", "atlas_agree_125_075", atlas_lit_agree(1.25, 0.75, "both"),
+               "ATLAS agreement: same side x1.25, other side x0.75"),
+              ("nq_edge_atlas_agree_up", "atlas_agree_only_15", atlas_lit_agree(1.5, 1.0, "up"), "ATLAS agreement: same side x1.5"),
+              ("nq_edge_atlas_disagree", "atlas_disagree_only_05", atlas_lit_agree(1.0, 0.5, "dn"), "ATLAS disagreement: x0.5")]
+    for rid, key, mfn, title in tilts:
+        c = R1[key]
+        L = _clean(E.lit_size(E.trades({}, mfn=mfn)))
+        lt = c["lit"]
+        h = lambda sp: f"PF {lt[sp]['pf']} ${lt[sp]['net']:+,} (${lt[sp]['per_month']:,}/mo) {lt[sp]['tpw']}/wk"
+        ver = f"LIT size H1 {h('H1')}; H2 {h('H2')}; 2021-25 ref {h('2021-25')}. " + _zver(c)
+        if c.get("fund"):
+            ver += f" Funded 50K $/mo H1 {c['fund']['H1']['per_month']} / H2 {c['fund']['H2']['per_month']} / 2021-25 {c['fund']['REF']['per_month']}."
+        rl.save(rid, "NQ edge: " + title, "risk", Q_, params={**E.LIVE, "x_nq_edge": key}, trades=L, scored=rl.score(L, F.SESS),
+                status="rejected", verdict=ver, notes="tools/nq_edge.py: live LIT trades, LIT size rule x the tilt (one rounding "
+                "with the weekly stop); eval / funded via tools/lit_edge.evaluate.", writeup="nq-edge-2026-11-13",
+                tags=["lit", "nq_edge"])
+        print("saved", rid, flush=True)
+    # ATLAS
+    if os.path.exists(OUT_A):
+        AE, V2, A, M, EAB = a_libs()
+        from tools import atx_edge as AX
+        AX.libs()
+        RA = json.load(open(OUT_A))["rows"]
+        V0 = V2.V_()
+        for nm, o in RA.items():
+            if nm == "base" or not nm.startswith("guard_r"):
+                continue
+            r0, x = nm.split("_r")[1].split("_x")
+            P = {"r0": float(r0), "x": float(x), "mode": "floor1"}
+            with guard(P):
+                _, T = AE._atlas_store(V0)
+            T = _clean(T)
+            f = lambda s: (f"{s} 2-week pass/dead {o[s]['p10']}/{o[s]['dead10']}, eval path ${o[s]['pm']:+,}/mo less fees, "
+                           f"slot ${o[s]['slot']['pm']:+,}/mo to the owner")
+            ver = "; ".join(f(s) for s in ("H1", "H2", "2021-25")) + f". Owner gate: {'PASS' if o['gate']['pass'] else 'fail'}."
+            rl.save(f"nq_edge_atlas_guard_r{r0}_x{x.replace('.', '')}", f"NQ edge ATLAS: room guard (room < ${float(r0):,.0f} -> at most "
+                    f"{float(x) * 100:.0f}% of the room)", "risk", Q_, params={"atlas": V0, "guard": P}, trades=T,
+                    scored=rl.score(T, sorted(set(M.units()["sessions"]))),
+                    status="adopt-candidate" if o["gate"]["pass"] else "rejected", verdict=ver,
+                    notes="tools/nq_edge.py atlas: tools/atx_edge.full (eval + 25K slot, 300 paths) under the research room guard.",
+                    writeup="nq-edge-2026-11-13", tags=["atlas", "nq_edge"])
+            print("saved", nm, flush=True)
 
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "lit"
     if cmd == "lit":
         cmd_lit()
+    elif cmd == "lit2":
+        cmd_lit2([(float(a), float(b)) for a, b in (p.split(":") for p in sys.argv[2:])] or None)
     elif cmd == "atlas":
         cmd_atlas()
     elif cmd == "save":
-        from tools import nq_edge_save
-        nq_edge_save.main()
+        cmd_save()
     else:
         raise SystemExit(__doc__)
