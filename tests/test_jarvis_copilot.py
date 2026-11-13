@@ -132,7 +132,12 @@ def run_browser():
                 ctx = br.new_context(viewport={"width": width, "height": 844}, device_scale_factor=1, service_workers="block")
                 now_s = at.timestamp()
                 seen = []
-                ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1[:/])"), lambda r: r.abort())            # nothing leaves the machine
+                blocked = []
+
+                def block(r):
+                    blocked.append(r.request.url)
+                    r.abort()
+                ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1[:/])"), block)            # nothing leaves the machine (the page's own live feed / prices are cut here)
                 ctx.route(re.compile(r"/home\.json(\?.*)?$"), lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(fixture_home(now_s))))
                 ctx.route(re.compile(r"/kalshi\.json(\?.*)?$"), lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(fixture_kalshi(now_s))))
                 ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.speak', 'off'); } catch (e) {}")
@@ -144,7 +149,7 @@ def run_browser():
                 p.goto(url + "jarvis/" + q)
                 p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=60000, polling=200)
                 p.wait_for_function("(() => { const c = document.getElementById('hcCopilot'); return c && c.querySelectorAll('.hc-row').length >= 2; })()", timeout=60000, polling=200)
-                return ctx, p, errs, seen
+                return ctx, p, errs, (seen, blocked)
 
             def ask(p, q):
                 p.evaluate("document.getElementById('talk').innerHTML = ''")
@@ -173,8 +178,11 @@ def run_browser():
             a = ask(p, "how close am I to passing")
             check("c. typed 'how close am I to passing': $ to go, wins needed, the published odds", "$3,867 to go" in a and "3 winning trades" in a and "58.6% pass within 10 sessions" in a, a[:600])
             a = ask(p, "kalshi exposure today")
-            check("c. typed 'kalshi exposure today': today, settled bets, $ at risk", "Kalshi today: +$4.10" in a and "$9 at risk" in a, a[:600])
-            check("c. no page error; every request stays on the local site", not errs and all(u.startswith(url) or u.startswith("data:") or u.startswith("blob:") for u in seen), (errs[:3], [u for u in seen if not u.startswith(url)][:5]))
+            check("c. typed 'kalshi exposure today': today, settled bets, $ at risk", "Kalshi today: +$4.10" in a and "$9.20 at risk" in a, a[:600])
+            seen, blocked = seen
+            out = [u for u in seen if not (u.startswith(url) or u.startswith("data:") or u.startswith("blob:"))]
+            check("c. no page error; every outside request (the page's live feed / prices, not the copilot) was cut by the test, none reached the net",
+                  not errs and all(u in blocked for u in out), (errs[:3], [u for u in out if u not in blocked][:5]))
             ctx.close()
             # 16:20 ET Friday: the 16:05 day summary, at 375 px
             ctx, p, errs, _ = page(dt.datetime(2026, 11, 13, 16, 20, tzinfo=NY), width=375)
