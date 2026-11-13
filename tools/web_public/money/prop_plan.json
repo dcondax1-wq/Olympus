@@ -1,0 +1,260 @@
+{
+ "v": 1,
+ "id": "prop_plan",
+ "asof": "2026-11-13T03:12:08Z",
+ "mode": "paper",
+ "status": "ok",
+ "headline": {
+  "text": "2 accounts trading (Zlarior 50K, ATLAS 25K): about $1,180 a month once funded at the Jul-Oct 2026 rate (estimate; -$9 in a 2021-25-like market). Next step: Funded at MFFU, when an eval passes ($53,000 / $26,500).",
+  "usd_month": 1180
+ },
+ "items": [
+  {
+   "title": "Step 0: Pass the two live MFFU evals (3 accounts)",
+   "detail": "When: now. Buy: nothing: Zlarior 50K and ATLAS 25K are trading, BLITZ 25K on paper. $0 a month until an eval passes.",
+   "usd": 0,
+   "score": 90,
+   "risk": "low"
+  },
+  {
+   "title": "Step 1: Funded at MFFU (3 accounts)",
+   "detail": "When: an eval passes ($53,000 / $26,500). Buy: nothing: switch the passed account to funded; a failed eval is bought again the next day, unless the account is 5 eval prices below its best (the stop rule). First-year estimate about $1,629 a month (Jul-Oct 2026 rate), -$12 in a 2021-25 market.",
+   "usd": 1629,
+   "score": 70,
+   "risk": "low"
+  },
+  {
+   "title": "Step 2: Two LIT 50K copies at Lucid / FundedNext (5 accounts)",
+   "detail": "When: the first payout is in your bank AND each firm said yes to bots + copying your own accounts in writing. Buy: LucidPro 50K (about $115-135 with a code such as DGT / PFD, $192 list) + FundedNext Rapid 50K (about $160-200 list, codes claim 30-55% off), a week apart; Black Friday week (from about Nov 19) is the cheapest time. First-year estimate about $3,221 a month (Jul-Oct 2026 rate), -$53 in a 2021-25 market.",
+   "usd": 3221,
+   "score": 40,
+   "risk": "med"
+  },
+  {
+   "title": "Step 3: Ten accounts (10 accounts)",
+   "detail": "When: $10,000 net paid out, no funded account lost in the last 2 weeks. Buy: 4 more LucidPro 50K (Lucid's cap is 5 funded) + 1 more FundedNext 50K, one a week. First-year estimate about $6,886 a month (Jul-Oct 2026 rate), -$148 in a 2021-25 market.",
+   "usd": 6886,
+   "score": 40,
+   "risk": "med"
+  },
+  {
+   "title": "Step 4: Your own live account (10 accounts)",
+   "detail": "When: $30,000 kept after tax AND 3 months of live fills within the backtest's band. Buy: open a personal futures account with $25,000; LIT at 1% of the account per trade (MNQ micros). The 10 prop accounts keep paying; with this account, $1M within 5 years on 85% of Jul-Oct-2026-like paths (median 52 months), 0% in a 2021-25 market: possible if the edge holds, not a forecast.",
+   "usd": 6886,
+   "score": 40,
+   "risk": "high"
+  }
+ ],
+ "notes": [
+  "Estimates from backtests: H1 = Jan-Jun 2026 (picked), H2 = Jul-Oct 2026 (checked, the one to quote), REF = 2021-25, where LIT shows no edge (profit factor 1.01). Backtests overstate; nothing here is promised.",
+  "All LIT copies are one bet: in a bad month they lose together. Each account can only lose its eval price, never more.",
+  "Eval sizing (research/writeups/eval-guard-2026-11-13.md, a proposal, the owner decides): risking 40% of the room instead of 80% fails a fresh eval in 2 weeks about 1 time in 200 instead of 1 in 4 and is worth about $835-1,000 more per eval. This plan uses today's live sizing.",
+  "Firm rules change: ask each firm in writing about bots and copying your own accounts before buying (MFFU has not said yes to copies).",
+  "Not tax advice: prop payouts are usually contractor income; a personal futures account is taxed 60/40 (Section 1256). Ask a tax professional.",
+  "Account drawdown figures are from the last PC report (2026-11-07, 2026-11-12)."
+ ],
+ "plan": {
+  "accounts": [
+   {
+    "id": "zlarior50",
+    "name": "Zlarior 50K",
+    "firm": "MFFU",
+    "plan": "Builder 50K",
+    "bot": "Zlarior (LIT)",
+    "stage": "eval",
+    "price_usd": 91.8,
+    "drawdown_left_usd": 1145.0,
+    "drawdown_max_usd": 2000.0,
+    "state_asof": "2026-11-07",
+    "payouts_usd": 0.0,
+    "usd_month": {
+     "h1": 823,
+     "h2": 798,
+     "ref": -7
+    },
+    "usd_month_counted": true,
+    "note": null
+   },
+   {
+    "id": "atlas25",
+    "name": "ATLAS 25K",
+    "firm": "MFFU",
+    "plan": "Builder 25K",
+    "bot": "ATLAS",
+    "stage": "eval",
+    "price_usd": 43.0,
+    "drawdown_left_usd": 822.0,
+    "drawdown_max_usd": 1000.0,
+    "state_asof": "2026-11-07",
+    "payouts_usd": 0.0,
+    "usd_month": {
+     "h1": 568,
+     "h2": 382,
+     "ref": -2
+    },
+    "usd_month_counted": true,
+    "note": null
+   },
+   {
+    "id": "blitz25",
+    "name": "BLITZ 25K",
+    "firm": "MFFU",
+    "plan": "Builder 25K",
+    "bot": "BLITZ",
+    "stage": "paper",
+    "price_usd": 63.0,
+    "drawdown_left_usd": null,
+    "drawdown_max_usd": 1000.0,
+    "state_asof": "2026-11-12",
+    "payouts_usd": 0.0,
+    "usd_month": {
+     "h1": 286,
+     "h2": 52,
+     "ref": -39
+    },
+    "usd_month_counted": false,
+    "note": "on paper: BLITZ is the weakest slot; a Zlarior copy pays more there once MFFU says yes in writing"
+   }
+  ],
+  "now": {
+   "accounts": 3,
+   "live_accounts": 2,
+   "fees_paid_usd": 197.8,
+   "payouts_usd": 0.0,
+   "usd_month": {
+    "h1": 1391,
+    "h2": 1180,
+    "ref": -9
+   }
+  },
+  "step": {
+   "n": 0,
+   "name": "Pass the two live MFFU evals"
+  },
+  "next_step": {
+   "n": 1,
+   "do": "nothing: switch the passed account to funded; a failed eval is bought again the next day, unless the account is 5 eval prices below its best (the stop rule)",
+   "when": "an eval passes ($53,000 / $26,500)",
+   "buy_usd": 0.0,
+   "adds_usd_month_h2": 1629
+  },
+  "ladder": [
+   {
+    "n": 0,
+    "name": "Pass the two live MFFU evals",
+    "accounts": 3,
+    "when": "now",
+    "buy": "nothing: Zlarior 50K and ATLAS 25K are trading, BLITZ 25K on paper",
+    "buy_usd": 0.0,
+    "usd_month": {
+     "h1": 0,
+     "h2": 0,
+     "ref": 0
+    }
+   },
+   {
+    "n": 1,
+    "name": "Funded at MFFU",
+    "accounts": 3,
+    "when": "an eval passes ($53,000 / $26,500)",
+    "buy": "nothing: switch the passed account to funded; a failed eval is bought again the next day, unless the account is 5 eval prices below its best (the stop rule)",
+    "buy_usd": 0.0,
+    "usd_month": {
+     "h1": 1739,
+     "h2": 1629,
+     "ref": -12
+    }
+   },
+   {
+    "n": 2,
+    "name": "Two LIT 50K copies at Lucid / FundedNext",
+    "accounts": 5,
+    "when": "the first payout is in your bank AND each firm said yes to bots + copying your own accounts in writing",
+    "buy": "LucidPro 50K (about $115-135 with a code such as DGT / PFD, $192 list) + FundedNext Rapid 50K (about $160-200 list, codes claim 30-55% off), a week apart; Black Friday week (from about Nov 19) is the cheapest time",
+    "buy_usd": 300.0,
+    "usd_month": {
+     "h1": 3397,
+     "h2": 3221,
+     "ref": -53
+    }
+   },
+   {
+    "n": 3,
+    "name": "Ten accounts",
+    "accounts": 10,
+    "when": "$10,000 net paid out, no funded account lost in the last 2 weeks",
+    "buy": "4 more LucidPro 50K (Lucid's cap is 5 funded) + 1 more FundedNext 50K, one a week",
+    "buy_usd": 700.0,
+    "usd_month": {
+     "h1": 7213,
+     "h2": 6886,
+     "ref": -148
+    }
+   },
+   {
+    "n": 4,
+    "name": "Your own live account",
+    "accounts": 10,
+    "when": "$30,000 kept after tax AND 3 months of live fills within the backtest's band",
+    "buy": "open a personal futures account with $25,000; LIT at 1% of the account per trade (MNQ micros)",
+    "buy_usd": 25000.0,
+    "usd_month": {
+     "h1": 7213,
+     "h2": 6886,
+     "ref": -148
+    }
+   }
+  ],
+  "expected": {
+   "y1_usd_month": {
+    "1": {
+     "h1": 899,
+     "h2": 874,
+     "ref": 5
+    },
+    "3": {
+     "h1": 1739,
+     "h2": 1629,
+     "ref": -12
+    },
+    "5": {
+     "h1": 3397,
+     "h2": 3221,
+     "ref": -53
+    },
+    "10": {
+     "h1": 7213,
+     "h2": 6886,
+     "ref": -148
+    },
+    "ladder": {
+     "h1": 5253,
+     "h2": 4903,
+     "ref": -24
+    }
+   },
+   "to_100k_months": {
+    "h1": 17,
+    "h2": 18,
+    "ref": null
+   },
+   "to_1m_months": {
+    "h1": 43,
+    "h2": 52,
+    "ref": null
+   },
+   "p_1m_5y_pct": {
+    "h1": 99.2,
+    "h2": 85.0,
+    "ref": 0.0
+   }
+  },
+  "stop_rules": [
+   "An account whose own running net is 5 eval prices below its best (about $460 on a 50K) buys no more evals: that is what a 2021-25-like market looks like, and it cuts the eval cash a bad market eats by over 90% and costs about 1-3% in a good one.",
+   "Live results 30 trades behind the backtest (profit factor under 1.0): buy no new evals until it recovers.",
+   "Never more than $3,000 at risk at the same time over all accounts; never long on one account and short on another.",
+   "Keep 30% of every payout for tax; only spend from what is left."
+  ],
+  "source": "research/writeups/millionaire-plan-2026-11-13.md"
+ }
+}
