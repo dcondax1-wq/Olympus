@@ -33,6 +33,7 @@ export const EXAMPLES = [
   'explain this trade', 'what should I do next', 'show me Athens', 'open Kronos', 'start the quiz', 'set my goal for today to stay flat before 10',
   'remember that I trade best before 10', 'what did I say about mornings', 'export my data', 'copy the briefing',
 ];
+const COPILOT_EX = ['should I trade today', 'how much can I lose today', 'how close am I to passing', 'best and worst trade', 'what changed since yesterday', 'kalshi exposure today'];   // copilot.js HELP
 const ZONES = { market: ['zenith', 'oracle', 'ares', 'forum', 'chronos', 'cities', 'odeon', 'pantheon', 'delphi', 'kronos'], research: ['datacity', 'observatory', 'tree', 'prometheus', 'hephaestus', 'nemesis', 'clio', 'fates', 'moirai'],
   risk: ['ledger', 'hera', 'plutus', 'pnyx', 'demeter', 'labyrinth', 'kalshi', 'kalshicity', 'tyche', 'dionysus', 'hermes', 'mint', 'mintcity', 'mercury', 'chrysos', 'sibyl'], command: ['hestia', 'inbox', 'argus', 'bridge', 'settings', 'atlas', 'stoa', 'kratos', 'argo'],
   life: ['planner', 'mind', 'arena', 'journal', 'athena', 'apollo', 'lyceum', 'nike', 'epilogue', 'gallery'] };       // atlas/atlas.js `zones` (checked by the tests)
@@ -307,6 +308,7 @@ export function createSkills(opts) {
   function helpReply() {
     const T = helpTable(), lines = ['Here is what I can do. Every number comes with its dollars, its R and where it came from; anything that changes something asks you first.'];
     for (const g of T) { lines.push('', g.name); for (const it of g.items) lines.push(`• ${it.label}: ${it.examples.map((x) => '"' + x + '"').join(', ')}`); }
+    lines.push('', 'Money copilot', `• GO / CAREFUL / SIT OUT, loss budget, pass odds, P&L, what changed, Kalshi: ${COPILOT_EX.map((x) => '"' + x + '"').join(', ')}`);
     lines.push('', 'Find, explain, tour'); for (const it of v3.help) lines.push(`• ${it.label}: ${it.ex.map((x) => '"' + x + '"').join(', ')}`);
     lines.push('', 'I never place, arm or change a trade: paper and suggestions only.');
     return reply(lines.join('\n'), { intent: 'skills_help', groups: T, more: v3.help, speak: 'I can answer from your numbers, open any app, set a goal in the Planner, check Kalshi, and remember things for you. The full list is on screen.' });
@@ -342,11 +344,31 @@ export function createSkills(opts) {
     const fn = AN[r.intent] || A[r.intent];
     return fn ? fn(S, now, a) : null;
   }
+  // the money copilot (copilot.js, J1 2026-11-13): "should I trade today", "how much can I lose today", "how close am I to passing", P&L / best and
+  // worst trade / $ a month, "what changed since yesterday", Kalshi's day. Loaded on the first question (a missing file = the older answers);
+  // asked right after the safety guard, before the follow-ups and the router.
+  let cpP = null;
+  const copilot = () => { if (!cpP) cpP = import('./copilot.js').then((m) => (m && typeof m.createCopilot === 'function' ? m.createCopilot({ storage: o.storage, now: o.now }) : null)).catch(() => { cpP = null; return null; }); return cpP; };
+  async function copilotAsk(text, now) {
+    const cp = await copilot(); if (!cp) return null;
+    const id = cp.match(text); if (!id) return null;
+    const out = cp.answer(id, await sources(), now);
+    if (!out || typeof out.text !== 'string') return null;
+    try { v3.note(out.intent, {}, out, text, now); } catch (_) { /* follow-ups are optional */ }
+    return { ...out, routed: out.intent, copilot: true };
+  }
+  async function early(raw, now) {
+    const text = String(raw == null ? '' : raw).slice(0, 500);
+    if (!text.trim()) return null;
+    const g = v3.guard(text); if (g) return g;
+    try { const c = await copilotAsk(text, now); if (c) return c; } catch (_) { /* the older skills carry on */ }
+    return v3.early(text, now);
+  }
   async function handle(raw, q, opt) {
     const text = String(raw == null ? '' : raw).slice(0, 500);
     if (!text.trim()) return null;
     const now = nowMs(opt && opt.now);
-    try { const e = await v3.early(text, now); if (e) return { ...e, routed: e.intent, v3: true }; } catch (_) { /* the router carries on */ }
+    try { const e = await early(text, now); if (e) return { ...e, routed: e.routed || e.intent, v3: !e.copilot }; } catch (_) { /* the router carries on */ }
     // "and open kronos", "now what is my worst weekday": a leading joining word is not part of the question
     const r = routeText(text, { apps: appsList() }) || routeText(text.replace(/^\s*(?:and|now|ok and|okay and|then|so|and then|and now)\s+/i, ''), { apps: appsList() });
     if (!r) { try { return await v3.explainMissing(text); } catch (_) { return null; } }
@@ -367,6 +389,7 @@ export function createSkills(opts) {
     if (!want.size || ['next_action', 'help_skills'].includes(r && r.intent)) ['drawdown_left', 'pnl_today'].forEach((k) => want.add(k));
     for (const k of want) { if (A[k]) add(k, A[k](S, now, { q: raw })); else if (AN[k]) add(k, AN[k](S, now, {})); }
     if (want.has('next_action') || (r && r.intent === 'next_action')) add('next_action', await nextAction(S, now));
+    try { const cp = await copilot(), id = cp && cp.match(String(raw || '')); if (id) add('copilot_' + id, cp.answer(id, S, now)); } catch (_) { /* optional */ }
     const m = mem.search(raw, 3).map((h) => h.item.text);
     if (m.length) lines.push('what the owner told you to remember: ' + m.join(' | '));
     return lines.join('\n');
@@ -374,7 +397,7 @@ export function createSkills(opts) {
   async function nudgesFor(opt) { const S = await sources(); return nudgeList(S, { now: nowMs(), ...(opt || {}) }); }
   return {
     handle, contextFor, nudges: nudgesFor, mem, actions, route: (t) => routeText(t, { apps: appsList() }), examples: EXAMPLES.slice(),
-    early: (raw, opt) => v3.early(raw, nowMs(opt && opt.now)), heard: () => v3.heard(), context: (n) => v3.context(nowMs(n)), tours: () => v3.tours(), search: (q, n) => v3.search(q, n), brief: (kind, n) => v3.brief(kind, nowMs(n)),
+    early: (raw, opt) => early(raw, nowMs(opt && opt.now)), copilot: async () => copilot(), card: async (n) => { const cp = await copilot(); return cp ? cp.card(await sources(), nowMs(n)) : null; }, heard: () => v3.heard(), context: (n) => v3.context(nowMs(n)), tours: () => v3.tours(), search: (q, n) => v3.search(q, n), brief: (kind, n) => v3.brief(kind, nowMs(n)),
     explain: (w) => v3.explain(w), agents: (n) => v3.agents(nowMs(n)), claims: (raw) => v3.claims(raw), guard: (raw) => v3.guard(raw),
     confirm: () => actions.confirm(), cancel: () => actions.cancel(), get pending() { return actions.pending; }, answer: (id, S, now, args) => (A[id] ? A[id](S, nowMs(now), args || {}) : null),
   };
