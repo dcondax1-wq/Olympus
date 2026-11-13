@@ -423,17 +423,353 @@ def server_wiring():
           o["gate"] == [200, True] and o["live"] == [200, "le-live"] and o["state"] == 200 and o["home"] == 200, o)
 
 
+# ============================================================================================== 6 static
+def static():
+    for name, script, extra in (("LIVE_LINK.bat", b'scripts\\live_link.ps1" %* & echo. & pause & exit /b', b":old"),
+                                ("UNDO_LIVE_LINK.bat", b'scripts\\live_link.ps1" -Remove & echo. & pause & exit /b', b"")):
+        b = rb(name)
+        check(f"6. {name}: CRLF line endings, ASCII", b"\n" not in b.replace(b"\r\n", b"") and b.endswith(b"\r\n") and all(c < 128 for c in b))
+        check(f"6. {name}: runs scripts\\live_link.ps1 with -ExecutionPolicy Bypass and pauses", script in b and b"-ExecutionPolicy Bypass" in b, b[-300:])
+        if extra:
+            check(f"6. {name}: an old folder without the script gets the UPDATE_FROM_ZIP fix, nothing else", extra in b and b"UPDATE_FROM_ZIP.bat" in b)
+    ps = rb("scripts/live_link.ps1")
+    check("6. live_link.ps1: ASCII only (Windows PowerShell 5.1 reads it without a BOM)", all(c < 128 for c in ps))
+    code = "\n".join(ln for ln in ps.decode().split("#>", 1)[-1].splitlines() if not ln.lstrip().startswith("#"))
+    check("6. live_link.ps1: never turns Funnel ON, never a public share, only 'serve --bg --yes' to 127.0.0.1",
+          re.search(r"serve --bg --yes \$Target", code) and "$Target = \"http://127.0.0.1:$Port\"" in code
+          and not re.search(r"funnel\s+(--bg|--https=\d+\s+(?!off)|\d)", code) and "funnel --https=443 off" in code, re.findall(r".*funnel.*", code))
+    check("6. live_link.ps1: no bot start / stop / arm, no live phrase, no order, no live_model, no logout",
+          not re.search(r"START_BOT|engine\.go|I ACCEPT|NINJATRADER_LIVE|/api/live/(start|stop|kill|arm)|live_model|stop_bot|Stop-Process|tailscale logout|serve reset", code))
+    check("6. live_link.ps1: the site task only builds (--provider none), never Netlify / a folder / scp",
+          "--provider none" in code and not re.search(r"--provider (netlify|folder|scp)", code))
+    check("6. live_link.ps1: files it writes are outside the repo (publish.json / live_link.json in the settings folder), UTF-8 without BOM",
+          "UTF8Encoding $false" in code and "$LinkFile = J2 $Home1 'live_link.json'" in code and "$PubFile = J2 $Home1 'publish.json'" in code)
+    doc = rb("docs/LIVE_DASHBOARD.md").decode() if os.path.exists(os.path.join(ROOT, "docs", "LIVE_DASHBOARD.md")) else ""
+    steps = re.search(r"## Your 3 steps\n(.*?)\n## ", doc, re.S)
+    n = len(re.findall(r"^\d\. ", steps.group(1), re.M)) if steps else 0
+    cmds = re.findall(r"`([^`]*(?:\.bat|python |powershell |pwsh )[^`]*)`", steps.group(1)) if steps else []
+    check("6. docs/LIVE_DASHBOARD.md: the owner's steps on top, at most 3, at most one copy-paste line, no code block",
+          steps is not None and doc.index("## Your 3 steps") < doc.index("## Security") and 1 <= n <= 3 and len([c for c in cmds if " " in c.strip()]) <= 1
+          and "```" not in steps.group(1), (n, cmds))
+    check("6. the doc says tailnet only, never Funnel, read only, free", all(x in doc for x in ("tailnet", "Funnel", "read only", "free")))
+
+
+# ============================================================================================== 7 pwsh
+FAKE_TS = r"""#!/bin/sh
+echo "TS $*" >> "$FAKE_TS_LOG"
+S="$FAKE_TS_DIR"
+case "$1" in
+  status)
+    cat "$S/status.json";;
+  up)
+    if [ -f "$S/after_up.json" ]; then cp "$S/after_up.json" "$S/status.json"; fi;;
+  funnel)
+    case "$*" in *"--https=443 off"*) sed 's/,"AllowFunnel":{[^}]*}//' "$S/serve.json" > "$S/serve.tmp" && mv "$S/serve.tmp" "$S/serve.json";; esac;;
+  serve)
+    case "$*" in
+      *"status --json"*) if [ -f "$S/serve.json" ]; then cat "$S/serve.json"; else echo "{}"; fi;;
+      *"--https=443 off"*) echo "{}" > "$S/serve.json";;
+      *"--bg"*)
+        if [ -f "$S/serve_fails" ]; then echo "error: HTTPS not enabled"; exit 1; fi
+        for a in "$@"; do tgt="$a"; done
+        dns=$(cat "$S/dns")
+        printf '{"TCP":{"443":{"HTTPS":true}},"Web":{"%s:443":{"Handlers":{"/":{"Proxy":"%s"}}}}}' "$dns" "$tgt" > "$S/serve.json"
+        echo "Available within your tailnet:"; echo "https://$dns/";;
+    esac;;
+esac
+exit 0
+"""
+DNS = "olympus-pc.tail1234.ts.net"
+
+
+def ts_status(state="Running", certs=True, auth="", dns=DNS):
+    return {"BackendState": state, "AuthURL": auth, "Self": {"DNSName": (dns + ".") if dns else "", "UserID": 7},
+            "User": {"7": {"LoginName": "owner@example.com"}}, "CertDomains": [dns] if certs and dns else None}
+
+
+def find_pwsh():
+    p = os.environ.get("LE_PWSH") or shutil.which("pwsh") or ("/usr/local/bin/pwsh" if os.path.exists("/usr/local/bin/pwsh") else None)
+    return p if p and os.path.exists(p) else None
+
+
+class PsBox:
+    def __init__(self):
+        self.dir = tempfile.mkdtemp(prefix="llps_", dir=TMP_BASE)
+        self.root = os.path.join(self.dir, "root")
+        os.makedirs(os.path.join(self.root, "scripts"))
+        os.makedirs(os.path.join(self.root, "tools"))
+        shutil.copy(os.path.join(ROOT, "scripts", "live_link.ps1"), os.path.join(self.root, "scripts"))
+        open(os.path.join(self.root, "tools", "pc_publish.py"), "w").close()
+        self.tsdir = os.path.join(self.dir, "ts")
+        os.makedirs(self.tsdir)
+        self.ts = os.path.join(self.dir, "tailscale")
+        with open(self.ts, "w") as fh:
+            fh.write(FAKE_TS)
+        os.chmod(self.ts, 0o755)
+        self.py = os.path.join(self.dir, "python")
+        with open(self.py, "w") as fh:
+            fh.write("#!/bin/sh\nexit 0\n")
+        os.chmod(self.py, 0o755)
+        with open(os.path.join(self.tsdir, "dns"), "w") as fh:
+            fh.write(DNS)
+        self.home = os.path.join(self.dir, "home")
+        self.tslog, self.winlog = os.path.join(self.dir, "ts.log"), os.path.join(self.dir, "win.log")
+        self.status(ts_status())
+
+    def status(self, st, after_up=None):
+        with open(os.path.join(self.tsdir, "status.json"), "w") as fh:
+            json.dump(st, fh)
+        p = os.path.join(self.tsdir, "after_up.json")
+        if after_up is not None:
+            with open(p, "w") as fh:
+                json.dump(after_up, fh)
+        elif os.path.exists(p):
+            os.remove(p)
+
+    def serve(self, cfg):
+        with open(os.path.join(self.tsdir, "serve.json"), "w") as fh:
+            json.dump(cfg, fh, separators=(",", ":"))
+
+    def serve_now(self):
+        try:
+            with open(os.path.join(self.tsdir, "serve.json")) as fh:
+                return json.load(fh)
+        except (OSError, ValueError):
+            return None
+
+    def run(self, pwsh, args=(), ts=True, ping="1", tasks="", wait=4):
+        env = {**os.environ, "FAKE_TS_LOG": self.tslog, "FAKE_TS_DIR": self.tsdir, "LE_LL_T_LOG": self.winlog, "LE_LL_T_PING": ping,
+               "LE_LL_T_TASKS": tasks, "OLYMPUS_HOME": self.home}
+        env.pop("PORT", None)
+        a = ["-Tailscale", self.ts if ts else os.path.join(self.dir, "missing-tailscale"), "-Python", self.py, "-LoginWait", str(wait), "-PollMs", "200"]
+        r = subprocess.run([pwsh, "-NoProfile", "-NoLogo", "-NonInteractive", "-File", os.path.join(self.root, "scripts", "live_link.ps1"), *a, *args],
+                           capture_output=True, text=True, timeout=180, env=env)
+        return r.returncode, r.stdout + r.stderr
+
+    def lines(self, p):
+        try:
+            with open(p) as fh:
+                return [ln.strip() for ln in fh if ln.strip()]
+        except OSError:
+            return []
+
+    def clear(self):
+        for p in (self.tslog, self.winlog):
+            open(p, "w").close()
+
+    def cleanup(self):
+        shutil.rmtree(self.dir, ignore_errors=True)
+
+
+def proxy_of(cfg):
+    try:
+        return cfg["Web"][f"{DNS}:443"]["Handlers"]["/"]["Proxy"]
+    except (KeyError, TypeError):
+        return None
+
+
+def pwsh_runs(pwsh):
+    r = subprocess.run([pwsh, "-NoProfile", "-NoLogo", "-File", os.path.join(ROOT, "tests", "win_harness", "lint51.ps1"),
+                        os.path.join(ROOT, "scripts", "live_link.ps1")], capture_output=True, text=True, timeout=300)
+    found = [ln for ln in r.stdout.splitlines() if ln.strip()]
+    check("7. 5.1 lint: no PowerShell-7-only syntax in live_link.ps1", r.returncode == 0 and not found, found or r.stderr)
+    b = PsBox()
+    try:
+        rc, out = b.run(pwsh, ["-DryRun"])
+        check("7. -DryRun: says the five steps, calls nothing, changes nothing", rc == 0 and "DRY RUN" in out and "serve --bg --yes http://127.0.0.1:8766" in out
+              and not b.lines(b.tslog) and not b.lines(b.winlog) and not os.path.exists(b.home), out)
+        rc, out = b.run(pwsh, ts=False)
+        check("7. Tailscale not installed: its download page opens, exit 1, nothing else", rc == 1 and b.lines(b.winlog) == ["OPEN https://tailscale.com/download/windows"]
+              and "not installed" in out and not b.lines(b.tslog), (out, b.lines(b.winlog)))
+        b.clear()
+        b.status(ts_status("NeedsLogin", auth="https://login.tailscale.com/a/abc123"),
+                 after_up=None)
+        rc, out = b.run(pwsh, wait=2)
+        win = b.lines(b.winlog)
+        check("7. not signed in: 'tailscale up' in the background, the sign-in page opens once, then a plain FIX when it never finishes",
+              rc == 1 and "TS up" in b.lines(b.tslog) and win.count("OPEN https://login.tailscale.com/a/abc123") == 1 and "not signed in yet" in out
+              and b.serve_now() is None, (out, win, b.lines(b.tslog)))
+        b.clear()
+        b.status(ts_status("Stopped"), after_up=ts_status())
+        rc, out = b.run(pwsh)
+        ts_calls = b.lines(b.tslog)
+        win = b.lines(b.winlog)
+        cfg = b.serve_now()
+        check("7. signed in but off: connects (bare 'tailscale up', no flags that could reset settings), then the full run exits 0",
+              rc == 0 and "TS up" in ts_calls and "signed in as owner@example.com" in out, (out, ts_calls))
+        check("7. the link: 'tailscale serve --bg --yes http://127.0.0.1:8766' -> https://<pc>.<tailnet>.ts.net/ proxies the bot server",
+              "TS serve --bg --yes http://127.0.0.1:8766" in ts_calls and proxy_of(cfg) == "http://127.0.0.1:8766" and not (cfg or {}).get("AllowFunnel"), (ts_calls, cfg))
+        check("7. the card: the https address to open on the iPhone, on the clipboard, saved in live_link.json outside the repo",
+              f"https://{DNS}/" in out and f"CLIP https://{DNS}/" in win and json.load(open(os.path.join(b.home, "live_link.json")))["url"] == f"https://{DNS}/"
+              and "Add to Home Screen" in out, (out[-600:], win))
+        check("7. a fresh site: no PUBLISH_NQ task -> the build-only task OlympusLiveSite every 15 min + one build now (sends nothing)",
+              any(w.startswith("TASK REGISTER OlympusLiveSite every 15 min") and "--provider none" in w and "live_site" in w for w in win)
+              and any(w.startswith("START BUILD") for w in win), win)
+        check("7. the bot server answers with the phone site", "serves the phone site" in out, out)
+        check("7. Kalshi: says it is not shown until the VM's feed is set", "Kalshi: not shown" in out, out)
+        # twice: nothing changes, no second serve
+        b.clear()
+        rc, out = b.run(pwsh, tasks="OlympusPublishNQ")
+        ts_calls = b.lines(b.tslog)
+        check("7. second run: 'already on', no second serve, PUBLISH_NQ's task found -> no OlympusLiveSite",
+              rc == 0 and "already on" in out and not [c for c in ts_calls if "--bg" in c] and not [w for w in b.lines(b.winlog) if w.startswith("TASK")]
+              and "rebuilt by OlympusPublishNQ" in out, (out, ts_calls, b.lines(b.winlog)))
+        # Funnel found on the address: switched off by the serve command
+        b.clear()
+        cfg = b.serve_now()
+        cfg["AllowFunnel"] = {f"{DNS}:443": True}
+        b.serve(cfg)
+        rc, out = b.run(pwsh)
+        cfg2 = b.serve_now()
+        check("7. Funnel (public internet) on this address: switched OFF, the link stays tailnet only",
+              rc == 0 and "switching it OFF" in out and not (cfg2 or {}).get("AllowFunnel") and proxy_of(cfg2) == "http://127.0.0.1:8766", (out, cfg2))
+        # another app on the address
+        b.clear()
+        b.serve({"TCP": {"443": {"HTTPS": True}}, "Web": {f"{DNS}:443": {"Handlers": {"/": {"Proxy": "http://127.0.0.1:3000"}}}}})
+        rc, out = b.run(pwsh)
+        check("7. the address pointed at something else: says so, now points at the bot server", rc == 0 and "pointed at http://127.0.0.1:3000" in out
+              and proxy_of(b.serve_now()) == "http://127.0.0.1:8766", out)
+        # HTTPS off in the tailnet: the admin page opens; serve fails -> FIX
+        b.clear()
+        b.serve({})
+        b.status(ts_status(certs=False))
+        open(os.path.join(b.tsdir, "serve_fails"), "w").close()
+        rc, out = b.run(pwsh)
+        check("7. HTTPS off in the tailnet: the DNS admin page opens (Enable HTTPS), a failed serve is a plain FIX, exit 1",
+              rc == 1 and "OPEN https://login.tailscale.com/admin/dns" in b.lines(b.winlog) and "did not switch on" in out, (out, b.lines(b.winlog)))
+        os.remove(os.path.join(b.tsdir, "serve_fails"))
+        b.status(ts_status())
+        # MagicDNS off
+        b.clear()
+        b.status(ts_status(dns=""))
+        rc, out = b.run(pwsh)
+        check("7. MagicDNS off: its page opens, exit 1, no serve", rc == 1 and "MagicDNS is off" in out and not [c for c in b.lines(b.tslog) if "--bg" in c], out)
+        b.status(ts_status())
+        # server down / old code
+        b.clear()
+        rc, out = b.run(pwsh, ping="0")
+        check("7. bot server down: the link is still made, the card says BOTS_BACK.bat starts it", rc == 0 and "does not answer" in out and "BOTS_BACK.bat" in out, out)
+        rc, out = b.run(pwsh, ping="old")
+        check("7. bot server on old code: restart it once when flat (STOP_BOT, then BOTS_BACK)", rc == 0 and "older code" in out, out)
+        # Kalshi address
+        rc, out = b.run(pwsh, ["-KalshiUrl", "http://not-https.example.org/k.json"])
+        check("7. -KalshiUrl that is not https: refused, nothing changed", rc == 1 and not os.path.exists(os.path.join(b.home, "publish.json")), out)
+        os.makedirs(b.home, exist_ok=True)
+        with open(os.path.join(b.home, "publish.json"), "w") as fh:
+            json.dump({"provider": "netlify", "min_interval_min": 10}, fh)
+        rc, out = b.run(pwsh, ["-KalshiUrl", "https://kalshi-feed.example.org/kalshi.json"])
+        raw = open(os.path.join(b.home, "publish.json"), "rb").read()
+        pub = json.loads(raw.decode("utf-8"))
+        check("7. -KalshiUrl https://...: saved in publish.json (kept the rest, UTF-8 without BOM, read by pc_publish.load_config)",
+              rc == 0 and pub.get("kalshi_feed_url") == "https://kalshi-feed.example.org/kalshi.json" and pub.get("provider") == "netlify"
+              and not raw.startswith(b"\xef\xbb\xbf"), (out, raw[:200]))
+        try:
+            from tools import pc_publish
+            cfg = pc_publish.load_config(cdir=b.home)
+            check("7. ... and tools/pc_publish.load_config reads that address (what the server uses for /site/kalshi.json)",
+                  cfg.get("kalshi_feed_url") == "https://kalshi-feed.example.org/kalshi.json", cfg)
+        except Exception as e:
+            check("7. pc_publish.load_config reads publish.json", False, e)
+        # -Remove
+        b.clear()
+        rc, out = b.run(pwsh, ["-Remove"], tasks="OlympusLiveSite")
+        check("7. -Remove: the link off (serve --https=443 off), the task and live_link.json gone, Tailscale not logged out",
+              rc == 0 and "TS serve --https=443 off" in b.lines(b.tslog) and "TASK REMOVE OlympusLiveSite" in b.lines(b.winlog)
+              and not os.path.exists(os.path.join(b.home, "live_link.json")) and not [c for c in b.lines(b.tslog) if "logout" in c or "down" in c], (out, b.lines(b.tslog)))
+        b.clear()
+        b.serve({"TCP": {"443": {"HTTPS": True}}, "Web": {f"{DNS}:443": {"Handlers": {"/": {"Proxy": "http://127.0.0.1:3000"}}}}})
+        rc, out = b.run(pwsh, ["-Remove"])
+        check("7. -Remove: a link that is not ours (another app) is left as it was", rc == 0 and "left as it was" in out
+              and proxy_of(b.serve_now()) == "http://127.0.0.1:3000" and "TS serve --https=443 off" not in b.lines(b.tslog), out)
+    finally:
+        b.cleanup()
+
+
+# ============================================================================================== 8 gate
+GATE_HARNESS = r"""
+const fs = require('fs'), path = require('path'), vm = require('vm');
+const src = fs.readFileSync(process.argv[1], 'utf8');
+const A = JSON.parse(process.argv[2]);
+function run(pathname, apiOk) {
+  const calls = [];
+  const els = {};
+  const mk = (id) => els[id] || (els[id] = { id, hidden: false, textContent: '', className: '', style: {}, children: [], attrs: {},
+    setAttribute(k, v) { this.attrs[k] = v; }, getAttribute(k) { return this.attrs[k]; }, appendChild(c) { this.children.push(c); return c; },
+    removeChild() {}, addEventListener() {}, querySelector() { return null; }, querySelectorAll() { return []; }, get firstChild() { return null; }, focus() {} });
+  const document = { readyState: 'complete', documentElement: { className: '' }, head: mk('head'), getElementById: mk,
+    createElement: (t) => mk('_' + t + Math.random()), createElementNS: (n, t) => mk('_' + t + Math.random()), createTextNode: (t) => ({ t }),
+    querySelectorAll: () => [], addEventListener() {}, visibilityState: 'visible' };
+  const home = A.home, live = A.live;
+  const fetch = (url) => { calls.push(String(url));
+    const u = String(url);
+    if (u.indexOf('/api/site/live.json') >= 0) return Promise.resolve(apiOk ? { ok: true, status: 200, json: () => Promise.resolve(live) } : { ok: false, status: 404, json: () => Promise.resolve(null) });
+    if (u.indexOf('home.json') >= 0) return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(JSON.parse(JSON.stringify(home))) });
+    return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) }); };
+  const timers = [];
+  const w = { document, location: { pathname, search: '?now=' + A.now_iso, href: 'https://pc.ts.net' + pathname }, fetch, localStorage: { getItem() { return null; }, setItem() {} },
+    addEventListener() {}, setTimeout: (f, ms) => { timers.push(ms); return 1; }, setInterval: (f, ms) => { timers.push(ms); return 1; }, URL, Intl, Date, JSON, Math,
+    GATE_BASE: '../', OLYMPUS_GATE: null };
+  w.window = w;
+  require(A.pcfeed);
+  w.PC_FEED = globalThis.PC_FEED;
+  vm.createContext(w);
+  vm.runInContext(src, w);
+  return new Promise((res) => setTimeout(() => res({ calls, state: w.GATE && w.GATE.state.now, line: els.nowLine && els.nowLine.textContent,
+    foot: els.nowFoot && els.nowFoot.textContent, badge: els.nowBadge && els.nowBadge.textContent, timers }), 3500));
+}
+(async () => {
+  const out = { pc: await run('/site/gate/', true), site: await run('/gate/', true), pcdown: await run('/site/gate/', false) };
+  process.stdout.write(JSON.stringify(out));
+})();
+"""
+
+
+def gate_live():
+    exe = shutil.which("node")
+    if not exe:
+        print("[SKIP] node not found: the Gate's live card was not run")
+        return
+    js = rb("tools/web_public/gate/gate.js").decode()
+    html = rb("tools/web_public/gate/index.html").decode()
+    check("8. the Gate loads pc_feed.js and reads /api/site/live.json only when served from the PC (/site/)",
+          "pc_feed.js" in html and "/api/site/live.json" in js and re.search(r"/\^\\/site\\//", js) is not None, re.findall(r".*site/live.*", js))
+    now = 1794537000
+    import datetime as dt
+    home = home_fixture(now)
+    live = live_fixture(now - 20, trade_t=now - 3600)
+    args = {"home": home, "live": live, "now_iso": dt.datetime.fromtimestamp(now, dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "pcfeed": os.path.join(ROOT, "tools", "web_public", "pc_feed.js")}
+    r = subprocess.run([exe, "-e", GATE_HARNESS, os.path.join(ROOT, "tools", "web_public", "gate", "gate.js"), json.dumps(args)],
+                       capture_output=True, text=True, timeout=60)
+    if not check("8. the Gate runs in node with a fake page", r.returncode == 0 and r.stdout.startswith("{"), r.stderr[-800:]):
+        return
+    o = json.loads(r.stdout)
+    pc, site_, down = o["pc"], o["site"], o["pcdown"]
+    check("8. served from the PC: it asks /api/site/live.json and shows 'Bots on', last report less than a minute ago, live from the PC",
+          any("/api/site/live.json" in c for c in pc["calls"]) and pc["badge"] == "Bots on" and "less than a minute" in (pc["line"] or "")
+          and "Live from your PC" in (pc["foot"] or "") and (pc["state"] or {}).get("from") == "pc", pc)
+    check("8. served from the PC: it refreshes every minute", 60000 in pc["timers"], pc["timers"])
+    check("8. any other copy (Netlify, the artifact): never asks the PC API, the old behaviour (home.json numbers, 2 h old = Quiet)",
+          not any("/api/site/" in c for c in site_["calls"]) and site_["badge"] == "Quiet", site_)
+    check("8. served from the PC but the bot API does not answer: home.json as before, no error", down["badge"] == "Quiet" and (down["state"] or {}).get("from") == "live", down)
+
+
 def main():
     guard()
     site()
     live()
     feeds()
     server_wiring()
-    try:
-        from tests import test_live_link_ps as PS   # the PowerShell / Gate parts (6-8)
-        PS.run(check, fast=FAST)
-    except ImportError:
-        pass
+    static()
+    if FAST:
+        print("[SKIP] --fast: the PowerShell runs were skipped")
+    else:
+        pwsh = find_pwsh()
+        if pwsh:
+            pwsh_runs(pwsh)
+        else:
+            print("[SKIP] pwsh not found: the PowerShell runs were skipped")
+    gate_live()
     bad = RES.count(False)
     print(f"\n{len(RES) - bad}/{len(RES)} passed")
     return 1 if bad else 0
