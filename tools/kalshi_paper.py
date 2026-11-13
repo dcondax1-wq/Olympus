@@ -210,17 +210,19 @@ def forecast_log(net, led, now):
     """once per city per day: the NWS forecast high for the next daytime period + the market's mids."""
     have = {(x["city"], x["day"]) for x in led["forecast_log"]}
     for city, (series, station, lat, lon, tz) in CITIES.items():
-        day = local_day(now, tz)
-        if (city, day.isoformat()) in have:
+        today = local_day(now, tz)
+        if (city, (today + dt.timedelta(days=1)).isoformat()) in have:
             continue
         pt = net.get(f"{NWS}/points/{lat},{lon}")
         fu = ((pt or {}).get("properties") or {}).get("forecast")
         fc = net.get(fu) if fu else None
-        hi = None
-        for p in ((fc or {}).get("properties") or {}).get("periods", []):
-            if p.get("isDaytime") and p.get("startTime", "")[:10] == day.isoformat():
-                hi = p.get("temperature")
+        hi, day = None, None
+        for p in ((fc or {}).get("properties") or {}).get("periods", []):   # the next daytime period, issued before its market's day
+            if p.get("isDaytime") and p.get("startTime", "")[:10] >= today.isoformat():
+                hi, day = p.get("temperature"), dt.date.fromisoformat(p["startTime"][:10])
                 break
+        if day is None or (city, day.isoformat()) in have:
+            continue
         d = net.get(f"{K}/markets", {"event_ticker": event_for(series, day), "limit": 100})
         mids = {}
         for mk in (d or {}).get("markets", []):

@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
 CACHE = os.environ.get("KK_CACHE") or os.path.join(HERE, "cache")
 os.makedirs(CACHE, exist_ok=True)
-GAP = float(os.environ.get("KK_GAP", "0.3"))
+GAP = float(os.environ.get("KK_GAP", "0.25"))
 _last, _lock = {}, threading.Lock()
 STATS = {"net": 0, "cache": 0, "429": 0, "fail": 0}
 
@@ -23,6 +23,8 @@ def get(path, params=None, base=B, cache=True, tries=12, gap=None, raw=False, he
                 return fh.read() if raw else json.load(fh)
         except Exception:
             pass
+    if os.environ.get("KK_OFFLINE"):      # cache only: what was fetched before, no network
+        return None
     host = urllib.parse.urlparse(url).netloc
     g = GAP if gap is None else gap
     h = {"User-Agent": "research-client"}
@@ -47,7 +49,7 @@ def get(path, params=None, base=B, cache=True, tries=12, gap=None, raw=False, he
             if e.code == 429:
                 STATS["429"] += 1
                 with _lock:
-                    _last[host] = time.time() + min(20, 1.0 * (k + 1))
+                    _last[host] = time.time() + min(8, 0.5 * (k + 1))
                 continue
             if e.code in (400, 404):
                 STATS["fail"] += 1
