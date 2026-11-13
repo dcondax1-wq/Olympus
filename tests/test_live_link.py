@@ -19,8 +19,10 @@ script; Windows-only steps (open a page, Task Scheduler, clipboard, a background
   7. pwsh      (skipped without pwsh) 5.1 lint; not installed -> download page; not signed in -> sign-in; HTTPS off -> the admin page;
                the serve command; Funnel switched off when found; the URL card; twice = no second serve; -DryRun; -Remove
   8. gate      (skipped without node) the Gate's live card reads /api/site/live.json only when served from the PC
+  9. browser   (skipped without playwright) Chromium through a fake link: / -> the Gate, the live card, home.json live, a POST refused.
+               Run it under the shared lock: flock -w 2400 /tmp/olympus_browser.lock python -X utf8 -m tests.test_live_link
 
-  python -X utf8 -m tests.test_live_link          (--fast: skips 5's child process and 7)
+  python -X utf8 -m tests.test_live_link          (--fast: skips 5's child process, 7 and 9)
 """
 from __future__ import annotations
 
@@ -707,7 +709,7 @@ function run(pathname, apiOk) {
     return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) }); };
   const timers = [];
   const w = { document, location: { pathname, search: '?now=' + A.now_iso, href: 'https://pc.ts.net' + pathname }, fetch, localStorage: { getItem() { return null; }, setItem() {} },
-    addEventListener() {}, setTimeout: (f, ms) => { timers.push(ms); return 1; }, setInterval: (f, ms) => { timers.push(ms); return 1; }, URL, Intl, Date, JSON, Math,
+    addEventListener() {}, setTimeout: (f, ms) => { timers.push(ms); return setTimeout(f, Math.min(ms, 30)); }, setInterval: (f, ms) => { timers.push(ms); return 1; }, URL, Intl, Date, JSON, Math, Promise,
     GATE_BASE: '../', OLYMPUS_GATE: null };
   w.window = w;
   require(A.pcfeed);
@@ -754,6 +756,72 @@ def gate_live():
     check("8. served from the PC but the bot API does not answer: home.json as before, no error", down["badge"] == "Quiet" and (down["state"] or {}).get("from") == "live", down)
 
 
+# ============================================================================================== 9 browser
+def browser_link():
+    """Chromium (iPhone size) through a fake 'link' (every request carries tailscale serve's headers): / -> the Gate, the live card from
+    the bot's live.json, the rest of the site loads, a POST from the page is refused. Under the shared browser lock."""
+    try:
+        import threading
+        import uvicorn
+        from playwright.sync_api import sync_playwright  # noqa: F401
+        from tests import agora_kit as AK
+    except Exception as e:
+        print(f"[SKIP] 9. no browser kit ({e.__class__.__name__}): the Chromium run was skipped")
+        return
+    s = Site()
+    old = os.environ.get("LE_SITE_DIR")
+    os.environ["LE_SITE_DIR"] = s.site
+    for rel in ("gate/index.html", "gate/gate.js", "gate/manifest.webmanifest", "olympus/truth.js"):   # the real Gate from web_public
+        os.remove(os.path.join(s.site, *rel.split("/")))
+    now = int(time.time())
+    app = FastAPI()
+    posted = []
+
+    @app.post("/api/live/start")
+    def start():
+        posted.append(1)
+        return {"started": True}
+    LS.install(app, live=lambda: live_fixture(now - 5, trade_t=now - 3600), kalshi_cfg={})
+    srv = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=0, log_level="warning"))
+    th = threading.Thread(target=srv.run, daemon=True)
+    th.start()
+    for _ in range(100):
+        if srv.started:
+            break
+        time.sleep(0.1)
+    port = srv.servers[0].sockets[0].getsockname()[1]
+    origin = f"http://127.0.0.1:{port}"
+    try:
+        with AK.browser() as br:
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True)
+            ctx.set_extra_http_headers({k: v for k, v in LINK.items()})
+            p = ctx.new_page()
+            errs = []
+            p.on("pageerror", lambda e: errs.append(str(e)))
+            p.goto(origin + "/", wait_until="load")
+            p.wait_for_function("window.GATE && window.GATE.ready()", timeout=20000)
+            badge, foot, line = p.inner_text("#nowBadge"), p.inner_text("#nowFoot"), p.inner_text("#nowLine")
+            check("9. Chromium through the link: / opens the Gate at /site/gate/", p.url == origin + "/site/gate/", p.url)
+            check("9. the Right now card is live from the PC: 'Bots on', less than a minute, 'Live from your PC'",
+                  badge == "Bots on" and "less than a minute" in line and "Live from your PC" in foot, (badge, line, foot))
+            facts = p.inner_text("#nowFacts")
+            check("9. ... with the bot's drawdown left ($1,890) and today's +$140", "$1,890" in facts and "+$140" in facts, facts)
+            res = p.evaluate("fetch('/api/live/start', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'}).then(r => r.status)")
+            check("9. a POST from the page through the link: 403, the route never ran", res == 403 and not posted, (res, posted))
+            n = p.evaluate("fetch('/site/home.json').then(r => r.json()).then(j => j.live.pc.live === true && j.board.lit.room)")
+            check("9. home.json through the link already carries the live numbers (every app is live)", n == 1890, n)
+            check("9. no page errors", not errs, errs)
+            ctx.close()
+    finally:
+        srv.should_exit = True
+        th.join(timeout=10)
+        if old is None:
+            os.environ.pop("LE_SITE_DIR", None)
+        else:
+            os.environ["LE_SITE_DIR"] = old
+        s.cleanup()
+
+
 def main():
     guard()
     site()
@@ -770,6 +838,10 @@ def main():
         else:
             print("[SKIP] pwsh not found: the PowerShell runs were skipped")
     gate_live()
+    if FAST:
+        print("[SKIP] --fast: the Chromium run was skipped")
+    else:
+        browser_link()
     bad = RES.count(False)
     print(f"\n{len(RES) - bad}/{len(RES)} passed")
     return 1 if bad else 0

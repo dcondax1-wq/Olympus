@@ -61,7 +61,7 @@ def test_static():
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' in html and 'aria-modal="true"' in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; gate.css, the catalog and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css" in html
-          and "'olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g1'" in html and "s.async = false" in html)
+          and "'olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g2'" in html and "s.async = false" in html)
     check("a. the three Start-here tiles are plain links in the page (they work even if gate.js fails): Today = the dashboard, Bots = nq/, Jarvis = jarvis/",
           all(f'data-to="{p}"' in html for p in ("index.html", "nq/index.html", "jarvis/index.html")) and html.count('class="g-tile"') == 3)
     check("a. four district doors (Trading, Money, Life, Worlds) and the Workshop link at the bottom; no lab is linked from the page itself",
@@ -74,9 +74,9 @@ def test_static():
     check("a. ES5 classic scripts (no arrow, let, const, template string, class, spread, .at, lookbehind): Safari 12+ safe, no build step", not es6, es6)
     bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function") if re.search(p, js + nav + cat + html)]
     check("a. no markup from data: text through textContent / createElementNS only", not bad and "textContent" in js and "createElementNS" in js and "textContent" in nav, bad)
-    check("a. read only: no XHR / WebSocket / sendBeacon / POST / cookies / web address; the Gate fetches only home.json (and a HEAD per app link to spot a partial copy)",
+    check("a. read only: no XHR / WebSocket / sendBeacon / POST / cookies / web address; the Gate fetches only home.json (+ the PC's /api/site/live.json when served from the PC, and a HEAD per app link to spot a partial copy)",
           not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|method:\s*['\"]POST|document\.cookie|https?://(?!www\.w3\.org)", js + nav + cat + html)
-          and set(re.findall(r"getJSON\(([^)]*)\)", js)) == {"base + 'home.json'", "url"} and "method: 'HEAD'" in js and "fetch(" not in nav)
+          and set(re.findall(r"getJSON\(([^)]*)\)", js)) == {"base + 'home.json'", "url", "LIVE_API"} and "LIVE_API = '/api/site/live.json'" in js and "method: 'HEAD'" in js and "fetch(" not in nav)
     ls = set(re.findall(r"localStorage\.(\w+)", js + nav))
     check("a. storage: only localStorage 'gate.recent.v1' (and the Gate's 'gate.now.v1'), every call inside try / catch; no sessionStorage / indexedDB",
           ls <= {"getItem", "setItem"} and "'gate.recent.v1'" in js and "'gate.recent.v1'" in nav and "'gate.now.v1'" in js and not re.search(r"sessionStorage|indexedDB", js + nav)
