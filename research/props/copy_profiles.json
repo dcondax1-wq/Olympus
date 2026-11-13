@@ -1,0 +1,152 @@
+{
+  "v": 1,
+  "title": "One signal, many accounts: firm account limits, the owner's own per-account limits, and placeholder firms (engine/copy_accounts.py)",
+  "built": "2026-11-13",
+  "how_to_read": "Same value format as research/props/firm_rules.json: {\"v\": value, \"verified\": bool, \"src\": [...], \"date\": \"yyyy-mm-dd\", \"n\": note}. v null = unknown (never guessed); v \"none\" = the rule does not exist. The plan rules of the firms the bot can trade (MFFU Builder 25K / 50K and the rest) stay in firm_rules.json (built by tools/build_firm_rules.py); this file adds (1) how many accounts a person may hold at each firm, (2) PLACEHOLDER firms and plans whose values are still to be filled from the firm research (research/writeups/millionaire-plan-2026-11-13.md, team M1), and (3) the documentation of every field. A placeholder plan with dd_amount null NEVER trades: the rule engine assumes no room until the max loss is known.",
+  "fields": {
+    "plan (eval / funded block)": {
+      "start": "$ start balance of the account",
+      "target": "$ profit target of the eval (passed when reached and the min days / best-day rule are met)",
+      "dd_type": "max-loss floor type: eod (follows the best CLOSING balance), intraday (follows the best balance incl. open profit; strictest), static (never moves)",
+      "dd_amount": "$ max loss (distance from the high-water mark to the floor); null = the account never trades",
+      "lock": "$ above start where the trailing floor stops moving (e.g. 100 = the floor locks at start + $100); null = never locks (strictest reading)",
+      "dll": "$ daily loss limit; \"none\" = no daily limit",
+      "dll_type": "soft (trading pauses for the rest of the day) | hard (the account fails)",
+      "max_micros": "most micros (MNQ) open at once; minis count 10 micros",
+      "max_minis": "most minis open at once (used when max_micros is unknown)",
+      "consistency": "eval best-day rule as a share of the target (0.4 = no day above 40% of the target); \"none\" = no rule",
+      "min_days": "trading days needed to pass",
+      "news": "{\"flat_min_before\": n, \"flat_min_after\": n} around Tier-1 releases, or \"none\"",
+      "max_active": "funded block only: how many funded accounts of THIS plan one person may hold (enforced by the fleet)"
+    },
+    "plan (payout block)": {
+      "buffer": "$ profit above start before any payout",
+      "min": "$ smallest payout", "max": "$ biggest payout", "split": "share the trader keeps (0.8 = 80%)",
+      "consistency": "funded best day as a share of the payout cycle's profit (not a breach: trade more days)",
+      "min_days": "traded days a payout cycle", "max_payouts": "payouts before the account moves on (live / closed)"
+    },
+    "firm": {
+      "bots": "allowed | own | semi_only | prohibited | api_only (a fully automated bot on NinjaTrader needs allowed / own)",
+      "copy_trading": "allowed | own_accounts | prohibited (copying between your OWN accounts at this firm)",
+      "hedging": "banned_all_accounts = never long and short on one underlying across your accounts (the bot's rule for every firm)",
+      "flat_by": "HH:MM ET the firm flattens (no new entry 5 minutes before)",
+      "ninjatrader": "true = the firm offers NinjaTrader for this bot",
+      "accounts.max_funded_total": "funded accounts one person may hold at this firm across all its plans (enforced when known; the smaller reading when sources conflict)",
+      "accounts.max_eval_active": "evals one person may run at once (information only today)"
+    },
+    "own (per account in data/fleet.json, the owner's own limits; they only ever TIGHTEN the firm's)": {
+      "day_stop_usd": "own stop for the day: no new copy on this account once today's loss (closed + open) reaches it; the size also fits it",
+      "week_stop_usd": "own stop for the week (Monday to Friday)",
+      "max_micros": "own contract cap (never above the firm's)",
+      "max_risk_usd": "own most $ at risk a trade (a full stop-out incl. 2 ticks of slippage and costs)"
+    },
+    "per account switches (data/fleet.json)": {
+      "killed": "this account's kill switch: flattened at the next poll, no new entry (--kill <id>, --unkill <id>)",
+      "stop_day": "yyyy-mm-dd: no new entry on this account that session (--stop-today <id>); it resumes by itself the next session",
+      "armed / armed_for": "a real (non-Sim) account trades only when the owner typed I ACCEPT LIVE RISK for THAT account Name (--arm <id>), the phrase was typed at the bot's start and NINJATRADER_LIVE=1",
+      "held_funded (top level)": "{plan id: n} funded accounts of a plan the owner already holds OUTSIDE the fleet (the leads' own accounts), counted against the firm's limit"
+    }
+  },
+  "accounts": {
+    "mffu": {
+      "max_funded_total": {"v": null, "verified": false, "date": "2026-11-13", "src": ["research/writeups/uprisk.md", "research/props/firm_rules.json plans.mffu_builder_*.funded.max_active"], "n": "per plan verified: 1 funded Builder 50K + 2 funded Builder 25K (enforced through max_active); one help article says up to 5 sim-funded in all: ask support before a 4th"},
+      "max_eval_active": {"v": null, "verified": false, "date": "2026-11-13", "n": "not found"}
+    },
+    "lucid": {
+      "max_funded_total": {"v": 5, "verified": false, "date": "2026-10-25", "src": ["research/writeups/uprisk.md"], "n": "5 funded per household (one source says 10): the smaller reading is used"},
+      "max_eval_active": {"v": null, "verified": false, "date": "2026-11-13", "n": "not found"}
+    },
+    "fundednext": {
+      "max_funded_total": {"v": null, "verified": false, "date": "2026-10-25", "src": ["research/writeups/uprisk.md"], "n": "no futures account cap found"},
+      "max_eval_active": {"v": null, "verified": false, "date": "2026-11-13", "n": "not found"}
+    },
+    "topstep": {"max_funded_total": {"v": null, "verified": false, "date": "2026-11-13", "n": "not researched (no NinjaTrader for new sign-ups)"}, "max_eval_active": {"v": null, "verified": false, "date": "2026-11-13"}},
+    "apex": {"max_funded_total": {"v": null, "verified": false, "date": "2026-11-13", "n": "not researched (bans automated trading)"}, "max_eval_active": {"v": null, "verified": false, "date": "2026-11-13"}},
+    "tpt": {"max_funded_total": {"v": null, "verified": false, "date": "2026-11-13", "n": "not researched"}, "max_eval_active": {"v": null, "verified": false, "date": "2026-11-13"}},
+    "alpha": {"max_funded_total": {"v": null, "verified": false, "date": "2026-11-13", "n": "not researched (semi-automated only)"}, "max_eval_active": {"v": null, "verified": false, "date": "2026-11-13"}},
+    "tradeify": {"max_funded_total": {"v": 5, "verified": false, "date": "2026-11-13", "src": ["research/props/firms.json tradeify.account_caps"], "n": "5 sim-funded (unconfirmed)"}, "max_eval_active": {"v": null, "verified": false, "date": "2026-11-13"}},
+    "bulenox": {"max_funded_total": {"v": 3, "verified": false, "date": "2026-11-13", "src": ["research/props/firms.json bulenox.account_caps"], "n": "3-11 Master accounts (sources conflict): the smaller reading is used"}, "max_eval_active": {"v": null, "verified": false, "date": "2026-11-13"}}
+  },
+  "firms": {
+    "tradeify": {
+      "name": "Tradeify (placeholder)",
+      "bots": {"v": null, "verified": false, "date": "2026-11-13", "src": ["research/props/firms.json tradeify.bots"], "n": "own bot only with proof; 'using it across multiple firms is against Tradeify's policy' (unconfirmed): ruled out while the bot trades MFFU"},
+      "copy_trading": {"v": null, "verified": false, "date": "2026-11-13", "src": ["research/props/firms.json tradeify.copy_trading"], "n": "the same bot at another firm: not allowed (per research)"},
+      "hedging": {"v": "banned_all_accounts", "verified": false, "date": "2026-11-13", "n": "the bot's own rule for every firm"},
+      "flat_by": {"v": null, "verified": false, "date": "2026-11-13"},
+      "ninjatrader": {"v": null, "verified": false, "date": "2026-11-13"},
+      "plans": ["tradeify_growth_50k"]
+    },
+    "bulenox": {
+      "name": "Bulenox (placeholder)",
+      "bots": {"v": null, "verified": false, "date": "2026-11-13", "src": ["research/props/firms.json bulenox.bots"], "n": "algorithms need Bulenox's written approval (unconfirmed)"},
+      "copy_trading": {"v": null, "verified": false, "date": "2026-11-13", "src": ["research/props/firms.json bulenox.copy_trading"], "n": "copying across your own accounts prohibited (unconfirmed)"},
+      "hedging": {"v": "banned_all_accounts", "verified": false, "date": "2026-11-13", "n": "the bot's own rule for every firm"},
+      "flat_by": {"v": null, "verified": false, "date": "2026-11-13"},
+      "ninjatrader": {"v": null, "verified": false, "date": "2026-11-13"},
+      "plans": ["bulenox_eod_50k"]
+    },
+    "new_firm": {
+      "name": "New firm (template: copy this block, rename the key, fill every value from the firm's own pages)",
+      "bots": {"v": null, "verified": false, "date": "2026-11-13"},
+      "copy_trading": {"v": null, "verified": false, "date": "2026-11-13"},
+      "hedging": {"v": "banned_all_accounts", "verified": false, "date": "2026-11-13", "n": "the bot's own rule for every firm"},
+      "flat_by": {"v": null, "verified": false, "date": "2026-11-13"},
+      "ninjatrader": {"v": null, "verified": false, "date": "2026-11-13"},
+      "plans": ["new_firm_50k"]
+    }
+  },
+  "plans": {
+    "tradeify_growth_50k": {
+      "firm": "tradeify", "name": "Growth 50K (placeholder)", "size": 50000, "placeholder": true,
+      "price": {"v": null, "verified": false, "date": "2026-11-13", "n": "check the current discount code before buying"},
+      "sizing_preset": "mffu_builder_50k",
+      "eval": {
+        "start": {"v": 50000.0, "verified": false, "date": "2026-11-13", "n": "the plan's size"},
+        "target": {"v": null, "verified": false, "date": "2026-11-13"}, "dd_type": {"v": null, "verified": false, "date": "2026-11-13"},
+        "dd_amount": {"v": null, "verified": false, "date": "2026-11-13"}, "lock": {"v": null, "verified": false, "date": "2026-11-13"},
+        "dll": {"v": null, "verified": false, "date": "2026-11-13"}, "dll_type": {"v": null, "verified": false, "date": "2026-11-13"},
+        "max_micros": {"v": null, "verified": false, "date": "2026-11-13"}, "consistency": {"v": null, "verified": false, "date": "2026-11-13"},
+        "min_days": {"v": null, "verified": false, "date": "2026-11-13"}, "news": {"v": null, "verified": false, "date": "2026-11-13"}
+      },
+      "funded": {"max_active": {"v": null, "verified": false, "date": "2026-11-13"}},
+      "payout": {"buffer": {"v": null, "verified": false, "date": "2026-11-13"}, "min": {"v": null, "verified": false, "date": "2026-11-13"},
+                 "max": {"v": null, "verified": false, "date": "2026-11-13"}, "split": {"v": null, "verified": false, "date": "2026-11-13"},
+                 "consistency": {"v": null, "verified": false, "date": "2026-11-13"}}
+    },
+    "bulenox_eod_50k": {
+      "firm": "bulenox", "name": "Qualification EOD 50K (placeholder)", "size": 50000, "placeholder": true,
+      "price": {"v": null, "verified": false, "date": "2026-11-13", "n": "monthly fee; check the current discount code before buying"},
+      "sizing_preset": "mffu_builder_50k",
+      "eval": {
+        "start": {"v": 50000.0, "verified": false, "date": "2026-11-13", "n": "the plan's size"},
+        "target": {"v": null, "verified": false, "date": "2026-11-13"}, "dd_type": {"v": "eod", "verified": false, "date": "2026-11-13", "n": "the plan's name"},
+        "dd_amount": {"v": null, "verified": false, "date": "2026-11-13"}, "lock": {"v": null, "verified": false, "date": "2026-11-13"},
+        "dll": {"v": null, "verified": false, "date": "2026-11-13"}, "dll_type": {"v": null, "verified": false, "date": "2026-11-13"},
+        "max_micros": {"v": null, "verified": false, "date": "2026-11-13"}, "consistency": {"v": null, "verified": false, "date": "2026-11-13"},
+        "min_days": {"v": null, "verified": false, "date": "2026-11-13"}, "news": {"v": null, "verified": false, "date": "2026-11-13"}
+      },
+      "funded": {"max_active": {"v": null, "verified": false, "date": "2026-11-13"}},
+      "payout": {"buffer": {"v": null, "verified": false, "date": "2026-11-13"}, "min": {"v": null, "verified": false, "date": "2026-11-13"},
+                 "max": {"v": null, "verified": false, "date": "2026-11-13"}, "split": {"v": null, "verified": false, "date": "2026-11-13"},
+                 "consistency": {"v": null, "verified": false, "date": "2026-11-13"}}
+    },
+    "new_firm_50k": {
+      "firm": "new_firm", "name": "50K (template)", "size": 50000, "placeholder": true,
+      "price": {"v": null, "verified": false, "date": "2026-11-13", "n": "the owner's real price with the current code, never the list price"},
+      "sizing_preset": "mffu_builder_50k",
+      "eval": {
+        "start": {"v": 50000.0, "verified": false, "date": "2026-11-13", "n": "the plan's size"},
+        "target": {"v": null, "verified": false, "date": "2026-11-13"}, "dd_type": {"v": null, "verified": false, "date": "2026-11-13"},
+        "dd_amount": {"v": null, "verified": false, "date": "2026-11-13"}, "lock": {"v": null, "verified": false, "date": "2026-11-13"},
+        "dll": {"v": null, "verified": false, "date": "2026-11-13"}, "dll_type": {"v": null, "verified": false, "date": "2026-11-13"},
+        "max_micros": {"v": null, "verified": false, "date": "2026-11-13"}, "consistency": {"v": null, "verified": false, "date": "2026-11-13"},
+        "min_days": {"v": null, "verified": false, "date": "2026-11-13"}, "news": {"v": null, "verified": false, "date": "2026-11-13"}
+      },
+      "funded": {"max_active": {"v": null, "verified": false, "date": "2026-11-13"}},
+      "payout": {"buffer": {"v": null, "verified": false, "date": "2026-11-13"}, "min": {"v": null, "verified": false, "date": "2026-11-13"},
+                 "max": {"v": null, "verified": false, "date": "2026-11-13"}, "split": {"v": null, "verified": false, "date": "2026-11-13"},
+                 "consistency": {"v": null, "verified": false, "date": "2026-11-13"}}
+    }
+  }
+}

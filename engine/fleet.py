@@ -47,6 +47,7 @@ import re
 import threading
 import time
 
+from . import copy_accounts as CA
 from . import firms
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -154,8 +155,7 @@ def profile_of(spec: dict) -> dict | None:
         lv = dict(spec.get("live") or {})
         lv.setdefault("start", _num(spec.get("balance")))
         return firms.live_profile(lv)
-    return firms.profile(str(spec.get("plan") or ""), "funded" if spec.get("stage") == "funded" else "eval",
-                         overrides=spec.get("rules") or None)
+    return CA.profile_for(spec)          # the firm's plan + the owner's values (only ever stricter) + the account's own limits
 
 
 def normalize(spec: dict, seen_ids=(), seen_names=(), reserved: dict | None = None) -> dict:
@@ -183,7 +183,8 @@ def _normalize(spec: dict, seen_ids=(), seen_names=(), reserved: dict | None = N
            "stagger_ms": max(0, min(5000, int(_num(s.get("stagger_ms"), 0) or 0))),
            "sizing": str(s.get("sizing") or "plan"), "risk_usd": _num(s.get("risk_usd")),
            "payouts": {str(k): float(v) for k, v in (s.get("payouts") or {}).items() if _num(v) is not None},
-           "rules": dict(s.get("rules") or {}), "live": dict(s.get("live") or {}), "problem": None}
+           "rules": dict(s.get("rules") or {}), "live": dict(s.get("live") or {}), "problem": None,
+           "own": dict(s.get("own") or {}), "stop_day": str(s.get("stop_day") or ""), "armed_for": str(s.get("armed_for") or "")}
     if out["stage"] == "live":
         out["plan"] = "live"
         out["sizing"] = "fixed"
@@ -194,6 +195,8 @@ def _normalize(spec: dict, seen_ids=(), seen_names=(), reserved: dict | None = N
         out["problem"] = f"rules invalid ({e.__class__.__name__})"
     if out["problem"]:
         pass
+    elif CA.own_problem(s.get("own")):
+        out["problem"] = CA.own_problem(s.get("own"))
     elif not _ID.match(out["id"]):
         out["problem"] = "id missing or invalid (letters, digits, - and _ only)"
     elif out["id"] in seen_ids:
@@ -253,7 +256,7 @@ def live_gate(spec: dict, bot_cfg: dict | None) -> str | None:
         return f"real account {spec.get('nt_account')}: the live phrase was not typed at the bot's start"
     if os.environ.get(LIVE_ENV, "") != "1":
         return f"real account {spec.get('nt_account')}: the bot is not running live ({LIVE_ENV}=1)"
-    return None
+    return CA.armed_problem(spec)        # armed with the phrase typed for this very Name (--arm), never a hand-set flag
 
 
 # ---------------------------------------------------------------------------------------------------------------- leads
@@ -508,7 +511,7 @@ class Follower:
         lim = 6 if self.lead == "blitz" else (2 if self.lead == "atlas" else 1)
         if n_today >= lim:
             return f"{n_today} entries today already (the lead's own limit {lim})"
-        return None
+        return CA.why_not(self, now)     # stopped for today by the owner / over the firm's account limit
 
     # ---- sizing
     def ma_rules(self) -> dict:
@@ -1513,6 +1516,9 @@ def _parser():
     ap.add_argument("--unkill", help="<id> or all")
     ap.add_argument("--arm", help="<id>: a real account trades only with this AND the phrase at the bot's start AND NINJATRADER_LIVE=1")
     ap.add_argument("--disarm")
+    ap.add_argument("--stop-today", metavar="ID", help="no new copy on this account this session (resumes next session)")
+    ap.add_argument("--resume-today", metavar="ID")
+    ap.add_argument("--now", type=float, help=argparse.SUPPRESS)
     ap.add_argument("--to-funded")
     ap.add_argument("--payout", nargs=2, metavar=("ID", "DAY=USD"))
     ap.add_argument("--dry-run", metavar="DAY")
@@ -1526,16 +1532,17 @@ def _parser():
     ap.add_argument("--balance", type=float, help="start balance (live account; a prop plan defaults to its size)")
     ap.add_argument("--stagger-ms", type=int)
     ap.add_argument("--risk-usd", type=float, help="fixed $ risk a trade (sizing fixed)")
-    ap.add_argument("--max-risk", type=float, help="live: max $ risk a trade")
-    ap.add_argument("--daily-stop", type=float, help="live: daily stop $")
-    ap.add_argument("--weekly-stop", type=float, help="live: weekly stop $")
-    ap.add_argument("--max-micros", type=int, help="live: max micros")
+    ap.add_argument("--max-risk", type=float, help="max $ risk a trade (live; a prop plan: the account's own, only stricter)")
+    ap.add_argument("--daily-stop", type=float, help="daily stop $ (live; a prop plan: the account's own stop for the day)")
+    ap.add_argument("--weekly-stop", type=float, help="weekly stop $ (live; a prop plan: the account's own)")
+    ap.add_argument("--max-micros", type=int, help="max micros (live; a prop plan: the account's own, never above the firm's)")
     ap.add_argument("--file", default=None)
     return ap
 
 
-def run(argv=None) -> tuple:
-    """The CLI's work without printing: (exit code, lines). Used by main() and the Fleet page (engine/fleet_api.py)."""
+def run(argv=None, inp=None) -> tuple:
+    """The CLI's work without printing: (exit code, lines). Used by main() and the Fleet page (engine/fleet_api.py).
+    inp: how --arm asks for the typed phrase (None = engine/copy_accounts.INPUT, else the console's input())."""
     a = _parser().parse_args(argv)
     lines = []
     say = lines.append
@@ -1578,8 +1585,13 @@ def run(argv=None) -> tuple:
         if live:
             r["live"] = {k: v for k, v in {"start": a.balance, "max_risk_usd": a.max_risk, "daily_stop_usd": a.daily_stop,
                                            "weekly_stop_usd": a.weekly_stop, "max_micros": a.max_micros}.items() if v is not None}
-        elif a.balance:
-            r["balance"] = a.balance
+        else:
+            if a.balance:
+                r["balance"] = a.balance
+            own = {k: v for k, v in {"day_stop_usd": a.daily_stop, "week_stop_usd": a.weekly_stop, "max_micros": a.max_micros,
+                                     "max_risk_usd": a.max_risk}.items() if v is not None}
+            if own:
+                r["own"] = own            # the account's own limits: only ever stricter than the firm's
         n = normalize(r, {x.get("id") for x in rows}, {x.get("nt_account") for x in rows if x.get("nt_account")})
         if n["problem"] and not n["problem"].startswith("switched off"):
             return fail(f"NOT saved: {n['problem']}")
@@ -1615,7 +1627,15 @@ def run(argv=None) -> tuple:
         r = find(i)
         if r is None:
             return fail(f"no follower {i}")
+        if a.arm:
+            ok, msg = CA.confirm_arm(r, inp)          # the owner types the live phrase for THIS account (never stored)
+            if not ok:
+                return fail(msg)
         r["armed"] = bool(a.arm)
+        if a.arm:
+            r["armed_for"] = r.get("nt_account") or ""
+        else:
+            r.pop("armed_for", None)
         if a.arm and r.get("adapter") == "ninjatrader" and r.get("nt_account") and not is_sim(r.get("nt_account")):
             try:                                   # the owner's own command: the Name joins the account allowlist (as account B / C)
                 from .ninjatrader import allow_account
@@ -1635,7 +1655,19 @@ def run(argv=None) -> tuple:
         if a.account:
             r["nt_account"] = a.account
         r.update(stage="funded", funded_start=a.start, armed=False, payouts={})
+        r.pop("armed_for", None)
         return saved(f"{a.to_funded} is FUNDED from {a.start} (disarmed; arm it again for a real account).")
+    if a.stop_today or a.resume_today:
+        i = a.stop_today or a.resume_today
+        r = find(i)
+        if r is None:
+            return fail(f"no follower {i}")
+        if a.stop_today:
+            r["stop_day"] = trading_day(time.time() if a.now is None else a.now)
+            return saved(f"{i} STOPPED for today ({r['stop_day']}): no new copy this session, an open copy is still managed. "
+                         "It resumes by itself next session.")
+        r.pop("stop_day", None)
+        return saved(f"{i} resumed today.")
     if a.payout:
         i, dv = a.payout
         r = find(i)
