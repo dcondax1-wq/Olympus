@@ -1586,6 +1586,12 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   Mon Dec 7 - Wed Dec 9, "ready", the late alarm from 01:40 ET, "done") through `tools/pc_guard.py`, called from
   `pc_report.events` (not on the reporter's first run; keys `guard:*` in `data/pc_report/state.json`, a failed push retried).
   The ops_checks Web Push reminders (7 days / 1 day) still exist but need GitHub's push subscriptions.
+- **Eval guard pushes (2026-11-13, team S1; `tools/pc_guard.py`, `tests/test_pc_guard.py` 39):** in the same 15-min PC report
+  (ntfy alert topic), from the board cards of `engine/live_board` (fresh heartbeat <= 15 min only): drawdown 50% / 75% used
+  (1 - room / mll, once per level per `eval_start`, re-armed 10 points back, 0 -> 80% is one push), daily loss near (70% of
+  `dll`, realized + the open trade's unrealized, once a trading day), quiet bot (`quiet_days` >= 5, high at 6 on a real
+  eval: MFFU's 7-day rule), the day summary 16:05-16:59 ET on CME trading days (`cme_calendar.full_closure` skipped; says
+  "last report old" with its age). Quiet hours 23:00-07:00 ET for default-priority pushes. Read-only: no order, no setting.
 - **DST / CME holidays / self-healing (2026-10-29, `docs/AUTOPILOT.md`):** US clocks go back Sun 2026-11-01; every live
   time decision is America/New_York wall clock (25 trading_day functions, market_open, entry / flat windows, auto-update,
   ops pushes, the cloud's UTC crons through its real bash guard, LIT replays over the 2025-11-02 / 2025-03-09 /
