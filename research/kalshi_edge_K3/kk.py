@@ -15,7 +15,7 @@ _lock = threading.Lock()
 STATS = {"net": 0, "cache": 0, "429": 0, "fail": 0}
 
 
-def get(path, params=None, base=B, cache=True, tries=8, raw=False):
+def get(path, params=None, base=B, cache=True, tries=8, raw=False, ua="research-client"):
     url = (base + path if not path.startswith("http") else path) + (("?" + urllib.parse.urlencode(params)) if params else "")
     fn = os.path.join(CACHE, hashlib.md5(url.encode()).hexdigest() + (".txt" if raw else ".json"))
     if cache and os.path.exists(fn):
@@ -32,7 +32,7 @@ def get(path, params=None, base=B, cache=True, tries=8, raw=False):
                 time.sleep(w)
             _last[host] = time.time()
         try:
-            r = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "research-client"}), timeout=60)
+            r = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": ua}), timeout=60)
             body = r.read().decode("utf-8", "replace")
             d = body if raw else json.loads(body)
             STATS["net"] += 1
