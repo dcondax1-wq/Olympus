@@ -831,6 +831,43 @@ class Guard:
         return out
 
 
+_DEFAULT = {}
+
+
+def default_guard():
+    """One Guard per process (home: $KALSHI_GUARD_HOME or ~/kalshi_jarvis/guard)."""
+    if "g" not in _DEFAULT:
+        _DEFAULT["g"] = Guard()
+    return _DEFAULT["g"]
+
+
+def _filled_from(resp, count):
+    """The filled contracts in the bot's own order response, when it says (Kalshi: order.fill_count); else None."""
+    o = resp.get("order") if isinstance(resp, dict) and isinstance(resp.get("order"), dict) else resp
+    if not isinstance(o, dict):
+        return None
+    for k in ("fill_count", "filled", "filled_count"):
+        x = _f(o.get(k))
+        if x is not None:
+            return max(0, min(int(x), int(count)))
+    return None
+
+
+def guarded_send(order, send, balance=None, guard=None):
+    """The one-line way in: check `order`; call `send()` (the bot's own create-order call, no arguments) ONLY when the
+    guard says send; book the fill from its answer when it carries one. -> (decision, response or None).
+    In paper / dry run, or when any check fails, send() is never called."""
+    g = guard or default_guard()
+    d = g.check(order, balance=balance)
+    if not d.get("send"):
+        return d, None
+    resp = send()
+    n = _filled_from(resp, d["order"]["count"])
+    if n is not None:
+        g.record_fill(d["id"], n)
+    return d, resp
+
+
 def feed_alerts(risk, now=None):
     """The risk block -> alert rows for kalshi.json (t, level, text), most serious first."""
     now = int(now or time.time())

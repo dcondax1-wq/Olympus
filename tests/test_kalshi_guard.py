@@ -320,6 +320,29 @@ def part_e(tmp):
     check("e. 4 processes x 15 orders at once: exactly the cap of 25 sent (the state lock)", total == 25, total)
 
 
+def part_e2(tmp):
+    g = G.Guard(os.path.join(tmp, "gs"), bot_dir="", clock=lambda: NOW).init()
+    calls = []
+
+    def send():
+        calls.append(1)
+        return {"order": {"order_id": "o1", "fill_count": 2, "status": "executed"}}
+
+    d, r = G.guarded_send(GOOD, send, balance=100, guard=g)
+    check("e2. guarded_send in paper: send() is never called", not calls and r is None and not d["send"])
+    g.set_mode("dry_run")
+    d, r = G.guarded_send(GOOD, send, balance=100, guard=g)
+    check("e2. guarded_send in dry run: send() is never called, the order is logged", not calls and r is None
+          and json.loads(open(os.path.join(g.home, "orders.jsonl")).readlines()[-1])["mode"] == "dry_run")
+    g.set_mode("live", phrase=G.phrase_for(G.et_day(NOW), 10))
+    d, r = G.guarded_send({**GOOD, "count": 50}, send, balance=100, guard=g)
+    check("e2. guarded_send in live, a blocked order: send() is never called", not calls and r is None and "ORDER_USD" in codes(d))
+    d, r = G.guarded_send(GOOD, send, balance=100, guard=g)
+    st = json.load(open(os.path.join(g.home, "state.json")))
+    check("e2. guarded_send in live, a good order: send() once, the answer's fill_count (2 of 5) booked",
+          calls == [1] and r["order"]["order_id"] == "o1" and st["live"]["open"][GOOD["ticker"]]["yes"]["n"] == 2, st["live"])
+
+
 def part_f(tmp):
     home = os.path.join(tmp, "cli")
     env = {**os.environ, "KALSHI_GUARD_HOME": home}
@@ -451,6 +474,7 @@ def main():
         part_c()
         part_d()
         part_e(tmp)
+        part_e2(tmp)
         part_f(tmp)
         part_g(tmp)
         part_h()
