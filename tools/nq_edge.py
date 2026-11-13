@@ -584,7 +584,8 @@ def cmd_save():
         if c.get("fund"):
             ver += f" Funded 50K $/mo H1 {c['fund']['H1']['per_month']} / H2 {c['fund']['H2']['per_month']} / 2021-25 {c['fund']['REF']['per_month']}."
         rl.save(rid, "NQ edge: " + title, "risk", Q_, params={**E.LIVE, "x_nq_edge": key}, trades=L, scored=rl.score(L, F.SESS),
-                status="rejected", verdict=ver, notes="tools/nq_edge.py: live LIT trades, LIT size rule x the tilt (one rounding "
+                status="promising" if rid == "nq_edge_atlas_agree_up" else "rejected", verdict=ver,
+                notes="tools/nq_edge.py: live LIT trades, LIT size rule x the tilt (one rounding "
                 "with the weekly stop); eval / funded via tools/lit_edge.evaluate.", writeup="nq-edge-2026-11-13",
                 tags=["lit", "nq_edge"])
         print("saved", rid, flush=True)
