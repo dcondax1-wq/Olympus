@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kk
 import weather_late as wl
 
-LAGS = [2, 5, 10, 15, 30, 60]
+LAGS = [1, 2, 3, 4, 5, 10, 15, 30, 60]
 CUTOFF = calendar.timegm((2026, 9, 14, 0, 0, 0))
 N_REF = 100
 
@@ -171,6 +171,15 @@ def summarize(rows):
                     e, lo, hi, nd = boot(buy, k)
                     d.update({"edge_per_$": e, "lo": lo, "hi": hi, "days": nd,
                               "net_c_per_contract": round(sum((100 if r["won"] else 0) - r[k] - fpc(r[k]) for r in buy) / len(buy), 3)})
+                    alld = sorted({r["e"].split("-")[1] for r in rs}, key=lambda s: wl.ev_day("x-" + s))
+                    cutd = set(alld[int(0.6 * len(alld)):])
+                    for nm, sub in (("train_first60pct_days", [r for r in buy if r["e"].split("-")[1] not in cutd]),
+                                    ("test_last40pct_days", [r for r in buy if r["e"].split("-")[1] in cutd]),
+                                    ("main7", [r for r in buy if r["s"] in wl.MAIN or r["s"].replace("KXLOWT", "") in ("NYC", "AUS", "DEN", "MIA", "CHI", "LAX", "PHIL")]),
+                                    ("other13", [r for r in buy if r["s"].startswith("KXHIGHT")])):
+                        if sub:
+                            e2, lo2, hi2, nd2 = boot(sub, k)
+                            d[nm] = {"n": len(sub), "won": sum(r["won"] for r in sub), "edge_per_$": e2, "lo": lo2, "hi": hi2, "days": nd2}
                     d["price_hist"] = dict(sorted(defaultdict(int, {p: sum(1 for r in buy if r[k] == p) for p in {r[k] for r in buy}}).items()))
                 cell["lags"][str(L)] = d
             out["cells"][f"{kind}_m{mg}"] = cell
