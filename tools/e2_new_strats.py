@@ -364,35 +364,70 @@ def run_rs(c, days=None):
     return out
 
 
-def run_gapf(c, days=None):
+def gap_jor(c):
+    orm = c["orm"]
+    return col((9 + (30 + orm) // 60, (30 + orm) % 60))
+
+
+def gap_sig(k, c, H=None, L=None, C=None, V=None):
+    """The gap-fade signal of day k at the opening-range close, from bars <= that close only (H/L/C/V rows can be passed
+    cut, for the look-ahead check). -> (dir, stop, rv, gap in 14-day ranges) or None.
+    filt "mid" (the hypothesis): the opening range closed in its half AWAY from the gap (the opening drive failed);
+    "none" = the plain gap fade at the OR close (control); "with" = trade WITH the gap when the OR closed in its gap-side
+    half (the gap-and-go mirror, control)."""
     B, X = DS.D(), E()
-    jor = col((9, 45)) if c["orm"] == 15 else col((10, 0))
+    H = B.H[k] if H is None else H
+    L = B.L[k] if L is None else L
+    C = B.C[k] if C is None else C
+    V = B.V[k] if V is None else V
+    jor = gap_jor(c)
+    pc, r14 = B.PC[k], X.rng14[k]
+    if not (np.isfinite(pc) and np.isfinite(r14) and np.isfinite(X.vavg[k, 0])):
+        return None
+    gap = B.O[k, 0] - pc
+    if abs(gap) < c["g"] * r14 or gap == 0:
+        return None
+    d = -1 if gap > 0 else 1
+    orh, orl = H[:jor + 1].max(), L[:jor + 1].min()
+    mid = (orh + orl) / 2.0
+    cl = C[jor]
+    far = (d == -1 and cl < mid) or (d == 1 and cl > mid)
+    filt = c.get("filt", "mid")
+    if filt == "mid" and not far:
+        return None
+    if filt == "with":
+        if far:
+            return None
+        d = -d
+    rv = V[:jor + 1].sum() / max(1.0, X.vavg[k, :jor + 1].sum())
+    if c["vol"] == "low" and rv >= 0.9:
+        return None
+    if c["vol"] == "high" and rv <= 1.1:
+        return None
+    stop = orh + TICK if d == -1 else orl - TICK
+    return d, stop, float(rv), float(gap / r14)
+
+
+def run_gapf(c, days=None):
+    """tg "fill" = the prior close as the target, "rX" = X R; end = (h, m) of the last bar held (time exit at the next
+    bar's open), None = 15:55."""
+    B = DS.D()
+    jor = gap_jor(c)
+    end = col(c["end"]) + 1 if c.get("end") else None
     out = []
     for k in (days if days is not None else range(len(B.days))):
-        pc, r14 = B.PC[k], X.rng14[k]
-        if not (np.isfinite(pc) and np.isfinite(r14) and np.isfinite(X.vavg[k, 0])):
+        s = gap_sig(k, c)
+        if s is None:
             continue
-        gap = B.O[k, 0] - pc
-        if abs(gap) < c["g"] * r14:
-            continue
-        d = -1 if gap > 0 else 1
-        orh, orl = B.H[k, :jor + 1].max(), B.L[k, :jor + 1].min()
-        mid = (orh + orl) / 2.0
-        cl = B.C[k, jor]
-        if (d == -1 and cl >= mid) or (d == 1 and cl <= mid):
-            continue
-        rv = B.V[k, :jor + 1].sum() / max(1.0, X.vavg[k, :jor + 1].sum())
-        if c["vol"] == "low" and rv >= 0.9:
-            continue
-        if c["vol"] == "high" and rv <= 1.1:
-            continue
-        stop = orh + TICK if d == -1 else orl - TICK
+        d, stop, rv, gap = s
         if c["tg"] == "fill":
-            w = walk(k, jor, d, stop, tgt=pc)
+            if c.get("filt") == "with":
+                continue
+            w = walk(k, jor, d, stop, tgt=B.PC[k], end=end)
         else:
-            w = walk(k, jor, d, stop, rr=2.0)
+            w = walk(k, jor, d, stop, rr=float(c["tg"][1:]), end=end)
         if w:
-            w["rv"], w["gap"] = float(rv), float(gap / r14)
+            w["rv"], w["gap"] = rv, gap
             out.append(w)
     return out
 
@@ -667,6 +702,130 @@ def grid_main():
 
 _RC = {}
 
+G1 = {"fam": "gapf", "g": 0.1, "vol": "none", "orm": 30, "tg": "r2"}       # the grid variant that held in all 4 spans
+
+
+def _row(S):
+    return {s: {k: S[s].get(k) for k in ("n", "tpw", "wk2", "pf", "net", "per_month", "dd", "win", "avg_r", "stop")}
+            for s in J4 + ("2026", "2021-25")}
+
+
+def units(W):
+    """div_stack units (src "na": the non-LIT dispatch of div_stack.Eval / Funded, sized by div_stack.na_q)."""
+    B = DS.D()
+    by = collections.defaultdict(list)
+    for w in W:
+        day = B.days[w["k"]]
+        by[day].append({"day": day, "src": "na", "risk": float(w["risk"]), "risk_pts": float(w["risk"]), "tgt": None, "tgt_pts": None,
+                        "pts": float(w["pts"]), "w1": float(min(0.0, w["mae"])), "size_mult": 1.0, "et": int(B.t[w["k"], w["j"] + 1]),
+                        "xt": int(B.t[w["k"], w["exit_j"]]) + 300})
+    return by
+
+
+def slot_main(n=1000, cfg=None, tag="G1"):
+    """The new strategy on its own MFFU account (the 3rd / 4th eval account question): eval 2-week pass / fail, funded $ a
+    month and the whole slot ($ to the owner a month net of every eval bought), div_stack / uprisk engines (MFFU Builder
+    rules, 80% split, 2 sessions of paperwork, 1,000 block-bootstrap paths of 126 sessions). Sizes picked on H1 only."""
+    import div_stack as DK
+    import uprisk as U
+    S, _ = U.load()
+    by = units(run(cfg or G1))
+    BY = [by.get(d, []) for d in S]
+    out = json.load(open(OUT, encoding="utf-8"))
+    res = {}
+    for plan in ("builder25k", "builder50k"):
+        ecfg = DK.LIT_E50 if plan == "builder50k" else DK.LIT_E25
+        fl = DK.LIT_F50 if plan == "builder50k" else DK.LIT_F25
+        PE = {sp: DK.paths(S, sp, n, length=60) for sp in DK.SPANS}
+        PL = {sp: DK.paths(S, sp, n) for sp in DK.SPANS}
+        ev = {}
+        for f in (0.3, 0.4, 0.5, 0.7):
+            c = DK.nc(f, 2000, plan)
+            ev[f"e{int(f * 100)}"] = {sp: DK.eval_mc(BY, PE[sp], lambda c=c: DK.Eval(ecfg, plan, nc=c, lit=False), DK.PRICE[plan])
+                                      for sp in DK.SPANS}
+        sl = {}
+        for fe in (0.3, 0.5, 0.7):
+            for ff, cap in ((0.2, 500), (0.3, 750), (0.4, 1000)):
+                ce, cf = DK.nc(fe, 2000, plan), DK.nc(ff, cap, plan)
+                row = {}
+                for sp in DK.SPANS:
+                    R = DK.life(BY, PL[sp], lambda ce=ce: DK.Eval(ecfg, plan, nc=ce, lit=False),
+                                lambda cf=cf: DK.Funded(plan, fl, nc=cf, lit=False), DK.PRICE[plan], U.LEN)
+                    net = np.array([r["net"] for r in R])
+                    row[sp] = {"slot_m": round(float(net.mean()) / (U.LEN / 21.0)), "p_neg": round(100.0 * float((net < 0).mean()), 1),
+                               "evals": round(float(np.mean([r["evals"] for r in R])), 2),
+                               "funded": round(float(np.mean([r["funded"] for r in R])), 2)}
+                sl[f"e{int(fe * 100)}_f{int(ff * 100)}_c{cap}"] = row
+        best = max(sl, key=lambda k: sl[k]["H1"]["slot_m"])
+        beste = max(ev, key=lambda k: ev[k]["H1"]["p10"] - ev[k]["H1"]["f10"])
+        res[plan] = {"eval": ev, "slot": sl, "pick_slot_h1": best, "pick_eval_h1": beste}
+        for k, r in ev.items():
+            print(f"{tag} eval {plan} {k}: " + " | ".join(f"{sp} p10 {r[sp]['p10']} f10 {r[sp]['f10']} med {r[sp]['pass_med']}" for sp in DK.SPANS), flush=True)
+        for k, r in sl.items():
+            print(f"{tag} slot {plan} {k}: " + " | ".join(f"{sp} ${r[sp]['slot_m']}/mo neg {r[sp]['p_neg']}%" for sp in DK.SPANS), flush=True)
+        print(plan, "picks (H1):", best, beste, flush=True)
+    out.setdefault("slot", {})[tag] = res
+    json.dump(out, open(OUT, "w", encoding="utf-8"), indent=1, default=float)
+
+
+def gap_deep():
+    """Added AFTER the first look (labelled so in the write-up): controls, neighbours, coin-flip placebo, years and a
+    look-ahead check for G1."""
+    out = json.load(open(OUT, encoding="utf-8"))
+    D = {}
+    base = dict(G1)
+    W = run(base)
+    T0 = booked(W); S0 = score(T0)
+    D["G1"] = {"cfg": base, "S": _row(S0), "corr": corr_all(T0)}
+    for nm, ch in (("ctrl_nofilter", {"filt": "none"}), ("ctrl_with_gap", {"filt": "with"}),
+                   ("vol_low", {"vol": "low"}), ("vol_high", {"vol": "high"})):
+        T = booked(run({**base, **ch}))
+        D[nm] = {"cfg": {**base, **ch}, "S": _row(score(T))}
+    nb = {}
+    for g in (0.0, 0.05, 0.1, 0.15, 0.25, 0.4):
+        for orm in (15, 30, 45, 60):
+            for tg in ("r1.5", "r2", "r3", "fill"):
+                for end in (None, (12, 0)):
+                    cfg = {**base, "g": g, "orm": orm, "tg": tg, "end": end}
+                    S = score(booked(run(cfg)))
+                    nb[f"g{g:g}_or{orm}_{tg}_{'eod' if end is None else 'to12'}"] = {"S": _row(S), "holds": holds(S)}
+    D["neighbours"] = nb
+    D["neighbours_n"] = len(nb)
+    D["neighbours_hold"] = sum(1 for v in nb.values() if v["holds"])
+    D["neighbours_pos"] = {sp: sum(1 for v in nb.values() if (v["S"][sp]["net"] or 0) > 0) for sp in J4}
+    D["neighbours_pos_all4"] = sum(1 for v in nb.values() if all((v["S"][sp]["net"] or 0) > 0 for sp in J4))
+    # coin-flip placebo on G1's own entry bars (same stop distance, same 2R exit), 300 seeds
+    P = collections.defaultdict(list)
+    for seed in range(300):
+        rng = np.random.default_rng(5000 + seed)
+        S = score(booked([m for m in (mirror(w, rng) for w in W) if m]))
+        for sp in J4 + ("2026", "2021-25", "all"):
+            P[sp].append(S[sp].get("net", 0))
+    D["placebo"] = {sp: {"p": round(float(np.mean(np.array(v) >= S0[sp]["net"])), 3), "mean": round(float(np.mean(v)))}
+                    for sp, v in P.items()}
+    yr = {}
+    for y in range(2021, 2027):
+        X = [t for t in T0 if t["day"][:4] == str(y)]
+        p = np.array([t["pnl"] for t in X]) if X else np.zeros(1)
+        gl = -p[p < 0].sum()
+        yr[y] = {"n": len(X), "net": round(float(p.sum())), "pf": round(float(p[p > 0].sum() / gl), 2) if gl else None,
+                 "win": round(100 * float((p > 0).mean()), 1) if X else None}
+    D["years"] = yr
+    # look-ahead: every signal rebuilt from bars cut right after the opening-range close (later bars = nan)
+    B = DS.D()
+    jor = gap_jor(base)
+    bad = 0
+    for w in W:
+        k = w["k"]
+        cut = lambda a: np.r_[a[:jor + 1], np.full(NB - jor - 1, np.nan)]
+        s = gap_sig(k, base, cut(B.H[k]), cut(B.L[k]), cut(B.C[k]), cut(B.V[k]))
+        if s is None or s[0] != w["dir"] or (abs(s[1] - w["stop0"]) > 1e-9 and w["risk"] > MIN_STOP + 1e-9):
+            bad += 1
+    D["lookahead"] = {"signals": len(W), "differ": bad}
+    out["gap_deep"] = D
+    json.dump(out, open(OUT, "w", encoding="utf-8"), indent=1, default=float)
+    print(json.dumps({k: v for k, v in D.items() if k != "neighbours"}, indent=1, default=float))
+
 
 def run_cached(cid, cfg):
     if cid not in _RC:
@@ -678,6 +837,10 @@ if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "grid"
     if cmd == "grid":
         grid_main()
+    elif cmd == "slot":
+        slot_main(int(sys.argv[sys.argv.index("--n") + 1]) if "--n" in sys.argv else 1000)
+    elif cmd == "gapdeep":
+        gap_deep()
     elif cmd == "cpicheck":
         B, X = DS.D(), E()
         d = pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv"))
