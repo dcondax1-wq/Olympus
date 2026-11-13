@@ -37,9 +37,16 @@ SER = {"KXHIGHNY": ("KNYC", -5, "high"), "KXHIGHCHI": ("KMDW", -6, "high"), "KXH
 MON = "JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC".split()
 
 
+_LAST = [0.0]
+
+
 def http_json(url, params=None, tries=4):
     u = url + ("?" + urllib.parse.urlencode(params) if params else "")
     for k in range(tries):
+        w = 0.3 - (time.time() - _LAST[0])   # polite: at most ~3 requests per second
+        if w > 0:
+            time.sleep(w)
+        _LAST[0] = time.time()
         try:
             with urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "research-logger"}), timeout=30) as r:
                 return json.loads(r.read().decode())
