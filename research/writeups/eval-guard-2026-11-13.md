@@ -126,3 +126,61 @@ Picked on H1 by $ per eval among the rules that keep 2-week passes near today's,
 - 2021-25 LIT is 5m-only reference data with no edge; the funded value there is near zero, so its $ column is ~$0 for every rule.
 - The funded value is a 6-month window from the uprisk / atlas-funded MCs at the live funded rules, not re-simulated here.
 - Real fills (step 2) are not in these numbers beyond the backtest's 1 tick; +2 extra ticks moves $ per eval by $15-120.
+
+## 2. Real costs: recorded fills vs the backtest's costs
+
+### What real fills exist (searched 2026-11-13)
+
+**None.** No real NinjaTrader / MFFU fill of either bot is recorded anywhere this repo or this machine can see:
+
+| Source | What it holds |
+|---|---|
+| `logs/learning/costs.json` (gitignored, last written 2026-10-27) | Zlarior `fills 0, obs 0, learned false`; ATLAS the same: "no real fills yet - sizing assumes 1 tick of slippage and $1.90 a micro" |
+| `logs/exec_audit/summary.json` (fill audit, 2026-10-27) | `trades 0`, "No live trades to audit yet." |
+| `research/handoff/*` | backtest ledgers, `COMMISSION_DRIFT.csv` ($1.40 vs $1.90 re-pricing), no broker fills |
+| heartbeat / dashboard branches | not in this checkout (the owner's GitHub account is suspended, `docs/QA_ROUND6.md`) |
+
+The drawdown the two evals already lost ($855 and $178 of room) did not come through a recorded bot fill. So every number
+below is the **modelled** gap, and the first real number comes from the PC's own fill audit after tonight.
+
+### What the backtest assumes vs what MFFU charges
+
+| Item | Backtest / research runs | Live booking and sizing | Real (MFFU, searched 2026-11-13) |
+|---|---|---|---|
+| Commission MNQ | $1.40 a micro round trip (`engine/lit.COMM`, every stored run) | $1.90 (`engine/sizing.LIVE_COMM`, eval book, caps, ATLAS) | **$1.90 round trip** (MFFU futures instrument list) |
+| Entry | market at the next 1m open + 1 tick (LIT); 5m open + 1 tick (ATLAS) | market, routed ~3 s after the 1m CISD close (timing fix 2026-10-18) | half the spread + book depth: ~0.5 tick NY, ~0.75 London, ~1 Asia (`lit-live-fills.md`) |
+| Stop | stop-market, touch -> 1 tick worse | STOPMARKET | 1-2 ticks normally, more on fast bars / news; a bar that opens through the stop fills at its open |
+| Target | limit, filled on touch | LIMIT 1 tick toward the entry | sure fill (0 of 25 2026 targets would miss with 2 ticks of trade-through), up to 1 tick of rounding |
+| Breakeven | from the next bar | CHANGE ~35 s into the next bar, may be refused | ~$500 a year at the LIT size |
+
+### $ a month the gap costs
+
+- **Commission:** the live books already use $1.90. Only the stored research runs are $0.50 a micro too kind: run `lit_live`
+  2026 +$43,820 -> +$43,502 at $1.90 (-$33 a month at the LIT size).
+- **Each extra tick of slippage per round trip** (on top of the 1 tick already in the prices), from this study's eval paths
+  (`--slip`, micros actually traded per eval month): **Zlarior $21-38 a month** (42-75 micros a month; 40% room: ~$16-24),
+  **ATLAS $11-22 a month** (21-44 micros). Per eval: +2 ticks costs Zlarior $15-118 of $ per eval and 0-3 points of
+  2-week fails; ATLAS $17-40. +8 ticks: Zlarior 80% $2,697 -> $2,565 (H2), ATLAS 50% $2,018 -> $1,850. The ranking of
+  the rules does not change at any slippage.
+- **The realistic total** (`lit-live-fills.md` fill model: $1.90, stop slippage, spread, target rounding, BE lag): about
+  **$1,200 a year = ~$100 a month** at the LIT size, ~4% of the H2 rate ($2,670 a month); ATLAS about $16 a month per tick
+  (`2026-11-03-slippage.md`).
+- **The one cost that can fail an eval** is not the average slip but a stop that slips past the room, because MFFU counts
+  open losses. Room left after the planned stop-out, divided by the micros: at 80% of a $1,145 room a 20-micro stop can
+  slip only **5.7 pts** (23 ticks) before the account fails intraday; at 40% it can slip **17 pts**. 3 of the 120 2026 LIT
+  trades were open across an NFP release, where 15-20+ tick stop slips are reported. This is a second reason for 40%.
+
+### Proposed fixes (none applied; order = value)
+
+1. **Measure first (no code):** after every session the PC fill audit writes `logs/learning/costs.json`. After 5 real fills
+   per bot, read `reserve_ticks`: if it is 2 or more, set `lit_sizing.learn_costs: true` (it only ever sizes down, never up).
+   The PC cannot push it while GitHub is off: copy the file's `text` lines into the chat.
+2. **Room share 0.4 (step 1):** the cheapest protection against a slipped stop on the eval (17 pts of slack instead of 6).
+3. **Keep the order types:** market entry (the "limit at the CISD level" is a watched price, not a resting order, so there
+   is no queue risk; a resting limit there misses the fast winners), stop-market stop (a stop-limit can leave a runaway
+   loser open), target limit 1 tick toward the entry.
+4. **Optional, Sim first:** a protected entry (limit = the 1m open + 3 ticks instead of a bare market) for the 02:00-08:00
+   London entries, where the book is ~10x thinner. It caps the worst entry slip at 3 ticks for a small chance of a
+   missed fill; worth testing on Sim101 only once real fills show London entries slipping more than 2 ticks.
+5. **Timing:** already fixed (decide on the 1m CISD close, route ~3 s later; ATLAS skips a 5m open seen more than 45 s
+   late). Keep NinjaTrader and the PC up from ~01:55 ET: 95 of 120 LIT entries are 02:00-08:00.
