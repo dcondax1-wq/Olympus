@@ -827,6 +827,68 @@ def blitz_main():
     json.dump(out, open(OUT, "w", encoding="utf-8"), indent=1, default=float)
 
 
+def book(cids):
+    """One account, one position: the families' trades in time order; a trade that starts while an earlier one is still
+    open is dropped."""
+    G = dict(grid())
+    W = []
+    for cid in cids:
+        cfg = G.get(cid) or (G1 if cid == "G1" else None)
+        W += run_cached(cid, cfg)
+    B = DS.D()
+    W.sort(key=lambda w: (w["k"], w["j"]))
+    keep, busy = [], (-1, -1)
+    for w in W:
+        if (w["k"], w["j"]) <= busy:
+            continue
+        keep.append(w)
+        busy = (w["k"], w["exit_j"])
+    return keep
+
+
+def save_main():
+    from tools import runlib as rl
+    res = json.load(open(OUT, encoding="utf-8"))
+    B = DS.D()
+    G = dict(grid())
+    gd = res.get("gap_deep", {})
+    pl = gd.get("placebo", {})
+    rows = [("e2_gapfade_g1", "Gap fade after a failed opening drive (E2 G1: gap >= 0.1 x 14-day range, 30-min OR closed in its "
+             "far half, stop 1 tick beyond the OR, 2R)", G1, "promising",
+             f"Holds in H1 / H2 / 2025 / 2021-24 at $500 a trade (PF 1.12 / 1.18 / 1.71 / 1.24); coin-flip placebo p 2026 "
+             f"{pl.get('2026', {}).get('p')}, 2021-25 {pl.get('2021-25', {}).get('p')}; the plain gap fade (no failed-drive "
+             f"filter) loses; 18 of 192 neighbours hold all four; 1.7 trades a week; 2026 stops ~145 pts = 1 micro, so on an "
+             f"MFFU eval it passes <= 7% in 2 weeks and the slot makes ~$0 a month. Paper lead only.")]
+    for fam, p in res["picks"].items():
+        cid = p.get("h1")
+        if cid:
+            rows.append((f"e2_{fam}_h1pick", f"E2 {fam} H1 pick ({cid})", G[cid], "rejected",
+                         f"Best H1 $ of the {fam} family (n >= 12, PF >= 1.2); fails at least one of H2 / 2025 / 2021-24."))
+    for rid, title, cfg, status, verdict in rows:
+        T = booked(run(cfg))
+        S = rl.score(T, B.days)
+        rl.save(rid, title, "other", "Team E2 2026-11-13: a NEW NQ strategy uncorrelated with LIT / ATLAS / BLITZ for more eval accounts?",
+                params={"cfg": cfg, "risk_usd": DS.RISK_USD, "data": "CME NQ1! 5m RTH", "tool": "tools/e2_new_strats.py"},
+                sizing={"mode": "fixed_risk", "risk_usd": DS.RISK_USD, "max_micros": DS.MAXQ}, trades=T, scored=S, status=status,
+                verdict=verdict, notes="tools/e2_new_strats.py (research/second/e2_new_strats.json); entry next 5m open + 1 tick, "
+                                       "stop fills -1 tick, $1.90 a micro; the eval columns are at $500 a trade.",
+                writeup="nq-new-strategies-2026-11-13", tags=["second", "e2", cfg["fam"]])
+        print("saved", rid, rl.line(S, "2026"), "|", rl.line(S, "2021-25"), flush=True)
+    # the H1-pick book
+    cids = [p["h1"] for p in res["picks"].values() if p.get("h1")]
+    T = booked(book(cids))
+    S = rl.score(T, B.days)
+    rl.save("e2_book_h1picks", "E2 book: every family's H1 pick on one account, one position at a time", "other",
+            "Team E2 2026-11-13: does a book of the new families reach 2-4 trades a week and hold?",
+            params={"cids": cids, "risk_usd": DS.RISK_USD, "tool": "tools/e2_new_strats.py"},
+            sizing={"mode": "fixed_risk", "risk_usd": DS.RISK_USD}, trades=T, scored=S, status="rejected",
+            verdict="The book of H1 picks trades more but loses outside 2026 H1.", writeup="nq-new-strategies-2026-11-13",
+            tags=["second", "e2", "book"])
+    print("saved e2_book_h1picks", rl.line(S, "2026"), "|", rl.line(S, "2021-25"), flush=True)
+    res["book_h1picks"] = {"cids": cids, "S": _row(score(T)), "corr": corr_all(T)}
+    json.dump(res, open(OUT, "w", encoding="utf-8"), indent=1, default=float)
+
+
 def gap_deep():
     """Added AFTER the first look (labelled so in the write-up): controls, neighbours, coin-flip placebo, years and a
     look-ahead check for G1."""
@@ -896,6 +958,8 @@ if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "grid"
     if cmd == "grid":
         grid_main()
+    elif cmd == "save":
+        save_main()
     elif cmd == "blitz":
         blitz_main()
     elif cmd == "slot":
