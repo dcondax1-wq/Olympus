@@ -16,7 +16,7 @@ team K1's angles (index fair value, weather vs NWS forecast, market making).
 | 1d. CPI m/m vs CPI y/y cross-market (same month, seasonal mapping with its own error bound) | 4 hits in 9,983 pair-hours, 43 months | +0.8c per pair, 13 contracts traded | - | under $0.01 | No edge |
 | 2a. Economic releases, market calibration and taker P&L (CPI, core, y/y, payrolls, U3, claims) | 4,702 trade units, 41 cells | best cell +36% (-18 to +83), t 1.4 | same cell +8% (-37 to +46) | - | No edge: no cell beats t 2, let alone the multiple-testing bar |
 | 2b. Cleveland Fed nowcast vs the CPI ladders (1 day out) | 144 train / 126 test | +3.7% (-12 to +21) at the train-picked threshold | +5.1% (-18 to +29) | - | No edge: the nowcast forecasts worse than the market (Brier 0.17 vs 0.09 train, 0.12 vs 0.10 test) |
-| 2c. Jobless claims vs last week's print + history | CLAIMS_N | CLAIMS_TR | CLAIMS_TE | - | CLAIMS_VERDICT |
+| 2c. Jobless claims vs last week's print + 2015-24 week-on-week history | 63 weekly events, 355 train / 271 test units | best rule -8.6% (-30 to +15) | +7.9% (-9 to +25) | - | No edge: every train threshold loses; the model ties the market in test (Brier 0.105 vs 0.105) |
 | 3a. Late resolution, temperature buckets: buy the known side after the METAR that kills a bucket, taker | 2,744 crossings, 57 days | before publication: +5 to +10% (looks great) | after publication (3+ min): known side under 99c in 0.1-0.4% of cases, losers among them | about $0 | No edge for a public-data bot: the price moves before the METAR is public |
 | 3b. Same, resting maker order at 98c on the known side, filled by late wrong-side buyers (upper bound) | MAKER_N | - | MAKER_TE | MAKER_CAP | MAKER_VERDICT |
 
@@ -43,7 +43,7 @@ hourly closes (the same event rarely shows a hit two hours in a row: 89 hits on 
 
 ## 2. Economic releases (CPI, core CPI, CPI y/y, payrolls, unemployment, jobless claims)
 
-**Data.** Every settled market 2021-2026 on these series (old names and new KX names): 2,775 markets, hourly yes bid/ask
+**Data.** Every settled market 2021-2026 on these series (old names and new KX names): 3,408 markets, hourly yes bid/ask
 in the last 7 days before close. Train = events before 2025-01-01, test = 2025 onward. Fed rate markets: FED_NOTE
 
 **Calibration** (mid price 6-24 hours before close vs how often YES won): the market is well calibrated on CPI, core CPI
@@ -53,9 +53,10 @@ and CPI y/y (e.g. CPI m/m priced 95% won 97%, priced 80% won 78%). The one visib
 
 **Outside models.** The Cleveland Fed inflation nowcast (public, the day before) with its error spread fitted on 2013-2020
 forecasts the CPI strikes worse than the Kalshi price itself (Brier 0.170 vs 0.087 train, 0.125 vs 0.101 test). Trading
-its disagreements: +5% per $1 in test with a range of -18% to +29%. CLAIMS_TEXT
+its disagreements: +5% per $1 in test with a range of -18% to +29%. Jobless claims (weekly, June 2025 on): last week's print plus the 2015-2024 week-on-week spread (FRED) loses on every
+train threshold (-8.6% to -44% per $1) and only ties the market price in the test half.
 
-**Taker cost.** Buying mid-priced strikes (16-84c) costs a significant 5.7-6.1% per $1 in both halves (t -9 and -16): that
+**Taker cost.** Buying mid-priced strikes (16-84c) costs a significant 5.7-6.4% per $1 in both halves (t -9 and -17): that
 is the spread plus the fee, and nothing in the forecasts earns it back.
 
 ## 3. Late resolution (the outcome is public before the market closes)

@@ -255,6 +255,19 @@ def part_c(rows):
             evv[r["e"]] = (r["ct"], r["ev"])
     evs = sorted(evv.items(), key=lambda x: x[1][0])
     prev = {evs[i][0]: evs[i - 1][1][1] for i in range(1, len(evs)) if evs[i][1][0] - evs[i - 1][1][0] < 9 * 86400}
+    # most events carry no expiration value: fall back to FRED ICSA for the week before the reported week
+    # (release Thursday T reports the week ending T-5; the week before ends T-12; FRED holds the once-revised value,
+    # usually within ~1% of the advance print the market saw)
+    fmap = {d: v for d, v in fred}
+    n_fred = 0
+    for r in cl:
+        if r["e"] in prev:
+            continue
+        wk = time.strftime("%Y-%m-%d", time.gmtime(r["ct"] - 12 * 86400))
+        if wk in fmap:
+            prev[r["e"]] = fmap[wk]
+            evv.setdefault(r["e"], (r["ct"], None))
+            n_fred += 1
     trades = []
     for r in cl:
         if r["e"] not in prev:
@@ -272,7 +285,8 @@ def part_c(rows):
             if a <= 0 or a >= 100 or b <= 0 or a - b > MAXSPREAD:
                 continue
             trades.append({"e": r["e"], "ct": r["ct"], "ob": ob, "pm": pm, "a": a, "b": b, "yes": r["res"] == "yes"})
-    out = {"n_changes": len(chg), "sd_log_change": round(statistics.pstdev(chg), 4), "events": len(prev), "cells": {}}
+    out = {"n_changes": len(chg), "sd_log_change": round(statistics.pstdev(chg), 4), "events": len(prev),
+           "events_prev_from_fred": len({e for e in prev if evv[e][1] is None}), "cells": {}}
     # claims markets exist only from 2025-06: split by time inside (first 60% of events train)
     evo = sorted({t["e"] for t in trades}, key=lambda e: evv[e][0])
     cut = evv[evo[int(0.6 * len(evo))]][0] if evo else 0
