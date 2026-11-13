@@ -2,13 +2,14 @@
 // (localStorage 'ledger.v1', never sent anywhere), and writes the numbers of ledgercore.js into glass cards over the 3D vault (ledgerscene.js). Text only through textContent
 // (no data ever becomes HTML). window.LG is the test hook; ?today=YYYY-MM-DD pretends it is that day (tests, screenshots).
 import * as C from './ledgercore.js';
+import * as SB from './scoreboardcore.js';
 
 const O = window.OLYMPUS || null;
 const KEY = 'ledger.v1';
 const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
 const $ = (id) => document.getElementById(id);
 const SVGNS = 'http://www.w3.org/2000/svg';
-const S = { st: C.emptyState(), home: null, rules: null, feed: null, fixture: null, roadmap: null, demo: false, tab: 'over', model: null, scene: null, prev: null, editing: null, filter: 'all', calMonth: null, saveOk: true, ready: false, error: null, undoTimer: 0, today: C.todayET(), clearArmed: 0 };
+const S = { st: C.emptyState(), score: null, home: null, rules: null, feed: null, fixture: null, roadmap: null, demo: false, tab: 'over', model: null, scene: null, prev: null, editing: null, filter: 'all', calMonth: null, saveOk: true, ready: false, error: null, undoTimer: 0, today: C.todayET(), clearArmed: 0 };
 const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
 const kids = (el, ...c) => { el.replaceChildren(...c.flat().filter(Boolean)); return el; };
@@ -110,9 +111,34 @@ function snapCard(m, t) {
     tile('Biggest cost', big ? C.money(-big[1], 0) : '-', big ? big[0] : 'No costs yet', big ? 'neg' : ''));
   return card('Your money in three numbers', grid);
 }
+/** the Scoreboard (2026-11-13): the site's money/scoreboard.json (tools/money_scoreboard.py) = every money source in one place, read only, with ages */
+function scoreCard() {
+  const v = SB.view(S.score, Date.now() / 1000), title = 'Scoreboard: every money source';
+  if (!v.ok) { const c = card(title, h('p', '', v.text)); c.id = 'score'; return c; }
+  const tile = (x) => { const d = h('div', 'snapt'); d.append(h('span', 'ag-cap', x.k), h('b', 'ag-money ' + x.cls, x.v), h('small', 'ag-cap', x.note)); return d; };
+  const grid = h('div', 'snap'); grid.append(...v.tiles.map(tile));
+  const src = h('ul', 'kv sbsrc');
+  for (const s of v.sources) {
+    const li = h('li'), k = h('span', 'k'), val = h('span', 'v');
+    k.append(document.createTextNode(s.name), h('small', '', s.note));
+    val.append(h('span', 'chip ' + s.chip, s.status), h('small', '', s.age));
+    li.append(k, val); src.append(li);
+  }
+  const notes = v.bySource.filter((r) => r[3]).map((r) => h('p', '', `${r[0]}: ${r[3]}`));
+  const c = card(title, h('p', 'strong', 'Every source the site knows, in real cash. Paper P&L and estimates are shown, never counted.'), grid,
+    kv(v.rows), h('p', '', v.nextText),
+    h('h3', '', 'By source (cash)'), kv(v.bySource.map((r) => [r[0], r[1], r[2]])), ...notes,
+    v.paper.length ? h('h3', '', 'On paper (not cash)') : null, v.paper.length ? kv(v.paper) : null,
+    h('h3', '', 'Sources and how old they are'), src,
+    v.missing ? h('p', 'warn', v.missing) : null, v.stale ? h('p', 'warn', 'This scoreboard is more than 36 hours old: the site has not been rebuilt since.') : null,
+    h('p', '', v.foot));
+  c.id = 'score';
+  return c;
+}
 function overView() {
   const m = S.model, t = m.totals, k = t.kalshi, be = m.be, out = [];
   out.push(snapCard(m, t));
+  out.push(scoreCard());
   out.push(card('Where the money went', kv([
     ['Payouts received', C.money(t.byKind.payout_in || 0), 'pos'], ['Other income', C.money(t.byKind.income || 0), 'pos'],
     ['Eval fees', C.money(-(t.byKind.fee || 0)), 'neg'], ['Resets and activation', C.money(-((t.byKind.reset || 0) + (t.byKind.activation || 0))), 'neg'],
@@ -460,7 +486,8 @@ async function main() {
   const p = new URLSearchParams(location.search), t = p.get('today');
   if (t && C.isDate(t)) S.today = t;
   S.st = store.read();
-  const [home, rules, feed, fixture, roadmap] = await Promise.all([getJSON('../home.json'), getJSON('rules.json'), getFeed(7000), getJSON('fixture.json'), getJSON('../plutus/roadmap.json')]);
+  const [home, rules, feed, fixture, roadmap, score] = await Promise.all([getJSON('../home.json'), getJSON('rules.json'), getFeed(7000), getJSON('fixture.json'), getJSON('../plutus/roadmap.json'), getJSON('../money/scoreboard.json')]);
+  S.score = SB.ok(score) ? score : null;     // the Scoreboard card (read only); without the file the card says so
   S.roadmap = C.roadmapOk(roadmap) ? roadmap : null;       // the Money plan (read only); without it the tracker is as before
   S.home = home && typeof home === 'object' ? home : null; S.rules = rules && rules.plans ? rules : null; S.fixture = fixture && Array.isArray(fixture.entries) ? fixture : null;
   S.feed = feed && feed.kind === 'kalshi' ? feed : null;
@@ -477,7 +504,7 @@ async function main() {
 
 window.LG = {
   state: () => ({ ready: S.ready, demo: S.demo, error: S.error, tab: S.tab, entries: S.st.entries.length, auto: S.model ? S.model.auto.length : 0, net: S.model ? S.model.totals.net : null, saveOk: S.saveOk, scene: S.scene ? S.scene.stats() : null, today: S.today, pendingUndo: !!S.prev }),
-  model: () => S.model, st: () => S.st, scene: () => S.scene, core: C, tab: setTab, open: openSheet, close: closeSheet, importText, undo, csv: () => C.toCSV(S.model.list), card: card2,
+  model: () => S.model, st: () => S.st, score: () => SB.view(S.score, Date.now() / 1000), scene: () => S.scene, core: C, tab: setTab, open: openSheet, close: closeSheet, importText, undo, csv: () => C.toCSV(S.model.list), card: card2,
   add: (e) => commit(C.addEntry(S.st, e), 'Added'),
 };
 main();

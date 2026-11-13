@@ -117,7 +117,7 @@ def money(x, signed=False) -> str:
     v = num(x)
     if v is None:
         return "-"
-    a = abs(round(v))
+    a = math.floor(abs(v) + 0.5)          # half up, the same as the page (scoreboardcore.usd)
     s = "${:,.0f}".format(a)
     if a == 0:
         return "$0"
