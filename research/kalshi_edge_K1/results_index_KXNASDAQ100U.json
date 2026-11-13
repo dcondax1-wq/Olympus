@@ -1,0 +1,587 @@
+{
+ "series": "KXNASDAQ100U",
+ "split": "2026-07-01",
+ "n_train_rows": 8945,
+ "n_test_rows": 5246,
+ "params": [
+  0.0,
+  1.5,
+  3.0,
+  3
+ ],
+ "horizons": {
+  "55": {
+   "skill_train": {
+    "n": 1023,
+    "brier_market_mid": 0.10459,
+    "brier_model": 0.10518,
+    "logloss_market_mid": 0.3454,
+    "logloss_model": 0.349
+   },
+   "skill_test": {
+    "n": 567,
+    "brier_market_mid": 0.11034,
+    "brier_model": 0.11189,
+    "logloss_market_mid": 0.3665,
+    "logloss_model": 0.3758
+   },
+   "spread_med_c": 5,
+   "thr_c": 6,
+   "train": {
+    "n": 68,
+    "clusters": 55,
+    "won": 0.75,
+    "avg_cost_c": 72.43,
+    "pnl_per_contract_c": 1.103,
+    "pnl_total_usd_1lot": 0.75,
+    "edge_per_usd": 0.0152,
+    "lo95": -0.1282,
+    "hi95": 0.1458,
+    "enough": false
+   },
+   "test": {
+    "n": 24,
+    "clusters": 21,
+    "won": 0.4583,
+    "avg_cost_c": 52.75,
+    "pnl_per_contract_c": -8.125,
+    "pnl_total_usd_1lot": -1.95,
+    "edge_per_usd": -0.154,
+    "lo95": -0.4035,
+    "hi95": 0.0697,
+    "enough": false
+   },
+   "all_thr_test": {
+    "2": {
+     "n": 109,
+     "clusters": 92,
+     "won": 0.4404,
+     "avg_cost_c": 46.67,
+     "pnl_per_contract_c": -3.853,
+     "pnl_total_usd_1lot": -4.2,
+     "edge_per_usd": -0.0826,
+     "lo95": -0.2382,
+     "hi95": 0.087,
+     "enough": true
+    },
+    "4": {
+     "n": 52,
+     "clusters": 43,
+     "won": 0.5385,
+     "avg_cost_c": 52.71,
+     "pnl_per_contract_c": -0.173,
+     "pnl_total_usd_1lot": -0.09,
+     "edge_per_usd": -0.0033,
+     "lo95": -0.2124,
+     "hi95": 0.2363,
+     "enough": false
+    },
+    "6": {
+     "n": 24,
+     "clusters": 21,
+     "won": 0.4583,
+     "avg_cost_c": 52.75,
+     "pnl_per_contract_c": -8.125,
+     "pnl_total_usd_1lot": -1.95,
+     "edge_per_usd": -0.154,
+     "lo95": -0.4035,
+     "hi95": 0.0697,
+     "enough": false
+    },
+    "8": {
+     "n": 10,
+     "clusters": 10,
+     "won": 0.4,
+     "avg_cost_c": 44.8,
+     "pnl_per_contract_c": -6.2,
+     "pnl_total_usd_1lot": -0.62,
+     "edge_per_usd": -0.1384,
+     "lo95": -0.6893,
+     "hi95": 0.1584,
+     "enough": false
+    },
+    "10": {
+     "n": 5,
+     "clusters": 5,
+     "won": 0.6,
+     "avg_cost_c": 66.6,
+     "pnl_per_contract_c": -8.2,
+     "pnl_total_usd_1lot": -0.41,
+     "edge_per_usd": -0.1231,
+     "lo95": -0.6504,
+     "hi95": 0.2275,
+     "enough": false
+    },
+    "15": {
+     "n": 0
+    }
+   },
+   "all_thr_train": {
+    "2": {
+     "n": 235,
+     "clusters": 178,
+     "won": 0.6638,
+     "avg_cost_c": 65.41,
+     "pnl_per_contract_c": -0.391,
+     "pnl_total_usd_1lot": -0.92,
+     "edge_per_usd": -0.006,
+     "lo95": -0.0733,
+     "hi95": 0.0542,
+     "enough": true
+    },
+    "4": {
+     "n": 120,
+     "clusters": 94,
+     "won": 0.7333,
+     "avg_cost_c": 71.38,
+     "pnl_per_contract_c": 0.55,
+     "pnl_total_usd_1lot": 0.66,
+     "edge_per_usd": 0.0077,
+     "lo95": -0.0909,
+     "hi95": 0.0946,
+     "enough": true
+    },
+    "6": {
+     "n": 68,
+     "clusters": 55,
+     "won": 0.75,
+     "avg_cost_c": 72.43,
+     "pnl_per_contract_c": 1.103,
+     "pnl_total_usd_1lot": 0.75,
+     "edge_per_usd": 0.0152,
+     "lo95": -0.1282,
+     "hi95": 0.1458,
+     "enough": false
+    },
+    "8": {
+     "n": 37,
+     "clusters": 29,
+     "won": 0.7838,
+     "avg_cost_c": 69.41,
+     "pnl_per_contract_c": 7.351,
+     "pnl_total_usd_1lot": 2.72,
+     "edge_per_usd": 0.1059,
+     "lo95": -0.0703,
+     "hi95": 0.2467,
+     "enough": false
+    },
+    "10": {
+     "n": 23,
+     "clusters": 18,
+     "won": 0.6957,
+     "avg_cost_c": 63.48,
+     "pnl_per_contract_c": 4.391,
+     "pnl_total_usd_1lot": 1.01,
+     "edge_per_usd": 0.0692,
+     "lo95": -0.2026,
+     "hi95": 0.2836,
+     "enough": false
+    },
+    "15": {
+     "n": 9,
+     "clusters": 8,
+     "won": 0.7778,
+     "avg_cost_c": 52.33,
+     "pnl_per_contract_c": 23.667,
+     "pnl_total_usd_1lot": 2.13,
+     "edge_per_usd": 0.4522,
+     "lo95": 0.2316,
+     "hi95": 0.6471,
+     "enough": false
+    }
+   }
+  },
+  "30": {
+   "skill_train": {
+    "n": 859,
+    "brier_market_mid": 0.10593,
+    "brier_model": 0.1063,
+    "logloss_market_mid": 0.3478,
+    "logloss_model": 0.3527
+   },
+   "skill_test": {
+    "n": 412,
+    "brier_market_mid": 0.1317,
+    "brier_model": 0.13464,
+    "logloss_market_mid": 0.4217,
+    "logloss_model": 0.444
+   },
+   "spread_med_c": 5,
+   "thr_c": 4,
+   "train": {
+    "n": 115,
+    "clusters": 96,
+    "won": 0.7478,
+    "avg_cost_c": 73.17,
+    "pnl_per_contract_c": 0.174,
+    "pnl_total_usd_1lot": 0.2,
+    "edge_per_usd": 0.0024,
+    "lo95": -0.1015,
+    "hi95": 0.1032,
+    "enough": true
+   },
+   "test": {
+    "n": 48,
+    "clusters": 44,
+    "won": 0.4792,
+    "avg_cost_c": 52.88,
+    "pnl_per_contract_c": -6.396,
+    "pnl_total_usd_1lot": -3.07,
+    "edge_per_usd": -0.121,
+    "lo95": -0.3518,
+    "hi95": 0.1368,
+    "enough": false
+   },
+   "all_thr_test": {
+    "2": {
+     "n": 101,
+     "clusters": 85,
+     "won": 0.495,
+     "avg_cost_c": 49.21,
+     "pnl_per_contract_c": -1.02,
+     "pnl_total_usd_1lot": -1.03,
+     "edge_per_usd": -0.0207,
+     "lo95": -0.1754,
+     "hi95": 0.1463,
+     "enough": true
+    },
+    "4": {
+     "n": 48,
+     "clusters": 44,
+     "won": 0.4792,
+     "avg_cost_c": 52.88,
+     "pnl_per_contract_c": -6.396,
+     "pnl_total_usd_1lot": -3.07,
+     "edge_per_usd": -0.121,
+     "lo95": -0.3518,
+     "hi95": 0.1368,
+     "enough": false
+    },
+    "6": {
+     "n": 20,
+     "clusters": 18,
+     "won": 0.45,
+     "avg_cost_c": 51.55,
+     "pnl_per_contract_c": -8.1,
+     "pnl_total_usd_1lot": -1.62,
+     "edge_per_usd": -0.1571,
+     "lo95": -0.557,
+     "hi95": 0.3354,
+     "enough": false
+    },
+    "8": {
+     "n": 13,
+     "clusters": 12,
+     "won": 0.4615,
+     "avg_cost_c": 63.23,
+     "pnl_per_contract_c": -18.846,
+     "pnl_total_usd_1lot": -2.45,
+     "edge_per_usd": -0.2981,
+     "lo95": -0.661,
+     "hi95": 0.0723,
+     "enough": false
+    },
+    "10": {
+     "n": 8,
+     "clusters": 8,
+     "won": 0.625,
+     "avg_cost_c": 64.38,
+     "pnl_per_contract_c": -3.625,
+     "pnl_total_usd_1lot": -0.29,
+     "edge_per_usd": -0.0563,
+     "lo95": -0.5991,
+     "hi95": 0.3886,
+     "enough": false
+    },
+    "15": {
+     "n": 1,
+     "clusters": 1,
+     "won": 1.0,
+     "avg_cost_c": 72.0,
+     "pnl_per_contract_c": 26.0,
+     "pnl_total_usd_1lot": 0.26,
+     "edge_per_usd": 0.3611,
+     "lo95": 0.3611,
+     "hi95": 0.3611,
+     "enough": false
+    }
+   },
+   "all_thr_train": {
+    "2": {
+     "n": 192,
+     "clusters": 160,
+     "won": 0.6927,
+     "avg_cost_c": 68.68,
+     "pnl_per_contract_c": -0.771,
+     "pnl_total_usd_1lot": -1.48,
+     "edge_per_usd": -0.0112,
+     "lo95": -0.0912,
+     "hi95": 0.0634,
+     "enough": true
+    },
+    "4": {
+     "n": 115,
+     "clusters": 96,
+     "won": 0.7478,
+     "avg_cost_c": 73.17,
+     "pnl_per_contract_c": 0.174,
+     "pnl_total_usd_1lot": 0.2,
+     "edge_per_usd": 0.0024,
+     "lo95": -0.1015,
+     "hi95": 0.1032,
+     "enough": true
+    },
+    "6": {
+     "n": 78,
+     "clusters": 67,
+     "won": 0.7564,
+     "avg_cost_c": 74.22,
+     "pnl_per_contract_c": -0.051,
+     "pnl_total_usd_1lot": -0.04,
+     "edge_per_usd": -0.0007,
+     "lo95": -0.1242,
+     "hi95": 0.119,
+     "enough": false
+    },
+    "8": {
+     "n": 41,
+     "clusters": 36,
+     "won": 0.7561,
+     "avg_cost_c": 70.34,
+     "pnl_per_contract_c": 3.585,
+     "pnl_total_usd_1lot": 1.47,
+     "edge_per_usd": 0.051,
+     "lo95": -0.1405,
+     "hi95": 0.2473,
+     "enough": false
+    },
+    "10": {
+     "n": 23,
+     "clusters": 22,
+     "won": 0.8261,
+     "avg_cost_c": 66.35,
+     "pnl_per_contract_c": 14.391,
+     "pnl_total_usd_1lot": 3.31,
+     "edge_per_usd": 0.2169,
+     "lo95": -0.0496,
+     "hi95": 0.4891,
+     "enough": false
+    },
+    "15": {
+     "n": 6,
+     "clusters": 6,
+     "won": 1.0,
+     "avg_cost_c": 62.33,
+     "pnl_per_contract_c": 35.667,
+     "pnl_total_usd_1lot": 2.14,
+     "edge_per_usd": 0.5722,
+     "lo95": 0.3184,
+     "hi95": 1.1618,
+     "enough": false
+    }
+   }
+  },
+  "10": {
+   "skill_train": {
+    "n": 426,
+    "brier_market_mid": 0.09562,
+    "brier_model": 0.09471,
+    "logloss_market_mid": 0.3222,
+    "logloss_model": 0.3155
+   },
+   "skill_test": {
+    "n": 218,
+    "brier_market_mid": 0.11039,
+    "brier_model": 0.11199,
+    "logloss_market_mid": 0.3412,
+    "logloss_model": 0.3373
+   },
+   "spread_med_c": 5,
+   "thr_c": 2,
+   "train": {
+    "n": 102,
+    "clusters": 96,
+    "won": 0.5784,
+    "avg_cost_c": 53.36,
+    "pnl_per_contract_c": 3.069,
+    "pnl_total_usd_1lot": 3.13,
+    "edge_per_usd": 0.0575,
+    "lo95": -0.0688,
+    "hi95": 0.188,
+    "enough": true
+   },
+   "test": {
+    "n": 46,
+    "clusters": 45,
+    "won": 0.3913,
+    "avg_cost_c": 40.0,
+    "pnl_per_contract_c": -2.283,
+    "pnl_total_usd_1lot": -1.05,
+    "edge_per_usd": -0.0571,
+    "lo95": -0.3358,
+    "hi95": 0.2686,
+    "enough": false
+   },
+   "all_thr_test": {
+    "2": {
+     "n": 46,
+     "clusters": 45,
+     "won": 0.3913,
+     "avg_cost_c": 40.0,
+     "pnl_per_contract_c": -2.283,
+     "pnl_total_usd_1lot": -1.05,
+     "edge_per_usd": -0.0571,
+     "lo95": -0.3358,
+     "hi95": 0.2686,
+     "enough": false
+    },
+    "4": {
+     "n": 26,
+     "clusters": 25,
+     "won": 0.2692,
+     "avg_cost_c": 31.27,
+     "pnl_per_contract_c": -5.846,
+     "pnl_total_usd_1lot": -1.52,
+     "edge_per_usd": -0.187,
+     "lo95": -0.6534,
+     "hi95": 0.451,
+     "enough": false
+    },
+    "6": {
+     "n": 11,
+     "clusters": 11,
+     "won": 0.1818,
+     "avg_cost_c": 39.0,
+     "pnl_per_contract_c": -22.455,
+     "pnl_total_usd_1lot": -2.47,
+     "edge_per_usd": -0.5758,
+     "lo95": -1.0507,
+     "hi95": 0.1114,
+     "enough": false
+    },
+    "8": {
+     "n": 7,
+     "clusters": 7,
+     "won": 0.1429,
+     "avg_cost_c": 45.71,
+     "pnl_per_contract_c": -33.0,
+     "pnl_total_usd_1lot": -2.31,
+     "edge_per_usd": -0.7219,
+     "lo95": -1.0481,
+     "hi95": -0.0334,
+     "enough": false
+    },
+    "10": {
+     "n": 3,
+     "clusters": 3,
+     "won": 0.3333,
+     "avg_cost_c": 44.0,
+     "pnl_per_contract_c": -12.667,
+     "pnl_total_usd_1lot": -0.38,
+     "edge_per_usd": -0.2879,
+     "lo95": -1.0588,
+     "hi95": 1.1304,
+     "enough": false
+    },
+    "15": {
+     "n": 1,
+     "clusters": 1,
+     "won": 1.0,
+     "avg_cost_c": 46.0,
+     "pnl_per_contract_c": 52.0,
+     "pnl_total_usd_1lot": 0.52,
+     "edge_per_usd": 1.1304,
+     "lo95": 1.1304,
+     "hi95": 1.1304,
+     "enough": false
+    }
+   },
+   "all_thr_train": {
+    "2": {
+     "n": 102,
+     "clusters": 96,
+     "won": 0.5784,
+     "avg_cost_c": 53.36,
+     "pnl_per_contract_c": 3.069,
+     "pnl_total_usd_1lot": 3.13,
+     "edge_per_usd": 0.0575,
+     "lo95": -0.0688,
+     "hi95": 0.188,
+     "enough": true
+    },
+    "4": {
+     "n": 51,
+     "clusters": 47,
+     "won": 0.5294,
+     "avg_cost_c": 49.98,
+     "pnl_per_contract_c": 1.588,
+     "pnl_total_usd_1lot": 0.81,
+     "edge_per_usd": 0.0318,
+     "lo95": -0.1752,
+     "hi95": 0.2393,
+     "enough": false
+    },
+    "6": {
+     "n": 25,
+     "clusters": 23,
+     "won": 0.6,
+     "avg_cost_c": 50.68,
+     "pnl_per_contract_c": 7.96,
+     "pnl_total_usd_1lot": 1.99,
+     "edge_per_usd": 0.1571,
+     "lo95": -0.1413,
+     "hi95": 0.5014,
+     "enough": false
+    },
+    "8": {
+     "n": 11,
+     "clusters": 9,
+     "won": 0.6364,
+     "avg_cost_c": 50.18,
+     "pnl_per_contract_c": 12.091,
+     "pnl_total_usd_1lot": 1.33,
+     "edge_per_usd": 0.2409,
+     "lo95": -0.2219,
+     "hi95": 0.9051,
+     "enough": false
+    },
+    "10": {
+     "n": 7,
+     "clusters": 6,
+     "won": 0.5714,
+     "avg_cost_c": 53.43,
+     "pnl_per_contract_c": 2.429,
+     "pnl_total_usd_1lot": 0.17,
+     "edge_per_usd": 0.0455,
+     "lo95": -0.554,
+     "hi95": 1.1026,
+     "enough": false
+    },
+    "15": {
+     "n": 1,
+     "clusters": 1,
+     "won": 0.0,
+     "avg_cost_c": 3.0,
+     "pnl_per_contract_c": -4.0,
+     "pnl_total_usd_1lot": -0.04,
+     "edge_per_usd": -1.3333,
+     "lo95": -1.3333,
+     "hi95": -1.3333,
+     "enough": false
+    }
+   }
+  }
+ },
+ "control_buy_all_yes_30m_test": {
+  "n": 399,
+  "clusters": 315,
+  "won": 0.4687,
+  "avg_cost_c": 56.77,
+  "pnl_per_contract_c": -4.18,
+  "pnl_total_usd_1lot": -16.68,
+  "edge_per_usd": -0.0736,
+  "lo95": -0.1409,
+  "hi95": -0.0063,
+  "enough": true
+ }
+}
