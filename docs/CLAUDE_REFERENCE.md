@@ -1209,6 +1209,17 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     `alerts`, `kelly`, `stats`, rows' `category` / `prob`. `read_bot()` fills them over EVERY settled buy (`breakdowns()`,
     `category_of()`; sell-backs out); `prob` (the bot's own chance) only the bot can add; `kelly` only from
     `KELLY_FRACTION` / `MAX_BET` / `MIN_EDGE` in its settings. Fields in `docs/KALSHI_PUBLISH.md` and the kit's SETUP.md.
+  - **Risk guard (team K2, 2026-11-13, `docs/KALSHI_VM_UPDATE.md`):** `tools/kalshi_kit/public/kalshi_guard.py` (stdlib, no
+    network, no keys) is the gate every bot order passes on the VM (`~/kalshi_jarvis/`, state in `guard/`): max $ per order /
+    market / day, daily stop, max open, orders a day, close window (`late_ok_strategies`), price <= fair + x, fee-aware EV
+    (0.07 P(1-P) rounded up per contract), kill switch file, fail closed, flock for the bot's 3 services. Modes paper (default) /
+    dry_run (logs intended orders) / live (owner types `GO LIVE <ET day> STOP <stop>`; a limits change, a guard update, the kill
+    switch or `--hours` drop it to paper). `guarded_send()` is the bot's one-line hook (`GUARD_SETUP.md` for the kalshi-server
+    chat). The status feed adds `risk` (`clean_risk()`), alerts, the guard's mode; `kalshi_guard.py notify` (VM cron) pushes
+    fills / losses / kill / stop / mode / unguarded orders to the owner's ntfy topic. PC: `tools/kalshi_kit/send_to_vm.py`
+    (update over srv.py, limits, switches, `--live` with the typed phrase), `tools/kalshi_pc_link.py` (fetch ->
+    `<olympus>/kalshi_feed/kalshi.json` + `data/pc_report/kalshi.json`, card line, PC alerts only when the VM sends none).
+    Page: "Risk guard" card first in Today. Tests `tests.test_kalshi_guard`, `tests.test_kalshi_vm_update`, page `--only=risk`.
   - **Phone page:** `tools/web_public/kalshi/` with its own `sw.js` (kalshi-k12).
     - Its own dashboard: the Kalshi theme (`data-theme="kalshi"`, mint + cyan on #010a07 = its `theme-color`), K mark,
       ticker tape, aurora; never Jarvis's `jtheme`.
