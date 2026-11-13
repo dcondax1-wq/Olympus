@@ -1,0 +1,2755 @@
+{
+ "built": "2026-11-13",
+ "k": 0.28,
+ "be_off_es": 0.75,
+ "streams": {
+  "nq_lit_live": {
+   "desc": "NQ LIT as live (1m execution in 2026, 5m before)",
+   "plan": "50k",
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85.2,
+    "win": 58.8,
+    "pf": 4.92,
+    "net": 33666,
+    "per_month": 5523,
+    "dd": -2213,
+    "worst_day": -763,
+    "sessions": 128,
+    "p10": 57.1,
+    "f10": 1.7,
+    "dec10": 58.8,
+    "p15": 62.2,
+    "f15": 1.7,
+    "pass_med": 4.0,
+    "slow_pass": 18.7,
+    "p60": 76.5,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81.2,
+    "win": 50.0,
+    "pf": 2.88,
+    "net": 9836,
+    "per_month": 2648,
+    "dd": -1419,
+    "worst_day": -641,
+    "sessions": 78,
+    "p10": 52.2,
+    "f10": 5.8,
+    "dec10": 58.0,
+    "p15": 56.5,
+    "f15": 5.8,
+    "pass_med": 3.5,
+    "slow_pass": 29.1,
+    "p60": 79.7,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 120,
+    "tpw": 2.91,
+    "wk2": 85.7,
+    "win": 55.8,
+    "pf": 4.15,
+    "net": 43502,
+    "per_month": 4435,
+    "dd": -2213,
+    "worst_day": -763,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 87,
+    "tpw": 2.34,
+    "wk2": 73.7,
+    "win": 57.5,
+    "pf": 0.93,
+    "net": -1012,
+    "per_month": -114,
+    "dd": -5862,
+    "worst_day": -878,
+    "sessions": 186,
+    "p10": 14.1,
+    "f10": 4.5,
+    "dec10": 18.6,
+    "p15": 17.5,
+    "f15": 4.5,
+    "pass_med": 5.0,
+    "slow_pass": 41.5,
+    "p60": 29.9,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 397,
+    "tpw": 2.44,
+    "wk2": 77.0,
+    "win": 52.4,
+    "pf": 0.96,
+    "net": -3487,
+    "per_month": -90,
+    "dd": -20378,
+    "worst_day": -871,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 1.0,
+      "both_days": 120,
+      "both_lose": 53,
+      "both_win": 67
+     },
+     "H1": {
+      "r": 1.0,
+      "both_days": 80,
+      "both_lose": 33,
+      "both_win": 47
+     },
+     "H2": {
+      "r": 1.0,
+      "both_days": 40,
+      "both_lose": 20,
+      "both_win": 20
+     },
+     "2025": {
+      "r": 1.0,
+      "both_days": 87,
+      "both_lose": 36,
+      "both_win": 50
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.026,
+      "both_days": 41,
+      "both_lose": 12,
+      "both_win": 12
+     },
+     "H1": {
+      "r": -0.022,
+      "both_days": 37,
+      "both_lose": 11,
+      "both_win": 11
+     },
+     "H2": {
+      "r": -0.038,
+      "both_days": 4,
+      "both_lose": 1,
+      "both_win": 1
+     },
+     "2025": {
+      "r": 0.073,
+      "both_days": 34,
+      "both_lose": 7,
+      "both_win": 10
+     }
+    }
+   },
+   "n_by_src": {
+    "nq": 120
+   }
+  },
+  "nq_lit_5m": {
+   "desc": "NQ LIT on 5m execution (the fair ES comparison)",
+   "plan": "50k",
+   "H1": {
+    "n": 54,
+    "tpw": 2.11,
+    "wk2": 66.7,
+    "win": 51.9,
+    "pf": 1.87,
+    "net": 6576,
+    "per_month": 1079,
+    "dd": -3080,
+    "worst_day": -818,
+    "sessions": 128,
+    "p10": 26.9,
+    "f10": 9.2,
+    "dec10": 36.1,
+    "p15": 29.4,
+    "f15": 10.9,
+    "pass_med": 3.5,
+    "slow_pass": 2.8,
+    "p60": 30.3,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 23,
+    "tpw": 1.47,
+    "wk2": 31.2,
+    "win": 39.1,
+    "pf": 1.38,
+    "net": 1474,
+    "per_month": 397,
+    "dd": -1313,
+    "worst_day": -635,
+    "sessions": 78,
+    "p10": 34.8,
+    "f10": 0.0,
+    "dec10": 34.8,
+    "p15": 34.8,
+    "f15": 1.4,
+    "pass_med": 4.5,
+    "slow_pass": 14.3,
+    "p60": 40.6,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 77,
+    "tpw": 1.87,
+    "wk2": 54.8,
+    "win": 48.1,
+    "pf": 1.7,
+    "net": 8050,
+    "per_month": 821,
+    "dd": -3080,
+    "worst_day": -818,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 86,
+    "tpw": 2.31,
+    "wk2": 71.1,
+    "win": 58.1,
+    "pf": 0.96,
+    "net": -505,
+    "per_month": -57,
+    "dd": -5862,
+    "worst_day": -878,
+    "sessions": 186,
+    "p10": 14.1,
+    "f10": 4.5,
+    "dec10": 18.6,
+    "p15": 17.5,
+    "f15": 4.5,
+    "pass_med": 5.0,
+    "slow_pass": 39.2,
+    "p60": 28.8,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 397,
+    "tpw": 2.44,
+    "wk2": 77.0,
+    "win": 52.4,
+    "pf": 0.96,
+    "net": -3487,
+    "per_month": -90,
+    "dd": -20378,
+    "worst_day": -871,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.529,
+      "both_days": 76,
+      "both_lose": 33,
+      "both_win": 33
+     },
+     "H1": {
+      "r": 0.536,
+      "both_days": 53,
+      "both_lose": 19,
+      "both_win": 24
+     },
+     "H2": {
+      "r": 0.484,
+      "both_days": 23,
+      "both_lose": 14,
+      "both_win": 9
+     },
+     "2025": {
+      "r": 0.998,
+      "both_days": 86,
+      "both_lose": 35,
+      "both_win": 50
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.122,
+      "both_days": 28,
+      "both_lose": 9,
+      "both_win": 6
+     },
+     "H1": {
+      "r": -0.161,
+      "both_days": 25,
+      "both_lose": 8,
+      "both_win": 6
+     },
+     "H2": {
+      "r": -0.01,
+      "both_days": 3,
+      "both_lose": 1,
+      "both_win": 0
+     },
+     "2025": {
+      "r": 0.074,
+      "both_days": 34,
+      "both_lose": 7,
+      "both_win": 10
+     }
+    }
+   },
+   "n_by_src": {
+    "nq": 77
+   }
+  },
+  "es_lit": {
+   "desc": "ES (MES) LIT, stops / BE scaled by k=0.28 (5m execution)",
+   "plan": "50k",
+   "H1": {
+    "n": 66,
+    "tpw": 2.58,
+    "wk2": 81.5,
+    "win": 48.5,
+    "pf": 0.78,
+    "net": -3838,
+    "per_month": -630,
+    "dd": -8591,
+    "worst_day": -889,
+    "sessions": 128,
+    "p10": 27.7,
+    "f10": 10.9,
+    "dec10": 38.6,
+    "p15": 27.7,
+    "f15": 12.6,
+    "pass_med": 5.0,
+    "slow_pass": 8.3,
+    "p60": 30.3,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 43,
+    "tpw": 2.76,
+    "wk2": 87.5,
+    "win": 46.5,
+    "pf": 2.27,
+    "net": 12670,
+    "per_month": 3411,
+    "dd": -2711,
+    "worst_day": -889,
+    "sessions": 78,
+    "p10": 44.9,
+    "f10": 15.9,
+    "dec10": 60.8,
+    "p15": 46.4,
+    "f15": 15.9,
+    "pass_med": 4.0,
+    "slow_pass": 17.9,
+    "p60": 56.5,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 109,
+    "tpw": 2.65,
+    "wk2": 85.7,
+    "win": 47.7,
+    "pf": 1.32,
+    "net": 8832,
+    "per_month": 900,
+    "dd": -10438,
+    "worst_day": -889,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 97,
+    "tpw": 2.61,
+    "wk2": 84.2,
+    "win": 44.3,
+    "pf": 0.44,
+    "net": -15936,
+    "per_month": -1799,
+    "dd": -16534,
+    "worst_day": -876,
+    "sessions": 186,
+    "p10": 9.0,
+    "f10": 16.4,
+    "dec10": 25.4,
+    "p15": 9.6,
+    "f15": 16.4,
+    "pass_med": 3.0,
+    "slow_pass": 34.6,
+    "p60": 14.7,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 0,
+    "tpw": 0.0,
+    "wk2": 0.0,
+    "win": 0.0,
+    "pf": null,
+    "net": 0,
+    "per_month": 0,
+    "dd": 0,
+    "worst_day": 0,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.14,
+      "both_days": 76,
+      "both_lose": 23,
+      "both_win": 27
+     },
+     "H1": {
+      "r": 0.097,
+      "both_days": 51,
+      "both_lose": 14,
+      "both_win": 19
+     },
+     "H2": {
+      "r": 0.309,
+      "both_days": 25,
+      "both_lose": 9,
+      "both_win": 8
+     },
+     "2025": {
+      "r": 0.113,
+      "both_days": 53,
+      "both_lose": 10,
+      "both_win": 17
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.062,
+      "both_days": 37,
+      "both_lose": 9,
+      "both_win": 8
+     },
+     "H1": {
+      "r": -0.118,
+      "both_days": 26,
+      "both_lose": 6,
+      "both_win": 4
+     },
+     "H2": {
+      "r": -0.029,
+      "both_days": 11,
+      "both_lose": 3,
+      "both_win": 4
+     },
+     "2025": {
+      "r": -0.078,
+      "both_days": 40,
+      "both_lose": 14,
+      "both_win": 9
+     }
+    }
+   },
+   "n_by_src": {
+    "es": 109
+   }
+  },
+  "es_lit_k08": {
+   "desc": "ES LIT, stop range x0.8 (neighbour)",
+   "plan": "50k",
+   "H1": {
+    "n": 62,
+    "tpw": 2.42,
+    "wk2": 81.5,
+    "win": 50.0,
+    "pf": 0.77,
+    "net": -3965,
+    "per_month": -651,
+    "dd": -8611,
+    "worst_day": -889,
+    "sessions": 128,
+    "p10": 27.7,
+    "f10": 10.9,
+    "dec10": 38.6,
+    "p15": 27.7,
+    "f15": 12.6,
+    "pass_med": 5.0,
+    "slow_pass": 8.3,
+    "p60": 30.3,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 41,
+    "tpw": 2.63,
+    "wk2": 81.2,
+    "win": 43.9,
+    "pf": 2.27,
+    "net": 12668,
+    "per_month": 3411,
+    "dd": -2713,
+    "worst_day": -889,
+    "sessions": 78,
+    "p10": 44.9,
+    "f10": 15.9,
+    "dec10": 60.8,
+    "p15": 46.4,
+    "f15": 15.9,
+    "pass_med": 4.0,
+    "slow_pass": 17.9,
+    "p60": 56.5,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 103,
+    "tpw": 2.5,
+    "wk2": 83.3,
+    "win": 47.6,
+    "pf": 1.32,
+    "net": 8702,
+    "per_month": 887,
+    "dd": -10569,
+    "worst_day": -889,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 94,
+    "tpw": 2.53,
+    "wk2": 84.2,
+    "win": 43.6,
+    "pf": 0.4,
+    "net": -17245,
+    "per_month": -1947,
+    "dd": -17263,
+    "worst_day": -876,
+    "sessions": 186,
+    "p10": 7.3,
+    "f10": 15.8,
+    "dec10": 23.1,
+    "p15": 7.9,
+    "f15": 15.8,
+    "pass_med": 4.0,
+    "slow_pass": 26.3,
+    "p60": 10.7,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 0,
+    "tpw": 0.0,
+    "wk2": 0.0,
+    "win": 0.0,
+    "pf": null,
+    "net": 0,
+    "per_month": 0,
+    "dd": 0,
+    "worst_day": 0,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.14,
+      "both_days": 75,
+      "both_lose": 23,
+      "both_win": 27
+     },
+     "H1": {
+      "r": 0.098,
+      "both_days": 51,
+      "both_lose": 14,
+      "both_win": 19
+     },
+     "H2": {
+      "r": 0.309,
+      "both_days": 24,
+      "both_lose": 9,
+      "both_win": 8
+     },
+     "2025": {
+      "r": 0.11,
+      "both_days": 52,
+      "both_lose": 9,
+      "both_win": 17
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.059,
+      "both_days": 35,
+      "both_lose": 9,
+      "both_win": 7
+     },
+     "H1": {
+      "r": -0.113,
+      "both_days": 25,
+      "both_lose": 6,
+      "both_win": 4
+     },
+     "H2": {
+      "r": -0.029,
+      "both_days": 10,
+      "both_lose": 3,
+      "both_win": 3
+     },
+     "2025": {
+      "r": -0.076,
+      "both_days": 39,
+      "both_lose": 14,
+      "both_win": 9
+     }
+    }
+   },
+   "n_by_src": {
+    "es": 103
+   }
+  },
+  "es_lit_k125": {
+   "desc": "ES LIT, stop range x1.25 (neighbour)",
+   "plan": "50k",
+   "H1": {
+    "n": 68,
+    "tpw": 2.66,
+    "wk2": 81.5,
+    "win": 48.5,
+    "pf": 0.78,
+    "net": -3914,
+    "per_month": -642,
+    "dd": -8667,
+    "worst_day": -889,
+    "sessions": 128,
+    "p10": 26.9,
+    "f10": 10.9,
+    "dec10": 37.8,
+    "p15": 26.9,
+    "f15": 12.6,
+    "pass_med": 5.0,
+    "slow_pass": 8.6,
+    "p60": 29.4,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 44,
+    "tpw": 2.82,
+    "wk2": 93.8,
+    "win": 47.7,
+    "pf": 2.27,
+    "net": 12675,
+    "per_month": 3412,
+    "dd": -2707,
+    "worst_day": -889,
+    "sessions": 78,
+    "p10": 44.9,
+    "f10": 15.9,
+    "dec10": 60.8,
+    "p15": 46.4,
+    "f15": 15.9,
+    "pass_med": 4.0,
+    "slow_pass": 13.5,
+    "p60": 53.6,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 112,
+    "tpw": 2.72,
+    "wk2": 88.1,
+    "win": 48.2,
+    "pf": 1.32,
+    "net": 8760,
+    "per_month": 893,
+    "dd": -10515,
+    "worst_day": -889,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 94,
+    "tpw": 2.53,
+    "wk2": 78.9,
+    "win": 43.6,
+    "pf": 0.3,
+    "net": -19272,
+    "per_month": -2176,
+    "dd": -20514,
+    "worst_day": -888,
+    "sessions": 186,
+    "p10": 8.5,
+    "f10": 16.4,
+    "dec10": 24.9,
+    "p15": 9.0,
+    "f15": 16.4,
+    "pass_med": 3.0,
+    "slow_pass": 38.5,
+    "p60": 14.7,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 0,
+    "tpw": 0.0,
+    "wk2": 0.0,
+    "win": 0.0,
+    "pf": null,
+    "net": 0,
+    "per_month": 0,
+    "dd": 0,
+    "worst_day": 0,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.14,
+      "both_days": 78,
+      "both_lose": 23,
+      "both_win": 28
+     },
+     "H1": {
+      "r": 0.097,
+      "both_days": 52,
+      "both_lose": 14,
+      "both_win": 19
+     },
+     "H2": {
+      "r": 0.309,
+      "both_days": 26,
+      "both_lose": 9,
+      "both_win": 9
+     },
+     "2025": {
+      "r": 0.026,
+      "both_days": 50,
+      "both_lose": 9,
+      "both_win": 16
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.061,
+      "both_days": 39,
+      "both_lose": 10,
+      "both_win": 9
+     },
+     "H1": {
+      "r": -0.118,
+      "both_days": 28,
+      "both_lose": 7,
+      "both_win": 5
+     },
+     "H2": {
+      "r": -0.029,
+      "both_days": 11,
+      "both_lose": 3,
+      "both_win": 4
+     },
+     "2025": {
+      "r": -0.006,
+      "both_days": 37,
+      "both_lose": 14,
+      "both_win": 7
+     }
+    }
+   },
+   "n_by_src": {
+    "es": 112
+   }
+  },
+  "es_lit_be125": {
+   "desc": "ES LIT, BE offset left at 1.25 ES pts (lit-more-setups' choice)",
+   "plan": "50k",
+   "H1": {
+    "n": 66,
+    "tpw": 2.58,
+    "wk2": 81.5,
+    "win": 48.5,
+    "pf": 0.81,
+    "net": -3311,
+    "per_month": -543,
+    "dd": -8394,
+    "worst_day": -889,
+    "sessions": 128,
+    "p10": 27.7,
+    "f10": 11.8,
+    "dec10": 39.5,
+    "p15": 27.7,
+    "f15": 13.4,
+    "pass_med": 5.0,
+    "slow_pass": 13.2,
+    "p60": 31.9,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 43,
+    "tpw": 2.76,
+    "wk2": 87.5,
+    "win": 46.5,
+    "pf": 2.3,
+    "net": 12993,
+    "per_month": 3498,
+    "dd": -2544,
+    "worst_day": -889,
+    "sessions": 78,
+    "p10": 44.9,
+    "f10": 14.5,
+    "dec10": 59.4,
+    "p15": 46.4,
+    "f15": 14.5,
+    "pass_med": 4.0,
+    "slow_pass": 13.5,
+    "p60": 53.6,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 109,
+    "tpw": 2.65,
+    "wk2": 85.7,
+    "win": 47.7,
+    "pf": 1.35,
+    "net": 9682,
+    "per_month": 987,
+    "dd": -10178,
+    "worst_day": -889,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 97,
+    "tpw": 2.61,
+    "wk2": 84.2,
+    "win": 44.3,
+    "pf": 0.49,
+    "net": -14606,
+    "per_month": -1649,
+    "dd": -15719,
+    "worst_day": -876,
+    "sessions": 186,
+    "p10": 9.0,
+    "f10": 15.8,
+    "dec10": 24.8,
+    "p15": 10.7,
+    "f15": 15.8,
+    "pass_med": 3.0,
+    "slow_pass": 36.7,
+    "p60": 16.9,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 0,
+    "tpw": 0.0,
+    "wk2": 0.0,
+    "win": 0.0,
+    "pf": null,
+    "net": 0,
+    "per_month": 0,
+    "dd": 0,
+    "worst_day": 0,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.142,
+      "both_days": 76,
+      "both_lose": 23,
+      "both_win": 27
+     },
+     "H1": {
+      "r": 0.101,
+      "both_days": 51,
+      "both_lose": 14,
+      "both_win": 19
+     },
+     "H2": {
+      "r": 0.308,
+      "both_days": 25,
+      "both_lose": 9,
+      "both_win": 8
+     },
+     "2025": {
+      "r": 0.112,
+      "both_days": 53,
+      "both_lose": 10,
+      "both_win": 17
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.062,
+      "both_days": 37,
+      "both_lose": 9,
+      "both_win": 8
+     },
+     "H1": {
+      "r": -0.12,
+      "both_days": 26,
+      "both_lose": 6,
+      "both_win": 4
+     },
+     "H2": {
+      "r": -0.029,
+      "both_days": 11,
+      "both_lose": 3,
+      "both_win": 4
+     },
+     "2025": {
+      "r": -0.075,
+      "both_days": 40,
+      "both_lose": 14,
+      "both_win": 9
+     }
+    }
+   },
+   "n_by_src": {
+    "es": 109
+   }
+  },
+  "es_lit_lon": {
+   "desc": "ES LIT, London slot only (02:00-08:00)",
+   "plan": "50k",
+   "H1": {
+    "n": 43,
+    "tpw": 1.68,
+    "wk2": 51.9,
+    "win": 51.2,
+    "pf": 0.51,
+    "net": -6817,
+    "per_month": -1118,
+    "dd": -8037,
+    "worst_day": -889,
+    "sessions": 128,
+    "p10": 16.8,
+    "f10": 0.8,
+    "dec10": 17.6,
+    "p15": 18.5,
+    "f15": 0.8,
+    "pass_med": 5.5,
+    "slow_pass": 26.7,
+    "p60": 25.2,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 31,
+    "tpw": 1.99,
+    "wk2": 62.5,
+    "win": 45.2,
+    "pf": 2.63,
+    "net": 13653,
+    "per_month": 3676,
+    "dd": -2073,
+    "worst_day": -889,
+    "sessions": 78,
+    "p10": 50.7,
+    "f10": 14.5,
+    "dec10": 65.2,
+    "p15": 50.7,
+    "f15": 14.5,
+    "pass_med": 4.0,
+    "slow_pass": 37.5,
+    "p60": 81.2,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 74,
+    "tpw": 1.8,
+    "wk2": 57.1,
+    "win": 48.6,
+    "pf": 1.31,
+    "net": 6836,
+    "per_month": 697,
+    "dd": -10080,
+    "worst_day": -889,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 50,
+    "tpw": 1.34,
+    "wk2": 36.8,
+    "win": 50.0,
+    "pf": 0.58,
+    "net": -7015,
+    "per_month": -792,
+    "dd": -8062,
+    "worst_day": -876,
+    "sessions": 186,
+    "p10": 10.7,
+    "f10": 5.6,
+    "dec10": 16.3,
+    "p15": 10.7,
+    "f15": 8.5,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "p60": 10.7,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 0,
+    "tpw": 0.0,
+    "wk2": 0.0,
+    "win": 0.0,
+    "pf": null,
+    "net": 0,
+    "per_month": 0,
+    "dd": 0,
+    "worst_day": 0,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.127,
+      "both_days": 50,
+      "both_lose": 17,
+      "both_win": 20
+     },
+     "H1": {
+      "r": 0.066,
+      "both_days": 33,
+      "both_lose": 11,
+      "both_win": 14
+     },
+     "H2": {
+      "r": 0.319,
+      "both_days": 17,
+      "both_lose": 6,
+      "both_win": 6
+     },
+     "2025": {
+      "r": 0.102,
+      "both_days": 29,
+      "both_lose": 4,
+      "both_win": 10
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.028,
+      "both_days": 24,
+      "both_lose": 8,
+      "both_win": 5
+     },
+     "H1": {
+      "r": -0.042,
+      "both_days": 18,
+      "both_lose": 6,
+      "both_win": 2
+     },
+     "H2": {
+      "r": -0.029,
+      "both_days": 6,
+      "both_lose": 2,
+      "both_win": 3
+     },
+     "2025": {
+      "r": -0.07,
+      "both_days": 22,
+      "both_lose": 5,
+      "both_win": 8
+     }
+    }
+   },
+   "n_by_src": {
+    "es": 74
+   }
+  },
+  "es_lit_ny": {
+   "desc": "ES LIT, NY slot only (08:00-15:30)",
+   "plan": "50k",
+   "H1": {
+    "n": 37,
+    "tpw": 1.45,
+    "wk2": 48.1,
+    "win": 43.2,
+    "pf": 1.29,
+    "net": 1827,
+    "per_month": 300,
+    "dd": -2588,
+    "worst_day": -889,
+    "sessions": 128,
+    "p10": 4.2,
+    "f10": 12.6,
+    "dec10": 16.8,
+    "p15": 4.2,
+    "f15": 14.3,
+    "pass_med": 3.0,
+    "slow_pass": 37.5,
+    "p60": 6.7,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 23,
+    "tpw": 1.47,
+    "wk2": 50.0,
+    "win": 47.8,
+    "pf": 0.44,
+    "net": -2237,
+    "per_month": -602,
+    "dd": -2304,
+    "worst_day": -626,
+    "sessions": 78,
+    "p10": 0.0,
+    "f10": 0.0,
+    "dec10": 0.0,
+    "p15": 0.0,
+    "f15": 0.0,
+    "pass_med": null,
+    "slow_pass": null,
+    "p60": 0.0,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 60,
+    "tpw": 1.46,
+    "wk2": 50.0,
+    "win": 45.0,
+    "pf": 0.96,
+    "net": -410,
+    "per_month": -42,
+    "dd": -4220,
+    "worst_day": -889,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 68,
+    "tpw": 1.83,
+    "wk2": 52.6,
+    "win": 41.2,
+    "pf": 0.64,
+    "net": -6115,
+    "per_month": -690,
+    "dd": -8363,
+    "worst_day": -888,
+    "sessions": 186,
+    "p10": 9.6,
+    "f10": 9.0,
+    "dec10": 18.6,
+    "p15": 10.2,
+    "f15": 10.2,
+    "pass_med": 5.0,
+    "slow_pass": 37.9,
+    "p60": 16.4,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 0,
+    "tpw": 0.0,
+    "wk2": 0.0,
+    "win": 0.0,
+    "pf": null,
+    "net": 0,
+    "per_month": 0,
+    "dd": 0,
+    "worst_day": 0,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.064,
+      "both_days": 45,
+      "both_lose": 10,
+      "both_win": 12
+     },
+     "H1": {
+      "r": 0.076,
+      "both_days": 31,
+      "both_lose": 5,
+      "both_win": 8
+     },
+     "H2": {
+      "r": -0.035,
+      "both_days": 14,
+      "both_lose": 5,
+      "both_win": 4
+     },
+     "2025": {
+      "r": -0.011,
+      "both_days": 38,
+      "both_lose": 7,
+      "both_win": 9
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.103,
+      "both_days": 20,
+      "both_lose": 2,
+      "both_win": 3
+     },
+     "H1": {
+      "r": -0.143,
+      "both_days": 14,
+      "both_lose": 1,
+      "both_win": 2
+     },
+     "H2": {
+      "r": 0.014,
+      "both_days": 6,
+      "both_lose": 1,
+      "both_win": 1
+     },
+     "2025": {
+      "r": -0.009,
+      "both_days": 23,
+      "both_lose": 11,
+      "both_win": 2
+     }
+    }
+   },
+   "n_by_src": {
+    "es": 60
+   }
+  },
+  "nq_lit_ny_slot": {
+   "desc": "NQ LIT, NY slot only (08:00-15:30) as its own account (takes the NY setup even when London traded)",
+   "plan": "50k",
+   "H1": {
+    "n": 28,
+    "tpw": 1.09,
+    "wk2": 22.2,
+    "win": 64.3,
+    "pf": 4.68,
+    "net": 12797,
+    "per_month": 2099,
+    "dd": -1593,
+    "worst_day": -867,
+    "sessions": 128,
+    "p10": 25.2,
+    "f10": 0.0,
+    "dec10": 25.2,
+    "p15": 30.3,
+    "f15": 0.0,
+    "pass_med": 5.5,
+    "slow_pass": 41.9,
+    "p60": 52.1,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 13,
+    "tpw": 0.83,
+    "wk2": 18.8,
+    "win": 46.2,
+    "pf": 0.48,
+    "net": -1185,
+    "per_month": -319,
+    "dd": -1185,
+    "worst_day": -443,
+    "sessions": 78,
+    "p10": 0.0,
+    "f10": 1.4,
+    "dec10": 1.4,
+    "p15": 0.0,
+    "f15": 1.4,
+    "pass_med": null,
+    "slow_pass": null,
+    "p60": 0.0,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 41,
+    "tpw": 1.0,
+    "wk2": 21.4,
+    "win": 58.5,
+    "pf": 3.02,
+    "net": 11612,
+    "per_month": 1184,
+    "dd": -1593,
+    "worst_day": -867,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 43,
+    "tpw": 1.16,
+    "wk2": 31.6,
+    "win": 53.5,
+    "pf": 0.62,
+    "net": -2621,
+    "per_month": -296,
+    "dd": -4999,
+    "worst_day": -837,
+    "sessions": 186,
+    "p10": 5.6,
+    "f10": 1.7,
+    "dec10": 7.3,
+    "p15": 9.0,
+    "f15": 3.4,
+    "pass_med": 5.5,
+    "slow_pass": 63.6,
+    "p60": 24.9,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 181,
+    "tpw": 1.11,
+    "wk2": 33.9,
+    "win": 50.3,
+    "pf": 0.58,
+    "net": -13989,
+    "per_month": -361,
+    "dd": -16860,
+    "worst_day": -872,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.103,
+      "both_days": 41,
+      "both_lose": 12,
+      "both_win": 18
+     },
+     "H1": {
+      "r": 0.095,
+      "both_days": 28,
+      "both_lose": 6,
+      "both_win": 13
+     },
+     "H2": {
+      "r": 0.159,
+      "both_days": 13,
+      "both_lose": 6,
+      "both_win": 5
+     },
+     "2025": {
+      "r": 0.367,
+      "both_days": 43,
+      "both_lose": 15,
+      "both_win": 22
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": 0.004,
+      "both_days": 12,
+      "both_lose": 3,
+      "both_win": 7
+     },
+     "H1": {
+      "r": 0.003,
+      "both_days": 11,
+      "both_lose": 3,
+      "both_win": 7
+     },
+     "H2": {
+      "r": 0.026,
+      "both_days": 1,
+      "both_lose": 0,
+      "both_win": 0
+     },
+     "2025": {
+      "r": 0.012,
+      "both_days": 16,
+      "both_lose": 4,
+      "both_win": 5
+     }
+    }
+   },
+   "n_by_src": {
+    "nq": 41
+   }
+  },
+  "nq_lit_lon_slot": {
+   "desc": "NQ LIT, London slot only (02:00-08:00)",
+   "plan": "50k",
+   "H1": {
+    "n": 65,
+    "tpw": 2.54,
+    "wk2": 81.5,
+    "win": 55.4,
+    "pf": 4.53,
+    "net": 27305,
+    "per_month": 4480,
+    "dd": -2137,
+    "worst_day": -763,
+    "sessions": 128,
+    "p10": 55.5,
+    "f10": 0.0,
+    "dec10": 55.5,
+    "p15": 63.9,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.6,
+    "p60": 65.5,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 32,
+    "tpw": 2.05,
+    "wk2": 68.8,
+    "win": 50.0,
+    "pf": 3.36,
+    "net": 9858,
+    "per_month": 2654,
+    "dd": -1291,
+    "worst_day": -641,
+    "sessions": 78,
+    "p10": 52.2,
+    "f10": 0.0,
+    "dec10": 52.2,
+    "p15": 58.0,
+    "f15": 0.0,
+    "pass_med": 3.5,
+    "slow_pass": 35.5,
+    "p60": 89.9,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 97,
+    "tpw": 2.35,
+    "wk2": 78.6,
+    "win": 53.6,
+    "pf": 4.12,
+    "net": 37163,
+    "per_month": 3788,
+    "dd": -2137,
+    "worst_day": -763,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 56,
+    "tpw": 1.51,
+    "wk2": 39.5,
+    "win": 53.6,
+    "pf": 0.87,
+    "net": -1429,
+    "per_month": -161,
+    "dd": -4345,
+    "worst_day": -878,
+    "sessions": 186,
+    "p10": 10.2,
+    "f10": 2.8,
+    "dec10": 13.0,
+    "p15": 12.4,
+    "f15": 4.0,
+    "pass_med": 6.0,
+    "slow_pass": 56.9,
+    "p60": 28.8,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 277,
+    "tpw": 1.7,
+    "wk2": 55.8,
+    "win": 54.2,
+    "pf": 1.09,
+    "net": 5850,
+    "per_month": 151,
+    "dd": -13030,
+    "worst_day": -871,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.966,
+      "both_days": 97,
+      "both_lose": 45,
+      "both_win": 52
+     },
+     "H1": {
+      "r": 0.962,
+      "both_days": 65,
+      "both_lose": 29,
+      "both_win": 36
+     },
+     "H2": {
+      "r": 0.987,
+      "both_days": 32,
+      "both_lose": 16,
+      "both_win": 16
+     },
+     "2025": {
+      "r": 0.929,
+      "both_days": 56,
+      "both_lose": 26,
+      "both_win": 30
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.021,
+      "both_days": 38,
+      "both_lose": 11,
+      "both_win": 10
+     },
+     "H1": {
+      "r": -0.016,
+      "both_days": 34,
+      "both_lose": 10,
+      "both_win": 9
+     },
+     "H2": {
+      "r": -0.038,
+      "both_days": 4,
+      "both_lose": 1,
+      "both_win": 1
+     },
+     "2025": {
+      "r": 0.1,
+      "both_days": 22,
+      "both_lose": 6,
+      "both_win": 5
+     }
+    }
+   },
+   "n_by_src": {
+    "nq": 97
+   }
+  },
+  "nq_atlas": {
+   "desc": "NQ ATLAS (5m execution, $500 a trade)",
+   "plan": "25k",
+   "H1": {
+    "n": 107,
+    "tpw": 4.18,
+    "wk2": 96.3,
+    "win": 53.3,
+    "pf": 3.05,
+    "net": 47285,
+    "per_month": 7758,
+    "dd": -2385,
+    "worst_day": -1009,
+    "sessions": 128,
+    "p10": 51.3,
+    "f10": 0.0,
+    "dec10": 51.3,
+    "p15": 60.5,
+    "f15": 0.0,
+    "pass_med": 3.0,
+    "slow_pass": 30.1,
+    "p60": 86.6,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 50,
+    "tpw": 3.21,
+    "wk2": 81.2,
+    "win": 54.0,
+    "pf": 2.28,
+    "net": 12105,
+    "per_month": 3259,
+    "dd": -2831,
+    "worst_day": -725,
+    "sessions": 78,
+    "p10": 44.9,
+    "f10": 0.0,
+    "dec10": 44.9,
+    "p15": 50.7,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 16.7,
+    "p60": 60.9,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 157,
+    "tpw": 3.81,
+    "wk2": 92.9,
+    "win": 53.5,
+    "pf": 2.83,
+    "net": 59390,
+    "per_month": 6054,
+    "dd": -2831,
+    "worst_day": -1009,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 171,
+    "tpw": 4.6,
+    "wk2": 100.0,
+    "win": 40.4,
+    "pf": 1.28,
+    "net": 13013,
+    "per_month": 1469,
+    "dd": -8913,
+    "worst_day": -1030,
+    "sessions": 186,
+    "p10": 28.2,
+    "f10": 0.0,
+    "dec10": 28.2,
+    "p15": 29.4,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 3.7,
+    "p60": 30.5,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 829,
+    "tpw": 5.09,
+    "wk2": 98.8,
+    "win": 36.3,
+    "pf": 1.09,
+    "net": 22090,
+    "per_month": 570,
+    "dd": -24970,
+    "worst_day": -1145,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.094,
+      "both_days": 81,
+      "both_lose": 17,
+      "both_win": 27
+     },
+     "H1": {
+      "r": 0.115,
+      "both_days": 61,
+      "both_lose": 13,
+      "both_win": 22
+     },
+     "H2": {
+      "r": -0.048,
+      "both_days": 20,
+      "both_lose": 4,
+      "both_win": 5
+     },
+     "2025": {
+      "r": 0.194,
+      "both_days": 66,
+      "both_lose": 18,
+      "both_win": 18
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": 0.629,
+      "both_days": 67,
+      "both_lose": 27,
+      "both_win": 36
+     },
+     "H1": {
+      "r": 0.585,
+      "both_days": 47,
+      "both_lose": 20,
+      "both_win": 24
+     },
+     "H2": {
+      "r": 0.813,
+      "both_days": 20,
+      "both_lose": 7,
+      "both_win": 12
+     },
+     "2025": {
+      "r": 0.528,
+      "both_days": 74,
+      "both_lose": 41,
+      "both_win": 28
+     }
+    }
+   },
+   "n_by_src": {
+    "MD": 40,
+    "SR": 40,
+    "EMA": 77
+   }
+  },
+  "nq_atlas_ema": {
+   "desc": "NQ ATLAS member EMA (5m execution, $500 a trade)",
+   "plan": "25k",
+   "H1": {
+    "n": 60,
+    "tpw": 2.34,
+    "wk2": 77.8,
+    "win": 60.0,
+    "pf": 2.72,
+    "net": 19867,
+    "per_month": 3259,
+    "dd": -3367,
+    "worst_day": -519,
+    "sessions": 128,
+    "p10": 47.1,
+    "f10": 0.0,
+    "dec10": 47.1,
+    "p15": 54.6,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 31.6,
+    "p60": 79.8,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 26,
+    "tpw": 1.67,
+    "wk2": 56.2,
+    "win": 69.2,
+    "pf": 3.1,
+    "net": 8136,
+    "per_month": 2190,
+    "dd": -1492,
+    "worst_day": -548,
+    "sessions": 78,
+    "p10": 39.1,
+    "f10": 0.0,
+    "dec10": 39.1,
+    "p15": 39.1,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 25.0,
+    "p60": 52.2,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 86,
+    "tpw": 2.09,
+    "wk2": 71.4,
+    "win": 62.8,
+    "pf": 2.82,
+    "net": 28003,
+    "per_month": 2855,
+    "dd": -3367,
+    "worst_day": -548,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 94,
+    "tpw": 2.53,
+    "wk2": 81.6,
+    "win": 48.9,
+    "pf": 1.19,
+    "net": 4520,
+    "per_month": 510,
+    "dd": -9472,
+    "worst_day": -574,
+    "sessions": 186,
+    "p10": 29.9,
+    "f10": 0.0,
+    "dec10": 29.9,
+    "p15": 31.6,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 8.2,
+    "p60": 34.5,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 420,
+    "tpw": 2.58,
+    "wk2": 83.6,
+    "win": 48.3,
+    "pf": 1.05,
+    "net": 5608,
+    "per_month": 145,
+    "dd": -21477,
+    "worst_day": -588,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.196,
+      "both_days": 57,
+      "both_lose": 13,
+      "both_win": 21
+     },
+     "H1": {
+      "r": 0.245,
+      "both_days": 44,
+      "both_lose": 11,
+      "both_win": 18
+     },
+     "H2": {
+      "r": -0.02,
+      "both_days": 13,
+      "both_lose": 2,
+      "both_win": 3
+     },
+     "2025": {
+      "r": -0.038,
+      "both_days": 49,
+      "both_lose": 11,
+      "both_win": 13
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": 0.438,
+      "both_days": 49,
+      "both_lose": 16,
+      "both_win": 28
+     },
+     "H1": {
+      "r": 0.355,
+      "both_days": 36,
+      "both_lose": 13,
+      "both_win": 18
+     },
+     "H2": {
+      "r": 0.66,
+      "both_days": 13,
+      "both_lose": 3,
+      "both_win": 10
+     },
+     "2025": {
+      "r": 0.444,
+      "both_days": 58,
+      "both_lose": 26,
+      "both_win": 24
+     }
+    }
+   },
+   "n_by_src": {
+    "EMA": 86
+   }
+  },
+  "nq_atlas_md": {
+   "desc": "NQ ATLAS member MD (5m execution, $500 a trade)",
+   "plan": "25k",
+   "H1": {
+    "n": 29,
+    "tpw": 1.13,
+    "wk2": 37.0,
+    "win": 37.9,
+    "pf": 3.78,
+    "net": 22090,
+    "per_month": 3624,
+    "dd": -2527,
+    "worst_day": -525,
+    "sessions": 128,
+    "p10": 44.5,
+    "f10": 0.0,
+    "dec10": 44.5,
+    "p15": 52.9,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 35.1,
+    "p60": 81.5,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 15,
+    "tpw": 0.96,
+    "wk2": 18.8,
+    "win": 33.3,
+    "pf": 1.75,
+    "net": 2569,
+    "per_month": 692,
+    "dd": -1717,
+    "worst_day": -524,
+    "sessions": 78,
+    "p10": 14.5,
+    "f10": 0.0,
+    "dec10": 14.5,
+    "p15": 14.5,
+    "f15": 0.0,
+    "pass_med": 5.5,
+    "slow_pass": 0.0,
+    "p60": 14.5,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 44,
+    "tpw": 1.07,
+    "wk2": 31.0,
+    "win": 36.4,
+    "pf": 3.17,
+    "net": 24658,
+    "per_month": 2514,
+    "dd": -2527,
+    "worst_day": -525,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 57,
+    "tpw": 1.53,
+    "wk2": 47.4,
+    "win": 22.8,
+    "pf": 1.23,
+    "net": 4295,
+    "per_month": 485,
+    "dd": -10795,
+    "worst_day": -588,
+    "sessions": 186,
+    "p10": 16.4,
+    "f10": 0.0,
+    "dec10": 16.4,
+    "p15": 16.9,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 50.8,
+    "p60": 34.5,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 271,
+    "tpw": 1.66,
+    "wk2": 50.3,
+    "win": 18.1,
+    "pf": 1.13,
+    "net": 12158,
+    "per_month": 314,
+    "dd": -22630,
+    "worst_day": -596,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": -0.063,
+      "both_days": 27,
+      "both_lose": 7,
+      "both_win": 5
+     },
+     "H1": {
+      "r": -0.079,
+      "both_days": 21,
+      "both_lose": 5,
+      "both_win": 3
+     },
+     "H2": {
+      "r": -0.009,
+      "both_days": 6,
+      "both_lose": 2,
+      "both_win": 2
+     },
+     "2025": {
+      "r": 0.313,
+      "both_days": 30,
+      "both_lose": 10,
+      "both_win": 6
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": 0.273,
+      "both_days": 24,
+      "both_lose": 12,
+      "both_win": 6
+     },
+     "H1": {
+      "r": 0.292,
+      "both_days": 17,
+      "both_lose": 9,
+      "both_win": 5
+     },
+     "H2": {
+      "r": 0.268,
+      "both_days": 7,
+      "both_lose": 3,
+      "both_win": 1
+     },
+     "2025": {
+      "r": 0.157,
+      "both_days": 32,
+      "both_lose": 21,
+      "both_win": 5
+     }
+    }
+   },
+   "n_by_src": {
+    "MD": 44
+   }
+  },
+  "nq_atlas_sr": {
+   "desc": "NQ ATLAS member SR (5m execution, $500 a trade)",
+   "plan": "25k",
+   "H1": {
+    "n": 29,
+    "tpw": 1.13,
+    "wk2": 25.9,
+    "win": 65.5,
+    "pf": 3.72,
+    "net": 12213,
+    "per_month": 2004,
+    "dd": -971,
+    "worst_day": -488,
+    "sessions": 128,
+    "p10": 41.2,
+    "f10": 0.0,
+    "dec10": 41.2,
+    "p15": 42.9,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 36.2,
+    "p60": 67.2,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 16,
+    "tpw": 1.03,
+    "wk2": 18.8,
+    "win": 50.0,
+    "pf": 1.89,
+    "net": 2914,
+    "per_month": 784,
+    "dd": -2773,
+    "worst_day": -512,
+    "sessions": 78,
+    "p10": 24.6,
+    "f10": 0.0,
+    "dec10": 24.6,
+    "p15": 30.4,
+    "f15": 0.0,
+    "pass_med": 8.0,
+    "slow_pass": 32.3,
+    "p60": 44.9,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 45,
+    "tpw": 1.09,
+    "wk2": 23.8,
+    "win": 60.0,
+    "pf": 2.95,
+    "net": 15126,
+    "per_month": 1542,
+    "dd": -2773,
+    "worst_day": -512,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 48,
+    "tpw": 1.29,
+    "wk2": 28.9,
+    "win": 45.8,
+    "pf": 1.64,
+    "net": 7312,
+    "per_month": 826,
+    "dd": -2272,
+    "worst_day": -544,
+    "sessions": 186,
+    "p10": 16.4,
+    "f10": 0.0,
+    "dec10": 16.4,
+    "p15": 19.8,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 50.0,
+    "p60": 39.5,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 258,
+    "tpw": 1.58,
+    "wk2": 46.7,
+    "win": 34.9,
+    "pf": 1.07,
+    "net": 5218,
+    "per_month": 135,
+    "dd": -5859,
+    "worst_day": -550,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": -0.046,
+      "both_days": 27,
+      "both_lose": 4,
+      "both_win": 7
+     },
+     "H1": {
+      "r": -0.11,
+      "both_days": 20,
+      "both_lose": 3,
+      "both_win": 5
+     },
+     "H2": {
+      "r": 0.148,
+      "both_days": 7,
+      "both_lose": 1,
+      "both_win": 2
+     },
+     "2025": {
+      "r": 0.07,
+      "both_days": 21,
+      "both_lose": 7,
+      "both_win": 8
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": 0.216,
+      "both_days": 25,
+      "both_lose": 10,
+      "both_win": 10
+     },
+     "H1": {
+      "r": 0.198,
+      "both_days": 16,
+      "both_lose": 6,
+      "both_win": 6
+     },
+     "H2": {
+      "r": 0.26,
+      "both_days": 9,
+      "both_lose": 4,
+      "both_win": 4
+     },
+     "2025": {
+      "r": 0.223,
+      "both_days": 23,
+      "both_lose": 8,
+      "both_win": 7
+     }
+    }
+   },
+   "n_by_src": {
+    "SR": 45
+   }
+  },
+  "es_atlas": {
+   "desc": "ES ATLAS (5m execution, $500 a trade)",
+   "plan": "25k",
+   "H1": {
+    "n": 125,
+    "tpw": 4.88,
+    "wk2": 96.3,
+    "win": 33.6,
+    "pf": 0.85,
+    "net": -6251,
+    "per_month": -1026,
+    "dd": -8843,
+    "worst_day": -1156,
+    "sessions": 128,
+    "p10": 26.9,
+    "f10": 0.0,
+    "dec10": 26.9,
+    "p15": 27.7,
+    "f15": 0.0,
+    "pass_med": 3.5,
+    "slow_pass": 0.0,
+    "p60": 27.7,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 76,
+    "tpw": 4.87,
+    "wk2": 100.0,
+    "win": 34.2,
+    "pf": 1.09,
+    "net": 2191,
+    "per_month": 590,
+    "dd": -11252,
+    "worst_day": -1088,
+    "sessions": 78,
+    "p10": 43.5,
+    "f10": 0.0,
+    "dec10": 43.5,
+    "p15": 44.9,
+    "f15": 0.0,
+    "pass_med": 4.5,
+    "slow_pass": 18.4,
+    "p60": 55.1,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 201,
+    "tpw": 4.88,
+    "wk2": 97.6,
+    "win": 33.8,
+    "pf": 0.94,
+    "net": -4060,
+    "per_month": -414,
+    "dd": -20095,
+    "worst_day": -1156,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 178,
+    "tpw": 4.78,
+    "wk2": 100.0,
+    "win": 36.0,
+    "pf": 0.95,
+    "net": -2785,
+    "per_month": -314,
+    "dd": -16047,
+    "worst_day": -1198,
+    "sessions": 186,
+    "p10": 21.5,
+    "f10": 0.0,
+    "dec10": 21.5,
+    "p15": 23.7,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 8.7,
+    "p60": 26.0,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 0,
+    "tpw": 0.0,
+    "wk2": 0.0,
+    "win": 0.0,
+    "pf": null,
+    "net": 0,
+    "per_month": 0,
+    "dd": 0,
+    "worst_day": 0,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.111,
+      "both_days": 92,
+      "both_lose": 22,
+      "both_win": 13
+     },
+     "H1": {
+      "r": 0.046,
+      "both_days": 61,
+      "both_lose": 13,
+      "both_win": 8
+     },
+     "H2": {
+      "r": 0.31,
+      "both_days": 31,
+      "both_lose": 9,
+      "both_win": 5
+     },
+     "2025": {
+      "r": -0.128,
+      "both_days": 67,
+      "both_lose": 15,
+      "both_win": 15
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.031,
+      "both_days": 63,
+      "both_lose": 19,
+      "both_win": 12
+     },
+     "H1": {
+      "r": 0.026,
+      "both_days": 43,
+      "both_lose": 13,
+      "both_win": 9
+     },
+     "H2": {
+      "r": -0.117,
+      "both_days": 20,
+      "both_lose": 6,
+      "both_win": 3
+     },
+     "2025": {
+      "r": 0.017,
+      "both_days": 63,
+      "both_lose": 24,
+      "both_win": 11
+     }
+    }
+   },
+   "n_by_src": {
+    "MD": 56,
+    "EMA": 90,
+    "SR": 55
+   }
+  },
+  "es_atlas_ema": {
+   "desc": "ES ATLAS member EMA (5m execution, $500 a trade)",
+   "plan": "25k",
+   "H1": {
+    "n": 62,
+    "tpw": 2.42,
+    "wk2": 77.8,
+    "win": 45.2,
+    "pf": 0.86,
+    "net": -2463,
+    "per_month": -404,
+    "dd": -8718,
+    "worst_day": -626,
+    "sessions": 128,
+    "p10": 10.1,
+    "f10": 0.0,
+    "dec10": 10.1,
+    "p15": 10.9,
+    "f15": 0.0,
+    "pass_med": 2.5,
+    "slow_pass": 18.8,
+    "p60": 13.4,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 34,
+    "tpw": 2.18,
+    "wk2": 81.2,
+    "win": 55.9,
+    "pf": 1.84,
+    "net": 6857,
+    "per_month": 1846,
+    "dd": -2072,
+    "worst_day": -599,
+    "sessions": 78,
+    "p10": 37.7,
+    "f10": 0.0,
+    "dec10": 37.7,
+    "p15": 44.9,
+    "f15": 0.0,
+    "pass_med": 5.5,
+    "slow_pass": 36.7,
+    "p60": 71.0,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 96,
+    "tpw": 2.33,
+    "wk2": 81.0,
+    "win": 49.0,
+    "pf": 1.17,
+    "net": 4394,
+    "per_month": 448,
+    "dd": -8718,
+    "worst_day": -626,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 91,
+    "tpw": 2.45,
+    "wk2": 84.2,
+    "win": 48.4,
+    "pf": 0.63,
+    "net": -9134,
+    "per_month": -1031,
+    "dd": -12545,
+    "worst_day": -626,
+    "sessions": 186,
+    "p10": 16.4,
+    "f10": 0.0,
+    "dec10": 16.4,
+    "p15": 19.2,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "p60": 19.2,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 0,
+    "tpw": 0.0,
+    "wk2": 0.0,
+    "win": 0.0,
+    "pf": null,
+    "net": 0,
+    "per_month": 0,
+    "dd": 0,
+    "worst_day": 0,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.114,
+      "both_days": 61,
+      "both_lose": 16,
+      "both_win": 14
+     },
+     "H1": {
+      "r": 0.15,
+      "both_days": 45,
+      "both_lose": 12,
+      "both_win": 10
+     },
+     "H2": {
+      "r": 0.068,
+      "both_days": 16,
+      "both_lose": 4,
+      "both_win": 4
+     },
+     "2025": {
+      "r": -0.027,
+      "both_days": 41,
+      "both_lose": 7,
+      "both_win": 10
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": 0.026,
+      "both_days": 44,
+      "both_lose": 12,
+      "both_win": 14
+     },
+     "H1": {
+      "r": 0.095,
+      "both_days": 34,
+      "both_lose": 11,
+      "both_win": 9
+     },
+     "H2": {
+      "r": -0.077,
+      "both_days": 10,
+      "both_lose": 1,
+      "both_win": 5
+     },
+     "2025": {
+      "r": 0.048,
+      "both_days": 50,
+      "both_lose": 19,
+      "both_win": 13
+     }
+    }
+   },
+   "n_by_src": {
+    "EMA": 96
+   }
+  },
+  "es_atlas_md": {
+   "desc": "ES ATLAS member MD (5m execution, $500 a trade)",
+   "plan": "25k",
+   "H1": {
+    "n": 38,
+    "tpw": 1.48,
+    "wk2": 48.1,
+    "win": 15.8,
+    "pf": 0.87,
+    "net": -1851,
+    "per_month": -304,
+    "dd": -8761,
+    "worst_day": -599,
+    "sessions": 128,
+    "p10": 25.2,
+    "f10": 0.0,
+    "dec10": 25.2,
+    "p15": 29.4,
+    "f15": 0.0,
+    "pass_med": 5.5,
+    "slow_pass": 2.8,
+    "p60": 30.3,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 31,
+    "tpw": 1.99,
+    "wk2": 68.8,
+    "win": 9.7,
+    "pf": 0.65,
+    "net": -4780,
+    "per_month": -1287,
+    "dd": -9875,
+    "worst_day": -579,
+    "sessions": 78,
+    "p10": 23.2,
+    "f10": 0.0,
+    "dec10": 23.2,
+    "p15": 23.2,
+    "f15": 0.0,
+    "pass_med": 4.5,
+    "slow_pass": 0.0,
+    "p60": 23.2,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 69,
+    "tpw": 1.67,
+    "wk2": 57.1,
+    "win": 13.0,
+    "pf": 0.77,
+    "net": -6630,
+    "per_month": -676,
+    "dd": -18635,
+    "worst_day": -599,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 69,
+    "tpw": 1.85,
+    "wk2": 55.3,
+    "win": 24.6,
+    "pf": 1.39,
+    "net": 9808,
+    "per_month": 1107,
+    "dd": -6683,
+    "worst_day": -608,
+    "sessions": 186,
+    "p10": 20.3,
+    "f10": 0.0,
+    "dec10": 20.3,
+    "p15": 27.7,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 37.2,
+    "p60": 44.1,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 0,
+    "tpw": 0.0,
+    "wk2": 0.0,
+    "win": 0.0,
+    "pf": null,
+    "net": 0,
+    "per_month": 0,
+    "dd": 0,
+    "worst_day": 0,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": 0.069,
+      "both_days": 39,
+      "both_lose": 8,
+      "both_win": 4
+     },
+     "H1": {
+      "r": -0.073,
+      "both_days": 24,
+      "both_lose": 5,
+      "both_win": 1
+     },
+     "H2": {
+      "r": 0.427,
+      "both_days": 15,
+      "both_lose": 3,
+      "both_win": 3
+     },
+     "2025": {
+      "r": -0.12,
+      "both_days": 35,
+      "both_lose": 10,
+      "both_win": 7
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": 0.003,
+      "both_days": 23,
+      "both_lose": 13,
+      "both_win": 1
+     },
+     "H1": {
+      "r": 0.009,
+      "both_days": 14,
+      "both_lose": 7,
+      "both_win": 1
+     },
+     "H2": {
+      "r": -0.004,
+      "both_days": 9,
+      "both_lose": 6,
+      "both_win": 0
+     },
+     "2025": {
+      "r": -0.039,
+      "both_days": 32,
+      "both_lose": 15,
+      "both_win": 5
+     }
+    }
+   },
+   "n_by_src": {
+    "MD": 69
+   }
+  },
+  "es_atlas_sr": {
+   "desc": "ES ATLAS member SR (5m execution, $500 a trade)",
+   "plan": "25k",
+   "H1": {
+    "n": 42,
+    "tpw": 1.64,
+    "wk2": 48.1,
+    "win": 35.7,
+    "pf": 0.98,
+    "net": -284,
+    "per_month": -47,
+    "dd": -4071,
+    "worst_day": -563,
+    "sessions": 128,
+    "p10": 6.7,
+    "f10": 0.0,
+    "dec10": 6.7,
+    "p15": 6.7,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "p60": 6.7,
+    "n_starts": 119
+   },
+   "H2": {
+    "n": 27,
+    "tpw": 1.73,
+    "wk2": 50.0,
+    "win": 29.6,
+    "pf": 0.69,
+    "net": -2905,
+    "per_month": -782,
+    "dd": -4315,
+    "worst_day": -565,
+    "sessions": 78,
+    "p10": 5.8,
+    "f10": 0.0,
+    "dec10": 5.8,
+    "p15": 5.8,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "p60": 5.8,
+    "n_starts": 69
+   },
+   "2026": {
+    "n": 69,
+    "tpw": 1.67,
+    "wk2": 50.0,
+    "win": 33.3,
+    "pf": 0.86,
+    "net": -3189,
+    "per_month": -325,
+    "dd": -6515,
+    "worst_day": -565,
+    "sessions": 206
+   },
+   "2025": {
+    "n": 58,
+    "tpw": 1.56,
+    "wk2": 50.0,
+    "win": 34.5,
+    "pf": 1.03,
+    "net": 601,
+    "per_month": 68,
+    "dd": -5483,
+    "worst_day": -582,
+    "sessions": 186,
+    "p10": 11.9,
+    "f10": 0.0,
+    "dec10": 11.9,
+    "p15": 12.4,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 37.1,
+    "p60": 19.8,
+    "n_starts": 177
+   },
+   "2021-24": {
+    "n": 0,
+    "tpw": 0.0,
+    "wk2": 0.0,
+    "win": 0.0,
+    "pf": null,
+    "net": 0,
+    "per_month": 0,
+    "dd": 0,
+    "worst_day": 0,
+    "sessions": 814
+   },
+   "corr": {
+    "lit": {
+     "2026": {
+      "r": -0.12,
+      "both_days": 41,
+      "both_lose": 10,
+      "both_win": 6
+     },
+     "H1": {
+      "r": -0.133,
+      "both_days": 27,
+      "both_lose": 6,
+      "both_win": 4
+     },
+     "H2": {
+      "r": -0.111,
+      "both_days": 14,
+      "both_lose": 4,
+      "both_win": 2
+     },
+     "2025": {
+      "r": 0.008,
+      "both_days": 34,
+      "both_lose": 10,
+      "both_win": 8
+     }
+    },
+    "atlas": {
+     "2026": {
+      "r": -0.157,
+      "both_days": 23,
+      "both_lose": 3,
+      "both_win": 3
+     },
+     "H1": {
+      "r": -0.161,
+      "both_days": 17,
+      "both_lose": 3,
+      "both_win": 2
+     },
+     "H2": {
+      "r": -0.148,
+      "both_days": 6,
+      "both_lose": 0,
+      "both_win": 1
+     },
+     "2025": {
+      "r": 0.152,
+      "both_days": 22,
+      "both_lose": 9,
+      "both_win": 4
+     }
+    }
+   },
+   "n_by_src": {
+    "SR": 69
+   }
+  }
+ },
+ "member_check": {
+  "EMA": {
+   "stored": 636,
+   "here": 636,
+   "same_entries": 636
+  },
+  "MD": {
+   "stored": 387,
+   "here": 387,
+   "same_entries": 387
+  },
+  "SR": {
+   "stored": 372,
+   "here": 374,
+   "same_entries": 372
+  }
+ },
+ "asia_slot_corr": {
+  "lit": {
+   "2026": {
+    "r": -0.021,
+    "both_days": 47,
+    "both_lose": 5,
+    "both_win": 16
+   },
+   "H1": {
+    "r": 0.008,
+    "both_days": 31,
+    "both_lose": 4,
+    "both_win": 9
+   },
+   "H2": {
+    "r": -0.082,
+    "both_days": 16,
+    "both_lose": 1,
+    "both_win": 7
+   },
+   "2025": {
+    "r": 0.043,
+    "both_days": 19,
+    "both_lose": 3,
+    "both_win": 6
+   }
+  },
+  "atlas": {
+   "2026": {
+    "r": -0.044,
+    "both_days": 20,
+    "both_lose": 2,
+    "both_win": 3
+   },
+   "H1": {
+    "r": -0.072,
+    "both_days": 15,
+    "both_lose": 1,
+    "both_win": 2
+   },
+   "H2": {
+    "r": -0.009,
+    "both_days": 5,
+    "both_lose": 1,
+    "both_win": 1
+   },
+   "2025": {
+    "r": -0.024,
+    "both_days": 18,
+    "both_lose": 8,
+    "both_win": 4
+   }
+  }
+ },
+ "asia_slot_n2026": 69,
+ "corr_null": {
+  "2026": {
+   "p95": 0.13
+  },
+  "2025": {
+   "p95": 0.145
+  }
+ }
+}
