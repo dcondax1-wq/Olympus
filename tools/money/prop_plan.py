@@ -104,6 +104,13 @@ def r0(x):
     return None if x is None else int(round(x))
 
 
+def usd(x):
+    """$1,234 / -$9 (the sign before the $)."""
+    if x is None:
+        return "n/a"
+    return ("-" if x < 0 else "") + f"${abs(int(round(x))):,}"
+
+
 def load_json(path):
     try:
         with open(path, encoding="utf-8") as fh:
@@ -188,14 +195,14 @@ def build(accts=None, fixture=False, asof=None):
     if nxt["usd_month"].get("h2") is not None and cur["usd_month"].get("h2") is not None and nxt["n"] != cur["n"]:
         adds = r0(nxt["usd_month"]["h2"] - cur["usd_month"]["h2"])
     on = [a["name"] for a in accts if a.get("stage") in ("eval", "funded")]
-    head = (f"{len(on)} accounts trading ({', '.join(on)}): about ${now_pm['h2']:,} a month once funded at the Jul-Oct 2026 rate "
-            f"(estimate; ${now_pm['ref']:,} in a 2021-25-like market). Next: {nxt['name'].lower()} when {nxt['when']}.")
+    head = (f"{len(on)} accounts trading ({', '.join(on)}): about {usd(now_pm['h2'])} a month once funded at the Jul-Oct 2026 rate "
+            f"(estimate; {usd(now_pm['ref'])} in a 2021-25-like market). Next step: {nxt['name']}, when {nxt['when']}.")
     items = []
     for row in ladder:
         h2, ref = row["usd_month"].get("h2"), row["usd_month"].get("ref")
         items.append({"title": f"Step {row['n']}: {row['name']} ({row['accounts']} accounts)",
                       "detail": f"When: {row['when']}. Buy: {row['buy']}." + (
-                          f" First-year estimate about ${h2:,} a month (Jul-Oct 2026 rate), ${ref:,} in a 2021-25 market." if h2 is not None and ref is not None else ""),
+                          f" First-year estimate about {usd(h2)} a month (Jul-Oct 2026 rate), {usd(ref)} in a 2021-25 market." if h2 is not None and ref is not None else ""),
                       "usd": h2, "score": 90 if row["n"] == n else 70 if row["n"] == n + 1 else 40,
                       "risk": "low" if row["n"] <= 1 else "med" if row["n"] <= 3 else "high"})
     plan = {
