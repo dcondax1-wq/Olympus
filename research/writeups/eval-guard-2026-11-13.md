@@ -158,7 +158,7 @@ below is the **modelled** gap, and the first real number comes from the PC's own
 - **Commission:** the live books already use $1.90. Only the stored research runs are $0.50 a micro too kind: run `lit_live`
   2026 +$43,820 -> +$43,502 at $1.90 (-$33 a month at the LIT size).
 - **Each extra tick of slippage per round trip** (on top of the 1 tick already in the prices), from this study's eval paths
-  (`--slip`, micros actually traded per eval month): **Zlarior $21-38 a month** (42-75 micros a month; 40% room: ~$16-24),
+  (`--slip`, micros actually traded per eval month): **Zlarior $21-38 a month** (42-75 micros a month; the smaller-size rules ~$16-24),
   **ATLAS $11-22 a month** (21-44 micros). Per eval: +2 ticks costs Zlarior $15-118 of $ per eval and 0-3 points of
   2-week fails; ATLAS $17-40. +8 ticks: Zlarior 80% $2,697 -> $2,565 (H2), ATLAS 50% $2,018 -> $1,850. The ranking of
   the rules does not change at any slippage.
@@ -184,3 +184,53 @@ below is the **modelled** gap, and the first real number comes from the PC's own
    missed fill; worth testing on Sim101 only once real fills show London entries slipping more than 2 ticks.
 5. **Timing:** already fixed (decide on the 1m CISD close, route ~3 s later; ATLAS skips a 5m open seen more than 45 s
    late). Keep NinjaTrader and the PC up from ~01:55 ET: 95 of 120 LIT entries are 02:00-08:00.
+
+## 3. MFFU rule compliance: what MFFU publishes now vs what the code enforces
+
+Rules searched 2026-11-13 (MFFU help center and plan pages, read through the search engine: `help.myfundedfutures.com`
+cannot be opened from this cloud session). Code read: `engine/sizing.py`, `engine/account_b.py`, `engine/multi_account.py`
+(PRESETS), `engine/broker_balance.py`, `engine/lit_brief.py`, `engine/live.py`; `python -X utf8 -m tests.test_mffu_rules`
+today: **55 ok, 0 FAIL, 3 WARN**.
+
+| Rule (Builder 50K / 25K, current) | What the bot enforces | Status |
+|---|---|---|
+| Max loss $2,000 / $1,000 EOD trailing, locks at start + $100, **open losses count** | eval book + floor (`sizing.eval_state`, anchor), every cap prices a full stop-out at stop + 1 tick + $1.90, real room from NinjaTrader `accounts.csv` caps the ledger room (`broker_balance`) | ok; thin slack at 80% (a 20-micro stop may slip only 5.7 pts) |
+| Daily loss $1,000 / $600, soft pause | `dll_cap` (2 ticks of stop slip), ATLAS `dll_guard`, the day stops at -$1,000 / -$600 | ok (a full stop-out can book ~$1,008: a pause only) |
+| Consistency: none in the eval; 50% best day at payout (funded) | eval: none; funded sizing `max_win` $2,000 / $1,000, `funded_life` tracker | ok |
+| Max size 4 minis / 40 micros (50K), 2 / 20 (25K), minis + micros together | `max_micros` 40 (LIT), 20 (ATLAS preset); scale-in OFF | ok |
+| News: Builder allows T1 news in eval and sim funded (the older general policy says flat 2 min around T1) | no news filter | ok for Builder; conflicting older page (watch) |
+| Hours: from 18:00 ET, auto-close 16:10 ET; never overnight / weekend; half-days not auto-flattened | LIT entries 02:00-15:30, flat 15:55; ATLAS flat 15:55 (`flat_mod` 955); flat 5 min before CME early halts | ok |
+| Hedging, also across own accounts | ATLAS never opposite LIT (blocked while LIT holds / enters / is armed; LIT opposite closes ATLAS first) | ok |
+| Minimum days: 1 (eval) | 1-micro min-days trade if fewer than 2 traded days | ok |
+| Payouts: $2,100 / $1,100 buffer, $500-2,000 / $250-1,000, 80/20, 2 days a cycle, 5 sim payouts | `funded_life` constants (test_mffu_rules) | ok; the bot never requests a payout |
+| Commission $1.90 MNQ round trip | live books and caps $1.90 | ok (research runs $1.40: WARN, research only) |
+| **Inactivity: 7 calendar days in a row without a trade -> the account can be closed (one-time model since 2026-08-25; sim funded: profits forfeited)** | only a note on the LIT plan page (`lit_brief.mffu_notes`, 5+ days); no push, nothing for ATLAS's 25K | **GAP** |
+| 2% price limit: no trading within 2% of a CME price limit (sim funded / live) | not checked | gap for funded only (stops are 8-80 pts; a 5% overnight move is rare) |
+
+### Gaps that could fail an eval (most urgent first)
+
+1. **Inactivity, now.** The last report is 2026-11-07 and the bots come back tonight. If either eval has had no trade since
+   2026-11-06 or earlier, it is at or past 7 calendar days. **Check the last fill date of each eval in the MFFU dashboard
+   before tonight; if 6+ days, place 1 MNQ by hand on that account at the open.** In 2026 the strategies themselves went 7+
+   full days without a trade 3 times (LIT: after 03-04, 06-08, 08-03) and 2 times (ATLAS: after 06-30, 08-31), so this will
+   recur. Fix (engine, the lead's call): a push at 5 days for each eval account and an optional 1-micro "keep-alive" trade
+   that fits the room cap.
+2. **Sizing mode differs from the docs** (step 1, finding 0): past session 10 the code sizes safe_eval, the docs promise
+   two-week 80%. Not an MFFU breach, but the owner may "fix" it to 80% and that is the row that fails 41% of the time.
+3. **Open-loss breach on a slipped stop at 80%** (step 2): 5.7 pts of slack for 20 micros. Room share 0.4 gives 17 pts.
+4. **The room the bot sees** comes from NinjaTrader's `accounts.csv` (fresh < 3 min) or, when that file is stale, from the
+   anchor of 2026-10-23 + the bot's own fills, which would overstate today's room by ~$400 (the $1,145 includes losses the
+   bot never booked). Confirm `python -m engine.broker_balance` shows both eval rows fresh before arming.
+5. Funded later: the 2% price-limit rule and the sim-funded inactivity forfeiture are not coded.
+
+### Sources (searched 2026-11-13)
+- Builder 50K guide: https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide
+- Builder 25K: https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look
+- Builder plan page: https://myfundedfutures.com/plans/builder
+- News policy: https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy
+- Permitted times: https://help.myfundedfutures.com/en/articles/9558251-permitted-times-to-trade
+- Consistency: https://help.myfundedfutures.com/en/articles/11994562-consistency-rule-at-my-fundedfutures
+- Payouts: https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts
+- Inactivity (one-time model): https://help.myfundedfutures.com/en/articles/16596524-inactivity-rule-one-time-payment-model
+- 2% price limit: https://help.myfundedfutures.com/en/articles/9698984-2-price-limit-rule
+- Instrument list (MNQ $1.90): https://help.myfundedfutures.com/en/articles/9735811-futures-instrument-list
