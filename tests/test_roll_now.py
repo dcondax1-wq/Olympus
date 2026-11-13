@@ -114,7 +114,6 @@ def guard():
     # ---- through the real reporter (fake http, fake heartbeat folder)
     from tests.test_bots_back import Box, FakeHTTP
     from tests.test_live_publish import hb_payload
-    from tools import pc_report as R
     real_fact = roll_watch.fact
     b = Box()
     try:

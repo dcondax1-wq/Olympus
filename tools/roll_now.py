@@ -263,7 +263,7 @@ def run(f: dict, check_only: bool = False, wait_s: int = WAIT_DEFAULT_S, regathe
             for ln in click_text(st, tgt):
                 say(f"     {ln}")
             if wait_s <= 0 or regather is None:
-                say(f"  [FIX] Do the click above, then double-click ROLL.bat again.")
+                say("  [FIX] Do the click above, then double-click ROLL.bat again.")
                 return 1
             say(f"  Waiting up to {wait_s // 60} minutes for the chart to show {_month(tgt)} ...")
             t0 = time.monotonic()
