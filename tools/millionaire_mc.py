@@ -9,7 +9,8 @@ The whole business as a Monte Carlo, from our own trade list (bootstrap by week 
   * fleets 1 / 3 / 5 / 10 accounts: [MFFU 50K, MFFU 25K, MFFU 25K] (MFFU's per-person Builder cap) then 50Ks at Lucid /
     FundedNext with MFFU 50K rules as the proxy at $130 an eval (list-ish; codes make it cheaper).
   * rebuy policy: "now" = rebuy the next session (the engine); "breaker" = after 3 evals in a row on a slot fail with no
-    pass, wait 42 sessions (2 months) before that slot buys again.
+    pass, wait 42 sessions (2 months) before that slot buys again; "stop" = a slot buys nothing more once its own running
+    net is 5 eval prices below its best (about $460 on the MFFU 50K).
   * eval budget ruin = the running cash (budget + payouts - every fee) would have gone below 0.
   * personal live account (option): once the prop cash after a 30% tax set-aside reaches $30,000, $25,000 goes into a
     personal futures account trading the same LIT trades at 1% of equity per trade (micros = floor(1% / risk of a micro),
@@ -56,6 +57,15 @@ def ecfg(plan):
     return U.ecfg_of({}, plan=plan)
 
 
+STOP_DD = 5                                   # "stop" policy: retire a slot once its running net is 5 eval prices below its best
+
+
+def retire(cash, k, price):
+    """The slot's running net (through session k, before this rebuy) is STOP_DD prices or more below its best -> stop."""
+    c = np.cumsum(cash[: k + 1])
+    return float(c.max()) - (float(c[-1]) - price) >= STOP_DD * price - 1e-9
+
+
 def flows(BY, seq, key, start, horizon, breaker=False, zombie=True):
     """Cash per session for one slot on one path (owner payouts +, eval purchases -), the slot bought at session `start`.
     Same state machine as uprisk.life (checked by `check` with zombie=False). zombie=True adds the owner's rule found in
@@ -65,7 +75,7 @@ def flows(BY, seq, key, start, horizon, breaker=False, zombie=True):
     plan, fc, price = s["plan"], s["fcfg"], s["price"]
     ec = ecfg(plan)
     cash = np.zeros(horizon)
-    st = {"evals": 0, "funded": 0, "lost": 0, "grads": 0, "paid": 0.0, "fees": 0.0, "zombies": 0}
+    st = {"evals": 0, "funded": 0, "lost": 0, "grads": 0, "paid": 0.0, "fees": 0.0, "zombies": 0, "retired": None}
     if start >= horizon:
         return cash, st
     cash[start] -= price
@@ -89,9 +99,12 @@ def flows(BY, seq, key, start, horizon, breaker=False, zombie=True):
                 fails_row = 0
             elif r in ("fail", "stuck", "reset"):
                 fails_row += 1
-                if breaker and fails_row >= 3:
+                if breaker is True and fails_row >= 3:
                     pause, fails_row = 42, 0
                     continue
+                if breaker == "stop" and retire(cash, k, price):
+                    st["retired"] = k
+                    break
                 cash[k] -= price
                 st["evals"] += 1
                 st["fees"] += price
@@ -113,6 +126,9 @@ def flows(BY, seq, key, start, horizon, breaker=False, zombie=True):
             if ev in ("lost", "grad"):
                 st["lost" if ev == "lost" else "grads"] += 1
                 f = None
+                if breaker == "stop" and retire(cash, k, price):
+                    st["retired"] = k
+                    break
                 cash[k] -= price
                 st["evals"] += 1
                 st["fees"] += price
@@ -194,7 +210,7 @@ def summarize(cum, months, live_w=None, live_start=None, first_cost=0.0):
     return r
 
 
-def run(n=500, months=120, spans=SPANS, breakers=(False, True), live=True):
+def run(n=500, months=120, spans=SPANS, breakers=(False, True, "stop"), live=True):
     S, BY = U.load()
     horizon = months * MO
     out = {"n": n, "months": months, "offset_sessions": OFFSET, "slots": {k: {kk: v for kk, v in s.items() if kk != "fcfg"} for k, s in SLOTS.items()},
@@ -208,7 +224,7 @@ def run(n=500, months=120, spans=SPANS, breakers=(False, True), live=True):
             U.PRICE[SLOTS[key]["plan"]] = SLOTS[key]["price"]
             out["evals"].setdefault(key, {})[sp] = U.eval_mc(BY, P60, ecfg(SLOTS[key]["plan"]), plan=SLOTS[key]["plan"], horizon=60)
         for br in breakers:
-            tag = f"{sp}{'_breaker' if br else ''}"
+            tag = sp + {False: "", True: "_breaker", "stop": "_stop"}[br]
             per = np.zeros((len(ORDER), n, horizon))
             stats = [[None] * n for _ in ORDER]
             for j, key in enumerate(ORDER):
@@ -220,7 +236,7 @@ def run(n=500, months=120, spans=SPANS, breakers=(False, True), live=True):
                 mon = sess.reshape(n, months, MO).sum(axis=2)
                 cum = np.cumsum(mon, axis=1)
                 lw, ls = None, None
-                if live and not br:
+                if live and br is False:
                     W = [personal(BY, P[i], mon[i], months) for i in range(n)]
                     lw, ls = np.array([w for w, _ in W]), [s for _, s in W]
                 res[str(N)] = summarize(cum, months, lw, ls, first_cost=sum(SLOTS[k]["price"] for k in ORDER[:N]))
@@ -244,8 +260,8 @@ def run(n=500, months=120, spans=SPANS, breakers=(False, True), live=True):
                 res["slot_alone"][key] = {"y1_net": round(float(c.mean())), "y1_p10": round(float(np.percentile(c, 10))),
                                           "y1_p90": round(float(np.percentile(c, 90))), "fees_y1": round(float(fees)),
                                           "per_fee_dollar": round(float(c.mean()) / max(1.0, float(fees)), 1)}
-            if not br:
-                res["ladder"] = ladder(BY, P, per, stats, horizon, months, live)
+            if br in (False, "stop"):
+                res["ladder"] = ladder(BY, P, per, stats, horizon, months, live and br is False, br)
                 L = res["ladder"]
                 print(f"{tag:12s} ladder    ${L['pm_y1']:>6}/mo y1  ${L['pm_y2_3']:>6}/mo y2-3  ruin {L['ruin_1']}%  need p95 ${L['cash_needed_p95']}  "
                       f"100K med {L['to_100000']['med']}  1M med {L['to_1000000']['med']} (5y {L['to_1000000']['p_hit_5y']}%)"
@@ -255,7 +271,7 @@ def run(n=500, months=120, spans=SPANS, breakers=(False, True), live=True):
     return out
 
 
-def ladder(BY, P, per, stats, horizon, months, live):
+def ladder(BY, P, per, stats, horizon, months, live, br=False):
     """Result-triggered growth: MFFU's 3 slots from day 1 (as the fixed fleet), slots 4-5 (other-firm 50Ks) the session
     after the first payout, slots 6-10 the session after the running net first reaches $10,000 (each a week apart)."""
     n = len(P)
@@ -269,7 +285,7 @@ def ladder(BY, P, per, stats, horizon, months, live):
         st_i = {}
         if t1 is not None:
             for q, j in enumerate(LADDER["first_pay"]):
-                c, s = flows(BY, seq, ORDER[j], t1 + OFFSET * q, horizon)
+                c, s = flows(BY, seq, ORDER[j], t1 + OFFSET * q, horizon, breaker=br)
                 tot += c
                 fees += s["fees"]
                 fund += s["funded"]
@@ -278,7 +294,7 @@ def ladder(BY, P, per, stats, horizon, months, live):
             t2 = int(np.argmax(cum >= 10000)) + 1 if (cum >= 10000).any() else None
             if t2 is not None:
                 for q, j in enumerate(LADDER["net_10k"]):
-                    c, s = flows(BY, seq, ORDER[j], t2 + OFFSET * q, horizon)
+                    c, s = flows(BY, seq, ORDER[j], t2 + OFFSET * q, horizon, breaker=br)
                     tot += c
                     fees += s["fees"]
                     fund += s["funded"]
