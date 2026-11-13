@@ -290,8 +290,10 @@ def part_a():
           "self.skipWaiting();" not in sw.split("addEventListener('message'")[0] and "if (e.data === 'jarvis:activate') self.skipWaiting();" in sw)
     check("a. no #dashboard shortcuts in the manifest (Jarvis always opens on its own screen)", "shortcuts" not in m, m.get("shortcuts"))
     zsw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
+    zo = re.search(r"const OTHER_APPS = \[([^\]]*)\]", zsw)          # the list grows (gate/ went first in round 7): read it, never pin its start
+    zother = set(re.findall(r"'([\w-]+/)'", zo.group(1))) if zo else set()
     check("a. Zenith's worker stays out of jarvis/ and planner/ and deletes only its own caches (le-public-*)",
-          "const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/'" in zsw and "if (OTHER_APPS.some(" in zsw
+          {"jarvis/", "planner/", "kalshi/"} <= zother and "if (OTHER_APPS.some(" in zsw
           and "ks.filter((k) => k.startsWith('le-public-') && k !== CACHE)" in zsw and "k !== CACHE && k !== BADGE" not in zsw)
     page = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     css = open(os.path.join(JV, "jarvis.css"), encoding="utf-8").read()
