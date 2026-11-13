@@ -186,12 +186,13 @@ def summary(ledger):
     bs = sorted(sum(rnd.choice(vals) for _ in vals) for _ in range(1000)) if vals else [0.0] * 1000
     tk = [e for e in es if e.get("taker")]
     mk = [e for e in es if (e.get("maker") or {}).get("n_upper_bound")]
-    lags = sorted(e["lag_s"] for e in ledger["entries"].values() if e.get("lag_s") is not None)
+    lags = sorted(e["lag_s"] for e in ledger["entries"].values() if e.get("lag_s") is not None and e["lag_s"] <= FRESH_S)
+    backlog = sum(1 for e in ledger["entries"].values() if e.get("lag_s") is None or e["lag_s"] > FRESH_S)
     s = {"settled": len(es), "days": len(days), "known_side_lost": sum(1 for e in es if e["result"] != e["side"]),
          "taker_fills": len(tk), "taker_usd": round(sum(e["taker"]["pnl_usd"] for e in tk), 2),
          "maker_fills": len(mk), "maker_usd_upper_bound": round(sum(e["maker"]["pnl_usd"] for e in mk), 2),
          "net_usd": round(sum(vals), 2), "net_usd_95": [round(bs[25], 2), round(bs[974], 2)],
-         "median_lag_s_metar_to_seen": lags[len(lags) // 2] if lags else None,
+         "median_lag_s_metar_to_seen": lags[len(lags) // 2] if lags else None, "fresh_logged": len(lags), "backlog_not_scored": backlog,
          "verdict": "collecting" if len(days) < 30 or (len(tk) + len(mk)) < 100 else ("edge" if bs[25] > 0 else "no edge")}
     return s
 
