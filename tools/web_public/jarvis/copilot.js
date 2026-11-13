@@ -39,7 +39,7 @@ const RX = {
   loss_budget: [/\bhow much (?:more |money )?(?:can|could|may) (?:i|we|zlarior|atlas|blitz) (?:still |afford to )?lose\b/, /\bloss budget\b|\brisk budget\b|\bhow much (?:room|risk) (?:do i have |is there )?(?:today|this week)\b/,
     /\bhow much (?:can|could) (?:i|we) (?:go down|drop|lose) before\b/, /\bbefore (?:the|my|i) (?:eval )?(?:fails?|blow|bust)\b/],
   pass_close: [/\bhow (?:close|near|far) (?:am i|are we|is (?:zlarior|atlas|blitz|the eval)) (?:to|from) (?:passing|pass|being funded|funded|the payout)\b/, /\bwhen (?:will|do|could|can) (?:i|we|zlarior|atlas) pass\b/,
-    /\b(?:odds|chances?|probability|likely|likelihood) (?:of |to |that (?:i|we) )?pass/, /\bhow many (?:more )?(?:trades|wins|winners|winning trades|days|sessions) (?:do i need |to |until |before )(?:pass|the target|funded|i pass)/, /\b(?:will|am) i (?:going to )?pass(?:ing)?\b/],
+    /\b(?:odds|chances?|probability|likely|likelihood) (?:of |to |that (?:i|we) )?pass/, /\bhow many (?:more )?(?:trades|wins|winners|winning trades|days|sessions) (?:do i need (?:to )?|to |until (?:i )?|before (?:i )?)(?:pass|the target|funded|get funded)/, /\b(?:will|am) i (?:going to )?pass(?:ing)?\b/],
   pnl_report: [/\b(?:best|biggest|largest) (?:and worst )?(?:trade|win|winner)\b|\b(?:worst|biggest|largest) (?:trade|loss|loser)\b/, /\bper month\b|\ba month\b.*\b(?:make|making|earn|earning|pace)\b|\b(?:monthly|month) (?:pace|income|rate)\b|\b(?:make|making|earn|earning) (?:a|per|each) month\b/,
     /^(?:what(?: is|'s|s)? )?my (?:p and l|pnl|profit and loss|money report|p and l report)$/, /\b(?:p and l|pnl|profit and loss) (?:report|overall|so far|this week|this month|since (?:the )?start|total|all in)\b|\b(?:overall|total|all in) (?:p and l|pnl|profit)\b/,
     /\bhow am i doing (?:overall|so far|this week|this month|on the eval)\b|\bmoney report\b|\bmy numbers\b/],
@@ -106,7 +106,7 @@ function allTrades(S) {
 }
 const pyEvents = (S) => arr(obj(S && S.pythia).events).filter((e) => isObj(e) && /^\d{4}-\d{2}-\d{2}$/.test(String(e.date || '')));
 function dayEvents(S, day) {
-  return pyEvents(S).filter((e) => e.date === day).map((e) => ({ title: str(e.title, 90), time: str(e.time, 5), kind: str(e.kind, 12), impact: str(e.impact, 6).toLowerCase(), closed: e.closed === true || (e.kind === 'holiday' && /closed/i.test(String(e.title || ''))), early: e.kind === 'early' ? str(e.close_et, 5) : '', verify: !!e.verify }))
+  return pyEvents(S).filter((e) => e.date === day).map((e) => ({ title: str(e.title, 90), time: str(e.time, 5), kind: str(e.kind, 12), impact: str(e.impact, 6).toLowerCase(), closed: e.closed === true, partial: e.partial === true, early: e.kind === 'early' ? str(e.close_et, 5) : '', verify: !!e.verify }))
     .sort((a, b) => (a.time < b.time ? -1 : 1));
 }
 function nextDay(day) { const [y, m, d] = day.split('-').map(Number), t = new Date(Date.UTC(y, m - 1, d + 1)); return t.toISOString().slice(0, 10); }
@@ -134,7 +134,7 @@ export function verdict(S, nowIn) {
   const now = nowOf(nowIn), p = etParts(now), day = p.day, h = homeOf(S), why = [], per = [];
   let v = 'GO', global = '';
   const wk = p.dow >= 1 && p.dow <= 5, evToday = dayEvents(S, day), closed = evToday.find((e) => e.closed), early = evToday.find((e) => e.early);
-  const big = evToday.filter((e) => e.impact === 'high' && !e.closed), med = evToday.filter((e) => e.impact === 'med' && !e.closed && !e.early);
+  const big = evToday.filter((e) => e.impact === 'high' && !e.closed), med = evToday.filter((e) => e.impact === 'med' && !e.closed && !e.early && !e.partial), part = evToday.find((e) => e.partial && !e.closed);
   if (!wk) { v = 'SIT OUT'; global = `It is ${DOW[p.dow]}: no LIT entries on the weekend. Next entries Monday from 02:00 ET.`; }
   else if (closed) { v = 'SIT OUT'; global = `${closed.title}: no trading today.`; }
   else if (p.mod >= WIN_LAST) { v = 'SIT OUT'; global = `Today's entries are over: the last entry is 15:30 ET and it is ${hm(p.mod)} ET. Next entries tomorrow from 02:00 ET.`; }
@@ -142,6 +142,7 @@ export function verdict(S, nowIn) {
   if (wk && !closed) {
     for (const e of big) { v = worse(v, 'CAREFUL'); why.push(`News today: ${e.title}${e.time ? ' at ' + e.time + ' ET' : ''} (high impact). Expect a fast market around it; the bot keeps its own rules.`); }
     if (early) { v = worse(v, 'CAREFUL'); why.push(`${early.title}: be flat before ${early.early} ET.`); }
+    if (part) { v = worse(v, 'CAREFUL'); why.push(`${part.title}: thin holiday trading, check the CME hours first.`); }
     for (const e of med.slice(0, 1)) why.push(`Also today: ${e.title}${e.time ? ' at ' + e.time + ' ET' : ''} (medium impact).`);
   }
   // the bot: is it reporting, is it running
@@ -382,7 +383,7 @@ export function morningCard(S, nowIn, slot) {
   rows.push(ev.length ? { text: `News: ${ev.slice(0, 2).map((e) => e.title + (e.time ? ' ' + e.time : '')).join('; ')} ET.`, tone: ev.some((e) => e.impact === 'high') ? 'warn' : 'info', say: 'Is there any news today?' } : { text: isObj(S && S.pythia) ? 'No big news on the calendar today.' : 'No risk calendar loaded (pythia/events.json).', tone: 'info', say: 'Is there any news today?' });
   const k = kalshiSnap(S, now);
   rows.push(k ? { text: `Kalshi: ${k.today != null ? usd(k.today, true) + ' today' : 'no P&L yet'}${k.positions.length ? `, ${plural(k.positions.length, 'open bet')}${k.exposure != null ? ' (' + usd(k.exposure) + ' at risk)' : ''}` : ', nothing open'}${k.live ? '' : ' (engine copy)'}.`, tone: k.paused ? 'warn' : 'info', say: 'Kalshi exposure today' } : { text: 'Kalshi: no feed loaded, so no Kalshi numbers.', tone: 'off', say: 'Kalshi exposure today' });
-  return { slot, kind: 'morning', title: slot === '10:45' ? 'Midday plan' : 'Morning plan', kicker: `Money copilot · ${slot} ET`, verdict: V.verdict, tone: TONE[V.verdict], rows: rows.slice(0, 5), foot: srcLine(S, ['home', 'pythia'].concat(k ? kNames(S) : []), now).line, asof: now };
+  return { slot, kind: 'morning', title: slot === '10:45' ? 'Midday plan' : 'Morning plan', kicker: `Money copilot · ${slot} ET`, verdict: V.verdict, tone: TONE[V.verdict], rows: rows.slice(0, 6), foot: srcLine(S, ['home', 'pythia'].concat(k ? kNames(S) : []), now).line, asof: now };
 }
 export function dayCard(S, nowIn, day) {
   const now = nowOf(nowIn), d = day || etParts(now).day, acc = accounts(S), rows = [], all = allTrades(S), mine = all.filter((t) => t.day === d);
