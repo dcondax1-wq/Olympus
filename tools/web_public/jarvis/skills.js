@@ -354,7 +354,7 @@ export function createSkills(opts) {
     const id = cp.match(text); if (!id) return null;
     const out = cp.answer(id, await sources(), now);
     if (!out || typeof out.text !== 'string') return null;
-    try { v3.note(out.intent, {}, out, text, now); } catch (_) { /* follow-ups are optional */ }
+    try { v3.note(out.intent, {}, { ...out, open: out.app }, text, now); } catch (_) { /* follow-ups are optional: "open it" opens out.app */ }
     return { ...out, routed: out.intent, copilot: true };
   }
   async function early(raw, now) {

@@ -7,7 +7,7 @@
 //   import { createCopilot, match, verdict, lossBudget, pnlReport, passClose, changed, kalshiDay, cardFor, morningCard, dayCard } from './copilot.js';
 //   const cp = createCopilot({ storage?, now? });
 //   cp.match(text)            -> 'trade_today' | 'loss_budget' | 'pnl_report' | 'pass_close' | 'changed' | 'kalshi_day' | null
-//   cp.answer(id, S, now?)    -> reply { text, speak, intent: 'copilot_<id>', sources: ['home.json, 6 min ago', ...], open?, verdict?, missing? }
+//   cp.answer(id, S, now?)    -> reply { text, speak, intent: 'copilot_<id>', sources: ['home.json, 6 min ago', ...], app? (opened only on "open it", never by itself), verdict?, missing? }
 //   cp.ask(text, S, now?)     -> reply | null           (match + answer; also keeps today's snapshot for "what changed")
 //   cp.remember(S, now?)      keeps this ET day's snapshot on this phone ('jarvis.copilot.v1': the last 5 days) for "what changed"
 //   cp.card(S, now?)          -> the home card due now: { slot: '01:45' | '10:45' | '16:05', title, kicker, verdict?, tone, rows: [{ text, tone, say }], foot, asof }
@@ -186,7 +186,7 @@ function tradeToday(S, now) {
   const r = verdict(S, now);
   const head = r.verdict === 'GO' ? 'GO: a normal day. Let the bot trade its plan.' : r.verdict === 'CAREFUL' ? 'CAREFUL: trade only the plan, at the bot\'s own size, and watch the points below.' : 'SIT OUT: no new trades today.';
   const lines = [head].concat(r.why, r.per.map((x) => x.text), ['The bot places its own trades; this is a read of the risk, not an order. Real money is always your decision.']);
-  return done(S, now, ['home', 'pythia'], lines, { intent: 'copilot_trade_today', verdict: r.verdict, reasons: r.why.concat(r.per.map((x) => x.text)), open: 'ares', speak: `${head} ${r.global || r.why[0] || ''}` });
+  return done(S, now, ['home', 'pythia'], lines, { intent: 'copilot_trade_today', verdict: r.verdict, reasons: r.why.concat(r.per.map((x) => x.text)), app: 'ares', speak: `${head} ${r.global || r.why[0] || ''}` });
 }
 
 // ------------------------------------------------------------------------------------------------ 2. how much can I lose today / this week before the eval fails?
@@ -212,7 +212,7 @@ function lossReply(S, now) {
   }
   const tight = L.filter((x) => x.room != null && x.mll && !x.paper).sort((a, b) => a.room / a.mll - b.room / b.mll)[0];
   if (tight && L.filter((x) => !x.paper).length > 1) lines.push(`Tightest: ${tight.name}.`);
-  return done(S, now, ['home'], lines, { intent: 'copilot_loss_budget', open: 'demeter', speak: lines[0] });
+  return done(S, now, ['home'], lines, { intent: 'copilot_loss_budget', app: 'demeter', speak: lines[0] });
 }
 
 // ------------------------------------------------------------------------------------------------ 3. P&L, best and worst trade, win rate, $ per month
@@ -240,7 +240,7 @@ function pnlReply(S, now) {
   } else lines.push('No closed trades in the published files yet.');
   if (P.pace != null) lines.push(`$ per month at Zlarior's pace so far: about ${usd(P.pace, true)} a month (over ${plural(P.paceSessions || 0, 'session')}).`);
   if (P.expected != null) lines.push(`The backtest expects about ${usd(P.expected, true)} a month at the live settings${P.expectedTpw != null ? ` (${Math.round(P.expectedTpw * 10) / 10} trades a week)` : ''}: an estimate, not a promise.`);
-  return done(S, now, ['home', 'odeon'], lines, { intent: 'copilot_pnl_report', open: 'zenith', speak: lines.slice(0, 2).join(' ') });
+  return done(S, now, ['home', 'odeon'], lines, { intent: 'copilot_pnl_report', app: 'zenith', speak: lines.slice(0, 2).join(' ') });
 }
 
 // ------------------------------------------------------------------------------------------------ 4. how close am I to passing?
@@ -274,7 +274,7 @@ function passReply(S, now) {
     lines.push(s);
   }
   lines.push('Odds are simulations of past markets, not a promise.');
-  return done(S, now, ['home', 'odeon', 'fatesCard'], lines, { intent: 'copilot_pass_close', open: 'fates', speak: lines[0] });
+  return done(S, now, ['home', 'odeon', 'fatesCard'], lines, { intent: 'copilot_pass_close', app: 'fates', speak: lines[0] });
 }
 
 // ------------------------------------------------------------------------------------------------ 5. what changed since yesterday (this phone keeps one snapshot per ET day)
@@ -328,7 +328,7 @@ function changedReply(S, now, storage) {
   if (C.kalshi && C.kalshi.balance != null) lines.push(`• Kalshi: balance ${usd(C.kalshi.balance)}${C.kalshi.was != null ? ` (was ${usd(C.kalshi.was)})` : ''}${C.kalshi.today != null ? `, today ${usd(C.kalshi.today, true)}` : ''}.`);
   for (const e of C.events.slice(0, 2)) lines.push(`• Today: ${e.title}${e.time ? ' at ' + e.time + ' ET' : ''}.`);
   saveSnap(storage, S, now);
-  return done(S, now, ['home', 'pythia'].concat(C.kalshi ? kNames(S) : []), lines, { intent: 'copilot_changed', open: 'inbox', speak: lines.slice(0, 3).join(' ') });
+  return done(S, now, ['home', 'pythia'].concat(C.kalshi ? kNames(S) : []), lines, { intent: 'copilot_changed', app: 'inbox', speak: lines.slice(0, 3).join(' ') });
 }
 
 // ------------------------------------------------------------------------------------------------ 6. Kalshi today: bets, P&L, open exposure
@@ -355,7 +355,7 @@ function kalshiReply(S, now) {
   else lines.push('No open bets: nothing at risk right now.');
   if (!k.live) lines.push('This is the engine\'s copy (kalshicity/edges.json): the bot\'s live feed is not answering, so today\'s bets may be missing.');
   lines.push('Read only: Jarvis never places a Kalshi bet.');
-  return done(S, now, kNames(S), lines, { intent: 'copilot_kalshi_day', open: 'kalshicity', speak: lines.slice(0, 2).join(' ') });
+  return done(S, now, kNames(S), lines, { intent: 'copilot_kalshi_day', app: 'kalshicity', speak: lines.slice(0, 2).join(' ') });
 }
 
 // ------------------------------------------------------------------------------------------------ the home cards: 01:45 / 10:45 morning plan, 16:05 day summary

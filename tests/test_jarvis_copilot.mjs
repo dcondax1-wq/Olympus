@@ -96,7 +96,7 @@ for (const t of LEAVE) check('left to the other skills: ' + JSON.stringify(t), C
   const st = mkStore(), cp = C.createCopilot({ storage: st, now: () => FRI10 }), S = SRC(FRI10, { kalshi: KAL(FRI10) });
   let r = cp.ask('should I trade today', S, FRI10);
   check('trade today: verdict first, reasons, per account, not an order, sources with age', r.intent === 'copilot_trade_today' && r.verdict === 'GO' && /^GO: a normal day/.test(r.text) && /not an order/.test(r.text)
-    && /From home\.json, 5 min ago \(PC report 4 minutes old\); pythia\/events\.json, \d+ (?:days|h|min) ago\./.test(r.text) && r.sources.length === 2 && r.open === 'ares', r.text);
+    && /From home\.json, 5 min ago \(PC report 4 minutes old\); pythia\/events\.json, \d+ (?:days|h|min) ago\./.test(r.text) && r.sources.length === 2 && r.app === 'ares' && r.open === undefined, r.text);
   check('speech has no $ sign and no bullets', !/[$•]/.test(r.speak) && /^GO/.test(r.speak), r.speak);
   r = cp.ask('how much can I lose today', S, FRI10);
   check('loss budget: today = the daily limit left, week/total = drawdown left, full losses at the live size', /Zlarior 50K: today \$1,000 before the daily limit \(\$1,000, \$0 used; MFFU's daily loss ends the day, not the eval\); this week and in total \$1,133 before the eval fails \(drawdown left \$1,133 of \$2,000 max loss; there is no weekly limit\)\. That is 2 full losses at \$450 \(the live sizing\)\./.test(r.text)

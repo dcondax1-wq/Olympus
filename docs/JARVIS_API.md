@@ -225,7 +225,40 @@ against STRATEGY.md. The builder fails when its word-to-rule table no longer mat
 question bank, the money machines (`money/<id>.json`, else the bundled fixture marked "[sample data]"), `kalshicity/edges.json` (stop / do-more /
 watch lists), the glossary and the strategy rules. Deterministic (no clock in the file).
 
+## Money copilot (J1, 2026-11-13): `copilot.js` + `copilot-card.js`
+
+The owner's money questions, answered offline from the published files (no model, no paid service), with the account numbers read through
+`olympus/truth.js` (`accountsOf`, `agesOf`: the same drawdown left / balance / data age as Aegis, Helios, NQ and Home). Every answer names each
+file and how old it is ("From home.json, 5 min ago (PC report 4 minutes old); pythia/events.json, 2 h ago."). Paper only: it reads, never acts.
+
+| He asks | Intent | Reads | Answer |
+|---|---|---|---|
+| "Should I trade today?", "go or no go today", "should I sit out" | `copilot_trade_today` | home.json (board, live.pc), pythia/events.json | **GO / CAREFUL / SIT OUT** (`reply.verdict`) with the reasons: weekend / holiday (`closed`, `partial`) / after 15:30 ET, high-impact news with its time, the bot's report age (silent in the window = CAREFUL, older than 36 h = SIT OUT), stopped, board blocks with their fix, per account drawdown left in full losses at the live size, daily loss used, 1 trade a day taken, quiet days (MFFU 7), sessions left of the 2-week goal |
+| "How much can I lose today / this week", "before the eval fails" | `copilot_loss_budget` | home.json | per account: today = min(daily loss left, drawdown left) (MFFU's daily loss ends the day, not the eval), this week and in total = drawdown left (no weekly limit), in full losses at the live sizing |
+| "What's my P&L", "best and worst trade", "$ per month", "how am I doing overall" | `copilot_pnl_report` | home.json (board.real, board.trades), odeon/trades.json | today / week / since start per account; real trades first (else paper, said so): n, win rate, net, PF, best, worst; $ a month at the pace so far and the backtest's $ a month at the live settings |
+| "How close am I to passing", "odds of passing", "how many trades to pass" | `copilot_pass_close` | home.json (board.progress odds), fates/jarvis.json | $ to go, winning trades needed at the live win size (and trades at the real win rate once there are 10+), the published H2 odds (p10 / f10 / median), Fates' pass % |
+| "What changed since yesterday", "what happened overnight" | `copilot_changed` | home.json, pythia, Kalshi | drawdown move per account against yesterday's snapshot on this phone (`jarvis.copilot.v1`, one per ET day, last 5 kept), new trades, alerts (`live.notices` + open board lines), Kalshi balance, today's events; without a snapshot: from the files, said so |
+| "Kalshi exposure today", "Kalshi bets today" | `copilot_kalshi_day` | kalshi.json (live) else kalshicity/edges.json | today's P&L, settled bets today, open bets and $ at risk (contracts x price); the engine copy and a missing feed are said plainly |
+
+`createCopilot({ storage?, now? })` -> `{ match(text), answer(id, S, now?), ask(text, S, now?), remember(S, now?), card(S, now?), ids }`; pure exports
+`match`, `verdict`, `lossBudget`, `pnlReport`, `passClose`, `changed`, `kalshiDay`, `slotAt`, `cardFor`, `morningCard`, `dayCard`, `STORE_KEY`.
+`skills.js` loads it lazily (`import('./copilot.js')`; a missing file = the older answers) and asks it right after the safety guard, before the
+v3 skills and the router, in both `skills.early()` (which the brain asks before modes, bots.js and the Kalshi brain) and `skills.handle()`;
+`skills.card(now?)` gives the home card from the same sources; `contextFor()` adds the copilot's answer for smart mode. `jdata.loadSources()`
+also loads `../fates/jarvis.json` (`sources.fatesCard`).
+
+**The home card** (`copilot-card.js?v=cp1`, mounted in `#hcopilot` above `#htoday`): `cardFor(S, now)` by the New York clock: 01:45 ET
+**Morning plan** (verdict chip, the top reason, what each account can lose today, the bot's game plan from `live.pc.mind.plans`, news, Kalshi),
+10:45 ET **Midday plan** (the same, news after 10:45), 16:05 ET **Day summary** (today's $ per account, drawdown left, $ to the target, the
+trades, Kalshi, tomorrow's big news); before 01:45 and on weekends the last session's summary. No "session X of 10" counters on it. Each line
+is a `data-say` button (a tap asks Jarvis the full question); the foot names the files and their age; `?demo=1` = example numbers, labelled.
+`window.__jarvisCopilot = { render, refresh, card, model }`. Tests: `tests.test_jarvis_copilot` (static + node + Chromium).
+
 ## Wiring needed (not done here: the lead owns these files)
+
+- **Copilot (J1, 2026-11-13)** `tools/web_public/jarvis/sw.js` SHELL (bump the worker): `./copilot.js`, `./copilot-card.js?v=cp1`,
+  `../olympus/truth.js` (copilot.js imports it), `../fates/jarvis.json` is data (network first, fine without). Until then the card and the answers
+  need the network on the first open (offline: the older skills answer, the card says it could not read the files).
 
 - **v3 (2026-11-11)** `tools/web_public/jarvis/sw.js` SHELL (bump the worker): `./skills3.js`, `./search.js`, `./dialogue.js`, `./explain.js`,
   `./tours.js`, `./safety.js`, `./jbrief.js`, `./jpeople.js`, `../helios/helioscore.js`, `./strategy-facts.json`, `./search-index.json`, `./agents-now.json` (only when the builder wrote it) (the brain loads them on
