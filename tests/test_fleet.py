@@ -731,7 +731,12 @@ def cli_checks(tmp):
     a = d["accounts"][0]
     check("CLI --to-funded (new Name, disarmed) and --payout", a["stage"] == "funded" and a["nt_account"] == "Sim111" and a["payouts"] == {"2026-12-01": 1000.0}
           and a["armed"] is False and d["kill"] is False, a)
-    run("--arm", "liv")
+    from engine import copy_accounts as CA
+    CA.INPUT = lambda *_: LIVE_PHRASE              # the owner types the phrase for this account (engine/copy_accounts.confirm_arm)
+    try:
+        run("--arm", "liv")
+    finally:
+        CA.INPUT = None
     d = FL.load_file(p)
     txt = open(p, encoding="utf-8").read()
     check("CLI --arm writes armed true but never the phrase", d["accounts"][1]["armed"] is True and LIVE_PHRASE not in txt)
