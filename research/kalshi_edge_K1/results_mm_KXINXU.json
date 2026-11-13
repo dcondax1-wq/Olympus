@@ -1,0 +1,2118 @@
+{
+ "series": "KXINXU",
+ "split": "2026-07-01",
+ "cells": [
+  {
+   "m": 50,
+   "k": 1,
+   "side": "yes",
+   "W": 5,
+   "train": {
+    "posted": 1181,
+    "fill_rate": 0.437,
+    "filled": {
+     "n": 516,
+     "clusters": 390,
+     "won": 0.4787,
+     "avg_cost_c": 49.61,
+     "pnl_per_contract_c": -2.74,
+     "pnl_total_usd_1lot": -14.14,
+     "edge_per_usd": -0.0552,
+     "lo95": -0.1221,
+     "hi95": 0.0136,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 1181,
+     "clusters": 687,
+     "won": 0.5191,
+     "avg_cost_c": 40.29,
+     "pnl_per_contract_c": 10.613,
+     "pnl_total_usd_1lot": 125.34,
+     "edge_per_usd": 0.2634,
+     "lo95": 0.1887,
+     "hi95": 0.3486,
+     "enough": true
+    },
+    "adverse_c": 2.96
+   },
+   "test": {
+    "posted": 469,
+    "fill_rate": 0.721,
+    "filled": {
+     "n": 338,
+     "clusters": 260,
+     "won": 0.4941,
+     "avg_cost_c": 48.33,
+     "pnl_per_contract_c": 0.074,
+     "pnl_total_usd_1lot": 0.25,
+     "edge_per_usd": 0.0015,
+     "lo95": -0.0838,
+     "hi95": 0.085,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 469,
+     "clusters": 348,
+     "won": 0.5416,
+     "avg_cost_c": 51.6,
+     "pnl_per_contract_c": 1.559,
+     "pnl_total_usd_1lot": 7.31,
+     "edge_per_usd": 0.0302,
+     "lo95": -0.0302,
+     "hi95": 0.0958,
+     "enough": true
+    },
+    "adverse_c": -0.55
+   }
+  },
+  {
+   "m": 50,
+   "k": 1,
+   "side": "yes",
+   "W": 60,
+   "train": {
+    "posted": 1181,
+    "fill_rate": 0.661,
+    "filled": {
+     "n": 781,
+     "clusters": 570,
+     "won": 0.4302,
+     "avg_cost_c": 44.37,
+     "pnl_per_contract_c": -2.344,
+     "pnl_total_usd_1lot": -18.31,
+     "edge_per_usd": -0.0528,
+     "lo95": -0.1074,
+     "hi95": 0.0061,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 1181,
+     "clusters": 687,
+     "won": 0.5191,
+     "avg_cost_c": 40.29,
+     "pnl_per_contract_c": 10.613,
+     "pnl_total_usd_1lot": 125.34,
+     "edge_per_usd": 0.2634,
+     "lo95": 0.1887,
+     "hi95": 0.3486,
+     "enough": true
+    },
+    "adverse_c": 3.2
+   },
+   "test": {
+    "posted": 469,
+    "fill_rate": 0.906,
+    "filled": {
+     "n": 425,
+     "clusters": 326,
+     "won": 0.4965,
+     "avg_cost_c": 48.65,
+     "pnl_per_contract_c": -0.002,
+     "pnl_total_usd_1lot": -0.01,
+     "edge_per_usd": -0.0,
+     "lo95": -0.0706,
+     "hi95": 0.073,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 469,
+     "clusters": 348,
+     "won": 0.5416,
+     "avg_cost_c": 51.6,
+     "pnl_per_contract_c": 1.559,
+     "pnl_total_usd_1lot": 7.31,
+     "edge_per_usd": 0.0302,
+     "lo95": -0.0302,
+     "hi95": 0.0958,
+     "enough": true
+    },
+    "adverse_c": -0.4
+   }
+  },
+  {
+   "m": 50,
+   "k": 1,
+   "side": "no",
+   "W": 5,
+   "train": {
+    "posted": 1181,
+    "fill_rate": 0.458,
+    "filled": {
+     "n": 541,
+     "clusters": 418,
+     "won": 0.4769,
+     "avg_cost_c": 47.79,
+     "pnl_per_contract_c": -1.104,
+     "pnl_total_usd_1lot": -5.97,
+     "edge_per_usd": -0.0231,
+     "lo95": -0.0888,
+     "hi95": 0.0415,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 1181,
+     "clusters": 687,
+     "won": 0.4809,
+     "avg_cost_c": 38.36,
+     "pnl_per_contract_c": 8.735,
+     "pnl_total_usd_1lot": 103.16,
+     "edge_per_usd": 0.2277,
+     "lo95": 0.155,
+     "hi95": 0.3085,
+     "enough": true
+    },
+    "adverse_c": 2.24
+   },
+   "test": {
+    "posted": 469,
+    "fill_rate": 0.719,
+    "filled": {
+     "n": 337,
+     "clusters": 265,
+     "won": 0.4214,
+     "avg_cost_c": 45.79,
+     "pnl_per_contract_c": -4.656,
+     "pnl_total_usd_1lot": -15.69,
+     "edge_per_usd": -0.1017,
+     "lo95": -0.1864,
+     "hi95": -0.0187,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 469,
+     "clusters": 348,
+     "won": 0.4584,
+     "avg_cost_c": 47.06,
+     "pnl_per_contract_c": -2.22,
+     "pnl_total_usd_1lot": -10.41,
+     "edge_per_usd": -0.0472,
+     "lo95": -0.117,
+     "hi95": 0.0185,
+     "enough": true
+    },
+    "adverse_c": 4.13
+   }
+  },
+  {
+   "m": 50,
+   "k": 1,
+   "side": "no",
+   "W": 60,
+   "train": {
+    "posted": 1181,
+    "fill_rate": 0.701,
+    "filled": {
+     "n": 828,
+     "clusters": 595,
+     "won": 0.4118,
+     "avg_cost_c": 41.65,
+     "pnl_per_contract_c": -1.463,
+     "pnl_total_usd_1lot": -12.11,
+     "edge_per_usd": -0.0351,
+     "lo95": -0.0904,
+     "hi95": 0.0266,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 1181,
+     "clusters": 687,
+     "won": 0.4809,
+     "avg_cost_c": 38.36,
+     "pnl_per_contract_c": 8.735,
+     "pnl_total_usd_1lot": 103.16,
+     "edge_per_usd": 0.2277,
+     "lo95": 0.155,
+     "hi95": 0.3085,
+     "enough": true
+    },
+    "adverse_c": 3.59
+   },
+   "test": {
+    "posted": 469,
+    "fill_rate": 0.915,
+    "filled": {
+     "n": 429,
+     "clusters": 334,
+     "won": 0.4079,
+     "avg_cost_c": 43.86,
+     "pnl_per_contract_c": -4.068,
+     "pnl_total_usd_1lot": -17.45,
+     "edge_per_usd": -0.0927,
+     "lo95": -0.1721,
+     "hi95": -0.0159,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 469,
+     "clusters": 348,
+     "won": 0.4584,
+     "avg_cost_c": 47.06,
+     "pnl_per_contract_c": -2.22,
+     "pnl_total_usd_1lot": -10.41,
+     "edge_per_usd": -0.0472,
+     "lo95": -0.117,
+     "hi95": 0.0185,
+     "enough": true
+    },
+    "adverse_c": 3.67
+   }
+  },
+  {
+   "m": 50,
+   "k": 2,
+   "side": "yes",
+   "W": 5,
+   "train": {
+    "posted": 1056,
+    "fill_rate": 0.487,
+    "filled": {
+     "n": 514,
+     "clusters": 396,
+     "won": 0.4903,
+     "avg_cost_c": 50.22,
+     "pnl_per_contract_c": -2.191,
+     "pnl_total_usd_1lot": -11.26,
+     "edge_per_usd": -0.0436,
+     "lo95": -0.1129,
+     "hi95": 0.0204,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 1056,
+     "clusters": 620,
+     "won": 0.5208,
+     "avg_cost_c": 39.7,
+     "pnl_per_contract_c": 11.383,
+     "pnl_total_usd_1lot": 120.2,
+     "edge_per_usd": 0.2867,
+     "lo95": 0.2013,
+     "hi95": 0.3803,
+     "enough": true
+    },
+    "adverse_c": 1.62
+   },
+   "test": {
+    "posted": 283,
+    "fill_rate": 0.802,
+    "filled": {
+     "n": 227,
+     "clusters": 185,
+     "won": 0.5066,
+     "avg_cost_c": 50.4,
+     "pnl_per_contract_c": -0.74,
+     "pnl_total_usd_1lot": -1.68,
+     "edge_per_usd": -0.0147,
+     "lo95": -0.1121,
+     "hi95": 0.0769,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 283,
+     "clusters": 225,
+     "won": 0.5442,
+     "avg_cost_c": 52.41,
+     "pnl_per_contract_c": 1.011,
+     "pnl_total_usd_1lot": 2.86,
+     "edge_per_usd": 0.0193,
+     "lo95": -0.0603,
+     "hi95": 0.1012,
+     "enough": true
+    },
+    "adverse_c": -0.35
+   }
+  },
+  {
+   "m": 50,
+   "k": 2,
+   "side": "yes",
+   "W": 60,
+   "train": {
+    "posted": 1056,
+    "fill_rate": 0.678,
+    "filled": {
+     "n": 716,
+     "clusters": 532,
+     "won": 0.4427,
+     "avg_cost_c": 45.01,
+     "pnl_per_contract_c": -1.735,
+     "pnl_total_usd_1lot": -12.42,
+     "edge_per_usd": -0.0385,
+     "lo95": -0.1017,
+     "hi95": 0.0217,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 1056,
+     "clusters": 620,
+     "won": 0.5208,
+     "avg_cost_c": 39.7,
+     "pnl_per_contract_c": 11.383,
+     "pnl_total_usd_1lot": 120.2,
+     "edge_per_usd": 0.2867,
+     "lo95": 0.2013,
+     "hi95": 0.3803,
+     "enough": true
+    },
+    "adverse_c": 2.1
+   },
+   "test": {
+    "posted": 283,
+    "fill_rate": 0.951,
+    "filled": {
+     "n": 269,
+     "clusters": 216,
+     "won": 0.5242,
+     "avg_cost_c": 51.46,
+     "pnl_per_contract_c": -0.048,
+     "pnl_total_usd_1lot": -0.13,
+     "edge_per_usd": -0.0009,
+     "lo95": -0.0838,
+     "hi95": 0.0886,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 283,
+     "clusters": 225,
+     "won": 0.5442,
+     "avg_cost_c": 52.41,
+     "pnl_per_contract_c": 1.011,
+     "pnl_total_usd_1lot": 2.86,
+     "edge_per_usd": 0.0193,
+     "lo95": -0.0603,
+     "hi95": 0.1012,
+     "enough": true
+    },
+    "adverse_c": -0.98
+   }
+  },
+  {
+   "m": 50,
+   "k": 2,
+   "side": "no",
+   "W": 5,
+   "train": {
+    "posted": 1056,
+    "fill_rate": 0.518,
+    "filled": {
+     "n": 547,
+     "clusters": 420,
+     "won": 0.4625,
+     "avg_cost_c": 47.76,
+     "pnl_per_contract_c": -2.51,
+     "pnl_total_usd_1lot": -13.73,
+     "edge_per_usd": -0.0526,
+     "lo95": -0.118,
+     "hi95": 0.0135,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 1056,
+     "clusters": 620,
+     "won": 0.4792,
+     "avg_cost_c": 38.42,
+     "pnl_per_contract_c": 8.492,
+     "pnl_total_usd_1lot": 89.68,
+     "edge_per_usd": 0.221,
+     "lo95": 0.1454,
+     "hi95": 0.3038,
+     "enough": true
+    },
+    "adverse_c": 2.84
+   },
+   "test": {
+    "posted": 283,
+    "fill_rate": 0.777,
+    "filled": {
+     "n": 220,
+     "clusters": 185,
+     "won": 0.4182,
+     "avg_cost_c": 45.1,
+     "pnl_per_contract_c": -4.282,
+     "pnl_total_usd_1lot": -9.42,
+     "edge_per_usd": -0.0949,
+     "lo95": -0.2011,
+     "hi95": 0.0174,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 283,
+     "clusters": 225,
+     "won": 0.4558,
+     "avg_cost_c": 47.37,
+     "pnl_per_contract_c": -2.792,
+     "pnl_total_usd_1lot": -7.9,
+     "edge_per_usd": -0.0589,
+     "lo95": -0.1497,
+     "hi95": 0.0272,
+     "enough": true
+    },
+    "adverse_c": 3.17
+   }
+  },
+  {
+   "m": 50,
+   "k": 2,
+   "side": "no",
+   "W": 60,
+   "train": {
+    "posted": 1056,
+    "fill_rate": 0.727,
+    "filled": {
+     "n": 768,
+     "clusters": 554,
+     "won": 0.4154,
+     "avg_cost_c": 42.83,
+     "pnl_per_contract_c": -2.294,
+     "pnl_total_usd_1lot": -17.62,
+     "edge_per_usd": -0.0536,
+     "lo95": -0.1103,
+     "hi95": 0.0066,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 1056,
+     "clusters": 620,
+     "won": 0.4792,
+     "avg_cost_c": 38.42,
+     "pnl_per_contract_c": 8.492,
+     "pnl_total_usd_1lot": 89.68,
+     "edge_per_usd": 0.221,
+     "lo95": 0.1454,
+     "hi95": 0.3038,
+     "enough": true
+    },
+    "adverse_c": 4.43
+   },
+   "test": {
+    "posted": 283,
+    "fill_rate": 0.929,
+    "filled": {
+     "n": 263,
+     "clusters": 218,
+     "won": 0.4144,
+     "avg_cost_c": 44.6,
+     "pnl_per_contract_c": -4.152,
+     "pnl_total_usd_1lot": -10.92,
+     "edge_per_usd": -0.0931,
+     "lo95": -0.1922,
+     "hi95": 0.0006,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 283,
+     "clusters": 225,
+     "won": 0.4558,
+     "avg_cost_c": 47.37,
+     "pnl_per_contract_c": -2.792,
+     "pnl_total_usd_1lot": -7.9,
+     "edge_per_usd": -0.0589,
+     "lo95": -0.1497,
+     "hi95": 0.0272,
+     "enough": true
+    },
+    "adverse_c": 3.18
+   }
+  },
+  {
+   "m": 30,
+   "k": 1,
+   "side": "yes",
+   "W": 5,
+   "train": {
+    "posted": 948,
+    "fill_rate": 0.458,
+    "filled": {
+     "n": 434,
+     "clusters": 356,
+     "won": 0.4585,
+     "avg_cost_c": 48.9,
+     "pnl_per_contract_c": -4.044,
+     "pnl_total_usd_1lot": -17.55,
+     "edge_per_usd": -0.0827,
+     "lo95": -0.1502,
+     "hi95": -0.016,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 948,
+     "clusters": 609,
+     "won": 0.5348,
+     "avg_cost_c": 41.91,
+     "pnl_per_contract_c": 10.566,
+     "pnl_total_usd_1lot": 100.17,
+     "edge_per_usd": 0.2521,
+     "lo95": 0.1699,
+     "hi95": 0.3386,
+     "enough": true
+    },
+    "adverse_c": 4.74
+   },
+   "test": {
+    "posted": 359,
+    "fill_rate": 0.816,
+    "filled": {
+     "n": 293,
+     "clusters": 247,
+     "won": 0.5051,
+     "avg_cost_c": 49.79,
+     "pnl_per_contract_c": -0.276,
+     "pnl_total_usd_1lot": -0.81,
+     "edge_per_usd": -0.0056,
+     "lo95": -0.0928,
+     "hi95": 0.0792,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 359,
+     "clusters": 290,
+     "won": 0.5515,
+     "avg_cost_c": 52.41,
+     "pnl_per_contract_c": 1.741,
+     "pnl_total_usd_1lot": 6.25,
+     "edge_per_usd": 0.0332,
+     "lo95": -0.0361,
+     "hi95": 0.1075,
+     "enough": true
+    },
+    "adverse_c": 0.02
+   }
+  },
+  {
+   "m": 30,
+   "k": 1,
+   "side": "yes",
+   "W": 60,
+   "train": {
+    "posted": 948,
+    "fill_rate": 0.619,
+    "filled": {
+     "n": 587,
+     "clusters": 474,
+     "won": 0.431,
+     "avg_cost_c": 45.04,
+     "pnl_per_contract_c": -2.939,
+     "pnl_total_usd_1lot": -17.25,
+     "edge_per_usd": -0.0652,
+     "lo95": -0.1272,
+     "hi95": -0.0034,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 948,
+     "clusters": 609,
+     "won": 0.5348,
+     "avg_cost_c": 41.91,
+     "pnl_per_contract_c": 10.566,
+     "pnl_total_usd_1lot": 100.17,
+     "edge_per_usd": 0.2521,
+     "lo95": 0.1699,
+     "hi95": 0.3386,
+     "enough": true
+    },
+    "adverse_c": 4.57
+   },
+   "test": {
+    "posted": 359,
+    "fill_rate": 0.905,
+    "filled": {
+     "n": 325,
+     "clusters": 276,
+     "won": 0.5046,
+     "avg_cost_c": 49.58,
+     "pnl_per_contract_c": -0.12,
+     "pnl_total_usd_1lot": -0.39,
+     "edge_per_usd": -0.0024,
+     "lo95": -0.0809,
+     "hi95": 0.0754,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 359,
+     "clusters": 290,
+     "won": 0.5515,
+     "avg_cost_c": 52.41,
+     "pnl_per_contract_c": 1.741,
+     "pnl_total_usd_1lot": 6.25,
+     "edge_per_usd": 0.0332,
+     "lo95": -0.0361,
+     "hi95": 0.1075,
+     "enough": true
+    },
+    "adverse_c": 0.11
+   }
+  },
+  {
+   "m": 30,
+   "k": 1,
+   "side": "no",
+   "W": 5,
+   "train": {
+    "posted": 948,
+    "fill_rate": 0.511,
+    "filled": {
+     "n": 484,
+     "clusters": 414,
+     "won": 0.4318,
+     "avg_cost_c": 44.34,
+     "pnl_per_contract_c": -2.157,
+     "pnl_total_usd_1lot": -10.44,
+     "edge_per_usd": -0.0486,
+     "lo95": -0.1198,
+     "hi95": 0.0242,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 948,
+     "clusters": 609,
+     "won": 0.4652,
+     "avg_cost_c": 36.34,
+     "pnl_per_contract_c": 9.178,
+     "pnl_total_usd_1lot": 87.01,
+     "edge_per_usd": 0.2526,
+     "lo95": 0.1731,
+     "hi95": 0.3406,
+     "enough": true
+    },
+    "adverse_c": 2.74
+   },
+   "test": {
+    "posted": 359,
+    "fill_rate": 0.774,
+    "filled": {
+     "n": 278,
+     "clusters": 237,
+     "won": 0.3705,
+     "avg_cost_c": 42.21,
+     "pnl_per_contract_c": -6.158,
+     "pnl_total_usd_1lot": -17.12,
+     "edge_per_usd": -0.1459,
+     "lo95": -0.2508,
+     "hi95": -0.0446,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 359,
+     "clusters": 290,
+     "won": 0.4485,
+     "avg_cost_c": 45.57,
+     "pnl_per_contract_c": -1.719,
+     "pnl_total_usd_1lot": -6.17,
+     "edge_per_usd": -0.0377,
+     "lo95": -0.1235,
+     "hi95": 0.0421,
+     "enough": true
+    },
+    "adverse_c": 5.83
+   }
+  },
+  {
+   "m": 30,
+   "k": 1,
+   "side": "no",
+   "W": 60,
+   "train": {
+    "posted": 948,
+    "fill_rate": 0.669,
+    "filled": {
+     "n": 634,
+     "clusters": 515,
+     "won": 0.388,
+     "avg_cost_c": 39.41,
+     "pnl_per_contract_c": -1.607,
+     "pnl_total_usd_1lot": -10.19,
+     "edge_per_usd": -0.0408,
+     "lo95": -0.1093,
+     "hi95": 0.0282,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 948,
+     "clusters": 609,
+     "won": 0.4652,
+     "avg_cost_c": 36.34,
+     "pnl_per_contract_c": 9.178,
+     "pnl_total_usd_1lot": 87.01,
+     "edge_per_usd": 0.2526,
+     "lo95": 0.1731,
+     "hi95": 0.3406,
+     "enough": true
+    },
+    "adverse_c": 3.63
+   },
+   "test": {
+    "posted": 359,
+    "fill_rate": 0.9,
+    "filled": {
+     "n": 323,
+     "clusters": 272,
+     "won": 0.387,
+     "avg_cost_c": 41.86,
+     "pnl_per_contract_c": -4.164,
+     "pnl_total_usd_1lot": -13.45,
+     "edge_per_usd": -0.0995,
+     "lo95": -0.1906,
+     "hi95": -0.0114,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 359,
+     "clusters": 290,
+     "won": 0.4485,
+     "avg_cost_c": 45.57,
+     "pnl_per_contract_c": -1.719,
+     "pnl_total_usd_1lot": -6.17,
+     "edge_per_usd": -0.0377,
+     "lo95": -0.1235,
+     "hi95": 0.0421,
+     "enough": true
+    },
+    "adverse_c": 3.92
+   }
+  },
+  {
+   "m": 30,
+   "k": 2,
+   "side": "yes",
+   "W": 5,
+   "train": {
+    "posted": 844,
+    "fill_rate": 0.483,
+    "filled": {
+     "n": 408,
+     "clusters": 331,
+     "won": 0.4534,
+     "avg_cost_c": 50.06,
+     "pnl_per_contract_c": -5.716,
+     "pnl_total_usd_1lot": -23.32,
+     "edge_per_usd": -0.1142,
+     "lo95": -0.1842,
+     "hi95": -0.0476,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 844,
+     "clusters": 537,
+     "won": 0.5273,
+     "avg_cost_c": 41.4,
+     "pnl_per_contract_c": 10.325,
+     "pnl_total_usd_1lot": 87.14,
+     "edge_per_usd": 0.2494,
+     "lo95": 0.1628,
+     "hi95": 0.3419,
+     "enough": true
+    },
+    "adverse_c": 5.68
+   },
+   "test": {
+    "posted": 243,
+    "fill_rate": 0.844,
+    "filled": {
+     "n": 205,
+     "clusters": 183,
+     "won": 0.4976,
+     "avg_cost_c": 48.8,
+     "pnl_per_contract_c": -0.049,
+     "pnl_total_usd_1lot": -0.1,
+     "edge_per_usd": -0.001,
+     "lo95": -0.1007,
+     "hi95": 0.1077,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 243,
+     "clusters": 208,
+     "won": 0.5473,
+     "avg_cost_c": 51.1,
+     "pnl_per_contract_c": 2.634,
+     "pnl_total_usd_1lot": 6.4,
+     "edge_per_usd": 0.0515,
+     "lo95": -0.0348,
+     "hi95": 0.141,
+     "enough": true
+    },
+    "adverse_c": -0.47
+   }
+  },
+  {
+   "m": 30,
+   "k": 2,
+   "side": "yes",
+   "W": 60,
+   "train": {
+    "posted": 844,
+    "fill_rate": 0.626,
+    "filled": {
+     "n": 528,
+     "clusters": 426,
+     "won": 0.4223,
+     "avg_cost_c": 45.68,
+     "pnl_per_contract_c": -4.445,
+     "pnl_total_usd_1lot": -23.47,
+     "edge_per_usd": -0.0973,
+     "lo95": -0.1644,
+     "hi95": -0.033,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 844,
+     "clusters": 537,
+     "won": 0.5273,
+     "avg_cost_c": 41.4,
+     "pnl_per_contract_c": 10.325,
+     "pnl_total_usd_1lot": 87.14,
+     "edge_per_usd": 0.2494,
+     "lo95": 0.1628,
+     "hi95": 0.3419,
+     "enough": true
+    },
+    "adverse_c": 5.54
+   },
+   "test": {
+    "posted": 243,
+    "fill_rate": 0.914,
+    "filled": {
+     "n": 222,
+     "clusters": 200,
+     "won": 0.5045,
+     "avg_cost_c": 48.64,
+     "pnl_per_contract_c": 0.815,
+     "pnl_total_usd_1lot": 1.81,
+     "edge_per_usd": 0.0168,
+     "lo95": -0.0854,
+     "hi95": 0.1157,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 243,
+     "clusters": 208,
+     "won": 0.5473,
+     "avg_cost_c": 51.1,
+     "pnl_per_contract_c": 2.634,
+     "pnl_total_usd_1lot": 6.4,
+     "edge_per_usd": 0.0515,
+     "lo95": -0.0348,
+     "hi95": 0.141,
+     "enough": true
+    },
+    "adverse_c": -1.35
+   }
+  },
+  {
+   "m": 30,
+   "k": 2,
+   "side": "no",
+   "W": 5,
+   "train": {
+    "posted": 844,
+    "fill_rate": 0.56,
+    "filled": {
+     "n": 473,
+     "clusters": 396,
+     "won": 0.4376,
+     "avg_cost_c": 44.38,
+     "pnl_per_contract_c": -1.619,
+     "pnl_total_usd_1lot": -7.66,
+     "edge_per_usd": -0.0365,
+     "lo95": -0.1082,
+     "hi95": 0.036,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 844,
+     "clusters": 537,
+     "won": 0.4727,
+     "avg_cost_c": 36.18,
+     "pnl_per_contract_c": 10.1,
+     "pnl_total_usd_1lot": 85.24,
+     "edge_per_usd": 0.2792,
+     "lo95": 0.1857,
+     "hi95": 0.3751,
+     "enough": true
+    },
+    "adverse_c": 1.91
+   },
+   "test": {
+    "posted": 243,
+    "fill_rate": 0.848,
+    "filled": {
+     "n": 206,
+     "clusters": 186,
+     "won": 0.4029,
+     "avg_cost_c": 45.51,
+     "pnl_per_contract_c": -6.218,
+     "pnl_total_usd_1lot": -12.81,
+     "edge_per_usd": -0.1366,
+     "lo95": -0.2566,
+     "hi95": -0.0227,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 243,
+     "clusters": 208,
+     "won": 0.4527,
+     "avg_cost_c": 47.91,
+     "pnl_per_contract_c": -3.646,
+     "pnl_total_usd_1lot": -8.86,
+     "edge_per_usd": -0.0761,
+     "lo95": -0.1729,
+     "hi95": 0.017,
+     "enough": true
+    },
+    "adverse_c": 5.25
+   }
+  },
+  {
+   "m": 30,
+   "k": 2,
+   "side": "no",
+   "W": 60,
+   "train": {
+    "posted": 844,
+    "fill_rate": 0.692,
+    "filled": {
+     "n": 584,
+     "clusters": 471,
+     "won": 0.4024,
+     "avg_cost_c": 40.41,
+     "pnl_per_contract_c": -1.173,
+     "pnl_total_usd_1lot": -6.85,
+     "edge_per_usd": -0.029,
+     "lo95": -0.0989,
+     "hi95": 0.0422,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 844,
+     "clusters": 537,
+     "won": 0.4727,
+     "avg_cost_c": 36.18,
+     "pnl_per_contract_c": 10.1,
+     "pnl_total_usd_1lot": 85.24,
+     "edge_per_usd": 0.2792,
+     "lo95": 0.1857,
+     "hi95": 0.3751,
+     "enough": true
+    },
+    "adverse_c": 3.24
+   },
+   "test": {
+    "posted": 243,
+    "fill_rate": 0.914,
+    "filled": {
+     "n": 222,
+     "clusters": 198,
+     "won": 0.4009,
+     "avg_cost_c": 44.56,
+     "pnl_per_contract_c": -5.473,
+     "pnl_total_usd_1lot": -12.15,
+     "edge_per_usd": -0.1228,
+     "lo95": -0.2319,
+     "hi95": -0.0122,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 243,
+     "clusters": 208,
+     "won": 0.4527,
+     "avg_cost_c": 47.91,
+     "pnl_per_contract_c": -3.646,
+     "pnl_total_usd_1lot": -8.86,
+     "edge_per_usd": -0.0761,
+     "lo95": -0.1729,
+     "hi95": 0.017,
+     "enough": true
+    },
+    "adverse_c": 4.62
+   }
+  },
+  {
+   "m": 20,
+   "k": 1,
+   "side": "yes",
+   "W": 5,
+   "train": {
+    "posted": 817,
+    "fill_rate": 0.485,
+    "filled": {
+     "n": 396,
+     "clusters": 351,
+     "won": 0.4596,
+     "avg_cost_c": 47.91,
+     "pnl_per_contract_c": -2.952,
+     "pnl_total_usd_1lot": -11.69,
+     "edge_per_usd": -0.0616,
+     "lo95": -0.1357,
+     "hi95": 0.0147,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 817,
+     "clusters": 542,
+     "won": 0.5226,
+     "avg_cost_c": 39.3,
+     "pnl_per_contract_c": 11.961,
+     "pnl_total_usd_1lot": 97.72,
+     "edge_per_usd": 0.3043,
+     "lo95": 0.2125,
+     "hi95": 0.4015,
+     "enough": true
+    },
+    "adverse_c": 3.97
+   },
+   "test": {
+    "posted": 275,
+    "fill_rate": 0.811,
+    "filled": {
+     "n": 223,
+     "clusters": 212,
+     "won": 0.5067,
+     "avg_cost_c": 49.31,
+     "pnl_per_contract_c": 0.363,
+     "pnl_total_usd_1lot": 0.81,
+     "edge_per_usd": 0.0074,
+     "lo95": -0.0867,
+     "hi95": 0.1055,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 275,
+     "clusters": 250,
+     "won": 0.5309,
+     "avg_cost_c": 51.45,
+     "pnl_per_contract_c": 0.644,
+     "pnl_total_usd_1lot": 1.77,
+     "edge_per_usd": 0.0125,
+     "lo95": -0.0693,
+     "hi95": 0.0987,
+     "enough": true
+    },
+    "adverse_c": -0.69
+   }
+  },
+  {
+   "m": 20,
+   "k": 1,
+   "side": "yes",
+   "W": 60,
+   "train": {
+    "posted": 817,
+    "fill_rate": 0.595,
+    "filled": {
+     "n": 486,
+     "clusters": 423,
+     "won": 0.4362,
+     "avg_cost_c": 45.39,
+     "pnl_per_contract_c": -2.767,
+     "pnl_total_usd_1lot": -13.45,
+     "edge_per_usd": -0.061,
+     "lo95": -0.1312,
+     "hi95": 0.009,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 817,
+     "clusters": 542,
+     "won": 0.5226,
+     "avg_cost_c": 39.3,
+     "pnl_per_contract_c": 11.961,
+     "pnl_total_usd_1lot": 97.72,
+     "edge_per_usd": 0.3043,
+     "lo95": 0.2125,
+     "hi95": 0.4015,
+     "enough": true
+    },
+    "adverse_c": 5.01
+   },
+   "test": {
+    "posted": 275,
+    "fill_rate": 0.909,
+    "filled": {
+     "n": 250,
+     "clusters": 233,
+     "won": 0.492,
+     "avg_cost_c": 49.24,
+     "pnl_per_contract_c": -1.044,
+     "pnl_total_usd_1lot": -2.61,
+     "edge_per_usd": -0.0212,
+     "lo95": -0.1134,
+     "hi95": 0.0669,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 275,
+     "clusters": 250,
+     "won": 0.5309,
+     "avg_cost_c": 51.45,
+     "pnl_per_contract_c": 0.644,
+     "pnl_total_usd_1lot": 1.77,
+     "edge_per_usd": 0.0125,
+     "lo95": -0.0693,
+     "hi95": 0.0987,
+     "enough": true
+    },
+    "adverse_c": 1.0
+   }
+  },
+  {
+   "m": 20,
+   "k": 1,
+   "side": "no",
+   "W": 5,
+   "train": {
+    "posted": 817,
+    "fill_rate": 0.463,
+    "filled": {
+     "n": 378,
+     "clusters": 343,
+     "won": 0.4206,
+     "avg_cost_c": 41.37,
+     "pnl_per_contract_c": -0.31,
+     "pnl_total_usd_1lot": -1.17,
+     "edge_per_usd": -0.0075,
+     "lo95": -0.0921,
+     "hi95": 0.0808,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 817,
+     "clusters": 542,
+     "won": 0.4774,
+     "avg_cost_c": 33.42,
+     "pnl_per_contract_c": 13.317,
+     "pnl_total_usd_1lot": 108.8,
+     "edge_per_usd": 0.3985,
+     "lo95": 0.2963,
+     "hi95": 0.5151,
+     "enough": true
+    },
+    "adverse_c": 1.56
+   },
+   "test": {
+    "posted": 275,
+    "fill_rate": 0.789,
+    "filled": {
+     "n": 217,
+     "clusters": 203,
+     "won": 0.3963,
+     "avg_cost_c": 43.08,
+     "pnl_per_contract_c": -4.452,
+     "pnl_total_usd_1lot": -9.66,
+     "edge_per_usd": -0.1033,
+     "lo95": -0.2137,
+     "hi95": 0.0065,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 275,
+     "clusters": 250,
+     "won": 0.4691,
+     "avg_cost_c": 45.99,
+     "pnl_per_contract_c": -0.084,
+     "pnl_total_usd_1lot": -0.23,
+     "edge_per_usd": -0.0018,
+     "lo95": -0.0949,
+     "hi95": 0.0941,
+     "enough": true
+    },
+    "adverse_c": 4.28
+   }
+  },
+  {
+   "m": 20,
+   "k": 1,
+   "side": "no",
+   "W": 60,
+   "train": {
+    "posted": 817,
+    "fill_rate": 0.592,
+    "filled": {
+     "n": 484,
+     "clusters": 421,
+     "won": 0.3802,
+     "avg_cost_c": 37.72,
+     "pnl_per_contract_c": -0.702,
+     "pnl_total_usd_1lot": -3.4,
+     "edge_per_usd": -0.0186,
+     "lo95": -0.0988,
+     "hi95": 0.0622,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 817,
+     "clusters": 542,
+     "won": 0.4774,
+     "avg_cost_c": 33.42,
+     "pnl_per_contract_c": 13.317,
+     "pnl_total_usd_1lot": 108.8,
+     "edge_per_usd": 0.3985,
+     "lo95": 0.2963,
+     "hi95": 0.5151,
+     "enough": true
+    },
+    "adverse_c": 3.12
+   },
+   "test": {
+    "posted": 275,
+    "fill_rate": 0.88,
+    "filled": {
+     "n": 242,
+     "clusters": 225,
+     "won": 0.3967,
+     "avg_cost_c": 41.34,
+     "pnl_per_contract_c": -2.674,
+     "pnl_total_usd_1lot": -6.47,
+     "edge_per_usd": -0.0647,
+     "lo95": -0.1734,
+     "hi95": 0.0489,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 275,
+     "clusters": 250,
+     "won": 0.4691,
+     "avg_cost_c": 45.99,
+     "pnl_per_contract_c": -0.084,
+     "pnl_total_usd_1lot": -0.23,
+     "edge_per_usd": -0.0018,
+     "lo95": -0.0949,
+     "hi95": 0.0941,
+     "enough": true
+    },
+    "adverse_c": 2.79
+   }
+  },
+  {
+   "m": 20,
+   "k": 2,
+   "side": "yes",
+   "W": 5,
+   "train": {
+    "posted": 730,
+    "fill_rate": 0.501,
+    "filled": {
+     "n": 366,
+     "clusters": 322,
+     "won": 0.459,
+     "avg_cost_c": 49.46,
+     "pnl_per_contract_c": -4.557,
+     "pnl_total_usd_1lot": -16.68,
+     "edge_per_usd": -0.0921,
+     "lo95": -0.1721,
+     "hi95": -0.0161,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 730,
+     "clusters": 475,
+     "won": 0.5192,
+     "avg_cost_c": 38.66,
+     "pnl_per_contract_c": 12.26,
+     "pnl_total_usd_1lot": 89.5,
+     "edge_per_usd": 0.3172,
+     "lo95": 0.2184,
+     "hi95": 0.4335,
+     "enough": true
+    },
+    "adverse_c": 4.89
+   },
+   "test": {
+    "posted": 183,
+    "fill_rate": 0.858,
+    "filled": {
+     "n": 157,
+     "clusters": 154,
+     "won": 0.535,
+     "avg_cost_c": 50.64,
+     "pnl_per_contract_c": 1.866,
+     "pnl_total_usd_1lot": 2.93,
+     "edge_per_usd": 0.0369,
+     "lo95": -0.0835,
+     "hi95": 0.1455,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 183,
+     "clusters": 173,
+     "won": 0.5355,
+     "avg_cost_c": 50.28,
+     "pnl_per_contract_c": 2.273,
+     "pnl_total_usd_1lot": 4.16,
+     "edge_per_usd": 0.0452,
+     "lo95": -0.0702,
+     "hi95": 0.1551,
+     "enough": true
+    },
+    "adverse_c": -2.79
+   }
+  },
+  {
+   "m": 20,
+   "k": 2,
+   "side": "yes",
+   "W": 60,
+   "train": {
+    "posted": 730,
+    "fill_rate": 0.596,
+    "filled": {
+     "n": 435,
+     "clusters": 377,
+     "won": 0.4322,
+     "avg_cost_c": 46.19,
+     "pnl_per_contract_c": -3.968,
+     "pnl_total_usd_1lot": -17.26,
+     "edge_per_usd": -0.0859,
+     "lo95": -0.1553,
+     "hi95": -0.0179,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 730,
+     "clusters": 475,
+     "won": 0.5192,
+     "avg_cost_c": 38.66,
+     "pnl_per_contract_c": 12.26,
+     "pnl_total_usd_1lot": 89.5,
+     "edge_per_usd": 0.3172,
+     "lo95": 0.2184,
+     "hi95": 0.4335,
+     "enough": true
+    },
+    "adverse_c": 5.71
+   },
+   "test": {
+    "posted": 183,
+    "fill_rate": 0.923,
+    "filled": {
+     "n": 169,
+     "clusters": 163,
+     "won": 0.5089,
+     "avg_cost_c": 49.34,
+     "pnl_per_contract_c": 0.55,
+     "pnl_total_usd_1lot": 0.93,
+     "edge_per_usd": 0.0112,
+     "lo95": -0.1064,
+     "hi95": 0.1262,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 183,
+     "clusters": 173,
+     "won": 0.5355,
+     "avg_cost_c": 50.28,
+     "pnl_per_contract_c": 2.273,
+     "pnl_total_usd_1lot": 4.16,
+     "edge_per_usd": 0.0452,
+     "lo95": -0.0702,
+     "hi95": 0.1551,
+     "enough": true
+    },
+    "adverse_c": -1.11
+   }
+  },
+  {
+   "m": 20,
+   "k": 2,
+   "side": "no",
+   "W": 5,
+   "train": {
+    "posted": 730,
+    "fill_rate": 0.473,
+    "filled": {
+     "n": 345,
+     "clusters": 309,
+     "won": 0.4319,
+     "avg_cost_c": 41.98,
+     "pnl_per_contract_c": 0.212,
+     "pnl_total_usd_1lot": 0.73,
+     "edge_per_usd": 0.005,
+     "lo95": -0.0841,
+     "hi95": 0.093,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 730,
+     "clusters": 475,
+     "won": 0.4808,
+     "avg_cost_c": 32.81,
+     "pnl_per_contract_c": 14.268,
+     "pnl_total_usd_1lot": 104.16,
+     "edge_per_usd": 0.4348,
+     "lo95": 0.3172,
+     "hi95": 0.5579,
+     "enough": true
+    },
+    "adverse_c": 0.35
+   },
+   "test": {
+    "posted": 183,
+    "fill_rate": 0.798,
+    "filled": {
+     "n": 146,
+     "clusters": 142,
+     "won": 0.4178,
+     "avg_cost_c": 47.47,
+     "pnl_per_contract_c": -6.685,
+     "pnl_total_usd_1lot": -9.76,
+     "edge_per_usd": -0.1408,
+     "lo95": -0.2699,
+     "hi95": -0.0064,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 183,
+     "clusters": 173,
+     "won": 0.4645,
+     "avg_cost_c": 47.87,
+     "pnl_per_contract_c": -2.426,
+     "pnl_total_usd_1lot": -4.44,
+     "edge_per_usd": -0.0507,
+     "lo95": -0.1705,
+     "hi95": 0.0691,
+     "enough": true
+    },
+    "adverse_c": 5.96
+   }
+  },
+  {
+   "m": 20,
+   "k": 2,
+   "side": "no",
+   "W": 60,
+   "train": {
+    "posted": 730,
+    "fill_rate": 0.605,
+    "filled": {
+     "n": 442,
+     "clusters": 383,
+     "won": 0.3801,
+     "avg_cost_c": 37.58,
+     "pnl_per_contract_c": -0.568,
+     "pnl_total_usd_1lot": -2.51,
+     "edge_per_usd": -0.0151,
+     "lo95": -0.0993,
+     "hi95": 0.0678,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 730,
+     "clusters": 475,
+     "won": 0.4808,
+     "avg_cost_c": 32.81,
+     "pnl_per_contract_c": 14.268,
+     "pnl_total_usd_1lot": 104.16,
+     "edge_per_usd": 0.4348,
+     "lo95": 0.3172,
+     "hi95": 0.5579,
+     "enough": true
+    },
+    "adverse_c": 2.89
+   },
+   "test": {
+    "posted": 183,
+    "fill_rate": 0.907,
+    "filled": {
+     "n": 166,
+     "clusters": 160,
+     "won": 0.4096,
+     "avg_cost_c": 45.4,
+     "pnl_per_contract_c": -5.434,
+     "pnl_total_usd_1lot": -9.02,
+     "edge_per_usd": -0.1197,
+     "lo95": -0.2543,
+     "hi95": 0.0107,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 183,
+     "clusters": 173,
+     "won": 0.4645,
+     "avg_cost_c": 47.87,
+     "pnl_per_contract_c": -2.426,
+     "pnl_total_usd_1lot": -4.44,
+     "edge_per_usd": -0.0507,
+     "lo95": -0.1705,
+     "hi95": 0.0691,
+     "enough": true
+    },
+    "adverse_c": 5.09
+   }
+  },
+  {
+   "m": 10,
+   "k": 1,
+   "side": "yes",
+   "W": 5,
+   "train": {
+    "posted": 758,
+    "fill_rate": 0.391,
+    "filled": {
+     "n": 296,
+     "clusters": 273,
+     "won": 0.4628,
+     "avg_cost_c": 47.02,
+     "pnl_per_contract_c": -1.736,
+     "pnl_total_usd_1lot": -5.14,
+     "edge_per_usd": -0.0369,
+     "lo95": -0.1242,
+     "hi95": 0.0521,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 758,
+     "clusters": 471,
+     "won": 0.5132,
+     "avg_cost_c": 34.0,
+     "pnl_per_contract_c": 16.317,
+     "pnl_total_usd_1lot": 123.68,
+     "edge_per_usd": 0.4799,
+     "lo95": 0.3557,
+     "hi95": 0.6113,
+     "enough": true
+    },
+    "adverse_c": 3.63
+   },
+   "test": {
+    "posted": 275,
+    "fill_rate": 0.633,
+    "filled": {
+     "n": 174,
+     "clusters": 165,
+     "won": 0.4253,
+     "avg_cost_c": 45.59,
+     "pnl_per_contract_c": -4.063,
+     "pnl_total_usd_1lot": -7.07,
+     "edge_per_usd": -0.0891,
+     "lo95": -0.2065,
+     "hi95": 0.0326,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 275,
+     "clusters": 215,
+     "won": 0.52,
+     "avg_cost_c": 49.67,
+     "pnl_per_contract_c": 1.327,
+     "pnl_total_usd_1lot": 3.65,
+     "edge_per_usd": 0.0267,
+     "lo95": -0.0525,
+     "hi95": 0.1077,
+     "enough": true
+    },
+    "adverse_c": 5.64
+   }
+  },
+  {
+   "m": 10,
+   "k": 1,
+   "side": "yes",
+   "W": 60,
+   "train": {
+    "posted": 758,
+    "fill_rate": 0.451,
+    "filled": {
+     "n": 342,
+     "clusters": 312,
+     "won": 0.424,
+     "avg_cost_c": 43.79,
+     "pnl_per_contract_c": -2.389,
+     "pnl_total_usd_1lot": -8.17,
+     "edge_per_usd": -0.0546,
+     "lo95": -0.1371,
+     "hi95": 0.0252,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 758,
+     "clusters": 471,
+     "won": 0.5132,
+     "avg_cost_c": 34.0,
+     "pnl_per_contract_c": 16.317,
+     "pnl_total_usd_1lot": 123.68,
+     "edge_per_usd": 0.4799,
+     "lo95": 0.3557,
+     "hi95": 0.6113,
+     "enough": true
+    },
+    "adverse_c": 5.41
+   },
+   "test": {
+    "posted": 275,
+    "fill_rate": 0.68,
+    "filled": {
+     "n": 187,
+     "clusters": 178,
+     "won": 0.4278,
+     "avg_cost_c": 44.95,
+     "pnl_per_contract_c": -3.171,
+     "pnl_total_usd_1lot": -5.93,
+     "edge_per_usd": -0.0705,
+     "lo95": -0.1937,
+     "hi95": 0.0572,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 275,
+     "clusters": 215,
+     "won": 0.52,
+     "avg_cost_c": 49.67,
+     "pnl_per_contract_c": 1.327,
+     "pnl_total_usd_1lot": 3.65,
+     "edge_per_usd": 0.0267,
+     "lo95": -0.0525,
+     "hi95": 0.1077,
+     "enough": true
+    },
+    "adverse_c": 4.68
+   }
+  },
+  {
+   "m": 10,
+   "k": 1,
+   "side": "no",
+   "W": 5,
+   "train": {
+    "posted": 758,
+    "fill_rate": 0.408,
+    "filled": {
+     "n": 309,
+     "clusters": 292,
+     "won": 0.3851,
+     "avg_cost_c": 39.33,
+     "pnl_per_contract_c": -1.822,
+     "pnl_total_usd_1lot": -5.63,
+     "edge_per_usd": -0.0463,
+     "lo95": -0.1423,
+     "hi95": 0.0527,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 758,
+     "clusters": 471,
+     "won": 0.4868,
+     "avg_cost_c": 30.07,
+     "pnl_per_contract_c": 17.611,
+     "pnl_total_usd_1lot": 133.49,
+     "edge_per_usd": 0.5857,
+     "lo95": 0.4461,
+     "hi95": 0.7381,
+     "enough": true
+    },
+    "adverse_c": 3.84
+   },
+   "test": {
+    "posted": 275,
+    "fill_rate": 0.644,
+    "filled": {
+     "n": 177,
+     "clusters": 172,
+     "won": 0.4181,
+     "avg_cost_c": 41.69,
+     "pnl_per_contract_c": -0.881,
+     "pnl_total_usd_1lot": -1.56,
+     "edge_per_usd": -0.0211,
+     "lo95": -0.1596,
+     "hi95": 0.1194,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 275,
+     "clusters": 215,
+     "won": 0.48,
+     "avg_cost_c": 42.68,
+     "pnl_per_contract_c": 4.316,
+     "pnl_total_usd_1lot": 11.87,
+     "edge_per_usd": 0.1011,
+     "lo95": -0.0003,
+     "hi95": 0.2019,
+     "enough": true
+    },
+    "adverse_c": 1.42
+   }
+  },
+  {
+   "m": 10,
+   "k": 1,
+   "side": "no",
+   "W": 60,
+   "train": {
+    "posted": 758,
+    "fill_rate": 0.467,
+    "filled": {
+     "n": 354,
+     "clusters": 328,
+     "won": 0.3446,
+     "avg_cost_c": 36.07,
+     "pnl_per_contract_c": -2.61,
+     "pnl_total_usd_1lot": -9.24,
+     "edge_per_usd": -0.0724,
+     "lo95": -0.1625,
+     "hi95": 0.0203,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 758,
+     "clusters": 471,
+     "won": 0.4868,
+     "avg_cost_c": 30.07,
+     "pnl_per_contract_c": 17.611,
+     "pnl_total_usd_1lot": 133.49,
+     "edge_per_usd": 0.5857,
+     "lo95": 0.4461,
+     "hi95": 0.7381,
+     "enough": true
+    },
+    "adverse_c": 6.12
+   },
+   "test": {
+    "posted": 275,
+    "fill_rate": 0.695,
+    "filled": {
+     "n": 191,
+     "clusters": 186,
+     "won": 0.3979,
+     "avg_cost_c": 40.1,
+     "pnl_per_contract_c": -1.309,
+     "pnl_total_usd_1lot": -2.5,
+     "edge_per_usd": -0.0326,
+     "lo95": -0.1679,
+     "hi95": 0.1074,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 275,
+     "clusters": 215,
+     "won": 0.48,
+     "avg_cost_c": 42.68,
+     "pnl_per_contract_c": 4.316,
+     "pnl_total_usd_1lot": 11.87,
+     "edge_per_usd": 0.1011,
+     "lo95": -0.0003,
+     "hi95": 0.2019,
+     "enough": true
+    },
+    "adverse_c": 1.9
+   }
+  },
+  {
+   "m": 10,
+   "k": 2,
+   "side": "yes",
+   "W": 5,
+   "train": {
+    "posted": 712,
+    "fill_rate": 0.395,
+    "filled": {
+     "n": 281,
+     "clusters": 261,
+     "won": 0.4555,
+     "avg_cost_c": 47.55,
+     "pnl_per_contract_c": -2.996,
+     "pnl_total_usd_1lot": -8.42,
+     "edge_per_usd": -0.063,
+     "lo95": -0.1452,
+     "hi95": 0.0236,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 712,
+     "clusters": 437,
+     "won": 0.5112,
+     "avg_cost_c": 33.76,
+     "pnl_per_contract_c": 16.361,
+     "pnl_total_usd_1lot": 116.49,
+     "edge_per_usd": 0.4846,
+     "lo95": 0.3614,
+     "hi95": 0.6231,
+     "enough": true
+    },
+    "adverse_c": 4.32
+   },
+   "test": {
+    "posted": 227,
+    "fill_rate": 0.626,
+    "filled": {
+     "n": 142,
+     "clusters": 134,
+     "won": 0.4225,
+     "avg_cost_c": 45.75,
+     "pnl_per_contract_c": -4.5,
+     "pnl_total_usd_1lot": -6.39,
+     "edge_per_usd": -0.0984,
+     "lo95": -0.24,
+     "hi95": 0.0458,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 227,
+     "clusters": 171,
+     "won": 0.5242,
+     "avg_cost_c": 50.7,
+     "pnl_per_contract_c": 0.718,
+     "pnl_total_usd_1lot": 1.63,
+     "edge_per_usd": 0.0142,
+     "lo95": -0.0747,
+     "hi95": 0.102,
+     "enough": true
+    },
+    "adverse_c": 6.08
+   }
+  },
+  {
+   "m": 10,
+   "k": 2,
+   "side": "yes",
+   "W": 60,
+   "train": {
+    "posted": 712,
+    "fill_rate": 0.454,
+    "filled": {
+     "n": 323,
+     "clusters": 297,
+     "won": 0.418,
+     "avg_cost_c": 43.96,
+     "pnl_per_contract_c": -3.167,
+     "pnl_total_usd_1lot": -10.23,
+     "edge_per_usd": -0.072,
+     "lo95": -0.1565,
+     "hi95": 0.0085,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 712,
+     "clusters": 437,
+     "won": 0.5112,
+     "avg_cost_c": 33.76,
+     "pnl_per_contract_c": 16.361,
+     "pnl_total_usd_1lot": 116.49,
+     "edge_per_usd": 0.4846,
+     "lo95": 0.3614,
+     "hi95": 0.6231,
+     "enough": true
+    },
+    "adverse_c": 5.76
+   },
+   "test": {
+    "posted": 227,
+    "fill_rate": 0.661,
+    "filled": {
+     "n": 150,
+     "clusters": 141,
+     "won": 0.4267,
+     "avg_cost_c": 45.91,
+     "pnl_per_contract_c": -4.24,
+     "pnl_total_usd_1lot": -6.36,
+     "edge_per_usd": -0.0924,
+     "lo95": -0.23,
+     "hi95": 0.0407,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 227,
+     "clusters": 171,
+     "won": 0.5242,
+     "avg_cost_c": 50.7,
+     "pnl_per_contract_c": 0.718,
+     "pnl_total_usd_1lot": 1.63,
+     "edge_per_usd": 0.0142,
+     "lo95": -0.0747,
+     "hi95": 0.102,
+     "enough": true
+    },
+    "adverse_c": 5.7
+   }
+  },
+  {
+   "m": 10,
+   "k": 2,
+   "side": "no",
+   "W": 5,
+   "train": {
+    "posted": 712,
+    "fill_rate": 0.42,
+    "filled": {
+     "n": 299,
+     "clusters": 285,
+     "won": 0.3913,
+     "avg_cost_c": 40.05,
+     "pnl_per_contract_c": -1.92,
+     "pnl_total_usd_1lot": -5.74,
+     "edge_per_usd": -0.0479,
+     "lo95": -0.1439,
+     "hi95": 0.0536,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 712,
+     "clusters": 437,
+     "won": 0.4888,
+     "avg_cost_c": 29.99,
+     "pnl_per_contract_c": 17.888,
+     "pnl_total_usd_1lot": 127.36,
+     "edge_per_usd": 0.5965,
+     "lo95": 0.4587,
+     "hi95": 0.7615,
+     "enough": true
+    },
+    "adverse_c": 3.36
+   },
+   "test": {
+    "posted": 227,
+    "fill_rate": 0.639,
+    "filled": {
+     "n": 145,
+     "clusters": 137,
+     "won": 0.3931,
+     "avg_cost_c": 40.53,
+     "pnl_per_contract_c": -2.221,
+     "pnl_total_usd_1lot": -3.22,
+     "edge_per_usd": -0.0548,
+     "lo95": -0.2117,
+     "hi95": 0.1056,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 227,
+     "clusters": 171,
+     "won": 0.4758,
+     "avg_cost_c": 42.04,
+     "pnl_per_contract_c": 4.542,
+     "pnl_total_usd_1lot": 10.31,
+     "edge_per_usd": 0.108,
+     "lo95": -0.0132,
+     "hi95": 0.2321,
+     "enough": true
+    },
+    "adverse_c": 2.3
+   }
+  },
+  {
+   "m": 10,
+   "k": 2,
+   "side": "no",
+   "W": 60,
+   "train": {
+    "posted": 712,
+    "fill_rate": 0.479,
+    "filled": {
+     "n": 341,
+     "clusters": 317,
+     "won": 0.349,
+     "avg_cost_c": 36.65,
+     "pnl_per_contract_c": -2.754,
+     "pnl_total_usd_1lot": -9.39,
+     "edge_per_usd": -0.0751,
+     "lo95": -0.1679,
+     "hi95": 0.0223,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 712,
+     "clusters": 437,
+     "won": 0.4888,
+     "avg_cost_c": 29.99,
+     "pnl_per_contract_c": 17.888,
+     "pnl_total_usd_1lot": 127.36,
+     "edge_per_usd": 0.5965,
+     "lo95": 0.4587,
+     "hi95": 0.7615,
+     "enough": true
+    },
+    "adverse_c": 5.95
+   },
+   "test": {
+    "posted": 227,
+    "fill_rate": 0.678,
+    "filled": {
+     "n": 154,
+     "clusters": 145,
+     "won": 0.3766,
+     "avg_cost_c": 38.63,
+     "pnl_per_contract_c": -1.968,
+     "pnl_total_usd_1lot": -3.03,
+     "edge_per_usd": -0.0509,
+     "lo95": -0.2067,
+     "hi95": 0.1162,
+     "enough": true
+    },
+    "if_always_filled": {
+     "n": 227,
+     "clusters": 171,
+     "won": 0.4758,
+     "avg_cost_c": 42.04,
+     "pnl_per_contract_c": 4.542,
+     "pnl_total_usd_1lot": 10.31,
+     "edge_per_usd": 0.108,
+     "lo95": -0.0132,
+     "hi95": 0.2321,
+     "enough": true
+    },
+    "adverse_c": 2.1
+   }
+  }
+ ],
+ "best_on_train": {
+  "m": 20,
+  "k": 2,
+  "side": "no",
+  "W": 5,
+  "train": {
+   "posted": 730,
+   "fill_rate": 0.473,
+   "filled": {
+    "n": 345,
+    "clusters": 309,
+    "won": 0.4319,
+    "avg_cost_c": 41.98,
+    "pnl_per_contract_c": 0.212,
+    "pnl_total_usd_1lot": 0.73,
+    "edge_per_usd": 0.005,
+    "lo95": -0.0841,
+    "hi95": 0.093,
+    "enough": true
+   },
+   "if_always_filled": {
+    "n": 730,
+    "clusters": 475,
+    "won": 0.4808,
+    "avg_cost_c": 32.81,
+    "pnl_per_contract_c": 14.268,
+    "pnl_total_usd_1lot": 104.16,
+    "edge_per_usd": 0.4348,
+    "lo95": 0.3172,
+    "hi95": 0.5579,
+    "enough": true
+   },
+   "adverse_c": 0.35
+  },
+  "test": {
+   "posted": 183,
+   "fill_rate": 0.798,
+   "filled": {
+    "n": 146,
+    "clusters": 142,
+    "won": 0.4178,
+    "avg_cost_c": 47.47,
+    "pnl_per_contract_c": -6.685,
+    "pnl_total_usd_1lot": -9.76,
+    "edge_per_usd": -0.1408,
+    "lo95": -0.2699,
+    "hi95": -0.0064,
+    "enough": true
+   },
+   "if_always_filled": {
+    "n": 183,
+    "clusters": 173,
+    "won": 0.4645,
+    "avg_cost_c": 47.87,
+    "pnl_per_contract_c": -2.426,
+    "pnl_total_usd_1lot": -4.44,
+    "edge_per_usd": -0.0507,
+    "lo95": -0.1705,
+    "hi95": 0.0691,
+    "enough": true
+   },
+   "adverse_c": 5.96
+  }
+ }
+}

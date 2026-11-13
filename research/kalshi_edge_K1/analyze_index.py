@@ -213,7 +213,11 @@ def main():
         h["all_thr_train"] = {str(t): stats.block(trades(trm, P, t)) for t in (2, 4, 6, 8, 10, 15)}
         out["horizons"][str(m)] = h
         print(m, "min:", json.dumps({k: h.get(k) for k in ("skill_train", "skill_test", "spread_med_c", "thr_c", "train", "test")}))
-    # control: buy everything at the ask (yes side) with a live market
+    # control: buy YES at the ask on every live row (spread <= 10c, mid 3-97) at 30 min, test block: the taker cost alone
+    ctl = [(x["ct"], (100 if x["y"] else 0) - x["ask"] - kk.fee_c(x["ask"]), x["ask"]) for x in te
+           if x["m"] == 30 and x["ask"] - x["bid"] <= 10 and 3 <= (x["ask"] + x["bid"]) / 2 <= 97 and 1 <= x["ask"] <= 99]
+    out["control_buy_all_yes_30m_test"] = stats.block(ctl)
+    print("control buy-all YES 30 min, test:", json.dumps(out["control_buy_all_yes_30m_test"]))
     json.dump(out, open(os.path.join(HERE, f"results_index_{a.series}.json"), "w"), indent=1)
 
 
