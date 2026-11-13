@@ -827,6 +827,32 @@ def blitz_main():
     json.dump(out, open(OUT, "w", encoding="utf-8"), indent=1, default=float)
 
 
+def mix_main(n=500):
+    """G1 as a small add-on on LIT's FUNDED 50K (as the NA add-on of diversifier-search.md): LIT's live funded sizing, G1
+    sized f x room <= cap, dropped when it overlaps a LIT trade (div_stack.mixed "no_overlap"). Funded $ a month to the
+    owner and 6-month loss %, LIT alone vs LIT + G1."""
+    import div_stack as DK
+    import uprisk as U
+    S, BYL = U.load()
+    for x in BYL:
+        for t in x:
+            t["src"] = "lit"
+    by = units(run(G1))
+    BYN = [by.get(d, []) for d in S]
+    BYM = DK.mixed(BYL, BYN, S)
+    PF = {sp: DK.paths(S, sp, n) for sp in DK.SPANS}
+    rows = {"lit_only": {sp: DK.funded_mc(BYL, PF[sp], lambda: DK.Funded("builder50k", DK.LIT_F50), "builder50k") for sp in DK.SPANS}}
+    for f, cap in ((0.03, 150), (0.05, 300), (0.1, 400), (0.15, 600)):
+        c = DK.nc(f, cap)
+        rows[f"lit+g1_f{int(f * 100)}_c{cap}"] = {sp: DK.funded_mc(BYM, PF[sp], lambda c=c: DK.Funded("builder50k", DK.LIT_F50, nc=c), "builder50k")
+                                                  for sp in DK.SPANS}
+    for k, r in rows.items():
+        print(f"mix {k:20s} " + " | ".join(f"{sp} ${r[sp]['per_month']}/mo lost {r[sp]['loss_6m']}%" for sp in DK.SPANS), flush=True)
+    out = json.load(open(OUT, encoding="utf-8"))
+    out["mix_lit50k"] = rows
+    json.dump(out, open(OUT, "w", encoding="utf-8"), indent=1, default=float)
+
+
 def book(cids):
     """One account, one position: the families' trades in time order; a trade that starts while an earlier one is still
     open is dropped."""
@@ -958,6 +984,8 @@ if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "grid"
     if cmd == "grid":
         grid_main()
+    elif cmd == "mix":
+        mix_main()
     elif cmd == "save":
         save_main()
     elif cmd == "blitz":
