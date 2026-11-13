@@ -41,7 +41,7 @@ def quote_time(ct, off):
 class Obs:
     def __init__(self, rec):
         self.tz = rec["tz_std"]
-        o = sorted(x for x in rec["obs"] if x[1] is not None or x[2] is not None)
+        o = sorted((x for x in rec["obs"] if x[1] is not None or x[2] is not None), key=lambda x: x[0])
         self.t = [x[0] for x in o]
         self.v = o
         self.cli = rec["cli"]
@@ -170,10 +170,10 @@ def main():
         print(f"LOCK margin {margin}:", json.dumps({k: v for k, v in res.items() if k != 'losses'}), "losses", len([1 for t in ts if not t[2]]))
 
     # model rule: brackets at or above the max so far, priced from the rise table (history 2024-2025 only)
-    for thr in (3, 5, 8):
+    for hmin, thr in [(13, 3), (13, 5), (13, 8), (18, 3), (18, 5), (18, 8)]:
         ts = []
         for x in rows:
-            if x["h"] < 13:
+            if x["h"] < hmin:
                 continue
             dist = rt.get((x["h"], gap_bucket(x["gap"])))
             if not dist:
@@ -189,12 +189,13 @@ def main():
             elif en >= thr:
                 ts.append((x["d"], 100 - b, not x["yes"]))
         res = stats.summarize([(d, (100 if wn else 0) - c - kk.fee_c(c), c) for d, c, wn in ts], SPLIT)
-        out["rules"][f"rise_model_thr{thr}"] = res
-        print(f"RISE MODEL thr {thr}c:", json.dumps(res))
+        out["rules"][f"rise_model_from{hmin}h_thr{thr}"] = res
+        print(f"RISE MODEL from {hmin}h thr {thr}c:", json.dumps(res))
     # market vs model Brier on test rows (h >= 13), same rows
-    bm, bq, n = 0.0, 0.0, 0
-    for x in rows:
-        if x["d"] < SPLIT or x["h"] < 13 or not (0 < x["bid"] <= x["ask"] < 100):
+    for hmin in (13, 18):
+      bm, bq, n = 0.0, 0.0, 0
+      for x in rows:
+        if x["d"] < SPLIT or x["h"] < hmin or not (0 < x["bid"] <= x["ask"] < 100):
             continue
         dist = rt.get((x["h"], gap_bucket(x["gap"])))
         p = p_bracket(dist, x["m"], x["st"], x["fs"], x["cs"]) if dist else None
@@ -204,8 +205,8 @@ def main():
         bm += ((x["bid"] + x["ask"]) / 200 - y) ** 2
         bq += (p - y) ** 2
         n += 1
-    out["brier_test_h13plus"] = {"n": n, "market_mid": round(bm / max(n, 1), 4), "rise_model": round(bq / max(n, 1), 4)}
-    print("Brier test (h>=13):", out["brier_test_h13plus"])
+      out[f"brier_test_h{hmin}plus"] = {"n": n, "market_mid": round(bm / max(n, 1), 4), "rise_model": round(bq / max(n, 1), 4)}
+      print(f"Brier test (h>={hmin}):", out[f"brier_test_h{hmin}plus"])
     json.dump(out, open(os.path.join(HERE, "results_weather.json"), "w"), indent=1)
 
 
