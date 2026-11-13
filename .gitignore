@@ -168,3 +168,10 @@ netlify.json
 data/pc_report/
 data/bots_back.json
 ntfy.json
+
+# money scoreboard (tools/money_scoreboard.py, 2026-11-13): the owner's ledger (eval buys, payouts, Kalshi deposits), the local
+# scoreboard copy and the Sunday reports hold his own money figures: never committed
+data/money_ledger.json
+data/money_report/
+tools/web_public/money/
+docs/reports/money_week_*.md

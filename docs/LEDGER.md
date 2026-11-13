@@ -25,6 +25,15 @@ for that account himself, taps Not mine, or taps Keep (which makes it his own). 
 Everything entered is in `localStorage['ledger.v1']` (entries, tax %, hidden auto keys). Export JSON / Import JSON / CSV are downloads he starts. The page fetches only `../home.json`, `rules.json`,
 `fixture.json` and the public Kalshi feed (read only); nothing is sent.
 
+## The Scoreboard card (2026-11-13)
+The first card after "Your money in three numbers" on Overview. It reads the site's `../money/scoreboard.json` (built by `tools/money_scoreboard.py`
+from every money source: accounts, bot payouts, Kalshi, second strategies, money machines, eval prices, the Plutus plan) and shows week / month /
+all-time cash, ROI on eval fees, the run-rate, the next milestone and its ETA, each source's net, the paper results (never cash) and every source
+with a status chip and its age. No file (or a file of another kind) = a plain "not on the site yet" line; nothing is invented. What you enter on
+this phone stays here: the card does not add it, so the hero above and the card can differ. On the PC, a Ledger "Export JSON" saved as
+`data/money_ledger.json` feeds the scoreboard and the Sunday report (`tools/weekly_money_report.py`); it reaches the public copy only with
+`"publish": true` in that file. Pure maths in `scoreboardcore.js` (`tests/test_scoreboard_card.py`).
+
 ## Wiring the lead does (this job added files only)
 1. `jarvis/apps.js` money group: `app('ledger', 'Ledger', 'money', '#ffcf5a', 'Your real money: fees, payouts, net profit', { glyph: 'L' })`
 2. `olympus/olympus.js` APPS: `ledger: ['Ledger', 'L', '#ffcf5a']`
