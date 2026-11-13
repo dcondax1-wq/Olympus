@@ -95,9 +95,11 @@ window.addEventListener('error', function (e) {
 </script>
 <link rel="stylesheet" id="jcss" href="jarvis.css?v=j16">
 <link rel="stylesheet" id="jhome" href="home3d.css?v=h3">
-<!-- Jarvis shows the Kalshi bot: it asks the Kalshi feed afresh once per load (data.js: "opening Jarvis again asks once more: that is how
-     a newly linked bot shows up"); without data-fresh a 404 earlier in the session kept it "not connected" after the bot published -->
-<script src="../olympus/quiet-net.js?v=q6a" data-fresh="raw:kalshi-feed,api:kalshi-feed,site:kalshi.json"></script>
+<!-- quiet-net: data-fresh = Jarvis shows the Kalshi bot, so it asks the Kalshi feed afresh once per load (data.js: "opening Jarvis again
+     asks once more: that is how a newly linked bot shows up"); without it a 404 earlier in the session kept it "not connected".
+     async: the file lives in ../olympus/, outside Jarvis's worker, so its saved copy cannot answer for it; a blocking tag made a slow
+     network hold the whole start one more round trip (6-12 s). A fetch before it arrives is just one real try, as before quiet-net. -->
+<script src="../olympus/quiet-net.js?v=q6a" data-fresh="raw:kalshi-feed,api:kalshi-feed,site:kalshi.json" async></script>
 <script src="../olympus/themes.js?v=o4" id="olyThemesJs" async></script>
 <script src="../olympus/sfx.js?v=s4" id="olySfxJs" async></script>
 <style>.booted #bootfx{display:none}
