@@ -284,6 +284,14 @@ def roll_now():
         check("C: add-on mode after the roll with the bot not running: feed_instruments.txt -> MNQ 03-27 (the bot's own rule)",
               rc == 0 and open(os.path.join(b.nt, "le_feed", "feed_instruments.txt")).read() == "MNQ 03-27\n"
               and any("told the LE_Feed add-on: MNQ 03-27" in x for x in out), out)
+        # ---- chart mode, the chart's contract unreadable (older LE_BarFeed / continuous): the click text, no endless wait
+        os.remove(os.path.join(b.nt, "le_feed", "le_feed_status.txt"))
+        os.remove(os.path.join(b.nt, "le_feed", "MNQ_instrument.txt"))
+        out.clear()
+        n = {"c": 0}
+        rc = RN.run(b.facts(eve), say=say, wait_s=600, regather=lambda: n.__setitem__("c", n["c"] + 1) or b.facts(eve), sleep=lambda s: None)
+        check("C: chart contract unreadable on the eve: the click text and [FIX] (dated contract), exit 1, no wait",
+              rc == 1 and n["c"] == 0 and any("Instrument > MNQ 03-27" in x for x in out) and any("[FIX]" in x and "dated contract" in x for x in out), out)
         incoming = os.listdir(os.path.join(b.nt, "incoming"))
         check("C: no order file was ever written (incoming\\ empty)", incoming == [], incoming)
     finally:

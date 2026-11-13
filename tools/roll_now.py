@@ -181,7 +181,9 @@ def decide(f: dict) -> dict:
         do.append(("unpin", pins_old))
     if list_old:
         do.append(("feed_list", f.get("want_list")))
-    if not chart_ok:
+    if not chart_ok and nt.contract_expiry(st.get("chart")) is None:
+        do.append(("chart_unknown", tgt))      # no / a continuous contract file: the click cannot be checked from here
+    elif not chart_ok:
         do.append(("chart", tgt))
     return {"code": "todo", "target": tgt, "do": do, "say": []}
 
@@ -249,8 +251,15 @@ def run(f: dict, check_only: bool = False, wait_s: int = WAIT_DEFAULT_S, regathe
             ok = nt.sync_feed_instruments(f["folder"], {k: v for k, v in (f.get("cfg") or {}).items() if k != "nt_instrument"},
                                           f["today"])
             say(f"  [OK]  told the LE_Feed add-on: {', '.join(arg)}" + ("" if ok else " (it already had it)"))
+        elif kind == "chart_unknown":
+            say(f"  The chart's contract cannot be read here ({st.get('chart') or 'no LE_BarFeed contract file'}). Make sure the chart")
+            say(f"  with LE_BarFeed is on {_month(tgt)}:")
+            for ln in click_text(st, tgt):
+                say(f"     {ln}")
+            say("  [FIX] Open NinjaTrader with the LE_BarFeed chart on a dated contract (not ##-##), then double-click ROLL.bat again.")
+            return 1
         elif kind == "chart":
-            say(f"  Your one job now (the bot waits; every bot is flat):")
+            say("  Your one job now (the bot waits; every bot is flat):")
             for ln in click_text(st, tgt):
                 say(f"     {ln}")
             if wait_s <= 0 or regather is None:

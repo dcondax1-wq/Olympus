@@ -1592,6 +1592,14 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   `dll`, realized + the open trade's unrealized, once a trading day), quiet bot (`quiet_days` >= 5, high at 6 on a real
   eval: MFFU's 7-day rule), the day summary 16:05-16:59 ET on CME trading days (`cme_calendar.full_closure` skipped; says
   "last report old" with its age). Quiet hours 23:00-07:00 ET for default-priority pushes. Read-only: no order, no setting.
+- **Second backup (2026-11-13, team S1; `tools/second_backup.py`, `BACKUP_SETUP.bat`, `scripts/backup_task.ps1`,
+  `tests/test_second_backup.py` 42, `docs/DISASTER_RECOVERY.md` "Second backup"):** setup asks the mirror URL + token
+  (getpass) + synced folder -> `%USERPROFILE%\.olympus\backup.json` (600); refuses a public repo (Codeberg / GitLab API).
+  Weekly (Sunday 11:37, StartWhenAvailable): snapshot of the working files into `refs/heads/pc-snapshot` with a temporary
+  index (copy of the real one; skips new files > 25 MB or secret-looking names; .gitignore respected) because the PC is
+  updated by zip and its HEAD lags; `make_backup.py --ref <snapshot>` into the synced folder (newest 4 kept); `git push
+  +refs/heads/* +refs/tags/*` with the token only in GIT_CONFIG_* env (Authorization header, credential.helper off); one
+  ntfy push via `pc_report.load_cfg`.
 - **DST / CME holidays / self-healing (2026-10-29, `docs/AUTOPILOT.md`):** US clocks go back Sun 2026-11-01; every live
   time decision is America/New_York wall clock (25 trading_day functions, market_open, entry / flat windows, auto-update,
   ops pushes, the cloud's UTC crons through its real bash guard, LIT replays over the 2025-11-02 / 2025-03-09 /
