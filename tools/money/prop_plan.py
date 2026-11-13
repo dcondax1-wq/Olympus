@@ -76,10 +76,10 @@ FALLBACK_MC = {
 }
 
 LADDER = [
-    {"n": 0, "name": "Pass the three MFFU evals", "accounts": 3, "when": "now",
-     "buy": "nothing: Zlarior 50K and ATLAS 25K are trading, BLITZ 25K on paper", "buy_usd": 0.0, "fleet": "3"},
+    {"n": 0, "name": "Pass the two live MFFU evals", "accounts": 3, "when": "now",
+     "buy": "nothing: Zlarior 50K and ATLAS 25K are trading, BLITZ 25K on paper", "buy_usd": 0.0, "fleet": None},
     {"n": 1, "name": "Funded at MFFU", "accounts": 3, "when": "an eval passes ($53,000 / $26,500)",
-     "buy": "nothing: switch the passed account to funded; a failed eval is bought again the next day (fees are small)",
+     "buy": "nothing: switch the passed account to funded; a failed eval is bought again the next day, unless the account is 5 eval prices below its best (the stop rule)",
      "buy_usd": 0.0, "fleet": "3"},
     {"n": 2, "name": "Two LIT 50K copies at Lucid / FundedNext", "accounts": 5,
      "when": "the first payout is in your bank AND each firm said yes to bots + copying your own accounts in writing",
@@ -90,7 +90,7 @@ LADDER = [
     {"n": 4, "name": "Your own live account", "accounts": 10,
      "when": "$30,000 kept after tax AND 3 months of live fills within the backtest's band",
      "buy": "open a personal futures account with $25,000; LIT at 1% of the account per trade (MNQ micros)",
-     "buy_usd": 25000.0, "fleet": "ladder"},
+     "buy_usd": 25000.0, "fleet": "10"},
 ]
 STOP_RULES = [
     "An account whose own running net is 5 eval prices below its best (about $460 on a 50K) buys no more evals: that is what a 2021-25-like market looks like, and it cuts the eval cash a bad market eats by over 90% and costs about 1-3% in a good one.",
@@ -187,7 +187,8 @@ def build(accts=None, fixture=False, asof=None):
     ladder = []
     for st in LADDER:
         row = {k: v for k, v in st.items() if k != "fleet"}
-        row["usd_month"] = mcn["y1"].get(st["fleet"], {"h1": None, "h2": None, "ref": None})
+        row["usd_month"] = ({"h1": 0, "h2": 0, "ref": 0} if st["fleet"] is None
+                            else mcn["y1"].get(st["fleet"], {"h1": None, "h2": None, "ref": None}))
         ladder.append(row)
     nxt = ladder[min(n + 1, len(ladder) - 1)]
     cur = ladder[n]
@@ -202,7 +203,10 @@ def build(accts=None, fixture=False, asof=None):
         h2, ref = row["usd_month"].get("h2"), row["usd_month"].get("ref")
         items.append({"title": f"Step {row['n']}: {row['name']} ({row['accounts']} accounts)",
                       "detail": f"When: {row['when']}. Buy: {row['buy']}." + (
-                          f" First-year estimate about {usd(h2)} a month (Jul-Oct 2026 rate), {usd(ref)} in a 2021-25 market." if h2 is not None and ref is not None else ""),
+                          f" First-year estimate about {usd(h2)} a month (Jul-Oct 2026 rate), {usd(ref)} in a 2021-25 market." if h2 is not None and ref is not None and 0 < row["n"] < 4 else
+                          " $0 a month until an eval passes." if row["n"] == 0 else "") + (
+                          f" The 10 prop accounts keep paying; with this account, $1M within 5 years on {mcn['p_1m_5y'].get('h2'):g}% of Jul-Oct-2026-like paths (median {mcn['to_1m'].get('h2')} months), "
+                          f"{mcn['p_1m_5y'].get('ref'):g}% in a 2021-25 market: possible if the edge holds, not a forecast." if row["n"] == 4 and mcn["to_1m"].get("h2") is not None else ""),
                       "usd": h2, "score": 90 if row["n"] == n else 70 if row["n"] == n + 1 else 40,
                       "risk": "low" if row["n"] <= 1 else "med" if row["n"] <= 3 else "high"})
     plan = {
