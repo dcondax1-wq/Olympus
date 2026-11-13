@@ -768,6 +768,65 @@ def slot_main(n=1000, cfg=None, tag="G1"):
     json.dump(out, open(OUT, "w", encoding="utf-8"), indent=1, default=float)
 
 
+def blitz_F(B, mode, k_imp=1.0):
+    """BLITZ candidates (scalp_na_lib.signals: 09:30-open noise band, 30-min checks 11:00-15:30, stop 1.5 x 5m ATR) with
+    the band changed. Pre-registered angles, neither in the BLITZ write-ups:
+      "base"  today's band (09:30 open x (1 +/- sigma)), the reproduction check;
+      "gap"   the paper's gap-aware band (Zarattini et al. 2024): upper = max(open, prior close) x (1 + sigma), lower =
+              min(open, prior close) x (1 - sigma) - a break toward the gap fill must first travel through the gap;
+      "imp"   band = max(sigma, the options-implied move): k x VXN(prior close) / 100 / sqrt(252) x sqrt(minutes since
+              09:30 / 390) x sqrt(2 / pi) (the mean |move| of a random walk) - no trade on a break the options market
+              already prices as noise."""
+    from tools import scalp_na_lib as SL
+    F0 = SL.signals(B, 1.0, 30, (630, 930), 1.5)
+    if mode == "base":
+        return F0
+    sg, op = SL._noise(B)
+    X = SL._day_ctx(B)
+    c, m = B["c"], B["mod"]
+    pc = X["pc"][B["day"]]
+    if mode == "gap":
+        ref_u = np.where(np.isfinite(pc), np.maximum(op, pc), op)
+        ref_l = np.where(np.isfinite(pc), np.minimum(op, pc), op)
+        up, lo = ref_u * (1 + sg), ref_l * (1 - sg)
+    else:
+        vx = np.array([SL.prev_close("VXN", d) for d in B["dates"]])[B["day"]]
+        t = np.maximum(m + B["tf"] - 570, 1) / 390.0
+        imp = k_imp * vx / 100.0 / math.sqrt(252) * np.sqrt(t) * math.sqrt(2 / math.pi)
+        s2 = np.where(np.isfinite(imp), np.maximum(sg, imp), sg)
+        up, lo = op * (1 + s2), op * (1 - s2)
+    ev = max(1, int(round(30 / B["tf"])))
+    I = np.where((m >= 630) & (m < 930) & ~np.isnan(sg))[0]
+    I = I[((m[I] + B["tf"] - 570) // B["tf"]) % ev == 0]
+    D = np.where(c[I] > up[I], 1.0, np.where(c[I] < lo[I], -1.0, 0.0))
+    I, D = I[D != 0], D[D != 0]
+    return {"sig": I.astype(np.int64), "dir": D, "stop": c[I] - D * 1.5 * B["atr5"][I], "risk_pts": 1.5 * B["atr5"][I],
+            "mod": m[I] + B["tf"], "day": B["day"][I], "prng_ratio": X["prng_ratio"][B["day"][I]], "_up": up, "_lo": lo}
+
+
+def blitz_main():
+    """BLITZ at $150 a trade (its standard table: 2026 halves on 1m, 2021-25 on 5m, the prior-day range filter on), today vs
+    the two band angles, + the coin-flip placebo of any angle that beats today in all three spans."""
+    from tools import scalp_na_lib as SL
+    out = json.load(open(OUT, encoding="utf-8"))
+    res = {}
+    for mode in ("base", "gap", "imp"):
+        row, TT = {}, {}
+        for sp, tf in (("H1", 1), ("H2", 1), ("R", 5)):
+            B = SL.bars(tf)
+            if tf not in TT:
+                F = blitz_F(B, mode)
+                TT[tf] = (SL.run(B, None, F["prng_ratio"] >= 0.8, F), F)
+            row[sp] = SL.stats(TT[tf][0], SL.sessions(B, sp), 150.0, 20)
+        res[mode] = row
+        print(mode, " | ".join(f"{sp} n {r['n']} tpw {r['tpw']} pf {r['pf']} ${r['per_month']}/mo dd {r['dd']}" for sp, r in row.items()), flush=True)
+    for mode in ("gap", "imp"):
+        better = all(res[mode][sp]["per_month"] > res["base"][sp]["per_month"] for sp in ("H1", "H2", "R"))
+        res[mode]["beats_today_all3"] = better
+    out["blitz"] = res
+    json.dump(out, open(OUT, "w", encoding="utf-8"), indent=1, default=float)
+
+
 def gap_deep():
     """Added AFTER the first look (labelled so in the write-up): controls, neighbours, coin-flip placebo, years and a
     look-ahead check for G1."""
@@ -837,6 +896,8 @@ if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "grid"
     if cmd == "grid":
         grid_main()
+    elif cmd == "blitz":
+        blitz_main()
     elif cmd == "slot":
         slot_main(int(sys.argv[sys.argv.index("--n") + 1]) if "--n" in sys.argv else 1000)
     elif cmd == "gapdeep":

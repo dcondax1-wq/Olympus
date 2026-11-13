@@ -27917,5 +27917,861 @@
    "signals": 459,
    "differ": 0
   }
+ },
+ "slot": {
+  "G1": {
+   "builder25k": {
+    "eval": {
+     "e30": {
+      "H1": {
+       "p10": 0.0,
+       "f10": 0.0,
+       "p15": 0.0,
+       "p_ever": 1.8,
+       "fail_ever": 0.0,
+       "pass_med": 42.0,
+       "slow_pass": 100.0,
+       "usd_per_pass": 3500.0,
+       "max_risk": 383
+      },
+      "H2": {
+       "p10": 0.0,
+       "f10": 0.0,
+       "p15": 0.0,
+       "p_ever": 13.0,
+       "fail_ever": 0.0,
+       "pass_med": 46.0,
+       "slow_pass": 100.0,
+       "usd_per_pass": 484.6,
+       "max_risk": 390
+      },
+      "2025": {
+       "p10": 1.2,
+       "f10": 0.0,
+       "p15": 4.8,
+       "p_ever": 36.0,
+       "fail_ever": 0.0,
+       "pass_med": 33.0,
+       "slow_pass": 86.7,
+       "usd_per_pass": 175.0,
+       "max_risk": 407
+      },
+      "2021-24": {
+       "p10": 0.8,
+       "f10": 0.0,
+       "p15": 3.0,
+       "p_ever": 16.8,
+       "fail_ever": 0.0,
+       "pass_med": 33.0,
+       "slow_pass": 82.1,
+       "usd_per_pass": 375.0,
+       "max_risk": 412
+      }
+     },
+     "e40": {
+      "H1": {
+       "p10": 2.0,
+       "f10": 0.0,
+       "p15": 4.6,
+       "p_ever": 18.2,
+       "fail_ever": 0.0,
+       "pass_med": 25.0,
+       "slow_pass": 74.7,
+       "usd_per_pass": 346.2,
+       "max_risk": 546
+      },
+      "H2": {
+       "p10": 1.0,
+       "f10": 0.0,
+       "p15": 2.8,
+       "p_ever": 21.4,
+       "fail_ever": 0.0,
+       "pass_med": 31.0,
+       "slow_pass": 86.9,
+       "usd_per_pass": 294.4,
+       "max_risk": 539
+      },
+      "2025": {
+       "p10": 4.8,
+       "f10": 0.0,
+       "p15": 10.4,
+       "p_ever": 40.4,
+       "fail_ever": 3.2,
+       "pass_med": 26.0,
+       "slow_pass": 74.3,
+       "usd_per_pass": 155.9,
+       "max_risk": 540
+      },
+      "2021-24": {
+       "p10": 5.4,
+       "f10": 0.0,
+       "p15": 9.8,
+       "p_ever": 26.8,
+       "fail_ever": 0.2,
+       "pass_med": 20.0,
+       "slow_pass": 63.4,
+       "usd_per_pass": 235.1,
+       "max_risk": 544
+      }
+     },
+     "e50": {
+      "H1": {
+       "p10": 5.0,
+       "f10": 0.0,
+       "p15": 8.4,
+       "p_ever": 20.6,
+       "fail_ever": 0.0,
+       "pass_med": 20.0,
+       "slow_pass": 59.2,
+       "usd_per_pass": 305.8,
+       "max_risk": 596
+      },
+      "H2": {
+       "p10": 2.6,
+       "f10": 0.0,
+       "p15": 5.4,
+       "p_ever": 24.6,
+       "fail_ever": 0.0,
+       "pass_med": 26.0,
+       "slow_pass": 78.0,
+       "usd_per_pass": 256.1,
+       "max_risk": 585
+      },
+      "2025": {
+       "p10": 13.0,
+       "f10": 0.6,
+       "p15": 17.8,
+       "p_ever": 41.2,
+       "fail_ever": 7.6,
+       "pass_med": 18.0,
+       "slow_pass": 56.8,
+       "usd_per_pass": 152.9,
+       "max_risk": 598
+      },
+      "2021-24": {
+       "p10": 9.0,
+       "f10": 0.2,
+       "p15": 14.0,
+       "p_ever": 28.4,
+       "fail_ever": 10.8,
+       "pass_med": 16.0,
+       "slow_pass": 50.7,
+       "usd_per_pass": 221.8,
+       "max_risk": 598
+      }
+     },
+     "e70": {
+      "H1": {
+       "p10": 7.0,
+       "f10": 0.2,
+       "p15": 12.2,
+       "p_ever": 26.2,
+       "fail_ever": 15.2,
+       "pass_med": 16.0,
+       "slow_pass": 53.4,
+       "usd_per_pass": 240.5,
+       "max_risk": 596
+      },
+      "H2": {
+       "p10": 7.4,
+       "f10": 2.6,
+       "p15": 13.6,
+       "p_ever": 28.6,
+       "fail_ever": 15.4,
+       "pass_med": 16.0,
+       "slow_pass": 52.4,
+       "usd_per_pass": 220.3,
+       "max_risk": 585
+      },
+      "2025": {
+       "p10": 21.2,
+       "f10": 3.4,
+       "p15": 28.0,
+       "p_ever": 45.2,
+       "fail_ever": 31.4,
+       "pass_med": 12.0,
+       "slow_pass": 38.1,
+       "usd_per_pass": 139.4,
+       "max_risk": 598
+      },
+      "2021-24": {
+       "p10": 13.4,
+       "f10": 5.6,
+       "p15": 19.2,
+       "p_ever": 29.4,
+       "fail_ever": 50.8,
+       "pass_med": 11.0,
+       "slow_pass": 34.7,
+       "usd_per_pass": 214.3,
+       "max_risk": 598
+      }
+     }
+    },
+    "slot": {
+     "e30_f20_c500": {
+      "H1": {
+       "slot_m": -10,
+       "p_neg": 100.0,
+       "evals": 1.0,
+       "funded": 0.06
+      },
+      "H2": {
+       "slot_m": -9,
+       "p_neg": 99.0,
+       "evals": 1.0,
+       "funded": 0.34
+      },
+      "2025": {
+       "slot_m": -2,
+       "p_neg": 94.8,
+       "evals": 1.02,
+       "funded": 0.6
+      },
+      "2021-24": {
+       "slot_m": -9,
+       "p_neg": 99.0,
+       "evals": 1.0,
+       "funded": 0.3
+      }
+     },
+     "e30_f30_c750": {
+      "H1": {
+       "slot_m": -10,
+       "p_neg": 100.0,
+       "evals": 1.0,
+       "funded": 0.06
+      },
+      "H2": {
+       "slot_m": -7,
+       "p_neg": 97.2,
+       "evals": 1.0,
+       "funded": 0.34
+      },
+      "2025": {
+       "slot_m": 23,
+       "p_neg": 82.8,
+       "evals": 1.02,
+       "funded": 0.6
+      },
+      "2021-24": {
+       "slot_m": -7,
+       "p_neg": 98.0,
+       "evals": 1.0,
+       "funded": 0.3
+      }
+     },
+     "e30_f40_c1000": {
+      "H1": {
+       "slot_m": -10,
+       "p_neg": 99.2,
+       "evals": 1.0,
+       "funded": 0.06
+      },
+      "H2": {
+       "slot_m": -2,
+       "p_neg": 94.2,
+       "evals": 1.0,
+       "funded": 0.34
+      },
+      "2025": {
+       "slot_m": 28,
+       "p_neg": 81.2,
+       "evals": 1.05,
+       "funded": 0.6
+      },
+      "2021-24": {
+       "slot_m": -4,
+       "p_neg": 95.6,
+       "evals": 1.0,
+       "funded": 0.3
+      }
+     },
+     "e50_f20_c500": {
+      "H1": {
+       "slot_m": -10,
+       "p_neg": 99.6,
+       "evals": 1.0,
+       "funded": 0.21
+      },
+      "H2": {
+       "slot_m": -6,
+       "p_neg": 97.4,
+       "evals": 1.0,
+       "funded": 0.34
+      },
+      "2025": {
+       "slot_m": 4,
+       "p_neg": 90.6,
+       "evals": 1.17,
+       "funded": 0.58
+      },
+      "2021-24": {
+       "slot_m": -11,
+       "p_neg": 97.8,
+       "evals": 1.27,
+       "funded": 0.41
+      }
+     },
+     "e50_f30_c750": {
+      "H1": {
+       "slot_m": -10,
+       "p_neg": 99.4,
+       "evals": 1.0,
+       "funded": 0.21
+      },
+      "H2": {
+       "slot_m": -2,
+       "p_neg": 94.0,
+       "evals": 1.0,
+       "funded": 0.34
+      },
+      "2025": {
+       "slot_m": 37,
+       "p_neg": 77.6,
+       "evals": 1.18,
+       "funded": 0.59
+      },
+      "2021-24": {
+       "slot_m": -4,
+       "p_neg": 94.0,
+       "evals": 1.27,
+       "funded": 0.41
+      }
+     },
+     "e50_f40_c1000": {
+      "H1": {
+       "slot_m": -6,
+       "p_neg": 97.0,
+       "evals": 1.0,
+       "funded": 0.21
+      },
+      "H2": {
+       "slot_m": 6,
+       "p_neg": 90.0,
+       "evals": 1.0,
+       "funded": 0.34
+      },
+      "2025": {
+       "slot_m": 41,
+       "p_neg": 76.2,
+       "evals": 1.22,
+       "funded": 0.61
+      },
+      "2021-24": {
+       "slot_m": 0,
+       "p_neg": 91.8,
+       "evals": 1.27,
+       "funded": 0.41
+      }
+     },
+     "e70_f20_c500": {
+      "H1": {
+       "slot_m": -14,
+       "p_neg": 99.6,
+       "evals": 1.39,
+       "funded": 0.36
+      },
+      "H2": {
+       "slot_m": -7,
+       "p_neg": 96.8,
+       "evals": 1.16,
+       "funded": 0.39
+      },
+      "2025": {
+       "slot_m": -1,
+       "p_neg": 90.4,
+       "evals": 1.62,
+       "funded": 0.78
+      },
+      "2021-24": {
+       "slot_m": -19,
+       "p_neg": 97.2,
+       "evals": 2.2,
+       "funded": 0.69
+      }
+     },
+     "e70_f30_c750": {
+      "H1": {
+       "slot_m": -13,
+       "p_neg": 98.6,
+       "evals": 1.39,
+       "funded": 0.36
+      },
+      "H2": {
+       "slot_m": -1,
+       "p_neg": 93.0,
+       "evals": 1.16,
+       "funded": 0.39
+      },
+      "2025": {
+       "slot_m": 45,
+       "p_neg": 70.6,
+       "evals": 1.63,
+       "funded": 0.79
+      },
+      "2021-24": {
+       "slot_m": -7,
+       "p_neg": 90.4,
+       "evals": 2.2,
+       "funded": 0.69
+      }
+     },
+     "e70_f40_c1000": {
+      "H1": {
+       "slot_m": -8,
+       "p_neg": 94.8,
+       "evals": 1.39,
+       "funded": 0.36
+      },
+      "H2": {
+       "slot_m": 7,
+       "p_neg": 88.4,
+       "evals": 1.16,
+       "funded": 0.39
+      },
+      "2025": {
+       "slot_m": 54,
+       "p_neg": 69.0,
+       "evals": 1.68,
+       "funded": 0.81
+      },
+      "2021-24": {
+       "slot_m": -1,
+       "p_neg": 87.2,
+       "evals": 2.2,
+       "funded": 0.69
+      }
+     }
+    },
+    "pick_slot_h1": "e50_f40_c1000",
+    "pick_eval_h1": "e70"
+   },
+   "builder50k": {
+    "eval": {
+     "e30": {
+      "H1": {
+       "p10": 0.0,
+       "f10": 0.0,
+       "p15": 1.0,
+       "p_ever": 10.8,
+       "fail_ever": 0.0,
+       "pass_med": 37.5,
+       "slow_pass": 90.7,
+       "usd_per_pass": 850.0,
+       "max_risk": 835
+      },
+      "H2": {
+       "p10": 0.0,
+       "f10": 0.0,
+       "p15": 0.6,
+       "p_ever": 18.6,
+       "fail_ever": 0.0,
+       "pass_med": 37.0,
+       "slow_pass": 96.8,
+       "usd_per_pass": 493.5,
+       "max_risk": 842
+      },
+      "2025": {
+       "p10": 2.0,
+       "f10": 0.0,
+       "p15": 6.8,
+       "p_ever": 40.0,
+       "fail_ever": 1.8,
+       "pass_med": 31.0,
+       "slow_pass": 83.0,
+       "usd_per_pass": 229.5,
+       "max_risk": 858
+      },
+      "2021-24": {
+       "p10": 2.6,
+       "f10": 0.0,
+       "p15": 5.4,
+       "p_ever": 23.0,
+       "fail_ever": 0.2,
+       "pass_med": 27.0,
+       "slow_pass": 76.5,
+       "usd_per_pass": 399.1,
+       "max_risk": 860
+      }
+     },
+     "e40": {
+      "H1": {
+       "p10": 2.8,
+       "f10": 0.0,
+       "p15": 5.4,
+       "p_ever": 22.6,
+       "fail_ever": 0.6,
+       "pass_med": 25.0,
+       "slow_pass": 76.1,
+       "usd_per_pass": 406.2,
+       "max_risk": 992
+      },
+      "H2": {
+       "p10": 2.0,
+       "f10": 0.0,
+       "p15": 4.4,
+       "p_ever": 26.8,
+       "fail_ever": 0.0,
+       "pass_med": 29.0,
+       "slow_pass": 83.6,
+       "usd_per_pass": 342.5,
+       "max_risk": 993
+      },
+      "2025": {
+       "p10": 7.8,
+       "f10": 0.4,
+       "p15": 13.6,
+       "p_ever": 43.8,
+       "fail_ever": 7.6,
+       "pass_med": 24.0,
+       "slow_pass": 68.9,
+       "usd_per_pass": 209.6,
+       "max_risk": 990
+      },
+      "2021-24": {
+       "p10": 7.4,
+       "f10": 0.0,
+       "p15": 11.8,
+       "p_ever": 30.0,
+       "fail_ever": 16.2,
+       "pass_med": 18.5,
+       "slow_pass": 60.7,
+       "usd_per_pass": 306.0,
+       "max_risk": 997
+      }
+     },
+     "e50": {
+      "H1": {
+       "p10": 7.2,
+       "f10": 0.0,
+       "p15": 10.4,
+       "p_ever": 26.2,
+       "fail_ever": 11.6,
+       "pass_med": 19.0,
+       "slow_pass": 60.3,
+       "usd_per_pass": 350.4,
+       "max_risk": 994
+      },
+      "H2": {
+       "p10": 6.8,
+       "f10": 0.0,
+       "p15": 10.8,
+       "p_ever": 26.6,
+       "fail_ever": 6.6,
+       "pass_med": 19.0,
+       "slow_pass": 59.4,
+       "usd_per_pass": 345.1,
+       "max_risk": 993
+      },
+      "2025": {
+       "p10": 17.6,
+       "f10": 1.0,
+       "p15": 23.2,
+       "p_ever": 47.2,
+       "fail_ever": 22.2,
+       "pass_med": 16.0,
+       "slow_pass": 50.8,
+       "usd_per_pass": 194.5,
+       "max_risk": 990
+      },
+      "2021-24": {
+       "p10": 11.8,
+       "f10": 1.0,
+       "p15": 16.0,
+       "p_ever": 31.2,
+       "fail_ever": 42.0,
+       "pass_med": 15.0,
+       "slow_pass": 48.7,
+       "usd_per_pass": 294.2,
+       "max_risk": 997
+      }
+     },
+     "e70": {
+      "H1": {
+       "p10": 7.6,
+       "f10": 2.8,
+       "p15": 12.2,
+       "p_ever": 30.4,
+       "fail_ever": 50.6,
+       "pass_med": 18.0,
+       "slow_pass": 59.9,
+       "usd_per_pass": 302.0,
+       "max_risk": 994
+      },
+      "H2": {
+       "p10": 6.8,
+       "f10": 7.4,
+       "p15": 12.2,
+       "p_ever": 30.4,
+       "fail_ever": 45.8,
+       "pass_med": 18.0,
+       "slow_pass": 59.9,
+       "usd_per_pass": 302.0,
+       "max_risk": 993
+      },
+      "2025": {
+       "p10": 20.2,
+       "f10": 8.2,
+       "p15": 28.4,
+       "p_ever": 48.8,
+       "fail_ever": 47.2,
+       "pass_med": 13.0,
+       "slow_pass": 41.8,
+       "usd_per_pass": 188.1,
+       "max_risk": 990
+      },
+      "2021-24": {
+       "p10": 12.4,
+       "f10": 9.0,
+       "p15": 19.0,
+       "p_ever": 32.4,
+       "fail_ever": 65.2,
+       "pass_med": 14.0,
+       "slow_pass": 41.4,
+       "usd_per_pass": 283.3,
+       "max_risk": 997
+      }
+     }
+    },
+    "slot": {
+     "e30_f20_c500": {
+      "H1": {
+       "slot_m": -12,
+       "p_neg": 99.0,
+       "evals": 1.0,
+       "funded": 0.21
+      },
+      "H2": {
+       "slot_m": -11,
+       "p_neg": 98.2,
+       "evals": 1.0,
+       "funded": 0.34
+      },
+      "2025": {
+       "slot_m": 27,
+       "p_neg": 88.6,
+       "evals": 1.05,
+       "funded": 0.64
+      },
+      "2021-24": {
+       "slot_m": -8,
+       "p_neg": 96.6,
+       "evals": 1.07,
+       "funded": 0.35
+      }
+     },
+     "e30_f30_c750": {
+      "H1": {
+       "slot_m": -8,
+       "p_neg": 97.6,
+       "evals": 1.0,
+       "funded": 0.21
+      },
+      "H2": {
+       "slot_m": 2,
+       "p_neg": 94.8,
+       "evals": 1.0,
+       "funded": 0.34
+      },
+      "2025": {
+       "slot_m": 80,
+       "p_neg": 78.8,
+       "evals": 1.06,
+       "funded": 0.64
+      },
+      "2021-24": {
+       "slot_m": 2,
+       "p_neg": 94.4,
+       "evals": 1.07,
+       "funded": 0.35
+      }
+     },
+     "e30_f40_c1000": {
+      "H1": {
+       "slot_m": -3,
+       "p_neg": 96.2,
+       "evals": 1.0,
+       "funded": 0.21
+      },
+      "H2": {
+       "slot_m": 16,
+       "p_neg": 91.4,
+       "evals": 1.0,
+       "funded": 0.34
+      },
+      "2025": {
+       "slot_m": 90,
+       "p_neg": 76.0,
+       "evals": 1.1,
+       "funded": 0.65
+      },
+      "2021-24": {
+       "slot_m": 8,
+       "p_neg": 93.6,
+       "evals": 1.07,
+       "funded": 0.35
+      }
+     },
+     "e50_f20_c500": {
+      "H1": {
+       "slot_m": -18,
+       "p_neg": 98.6,
+       "evals": 1.43,
+       "funded": 0.33
+      },
+      "H2": {
+       "slot_m": -8,
+       "p_neg": 96.2,
+       "evals": 1.16,
+       "funded": 0.4
+      },
+      "2025": {
+       "slot_m": 46,
+       "p_neg": 81.6,
+       "evals": 1.46,
+       "funded": 0.8
+      },
+      "2021-24": {
+       "slot_m": -11,
+       "p_neg": 93.2,
+       "evals": 1.97,
+       "funded": 0.64
+      }
+     },
+     "e50_f30_c750": {
+      "H1": {
+       "slot_m": -10,
+       "p_neg": 95.6,
+       "evals": 1.43,
+       "funded": 0.33
+      },
+      "H2": {
+       "slot_m": 14,
+       "p_neg": 90.6,
+       "evals": 1.16,
+       "funded": 0.4
+      },
+      "2025": {
+       "slot_m": 118,
+       "p_neg": 69.0,
+       "evals": 1.48,
+       "funded": 0.81
+      },
+      "2021-24": {
+       "slot_m": 9,
+       "p_neg": 89.4,
+       "evals": 1.97,
+       "funded": 0.64
+      }
+     },
+     "e50_f40_c1000": {
+      "H1": {
+       "slot_m": -6,
+       "p_neg": 95.4,
+       "evals": 1.43,
+       "funded": 0.33
+      },
+      "H2": {
+       "slot_m": 27,
+       "p_neg": 88.8,
+       "evals": 1.16,
+       "funded": 0.4
+      },
+      "2025": {
+       "slot_m": 141,
+       "p_neg": 65.4,
+       "evals": 1.55,
+       "funded": 0.84
+      },
+      "2021-24": {
+       "slot_m": 21,
+       "p_neg": 86.2,
+       "evals": 1.97,
+       "funded": 0.64
+      }
+     },
+     "e70_f20_c500": {
+      "H1": {
+       "slot_m": -28,
+       "p_neg": 97.4,
+       "evals": 2.3,
+       "funded": 0.61
+      },
+      "H2": {
+       "slot_m": -22,
+       "p_neg": 96.2,
+       "evals": 2.1,
+       "funded": 0.69
+      },
+      "2025": {
+       "slot_m": 58,
+       "p_neg": 76.0,
+       "evals": 1.85,
+       "funded": 0.93
+      },
+      "2021-24": {
+       "slot_m": -12,
+       "p_neg": 90.8,
+       "evals": 2.65,
+       "funded": 0.82
+      }
+     },
+     "e70_f30_c750": {
+      "H1": {
+       "slot_m": -16,
+       "p_neg": 93.4,
+       "evals": 2.3,
+       "funded": 0.61
+      },
+      "H2": {
+       "slot_m": 14,
+       "p_neg": 85.2,
+       "evals": 2.1,
+       "funded": 0.69
+      },
+      "2025": {
+       "slot_m": 154,
+       "p_neg": 60.2,
+       "evals": 1.86,
+       "funded": 0.94
+      },
+      "2021-24": {
+       "slot_m": 19,
+       "p_neg": 82.8,
+       "evals": 2.65,
+       "funded": 0.82
+      }
+     },
+     "e70_f40_c1000": {
+      "H1": {
+       "slot_m": -4,
+       "p_neg": 90.2,
+       "evals": 2.3,
+       "funded": 0.61
+      },
+      "H2": {
+       "slot_m": 29,
+       "p_neg": 82.4,
+       "evals": 2.11,
+       "funded": 0.69
+      },
+      "2025": {
+       "slot_m": 173,
+       "p_neg": 56.8,
+       "evals": 1.96,
+       "funded": 0.99
+      },
+      "2021-24": {
+       "slot_m": 38,
+       "p_neg": 79.6,
+       "evals": 2.65,
+       "funded": 0.82
+      }
+     }
+    },
+    "pick_slot_h1": "e30_f40_c1000",
+    "pick_eval_h1": "e50"
+   }
+  }
  }
 }
