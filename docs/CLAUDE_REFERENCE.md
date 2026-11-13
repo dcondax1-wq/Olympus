@@ -1577,6 +1577,15 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   account C) builds its NinjaTraderAdapter from `live.ADAPTERS`, so each carries the guard; an order contract pinned in a
   config (`nt_instrument` / `nt_instrument_mini`) is refused once it is past its roll (`_contract_mismatch`), even with
   the chart left on the same old contract.
+- **ROLL.bat (2026-11-13, team S1; `tools/roll_now.py`, `tests/test_roll_now.py` 42):** the owner's one double-click for the roll.
+  Acts only from the eve after 15:56 ET (or any day after the roll) and only flat (no non-flat MNQ / NQ position file in
+  NinjaTrader's outgoing\, no trade in a fresh heartbeat); removes an OLD pinned `nt_instrument` from `data/autostart.json`
+  (backup `autostart.json.before-roll-*`), fixes `le_feed\feed_instruments.txt` in add-on mode when the bot did not, else
+  shows the chart click and waits (15 min) until `<ROOT>_instrument.txt` shows the new month, then `roll_check`. Never an
+  order, never the order contract rule. Phone pushes without GitHub: `roll_watch.countdown` (daily from 3 days before:
+  Mon Dec 7 - Wed Dec 9, "ready", the late alarm from 01:40 ET, "done") through `tools/pc_guard.py`, called from
+  `pc_report.events` (not on the reporter's first run; keys `guard:*` in `data/pc_report/state.json`, a failed push retried).
+  The ops_checks Web Push reminders (7 days / 1 day) still exist but need GitHub's push subscriptions.
 - **DST / CME holidays / self-healing (2026-10-29, `docs/AUTOPILOT.md`):** US clocks go back Sun 2026-11-01; every live
   time decision is America/New_York wall clock (25 trading_day functions, market_open, entry / flat windows, auto-update,
   ops pushes, the cloud's UTC crons through its real bash guard, LIT replays over the 2025-11-02 / 2025-03-09 /

@@ -563,6 +563,16 @@ def events(state: dict, snap: dict) -> tuple:
         st["cond"].pop(code, None)
         msgs.append({"key": f"back:{code}:{now}", "title": "Back to normal", "body": COND_BACK.get(code, "Back to normal."),
                      "priority": "default", "tags": "white_check_mark"})
+    # the guard pushes (tools/pc_guard.py, read-only): contract roll, eval drawdown, daily loss, quiet bot, 16:05 day summary.
+    # Not on the very first run (that one only records what is already there).
+    st["guard"] = dict(_d(state.get("guard")))
+    if st["seeded"]:
+        try:
+            from tools import pc_guard
+            st["guard"], gm = pc_guard.guard(st["guard"], snap)
+            msgs += gm
+        except Exception:
+            pass
     if not st["seeded"]:                # the first run: what is already there is only recorded, never pushed
         st["seeded"] = True
         msgs = [m for m in msgs if m["key"].startswith("cond:")]
@@ -744,6 +754,8 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
             # not sent: forget it so the next run tries again (conditions keep their state; a trade key is retried)
             if m["key"].startswith(("open:", "close:")):
                 new_state["seen"].pop(m["key"], None)
+            elif m["key"].startswith("guard:"):
+                _d(_d(new_state.get("guard")).get("sent")).pop(m["key"], None)
     if not dry:
         write_json(os.path.join(work, "state.json"), new_state)
     rec.update(sent=sent, queued=len(msgs), ok=not rec["errors"])
