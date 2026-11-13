@@ -467,6 +467,13 @@ def pwsh_runs(pwsh):
         check("second run (server up, NinjaTrader open): the running bot is left alone, nothing started twice, task replaced",
               rc == 0 and "already running (left alone)" in out and "--wait-server" not in " ".join(py) and win == [w for w in win if w.startswith("TASK REGISTER")]
               and len(win) == 1 and "GitHub-free mode already on" in out, (out, win, py))
+        open(b.pylog, "w").close()
+        open(b.winlog, "w").close()
+        rc, out = b.run(pwsh, ["-NoResume"], server=True, nt=True)
+        py = [ln.split("tools/")[-1] for ln in b.lines(b.pylog)]
+        check("-NoResume (GO_LIVE_EVAL.bat part 1): no paper start resumed, the rest the same, still never a live phrase",
+              rc == 0 and "--resume-paper" not in " ".join(py) and "no paper start resumed" in out and "pc_report.py" in py
+              and not re.search(r"engine\.go|START_BOT|ACCEPT", " ".join(py)), (out, py))
         rc, out = b.run(pwsh, ["-Remove"])
         check("-Remove: the task and the marker BOTS_BACK made are gone; the bot is not touched",
               rc == 0 and b.lines(b.winlog)[-1] == "TASK REMOVE OlympusPCReport" and not os.path.exists(os.path.join(b.home, "no_github"))
@@ -575,7 +582,21 @@ def node_runs(node):
         b.cleanup()
 
 
+def go_live_static():
+    """GO_LIVE_EVAL.bat (owner 2026-11-12: Zlarior + ATLAS on the eval tonight): part 1 = bots_back.ps1 -NoResume, part 2 = engine.go
+    (START BOT, where the owner types the live phrase himself); the file never types or holds the phrase and never sets the live switch."""
+    bat = rb("GO_LIVE_EVAL.bat").decode("ascii")
+    code = [ln for ln in bat.splitlines() if ln.strip() and not ln.lower().startswith("rem ")]
+    body = "\n".join(code)
+    i1, i2 = body.find("bots_back.ps1\" -NoResume"), body.find("-m engine.go")
+    check("GO_LIVE_EVAL.bat: CRLF, bots_back.ps1 -NoResume first, then engine.go (START BOT); old folder -> UPDATE_FROM_ZIP first",
+          "\r\n" in bat and 0 < i1 < i2 and "UPDATE_FROM_ZIP.bat" in bat, (i1, i2))
+    check("GO_LIVE_EVAL.bat: never arms by itself (no live phrase to type, no NINJATRADER_LIVE, no --arm)",
+          not [ln for ln in code if "ACCEPT" in ln or "NINJATRADER_LIVE" in ln or "--arm" in ln], code)
+
+
 def main() -> int:
+    go_live_static()
     static()
     reporter()
     helpers()

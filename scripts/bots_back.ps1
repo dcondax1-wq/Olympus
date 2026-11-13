@@ -15,12 +15,14 @@ the bots never needed it to trade, only their reporting did. One double-click, s
   5 CARD     six lines: bots, feed, last trade, drawdown left, reporting, next window (tools\pc_report.py)
 
   -DryRun    say what it would do, change nothing         -Remove   undo 1 and 4 (UNDO_BOTS_BACK.bat)
+  -NoResume  skip step 3's paper resume (GO_LIVE_EVAL.bat: START BOT follows, where the owner types the live phrase himself)
 It never stops or restarts a running bot, never places an order, never touches live_model*.json, engine\ or NinjaTrader settings.
 Tests: tests\test_bots_back.py (pwsh with a fake python; LE_BB_T_NT=1|0 and LE_BB_T_LOG=<file> stand in for Windows-only steps).
 #>
 param(
     [switch]$DryRun,
     [switch]$Remove,
+    [switch]$NoResume,
     [string]$Python = "",
     [int]$FeedWait = 300
 )
@@ -193,7 +195,11 @@ if ($wasUp) {
     Line 'OK' '3/5 starting the bot server (hidden window, log in logs\server-YYYYMMDD.log)'
     & $Python -X utf8 $Helper --wait-server 120
 }
-& $Python -X utf8 $Helper --resume-paper
+if ($NoResume) {
+    Line 'SKIP' '    no paper start resumed (GO_LIVE_EVAL.bat: START BOT comes next, where you type the live phrase yourself)'
+} else {
+    & $Python -X utf8 $Helper --resume-paper
+}
 
 # ------------------------------------------------------------------ 4 reporting (no GitHub, free)
 & $TaskScript -Python $Python
