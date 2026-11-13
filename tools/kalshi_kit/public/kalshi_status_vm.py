@@ -17,6 +17,9 @@ Where the numbers come from:
   --src FILE      a status file the bot writes (the contract: --sample).
   --from-api      the Kalshi account through Kalshi's READ-ONLY endpoints. NOT recommended: the bot's account already
                   meets Kalshi's rate limits (HTTP 429); off unless asked for, at most one round every 5 min.
+Risk guard (2026-11-13): when ~/kalshi_jarvis/guard exists (kalshi_guard.py beside this file; --guard DIR overrides), the
+payload also carries `risk` (the guard's mode, limits, today's room, kill switch, the orders it saw; clean_risk()) and its
+alerts, and once the bot asks the guard about its orders the mode shown is the guard's (paper / dry-run / live).
 How it runs:
   --check   print exactly what would go public (no push)
   --once    push once (prints the result and the address the phone reads)
@@ -61,6 +64,7 @@ import base64
 import datetime as _dt
 import glob
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -342,6 +346,10 @@ def clean(raw, now=None, phrases=()):
             v3 = True
         if v3:
             out["v"] = 3
+        if isinstance(src.get("risk"), dict):
+            r = clean_risk(src["risk"])
+            if r:
+                out["risk"] = r
         out["pub_t"] = int(now)
         return out
     except Exception as e:
@@ -360,6 +368,131 @@ def _v3_ok(key, r):
     if key == "alerts":
         return bool(r.get("text"))
     return True
+
+
+# ------------------------------------------------------------------------------------------------- the risk guard (2026-11-13)
+# kalshi_guard.py beside this file on the VM (~/kalshi_jarvis/) gates every order of the bot; its state is in
+# ~/kalshi_jarvis/guard/. When that folder exists, kalshi.json carries a `risk` block (numbers and fixed words only) and its
+# alerts, and, once the bot has asked the guard about an order, the guard's mode (paper / dry-run / live) is the one shown.
+RISK_MODES = ("paper", "dry_run", "live")
+RISK_BOOL = ("kill", "connected", "stopped", "alerts_vm", "limits_ok")
+RISK_INT = ("kill_t", "last_check_t", "installed_t", "armed_t", "until", "unguarded")
+RISK_LIMITS = ("max_order_usd", "max_order_pct_balance", "max_market_usd", "max_day_usd", "daily_stop_usd", "max_open_usd",
+               "max_orders_day", "no_trade_last_s", "max_over_fair_cents", "min_edge_cents", "fee_rate")
+_GO_LIVE = re.compile(r"GO LIVE \d{4}-\d{2}-\d{2} STOP \d{1,5}(?:\.\d{2})?")
+_DAY = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def _int(v):
+    x = _num(v)
+    return None if x is None else int(x)
+
+
+def clean_risk(r):
+    """The guard's risk block as it may be published: whitelisted keys, numbers as numbers, texts redacted."""
+    if not isinstance(r, dict):
+        return None
+    m = str(r.get("mode") or "").strip().lower()
+    out = {"mode": m if m in RISK_MODES else "paper"}
+    for k in RISK_BOOL:
+        if r.get(k) is not None:
+            out[k] = bool(r[k])
+    for k in RISK_INT:
+        if _int(r.get(k)) is not None:
+            out[k] = _int(r[k])
+    if _num(r.get("open")) is not None:
+        out["open"] = _num(r["open"])
+    for k, n in (("why", 140), ("version", 24)):
+        if r.get(k):
+            out[k] = public_text(r[k], n)
+    if isinstance(r.get("go_live"), str) and _GO_LIVE.fullmatch(r["go_live"]):
+        out["go_live"] = r["go_live"]
+    lim = r.get("limits") if isinstance(r.get("limits"), dict) else {}
+    out["limits"] = {k: _num(lim.get(k)) for k in RISK_LIMITS if _num(lim.get(k)) is not None}
+    td = r.get("today") if isinstance(r.get("today"), dict) else {}
+    today = {k: _num(td.get(k)) for k in ("spend", "pnl") if _num(td.get(k)) is not None}
+    today.update({k: _int(td.get(k)) for k in ("orders", "sent", "blocked") if _int(td.get(k)) is not None})
+    if isinstance(td.get("day"), str) and _DAY.fullmatch(td["day"]):
+        today["day"] = td["day"]
+    out["today"] = today
+    rm = r.get("room") if isinstance(r.get("room"), dict) else {}
+    out["room"] = {k: _num(rm.get(k)) for k in ("day", "stop", "open") if _num(rm.get(k)) is not None}
+    lb = r.get("last_block")
+    if isinstance(lb, dict) and lb.get("text"):
+        out["last_block"] = {"t": _int(lb.get("t")), "text": public_text(lb["text"], 160)}
+    rows = []
+    for x in (r.get("intended") or [])[:10] if isinstance(r.get("intended"), (list, tuple)) else []:
+        if not isinstance(x, dict):
+            continue
+        row = {"t": _int(x.get("t")), "send": bool(x.get("send"))}
+        if x.get("ticker"):
+            row["ticker"] = _field("ticker", x["ticker"], 60)
+        for k, ok in (("side", ("yes", "no")), ("action", ("buy", "sell"))):
+            v = str(x.get(k) or "").lower()
+            if v in ok:
+                row[k] = v
+        if _int(x.get("contracts")) is not None:
+            row["contracts"] = _int(x["contracts"])
+        p = _num(x.get("price"))
+        if p is not None and 0 <= p <= 1:
+            row["price"] = p
+        if _num(x.get("cost")) is not None:
+            row["cost"] = _num(x["cost"])
+        if x.get("why"):
+            row["why"] = public_text(x["why"], 160)
+        rows.append(row)
+    out["intended"] = rows
+    return out
+
+
+def _guard_home(guard=None):
+    return os.path.abspath(os.path.expanduser(guard or os.environ.get("KALSHI_GUARD_HOME") or os.path.join("~", "kalshi_jarvis", "guard")))
+
+
+def load_guard(guard=None):
+    """kalshi_guard.py from the guard folder's parent (~/kalshi_jarvis) or beside this file; None when there is none."""
+    here = globals().get("__file__")
+    for d in (os.path.dirname(_guard_home(guard)), os.path.dirname(os.path.abspath(here)) if here else None):
+        f = os.path.join(d, "kalshi_guard.py") if d else None
+        if f and os.path.isfile(f):
+            spec = importlib.util.spec_from_file_location("kalshi_guard_for_status", f)
+            mod = importlib.util.module_from_spec(spec)
+            old, sys.dont_write_bytecode = sys.dont_write_bytecode, True
+            try:
+                spec.loader.exec_module(mod)
+            finally:
+                sys.dont_write_bytecode = old
+            return mod
+    return None
+
+
+def with_guard(raw, bot_dir=None, guard=None, now=None):
+    """The bot's status + the guard's risk block and alerts. No guard folder -> unchanged. Never raises."""
+    try:
+        home = _guard_home(guard)
+        if not os.path.isdir(home):
+            return raw
+        mod = load_guard(guard)
+        if mod is None:
+            return raw
+        risk = mod.Guard(home, bot_dir=bot_dir).public(now=now)
+        alerts = mod.feed_alerts(risk, now)
+    except Exception as e:
+        return {**raw, "alerts": [{"t": int(now or time.time()), "level": "warn",
+                                   "text": f"risk guard could not be read ({e.__class__.__name__})"}] + list(raw.get("alerts") or [])}
+    out = {**raw, "risk": risk, "alerts": alerts + list(raw.get("alerts") or [])}
+    if risk.get("connected"):
+        m = risk.get("mode")
+        out["mode"] = "dry-run" if m == "dry_run" else m
+        if m != "live":
+            out["note"] = "Dry run: orders are logged, none is sent (risk guard)" if m == "dry_run" else \
+                "Paper: the risk guard sends no real orders"
+            out["strategies"] = [{**x, "mode": "paper" if x.get("mode") == "live" else x.get("mode")} for x in out.get("strategies") or []]
+        if risk.get("kill"):
+            out["running"], out["status"] = False, "Paused: kill switch on (no orders)"
+        elif risk.get("stopped"):
+            out["running"], out["status"] = False, "Paused for today: daily stop-loss hit"
+    return out
 
 
 def _size(p):
@@ -1234,8 +1367,9 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
             **extra, "alerts": alerts[:CAPS["alerts"]], **({"kelly": kelly} if kelly else {})}
 
 
-def bot_payload(bot_dir, now=None, units=UNITS, week="monday", max_bytes=MAX_BYTES):
-    return fit(clean(read_bot(bot_dir, now=now, units=units, week=week), now), max_bytes)
+def bot_payload(bot_dir, now=None, units=UNITS, week="monday", max_bytes=MAX_BYTES, guard=None):
+    raw = with_guard(read_bot(bot_dir, now=now, units=units, week=week), bot_dir=bot_dir, guard=guard, now=now)
+    return fit(clean(raw, now), max_bytes)
 
 
 # ------------------------------------------------------------------------------------------------- the VM, through srv.py
@@ -1710,6 +1844,7 @@ def parser(prog=None):
     ap.add_argument("--publish-dir", default=None, help="folder (--publish folder) or user@host:/path (--publish scp)")
     ap.add_argument("--netlify-file", default=None, help="JSON file {site_id, token} on this machine (default ~/.olympus/netlify.json)")
     ap.add_argument("--week", choices=("monday", "rolling7"), default="monday", help="week start for week_pnl (default Monday 00:00 ET)")
+    ap.add_argument("--guard", default=None, help="the risk guard's folder (default ~/kalshi_jarvis/guard, when it exists)")
     ap.add_argument("--every", type=float, default=None, help="seconds between reads in --loop (default 60; --from-api 300)")
     ap.add_argument("--vm-helper", default=None, help="the PC's srv.py (default: found under %%APPDATA%%\\Claude\\scratch-workspaces)")
     ap.add_argument("--vm-python", default=None, help="python that runs srv.py (needs paramiko; default this python)")
@@ -1748,7 +1883,7 @@ def maker(a, st, log=print):
     if a.from_bot:
         def from_bot():
             try:
-                return bot_payload(a.from_bot, now=a.now, units=units, week=a.week), None
+                return bot_payload(a.from_bot, now=a.now, units=units, week=a.week, guard=a.guard), None
             except Exception as e:
                 return None, redact(f"{e.__class__.__name__}: {e}")
         return from_bot

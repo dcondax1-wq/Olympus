@@ -907,3 +907,12 @@ html.framed .note.sample { top: 56px; }
 .card.err p { margin: 0; max-width: 30ch; font-size: 15px; line-height: 1.45; }
 .card.err .btn { min-height: 44px; padding: 0 22px; border-radius: 13px; }
 @media (prefers-reduced-motion: no-preference) { .card.err { animation: k-err-in .32s cubic-bezier(.2, .8, .2, 1) both; } @keyframes k-err-in { from { opacity: 0; transform: translateY(8px); } } }
+
+/* the risk guard card (2026-11-13, kalshi_guard.py on the VM) */
+.card.rk.bad { border-color: var(--bad); }
+.rk-h { margin: 6px 0 10px; font-weight: 600; }
+.rk-g { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; margin: 0 0 10px; }
+.rk-g b { font-variant-numeric: tabular-nums; }
+.rk-o { list-style: none; margin: 8px 0; padding: 0; }
+.rk-o li { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line, rgba(127,127,127,.2)); min-width: 0; flex-wrap: wrap; }
+.rk code { overflow-wrap: anywhere; }
