@@ -793,6 +793,11 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   raising stub), FEED STALE blocks entries, PC bars push/read roundtrip, roll back-adjustment, CBOE VIX (23 checks, ~10 s).
 
 ## Infrastructure
+- **Real dashboard (2026-11-13, `docs/LIVE_DASHBOARD.md`):** `LIVE_LINK.bat` -> `scripts/live_link.ps1` (Tailscale `serve`, tailnet
+  only, never Funnel) -> the PC's own server serves the whole site at `/site/` (`engine/live_site.py`, 9 lines in `server.py` in
+  try/except): Gate at `/site/gate/`, live bot numbers over home.json (`/api/site/live.json`), `/site/kalshi.json` from the VM's feed,
+  money files; every non-GET over the link refused. Rebuild task `OlympusLiveSite` (15 min). Tests `tests.test_live_link` (area pc).
+- **Tonight on the eval:** `GO_LIVE_EVAL.bat` = `bots_back.ps1 -NoResume` then `engine.go` (the owner types the live phrase).
 - **Bots back without GitHub (2026-11-12, `docs/BOTS_BACK.md`):** `BOTS_BACK.bat` -> `scripts/bots_back.ps1` (GitHub-free switch
   `%USERPROFILE%\.olympus\no_github`, NinjaTrader + LE_BarFeed check, resumes only a paper / Sim autostart, six-line card; undo
   `UNDO_BOTS_BACK.bat`). `tools/pc_report.py` (task `OlympusPCReport`, every 15 min): phone pushes to the owner's private ntfy topic
