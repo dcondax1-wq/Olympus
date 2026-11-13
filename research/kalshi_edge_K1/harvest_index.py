@@ -24,7 +24,7 @@ CUTOFF = kk.ts("2026-09-13T00:00:00")   # /historical/cutoff market_settled_ts
 MON = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 UNDER = {"KXNASDAQ100U": ("NQ", futures.VXN), "KXINXU": ("ES", futures.VIX)}
 WIN = 66
-THREADS = 4
+THREADS = int(os.environ.get("KK_THREADS", "4"))
 
 
 def event_ticker(series, d, h):

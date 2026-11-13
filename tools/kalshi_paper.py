@@ -275,7 +275,7 @@ def idx_model(net, led, rule, now, bars):
         led["status"]["idx_model"] = "bars stale (older than 3 min): no new signals"
         return []
     out = []
-    et_off = -4 if 3 <= dt.datetime.utcfromtimestamp(now).month <= 10 else -5   # rough; Kalshi tickers carry the hour anyway
+    et_off = -4 if 3 <= dt.datetime.fromtimestamp(now, dt.timezone.utc).month <= 10 else -5   # rough; Kalshi tickers carry the hour anyway
     d = net.get(f"{K}/events", {"series_ticker": "KXNASDAQ100U", "status": "settled", "limit": 3})
     last = None
     for e in (d or {}).get("events", []):
@@ -341,7 +341,7 @@ def settle(net, led, now):
     led["open"] = still
     led["closed"] = led["closed"][-MAX_CLOSED:]
     for f in led["forecast_log"]:
-        if f.get("final_high") is None and f["day"] < (dt.datetime.utcfromtimestamp(now) - dt.timedelta(days=1)).date().isoformat():
+        if f.get("final_high") is None and f["day"] < (dt.datetime.fromtimestamp(now, dt.timezone.utc) - dt.timedelta(days=1)).date().isoformat():
             md = net.get(f"{K}/markets", {"event_ticker": f["event"], "limit": 1})
             mk = ((md or {}).get("markets") or [None])[0]
             if mk and mk.get("expiration_value"):
