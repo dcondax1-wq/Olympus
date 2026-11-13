@@ -1,0 +1,1524 @@
+{
+ "n_rows": 4790,
+ "cells": {
+  "high_m0": {
+   "n_cross": 2206,
+   "won": 2204,
+   "win_rate": 0.9991,
+   "vol_bad_1h_total": 230171,
+   "lags": {
+    "0": {
+     "n_quoted": 1928,
+     "n_buyable": 290,
+     "share_buyable": 0.15,
+     "avg_price": 92.25,
+     "won": 288,
+     "edge_per_$": 0.0724,
+     "lo": 0.0534,
+     "hi": 0.0917,
+     "days": 57,
+     "net_c_per_contract": 6.674,
+     "train_first60pct_days": {
+      "n": 172,
+      "won": 170,
+      "edge_per_$": 0.0719,
+      "lo": 0.0456,
+      "hi": 0.0995,
+      "days": 34
+     },
+     "test_last40pct_days": {
+      "n": 118,
+      "won": 118,
+      "edge_per_$": 0.0729,
+      "lo": 0.0509,
+      "hi": 0.0982,
+      "days": 23
+     },
+     "main7": {
+      "n": 99,
+      "won": 99,
+      "edge_per_$": 0.0796,
+      "lo": 0.0552,
+      "hi": 0.1074,
+      "days": 45
+     },
+     "other13": {
+      "n": 191,
+      "won": 189,
+      "edge_per_$": 0.0686,
+      "lo": 0.0445,
+      "hi": 0.0963,
+      "days": 57
+     },
+     "price_hist": {
+      "12": 1,
+      "26": 1,
+      "35": 1,
+      "40": 1,
+      "41": 2,
+      "45": 1,
+      "46": 1,
+      "47": 1,
+      "53": 1,
+      "55": 1,
+      "56": 1,
+      "60": 2,
+      "65": 1,
+      "69": 1,
+      "72": 1,
+      "73": 3,
+      "74": 2,
+      "75": 2,
+      "77": 3,
+      "79": 1,
+      "80": 2,
+      "81": 4,
+      "82": 1,
+      "83": 2,
+      "84": 2,
+      "85": 2,
+      "86": 2,
+      "87": 2,
+      "88": 2,
+      "89": 5,
+      "90": 6,
+      "91": 5,
+      "92": 7,
+      "93": 11,
+      "94": 15,
+      "95": 15,
+      "96": 22,
+      "97": 27,
+      "98": 33,
+      "99": 97
+     }
+    },
+    "1": {
+     "n_quoted": 1938,
+     "n_buyable": 231,
+     "share_buyable": 0.119,
+     "avg_price": 91.76,
+     "won": 229,
+     "edge_per_$": 0.076,
+     "lo": 0.0548,
+     "hi": 0.0988,
+     "days": 55,
+     "net_c_per_contract": 6.977,
+     "train_first60pct_days": {
+      "n": 137,
+      "won": 135,
+      "edge_per_$": 0.0776,
+      "lo": 0.0452,
+      "hi": 0.1121,
+      "days": 32
+     },
+     "test_last40pct_days": {
+      "n": 94,
+      "won": 94,
+      "edge_per_$": 0.0737,
+      "lo": 0.0508,
+      "hi": 0.0985,
+      "days": 23
+     },
+     "main7": {
+      "n": 77,
+      "won": 77,
+      "edge_per_$": 0.0909,
+      "lo": 0.0608,
+      "hi": 0.1239,
+      "days": 40
+     },
+     "other13": {
+      "n": 154,
+      "won": 152,
+      "edge_per_$": 0.0687,
+      "lo": 0.0416,
+      "hi": 0.1016,
+      "days": 55
+     },
+     "price_hist": {
+      "16": 1,
+      "26": 1,
+      "28": 1,
+      "33": 1,
+      "41": 1,
+      "45": 1,
+      "47": 1,
+      "52": 1,
+      "55": 2,
+      "58": 1,
+      "60": 3,
+      "67": 1,
+      "68": 1,
+      "69": 1,
+      "70": 1,
+      "72": 2,
+      "74": 1,
+      "75": 1,
+      "76": 1,
+      "79": 2,
+      "80": 3,
+      "81": 1,
+      "83": 2,
+      "85": 2,
+      "86": 2,
+      "87": 2,
+      "89": 5,
+      "90": 7,
+      "91": 2,
+      "92": 3,
+      "93": 7,
+      "94": 13,
+      "95": 19,
+      "96": 19,
+      "97": 16,
+      "98": 28,
+      "99": 75
+     }
+    },
+    "2": {
+     "n_quoted": 1969,
+     "n_buyable": 154,
+     "share_buyable": 0.078,
+     "avg_price": 93.55,
+     "won": 152,
+     "edge_per_$": 0.0515,
+     "lo": 0.0303,
+     "hi": 0.0735,
+     "days": 54,
+     "net_c_per_contract": 4.82,
+     "train_first60pct_days": {
+      "n": 86,
+      "won": 84,
+      "edge_per_$": 0.0513,
+      "lo": 0.0177,
+      "hi": 0.0868,
+      "days": 31
+     },
+     "test_last40pct_days": {
+      "n": 68,
+      "won": 68,
+      "edge_per_$": 0.0518,
+      "lo": 0.0308,
+      "hi": 0.0804,
+      "days": 23
+     },
+     "main7": {
+      "n": 45,
+      "won": 45,
+      "edge_per_$": 0.0462,
+      "lo": 0.0288,
+      "hi": 0.0677,
+      "days": 32
+     },
+     "other13": {
+      "n": 109,
+      "won": 107,
+      "edge_per_$": 0.0538,
+      "lo": 0.0242,
+      "hi": 0.0853,
+      "days": 51
+     },
+     "price_hist": {
+      "29": 1,
+      "32": 1,
+      "42": 1,
+      "46": 1,
+      "54": 1,
+      "66": 2,
+      "67": 1,
+      "72": 1,
+      "74": 2,
+      "79": 1,
+      "80": 1,
+      "83": 1,
+      "84": 1,
+      "85": 1,
+      "86": 1,
+      "89": 1,
+      "90": 3,
+      "91": 4,
+      "92": 2,
+      "93": 5,
+      "94": 9,
+      "95": 11,
+      "96": 8,
+      "97": 16,
+      "98": 17,
+      "99": 61
+     }
+    },
+    "3": {
+     "n_quoted": 2077,
+     "n_buyable": 6,
+     "share_buyable": 0.003,
+     "avg_price": 86.0,
+     "won": 4,
+     "edge_per_$": -0.2313,
+     "lo": -0.7487,
+     "hi": 0.0147,
+     "days": 5,
+     "net_c_per_contract": -19.893,
+     "train_first60pct_days": {
+      "n": 4,
+      "won": 2,
+      "edge_per_$": -0.3829,
+      "lo": -1.0393,
+      "hi": 0.0142,
+      "days": 3
+     },
+     "test_last40pct_days": {
+      "n": 2,
+      "won": 2,
+      "edge_per_$": 0.0142,
+      "lo": 0.0094,
+      "hi": 0.019,
+      "days": 2
+     },
+     "main7": {
+      "n": 3,
+      "won": 3,
+      "edge_per_$": 0.0158,
+      "lo": 0.0142,
+      "hi": 0.019,
+      "days": 2
+     },
+     "other13": {
+      "n": 3,
+      "won": 1,
+      "edge_per_$": -0.5611,
+      "lo": -1.0393,
+      "hi": 0.0094,
+      "days": 3
+     },
+     "price_hist": {
+      "44": 1,
+      "78": 1,
+      "98": 2,
+      "99": 2
+     }
+    },
+    "4": {
+     "n_quoted": 2128,
+     "n_buyable": 3,
+     "share_buyable": 0.001,
+     "avg_price": 76.33,
+     "won": 1,
+     "edge_per_$": -0.5752,
+     "lo": -1.0387,
+     "hi": 0.019,
+     "days": 3,
+     "net_c_per_contract": -43.91,
+     "train_first60pct_days": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.0198,
+      "lo": -1.0387,
+      "hi": -1.0099,
+      "days": 2
+     },
+     "test_last40pct_days": {
+      "n": 1,
+      "won": 1,
+      "edge_per_$": 0.019,
+      "lo": 0.019,
+      "hi": 0.019,
+      "days": 1
+     },
+     "main7": {
+      "n": 1,
+      "won": 1,
+      "edge_per_$": 0.019,
+      "lo": 0.019,
+      "hi": 0.019,
+      "days": 1
+     },
+     "other13": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.0198,
+      "lo": -1.0387,
+      "hi": -1.0099,
+      "days": 2
+     },
+     "price_hist": {
+      "45": 1,
+      "86": 1,
+      "98": 1
+     }
+    },
+    "5": {
+     "n_quoted": 2171,
+     "n_buyable": 4,
+     "share_buyable": 0.002,
+     "avg_price": 83.75,
+     "won": 2,
+     "edge_per_$": -0.4107,
+     "lo": -1.0172,
+     "hi": 0.0142,
+     "days": 4,
+     "net_c_per_contract": -34.398,
+     "train_first60pct_days": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.0172,
+      "lo": -1.0365,
+      "hi": -1.007,
+      "days": 2
+     },
+     "test_last40pct_days": {
+      "n": 2,
+      "won": 2,
+      "edge_per_$": 0.0142,
+      "lo": 0.0094,
+      "hi": 0.019,
+      "days": 2
+     },
+     "main7": {
+      "n": 1,
+      "won": 1,
+      "edge_per_$": 0.019,
+      "lo": 0.019,
+      "hi": 0.019,
+      "days": 1
+     },
+     "other13": {
+      "n": 3,
+      "won": 1,
+      "edge_per_$": -0.5884,
+      "lo": -1.0365,
+      "hi": 0.0094,
+      "days": 3
+     },
+     "price_hist": {
+      "48": 1,
+      "90": 1,
+      "98": 1,
+      "99": 1
+     }
+    },
+    "10": {
+     "n_quoted": 2199,
+     "n_buyable": 4,
+     "share_buyable": 0.002,
+     "avg_price": 91.5,
+     "won": 2,
+     "edge_per_$": -0.4589,
+     "lo": -1.0104,
+     "hi": 0.0142,
+     "days": 4,
+     "net_c_per_contract": -41.992,
+     "train_first60pct_days": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.0104,
+      "lo": -1.0161,
+      "hi": -1.0057,
+      "days": 2
+     },
+     "test_last40pct_days": {
+      "n": 2,
+      "won": 2,
+      "edge_per_$": 0.0142,
+      "lo": 0.0094,
+      "hi": 0.019,
+      "days": 2
+     },
+     "main7": {
+      "n": 2,
+      "won": 2,
+      "edge_per_$": 0.0142,
+      "lo": 0.0094,
+      "hi": 0.019,
+      "days": 2
+     },
+     "other13": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.0104,
+      "lo": -1.0161,
+      "hi": -1.0057,
+      "days": 2
+     },
+     "price_hist": {
+      "77": 1,
+      "92": 1,
+      "98": 1,
+      "99": 1
+     }
+    },
+    "15": {
+     "n_quoted": 2200,
+     "n_buyable": 3,
+     "share_buyable": 0.001,
+     "avg_price": 94.67,
+     "won": 1,
+     "edge_per_$": -0.6516,
+     "lo": -1.0064,
+     "hi": 0.0094,
+     "days": 3,
+     "net_c_per_contract": -61.683,
+     "train_first60pct_days": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.0053,
+      "lo": -1.0064,
+      "hi": -1.0043,
+      "days": 2
+     },
+     "test_last40pct_days": {
+      "n": 1,
+      "won": 1,
+      "edge_per_$": 0.0094,
+      "lo": 0.0094,
+      "hi": 0.0094,
+      "days": 1
+     },
+     "main7": {
+      "n": 1,
+      "won": 1,
+      "edge_per_$": 0.0094,
+      "lo": 0.0094,
+      "hi": 0.0094,
+      "days": 1
+     },
+     "other13": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.0053,
+      "lo": -1.0064,
+      "hi": -1.0043,
+      "days": 2
+     },
+     "price_hist": {
+      "91": 1,
+      "94": 1,
+      "99": 1
+     }
+    },
+    "30": {
+     "n_quoted": 1875,
+     "n_buyable": 2,
+     "share_buyable": 0.001,
+     "avg_price": 58.5,
+     "won": 0,
+     "edge_per_$": -1.0291,
+     "lo": -1.0309,
+     "hi": -1.0274,
+     "days": 2,
+     "net_c_per_contract": -60.2,
+     "train_first60pct_days": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.0291,
+      "lo": -1.0309,
+      "hi": -1.0274,
+      "days": 2
+     },
+     "other13": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.0291,
+      "lo": -1.0309,
+      "hi": -1.0274,
+      "days": 2
+     },
+     "price_hist": {
+      "56": 1,
+      "61": 1
+     }
+    },
+    "60": {
+     "n_quoted": 1763,
+     "n_buyable": 2,
+     "share_buyable": 0.001,
+     "avg_price": 25.5,
+     "won": 0,
+     "edge_per_$": -1.048,
+     "lo": -1.0615,
+     "hi": -1.0434,
+     "days": 2,
+     "net_c_per_contract": -26.725,
+     "train_first60pct_days": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.048,
+      "lo": -1.0615,
+      "hi": -1.0434,
+      "days": 2
+     },
+     "other13": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.048,
+      "lo": -1.0615,
+      "hi": -1.0434,
+      "days": 2
+     },
+     "price_hist": {
+      "13": 1,
+      "38": 1
+     }
+    }
+   }
+  },
+  "high_m1": {
+   "n_cross": 1683,
+   "won": 1683,
+   "win_rate": 1.0,
+   "vol_bad_1h_total": 18007,
+   "lags": {
+    "0": {
+     "n_quoted": 1401,
+     "n_buyable": 21,
+     "share_buyable": 0.015,
+     "avg_price": 92.1,
+     "won": 21,
+     "edge_per_$": 0.0816,
+     "lo": 0.0257,
+     "hi": 0.1695,
+     "days": 17,
+     "net_c_per_contract": 7.519,
+     "train_first60pct_days": {
+      "n": 13,
+      "won": 13,
+      "edge_per_$": 0.0519,
+      "lo": 0.0182,
+      "hi": 0.0951,
+      "days": 10
+     },
+     "test_last40pct_days": {
+      "n": 8,
+      "won": 8,
+      "edge_per_$": 0.1338,
+      "lo": 0.0121,
+      "hi": 0.3277,
+      "days": 7
+     },
+     "main7": {
+      "n": 11,
+      "won": 11,
+      "edge_per_$": 0.1236,
+      "lo": 0.019,
+      "hi": 0.2685,
+      "days": 10
+     },
+     "other13": {
+      "n": 10,
+      "won": 10,
+      "edge_per_$": 0.0391,
+      "lo": 0.0113,
+      "hi": 0.0793,
+      "days": 9
+     },
+     "price_hist": {
+      "41": 1,
+      "74": 1,
+      "80": 1,
+      "83": 1,
+      "88": 1,
+      "92": 1,
+      "97": 2,
+      "98": 5,
+      "99": 8
+     }
+    },
+    "1": {
+     "n_quoted": 1401,
+     "n_buyable": 16,
+     "share_buyable": 0.011,
+     "avg_price": 92.12,
+     "won": 16,
+     "edge_per_$": 0.0817,
+     "lo": 0.0133,
+     "hi": 0.2061,
+     "days": 13,
+     "net_c_per_contract": 7.524,
+     "train_first60pct_days": {
+      "n": 10,
+      "won": 10,
+      "edge_per_$": 0.0403,
+      "lo": 0.0129,
+      "hi": 0.1038,
+      "days": 8
+     },
+     "test_last40pct_days": {
+      "n": 6,
+      "won": 6,
+      "edge_per_$": 0.1588,
+      "lo": 0.0094,
+      "hi": 0.4204,
+      "days": 5
+     },
+     "main7": {
+      "n": 10,
+      "won": 10,
+      "edge_per_$": 0.128,
+      "lo": 0.0147,
+      "hi": 0.3146,
+      "days": 9
+     },
+     "other13": {
+      "n": 6,
+      "won": 6,
+      "edge_per_$": 0.0126,
+      "lo": 0.0094,
+      "hi": 0.0166,
+      "days": 5
+     },
+     "price_hist": {
+      "41": 1,
+      "74": 1,
+      "79": 1,
+      "97": 1,
+      "98": 5,
+      "99": 7
+     }
+    },
+    "2": {
+     "n_quoted": 1413,
+     "n_buyable": 9,
+     "share_buyable": 0.006,
+     "avg_price": 95.44,
+     "won": 9,
+     "edge_per_$": 0.0449,
+     "lo": 0.0136,
+     "hi": 0.114,
+     "days": 8,
+     "net_c_per_contract": 4.289,
+     "train_first60pct_days": {
+      "n": 5,
+      "won": 5,
+      "edge_per_$": 0.071,
+      "lo": 0.017,
+      "hi": 0.1858,
+      "days": 5
+     },
+     "test_last40pct_days": {
+      "n": 4,
+      "won": 4,
+      "edge_per_$": 0.0142,
+      "lo": 0.0094,
+      "hi": 0.019,
+      "days": 3
+     },
+     "main7": {
+      "n": 7,
+      "won": 7,
+      "edge_per_$": 0.0526,
+      "lo": 0.0142,
+      "hi": 0.152,
+      "days": 6
+     },
+     "other13": {
+      "n": 2,
+      "won": 2,
+      "edge_per_$": 0.019,
+      "lo": 0.0094,
+      "hi": 0.0288,
+      "days": 2
+     },
+     "price_hist": {
+      "74": 1,
+      "97": 2,
+      "98": 3,
+      "99": 3
+     }
+    },
+    "3": {
+     "n_quoted": 1475,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    },
+    "4": {
+     "n_quoted": 1532,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    },
+    "5": {
+     "n_quoted": 1577,
+     "n_buyable": 1,
+     "share_buyable": 0.001,
+     "avg_price": 99.0,
+     "won": 1,
+     "edge_per_$": 0.0094,
+     "lo": 0.0094,
+     "hi": 0.0094,
+     "days": 1,
+     "net_c_per_contract": 0.93,
+     "test_last40pct_days": {
+      "n": 1,
+      "won": 1,
+      "edge_per_$": 0.0094,
+      "lo": 0.0094,
+      "hi": 0.0094,
+      "days": 1
+     },
+     "other13": {
+      "n": 1,
+      "won": 1,
+      "edge_per_$": 0.0094,
+      "lo": 0.0094,
+      "hi": 0.0094,
+      "days": 1
+     },
+     "price_hist": {
+      "99": 1
+     }
+    },
+    "10": {
+     "n_quoted": 1639,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    },
+    "15": {
+     "n_quoted": 1646,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    },
+    "30": {
+     "n_quoted": 1439,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    },
+    "60": {
+     "n_quoted": 1357,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    }
+   }
+  },
+  "low_m0": {
+   "n_cross": 538,
+   "won": 536,
+   "win_rate": 0.9963,
+   "vol_bad_1h_total": 39495,
+   "lags": {
+    "0": {
+     "n_quoted": 364,
+     "n_buyable": 133,
+     "share_buyable": 0.365,
+     "avg_price": 88.96,
+     "won": 131,
+     "edge_per_$": 0.101,
+     "lo": 0.0678,
+     "hi": 0.1379,
+     "days": 53,
+     "net_c_per_contract": 8.981,
+     "train_first60pct_days": {
+      "n": 85,
+      "won": 84,
+      "edge_per_$": 0.1045,
+      "lo": 0.0657,
+      "hi": 0.1539,
+      "days": 32
+     },
+     "test_last40pct_days": {
+      "n": 48,
+      "won": 47,
+      "edge_per_$": 0.0946,
+      "lo": 0.0396,
+      "hi": 0.1477,
+      "days": 21
+     },
+     "main7": {
+      "n": 133,
+      "won": 131,
+      "edge_per_$": 0.101,
+      "lo": 0.0678,
+      "hi": 0.1379,
+      "days": 53
+     },
+     "price_hist": {
+      "7": 1,
+      "44": 1,
+      "50": 1,
+      "54": 1,
+      "55": 1,
+      "59": 2,
+      "60": 2,
+      "62": 1,
+      "63": 2,
+      "67": 1,
+      "68": 1,
+      "71": 1,
+      "73": 1,
+      "74": 1,
+      "76": 1,
+      "79": 3,
+      "80": 3,
+      "82": 3,
+      "84": 6,
+      "85": 2,
+      "86": 1,
+      "88": 4,
+      "89": 2,
+      "90": 5,
+      "91": 3,
+      "92": 4,
+      "93": 1,
+      "94": 9,
+      "95": 4,
+      "96": 15,
+      "97": 16,
+      "98": 14,
+      "99": 20
+     }
+    },
+    "1": {
+     "n_quoted": 377,
+     "n_buyable": 118,
+     "share_buyable": 0.313,
+     "avg_price": 89.08,
+     "won": 116,
+     "edge_per_$": 0.0974,
+     "lo": 0.0654,
+     "hi": 0.1319,
+     "days": 52,
+     "net_c_per_contract": 8.676,
+     "train_first60pct_days": {
+      "n": 79,
+      "won": 78,
+      "edge_per_$": 0.1071,
+      "lo": 0.0632,
+      "hi": 0.1526,
+      "days": 33
+     },
+     "test_last40pct_days": {
+      "n": 39,
+      "won": 38,
+      "edge_per_$": 0.078,
+      "lo": 0.0223,
+      "hi": 0.1256,
+      "days": 19
+     },
+     "main7": {
+      "n": 118,
+      "won": 116,
+      "edge_per_$": 0.0974,
+      "lo": 0.0654,
+      "hi": 0.1319,
+      "days": 52
+     },
+     "price_hist": {
+      "7": 1,
+      "43": 1,
+      "52": 1,
+      "54": 1,
+      "59": 1,
+      "60": 2,
+      "62": 1,
+      "63": 2,
+      "67": 1,
+      "68": 1,
+      "71": 1,
+      "73": 1,
+      "75": 1,
+      "79": 4,
+      "80": 3,
+      "82": 3,
+      "84": 4,
+      "85": 1,
+      "86": 2,
+      "87": 1,
+      "88": 2,
+      "90": 5,
+      "91": 5,
+      "92": 3,
+      "93": 1,
+      "94": 7,
+      "95": 4,
+      "96": 13,
+      "97": 13,
+      "98": 12,
+      "99": 20
+     }
+    },
+    "2": {
+     "n_quoted": 385,
+     "n_buyable": 84,
+     "share_buyable": 0.218,
+     "avg_price": 90.1,
+     "won": 82,
+     "edge_per_$": 0.0783,
+     "lo": 0.0404,
+     "hi": 0.1215,
+     "days": 42,
+     "net_c_per_contract": 7.053,
+     "train_first60pct_days": {
+      "n": 57,
+      "won": 56,
+      "edge_per_$": 0.0814,
+      "lo": 0.0347,
+      "hi": 0.1457,
+      "days": 26
+     },
+     "test_last40pct_days": {
+      "n": 27,
+      "won": 26,
+      "edge_per_$": 0.0716,
+      "lo": -0.0089,
+      "hi": 0.1227,
+      "days": 16
+     },
+     "main7": {
+      "n": 84,
+      "won": 82,
+      "edge_per_$": 0.0783,
+      "lo": 0.0404,
+      "hi": 0.1215,
+      "days": 42
+     },
+     "price_hist": {
+      "6": 1,
+      "44": 1,
+      "54": 1,
+      "57": 1,
+      "60": 2,
+      "67": 1,
+      "68": 1,
+      "71": 1,
+      "78": 2,
+      "79": 1,
+      "80": 2,
+      "82": 1,
+      "84": 2,
+      "85": 1,
+      "86": 1,
+      "88": 2,
+      "89": 1,
+      "90": 3,
+      "91": 3,
+      "92": 1,
+      "93": 1,
+      "94": 2,
+      "95": 4,
+      "96": 8,
+      "97": 8,
+      "98": 8,
+      "99": 24
+     }
+    },
+    "3": {
+     "n_quoted": 457,
+     "n_buyable": 8,
+     "share_buyable": 0.018,
+     "avg_price": 89.25,
+     "won": 6,
+     "edge_per_$": -0.1647,
+     "lo": -0.7459,
+     "hi": 0.0495,
+     "days": 5,
+     "net_c_per_contract": -14.7,
+     "train_first60pct_days": {
+      "n": 6,
+      "won": 5,
+      "edge_per_$": -0.1275,
+      "lo": -1.0036,
+      "hi": 0.0988,
+      "days": 3
+     },
+     "test_last40pct_days": {
+      "n": 2,
+      "won": 1,
+      "edge_per_$": -0.3133,
+      "lo": -1.0393,
+      "hi": 0.0094,
+      "days": 2
+     },
+     "main7": {
+      "n": 8,
+      "won": 6,
+      "edge_per_$": -0.1647,
+      "lo": -0.7459,
+      "hi": 0.0495,
+      "days": 5
+     },
+     "price_hist": {
+      "44": 1,
+      "82": 1,
+      "95": 1,
+      "98": 2,
+      "99": 3
+     }
+    },
+    "4": {
+     "n_quoted": 482,
+     "n_buyable": 4,
+     "share_buyable": 0.008,
+     "avg_price": 79.5,
+     "won": 2,
+     "edge_per_$": -0.381,
+     "lo": -1.0407,
+     "hi": 0.0988,
+     "days": 3,
+     "net_c_per_contract": -30.29,
+     "train_first60pct_days": {
+      "n": 3,
+      "won": 2,
+      "edge_per_$": -0.2806,
+      "lo": -1.0036,
+      "hi": 0.0988,
+      "days": 2
+     },
+     "test_last40pct_days": {
+      "n": 1,
+      "won": 0,
+      "edge_per_$": -1.0407,
+      "lo": -1.0407,
+      "hi": -1.0407,
+      "days": 1
+     },
+     "main7": {
+      "n": 4,
+      "won": 2,
+      "edge_per_$": -0.381,
+      "lo": -1.0407,
+      "hi": 0.0988,
+      "days": 3
+     },
+     "price_hist": {
+      "42": 1,
+      "82": 1,
+      "95": 1,
+      "99": 1
+     }
+    },
+    "5": {
+     "n_quoted": 500,
+     "n_buyable": 4,
+     "share_buyable": 0.008,
+     "avg_price": 80.0,
+     "won": 2,
+     "edge_per_$": -0.3849,
+     "lo": -1.0393,
+     "hi": 0.0988,
+     "days": 3,
+     "net_c_per_contract": -30.795,
+     "train_first60pct_days": {
+      "n": 3,
+      "won": 2,
+      "edge_per_$": -0.2806,
+      "lo": -1.0036,
+      "hi": 0.0988,
+      "days": 2
+     },
+     "test_last40pct_days": {
+      "n": 1,
+      "won": 0,
+      "edge_per_$": -1.0393,
+      "lo": -1.0393,
+      "hi": -1.0393,
+      "days": 1
+     },
+     "main7": {
+      "n": 4,
+      "won": 2,
+      "edge_per_$": -0.3849,
+      "lo": -1.0393,
+      "hi": 0.0988,
+      "days": 3
+     },
+     "price_hist": {
+      "44": 1,
+      "82": 1,
+      "95": 1,
+      "99": 1
+     }
+    },
+    "10": {
+     "n_quoted": 523,
+     "n_buyable": 4,
+     "share_buyable": 0.008,
+     "avg_price": 83.25,
+     "won": 2,
+     "edge_per_$": -0.4063,
+     "lo": -1.0161,
+     "hi": 0.0094,
+     "days": 4,
+     "net_c_per_contract": -33.828,
+     "train_first60pct_days": {
+      "n": 2,
+      "won": 1,
+      "edge_per_$": -0.4819,
+      "lo": -1.0049,
+      "hi": 0.0094,
+      "days": 2
+     },
+     "test_last40pct_days": {
+      "n": 2,
+      "won": 1,
+      "edge_per_$": -0.3034,
+      "lo": -1.0407,
+      "hi": 0.0094,
+      "days": 2
+     },
+     "main7": {
+      "n": 4,
+      "won": 2,
+      "edge_per_$": -0.4063,
+      "lo": -1.0161,
+      "hi": 0.0094,
+      "days": 4
+     },
+     "price_hist": {
+      "42": 1,
+      "93": 1,
+      "99": 2
+     }
+    },
+    "15": {
+     "n_quoted": 527,
+     "n_buyable": 3,
+     "share_buyable": 0.006,
+     "avg_price": 77.0,
+     "won": 1,
+     "edge_per_$": -0.5781,
+     "lo": -1.0393,
+     "hi": 0.0094,
+     "days": 3,
+     "net_c_per_contract": -44.513,
+     "train_first60pct_days": {
+      "n": 2,
+      "won": 1,
+      "edge_per_$": -0.4696,
+      "lo": -1.0084,
+      "hi": 0.0094,
+      "days": 2
+     },
+     "test_last40pct_days": {
+      "n": 1,
+      "won": 0,
+      "edge_per_$": -1.0393,
+      "lo": -1.0393,
+      "hi": -1.0393,
+      "days": 1
+     },
+     "main7": {
+      "n": 3,
+      "won": 1,
+      "edge_per_$": -0.5781,
+      "lo": -1.0393,
+      "hi": 0.0094,
+      "days": 3
+     },
+     "price_hist": {
+      "44": 1,
+      "88": 1,
+      "99": 1
+     }
+    },
+    "30": {
+     "n_quoted": 300,
+     "n_buyable": 3,
+     "share_buyable": 0.01,
+     "avg_price": 66.67,
+     "won": 1,
+     "edge_per_$": -0.5177,
+     "lo": -1.0387,
+     "hi": 0.0094,
+     "days": 3,
+     "net_c_per_contract": -34.513,
+     "train_first60pct_days": {
+      "n": 1,
+      "won": 0,
+      "edge_per_$": -1.0309,
+      "lo": -1.0309,
+      "hi": -1.0309,
+      "days": 1
+     },
+     "test_last40pct_days": {
+      "n": 2,
+      "won": 1,
+      "edge_per_$": -0.3181,
+      "lo": -1.0387,
+      "hi": 0.0094,
+      "days": 2
+     },
+     "main7": {
+      "n": 3,
+      "won": 1,
+      "edge_per_$": -0.5177,
+      "lo": -1.0387,
+      "hi": 0.0094,
+      "days": 3
+     },
+     "price_hist": {
+      "45": 1,
+      "56": 1,
+      "99": 1
+     }
+    },
+    "60": {
+     "n_quoted": 225,
+     "n_buyable": 2,
+     "share_buyable": 0.009,
+     "avg_price": 87.5,
+     "won": 0,
+     "edge_per_$": -1.0081,
+     "lo": -1.0155,
+     "hi": -1.0022,
+     "days": 2,
+     "net_c_per_contract": -88.21,
+     "train_first60pct_days": {
+      "n": 1,
+      "won": 0,
+      "edge_per_$": -1.0155,
+      "lo": -1.0155,
+      "hi": -1.0155,
+      "days": 1
+     },
+     "test_last40pct_days": {
+      "n": 1,
+      "won": 0,
+      "edge_per_$": -1.0022,
+      "lo": -1.0022,
+      "hi": -1.0022,
+      "days": 1
+     },
+     "main7": {
+      "n": 2,
+      "won": 0,
+      "edge_per_$": -1.0081,
+      "lo": -1.0155,
+      "hi": -1.0022,
+      "days": 2
+     },
+     "price_hist": {
+      "78": 1,
+      "97": 1
+     }
+    }
+   }
+  },
+  "low_m1": {
+   "n_cross": 363,
+   "won": 363,
+   "win_rate": 1.0,
+   "vol_bad_1h_total": 3568,
+   "lags": {
+    "0": {
+     "n_quoted": 205,
+     "n_buyable": 13,
+     "share_buyable": 0.063,
+     "avg_price": 90.69,
+     "won": 13,
+     "edge_per_$": 0.0973,
+     "lo": 0.0354,
+     "hi": 0.2196,
+     "days": 8,
+     "net_c_per_contract": 8.826,
+     "train_first60pct_days": {
+      "n": 10,
+      "won": 10,
+      "edge_per_$": 0.0776,
+      "lo": 0.0265,
+      "hi": 0.1882,
+      "days": 5
+     },
+     "test_last40pct_days": {
+      "n": 3,
+      "won": 3,
+      "edge_per_$": 0.1687,
+      "lo": 0.0094,
+      "hi": 0.6661,
+      "days": 3
+     },
+     "main7": {
+      "n": 13,
+      "won": 13,
+      "edge_per_$": 0.0973,
+      "lo": 0.0354,
+      "hi": 0.2196,
+      "days": 8
+     },
+     "price_hist": {
+      "59": 1,
+      "68": 1,
+      "79": 1,
+      "96": 3,
+      "97": 3,
+      "98": 2,
+      "99": 2
+     }
+    },
+    "1": {
+     "n_quoted": 212,
+     "n_buyable": 12,
+     "share_buyable": 0.057,
+     "avg_price": 91.67,
+     "won": 12,
+     "edge_per_$": 0.0859,
+     "lo": 0.0328,
+     "hi": 0.1921,
+     "days": 7,
+     "net_c_per_contract": 7.872,
+     "train_first60pct_days": {
+      "n": 10,
+      "won": 10,
+      "edge_per_$": 0.0754,
+      "lo": 0.0235,
+      "hi": 0.1882,
+      "days": 5
+     },
+     "test_last40pct_days": {
+      "n": 2,
+      "won": 2,
+      "edge_per_$": 0.1414,
+      "lo": 0.0094,
+      "hi": 0.3157,
+      "days": 2
+     },
+     "main7": {
+      "n": 12,
+      "won": 12,
+      "edge_per_$": 0.0859,
+      "lo": 0.0328,
+      "hi": 0.1921,
+      "days": 7
+     },
+     "price_hist": {
+      "68": 1,
+      "75": 1,
+      "79": 1,
+      "96": 2,
+      "97": 2,
+      "98": 3,
+      "99": 2
+     }
+    },
+    "2": {
+     "n_quoted": 216,
+     "n_buyable": 8,
+     "share_buyable": 0.037,
+     "avg_price": 93.88,
+     "won": 8,
+     "edge_per_$": 0.0617,
+     "lo": 0.0171,
+     "hi": 0.178,
+     "days": 5,
+     "net_c_per_contract": 5.787,
+     "train_first60pct_days": {
+      "n": 6,
+      "won": 6,
+      "edge_per_$": 0.0731,
+      "lo": 0.0158,
+      "hi": 0.4481,
+      "days": 3
+     },
+     "test_last40pct_days": {
+      "n": 2,
+      "won": 2,
+      "edge_per_$": 0.0288,
+      "lo": 0.0094,
+      "hi": 0.0491,
+      "days": 2
+     },
+     "main7": {
+      "n": 8,
+      "won": 8,
+      "edge_per_$": 0.0617,
+      "lo": 0.0171,
+      "hi": 0.178,
+      "days": 5
+     },
+     "price_hist": {
+      "68": 1,
+      "95": 1,
+      "96": 1,
+      "98": 3,
+      "99": 2
+     }
+    },
+    "3": {
+     "n_quoted": 253,
+     "n_buyable": 3,
+     "share_buyable": 0.012,
+     "avg_price": 98.33,
+     "won": 3,
+     "edge_per_$": 0.0158,
+     "lo": 0.0158,
+     "hi": 0.0158,
+     "days": 1,
+     "net_c_per_contract": 1.55,
+     "train_first60pct_days": {
+      "n": 3,
+      "won": 3,
+      "edge_per_$": 0.0158,
+      "lo": 0.0158,
+      "hi": 0.0158,
+      "days": 1
+     },
+     "main7": {
+      "n": 3,
+      "won": 3,
+      "edge_per_$": 0.0158,
+      "lo": 0.0158,
+      "hi": 0.0158,
+      "days": 1
+     },
+     "price_hist": {
+      "98": 2,
+      "99": 1
+     }
+    },
+    "4": {
+     "n_quoted": 305,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    },
+    "5": {
+     "n_quoted": 318,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    },
+    "10": {
+     "n_quoted": 337,
+     "n_buyable": 1,
+     "share_buyable": 0.003,
+     "avg_price": 99.0,
+     "won": 1,
+     "edge_per_$": 0.0094,
+     "lo": 0.0094,
+     "hi": 0.0094,
+     "days": 1,
+     "net_c_per_contract": 0.93,
+     "test_last40pct_days": {
+      "n": 1,
+      "won": 1,
+      "edge_per_$": 0.0094,
+      "lo": 0.0094,
+      "hi": 0.0094,
+      "days": 1
+     },
+     "main7": {
+      "n": 1,
+      "won": 1,
+      "edge_per_$": 0.0094,
+      "lo": 0.0094,
+      "hi": 0.0094,
+      "days": 1
+     },
+     "price_hist": {
+      "99": 1
+     }
+    },
+    "15": {
+     "n_quoted": 339,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    },
+    "30": {
+     "n_quoted": 227,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    },
+    "60": {
+     "n_quoted": 165,
+     "n_buyable": 0,
+     "share_buyable": 0.0
+    }
+   }
+  }
+ }
+}

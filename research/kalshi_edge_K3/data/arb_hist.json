@@ -1,0 +1,2265 @@
+{
+ "note": "hourly candle closes, team C data; fees for 100-contract orders",
+ "total": {
+  "range_events": 9315,
+  "range_obs": 39813,
+  "yes_arb": 22,
+  "no_arb": 66,
+  "yes_gross_pos": 568,
+  "no_gross_pos": 4136,
+  "ladder_pairs": 82616,
+  "ladder_arb": 1,
+  "ladder_gross_pos": 2
+ },
+ "by_series": {
+  "KXAAAGASD": {
+   "events": 230,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXAAAGASM": {
+   "events": 12,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXAAAGASW": {
+   "events": 54,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXCPI": {
+   "events": 13,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 2397,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXCPICORE": {
+   "events": 13,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 2200,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXCPIYOY": {
+   "events": 12,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 3798,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXDIESELD": {
+   "events": 100,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 48845,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXEURUSD": {
+   "events": 256,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXFED": {
+   "events": 8,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 1423,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXFEDDECISION": {
+   "events": 8,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXGDP": {
+   "events": 4,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 1675,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXHIGHAUS": {
+   "events": 375,
+   "range_events": 375,
+   "range_obs": 2614,
+   "yes_arb": 1,
+   "no_arb": 11,
+   "yes_gross_pos": 41,
+   "no_gross_pos": 368,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 375,
+   "sum_ask_p05": 102,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHCHI": {
+   "events": 375,
+   "range_events": 375,
+   "range_obs": 2721,
+   "yes_arb": 3,
+   "no_arb": 6,
+   "yes_gross_pos": 58,
+   "no_gross_pos": 334,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 375,
+   "sum_ask_p05": 101,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHDEN": {
+   "events": 375,
+   "range_events": 375,
+   "range_obs": 2649,
+   "yes_arb": 2,
+   "no_arb": 9,
+   "yes_gross_pos": 67,
+   "no_gross_pos": 441,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 375,
+   "sum_ask_p05": 101,
+   "sum_bid_p95": 103
+  },
+  "KXHIGHLAX": {
+   "events": 375,
+   "range_events": 375,
+   "range_obs": 2892,
+   "yes_arb": 0,
+   "no_arb": 3,
+   "yes_gross_pos": 9,
+   "no_gross_pos": 527,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 375,
+   "sum_ask_p05": 104,
+   "sum_bid_p95": 103
+  },
+  "KXHIGHMIA": {
+   "events": 375,
+   "range_events": 374,
+   "range_obs": 2816,
+   "yes_arb": 0,
+   "no_arb": 11,
+   "yes_gross_pos": 34,
+   "no_gross_pos": 348,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 374,
+   "sum_ask_p05": 102,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHNY": {
+   "events": 375,
+   "range_events": 375,
+   "range_obs": 2772,
+   "yes_arb": 1,
+   "no_arb": 6,
+   "yes_gross_pos": 24,
+   "no_gross_pos": 453,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 375,
+   "sum_ask_p05": 103,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHPHIL": {
+   "events": 375,
+   "range_events": 375,
+   "range_obs": 2647,
+   "yes_arb": 5,
+   "no_arb": 11,
+   "yes_gross_pos": 72,
+   "no_gross_pos": 326,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 375,
+   "sum_ask_p05": 101,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHTATL": {
+   "events": 279,
+   "range_events": 279,
+   "range_obs": 1143,
+   "yes_arb": 0,
+   "no_arb": 2,
+   "yes_gross_pos": 19,
+   "no_gross_pos": 89,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 279,
+   "sum_ask_p05": 102,
+   "sum_bid_p95": 101
+  },
+  "KXHIGHTBOS": {
+   "events": 278,
+   "range_events": 278,
+   "range_obs": 1096,
+   "yes_arb": 1,
+   "no_arb": 1,
+   "yes_gross_pos": 33,
+   "no_gross_pos": 100,
+   "sum_ask_med": 105,
+   "sum_bid_med": 98,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 278,
+   "sum_ask_p05": 101,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHTDAL": {
+   "events": 272,
+   "range_events": 272,
+   "range_obs": 1099,
+   "yes_arb": 0,
+   "no_arb": 1,
+   "yes_gross_pos": 9,
+   "no_gross_pos": 119,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 272,
+   "sum_ask_p05": 103,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHTDC": {
+   "events": 294,
+   "range_events": 294,
+   "range_obs": 1080,
+   "yes_arb": 0,
+   "no_arb": 1,
+   "yes_gross_pos": 29,
+   "no_gross_pos": 79,
+   "sum_ask_med": 105,
+   "sum_bid_med": 98,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 294,
+   "sum_ask_p05": 101,
+   "sum_bid_p95": 101
+  },
+  "KXHIGHTHOU": {
+   "events": 272,
+   "range_events": 272,
+   "range_obs": 1077,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 16,
+   "no_gross_pos": 119,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 272,
+   "sum_ask_p05": 102,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHTLV": {
+   "events": 300,
+   "range_events": 300,
+   "range_obs": 1037,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 13,
+   "no_gross_pos": 108,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 300,
+   "sum_ask_p05": 102,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHTMIN": {
+   "events": 279,
+   "range_events": 279,
+   "range_obs": 1090,
+   "yes_arb": 2,
+   "no_arb": 1,
+   "yes_gross_pos": 27,
+   "no_gross_pos": 62,
+   "sum_ask_med": 105,
+   "sum_bid_med": 97,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 279,
+   "sum_ask_p05": 101,
+   "sum_bid_p95": 101
+  },
+  "KXHIGHTNOLA": {
+   "events": 300,
+   "range_events": 300,
+   "range_obs": 938,
+   "yes_arb": 0,
+   "no_arb": 2,
+   "yes_gross_pos": 21,
+   "no_gross_pos": 86,
+   "sum_ask_med": 106,
+   "sum_bid_med": 98,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 300,
+   "sum_ask_p05": 101,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHTOKC": {
+   "events": 272,
+   "range_events": 272,
+   "range_obs": 1068,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 13,
+   "no_gross_pos": 102,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 272,
+   "sum_ask_p05": 101,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHTPHX": {
+   "events": 279,
+   "range_events": 279,
+   "range_obs": 1101,
+   "yes_arb": 1,
+   "no_arb": 1,
+   "yes_gross_pos": 10,
+   "no_gross_pos": 139,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 279,
+   "sum_ask_p05": 102,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHTSATX": {
+   "events": 272,
+   "range_events": 272,
+   "range_obs": 1036,
+   "yes_arb": 2,
+   "no_arb": 0,
+   "yes_gross_pos": 9,
+   "no_gross_pos": 83,
+   "sum_ask_med": 106,
+   "sum_bid_med": 98,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 272,
+   "sum_ask_p05": 102,
+   "sum_bid_p95": 101
+  },
+  "KXHIGHTSEA": {
+   "events": 300,
+   "range_events": 300,
+   "range_obs": 1053,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 32,
+   "no_gross_pos": 105,
+   "sum_ask_med": 105,
+   "sum_bid_med": 98,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 300,
+   "sum_ask_p05": 101,
+   "sum_bid_p95": 102
+  },
+  "KXHIGHTSFO": {
+   "events": 300,
+   "range_events": 300,
+   "range_obs": 1090,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 14,
+   "no_gross_pos": 121,
+   "sum_ask_med": 105,
+   "sum_bid_med": 99,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 300,
+   "sum_ask_p05": 102,
+   "sum_bid_p95": 102
+  },
+  "KXINX": {
+   "events": 257,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXJOBLESSCLAIMS": {
+   "events": 47,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXLOWTAUS": {
+   "events": 332,
+   "range_events": 332,
+   "range_obs": 881,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 5,
+   "sum_ask_med": 113,
+   "sum_bid_med": 90,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 332,
+   "sum_ask_p05": 105,
+   "sum_bid_p95": 99
+  },
+  "KXLOWTCHI": {
+   "events": 332,
+   "range_events": 332,
+   "range_obs": 776,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 2,
+   "no_gross_pos": 1,
+   "sum_ask_med": 113,
+   "sum_bid_med": 89,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 332,
+   "sum_ask_p05": 105,
+   "sum_bid_p95": 99
+  },
+  "KXLOWTDEN": {
+   "events": 332,
+   "range_events": 332,
+   "range_obs": 964,
+   "yes_arb": 1,
+   "no_arb": 0,
+   "yes_gross_pos": 4,
+   "no_gross_pos": 5,
+   "sum_ask_med": 117,
+   "sum_bid_med": 85,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 332,
+   "sum_ask_p05": 105,
+   "sum_bid_p95": 99
+  },
+  "KXLOWTLAX": {
+   "events": 332,
+   "range_events": 332,
+   "range_obs": 902,
+   "yes_arb": 1,
+   "no_arb": 0,
+   "yes_gross_pos": 3,
+   "no_gross_pos": 5,
+   "sum_ask_med": 112,
+   "sum_bid_med": 92,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 332,
+   "sum_ask_p05": 105,
+   "sum_bid_p95": 99
+  },
+  "KXLOWTMIA": {
+   "events": 330,
+   "range_events": 329,
+   "range_obs": 1066,
+   "yes_arb": 2,
+   "no_arb": 0,
+   "yes_gross_pos": 4,
+   "no_gross_pos": 3,
+   "sum_ask_med": 114,
+   "sum_bid_med": 88,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 329,
+   "sum_ask_p05": 105,
+   "sum_bid_p95": 99
+  },
+  "KXLOWTNYC": {
+   "events": 332,
+   "range_events": 332,
+   "range_obs": 980,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 4,
+   "sum_ask_med": 113,
+   "sum_bid_med": 89,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 332,
+   "sum_ask_p05": 105,
+   "sum_bid_p95": 99
+  },
+  "KXLOWTPHIL": {
+   "events": 332,
+   "range_events": 332,
+   "range_obs": 615,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 1,
+   "no_gross_pos": 3,
+   "sum_ask_med": 111,
+   "sum_bid_med": 92,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 332,
+   "sum_ask_p05": 105,
+   "sum_bid_p95": 99
+  },
+  "KXNASDAQ100": {
+   "events": 257,
+   "range_events": 257,
+   "range_obs": 98,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": 155,
+   "sum_bid_med": 85,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 257,
+   "sum_ask_p05": 141,
+   "sum_bid_p95": 98
+  },
+  "KXNETFLIXRANKSHOW": {
+   "events": 54,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXPAYROLLS": {
+   "events": 13,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 20479,
+   "ladder_arb": 1,
+   "ladder_gross_pos": 2,
+   "paid_ok": 0
+  },
+  "KXRAINNYC": {
+   "events": 254,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXRT": {
+   "events": 91,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXSPOTIFYD": {
+   "events": 230,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXTNOTED": {
+   "events": 129,
+   "range_events": 129,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 128
+  },
+  "KXTNOTEW": {
+   "events": 32,
+   "range_events": 32,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 32
+  },
+  "KXTSAW": {
+   "events": 53,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXU3": {
+   "events": 13,
+   "range_events": 0,
+   "range_obs": 0,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 0,
+   "no_gross_pos": 0,
+   "sum_ask_med": null,
+   "sum_bid_med": null,
+   "ladder_pairs": 1799,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 0
+  },
+  "KXUSDJPY": {
+   "events": 255,
+   "range_events": 255,
+   "range_obs": 512,
+   "yes_arb": 0,
+   "no_arb": 0,
+   "yes_gross_pos": 4,
+   "no_gross_pos": 1,
+   "sum_ask_med": 129,
+   "sum_bid_med": 75,
+   "ladder_pairs": 0,
+   "ladder_arb": 0,
+   "ladder_gross_pos": 0,
+   "paid_ok": 255,
+   "sum_ask_p05": 109,
+   "sum_bid_p95": 91
+  }
+ },
+ "hits": [
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26JUN04",
+   "off_h": "36",
+   "k": "yes",
+   "gross_c": 6,
+   "net_c": 1.22,
+   "vol": [
+    0,
+    0,
+    0,
+    23,
+    11,
+    16
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26JUN10",
+   "off_h": "18",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 1.65,
+   "vol": [
+    0,
+    173,
+    29,
+    1,
+    22,
+    123
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26JUN16",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.08,
+   "vol": [
+    0,
+    87,
+    291,
+    173,
+    1152,
+    87
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26JUN30",
+   "off_h": "21",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.11,
+   "vol": [
+    10,
+    0,
+    0,
+    217,
+    70,
+    46
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26JUL01",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.28,
+   "vol": [
+    7,
+    504,
+    5,
+    14,
+    41,
+    91
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26JUL04",
+   "off_h": "24",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.13,
+   "vol": [
+    0,
+    3,
+    113,
+    274,
+    18,
+    0
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26JUL06",
+   "off_h": "14",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.09,
+   "vol": [
+    91,
+    0,
+    787,
+    352,
+    147,
+    76
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26JUL11",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 0.66,
+   "vol": [
+    0,
+    459,
+    53,
+    52,
+    51,
+    381
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26JUL14",
+   "off_h": "24",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.15,
+   "vol": [
+    0,
+    32,
+    14,
+    23,
+    97,
+    14
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26AUG27",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.22,
+   "vol": [
+    43,
+    0,
+    86,
+    231,
+    5,
+    236
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26SEP07",
+   "off_h": "24",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.36,
+   "vol": [
+    0,
+    0,
+    914,
+    97,
+    25,
+    39
+   ]
+  },
+  {
+   "s": "KXHIGHAUS",
+   "e": "KXHIGHAUS-26OCT03",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 0.34,
+   "vol": [
+    0,
+    235,
+    55,
+    80,
+    66,
+    161
+   ]
+  },
+  {
+   "s": "KXHIGHCHI",
+   "e": "KXHIGHCHI-26JUN06",
+   "off_h": "33",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 0.5,
+   "vol": [
+    61,
+    140,
+    69,
+    103,
+    15,
+    75
+   ]
+  },
+  {
+   "s": "KXHIGHCHI",
+   "e": "KXHIGHCHI-26JUN09",
+   "off_h": "8",
+   "k": "yes",
+   "gross_c": 4,
+   "net_c": 1.12,
+   "vol": [
+    893,
+    388,
+    3886,
+    13168,
+    12539,
+    2514
+   ]
+  },
+  {
+   "s": "KXHIGHCHI",
+   "e": "KXHIGHCHI-26JUN20",
+   "off_h": "33",
+   "k": "yes",
+   "gross_c": 5,
+   "net_c": 0.35,
+   "vol": [
+    0,
+    836,
+    0,
+    401,
+    3782,
+    23
+   ]
+  },
+  {
+   "s": "KXHIGHCHI",
+   "e": "KXHIGHCHI-26JUN24",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 0.93,
+   "vol": [
+    21,
+    571,
+    37,
+    38,
+    73,
+    82
+   ]
+  },
+  {
+   "s": "KXHIGHCHI",
+   "e": "KXHIGHCHI-26JUN26",
+   "off_h": "33",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.17,
+   "vol": [
+    0,
+    9,
+    230,
+    0,
+    257,
+    99
+   ]
+  },
+  {
+   "s": "KXHIGHCHI",
+   "e": "KXHIGHCHI-26JUN28",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 0.69,
+   "vol": [
+    52,
+    61,
+    1246,
+    253,
+    110,
+    261
+   ]
+  },
+  {
+   "s": "KXHIGHCHI",
+   "e": "KXHIGHCHI-26JUL03",
+   "off_h": "36",
+   "k": "no",
+   "gross_c": 8,
+   "net_c": 2.44,
+   "vol": [
+    108,
+    288,
+    39,
+    34,
+    24,
+    91
+   ]
+  },
+  {
+   "s": "KXHIGHCHI",
+   "e": "KXHIGHCHI-26JUL03",
+   "off_h": "21",
+   "k": "yes",
+   "gross_c": 5,
+   "net_c": 0.28,
+   "vol": [
+    20,
+    2201,
+    17,
+    16,
+    18,
+    267
+   ]
+  },
+  {
+   "s": "KXHIGHCHI",
+   "e": "KXHIGHCHI-26OCT04",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.02,
+   "vol": [
+    0,
+    297,
+    106,
+    173,
+    465,
+    1380
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26JUN05",
+   "off_h": "12",
+   "k": "no",
+   "gross_c": 3,
+   "net_c": 0.13,
+   "vol": [
+    0,
+    417,
+    0,
+    0,
+    221,
+    234
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26JUN12",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 0.85,
+   "vol": [
+    75,
+    0,
+    135,
+    70,
+    90,
+    60
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26JUN12",
+   "off_h": "21",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.87,
+   "vol": [
+    440,
+    0,
+    172,
+    33,
+    33,
+    0
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26JUN23",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 7,
+   "net_c": 1.67,
+   "vol": [
+    0,
+    0,
+    0,
+    346,
+    0,
+    28
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26JUN25",
+   "off_h": "10",
+   "k": "no",
+   "gross_c": 3,
+   "net_c": 0.01,
+   "vol": [
+    11,
+    1552,
+    11,
+    11,
+    712,
+    719
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26JUN26",
+   "off_h": "16",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.18,
+   "vol": [
+    5499,
+    102,
+    898,
+    441,
+    281,
+    144
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26JUL12",
+   "off_h": "24",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.21,
+   "vol": [
+    6,
+    6,
+    8,
+    83,
+    14,
+    101
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26JUL13",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.45,
+   "vol": [
+    13,
+    31,
+    289,
+    44,
+    96,
+    31
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26JUL15",
+   "off_h": "36",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.05,
+   "vol": [
+    19,
+    20,
+    594,
+    22,
+    24,
+    19
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26SEP08",
+   "off_h": "33",
+   "k": "yes",
+   "gross_c": 5,
+   "net_c": 0.33,
+   "vol": [
+    0,
+    8,
+    0,
+    39,
+    5,
+    0
+   ]
+  },
+  {
+   "s": "KXHIGHDEN",
+   "e": "KXHIGHDEN-26OCT20",
+   "off_h": "21",
+   "k": "yes",
+   "gross_c": 5,
+   "net_c": 0.94,
+   "vol": [
+    111,
+    128,
+    111,
+    877,
+    983,
+    116
+   ]
+  },
+  {
+   "s": "KXHIGHLAX",
+   "e": "KXHIGHLAX-26JUN02",
+   "off_h": "12",
+   "k": "no",
+   "gross_c": 2,
+   "net_c": 0.83,
+   "vol": [
+    14343,
+    19,
+    6104,
+    13863,
+    6389,
+    10318
+   ]
+  },
+  {
+   "s": "KXHIGHLAX",
+   "e": "KXHIGHLAX-26JUN05",
+   "off_h": "12",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.26,
+   "vol": [
+    11698,
+    9466,
+    6112,
+    3488,
+    5546,
+    3775
+   ]
+  },
+  {
+   "s": "KXHIGHLAX",
+   "e": "KXHIGHLAX-26JUN10",
+   "off_h": "18",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.3,
+   "vol": [
+    11885,
+    1467,
+    2915,
+    1153,
+    2032,
+    2326
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUN20",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.02,
+   "vol": [
+    32,
+    82,
+    261,
+    167,
+    260,
+    39
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUN21",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.41,
+   "vol": [
+    33,
+    0,
+    10,
+    44,
+    173,
+    909
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUN22",
+   "off_h": "14",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 1.33,
+   "vol": [
+    361,
+    0,
+    999,
+    199,
+    880,
+    100
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUN27",
+   "off_h": "21",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 1.11,
+   "vol": [
+    0,
+    0,
+    16,
+    372,
+    260,
+    275
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUN28",
+   "off_h": "36",
+   "k": "no",
+   "gross_c": 7,
+   "net_c": 2.49,
+   "vol": [
+    102,
+    305,
+    389,
+    174,
+    200,
+    85
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUN29",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.15,
+   "vol": [
+    56,
+    41,
+    286,
+    204,
+    139,
+    149
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUL02",
+   "off_h": "14",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.65,
+   "vol": [
+    0,
+    2125,
+    542,
+    1133,
+    1499,
+    4793
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUL06",
+   "off_h": "14",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.81,
+   "vol": [
+    219,
+    346,
+    2067,
+    1932,
+    1627,
+    3780
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUL11",
+   "off_h": "21",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.03,
+   "vol": [
+    0,
+    0,
+    151,
+    277,
+    375,
+    655
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUL26",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.22,
+   "vol": [
+    413,
+    15,
+    167,
+    182,
+    34,
+    44
+   ]
+  },
+  {
+   "s": "KXHIGHMIA",
+   "e": "KXHIGHMIA-26JUL29",
+   "off_h": "33",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.32,
+   "vol": [
+    7,
+    2,
+    20,
+    233,
+    125,
+    65
+   ]
+  },
+  {
+   "s": "KXHIGHNY",
+   "e": "KXHIGHNY-26JUN03",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 1.59,
+   "vol": [
+    165,
+    288,
+    1400,
+    245,
+    118,
+    782
+   ]
+  },
+  {
+   "s": "KXHIGHNY",
+   "e": "KXHIGHNY-26JUN11",
+   "off_h": "36",
+   "k": "yes",
+   "gross_c": 6,
+   "net_c": 0.86,
+   "vol": [
+    17,
+    2,
+    3,
+    26,
+    58,
+    255
+   ]
+  },
+  {
+   "s": "KXHIGHNY",
+   "e": "KXHIGHNY-26JUN29",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 7,
+   "net_c": 2.66,
+   "vol": [
+    841,
+    0,
+    1063,
+    663,
+    636,
+    511
+   ]
+  },
+  {
+   "s": "KXHIGHNY",
+   "e": "KXHIGHNY-26JUN30",
+   "off_h": "24",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.14,
+   "vol": [
+    634,
+    1,
+    276,
+    312,
+    850,
+    195
+   ]
+  },
+  {
+   "s": "KXHIGHNY",
+   "e": "KXHIGHNY-26JUL03",
+   "off_h": "18",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.79,
+   "vol": [
+    797,
+    187,
+    1070,
+    898,
+    1587,
+    1064
+   ]
+  },
+  {
+   "s": "KXHIGHNY",
+   "e": "KXHIGHNY-26JUL04",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 3,
+   "net_c": 0.25,
+   "vol": [
+    742,
+    0,
+    255,
+    20,
+    20,
+    231
+   ]
+  },
+  {
+   "s": "KXHIGHNY",
+   "e": "KXHIGHNY-26JUL16",
+   "off_h": "16",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.45,
+   "vol": [
+    0,
+    4839,
+    1945,
+    1625,
+    4167,
+    3079
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26MAY31",
+   "off_h": "18",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.02,
+   "vol": [
+    188,
+    203,
+    188,
+    195,
+    333,
+    189
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUN01",
+   "off_h": "8",
+   "k": "no",
+   "gross_c": 1,
+   "net_c": 0.14,
+   "vol": [
+    0,
+    0,
+    541,
+    486,
+    0,
+    0
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUN02",
+   "off_h": "10",
+   "k": "no",
+   "gross_c": 2,
+   "net_c": 0.12,
+   "vol": [
+    357,
+    0,
+    1255,
+    914,
+    160,
+    5
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUN05",
+   "off_h": "8",
+   "k": "no",
+   "gross_c": 3,
+   "net_c": 0.79,
+   "vol": [
+    0,
+    0,
+    0,
+    416,
+    463,
+    0
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUN06",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 7,
+   "net_c": 1.87,
+   "vol": [
+    0,
+    160,
+    28,
+    6,
+    10,
+    7
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUN07",
+   "off_h": "12",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.01,
+   "vol": [
+    0,
+    1943,
+    0,
+    651,
+    947,
+    1510
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUN10",
+   "off_h": "24",
+   "k": "yes",
+   "gross_c": 6,
+   "net_c": 1.3,
+   "vol": [
+    6,
+    13,
+    6,
+    23,
+    18,
+    282
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUN11",
+   "off_h": "24",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 0.59,
+   "vol": [
+    40,
+    0,
+    188,
+    12,
+    25,
+    12
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUN27",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 0.63,
+   "vol": [
+    15,
+    146,
+    22,
+    14,
+    32,
+    60
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUN29",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.2,
+   "vol": [
+    505,
+    23,
+    384,
+    50,
+    22,
+    23
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUN30",
+   "off_h": "24",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 1.05,
+   "vol": [
+    42,
+    0,
+    100,
+    62,
+    42,
+    52
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUL03",
+   "off_h": "18",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 1.07,
+   "vol": [
+    47,
+    0,
+    47,
+    342,
+    35,
+    1047
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26JUL18",
+   "off_h": "36",
+   "k": "yes",
+   "gross_c": 7,
+   "net_c": 1.73,
+   "vol": [
+    54,
+    8,
+    28,
+    17,
+    8,
+    14
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26AUG08",
+   "off_h": "27",
+   "k": "yes",
+   "gross_c": 6,
+   "net_c": 1.38,
+   "vol": [
+    13,
+    23,
+    66,
+    13,
+    69,
+    10
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26AUG13",
+   "off_h": "36",
+   "k": "yes",
+   "gross_c": 6,
+   "net_c": 1.24,
+   "vol": [
+    29,
+    111,
+    8,
+    5,
+    93,
+    5
+   ]
+  },
+  {
+   "s": "KXHIGHPHIL",
+   "e": "KXHIGHPHIL-26AUG28",
+   "off_h": "21",
+   "k": "yes",
+   "gross_c": 5,
+   "net_c": 0.29,
+   "vol": [
+    3,
+    18,
+    5,
+    8,
+    5,
+    267
+   ]
+  },
+  {
+   "s": "KXHIGHTATL",
+   "e": "KXHIGHTATL-26SEP13",
+   "off_h": "24",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.71,
+   "vol": [
+    0,
+    270,
+    12,
+    71,
+    20,
+    20
+   ]
+  },
+  {
+   "s": "KXHIGHTATL",
+   "e": "KXHIGHTATL-26SEP24",
+   "off_h": "14",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.88,
+   "vol": [
+    0,
+    849,
+    0,
+    1,
+    235,
+    523
+   ]
+  },
+  {
+   "s": "KXHIGHTBOS",
+   "e": "KXHIGHTBOS-26SEP04",
+   "off_h": "24",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 0.65,
+   "vol": [
+    0,
+    16,
+    1,
+    76,
+    14,
+    2
+   ]
+  },
+  {
+   "s": "KXHIGHTBOS",
+   "e": "KXHIGHTBOS-26OCT03",
+   "off_h": "24",
+   "k": "yes",
+   "gross_c": 5,
+   "net_c": 1.31,
+   "vol": [
+    27,
+    740,
+    28,
+    727,
+    362,
+    627
+   ]
+  },
+  {
+   "s": "KXHIGHTDAL",
+   "e": "KXHIGHTDAL-26SEP04",
+   "off_h": "24",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.29,
+   "vol": [
+    1,
+    0,
+    4,
+    48,
+    7,
+    10
+   ]
+  },
+  {
+   "s": "KXHIGHTDC",
+   "e": "KXHIGHTDC-26OCT23",
+   "off_h": "29",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.06,
+   "vol": [
+    0,
+    0,
+    0,
+    0,
+    63,
+    12
+   ]
+  },
+  {
+   "s": "KXHIGHTMIN",
+   "e": "KXHIGHTMIN-26SEP20",
+   "off_h": "21",
+   "k": "yes",
+   "gross_c": 6,
+   "net_c": 1.35,
+   "vol": [
+    2,
+    2,
+    10,
+    123,
+    44,
+    5
+   ]
+  },
+  {
+   "s": "KXHIGHTMIN",
+   "e": "KXHIGHTMIN-26SEP28",
+   "off_h": "27",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.12,
+   "vol": [
+    52,
+    86,
+    52,
+    52,
+    92,
+    52
+   ]
+  },
+  {
+   "s": "KXHIGHTMIN",
+   "e": "KXHIGHTMIN-26OCT28",
+   "off_h": "16",
+   "k": "yes",
+   "gross_c": 5,
+   "net_c": 0.15,
+   "vol": [
+    7,
+    111,
+    67,
+    110,
+    139,
+    51
+   ]
+  },
+  {
+   "s": "KXHIGHTNOLA",
+   "e": "KXHIGHTNOLA-26SEP05",
+   "off_h": "36",
+   "k": "no",
+   "gross_c": 6,
+   "net_c": 0.74,
+   "vol": [
+    0,
+    0,
+    3,
+    35,
+    22,
+    0
+   ]
+  },
+  {
+   "s": "KXHIGHTNOLA",
+   "e": "KXHIGHTNOLA-26SEP05",
+   "off_h": "16",
+   "k": "no",
+   "gross_c": 5,
+   "net_c": 0.19,
+   "vol": [
+    10,
+    40,
+    50,
+    40,
+    10,
+    76
+   ]
+  },
+  {
+   "s": "KXHIGHTPHX",
+   "e": "KXHIGHTPHX-26SEP08",
+   "off_h": "18",
+   "k": "no",
+   "gross_c": 4,
+   "net_c": 0.35,
+   "vol": [
+    0,
+    0,
+    206,
+    139,
+    235,
+    215
+   ]
+  },
+  {
+   "s": "KXHIGHTPHX",
+   "e": "KXHIGHTPHX-26OCT10",
+   "off_h": "16",
+   "k": "yes",
+   "gross_c": 7,
+   "net_c": 2.03,
+   "vol": [
+    638,
+    101,
+    518,
+    1237,
+    1711,
+    787
+   ]
+  },
+  {
+   "s": "KXHIGHTSATX",
+   "e": "KXHIGHTSATX-26SEP11",
+   "off_h": "21",
+   "k": "yes",
+   "gross_c": 4,
+   "net_c": 0.39,
+   "vol": [
+    3,
+    0,
+    12,
+    250,
+    0,
+    0
+   ]
+  },
+  {
+   "s": "KXHIGHTSATX",
+   "e": "KXHIGHTSATX-26NOV07",
+   "off_h": "12",
+   "k": "yes",
+   "gross_c": 5,
+   "net_c": 1.16,
+   "vol": [
+    43,
+    494,
+    54,
+    54,
+    76,
+    336
+   ]
+  },
+  {
+   "s": "KXLOWTDEN",
+   "e": "KXLOWTDEN-26OCT01",
+   "off_h": "14",
+   "k": "yes",
+   "gross_c": 5,
+   "net_c": 0.35,
+   "vol": [
+    7,
+    16,
+    30,
+    10,
+    16,
+    31
+   ]
+  },
+  {
+   "s": "KXLOWTLAX",
+   "e": "KXLOWTLAX-26SEP18",
+   "off_h": "21",
+   "k": "yes",
+   "gross_c": 3,
+   "net_c": 0.77,
+   "vol": [
+    235,
+    0,
+    12,
+    10,
+    10,
+    12
+   ]
+  },
+  {
+   "s": "KXLOWTMIA",
+   "e": "KXLOWTMIA-26SEP17",
+   "off_h": "21",
+   "k": "yes",
+   "gross_c": 6,
+   "net_c": 1.98,
+   "vol": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "s": "KXLOWTMIA",
+   "e": "KXLOWTMIA-26OCT03",
+   "off_h": "1",
+   "k": "yes",
+   "gross_c": 5,
+   "net_c": 0.4,
+   "vol": [
+    1267,
+    815,
+    408,
+    151,
+    843,
+    1052
+   ]
+  },
+  {
+   "s": "KXPAYROLLS",
+   "e": "KXPAYROLLS-26MAR",
+   "off_h": "2",
+   "k": "ladder",
+   "gross_c": 2,
+   "net_c": 0.85,
+   "pair": [
+    "KXPAYROLLS-26MAR-T-25000",
+    "KXPAYROLLS-26MAR-T0"
+   ],
+   "vol": [
+    133,
+    2891
+   ]
+  }
+ ]
+}
