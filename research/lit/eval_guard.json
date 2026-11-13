@@ -1,0 +1,4054 @@
+{
+ "built": "2026-11-13 02:27",
+ "n": 2000,
+ "horizon": 60,
+ "accounts": {
+  "zlarior": {
+   "label": "Zlarior (LIT, Builder 50K)",
+   "plan": "builder50k",
+   "tgt": 3000.0,
+   "mll": 2000.0,
+   "lock": 100.0,
+   "dll": 1000.0,
+   "maxq": 40,
+   "stuck": 200.0,
+   "price": 91.8,
+   "max_day": 1,
+   "bal0": -686.8000000000029,
+   "floor0": -1831.800000000003,
+   "session0": 20,
+   "safe_cap": 0.6,
+   "vf": {
+    "H1": 5574.0,
+    "H2": 5490.0,
+    "REF": 396.0
+   }
+  },
+  "atlas": {
+   "label": "ATLAS (Builder 25K)",
+   "plan": "builder25k",
+   "tgt": 1500.0,
+   "mll": 1000.0,
+   "lock": 100.0,
+   "dll": 600.0,
+   "maxq": 20,
+   "stuck": 100.0,
+   "price": 43.0,
+   "max_day": 2,
+   "bal0": -178.0,
+   "floor0": -1000.0,
+   "session0": 14,
+   "safe_cap": 0.3,
+   "vf": {
+    "H1": 3494.0,
+    "H2": 3100.0,
+    "REF": 300.0
+   }
+  }
+ },
+ "rows": {
+  "zlarior": {
+   "as_coded": {
+    "rule": {
+     "count": "coded"
+    },
+    "label": "as coded tonight (session 20 > 10: safe_eval 60%)",
+    "H1": {
+     "p10": 28.9,
+     "f10": 14.5,
+     "dec10": 43.5,
+     "p15": 39.5,
+     "p60": 65.0,
+     "f60": 34.4,
+     "open60": 0.7,
+     "pass_med": 13.0,
+     "slow_pass": 39.1,
+     "days_mean": 15.3,
+     "max_risk": 867,
+     "usd_now": 3620,
+     "usd_eval": 3529,
+     "usd_10": 1522
+    },
+    "H2": {
+     "p10": 16.3,
+     "f10": 16.2,
+     "dec10": 32.5,
+     "p15": 25.2,
+     "p60": 60.6,
+     "f60": 36.5,
+     "open60": 2.8,
+     "pass_med": 19.0,
+     "slow_pass": 58.4,
+     "days_mean": 20.6,
+     "max_risk": 848,
+     "usd_now": 3330,
+     "usd_eval": 3238,
+     "usd_10": 803
+    },
+    "REF": {
+     "p10": 1.6,
+     "f10": 20.9,
+     "dec10": 22.6,
+     "p15": 3.5,
+     "p60": 12.2,
+     "f60": 83.7,
+     "open60": 4.1,
+     "pass_med": 23.0,
+     "slow_pass": 70.9,
+     "days_mean": 23.2,
+     "max_risk": 878,
+     "usd_now": 48,
+     "usd_eval": -43,
+     "usd_10": -85
+    }
+   },
+   "tw_80": {
+    "rule": {
+     "room_f": 0.8
+    },
+    "label": "two_week room_f 0.8 (session count restarted tonight)",
+    "H1": {
+     "p10": 35.4,
+     "f10": 40.8,
+     "dec10": 76.1,
+     "p15": 39.9,
+     "p60": 50.2,
+     "f60": 49.6,
+     "open60": 0.2,
+     "pass_med": 6.0,
+     "slow_pass": 20.6,
+     "days_mean": 8.9,
+     "max_risk": 991,
+     "usd_now": 2798,
+     "usd_eval": 2706,
+     "usd_10": 1879
+    },
+    "H2": {
+     "p10": 39.5,
+     "f10": 42.4,
+     "dec10": 81.8,
+     "p15": 42.9,
+     "p60": 51.0,
+     "f60": 48.0,
+     "open60": 0.9,
+     "pass_med": 4.0,
+     "slow_pass": 16.1,
+     "days_mean": 8.2,
+     "max_risk": 995,
+     "usd_now": 2803,
+     "usd_eval": 2711,
+     "usd_10": 2074
+    },
+    "REF": {
+     "p10": 8.7,
+     "f10": 50.9,
+     "dec10": 59.5,
+     "p15": 10.2,
+     "p60": 15.8,
+     "f60": 82.4,
+     "open60": 1.8,
+     "pass_med": 9.0,
+     "slow_pass": 35.6,
+     "days_mean": 14.1,
+     "max_risk": 994,
+     "usd_now": 63,
+     "usd_eval": -29,
+     "usd_10": -58
+    }
+   },
+   "tw_60": {
+    "rule": {
+     "room_f": 0.6
+    },
+    "label": "two_week room_f 0.6 (session count restarted tonight)",
+    "H1": {
+     "p10": 35.9,
+     "f10": 23.8,
+     "dec10": 59.6,
+     "p15": 42.2,
+     "p60": 57.8,
+     "f60": 41.9,
+     "open60": 0.3,
+     "pass_med": 8.0,
+     "slow_pass": 27.0,
+     "days_mean": 11.9,
+     "max_risk": 991,
+     "usd_now": 3222,
+     "usd_eval": 3130,
+     "usd_10": 1909
+    },
+    "H2": {
+     "p10": 34.0,
+     "f10": 27.4,
+     "dec10": 61.3,
+     "p15": 38.7,
+     "p60": 55.9,
+     "f60": 42.8,
+     "open60": 1.4,
+     "pass_med": 8.0,
+     "slow_pass": 30.7,
+     "days_mean": 13.0,
+     "max_risk": 995,
+     "usd_now": 3066,
+     "usd_eval": 2974,
+     "usd_10": 1772
+    },
+    "REF": {
+     "p10": 5.3,
+     "f10": 28.2,
+     "dec10": 33.6,
+     "p15": 7.2,
+     "p60": 13.7,
+     "f60": 83.7,
+     "open60": 2.6,
+     "pass_med": 13.0,
+     "slow_pass": 47.4,
+     "days_mean": 19.5,
+     "max_risk": 989,
+     "usd_now": 54,
+     "usd_eval": -38,
+     "usd_10": -71
+    }
+   },
+   "tw_50": {
+    "rule": {
+     "room_f": 0.5
+    },
+    "label": "two_week room_f 0.5 (session count restarted tonight)",
+    "H1": {
+     "p10": 32.9,
+     "f10": 13.5,
+     "dec10": 46.4,
+     "p15": 40.9,
+     "p60": 61.7,
+     "f60": 37.9,
+     "open60": 0.4,
+     "pass_med": 10.0,
+     "slow_pass": 33.8,
+     "days_mean": 14.4,
+     "max_risk": 991,
+     "usd_now": 3439,
+     "usd_eval": 3347,
+     "usd_10": 1739
+    },
+    "H2": {
+     "p10": 30.8,
+     "f10": 14.2,
+     "dec10": 45.0,
+     "p15": 36.8,
+     "p60": 61.0,
+     "f60": 37.0,
+     "open60": 2.0,
+     "pass_med": 10.0,
+     "slow_pass": 39.7,
+     "days_mean": 17.1,
+     "max_risk": 995,
+     "usd_now": 3352,
+     "usd_eval": 3260,
+     "usd_10": 1596
+    },
+    "REF": {
+     "p10": 4.3,
+     "f10": 17.3,
+     "dec10": 21.6,
+     "p15": 6.0,
+     "p60": 13.8,
+     "f60": 83.2,
+     "open60": 3.1,
+     "pass_med": 17.0,
+     "slow_pass": 56.4,
+     "days_mean": 21.8,
+     "max_risk": 989,
+     "usd_now": 54,
+     "usd_eval": -37,
+     "usd_10": -75
+    }
+   },
+   "tw_40": {
+    "rule": {
+     "room_f": 0.4
+    },
+    "label": "two_week room_f 0.4 (session count restarted tonight)",
+    "H1": {
+     "p10": 31.9,
+     "f10": 3.5,
+     "dec10": 35.4,
+     "p15": 41.0,
+     "p60": 66.6,
+     "f60": 32.7,
+     "open60": 0.7,
+     "pass_med": 12.0,
+     "slow_pass": 38.4,
+     "days_mean": 16.6,
+     "max_risk": 867,
+     "usd_now": 3712,
+     "usd_eval": 3620,
+     "usd_10": 1684
+    },
+    "H2": {
+     "p10": 27.4,
+     "f10": 3.5,
+     "dec10": 30.9,
+     "p15": 33.4,
+     "p60": 65.3,
+     "f60": 31.6,
+     "open60": 3.1,
+     "pass_med": 15.0,
+     "slow_pass": 48.9,
+     "days_mean": 20.2,
+     "max_risk": 848,
+     "usd_now": 3585,
+     "usd_eval": 3493,
+     "usd_10": 1415
+    },
+    "REF": {
+     "p10": 2.8,
+     "f10": 4.5,
+     "dec10": 7.2,
+     "p15": 4.0,
+     "p60": 12.9,
+     "f60": 82.6,
+     "open60": 4.5,
+     "pass_med": 23.0,
+     "slow_pass": 69.1,
+     "days_mean": 25.2,
+     "max_risk": 878,
+     "usd_now": 51,
+     "usd_eval": -41,
+     "usd_10": -81
+    }
+   },
+   "tw_80_prot1000": {
+    "rule": {
+     "room_f": 0.8,
+     "protect": [
+      1000.0,
+      0.35
+     ]
+    },
+    "label": "two_week 0.8 + protect: room < $1,000 -> stop-out <= 35% of room",
+    "H1": {
+     "p10": 33.8,
+     "f10": 7.7,
+     "dec10": 41.5,
+     "p15": 39.0,
+     "p60": 66.7,
+     "f60": 26.6,
+     "open60": 6.7,
+     "pass_med": 10.0,
+     "slow_pass": 41.5,
+     "days_mean": 20.6,
+     "max_risk": 991,
+     "usd_now": 3715,
+     "usd_eval": 3623,
+     "usd_10": 1789
+    },
+    "H2": {
+     "p10": 38.1,
+     "f10": 10.0,
+     "dec10": 48.1,
+     "p15": 40.2,
+     "p60": 59.0,
+     "f60": 32.5,
+     "open60": 8.5,
+     "pass_med": 4.0,
+     "slow_pass": 31.8,
+     "days_mean": 19.3,
+     "max_risk": 989,
+     "usd_now": 3239,
+     "usd_eval": 3147,
+     "usd_10": 2003
+    },
+    "REF": {
+     "p10": 8.2,
+     "f10": 19.1,
+     "dec10": 27.3,
+     "p15": 9.8,
+     "p60": 14.7,
+     "f60": 72.5,
+     "open60": 12.8,
+     "pass_med": 8.0,
+     "slow_pass": 33.4,
+     "days_mean": 26.3,
+     "max_risk": 994,
+     "usd_now": 58,
+     "usd_eval": -34,
+     "usd_10": -59
+    }
+   },
+   "tw_80_prot700": {
+    "rule": {
+     "room_f": 0.8,
+     "protect": [
+      700.0,
+      0.35
+     ]
+    },
+    "label": "two_week 0.8 + protect: room < $700 -> stop-out <= 35% of room",
+    "H1": {
+     "p10": 36.0,
+     "f10": 10.1,
+     "dec10": 46.0,
+     "p15": 41.5,
+     "p60": 65.3,
+     "f60": 29.4,
+     "open60": 5.3,
+     "pass_med": 9.0,
+     "slow_pass": 36.4,
+     "days_mean": 18.8,
+     "max_risk": 991,
+     "usd_now": 3643,
+     "usd_eval": 3551,
+     "usd_10": 1915
+    },
+    "H2": {
+     "p10": 38.1,
+     "f10": 10.2,
+     "dec10": 48.3,
+     "p15": 40.4,
+     "p60": 59.0,
+     "f60": 33.8,
+     "open60": 7.3,
+     "pass_med": 4.0,
+     "slow_pass": 31.6,
+     "days_mean": 18.8,
+     "max_risk": 989,
+     "usd_now": 3236,
+     "usd_eval": 3145,
+     "usd_10": 2003
+    },
+    "REF": {
+     "p10": 8.2,
+     "f10": 21.2,
+     "dec10": 29.4,
+     "p15": 9.8,
+     "p60": 14.8,
+     "f60": 75.7,
+     "open60": 9.5,
+     "pass_med": 8.0,
+     "slow_pass": 34.3,
+     "days_mean": 24.5,
+     "max_risk": 994,
+     "usd_now": 59,
+     "usd_eval": -33,
+     "usd_10": -59
+    }
+   },
+   "tw_60_prot700": {
+    "rule": {
+     "room_f": 0.6,
+     "protect": [
+      700.0,
+      0.35
+     ]
+    },
+    "label": "two_week 0.6 + protect: room < $700 -> stop-out <= 35% of room",
+    "H1": {
+     "p10": 34.0,
+     "f10": 3.3,
+     "dec10": 37.3,
+     "p15": 41.3,
+     "p60": 69.7,
+     "f60": 24.9,
+     "open60": 5.4,
+     "pass_med": 12.0,
+     "slow_pass": 40.7,
+     "days_mean": 20.7,
+     "max_risk": 940,
+     "usd_now": 3882,
+     "usd_eval": 3790,
+     "usd_10": 1806
+    },
+    "H2": {
+     "p10": 30.2,
+     "f10": 7.5,
+     "dec10": 37.8,
+     "p15": 35.5,
+     "p60": 60.6,
+     "f60": 31.1,
+     "open60": 8.2,
+     "pass_med": 11.0,
+     "slow_pass": 41.5,
+     "days_mean": 22.2,
+     "max_risk": 848,
+     "usd_now": 3330,
+     "usd_eval": 3238,
+     "usd_10": 1566
+    },
+    "REF": {
+     "p10": 5.0,
+     "f10": 6.4,
+     "dec10": 11.4,
+     "p15": 6.8,
+     "p60": 12.6,
+     "f60": 74.2,
+     "open60": 13.2,
+     "pass_med": 13.0,
+     "slow_pass": 46.2,
+     "days_mean": 31.3,
+     "max_risk": 989,
+     "usd_now": 50,
+     "usd_eval": -42,
+     "usd_10": -72
+    }
+   },
+   "safe_60": {
+    "rule": {
+     "mode": "safe_eval",
+     "safe_cap": 0.6
+    },
+    "label": "safe_eval 60% of room (model size)",
+    "H1": {
+     "p10": 28.9,
+     "f10": 14.5,
+     "dec10": 43.5,
+     "p15": 39.5,
+     "p60": 65.0,
+     "f60": 34.4,
+     "open60": 0.7,
+     "pass_med": 13.0,
+     "slow_pass": 39.1,
+     "days_mean": 15.3,
+     "max_risk": 867,
+     "usd_now": 3620,
+     "usd_eval": 3529,
+     "usd_10": 1522
+    },
+    "H2": {
+     "p10": 16.3,
+     "f10": 16.2,
+     "dec10": 32.5,
+     "p15": 25.2,
+     "p60": 60.6,
+     "f60": 36.5,
+     "open60": 2.8,
+     "pass_med": 19.0,
+     "slow_pass": 58.4,
+     "days_mean": 20.6,
+     "max_risk": 848,
+     "usd_now": 3330,
+     "usd_eval": 3238,
+     "usd_10": 803
+    },
+    "REF": {
+     "p10": 1.6,
+     "f10": 20.9,
+     "dec10": 22.6,
+     "p15": 3.5,
+     "p60": 12.2,
+     "f60": 83.7,
+     "open60": 4.1,
+     "pass_med": 23.0,
+     "slow_pass": 70.9,
+     "days_mean": 23.2,
+     "max_risk": 878,
+     "usd_now": 48,
+     "usd_eval": -43,
+     "usd_10": -85
+    }
+   },
+   "safe_40": {
+    "rule": {
+     "mode": "safe_eval",
+     "safe_cap": 0.4
+    },
+    "label": "safe_eval 40% of room (model size)",
+    "H1": {
+     "p10": 27.4,
+     "f10": 2.4,
+     "dec10": 29.8,
+     "p15": 37.9,
+     "p60": 72.9,
+     "f60": 22.3,
+     "open60": 4.8,
+     "pass_med": 15.0,
+     "slow_pass": 48.1,
+     "days_mean": 21.8,
+     "max_risk": 867,
+     "usd_now": 4063,
+     "usd_eval": 3972,
+     "usd_10": 1435
+    },
+    "H2": {
+     "p10": 12.3,
+     "f10": 1.6,
+     "dec10": 13.9,
+     "p15": 22.1,
+     "p60": 67.1,
+     "f60": 23.6,
+     "open60": 9.4,
+     "pass_med": 22.0,
+     "slow_pass": 67.0,
+     "days_mean": 28.4,
+     "max_risk": 848,
+     "usd_now": 3684,
+     "usd_eval": 3592,
+     "usd_10": 586
+    },
+    "REF": {
+     "p10": 0.8,
+     "f10": 3.4,
+     "dec10": 4.1,
+     "p15": 2.3,
+     "p60": 10.4,
+     "f60": 70.8,
+     "open60": 18.8,
+     "pass_med": 27.5,
+     "slow_pass": 77.9,
+     "days_mean": 35.6,
+     "max_risk": 871,
+     "usd_now": 41,
+     "usd_eval": -51,
+     "usd_10": -89
+    }
+   },
+   "hold_40": {
+    "rule": {
+     "room_f": 0.4,
+     "count": "coded",
+     "until": 80
+    },
+    "label": "two_week room_f 0.4 kept past session 10 (two_week_until 80, eval_start unchanged)",
+    "H1": {
+     "p10": 31.9,
+     "f10": 3.5,
+     "dec10": 35.4,
+     "p15": 41.9,
+     "p60": 71.8,
+     "f60": 25.4,
+     "open60": 2.9,
+     "pass_med": 13.0,
+     "slow_pass": 41.7,
+     "days_mean": 19.6,
+     "max_risk": 791,
+     "usd_now": 3999,
+     "usd_eval": 3908,
+     "usd_10": 1684
+    },
+    "H2": {
+     "p10": 27.4,
+     "f10": 3.5,
+     "dec10": 30.9,
+     "p15": 38.6,
+     "p60": 70.5,
+     "f60": 25.7,
+     "open60": 3.8,
+     "pass_med": 13.0,
+     "slow_pass": 45.2,
+     "days_mean": 20.7,
+     "max_risk": 794,
+     "usd_now": 3868,
+     "usd_eval": 3776,
+     "usd_10": 1415
+    },
+    "REF": {
+     "p10": 2.8,
+     "f10": 4.5,
+     "dec10": 7.2,
+     "p15": 4.6,
+     "p60": 13.8,
+     "f60": 72.3,
+     "open60": 14.0,
+     "pass_med": 23.0,
+     "slow_pass": 66.5,
+     "days_mean": 32.7,
+     "max_risk": 799,
+     "usd_now": 54,
+     "usd_eval": -37,
+     "usd_10": -81
+    }
+   },
+   "hold_50": {
+    "rule": {
+     "room_f": 0.5,
+     "count": "coded",
+     "until": 80
+    },
+    "label": "two_week room_f 0.5 kept past session 10 (two_week_until 80, eval_start unchanged)",
+    "H1": {
+     "p10": 32.9,
+     "f10": 13.5,
+     "dec10": 46.4,
+     "p15": 42.1,
+     "p60": 62.5,
+     "f60": 36.9,
+     "open60": 0.7,
+     "pass_med": 10.0,
+     "slow_pass": 32.6,
+     "days_mean": 14.7,
+     "max_risk": 991,
+     "usd_now": 3481,
+     "usd_eval": 3389,
+     "usd_10": 1739
+    },
+    "H2": {
+     "p10": 30.8,
+     "f10": 14.2,
+     "dec10": 45.0,
+     "p15": 42.0,
+     "p60": 63.0,
+     "f60": 35.9,
+     "open60": 1.1,
+     "pass_med": 11.0,
+     "slow_pass": 33.5,
+     "days_mean": 14.8,
+     "max_risk": 995,
+     "usd_now": 3461,
+     "usd_eval": 3370,
+     "usd_10": 1596
+    },
+    "REF": {
+     "p10": 4.3,
+     "f10": 17.3,
+     "dec10": 21.6,
+     "p15": 6.8,
+     "p60": 15.3,
+     "f60": 80.2,
+     "open60": 4.4,
+     "pass_med": 17.0,
+     "slow_pass": 55.4,
+     "days_mean": 22.9,
+     "max_risk": 994,
+     "usd_now": 61,
+     "usd_eval": -31,
+     "usd_10": -75
+    }
+   },
+   "hold_80": {
+    "rule": {
+     "room_f": 0.8,
+     "count": "coded",
+     "until": 80
+    },
+    "label": "two_week room_f 0.8 kept past session 10 (two_week_until 80)",
+    "H1": {
+     "p10": 35.4,
+     "f10": 40.8,
+     "dec10": 76.1,
+     "p15": 41.4,
+     "p60": 48.6,
+     "f60": 51.4,
+     "open60": 0.0,
+     "pass_med": 6.0,
+     "slow_pass": 14.8,
+     "days_mean": 7.9,
+     "max_risk": 991,
+     "usd_now": 2709,
+     "usd_eval": 2617,
+     "usd_10": 1879
+    },
+    "H2": {
+     "p10": 39.5,
+     "f10": 42.4,
+     "dec10": 81.8,
+     "p15": 45.2,
+     "p60": 50.8,
+     "f60": 49.2,
+     "open60": 0.0,
+     "pass_med": 4.0,
+     "slow_pass": 10.9,
+     "days_mean": 6.6,
+     "max_risk": 995,
+     "usd_now": 2789,
+     "usd_eval": 2697,
+     "usd_10": 2074
+    },
+    "REF": {
+     "p10": 8.7,
+     "f10": 50.9,
+     "dec10": 59.5,
+     "p15": 11.4,
+     "p60": 18.8,
+     "f60": 80.7,
+     "open60": 0.6,
+     "pass_med": 12.0,
+     "slow_pass": 38.9,
+     "days_mean": 11.5,
+     "max_risk": 994,
+     "usd_now": 74,
+     "usd_eval": -18,
+     "usd_10": -58
+    }
+   }
+  },
+  "atlas": {
+   "as_coded": {
+    "rule": {
+     "count": "coded"
+    },
+    "label": "as coded tonight (session 14 > 10: safe_eval 30%)",
+    "H1": {
+     "p10": 37.0,
+     "f10": 0.0,
+     "dec10": 37.0,
+     "p15": 53.0,
+     "p60": 88.6,
+     "f60": 1.1,
+     "open60": 10.4,
+     "pass_med": 13.0,
+     "slow_pass": 40.2,
+     "days_mean": 21.5,
+     "max_risk": 413,
+     "usd_now": 3096,
+     "usd_eval": 3053,
+     "usd_10": 1248
+    },
+    "H2": {
+     "p10": 14.5,
+     "f10": 0.0,
+     "dec10": 14.5,
+     "p15": 24.4,
+     "p60": 70.2,
+     "f60": 0.3,
+     "open60": 29.5,
+     "pass_med": 22.0,
+     "slow_pass": 65.2,
+     "days_mean": 34.9,
+     "max_risk": 403,
+     "usd_now": 2176,
+     "usd_eval": 2133,
+     "usd_10": 406
+    },
+    "REF": {
+     "p10": 10.4,
+     "f10": 0.8,
+     "dec10": 11.2,
+     "p15": 13.3,
+     "p60": 19.7,
+     "f60": 68.6,
+     "open60": 11.7,
+     "pass_med": 9.0,
+     "slow_pass": 32.5,
+     "days_mean": 32.7,
+     "max_risk": 584,
+     "usd_now": 59,
+     "usd_eval": 16,
+     "usd_10": -12
+    }
+   },
+   "tw_80": {
+    "rule": {
+     "room_f": 0.8
+    },
+    "label": "two_week room_f 0.8 (session count restarted tonight)",
+    "H1": {
+     "p10": 66.1,
+     "f10": 17.1,
+     "dec10": 83.1,
+     "p15": 70.9,
+     "p60": 78.5,
+     "f60": 18.6,
+     "open60": 2.9,
+     "pass_med": 6.0,
+     "slow_pass": 9.7,
+     "days_mean": 9.5,
+     "max_risk": 593,
+     "usd_now": 2745,
+     "usd_eval": 2702,
+     "usd_10": 2267
+    },
+    "H2": {
+     "p10": 41.5,
+     "f10": 17.4,
+     "dec10": 58.9,
+     "p15": 45.3,
+     "p60": 61.2,
+     "f60": 20.0,
+     "open60": 18.8,
+     "pass_med": 8.0,
+     "slow_pass": 26.0,
+     "days_mean": 21.4,
+     "max_risk": 767,
+     "usd_now": 1897,
+     "usd_eval": 1854,
+     "usd_10": 1242
+    },
+    "REF": {
+     "p10": 20.1,
+     "f10": 62.4,
+     "dec10": 82.5,
+     "p15": 21.6,
+     "p60": 23.4,
+     "f60": 74.5,
+     "open60": 2.0,
+     "pass_med": 4.0,
+     "slow_pass": 7.9,
+     "days_mean": 10.2,
+     "max_risk": 800,
+     "usd_now": 70,
+     "usd_eval": 27,
+     "usd_10": 17
+    }
+   },
+   "tw_60": {
+    "rule": {
+     "room_f": 0.6
+    },
+    "label": "two_week room_f 0.6 (session count restarted tonight)",
+    "H1": {
+     "p10": 62.0,
+     "f10": 7.0,
+     "dec10": 69.1,
+     "p15": 70.1,
+     "p60": 84.2,
+     "f60": 9.9,
+     "open60": 5.9,
+     "pass_med": 6.0,
+     "slow_pass": 16.7,
+     "days_mean": 13.5,
+     "max_risk": 593,
+     "usd_now": 2940,
+     "usd_eval": 2897,
+     "usd_10": 2125
+    },
+    "H2": {
+     "p10": 36.4,
+     "f10": 5.8,
+     "dec10": 42.1,
+     "p15": 42.2,
+     "p60": 62.7,
+     "f60": 9.6,
+     "open60": 27.7,
+     "pass_med": 10.0,
+     "slow_pass": 32.7,
+     "days_mean": 28.3,
+     "max_risk": 640,
+     "usd_now": 1944,
+     "usd_eval": 1901,
+     "usd_10": 1084
+    },
+    "REF": {
+     "p10": 19.2,
+     "f10": 45.8,
+     "dec10": 65.0,
+     "p15": 20.7,
+     "p60": 23.3,
+     "f60": 73.2,
+     "open60": 3.5,
+     "pass_med": 5.0,
+     "slow_pass": 11.2,
+     "days_mean": 15.3,
+     "max_risk": 688,
+     "usd_now": 70,
+     "usd_eval": 27,
+     "usd_10": 15
+    }
+   },
+   "tw_50": {
+    "rule": {
+     "room_f": 0.5
+    },
+    "label": "two_week room_f 0.5 (session count restarted tonight)",
+    "H1": {
+     "p10": 57.3,
+     "f10": 1.9,
+     "dec10": 59.2,
+     "p15": 67.2,
+     "p60": 86.3,
+     "f60": 5.0,
+     "open60": 8.7,
+     "pass_med": 8.0,
+     "slow_pass": 22.2,
+     "days_mean": 16.7,
+     "max_risk": 493,
+     "usd_now": 3015,
+     "usd_eval": 2972,
+     "usd_10": 1959
+    },
+    "H2": {
+     "p10": 34.5,
+     "f10": 0.1,
+     "dec10": 34.5,
+     "p15": 40.0,
+     "p60": 66.5,
+     "f60": 2.8,
+     "open60": 30.8,
+     "pass_med": 10.0,
+     "slow_pass": 39.8,
+     "days_mean": 31.1,
+     "max_risk": 640,
+     "usd_now": 2062,
+     "usd_eval": 2018,
+     "usd_10": 1025
+    },
+    "REF": {
+     "p10": 17.6,
+     "f10": 31.4,
+     "dec10": 49.0,
+     "p15": 19.4,
+     "p60": 22.4,
+     "f60": 72.0,
+     "open60": 5.6,
+     "pass_med": 6.0,
+     "slow_pass": 13.4,
+     "days_mean": 20.0,
+     "max_risk": 643,
+     "usd_now": 67,
+     "usd_eval": 24,
+     "usd_10": 10
+    }
+   },
+   "tw_40": {
+    "rule": {
+     "room_f": 0.4
+    },
+    "label": "two_week room_f 0.4 (session count restarted tonight)",
+    "H1": {
+     "p10": 48.2,
+     "f10": 0.2,
+     "dec10": 48.5,
+     "p15": 61.2,
+     "p60": 87.5,
+     "f60": 2.5,
+     "open60": 10.0,
+     "pass_med": 10.0,
+     "slow_pass": 30.0,
+     "days_mean": 18.8,
+     "max_risk": 413,
+     "usd_now": 3056,
+     "usd_eval": 3013,
+     "usd_10": 1643
+    },
+    "H2": {
+     "p10": 28.6,
+     "f10": 0.0,
+     "dec10": 28.6,
+     "p15": 36.8,
+     "p60": 70.8,
+     "f60": 0.6,
+     "open60": 28.6,
+     "pass_med": 15.0,
+     "slow_pass": 48.1,
+     "days_mean": 31.4,
+     "max_risk": 512,
+     "usd_now": 2196,
+     "usd_eval": 2153,
+     "usd_10": 845
+    },
+    "REF": {
+     "p10": 16.1,
+     "f10": 13.1,
+     "dec10": 29.2,
+     "p15": 18.9,
+     "p60": 23.4,
+     "f60": 68.7,
+     "open60": 8.0,
+     "pass_med": 7.0,
+     "slow_pass": 18.8,
+     "days_mean": 25.8,
+     "max_risk": 551,
+     "usd_now": 70,
+     "usd_eval": 27,
+     "usd_10": 5
+    }
+   },
+   "tw_80_prot600": {
+    "rule": {
+     "room_f": 0.8,
+     "protect": [
+      600.0,
+      0.35
+     ]
+    },
+    "label": "two_week 0.8 + protect: room < $600 -> stop-out <= 35% of room",
+    "H1": {
+     "p10": 52.5,
+     "f10": 0.3,
+     "dec10": 52.9,
+     "p15": 59.9,
+     "p60": 83.2,
+     "f60": 4.0,
+     "open60": 12.8,
+     "pass_med": 7.0,
+     "slow_pass": 28.0,
+     "days_mean": 19.9,
+     "max_risk": 593,
+     "usd_now": 2905,
+     "usd_eval": 2862,
+     "usd_10": 1791
+    },
+    "H2": {
+     "p10": 35.8,
+     "f10": 1.4,
+     "dec10": 37.2,
+     "p15": 39.7,
+     "p60": 56.5,
+     "f60": 5.8,
+     "open60": 37.7,
+     "pass_med": 9.0,
+     "slow_pass": 29.8,
+     "days_mean": 32.8,
+     "max_risk": 590,
+     "usd_now": 1753,
+     "usd_eval": 1710,
+     "usd_10": 1067
+    },
+    "REF": {
+     "p10": 16.9,
+     "f10": 10.3,
+     "dec10": 27.2,
+     "p15": 18.2,
+     "p60": 22.4,
+     "f60": 69.5,
+     "open60": 8.0,
+     "pass_med": 5.5,
+     "slow_pass": 18.5,
+     "days_mean": 24.9,
+     "max_risk": 815,
+     "usd_now": 67,
+     "usd_eval": 24,
+     "usd_10": 8
+    }
+   },
+   "tw_80_prot400": {
+    "rule": {
+     "room_f": 0.8,
+     "protect": [
+      400.0,
+      0.35
+     ]
+    },
+    "label": "two_week 0.8 + protect: room < $400 -> stop-out <= 35% of room",
+    "H1": {
+     "p10": 57.5,
+     "f10": 1.1,
+     "dec10": 58.6,
+     "p15": 63.7,
+     "p60": 83.0,
+     "f60": 5.0,
+     "open60": 12.0,
+     "pass_med": 7.0,
+     "slow_pass": 23.2,
+     "days_mean": 18.6,
+     "max_risk": 593,
+     "usd_now": 2898,
+     "usd_eval": 2855,
+     "usd_10": 1968
+    },
+    "H2": {
+     "p10": 40.0,
+     "f10": 1.4,
+     "dec10": 41.4,
+     "p15": 43.2,
+     "p60": 58.6,
+     "f60": 6.5,
+     "open60": 34.9,
+     "pass_med": 8.0,
+     "slow_pass": 26.2,
+     "days_mean": 30.9,
+     "max_risk": 767,
+     "usd_now": 1817,
+     "usd_eval": 1774,
+     "usd_10": 1195
+    },
+    "REF": {
+     "p10": 17.6,
+     "f10": 19.8,
+     "dec10": 37.5,
+     "p15": 18.8,
+     "p60": 21.7,
+     "f60": 73.1,
+     "open60": 5.2,
+     "pass_med": 5.0,
+     "slow_pass": 13.6,
+     "days_mean": 20.6,
+     "max_risk": 815,
+     "usd_now": 65,
+     "usd_eval": 22,
+     "usd_10": 10
+    }
+   },
+   "tw_60_prot400": {
+    "rule": {
+     "room_f": 0.6,
+     "protect": [
+      400.0,
+      0.35
+     ]
+    },
+    "label": "two_week 0.6 + protect: room < $400 -> stop-out <= 35% of room",
+    "H1": {
+     "p10": 56.9,
+     "f10": 0.2,
+     "dec10": 57.1,
+     "p15": 65.5,
+     "p60": 84.8,
+     "f60": 3.9,
+     "open60": 11.4,
+     "pass_med": 6.0,
+     "slow_pass": 22.8,
+     "days_mean": 18.2,
+     "max_risk": 593,
+     "usd_now": 2961,
+     "usd_eval": 2918,
+     "usd_10": 1943
+    },
+    "H2": {
+     "p10": 35.8,
+     "f10": 0.0,
+     "dec10": 35.8,
+     "p15": 40.8,
+     "p60": 61.3,
+     "f60": 2.0,
+     "open60": 36.7,
+     "pass_med": 10.0,
+     "slow_pass": 33.4,
+     "days_mean": 32.8,
+     "max_risk": 640,
+     "usd_now": 1900,
+     "usd_eval": 1857,
+     "usd_10": 1067
+    },
+    "REF": {
+     "p10": 16.7,
+     "f10": 12.7,
+     "dec10": 29.4,
+     "p15": 18.1,
+     "p60": 21.6,
+     "f60": 72.0,
+     "open60": 6.4,
+     "pass_med": 6.0,
+     "slow_pass": 15.8,
+     "days_mean": 24.1,
+     "max_risk": 726,
+     "usd_now": 65,
+     "usd_eval": 22,
+     "usd_10": 7
+    }
+   },
+   "safe_60": {
+    "rule": {
+     "mode": "safe_eval",
+     "safe_cap": 0.6
+    },
+    "label": "safe_eval 60% of room (model size)",
+    "H1": {
+     "p10": 46.2,
+     "f10": 12.7,
+     "dec10": 59.0,
+     "p15": 56.1,
+     "p60": 67.7,
+     "f60": 32.2,
+     "open60": 0.0,
+     "pass_med": 6.0,
+     "slow_pass": 17.1,
+     "days_mean": 11.3,
+     "max_risk": 593,
+     "usd_now": 2365,
+     "usd_eval": 2322,
+     "usd_10": 1573
+    },
+    "H2": {
+     "p10": 13.3,
+     "f10": 3.7,
+     "dec10": 17.1,
+     "p15": 21.4,
+     "p60": 49.0,
+     "f60": 45.3,
+     "open60": 5.7,
+     "pass_med": 18.0,
+     "slow_pass": 56.2,
+     "days_mean": 26.1,
+     "max_risk": 575,
+     "usd_now": 1519,
+     "usd_eval": 1476,
+     "usd_10": 371
+    },
+    "REF": {
+     "p10": 15.4,
+     "f10": 53.5,
+     "dec10": 69.0,
+     "p15": 17.1,
+     "p60": 18.0,
+     "f60": 82.0,
+     "open60": 0.0,
+     "pass_med": 3.0,
+     "slow_pass": 4.7,
+     "days_mean": 9.0,
+     "max_risk": 734,
+     "usd_now": 54,
+     "usd_eval": 11,
+     "usd_10": 3
+    }
+   },
+   "safe_40": {
+    "rule": {
+     "mode": "safe_eval",
+     "safe_cap": 0.4
+    },
+    "label": "safe_eval 40% of room (model size)",
+    "H1": {
+     "p10": 40.9,
+     "f10": 0.3,
+     "dec10": 41.2,
+     "p15": 54.3,
+     "p60": 82.3,
+     "f60": 13.2,
+     "open60": 4.6,
+     "pass_med": 11.0,
+     "slow_pass": 34.0,
+     "days_mean": 19.0,
+     "max_risk": 554,
+     "usd_now": 2876,
+     "usd_eval": 2833,
+     "usd_10": 1386
+    },
+    "H2": {
+     "p10": 14.9,
+     "f10": 0.0,
+     "dec10": 14.9,
+     "p15": 25.8,
+     "p60": 66.1,
+     "f60": 9.9,
+     "open60": 24.0,
+     "pass_med": 20.0,
+     "slow_pass": 61.0,
+     "days_mean": 33.7,
+     "max_risk": 557,
+     "usd_now": 2049,
+     "usd_eval": 2006,
+     "usd_10": 420
+    },
+    "REF": {
+     "p10": 13.9,
+     "f10": 13.9,
+     "dec10": 27.8,
+     "p15": 16.6,
+     "p60": 20.0,
+     "f60": 79.3,
+     "open60": 0.7,
+     "pass_med": 7.0,
+     "slow_pass": 16.8,
+     "days_mean": 18.6,
+     "max_risk": 726,
+     "usd_now": 60,
+     "usd_eval": 17,
+     "usd_10": -1
+    }
+   },
+   "hold_40": {
+    "rule": {
+     "room_f": 0.4,
+     "count": "coded",
+     "until": 80
+    },
+    "label": "two_week room_f 0.4 kept past session 10 (two_week_until 80, eval_start unchanged)",
+    "H1": {
+     "p10": 48.2,
+     "f10": 0.2,
+     "dec10": 48.5,
+     "p15": 64.9,
+     "p60": 89.3,
+     "f60": 8.6,
+     "open60": 2.1,
+     "pass_med": 10.0,
+     "slow_pass": 27.3,
+     "days_mean": 14.9,
+     "max_risk": 399,
+     "usd_now": 3120,
+     "usd_eval": 3077,
+     "usd_10": 1643
+    },
+    "H2": {
+     "p10": 28.6,
+     "f10": 0.0,
+     "dec10": 28.6,
+     "p15": 41.8,
+     "p60": 74.5,
+     "f60": 9.2,
+     "open60": 16.3,
+     "pass_med": 14.5,
+     "slow_pass": 43.9,
+     "days_mean": 26.7,
+     "max_risk": 512,
+     "usd_now": 2310,
+     "usd_eval": 2266,
+     "usd_10": 845
+    },
+    "REF": {
+     "p10": 16.1,
+     "f10": 13.1,
+     "dec10": 29.2,
+     "p15": 19.9,
+     "p60": 26.1,
+     "f60": 73.5,
+     "open60": 0.4,
+     "pass_med": 8.0,
+     "slow_pass": 23.4,
+     "days_mean": 18.3,
+     "max_risk": 551,
+     "usd_now": 78,
+     "usd_eval": 35,
+     "usd_10": 5
+    }
+   },
+   "hold_50": {
+    "rule": {
+     "room_f": 0.5,
+     "count": "coded",
+     "until": 80
+    },
+    "label": "two_week room_f 0.5 kept past session 10 (two_week_until 80, eval_start unchanged)",
+    "H1": {
+     "p10": 57.3,
+     "f10": 1.9,
+     "dec10": 59.2,
+     "p15": 72.0,
+     "p60": 86.7,
+     "f60": 13.1,
+     "open60": 0.2,
+     "pass_med": 8.0,
+     "slow_pass": 17.0,
+     "days_mean": 11.4,
+     "max_risk": 493,
+     "usd_now": 3029,
+     "usd_eval": 2986,
+     "usd_10": 1959
+    },
+    "H2": {
+     "p10": 34.5,
+     "f10": 0.1,
+     "dec10": 34.5,
+     "p15": 46.1,
+     "p60": 68.2,
+     "f60": 25.9,
+     "open60": 5.9,
+     "pass_med": 10.0,
+     "slow_pass": 32.3,
+     "days_mean": 21.8,
+     "max_risk": 640,
+     "usd_now": 2113,
+     "usd_eval": 2070,
+     "usd_10": 1025
+    },
+    "REF": {
+     "p10": 17.6,
+     "f10": 31.4,
+     "dec10": 49.0,
+     "p15": 21.1,
+     "p60": 24.8,
+     "f60": 75.2,
+     "open60": 0.0,
+     "pass_med": 7.0,
+     "slow_pass": 14.9,
+     "days_mean": 12.7,
+     "max_risk": 643,
+     "usd_now": 74,
+     "usd_eval": 31,
+     "usd_10": 10
+    }
+   },
+   "hold_80": {
+    "rule": {
+     "room_f": 0.8,
+     "count": "coded",
+     "until": 80
+    },
+    "label": "two_week room_f 0.8 kept past session 10 (two_week_until 80)",
+    "H1": {
+     "p10": 66.1,
+     "f10": 17.1,
+     "dec10": 83.1,
+     "p15": 73.9,
+     "p60": 78.0,
+     "f60": 22.0,
+     "open60": 0.0,
+     "pass_med": 6.0,
+     "slow_pass": 5.3,
+     "days_mean": 7.0,
+     "max_risk": 593,
+     "usd_now": 2725,
+     "usd_eval": 2682,
+     "usd_10": 2267
+    },
+    "H2": {
+     "p10": 41.5,
+     "f10": 17.4,
+     "dec10": 58.9,
+     "p15": 51.2,
+     "p60": 60.8,
+     "f60": 39.1,
+     "open60": 0.1,
+     "pass_med": 8.0,
+     "slow_pass": 15.7,
+     "days_mean": 11.4,
+     "max_risk": 767,
+     "usd_now": 1883,
+     "usd_eval": 1840,
+     "usd_10": 1242
+    },
+    "REF": {
+     "p10": 20.1,
+     "f10": 62.4,
+     "dec10": 82.5,
+     "p15": 23.5,
+     "p60": 24.9,
+     "f60": 75.2,
+     "open60": 0.0,
+     "pass_med": 5.0,
+     "slow_pass": 5.4,
+     "days_mean": 6.9,
+     "max_risk": 800,
+     "usd_now": 75,
+     "usd_eval": 32,
+     "usd_10": 17
+    }
+   },
+   "safe_30": {
+    "rule": {
+     "mode": "safe_eval",
+     "safe_cap": 0.3
+    },
+    "label": "safe_eval 30% of room (model size)",
+    "H1": {
+     "p10": 37.0,
+     "f10": 0.0,
+     "dec10": 37.0,
+     "p15": 53.0,
+     "p60": 88.6,
+     "f60": 1.1,
+     "open60": 10.4,
+     "pass_med": 13.0,
+     "slow_pass": 40.2,
+     "days_mean": 21.5,
+     "max_risk": 413,
+     "usd_now": 3096,
+     "usd_eval": 3053,
+     "usd_10": 1248
+    },
+    "H2": {
+     "p10": 14.5,
+     "f10": 0.0,
+     "dec10": 14.5,
+     "p15": 24.4,
+     "p60": 70.2,
+     "f60": 0.3,
+     "open60": 29.5,
+     "pass_med": 22.0,
+     "slow_pass": 65.2,
+     "days_mean": 34.9,
+     "max_risk": 403,
+     "usd_now": 2176,
+     "usd_eval": 2133,
+     "usd_10": 406
+    },
+    "REF": {
+     "p10": 10.4,
+     "f10": 0.8,
+     "dec10": 11.2,
+     "p15": 13.3,
+     "p60": 19.7,
+     "f60": 68.6,
+     "open60": 11.7,
+     "pass_med": 9.0,
+     "slow_pass": 32.5,
+     "days_mean": 32.7,
+     "max_risk": 584,
+     "usd_now": 59,
+     "usd_eval": 16,
+     "usd_10": -12
+    }
+   }
+  }
+ },
+ "worlds": {
+  "zlarior": {
+   "as_coded": {
+    "H1": {
+     "p10_band": [
+      13.8,
+      47.6
+     ],
+     "f10_band": [
+      5.5,
+      25.6
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      1.5,
+      31.2
+     ],
+     "f10_band": [
+      1.5,
+      27.1
+     ]
+    }
+   },
+   "tw_80": {
+    "H1": {
+     "p10_band": [
+      20.4,
+      50.1
+     ],
+     "f10_band": [
+      29.4,
+      55.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      21.0,
+      58.1
+     ],
+     "f10_band": [
+      25.4,
+      63.6
+     ]
+    }
+   },
+   "tw_60": {
+    "H1": {
+     "p10_band": [
+      20.4,
+      49.6
+     ],
+     "f10_band": [
+      14.4,
+      35.6
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      15.5,
+      56.5
+     ],
+     "f10_band": [
+      8.0,
+      41.6
+     ]
+    }
+   },
+   "tw_50": {
+    "H1": {
+     "p10_band": [
+      16.5,
+      49.1
+     ],
+     "f10_band": [
+      6.0,
+      24.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      12.5,
+      50.9
+     ],
+     "f10_band": [
+      2.5,
+      22.6
+     ]
+    }
+   },
+   "tw_40": {
+    "H1": {
+     "p10_band": [
+      14.9,
+      48.0
+     ],
+     "f10_band": [
+      0.5,
+      8.1
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      9.0,
+      47.5
+     ],
+     "f10_band": [
+      0.0,
+      7.0
+     ]
+    }
+   },
+   "tw_80_prot1000": {
+    "H1": {
+     "p10_band": [
+      18.5,
+      48.8
+     ],
+     "f10_band": [
+      2.0,
+      17.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      19.0,
+      56.1
+     ],
+     "f10_band": [
+      3.5,
+      19.0
+     ]
+    }
+   },
+   "tw_60_prot700": {
+    "H1": {
+     "p10_band": [
+      18.4,
+      50.5
+     ],
+     "f10_band": [
+      0.5,
+      8.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      13.0,
+      51.1
+     ],
+     "f10_band": [
+      1.0,
+      12.7
+     ]
+    }
+   },
+   "hold_40": {
+    "H1": {
+     "p10_band": [
+      14.9,
+      48.0
+     ],
+     "f10_band": [
+      0.5,
+      8.1
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      9.0,
+      47.5
+     ],
+     "f10_band": [
+      0.0,
+      7.0
+     ]
+    }
+   },
+   "hold_50": {
+    "H1": {
+     "p10_band": [
+      16.5,
+      49.1
+     ],
+     "f10_band": [
+      6.0,
+      24.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      12.5,
+      50.9
+     ],
+     "f10_band": [
+      2.5,
+      22.6
+     ]
+    }
+   },
+   "hold_80": {
+    "H1": {
+     "p10_band": [
+      20.4,
+      50.1
+     ],
+     "f10_band": [
+      29.4,
+      55.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      21.0,
+      58.1
+     ],
+     "f10_band": [
+      25.4,
+      63.6
+     ]
+    }
+   }
+  },
+  "atlas": {
+   "as_coded": {
+    "H1": {
+     "p10_band": [
+      22.9,
+      53.1
+     ],
+     "f10_band": [
+      0.0,
+      0.0
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      3.4,
+      34.6
+     ],
+     "f10_band": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "tw_80": {
+    "H1": {
+     "p10_band": [
+      52.0,
+      79.7
+     ],
+     "f10_band": [
+      8.5,
+      27.6
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      25.5,
+      62.5
+     ],
+     "f10_band": [
+      4.5,
+      26.3
+     ]
+    }
+   },
+   "tw_60": {
+    "H1": {
+     "p10_band": [
+      47.4,
+      77.1
+     ],
+     "f10_band": [
+      1.9,
+      12.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      20.9,
+      57.2
+     ],
+     "f10_band": [
+      0.0,
+      9.1
+     ]
+    }
+   },
+   "tw_50": {
+    "H1": {
+     "p10_band": [
+      43.9,
+      72.0
+     ],
+     "f10_band": [
+      0.0,
+      3.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      17.5,
+      56.2
+     ],
+     "f10_band": [
+      0.0,
+      1.0
+     ]
+    }
+   },
+   "tw_40": {
+    "H1": {
+     "p10_band": [
+      33.4,
+      63.6
+     ],
+     "f10_band": [
+      0.0,
+      0.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      13.5,
+      49.5
+     ],
+     "f10_band": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "tw_80_prot600": {
+    "H1": {
+     "p10_band": [
+      39.4,
+      68.6
+     ],
+     "f10_band": [
+      0.0,
+      0.6
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      21.9,
+      56.1
+     ],
+     "f10_band": [
+      0.0,
+      3.5
+     ]
+    }
+   },
+   "tw_60_prot400": {
+    "H1": {
+     "p10_band": [
+      43.6,
+      72.6
+     ],
+     "f10_band": [
+      0.0,
+      0.6
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      22.4,
+      57.5
+     ],
+     "f10_band": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "hold_40": {
+    "H1": {
+     "p10_band": [
+      33.4,
+      63.6
+     ],
+     "f10_band": [
+      0.0,
+      0.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      13.5,
+      49.5
+     ],
+     "f10_band": [
+      0.0,
+      0.0
+     ]
+    }
+   },
+   "hold_50": {
+    "H1": {
+     "p10_band": [
+      43.9,
+      72.0
+     ],
+     "f10_band": [
+      0.0,
+      3.5
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      17.5,
+      56.2
+     ],
+     "f10_band": [
+      0.0,
+      1.0
+     ]
+    }
+   },
+   "hold_80": {
+    "H1": {
+     "p10_band": [
+      52.0,
+      79.7
+     ],
+     "f10_band": [
+      8.5,
+      27.6
+     ]
+    },
+    "H2": {
+     "p10_band": [
+      25.5,
+      62.5
+     ],
+     "f10_band": [
+      4.5,
+      26.3
+     ]
+    }
+   }
+  }
+ },
+ "sens": {
+  "zlarior:as_coded": {
+   "p10": 20.4,
+   "f10": 16.2,
+   "dec10": 36.5,
+   "p15": 29.0,
+   "p60": 62.2,
+   "f60": 35.3,
+   "open60": 2.5,
+   "pass_med": 17.0,
+   "slow_pass": 53.4,
+   "days_mean": 19.1,
+   "max_risk": 848,
+   "usd_now": 3418,
+   "usd_eval": 3326,
+   "usd_10": 1025
+  },
+  "zlarior:tw_80": {
+   "p10": 44.9,
+   "f10": 40.5,
+   "dec10": 85.3,
+   "p15": 46.9,
+   "p60": 53.2,
+   "f60": 46.2,
+   "open60": 0.5,
+   "pass_med": 3.0,
+   "slow_pass": 12.0,
+   "days_mean": 7.3,
+   "max_risk": 995,
+   "usd_now": 2923,
+   "usd_eval": 2832,
+   "usd_10": 2370
+  },
+  "zlarior:tw_60": {
+   "p10": 35.2,
+   "f10": 27.4,
+   "dec10": 62.6,
+   "p15": 40.8,
+   "p60": 57.5,
+   "f60": 41.2,
+   "open60": 1.3,
+   "pass_med": 8.0,
+   "slow_pass": 29.0,
+   "days_mean": 12.5,
+   "max_risk": 995,
+   "usd_now": 3154,
+   "usd_eval": 3062,
+   "usd_10": 1841
+  },
+  "zlarior:tw_50": {
+   "p10": 34.1,
+   "f10": 13.8,
+   "dec10": 47.9,
+   "p15": 39.7,
+   "p60": 62.5,
+   "f60": 35.4,
+   "open60": 2.1,
+   "pass_med": 9.0,
+   "slow_pass": 36.5,
+   "days_mean": 16.1,
+   "max_risk": 995,
+   "usd_now": 3431,
+   "usd_eval": 3339,
+   "usd_10": 1780
+  },
+  "zlarior:tw_40": {
+   "p10": 29.1,
+   "f10": 3.5,
+   "dec10": 32.6,
+   "p15": 36.0,
+   "p60": 67.1,
+   "f60": 30.9,
+   "open60": 2.1,
+   "pass_med": 13.0,
+   "slow_pass": 46.4,
+   "days_mean": 19.3,
+   "max_risk": 848,
+   "usd_now": 3684,
+   "usd_eval": 3592,
+   "usd_10": 1509
+  },
+  "atlas:as_coded": {
+   "p10": 16.6,
+   "f10": 0.0,
+   "dec10": 16.6,
+   "p15": 30.6,
+   "p60": 75.2,
+   "f60": 0.3,
+   "open60": 24.5,
+   "pass_med": 20.0,
+   "slow_pass": 59.3,
+   "days_mean": 31.8,
+   "max_risk": 419,
+   "usd_now": 2330,
+   "usd_eval": 2287,
+   "usd_10": 472
+  },
+  "atlas:tw_80": {
+   "p10": 43.9,
+   "f10": 17.6,
+   "dec10": 61.5,
+   "p15": 49.1,
+   "p60": 65.0,
+   "f60": 19.4,
+   "open60": 15.6,
+   "pass_med": 8.0,
+   "slow_pass": 24.3,
+   "days_mean": 19.3,
+   "max_risk": 590,
+   "usd_now": 2013,
+   "usd_eval": 1970,
+   "usd_10": 1316
+  },
+  "atlas:tw_60": {
+   "p10": 42.1,
+   "f10": 5.8,
+   "dec10": 47.9,
+   "p15": 46.6,
+   "p60": 65.3,
+   "f60": 9.3,
+   "open60": 25.4,
+   "pass_med": 9.0,
+   "slow_pass": 28.6,
+   "days_mean": 26.3,
+   "max_risk": 640,
+   "usd_now": 2024,
+   "usd_eval": 1981,
+   "usd_10": 1264
+  },
+  "atlas:tw_50": {
+   "p10": 40.1,
+   "f10": 0.1,
+   "dec10": 40.2,
+   "p15": 46.1,
+   "p60": 70.3,
+   "f60": 2.8,
+   "open60": 27.0,
+   "pass_med": 10.0,
+   "slow_pass": 34.4,
+   "days_mean": 28.2,
+   "max_risk": 512,
+   "usd_now": 2179,
+   "usd_eval": 2136,
+   "usd_10": 1202
+  },
+  "atlas:tw_40": {
+   "p10": 35.5,
+   "f10": 0.0,
+   "dec10": 35.5,
+   "p15": 44.3,
+   "p60": 75.0,
+   "f60": 0.6,
+   "open60": 24.4,
+   "pass_med": 13.0,
+   "slow_pass": 41.0,
+   "days_mean": 28.1,
+   "max_risk": 512,
+   "usd_now": 2327,
+   "usd_eval": 2284,
+   "usd_10": 1059
+  }
+ },
+ "slip": {
+  "zlarior:as_coded:H1:0": {
+   "p10": 28.9,
+   "f10": 14.5,
+   "dec10": 43.5,
+   "p15": 39.5,
+   "p60": 65.0,
+   "f60": 34.4,
+   "open60": 0.7,
+   "pass_med": 13.0,
+   "slow_pass": 39.1,
+   "days_mean": 15.3,
+   "max_risk": 867,
+   "usd_now": 3620,
+   "usd_eval": 3529,
+   "usd_10": 1522,
+   "micros_per_month": 70.2,
+   "usd_per_tick_month": 35.1
+  },
+  "zlarior:as_coded:H2:0": {
+   "p10": 16.3,
+   "f10": 16.2,
+   "dec10": 32.5,
+   "p15": 25.2,
+   "p60": 60.6,
+   "f60": 36.5,
+   "open60": 2.8,
+   "pass_med": 19.0,
+   "slow_pass": 58.4,
+   "days_mean": 20.6,
+   "max_risk": 848,
+   "usd_now": 3330,
+   "usd_eval": 3238,
+   "usd_10": 803,
+   "micros_per_month": 42.1,
+   "usd_per_tick_month": 21.1
+  },
+  "zlarior:tw_80:H1:0": {
+   "p10": 35.4,
+   "f10": 40.8,
+   "dec10": 76.1,
+   "p15": 39.9,
+   "p60": 50.2,
+   "f60": 49.6,
+   "open60": 0.2,
+   "pass_med": 6.0,
+   "slow_pass": 20.6,
+   "days_mean": 8.9,
+   "max_risk": 991,
+   "usd_now": 2798,
+   "usd_eval": 2706,
+   "usd_10": 1879,
+   "micros_per_month": 75.3,
+   "usd_per_tick_month": 37.6
+  },
+  "zlarior:tw_80:H2:0": {
+   "p10": 39.5,
+   "f10": 42.4,
+   "dec10": 81.8,
+   "p15": 42.9,
+   "p60": 51.0,
+   "f60": 48.0,
+   "open60": 0.9,
+   "pass_med": 4.0,
+   "slow_pass": 16.1,
+   "days_mean": 8.2,
+   "max_risk": 995,
+   "usd_now": 2803,
+   "usd_eval": 2711,
+   "usd_10": 2074,
+   "micros_per_month": 53.2,
+   "usd_per_tick_month": 26.6
+  },
+  "zlarior:tw_50:H1:0": {
+   "p10": 32.9,
+   "f10": 13.5,
+   "dec10": 46.4,
+   "p15": 40.9,
+   "p60": 61.7,
+   "f60": 37.9,
+   "open60": 0.4,
+   "pass_med": 10.0,
+   "slow_pass": 33.8,
+   "days_mean": 14.4,
+   "max_risk": 991,
+   "usd_now": 3439,
+   "usd_eval": 3347,
+   "usd_10": 1739,
+   "micros_per_month": 62.1,
+   "usd_per_tick_month": 31.1
+  },
+  "zlarior:tw_50:H2:0": {
+   "p10": 30.8,
+   "f10": 14.2,
+   "dec10": 45.0,
+   "p15": 36.8,
+   "p60": 61.0,
+   "f60": 37.0,
+   "open60": 2.0,
+   "pass_med": 10.0,
+   "slow_pass": 39.7,
+   "days_mean": 17.1,
+   "max_risk": 995,
+   "usd_now": 3352,
+   "usd_eval": 3260,
+   "usd_10": 1596,
+   "micros_per_month": 41.2,
+   "usd_per_tick_month": 20.6
+  },
+  "zlarior:tw_60_prot700:H1:0": {
+   "p10": 34.0,
+   "f10": 3.3,
+   "dec10": 37.3,
+   "p15": 41.3,
+   "p60": 69.7,
+   "f60": 24.9,
+   "open60": 5.4,
+   "pass_med": 12.0,
+   "slow_pass": 40.7,
+   "days_mean": 20.7,
+   "max_risk": 940,
+   "usd_now": 3882,
+   "usd_eval": 3790,
+   "usd_10": 1806,
+   "micros_per_month": 48.3,
+   "usd_per_tick_month": 24.1
+  },
+  "zlarior:tw_60_prot700:H2:0": {
+   "p10": 30.2,
+   "f10": 7.5,
+   "dec10": 37.8,
+   "p15": 35.5,
+   "p60": 60.6,
+   "f60": 31.1,
+   "open60": 8.2,
+   "pass_med": 11.0,
+   "slow_pass": 41.5,
+   "days_mean": 22.2,
+   "max_risk": 848,
+   "usd_now": 3330,
+   "usd_eval": 3238,
+   "usd_10": 1566,
+   "micros_per_month": 31.6,
+   "usd_per_tick_month": 15.8
+  },
+  "zlarior:as_coded:H1:1": {
+   "p10": 28.9,
+   "f10": 14.5,
+   "dec10": 43.5,
+   "p15": 39.4,
+   "p60": 64.2,
+   "f60": 35.1,
+   "open60": 0.6,
+   "pass_med": 13.0,
+   "slow_pass": 38.6,
+   "days_mean": 15.3,
+   "max_risk": 867,
+   "usd_now": 3579,
+   "usd_eval": 3487,
+   "usd_10": 1522,
+   "micros_per_month": 69.7,
+   "usd_per_tick_month": 34.9
+  },
+  "zlarior:as_coded:H2:1": {
+   "p10": 16.3,
+   "f10": 16.7,
+   "dec10": 33.0,
+   "p15": 25.1,
+   "p60": 60.0,
+   "f60": 37.4,
+   "open60": 2.6,
+   "pass_med": 19.0,
+   "slow_pass": 58.2,
+   "days_mean": 20.5,
+   "max_risk": 848,
+   "usd_now": 3294,
+   "usd_eval": 3202,
+   "usd_10": 803,
+   "micros_per_month": 42.1,
+   "usd_per_tick_month": 21.1
+  },
+  "zlarior:tw_80:H1:1": {
+   "p10": 35.7,
+   "f10": 40.2,
+   "dec10": 76.0,
+   "p15": 40.0,
+   "p60": 50.1,
+   "f60": 49.8,
+   "open60": 0.1,
+   "pass_med": 6.0,
+   "slow_pass": 20.3,
+   "days_mean": 8.8,
+   "max_risk": 991,
+   "usd_now": 2793,
+   "usd_eval": 2701,
+   "usd_10": 1898,
+   "micros_per_month": 75.5,
+   "usd_per_tick_month": 37.8
+  },
+  "zlarior:tw_80:H2:1": {
+   "p10": 39.0,
+   "f10": 42.4,
+   "dec10": 81.4,
+   "p15": 42.5,
+   "p60": 50.8,
+   "f60": 48.4,
+   "open60": 0.8,
+   "pass_med": 4.0,
+   "slow_pass": 16.4,
+   "days_mean": 8.3,
+   "max_risk": 995,
+   "usd_now": 2789,
+   "usd_eval": 2697,
+   "usd_10": 2049,
+   "micros_per_month": 52.6,
+   "usd_per_tick_month": 26.3
+  },
+  "zlarior:tw_50:H1:1": {
+   "p10": 32.9,
+   "f10": 13.3,
+   "dec10": 46.2,
+   "p15": 40.9,
+   "p60": 61.3,
+   "f60": 38.2,
+   "open60": 0.5,
+   "pass_med": 10.0,
+   "slow_pass": 33.4,
+   "days_mean": 14.4,
+   "max_risk": 991,
+   "usd_now": 3417,
+   "usd_eval": 3325,
+   "usd_10": 1739,
+   "micros_per_month": 61.9,
+   "usd_per_tick_month": 30.9
+  },
+  "zlarior:tw_50:H2:1": {
+   "p10": 30.8,
+   "f10": 13.6,
+   "dec10": 44.4,
+   "p15": 36.8,
+   "p60": 60.5,
+   "f60": 37.6,
+   "open60": 1.9,
+   "pass_med": 10.0,
+   "slow_pass": 39.2,
+   "days_mean": 17.0,
+   "max_risk": 995,
+   "usd_now": 3319,
+   "usd_eval": 3227,
+   "usd_10": 1596,
+   "micros_per_month": 41.0,
+   "usd_per_tick_month": 20.5
+  },
+  "zlarior:tw_60_prot700:H1:1": {
+   "p10": 33.8,
+   "f10": 4.1,
+   "dec10": 37.9,
+   "p15": 40.6,
+   "p60": 68.8,
+   "f60": 26.1,
+   "open60": 5.1,
+   "pass_med": 11.5,
+   "slow_pass": 41.0,
+   "days_mean": 20.6,
+   "max_risk": 940,
+   "usd_now": 3835,
+   "usd_eval": 3743,
+   "usd_10": 1789,
+   "micros_per_month": 47.9,
+   "usd_per_tick_month": 23.9
+  },
+  "zlarior:tw_60_prot700:H2:1": {
+   "p10": 30.2,
+   "f10": 8.3,
+   "dec10": 38.5,
+   "p15": 35.4,
+   "p60": 60.0,
+   "f60": 31.9,
+   "open60": 8.1,
+   "pass_med": 10.0,
+   "slow_pass": 41.0,
+   "days_mean": 22.1,
+   "max_risk": 919,
+   "usd_now": 3291,
+   "usd_eval": 3199,
+   "usd_10": 1566,
+   "micros_per_month": 31.4,
+   "usd_per_tick_month": 15.7
+  },
+  "zlarior:as_coded:H1:2": {
+   "p10": 28.6,
+   "f10": 14.8,
+   "dec10": 43.5,
+   "p15": 39.2,
+   "p60": 64.0,
+   "f60": 35.4,
+   "open60": 0.7,
+   "pass_med": 13.0,
+   "slow_pass": 38.6,
+   "days_mean": 15.4,
+   "max_risk": 867,
+   "usd_now": 3565,
+   "usd_eval": 3473,
+   "usd_10": 1505,
+   "micros_per_month": 69.5,
+   "usd_per_tick_month": 34.8
+  },
+  "zlarior:as_coded:H2:2": {
+   "p10": 15.9,
+   "f10": 17.5,
+   "dec10": 33.5,
+   "p15": 24.5,
+   "p60": 59.5,
+   "f60": 37.9,
+   "open60": 2.6,
+   "pass_med": 19.0,
+   "slow_pass": 58.9,
+   "days_mean": 20.5,
+   "max_risk": 848,
+   "usd_now": 3269,
+   "usd_eval": 3177,
+   "usd_10": 784,
+   "micros_per_month": 42.2,
+   "usd_per_tick_month": 21.1
+  },
+  "zlarior:tw_80:H1:2": {
+   "p10": 35.3,
+   "f10": 40.2,
+   "dec10": 75.5,
+   "p15": 39.6,
+   "p60": 49.8,
+   "f60": 50.0,
+   "open60": 0.2,
+   "pass_med": 6.0,
+   "slow_pass": 20.3,
+   "days_mean": 8.8,
+   "max_risk": 991,
+   "usd_now": 2773,
+   "usd_eval": 2681,
+   "usd_10": 1876,
+   "micros_per_month": 75.4,
+   "usd_per_tick_month": 37.7
+  },
+  "zlarior:tw_80:H2:2": {
+   "p10": 39.1,
+   "f10": 45.8,
+   "dec10": 84.9,
+   "p15": 42.0,
+   "p60": 48.9,
+   "f60": 50.5,
+   "open60": 0.6,
+   "pass_med": 3.0,
+   "slow_pass": 14.1,
+   "days_mean": 7.3,
+   "max_risk": 995,
+   "usd_now": 2685,
+   "usd_eval": 2593,
+   "usd_10": 2055,
+   "micros_per_month": 55.1,
+   "usd_per_tick_month": 27.6
+  },
+  "zlarior:tw_50:H1:2": {
+   "p10": 32.3,
+   "f10": 13.6,
+   "dec10": 45.9,
+   "p15": 40.4,
+   "p60": 60.6,
+   "f60": 39.0,
+   "open60": 0.4,
+   "pass_med": 10.0,
+   "slow_pass": 33.5,
+   "days_mean": 14.4,
+   "max_risk": 991,
+   "usd_now": 3381,
+   "usd_eval": 3289,
+   "usd_10": 1709,
+   "micros_per_month": 61.6,
+   "usd_per_tick_month": 30.8
+  },
+  "zlarior:tw_50:H2:2": {
+   "p10": 30.8,
+   "f10": 14.7,
+   "dec10": 45.5,
+   "p15": 36.6,
+   "p60": 59.9,
+   "f60": 38.3,
+   "open60": 1.9,
+   "pass_med": 10.0,
+   "slow_pass": 38.8,
+   "days_mean": 16.9,
+   "max_risk": 989,
+   "usd_now": 3286,
+   "usd_eval": 3194,
+   "usd_10": 1596,
+   "micros_per_month": 41.1,
+   "usd_per_tick_month": 20.6
+  },
+  "zlarior:tw_60_prot700:H1:2": {
+   "p10": 33.4,
+   "f10": 4.5,
+   "dec10": 37.8,
+   "p15": 40.4,
+   "p60": 68.0,
+   "f60": 27.1,
+   "open60": 4.9,
+   "pass_med": 11.0,
+   "slow_pass": 40.7,
+   "days_mean": 20.4,
+   "max_risk": 940,
+   "usd_now": 3790,
+   "usd_eval": 3699,
+   "usd_10": 1767,
+   "micros_per_month": 48.2,
+   "usd_per_tick_month": 24.1
+  },
+  "zlarior:tw_60_prot700:H2:2": {
+   "p10": 29.8,
+   "f10": 7.0,
+   "dec10": 36.7,
+   "p15": 34.6,
+   "p60": 59.7,
+   "f60": 31.4,
+   "open60": 8.9,
+   "pass_med": 11.0,
+   "slow_pass": 42.0,
+   "days_mean": 22.6,
+   "max_risk": 919,
+   "usd_now": 3278,
+   "usd_eval": 3186,
+   "usd_10": 1541,
+   "micros_per_month": 31.1,
+   "usd_per_tick_month": 15.6
+  },
+  "zlarior:as_coded:H1:4": {
+   "p10": 28.1,
+   "f10": 16.0,
+   "dec10": 44.1,
+   "p15": 38.5,
+   "p60": 63.0,
+   "f60": 36.5,
+   "open60": 0.6,
+   "pass_med": 13.0,
+   "slow_pass": 38.8,
+   "days_mean": 15.3,
+   "max_risk": 867,
+   "usd_now": 3509,
+   "usd_eval": 3417,
+   "usd_10": 1474,
+   "micros_per_month": 69.1,
+   "usd_per_tick_month": 34.5
+  },
+  "zlarior:as_coded:H2:4": {
+   "p10": 15.9,
+   "f10": 13.6,
+   "dec10": 29.5,
+   "p15": 24.6,
+   "p60": 59.9,
+   "f60": 37.4,
+   "open60": 2.8,
+   "pass_med": 19.0,
+   "slow_pass": 58.9,
+   "days_mean": 21.3,
+   "max_risk": 848,
+   "usd_now": 3286,
+   "usd_eval": 3194,
+   "usd_10": 784,
+   "micros_per_month": 41.4,
+   "usd_per_tick_month": 20.7
+  },
+  "zlarior:tw_80:H1:4": {
+   "p10": 34.4,
+   "f10": 40.6,
+   "dec10": 75.0,
+   "p15": 38.9,
+   "p60": 49.4,
+   "f60": 50.3,
+   "open60": 0.3,
+   "pass_med": 6.0,
+   "slow_pass": 21.3,
+   "days_mean": 9.0,
+   "max_risk": 991,
+   "usd_now": 2754,
+   "usd_eval": 2662,
+   "usd_10": 1826,
+   "micros_per_month": 74.6,
+   "usd_per_tick_month": 37.3
+  },
+  "zlarior:tw_80:H2:4": {
+   "p10": 39.1,
+   "f10": 45.5,
+   "dec10": 84.6,
+   "p15": 42.0,
+   "p60": 48.8,
+   "f60": 50.7,
+   "open60": 0.5,
+   "pass_med": 3.0,
+   "slow_pass": 13.9,
+   "days_mean": 7.3,
+   "max_risk": 995,
+   "usd_now": 2676,
+   "usd_eval": 2585,
+   "usd_10": 2058,
+   "micros_per_month": 54.5,
+   "usd_per_tick_month": 27.2
+  },
+  "zlarior:tw_50:H1:4": {
+   "p10": 32.2,
+   "f10": 16.7,
+   "dec10": 48.9,
+   "p15": 40.2,
+   "p60": 59.4,
+   "f60": 40.2,
+   "open60": 0.4,
+   "pass_med": 10.0,
+   "slow_pass": 32.3,
+   "days_mean": 14.0,
+   "max_risk": 991,
+   "usd_now": 3308,
+   "usd_eval": 3216,
+   "usd_10": 1703,
+   "micros_per_month": 61.7,
+   "usd_per_tick_month": 30.9
+  },
+  "zlarior:tw_50:H2:4": {
+   "p10": 30.8,
+   "f10": 16.8,
+   "dec10": 47.5,
+   "p15": 36.5,
+   "p60": 58.6,
+   "f60": 39.6,
+   "open60": 1.7,
+   "pass_med": 10.0,
+   "slow_pass": 37.9,
+   "days_mean": 16.4,
+   "max_risk": 989,
+   "usd_now": 3220,
+   "usd_eval": 3128,
+   "usd_10": 1596,
+   "micros_per_month": 41.3,
+   "usd_per_tick_month": 20.6
+  },
+  "zlarior:tw_60_prot700:H1:4": {
+   "p10": 33.0,
+   "f10": 5.0,
+   "dec10": 38.0,
+   "p15": 39.0,
+   "p60": 66.4,
+   "f60": 28.8,
+   "open60": 4.8,
+   "pass_med": 11.0,
+   "slow_pass": 41.3,
+   "days_mean": 20.5,
+   "max_risk": 940,
+   "usd_now": 3701,
+   "usd_eval": 3609,
+   "usd_10": 1745,
+   "micros_per_month": 47.4,
+   "usd_per_tick_month": 23.7
+  },
+  "zlarior:tw_60_prot700:H2:4": {
+   "p10": 29.8,
+   "f10": 4.8,
+   "dec10": 34.5,
+   "p15": 34.6,
+   "p60": 60.4,
+   "f60": 30.1,
+   "open60": 9.5,
+   "pass_med": 11.5,
+   "slow_pass": 42.7,
+   "days_mean": 23.3,
+   "max_risk": 848,
+   "usd_now": 3316,
+   "usd_eval": 3224,
+   "usd_10": 1541,
+   "micros_per_month": 31.1,
+   "usd_per_tick_month": 15.6
+  },
+  "zlarior:as_coded:H1:8": {
+   "p10": 28.1,
+   "f10": 17.3,
+   "dec10": 45.4,
+   "p15": 38.0,
+   "p60": 60.8,
+   "f60": 38.8,
+   "open60": 0.4,
+   "pass_med": 12.0,
+   "slow_pass": 37.6,
+   "days_mean": 15.0,
+   "max_risk": 867,
+   "usd_now": 3389,
+   "usd_eval": 3297,
+   "usd_10": 1474,
+   "micros_per_month": 68.4,
+   "usd_per_tick_month": 34.2
+  },
+  "zlarior:as_coded:H2:8": {
+   "p10": 15.9,
+   "f10": 14.4,
+   "dec10": 30.4,
+   "p15": 24.2,
+   "p60": 57.5,
+   "f60": 39.7,
+   "open60": 2.8,
+   "pass_med": 18.0,
+   "slow_pass": 57.9,
+   "days_mean": 21.0,
+   "max_risk": 848,
+   "usd_now": 3157,
+   "usd_eval": 3065,
+   "usd_10": 784,
+   "micros_per_month": 41.3,
+   "usd_per_tick_month": 20.6
+  },
+  "zlarior:tw_80:H1:8": {
+   "p10": 34.6,
+   "f10": 40.1,
+   "dec10": 74.8,
+   "p15": 38.8,
+   "p60": 48.2,
+   "f60": 51.6,
+   "open60": 0.2,
+   "pass_med": 6.0,
+   "slow_pass": 19.6,
+   "days_mean": 9.3,
+   "max_risk": 991,
+   "usd_now": 2687,
+   "usd_eval": 2595,
+   "usd_10": 1837,
+   "micros_per_month": 72.1,
+   "usd_per_tick_month": 36.0
+  },
+  "zlarior:tw_80:H2:8": {
+   "p10": 38.5,
+   "f10": 45.5,
+   "dec10": 84.0,
+   "p15": 41.6,
+   "p60": 48.4,
+   "f60": 51.1,
+   "open60": 0.5,
+   "pass_med": 3.0,
+   "slow_pass": 13.9,
+   "days_mean": 7.4,
+   "max_risk": 995,
+   "usd_now": 2657,
+   "usd_eval": 2565,
+   "usd_10": 2019,
+   "micros_per_month": 53.9,
+   "usd_per_tick_month": 26.9
+  },
+  "zlarior:tw_50:H1:8": {
+   "p10": 27.9,
+   "f10": 17.9,
+   "dec10": 45.8,
+   "p15": 37.4,
+   "p60": 56.5,
+   "f60": 43.1,
+   "open60": 0.4,
+   "pass_med": 11.0,
+   "slow_pass": 34.0,
+   "days_mean": 14.4,
+   "max_risk": 991,
+   "usd_now": 3152,
+   "usd_eval": 3060,
+   "usd_10": 1463,
+   "micros_per_month": 61.4,
+   "usd_per_tick_month": 30.7
+  },
+  "zlarior:tw_50:H2:8": {
+   "p10": 29.9,
+   "f10": 22.8,
+   "dec10": 52.8,
+   "p15": 35.4,
+   "p60": 55.0,
+   "f60": 43.8,
+   "open60": 1.3,
+   "pass_med": 9.0,
+   "slow_pass": 35.6,
+   "days_mean": 14.9,
+   "max_risk": 963,
+   "usd_now": 3017,
+   "usd_eval": 2925,
+   "usd_10": 1552,
+   "micros_per_month": 42.3,
+   "usd_per_tick_month": 21.1
+  },
+  "zlarior:tw_60_prot700:H1:8": {
+   "p10": 32.9,
+   "f10": 8.9,
+   "dec10": 41.8,
+   "p15": 38.5,
+   "p60": 63.5,
+   "f60": 32.6,
+   "open60": 3.9,
+   "pass_med": 10.0,
+   "slow_pass": 39.2,
+   "days_mean": 19.6,
+   "max_risk": 969,
+   "usd_now": 3537,
+   "usd_eval": 3445,
+   "usd_10": 1742,
+   "micros_per_month": 47.0,
+   "usd_per_tick_month": 23.5
+  },
+  "zlarior:tw_60_prot700:H2:8": {
+   "p10": 29.6,
+   "f10": 5.3,
+   "dec10": 34.9,
+   "p15": 34.0,
+   "p60": 59.1,
+   "f60": 32.1,
+   "open60": 8.8,
+   "pass_med": 11.0,
+   "slow_pass": 42.5,
+   "days_mean": 23.2,
+   "max_risk": 919,
+   "usd_now": 3247,
+   "usd_eval": 3156,
+   "usd_10": 1530,
+   "micros_per_month": 30.7,
+   "usd_per_tick_month": 15.3
+  },
+  "atlas:as_coded:H1:0": {
+   "p10": 37.0,
+   "f10": 0.0,
+   "dec10": 37.0,
+   "p15": 53.0,
+   "p60": 88.6,
+   "f60": 1.1,
+   "open60": 10.4,
+   "pass_med": 13.0,
+   "slow_pass": 40.2,
+   "days_mean": 21.5,
+   "max_risk": 413,
+   "usd_now": 3096,
+   "usd_eval": 3053,
+   "usd_10": 1248,
+   "micros_per_month": 34.2,
+   "usd_per_tick_month": 17.1
+  },
+  "atlas:as_coded:H2:0": {
+   "p10": 14.5,
+   "f10": 0.0,
+   "dec10": 14.5,
+   "p15": 24.4,
+   "p60": 70.2,
+   "f60": 0.3,
+   "open60": 29.5,
+   "pass_med": 22.0,
+   "slow_pass": 65.2,
+   "days_mean": 34.9,
+   "max_risk": 403,
+   "usd_now": 2176,
+   "usd_eval": 2133,
+   "usd_10": 406,
+   "micros_per_month": 23.2,
+   "usd_per_tick_month": 11.6
+  },
+  "atlas:tw_80:H1:0": {
+   "p10": 66.1,
+   "f10": 17.1,
+   "dec10": 83.1,
+   "p15": 70.9,
+   "p60": 78.5,
+   "f60": 18.6,
+   "open60": 2.9,
+   "pass_med": 6.0,
+   "slow_pass": 9.7,
+   "days_mean": 9.5,
+   "max_risk": 593,
+   "usd_now": 2745,
+   "usd_eval": 2702,
+   "usd_10": 2267,
+   "micros_per_month": 44.2,
+   "usd_per_tick_month": 22.1
+  },
+  "atlas:tw_80:H2:0": {
+   "p10": 41.5,
+   "f10": 17.4,
+   "dec10": 58.9,
+   "p15": 45.3,
+   "p60": 61.2,
+   "f60": 20.0,
+   "open60": 18.8,
+   "pass_med": 8.0,
+   "slow_pass": 26.0,
+   "days_mean": 21.4,
+   "max_risk": 767,
+   "usd_now": 1897,
+   "usd_eval": 1854,
+   "usd_10": 1242,
+   "micros_per_month": 24.9,
+   "usd_per_tick_month": 12.4
+  },
+  "atlas:tw_50:H1:0": {
+   "p10": 57.3,
+   "f10": 1.9,
+   "dec10": 59.2,
+   "p15": 67.2,
+   "p60": 86.3,
+   "f60": 5.0,
+   "open60": 8.7,
+   "pass_med": 8.0,
+   "slow_pass": 22.2,
+   "days_mean": 16.7,
+   "max_risk": 493,
+   "usd_now": 3015,
+   "usd_eval": 2972,
+   "usd_10": 1959,
+   "micros_per_month": 33.3,
+   "usd_per_tick_month": 16.6
+  },
+  "atlas:tw_50:H2:0": {
+   "p10": 34.5,
+   "f10": 0.1,
+   "dec10": 34.5,
+   "p15": 40.0,
+   "p60": 66.5,
+   "f60": 2.8,
+   "open60": 30.8,
+   "pass_med": 10.0,
+   "slow_pass": 39.8,
+   "days_mean": 31.1,
+   "max_risk": 640,
+   "usd_now": 2062,
+   "usd_eval": 2018,
+   "usd_10": 1025,
+   "micros_per_month": 21.3,
+   "usd_per_tick_month": 10.7
+  },
+  "atlas:tw_60_prot400:H1:0": {
+   "p10": 56.9,
+   "f10": 0.2,
+   "dec10": 57.1,
+   "p15": 65.5,
+   "p60": 84.8,
+   "f60": 3.9,
+   "open60": 11.4,
+   "pass_med": 6.0,
+   "slow_pass": 22.8,
+   "days_mean": 18.2,
+   "max_risk": 593,
+   "usd_now": 2961,
+   "usd_eval": 2918,
+   "usd_10": 1943,
+   "micros_per_month": 28.5,
+   "usd_per_tick_month": 14.2
+  },
+  "atlas:tw_60_prot400:H2:0": {
+   "p10": 35.8,
+   "f10": 0.0,
+   "dec10": 35.8,
+   "p15": 40.8,
+   "p60": 61.3,
+   "f60": 2.0,
+   "open60": 36.7,
+   "pass_med": 10.0,
+   "slow_pass": 33.4,
+   "days_mean": 32.8,
+   "max_risk": 640,
+   "usd_now": 1900,
+   "usd_eval": 1857,
+   "usd_10": 1067,
+   "micros_per_month": 17.9,
+   "usd_per_tick_month": 8.9
+  },
+  "atlas:as_coded:H1:1": {
+   "p10": 36.8,
+   "f10": 0.0,
+   "dec10": 36.8,
+   "p15": 52.4,
+   "p60": 87.8,
+   "f60": 1.6,
+   "open60": 10.6,
+   "pass_med": 13.0,
+   "slow_pass": 40.3,
+   "days_mean": 21.8,
+   "max_risk": 410,
+   "usd_now": 3068,
+   "usd_eval": 3025,
+   "usd_10": 1243,
+   "micros_per_month": 33.8,
+   "usd_per_tick_month": 16.9
+  },
+  "atlas:as_coded:H2:1": {
+   "p10": 14.5,
+   "f10": 0.0,
+   "dec10": 14.5,
+   "p15": 24.2,
+   "p60": 69.9,
+   "f60": 0.3,
+   "open60": 29.7,
+   "pass_med": 22.0,
+   "slow_pass": 65.4,
+   "days_mean": 35.1,
+   "max_risk": 403,
+   "usd_now": 2167,
+   "usd_eval": 2124,
+   "usd_10": 406,
+   "micros_per_month": 23.1,
+   "usd_per_tick_month": 11.6
+  },
+  "atlas:tw_80:H1:1": {
+   "p10": 65.8,
+   "f10": 16.3,
+   "dec10": 82.1,
+   "p15": 71.0,
+   "p60": 78.6,
+   "f60": 17.9,
+   "open60": 3.5,
+   "pass_med": 6.0,
+   "slow_pass": 9.7,
+   "days_mean": 9.9,
+   "max_risk": 593,
+   "usd_now": 2746,
+   "usd_eval": 2703,
+   "usd_10": 2256,
+   "micros_per_month": 42.7,
+   "usd_per_tick_month": 21.4
+  },
+  "atlas:tw_80:H2:1": {
+   "p10": 41.6,
+   "f10": 17.7,
+   "dec10": 59.3,
+   "p15": 45.3,
+   "p60": 60.8,
+   "f60": 20.7,
+   "open60": 18.5,
+   "pass_med": 8.0,
+   "slow_pass": 25.5,
+   "days_mean": 21.3,
+   "max_risk": 767,
+   "usd_now": 1885,
+   "usd_eval": 1842,
+   "usd_10": 1247,
+   "micros_per_month": 24.8,
+   "usd_per_tick_month": 12.4
+  },
+  "atlas:tw_50:H1:1": {
+   "p10": 56.4,
+   "f10": 1.9,
+   "dec10": 58.2,
+   "p15": 66.2,
+   "p60": 85.8,
+   "f60": 5.3,
+   "open60": 8.9,
+   "pass_med": 8.0,
+   "slow_pass": 22.8,
+   "days_mean": 17.0,
+   "max_risk": 493,
+   "usd_now": 2998,
+   "usd_eval": 2955,
+   "usd_10": 1926,
+   "micros_per_month": 32.8,
+   "usd_per_tick_month": 16.4
+  },
+  "atlas:tw_50:H2:1": {
+   "p10": 34.5,
+   "f10": 0.1,
+   "dec10": 34.5,
+   "p15": 39.8,
+   "p60": 65.5,
+   "f60": 3.0,
+   "open60": 31.6,
+   "pass_med": 10.0,
+   "slow_pass": 39.2,
+   "days_mean": 31.3,
+   "max_risk": 640,
+   "usd_now": 2029,
+   "usd_eval": 1986,
+   "usd_10": 1025,
+   "micros_per_month": 20.9,
+   "usd_per_tick_month": 10.4
+  },
+  "atlas:tw_60_prot400:H1:1": {
+   "p10": 56.6,
+   "f10": 0.2,
+   "dec10": 56.9,
+   "p15": 64.9,
+   "p60": 84.8,
+   "f60": 3.9,
+   "open60": 11.3,
+   "pass_med": 6.0,
+   "slow_pass": 23.4,
+   "days_mean": 18.5,
+   "max_risk": 593,
+   "usd_now": 2961,
+   "usd_eval": 2918,
+   "usd_10": 1936,
+   "micros_per_month": 28.7,
+   "usd_per_tick_month": 14.3
+  },
+  "atlas:tw_60_prot400:H2:1": {
+   "p10": 35.8,
+   "f10": 0.0,
+   "dec10": 35.8,
+   "p15": 40.5,
+   "p60": 60.5,
+   "f60": 2.1,
+   "open60": 37.4,
+   "pass_med": 10.0,
+   "slow_pass": 33.0,
+   "days_mean": 33.0,
+   "max_risk": 640,
+   "usd_now": 1877,
+   "usd_eval": 1834,
+   "usd_10": 1067,
+   "micros_per_month": 17.7,
+   "usd_per_tick_month": 8.8
+  },
+  "atlas:as_coded:H1:2": {
+   "p10": 36.4,
+   "f10": 0.0,
+   "dec10": 36.4,
+   "p15": 51.5,
+   "p60": 87.5,
+   "f60": 1.9,
+   "open60": 10.7,
+   "pass_med": 13.0,
+   "slow_pass": 41.1,
+   "days_mean": 22.1,
+   "max_risk": 413,
+   "usd_now": 3056,
+   "usd_eval": 3013,
+   "usd_10": 1227,
+   "micros_per_month": 33.5,
+   "usd_per_tick_month": 16.8
+  },
+  "atlas:as_coded:H2:2": {
+   "p10": 14.0,
+   "f10": 0.0,
+   "dec10": 14.0,
+   "p15": 23.9,
+   "p60": 68.5,
+   "f60": 0.3,
+   "open60": 31.1,
+   "pass_med": 22.0,
+   "slow_pass": 65.2,
+   "days_mean": 35.5,
+   "max_risk": 403,
+   "usd_now": 2125,
+   "usd_eval": 2082,
+   "usd_10": 391,
+   "micros_per_month": 22.8,
+   "usd_per_tick_month": 11.4
+  },
+  "atlas:tw_80:H1:2": {
+   "p10": 65.2,
+   "f10": 17.4,
+   "dec10": 82.6,
+   "p15": 70.5,
+   "p60": 78.3,
+   "f60": 19.0,
+   "open60": 2.7,
+   "pass_med": 6.0,
+   "slow_pass": 9.9,
+   "days_mean": 9.8,
+   "max_risk": 593,
+   "usd_now": 2736,
+   "usd_eval": 2693,
+   "usd_10": 2237,
+   "micros_per_month": 43.3,
+   "usd_per_tick_month": 21.6
+  },
+  "atlas:tw_80:H2:2": {
+   "p10": 38.9,
+   "f10": 17.4,
+   "dec10": 56.2,
+   "p15": 43.8,
+   "p60": 60.6,
+   "f60": 20.9,
+   "open60": 18.5,
+   "pass_med": 9.0,
+   "slow_pass": 27.7,
+   "days_mean": 21.9,
+   "max_risk": 767,
+   "usd_now": 1879,
+   "usd_eval": 1836,
+   "usd_10": 1163,
+   "micros_per_month": 24.5,
+   "usd_per_tick_month": 12.2
+  },
+  "atlas:tw_50:H1:2": {
+   "p10": 55.6,
+   "f10": 2.1,
+   "dec10": 57.8,
+   "p15": 65.4,
+   "p60": 85.1,
+   "f60": 6.1,
+   "open60": 8.8,
+   "pass_med": 8.0,
+   "slow_pass": 23.1,
+   "days_mean": 17.2,
+   "max_risk": 493,
+   "usd_now": 2973,
+   "usd_eval": 2930,
+   "usd_10": 1901,
+   "micros_per_month": 32.8,
+   "usd_per_tick_month": 16.4
+  },
+  "atlas:tw_50:H2:2": {
+   "p10": 32.0,
+   "f10": 0.4,
+   "dec10": 32.4,
+   "p15": 37.6,
+   "p60": 64.5,
+   "f60": 3.0,
+   "open60": 32.5,
+   "pass_med": 11.5,
+   "slow_pass": 41.6,
+   "days_mean": 31.9,
+   "max_risk": 640,
+   "usd_now": 2000,
+   "usd_eval": 1956,
+   "usd_10": 949,
+   "micros_per_month": 20.7,
+   "usd_per_tick_month": 10.3
+  },
+  "atlas:tw_60_prot400:H1:2": {
+   "p10": 56.2,
+   "f10": 0.3,
+   "dec10": 56.6,
+   "p15": 64.5,
+   "p60": 84.0,
+   "f60": 4.5,
+   "open60": 11.5,
+   "pass_med": 6.0,
+   "slow_pass": 23.2,
+   "days_mean": 18.6,
+   "max_risk": 593,
+   "usd_now": 2933,
+   "usd_eval": 2890,
+   "usd_10": 1922,
+   "micros_per_month": 28.4,
+   "usd_per_tick_month": 14.2
+  },
+  "atlas:tw_60_prot400:H2:2": {
+   "p10": 33.6,
+   "f10": 0.0,
+   "dec10": 33.6,
+   "p15": 39.3,
+   "p60": 59.9,
+   "f60": 2.4,
+   "open60": 37.8,
+   "pass_med": 10.0,
+   "slow_pass": 34.3,
+   "days_mean": 33.5,
+   "max_risk": 640,
+   "usd_now": 1855,
+   "usd_eval": 1812,
+   "usd_10": 999,
+   "micros_per_month": 17.7,
+   "usd_per_tick_month": 8.8
+  },
+  "atlas:as_coded:H1:4": {
+   "p10": 36.0,
+   "f10": 0.0,
+   "dec10": 36.0,
+   "p15": 50.2,
+   "p60": 85.8,
+   "f60": 2.9,
+   "open60": 11.3,
+   "pass_med": 13.0,
+   "slow_pass": 41.4,
+   "days_mean": 22.7,
+   "max_risk": 413,
+   "usd_now": 2996,
+   "usd_eval": 2953,
+   "usd_10": 1215,
+   "micros_per_month": 32.5,
+   "usd_per_tick_month": 16.2
+  },
+  "atlas:as_coded:H2:4": {
+   "p10": 13.6,
+   "f10": 0.0,
+   "dec10": 13.6,
+   "p15": 23.1,
+   "p60": 65.8,
+   "f60": 0.6,
+   "open60": 33.7,
+   "pass_med": 22.0,
+   "slow_pass": 64.9,
+   "days_mean": 36.4,
+   "max_risk": 403,
+   "usd_now": 2040,
+   "usd_eval": 1997,
+   "usd_10": 377,
+   "micros_per_month": 22.2,
+   "usd_per_tick_month": 11.1
+  },
+  "atlas:tw_80:H1:4": {
+   "p10": 64.5,
+   "f10": 19.4,
+   "dec10": 83.8,
+   "p15": 69.5,
+   "p60": 76.5,
+   "f60": 20.9,
+   "open60": 2.6,
+   "pass_med": 6.0,
+   "slow_pass": 9.1,
+   "days_mean": 9.2,
+   "max_risk": 593,
+   "usd_now": 2673,
+   "usd_eval": 2630,
+   "usd_10": 2209,
+   "micros_per_month": 44.8,
+   "usd_per_tick_month": 22.4
+  },
+  "atlas:tw_80:H2:4": {
+   "p10": 40.0,
+   "f10": 18.1,
+   "dec10": 58.1,
+   "p15": 44.2,
+   "p60": 59.2,
+   "f60": 21.9,
+   "open60": 18.9,
+   "pass_med": 8.0,
+   "slow_pass": 25.3,
+   "days_mean": 21.6,
+   "max_risk": 767,
+   "usd_now": 1835,
+   "usd_eval": 1792,
+   "usd_10": 1199,
+   "micros_per_month": 24.2,
+   "usd_per_tick_month": 12.1
+  },
+  "atlas:tw_50:H1:4": {
+   "p10": 55.0,
+   "f10": 3.1,
+   "dec10": 58.1,
+   "p15": 64.3,
+   "p60": 83.5,
+   "f60": 7.2,
+   "open60": 9.4,
+   "pass_med": 8.0,
+   "slow_pass": 22.9,
+   "days_mean": 17.2,
+   "max_risk": 493,
+   "usd_now": 2916,
+   "usd_eval": 2873,
+   "usd_10": 1880,
+   "micros_per_month": 32.5,
+   "usd_per_tick_month": 16.2
+  },
+  "atlas:tw_50:H2:4": {
+   "p10": 34.2,
+   "f10": 1.4,
+   "dec10": 35.7,
+   "p15": 38.9,
+   "p60": 63.8,
+   "f60": 4.1,
+   "open60": 32.1,
+   "pass_med": 10.0,
+   "slow_pass": 39.0,
+   "days_mean": 31.3,
+   "max_risk": 640,
+   "usd_now": 1976,
+   "usd_eval": 1933,
+   "usd_10": 1019,
+   "micros_per_month": 20.6,
+   "usd_per_tick_month": 10.3
+  },
+  "atlas:tw_60_prot400:H1:4": {
+   "p10": 56.0,
+   "f10": 0.8,
+   "dec10": 56.8,
+   "p15": 63.2,
+   "p60": 81.7,
+   "f60": 6.2,
+   "open60": 12.1,
+   "pass_med": 6.0,
+   "slow_pass": 22.6,
+   "days_mean": 19.1,
+   "max_risk": 593,
+   "usd_now": 2855,
+   "usd_eval": 2812,
+   "usd_10": 1912,
+   "micros_per_month": 27.2,
+   "usd_per_tick_month": 13.6
+  },
+  "atlas:tw_60_prot400:H2:4": {
+   "p10": 34.2,
+   "f10": 0.0,
+   "dec10": 34.2,
+   "p15": 39.0,
+   "p60": 58.2,
+   "f60": 3.5,
+   "open60": 38.3,
+   "pass_med": 10.0,
+   "slow_pass": 32.9,
+   "days_mean": 33.6,
+   "max_risk": 640,
+   "usd_now": 1804,
+   "usd_eval": 1761,
+   "usd_10": 1019,
+   "micros_per_month": 17.1,
+   "usd_per_tick_month": 8.6
+  },
+  "atlas:as_coded:H1:8": {
+   "p10": 33.9,
+   "f10": 0.0,
+   "dec10": 33.9,
+   "p15": 47.7,
+   "p60": 83.0,
+   "f60": 3.5,
+   "open60": 13.5,
+   "pass_med": 13.0,
+   "slow_pass": 42.5,
+   "days_mean": 23.8,
+   "max_risk": 413,
+   "usd_now": 2898,
+   "usd_eval": 2855,
+   "usd_10": 1140,
+   "micros_per_month": 31.7,
+   "usd_per_tick_month": 15.8
+  },
+  "atlas:as_coded:H2:8": {
+   "p10": 13.6,
+   "f10": 0.0,
+   "dec10": 13.6,
+   "p15": 22.7,
+   "p60": 61.6,
+   "f60": 0.8,
+   "open60": 37.6,
+   "pass_med": 21.5,
+   "slow_pass": 63.1,
+   "days_mean": 37.8,
+   "max_risk": 419,
+   "usd_now": 1910,
+   "usd_eval": 1867,
+   "usd_10": 377,
+   "micros_per_month": 21.0,
+   "usd_per_tick_month": 10.5
+  },
+  "atlas:tw_80:H1:8": {
+   "p10": 62.1,
+   "f10": 22.6,
+   "dec10": 84.7,
+   "p15": 67.8,
+   "p60": 73.8,
+   "f60": 23.4,
+   "open60": 2.8,
+   "pass_med": 6.0,
+   "slow_pass": 8.1,
+   "days_mean": 8.8,
+   "max_risk": 593,
+   "usd_now": 2580,
+   "usd_eval": 2537,
+   "usd_10": 2127,
+   "micros_per_month": 44.5,
+   "usd_per_tick_month": 22.2
+  },
+  "atlas:tw_80:H2:8": {
+   "p10": 40.1,
+   "f10": 16.9,
+   "dec10": 57.0,
+   "p15": 44.0,
+   "p60": 56.9,
+   "f60": 22.4,
+   "open60": 20.8,
+   "pass_med": 8.0,
+   "slow_pass": 22.6,
+   "days_mean": 22.5,
+   "max_risk": 767,
+   "usd_now": 1762,
+   "usd_eval": 1719,
+   "usd_10": 1200,
+   "micros_per_month": 23.0,
+   "usd_per_tick_month": 11.5
+  },
+  "atlas:tw_50:H1:8": {
+   "p10": 54.8,
+   "f10": 3.5,
+   "dec10": 58.3,
+   "p15": 63.6,
+   "p60": 81.5,
+   "f60": 8.8,
+   "open60": 9.7,
+   "pass_med": 7.0,
+   "slow_pass": 22.0,
+   "days_mean": 17.3,
+   "max_risk": 493,
+   "usd_now": 2848,
+   "usd_eval": 2805,
+   "usd_10": 1870,
+   "micros_per_month": 31.2,
+   "usd_per_tick_month": 15.6
+  },
+  "atlas:tw_50:H2:8": {
+   "p10": 32.9,
+   "f10": 2.3,
+   "dec10": 35.2,
+   "p15": 38.5,
+   "p60": 61.0,
+   "f60": 6.4,
+   "open60": 32.6,
+   "pass_med": 10.0,
+   "slow_pass": 36.9,
+   "days_mean": 31.3,
+   "max_risk": 640,
+   "usd_now": 1893,
+   "usd_eval": 1850,
+   "usd_10": 977,
+   "micros_per_month": 20.1,
+   "usd_per_tick_month": 10.1
+  },
+  "atlas:tw_60_prot400:H1:8": {
+   "p10": 56.2,
+   "f10": 0.5,
+   "dec10": 56.8,
+   "p15": 63.5,
+   "p60": 82.4,
+   "f60": 6.0,
+   "open60": 11.6,
+   "pass_med": 6.0,
+   "slow_pass": 23.0,
+   "days_mean": 18.8,
+   "max_risk": 593,
+   "usd_now": 2879,
+   "usd_eval": 2836,
+   "usd_10": 1922,
+   "micros_per_month": 28.3,
+   "usd_per_tick_month": 14.2
+  },
+  "atlas:tw_60_prot400:H2:8": {
+   "p10": 33.9,
+   "f10": 0.0,
+   "dec10": 33.9,
+   "p15": 38.5,
+   "p60": 55.1,
+   "f60": 5.0,
+   "open60": 39.8,
+   "pass_med": 9.0,
+   "slow_pass": 30.2,
+   "days_mean": 34.3,
+   "max_risk": 640,
+   "usd_now": 1710,
+   "usd_eval": 1667,
+   "usd_10": 1008,
+   "micros_per_month": 16.2,
+   "usd_per_tick_month": 8.1
+  }
+ },
+ "fresh": {
+  "zlarior:tw_80:H1": {
+   "p10": 46.5,
+   "f10": 21.9,
+   "dec10": 68.3,
+   "p15": 52.5,
+   "p60": 66.7,
+   "f60": 33.0,
+   "open60": 0.3,
+   "pass_med": 6.0,
+   "slow_pass": 21.2,
+   "days_mean": 10.5,
+   "max_risk": 991,
+   "usd_now": 3715,
+   "usd_eval": 3623,
+   "usd_10": 2497
+  },
+  "zlarior:tw_80:H2": {
+   "p10": 55.9,
+   "f10": 26.4,
+   "dec10": 82.2,
+   "p15": 57.8,
+   "p60": 66.1,
+   "f60": 33.2,
+   "open60": 0.7,
+   "pass_med": 3.0,
+   "slow_pass": 12.6,
+   "days_mean": 8.2,
+   "max_risk": 989,
+   "usd_now": 3629,
+   "usd_eval": 3537,
+   "usd_10": 2974
+  },
+  "zlarior:tw_60:H1": {
+   "p10": 48.0,
+   "f10": 10.2,
+   "dec10": 58.1,
+   "p15": 55.4,
+   "p60": 72.8,
+   "f60": 27.0,
+   "open60": 0.2,
+   "pass_med": 7.0,
+   "slow_pass": 23.9,
+   "days_mean": 12.1,
+   "max_risk": 991,
+   "usd_now": 4055,
+   "usd_eval": 3963,
+   "usd_10": 2581
+  },
+  "zlarior:tw_60:H2": {
+   "p10": 51.4,
+   "f10": 14.2,
+   "dec10": 65.5,
+   "p15": 55.4,
+   "p60": 70.7,
+   "f60": 27.7,
+   "open60": 1.6,
+   "pass_med": 4.0,
+   "slow_pass": 21.6,
+   "days_mean": 12.1,
+   "max_risk": 995,
+   "usd_now": 3879,
+   "usd_eval": 3787,
+   "usd_10": 2730
+  },
+  "zlarior:tw_50:H1": {
+   "p10": 47.9,
+   "f10": 4.4,
+   "dec10": 52.3,
+   "p15": 56.5,
+   "p60": 76.0,
+   "f60": 23.6,
+   "open60": 0.4,
+   "pass_med": 7.0,
+   "slow_pass": 25.7,
+   "days_mean": 13.2,
+   "max_risk": 991,
+   "usd_now": 4236,
+   "usd_eval": 4144,
+   "usd_10": 2578
+  },
+  "zlarior:tw_50:H2": {
+   "p10": 48.2,
+   "f10": 6.5,
+   "dec10": 54.8,
+   "p15": 53.0,
+   "p60": 73.2,
+   "f60": 24.5,
+   "open60": 2.3,
+   "pass_med": 4.0,
+   "slow_pass": 27.7,
+   "days_mean": 14.2,
+   "max_risk": 995,
+   "usd_now": 4019,
+   "usd_eval": 3927,
+   "usd_10": 2557
+  },
+  "zlarior:tw_40:H1": {
+   "p10": 44.1,
+   "f10": 0.5,
+   "dec10": 44.6,
+   "p15": 55.0,
+   "p60": 78.2,
+   "f60": 21.1,
+   "open60": 0.7,
+   "pass_med": 9.0,
+   "slow_pass": 29.6,
+   "days_mean": 14.9,
+   "max_risk": 867,
+   "usd_now": 4359,
+   "usd_eval": 4267,
+   "usd_10": 2366
+  },
+  "zlarior:tw_40:H2": {
+   "p10": 47.4,
+   "f10": 0.6,
+   "dec10": 48.0,
+   "p15": 52.2,
+   "p60": 76.5,
+   "f60": 21.1,
+   "open60": 2.4,
+   "pass_med": 6.0,
+   "slow_pass": 31.7,
+   "days_mean": 15.9,
+   "max_risk": 848,
+   "usd_now": 4200,
+   "usd_eval": 4108,
+   "usd_10": 2508
+  },
+  "zlarior:hold_40:H1": {
+   "p10": 44.1,
+   "f10": 0.5,
+   "dec10": 44.6,
+   "p15": 55.6,
+   "p60": 81.9,
+   "f60": 15.6,
+   "open60": 2.5,
+   "pass_med": 10.0,
+   "slow_pass": 32.1,
+   "days_mean": 17.1,
+   "max_risk": 794,
+   "usd_now": 4565,
+   "usd_eval": 4473,
+   "usd_10": 2366
+  },
+  "zlarior:hold_40:H2": {
+   "p10": 47.4,
+   "f10": 0.6,
+   "dec10": 48.0,
+   "p15": 56.1,
+   "p60": 79.8,
+   "f60": 17.1,
+   "open60": 3.1,
+   "pass_med": 7.0,
+   "slow_pass": 29.7,
+   "days_mean": 16.0,
+   "max_risk": 794,
+   "usd_now": 4384,
+   "usd_eval": 4292,
+   "usd_10": 2508
+  },
+  "zlarior:hold_50:H1": {
+   "p10": 47.9,
+   "f10": 4.4,
+   "dec10": 52.3,
+   "p15": 58.5,
+   "p60": 76.6,
+   "f60": 23.0,
+   "open60": 0.4,
+   "pass_med": 7.0,
+   "slow_pass": 23.6,
+   "days_mean": 13.0,
+   "max_risk": 991,
+   "usd_now": 4270,
+   "usd_eval": 4178,
+   "usd_10": 2578
+  },
+  "zlarior:hold_50:H2": {
+   "p10": 48.2,
+   "f10": 6.5,
+   "dec10": 54.8,
+   "p15": 57.5,
+   "p60": 75.2,
+   "f60": 24.1,
+   "open60": 0.6,
+   "pass_med": 6.0,
+   "slow_pass": 23.7,
+   "days_mean": 12.3,
+   "max_risk": 995,
+   "usd_now": 4131,
+   "usd_eval": 4039,
+   "usd_10": 2557
+  },
+  "zlarior:hold_80:H1": {
+   "p10": 46.5,
+   "f10": 21.9,
+   "dec10": 68.3,
+   "p15": 54.6,
+   "p60": 64.0,
+   "f60": 36.0,
+   "open60": 0.0,
+   "pass_med": 5.0,
+   "slow_pass": 14.6,
+   "days_mean": 9.1,
+   "max_risk": 991,
+   "usd_now": 3565,
+   "usd_eval": 3473,
+   "usd_10": 2497
+  },
+  "zlarior:hold_80:H2": {
+   "p10": 55.9,
+   "f10": 26.4,
+   "dec10": 82.2,
+   "p15": 60.2,
+   "p60": 64.7,
+   "f60": 35.4,
+   "open60": -0.0,
+   "pass_med": 3.0,
+   "slow_pass": 6.9,
+   "days_mean": 6.4,
+   "max_risk": 995,
+   "usd_now": 3549,
+   "usd_eval": 3457,
+   "usd_10": 2974
+  },
+  "atlas:tw_80:H1": {
+   "p10": 71.1,
+   "f10": 15.2,
+   "dec10": 86.3,
+   "p15": 75.0,
+   "p60": 81.0,
+   "f60": 16.6,
+   "open60": 2.5,
+   "pass_med": 5.0,
+   "slow_pass": 7.4,
+   "days_mean": 8.5,
+   "max_risk": 593,
+   "usd_now": 2828,
+   "usd_eval": 2785,
+   "usd_10": 2441
+  },
+  "atlas:tw_80:H2": {
+   "p10": 45.1,
+   "f10": 14.3,
+   "dec10": 59.4,
+   "p15": 49.7,
+   "p60": 66.0,
+   "f60": 17.6,
+   "open60": 16.4,
+   "pass_med": 8.0,
+   "slow_pass": 24.8,
+   "days_mean": 20.3,
+   "max_risk": 640,
+   "usd_now": 2048,
+   "usd_eval": 2005,
+   "usd_10": 1355
+  },
+  "atlas:tw_60:H1": {
+   "p10": 71.8,
+   "f10": 4.8,
+   "dec10": 76.6,
+   "p15": 76.3,
+   "p60": 88.0,
+   "f60": 6.7,
+   "open60": 5.3,
+   "pass_med": 6.0,
+   "slow_pass": 13.3,
+   "days_mean": 11.9,
+   "max_risk": 593,
+   "usd_now": 3075,
+   "usd_eval": 3032,
+   "usd_10": 2467
+  },
+  "atlas:tw_60:H2": {
+   "p10": 43.6,
+   "f10": 2.5,
+   "dec10": 46.1,
+   "p15": 48.2,
+   "p60": 67.3,
+   "f60": 5.8,
+   "open60": 26.8,
+   "pass_med": 9.0,
+   "slow_pass": 28.4,
+   "days_mean": 27.1,
+   "max_risk": 640,
+   "usd_now": 2088,
+   "usd_eval": 2045,
+   "usd_10": 1309
+  },
+  "atlas:tw_50:H1": {
+   "p10": 67.8,
+   "f10": 1.9,
+   "dec10": 69.7,
+   "p15": 75.5,
+   "p60": 89.8,
+   "f60": 4.4,
+   "open60": 5.8,
+   "pass_med": 6.0,
+   "slow_pass": 15.9,
+   "days_mean": 13.4,
+   "max_risk": 493,
+   "usd_now": 3136,
+   "usd_eval": 3093,
+   "usd_10": 2328
+  },
+  "atlas:tw_50:H2": {
+   "p10": 41.5,
+   "f10": 0.0,
+   "dec10": 41.5,
+   "p15": 46.3,
+   "p60": 71.2,
+   "f60": 1.4,
+   "open60": 27.3,
+   "pass_med": 10.0,
+   "slow_pass": 35.0,
+   "days_mean": 28.2,
+   "max_risk": 640,
+   "usd_now": 2207,
+   "usd_eval": 2164,
+   "usd_10": 1242
+  },
+  "atlas:tw_40:H1": {
+   "p10": 60.0,
+   "f10": 0.1,
+   "dec10": 60.0,
+   "p15": 71.5,
+   "p60": 91.3,
+   "f60": 1.9,
+   "open60": 6.9,
+   "pass_med": 7.0,
+   "slow_pass": 21.7,
+   "days_mean": 15.2,
+   "max_risk": 410,
+   "usd_now": 3190,
+   "usd_eval": 3147,
+   "usd_10": 2052
+  },
+  "atlas:tw_40:H2": {
+   "p10": 39.5,
+   "f10": 0.0,
+   "dec10": 39.5,
+   "p15": 45.4,
+   "p60": 75.0,
+   "f60": 0.9,
+   "open60": 24.1,
+   "pass_med": 10.0,
+   "slow_pass": 39.4,
+   "days_mean": 27.6,
+   "max_risk": 512,
+   "usd_now": 2323,
+   "usd_eval": 2280,
+   "usd_10": 1180
+  },
+  "atlas:hold_40:H1": {
+   "p10": 60.0,
+   "f10": 0.1,
+   "dec10": 60.0,
+   "p15": 74.3,
+   "p60": 92.9,
+   "f60": 5.6,
+   "open60": 1.5,
+   "pass_med": 7.0,
+   "slow_pass": 20.0,
+   "days_mean": 12.4,
+   "max_risk": 399,
+   "usd_now": 3246,
+   "usd_eval": 3203,
+   "usd_10": 2052
+  },
+  "atlas:hold_40:H2": {
+   "p10": 39.5,
+   "f10": 0.0,
+   "dec10": 39.5,
+   "p15": 50.1,
+   "p60": 77.2,
+   "f60": 8.6,
+   "open60": 14.2,
+   "pass_med": 10.0,
+   "slow_pass": 35.0,
+   "days_mean": 23.7,
+   "max_risk": 512,
+   "usd_now": 2392,
+   "usd_eval": 2349,
+   "usd_10": 1180
+  },
+  "atlas:hold_50:H1": {
+   "p10": 67.8,
+   "f10": 1.9,
+   "dec10": 69.7,
+   "p15": 78.0,
+   "p60": 90.0,
+   "f60": 9.8,
+   "open60": 0.2,
+   "pass_med": 6.0,
+   "slow_pass": 13.3,
+   "days_mean": 9.8,
+   "max_risk": 493,
+   "usd_now": 3143,
+   "usd_eval": 3100,
+   "usd_10": 2328
+  },
+  "atlas:hold_50:H2": {
+   "p10": 41.5,
+   "f10": 0.0,
+   "dec10": 41.5,
+   "p15": 52.5,
+   "p60": 73.8,
+   "f60": 21.2,
+   "open60": 5.0,
+   "pass_med": 10.0,
+   "slow_pass": 28.9,
+   "days_mean": 19.9,
+   "max_risk": 640,
+   "usd_now": 2288,
+   "usd_eval": 2245,
+   "usd_10": 1242
+  },
+  "atlas:hold_80:H1": {
+   "p10": 71.1,
+   "f10": 15.2,
+   "dec10": 86.3,
+   "p15": 77.0,
+   "p60": 80.2,
+   "f60": 19.8,
+   "open60": -0.0,
+   "pass_med": 5.0,
+   "slow_pass": 3.9,
+   "days_mean": 6.3,
+   "max_risk": 593,
+   "usd_now": 2802,
+   "usd_eval": 2759,
+   "usd_10": 2441
+  },
+  "atlas:hold_80:H2": {
+   "p10": 45.1,
+   "f10": 14.3,
+   "dec10": 59.4,
+   "p15": 55.5,
+   "p60": 65.2,
+   "f60": 34.8,
+   "open60": 0.0,
+   "pass_med": 8.0,
+   "slow_pass": 14.9,
+   "days_mean": 11.3,
+   "max_risk": 767,
+   "usd_now": 2023,
+   "usd_eval": 1980,
+   "usd_10": 1355
+  }
+ }
+}
