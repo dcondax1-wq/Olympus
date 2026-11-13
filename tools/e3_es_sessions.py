@@ -12,7 +12,8 @@ Data (CME futures only, TradingView exports):
 Instrument scaling (pre-registered, nothing tuned): k = the ES / NQ price ratio (median of the daily 18:00 opens of
 2025-04..2026-10 = 0.28). Every point-valued setting is multiplied by k (LIT min / max stop 8 / 80 -> 2.25 / 22.5; ATLAS
 members' 6 / 80 -> 1.75 / 22.5; S/R outcomes' 6 / 120). Breakeven offsets that pay the costs (LIT be_off 1.25, EMA beo
-1.25 NQ pts = $1.90 / $2 + 1 tick) become the MES cost equivalent: $1.90 / $5 + 1 tick = 0.63 -> 0.5 ES pts. ATR / R / VIX
+1.25 NQ pts: the BE exit, 1 tick of slippage below it, still pays the $1.90) become the MES cost equivalent: the
+smallest offset whose exit (offset - 1 tick) x $5 covers $1.90 = 0.63 -> 0.75 ES pts (3 ticks). ATR / R / VIX
 settings need no scaling (the LIT and EMA VIX band = VIX% x the instrument's own price = the S&P implied move on ES).
 Neighbours: k x 0.8 / x 1.25 (stop range) to show the result is not a knife edge.
 
@@ -62,7 +63,7 @@ SPANS = {"H1": ("2026-01-01", "2026-06-30"), "H2": ("2026-07-01", "2026-12-31"),
          "2025": (ES_START, "2025-12-31"), "2021-24": ("2021-01-01", "2024-12-31")}
 PVI = {"NQ": 2.0, "ES": 5.0}
 COMM = 1.90
-BEO_ES = 0.5
+BEO_ES = 0.75
 L.SPAN.update(SPANS)
 SESS = L.SESS
 
