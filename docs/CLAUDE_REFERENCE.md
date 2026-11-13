@@ -715,6 +715,16 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   before 2025-04), best-first branch-and-bound, train <= 2024, test 2025-26. 1,127,006 nodes, 54.6% cut by the bound; 31 of 80
   best rules hold out of sample vs 25 / 28 with shuffled conditions = chance. Every rule trades 0.1-0.5 a week. Nothing
   adopted; the page is a research lens, paper only.
+- **E2 new NQ strategies (2026-11-13, `nq-new-strategies-2026-11-13.md`, `tools/e2_new_strats.py`, runs `e2_*`):** 7 families,
+  140 variants, 5m RTH, $500 a trade, stops beyond structure: ORB 2nd side after a failed break, PDH/PDL sweep + climax
+  volume (the volume gate makes it worse), NQ/ES relative strength at 10:00 (ES only 2025-04+), gap fade + failed opening
+  drive + volume, VWAP reversion on low-VIX days, late-day break / last-half-hour reversal (the "since 2025" reversal loses
+  in 2021-24), CPI/NFP/FOMC playbook (0.1-0.2 a week). 2 of 140 hold in H1/H2/2025/2021-24 vs 0.75 with coin-flip sides.
+  Paper lead only: G1 gap fade (gap >= 0.1 x 14-day range, 09:30-10:00 range closes in its half away from the gap, stop 1
+  tick beyond the range, 2R): $180 / $496 a month 2026 / 2021-25, PF 1.14 / 1.34, 1.7 a week, corr LIT 0.03; placebo p 0.003
+  over 2021-25 but 0.22 in 2026; the plain gap fade loses; 2026 stops ~145 pts = 1 micro, so its own 25K / 50K passes 0-7%
+  in 2 weeks and the slot is ~$0 a month; on LIT's funded 50K +$23 H1 / -$16 H2. BLITZ gap-aware band (Zarattini) H1 / H2
+  $936 / $771 vs $912 / $577 but 2021-25 -$15 vs +$89; implied-vol band worse: BLITZ unchanged. No new eval account.
 
 ## Key commands (run from the repo root)
 - **Numbers audit (2026-11-04):** `python tools/numbers_audit.py` (`--check` exits 1 on any 'wrong'; `--all` shows skipped history; `--json`; test `tests.test_numbers_audit`).

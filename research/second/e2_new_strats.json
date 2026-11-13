@@ -28998,5 +28998,277 @@
     "2021-25": -0.017
    }
   }
+ },
+ "mix_lit50k": {
+  "lit_only": {
+   "H1": {
+    "per_month": 923,
+    "paid_p10": 1600,
+    "loss_6m": 0.0,
+    "first_med": 26.0,
+    "any_pay": 94.4,
+    "payouts": 3.49,
+    "trade_pnl_m": 2535,
+    "hold_cons": 45.1,
+    "months_paying": 2.83,
+    "max_risk": 581,
+    "trades_6m": 70.2
+   },
+   "H2": {
+    "per_month": 910,
+    "paid_p10": 1580,
+    "loss_6m": 0.0,
+    "first_med": 24.0,
+    "any_pay": 93.0,
+    "payouts": 3.45,
+    "trade_pnl_m": 2556,
+    "hold_cons": 44.8,
+    "months_paying": 2.98,
+    "max_risk": 845,
+    "trades_6m": 57.9
+   },
+   "2025": {
+    "per_month": 74,
+    "paid_p10": 0,
+    "loss_6m": 0.0,
+    "first_med": 56.0,
+    "any_pay": 23.0,
+    "payouts": 0.28,
+    "trade_pnl_m": 71,
+    "hold_cons": 3.7,
+    "months_paying": 0.27,
+    "max_risk": 981,
+    "trades_6m": 42.0
+   },
+   "2021-24": {
+    "per_month": 56,
+    "paid_p10": 0,
+    "loss_6m": 0.0,
+    "first_med": 39.0,
+    "any_pay": 18.4,
+    "payouts": 0.22,
+    "trade_pnl_m": -23,
+    "hold_cons": 2.6,
+    "months_paying": 0.22,
+    "max_risk": 909,
+    "trades_6m": 36.1
+   }
+  },
+  "lit+g1_f3_c150": {
+   "H1": {
+    "per_month": 920,
+    "paid_p10": 1600,
+    "loss_6m": 0.0,
+    "first_med": 26.0,
+    "any_pay": 94.4,
+    "payouts": 3.48,
+    "trade_pnl_m": 2521,
+    "hold_cons": 44.7,
+    "months_paying": 2.82,
+    "max_risk": 581,
+    "trades_6m": 72.1
+   },
+   "H2": {
+    "per_month": 914,
+    "paid_p10": 1580,
+    "loss_6m": 0.0,
+    "first_med": 24.0,
+    "any_pay": 93.0,
+    "payouts": 3.46,
+    "trade_pnl_m": 2594,
+    "hold_cons": 44.9,
+    "months_paying": 2.99,
+    "max_risk": 845,
+    "trades_6m": 58.8
+   },
+   "2025": {
+    "per_month": 75,
+    "paid_p10": 0,
+    "loss_6m": 0.0,
+    "first_med": 56.0,
+    "any_pay": 23.4,
+    "payouts": 0.29,
+    "trade_pnl_m": 76,
+    "hold_cons": 3.9,
+    "months_paying": 0.28,
+    "max_risk": 981,
+    "trades_6m": 42.6
+   },
+   "2021-24": {
+    "per_month": 56,
+    "paid_p10": 0,
+    "loss_6m": 0.0,
+    "first_med": 39.0,
+    "any_pay": 18.4,
+    "payouts": 0.22,
+    "trade_pnl_m": -22,
+    "hold_cons": 2.7,
+    "months_paying": 0.22,
+    "max_risk": 909,
+    "trades_6m": 36.6
+   }
+  },
+  "lit+g1_f5_c300": {
+   "H1": {
+    "per_month": 914,
+    "paid_p10": 1600,
+    "loss_6m": 0.0,
+    "first_med": 27.0,
+    "any_pay": 94.6,
+    "payouts": 3.45,
+    "trade_pnl_m": 2535,
+    "hold_cons": 45.9,
+    "months_paying": 2.84,
+    "max_risk": 581,
+    "trades_6m": 79.3
+   },
+   "H2": {
+    "per_month": 898,
+    "paid_p10": 1589,
+    "loss_6m": 0.0,
+    "first_med": 24.0,
+    "any_pay": 93.0,
+    "payouts": 3.4,
+    "trade_pnl_m": 2712,
+    "hold_cons": 48.1,
+    "months_paying": 2.97,
+    "max_risk": 845,
+    "trades_6m": 70.8
+   },
+   "2025": {
+    "per_month": 84,
+    "paid_p10": 0,
+    "loss_6m": 0.0,
+    "first_med": 51.0,
+    "any_pay": 24.6,
+    "payouts": 0.32,
+    "trade_pnl_m": 98,
+    "hold_cons": 3.8,
+    "months_paying": 0.31,
+    "max_risk": 981,
+    "trades_6m": 44.5
+   },
+   "2021-24": {
+    "per_month": 59,
+    "paid_p10": 0,
+    "loss_6m": 0.0,
+    "first_med": 40.0,
+    "any_pay": 18.2,
+    "payouts": 0.23,
+    "trade_pnl_m": -19,
+    "hold_cons": 2.1,
+    "months_paying": 0.22,
+    "max_risk": 909,
+    "trades_6m": 37.9
+   }
+  },
+  "lit+g1_f10_c400": {
+   "H1": {
+    "per_month": 946,
+    "paid_p10": 1600,
+    "loss_6m": 0.0,
+    "first_med": 26.0,
+    "any_pay": 94.6,
+    "payouts": 3.58,
+    "trade_pnl_m": 2600,
+    "hold_cons": 44.7,
+    "months_paying": 2.88,
+    "max_risk": 581,
+    "trades_6m": 87.1
+   },
+   "H2": {
+    "per_month": 894,
+    "paid_p10": 1600,
+    "loss_6m": 0.0,
+    "first_med": 24.0,
+    "any_pay": 92.8,
+    "payouts": 3.37,
+    "trade_pnl_m": 2811,
+    "hold_cons": 51.7,
+    "months_paying": 2.96,
+    "max_risk": 845,
+    "trades_6m": 85.2
+   },
+   "2025": {
+    "per_month": 109,
+    "paid_p10": 0,
+    "loss_6m": 0.0,
+    "first_med": 42.0,
+    "any_pay": 28.6,
+    "payouts": 0.42,
+    "trade_pnl_m": 175,
+    "hold_cons": 5.4,
+    "months_paying": 0.4,
+    "max_risk": 981,
+    "trades_6m": 51.5
+   },
+   "2021-24": {
+    "per_month": 72,
+    "paid_p10": 0,
+    "loss_6m": 0.0,
+    "first_med": 38.0,
+    "any_pay": 20.2,
+    "payouts": 0.28,
+    "trade_pnl_m": 15,
+    "hold_cons": 3.1,
+    "months_paying": 0.27,
+    "max_risk": 909,
+    "trades_6m": 42.7
+   }
+  },
+  "lit+g1_f15_c600": {
+   "H1": {
+    "per_month": 942,
+    "paid_p10": 1600,
+    "loss_6m": 0.0,
+    "first_med": 26.0,
+    "any_pay": 94.2,
+    "payouts": 3.57,
+    "trade_pnl_m": 2597,
+    "hold_cons": 43.6,
+    "months_paying": 2.84,
+    "max_risk": 596,
+    "trades_6m": 96.3
+   },
+   "H2": {
+    "per_month": 861,
+    "paid_p10": 1600,
+    "loss_6m": 0.0,
+    "first_med": 27.0,
+    "any_pay": 93.2,
+    "payouts": 3.24,
+    "trade_pnl_m": 3044,
+    "hold_cons": 55.6,
+    "months_paying": 2.83,
+    "max_risk": 845,
+    "trades_6m": 95.4
+   },
+   "2025": {
+    "per_month": 147,
+    "paid_p10": 0,
+    "loss_6m": 0.0,
+    "first_med": 41.0,
+    "any_pay": 34.0,
+    "payouts": 0.56,
+    "trade_pnl_m": 276,
+    "hold_cons": 6.8,
+    "months_paying": 0.52,
+    "max_risk": 981,
+    "trades_6m": 57.8
+   },
+   "2021-24": {
+    "per_month": 89,
+    "paid_p10": 0,
+    "loss_6m": 0.0,
+    "first_med": 36.0,
+    "any_pay": 21.6,
+    "payouts": 0.34,
+    "trade_pnl_m": 48,
+    "hold_cons": 3.1,
+    "months_paying": 0.31,
+    "max_risk": 909,
+    "trades_6m": 45.7
+   }
+  }
  }
 }
