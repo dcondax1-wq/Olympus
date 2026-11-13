@@ -1,0 +1,50 @@
+{
+ "source": "arb_hist.json hits (hourly closes, net of 0.07 p(1-p) fees on 100-lot legs)",
+ "totals": {
+  "range_events": 9315,
+  "range_obs": 39813,
+  "yes_arb": 22,
+  "no_arb": 66,
+  "yes_gross_pos": 568,
+  "no_gross_pos": 4136,
+  "ladder_pairs": 82616,
+  "ladder_arb": 1,
+  "ladder_gross_pos": 2
+ },
+ "all": {
+  "n_obs": 89,
+  "events": 86,
+  "edge_per_$": 0.0017,
+  "lo": 0.0014,
+  "hi": 0.0022,
+  "median_net_c_per_set": 0.45,
+  "span_days": 252,
+  "usd_total_capped_by_thinnest_leg": 14.6,
+  "usd_per_day": 0.06,
+  "share_thinnest_leg_zero_vol": 0.506
+ },
+ "train": {
+  "n_obs": 61,
+  "events": 59,
+  "edge_per_$": 0.0015,
+  "lo": 0.0012,
+  "hi": 0.002,
+  "median_net_c_per_set": 0.45,
+  "span_days": 151,
+  "usd_total_capped_by_thinnest_leg": 10.02,
+  "usd_per_day": 0.07,
+  "share_thinnest_leg_zero_vol": 0.492
+ },
+ "test": {
+  "n_obs": 28,
+  "events": 27,
+  "edge_per_$": 0.0024,
+  "lo": 0.0015,
+  "hi": 0.0041,
+  "median_net_c_per_set": 0.4,
+  "span_days": 92,
+  "usd_total_capped_by_thinnest_leg": 4.57,
+  "usd_per_day": 0.05,
+  "share_thinnest_leg_zero_vol": 0.536
+ }
+}
