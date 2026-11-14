@@ -8,12 +8,12 @@
  },
  "hard_fails": [],
  "to_fix": [],
- "bytes_total": 80944,
+ "bytes_total": 80947,
  "sizes": {
   "404.html": 19826,
   "_headers": 411,
   "favicon.svg": 259,
-  "index.html": 37197,
+  "index.html": 37200,
   "robots.txt": 26,
   "site.js": 3378,
   "thanks.html": 19847
@@ -26,7 +26,7 @@
   },
   {
    "page": "index.html",
-   "bytes": 37197,
+   "bytes": 37200,
    "failed": []
   },
   {

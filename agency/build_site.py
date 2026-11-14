@@ -98,7 +98,7 @@ def site_from_lead(lead: dict, cfg: dict, template=None) -> dict:
     if open_days:
         why.append({"title": f"Open {open_days} days a week" if open_days < 7 else "Open every day", "line": "See today's hours below.", "icon": "clock"})
     if lead.get("phone"):
-        why.append({"title": "Talk to a real person", "line": f"Call {lead['phone']}.", "icon": "phone"})
+        why.append({"title": "Call us", "line": f"{lead['phone']}, during opening hours.", "icon": "phone"})
     why.append({"title": "Easy to reach", "line": "Send a message with the form below.", "icon": "chat"})
     ds = cfg.get("demo_sites") or {}
     slug = lead.get("slug") or "business"

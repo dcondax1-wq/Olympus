@@ -14,7 +14,7 @@
   "osm_base": "2026-11-13T21:22:20Z",
   "cache": {
    "hit": true,
-   "age_h": 0.9
+   "age_h": 1.0
   },
   "attribution": "Business data (c) OpenStreetMap contributors, ODbL 1.0 (openstreetmap.org/copyright)",
   "place": {
@@ -73,7 +73,7 @@
    "street_address": 0.758,
    "email": 0.12
   },
-  "made": "2026-11-14T20:23:27"
+  "made": "2026-11-14T20:29:21"
  },
  "leads": [
   {

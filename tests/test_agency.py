@@ -415,6 +415,16 @@ def test_pitch():
     check("c. the pricing research lists its sources with links and the date it was read", pr["checked"] == "2026-11-14" and len(pr["market"]) >= 8
           and all(x["url"].startswith("https://") and x["source"] for x in pr["market"] + pr["hosting"] + pr["rules"]))
     os.remove(os.environ["AGENCY_CONFIG"])
+    raw = open(os.path.join(ROOT, "RUN_AGENCY.bat"), "rb").read()
+    txt = raw.decode("ascii", "replace")
+    labels = {ln.strip()[1:].split()[0].lower() for ln in txt.split("\r\n") if ln.strip().startswith(":") and not ln.strip().startswith("::")} | {"eof"}
+    gotos = {m.lower() for m in re.findall(r"(?i)\bgoto\s+:([A-Za-z0-9_]+)", txt)}
+    check("c. RUN_AGENCY.bat (the owner's double-click): CRLF, ASCII, every goto label exists, first run copies the example settings and opens Notepad, then runs agency.run; it sends nothing",
+          b"\n" not in raw.replace(b"\r\n", b"") and raw.endswith(b"\r\n") and all(b < 128 for b in raw) and gotos <= labels and 'copy /y "agency\\config.example.json" "agency\\config.json"' in txt
+          and "python -X utf8 -m agency.run %*" in txt and not re.search(r"(?i)\b(curl|blat|sendmail|powershell)\b", txt), (sorted(gotos - labels)))
+    gi = open(os.path.join(ROOT, ".gitignore"), encoding="utf-8").read()
+    check("c. no secrets or personal data in the repo: the owner's settings, cache, batches and do-not-contact list are gitignored; the committed example has placeholders only",
+          all(x in gi for x in ("agency/config.json", "agency/cache/", "agency/out/", "agency/suppress.txt")) and set(CFG.placeholders(CFG.load(CFG.EXAMPLE))) >= {"agency.name", "agency.your_name", "agency.email", "agency.postal_address", "search.city"})
 
 
 # ================================================================================================ d. the CRM page (tools/web_public/agency/)
