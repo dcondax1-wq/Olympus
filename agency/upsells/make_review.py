@@ -179,7 +179,10 @@ def build(client_path: str, out: str | None = None, site: str | None = None, qui
     e = K.esc
     v = {"name": e(client["name"]), "city": e(client.get("city", "")), "initials": e(initials(client["name"])), "fill": pal["fill"], "ink": pal["ink"],
          "accent": pal["accent"], "soft": pal["soft"], "google": e(glink), "google_json": json.dumps(glink), "phone": e(client["phone"]),
-         "phone_json": json.dumps(client["phone"]), "tel": e(K.tel(client["phone"])), "owner": e(owner), "form": e(form), "gicon": GICON}
+         "phone_json": json.dumps(client["phone"]), "tel": e(K.tel(client["phone"])), "owner": e(owner), "form": e(form), "gicon": GICON,
+         # same_for_all: every rating gets the same two choices (Google or a private message) and nothing redirects by itself
+         "same_json": json.dumps(bool(rv.get("same_for_all"))),
+         "hint": "Then pick: a Google review or a private message." if rv.get("same_for_all") else "4 or 5 stars opens our Google review page."}
     page = render("page.html", v)
     check_wording("review page", page)
     out = out or K.default_out(client)

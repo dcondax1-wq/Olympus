@@ -463,6 +463,14 @@ def part_review_static():
         refused = True
     check("f. a review link that is not Google's is refused (the page could otherwise send customers anywhere)", refused)
     check("f. a Place ID alone builds the documented review URL", MR.google_link({"place_id": "ChIJabc"}) == "https://search.google.com/local/writereview?placeid=ChIJabc")
+    strict = K.load_json(os.path.join(FIX, "demo_barber.json"))
+    strict["id"], strict["review"]["same_for_all"] = "test-strict", True
+    sp = os.path.join(TMP, "strict.json")
+    K.write(sp, json.dumps(strict))
+    MR.build(sp, out=os.path.join(TMP, "strict"), quiet=True)
+    sp_page = rd(os.path.join(TMP, "strict", "review", "index.html"))
+    check("f. strict mode (review.same_for_all): every rating gets the same two choices, no automatic redirect, and the page says so",
+          "SAME = true" in sp_page and "Then pick: a Google review or a private message." in sp_page and "4 or 5 stars opens" not in sp_page)
 
 
 # ---------------------------------------------------------------------------------------------------------------- g. Chromium
@@ -511,6 +519,12 @@ def part_browser(shots: bool):
     K.write(os.path.join(site, "hostile", "index.html"), "<!doctype html><html><head><meta name=viewport content='width=device-width'></head><body><h1>x</h1></body></html>")
     MC.build(hp, out=os.path.join(TMP, "hostile_kit"), site=os.path.join(site, "hostile"), quiet=True)
     MR.build(hp, out=os.path.join(TMP, "hostile_kit"), site=os.path.join(site, "hostile"), quiet=True)
+    strict = K.load_json(os.path.join(FIX, "demo_barber.json"))
+    strict["id"], strict["review"]["same_for_all"] = "test-strict", True
+    stp = os.path.join(TMP, "strict_site.json")
+    K.write(stp, json.dumps(strict))
+    os.makedirs(os.path.join(site, "strict"))
+    MR.build(stp, out=os.path.join(TMP, "strict_kit"), site=os.path.join(site, "strict"), quiet=True)
     srv, base = serve(site)
     outside = []
 
@@ -689,6 +703,13 @@ def part_browser(shots: bool):
                 p.wait_for_url(g, timeout=8000)
                 check(f"g. {r} stars: 'Thank you!' with the Google button, then straight on to the Google review link", thanks and p.url == g, p.url)
                 ctx.close()
+            ctx, p, errs = phone()
+            p.goto(base + "/strict/review/")
+            p.click(".star[data-r='5']")
+            p.wait_for_timeout(900)
+            check("g. strict mode: 5 stars shows the same two choices as 1 star (Google + private form) and stays on the page",
+                  p.locator("#sorry").is_visible() and p.locator("#sorry a[data-google]").is_visible() and p.url.startswith(base) and not p.locator("#happy").is_visible(), p.url)
+            ctx.close()
             ctx, p, errs = phone()
             p.goto(base + "/harborline/review/")
             p.click("a[data-private]")

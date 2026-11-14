@@ -115,7 +115,7 @@ input:focus,textarea:focus{outline:none;border-color:var(--a)}
 <script>
 (function () {
   "use strict";
-  var GOOGLE = "https://search.google.com/local/writereview?placeid=DEMO_BLUELINE_PLACE_ID", phone = "(813) 555-0177";
+  var GOOGLE = "https://search.google.com/local/writereview?placeid=DEMO_BLUELINE_PLACE_ID", phone = "(813) 555-0177", SAME = false;
   var panes = ["ask", "happy", "sorry", "sent"].map(function (id) { return document.getElementById(id); });
   var form = document.getElementById("private"), err = form.querySelector(".err");
   function show(id, keepAsk) {
@@ -128,7 +128,7 @@ input:focus,textarea:focus{outline:none;border-color:var(--a)}
       var r = +b.getAttribute("data-r");
       [].forEach.call(document.querySelectorAll(".star"), function (s) { s.classList.toggle("on", +s.getAttribute("data-r") <= r); s.setAttribute("aria-pressed", s === b); });
       form.rating.value = r;
-      if (r >= 4) { show("happy", true); setTimeout(function () { window.location.href = GOOGLE; }, 450); }
+      if (r >= 4 && !SAME) { show("happy", true); setTimeout(function () { window.location.href = GOOGLE; }, 450); }
       else show("sorry", true);
     });
   });

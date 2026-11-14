@@ -76,7 +76,7 @@ input:focus,textarea:focus{outline:none;border-color:var(--a)}
         <button class="star" type="button" data-r="5" aria-label="5 stars: great"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5l2.9 6.2 6.8.8-5 4.7 1.3 6.7L12 17.6l-6 3.3 1.3-6.7-5-4.7 6.8-.8z"/></svg></button>
       </div>
       <div class="legend" aria-hidden="true"><span>Poor</span><span>Great</span></div>
-      <p class="hint">4 or 5 stars opens our Google review page.</p>
+      <p class="hint">{{hint}}</p>
     </div>
 
     <div id="happy" class="pane" hidden>
@@ -115,7 +115,7 @@ input:focus,textarea:focus{outline:none;border-color:var(--a)}
 <script>
 (function () {
   "use strict";
-  var GOOGLE = {{google_json}}, phone = {{phone_json}};
+  var GOOGLE = {{google_json}}, phone = {{phone_json}}, SAME = {{same_json}};
   var panes = ["ask", "happy", "sorry", "sent"].map(function (id) { return document.getElementById(id); });
   var form = document.getElementById("private"), err = form.querySelector(".err");
   function show(id, keepAsk) {
@@ -128,7 +128,7 @@ input:focus,textarea:focus{outline:none;border-color:var(--a)}
       var r = +b.getAttribute("data-r");
       [].forEach.call(document.querySelectorAll(".star"), function (s) { s.classList.toggle("on", +s.getAttribute("data-r") <= r); s.setAttribute("aria-pressed", s === b); });
       form.rating.value = r;
-      if (r >= 4) { show("happy", true); setTimeout(function () { window.location.href = GOOGLE; }, 450); }
+      if (r >= 4 && !SAME) { show("happy", true); setTimeout(function () { window.location.href = GOOGLE; }, 450); }
       else show("sorry", true);
     });
   });
