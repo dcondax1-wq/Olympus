@@ -2,7 +2,7 @@
 """Perf probe: how smooth each page of a BUILT site runs, on a mid iPhone and on a 4K desktop (team P2, 2026-11-14, docs/OLYMPUS_PERF.md "Perf v2").
 
     flock -w 2400 /tmp/olympus_browser.lock python -X utf8 tools/perf_probe.py <site folder> [--profiles iphone,4k] [--pages gate,hub-today,...]
-        [--json out.json] [--gpu] [--quick]
+        [--json out.json] [--gpu] [--compare <after site>] [--fx high]
 
 tools/phone_budget.py answers "what does a first visit cost on a slow line"; this answers "does it stay smooth once it is open". Per page and profile:
   fcp / lcp      first contentful / largest contentful paint (ms after navigation start; local server, no network throttle: CPU only)
@@ -328,6 +328,8 @@ def measure(br, url, prof, timeout_s=90, trace=True, init=None, settle_ms=SETTLE
     for s in init or []:
         ctx.add_init_script(s)
     pg = ctx.new_page()
+    errs = []
+    pg.on("pageerror", lambda e: errs.append(str(e).splitlines()[0][:160]))
     raw = {}
     try:
         cdp = ctx.new_cdp_session(pg)
@@ -386,6 +388,7 @@ def measure(br, url, prof, timeout_s=90, trace=True, init=None, settle_ms=SETTLE
                 raw["trace_error"] = str(e)[:120]
         raw["snap"] = pg.evaluate(SNAP)
         row = summarize(raw)
+        row["errors"] = errs[:5]
         row["cv"] = raw["cv_idle"]
         row["cv_scroll"] = raw["cv_scroll"]
         return row
@@ -404,12 +407,14 @@ def main(argv=None):
     ap.add_argument("--pages", default=",".join(PAGES))
     ap.add_argument("--profiles", default="iphone,4k")
     ap.add_argument("--json")
+    ap.add_argument("--compare", help="a second built site (the 'after'): each page is measured in both, back to back under the same load")
     ap.add_argument("--gpu", action="store_true", help="add ?gpu=1: the render core's HD path instead of its software-GL LITE cap")
     ap.add_argument("--no-trace", action="store_true")
     ap.add_argument("--fx", default="", help="a stored 3D quality (jfx) for every page: ultra | high | low | off (default: none = Auto)")
     a = ap.parse_args(argv)
     from playwright.sync_api import sync_playwright
-    srv, base = PB.serve(os.path.abspath(a.site))
+    sites = [("before" if a.compare else "", os.path.abspath(a.site))] + ([("after", os.path.abspath(a.compare))] if a.compare else [])
+    servers = [(tag, PB.serve(path)) for tag, path in sites]
     out = {}
     if a.json and os.path.isfile(a.json):
         try:
@@ -419,24 +424,31 @@ def main(argv=None):
     with sync_playwright() as pw:
         br = PB.launch(pw)
         for prof in [p.strip() for p in a.profiles.split(",") if p.strip()]:
-            rows = []
+            rows = {tag: [] for tag, _ in sites}
             for name in [p.strip() for p in a.pages.split(",") if p.strip()]:
                 init = [JARVIS_INIT] if name == "jarvis" else []
                 if a.fx:
                     init.append("try { localStorage.setItem('jfx', %s); } catch (e) {}" % json.dumps(a.fx))
-                t = time.time()
-                r = measure(br, page_url(base, name, a.gpu), prof, trace=not a.no_trace, init=init)
-                r["wall_s"] = round(time.time() - t, 1)
-                rows.append((name, r))
-                out.setdefault(prof, {})[name] = r
-                print(prof, name, json.dumps({k: v for k, v in r.items() if k not in ("cv", "cv_scroll")}), flush=True)
-                if a.json:      # after every page: a lock released mid-run keeps what was measured
-                    with open(a.json, "w") as fh:
-                        json.dump(out, fh, indent=1)
-            print("\n## " + prof)
-            print("\n".join(table_lines(rows)))
+                for tag, (srv, base) in servers:
+                    t = time.time()
+                    r = measure(br, page_url(base, name, a.gpu), prof, trace=not a.no_trace, init=init)
+                    r["wall_s"] = round(time.time() - t, 1)
+                    rows[tag].append((name, r))
+                    key = prof + ("/" + tag if tag else "")
+                    out.setdefault(key, {})[name] = r
+                    print(key, name, json.dumps({k: v for k, v in r.items() if k not in ("cv", "cv_scroll")}), flush=True)
+                    if a.json:      # after every page: a lock released mid-run keeps what was measured
+                        with open(a.json, "w") as fh:
+                            json.dump(out, fh, indent=1)
+            for tag, _ in sites:
+                print("\n## " + prof + (" " + tag if tag else ""))
+                print("\n".join(table_lines(rows[tag])))
+            if a.compare:
+                print("\n## " + prof + ": before -> after")
+                print("\n".join(compare_lines(dict(rows["before"]), dict(rows["after"]))))
         br.close()
-    srv.shutdown()
+    for tag, (srv, base) in servers:
+        srv.shutdown()
     return 0
 
 

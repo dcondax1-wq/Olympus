@@ -4,7 +4,8 @@
      three.module.min.js' or each other; render.js / materials.js import only relative paths; no external URL anywhere
   b. the pipeline builds in Chromium (WebGL2 through SwiftShader) on every tier, with the pass budget per tier:
      ultra / high = scene + bloom + finish (3, 4x MSAA, HDR), low = scene + finish with FXAA (2, no bloom), off = 1 (direct);
-     pixel ratio <= 2 (<= 1.5 on low, 1 when off); the frame is not black; no console error; no request off the site
+     pixel ratio <= 2 on high (<= 1.5 on low, 1 when off), up to 3 on ultra (perf v2: Ultra 4K = the full device ratio, and over 2x the scene
+     buffer is not multisampled: FXAA instead); the frame is not black; no console error; no request off the site
   c. the tiers switch live: setQuality(), and OLYMPUS.setFx() (Jarvis's 'jfx' key) when the app did not force a level;
      prefers-reduced-motion with no choice starts on low
   d. slow frames step the quality down (ultra -> high -> low), never stored in 'jfx'
@@ -37,7 +38,7 @@ ADDONS = os.path.join(KIT, "three-addons")
 LAB = "/olympus/render-lab.html"
 # tier -> (passes, pass names, MSAA samples, bloom, fxaa, max pixel ratio)
 TIERS = {
-    "ultra": (3, ["scene", "bloom", "finish"], 4, True, False, 2),
+    "ultra": (3, ["scene", "bloom", "finish"], 4, True, False, 3),      # perf v2: up to the device ratio (3 here); over 2x: MSAA 0 + FXAA (below)
     "high": (3, ["scene", "bloom", "finish"], 4, True, False, 2),
     "low": (2, ["scene", "finish"], 0, False, True, 1.5),
     "off": (1, ["direct"], 0, False, False, 1),
@@ -115,6 +116,8 @@ def test_tiers(br, origin):
         ctx, p, errs, off = lab(br, origin, f"?q={tier}")
         s = p.evaluate("() => __lab.rc.stats()")
         check(f"b. {tier}: {n} pass(es) {names}", s["passes"] == n and s["names"] == names, s)
+        if tier == "ultra" and s["dpr"] > 2.05:          # perf v2: over 2 pixels per CSS pixel the scene buffer is not multisampled (FXAA in the finish)
+            samples, fxaa = 0, True
         check(f"b. {tier}: MSAA {samples}, bloom {bloom}, FXAA {fxaa}", (s["samples"], s["bloom"], s["fxaa"]) == (samples, bloom, fxaa), s)
         check(f"b. {tier}: pixel ratio {s['dpr']} <= {dpr}", 0 < s["dpr"] <= dpr, s)
         if tier != "off":

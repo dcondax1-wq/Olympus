@@ -19,10 +19,16 @@
 //     not chosen a level; pixel ratio <= 2 (<= 1.5 on low, 1 when off); no frame while the tab is hidden.
 //   - the real phone (QA round 6): a tab hidden 20 s or a page put in the back-forward cache gives its GPU buffers back (suspend) and
 //     rebuilds on return; a lost WebGL context draws nothing and everything is rebuilt on restore (olympus.js shows a still meanwhile).
+//   - fast and crisp (perf v2, 2026-11-14, docs/OLYMPUS_PERF.md): the pixel ratio comes from the page's one render-scale governor
+//     (./render-scale.js): full device pixel ratio up to 3 on Ultra 4K (and on Auto while frames keep full rate), stepped down smoothly when
+//     they do not, never thrashing; above 2 pixels per CSS pixel the scene buffer is not multisampled (FXAA in the finish: the same memory as 2x
+//     with MSAA). A canvas scrolled off screen (IntersectionObserver) draws nothing; the CSS size comes from a ResizeObserver, so a frame
+//     never forces a layout; a canvas with no box (display: none) is never resized from its own backing size (that grew it every frame).
 //
 // Passes per frame: ultra / high = 3 (scene, bloom, finish) · low = 2 (scene, finish + FXAA) · off = 1 (straight to screen).
 
 import * as THREE from '../jarvis/three.module.min.js';
+import { governor, range as rqRange } from './render-scale.js';
 import { EffectComposer } from './three-addons/EffectComposer.js';
 import { RenderPass } from './three-addons/RenderPass.js';
 import { UnrealBloomPass } from './three-addons/UnrealBloomPass.js';
@@ -32,7 +38,7 @@ import { RoomEnvironment } from './three-addons/RoomEnvironment.js';
 // AGORA (2026-11-11, the effects pass): bloom only on hot spots (fire, gold), never above .25 (docs/DESIGN_AGORA.md); grain very low.
 export const BLOOM_MAX = 0.25;
 export const TIERS = Object.freeze({
-  ultra: { dpr: 2, samples: 4, fxaa: false, bloom: { strength: 0.25, radius: 0.5, threshold: 0.9 }, grade: { grain: 0.03, vignette: 0.3, aberration: 0.0015, saturation: 1.08 } },
+  ultra: { dpr: 3, samples: 4, fxaa: false, bloom: { strength: 0.25, radius: 0.5, threshold: 0.9 }, grade: { grain: 0.03, vignette: 0.3, aberration: 0.0015, saturation: 1.08 } },
   high: { dpr: 2, samples: 4, fxaa: false, bloom: { strength: 0.22, radius: 0.5, threshold: 0.92 }, grade: { grain: 0.025, vignette: 0.28, aberration: 0.001, saturation: 1.08 } },
   low: { dpr: 1.5, samples: 0, fxaa: true, bloom: null, grade: { grain: 0.02, vignette: 0.26, aberration: 0, saturation: 1.06 } },
   off: { dpr: 1, samples: 0, fxaa: false, bloom: null, grade: null },
@@ -299,7 +305,9 @@ export function makeEnvironment(renderer, kind, pal) {
  *   adapt     step down on slow frames: true (default: only when the owner has not chosen a level) | 'always' | false
  *   msaa      false: no multisampled buffer (a soft full-screen backdrop): FXAA does the edges, and a second composer
  *             on the same screen never holds a second MSAA buffer
- *   maxDpr    a lower pixel-ratio cap than the tier's; autoSize (default true) sizes from the canvas's CSS box
+ *   maxDpr    the app's pixel-ratio budget (a lower cap than the tier's). On Ultra 4K and on Auto a budget of 1.5 or more may be exceeded up
+ *             to the device's full ratio (<= 3) by the render-scale governor; under 1.5 (a soft backdrop) it is a hard cap. autoSize (default
+ *             true) sizes from the canvas's CSS box (a ResizeObserver: no layout read per frame)
  *   onQuality(level)   told after every tier change (the owner's choice or the automatic step down)
  * -> { renderer, composer, scene, camera, render(), resize(w?, h?), setQuality(level), quality(), passes(), setTheme(t),
  *      setBloom({ strength?, radius?, threshold?, tint? }), addPass(pass), start(cb), stop(), stats(), dispose() }
@@ -345,10 +353,21 @@ export function createRenderer(opts) {
   const perf = { last: 0, n: 0, sum: 0, warm: 0, fps: 0, steps: 0 };
   const reduced = prefersReduced();
   const t0 = performance.now();
+  // perf v2: the page's render-scale governor sizes this canvas (its range: floor / budget / ceiling in device pixels per CSS pixel)
+  const RQ = governor();
+  let hiDpr = false;                                   // over 2 pixels per CSS pixel: no MSAA buffer (FXAA), the memory of 2x + MSAA
+  const myRange = () => {
+    const Ok = kit();
+    return rqRange({ tier: level, chosen: !!forced || !!(Ok && Ok.chosen && Ok.chosen()), maxDpr: o.maxDpr || 2,
+      saver: !!(Ok && Ok.saver && Ok.saver()), software: software || level === 'low' || level === 'off' });
+  };
+  const leaveRQ = RQ.join({ range: myRange });
+  const offRQ = RQ.on(() => { if (!dead && !asleep) size(false); });
+  hiDpr = level !== 'off' && RQ.dpr(myRange()) > 2.05;          // known before the first build: one composer at start, not two
 
   function tierOf(l) {
     const base = TIERS[l];
-    const msaa = gl2 && o.msaa !== false;              // msaa:false (a soft backdrop): no multisampled buffer, FXAA instead
+    const msaa = gl2 && o.msaa !== false && !hiDpr;    // msaa:false (a soft backdrop), or over 2x: no multisampled buffer, FXAA instead
     return { dpr: base.dpr, samples: msaa ? base.samples : 0, fxaa: base.fxaa || (!msaa && l !== 'off'),
       // an app's overrides tune the tier's bloom and grade, never switch them on for low / off
       bloom: base.bloom && capBloom(Object.assign({}, base.bloom, o.bloom)), grade: base.grade && Object.assign({}, base.grade, o.grade) };
@@ -406,11 +425,29 @@ export function createRenderer(opts) {
     syncPost();
   }
 
+  // the CSS box: a ResizeObserver keeps it (a frame never reads clientWidth, which forces a layout when the page's DOM changed); a canvas with
+  // no box (display: none, not in the page) keeps its last size: sizing it from its own backing store grew it by the pixel ratio every frame
+  let boxW = 0, boxH = 0;
+  const ro = o.autoSize && typeof ResizeObserver === 'function' ? new ResizeObserver((es) => {
+    const e = es[es.length - 1], b = e.contentBoxSize && (e.contentBoxSize[0] || e.contentBoxSize);
+    const w0 = boxW, h0 = boxH;
+    boxW = Math.round(b && b.inlineSize !== undefined ? b.inlineSize : e.contentRect.width);
+    boxH = Math.round(b && b.blockSize !== undefined ? b.blockSize : e.contentRect.height);
+    // an on-demand scene (no start() loop: a still, reduced motion) draws once more at its new size; a looping one picks it up next frame
+    if ((boxW !== w0 || boxH !== h0) && boxW && boxH && !loop && !firstFrame && !dead) requestAnimationFrame(() => { if (!loop && !dead && !asleep) render(); });
+  }) : null;
+  if (ro) { try { ro.observe(canvas); } catch (e) { /* an old browser: clientWidth below */ } }
+  function cssBox(force) {
+    if (!o.autoSize) return [width || Math.round(canvas.width / (dpr || 1)) || 1, height || Math.round(canvas.height / (dpr || 1)) || 1];
+    if (!ro || force || !boxW) { boxW = canvas.clientWidth; boxH = canvas.clientHeight; }
+    if (boxW && boxH) return [boxW, boxH];
+    return [width || Math.round(canvas.width / (dpr || 1)) || 1, height || Math.round(canvas.height / (dpr || 1)) || 1];
+  }
   function size(force) {
-    const w = o.autoSize ? canvas.clientWidth || canvas.width || 1 : width || canvas.width || 1;
-    const h = o.autoSize ? canvas.clientHeight || canvas.height || 1 : height || canvas.height || 1;
-    const Ok = kit(), saver = !!(Ok && Ok.saver && Ok.saver());            // battery saver: never above 1.5 pixels per CSS px
-    const d = Math.min(window.devicePixelRatio || 1, tier.dpr, o.maxDpr || 2, saver ? 1.5 : 9);
+    const [w, h] = cssBox(force);
+    const d = RQ.dpr(myRange());                                           // the governor's ratio (the tier's cap, the app's budget, saver inside)
+    const hi = d > 2.05;
+    if (hi !== hiDpr && level !== 'off') { hiDpr = hi; tier = tierOf(level); build(); force = true; }   // crossing 2x: MSAA off / on (rare)
     if (!force && w === width && h === height && d === dpr) return;
     width = w; height = h; dpr = d;
     renderer.setPixelRatio(d);
@@ -433,7 +470,10 @@ export function createRenderer(opts) {
     const avg = perf.sum / perf.n;
     perf.fps = Math.round(1000 / avg); perf.sum = perf.n = 0;
     const may = o.adapt === 'always' || (o.adapt && !(O && O.chosen()));
-    if (may && avg > (gap ? gap + 9 : SLOW_MS) && (level === 'ultra' || level === 'high')) {
+    // perf v2: resolution first. The tier (bloom, MSAA, the apps' particles) steps down only once the governor cannot lower the pixel ratio
+    // any more, or when the frames are slow for the page's own JavaScript (a smaller buffer would not help: fewer effects might)
+    const rg = myRange(), floored = RQ.dpr(rg) <= rg.floor + 0.01 || /cpu/.test(RQ.state().why || '');
+    if (may && floored && avg > (gap ? gap + 9 : SLOW_MS) && (level === 'ultra' || level === 'high')) {
       perf.steps++;
       apply(level === 'ultra' ? 'high' : 'low');
       if (O) O.mode(level === 'low');
@@ -447,13 +487,55 @@ export function createRenderer(opts) {
     tierSubs.slice().forEach((fn) => { try { fn(l); } catch (e) { /* one listener never stops the rest */ } });
   }
 
-  /** draw one frame (nothing while the tab is hidden or covered, nothing sooner than the kit's frame gap); returns true when it drew */
+  // off screen (perf v2): a connected canvas scrolled out of view, or inside a hidden box, draws nothing until it comes back (its first
+  // frame is always drawn: the veil lifts and the WebGL guard has a still); a canvas outside the page is never held back
+  let onScreen = true;
+  const offScreen = () => !onScreen && !firstFrame && canvas.isConnected;
+  const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver((es) => {
+    const was = onScreen;
+    onScreen = es[es.length - 1].isIntersecting;
+    if (onScreen && !was && !dead && !asleep) { RQ.reset(); if (loop) onVisible(); else render(); }
+  }, { rootMargin: '96px' }) : null;
+  if (io) { try { io.observe(canvas); } catch (e) { /* an old browser: always on */ } }
+
+  // shaders compiled in the background (perf v2): the first draw would compile every material synchronously, holding the page for
+  // seconds on a phone (Jarvis' home: 7 s of getShaderInfoLog / getProgramParameter on this machine). compileAsync (KHR_parallel_shader_compile)
+  // compiles them for the buffer the scene really draws into (the composer's target: its own tone mapping and colour space) while the page
+  // stays live; the first frame comes when they are ready. Materials added later compile on their first draw, as before. compile: false = off.
+  const canCompile = o.compile !== false && typeof renderer.compileAsync === 'function';
+  let compiled = !canCompile, compiling = false, wantDraw = false, gen = 0;
+  function warm() {
+    if (compiled || compiling || dead) return;
+    compiling = true;
+    const my = gen;
+    let p, over = false;
+    try {
+      const prev = renderer.getRenderTarget();
+      renderer.setRenderTarget(composer ? composer.renderTarget2 : null);
+      p = renderer.compileAsync(scene, camera);
+      renderer.setRenderTarget(prev);
+    } catch (e) { p = Promise.resolve(); }
+    const done = () => {
+      if (over) return; over = true; compiling = false;
+      if (my !== gen) { warm(); return; }                               // more objects arrived meanwhile (rc.warm()): compile those too
+      compiled = true;
+      if (dead || asleep) return;
+      if (loop) onVisible(); else if (wantDraw) { wantDraw = false; render(); }
+    };
+    Promise.resolve(p).then(done, done);
+    setTimeout(done, 8000);                                             // never wait for ever
+  }
+
+  /** draw one frame (nothing while the tab is hidden or covered, the canvas is off screen, or sooner than the kit's frame gap); true when it drew */
   function render() {
-    if (dead || asleep || lost || pageHidden()) return false;
+    if (dead || asleep || lost || pageHidden() || offScreen()) return false;
+    if (!compiled) { wantDraw = true; warm(); return false; }
     const g = frameGap();
     if (g && tDraw && performance.now() - tDraw < g - 3) return false;
     return drawNow();
   }
+  // the frame's time: the rAF time of the frame being drawn (document.timeline), so the canvases of one frame are one sample for the governor
+  const frameTime = () => { try { const t = document.timeline && document.timeline.currentTime; return typeof t === 'number' && t > 0 ? t : performance.now(); } catch (e) { return performance.now(); } };
   function drawNow() {
     const now = performance.now();
     tDraw = now;
@@ -474,12 +556,17 @@ export function createRenderer(opts) {
       renderer.render(scene, camera);
     }
     if (firstFrame) { firstFrame = false; if (O && !renderer.__oly) O.ready(); }
+    // one sample for the governor: the frame's time and its CPU work (the JavaScript of this frame up to the end of this draw)
+    const ft = frameTime(), end = performance.now();
+    RQ.frame(ft, { gap: frameGap(), work: Math.max(0, Math.min(end - ft, 1000)) });
     return true;
   }
 
   function tick(now) {
     raf = 0;
     if (dead || asleep || lost || !loop || pageHidden()) return;  // hidden (or a lost context): no new frame is asked for until the tab is back
+    if (offScreen()) return;                                      // scrolled away: the IntersectionObserver starts the loop again
+    if (!compiled) { warm(); return; }                            // shaders compiling in the background: the loop starts when they are ready
     const g = frameGap();
     if (g && tPrev && now - tPrev < g - 3) { raf = requestAnimationFrame(tick); return; }      // idle / saver: skip the frame (no JS, no draw)
     const dt = tPrev ? Math.min(0.1, (now - tPrev) / 1000) : 1 / 60;
@@ -528,7 +615,7 @@ export function createRenderer(opts) {
   canvas.addEventListener('webglcontextrestored', onRestored, false);
 
   if (O && O.onPower) O.onPower(() => { if (!dead) size(true); });
-  const followFx = (l) => { if (!forced && !dead && levelOf(l) && capSoft(l) !== level) apply(capSoft(l)); };
+  const followFx = (l) => { if (!forced && !dead && levelOf(l) && capSoft(l) !== level) { RQ.reset(true); apply(capSoft(l)); } };   // the owner's new level: a fresh scale
   const followTheme = (t) => { if (!dead) api.setTheme(t); };
   const backToDefault = () => followTheme(null);
   if (O && !levelOf(o.quality)) O.onFx(followFx);
@@ -579,6 +666,8 @@ export function createRenderer(opts) {
     /** an app's own pass, run after bloom and before the finish */
     addPass(p) { if (p && extra.indexOf(p) < 0) { extra.push(p); build(); size(true); } return p; },
     start(cb) { loop = typeof cb === 'function' ? cb : () => {}; onVisible(); return api; },
+    /** many new materials added after the first frame (a lazy module's objects): compile them in the background before the next frame */
+    warm() { if (!canCompile || dead) return false; gen++; compiled = false; return true; },
     stop() { loop = null; if (raf) cancelAnimationFrame(raf); raf = 0; },
     /** the colour grade: { lut: 'dawn' | 'golden' | 'day' | 'dusk' | 'night' | a grade object | null, mix (0..1, default 1), tone: 'aces' | 'agx' }.
      *  A new grade refills the same 16 KB LUT (no shader rebuild); switching the LUT on / off or the tone curve rebuilds the finish once. */
@@ -621,11 +710,13 @@ export function createRenderer(opts) {
         bloom: !!bloom, fxaa: !!(composer && tier.fxaa), hdr: bufferType === THREE.HalfFloatType, fps: perf.fps, steps: perf.steps,
         targets: composer ? 2 : 0, calls: i.render.calls, triangles: i.render.triangles, programs: (i.programs || []).length, env: extEnv ? 'external' : envTex ? o.env : 'none',
         bloomStrength: bloom ? bloom.strength : 0, grade: post.lutName || null, focus: post.focusOn, tone: post.tone, hooks: hooks.length,
-        lost, restores, asleep };
+        lost, restores, asleep, onScreen: !offScreen(), compiled, range: myRange(), rq: RQ.state(), box: [width, height], backing: [canvas.width, canvas.height] };
     },
     dispose() {
       if (dead) return;
       dead = true; api.stop();
+      try { if (io) io.disconnect(); if (ro) ro.disconnect(); } catch (e) { /* nothing */ }
+      leaveRQ(); offRQ();
       document.removeEventListener('visibilitychange', onVisible); document.removeEventListener('visibilitychange', onHide);
       window.removeEventListener('pagehide', onPageHide); window.removeEventListener('pageshow', onPageShow); if (hideTimer) clearTimeout(hideTimer);
       canvas.removeEventListener('webglcontextlost', onLost); canvas.removeEventListener('webglcontextrestored', onRestored);
