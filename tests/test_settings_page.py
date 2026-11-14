@@ -54,7 +54,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "settings.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app='settings'), viewport-fit=cover, theme-color, dark, manifest, icon, apple-touch-icon",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o5">' in html and 'src="../olympus/themes.js?v=o5"' in html and 'src="../olympus/olympus.js?v=o6" data-app="settings"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o6">' in html and 'src="../olympus/themes.js?v=o6"' in html and 'src="../olympus/olympus.js?v=o7" data-app="settings"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'content="dark"' in html and 'rel="manifest" href="manifest.webmanifest"' in html
           and 'rel="icon" href="icon.svg"' in html and 'rel="apple-touch-icon"' in html and "fx-core.js?v=f1" in html and "sfx.js" in html)
     check("a. no CDN, no outside script / font / image: every src and href is local", not re.search(r'(src|href)="https?://', html))
@@ -74,7 +74,7 @@ def part_a():
           j["v"] == 1 and j["name"] == "Settings" and j["status"]["level"] in ("ok", "warn", "bad", "off") and len(j["kpis"]) == 3 and len(j["lines"]) <= 3 and isinstance(j["t"], int)
           and re.fullmatch(r"#[0-9a-f]{6}", j["theme"]) and os.path.getsize(os.path.join(PAGE, "jarvis.json")) < 8192 and not re.search(r"[<>]", json.dumps(j)), j)
     check("a. Reading and quality: the kit's a11y layer is loaded (a11y.js defer + a11y.css), Big text is a data-oly-a11y='big-text' toggle, the quality levels are explained, the storage list has a Clear-all button",
-          'src="../olympus/a11y.js?v=a1" defer' in html and 'href="../olympus/a11y.css?v=a1"' in html and 'data-oly-a11y="big-text"' in html and 'data-oly-a11y="more-contrast"' in html
+          'src="../olympus/a11y.js?v=a1" defer' in html and 'href="../olympus/a11y.css?v=a2"' in html and 'data-oly-a11y="big-text"' in html and 'data-oly-a11y="more-contrast"' in html
           and 'id="fxLevels"' in html and 'id="fxWhy"' in html and 'id="clearAll"' in html and 'id="stWhat"' in html and os.path.isfile(os.path.join(WEB, "olympus", "a11y.js")))
     check("a. haptics: olympus/sfx.js honours the 'olympus.haptics' = off switch", "olympus.haptics" in rd(WEB, "olympus", "sfx.js"))
 

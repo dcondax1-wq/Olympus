@@ -55,7 +55,7 @@
   // ------------------------------------------------------------------ stylesheet, phone touches, chart module (on demand)
   function ensureCss() {
     if (document.querySelector('link[data-lv]')) return;
-    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'liveview.css?v=3'; l.dataset.lv = '1';
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'liveview.css?v=4'; l.dataset.lv = '1';
     document.head.appendChild(l);
     const s = document.createElement('style'); s.dataset.lv = 'phone';
     s.textContent = `

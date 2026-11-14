@@ -1,6 +1,6 @@
 // Independent, GPU-free recovery if a cached 3D/controller module cannot load.
 import { mountWorld } from './world.js?v=w2';
-import { openDistrictWorld } from './district-world.js?v=d2';
+import { openDistrictWorld } from './district-world.js?v=d3';
 import { loadDataset } from './datasets.js?v=atlas1';
 export async function recoverAtlas() {
   const get = async path => { const response = await fetch(path); if (!response.ok) throw Error('City files unavailable'); return response.json(); };

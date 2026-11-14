@@ -23,7 +23,7 @@
 <script>(function () { var d = document.documentElement; d.setAttribute('data-theme', 'kalshi');
   /* inside Jarvis (a frame under its bar) the notch is Jarvis's: no second top inset */
   try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="stylesheet" href="kalshi.css?v=k26">
+<link rel="stylesheet" href="kalshi.css?v=k27">
 <!-- OLYMPUS theme (../olympus/themes.js, key 'olympus.theme', picked on the Gate's Look row or in Jarvis's Look sheet): every colour of
      kalshi.css reads a theme slot with its AGORA colour as the fallback (tools/theme_tokenize.py), on the full 'page' palette since
      2026-11-14 (team T2: a light look is light here too, like everywhere). The <head> paints the engine's copy of the look before the first
@@ -43,7 +43,7 @@
 } catch (e) { return; } })('kalshi', 'page');</script>
 <script>(function () {
   function go() { var T = window.OLYMPUS_THEMES; if (T) T.apply('page', { meta: true }); }
-  var s = document.createElement('script'); s.src = '../olympus/themes.js?v=o5'; s.async = true; s.onload = go; document.head.appendChild(s);
+  var s = document.createElement('script'); s.src = '../olympus/themes.js?v=o6'; s.async = true; s.onload = go; document.head.appendChild(s);
 })();</script>
 </head>
 <body>
@@ -68,7 +68,7 @@
 </main>
 <script src="../olympus/quiet-net.js?v=q6a" data-fresh="raw:kalshi-feed,api:kalshi-feed,site:kalshi.json"></script>
 <script src="../olympus/gate-nav.js?v=g3" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
-<script src="kfx.js?v=k25"></script>
+<script src="kfx.js?v=k26"></script>
 <script src="kalshi.js?v=k25"></script>
 </body>
 </html>

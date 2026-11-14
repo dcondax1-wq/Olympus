@@ -53,7 +53,7 @@ def test_static():
     check("a. the files: hub/index.html, hub.js, hub.css, icon.svg, olympus/hub-status.js, docs/OLYMPUS_IA_V2.md",
           all(os.path.isfile(os.path.join(H, n)) for n in names) and os.path.isfile(HSJ) and os.path.isfile(os.path.join(AK.ROOT, "docs", "OLYMPUS_IA_V2.md")))
     html, js, css, hs, nav, cat = (AK.read(p) for p in (os.path.join(H, "index.html"), os.path.join(H, "hub.js"), os.path.join(H, "hub.css"), HSJ, NAV, CAT))
-    order = ["../olympus/agora.css?v=a3", "hub.css?v=h1", "../olympus/themes.js?v=o5", "../olympus/gate-catalog.js?v=g2", "../olympus/hub-status.js?v=h1",
+    order = ["../olympus/agora.css?v=a4", "hub.css?v=h2", "../olympus/themes.js?v=o6", "../olympus/gate-catalog.js?v=g2", "../olympus/hub-status.js?v=h1",
              '../olympus/gate-nav.js?v=g3" data-app="hub" defer', "hub.js?v=h1"]
     pos = [html.find(x) for x in order]
     check("a. the page loads agora.css, hub.css, the theme engine, the catalog, hub-status, gate-nav (data-app=hub, deferred) and hub.js, in that order, all in <head>",

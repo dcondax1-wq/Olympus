@@ -7,7 +7,7 @@
 // follows their head, "show me your work" puts their work card beside them, "walk with me" walks them out to their app. "Voices" turns every voice on
 // (off by default, remembered). Let them talk: two or three people talk to each other, each only about their own numbers.
 import * as C from './symposiumcore.js';
-import P from '../olympus/people.js?v=p2';
+import P from '../olympus/people.js?v=p3';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);

@@ -56,7 +56,7 @@ def part_a():
           "import * as SB from './scoreboardcore.js'" in js and "getJSON('../money/scoreboard.json')" in js and "SB.ok(score)" in js and "function scoreCard()" in js
           and "out.push(scoreCard())" in js and not re.search(r"innerHTML|insertAdjacentHTML", js))
     html = open(os.path.join(PAGE, "index.html"), encoding="utf-8").read()
-    check("a. the page's own files carry a new version (ledger.js / ledger.css ?v=s1) so the phone fetches the new card", "ledger.js?v=s1" in html and "ledger.css?v=s1" in html)
+    check("a. the page's own files carry a new version (ledger.js / ledger.css ?v=s1) so the phone fetches the new card", "ledger.js?v=s1" in html and "ledger.css?v=s2" in html)
     check("a. AGORA: the card reuses the page's glass card, the AGORA number tiles (.snap / .ag-money) and chips; no neon, glow or techno font in the new CSS",
           ".sbsrc" in open(os.path.join(PAGE, "ledger.css"), encoding="utf-8").read() and not re.search(r"text-shadow|Orbitron|Rajdhani|#0ff|cyan", open(os.path.join(PAGE, "ledger.css"), encoding="utf-8").read().split("Scoreboard card")[-1]))
 
