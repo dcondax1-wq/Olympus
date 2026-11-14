@@ -40,6 +40,15 @@ briefs, three "what do I do now" pages, three risk views, three money plans, two
 82 entries, each in exactly one hub (checked by `tests/test_hubs.py`). A few also appear as "Also useful here, from other hubs" (for example Kalshi City
 and Tyche on the Kalshi hub, Aegis and NQ on Today), so the 3D views and cross-job tools are one tap from where you need them.
 
+## The tenth hub: Me (2026-11-14, team ME1, docs/ME_HUB.md)
+
+Owner: *"get a certain dashboard or area for personal stuff. Make everything very organized, easy to access: connecting to my finances, cards,
+spending, WiFi, health, Apple Watch. Find more."* **Me** (`hub/?h=me`, the second tile on the home, wide, under Today) answers *How am I doing — money,
+health, home?* It is a PAGE hub: no app tabs and no apps of its own (so the 82 entries above stay as they are), drawn by `hub/me.js` from the PC's private
+`me/me.json` (`tools/me_hub.py`): 4 status tiles (Money left this month, Health today, Home, Next important date; each with its source and age), then 8
+areas (Money, Cards, Health, Home & WiFi, Freedom, Dates, Car, Streaks), each a short card stack with one-tap detail. Also useful there: Oikos, the
+Planner, Argo. Its own look in Mix like any hub (`data-oly-page="hub-me"`, legacy `life`); the home's search finds it by its words (health, wifi, cards).
+
 ## Duplicates folded (the best version first)
 
 | Job | Best version (shown first) | Folded under "Other views of the same" | Why this one |
@@ -213,6 +222,7 @@ Also shown here (they live in another hub): Trade replays (`odeon`), Meet your w
 
 | Piece | File | Test |
 |---|---|---|
+| The Me hub (a page hub: tiles + areas from the PC's private `me/me.json`) | `tools/web_public/hub/me.js`, `hub/me.css`, `tools/me_hub.py`, `docs/ME_HUB.md` | `tests/test_me_hub.py` |
 | The hubs, their tabs, every app's hub / tab / fold, the search | `tools/web_public/olympus/gate-catalog.js` (v2: `hubs` = `districts`, `layout(hub)`, `crumbOf(app)`, `hub(id)`, `hubOf(app)`, `mixOf(app)`) | `tests/test_hubs.py` (b), `tests/test_gate_page.py` (b) |
 | The live one-line status per hub (pure + two loaders) | `tools/web_public/olympus/hub-status.js` (`window.OLYMPUS_HUB_STATUS`) | `tests/test_hubs.py` (b, node) |
 | The home (command center) | `tools/web_public/gate/` (`index.html`, `gate.js`, `gate.css`) | `tests/test_gate_page.py`, `tests/test_live_link.py` (8, 9) |

@@ -18,6 +18,7 @@ freedom, dates, car, streaks). PC tools tools/me_*.py -> data/me/ (PRIVATE, serv
 """
 from __future__ import annotations
 
+import atexit
 import datetime as dt
 import io
 import json
@@ -41,6 +42,7 @@ NOW = int(dt.datetime(2026, 11, 14, 15, 0, tzinfo=dt.timezone.utc).timestamp()) 
 NOW_ISO = "2026-11-14T15:00:00Z"
 TODAY = "2026-11-14"
 TMP = tempfile.mkdtemp(prefix="me-hub-test-")
+atexit.register(shutil.rmtree, TMP, True)        # also when tests.gate_static imports this module
 
 
 def env_for(name: str) -> dict:
