@@ -543,7 +543,7 @@ def part_browser(shots: bool):
             p = ctx.new_page()
             errs = []
             p.on("pageerror", lambda e: errs.append(str(e)))
-            if js:
+            if js and when:
                 p.clock.set_fixed_time(datetime.datetime.fromisoformat(when))
             return ctx, p, errs
 
@@ -599,7 +599,7 @@ def part_browser(shots: bool):
             snap(p, "chat-07-lead-sent.png")
             post = POSTS[-1] if POSTS else None
             check("g. the lead goes to the site's own Netlify form: POST / urlencoded with form-name, name, phone, need, page, chat and the empty honeypot",
-                  post and post[0] == "/" and post[1] == "application/x-www-form-urlencoded" and post[2].get("form-name") == "frontdesk-chat"
+                  post and post[0] == "/" and (post[1] or "").startswith("application/x-www-form-urlencoded") and post[2].get("form-name") == "frontdesk-chat"
                   and post[2].get("name") == "Sam Rivera" and post[2].get("phone") == "(813) 555-0199" and "beard trim" in post[2].get("need", "")
                   and post[2].get("page", "").endswith("/harborline/") and post[2].get("bot-field") == "", post)
             widget_reqs = [r for r in REQS if r not in (("GET", "/harborline/"), ("GET", "/harborline/chat-demo-harborline.js"), ("GET", "/favicon.ico"))]
@@ -692,7 +692,7 @@ def part_browser(shots: bool):
             snap(p, "review-04-sent.png")
             ctx.close()
             for r in (4, 5):
-                ctx, p, errs = phone()
+                ctx, p, errs = phone(when=None)                 # clock.install below: fake timers, so the redirect waits for run_for
                 p.clock.install(time=datetime.datetime.fromisoformat(iso(2026, 11, 14, 11, 5)))
                 p.goto(base + "/harborline/review/")
                 p.click(f".star[data-r='{r}']")
@@ -716,7 +716,7 @@ def part_browser(shots: bool):
             check("g. 'Message the owner privately' opens the form without rating first (anyone, any time)", p.locator("#private textarea").is_visible()
                   and p.locator("input[name=rating]").input_value() == "")
             ctx.close()
-            ctx, p, errs = phone(js=False)
+            ctx, p, errs = phone(js=False, when=None)
             p.goto(base + "/harborline/review/")
             check("g. with JavaScript off the page still offers both: the Google link and the private form (posts natively to Netlify)",
                   google_visible(p) >= 2 and p.locator("#private textarea").is_visible())
