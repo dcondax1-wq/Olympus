@@ -41,7 +41,7 @@ THEMES = {
         "palette": {"bg": "#fff8ec", "surface": "#fffdf8", "ink": "#2a1a12", "muted": "#6b5446", "accent": "#a8261d", "accent_ink": "#ffffff", "accent_text": "#9c231b",
                     "line": "#ecdcc4", "hero_bg": "#fbecd3", "hero_ink": "#2a1a12", "hero_muted": "#6b5446"},
         "art": ["#a8261d", "#f3c06b", "#5d7a3a", "#2a1a12"],
-        "display": "'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif",
+        "display": "'Iowan Old Style','Palatino Linotype',Palatino,Georgia,Caladea,serif",
         "body": "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif", "radius": "14px"},
     "salon": {
         "label": "Salon", "short": "Salon", "folder": "4-salon", "special": "prices", "schema": "HairSalon",
@@ -49,7 +49,7 @@ THEMES = {
         "palette": {"bg": "#fcf7f3", "surface": "#ffffff", "ink": "#2b1b24", "muted": "#6b5560", "accent": "#a63d62", "accent_ink": "#ffffff", "accent_text": "#9a3459",
                     "line": "#ead8d6", "hero_bg": "#f6e7e3", "hero_ink": "#2b1b24", "hero_muted": "#6b5560"},
         "art": ["#a63d62", "#f2c6c9", "#d98c8f", "#7a2c4a"],
-        "display": "'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif",
+        "display": "'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,Caladea,serif",
         "body": "'Avenir Next',Avenir,-apple-system,'Segoe UI',Roboto,Arial,sans-serif", "radius": "22px"},
     "barber": {
         "label": "Barber", "short": "Barber", "folder": "5-barber", "special": "prices", "schema": "HairSalon",
@@ -57,7 +57,7 @@ THEMES = {
         "palette": {"bg": "#141210", "surface": "#1f1b17", "ink": "#f4ede1", "muted": "#c7bba7", "accent": "#d4ad4b", "accent_ink": "#141210", "accent_text": "#e0bd62",
                     "line": "#3a332a", "hero_bg": "#141210", "hero_ink": "#f4ede1", "hero_muted": "#c7bba7"},
         "art": ["#d4ad4b", "#f4ede1", "#8c2f2f", "#2b2620"],
-        "display": "'Didot','Bodoni 72','Bodoni MT','Playfair Display',Georgia,'Times New Roman',serif",
+        "display": "'Didot','Bodoni 72','Bodoni MT','Playfair Display',Georgia,Caladea,'Times New Roman',serif",
         "body": "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif", "radius": "2px"},
 }
 ORDER = ["trades", "garden", "cafe", "salon", "barber"]
