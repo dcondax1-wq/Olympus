@@ -629,7 +629,100 @@ def test_browser():
         check("l. Jarvis in Chromium ran", False, f"{e.__class__.__name__}: {e}")
 
 
-EXTRA = {"k": test_node}
+# ------------------------------------------------------------------------------------------------ i. the internet feeds (weather.gov, the official RSS)
+POINTS = {"properties": {"forecast": "https://api.weather.gov/gridpoints/ILN/85,82/forecast", "relativeLocation": {"properties": {"city": "Columbus", "state": "OH"}}}}
+FORECAST = {"properties": {"periods": [{"name": "Today", "temperature": 51, "temperatureUnit": "F", "shortForecast": "Chance Rain Showers", "probabilityOfPrecipitation": {"value": 40},
+                                        "windSpeed": "10 to 15 mph", "isDaytime": True},
+                                       {"name": "Tonight", "temperature": 38, "temperatureUnit": "F", "shortForecast": "Mostly Cloudy", "probabilityOfPrecipitation": {"value": None}, "isDaytime": False}]}}
+ALERTS = {"features": [{"properties": {"event": "Wind Advisory", "headline": "Wind Advisory issued November 16 until 6 PM", "severity": "Moderate"}}]}
+FED_RSS = """<?xml version="1.0" encoding="utf-8"?><rss version="2.0"><channel><title>FRB: Press Releases</title>
+<item><title>Federal Reserve issues FOMC statement</title><link>https://www.federalreserve.gov/x.htm</link><pubDate>Mon, 16 Nov 2026 12:00:00 GMT</pubDate></item>
+<item><title>Agencies announce dollar thresholds for smaller loan exemption</title><pubDate>Mon, 16 Nov 2026 11:00:00 GMT</pubDate></item>
+<item><title>Minutes of the Federal Open Market Committee, October 2025</title><pubDate>Wed, 08 Oct 2025 18:00:00 GMT</pubDate></item>
+</channel></rss>"""
+BLS_ATOM = """<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><title>BLS</title>
+<entry><title>Consumer Price Index news release</title><updated>2026-11-16T08:30:00-05:00</updated></entry>
+<entry><title>County Employment and Wages</title><updated>2026-11-15T10:00:00-05:00</updated></entry>
+</feed>"""
+BOMB = """<?xml version="1.0"?><!DOCTYPE lolz [<!ENTITY lol "lol"><!ENTITY lol2 "&lol;&lol;&lol;">]><rss><channel><item><title>&lol2; cpi</title></item></channel></rss>"""
+
+
+def feed_net(extra=None):
+    r = {"https://api.weather.gov/points/39.9612,-82.9988": (200, json.dumps(POINTS).encode()), "https://api.weather.gov/gridpoints/ILN/85,82/forecast": (200, json.dumps(FORECAST).encode()),
+         "https://api.weather.gov/alerts/active?point=39.9612,-82.9988": (200, json.dumps(ALERTS).encode()),
+         "https://www.federalreserve.gov/feeds/press_all.xml": (200, FED_RSS.encode()), "https://www.bls.gov/feed/bls_latest.rss": (200, BLS_ATOM.encode())}
+    r.update(extra or {})
+    return Net(r)
+
+
+def test_feeds():
+    from tools import day_feeds as F
+    cfg = {}
+    geo = [{"name": "Columbus", "latitude": 32.46, "longitude": -84.98, "admin1": "Georgia"}, {"name": "Columbus", "latitude": 39.9612, "longitude": -82.9988, "admin1": "Ohio"}]
+    place = F.set_city(cfg, "Columbus, OH", geocode=lambda c, s: geo)
+    check("i. city by name: 'Columbus, OH' picks Ohio (not Georgia), saved as numbers", place == "Columbus, OH" and cfg["city"] == {"name": "Columbus, OH", "lat": 39.9612, "lon": -82.9988}, cfg)
+    c2 = {}
+    check("i. city by numbers, no lookup at all", F.set_city(c2, "39.9612, -82.9988") == "39.96,-83.00" and c2["city"]["lat"] == 39.9612)
+    for bad in ("", "999,999"):
+        try:
+            F.set_city({}, bad, geocode=lambda c, s: [])
+            check(f"i. a bad city '{bad}' raises a plain error", False)
+        except ValueError:
+            check(f"i. a bad city '{bad}' raises a plain error", True)
+    net = feed_net()
+    tmp = tempfile.mkdtemp()
+    try:
+        out = F.gather(cfg, MON_0800, tmp, opener=net, say=lambda *_: None)
+        w = out["weather"]
+        check("i. weather.gov: points -> forecast -> alerts; Columbus 51 F, 40% rain, the wind advisory", w and w["place"] == "Columbus, OH" and w["periods"][0]["temp"] == 51 and w["periods"][0]["rain"] == 40
+              and w["alerts"][0]["event"] == "Wind Advisory" and w["src"] == "api.weather.gov", w)
+        hd = [h["title"] for h in out["headlines"]["items"]]
+        check("i. headlines: the FOMC statement (fed) and the CPI release (cpi) only; the loan notice, the county wages and the 2025 minutes are left out",
+              hd == ["Consumer Price Index news release", "Federal Reserve issues FOMC statement"] or hd == ["Federal Reserve issues FOMC statement", "Consumer Price Index news release"], hd)
+        check("i. headline tags and sources, no links kept", {h["source"] for h in out["headlines"]["items"]} == {"federalreserve.gov", "bls.gov"} and all(h["tags"] for h in out["headlines"]["items"])
+              and "https://" not in json.dumps(out["headlines"]), out["headlines"])
+        check("i. every request: https, a generic User-Agent, no cookie or key", all(c["url"].startswith("https://") and set(c["headers"]) == {"User-Agent", "Accept"} for c in net.calls), net.calls[:2])
+        n1 = len(net.calls)
+        F.gather(cfg, MON_0800 + 600, tmp, opener=net, say=lambda *_: None)
+        check("i. asked at most once an hour (10 minutes later: no request)", len(net.calls) == n1, len(net.calls) - n1)
+        F.gather(cfg, MON_0800 + 3600, tmp, opener=net, say=lambda *_: None)
+        check("i. an hour later: the forecast again, the points lookup is remembered", sum(1 for c in net.calls[n1:] if "/points/" in c["url"]) == 0 and any("forecast" in c["url"] for c in net.calls[n1:]), [c["url"] for c in net.calls[n1:]])
+        down = Net({})
+        out3 = F.gather(cfg, MON_0800 + 2 * 3600, tmp, opener=down, say=lambda *_: None)
+        check("i. the network is down: the last good weather and headlines stay", out3["weather"] and out3["weather"]["periods"][0]["temp"] == 51 and out3["headlines"]["items"])
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    try:
+        F.parse_feed(BOMB.encode(), "x")
+        check("i. a feed with entity declarations (an XML bomb) is refused", False)
+    except ValueError:
+        check("i. a feed with entity declarations (an XML bomb) is refused", True)
+    try:
+        F.get("http://www.bls.gov/feed/bls_latest.rss", opener=lambda *a: (200, b""))
+        check("i. http:// is refused", False)
+    except ValueError:
+        check("i. http:// is refused", True)
+    tmp = tempfile.mkdtemp()
+    try:
+        out = F.gather({"rss": []}, MON_0800, tmp, opener=Net({}), say=lambda *_: None)
+        check("i. no city and rss: [] -> no weather, no headlines, nothing asked", out == {"weather": None, "headlines": None})
+        # the whole sync: the feeds land in day.json and in the morning brief lines
+        home = os.path.join(tmp, "o")
+        cfgp = os.path.join(home, "calendars.json")
+        c = CS.load_config(cfgp)
+        c, _ = CS.add_calendar(c, SECRET_URLS["outlook"], "Office", True)
+        c["city"] = cfg["city"]
+        CS.save_config(c, cfgp)
+        net = feed_net({CS.normalize_url(SECRET_URLS["outlook"]): (200, rd("outlook.ics").encode())})
+        d = CS.sync(MON_0800, cfg_path=cfgp, work_dir=os.path.join(tmp, "day"), opener=net, site_dir=tmp, trade={"ok": False}, say=lambda *_: None)
+        txt = json.dumps(d)
+        check("i. sync: weather and headlines are in day.json, the weather.gov forecast address and the feed links are not", d["weather"]["periods"][0]["temp"] == 51 and d["headlines"]["items"]
+              and "gridpoints" not in txt and "https://" not in txt, (d.get("weather"), "gridpoints" in txt))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+EXTRA = {"i": test_feeds, "k": test_node}
 
 
 def main():
