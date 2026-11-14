@@ -2,6 +2,8 @@
 rem OLYMPUS: SETUP EVERYTHING (double-click; owner 2026-11-14: "one double-click"). ONE window walks you through this
 rem weekend's three PC jobs in order; each one is checked first and skipped when it is already done:
 rem   1 NEW CODE    the newest OLYMPUS_BACKUP_*.zip (+ its .sha256.txt) from Downloads / the Desktop into the bot folder
+rem   1b AUTO-UPDATE once: from then on the PC gets new code by itself from the private backup repo (a GitHub
+rem                 sign-in window may open the first time; never during trading hours, never with a trade open)
 rem   2 PHONE LINK  the private Tailscale link to the dashboard, shown big and put on the clipboard
 rem   3 GO LIVE     only after you type YES (Sunday after 6 PM ET, both evals active on MFFU): GO_LIVE_EVAL's flow, where
 rem                 YOU type the live phrase yourself. This file never types it, never stores it and never arms anything.
