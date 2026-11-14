@@ -144,7 +144,7 @@ PACKS["barber"] = {
     "city_tag": "Barber",
     "cta": ["Book your chair: {site}", "Call {phone} to grab a chair.", "Book online at {site} or call {phone}."],
     "times": {1: "11:30", 2: "11:30", 3: "17:30", 4: "11:30", 5: "08:30"},
-    "times_note": "Tue-Fri 11:30 am (lunch-break bookings), Thu 5:30 pm, Sat 8:30 am",
+    "times_note": "Tue, Wed, Fri 11:30 am (lunch-break bookings), Thu 5:30 pm, Sat 8:30 am",
     "services": [
         ("Skin *fade*", "Clean, sharp and blended down to the skin. Tell us how high you want it and we will take it from there.", ""),
         ("Beard *trim*", "Shape, line and condition. A good beard trim changes your whole face, and it only takes a few minutes in the chair.", ""),
@@ -226,7 +226,7 @@ PACKS["salon"] = {
     "city_tag": "Salon",
     "cta": ["Book your appointment: {site}", "Call {phone} to book.", "Book online at {site} or call {phone}."],
     "times": {1: "10:00", 2: "19:00", 3: "10:00", 4: "12:00", 5: "09:00"},
-    "times_note": "Tue & Thu 10 am, Wed 7 pm (evening scrolling), Fri noon, Sat 9 am",
+    "times_note": "Tue, Thu 10 am, Wed 7 pm (evening scrolling), Fri noon, Sat 9 am",
     "services": [
         ("Balayage", "Soft, hand-painted color that grows out beautifully. Low maintenance, high impact.", "Do you do balayage?"),
         ("The perfect *blowout*", "Smooth, bouncy and lasts for days. Perfect before an event, a trip or just because.", ""),
@@ -306,7 +306,7 @@ PACKS["restaurant"] = {
     "city_tag": "Eats",
     "cta": ["Reserve a table: {phone}", "See the menu: {site}", "Call {phone} or visit {site}."],
     "times": {0: "11:00", 1: "11:00", 2: "16:30", 3: "16:30", 4: "11:30", 5: "10:00", 6: "10:00"},
-    "times_note": "11 am (lunch plans), 4:30 pm Wed/Thu (dinner plans), weekends 10 am",
+    "times_note": "Mon, Tue 11 am and Fri 11:30 am (lunch plans), Wed, Thu 4:30 pm (dinner plans), weekends 10 am",
     "services": [
         ("House *favorite*", "The dish our regulars order again and again. Ask your server which one, then thank us later.", ""),
         ("Date *night*", "Good food, good company, no dishes to wash. Bring someone you like.", ""),
@@ -387,7 +387,7 @@ PACKS["plumber"] = {
     "city_tag": "Plumber",
     "cta": ["Call {phone} to book a visit.", "Book online: {site}", "Call {phone} or book at {site}."],
     "times": {0: "07:30", 1: "07:30", 2: "12:00", 3: "07:30", 4: "12:00", 5: "09:00"},
-    "times_note": "Weekdays 7:30 am (before work), Wed & Fri noon, Sat 9 am",
+    "times_note": "Mon, Tue, Thu 7:30 am (before work), Wed, Fri noon, Sat 9 am",
     "hvac_words": ["hvac", "heating", "cooling", "air", "ac ", "a/c", "furnace", "heat"],
     "services": [
         ("Water heater *service*", "No hot water, rusty water or strange noises? We repair and replace water heaters.", "", "p"),
@@ -474,7 +474,7 @@ PACKS["landscaper"] = {
     "city_tag": "Landscaping",
     "cta": ["Get a quote: {phone}", "Request a quote at {site}", "Call {phone} or visit {site}."],
     "times": {0: "07:00", 1: "12:00", 2: "07:00", 3: "12:00", 4: "07:00", 5: "08:00"},
-    "times_note": "Weekdays 7 am (coffee scroll), Tue & Thu noon, Sat 8 am (yard-work mood)",
+    "times_note": "Mon, Wed, Fri 7 am (coffee scroll), Tue, Thu noon, Sat 8 am (yard-work mood)",
     "services": [
         ("Weekly *mowing*", "Crisp lines and a clean cut every week, so your weekends are yours again.", ""),
         ("Mulch & *beds*", "Fresh mulch and tidy beds make the whole house look cared for.", ""),
@@ -556,7 +556,7 @@ PACKS["auto"] = {
     "city_tag": "AutoRepair",
     "cta": ["Book a service: {phone}", "Book online at {site}", "Call {phone} or book at {site}."],
     "times": {0: "07:45", 1: "12:00", 2: "07:45", 3: "12:00", 4: "07:45", 5: "09:00"},
-    "times_note": "Weekdays 7:45 am (the commute), Tue & Thu noon, Sat 9 am",
+    "times_note": "Mon, Wed, Fri 7:45 am (the commute), Tue, Thu noon, Sat 9 am",
     "services": [
         ("Brake *check*", "Squeaks, grinding or a soft pedal? Brakes are not something to wait on. We check them fast.", ""),
         ("Oil *change*", "Fresh oil, a quick look over the car, and you are back on the road.", ""),
@@ -641,7 +641,7 @@ PACKS["gym"] = {
     "city_tag": "Fitness",
     "cta": ["Try a class: {site}", "Questions? Call {phone}.", "Stop by or book at {site}."],
     "times": {0: "06:00", 1: "17:00", 2: "06:00", 3: "17:00", 4: "06:00", 5: "08:00", 6: "17:00"},
-    "times_note": "6 am (before the workout) and 5 pm (after work), Sat 8 am, Sun 5 pm (planning the week)",
+    "times_note": "Mon, Wed, Fri 6 am (before the workout), Tue, Thu 5 pm (after work), Sat 8 am, Sun 5 pm (planning the week)",
     "services": [
         ("Personal *training*", "A plan built for you, a coach in your corner, and real progress.", "Do you offer personal training?"),
         ("Group *classes*", "More energy, more fun, and someone to notice when you skip. Find your class.", ""),
@@ -722,7 +722,7 @@ PACKS["dentist"] = {
     "city_tag": "Dentist",
     "cta": ["Book your visit: {site}", "Call {phone} to book.", "Book at {site} or call {phone}."],
     "times": {0: "12:15", 1: "19:00", 2: "12:15", 3: "19:00", 4: "12:15", 6: "19:00"},
-    "times_note": "Weekday lunch 12:15 pm, Tue & Thu 7 pm, Sun 7 pm (planning the week)",
+    "times_note": "Mon, Wed, Fri 12:15 pm (lunch break), Tue, Thu 7 pm, Sun 7 pm (planning the week)",
     "services": [
         ("Cleaning & *checkup*", "A fresh, clean feeling and a chance to catch small problems before they grow.", ""),
         ("Teeth *whitening*", "A brighter smile, safely, with a dentist who knows your teeth.", "Do you offer whitening?"),

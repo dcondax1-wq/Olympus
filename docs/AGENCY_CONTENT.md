@@ -45,8 +45,9 @@ The tool picks the post count from the client's `package` field ("Basic" -> 12, 
 season (the client's climate from the state in `city`: a Tampa plumber is never told about snow), tip, service spotlight, offer, behind
 the scenes, meet the team, review ask, FAQ, local love, conversation starter, booking reminder, checklist. Captions open with a hook,
 carry a local angle and end with the client's own call to action (site and/or phone). Six hashtags: 2 local (#AustinBarber, #AustinTX),
-2 trade, 1 topic or holiday, 1 general. Posting times are per trade (e.g. barbers Tue-Fri 11:30 am, Thu 5:30 pm, Sat 8:30 am; gyms 6 am
-and 5 pm). After a month, look at the page's Insights and move the times toward the hours that got the most reach.
+2 trade, 1 topic or holiday, 1 general. Posting times are per trade (e.g. barbers Tue, Wed, Fri 11:30 am, Thu 5:30 pm, Sat 8:30 am;
+gyms Mon, Wed, Fri 6 am, Tue, Thu 5 pm); holiday greetings go out at 9 am on the day. They are sensible starting points, not
+measured per client: after a month, look at the page's Insights and move the times toward the hours that got the most reach.
 
 **Honesty rules built in** (tested): nothing invented about the business (no prices, hours, years, star counts); any post that assumes a
 service (gift cards, catering, discounts, free tests, warranties) carries a yes/no question that lands in `client_message.txt` and on
@@ -55,8 +56,10 @@ the contact sheet; review posts never quote a customer unless you give real revi
 never sell; behind-the-scenes posts say which real photo would beat the graphic.
 
 **No repeats.** Consecutive months never share a caption (tested over 12 months for every trade); only the November / December
-gift-card offer runs twice, with different words. The packs hold about 70 lines per trade, so content cycles after a few months on the
-20-post plan; add lines to `agency/content/packs.py` to stretch it.
+gift-card offer runs twice, with different words. Each trade has about 50 lines of its own plus 45 shared ones (holidays, review
+asks, local love), so evergreen tips come back every other month on the bigger plans; add lines to `agency/content/packs.py` to
+stretch it. Weather lines follow the client's climate (cold, mild, warm or rainy, from the state): Phoenix and Tampa never hear
+about snow or frozen pipes (tested).
 
 **Trade packs** (`packs.py`): barber, salon, restaurant, plumber / HVAC (plumbing-only and HVAC-only clients get only their tips),
 landscaper, auto repair, gym, dentist. Each: 3 colour palettes (one is picked per client; `--colors "#hex,#hex"` or `"brand_colors"`
