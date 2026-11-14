@@ -631,6 +631,31 @@ def part_b(tmp: Path):
               {t: (r["score"], demos[t]["score"]) for t, r in befores.items()})
     finally:
         httpd.shutdown()
+    import gzip
+
+    class Zipped(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802
+            body = gzip.compress((FIX / "good.html").read_bytes()) if self.path == "/" else gzip.compress(b"<p>" + b"0" * 20_000_000)
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Encoding", "gzip")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *a):
+            pass
+    zs = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Zipped)
+    threading.Thread(target=zs.serve_forever, daemon=True).start()
+    zu = f"http://127.0.0.1:{zs.server_address[1]}"
+    try:
+        f1 = grade.fetch_page(zu + "/")
+        f2 = grade.fetch_page(zu + "/bomb")
+    finally:
+        zs.shutdown()
+    check("b. a gzip page is unpacked and read (its title found); a 'gzip bomb' (20 MB of zeros in 20 KB) stops at the 5 MB cap",
+          grade.analyse(f1["html"], zu)["title"] == "Plumber in Springfield | Joe's Plumbing" and f1["wire_bytes"] < f1["html_bytes"]
+          and f2["html_bytes"] == grade.MAX_BYTES and f2["wire_bytes"] < 100_000, (f1["html_bytes"], f2["html_bytes"], f2["wire_bytes"]))
     old = grade.REPORTS
     try:
         grade.REPORTS = tmp / "data" / "agency" / "reports"

@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import gzip
 import html
 import json
 import os
@@ -105,17 +104,14 @@ def normalize_url(raw: str) -> str:
 
 
 def _decode(raw: bytes, enc: str) -> bytes:
+    """gzip / deflate undone, never past MAX_BYTES (a hostile page cannot blow up in memory)"""
     enc = (enc or "").lower()
-    try:
-        if enc == "gzip":
-            return gzip.decompress(raw)
-        if enc == "deflate":
-            try:
-                return zlib.decompress(raw)
-            except zlib.error:
-                return zlib.decompress(raw, -zlib.MAX_WBITS)
-    except (OSError, zlib.error, EOFError):
-        return raw
+    modes = {"gzip": [16 + zlib.MAX_WBITS], "x-gzip": [16 + zlib.MAX_WBITS], "deflate": [zlib.MAX_WBITS, -zlib.MAX_WBITS]}.get(enc)
+    for wbits in modes or []:
+        try:
+            return zlib.decompressobj(wbits).decompress(raw, MAX_BYTES)
+        except zlib.error:
+            continue
     return raw
 
 
@@ -237,7 +233,10 @@ def visit(url: str, assets: bool = True, max_assets: int = MAX_ASSETS, pause: fl
     if net.get("status") and net["final_url"].startswith("https://") and not _local(net["final_url"]):
         net["http_to_https"] = http_moves_to_https(net["final_url"])
     if assets and net.get("status") and net["status"] < 400:
+        t_end = time.monotonic() + 40                               # weighing never takes more than about 40 seconds
         for a in page["assets"][:max_assets]:
+            if time.monotonic() > t_end:
+                break
             size, st = head_size(a["url"])
             net["assets"].append({**a, "bytes": size, "status": st})
             time.sleep(pause)
