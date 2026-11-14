@@ -1,0 +1,39 @@
+{
+  "_about": "Pricing and offer research for the agency (read 2026-11-14 with web search; most price sources are vendor blogs, so they are ranges, not facts). The three packages themselves live in agency/config.json (the owner's prices); this file holds the market, the funnel assumptions and the sources. agency/money.py turns them into the plan to $5,000 a month.",
+  "checked": "2026-11-14",
+  "market": [
+    {"what": "Small businesses with no website", "value": "17% of US small businesses (83% have one)", "source": "Clutch, small-business website survey, press release 2025-08-21", "url": "https://www.businesswire.com/news/home/20250821848152/en/Clutch-Report-No-Code-Tools-Fuel-Website-Growth-Yet-17-of-Small-Businesses-are-Still-Offline"},
+    {"what": "Why they have none", "value": "top answer 'not relevant to my industry' (34%); cost is the main reason for only 16%", "source": "Clutch, Do I need a website for my business (2025 data)", "url": "https://clutch.co/resources/do-i-need-website-my-business-2025-data"},
+    {"what": "Freelancer site for a small business", "value": "$1,500 - $5,000 (5-page brochure $1,500 - $3,000)", "source": "Seahawk Media and TDL Web Solutions pricing guides, 2025", "url": "https://seahawkmedia.com/tech/small-business-website-costs/"},
+    {"what": "Agency site for a small business", "value": "$5,000 - $15,000", "source": "Levitate, average website design cost 2026", "url": "https://www.levitate.ai/blog-posts/average-website-design-cost-for-small-businesses-in-2026"},
+    {"what": "Do-it-yourself builders", "value": "Wix Light $17, Core $29, Business $39 a month (annual); Squarespace from about $19 a month after its July 2026 increase", "source": "Website Builder Expert (Feb 2026) and Hostadvice (2026) price comparisons", "url": "https://hostadvice.com/blog/website-builders/wix/wix-vs-squarespace-pricing/"},
+    {"what": "Monthly care / maintenance plans", "value": "basic $39 - $99 a month; typical $50 - $200 a month", "source": "Fatlab, Seahawk Media, WPX maintenance-package guides 2025-2026", "url": "https://seahawkmedia.com/wordpress/wordpress-maintenance-packages/"},
+    {"what": "Cold email reply rate", "value": "0.45% of emails sent (7.5 million emails, 2025) up to about 4-4.5% in friendlier samples", "source": "Belkins 2025 study; Hunter, The State of Cold Email 2025", "url": "https://hunter.io/the-state-of-cold-email-2025"},
+    {"what": "Cold calls (B2B benchmarks)", "value": "about 6-10% of dials reach a person; 2.3-2.7% of conversations book a meeting", "source": "Belkins cold-calling benchmarks; Cognism cold calling report 2026", "url": "https://www.cognism.com/reports/cold-calling-report-2026"},
+    {"what": "Demo-first selling (a site already built)", "value": "claimed 3-5x better than plain cold outreach and 20-50% closes on demos shown, but only anecdotes and vendor claims: no audited study", "source": "Kolonell 2026 field notes; dev.to build-then-pitch experiment", "url": "https://dev.to/ryancwynar/the-ugly-site-prospecting-strategy-building-free-redesigns-to-win-clients-39k"},
+    {"what": "Google Business Profile sites", "value": "Google shut down every business.site website on 2024-03-01 (redirects ended 2024-06-10): those owners lost their site", "source": "Search Engine Land, 2024", "url": "https://searchengineland.com/google-shutting-down-websites-business-profiles-436393"},
+    {"what": "Phones in US web traffic", "value": "about 42% of US page views (desktop about 56%), August 2026", "source": "Statcounter Global Stats, platform market share, United States", "url": "https://gs.statcounter.com/platform-market-share/all/united-states-of-america/"}
+  ],
+  "hosting": [
+    {"what": "Netlify Free", "value": "300 credits a month; a production deploy costs 15 credits (about 20 deploys a month); forms are free and unlimited on credit plans; bandwidth 20 credits per GB; at zero credits every site pauses. Personal plan $9 a month = 1,000 credits", "source": "netlify.com/pricing and docs.netlify.com 'How credits work', read 2026-11-14", "url": "https://www.netlify.com/pricing/"},
+    {"what": "Netlify Drop", "value": "drag the site FOLDER onto app.netlify.com/drop (a zip must be unzipped first); new projects start private until you publish", "source": "docs.netlify.com, deploy guide, read 2026-11-14", "url": "https://docs.netlify.com/deploy/create-deploys/"},
+    {"what": "Cloudflare Pages Free", "value": "drag and drop a zip or a folder (Workers & Pages > Create > Drag and drop); 500 builds a month on the Free plan", "source": "developers.cloudflare.com Pages Direct Upload (2026-04-21) and Limits (2026-09-05)", "url": "https://developers.cloudflare.com/pages/get-started/direct-upload/"},
+    {"what": "Google Places API (the paid lead source)", "value": "Nearby Search Pro: 5,000 free calls a month, then $32 per 1,000; the $200 monthly credit was replaced by per-SKU free caps in March 2025", "source": "Google Maps Platform pricing list, read via search 2026-11-14", "url": "https://developers.google.com/maps/billing-and-pricing/pricing"}
+  ],
+  "rules": [
+    {"what": "CAN-SPAM (commercial email, business-to-business included)", "value": "true From and subject, say it is an ad, your valid postal address, a working opt-out honoured within 10 business days (it must work for 30 days); up to $53,088 per bad email", "source": "FTC, CAN-SPAM Act: A Compliance Guide for Business", "url": "https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business"}
+  ],
+  "assumptions": {
+    "_about": "The funnel the money math uses. They are ESTIMATES for a phone-first, demo-first approach to owner-run local shops (higher reach than the corporate B2B benchmarks above). Replace them with your own numbers after 2 weeks: the Agency page counts them for you.",
+    "package_mix": {"starter": 0.6, "growth": 0.3, "pro": 0.1},
+    "dials_per_conversation": 4,
+    "conversations_per_demo_view": 2,
+    "demo_views_per_sale": 4,
+    "care_churn_per_month": 0.03,
+    "working_days_per_month": 20,
+    "hours_per_sale": 4,
+    "minutes_per_call": 5,
+    "stripe_fee": 0.029,
+    "domain_per_year": 15
+  }
+}
