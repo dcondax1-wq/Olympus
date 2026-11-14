@@ -820,8 +820,8 @@ def test_page():
                   "g-wide" in g[0] and g[1] == " · ".join(t["short"] for t in doc["tiles"][:3]) and g[2] == "8 areas" and g[3].endswith("hub/index.html?h=me"), g)
             p.fill("#q", "health")
             p.wait_for_timeout(200)
-            first = p.evaluate("() => { const a = document.querySelector('#results a.g-row'); return a ? [a.dataset.hub, a.textContent] : null; }")
-            check("j. the home's search: 'health' finds the Me hub first", first and first[0] == "me" and first[1].startswith("Me"), first)
+            first = p.evaluate("() => { const a = document.querySelector('#results a.g-row'); return a ? [a.dataset.hub, a.querySelector('b').textContent] : null; }")
+            check("j. the home's search: 'health' finds the Me hub first", first and first[0] == "me" and first[1] == "Me", first)
             have = p.evaluate("() => !!document.querySelector('#lookTab2') && !document.querySelector('#lookSec').hidden")
             if have:
                 p.click("#lookTab2")
