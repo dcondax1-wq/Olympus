@@ -13,4 +13,5 @@ Also inside
   How_to_use.pdf           the guide: making posts, posting and scheduling, the rules that keep you safe
 
 Sizes: portrait 4:5 (1080 x 1350, the most space in a feed), 1:1 (1080 x 1080) and story (1080 x 1920).
+"Save my work" keeps everything (text, logo, photos) in one file you can open on another computer with "Open saved work".
 Nothing you type or add leaves your computer: the Post Maker has no server and loads nothing from the internet.

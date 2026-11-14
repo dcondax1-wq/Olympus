@@ -88,6 +88,7 @@ Also inside
   How_to_use.pdf           the guide: making posts, posting and scheduling, the rules that keep you safe
 
 Sizes: portrait 4:5 (1080 x 1350, the most space in a feed), 1:1 (1080 x 1080) and story (1080 x 1920).
+"Save my work" keeps everything (text, logo, photos) in one file you can open on another computer with "Open saved work".
 Nothing you type or add leaves your computer: the Post Maker has no server and loads nothing from the internet.
 """
 
@@ -189,7 +190,7 @@ def howto_html(shot: str) -> str:
 <li>Change the words in the <b>Edit</b> panel. Lines in the text box become list items or steps in designs that use them.</li>
 <li>Designs with a photo frame say "Add your photo": choose a photo from your device. It stays on your device.</li>
 <li>Press <b>Download this post</b> for a PNG, or <b>Download all 30</b> for a zip with every post and a captions sheet (captions.csv).</li>
-<li>Your work is saved in this browser as you go. To start a post again, press "Reset this post".</li></ol>
+<li>Your work is saved in this browser as you go. To move it to another computer, press <b>Save my work</b> and open the file there with <b>Open saved work</b>. To start a post again, press "Reset this post".</li></ol>
 <h2 class="pb">3. Post or schedule</h2>
 <ul><li>Copy the caption from the Post Maker (your name is filled in), change the [bracket] words, and paste it into your post.</li>
 <li>Add the <b>alt text</b> (the description for people who use screen readers) in your app's accessibility or alt-text setting.</li>

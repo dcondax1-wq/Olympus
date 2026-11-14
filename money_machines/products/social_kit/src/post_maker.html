@@ -69,6 +69,8 @@ header.bar span{color:var(--muted);font-size:.88rem}
   <div class="tools">
     <button class="btn primary" id="dl1" type="button">Download this post</button>
     <button class="btn" id="dlall" type="button">Download all 30 (.zip)</button>
+    <button class="btn" id="savework" type="button">Save my work</button>
+    <label class="btn">Open saved work<input type="file" id="openwork" accept=".json,application/json"></label>
   </div>
 </header>
 <div class="tabs" role="tablist"><button type="button" role="tab" id="t-make" aria-selected="true">Make posts</button><button type="button" role="tab" id="t-bank" aria-selected="false">Caption bank</button></div>
@@ -583,6 +585,26 @@ header.bar span{color:var(--muted);font-size:.88rem}
         });
       }, "image/png");
     })();
+  });
+
+  /* save and open your work (a .json file: moves your posts, logo and photos to another computer) */
+  $("savework").addEventListener("click", function () { save(new Blob([JSON.stringify(state)], {type: "application/json"}), slug() + "-posts.json"); });
+  $("openwork").addEventListener("change", function () {
+    var f = this.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var o = JSON.parse(r.result), s = PK.defaults();
+        s.brand = Object.assign(s.brand, o.brand || {}); s.size = PK.SIZES[o.size] ? o.size : "portrait"; s.current = +o.current || 0; s.edits = o.edits || {};
+        state = s; imgs = {photos: {}, logo: null};
+        ["b-name", "b-town", "b-contact"].forEach(function (id, j) { $(id).value = state.brand[["name", "town", "contact"][j]] || ""; });
+        $("b-font").value = state.brand.fonts || "classic";
+        swatches(); sizes(); logoUi(); fillEdit(); drawAll(); persist();
+        image(state.brand.logo, function (im) { imgs.logo = im; drawAll(); });
+        Object.keys(state.edits).forEach(function (k) { if (state.edits[k].photo) image(state.edits[k].photo, function (im) { imgs.photos[k] = im; drawThumb(+k); if (+k === state.current) drawMain(); }); });
+      } catch (e) { alert("That file is not a saved Post Maker file."); }
+    };
+    r.readAsText(f); this.value = "";
   });
 
   /* caption bank */
