@@ -69,7 +69,7 @@ const CSS = `
 .nx-orb:active,.nx-orb.press{transform:scale(.92)}
 .nx-orb.hide{opacity:0;visibility:hidden;pointer-events:none}
 .nx-orb:focus{outline:none}.nx-orb:focus-visible{outline:2px solid var(--oly-th-warn, #e0b060);outline-offset:3px}
-.nx-orb .nx-core svg{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;opacity:.82}
+.nx-orb .nx-core svg{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;opacity:.82;stroke:var(--oly-th-n37, #f3ece0)}
 .nx-orb.pulse .nx-core{animation:nx-pulse .6s ease}
 @keyframes nx-pulse{50%{transform:scale(.94)}}
 @keyframes nx-spin{to{transform:rotate(360deg)}}

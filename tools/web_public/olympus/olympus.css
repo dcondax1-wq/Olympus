@@ -69,7 +69,7 @@ html[data-fx="off"] .oly-glass::before, html[data-fx="off"] .oly-card::before { 
 
 /* ---------------------------------------------------------------- the orb's seat: Jarvis's orb when framed, the way back when alone */
 .oly-home { position: fixed; right: calc(18px + var(--oly-sr)); bottom: calc(18px + var(--oly-sb)); z-index: 40; width: var(--oly-tap); height: var(--oly-tap);
-  border-radius: 50%; display: grid; place-items: center; text-decoration: none; color: var(--oly-accent);
+  border-radius: 50%; display: grid; place-items: center; text-decoration: none; color: var(--oly-th-a8, var(--oly-accent));   /* a look: its text-safe accent (T2) */
   background: radial-gradient(circle at 50% 35%, var(--oly-th-n7, #3a2f20), var(--oly-bg2) 75%); border: 1px solid rgba(var(--oly-accent-rgb), .55);
   box-shadow: var(--oly-shadow); touch-action: manipulation; }
 .oly-home-o { font: 600 18px/1 var(--oly-display); }

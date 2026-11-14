@@ -451,13 +451,14 @@
      * headers, g0-g3 / r0-r3: the gain / loss chips) stay far enough from the muted text to carry it. A blend between two reference colours can
      * fall a little short on a light look (AGORA's #9a8f7d sits just under its muted, so on Ivory it lands just above it) and a monochrome look
      * (Amber: its text IS its accent) tints its cards too bright: such a slot is nudged (its hue kept) until it reads. One that reads is left. */
-    var page = [out.n3, out.n4, out.n5, out.n7].concat(R.surf || []);
-    for (s = 20; s <= 40; s++) out['n' + s] = readable(out['n' + s], page, 4.5);
+    // INK: 4.5:1 and a little headroom, for the tints a card or a chip lays over these surfaces (a warn row, a gain chip, a glass card)
+    var INK = 4.75, page = [out.n3, out.n4, out.n5, out.n7].concat(R.surf || []);
+    for (s = 20; s <= 40; s++) out['n' + s] = readable(out['n' + s], page, INK);
     var muted = [out.n24];
     for (s = 0; s <= 4; s++) { out['a' + s] = readable(out['a' + s], muted, 4.5); if (s <= 3) { out['g' + s] = readable(out['g' + s], muted, 4.5); out['r' + s] = readable(out['r' + s], muted, 4.5); } }
     var two = [out.n3, out.n4, out.a1, out.a3].concat(R.surf || []);
-    for (s = 7; s <= 15; s++) { out['g' + s] = readable(out['g' + s], two, 4.5); if (s >= 8) { out['a' + s] = readable(out['a' + s], two, 4.5); out['r' + s] = readable(out['r' + s], two, 4.5); } }
-    out.warn = readable(out.warn, two, 4.5);
+    for (s = 7; s <= 15; s++) { out['g' + s] = readable(out['g' + s], two, INK); if (s >= 8) { out['a' + s] = readable(out['a' + s], two, INK); out['r' + s] = readable(out['r' + s], two, INK); } }
+    out.warn = readable(out.warn, two, INK);
     return out;
   }
   function relLum(c) { var x = rgbOf(c), s = 0, wt = [0.2126, 0.7152, 0.0722]; for (var q = 0; q < 3; q++) { var v = x[q] / 255; s += wt[q] * (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); } return s; }
