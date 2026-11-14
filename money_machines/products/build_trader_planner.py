@@ -490,28 +490,28 @@ ul.checks li{{font-size:{int((28 if sq else 22) * k)}px;margin:{int(11 * k)}px 0
                     f'<ul class="checks" style="margin-top:{int(14 * k)}px"><li>16 undated pages, US Letter + A4</li><li>Pre-market routine, daily plan, trade log</li>'
                     f'<li>Daily, weekly and monthly reviews</li><li>Spreadsheet journal with a process dashboard</li></ul>')
             if sq:
-                pos = [(1030, 960, 8, 640), (800, 1000, 2, 640), (560, 1040, -4, 640), (330, 1090, -10, 640)]
+                pos = [(830, 640, 8, 358), (650, 665, 2, 358), (470, 695, -4, 358), (290, 725, -10, 358)]
                 body = f'<div class="pad">{text}</div>'
             else:
-                pos = [(1010, 120, 9, 300), (900, 150, 3, 300), (790, 190, -3, 300), (690, 240, -9, 300)]
+                pos = [(965, 120, 9, 290), (855, 150, 3, 290), (745, 190, -3, 290), (650, 235, -9, 290)]
                 body = f'<div class="pad" style="width:{int(600 * k)}px">{text}</div>'
             body += "".join(f'<img class="pg" src="{u(pngs[i])}" style="left:{int(x * k)}px;top:{int(y * k)}px;width:{int(pw * k)}px;transform:rotate({r}deg)">'
                             for i, (x, y, r, pw) in zip(fan_idx, pos))
             body += '<div class="foot">Process only: no signals, no predictions, no results promised. Trading involves substantial risk of loss.</div>'
         elif n == "2":
             cols = 4 if sq else 8
-            tw = int((400 if sq else 136) * k)
+            tw = 270 if sq else 136
             cells = "".join(f'<div><img src="{u(b)}" style="width:{tw}px;border-radius:{max(3, int(4 * k))}px;box-shadow:0 {int(8 * k)}px {int(20 * k)}px rgba(0,0,0,.45);background:#fff;display:block"><div class="lbl">{names[i]}</div></div>' for i, b in enumerate(pngs))
-            top = int((280 if sq else 150) * k)
+            top = 260 if sq else 150
             body = (f'<div class="pad" style="text-align:center"><h1 style="font-size:{int((70 if sq else 44) * k)}px">16 pages for your routine</h1></div>'
                     f'<div style="position:absolute;top:{top}px;left:0;right:0;display:grid;grid-template-columns:repeat({cols},{tw}px);gap:{int((26 if sq else 12) * k)}px {int((34 if sq else 14) * k)}px;justify-content:center">{cells}</div>')
         else:
             text = (f'<span class="chip kick">Included: the spreadsheet journal</span><h1>Track your habits, not just trades</h1><div class="rule" style="margin-top:{int(22 * k)}px"></div>'
                     f'<ul class="checks" style="margin-top:{int(16 * k)}px"><li>Daily log: sleep, energy, routine, plan, grade</li><li>Rules and rule breaks, counted for you</li>'
                     f'<li>Weekly review that adds itself up</li><li>A dashboard of your process</li></ul>')
-            jw = int((1180 if sq else 600) * k)
+            jw = 1200 if sq else 600
             if sq:
-                body = f'<div class="pad">{text}</div><div style="position:absolute;left:{int(410 * k)}px;top:{int(900 * k)}px">{K.window(u(journal, crop=0.78), jw)}</div>'
+                body = f'<div class="pad">{text}</div><div style="position:absolute;left:400px;top:960px">{K.window(u(journal, crop=0.78), jw)}</div>'
             else:
                 body = f'<div class="pad" style="width:{int(560 * k)}px">{text}</div><div style="position:absolute;left:{int(620 * k)}px;top:{int(90 * k)}px">{K.window(u(journal, crop=0.78), jw)}</div>'
             body += '<div class="foot">The journal measures your own habits. It gives no trade ideas and makes no predictions.</div>'

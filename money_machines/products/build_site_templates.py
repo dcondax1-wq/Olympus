@@ -364,25 +364,22 @@ ul.checks li{{font-size:{int((27 if sq else 22) * k)}px;margin:{int(11 * k)}px 0
                     f'<li>No code, no subscription, works offline</li><li>Guide: put it online for free</li></ul>')
             if sq:
                 body = (f'<div class="pad">{text}</div><div class="band"></div>'
-                        f'<div style="position:absolute;left:{int(80 * k)}px;top:{int(1040 * k)}px">{K.window(u[("trades", "desk")], int(1180 * k))}</div>'
-                        f'<div style="position:absolute;right:{int(70 * k)}px;top:{int(860 * k)}px">{K.phone(u[("salon", "phone")], int(330 * k))}</div>'
-                        f'<div style="position:absolute;right:{int(400 * k)}px;top:{int(1010 * k)}px">{K.phone(u[("barber", "phone")], int(300 * k))}</div>')
+                        f'<div style="position:absolute;left:{int(60 * k)}px;top:{int(680 * k)}px">{K.window(u[("trades", "desk")], int(830 * k))}</div>'
+                        f'<div style="position:absolute;right:{int(45 * k)}px;top:{int(755 * k)}px">{K.phone(u[("salon", "phone")], int(210 * k))}</div>'
+                        f'<div style="position:absolute;right:{int(270 * k)}px;top:{int(835 * k)}px">{K.phone(u[("barber", "phone")], int(185 * k))}</div>')
             else:
                 body = (f'<div class="pad" style="width:{int(600 * k)}px">{text}</div><div class="band"></div>'
                         f'<div style="position:absolute;left:{int(640 * k)}px;top:{int(80 * k)}px">{K.window(u[("trades", "desk")], int(600 * k))}</div>'
-                        f'<div style="position:absolute;left:{int(1000 * k)}px;top:{int(250 * k)}px">{K.phone(u[("salon", "phone")], int(210 * k))}</div>'
-                        f'<div style="position:absolute;left:{int(800 * k)}px;top:{int(330 * k)}px">{K.phone(u[("barber", "phone")], int(185 * k))}</div>')
+                        f'<div style="position:absolute;left:{int(1010 * k)}px;top:{int(240 * k)}px">{K.phone(u[("salon", "phone")], int(190 * k))}</div>'
+                        f'<div style="position:absolute;left:{int(810 * k)}px;top:{int(318 * k)}px">{K.phone(u[("barber", "phone")], int(170 * k))}</div>')
             body += '<div class="foot">Sample businesses are made up. Hosting and domain not included.</div>'
         elif n == "2":
             labels = [(t, D.THEMES[t]["label"], D.THEMES[t]["for"].split(",")[0].strip() + ", " + D.THEMES[t]["for"].split(",")[1].strip()) for t in D.ORDER]
             if sq:
-                pw = int(330 * k)
+                pw = 340
                 ph = lambda t, l, f: f'<div style="width:{pw}px">{K.phone(u[(t, "phone")], pw)}<div class="lbl">{l}<small>{f}</small></div></div>'
-                row1 = "".join(ph(*x) for x in labels[:3])
-                row2 = "".join(ph(*x) for x in labels[3:])
-                body = (f'<div class="pad" style="text-align:center"><h1>5 looks, one for each kind of local business</h1><div class="rule" style="margin:{int(22 * k)}px auto 0"></div></div>'
-                        f'<div style="position:absolute;top:{int(330 * k)}px;left:0;right:0;display:flex;justify-content:center;gap:{int(70 * k)}px">{row1}</div>'
-                        f'<div style="position:absolute;top:{int(1170 * k)}px;left:0;right:0;display:flex;justify-content:center;gap:{int(70 * k)}px">{row2}</div>')
+                body = (f'<div class="pad" style="text-align:center;padding-top:300px"><h1>5 looks, one for each kind of local business</h1><div class="rule" style="margin:{int(22 * k)}px auto 0"></div></div>'
+                        f'<div style="position:absolute;top:640px;left:0;right:0;display:flex;justify-content:center;gap:34px">{"".join(ph(*x) for x in labels)}</div>')
             else:
                 pw = int(196 * k)
                 body = (f'<div class="pad" style="padding-bottom:0"><h1 style="font-size:{int(44 * k)}px">5 looks, one for each kind of local business</h1>'
@@ -400,7 +397,7 @@ ul.checks li{{font-size:{int((27 if sq else 22) * k)}px;margin:{int(11 * k)}px 0
             text = (f'<span class="chip kick">Included: the Site Editor</span><h1>Edit your site without code</h1><div class="rule" style="margin-top:{int(22 * k)}px"></div>{steps}')
             if sq:
                 body = (f'<div class="pad">{text}</div><div class="band"></div>'
-                        f'<div style="position:absolute;left:{int(80 * k)}px;top:{int(1000 * k)}px">{K.window(u[("editor", "desk")], int(1400 * k))}</div>')
+                        f'<div style="position:absolute;left:{int(160 * k)}px;top:{int(627 * k)}px">{K.window(u[("editor", "desk")], int(960 * k))}</div>')
             else:
                 body = (f'<div class="pad" style="width:{int(520 * k)}px">{text}</div><div class="band"></div>'
                         f'<div style="position:absolute;left:{int(560 * k)}px;top:{int(92 * k)}px">{K.window(u[("editor", "desk")], int(670 * k))}</div>')

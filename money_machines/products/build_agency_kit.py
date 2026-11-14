@@ -422,20 +422,20 @@ h1{{font-size:{int((78 if sq else 58) * k)}px}}.lead{{font-size:{int((30 if sq e
 ul.checks li{{font-size:{int((28 if sq else 22) * k)}px;margin:{int(11 * k)}px 0}}
 .foot{{position:absolute;left:{int(60 * k)}px;bottom:{int(24 * k)}px;font-size:{int((18 if sq else 15) * k)}px;color:#a89c88}}
 .pg{{position:absolute;background:#fff;border-radius:{max(3, int(5 * k))}px;box-shadow:0 {int(18 * k)}px {int(40 * k)}px rgba(0,0,0,.5)}}
-.tile{{display:flex;gap:{int(16 * k)}px;align-items:center;background:#26211b;border:1px solid #3a3228;border-radius:{int(14 * k)}px;padding:{int(14 * k)}px {int(16 * k)}px}}
-.ic{{flex:none;width:{int(54 * k)}px;height:{int(66 * k)}px;border-radius:{int(6 * k)}px;display:grid;place-items:end center;padding-bottom:{int(8 * k)}px;font-weight:800;font-size:{int(15 * k)}px;color:#1b1814;
+.tile{{display:flex;gap:{int((22 if sq else 16) * k)}px;align-items:center;background:#26211b;border:1px solid #3a3228;border-radius:{int(14 * k)}px;padding:{int((26 if sq else 14) * k)}px {int((24 if sq else 16) * k)}px}}
+.ic{{flex:none;width:{int((78 if sq else 54) * k)}px;height:{int((94 if sq else 66) * k)}px;border-radius:{int(6 * k)}px;display:grid;place-items:end center;padding-bottom:{int(8 * k)}px;font-weight:800;font-size:{int((19 if sq else 15) * k)}px;color:#1b1814;
 clip-path:polygon(0 0,72% 0,100% 22%,100% 100%,0 100%)}}.ic.DOC{{background:#9fc0dd}}.ic.XLS{{background:#a9c98f}}.ic.PDF{{background:#e3a08a}}
-.tile b{{display:block;font-size:{int((21 if sq else 17) * k)}px;color:{ink}}}.tile span{{display:block;font-size:{int((18 if sq else 14) * k)}px;color:{soft};margin-top:{int(2 * k)}px}}"""
+.tile b{{display:block;font-size:{int((24 if sq else 17) * k)}px;color:{ink}}}.tile span{{display:block;font-size:{int((20 if sq else 14) * k)}px;color:{soft};margin-top:{int(4 * k)}px}}"""
         if n == "1":
             text = (f'<span class="chip kick">7 documents + 2 spreadsheets + the plan</span><h1>First Clients Agency Starter Kit</h1><div class="rule" style="margin-top:{int(22 * k)}px"></div>'
                     f'<p class="lead">For new web designers and local marketers: what to say, what to send, what to sign, how to bill.</p>'
                     f'<ul class="checks" style="margin-top:{int(14 * k)}px"><li>Outreach scripts that follow the rules</li><li>Proposal + service agreement*</li>'
                     f'<li>Onboarding, honest reviews, checklists</li><li>Tracker, pricing calculator, invoices</li></ul>')
             if sq:
-                pos = [(980, 980, 9, 600), (760, 1010, 3, 600), (540, 1060, -4, 600), (330, 1120, -10, 600)]
+                pos = [(830, 640, 9, 358), (650, 660, 3, 358), (470, 690, -4, 358), (290, 720, -10, 358)]
                 body = f'<div class="pad">{text}</div>'
             else:
-                pos = [(1000, 110, 9, 300), (890, 140, 3, 300), (780, 180, -3, 300), (680, 230, -9, 300)]
+                pos = [(960, 110, 9, 290), (850, 140, 3, 290), (740, 180, -3, 290), (640, 225, -9, 290)]
                 body = f'<div class="pad" style="width:{int(600 * k)}px">{text}</div>'
             body += "".join(f'<img class="pg" src="{s}" style="left:{int(x * k)}px;top:{int(y * k)}px;width:{int(pw * k)}px;transform:rotate({r}deg)">' for s, (x, y, r, pw) in zip(stack, pos))
             body += '<div class="foot">*Templates, not legal advice: have a lawyer in your area review the agreement. No client or income results promised.</div>'
@@ -443,7 +443,7 @@ clip-path:polygon(0 0,72% 0,100% 22%,100% 100%,0 100%)}}.ic.DOC{{background:#9fc
             cols = 2
             tiles = "".join(f'<div class="tile"><div class="ic {t}">{t}</div><div><b>{f}</b><span>{d}</span></div></div>' for f, t, d in files)
             body = (f'<div class="pad"><h1 style="font-size:{int((70 if sq else 46) * k)}px">What is inside</h1><div class="rule" style="margin-top:{int(16 * k)}px"></div></div>'
-                    f'<div style="position:absolute;left:{int(60 * k)}px;right:{int(60 * k)}px;top:{int((260 if sq else 165) * k)}px;display:grid;grid-template-columns:repeat({cols},1fr);gap:{int((22 if sq else 12) * k)}px">{tiles}</div>'
+                    f'<div style="position:absolute;left:{int(60 * k)}px;right:{int(60 * k)}px;top:{int((260 if sq else 165) * k)}px;display:grid;grid-template-columns:repeat({cols},1fr);gap:{int((26 if sq else 12) * k)}px">{tiles}</div>'
                     '<div class="foot">Editable in the usual word processors and spreadsheet apps, or free online editors. *Not legal advice.</div>')
         else:
             steps = [("Find", "25 local businesses"), ("Reach out", "scripts, follow-ups"), ("Call", "20-minute discovery"), ("Propose", "3 clear options"),
@@ -451,14 +451,14 @@ clip-path:polygon(0 0,72% 0,100% 22%,100% 100%,0 100%)}}.ic.DOC{{background:#9fc
             sw = int((248 if sq else 160) * k)
             flow = "".join(f'<div style="width:{sw}px;text-align:center"><div style="width:{int(58 * k)}px;height:{int(58 * k)}px;margin:0 auto {int(10 * k)}px;border-radius:50%;background:{acc};color:#1b1814;display:grid;place-items:center;font-weight:800;font-size:{int(26 * k)}px">{i}</div>'
                            f'<b style="display:block;font-size:{int((26 if sq else 20) * k)}px">{t}</b><span class="soft" style="font-size:{int((19 if sq else 14) * k)}px">{d}</span></div>' for i, (t, d) in enumerate(steps, 1))
-            tw = int((1100 if sq else 560) * k)
+            tw = 1300 if sq else 540
             trk = u("Agency_Tracker.xlsx", 0, crop=0.62)
             if sq:
                 rows = f'<div style="position:absolute;top:{int(330 * k)}px;left:{int(60 * k)}px;right:{int(60 * k)}px;display:grid;grid-template-columns:repeat(4,1fr);row-gap:{int(40 * k)}px;justify-items:center">{flow}</div>'
-                pic = f'<div style="position:absolute;left:{int(450 * k)}px;top:{int(930 * k)}px">{K.window(trk, tw)}</div>'
+                pic = f'<div style="position:absolute;left:350px;top:1010px">{K.window(trk, tw)}</div>'
             else:
                 rows = f'<div style="position:absolute;top:{int(175 * k)}px;left:{int(40 * k)}px;right:{int(40 * k)}px;display:flex;justify-content:space-between">{flow}</div>'
-                pic = f'<div style="position:absolute;left:{int(360 * k)}px;top:{int(370 * k)}px">{K.window(trk, tw)}</div>'
+                pic = f'<div style="position:absolute;left:370px;top:328px">{K.window(trk, tw)}</div>'
             body = (f'<div class="pad"><h1 style="font-size:{int((66 if sq else 44) * k)}px">From first hello to paid invoice</h1><div class="rule" style="margin-top:{int(16 * k)}px"></div></div>{rows}{pic}'
                     '<div class="foot">The tracker counts your own numbers: contacts, replies, calls, proposals, invoices.</div>')
         html = f"<!doctype html><html><head><meta charset='utf-8'><style>{css}</style></head><body>{body}</body></html>"

@@ -275,37 +275,37 @@ ul.checks li{{font-size:{int((28 if sq else 22) * k)}px;margin:{int(11 * k)}px 0
                     f'<ul class="checks" style="margin-top:{int(16 * k)}px"><li>30 editable designs, 8 colour looks</li><li>150 captions, your name filled in</li>'
                     f'<li>4:5, 1:1 and story sizes</li><li>Works offline: no account, no subscription</li></ul>')
             if sq:
-                pos = [(120, 1060, -9), (470, 990, -3), (820, 960, 3), (1170, 990, 8), (1500, 1070, 13)]
-                pw = 420
+                pos = [(70, 690, -9), (285, 650, -3), (500, 630, 3), (715, 650, 8), (930, 690, 13)]
+                pw = 243
                 body = f'<div class="pad">{text}</div>' + "".join(
                     f'<img class="post" src="{u}" style="left:{int(x * k)}px;top:{int(y * k)}px;width:{int(pw * k)}px;transform:rotate({r}deg)">' for u, (x, y, r) in zip(fan_u, pos))
             else:
-                pos = [(640, 150, -10), (760, 120, -4), (880, 110, 2), (1000, 130, 8), (1100, 170, 14)]
+                pos = [(585, 150, -10), (690, 120, -4), (795, 110, 2), (900, 130, 8), (990, 170, 14)]
                 pw = 250
                 body = f'<div class="pad" style="width:{int(590 * k)}px">{text}</div>' + "".join(
                     f'<img class="post" src="{u}" style="left:{int(x * k)}px;top:{int(y * k)}px;width:{int(pw * k)}px;transform:rotate({r}deg)">' for u, (x, y, r) in zip(fan_u, pos))
             body += '<div class="foot">Sample text shown. Add your own photos and logo.</div>'
         elif n == "2":
             cols = 6 if sq else 10
-            tw = int((290 if sq else 108) * k)
+            tw = 212 if sq else 108
             cells = "".join(f'<img src="{u}" style="width:{tw}px;border-radius:{max(4, int(8 * k))}px;box-shadow:0 {int(6 * k)}px {int(14 * k)}px rgba(0,0,0,.15)">' for u in grid_u)
-            top = int((300 if sq else 190) * k)
+            top = 470 if sq else 190
             body = (f'<div class="pad" style="text-align:center"><h1 style="font-size:{int((76 if sq else 46) * k)}px">30 editable post designs</h1>'
                     f'<p class="lead" style="margin-top:{int(12 * k)}px">One for every day of the month: tips, offers, hours, questions, events, thank-yous.</p></div>'
-                    f'<div style="position:absolute;top:{top}px;left:0;right:0;display:grid;grid-template-columns:repeat({cols},{tw}px);gap:{int((22 if sq else 12) * k)}px;justify-content:center">{cells}</div>')
+                    f'<div style="position:absolute;top:{top}px;left:0;right:0;display:grid;grid-template-columns:repeat({cols},{tw}px);gap:{26 if sq else 12}px;justify-content:center">{cells}</div>')
         else:
             text = (f'<span class="chip kick">The Post Maker</span><h1>Your colours, your words, in seconds</h1><div class="rule" style="margin-top:{int(22 * k)}px"></div>'
                     f'<ul class="checks" style="margin-top:{int(20 * k)}px"><li>Pick a look or use your brand colours</li><li>Add your logo and photos</li>'
                     f'<li>Download one post or all 30 as a zip</li><li>Caption bank with copy buttons</li></ul>')
-            lw = int((330 if sq else 150) * k)
+            lw = 300 if sq else 135
             row = "".join(f'<img src="{u}" style="width:{lw}px;border-radius:{max(5, int(10 * k))}px;box-shadow:0 {int(10 * k)}px {int(24 * k)}px rgba(0,0,0,.2)">' for u in looks)
             if sq:
-                body = (f'<div class="pad">{text}</div><div style="position:absolute;left:{int(80 * k)}px;top:{int(890 * k)}px">{K.window(app_u, int(1150 * k))}</div>'
-                        f'<div style="position:absolute;right:{int(70 * k)}px;top:{int(700 * k)}px;display:grid;gap:{int(26 * k)}px">{row}</div>')
+                body = (f'<div class="pad">{text}</div><div style="position:absolute;left:94px;top:1010px">{K.window(app_u, 1150)}</div>'
+                        f'<div style="position:absolute;right:94px;top:1010px;display:grid;grid-template-columns:300px 300px;gap:28px">{row}</div>')
             else:
                 body = (f'<div class="pad" style="width:{int(560 * k)}px">{text}</div>'
                         f'<div style="position:absolute;left:{int(600 * k)}px;top:{int(70 * k)}px">{K.window(app_u, int(640 * k))}</div>'
-                        f'<div style="position:absolute;left:{int(600 * k)}px;top:{int(500 * k)}px;display:flex;gap:{int(14 * k)}px">{row}</div>')
+                        f'<div style="position:absolute;left:{int(600 * k)}px;top:{int(530 * k)}px;display:flex;gap:{int(14 * k)}px">{row}</div>')
             body += '<div class="foot">Works offline in your browser. Nothing you add leaves your device.</div>'
         html = f"<!doctype html><html><head><meta charset='utf-8'><style>{css}</style></head><body>{body}</body></html>"
         done.append(K.shoot(br, html, w, h, os.path.join(SHOP, name), quality=80 if sq else 84))
