@@ -23,7 +23,19 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
 PAGES = [("gate", "gate/", "Gate"), ("look", "gate/", "Gate: Look row"), ("dash", "", "Dashboard"), ("jarvis", "jarvis/", "Jarvis"), ("nq", "nq/?demo=1", "NQ"),
-         ("kalshi", "kalshi/", "Kalshi"), ("helios", "helios/?demo=1", "Helios"), ("polis", "polis/?demo=1", "Polis")]
+         ("kalshi", "kalshi/", "Kalshi"), ("helios", "helios/?demo=1", "Helios"), ("polis", "polis/?demo=1", "Polis"), ("mint", "mint/?demo=1", "Mint (Money)")]
+# the Gate's three ready-made mixes (gate/gate.js COMBOS): --mix trader | luxury | clean
+MIXES = {"trader": {"trading": "amber", "money": "stocks", "life": "forest", "worlds": "aurora"},
+         "luxury": {"trading": "noir", "money": "royal", "life": "rosegold", "worlds": "sunset"},
+         "clean": {"trading": "stocks", "money": "ivory", "life": "ivory", "worlds": "midnight"}}
+
+
+def of_map():
+    """app -> district, from olympus/gate-catalog.js (what the Gate saves with a mix)"""
+    js = ("const g={};require('vm').runInNewContext(require('fs').readFileSync(process.argv[1],'utf8'),{window:g,module:{}});const C=g.OLYMPUS_GATE,o={today:'trading'};"
+          "C.apps.forEach(a=>{const d=a.hub||a.district;if(!/^(start|workshop)$/.test(d))o[a.id]=d;});process.stdout.write(JSON.stringify(o))")
+    out = subprocess.run(["node", "-e", js, os.path.join(WEB, "olympus", "gate-catalog.js")], capture_output=True, text=True, timeout=30)
+    return json.loads(out.stdout)
 
 
 def theme_ids():
@@ -59,13 +71,14 @@ def serve(site):
 LEFT = os.path.join(ROOT, "tools", "theme_leftovers.js")
 
 
-def shoot(br, origin, theme, key, path, raw, leftovers=False):
+def shoot(br, origin, theme, key, path, raw, leftovers=False, mix=None):
     ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block",
                          reduced_motion="reduce")
     ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
     ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9'));"
                         " localStorage.setItem('jarvis.intro', 'off'); localStorage.setItem('olympus.intro', 'off'); localStorage.setItem('olympus.theme.v', '2');"
-                        f" localStorage.setItem('olympus.theme', {json.dumps(theme)}); }} catch (e) {{}}")
+                        f" localStorage.setItem('olympus.theme', {json.dumps(theme)});"
+                        + (f" localStorage.setItem('olympus.themeMix', {json.dumps(json.dumps(mix))});" if mix else "") + " } catch (e) {}")
     p = ctx.new_page()
     p.set_default_timeout(60000)
     errs: list = []
@@ -78,7 +91,7 @@ def shoot(br, origin, theme, key, path, raw, leftovers=False):
         if key == "look":                                                  # the Gate scrolled to its Look row (the theme picker)
             p.evaluate("() => { const s = document.getElementById('lookSec'); if (s) s.scrollIntoView({ block: 'center' }); }")
             p.wait_for_timeout(400)
-        f = os.path.join(raw, f"{theme}-{key}.png")
+        f = os.path.join(raw, f"{'mix' if mix else theme}-{key}.png")
         p.screenshot(path=f)
         if leftovers:
             left = p.evaluate("(a) => (" + open(LEFT, encoding="utf-8").read() + ")(a)", {"max": 25})
@@ -134,6 +147,7 @@ def main():
     ap.add_argument("--raw", default="")
     ap.add_argument("--stack", default="", help="also write every sheet stacked into this one .jpg")
     ap.add_argument("--ext", default="jpg")
+    ap.add_argument("--mix", default="", help="one of the Gate's combos (trader, luxury, clean): every page under that mix, one sheet")
     ap.add_argument("--leftovers", action="store_true", help="list visible elements still in AGORA's warm browns (use with a blue / green theme)")
     a = ap.parse_args()
     from playwright.sync_api import sync_playwright
@@ -142,7 +156,10 @@ def main():
     if a.themes:
         want = a.themes.split(",")
         themes = [t for t in themes if t[0] in want]
-    pages = [p for p in PAGES if not a.pages or p[0] in a.pages.split(",")]
+    pages = [p for p in PAGES if (p[0] != "mint" or a.mix or "mint" in a.pages) and (not a.pages or p[0] in a.pages.split(","))]
+    mix = {"district": MIXES[a.mix], "app": {}, "of": of_map()} if a.mix else None
+    if mix:
+        themes = [("agora", f"Mix: {a.mix.title()} (" + ", ".join(f"{k} = {v}" for k, v in MIXES[a.mix].items()) + ")")]
     os.makedirs(a.out, exist_ok=True)
     raw = a.raw or os.path.join(a.out, ".raw")
     os.makedirs(raw, exist_ok=True)
@@ -153,12 +170,12 @@ def main():
         for tid, name in themes:
             files = []
             for key, path, label in pages:
-                f, errs = shoot(br, origin, tid, key, path, raw, a.leftovers)
+                f, errs = shoot(br, origin, tid, key, path, raw, a.leftovers, mix)
                 files.append(f)
                 if errs:
                     bad += 1
                     print(f"  {tid} {key}: page error {errs[:2]}")
-            out = os.path.join(a.out, f"{tid}.{a.ext}")
+            out = os.path.join(a.out, (f"mix-{a.mix}" if mix else tid) + f".{a.ext}")
             sheet(files, [p[2] for p in pages], out, f"{name}  ({tid})")
             sheets.append(out)
             print("sheet:", out, flush=True)

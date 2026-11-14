@@ -122,7 +122,12 @@ svg { flex: none; }
 .g-sheetbody .g-list.g-top { border-color: var(--ag-line-gold); background: linear-gradient(180deg, var(--ag-s2), var(--ag-s1)); }
 
 /* ------------------------------------------------------------------ Look: the theme swatches (six, 3 x 2; the picked one ringed) */
-.g-swatches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.g-swatches { display: flex; flex-direction: column; }
+.g-lookg { margin: 10px 2px 6px; color: var(--ag-soft); font: 600 .8125rem/1.2 var(--ag-sans); }
+.g-lookg:first-child { margin-top: 2px; }
+.g-swrow { display: flex; gap: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; padding: 2px 2px 6px; scrollbar-width: none; }
+.g-swrow::-webkit-scrollbar { display: none; }
+.g-swrow .g-sw { flex: 0 0 116px; }
 .g-sw { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-height: 44px; padding: 8px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line);
   background: var(--ag-s1); color: var(--ag-text); text-align: left; cursor: pointer; -webkit-touch-callout: none; }
 .g-sw[aria-checked="true"] { border-color: var(--ag-gold); box-shadow: 0 0 0 1px var(--ag-gold) inset; }

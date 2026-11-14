@@ -36,9 +36,18 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 KIT = os.path.join(WEB, "olympus")
 BASE = os.path.join(ROOT, "tests", "fixtures", "olympus_default_vars.json")
 RES: list = []
-IDS = ["agora", "olympus", "zeus", "poseidon", "hades", "athena", "apollo", "artemis"]
+PLAIN = ["agora", "ivory", "midnight", "terminal", "carbon", "royal"]            # 2026-11-14: the colour looks
+STYLED = ["aurora", "amber", "lime", "stocks", "editorial", "brutal", "noir", "sunset", "ocean", "carbonred", "forest", "rosegold",      # the style looks
+          "swiss", "paperdark", "solarized", "nord", "cyber", "deco", "zen", "desert", "monoblack", "monowhite", "vapor", "bullion", "wallstreet", "marble"]
+OLD = ["olympus", "zeus", "poseidon", "hades", "athena", "apollo", "artemis"]      # 2026-11-03, kept for Jarvis / Settings
+IDS = PLAIN + STYLED + OLD
+LIGHT = ["ivory", "stocks", "editorial", "brutal", "swiss", "zen", "desert", "monowhite", "vapor", "marble", "athena"]
 DEFAULT_ID = "agora"                 # AGORA is the default since 2026-11-09 (docs/DESIGN_AGORA.md); "olympus" is the old violet look, selectable
-NAMES = {"agora": "Agora", "olympus": "Olympus Night", "zeus": "Zeus Storm", "poseidon": "Poseidon", "hades": "Hades", "athena": "Athena", "apollo": "Apollo"}
+NAMES = {"ivory": "Ivory", "midnight": "Midnight", "terminal": "Terminal", "carbon": "Carbon", "royal": "Royal", "aurora": "Glass Aurora", "amber": "Amber",
+         "lime": "Lime", "stocks": "Stocks Light", "editorial": "Editorial", "brutal": "Neo Brutal", "noir": "Noir Gold", "sunset": "Sunset", "ocean": "Ocean",
+         "carbonred": "Carbon Red", "forest": "Forest", "rosegold": "Rose Gold", "swiss": "Swiss", "paperdark": "Paper Dark", "solarized": "Solarized", "nord": "Nord",
+         "cyber": "Cyber Minimal", "deco": "Art Deco", "zen": "Zen", "desert": "Desert", "monoblack": "Mono Black", "monowhite": "Mono White", "vapor": "Vapor Soft",
+         "bullion": "Gold Bullion", "wallstreet": "Wall Street", "marble": "Marble White", "agora": "Agora", "olympus": "Olympus Night", "zeus": "Zeus Storm", "poseidon": "Poseidon", "hades": "Hades", "athena": "Athena", "apollo": "Apollo"}
 APPS = {"datacity": "", "mind": "", "tree": "", "oracle": "?demo=1", "odeon": "?demo=1&autoplay=1", "fates": "",
         "hermes": "#week,demo", "prometheus": "?demo=1", "tyche": "?demo=1"}
 OWN_META = ("hermes", "datacity")                   # set their status-bar colour themselves (Hermes per story, Data City from its market-clock sky)
@@ -58,11 +67,23 @@ def read(*p):
 # ------------------------------------------------------------------ the data, read by running themes.js in node (no browser)
 DUMP_JS = r"""
 const fs = require('fs'), vm = require('vm'), w = { addEventListener() {} }, st = {};
-const root = { style: { setProperty(k, v) { st[k] = v; }, removeProperty(k) { delete st[k]; }, getPropertyValue(k) { return st[k] || ''; } }, setAttribute() {} };
-vm.runInNewContext(fs.readFileSync(process.argv[1], 'utf8'), { window: w, document: { documentElement: root, body: null, addEventListener() {}, querySelector() { return null; } },
-  localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} } });
+const at = {}, ls = {};
+const root = { style: { setProperty(k, v) { st[k] = v; }, removeProperty(k) { delete st[k]; }, getPropertyValue(k) { return st[k] || ''; } },
+  setAttribute(k, v) { at[k] = v; }, getAttribute(k) { return k in at ? at[k] : null; }, removeAttribute(k) { delete at[k]; } };
+vm.runInNewContext(fs.readFileSync(process.argv[1], 'utf8'), { window: w, location: { pathname: '/nq/' }, document: { documentElement: root, body: null, addEventListener() {}, querySelector() { return null; } },
+  localStorage: { getItem(k) { return k in ls ? ls[k] : null; }, setItem(k, v) { ls[k] = String(v); }, removeItem(k) { delete ls[k]; } } });
 const T = w.OLYMPUS_THEMES;
-process.stdout.write(JSON.stringify({ TOKENS: T.TOKENS, JARVIS: T.JARVIS, list: T.list(), stage: T.list().map((t) => T.tokens(t.id, 'stage')),
+// the mix: app beats district beats the one look
+ls['olympus.theme'] = 'midnight'; ls['olympus.theme.v'] = '2';
+ls['olympus.themeMix'] = JSON.stringify({ district: { trading: 'amber', money: 'stocks' }, app: { gate: 'aurora', helios: 'forest' }, of: { nq: 'trading', helios: 'trading', mint: 'money' } });
+const mixed = { nq: T.lookFor('nq'), helios: T.lookFor('helios'), mint: T.lookFor('mint'), gate: T.lookFor('gate'), today: T.lookFor('today'), jarvis: T.lookFor('jarvis'), page: T.page(), here: T.id() };
+T.apply('page'); mixed.style = at['data-oly-style'] || null; mixed.case = st['--oly-th-title-case'] || null; mixed.n3 = st['--oly-th-n3'] || null;
+T.set('ivory'); mixed.afterSet = [T.id(), 'olympus.themeMix' in ls, at['data-oly-style'] || null];
+T.set('agora'); mixed.afterDefault = [Object.keys(st).filter((k) => k.indexOf('--oly-th-') === 0).length, at['data-oly-style'] || null];
+const slots = {}; T.list().forEach((t) => { slots[t.id] = { page: T.slots(t.id, 'page'), stage: T.slots(t.id, 'stage') }; });
+process.stdout.write(JSON.stringify({ TOKENS: T.TOKENS, JARVIS: T.JARVIS, GRID: T.GRID, STYLE: T.STYLE, plain: T.plain().map((t) => t.id), mixed, slots,
+  groups: T.groups().map((g) => [g.id, g.themes.map((t) => t.id)]),
+  styles: T.list().map((t) => [t.id, t.style || null, t.feel || null]), list: T.list(), stage: T.list().map((t) => T.tokens(t.id, 'stage')),
   mix0: T.mix('#7fe9ff', '#ff0000', 0), mixN: T.mix(0x02030a, '#ff0000', 0), harm0: T.harmonise('#ffcf5a', '#4da3ff', 0) }));
 """
 
@@ -119,7 +140,14 @@ def test_static(data):
           "KEY = 'olympus.theme', DEFAULT = 'agora'" in js and "addEventListener('storage'" in js)
     if data:
         ids = [t["id"] for t in data["list"]]
-        check("a. eight themes in picker order: Agora (default), Olympus Night, Zeus Storm, Poseidon, Hades, Athena, Apollo, + Artemis",
+        check(f"a. {len(IDS)} themes in picker order: Agora (default), the 5 colour looks, the {len(STYLED)} style looks, then the 7 earlier ones; the Gate shows the first {len(PLAIN + STYLED)}",
+              ids == IDS and data["plain"] == PLAIN + STYLED, (ids, data["plain"]))
+        grp = dict(data["groups"])
+        check("a. the picker's groups: Dark, Light, Bold, Luxury hold every look but the default exactly once; every light theme is in Light or a bold / luxury group",
+              [g for g, _ in data["groups"]] == ["dark", "light", "bold", "luxury"] and sorted(sum(grp.values(), [])) == sorted(PLAIN[1:] + STYLED)
+              and all(i in grp["light"] + grp["bold"] + grp["luxury"] for i in LIGHT if i != "athena"), data["groups"])
+        GATE_ORDER[:] = ["agora"] + sum((ids_ for _, ids_ in data["groups"]), [])
+        check("a. names: plain words (Ivory, Midnight, Terminal ... Glass Aurora, Amber, Stocks Light ... Rose Gold)",
               ids == IDS and all(t["name"] == NAMES[t["id"]] for t in data["list"] if t["id"] in NAMES), ids)
         miss = {t["id"]: [k for k in data["TOKENS"] if k not in t["tokens"]] for t in data["list"]}
         miss = {k: v for k, v in miss.items() if v}
@@ -139,8 +167,9 @@ def test_static(data):
         check("a. a 0 blend returns the colour untouched, same type (so the default theme leaves every scene and accent as it was)",
               data["mix0"] == "#7fe9ff" and data["mixN"] == 0x02030a and data["harm0"] == "#ffcf5a", data)
         light = [t for t in data["list"] if t["scheme"] == "light"]
-        check("a. the light theme (Athena) has a dark 'stage' palette for the 3D apps / Zenith / Kalshi (light fog would wash the glow out)",
-              [t["id"] for t in light] == ["athena"] and light[0].get("stage") and data["stage"][4]["scheme"] == "dark", [t["id"] for t in light])
+        check("a. every light theme (Ivory, Stocks Light, Editorial, Neo Brutal, Athena) has a dark 'stage' palette for the 3D apps / Kalshi / pages not checked in light",
+              sorted(t["id"] for t in light) == sorted(LIGHT) and all(t.get("stage") and data["stage"][IDS.index(t["id"])]["scheme"] == "dark" for t in light), [t["id"] for t in light])
+        test_reach_data(data)
     for app in APPS:
         html = read(WEB, app, "index.html")
         i_th, i_js = html.find('<script src="../olympus/themes.js?v=o5"></script>'), html.find(f'../olympus/olympus.js?v=o6" data-app="{app}"')
@@ -305,12 +334,14 @@ def test_default(br, origin):
 def open_look(p):
     """⋯ -> Theme, like the owner (tried again if a busy start swallowed the tap)"""
     for _ in range(4):
+        if not p.locator("#look").is_hidden() and p.locator("#olyThemes .oth").count():
+            return
         if p.locator("#more").is_hidden():
             p.click("#moreB")
         p.wait_for_timeout(150)
         p.click('#more [data-key="theme"]')
         try:
-            p.wait_for_selector("#olyThemes .oth", timeout=3000)
+            p.wait_for_selector("#olyThemes .oth", timeout=8000)
             return
         except Exception:
             p.wait_for_timeout(500)
@@ -468,10 +499,268 @@ def test_zenith_kalshi(br, origin):
         ctx.close()
 
 
+# ------------------------------------------------------------------ f. the reach (2026-11-14): tokenized stylesheets, the ramp, style looks, the mix
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+import theme_tokenize as TOK  # noqa: E402
+
+TOKENIZED = ["olympus/agora.css", "olympus/agora-apps.css", "gate/gate.css", "gate/index.html", "index.html", "zenith.css", "zenith_agora.css", "polish.css",
+             "nq/nq.css", "helios/helios.css", "polis/polis.css", "olympus/polis.css", "jarvis/jarvis.css", "jarvis/home3d.css", "kalshi/kalshi.css",
+             "olympus/gate-nav.js", "launcher.js", "olympus/polis-life.js", "jarvis/switcher.js", "jarvis/copilot-card.js"]
+LAYER = "style themes (olympus/themes.js 'style', 2026-11-14)"
+
+
+def test_reach_data(data):
+    check("f. the grid of theme slots in themes.js equals tools/theme_tokenize.py's (the tool and the engine agree on every slot)",
+          {k: list(v) for k, v in data["GRID"].items()} == {k: list(v) for k, v in TOK.GRID.items()}, (data["GRID"], TOK.GRID))
+    mx = data["mixed"]
+    check("f. the mix: an app's own look beats its district's, which beats the one look (nq -> Amber via Trading, helios -> Forest (its own), mint -> Stocks Light, the Gate -> Glass Aurora, the dashboard counts as Trading, Jarvis keeps Midnight)",
+          [mx[k] for k in ("nq", "helios", "mint", "gate", "today", "jarvis", "page", "here")] == ["amber", "forest", "stocks", "aurora", "amber", "midnight", "nq", "amber"], mx)
+    check("f. a style look paints its style tokens and marks <html data-oly-style> (Amber: capitals); 'One look' clears the mix; the default paints no slot and no style",
+          mx["style"] == "amber" and mx["case"] == "uppercase" and mx["n3"] and mx["afterSet"] == ["ivory", False, None] and mx["afterDefault"] == [0, None], mx)
+    st = {i: (s, f) for i, s, f in data["styles"]}
+    miss = {i: [k for k in data["STYLE"] if not (st[i][0] or {}).get(k)] for i in STYLED}
+    miss = {k: v for k, v in miss.items() if v}
+    fonts = " ".join(str((st[i][1] or {}).get("display", "")) + " " + str((st[i][0] or {}).get("body", "")) for i in IDS)
+    check("f. every style look carries every style token (page, card, border, shadow, blur, title weight / case / tracking / italic, body font, button) and only system fonts (no download)",
+          not miss and "url(" not in fonts and "http" not in fonts and all(st[i][1] and st[i][1].get("radius") for i in STYLED), miss)
+    defs = []
+    for fp in glob.glob(os.path.join(WEB, "**", "*.css"), recursive=True) + glob.glob(os.path.join(WEB, "**", "*.html"), recursive=True):
+        if re.search(r"--oly-th-[\w-]+\s*:", read(fp)):
+            defs.append(os.path.relpath(fp, WEB))
+    check("f. no stylesheet defines a theme slot (--oly-th-*): only themes.js paints them, so on the default every var(--oly-th-x, <AGORA colour>) is the AGORA colour", not defs, defs)
+    left, layer_bad = {}, {}
+    for f in TOKENIZED:
+        txt = read(WEB, f)
+        body = txt.split(LAYER)[0]
+        un = TOK.untokenize(body)
+        if "--oly-th-" in un or "var(--oly-th-" not in txt:
+            left[f] = un[un.find("--oly-th-") - 80:un.find("--oly-th-") + 60] if "--oly-th-" in un else "not tokenized"
+        if LAYER in txt:
+            sels = re.findall(r"(?m)^([^{}\n/][^{}]*)\{", txt.split(LAYER)[1].split("*/", 1)[1])
+            bad = [x.strip() for x in sels if not x.strip().startswith("html[data-oly-style]")]
+            if bad:
+                layer_bad[f] = bad
+    check(f"f. {len(TOKENIZED)} stylesheets / scripts read theme slots, each with its AGORA literal as the fallback (the tool's untokenize gives back plain colours)", not left, left)
+    check("f. the style layers (agora.css, gate.css, zenith_agora.css, jarvis.css) only match under <html data-oly-style>", not layer_bad and all(LAYER in read(WEB, f) for f in (
+        "olympus/agora.css", "gate/gate.css", "zenith_agora.css", "jarvis/jarvis.css")), layer_bad)
+    ag = read(KIT, "agora.css")
+    check("f. agora.css's own tokens read the theme with the AGORA values as fallbacks (--ag-night, --ag-gold, --ag-text, the radius, the heading / number fonts)",
+          "--ag-night: var(--oly-th-n3, #14110e)" in ag and "--ag-gold: var(--oly-th-a8, #c8a24a)" in ag and "--ag-text: var(--oly-th-n37, #f3ece0)" in ag
+          and "--ag-radius: var(--oly-th-radius, 16px)" in ag and "--ag-serif: var(--oly-th-display," in ag and "--ag-num: var(--oly-th-num," in ag)
+
+
+def stops(c):
+    """the colours of a CSS background (a colour, or every colour stop of a gradient)"""
+    return re.findall(r"#[0-9a-fA-F]{6}|rgba?\([^)]*\)", c) or [c]
+
+
+def test_slot_contrast(data):
+    if not data:
+        return
+    TXT = {"text": "n37", "soft": "n30", "muted": "n24", "gain": "g8", "loss": "r10", "gold as text": "a8", "warn": "warn"}
+    SURF = {"page": "n3", "panel": "n4", "raised": "n5", "s4": "n7"}
+    styles = {i: s for i, s, f in data["styles"]}
+    for tid in PLAIN[1:] + STYLED:
+        t = data["list"][IDS.index(tid)]
+        for where in (("page", "stage") if t["scheme"] == "light" else ("page",)):
+            sl = data["slots"][tid][where]
+            low = {}
+            for tn, tk in TXT.items():
+                for sn, sk in SURF.items():
+                    v = contrast(sl[tk], sl[sk])
+                    if v < 4.5:
+                        low[f"{tn}/{sn}"] = round(v, 2)
+            sty = styles.get(tid)
+            if sty and where == "page":
+                pg = rgba(stops(sty["page"])[0]) if stops(sty["page"])[0].startswith(("#", "rgb")) else rgba(sl["n3"])
+                for stop in stops(sty["page"]):
+                    if stop.startswith("#"):
+                        card = over(rgba(stops(sty["card"])[0]), rgba(stop))
+                        for tn in ("text", "soft", "muted"):
+                            v = contrast(sl[TXT[tn]], card)
+                            if v < 4.5:
+                                low[f"{tn}/card over {stop}"] = round(v, 2)
+                        for tn in ("gold as text",):                       # section titles sit on the page itself
+                            v = contrast(sl[TXT[tn]], rgba(stop))
+                            if v < 4.5:
+                                low[f"{tn}/page {stop}"] = round(v, 2)
+                for b in stops(sty["btn"]):
+                    if b == "transparent":
+                        b = sl["n3"]
+                    v = contrast(sty["btnFg"], rgba(b) if b.startswith(("#", "rgb")) else rgba(sl["n3"]))
+                    if v < 4.5:
+                        low[f"button text on {b}"] = round(v, 2)
+            check(f"b. {t['name']} ({where}): every text colour the pages show (text, soft, muted, gains, losses, gold-as-text, warn) is >= 4.5:1 on the page, the panels"
+                  + (", the cards and the button" if sty and where == "page" else ""), not low, low)
+
+
+GATE_Q = "?now=2026-11-12T15:00:00Z"
+GATE_ORDER: list = []                        # Agora, then the groups (filled from the data)
+
+
+def gate_ready(p):
+    p.wait_for_function("() => window.GATE && window.GATE.ready() && !document.getElementById('lookSec').hidden", timeout=60000)
+    p.wait_for_timeout(300)
+
+
+def test_gate_look(br, origin):
+    ctx, p, errs = ctx_page(br, origin, None)
+    p.goto(origin + "/gate/" + GATE_Q)
+    gate_ready(p)
+    sw = p.evaluate("""() => [...document.querySelectorAll('#looks .g-sw')].map((b) => ({ id: b.dataset.themeId, on: b.getAttribute('aria-checked'), h: b.getBoundingClientRect().height,
+        name: b.querySelector('b').textContent }))""")
+    heads = p.evaluate("() => [...document.querySelectorAll('#looks .g-lookg')].map((h) => h.textContent)")
+    check(f"g. the Gate's Look row: One look shows {len(PLAIN + STYLED)} swatches in groups (Default, Dark, Light, Bold, Luxury), Agora picked, each a 44 px+ target, no sideways page scroll",
+          [x["id"] for x in sw] == (GATE_ORDER or [x["id"] for x in sw]) and len(sw) == len(PLAIN + STYLED) and heads == ["Default", "Dark", "Light", "Bold", "Luxury"]
+          and sw[0]["on"] == "true" and all(x["h"] >= 44 for x in sw) and p.evaluate("document.documentElement.scrollWidth - innerWidth") <= 0, (heads, sw[:3]))
+    p.click('#looks [data-theme-id="midnight"]')
+    p.wait_for_timeout(250)
+    st = p.evaluate("""() => { const r = document.documentElement, cs = getComputedStyle(r);
+        return { key: localStorage.getItem('olympus.theme'), attr: r.dataset.olyTheme, style: r.dataset.olyStyle || null, n3: cs.getPropertyValue('--oly-th-n3').trim(),
+          card: getComputedStyle(document.querySelector('.g-card')).backgroundImage, on: document.querySelector('#looks [aria-checked="true"]').dataset.themeId,
+          meta: document.querySelector('meta[name="theme-color"]').content }; }""")
+    check("g. a tap on Midnight: 'olympus.theme' = midnight, the Gate repainted at once (slots painted, the cards navy), the swatch picked, the status bar navy",
+          st["key"] == "midnight" and st["attr"] == "midnight" and st["style"] is None and st["n3"].startswith("#") and st["on"] == "midnight" and st["meta"] == "#0b1220", st)
+    p.click('#looks [data-theme-id="aurora"]')
+    p.wait_for_timeout(300)
+    au = p.evaluate("""() => { const r = document.documentElement, c = getComputedStyle(document.querySelector('.g-card')), t = getComputedStyle(document.querySelector('.g-title'));
+        return { style: r.dataset.olyStyle || null, page: getComputedStyle(r).backgroundImage.slice(0, 40), blur: c.backdropFilter || c.webkitBackdropFilter, radius: c.borderTopLeftRadius,
+          weight: t.fontWeight, btn: getComputedStyle(document.getElementById('bringBack')).backgroundImage.slice(0, 30), sx: document.documentElement.scrollWidth - innerWidth }; }""")
+    check("g. Glass Aurora (a style look): <html data-oly-style>, the aurora gradient page, frosted cards (blur, 24 px corners), bold titles, nothing spills sideways",
+          au["style"] == "aurora" and "radial-gradient" in au["page"] and "blur" in str(au["blur"]) and au["radius"] == "24px" and au["weight"] == "700" and au["sx"] <= 0, au)
+    p.click("#lookTab2")
+    p.wait_for_timeout(200)
+    mx = p.evaluate("""() => ({ combos: [...document.querySelectorAll('.g-combo')].map((b) => b.dataset.combo), rows: [...document.querySelectorAll('.g-mixrow .g-mixh b')].map((b) => b.textContent),
+        minis: document.querySelectorAll('.g-mixrow')[0].querySelectorAll('.g-mini').length, one: document.getElementById('looks').hidden,
+        h: Math.min(...[...document.querySelectorAll('.g-mini, .g-combo, #lookTab1, #lookTab2')].map((b) => b.getBoundingClientRect().height)) })""")
+    check(f"g. Mix: three ready-made combos (Trader, Luxury, Clean), a row per catalog district (Trading, Money, Life, Worlds) and this Gate, each with 'Same' + the {len(PLAIN + STYLED)} looks; targets 44 px+",
+          mx["combos"] == ["trader", "luxury", "clean"] and mx["rows"] == ["Trading", "Money", "Life", "Worlds", "This Gate"] and mx["minis"] == 1 + len(PLAIN + STYLED) and mx["one"] and mx["h"] >= 44, mx)
+    p.click('.g-combo[data-combo="trader"]')
+    p.wait_for_timeout(250)
+    m = p.evaluate("() => [JSON.parse(localStorage.getItem('olympus.themeMix') || 'null'), document.documentElement.dataset.olyTheme, document.querySelector('.g-combo[data-combo=\"trader\"]').getAttribute('aria-pressed')]")
+    check("g. the Trader combo: Trading = Amber, Money = Stocks Light, Life = Forest, Worlds = Glass Aurora, the app -> district map from the catalog saved with it; the Gate keeps the one look",
+          m[0] and m[0]["district"] == {"trading": "amber", "money": "stocks", "life": "forest", "worlds": "aurora"} and m[0]["of"].get("nq") == "trading"
+          and m[0]["of"].get("mint") == "money" and m[0]["of"].get("today") == "trading" and m[1] == "aurora" and m[2] == "true", m)
+    rows = p.locator(".g-mixrow")
+    rows.nth(4).locator('.g-mini[data-theme-id="forest"]').click()
+    p.wait_for_timeout(250)
+    gf = p.evaluate("() => [document.documentElement.dataset.olyTheme, JSON.parse(localStorage.getItem('olympus.themeMix')).app]")
+    check("g. This Gate's own look (Forest) repaints the Gate at once and is kept as an app override", gf[0] == "forest" and gf[1].get("gate") == "forest", gf)
+    p2 = ctx.new_page()
+    looks = {}
+    for app, q in (("nq", "?demo=1"), ("helios", "?demo=1"), ("mint", "?demo=1")):
+        p2.goto(f"{origin}/{app}/{q}")
+        p2.wait_for_function("() => document.documentElement.hasAttribute('data-oly-theme')", timeout=30000)
+        p2.wait_for_timeout(400)
+        looks[app] = p2.evaluate("() => [document.documentElement.dataset.olyTheme, document.documentElement.dataset.olyStyle || null, getComputedStyle(document.querySelector('h1')).textTransform]")
+    check("g. the mix reaches the apps: NQ and Helios (Trading) open in Amber (its capitals), Mint (Money) in Stocks Light",
+          looks["nq"][:2] == ["amber", "amber"] and looks["nq"][2] == "uppercase" and looks["helios"][0] == "amber" and looks["mint"][0] == "stocks", looks)
+    p.click("#lookTab1")
+    p.click('#looks [data-theme-id="agora"]')
+    p.wait_for_timeout(300)
+    back = p.evaluate("""() => { const r = document.documentElement; return [localStorage.getItem('olympus.themeMix'), r.dataset.olyTheme, r.dataset.olyStyle || null,
+        [...r.style].filter((k) => k.indexOf('--oly-th-') === 0).length]; }""")
+    check("g. One look -> Agora: the mix cleared, the default back, no theme slot or style left painted", back == [None, "agora", None, 0], back)
+    check("g. the Gate's Look row: no console error", not real(errs), real(errs)[:3])
+    ctx.close()
+
+
+LEFT_JS = os.path.join(ROOT, "tools", "theme_leftovers.js")
+REACH = [("gate", "/gate/" + GATE_Q), ("dashboard", "/"), ("jarvis", "/jarvis/"), ("nq", "/nq/?demo=1"), ("helios", "/helios/?demo=1"), ("kalshi", "/kalshi/")]
+
+
+def test_reach(br, origin):
+    src = read(LEFT_JS)
+    for theme in ("midnight", "terminal"):
+        for name, path in REACH:
+            ctx, p, errs = ctx_page(br, origin, theme)
+            try:
+                p.goto(origin + path)
+                p.wait_for_function("() => document.documentElement.getAttribute('data-oly-theme') === %s" % json.dumps(theme), timeout=60000)
+                p.wait_for_timeout(2500)
+                left = p.evaluate("(a) => (" + src + ")(a)", {"max": 12})
+                check(f"h. {name} under {theme}: no AGORA brown or gold left on screen (every card, bar, title and label follows the theme)", not left,
+                      [f"{x['sel']} {x['prop']}={x['value']} <- {x['rule']}" for x in left[:5]])
+            except Exception as e:
+                check(f"h. {name} under {theme}: comes up themed", False, e)
+            ctx.close()
+    for theme in ("ivory", "stocks"):
+        for name, path in REACH[:1] + REACH[3:5]:
+            ctx, p, errs = ctx_page(br, origin, theme)
+            try:
+                p.goto(origin + path)
+                p.wait_for_function("() => document.documentElement.getAttribute('data-oly-theme') === %s" % json.dumps(theme), timeout=60000)
+                p.wait_for_timeout(1500)
+                got = p.evaluate("""() => { const r = document.documentElement, c = (e) => getComputedStyle(e);
+                    const h = document.querySelector('h1'), card = document.querySelector('.g-card, .ag-card');
+                    return { scheme: r.dataset.olyScheme, cs: c(r).colorScheme, h1: c(h).color, card: c(card).backgroundColor, n3: c(r).getPropertyValue('--oly-th-n3').trim() }; }""")
+                ok = got["scheme"] == "light" and lum(rgba(got["n3"])) > 0.7 and contrast(got["h1"], rgba(got["n3"])) >= 4.5
+                check(f"h. {name} under {NAMES[theme]}: a light page (checked in light: data-oly-light / the Gate), its title AA on the page", ok, got)
+            except Exception as e:
+                check(f"h. {name} under {theme}: light", False, e)
+            ctx.close()
+
+
+def test_same_as_before(br):
+    """the default (no key) on each page, served as-is and served with every theme slot replaced by its fallback (tools/theme_tokenize.py
+    untokenize: the files as they were before the reach work): every element's computed colours, borders, shadows, fonts and radius are equal"""
+    class Raw(Handler):
+        def send_head(self):
+            path = self.translate_path(self.path)
+            if os.path.isdir(path):
+                path = os.path.join(path, "index.html")
+            if not path.endswith((".css", ".js", ".html")) or not os.path.isfile(path):
+                return super().send_head()
+            body = TOK.untokenize(open(path, encoding="utf-8").read()).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", self.guess_type(path))
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            import io
+            return io.BytesIO(body)
+    raw = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Raw, directory=WEB))
+    threading.Thread(target=raw.serve_forever, daemon=True).start()
+    norm = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Handler, directory=WEB))
+    threading.Thread(target=norm.serve_forever, daemon=True).start()
+    o_raw, o_now = (f"http://127.0.0.1:{s.server_address[1]}" for s in (raw, norm))
+    DUMPS = """() => { const P = ['color', 'background-color', 'background-image', 'border-top-color', 'border-bottom-color', 'border-top-left-radius', 'box-shadow', 'font-family', 'font-weight', 'text-transform', 'letter-spacing', 'outline-color', 'fill', 'stroke'];
+        const out = []; for (const e of [document.documentElement, ...document.querySelectorAll('body, body *')]) { if (e.closest('svg') && e.tagName !== 'svg') continue; const cs = getComputedStyle(e);
+          out.push(e.tagName + '.' + (typeof e.className === 'string' ? e.className : '') + '|' + P.map((k) => cs.getPropertyValue(k)).join('|')); } return out; }"""
+    for name, path in (("gate", "/gate/" + GATE_Q), ("nq", "/nq/?demo=1"), ("helios", "/helios/?demo=1"), ("polis", "/polis/?demo=1"), ("kalshi", "/kalshi/"), ("dashboard", "/"), ("jarvis", "/jarvis/")):
+        res = []
+        for origin in (o_raw, o_now):
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, service_workers="block", reduced_motion="reduce")
+            ctx.route("**/*", (lambda o: lambda r: r.continue_() if r.request.url.startswith(o) else r.abort())(origin))
+            ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off'); } catch (e) {}")
+            p = ctx.new_page()
+            p.set_default_timeout(90000)
+            try:
+                p.goto(origin + path, wait_until="domcontentloaded")
+                p.wait_for_timeout(3500)
+                res.append(p.evaluate(DUMPS))
+            except Exception as e:
+                res.append(["error: " + str(e)[:200]])
+            ctx.close()
+        def group(rows):                         # element kind (tag.class) -> the set of computed looks it has (a page that loads cards late may differ in count)
+            g = {}
+            for r in rows:
+                k, _, v = r.partition("|")
+                g.setdefault(k, set()).add(v)
+            return g
+        ga, gb = group(res[0]), group(res[1])
+        both = [k for k in ga if k in gb]
+        diff = {k: (sorted(ga[k] - gb[k])[:1], sorted(gb[k] - ga[k])[:1]) for k in both if ga[k] != gb[k]}
+        check(f"c. {name}: on the default, every kind of element computes the same colours / borders / shadows / fonts / radius as the page with every slot replaced by its AGORA literal ({len(both)} kinds, {len(res[1])} elements)",
+              len(both) > 20 and len(both) >= 0.9 * max(len(ga), len(gb)) and not diff, {"kinds": (len(ga), len(gb), len(both)), "diff": dict(list(diff.items())[:2])})
+    raw.shutdown()
+    norm.shutdown()
+
+
 def main():
     data = theme_data()
     test_static(data)
     test_contrast(data)
+    test_slot_contrast(data)
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -479,7 +768,7 @@ def main():
         return
     srv, origin = serve()
     shots = sys.argv[sys.argv.index("--shots") + 1] if "--shots" in sys.argv else None
-    only = [a for a in sys.argv[1:] if a in APPS or a in ("jarvis", "default", "zenith")]
+    only = [a for a in sys.argv[1:] if a in APPS or a in ("jarvis", "default", "zenith", "gate", "reach", "same")]
     with sync_playwright() as pw:
         br = launch(pw)
         if "--regen" in sys.argv:
@@ -497,6 +786,12 @@ def main():
             test_app(br, origin, app)
         if not only or "zenith" in only:
             test_zenith_kalshi(br, origin)
+        if not only or "gate" in only:
+            test_gate_look(br, origin)
+        if not only or "reach" in only:
+            test_reach(br, origin)
+        if not only or "same" in only:
+            test_same_as_before(br)
         br.close()
     srv.shutdown()
 

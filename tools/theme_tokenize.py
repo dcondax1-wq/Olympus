@@ -249,7 +249,7 @@ def tokenize_js(src, families="nagrw"):
 
 UN_HEX = re.compile(r"var\(--oly-th-[\w-]+, (#[0-9a-fA-F]{3,6})\)")
 UN_TRI = re.compile(r"var\(--oly-th-[\w-]+-rgb, ([^()]*)\)")
-UN_FEEL = re.compile(r"var\(--oly-th-(?:display|num|radius|radius-s|radius-l), ((?:[^()]|\([^()]*\))*)\)")
+UN_FEEL = re.compile(r"var\(--oly-th-(?:display|num|body|radius|radius-s|radius-l), ((?:[^()]|\([^()]*\))*)\)")
 
 
 def untokenize(text):
