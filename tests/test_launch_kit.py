@@ -500,6 +500,14 @@ def fills_report():
           "flags": [{"code": "size", "level": "bad", "text": "NinjaTrader filled 2 micros, the bot sent 4.", "fix": "x"}]}
     _s, m = R.events({"seen": {}, "cond": {}, "seeded": True}, snap_of(now, {"lit": lit_card(), "trades": []}, fills=[rv]))
     fm = [x for x in m if x["key"].startswith("fill:")]
+    junk = [{"acct": "lit", "entry_t": "x", "flags": [{}]}, {"acct": "lit", "entry_t": now - 60, "flags": ["x", {"code": "size"}, None]}, 5, None,
+            {"acct": "atlas", "entry_t": now - 90, "flags": "x", "real": "y"}]
+    try:
+        _s, mj = R.events({"seen": {}, "cond": {}, "seeded": True}, snap_of(now, {"lit": lit_card(), "trades": []}, fills=junk))
+        ok = isinstance(mj, list)
+    except Exception as e:                  # noqa: BLE001
+        ok, mj = False, repr(e)
+    check("2. odd fill reviews never stop the report run (junk entry_t / flags): no exception", ok, mj)
     check("2. a Sim account's flag (BLITZ on Sim) is pushed at default priority; a real account's is high", [x["priority"] for x in fm] == ["default"]
           and [x["priority"] for x in R.events({"seen": {}, "cond": {}, "seeded": True}, snap_of(now, {"lit": lit_card(), "trades": []}, fills=[{**rv, "kind": "LIVE"}]))[1]
                if x["key"].startswith("fill:")] == ["high"], fm)

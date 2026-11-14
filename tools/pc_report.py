@@ -660,8 +660,8 @@ def events(state: dict, snap: dict) -> tuple:
           "seeded": bool(state.get("seeded"))}
     now = snap["t"]
     msgs = []
-    revs = [r for r in snap.get("fills") or [] if isinstance(r, dict) and r.get("acct") and r.get("entry_t")]
-    rv_of = {(r["acct"], int(r["entry_t"])): r for r in revs}
+    revs = [r for r in snap.get("fills") or [] if isinstance(r, dict) and r.get("acct") and num(r.get("entry_t"))]
+    rv_of = {(r["acct"], int(num(r["entry_t"]))): r for r in revs}
     evs = _trade_events(snap)
     closing = {e["pair"] for e in evs if e.get("pair") and e["key"] not in st["seen"]}
     for ev in evs:
@@ -678,26 +678,31 @@ def events(state: dict, snap: dict) -> tuple:
                          "body": ((ev["both"] if both else ev["body"]) + (" " + note if note else "")).strip(),
                          "priority": "high" if key.startswith("open") else "default",
                          "tags": "chart_with_upwards_trend" if key.startswith("open") else "checkered_flag"})
-    # real fill vs plan (tools/fill_check.py): every flag of a NinjaTrader trade, once, high priority at any hour
+    # real fill vs plan (tools/fill_check.py): every flag of a NinjaTrader trade, once, high priority at any hour (a real account)
     for r in revs:
-        by = {}
-        for f in r.get("flags") or []:
-            by.setdefault(f.get("code") or "flag", []).append(f)
-        for code, fs in by.items():
-            key = f"fill:{r['acct']}:{int(r['entry_t'])}:{code}"
-            if key in st["seen"]:
-                continue
-            st["seen"][key] = now
-            last_t = max(int(r["entry_t"]), int(num(_d(r.get("real")).get("exit_t")) or 0))
-            if not st["seeded"] or now - last_t > OLD_EVENT_S:
-                continue
-            try:
-                from tools import fill_check
-                title, body = fill_check.push_text(r, {**fs[0], "text": " ".join(x["text"] for x in fs)})
-            except Exception:
-                title, body = f"{r.get('label') or r['acct']} fill check: {code}", " ".join(x.get("text", "") for x in fs)
-            msgs.append({"key": key, "title": title, "body": body, "priority": "high" if r.get("kind") == "LIVE" else "default",
-                         "tags": "rotating_light"})
+        try:                            # one odd review never stops the run (the status and the other alerts still go out)
+            by = {}
+            for f in r.get("flags") or []:
+                if isinstance(f, dict):
+                    by.setdefault(f.get("code") or "flag", []).append(f)
+            et_ = int(num(r["entry_t"]))
+            for code, fs in by.items():
+                key = f"fill:{r['acct']}:{et_}:{code}"
+                if key in st["seen"]:
+                    continue
+                st["seen"][key] = now
+                last_t = max(et_, int(num(_d(r.get("real")).get("exit_t")) or 0))
+                if not st["seeded"] or now - last_t > OLD_EVENT_S:
+                    continue
+                try:
+                    from tools import fill_check
+                    title, body = fill_check.push_text(r, {**fs[0], "text": " ".join(str(x.get("text") or "") for x in fs)})
+                except Exception:
+                    title, body = f"{r.get('label') or r['acct']} fill check: {code}", " ".join(str(x.get("text") or "") for x in fs)
+                msgs.append({"key": key, "title": title, "body": body, "priority": "high" if r.get("kind") == "LIVE" else "default",
+                             "tags": "rotating_light"})
+        except Exception:
+            continue
     cond = conditions(snap)
     for code, text in cond.items():
         c = st["cond"].get(code)
