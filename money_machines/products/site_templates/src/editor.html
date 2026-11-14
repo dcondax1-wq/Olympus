@@ -602,8 +602,8 @@ details.grp[open]>summary::after{content:"\2212"}
       field("Email", "email", {type: "email", ph: "e.g. hello@yourbusiness.com", help: "Turns on the message form (it opens the visitor's email app; nothing is stored)."}),
       field("Street address (leave empty if you go to customers)", "street", {ph: "e.g. 123 Main Street"}),
       el("div", {"class": "row2"}, [field("State or region", "region", {ph: "e.g. CO"}), field("Postcode / ZIP", "postcode", {ph: "e.g. 80000"})]),
-      field("Map link (optional)", "mapLink", {type: "url", ph: "https://...", help: "Paste the share link of your business on a map site: it becomes the Directions button."}),
-      field("Online booking link (optional)", "bookLink", {type: "url", ph: "https://...", help: "If you use an online booking page, paste its link: it becomes the Book button."})]));
+      field("Map link (optional)", "mapLink", {type: "url", ph: "Paste the link here", help: "Paste the share link of your business on a map site: it becomes the Directions button."}),
+      field("Online booking link (optional)", "bookLink", {type: "url", ph: "Paste the link here", help: "If you use an online booking page, paste its link: it becomes the Book button."})]));
     f.appendChild(group("Top of the page", "top", [
       field("Headline", "headline", {ph: "What you do and where, in one line"}), field("A short introduction", "intro", {type: "textarea", rows: 3}),
       field("Main button", "cta", {type: "select", options: [["call", "Call us"], ["quote", "Ask for a quote"], ["book", "Book online (needs a booking link)"], ["visit", "Visit us"], ["contact", "Get in touch"]]}),

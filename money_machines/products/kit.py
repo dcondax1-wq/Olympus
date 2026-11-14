@@ -53,7 +53,7 @@ PROMISES = (
     r"top of (?:search|the map)", r"pass your (?:eval|evaluation|challenge)", r"funded in", r"winning (?:trades|strategy|system)", r"profitable (?:strategy|system|trader)",
     r"risk[- ]free", r"proven to", r"100% (?:win|success|results)", r"more (?:clients|customers|sales|followers) (?:fast|guaranteed)", r"instant results",
 )
-NEGATIONS = ("no ", "not ", "never ", "n't ", "without ", "nor ", "nothing ", "none ", "no-")
+NEGATIONS = ("no ", "not ", "never ", "n't ", "without ", "nor ", "nothing ", "none ", "no-", "nobody ", "cannot ")
 NEGATED_AFTER = (" nothing", " no ", " none", " not ")
 
 # Things that look like links but are vocabulary names, never fetched: XML namespaces and the structured-data vocabulary.
