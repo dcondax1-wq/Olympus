@@ -166,6 +166,11 @@ const stuck = { a: { program: {}, isReady: () => null } }; const t1 = Date.now()
 out.cqStuck = await RQ.compileQuietly({ compile: () => new Set(['a']), extensions: { get: () => ({}) }, properties: { get: (m) => ({ currentProgram: stuck[m] }) } }, {}, {}, 300);
 out.cqStuckMs = Date.now() - t1;
 out.cqNoExt = await RQ.compileQuietly({ compile: () => new Set(['a']), extensions: { get: () => null }, properties: { get: () => ({}) } }, {}, {}, 300);
+// a software GL (SwiftShader): no compile up front at all (its GPU process compiles in order: the first status query would hold the page anyway)
+let swN = 0;
+const sw = { compile: () => { swN++; return new Set(['a']); }, extensions: { has: () => true }, properties: { get: () => ({}) },
+  getContext: () => ({ getExtension: () => ({ UNMASKED_RENDERER_WEBGL: 37446 }), getParameter: () => 'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)))' }) };
+out.cqSoft = await RQ.compileQuietly(sw, {}, {}, 300); out.cqSoftN = swN; out.pcSoft = RQ.parallelCompile(sw);
 console.log('@@' + JSON.stringify(out));
 """
 
@@ -239,15 +244,18 @@ def test_perf_static():
         check("f. compileQuietly: programs that turn ready resolve it (a program deleted meanwhile counts as done), one that never does gives up at maxMs (three's compileAsync polled for ever), no parallel-compile extension = at once",
               r.get("cqOk") is True and r.get("cqMs", 9999) < 1000 and r.get("cqStuck") is False and 250 <= r.get("cqStuckMs", 0) < 1500 and r.get("cqNoExt") is True,
               {k: r.get(k) for k in ("cqOk", "cqMs", "cqStuck", "cqStuckMs", "cqNoExt")})
+        check("f. compileQuietly on a software GL (SwiftShader): nothing compiled up front (the first frame compiles what it draws, as before), parallelCompile() false",
+              r.get("cqSoft") is True and r.get("cqSoftN") == 0 and r.get("pcSoft") is False, {k: r.get(k) for k in ("cqSoft", "cqSoftN", "pcSoft")})
 
     rnd, hs, rs = (read(os.path.join(WEB, "olympus", f)) for f in ("render.js", "hero-stage.js", "render-scale.js"))
     check("f. render.js: the governor sizes every core canvas (Ultra 4K = 3x), no MSAA over 2x, off screen = no frame per vsync, a quiet picture a second (IntersectionObserver; the app's loop keeps its clock at 10 Hz), the CSS box from a ResizeObserver, shaders compiled in the background",
           all(k in rnd for k in ("from './render-scale.js'", "ultra: { dpr: 3,", "RQ.dpr(myRange())", "RQ.frame(ft", "hiDpr", "new IntersectionObserver", "offScreen()",
                                  "new ResizeObserver", "compileQuietly(renderer, scene, camera, 8000)", "warm() {", "onScreen: !offScreen()", "function offTick()",
-                                 "const OFF_MS = 100, OFF_DRAW_MS = 1000;", "if (!quiet) RQ.frame(", "draw() { if (dead || asleep || lost) return false;"))
+                                 "const OFF_MS = 100, OFF_DRAW_MS = 1000;", "if (!quiet) { perf.work += work; RQ.frame(ft", "draw() { if (dead || asleep || lost) return false;",
+                                 "&& parallelCompile(renderer);", "cpu > avg * 0.7"))
           and "canvas.clientWidth || canvas.width || 1" not in rnd and "if (off && tDraw && performance.now() - tDraw < OFF_DRAW_MS) return false;" in rnd)
     check("f. hero-stage.js: the same governor, sleeps while hidden / covered (OLYMPUS.hidden), off screen one picture a second on a timer (no rAF spin, no governor sample), keeps the kit's idle frame cap, compiles in the background",
-          all(k in hs for k in ("from './render-scale.js'", "RQ.dpr(myRange())", "O.hidden", "O.frameGap", "compileQuietly(renderer, scene, camera, 8000)", "if (!off) RQ.frame(now",
+          all(k in hs for k in ("from './render-scale.js'", "RQ.dpr(myRange())", "O.hidden", "O.frameGap", "compileQuietly(renderer, scene, camera, 8000)", "if (!off) RQ.frame(now", "!parallelCompile(renderer)",
                                 "offDue = true; schedule();")) and "draw about once a second" not in hs
           and "renderer.compileAsync(" not in hs and "renderer.compileAsync(" not in rnd)
     check("f. render-scale.js: no three.js, no DOM needed, one governor per page (window.OLYMPUS_RQ), ?rs= pins a ratio for screenshots",

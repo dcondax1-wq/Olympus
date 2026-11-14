@@ -122,6 +122,26 @@ export function step(s, t, ms, gap, work, maxQ, minQ) {
 }
 
 /**
+ * true when this renderer's browser compiles shaders in parallel (KHR_parallel_shader_compile on a real GPU). On a software GL (SwiftShader,
+ * llvmpipe: no GPU) the GPU process compiles in order, so the first status query holds the page for the whole compile anyway, and compiling
+ * the scene up front would also compile its hidden materials: there the first frame compiles what it draws, as it always did.
+ */
+const PARALLEL = typeof WeakMap === 'function' ? new WeakMap() : null;
+export function parallelCompile(renderer) {
+  if (!renderer) return false;
+  if (PARALLEL && PARALLEL.has(renderer)) return PARALLEL.get(renderer);
+  let ok = false;
+  try {
+    const E = renderer.extensions;
+    ok = !!(E && (typeof E.has === 'function' ? E.has('KHR_parallel_shader_compile') : E.get && E.get('KHR_parallel_shader_compile')));
+    const gl = ok && renderer.getContext ? renderer.getContext() : null, d = gl && gl.getExtension ? gl.getExtension('WEBGL_debug_renderer_info') : null;
+    if (d && /swiftshader|llvmpipe|software/i.test(String(gl.getParameter(d.UNMASKED_RENDERER_WEBGL)))) ok = false;
+  } catch (e) { ok = false; }
+  if (PARALLEL) PARALLEL.set(renderer, ok);
+  return ok;
+}
+
+/**
  * compile a scene's materials without holding the page, and never wait for ever (render.js and hero-stage.js use it before a first frame).
  * three's own compileAsync polls every 10 ms until every program says it is ready, and a program deleted meanwhile (a material disposed, or
  * rebuilt when an environment map arrived) never says so: it polled for ever (225 ms of script a second on an idle hero page, found by the
@@ -130,11 +150,11 @@ export function step(s, t, ms, gap, work, maxQ, minQ) {
  */
 export function compileQuietly(renderer, scene, camera, maxMs) {
   return new Promise((done) => {
+    if (!parallelCompile(renderer)) { done(true); return; }                     // no parallel compile here: the first frame compiles, as before
     let mats = null;
     try { mats = renderer.compile(scene, camera); } catch (e) { done(false); return; }
-    const ext = renderer.extensions && renderer.extensions.get && renderer.extensions.get('KHR_parallel_shader_compile');
     const props = renderer.properties, t0 = typeof performance !== 'undefined' ? performance.now() : Date.now(), cap = maxMs || 8000;
-    if (!ext || !props || !mats || !mats.size) { done(true); return; }            // no parallel compile: the first frame links them, as before
+    if (!props || !mats || !mats.size) { done(true); return; }
     const check = () => {
       try {
         mats.forEach((m) => {

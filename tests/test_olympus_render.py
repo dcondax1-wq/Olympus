@@ -168,10 +168,12 @@ def test_adapt(br, origin):
       const { createRenderer } = await import('./render.js'), T = await import('../jarvis/three.module.min.js');
       const L = window.__lab, seen = [];
       L.rc.dispose();
-      // an empty scene: the 32 ms busy loop is the whole cost of a frame (SwiftShader draws the lab at ~8 fps)
+      // an empty scene: the 48 ms busy loop is the whole cost of a frame (SwiftShader draws the lab at ~8 fps). 48, not 32: once the kit is idle
+      // (4 s without a touch) it caps frames at 30 fps, and a 33 ms frame is then full rate, not slow; the frames are slow for the page's own
+      // JavaScript, so the core steps the tier (a smaller buffer would not help: perf v2)
       const rc = createRenderer({ canvas: document.getElementById('lab'), scene: new T.Scene(), camera: new T.PerspectiveCamera(),
         quality: 'ultra', adapt: 'always', onQuality: (q) => seen.push(q), maxDpr: 0.25 });
-      rc.start(() => { const t = performance.now(); while (performance.now() - t < 32) {} });
+      rc.start(() => { const t = performance.now(); while (performance.now() - t < 48) {} });
       for (let i = 0; i < 60 && seen.length < 2; i++) await new Promise((r) => setTimeout(r, 500));   // <= 30 s
       await new Promise((r) => setTimeout(r, 4000));                                                 // and it stays on low
       rc.stop();

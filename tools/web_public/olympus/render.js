@@ -29,7 +29,7 @@
 // Passes per frame: ultra / high = 3 (scene, bloom, finish) · low = 2 (scene, finish + FXAA) · off = 1 (straight to screen).
 
 import * as THREE from '../jarvis/three.module.min.js';
-import { governor, range as rqRange, compileQuietly } from './render-scale.js';
+import { governor, range as rqRange, compileQuietly, parallelCompile } from './render-scale.js';
 import { EffectComposer } from './three-addons/EffectComposer.js';
 import { RenderPass } from './three-addons/RenderPass.js';
 import { UnrealBloomPass } from './three-addons/UnrealBloomPass.js';
@@ -351,7 +351,7 @@ export function createRenderer(opts) {
   const capBloom = (b) => { if (b && b.strength > BLOOM_MAX) b.strength = BLOOM_MAX; return b; };     // AGORA: bloom <= .25, always
   let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true, asleep = false, tDraw = 0, draws = 0;
   const bloomTint = new THREE.Color(1, 1, 1);
-  const perf = { last: 0, n: 0, sum: 0, warm: 0, fps: 0, steps: 0 };
+  const perf = { last: 0, n: 0, sum: 0, work: 0, warm: 0, fps: 0, steps: 0 };
   const reduced = prefersReduced();
   const t0 = performance.now();
   // perf v2: the page's render-scale governor sizes this canvas (its range: floor / budget / ceiling in device pixels per CSS pixel)
@@ -464,16 +464,17 @@ export function createRenderer(opts) {
     perf.last = now;
     if (!ms || ms > 1000) return;                   // the first frame, or back from a hidden tab
     const gap = frameGap();                         // a deliberate frame cap (idle / saver) is judged against the cap, not against 60 fps
-    if (gap !== perf.gap) { perf.gap = gap; perf.sum = perf.n = 0; return; }       // the cap changed: a new window
-    if (perf.warm < WARM_FRAMES) { perf.warm++; return; }
+    if (gap !== perf.gap) { perf.gap = gap; perf.sum = perf.n = perf.work = 0; return; }       // the cap changed: a new window
+    if (perf.warm < WARM_FRAMES) { perf.warm++; perf.work = 0; return; }
     perf.sum += ms; perf.n++;
     if (perf.n < WINDOW) return;
-    const avg = perf.sum / perf.n;
-    perf.fps = Math.round(1000 / avg); perf.sum = perf.n = 0;
+    const avg = perf.sum / perf.n, cpu = perf.work / perf.n;
+    perf.fps = Math.round(1000 / avg); perf.sum = perf.n = perf.work = 0;
     const may = o.adapt === 'always' || (o.adapt && !(O && O.chosen()));
     // perf v2: resolution first. The tier (bloom, MSAA, the apps' particles) steps down only once the governor cannot lower the pixel ratio
-    // any more, or when the frames are slow for the page's own JavaScript (a smaller buffer would not help: fewer effects might)
-    const rg = myRange(), floored = RQ.dpr(rg) <= rg.floor + 0.01 || /cpu/.test(RQ.state().why || '');
+    // any more, or when the frames are slow for the page's own JavaScript (cpu: this window's own measure; a smaller buffer would not help,
+    // fewer effects might)
+    const rg = myRange(), floored = RQ.dpr(rg) <= rg.floor + 0.01 || cpu > avg * 0.7 || /cpu/.test(RQ.state().why || '');
     if (may && floored && avg > (gap ? gap + 9 : SLOW_MS) && (level === 'ultra' || level === 'high')) {
       perf.steps++;
       apply(level === 'ultra' ? 'high' : 'low');
@@ -517,7 +518,8 @@ export function createRenderer(opts) {
   // seconds on a phone (Jarvis' home: 7 s of getShaderInfoLog / getProgramParameter on this machine). compileAsync (KHR_parallel_shader_compile)
   // compiles them for the buffer the scene really draws into (the composer's target: its own tone mapping and colour space) while the page
   // stays live; the first frame comes when they are ready. Materials added later compile on their first draw, as before. compile: false = off.
-  const canCompile = o.compile !== false && typeof renderer.compile === 'function' && !!renderer.properties;
+  // only where the browser compiles in parallel (a real GPU): on a software GL the first status query would hold the page for the whole compile
+  const canCompile = o.compile !== false && typeof renderer.compile === 'function' && !!renderer.properties && parallelCompile(renderer);
   let compiled = !canCompile, compiling = false, wantDraw = false, gen = 0;
   function warm() {
     if (compiled || compiling || dead) return;
@@ -574,8 +576,8 @@ export function createRenderer(opts) {
     }
     if (firstFrame) { firstFrame = false; if (O && !renderer.__oly) O.ready(); }
     // one sample for the governor: the frame's time and its CPU work (the JavaScript of this frame up to the end of this draw)
-    const ft = frameTime(), end = performance.now();
-    if (!quiet) RQ.frame(ft, { gap: frameGap(), work: Math.max(0, Math.min(end - ft, 1000)) });
+    const ft = frameTime(), end = performance.now(), work = Math.max(0, Math.min(end - ft, 1000));
+    if (!quiet) { perf.work += work; RQ.frame(ft, { gap: frameGap(), work }); }
     return true;
   }
 
