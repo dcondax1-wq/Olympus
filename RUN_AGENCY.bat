@@ -11,7 +11,7 @@ if not exist "agency\config.json" goto :first
 python -X utf8 -m agency.run %*
 if errorlevel 2 goto :fix
 echo.
-echo  Done. In the folder that opens: drag each "site" folder onto app.netlify.com/drop,
+echo  Done. In the folder that opens: drag each "site" folder onto app.netlify.com/drop, press Publish,
 echo  then open the Agency page on your phone and call the top leads.
 start "" explorer "agency\out"
 pause

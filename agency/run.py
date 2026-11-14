@@ -109,7 +109,7 @@ def main(argv=None):
     print(f"{'Agency page data':34} {crm}")
     print(f"{'Emails':34} {'ready to send' if summary['sender_ready'] else 'NOT ready: fill in agency/config.json (your name, email, postal address)'}")
     print()
-    print("Next: 1) drag each sites/<name>/site folder onto app.netlify.com/drop  2) open the Agency page on your phone  3) call the top leads with the opener")
+    print("Next: 1) drag each sites/<name>/site folder onto app.netlify.com/drop, press Publish  2) open the Agency page on your phone  3) call the top leads with the opener")
     print(ATTRIBUTION)
     return 0 if all(r["check"]["ok"] for _, _, r, _ in rows) else 1
 

@@ -17,8 +17,8 @@ email, places a call or texts anyone: it prepares the words, you dial and press 
 ## Your 3 steps
 1. Double-click **`RUN_AGENCY.bat`**. The first time Notepad opens your settings file: put in your agency name, your name, phone,
    email, postal address and your city, save, and double-click it again. Each run makes today's leads, 3 demo sites and their pitches.
-2. Drag each `site` folder it shows onto **app.netlify.com/drop** (free account), then name the site as the pitch says
-   (`<business>-demo.netlify.app`).
+2. Drag each `site` folder it shows onto **app.netlify.com/drop** (free account), press **Publish** (new Netlify projects start
+   private), and rename it to the name in its pitch (`<business>-demo.netlify.app`).
 3. Open the **Agency** page on your phone and call the people under "Call today" with the opener on the card.
 
 ## The daily routine (about 1 hour)
@@ -28,7 +28,7 @@ email, places a call or texts anyone: it prepares the words, you dial and press 
 | 10:00-12:00 or 14:00-16:00, 30-45 min, phone | Agency page > Call today. Before each call search the name on Google (10 seconds: the map data can miss a website). Dial, read the opener, ask to send the link. |
 | After each call, 10 s | Tap the stage: Contacted, Call back (pick the day), Won, Lost, or Do not contact. Notes go on the card. |
 | They said "send it" | Card > The email > Copy (or Open in Mail once your settings are real), put their address in, press send. |
-| They said yes | Mark Won with the price. On the PC: edit `site.json` (their real services, photos, words), then `python -m agency.build_site --site <that site.json> --final --url https://<their domain>` and drop the `-live` folder. |
+| They said yes | Mark Won with the price. Tell Claude "Agency: `<business>` said yes, domain `<their domain>`": it puts their real services and words in the site's `site.json` and builds the live folder (`build_site --final`, no preview bar, open to Google, the form switched on). Drop the `-live` folder on Netlify and connect their domain. |
 | Someone says stop | Mark "Do not contact" at once. On the PC, put their number (or name) on a line of `agency/suppress.txt`, or save your page export as `agency/crm_export.json`: the machine never lists them again. |
 | Sunday, 5 min | Agency page > Your notes > Export (keep the file, and save it as `agency/crm_export.json` on the PC) and look at the plan: calls this week, clients this month. |
 
