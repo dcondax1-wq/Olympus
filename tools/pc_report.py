@@ -9,8 +9,11 @@ the repo's own engine code (read-only use: engine/live_publish.build, engine/go.
               tools/web_public/status_feed.json (the site reads it with tools/web_public/pc_feed.js). Its "t" is the bot's own
               heartbeat time (never "now"), so an old report always looks old; "reporter" says what this PC saw just now.
   3. alerts   phone pushes on YOUR private ntfy topic (made here once, kept in %USERPROFILE%\\.olympus\\ntfy.json, never in the
-              repo): trade opened, trade closed ($ and R), FEED STALE, bot down, NinjaTrader closed, and "back to normal".
-              Once per event; a problem repeats at most every 3 hours. The first run only records what is already there.
+              repo): trade opened and trade closed per account (Zlarior 50K, ATLAS 25K, BLITZ 25K; entry: side, micros, entry /
+              stop / target, $ risk at the stop and its share of the drawdown left; exit: how it ended, +/- $ and R, drawdown
+              left, today's $; a trade that opened and closed between two runs gets one push with both), FEED STALE, bot down,
+              NinjaTrader closed, and "back to normal". Once per event; a problem repeats at most every 3 hours. The first run
+              only records what is already there.
 Nothing here starts, stops, arms or routes anything; no order, no live_model*.json, no engine/ file is changed. Every failure is
 soft (logged, exit 0). Tests: tests/test_bots_back.py (fake http, fake files, never the real network).
 
@@ -499,36 +502,128 @@ def _mode_note(snap) -> str:
     return {"paper": "Paper.", "Sim": "Sim account.", "LIVE": "Real account (you armed it)."}.get(m, "")
 
 
+USD_PT = 2.0                     # MNQ: $2 a point a micro (every bot trades MNQ micros)
+COMM_MICRO = 1.90                # engine/sizing.LIVE_COMM: the bot's commission a micro round trip
+PUSH_NAME = {"lit": "Zlarior", "atlas": "ATLAS", "blitz": "BLITZ"}
+
+
+def _label(acct, card=None) -> str:
+    """'Zlarior 50K', 'ATLAS 25K', 'BLITZ 25K' (the size from the card's plan), else the bot's name."""
+    import re
+    m = re.search(r"(\d+K)", str(_d(card).get("plan") or ""))
+    name = PUSH_NAME.get(acct, str(acct).upper())
+    return f"{name} {m.group(1)}" if m else name
+
+
+def _kind_note(acct, card, snap) -> str:
+    """Which account the trade is on: Zlarior from the bot's own account block, ATLAS / BLITZ from their card's badge."""
+    if acct == "lit":
+        return _mode_note(snap or {})
+    c = _d(card)
+    b = str(c.get("badge") or "").upper()
+    if c.get("real") or b == "LIVE":
+        return "Real account."
+    if b == "SIM":
+        return "Sim account."
+    return "Paper." if c.get("configured") is not False else "Paper (no account set up)."
+
+
+def _pts(a, b):
+    x, y = num(a), num(b)
+    return None if x is None or y is None else abs(x - y)
+
+
+def _px(v) -> str:
+    x = num(v)
+    return "-" if x is None else f"{x:,.2f}"
+
+
+def risk_usd(p) -> float | None:
+    """$ the trade loses at its stop, costs in: micros x stop distance x $2 + $1.90 a micro."""
+    q, pts = num(_d(p).get("qty")), _pts(_d(p).get("entry"), _d(p).get("stop"))
+    if not q or pts is None:
+        return None
+    return round(q * (pts * USD_PT + COMM_MICRO), 2)
+
+
+def _r_of(t) -> float | None:
+    r = num(t.get("r"))
+    if r is not None:
+        return r
+    rk = risk_usd(t)
+    u = num(t.get("usd"))
+    return round(u / rk, 2) if (rk and u is not None) else None
+
+
+def _entry_text(p, card, closed=False) -> str:
+    """'SHORT 6 micros at 25,100.25, stop 25,130.00 (29.75 pts), target 24,980.00 (120.25 pts). Risk $369 if stopped (costs
+    in), 32% of the $1,145 drawdown left.' (an open position without a stop says so; the fill check pushes it apart)"""
+    q = p.get("qty")
+    sp, tp = _pts(p.get("entry"), p.get("stop")), _pts(p.get("target"), p.get("entry"))
+    rk = risk_usd(p)
+    room = num(_d(card).get("room"))
+    side = str(p.get("side") or "").upper()
+    return (f"{side} {q if q is not None else '?'} micros at {_px(p.get('entry'))}"
+            + (f", stop {_px(p.get('stop'))} ({sp:.2f} pts)" if sp is not None else "" if closed else ", NO STOP in the report")
+            + (f", target {_px(p.get('target'))} ({tp:.2f} pts)" if tp is not None else "") + ". "
+            + (f"Risk {money(rk)} if stopped (costs in)" + (f", {rk / room * 100:.0f}% of the {money(room)} drawdown left" if room else "") + "."
+               if rk is not None else ""))
+
+
+def _exit_text(t, card) -> str:
+    """'TARGET at 24,980.00, +$1,203 (+3.4R), Thu 10:42 ET. Drawdown left $2,000 of $2,000. Today +$1,203.'"""
+    c = _d(card)
+    r = _r_of(t)
+    return (f"{str(t.get('exit') or 'exit').upper()}" + (f" at {_px(t.get('exit_px'))}" if num(t.get("exit_px")) is not None else "")
+            + f", {signed_money(t.get('usd'))}" + (f" ({r:+.1f}R)" if r is not None else "") + f", {et_text(t.get('exit_t') or t.get('entry_t'))}. "
+            + (f"Drawdown left {money(c.get('room'))} of {money(c.get('mll'))}. " if num(c.get("room")) is not None else "")
+            + (f"Today {signed_money(c.get('today_pnl'))}." if num(c.get("today_pnl")) is not None else ""))
+
+
+def _open_event(acct, p, snap=None, card=None) -> dict:
+    """The entry push: side, micros, entry / stop / target, the $ risk and its share of the drawdown left, the account."""
+    side, q = str(p.get("side") or "").upper(), p.get("qty")
+    body = f"{_entry_text(p, card)} {et_text(p.get('entry_t'))}. {_kind_note(acct, card, snap)}"
+    return {"key": f"open:{acct}:{int(num(p['entry_t']))}", "t": int(num(p["entry_t"])), "acct": acct, "entry_t": int(num(p["entry_t"])),
+            "title": f"{_label(acct, card)} trade opened: {side} {q if q is not None else ''} micros".strip(), "body": " ".join(body.split())}
+
+
+def _close_event(acct, t, snap=None, card=None) -> dict:
+    """The exit push: +/- $ and R, how it ended, the drawdown left and today's $ of the account. "both" is the one push for a
+    trade that opened and closed between two report runs (its entry and its exit in one message)."""
+    r = _r_of(t)
+    rs = f" ({r:+.1f}R)" if r is not None else ""
+    side = str(t.get("side") or "").upper()
+    kind = _kind_note(acct, card, snap)
+    body = f"{side} {t.get('qty') or ''} micros: {_exit_text(t, card)} {kind}"
+    both = f"Opened {et_text(t.get('entry_t'))}: {_entry_text(t, card, closed=True)} Closed: {_exit_text(t, card)} {kind}"
+    et_ = int(num(t["entry_t"]))
+    return {"key": f"close:{acct}:{et_}", "t": int(num(t.get("exit_t")) or et_), "acct": acct, "entry_t": et_, "pair": f"open:{acct}:{et_}",
+            "title": f"{_label(acct, card)} trade closed {signed_money(t.get('usd'))}{rs}", "body": " ".join(body.split()),
+            "both": " ".join(both.split())}
+
+
 def _trade_events(snap: dict) -> list:
-    """[(key, t, title, body)] for every trade the PC knows: opens (board.<bot>.position, open trades) and closes."""
+    """[{key, t, title, body, ...}] for every trade of each account the PC knows: opens (board.<bot>.position, open trades) and
+    closes, each close after its own open (events() sends one push with both when the trade opened and closed between two
+    report runs). An account's paper shadow rows (ATLAS's members while account B trades) are not its trades: left out."""
     bd = _d(_d(snap.get("live")).get("board"))
     out = []
     for key in ("lit", "atlas", "blitz"):
         p = _d(_d(bd.get(key)).get("position"))
         if num(p.get("entry_t")):
-            out.append(_open_event(key, p, snap))
+            out.append(_open_event(key, p, snap, bd.get(key)))
     for t in bd.get("trades") or []:
         if not isinstance(t, dict) or not num(t.get("entry_t")):
             continue
         acct = str(t.get("acct") or t.get("key") or "lit")
-        if t.get("open"):
-            out.append(_open_event(acct, t, snap))
+        card = _d(bd.get(acct))
+        if t.get("src") == "paper" and (acct == "lit" or card.get("configured")):
             continue
-        name = BOT_NAME.get(acct, acct.upper())
-        r = num(t.get("r"))
-        body = (f"{name} closed {t.get('side') or ''} {t.get('qty') or ''}: {t.get('exit') or 'exit'} {signed_money(t.get('usd'))}"
-                + (f" ({r:+.1f}R)" if r is not None else "") + f", {et_text(t.get('exit_t') or t.get('entry_t'))}. " + (_mode_note(snap) if acct == "lit" else "Paper / Sim."))
-        out.append((f"close:{acct}:{int(num(t['entry_t']))}", int(num(t.get("exit_t")) or num(t["entry_t"])),
-                    f"{name} trade closed {signed_money(t.get('usd'))}", " ".join(body.split())))
+        out.append(_open_event(acct, t, snap, card))
+        if not t.get("open"):
+            out.append(_close_event(acct, t, snap, card))
     return out
-
-
-def _open_event(acct, p, snap=None) -> tuple:
-    name = BOT_NAME.get(acct, str(acct).upper())
-    body = (f"{name} opened {p.get('side') or ''} {p.get('qty') or ''} at {p.get('entry')}"
-            + (f", stop {p.get('stop')}" if p.get("stop") is not None else "") + (f", target {p.get('target')}" if p.get("target") is not None else "")
-            + f", {et_text(p.get('entry_t'))}. " + (_mode_note(snap or {}) if acct == "lit" else "Paper / Sim."))
-    return (f"open:{acct}:{int(num(p['entry_t']))}", int(num(p["entry_t"])), f"{name} trade opened", " ".join(body.split()))
 
 
 COND_TITLE = {"bot_down": "Bot down", "bot_stopped": "Bot stopped", "nt_down": "NinjaTrader closed", "feed_stale": "FEED STALE"}
@@ -542,12 +637,19 @@ def events(state: dict, snap: dict) -> tuple:
           "seeded": bool(state.get("seeded"))}
     now = snap["t"]
     msgs = []
-    for key, t, title, body in _trade_events(snap):
+    evs = _trade_events(snap)
+    closing = {e["pair"] for e in evs if e.get("pair") and e["key"] not in st["seen"]}
+    for ev in evs:
+        key, t = ev["key"], ev["t"]
         if key in st["seen"]:
             continue
         st["seen"][key] = now
+        if key.startswith("open:") and ("close:" + key[len("open:"):] in st["seen"] or key in closing):
+            continue                    # closed before (no late "opened"), or closing in this run: its close push says both
         if st["seeded"] and now - t <= OLD_EVENT_S:
-            msgs.append({"key": key, "title": title, "body": body, "priority": "high" if key.startswith("open") else "default",
+            both = bool(ev.get("pair")) and ev["pair"] in closing and st["seen"].get(ev["pair"]) == now
+            msgs.append({"key": key, "keys": [key] + ([ev["pair"]] if both else []), "title": ev["title"],
+                         "body": ev["both"] if both else ev["body"], "priority": "high" if key.startswith("open") else "default",
                          "tags": "chart_with_upwards_trend" if key.startswith("open") else "checkered_flag"})
     cond = conditions(snap)
     for code, text in cond.items():
@@ -753,7 +855,8 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
             rec["errors"].append("alert: " + why)
             # not sent: forget it so the next run tries again (conditions keep their state; a trade key is retried)
             if m["key"].startswith(("open:", "close:")):
-                new_state["seen"].pop(m["key"], None)
+                for k in m.get("keys") or [m["key"]]:
+                    new_state["seen"].pop(k, None)
             elif m["key"].startswith("guard:"):
                 _d(_d(new_state.get("guard")).get("sent")).pop(m["key"], None)
     if not dry:
