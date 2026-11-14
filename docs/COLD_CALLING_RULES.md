@@ -258,6 +258,29 @@ calls go through the phone's dialer (`tel:`), emails through your mail app (`mai
 Honest view: for cold outreach to businesses that never asked, there is no consent, so outbound AI calling is not a fit. It can fit
 **warm** leads who filled in the form.
 
+**A consent form that would hold up** (a starting draft for the lawyer, not final wording). On your own site, next to "Get a free website review":
+- Their business name, their name, **their phone number typed by them**, their email.
+- One checkbox, **not ticked in advance**, its own line: "Yes, [Your Business] may call and text me at the number above about my free website
+  review and offers, including calls made with an AI assistant or a prerecorded voice. This is not a condition of buying anything. I can say
+  'stop' or reply STOP at any time."
+- The button says what happens ("Send my free review"), and the page links the privacy policy.
+- **Keep, for every sign-up, at least 4 years:** the exact wording shown, the checkbox state, the number, date and time (UTC), the page address,
+  the IP address and browser, and how they later opted out (if they did). Without these records, a lawsuit is lost even if consent was real.
+- Treat it as consent for **your** business only, for **that** number, until they say stop. Bought "consented" lists do not count.
+
+**What it would take to build (if the consent exists):** one Twilio number; a voice-AI agent (Vapi or Retell) with a fixed script that
+opens with "Hi, this is an AI assistant calling for [Your Business] about the free website review you asked for. Say stop anytime and we will
+never call again."; a small consent store (the records above) that the dialer checks before each call; the same windows and locks as the
+copilot (part 11). About a week of work plus the lawyer's review. Not built: the owner's leads today are cold, so it has nothing legal to call.
+
+### HIPAA note for clinic clients (dentists, doctors, chiropractors, physical therapists; vets are not covered)
+An AI receptionist for a dentist, doctor or chiropractor hears patient health information, so the voice-AI vendor must sign a **business
+associate agreement (BAA)** with the practice **before the first call**, encrypt the audio and transcripts, and not train on them. Some
+vendors do not offer a BAA at all, and some charge extra for it (one is reported at about $500 a month). Offer the receptionist to medical
+practices only on a vendor that signs the BAA; restaurants, shops and trades do not have this issue. (Sources: Aira, "HIPAA and AI
+receptionists" (2026); JustCall, "Is an AI receptionist HIPAA compliant"; Keragon, "AI receptionist dental" (2026); Trillet, "Why HIPAA
+compliance shouldn't be a $500 add-on"; all vendor sources, accessed 2026-11-14.)
+
 ### B. Inbound AI receptionist as a SERVICE to sell (legal and sellable)
 
 - **Why it is legal:** the TCPA limits calls you **make**; an AI that **answers** a business's incoming calls is not a robocall (the FCC's 2024
@@ -270,6 +293,22 @@ Honest view: for cold outreach to businesses that never asked, there is no conse
   Dialzara from $29, Smith.ai from $150). Our cost at about $0.10-0.15 a minute + $1.15 a number: a 300-minute month is about $35-50.
 - **The pitch fits the website sale:** "Your new site plus a receptionist that never misses a call: $X setup, $Y a month." Selling it is a
   normal human cold call (parts 1-9); the AI only works after the client says yes.
+- **A price list that leaves a margin** (our cost about $0.10-0.15 a minute + $1.15 a number + the platform's monthly fee, if any):
+
+| Plan | Price to the client | Minutes included | Our cost (about) | What it does |
+|---|---|---|---|---|
+| Missed-call catcher | $49 a month | 100 | $12-17 | Answers when they cannot, takes a message, texts the owner |
+| Receptionist | $129 a month + $149 setup | 400 | $42-62 | 24/7 answers, books into their calendar, quote / order requests, FAQ from their site |
+| Busy shop | $249 a month + $149 setup | 1,000 | $102-152 | The same with more minutes, Spanish, a monthly call report |
+
+  Over the minutes: $0.25 a minute. Check the margin against the vendor you pick before quoting, and quote the HIPAA-ready vendor's price for
+  medical practices.
+- **The setup checklist per client:** a Twilio number they forward to (or forward on no answer), the greeting with the AI line and, in an
+  all-party state, the recording line ("This call is answered by an AI assistant and may be recorded"); their hours, services, prices and FAQ
+  from the new website; where bookings go (their calendar); what the AI must never do (quote a final price for a job, promise a time it cannot
+  see, give medical or legal advice); and who gets the summary text. Test 10 calls yourself before it goes live.
+- **The objection line on the cold call:** "Do you ever miss calls when you are busy? A missed call is usually a lost customer. For $49 a month a
+  receptionist answers, takes the message and texts it to you."
 
 Sources: Twilio, "Programmable Voice pricing, United States" (2026-08); MorphLLM, "Vapi vs Retell vs Bland vs Synthflow (2026)"; Dupple, "The
 best AI voice agents in 2026"; Bland, "Voice AI pricing" (2026); Federal Register 2025-16641 (prior express written consent wording,
