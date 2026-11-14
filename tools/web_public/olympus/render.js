@@ -28,7 +28,7 @@
 // Passes per frame: ultra / high = 3 (scene, bloom, finish) · low = 2 (scene, finish + FXAA) · off = 1 (straight to screen).
 
 import * as THREE from '../jarvis/three.module.min.js';
-import { governor, range as rqRange } from './render-scale.js';
+import { governor, range as rqRange, compileQuietly } from './render-scale.js';
 import { EffectComposer } from './three-addons/EffectComposer.js';
 import { RenderPass } from './three-addons/RenderPass.js';
 import { UnrealBloomPass } from './three-addons/UnrealBloomPass.js';
@@ -502,7 +502,7 @@ export function createRenderer(opts) {
   // seconds on a phone (Jarvis' home: 7 s of getShaderInfoLog / getProgramParameter on this machine). compileAsync (KHR_parallel_shader_compile)
   // compiles them for the buffer the scene really draws into (the composer's target: its own tone mapping and colour space) while the page
   // stays live; the first frame comes when they are ready. Materials added later compile on their first draw, as before. compile: false = off.
-  const canCompile = o.compile !== false && typeof renderer.compileAsync === 'function';
+  const canCompile = o.compile !== false && typeof renderer.compile === 'function' && !!renderer.properties;
   let compiled = !canCompile, compiling = false, wantDraw = false, gen = 0;
   function warm() {
     if (compiled || compiling || dead) return;
@@ -512,7 +512,7 @@ export function createRenderer(opts) {
     try {
       const prev = renderer.getRenderTarget();
       renderer.setRenderTarget(composer ? composer.renderTarget2 : null);
-      p = renderer.compileAsync(scene, camera);
+      p = compileQuietly(renderer, scene, camera, 8000);              // three's compileAsync could poll for ever (a deleted program)
       renderer.setRenderTarget(prev);
     } catch (e) { p = Promise.resolve(); }
     const done = () => {

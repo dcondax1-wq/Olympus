@@ -157,6 +157,15 @@ out.crawl = run(out.ranges.ultra4k, () => 1500, 120);      // over 1 s a frame (
 out.capped = run(auto, () => 33.33, 30, { gap: 33 });
 const hitch = []; for (let k = 0; k < 4000; k++) hitch.push(k % 400 === 200 ? 600 : 16.667);
 out.hitch = run(RQ.range({ tier: 'high', chosen: true, maxDpr: 2, device: 2 }), () => 16.667, 60, { at: hitch });
+// compileQuietly with a fake renderer: programs that turn ready, one deleted meanwhile (counts as done), one never ready (gives up at maxMs)
+const mk = (n) => { let k = 0; return { program: {}, isReady: () => (++k >= n) }; };
+const mats = ['a', 'b', 'c'], progs = { a: mk(3), b: { program: undefined, isReady: () => null }, c: mk(2) };
+const fake = (pp) => ({ compile: () => new Set(mats), extensions: { get: () => ({}) }, properties: { get: (m) => ({ currentProgram: pp[m] }) } });
+const t0 = Date.now(); out.cqOk = await RQ.compileQuietly(fake(progs), {}, {}, 2000); out.cqMs = Date.now() - t0;
+const stuck = { a: { program: {}, isReady: () => null } }; const t1 = Date.now();
+out.cqStuck = await RQ.compileQuietly({ compile: () => new Set(['a']), extensions: { get: () => ({}) }, properties: { get: (m) => ({ currentProgram: stuck[m] }) } }, {}, {}, 300);
+out.cqStuckMs = Date.now() - t1;
+out.cqNoExt = await RQ.compileQuietly({ compile: () => new Set(['a']), extensions: { get: () => null }, properties: { get: () => ({}) } }, {}, {}, 300);
 console.log('@@' + JSON.stringify(out));
 """
 
@@ -227,13 +236,18 @@ def test_perf_static():
         check("f. a very slow GPU (300 ms frames at 3x) still steps down (windows by time, not only by 30 frames); frames over 1 s twice in a row are frames, not a pause (1.5 s frames at 4K reach the floor)",
               r["slowGpu"]["q"] <= -2 and r["slowGpu"]["dpr"] <= 2.2 and r["crawl"]["dpr"] == r["ranges"]["ultra4k"]["floor"] and r["crawl"]["steps"] >= 2, [r["slowGpu"], r["crawl"]])
 
+        check("f. compileQuietly: programs that turn ready resolve it (a program deleted meanwhile counts as done), one that never does gives up at maxMs (three's compileAsync polled for ever), no parallel-compile extension = at once",
+              r.get("cqOk") is True and r.get("cqMs", 9999) < 1000 and r.get("cqStuck") is False and 250 <= r.get("cqStuckMs", 0) < 1500 and r.get("cqNoExt") is True,
+              {k: r.get(k) for k in ("cqOk", "cqMs", "cqStuck", "cqStuckMs", "cqNoExt")})
+
     rnd, hs, rs = (read(os.path.join(WEB, "olympus", f)) for f in ("render.js", "hero-stage.js", "render-scale.js"))
     check("f. render.js: the governor sizes every core canvas (Ultra 4K = 3x), no MSAA over 2x, off screen = no frame (IntersectionObserver), the CSS box from a ResizeObserver, shaders compiled in the background",
           all(k in rnd for k in ("from './render-scale.js'", "ultra: { dpr: 3,", "RQ.dpr(myRange())", "RQ.frame(ft", "hiDpr", "new IntersectionObserver", "offScreen()",
-                                 "new ResizeObserver", "renderer.compileAsync(scene, camera)", "warm() {", "onScreen: !offScreen()"))
+                                 "new ResizeObserver", "compileQuietly(renderer, scene, camera, 8000)", "warm() {", "onScreen: !offScreen()"))
           and "canvas.clientWidth || canvas.width || 1" not in rnd and "if (dead || asleep || lost || pageHidden() || offScreen()) return false;" in rnd)
     check("f. hero-stage.js: the same governor, sleeps off screen / hidden / covered (OLYMPUS.hidden), keeps the kit's idle frame cap, compiles in the background",
-          all(k in hs for k in ("from './render-scale.js'", "RQ.dpr(myRange())", "O.hidden", "O.frameGap", "compileAsync", "RQ.frame(now")) and "draw about once a second" not in hs)
+          all(k in hs for k in ("from './render-scale.js'", "RQ.dpr(myRange())", "O.hidden", "O.frameGap", "compileQuietly(renderer, scene, camera, 8000)", "RQ.frame(now")) and "draw about once a second" not in hs
+          and "renderer.compileAsync(" not in hs and "renderer.compileAsync(" not in rnd)
     check("f. render-scale.js: no three.js, no DOM needed, one governor per page (window.OLYMPUS_RQ), ?rs= pins a ratio for screenshots",
           not re.search(r"^\s*import\b", rs, re.M) and "document." not in rs and "OLYMPUS_RQ" in rs and "get('rs')" in rs)
     sc = read(os.path.join(WEB, "settings", "settingscore.js"))

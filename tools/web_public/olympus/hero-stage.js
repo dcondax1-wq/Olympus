@@ -23,7 +23,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { envKit, mat4, latheGeo, boxGeo, ringGeo, discGeo, bandGeo, shaftGeo, measure } from './env-kit.js';
 import { mergeGeometries } from './three-addons/BufferGeometryUtils.js';
-import { governor, range as rqRange } from './render-scale.js';
+import { governor, range as rqRange, compileQuietly } from './render-scale.js';
 
 export const VERSION = 'hero-stage 1 (2026-11-11)';
 
@@ -445,12 +445,12 @@ export function createStage(box, opts) {
   const hidden = () => { const O = K(); try { return O && O.hidden ? O.hidden() : document.hidden; } catch (e) { return document.hidden; } };
   const gapNow = () => { const O = K(); try { return O && O.frameGap ? O.frameGap() : 0; } catch (e) { return 0; } };
   // the shaders compile in the background before the first frame (the first draw would compile them all synchronously)
-  let compiled = typeof renderer.compileAsync !== 'function', compiling = false;
+  let compiled = typeof renderer.compile !== 'function' || !renderer.properties, compiling = false;
   const warm = () => {
     if (compiled || compiling || dead) return;
     compiling = true;
     const done = () => { compiled = true; compiling = false; if (!dead) schedule(); };
-    try { renderer.compileAsync(scene, camera).then(done, done); } catch (e) { done(); }
+    try { compileQuietly(renderer, scene, camera, 8000).then(done, done); } catch (e) { done(); }      // bounded: three's compileAsync could poll for ever
     setTimeout(() => { if (!compiled) done(); }, 8000);
   };
   let lastDraw = 0;
@@ -478,7 +478,7 @@ export function createStage(box, opts) {
   if (typeof IntersectionObserver === 'function') { io = new IntersectionObserver((es) => { onScreen = es.some((e) => e.isIntersecting); if (onScreen) { tPrev = performance.now(); H.poke(300); } }); io.observe(box); }
   // textures and the HDRI arrive later: draw again when they do (reduced motion draws on demand only)
   // the HDRI changes every material's program (an environment map): those compile in the background too before the next frame
-  D.envReady.then(() => { if (!compiling && typeof renderer.compileAsync === 'function') compiled = false; H.poke(400); });
+  D.envReady.then(() => { if (!compiling && typeof renderer.compile === 'function' && renderer.properties) compiled = false; H.poke(400); });
   setTimeout(() => H.poke(500), 1500); setTimeout(() => H.poke(500), 4000);
   const baseStats = D.stats;
   H.stats = () => Object.assign(baseStats(), { frames: H.frames, calls: renderer.info.render.calls });

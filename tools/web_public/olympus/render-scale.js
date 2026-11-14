@@ -121,6 +121,34 @@ export function step(s, t, ms, gap, work, maxQ, minQ) {
   return s;
 }
 
+/**
+ * compile a scene's materials without holding the page, and never wait for ever (render.js and hero-stage.js use it before a first frame).
+ * three's own compileAsync polls every 10 ms until every program says it is ready, and a program deleted meanwhile (a material disposed, or
+ * rebuilt when an environment map arrived) never says so: it polled for ever (225 ms of script a second on an idle hero page, found by the
+ * perf probe). Here a deleted program counts as done, the poll is once a frame, and after maxMs (8 s) it gives up and lets the frame compile.
+ * -> Promise<boolean> (true = every program reported ready)
+ */
+export function compileQuietly(renderer, scene, camera, maxMs) {
+  return new Promise((done) => {
+    let mats = null;
+    try { mats = renderer.compile(scene, camera); } catch (e) { done(false); return; }
+    const ext = renderer.extensions && renderer.extensions.get && renderer.extensions.get('KHR_parallel_shader_compile');
+    const props = renderer.properties, t0 = typeof performance !== 'undefined' ? performance.now() : Date.now(), cap = maxMs || 8000;
+    if (!ext || !props || !mats || !mats.size) { done(true); return; }            // no parallel compile: the first frame links them, as before
+    const check = () => {
+      try {
+        mats.forEach((m) => {
+          const p = props.get(m) && props.get(m).currentProgram;
+          if (!p || !p.program || p.isReady()) mats.delete(m);                       // ready, or deleted meanwhile (destroy() clears .program)
+        });
+      } catch (e) { mats.clear(); }
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (!mats.size) done(true); else if (now - t0 > cap) done(false); else setTimeout(check, 16);
+    };
+    check();
+  });
+}
+
 /** the page's one governor (shared by every module copy through window.OLYMPUS_RQ) */
 export function governor() {
   const W = typeof window !== 'undefined' ? window : null;
