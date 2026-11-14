@@ -150,7 +150,7 @@ Nothing you type leaves your computer: the editor has no server and loads nothin
 
 
 def guide_html(thumbs: dict) -> str:
-    """The 8-page guide (US Letter). thumbs: {template id: data URI of a phone screenshot} or {} for a text-only build."""
+    """The guide (US Letter). thumbs: {template id: data URI of a phone screenshot} or {} for a text-only build."""
     cards = "".join(f'<div class="tc"><img src="{thumbs[t]}" alt=""><b>{D.THEMES[t]["label"]}</b><span>{D.THEMES[t]["for"]}</span></div>'
                     for t in D.ORDER if t in thumbs)
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
@@ -269,7 +269,7 @@ LISTING = {
         "WHAT YOU GET",
         "- 5 one-page website templates, each designed for a kind of local business: Trades (plumbers, electricians, heating, roofers), Home and Garden (lawn care, landscapers, cleaners), Cafe (with a menu board), Salon (with a price list), Barber (dark, with a price board)",
         "- The Site Editor: an offline page where you fill in a form (name, services, prices, hours, photos, colours) and download your finished site. No code, no account, no subscription",
-        "- An 8-page guide: edit without code, put it online for free, use your own domain, a launch checklist, local-search basics and the rules on reviews",
+        "- A step-by-step guide (PDF): edit without code, put it online for free, use your own domain, a launch checklist, local-search basics and the rules on reviews",
         "WHAT EACH SITE HAS",
         "- Big tap-to-call button and a call bar on phones, text and email buttons, a message form that opens the visitor's email app",
         "- Services, a section made for the trade (steps, seasons, menu or price list), why choose you, your story, photos, real reviews, questions, opening hours and location",
