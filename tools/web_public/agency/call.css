@@ -66,7 +66,8 @@ html.framed #app { padding-top: 12px; }
 .foot { margin: 4px 0 0; font-size: 12px; color: var(--ag-muted); }
 
 /* the call screen: one full-height sheet, big words, big buttons */
-.sheet { position: fixed; inset: 0; z-index: 60; display: grid; }
+/* above AGORA's compact app bar (70) and its own sheets (80 / 81), below toasts (90) and the Go-to sheet (9500): the bar must never cover Close */
+.sheet { position: fixed; inset: 0; z-index: 82; display: grid; }
 .scrim { position: absolute; inset: 0; background: rgba(10, 8, 6, .72); }
 .panel { position: relative; z-index: 1; width: 100%; max-width: 640px; height: 100%; margin: 0 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
   display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 12px; background: var(--ag-night, #14110e);

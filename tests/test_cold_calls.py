@@ -77,6 +77,8 @@ def test_static():
     check("a. CSS: taps >= 44 px (outcomes 56), safe areas, 176 px clear of Jarvis's corner, reduced motion, LITE, big call text (opener 22 px, script 20 px)",
           css.count("min-height: 44px") >= 3 and "min-height: 56px" in css and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion" in css
           and 'data-oly-lite="1"' in css and re.search(r"\.say\.opener \{[^}]*22px", css) and re.search(r"\.say \{[^}]*20px", css))
+    zi = re.search(r"\.sheet \{[^}]*z-index: (\d+)", css)
+    check("a. the call screen sits above AGORA's compact app bar (z-index 70) and its sheets (81), so the bar never covers Close (found by the browser run)", zi and int(zi.group(1)) > 81, zi and zi.group(1))
     check("a. the AGORA look: no neon / glow / techno font / cyber words in the page's own files", not AK.BANNED_LOOK.search(css + js + core + html.split("</head>")[0].split("-->")[-1]), AK.BANNED_LOOK.findall(css + js)[:3])
     man = json.loads(AK.read(os.path.join(D, "call.webmanifest")))
     check("a. the manifest opens Call mode itself: start_url ./call.html, scope ./, standalone, portrait, the svg icon",
