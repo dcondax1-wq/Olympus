@@ -132,7 +132,7 @@
     { id: 'worlds', name: 'Worlds', q: 'The 3D places (optional, for fun)', line: 'The 3D city, duels and night cities', icon: 'worlds', legacy: 'worlds',
       sections: [['top', 'Most visited', 'The city, the islands, the duels'], ['views', 'Numbers as places', 'Kalshi, money, data and ATLAS as cities']],
       see: ['odeon', 'symposium'] },
-    { id: 'settings', name: 'Settings & Help', q: 'Change the look, start the PC, find any app', line: 'Look, the PC, every app, the workshop', icon: 'settings', legacy: 'life',
+    { id: 'settings', name: 'Settings & Help', q: 'How do I change the look, start the PC or find an app?', line: 'Look, the PC, every app, the workshop', icon: 'settings', legacy: 'life',
       sections: [['settings', 'Settings', 'Look, voice, storage, and the PC'], ['help', 'Help and every app', 'Every app A to Z, and the old map'], ['workshop', 'Workshop', 'Labs and test pages (for building, not daily use)']],
       see: [] }
   ];

@@ -1,4 +1,4 @@
-"""THE GATE, the OLYMPUS front door (tools/web_public/gate/, AGORA look, 2026-11-12). Owner: "When I click the dashboard link there's just a shit ton of buttons ...
+"""THE GATE, the OLYMPUS front door (tools/web_public/gate/, AGORA look, 2026-11-12; v2 2026-11-14 = the command center + nine hubs, docs/OLYMPUS_IA_V2.md). Owner: "When I click the dashboard link there's just a shit ton of buttons ...
 make something that's very easy on how to get to things." One page: a "Right now" card (bots on / quiet / old numbers with the age, drawdown left, today's $, the next
 trade window; older than 6 h = one "Bring the bots back" button), three Start-here tiles (1 tap), four district doors that open a short sheet (2 taps to any app), a search
 by name / purpose / plain words, the last 4 apps opened, the labs under a small Workshop link. Plus olympus/gate-nav.js: "< Gate" and "Go to" on any app.
@@ -8,6 +8,8 @@ by name / purpose / plain words, the last 4 apps opened, the labs under a small 
   c. Chromium 390 x 844 (and 375 x 667, reduced motion): fresh / quiet / old / missing / broken home.json, the artifact copy at the site root, the district sheets
      (every app in 2 taps), the search and Enter, Recent, a partial copy marks missing apps, gate-nav on NQ / Kalshi / Cities / Polis, taps >= 44 px, no sideways scroll
     python -X utf8 -m tests.test_gate_page            (--static: parts a and b only)
+v2 (2026-11-14): the district doors and their sheets are gone; the home shows Right now (+ Kalshi and my shift, each fact a link), the nine hub tiles
+(hub/?h=<id>, each with a live line), the search and Recent. The hub pages themselves: tests/test_hubs.py.
 """
 from __future__ import annotations
 
@@ -31,6 +33,7 @@ CAT = os.path.join(AK.WEB, "olympus", "gate-catalog.js")
 NAV = os.path.join(AK.WEB, "olympus", "gate-nav.js")
 TEN = ("nq", "helios", "aegis", "mint", "polis", "symposium", "ergasterion", "cities", "kalshi", "herald")
 LABS = {"agora-lab", "env-lab", "fx-lab", "sfx-lab", "people-lab", "polis-lab", "polis-life-lab", "render-lab"}
+HUBS = ["today", "bots", "kalshi", "money", "plan", "research", "jarvis", "worlds", "settings"]
 NOW = "2026-11-12T15:00:00Z"            # Thursday 10:00 New York: the LIT window is open
 NOW_S = int(datetime(2026, 11, 12, 15, 0, tzinfo=timezone.utc).timestamp())
 
@@ -56,30 +59,32 @@ def test_static():
     check("a. the files: gate/index.html, gate.js, gate.css, icon.svg, olympus/gate-catalog.js, olympus/gate-nav.js",
           all(os.path.isfile(os.path.join(G, n)) for n in names) and os.path.isfile(CAT) and os.path.isfile(NAV))
     html, js, css, cat, nav = (AK.read(p) for p in (os.path.join(G, "index.html"), os.path.join(G, "gate.js"), os.path.join(G, "gate.css"), CAT, NAV))
-    check("a. the page: AGORA theme, viewport-fit=cover, theme-color, colour scheme dark, ONE h1, a polite live status line, a dialog sheet with a label",
+    check("a. the page: AGORA theme, viewport-fit=cover, theme-color, colour scheme dark, ONE h1, a polite live status line, no sheet any more (hubs are pages)",
           '<html lang="en" data-theme="agora">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
-          and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' in html and 'aria-modal="true"' in html)
-    check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; gate.css, the catalog and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css" in html
-          and "'olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g2'" in html and "s.async = false" in html)
-    check("a. the three Start-here tiles are plain links in the page (they work even if gate.js fails): Today = the dashboard, Bots = nq/, Jarvis = jarvis/",
-          all(f'data-to="{p}"' in html for p in ("index.html", "nq/index.html", "jarvis/index.html")) and html.count('class="g-tile"') == 3)
-    check("a. four district doors (Trading, Money, Life, Worlds) and the Workshop link at the bottom; no lab is linked from the page itself",
-          [m for m in re.findall(r'class="g-door" data-district="(\w+)"', html)] == ["trading", "money", "life", "worlds"] and 'data-district="workshop"' in html
-          and not re.search(r"href=\"[^\"]*lab", html))
-    check("a. the order on the page: Right now, Start here, Recent, the districts, the search, the footer",
-          html.index('id="now"') < html.index('id="startH"') < html.index('id="recentSec"') < html.index('id="distH"') < html.index('id="q"') < html.index('class="g-foot"'))
-    code = strip_comments(js) + strip_comments(nav) + strip_comments(cat)
+          and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
+    check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g3'" in html and "b + 'olympus/agora.css" in html
+          and "'olympus/gate-catalog.js?v=g2', 'olympus/hub-status.js?v=h1', 'gate/gate.js?v=g3'" in html and "s.async = false" in html)
+    tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
+    check("a. the nine hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order: Today (wide) first ... Settings & Help last",
+          [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="today"' in html and html.count('class="g-hline"') == 9)
+    check("a. the Workshop link at the bottom opens Settings & Help > Workshop; no lab is linked from the page itself; no Trading / Money / Life district doors",
+          'data-to="hub/index.html?h=settings&amp;t=workshop"' in html and not re.search(r"href=\"[^\"]*lab", html) and "g-door" not in html and "data-district" not in html)
+    check("a. the order on the page: Right now, the hubs, the search, Recent, the footer",
+          html.index('id="now"') < html.index('id="hubsH"') < html.index('id="q"') < html.index('id="recentSec"') < html.index('class="g-foot"'))
+    hs = AK.read(os.path.join(AK.WEB, "olympus", "hub-status.js"))
+    code = strip_comments(js) + strip_comments(nav) + strip_comments(cat) + strip_comments(hs)
     es6 = [p for p in (r"=>", r"\blet\s", r"\bconst\s", r"`", r"\bclass\s+\w+\s*[{e]", r"\.\.\.\w", r"\.at\(", r"\(\?<[=!]") if re.search(p, code)]
     check("a. ES5 classic scripts (no arrow, let, const, template string, class, spread, .at, lookbehind): Safari 12+ safe, no build step", not es6, es6)
     bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function") if re.search(p, js + nav + cat + html)]
     check("a. no markup from data: text through textContent / createElementNS only", not bad and "textContent" in js and "createElementNS" in js and "textContent" in nav, bad)
     check("a. read only: no XHR / WebSocket / sendBeacon / POST / cookies / web address; the Gate fetches only home.json (+ the PC's /api/site/live.json when served from the PC, and a HEAD per app link to spot a partial copy)",
           not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|method:\s*['\"]POST|document\.cookie|https?://(?!www\.w3\.org)", js + nav + cat + html)
-          and set(re.findall(r"getJSON\(([^)]*)\)", js)) == {"base + 'home.json'", "url", "LIVE_API"} and "LIVE_API = '/api/site/live.json'" in js and "method: 'HEAD'" in js and "fetch(" not in nav)
+          and set(re.findall(r"getJSON\(([^)]*)\)", js)) == {"base + 'home.json'", "url", "LIVE_API", "base + 'kalshi.json'", "base + 'money/scoreboard.json'", "base + 'hephaestus/jarvis.json'", "base + 'plutus/jarvis.json'"} and "LIVE_API = '/api/site/live.json'" in js and "method: 'HEAD'" in js and "fetch(" not in nav)
     ls = set(re.findall(r"localStorage\.(\w+)", js + nav))
-    check("a. storage: only localStorage 'gate.recent.v1' (and the Gate's 'gate.now.v1'), every call inside try / catch; no sessionStorage / indexedDB",
-          ls <= {"getItem", "setItem"} and "'gate.recent.v1'" in js and "'gate.recent.v1'" in nav and "'gate.now.v1'" in js and not re.search(r"sessionStorage|indexedDB", js + nav)
+    check("a. storage: only localStorage 'gate.recent.v1' (and the Gate's 'gate.now.v1'; the Planner's 'planner.today.v1' read only), every call inside try / catch; no sessionStorage / indexedDB",
+          ls <= {"getItem", "setItem"} and "'gate.recent.v1'" in js and "'gate.recent.v1'" in nav and "'gate.now.v1'" in js and "LS_PLAN = 'planner.today.v1'" in js
+          and "lsSet(LS_PLAN" not in js and not re.search(r"sessionStorage|indexedDB", js + nav)
           and all("try {" in ln for ln in (js + nav).splitlines() if "localStorage." in ln), ls)
     check("a. truth.js is the one source for drawdown and data age (a module tag), with a light copy of its rules only when it does not load; 6 h = old, 20 min = fresh",
           "olympus/truth.js?v=q6a" in js and "T.agesOf(home, t)" in js and "T.accountsOf(home)" in js and "lightAges" in js and "STALE_S = 6 * 3600" in js and "FRESH_S = 20 * 60" in js)
@@ -89,13 +94,13 @@ def test_static():
           "#14110e" in css and "#c8a24a" in css and "--ag-serif" in css and "tabular-nums" in css and not AK.BANNED_LOOK.search(css + js + nav + html.split("-->")[-1]))
     check("a. phone rules in the CSS: taps >= 44 px, safe areas, 176 px clear of Jarvis's corner at the end, reduced motion, LITE, no sideways scroll",
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
-    check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Gate link + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
-          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=g1" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
+    check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
+          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=g2" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))
-        tagged[app] = h.count('<script src="../olympus/gate-nav.js?v=g1" defer></script>') == 1 and ("agora-ui.js" not in h or h.index("agora-ui.js") < h.index("gate-nav.js")) and h.index("gate-nav.js") < h.index("</head>")
-    check("a. the gate-nav tag (once, deferred, in <head>, after agora-ui.js) in the 10 busiest apps: " + ", ".join(TEN), all(tagged.values()), tagged)
+        tagged[app] = h.count('<script src="../olympus/gate-nav.js?v=g2" defer></script>') == 1 and ("agora-ui.js" not in h or h.index("agora-ui.js") < h.index("gate-nav.js")) and h.index("gate-nav.js") < (h.index("</body>") if app == "kalshi" else h.index("</head>"))
+    check("a. the gate-nav tag (once, deferred, in <head> (Kalshi: its body, since 11-12), after agora-ui.js) in the 10 busiest apps (agora-ui.js adds it to every other AGORA app): " + ", ".join(TEN), all(tagged.values()), tagged)
 
 
 # ------------------------------------------------------------------------------------------------ b. the catalog
@@ -110,7 +115,7 @@ def test_catalog():
     apps = C["apps"]
     ids = [a["id"] for a in apps]
     check("b. no app twice in the catalog", len(ids) == len(set(ids)), [i for i in ids if ids.count(i) > 1])
-    folders = sorted(n for n in os.listdir(AK.WEB) if os.path.isfile(os.path.join(AK.WEB, n, "index.html")) and n != "gate")
+    folders = sorted(n for n in os.listdir(AK.WEB) if os.path.isfile(os.path.join(AK.WEB, n, "index.html")) and n not in ("gate", "hub"))
     missing = [f for f in folders if f not in ids]
     check(f"b. every app folder of the site ({len(folders)}) is in the catalog", not missing, missing)
     listed = re.findall(r'\{"id": "([^"]+)"', AK.read(os.path.join(AK.WEB, "olympus", "apps-list.js")))
@@ -118,16 +123,19 @@ def test_catalog():
     check(f"b. every row of olympus/apps-list.js ({len(listed)}) is in the catalog (zenith = Today, the dashboard)", not lmiss, lmiss)
     nopath = [a["id"] for a in apps if a["path"] and not os.path.isfile(os.path.join(AK.WEB, a["path"] + ("index.html" if a["path"].endswith("/") else "")))]
     check("b. every path in the catalog exists in the site", not nopath, nopath)
-    ws = {a["id"] for a in apps if a["district"] == "workshop"}
-    check("b. the Workshop holds exactly the 8 labs (agora, env, fx, sfx, people, polis, polis-life, render), and no lab sits anywhere else", ws == LABS, ws ^ LABS)
-    dist = {d["id"] for d in C["districts"]}
-    check("b. districts: Trading, Money, Life, Worlds (+ the Workshop); every app is in one of them or Start here", dist == {"trading", "money", "life", "worlds", "workshop"}
-          and all(a["district"] in dist | {"start"} for a in apps))
-    tops = {d: sum(1 for a in apps if a["district"] == d and a["section"] == "top") for d in ("trading", "money", "life", "worlds")}
-    check("b. each district opens with at most 6 'most useful' apps", all(1 <= n <= 6 for n in tops.values()), tops)
+    ws = {a["id"] for a in apps if a["section"] == "workshop"}
+    check("b. Settings & Help > Workshop holds the 8 labs (+ the Agora Gallery of 3D shapes), and no lab sits anywhere else",
+          ws == LABS | {"gallery"} and all(a["district"] == "settings" for a in apps if a["section"] == "workshop"), ws ^ LABS)
+    dist = [d["id"] for d in C["districts"]]
+    check("b. the districts ARE the nine hubs (the theme's per-district mix follows them); every app is in exactly one", dist == HUBS and all(a["district"] in dist for a in apps), dist)
+    tabs = {}
+    for a in apps:
+        tabs.setdefault(a["district"] + "/" + a["section"], []).append(a["id"])
+    big = {k: len(v) for k, v in tabs.items() if len(v) > 6 and not k.endswith("/workshop")}
+    check("b. no tab holds more than 6 apps (the Workshop aside)", not big, big)
     long = [a["id"] for a in apps if len(a["label"]) > 28 or len(a["line"]) > 60 or not a["line"]]
     check("b. every app has a plain label (<= 28 characters) and a one-line purpose (<= 60)", not long, long)
-    check("b. Start here = Today, Bots (nq), Jarvis", C["start"] == ["today", "nq", "jarvis"])
+    check("b. start (the fallback 'start here' list) = Bots (nq), the dashboard, Jarvis", C["start"] == ["nq", "today", "jarvis"])
     q = C["q"]
     check("b. the search finds plain words: money -> Mint and Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, news -> Pheme / Pythia / Herald",
           {"mint", "ledger"} <= set(q["money"]) and "aegis" in q["drawdown"] and q["kalshi"][0] == "kalshi" and q["journal"][0] == "journal" and {"pheme", "pythia", "herald"} <= set(q["news"]), q)
@@ -188,6 +196,10 @@ NOWCARD = "() => ({ state: document.querySelector('#now').dataset.state, badge: 
 
 def test_page():
     html = AK.read(os.path.join(G, "index.html"))
+    plan = json.dumps({"v": 1, "day": "2026-11-12", "events": [{"title": "Work shift", "start": "08:00", "end": "16:00"}, {"title": "Walk", "start": "17:30", "end": "18:15"}],
+                       "tasks": [{"title": "a", "done": True}, {"title": "b"}]})
+    kal = json.dumps({"v": 3, "t": NOW_S - 1200, "running": True, "balance": 2410.55, "today_pnl": 3.4, "total_pnl": 410.55, "positions": [{}, {}]})
+    sb = json.dumps({"totals": {"week": {"net": 120}, "month": {"net": 640}, "all": {"net": 1585}}})
     srv, origin = serve({"/home.json": home_json(300), "/olympus-live.html": html})
     try:
         with AK.browser() as br:
@@ -198,45 +210,27 @@ def test_page():
             check("c. fresh report (5 min): 'Bots on', 'The bots are on. Last report 5 minutes ago.', drawdown $1,420 of $2,000 and $900 of $1,000, today +$272, the window open until 15:30 ET; no button; through truth.js",
                   r["state"] == "on" and r["badge"] == "Bots on" and r["line"] == "The bots are on. Last report 5 minutes ago." and r["facts"][0] == "Drawdown left$1,420of $2,000 max loss, Zlarior 50K"
                   and r["facts"][1] == "Drawdown left$900of $1,000 max loss, ATLAS 25K" and r["facts"][2].startswith("Today+$272") and r["facts"][3] == "Trade windowOpen nowuntil 15:30 ET" and not r["btn"] and r["truth"], r)
-            tiles = p.evaluate("() => [...document.querySelectorAll('.g-tile')].map((a) => a.href)")
-            check("c. the three Start-here tiles go to the dashboard, nq/ and jarvis/ (1 tap) from gate/", tiles == [f"{origin}/index.html", f"{origin}/nq/index.html", f"{origin}/jarvis/index.html"], tiles)
+            go = p.evaluate("() => [...document.querySelectorAll('#nowFacts a.g-fact')].map((a) => a.href.replace(location.origin, ''))")
+            check("c. each fact is a tap to the app with the detail: drawdown -> Aegis, today -> NQ, the window -> Kairos",
+                  go == ["/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
+            tiles = p.evaluate("() => [...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.href.replace(location.origin, ''), a.querySelector('.g-hline').textContent, a.querySelector('.g-hcount').textContent])")
+            check("c. the nine hub tiles open hub/?h=<hub> (1 tap) with their app counts (15 + 16 + 3 + 11 + 5 + 8 + 4 + 8 + 12 = 82)",
+                  [t[0] for t in tiles] == HUBS and all(t[1] == f"/hub/index.html?h={t[0]}" for t in tiles)
+                  and sum(int(t[3].split()[0]) for t in tiles) == 82 and tiles[0][3] == "15 apps", tiles)
+            lines = {t[0]: t[2] for t in tiles}
+            check("c. live hub lines: Bots & Evals '2 evals active, $1,420 / $900 left', Today 'Trade window open until 15:30 ET', Kalshi 'No Kalshi numbers yet' (no feed here)",
+                  lines["bots"] == "2 evals active, $1,420 / $900 left" and lines["today"].startswith("Trade window open until 15:30 ET") and lines["kalshi"] == "No Kalshi numbers yet", lines)
             t = AK.taps(p)
             check("c. every tap target >= 44 x 44, no sideways scroll, Jarvis's corner free at the end, no console error, nothing off the origin",
                   not t and AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (t[:4], AK.corner(p), errs[:3], off[:3]))
-            vis = p.evaluate("() => { const r = (s) => document.querySelector(s).getBoundingClientRect().bottom; return [r('#now'), r('.g-tiles')]; }")
-            check("c. at 390 x 844 the Right now card and the three Start-here tiles are on the first screen", vis[1] <= 844, vis)
-
-            # the district sheets: every app 2 taps away
-            seen_ids, first = {}, {}
-            for did in ("trading", "money", "life", "worlds"):
-                p.click(f'.g-door[data-district="{did}"]')
-                p.wait_for_timeout(450)
-                info = p.evaluate("() => ({ open: !document.querySelector('#sheet').hidden, title: document.querySelector('#sheetH').textContent, secs: [...document.querySelectorAll('#sheetBody .g-sec')].map((h) => h.textContent),"
-                                  " ids: [...document.querySelectorAll('#sheetBody a.g-row')].map((a) => a.dataset.app), hrefs: [...document.querySelectorAll('#sheetBody a.g-row')].map((a) => a.href),"
-                                  " top: document.querySelectorAll('#sheetBody .g-list.g-top a').length, focus: document.activeElement.id })")
-                first[did] = info
-                for i in info["ids"]:
-                    seen_ids[i] = seen_ids.get(i, 0) + 1
-                bad = [h for h in info["hrefs"] if not os.path.isfile(os.path.join(AK.WEB, h.replace(origin + "/", "")))]
-                check(f"c. the {did} door opens its sheet ('{info['title']}', {len(info['ids'])} apps, 'Most useful'/'Most visited' first with {info['top']} apps), every link is a real page, focus on Close",
-                      info["open"] and info["title"].lower() == did and info["secs"][0] in ("Most useful", "Most visited") and 1 <= info["top"] <= 6 and not bad and info["focus"] == "sheetClose", (info["secs"], bad[:3]))
-                t = AK.taps(p)
-                check(f"c. the {did} sheet: taps >= 44 px, no sideways scroll", not t and AK.no_sideways(p), t[:4])
-                p.keyboard.press("Escape")
-                p.wait_for_timeout(200)
-                closed = p.evaluate(f"() => [document.querySelector('#sheet').hidden, document.activeElement.dataset.district]")
-                check(f"c. Escape closes the {did} sheet and focus returns to its door", closed == [True, did], closed)
-            C = catalog() or {"apps": []}
-            want = {a["id"] for a in C.get("apps", []) if a["district"] in ("trading", "money", "life", "worlds")}
-            check(f"c. every app ({len(want)}) is in exactly one district sheet: Gate -> door -> app = 2 taps (Today and Jarvis are tiles: 1 tap)",
-                  set(seen_ids) == want and all(v == 1 for v in seen_ids.values()) and first["trading"]["ids"][0] == "nq", (set(seen_ids) ^ want, [k for k, v in seen_ids.items() if v > 1]))
-            p.click("#workshopBtn")
-            p.wait_for_timeout(400)
-            ws = p.evaluate("() => [...document.querySelectorAll('#sheetBody a.g-row')].map((a) => a.dataset.app)")
-            check("c. the small Workshop link opens the 8 labs (and the labs appear nowhere else on the page)", set(ws) == LABS and p.evaluate("() => [...document.querySelectorAll('main a')].filter((a) => /lab/.test(a.href)).length") == 0, ws)
-            p.click("#scrim", position={"x": 20, "y": 10})
-            p.wait_for_timeout(200)
-            check("c. a tap on the dimmed page closes the sheet", p.evaluate("() => document.querySelector('#sheet').hidden"))
+            p.evaluate("() => window.scrollTo(0, 0)")
+            vis = p.evaluate("() => { const r = (s) => document.querySelector(s).getBoundingClientRect().bottom; return [r('#now'), r('.g-hub.g-wide')]; }")
+            check("c. at 390 x 844 the Right now card and the wide Today hub tile are on the first screen", vis[0] <= 844 and vis[1] <= 844, vis)
+            p.click('#workshopLink')
+            p.wait_for_url("**/hub/index.html?h=settings&t=workshop", timeout=30000)
+            check("c. the small Workshop link opens Settings & Help on its Workshop tab", "h=settings&t=workshop" in p.url, p.url)
+            p.goto(f"{origin}/gate/?now={NOW}")
+            p.wait_for_function("window.GATE && window.GATE.ready()", timeout=60000)
 
             # search
             res = {}
@@ -247,6 +241,7 @@ def test_page():
             check("c. the search box: money -> Mint + Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, nonsense -> a plain 'Nothing found' line",
                   {"mint", "ledger"} <= set(res["money"][0]) and "aegis" in res["drawdown"][0] and res["kalshi"][0][0] == "kalshi" and res["journal"][0][0] == "journal"
                   and not res["qqqzz"][0] and "Nothing found" in res["qqqzz"][1], {k: v[0] for k, v in res.items()})
+            check("c. each result says which hub it lives in ('in Bots & Evals')", "in Bots & Evals" in p.evaluate("() => { document.querySelector('#q').value = 'journal'; document.querySelector('#q').dispatchEvent(new Event('input')); return document.querySelector('#results').textContent; }"))
             p.fill("#q", "risk guard")
             p.wait_for_timeout(120)
             p.press("#q", "Enter")
@@ -258,6 +253,19 @@ def test_page():
             check("c. Recent: the app just opened is first (Aegis remembered by the Gate and by gate-nav on Aegis), at most 4", rec[:1] == ["aegis"] and len(rec) <= 4, rec)
             AK.shot(p, "gate-fresh")
             ctx.close()
+
+            # Kalshi, the money scoreboard and my shift (the Planner's summary on this phone)
+            s1, o1 = serve({"/home.json": home_json(300), "/kalshi.json": kal, "/money/scoreboard.json": sb})
+            ctx, p, errs, seen, off = AK.page(br, o1, storage={"planner.today.v1": plan})
+            open_gate(p, o1)
+            r = p.evaluate(NOWCARD)
+            lines = p.evaluate("() => Object.fromEntries([...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.querySelector('.g-hline').textContent]))")
+            check("c. with kalshi.json and today's plan: 'Kalshi $2,411 today +$3' and 'My shift Now to 16:00 Work shift' facts (taps to Kalshi and the Planner)",
+                  "Kalshi$2,411today +$3" in r["facts"] and "My shiftNow to 16:00Work shift" in r["facts"] and not errs, (r["facts"], errs[:2]))
+            check("c. ... and the hub lines: Kalshi 'Balance $2,411 · today +$3 · 2 open bets', My Money 'This month +$640 cash · all time +$1,585', Plan & Day starts 'On shift now until 16:00'",
+                  lines["kalshi"] == "Balance $2,411 · today +$3 · 2 open bets" and lines["money"] == "This month +$640 cash · all time +$1,585" and lines["plan"].startswith("On shift now until 16:00"), lines)
+            ctx.close()
+            s1.shutdown()
 
             # quiet, old, stopped
             for age, running, state, badge, btn, line in ((2 * 3600, True, "quiet", "Quiet", False, "Last report from your PC 2 hours ago. The bots may still be trading."),
@@ -271,6 +279,8 @@ def test_page():
                       r["state"] == state and r["badge"] == badge and r["line"] == line and r["btn"] == btn and (not btn or r["href"] == f"{o2}/nq/index.html?howto=1") and not errs, (r, errs[:2]))
                 if state == "stale":
                     check("c. old numbers are labelled as the last report day, not 'Today'", any(f.startswith("Last report day") for f in r["facts"]), r["facts"])
+                    bl = p.evaluate("() => document.querySelector('#hl-bots').textContent")
+                    check("c. ... and the Bots & Evals tile says so: 'Old numbers (3 d ago) · 2 evals active ...'", bl.startswith("Old numbers (3 d ago) · 2 evals active"), bl)
                 ctx.close()
                 s2.shutdown()
 
@@ -280,9 +290,9 @@ def test_page():
                 ctx, p, errs, seen, off = AK.page(br, o3)
                 open_gate(p, o3)
                 r = p.evaluate(NOWCARD)
-                check(f"c. home.json {name}: 'No numbers', a plain line, no button, the trade window still shown from the clock, the tiles and doors still work, no console error",
+                check(f"c. home.json {name}: 'No numbers', a plain line, no button, the trade window still shown from the clock, the hub tiles still work, no console error",
                       r["state"] == "none" and r["badge"] == "No numbers" and r["line"] == "No bot numbers reached this page." and not r["btn"] and r["facts"] == ["Trade windowOpen nowuntil 15:30 ET"]
-                      and p.evaluate("() => document.querySelectorAll('.g-tile').length === 3 && !!window.OLYMPUS_GATE") and not errs, (r, errs[:2]))
+                      and p.evaluate("() => document.querySelectorAll('.g-hub').length === 9 && !!window.OLYMPUS_GATE") and not errs, (r, errs[:2]))
                 ctx.close()
                 s3.shutdown()
             s4, o4 = serve({"/home.json": None})
@@ -297,7 +307,7 @@ def test_page():
             ctx, p, errs, seen, off = AK.page(br, o4)
             p.add_init_script("Storage.prototype.getItem = function () { throw new Error('blocked'); }; Storage.prototype.setItem = function () { throw new Error('blocked'); };")
             open_gate(p, o4)
-            check("c. storage blocked (private mode): the page still works, no Recent row, no console error", p.evaluate("() => document.querySelector('#recentSec').hidden && document.querySelectorAll('.g-door').length === 4") and not errs, errs[:2])
+            check("c. storage blocked (private mode): the page still works, no Recent row, no console error", p.evaluate("() => document.querySelector('#recentSec').hidden && document.querySelectorAll('.g-hub').length === 9") and not errs, errs[:2])
             ctx.close()
             s4.shutdown()
 
@@ -305,28 +315,30 @@ def test_page():
             s5, o5 = serve({"/home.json": home_json(300), "/olympus-live.html": html, "/odeon/index.html": None})
             ctx, p, errs, seen, off = AK.page(br, o5)
             open_gate(p, o5, path="olympus-live.html")
-            r = p.evaluate("() => ({ base: window.GATE_BASE, tiles: [...document.querySelectorAll('.g-tile')].map((a) => a.href), css: !!getComputedStyle(document.querySelector('.g-tile')).borderRadius })")
-            check("c. copied to the site root as olympus-live.html: base '' and the tiles go to index.html, nq/index.html, jarvis/index.html; styled; no console error",
-                  r["base"] == "" and r["tiles"] == [f"{o5}/index.html", f"{o5}/nq/index.html", f"{o5}/jarvis/index.html"] and r["css"] and not errs, (r, errs[:2]))
-            p.click('.g-door[data-district="trading"]')
-            p.wait_for_function("() => document.querySelector('#sheetBody a.g-row[data-app=\"odeon\"]') && /g-gone/.test(document.querySelector('#sheetBody a.g-row[data-app=\"odeon\"]').className)", timeout=15000)
-            gone = p.evaluate("() => [...document.querySelectorAll('#sheetBody a.g-gone')].map((a) => a.dataset.app)")
-            check("c. a partial copy (odeon/ missing here): its row is dimmed and says 'not in this link'; the others stay normal", gone == ["odeon"], gone)
-            AK.shot(p, "gate-root-trading")
+            r = p.evaluate("() => ({ base: window.GATE_BASE, tiles: [...document.querySelectorAll('.g-hub')].map((a) => a.href), css: !!getComputedStyle(document.querySelector('.g-hub')).borderRadius })")
+            check("c. copied to the site root as olympus-live.html: base '' and the hub tiles go to hub/index.html?h=...; styled; no console error",
+                  r["base"] == "" and r["tiles"] == [f"{o5}/hub/index.html?h={h}" for h in HUBS] and r["css"] and not errs, (r, errs[:2]))
+            p.fill("#q", "replay")
+            p.wait_for_function("() => document.querySelector('#results a.g-row[data-app=\"odeon\"]') && /g-gone/.test(document.querySelector('#results a.g-row[data-app=\"odeon\"]').className)", timeout=15000)
+            gone = p.evaluate("() => [...document.querySelectorAll('#results a.g-gone')].map((a) => a.dataset.app)")
+            check("c. a partial copy (odeon/ missing here): its search row is dimmed and says 'not in this link'; the others stay normal", gone == ["odeon"], gone)
+            AK.shot(p, "gate-root")
             ctx.close()
             s5.shutdown()
 
-            # gate-nav on the apps
-            for app, sel in (("nq", "header.top .ag-navback"), ("kalshi", "a.olyback"), ("cities", "a.gn-back"), ("polis", "a.gn-back")):
+            # gate-nav on the apps: Home > Hub > app
+            for app, sel, hub in (("nq", "header.top .ag-navback", "Bots & Evals"), ("kalshi", "a.olyback", "Kalshi"), ("cities", "a.gn-back", "Worlds"), ("polis", "a.gn-back", "Worlds")):
                 ctx, p, errs, seen, off = AK.page(br, origin)
                 p.goto(f"{origin}/{app}/")
-                p.wait_for_function("window.OLYMPUS_GATE_NAV && window.OLYMPUS_GATE_NAV.placed()", timeout=60000)
+                p.wait_for_function("window.OLYMPUS_GATE_NAV && window.OLYMPUS_GATE_NAV.placed() && document.querySelector('.gn-crumb') && document.querySelector('.gn-crumb').textContent", timeout=60000)
                 p.wait_for_timeout(500)
-                r = p.evaluate("(sel) => { const a = document.querySelector(sel), g = document.querySelector('.gn-go'), ra = a && a.getBoundingClientRect(), rg = g && g.getBoundingClientRect();"
+                r = p.evaluate("(sel) => { const a = document.querySelector(sel), g = document.querySelector('.gn-go'), ra = a && a.getBoundingClientRect(), rg = g && g.getBoundingClientRect(), c = document.querySelector('.gn-crumb');"
                                " return { text: a && a.textContent.trim(), href: a && a.href, go: !!g, top: ra && Math.round(ra.top), goTop: rg && Math.round(rg.top), goR: rg && Math.round(rg.right), h: rg && Math.round(rg.height),"
+                               " hub: c && c.textContent, hubHref: c && c.href, cur: (document.querySelector('.gn-cur') || {}).textContent, inNav: !!a.closest('nav.gn-crumbs'),"
                                " rec: JSON.parse(localStorage.getItem('gate.recent.v1') || '[]')[0] }; }", sel)
-                check(f"c. {app}: the back link reads Gate and opens gate/, 'Go to' (44 px) sits in the top row on the right, this app is remembered for Recent",
-                      r["text"] in ("Gate", "← Gate") and r["href"] == f"{origin}/gate/index.html" and r["go"] and r["h"] >= 44 and r["goTop"] < 140 and r["goR"] <= 390 and r["rec"] == app, r)
+                check(f"c. {app}: the breadcrumb reads Home > {hub} > its name (Home -> gate/, {hub} -> its hub tab), 'Go to' (44 px) on the right of the top row, remembered for Recent",
+                      r["text"] in ("Home", "← Home") and r["href"] == f"{origin}/gate/index.html" and r["inNav"] and r["hub"] == hub and "/hub/index.html?h=" in (r["hubHref"] or "") and r["cur"]
+                      and r["go"] and r["h"] >= 44 and r["goTop"] < 140 and r["goR"] <= 390 and r["rec"] == app, r)
                 check(f"c. {app} with gate-nav: no sideways scroll, no console error", AK.no_sideways(p) and not errs, errs[:3])
                 if app == "nq":
                     p.click(".gn-go")
@@ -334,11 +346,11 @@ def test_page():
                     p.fill("#gnQ", "kalshi")
                     p.wait_for_timeout(200)
                     g = p.evaluate("() => ({ open: !document.querySelector('.gn-sheet').hidden, first: (document.querySelector('.gn-body a.gn-item[data-app]') || {}).href, gate: [...document.querySelectorAll('.gn-body a.gn-gate')].map((a) => a.href) })")
-                    check("c. Go to on NQ: the sheet opens, 'kalshi' finds the Kalshi bot first, the Gate is always one tap", g["open"] and g["first"] == f"{origin}/kalshi/index.html" and g["gate"] == [f"{origin}/gate/index.html"], g)
+                    check("c. Go to on NQ: the sheet opens, 'kalshi' finds the Kalshi bot first, Home is always one tap", g["open"] and g["first"] == f"{origin}/kalshi/index.html" and g["gate"] == [f"{origin}/gate/index.html"], g)
                     p.fill("#gnQ", "")
                     p.wait_for_timeout(150)
-                    dl = p.evaluate("() => [...document.querySelectorAll('.gn-dist')].map((a) => a.href.replace(location.origin, ''))")
-                    check("c. Go to with an empty box: Start here and the four districts (each opens the Gate on that district's sheet)", dl == ["/gate/index.html?d=trading", "/gate/index.html?d=money", "/gate/index.html?d=life", "/gate/index.html?d=worlds"], dl)
+                    dl = p.evaluate("() => ({ hubs: [...document.querySelectorAll('.gn-dist')].map((a) => a.href.replace(location.origin, '')), first: document.querySelector('.gn-body .gn-sec').textContent, here: (document.querySelector('.gn-dist.gn-here') || {}).dataset })")
+                    check("c. Go to with an empty box: the nine HUBS first (each opens its hub page), this app's hub marked", dl["hubs"] == [f"/hub/index.html?h={h}" for h in HUBS] and dl["first"] == "Hubs" and dl["here"] == {"hub": "bots"}, dl)
                     t = AK.taps(p)
                     check("c. the Go to sheet: every tap >= 44 px", not t, t[:4])
                     p.keyboard.press("Escape")
@@ -347,20 +359,21 @@ def test_page():
                     p.evaluate("() => window.scrollTo(0, 1400)")
                     p.wait_for_timeout(500)
                     bar = p.evaluate("() => { const b = document.querySelector('.ag-appbar'); return b ? [b.classList.contains('on'), (b.querySelector('.ag-navback') || {}).textContent, !!b.querySelector('.gn-go')] : null; }")
-                    check("c. scrolled down, the compact bar has '< Gate' and the Go to icon", bar == [True, "Gate", True], bar)
+                    check("c. scrolled down, the compact bar has '< Home' and the Go to icon", bar == [True, "Home", True], bar)
                 ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin)
             p.goto(f"{origin}/gate/?d=money&now={NOW}")
-            p.wait_for_function("window.GATE && window.GATE.ready()", timeout=60000)
-            check("c. gate/?d=money (Go to -> Money) opens the Money sheet at once", p.evaluate("() => !document.querySelector('#sheet').hidden && document.querySelector('#sheetH').textContent === 'Money'"))
+            p.wait_for_url("**/hub/index.html?h=money", timeout=30000)
+            check("c. an old link gate/?d=money (the v1 Money district) opens the My Money hub", p.url.endswith("/hub/index.html?h=money"), p.url)
+            p.goto(f"{origin}/gate/?d=trading&now={NOW}")
+            p.wait_for_url("**/hub/index.html?h=bots", timeout=30000)
+            check("c. gate/?d=trading opens Bots & Evals", p.url.endswith("/hub/index.html?h=bots"), p.url)
             ctx.close()
 
             ctx, p, errs, seen, off = AK.page(br, origin, w=375, h=667, reduced=True, lite=True)
             open_gate(p, origin)
-            p.click('.g-door[data-district="life"]')
-            p.wait_for_timeout(300)
             anim = p.evaluate("() => document.getAnimations().length")
-            check("c. 375 x 667, reduced motion: the sheet appears without animation, no sideways scroll, every tap >= 44 px, no console error",
+            check("c. 375 x 667, reduced motion: nothing animates, no sideways scroll, every tap >= 44 px, no console error",
                   anim == 0 and AK.no_sideways(p) and not AK.taps(p) and not errs, (anim, AK.taps(p)[:3], errs[:2]))
             ctx.close()
     finally:

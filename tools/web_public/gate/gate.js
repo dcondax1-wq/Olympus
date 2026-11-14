@@ -1,6 +1,6 @@
 /* OLYMPUS HOME v2 (the Gate, 2026-11-14, docs/OLYMPUS_IA_V2.md). Classic script, ES5, no build step, no network but the site's own files.
  * - "Right now": ../home.json through olympus/truth.js (the one source every app uses for drawdown and data age); a light copy of its rules when truth.js
- *   does not load. Bots on / quiet / old numbers with the exact age, then the facts, each a tap to its app: drawdown left per eval (Aegis), today's $ (NQ),
+ *   does not load. Bots on / quiet / old numbers with the exact age, then the facts, each a tap to its app: drawdown left per account (Aegis), today's $ (NQ),
  *   the next trade window (Kairos), the Kalshi bot (kalshi.json -> Kalshi), my shift / next on the plan (the Planner's summary on this phone -> Planner).
  *   Older than 6 h: one button "Bring the bots back".
  * - The nine hubs (olympus/gate-catalog.js HUBS): static links in the page (they work without this script); this script adds each hub's live line
