@@ -191,9 +191,11 @@ def part_b():
             for p in M.plan_month(c, y, m, 20)["posts"] if re.search(r"gift card|gift certificate|gift membership", p["caption"], re.I) and not p["check"]]
     check("b. every post that mentions gift cards (offers and holiday posts alike) asks the client first", not gift, gift[:3])
     ph_plan = M.plan_month(BY_TRADE["plumber"], 2027, 1, 16)
-    winter = " ".join(p["caption"] for p in M.plan_month(dict(BY_TRADE["plumber"], city="Tampa, FL"), 2027, 1, 16)["posts"]).lower()
-    check("b. the climate shows: a Denver plumber in January talks freezes, a Tampa one is never told about snow and ice",
-          any(re.search(r"freez|frozen|snow", p["caption"], re.I) for p in ph_plan["posts"]) and "snow and ice" not in winter)
+    cold_words = re.compile(r"\b(snow\w*|freez\w*|frozen|frost\w*|icy(?! blonde)|ice)\b", re.I)          # 'icy blonde' is a hair colour
+    warm_hits = [(t, y, m, p["headline"]) for t, c in BY_TRADE.items() for y, m in ((2026, 12), (2027, 1), (2027, 2)) for n in (12, 20)
+                 for p in M.plan_month(dict(c, city="Tampa, FL"), y, m, n)["posts"] if cold_words.search(p["caption"] + " " + p["headline"])]
+    check("b. the climate shows: a Denver plumber in January talks freezes; no trade in Tampa is ever told about snow, ice or freezes",
+          any(cold_words.search(p["caption"]) for p in ph_plan["posts"]) and not warm_hits, warm_hits[:3])
     try:
         M.plan_month(BY_TRADE["barber"], 2027, 1, 25)
         ok = False

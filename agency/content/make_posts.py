@@ -222,10 +222,13 @@ def brand_for(client: dict, trade: str, colors: str | None = None) -> dict:
 
 # --------------------------------------------------------------------------------------------------------------- the plan
 def _split_item(item) -> dict:
-    """a pack tuple -> fields: (headline, body, [check | tag | months] ...) in any order after the first two"""
-    out = {"headline": item[0], "body": item[1], "check": "", "tag": "", "months": None, "extra": None}
+    """a pack tuple -> fields: (headline, body, [check | tag | months | zones] ...) in any order after the first two.
+    A set of numbers = the months it runs in; a set of words = the climate zones it fits (cold, mild, warm, rainy)."""
+    out = {"headline": item[0], "body": item[1], "check": "", "tag": "", "months": None, "zones": None, "extra": None}
     for x in item[2:]:
-        if isinstance(x, (set, frozenset)):
+        if isinstance(x, (set, frozenset)) and x and all(isinstance(v, str) for v in x):
+            out["zones"] = x
+        elif isinstance(x, (set, frozenset)):
             out["months"] = x
         elif isinstance(x, list):
             out["extra"] = x
@@ -236,11 +239,13 @@ def _split_item(item) -> dict:
     return out
 
 
-def _pool(items, month: int, trade_flags: str) -> list[dict]:
+def _pool(items, month: int, trade_flags: str, zone: str | None = None) -> list[dict]:
     res = []
     for it in items or []:
         f = _split_item(it)
         if f["months"] is not None and month not in f["months"]:
+            continue
+        if f["zones"] is not None and zone and zone not in f["zones"]:
             continue
         if f["tag"] and trade_flags and not set(f["tag"]) & set(trade_flags):
             continue
@@ -255,27 +260,29 @@ def _season_months(season: str) -> list[int]:
     return {"winter": [12, 1, 2], "spring": [3, 4, 5], "summer": [6, 7, 8], "fall": [9, 10, 11]}[season]
 
 
-def _candidates(pack: dict, year: int, month: int, flags: str, reviews) -> dict:
+def _candidates(pack: dict, year: int, month: int, flags: str, reviews, zone: str | None = None) -> dict:
     """every kind's items for one month, freshest first (pure: the same month always gives the same lists)"""
     season = S.season_of(month)
     pos = (month - SEASON_START[season]) % 12                          # 0, 1 or 2 inside the season
     rot = year * 12 + month
-    seasonal = [f for j, it in enumerate(pack["tips"].get(season) or []) if j % 3 == pos for f in _pool([it], month, flags)]
-    hooks = _pool(pack["season"].get(season), month, flags)
+    pool = lambda items: _pool(items, month, flags, zone)  # noqa: E731
+    seasonal = [f for j, it in enumerate(pack["tips"].get(season) or []) if j % 3 == pos for f in pool([it])]
+    hooks = pool(pack["season"].get(season))
     first = lambda f: min(f["months"] & set(_season_months(season)), key=lambda mm: (mm - SEASON_START[season]) % 12)  # noqa: E731
     tagged = [f for f in hooks if f["months"] and month == first(f)]
     plain = [f for f in hooks if not f["months"]]
-    offers = _pool(pack["offers"], month, flags)
+    offers = pool(pack["offers"])
     # a timed offer runs in its months; one with a long window (a battery test Oct-Feb) runs every other month
     timed = [f for f in offers if f["months"] and (len(f["months"]) <= 2 or (rot + crc(f["headline"])) % 2 == 0)]
     checklists = [{"headline": c[0], "body": "", "items": c[1], "check": "", "months": (c[2] if len(c) > 2 else None)}
-                  for c in pack["checklists"] if (len(c) < 3 or c[2] is None or month in c[2])]
+                  for c in pack["checklists"] if (len(c) < 3 or c[2] is None or month in c[2])
+                  and (len(c) < 4 or not zone or zone in c[3])]
 
     def half(raw, parity=None):
         """odd and even months draw from the two halves of a pool (by position in the pack, so a month filter never shifts
         them): two neighbouring months can never share an item; inside its half each month turns one step"""
         par = rot % 2 if parity is None else parity
-        mine = [f for j, it in enumerate(raw or []) if j % 2 == par for f in _pool([it], month, flags)]
+        mine = [f for j, it in enumerate(raw or []) if j % 2 == par for f in pool([it])]
         return _rotate(mine, rot // 2)
 
     tips_mine, tips_other = half(pack["tips"]["any"]), half(pack["tips"]["any"], 1 - rot % 2)
@@ -355,7 +362,7 @@ def plan_month(client: dict, year: int, month: int, n_posts: int | None = None, 
     wlist = P.WEATHER.get((season, zone)) or ["the weather"]
     ctx = {"name": brand["name"], "city": brand["city"] or "town", "pro": pack["pro"], "pros": pack["pros"], "visit": pack["visit"], "season": season,
            "month": S.month_name(month), "next_month": S.month_name(nm), "year": year, "next_year": year + 1, "last_year": year - 1,
-           "site": brand["site"] or "our website", "phone": brand["phone"] or "us"}
+           "site": brand["site"] or "our website", "phone": brand["phone"] or "us", "zone": zone}
 
     # holidays: the trade's relevant ones, the heaviest first, about 3 in 10 posts
     hol = [h for h in S.holidays(year, month) if h["trades"] is None or trade in h["trades"]]
@@ -369,8 +376,8 @@ def plan_month(client: dict, year: int, month: int, n_posts: int | None = None, 
 
     # the content pools, fresh every month (_candidates): a season's own items are spread over its three months, tips and
     # services take turns by halves, and the small pools give odd and even months different halves (no repeats month to month)
-    cur = _candidates(pack, year, month, flags, reviews)
-    nxt = _candidates(pack, ny, nm, flags, reviews)
+    cur = _candidates(pack, year, month, flags, reviews, zone)
+    nxt = _candidates(pack, ny, nm, flags, reviews, zone)
 
     def fresh(kind, k=1):
         return cur[kind][:k]
@@ -541,7 +548,7 @@ def compose(kind, it, h, d, pack, trade, brand, ctx, seed, emoji, i, prev_layout
     elif kind == "season":
         lay = "bold" if prev_layout != "bold" else "split"
         p.update(layout=lay, label=f"{ctx['season'].title()} in {city}", headline=hl, sub=sub_line(body),
-                 icon={"winter": "snowflake", "spring": "flower", "summer": "sun", "fall": "leaf"}.get(ctx["season"], icons[0]))
+                 icon=("sun" if ctx.get("zone") == "warm" and ctx["season"] == "winter" else {"winter": "snowflake", "spring": "flower", "summer": "sun", "fall": "leaf"}.get(ctx["season"], icons[0])))
         p["caption"] = f"{e(SEASON_EMOJI.get(ctx['season'], ''))}{strip_stars(hl)}\n\n{body}\n\n{cta}"
     elif kind in ("bts", "team"):
         p.update(layout="frame", label="Behind the scenes" if kind == "bts" else "Meet the team", headline=hl, sub=sub_line(body))
