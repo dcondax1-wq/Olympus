@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; frame-src data: blob: about:; base-uri 'none'; form-action 'none'">
+<meta name="robots" content="noindex">
+<title>Site Editor: one-page website templates</title>
+<style>
+:root{--bg:#f6f2ea;--panel:#fffdf9;--ink:#1d1a16;--muted:#5f574b;--line:#ded5c5;--accent:#8a5a1c;--accent-ink:#ffffff;--soft:#efe8db;--ok:#2f6b3a;--warn:#9a3412;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+button,input,textarea,select{font:inherit;color:inherit}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 1.25rem;padding:.75rem 1rem;background:var(--panel);border-bottom:1px solid var(--line)}
+.bar .title b{display:block;font:700 1.35rem/1.1 var(--serif)}
+.bar .title span{color:var(--muted);font-size:.9rem}
+.tools{display:flex;flex-wrap:wrap;gap:.5rem;margin-left:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:44px;padding:.55rem 1rem;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);font-weight:700;cursor:pointer;text-decoration:none}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{min-height:38px;padding:.35rem .75rem;font-size:.9rem;border-radius:10px}
+.btn input[type=file]{display:none}
+.tabs{display:none;gap:.5rem;padding:.5rem 1rem;background:var(--panel);border-bottom:1px solid var(--line)}
+.tabs button{flex:1;min-height:44px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);font-weight:700}
+.tabs button[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.split{flex:1;display:grid;grid-template-columns:minmax(330px,440px) 1fr;min-height:0}
+.pane{min-height:0;overflow:auto}
+.form{border-right:1px solid var(--line);padding:1rem 1rem 3rem;background:var(--bg)}
+.picker{display:grid;grid-template-columns:repeat(5,1fr);gap:.45rem;margin-bottom:1rem}
+.picker button{display:grid;gap:.35rem;justify-items:center;padding:.5rem .25rem;border:1.5px solid var(--line);border-radius:12px;background:var(--panel);cursor:pointer;font-size:.78rem;font-weight:700;line-height:1.2;text-align:center}
+.picker button[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.sw{display:flex;width:100%;height:22px;border-radius:6px;overflow:hidden;border:1px solid rgba(0,0,0,.12)}
+.sw i{flex:1}
+details.grp{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:.6rem}
+details.grp>summary{cursor:pointer;list-style:none;padding:.85rem 1rem;font:700 1.02rem/1.3 var(--serif);display:flex;justify-content:space-between;align-items:center;min-height:48px}
+details.grp>summary::-webkit-details-marker{display:none}
+details.grp>summary::after{content:"+";font:400 1.4rem/1 var(--sans);color:var(--accent)}
+details.grp[open]>summary::after{content:"\2212"}
+.grp .in{padding:0 1rem 1rem}
+.help{color:var(--muted);font-size:.88rem;margin:.1rem 0 .75rem}
+.f{display:grid;gap:.3rem;margin-bottom:.8rem}
+.f>span{font-weight:700;font-size:.9rem}
+.f input[type=text],.f input[type=email],.f input[type=tel],.f input[type=url],.f textarea,.f select{width:100%;min-height:44px;padding:.55rem .7rem;border:1.5px solid var(--line);border-radius:10px;background:#fff}
+.f textarea{min-height:88px;resize:vertical}
+.f input:focus,.f textarea:focus,.f select:focus{outline:3px solid rgba(138,90,28,.35);border-color:var(--accent)}
+.chk{display:flex;gap:.6rem;align-items:flex-start;margin-bottom:.8rem;font-size:.92rem}
+.chk input{width:22px;height:22px;flex:none;margin-top:.1rem;accent-color:var(--accent)}
+.item{border:1px dashed var(--line);border-radius:12px;padding:.75rem .75rem .25rem;margin-bottom:.6rem;background:var(--bg)}
+.item .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;font-weight:700;font-size:.85rem;color:var(--muted)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.thumbs{display:flex;flex-wrap:wrap;gap:.5rem;margin:.3rem 0 .6rem}
+.thumbs figure{margin:0;position:relative}
+.thumbs img{width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.thumbs button{position:absolute;top:-8px;right:-8px;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:800}
+.warnbox{border-left:4px solid var(--warn);background:#fdf1e7;border-radius:8px;padding:.5rem .75rem;font-size:.88rem;margin:.25rem 0 .75rem}
+.okbox{border-left:4px solid var(--ok);background:#eaf3ea;border-radius:8px;padding:.5rem .75rem;font-size:.88rem;margin:.25rem 0 .75rem}
+.view{display:flex;flex-direction:column;background:#e9e2d4}
+.viewbar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;padding:.6rem 1rem;border-bottom:1px solid var(--line);background:var(--soft)}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;min-height:40px;padding:.3rem .95rem;font-weight:700;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--panel)}
+#status{margin-left:auto;color:var(--muted);font-size:.88rem}
+.stage{flex:1;overflow:auto;display:flex;justify-content:center;padding:1rem}
+.device{background:#fff;border-radius:18px;box-shadow:0 18px 44px rgba(29,26,22,.18);overflow:hidden;transform-origin:top center;flex:none}
+.device iframe{display:block;border:0;width:100%;height:100%;background:#fff}
+@media (max-width:860px){
+  .tabs{display:flex}
+  .split{grid-template-columns:1fr}
+  .split[data-tab=edit] .view{display:none}
+  .split[data-tab=preview] .form{display:none}
+  .form{border-right:0}
+  .bar .title span{display:none}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="title"><b>Site Editor</b><span>Fill in the form, check the preview, download your site. Nothing leaves this computer.</span></div>
+  <div class="tools">
+    <button class="btn primary" id="dl" type="button">Download my site</button>
+    <button class="btn" id="save" type="button">Save my answers</button>
+    <label class="btn">Open saved answers<input type="file" id="load" accept=".json,application/json"></label>
+    <button class="btn" id="reset" type="button">Start again</button>
+  </div>
+</header>
+<div class="tabs" role="tablist"><button type="button" role="tab" id="tab-edit" aria-selected="true">Edit</button><button type="button" role="tab" id="tab-preview" aria-selected="false">Preview</button></div>
+<main class="split" data-tab="edit">
+  <section class="pane form" id="form" aria-label="Your answers"></section>
+  <section class="pane view" aria-label="Preview">
+    <div class="viewbar">
+      <div class="seg" role="group" aria-label="Preview size"><button type="button" id="v-phone" aria-pressed="true">Phone</button><button type="button" id="v-desk" aria-pressed="false">Computer</button></div>
+      <span id="status">Ready</span>
+    </div>
+    <div class="stage" id="stage"><div class="device" id="device"><iframe id="preview" sandbox="allow-same-origin" title="Preview of your site"></iframe></div></div>
+  </section>
+</main>
+
+<script id="sitekit">
+/* SiteKit: turns your answers into a finished one-page website (one HTML file, no libraries, nothing loaded from the internet). */
+(function (root) {
+  "use strict";
+  var KIT = /*KIT*/{}/*END*/;
+  var DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  var SCHEMA_DAY = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+  function str(v) { return v == null ? "" : String(v); }
+  function clean(v) { return str(v).trim(); }
+  function has(v) { return clean(v) !== ""; }
+  function esc(v) { return str(v).replace(/[&<>"']/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]; }); }
+  function digits(p) { return clean(p).replace(/[^0-9+]/g, ""); }
+  function safeUrl(u) { u = clean(u); return /^https?:\/\/[^\s"'<>]+$/i.test(u) ? u : ""; }
+  function safeImg(u) { u = str(u); return /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(u) ? u : ""; }
+  function list(a) { return Array.isArray(a) ? a : []; }
+  function paras(t) { return clean(t).split(/\n\s*\n/).map(function (p) { return p.trim(); }).filter(Boolean); }
+  function icon(name, cls) {
+    var body = KIT.icons[name] || KIT.icons.check;
+    return '<svg class="' + (cls || "ico") + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + "</svg>";
+  }
+  function initials(n) {
+    var w = clean(n).replace(/[^A-Za-z0-9\s&'-]/g, " ").split(/\s+/).filter(function (x) { return x && !/^(and|of|the|&|co\.?|llc|inc)$/i.test(x); });
+    return (w.slice(0, 2).map(function (x) { return x.charAt(0).toUpperCase(); }).join("") || "AB");
+  }
+
+  /* colours: WCAG contrast, used to keep any custom accent readable */
+  function rgb(h) { h = clean(h).replace("#", ""); if (h.length === 3) h = h.replace(/./g, "$&$&"); var n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function hex(c) { return "#" + c.map(function (x) { var s = Math.max(0, Math.min(255, Math.round(x))).toString(16); return s.length < 2 ? "0" + s : s; }).join(""); }
+  function lum(h) { return rgb(h).map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }).reduce(function (a, v, i) { return a + v * [0.2126, 0.7152, 0.0722][i]; }, 0); }
+  function contrast(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function mix(a, b, t) { var x = rgb(a), y = rgb(b); return hex(x.map(function (v, i) { return v + (y[i] - v) * t; })); }
+  function isHex(h) { return /^#[0-9a-fA-F]{6}$/.test(clean(h)); }
+  function palette(T, d) {
+    var p = {}, k;
+    for (k in T.palette) p[k] = T.palette[k];
+    var a = clean(d.accent);
+    if (isHex(a) && a.toLowerCase() !== T.palette.accent.toLowerCase()) {
+      p.accent = a;
+      p.accent_ink = contrast(a, "#ffffff") >= contrast(a, p.ink) ? "#ffffff" : (lum(p.ink) < 0.2 ? p.ink : "#141210");
+      var t = a, toward = lum(p.bg) > 0.4 ? "#000000" : "#ffffff", i = 0;
+      while ((contrast(t, p.bg) < 4.5 || contrast(t, p.surface) < 4.5) && i < 20) { t = mix(a, toward, (i + 1) * 0.05); i++; }
+      p.accent_text = t;
+    }
+    return p;
+  }
+  function checkAccent(id, d) {
+    var p = palette(KIT.themes[id], d);
+    return {button: Math.round(contrast(p.accent, p.accent_ink) * 10) / 10, text: Math.round(Math.min(contrast(p.accent_text, p.bg), contrast(p.accent_text, p.surface)) * 10) / 10};
+  }
+
+  function parseTime(s) {
+    var m = clean(s).toLowerCase().replace(/\./g, "").match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/);
+    if (!m) return "";
+    var h = +m[1], mi = +(m[2] || 0);
+    if (m[3] === "pm" && h < 12) h += 12;
+    if (m[3] === "am" && h === 12) h = 0;
+    if (h > 23 || mi > 59) return "";
+    return (h < 10 ? "0" : "") + h + ":" + (mi < 10 ? "0" : "") + mi;
+  }
+  function openingSpec(hours) {
+    var out = [];
+    list(hours).forEach(function (h, i) {
+      var parts = clean(h && h.hours).split(/\s*(?:-|–|to)\s*/);
+      if (parts.length !== 2) return;
+      var a = parseTime(parts[0]), b = parseTime(parts[1]);
+      if (a && b) out.push({"@type": "OpeningHoursSpecification", "dayOfWeek": SCHEMA_DAY[i], "opens": a, "closes": b});
+    });
+    return out;
+  }
+
+  function blank() {
+    return {template: "trades", name: "", trade: "", town: "", area: "", since: "", schema: "LocalBusiness",
+      phone: "", textOk: false, email: "", street: "", region: "", postcode: "", mapLink: "", bookLink: "",
+      headline: "", intro: "", cta: "call", ctaLabel: "", badges: [], servicesTitle: "", servicesIntro: "", services: [],
+      steps: [], seasons: [], menu: [], prices: [], pricesNote: "", why: [], aboutTitle: "", about: "", owner: "",
+      hours: DAYS.map(function (d) { return {day: d, hours: ""}; }), hoursNote: "", faq: [], reviewsConfirmed: false, reviews: [],
+      photos: {hero: "", about: "", gallery: []}, accent: "", seoTitle: "", seoDescription: "", footerNote: ""};
+  }
+  function normalize(d) {
+    var b = blank(), k;
+    d = d || {};
+    for (k in b) if (d[k] !== undefined && d[k] !== null) b[k] = d[k];
+    b.photos = {hero: safeImg(d.photos && d.photos.hero), about: safeImg(d.photos && d.photos.about),
+      gallery: list(d.photos && d.photos.gallery).map(safeImg).filter(Boolean).slice(0, 6)};
+    b.hours = DAYS.map(function (day, i) { var h = list(d.hours)[i] || {}; return {day: day, hours: clean(h.hours)}; });
+    return b;
+  }
+
+  function sectionHead(kicker, title, intro) {
+    return (has(kicker) ? '<span class="kicker">' + esc(kicker) + "</span>" : "") + "<h2>" + esc(title) + "</h2>" + (has(intro) ? '<p class="intro">' + esc(intro) + "</p>" : "");
+  }
+  function itemsList(items, cls) {
+    return '<ul class="items' + (cls ? " " + cls : "") + '">' + items.map(function (it) {
+      return '<li><div class="row"><b>' + esc(it.name) + "</b><i></i>" + (has(it.price) ? "<span>" + esc(it.price) + "</span>" : "") + "</div>" +
+        (has(it.desc || it.note) ? "<small>" + esc(it.desc || it.note) + "</small>" : "") + "</li>";
+    }).join("") + "</ul>";
+  }
+
+  function render(id, d0, opt) {
+    opt = opt || {};
+    var T = KIT.themes[id] || KIT.themes.trades;
+    var d = normalize(d0);
+    var P = palette(T, d);
+    var demo = !!opt.demo;
+    var name = clean(d.name) || "Your Business";
+    var town = clean(d.town);
+    var tel = digits(d.phone), email = clean(d.email), mapLink = safeUrl(d.mapLink), bookLink = safeUrl(d.bookLink);
+    var services = list(d.services).filter(function (s) { return has(s.title); }).slice(0, 6);
+    var why = list(d.why).filter(function (s) { return has(s.title); }).slice(0, 4);
+    var faq = list(d.faq).filter(function (s) { return has(s.q) && has(s.a); }).slice(0, 6);
+    var reviews = d.reviewsConfirmed ? list(d.reviews).filter(function (r) { return has(r.text) && has(r.name); }).slice(0, 3) : [];
+    var hours = d.hours.filter(function (h) { return has(h.hours); });
+    var address = [clean(d.street), [town, clean(d.region)].filter(Boolean).join(", "), clean(d.postcode)].filter(Boolean).join(", ");
+    var year = clean(opt.year) || String(new Date().getFullYear());
+    var special = T.special;
+    var spec = {
+      steps: list(d.steps).filter(function (s) { return has(s.title); }).slice(0, 4),
+      seasons: list(d.seasons).filter(function (s) { return has(s.title); }).slice(0, 4),
+      menu: list(d.menu).filter(function (g) { return has(g.group) && list(g.items).some(function (i) { return has(i.name); }); }).slice(0, 3),
+      prices: list(d.prices).filter(function (s) { return has(s.name); }).slice(0, 16)
+    }[special];
+    var specLabel = {steps: "How it works", seasons: "Seasons", menu: "Menu", prices: "Prices"}[special];
+    var specId = {steps: "how", seasons: "seasons", menu: "menu", prices: "prices"}[special];
+
+    /* navigation */
+    var nav = [];
+    if (services.length) nav.push(["#services", clean(d.servicesTitle) || "Services"]);
+    if (spec.length) nav.push(["#" + specId, specLabel]);
+    if (has(d.about)) nav.push(["#about", "About"]);
+    if (hours.length || address) nav.push(["#visit", hours.length ? "Hours" : "Find us"]);
+    nav.push(["#contact", "Contact"]);
+    var navHtml = nav.map(function (n) { return '<a href="' + n[0] + '">' + esc(n[1]) + "</a>"; }).join("");
+
+    /* the main button */
+    var cta = d.cta;
+    if (cta === "book" && !bookLink) cta = tel ? "call" : "contact";
+    if (cta === "call" && !tel) cta = "contact";
+    var ctaDefault = {call: "Call " + clean(d.phone), book: "Book online", quote: "Get a quote", contact: "Get in touch", visit: "Plan your visit"}[cta] || "Get in touch";
+    var ctaLabel = clean(d.ctaLabel) || ctaDefault;
+    var ctaHref = {call: "tel:" + tel, book: bookLink, quote: "#contact", contact: "#contact", visit: "#visit"}[cta] || "#contact";
+    var ctaIcon = {call: "phone", book: "calendar", quote: "chat", contact: "chat", visit: "pin"}[cta] || "chat";
+    var second = spec.length ? ["#" + specId, {steps: "How it works", seasons: "What we do each season", menu: "See the menu", prices: "See prices"}[special]] : (services.length ? ["#services", "Our services"] : null);
+
+    var css = ":root{--bg:" + P.bg + ";--surface:" + P.surface + ";--ink:" + P.ink + ";--muted:" + P.muted + ";--accent:" + P.accent + ";--accent-ink:" + P.accent_ink +
+      ";--accent-text:" + P.accent_text + ";--line:" + P.line + ";--hero-bg:" + P.hero_bg + ";--hero-ink:" + P.hero_ink + ";--hero-muted:" + P.hero_muted +
+      ";--art1:" + T.art[0] + ";--art2:" + T.art[1] + ";--art3:" + T.art[2] + ";--art4:" + T.art[3] +
+      ";--display:" + T.display + ";--body:" + T.body + ";--radius:" + T.radius + "}";
+
+    var title = clean(d.seoTitle) || (name + (has(d.trade) || town ? " | " + [clean(d.trade), town ? "in " + town : ""].filter(Boolean).join(" ") : ""));
+    var desc = clean(d.seoDescription) || (clean(d.intro) || (name + (town ? " in " + town : ""))).slice(0, 158);
+    var ld = {"@context": "https://schema.org", "@type": clean(d.schema) || T.schema, "name": name};
+    if (has(d.intro)) ld.description = clean(d.intro).slice(0, 300);
+    if (tel) ld.telephone = tel;
+    if (email) ld.email = email;
+    if (address) ld.address = {"@type": "PostalAddress", "streetAddress": clean(d.street), "addressLocality": town, "addressRegion": clean(d.region), "postalCode": clean(d.postcode)};
+    if (has(d.area)) ld.areaServed = clean(d.area);
+    var oh = openingSpec(d.hours);
+    if (oh.length) ld.openingHoursSpecification = oh;
+    Object.keys(ld.address || {}).forEach(function (k) { if (ld.address[k] === "") delete ld.address[k]; });
+    var favicon = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="' + P.accent + '"/><text x="32" y="42" font-family="Arial,sans-serif" font-size="28" font-weight="700" text-anchor="middle" fill="' + P.accent_ink + '">' + esc(initials(name)) + "</text></svg>");
+
+    var h = [];
+    h.push("<!doctype html>", '<html lang="en">', "<head>", '<meta charset="utf-8">', '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
+      "<title>" + esc(title) + "</title>", '<meta name="description" content="' + esc(desc) + '">', '<meta name="theme-color" content="' + esc(P.hero_bg) + '">',
+      '<meta property="og:title" content="' + esc(title) + '">', '<meta property="og:description" content="' + esc(desc) + '">', '<meta property="og:type" content="website">',
+      '<link rel="icon" href="' + esc(favicon) + '">',
+      "<!-- Made with the Site Editor (" + esc(T.label) + " template, v" + esc(KIT.version) + "). Edit the text below in any plain text editor, or open Site_Editor.html again. -->",
+      "<style>", "/* ===== COLOURS AND FONTS: change these to your own ===== */", css, KIT.base_css, T.css, "</style>",
+      '<script type="application/ld+json">' + JSON.stringify(ld).replace(/</g, "\\u003c") + "</" + "script>", "</head>", "<body>",
+      '<a class="skip" href="#main">Skip to the content</a>');
+
+    /* header */
+    h.push("<!-- ===== HEADER ===== -->", '<header class="top"><div class="wrap">',
+      '<a class="brand" href="#top"><span class="mark" aria-hidden="true">' + esc(initials(name)) + '</span><span class="nm">' + esc(name) + "</span></a>",
+      '<nav class="nav" aria-label="Main">' + navHtml + "</nav>",
+      tel ? '<a class="btn primary small call" href="tel:' + esc(tel) + '">' + icon("phone") + '<span class="lbl">' + esc(d.phone) + "</span></a>" : "",
+      '<details class="menu"><summary aria-label="Menu">' + icon("menu") + '</summary><nav aria-label="Menu">' + navHtml + "</nav></details>",
+      "</div></header>", '<main id="main">');
+
+    /* hero */
+    var eyebrow = [clean(d.trade), town].filter(Boolean).join(" · ");
+    var heroVisual = d.photos.hero ? '<img class="photo" src="' + d.photos.hero + '" alt="' + esc(name) + '">' : '<div class="art" aria-hidden="true">' + T.svg + "</div>";
+    var badges = list(d.badges).map(clean).filter(Boolean).slice(0, 4);
+    h.push("<!-- ===== TOP OF THE PAGE ===== -->", '<section class="hero" id="top"><div class="wrap"><div>',
+      eyebrow ? '<p class="eyebrow">' + esc(eyebrow) + "</p>" : "",
+      "<h1>" + esc(clean(d.headline) || name) + "</h1>",
+      has(d.intro) ? '<p class="lead">' + esc(d.intro) + "</p>" : "",
+      '<div class="actions"><a class="btn primary" href="' + esc(ctaHref) + '">' + icon(ctaIcon) + esc(ctaLabel) + "</a>" +
+        (second ? '<a class="btn ghost" href="' + second[0] + '">' + esc(second[1]) + "</a>" : "") + "</div>",
+      (id === "trades" && tel && cta !== "call") ? '<a class="bigphone" href="tel:' + esc(tel) + '"><small>Call' + (d.textOk ? " or text" : "") + "</small>" + esc(d.phone) + "</a>" : "",
+      badges.length ? '<ul class="badges">' + badges.map(function (b) { return "<li>" + icon("check") + esc(b) + "</li>"; }).join("") + "</ul>" : "",
+      "</div>", heroVisual, "</div></section>");
+
+    var alt = false;
+    function open(idAttr, cls) { alt = !alt; return '<section class="section' + (alt ? "" : " alt") + (cls ? " " + cls : "") + '" id="' + idAttr + '"><div class="wrap">'; }
+
+    /* services */
+    if (services.length) {
+      h.push("<!-- ===== SERVICES ===== -->", open("services"), sectionHead("What we do", clean(d.servicesTitle) || "Services", d.servicesIntro),
+        '<ul class="cards">' + services.map(function (s) {
+          return '<li class="card"><div class="ic">' + icon(s.icon || "check") + "</div><h3>" + esc(s.title) + "</h3>" + (has(s.text) ? "<p>" + esc(s.text) + "</p>" : "") +
+            (has(s.price) ? '<span class="from">' + esc(s.price) + "</span>" : "") + "</li>";
+        }).join("") + "</ul>", "</div></section>");
+    }
+
+    /* the template's own section */
+    if (spec.length) {
+      h.push("<!-- ===== " + specLabel.toUpperCase() + " ===== -->", open(specId));
+      if (special === "steps") {
+        h.push(sectionHead("How it works", "Simple from the first call", ""), '<ol class="steps">' + spec.map(function (s) { return "<li><b>" + esc(s.title) + "</b><span>" + esc(s.text) + "</span></li>"; }).join("") + "</ol>");
+      } else if (special === "seasons") {
+        h.push(sectionHead("All year round", "What we do each season", ""), '<ul class="seasons">' + spec.map(function (s) {
+          return "<li><h3>" + esc(s.title) + "</h3><ul>" + clean(s.items).split(/\s*;\s*|\n/).filter(Boolean).map(function (x) { return "<li>" + icon("leaf") + esc(x) + "</li>"; }).join("") + "</ul></li>";
+        }).join("") + "</ul>");
+      } else if (special === "menu") {
+        h.push(sectionHead("On the menu", "Our favourites", "Prices include tax. Ask us about allergens: we are happy to help."), '<div class="boards">' + spec.map(function (g) {
+          return '<div class="board"><h3>' + esc(g.group) + "</h3>" + itemsList(list(g.items).filter(function (i) { return has(i.name); }).slice(0, 8)) + "</div>";
+        }).join("") + "</div>");
+      } else {
+        h.push(sectionHead("Prices", "Price list", d.pricesNote), itemsList(spec, "pricelist"));
+      }
+      h.push("</div></section>");
+    }
+
+    /* why */
+    if (why.length) {
+      h.push("<!-- ===== WHY CHOOSE US ===== -->", open("why"), sectionHead("Why us", "Why people choose " + name, ""),
+        '<ul class="why">' + why.map(function (w, i) { return "<li>" + icon(["shield", "clock", "sparkle", "smile"][i % 4]) + "<div><b>" + esc(w.title) + "</b><span>" + esc(w.text) + "</span></div></li>"; }).join("") + "</ul>",
+        "</div></section>");
+    }
+
+    /* about */
+    if (has(d.about)) {
+      var seal = d.photos.about ? '<img src="' + d.photos.about + '" alt="' + esc(name) + '">' :
+        '<div class="seal" aria-hidden="true"><div><b>' + esc(initials(name)) + "</b><span>" + esc(has(d.since) ? "Since " + clean(d.since) : (town || clean(d.trade))) + "</span></div></div>";
+      h.push("<!-- ===== ABOUT ===== -->", open("about"), '<div class="about"><div>', sectionHead("About us", clean(d.aboutTitle) || ("About " + name), ""),
+        paras(d.about).map(function (p) { return "<p>" + esc(p) + "</p>"; }).join(""), has(d.owner) ? '<p class="sign">' + esc(d.owner) + "</p>" : "", "</div>", seal, "</div></div></section>");
+    }
+
+    /* gallery */
+    if (d.photos.gallery.length || demo) {
+      h.push("<!-- ===== PHOTOS ===== -->", open("photos"), sectionHead("Photos", "Recent work", ""), '<ul class="gallery">' +
+        (d.photos.gallery.length ? d.photos.gallery.map(function (src, i) { return '<li><img src="' + src + '" alt="' + esc(name) + " photo " + (i + 1) + '" loading="lazy"></li>'; }).join("")
+          : [1, 2, 3, 4].map(function () { return '<li><div class="ph">Your photo here</div></li>'; }).join("")) + "</ul>", "</div></section>");
+    }
+
+    /* reviews: real ones only */
+    if (reviews.length || demo) {
+      h.push("<!-- ===== REVIEWS: paste real reviews from real customers only, with their permission ===== -->", open("reviews"), sectionHead("Reviews", "What customers say", ""), '<ul class="reviews">' +
+        (reviews.length ? reviews.map(function (r) {
+          return '<li class="review"><div class="stars" aria-hidden="true">' + [1, 2, 3, 4, 5].map(function () { return icon("star"); }).join("") + "</div><p>“" + esc(r.text) + "”</p><cite>" + esc(r.name) + (has(r.source) ? ", " + esc(r.source) : "") + "</cite></li>";
+        }).join("") : [1, 2, 3].map(function () { return '<li class="review ph"><p>Paste a real review from a real customer here (with their permission), or delete this section.</p><cite>Customer’s first name</cite></li>'; }).join("")) +
+        "</ul>", "</div></section>");
+    }
+
+    /* questions */
+    if (faq.length) {
+      h.push("<!-- ===== QUESTIONS ===== -->", open("faq"), sectionHead("Questions", "Good to know", ""), '<div class="faq">' + faq.map(function (f) {
+        return "<details><summary>" + esc(f.q) + "</summary><p>" + esc(f.a) + "</p></details>";
+      }).join("") + "</div>", "</div></section>");
+    }
+
+    /* visit: hours and address */
+    if (hours.length || address || has(d.area)) {
+      h.push("<!-- ===== HOURS AND LOCATION ===== -->", open("visit"), sectionHead("Visit", hours.length ? "Hours and location" : "Where we work", ""), '<div class="visit">');
+      if (hours.length) {
+        h.push('<div class="panel"><h3>' + icon("clock") + "Opening hours</h3><table class=\"hours\">" +
+          d.hours.map(function (x) { return "<tr><th scope=\"row\">" + x.day + "</th><td>" + esc(has(x.hours) ? x.hours : "Closed") + "</td></tr>"; }).join("") + "</table>" +
+          (has(d.hoursNote) ? '<p class="note">' + esc(d.hoursNote) + "</p>" : "") + "</div>");
+      }
+      h.push('<div class="panel"><h3>' + icon("pin") + (address ? "Find us" : "Where we work") + '</h3><div class="mapart" aria-hidden="true"><span class="pin"></span></div>' +
+        (address ? '<p class="addr">' + esc(address) + "</p>" : "") + (has(d.area) ? '<p class="addr">' + esc(d.area) + "</p>" : "") +
+        '<div class="btnrow">' + (mapLink ? '<a class="btn primary" href="' + esc(mapLink) + '">' + icon("directions") + "Directions</a>" : "") +
+        (tel ? '<a class="btn ghost" href="tel:' + esc(tel) + '">' + icon("phone") + "Call</a>" : "") + "</div></div>");
+      h.push("</div></div></section>");
+    }
+
+    /* contact */
+    var cTitle = {quote: "Ask for a quote", book: "Book your visit", call: "Get in touch"}[d.cta] || "Get in touch";
+    h.push("<!-- ===== CONTACT ===== -->", '<section class="section cta" id="contact"><div class="wrap">', sectionHead("Contact", cTitle, "Call, text or email: we reply as soon as we can."), '<div class="contact">');
+    if (email) {
+      h.push('<form class="form" id="quote" data-to="' + esc(email) + '" data-subject="' + esc((d.cta === "quote" ? "Quote request" : "Message") + " from the website") + '">',
+        '<div class="two"><div class="field"><label for="f-name">Your name</label><input id="f-name" name="name" data-label="Name" autocomplete="name" required></div>',
+        '<div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" data-label="Phone" type="tel" autocomplete="tel"></div></div>',
+        '<div class="field"><label for="f-msg">' + (d.cta === "quote" ? "What do you need?" : "Your message") + '</label><textarea id="f-msg" name="message" data-label="Message" required></textarea></div>',
+        '<button class="btn primary" type="submit">' + icon("mail") + "Send by email</button>",
+        '<p class="fine">This opens your email app with your message filled in. Nothing is stored on this website.</p></form>');
+    }
+    h.push('<div class="direct">',
+      tel ? '<a href="tel:' + esc(tel) + '">' + icon("phone") + "<span>" + esc(d.phone) + "<small>Call us</small></span></a>" : "",
+      tel && d.textOk ? '<a href="sms:' + esc(tel) + '">' + icon("chat") + "<span>" + esc(d.phone) + "<small>Send a text</small></span></a>" : "",
+      email ? '<a href="mailto:' + esc(email) + '">' + icon("mail") + "<span>" + esc(email) + "<small>Email us</small></span></a>" : "",
+      bookLink ? '<a href="' + esc(bookLink) + '">' + icon("calendar") + "<span>Book online<small>Pick a time that suits you</small></span></a>" : "",
+      "</div></div></div></section>", "</main>");
+
+    /* footer */
+    var hoursShort = hours.length ? hours.map(function (x) { return x.day.slice(0, 3) + " " + x.hours; }).join(" · ") : "";
+    h.push("<!-- ===== FOOTER ===== -->", '<footer class="foot"><div class="wrap">',
+      "<div><h2>" + esc(name) + "</h2><p>" + esc([clean(d.trade), town].filter(Boolean).join(" in ")) + "</p></div>",
+      "<div><h2>Contact</h2>" + (tel ? '<p><a href="tel:' + esc(tel) + '">' + esc(d.phone) + "</a></p>" : "") + (email ? '<p><a href="mailto:' + esc(email) + '">' + esc(email) + "</a></p>" : "") +
+        (address ? "<p>" + esc(address) + "</p>" : "") + "</div>",
+      hoursShort ? "<div><h2>Hours</h2><p>" + esc(hoursShort) + "</p></div>" : "",
+      '</div><div class="credit"><div class="wrap">© ' + esc(year) + " " + esc(name) + (has(d.footerNote) ? " · " + esc(d.footerNote) : "") + "</div></div></footer>");
+
+    /* the call bar on phones */
+    var bar = [];
+    if (tel) bar.push('<a class="main" href="tel:' + esc(tel) + '">' + icon("phone") + "Call</a>");
+    if (tel && d.textOk) bar.push('<a href="sms:' + esc(tel) + '">' + icon("chat") + "Text</a>");
+    else if (email) bar.push('<a href="mailto:' + esc(email) + '">' + icon("mail") + "Email</a>");
+    if (bookLink) bar.push('<a href="' + esc(bookLink) + '">' + icon("calendar") + "Book</a>");
+    else if (mapLink) bar.push('<a href="' + esc(mapLink) + '">' + icon("directions") + "Directions</a>");
+    else bar.push('<a href="#contact">' + icon("chat") + (d.cta === "quote" ? "Quote" : "Contact") + "</a>");
+    if (!tel) bar[0] = bar[0].replace('<a href="', '<a class="main" href="');
+    h.push('<nav class="callbar" aria-label="Quick contact">' + bar.join("") + "</nav>");
+
+    if (email) {
+      h.push("<script>/* the message form: opens the visitor's email app with the message filled in (no server needed) */",
+        "(function(){var f=document.getElementById('quote');if(!f)return;f.addEventListener('submit',function(e){e.preventDefault();var b=[];",
+        "Array.prototype.forEach.call(f.elements,function(el){if(el.name&&el.value)b.push(el.getAttribute('data-label')+': '+el.value);});",
+        "location.href='mailto:'+f.getAttribute('data-to')+'?subject='+encodeURIComponent(f.getAttribute('data-subject'))+'&body='+encodeURIComponent(b.join('\\n'));});})();", "</" + "script>");
+    }
+    h.push("</body>", "</html>", "");
+    return h.filter(function (x) { return x !== ""; }).join("\n") + "\n";
+  }
+
+  function sample(id) { return JSON.parse(JSON.stringify(KIT.samples[id] || KIT.samples.trades)); }
+  root.SiteKit = {KIT: KIT, DAYS: DAYS, render: render, blank: blank, normalize: normalize, sample: sample, initials: initials, contrast: contrast, checkAccent: checkAccent, palette: palette};
+})(typeof globalThis !== "undefined" ? globalThis : this);
+</script>
+
+<script id="editor-ui">
+(function () {
+  "use strict";
+  var SK = window.SiteKit, KIT = SK.KIT, STORE = "siteEditor.v1";
+  var state, timer = 0, view = "phone";
+  var $ = function (id) { return document.getElementById(id); };
+
+  function el(tag, attrs, kids) {
+    var e = document.createElement(tag), k;
+    for (k in (attrs || {})) {
+      if (k === "text") e.textContent = attrs[k];
+      else if (k === "on") Object.keys(attrs.on).forEach(function (ev) { e.addEventListener(ev, attrs.on[ev]); });
+      else if (attrs[k] !== false && attrs[k] != null) e.setAttribute(k, attrs[k] === true ? "" : attrs[k]);
+    }
+    (kids || []).forEach(function (c) { if (c) e.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return e;
+  }
+  function load() {
+    try { var s = localStorage.getItem(STORE); if (s) return SK.normalize(JSON.parse(s)); } catch (e) { /* private window or blocked storage: start from the sample */ }
+    var d = SK.sample("trades"); d.template = "trades"; return SK.normalize(d);
+  }
+  function persist() {
+    try { localStorage.setItem(STORE, JSON.stringify(state)); $("status").textContent = "Saved in this browser"; }
+    catch (e) { $("status").textContent = "Not saved in the browser (photos too big?): use Save my answers"; }
+  }
+  function changed() { clearTimeout(timer); timer = setTimeout(function () { preview(); persist(); }, 250); }
+
+  /* the template picker */
+  var ORDER = ["trades", "garden", "cafe", "salon", "barber"];
+  function picker() {
+    var wrap = el("div", {"class": "picker", role: "group", "aria-label": "Template"});
+    ORDER.forEach(function (id) {
+      var T = KIT.themes[id], p = T.palette;
+      var b = el("button", {type: "button", "aria-pressed": state.template === id ? "true" : "false", title: T.label + ": " + T["for"], on: {click: function () { switchTo(id); }}},
+        [el("span", {"class": "sw"}, [el("i", {style: "background:" + p.hero_bg}), el("i", {style: "background:" + p.accent}), el("i", {style: "background:" + p.bg})]), T.short]);
+      wrap.appendChild(b);
+    });
+    return wrap;
+  }
+  function switchTo(id) {
+    var S = SK.sample(id), sp = KIT.themes[id].special;
+    state.template = id;
+    if (!(state[sp] || []).length) state[sp] = S[sp];
+    if (sp === "prices" && !state.pricesNote) state.pricesNote = S.pricesNote || "";
+    state.accent = "";
+    build(); preview(); persist();
+  }
+
+  /* fields */
+  function field(label, key, opts, obj) {
+    opts = opts || {}; obj = obj || state;
+    var input;
+    if (opts.type === "textarea") input = el("textarea", {rows: opts.rows || 4, placeholder: opts.ph || ""});
+    else if (opts.type === "select") { input = el("select"); opts.options.forEach(function (o) { input.appendChild(el("option", {value: o[0], text: o[1]})); }); }
+    else input = el("input", {type: opts.type || "text", placeholder: opts.ph || "", maxlength: opts.max || 300, inputmode: opts.inputmode || false, autocomplete: "off"});
+    input.value = obj[key] == null ? "" : obj[key];
+    input.addEventListener("input", function () { obj[key] = input.value; changed(); if (opts.after) opts.after(); });
+    return el("label", {"class": "f"}, [el("span", {text: label}), input, opts.help ? el("small", {"class": "help", text: opts.help}) : null]);
+  }
+  function check(label, key) {
+    var input = el("input", {type: "checkbox"});
+    input.checked = !!state[key];
+    input.addEventListener("change", function () { state[key] = input.checked; changed(); });
+    return el("label", {"class": "chk"}, [input, el("span", {text: label})]);
+  }
+  function repeat(key, max, make, empty, title) {
+    var box = el("div");
+    function draw() {
+      box.textContent = "";
+      var arr = state[key] = state[key] || [];
+      arr.forEach(function (item, i) {
+        var rm = el("button", {type: "button", "class": "btn small", text: "Remove", on: {click: function () { arr.splice(i, 1); draw(); changed(); }}});
+        box.appendChild(el("div", {"class": "item"}, [el("div", {"class": "head"}, [el("span", {text: (title || "Item") + " " + (i + 1)}), rm])].concat(make(item))));
+      });
+      if (arr.length < max) box.appendChild(el("button", {type: "button", "class": "btn small", text: "+ Add " + (title || "item").toLowerCase(), on: {click: function () { arr.push(empty()); draw(); changed(); }}}));
+    }
+    draw();
+    return box;
+  }
+  function textList(key, max, ph) {
+    var box = el("div");
+    var arr = state[key] = (state[key] || []).slice(0, max);
+    while (arr.length < max) arr.push("");
+    arr.forEach(function (v, i) {
+      var inp = el("input", {type: "text", value: v, placeholder: ph + " " + (i + 1), maxlength: 60});
+      inp.addEventListener("input", function () { arr[i] = inp.value; changed(); });
+      box.appendChild(el("label", {"class": "f"}, [inp]));
+    });
+    return box;
+  }
+  function resize(file, done) {
+    var r = new FileReader();
+    r.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var max = 1600, w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement("canvas"); c.width = Math.round(w * k); c.height = Math.round(h * k);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        done(c.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = function () { alert("That file could not be opened as a picture."); };
+      img.src = r.result;
+    };
+    r.readAsDataURL(file);
+  }
+  function photoInput(label, slot, multiple) {
+    var box = el("div"), thumbs = el("div", {"class": "thumbs"});
+    function draw() {
+      thumbs.textContent = "";
+      var list = multiple ? state.photos.gallery : (state.photos[slot] ? [state.photos[slot]] : []);
+      list.forEach(function (src, i) {
+        thumbs.appendChild(el("figure", {}, [el("img", {src: src, alt: ""}), el("button", {type: "button", title: "Remove", text: "×", on: {click: function () {
+          if (multiple) state.photos.gallery.splice(i, 1); else state.photos[slot] = ""; draw(); changed(); }}})]));
+      });
+    }
+    var inp = el("input", {type: "file", accept: "image/*", multiple: multiple || false});
+    inp.addEventListener("change", function () {
+      Array.prototype.slice.call(inp.files, 0, multiple ? 6 : 1).forEach(function (f) {
+        resize(f, function (data) {
+          if (multiple) { if (state.photos.gallery.length < 6) state.photos.gallery.push(data); } else state.photos[slot] = data;
+          draw(); changed();
+        });
+      });
+      inp.value = "";
+    });
+    draw();
+    box.appendChild(el("label", {"class": "f"}, [el("span", {text: label}), inp]));
+    box.appendChild(thumbs);
+    return box;
+  }
+  function group(title, target, kids, openIt, help) {
+    var d = el("details", {"class": "grp", open: openIt || false, "data-target": target}, [el("summary", {text: title}), el("div", {"class": "in"}, [help ? el("p", {"class": "help", text: help}) : null].concat(kids))]);
+    d.addEventListener("toggle", function () { if (d.open) jump(target); });
+    d.addEventListener("focusin", function () { jump(target); });
+    return d;
+  }
+  var ICON_CHOICES = Object.keys(KIT.icons).filter(function (k) { return k !== "_about"; }).map(function (k) { return [k, k]; });
+
+  function accentBox() {
+    var box = el("div"), msg = el("div");
+    var picker = el("input", {type: "color", value: state.accent || KIT.themes[state.template].palette.accent, style: "width:100%;height:48px;border:1.5px solid var(--line);border-radius:10px;background:#fff"});
+    function note() {
+      var c = SK.checkAccent(state.template, state);
+      msg.className = c.button >= 4.5 ? "okbox" : "warnbox";
+      msg.textContent = c.button >= 4.5 ? "Readable: button text contrast " + c.button + ":1 (4.5:1 or more is the accessibility standard). Links are adjusted automatically."
+        : "Hard to read: button text contrast is only " + c.button + ":1 (aim for 4.5:1). Try a darker or a lighter colour.";
+    }
+    picker.addEventListener("input", function () { state.accent = picker.value; note(); changed(); });
+    var reset = el("button", {type: "button", "class": "btn small", text: "Use the template's colour", on: {click: function () { state.accent = ""; picker.value = KIT.themes[state.template].palette.accent; note(); changed(); }}});
+    note();
+    box.appendChild(el("label", {"class": "f"}, [el("span", {text: "Main colour (buttons and highlights)"}), picker]));
+    box.appendChild(msg); box.appendChild(reset);
+    return box;
+  }
+
+  function build() {
+    var f = $("form"), T = KIT.themes[state.template], sp = T.special;
+    f.textContent = "";
+    f.appendChild(el("p", {"class": "help", text: "1. Pick a look. 2. Fill in the groups (empty fields and lists are left out of the site). 3. Download my site: you get one file, index.html."}));
+    f.appendChild(picker());
+    f.appendChild(group("Your business", "top", [
+      field("Business name", "name", {ph: "e.g. Riverton Plumbing"}), field("What you do, in a few words", "trade", {ph: "e.g. Plumbing and heating"}),
+      field("Town or city", "town", {ph: "e.g. Riverton"}), field("Area you serve (optional)", "area", {ph: "e.g. Riverton and 20 miles around"}),
+      field("Year you started (optional)", "since", {ph: "e.g. 2014", max: 12}),
+      field("Business type (helps search engines)", "schema", {type: "select", options: KIT.schema_types})], true));
+    f.appendChild(group("How customers reach you", "contact", [
+      field("Phone", "phone", {type: "tel", ph: "e.g. (555) 010-0142"}), check("Customers can text this number", "textOk"),
+      field("Email", "email", {type: "email", ph: "e.g. hello@yourbusiness.com", help: "Turns on the message form (it opens the visitor's email app; nothing is stored)."}),
+      field("Street address (leave empty if you go to customers)", "street", {ph: "e.g. 123 Main Street"}),
+      el("div", {"class": "row2"}, [field("State or region", "region", {ph: "e.g. CO"}), field("Postcode / ZIP", "postcode", {ph: "e.g. 80000"})]),
+      field("Map link (optional)", "mapLink", {type: "url", ph: "https://...", help: "Paste the share link of your business on a map site: it becomes the Directions button."}),
+      field("Online booking link (optional)", "bookLink", {type: "url", ph: "https://...", help: "If you use an online booking page, paste its link: it becomes the Book button."})]));
+    f.appendChild(group("Top of the page", "top", [
+      field("Headline", "headline", {ph: "What you do and where, in one line"}), field("A short introduction", "intro", {type: "textarea", rows: 3}),
+      field("Main button", "cta", {type: "select", options: [["call", "Call us"], ["quote", "Ask for a quote"], ["book", "Book online (needs a booking link)"], ["visit", "Visit us"], ["contact", "Get in touch"]]}),
+      field("Main button text (optional)", "ctaLabel", {ph: "e.g. Call for a free quote", max: 40}),
+      el("span", {"class": "help", text: "Up to 4 short facts under the buttons (only what is true, e.g. 'Upfront prices')."}), textList("badges", 4, "Fact")]));
+    f.appendChild(group("Services", "services", [field("Section title", "servicesTitle", {ph: "Services"}), field("One line under the title (optional)", "servicesIntro"),
+      repeat("services", 6, function (s) { return [field("Service", "title", {}, s), field("One line about it", "text", {}, s),
+        el("div", {"class": "row2"}, [field("Price (optional)", "price", {ph: "e.g. From $90"}, s), field("Icon", "icon", {type: "select", options: ICON_CHOICES}, s)])]; },
+        function () { return {title: "", text: "", price: "", icon: "check"}; }, "Service")]));
+    if (sp === "steps") f.appendChild(group("How it works", "how", [repeat("steps", 4, function (s) { return [field("Step", "title", {}, s), field("What happens", "text", {}, s)]; }, function () { return {title: "", text: ""}; }, "Step")]));
+    if (sp === "seasons") f.appendChild(group("Seasons", "seasons", [repeat("seasons", 4, function (s) { return [field("Season", "title", {}, s), field("Jobs, separated by ;", "items", {type: "textarea", rows: 2}, s)]; }, function () { return {title: "", items: ""}; }, "Season")]));
+    if (sp === "menu") f.appendChild(group("Menu", "menu", [repeat("menu", 3, function (g) {
+      var inner = el("div"); g.items = g.items || [];
+      function draw() {
+        inner.textContent = "";
+        g.items.forEach(function (it, i) {
+          inner.appendChild(el("div", {"class": "item"}, [el("div", {"class": "head"}, [el("span", {text: "Item " + (i + 1)}), el("button", {type: "button", "class": "btn small", text: "Remove", on: {click: function () { g.items.splice(i, 1); draw(); changed(); }}})]),
+            el("div", {"class": "row2"}, [field("Name", "name", {}, it), field("Price", "price", {ph: "$4.50"}, it)]), field("Short description (optional)", "desc", {}, it)]));
+        });
+        if (g.items.length < 8) inner.appendChild(el("button", {type: "button", "class": "btn small", text: "+ Add item", on: {click: function () { g.items.push({name: "", price: "", desc: ""}); draw(); changed(); }}}));
+      }
+      draw();
+      return [field("Menu heading", "group", {ph: "e.g. Coffee"}, g), inner];
+    }, function () { return {group: "", items: [{name: "", price: "", desc: ""}]}; }, "Menu board")], false, "Up to 3 boards (for example Coffee, Bakery, Lunch) with up to 8 items each."));
+    if (sp === "prices") f.appendChild(group("Prices", "prices", [field("One line above the prices (optional)", "pricesNote"),
+      repeat("prices", 16, function (s) { return [el("div", {"class": "row2"}, [field("Service", "name", {}, s), field("Price", "price", {ph: "$30"}, s)]), field("Note (optional)", "note", {}, s)]; },
+        function () { return {name: "", price: "", note: ""}; }, "Price")]));
+    f.appendChild(group("Why choose you", "why", [repeat("why", 4, function (s) { return [field("Reason", "title", {}, s), field("One line", "text", {}, s)]; }, function () { return {title: "", text: ""}; }, "Reason")]));
+    f.appendChild(group("About you", "about", [field("Title (optional)", "aboutTitle"), field("Your story (an empty line starts a new paragraph)", "about", {type: "textarea", rows: 6}), field("Signed (optional)", "owner", {ph: "e.g. Sam, owner"})]));
+    var hrs = el("div");
+    state.hours.forEach(function (x) { hrs.appendChild(field(x.day, "hours", {ph: "e.g. 9 am - 5 pm (empty = Closed)"}, x)); });
+    f.appendChild(group("Opening hours", "visit", [hrs, field("A note under the hours (optional)", "hoursNote", {ph: "e.g. Holiday hours are posted here"})]));
+    f.appendChild(group("Questions customers ask", "faq", [repeat("faq", 6, function (s) { return [field("Question", "q", {}, s), field("Answer", "a", {type: "textarea", rows: 3}, s)]; }, function () { return {q: "", a: ""}; }, "Question")]));
+    f.appendChild(group("Reviews (real ones only)", "reviews", [
+      el("p", {"class": "warnbox", text: "Only real reviews from real customers, in their words, with their permission. Never write reviews yourself, never pay or reward for them, and never show only the good ones while hiding a pattern of bad ones: that misleads people and is against the law in many places (in the US, the FTC's rule on consumer reviews)."}),
+      check("I confirm these are real reviews from real customers and I have their permission to show them", "reviewsConfirmed"),
+      repeat("reviews", 3, function (s) { return [field("Review text (their words)", "text", {type: "textarea", rows: 3}, s), el("div", {"class": "row2"}, [field("Their first name", "name", {}, s), field("Where it came from (optional)", "source", {ph: "e.g. by email"}, s)])]; },
+        function () { return {text: "", name: "", source: ""}; }, "Review")], false, "The section appears only when the box is ticked."));
+    f.appendChild(group("Photos (optional)", "photos", [el("p", {"class": "help", text: "Use your own photos (or ones you have the rights to). They are shrunk automatically and saved inside the site file."}),
+      photoInput("Big photo at the top (replaces the drawing)", "hero"), photoInput("Photo next to your story", "about"), photoInput("Gallery (up to 6)", "gallery", true)]));
+    f.appendChild(group("Colour", "top", [accentBox()]));
+    f.appendChild(group("Search engines and the footer", "top", [field("Page title (optional)", "seoTitle", {ph: "Business name | what you do in town", max: 70, help: "Shown in search results. About 60 characters."}),
+      field("Page description (optional)", "seoDescription", {type: "textarea", rows: 3, help: "Shown under the title in search results. About 150 characters."}),
+      field("Footer note (optional)", "footerNote", {ph: "e.g. Licence no. 12345 (only real details)"})]));
+  }
+
+  /* the preview */
+  function preview() {
+    var fr = $("preview"), y = 0;
+    try { y = fr.contentWindow.scrollY || 0; } catch (e) { y = 0; }
+    fr.onload = function () { try { fr.contentWindow.scrollTo(0, y); } catch (e) { /* ignore */ } };
+    fr.srcdoc = SK.render(state.template, state, {});
+    fit();
+  }
+  function jump(target) {
+    try { var doc = $("preview").contentDocument, t = doc && doc.getElementById(target); if (t) t.scrollIntoView({block: "start"}); } catch (e) { /* ignore */ }
+  }
+  function fit() {
+    var stage = $("stage"), dev = $("device"), w = view === "phone" ? 390 : 1280, h = view === "phone" ? 844 : 800;
+    var avail = Math.max(280, stage.clientWidth - 32), k = Math.min(1, avail / w);
+    dev.style.width = w + "px"; dev.style.height = (Math.max(h, (stage.clientHeight - 32) / k)) + "px";
+    dev.style.transform = "scale(" + k + ")"; dev.style.marginBottom = (-(1 - k) * parseFloat(dev.style.height)) + "px";
+  }
+  function setView(v) { view = v; $("v-phone").setAttribute("aria-pressed", v === "phone"); $("v-desk").setAttribute("aria-pressed", v !== "phone"); fit(); }
+
+  function download(name, text, type) {
+    var a = el("a", {href: URL.createObjectURL(new Blob([text], {type: type})), download: name});
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+  $("dl").addEventListener("click", function () {
+    download("index.html", SK.render(state.template, state, {}), "text/html");
+    $("status").textContent = "Downloaded index.html: see the guide (Guide.pdf) to put it online";
+  });
+  $("save").addEventListener("click", function () { download((SK.initials(state.name) || "site").toLowerCase() + "-site-answers.json", JSON.stringify(state, null, 1), "application/json"); });
+  $("load").addEventListener("change", function () {
+    var file = this.files[0]; if (!file) return;
+    var r = new FileReader();
+    r.onload = function () { try { state = SK.normalize(JSON.parse(r.result)); if (!KIT.themes[state.template]) state.template = "trades"; build(); preview(); persist(); } catch (e) { alert("That file is not a saved answers file."); } };
+    r.readAsText(file); this.value = "";
+  });
+  $("reset").addEventListener("click", function () {
+    if (!confirm("Start again from the sample text of this template? Your answers in this browser will be replaced.")) return;
+    var id = state.template; state = SK.normalize(SK.sample(id)); state.template = id; build(); preview(); persist();
+  });
+  $("v-phone").addEventListener("click", function () { setView("phone"); });
+  $("v-desk").addEventListener("click", function () { setView("desk"); });
+  function tab(which) { document.querySelector(".split").setAttribute("data-tab", which); $("tab-edit").setAttribute("aria-selected", which === "edit"); $("tab-preview").setAttribute("aria-selected", which !== "edit"); if (which !== "edit") fit(); }
+  $("tab-edit").addEventListener("click", function () { tab("edit"); });
+  $("tab-preview").addEventListener("click", function () { tab("preview"); });
+  window.addEventListener("resize", fit);
+
+  state = load();
+  build(); preview();
+})();
+</script>
+</body>
+</html>

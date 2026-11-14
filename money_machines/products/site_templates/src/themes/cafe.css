@@ -1,0 +1,22 @@
+/* CAFE (cream and tomato): a warm neighbourhood place. A scalloped edge, serif headings, a menu board with prices. */
+:root{--btn-radius:999px;--mark-radius:50%;--ic-radius:50%;--foot-bg:#2a1a12;--foot-ink:#fff8ec;--foot-muted:#e9d9c3;--foot-line:#3d2a1f}
+.mark{font-family:var(--display);font-size:1.1rem}
+.hero{padding-bottom:26px}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:26px;background:radial-gradient(circle at 13px 26px,var(--bg) 12px,transparent 13px) 0 0/26px 26px repeat-x}
+.hero h1{font-weight:700;letter-spacing:-.01em}
+.eyebrow{color:var(--accent-text)}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--accent)}
+.section h2{font-weight:700}
+.kicker{font-family:var(--display);font-style:italic;text-transform:none;letter-spacing:0;font-size:1.08rem}
+.cards{grid-template-columns:1fr;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:.5rem 1.25rem}
+@media (min-width:880px){.cards{grid-template-columns:1fr 1fr;column-gap:2.5rem}}
+.cards .card{display:grid;grid-template-columns:auto 1fr;column-gap:1rem;align-items:center;background:transparent;border:0;border-bottom:1px dotted var(--muted);border-radius:0;padding:1rem 0}
+.cards .card .ic{grid-row:span 3;width:46px;height:46px;margin:0;background:#fbecd3;color:var(--accent-text)}
+.cards .card .ic .ico{width:22px;height:22px}
+.cards .card h3{font-size:1.15rem;margin:0}
+.alt .cards{background:var(--bg)}
+.board{position:relative;padding-top:1.8rem}
+.board::before{content:"";position:absolute;left:1.4rem;right:1.4rem;top:.9rem;height:2px;background:repeating-linear-gradient(90deg,var(--accent) 0 10px,transparent 10px 16px)}
+.board h3{font-style:italic}
+.hours{font-family:var(--display);font-size:1.05rem}
+.cta{background:#fbecd3}
