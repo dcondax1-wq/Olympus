@@ -22,8 +22,9 @@
 //   - fast and crisp (perf v2, 2026-11-14, docs/OLYMPUS_PERF.md): the pixel ratio comes from the page's one render-scale governor
 //     (./render-scale.js): full device pixel ratio up to 3 on Ultra 4K (and on Auto while frames keep full rate), stepped down smoothly when
 //     they do not, never thrashing; above 2 pixels per CSS pixel the scene buffer is not multisampled (FXAA in the finish: the same memory as 2x
-//     with MSAA). A canvas scrolled off screen (IntersectionObserver) draws nothing; the CSS size comes from a ResizeObserver, so a frame
-//     never forces a layout; a canvas with no box (display: none) is never resized from its own backing size (that grew it every frame).
+//     with MSAA). A canvas scrolled off screen (IntersectionObserver) gets no frame per vsync, only a quiet picture about once a second
+//     (its app's loop keeps its clock at 10 Hz); the CSS size comes from a ResizeObserver, so a frame never forces a layout; a canvas with
+//     no box (display: none) is never resized from its own backing size (that grew it every frame); shaders compile in the background.
 //
 // Passes per frame: ultra / high = 3 (scene, bloom, finish) · low = 2 (scene, finish + FXAA) · off = 1 (straight to screen).
 
@@ -309,7 +310,7 @@ export function makeEnvironment(renderer, kind, pal) {
  *             to the device's full ratio (<= 3) by the render-scale governor; under 1.5 (a soft backdrop) it is a hard cap. autoSize (default
  *             true) sizes from the canvas's CSS box (a ResizeObserver: no layout read per frame)
  *   onQuality(level)   told after every tier change (the owner's choice or the automatic step down)
- * -> { renderer, composer, scene, camera, render(), resize(w?, h?), setQuality(level), quality(), passes(), setTheme(t),
+ * -> { renderer, composer, scene, camera, render(), draw() (now, for a photo), resize(w?, h?), setQuality(level), quality(), passes(), setTheme(t),
  *      setBloom({ strength?, radius?, threshold?, tint? }), addPass(pass), start(cb), stop(), stats(), dispose() }
  */
 export function createRenderer(opts) {
@@ -348,7 +349,7 @@ export function createRenderer(opts) {
   const hooks = [], tierSubs = [];
   let tHook = 0;
   const capBloom = (b) => { if (b && b.strength > BLOOM_MAX) b.strength = BLOOM_MAX; return b; };     // AGORA: bloom <= .25, always
-  let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true, asleep = false, tDraw = 0;
+  let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true, asleep = false, tDraw = 0, draws = 0;
   const bloomTint = new THREE.Color(1, 1, 1);
   const perf = { last: 0, n: 0, sum: 0, warm: 0, fps: 0, steps: 0 };
   const reduced = prefersReduced();
@@ -487,10 +488,24 @@ export function createRenderer(opts) {
     tierSubs.slice().forEach((fn) => { try { fn(l); } catch (e) { /* one listener never stops the rest */ } });
   }
 
-  // off screen (perf v2): a connected canvas scrolled out of view, or inside a hidden box, draws nothing until it comes back (its first
-  // frame is always drawn: the veil lifts and the WebGL guard has a still); a canvas outside the page is never held back
-  let onScreen = true;
+  // off screen (perf v2): a connected canvas scrolled out of view, or inside a hidden box, gets no frame per vsync; it draws a quiet picture
+  // about once a second (OFF_DRAW_MS: what the hero stage always did off screen, so a frame counter still moves) until it comes back. Its
+  // first frame is always drawn (the veil lifts, the WebGL guard has a still); a canvas outside the page is never held back. An app's loop
+  // (start(cb)) keeps its clock meanwhile at 10 Hz with real time steps: a walk, a timer or a reply that runs in the loop is where it should
+  // be when the canvas comes back (and a joystick held below the fold still walks). Off-screen pictures never feed the governor.
+  let onScreen = true, offT = 0;
+  const OFF_MS = 100, OFF_DRAW_MS = 1000;
   const offScreen = () => !onScreen && !firstFrame && canvas.isConnected;
+  function offTick() {
+    offT = 0;
+    if (dead || asleep || lost || !loop || pageHidden()) return;
+    if (!offScreen()) { onVisible(); return; }
+    const now = performance.now(), dt = tPrev ? Math.min(0.1, (now - tPrev) / 1000) : OFF_MS / 1000;
+    tPrev = now;
+    loop(dt, (now - t0) / 1000);                                  // its own render() calls draw at most the once-a-second picture
+    if (compiled && !dead && (!tDraw || performance.now() - tDraw >= OFF_DRAW_MS)) drawNow(true);
+    offT = setTimeout(offTick, OFF_MS);
+  }
   const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver((es) => {
     const was = onScreen;
     onScreen = es[es.length - 1].isIntersecting;
@@ -526,20 +541,22 @@ export function createRenderer(opts) {
     setTimeout(done, 8000);                                             // never wait for ever
   }
 
-  /** draw one frame (nothing while the tab is hidden or covered, the canvas is off screen, or sooner than the kit's frame gap); true when it drew */
+  /** draw one frame (nothing while the tab is hidden or covered or sooner than the kit's frame gap; off screen about once a second); true when it drew */
   function render() {
-    if (dead || asleep || lost || pageHidden() || offScreen()) return false;
+    if (dead || asleep || lost || pageHidden()) return false;
+    const off = offScreen();
+    if (off && tDraw && performance.now() - tDraw < OFF_DRAW_MS) return false;   // off screen: a picture about once a second
     if (!compiled) { wantDraw = true; warm(); return false; }
     const g = frameGap();
-    if (g && tDraw && performance.now() - tDraw < g - 3) return false;
-    return drawNow();
+    if (!off && g && tDraw && performance.now() - tDraw < g - 3) return false;
+    return drawNow(off);
   }
   // the frame's time: the rAF time of the frame being drawn (document.timeline), so the canvases of one frame are one sample for the governor
   const frameTime = () => { try { const t = document.timeline && document.timeline.currentTime; return typeof t === 'number' && t > 0 ? t : performance.now(); } catch (e) { return performance.now(); } };
-  function drawNow() {
+  function drawNow(quiet) {                         // quiet: an off-screen picture (no tier step, no governor sample)
     const now = performance.now();
-    tDraw = now;
-    adapt(now);
+    tDraw = now; draws++;
+    if (!quiet) adapt(now);
     if (o.autoSize) size(false);
     if (hooks.length) {                                // shared effects (fx-cine.js): one update per drawn frame, before the draw
       const dt = tHook ? Math.min(0.1, (now - tHook) / 1000) : 1 / 60, ts = (now - t0) / 1000;
@@ -558,14 +575,14 @@ export function createRenderer(opts) {
     if (firstFrame) { firstFrame = false; if (O && !renderer.__oly) O.ready(); }
     // one sample for the governor: the frame's time and its CPU work (the JavaScript of this frame up to the end of this draw)
     const ft = frameTime(), end = performance.now();
-    RQ.frame(ft, { gap: frameGap(), work: Math.max(0, Math.min(end - ft, 1000)) });
+    if (!quiet) RQ.frame(ft, { gap: frameGap(), work: Math.max(0, Math.min(end - ft, 1000)) });
     return true;
   }
 
   function tick(now) {
     raf = 0;
     if (dead || asleep || lost || !loop || pageHidden()) return;  // hidden (or a lost context): no new frame is asked for until the tab is back
-    if (offScreen()) return;                                      // scrolled away: the IntersectionObserver starts the loop again
+    if (offScreen()) { if (!offT) offT = setTimeout(offTick, OFF_MS); return; }   // scrolled away: no frame per vsync (offTick: the app's clock, a picture a second)
     if (!compiled) { warm(); return; }                            // shaders compiling in the background: the loop starts when they are ready
     const g = frameGap();
     if (g && tPrev && now - tPrev < g - 3) { raf = requestAnimationFrame(tick); return; }      // idle / saver: skip the frame (no JS, no draw)
@@ -575,7 +592,7 @@ export function createRenderer(opts) {
     if (!pageHidden()) drawNow();
     raf = requestAnimationFrame(tick);
   }
-  const onVisible = () => { if (!pageHidden() && loop && !raf && !dead && !asleep) { tPrev = 0; perf.last = 0; raf = requestAnimationFrame(tick); } };
+  const onVisible = () => { if (offT) { clearTimeout(offT); offT = 0; } if (!pageHidden() && loop && !raf && !dead && !asleep) { tPrev = 0; perf.last = 0; raf = requestAnimationFrame(tick); } };
   document.addEventListener('visibilitychange', onVisible);
 
   // ---- the real-phone pass (QA round 6, 2026-11-11): GPU memory and context loss
@@ -625,6 +642,9 @@ export function createRenderer(opts) {
     renderer, scene, camera, forced, software,
     get composer() { return composer; },
     render,
+    /** draw one frame NOW, whatever the kit's frame gap, the canvas's place on the page or the background compile (a photo, a share picture:
+     *  read the canvas right after); false when it cannot (lost, asleep, disposed). render() is the one for loops. */
+    draw() { if (dead || asleep || lost) return false; return drawNow(offScreen()); },
     /** re-measure (or set a fixed size when autoSize is false) */
     resize(w, h) { if (w && h) { width = w; height = h; } size(true); },
     /** 'ultra' | 'high' | 'low' | 'off': the pipeline is rebuilt for that tier */
@@ -668,7 +688,7 @@ export function createRenderer(opts) {
     start(cb) { loop = typeof cb === 'function' ? cb : () => {}; onVisible(); return api; },
     /** many new materials added after the first frame (a lazy module's objects): compile them in the background before the next frame */
     warm() { if (!canCompile || dead) return false; gen++; compiled = false; return true; },
-    stop() { loop = null; if (raf) cancelAnimationFrame(raf); raf = 0; },
+    stop() { loop = null; if (raf) cancelAnimationFrame(raf); raf = 0; if (offT) { clearTimeout(offT); offT = 0; } },
     /** the colour grade: { lut: 'dawn' | 'golden' | 'day' | 'dusk' | 'night' | a grade object | null, mix (0..1, default 1), tone: 'aces' | 'agx' }.
      *  A new grade refills the same 16 KB LUT (no shader rebuild); switching the LUT on / off or the tone curve rebuilds the finish once. */
     setGrade(gr) {
@@ -710,7 +730,7 @@ export function createRenderer(opts) {
         bloom: !!bloom, fxaa: !!(composer && tier.fxaa), hdr: bufferType === THREE.HalfFloatType, fps: perf.fps, steps: perf.steps,
         targets: composer ? 2 : 0, calls: i.render.calls, triangles: i.render.triangles, programs: (i.programs || []).length, env: extEnv ? 'external' : envTex ? o.env : 'none',
         bloomStrength: bloom ? bloom.strength : 0, grade: post.lutName || null, focus: post.focusOn, tone: post.tone, hooks: hooks.length,
-        lost, restores, asleep, onScreen: !offScreen(), compiled, range: myRange(), rq: RQ.state(), box: [width, height], backing: [canvas.width, canvas.height] };
+        lost, restores, asleep, onScreen: !offScreen(), compiled, draws, range: myRange(), rq: RQ.state(), box: [width, height], backing: [canvas.width, canvas.height] };
     },
     dispose() {
       if (dead) return;

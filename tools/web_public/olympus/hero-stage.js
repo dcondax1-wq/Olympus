@@ -453,18 +453,23 @@ export function createStage(box, opts) {
     try { compileQuietly(renderer, scene, camera, 8000).then(done, done); } catch (e) { done(); }      // bounded: three's compileAsync could poll for ever
     setTimeout(() => { if (!compiled) done(); }, 8000);
   };
-  let lastDraw = 0;
+  let lastDraw = 0, offT = 0, offDue = false;
   const frame = (now) => {
     raf = 0; if (dead) return;
-    // off screen, hidden or covered: nothing is drawn and no frame is asked for (the IntersectionObserver / visibility / the kit wake it)
-    if (H.frames > 0 && (!onScreen || hidden())) return;
+    // hidden or covered (a sheet, an app over the page: OLYMPUS.hidden): nothing is drawn and no frame is asked for (visibility / the kit wake it)
+    if (H.frames > 0 && hidden()) return;
+    // off screen: no frame per vsync (it spun 60 rAF a second for one picture); about one picture a second on a timer, as before (the clock
+    // and the frame counter still move), never a governor sample; the IntersectionObserver brings the frames back
+    const off = H.frames > 0 && !onScreen;
+    if (off && !offDue) { if (!offT) offT = setTimeout(() => { offT = 0; offDue = true; schedule(); }, Math.max(0, 1000 - (performance.now() - lastDraw))); return; }
+    offDue = false;
     if (!compiled) { warm(); return; }
     const g = gapNow();                                 // the kit's idle cap (30 fps idle on high, battery saver): skip the frame, no JS, no draw
-    if (g && lastDraw && now - lastDraw < g - 3 && now >= wakeUntil) { schedule(); return; }
+    if (!off && g && lastDraw && now - lastDraw < g - 3 && now >= wakeUntil) { schedule(); return; }
     const t = (now - t0) / 1000, dt = Math.min(0.1, (now - tPrev) / 1000); tPrev = now; lastDraw = now;
     let moving = false; if (loop) { try { moving = !!loop(dt, t); } catch (e) { moving = false; } }
     place(t); renderer.render(scene, camera); H.frames++; need = false;
-    RQ.frame(now, { gap: g, work: Math.max(0, performance.now() - now) });
+    if (!off) RQ.frame(now, { gap: g, work: Math.max(0, performance.now() - now) });
     if (!reduce || moving || now < wakeUntil) schedule();
   };
   const schedule = () => { if (!raf && !dead && !document.hidden) raf = requestAnimationFrame(frame); };
@@ -483,7 +488,7 @@ export function createStage(box, opts) {
   const baseStats = D.stats;
   H.stats = () => Object.assign(baseStats(), { frames: H.frames, calls: renderer.info.render.calls });
   H.dispose = () => {
-    if (dead) return; dead = true; cancelAnimationFrame(raf);
+    if (dead) return; dead = true; cancelAnimationFrame(raf); if (offT) { clearTimeout(offT); offT = 0; }
     try { document.removeEventListener('visibilitychange', vis); if (ro) ro.disconnect(); if (io) io.disconnect(); leaveRQ(); offRQ(); } catch (e) { /* nothing */ }
     try { scene.traverse((x) => { if (x.geometry) x.geometry.dispose(); }); D.dispose(); renderer.dispose(); if (own && renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement); } catch (e) { /* nothing */ }
   };

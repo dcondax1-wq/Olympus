@@ -114,7 +114,7 @@ def test_static():
     check("a. render.js: a lost context draws nothing, a restore rebuilds environment + composer and draws; GPU buffers freed after 20 s hidden and on pagehide",
           all(k in rnd for k in ("webglcontextlost', onLost", "webglcontextrestored', onRestored", "environment(); build(); size(true);", "HIDE_MS = 20000",
                                  "'pagehide', onPageHide", "'pageshow', onPageShow", "removeEventListener('webglcontextlost', onLost)", "restores"))
-          and "if (dead || asleep || lost || pageHidden() || offScreen()) return false;" in rnd)
+          and "if (dead || asleep || lost || pageHidden()) return false;" in rnd)
     check("a. sfx.js: a missing format falls back to the other, an HTML answer is never decoded, both missing = synth for the session (no more requests)",
           all(k in sfx for k in ("smpDead", "!smpDead", "text\\/html", "if (!fmtUsed) smpDead = true;", "dead: smpDead")))
     check("a. lazy3d.js: no probe context (WebGL checked without one), after the first paint, never while hidden, skip on LITE (loads on HD)",
@@ -241,12 +241,14 @@ def test_perf_static():
               {k: r.get(k) for k in ("cqOk", "cqMs", "cqStuck", "cqStuckMs", "cqNoExt")})
 
     rnd, hs, rs = (read(os.path.join(WEB, "olympus", f)) for f in ("render.js", "hero-stage.js", "render-scale.js"))
-    check("f. render.js: the governor sizes every core canvas (Ultra 4K = 3x), no MSAA over 2x, off screen = no frame (IntersectionObserver), the CSS box from a ResizeObserver, shaders compiled in the background",
+    check("f. render.js: the governor sizes every core canvas (Ultra 4K = 3x), no MSAA over 2x, off screen = no frame per vsync, a quiet picture a second (IntersectionObserver; the app's loop keeps its clock at 10 Hz), the CSS box from a ResizeObserver, shaders compiled in the background",
           all(k in rnd for k in ("from './render-scale.js'", "ultra: { dpr: 3,", "RQ.dpr(myRange())", "RQ.frame(ft", "hiDpr", "new IntersectionObserver", "offScreen()",
-                                 "new ResizeObserver", "compileQuietly(renderer, scene, camera, 8000)", "warm() {", "onScreen: !offScreen()"))
-          and "canvas.clientWidth || canvas.width || 1" not in rnd and "if (dead || asleep || lost || pageHidden() || offScreen()) return false;" in rnd)
-    check("f. hero-stage.js: the same governor, sleeps off screen / hidden / covered (OLYMPUS.hidden), keeps the kit's idle frame cap, compiles in the background",
-          all(k in hs for k in ("from './render-scale.js'", "RQ.dpr(myRange())", "O.hidden", "O.frameGap", "compileQuietly(renderer, scene, camera, 8000)", "RQ.frame(now")) and "draw about once a second" not in hs
+                                 "new ResizeObserver", "compileQuietly(renderer, scene, camera, 8000)", "warm() {", "onScreen: !offScreen()", "function offTick()",
+                                 "const OFF_MS = 100, OFF_DRAW_MS = 1000;", "if (!quiet) RQ.frame(", "draw() { if (dead || asleep || lost) return false;"))
+          and "canvas.clientWidth || canvas.width || 1" not in rnd and "if (off && tDraw && performance.now() - tDraw < OFF_DRAW_MS) return false;" in rnd)
+    check("f. hero-stage.js: the same governor, sleeps while hidden / covered (OLYMPUS.hidden), off screen one picture a second on a timer (no rAF spin, no governor sample), keeps the kit's idle frame cap, compiles in the background",
+          all(k in hs for k in ("from './render-scale.js'", "RQ.dpr(myRange())", "O.hidden", "O.frameGap", "compileQuietly(renderer, scene, camera, 8000)", "if (!off) RQ.frame(now",
+                                "offDue = true; schedule();")) and "draw about once a second" not in hs
           and "renderer.compileAsync(" not in hs and "renderer.compileAsync(" not in rnd)
     check("f. render-scale.js: no three.js, no DOM needed, one governor per page (window.OLYMPUS_RQ), ?rs= pins a ratio for screenshots",
           not re.search(r"^\s*import\b", rs, re.M) and "document." not in rs and "OLYMPUS_RQ" in rs and "get('rs')" in rs)
@@ -254,8 +256,11 @@ def test_perf_static():
     check("f. the Quality picker: Auto / Battery / High / Ultra 4K (+ Still) in the one 3D-quality key jfx (no new key)",
           "['low', 'Battery'" in sc and "['high', 'High'" in sc and "['ultra', 'Ultra 4K'" in sc and "['off', 'Still'" in sc and "fx: 'jfx'" in sc and "olympus.quality" not in sc)
     jv, ag, st = read(os.path.join(WEB, "jarvis", "index.html")), read(os.path.join(WEB, "olympus", "agora.css")), read(os.path.join(WEB, "settings", "settings.css"))
-    check("f. cheap paths: Jarvis' 2D stars stop behind the 3D sky; AGORA's sky is a root background (no full repaint per scroll frame); Settings' cards drop the live blur",
-          "const behind3d = () => root.dataset.bg3d === 'on'" in jv and 'html[data-theme="agora"] body { background: transparent; }' in ag
+    # AGORA's sky: html has no background of its own, so body's fixed sky is propagated to the root (one still layer, no repaint per scroll frame);
+    # body keeps it in its computed style (the apps' tests read body's background colour)
+    check("f. cheap paths: Jarvis' 2D stars stop behind the 3D sky; AGORA's sky is the root's background (html none, body's sky propagated: no full repaint per scroll frame); Settings' cards drop the live blur",
+          "const behind3d = () => root.dataset.bg3d === 'on'" in jv and 'html[data-theme="agora"] { background: none; }' in ag
+          and 'html[data-theme="agora"] body { background: transparent; }' not in ag and "ag-night) 62%) fixed, var(--ag-night);" in ag
           and "backdrop-filter: blur(var(--oly-blur, 14px)) saturate(1.3)" not in st)
 
 
@@ -527,8 +532,8 @@ SMALL = """async (o) => {
   scene.add(new T.Mesh(new T.BoxGeometry(1, 1, 1), new T.MeshStandardMaterial({ color: '#c8a24a', roughness: 0.4 })));
   scene.add(new T.HemisphereLight('#fff', '#333', 2));
   const rc = createRenderer({ canvas: cv, scene, camera: cam, maxDpr: 2, env: 'none' });
-  let frames = 0; rc.start(() => { frames++; });
-  window.__small = { rc, cv, frames: () => frames };
+  let frames = 0; const tick = () => { frames++; }; rc.start(tick);
+  window.__small = { rc, cv, tick, frames: () => frames };
   await new Promise((r) => setTimeout(r, o.wait));
   const s = rc.stats();
   return { backing: [cv.width, cv.height], css: [cv.clientWidth, cv.clientHeight], dpr: s.dpr, range: s.range, q: s.quality, rq: s.rq, frames, compiled: s.compiled, samples: s.samples };
@@ -566,16 +571,18 @@ def test_perf_4k(br, origin):
       return { a: a.q, b: b.q, c: c.q, b1, b2, back: [s.cv.width, s.cv.height], downs: c.downs, ups: c.ups }; }""")
     check("g. 4K: slow frames step the canvas down ONE level per window (2x -> 1.68x -> 1.41x: 320 -> 268 -> 225 px), full-rate frames bring it back to 2x",
           r2["a"] == -1 and r2["b"] == -2 and r2["b1"][0] == 268 and r2["b2"][0] == 225 and r2["c"] == 0 and r2["back"] == [320, 180], r2)
-    # 3. off screen: the canvas scrolled out of view draws nothing (IntersectionObserver), back on screen it draws again
-    r3 = p.evaluate("""async () => { const s = window.__small; s.rc.start(() => {});
+    # 3. off screen: the canvas scrolled out of view gets no frame per vsync (IntersectionObserver): a quiet picture about once a second, while
+    #    the app's loop keeps its clock at 10 Hz; back on screen it draws every frame again. Draws = the core's own count (stats().draws)
+    r3 = p.evaluate("""async () => { const s = window.__small, draws = () => s.rc.stats().draws; s.rc.start(s.tick);
       const sp = document.createElement('div'); sp.style.cssText = 'position:absolute;left:0;top:0;width:10px;height:6000px'; document.body.appendChild(sp);
-      document.documentElement.style.overflow = 'auto'; document.body.style.overflow = 'auto';
+      for (const el of [document.documentElement, document.body]) { el.style.height = 'auto'; el.style.overflow = 'visible'; }   // the lab page itself never scrolls
       await new Promise((r) => setTimeout(r, 600)); window.scrollTo(0, 4000); await new Promise((r) => setTimeout(r, 900));
-      const f0 = s.frames(); await new Promise((r) => setTimeout(r, 1500)); const f1 = s.frames(), off = s.rc.stats().onScreen;
-      window.scrollTo(0, 0); await new Promise((r) => setTimeout(r, 1200)); const f2 = s.frames();
-      return { scrolled: window.scrollY, f0, f1, f2, off }; }""")
-    check("g. a canvas scrolled off screen runs no frame at all (0 frames in 1.5 s, onScreen false) and comes back when scrolled into view",
-          r3["f1"] == r3["f0"] and r3["off"] is False and r3["f2"] > r3["f1"], r3)
+      const down = window.scrollY, d0 = draws(), f0 = s.frames(); await new Promise((r) => setTimeout(r, 1500));
+      const d1 = draws(), calls = s.frames() - f0, off = s.rc.stats().onScreen;
+      window.scrollTo(0, 0); await new Promise((r) => setTimeout(r, 1200)); const d2 = draws();
+      return { down, d0, d1, d2, calls, off }; }""")
+    check("g. a canvas scrolled off screen gets no frame per vsync: at most 2 quiet pictures in 1.5 s (one a second, onScreen false) while its app's loop keeps time at ~10 Hz; scrolled back, it draws every frame again",
+          r3["down"] >= 3000 and r3["d1"] - r3["d0"] <= 2 and 5 <= r3["calls"] <= 20 and r3["off"] is False and r3["d2"] - r3["d1"] >= 5, r3)
     ctx.close()
 
     # 4. the iPhone (3x), Auto: the same canvas climbs from its 2x budget to the full 3x while frames keep full rate (the governor fed 60 fps)

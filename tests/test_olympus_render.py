@@ -130,12 +130,15 @@ def test_tiers(br, origin):
 
 def test_switch(br, origin):
     ctx, p, errs, _ = lab(br, origin, "?gpu=1", fx="high")
-    got = p.evaluate("""() => { const rc = __lab.rc, out = [rc.quality(), rc.stats().passes];
-      rc.setQuality('low'); out.push(rc.quality(), rc.stats().passes, rc.render());
-      rc.setQuality('off'); out.push(rc.stats().passes, rc.render());
-      OLYMPUS.setFx('ultra'); out.push(rc.quality(), rc.stats().passes, rc.stats().samples, rc.render()); return out; }""")
-    check("c. setQuality high -> low -> off and OLYMPUS.setFx('ultra') rebuild the pipeline (3 -> 2 -> 1 -> 3 passes)",
-          got == ["high", 3, "low", 2, True, 1, True, "ultra", 3, 4, True], got)
+    # a touch before each draw: the kit's idle frame cap (30 fps after 4 s without input) would skip a second draw within 33 ms
+    got = p.evaluate("""() => { const rc = __lab.rc, out = [rc.quality(), rc.stats().passes], touch = () => window.dispatchEvent(new Event('pointermove'));
+      rc.setQuality('low'); touch(); out.push(rc.quality(), rc.stats().passes, rc.render());
+      rc.setQuality('off'); touch(); out.push(rc.stats().passes, rc.render());
+      OLYMPUS.setFx('ultra'); touch(); out.push(rc.quality(), rc.stats().passes, rc.stats().samples, rc.render(), rc.stats().dpr); return out; }""")
+    # Ultra 4K on this 3x phone renders at the full 3x: no MSAA buffer over 2x (FXAA), 4 samples at 2x or less
+    msaa = 0 if got[-1] > 2.05 else 4
+    check("c. setQuality high -> low -> off and OLYMPUS.setFx('ultra') rebuild the pipeline (3 -> 2 -> 1 -> 3 passes; ultra over 2x: FXAA, no MSAA)",
+          got[:-1] == ["high", 3, "low", 2, True, 1, True, "ultra", 3, msaa, True], got)
     check("c. no console error while switching tiers", not errs, errs)
     ctx.close()
     ctx, p, errs, _ = lab(br, origin, "?gpu=1", reduced=True)

@@ -173,12 +173,21 @@ export function mountCore(el, opts) {
   }
   // quality: every 30 frames look at the mean frame time; under ~45 fps step down, a steady 58+ fps for ~3 s climbs back
   function rewarm() { warm = acc = nAcc = good = 0; }   // shader compiles and uploads are not a slow device
+  // the governor can still lower this canvas's pixel ratio (render core stats: dpr above its range's floor, frames not CPU-bound)
+  function roomy() {
+    let s = null;
+    try { s = r3 && r3.post ? r3.post() : null; } catch (e) { s = null; }
+    return !!(s && s.range && s.rq && s.dpr > s.range.floor + 0.01 && !/cpu/.test(s.rq.why || ''));
+  }
   function adapt(ms) {
     if (warm < 20) { warm++; return; }
     acc += ms; nAcc++;
     if (nAcc < 30) return;
     const avg = acc / nAcc; acc = nAcc = 0; fps = Math.round(1000 / avg);
     if (!auto) return;
+    // perf v2: on the render core the page's render-scale governor lowers the resolution first (one controller, no two stepping on the same
+    // slow frames); the effects step down once it is at its floor, or when the frames are slow for the page's own JavaScript
+    if (avg > 22 && tier > 0 && roomy()) { good = 0; return; }
     if (avg > 22 && tier > 0) { tier--; drops++; good = 0; fit(); if (r3) r3.quality(tier); }
     else if (avg < 17.5 && tier < cap && drops < 4) { if (++good >= 6) { tier++; good = 0; fit(); if (r3) r3.quality(tier); } }
     else good = 0;

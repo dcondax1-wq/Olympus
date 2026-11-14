@@ -489,7 +489,7 @@ export class Stage {
     const s = this.rc.stats();
     return { tier: s.quality, calls: s.calls, triangles: s.triangles, passes: s.passes, fps: s.fps, dpr: s.dpr, programs: s.programs, mode: this.mode };
   }
-  frame() { return this.rc.render(); }
+  frame() { return this.rc.draw ? this.rc.draw() : this.rc.render(); }      // a photo / the stats: a fresh frame now (render() may wait for the idle frame gap)
   start(cb) { this.rc.start(cb); }
   dispose() { this.rc.dispose(); }
 }
