@@ -338,7 +338,8 @@ function leadForm(need) {
     "<label>What do you need?<textarea name=need></textarea></label><input class=hp name=bot-field tabindex=-1 aria-hidden=true><p class=er role=alert></p><button class=bt>Send</button><small>Only " + esc(C.n) +
     " sees your name, number and this chat.</small></form>");
   var f = logEl.lastElementChild, E = f.elements;
-  if (need.split(" ").length > 2 && understand(need).ids.join() != "lead") E.need.value = need;
+  var m = need ? understand(need) : {ids: ["lead"]};
+  if (m.sv || m.town || m.zip || m.day >= 0 || m.ids.join() != "lead") E.need.value = need;   // their question said what they need
   f.onsubmit = function (e) {
     e.preventDefault();
     var name = E.name.value.trim(), phone = E.phone.value.trim(), bad = phone.replace(/\D/g, "").length < 10, er = f.querySelector(".er"), b = f.querySelector("button");
@@ -368,7 +369,7 @@ function open() {
     D.documentElement.style.overflow = "hidden"; fit();
     if (W.visualViewport) W.visualViewport.onresize = W.visualViewport.onscroll = fit;
   }
-  setTimeout(function () { $(COARSE ? ".hn" : "input").focus(); }, 60);
+  setTimeout(function () { var f = host.shadowRoot.activeElement; if (!f || f == $(".l")) $(COARSE ? ".hn" : "input").focus(); }, 60);   // never steal focus from what they tapped
 }
 function close() {
   if (!opened) return;
