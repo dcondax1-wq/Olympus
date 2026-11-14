@@ -76,7 +76,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Lyceum (`lyceum`) | Life | life | The school: daily rules quiz, ranks, habits costing | `fixture.json`, `../odeon/trades.json`, `../home.json` | `tests.test_lyceum_page` |
 | Mind (`mind`) | Life | life | Your vault as a living 3D brain | bundled fixture / its own files | `tests.test_mind_page` |
 | Nike (`nike`) | Life | life | The trophy hall: milestones and wins from real | `fixture.json`, `../home.json`, `../ledger/rules.json`, `../odeon/trades.json`, `../kalshicity/edges.json` | `tests.test_nike_page` |
-| Planner (`planner`) | Life | life | Day and week plan: session windows, tasks, habits | `../pythia/events.json`, `../home.json`, `fixture.json` | `tests.test_planner_page` |
+| Planner (`planner`) | Life | life | Day and week plan: session windows, tasks, habits | `../pythia/events.json`, `../home.json`, `../day/day.json`, `../day/inbox.json`, `fixture.json` | `tests.test_planner_page` |
 | Polis (`polis`) | Life | life | The city of OLYMPUS: every app a building | `../olympus/polis.json`, `../olympus/polis-demo.json`, `fixture.json`, `../home.json`, `../kalshi.json`, ... | `tests.test_polis_page` |
 | Symposium (`symposium`) | Life | life | Meet everyone who works for you, and talk | `fixture.json` | `tests.test_symposium_page` |
 
