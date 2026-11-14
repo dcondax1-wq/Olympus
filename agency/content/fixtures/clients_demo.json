@@ -1,0 +1,32 @@
+{
+  "note": "Fictional demo clients for tests and screenshots: 555-01xx numbers and .example domains are reserved for fiction. Real clients live in data/agency/ (gitignored).",
+  "clients": [
+    {"id": "fade-co", "name": "Fade & Co. Barbershop", "trade": "Barber", "city": "Austin, TX", "phone": "(512) 555-0142",
+     "email": "hello@fadeandco.example", "site_url": "https://fadeandco.example", "demo_url": "", "status": "active",
+     "package": "Website + Social Pro", "setup_usd": 499, "monthly_usd": 299, "notes": "Closed Mondays. Walk-ins OK."},
+    {"id": "willow-rose", "name": "Willow & Rose Hair Studio", "trade": "Hair salon", "city": "Charlotte, NC", "phone": "(704) 555-0117",
+     "email": "book@willowrose.example", "site_url": "https://willowrose.example", "demo_url": "", "status": "active",
+     "package": "Website + Social Basic", "setup_usd": 499, "monthly_usd": 149, "notes": ""},
+    {"id": "nonna-rosa", "name": "Nonna Rosa Trattoria", "trade": "Restaurant", "city": "Columbus, OH", "phone": "(614) 555-0163",
+     "email": "ciao@nonnarosa.example", "site_url": "https://nonnarosa.example", "demo_url": "", "status": "active",
+     "package": "Website + Social", "setup_usd": 699, "monthly_usd": 199, "notes": ""},
+    {"id": "blueline", "name": "BlueLine Plumbing & HVAC", "trade": "Plumbing & HVAC", "city": "Denver, CO", "phone": "(303) 555-0128",
+     "email": "office@blueline.example", "site_url": "https://blueline.example", "demo_url": "", "status": "active",
+     "package": "Website + Social", "setup_usd": 799, "monthly_usd": 199, "notes": ""},
+    {"id": "greenway", "name": "Greenway Lawn & Landscape", "trade": "Landscaping", "city": "Portland, OR", "phone": "(503) 555-0190",
+     "email": "quotes@greenway.example", "site_url": "https://greenway.example", "demo_url": "", "status": "active",
+     "package": "Website + Social", "setup_usd": 599, "monthly_usd": 199, "notes": ""},
+    {"id": "ridgeline", "name": "Ridgeline Auto Repair", "trade": "Auto repair", "city": "Phoenix, AZ", "phone": "(602) 555-0175",
+     "email": "service@ridgeline.example", "site_url": "https://ridgeline.example", "demo_url": "", "status": "active",
+     "package": "Website + Social", "setup_usd": 599, "monthly_usd": 199, "notes": ""},
+    {"id": "iron-harbor", "name": "Iron Harbor Fitness", "trade": "Gym", "city": "Tampa, FL", "phone": "(813) 555-0134",
+     "email": "team@ironharbor.example", "site_url": "https://ironharbor.example", "demo_url": "", "status": "active",
+     "package": "Website + Social Pro", "setup_usd": 699, "monthly_usd": 299, "notes": ""},
+    {"id": "bright-day", "name": "Bright Day Family Dental", "trade": "Dentist", "city": "Minneapolis, MN", "phone": "(612) 555-0151",
+     "email": "smile@brightday.example", "site_url": "https://brightday.example", "demo_url": "", "status": "active",
+     "package": "Website + Social", "setup_usd": 999, "monthly_usd": 249, "notes": ""},
+    {"id": "old-lead", "name": "Corner Cuts", "trade": "Barber", "city": "Austin, TX", "phone": "(512) 555-0199", "email": "",
+     "site_url": "", "demo_url": "https://demo.example/corner-cuts", "status": "lead", "package": "", "setup_usd": 0, "monthly_usd": 0,
+     "notes": "Not a client yet: --all skips it."}
+  ]
+}
