@@ -113,6 +113,9 @@ def accounts():
           and k[0]["priority"] == "default", m)
     _s, m = run({}, snap(t, {"lit": lit(quiet_days=6)}))
     check("6 days on the real eval: high priority (tomorrow is day 7)", [x["priority"] for x in m if ":quiet:" in x["key"]] == ["high"], m)
+    check("6+ days on the real eval: says check MFFU and place 1 MNQ by hand (5 days: not yet)",
+          all("place 1 MNQ by hand" in x["body"] for x in m if ":quiet:" in x["key"])
+          and not any("by hand" in x["body"] for x in run({}, snap(t, {"lit": lit(quiet_days=5)}))[1] if ":quiet:" in x["key"]), m)
     _s, m = run({}, snap(t, {"lit": lit(quiet_days=4)}))
     check("4 days: nothing (a long weekend is normal)", not [x for x in m if ":quiet:" in x["key"]], m)
     _s, m = run({}, snap(t, {"atlas": atlas(quiet_days=8)}, mode="paper"))
