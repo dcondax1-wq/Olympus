@@ -67,6 +67,70 @@ one thing on the weakest gig. Start on Fiverr (free); add Upwork Plus only after
 
 ---
 
+## 2. Content accounts (Instagram): two accounts, a 30-day plan each, posting only with the owner's own token
+
+### The rules that matter (searched 2026-11-14)
+
+- **Automation:** Instagram's terms ban automated data collection and artificial likes, follows and comments, and Meta has sued
+  automation services. Scheduling and publishing through Meta's own tools or the official API is allowed. So: **we post, we never
+  like, follow, comment or DM by bot.**
+- **The free scheduler:** Meta Business Suite (Planner) schedules Instagram posts, carousels, Reels and Stories, reported as up to
+  **75 days ahead** (older pages say 29) and about 25 scheduled posts a day. No token, no code, free.
+- **The publishing API (Instagram Graph API):** a **professional account** (Business or Creator); a free Meta developer app with
+  `instagram_business_content_publish` (Instagram Login, no Facebook Page needed) or `instagram_content_publish` (Facebook Login +
+  a Page). For your own account the app's Standard Access works while you have a role on the app (third-party guides say no App
+  Review is needed; check Meta's page). Images: **JPEG on a public https address**, 4:5 to 1.91:1, up to 8 MB. Two calls: create a
+  container, then publish. **Limit: 100 API posts per rolling 24 h in Meta's guide, "currently 50" on its reference page:** read
+  `content_publishing_limit` before each post. Tokens: short-lived 1 hour, long-lived **60 days**, refresh after the first 24 h.
+- **Hashtags:** Instagram has been rolling out a **5-hashtag limit** since December 2025 (some 2026 pages still say 30). We use at most 5.
+- **FTC (US):** disclose any paid or affiliate relationship **in the caption, before "more"**, not only in the bio or in a pile of
+  hashtags; "#ad" or "Ad" works. Fake reviews and sentiment-based rewards are banned by the 2024 rule. Earnings claims must be
+  typical and backed up ("results not typical" does not fix a misleading claim); the FTC proposed in January 2025 to extend its
+  earnings-claim rule to money-making and coaching offers.
+- **Trading content:** CFTC Rule 4.41 requires a set warning when simulated results are shown by trading advisors; whether a creator
+  counts as one is a legal question we avoid by **never showing results, simulated or real**: only rules, routines and labelled math examples.
+
+### The two accounts
+
+| | **Main Street Growth** (`local_growth`) | **The Eval Journal** (`eval_journal`) |
+|---|---|---|
+| For | local business owners | traders in prop-firm evaluations |
+| Makes money by | sending owners to the agency's free website check (one client = B1's Starter $499 + $49/mo) | the eval tracker product ($17), later disclosed affiliate links, sponsored posts once it has an audience |
+| Plan | 30 posts from Mon 2026-11-16, 11:45 ET; Thanksgiving, Black Friday, Small Business Saturday and holiday-hours posts land on their days | 30 posts from Mon 2026-11-16, 07:30 ET (before the open); a holiday-week post on 11-23 |
+| Look | AGORA ivory (light) | AGORA night (dark) |
+| Hard rules | no ranking promises; examples labelled; honest-review advice only | education only; every caption ends with the risk line; numbers only in "Example only" posts; no results, profits, passes, payouts or signals; a paid link starts the caption with "Ad" |
+| Plan files | `money_machines/plans/local_growth_30d.md` (+ `.json`) | `money_machines/plans/eval_journal_30d.md` (+ `.json`) |
+| Sample image | `docs/shots/money_machines/local_growth_day01.jpg` | `docs/shots/money_machines/eval_journal_day04.jpg` |
+
+Make the images (Chromium, about 10 seconds for 30): `python -m money_machines.content_plan --all --render` writes
+`money_machines/out/content/<account>/dayNN.jpg` (1080 x 1350 JPEG), `index.html` (the posting sheet: image, caption, alt text) and
+`schedule.csv`. A new month: `--fresh` (next Monday) or `--start YYYY-MM-DD`. A style file from team B5's social-post machine
+(`agency/social/style.json`, colours and fonts per account) is used when it exists, or `--style FILE`.
+
+### How to post (simplest first)
+
+1. **Meta Business Suite, by hand (recommended):** open the posting sheet, then Planner > Create post: upload the image, paste the
+   caption, add the alt text, pick the time. A week takes about 15 minutes. No token, nothing to break.
+2. **The API, automatic (optional, later):** make a free Meta developer app, add your own Instagram as a tester, put the long-lived
+   token in a private file outside the repo (`~/.config/olympus/instagram.json`), put the images online at a public https folder, then
+   once a day: `python -m money_machines.ig_post --plan money_machines/plans/local_growth_30d.json --image-base-url https://.../ --live`.
+   Without `--live` it is a dry run. It reads Instagram's own limit first, posts at most 1 a day (our cap, never above 25), keeps a
+   ledger so a day is never posted twice, stops on any rate-limit error and never prints the token.
+
+**Stays human:** replying to comments and DMs (no auto-DM tools), approving each week's posts, the accounts themselves.
+
+### Growth and money, honestly
+
+- There is no good public data for brand-new accounts. Buffer's 2026 benchmark is about 7.5% follower growth a month across its
+  accounts, and Socialinsider reports engagement down about 24% year on year. **Plan for 100-1,000 followers in the first 3 months**
+  at one post a day (our estimate, not a promise).
+- Sponsored posts: published 2026 rate cards put nano creators (1k-10k followers) at about **$10-250 a post** and micro (10k-100k)
+  at $100-1,500, with finance 2-3x higher. Instagram's own pay features need followers first (Gifts about 500, Subscriptions about 10,000).
+- So the money is **indirect**: agency clients from the local account, product sales and disclosed affiliate links from the eval journal.
+  Prop-firm affiliate programs are team B6's research; join one only with a clear "Ad / affiliate link" first line every time.
+
+---
+
 ## Sources (web search on 2026-11-14; the official pages could not be opened from this sandbox, so each line is the search engine's reading of the page: re-check before relying on a number)
 
 Freelance platforms
@@ -89,3 +153,11 @@ Competing gig prices
 Reviews (for the review and Google-profile gigs)
 - FTC Consumer Reviews and Testimonials Rule, in force 2024-10-21: [press release](https://www.ftc.gov/news-events/news/press-releases/2024/08/federal-trade-commission-announces-final-rule-banning-fake-reviews-testimonials), [Q&A](https://www.ftc.gov/business-guidance/resources/consumer-reviews-testimonials-rule-questions-answers), [2025-12 warning letters](https://www.ftc.gov/news-events/news/press-releases/2025/12/ftc-warns-10-companies-about-possible-violations-agencys-new-consumer-review-rule)
 - Google: no incentives, no selective asking: [prohibited content](https://support.google.com/business/answer/7400114), [tips to get more reviews](https://support.google.com/business/answer/3474122)
+
+Instagram and Meta
+- Publishing limit 100 vs 50, `content_publishing_limit`: [reference](https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/content_publishing_limit), [content publishing guide](https://developers.facebook.com/docs/instagram-platform/content-publishing/), [adaptlypost on the two numbers](https://adaptlypost.com/blog/content-publishing-limit-instagram-api)
+- Permissions, professional accounts, public URL: [Instagram API with Instagram Login](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login), [Business Login](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login/business-login); JPEG, 4:5-1.91:1, 8 MB: [adaptlypost image requirements](https://adaptlypost.com/blog/instagram-api-image-requirements); 60-day tokens: [getphyllo guide](https://www.getphyllo.com/post/instagram-api-guide)
+- Meta Business Suite 75 days: [OneUp](https://www.oneupapp.io/blog/schedule-facebook-and-instagram-posts-more-than-29-days-into-future.md), [SocialBee](https://socialbee.com/blog/meta-planner-30-day-post-scheduling-restriction/)
+- Automation and lawsuits: [Meta newsroom](https://about.fb.com/news/2020/06/automation-software-lawsuits/); 5 hashtags: [Later](https://later.com/blog/instagram-hashtags/amp), [InstantDM](https://instantdm.com/blog/instagram-hashtags), [Circleboom (still 30)](https://circleboom.com/blog/how-many-hashtags-should-you-use-on-instagram-in-2026/)
+- Growth: [Buffer benchmarks](https://buffer.com/insights/instagram-benchmarks), [Socialinsider 2026](https://www.socialinsider.io/blog/instagram-benchmarks/?RewriteStatus=1); rates: [Influencer Marketing Hub](https://influencermarketinghub.com/instagram-influencer-rates/), [Later 2026 benchmarks](https://later.com/blog/influencer-pricing-benchmarks-the-complete-2026-guide/), [influee](https://influee.co/blog/instagram-influencer-pricing); pay features: [influencermarketinghub](https://influencermarketinghub.com/instagram-subscriptions-gifts/)
+- FTC disclosures: [Endorsement Guides FAQ](https://www.ftc.gov/business-guidance/resources/ftcs-endorsement-guides-what-people-are-asking), [Disclosures 101](https://www.ftc.gov/business-guidance/resources/disclosures-101-social-media-influencers); earnings claims: [FTC 2025 proposal](https://www.ftc.gov/business-guidance/blog/2025/01/concerned-about-deceptive-earnings-claims-sos-ftc-we-want-your-feedback); CFTC Rule 4.41: [Federal Register 2007](https://www.federalregister.gov/documents/2007/02/23/E7-3122/advertising-by-commodity-pool-operators-commodity-trading-advisors-and-the-principals-thereof)

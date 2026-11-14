@@ -1,0 +1,832 @@
+{
+ "v": 1,
+ "kind": "ig-content-plan",
+ "account": "local_growth",
+ "title": "Main Street Growth",
+ "bio": "Simple, honest tips to get more local customers: Google, websites, reviews. Free website check: link below.",
+ "handle_ideas": [
+  "@mainstreet.growth",
+  "@localgrowth.notes",
+  "@thelocalgrowthdesk"
+ ],
+ "purpose": "Teaches local business owners the basics the agency sells (Google profile, fast phone website, honest reviews) and sends interested owners to the free website check on the agency storefront (team B3).",
+ "start": "2026-11-16",
+ "days": 30,
+ "tz": "America/New_York",
+ "posts": [
+  {
+   "day": 1,
+   "date": "2026-11-16",
+   "weekday": "Mon",
+   "time": "11:45",
+   "pillar": "Google profile",
+   "special": "",
+   "example": false,
+   "headline": "5 things your Google profile needs this week",
+   "points": [
+    "Your real business name, nothing added",
+    "The most specific main category",
+    "Correct hours, holidays too",
+    "10+ real photos",
+    "A reply to every review"
+   ],
+   "caption": "5 things your Google profile needs this week\n\nYour Google Business Profile is often the first thing a new customer sees, before your website, before your Instagram. It is free, and most local businesses leave half of it empty. Fix these five this week and you are ahead of most of your street.\n\n1. Your real business name, nothing added\n2. The most specific main category\n3. Correct hours, holidays too\n4. 10+ real photos\n5. A reply to every review\n\nSave this for later.\n\n#smallbusiness #localbusiness #smallbusinesstips #googlebusinessprofile #localseo",
+   "hashtags": [
+    "#smallbusiness",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#googlebusinessprofile",
+    "#localseo"
+   ],
+   "alt_text": "Text card from Main Street Growth: 5 things your Google profile needs this week. Your real business name, nothing added; The most specific main category; Correct hours, holidays too; 10+ real photos; A reply to every review.",
+   "image": "local_growth/day01.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 2,
+   "date": "2026-11-17",
+   "weekday": "Tue",
+   "time": "11:45",
+   "pillar": "Website",
+   "special": "",
+   "example": false,
+   "headline": "Your website has 3 seconds",
+   "points": [
+    "Say what you do and where, in one line",
+    "Phone number at the top, tap-to-call",
+    "One big button: Call, Book or Get a quote"
+   ],
+   "caption": "Your website has 3 seconds\n\nPeople on a phone decide fast. If they can't tell what you do, where, and how to reach you in about three seconds, they go back to Google and tap the next result. Open your own site on your phone right now and check those three things.\n\n1. Say what you do and where, in one line\n2. Phone number at the top, tap-to-call\n3. One big button: Call, Book or Get a quote\n\nSend this to a business owner who needs it.\n\n#smallbusiness #websitetips #localbusiness #smallbusinessowner #webdesign",
+   "hashtags": [
+    "#smallbusiness",
+    "#websitetips",
+    "#localbusiness",
+    "#smallbusinessowner",
+    "#webdesign"
+   ],
+   "alt_text": "Text card from Main Street Growth: Your website has 3 seconds. Say what you do and where, in one line; Phone number at the top, tap-to-call; One big button: Call, Book or Get a quote.",
+   "image": "local_growth/day02.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 3,
+   "date": "2026-11-18",
+   "weekday": "Wed",
+   "time": "11:45",
+   "pillar": "Reviews",
+   "special": "",
+   "example": false,
+   "headline": "How to ask for a review without feeling awkward",
+   "points": [
+    "Ask right after a good moment",
+    "Send the direct link, not 'search us'",
+    "Ask every customer, not only happy ones",
+    "Never offer a reward"
+   ],
+   "caption": "How to ask for a review without feeling awkward\n\nMost happy customers would leave a review. They just forget, or can't find where. Ask at the right moment, make it one tap, and ask everyone the same way. Rewards for reviews break Google's rules and the FTC's review rule, so keep it simple: just ask.\n\n1. Ask right after a good moment\n2. Send the direct link, not 'search us'\n3. Ask every customer, not only happy ones\n4. Never offer a reward\n\nWant to know how your website does on a phone? Free 60-second website check: link in bio.\n\n#smallbusiness #customerreviews #localbusiness #smallbusinesstips #shoplocal",
+   "hashtags": [
+    "#smallbusiness",
+    "#customerreviews",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#shoplocal"
+   ],
+   "alt_text": "Text card from Main Street Growth: How to ask for a review without feeling awkward. Ask right after a good moment; Send the direct link, not 'search us'; Ask every customer, not only happy ones; Never offer a reward.",
+   "image": "local_growth/day03.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 4,
+   "date": "2026-11-19",
+   "weekday": "Thu",
+   "time": "11:45",
+   "pillar": "Myths",
+   "special": "",
+   "example": false,
+   "headline": "Myth: 'My customers find me by word of mouth'",
+   "points": [
+    "People still Google you after a referral",
+    "They read your reviews first",
+    "No site or profile? They call the next name"
+   ],
+   "caption": "Myth: 'My customers find me by word of mouth'\n\nWord of mouth is great, and it now goes through Google. A friend says 'call Sam's Plumbing', and the first thing people do is search the name. What they find decides if they call. Make sure they find you, your hours and your reviews.\n\n1. People still Google you after a referral\n2. They read your reviews first\n3. No site or profile? They call the next name\n\nQuestions? Ask in the comments and I'll answer.\n\n#smallbusiness #socialmediatips #localbusiness #marketingtips #smallbusinessowner",
+   "hashtags": [
+    "#smallbusiness",
+    "#socialmediatips",
+    "#localbusiness",
+    "#marketingtips",
+    "#smallbusinessowner"
+   ],
+   "alt_text": "Text card from Main Street Growth: Myth: 'My customers find me by word of mouth'. People still Google you after a referral; They read your reviews first; No site or profile? They call the next name.",
+   "image": "local_growth/day04.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 5,
+   "date": "2026-11-20",
+   "weekday": "Fri",
+   "time": "11:45",
+   "pillar": "Website",
+   "special": "",
+   "example": false,
+   "headline": "Is your website losing calls? A 2-minute test",
+   "points": [
+    "Open it on your phone",
+    "Tap the phone number: does it dial?",
+    "Send your own form: did it arrive?",
+    "Count: does it load in 3 seconds?"
+   ],
+   "caption": "Is your website losing calls? A 2-minute test\n\nYou don't need a tech person for this test. Do it once a month. A broken form or a number that doesn't dial loses customers silently, and you never hear about it.\n\n1. Open it on your phone\n2. Tap the phone number: does it dial?\n3. Send your own form: did it arrive?\n4. Count: does it load in 3 seconds?\n\nFollow for one simple tip a day.\n\n#smallbusiness #localbusiness #smallbusinesstips #googlebusinessprofile #localseo",
+   "hashtags": [
+    "#smallbusiness",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#googlebusinessprofile",
+    "#localseo"
+   ],
+   "alt_text": "Text card from Main Street Growth: Is your website losing calls? A 2-minute test. Open it on your phone; Tap the phone number: does it dial?; Send your own form: did it arrive?; Count: does it load in 3 seconds?.",
+   "image": "local_growth/day05.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 6,
+   "date": "2026-11-21",
+   "weekday": "Sat",
+   "time": "11:45",
+   "pillar": "Google profile",
+   "special": "",
+   "example": false,
+   "headline": "Google profile photos that get calls",
+   "points": [
+    "Outside, so people find the door",
+    "Your team, smiling",
+    "Your work: before and after",
+    "Inside your shop or van",
+    "No stock photos"
+   ],
+   "caption": "Google profile photos that get calls\n\nReal photos build trust. Add a few every month, from your own phone. Good light, no filters needed. Stock photos make people wonder what you are hiding.\n\n1. Outside, so people find the door\n2. Your team, smiling\n3. Your work: before and after\n4. Inside your shop or van\n5. No stock photos\n\nSave this for later.\n\n#smallbusiness #websitetips #localbusiness #smallbusinessowner #webdesign",
+   "hashtags": [
+    "#smallbusiness",
+    "#websitetips",
+    "#localbusiness",
+    "#smallbusinessowner",
+    "#webdesign"
+   ],
+   "alt_text": "Text card from Main Street Growth: Google profile photos that get calls. Outside, so people find the door; Your team, smiling; Your work: before and after; Inside your shop or van; No stock photos.",
+   "image": "local_growth/day06.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 7,
+   "date": "2026-11-22",
+   "weekday": "Sun",
+   "time": "11:45",
+   "pillar": "Social",
+   "special": "",
+   "example": false,
+   "headline": "What to post when you don't know what to post",
+   "points": [
+    "A job you just finished",
+    "A question customers always ask",
+    "A tip that saves them money",
+    "Your team at work",
+    "A review (with permission)"
+   ],
+   "caption": "What to post when you don't know what to post\n\nYou don't need to be funny or go viral. Show your work, answer questions, and be consistent. Three useful posts a week beat seven posts you can't keep up.\n\n1. A job you just finished\n2. A question customers always ask\n3. A tip that saves them money\n4. Your team at work\n5. A review (with permission)\n\nSend this to a business owner who needs it.\n\n#smallbusiness #customerreviews #localbusiness #smallbusinesstips #shoplocal",
+   "hashtags": [
+    "#smallbusiness",
+    "#customerreviews",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#shoplocal"
+   ],
+   "alt_text": "Text card from Main Street Growth: What to post when you don't know what to post. A job you just finished; A question customers always ask; A tip that saves them money; Your team at work; A review (with permission).",
+   "image": "local_growth/day07.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 8,
+   "date": "2026-11-23",
+   "weekday": "Mon",
+   "time": "11:45",
+   "pillar": "Reviews",
+   "special": "",
+   "example": false,
+   "headline": "Reply to a bad review like this",
+   "points": [
+    "Thank them for the feedback",
+    "Own what was yours to own",
+    "Take it offline: phone or email",
+    "Short and calm",
+    "Remember: new customers read it"
+   ],
+   "caption": "Reply to a bad review like this\n\nA calm, kind reply to a bad review can win you more customers than a five-star one. The reply is not for the angry reviewer, it is for everyone reading later.\n\n1. Thank them for the feedback\n2. Own what was yours to own\n3. Take it offline: phone or email\n4. Short and calm\n5. Remember: new customers read it\n\nWant to know how your website does on a phone? Free 60-second website check: link in bio.\n\n#smallbusiness #socialmediatips #localbusiness #marketingtips #smallbusinessowner",
+   "hashtags": [
+    "#smallbusiness",
+    "#socialmediatips",
+    "#localbusiness",
+    "#marketingtips",
+    "#smallbusinessowner"
+   ],
+   "alt_text": "Text card from Main Street Growth: Reply to a bad review like this. Thank them for the feedback; Own what was yours to own; Take it offline: phone or email; Short and calm; Remember: new customers read it.",
+   "image": "local_growth/day08.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 9,
+   "date": "2026-11-24",
+   "weekday": "Tue",
+   "time": "11:45",
+   "pillar": "Website",
+   "special": "",
+   "example": false,
+   "headline": "Why your website should load in under 3 seconds",
+   "points": [
+    "Big photos are the usual problem",
+    "Shrink images before you upload",
+    "Fewer plugins and pop-ups",
+    "Test free with PageSpeed Insights"
+   ],
+   "caption": "Why your website should load in under 3 seconds\n\nSlow pages lose visitors, especially on a phone with a weak signal. The fix is often simple: smaller images and fewer extras. Google's free PageSpeed Insights shows what slows you down.\n\n1. Big photos are the usual problem\n2. Shrink images before you upload\n3. Fewer plugins and pop-ups\n4. Test free with PageSpeed Insights\n\nQuestions? Ask in the comments and I'll answer.\n\n#smallbusiness #localbusiness #smallbusinesstips #googlebusinessprofile #localseo",
+   "hashtags": [
+    "#smallbusiness",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#googlebusinessprofile",
+    "#localseo"
+   ],
+   "alt_text": "Text card from Main Street Growth: Why your website should load in under 3 seconds. Big photos are the usual problem; Shrink images before you upload; Fewer plugins and pop-ups; Test free with PageSpeed Insights.",
+   "image": "local_growth/day09.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 10,
+   "date": "2026-11-25",
+   "weekday": "Wed",
+   "time": "11:45",
+   "pillar": "Google profile",
+   "special": "",
+   "example": false,
+   "headline": "Don't stuff keywords into your business name",
+   "points": [
+    "Use your real name, as on your sign",
+    "'Best plumber in town' in the name can get you suspended",
+    "Put services in the Services section"
+   ],
+   "caption": "Don't stuff keywords into your business name\n\nIt is tempting to add keywords to your name on Google. It breaks Google's guidelines and can get your profile suspended. Your services, categories and description are where those words belong.\n\n1. Use your real name, as on your sign\n2. 'Best plumber in town' in the name can get you suspended\n3. Put services in the Services section\n\nFollow for one simple tip a day.\n\n#smallbusiness #websitetips #localbusiness #smallbusinessowner #webdesign",
+   "hashtags": [
+    "#smallbusiness",
+    "#websitetips",
+    "#localbusiness",
+    "#smallbusinessowner",
+    "#webdesign"
+   ],
+   "alt_text": "Text card from Main Street Growth: Don't stuff keywords into your business name. Use your real name, as on your sign; 'Best plumber in town' in the name can get you suspended; Put services in the Services section.",
+   "image": "local_growth/day10.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 11,
+   "date": "2026-11-26",
+   "weekday": "Thu",
+   "time": "11:45",
+   "pillar": "Seasonal",
+   "special": "thanksgiving",
+   "example": false,
+   "headline": "Thankful for the businesses on our street",
+   "points": [
+    "Share a local business you love",
+    "Tag them",
+    "Leave them a review this week"
+   ],
+   "caption": "Thankful for the businesses on our street\n\nHappy Thanksgiving. Small shout-outs help small businesses more than you think. Tag a local favourite in the comments.\n\n1. Share a local business you love\n2. Tag them\n3. Leave them a review this week\n\nSave this for later.\n\n#smallbusiness #customerreviews #localbusiness #smallbusinesstips #shoplocal",
+   "hashtags": [
+    "#smallbusiness",
+    "#customerreviews",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#shoplocal"
+   ],
+   "alt_text": "Text card from Main Street Growth: Thankful for the businesses on our street. Share a local business you love; Tag them; Leave them a review this week.",
+   "image": "local_growth/day11.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 12,
+   "date": "2026-11-27",
+   "weekday": "Fri",
+   "time": "11:45",
+   "pillar": "Seasonal",
+   "special": "black_friday",
+   "example": false,
+   "headline": "Black Friday offers that don't kill your margin",
+   "points": [
+    "Bundle instead of discount",
+    "Gift cards with a small bonus",
+    "Early booking for January",
+    "A thank-you for regulars"
+   ],
+   "caption": "Black Friday offers that don't kill your margin\n\nYou don't have to fight the big stores on price. Give local customers a reason to choose you: a bundle, a bonus, or a thank-you.\n\n1. Bundle instead of discount\n2. Gift cards with a small bonus\n3. Early booking for January\n4. A thank-you for regulars\n\nSend this to a business owner who needs it.\n\n#smallbusiness #socialmediatips #localbusiness #marketingtips #smallbusinessowner",
+   "hashtags": [
+    "#smallbusiness",
+    "#socialmediatips",
+    "#localbusiness",
+    "#marketingtips",
+    "#smallbusinessowner"
+   ],
+   "alt_text": "Text card from Main Street Growth: Black Friday offers that don't kill your margin. Bundle instead of discount; Gift cards with a small bonus; Early booking for January; A thank-you for regulars.",
+   "image": "local_growth/day12.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 13,
+   "date": "2026-11-28",
+   "weekday": "Sat",
+   "time": "11:45",
+   "pillar": "Seasonal",
+   "special": "small_business_saturday",
+   "example": false,
+   "headline": "Small Business Saturday checklist",
+   "points": [
+    "Update today's hours on Google",
+    "Post your offer on your profile",
+    "Review QR card at the counter",
+    "Thank every customer"
+   ],
+   "caption": "Small Business Saturday checklist\n\nToday is Small Business Saturday. People are looking for local shops on purpose. Make sure they find you open, with your offer up.\n\n1. Update today's hours on Google\n2. Post your offer on your profile\n3. Review QR card at the counter\n4. Thank every customer\n\nWant to know how your website does on a phone? Free 60-second website check: link in bio.\n\n#smallbusiness #localbusiness #smallbusinesstips #googlebusinessprofile #localseo",
+   "hashtags": [
+    "#smallbusiness",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#googlebusinessprofile",
+    "#localseo"
+   ],
+   "alt_text": "Text card from Main Street Growth: Small Business Saturday checklist. Update today's hours on Google; Post your offer on your profile; Review QR card at the counter; Thank every customer.",
+   "image": "local_growth/day13.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 14,
+   "date": "2026-11-29",
+   "weekday": "Sun",
+   "time": "11:45",
+   "pillar": "Myths",
+   "special": "",
+   "example": false,
+   "headline": "Myth: 'Social media is free advertising'",
+   "points": [
+    "Free to post, not free in time",
+    "Consistency beats volume",
+    "Plan a month in one sitting"
+   ],
+   "caption": "Myth: 'Social media is free advertising'\n\nPosting costs no money, but it costs time. The businesses that do well treat it like a small weekly job: one hour to plan, a few minutes a day to post and answer.\n\n1. Free to post, not free in time\n2. Consistency beats volume\n3. Plan a month in one sitting\n\nQuestions? Ask in the comments and I'll answer.\n\n#smallbusiness #websitetips #localbusiness #smallbusinessowner #webdesign",
+   "hashtags": [
+    "#smallbusiness",
+    "#websitetips",
+    "#localbusiness",
+    "#smallbusinessowner",
+    "#webdesign"
+   ],
+   "alt_text": "Text card from Main Street Growth: Myth: 'Social media is free advertising'. Free to post, not free in time; Consistency beats volume; Plan a month in one sitting.",
+   "image": "local_growth/day14.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 15,
+   "date": "2026-11-30",
+   "weekday": "Mon",
+   "time": "11:45",
+   "pillar": "Website",
+   "special": "",
+   "example": false,
+   "headline": "5 things every local business website needs",
+   "points": [
+    "What you do and where",
+    "Tap-to-call at the top",
+    "Opening hours",
+    "Real reviews",
+    "A form or booking button"
+   ],
+   "caption": "5 things every local business website needs\n\nYou don't need ten pages and an animated slider. You need these five things, working on a phone, and loading fast. Everything else is extra.\n\n1. What you do and where\n2. Tap-to-call at the top\n3. Opening hours\n4. Real reviews\n5. A form or booking button\n\nFollow for one simple tip a day.\n\n#smallbusiness #customerreviews #localbusiness #smallbusinesstips #shoplocal",
+   "hashtags": [
+    "#smallbusiness",
+    "#customerreviews",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#shoplocal"
+   ],
+   "alt_text": "Text card from Main Street Growth: 5 things every local business website needs. What you do and where; Tap-to-call at the top; Opening hours; Real reviews; A form or booking button.",
+   "image": "local_growth/day15.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 16,
+   "date": "2026-12-01",
+   "weekday": "Tue",
+   "time": "11:45",
+   "pillar": "Seasonal",
+   "special": "holiday_hours",
+   "example": false,
+   "headline": "Holiday season: update these 4 things",
+   "points": [
+    "Holiday hours on Google and your site",
+    "Gift cards, if you sell them",
+    "A holiday post",
+    "A thank-you to your customers"
+   ],
+   "caption": "Holiday season: update these 4 things\n\nDecember is busy. Set your hours for Christmas and New Year now so nobody finds a locked door.\n\n1. Holiday hours on Google and your site\n2. Gift cards, if you sell them\n3. A holiday post\n4. A thank-you to your customers\n\nSave this for later.\n\n#smallbusiness #socialmediatips #localbusiness #marketingtips #smallbusinessowner",
+   "hashtags": [
+    "#smallbusiness",
+    "#socialmediatips",
+    "#localbusiness",
+    "#marketingtips",
+    "#smallbusinessowner"
+   ],
+   "alt_text": "Text card from Main Street Growth: Holiday season: update these 4 things. Holiday hours on Google and your site; Gift cards, if you sell them; A holiday post; A thank-you to your customers.",
+   "image": "local_growth/day16.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 17,
+   "date": "2026-12-02",
+   "weekday": "Wed",
+   "time": "11:45",
+   "pillar": "Money and time",
+   "special": "",
+   "example": false,
+   "headline": "What a simple website really costs",
+   "points": [
+    "Domain: about $10-15 a year",
+    "Hosting: free for a simple site",
+    "Your time to keep it current",
+    "The real cost: calls you miss without one"
+   ],
+   "caption": "What a simple website really costs\n\nA simple, fast website does not need a big monthly bill. Keep your domain in your own name, keep the site simple, and update your hours and services when they change.\n\n1. Domain: about $10-15 a year\n2. Hosting: free for a simple site\n3. Your time to keep it current\n4. The real cost: calls you miss without one\n\nSend this to a business owner who needs it.\n\n#smallbusiness #localbusiness #smallbusinesstips #googlebusinessprofile #localseo",
+   "hashtags": [
+    "#smallbusiness",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#googlebusinessprofile",
+    "#localseo"
+   ],
+   "alt_text": "Text card from Main Street Growth: What a simple website really costs. Domain: about $10-15 a year; Hosting: free for a simple site; Your time to keep it current; The real cost: calls you miss without one.",
+   "image": "local_growth/day17.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 18,
+   "date": "2026-12-03",
+   "weekday": "Thu",
+   "time": "11:45",
+   "pillar": "Google profile",
+   "special": "",
+   "example": false,
+   "headline": "Google posts: the free ad space you're ignoring",
+   "points": [
+    "Post an offer, update or event",
+    "Add a photo and a button",
+    "Once a week is enough"
+   ],
+   "caption": "Google posts: the free ad space you're ignoring\n\nPosts on your Google profile show up when people search for you. Most businesses never use them. A short weekly post shows you are open, active and worth calling.\n\n1. Post an offer, update or event\n2. Add a photo and a button\n3. Once a week is enough\n\nWant to know how your website does on a phone? Free 60-second website check: link in bio.\n\n#smallbusiness #websitetips #localbusiness #smallbusinessowner #webdesign",
+   "hashtags": [
+    "#smallbusiness",
+    "#websitetips",
+    "#localbusiness",
+    "#smallbusinessowner",
+    "#webdesign"
+   ],
+   "alt_text": "Text card from Main Street Growth: Google posts: the free ad space you're ignoring. Post an offer, update or event; Add a photo and a button; Once a week is enough.",
+   "image": "local_growth/day18.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 19,
+   "date": "2026-12-04",
+   "weekday": "Fri",
+   "time": "11:45",
+   "pillar": "Reviews",
+   "special": "",
+   "example": false,
+   "headline": "The review QR card: one tap to your review page",
+   "points": [
+    "Put your review link in a QR code",
+    "Counter, receipts, invoices, the van",
+    "Ask every customer the same way"
+   ],
+   "caption": "The review QR card: one tap to your review page\n\nMake leaving a review as easy as scanning a menu. A small card at the counter or on the invoice does the asking for you, every day, without feeling pushy.\n\n1. Put your review link in a QR code\n2. Counter, receipts, invoices, the van\n3. Ask every customer the same way\n\nQuestions? Ask in the comments and I'll answer.\n\n#smallbusiness #customerreviews #localbusiness #smallbusinesstips #shoplocal",
+   "hashtags": [
+    "#smallbusiness",
+    "#customerreviews",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#shoplocal"
+   ],
+   "alt_text": "Text card from Main Street Growth: The review QR card: one tap to your review page. Put your review link in a QR code; Counter, receipts, invoices, the van; Ask every customer the same way.",
+   "image": "local_growth/day19.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 20,
+   "date": "2026-12-05",
+   "weekday": "Sat",
+   "time": "11:45",
+   "pillar": "Social",
+   "special": "",
+   "example": false,
+   "headline": "Instagram bio checklist for local businesses",
+   "points": [
+    "What you do + your town in line one",
+    "How to book or call",
+    "One link that works on phones",
+    "Hours or service area"
+   ],
+   "caption": "Instagram bio checklist for local businesses\n\nYour bio is your shop window on Instagram. People decide in seconds whether to follow, call or leave. Make it clear, local and simple.\n\n1. What you do + your town in line one\n2. How to book or call\n3. One link that works on phones\n4. Hours or service area\n\nFollow for one simple tip a day.\n\n#smallbusiness #socialmediatips #localbusiness #marketingtips #smallbusinessowner",
+   "hashtags": [
+    "#smallbusiness",
+    "#socialmediatips",
+    "#localbusiness",
+    "#marketingtips",
+    "#smallbusinessowner"
+   ],
+   "alt_text": "Text card from Main Street Growth: Instagram bio checklist for local businesses. What you do + your town in line one; How to book or call; One link that works on phones; Hours or service area.",
+   "image": "local_growth/day20.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 21,
+   "date": "2026-12-06",
+   "weekday": "Sun",
+   "time": "11:45",
+   "pillar": "Website",
+   "special": "",
+   "example": false,
+   "headline": "Your contact form might be broken. Check today.",
+   "points": [
+    "Fill it out yourself",
+    "Check the spam folder",
+    "Answer within the hour",
+    "Add tap-to-call as a backup"
+   ],
+   "caption": "Your contact form might be broken. Check today.\n\nA form that stopped sending emails months ago is more common than you think. Test it today. It takes one minute and might save a customer this week.\n\n1. Fill it out yourself\n2. Check the spam folder\n3. Answer within the hour\n4. Add tap-to-call as a backup\n\nSave this for later.\n\n#smallbusiness #localbusiness #smallbusinesstips #googlebusinessprofile #localseo",
+   "hashtags": [
+    "#smallbusiness",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#googlebusinessprofile",
+    "#localseo"
+   ],
+   "alt_text": "Text card from Main Street Growth: Your contact form might be broken. Check today.. Fill it out yourself; Check the spam folder; Answer within the hour; Add tap-to-call as a backup.",
+   "image": "local_growth/day21.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 22,
+   "date": "2026-12-07",
+   "weekday": "Mon",
+   "time": "11:45",
+   "pillar": "Google profile",
+   "special": "",
+   "example": false,
+   "headline": "Wrong hours on Google = angry customers",
+   "points": [
+    "Set holiday hours now",
+    "Add special hours for events",
+    "Check Apple Maps and Bing too"
+   ],
+   "caption": "Wrong hours on Google = angry customers\n\nNothing annoys a customer more than driving over and finding the door locked. Update holiday hours a week ahead and you avoid the angry review.\n\n1. Set holiday hours now\n2. Add special hours for events\n3. Check Apple Maps and Bing too\n\nSend this to a business owner who needs it.\n\n#smallbusiness #websitetips #localbusiness #smallbusinessowner #webdesign",
+   "hashtags": [
+    "#smallbusiness",
+    "#websitetips",
+    "#localbusiness",
+    "#smallbusinessowner",
+    "#webdesign"
+   ],
+   "alt_text": "Text card from Main Street Growth: Wrong hours on Google = angry customers. Set holiday hours now; Add special hours for events; Check Apple Maps and Bing too.",
+   "image": "local_growth/day22.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 23,
+   "date": "2026-12-08",
+   "weekday": "Tue",
+   "time": "11:45",
+   "pillar": "Myths",
+   "special": "",
+   "example": false,
+   "headline": "Myth: 'I need a fancy website'",
+   "points": [
+    "One fast page beats a slow fancy one",
+    "Clear beats clever",
+    "Built for the phone first"
+   ],
+   "caption": "Myth: 'I need a fancy website'\n\nCustomers don't want animations. They want to know what you do, see proof you are good, and call you. A simple page that does that wins.\n\n1. One fast page beats a slow fancy one\n2. Clear beats clever\n3. Built for the phone first\n\nWant to know how your website does on a phone? Free 60-second website check: link in bio.\n\n#smallbusiness #customerreviews #localbusiness #smallbusinesstips #shoplocal",
+   "hashtags": [
+    "#smallbusiness",
+    "#customerreviews",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#shoplocal"
+   ],
+   "alt_text": "Text card from Main Street Growth: Myth: 'I need a fancy website'. One fast page beats a slow fancy one; Clear beats clever; Built for the phone first.",
+   "image": "local_growth/day23.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 24,
+   "date": "2026-12-09",
+   "weekday": "Wed",
+   "time": "11:45",
+   "pillar": "Reviews",
+   "special": "",
+   "example": false,
+   "headline": "Should you reply to every review? Yes.",
+   "points": [
+    "Thank them by name",
+    "Mention the service they had",
+    "Invite them back",
+    "Short is fine"
+   ],
+   "caption": "Should you reply to every review? Yes.\n\nReplies show future customers that a real person cares. Thirty seconds per review. Do it every Friday and it never piles up.\n\n1. Thank them by name\n2. Mention the service they had\n3. Invite them back\n4. Short is fine\n\nQuestions? Ask in the comments and I'll answer.\n\n#smallbusiness #socialmediatips #localbusiness #marketingtips #smallbusinessowner",
+   "hashtags": [
+    "#smallbusiness",
+    "#socialmediatips",
+    "#localbusiness",
+    "#marketingtips",
+    "#smallbusinessowner"
+   ],
+   "alt_text": "Text card from Main Street Growth: Should you reply to every review? Yes.. Thank them by name; Mention the service they had; Invite them back; Short is fine.",
+   "image": "local_growth/day24.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 25,
+   "date": "2026-12-10",
+   "weekday": "Thu",
+   "time": "11:45",
+   "pillar": "Money and time",
+   "special": "",
+   "example": false,
+   "headline": "Where your next customer is searching",
+   "points": [
+    "Google Maps",
+    "Google search",
+    "Instagram and Facebook",
+    "Neighbourhood groups",
+    "Apple Maps"
+   ],
+   "caption": "Where your next customer is searching\n\nCustomers search in more than one place. Make sure your name, phone, address and hours are the same everywhere. Different details confuse both people and Google.\n\n1. Google Maps\n2. Google search\n3. Instagram and Facebook\n4. Neighbourhood groups\n5. Apple Maps\n\nFollow for one simple tip a day.\n\n#smallbusiness #localbusiness #smallbusinesstips #googlebusinessprofile #localseo",
+   "hashtags": [
+    "#smallbusiness",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#googlebusinessprofile",
+    "#localseo"
+   ],
+   "alt_text": "Text card from Main Street Growth: Where your next customer is searching. Google Maps; Google search; Instagram and Facebook; Neighbourhood groups; Apple Maps.",
+   "image": "local_growth/day25.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 26,
+   "date": "2026-12-11",
+   "weekday": "Fri",
+   "time": "11:45",
+   "pillar": "Website",
+   "special": "",
+   "example": false,
+   "headline": "A clear homepage, before and after (example)",
+   "points": [
+    "Before: logo, slogan, no phone number",
+    "After: what we do in your town",
+    "After: a call button and hours",
+    "After: three real reviews"
+   ],
+   "caption": "A clear homepage, before and after (example)\n\nThis is a made-up example, not a real business. Look at your own homepage: is the first thing people see your logo, or the answer to 'can you help me, and how do I reach you?'\n\n1. Before: logo, slogan, no phone number\n2. After: what we do in your town\n3. After: a call button and hours\n4. After: three real reviews\n\nSave this for later.\n\n#smallbusiness #websitetips #localbusiness #smallbusinessowner #webdesign",
+   "hashtags": [
+    "#smallbusiness",
+    "#websitetips",
+    "#localbusiness",
+    "#smallbusinessowner",
+    "#webdesign"
+   ],
+   "alt_text": "Text card from Main Street Growth: A clear homepage, before and after (example). Before: logo, slogan, no phone number; After: what we do in your town; After: a call button and hours; After: three real reviews.",
+   "image": "local_growth/day26.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 27,
+   "date": "2026-12-12",
+   "weekday": "Sat",
+   "time": "11:45",
+   "pillar": "Google profile",
+   "special": "",
+   "example": false,
+   "headline": "Add your services on Google (most skip this)",
+   "points": [
+    "List each main service",
+    "A short description each",
+    "A price if you share it",
+    "Use the words customers use"
+   ],
+   "caption": "Add your services on Google (most skip this)\n\nThe Services section helps Google understand exactly what you offer, and it helps customers see it before they call. It is free and takes ten minutes.\n\n1. List each main service\n2. A short description each\n3. A price if you share it\n4. Use the words customers use\n\nSend this to a business owner who needs it.\n\n#smallbusiness #customerreviews #localbusiness #smallbusinesstips #shoplocal",
+   "hashtags": [
+    "#smallbusiness",
+    "#customerreviews",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#shoplocal"
+   ],
+   "alt_text": "Text card from Main Street Growth: Add your services on Google (most skip this). List each main service; A short description each; A price if you share it; Use the words customers use.",
+   "image": "local_growth/day27.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 28,
+   "date": "2026-12-13",
+   "weekday": "Sun",
+   "time": "11:45",
+   "pillar": "Social",
+   "special": "",
+   "example": false,
+   "headline": "One hour, one month of posts",
+   "points": [
+    "Pick 4 themes",
+    "Take photos during work",
+    "Write captions in one sitting",
+    "Schedule in Meta Business Suite (free)"
+   ],
+   "caption": "One hour, one month of posts\n\nBatching saves your sanity. One hour on a quiet afternoon, and your Instagram and Facebook post themselves for the month. Meta Business Suite's planner is free.\n\n1. Pick 4 themes\n2. Take photos during work\n3. Write captions in one sitting\n4. Schedule in Meta Business Suite (free)\n\nWant to know how your website does on a phone? Free 60-second website check: link in bio.\n\n#smallbusiness #socialmediatips #localbusiness #marketingtips #smallbusinessowner",
+   "hashtags": [
+    "#smallbusiness",
+    "#socialmediatips",
+    "#localbusiness",
+    "#marketingtips",
+    "#smallbusinessowner"
+   ],
+   "alt_text": "Text card from Main Street Growth: One hour, one month of posts. Pick 4 themes; Take photos during work; Write captions in one sitting; Schedule in Meta Business Suite (free).",
+   "image": "local_growth/day28.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 29,
+   "date": "2026-12-14",
+   "weekday": "Mon",
+   "time": "11:45",
+   "pillar": "Reviews",
+   "special": "",
+   "example": false,
+   "headline": "Never do this with reviews",
+   "points": [
+    "Buy reviews",
+    "Write your own",
+    "Give discounts for 5 stars",
+    "Ask only the happy customers"
+   ],
+   "caption": "Never do this with reviews\n\nThese shortcuts can get your profile restricted, and the FTC's 2024 rule allows big fines for fake reviews. Real reviews, asked for honestly, are slower and they last.\n\n1. Buy reviews\n2. Write your own\n3. Give discounts for 5 stars\n4. Ask only the happy customers\n\nQuestions? Ask in the comments and I'll answer.\n\n#smallbusiness #localbusiness #smallbusinesstips #googlebusinessprofile #localseo",
+   "hashtags": [
+    "#smallbusiness",
+    "#localbusiness",
+    "#smallbusinesstips",
+    "#googlebusinessprofile",
+    "#localseo"
+   ],
+   "alt_text": "Text card from Main Street Growth: Never do this with reviews. Buy reviews; Write your own; Give discounts for 5 stars; Ask only the happy customers.",
+   "image": "local_growth/day29.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 30,
+   "date": "2026-12-15",
+   "weekday": "Tue",
+   "time": "11:45",
+   "pillar": "Website",
+   "special": "",
+   "example": false,
+   "headline": "Your website and your Google profile should match",
+   "points": [
+    "Same name",
+    "Same phone number",
+    "Same address or service area",
+    "Same hours"
+   ],
+   "caption": "Your website and your Google profile should match\n\nWhen your details match everywhere, customers trust you and Google trusts you. A five-minute check can fix years of mixed-up listings.\n\n1. Same name\n2. Same phone number\n3. Same address or service area\n4. Same hours\n\nFollow for one simple tip a day.\n\n#smallbusiness #websitetips #localbusiness #smallbusinessowner #webdesign",
+   "hashtags": [
+    "#smallbusiness",
+    "#websitetips",
+    "#localbusiness",
+    "#smallbusinessowner",
+    "#webdesign"
+   ],
+   "alt_text": "Text card from Main Street Growth: Your website and your Google profile should match. Same name; Same phone number; Same address or service area; Same hours.",
+   "image": "local_growth/day30.jpg",
+   "format": "image 1080x1350 (4:5)"
+  }
+ ],
+ "rules": [
+  "Post from the owner's own account; schedule in Meta Business Suite (free) or ig_post.py with his own token.",
+  "At most 5 hashtags; captions under 2200 characters; alt text on every image.",
+  "No bought followers, likes or comments; no follow/unfollow or auto-DM tools (Instagram bans automated engagement).",
+  "Never promise rankings; examples are labelled as examples; no fake reviews or review tricks.",
+  "Interested owners go to the free website check (agency storefront), not to cold DMs."
+ ]
+}

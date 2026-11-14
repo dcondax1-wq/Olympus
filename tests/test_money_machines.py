@@ -183,7 +183,168 @@ def part_b():
           and {g for g, m, ok, s in st if ok} >= {"logo-brand-kit", "gbp-setup"}, st)
 
 
-PARTS = {"a": part_a, "b": part_b}
+# ------------------------------------------------------------------------------------------------ c. content plan
+def jpeg_size(path):
+    """(width, height) from the JPEG's SOF marker (no Pillow needed)."""
+    with open(path, "rb") as fh:
+        b = fh.read()
+    i = 2
+    while i < len(b) - 9:
+        if b[i] != 0xFF:
+            i += 1
+            continue
+        m = b[i + 1]
+        if m in (0xC0, 0xC1, 0xC2):
+            return int.from_bytes(b[i + 7:i + 9], "big"), int.from_bytes(b[i + 5:i + 7], "big")
+        i += 2 + int.from_bytes(b[i + 2:i + 4], "big")
+    return None
+
+
+def part_c():
+    import datetime as dt
+    from money_machines import content_plan as CP
+    from money_machines import content_topics as T
+    start = dt.date.fromisoformat(CP.FIXED_START)
+    plans = {acc: CP.build_plan(acc, start) for acc in ("local_growth", "eval_journal")}
+    for acc, plan in plans.items():
+        probs = CP.validate(plan)
+        check(f"c. {acc}: the 30-day plan is valid (dates, captions, hashtags, claims)", not probs, probs)
+        posts = plan["posts"]
+        dates = [p["date"] for p in posts]
+        check(f"c. {acc}: 30 consecutive dates from {CP.FIXED_START}, days 1-30",
+              len(posts) == 30 and dates == [(start + dt.timedelta(days=i)).isoformat() for i in range(30)] and [p["day"] for p in posts] == list(range(1, 31)))
+        check(f"c. {acc}: captions unique, <= 2,200 chars, <= 5 hashtags each, alt text on every post",
+              len({p["caption"] for p in posts}) == 30 and max(len(p["caption"]) for p in posts) <= 2200
+              and all(len(p["hashtags"]) <= 5 and p["caption"].count("#") <= 5 and p["alt_text"] for p in posts))
+        jp, mp = CP.plan_paths(acc)
+        committed = json.load(open(jp, encoding="utf-8"))
+        check(f"c. {acc}: the committed plan equals a fresh build (python -m money_machines.content_plan --all)",
+              committed == json.loads(json.dumps(plan)) and open(mp, encoding="utf-8").read() == CP.plan_md(plan))
+    ev = plans["eval_journal"]["posts"]
+    risk = T.ACCOUNTS["eval_journal"]["risk_line"]
+    check("c. eval journal: every caption ends with the risk line; dollar amounts only in 'Example only' posts",
+          all(p["caption"].endswith(risk) for p in ev) and all("example only" in p["caption"].lower() for p in ev if "$" in p["caption"]))
+    lg = {p["date"]: p for p in plans["local_growth"]["posts"]}
+    check("c. specials land on their days: Thanksgiving 11-26, Black Friday 11-27, Small Business Saturday 11-28, holiday hours 12-01",
+          lg["2026-11-26"]["special"] == "thanksgiving" and lg["2026-11-27"]["special"] == "black_friday"
+          and lg["2026-11-28"]["special"] == "small_business_saturday" and lg["2026-12-01"]["special"] == "holiday_hours")
+    check("c. the eval journal's holiday-week post lands on the Monday of Thanksgiving week (11-23)",
+          {p["date"]: p for p in ev}["2026-11-23"]["special"] == "thanksgiving_week")
+    spring = CP.build_plan("local_growth", dt.date(2027, 3, 1))
+    check("c. a month with no specials still fills 30 valid posts from the regular topics", not CP.validate(spring) and len(spring["posts"]) == 30)
+    bad = json.loads(json.dumps(plans["eval_journal"]))
+    bad["posts"][0]["caption"] = bad["posts"][0]["caption"].replace("Most failed", "I made $500 a day. Most failed")
+    bad["posts"][1]["caption"] = bad["posts"][1]["caption"].replace(risk, "")
+    bad["posts"][2]["hashtags"] = ["#a", "#b", "#c", "#d", "#e", "#f"]
+    bad["posts"][3]["caption"] = "Use my affiliate link for 20% off. " + bad["posts"][3]["caption"][30:]
+    msg = " | ".join(CP.validate(bad))
+    check("c. the validator catches a profit claim, a missing risk line, 6 hashtags and an undisclosed affiliate link",
+          "day 1: claim" in msg and "day 2: the risk line" in msg and "day 3: hashtags" in msg and "day 4: a paid link" in msg, msg)
+    try:
+        import playwright  # noqa: F401
+        have = bool(CP.chromium_path()) or os.environ.get("PLAYWRIGHT_BROWSERS_PATH")
+    except Exception:
+        have = False
+    if not have:
+        print("[SKIP] c. image render: no playwright / Chromium here")
+        return
+    tmp = tempfile.mkdtemp(prefix="mm_cp_")
+    try:
+        imgs = CP.render(plans["eval_journal"], tmp, only={4})
+        dims = jpeg_size(imgs[0]) if imgs else None
+        sheet = os.path.join(tmp, "eval_journal", "index.html")
+        check("c. one card renders to a 1080 x 1350 JPEG (Instagram's 4:5) + the posting sheet and schedule.csv",
+              dims == (1080, 1350) and os.path.exists(sheet) and os.path.exists(os.path.join(tmp, "eval_journal", "schedule.csv")), dims)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+# ------------------------------------------------------------------------------------------------ d. poster
+def part_d():
+    from money_machines import ig_post as IG
+    plan = json.load(open(os.path.join(ROOT, "money_machines", "plans", "local_growth_30d.json"), encoding="utf-8"))
+    tmp = tempfile.mkdtemp(prefix="mm_ig_")
+    calls, logs = [], []
+    real_call, real_load = IG._call, IG.load_token
+    try:
+        led = os.path.join(tmp, "ledger.json")
+        n0 = len(NET_TRIES)
+        r = IG.run(plan, "2026-11-18", live=False, ledger_path=led, log=logs.append)
+        check("d. dry run without a token: plans day 3, sends nothing, writes no ledger, no network",
+              r["mode"] == "dry-run" and [x["day"] for x in r["planned"]] == [3] and not r["posted"] and not os.path.exists(led) and len(NET_TRIES) == n0)
+
+        def boom(*a, **k):
+            raise AssertionError("the token was read in a dry run")
+        IG.load_token = boom
+        IG._call = lambda *a, **k: calls.append(a) or {}
+        r = IG.run(plan, "2026-11-18", live=False, ledger_path=led, env={"IG_ACCESS_TOKEN": "EAAfake", "IG_USER_ID": "1"}, log=logs.append)
+        check("d. dry run WITH a token in the environment: the token is not even read and no API call is made", not calls and r["mode"] == "dry-run")
+        IG.load_token = real_load
+        IG._call = real_call
+        rc = IG.main(["--plan", os.path.join(ROOT, "money_machines", "plans", "local_growth_30d.json"), "--date", "2026-11-18", "--live",
+                      "--image-base-url", "https://example.test/ig/", "--token-file", os.path.join(tmp, "missing.json"), "--ledger", led])
+        check("d. --live without a token refuses with exit 2 and touches no network", rc == 2 and len(NET_TRIES) == n0)
+        inrepo = os.path.join(ROOT, "money_machines", "out", "instagram_token.json")
+        try:
+            IG.load_token(inrepo, env={})
+            ok = False
+        except IG.Refused as e:
+            ok = "inside the repository" in str(e)
+        check("d. a token file inside the repository is refused", ok)
+        tf = os.path.join(tmp, "tok.json")
+        json.dump({"access_token": "EAAsecretTOKEN123456", "ig_user_id": "1784"}, open(tf, "w"))
+        seq = []
+
+        def fake(method, url, params):
+            seq.append((method, url.split("/v23.0/")[-1]))
+            if "content_publishing_limit" in url:
+                return {"data": [{"quota_usage": 3, "config": {"quota_total": 100, "quota_duration": 86400}}]}
+            if url.endswith("/media"):
+                return {"id": "c-17"}
+            if url.endswith("/c-17"):
+                return {"status_code": "FINISHED"}
+            if url.endswith("/media_publish"):
+                return {"id": "m-99"}
+            return {}
+        IG._call = fake
+        out = []
+        r = IG.run(plan, "2026-11-18", live=True, base_url="https://example.test/ig/", token_file=tf, ledger_path=led, sleep=lambda s: None, log=out.append)
+        check("d. live run (faked API): limit check, create container, wait for FINISHED, publish, in that order",
+              [s[1] for s in seq] == ["1784/content_publishing_limit", "1784/media", "c-17", "1784/media_publish"]
+              and r["posted"] == [{"day": 3, "media_id": "m-99"}], seq)
+        check("d. the token never appears in what the tool prints", not any("EAAsecretTOKEN123456" in x for x in out), out)
+        seq.clear()
+        r2 = IG.run(plan, "2026-11-18", live=True, base_url="https://example.test/ig/", token_file=tf, ledger_path=led, sleep=lambda s: None, log=out.append)
+        check("d. the ledger stops the same day being posted twice (no API call the second time)", not seq and not r2["posted"])
+        two = json.loads(json.dumps(plan))
+        two["posts"][4]["date"] = two["posts"][3]["date"]          # two posts due the same day
+        r3 = IG.run(two, two["posts"][3]["date"], live=True, base_url="https://example.test/ig/", token_file=tf, ledger_path=os.path.join(tmp, "l2.json"),
+                    max_per_day=1, sleep=lambda s: None, log=out.append)
+        check("d. our cap: with 2 posts due and --max-per-day 1, one is posted and the run stops with the reason",
+              len(r3["posted"]) == 1 and "cap" in r3["stopped"], r3)
+        IG._call = lambda m, u, p: {"error": {"message": "Application request limit reached", "code": 4}}
+        try:
+            IG.run(plan, "2026-11-19", live=True, base_url="https://example.test/ig/", token_file=tf, ledger_path=os.path.join(tmp, "l3.json"),
+                   sleep=lambda s: None, log=out.append)
+            ok = False
+        except IG.Refused as e:
+            ok = "rate limit" in str(e)
+        check("d. a Graph API rate-limit error (code 4) stops the run for the day", ok)
+        try:
+            IG.run(plan, "2026-11-19", live=True, base_url="http://insecure.test/", token_file=tf, ledger_path=os.path.join(tmp, "l4.json"), log=out.append)
+            ok = False
+        except IG.Refused as e:
+            ok = "https" in str(e)
+        check("d. live posting needs a public https image address", ok)
+        check("d. the caps: our hard ceiling is 25 a day, the assumed API cap the smaller published number (50)", IG.HARD_CAP_24H == 25 and IG.API_CAP_ASSUMED == 50)
+        gi = open(os.path.join(ROOT, "money_machines", ".gitignore"), encoding="utf-8").read()
+        check("d. the ledger folder and token files are gitignored", "out/" in gi and "*token*.json" in gi)
+    finally:
+        IG._call, IG.load_token = real_call, real_load
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+PARTS = {"a": part_a, "b": part_b, "c": part_c, "d": part_d}
 
 
 def main(argv=None):
