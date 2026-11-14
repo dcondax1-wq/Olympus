@@ -450,6 +450,11 @@ def part_f():
     rc, out = run(["invoice", "Nobody Here", "--today", "2026-12-15"] + cl, env)
     check("f. an unknown client stops with exit 2 and names some clients; no number is used", rc == 2 and "no client" in out
           and len(json.load(open(os.path.join(data, "invoices.json"), encoding="utf-8"))["invoices"]) == 3, out[-300:])
+    crm2 = os.path.join(d, "crm2.json")
+    json.dump({"clients": [{"id": "c_noprice", "name": "No Price Co", "package": "custom"}]}, open(crm2, "w", encoding="utf-8"))
+    rc, out = run(["invoice", "c_noprice", "--today", "2026-12-15", "--clients", crm2], env)
+    check("f. a client with no monthly price (unknown package, none in the record) stops with exit 2: never a $0 invoice, no number used",
+          rc == 2 and "no monthly price" in out and len(json.load(open(os.path.join(data, "invoices.json"), encoding="utf-8"))["invoices"]) == 3, out[-300:])
     rc, out = run(["invoice", "c_demo_summit", "--dry-run", "--today", "2026-12-15"] + cl, env)
     check("f. --dry-run shows the total and uses no number", rc == 0 and "Dry run" in out and len(json.load(open(os.path.join(data, "invoices.json"), encoding="utf-8"))["invoices"]) == 3)
     before = open(os.path.join(data, "invoices.json"), "rb").read()

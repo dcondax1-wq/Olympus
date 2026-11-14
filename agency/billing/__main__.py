@@ -29,6 +29,10 @@ def say(*a) -> None:
     print(*a, flush=True)
 
 
+def n_of(n, word: str) -> str:
+    return f"{n} {word}{'' if n == 1 else 's'}"
+
+
 def ctx(a) -> tuple[S.Store, str]:
     today = a.today or os.environ.get("AGENCY_TODAY") or C.today_et(a.now)
     if not C.is_date(today):
@@ -60,7 +64,7 @@ def refresh(st: S.Store, today: str, a) -> None:
     """rebuild money_out/agency.json after a change (never stops the command)"""
     try:
         path, doc = S.write_summary(st, today, a.now or time.time(), out=a.summary_out or os.environ.get("AGENCY_SUMMARY_OUT"))
-        say(f"  summary: MRR {C.usd(doc['mrr']['now'], whole=True)} from {doc['mrr']['clients']} clients -> {path}")
+        say(f"  summary: MRR {C.usd(doc['mrr']['now'], whole=True)} from {n_of(doc['mrr']['clients'], 'client')} -> {path}")
     except (OSError, S.StoreError) as e:
         say(f"  (summary not updated: {e})")
 
@@ -89,6 +93,9 @@ def draft_invoice(st: S.Store, a, client: dict, pkg: dict, biz: dict, today: str
         sd = C.cents(pkg["setup_usd"])
         lines.append(C.make_line(f"Website setup ({pkg['name']} plan)" + (": included" if sd == 0 else ""), 1, sd))
     if monthly_line:
+        if monthly <= 0:
+            raise S.StoreError(f"no monthly price for {client['name']} (package '{pkg['id']}'): set monthly_usd in the CRM record, "
+                               "or pass --package starter / growth / pro")
         lines.append(C.make_line(f"{pkg['name']} website plan, {C.month_name(ym)}", 1, monthly))
     lines += [C.parse_item(s) for s in (a.item or [])]
     if not lines:
@@ -146,7 +153,7 @@ def cmd_setup(a) -> int:
     biz = st.save_business(up) if up else st.business()
     say(f"Your agency: {biz.get('business_name') or '(no name yet)'} | {biz.get('email') or 'no email'} | {biz.get('phone') or 'no phone'}")
     say(f"  payment links: {', '.join(f'{k}={v}' for k, v in (biz.get('pay_links') or {}).items()) or 'none yet (see agency/billing/PAYMENTS.md)'}")
-    say(f"  sales tax on invoices: {biz.get('tax_rate_pct') or 0}%   goal: ${biz.get('goal_mrr')} MRR   saved in {st.biz_path}")
+    say(f"  sales tax on invoices: {biz.get('tax_rate_pct') or 0}%   goal: {C.usd(biz.get('goal_mrr'), whole=True)} MRR   saved in {st.biz_path}")
     return 0
 
 
@@ -299,7 +306,7 @@ def cmd_summary(a) -> int:
     path, s = S.write_summary(st, today, a.now or time.time(), out=a.out or a.summary_out or os.environ.get("AGENCY_SUMMARY_OUT"))
     m, g, cash, inv = s["mrr"], s["goal"], s["cash"], s["invoices"]
     lf = s["last_full_month"]
-    rows = [("MRR (monthly recurring revenue)", f"{C.usd(m['now'], whole=True)} from {m['clients']} clients ({C.usd(m['arpa'], whole=True)} average)"),
+    rows = [("MRR (monthly recurring revenue)", f"{C.usd(m['now'], whole=True)} from {n_of(m['clients'], 'client')} ({C.usd(m['arpa'], whole=True)} average)"),
             (f"Goal {C.usd(g['mrr'], whole=True)} MRR", "reached" if g["reached"] else f"{C.usd(g['left'], whole=True)} to go, about {g['clients_needed']} more clients"),
             ("Signed, starting later / cancelling", f"+{C.usd(m['scheduled_usd'], whole=True)} / -{C.usd(m['ending_usd'], whole=True)} a month")]
     if lf:

@@ -504,7 +504,7 @@ def csv_payments(header, rows: list, clients: list) -> tuple[list, int]:
         email, name, desc = text(g("email"), 160).lower(), text(g("name"), 120), text(g("desc"), 200).lower()
         c = by_mail.get(email) or (find_client(clients, name) if name else None)
         if not c and desc:
-            hits = [x for x in clients if x["name"].lower() in desc or x["id"].lower() in desc]
+            hits = [x for x in clients if x["name"].lower() in desc or (len(x["id"]) >= 5 and re.search(r"\b" + re.escape(x["id"].lower()) + r"\b", desc))]
             c = hits[0] if len(hits) == 1 else None
         rid = text(g("id"), 80)
         out.append({"ext_id": ("csv:" + rid) if rid else f"row:{d}:{cents(a)}:{email or name.lower()}", "date": d,
