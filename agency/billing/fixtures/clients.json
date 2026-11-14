@@ -1,0 +1,23 @@
+{
+  "note": "FIXTURES ONLY: made-up businesses (555 phone numbers, .example addresses) in the shared client record shape. Real clients live in the gitignored data/agency/.",
+  "clients": [
+    {"id": "c_demo_rivera", "name": "Rivera Plumbing (sample)", "trade": "plumber", "city": "Springfield", "phone": "(555) 010-0142",
+     "email": "owner@riveraplumbing.example", "site_url": "", "demo_url": "https://demo.example.com/rivera-plumbing", "status": "demo_sent",
+     "package": "growth", "setup_usd": 0, "monthly_usd": 149, "notes": "Wants a quote form."},
+    {"id": "c_demo_summit", "name": "Summit Roofing (sample)", "trade": "roofer", "city": "Riverton", "phone": "(555) 010-0177",
+     "email": "office@summitroofing.example", "site_url": "", "demo_url": "https://demo.example.com/summit-roofing", "status": "called",
+     "package": "starter", "setup_usd": 0, "monthly_usd": 99, "notes": ""},
+    {"id": "c_demo_northside", "name": "Northside Heating & Air (sample)", "trade": "HVAC company", "city": "Lakewood", "phone": "(555) 010-0199",
+     "email": "info@northsidehvac.example", "site_url": "https://old-site.example.com", "demo_url": "https://demo.example.com/northside-hvac",
+     "status": "proposal", "package": "pro", "setup_usd": 0, "monthly_usd": 249, "notes": "Two towns, wants a page for each."},
+    {"id": "c_demo_greenway", "name": "Greenway Lawn Care (sample)", "trade": "lawn care company", "city": "Springfield", "phone": "(555) 010-0123",
+     "email": "hello@greenwaylawn.example", "site_url": "", "demo_url": "", "status": "won",
+     "package": "starter", "setup_usd": 0, "monthly_usd": 99, "notes": ""},
+    {"id": "c_demo_brightline", "name": "Brightline Electric (sample)", "trade": "electrician", "city": "Riverton", "phone": "(555) 010-0155",
+     "email": "jobs@brightline.example", "site_url": "", "demo_url": "https://demo.example.com/brightline-electric", "status": "won",
+     "package": "growth", "setup_usd": 0, "monthly_usd": 149, "notes": ""},
+    {"id": "c_demo_oak", "name": "Oak & Iron Fencing (sample)", "trade": "fence company", "city": "Lakewood", "phone": "(555) 010-0188",
+     "email": "sales@oakiron.example", "site_url": "", "demo_url": "", "status": "lost",
+     "package": "starter", "setup_usd": 0, "monthly_usd": 99, "notes": ""}
+  ]
+}

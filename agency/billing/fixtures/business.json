@@ -1,0 +1,25 @@
+{
+  "note": "FIXTURE business profile (made up). Your real one is data/agency/business.json (gitignored): python -m agency.billing setup --name ... --email ...",
+  "business_name": "Harbor Web Co (sample)",
+  "owner_name": "Sample Owner",
+  "email": "hello@harborweb.example",
+  "phone": "(555) 010-0100",
+  "city": "Springfield",
+  "state": "",
+  "website": "https://harborweb.example",
+  "accent": "#1f5f55",
+  "pay_links": {
+    "starter": "https://pay.example.com/starter-99",
+    "growth": "https://pay.example.com/growth-149",
+    "pro": "https://pay.example.com/pro-249"
+  },
+  "pay_note": "Card or bank transfer (ACH) through secure checkout. Questions? Reply to this email.",
+  "terms_days": 7,
+  "tax_rate_pct": 0,
+  "goal_mrr": 1000,
+  "fee_model": {"pct": 2.9, "fixed": 0.30, "extra_pct": 0.7},
+  "late_days": 10,
+  "liability_months": 3,
+  "buyout_months": 6,
+  "publish_summary": false
+}
