@@ -72,7 +72,7 @@ The fields the PC accepts (anything else is refused with a plain reason): `date`
 ## Connect dates, car and freedom
 1. A date: `python tools\me_life.py --date "Mom's birthday=03-14"` (every year; a one-off is `--date "Passport renewal=2027-05-01"`). Calendars connected with `CONNECT_DAY.bat` count too.
 2. The car: `python tools\me_life.py --car-miles 48210 --car-date registration=2027-03-31` (after an oil change: `--car-oil-done`).
-3. Freedom: `python tools\me_life.py --paycheck 3200 --agency 800` (else the paycheck comes from your calendar wage or the bank's paychecks, the agency from `data/agency/`).
+3. Freedom: `python tools\me_life.py --paycheck 3200 --agency 800` (else the paycheck comes from your calendar wage or the bank's paychecks, the agency's MRR from the agency billing kit, `python -m agency.billing summary`).
 
 ## Private on purpose
 - **Where it lives.** What you type is in `%USERPROFILE%\.olympus\me\` (cards, car, dates, device names, your health history), outside the bot folder,

@@ -82,7 +82,7 @@ def gather(env=None) -> dict:
             "health": M.read_json(os.path.join(M.out_dir(env), me_health.OUT_NAME)), "home": M.read_json(os.path.join(M.out_dir(env), me_home.OUT_NAME)),
             "day": day_doc(env), "dates": me_life.load("dates.json", env), "dates_t": mtime(me_life.pfile("dates.json", env)),
             "car": me_life.load("car.json", env), "car_t": mtime(me_life.pfile("car.json", env)), "freedom": me_life.load("freedom.json", env),
-            "agency": me_life.agency_mrr()}
+            "agency": me_life.agency_mrr(money_out=(os.environ if env is None else env).get("LE_MONEY_OUT"))}
 
 
 def _ok(doc, kind):

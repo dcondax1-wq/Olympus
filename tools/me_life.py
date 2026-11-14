@@ -62,11 +62,19 @@ def load(name: str, env=None) -> dict:
 
 
 # ------------------------------------------------------------------------------------------------ Freedom
-def agency_mrr(folder: str = AGENCY_DIR):
-    """the agency's monthly recurring revenue when data/agency/ has it: a number under mrr / mrr_usd / monthly_recurring, or the sum of
-    clients[].mrr. None when there is no such file."""
+def agency_mrr(folder: str = AGENCY_DIR, money_out: str | None = None):
+    """the agency's monthly recurring revenue. First the agency billing kit's own summary (team B6, `python -m agency.billing summary`:
+    money_out/agency.json, kind olympus-agency-income, mrr.now; never its sample), else a simple file in data/agency/ with a number under
+    mrr / mrr_usd / monthly_recurring, or the sum of clients[].mrr. None when there is neither."""
+    s = M.read_json(os.path.join(money_out or os.environ.get("LE_MONEY_OUT") or os.path.join(ROOT, "money_out"), "agency.json"), None)
+    if isinstance(s, dict) and s.get("kind") == "olympus-agency-income" and s.get("status") == "ok":
+        v = M.num(M.obj(s.get("mrr")).get("now"))
+        if v is not None:
+            return round(v, 2)
     best = None
     for p in sorted(glob.glob(os.path.join(folder, "*.json"))):
+        if os.path.basename(p) in ("ledger.json", "invoices.json", "clients.json", "business.json", "packages.json"):
+            continue                 # the billing kit's private records: its summary above is the one to read
         d = M.read_json(p, None)
         if not isinstance(d, dict):
             continue
@@ -104,7 +112,7 @@ def freedom(household: dict | None, day: dict | None, typed: dict | None, agency
     pay_day = M.num(M.obj(M.obj(D.get("week")).get("pay")).get("month_usd"))
     pay, pay_src = (M.num(T.get("paycheck_month")), "typed") if M.num(T.get("paycheck_month")) else (pay_day, "your shifts x your pay (calendars)") if pay_day else (pay_bank, "paychecks in your bank exports") if pay_bank else (None, "")
     ag = M.num(T.get("agency_mrr")) if M.num(T.get("agency_mrr")) is not None else agency
-    ag_src = "typed" if M.num(T.get("agency_mrr")) is not None else ("data/agency" if agency is not None else "")
+    ag_src = "typed" if M.num(T.get("agency_mrr")) is not None else ("the agency billing kit" if agency is not None else "")
     spend = M.num(M.obj(H.get("avg3")).get("out"))
     tr3 = round(sum(trade[-3:]) / len(trade[-3:]), 2) if trade else None
     side = round((tr3 or 0.0) + (ag or 0.0), 2) if (tr3 is not None or ag is not None) else None

@@ -559,7 +559,7 @@ def test_life():
     F3 = L.freedom(None, None, {}, None)
     check("g. freedom: side income above the paycheck = 'Now'; nothing to go on = not enough (the area says how to connect)",
           F2["months_to"] == 0 and F2["when"].startswith("Now") and not F3["has"] and L.freedom_section(F3)["state"] == "empty", (F2["when"], F3))
-    check("g. agency MRR from data/agency/*.json (mrr, or the sum of clients[].mrr); no folder = None", agency_check(L))
+    check("g. agency MRR: the billing kit's summary first (money_out/agency.json, mrr.now; never its sample), else data/agency/*.json (mrr or clients[].mrr; its private ledger skipped); nothing = None", agency_check(L))
     nxt = [L.next_of({"date": "11-20", "yearly": True}, TODAY), L.next_of({"date": "11-10", "yearly": True}, TODAY), L.next_of({"date": "02-29", "yearly": True}, "2026-03-01"),
            L.next_of({"date": "2026-12-01"}, TODAY)]
     check("g. a yearly date: this year's, or next year's once it passed; Feb 29 is Feb 28 in a normal year; a one-off stays", nxt == ["2026-11-20", "2027-11-10", "2027-02-28", "2026-12-01"], nxt)
@@ -593,7 +593,18 @@ def agency_check(L) -> bool:
         json.dump({"mrr": 500}, fh)
     with open(os.path.join(d, "b.json"), "w", encoding="utf-8") as fh:
         json.dump({"clients": [{"mrr": 200}, {"mrr": 150.5}, {"name": "x"}]}, fh)
-    return L.agency_mrr(d) == 850.5 and L.agency_mrr(os.path.join(TMP, "nope")) is None
+    with open(os.path.join(d, "ledger.json"), "w", encoding="utf-8") as fh:       # the billing kit's private records: never read as MRR
+        json.dump({"mrr": 99999, "plans": []}, fh)
+    mo = os.path.join(TMP, "agency_out")
+    os.makedirs(mo, exist_ok=True)
+    plain = L.agency_mrr(d, money_out=mo)
+    with open(os.path.join(mo, "agency.json"), "w", encoding="utf-8") as fh:      # team B6's summary (python -m agency.billing summary)
+        json.dump({"kind": "olympus-agency-income", "status": "sample", "mrr": {"now": 5000}}, fh)
+    sample = L.agency_mrr(d, money_out=mo)
+    with open(os.path.join(mo, "agency.json"), "w", encoding="utf-8") as fh:
+        json.dump({"kind": "olympus-agency-income", "status": "ok", "mrr": {"now": 1490.0}}, fh)
+    kit = L.agency_mrr(d, money_out=mo)
+    return plain == 850.5 and sample == 850.5 and kit == 1490.0 and L.agency_mrr(os.path.join(TMP, "nope"), money_out=os.path.join(TMP, "nope")) is None
 
 
 # ------------------------------------------------------------------------------------------------ h. the hub file
