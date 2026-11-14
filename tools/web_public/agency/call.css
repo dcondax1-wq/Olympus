@@ -80,7 +80,7 @@ html.framed #app { padding-top: 12px; }
 .dial { min-height: 60px; font-size: 20px; background: #34401f; border-color: #6d7a40; color: #e9efcf; }
 .dial.locked { background: #2b211b; border-color: #6e3424; color: var(--ag-terra-text, #e08e70); font-size: 16px; }
 .tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-.tabs [role=tab] { min-height: 44px; padding: 0 4px; border-radius: 12px; border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-soft); font: 600 14px var(--ag-sans); }
+.tabs [role=tab] { min-height: 44px; min-width: 0; padding: 0 2px; border-radius: 12px; border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-soft); font: 600 13px var(--ag-sans); overflow-wrap: anywhere; }
 .tabs [role=tab][aria-selected="true"] { border-color: var(--ag-gold); color: var(--ag-gold); background: #2a2217; }
 .tpanel { display: grid; gap: 10px; }
 .say { margin: 0; font: 500 20px/1.45 var(--ag-sans); color: var(--ag-text); }
