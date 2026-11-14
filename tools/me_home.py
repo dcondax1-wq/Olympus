@@ -450,15 +450,18 @@ def update(state: dict, now_s: float, online: bool | None = None, found: dict | 
         checks = M.arr(st.get("checks")) + [{"t": now, "ok": bool(online)}]
         st["checks"] = checks[-KEEP_CHECKS:]
         outs = M.arr(st.get("outages"))
-        if not online and o.get("ok", True):                 # just went down: it started after the last good check
-            outs.append({"from": int(o.get("t") or now), "to": None, "seen_t": now})
+        if not online and o.get("ok", True):                 # just went down: seen now; it began after the last good check ("from")
+            outs.append({"from": int(o.get("t") or now), "seen_t": now, "last_down_t": now, "to": None})
+        elif not online and outs and outs[-1].get("to") is None:
+            outs[-1]["last_down_t"] = now
         if online and o.get("ok") is False and outs and outs[-1].get("to") is None:
             last = outs[-1]
             last["to"] = now
-            mins = round((now - last["from"]) / 60.0)
-            if now - last["from"] >= OUTAGE_MIN_S:
-                ev.append({"key": f"home:out:{last['from']}", "title": "Internet back",
-                           "body": f"Your internet was down about {mins} min ({M.ny_dt(last['from']).strftime('%H:%M')} to {M.ny_dt(now).strftime('%H:%M')} New York). It is back.",
+            mins = round((now - last["seen_t"]) / 60.0)
+            # pushed only when it was down at two checks in a row (10+ minutes apart): one failed check can be a blip
+            if (last.get("last_down_t") or last["seen_t"]) - last["seen_t"] >= OUTAGE_MIN_S * 2 // 3:
+                ev.append({"key": f"home:out:{last['seen_t']}", "title": "Internet back",
+                           "body": f"Your internet was down about {mins} min ({M.ny_dt(last['seen_t']).strftime('%H:%M')} to {M.ny_dt(now).strftime('%H:%M')} New York). It is back.",
                            "priority": "default", "tags": "globe_with_meridians"})
         st["outages"] = outs[-KEEP_OUTAGES:]
         st["online"] = {"ok": bool(online), "t": now, "since": now if bool(online) != o.get("ok") else o.get("since", now)}
@@ -511,8 +514,13 @@ def build(state: dict, now_s: float, names: dict | None = None, table: dict | No
     avg7 = {"down_mbps": med("down_mbps"), "up_mbps": med("up_mbps"), "ping_ms": med("ping_ms"), "n": len(wk)}
     outs = M.arr(st.get("outages"))
     today = M.ny_day(now_s)
-    o_list = [{"from": x["from"], "to": x.get("to"), "open": x.get("to") is None,
-               "mins": round(((x.get("to") or now) - x["from"]) / 60.0)} for x in outs if now - int(x["from"]) <= 7 * 86400]
+    o_list = []
+    for x in outs:
+        seen = int(x.get("seen_t") or x["from"])
+        if now - seen > 7 * 86400:
+            continue
+        o_list.append({"from": seen, "to": x.get("to"), "open": x.get("to") is None, "mins": round(((x.get("to") or now) - seen) / 60.0),
+                       "blip": x.get("to") is not None and int(x.get("last_down_t") or seen) == seen})     # down at one check only
     o_today = [x for x in o_list if M.ny_day(x["from"]) == today]
     seen_now = set(M.arr(st.get("seen_now")))
     gw = st.get("gateway")
@@ -556,7 +564,7 @@ def build(state: dict, now_s: float, names: dict | None = None, table: dict | No
     return M.scrub_doc(doc)
 
 
-def maybe_run(now_s: float | None = None, env=None, http=default_http, runner=run_cmd, speed_fn=speed_test, sweep=True, force_speed=False, say=print) -> tuple:
+def maybe_run(now_s: float | None = None, env=None, http=default_http, runner=run_cmd, speed_fn=speed_test, sweep=True, force_speed=False, say=print, pc_fn=None) -> tuple:
     """one PC-report run: (home.json doc, events). Soft: a failing part is skipped. LE_ME_HOME=0 turns it off."""
     e = os.environ if env is None else env
     if str(e.get("LE_ME_HOME", "1")) == "0":
@@ -582,7 +590,7 @@ def maybe_run(now_s: float | None = None, env=None, http=default_http, runner=ru
     if now_s - (M.num(st.get("temp_t")) or 0) >= TEMP_EVERY_S:
         temp = cpu_temp(runner)
         st["temp"], st["temp_t"] = temp, int(now_s)
-    st, ev = update(st, now_s, online=on, found=found, speed=sp_res, pc=pc_health(env, temp))
+    st, ev = update(st, now_s, online=on, found=found, speed=sp_res, pc=(pc_fn or pc_health)(env, temp))
     if sp_res is not None and not sp_res.get("ok"):
         st["speed_t"] = int(now_s) - SPEED_EVERY_S + 1800           # a failed test is tried again in 30 minutes, not in 4 hours
     events += ev

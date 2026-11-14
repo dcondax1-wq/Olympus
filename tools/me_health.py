@@ -46,7 +46,7 @@ GOAL_RANGE = {"move": (50, 5000), "exercise": (5, 300), "stand": (1, 24), "steps
 DAYS_KEEP = 60                 # rows on the phone
 HISTORY_DAYS = 400             # rows kept from an export
 METRICS = ("steps", "active_kcal", "exercise_min", "stand_h", "rhr", "hrv_ms", "sleep_h", "sleep_deep_h", "sleep_rem_h", "weight_lb")
-CONNECT = "Make the iPhone Shortcut 'Health to PC' (docs/ME_HUB.md, 5 minutes, no app) and let it run each evening"
+CONNECT = "Make the iPhone Shortcut 'Health to PC' (docs/ME_HUB.md, 5 minutes, no app); it runs each evening"
 
 # the export's record types -> how a day sums them
 T_STEPS = "HKQuantityTypeIdentifierStepCount"

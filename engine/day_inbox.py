@@ -100,7 +100,9 @@ HEALTH_FIELDS = {   # field: (lowest, highest, decimals kept)
 HEALTH_ALIASES = {"active_energy": "active_kcal", "move": "active_kcal", "move_kcal": "active_kcal", "exercise": "exercise_min",
                   "stand": "stand_h", "stand_hours": "stand_h", "resting_hr": "rhr", "resting_heart_rate": "rhr", "hrv": "hrv_ms",
                   "sleep": "sleep_h", "weight": "weight_lb"}
-HEALTH_CONVERT = {"sleep_min": ("sleep_h", 1 / 60.0), "weight_kg": ("weight_lb", 2.20462), "active_kj": ("active_kcal", 0.239006)}
+HEALTH_CONVERT = {"sleep_min": ("sleep_h", 1 / 60.0), "sleep_s": ("sleep_h", 1 / 3600.0), "weight_kg": ("weight_lb", 2.20462), "active_kj": ("active_kcal", 0.239006)}
+# a unit mix-up is refused, not stored: a night in seconds or minutes is either 0 (no sleep sent) or at least 10 minutes long
+HEALTH_UNIT_FLOOR = {"sleep_s": 600, "sleep_min": 10}
 WORKOUT_KEYS = {"type": None, "min": (0, 1440), "kcal": (0, 5000), "km": (0, 500), "mi": (0, 320)}
 NUM_RX = re.compile(r"^-?(\d{1,3}(,\d{3})+|\d+)(\.\d+)?$")
 DECIMAL_COMMA_RX = re.compile(r"^\d+,\d{1,2}$")
@@ -211,6 +213,8 @@ def validate_health(body, now_s: float) -> tuple[dict | None, str]:
                 return None, why
             if x is None:
                 continue
+            if 0 < x < HEALTH_UNIT_FLOOR.get(k, 0):
+                return None, f"{k}: {x:g} is too short for a night (send {'seconds' if k == 'sleep_s' else 'minutes'}, or sleep_h in hours)"
             k, v = to, x * f
         if k not in HEALTH_FIELDS:
             return None, f"unknown field '{_clean(k, 24)}': the fields are date, " + ", ".join(sorted(HEALTH_FIELDS)) + ", workouts"
@@ -223,6 +227,8 @@ def validate_health(body, now_s: float) -> tuple[dict | None, str]:
         x, why = _ranged(k, x, lo, hi, dec)
         if why:
             return None, why
+        if k in rec:
+            return None, f"{k} sent twice (under two names): send it once"
         rec[k] = x
         nums += 1
     if not nums and not rec.get("workouts") and not rec.get("workouts_text"):
