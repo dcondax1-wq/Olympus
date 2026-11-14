@@ -29,6 +29,7 @@ RUNTIME = os.path.join(HERE, "chat", "widget.min.js")
 BUDGET = 25_000                                   # bytes, the whole built file (runtime + this client's data)
 KINDS_NEED = {"area": "area", "pay": "payments", "services": "services"}
 TOKEN = re.compile(r"\{([a-z_]+)\}")
+TOKEN_DOT = re.compile(r"\{([a-z_]+)\}(\.?)")
 DYNAMIC = {"status", "next_open", "today"}        # filled by the widget at the moment of the question
 
 
@@ -165,15 +166,16 @@ def build_config(client: dict) -> tuple:
             missing: list = []
 
             def sub(m):
-                k = m.group(1)
+                k, dot = m.group(1), m.group(2)
                 if k in DYNAMIC:
                     return m.group(0)
                 v = facts.get(k, static.get(k))
                 if v is None or str(v).strip() == "":
                     missing.append(k)
                     return m.group(0)
-                return str(v)
-            new = TOKEN.sub(sub, out)
+                v = str(v)
+                return (v.rstrip(".") if dot and v.endswith(".") else v) + dot     # "{name}." with "Joe's Co." -> one period
+            new = TOKEN_DOT.sub(sub, out)
             if missing:
                 return None, sorted(set(missing))
             if new == out:
@@ -249,15 +251,15 @@ def build_config(client: dict) -> tuple:
         return out
 
     cfg = {
-        "id": client["id"], "n": client["name"], "city": client.get("city", ""),
+        "id": client["id"], "n": client["name"], "city": client.get("city", "").rstrip("."),
         "col": {"f": pal["fill"], "i": pal["ink"], "a": pal["accent"], "s": pal["soft"]},
         "font": chat.get("font", ""), "tz": chat.get("timezone") or "America/New_York",
         "h": week, "dt": [day_text(d) for d in week], "wk": K.week_text(week), "x": closed,
         "ph": phone, "phl": client["phone"], "sm": K.tel(text_phone) if text_phone else "", "sml": text_phone or "",
         "em": K.tel(emergency) if emergency else "", "eml": emergency,
-        "bk": booking, "bkl": static["booking_label"], "mp": chat.get("maps_url", ""), "ad": chat.get("address", ""), "dn": chat.get("directions", ""),
-        "mu": chat.get("menu_url", ""), "ar": {"t": area["text"], "w": area.get("towns", []), "z": [str(z) for z in area.get("zips", [])]} if area else None,
-        "pay": static["payments"], "sv": services, "pn": chat.get("prices_note", ""),
+        "bk": booking, "bkl": static["booking_label"], "mp": chat.get("maps_url", ""), "ad": (chat.get("address") or "").rstrip("."), "dn": chat.get("directions", ""),
+        "mu": chat.get("menu_url", ""), "ar": {"t": area["text"].rstrip("."), "w": area.get("towns", []), "z": [str(z) for z in area.get("zips", [])]} if area else None,
+        "pay": static["payments"].rstrip("."), "sv": services, "pn": chat.get("prices_note", ""),
         "g": text("greeting", pre.get("greeting") or base["greeting"]), "ah": text("after_hours", pre.get("after_hours") or base["after_hours"]),
         "fb": text("fallback", base["fallback"]), "ch": chips, "it": out_int,
         "f": {"n": chat.get("form_name") or "frontdesk-chat", "a": chat.get("form_action") or "/"},

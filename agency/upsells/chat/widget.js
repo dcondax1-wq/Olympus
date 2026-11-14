@@ -94,7 +94,7 @@ var AR = C.ar;
 var TOWNS = AR ? AR.w.map(function (t) { return {n: t, k: keys(t)}; }) : [];
 var DAYW = {sun: 0, mon: 1, tue: 2, tues: 2, wed: 3, thu: 4, thur: 4, thurs: 4, fri: 5, sat: 6};
 DAYS.forEach(function (d, i) { DAYW[d.toLowerCase()] = i; });
-var HOL = /\b(holiday|christmas|xmas|thanksgiving|easter|new year|july 4|4th of july|memorial day|labor day)/;
+var HOL = /\b(holiday|christmas|xmas|thanksgiving|easter|new year|july 4|memorial day|labor day)/;
 
 // -> {ids: up to 2 intents, sv: a service named, town / zip, day: weekday asked about, rel: today/tomorrow/weekend, hol}
 function understand(text) {
@@ -118,6 +118,7 @@ function understand(text) {
   var real = r.filter(function (x) { return !/^(greet|thanks|bye)$/.test(x.it.kind); });
   if (real.length) r = real;
   if (r.length > 1 && r[1].s < r[0].s * 0.75) r = r.slice(0, 1);
+  if (r.length > 1 && r[0].it.kind + r[1].it.kind == "leadcontact") r = r.slice(0, 1);
   m.ids = r.slice(0, 2).map(function (x) { return x.it.id; });
   return m;
 }
@@ -186,7 +187,7 @@ function answerOne(it, m, st) {
       return {t: m.town ? "Yes, we serve " + m.town.n + "!" : m.zip && AR.z.length && AR.z.indexOf(m.zip) >= 0 ? "Yes, " + m.zip + " is in our area!"
         : (m.zip && AR.z.length ? m.zip + " may be outside our area. " : "") + "We serve " + AR.t + ". Not sure? Leave your address and we'll check.", a: ["lead", "call"]};
     case "book":
-      return C.bk ? {t: "You can do it online in about a minute:", a: ["book", "call"]} : {t: "Call or text us to set up a time, or leave your number and we'll reach out.", a: ["call", "text", "lead"]};
+      return C.bk ? {t: "You can do it online in about a minute:", a: ["book", "call"]} : {t: "Call or text us to book, or leave your number.", a: ["call", "text", "lead"]};
     case "dir":
       return C.ad ? {t: "We're at " + C.ad + "." + (C.dn ? "\n" + C.dn : ""), a: C.mp ? ["map", "call"] : ["call"]} : {t: "We come to you! We serve " + (AR ? AR.t : C.city) + ".", a: ["lead", "call"]};
     case "pay":
@@ -194,7 +195,7 @@ function answerOne(it, m, st) {
     case "contact":
       return {t: "You can call us at " + C.phl + (C.sm ? " or text " + (C.sm == C.ph ? "the same number" : C.sml) : "") + ". " + statusLine(st), a: ["call", "text", "lead"]};
     case "lead":
-      return {t: "Sure! Leave your name and number and we'll get back to you " + (st.open ? "shortly." : when(st.next) + "."), lead: 1};
+      return {t: "Sure! Leave your number and we'll get back to you " + (st.open ? "shortly." : when(st.next) + "."), lead: 1};
     case "greet":
       return {t: "Hi! What can I help you with?", chips: 1};
     case "thanks":
@@ -231,13 +232,14 @@ var NUM = {call: C.phl, text: C.sml, emergency: C.eml || C.phl};
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; }); }
 function svg(n, s) { s = s || 18; return '<svg viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IC[n] + "</svg>"; }
 // a button: tel:/sms: links, the booking / map / menu link (new tab), or the in-chat "leave my number" form
-function btn(a) {
-  var h = HREF[a], t = svg(a) + esc(LBL[a]);
+function btn(a, bar) {
+  var h = HREF[a], l = bar ? (a == "lead" ? "Get a call" : LBL[a].split(" ")[0]) : LBL[a], t = svg(a) + esc(l),
+    lab = NUM[a] ? LBL[a] + " " + NUM[a] : l != LBL[a] && a != "lead" ? LBL[a] : "";      // the spoken name always contains the visible word
   if (a == "lead") return "<button class=bt type=button data-a=lead>" + t + "</button>";
-  return h ? '<a class=bt href="' + esc(h) + '"' + (/^http/.test(h) ? " target=_blank rel=noopener" : "") + (NUM[a] ? ' aria-label="' + esc(LBL[a] + " " + NUM[a]) + '"' : "") + ">" + t + "</a>" : "";
+  return h ? '<a class=bt href="' + esc(h) + '"' + (/^http/.test(h) ? " target=_blank rel=noopener" : "") + (lab ? ' aria-label="' + esc(lab) + '"' : "") + ">" + t + "</a>" : "";
 }
 var CSS = ":host{all:initial}*{box-sizing:border-box;margin:0;padding:0;font:inherit;color:inherit}" +
-  ".w{font:15px/1.45 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#1f2430}" +
+  ".w{font:15px/1.45 system-ui,sans-serif;color:#1f2430}" +
   "button,a{cursor:pointer;-webkit-tap-highlight-color:transparent}.g{display:grid;place-items:center;border:0;border-radius:50%;flex:none}" +
   ".l,.p{position:fixed;right:18px;z-index:2147483000}" +
   ".l{bottom:calc(18px + env(safe-area-inset-bottom));width:62px;height:62px;background:var(--f);color:var(--i);box-shadow:0 10px 28px #0f172a47}" +
@@ -250,21 +252,21 @@ var CSS = ":host{all:initial}*{box-sizing:border-box;margin:0;padding:0;font:inh
   ".av{width:42px;height:42px;background:#ffffff38;font-weight:700}.hn{font-weight:700;font-size:16px}" +
   ".hs{font-size:13px;display:flex;align-items:center;gap:6px}.hs i{width:8px;height:8px;border-radius:50%;background:#cbd2d9}" +
   ".x{margin-left:auto;width:44px;height:44px;background:none}" +
-  ".lg{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 14px 10px;display:flex;flex-direction:column;gap:10px}" +
+  ".lg{flex:1;overflow-y:auto;padding:16px 14px 10px;display:flex;flex-direction:column;gap:10px}" +
   ".m,.fm{animation:fdcf .25s}@keyframes fdcf{from{opacity:0;transform:translateY(6px)}}" +
   ".m{max-width:88%;padding:10px 13px;border-radius:18px 18px 18px 6px;background:#f1f3f5;align-self:flex-start;overflow-wrap:anywhere}" +
   ".u{background:var(--f);color:var(--i);border-radius:18px 18px 6px;align-self:flex-end}.m>*+*{margin-top:6px}.m ul{padding-left:18px}" +
   ".ac,.ch{display:flex;flex-wrap:wrap;gap:8px}.ac{margin-top:10px}" +
   ".bt,.cp{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:8px 15px;border:0;border-radius:99px;background:var(--f);color:var(--i);font-weight:600;font-size:14.5px;text-decoration:none}" +
   ".cp{border:1.5px solid var(--a);background:#fff;color:var(--a)}" +
-  ".bar{display:flex;gap:8px;padding:10px 12px 0;border-top:1px solid #dfe3e8}.bar .bt{flex:1;justify-content:center;padding:8px 6px;background:var(--s);color:var(--a)}" +
+  ".bar{display:flex;gap:8px;padding:10px 12px 0;border-top:1px solid #dfe3e8}.bar .bt{flex:1;justify-content:center;padding:8px 6px;background:var(--s);color:var(--a);white-space:nowrap}" +
   ".in{display:flex;gap:8px;padding:10px 12px 6px}" +
   "input,textarea{width:100%;min-width:0;height:48px;padding:0 15px;border:1.5px solid #8a94a0;border-radius:16px;background:#fff;color:#1f2430;font-size:16px;font-weight:400}" +
   "input:focus,textarea:focus{border-color:var(--a);outline:none}.go{width:48px;height:48px;background:var(--f);color:var(--i)}" +
   ".ft,small{font-size:12px;color:#5c6573}.ft{text-align:center;padding:2px 14px calc(10px + env(safe-area-inset-bottom))}" +
   ".fm{display:grid;gap:11px;border:1.5px solid #dfe3e8;border-radius:18px;padding:14px}.fm b{font-weight:700}.fm label{display:grid;gap:5px;font-size:13.5px;font-weight:600;color:#5c6573}" +
   "textarea{height:76px;padding:11px 15px}[aria-invalid=true]{border-color:#c62828}.er{color:#b42318}.er:empty,.hp{display:none}" +
-  ":focus-visible{outline:3px solid var(--a);outline-offset:2px}.hd :focus-visible{outline-color:var(--i)}" +
+  ":focus-visible{outline:3px solid var(--a);outline-offset:2px}.hd :focus-visible{outline-color:var(--i)}.hn:focus{outline:0}" +
   "@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}";
 
 var host = D.createElement("div"), wrap, logEl, input, said = [], opened = 0, greeted = 0;
@@ -274,13 +276,13 @@ function build() {
   var n = esc(C.n);
   wrap = D.createElement("div");
   wrap.className = "w";
-  wrap.innerHTML = "<style>" + CSS + "</style><button class='l g' type=button aria-label=\"Chat with " + n + ": hours, prices, booking\" aria-expanded=false aria-controls=fdc-p>" + svg("chat", 28) + "</button>" +
+  wrap.innerHTML = "<style>" + CSS + "</style><button class='l g' type=button aria-label=\"Chat with " + n + "\" aria-expanded=false aria-controls=fdc-p>" + svg("chat", 28) + "</button>" +
     "<div class=p id=fdc-p role=dialog aria-label=\"" + n + " front desk chat\"><div class=hd><div class='av g' aria-hidden=true>" +
     esc(C.n.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0]; }).join("").toUpperCase()) +
     "</div><div><h2 class=hn tabindex=-1>" + n + "</h2><div class=hs></div></div><button class='x g' type=button aria-label='Close chat'>" + svg("x", 22) + "</button></div>" +
-    "<div class=lg role=log aria-live=polite aria-label=Conversation></div><div class=bar>" + ["call", "text", C.bk ? "book" : C.mu ? "menu" : "lead"].map(btn).join("") + "</div>" +
+    "<div class=lg role=log aria-live=polite aria-label=Conversation></div><div class=bar>" + ["call", "text", C.bk ? "book" : C.mu ? "menu" : "lead"].map(function (a) { return btn(a, 1); }).join("") + "</div>" +
     "<form class=in><input aria-label='Type your question' placeholder='Type your question…' autocomplete=off enterkeyhint=send maxlength=300><button class='go g' aria-label=Send>" + svg("go", 22) + "</button></form>" +
-    "<p class=ft>Instant answers. Nothing you type is kept unless you send your details.</p></div>";
+    "<p class=ft>Instant answers. Nothing is kept unless you send it.</p></div>";
   "fias".split("").forEach(function (v) { wrap.style.setProperty("--" + v, C.col[v]); });
   if (C.font) wrap.style.fontFamily = C.font;
   host.attachShadow({mode: "open"}).appendChild(wrap);
@@ -334,19 +336,19 @@ function leadForm(need) {
   if (old) old.remove();                                           // one form at a time, at the bottom
   add("<form class=fm aria-label='Leave your details' novalidate><b>We'll call or text you back</b><label>Your name<input name=name autocomplete=name></label><label>Phone number<input name=phone type=tel autocomplete=tel></label>" +
     "<label>What do you need?<textarea name=need></textarea></label><input class=hp name=bot-field tabindex=-1 aria-hidden=true><p class=er role=alert></p><button class=bt>Send</button><small>Only " + esc(C.n) +
-    " gets your name, number and this chat, to reply to you.</small></form>");
+    " sees your name, number and this chat.</small></form>");
   var f = logEl.lastElementChild, E = f.elements;
   if (need.split(" ").length > 2 && understand(need).ids.join() != "lead") E.need.value = need;
   f.onsubmit = function (e) {
     e.preventDefault();
     var name = E.name.value.trim(), phone = E.phone.value.trim(), bad = phone.replace(/\D/g, "").length < 10, er = f.querySelector(".er"), b = f.querySelector("button");
     E.name.setAttribute("aria-invalid", !name); E.phone.setAttribute("aria-invalid", bad);
-    if (!name || bad) { er.textContent = name ? "Please add a phone number we can call (10 digits)." : "Please add your name."; return (name ? E.phone : E.name).focus(); }
+    if (!name || bad) { er.textContent = name ? "Please add a 10-digit phone number." : "Please add your name."; return (name ? E.phone : E.name).focus(); }
     er.textContent = ""; b.disabled = true; b.textContent = "Sending…";
     var data = {"form-name": C.f.n, name: name, phone: phone, need: E.need.value.trim().slice(0, 1000), page: W.location.origin + W.location.pathname, chat: said.slice(-6).join(" | ").slice(0, 600), "bot-field": E["bot-field"].value};
     var done = function () { var st = state(); f.remove(); reply([{t: "Thanks, " + name.split(" ")[0] + "! " + C.n + " will get back to you at " + phone + (st.open ? " shortly." : " " + when(st.next) + ".")}]); };
     if (data["bot-field"]) return done();                          // a bot filled the hidden field: say thanks, send nothing
-    send(data).then(done, function () { b.disabled = false; b.textContent = "Try again"; er.textContent = "That didn't go through. Please try again, or call us at " + C.phl + "."; });
+    send(data).then(done, function () { b.disabled = false; b.textContent = "Try again"; er.textContent = "Not sent. Please try again, or call us at " + C.phl + "."; });
   };
   if (!COARSE) E.name.focus();
 }
@@ -373,6 +375,6 @@ function close() {
   opened = 0; wrap.classList.remove("open"); $(".l").setAttribute("aria-expanded", "false"); D.documentElement.style.overflow = "";
   $(".l").focus();
 }
-API.open = open; API.close = close; API.ask = function (t) { open(); ask(t); };
+API.open = open;                       // a site can add its own "Chat with us" button
 if (D.readyState == "loading") D.addEventListener("DOMContentLoaded", build); else build();
 })();

@@ -530,6 +530,7 @@ def part_browser(shots: bool):
 
     def snap(p, name, full=False):
         if shots:
+            p.wait_for_timeout(500)                                    # let the 0.18-0.25 s fade-ins finish
             p.screenshot(path=os.path.join(SHOTS, name), full_page=full)
 
     with sync_playwright() as pw:
@@ -559,6 +560,9 @@ def part_browser(shots: bool):
             check("g. the chat bubble sits bottom-right, 62 px, inside the screen", lb and lb["width"] >= 60 and lb["x"] + lb["width"] <= 390 and lb["y"] + lb["height"] <= 844, lb)
             p.locator(W + " >> .l").click()
             p.wait_for_selector(W + " >> .ch")
+            bar = p.locator(W + " >> .bar .bt").all_inner_texts()
+            check("g. the bottom bar fits a phone on one line: Call / Text / Book (short labels)", [t.strip() for t in bar] == ["Call", "Text", "Book"]
+                  and all(p.locator(W + " >> .bar .bt").nth(i).bounding_box()["height"] < 60 for i in range(3)), bar)
             check("g. open: aria-expanded, full screen on a phone, greeting + 6 suggested questions + Call / Text / Book bar",
                   p.locator(W + " >> .l").get_attribute("aria-expanded") == "true" and p.locator(W + " >> .cp").count() == 6
                   and "virtual front desk" in p.locator(W + " >> .m").first.inner_text() and p.locator(W + " >> .bar .bt").count() == 3
@@ -591,7 +595,7 @@ def part_browser(shots: bool):
             f.locator("input[name=name]").fill("Sam Rivera")
             f.locator("input[name=phone]").fill("555-01")
             f.locator("button").click()
-            check("g. ... and refuses a short phone number", "10 digits" in f.locator(".er").inner_text() and f.locator("input[name=phone]").get_attribute("aria-invalid") == "true")
+            check("g. ... and refuses a short phone number", "10-digit" in f.locator(".er").inner_text() and f.locator("input[name=phone]").get_attribute("aria-invalid") == "true")
             f.locator("input[name=phone]").fill("(813) 555-0199")
             snap(p, "chat-06-lead-form.png")
             f.locator("button").click()

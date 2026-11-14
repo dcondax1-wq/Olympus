@@ -23,14 +23,14 @@
     "booking_label": "Book a visit",
     "payments": ["all major cards", "cash", "check", "financing"],
     "services": [
-      {"name": "Service call / diagnostic", "price": "$89 (waived if we do the repair)", "keys": ["trip charge"]},
+      {"name": "Service call", "price": "$89 (waived if we do the repair)", "keys": ["trip charge"]},
       {"name": "Drain cleaning", "price": "from $149", "keys": ["drain", "clog", "unclog", "snake"]},
-      {"name": "Water heater repair & install", "price": "from $199; new tank from $1,450 installed", "keys": ["water heater", "tankless", "hot water"]},
+      {"name": "Water heaters", "price": "from $199; new tank from $1,450 installed", "keys": ["water heater", "tankless", "hot water"]},
       {"name": "Leak repair", "price": "from $175", "keys": ["fix a leak", "pipe repair", "repipe"]},
       {"name": "Toilet & faucet repair", "price": "from $129", "keys": ["toilet", "faucet", "sink", "disposal"]},
       {"name": "AC repair", "price": "from $129 + parts", "keys": ["ac", "air conditioner", "hvac", "compressor", "freon"]},
-      {"name": "Furnace & heat pump repair", "price": "from $129 + parts", "keys": ["furnace", "heat pump", "heater", "heating", "thermostat"]},
-      {"name": "New AC / heat pump system", "price": "free in-home quote", "keys": ["new system", "new ac", "new unit", "replacement"]},
+      {"name": "Furnace & heat pump", "price": "from $129 + parts", "keys": ["furnace", "heat pump", "heater", "heating", "thermostat"]},
+      {"name": "New AC system", "price": "free in-home quote", "keys": ["new system", "new ac", "new unit", "replacement"]},
       {"name": "Yearly tune-up", "price": "$99", "keys": ["tune up", "maintenance visit"]}
     ],
     "area": {"text": "Brandon, Tampa, Riverview, Valrico and nearby",
