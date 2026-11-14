@@ -1,7 +1,7 @@
 /* POLIS life (OLYMPUS, docs/POLIS_25.md section B, items 11-18, 2026-11-11): the civic life of the city drawn from olympus/polis.json
  * (built by tools/polis_build.py). A classic ES5 script, no dependencies, nothing fetched but the JSON you point it at.
  *
- *   <script src="../olympus/polis-life.js?v=pl3"></script>
+ *   <script src="../olympus/polis-life.js?v=pl4"></script>
  *   OLYMPUS_POLIS_LIFE.load('../olympus/polis.json', function (doc) { OLYMPUS_POLIS_LIFE.herald(el, doc); });
  *   OLYMPUS_POLIS_LIFE.render(el, 'grove', doc)      one piece into el: herald | oracle | festivals | torch | grove | amphorae | statues | stoic
  *   OLYMPUS_POLIS_LIFE.all(el, doc)                  every piece, in order
