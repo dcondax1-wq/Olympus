@@ -52,6 +52,14 @@ export function createSkills(opts) {
   const oneR = (S) => { const u = J.usualR(S); return u ? ` Your usual 1R is about ${usd(u)} (median of your last trades).` : ''; };
   const both = (v, S, sign) => J.both(v, S, sign);
 
+  // the household: money/household.json (tools/money_import.py: the owner's own bank exports; the PC's private link only)
+  const hh = (S) => (isObj(S.household) && S.household.kind === 'olympus-household' && S.household.status === 'ok' ? S.household : null);
+  const HH_MISSING = () => MISSING('your bank money', 'money/household.json (your bank exports, on the PC\'s private link)');
+  const household = (S, now, lines, id) => withSrc(S, ['household'], now, lines.concat(['From your own bank exports; no account numbers.']), { intent: id, open: undefined });
+  const HH_CATS = [[/\b(food|groceries|grocery|eating out|restaurants?|takeout|take out|delivery|doordash)\b/, 'food'], [/\b(gas|fuel)\b/, 'gas'], [/\brent\b/, 'rent'],
+    [/\bsubscriptions?\b/, 'subscriptions'], [/\bshopping\b/, 'shopping'], [/\b(bills|utilities|phone|internet)\b/, 'utilities'], [/\b(car|rides|uber)\b/, 'transport'],
+    [/\b(health|gym)\b/, 'health'], [/\bbank fees\b/, 'bank_fees'], [/\b(atm|cash)\b/, 'cash']];
+
   // ------------------------------------------------------------------------------------------------ answers from the data
   const A = {
     drawdown_left(S, now) {
@@ -198,6 +206,38 @@ export function createSkills(opts) {
       const u = J.unrated(S, now, 14);
       if (!isObj(S.journal)) return withSrc(S, ['odeon'], now, [`${u.length} trades in the last 14 days; I cannot see your journal ratings on this phone, so I count them all as unrated.`], { intent: 'unrated' });
       return withSrc(S, ['odeon'], now, [u.length ? `${u.length} ${u.length === 1 ? 'trade' : 'trades'} from the last 14 days ${u.length === 1 ? 'is' : 'are'} unrated (${both(u.reduce((s, t) => s + t.usd, 0), S, true)} together).` : 'Every trade of the last 14 days is rated. Nice.'], { intent: 'unrated', open: u.length ? 'journal' : undefined });
+    },
+    household_spend_cat(S, now, args) {
+      const H = hh(S); if (!H) return HH_MISSING();
+      const q = norm((args && args.q) || ''), last = /\blast month\b/.test(q), M = isObj(H[last ? 'last_month' : 'this_month']) ? H[last ? 'last_month' : 'this_month'] : {};
+      const cat = HH_CATS.find(([rx]) => rx.test(q)), id = cat ? cat[1] : null, name = id && isObj(H.categories) && isObj(H.categories[id]) ? str(H.categories[id].name, 40) : id;
+      if (!id) return household(S, now, ['Which kind of spending? Say food, gas, rent, subscriptions, shopping, bills, car, health or bank fees.'], 'household_spend_cat');
+      const by = isObj(M.by_cat) ? M.by_cat : {}, v = num(by[id]) || 0, other = isObj(H[last ? 'this_month' : 'last_month']) && isObj(H[last ? 'this_month' : 'last_month'].by_cat) ? num(H[last ? 'this_month' : 'last_month'].by_cat[id]) : null;
+      const lines = [`${name} in ${str(M.month, 7)}${M.partial ? ' so far' : ''}: ${usd(v)}${other != null ? ` (${last ? 'this month so far' : 'last month'} ${usd(other)})` : ''}.`];
+      const fs = id === 'food' && isObj(M.food_subs) ? Object.keys(M.food_subs).filter((k) => num(M.food_subs[k]) > 0) : [];
+      if (fs.length) lines.push('Of that: ' + fs.map((k) => `${str(k, 20)} ${usd(M.food_subs[k])}`).join(', ') + '.');
+      if (id === 'subscriptions' && isObj(H.subscriptions)) lines.push(`Running subscriptions and bills: ${usd(num(H.subscriptions.usd_month) || 0)} a month (${num(H.subscriptions.active) || 0} found).`);
+      return household(S, now, lines, 'household_spend_cat');
+    },
+    household_month(S, now, args) {
+      const H = hh(S); if (!H) return HH_MISSING();
+      const last = /\blast month\b/.test(norm((args && args.q) || '')), M = isObj(H[last ? 'last_month' : 'this_month']) ? H[last ? 'last_month' : 'this_month'] : {}, a3 = isObj(H.avg3) ? H.avg3 : {};
+      const cats = (Array.isArray(M.cats) ? M.cats : []).filter((c) => isObj(c) && isObj(H.categories) && isObj(H.categories[c.id]) && H.categories[c.id].kind === 'spend' && num(c.usd) > 0).slice(0, 3);
+      return household(S, now, [`${str(M.month, 7)}${M.partial ? ' so far' : ''}: ${usd(num(M.out) || 0)} out, ${usd(num(M.in) || 0)} in, net ${usd(num(M.net) || 0, true)}.`,
+        cats.length ? 'Biggest: ' + cats.map((c) => `${str(c.name, 40)} ${usd(c.usd)}`).join(', ') + '.' : '',
+        num(a3.out) != null ? `A normal month lately: ${usd(a3.out)} out, ${usd(num(a3.in) || 0)} in (the last ${num(a3.months) || 0} full months).` : ''], 'household_month');
+    },
+    household_subs(S, now) {
+      const H = hh(S); if (!H) return HH_MISSING();
+      return household(S, now, [str(isObj(H.jarvis) ? H.jarvis.subscriptions : '', 900) || 'No recurring charges found yet.'], 'household_subs');
+    },
+    household_runway(S, now) {
+      const H = hh(S); if (!H) return HH_MISSING();
+      return household(S, now, [str(isObj(H.runway) ? H.runway.text : '', 300) || 'I cannot work that out yet: add your balances on the PC.', 'An estimate from your own bank exports and balances, not advice.'], 'household_runway');
+    },
+    household_networth(S, now) {
+      const H = hh(S); if (!H) return HH_MISSING();
+      return household(S, now, [str(isObj(H.jarvis) ? H.jarvis.networth : '', 300) || 'No balances entered yet.'], 'household_networth');
     },
     feeds(S, now) {
       const f = J.feedHealth(S, now), bad = f.filter((x) => x.missing || x.stale);

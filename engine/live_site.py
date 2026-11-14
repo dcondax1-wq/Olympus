@@ -13,6 +13,7 @@ into a proxy to http://127.0.0.1:8766, inside the owner's tailnet only, never Fu
   /site/kalshi.json      the Kalshi feed fresh from the owner's setting (publish.json "kalshi_file" or "kalshi_feed_url", the same
                          keys tools/pc_publish.add_kalshi reads), else the site's copy, else 404 (the page says so)
   /site/money/<id>.json  the money machines' newest output (money_out/, RUN_MONEY.bat) instead of the build's sample copy
+                         (+ money/household.json: your bank exports' summary, tools/money_import.py; on this link only)
   GET /api/site/live.json  the bot's live.json (engine/live_publish.build of the running bot: kind "le-live", pc, pc_verdict,
                          board, accounts), at most 15 s old; the Gate's "Right now" card reads it
   GET /api/site/status   what this serves: which site folder and how old, live on / off, the Kalshi and money sources
@@ -51,6 +52,9 @@ PROXY_HEADERS = ("x-forwarded-for", "x-forwarded-host", "x-forwarded-proto", "x-
                  "tailscale-funnel-request", "cf-connecting-ip", "true-client-ip")
 HIDDEN_OVER_LINK = ("/api/tv/status",)  # shows the TradingView webhook key: the PC only
 MONEY_KEEP = ("index", "chrysos", "mercury", "sibyl", "oikos", "arbiter", "sibyl_forward")   # tools/money_publish.KEEP
+# + the household summary (tools/money_import.py, 2026-11-14): served over this PRIVATE link only, never in money_publish.KEEP
+# (the public site never gets it); no account numbers, no merchant names unless the owner turns them on
+MONEY_KEEP = MONEY_KEEP + ("household",)
 TYPES = {".html": "text/html; charset=utf-8", ".htm": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
          ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json",
          ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg",

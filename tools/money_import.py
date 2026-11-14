@@ -68,6 +68,7 @@ CATS = {
 }
 BILLS = ("rent", "utilities", "transport", "health")
 P2P_APPS = ("venmo", "cash_app", "paypal")
+DUPE_LABELS = ("Streaming", "Music and audio", "Gym")   # two of these at once is usually one too many
 LOOSE_CATS = ("subscriptions", "trading_tools", "utilities", "rent", "health")   # recurring bills whose amount may move a little
 CARDS = ("chase_card", "bofa_card", "capone_card", "apple_card", "discover", "amex", "generic_card", "ofx_card")   # recurring charges here are "bills", the rest "subscriptions"
 
@@ -975,7 +976,7 @@ def leaks(rows, subs, months, today) -> list:
         if s["type"] == "subscription":
             by_label.setdefault(s["label"], []).append(s)
     for lab, ss in by_label.items():
-        if len(ss) >= 2:
+        if len(ss) >= 2 and lab in DUPE_LABELS:
             tot = r2(sum(s["usd_month"] for s in ss))
             out.append({"id": "dupe:" + lab, "title": f"{len(ss)} {lab.lower()} subscriptions", "detail": f"{money(tot)} a month together ({money(tot * 12)} a year). Keep the one you use most.",
                         "usd_month": r2(tot - max(s["usd_month"] for s in ss))})
@@ -1072,15 +1073,17 @@ def build(ledger: dict, rules_doc: dict, today: str, balances: dict | None = Non
     subs_pub = [{k: v for k, v in s.items() if k != "key" and (show or k != "merchant")} for s in subs]
     act = [s for s in subs if s["active"]]
     food_m = cur["by_cat"].get("food", 0.0)
-    food_sub = {}
+    food_by = {cur["month"]: {}, prev["month"]: {}}
     for r in rows:
-        if r["cat"] == "food" and r["date"][:7] == cur["month"] and r["date"] <= today:
-            food_sub[r.get("sub") or "other"] = food_sub.get(r.get("sub") or "other", 0.0) - r["amount"]
+        if r["cat"] == "food" and r["date"][:7] in food_by and r["date"] <= today:
+            k = (r.get("sub") or "other").replace("_", " ")
+            food_by[r["date"][:7]][k] = food_by[r["date"][:7]].get(k, 0.0) - r["amount"]
+    food_sub = {k: r2(v) for k, v in sorted(food_by[cur["month"]].items(), key=lambda kv: -kv[1]) if abs(v) >= 0.005}
     top = sorted(((c, v) for c, v in cur["by_cat"].items() if CATS[c][1] == "spend"), key=lambda kv: -kv[1])[:3]
     has = bool(rows)
     jarvis = {
         "spend_month": f"This month so far ({cur['month']}): {money(cur['out'])} out, {money(cur['in'])} in, net {money(cur['net'], True)}." if has else "No bank data imported yet.",
-        "food_month": (f"Food this month: {money(food_m)}" + (" (" + ", ".join(f"{k.replace('_', ' ')} {money(v)}" for k, v in sorted(food_sub.items(), key=lambda kv: -kv[1])) + ")" if food_sub else "")
+        "food_month": (f"Food this month: {money(food_m)}" + (" (" + ", ".join(f"{k} {money(v)}" for k, v in food_sub.items()) + ")" if food_sub else "")
                        + (f"; last month {money(prev['by_cat'].get('food', 0.0))}." if prev["n"] else ".")) if has else "No bank data imported yet.",
         "subscriptions": (f"{len(act)} recurring charges, {money(sum(s['usd_month'] for s in act))} a month: " + "; ".join(
             f"{s['merchant'] or s['label']} {money(s['usd'])} a {s['every']}, next {s['next']}" for s in act[:8]) + ".") if act else
@@ -1100,14 +1103,16 @@ def build(ledger: dict, rules_doc: dict, today: str, balances: dict | None = Non
             if f.get(k):
                 s[k] = fn(s[k], f[k]) if s[k] else f[k]
     last_day = max((r["date"] for r in rows if r["date"] <= today), default=None)
-    doc = {"v": VERSION, "kind": "olympus-household", "built": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "today": today,
+    now = dt.datetime.now(dt.timezone.utc)
+    doc = {"v": VERSION, "kind": "olympus-household", "built": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "t": int(now.timestamp()), "today": today,
            "status": "ok" if has else "empty", "paper_only": True,
            "privacy": {"account_numbers": "never kept", "merchants": "shown" if show else "hidden (generic labels; privacy.publish_merchants in the rules turns names on)",
                        "where": "the PC's private Tailscale link only (money_out/household.json); never the public site"},
            "data": {"rows": len(rows), "first": rows[0]["date"] if rows else None, "last": last_day,
                     "age_days": days_between(last_day, today) if last_day else None, "sources": sorted(src.values(), key=lambda s: s["layout"] or "")},
-           "this_month": {**cur, "cats": [{"id": c, "name": CATS[c][0], "usd": v} for c, v in cur["by_cat"].items()]},
-           "last_month": {**prev, "cats": [{"id": c, "name": CATS[c][0], "usd": v} for c, v in prev["by_cat"].items()]},
+           "this_month": {**cur, "cats": [{"id": c, "name": CATS[c][0], "usd": v} for c, v in cur["by_cat"].items()], "food_subs": food_sub},
+           "last_month": {**prev, "cats": [{"id": c, "name": CATS[c][0], "usd": v} for c, v in prev["by_cat"].items()],
+                          "food_subs": {k: r2(v) for k, v in sorted(food_by[prev["month"]].items(), key=lambda kv: -kv[1]) if abs(v) >= 0.005}},
            "months": months, "avg3": {"in": avg_in, "out": avg_out, "net": avg_net, "months": len(full)},
            "categories": {c: {"name": n, "kind": k} for c, (n, k) in CATS.items()},
            "subscriptions": {"items": subs_pub, "active": len(act), "usd_month": r2(sum(s["usd_month"] for s in act)),

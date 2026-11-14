@@ -382,6 +382,81 @@ def test_cli(tmp):
     check("h. data/money_rules.json is gitignored (the private folder is outside the repo; .olympus/ ignored too)", "data/money_rules.json" in gi and ".olympus/" in gi)
 
 
+# ------------------------------------------------------------------------------------------------ i. connected: scoreboard, private link, Oikos card, Jarvis
+def test_connect(tmp, led):
+    from tools import money_scoreboard as MS
+    bal = {"accounts": [{"name": "Checking", "kind": "cash", "usd": 3000}, {"name": "Savings", "kind": "savings", "usd": 6000}]}
+    doc = MI.build(led, MI.DEFAULT_RULES_DOC, TODAY, bal, None, [])
+    now = 1794762000
+    base = {"home": None, "kalshi": None, "machines": None, "rules": None, "plans": None, "ledger": None}
+    priv = MS.build({**base, "household": doc, "household_file": "money_out/household.json"}, now, include_ledger=True)
+    pub = MS.build({**base, "household": doc, "household_file": "money_out/household.json"}, now, include_ledger=False)
+    off = MS.build(base, now, include_ledger=True)
+    hb = priv.get("household") or {}
+    src = lambda sb: next((s for s in sb["sources"] if s["id"] == "household"), {})  # noqa: E731
+    check("i. scoreboard --private: a household block (this month in / out / net, runway, subscriptions, net worth, prop fees vs payouts from the bank)",
+          hb.get("month") == "2026-11" and near(hb.get("in"), doc["this_month"]["in"]) and near(hb.get("out"), doc["this_month"]["out"]) and hb.get("runway_months") == doc["runway"]["months"]
+          and hb.get("networth") == 9000.0 and hb["prop"]["fees"] == 156.8 and src(priv).get("status") == "ok" and "From your bank exports" in hb.get("text", ""), (hb, src(priv)))
+    check("i. ... never added to the cash totals (those stay ledger + eval prices)", priv["totals"] == off["totals"], (priv["totals"]["all"], off["totals"]["all"]))
+    check("i. the public scoreboard: no household numbers, the source says private", pub.get("household") is None and src(pub).get("status") == "private" and "9,000" not in json.dumps(pub), src(pub))
+    check("i. no household file: the source is 'off' (not connected), not a missing source, and the table still prints",
+          src(off).get("status") == "off" and "household" not in [m["id"] for m in off["missing"]] and "CONNECT_MONEY" in src(off).get("note", "") and MS.table(off), src(off))
+    check("i. the scoreboard table prints the household line when private", "From your bank exports" in MS.table(priv))
+    # the private link serves money_out/household.json; the public publisher never copies it
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import money_publish as MP  # noqa: E402
+    ls_src = open(os.path.join(ROOT, "engine", "live_site.py"), encoding="utf-8").read()
+    check("i. the PC's private link (engine/live_site.py) serves money/household.json from money_out/; tools/money_publish.py (the public site) never copies it",
+          'MONEY_KEEP = MONEY_KEEP + ("household",)' in ls_src and "household" not in MP.KEEP)
+    try:
+        from engine import live_site as LS
+        mo = os.path.join(tmp, "mo")
+        MI.write_json(os.path.join(mo, "household.json"), doc)
+        check("i. live_site.money_file('household.json') finds it in money_out; a path trick does not", LS.money_file("household.json", mo) == os.path.join(mo, "household.json") and LS.money_file("../household.json", mo) is None)
+    except ImportError as e:
+        check("i. live_site import skipped (no fastapi here)", True, e)
+    site = os.path.join(tmp, "site")
+    pubd = os.path.join(tmp, "pubsrc")
+    MI.write_json(os.path.join(pubd, "household.json"), doc)
+    MI.write_json(os.path.join(pubd, "index.json"), {"v": 1, "streams": []})
+    MP.publish(pubd, site, quiet=True)
+    check("i. money_publish run on a folder holding household.json: it is not copied to the site", not os.path.exists(os.path.join(site, "money", "household.json")) and os.path.exists(os.path.join(site, "money", "index.json")))
+    # node: the Oikos card core and Jarvis
+    if not shutil.which("node"):
+        check("i. node not installed: the Oikos card and Jarvis checks were skipped", True)
+        return
+    p1, p2 = os.path.join(tmp, "hh.json"), os.path.join(tmp, "hh_old.json")
+    MI.write_json(p1, doc)
+    old = json.loads(json.dumps(doc))
+    old["data"]["age_days"] = 60
+    MI.write_json(p2, old)
+    r = subprocess.run(["node", os.path.join(ROOT, "tests", "test_money_import_node.mjs"), p1, p2], capture_output=True, text=True, timeout=120, env={**os.environ, "TZ": "America/New_York"})
+    try:
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    except (ValueError, IndexError):
+        check("i. node harness ran", False, (r.stdout[-500:], r.stderr[-800:]))
+        return
+    v = o["view"]
+    kp = dict(v["kpis"])
+    check("i. Oikos card: state ok, this month's out / in / net, runway in months, subscriptions $ a month, net worth",
+          v["state"] == "ok" and kp.get("Out in 2026-11") == MI.money(doc["this_month"]["out"]).replace("$", "$") and kp.get("Runway on savings", "").endswith("months") and kp.get("Net worth") == "$9,000", v["kpis"])
+    check("i. Oikos card: spending by category biggest first (spend only), subscriptions with their next date, leaks",
+          v["cats"] and v["cats"][0][0] == "Rent" and all(c[1] > 0 for c in v["cats"]) and any(s[3] == "2026-11-28" for s in v["subs"]) and v["leaks"] >= 1, (v["cats"], v["subs"]))
+    check("i. Oikos card: no file / another file / empty / a 60-day-old export -> off / off / empty / stale; the off line says how to connect",
+          o["off"][:4] == ["off", "off", "empty", "stale"] and "RUN_MONEY.bat" in o["off"][4], o["off"])
+    check("i. Oikos card money words", o["usd"] == ["$1,235", "-$12.50", "$15.49", "$0", "-", "+$50"], o["usd"])
+    check("i. Jarvis routes the owner's questions: food this month, subscriptions, savings runway, this month's spending, net worth, gas last month",
+          o["routes"] == ["household_spend_cat", "household_subs", "household_runway", "household_month", "household_networth", "household_spend_cat"], o["routes"])
+    A = o["answers"]
+    food = next((m["by_cat"].get("food") for m in doc["months"] if m["month"] == "2026-11"), 0)
+    gas_oct = next((m["by_cat"].get("gas") for m in doc["months"] if m["month"] == "2026-10"), 0)
+    check("i. Jarvis: food this month in $ (and last month), from money/household.json", A[0] and f"Food in 2026-11 so far: {MI.money(food)}" in A[0]["text"].replace(".00", "") and "money/household.json" in A[0]["text"], A[0])
+    check("i. Jarvis: the subscriptions with $ and next dates; runway in months; net worth; gas last month",
+          "next 2026-" in A[1]["text"] and "months on savings alone" in A[2]["text"] and "Net worth $9,000" in A[4]["text"] and f"Gas in 2026-10: ${gas_oct:.0f}" in A[5]["text"], [a["text"][:160] for a in A])
+    check("i. Jarvis: this month's money in / out / net and the biggest categories", "2026-11 so far:" in A[3]["text"] and "Biggest:" in A[3]["text"], A[3]["text"])
+    check("i. Jarvis without the file: 'I don't have that', nothing invented", o["missing"] and o["missing"]["missing"] and o["missing"]["text"].startswith("I don't have that") and "$" not in o["missing"]["text"], o["missing"])
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="money-import-test-")
     try:
@@ -391,6 +466,7 @@ def main():
         led = test_summary(tmp)
         test_oikos(tmp, led)
         test_cli(tmp)
+        test_connect(tmp, led)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     bad = RES.count(False)

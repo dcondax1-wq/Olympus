@@ -19,6 +19,10 @@ What it reads (every one optional; a missing one is LISTED as missing, never inv
   prices     tools/web_public/ledger/rules.json (the owner's real eval prices and dates); without it the CLAUDE.md prices
              (Builder 50K $91.80 on 2026-10-18, the ATLAS 25K $43 on 2026-10-26, Builder 25K $63, $0 activation).
   plan       tools/web_public/plutus/plans.json: the Plutus study's $ a month from purchase (H2 = the Jul-Oct check), an ESTIMATE.
+  household  money_out/household.json, else %USERPROFILE%\\.olympus\\money\\household.json (tools/money_import.py: your own bank / card
+             exports): this month's money in / out, runway, subscriptions, leaks, net worth, prop-firm fees vs payouts as the BANK saw them.
+             Shown apart (never added to the cash totals, which come from the ledger + the eval prices). PRIVATE like the ledger: in a
+             written file only with --private.
   ledger     data/money_ledger.json (gitignored, owner-editable): eval purchases, resets, payouts, Kalshi deposits, expenses. The
              same format as the Ledger app's Export JSON ({"entries": [{"kind", "amount", "date", "acct", "note"}]}), so an export
              saved there works as is. PRIVATE by default: it is counted in a written file only with --private or "publish": true
@@ -43,6 +47,7 @@ ROOT = os.path.dirname(HERE)
 WEB = os.path.join(HERE, "web_public")
 DEFAULT_OUT = os.path.join(WEB, "money", "scoreboard.json")
 DEFAULT_LEDGER = os.path.join(ROOT, "data", "money_ledger.json")
+HOUSEHOLD = os.path.join(ROOT, "money_out", "household.json")
 PC_LIVE = os.path.join(ROOT, "data", "pc_report", "live.json")
 RULES = os.path.join(WEB, "ledger", "rules.json")
 PLANS = os.path.join(WEB, "plutus", "plans.json")
@@ -51,7 +56,7 @@ MILESTONES = (10_000, 100_000, 1_000_000)
 MIN_DAYS_FOR_RATE = 28            # a cash run-rate needs four weeks of data
 DAYS_PER_MONTH = 30.4375
 # how old a source may be before it is called stale (seconds)
-STALE_S = {"accounts": 36 * 3600, "kalshi": 6 * 3600, "machines": 24 * 3600, "second": 36 * 3600, "ledger": 45 * 86400}
+STALE_S = {"accounts": 36 * 3600, "kalshi": 6 * 3600, "machines": 24 * 3600, "second": 36 * 3600, "ledger": 45 * 86400, "household": 40 * 86400}
 
 # the owner's real prices (CLAUDE.md "Prop-firm prices"), used only when ledger/rules.json is missing
 PRICES = {"builder_50k": 91.80, "builder_25k": 63.00, "atlas_25k": 43.00, "activation": 0.0}
@@ -653,6 +658,13 @@ def build(inputs: dict, now: float, include_ledger: bool = True) -> dict:
         _source("plan", "Plutus plan (estimate)", "estimate", "ok" if plan else "missing", None, None, "plutus/plans.json" if plans else None,
                 plan["text"] if plan else "No plan estimate."),
     ]
+    hh = inputs.get("household")
+    hh = hh if isinstance(hh, dict) and hh.get("kind") == "olympus-household" else None
+    household = household_block(hh) if hh and include_ledger else None
+    sources.append(_source("household", "Household (your bank exports)", "cash", ("ok" if household else "private") if hh else "off",
+                           to_s(hh.get("built")) if hh else None, now, inputs.get("household_file") if hh else None,
+                           (household["text"] if household else "kept private (run with --private to show it here)") if hh else
+                           "Not connected: drop your bank exports in the money inbox and run tools/money_import.py (docs/CONNECT_MONEY.md)."))
     missing = [{"id": s["id"], "name": s["name"], "why": s["note"]} for s in sources if s["status"] in ("missing", "bad")]
 
     words = []
@@ -662,7 +674,26 @@ def build(inputs: dict, now: float, include_ledger: bool = True) -> dict:
     return {"v": VERSION, "kind": "olympus-money-scoreboard", "built": dt.datetime.fromtimestamp(now, dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "t": int(now), "today": today, "paper_only": True, "ledger_included": bool(use_led),
             "totals": totals, "roi": roi, "run_rate": rate, "milestones": ms, "next": nxt, "by_source": rows, "paper": paper,
-            "machines": machines, "sources": sources, "missing": missing, "notes": words}
+            "machines": machines, "household": household, "sources": sources, "missing": missing, "notes": words}
+
+
+def household_block(hh: dict) -> dict:
+    """the bank-export summary (tools/money_import.py) in a few numbers: shown apart, never added to the cash totals"""
+    tm, a3, pr, nw, run, sub, kal = (obj(hh.get(k)) for k in ("this_month", "avg3", "prop", "networth", "runway", "subscriptions", "kalshi"))
+    b = {"today": text(hh.get("today"), 10), "month": text(tm.get("month"), 7), "in": num(tm.get("in")), "out": num(tm.get("out")), "net": num(tm.get("net")),
+         "avg3": {"in": num(a3.get("in")), "out": num(a3.get("out")), "net": num(a3.get("net")), "months": int(num(a3.get("months")) or 0)},
+         "runway_months": num(run.get("months")), "runway_text": text(run.get("text"), 220), "subs_month": num(sub.get("usd_month")),
+         "subs_active": int(num(sub.get("active")) or 0), "leak_month": num(hh.get("leak_month")), "networth": num(nw.get("total")),
+         "networth_30d": num(nw.get("change_30d")), "prop": {"fees": num(pr.get("fees")), "payouts": num(pr.get("payouts")), "net": num(pr.get("net")),
+                                                            "roi_pct": num(pr.get("roi_pct"))}, "kalshi_moved": num(kal.get("net_moved")),
+         "rows": int(num(obj(hh.get("data")).get("rows")) or 0), "status": text(hh.get("status"), 10)}
+    bits = [f"this month {money(b['in'])} in, {money(b['out'])} out, net {money(b['net'], True)}" if b["month"] else "no month yet"]
+    if b["runway_months"] is not None:
+        bits.append(f"runway about {b['runway_months']:.1f} months")
+    if b["networth"] is not None:
+        bits.append(f"net worth {money(b['networth'])}")
+    b["text"] = "From your bank exports: " + "; ".join(bits) + "."
+    return b
 
 
 # ------------------------------------------------------------------------------------------------ reading the files
@@ -676,7 +707,17 @@ def _kalshi_default():
     return os.path.join(d, "kalshi_feed", "kalshi.json")
 
 
-def gather(site: str | None = None, ledger_path: str | None = None, kalshi_path: str | None = None, keep_notes=False) -> dict:
+def _household_default():
+    try:
+        sys.path.insert(0, ROOT)
+        from engine import nogithub
+        d = nogithub.olympus_dir()
+    except Exception:
+        d = os.environ.get("OLYMPUS_HOME") or os.path.join(os.environ.get("USERPROFILE") or os.path.expanduser("~"), ".olympus")
+    return os.path.join(d, "money", "household.json")
+
+
+def gather(site: str | None = None, ledger_path: str | None = None, kalshi_path: str | None = None, keep_notes=False, household_path: str | None = None) -> dict:
     """Load every source that exists. Never raises."""
     site = site or WEB
     home = home_file = home_kind = None
@@ -700,9 +741,15 @@ def gather(site: str | None = None, ledger_path: str | None = None, kalshi_path:
             break
     rules = read_json(os.path.join(site, "ledger", "rules.json")) or read_json(RULES)
     plans = read_json(os.path.join(site, "plutus", "plans.json")) or read_json(PLANS)
+    hh = hh_file = None
+    for p in ([household_path] if household_path else [HOUSEHOLD, _household_default()]):
+        j = read_json(p)
+        if isinstance(j, dict) and j.get("kind") == "olympus-household":
+            hh, hh_file = j, ("money_out/household.json" if p == HOUSEHOLD else "household.json (private folder)")
+            break
     return {"home": home, "home_file": home_file, "home_kind": home_kind, "kalshi": kal, "kalshi_file": kal_file, "machines": mach,
             "machines_file": mach_file, "rules": rules if isinstance(rules, dict) else None, "plans": plans if isinstance(plans, dict) else None,
-            "ledger": load_ledger(ledger_path or DEFAULT_LEDGER, keep_notes)}
+            "ledger": load_ledger(ledger_path or DEFAULT_LEDGER, keep_notes), "household": hh, "household_file": hh_file}
 
 
 def write(sb: dict, path: str) -> str:
@@ -731,6 +778,8 @@ def table(sb: dict) -> str:
         out.append(f"| {p['name']} (paper, not cash) | {money(p.get('profit'), True)} | {money(p.get('week'), True) if p.get('week') is not None else '-'} | {ages.get('second' if p['id'] == 'second' else 'accounts')} |")
     out.append("")
     out.append(f"ROI on eval fees: {sb['roi']['text']} Run-rate: {sb['run_rate']['text']}")
+    if sb.get("household"):
+        out.append(sb["household"]["text"] + (" " + sb["household"]["runway_text"] if sb["household"].get("runway_text") else ""))
     if sb["next"]:
         out.append(f"Next milestone: {sb['next']['text']}")
     if sb["missing"]:
@@ -744,13 +793,14 @@ def main(argv=None) -> int:
     ap.add_argument("--out")
     ap.add_argument("--ledger", default=DEFAULT_LEDGER)
     ap.add_argument("--kalshi")
+    ap.add_argument("--household", help="a household.json from tools/money_import.py (default money_out/, then the private folder)")
     ap.add_argument("--private", action="store_true", help="count your ledger in the written file even without \"publish\": true")
     ap.add_argument("--print", dest="show", action="store_true")
     ap.add_argument("--now", type=float)
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
     now = a.now if a.now is not None else time.time()
-    sb = build(gather(a.site, a.ledger, a.kalshi), now, include_ledger=a.private or a.show)
+    sb = build(gather(a.site, a.ledger, a.kalshi, household_path=a.household), now, include_ledger=a.private or a.show)
     if a.show:
         print(table(sb))
         return 0
