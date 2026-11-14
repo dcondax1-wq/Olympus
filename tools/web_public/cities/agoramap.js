@@ -345,6 +345,7 @@ export class AgoraMap {
     const c = this.cam, key = [c.x, c.y, c.s, this.W, this.H, this.dpr, this.ver || 0, this.sel, this.low ? 1 : 0].join('|');
     const C = this.stillCv || (this.stillCv = document.createElement('canvas'));
     if (C.width !== this.cv.width || C.height !== this.cv.height) { C.width = this.cv.width; C.height = this.cv.height; this.stillKey = ''; }
+    if (!C.width || !C.height) return;
     if (key !== this.stillKey) {
       const k = C.getContext('2d');
       k.setTransform(1, 0, 0, 1, 0, 0); k.clearRect(0, 0, C.width, C.height);
