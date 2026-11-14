@@ -1216,6 +1216,14 @@ try:
 except Exception as _ls_err:
     print(f"[live_site] /site disabled: {_ls_err.__class__.__name__}: {_ls_err}", flush=True)
 # ---- END LIVE SITE ----
+# ---- DAY INBOX ---- (engine/day_inbox.py, docs/CONNECT_DAY.md): POST /inbox/{kind} only appends one line to data/inbox/<kind>.jsonl
+# (the iPhone "Add to my day" Shortcut over the private Tailscale link); never trading. Registered kinds only; Funnel refused.
+try:
+    from engine import day_inbox as _di
+    _di.install(app)
+except Exception as _di_err:
+    print(f"[day_inbox] disabled: {_di_err.__class__.__name__}: {_di_err}", flush=True)
+# ---- END DAY INBOX ----
 _static = StaticFiles(directory=WEB)
 _static.all_directories = list(UI_DIRS)       # first directory that has the file wins
 app.mount("/", _static, name="web")

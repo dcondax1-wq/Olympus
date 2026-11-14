@@ -821,7 +821,8 @@ def test_inbox():
     check("j. day_inbox imports nothing of the bots (only the stdlib, fastapi and live_site)", all(m in ("__future__", "datetime", "hashlib", "json", "os", "re", "threading", "time", "fastapi", "fastapi.responses", "zoneinfo", "engine") for m in imports)
           and "live_site" in src and not re.search(r"\b(ninjatrader|lit_live|live_model|arm|order)\w*\(", src), imports)
     srv = open(os.path.join(ROOT, "server.py"), encoding="utf-8").read()
-    check("j. (wiring for the lead) server.py does not call day_inbox.install yet: the endpoint is off until the lead adds one line", "day_inbox" not in srv)
+    check("j. server.py installs day_inbox right after the live site, inside try/except (a failure only disables the inbox)",
+          "_di.install(app)" in srv and srv.find("_ls.install(app") < srv.find("_di.install(app)") and "[day_inbox] disabled" in srv)
 
 
 EXTRA = {"i": test_feeds, "j": test_inbox, "k": test_node}
