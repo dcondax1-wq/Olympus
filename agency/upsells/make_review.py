@@ -122,6 +122,8 @@ def requests_text(client: dict, rv: dict, purl: str, glink: str, warnings: list)
     sms = f"Hi [first name], thanks for visiting {name}! How did we do? {purl} Reply STOP to opt out."
     if len(sms.replace("[first name]", "Christopher")) > 160:
         sms = f"Thanks for visiting {name}! How did we do? {purl} Reply STOP to opt out."
+    if len(sms) > 160:
+        warnings.append(f"requests.txt: the text message is {len(sms)} characters (2 SMS); a shorter review page address would fit one")
     return f"""REVIEW REQUESTS FOR {name.upper()}
 Ask EVERY customer the same way, happy or not. Never offer anything in return for a review (no discount, gift or entry):
 Google and the FTC both forbid it. The review page shows the Google link to everyone; the private message is an extra choice.

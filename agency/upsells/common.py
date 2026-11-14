@@ -72,8 +72,8 @@ def digits(phone: str) -> str:
 
 
 def tel(phone: str, country: str = "1") -> str:
-    """'(813) 555-0142' -> '+18135550142' (US numbers by default; a number that starts with + keeps its own code)"""
-    p = str(phone or "").strip()
+    """'(813) 555-0142' -> '+18135550142' (US numbers by default; a number that starts with + keeps its own code; 'ext. 12' is dropped)"""
+    p = re.split(r"\s*(?:ext\.?|extension|x)\s*\d+\s*$", str(phone or "").strip(), flags=re.I)[0]
     d = digits(p)
     if not d:
         return ""

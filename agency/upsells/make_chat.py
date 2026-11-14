@@ -211,6 +211,9 @@ def build_config(client: dict) -> tuple:
         if need and not chat.get(need):
             warnings.append(f"'{iid}' answers are off: the client file has no chat.{need}")
             continue
+        if kind == "dir" and not chat.get("address") and not chat.get("area"):
+            warnings.append(f"'{iid}' answers are off: the client file has no chat.address (or chat.area for a business that comes to you)")
+            continue
         answer = ""
         if kind == "faq":
             override = (chat.get("answers") or {}).get(iid)
