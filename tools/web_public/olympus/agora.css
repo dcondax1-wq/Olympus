@@ -56,6 +56,11 @@ html[data-theme="agora"] body, body.agora {
   background: radial-gradient(120% 70% at 50% -10%, var(--oly-th-n5, #2a2118) 0%, var(--ag-night) 62%) fixed, var(--ag-night);
   color: var(--ag-text); font-family: var(--ag-sans); -webkit-font-smoothing: antialiased; letter-spacing: 0;
 }
+/* perf v2 (2026-11-14): the same sky on the ROOT, not on body. A fixed background on body (html has its own colour, so it is not propagated)
+   repaints the whole screen on every scroll frame in Chromium (main-thread scrolling); on the root it is one still layer the compositor slides
+   under the page. The look is the same (iOS Safari draws fixed as scroll either way). */
+html[data-theme="agora"] { background: radial-gradient(120% 70% at 50% -10%, var(--oly-th-n5, #2a2118) 0%, var(--ag-night) 62%) fixed, var(--ag-night); }
+html[data-theme="agora"] body { background: transparent; }
 .ag-h, html[data-theme="agora"] h1, html[data-theme="agora"] h2, html[data-theme="agora"] h3 { font-family: var(--ag-serif); font-weight: 600; letter-spacing: .005em; text-transform: none; text-shadow: none; color: var(--ag-text); }
 html[data-theme="agora"] :is(button, input, select, textarea) { font-family: inherit; }
 html[data-theme="agora"] ::selection { background: rgba(var(--ag-gold-rgb), .35); color: var(--ag-text); }
