@@ -388,6 +388,13 @@ def page_pictures(tmp: str) -> dict:
     pdfs = soffice_pdfs([os.path.join(BUYER, n) for n in names], tmp)
     for name, pdf in zip(names, pdfs):
         pngs = K.pdf_pages_png(pdf, os.path.join(tmp, name.split(".")[0]), dpi=80)
+        if name == "Agency_Tracker.xlsx":                     # show the Prospects page (with the example rows), not the instructions
+            try:
+                from pypdf import PdfReader
+                at = next((i for i, p in enumerate(PdfReader(pdf).pages) if "Riverton" in (p.extract_text() or "")), 0)
+                pngs = pngs[at:] + pngs[:at]
+            except Exception:
+                pass
         out[name] = [open(p, "rb").read() for p in pngs[:3]]
     pngs = K.pdf_pages_png(os.path.join(BUYER, "00_Start_Here.pdf"), os.path.join(tmp, "start"), dpi=80)
     out["00_Start_Here.pdf"] = [open(p, "rb").read() for p in pngs[:2]]
