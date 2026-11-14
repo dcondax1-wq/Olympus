@@ -608,6 +608,8 @@ def categorize(row: dict, rules: list, overrides: dict | None = None) -> dict:
     d = "in" if row["amount"] > 0 else "out"
     if overrides and row.get("id") in overrides and overrides[row["id"]] in CATS:
         return {"cat": overrides[row["id"]], "label": "", "sub": "", "rule": "override"}
+    if row.get("source") == "inbox" and row.get("bank_cat") in CATS and CATS[row["bank_cat"]][1] in ("spend", "income"):
+        return {"cat": row["bank_cat"], "label": CATS[row["bank_cat"]][0], "sub": "", "rule": "inbox"}     # you chose it on the phone
     t = norm_text(row.get("desc"))
     for i, r in enumerate(rules):
         if r["dir"] and r["dir"] != d:
