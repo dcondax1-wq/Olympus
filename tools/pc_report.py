@@ -991,6 +991,13 @@ def main(argv=None) -> int:
             _cal.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
+        # the Me hub (tools/me_hub.py, docs/ME_HUB.md): home WiFi / devices / this PC, the Apple Watch days, data/me/me.json for the phone's
+        # Me hub (private, the PC's own link only) and its reminders (cards due, dates, car, a new device) on your private topic; soft
+        try:
+            from tools import me_hub as _me
+            _me.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
     return 0
 
 
