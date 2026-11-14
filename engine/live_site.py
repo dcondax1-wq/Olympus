@@ -13,6 +13,9 @@ into a proxy to http://127.0.0.1:8766, inside the owner's tailnet only, never Fu
   /site/kalshi.json      the Kalshi feed fresh from the owner's setting (publish.json "kalshi_file" or "kalshi_feed_url", the same
                          keys tools/pc_publish.add_kalshi reads), else the site's copy, else 404 (the page says so)
   /site/money/<id>.json  the money machines' newest output (money_out/, RUN_MONEY.bat) instead of the build's sample copy
+  /site/day/day.json     your day from your own calendars (tools/calendar_sync.py -> data/day/day.json, docs/CONNECT_DAY.md):
+                         PRIVATE, so it lives only in data/day/ and only this route serves it (never a site folder, never
+                         PUBLISH_NQ / Netlify / GitHub Pages); 404 with a plain reason until a calendar is connected
   GET /api/site/live.json  the bot's live.json (engine/live_publish.build of the running bot: kind "le-live", pc, pc_verdict,
                          board, accounts), at most 15 s old; the Gate's "Right now" card reads it
   GET /api/site/status   what this serves: which site folder and how old, live on / off, the Kalshi and money sources
@@ -40,6 +43,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_PUBLIC = os.path.join(ROOT, "tools", "web_public")
 SITE_CANDIDATES = (os.path.join(ROOT, "data", "pc_publish", "site"), os.path.join(ROOT, "data", "live_site", "site"))
 MONEY_OUT = os.path.join(ROOT, "money_out")
+DAY_DIR = os.path.join(ROOT, "data", "day")     # tools/calendar_sync.py OUT_DEFAULT (LE_DAY_DIR overrides, as there)
+DAY_FILES = ("day.json",)                       # private: served from DAY_DIR only, never looked up in a site folder
 PREFIX = "/site"
 GATE = PREFIX + "/gate/"
 LIVE_TTL_S = 15
@@ -325,6 +330,15 @@ def money_file(name: str, src: str | None = None):
     return p if os.path.isfile(p) and read_json(p) is not None else None
 
 
+def day_file(name: str, env=None):
+    """data/day/<name> (your calendars' day, tools/calendar_sync.py) when it is a known file with valid JSON, else None"""
+    env = os.environ if env is None else env
+    if name not in DAY_FILES:
+        return None
+    p = os.path.join(env.get("LE_DAY_DIR") or DAY_DIR, name)
+    return p if os.path.isfile(p) and read_json(p) is not None else None
+
+
 # ------------------------------------------------------------------------------------------------ the routes
 router = APIRouter()
 
@@ -389,6 +403,14 @@ def r_site(rel: str, request: Request):
         p = money_file(rel[len("money/"):])
         if p:
             return FileResponse(p, media_type="application/json", headers={"Cache-Control": "no-cache", "X-Olympus-Source": "money_out"})
+    if rel.startswith("day/"):
+        name = rel[len("day/"):]
+        p = day_file(name)
+        if p:
+            return FileResponse(p, media_type="application/json", headers={"Cache-Control": "no-store", "X-Olympus-Source": "calendar_sync"})
+        if name in DAY_FILES:
+            return _J({"ok": False, "error": "no calendar connected on this PC yet (CONNECT_DAY.bat, docs/CONNECT_DAY.md)"}, 404)
+        return _J({"ok": False, "error": "not found"}, 404)
     kind, path = resolve(rel, dirs)
     if kind == "file":
         return FileResponse(path, media_type=ctype(path), headers={"Cache-Control": "no-cache"})

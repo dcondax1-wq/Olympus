@@ -815,6 +815,13 @@ def main(argv=None) -> int:
             _wmr.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
+        # your day (tools/calendar_sync.py, docs/CONNECT_DAY.md): your calendars -> data/day/day.json every 15 minutes, only once
+        # you connected one (CONNECT_DAY.bat); private, read by the phone through the PC's own link; soft, never stops this run
+        try:
+            from tools import calendar_sync as _cal
+            _cal.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
     return 0
 
 
