@@ -64,7 +64,7 @@ website is marked "a perfect lead for a free demo").
 | `src/assets/site.css`, `site.js` | One stylesheet (the three `[data-preset]` palettes live only here; `build.css_presets()` reads them), one small script (menu, `?preset=`, `?plan=`, the self-check scoring, one-tap send). Both fingerprinted at build (`site.<hash>.css`), CSS minified. |
 | `src/quiz.json` | The 10 self-check questions (weights add up to 100, "not sure" counts half). |
 | `src/_headers` | Netlify headers: strict CSP (only the site's own files, `form-action 'self'`, no framing), nosniff, referrer policy, a year of cache for `/assets/*`. |
-| `src/img/ex/*.webp`, `src/img/og-*.png` | The example screenshots (phone after / before, desktop) and one share picture per preset. Made by `shots.py`; they never show the agency name, so a new name needs no new pictures. |
+| `src/img/ex/*.webp`, `src/img/og-*.jpg` | The example screenshots (phone after / before, desktop) and one share picture per preset. Made by `shots.py`; they never show the agency name, so a new name needs no new pictures. |
 | `examples/` | `examples.json` (the three fictional businesses in the shared client record shape + before/after notes), `barber/`, `plumber/`, `restaurant/` (each `index.html` + `style.css`), `demo.js` (open-now badge, demo forms that send nothing, `?shot` screenshot mode, `?now=` clock). |
 | `mockups/` | The made-up "before" pages (desktop-only, dated), used only for the before screenshots, never deployed. |
 | `grade.py` | The real grader (below). |

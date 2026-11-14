@@ -6,7 +6,7 @@
     flock -w 2400 /tmp/olympus_browser.lock python agency/storefront/shots.py --review     docs/shots/agency_storefront/*.png
 
 --examples: each demo site on a phone (390 x 844) and a desktop (1440 x 900), the matching made-up "before" page on a phone,
-            and one share picture per colour preset -> src/img/ex/*.webp, src/img/og-*.png.
+            and one share picture per colour preset -> src/img/ex/*.webp, src/img/og-*.jpg.
             The demos are shot in screenshot mode (?shot: no ribbon, a fixed Friday-evening clock), so no picture shows
             the agency name and a new name never needs new pictures.
 --review:   every storefront page at 390 x 844 and 1440 wide, the other two presets, the three demos, for a human look.
@@ -57,11 +57,17 @@ def launch(pw):
 
 
 def settle(page):
-    """every lazy picture loaded and the fonts in, so a full-page shot has no holes"""
-    page.evaluate("""() => { document.querySelectorAll('img[loading=lazy]').forEach(i => { i.loading = 'eager'; }); }""")
+    """every picture loaded AND decoded and the fonts in, so a full-page shot has no blank picture"""
+    page.evaluate("""() => { document.querySelectorAll('img').forEach(i => { i.loading = 'eager'; i.decoding = 'sync'; }); }""")
     page.wait_for_function("() => Array.from(document.images).every(i => i.complete)", timeout=20000)
-    page.evaluate("() => document.fonts ? document.fonts.ready.then(() => true) : true")
-    page.wait_for_timeout(150)
+    page.evaluate("""async () => {
+        await Promise.all(Array.from(document.images).map(i => i.decode ? i.decode().catch(() => null) : null));
+        if (document.fonts) { await document.fonts.ready; }
+        const y = scrollY;
+        for (let s = 0; s < document.documentElement.scrollHeight; s += innerHeight) { scrollTo(0, s); await new Promise(r => requestAnimationFrame(r)); }
+        scrollTo(0, y);
+        await new Promise(r => setTimeout(r, 120));
+    }""")
 
 
 def webp(png: bytes, size: tuple, out: Path, q: int = 74) -> int:
@@ -70,6 +76,14 @@ def webp(png: bytes, size: tuple, out: Path, q: int = 74) -> int:
     buf = io.BytesIO()
     im.save(buf, "WEBP", quality=q, method=6)
     out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(buf.getvalue())
+    return len(buf.getvalue())
+
+
+def jpeg(png: bytes, out: Path, q: int = 84) -> int:
+    from PIL import Image
+    buf = io.BytesIO()
+    Image.open(io.BytesIO(png)).convert("RGB").save(buf, "JPEG", quality=q, optimize=True, progressive=True)
     out.write_bytes(buf.getvalue())
     return len(buf.getvalue())
 
@@ -134,8 +148,11 @@ def shoot_examples(br, url: str) -> list[str]:
         p = ctx.new_page()
         p.set_content(og_html(preset), wait_until="load")
         settle(p)
-        n = png_small(p.screenshot(), IMG / f"og-{preset}.png")
-        done.append(f"img/og-{preset}.png {n // 1024} KB")
+        n = jpeg(p.screenshot(), IMG / f"og-{preset}.jpg")
+        done.append(f"img/og-{preset}.jpg {n // 1024} KB")
+        old = IMG / f"og-{preset}.png"
+        if old.exists():
+            old.unlink()
         ctx.close()
     return done
 
@@ -162,6 +179,10 @@ def shoot_review(br, url: str) -> list[str]:
         if prep:
             prep(p)
             settle(p)
+        if full:                      # a full-page shot paints fixed bars mid-page: hide them, start at the top
+            p.add_style_tag(content=".dock, .bar { display: none !important; }")
+            p.evaluate("() => scrollTo(0, 0)")
+            p.wait_for_timeout(100)
         n = png_small(p.screenshot(full_page=full), REVIEW / name, quantize=full)
         done.append(f"{name} {n // 1024} KB")
         ctx.close()

@@ -736,11 +736,11 @@ def build(out_dir: Path, preset: str | None = None, cfg: dict | None = None) -> 
     for p in sorted(img_dir.rglob("*")) if img_dir.exists() else []:
         if p.is_file() and not p.name.startswith("og-"):
             files["img/" + p.relative_to(img_dir).as_posix()] = p.read_bytes()
-    og = img_dir / f"og-{preset}.png"
+    og = img_dir / f"og-{preset}.jpg"
     if og.exists():
-        files["img/og.png"] = og.read_bytes()
+        files["img/og.jpg"] = og.read_bytes()
     else:
-        warnings.append(f"share picture missing (src/img/og-{preset}.png): run python agency/storefront/shots.py")
+        warnings.append(f"share picture missing (src/img/og-{preset}.jpg): run python agency/storefront/shots.py")
     for t in TRADES:
         for kind in ("after", "before", "desktop"):
             if "img/ex/%s-%s.webp" % (t, kind) not in files:
@@ -788,7 +788,7 @@ def build(out_dir: Path, preset: str | None = None, cfg: dict | None = None) -> 
         tpl = tpl[m.end():]
         root = "/" if name == "404.html" else ""
         url = f"{site_url}/{'' if name == 'index.html' else name}" if site_url else ""
-        og_img = (f"{site_url}/img/og.png" if site_url else f"{root}img/og.png") if "img/og.png" in files else ""
+        og_img = (f"{site_url}/img/og.jpg" if site_url else f"{root}img/og.jpg") if "img/og.jpg" in files else ""
         head_extra = []
         if url and name not in NO_INDEX:
             head_extra.append(f'<link rel="canonical" href="{esc(url)}">')

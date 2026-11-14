@@ -362,9 +362,9 @@ def part_a(tmp: Path):
           {k: v // 1000 for k, v in wd.items()})
     shots = [f for f in files if f.startswith("img/")]
     sizes = {f: (site / f).stat().st_size for f in shots}
-    check("a. the 9 example screenshots are WebP under 90 KB each, the share picture under 400 KB",
+    check("a. the 9 example screenshots are WebP under 90 KB each, the share picture (JPEG) under 200 KB",
           len([f for f in shots if f.startswith("img/ex/") and f.endswith(".webp")]) == 9
-          and all(v < 90_000 for f, v in sizes.items() if f.startswith("img/ex/")) and sizes.get("img/og.png", 10 ** 9) < 400_000,
+          and all(v < 90_000 for f, v in sizes.items() if f.startswith("img/ex/")) and sizes.get("img/og.jpg", 10 ** 9) < 200_000,
           {k: v // 1000 for k, v in sizes.items()})
 
     # colours
