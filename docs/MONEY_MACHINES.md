@@ -178,6 +178,62 @@ challenge tracker about $16.68 (on sale from $22.24), trading journals $9.90-35,
 
 ---
 
+## 4. Rank-and-rent / lead-gen sites (research and plan only; nothing built, nothing bought)
+
+**How it works.** Build a small website for one service in one town ("emergency plumber, Loveland CO"), get it into Google's
+results, then rent the whole site to one local business for a monthly fee, or sell it the calls and form requests (pay per lead).
+Calls go through a tracking number that forwards to the business, so both sides can count them.
+
+**What it costs.**
+
+| Item | Cost | Note |
+|---|---|---|
+| Domain (.com) | about $10-15 a year | the owner's choice; nothing here buys one |
+| Hosting | $0 | a static site on a free plan, the same way as the agency's demo sites |
+| Call tracking (optional) | $1.15 a month per local number + $0.0085 a minute for incoming calls | Twilio's US price page (Aug 2026); without it you cannot prove the calls |
+| Building the site | 6-10 hours | with the agency site generator (B1) and your own writing |
+| Keeping it alive | 1-2 hours a month | one useful page a month, check Search Console (free) |
+
+**No Google Business Profile.** Google's guidelines do not allow profiles for lead-generation businesses or at virtual offices, and a
+fake listing gets suspended (and misleads people). So rank-and-rent here means the normal (organic) results only, which is harder
+than the map.
+
+**How long to rank.** SEO agency estimates for a new local site: **3-12 months**, a brand-new domain at the slow end, crowded trades and
+big cities longer. AI answers in Google take clicks from "how to" searches; urgent "near me" service searches still bring calls (one
+2026 guide's view).
+
+**What it pays.** One 2025 guide: $500-3,000 a month flat, or $20-100 per exclusive lead (not checked for 2026). For a small town and a
+quiet trade, **$300-750 a month** is a more careful first rent. If the business stops paying, the site earns $0 until a new one rents it.
+
+**Legal and fair-play notes (not legal advice).**
+1. Say what the site is: a referral service, not the business itself ("We connect you with a local licensed plumber"). Once rented,
+   show the tenant's real name, address and licence numbers (theirs). Misleading people is an unfair practice under the FTC Act.
+2. Never claim a licence, insurance, years in business, awards or reviews the tenant does not have. No fake reviews (the FTC's 2024 rule).
+3. Recording calls: in all-party-consent states (California, Delaware, Florida, Illinois, Maryland, Massachusetts, Montana, Nevada,
+   New Hampshire, Pennsylvania, Washington) everyone must agree: play "this call may be recorded" or do not record.
+4. The site only receives calls: no cold texts or robocalls (the TCPA).
+5. Forms: a short privacy page, ask only for what the tenant needs (name, phone, the job); California visitors have privacy rights.
+6. No brand names in domains ("carrier-ac-repair-..."), no copied photos.
+7. Some states regulate referral services in some trades, and lawyers and doctors have strict advertising rules: avoid those niches,
+   check the state's rules before renting in home improvement.
+8. A simple monthly agreement (team B6's agreement template): what is included, one month's notice, the domain stays yours.
+9. Rent is business income (team B6's business setup notes).
+
+**The plan, if the owner wants to try (one site, a 6-month test).**
+1. Pick one high-ticket trade (plumbing, heating, roofing, tree service, garage doors) in one small town (20,000-80,000 people) where
+   the agency's lead finder shows many businesses without a website: weak online competition.
+2. Week 1: one domain (about $12), a 5-page site from the agency generator (services, the town, FAQ, about, contact), free hosting,
+   Google Search Console (free) with the sitemap.
+3. Months 1-6: one useful page a month (costs, how to choose a pro, seasonal checks). Watch impressions and clicks in Search Console.
+4. When the site brings about 5 calls or forms a month, offer it to 3 local businesses with the agency pitch kit: "these calls come from
+   my site; a free first month, then $X a month".
+5. Stop rule: nothing on page 1 after 6 months, stop paying for the domain, or turn the site into a portfolio piece for the agency.
+
+Honest view: the slowest and least certain machine here (**$0 at 3 months, $0-750 a month per site at 12 months**). Do it only after
+the gigs and the agency are running.
+
+---
+
 ## Sources (web search on 2026-11-14; the official pages could not be opened from this sandbox, so each line is the search engine's reading of the page: re-check before relying on a number)
 
 Freelance platforms
@@ -215,3 +271,9 @@ Digital product platforms
 - Payhip plans 5% / 2% / 0%: [sellfy summary](https://sellfy.com/blog/payhip-pricing/), [passivekit](https://passivekit.com/payhip-pricing/)
 - Comparable products: [Etsy prop firm challenge tracker](https://www.etsy.com/listing/4606983180), [Etsy trading journal](https://www.etsy.com/listing/4601752496), [Etsy 100 Instagram templates](https://www.etsy.com/listing/900701313/100-instagram-post-templates-instagram?pro=1), [Etsy HTML website template](https://www.etsy.com/listing/4442821091/responsive-website-template-html-css)
 - Contract values ($ per point) in the tracker: the exchanges' contract specifications (MNQ $2, NQ $20, MES $5, ES $50, M2K $5, RTY $50, MYM $0.50, YM $5, MGC $10, GC $100, MCL $100, CL $1,000 per 1.00)
+
+Rank-and-rent
+- How it works and prices: [Search Engine Journal](https://www.searchenginejournal.com/rank-and-rent/321315/), [Alejandro Rioja 2026 guide](https://alejandrorioja.com/rank-and-rent/), [Ippei local lead-gen guide](https://ippei.com/local-lead-generation-guide/), [Side Hustle Nation](https://www.sidehustlenation.com/rank-and-rent-websites/)
+- Google Business Profile: [guidelines (service-area / virtual offices)](https://support.google.com/business/answer/3038177), [Search Engine Journal on suspensions](https://www.searchenginejournal.com/google-business-profile-suspended/448553/), [PaperStreet on virtual offices](https://www.paperstreet.com/blog/can-i-list-my-business-on-google-maps-using-a-virtual-office/)
+- Time to rank: [BrightLocal](https://www.brightlocal.com/research/long-take-rank-local-search/), [SEO Discovery](https://www.seodiscovery.com/blog/how-long-does-it-take-for-seo-to-work/), [PushLeads](https://pushleads.com/how-to-improve-google-rankings/how-long-rank-google/)
+- Call tracking price: [Twilio US voice pricing](https://www.twilio.com/en-us/voice/pricing/us); all-party consent states: [Layer3 Labs (Aug 2026)](https://www.layer3labs.io/guides/two-party-consent-states), [Scribbl](https://scribbl.co/post/do-you-have-to-tell-people-youre-recording)
