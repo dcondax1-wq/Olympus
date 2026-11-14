@@ -54,7 +54,7 @@ function statusOf(q) {
   if (q.cb && q.win && q.win.legal) return { cls: 'ok', pill: 'Callback now', text: 'They asked you to call back about now.' };
   if (!q.win || q.win.code === 'nozone') return { cls: 'warn', pill: 'No state', text: 'Add the state: the time zone is unknown.' };
   if (q.win.code === 'best') return { cls: 'ok', pill: 'Good now', text: q.win.text };
-  if (q.win.code === 'ok') return { cls: 'warn', pill: 'Legal now', text: q.win.text };
+  if (q.win.code === 'ok') return { cls: 'warn', pill: 'Legal now', text: 'Legal now, not their best time' + (q.win.next ? '; best ' + C.whenWords(q.win.next.start, q.win.zones[0], S.now()) + ' their time' : '') + '.' };
   return { cls: 'info', pill: q.win.next ? 'Opens ' + myWhen(q.win.next.start) : 'Closed', text: q.win.text };
 }
 

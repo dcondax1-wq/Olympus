@@ -109,7 +109,8 @@ def test_static():
     tr = R["trades"]
     check("a. trades: restaurants 2-4 pm (and 9:30-11), contractors 8-9 am and 4-6 pm, every window inside 8 am-9 pm on weekdays, an 'other' fallback",
           [840, 960] in tr["restaurant"]["win"] and tr["contractor"]["win"] == [[480, 540], [960, 1080]] and "other" in tr
-          and all(480 <= w[0] < w[1] <= 1260 for T in tr.values() for w in T["win"]) and all(set(T["days"]) <= {1, 2, 3, 4, 5} for T in tr.values()))
+          and all(480 <= w[0] < w[1] <= 1260 for T in tr.values() for w in T["win"]) and all(set(T["days"]) <= {1, 2, 3, 4, 5} for T in tr.values())
+          and all(T.get("one") and T.get("plural") for T in tr.values()))
     cad = R["cadence"]
     check("a. the 7-day plan: day 1 call + voicemail 1 + email 1 ... day 7 last call + goodbye email; texts only on the consent step", [c["day"] for c in cad] == [1, 2, 3, 4, 5, 7]
           and cad[0]["vm"] == "vm1" and cad[0]["email"] == "e1" and cad[-1]["email"] == "e4" and [c.get("text") for c in cad if c.get("text")] == ["t2"])
@@ -512,7 +513,7 @@ def test_node():
     check("c. a demo-site link from the data is used only when it is plain http(s): javascript:, data: and quote tricks are dropped", F["url"] == ["https://example.com/demo/taco-town", "", "", "", "http://ok.example/p"], F["url"])
     check("c. the queue: the callback due first, good now, legal now, opens later, the DNC-listed one last", F["queue"] == ["Callback:0", "Good:1", "Legal:2", "Later:3", "Locked:9"], F["queue"])
     check("c. today's call plan in YOUR time zone (New York): restaurants now to 4, Chicago's offices 3-5:30 pm, Florida's contractors 4-6 pm, Guam's at 8 am their time = 5 pm yours",
-          F["plan"] == ["restaurants 2:30 pm-4:00 pm", "local offices 3:00 pm-5:30 pm", "contractors 4:00 pm-6:00 pm", "contractors 5:00 pm-6:00 pm"], F["plan"])
+          F["plan"] == ["restaurant 2:30 pm-4:00 pm", "local office 3:00 pm-5:30 pm", "contractor 4:00 pm-6:00 pm", "contractor 5:00 pm-6:00 pm"], F["plan"])
 
 
 # ------------------------------------------------------------------------------------------------ d. Chromium

@@ -539,7 +539,7 @@ export function callPlan(st, nowMs, rules, myTz) {
     for (let i = 0; i < 4; i++) {
       const w = nextWindow(g.lead, t, rules, st.settings, { zones: g.zones, how: 'plan', state: g.state });
       if (!w || w.start >= end) break;
-      out.push({ trade: g.trade, label: T.plural, n: g.n, start: w.start, end: w.end, theirs: span(partsIn(w.start, g.zones[0]).min, partsIn(w.end, g.zones[0]).min), mine: span(partsIn(w.start, my).min, partsIn(w.end, my).min), zone: g.zones[0] });
+      out.push({ trade: g.trade, label: g.n === 1 ? T.one || T.plural : T.plural, n: g.n, start: w.start, end: w.end, theirs: span(partsIn(w.start, g.zones[0]).min, partsIn(w.end, g.zones[0]).min), mine: span(partsIn(w.start, my).min, partsIn(w.end, my).min), zone: g.zones[0] });
       t = w.end + 60000;
     }
   }
