@@ -114,11 +114,11 @@ def live_cases():
     """The owner's live values (2026-10-25): room_f 0.8 and no eval weekly loss stop, still inside every ceiling."""
     live_checks(check)
     L = dict(LIVE)
-    # 88-pt stop = $178.40 a micro: 80% of $230 = $184 -> 1; 80% of $220 = $176 -> skip
-    r1 = lq(88.0, 200.0, st_of(profit=-1770.0, room=230.0, session=4), cfg=L)
-    r0 = lq(88.0, 200.0, st_of(profit=-1780.0, room=220.0, session=4), cfg=L)
-    check("LIVE two_week (room_f 0.8): 88-pt stop, room $230 -> 1 micro ($178.40 <= $184)", int(r1["qty"]) == 1, r1)
-    check("LIVE two_week (room_f 0.8): 88-pt stop, room $220 -> skip ($178.40 > $176)", skipped(r0), r0)
+    # 88-pt stop = $178.40 a micro: 40% of $450 = $180 -> 1; 40% of $440 = $176 -> skip (owner "yes 40%", 2026-11-14)
+    r1 = lq(88.0, 200.0, st_of(profit=-1550.0, room=450.0, session=4), cfg=L)
+    r0 = lq(88.0, 200.0, st_of(profit=-1560.0, room=440.0, session=4), cfg=L)
+    check("LIVE two_week (room_f 0.4): 88-pt stop, room $450 -> 1 micro ($178.40 <= $180)", int(r1["qty"]) == 1, r1)
+    check("LIVE two_week (room_f 0.4): 88-pt stop, room $440 -> skip ($178.40 > $176)", skipped(r0), r0)
     # no weekly stop: week -$1,190 still trades (the soft daily loss and the room still bound it)
     r = lq(40.0, 200.0, st_of(room=1500.0, session=3, wk_pnl=-1190.0), cfg=L)
     check("LIVE: no eval weekly loss stop: week -$1,190, 40-pt stop -> trades, inside 80% room and the $1,000 day",

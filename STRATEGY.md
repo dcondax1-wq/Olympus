@@ -131,7 +131,7 @@ Every one of these counts as liquidity:
     the first entry's, inside 60% of the room and the soft daily loss that is left.
   - If the target, the stop or the eval state is missing at an entry, the bot sizes it with the eval mode below and logs why.
   - Code: `engine/sizing.py` (`two_week_qty`, `eval_state`, `eval_session`, `eval_clock`, `lit_qty` mode `two_week`), settings
-    `lit_sizing.two_week` (`base need`, `room_f 0.8` (owner 2026-10-25; 0.55 on 2026-10-24, 0.6 before), `wk false`, `dll_cap true`, `stop_at_target true`);
+    `lit_sizing.two_week` (`base need`, `room_f 0.4` and `two_week_until 80` (owner 2026-11-14 "yes 40%": fewer failed evals, more $ per eval; 0.8 on 2026-10-25; 0.55 on 2026-10-24, 0.6 before), `wk false`, `dll_cap true`, `stop_at_target true`);
     `lit_sizing.wk_loss_usd null` (eval weekly loss stop off since 2026-10-25); `lit_sizing.funded` `pct 0.6`, `pct_max_usd 1500`, `max_win 2000`.
 - **Eval sizing (on 2026-10-18 until the two-week mode replaced it; `"mode": "eval"` switches back):** $800 up to a **25-point** stop, then 800 × 25 ÷ stop
   (times the weekly stop's half, rounded down once), then never more than **60% of the room** between the eval balance and the

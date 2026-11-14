@@ -16,7 +16,7 @@ Claude got everything ready. **You arm the eval yourself** (MFFU requires you to
 | Zlarior (50K eval, LIT) | live after your phrase; drawdown left $1,145 of $2,000 at the last report (2026-11-07) |
 | ATLAS (25K eval) | live after your phrase; drawdown left $822 of $1,000 at the last report |
 | BLITZ | paper (unchanged) |
-| Size | the eval is past session 10, so the code uses safe_eval: Zlarior at most 60% of the room on one trade (about $630-690), ATLAS at most 30% (corrected 2026-11-12 21:45: the earlier $916 / 80% line was wrong; research/writeups/eval-guard-2026-11-13.md) |
+| Size | two-week mode kept past session 10 (owner "yes 40%", 2026-11-14): Zlarior risks at most 40% of the room on one trade (about $420-460 at a $1,145 room); a wide stop that does not fit is skipped |
 | Phone | alerts on trade open / close with $, FEED STALE, bot down (ntfy); the site shows the PC's status every 15 min |
 | Stop everything | `STOP_BOT.bat` (orders at the broker keep their stop and target) |
 

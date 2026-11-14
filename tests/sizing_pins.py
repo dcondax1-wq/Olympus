@@ -42,8 +42,9 @@ PINNED["wk_loss_usd"] = 1200
 PINNED["funded"] = dict(OLD_FUNDED)
 
 # the owner's values today: change these (and the write-up) together with live_model.json
-OWNER = {"two_week.room_f": 0.8, "wk_loss_usd": None, "funded.pct": 0.6, "funded.pct_max_usd": 1500,
-         "funded.max_win": 2000, "funded.skip_breach": True, "mode": "two_week", "two_week_until": 10,
+# 2026-11-14 owner "yes 40%" (research/writeups/eval-guard-2026-11-13.md): two_week room_f 0.8 -> 0.4, kept past session 10
+OWNER = {"two_week.room_f": 0.4, "wk_loss_usd": None, "funded.pct": 0.6, "funded.pct_max_usd": 1500,
+         "funded.max_win": 2000, "funded.skip_breach": True, "mode": "two_week", "two_week_until": 80,
          "after_mode": "safe_eval"}
 OWNER_25K_FUNDED = {"pct": 0.6, "pct_max_usd": 750, "max_win": 1000, "skip_breach": True}
 

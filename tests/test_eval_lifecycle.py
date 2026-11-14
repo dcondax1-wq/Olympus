@@ -67,7 +67,10 @@ def sizing_checks():
     days["2026-10-15"] = -50.0
     days["2026-10-16"] = 3250.0
     s11 = sz.eval_state(days, 0.0, session=11, today="2026-10-19")
-    on, off = q_of(L, s11), q_of({**L, "pass_lock": False}, s11)
+    # the safe_eval path after session two_week_until (10 here; the live value is 80 since 2026-11-14 "yes 40%")
+    L10 = {**L, "two_week_until": 10}
+    on, off = q_of(L10, s11), q_of({**L10, "pass_lock": False}, s11)
+    check("live config (two_week kept past session 10): a passed eval does not trade either", q_of(L, s11)["qty"] == 0, q_of(L, s11))
     check("passed eval after session 10 (safe_eval): no trade (pass_lock)", on["qty"] == 0 and on.get("lock") == "passed", on)
     check("pass_lock false = the old sizing (safe_eval kept trading a passed eval)", off["qty"] > 0, off)
     # fail day: room <= 0 -> 0; the room caps' min-1-micro rule traded 1 micro before
@@ -151,9 +154,12 @@ def bot_checks(tmp):
     b.cfg["eval_prior_pnl"] = 0.0
     q = b._equity_qty(T_WED, 13, p)
     check("LiveBot pass day +1 with 1 traded day: the 1-micro minimum-days trade", q == 1, q)
-    b, sent = bot({"2026-10-05": -50.0, "2026-10-16": 3250.0}, L, start="2026-10-05")
+    b, sent = bot({"2026-10-05": -50.0, "2026-10-16": 3250.0}, {**L, "two_week_until": 10}, start="2026-10-05")
     q = b._equity_qty(T_WED, 13, p)
     check("LiveBot passed eval after session 10 (safe_eval): no trade", q == 0, q)
+    b, sent = bot({"2026-10-05": -50.0, "2026-10-16": 3250.0}, L, start="2026-10-05")
+    q = b._equity_qty(T_WED, 13, p)
+    check("LiveBot passed eval after session 10 (live: two_week kept): no trade", q == 0, q)
     b, sent = bot({"2026-10-19": -1950.0}, L)
     q = b._equity_qty(T_WED, 13, p)
     b._eval_life_tick()

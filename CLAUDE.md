@@ -57,7 +57,7 @@ there, not here.
   two_week. **Scale-in is built but OFF** until the owner's Sim roundtrip passes. Change both `live_model.json` and
   `live_model_lit.json`, then rerun `python tools/lit_losses.py live`.
 - **Headline (run `lit_live`, costs in):** 2026 PF 4.19, +$43,820; **quote the H2 check rate: PF 2.91, +$9,919 (~$2,670/mo)** (cisd1m 22 since 2026-10-24).
-  **Uprisk (owner 2026-10-25, `uprisk.md`):** eval two_week room_f 0.8, no eval weekly stop (2-week pass/fail H2 58.6/20.9,
+  **Uprisk (owner 2026-10-25, `uprisk.md`):** eval two_week room_f 0.4 kept past session 10 (owner "yes 40%" 2026-11-14, `eval-guard-2026-11-13.md`; was 0.8), no eval weekly stop (2-week pass/fail H2 58.6/20.9,
   was 53.7/2.2); funded 60% of room, <= $1,500, winner <= $2,000 (~$915/mo H2 to the owner, 0% lost).
 - **Live loop:** `engine/lit_live.py`; PC bot `engine/live.py` (`server.py`, http://localhost:8766) routes to NinjaTrader 8
   via `engine/ninjatrader.py` (Sim by default); cloud monitor `tools/cloud_monitor.py` (GitHub Actions, every 15 min,

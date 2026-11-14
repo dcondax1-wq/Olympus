@@ -209,8 +209,9 @@ def bot_checks(tmp):
           "MFFU anchor" in steps and "48,168.20" in steps["MFFU anchor"]["text"] and "3,289" in steps["Left to +$3,000"]["value"]
           and "1,543" in steps["55% room cap"]["text"], sz_out["steps"])
     sz_l = brain._sizing({"risk": 30.0, "tgt": 200.0, "what": "test"}, {"lit_sizing": LIVE, "eval_state": st}, None, {}, None)
-    check("Bot Brain sizing on the live config: the room cap step names the live room_f (80%), not a fixed 60%",
-          any(s_["label"] == "80% room cap" for s_ in sz_l["steps"]), sz_l["steps"])
+    live_pct = int(round(float(LIVE["two_week"]["room_f"]) * 100))
+    check(f"Bot Brain sizing on the live config: the room cap step names the live room_f ({live_pct}%), not a fixed 60%",
+          any(s_["label"] == f"{live_pct}% room cap" for s_ in sz_l["steps"]), sz_l["steps"])
 
     # the session after: a routed +$500 day raises the floor
     clock.t = T_TUE + 290
