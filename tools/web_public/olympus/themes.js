@@ -456,7 +456,7 @@
     var muted = [out.n24];
     for (s = 0; s <= 4; s++) { out['a' + s] = readable(out['a' + s], muted, 4.5); if (s <= 3) { out['g' + s] = readable(out['g' + s], muted, 4.5); out['r' + s] = readable(out['r' + s], muted, 4.5); } }
     var two = [out.n3, out.n4, out.a1, out.a3].concat(R.surf || []);
-    for (s = 7; s <= 15; s++) { if (s >= 8) out['a' + s] = readable(out['a' + s], two, 4.5); out['g' + s] = readable(out['g' + s], two, 4.5); out['r' + (s + 1 > 15 ? 15 : s + 1)] = readable(out['r' + (s + 1 > 15 ? 15 : s + 1)], two, 4.5); }
+    for (s = 7; s <= 15; s++) { out['g' + s] = readable(out['g' + s], two, 4.5); if (s >= 8) { out['a' + s] = readable(out['a' + s], two, 4.5); out['r' + s] = readable(out['r' + s], two, 4.5); } }
     out.warn = readable(out.warn, two, 4.5);
     return out;
   }
