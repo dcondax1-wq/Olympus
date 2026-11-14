@@ -373,6 +373,8 @@ def ready_push(snap: dict, now=None) -> list:
     NinjaTrader and the feed, and what is wrong with its one action. Silent (low) when all is well, high when not. The 15-minute
     report's own condition codes come in snap["cond"] (tools/pc_report.conditions)."""
     now = int(now or snap.get("t") or time.time())
+    if not isinstance(snap, dict) or "hb_age" not in snap:
+        return []                       # only the 15-minute report's own look at the PC (tools/pc_report.gather) can say ready or not
     e = dt.datetime.fromtimestamp(now, ET)
     m = e.hour * 60 + e.minute
     if e.weekday() >= 5 or not (READY_FROM <= m < READY_TO):

@@ -731,6 +731,8 @@ def ready():
     rd = rdy(m)
     check("3. 85% of the drawdown used is not 'NOT ready' (it has its own push): still Ready", rd and rd[0]["title"].startswith("Ready"), rd)
     check("3. ready titles are ASCII and short", all(ascii_ok(x["title"]) and len(x["title"]) <= 118 for x in LC.ready_push(snap(mon, live_of(mon)), mon)))
+    _s, m = G.guard({}, {"t": mon}, roll_state={})
+    check("3. a guard call without the report's look at the PC (no hb_age) never says ready or not (tests/test_roll_now's bare calls)", not rdy(m), m)
 
 
 def ready_report():
