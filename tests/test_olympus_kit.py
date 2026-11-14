@@ -125,8 +125,11 @@ def test_static():
     render = read(os.path.join(KIT, "render.js"))
     check("a. power (docs/OLYMPUS_PERF.md): the kit has saver() (battery API, Save-Data, the owner's 'olympus.saver'), idle(), frameGap(), covered(); hidden() includes covered",
           all(x in js for x in ("getBattery", "saveData", "'olympus.saver'", "frameGap: function", "idle: function", "covered: function", "|| covered;", "data-oly-covered", "e.origin === location.origin")))
-    check("a. the render core keeps the kit's frame gap (30 fps idle on high, 15 on low), never steps down because of its own cap, caps the pixel ratio at 1.5 in saver, sleeps when covered",
-          all(x in render for x in ("O.frameGap", "gap + 9", "saver ? 1.5 : 9", "pageHidden()", "O.onPower"))
+    # perf v2 (2026-11-14): the pixel ratio comes from the render-scale governor (olympus/render-scale.js); the saver cap of 1.5 lives in its range()
+    rscale = read(os.path.join(KIT, "render-scale.js"))
+    check("a. the render core keeps the kit's frame gap (30 fps idle on high, 15 on low), never steps down because of its own cap, caps the pixel ratio at 1.5 in saver (the governor's range), sleeps when covered",
+          all(x in render for x in ("O.frameGap", "gap + 9", "saver: !!(Ok && Ok.saver && Ok.saver())", "pageHidden()", "O.onPower"))
+          and "if (x.saver) { budget = Math.min(budget, 1.5); ceil = Math.min(ceil, 1.5); }" in rscale
           and all(x in js for x in ("idle ? (level === 'low' ? 66 : 33) : 0", "idle ? 500 : 0", "saverNow()) return idle ? 66 : 33")))
     check("a. ambience: every app of the kit has a bed in the AMBIENT table, each bed exists in sfx.js, none starts before a gesture or when muted / saver / Jarvis talks",
           all(f"{a}:" in js.split("var AMBIENT = {")[1].split("};")[0] for a in list(APPS) + list(MORE) + ["bridge"]) and "OLYMPUS_QUIET" in js
