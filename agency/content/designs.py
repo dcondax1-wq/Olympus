@@ -658,7 +658,7 @@ transform:rotate(-3.2deg);box-shadow:0 40px 70px -30px rgba(0,0,0,.45),0 2px 6px
 .L-frame .ph .pt{{position:absolute;inset:0;background:{trade_pattern(b['motif'], b['vars']['line_d'], 1)};opacity:.8}}
 .L-frame .ph .mono{{position:relative;font-family:var(--fa),serif;font-style:var(--fas);font-weight:var(--faw);font-size:{300 if st else 220}px;line-height:1;color:var(--accd)}}
 .L-frame .ph .ic{{position:absolute;right:{28 if st else 22}px;bottom:{28 if st else 22}px;width:{110 if st else 80}px;height:{110 if st else 80}px;color:var(--ink);opacity:.85}}
-.L-frame .cap{{font-family:var(--fh),cursive;font-weight:600;color:var(--pink);text-align:center;line-height:1;padding-top:{30 if st else 22}px}}
+.L-frame .cap{{font-family:var(--fh),cursive;font-weight:600;color:var(--pink);text-align:center;line-height:1.05;margin-top:{30 if st else 22}px}}
 .L-frame .tape{{position:absolute;left:50%;top:-22px;width:{200 if st else 160}px;height:44px;margin-left:-{100 if st else 80}px;background:var(--acc);opacity:.75;transform:rotate(2deg)}}
 .L-frame .wrap{{position:absolute;left:{120 if st else 96}px;right:{120 if st else 96}px;top:{top + ph + (120 if st else 44)}px;bottom:{500 if st else 140}px;display:flex;
 flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:{26 if st else 16}px}}

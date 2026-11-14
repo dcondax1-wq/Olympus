@@ -396,7 +396,7 @@ def _not_blank(path: str) -> bool:
     try:
         from PIL import Image
         im = Image.open(path).convert("RGB").resize((64, 64))
-        return len(set(im.getdata())) > 24
+        return len(im.getcolors(maxcolors=64 * 64) or []) > 24
     except ImportError:
         return os.path.getsize(path) > 15000
 
@@ -482,6 +482,7 @@ def part_f():
             pg.emulate_media(media="print")
             fit = pg.evaluate("(() => { const s = document.querySelector('.sheet'); return [s.scrollHeight, s.clientHeight]; })()")
             pg.emulate_media(media="screen")
+            pg.set_viewport_size({"width": 390, "height": 844})
             check("f. in print the whole report fits the Letter page (nothing clipped)", fit[0] <= fit[1] + 1, fit)
             pg.goto("file://" + os.path.join(out, "contact_sheet.html"), wait_until="load")
             pg.wait_for_function("document.documentElement.getAttribute('data-ready') === '1'", timeout=20000)
@@ -491,6 +492,10 @@ def part_f():
             pg.wait_for_function("Array.from(document.images).every(i => i.complete)", timeout=30000)
             loaded = pg.evaluate("Array.from(document.images).filter(i => i.complete && i.naturalWidth > 0).length")
             tap = pg.evaluate("Array.from(document.querySelectorAll('button.copy')).every(b => b.getBoundingClientRect().height >= 44)")
+            shape = pg.evaluate("Array.from(document.querySelectorAll('.media img')).map(i => { const r = i.getBoundingClientRect(); "
+                                "return Math.round(100 * r.height / r.width); })")
+            check("f. the contact sheet shows each image whole: squares 1:1, stories 9:16 (no zoomed crops)",
+                  shape and all(v in (100, 177, 178) for v in shape), sorted(set(shape))[:6])
             check("f. the contact sheet at 390 px: no sideways scroll, all 24 images load, Copy buttons are 44 px tall", sw <= 390 and loaded == 24 and tap, (sw, loaded, tap))
             ctx.close()
             pdf = os.path.join(tmp, "report.pdf")

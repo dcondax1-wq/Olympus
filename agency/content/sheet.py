@@ -92,7 +92,7 @@ ol.steps{margin:0;padding-left:20px;display:grid;gap:8px;color:var(--ink2)}ol.st
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;scroll-margin-top:12px}
 .card.done{opacity:.55}
 .media{position:relative;display:grid;grid-template-columns:3fr 1fr;gap:6px;padding:8px;background:var(--bg)}
-.media img{width:100%%;display:block;border-radius:9px;background:#ddd}
+.media img{width:100%%;height:auto;display:block;border-radius:9px;background:#ddd}
 .media .sq{aspect-ratio:1/1;object-fit:cover}
 .media .st{aspect-ratio:9/16;object-fit:cover;align-self:end}
 .ph{aspect-ratio:1/1;border-radius:9px;background:var(--hero);color:var(--heroink);display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;font:800 18px/1.25 "Manrope"}
@@ -190,7 +190,7 @@ def contact_sheet(plan: dict, brand: dict, images: bool = True, html_pages: bool
             f'{" &middot; " + esc(b["city"]) if b.get("city") else ""}</div><h1>{esc(b["name"])}</h1><div class="month">{esc(plan["label"])}</div>'
             f'<div class="stats"><span class="stat"><b>{n}</b> posts</span><span class="stat"><b>{n}</b> stories</span>'
             f'<span class="stat">about <b>{max(1, round(n / (S_weeks(plan))))}</b> a week</span>'
-            f'<span class="stat"><b>{len(plan["checks"])}</b> questions for the client</span></div></div></header>')
+            f'<span class="stat"><b>{len(plan["checks"])}</b> question{"" if len(plan["checks"]) == 1 else "s"} for the client</span></div></div></header>')
     steps = ('<section class="panel" aria-labelledby="hh"><h2 id="hh">How to post</h2><ol class="steps">'
              '<li><b>Get the OK.</b> Send <i>client_message.txt</i> and <i>contact_sheet.png</i> to the client.</li>'
              '<li><b>Schedule in Meta Business Suite</b> (business.facebook.com &rsaquo; Planner): click the day, Schedule post, add the square '

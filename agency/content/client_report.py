@@ -271,6 +271,16 @@ def _bars(weeks: list[int], color: str, ink: str) -> str:
             f'font-family="Manrope, sans-serif">{"".join(parts)}</svg>')
 
 
+def occasions(names: list) -> list:
+    """the holidays worth naming to a client (not 'Clocks fall back' or 'First day of winter')"""
+    return [n for n in names or [] if not n.startswith(("Clocks", "First day of"))]
+
+
+def join_and(items: list) -> str:
+    items = [str(x) for x in items if x]
+    return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1] if items else ""
+
+
 def _delta(now: int, before: int | None) -> str:
     if before is None:
         return ""
@@ -383,15 +393,17 @@ def build_report(client: dict, year: int, month: int, leads: dict, site: dict, r
     # what we did
     items = []
     if cs["posts"]:
-        extra = ""
-        if cs["holidays"]:
-            extra = " including " + ", ".join(cs["holidays"][:3])
+        hol = occasions(cs["holidays"])
+        extra = f" including posts for {join_and(hol[:3])}" if hol else ""
         items.append(f"Made and scheduled {cs['posts']} posts and {cs['stories']} stories{extra}.")
         tips = cs["kinds"].get("tip", 0) + cs["kinds"].get("checklist", 0)
         if tips:
             items.append(f"Shared {tips} helpful tip{'s' if tips != 1 else ''} that show customers you know your trade.")
-    if site.get("checked") or uptime_pct is not None:
-        items.append("Kept your website online and checked it" + (" (it is up and secure)." if site.get("up") and site.get("https") else "."))
+    if uptime_pct is not None:
+        items.append(f"Kept your website online ({uptime_pct:g}% of the month).")
+    elif site.get("checked"):
+        items.append("Checked your website: online and secure." if site.get("up") and site.get("https") else
+                     ("Checked your website: online." if site.get("up") else "Checked your website and found a problem: we are on it."))
     items += [d.strip().rstrip(".") + "." for d in did if d.strip()]
     if not items:
         items.append("Kept your website running.")
@@ -424,7 +436,8 @@ def build_report(client: dict, year: int, month: int, leads: dict, site: dict, r
     # next month
     nxt = []
     if ns["posts"]:
-        h = f" for {', '.join(ns['holidays'][:4])}" if ns["holidays"] else ""
+        hol = occasions(ns["holidays"])
+        h = f" for {join_and(hol[:4])}" if hol else ""
         nxt.append(f"{ns['posts']} new posts and stories{h}.")
     nxt += [x.strip().rstrip(".") + "." for x in plan_lines if x.strip()]
     nxt.append("Keep your website fast, secure and up to date.")
