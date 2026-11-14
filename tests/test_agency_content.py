@@ -73,12 +73,20 @@ def part_a():
                "Family Dentistry": "dentist", "Dental practice": "dentist"}
     got = {k: P.trade_of(k) for k in aliases}
     check("a. trade names as typed in the CRM map to a pack (Plumbing & HVAC -> plumber, Pizzeria -> restaurant ...)", got == aliases, got)
-    try:
-        P.trade_of("Accountant")
-        bad = False
-    except ValueError:
-        bad = True
-    check("a. a trade with no pack is refused with the list of packs (never a wrong pack)", bad)
+    crm = {"auto_repair": "auto", "HVAC company": "plumber", "lawn care company": "landscaper", "cafe": "restaurant", "bakery": "restaurant",
+           "plumber": "plumber", "hvac": "plumber", "dentist": "dentist"}
+    got_crm = {k: P.trade_of(k) for k in crm}
+    check("a. the agency CRM's own trade keys map too (auto_repair, HVAC company, lawn care company, cafe ...)", got_crm == crm, got_crm)
+    flags = (P.is_hvac("HVAC company"), P.is_plumbing("HVAC company"), P.is_hvac("plumber"), P.is_plumbing("plumber"))
+    check("a. an HVAC-only company gets heating & cooling words, a plumber gets plumbing words", flags == (True, False, False, True), flags)
+    refused = []
+    for t in ("Accountant", "roofer", "electrician", "beauty"):
+        try:
+            P.trade_of(t)
+        except ValueError:
+            refused.append(t)
+    bad = len(refused) == 4
+    check("a. a trade with no pack is refused with the list of packs (never a wrong pack: roofer, electrician, a nail 'beauty' salon)", bad, refused)
     low = []
     for t in P.TRADES:
         for pal in P.PACKS[t]["palettes"]:
@@ -208,6 +216,12 @@ def part_b():
     check("b. 12-20 posts only (the sellable range)", ok)
     check("b. the package sets the count: Social Basic 12, Social Pro 20, otherwise 16", M.default_posts({"package": "Website + Social Basic"}) == 12
           and M.default_posts({"package": "Social Pro"}) == 20 and M.default_posts({"package": "Website + Social"}) == 16)
+    counts = {pk: M.default_posts({"package": pk}) for pk in ("pro", "growth", "starter", "pro + social basic", "growth + social pro")}
+    counts["starter, addons [Social Pro]"] = M.default_posts({"package": "starter", "addons": ["Social Pro"]})
+    check("b. the website plans (starter / growth / pro) never set the post count: only the social add-on does",
+          counts == {"pro": 16, "growth": 16, "starter": 16, "pro + social basic": 12, "growth + social pro": 20, "starter, addons [Social Pro]": 20}, counts)
+    cafe = M.plan_month(dict(BY_TRADE["restaurant"], trade="Cafe", id="corner-cafe"), 2027, 3, 16)
+    check("b. a cafe or bakery is never told to 'reserve a table'", not any("Reserve a table" in p["caption"] for p in cafe["posts"]))
 
 
 # ============================================================================================================= c. honesty
@@ -272,6 +286,24 @@ def part_d():
     check("d. a file with several clients and no --id / --all is refused with the list of ids (never a guess)", refused)
     paying = M.choose_clients(CLIENTS, None, True)
     check("d. --all takes the paying clients only (the lead in the demo file is skipped)", len(paying) == 8 and all(c["status"] == "active" for c in paying))
+    mixed = [dict(BY_TRADE["barber"], id="b1", status="won", package="growth + social basic"),
+             dict(BY_TRADE["barber"], id="r1", name="Summit Roofing", trade="roofer", status="won", package="pro + social pro"),
+             dict(BY_TRADE["plumber"], id="p1", status="won", package="growth"),
+             dict(BY_TRADE["gym"], id="g1", status="proposal", package="social pro")]
+    with tempfile.TemporaryDirectory() as td:
+        f = os.path.join(td, "clients.json")
+        with open(f, "w", encoding="utf-8") as fh:
+            json.dump({"clients": mixed}, fh)
+        err = io.StringIO()
+        old = sys.stderr
+        sys.stderr = err
+        try:
+            rc = M.main([f, "--all", "--month", "2027-02", "--no-images", "--quiet", "--out", os.path.join(td, "out")])
+        finally:
+            sys.stderr = old
+        made = sorted(os.listdir(os.path.join(td, "out"))) if os.path.isdir(os.path.join(td, "out")) else []
+    check("d. --all with real CRM records: only won clients with social posts; a trade with no pack (roofer) is skipped and named, the run goes on",
+          rc == 0 and made == ["b1"] and "Summit Roofing" in err.getvalue(), (rc, made, err.getvalue()[:200]))
     # the two double-click helpers for the owner's PC (the same static rules as the repo's Windows scripts; cmd.exe is not run here)
     bad = {}
     for name in ("MAKE_POSTS.bat", "CLIENT_REPORT.bat"):
@@ -391,6 +423,18 @@ def part_e():
     check("e. one suggestion from the numbers: no social -> social posts; few new reviews -> review booster; many leads -> chat; basic -> pro; nothing left -> none",
           nos["id"] == "social_basic" and rb["id"] == "review_booster" and ch["id"] == "chat_widget" and pro["id"] == "social_pro" and none is None,
           [x and x["id"] for x in (nos, rb, ch, pro, none)])
+    with tempfile.TemporaryDirectory() as td:
+        cfg, data = os.path.join(td, "config.json"), os.path.join(td, "agency.json")
+        with open(cfg, "w", encoding="utf-8") as fh:
+            json.dump({"agency": {"name": "YOUR AGENCY", "phone": "(555) 555-0100", "email": "you@example.com", "website": "https://mainstreet.example"}}, fh)
+        with open(data, "w", encoding="utf-8") as fh:
+            json.dump({"name": "Main Street Web Co.", "email": "hi@mainstreet.example"}, fh)
+        ag = C.load_agency(None, [(cfg, "agency"), (data, None)])
+        ag2 = C.load_agency("Given Name", [(cfg, "agency"), (data, None)])
+        ag3 = C.load_agency(None, [])
+    check("e. the agency's name and contact come from its settings file; 'YOUR AGENCY' placeholders are never printed; --agency-name wins",
+          ag == {"name": "Main Street Web Co.", "email": "hi@mainstreet.example", "phone": "", "site": "https://mainstreet.example"}
+          and ag2["name"] == "Given Name" and ag3["name"] == "Your web team", (ag, ag2["name"], ag3["name"]))
     off = report_fixture({"checked": False, "up": None, "reason": "check skipped (offline)", "at": ""})
     check("e. offline: the website box says 'check skipped', never a made-up result", "check skipped (offline)" in off["html"] and "Website: up" not in off["email"])
 

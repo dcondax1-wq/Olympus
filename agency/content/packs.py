@@ -801,7 +801,7 @@ OBSERVANCE_TRADES = {"dental_month": "dentist", "hygiene_month": "dentist", "wor
 
 def trade_of(text: str) -> str:
     """the pack for a client's `trade` field ('Plumbing & HVAC' -> 'plumber'); ValueError when no pack fits"""
-    t = (text or "").strip().lower()
+    t = re.sub(r"[_\-/]+", " ", (text or "").strip().lower()).strip()        # the CRM's 'auto_repair', 'plumber/hvac'
     if t in PACKS:
         return t
     best = ""

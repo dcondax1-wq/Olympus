@@ -198,16 +198,29 @@ def check_site(url: str, timeout: float = 10.0) -> dict:
 
 
 # ------------------------------------------------------------------------------------------------------------------ pieces
-def load_agency(name: str | None) -> dict:
+AGENCY_FILES = [(os.path.join(ROOT, "agency", "config.json"), "agency"),        # the agency's one settings file (agency/, docs/AGENCY.md)
+                (os.path.join(ROOT, "data", "agency", "agency.json"), None)]
+
+
+def load_agency(name: str | None, files=None) -> dict:
+    """the agency's name / email / phone / site for the report: --agency-name, else agency/config.json ("agency" section), else
+    data/agency/agency.json. Unfilled template values ('YOUR AGENCY', you@example.com) are ignored."""
     ag = {"name": name or "", "email": "", "phone": "", "site": ""}
-    path = os.path.join(ROOT, "data", "agency", "agency.json")
-    if not name and os.path.isfile(path):
+    for path, section in (files if files is not None else AGENCY_FILES):
+        if not os.path.isfile(path):
+            continue
         try:
-            with open(path, encoding="utf-8") as fh:
+            with open(path, encoding="utf-8-sig") as fh:
                 d = json.load(fh)
-            ag.update({k: str(d.get(k) or "") for k in ("name", "email", "phone", "site")})
         except (OSError, ValueError):
-            pass
+            continue
+        d = (d.get(section) or {}) if section else d
+        if not isinstance(d, dict):
+            continue
+        for key, src in (("name", "name"), ("email", "email"), ("phone", "phone"), ("site", "site"), ("site", "website")):
+            v = str(d.get(src) or "").strip()
+            if v and not ag[key] and "YOUR" not in v and not re.search(r"@example\.com$|555-0100", v):
+                ag[key] = v
     ag["name"] = ag["name"] or "Your web team"
     return ag
 

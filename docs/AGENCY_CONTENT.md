@@ -25,7 +25,10 @@ Screenshots: `docs/shots/agency_content/` (contact sheet and report on a phone a
 | Social Pro | **$299/mo** | 20 posts + 20 stories, review shout-outs, seasonal offers, the monthly report | about 50 min (+5 min for the report) |
 | Report alone | add to any website plan | the monthly one-pager | about 5 min |
 
-The tool picks the post count from the client's `package` field ("Basic" -> 12, "Pro" -> 20, anything else 16); `--posts N` overrides (12-20).
+The post count comes from the social add-on written on the client record: `"package": "growth + social basic"` -> 12,
+`"social pro"` -> 20, plain `"social"` -> 16 (also read from an `addons` list). The website plans (starter / growth / pro) never
+count. `--posts N` overrides (12-20). `MAKE_POSTS.bat` (`--all`) makes a month for every client whose status is won / active (or
+paying, live, signed, client, customer) **and** whose package mentions social; anyone else is left alone.
 
 ## What a month contains
 
@@ -64,8 +67,9 @@ about snow or frozen pipes (tested).
 **Trade packs** (`packs.py`): barber, salon, restaurant, plumber / HVAC (plumbing-only and HVAC-only clients get only their tips),
 landscaper, auto repair, gym, dentist. Each: 3 colour palettes (one is picked per client; `--colors "#hex,#hex"` or `"brand_colors"`
 uses the client's own), its fonts, icons and background motif. **Designs** (`designs.py`): 11 layouts (bold, split, tip, quote, offer,
-holiday, date, checklist, Q&A, polaroid frame, minimal), each month uses 6 or more. A trade the tool has no pack for is refused with
-the list of packs, never given the wrong one.
+holiday, date, checklist, Q&A, polaroid frame, minimal), each month uses 6 or more. The CRM's trade keys map (auto_repair, HVAC
+company, lawn care company, cafe and bakery use the restaurant pack without "reserve a table"). A trade with no pack (roofer,
+electrician, painter, nail / beauty salon ...) is skipped and named, never given the wrong words.
 
 ## Meta Business Suite: is there a free CSV import? (checked 2026-11-14)
 
@@ -112,7 +116,9 @@ story_image, alt_text, check_with_client, photo_idea`.
 | Our suggestion | One, from the numbers (`agency/content/offers.json`): no social package -> Social Basic; under 4 new reviews -> review booster; 8+ leads -> website chat; Basic -> Pro; nothing left -> none. Prices not set in `offers.json` print "Ask us". |
 
 The page is one Letter page in print (tested), readable on a phone, and loads nothing from the internet (fonts inside, the chart is
-inline SVG). Your agency name, email and phone come from `--agency-name` or `data/agency/agency.json` (`{"name","email","phone","site"}`).
+inline SVG). Your agency name, email, phone and site come from the agency settings file `agency/config.json` (its "agency"
+section, the same file the pitches use), then `data/agency/agency.json`; `--agency-name` overrides. Unfilled "YOUR ..." values
+are never printed.
 
 ## Commands (for the lead chat)
 

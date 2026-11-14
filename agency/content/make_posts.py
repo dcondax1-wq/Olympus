@@ -168,16 +168,33 @@ def choose_clients(clients: list[dict], cid: str | None, all_: bool) -> list[dic
     if len(clients) == 1:
         return clients
     if all_:
-        return [c for c in clients if str(c.get("status", "")).strip().lower() in PAYING]
-    raise SystemExit("this file has several clients: add --id <id> (or --all for every paying client)\n  ids: "
+        return [c for c in clients if str(c.get("status", "")).strip().lower() in PAYING and has_social(c)]
+    raise SystemExit("this file has several clients: add --id <id> (or --all for every paying client with social posts)\n  ids: "
                      + ", ".join(str(c.get("id")) for c in clients))
 
 
+def social_words(client: dict) -> str:
+    """the social add-on as written on the client record: in `package` ('growth + social pro'), an `addons` list, or `social`"""
+    parts = [str(client.get("package") or "")]
+    addons = client.get("addons") or []
+    parts += [str(a) for a in (addons if isinstance(addons, list) else [addons])]
+    if client.get("social"):
+        parts.append("social " + (client["social"] if isinstance(client["social"], str) else ""))
+    return " ".join(p for p in parts if "social" in p.lower()).lower()
+
+
+def has_social(client: dict) -> bool:
+    return bool(social_words(client))
+
+
 def default_posts(client: dict) -> int:
-    pk = str(client.get("package", "")).lower()
-    if any(w in pk for w in ("pro", "plus", "premium", "299", "growth")):
+    """from the SOCIAL add-on only (the website plans are also called starter / growth / pro, so 'pro + social basic' is 12):
+    social basic 12, social pro 20, social alone 16"""
+    tiers = re.findall(r"social[\s:_\-]*([a-z0-9$]+)?", social_words(client))
+    tier = " ".join(t for t in tiers if t)
+    if any(w in tier for w in ("pro", "plus", "premium", "299")):
         return 20
-    if any(w in pk for w in ("basic", "starter", "149", "lite")):
+    if any(w in tier for w in ("basic", "starter", "149", "lite")):
         return 12
     return 16
 
@@ -371,7 +388,7 @@ def plan_month(client: dict, year: int, month: int, n_posts: int | None = None, 
     wlist = P.WEATHER.get((season, zone)) or ["the weather"]
     ctx = {"name": brand["name"], "city": brand["city"] or "town", "pro": pack["pro"], "pros": pack["pros"], "visit": pack["visit"], "season": season,
            "month": S.month_name(month), "next_month": S.month_name(nm), "year": year, "next_year": year + 1, "last_year": year - 1,
-           "site": brand["site"] or "our website", "phone": brand["phone"] or "us", "zone": zone}
+           "site": brand["site"] or "our website", "phone": brand["phone"] or "us", "zone": zone, "trade_text": client.get("trade", "")}
 
     # holidays: the trade's relevant ones, the heaviest first, about 3 in 10 posts
     hol = [h for h in S.holidays(year, month) if h["trades"] is None or trade in h["trades"]]
@@ -493,10 +510,13 @@ def plan_month(client: dict, year: int, month: int, n_posts: int | None = None, 
 
 def _cta(pack: dict, ctx: dict, brand: dict, i: int) -> str:
     opts = []
+    counter = re.search(r"caf|coffee|bakery|bagel|donut|deli", str(ctx.get("trade_text", "")).lower())
     for c in pack["cta"]:
         if "{site}" in c and not brand["site"]:
             continue
         if "{phone}" in c and not brand["phone"]:
+            continue
+        if counter and "Reserve" in c:                                 # a cafe or bakery: no table reservations
             continue
         opts.append(c)
     if not opts:
@@ -789,8 +809,8 @@ def main(argv=None) -> int:
     ap.add_argument("client", nargs="?", default=os.path.join(ROOT, "data", "agency", "clients.json"), help="client JSON (one, a list, or {clients: [...]})")
     ap.add_argument("--month", default="next", help="YYYY-MM, or next / this (default next)")
     ap.add_argument("--id", dest="cid")
-    ap.add_argument("--all", action="store_true", help="every paying client in the file")
-    ap.add_argument("--posts", type=int, default=0, help="12-20 (default from the package: basic 12, pro 20, otherwise 16)")
+    ap.add_argument("--all", action="store_true", help="every paying client whose package has social posts")
+    ap.add_argument("--posts", type=int, default=0, help="12-20 (default from the social add-on: social basic 12, social pro 20, otherwise 16)")
     ap.add_argument("--out")
     ap.add_argument("--colors", help='the client brand colours, e.g. "#14213D,#D4A24C"')
     ap.add_argument("--reviews", help="a text file of real reviews, one per line: text | name")
@@ -805,9 +825,16 @@ def main(argv=None) -> int:
     y, m = S.parse_month(a.month)
     clients = choose_clients(load_clients(a.client), a.cid, a.all)
     if not clients:
-        print("no paying clients in the file (status active / client / won / paying)", file=sys.stderr)
+        print("No paying client has social posts yet. Write it in the client's package (e.g. \"growth + social basic\" or "
+              "\"social pro\"), or make one client's month with --id <client id>.", file=sys.stderr)
         return 1
+    skipped = []
     for c in clients:
+        try:
+            P.trade_of(c.get("trade", ""))
+        except ValueError as e:                                        # a trade with no pack: say so, carry on with the others
+            skipped.append(f"{c.get('name') or c.get('id')}: {e}")
+            continue
         plan = plan_month(c, y, m, a.posts or None, a.seed, read_reviews(a.reviews, c), not a.no_emoji, a.colors)
         out = a.out if (a.out and len(clients) == 1) else (os.path.join(a.out, str(c.get("id"))) if a.out else default_out(c, plan["month"]))
         if not a.quiet:
@@ -817,7 +844,9 @@ def main(argv=None) -> int:
             layouts = sorted({p["layout"] for p in plan["posts"]})
             print(f"  {len(plan['posts'])} posts, {made['images']} images ({made['renderer']}), {len(layouts)} designs, "
                   f"{len(plan['checks'])} questions for the client\n  folder: {out}")
-    return 0
+    for s in skipped:
+        print(f"skipped {s}", file=sys.stderr)
+    return 1 if skipped and len(skipped) == len(clients) else 0
 
 
 if __name__ == "__main__":
