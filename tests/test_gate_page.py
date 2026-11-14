@@ -57,15 +57,15 @@ def test_static():
           all(os.path.isfile(os.path.join(G, n)) for n in names) and os.path.isfile(CAT) and os.path.isfile(NAV))
     html, js, css, cat, nav = (AK.read(p) for p in (os.path.join(G, "index.html"), os.path.join(G, "gate.js"), os.path.join(G, "gate.css"), CAT, NAV))
     check("a. the page: AGORA theme, viewport-fit=cover, theme-color, colour scheme dark, ONE h1, a polite live status line, a dialog sheet with a label",
-          '<html lang="en" data-theme="agora">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
+          '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' in html and 'aria-modal="true"' in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; gate.css, the catalog and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css" in html
           and "['olympus/themes.js?v=o5', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g3']" in html and "s.async = false" in html)
     check("a. the Look row (2026-11-14, themes): near the bottom (after the search, before the footer), a radio group filled by gate.js from OLYMPUS_THEMES.plain();"
           " the theme engine loads first, and the <head> paints the engine's copy ('olympus.theme.paint.page') before the first frame",
-          html.index('id="q"') < html.index('id="lookSec"') < html.index('class="g-foot"') and 'role="radiogroup"' in html and "T.plain()" in js and "T.set(t.id)" in js
-          and "T.apply('page', { meta: true })" in js and "'olympus.theme.paint.page'" in html and ".g-swatches" in css)
+          html.index('id="q"') < html.index('id="lookSec"') < html.index('class="g-foot"') and 'role="radiogroup"' in html and "T.groups()" in js and "T.set(id)" in js
+          and "T.setMix(o)" in js and "T.apply('page', { meta: true })" in js and "'olympus.theme.paint.page.gate'" in html and ".g-swatches" in css and 'id="lookTab2"' in html)
     check("a. the three Start-here tiles are plain links in the page (they work even if gate.js fails): Today = the dashboard, Bots = nq/, Jarvis = jarvis/",
           all(f'data-to="{p}"' in html for p in ("index.html", "nq/index.html", "jarvis/index.html")) and html.count('class="g-tile"') == 3)
     check("a. four district doors (Trading, Money, Life, Worlds) and the Workshop link at the bottom; no lab is linked from the page itself",
