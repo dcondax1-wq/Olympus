@@ -53,7 +53,7 @@ Needs the Tailscale VPN on (the same as your PC link). Replace `YOUR-PC.YOUR-TAI
 4. **Find Health Samples** where Type is **Resting Heart Rate**, Start Date is Today, Sort by Start Date, Latest First, Limit 1. **Set Variable** `RHR`.
 5. **Find Health Samples** where Type is **Heart Rate Variability**, Start Date is in the last 1 day. **Calculate Statistics**: **Average**. **Set Variable** `HRV`.
 6. **Find Health Samples** where Type is **Sleep** (Sleep Analysis), Value is **Asleep**, Start Date is in the last 1 day. **Get Details of Health Sample**: **Duration**. **Calculate Statistics**: **Sum**. **Set Variable** `Sleep`.
-7. Optional: **Stand Hours** (Find, Start Date Today, then **Count**, variable `Stand`) and **Weight** (Find, Latest First, Limit 1, variable `Weight`).
+7. Optional: **Stand Hours** (Find, Start Date Today, Value is Stood if your phone offers it, then **Count**, variable `Stand`) and **Weight** (Find, Latest First, Limit 1, variable `Weight`).
 8. **Get Contents of URL**: `https://YOUR-PC.YOUR-TAILNET.ts.net/inbox/health`. Tap the arrow: Method **POST**; Headers: add `X-Olympus-Inbox` = `1`; Request Body **JSON**, each field of type **Number**:
    `steps` = Steps, `active_kcal` = Energy, `exercise_min` = Exercise, `rhr` = RHR, `hrv_ms` = HRV, `sleep_s` = Sleep, and if you made them `stand_h` = Stand, `weight_lb` = Weight.
 9. **Show Notification** with **Contents of URL**: it says what the PC kept ("Saved your health for 2026-11-14: 8,432 steps, slept 7.2 h ...") or why it refused a value.
