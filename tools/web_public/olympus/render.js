@@ -451,8 +451,12 @@ export function createRenderer(opts) {
     if (hi !== hiDpr && level !== 'off') { hiDpr = hi; tier = tierOf(level); build(); force = true; }   // crossing 2x: MSAA off / on (rare)
     if (!force && w === width && h === height && d === dpr) return;
     width = w; height = h; dpr = d;
-    renderer.setPixelRatio(d);
-    renderer.setSize(w, h, false);
+    // one resize of the drawing buffer: setPixelRatio() + setSize() reset the canvas twice (each reset waits for the GPU: ~0.35 s on a
+    // software GPU at 4K, a governor step paid it twice); an unchanged backing size is not reset at all
+    const bw = Math.floor(w * d), bh = Math.floor(h * d);
+    if (typeof renderer.setDrawingBufferSize !== 'function') { renderer.setPixelRatio(d); renderer.setSize(w, h, false); }
+    else if (canvas.width !== bw || canvas.height !== bh || renderer.getPixelRatio() !== d) renderer.setDrawingBufferSize(w, h, d);
+    else renderer.setViewport(0, 0, w, h);
     if (camera.isPerspectiveCamera && o.fitCamera !== false) { camera.aspect = w / h; camera.updateProjectionMatrix(); }
     if (composer) { composer.setPixelRatio(d); composer.setSize(w, h); }   // every pass gets the buffer size (finish: its texel)
     syncPost();                                                            // the focus blur is in device pixels

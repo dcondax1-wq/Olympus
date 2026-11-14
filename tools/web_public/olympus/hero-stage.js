@@ -437,8 +437,10 @@ export function createStage(box, opts) {
   const size = (measure) => {
     if (measure !== false || !cssW) { cssW = Math.max(o.minW ?? 160, box.clientWidth || 320); cssH = Math.max(o.minH ?? 90, box.clientHeight || 180); }
     const w = cssW, h = cssH, d = RQ.dpr(myRange());
-    if (renderer.getPixelRatio() !== d) renderer.setPixelRatio(d);
-    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); D.backdrop(w, h); need = true;
+    // one resize of the drawing buffer (setPixelRatio + setSize reset the canvas twice, each a wait for the GPU); none when the size is the same
+    const cv = renderer.domElement, bw = Math.floor(w * d), bh = Math.floor(h * d);
+    if (cv.width !== bw || cv.height !== bh || renderer.getPixelRatio() !== d) renderer.setDrawingBufferSize(w, h, d); else renderer.setViewport(0, 0, w, h);
+    camera.aspect = w / h; camera.updateProjectionMatrix(); D.backdrop(w, h); need = true;
   };
   const leaveRQ = RQ.join({ range: myRange });
   const offRQ = RQ.on(() => { if (!dead && renderer.getPixelRatio() !== RQ.dpr(myRange())) { size(false); H.poke(200); } });
