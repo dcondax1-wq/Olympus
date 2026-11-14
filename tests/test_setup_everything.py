@@ -695,8 +695,8 @@ def flows(pwsh):
         wr(os.path.join(b.bot, "scripts", "setup_everything.ps1"), old_se)
         wr(os.path.join(b.bot, "SETUP_EVERYTHING.bat"), rb("SETUP_EVERYTHING.bat"))
         rc, out = b.run(pwsh, script=os.path.join(b.bot, "scripts", "setup_everything.ps1"), batdir=b.bot + os.sep + ".")
-        check("an older copy in the bot folder: it updates, then the NEW copy goes on with step 2 (-AfterUpdate), step 1 done once",
-              rc == 0 and "brought a newer version of this window" in out and "Done just now: the bot folder has the new code." in out
+        check("an older copy in the bot folder: it updates, then the NEW copy goes on with step 2 (-Step1 with the result), step 1 done once",
+              rc == 0 and "brought a newer version of this window" in out and "Step 1 (above): done: the new code is in." in out
               and out.count("STEP 1 of 3") == 2 and out.count("STEP 2 of 3") == 1 and len(b.manifests()) == 1
               and open(os.path.join(b.bot, "scripts", "setup_everything.ps1"), "rb").read() == b.se, out[-2500:])
     finally:
@@ -785,6 +785,13 @@ def flows(pwsh):
         rc, out = b.run(pwsh, tasks="OlympusLiveSite")
         check("an OLDER zip than the folder's last update: step 1 skipped, never put back over the newer code",
               rc == 0 and "Skipped: this zip is older than the code already on this PC." in out and tree(b.bot) == before, out[-1500:])
+        newer = b.se.replace(b"$ErrorActionPreference = 'Continue'", b"$ErrorActionPreference = 'Continue'\n# NEWER COPY (the folder's own)", 1)
+        wr(os.path.join(b.bot, "scripts", "setup_everything.ps1"), newer)
+        rc, out = b.run(pwsh, tasks="OlympusLiveSite")
+        check("... and the bot folder has its own (newer) copy of this script: that copy runs steps 2 and 3, told what step 1 found",
+              rc == 0 and "The bot folder has its own copy of this window: it goes on with step 2." in out
+              and "Step 1 (above): skipped: the zip is older than the code on this PC." in out and out.count("STEP 2 of 3") == 1
+              and re.search(r"1  New code\s+skipped: the zip is older", out), out[-2000:])
     finally:
         b.cleanup()
 

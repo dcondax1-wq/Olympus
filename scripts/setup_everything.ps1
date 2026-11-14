@@ -6,7 +6,8 @@ ONE window, in order, each one checked first and skipped when it is already done
                 .bat) into the bot folder with tools\update_from_zip.py, taken out of that zip: --check first (skipped when the
                 folder already has that code, or the zip is older), then the update. A running bot server is stopped first only
                 after you type Y (scripts\stop_bot.ps1, the STOP_BOT.bat stop; never with an open trade) and started again right
-                after (the bot itself stays stopped). When the update brought a new copy of this script, that copy goes on.
+                after (the bot itself stays stopped). Then the bot folder's own copy of this script runs steps 2 and 3 (when it
+                differs from the one running: the update brought a newer one, or the folder has a newer one than the zip).
   2 PHONE LINK  the private Tailscale link to the dashboard (scripts\live_link.ps1); skipped when "tailscale serve" already points
                 at the bot server and the site task is there. A failure says what to do, Enter tries again, LATER skips it.
                 The link is shown big and put on the clipboard.
@@ -20,7 +21,7 @@ ONE window, in order, each one checked first and skipped when it is already done
   -BatDir DIR   the folder the .bat was double-clicked in (it may be the zip's temp folder)        -Zip FILE   this code zip
   -BotDir DIR   the bot folder (default: found: the .bat's folder, LE_BOT_DIR, the bot's tasks and Startup shortcut,
                 %USERPROFILE%\nq-liquidity-engine, the Desktop, Documents ...)
-  -AfterUpdate  (internal) the previous copy of this script just did step 1
+  -Step1 WORDS  (internal) the copy of this script that ran first did step 1 (its result): steps 2 and 3 only
   -ServerWait / -ArmWait  seconds to wait for the bot server to answer again / for both evals to show armed (tests: short)
 It never edits live_model*.json or engine\, never places an order, never touches NinjaTrader settings.
 Tests: tests\test_setup_everything.py (pwsh; fakes for engine.go, the child scripts, tailscale and the bot server;
@@ -35,7 +36,7 @@ param(
     [int]$Port = 0,
     [int]$ServerWait = 120,
     [int]$ArmWait = 60,
-    [switch]$AfterUpdate
+    [string]$Step1 = ""
 )
 
 $ErrorActionPreference = 'Continue'
@@ -470,7 +471,7 @@ $env:PYTHONIOENCODING = 'utf-8'
 $nowArgs = @()
 if ($env:LE_SE_T_NOW) { $nowArgs = @('--now', $env:LE_SE_T_NOW) }
 
-if (-not $AfterUpdate) {
+if (-not $Step1) {
     Write-Host ''
     Write-Host ('  ' + ('#' * 72)) -ForegroundColor Cyan
     Band '     OLYMPUS: SETUP EVERYTHING  -  one window, three steps, in order'
@@ -501,9 +502,10 @@ $py = $script:Py
 
 # ================================================================================================ 1 new code
 Header 'STEP 1 of 3' 'New code from the zip'
-if ($AfterUpdate) {
-    Say 'OK' 'Done just now: the bot folder has the new code.'
-    $script:S1 = 'done: the new code is in'
+$updated = $false
+if ($Step1) {
+    Say 'OK' ("Step 1 (above): {0}." -f $Step1)
+    $script:S1 = $Step1
 } else {
     $zipPath = Find-Zip
     if (-not $zipPath) {
@@ -620,18 +622,21 @@ if ($AfterUpdate) {
                 Done 1
             }
             $script:S1 = 'done: the new code is in'
+            $updated = $true
             if ($stopped) { Start-Server }
-            $new = JP $Root 'scripts\setup_everything.ps1'
-            if ((Test-Path -LiteralPath $new) -and (File-Sha $new) -ne $SelfSha) {
-                # the update brought a new copy of this window's script: it does steps 2 and 3 (this copy stops here)
-                Say 'OK' 'The update brought a newer version of this window: it goes on with step 2.'
-                $na = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $new, '-AfterUpdate', '-BotDir', $Root, '-Port', "$Port", '-Python', $py,
-                        '-ServerWait', "$ServerWait", '-ArmWait', "$ArmWait")
-                if ($Tailscale) { $na += @('-Tailscale', $Tailscale) }
-                & $script:PsExe @na
-                exit $LASTEXITCODE
-            }
         }
+    }
+    # steps 2 and 3 always run on the bot folder's own copy of this script: when it differs from this one (the update just brought
+    # a newer one, or the folder already had a newer one than the zip), it goes on from step 2 and this copy stops here
+    $new = JP $Root 'scripts\setup_everything.ps1'
+    if ((Test-Path -LiteralPath $new) -and (File-Sha $new) -ne $SelfSha) {
+        if ($updated) { Say 'OK' 'The update brought a newer version of this window: it goes on with step 2.' }
+        else { Say 'OK' 'The bot folder has its own copy of this window: it goes on with step 2.' }
+        $na = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $new, '-Step1', $script:S1, '-BotDir', $Root, '-Port', "$Port", '-Python', $py,
+                '-ServerWait', "$ServerWait", '-ArmWait', "$ArmWait")
+        if ($Tailscale) { $na += @('-Tailscale', $Tailscale) }
+        & $script:PsExe @na
+        exit $LASTEXITCODE
     }
 }
 

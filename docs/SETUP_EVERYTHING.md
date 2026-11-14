@@ -23,7 +23,7 @@ A bot that runs on paper (or not armed) when you type YES is stopped first, so S
 
 ## Inside the zip, or in the bot folder
 - **Double-clicked inside the zip** (Windows runs it from a temp folder, alone): the .bat takes `scripts/setup_everything.ps1` out of the newest zip in Downloads / on the Desktop, finds the bot folder by itself (the folder the bot really ran in: its code plus `logs` / `.git` / `data/start_bot.json`; the bot's scheduled tasks and Startup shortcut; `%USERPROFILE%\nq-liquidity-engine`, the Desktop, Documents) and updates that folder.
-- **In the bot folder:** the update writes SETUP_EVERYTHING.bat there, so next time it is double-clicked there. It always runs from a copy in `%TEMP%`, so the update can rewrite the .bat safely; when the update brings a newer `scripts/setup_everything.ps1`, the newer one goes on from step 2.
+- **In the bot folder:** the update writes SETUP_EVERYTHING.bat there, so next time it is double-clicked there. It always runs from a copy in `%TEMP%`, so the update can rewrite the .bat safely. Steps 2 and 3 always run on the bot folder's own `scripts/setup_everything.ps1`: when it differs from the copy that started (the update just brought a newer one, or the folder has a newer one than the zip), it takes over from step 2.
 - **The zip unpacked somewhere** (Extract all): the same; an unpacked zip is never taken for the bot folder.
 
 ## Honest limits
