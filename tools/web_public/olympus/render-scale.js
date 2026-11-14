@@ -19,7 +19,7 @@
 //   - full-rate frames (a mean <= 17.5 ms, uncapped) for 2.5 s step UP one level, toward the ceiling (or back to where it was).
 //   - never thrash: an up-step followed by a down-step within 4 s marks that level as failed; the wait before trying it again doubles
 //     (8 s, 16 s ... 64 s) and after 3 failures it is never tried again this session. Slowness is judged on a window's median (a GC hitch never
-//     lowers the resolution); a pause over 1 s (a tab switch, a sheet) starts the window again.
+//     lowers the resolution); one pause over 1 s (a tab switch, a sheet) starts the window again, two in a row are a GPU that slow.
 
 export const VERSION = 'rq1';
 /** device pixels per CSS pixel each tier may reach at most (Ultra 4K = 3: the iPhone's full retina, a 4K screen at 200% is 2) */
@@ -74,7 +74,7 @@ const clearWin = (s) => { s.win.length = 0; s.work = 0; s.tWin = 0; };
  *   work: CPU ms of the frame (its JavaScript + the draw submission); maxQ / minQ: how far up / down the canvases on the page can go.
  * A window is 30 frames, or 1.5 s with at least 4 frames (a slow GPU at 4 fps is judged as fast as a quick one). Slowness is judged on the
  * window's MEDIAN (one GC hitch never lowers the resolution), a climb needs the MEAN at full rate (any hitch blocks it). An interval over
- * 1 s is a pause (a tab switch, a sheet, the debugger), not a frame: the window starts again.
+ * 1 s once is a pause (a tab switch, a sheet, the debugger), not a frame: the window starts again; over 1 s twice in a row is a slow GPU.
  */
 export function step(s, t, ms, gap, work, maxQ, minQ) {
   const P = POLICY;

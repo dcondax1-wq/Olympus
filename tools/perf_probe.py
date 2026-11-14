@@ -4,6 +4,8 @@
     flock -w 2400 /tmp/olympus_browser.lock python -X utf8 tools/perf_probe.py <site folder> [--profiles iphone,4k] [--pages gate,hub-today,...]
         [--json out.json] [--gpu] [--compare <after site>] [--fx high]
 
+--compare <after site> measures every page in both sites back to back (before, after, before, after ...) under the same machine load and prints
+a "before -> after" table per profile (the json keys are "<profile>/before" and "<profile>/after"). Each row also lists the page errors seen.
 tools/phone_budget.py answers "what does a first visit cost on a slow line"; this answers "does it stay smooth once it is open". Per page and profile:
   fcp / lcp      first contentful / largest contentful paint (ms after navigation start; local server, no network throttle: CPU only)
   cls            cumulative layout shift (fonts and late content moving the page)
