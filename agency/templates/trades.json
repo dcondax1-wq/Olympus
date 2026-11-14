@@ -1,0 +1,192 @@
+{
+  "_about": "Starting words for each trade's demo site. Rule: nothing that would be a claim about the business (no 'licensed', '24/7', 'since 1998', 'free estimates', ratings): only what the trade does and an invitation to call. The owner (or the client) replaces them in the site's site.json. {name} {city} {street} {cuisine} are filled in. cta_kind: call | book | quote | order.",
+  "default": {
+    "headline": "{label} in {city}", "sub": "{name} is right here in {city}. Call to ask a question or to book.",
+    "cta": "Call us", "cta_kind": "call", "form_title": "Send a message", "form_need": "How can we help?",
+    "services": [["Ask us anything", "Call or send a message and we will get back to you.", "chat"], ["Visit us", "Find us on the map below.", "pin"], ["Opening hours", "See when we are open.", "clock"]],
+    "about": "{name} is a local {label_lower} in {city}."
+  },
+  "barber": {
+    "headline": "Sharp cuts in {city}", "sub": "Classic cuts, clean fades and beard work at {name}. Call to book your chair.",
+    "cta": "Call to book", "cta_kind": "book", "form_title": "Book a chair", "form_need": "Which service?",
+    "services": [["Classic cut", "Scissor or clipper work, finished clean at the neck.", "scissors"], ["Skin fade", "Smooth blends, low to high.", "razor"], ["Beard trim", "Shape, line-up and a warm towel.", "comb"],
+                 ["Hot-towel shave", "The old-school straight-razor shave.", "sparkle"], ["Kids' cut", "A good first cut for the little ones.", "smile"], ["Line-up", "A quick clean-up between cuts.", "check"]],
+    "about": "{name} is a neighborhood barbershop on {street} in {city}."
+  },
+  "salon": {
+    "headline": "Hair you will love, in {city}", "sub": "Cuts, color and styling at {name}. Call to book your appointment.",
+    "cta": "Book an appointment", "cta_kind": "book", "form_title": "Request an appointment", "form_need": "Which service?",
+    "services": [["Cut and style", "A cut that suits you, finished with a blow-dry.", "scissors"], ["Color", "All-over color, roots and gloss.", "drop"], ["Highlights", "Foils, balayage and soft blends.", "sparkle"],
+                 ["Treatments", "Deep conditioning and repair.", "leaf"], ["Blow-dry", "Smooth or full of volume, for any day.", "wind"], ["Special occasions", "Updos for weddings and events.", "flower"]],
+    "about": "{name} is a hair salon on {street} in {city}."
+  },
+  "beauty": {
+    "headline": "Treat yourself in {city}", "sub": "Nails and beauty at {name}. Call to book, or send a request below.",
+    "cta": "Book an appointment", "cta_kind": "book", "form_title": "Request an appointment", "form_need": "Which service?",
+    "services": [["Manicure", "Shape, cuticle care and polish.", "hand"], ["Pedicure", "A relaxing soak, scrub and polish.", "drop"], ["Gel and dip", "Long-lasting color with a glossy finish.", "sparkle"],
+                 ["Nail art", "From a simple accent to a full design.", "brush"], ["Waxing", "Quick and gentle.", "leaf"], ["Gift cards", "Ask us about a gift for someone special.", "gift"]],
+    "about": "{name} is a beauty salon on {street} in {city}."
+  },
+  "plumber": {
+    "headline": "Plumbing help in {city}", "sub": "Leaks, drains, water heaters and fixtures. Call {name} and tell us what is going on.",
+    "cta": "Call now", "cta_kind": "quote", "form_title": "Ask for a quote", "form_need": "What do you need help with?",
+    "services": [["Leaks and repairs", "Dripping taps, burst pipes, running toilets.", "drop"], ["Drain cleaning", "Slow sinks, blocked drains and sewer lines.", "pipe"], ["Water heaters", "Repair and replacement, tank or tankless.", "flame"],
+                 ["Fixtures", "Faucets, toilets, showers and disposals.", "wrench"], ["Remodels", "New plumbing for kitchens and bathrooms.", "home"], ["Inspections", "A check before you buy or renovate.", "check"]],
+    "about": "{name} is a plumbing company serving {city}."
+  },
+  "hvac": {
+    "headline": "Heating and cooling in {city}", "sub": "Furnaces, air conditioning and tune-ups. Call {name} to book a visit.",
+    "cta": "Call now", "cta_kind": "quote", "form_title": "Book a visit", "form_need": "What do you need help with?",
+    "services": [["Furnace repair", "When the heat stops, we come and look.", "flame"], ["AC repair", "Warm air, strange noises, no cooling.", "snow"], ["Installation", "New furnaces, AC units and heat pumps.", "home"],
+                 ["Tune-ups", "Seasonal service so it runs right.", "wrench"], ["Thermostats", "Smart and programmable thermostats.", "gauge"], ["Air quality", "Filters, humidifiers and ventilation.", "wind"]],
+    "about": "{name} keeps homes in {city} warm in winter and cool in summer."
+  },
+  "electrician": {
+    "headline": "Electrical work in {city}", "sub": "Repairs, panels, lighting and EV chargers. Call {name} to talk it through.",
+    "cta": "Call now", "cta_kind": "quote", "form_title": "Ask for a quote", "form_need": "What do you need help with?",
+    "services": [["Repairs", "Dead outlets, tripping breakers, flickering lights.", "bolt"], ["Panel upgrades", "More power for a modern home.", "gauge"], ["Lighting", "Indoor, outdoor and recessed lighting.", "sun"],
+                 ["EV chargers", "A charger installed in your garage.", "car"], ["Remodels", "New wiring for kitchens and additions.", "home"], ["Safety checks", "Smoke detectors and inspections.", "shield"]],
+    "about": "{name} is an electrical contractor serving {city}."
+  },
+  "roofer": {
+    "headline": "Roofing in {city}", "sub": "Repairs, replacements and inspections. Call {name} to have your roof looked at.",
+    "cta": "Call now", "cta_kind": "quote", "form_title": "Ask for an inspection", "form_need": "What do you need help with?",
+    "services": [["Roof repair", "Leaks, missing shingles and flashing.", "home"], ["Replacement", "A new roof, start to finish.", "hammer"], ["Inspections", "Know the state of your roof.", "check"],
+                 ["Storm damage", "Hail and wind damage checks.", "cloud"], ["Gutters", "Cleaning, repair and new gutters.", "drop"], ["Skylights", "New or replacement skylights.", "sun"]],
+    "about": "{name} is a roofing company serving {city}."
+  },
+  "painter": {
+    "headline": "House painting in {city}", "sub": "Interior and exterior painting. Call {name} to plan your project.",
+    "cta": "Call now", "cta_kind": "quote", "form_title": "Ask for a quote", "form_need": "What would you like painted?",
+    "services": [["Interior painting", "Walls, ceilings and trim.", "roller"], ["Exterior painting", "Siding, decks and fences.", "home"], ["Cabinets", "A fresh finish for kitchen cabinets.", "brush"],
+                 ["Drywall repair", "Patches and texture before paint.", "wrench"], ["Color advice", "Help choosing the right colors.", "drop"], ["Commercial", "Offices and shops.", "building"]],
+    "about": "{name} is a painting company serving {city}."
+  },
+  "builder": {
+    "headline": "Building and repairs in {city}", "sub": "Remodels, carpentry and repairs. Call {name} to talk about your project.",
+    "cta": "Call now", "cta_kind": "quote", "form_title": "Tell us about your project", "form_need": "What are you planning?",
+    "services": [["Remodels", "Kitchens, bathrooms and basements.", "home"], ["Carpentry", "Trim, doors, shelves and built-ins.", "hammer"], ["Decks", "New decks and repairs.", "sun"],
+                 ["Repairs", "The odd jobs on your list.", "wrench"], ["Additions", "More room for your family.", "building"], ["Planning", "Help with ideas and budgets.", "chat"]],
+    "about": "{name} is a builder serving {city}."
+  },
+  "locksmith": {
+    "headline": "Locksmith in {city}", "sub": "Lockouts, rekeying and new locks. Call {name} and tell us where you are.",
+    "cta": "Call now", "cta_kind": "call", "form_title": "Send a message", "form_need": "What do you need?",
+    "services": [["Lockouts", "Locked out of home or car.", "key"], ["Rekeying", "New keys for your existing locks.", "key"], ["New locks", "Deadbolts and smart locks.", "lock"],
+                 ["Car keys", "Replacement keys and fobs.", "car"], ["Businesses", "Master keys and access control.", "building"], ["Safes", "Opening and installation.", "shield"]],
+    "about": "{name} is a locksmith in {city}."
+  },
+  "landscaper": {
+    "headline": "Landscaping in {city}", "sub": "Lawns, gardens, planting and clean-ups. Call {name} to plan your yard.",
+    "cta": "Ask for a quote", "cta_kind": "quote", "form_title": "Ask for a quote", "form_need": "What would you like done?",
+    "services": [["Lawn care", "Mowing, edging and fertilizing.", "leaf"], ["Garden design", "Beds, borders and planting plans.", "flower"], ["Clean-ups", "Spring and fall clean-ups.", "wind"],
+                 ["Irrigation", "Sprinkler repair and setup.", "drop"], ["Hardscaping", "Paths, patios and walls.", "home"], ["Tree and shrub care", "Pruning and planting.", "tree"]],
+    "about": "{name} takes care of yards and gardens around {city}."
+  },
+  "cleaner": {
+    "headline": "Cleaning in {city}", "sub": "Fresh clothes and clean spaces. Call {name} or stop by.",
+    "cta": "Call us", "cta_kind": "call", "form_title": "Send a message", "form_need": "What do you need cleaned?",
+    "services": [["Dry cleaning", "Suits, dresses and delicate fabrics.", "shirt"], ["Laundry", "Wash and fold.", "drop"], ["Alterations", "Hems, repairs and fittings.", "scissors"],
+                 ["Household items", "Comforters, curtains and rugs.", "home"], ["Pressing", "Crisp shirts and trousers.", "sparkle"], ["Special care", "Wedding dresses and leather.", "heart"]],
+    "about": "{name} is a cleaner on {street} in {city}."
+  },
+  "florist": {
+    "headline": "Fresh flowers in {city}", "sub": "Bouquets for every day and every occasion at {name}. Call to order.",
+    "cta": "Call to order", "cta_kind": "order", "form_title": "Order flowers", "form_need": "What is the occasion?",
+    "services": [["Bouquets", "Fresh flowers, arranged by hand.", "flower"], ["Weddings", "Bridal flowers and table pieces.", "heart"], ["Sympathy", "Flowers to say you care.", "leaf"],
+                 ["Birthdays", "A bright surprise for someone.", "gift"], ["Plants", "Green plants for home and office.", "tree"], ["Events", "Flowers for parties and businesses.", "sparkle"]],
+    "about": "{name} is a florist on {street} in {city}."
+  },
+  "pet_grooming": {
+    "headline": "Happy, clean pets in {city}", "sub": "Baths, trims and nail care at {name}. Call to book your pet's visit.",
+    "cta": "Book a visit", "cta_kind": "book", "form_title": "Book a grooming", "form_need": "Tell us about your pet",
+    "services": [["Bath and brush", "A gentle wash and a soft coat.", "drop"], ["Haircut", "A full groom, breed style or short.", "scissors"], ["Nail trim", "Quick and calm.", "paw"],
+                 ["De-shedding", "Less fur on your couch.", "wind"], ["Puppy groom", "A good first visit.", "heart"], ["Ear and teeth care", "The little things that matter.", "sparkle"]],
+    "about": "{name} is a pet groomer in {city}."
+  },
+  "auto_repair": {
+    "headline": "Car repair in {city}", "sub": "Brakes, oil, tires and diagnostics. Call {name} to book your car in.",
+    "cta": "Get a quote", "cta_kind": "quote", "form_title": "Book your car in", "form_need": "What does your car need?",
+    "services": [["Oil change", "Oil, filter and a quick check-over.", "oil"], ["Brakes", "Pads, rotors and brake fluid.", "disc"], ["Tires", "New tires, rotation and balancing.", "tire"],
+                 ["Check engine light", "Find out what the light means.", "gauge"], ["Batteries", "Testing and replacement.", "battery"], ["Inspections", "A check before a trip or a sale.", "check"]],
+    "about": "{name} is an auto repair shop on {street} in {city}."
+  },
+  "car_wash": {
+    "headline": "A clean car in {city}", "sub": "Washes, detailing and interior cleaning at {name}. Drive in or call us.",
+    "cta": "Call us", "cta_kind": "call", "form_title": "Send a message", "form_need": "What would you like?",
+    "services": [["Exterior wash", "A clean, shiny finish.", "drop"], ["Interior clean", "Vacuum, wipe-down and windows.", "sparkle"], ["Detailing", "Inside and out, in detail.", "car"],
+                 ["Wax", "Protection for your paint.", "shield"], ["Wheels and tires", "Clean rims, dressed tires.", "tire"], ["Gift cards", "A clean car makes a nice gift.", "gift"]],
+    "about": "{name} is a car wash on {street} in {city}."
+  },
+  "dentist": {
+    "headline": "Your dentist in {city}", "sub": "Check-ups, cleanings and care for the whole family at {name}. Call to book a visit.",
+    "cta": "Book a visit", "cta_kind": "book", "form_title": "Request an appointment", "form_need": "What is the visit for?",
+    "services": [["Check-ups and cleanings", "Regular visits to keep your smile healthy.", "tooth"], ["Fillings", "Repairing cavities.", "check"], ["Whitening", "A brighter smile.", "sparkle"],
+                 ["Crowns and bridges", "Restoring damaged or missing teeth.", "shield"], ["Children's dentistry", "Gentle care for kids.", "smile"], ["Urgent visits", "Toothache? Call us.", "phone"]],
+    "about": "{name} is a dental practice on {street} in {city}."
+  },
+  "chiropractor": {
+    "headline": "Chiropractic care in {city}", "sub": "Back, neck and joint care at {name}. Call to book your first visit.",
+    "cta": "Book a visit", "cta_kind": "book", "form_title": "Request an appointment", "form_need": "What is bothering you?",
+    "services": [["Adjustments", "Hands-on chiropractic adjustments.", "spine"], ["Back pain", "Care for lower and upper back pain.", "heart"], ["Neck and shoulders", "Relief for stiffness and tension.", "hand"],
+                 ["Sports injuries", "Get back to what you love.", "run"], ["Posture", "Habits that help your back.", "check"], ["First visit", "We listen, check and explain.", "chat"]],
+    "about": "{name} is a chiropractic office in {city}."
+  },
+  "physio": {
+    "headline": "Physical therapy in {city}", "sub": "Recover from injury and move better with {name}. Call to book a session.",
+    "cta": "Book a session", "cta_kind": "book", "form_title": "Request an appointment", "form_need": "What would you like help with?",
+    "services": [["Injury recovery", "A plan to get you moving again.", "heart"], ["After surgery", "Rehab after an operation.", "shield"], ["Sports therapy", "Return to sport safely.", "run"],
+                 ["Back and neck", "Relief and strength.", "spine"], ["Balance", "Steadier on your feet.", "check"], ["Home exercises", "A plan you can follow at home.", "calendar"]],
+    "about": "{name} is a physical therapy clinic in {city}."
+  },
+  "vet": {
+    "headline": "Care for your pets in {city}", "sub": "Check-ups, vaccines and care at {name}. Call to book a visit.",
+    "cta": "Book a visit", "cta_kind": "book", "form_title": "Request an appointment", "form_need": "Tell us about your pet",
+    "services": [["Wellness exams", "A yearly check from nose to tail.", "paw"], ["Vaccines", "Keep them protected.", "shield"], ["Dental care", "Healthy teeth for pets too.", "tooth"],
+                 ["Surgery", "Spay, neuter and more.", "heart"], ["Sick visits", "When something is not right.", "phone"], ["Advice", "Food, behavior and care questions.", "chat"]],
+    "about": "{name} is a veterinary clinic in {city}."
+  },
+  "massage": {
+    "headline": "Massage in {city}", "sub": "Relax and recover at {name}. Call to book your massage.",
+    "cta": "Book a massage", "cta_kind": "book", "form_title": "Request an appointment", "form_need": "Which massage?",
+    "services": [["Relaxation massage", "Slow and soothing.", "leaf"], ["Deep tissue", "For tight muscles and knots.", "hand"], ["Hot stone", "Warm stones, deep relaxation.", "flame"],
+                 ["Couples massage", "Side by side.", "heart"], ["Foot massage", "Tired feet, happy again.", "drop"], ["Gift cards", "A gift anyone will love.", "gift"]],
+    "about": "{name} is a massage studio in {city}."
+  },
+  "gym": {
+    "headline": "Get stronger in {city}", "sub": "Training, classes and a place to work hard at {name}. Call to ask about a visit.",
+    "cta": "Ask about a visit", "cta_kind": "book", "form_title": "Plan your first visit", "form_need": "What are your goals?",
+    "services": [["Strength", "Free weights, racks and machines.", "dumbbell"], ["Cardio", "Bikes, rowers and treadmills.", "pulse"], ["Classes", "Train together with a coach.", "people"],
+                 ["Personal training", "A plan made for you.", "check"], ["Open hours", "Train when it suits you.", "clock"], ["Memberships", "Ask us about the options.", "chat"]],
+    "about": "{name} is a gym in {city}."
+  },
+  "tattoo": {
+    "headline": "Tattoos in {city}", "sub": "Custom designs and flash at {name}. Call to talk about your idea.",
+    "cta": "Talk about your idea", "cta_kind": "book", "form_title": "Tell us your idea", "form_need": "Describe your idea",
+    "services": [["Custom designs", "Drawn for you, from your idea.", "brush"], ["Flash", "Ready-made designs.", "sparkle"], ["Cover-ups", "A new tattoo over an old one.", "shield"],
+                 ["Touch-ups", "Bring an old tattoo back to life.", "check"], ["Consultations", "Talk it through first.", "chat"], ["Aftercare", "How to care for your new tattoo.", "heart"]],
+    "about": "{name} is a tattoo studio in {city}."
+  },
+  "restaurant": {
+    "headline": "{cuisine_title} in {city}", "sub": "Come hungry. {name} is on {street}. Call for a table or to order.",
+    "cta": "Call to order", "cta_kind": "order", "form_title": "Book a table", "form_need": "Date, time and how many people",
+    "services": [["Dine in", "A seat at the table.", "food"], ["Take-out", "Call ahead and pick it up.", "bag"], ["Groups", "Room for family and friends.", "people"],
+                 ["Lunch", "A good midday meal.", "sun"], ["Dinner", "End the day well.", "moon"], ["Catering", "Ask us about your event.", "calendar"]],
+    "about": "{name} is a restaurant on {street} in {city}.",
+    "cuisine_default": "Good food"
+  },
+  "cafe": {
+    "headline": "Coffee in {city}", "sub": "Good coffee and something to eat at {name} on {street}.",
+    "cta": "Call us", "cta_kind": "order", "form_title": "Send a message", "form_need": "Your message",
+    "services": [["Espresso drinks", "Lattes, cappuccinos and more.", "cup"], ["Drip coffee", "A fresh cup, every day.", "cup"], ["Tea", "Hot or iced.", "leaf"],
+                 ["Pastries", "Something sweet with your coffee.", "cake"], ["Breakfast", "Start the day right.", "sun"], ["To go", "Grab it and go.", "bag"]],
+    "about": "{name} is a cafe on {street} in {city}."
+  },
+  "bakery": {
+    "headline": "Fresh from the oven in {city}", "sub": "Bread, pastries and cakes at {name}. Call to order.",
+    "cta": "Call to order", "cta_kind": "order", "form_title": "Order a cake", "form_need": "What would you like?",
+    "services": [["Bread", "Baked fresh.", "bread"], ["Pastries", "Croissants, muffins and more.", "cake"], ["Cakes", "For birthdays and celebrations.", "gift"],
+                 ["Cookies", "A sweet treat.", "sparkle"], ["Coffee", "A cup to go with it.", "cup"], ["Special orders", "Ask us about your event.", "calendar"]],
+    "about": "{name} is a bakery on {street} in {city}."
+  }
+}

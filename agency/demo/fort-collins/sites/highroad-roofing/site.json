@@ -1,0 +1,150 @@
+{
+ "v": 1,
+ "slug": "highroad-roofing",
+ "theme": "pro",
+ "made": "2026-11-14",
+ "business": {
+  "name": "Highroad Roofing",
+  "trade": "roofer",
+  "trade_label": "Roofer",
+  "schema": "RoofingContractor",
+  "city": "Fort Collins",
+  "state": "CO",
+  "street_line": "3307 South College Avenue, #200-11",
+  "address_line": "3307 South College Avenue, #200-11, Fort Collins, CO 80525",
+  "postcode": "80525",
+  "phone": "(970) 568-7663",
+  "phone_e164": "+19705687663",
+  "email": "info@highroadroofing.com",
+  "old_website": "https://highroadroofing.com/",
+  "facebook": "",
+  "instagram": "",
+  "lat": 40.541977,
+  "lon": -105.07855,
+  "tz": "America/Denver",
+  "cuisine": ""
+ },
+ "hours": {
+  "raw": "Mo-Sa 08:00-17:00",
+  "ok": true,
+  "week": [
+   [
+    [
+     480,
+     1020
+    ]
+   ],
+   [
+    [
+     480,
+     1020
+    ]
+   ],
+   [
+    [
+     480,
+     1020
+    ]
+   ],
+   [
+    [
+     480,
+     1020
+    ]
+   ],
+   [
+    [
+     480,
+     1020
+    ]
+   ],
+   [
+    [
+     480,
+     1020
+    ]
+   ],
+   []
+  ]
+ },
+ "copy": {
+  "headline": "Roofing in Fort Collins",
+  "sub": "Repairs, replacements and inspections. Call Highroad Roofing to have your roof looked at.",
+  "about": "Highroad Roofing is a roofing company serving Fort Collins.",
+  "cta": "Call now",
+  "cta_kind": "quote",
+  "form_title": "Ask for an inspection",
+  "form_need": "What do you need help with?",
+  "kicker": "Roofer in Fort Collins",
+  "services": [
+   {
+    "title": "Roof repair",
+    "line": "Leaks, missing shingles and flashing.",
+    "icon": "home"
+   },
+   {
+    "title": "Replacement",
+    "line": "A new roof, start to finish.",
+    "icon": "hammer"
+   },
+   {
+    "title": "Inspections",
+    "line": "Know the state of your roof.",
+    "icon": "check"
+   },
+   {
+    "title": "Storm damage",
+    "line": "Hail and wind damage checks.",
+    "icon": "cloud"
+   },
+   {
+    "title": "Gutters",
+    "line": "Cleaning, repair and new gutters.",
+    "icon": "drop"
+   },
+   {
+    "title": "Skylights",
+    "line": "New or replacement skylights.",
+    "icon": "sun"
+   }
+  ],
+  "why": [
+   {
+    "title": "Right here in Fort Collins",
+    "line": "3307 South College Avenue, #200-11",
+    "icon": "pin"
+   },
+   {
+    "title": "Open 6 days a week",
+    "line": "See today's hours below.",
+    "icon": "clock"
+   },
+   {
+    "title": "Call us",
+    "line": "(970) 568-7663, during opening hours.",
+    "icon": "phone"
+   },
+   {
+    "title": "Easy to reach",
+    "line": "Send a message with the form below.",
+    "icon": "chat"
+   }
+  ]
+ },
+ "agency": {
+  "name": "YOUR AGENCY",
+  "your_name": "YOUR NAME",
+  "phone": "(555) 555-0100",
+  "email": "you@example.com",
+  "website": ""
+ },
+ "form": "netlify",
+ "pages": 1,
+ "demo_url": "https://highroad-roofing-demo.netlify.app",
+ "live_url": "",
+ "source": {
+  "osm_url": "https://www.openstreetmap.org/node/11279579528",
+  "lead_id": "n11279579528",
+  "attribution": "Business data (c) OpenStreetMap contributors, ODbL 1.0 (openstreetmap.org/copyright)"
+ }
+}

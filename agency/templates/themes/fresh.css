@@ -1,0 +1,18 @@
+/* Fresh Air: sage and forest. Outdoors and tidy: rolling hills, leaf-shaped cards, a quote button. */
+:root{--btn-radius:999px;--mark-radius:16px 4px;--ic-radius:16px 4px}
+.hero{background:linear-gradient(180deg,#eef4e6 0,var(--hero-bg) 100%)}
+.hero h1{font-weight:700;letter-spacing:-.01em}
+.eyebrow{color:var(--accent-text)}
+.eyebrow::before{content:"";width:14px;height:14px;border-radius:14px 2px;background:var(--accent)}
+.art{align-self:end;margin-bottom:-2.5rem}
+.section h2{font-weight:700}
+.card{border:0;border-radius:var(--radius);box-shadow:0 10px 28px rgba(28,51,36,.07)}
+.card .ic{background:#e3efd8;color:var(--accent-text)}
+.panel,.form{border-radius:var(--radius)}
+.alt{background:#fff}
+.why .ico{color:var(--accent-text)}
+.foot{background:#1c3324;color:#eef4e6;border-top:0}
+.foot p,.foot a{color:#cfe0c4}
+.foot h2{color:#fff}
+.credit{background:#152a1d;border-top:0;color:#cfe0c4}
+.credit a{color:#cfe0c4}

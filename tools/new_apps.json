@@ -606,6 +606,24 @@
         "kind": "skyline",
         "ms": 1000
       }
+    },
+    {
+      "id": "agency",
+      "name": "Agency",
+      "group": "money",
+      "accent": "#d08c4a",
+      "description": "Website agency: leads, demo sites, calls and the $ pipeline",
+      "glyph": "Ε",
+      "ambient": "agora",
+      "flavour": [
+        "columns",
+        "Open the shop",
+        "tap"
+      ],
+      "transition": {
+        "kind": "tiles",
+        "ms": 800
+      }
     }
   ],
   "pending": [],

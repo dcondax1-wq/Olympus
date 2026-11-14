@@ -1,0 +1,25 @@
+/* Table: cream and tomato. A warm neighbourhood place: a menu board, a scalloped edge, serif headings. */
+:root{--btn-radius:999px;--mark-radius:50%;--ic-radius:50%}
+.mark{font-family:var(--display);font-size:1.1rem}
+.hero{padding-bottom:26px}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:26px;background:radial-gradient(circle at 13px 26px,var(--bg) 12px,transparent 13px) 0 0/26px 26px repeat-x}
+.hero h1{font-weight:700;letter-spacing:-.01em}
+.eyebrow{color:var(--accent-text)}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--accent)}
+.section h2{font-weight:700}
+.kicker{font-family:var(--display);font-style:italic;text-transform:none;letter-spacing:0;font-size:1.05rem}
+.cards{grid-template-columns:1fr;gap:0;max-width:760px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:.5rem 1.25rem}
+@media (min-width:880px){.cards{grid-template-columns:1fr 1fr;column-gap:2.5rem;max-width:none}}
+.cards .card{display:grid;grid-template-columns:auto 1fr;column-gap:1rem;align-items:center;background:transparent;border:0;border-bottom:1px dotted var(--muted);border-radius:0;padding:1rem 0}
+.cards .card .ic{grid-row:span 2;width:44px;height:44px;margin:0;background:#fbecd3;color:var(--accent-text)}
+.cards .card .ic .ico{width:22px;height:22px}
+.cards .card h3{font-size:1.15rem;margin:0}
+.alt .cards{background:var(--bg)}
+.panel{background:var(--surface)}
+.hours{font-family:var(--display);font-size:1.05rem}
+.sample{background:#fffdf8}
+.foot{background:#2a1a12;color:#fff8ec;border-top:0}
+.foot p,.foot a{color:#e9d9c3}
+.foot h2{color:#fff8ec}
+.credit{background:#21140e;border-top:0;color:#e9d9c3}
+.credit a{color:#e9d9c3}

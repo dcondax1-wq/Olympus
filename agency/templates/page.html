@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>$title</title>
+<meta name="description" content="$description">
+<meta name="robots" content="$robots">
+<meta name="theme-color" content="$theme_color">
+<meta name="format-detection" content="telephone=no">
+<meta property="og:title" content="$title">
+<meta property="og:description" content="$description">
+<meta property="og:type" content="website">
+$canonical<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+$css
+</style>
+<script type="application/ld+json">$jsonld</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+$demo_bar<header class="top">
+  <div class="wrap">
+    <a class="brand" href="$home_href"><span class="mark" aria-hidden="true">$initials</span><span>$name</span></a>
+    <nav class="nav" aria-label="Main">$nav</nav>
+    $header_call
+    <details class="menu"><summary aria-label="Menu">$menu_icon</summary><nav aria-label="Menu">$nav</nav></details>
+  </div>
+</header>
+<main id="main">
+$main
+</main>
+<footer class="foot">
+$footer
+</footer>
+<div class="callbar" role="navigation" aria-label="Quick contact">$callbar</div>
+<script type="application/json" id="site-data">$site_data</script>
+<script src="site.js" defer></script>
+</body>
+</html>

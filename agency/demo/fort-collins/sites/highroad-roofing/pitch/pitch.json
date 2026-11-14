@@ -1,0 +1,15 @@
+{
+ "ready": false,
+ "subject": "A free website preview for Highroad Roofing",
+ "opener": "Hi, is this the owner of Highroad Roofing? Great. My name is YOUR NAME, I make websites for local businesses here in Fort Collins. I noticed your website wasn't loading when I checked, so I built you a free preview of a new website. It's already online, with your hours, tap-to-call and directions. Could I email or text you the link so you can take a look?",
+ "opener_words": 67,
+ "voicemail": "Hi, this is YOUR NAME with YOUR AGENCY. I made a free preview of a new website for Highroad Roofing. You can see it at highroad-roofing-demo.netlify.app. If you like it, call me back at (555) 555-0100. Thanks!",
+ "package": "growth",
+ "setup": 999.0,
+ "monthly": 79.0,
+ "problem": "site_down",
+ "problem_short": "your website wasn't loading when I checked",
+ "lead_id": "n11279579528",
+ "name": "Highroad Roofing",
+ "demo_url": "https://highroad-roofing-demo.netlify.app"
+}

@@ -1,0 +1,17 @@
+PHONE OPENER for $name ($trade, $city)        call $phone_to
+You dial it yourself (never an auto-dialer or a recording). Business hours only. If they say stop, mark "Do not contact".
+
+30 SECONDS ($words words, about $seconds seconds out loud)
+$opener
+
+IF YOU GET THE VOICEMAIL (about 15 seconds)
+$voicemail
+
+IF THEY SAY ...
+"We already have a website."  $obj_have
+"How much?"                   $obj_price
+"Send me something."          $obj_send
+"Not interested."             $obj_no
+
+AFTER THE CALL
+Mark the result on the Agency page: Contacted, Call back (with the day), Won or Lost.

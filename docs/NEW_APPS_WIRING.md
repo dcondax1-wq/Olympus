@@ -680,3 +680,22 @@ No new app. Wiring the lead does:
 - Bump the workers of symposium, ergasterion, cities, colosseum and jarvis (new files: `olympus/env-kit.js`, `olympus/env-lab.html`,
   `olympus/three-addons/GLTFLoader.js`, `RGBELoader.js`, `BufferGeometryUtils.js`, `meshopt_decoder.module.js`,
   `symposium/hall-room.js`, `ergasterion/floor-art.js`).
+
+# Wiring AGENCY, the website machine's CRM (team B1, 2026-11-14)
+
+App `agency` in `tools/web_public/agency/` (index.html, agency.css, agency.js, agencycore.js, leads.json, fixture.json, jarvis.json, manifest, icon.svg). It reads only
+its own `./my_leads.json` (the owner's batch, written on his PC by `RUN_AGENCY.bat`, gitignored) or the committed `./leads.json` (the Fort Collins, CO demo batch, marked "sample city") and falls back to
+`fixture.json` (DEMO, invented businesses). The owner's stages / notes / prices stay in `localStorage['agency.crm.v1']`. Test `python -X utf8 -m tests.test_agency`
+(`--fast` = no browser). The machine itself is `agency/` (docs/AGENCY.md). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, the `olympus.js` APPS table,
+`intro-app.js`, `transitions.js`, `olympus/gate-catalog.js`. The entry is in `tools/new_apps.json`, so steps 1-4 and 6 are `python tools/wire_new_apps.py --dry-run` / `--apply`.
+1. `jarvis/apps.js` BUILT_INS: `app('agency', 'Agency', 'money', '#d08c4a', 'Website agency: leads, demo sites, calls and the $ pipeline', { glyph: 'Ε' }),`
+2. `olympus/olympus.js` APPS: `agency: ['Agency', 'Ε', '#d08c4a'],` AMBIENT: `agency: 'agora',`
+3. `tools/build_web_dashboard.py` app tuple: add `"agency"` (the folder is copied whole: on the PC build the owner's my_leads.json goes with it).
+4. `tools/web_public/sw.js` OTHER_APPS: add `'agency/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
+5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
+6. `olympus/intro-app.js` FLAVOUR: `agency: ['columns', 'Open the shop', 'tap'],` `jarvis/transitions.js` REGISTRY: `agency: { kind: 'tiles', ms: 800 },`
+7. `olympus/gate-catalog.js` (hub My Money, tab "Ideas and deals", after the arbiter row): `['agency', 'agency/', 'Agency', 'Website agency', 'Local-business leads, demo sites and calls', 'money', 'ideas', 'website websites agency web design clients leads crm pipeline calls side business', ''],`
+   (`tests.test_gate_page` / `tests.test_hubs` fail until this row is in: every app folder must be in the catalog.)
+8. Optional: `agency` in `tools/make_app_icons.py` APPS and `tests/test_new_app_icons.py` APPS (the PNG icons are already in the folder), `python tools/olympus_map_build.py`.
+9. Tests after wiring: `tests.test_agency`, `tests.test_apps_list`, `tests.test_gate_page`, `tests.test_hubs`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`,
+   `tests.test_app_intro`, `tests.test_wire_new_apps`, `tests.test_zenith_mode`, `tests.test_jarvis_hub`, then `python -X utf8 tests/run_gate.py --fast`.
