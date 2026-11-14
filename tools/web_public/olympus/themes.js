@@ -29,6 +29,42 @@
   // Jarvis's own palette names (jarvis.css :root[data-theme]): a theme that is not the default paints them too
   var JARVIS = ['bg', 'bg2', 'pr', 'txt', 'mut', 'dim', 'dim2', 'dim3', 'c', 'c2', 'c3', 'cr', 'cr2', 'cr3', 'tint', 'neb1', 'neb2', 'neb3', 'grid', 'scan'];
 
+  /* ------------------------------------------------------------------ the reach ramp (2026-11-14, team T1 "themes")
+   * The AGORA stylesheets (agora.css, gate.css, the dashboard's sheets, Jarvis's, NQ / Helios / Polis) wrote their colours as literals.
+   * tools/theme_tokenize.py rewrote each literal as var(--oly-th-<slot>, <the literal>): the literal stays the fallback, and no stylesheet
+   * defines --oly-th-*, so the default theme (which paints nothing) is byte for byte today's look. A slot is the literal's family and
+   * its HSL lightness on a fixed grid: n = the warm neutrals (page, panels, lines, text), a = the golds / bronzes, g = the olive greens
+   * (gains), r = the terracottas (losses), warn = AGORA's sun. A theme gives, for each family, the colour each AGORA reference colour
+   * becomes (REF); every grid step is the blend between the two references around it, so the whole hierarchy (page < panel < raised
+   * panel < line < muted < soft < text) follows, inverted for a light theme. Each slot is painted as #rrggbb and as 'r, g, b'
+   * (--oly-th-<slot>-rgb, for rgba(var(...), a)). tests/test_olympus_themes.py checks that this grid equals the tool's. */
+  var GRID = { n: [0, 100, 2.5], a: [15, 90, 5], g: [15, 90, 5], r: [15, 90, 5] };
+  var REF = {
+    n: [['deep', '#000000'], ['bg', '#14110e'], ['panel', '#1d1914'], ['lift', '#26211b'], ['line', '#3a3228'], ['muted', '#a89c88'], ['soft', '#cfc4b2'], ['text', '#f3ece0'], ['peak', '#ffffff']],
+    a: [['deep', '#3b2c1e'], ['bronze', '#9c6b3c'], ['accent', '#c8a24a'], ['hi', '#dcbd6e'], ['pale', '#f5e6c4']],
+    g: [['deep', '#3a4022'], ['fill', '#7f8a52'], ['text', '#a0ac6e'], ['pale', '#d4dcb0']],
+    r: [['deep', '#4a2418'], ['fill', '#c96a4a'], ['text', '#e08a6b'], ['pale', '#f2c4b4']]
+  };
+  // the feel of a theme besides colour: corner radius and the heading / number fonts (agora.css, gate.css and the dashboard read them)
+  var FEEL = { radius: '--oly-th-radius', radiusS: '--oly-th-radius-s', radiusL: '--oly-th-radius-l', display: '--oly-th-display', num: '--oly-th-num' };
+  var SANS = "-apple-system, 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif";
+  /** a theme from its ramp: the --oly-* tokens follow from it (page = n.bg, panels = n.panel / lift, text = n.text, dim = n.soft ...) */
+  function mk(o) {
+    var R = o.ramp, n = R.n, a = R.a, rgbs = function (c, al) { var x = rgbOf(c); return 'rgba(' + x[0] + ', ' + x[1] + ', ' + x[2] + ', ' + al + ')'; };
+    var tk = { bg: n.bg, bg2: n.panel, glass: rgbs(n.panel, o.light ? '.92' : '.9'), glass2: rgbs(n.lift, '.97'), line: n.line, edge: rgbs(a.accent, '.42'),
+      text: n.text, dim: n.soft, accent: a.accent, accent2: a.hi, glow: a.hi, ok: R.g.text, bad: R.r.text, warn: R.warn,
+      shadow: o.light ? '0 6px 18px rgba(60, 45, 20, .12)' : '0 6px 18px rgba(0, 0, 0, .4)', scheme: o.scheme, themeColor: n.bg };
+    for (var k in o.scene) tk[k] = o.scene[k];
+    var t = { id: o.id, name: o.name, greek: o.greek || '', tag: o.tag, scheme: o.scheme, tokens: tk, ramp: R, feel: o.feel || null, jarvis: o.jarvis, plain: true };
+    if (o.stage) {
+      var S = o.stage, sn = S.n, sa = S.a;
+      t.stageRamp = S;
+      t.stage = { bg: sn.bg, bg2: sn.panel, glass: rgbs(sn.panel, '.9'), glass2: rgbs(sn.lift, '.97'), line: sn.line, edge: rgbs(sa.accent, '.42'), text: sn.text,
+        dim: sn.soft, accent: sa.accent, accent2: sa.hi, glow: sa.hi, ok: S.g.text, bad: S.r.text, warn: S.warn, shadow: '0 6px 18px rgba(0, 0, 0, .4)', scheme: 'dark', themeColor: sn.bg };
+    }
+    return t;
+  }
+
   /* ------------------------------------------------------------------ the themes (data only) */
   var THEMES = [
     { id: 'agora', name: 'Agora', greek: 'ΑΓΟΡΑ', tag: 'Marble · bronze · gold · default', scheme: 'dark',
@@ -39,6 +75,59 @@
         ok: '#7f8a52', bad: '#c96a4a', warn: '#e0b060', shadow: '0 6px 18px rgba(0, 0, 0, .35)', scheme: 'dark', themeColor: '#14110e',
         fog: '#2a2118', sky: '#3a2a1c', emissive: '#e0b060', bloom: '#f0d9a0', mix: 0, harmony: 0 },
       jarvis: null },
+    /* the five plain looks (2026-11-14, owner: "a different theme but keep everything the same, stuff-wise ... multiple theme options. Make it good").
+       Only colour, surface, heading / number type and corner radius change; every word and number stays. Every text colour is >= 4.5:1 on the
+       page, the panels and the raised panels (WCAG AA, tests/test_olympus_themes.py); gains are green and losses red in every one. No glow. */
+    mk({ id: 'ivory', name: 'Ivory', tag: 'Warm paper white · ink · gold · for daylight', scheme: 'light', light: true,
+      ramp: { n: { deep: '#f7f4ee', bg: '#f7f4ee', panel: '#fffdf9', lift: '#ffffff', line: '#d9d0c1', muted: '#6b6152', soft: '#4a4237', text: '#1c1813', peak: '#0f0c08' },
+        a: { deep: '#efe4cc', bronze: '#c9a96a', accent: '#8a6514', hi: '#7a5810', pale: '#5c420b' },
+        g: { deep: '#dde8d3', fill: '#3f7a3a', text: '#2e6b2c', pale: '#1f4d1e' }, r: { deep: '#f4d9d3', fill: '#c0392b', text: '#b0301f', pale: '#7d2216' }, warn: '#8f5a00' },
+      // the 3D apps, Kalshi and every page not yet checked in light: a warm graphite night with the same ink-gold (light fog would wash the scenes out)
+      stage: { n: { deep: '#0d0c0a', bg: '#15130f', panel: '#1e1b16', lift: '#26231d', line: '#3a352c', muted: '#a39b8c', soft: '#d3cbbd', text: '#f7f3ea', peak: '#ffffff' },
+        a: { deep: '#3a2e18', bronze: '#8f7440', accent: '#c9a45c', hi: '#dcc088', pale: '#f3e6c8' },
+        g: { deep: '#26391f', fill: '#5fa055', text: '#7cc370', pale: '#c8e8c0' }, r: { deep: '#4a1f18', fill: '#e86a58', text: '#f07a6a', pale: '#f8c8c0' }, warn: '#e8b45a' },
+      feel: { radius: '18px', radiusS: '13px', radiusL: '24px' },
+      scene: { fog: '#2f2a22', sky: '#3d362b', emissive: '#e2c88a', bloom: '#f6ecd4', mix: 0.5, harmony: 0.25 },
+      jarvis: { bg: '#f7f4ee', bg2: '#ffffff', pr: '255,253,249', txt: '#1c1813', mut: '#5f5648', dim: '#e6dfd2', dim2: '#cfc4b0', dim3: '#a8916a',
+        c: '#8a6514', c2: '#6e500f', c3: '#6e500f', cr: '138,101,20', cr2: '110,80,15', cr3: '92,66,11', tint: '#fffdf8',
+        neb1: '201,169,106', neb2: '230,214,180', neb3: '180,196,210', grid: '.04', scan: '0' } }),
+    mk({ id: 'midnight', name: 'Midnight', tag: 'Deep navy glass · soft blue · iPhone calm', scheme: 'dark',
+      ramp: { n: { deep: '#05080f', bg: '#0b1220', panel: '#111a2c', lift: '#172237', line: '#283650', muted: '#94a0b8', soft: '#c5cddb', text: '#f2f5fa', peak: '#ffffff' },
+        a: { deep: '#0f2a4d', bronze: '#2f6fc4', accent: '#4c9dff', hi: '#7ab6ff', pale: '#cfe3ff' },
+        g: { deep: '#123a26', fill: '#30c26a', text: '#4ade80', pale: '#c2f5d6' }, r: { deep: '#4a1820', fill: '#f25c66', text: '#ff7a82', pale: '#ffd0d3' }, warn: '#ffc857' },
+      feel: { radius: '20px', radiusS: '14px', radiusL: '26px', display: SANS, num: SANS },
+      scene: { fog: '#0a1424', sky: '#0f1d36', emissive: '#6aa8ff', bloom: '#d6e6ff', mix: 0.55, harmony: 0.3 },
+      jarvis: { bg: '#0b1220', bg2: '#111a2c', pr: '17,26,44', txt: '#f2f5fa', mut: '#94a0b8', dim: '#172237', dim2: '#283650', dim3: '#3b5378',
+        c: '#4c9dff', c2: '#2f6fc4', c3: '#7ab6ff', cr: '76,157,255', cr2: '47,111,196', cr3: '207,227,255', tint: '#e6f0ff',
+        neb1: '47,111,196', neb2: '90,140,220', neb3: '120,170,230', grid: '.04', scan: '0' } }),
+    mk({ id: 'trader', name: 'Trader', tag: 'Black · one green · square and exact', scheme: 'dark',
+      ramp: { n: { deep: '#000000', bg: '#060707', panel: '#0d0f0e', lift: '#131614', line: '#242a27', muted: '#8a948e', soft: '#b9c2bc', text: '#e9eeea', peak: '#ffffff' },
+        a: { deep: '#0f2e1d', bronze: '#1f8a4f', accent: '#2ecc71', hi: '#5ee69a', pale: '#c6f6d9' },
+        g: { deep: '#0f2e1d', fill: '#2ecc71', text: '#3ddc84', pale: '#c6f6d9' }, r: { deep: '#3d1414', fill: '#ff5a52', text: '#ff6b63', pale: '#ffd2cf' }, warn: '#e6c15c' },
+      feel: { radius: '8px', radiusS: '6px', radiusL: '10px', display: SANS, num: SANS },
+      scene: { fog: '#050806', sky: '#08100b', emissive: '#3ddc84', bloom: '#c6f6d9', mix: 0.6, harmony: 0.3 },
+      jarvis: { bg: '#060707', bg2: '#0d0f0e', pr: '13,15,14', txt: '#e9eeea', mut: '#8a948e', dim: '#131614', dim2: '#242a27', dim3: '#2f5a40',
+        c: '#2ecc71', c2: '#1f8a4f', c3: '#5ee69a', cr: '46,204,113', cr2: '31,138,79', cr3: '198,246,217', tint: '#e6fff0',
+        neb1: '20,60,40', neb2: '31,138,79', neb3: '40,80,60', grid: '.03', scan: '0' } }),
+    mk({ id: 'carbon', name: 'Carbon', tag: 'Graphite greys · one orange', scheme: 'dark',
+      ramp: { n: { deep: '#08090a', bg: '#121314', panel: '#191a1c', lift: '#202224', line: '#33363a', muted: '#9a9fa6', soft: '#c9ccd1', text: '#f4f5f6', peak: '#ffffff' },
+        a: { deep: '#3d2508', bronze: '#b86e12', accent: '#ff9f0a', hi: '#ffb84d', pale: '#ffe2b8' },
+        g: { deep: '#133a1d', fill: '#30d158', text: '#4cd964', pale: '#c6f5d0' }, r: { deep: '#4a1512', fill: '#ff453a', text: '#ff6961', pale: '#ffd0cc' }, warn: '#ffd60a' },
+      feel: { radius: '12px', radiusS: '9px', radiusL: '16px', display: "'Helvetica Neue', -apple-system, 'SF Pro Display', system-ui, Arial, sans-serif", num: SANS },
+      scene: { fog: '#121314', sky: '#1b1c1e', emissive: '#ffb84d', bloom: '#ffe2b8', mix: 0.6, harmony: 0.25 },
+      jarvis: { bg: '#121314', bg2: '#191a1c', pr: '25,26,28', txt: '#f4f5f6', mut: '#9a9fa6', dim: '#202224', dim2: '#33363a', dim3: '#55595f',
+        c: '#ff9f0a', c2: '#b86e12', c3: '#ffb84d', cr: '255,159,10', cr2: '184,110,18', cr3: '255,226,184', tint: '#fff3e0',
+        neb1: '60,62,66', neb2: '90,92,96', neb3: '184,110,18', grid: '.03', scan: '0' } }),
+    mk({ id: 'royal', name: 'Royal', tag: 'Navy · gold · classic', scheme: 'dark',
+      ramp: { n: { deep: '#060b18', bg: '#0c1428', panel: '#121c35', lift: '#182442', line: '#2b3a5f', muted: '#9ba6c0', soft: '#cdd3e2', text: '#f6f2e7', peak: '#ffffff' },
+        a: { deep: '#3a2e0e', bronze: '#9c7a26', accent: '#d4af37', hi: '#e8c860', pale: '#f6e6b0' },
+        g: { deep: '#123a2a', fill: '#3fbf86', text: '#5fd39a', pale: '#c8f2dc' }, r: { deep: '#4a1a22', fill: '#f2606a', text: '#ff8086', pale: '#ffd3d6' }, warn: '#f2c14e' },
+      feel: { radius: '14px', radiusS: '10px', radiusL: '20px', display: "Didot, 'Bodoni 72', 'Iowan Old Style', Georgia, serif" },
+      scene: { fog: '#0b1530', sky: '#13204a', emissive: '#e8c860', bloom: '#f6e6b0', mix: 0.55, harmony: 0.3 },
+      jarvis: { bg: '#0c1428', bg2: '#121c35', pr: '18,28,53', txt: '#f6f2e7', mut: '#9ba6c0', dim: '#182442', dim2: '#2b3a5f', dim3: '#4a5a85',
+        c: '#d4af37', c2: '#9c7a26', c3: '#e8c860', cr: '212,175,55', cr2: '156,122,38', cr3: '246,230,176', tint: '#fff6dc',
+        neb1: '40,60,120', neb2: '156,122,38', neb3: '60,90,160', grid: '.04', scan: '0' } }),
+    /* the earlier looks (2026-11-03), kept selectable in Jarvis's Look sheet and Settings; the Gate shows the plain six above */
     { id: 'olympus', name: 'Olympus Night', greek: 'ΟΛΥΜΠΟΣ', tag: 'Violet + gold · the old look', scheme: 'dark',
       tokens: { bg: '#04050c', bg2: '#0d0620', glass: 'rgba(9, 11, 22, .74)', glass2: 'rgba(14, 8, 30, .92)', line: 'rgba(255, 255, 255, .12)',
         edge: 'rgba(168, 85, 247, .38)', text: '#f3f5fb', dim: 'rgba(214, 220, 236, .66)', accent: '#a855f7', accent2: '#ffc94a', glow: '#a95cff',
@@ -140,6 +229,44 @@
     return fromHsl((a[0] + turn + 360) % 360, a[1], a[2]);
   }
   function theme(id) { return by[id] || by[DEFAULT]; }
+
+  /* ------------------------------------------------------------------ the reach ramp: slots from a theme */
+  function lOf(c) { var x = rgbOf(c); return (Math.max(x[0], x[1], x[2]) + Math.min(x[0], x[1], x[2])) / 5.1; }     // HSL lightness, 0..100
+  var REFL = {}, fam;
+  for (fam in REF) { REFL[fam] = []; for (i = 0; i < REF[fam].length; i++) REFL[fam].push(lOf(REF[fam][i][1])); }
+  function solid(c, bg) {                                    // an 'rgba(...)' token as the colour it shows over the page
+    var m = /rgba?\(([^)]*)\)/.exec(String(c));
+    if (!m) return c;
+    var p = m[1].split(','), al = p.length > 3 ? parseFloat(p[3]) : 1, b = rgbOf(bg), n = 0;
+    for (var k = 0; k < 3; k++) n = n * 256 + Math.round(parseFloat(p[k]) * al + b[k] * (1 - al));
+    return '#' + ('000000' + n.toString(16)).slice(-6);
+  }
+  // the earlier themes (no ramp of their own): one from their tokens, so they reach the same pages
+  function derive(k) {
+    var light = k.scheme === 'light', bg = k.bg, txt = k.text, line = solid(k.line, bg), dim = solid(k.dim, bg), x = k.accent, ink = light ? '#000000' : '#ffffff';
+    return { n: { deep: light ? bg : mix(bg, '#000000', 0.5), bg: bg, panel: solid(k.bg2, bg), lift: mix(solid(k.bg2, bg), txt, 0.05), line: line, muted: mix(dim, bg, 0.22),
+      soft: dim, text: txt, peak: ink }, a: { deep: mix(x, bg, 0.75), bronze: mix(x, bg, 0.35), accent: x, hi: mix(x, ink, 0.22), pale: mix(x, txt, 0.6) },
+      g: { deep: mix(k.ok, bg, 0.7), fill: k.ok, text: k.ok, pale: mix(k.ok, txt, 0.6) }, r: { deep: mix(k.bad, bg, 0.7), fill: k.bad, text: k.bad, pale: mix(k.bad, txt, 0.6) },
+      warn: k.warn };
+  }
+  function rampOf(t, w) {
+    if (t.ramp) return w === 'stage' && t.stageRamp ? t.stageRamp : t.ramp;
+    return derive(tokens(t.id, w));
+  }
+  function at(spec, f, L) {
+    var refs = REF[f], Ls = REFL[f], last = refs.length - 1;
+    if (L <= Ls[0]) return spec[refs[0][0]];
+    if (L >= Ls[last]) return spec[refs[last][0]];
+    for (var k = 0; k < last; k++) if (L < Ls[k + 1]) return mix(spec[refs[k][0]], spec[refs[k + 1][0]], (L - Ls[k]) / (Ls[k + 1] - Ls[k]));
+    return spec[refs[last][0]];
+  }
+  /** every slot of a ramp: { n0: '#rrggbb', ..., a0, g0, r0 ..., warn } */
+  function slots(R) {
+    var out = {}, f, g, n, s;
+    for (f in GRID) { g = GRID[f]; n = Math.round((g[1] - g[0]) / g[2]); for (s = 0; s <= n; s++) out[f + s] = at(R[f], f, g[0] + s * g[2]); }
+    out.warn = R.warn;
+    return out;
+  }
   // A choice saved before AGORA (2026-11-09) may be 'olympus' only because that used to be the default (Jarvis wrote it when a Jarvis colour
   // was picked): it reads as the default (AGORA) until the owner picks a theme again; every pick after that is marked (VKEY) and wins.
   var VKEY = 'olympus.theme.v';
@@ -167,9 +294,19 @@
       paint('--oly-tone-rgb', rgbOf(t.accent).join(', '));
       paint('--oly-glow-rgb', rgbOf(t.glow).join(', '));
       paint('color-scheme', t.scheme);
+      // the reach ramp (every tokenized stylesheet) and the feel (radius, heading / number fonts); opts.ramp = false keeps a page's own look
+      if (!opts || opts.ramp === undefined || (typeof opts.ramp === 'function' ? opts.ramp(t, id) : opts.ramp)) {
+        var sl = slots(rampOf(theme(id), where)), fe = theme(id).feel;
+        for (k in sl) { paint('--oly-th-' + k, sl[k]); paint('--oly-th-' + k + '-rgb', rgbOf(sl[k]).join(', ')); }
+        if (fe) for (k in FEEL) if (fe[k]) paint(FEEL[k], fe[k]);
+      }
+      // a copy of the shared part, for a page's <head> to paint before this script arrives (the Gate, the dashboard: 'olympus.theme.paint.<where>')
+      var gen = {};
+      for (k = 0; k < painted.length; k++) gen[painted[k]] = st.getPropertyValue(painted[k]);
+      put(PAINT_KEY + '.' + where, JSON.stringify({ id: id, scheme: t.scheme, meta: t.themeColor, vars: gen }));
       if (opts && opts.jarvis && j && where === 'page') for (k = 0; k < JARVIS.length; k++) paint('--' + JARVIS[k], j[JARVIS[k]]);
       if (opts && typeof opts.extra === 'function') { var x = opts.extra(t, id) || {}; for (k in x) if (x[k] != null) paint(k, String(x[k])); }
-    }
+    } else { del(PAINT_KEY + '.page'); del(PAINT_KEY + '.stage'); }
     root.setAttribute('data-oly-theme', id);
     root.setAttribute('data-oly-scheme', t.scheme);
     if (opts && opts.meta && id !== DEFAULT) {
@@ -213,7 +350,11 @@
   if (d.body) grain(); else d.addEventListener('DOMContentLoaded', grain);
 
   var API = {
-    KEY: KEY, DEFAULT: DEFAULT, TOKENS: TOKENS, JARVIS: JARVIS,
+    KEY: KEY, DEFAULT: DEFAULT, TOKENS: TOKENS, JARVIS: JARVIS, GRID: GRID, REF: REF,
+    /** the reach ramp's slots for a theme: { n0: '#rrggbb' ... warn } (where = 'page' | 'stage') */
+    slots: function (id, w) { var t = theme(id === undefined ? stored() : id); return slots(rampOf(t, w || where || 'stage')); },
+    /** the five plain looks + the default, for a short picker (the Gate) */
+    plain: function () { var o = []; for (var q = 0; q < THEMES.length; q++) if (THEMES[q].id === DEFAULT || THEMES[q].plain) o.push(THEMES[q]); return o; },
     list: function () { return THEMES.slice(); },
     get: function (id) { return theme(id); },
     id: stored,
