@@ -21,7 +21,7 @@ Zlarior (MFFU 50K eval, LIT) and ATLAS (25K eval) trade for real from 02:00 ET. 
 | Push (ntfy) | What it means | Do |
 |---|---|---|
 | Ready for 02:00 ET | both bots running and armed, feed fresh, drawdown left per account | nothing |
-| NOT ready for 02:00 ET | something is wrong before the first entry | the fix written in the push |
+| NOT ready for 02:00 ET | something is wrong before the first entry | the fix written in the push (fixed before 02:00: a Ready push follows) |
 | Zlarior 50K trade opened | an entry: side, micros, entry, stop, target, $ risk at the stop | nothing |
 | Zlarior 50K trade closed | the exit: how, +/- $ and R, drawdown left, today's $ | nothing |
 | ... fill check: ... | NinjaTrader did something else than the bot planned | see the fill check table |

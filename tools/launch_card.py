@@ -383,7 +383,7 @@ def ready_push(snap: dict, now=None) -> list:
             return []
     except Exception:
         pass
-    key = f"guard:ready:{e.date().isoformat()}"
+    day = e.date().isoformat()
     cond = _d(snap.get("cond"))
     fresh = snap.get("hb_age") is not None and snap["hb_age"] <= 900
     rows = bots(snap.get("live"), now, snap.get("fills")) if fresh else []
@@ -411,5 +411,6 @@ def ready_push(snap: dict, now=None) -> list:
     names = [f"{r['name']} " + (("LIVE armed" if r["armed"] else "LIVE NOT armed") if r["mode"] == "LIVE" else word.get(r["mode"], r["mode"])) for r in rows]
     title = ("Ready for 02:00 ET: " + ", ".join(names)) if ok else ("NOT ready for 02:00 ET: " + (probs[0].split(".")[0][:70]))
     body = ("; ".join(parts) + ". " if parts else "") + tail + (" Entries from 02:00 ET." if ok else " Fix: " + " ".join(probs[:3]))
-    return [{"key": key, "title": "".join(ch if ord(ch) < 128 else "-" for ch in title)[:118], "body": " ".join(body.split()),
-             "priority": "low" if ok else "high", "tags": "white_check_mark" if ok else "warning", "night": True}]
+    # one key each: "NOT ready" at 01:36 and, once you fixed it, "Ready" at 01:51; neither is said twice in a day
+    return [{"key": f"guard:{'ready' if ok else 'notready'}:{day}", "title": "".join(ch if ord(ch) < 128 else "-" for ch in title)[:118],
+             "body": " ".join(body.split()), "priority": "low" if ok else "high", "tags": "white_check_mark" if ok else "warning", "night": True}]

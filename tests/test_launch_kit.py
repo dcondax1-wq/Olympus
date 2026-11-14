@@ -688,8 +688,11 @@ def ready():
         s = {"t": now, "hb": {"running": True}, "hb_age": 60, "server": True, "nt": True, "mode": "LIVE", "live": live, "cond": {}, "fills": []}
         s.update(kw)
         return s
+
+    def rdy(msgs):
+        return [x for x in msgs if x["key"].startswith(("guard:ready:", "guard:notready:"))]
     st, m = G.guard({}, snap(mon, live_of(mon)), roll_state={})
-    rd = [x for x in m if x["key"].startswith("guard:ready:")]
+    rd = rdy(m)
     check("3. 01:45 ET Monday, all well: one silent push 'Ready for 02:00 ET: Zlarior LIVE armed, ATLAS LIVE armed', through the quiet hours",
           len(rd) == 1 and rd[0]["key"] == "guard:ready:2026-11-16" and rd[0]["title"] == "Ready for 02:00 ET: Zlarior LIVE armed, ATLAS LIVE armed"
           and rd[0]["priority"] == "low" and G.quiet(mon), rd)
@@ -698,29 +701,34 @@ def ready():
           "Zlarior 50K: LIVE, armed, drawdown left $1,145 of $2,000" in body and "ATLAS 25K: LIVE, armed, drawdown left $822 of $1,000" in body
           and "Bot running, NinjaTrader on, feed fresh" in body and body.endswith("Entries from 02:00 ET."), body)
     _s, m = G.guard(st, snap(mon + 600, live_of(mon + 600)), roll_state={})
-    check("3. once a day", not [x for x in m if x["key"].startswith("guard:ready:")], m)
+    check("3. once a day", not rdy(m), m)
     for label, t in (("01:20 ET", at(2026, 11, 16, 1, 20)), ("02:05 ET", at(2026, 11, 16, 2, 5)), ("Saturday", at(2026, 11, 21, 1, 45)),
                      ("Christmas Day", at(2026, 12, 25, 1, 45))):
         _s, m = G.guard({}, snap(t, live_of(t)), roll_state={})
-        check(f"3. no ready push at {label}", not [x for x in m if x["key"].startswith("guard:ready:")], (label, m))
-    _s, m = G.guard({}, snap(mon, live_of(mon), cond={"bot_down": "The bot server on the PC is not answering. Double-click GO_LIVE_EVAL.bat on the PC."}), roll_state={})
-    rd = [x for x in m if x["key"].startswith("guard:ready:")]
-    check("3. the bot server down: 'NOT ready for 02:00 ET: The bot server on the PC is not answering', high, with the fix",
-          rd and rd[0]["title"].startswith("NOT ready for 02:00 ET: The bot server on the PC is not answering") and rd[0]["priority"] == "high"
-          and "Fix: The bot server on the PC is not answering. Double-click GO_LIVE_EVAL.bat" in rd[0]["body"], rd)
+        check(f"3. no ready push at {label}", not rdy(m), (label, m))
+    down = {"bot_down": "The bot server on the PC is not answering. Double-click GO_LIVE_EVAL.bat on the PC."}
+    st, m = G.guard({}, snap(at(2026, 11, 16, 1, 36), live_of(mon), cond=down), roll_state={})
+    rd = rdy(m)
+    check("3. the bot server down at 01:36: 'NOT ready for 02:00 ET: The bot server on the PC is not answering', high, with the fix",
+          rd and rd[0]["key"] == "guard:notready:2026-11-16" and rd[0]["title"].startswith("NOT ready for 02:00 ET: The bot server on the PC is not answering")
+          and rd[0]["priority"] == "high" and "Fix: The bot server on the PC is not answering. Double-click GO_LIVE_EVAL.bat" in rd[0]["body"], rd)
+    st, m = G.guard(st, snap(at(2026, 11, 16, 1, 51), live_of(mon)), roll_state={})
+    check("3. ... fixed by 01:51: then the 'Ready for 02:00 ET' push", [x["title"] for x in rdy(m)] == ["Ready for 02:00 ET: Zlarior LIVE armed, ATLAS LIVE armed"], rdy(m))
+    _s, m = G.guard(st, snap(at(2026, 11, 16, 1, 58), live_of(mon), cond=down), roll_state={})
+    check("3. ... and no second 'NOT ready' that day (the bot-down alert itself still comes from the report)", not rdy(m), rdy(m))
     _s, m = G.guard({}, snap(mon, live_of(mon, running=False), hb={"running": False}), roll_state={})
-    rd = [x for x in m if x["key"].startswith("guard:ready:")]
+    rd = rdy(m)
     check("3. the bot stopped at 01:45 (before the report's own 01:50 'stopped' alert): NOT ready, GO_LIVE_EVAL.bat",
           rd and rd[0]["priority"] == "high" and "The bot is stopped on the PC" in rd[0]["title"] and "GO_LIVE_EVAL.bat" in rd[0]["body"], rd)
     _s, m = G.guard({}, snap(mon, live_of(mon, account={"armed": False}, facts={"lit_armed": False, "b": {"armed": True}})), roll_state={})
-    rd = [x for x in m if x["key"].startswith("guard:ready:")]
-    check("3. Zlarior not armed: NOT ready, 'Zlarior LIVE NOT armed' is not in a Ready title, the arm-it-yourself action",
+    rd = rdy(m)
+    check("3. Zlarior not armed: NOT ready, with the arm-it-yourself action",
           rd and rd[0]["title"].startswith("NOT ready") and "Arm it yourself at the PC" in rd[0]["body"], rd)
     _s, m = G.guard({}, snap(mon, live_of(mon), hb_age=3600), roll_state={})
-    rd = [x for x in m if x["key"].startswith("guard:ready:")]
+    rd = rdy(m)
     check("3. the last report an hour old: NOT ready, 'The bot has not reported for 60 min'", rd and "The bot has not reported for 60 min" in rd[0]["title"], rd)
     _s, m = G.guard({}, snap(mon, live_of(mon, lit=lit_card(room=300.0))), roll_state={})
-    rd = [x for x in m if x["key"].startswith("guard:ready:")]
+    rd = rdy(m)
     check("3. 85% of the drawdown used is not 'NOT ready' (it has its own push): still Ready", rd and rd[0]["title"].startswith("Ready"), rd)
     check("3. ready titles are ASCII and short", all(ascii_ok(x["title"]) and len(x["title"]) <= 118 for x in LC.ready_push(snap(mon, live_of(mon)), mon)))
 
