@@ -159,6 +159,10 @@ def part_b():
     check("b. 6 hashtags or fewer per post, each one word", not tags, tags[:3])
     check("b. every caption + hashtags is under Instagram's 2,200 characters", not length, length[:3])
     check("b. no {placeholder} or 'None' left in any caption, headline, label or alt text", not ph, ph[:3])
+    cut = [(t, p["date"], p["sub"]) for t, c in BY_TRADE.items() for y, m in ((2027, 1), (2026, 12), (2027, 5), (2026, 11))
+           for p in M.plan_month(c, y, m, 20)["posts"] if re.search(r"\b(Co|Dr|Jr|St|Inc)\.$", p["sub"] or "")
+           or (p["kind"] == "holiday" and p["layout"] == "minimal" and p["sub"].endswith("..."))]
+    check("b. image lines never stop at an abbreviation ('Fade & Co.', 'Dr. King') and respect-day lines are never cut short", not cut, cut[:3])
     dec = M.plan_month(BY_TRADE["barber"], 2026, 12, 16)
     keys = [p.get("holiday_key") for p in dec["posts"]]
     check("b. December: Christmas and New Year's Eve are in, Christmas on the 25th", "christmas" in keys and "nye" in keys and

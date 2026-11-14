@@ -77,14 +77,22 @@ def strip_stars(t: str) -> str:
     return (t or "").replace("*", "")
 
 
+ABBR = re.compile(r"\b(Co|Inc|Ltd|Dr|Mr|Mrs|Ms|Jr|Sr|St|Mt|vs|No)\.")    # 'Fade & Co. Barbershop', 'Dr. King' are not sentence ends
+HOLD = "․"
+
+
+def _hold(t: str) -> str:
+    return ABBR.sub(lambda m: m.group(1) + HOLD, t or "")
+
+
 def first_sentence(t: str, limit: int = 118) -> str:
-    t = (t or "").strip()
+    t = _hold((t or "").strip())
     m = re.match(r"(.+?[.!?])(\s|$)", t)
     s = m.group(1) if m else t
     if len(s) > limit:
         cut = s[:limit].rsplit(" ", 1)[0].rstrip(",;:")
         s = cut + "..."
-    return s
+    return s.replace(HOLD, ".")
 
 
 def sub_line(t: str, limit: int = 118) -> str:
@@ -99,7 +107,7 @@ def sub_line(t: str, limit: int = 118) -> str:
 
 def lead_text(t: str, limit: int = 170) -> str:
     """as many whole sentences as fit in `limit` characters (at least the first, shortened if it must be)"""
-    parts = re.findall(r"[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$", (t or "").strip())
+    parts = re.findall(r"[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$", _hold((t or "").strip()))
     out = ""
     for s in parts:
         s = s.strip()
@@ -109,6 +117,7 @@ def lead_text(t: str, limit: int = 170) -> str:
             out += " " + s
         else:
             break
+    out = out.replace(HOLD, ".")
     return out if len(out) <= limit else first_sentence(out, limit)
 
 
@@ -516,7 +525,7 @@ def compose(kind, it, h, d, pack, trade, brand, ctx, seed, emoji, i, prev_layout
                  check=pick[2] if len(pick) > 2 else "")             # holiday words that assume a service ask the client too
         tile = {"mon": h["date"].strftime("%b").upper(), "day": str(h["date"].day), "dow": h["date"].strftime("%A"), "event": h["name"]}
         if h["respect"]:
-            p.update(layout="minimal", label=h["name"], sub=sub_line(body, 120))
+            p.update(layout="minimal", label=h["name"], sub=sub_line(body, 160))
             cap = f"{hl.replace('*', '')}\n\n{body}"
         elif h["post_date"] != h["date"] or h["kind"] == "observance":
             p.update(layout="date", label=("Coming up" if h["post_date"] != h["date"] else "This month"), sub=sub_line(body), tile=tile)
