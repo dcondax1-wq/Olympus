@@ -404,7 +404,12 @@ def update(py=sys.executable) -> bool:
     """The newest main (fast-forward only) while the bot is stopped: engine/autoupdate.pull, the same code as the
     auto-update and UPDATE.bat (ATLAS's account block moved out of second_model.json, files checked out from main by
     hand, a shallow history). True = new code arrived (START BOT re-runs itself, the Start page restarts the server)."""
-    from . import autoupdate, generated_files
+    from . import autoupdate, generated_files, nogithub
+    if nogithub.active():
+        # GitHub-free mode (BOTS_BACK.bat / GO_LIVE_EVAL.bat; the account is gone, 2026-11-08): no git fetch at all. A fetch
+        # would only fail (a scary "git fetch failed" line, or a sign-in window) and new code comes from the code zip.
+        print(" [OK] Update by git skipped (GitHub-free mode: new code comes from the code zip, UPDATE_FROM_ZIP.bat).")
+        return False
     if generated_files.git_exe() == "git" and not shutil.which("git"):
         print(" [..] Update skipped (git not found); starting the version on this PC.")
         return False

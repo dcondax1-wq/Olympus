@@ -253,6 +253,21 @@ def main():
             check("no live bars: stops before the Sim test, never started",
                   rc == 1 and "feed" in w.calls and not any(isinstance(c, str) and c.startswith("--sim") for c in w.calls)
                   and not any(isinstance(c, tuple) and c[0] == "start" for c in w.calls), w.calls)
+        # GitHub-free mode (BOTS_BACK.bat marker / LE_NO_GITHUB=1): START BOT never fetches from GitHub (2026-11-14 drill)
+        pulls = []
+        G.PULL = lambda: (pulls.append(1), {"status": "up_to_date", "say": "x"})[1]
+        old_ng = os.environ.get("LE_NO_GITHUB")
+        try:
+            os.environ["LE_NO_GITHUB"] = "1"
+            check("GitHub-free mode: update() skips git (no fetch, no 'git fetch failed' line)", G.update() is False and pulls == [], pulls)
+            os.environ["LE_NO_GITHUB"] = "0"
+            check("GitHub mode: update() still pulls", G.update() is False and pulls == [1], pulls)
+        finally:
+            G.PULL = None
+            if old_ng is None:
+                os.environ.pop("LE_NO_GITHUB", None)
+            else:
+                os.environ["LE_NO_GITHUB"] = old_ng
         g3 = importlib.reload(G)
         fs = iter(["stale", "stale", None])
         check("ensure_feed: waits for fresh bars", g3.ensure_feed(wait_s=60, problem=lambda: next(fs), sleep=lambda s: None))
