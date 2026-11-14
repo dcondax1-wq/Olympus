@@ -5,7 +5,7 @@
   "phone": "(555) 555-0100",
   "email": "hello@your-agency.example",
   "brand_color": "coral",
-  "_brand_color": "coral (warm red), ocean (blue), forest (green), or your own colour like #1E6B47. Preview a preset by adding ?preset=ocean to a page address.",
+  "_brand_color": "coral (warm red), ocean (blue), forest (green), or your own color like #1E6B47. Preview a preset by adding ?preset=ocean to a page address.",
   "owner_name": "YOUR NAME",
   "state": "YOUR STATE",
   "service_area": "YOUR CITY and the towns around it",

@@ -7,7 +7,9 @@
 
 One visit means: one GET of the home page (redirects followed, at most 5 MB read), a HEAD request for up to 25 of the
 files that page loads (pictures, styles, scripts) to weigh it, and one HEAD of the plain http:// address to see whether
-it moves to https://. Nothing else is opened, no form is sent, nothing is stored about the visitor.
+it moves to https://. Nothing else is opened, no form is sent, nothing is stored about the visitor. A single check is
+done for a business that asked for its report; --batch (cold leads) also reads robots.txt and skips a site that asks
+tools to stay away, with 1 second between sites.
 It checks: HTTPS, the phone layout (viewport), tap-to-call, a clear call / book / quote button, a Google Business Profile
 link, load time, page weight, the title and Google snippet, whether Google may list the page, the main headline,
 business details for Google (schema), how up to date it looks and picture descriptions.
@@ -183,6 +185,21 @@ def head_size(url: str, timeout: float = 10) -> tuple:
         return None, e.code
     except (urllib.error.URLError, OSError, ValueError):
         return None, None
+
+
+def robots_allows(url: str, timeout: float = 10):
+    """True / False from the site's robots.txt for this tool, None = no robots.txt or it could not be read (= allowed)"""
+    import urllib.robotparser
+    u = urllib.parse.urlsplit(url)
+    robots = urllib.parse.urlunsplit((u.scheme, u.netloc, "/robots.txt", "", ""))
+    try:
+        resp = _opener(robots).open(urllib.request.Request(robots, headers={"User-Agent": UA}), timeout=timeout)
+        lines = resp.read(200_000).decode("utf-8", "replace").splitlines()
+    except (urllib.error.URLError, OSError, ValueError):
+        return None
+    rp = urllib.robotparser.RobotFileParser()
+    rp.parse(lines)
+    return rp.can_fetch("WebsiteCheck", url)
 
 
 def http_moves_to_https(url: str, timeout: float = 10):
@@ -814,6 +831,10 @@ def main(argv=None) -> int:
                                 "note": "no website: a perfect lead for a free demo"})
                 continue
             try:
+                if robots_allows(normalize_url(site)) is False:      # a cold lead's site that asks tools to stay away: we do
+                    summary.append({"id": c.get("id", ""), "name": c.get("name", ""), "site_url": site, "score": None, "grade": None,
+                                    "note": "skipped: its robots.txt asks tools not to visit (call them instead)"})
+                    continue
                 r = grade_url(site, out, c.get("name", ""), c.get("city", ""), not args.page_only, args.pdf)
             except ValueError as e:
                 summary.append({"id": c.get("id", ""), "name": c.get("name", ""), "site_url": site, "score": None, "grade": None, "note": str(e)})

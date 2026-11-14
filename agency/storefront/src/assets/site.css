@@ -159,7 +159,7 @@ h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 600; 
   text-transform: uppercase; color: var(--brand-text);
 }
 .eyebrow .num { font-family: var(--mono); font-weight: 600; letter-spacing: 0; color: var(--muted); }
-.hero .eyebrow { background: var(--card); border: 1px solid var(--line); padding: 8px 13px; border-radius: 999px; box-shadow: var(--shadow-sm); }
+.hero .eyebrow { background: var(--card); border: 1px solid var(--line); padding: 8px 13px; border-radius: 16px; box-shadow: var(--shadow-sm); line-height: 1.35; }
 .display { max-width: 11.5em; }
 .lede { font-size: clamp(1.08rem, .55vw + 1rem, 1.3rem); line-height: 1.55; color: var(--ink-2); max-width: 36em; }
 .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin: 26px 0 14px; }

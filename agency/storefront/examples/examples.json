@@ -59,7 +59,7 @@
       "trade_label": "Plumber",
       "domain": "steadyflow.example",
       "before": ["Not secure warning", "Emergency number buried", "No quote form"],
-      "after": ["24/7 call button always on screen", "Free quote form", "Licence, warranty and towns served"],
+      "after": ["24/7 call button always on screen", "Free quote form", "License, warranty and towns served"],
       "changed": ["Emergency bar at the top", "Six services with starting prices", "Quote form with 'how urgent'", "Service-area list for local search"]
     },
     "demo-restaurant": {

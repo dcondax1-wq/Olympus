@@ -603,6 +603,17 @@ def part_b(tmp: Path):
               "a local server has no https), 'perfect lead' for no website",
               [g["id"] for g in gj] == ["c1", "c2"] and gj[0]["score"] == 86 and gj[0]["top_fix"] == "Secure padlock (HTTPS)"
               and gj[1]["score"] is None and "perfect lead" in gj[1]["note"], gj)
+        shy = tmp / "shy"
+        shy.mkdir()
+        shutil.copy(FIX / "good.html", shy / "index.html")
+        (shy / "robots.txt").write_text("User-agent: *\nDisallow: /\n")
+        httpd3, url3 = serve(shy)
+        (tmp / "shy.txt").write_text(url3 + "/\n")
+        grade.main(["--batch", str(tmp / "shy.txt"), "--out", str(out / "batch2")])
+        httpd3.shutdown()
+        g2 = json.loads((out / "batch2" / "grades.json").read_text())
+        check("b. batch mode (cold leads) obeys robots.txt: a site that asks tools to stay away is skipped, with a plain note",
+              g2[0]["score"] is None and "robots.txt" in g2[0]["note"], g2)
         demo_site = tmp / "demo_site"
         build.build(demo_site)
         shutil.copytree(SF / "mockups", demo_site / "_mockups")
