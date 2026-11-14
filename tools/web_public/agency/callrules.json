@@ -4,7 +4,7 @@
   "checked": "2026-11-14",
   "policy": {"fed": [480, 1260], "noSunday": true, "federalHolidays": true, "dayAfterThanksgiving": true, "maxPerDay": 1, "cap24h": 3, "restDays": 180, "dncMaxAgeDays": 31, "searchDays": 14},
   "rules5": [
-    "Human calls to businesses with a good script are OK: weekdays, inside their local window, say who you are and that it is a sales call.",
+    "Human calls to businesses with a good script are OK: weekdays 10 am-6 pm their time is legal everywhere; the Call button follows each state's exact hours. Say who you are and that it is a sales call.",
     "Check numbers against the National Do Not Call list (free for 5 area codes); keep your own do-not-call list forever.",
     "No AI voice, robocall, recorded message or ringless voicemail to anyone without signed consent: $500 to $1,500 per call.",
     "Emails: real name, honest subject, your postal address, an opt-out that works. Texts: only to people who said yes, with Reply STOP.",

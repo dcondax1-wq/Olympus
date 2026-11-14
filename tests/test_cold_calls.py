@@ -98,6 +98,9 @@ def test_static():
           all(st[k]["win"] == [480, 1200] and st[k]["max24"] == 3 for k in ("FL", "OK", "MD")) and st["PA"]["win"] == [540, 1140] and st["PA"]["sun"] is None and st["PA"]["hol"]
           and st["TX"]["win"] == [540, 1260] and st["TX"]["sun"] == [720, 1260] and st["RI"]["win"] == [540, 1080] and st["RI"]["sat"] == [600, 1020] and st["KY"]["win"][0] == 600
           and st["CT"]["win"][0] == 540 and st["NV"]["win"][0] == 540 and all(st[k]["sun"] is None and st[k]["hol"] for k in ("AL", "LA")))
+    check("a. the one-line rule holds: weekdays 10 am-6 pm their time is inside every state's window (docs part '5 lines', rules5 line 1)",
+          all((s.get("win") or [480, 1260])[0] <= 600 and (s.get("win") or [480, 1260])[1] >= 1080 for s in st.values()) and "10 am-6 pm" in R["rules5"][0],
+          [k for k, s in st.items() if not ((s.get("win") or [480, 1260])[0] <= 600 and (s.get("win") or [480, 1260])[1] >= 1080)])
     P = R["policy"]
     check("a. the copilot's own policy: no Sundays, no federal holidays (+ the day after Thanksgiving), one call a day, at most 3 in 24 h, 180 days rest after 'not interested', DNC checks expire after 31 days",
           P["noSunday"] and P["federalHolidays"] and P["dayAfterThanksgiving"] and P["maxPerDay"] == 1 and P["cap24h"] == 3 and P["restDays"] == 180 and P["dncMaxAgeDays"] == 31)

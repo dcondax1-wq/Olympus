@@ -19,7 +19,7 @@ The tool that follows these rules is the **Call copilot** (`tools/web_public/age
 | Record the call | **Only if you announce it** | About 12 states need everyone's consent. The copilot never records. |
 
 **In 5 lines:**
-1. Human calls to businesses with a good script are OK: call 9 am to 6 pm their time on weekdays, say who you are and that it is a sales call, never on Sundays or holidays.
+1. Human calls to businesses with a good script are OK: weekdays 10 am to 6 pm their time is legal in every state (the app shows each state's exact hours), say who you are and that it is a sales call, never on Sundays or holidays.
 2. Check numbers against the National Do Not Call list (free for 5 area codes) and keep your own do-not-call list forever; "don't call me" means never again.
 3. No AI voice, robocall, recorded message or ringless voicemail to anyone who has not signed a written consent: that is $500-$1,500 per call.
 4. Emails: real name, honest subject, postal address, an opt-out that works. Texts: only to people who said yes, with "Reply STOP to opt out".
