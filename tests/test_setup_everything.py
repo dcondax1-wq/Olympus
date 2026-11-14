@@ -714,6 +714,11 @@ def flows(pwsh):
         check("the stop question answered n: nothing changed, exit 0, the bot left running",
               rc == 0 and "Nothing was changed. Double-click SETUP_EVERYTHING.bat again when you are ready." in out and not b.lines(b.calls)
               and tree(b.bot) == before and b.fake.srv is not None, out[-1500:])
+        b.clear()
+        rc, out = b.run(pwsh, stdin="n\n", now=WED)
+        check("the market open (Wed 10:00 ET) and the bot running: ONE question before anything is stopped; n -> the bot is left running, nothing changed",
+              rc == 0 and out.count("Type Y then Enter to stop the bot and update now anyway") == 1 and "Update anyway?" not in out
+              and not b.lines(b.calls) and b.fake.srv is not None and tree(b.bot) == before, (b.lines(b.calls), out[-1500:]))
         b.fake.down()
         b.clear()
         rc, out = b.run(pwsh, stdin="\n", now=WED)
@@ -724,6 +729,18 @@ def flows(pwsh):
         check("... Y -> the update with --allow-market-open; a server that was not running is NOT started (left as found)",
               "--allow-market-open" in " ".join(b.lines(b.pylog)) and open(os.path.join(b.bot, "engine", "lit.py")).read() == "VERSION = 'new'\n"
               and not [w for w in b.lines(b.winlog) if w.startswith("START SERVER")], (b.lines(b.pylog), out[-1500:]))
+    finally:
+        b.cleanup()
+
+    b = Box()
+    try:
+        b.fake.up()
+        b.fake.running = True
+        rc, out = b.run(pwsh, stdin="Y\n", now=WED)
+        py = b.lines(b.pylog)
+        check("the market open and the bot running, Y: stopped, updated with --allow-market-open in one go, the server started again",
+              rc == 0 and [c.split()[0] for c in b.lines(b.calls)[:1]] == ["stop_bot.ps1"] and len(py) >= 2 and "--allow-market-open" in py[1] and "Update anyway?" not in out
+              and open(os.path.join(b.bot, "engine", "lit.py")).read() == "VERSION = 'new'\n" and b.lines(b.winlog)[:1][0].startswith("START SERVER"), (py, out[-1500:]))
     finally:
         b.cleanup()
 

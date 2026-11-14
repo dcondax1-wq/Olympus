@@ -110,6 +110,15 @@ function Et-Now {
     return $u.AddHours($off)
 }
 function Et-Words($E) { return $E.ToString('dddd h:mm tt', [System.Globalization.CultureInfo]::InvariantCulture) }
+function Market-Open($E) {
+    # CME equity-index futures: Sunday 18:00 ET to Friday 17:00 ET, with a break 17:00-18:00 ET every day (tools\update_from_zip.py)
+    $d = [int]$E.DayOfWeek
+    $m = $E.Hour * 60 + $E.Minute
+    if ($d -eq 6) { return $false }
+    if ($d -eq 0) { return ($m -ge 18 * 60) }
+    if ($d -eq 5) { return ($m -lt 17 * 60) }
+    return (-not ($m -ge 17 * 60 -and $m -lt 18 * 60))
+}
 function Weekend-Closed($E) {
     # the futures market's weekend: Friday 17:00 ET to Sunday 18:00 ET (the evals go live at Sunday's 18:00 ET open)
     $d = [int]$E.DayOfWeek
@@ -147,11 +156,17 @@ function Home-Dir {
     if (-not $up) { $up = $HOME }
     return $up
 }
+function First-Bot($Cands) {
+    foreach ($d in $Cands) { if ($d -and (Is-BotFolder $d)) { return (Get-Item -LiteralPath $d).FullName } }
+    return $null
+}
 function Find-BotFolder {
     if ($BotDir) { if (Is-BotCode $BotDir) { return (Get-Item -LiteralPath $BotDir).FullName }; return $null }
-    $up = Home-Dir
+    # 1. where the .bat / this script is, LE_BOT_DIR
+    $f = First-Bot @($BatDir, (Split-Path -Parent $PSScriptRoot), $env:LE_BOT_DIR)
+    if ($f) { return $f }
+    # 2. where the bot itself says it lives: its scheduled tasks and the Startup shortcut engine\go.py made
     $c = New-Object System.Collections.Generic.List[string]
-    foreach ($d in @($BatDir, (Split-Path -Parent $PSScriptRoot), $env:LE_BOT_DIR)) { if ($d) { $c.Add($d) } }
     foreach ($t in @('OlympusPCReport', 'OlympusLiveSite', 'OlympusPublishNQ')) { $w = Task-Dir $t; if ($w) { $c.Add($w) } }
     if (OnWindows) {
         try {
@@ -159,14 +174,20 @@ function Find-BotFolder {
             if (Test-Path -LiteralPath $lnk) { $c.Add([string](New-Object -ComObject WScript.Shell).CreateShortcut($lnk).WorkingDirectory) }
         } catch { }
     }
+    $f = First-Bot $c
+    if ($f) { return $f }
+    # 3. the usual places, then a renamed folder right inside the home folder, the Desktop or Documents
+    $up = Home-Dir
+    $c = New-Object System.Collections.Generic.List[string]
     $bases = New-Object System.Collections.Generic.List[string]
     foreach ($b in @($up, (J2 $up 'Desktop'), (J2 $up 'Documents'), (JP $up 'OneDrive\Desktop'), (JP $up 'OneDrive\Documents'))) { $bases.Add($b) }
     try { foreach ($k in @('Desktop', 'MyDocuments')) { $f = [Environment]::GetFolderPath($k); if ($f) { $bases.Add($f) } } } catch { }
     foreach ($b in $bases) { $c.Add((J2 $b 'nq-liquidity-engine')) }
     $c.Add((JP $up 'Documents\GitHub\nq-liquidity-engine'))
     if (OnWindows) { $c.Add('C:\nq-liquidity-engine') }
-    foreach ($d in $c) { if (Is-BotFolder $d) { return (Get-Item -LiteralPath $d).FullName } }
-    foreach ($b in $bases) {                                 # a renamed bot folder right inside the home folder, Desktop or Documents
+    $f = First-Bot $c
+    if ($f) { return $f }
+    foreach ($b in $bases) {
         if (-not (Test-Path -LiteralPath $b -PathType Container)) { continue }
         foreach ($sub in @(Get-ChildItem -LiteralPath $b -Directory -ErrorAction SilentlyContinue)) {
             if (Is-BotFolder $sub.FullName) { return $sub.FullName }
@@ -258,10 +279,11 @@ function Port-Open([int]$P) {
     }
 }
 function Get-Json([string]$Path) {
+    # a local GET of the bot server's JSON (only ever 127.0.0.1; a 404 / an error / not JSON = $null)
     try {
-        $r = Invoke-WebRequest -Uri "http://127.0.0.1:$Port$Path" -UseBasicParsing -TimeoutSec 8 -ErrorAction Stop
-        if ([int]$r.StatusCode -ne 200) { return $null }
-        return ([string]$r.Content | ConvertFrom-Json -ErrorAction Stop)
+        $r = Invoke-RestMethod -Uri "http://127.0.0.1:$Port$Path" -UseBasicParsing -TimeoutSec 8 -ErrorAction Stop
+        if ($r -is [string]) { return $null }
+        return $r
     } catch {
         return $null
     }
@@ -528,8 +550,11 @@ if ($AfterUpdate) {
             $script:S1 = 'NOT done: the zip check failed'
             Done 1
         } else {
-            # an update is due: the bot server must be stopped for it (UPDATE_FROM_ZIP refuses while it answers)
+            # an update is due: the bot server must be stopped for it (UPDATE_FROM_ZIP refuses while it answers), and while the market
+            # is open only with a Y. Both are asked BEFORE anything is stopped (one question), so a "no" leaves the bot as it was.
             $stopped = $false
+            $mOpen = Market-Open (Et-Now)
+            $okMarket = $false
             if (Port-Open $Port) {
                 $ls = Launch-State
                 if ($ls.open) {
@@ -541,12 +566,18 @@ if ($AfterUpdate) {
                 Write-Host '   The bot server is running. The new code can only go in while it is stopped.' -ForegroundColor Yellow
                 if ($ls.words) { Write-Host "   Now: $($ls.words)" -ForegroundColor Yellow }
                 Write-Host '   It is started again right after the update; the bot itself stays stopped until step 3.' -ForegroundColor Yellow
-                $a = Ask '   Type Y then Enter to stop the bot now (anything else: nothing is changed)'
+                if ($mOpen) {
+                    Write-Host ("   The market is open now ({0} in New York): the bot misses trades until step 3 starts it again." -f (Et-Words (Et-Now))) -ForegroundColor Yellow
+                    $a = Ask '   Type Y then Enter to stop the bot and update now anyway (anything else: nothing is changed)'
+                } else {
+                    $a = Ask '   Type Y then Enter to stop the bot now (anything else: nothing is changed)'
+                }
                 if ($a.ToUpper() -ne 'Y') {
                     Say 'OK' 'Nothing was changed. Double-click SETUP_EVERYTHING.bat again when you are ready.'
                     $script:S1 = 'NOT done: you kept the bot running'
                     Done 0
                 }
+                $okMarket = $mOpen
                 if (-not (Stop-Bot)) {
                     Fix 'The bot server did not stop' 'Restart the PC, then double-click SETUP_EVERYTHING.bat again'
                     $script:S1 = 'NOT done: the bot did not stop'
@@ -555,10 +586,20 @@ if ($AfterUpdate) {
                 Say 'OK' 'The bot is stopped.'
                 $stopped = $true
             }
+            if ($mOpen -and -not $okMarket) {
+                $a = Ask '   The market is open now and the bot is stopped. Update anyway? Type Y then Enter'
+                if ($a.ToUpper() -ne 'Y') {
+                    Say 'OK' 'Nothing was changed. Double-click SETUP_EVERYTHING.bat again after 17:00 ET or at the weekend.'
+                    $script:S1 = 'NOT done: the market was open'
+                    Done 0
+                }
+                $okMarket = $true
+            }
             $ua = @('-I', '-X', 'utf8', $tool, $zipPath, '--folder', $Root, '--pip', '--port', "$Port", '--next', 'this window goes on with step 2 by itself.') + $nowArgs
+            if ($okMarket) { $ua += '--allow-market-open' }
             & $py @ua
             $rc = $LASTEXITCODE
-            if ($rc -eq 12) {
+            if ($rc -eq 12) {                               # the updater's own clock says open (a clock edge): ask as UPDATE_FROM_ZIP.bat does
                 $a = Ask '   The market is open now and the bot is stopped. Update anyway? Type Y then Enter'
                 if ($a.ToUpper() -eq 'Y') {
                     & $py @ua '--allow-market-open'
