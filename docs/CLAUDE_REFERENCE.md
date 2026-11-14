@@ -19,7 +19,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 
 | Thing | Where it lives | How a change ships | Tests to run (only these) |
 |---|---|---|---|
-| NQ bots (Zlarior/LIT, ATLAS, BLITZ) | `engine/`, `live_model*.json`, `second_model.json`, `tools/` | main -> the PC auto-updates when the bot is FLAT (`engine/autoupdate.py`: self-tests, rollback on failure) | `tests.test_lit_live` + the area's own test |
+| NQ bots (Zlarior/LIT, ATLAS, BLITZ) | `engine/`, `live_model*.json`, `second_model.json`, `tools/` | the backup repo `dcondax1-wq/olympus` branch `pc` (since 2026-11-14; `docs/AUTO_UPDATE.md`) -> the PC auto-updates when the bot is FLAT (`engine/autoupdate.py`: self-tests, rollback on failure) | `tests.test_lit_live` + the area's own test |
 | Zenith (phone dashboard) | `tools/web_public/` (index.html, sw.js, …) | main -> run `cloud-monitor.yml` (ref main) -> nq-dashboard Pages, live ~2 min after the run | `tests.test_phone_e2e` (+ the page's own test) |
 | Jarvis (home app, the orb) | `tools/web_public/jarvis/` | same as Zenith | `tests.test_jarvis_hub`, `tests.test_phone_e2e`, the module's test (System view: `tests.test_jarvis_system`) |
 | Kalshi page in Jarvis | `tools/web_public/kalshi/`, `tools/kalshi_kit/`, `engine/kalshi_publish.py` | same as Zenith | `tests.test_kalshi_page`, `tests.test_kalshi_publish` |
