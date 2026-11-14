@@ -1,0 +1,12 @@
+Description,,Summary Amt.
+Beginning balance as of 10/01/2026,,"1,000.00"
+Total credits,,"1,250.00"
+Total debits,,"-484.12"
+Ending balance as of 10/31/2026,,"1,765.88"
+
+Date,Description,Amount,Running Bal.
+10/01/2026,Beginning balance as of 10/01/2026,,"1,000.00"
+10/02/2026,"KROGER #1234 10/01 PURCHASE",-84.12,915.88
+10/03/2026,"DIRECT DEP GUSTO PAYROLL",1250.00,"2,165.88"
+10/09/2026,"ATM WITHDRAWAL 000123 10/09",-100.00,"2,065.88"
+10/10/2026,"Online Banking transfer to SAV 5678 Confirmation# 1234567890",-300.00,"1,765.88"

@@ -1,0 +1,5 @@
+"Date","Time","TimeZone","Name","Type","Status","Currency","Gross","Fee","Net","From Email Address","To Email Address","Transaction ID","Balance"
+"10/24/2026","09:12:00","PDT","Adobe Inc","Preapproved Payment Bill User Payment","Completed","USD","-22.99","0.00","-22.99","pat@example.com","billing@adobe.example","8AB12345CD678901E","0.00"
+"10/24/2026","09:12:00","PDT","","General Card Deposit","Completed","USD","22.99","0.00","22.99","","","1XY23456AB789012C","22.99"
+"10/20/2026","11:00:00","PDT","Rise Works Inc","Payment Received","Completed","USD","750.00","0.00","750.00","payouts@rise.example","pat@example.com","5RT23456AB789012D","750.00"
+"10/19/2026","11:00:00","PDT","Jane Smith","General Authorization","Pending","USD","-30.00","0.00","-30.00","pat@example.com","jane@example.com","7GH23456AB789012E","750.00"

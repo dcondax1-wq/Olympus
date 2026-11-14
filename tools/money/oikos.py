@@ -3,6 +3,8 @@
 
   python tools/money/oikos.py --out DIR                 # sample ledger (works offline), writes DIR/oikos.json
   python tools/money/oikos.py --out DIR --ledger X.json # a Ledger export (Ledger app -> Export JSON)
+  python tools/money/oikos.py --out DIR                 # with no --ledger: your bank exports' ledger when tools/money_import.py has built one
+                                                        # (%USERPROFILE%\\.olympus\\money\\oikos_ledger.json), else the sample
   python tools/money/oikos.py --selftest
 
 Stdlib only, offline, read only: it reads one file and writes one file. It never trades, never calls a service, never touches the bot.
@@ -164,6 +166,7 @@ def normalize(raw, today):
     if isinstance(raw.get("opts"), dict):
         out["opts"] = {k: v for k, v in raw["opts"].items() if k in DEFAULTS and num(v) is not None}
     out["demo"] = raw.get("demo") is True
+    out["source"] = text(raw.get("source"), 20)
     out["note"] = text(raw.get("note"), 200)
     return out
 
@@ -400,13 +403,23 @@ def build(ledger, today, status, opts=None, asof=None):
     notes = ["Everything is an estimate from the entries you recorded in the Ledger; nothing here moves money or trades.",
              NOTE_TAX,
              "The projector is not a promise: new accounts run the same strategy, so they win and lose together, and a bad month cuts every account at once.",
-             "Sample ledger (not yours) - export your own from the Ledger app and run again with --ledger." if status == "sample" else "Built from your Ledger export."]
+             "Sample ledger (not yours) - export your own from the Ledger app and run again with --ledger." if status == "sample" else
+             "Built from your bank exports (tools/money_import.py, category level)." if ledger.get("source") == "money_import" else "Built from your Ledger export."]
     if ledger["skipped"]:
         notes.append("%d row%s in the file could not be read and %s skipped." % (ledger["skipped"], "" if ledger["skipped"] == 1 else "s", "was" if ledger["skipped"] == 1 else "were"))
     return {"v": 1, "id": "oikos", "asof": asof or dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "mode": "paper", "status": status,
             "headline": headline(a), "items": items, "notes": notes,
             "ledger": {"entries": ledger["entries"], "settings": ledger["settings"], "accounts": [{"id": k, "name": v} for k, v in ledger["accounts"].items()], "opts": ledger["opts"], "demo": ledger["demo"], "note": ledger["note"]},
             "analysis": a}
+
+
+def bank_ledger(env=None):
+    """the household ledger tools/money_import.py builds from your own bank exports (<OLYMPUS_HOME or %USERPROFILE%\\.olympus>/money/
+    oikos_ledger.json, private, outside the repo), when it exists; the default when no --ledger is given (RUN_MONEY.bat runs the importer first)"""
+    env = os.environ if env is None else env
+    home = env.get("OLYMPUS_HOME") or os.path.join(env.get("USERPROFILE") or os.path.expanduser("~"), ".olympus")
+    p = os.path.join(home, "money", "oikos_ledger.json")
+    return p if os.path.isfile(p) else None
 
 
 def load_file(path):
@@ -484,12 +497,13 @@ def main(argv=None):
         return selftest()
     today = ns.today if ns.today and is_date(ns.today) else dt.datetime.now(dt.timezone.utc).date().isoformat()
     status, raw = "sample", None
-    if ns.ledger and not ns.fixture:
+    path = ns.ledger or (None if ns.fixture else bank_ledger())
+    if path and not ns.fixture:
         try:
-            raw = load_file(ns.ledger)
+            raw = load_file(path)
             status = "ok"
         except (OSError, ValueError) as e:
-            print("could not read %s (%s): using the sample" % (ns.ledger, e), file=sys.stderr)
+            print("could not read %s (%s): using the sample" % (path, e), file=sys.stderr)
     if raw is None:
         raw = load_file(SAMPLE)
     led = normalize(raw, today)
