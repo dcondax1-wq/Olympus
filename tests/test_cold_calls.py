@@ -250,6 +250,12 @@ def test_python():
               bl["A"]["phone"] == "+18135550142" and bl["A"]["city"] == "Tampa" and bl["A"]["state"] == "FL" and [bl[k]["trade"] for k in ("A", "B", "C", "Hill Roofing")] == ["restaurant", "contractor", "salon", "contractor"]
               and bl["A"]["issue"].startswith("you do not have a website yet") and bl["B"]["issue"].startswith("your current site has a few problems") and bl["A"]["finder"].startswith("No website found")
               and bl["A"]["id"] == "osm-n1", {k: (v["phone"], v["trade"], v["issue"][:20]) for k, v in bl.items()})
+        roy = PC.norm_lead({"id": "w1", "name": "Roy's Quick Lube", "category": "auto_repair", "phone_e164": "+19705550123", "address_line": "825 North College Avenue, Fort Collins, CO 80524",
+                            "city": "Fort Collins", "demo_url": "https://roys-quick-lube-demo.netlify.app", "setup": 999.0, "monthly": 79.0}, R)
+        rs = PC.script_for(roy, {"me": "Sam", "price": "$499"}, R, SC, ms("2026-11-17T19:30:00Z"))
+        check("b. B1's published CRM record: the state comes from address_line (CO), its demo_url and its own package price ('$999 to set up, then $79 a month') win over yours",
+              roy["state"] == "CO" and roy["city"] == "Fort Collins" and roy["demo"].endswith("netlify.app") and roy["price"] == "$999 to set up, then $79 a month"
+              and any("For Roy's Quick Lube it is $999 to set up, then $79 a month." in x for o in rs["objections"] for x in o["lines"]), (roy["state"], roy["price"]))
         b1keys = ["restaurant", "cafe", "bakery", "barber", "salon", "beauty", "plumber", "hvac", "electrician", "roofer", "painter", "builder", "locksmith", "landscaper", "cleaner",
                   "florist", "pet_grooming", "auto_repair", "car_wash", "dentist", "chiropractor", "physio", "vet", "massage", "gym", "tattoo"]
         got_t = [PC.trade_of({"category": k}, R) for k in b1keys]
@@ -371,6 +377,11 @@ F.junk = [C.loadState('not json').leads.length, C.loadState('{"leads":"x","log":
 F.shared = C.sharedLeads(JSON.stringify({ leads: [{ business_name: 'From B1', phone: '813-555-0190', state: 'FL', category: 'bakery' }] }), R).map((x) => [x.name, x.trade]);
 // fictional numbers are never dialed
 F.tel = [C.telHref('+18135550142'), C.telHref('+18135551234'), C.isFictional('+18135550199')];
+// team B1's CRM on the same phone: 'Do not contact' locks for good, 'won' = a client; other stages and junk change nothing
+const cs = C.emptyState(); for (const [i, n] of [['b-1', 'One'], ['b-2', 'Two'], ['b-3', 'Three']]) { const x = C.normLead({ id: i, name: n, phone: '813-555-02' + i.slice(2).padStart(2, '0'), state: 'FL' }, R, 0); cs.leads.push(x); }
+const stg = C.crmStages(JSON.stringify({ v: 1, leads: { 'b-1': { stage: 'dnc' }, 'b-2': { stage: 'won' }, 'b-3': { stage: 'callback' } }, log: [] }));
+const nCrm = C.applyCrm(cs, stg), again2 = C.applyCrm(cs, stg);
+F.crm = [stg, nCrm, again2, (C.blockOf(cs.leads[0], cs, t0, R) || {}).code, (C.blockOf(cs.leads[1], cs, t0, R) || {}).code, C.blockOf(cs.leads[2], cs, t0, R), cs.optouts.length, Object.keys(C.crmStages('nope')).length, Object.keys(C.crmStages('{"leads": [1, 2]}')).length];
 F.url = [C.safeUrl('https://example.com/demo/taco-town'), C.safeUrl('javascript:alert(1)'), C.safeUrl('data:text/html,x'), C.safeUrl('https://x.example/a"onmouseover'), C.safeUrl(' http://ok.example/p ')];
 // the queue: a callback due first, good now, legal now, later, locked last
 const q = C.emptyState();
@@ -443,6 +454,9 @@ def test_node():
             {"id": "osm-n1", "name": "B1 Diner", "category": "restaurant", "category_label": "Restaurant", "phone": "(813) 555-0142", "phone_e164": "+18135550142",
              "address": {"street": "Main St", "city": "Tampa", "state": "FL", "postcode": "33602", "line": "1 Main St, Tampa, FL 33602", "has_street": True}, "site_status": "none", "why": "No website found."},
             {"rank": "1", "name": "B1 Florist", "category_label": "Florist", "address": "12 Hope St, Providence, RI 02906", "phone": "(401) 555-0158", "site_status": "fair", "why": "Slow site."},
+            {"id": "w248410324", "name": "Roy's Quick Lube", "category": "auto_repair", "trade_label": "Auto repair", "phone": "(970) 555-0123", "phone_e164": "+19705550123",
+             "address_line": "825 North College Avenue, Fort Collins, CO 80524", "city": "Fort Collins", "demo_url": "https://roys-quick-lube-demo.netlify.app", "setup": 999.0, "monthly": 79.0,
+             "site_status": "none", "why": "No website found.", "opener": "B1's own opener", "package": "growth"},
         ],
         "phones": ["(813) 555-0142", "+1-813-555-0142", "1 813 555 0142", "813.555.0142 x12", "555-0142", "+44 20 7946 0958", "113-555-0142", "813-155-0142", "", "8135550142"],
         "trades": ["Joe's Bar & Grill", "Smile Dental", "Kitchen Remodeling Pros", "Main St Auto", "Bella Nails", "Dance Studio 9", "Barber Shop", "Coffee Shop", "Body Shop", "Bookkeeping LLC", "Café Rio", "Lawn Bros", "Spanish Moss Bakery", "Zen Spa", "Unknown Thing"],
@@ -450,6 +464,8 @@ def test_node():
             {"lead": {**base, "contact": "Maria Lopez", "demo": "https://example.com/demo/taco-town", "issue": "your menu is a PDF"}, "settings": {"me": "Sam Rivera", "biz": "Bright Sites", "city": "Tampa", "phone": "(813) 555-0100", "price": "$499"}, "now": t},
             {"lead": {"name": "Acme Plumbing", "phone": "614-555-0123", "state": "OH", "category": "plumber"}, "settings": {}, "now": t},
             {"lead": {"name": "Dr Smile", "phone": "512-555-0117", "state": "TX", "category": "dentist", "contact": "Dr. Anita Patel", "source": "Yelp"}, "settings": {"me": "Sam", "phone": "not a number"}, "now": ms("2026-11-20T19:30:00Z")},
+            {"lead": {"name": "Roy's Quick Lube", "category": "auto_repair", "phone_e164": "+19705550123", "address_line": "825 North College Avenue, Fort Collins, CO 80524", "setup": 1500, "monthly": 79},
+             "settings": {"me": "Sam", "price": "$499"}, "now": t},
         ],
     }
     tmp = tempfile.mkdtemp(prefix="cc-node-")
@@ -510,6 +526,8 @@ def test_node():
           F["junk"] == [0, ["+12135550181"], "bad", "empty", None, None], F["junk"])
     check("c. team B1's agency app on the same phone: its shared leads load (a bakery is a restaurant-type trade)", F["shared"] == [["From B1", "restaurant"]], F["shared"])
     check("c. fictional 555-01xx numbers never get a tel: link; real ones do", F["tel"] == ["", "tel:+18135551234", True], F["tel"])
+    check("c. team B1's CRM stages on this phone: 'Do not contact' locks the lead for good (opt-out list too), 'won' = a client, other stages and junk change nothing, applying twice changes nothing more",
+          F["crm"] == [{"b-1": "dnc", "b-2": "won"}, 2, 0, "optout", "client", None, 1, 0, 0], F["crm"])
     check("c. a demo-site link from the data is used only when it is plain http(s): javascript:, data: and quote tricks are dropped", F["url"] == ["https://example.com/demo/taco-town", "", "", "", "http://ok.example/p"], F["url"])
     check("c. the queue: the callback due first, good now, legal now, opens later, the DNC-listed one last", F["queue"] == ["Callback:0", "Good:1", "Legal:2", "Later:3", "Locked:9"], F["queue"])
     check("c. today's call plan in YOUR time zone (New York): restaurants now to 4, Chicago's offices 3-5:30 pm, Florida's contractors 4-6 pm, Guam's at 8 am their time = 5 pm yours",

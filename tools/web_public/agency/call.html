@@ -17,7 +17,8 @@
 <!-- CALL COPILOT (OLYMPUS Agency, team B2, 2026-11-14): Call mode of the agency app (team B1's CRM is index.html in this folder when it lands).
      callcore.js = the pure part (call windows by state / time zone / trade, Do Not Call locks, the script filled from the lead, outcomes, the 7-day plan,
      the funnel, import / export; its PC twin is agency/calls/core.py). call.js = the page. It reads only callrules.json, callscript.json,
-     call_fixture.json (DEMO, fictional numbers) and team B1's published leads.json (when it exists) from this folder. Everything the owner types stays in localStorage['agency.calls.v1'] on this phone
+     call_fixture.json (DEMO, fictional numbers) and team B1's published leads.json (when it exists, not its sample) from this folder; it honours B1's CRM 'Do not contact' / 'Won' stages
+     (localStorage['agency.crm.v1'], read-only). Everything the owner types stays in localStorage['agency.calls.v1'] on this phone
      (JSON / CSV export): it never goes on the network. Calls, emails and texts open the phone's own apps (tel: / mailto: / sms:), tapped by a human.
      No AI voice, no autodialer, no recording. The law behind every limit: docs/COLD_CALLING_RULES.md (not legal advice). Text only through textContent. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>

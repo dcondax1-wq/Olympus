@@ -388,6 +388,20 @@ def _line_word(v) -> str:
     return "voip" if "voip" in s else "unknown"
 
 
+def _num(v) -> float:
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def price_of(setup, monthly) -> str:
+    """Team B1's package price for this lead (setup + monthly, dollars) -> one phrase for the script (same as callcore.js priceOf)."""
+    a = f"${round(_num(setup)):,}" if _num(setup) > 0 else ""
+    b = f"${round(_num(monthly)):,} a month" if _num(monthly) > 0 else ""
+    return f"{a} to set up, then {b}" if a and b else a or b
+
+
 def _site_issue(v) -> str:
     """Team B1's lead finder grades the current site (site_status): none / bad / fair -> the reason the script gives on the call (same as callcore.js)."""
     s = s_(v).lower()
@@ -423,7 +437,7 @@ def norm_lead(raw, rules: dict, i: int = 0) -> dict | None:
         return None
     state = state_code(_pick(src, ["state", "state_code", "region", "province", "addr:state", "administrative_area_level_1"]), rules)
     city = s_(_pick(src, ["city", "town", "locality", "addr:city", "municipality"]))
-    full = s_(raw["address"] if isinstance(raw.get("address"), str) else _pick(src, ["formatted_address", "full_address", "vicinity"]))
+    full = s_(raw["address"] if isinstance(raw.get("address"), str) else _pick(src, ["formatted_address", "full_address", "address_line", "addressLine", "vicinity"]))
     if (not state or not city) and full:
         m = ADDR1.search(full) or ADDR2.search(full)
         if m:
@@ -455,6 +469,7 @@ def norm_lead(raw, rules: dict, i: int = 0) -> dict | None:
         "consentText": ct, "optout": truthy(_pick(src, ["optout", "opt_out", "do_not_call", "doNotCall"])), "emailOptOut": truthy(_pick(src, ["emailOptOut", "email_optout", "unsubscribed"])),
         "issue": s_(_pick(src, ["issue", "site_issue", "siteIssue", "pitch_issue", "problem"]))[:200] or _site_issue(_pick(src, ["site_status", "siteStatus"])),
         "source": s_(_pick(src, ["source", "found_on", "via"]))[:60], "finder": s_(_pick(src, ["finder", "why"]))[:220],
+        "price": s_(raw.get("price")) or price_of(_pick(src, ["setup", "setup_price"]), _pick(src, ["monthly", "monthly_price"])),
         "notes": s_(_pick(src, ["notes", "note"]))[:500], "stage": s_(raw.get("stage")) or "new", "callbackAt": cb, "demoAt": da,
     }
     lead["trade"] = trade_of({"trade": _pick(src, ["trade"]), "category": lead["category"], "name": lead["name"]}, rules)
@@ -583,7 +598,7 @@ def next_day_name(lead: dict, now_ms: int, rules: dict, settings: dict | None = 
 def vars_for(lead: dict, settings: dict | None, rules: dict, script: dict, now_ms: int) -> dict:
     S, T = settings or {}, trade_info(lead, rules)
     my_phone = norm_phone(S.get("phone"))
-    price = s_(S.get("price"))
+    price = s_(lead.get("price")) or s_(S.get("price"))
     return {
         "me": s_(S.get("me")) if _first(S.get("me")) else "", "myBiz": S.get("biz"), "myCity": S.get("city") or lead.get("city"),
         "myPhone": pretty_phone(my_phone) if my_phone else s_(S.get("phone")), "myEmail": S.get("email"), "myAddress": S.get("address"), "mySite": S.get("site"),
@@ -592,7 +607,8 @@ def vars_for(lead: dict, settings: dict | None, rules: dict, script: dict, now_m
         "city": lead.get("city"), "plural": T["plural"], "word": T["word"], "ask": T["ask"], "goal": T["goal"], "hook": T["hook"],
         "issue": lead.get("issue") or T["issue"], "source": lead.get("source"), "day": next_day_name(lead, now_ms, rules, S),
         "demoOrOffer": lead.get("demo"), "price": price,
-        "priceLine": f"My sites for {T['plural']} start at {price}, and one new customer a month usually covers it." if price else "",
+        "priceLine": (f"For {lead.get('name')} it is {s_(lead.get('price'))}. One new customer a month usually covers it." if s_(lead.get("price"))
+                      else f"My sites for {T['plural']} start at {price}, and one new customer a month usually covers it." if price else ""),
     }
 
 

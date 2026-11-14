@@ -254,6 +254,12 @@ function lineWord(v) {
   if (/voip/.test(s)) return 'voip';
   return 'unknown';
 }
+// team B1's package price for this lead (setup + monthly, dollars) -> one phrase for the script; '' when there is none
+function money0(v) { const n = Math.round(+v); return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+export function priceOf(setup, monthly) {
+  const a = +setup > 0 ? '$' + money0(setup) : '', b = +monthly > 0 ? '$' + money0(monthly) + ' a month' : '';
+  return a && b ? a + ' to set up, then ' + b : a || b;
+}
 // team B1's lead finder grades the current site (site_status): none / bad / fair -> the reason the script gives on the call
 function siteIssue(v) {
   const s = str(v).toLowerCase();
@@ -273,7 +279,7 @@ export function normLead(raw, rules, i) {
   if (!name && !phone) return null;
   let state = stateCode(pick(src, ['state', 'state_code', 'region', 'province', 'addr:state', 'administrative_area_level_1']), rules);
   let city = str(pick(src, ['city', 'town', 'locality', 'addr:city', 'municipality']));
-  const full = str(typeof raw.address === 'string' ? raw.address : pick(src, ['formatted_address', 'full_address', 'vicinity']));
+  const full = str(typeof raw.address === 'string' ? raw.address : pick(src, ['formatted_address', 'full_address', 'address_line', 'addressLine', 'vicinity']));
   if ((!state || !city) && full) {
     const m = /,\s*([^,]+?),\s*([A-Za-z]{2})\s+\d{5}(?:-\d{4})?\b/.exec(full) || /,\s*([^,]+?),\s*([A-Za-z]{2})\s*(?:,|$)/.exec(full);
     if (m) { if (!state) state = stateCode(m[2], rules); if (!city) city = str(m[1]); }
@@ -295,6 +301,7 @@ export function normLead(raw, rules, i) {
     consentText: ct, optout: truthy(pick(src, ['optout', 'opt_out', 'do_not_call', 'doNotCall'])), emailOptOut: truthy(pick(src, ['emailOptOut', 'email_optout', 'unsubscribed'])),
     issue: str(pick(src, ['issue', 'site_issue', 'siteIssue', 'pitch_issue', 'problem'])).slice(0, 200) || siteIssue(pick(src, ['site_status', 'siteStatus'])), source: str(pick(src, ['source', 'found_on', 'via'])).slice(0, 60),
     finder: str(pick(src, ['finder', 'why'])).slice(0, 220),
+    price: str(raw.price) || priceOf(pick(src, ['setup', 'setup_price']), pick(src, ['monthly', 'monthly_price'])),
     notes: str(pick(src, ['notes', 'note'])).slice(0, 500), stage: str(raw.stage) || 'new', callbackAt: +raw.callbackAt || 0, demoAt: +raw.demoAt || 0,
   };
   lead.trade = tradeOf({ trade: pick(src, ['trade']), category: lead.category, name: lead.name }, rules);
@@ -385,8 +392,9 @@ export function varsFor(lead, settings, rules, script, nowMs) {
     biz: lead.name, contact: lead.contact, contactName: first(lead.contact), contactOrOwner: lead.contact,
     contactAsk: lead.contact ? 'is this ' + first(lead.contact) + '?' : 'could I speak with the owner, please?',
     city: lead.city, plural: T.plural, word: T.word, ask: T.ask, goal: T.goal, hook: T.hook, issue: lead.issue || T.issue, source: lead.source,
-    day: nextDayName(lead, nowMs, rules, S), demoOrOffer: lead.demo, price: S.price,
-    priceLine: str(S.price) ? 'My sites for ' + T.plural + ' start at ' + str(S.price) + ', and one new customer a month usually covers it.' : '',
+    day: nextDayName(lead, nowMs, rules, S), demoOrOffer: lead.demo, price: lead.price || S.price,
+    priceLine: str(lead.price) ? 'For ' + lead.name + ' it is ' + str(lead.price) + '. One new customer a month usually covers it.'
+      : str(S.price) ? 'My sites for ' + T.plural + ' start at ' + str(S.price) + ', and one new customer a month usually covers it.' : '',
   };
 }
 export function scriptFor(lead, settings, rules, script, nowMs) {
@@ -637,6 +645,25 @@ export function mergeImport(st, imp) {
 }
 // Leads another OLYMPUS page on this phone left for the copilot (team B1's agency app): the saved text under one of SHARED_KEYS (the page reads it).
 export const SHARED_KEYS = ['agency.leads.v1', 'agency.crm.v1', 'agency.v1'];
+export const CRM_KEY = 'agency.crm.v1';
+/** Team B1's CRM work saved on this phone ({leads: {id: {stage}}}): the stages the copilot must honour, read-only. 'dnc' = Do not contact, 'won' = a client. */
+export function crmStages(text) {
+  let o = null;
+  try { o = JSON.parse(text); } catch (e) { return {}; }
+  const out = {}, L = o && typeof o === 'object' && o.leads && typeof o.leads === 'object' && !Array.isArray(o.leads) ? o.leads : {};
+  for (const id in L) { const s = L[id] && L[id].stage; if (s === 'dnc' || s === 'won') out[id] = s; }
+  return out;
+}
+/** Apply B1's stages to the copilot's list: Do not contact = opted out for good; won = a client (no cold calls). Returns how many leads changed. */
+export function applyCrm(st, stages) {
+  let n = 0;
+  for (const L of st.leads) {
+    const s = stages[L.id];
+    if (s === 'dnc' && !(L.optout && L.stage === 'dnc')) { L.optout = true; L.emailOptOut = true; L.consentText = null; L.stage = 'dnc'; if (L.phone && st.optouts.indexOf(L.phone) < 0) st.optouts.push(L.phone); n++; }
+    else if (s === 'won' && L.stage !== 'won' && L.stage !== 'dnc') { L.stage = 'won'; n++; }
+  }
+  return n;
+}
 export function sharedLeads(text, rules) {
   let o = null;
   try { o = JSON.parse(text); } catch (e) { return []; }

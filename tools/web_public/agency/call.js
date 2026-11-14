@@ -29,6 +29,15 @@ function save() {
   if (S.demo) return;
   try { localStorage.setItem(C.KEY, JSON.stringify(S.st)); S.saveOk = true; } catch (_) { S.saveOk = false; say('This phone did not let the page save (private browsing?). Export your data to keep it.'); }
 }
+// B1's CRM on this phone: its 'Do not contact' and 'Won' stages lock the same leads here (read-only; the copilot never writes B1's data)
+function crmSync() {
+  if (S.demo) return 0;
+  let text = null;
+  try { text = localStorage.getItem(C.CRM_KEY); } catch (_) { text = null; }
+  const n = text ? C.applyCrm(S.st, C.crmStages(text)) : 0;
+  if (n) save();
+  return n;
+}
 function demoState() {
   const st = C.emptyState(), fx = S.fixture || {}, now = S.now();
   const r = C.normLeads(fx.leads || [], S.rules);
@@ -341,6 +350,7 @@ function doImport(text, label) {
   if (S.demo) { const saved = readSaved(); const keep = saved ? C.loadState(saved) : C.emptyState(); S.st = keep; S.demo = false; }
   if (imp.settings && !S.st.settings.me) S.st.settings = C.loadState(JSON.stringify({ settings: imp.settings })).settings;
   const r = C.mergeImport(S.st, imp);
+  crmSync();
   save(); render();
   say('Imported from ' + label + ': ' + r.added + ' new ' + (r.added === 1 ? 'business' : 'businesses') + ', ' + r.updated + ' already in your list' + (imp.dupes ? ', ' + imp.dupes + ' duplicates merged' : '') + (r.optouts ? ', ' + r.optouts + ' do-not-call numbers added' : '') + '.');
   cue('success');
@@ -426,13 +436,15 @@ async function boot() {
   const [rules, script, fx, crm] = await Promise.all([getJSON('./callrules.json'), getJSON('./callscript.json'), getJSON('./call_fixture.json'), getJSON('./leads.json', 4000)]);
   if (!rules || !script) { say('The call rules did not load, so no call can be checked. Reload the page when you are online.'); try { if (O && O.fail) O.fail('Call copilot could not start'); } catch (_) { /* nothing */ } return; }
   S.rules = rules; S.script = script; S.fixture = fx || { leads: [] };
-  S.crm = crm && typeof crm === 'object' ? C.sharedLeads(JSON.stringify(crm), rules) : [];
+  // B1's published CRM data, unless it is its sample / demo file (real businesses from a sample city: not for practice calls)
+  S.crm = crm && typeof crm === 'object' && !crm.demo && !crm.sample ? C.sharedLeads(JSON.stringify(crm), rules) : [];
   const saved = S.forced ? null : readSaved();
   const st = saved ? C.loadState(saved) : null;
   if (st && st.leads.length) { S.st = st; S.demo = false; } else { S.st = demoState(); S.demo = true; }
   let tz = '';
   try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (_) { tz = ''; }
   S.myTz = C.validTz(S.st.settings.myTz) ? S.st.settings.myTz : C.validTz(tz) ? tz : 'America/New_York';
+  crmSync();
   bind(); render();
   const id = q.get('lead');
   if (id && C.findLead(S.st, id)) openCall(id, q.get('tab') || 'script');
