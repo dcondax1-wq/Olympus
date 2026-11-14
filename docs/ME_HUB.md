@@ -29,7 +29,8 @@ registration). **Streaks** turns the watch data into motivation with zero typing
 
 ## Connect your money
 Already built: the 3 steps of `docs/CONNECT_MONEY.md` (a bank CSV in `%USERPROFILE%\.olympus\money_inbox\`, then `RUN_MONEY.bat`).
-The Money area and the "Money left this month" tile read the same summary.
+The Money area and the "Money left this month" tile read the same summary. **Money left this month** = your usual money in (the average of
+the last 3 full months, or this month's if it is bigger) minus what you spent so far this month minus the recurring charges still due before it ends.
 
 ## Connect your cards
 1. On the PC, in a Command Prompt in the bot folder, paste: `python tools\me_cards.py --add`
