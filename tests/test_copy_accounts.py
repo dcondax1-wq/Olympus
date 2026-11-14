@@ -393,6 +393,23 @@ def arm_checks(tmp):
     rc, _ = FL.run(["--to-funded", "r1", "--account", "MFFUFUNDED25K-9", "--start", "2026-11-20", "--file", p])
     a = FL.load_file(p)["accounts"][0]
     check("--to-funded disarms (armed and armed_for cleared: the funded Name is armed again by the owner)", a["armed"] is False and "armed_for" not in a, a)
+    # the owner's ONE line (docs/ACCOUNT_4.md): --add ... --start today --arm <the same id> = saved, then the phrase prompt
+    p2 = os.path.join(tmp, "arm1", "fleet.json")
+    now = ts(DAY, 20, 0)
+    line = lambda i, nm, inp: FL.run(["--add", "--id", i, "--lead", "zlarior", "--plan", "lucid_pro_50k", "--account", nm, "--start", "today",
+                                      "--arm", i, "--now", str(now), "--file", p2], inp=inp)
+    rc, ln = line("luc4", "LTT0001234", lambda _p: "I ACCEPT LIVE RISK")
+    a = FL.load_file(p2)["accounts"][0]
+    check("one line: --add ... --start today --arm <id> saves the Lucid copy (start = this session) and arms THIS Name with the typed "
+          "phrase (never stored)", rc == 0 and a["start"] == FL.trading_day(now) and a["armed"] is True and a["armed_for"] == "LTT0001234"
+          and LIVE_PHRASE not in open(p2, encoding="utf-8").read(), (rc, ln, a))
+    rc, ln = line("luc5", "LTT0005678", lambda _p: "yes")
+    a = next(x for x in FL.load_file(p2)["accounts"] if x["id"] == "luc5")
+    check("... a wrong phrase: the account is saved but NOT armed (exit 1, says why)", rc == 1 and a["armed"] is False and not a.get("armed_for")
+          and any("NOT armed" in x for x in ln), (rc, ln, a))
+    rc, ln = FL.run(["--add", "--id", "luc6", "--plan", "lucid_pro_50k", "--account", "Sim130", "--start", "today", "--now", str(now), "--file", p2])
+    check("... without --arm the add is as before (a Sim account needs no arming)", rc == 0 and not any("phrase" in x for x in ln[:-1])
+          and next(x for x in FL.load_file(p2)["accounts"] if x["id"] == "luc6")["armed"] is False, ln)
 
 
 # ------------------------------------------------------------------------------------------------------------- session

@@ -321,8 +321,10 @@ def main(argv=None) -> int:
         if P.get("own_applied"):
             print("  own limits: " + ", ".join(f"{k} {v}" for k, v in P["own_applied"].items()))
         lim = firm_limits(P.get("firm_id"))
-        print(f"  funded accounts a person may hold: this plan {P.get('max_active') if a.stage == 'funded' else '(see --stage funded)'}, "
-              f"the firm {lim.get('max_funded_total') if lim.get('max_funded_total') is not None else 'unknown'}")
+        n = lambda x, none: none if _num(x) is None else str(int(_num(x)))   # noqa: E731
+        print(f"  funded accounts a person may hold: this plan "
+              f"{n(P.get('max_active'), 'no own cap') if a.stage == 'funded' else '(see --stage funded)'}, "
+              f"the firm {n(lim.get('max_funded_total'), 'unknown')}")
         for w in P.get("warn") or []:
             print("  ! " + w)
         return 0

@@ -483,6 +483,18 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     Builder 25K / 50K verified from mffu_rules.json (min days = conflict, unverified). Prices: only the owner's ($91.80 /
     $63); every other price null. Firm rules: bots (Apex prohibited, Alpha semi-only, Topstep no NinjaTrader), hedging
     (MFFU banned across all accounts, verified), flat_by (MFFU 16:10).
+  - **Account #4 (team A4, 2026-11-14; owner checklist `docs/ACCOUNT_4.md`, write-up `account-4-2026-11-14.md`):** the 4th
+    builder input `research/props/firm_research.json` (applied last) re-reads LucidPro / LucidFlex 50K, FundedNext Rapid
+    Daily 50K and the Lucid / FundedNext firm rules from the firms' own help centers (searched; their pages are DNS-blocked
+    here); Bulenox EOD 50K is filled in `copy_profiles.json` (mostly third-party). Guards added in `engine/firms.py`, each
+    only where the data / owner sets it: `max_micros_at` (contract scaling by profit: LucidFlex, Bulenox), `on_hold` (firm
+    "hold": FundedNext + Bulenox until a written yes; clear per account with rules {"hold": "none"}), owner switch rules
+    {"payout_guard": true} (payout best-day rule as a soft winner cap: costs 9-15% of the Lucid funded $, keep OFF), payout
+    readiness extras (cycle_min, win_days / win_day_min, max_after_first, share) and `inactivity()` (30 days). Fleet CLI:
+    `--start today`, `--add ... --arm <same id>` (one line, the phrase prompt right after adding). Sim
+    `tools/account4_sim.py` (`check` = its eval == tools/uprisk.Eval) -> `research/lab/account4_sim.json`, runs
+    `acct4_lucid_copy`, `acct4_pair`: the Lucid copy is a clone of the MFFU eval (same sizing; same 2-week outcome on 100%
+    of paths), pair H2 $1,750 a month, daily correlation 0.94. Tests `tests.test_copy_accounts`.
   - **Rule engine `engine/firms.py`:** `profile(plan, stage)` (flat values + verified / unknown / warn), `live_profile(cfg)`
     (the owner's personal LIVE account: max $ a trade, daily / weekly stop, max micros; defaults 150 / 300 / 600 / 5),
     `book(start, closes, today, prior, payouts)` -> balance / eod_high / intra_high / day / week / best day,
