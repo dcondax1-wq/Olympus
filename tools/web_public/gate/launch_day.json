@@ -71,12 +71,12 @@
      "the fix written in the push (fixed before 02:00: a Ready push follows)"
     ],
     [
-     "Zlarior 50K trade opened",
+     "Zlarior 50K / ATLAS 25K trade opened",
      "an entry: side, micros, entry, stop, target, $ risk at the stop",
      "nothing"
     ],
     [
-     "Zlarior 50K trade closed",
+     "Zlarior 50K / ATLAS 25K trade closed",
      "the exit: how, +/- $ and R, drawdown left, today's $",
      "nothing"
     ],

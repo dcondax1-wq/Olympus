@@ -22,8 +22,8 @@ Zlarior (MFFU 50K eval, LIT) and ATLAS (25K eval) trade for real from 02:00 ET. 
 |---|---|---|
 | Ready for 02:00 ET | both bots running and armed, feed fresh, drawdown left per account | nothing |
 | NOT ready for 02:00 ET | something is wrong before the first entry | the fix written in the push (fixed before 02:00: a Ready push follows) |
-| Zlarior 50K trade opened | an entry: side, micros, entry, stop, target, $ risk at the stop | nothing |
-| Zlarior 50K trade closed | the exit: how, +/- $ and R, drawdown left, today's $ | nothing |
+| Zlarior 50K / ATLAS 25K trade opened | an entry: side, micros, entry, stop, target, $ risk at the stop | nothing |
+| Zlarior 50K / ATLAS 25K trade closed | the exit: how, +/- $ and R, drawdown left, today's $ | nothing |
 | ... fill check: ... | NinjaTrader did something else than the bot planned | see the fill check table |
 | FEED STALE | no fresh NinjaTrader bars: no new entries | NinjaTrader: open the MNQ 5-minute chart, right-click > Indicators > LE_BarFeed > Add |
 | Bot down | the bot server on the PC does not answer or report | PC: double-click GO_LIVE_EVAL.bat (it brings the bot back) and type the phrase |
