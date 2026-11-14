@@ -675,7 +675,8 @@ def test_page():
             p.wait_for_timeout(200)
             cv = p.evaluate("() => document.querySelector('#box').value")
             check("d. Export CSV: a header row and both businesses", cv.startswith("name,phone,contact,email") and "Main Pizza" in cv and "Desert Plumbing" in cv, cv[:80])
-            check("d. the real run: only GET requests, nothing off this origin, no console error", set(methods) <= {"GET"} and not off and not errs, (set(methods), off[:3], errs[:3]))
+            far = [u for u in off if not u.startswith(("blob:", "data:"))]  # the Export download is a blob: of this page (never leaves the phone)
+            check("d. the real run: only GET requests, nothing off this origin (the export is a local blob:), no console error", set(methods) <= {"GET"} and not far and not errs, (set(methods), far[:3], errs[:3]))
             ctx.close()
 
             ctx, p, errs, seen, off = AK.page(br, origin, w=375, h=667, reduced=True, lite=True)
