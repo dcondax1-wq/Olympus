@@ -243,7 +243,7 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   const hits = [];
   const f = async (u) => { hits.push(u); return u.endsWith('home.json') ? { ok: true, json: async () => ({ accounts: [], t: 1 }) } : { ok: false }; };
   const S = await D.loadSources({ fetch: f, now: () => NOW });
-  check('loader: one GET per file, relative, no keys, a missing file is null', hits.length === 12 && hits.includes('../fates/jarvis.json') && hits.includes('../day/day.json') && hits.includes('../money/household.json') && hits.every((u) => /^\.\.\//.test(u)) && S.home && S.odeon === null && S.at.home === NOW);
+  check('loader: one GET per file, relative, no keys, a missing file is null', hits.length === 13 && hits.includes('../fates/jarvis.json') && hits.includes('../day/day.json') && hits.includes('../money/household.json') && hits.includes('../me/health.json') && hits.every((u) => /^\.\.\//.test(u)) && S.home && S.odeon === null && S.at.home === NOW);
   const bad = await D.loadSources({ fetch: async () => { throw new Error('offline'); } }); check('loader: offline never throws', bad.home === null);
   check('zones list matches the Atlas districts', (() => { const src = fs.readFileSync(path.join(WP, 'atlas/atlas.js'), 'utf8'); return Object.entries(K.ZONES).every(([id, ids]) => ids.every((i) => src.includes("'" + i + "'"))) && Object.keys(K.ZONES).every((id) => src.includes("id:'" + id + "'")); })());
   check('et time helper', D.etParts(NOW).h === 10 && D.etParts(NOW).day === '2026-11-10' && D.etParts(NOW).dow === 2);
