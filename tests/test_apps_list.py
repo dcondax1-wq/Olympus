@@ -78,7 +78,7 @@ def test_static():
     ph, pc = read(WEB, "index.html"), read(NEXT, "index.html")
     check("b. the phone dashboard has ONE tag, launcher.js (deferred); the list is loaded by the launcher, async, so a slow site never holds Zenith back",
           '<script src="launcher.js?v=l6" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l2" in read(WEB, "launcher.js"))
-    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l5" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l2" in read(NEXT, "js", "next", "launcher.js"))
+    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l6" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l2" in read(NEXT, "js", "next", "launcher.js"))
     sw = read(NEXT, "sw.js")
     v = re.search(r"const SHELL = 'le-shell-next-v(\d+)'", sw)
     check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l2'" in sw and "'/js/next/launcher.js?v=l5'" in sw and v and int(v.group(1)) >= 34)
