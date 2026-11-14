@@ -259,8 +259,10 @@ def test_app(br, origin, app, table):
     st = p.evaluate("""() => ({ fx: document.documentElement.dataset.fx, lite: document.documentElement.dataset.olyLite,
       sx: document.documentElement.scrollWidth - innerWidth, bx: document.body.scrollWidth - innerWidth, stats: OLYMPUS.stats() })""")
     ratio = p.evaluate(CANVAS_RATIO)
-    check(f"b. {app}: jfx=high -> data-fx=high, the HD look, <= 2 pixels per CSS px (dpr 3 phone)",
-          st["fx"] == "high" and st["lite"] == "0" and (1.5 < ratio <= 2.01 or (app == "datacity" and 1.49 <= ratio <= 1.51)), (st["fx"], st["lite"], ratio))
+    # perf v2 (2026-11-14): the render-scale governor may step a slow scene's resolution down (software GL here) from the HD budget (2x;
+    # Data City 1.5x) toward its floor (1x): the HD look is the tier (data-fx high, no auto-LITE), the ratio is never above the budget
+    check(f"b. {app}: jfx=high -> data-fx=high, the HD look, <= 2 pixels per CSS px (dpr 3 phone; the governor may lower a slow scene to 1x)",
+          st["fx"] == "high" and st["lite"] == "0" and (0.99 <= ratio <= 2.01 if app != "datacity" else 0.99 <= ratio <= 1.51), (st["fx"], st["lite"], ratio))
     check(f"e. {app}: no sideways scroll at 390 x 844", st["sx"] <= 0 and st["bx"] <= 0, (st["sx"], st["bx"]))
     # perf: layouts per frame over 2 s, the heap, renderer.info
     cdp = ctx.new_cdp_session(p)
