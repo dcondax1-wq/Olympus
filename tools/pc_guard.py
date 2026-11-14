@@ -11,6 +11,9 @@ LE_BarFeed contract file. It never blocks, places, changes or cancels an order, 
   quiet bot       no trade for 5+ calendar days (normal: 2-4 a week; MFFU can close an eval after 7), once a day in the
                   daytime. Feed and bot silence were already pushed by pc_report (FEED STALE after 5 min, bot down after 15).
   day summary     16:05 ET on CME trading days (first report run 16:05-16:59): $ today, trades, drawdown left per account.
+  ready           01:35-01:59 ET on CME trading days (tools/launch_card.ready_push, Monday launch kit 2026-11-14): every bot's
+                  mode (LIVE armed / Sim / paper) and drawdown left, the bot, NinjaTrader and the feed; "Ready for 02:00 ET"
+                  is a silent (low) push at night, "NOT ready" (what is wrong + its one action) a high one.
 Numbers come only from a fresh heartbeat (<= 15 min); the day summary says plainly when the last one is older.
 
 guard(state, snap, roll_state=None) -> (new state, [push]); state = {"sent": {key: t}}. Each key is sent once; pc_report
@@ -246,11 +249,16 @@ def guard(state: dict | None, snap: dict, roll_state=None) -> tuple:
         cands += day_summary(snap, now)
     except Exception:
         pass
+    try:                     # the 01:45 ET "ready for 02:00" push (tools/launch_card.py, read-only): silent when all is well
+        from tools import launch_card
+        cands += launch_card.ready_push(snap, now)
+    except Exception:
+        pass
     msgs = []
     for m in cands:
         if m["key"] in st["sent"]:
             continue
-        if quiet(now) and m.get("priority") != "high":      # an ordinary push waits for 07:00 ET (it is not marked sent)
+        if quiet(now) and m.get("priority") != "high" and not m.get("night"):   # an ordinary push waits for 07:00 ET (not marked sent)
             continue
         st["sent"][m["key"]] = now
         msgs.append(m)

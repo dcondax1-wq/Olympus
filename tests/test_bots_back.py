@@ -224,8 +224,9 @@ def reporter():
         h = FakeHTTP()
         rec = b.run(h, now + 900)
         ps = h.posts(cfg["topic"])
-        check("trade closed: exactly one push, title with $, body with R and the account kind",
-              len(ps) == 1 and ps[0]["h"]["Title"].startswith("LIT trade closed +$") and "+3.4R" in ps[0]["body"] and "Real account" in ps[0]["body"], ps)
+        check("trade closed: exactly one push, title with the account, $ and R, body with R and the account kind",
+              len(ps) == 1 and ps[0]["h"]["Title"].startswith("Zlarior 50K trade closed +$1,203 (+3.4R)") and "+3.4R" in ps[0]["body"]
+              and "Real account" in ps[0]["body"], ps)
         check("push headers are ASCII (HTTP headers)", all(all(ord(ch) < 128 for ch in v) for c in ps for v in c["h"].values()))
         hb2["t"] = now + 1740
         b.hb(hb2)
