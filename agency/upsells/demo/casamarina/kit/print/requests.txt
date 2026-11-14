@@ -1,0 +1,38 @@
+REVIEW REQUESTS FOR CASA MARINA KITCHEN
+Ask EVERY customer the same way, happy or not. Never offer anything in return for a review (no discount, gift or entry):
+Google and the FTC both forbid it. The review page shows the Google link to everyone; the private message is an extra choice.
+
+Review page (the QR code opens it): https://casamarina.example/review/
+Google review link (straight to Google): https://g.page/r/DEMO-casamarina/review
+
+1) IN PERSON, at checkout or when the job is done
+   "Thanks for coming in! If you have 30 seconds, we'd love a review, good or bad. It helps us get better.
+   The code's right here." (point at the card)
+
+2) EMAIL, the same day or the next (one email; at most one reminder)
+   Subject: How was your visit to Casa Marina Kitchen?
+
+   Hi [first name],
+
+   Thanks for choosing Casa Marina Kitchen! Would you take 30 seconds to tell us how it went? Good or bad, we read every review.
+
+   Leave a review: https://casamarina.example/review/
+   Or go straight to Google: https://g.page/r/DEMO-casamarina/review
+
+   Thank you,
+   Lucia, Casa Marina Kitchen
+   (727) 555-0123 · 88 Harbor Walk, St. Petersburg, FL 33701
+
+   You're getting this one-time email because you visited Casa Marina Kitchen. Don't want emails like this? Reply "unsubscribe"
+   and we won't email you again.
+
+3) TEXT MESSAGE: ONLY to customers who said yes to a text
+   First ask, and note who said yes: "Can we text you a quick link to tell us how we did? It's just one text."
+   Then send (one SMS, under 160 characters):
+
+   Hi [first name], thanks for visiting Casa Marina Kitchen! How did we do? https://casamarina.example/review/ Reply STOP to opt out.
+
+   Rules: one text per visit and no follow-ups; send during the day (8 am - 9 pm their time); anyone who replies STOP
+   (or "stop texting me", "unsubscribe", "cancel"...) never gets another text: keep a do-not-text list.
+
+Not legal advice. Texts: US TCPA consent + CTIA opt-out practice; email: CAN-SPAM (address + opt-out). See docs/AGENCY_UPSELLS.md.

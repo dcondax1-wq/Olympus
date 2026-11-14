@@ -334,7 +334,12 @@ def install_into_site(site: str, cfg: dict, js: str) -> str:
     if not os.path.isfile(idx):
         raise K.ClientError(f"no index.html in {site}")
     K.write(os.path.join(site, f"chat-{cfg['id']}.js"), js)
-    pages = [os.path.join(dp, f) for dp, _, fs in os.walk(site) for f in fs if f.endswith(".html")]
+    skip = {"review", "kit", "print", "node_modules", ".git"}                # the review page and the owner's kit get no chat bubble
+    pages = []
+    for dp, dirs, fs in os.walk(site):
+        dirs[:] = sorted(d for d in dirs if d not in skip and not d.startswith("."))
+        pages += [os.path.join(dp, f) for f in sorted(fs) if f.endswith(".html") and not f.startswith("chat-")
+                  and "</body>" in open(os.path.join(dp, f), encoding="utf-8").read().lower()]
     for page in pages:
         rel = os.path.relpath(os.path.join(site, f"chat-{cfg['id']}.js"), os.path.dirname(page)).replace(os.sep, "/")
         html = open(page, encoding="utf-8").read()

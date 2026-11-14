@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>How was your visit? · {{name}}</title>
+<meta name="description" content="Tell {{name}} how your visit went: a Google review or a private message to the owner.">
+<meta name="theme-color" content="{{fill}}">
+<!-- Review booster (agency/upsells/make_review.py). Every visitor can reach the Google review link at all times: the private message
+     is an extra choice, never a filter (Google's policy forbids discouraging negative reviews or asking only happy customers). No tracking. -->
+<style>
+:root{--f:{{fill}};--i:{{ink}};--a:{{accent}};--s:{{soft}};--fg:#1f2430;--mu:#5c6573;--bd:#dfe3e8}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--fg);background:#f4f5f7}
+.top{background:var(--f);color:var(--i);padding:calc(18px + env(safe-area-inset-top)) 20px 54px;text-align:center}
+.av{width:56px;height:56px;margin:0 auto 10px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;font-weight:700;font-size:20px}
+.top b{display:block;font-size:20px}
+.top span{opacity:.9;font-size:15px}
+main{max-width:460px;margin:-36px auto 0;padding:0 16px calc(28px + env(safe-area-inset-bottom))}
+.card{background:#fff;border-radius:22px;box-shadow:0 10px 34px rgba(15,23,42,.1);padding:26px 20px 22px;text-align:center}
+h1,h2{margin:0 0 6px;line-height:1.2}
+h1{font-size:27px}
+h2{font-size:22px}
+h1:focus,h2:focus{outline:none}
+p{margin:0 0 12px}
+.sub{color:var(--mu)}
+.stars{display:flex;justify-content:center;gap:6px;margin:16px 0 4px}
+.star{width:56px;height:56px;padding:6px;border:0;border-radius:14px;background:none;cursor:pointer;color:#c5cbd3;-webkit-tap-highlight-color:transparent;transition:transform .15s}
+.star svg{width:100%;height:100%;display:block}
+.star:hover,.star:focus-visible{transform:scale(1.1)}
+.star.on{color:#f5a623}
+.legend{display:flex;justify-content:space-between;max-width:300px;margin:0 auto 6px;font-size:13px;color:var(--mu)}
+.hint{font-size:14px;color:var(--mu);margin-top:10px}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin:10px 0 0;padding:12px 18px;border:0;border-radius:14px;background:var(--f);color:var(--i);font:inherit;font-weight:700;text-decoration:none;cursor:pointer}
+.btn.alt{background:#fff;color:var(--a);border:2px solid var(--a)}
+.btn svg{width:22px;height:22px;flex:none}
+.pane{margin-top:6px}
+form{text-align:left;margin-top:16px;display:grid;gap:12px}
+label{display:grid;gap:6px;font-size:15px;font-weight:600;color:var(--mu)}
+input,textarea{width:100%;padding:13px 14px;border:1.5px solid var(--bd);border-radius:12px;font:inherit;font-size:17px;color:var(--fg);background:#fff}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus{outline:none;border-color:var(--a)}
+:focus-visible{outline:3px solid var(--a);outline-offset:3px}
+.or{display:flex;align-items:center;gap:10px;margin:18px 0 0;color:var(--mu);font-size:14px}
+.or:before,.or:after{content:"";flex:1;height:1px;background:var(--bd)}
+.err{color:#b42318;font-size:15px;margin:0}
+.err:empty{display:none}
+.hp{position:absolute;left:-9999px}
+.always{margin:18px 4px 0;text-align:center;font-size:15px;color:var(--mu)}
+.always a{color:var(--a);font-weight:700;text-underline-offset:3px}
+.fine{margin-top:10px;font-size:13px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<noscript><style>#sorry{display:block!important}.stars,.legend,.hint{display:none}</style></noscript>
+</head>
+<body>
+<header class="top">
+  <div class="av" aria-hidden="true">{{initials}}</div>
+  <b>{{name}}</b>
+  <span>{{city}}</span>
+</header>
+<main>
+  <section class="card" aria-live="polite">
+    <div id="ask">
+      <h1 id="q" tabindex="-1">How was your visit?</h1>
+      <p class="sub">Tap a star. It takes 30 seconds, and we read every review.</p>
+      <div class="stars" role="group" aria-labelledby="q">
+        <button class="star" type="button" data-r="1" aria-label="1 star: poor"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5l2.9 6.2 6.8.8-5 4.7 1.3 6.7L12 17.6l-6 3.3 1.3-6.7-5-4.7 6.8-.8z"/></svg></button>
+        <button class="star" type="button" data-r="2" aria-label="2 stars: fair"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5l2.9 6.2 6.8.8-5 4.7 1.3 6.7L12 17.6l-6 3.3 1.3-6.7-5-4.7 6.8-.8z"/></svg></button>
+        <button class="star" type="button" data-r="3" aria-label="3 stars: okay"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5l2.9 6.2 6.8.8-5 4.7 1.3 6.7L12 17.6l-6 3.3 1.3-6.7-5-4.7 6.8-.8z"/></svg></button>
+        <button class="star" type="button" data-r="4" aria-label="4 stars: good"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5l2.9 6.2 6.8.8-5 4.7 1.3 6.7L12 17.6l-6 3.3 1.3-6.7-5-4.7 6.8-.8z"/></svg></button>
+        <button class="star" type="button" data-r="5" aria-label="5 stars: great"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5l2.9 6.2 6.8.8-5 4.7 1.3 6.7L12 17.6l-6 3.3 1.3-6.7-5-4.7 6.8-.8z"/></svg></button>
+      </div>
+      <div class="legend" aria-hidden="true"><span>Poor</span><span>Great</span></div>
+      <p class="hint">4 or 5 stars opens our Google review page.</p>
+    </div>
+
+    <div id="happy" class="pane" hidden>
+      <h2 tabindex="-1">Thank you!</h2>
+      <p class="sub">Opening Google so you can share it there. If it doesn't open, tap the button.</p>
+      <a class="btn" href="{{google}}" data-google>{{gicon}}Leave a Google review</a>
+    </div>
+
+    <div id="sorry" class="pane" hidden>
+      <h2 tabindex="-1">Thanks for telling us</h2>
+      <p class="sub">You can post a public review on Google, or send {{owner}} a private message. Your choice, and we'll read it either way.</p>
+      <a class="btn" href="{{google}}" data-google>{{gicon}}Post a Google review</a>
+      <div class="or">or tell {{owner}} privately</div>
+      <form name="{{form}}" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="private">
+        <input type="hidden" name="form-name" value="{{form}}">
+        <input type="hidden" name="rating" value="">
+        <p class="hp"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+        <label>What happened? What could we do better?<textarea name="message" required></textarea></label>
+        <label>Your name (optional)<input name="name" autocomplete="name"></label>
+        <label>Phone or email, if you'd like a reply (optional)<input name="contact" autocomplete="email"></label>
+        <p class="err" role="alert"></p>
+        <button class="btn alt" type="submit">Send privately to {{owner}}</button>
+      </form>
+    </div>
+
+    <div id="sent" class="pane" hidden>
+      <h2 tabindex="-1">Message sent. Thank you.</h2>
+      <p class="sub">It went straight to {{owner}}, who reads every message.</p>
+      <a class="btn alt" href="{{google}}" data-google>{{gicon}}Post a Google review too</a>
+    </div>
+  </section>
+
+  <p class="always">Prefer to skip the stars? <a href="{{google}}" data-google>Review us on Google</a> · <a href="#private" data-private>Message {{owner}} privately</a></p>
+  <p class="always fine">No tracking, no cookies. A private message goes only to {{name}}. Phone: <a href="tel:{{tel}}">{{phone}}</a></p>
+</main>
+<script>
+(function () {
+  "use strict";
+  var GOOGLE = {{google_json}}, phone = {{phone_json}};
+  var panes = ["ask", "happy", "sorry", "sent"].map(function (id) { return document.getElementById(id); });
+  var form = document.getElementById("private"), err = form.querySelector(".err");
+  function show(id, keepAsk) {
+    panes.forEach(function (p) { p.hidden = !(p.id === id || (keepAsk && p.id === "ask")); });
+    var h = document.querySelector("#" + id + " [tabindex]");
+    if (h) h.focus();
+  }
+  [].forEach.call(document.querySelectorAll(".star"), function (b) {
+    b.addEventListener("click", function () {
+      var r = +b.getAttribute("data-r");
+      [].forEach.call(document.querySelectorAll(".star"), function (s) { s.classList.toggle("on", +s.getAttribute("data-r") <= r); s.setAttribute("aria-pressed", s === b); });
+      form.rating.value = r;
+      if (r >= 4) { show("happy", true); setTimeout(function () { window.location.href = GOOGLE; }, 450); }
+      else show("sorry", true);
+    });
+  });
+  [].forEach.call(document.querySelectorAll("[data-private]"), function (a) {
+    a.addEventListener("click", function (e) { e.preventDefault(); show("sorry", true); form.message.focus(); });
+  });
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!form.message.value.trim()) { err.textContent = "Please write a few words first."; form.message.focus(); return; }
+    var btn = form.querySelector("button"), data = new FormData(form), body = [];
+    data.forEach(function (v, k) { body.push(encodeURIComponent(k) + "=" + encodeURIComponent(v)); });
+    btn.disabled = true; err.textContent = "";
+    fetch("/", {method: "POST", headers: {"Content-Type": "application/x-www-form-urlencoded"}, body: body.join("&"), credentials: "omit"})
+      .then(function (r) { if (!r.ok) throw Error(r.status); show("sent"); })
+      .catch(function () { btn.disabled = false; err.textContent = "That didn't go through. Please try again, or call us at " + phone + "."; });
+  });
+})();
+</script>
+</body>
+</html>
