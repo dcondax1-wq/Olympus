@@ -309,11 +309,90 @@ def normalize(el: dict, place: dict, wanted=C.DEFAULT_KEYS, source="overpass"):
     }
 
 
-def find(place: dict, radius_km: float, keys, endpoint=None, refresh=False, fetch=None, sleep=time.sleep):
-    """The raw lead list (unscored) for a place, deduplicated by name + street. Returns (leads, meta)."""
-    endpoint = endpoint or endpoint_for(place.get("country_code"))
-    q = build_query(place["lat"], place["lon"], radius_km * 1000, keys)
-    data = overpass(q, endpoint, refresh=refresh, fetch=fetch, sleep=sleep)
+def _wanted(tags: dict, filters) -> bool:
+    for k, v in filters:
+        t = tags.get(k)
+        if t is not None and (re.search(v[1:], t, re.I) if v.startswith("~") else t == v):
+            return bool(tags.get("name"))
+    return False
+
+
+def read_extract(path: str, place: dict, radius_km: float, keys) -> list:
+    """An OpenStreetMap extract file (.osm, .osm.gz or .osm.bz2: e.g. a city from download.bbbike.org) -> elements shaped like
+    Overpass's `out center tags`, within radius_km of the centre. No network: the policy-friendly way to pull a lot of data.
+    Two passes: the business nodes and buildings first, then the points of those buildings (their average = the centre)."""
+    import bz2
+    import gzip
+    import xml.etree.ElementTree as ET
+    opener = gzip.open if path.endswith(".gz") else bz2.open if path.endswith(".bz2") else open
+    filters = C.overpass_filters(keys)
+    pad = radius_km / 111.0
+    lat0, lon0 = place["lat"], place["lon"]
+    box = (lat0 - pad, lat0 + pad, lon0 - pad / max(0.2, math.cos(math.radians(lat0))), lon0 + pad / max(0.2, math.cos(math.radians(lat0))))
+    out, ways, need = [], [], set()
+
+    def tags_of(e):
+        return {t.get("k"): t.get("v") for t in e.findall("tag")}
+    with opener(path, "rb") as fh:
+        root = None
+        for ev, e in ET.iterparse(fh, events=("start", "end")):
+            if root is None:
+                root = e
+            if ev == "start":
+                continue
+            if e.tag == "node":
+                if len(e):
+                    tg = tags_of(e)
+                    la, lo = float(e.get("lat")), float(e.get("lon"))
+                    if _wanted(tg, filters) and box[0] <= la <= box[1] and box[2] <= lo <= box[3]:
+                        out.append({"type": "node", "id": int(e.get("id")), "lat": la, "lon": lo, "tags": tg})
+                root.clear()                      # keep memory flat on a big file
+            elif e.tag == "way":
+                tg = tags_of(e)
+                if _wanted(tg, filters):
+                    refs = [int(n.get("ref")) for n in e.findall("nd")]
+                    ways.append((int(e.get("id")), tg, refs))
+                    need.update(refs)
+                root.clear()
+            elif e.tag == "relation":
+                root.clear()
+    if ways:
+        pts = {}
+        with opener(path, "rb") as fh:
+            root = None
+            for ev, e in ET.iterparse(fh, events=("start", "end")):
+                if root is None:
+                    root = e
+                if ev == "start":
+                    continue
+                if e.tag == "node":
+                    i = int(e.get("id"))
+                    if i in need:
+                        pts[i] = (float(e.get("lat")), float(e.get("lon")))
+                    root.clear()
+                elif e.tag in ("way", "relation"):
+                    root.clear()
+        for wid, tg, refs in ways:
+            p = [pts[r] for r in refs if r in pts]
+            if not p:
+                continue
+            la, lo = sum(x for x, _ in p) / len(p), sum(y for _, y in p) / len(p)
+            if box[0] <= la <= box[1] and box[2] <= lo <= box[3]:
+                out.append({"type": "way", "id": wid, "center": {"lat": la, "lon": lo}, "tags": tg})
+    return [el for el in out if haversine_km(lat0, lon0, el.get("lat", (el.get("center") or {}).get("lat")), el.get("lon", (el.get("center") or {}).get("lon"))) <= radius_km]
+
+
+def find(place: dict, radius_km: float, keys, endpoint=None, refresh=False, fetch=None, sleep=time.sleep, extract=None):
+    """The raw lead list (unscored) for a place, deduplicated by name + street. Returns (leads, meta).
+    extract = a local OpenStreetMap extract file to read instead of asking Overpass (when the free server is busy)."""
+    if extract:
+        els = read_extract(extract, place, radius_km, keys)
+        data = {"elements": els, "osm3s": {"timestamp_osm_base": "extract " + os.path.basename(extract)}, "_cache": {"hit": False, "extract": True}}
+        endpoint, q = "extract:" + os.path.basename(extract), ""
+    else:
+        endpoint = endpoint or endpoint_for(place.get("country_code"))
+        q = build_query(place["lat"], place["lon"], radius_km * 1000, keys)
+        data = overpass(q, endpoint, refresh=refresh, fetch=fetch, sleep=sleep)
     els = data.get("elements") or []
     leads, seen, skipped = [], set(), {"no_name_or_closed": 0, "chain": 0, "other_trade": 0, "duplicate": 0}
     for el in els:

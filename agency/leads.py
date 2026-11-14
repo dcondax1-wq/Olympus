@@ -174,12 +174,12 @@ def suppressed(lead: dict, sup: dict) -> bool:
 
 
 def run(place: dict, radius_km=8.0, keys=C.DEFAULT_KEYS, top=20, per_category=3, audit_max=30, do_audit=True, refresh=False,
-        endpoint=None, fetch=None, audit_fn=None, sleep=None, log=print, redesign_share=0.25, suppress=None):
+        endpoint=None, fetch=None, audit_fn=None, sleep=None, log=print, redesign_share=0.25, suppress=None, extract=None):
     """Find -> drop the do-not-contact list -> score without fetching -> check the websites of the best candidates -> rescore -> pick."""
     kw = {"fetch": fetch} if fetch else {}
     if sleep:
         kw["sleep"] = sleep
-    raw, meta = osm.find(place, radius_km, keys, endpoint=endpoint, refresh=refresh, **kw)
+    raw, meta = osm.find(place, radius_km, keys, endpoint=endpoint, refresh=refresh, extract=extract, **kw)
     sup = suppress if suppress is not None else suppression()
     kept = [l for l in raw if not suppressed(l, sup)]
     meta["skipped"]["do_not_contact"] = len(raw) - len(kept)
@@ -274,6 +274,7 @@ def parser(cfg: dict) -> argparse.ArgumentParser:
     ap.add_argument("--no-audit", action="store_true", help="do not open any website")
     ap.add_argument("--refresh", action="store_true", help="ignore the cache (asks the servers again)")
     ap.add_argument("--endpoint", default=None, help="another Overpass server")
+    ap.add_argument("--extract", default=None, help="read a local OpenStreetMap extract (.osm / .osm.gz / .osm.bz2, e.g. from download.bbbike.org) instead of Overpass")
     ap.add_argument("--out", default=None)
     return ap
 
@@ -284,7 +285,7 @@ def find_leads(args, log=print):
     place = place_from_args(args)
     log(f"AGENCY lead finder: {place.get('name') or place.get('city')} ({place['lat']:.4f}, {place['lon']:.4f}), {args.radius_km:g} km, {len(keys)} trades")
     res = run(place, args.radius_km, keys, args.top, args.per_category, args.audit_max, not args.no_audit, args.refresh, args.endpoint, log=log,
-              redesign_share=args.redesign_share)
+              redesign_share=args.redesign_share, extract=getattr(args, "extract", None))
     out = args.out or os.path.join(OUT_DIR, osm.slug(args.city or args.center, 30))
     return res, out
 

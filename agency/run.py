@@ -58,6 +58,7 @@ def main(argv=None):
     ap.add_argument("--sample", action="store_true", help="mark the page data as a sample city (the committed demo)")
     ap.add_argument("--no-audit", action="store_true")
     ap.add_argument("--refresh", action="store_true")
+    ap.add_argument("--extract", default=None, help="a local OpenStreetMap extract (.osm.gz from download.bbbike.org) when the free Overpass server is busy")
     args = ap.parse_args(argv)
     if not os.environ.get("AGENCY_CONFIG"):
         CFG.ensure_owner_copy()
@@ -67,7 +68,7 @@ def main(argv=None):
     la = L.parser(cfg).parse_args([])
     la.city = args.city or la.city
     la.center = args.center
-    la.no_audit, la.refresh = args.no_audit, args.refresh
+    la.no_audit, la.refresh, la.extract = args.no_audit, args.refresh, args.extract
     print("AGENCY: the website machine")
     try:
         res, out = L.find_leads(la)

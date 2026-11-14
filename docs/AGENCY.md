@@ -87,6 +87,9 @@ Every line with its link is in `agency/pricing.json`.
   when busy; the main server asks commercial users to self-host, so North America uses the free North America server from the same OSM wiki
   list. Nominatim (the city search) is used once per city for the centre point only, never to list businesses (its policy forbids that), at
   most 1 request a second, cached for good. Business data (c) OpenStreetMap contributors (ODbL): the attribution is on every file and page.
+- **When the free map server is busy** (the wiki says it often is): the machine waits and retries, reuses its last answer (7 days), and can read
+  an OpenStreetMap extract file instead (`--extract FortCollins.osm.gz`, from download.bbbike.org, about 30 US cities, refreshed weekly). Tested:
+  the Fort Collins extract gave 497 of the 501 businesses Overpass gave (the 4 others were mapped after the extract was made), in 10 seconds.
 - **The site check is polite and careful:** it reads robots.txt, opens each home page once (https first), and calls a site "dead" only when
   that is certain. From this cloud sandbox plain-http sites could not be opened at all, so those leads say "could not check"; on your PC
   they are checked normally.
@@ -103,7 +106,7 @@ Every line with its link is in `agency/pricing.json`.
 | Part | File | Run / test |
 |---|---|---|
 | Settings (ONE file) | `agency/config.example.json` -> `agency/config.json` (gitignored: an edited tracked file would block the bot's auto-update) | `agency/config.py` |
-| Lead finder | `agency/leads.py`, `osm.py` (Overpass + Nominatim), `audit.py` (site check), `categories.py`, `hours.py` | `python -m agency.leads --city "Fort Collins, CO"` |
+| Lead finder | `agency/leads.py`, `osm.py` (Overpass + Nominatim, or an extract file), `audit.py` (site check), `categories.py`, `hours.py`, `agency/suppress.txt` (do not contact) | `python -m agency.leads --city "Fort Collins, CO"` (`--extract FILE.osm.gz`) |
 | Site generator | `agency/build_site.py`, `agency/templates/` (8 looks: studio, bloom, pro, table, clinic, garage, fresh, pulse; `trades.json` = the words) | `python -m agency.build_site --leads FILE --id ID` (`--all-templates`, `--pages 3`, `--final --url`) |
 | Self-check | `agency/sitecheck.py` | `python -m agency.sitecheck <site folder>` |
 | Pitch kit | `agency/pitch.py`, `agency/templates/pitch/` | `python -m agency.pitch --leads FILE --id ID` |

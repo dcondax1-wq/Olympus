@@ -232,6 +232,24 @@ def test_leads():
     check("a. coverage is measured and stored (honest about thin OSM data): phone 80%, website 40%, hours 20%", (cov["phone"], cov["website"], cov["hours"]) == (0.8, 0.4, 0.2), cov)
 
     # --- one full run on fake sources, files written
+    # --- the offline fallback: an OpenStreetMap extract file (.osm.gz) instead of Overpass
+    import gzip
+    xml = """<?xml version='1.0' encoding='UTF-8'?><osm version="0.6">
+<node id="1" lat="40.5872" lon="-105.0770"><tag k="name" v="Old Town Barbers"/><tag k="shop" v="hairdresser"/><tag k="hairdresser" v="barber"/><tag k="phone" v="+1 970 555 0101"/></node>
+<node id="2" lat="40.9000" lon="-105.0770"><tag k="name" v="Far Away Salon"/><tag k="shop" v="hairdresser"/></node>
+<node id="3" lat="40.5880" lon="-105.0780"><tag k="name" v="Great Clips"/><tag k="shop" v="hairdresser"/><tag k="brand" v="Great Clips"/></node>
+<node id="4" lat="40.5800" lon="-105.0800"/><node id="5" lat="40.5802" lon="-105.0800"/><node id="6" lat="40.5802" lon="-105.0804"/>
+<node id="7" lat="40.5880" lon="-105.0781"><tag k="amenity" v="bench"/></node>
+<way id="9"><nd ref="4"/><nd ref="5"/><nd ref="6"/><nd ref="4"/><tag k="name" v="North Star Plumbing"/><tag k="craft" v="plumber"/><tag k="building" v="yes"/></way>
+<way id="10"><nd ref="4"/><nd ref="5"/><tag k="highway" v="residential"/><tag k="name" v="Main Street"/></way>
+<relation id="11"><member type="way" ref="9" role="outer"/><tag k="type" v="multipolygon"/></relation></osm>"""
+    xp = os.path.join(TMP, "city.osm.gz")
+    with gzip.open(xp, "wt", encoding="utf-8") as fh:
+        fh.write(xml)
+    ex_leads, ex_meta = osm.find(PLACE, 8, C.DEFAULT_KEYS, extract=xp)
+    check("a. offline fallback: a local OpenStreetMap extract (.osm.gz) gives the same kind of leads with no network: the barber, the plumber's building at its centre; the far shop, the chain, the bench and the street are left out",
+          sorted(l["name"] for l in ex_leads) == ["North Star Plumbing", "Old Town Barbers"] and next(l for l in ex_leads if l["osm"] == "way/9")["lat"] == round((40.58 + 40.5802 + 40.5802 + 40.58) / 4, 6)
+          and ex_meta["skipped"]["chain"] == 1 and ex_meta["endpoint"] == "extract:city.osm.gz", ([l["name"] for l in ex_leads], ex_meta["skipped"]))
     none = L.suppression(os.path.join(TMP, "no-suppress.txt"), exports=[])
     sp = os.path.join(TMP, "suppress.txt")
     open(sp, "w", encoding="utf-8").write("# people who said stop\n(970) 694-2949   # Cinco Brothers asked\nn10\nWild Mane Salon\nhttps://www.taqueria-elsewhere.example/\n")
