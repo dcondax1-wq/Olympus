@@ -286,34 +286,101 @@
     });
   }
 
-  /* ------------------------------------------------------------------------------------------ Look: the OLYMPUS theme (olympus/themes.js, key 'olympus.theme')
-     Six plain looks as swatches (a tiny card in the theme's own page, panel, accent, gain green and loss red); one tap applies it here at once and
-     everywhere else (Jarvis's Look sheet shows the same key; another tab follows through the storage event). Hidden when the engine is not served. */
+  /* ------------------------------------------------------------------------------------------ Look: the OLYMPUS theme (olympus/themes.js)
+     Two tabs. "One look": Agora + the 17 looks as swatches (a tiny card in the theme's own page, card, accent, gain green and loss red); a tap is
+     one look for everything ('olympus.theme', and the mix cleared). "Mix": each district (Trading, Money, Life, Worlds) and this Gate get their
+     own look ('olympus.themeMix' = { district, app, of }; app beats district beats the one look), or one of three ready-made combos. Jarvis's Look
+     sheet writes the same keys, so both stay in sync; other tabs follow through the storage event. Hidden when the engine is not served. */
+  var DISTRICTS = [['trading', 'Trading'], ['money', 'Money'], ['life', 'Life'], ['worlds', 'Worlds'], ['gate', 'This Gate']];
+  var COMBOS = [['Trader', 'A trading screen for trading, a clean bank for money', { trading: 'amber', money: 'stocks', life: 'forest', worlds: 'aurora' }],
+    ['Luxury', 'Black and gold, navy, rose gold, a sunset', { trading: 'noir', money: 'royal', life: 'rosegold', worlds: 'sunset' }],
+    ['Clean', 'Light and calm, a navy night for the worlds', { trading: 'stocks', money: 'ivory', life: 'ivory', worlds: 'midnight' }]];
+  function swatch(T, t, small) {
+    var k = t.tokens, sty = t.style || null, p = el('span', 'g-swp'), bar = el('i', 'g-swbar'), up = el('i', 'g-swup', '+$'), dn = el('i', 'g-swdn', '−$'), dot = el('i', 'g-swdot');
+    p.setAttribute('aria-hidden', 'true');
+    p.style.background = sty ? sty.page : k.bg; p.style.borderColor = k.line;
+    bar.style.background = sty ? sty.card : k.bg2; bar.style.borderColor = k.accent;
+    if (sty && t.feel && t.feel.radius) bar.style.borderRadius = Math.min(parseFloat(t.feel.radius) || 0, 6) + 'px';
+    up.style.color = k.ok; dn.style.color = k.bad; dot.style.background = k.accent;
+    bar.appendChild(dot); p.appendChild(bar);
+    if (!small) { p.appendChild(up); p.appendChild(dn); }
+    return p;
+  }
   function look() {
     var T = w.OLYMPUS_THEMES;
     if (!T || !T.plain) return;
     T.apply('page', { meta: true });
-    var host = $('looks'), sec = $('lookSec');
-    function draw() {
-      var cur = T.id(), list = T.plain();
+    var host = $('looks'), mixHost = $('lookMix'), sec = $('lookSec'), tabs = [$('lookTab1'), $('lookTab2')];
+    var mode = T.getMix && T.getMix() ? 'mix' : 'one';
+    function ofMap() {   // app -> district, from the catalog (the dashboard is part of Trading)
+      var o = { today: 'trading' };
+      if (C) for (var i = 0; i < C.apps.length; i++) { var a = C.apps[i]; if (/^(trading|money|life|worlds)$/.test(a.district)) o[a.id] = a.district; }
+      return o;
+    }
+    function current() { var m = T.getMix(); return m || { district: {}, app: {}, of: {} }; }
+    function setOne(id) { T.set(id); draw(); }
+    function setPart(part, id) {
+      var m = current(), o = { district: m.district || {}, app: m.app || {}, of: ofMap() };
+      if (part === 'gate') { if (id) o.app.gate = id; else delete o.app.gate; } else if (id) o.district[part] = id; else delete o.district[part];
+      T.setMix(o); draw();
+    }
+    function useCombo(c) { var m = current(), o = { district: {}, app: m.app || {}, of: ofMap() }; for (var k in c) o.district[k] = c[k]; T.setMix(o); draw(); }
+    function drawOne() {
+      var cur = T.getMix() ? '' : T.global(), list = T.plain();
       clear(host);
       for (var i = 0; i < list.length; i++) (function (t) {
-        var k = t.tokens, b = el('button', 'g-sw'), p = el('span', 'g-swp'), bar = el('i', 'g-swbar'), up = el('i', 'g-swup', '+$'), dn = el('i', 'g-swdn', '\u2212$');
+        var b = el('button', 'g-sw');
         b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(t.id === cur)); b.setAttribute('data-theme-id', t.id);
         b.setAttribute('aria-label', t.name + ': ' + (t.tag || ''));
-        p.setAttribute('aria-hidden', 'true');
-        p.style.background = k.bg; p.style.borderColor = k.line; bar.style.background = k.bg2; bar.style.borderColor = k.accent; bar.style.color = k.text;
-        up.style.color = k.ok; dn.style.color = k.bad;
-        var dot = el('i', 'g-swdot'); dot.style.background = k.accent;
-        bar.appendChild(dot); p.appendChild(bar); p.appendChild(up); p.appendChild(dn);
-        b.appendChild(p); b.appendChild(el('b', '', t.name)); b.appendChild(el('small', '', (t.tag || '').split(' \u00b7 ')[0]));
-        b.addEventListener('click', function () { T.set(t.id); draw(); });
+        b.appendChild(swatch(T, t)); b.appendChild(el('b', '', t.name)); b.appendChild(el('small', '', (t.tag || '').split(' · ')[0]));
+        b.addEventListener('click', function () { setOne(t.id); });
         host.appendChild(b);
       })(list[i]);
-      var now = T.get(cur), extra = $('lookHint');
-      if (extra && now && !now.plain && now.id !== T.DEFAULT) extra.textContent = 'Now: ' + now.name + ' (picked in Jarvis). One tap below changes it everywhere.';
     }
-    T.on(draw);
+    function drawMix() {
+      var m = current(), list = T.plain();
+      clear(mixHost);
+      var cs = el('div', 'g-combos');
+      for (var c = 0; c < COMBOS.length; c++) (function (cb) {
+        var b = el('button', 'g-combo'), on = true, dots = el('span', 'g-cdots');
+        for (var k in cb[2]) { if ((m.district || {})[k] !== cb[2][k]) on = false; var dt = el('i'), th = T.get(cb[2][k]); dt.style.background = th.style ? th.style.page : th.tokens.bg; dt.style.borderColor = th.tokens.accent; dots.appendChild(dt); }
+        b.type = 'button'; b.setAttribute('aria-pressed', String(on)); b.setAttribute('data-combo', cb[0].toLowerCase());
+        b.appendChild(dots); b.appendChild(el('b', '', cb[0])); b.appendChild(el('small', '', cb[1]));
+        b.addEventListener('click', function () { useCombo(cb[2]); });
+        cs.appendChild(b);
+      })(COMBOS[c]);
+      mixHost.appendChild(cs);
+      for (var r = 0; r < DISTRICTS.length; r++) (function (dd) {
+        var row = el('div', 'g-mixrow'), strip = el('div', 'g-strip'), pick = dd[0] === 'gate' ? (m.app || {}).gate : (m.district || {})[dd[0]];
+        var head = el('p', 'g-mixh'); head.appendChild(el('b', '', dd[1])); head.appendChild(el('small', '', pick ? T.get(pick).name : 'Same as one look: ' + T.get(T.global()).name));
+        row.appendChild(head);
+        strip.setAttribute('role', 'radiogroup'); strip.setAttribute('aria-label', dd[1] + ' look');
+        var same = el('button', 'g-mini g-same', 'Same');
+        same.type = 'button'; same.setAttribute('role', 'radio'); same.setAttribute('aria-checked', String(!pick)); same.setAttribute('aria-label', dd[1] + ': same as one look');
+        same.addEventListener('click', function () { setPart(dd[0], ''); });
+        strip.appendChild(same);
+        for (var i = 0; i < list.length; i++) (function (t) {
+          var b = el('button', 'g-mini');
+          b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(pick === t.id)); b.setAttribute('data-theme-id', t.id);
+          b.setAttribute('aria-label', dd[1] + ': ' + t.name);
+          b.appendChild(swatch(T, t, true)); b.appendChild(el('small', '', t.name));
+          b.addEventListener('click', function () { setPart(dd[0], t.id); });
+          strip.appendChild(b);
+        })(list[i]);
+        row.appendChild(strip);
+        mixHost.appendChild(row);
+      })(DISTRICTS[r]);
+    }
+    function draw() {
+      tabs[0].setAttribute('aria-selected', String(mode === 'one')); tabs[1].setAttribute('aria-selected', String(mode === 'mix'));
+      host.hidden = mode !== 'one'; mixHost.hidden = mode !== 'mix';
+      $('lookHint').textContent = mode === 'one' ? 'One tap changes the colours and the style everywhere: here, Jarvis and every app. Every word and number stays the same.'
+        : 'Give each part its own look. A part left on Same follows the one look. One look clears the mix.';
+      if (mode === 'one') drawOne(); else drawMix();
+    }
+    tabs[0].addEventListener('click', function () { mode = 'one'; draw(); });
+    tabs[1].addEventListener('click', function () { mode = 'mix'; draw(); });
+    T.on(function () { draw(); });
     draw();
     sec.hidden = false;
   }

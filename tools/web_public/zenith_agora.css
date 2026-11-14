@@ -624,3 +624,18 @@ html .oly-l .oly-g, html .oly-l .oly-chip i { animation: none !important; filter
 #page.pl-h > .pl-kept-herald { order: 2; margin: 0 0 14px; }
 #page.pl-h:not(.pl-all) > .pl-kept-herald:not(#plA):not(#plB):not(#plC):not(#plD) { display: block !important; }
 #page > .pl-kept-herald .pl-btn { height: auto; padding: 0; font-size: 22px; justify-content: center; }
+
+/* ================================================================================================ style themes (olympus/themes.js 'style', 2026-11-14)
+   Only under <html data-oly-style> (a style theme is on): the page background (a gradient or a pattern), the cards' surface, border, shadow and
+   blur, the titles' weight / case / tracking / italic and the primary button, from the --oly-th-* the engine paints. The default (AGORA) and the
+   colour-only themes never set the attribute, so nothing here applies to them. */
+html[data-oly-style] { background: var(--oly-th-page-bg) fixed var(--oly-th-n3); }
+html[data-oly-style] body { background: transparent !important; background-image: none !important; }
+html[data-oly-style] .space-css { background: var(--oly-th-page-bg) !important; }
+html[data-oly-style] .space-css > * { display: none !important; }
+html[data-oly-style] :is(#page .card, .mn-card, .sd-card, .zh-hero, .su-sun, .zn-nq, .mc-strip, .mc-orbit) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
+  border-radius: var(--oly-th-radius) !important;
+  -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
+html[data-oly-style] :is(#page h1, #page h2, #page h3, .pl-hi > b, .zn-nq-t, header.top h1) { font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case); letter-spacing: var(--oly-th-title-track) !important;
+  font-style: var(--oly-th-title-style); }
+html[data-oly-style] :is(.btn.primary, .mg-btn.primary, .zn-nq-a) { background: var(--oly-th-btn-bg) !important; color: var(--oly-th-btn-fg) !important; border: var(--oly-th-btn-border) !important; box-shadow: none !important; }

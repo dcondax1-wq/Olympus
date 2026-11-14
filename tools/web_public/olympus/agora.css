@@ -17,7 +17,7 @@
   --ag-on-gold: var(--oly-th-n3, #1b1610);
   /* type: serif display, system sans body, rounded tabular numbers. rem based (dynamic type / browser text size follow) */
   --ag-serif: var(--oly-th-display, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif);
-  --ag-sans: -apple-system,'SF Pro Text',system-ui,'Helvetica Neue',Arial,sans-serif;
+  --ag-sans: var(--oly-th-body, -apple-system,'SF Pro Text',system-ui,'Helvetica Neue',Arial,sans-serif);
   --ag-num: var(--oly-th-num, 'SF Pro Rounded',-apple-system,system-ui,sans-serif);
   --ag-fs-cap: .75rem;     /* 12  captions, chips */
   --ag-fs-foot: .8125rem;  /* 13  footnotes, labels */
@@ -360,3 +360,16 @@ html[data-theme="agora"] .scan, html[data-theme="agora"] .scanlines, html[data-t
 }
 html[data-fx="off"] main#app > *, html[data-fx="off"] .ag-stagger > *, html[data-fx="off"] .ag-enter { animation: none !important; }
 html[data-oly-lite="1"] .ag-appbar, html[data-oly-lite="1"] .ag-tabbar { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(var(--oly-th-n3-rgb, 26, 22, 18), .97); }
+
+/* ================================================================================================ style themes (olympus/themes.js 'style', 2026-11-14)
+   Only under <html data-oly-style> (a style theme is on): the page background (a gradient or a pattern), the cards' surface, border, shadow and
+   blur, the titles' weight / case / tracking / italic and the primary button, from the --oly-th-* the engine paints. The default (AGORA) and the
+   colour-only themes never set the attribute, so nothing here applies to them. */
+html[data-oly-style] { background: var(--oly-th-page-bg) fixed var(--oly-th-n3); }
+html[data-oly-style] body, html[data-oly-style] body.agora { background: transparent !important; }
+html[data-oly-style] :is(.ag-card, .ag-stat) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
+  border-radius: var(--oly-th-radius) !important;
+  -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
+html[data-oly-style] :is(h1, h2, h3, .ag-title, .ag-display, .ag-h2, .ag-h3) { font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case); letter-spacing: var(--oly-th-title-track) !important;
+  font-style: var(--oly-th-title-style); }
+html[data-oly-style] .ag-btn.primary { background: var(--oly-th-btn-bg) !important; color: var(--oly-th-btn-fg) !important; border: var(--oly-th-btn-border) !important; box-shadow: none !important; }

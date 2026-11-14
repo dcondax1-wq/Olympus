@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="agora" data-fx="high" data-mode="jarvis" data-state="idle">
+<html lang="en" data-theme="agora" data-fx="high" data-mode="jarvis" data-state="idle" data-oly-page="jarvis">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -25,9 +25,10 @@
   // keeps of what it painted ('olympus.theme.paint'); the engine loads after the start (async, never waited on) and repaints
   try {
     var ot = g('olympus.theme'), op = JSON.parse(g('olympus.theme.paint') || 'null'), on = [];
-    if (ot && ot !== 'agora' && op && op.id === ot && op.vars) {
+    if ((ot || g('olympus.themeMix')) && op && op.id && op.id !== 'agora' && op.vars) {     /* the look this page got last time (a mix may give Jarvis its own) */
       for (var vk in op.vars) { d.style.setProperty(vk, op.vars[vk]); on.push(vk); }
-      d.setAttribute('data-oly-theme', ot); d.setAttribute('data-oly-scheme', op.scheme === 'light' ? 'light' : 'dark'); window.__olyPaint = on;
+      d.setAttribute('data-oly-theme', op.id); d.setAttribute('data-oly-scheme', op.scheme === 'light' ? 'light' : 'dark'); window.__olyPaint = on;
+      if (op.style) d.setAttribute('data-oly-style', op.style);
     }
   } catch (e) { /* the default look */ }
   var fx = g('jfx');

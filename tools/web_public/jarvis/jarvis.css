@@ -13,7 +13,7 @@
 :root {
   --ok: var(--oly-th-g6, #7f8a52); --bad: var(--oly-th-r8, #c96a4a); --warn: var(--oly-th-warn, #e0b060);
   --fh: var(--oly-th-display, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif);
-  --fb: -apple-system, "SF Pro Text", system-ui, "Helvetica Neue", Arial, sans-serif;
+  --fb: var(--oly-th-body, -apple-system, "SF Pro Text", system-ui, "Helvetica Neue", Arial, sans-serif);
   --fm: var(--oly-th-num, "SF Pro Rounded", -apple-system, system-ui, sans-serif);
   --bar-h: 54px;
   --dock-h: 64px;
@@ -1075,3 +1075,18 @@ html[data-oly-scheme="light"] .tile.is-press, html[data-oly-scheme="light"] .hc-
 @media (max-width: 350px) { html[data-orb-dock="1"] .nextchip { display: flex; align-items: center; white-space: normal; overflow: visible; text-overflow: clip; text-align: left; font-size: 13px; line-height: 1.15; padding: 4px 12px; } }
 /* the smallest iPhone (320 px): the numbers in the timeline and the project cards wrap instead of being cut */
 @media (max-width: 350px) { .kv strong, .tl-row strong { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; } }
+
+/* ================================================================================================ style themes (olympus/themes.js 'style', 2026-11-14)
+   Only under <html data-oly-style> (a style theme is on): the page background (a gradient or a pattern), the cards' surface, border, shadow and
+   blur, the titles' weight / case / tracking / italic and the primary button, from the --oly-th-* the engine paints. The default (AGORA) and the
+   colour-only themes never set the attribute, so nothing here applies to them. */
+html[data-oly-style] { background: var(--oly-th-page-bg) fixed var(--oly-th-n3); }
+html[data-oly-style] body { background: transparent !important; }
+html[data-oly-style] .bgfx { background: var(--oly-th-page-bg) !important; }
+html[data-oly-style] .bgfx canvas { opacity: .35; }
+html[data-oly-style] :is(.tile, .hc-row, .hc-bot, .jx-plan, .jx-pro, .dock, .sug, .nextchip) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
+  border-radius: var(--oly-th-radius) !important;
+  -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
+html[data-oly-style] :is(.hero-h, h2, .hsec-h) { font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case); letter-spacing: var(--oly-th-title-track) !important;
+  font-style: var(--oly-th-title-style); }
+html[data-oly-style] .hub-gate-primary { background: var(--oly-th-btn-bg) !important; color: var(--oly-th-btn-fg) !important; border: var(--oly-th-btn-border) !important; box-shadow: none !important; }
