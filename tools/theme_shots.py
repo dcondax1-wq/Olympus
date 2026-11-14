@@ -4,7 +4,7 @@
 
 <built site> = python tools/build_web_dashboard.py --out <dir> (only its data: data.json, home.json, runs/ ...; every app file is served
 from this working tree, so the shots show the code as it is now). One JPEG per theme: <out>/<theme>.jpg (--ext png for PNG), the pages side by side
-(Gate, dashboard, Jarvis, NQ, Kalshi, Helios, Polis), each shot 390 x 844 at 1x. --raw keeps the full-size single shots too.
+(Gate, the Gate's Look row, dashboard, Jarvis, NQ, Kalshi, Helios, Polis), each shot 390 x 844 at 1x. --raw keeps the full-size single shots too.
 Read only: every request off the local origin is refused; the theme is set through localStorage 'olympus.theme' like the owner's pick.
 Run browser work under: flock -w 2400 /tmp/olympus_browser.lock python -X utf8 tools/theme_shots.py ...
 """
@@ -22,7 +22,7 @@ import threading
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
-PAGES = [("gate", "gate/", "Gate"), ("dash", "", "Dashboard"), ("jarvis", "jarvis/", "Jarvis"), ("nq", "nq/?demo=1", "NQ"),
+PAGES = [("gate", "gate/", "Gate"), ("look", "gate/", "Gate: Look row"), ("dash", "", "Dashboard"), ("jarvis", "jarvis/", "Jarvis"), ("nq", "nq/?demo=1", "NQ"),
          ("kalshi", "kalshi/", "Kalshi"), ("helios", "helios/?demo=1", "Helios"), ("polis", "polis/?demo=1", "Polis")]
 
 
@@ -56,7 +56,10 @@ def serve(site):
     return srv, f"http://127.0.0.1:{srv.server_address[1]}"
 
 
-def shoot(br, origin, theme, key, path, raw):
+LEFT = os.path.join(ROOT, "tools", "theme_leftovers.js")
+
+
+def shoot(br, origin, theme, key, path, raw, leftovers=False):
     ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block",
                          reduced_motion="reduce")
     ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
@@ -72,8 +75,15 @@ def shoot(br, origin, theme, key, path, raw):
         if key == "jarvis":
             p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=60000)
         p.wait_for_timeout(3500 if key in ("jarvis", "dash", "kalshi") else 2200)
+        if key == "look":                                                  # the Gate scrolled to its Look row (the theme picker)
+            p.evaluate("() => { const s = document.getElementById('lookSec'); if (s) s.scrollIntoView({ block: 'center' }); }")
+            p.wait_for_timeout(400)
         f = os.path.join(raw, f"{theme}-{key}.png")
         p.screenshot(path=f)
+        if leftovers:
+            left = p.evaluate("(a) => (" + open(LEFT, encoding="utf-8").read() + ")(a)", {"max": 25})
+            for x in left:
+                print(f"    leftover {theme}/{key}: {x['sel']} {x['prop']}={x['value']} '{x['text']}'  <- {x['rule']}")
         return f, errs
     finally:
         ctx.close()
@@ -124,6 +134,7 @@ def main():
     ap.add_argument("--raw", default="")
     ap.add_argument("--stack", default="", help="also write every sheet stacked into this one .jpg")
     ap.add_argument("--ext", default="jpg")
+    ap.add_argument("--leftovers", action="store_true", help="list visible elements still in AGORA's warm browns (use with a blue / green theme)")
     a = ap.parse_args()
     from playwright.sync_api import sync_playwright
     from tests import browser_kit as BK
@@ -142,7 +153,7 @@ def main():
         for tid, name in themes:
             files = []
             for key, path, label in pages:
-                f, errs = shoot(br, origin, tid, key, path, raw)
+                f, errs = shoot(br, origin, tid, key, path, raw, a.leftovers)
                 files.append(f)
                 if errs:
                     bad += 1

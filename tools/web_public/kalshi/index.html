@@ -23,19 +23,13 @@
 <script>(function () { var d = document.documentElement; d.setAttribute('data-theme', 'kalshi');
   /* inside Jarvis (a frame under its bar) the notch is Jarvis's: no second top inset */
   try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="stylesheet" href="kalshi.css?v=k25">
-<!-- OLYMPUS theme (../olympus/themes.js, key 'olympus.theme', picked in Jarvis's Look sheet): the shared --oly-* tokens and Kalshi's
-     page / panels blended toward the theme (the mint stays Kalshi's own). Async, never waited on; the default changes nothing. -->
+<link rel="stylesheet" href="kalshi.css?v=k26">
+<!-- OLYMPUS theme (../olympus/themes.js, key 'olympus.theme', picked on the Gate's Look row or in Jarvis's Look sheet): every colour of
+     kalshi.css reads a theme slot with its AGORA colour as the fallback (tools/theme_tokenize.py), on the 'stage' palette (dark by design:
+     a light theme gives its dark variant here). Async, never waited on; the default paints nothing (today's look). -->
 <script>(function () {
-  var K = { '--bg': ['#14110e', 'bg'], '--bg2': ['#1d1914', 'bg2'] };
-  function go() {
-    var T = window.OLYMPUS_THEMES; if (!T) return;
-    T.apply('stage', { meta: true, extra: function (t) {
-      var o = { '--pr': T.rgb(T.mix('#1d1914', t.bg2, t.mix)).join(','), '--txt': t.text };
-      for (var k in K) o[k] = T.mix(K[k][0], t[K[k][1]], t.mix);
-      return o; } });
-  }
-  var s = document.createElement('script'); s.src = '../olympus/themes.js?v=o4'; s.async = true; s.onload = go; document.head.appendChild(s);
+  function go() { var T = window.OLYMPUS_THEMES; if (T) T.apply('stage', { meta: true }); }
+  var s = document.createElement('script'); s.src = '../olympus/themes.js?v=o5'; s.async = true; s.onload = go; document.head.appendChild(s);
 })();</script>
 </head>
 <body>

@@ -119,7 +119,10 @@
     return out;
   }
   var rootStyle0 = root.getAttribute('style') || '';          // before any theme paints (restoreRoot)
-  var theme = TH ? TH.apply('stage', { meta: function (t) { return TH.mix(ownBg, t.bg, t.mix); }, extra: appVars }) : null;
+  // where: a page checked in light (<html data-oly-light>, its sheets tokenized: the Gate, NQ, Helios, Polis) takes the full palette, a light
+  // theme light; every other app the 'stage' palette (a light theme's dark variant), so a sheet with dark literals of its own stays readable
+  var where = root.hasAttribute('data-oly-light') ? 'page' : 'stage';
+  var theme = TH ? TH.apply(where, { meta: function (t) { return where === 'page' || !APP_VARS[id] ? t.themeColor : TH.mix(ownBg, t.bg, t.mix); }, extra: appVars }) : null;
   accent(theme);
 
   function emit() { for (var i = 0; i < subs.length; i++) { try { subs[i](level); } catch (e) { /* one listener never stops the rest */ } } }
