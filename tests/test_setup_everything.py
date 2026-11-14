@@ -197,7 +197,24 @@ def check_mode():
         rc, out = run(zp, "--folder", bot, "--port", "1", "--now", str(SAT))
         check("... the update itself (exit 0) ...", rc == 0, out)
         rc, out = run(zp, "--folder", bot, "--check")
-        check("--check after the update: the folder already has this code -> exit 0", rc == 0 and "already has this code" in out, (rc, out))
+        check("--check after the update: this zip was applied (its SHA-256 in the update's record) -> exit 0", rc == 0 and "already has this code (applied" in out, (rc, out))
+        wr(os.path.join(bot, "tools", "x.py"), "X = 3  # a fix made on the PC after the update\n")
+        rc, out = run(zp, "--folder", bot, "--check")
+        check("--check: a file fixed on the PC after the update -> still 'already applied' (exit 0): the same zip never reverts a later fix",
+              rc == 0 and open(os.path.join(bot, "tools", "x.py")).read().startswith("X = 3"), (rc, out))
+        rc, out = run("--folder", bot, "--undo", "--port", "1")
+        rc2, out2 = run(zp, "--folder", bot, "--check")
+        check("--check after UNDO_UPDATE: the update is due again (exit 10)", rc in (0, 1) and rc2 == 10, (rc, out, rc2, out2))
+        rc, out = run(zp, "--folder", bot, "--port", "1", "--now", str(SAT))
+        time.sleep(1.1)                                          # the next update gets its own backup stamp (seconds)
+        zb = os.path.join(base, "home", "Downloads", "OLYMPUS_BACKUP_2026-11-14_bbb2222.zip")
+        with zipfile.ZipFile(zb, "w") as z:
+            for rel, data in {**code, "tools/x.py": "X = 4\n"}.items():
+                z.writestr(rel, data)
+        rc3, out3 = run(zb, "--folder", bot, "--port", "1", "--now", str(SAT))
+        rc, out = run(zp, "--folder", bot, "--check")
+        check("--check: a zip applied BEFORE a newer one (same day) -> exit 13, never put back over the newer one",
+              rc3 == 0 and rc == 13 and "then the newer OLYMPUS_BACKUP_2026-11-14_bbb2222.zip" in out, (rc3, out3, rc, out))
         old_zip = os.path.join(base, "home", "Downloads", "OLYMPUS_BACKUP_2026-11-10_0ld0001.zip")
         with zipfile.ZipFile(old_zip, "w") as z:
             for rel, data in {**code, "engine/lit.py": "VERSION = 'older'\n"}.items():
@@ -212,8 +229,17 @@ def check_mode():
         check("--check: a damaged zip -> exit 3 with the reason", rc == 3 and "does not open" in out, (rc, out))
         rc, out = run(os.path.join(base, "nope.zip"), "--folder", bot, "--check")
         check("--check: no such zip -> exit 2", rc == 2 and "was not found" in out, (rc, out))
-        rc, out = run(zp, "--folder", bot, "--check", "--port", "1")
-        check("--check never needs the bot stopped or the market closed (no guards) and changes nothing", rc == 0, out)
+        busy = socket.socket()
+        busy.bind(("127.0.0.1", 0))
+        busy.listen(1)                                           # "the bot server answers": the update itself would refuse (exit 11)
+        try:
+            before = tree(bot)
+            rc, out = run(zb, "--folder", bot, "--check", "--port", str(busy.getsockname()[1]), "--now", str(WED))
+            rc2, out2 = run(zb, "--folder", bot, "--port", str(busy.getsockname()[1]), "--now", str(WED))
+        finally:
+            busy.close()
+        check("--check needs no stopped bot and no closed market (the bot answering, Wednesday 10:00 ET: exit 0; the update itself: 11)",
+              rc == 0 and rc2 == 11 and tree(bot) == before, (rc, out, rc2, out2))
     finally:
         shutil.rmtree(base, ignore_errors=True)
 

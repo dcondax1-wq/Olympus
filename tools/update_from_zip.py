@@ -24,8 +24,9 @@ What it guarantees:
   - BACKS UP first: backups/update_from_zip/<stamp>/ holds the folder's state list (state_before.txt), a copy of every file
     it replaces and a manifest; a failed write rolls everything back.
   - Prints a SIX-LINE summary. Exit codes: 0 done, 2 nothing to do / not found, 3 bad zip, 11 bot running, 12 market open, 1 failed.
-    --check prints one line instead: 0 the folder already has this zip's code, 10 an update is due, 13 the zip is OLDER (its date)
-    than the zip of the folder's last update (never applied over newer code), 2 / 3 as above. It changes nothing.
+    --check prints one line instead: 0 the folder already has this zip's code (this very zip was applied and not undone: later
+    fixes on the PC are never reverted; else every file the same), 10 an update is due, 13 the zip is OLDER than the folder's last
+    update (applied before a newer one, or dated before it: never put back over newer code), 2 / 3 as above. It changes nothing.
 Stdlib only, no zoneinfo (Windows has no time-zone database without the tzdata package).
 """
 from __future__ import annotations
@@ -550,22 +551,23 @@ def zip_day(name: str | None) -> str | None:
     return m.group(1) if m else None
 
 
-def last_update_zip(folder: str) -> str | None:
-    """The zip name of the folder's newest finished update that was not undone (backups/update_from_zip/<stamp>/manifest.json)."""
+def applied_updates(folder: str) -> list:
+    """The folder's finished updates that were not undone, oldest first: [(stamp, manifest)] (backups/update_from_zip/<stamp>/)."""
     broot = os.path.join(folder, BACKUP_REL)
     try:
         stamps = sorted(d for d in os.listdir(broot) if os.path.isfile(os.path.join(broot, d, "manifest.json")))
     except OSError:
-        return None
-    for st in reversed(stamps):
+        return []
+    out = []
+    for st in stamps:
         try:
             with open(os.path.join(broot, st, "manifest.json"), encoding="utf-8") as fh:
                 m = json.load(fh)
         except (OSError, ValueError):
             continue
-        if m.get("done") and not m.get("undone"):
-            return str(m.get("zip") or "") or None
-    return None
+        if isinstance(m, dict) and m.get("done") and not m.get("undone"):
+            out.append((st, m))
+    return out
 
 
 def check(a) -> int:
@@ -579,11 +581,24 @@ def check(a) -> int:
         say("FIX", (f"{a.zip} was not found." if a.zip else f"No {ZIP_GLOB} in the bot folder, Downloads or Desktop.") + " Download the code zip to the PC first.")
         return EXIT_NOTHING
     zip_path = os.path.abspath(zip_path)
+    name, done = os.path.basename(zip_path), applied_updates(folder)
+    if done:                                                  # this very zip applied before (fast: no unpacking at all)
+        try:
+            sha = sha256_file(zip_path)
+        except OSError:
+            sha = None
+        hits = [i for i, (_st, m) in enumerate(done) if sha and m.get("zip_sha256") == sha]
+        if hits and hits[-1] == len(done) - 1:
+            say("OK", f"{name}: the bot folder already has this code (applied {done[-1][0]}, not undone).")
+            return EXIT_OK
+        if hits:
+            say("OK", f"{name} was applied on {done[hits[-1]][0]}, then the newer {done[-1][1].get('zip')}: it is not put back over it.")
+            return EXIT_OLDER
     state, sha_words, why = check_zip(zip_path)
     if state != "ok":
         say("STOP", why + " Nothing was changed.")
         return EXIT_BADZIP
-    name, last = os.path.basename(zip_path), last_update_zip(folder)
+    last = str(done[-1][1].get("zip") or "") if done else None
     if zip_day(last) and zip_day(name) and zip_day(name) < zip_day(last):
         say("OK", f"{name} is older than the code this folder already took from {last}: it is not put back over it.")
         return EXIT_OLDER
