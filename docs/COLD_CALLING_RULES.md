@@ -227,6 +227,12 @@ calls go through the phone's dialer (`tel:`), emails through your mail app (`mai
   at "do not call" (never again).
 - **Texts** only after logged consent; **emails** only with your postal address; **no recording**; the script says who you are and that it is a
   sales call.
+- **With team B1's Agency app:** the PC builder reads B1's day lists (`agency/out/<city>/leads.json`, never its sample files); the page offers
+  B1's published `leads.json` with one button, reads B1's demo-site link and package price into the script, and treats B1's CRM stages
+  "Do not contact" and "Won" (`localStorage['agency.crm.v1']`, read-only) as locks. Call mode's own outcomes stay in
+  `localStorage['agency.calls.v1']` (B1's CRM can read its `optouts` list to show the same locks).
+- **On the PC:** `python -m agency.calls.build` (add `--dnc <download>` for the registry check, `--merge <phone export>` to bring the phone's
+  do-not-call numbers back) writes `agency/calls/out/call_list.json` to import on the phone; opt-outs and registry results there never shrink.
 
 ## 12. Optional future (documented only, nothing built)
 
