@@ -2455,7 +2455,7 @@
     "learned"
    ],
    "title": "ATLAS's funded account",
-   "short": "Once ATLAS's MFFU Builder 25K eval (MFFUEVBLD602936017, $43) passes, the bot can now keep trading ATLAS on the new funded account under the funded rules (one owner-run switch, never automatic).",
+   "short": "Once ATLAS's MFFU Builder 25K eval (MFFUEVBLD…6017, $43) passes, the bot can now keep trading ATLAS on the new funded account under the funded rules (one owner-run switch, never automatic).",
    "body": [
     "Worth adopting (the owner decides), 2026-10-26.",
     "Replayed on ATLAS's real trades under the account-B rules (no hedging against LIT, LIT's armed setups block it), with the live funded sizing (60% of the room, at most $750 a trade, a winner at most $1,000) and MFFU's payout rules, a funded ATLAS 25K pays you about $517 a month on the Jul-Oct check half ($582...",
