@@ -23,6 +23,14 @@ into a proxy to http://127.0.0.1:8766, inside the owner's tailnet only, never Fu
   GET /api/site/launch.json  the Gate's Launch card (tools/launch_card.py): per bot armed? feed fresh? trades, $, drawdown left,
                          flags incl. the real-fill check (tools/fill_check.py), and whether the 15-minute phone report runs
 
+PRIVATE files (team Q2 privacy audit, 2026-11-14, docs/PRIVACY.md): day/ (calendars, the phone inbox), money/household.json +
+agency.json (bank exports, agency billing), every money_out/ file (oikos.json is built from the bank exports), and health / cards
+(team ME1) are served ONLY to the PC itself (a loopback client, no proxy headers, Host localhost) or through the owner's Tailscale
+link (tailscale serve on this PC: X-Forwarded-For a tailnet address, a signed-in Tailscale-User-Login, Host <pc>.<tailnet>.ts.net,
+never Funnel, no other tunnel): private_why(). The server listens on 0.0.0.0 (server.py HOST), so without this anyone on the home
+WiFi could read them at http://<pc>:8766/site/day/day.json. Over the WiFi the money pages get the build's sample copies instead.
+Tests: tests/test_private_link.py.
+
 READ ONLY over the link: a request that came through any proxy (X-Forwarded-For / X-Forwarded-Host / Tailscale-User-Login ...)
 may only GET / HEAD / OPTIONS (one exception, only once engine/day_inbox.install ran: POST /inbox/<kind>, which appends a line to
 the phone inbox file and nothing else; docs/CONNECT_DAY.md); every other POST, PUT, PATCH, DELETE is refused with 403 before it reaches a route (so nothing can start,
@@ -32,6 +40,7 @@ order or reads a secret. Tests: tests/test_live_link.py.
 """
 from __future__ import annotations
 
+import ipaddress
 import json
 import math
 import mimetypes
@@ -60,6 +69,14 @@ SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
 PROXY_HEADERS = ("x-forwarded-for", "x-forwarded-host", "x-forwarded-proto", "x-real-ip", "forwarded", "tailscale-user-login",
                  "tailscale-funnel-request", "cf-connecting-ip", "true-client-ip")
 HIDDEN_OVER_LINK = ("/api/tv/status",)  # shows the TradingView webhook key: the PC only
+# PRIVATE routes (private_why): the PC itself or the Tailscale link only, never another device on the WiFi (docs/PRIVACY.md)
+PRIVATE_ROUTES = ("day/",)                                    # data/day/: calendars, shifts, the phone inbox (+ health / cards JSON there)
+PRIVATE_MONEY = ("household", "agency", "cards", "health")   # money/<name>.json with no public copy at all: 403 for anyone else
+LOOPBACK = ("127.0.0.1", "::1", "::ffff:127.0.0.1")
+LOCAL_NAMES = ("localhost", "127.0.0.1", "::1")
+OTHER_TUNNELS = ("cf-connecting-ip", "true-client-ip", "cf-ray", "fly-client-ip", "x-original-forwarded-for", "x-envoy-external-address",
+                 "x-vercel-forwarded-for", "x-nf-client-connection-ip", "x-azure-clientip")
+TAILNET = (ipaddress.ip_network("100.64.0.0/10"), ipaddress.ip_network("fd7a:115c:a1e0::/48"))   # Tailscale's address ranges
 MONEY_KEEP = ("index", "chrysos", "mercury", "sibyl", "oikos", "arbiter", "sibyl_forward")   # tools/money_publish.KEEP
 # + the household summary (tools/money_import.py, 2026-11-14): served over this PRIVATE link only, never in money_publish.KEEP
 # (the public site never gets it); no account numbers, no merchant names unless the owner turns them on
@@ -107,6 +124,55 @@ def allow_post(f) -> None:
     """engine/day_inbox.install: let ONE kind of POST through the link (f(method, path) -> bool; only /inbox/<kind>)"""
     if f not in POST_ALLOW:
         POST_ALLOW.append(f)
+
+
+def _hostname(v) -> str:
+    v = str(v or "").strip().lower()
+    if v.startswith("["):
+        return v[1:].split("]", 1)[0]
+    return v.rsplit(":", 1)[0] if v.count(":") == 1 else v
+
+
+def tailnet_ip(v) -> bool:
+    try:
+        ip = ipaddress.ip_address(str(v or "").strip().strip("[]"))
+    except ValueError:
+        return False
+    if ip.version == 6 and ip.ipv4_mapped:
+        ip = ip.ipv4_mapped
+    return any(ip in n for n in TAILNET if n.version == ip.version)
+
+
+def private_why(client, headers) -> str | None:
+    """None = this request may read a PRIVATE file; else why not, in plain words. Allowed: (1) the PC itself: a loopback client, no
+    proxy header, Host localhost (a web page that renamed itself to 127.0.0.1 - DNS rebinding - has another Host); (2) the owner's
+    Tailscale link: tailscale serve on this PC sets X-Forwarded-For to the phone's tailnet address and Tailscale-User-Login to the
+    signed-in user, Host stays <pc>.<tailnet>.ts.net (uvicorn then reports the tailnet address as the client). Refused: any other
+    device (the home WiFi), a Funnel (internet) request, another tunnel, a forwarded address outside Tailscale. Pure."""
+    h = {str(k).lower(): str(v) for k, v in (headers.items() if hasattr(headers, "items") else [])}
+    c = str(client or "").strip()
+    host = _hostname(h.get("host", ""))
+    if not proxied(h):
+        if c in LOOPBACK and host in LOCAL_NAMES:
+            return None
+        return ("private: open it on the PC itself (http://localhost:8766) or through your Tailscale link, not from another device on "
+                "the WiFi" if c not in LOOPBACK else "private: open it on the PC at http://localhost:8766")
+    if h.get("tailscale-funnel-request"):
+        return "private: never from the internet (Tailscale Funnel is refused)"
+    if any(h.get(k) for k in OTHER_TUNNELS):
+        return "private: only through your own Tailscale link, not another tunnel"
+    xff = [x.strip() for x in h.get("x-forwarded-for", "").split(",") if x.strip()]
+    if not xff or not all(tailnet_ip(x) for x in xff) or not (c in LOOPBACK or tailnet_ip(c)):
+        return "private: only from your own devices on Tailscale"
+    if not h.get("tailscale-user-login", "").strip():
+        return "private: only a device signed in to your Tailscale account"
+    if not (host.endswith(".ts.net") or host in LOCAL_NAMES):
+        return "private: open it at your https://<pc>.<tailnet>.ts.net address"
+    return None
+
+
+def _client(request) -> str:
+    return getattr(getattr(request, "client", None), "host", None) or ""
 
 
 # ------------------------------------------------------------------------------------------------ where the site is
@@ -419,6 +485,10 @@ def r_site_root():
 def r_site(rel: str, request: Request):
     dirs = site_dirs()
     built = dirs[0] if len(dirs) > 1 else None
+    low = "/".join(x for x in (rel or "").replace("\\", "/").lower().split("/") if x not in ("", "."))
+    why = private_why(_client(request), request.headers)
+    if why and low.startswith(PRIVATE_ROUTES):
+        return _J({"ok": False, "error": why}, 403)
     if rel == "home.json":
         home = read_json(os.path.join(built, "home.json")) if built else None
         lv = _live()
@@ -432,9 +502,12 @@ def r_site(rel: str, request: Request):
             return _J({"ok": False, "error": "no Kalshi feed on this PC yet"}, 404)
         return Response(raw, media_type="application/json", headers={"Cache-Control": "no-store", "X-Olympus-Source": src})
     if rel.startswith("money/"):
-        p = money_file(rel[len("money/"):])
+        p = money_file(rel[len("money/"):]) if why is None else None      # money_out = the PC's real money: private
         if p:
-            return FileResponse(p, media_type="application/json", headers={"Cache-Control": "no-cache", "X-Olympus-Source": "money_out"})
+            return FileResponse(p, media_type="application/json", headers={"Cache-Control": "no-store", "X-Olympus-Source": "money_out"})
+        if why and os.path.splitext(low[len("money/"):])[0] in PRIVATE_MONEY:
+            return _J({"ok": False, "error": why}, 403)
+        # anyone else gets the build's public (sample) copy below, like the Netlify site
     if rel.startswith("day/"):
         name = rel[len("day/"):]
         p = day_file(name)

@@ -12,7 +12,9 @@ with the money inbox (team X1): POST /inbox/{kind}; a kind is one entry of KINDS
 writes only its own file.
 
 Safety: the read-only guard of engine/live_site.py lets a proxied POST through ONLY for /inbox/<a registered kind>, and only once
-install() ran; a Tailscale Funnel (internet) request is still refused; the custom header makes a browser on another site send a
+install() ran; a Tailscale Funnel (internet) request is still refused; the route takes a post only from the PC itself or through the
+Tailscale link (live_site.private_why: never another device on the home WiFi, team Q2 2026-11-14); a body over 2 KB is refused from
+its Content-Length before it is read, and never read past 2 KB; the custom header makes a browser on another site send a
 CORS pre-flight first, which is never answered, so a web page cannot post here behind your back; 2 KB a request, 200 characters of
 text, 30 requests per 10 minutes, 5,000 lines per file. Wiring (the lead): server.py calls day_inbox.install(app) right after
 live_site.install(app, ...). Test: python -X utf8 -m tests.test_calendar_sync --only=j
@@ -145,12 +147,22 @@ def snapshot(env=None, now_s: float | None = None) -> dict:
     return snap
 
 
-def accept(kind: str, raw: bytes, content_type: str = "", headers=None, now_s: float | None = None, env=None) -> tuple[int, dict]:
-    """The whole endpoint, pure enough to test: -> (HTTP status, JSON reply). Appends one line, nothing else."""
+def accept(kind: str, raw: bytes, content_type: str = "", headers=None, now_s: float | None = None, env=None,
+           client: str | None = None) -> tuple[int, dict]:
+    """The whole endpoint, pure enough to test: -> (HTTP status, JSON reply). Appends one line, nothing else. client: the
+    request's address (the route always passes it): only the PC itself or the Tailscale link may post (live_site.private_why)."""
     now_s = time.time() if now_s is None else now_s
     h = {str(k).lower(): v for k, v in (headers or {}).items()}
     if kind not in KINDS:
         return 404, {"ok": False, "error": "no such inbox"}
+    if client is not None:
+        try:
+            from engine import live_site
+            why = live_site.private_why(client, h)
+        except Exception:  # noqa: BLE001
+            why = "private: the check could not run"
+        if why:
+            return 403, {"ok": False, "error": why}
     if str(h.get(HEADER, "")).strip() != "1":
         return 403, {"ok": False, "error": "missing the X-Olympus-Inbox: 1 header (docs/CONNECT_DAY.md has the Shortcut)"}
     if h.get("tailscale-funnel-request"):
@@ -162,7 +174,7 @@ def accept(kind: str, raw: bytes, content_type: str = "", headers=None, now_s: f
     if "json" in (content_type or "").lower() or text.startswith("{"):
         try:
             body = json.loads(text) if text else {}
-        except ValueError:
+        except (ValueError, RecursionError):
             return 400, {"ok": False, "error": "that is not JSON"}
     rec, why = KINDS[kind](body, now_s)
     if rec is None:
@@ -197,8 +209,20 @@ def install(app) -> dict:
 
     @app.post("/inbox/{kind}")
     async def r_inbox(kind: str, request: Request):
-        raw = await request.body()
-        status, out = accept(kind, raw[: MAX_BODY + 1], request.headers.get("content-type", ""), dict(request.headers))
+        client = getattr(getattr(request, "client", None), "host", None) or ""
+        try:
+            n = int(request.headers.get("content-length") or 0)
+        except ValueError:
+            n = 0
+        if n > MAX_BODY:                                     # refused before a byte is read (a 1 GB post costs nothing)
+            raw = b"x" * (MAX_BODY + 1)
+        else:
+            raw = b""
+            async for chunk in request.stream():             # never more than 2 KB in memory, whatever the client says
+                raw += chunk
+                if len(raw) > MAX_BODY:
+                    break
+        status, out = accept(kind, raw[: MAX_BODY + 1], request.headers.get("content-type", ""), dict(request.headers), client=client)
         return JSONResponse(out, status_code=status, headers={"Cache-Control": "no-store"})
 
     _S["installed"] = True
