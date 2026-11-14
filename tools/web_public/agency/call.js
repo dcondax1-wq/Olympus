@@ -22,7 +22,6 @@ async function getJSON(url, ms) {
 }
 function say(t) { $('status').textContent = t; }
 function cue(name) { try { if (O && O.cue) O.cue(name); } catch (_) { /* sound is optional */ } }
-function toast(t) { try { if (window.AGORA && window.AGORA.toast) { window.AGORA.toast(t); return; } } catch (_) { /* fall through */ } say(t); }
 
 // ---------------------------------------------------------------------------------------------------- storage (this phone only)
 function readSaved() { try { return localStorage.getItem(C.KEY); } catch (_) { return null; } }
@@ -178,6 +177,8 @@ function renderCall() {
   win.textContent = b ? b.text : w.text;
   win.className = 'win ' + (b ? (b.lock ? 'bad' : 'warn') : w.code === 'best' ? 'ok' : w.code === 'ok' ? 'warn' : 'bad');
   $('cFinder').hidden = !L.finder; $('cFinder').textContent = L.finder ? 'Lead finder: ' + L.finder : '';
+  const demo = C.safeUrl(L.demo), dl = $('cDemo');
+  if (demo) { dl.setAttribute('href', demo); dl.textContent = 'Open their preview site (' + demo.replace(/^https?:\/\//i, '').slice(0, 40) + ')'; dl.hidden = false; } else { dl.removeAttribute('href'); dl.hidden = true; }
   $('cLaw').textContent = C.stateWords(w.state, R) + (w.allParty ? ' All-party recording state: if you record, say so first (this app never records).' : '') + (w.how === 'split' ? ' Two time zones in this state: add the city or time zone for exact hours.' : '');
   const can = !b && (w.code === 'best' || w.code === 'ok');
   const conf = can && C.needsConfirm(L, now, R);

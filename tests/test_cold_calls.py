@@ -358,6 +358,7 @@ F.junk = [C.loadState('not json').leads.length, C.loadState('{"leads":"x","log":
 F.shared = C.sharedLeads(JSON.stringify({ leads: [{ business_name: 'From B1', phone: '813-555-0190', state: 'FL', category: 'bakery' }] }), R).map((x) => [x.name, x.trade]);
 // fictional numbers are never dialed
 F.tel = [C.telHref('+18135550142'), C.telHref('+18135551234'), C.isFictional('+18135550199')];
+F.url = [C.safeUrl('https://example.com/demo/taco-town'), C.safeUrl('javascript:alert(1)'), C.safeUrl('data:text/html,x'), C.safeUrl('https://x.example/a"onmouseover'), C.safeUrl(' http://ok.example/p ')];
 // the queue: a callback due first, good now, legal now, later, locked last
 const q = C.emptyState();
 const mk = (o) => { const x = C.normLead(o, R, 0); x.lineConfirmed = '2026-11-17'; q.leads.push(x); return x; };
@@ -494,6 +495,7 @@ def test_node():
           F["junk"] == [0, ["+12135550181"], "bad", "empty", None, None], F["junk"])
     check("c. team B1's agency app on the same phone: its shared leads load (a bakery is a restaurant-type trade)", F["shared"] == [["From B1", "restaurant"]], F["shared"])
     check("c. fictional 555-01xx numbers never get a tel: link; real ones do", F["tel"] == ["", "tel:+18135551234", True], F["tel"])
+    check("c. a demo-site link from the data is used only when it is plain http(s): javascript:, data: and quote tricks are dropped", F["url"] == ["https://example.com/demo/taco-town", "", "", "", "http://ok.example/p"], F["url"])
     check("c. the queue: the callback due first, good now, legal now, opens later, the DNC-listed one last", F["queue"] == ["Callback:0", "Good:1", "Legal:2", "Later:3", "Locked:9"], F["queue"])
     check("c. today's call plan in YOUR time zone (New York): restaurants now to 4, Chicago's offices 3-5:30 pm, Florida's contractors 4-6 pm, Guam's at 8 am their time = 5 pm yours",
           F["plan"] == ["restaurants 2:30 pm-4:00 pm", "local offices 3:00 pm-5:30 pm", "contractors 4:00 pm-6:00 pm", "contractors 5:00 pm-6:00 pm"], F["plan"])
@@ -543,10 +545,12 @@ def test_page():
             p.wait_for_timeout(250)
             c = p.evaluate("""() => ({ name: document.querySelector('#cName').textContent, opener: document.querySelector('#sOpener').textContent, size: parseFloat(getComputedStyle(document.querySelector('#sOpener')).fontSize),
               qs: [...document.querySelectorAll('#sQs li')].map((l) => l.textContent), dial: document.querySelector('#cDial').textContent, href: document.querySelector('#cDial').getAttribute('href'),
+              demo: document.querySelector('#cDemo').hidden ? null : document.querySelector('#cDemo').getAttribute('href'),
               win: document.querySelector('#cWin').textContent, law: document.querySelector('#cLaw').textContent, outs: [...document.querySelectorAll('#outs button')].map((b) => [b.textContent, Math.round(b.getBoundingClientRect().height)]) })""")
-            check("d. the call screen: Taco Town, the opener in big type (>= 22 px) asking for Maria, 3 questions, the Call button with the number (an example number: no tel: link)",
+            check("d. the call screen: Taco Town, the opener in big type (>= 22 px) asking for Maria, 3 questions, the Call button with the number (an example number: no tel: link), their preview site one tap away",
                   c["name"] == "Taco Town" and c["opener"].startswith("Hi, is this Maria? This is Sam Rivera with Bright Sites") and c["size"] >= 22 and len(c["qs"]) == 3
-                  and c["dial"] == "Call (813) 555-0142 (example: no real call)" and c["href"] is None and "Good time to call" in c["win"] and "Florida" in c["law"], c)
+                  and c["dial"] == "Call (813) 555-0142 (example: no real call)" and c["href"] is None and "Good time to call" in c["win"] and "Florida" in c["law"]
+                  and c["demo"] == "https://example.com/demo/taco-town", c)
             check("d. six one-tap outcomes (no answer, voicemail, callback time, interested, not interested, do not call), each at least 56 px tall",
                   [o[0] for o in c["outs"]] == ["No answer", "Voicemail", "Callback time", "Interested", "Not interested", "Do not call"] and all(o[1] >= 56 for o in c["outs"]), c["outs"])
             p.locator("#tabObj").click()

@@ -47,6 +47,8 @@ export function areaCode(e164) { const d = str(e164).replace(/^\+1/, ''); return
 /** 555-0100 to 555-0199 are the fictional numbers (the DEMO leads): never dialed. */
 export function isFictional(e164) { return /^\+1\d{3}55501\d\d$/.test(str(e164)); }
 export function telHref(e164) { return e164 && !isFictional(e164) ? 'tel:' + e164 : ''; }
+/** A web address from the data (their demo site) only when it is plain http(s): never javascript:, data: or anything else. */
+export function safeUrl(u) { const s = str(u); return /^https?:\/\/[^\s"'<>\\]+$/i.test(s) && s.length <= 300 ? s : ''; }
 
 // ---------------------------------------------------------------------------------------------------- states, cities, time zones
 export function stateCode(v, rules) {
@@ -521,8 +523,7 @@ export function queue(st, nowMs, rules) {
 export function callPlan(st, nowMs, rules, myTz) {
   const groups = {};
   for (const L of st.leads) {
-    const b = blockOf(L, st, nowMs, rules);
-    if (b && b.lock) continue;
+    if (blockOf(L, st, nowMs, rules)) continue;   // locked, resting, or already called today: not in today's plan
     const Z = zonesOf(L, rules, st.settings);
     if (!Z.zones.length) continue;
     const key = L.trade + '|' + Z.zones.join(',');
