@@ -40,7 +40,7 @@ monitoring dashboard.
 - **Card fees** (Stripe, about 2.9% + 30¢ per charge, [CheckoutPage](https://checkoutpage.com/blog/stripe-processing-fees)): $39 keeps $37.57;
   $29 keeps $27.86; $59 keeps $56.99 a month.
 - **Our time**: about 30 minutes to set up each add-on (fill the file with the client, build, deploy, one test message), then about
-  10 minutes a month (new hours, a price change). The bundle is about $228 per hour of monthly upkeep.
+  15 minutes a month for both together (new hours, a price change). The bundle is about $228 per hour of monthly upkeep.
 - **Scale**: 10 clients on the bundle = $590 a month ($570 after card fees, $6,840 a year); 25 clients = $1,475 a month.
 
 ## Front-desk chat: how it works
@@ -58,7 +58,7 @@ monitoring dashboard.
   can't place gets "not sure" + suggested questions + Call / Text / Leave my number, never a guess. 48/48 sample questions pass.
 - **Hours in the shop's own time zone** (a visitor in Tokyo sees Tampa's hours), holidays from `closed_dates`, past-midnight
   hours (5 pm-2 am), "open now until 5 pm" / "Closed · opens Tue 9 am" in the header, and an after-hours greeting.
-- **Leads**: name + phone + what they need (prefilled with their question), sent as a form post to the site's own Netlify form
+- **Leads**: name + phone + what they need (prefilled when their question named a service, a day or a place), sent as a form post to the site's own Netlify form
   with a honeypot. It is the only request the widget ever makes (the test watches every request).
 - **Phone first**: full screen on phones, sized to the visible screen above the keyboard, 16 px inputs (no iPhone zoom), 44 px
   targets, safe-area insets, reduced motion respected, Escape closes, screen-reader labels and a live log. In a shadow root, so the
