@@ -16,7 +16,8 @@ No network at all (every socket connect and urlopen raises). No browser: the pic
   g. trader planner: Letter and A4 PDFs with 16 pages at the right size, the journal keeps formulas and computed the examples, the
      risk line is in the readme, licence and listing, the example rows show no profit or loss
   h. catalogue, docs and the money test area: 5 built products, folded ideas named, docs/MONEY_MACHINES.md lists each build command,
-     tests/run_area.py runs this suite in the money area, the product folders stay under 15 MB
+     tests/run_area.py runs this suite in the money area, the product folders stay under 15 MB, build_all --zip runs on the standard
+     library alone (python -S, as on a fresh Windows PC)
     python -X utf8 -m tests.test_digital_products            (parts: a b c d e f g h, e.g. python -m tests.test_digital_products d e)
 """
 from __future__ import annotations
@@ -356,7 +357,11 @@ def part_g():
     if PdfReader:
         sizes = {}
         for size, (wmm, hmm) in B.SIZES.items():
-            r = PdfReader(os.path.join(d, f"Trader_Planner_{size}.pdf"))
+            p = os.path.join(d, f"Trader_Planner_{size}.pdf")
+            if not os.path.exists(p):
+                sizes[size] = "missing"
+                continue
+            r = PdfReader(p)
             box = r.pages[0].mediabox
             sizes[size] = (len(r.pages), round(float(box.width) / 72 * 25.4), round(float(box.height) / 72 * 25.4))
         check(f"g. the planner PDFs: 16 pages each, US Letter 216 x 279 mm and A4 210 x 297 mm ({sizes})",
@@ -401,6 +406,17 @@ def part_h():
         for base, _, files in os.walk(prod_dir(name)):
             total += sum(os.path.getsize(os.path.join(base, f)) for f in files)
     check(f"h. the 4 product folders stay small: {total / 1e6:.1f} MB (< 15 MB)", total < 15e6, total)
+    tmp = tempfile.mkdtemp(prefix="dp_std_")
+    try:
+        code = ("import sys; sys.path.insert(0, '.'); assert not [p for p in sys.path if 'packages' in p]; "
+                "from money_machines.products import build_all; build_all.main(['--zip'])")
+        r = subprocess.run([sys.executable, "-S", "-c", code], cwd=ROOT, capture_output=True, text=True, timeout=300,
+                           env=dict(os.environ, MONEY_MACHINES_OUT=tmp))
+        made = sorted(os.listdir(os.path.join(tmp, "products"))) if os.path.isdir(os.path.join(tmp, "products")) else []
+        check("h. the one owner command works with the standard library only (python -S): build_all --zip makes all 5 zips",
+              r.returncode == 0 and len(made) == 5, (r.returncode, made, r.stderr[-400:]))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
     tracked = subprocess.run(["git", "ls-files", "money_machines/out"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     check("h. no zip or output is committed (money_machines/out is ignored)", tracked == "", tracked[:200])
 
