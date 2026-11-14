@@ -14,6 +14,7 @@
   if (window.AGORA && window.AGORA.v) return;
   var d = document, root = d.documentElement, NS = 'http://www.w3.org/2000/svg';
   var framed = (function () { try { return window.top !== window; } catch (e) { return true; } })();
+  var meSrc = d.currentScript && d.currentScript.src ? d.currentScript.src : '';   // this file's own address: gate-nav.js sits next to it
   var still = function () {
     try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true; } catch (e) { /* old browser */ }
     return root.getAttribute('data-fx') === 'off';
@@ -297,6 +298,12 @@
   }
 
   window.AGORA = { v: 2, icon: icon, ICONS: Object.keys(ICONS), hydrate: hydrateIcons, chart: chart, toast: toast, sheet: sheet, state: state, pull: pull, morph: morph, shell: shell };
-  var boot = function () { try { shell(); } catch (e) { /* the page works without the shell */ } try { hydrateIcons(d); } catch (e) { /* plain labels stay */ } };
+  /* the breadcrumbs (Home > Hub > app) and "Go to" on every AGORA app (2026-11-14, docs/OLYMPUS_IA_V2.md): olympus/gate-nav.js, unless the page
+     already has its own tag or runs inside Jarvis's frame. A failed load leaves the shell's own back link. */
+  function gateNav() {
+    if (framed || window.OLYMPUS_GATE_NAV || !meSrc || root.hasAttribute('data-ag-nonav') || d.querySelector('script[src*="gate-nav.js"]')) return;
+    var s = el('script', ''); s.src = new URL('gate-nav.js?v=g2', meSrc).href; s.async = true; (d.head || d.documentElement).appendChild(s);
+  }
+  var boot = function () { try { shell(); } catch (e) { /* the page works without the shell */ } try { hydrateIcons(d); } catch (e) { /* plain labels stay */ } try { gateNav(); } catch (e) { /* the shell's back link stays */ } };
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', boot); else boot();
 })();
