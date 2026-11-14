@@ -89,6 +89,8 @@ def test_leads():
     check("a. phones: +1-970-694-2949 / 970.482.1234 ext 12 / (970) 226-1104 / 19704728333 -> one display form and E.164; a foreign number keeps its digits",
           osm.phone_parts("+1-970-694-2949;+1 970 555 0000") == ("(970) 694-2949", "+19706942949") and osm.phone_parts("970.482.1234 ext 12") == ("(970) 482-1234 ext. 12", "+19704821234")
           and osm.phone_parts("19704728333") == ("(970) 472-8333", "+19704728333") and osm.phone_parts("+44 20 7946 0958")[1] == "+442079460958" and osm.phone_parts("") == ("", ""))
+    dup = osm.address_of({"addr:housenumber": "210", "addr:street": "210 E Oak", "addr:unit": "B"}, PLACE)
+    check("a. an address where the mapper put the number in the street too reads '210 E Oak, Suite B', not '210 210 E Oak'", dup["street_line"] == "210 E Oak, Suite B", dup["street_line"])
     check("a. websites: 'www.x.com' gets http://, junk is dropped, the first of a list wins", osm.clean_url("www.allenservice.com") == "http://www.allenservice.com"
           and osm.clean_url("not a url") == "" and osm.clean_url("https://a.com;https://b.com") == "https://a.com")
     hp = H.parse("Tu-Fr 09:00-18:00; Sa 08:00-15:00")
@@ -610,7 +612,7 @@ def test_crm_page():
             with p.expect_download() as dl:
                 p.locator("#csvBtn").click()
             path = dl.value.path()
-            text = open(path, encoding="utf-8").read()
+            text = open(path, encoding="utf-8", newline="").read()
             check("d. Download CSV gives every lead with its stage (Won for the one we marked)", text.startswith("name,trade,stage") and text.count("\r\n") == 21 and ",Won," in text, text[:200])
             p.locator("#exportBtn").click()
             ex = p.evaluate("() => [document.querySelector('#ioText').value, document.querySelector('#ioMsg').textContent]")

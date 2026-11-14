@@ -261,7 +261,10 @@ def address_of(tags: dict, place: dict) -> dict:
     a["city_guess"] = not a["city"]
     a["city"] = a["city"] or place.get("city", "")
     a["state"] = a["state"] or place.get("state_code", "")
-    street = " ".join(x for x in (a["housenumber"], a["street"]) if x)
+    hn = a["housenumber"]
+    if hn and re.match(rf"^{re.escape(hn)}\b", a["street"]):
+        hn = ""                                  # a mapper put the number in the street too: '210' + '210 E Oak'
+    street = " ".join(x for x in (hn, a["street"]) if x)
     if street and a["unit"]:
         street += f", {'Suite ' + a['unit'] if a['unit'].isalnum() and len(a['unit']) < 6 else a['unit']}"
     tail = " ".join(x for x in (a["state"], a["postcode"].split("-")[0] if a["postcode"] else "") if x)

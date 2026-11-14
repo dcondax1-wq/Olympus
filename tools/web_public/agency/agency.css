@@ -34,7 +34,7 @@ html.framed #app { padding-top: 12px; }
 .tile span { display: block; margin-top: 2px; font-size: var(--ag-fs-cap); color: var(--ag-soft); }
 .ag-bar { height: 10px; } .ag-bar.green > i { background: linear-gradient(90deg, var(--ag-bronze), var(--ag-gold)); } .ag-bar > i { transition: width var(--ag-d3) var(--ag-ease); }
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line); background: var(--ag-raise); color: var(--ag-text); font: 600 var(--ag-fs-body) var(--ag-sans); text-decoration: none; }
-.btn.primary { background: linear-gradient(180deg, var(--ag-gold-hi), var(--ag-gold)); color: var(--ag-on-gold); border-color: var(--ag-line-gold); font-weight: 700; }
+.btn.primary { background-color: var(--ag-gold); background-image: linear-gradient(180deg, var(--ag-gold-hi), var(--ag-gold)); color: var(--ag-on-gold); border-color: var(--ag-line-gold); font-weight: 700; }
 .seg { display: flex; flex-wrap: wrap; gap: 8px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--ag-line); background: var(--ag-s3); color: var(--ag-soft); font: 600 var(--ag-fs-sub) var(--ag-sans); }
@@ -57,9 +57,10 @@ html.framed #app { padding-top: 12px; }
 .sub3 { margin: 4px 0 0; font: 600 var(--ag-fs-sub) var(--ag-serif); color: var(--ag-soft); }
 .flds { display: grid; gap: 10px; }
 .flds.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.flds.two > .fld:first-child { grid-column: 1 / -1; }
 .flds.three { grid-template-columns: minmax(0, 1fr); }
 .fld { display: grid; gap: 4px; min-width: 0; font-size: var(--ag-fs-foot); color: var(--ag-soft); }
-.fld input, .fld select, .fld textarea { min-height: 44px; width: 100%; padding: 0 12px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line); background: var(--ag-s3); color: var(--ag-text); font: 600 16px var(--ag-sans); }
+.fld input, .fld select, .fld textarea { min-height: 44px; width: 100%; min-width: 0; max-width: 100%; padding: 0 12px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line); background: var(--ag-s3); color: var(--ag-text); font: 600 16px var(--ag-sans); }
 .fld textarea { padding: 10px 12px; font: 500 16px/1.4 var(--ag-sans); min-height: 96px; }
 details > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--ag-soft); }
 .script { margin: 6px 0; padding: 12px 14px; border-radius: var(--ag-radius-s); background: var(--ag-s3); border-left: 3px solid var(--acc); font: 500 var(--ag-fs-lead)/1.5 var(--ag-sans); color: var(--ag-text); }

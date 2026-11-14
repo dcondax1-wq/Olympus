@@ -235,7 +235,7 @@ def page_parts(site: dict, mode: str, pages: int, page: str = "index"):
     if b.get("street_line"):
         facts.append(f'<li>{icon("pin")}{esc(b["street_line"])}</li>')
     if b.get("phone"):
-        facts.append(f'<li>{icon("phone")}<a href="{tel}" style="color:inherit">{esc(b["phone"])}</a></li>')
+        facts.append(f'<li>{icon("phone")}<a class="factlink" href="{tel}">{esc(b["phone"])}</a></li>')
     art = _read("art", site["theme"] + ".svg").strip().replace("<svg ", f'<svg role="img" aria-label="{esc(b["trade_label"])} illustration" ', 1)
     bigphone = (f'<a class="bigphone" href="{tel}"><small>Call us</small>{esc(b["phone"])}</a>' if tel and site["theme"] == "pro" else "")
     headline = esc(c["headline"])

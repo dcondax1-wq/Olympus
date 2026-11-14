@@ -1,5 +1,5 @@
 {
- "made": "2026-11-14T21:04:37",
+ "made": "2026-11-14T21:38:39",
  "city": "Fort Collins, CO",
  "leads": 20,
  "all": 501,
@@ -25,7 +25,7 @@
     "seo": 100
    },
    "ok": true,
-   "kb": 79.1,
+   "kb": 79.7,
    "package": "growth",
    "setup": 999.0,
    "monthly": 79.0
@@ -43,7 +43,7 @@
     "seo": 100
    },
    "ok": true,
-   "kb": 78.5,
+   "kb": 79.1,
    "package": "growth",
    "setup": 999.0,
    "monthly": 79.0
@@ -61,7 +61,7 @@
     "seo": 100
    },
    "ok": true,
-   "kb": 76.5,
+   "kb": 77.1,
    "package": "growth",
    "setup": 999.0,
    "monthly": 79.0

@@ -8,30 +8,30 @@
  },
  "hard_fails": [],
  "to_fix": [],
- "bytes_total": 80364,
+ "bytes_total": 80956,
  "sizes": {
-  "404.html": 19707,
+  "404.html": 19906,
   "_headers": 411,
   "favicon.svg": 259,
-  "index.html": 36860,
+  "index.html": 37054,
   "robots.txt": 26,
   "site.js": 3378,
-  "thanks.html": 19723
+  "thanks.html": 19922
  },
  "pages": [
   {
    "page": "404.html",
-   "bytes": 19707,
+   "bytes": 19906,
    "failed": []
   },
   {
    "page": "index.html",
-   "bytes": 36860,
+   "bytes": 37054,
    "failed": []
   },
   {
    "page": "thanks.html",
-   "bytes": 19723,
+   "bytes": 19922,
    "failed": []
   }
  ],
@@ -49,7 +49,7 @@
   "few files to load (the CSS is inline)",
   "focus ring and a skip link",
   "headings in order (no level skipped)",
-  "home page 36.0 KB (budget 60 KB)",
+  "home page 36.2 KB (budget 60 KB)",
   "ids are unique",
   "new-tab links have rel=noopener",
   "no inline onclick= / javascript: links (works with the strict security header)",
@@ -68,7 +68,7 @@
   "title 41 characters (10-70)",
   "utf-8 declared",
   "valid HTML: every tag closed in order",
-  "whole site 78.5 KB (budget 200 KB)"
+  "whole site 79.1 KB (budget 200 KB)"
  ],
  "mode": "demo"
 }
