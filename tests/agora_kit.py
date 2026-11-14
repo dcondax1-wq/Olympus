@@ -82,7 +82,7 @@ def static_kit(app, name, reads=(), storage=None, allow_urls=()):
           html.index("../olympus/olympus.css?v=o5") < html.index("../olympus/agora.css") < html.index(f"{app}.css") and "../olympus/themes.js?v=o5" in html
           and f'data-app="{app}"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
     check("a. AGORA: <html data-theme=\"agora\">, the a11y layer and the sound kit, the page is an ES module",
-          '<html lang="en" data-theme="agora">' in html and "../olympus/a11y.js" in html and "../olympus/sfx.js?v=s4" in html and f'<script type="module" src="{app}.js' in html)
+          re.search(r'<html lang="en" data-theme="agora"( data-oly-light)?>', html) and "../olympus/a11y.js" in html and "../olympus/sfx.js?v=s4" in html and f'<script type="module" src="{app}.js' in html)
     check(f"a. viewport-fit=cover, theme-color, manifest, icon, apple-touch-icon, lang, ONE h1 named {name}, a polite live status line",
           all(x in html for x in ("viewport-fit=cover", 'name="theme-color"', 'rel="manifest"', 'rel="icon"', "apple-touch-icon", '<html lang="en"')) and html.count("<h1") == 1
           and f">{name}</h1>" in html and 'role="status"' in html and 'aria-live="polite"' in html)

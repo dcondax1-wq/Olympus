@@ -64,8 +64,8 @@ def part_a():
           and not cold(css[css.index("/* ---- the NQ note above Home"):]))
     hero = rd("zenith_hero.js")
     check("a. the Home curve (zenith_hero.js) has no cold colour left: bronze to olive / terracotta line, gold target, marble grid", not cold(hero) and "'#9c6b3c'" in hero and "'#a3ae6b' : '#e0795a'" in hero, cold(hero))
-    check("a. no cold colour in zenith_nq.js, zenith_money.js, zenith.js, zenith.css, polish.css; the accent rgb token is gold (200,162,74)",
-          not any(cold(rd(n)) for n in ("zenith_nq.js", "zenith_money.js", "zenith.js", "zenith.css", "polish.css")) and "--zn-accent-rgb:200,162,74" in css and "109,124,255" not in css,
+    check("a. no cold colour in zenith_nq.js, zenith_money.js, zenith.js, zenith.css, polish.css; the accent rgb token is gold (200,162,74; a theme slot's fallback)",
+          not any(cold(rd(n)) for n in ("zenith_nq.js", "zenith_money.js", "zenith.js", "zenith.css", "polish.css")) and "--zn-accent-rgb:var(--oly-th-a8-rgb, 200,162,74)" in css and "109,124,255" not in css,
           {n: cold(rd(n))[:3] for n in ("zenith_nq.js", "zenith_money.js", "zenith.js", "zenith.css", "polish.css")})
     fb = idx[idx.index("function reactorFb("):idx.index("function reactorFb(") + 2600]
     sp = idx[idx.index("const cv = $('#spCv')"):idx.index("const cv = $('#spCv')") + 3200]

@@ -212,7 +212,7 @@ console.log(JSON.stringify(out));
     check("f. never blank: the three tiles are skeletons in the page itself (before any script), aria-busy, and a Refresh button for those who cannot pull",
           home.count('class="tile sk"') == 3 and 'id="hfirst" role="group" aria-label="What matters now" aria-busy="true"' in home and 'id="hRefresh" data-hc="refresh"' in home and 'id="ptr"' in home)
     css = read(JV, "jarvis.css")
-    v2 = css[css.index("JARVIS HOME v2"):]
+    v2 = css[css.index("JARVIS HOME v2"):].split("style themes (olympus/themes.js 'style'")[0]   # the style looks' layer (only under data-oly-style) is not Jarvis's own look
     check("f. CSS: 44 px taps on the new parts, focus rings, 200-450 ms ease-out, everything still with reduced motion, no glow / blur / neon",
           all(x in v2 for x in (".dgate { position: relative; min-width: 0; min-height: 44px", "min-height: 48px", ".hv-btn { min-height: 44px", ".tile:focus-visible", "@media (prefers-reduced-motion: reduce)"))
           and not re.search(r"blur\(|text-shadow|filter:", v2) and set(re.findall(r"(?:transition|animation):[^;]*?(\d?\.\d+)s", v2)) <= {".2", ".25", ".45", ".9", "1.5"}, sorted(set(re.findall(r"(?:transition|animation):[^;]*?(\d?\.\d+)s", v2))))
