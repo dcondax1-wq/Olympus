@@ -492,6 +492,17 @@ def part_g():
     check("g. ... and a 30-day plan with daily numbers (leads, dials, talks, demos, closes) adding up to the first $1,000 MRR, its assumptions said out loud",
           all(x in plan for x in ("Leads added", "Dials", "Owner talks", "Demo links sent", "New clients", "**Total**", "7 x $149", "$1,043", "assumptions, not facts"))
           and 7 * 149 >= 1000)
+    wp = os.path.join(ROOT, "research", "writeups", "affiliate-income-2026-11-14.md")
+    wt = open(wp, encoding="utf-8").read() if os.path.isfile(wp) else ""
+    from tools import writeups_index as WI
+    meta = WI.front(wt) if wt else {}
+    check("g. the affiliate write-up: front matter the index reads (title, family, date, status info), the six firms, self-referral and own-results "
+          "rules, the FTC disclosure rules, the $500-a-month maths, a plain disclosure, dated sources",
+          meta.get("date") == "2026-11-14" and WI.verdict(meta.get("status")) == "info" and meta.get("title") and meta.get("summary")
+          and all(x in wt for x in ("MyFundedFutures", "Lucid", "Topstep", "Apex", "FundedNext", "Tradeify", "Self-referral", "FTC", "clearly and conspicuously",
+                                    "$500 a month", "Purchases a month for $500", "I get paid a commission", "## Sources (searched 2026-11-14)")))
+    check("g. ... and no promotion copy: no 'guaranteed', no 'easy money', no backtest figure (PF / $ a month of the bot) used to sell",
+          not re.search(r"guarantee|easy money|risk[- ]free|\bPF\s*\d", wt, re.I))
     fx = json.dumps([load("clients.json"), load("business.json"), load("ledger.json")])
     check("g. the fixtures are made up: example.com / .example addresses and 555 phone numbers only",
           all(e.endswith(".example") or e.endswith("example.com") for e in re.findall(r"[\w.+-]+@([\w.-]+)", fx)) and all("555" in ph for ph in re.findall(r"\(\d{3}\) \d{3}-\d{4}", fx)))
