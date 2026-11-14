@@ -706,6 +706,40 @@ def test_node():
           not B["has"] and J["tiles"][0]["value"] == "b x /b" and len(J["tiles"][0]["sub"]) == 120 and J["tiles"][0]["lvl"] == "" and J["areas"][0]["cards"][0]["rows"][0]["pct"] == 100, J["tiles"][0])
     check("i. the connect lines on the phone are the PC's own words (me.js CONNECT == tools/me_hub.py CONNECT)", O["connect"] == me_hub.CONNECT,
           {k: (O["connect"].get(k), me_hub.CONNECT.get(k)) for k in me_hub.CONNECT if O["connect"].get(k) != me_hub.CONNECT.get(k)})
+    # Jarvis, the whole way (router + skills.handle, the copilot and the safety layer included), reading me/health.json
+    hp = os.path.join(TMP, "health.json")
+    with open(hp, "w", encoding="utf-8") as fh:
+        json.dump(full_inputs()["health"], fh)
+    r = subprocess.run([exe, "--input-type=module", "-e", JARVIS, os.path.join(WEB, "jarvis", "skills.js"), hp, str(NOW * 1000)], capture_output=True, text=True, timeout=120,
+                       env={**os.environ, "TZ": "America/New_York"})
+    try:
+        A = json.loads(r.stdout.strip().splitlines()[-1])
+    except (ValueError, IndexError):
+        check("i. the Jarvis harness ran", False, (r.stdout[-300:], r.stderr[-600:]))
+        return
+    hj = full_inputs()["health"]["jarvis"]
+    check("i. Jarvis: 'how did I sleep', 'steps this week', 'am I recovered' answer from me/health.json (the PC's lines, with the source and its age)",
+          [a["intent"] for a in A["with"]] == ["health_sleep", "health_steps", "health_recovered"] and A["with"][0]["text"].startswith(hj["sleep"])
+          and A["with"][1]["text"].startswith(hj["steps_week"]) and A["with"][2]["text"].startswith(hj["recovered"])
+          and all("me/health.json (your Apple Watch), " in a["text"] for a in A["with"]), A["with"])
+    check("i. Jarvis without the file (the public site): 'I don't have that', nothing invented", all(a["missing"] and a["text"].startswith("I don't have that") and "steps" not in a["text"].split(":")[0] for a in A["without"]),
+          A["without"])
+
+
+JARVIS = r"""
+import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
+const SK = await import(pathToFileURL(process.argv[1]).href);
+const doc = JSON.parse(fs.readFileSync(process.argv[2], 'utf8')), NOW = Number(process.argv[3]);
+const store = new Map(), storage = { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, x) => store.set(k, String(x)), removeItem: (k) => store.delete(k) };
+const mk = (S) => SK.createSkills({ getSources: async () => S, storage, now: () => NOW, apps: () => [] });
+const qs = ['how did I sleep', 'how many steps this week', 'am I recovered'];
+const out = { with: [], without: [] };
+const a = mk({ health: doc, at: { health: NOW - 120000 } }), b = mk({ at: {} });
+for (const q of qs) { const r = await a.handle(q, null, { now: NOW }); out.with.push(r ? { intent: r.intent, text: r.text, missing: !!r.missing } : { intent: null, text: '' }); }
+for (const q of qs) { const r = await b.handle(q, null, { now: NOW }); out.without.push(r ? { intent: r.intent, text: r.text, missing: !!r.missing } : { intent: null, text: '', missing: false }); }
+console.log(JSON.stringify(out));
+"""
 
 
 # ------------------------------------------------------------------------------------------------ j. the browser
