@@ -407,7 +407,7 @@ def test_connect(tmp, led):
     import money_publish as MP  # noqa: E402
     ls_src = open(os.path.join(ROOT, "engine", "live_site.py"), encoding="utf-8").read()
     check("i. the PC's private link (engine/live_site.py) serves money/household.json from money_out/; tools/money_publish.py (the public site) never copies it",
-          'MONEY_KEEP = MONEY_KEEP + ("household",)' in ls_src and "household" not in MP.KEEP)
+          re.search(r'MONEY_KEEP = MONEY_KEEP \+ \("household",', ls_src) is not None and "household" not in MP.KEEP)   # + "agency" since B6 (2026-11-14)
     try:
         from engine import live_site as LS
         mo = os.path.join(tmp, "mo")
