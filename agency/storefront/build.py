@@ -39,6 +39,7 @@ ZIP_PATH = DIST / "storefront.zip"
 CONFIG = HERE / "config.json"                   # the storefront's own words + fallbacks (tracked: Claude edits it, never the PC)
 SHARED_CONFIG = HERE.parent / "config.json"     # agency/config.json: the owner's own copy, kept on the PC only (gitignored by team B1)
 SHARED_EXAMPLE = HERE.parent / "config.example.json"   # agency/config.example.json: team B1's committed placeholders
+LOCAL_CONFIG = HERE / "config.local.json"       # the PC-only fallback when agency/config.json cannot be made safely (gitignored here)
 SHARED_KEYS = ("agency_name", "city", "phone", "email", "brand_color")
 # where each shared value can sit: the flat names first, then team B1's nested ones
 SHARED_PATHS = {
@@ -270,7 +271,8 @@ def normalize(c: dict, shared_from: str = "", sources: dict | None = None) -> di
             "shared_from": shared_from, "sources": sources or {}}
 
 
-def load_config(path: Path = CONFIG, shared_path: Path | None = SHARED_CONFIG, example_path: Path | None = SHARED_EXAMPLE) -> dict:
+def load_config(path: Path = CONFIG, shared_path: Path | None = SHARED_CONFIG, example_path: Path | None = SHARED_EXAMPLE,
+                local_path: Path | None = LOCAL_CONFIG) -> dict:
     """the storefront config, with the agency-wide values on top.
 
     For each shared value (agency_name, owner_name, city, phone, email, brand_color, site_url) the first REAL value wins, in
@@ -280,25 +282,27 @@ def load_config(path: Path = CONFIG, shared_path: Path | None = SHARED_CONFIG, e
     they have any. A "storefront": {...} block in the owner's copy overrides any storefront key (booking_url, legal_reviewed ...)."""
     raw = load_json(path, "config.json")
     owner = load_json(shared_path, "agency/config.json") if shared_path and Path(shared_path).exists() else {}
+    local = load_json(local_path, "config.local.json") if local_path and Path(local_path).exists() else {}
     example = load_json(example_path, "agency/config.example.json") if example_path and Path(example_path).exists() else {}
-    for k, v in (owner.get("storefront") or {}).items():
-        raw[k] = {**raw[k], **v} if isinstance(v, dict) and isinstance(raw.get(k), dict) else v
+    for d in (local, owner):                               # the owner's copy wins over the local fallback
+        for k, v in (d.get("storefront") or {}).items():
+            raw[k] = {**raw[k], **v} if isinstance(v, dict) and isinstance(raw.get(k), dict) else v
     sources = {}
     for key, paths in SHARED_PATHS.items():
-        cands = [("agency/config.json", dig(owner, *paths)), ("storefront config.json", raw.get(key)),
-                 ("agency/config.example.json", dig(example, *paths))]
+        cands = [("agency/config.json", dig(owner, *paths)), ("config.local.json", dig(local, *paths)),
+                 ("storefront config.json", raw.get(key)), ("agency/config.example.json", dig(example, *paths))]
         present = [(n, v) for n, v in cands if v not in (None, "")]
         real = [(n, v) for n, v in present if not is_placeholder(v)]
         if real or present:
             src, val = (real or present)[0]
             raw[key] = val
             sources[key] = src
-    for name, d in (("agency/config.json", owner), ("agency/config.example.json", example)):
+    for name, d in (("agency/config.json", owner), ("config.local.json", local), ("agency/config.example.json", example)):
         if isinstance(d.get("packages"), list) and d["packages"]:
             raw["packages"] = merge_packages(raw.get("packages") or [], d["packages"])
             sources["packages"] = name
             break
-    files = {"agency/config.json": shared_path, "agency/config.example.json": example_path}
+    files = {"agency/config.json": shared_path, "config.local.json": local_path, "agency/config.example.json": example_path}
     used = sorted({v for v in sources.values() if v in files})
     return normalize(raw, ", ".join(str(files[u]) for u in used), sources)
 
@@ -313,23 +317,31 @@ def git_ignored(p: Path):
     return True if r.returncode == 0 else False if r.returncode == 1 else None
 
 
-def ensure_owner_copy(path: Path = SHARED_CONFIG, example: Path = SHARED_EXAMPLE) -> bool:
-    """the first build on the PC makes agency/config.json (the owner's one file), like the agency tools do. True = made now.
-    Only where git ignores that path: a tracked file edited on the PC would stop the bot's auto-update."""
-    if path.exists() or git_ignored(path) is False:
-        return False
-    if example.exists():
+def ensure_owner_copy(path: Path = SHARED_CONFIG, example: Path = SHARED_EXAMPLE, local: Path | None = LOCAL_CONFIG):
+    """the first build on the PC makes the owner's one file; returns the file made now, else None.
+    agency/config.json (from team B1's example, like the agency tools do) where git ignores that path; otherwise the
+    PC-only agency/storefront/config.local.json (ignored by this folder's .gitignore). Never a tracked file: one edited on
+    the PC would stop the bot's auto-update."""
+    if path.exists() or (local is not None and local.exists() and git_ignored(path) is False):
+        return None
+    target = path if git_ignored(path) is not False else local
+    if target is None or (git_ignored(target) is False):
+        return None
+    if target == path and example.exists():
         shutil.copyfile(example, path)
-    else:
-        own = load_json(CONFIG, "config.json")
-        path.write_text(json.dumps({
-            "_read_me": "YOUR AGENCY IN ONE FILE (kept on this PC only). Change every YOUR ... value, save, then run: python agency/storefront/build.py",
-            "agency": {"name": own.get("agency_name", "YOUR AGENCY"), "your_name": own.get("owner_name", "YOUR NAME"),
-                       "phone": own.get("phone", ""), "email": own.get("email", ""), "website": own.get("site_url", "")},
-            "search": {"city": own.get("city", "YOUR CITY")},
-            "brand_color": own.get("brand_color", "coral"),
-            "storefront": {"booking_url": own.get("booking_url", ""), "legal_reviewed": False}}, indent=2) + "\n", encoding="utf-8")
-    return True
+        return path
+    own = load_json(CONFIG, "config.json")
+    target.write_text(json.dumps({
+        "_read_me": "YOUR AGENCY IN ONE FILE (kept on this PC only, never uploaded). Change every YOUR ... value, save, then run: "
+                    "python agency/storefront/build.py",
+        "agency": {"name": own.get("agency_name", "YOUR AGENCY"), "your_name": own.get("owner_name", "YOUR NAME"),
+                   "phone": own.get("phone", ""), "email": own.get("email", ""), "website": own.get("site_url", "")},
+        "search": {"city": own.get("city", "YOUR CITY")},
+        "brand_color": own.get("brand_color", "coral"),
+        "packages": [{"id": p.get("id"), "name": p.get("name"), "setup": p.get("setup_usd"), "monthly": p.get("monthly_usd")}
+                     for p in own.get("packages") or []],
+        "storefront": {"booking_url": own.get("booking_url", ""), "legal_reviewed": False}}, indent=2) + "\n", encoding="utf-8")
+    return target
 
 
 # ------------------------------------------------------------------------------------------------ icons (own simple strokes)
@@ -896,7 +908,7 @@ def main(argv=None) -> int:
             for w in res["warnings"]:
                 print("  ! " + w)
             return 0
-        made = False if args.out else ensure_owner_copy()
+        made = None if args.out else ensure_owner_copy()
         out = Path(args.out).resolve() if args.out else DIST / "site"
         res = build(out, args.preset)
         if not args.out:
@@ -906,13 +918,13 @@ def main(argv=None) -> int:
         if not args.out:
             print(f"Zip for Netlify Drop: {ZIP_PATH}  ({ZIP_PATH.stat().st_size // 1024} KB)")
         if made:
-            print(f"Made {SHARED_CONFIG}: put your details in it (agency name, phone, email, city, prices), save, then run this again.")
+            print(f"Made {made}: put your details in it (agency name, phone, email, city, prices), save, then run this again.")
         elif res["shared_from"]:
             print(f"Your details come from {res['shared_from']}")
         for w in res["warnings"]:
             print("  ! " + w)
         if res["placeholders"]:
-            where = SHARED_CONFIG if SHARED_CONFIG.exists() else CONFIG
+            where = next((p for p in (SHARED_CONFIG, LOCAL_CONFIG) if p.exists()), CONFIG)
             print(f"Still placeholders (edit {where}):")
             for p in res["placeholders"]:
                 print("  - " + p)

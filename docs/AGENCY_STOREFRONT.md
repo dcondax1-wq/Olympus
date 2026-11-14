@@ -59,7 +59,7 @@ website is marked "a perfect lead for a free demo").
 | File | What it is |
 |---|---|
 | `config.json` | The storefront's words and fallbacks (tracked: Claude edits it in the chat, never the PC). Top-level shared keys `agency_name`, `city`, `phone`, `email`, `brand_color` (+ owner_name, state, service_area, hours, texts_ok, booking_url, site_url, legal_name, founded, legal_reviewed), then `offer`, `packages` (3), `addons`, `faq`, `testimonials`. Text may use `{city}`, `{agency}`, `{from_setup}`, `{from_monthly}`, `{demo_days}`, `{launch_days}`, `{reply_time}`, `{phone}`, `{email}`, `{service_area}`; `*word*` in the headline is the serif accent. |
-| `build.py` | config + `src/` + `examples/` -> `dist/site/` + `dist/storefront.zip` (both gitignored, deterministic, index.html at the root). The first build on the PC makes `agency/config.json` from team B1's example when git ignores that path. `--serve` previews on http://localhost:8790 (form posts print to the console and land on thanks.html), `--check` says whether the config builds (writes nothing), `--preset`, `--out DIR`. Standard library only. Stops with a plain message (line number for a JSON typo). |
+| `build.py` | config + `src/` + `examples/` -> `dist/site/` + `dist/storefront.zip` (both gitignored, deterministic, index.html at the root). The first build on the PC makes the owner's one file: `agency/config.json` from team B1's example when git ignores that path (B1's `.gitignore`), otherwise the PC-only `agency/storefront/config.local.json` (ignored by this folder), never a tracked file. `--serve` previews on http://localhost:8790 (form posts print to the console and land on thanks.html), `--check` says whether the config builds (writes nothing), `--preset`, `--out DIR`. Standard library only. Stops with a plain message (line number for a JSON typo). |
 | `src/pages/*.html`, `src/partials/*.html` | The page templates: `{{x}}` escaped, `{{{x}}}` raw (blocks built in build.py), `{{> partial}}`. Each page starts with `<!--page {"title", "description", "nav"} -->`. |
 | `src/assets/site.css`, `site.js` | One stylesheet (the three `[data-preset]` palettes live only here; `build.css_presets()` reads them), one small script (menu, `?preset=`, `?plan=`, the self-check scoring, one-tap send). Both fingerprinted at build (`site.<hash>.css`), CSS minified. |
 | `src/quiz.json` | The 10 self-check questions (weights add up to 100, "not sure" counts half). |
@@ -77,9 +77,9 @@ Team B1 keeps the owner's details in `agency/config.json` (made from the committ
 PC only) in a nested format: `agency.name`, `agency.your_name`, `agency.phone`, `agency.email`, `agency.website`,
 `search.city`, `packages[].id/name/setup/monthly/includes`. `build.load_config()` reads that format and the flat names the
 lead asked for (`agency_name`, `city`, `phone`, `email`, `brand_color`/`brand_colour`, at the top level or under `agency`).
-For each shared value the first REAL value wins: `agency/config.json` > `agency/storefront/config.json` >
-`agency/config.example.json`; a placeholder (YOUR ..., a 555-01xx number, an example email) never hides a real value. Plans
-come from the owner's copy (else B1's example): names, prices and the `includes` bullets as they are (the storefront then
+For each shared value the first REAL value wins: `agency/config.json` > `agency/storefront/config.local.json` (the fallback
+when B3 lands before B1) > `agency/storefront/config.json` > `agency/config.example.json`; a placeholder (YOUR ..., a
+555-01xx number, an example email) never hides a real value. Plans come from the owner's copy (else B1's example): names, prices and the `includes` bullets as they are (the storefront then
 drops its own page / edit lines so nothing contradicts the pitch); a plan removed there drops out here. A `"storefront": {}`
 block in the owner's copy overrides any storefront key (`booking_url`, `legal_reviewed`, `offer`, ...). The state is taken
 from "City, ST" when it is still a placeholder; a bare `youragency.com` website becomes `https://youragency.com`.

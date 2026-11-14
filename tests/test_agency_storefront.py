@@ -139,8 +139,13 @@ def parse(text: str) -> Doc:
     return d
 
 
+def repo_cfg() -> dict:
+    """the storefront config alone: a real agency/config.json on the PC never changes what these tests expect"""
+    return build.load_config(shared_path=None, example_path=None, local_path=None)
+
+
 def build_to(tmp: Path, **kw) -> dict:
-    return build.build(tmp, **kw)
+    return build.build(tmp, cfg=repo_cfg(), **kw)
 
 
 class Rec(http.server.SimpleHTTPRequestHandler):
@@ -426,7 +431,7 @@ def part_a(tmp: Path):
     shared = tmp / "shared.json"
     shared.write_text(json.dumps({"agency_name": "Brightside Web Co", "city": "Tampa", "phone": "(813) 555-0199", "email": "hi@brightside.co",
                                   "brand_colour": "#7C3AED", "other_team_key": 1}))
-    cfg = build.load_config(shared_path=shared, example_path=nope)
+    cfg = build.load_config(shared_path=shared, example_path=nope, local_path=nope)
     r2 = build.build(tmp / "site2", cfg=cfg)
     idx = (tmp / "site2" / "index.html").read_text()
     css2 = (tmp / "site2" / next(f for f in r2["files"] if f.endswith(".css"))).read_text()
@@ -446,7 +451,7 @@ def part_a(tmp: Path):
                                  "packages": [{"id": "starter", "name": "Starter", "setup": 399, "monthly": 39, "includes": ["The one-page site you saw", "Hosting"]},
                                               {"id": "growth", "name": "Growth", "setup": 899, "monthly": 69, "includes": ["Everything in Starter", "5 pages"]}],
                                  "storefront": {"booking_url": "https://cal.com/peak/15", "legal_reviewed": True}}))
-    c5 = build.load_config(shared_path=owner, example_path=example)
+    c5 = build.load_config(shared_path=owner, example_path=example, local_path=nope)
     build.build(tmp / "site5", cfg=c5)
     i5, p5, t5 = ((tmp / "site5" / f).read_text() for f in ("index.html", "pricing.html", "terms.html"))
     check("a. team B1's nested format works too: agency.name, agency.phone, agency.email, search.city, agency.website, packages setup/monthly",
@@ -456,22 +461,29 @@ def part_a(tmp: Path):
           "The one-page site you saw" in p5 and "30 min of edits" not in p5 and 'id="plan-pro"' not in p5 and "Free with Growth" in p5, re.findall(r"Free with [^<]+", p5))
     check("a. ... the state comes from 'Fort Collins, CO', the 'storefront' block overrides storefront keys (booking link, legal reviewed)",
           "laws of CO" in t5 and "https://cal.com/peak/15" in i5 + p5 + (tmp / "site5" / "contact.html").read_text() and "Template: edit before going live" not in t5)
-    c6 = build.load_config(shared_path=nope, example_path=example)
+    c6 = build.load_config(shared_path=nope, example_path=example, local_path=nope)
     check("a. a placeholder never hides a real value: B1's example ('YOUR AGENCY', you@example.com) leaves the storefront's own values; without any shared file the storefront config is used",
           c6["agency"]["name"] == "YOUR AGENCY" and c6["agency"]["email"] == "hello@your-agency.example" and c6["sources"]["packages"] == "agency/config.example.json"
-          and build.load_config(shared_path=nope, example_path=nope)["agency"]["name"] == "YOUR AGENCY", c6["sources"])
-    plain = SF / "owner-copy-test.json"                       # not ignored by git: must not be made
-    ignored = SF / "dist" / "owner-copy-test.json"            # dist/ is ignored: may be made
-    made_plain = build.ensure_owner_copy(plain, example)
-    ignored.parent.mkdir(exist_ok=True)
-    made_ignored = build.ensure_owner_copy(ignored, example)
-    ok_copy = not made_plain and not plain.exists() and made_ignored and json.loads(ignored.read_text())["agency"]["name"] == "YOUR AGENCY"
-    for p in (plain, ignored):
-        if p.exists():
-            p.unlink()
-    check("a. the owner's copy (agency/config.json, from B1's example) is only ever made where git ignores it: a tracked file edited "
-          "on the PC would stop the bot's auto-update", ok_copy, (made_plain, made_ignored))
-    cfg3 = build.load_config(shared_path=None)
+          and build.load_config(shared_path=nope, example_path=nope, local_path=nope)["agency"]["name"] == "YOUR AGENCY", c6["sources"])
+    probe = [SF / "owner-copy-test.json", SF / "local-copy-test.json", SF / "dist" / "owner-copy-test.json", SF / "dist" / "local-copy-test.json"]
+    (SF / "dist").mkdir(exist_ok=True)
+    try:
+        none_made = build.ensure_owner_copy(probe[0], example, probe[1])       # neither path is ignored: nothing may be written
+        local_made = build.ensure_owner_copy(probe[0], example, probe[3])      # agency/config.json not ignored yet: the ignored local file
+        owner_made = build.ensure_owner_copy(probe[2], example, probe[3])      # agency/config.json ignored (B1 merged): a copy of B1's example
+        ok_copy = (none_made is None and not probe[0].exists() and not probe[1].exists() and local_made == probe[3]
+                   and json.loads(probe[3].read_text())["agency"]["name"] == "YOUR AGENCY" and owner_made == probe[2]
+                   and json.loads(probe[2].read_text()) == json.loads(example.read_text()))
+        lc = build.load_config(shared_path=nope, example_path=nope, local_path=probe[3])
+        ok_local = lc["sources"].get("packages") == "config.local.json" and lc["agency"]["name"] == "YOUR AGENCY"
+    finally:
+        for p in probe:
+            if p.exists():
+                p.unlink()
+    check("a. the owner's one file is only ever made where git ignores it (a tracked file edited on the PC stops the bot's auto-update): "
+          "agency/config.json from B1's example once B1's .gitignore covers it, else the PC-only agency/storefront/config.local.json",
+          ok_copy and ok_local, (none_made, local_made, owner_made))
+    cfg3 = repo_cfg()
     cfg3["agency"]["texts_ok"] = False
     cfg3["agency"]["legal_reviewed"] = True
     cfg3["agency"]["booking_url"] = "https://cal.com/example/15min"
@@ -480,7 +492,7 @@ def part_a(tmp: Path):
     check("a. texts_ok false removes every 'Send a text' link; legal_reviewed true removes the template note; a booking link opens in a new tab",
           "sms:" not in allt3 and "Template: edit before going live" not in allt3
           and 'href="https://cal.com/example/15min" target="_blank" rel="noopener"' in allt3, re.findall(r"sms:[^\"]+", allt3)[:2])
-    bad_cfg = build.load_config(shared_path=None)
+    bad_cfg = repo_cfg()
     bad_cfg["packages"][0]["setup_usd"] = "lots"
     try:
         build.build(tmp / "site4", cfg=bad_cfg)
@@ -491,7 +503,7 @@ def part_a(tmp: Path):
     typo = tmp / "typo.json"
     typo.write_text('{\n  "agency_name": "X",\n  "city": "Y"\n  "phone": "1"\n}')
     try:
-        build.load_config(path=typo, shared_path=None)
+        build.load_config(path=typo, shared_path=None, example_path=None, local_path=None)
         said = ""
     except build.BuildError as e:
         said = str(e)
@@ -501,7 +513,7 @@ def part_a(tmp: Path):
     check("a. build.py --check says the config builds (and writes nothing)", build.main(["--check"]) == 0)
     z1, z2 = tmp / "a.zip", tmp / "b.zip"
     build.make_zip(site, z1)
-    build.build(tmp / "again")
+    build_to(tmp / "again")
     build.make_zip(tmp / "again", z2)
     names = zipfile.ZipFile(z1).namelist()
     check("a. the zip has index.html at its root (Netlify Drop serves the root), every page, no build folders, under 1.5 MB",
@@ -622,7 +634,7 @@ def part_b(tmp: Path):
         check("b. batch mode (cold leads) obeys robots.txt: a site that asks tools to stay away is skipped, with a plain note",
               g2[0]["score"] is None and "robots.txt" in g2[0]["note"], g2)
         demo_site = tmp / "demo_site"
-        build.build(demo_site)
+        build_to(demo_site)
         shutil.copytree(SF / "mockups", demo_site / "_mockups")
         httpd2, url2 = serve(demo_site)
         demos = {}
@@ -680,7 +692,7 @@ def part_c(tmp: Path):
     from playwright.sync_api import sync_playwright
     from tests import browser_kit as BK
     site = tmp / "bsite"
-    build.build(site)
+    build_to(site)
     Rec.posts = []
     hd = (site / "_headers").read_text()
     csp = re.search(r"Content-Security-Policy:\s*(.+)", hd).group(1).strip()
