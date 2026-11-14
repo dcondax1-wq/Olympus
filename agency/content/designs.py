@@ -365,7 +365,9 @@ def initials(name: str) -> str:
 
 
 FIT_JS = """(function(){function fit(e){var mx=+e.getAttribute('data-max'),mn=+(e.getAttribute('data-min')||26),ln=+(e.getAttribute('data-lines')||3),s=mx;
-e.style.fontSize=s+'px';function bad(){var lh=parseFloat(getComputedStyle(e).lineHeight)||s;return e.getBoundingClientRect().height>lh*ln+3||e.scrollWidth>e.clientWidth+2;}
+var box=e.closest('[data-box]');e.style.fontSize=s+'px';
+function bad(){var lh=parseFloat(getComputedStyle(e).lineHeight)||s;return e.getBoundingClientRect().height>lh*ln+3||e.scrollWidth>e.clientWidth+2||
+(box&&box.scrollHeight>box.clientHeight+2);}
 while(s>mn&&bad()){s-=2;e.style.fontSize=s+'px';}}
 function go(){var a=document.querySelectorAll('[data-max]');for(var i=0;i<a.length;i++)fit(a[i]);document.documentElement.setAttribute('data-ready','1');}
 if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){requestAnimationFrame(go);});}else{go();}})();"""
@@ -452,7 +454,7 @@ color:var(--ink);opacity:.075;transform:rotate(-14deg)}}
 .L-bold .pat{{background:{trade_pattern(b['motif'], b['vars']['line_d'], 1)};opacity:.45;-webkit-mask:linear-gradient(90deg,#000,transparent 55%);mask:linear-gradient(90deg,#000,transparent 55%)}}"""
     body = (f'<div class="pat"></div><div class="wm">{icon(p["icon"], stroke=2.4)}</div>'
             f'<div class="lab"><span class="label chip">{esc(p["label"])}</span></div>'
-            f'<div class="wrap">{_hl(p["headline"], int((250 if st else 205) * s), 4 if st else 3)}<div class="rule"></div>'
+            f'<div class="wrap" data-box>{_hl(p["headline"], int((250 if st else 205) * s), 4 if st else 3)}<div class="rule"></div>'
             f'{_sub(p["sub"], 46 if st else 38, 4 if st else 3)}</div>{foot(b)}')
     return css, body, "dark"
 
@@ -475,7 +477,7 @@ background:var(--acc);color:var(--onacc);display:flex;align-items:center;justify
 .L-split .b .sub{{color:var(--pink2)}}
 .L-split .foot{{color:var(--pink)}}"""
     body = (f'<div class="top"></div><div class="bot"></div><div class="band"></div>'
-            f'<div class="t"><span class="label" style="color:var(--accd)">{esc(p["label"])}</span>'
+            f'<div class="t" data-box><span class="label" style="color:var(--accd)">{esc(p["label"])}</span>'
             f'{_hl(p["headline"], int((230 if st else 168) * s), 4 if st else 3)}</div>'
             f'<div class="disc">{icon(p["icon"], stroke=3)}</div>'
             f'<div class="b">{_sub(p.get("sub_long") or p["sub"], 46 if st else 36, 5 if st else 3)}'
@@ -496,7 +498,7 @@ font-size:{int((560 if st else 400) * min(1.0, s + .12))}px;line-height:.82;colo
 .L-tip .foot{{color:var(--ink);bottom:{250 if st else 35}px}}
 .L-tip .pat{{background:{trade_pattern(b['motif'], b['vars']['line_p'], 1)};opacity:.55;-webkit-mask:linear-gradient(180deg,#000,transparent 40%);mask:linear-gradient(180deg,#000,transparent 40%)}}"""
     body = (f'<div class="pat"></div><div class="num">{num}</div><div class="lab"><span class="label chip">{esc(p["label"])}</span></div>'
-            f'<div class="wrap">{_hl(p["headline"], int((200 if st else 150) * s), 3)}<div class="rule"></div>{_sub(p["sub"], 44 if st else 35, 4 if st else 3)}</div>'
+            f'<div class="wrap" data-box>{_hl(p["headline"], int((200 if st else 150) * s), 3)}<div class="rule"></div>{_sub(p["sub"], 44 if st else 35, 4 if st else 3)}</div>'
             f'<div class="band"></div>{foot(b)}')
     return css, body, "light"
 
@@ -518,7 +520,7 @@ def lay_quote(p, b, fmt):
     else:
         inner = (f'<div class="stars">{stars}</div>{_hl(p["headline"], int((220 if st else 160) * _scale(b)), 3)}'
                  f'{_sub(p["sub"], 44 if st else 36, 4 if st else 3)}<div class="who">{esc(p["label"])}</div>')
-    body = f'<div class="qm">{icon("quote")}</div><div class="wrap">{inner}</div>{foot(b)}'
+    body = f'<div class="qm">{icon("quote")}</div><div class="wrap" data-box>{inner}</div>{foot(b)}'
     return css, body, "dark"
 
 
@@ -541,7 +543,7 @@ box-shadow:0 30px 60px -30px rgba(0,0,0,.45)}}
 .L-offer .tk .sub{{color:var(--ink2)}}
 .L-offer .tk .hl em{{color:var(--accd)}}
 .L-offer .foot{{color:var(--pink)}}"""
-    body = (f'<div class="pat"></div><div class="tk"><div class="in"><span class="label" style="color:var(--accd)">{esc(p["label"])}</span>'
+    body = (f'<div class="pat"></div><div class="tk"><div class="in" data-box><span class="label" style="color:var(--accd)">{esc(p["label"])}</span>'
             f'{_hl(p["headline"], int((220 if st else 160) * s), 3)}{_sub(p["sub"], 42 if st else 33, 4 if st else 3)}</div><div class="perf"></div>'
             f'<div class="stub"><span class="cta">{esc(cta)}</span>{icon(p["icon"], stroke=3)}</div></div>{foot(b, web=False)}')
     return css, body, "light"
@@ -561,7 +563,7 @@ align-items:center;justify-content:center;text-align:center;gap:{34 if st else 2
 .L-holiday .hh{{font-family:var(--fa),serif;font-weight:var(--faw);font-style:italic;line-height:1.02;letter-spacing:-.01em;color:var(--ink);text-wrap:balance}}
 .L-holiday .hh em{{color:var(--accd);font-style:italic}}
 .L-holiday .foot{{justify-content:center;bottom:{250 if st else 86}px}}"""
-    body = (f'{mot}<div class="frame"></div><div class="wrap">{icon(p["icon"], "ic big", stroke=2.6)}'
+    body = (f'{mot}<div class="frame"></div><div class="wrap" data-box>{icon(p["icon"], "ic big", stroke=2.6)}'
             f'<span class="label" style="color:var(--accd)">{esc(p["label"])}</span>'
             f'<h1 class="hh" data-max="{150 if st else 118}" data-min="40" data-lines="{3 if st else 2}">{rich(p["headline"])}</h1>'
             f'{_sub(p["sub"], 42 if st else 33, 4 if st else 3)}</div>{foot(b, center=True)}')
@@ -588,7 +590,7 @@ font:800 {58 if st else 44}px/1 "Manrope";letter-spacing:.24em;padding-left:.24e
     lab = f'<span class="label" style="color:var(--accp)">{esc(p["label"])}</span>' if st else ""
     body = (f'<div class="pat"></div><div class="tile"><div class="mon">{esc(d.get("mon", ""))}</div><div class="day">{esc(d.get("day", ""))}</div>'
             f'<div class="dow">{esc(d.get("dow", ""))}</div></div>{side}'
-            f'<div class="wrap">{lab}{_hl(p["headline"], int((210 if st else 150) * s), 3 if st else 2)}{_sub(p["sub"], 44 if st else 34, 4 if st else 3)}</div>{foot(b)}')
+            f'<div class="wrap" data-box>{lab}{_hl(p["headline"], int((210 if st else 150) * s), 3 if st else 2)}{_sub(p["sub"], 44 if st else 34, 4 if st else 3)}</div>{foot(b)}')
     return css, body, "light"
 
 
@@ -620,7 +622,7 @@ def lay_qa(p, b, fmt):
 .L-qa .lab{{position:absolute;right:var(--m);top:{300 if st else 90}px}}
 .L-qa .pat{{background:{trade_pattern(b['motif'], b['vars']['line_p'], 1)};opacity:.5;-webkit-mask:linear-gradient(160deg,transparent 40%,#000);mask:linear-gradient(160deg,transparent 40%,#000)}}"""
     body = (f'<div class="pat"></div><div class="q">Q</div><div class="lab"><span class="label chip">{esc(p["label"])}</span></div>'
-            f'<div class="wrap">{_hl(p["headline"], int((190 if st else 128) * s), 3)}<div class="ans"><span class="a">A.</span>'
+            f'<div class="wrap" data-box>{_hl(p["headline"], int((190 if st else 128) * s), 3)}<div class="ans"><span class="a">A.</span>'
             f'{_sub(p["sub"], 44 if st else 35, 5 if st else 4)}</div></div>{foot(b)}')
     return css, body, "light"
 
@@ -643,7 +645,7 @@ flex-direction:column;align-items:center;justify-content:center;text-align:cente
 .L-frame .wrap .label{{color:var(--accp)}}"""
     body = (f'<div class="pat"></div><div class="pol"><div class="tape"></div><div class="ph"><div class="pt"></div><div class="mono">{esc(b["initials"])}</div>'
             f'{icon(p["icon"], stroke=2.6)}</div><p class="cap" data-max="{(104 if st else 84) if len(p["headline"]) < 26 else (76 if st else 58)}" data-min="30" data-lines="{1 if len(p["headline"]) < 26 else 2}">{esc(p["headline"].replace("*", ""))}</p></div>'
-            f'<div class="wrap"><span class="label">{esc(p["label"])}</span>{_sub(p["sub"], 42 if st else 31, 3 if st else 2)}</div>{foot(b)}')
+            f'<div class="wrap" data-box><span class="label">{esc(p["label"])}</span>{_sub(p["sub"], 42 if st else 31, 3 if st else 2)}</div>{foot(b)}')
     return css, body, "light"
 
 
@@ -657,7 +659,7 @@ justify-content:center;text-align:center;gap:{34 if st else 26}px}}
 .L-minimal .ic.top{{width:{110 if st else 86}px;height:{110 if st else 86}px;color:var(--accp)}}
 .L-minimal .label{{color:var(--pink2)}}
 .L-minimal .foot{{justify-content:center;bottom:{250 if st else 92}px}}"""
-    body = (f'<div class="b1"></div><div class="b2"></div><div class="wrap">{icon(p["icon"], "ic top", stroke=2.6)}<span class="label">{esc(p["label"])}</span>'
+    body = (f'<div class="b1"></div><div class="b2"></div><div class="wrap" data-box>{icon(p["icon"], "ic top", stroke=2.6)}<span class="label">{esc(p["label"])}</span>'
             f'{_hl(p["headline"], int((210 if st else 150) * s), 3)}<div class="rule"></div>{_sub(p["sub"], 42 if st else 33, 4 if st else 3)}</div>{foot(b, center=True)}')
     return css, body, "light"
 
