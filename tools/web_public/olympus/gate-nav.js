@@ -78,7 +78,7 @@
     'main#app>header.top.ag-hasnav>.gn-crumbs{grid-column:1;grid-row:1;justify-self:start}',
     '.gn-crumbs>.ag-navback,.gn-crumbs>.gn-back,.gn-crumbs>a.olyback{flex:none}',
     '.gn-sep{flex:none;padding:0 3px;color:var(--ag-muted,#a89c88);font:400 1.0625rem/1 var(--ag-sans,-apple-system,system-ui,sans-serif)}',
-    '.gn-crumb{display:inline-flex;align-items:center;min-height:44px;min-width:44px;padding:0 6px;border-radius:10px;color:var(--ag-gold,#c8a24a);font:600 .9375rem/1.1 var(--ag-sans,-apple-system,system-ui,sans-serif);text-decoration:none;white-space:nowrap;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}',
+    '.gn-crumb{display:inline-flex;align-items:center;min-height:44px;min-width:44px;padding:0 6px;border-radius:10px;color:var(--ag-gold,#c8a24a);font:600 .9375rem/1.1 var(--ag-sans,-apple-system,system-ui,sans-serif);text-decoration:none;white-space:nowrap;flex:none}',
     '.gn-cur{flex:0 3 auto;min-width:0;padding:0 4px;color:var(--ag-soft,#cfc4b2);font:400 .9375rem/1.1 var(--ag-sans,-apple-system,system-ui,sans-serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '.gn-crumb:empty,.gn-cur:empty,.gn-sep.gn-off{display:none}',
     '.gn-empty{margin:10px 2px;color:var(--ag-soft,#cfc4b2)}',
