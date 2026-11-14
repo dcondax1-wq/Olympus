@@ -21,8 +21,10 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import glob
 import json
 import os
+import re
 import sys
 
 from . import ATTRIBUTION, OUT_DIR, ensure_dir
@@ -127,15 +129,64 @@ def enrich(lead: dict, audit=None) -> dict:
     return lead
 
 
+SUPPRESS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "suppress.txt")
+
+
+def suppression(path=SUPPRESS_FILE, exports=None) -> dict:
+    """The do-not-contact list: agency/suppress.txt (one phone, web domain, lead id or exact business name per line, # comments)
+    plus every lead marked 'Do not contact' in a saved Agency-page export (agency/crm_export*.json). Both are gitignored.
+    The lead finder never puts these back on a call list (CAN-SPAM: an opt-out is for good)."""
+    out = {"phones": set(), "domains": set(), "ids": set(), "names": set()}
+    try:
+        with open(path, encoding="utf-8-sig") as fh:
+            lines = fh.read().splitlines()
+    except OSError:
+        lines = []
+    for ln in lines:
+        s = ln.split("#", 1)[0].strip()
+        if not s:
+            continue
+        digits = "".join(ch for ch in s if ch.isdigit())
+        if len(digits) >= 10 and len(digits) >= len(s.replace(" ", "")) * 0.6:
+            out["phones"].add(digits[-10:])
+        elif re.fullmatch(r"[nwr]\d+", s):
+            out["ids"].add(s)
+        elif re.fullmatch(r"(?:https?://)?(?:www\.)?([a-z0-9-]+\.)+[a-z]{2,}/?\S*", s, re.I):
+            out["domains"].add(re.sub(r"^(?:https?://)?(?:www\.)?", "", s.lower()).split("/")[0])
+        else:
+            out["names"].add(s.lower())
+    folder = os.path.dirname(path)
+    for p in exports if exports is not None else sorted(glob.glob(os.path.join(folder, "crm_export*.json"))):
+        try:
+            with open(p, encoding="utf-8") as fh:
+                d = json.load(fh)
+            st = d.get("state", d) if isinstance(d, dict) else {}
+            out["ids"] |= {i for i, e in (st.get("leads") or {}).items() if isinstance(e, dict) and e.get("stage") == "dnc"}
+        except (OSError, ValueError, AttributeError):
+            continue
+    return out
+
+
+def suppressed(lead: dict, sup: dict) -> bool:
+    host = re.sub(r"^(?:https?://)?(?:www\.)?", "", (lead.get("website") or "").lower()).split("/")[0]
+    return (lead["id"] in sup["ids"] or (lead.get("phone_e164") or "")[-10:] in sup["phones"] or (host and host in sup["domains"])
+            or lead["name"].lower() in sup["names"])
+
+
 def run(place: dict, radius_km=8.0, keys=C.DEFAULT_KEYS, top=20, per_category=3, audit_max=30, do_audit=True, refresh=False,
-        endpoint=None, fetch=None, audit_fn=None, sleep=None, log=print, redesign_share=0.25):
-    """Find -> score without fetching -> check the websites of the best candidates -> rescore -> pick the day's list."""
+        endpoint=None, fetch=None, audit_fn=None, sleep=None, log=print, redesign_share=0.25, suppress=None):
+    """Find -> drop the do-not-contact list -> score without fetching -> check the websites of the best candidates -> rescore -> pick."""
     kw = {"fetch": fetch} if fetch else {}
     if sleep:
         kw["sleep"] = sleep
     raw, meta = osm.find(place, radius_km, keys, endpoint=endpoint, refresh=refresh, **kw)
-    log(f"  found {meta['elements']} places on OpenStreetMap, kept {meta['kept']} (skipped: {meta['skipped']['chain']} chains, "
-        f"{meta['skipped']['duplicate']} duplicates, {meta['skipped']['no_name_or_closed'] + meta['skipped']['other_trade']} others)")
+    sup = suppress if suppress is not None else suppression()
+    kept = [l for l in raw if not suppressed(l, sup)]
+    meta["skipped"]["do_not_contact"] = len(raw) - len(kept)
+    raw = kept
+    log(f"  found {meta['elements']} places on OpenStreetMap, kept {len(raw)} (skipped: {meta['skipped']['chain']} chains, "
+        f"{meta['skipped']['duplicate']} duplicates, {meta['skipped']['do_not_contact']} on your do-not-contact list, "
+        f"{meta['skipped']['no_name_or_closed'] + meta['skipped']['other_trade']} others)")
     first = [enrich(l) for l in raw]
     audited = 0
     if do_audit:

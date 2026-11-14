@@ -126,7 +126,7 @@ export function value(lead, state, packages) {
 }
 export function views(data, state) {
   return data.leads.map((l) => { const e = entry(state, l.id); return { ...l, stage: stageOf(l, state), notes: e.notes || '', callback: e.callback || '', calls: e.calls || 0, last_call: e.last_call || '',
-    won: e.won || '', demo_url: e.demo_url || l.demo_url, value: value(l, state, data.packages) }; });
+    won: e.won || '', demo_url: e.demo_url || l.demo_url, has_demo: l.demo_built || !!e.demo_url, value: value(l, state, data.packages) }; });
 }
 export function pipeline(vs, today, goal) {
   const month = today.slice(0, 7), wk = weekStart(today), by = Object.fromEntries(STAGES.map((s) => [s.id, 0]));

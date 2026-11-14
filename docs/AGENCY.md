@@ -29,7 +29,8 @@ email, places a call or texts anyone: it prepares the words, you dial and press 
 | After each call, 10 s | Tap the stage: Contacted, Call back (pick the day), Won, Lost, or Do not contact. Notes go on the card. |
 | They said "send it" | Card > The email > Copy (or Open in Mail once your settings are real), put their address in, press send. |
 | They said yes | Mark Won with the price. On the PC: edit `site.json` (their real services, photos, words), then `python -m agency.build_site --site <that site.json> --final --url https://<their domain>` and drop the `-live` folder. |
-| Sunday, 5 min | Agency page > Your notes > Export (keep the file) and look at the plan: calls this week, clients this month. |
+| Someone says stop | Mark "Do not contact" at once. On the PC, put their number (or name) on a line of `agency/suppress.txt`, or save your page export as `agency/crm_export.json`: the machine never lists them again. |
+| Sunday, 5 min | Agency page > Your notes > Export (keep the file, and save it as `agency/crm_export.json` on the PC) and look at the plan: calls this week, clients this month. |
 
 ## Prices (owner-editable: `packages` in agency/config.json)
 | Package | To start | Each month | What they get |

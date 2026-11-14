@@ -82,7 +82,8 @@ function renderDetail(all) {
   const acts = $('detActions'); clear(acts);
   const link = (label, href, cls) => { if (!href) return; const a = h('a', 'btn' + (cls ? ' ' + cls : ''), label); a.href = href; if (/^https:/.test(href)) { a.target = '_blank'; a.rel = 'noopener'; } acts.appendChild(a); return a; };
   if (v.tel && v.stage !== 'dnc') { const a = link('Call ' + v.phone, v.tel, 'primary'); a.addEventListener('click', () => change(v.id, { called: true }, 'Marked as called today.')); }
-  link('Demo site', v.demo_url); link('Their site now', v.website); link('Map', v.map); link('Map data', v.osm);
+  if (v.has_demo) link('Demo site', v.demo_url);
+  link('Their site now', v.website); link('Map', v.map); link('Map data', v.osm);
   const st = $('detStages'); clear(st);
   for (const s of C.STAGES) {
     const b = h('button', 'chip', s.label); b.type = 'button'; b.setAttribute('aria-pressed', v.stage === s.id ? 'true' : 'false');
@@ -145,7 +146,8 @@ function bind() {
   $('exportBtn').addEventListener('click', () => {
     const txt = C.exportJson(S.state, S.today); $('ioText').value = txt; $('io').open = true;
     try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).catch(() => {}); } catch (_) { /* the text is in the box */ }
-    $('ioMsg').textContent = `Exported your notes on ${Object.keys(S.state.leads).length} leads. Copy the text (or save it in Files) to keep it.`;
+    const n = Object.keys(S.state.leads).length;
+    $('ioMsg').textContent = `Exported your notes on ${n} lead${n === 1 ? '' : 's'}. Copy the text (or save it in Files) to keep it.`;
   });
   $('importBtn').addEventListener('click', () => {
     const r = C.parseImport($('ioText').value);

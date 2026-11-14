@@ -231,7 +231,17 @@ def test_leads():
     check("a. coverage is measured and stored (honest about thin OSM data): phone 80%, website 40%, hours 20%", (cov["phone"], cov["website"], cov["hours"]) == (0.8, 0.4, 0.2), cov)
 
     # --- one full run on fake sources, files written
-    res = L.run(PLACE, 8, C.DEFAULT_KEYS, top=20, fetch=fake, audit_fn=lambda u, refresh=False: {"issues": [], "checked": "2026-11-14"}, log=lambda *a: None)
+    none = L.suppression(os.path.join(TMP, "no-suppress.txt"), exports=[])
+    sp = os.path.join(TMP, "suppress.txt")
+    open(sp, "w", encoding="utf-8").write("# people who said stop\n(970) 694-2949   # Cinco Brothers asked\nn10\nWild Mane Salon\nhttps://www.taqueria-elsewhere.example/\n")
+    ex = os.path.join(TMP, "crm_export.json")
+    json.dump({"kind": "agency-crm", "v": 1, "state": {"leads": {"w4": {"stage": "dnc"}, "n11": {"stage": "won"}}}}, open(ex, "w"))
+    sup = L.suppression(sp, exports=[ex])
+    gone = L.run(PLACE, 8, C.DEFAULT_KEYS, top=20, fetch=fake, audit_fn=lambda u, refresh=False: {"issues": [], "checked": "2026-11-14"}, log=lambda *a: None, suppress=sup)
+    check("a. the do-not-contact list is honoured on every run: a phone, a lead id, a name (suppress.txt) and a 'Do not contact' lead in a saved page export are never listed again",
+          [l["name"] for l in gone["leads"]] == ["Taqueria Sol"] and gone["meta"]["skipped"]["do_not_contact"] == 4 and "taqueria-elsewhere.example" in sup["domains"]
+          and sup["ids"] == {"n10", "w4"}, ([l["name"] for l in gone["leads"]], sup))
+    res = L.run(PLACE, 8, C.DEFAULT_KEYS, top=20, fetch=fake, audit_fn=lambda u, refresh=False: {"issues": [], "checked": "2026-11-14"}, log=lambda *a: None, suppress=none)
     paths = L.write(res, os.path.join(TMP, "run1"))
     data = json.load(open(paths["json"], encoding="utf-8"))
     csv_head = open(paths["csv"], encoding="utf-8-sig").readline().strip().split(",")
@@ -581,7 +591,7 @@ def test_crm_page():
             check("d. Download CSV gives every lead with its stage (Won for the one we marked)", text.startswith("name,trade,stage") and text.count("\r\n") == 21 and ",Won," in text, text[:200])
             p.locator("#exportBtn").click()
             ex = p.evaluate("() => [document.querySelector('#ioText').value, document.querySelector('#ioMsg').textContent]")
-            check("d. Export puts the notes as JSON in the box and says how many leads", '"kind": "agency-crm"' in ex[0] and "Owner said yes" in ex[0] and "1 leads" in ex[1], ex[1])
+            check("d. Export puts the notes as JSON in the box and says how many leads", '"kind": "agency-crm"' in ex[0] and "Owner said yes" in ex[0] and "on 1 lead." in ex[1], ex[1])
             p.evaluate("() => { window.confirm = () => true; }")
             p.locator("#clearBtn").click()
             p.wait_for_timeout(150)
