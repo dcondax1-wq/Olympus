@@ -46,7 +46,7 @@ Update source (owner 2026-11-14: "keep it on GitHub in case we get banned ... I'
   copied to logs/connect-<stamp>/; after it pip + the quick self-tests run, and any failure puts the folder back exactly as
   it was (bot server stopped, no trade open, or it refuses). Then the rules above apply to <remote>/<branch> instead of
   origin/main. GitHub-free mode (engine/nogithub.py) only blocks origin. A real-account bot without auto-resume updates
-  only in FRIDAY's halt check (an update never leaves an eval stopped in the middle of the week).
+  only in the Friday / Saturday halt check (an update never leaves an eval stopped in the middle of the week).
 Every step is logged to logs/update-YYYYMMDD.log; the last result is in the heartbeat health block (version + update).
 """
 from __future__ import annotations
@@ -89,7 +89,7 @@ HOLD_MARK = "SELFTEST-HOLD:"
 
 # 2026-11-14: where updates come from (update_source.json at the repo root; see the docstring)
 SOURCE_FILE = "update_source.json"
-LIVE_UPDATE_DAY = 4                       # Friday: a real-account bot without auto-resume updates only in Friday's halt
+LIVE_UPDATE_DAYS = (4, 5)                 # Fri, Sat: a real-account bot without auto-resume updates only at the weekend
 _NAME_OK = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,40}$")
 _BRANCH_OK = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,80}$")
 CONNECT_OK, CONNECT_FAIL, CONNECT_UNREACHABLE, CONNECT_NOT_NOW, CONNECT_NO_GIT = 0, 1, 20, 21, 22
@@ -140,11 +140,11 @@ def ensure_remote(sh, src: dict) -> tuple:
 
 def live_wait_reason(now, restart_reason: str | None) -> str | None:
     """The daily check on a bot whose restart is not safe (a real account without auto-resume: restart_safe_reason) runs
-    only on Friday (LIVE_UPDATE_DAY): the restart after an update leaves it stopped until the owner starts it again, so
-    an update never stops an eval in the middle of the week. None = go on."""
-    if restart_reason and _et(now).weekday() != LIVE_UPDATE_DAY:
-        return ("a real-account bot without auto-resume: the update waits for Friday's 17:02 ET halt (a restart now would "
-                "leave the eval stopped until you start it again)")
+    only on Friday or Saturday (LIVE_UPDATE_DAYS): the restart after an update leaves it stopped until the owner starts it
+    again, so an update never stops an eval in the middle of the week and he has the weekend to start it. None = go on."""
+    if restart_reason and _et(now).weekday() not in LIVE_UPDATE_DAYS:
+        return ("a real-account bot without auto-resume: the update waits for the weekend (Friday or Saturday 17:02 ET; a "
+                "restart now would leave the eval stopped until you start it again)")
     return None
 
 
@@ -1057,7 +1057,7 @@ class DailyUpdater:
             why = restart_safe_reason(self.bot, optin)
             if why:
                 return {"status": "skipped", "mode": mode, "reason": why}
-        else:                                          # daily: an eval without auto-resume updates on Friday only
+        else:                                          # daily: an eval without auto-resume updates on Fri / Sat only
             why = live_wait_reason(now, restart_safe_reason(self.bot, optin))
             if why:
                 return {"status": "skipped", "mode": mode, "reason": why}

@@ -1,7 +1,7 @@
 """The PC updates itself from the backup repo (owner 2026-11-14: "keep it on GitHub in case we get banned ... I'm not
 updating the files every time"). engine/autoupdate.py: update_source.json, the one-time --connect (any folder state ->
 exactly the backup's newest commit, put back on any failure), GitHub-free mode blocking only origin, and an eval without
-auto-resume updating only in Friday's halt. Real git in temp folders; no network.
+auto-resume updating only in the Friday / Saturday halt. Real git in temp folders; no network.
 
     python -X utf8 -m tests.test_autoupdate_source
 """
@@ -122,11 +122,14 @@ def main() -> int:
     check("LE_AUTOUPDATE=0 still turns it off", au.is_enabled({"enabled": True}, {"LE_AUTOUPDATE": "0"}, ROOT) is False)
     check("not enabled: off", au.is_enabled({}, {}, ROOT) is False)
 
-    # ---------------------------------------------------------------------- an eval without auto-resume: Friday only
+    # ---------------------------------------------------------------------- an eval without auto-resume: Friday / Saturday only
     tue, fri = ts(2026, 11, 17, 17, 10), ts(2026, 11, 20, 17, 10)
     why = "a real-account bot without auto-resume: waits for the 17:02 ET halt check"
     check("live_wait_reason: an eval on a Tuesday waits for Friday", "Friday" in (au.live_wait_reason(tue, why) or ""))
     check("live_wait_reason: Friday goes", au.live_wait_reason(fri, why) is None)
+    check("live_wait_reason: Saturday goes (the weekend to start it again)", au.live_wait_reason(ts(2026, 11, 21, 17, 10), why) is None)
+    check("live_wait_reason: Sunday waits (it would be stopped hours before the week starts)",
+          au.live_wait_reason(ts(2026, 11, 22, 17, 10), why) is not None)
     check("live_wait_reason: paper / Sim / auto-resume (no reason) goes any day", au.live_wait_reason(tue, None) is None)
 
     class Bot:
