@@ -611,8 +611,9 @@ def trading_of(now_s: float, site_dir: str | None = None, sb=None) -> dict:
     try:
         if sb is None:
             from tools import money_scoreboard as MS
-            sb = MS.build(MS.gather(site=site_dir or newest_site()), now_s, include_ledger=True)
-            accts = MS.accounts_of(MS.gather(site=site_dir or newest_site()).get("home"))
+            g = MS.gather(site=site_dir or newest_site())
+            sb = MS.build(g, now_s, include_ledger=True)
+            accts = MS.accounts_of(g.get("home"))
         else:
             accts = obj(sb.get("_accounts"))
     except Exception as e:  # noqa: BLE001
