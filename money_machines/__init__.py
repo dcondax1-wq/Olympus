@@ -9,7 +9,7 @@ fakes a review, and nothing reaches the network unless the owner runs a live com
     python -m money_machines.brand_kit --name ... --industry ... --out DIR      logo + brand kit from code (SVG)
     python -m money_machines.content_plan --account local_growth --render        30-day Instagram plan: captions + images
     python -m money_machines.ig_post --plan money_machines/plans/local_growth_30d.json --image-base-url URL   dry run (default)
-    python -m money_machines.products.build_eval_tracker                          rebuild the digital product files
+    python -m money_machines.products.build_eval_tracker --zip                    the eval tracker upload zip (digital product)
 
 Tests: python -X utf8 -m tests.test_money_machines   (no network; the image and product renders are skipped without Chromium)
 """

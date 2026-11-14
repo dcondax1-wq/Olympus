@@ -1,12 +1,15 @@
 """GIG PACK: 8 productized freelance gigs the agency machines can deliver, ready to paste into Fiverr / Upwork / Contra.
 
-    python -m money_machines.gig_pack --check                    # is every gig's tool installed here? (team B1-B5 modules + ours)
+    python -m money_machines.gig_pack --check                    # is every gig's tool installed here? (team B1-B5 tools + ours)
     python -m money_machines.gig_pack --md                       # rewrite docs/GIG_PACK.md from gig_pack.json (the copy-paste pack)
     python -m money_machines.gig_pack --validate                 # Fiverr limits: title <= 80, 5 tags <= 20 chars, description <= 1,200 ...
     python -m money_machines.gig_pack order --gig local-website --name "Rivera Plumbing" --category plumber --city "Fort Collins, CO" \
-        --phone "(970) 555-0142" --email owner@example.com    # one-lead file for the agency site builder (B1), then its command
+        --phone "(970) 555-0142" --email owner@example.com    # turns a paid order into the agency's input files, prints the next command
     python -m money_machines.gig_pack checklist --gig gbp-setup --business "Rivera Plumbing" --out DIR   # the GBP checklist deliverable
-    python -m money_machines.gig_pack report --url https://example.com --business "Rivera Plumbing" --out DIR   # speed/SEO report
+
+`order` writes lead.json (B1's agency-leads shape, for agency.build_site) and client.json (the shared agency client record that
+B4's make_review / make_chat and B5's make_posts read). The deliverables themselves come from the agency kit (B1 sites, B3 grader,
+B4 review kit and chat, B5 posts) and from this folder (brand kit, GBP checklist): see each gig's "tool".
 
 The data is gig_pack.json (titles, tags, descriptions, 3 priced packages, FAQ, requirements, the tool, the delivery checklist,
 Upwork proposal templates, the daily routine). Everything here PREPARES words and files: nothing logs in to a platform, sends a
@@ -80,8 +83,8 @@ def validate(pack: dict) -> list:
         if not g.get("requirements") or not g.get("delivery_checklist") or not g.get("stays_human") or not g.get("never"):
             p.append(f"{i}: requirements, delivery_checklist, stays_human and never are all needed")
         t = g.get("tool") or {}
-        if not t.get("module") or not t.get("steps"):
-            p.append(f"{i}: the tool needs a module and steps")
+        if not (t.get("module") or t.get("path")) or not t.get("steps"):
+            p.append(f"{i}: the tool needs a module or a path, and steps")
         if i not in pack["upwork"]["templates"]:
             p.append(f"{i}: no Upwork proposal template")
         text = " ".join([g["title"], g["description"]] + [f["a"] for f in g["faq"]]).lower()
@@ -96,16 +99,20 @@ def validate(pack: dict) -> list:
 
 
 def tool_status() -> list:
-    """[(gig id, module, installed?)] for --check."""
+    """[(gig id, module or path, installed?, status)] for --check: a module is looked up, a script path must exist in the repo."""
     out = []
     pack = load()
     for g in pack["gigs"]:
-        mod = g["tool"]["module"]
-        try:
-            ok = importlib.util.find_spec(mod) is not None
-        except (ImportError, ValueError):
-            ok = False
-        out.append((g["id"], mod, ok, g["tool"]["status"]))
+        t = g["tool"]
+        if t.get("path"):
+            name, ok = t["path"], os.path.exists(os.path.join(ROOT, t["path"]))
+        else:
+            name = t["module"]
+            try:
+                ok = importlib.util.find_spec(name) is not None
+            except (ImportError, ValueError):
+                ok = False
+        out.append((g["id"], name, ok, t["status"]))
     return out
 
 
@@ -132,7 +139,8 @@ def render_md(pack: dict) -> str:
         L += ["", "**Questions to ask the buyer (requirements):**", ""] + [f"- {r}" for r in g["requirements"]]
         L += ["", "**FAQ:**", ""] + [f"- **{f['q']}** {f['a']}" for f in g["faq"]]
         t = g["tool"]
-        L += ["", f"**The tool:** {t['what']} Module `{t['module']}` ({t['status']}).", ""] + [f"    {s}" for s in t["steps"]]
+        where = f"Module `{t['module']}`" if t.get("module") else f"Script `{t['path']}`"
+        L += ["", f"**The tool:** {t['what']} {where} ({t['status']}).", ""] + [f"    {s}" for s in t["steps"]]
         L += ["", "**Delivery checklist:**", ""] + [f"{i}. {s}" for i, s in enumerate(g["delivery_checklist"], 1)]
         L += ["", "**Stays human:** " + "; ".join(g["stays_human"]) + ".", "", "**Never:** " + "; ".join(g["never"]) + ".", ""]
     up = pack["upwork"]
@@ -187,6 +195,34 @@ def make_lead(name, category, city="", phone="", email="", website="", street=""
             "leads": [lead]}
 
 
+def make_client(lead_file: dict, gig_id: str, price=None, review_url="", colors="") -> dict:
+    """The shared agency client record that B4 (make_review, make_chat) and B5 (make_posts) read:
+    {"id","name","trade","city","phone","email","site_url","demo_url","status","package","setup_usd","monthly_usd","notes"}
+    plus the optional "review_url" and "brand_colors" those tools use when present."""
+    L = lead_file["leads"][0]
+    rec = {"id": L["slug"], "name": L["name"], "trade": L["category"], "city": L["address"]["city"], "phone": L["phone"], "email": L["email"],
+           "site_url": L["website"], "demo_url": "", "status": "client", "package": gig_id, "setup_usd": price, "monthly_usd": 0,
+           "notes": f"Freelance order ({gig_id}); source: money_machines.gig_pack order"}
+    if review_url:
+        rec["review_url"] = review_url
+    cols = [c.strip() for c in (colors or "").split(",") if re.fullmatch(r"#[0-9a-fA-F]{6}", c.strip())]
+    if cols:
+        rec["brand_colors"] = cols
+    return rec
+
+
+NEXT_STEP = {
+    "local-website": "python -m agency.build_site --leads {lead} --id {slug} --pages 3",
+    "landing-page": "python -m agency.build_site --leads {lead} --id {slug}",
+    "review-booster": "python agency/upsells/make_review.py {client} --out {out}/reviews",
+    "gbp-setup": "python -m money_machines.gig_pack checklist --business \"{name}\" --out {out}",
+    "chat-widget": "python agency/upsells/make_chat.py {client} --out {out}/chat",
+    "social-month": "python agency/content/make_posts.py {client} --month next --posts 12",
+    "logo-brand-kit": "python -m money_machines.brand_kit --name \"{name}\" --industry {trade} --out {out}/brand --png",
+    "speed-seo-report": "python agency/storefront/grade.py <their site> --name \"{name}\" --pdf",
+}
+
+
 # ------------------------------------------------------------------------------------------------ deliverables
 PAGE_CSS = ("body{margin:0;font-family:-apple-system,'Segoe UI',system-ui,sans-serif;background:#f6f3ec;color:#1d1a16;line-height:1.5}"
             "main{max-width:860px;margin:0 auto;padding:24px 16px 64px}h1,h2{font-family:Georgia,'Palatino Linotype',serif}"
@@ -221,61 +257,10 @@ def checklist_files(pack: dict, gid: str, business: str, out: str) -> list:
     return files
 
 
-GENERIC_FIXES = [
-    ("Compress and resize images (WebP or JPEG, no wider than 1600 px)", "The biggest speed win on most small sites"),
-    ("Load chat, maps and video after the page (lazy load)", "Third-party widgets often slow the first view"),
-    ("Make the phone number tap-to-call (tel: link) in the header", "Most local visitors are on a phone"),
-    ("One clear button above the fold: Call, Book or Get a quote", "Visitors should know the next step in 3 seconds"),
-    ("Unique page title and Google description on every page", "What Google shows in search results"),
-    ("https everywhere (padlock), and http redirects to https", "Chrome marks http sites 'Not secure'"),
-    ("Name, address and phone the same as the Google Business Profile", "Consistent details help local search"),
-    ("Contact form tested: it sends to the right inbox", "Broken forms lose leads silently"),
-    ("Text size 16 px or more on phones, buttons at least 44 px tall", "Easy to read and tap"),
-    ("Remove unused plugins, fonts and scripts", "Less code, faster pages"),
-]
-
-
-def report_html(business: str, url: str, audit: dict | None, today: str) -> str:
-    issues = sorted((audit or {}).get("issues") or [], key=lambda x: -int(x.get("weight", 0)))
-    facts = (audit or {}).get("facts") or {}
-    found = "".join(f"<tr><td>{html.escape(str(i.get('text', '')))}</td><td>{int(i.get('weight', 0))}</td></tr>" for i in issues) or \
-        "<tr><td colspan='2'>The automatic check found no basic problems (or could not run: see the note below).</td></tr>"
-    fact_rows = "".join(f"<tr><td>{html.escape(str(k))}</td><td>{html.escape(str(v))}</td></tr>" for k, v in facts.items())
-    fixes = "".join(f"<li><span class='w'>{html.escape(a)}</span><div class='muted'>{html.escape(b)}</div></li>" for a, b in GENERIC_FIXES)
-    note = "" if audit else "<p class='muted'>Automatic check not available here (the agency kit is not installed or the site could not be reached). The checks below were done by hand.</p>"
-    return (f"<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
-            f"<title>{html.escape(business)} website report</title><style>{PAGE_CSS}</style></head><body><main>"
-            f"<h1>{html.escape(business)}: website report</h1><p>{html.escape(url)} &middot; checked {today}</p>{note}"
-            "<h2>Speed on a phone (Google PageSpeed Insights, Mobile)</h2><div class='box'><table>"
-            "<tr><td>Performance</td><td>__ / 100</td></tr><tr><td>Accessibility</td><td>__ / 100</td></tr>"
-            "<tr><td>Best practices</td><td>__ / 100</td></tr><tr><td>SEO</td><td>__ / 100</td></tr>"
-            "<tr><td>Largest Contentful Paint</td><td>__ s</td></tr></table><p class='muted'>Measured at pagespeed.web.dev on the date above. Scores move from run to run; re-test after the fixes.</p></div>"
-            f"<h2>What the check found</h2><div class='box'><table><tr><th>Problem</th><th>Weight</th></tr>{found}</table></div>"
-            + (f"<h2>Facts</h2><div class='box'><table>{fact_rows}</table></div>" if fact_rows else "") +
-            f"<h2>Top fixes, easiest and biggest first</h2><div class='box'><ol>{fixes}</ol></div>"
-            "<p class='muted'>No one can promise a ranking or a score. This report shows what was measured on the date above and what will help customers on phones.</p>"
-            "</main></body></html>\n")
-
-
-def run_report(url: str, business: str, out: str, use_audit: bool = True) -> str:
-    result = None
-    if use_audit:
-        try:
-            from agency import audit as A               # B1's polite one-page check (robots.txt obeyed, one fetch, cached)
-            result = A.audit(url)
-        except Exception as e:                           # kit missing or the site unreachable: the report says so
-            print(f"  (automatic check skipped: {type(e).__name__})")
-    os.makedirs(out, exist_ok=True)
-    p = os.path.join(out, f"{slugify(business)}_website_report.html")
-    with open(p, "w", encoding="utf-8") as fh:
-        fh.write(report_html(business, url, result, dt.date.today().isoformat()))
-    return p
-
-
 # ------------------------------------------------------------------------------------------------ CLI
 def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
-    if argv and argv[0] in ("order", "checklist", "report"):
+    if argv and argv[0] in ("order", "checklist"):
         cmd, rest = argv[0], argv[1:]
         ap = argparse.ArgumentParser(prog=f"python -m money_machines.gig_pack {cmd}")
         if cmd == "order":
@@ -289,6 +274,9 @@ def main(argv=None) -> int:
             ap.add_argument("--street", default="")
             ap.add_argument("--hours", default="", help='OpenStreetMap style, e.g. "Mo-Fr 08:00-17:00; Sa 09:00-13:00"')
             ap.add_argument("--description", default="")
+            ap.add_argument("--review-url", default="", help="their Google review link (review booster)")
+            ap.add_argument("--colors", default="", help='their brand colours, e.g. "#14213D,#D4A24C"')
+            ap.add_argument("--price", type=float, default=None, help="what the order paid (for the client record)")
             ap.add_argument("--out", default=None)
             a = ap.parse_args(rest)
             gig(load(), a.gig)
@@ -296,25 +284,21 @@ def main(argv=None) -> int:
             slug = data["leads"][0]["slug"]
             out = a.out or os.path.join(OUT, "orders", slug)
             os.makedirs(out, exist_ok=True)
-            p = os.path.join(out, "lead.json")
-            with open(p, "w", encoding="utf-8") as fh:
+            lead_p, client_p = os.path.join(out, "lead.json"), os.path.join(out, "client.json")
+            with open(lead_p, "w", encoding="utf-8") as fh:
                 json.dump(data, fh, indent=1)
-            print(f"order file: {p}")
-            print(f"next: python -m agency.build_site --leads {p} --id {slug}")
+            with open(client_p, "w", encoding="utf-8") as fh:
+                json.dump(make_client(data, a.gig, a.price, a.review_url, a.colors), fh, indent=1)
+            print(f"order files: {lead_p} (for the site builder) and {client_p} (for the review, chat and post tools)")
+            print("next: " + NEXT_STEP[a.gig].format(lead=lead_p, client=client_p, out=out, slug=slug, name=a.name, trade=data["leads"][0]["category"]))
             return 0
         ap.add_argument("--gig", default="gbp-setup")
         ap.add_argument("--business", required=True)
         ap.add_argument("--out", default=None)
-        if cmd == "report":
-            ap.add_argument("--url", required=True)
-            ap.add_argument("--no-audit", action="store_true", help="do not open the site (hand checks only)")
         a = ap.parse_args(rest)
         out = a.out or os.path.join(OUT, "orders", slugify(a.business))
-        if cmd == "checklist":
-            for p in checklist_files(load(), a.gig, a.business, out):
-                print(p)
-        else:
-            print(run_report(a.url, a.business, out, use_audit=not a.no_audit))
+        for p in checklist_files(load(), a.gig, a.business, out):
+            print(p)
         return 0
     ap = argparse.ArgumentParser(prog="python -m money_machines.gig_pack", description=__doc__.split("\n")[0])
     ap.add_argument("--check", action="store_true", help="is each gig's tool installed here?")

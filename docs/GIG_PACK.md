@@ -12,7 +12,7 @@ Regenerate after editing the JSON: `python -m money_machines.gig_pack --md`. Che
 | set up an honest Google review system with QR cards and message scripts | 30 / 60 / 110 | 15 / 30 / 50 | yes |
 | audit your website speed and SEO and send a clear fix report | 35 / 70 / 140 | 25 / 45 / 90 | later |
 | build a fast landing page for your offer, event or local service | 70 / 140 / 250 | 25 / 45 / 75 | later |
-| create a month of social media posts with images for your local business | 45 / 85 / 150 | 30 / 45 / 70 | later |
+| create a month of social media posts with images for your local business | 45 / 85 / 140 | 30 / 45 / 70 | later |
 | install a free live chat widget on your website and set it up | 25 / 55 / 95 | 15 / 35 / 55 | later |
 
 ## What stays human (always)
@@ -95,10 +95,11 @@ I use AI-assisted tools for first drafts and code; I check and finish every page
 - **Can you build it in WordPress?** No. I build fast static sites that need no plugins or updates. If you need WordPress, this gig is not the right fit.
 - **Can I make changes later?** Yes. Small edits are included for 30 days in the top package; after that I send a custom offer for each change.
 
-**The tool:** Agency demo-site generator (team B1): one lead file in, a finished site folder + zip out. Module `agency.build_site` (B1 contract (agency/__init__.py, branch commit 2af4912)).
+**The tool:** Agency site generator (team B1): a lead file in, a finished phone-first site folder + zip out (no web fonts, no trackers). Module `agency.build_site` (B1 (agency/build_site.py)).
 
     python -m money_machines.gig_pack order --gig local-website --name "<business>" --category <trade> --city "<city, ST>" --phone "<phone>" --email <email>
-    python -m agency.build_site --leads money_machines/out/orders/<slug>/lead.json --id <slug>
+    python -m agency.build_site --leads money_machines/out/orders/<slug>/lead.json --id <slug> --pages 3   (leave out --pages for the one-page package)
+    edit the site.json it writes (their words, services, hours), then: python -m agency.build_site --site <out>/<slug>/site.json --final
     python -m money_machines.brand_kit --name "<business>" --industry <trade> --out money_machines/out/orders/<slug>/brand   (only if they have no logo)
 
 **Delivery checklist:**
@@ -167,7 +168,7 @@ The logos are drawn by code from simple shapes, not by an image AI. I check ever
 - **Which files will I get?** SVG files (sharp at any size, for printers and sign makers) and PNG files for the web and social media.
 - **Can you copy a logo I like?** No, but send it: I use it to understand the style you like and make something original.
 
-**The tool:** Brand kit generator (this folder). Module `money_machines.brand_kit` (built (money_machines/brand_kit.py)).
+**The tool:** Brand kit generator (this folder). Module `money_machines.brand_kit` (built here (money_machines/brand_kit.py)).
 
     python -m money_machines.brand_kit --name "<business>" --tagline "<tagline>" --industry <trade> --out money_machines/out/orders/<slug>/brand --png
     Send concepts.svg (as PNG) and ask the client to pick 1, 2 or 3
@@ -236,11 +237,11 @@ I use AI-assisted tools for first drafts; I check and finish everything myself.
 - **Can you get me reviews?** I set up an easy way to ask every customer. I never write, buy or swap reviews.
 - **I don't have a profile yet. Can you make one?** Yes, in Done for you. Google sends the verification to you (postcard, call or video), so you finish that step.
 
-**The tool:** Google Business Profile checklist (this folder) + review QR from team B4. Module `money_machines.gig_pack` (built (gig_pack.py checklist)).
+**The tool:** Google Business Profile checklist (this folder) + the review kit from team B4. Module `money_machines.gig_pack` (built here (gig_pack.py checklist)).
 
     python -m money_machines.gig_pack checklist --gig gbp-setup --business "<business>" --out money_machines/out/orders/<slug>
     Work through the checklist in the profile (Manager access); tick each line in the file
-    Done + review kit: python -m agency.upsells.make_review ... (team B4, see docs/AGENCY.md)
+    Done + review kit: the review booster (python agency/upsells/make_review.py ..., team B4)
 
 **Delivery checklist:**
 
@@ -304,10 +305,11 @@ I use AI-assisted tools for first drafts; I check and finish everything myself.
 - **Will you write reviews for me?** Never. Fake reviews can get your profile restricted and break the law.
 - **Do you send the messages for me?** No. You or your staff send them; I give you the words and the timing.
 
-**The tool:** Review booster from team B4 (agency/upsells: QR maker confirmed, the card maker is their next step). Module `agency.upsells.make_review` (B4 contract (agency/upsells/qr.py, branch commit e9ed446); make_review expected).
+**The tool:** Review booster (team B4): review page, vector QR, print-ready cards, request messages; Google's and the FTC's rules built in. Script `agency/upsells/make_review.py` (B4 (agency/upsells/make_review.py)).
 
-    python -m agency.upsells.make_review ... (team B4: see docs/AGENCY.md once merged)
-    Fallback today: python -c "from agency.upsells import qr; open('card_qr.svg','w').write(qr.make('<review link>', ecl='Q').svg(title='Review us'))"
+    python -m money_machines.gig_pack order --gig review-booster --name "<business>" --category <trade> --city "<city, ST>" --review-url <their Google review link>
+    python agency/upsells/make_review.py money_machines/out/orders/<slug>/client.json --out money_machines/out/orders/<slug>/reviews
+    scan the printed QR with your own phone before you deliver
 
 **Delivery checklist:**
 
@@ -369,11 +371,11 @@ I use AI-assisted tools to draft the report; I run the checks and write the advi
 - **Do you do WordPress plugins?** I recommend and explain what to change. On simple HTML sites I make the fixes myself.
 - **Will this get me to the top of Google?** No one can promise rankings. A fast, clear site with correct titles helps Google and customers understand you.
 
-**The tool:** Website check from the agency kit (B1 audit, confirmed) wrapped as a client report here; team B3 builds the full grader. PageSpeed Insights runs in the browser (free). Module `agency.audit` (B1 contract (agency/audit.py audit(url), branch commit 2af4912); B3 grader expected).
+**The tool:** Website grader (team B3): one polite visit, a one-page report (https, phone layout, tap-to-call, button, Google profile link, speed, weight, title, schema) + PageSpeed Insights by hand. Script `agency/storefront/grade.py` (B3 (agency/storefront/grade.py)).
 
-    python -m money_machines.gig_pack report --url https://<site> --business "<business>" --out money_machines/out/orders/<slug>
-    Open pagespeed.web.dev with the site, Mobile tab: copy the 4 scores and the top 3 'opportunities' into the report's PageSpeed box
-    Re-read the top 10 fixes and put them in order for this business
+    python agency/storefront/grade.py <their site> --name "<business>" --city <city> --pdf
+    open pagespeed.web.dev with the site, Mobile tab: add the 4 scores and the top 3 'opportunities' with today's date to your delivery note
+    put the fixes in order for this business (easiest and biggest first)
 
 **Delivery checklist:**
 
@@ -436,10 +438,11 @@ I use AI-assisted tools for first drafts and code; I check and finish every page
 - **Can you add fake reviews to look busy?** No. Only real reviews from real customers, with their permission.
 - **Do you use AI?** Yes, for first drafts and code. I check and finish every page myself.
 
-**The tool:** Agency demo-site generator (team B1) with a one-page build. Module `agency.build_site` (B1 contract (agency/__init__.py, branch commit 2af4912)).
+**The tool:** Agency site generator (team B1), one page. Module `agency.build_site` (B1 (agency/build_site.py)).
 
     python -m money_machines.gig_pack order --gig landing-page --name "<business>" --category <trade> --city "<city, ST>" --phone "<phone>" --email <email>
     python -m agency.build_site --leads money_machines/out/orders/<slug>/lead.json --id <slug>
+    edit site.json (headline, offer, FAQ, real reviews), then: python -m agency.build_site --site <out>/<slug>/site.json --final
 
 **Delivery checklist:**
 
@@ -463,10 +466,10 @@ I use AI-assisted tools for first drafts and code; I check and finish every page
 **Description** (paste as is):
 
 ```
-Posting every week is hard when you are running a business. I make a month of posts for you, ready to schedule.
+Posting every week is hard when you are running a business. I make a month of posts for you (12 or 20), ready to schedule.
 
 Each post has:
-- A designed image in your colours and logo
+- A designed image in your colours (square for the feed, plus a story version)
 - A short caption in your voice, with a clear next step (call, book, visit)
 - A few useful hashtags (no spam lists)
 - The date to post it
@@ -482,9 +485,9 @@ I use AI-assisted tools for first drafts; every caption is read, edited and appr
 
 | Package | Price | Days | Revisions | Includes | Your time |
 |---|---|---|---|---|---|
-| 12 posts | $45 | 3 | 1 | 12 posts (3 a week) with designed images; Captions with hashtags; Posting calendar | 30 min |
-| 30 posts | $85 | 4 | 2 | 30 posts (one a day) with designed images; Captions, hashtags and calendar; 4 seasonal or offer posts | 45 min |
-| 30 posts scheduled | $150 | 5 | 2 | Everything in 30 posts; I schedule them in your Meta Business Suite (you give me access); 4 carousel posts | 70 min |
+| 12 posts | $45 | 3 | 1 | 12 posts (3 a week) with designed images; Captions with a few hashtags; Posting calendar and schedule sheet | 30 min |
+| 20 posts + stories | $85 | 4 | 2 | 20 posts with designed images; A story version of every post; Captions, calendar and schedule sheet | 45 min |
+| 20 posts scheduled | $140 | 5 | 2 | Everything in 20 posts + stories; I schedule them in your Meta Business Suite (you give me access); An approval message so nothing posts without your OK | 70 min |
 
 **Questions to ask the buyer (requirements):**
 
@@ -502,10 +505,11 @@ I use AI-assisted tools for first drafts; every caption is read, edited and appr
 - **Will this get me followers?** I can't promise numbers. Regular, useful posts give people a reason to follow and to call you.
 - **Do you post for me?** In the top package I schedule them in your Meta Business Suite. You stay the owner of your accounts.
 
-**The tool:** Social-post machine from team B5 (captions + designed images for a client). Module `agency.social` (B5 expected (module name to confirm after merge)).
+**The tool:** Social post machine (team B5): designed square + story images from code (no AI images), captions, schedule sheet, approval message. Script `agency/content/make_posts.py` (B5 (agency/content/make_posts.py)).
 
-    python -m agency.social ... (team B5: see docs/AGENCY.md once merged)
-    Schedule by hand in the client's Meta Business Suite > Planner (free), or hand over the images + captions sheet
+    python -m money_machines.gig_pack order --gig social-month --name "<business>" --category <trade> --city "<city, ST>" --phone ... --email ...
+    python agency/content/make_posts.py money_machines/out/orders/<slug>/client.json --month next --posts 12   (20 for the bigger packages; --colors "#hex,#hex" for their brand)
+    send client_message.txt for their OK, then schedule by hand in their Meta Business Suite > Planner (free) or hand over posts.csv
 
 **Delivery checklist:**
 
@@ -567,10 +571,11 @@ I use AI-assisted tools for first drafts; I check and finish everything myself.
 - **Do you need my password?** No. You create the chat account and invite me, or paste one line of code I send you.
 - **Does it slow my site down?** Slightly. I load it after the page so your site stays fast; the FAQ widget is very light.
 
-**The tool:** Chat widget from team B4 (agency/upsells), or a free chat service installed by hand. Module `agency.upsells.make_chat` (B4 expected (module name to confirm after merge)).
+**The tool:** Front-desk chat (team B4): one script tag, answers only from the client's facts; or a free chat service installed by hand. Script `agency/upsells/make_chat.py` (B4 (agency/upsells/make_chat.py)).
 
-    Install + answers: the client creates a free account at a chat service (for example tawk.to or crisp.chat), invites you, you paste its snippet before </body>
-    FAQ widget: python -m agency.upsells.make_chat ... (team B4: see docs/AGENCY.md once merged)
+    Install / Install + answers: the client opens a free account at a chat service (for example tawk.to or crisp.chat) and invites you; paste its snippet before </body>
+    FAQ widget: python -m money_machines.gig_pack order --gig chat-widget --name "<business>" --category <trade> --city "<city, ST>" --phone ... --email ...
+    python agency/upsells/make_chat.py money_machines/out/orders/<slug>/client.json --out money_machines/out/orders/<slug>/chat   (fill the facts it lists under 'check with the client')
 
 **Delivery checklist:**
 

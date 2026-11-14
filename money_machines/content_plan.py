@@ -9,8 +9,8 @@
 Images: one HTML card per post, rendered to JPEG by the pre-installed Chromium (playwright). Instagram's publishing API takes
 JPEG only, 4:5 portrait fits its 4:5-1.91:1 range. Out: money_machines/out/content/<account>/dayNN.jpg + index.html (the posting
 sheet: image + caption + date, to schedule by hand in Meta Business Suite, free). The look is OLYMPUS AGORA (ivory and night,
-gold and olive, serif titles); a style file from the social-post machine (team B5, agency/social/style.json) or --style FILE
-overrides the colours and fonts when present.
+gold and olive, serif titles). When the agency content kit (team B5, agency/content/designs.py) is installed, the cards use
+its embedded open fonts (Fraunces titles, Manrope text) like the agency's own posts; --style FILE overrides colours and fonts.
 
 Nothing here posts. Posting is money_machines/ig_post.py (dry run by default) or the owner in Meta Business Suite.
 """
@@ -32,7 +32,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 PLANS = os.path.join(HERE, "plans")
 OUT = os.environ.get("MONEY_MACHINES_OUT") or os.path.join(HERE, "out")
-B5_STYLE = os.path.join(ROOT, "agency", "social", "style.json")
 DAYS = 30
 FIXED_START = "2026-11-16"            # the committed plans start here (a Monday); --start changes it
 CAPTION_MAX = 2200                    # Instagram caption limit
@@ -193,12 +192,23 @@ def write_plan(plan: dict) -> tuple:
 
 
 # ------------------------------------------------------------------------------------------------ images
+def b5_fonts() -> tuple:
+    """Team B5's embedded OFL fonts (agency/content/designs.py: Fraunces titles, Manrope text) when the agency content kit is
+    installed, so our cards share the agency posts' type; else ("", "", "") and the system font stacks are used."""
+    try:
+        from agency.content import designs as D
+        return D.font_faces(["fraunces", "manrope"]), "'Fraunces',", "'Manrope',"
+    except Exception:
+        return "", "", ""
+
+
 def load_style(account: str, style_file: str | None = None) -> dict:
     st = dict(STYLES[account])
-    path = style_file or (B5_STYLE if os.path.exists(B5_STYLE) else None)
-    if path:
+    faces, serif, sans = b5_fonts()
+    st.update(faces=faces, serif=serif + st["serif"], sans=sans + st["sans"])
+    if style_file:
         try:
-            with open(path, encoding="utf-8") as fh:
+            with open(style_file, encoding="utf-8") as fh:
                 ext = json.load(fh)
             ext = ext.get(account, ext) if isinstance(ext, dict) else {}
             st.update({k: v for k, v in ext.items() if k in st and isinstance(v, str) and (k in ("serif", "sans") or re.fullmatch(r"#[0-9a-fA-F]{6}", v))})
@@ -220,7 +230,7 @@ def card_html(plan: dict, post: dict, style: dict) -> str:
     foot_r = "Save for later" if plan["account"] == "local_growth" else "Education only · not financial advice"
     risk = ("<div class='risk'>Futures trading involves substantial risk of loss. No results are shown or promised.</div>"
             if plan["account"] == "eval_journal" else "")
-    return f"""<!doctype html><html><head><meta charset="utf-8"><style>
+    return f"""<!doctype html><html><head><meta charset="utf-8"><style>{s.get('faces', '')}
 *{{box-sizing:border-box;margin:0;padding:0}}
 html,body{{width:1080px;height:1350px;background:{s['bg']}}}
 body{{font-family:{s['sans']};color:{s['ink']};padding:64px 72px;display:flex;flex-direction:column}}

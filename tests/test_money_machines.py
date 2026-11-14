@@ -167,20 +167,23 @@ def part_b():
         md = open(files[0], encoding="utf-8").read()
         check("b. the GBP checklist deliverable is written (md + html) with all 18 lines and the honest-rules line",
               len(files) == 2 and md.count("\n| ") >= 18 and "No one can promise a ranking" in md)
-        n0 = len(NET_TRIES)
-        p = GP.run_report("https://example.com", "Rivera Plumbing", tmp, use_audit=False)
-        page = open(p, encoding="utf-8").read()
-        check("b. the website report without the agency kit: written, says the automatic check did not run, no network", "not available here" in page
-              and len(NET_TRIES) == n0 and "PageSpeed" in page)
-        fake = {"issues": [{"code": "no_tel", "weight": 10, "text": "The phone number is not tap-to-call"},
-                           {"code": "no_https", "weight": 20, "text": "No padlock"}], "facts": {"https": False}}
-        h = GP.report_html("Rivera Plumbing", "http://x.test", fake, "2026-11-14")
-        check("b. the report lists what the check found, biggest first", h.index("No padlock") < h.index("tap-to-call") and "2026-11-14" in h)
+        rc = GP.main(["order", "--gig", "review-booster", "--name", "Rivera Plumbing", "--category", "plumber", "--city", "Fort Collins, CO",
+                      "--phone", "(970) 555-0142", "--review-url", "https://g.page/r/example/review", "--colors", "#14213D,#D4A24C,nothex", "--price", "60",
+                      "--out", os.path.join(tmp, "ord")])
+        cl = json.load(open(os.path.join(tmp, "ord", "client.json"), encoding="utf-8"))
+        shared = {"id", "name", "trade", "city", "phone", "email", "site_url", "demo_url", "status", "package", "setup_usd", "monthly_usd", "notes"}
+        check("b. order writes lead.json (B1) and client.json in the shared client record B4/B5 read (+ review_url, valid brand colours only)",
+              rc == 0 and os.path.exists(os.path.join(tmp, "ord", "lead.json")) and shared <= set(cl) and cl["id"] == "rivera-plumbing"
+              and cl["review_url"].endswith("/review") and cl["brand_colors"] == ["#14213D", "#D4A24C"] and cl["setup_usd"] == 60.0, cl)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     st = GP.tool_status()
-    check("b. --check knows the tool of every gig (ours ready: brand kit + GBP checklist)", len(st) == 8
-          and {g for g, m, ok, s in st if ok} >= {"logo-brand-kit", "gbp-setup"}, st)
+    by = {g: (m, ok) for g, m, ok, s in st}
+    check("b. --check knows the tool of every gig: ours are ready (brand kit, GBP checklist); the agency tools are named by their real paths",
+          len(st) == 8 and by["logo-brand-kit"][1] and by["gbp-setup"][1] and by["speed-seo-report"][0] == "agency/storefront/grade.py"
+          and by["social-month"][0] == "agency/content/make_posts.py" and by["review-booster"][0] == "agency/upsells/make_review.py"
+          and by["chat-widget"][0] == "agency/upsells/make_chat.py" and by["local-website"][0] == "agency.build_site", st)
+    check("b. no website-report code of our own (team B3's grader does that job)", not hasattr(GP, "run_report"))
 
 
 # ------------------------------------------------------------------------------------------------ c. content plan

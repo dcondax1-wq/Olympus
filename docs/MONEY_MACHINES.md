@@ -31,19 +31,22 @@ revision policy, plus Upwork proposal templates and the daily routine.
 
 | Gig | Packages ($) | Owner's time (min) | Tool that makes it | Ready? |
 |---|---|---|---|---|
-| Fast mobile website for a local business | 120 / 260 / 480 | 35 / 55 / 90 | B1 demo-site generator (`python -m agency.build_site`), fed by `python -m money_machines.gig_pack order ...` | when the agency kit is merged |
+| Fast mobile website for a local business | 120 / 260 / 480 | 35 / 55 / 90 | B1 site generator (`python -m agency.build_site`) | when the agency kit is merged |
 | Simple logo + brand kit | 25 / 55 / 95 | 20 / 35 / 50 | `python -m money_machines.brand_kit` (built here) | yes |
 | Google Business Profile set-up + checklist | 35 / 75 / 140 | 25 / 50 / 75 | `python -m money_machines.gig_pack checklist` (built here) | yes |
-| Honest review system (QR card + scripts) | 30 / 60 / 110 | 15 / 30 / 50 | B4 review booster (`agency/upsells`) | QR maker yes, card maker when merged |
-| Website speed + SEO fix report | 35 / 70 / 140 | 25 / 45 / 90 | `python -m money_machines.gig_pack report` (wraps B1's `agency.audit`) + PageSpeed Insights by hand | yes (hand checks); automatic part when merged |
-| Landing page | 70 / 140 / 250 | 25 / 45 / 75 | B1 demo-site generator (one page) | when merged |
-| A month of social posts + images | 45 / 85 / 150 | 30 / 45 / 70 | B5 social-post machine | when merged |
-| Chat widget install | 25 / 55 / 95 | 15 / 35 / 55 | free chat service by hand, or B4's widget | by hand yes |
+| Honest review system (QR card + scripts) | 30 / 60 / 110 | 15 / 30 / 50 | B4 review booster (`agency/upsells/make_review.py`) | when merged |
+| Website speed + SEO fix report | 35 / 70 / 140 | 25 / 45 / 90 | B3 website grader (`agency/storefront/grade.py`) + PageSpeed Insights by hand | when merged |
+| Landing page | 70 / 140 / 250 | 25 / 45 / 75 | B1 site generator (one page) | when merged |
+| A month of social posts + images (12 or 20) | 45 / 85 / 140 | 30 / 45 / 70 | B5 social-post machine (`agency/content/make_posts.py`) | when merged |
+| Chat widget install | 25 / 55 / 95 | 15 / 35 / 55 | a free chat service by hand, or B4's widget (`agency/upsells/make_chat.py`) | by hand yes |
 
-`python -m money_machines.gig_pack --check` prints which tools are installed. Prices are launch prices inside the ranges competing gigs
+A paid order becomes the agency tools' input with one line: `python -m money_machines.gig_pack order --gig <gig> --name ... --category ...
+--city ...` writes `lead.json` (for B1's site generator) and `client.json` (the shared client record B4's and B5's tools read) and prints
+the next command. `python -m money_machines.gig_pack --check` prints which tools are installed. Prices are launch prices inside the ranges competing gigs
 showed on 2026-11-14 (websites $150-800 for 3-6 pages and $400-1,200 in Fiverr's own guide; landing pages $25-250; 30 posts with
 graphics $30-115; logos mostly $15-50 basic; review QR cards from $25; Google profile gigs "up to $50"). Raise them about 30% after 5
-five-star reviews. **Fiverr keeps 20%**, so a $120 order pays $96.
+five-star reviews. **Fiverr keeps 20%**, so a $120 order pays $96. What the brand kit makes: `docs/shots/money_machines/brand_kit_concepts.jpg` (3 concepts for one
+client; the full kit adds 4 logo layouts, dark/light versions, favicon, profile picture, banner, business cards, palette and a guide).
 
 ### The platforms' rules (searched 2026-11-14; check the official page before relying on a number)
 
@@ -104,8 +107,9 @@ one thing on the weakest gig. Start on Fiverr (free); add Upwork Plus only after
 
 Make the images (Chromium, about 10 seconds for 30): `python -m money_machines.content_plan --all --render` writes
 `money_machines/out/content/<account>/dayNN.jpg` (1080 x 1350 JPEG), `index.html` (the posting sheet: image, caption, alt text) and
-`schedule.csv`. A new month: `--fresh` (next Monday) or `--start YYYY-MM-DD`. A style file from team B5's social-post machine
-(`agency/social/style.json`, colours and fonts per account) is used when it exists, or `--style FILE`.
+`schedule.csv`. A new month: `--fresh` (next Monday) or `--start YYYY-MM-DD`. When team B5's content kit is installed
+(`agency/content/designs.py`), the cards use its embedded open fonts (Fraunces, Manrope) like the agency's own posts; `--style FILE`
+overrides colours and fonts.
 
 ### How to post (simplest first)
 
@@ -159,7 +163,8 @@ pictures (`cover.jpg` 1280 x 720, `cover_square.jpg` 2000 x 2000, `app_screensho
   spreadsheet in 3 scenarios and Chromium runs the JavaScript: both equal the Python (`--verify`, `tests.test_money_machines e`).
 - It names no prop firm, shows no results, promises nothing and says it is not affiliated with anyone; the description says AI coding
   tools helped (Etsy's rule).
-- Rebuild: `python -m money_machines.products.build_eval_tracker --zip` writes the upload zip to `money_machines/out/products/`.
+- The upload file: `python -m money_machines.products.build_eval_tracker --zip` packs the 5 buyer files into
+  `money_machines/out/products/prop_eval_tracker_v1.0.zip` (plain Python, works on the PC). Rebuilding the files themselves (no flag) needs openpyxl and Chromium.
 
 **List it (owner, about 20 minutes):** 1. Free Payhip account. 2. New product > Digital download: upload the zip, paste the title and
 description from `listing.md`, add `cover.jpg` and `app_screenshot.jpg`, price $17. 3. Put the link in the Eval Journal bio.

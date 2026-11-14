@@ -1,9 +1,11 @@
 """Build the PROP EVAL TRACKER product (digital download): spreadsheet, how-to PDF, licence, listing copy, covers, upload zip.
 
-    python -m money_machines.products.build_eval_tracker            # rebuild everything in money_machines/products/eval_tracker/
-    python -m money_machines.products.build_eval_tracker --zip      # + money_machines/out/products/prop_eval_tracker_v1.zip (the upload)
+    python -m money_machines.products.build_eval_tracker --zip      # the owner: pack the committed files into the upload zip
+                                                                    #   (money_machines/out/products/prop_eval_tracker_v1.0.zip; stdlib only)
+    python -m money_machines.products.build_eval_tracker            # rebuild every file in money_machines/products/eval_tracker/
+                                                                    #   (needs openpyxl; Chromium for the PDF and pictures)
     python -m money_machines.products.build_eval_tracker --verify   # LibreOffice recomputes the spreadsheet: must equal eval_math.py
-    python -m money_machines.products.build_eval_tracker --no-images  # skip the Chromium parts (PDF, covers)
+    python -m money_machines.products.build_eval_tracker --no-images  # rebuild without the Chromium parts (PDF, covers)
 
 The web app (eval_tracker/prop_eval_tracker.html) is hand-written and copied as is. Everything uses the same math
 (money_machines/products/eval_math.py). The product tracks the buyer's own rules; it promises nothing, names no firm and talks
@@ -103,7 +105,6 @@ def build_xlsx(path: str = XLSX, rules: dict | None = None, days: list | None = 
     input_fill = PatternFill("solid", fgColor="FFF2CC")
     line = Border(bottom=Side(style="thin", color="BBBBBB"))
     money = '$#,##0.00;-$#,##0.00;"-"'
-    wrap = Alignment(wrap_text=True, vertical="top")
     lock = 'IF(Rules!$B$7="",9E+99,Rules!$B$3+Rules!$B$7)'
 
     wb = Workbook()
@@ -231,7 +232,6 @@ def build_xlsx(path: str = XLSX, rules: dict | None = None, days: list | None = 
     db.column_dimensions["B"].width = 34
     db["A1"] = "Where you stand"
     db["A1"].font = title
-    rng = f"{FIRST}:{'B'}{LAST}"
     items = [
         ("Days logged", f"=COUNT(Log!B{FIRST}:B{LAST})", "0"),
         ("Balance ($)", f"=IF(B3=0,Rules!B3,INDEX(Log!G{FIRST}:G{LAST},B3))", money),
@@ -247,7 +247,6 @@ def build_xlsx(path: str = XLSX, rules: dict | None = None, days: list | None = 
         ("Minimum days met?", '=IF(B3>=Rules!B10,"Yes","No")', "@"),
         ("STATUS", '=IF(B13="Yes","BREACHED",IF(AND(Rules!B4>0,B7>=Rules!B4,B14="Yes",OR(B11="No rule",B11="Yes")),"TARGET MET",IF(B6<=0.25*Rules!B5,"CAREFUL","OK")))', "@"),
     ]
-    del rng
     for i, (lab, formula, fmt) in enumerate(items, 3):
         a = db.cell(row=i, column=1, value=lab)
         a.font = bold if lab.isupper() or lab.startswith("DRAWDOWN") else norm
@@ -576,7 +575,8 @@ def cache_values(path: str = XLSX) -> str:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m money_machines.products.build_eval_tracker")
-    ap.add_argument("--zip", action="store_true", help="also write the upload zip to money_machines/out/products/")
+    ap.add_argument("--zip", action="store_true", help="pack the committed files into the upload zip (no rebuild; add --build to rebuild first)")
+    ap.add_argument("--build", action="store_true", help="with --zip: rebuild the files first")
     ap.add_argument("--verify", action="store_true", help="LibreOffice recomputes 3 scenarios; they must equal eval_math.py")
     ap.add_argument("--no-images", action="store_true")
     a = ap.parse_args(argv)
@@ -584,6 +584,9 @@ def main(argv=None) -> int:
         probs = verify()
         print("\n".join(probs) if probs else "spreadsheet = eval_math in every scenario")
         return 1 if probs else 0
+    if a.zip and not a.build:
+        print(make_zip())
+        return 0
     price = LISTING["price_usd"]
     print(build_xlsx())
     print(cache_values())
