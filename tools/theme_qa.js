@@ -8,7 +8,8 @@
  *             or gradient is still one of AGORA's own literal colours (opts.agora: 'r,g,b' strings) while the look should repaint it.
  *   money     the gains and losses (+$ / -$, .up / .dn / .pos / .neg / gain / loss ...): green / red hue, readable.
  *   meta      the theme-color meta, color-scheme, ::selection, scrollbar colours, the placeholder ink, the first painted frame (window.__olyQAPaint).
- * window.__olyQA keeps the helpers (focus ring checks after a Tab: __olyQA.focus()). */
+ * window.__olyQA keeps the helpers (focus ring checks after a Tab: __olyQA.focus(); __olyQA.boxes(ix): the measured texts' boxes now, so
+ * theme_shots.py leaves out of the pixel check a text that moved between its measure and the screenshot). */
 (function () {
   return function (opts) {
     opts = opts || {};
@@ -109,7 +110,7 @@
     }
 
     // ---------------------------------------------------------------- 1. text contrast
-    const texts = [], low = [];
+    const texts = [], low = [], els = [];
     // opts.scope: only what sits inside it (a sheet, a toast: theme_shots.py's overlay check)
     const all = opts.scope ? [...d.querySelectorAll('body *')].filter((e) => e.closest(opts.scope)) : d.querySelectorAll('body *');
     const until = opts.screens ? opts.screens * H : Infinity;
@@ -134,8 +135,9 @@
       for (const b of B.cands) { const v = ratio(over(f, b), b); if (v < worst) { worst = v; wb = b; } }
       const row = { sel: path(e), text: (field ? e.value : e.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40), fg: hex(fg), a: Math.round(f[3] * 100) / 100,
         bg: hex(wb), cands: B.cands.length, ratio: Math.round(worst * 100) / 100, need, unsure: B.unsure,
-        box: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], top: r.top < H && r.bottom > 0 ? onTop(e, r) : null };
+        box: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], top: r.top < H && r.bottom > 0 ? onTop(e, r) : null, i: texts.length };
       texts.push(row);
+      els.push(e);
       if (worst < need) low.push(row);
     }
 
@@ -244,6 +246,11 @@
     };
     window.__olyQA = {
       col, ratio, over, bgOf, hex,
+      /** the boxes of the measured texts (by their row's i) as they are now: null for one that left the page */
+      boxes(ix) {
+        return (ix || []).map((i) => { const e = els[i]; if (!e || !e.isConnected) return null; const r = e.getBoundingClientRect();
+          return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; });
+      },
       /** the focused element's ring: { sel, kind, color, ratio (ring vs the background under it), ok } */
       focus() {
         const e = d.activeElement; if (!e || e === d.body || e === root) return null;

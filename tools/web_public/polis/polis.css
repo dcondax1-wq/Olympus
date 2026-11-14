@@ -128,3 +128,6 @@ html[data-oly-lite="1"] .plaque { transition: none; }
 .lifedemo { color: var(--ag-sun); }
 /* the harbour card: the red-figure tondo and the text keep clear of each other at phone size */
 @media (max-width: 420px) { .potmark { width: 56px; height: 56px; right: 12px; top: 12px; } .potmark svg { width: 56px; height: 56px; } #harH, #harLead { padding-right: 64px; } }
+/* light looks (T2 2026-11-14; AGORA is dark: never the default): the district buttons stay solid enough that the 3D scene under their blur
+   does not take the chosen one's accent ink under 4.5:1 */
+html[data-oly-scheme="light"] .dist { background: rgba(var(--oly-th-n4-rgb, 29, 25, 20), .92); }

@@ -625,6 +625,12 @@ html .oly-l .oly-g, html .oly-l .oly-chip i { animation: none !important; filter
 #page.pl-h:not(.pl-all) > .pl-kept-herald:not(#plA):not(#plB):not(#plC):not(#plD) { display: block !important; }
 #page > .pl-kept-herald .pl-btn { height: auto; padding: 0; font-size: 22px; justify-content: center; }
 
+/* light looks (data-oly-scheme="light", T2 2026-11-14; AGORA is dark, so none of this applies to the default): the paper-shadow cards keep
+   full ink (their .88 dimming took the muted ink under 4.5:1 on a light page) and BLITZ's muted labels take one step stronger ink (its
+   tiles sit on accent glows that shade a light page) */
+html[data-oly-scheme="light"] :is(.su-acct.ph, .mc-orbit.ph) { opacity: 1; }
+html[data-oly-scheme="light"] .bl-wrap { --bl-mut: var(--oly-th-n24, #6c665f); }
+
 /* ================================================================================================ style themes (olympus/themes.js 'style', 2026-11-14)
    Only under <html data-oly-style> (a style theme is on): the page background (a gradient or a pattern), the cards' surface, border, shadow and
    blur, the titles' weight / case / tracking / italic and the primary button, from the --oly-th-* the engine paints. The default (AGORA) and the

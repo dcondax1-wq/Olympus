@@ -516,6 +516,8 @@ textarea.jn { width: 100%; margin: 8px 0 0; padding: 8px; font-size: 16px; line-
 .chip.up { border-color: rgba(var(--ok-rgb), .45); } .chip.up b { color: var(--ok); }
 .chip.down { border-color: rgba(var(--bad-rgb), .45); } .chip.down b { color: var(--bad); }
 .chip.on { border-color: rgba(var(--cr), .7); background: rgba(var(--cr), .14); }
+/* under a look the chosen chip reads in full ink (its accent tint lifts the muted ink under 4.5:1 on some looks); AGORA keeps its own */
+html[data-oly-theme]:not([data-oly-theme="agora"]) .chip.on { color: var(--txt); }
 .hero .chips { margin-top: -2px; }
 
 /* ---- the 3D links */

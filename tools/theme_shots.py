@@ -318,6 +318,23 @@ def mostly_on(box, W, H):
     return w > 0 and h > 0 and vis_w >= 0.6 * w and vis_h >= 0.6 * h
 
 
+def measure(p, src, args, shot):
+    """the page measured (theme_qa.js), then its screenshot, then the measured texts' boxes read again: a text whose box changed meanwhile
+    (async content shifting the page) is marked moved and the pixel check leaves it out (the screenshot does not show it where it was
+    measured); rep["moved"] counts them"""
+    rep = p.evaluate("(a) => (" + src + ")(a)", args)
+    p.screenshot(path=shot)
+    rows = rep.get("texts") or []
+    now = p.evaluate("(ix) => window.__olyQA && window.__olyQA.boxes ? window.__olyQA.boxes(ix) : null", [t.get("i", -1) for t in rows])
+    moved = 0
+    for t, b in zip(rows, now or []):
+        if b is None or any(abs(b[k] - t["box"][k]) > 2 for k in range(4)):
+            t["moved"] = True
+            moved += 1
+    rep["moved"] = moved
+    return rep
+
+
 def pixel_check(png, rows, vw, vh):
     """the text rows on screen, measured on the screenshot: (fails, checked). A row passes when its ink over the background its box
     mostly shows reaches its need; covered rows (top == False) are skipped."""
@@ -327,8 +344,8 @@ def pixel_check(png, rows, vw, vh):
     H, W = im.shape[:2]
     fails, n = [], 0
     for r in rows:
-        if not r.get("top"):
-            continue
+        if not r.get("top") or r.get("moved"):
+            continue                                              # covered, or moved while the screen was taken (measure() above)
         x, y, w, h = r["box"]
         x0, y0, x1, y1 = max(0, x), max(0, y), min(W, x + w), min(H, y + h)
         if x1 - x0 < 2 or y1 - y0 < 2 or not mostly_on(r["box"], W, H):
@@ -410,8 +427,7 @@ def overlays(p, src, raw, look, key, agora):
             if not p.evaluate("(s) => !!document.querySelector(s)", scope):
                 continue
             shot = os.path.join(raw, f"{look}-{key}-{name}.png")
-            p.screenshot(path=shot)
-            rep = p.evaluate("(a) => (" + src + ")(a)", {"agora": agora if look != "agora" else [], "max": 12, "scope": scope + ", " + scope + " *"})
+            rep = measure(p, src, {"agora": agora if look != "agora" else [], "max": 12, "scope": scope + ", " + scope + " *"}, shot)
             fails, n = pixel_check(shot, rep["texts"], 390, 844)
             out[name] = {"n": n, "lowPx": fails[:6], "left": rep["left"][:6], "ok": not fails and not rep["left"]}
             if closer:
@@ -438,9 +454,9 @@ def qa_page(p, origin, key, path, raw, look, agora, focus=True, first_dash=True,
         p.wait_for_timeout(150)
         vw, vh = p.viewport_size["width"], p.viewport_size["height"]
         shot = os.path.join(raw, f"{look}-{key}.png")
-        p.screenshot(path=shot)
-        rep = p.evaluate("(a) => (" + src + ")(a)", {"agora": agora if look != "agora" else [], "max": 40})          # the default: AGORA is its own colour
+        rep = measure(p, src, {"agora": agora if look != "agora" else [], "max": 40}, shot)          # the default: AGORA is its own colour
         fails, checked = pixel_check(shot, rep["texts"], vw, vh)
+        moved = rep.get("moved", 0)
         below = [r for r in rep["low"] if r.get("top") is None and r["box"][1] >= vh and not r.get("unsure")]
         for s in range(1, screens):                               # the next screen down: measured on its own pixels too
             if rep["h"] <= vh * s + 40:
@@ -448,9 +464,9 @@ def qa_page(p, origin, key, path, raw, look, agora, focus=True, first_dash=True,
             p.evaluate("(y) => window.scrollTo(0, y)", int(vh * 0.92 * s))
             p.wait_for_timeout(350)
             shot2 = os.path.join(raw, f"{look}-{key}-s{s + 1}.png")
-            p.screenshot(path=shot2)
-            r2 = p.evaluate("(a) => (" + src + ")(a)", {"agora": [], "max": 10})
+            r2 = measure(p, src, {"agora": [], "max": 10}, shot2)
             f2, c2 = pixel_check(shot2, r2["texts"], vw, vh)
+            moved += r2.get("moved", 0)
             seen = {(x["sel"], x["text"]) for x in fails}
             fails += [x for x in f2 if (x["sel"], x["text"]) not in seen]
             checked += c2
@@ -489,7 +505,7 @@ def qa_page(p, origin, key, path, raw, look, agora, focus=True, first_dash=True,
                "top": "#%02x%02x%02x" % tuple(top), "selection": rep["selection"], "scrollbar": rep["scrollbar"], "nTexts": rep["nTexts"], "checkedPx": checked,
                "lowPx": fails[:25], "nLowPx": len(fails), "lowBelow": below[:15], "nLowBelow": len(below), "left": rep["left"], "money": rep["money"],
                "placeholders": [x for x in rep["placeholders"] if x["ratio"] < 4.5], "first": first, "flash": flash, "focus": rings, "sx": rep["sx"],
-               "errors": errs[:4], "slow": slow, "shot": shot, "overlays": ov, "canvases": rep.get("canvases") or []}
+               "errors": errs[:4], "slow": slow, "shot": shot, "overlays": ov, "canvases": rep.get("canvases") or [], "moved": moved}
         res["verdict"] = {
             "text": not fails and not below,
             "left": not rep["left"],
