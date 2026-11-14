@@ -122,7 +122,7 @@
   <div class="scrim" id="callScrim"></div>
   <div class="panel" id="callPanel" role="dialog" aria-modal="true" aria-labelledby="cName">
     <div class="chead">
-      <div class="cid"><h2 id="cName" tabindex="-1"></h2><p class="note" id="cSub"></p></div>
+      <div class="cid"><h2 id="cName" tabindex="-1" data-oly-skip></h2><p class="note" id="cSub"></p></div><!-- focused on open so VoiceOver reads the business; data-oly-skip: no keyboard ring on a heading -->
       <button type="button" class="btn quiet" id="cClose" data-oly-cue="close">Close</button>
     </div>
     <p class="win" id="cWin" role="status" aria-live="polite"></p>
