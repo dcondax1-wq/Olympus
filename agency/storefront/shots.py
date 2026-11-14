@@ -74,9 +74,12 @@ def webp(png: bytes, size: tuple, out: Path, q: int = 74) -> int:
     return len(buf.getvalue())
 
 
-def png_small(png: bytes, out: Path) -> int:
+def png_small(png: bytes, out: Path, quantize: bool = False) -> int:
+    """optimized PNG; long full-page review shots go to 256 colours (a third of the size, fine for reading)"""
     from PIL import Image
     im = Image.open(io.BytesIO(png)).convert("RGB")
+    if quantize:
+        im = im.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
     buf = io.BytesIO()
     im.save(buf, "PNG", optimize=True)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -159,7 +162,7 @@ def shoot_review(br, url: str) -> list[str]:
         if prep:
             prep(p)
             settle(p)
-        n = png_small(p.screenshot(full_page=full), REVIEW / name)
+        n = png_small(p.screenshot(full_page=full), REVIEW / name, quantize=full)
         done.append(f"{name} {n // 1024} KB")
         ctx.close()
 
@@ -167,7 +170,7 @@ def shoot_review(br, url: str) -> list[str]:
     for pg in pages:
         prep = answer_quiz if pg == "grader" else None
         snap(phone1, f"/{pg}.html", f"phone-{pg}.png", True, prep)
-        snap(DESK, f"/{pg}.html", f"desktop-{pg}.png", True, prep)
+        snap(DESK, f"/{pg}.html", f"desktop-{pg}.png", pg in ("index", "work", "pricing", "grader"), prep)
     snap(PHONE, "/index.html", "phone-home-top.png", False)
     snap(DESK, "/index.html", "desktop-home-top.png", False)
     snap(PHONE, "/index.html", "phone-menu-open.png", False, lambda p: p.click(".menu-btn"))

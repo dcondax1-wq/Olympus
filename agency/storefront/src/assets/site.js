@@ -43,12 +43,16 @@
     $$('input[name="plan"]').forEach(function (r) { if (r.value === plan) { r.checked = true; } });
   }
 
-  // 5. forms: one tap = one send
+  // 5. forms: one tap = one send (and Back after sending gives a working button again)
   $$('form[data-netlify]').forEach(function (f) {
+    var b = $('button[type="submit"]', f);
+    var label = b ? b.firstChild.textContent : '';
     f.addEventListener('submit', function (e) {
       if (f.id === 'grader' && !graderReady(e)) { return; }
-      var b = $('button[type="submit"]', f);
       if (b) { b.disabled = true; b.setAttribute('aria-busy', 'true'); b.firstChild.textContent = 'Sending... '; }
+    });
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted && b) { b.disabled = false; b.removeAttribute('aria-busy'); b.firstChild.textContent = label; }
     });
   });
 
