@@ -163,7 +163,7 @@ def test_static():
           and all(sel.strip().startswith(("@", "html", ".me-", "}")) or not sel.strip() for sel in re.findall(r"(?m)^([^{}\n]+)\{", re.sub(r"/\*.*?\*/", "", css, flags=re.S))))
     check("a. the hub page loads me.css after hub.css and me.js (deferred) before hub.js; a Me chip in the plain hub list",
           hub_html.index('href="hub.css?v=h1"') < hub_html.index('href="me.css?v=m1"') < hub_html.index("</head>")
-          and hub_html.index('<script src="me.js?v=m1" defer></script>') < hub_html.index('<script src="hub.js?v=h2" defer></script>') and 'data-hub="me" href="index.html?h=me"' in hub_html)
+          and hub_html.index('<script src="me.js?v=m2" defer></script>') < hub_html.index('<script src="hub.js?v=h2" defer></script>') and 'data-hub="me" href="index.html?h=me"' in hub_html)
     check("a. hub.js hands a PAGE hub (page: 'me') to OLYMPUS_ME_PAGE.mount (no tabs), with the Me icon",
           "if (H.page)" in hub_js and "MP.mount(panel, { base: base, now: nowS, hub: H, done:" in hub_js and "me: ['M20 6.5" in hub_js)
     check("a. the catalog: the hub 'me' (Me, its question, page 'me', 8 areas, no apps, legacy life for old themes), findHubs; the hub-status line meOf",
@@ -712,7 +712,8 @@ def test_node():
           [t["id"] for t in V["tiles"]] == ["money", "health", "home", "date"] and V["tiles"][0]["src"] == "Bank exports" and V["tiles"][0]["age"] == "4 d ago"
           and V["tiles"][2]["age"] == "just now" and len(V["areas"]) == 8 and V["connected"] == 8 and V["has"] and not V["banner"] and len(V["areas"][0]["cards"]) == 4, V["tiles"])
     check("i. me.js view() without the file (the public site): the banner says to open it through the PC's link; every tile 'Not connected' + how; every area its connect line",
-          not N["has"] and "LIVE_LINK.bat" in N["banner"] and all(t["empty"] and t["connect"] for t in N["tiles"]) and all(a["state"] == "empty" and a["connect"] for a in N["areas"]), N["tiles"][0])
+          not N["has"] and "LIVE_LINK.bat" in N["banner"] and all(t["empty"] and t["connect"] for t in N["tiles"]) and all(a["state"] == "empty" and a["connect"] for a in N["areas"])
+          and N["tiles"][0]["connect"] == "A bank CSV + RUN_MONEY.bat on the PC" and N["areas"][0]["connect"] == me_hub.CONNECT["money"], (N["tiles"][0], N["areas"][0]))
     check("i. a broken file = the same as none; junk is cut and cleaned (markup removed, 120 characters, an unknown level dropped, a bar kept within 0-100%)",
           not B["has"] and J["tiles"][0]["value"] == "b x /b" and len(J["tiles"][0]["sub"]) == 120 and J["tiles"][0]["lvl"] == "" and J["areas"][0]["cards"][0]["rows"][0]["pct"] == 100, J["tiles"][0])
     check("i. the connect lines on the phone are the PC's own words (me.js CONNECT == tools/me_hub.py CONNECT)", O["connect"] == me_hub.CONNECT,

@@ -29,6 +29,9 @@
   };
   var TILES = [['money', 'Money left this month', 'Bank exports', 'money'], ['health', 'Health today', 'Apple Watch', 'health'], ['home', 'Home', 'PC checks', 'home'],
     ['date', 'Next important date', 'Your dates + calendars', 'dates']];
+  /* an empty tile says how in a few words (a half-width tile); its area below holds the exact line (CONNECT), one tap away */
+  var SHORT = { money: 'A bank CSV + RUN_MONEY.bat on the PC', health: "The 'Health to PC' Shortcut, 5 minutes", home: 'Runs on the PC by itself',
+    dates: 'Type a date on the PC, or link a calendar' };
   var LINK = 'Your numbers show only through your PC\'s own link: on the PC double-click LIVE_LINK.bat, then open Me from that link (docs/ME_HUB.md).';
   var LV = { ok: 1, warn: 1, bad: 1 };
 
@@ -43,12 +46,12 @@
 
   /* ------------------------------------------------------------------------------------------ the view (pure) */
   function areasOf(a) { var L = arr(a).filter(function (x) { return x instanceof Array && typeof x[0] === 'string'; }); return L.length ? L : AREAS; }
-  function emptyTile(t) { return { id: t[0], label: t[1], value: 'Not connected', sub: '', lvl: '', src: t[2], age: '', to: t[3], empty: true, connect: CONNECT[t[3]] || '' }; }
+  function emptyTile(t) { return { id: t[0], label: t[1], value: 'Not connected', sub: '', lvl: '', src: t[2], age: '', to: t[3], empty: true, connect: SHORT[t[3]] || CONNECT[t[3]] || '' }; }
   function tileOf(x, nowS) {
     var t = obj(x), base = null;
     for (var i = 0; i < TILES.length; i++) if (TILES[i][0] === t.id) base = TILES[i];
     if (!base) return null;
-    if (t.empty) { var e = emptyTile(base); e.connect = txt(t.connect, 200) || e.connect; if (t.value && t.value !== 'Not connected') { e.value = txt(t.value, 40); e.sub = txt(t.sub, 120); } return e; }
+    if (t.empty) { var e = emptyTile(base); if (t.value && t.value !== 'Not connected') { e.value = txt(t.value, 40); e.sub = txt(t.sub, 120); } return e; }
     return { id: base[0], label: txt(t.label, 40) || base[1], value: txt(t.value, 40) || '-', sub: txt(t.sub, 120), lvl: lvl(t.lvl), src: txt(t.src, 40) || base[2],
       age: ageOf(t.t, nowS), to: txt(t.to, 20) || base[3], empty: false, connect: '' };
   }
@@ -137,7 +140,7 @@
       sec.appendChild(box);
       return sec;
     }
-    sec.appendChild(el('p', 'me-src', (s.src ? 'From ' + s.src : '') + (s.age ? ' · ' + s.age : '')));
+    sec.appendChild(el('p', 'me-src', (s.src ? 'From ' + s.src.replace(/^(Your|What) /, function (m) { return m.toLowerCase(); }) : '') + (s.age ? ' · ' + s.age : '')));
     if (s.line) sec.appendChild(el('p', 'me-line', s.line));
     if (s.note) sec.appendChild(el('p', 'me-warn', s.note));
     var stack = el('div', 'me-stack');
@@ -193,7 +196,7 @@
     g.addEventListener('pageshow', function (e) { if (e.persisted) load(null); });
   }
 
-  var out = { v: 1, AREAS: AREAS, CONNECT: CONNECT, TILES: TILES, view: view, mount: mount };
+  var out = { v: 1, AREAS: AREAS, CONNECT: CONNECT, SHORT: SHORT, TILES: TILES, view: view, mount: mount };
   g.OLYMPUS_ME_PAGE = out;
   if (typeof module !== 'undefined' && module.exports) module.exports = out;
 }(typeof window !== 'undefined' ? window : globalThis));
