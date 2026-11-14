@@ -10,7 +10,7 @@
                         -> [Finding]; a value is never printed whole (masked()).
   scrub(site)           the build's last step (and pc_publish's, after it adds kalshi.json): broker account ids keep only their last
                         4 digits ("MFFUEVBLDR...6789"), a personal folder becomes <you>, an email j***@domain, a card number ...1111,
-                        an age ("before I turn 19") goes, a commit author ("who" next to a "sha") is dropped, a private file that should never be there is removed. Data
+                        an age ("before I turn NN") goes, a commit author ("who" next to a "sha") is dropped, a private file that should never be there is removed. Data
                         files only (.json .md .txt .csv; never code or a licence); JSON stays valid; a file without a hit is untouched.
   public_status(obj)    the same masking for the dict posted to the PUBLIC ntfy status topic, plus no PC name / login / broker fields.
   canaries(state)       the values only this PC knows (git authors, the heartbeat's broker account names, the ntfy alert topic),
@@ -114,9 +114,9 @@ SAFE_TAILSCALE_IPS = {"100.100.100.100"}                         # Tailscale's o
 SAFE_EMAIL_DOMAINS = ("example.com", "example.org", "example.net", "example", "test", "localhost", "invalid", "email.com", "domain.com",
                       "yourdomain.com", "company.com", "users.noreply.github.com")
 SAFE_PHONE_EXCHANGES = {"555"}                                   # 555-01xx: the fiction numbers
-# the owner's age / birthday ("a Stingray before I turn 19 (Feb 22, 2027)" = a date of birth): never public
+# an age / birthday ("a car before I turn NN (<date>)" gives the birthday away): never public
 AGE_RX = re.compile(r"(?i)\b(?:before|by the time|until|when|after) I (?:turn|am|'m) \d{1,2}\b|\bI(?:'ll| will)? turn \d{1,2}\b|"
-                    r"\bmy (?:date of )?birth(?:day|date)? is\b|\bdate of birth\b|\bborn (?:on|in) (?:\d|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)")
+                    r"\bmy (?:date of )?birth(?:day|date)? is\b|\bdate\s+of\s+birth\b|\bborn (?:on|in) (?:\d|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)")
 MASK = "\u2026"
 
 
@@ -223,7 +223,7 @@ def scan_text(text: str, rel: str, canaries=(), binary: bool = False) -> list:
         _add(out, "street address", rel, m.start(), m.group(0))
     if " turn " in low or "birth" in low or "born " in low or " am " in low or "'m " in low:
         for m in AGE_RX.finditer(text):
-            _add(out, "age / birthday", rel, m.start(), m.group(0), "with a date it is a date of birth")
+            _add(out, "age / birthday", rel, m.start(), m.group(0), "with a date it gives the birthday away")
     if ZIP_HINT_RX.search(text):
         for m in STATE_ZIP_RX.finditer(text):
             _add(out, "state + ZIP", rel, m.start(), m.group(0))
@@ -436,7 +436,7 @@ def mask_cards(s: str) -> str:
 
 
 def mask_age(s: str) -> str:
-    """'2024 Stingray 3LT before I turn 19 (Feb 22, 2027)' -> '2024 Stingray 3LT (Feb 22, 2027)': the goal stays, the age goes"""
+    """'a red car before I turn NN (Jan 5, 2031)' -> 'a red car (Jan 5, 2031)': the goal stays, the age goes"""
     return re.sub(r"\s*(?:" + AGE_RX.pattern[4:] + ")", "", s, flags=re.I) if AGE_RX.search(s) else s
 
 

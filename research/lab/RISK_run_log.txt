@@ -319,5 +319,5 @@
 [  1179s] ATM_m1_two_a_day_tier  2026     P5_f_c35_w30_f1 b2b 1/2 roll 25.9 | P(pass)   9.5 fail  22.8 med 36.0 | zero   9.2
 [  1181s] ATM_m1_two_a_day_tier  2026     P5_1b_c35_f1 b2b 1/2 roll 30.1 | P(pass)  20.9 fail  50.7 med 28.0 | zero  20.5
 [  1184s] ATM_m1_two_a_day_tier  2026     P5_t_c_d_f2  b2b 1/1 roll 24.6 | P(pass)   7.1 fail  24.3 med 40.0 | zero   6.6
-done in 1184s -> C:\Users\Demetri Condax\AppData\Roaming\Claude\scratch-workspaces\70db7b8c-199a-421c-a714-e2c2b5e695d0\6871d521-939b-4b97-a32d-cbe1d3df7863\scratch-2026-10-15-bb0e63\nqbot\research\lab\RISK_results.json
-tables -> C:\Users\Demetri Condax\AppData\Roaming\Claude\scratch-workspaces\70db7b8c-199a-421c-a714-e2c2b5e695d0\6871d521-939b-4b97-a32d-cbe1d3df7863\scratch-2026-10-15-bb0e63\nqbot\research\lab\RISK_tables.md
+done in 1184s -> C:\Users\<you>\AppData\Roaming\Claude\scratch-workspaces\70db7b8c-199a-421c-a714-e2c2b5e695d0\6871d521-939b-4b97-a32d-cbe1d3df7863\scratch-2026-10-15-bb0e63\nqbot\research\lab\RISK_results.json
+tables -> C:\Users\<you>\AppData\Roaming\Claude\scratch-workspaces\70db7b8c-199a-421c-a714-e2c2b5e695d0\6871d521-939b-4b97-a32d-cbe1d3df7863\scratch-2026-10-15-bb0e63\nqbot\research\lab\RISK_tables.md

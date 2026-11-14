@@ -310,7 +310,7 @@ Examples seen: "open liquidity", "hide my balance", "good morning", "mission con
 ## d. Architecture
 
 ### PC (Windows, "desktop-tf4ue", 8 GB RAM)
-- **Folder** `C:\Users\Demetri Condax\OneDrive\Desktop\Jarvis\` (about 456 files deployed, 8.5 MB). Docs: `CLAUDE.md`, `DEV_GUIDE.md`, `HANDOFF.md`, `CREW.md`, `MORNING_REPORT.md`, `PC_TUNING.md`, `docs/FEATURES.md`, `docs/README.md`, `docs/TOOL_SAFETY.md`, `docs/EVALS.md`, `docs/CALLS.md`, `docs/BUSINESS_OS.md`, `docs/MYCAL_DESIGN.md`.
+- **Folder** `C:\Users\<you>\OneDrive\Desktop\Jarvis\` (about 456 files deployed, 8.5 MB). Docs: `CLAUDE.md`, `DEV_GUIDE.md`, `HANDOFF.md`, `CREW.md`, `MORNING_REPORT.md`, `PC_TUNING.md`, `docs/FEATURES.md`, `docs/README.md`, `docs/TOOL_SAFETY.md`, `docs/EVALS.md`, `docs/CALLS.md`, `docs/BUSINESS_OS.md`, `docs/MYCAL_DESIGN.md`.
 - **Server:**
   - Python 3.12 FastAPI `server.py`, run as `python -m uvicorn server:app --host 127.0.0.1 --port 8765`, started hidden by `jarvis-background.vbs` (`start.ps1` is the interactive launcher);
   - `Start/Stop/Restart Jarvis.bat` and `Open Jarvis.bat`;

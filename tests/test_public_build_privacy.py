@@ -112,7 +112,7 @@ def detectors(tmp):
         "tailnet name": ("link.md", f"open https://{F['tailnet']}/site/"),
         "tailscale IP": ("ip.md", f"phone at {F['tsip']}"),
         "canary": ("about.md", "made by " + F["name"].replace(" ", ".")),
-        "age / birthday": ("goal.md", "a 2024 Stingray 3LT before I " + "turn 19 (Feb 22, 2027)"),
+        "age / birthday": ("goal.md", "a red car before I " + "turn 30 (Jan 5, 2031)"),
     }
     for kind, (rel, text) in plant.items():
         write(bad, "plant/" + rel, text)
@@ -159,7 +159,7 @@ def scrub(tmp):
     doc = {"accounts": [{"broker_account": F["broker"], "balance": 49313.54}], "notice": f"LONG · {F['broker']} entered 2 MNQ",
            "log": F["path"], "rule_changes": [{"commit": {"sha": "abc123", "who": "planted-user", "when": "2026-11-03", "why": "merge"}}],
            "learnings": [{"who": "dev", "text": "kept"}], "contact": f"mail {F['email']}", "n": 1794000386, "id_num": 123456789012,
-           "goal": "2024 Stingray 3LT before I " + "turn 19 (Feb 22, 2027)"}
+           "goal": "a red car before I " + "turn 30 (Jan 5, 2031)"}
     write(s, "data.json", json.dumps(doc, separators=(",", ":")))
     write(s, "writeups/x.md", f"The 25K eval ({F['broker']}) under {F['path']}.")
     write(s, "app.js", f"const id = '{F['broker']}';")
@@ -178,7 +178,7 @@ def scrub(tmp):
     check("b. any other email keeps only its first letter (j***@gmail.com)", SP.clean_string("mail " + "bob.jones" + "@" + "gmail.com") == "mail b***@gmail.com"
           and SP.clean_string("you@example.com") == "you@example.com")
     check("b. a card number in a text keeps only its last 4 digits", SP.clean_string("card " + F["card"]) == "card " + SP.MASK + "1111")
-    check("b. an age goes, the goal stays ('2024 Stingray 3LT (Feb 22, 2027)')", d["goal"] == "2024 Stingray 3LT (Feb 22, 2027)", d["goal"])
+    check("b. an age goes, the goal stays ('a red car (Jan 5, 2031)')", d["goal"] == "a red car (Jan 5, 2031)", d["goal"])
     check("b. numbers are untouched (epoch time, a long integer, a balance)", d["n"] == 1794000386 and d["id_num"] == 123456789012 and d["accounts"][0]["balance"] == 49313.54)
     md = open(os.path.join(s, "writeups", "x.md"), encoding="utf-8").read()
     check("b. a write-up (.md) is masked the same way", F["broker"] not in md and mid in md and "<you>" in md, md)
@@ -236,7 +236,7 @@ def planted_state(t):
                "launch": {"facts": {"lit_account": b1}, "items": [{"key": "allow", "detail": f"{b1} and {b2} may receive orders"}]},
                "ai": {"rule_changes": [{"t": t, "changes": [], "commit": {"sha": "abc123", "who": "planted-git-user", "when": "2026-11-03", "why": "merge"}}]}},
         "notices": [{"t": t, "account": b1, "title": f"LONG · {b1}", "src": f"pc:{b1}", "body": f"mail {F['email']}"},
-                    {"t": t, "title": "Goal", "body": "a 2024 Stingray 3LT before I " + "turn 19 (Feb 22, 2027)"}],
+                    {"t": t, "title": "Goal", "body": "a red car before I " + "turn 30 (Jan 5, 2031)"}],
         "pc_verdict": {"code": "TRADING", "reason": f"Trading on {b1}", "checks": [[f"account {b1}", True]]},
     }
 
