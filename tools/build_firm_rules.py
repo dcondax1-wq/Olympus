@@ -5,6 +5,9 @@ Sources (all already in the repo, nothing fetched here):
   research/lit/prop_firms.json   the 60-plan rule table of the LIT prop-firm study (searched 2026-10-18; "unconfirmed" notes
                                  name every value that was assumed)
   research/props/firms.json      the prop-firm hub (st confirmed / conflict / unconfirmed per value, 2026-10-18..20)
+  research/props/firm_research.json  the newest re-read of the firms' own help centers (team A4, 2026-11-14: LucidPro /
+                                 LucidFlex 50K, FundedNext Rapid Daily 50K, the Lucid / FundedNext firm rules); applied
+                                 LAST, value by value (it carries the full {"v", "verified", "src", "date", "n"} of each)
 
 Every value is {"v": value, "verified": bool, "src": [...], "date": "yyyy-mm-dd", "n": note}:
   verified true   the repo's research marks it confirmed: the firm's own help / plan page (read through web search), or the
@@ -29,7 +32,8 @@ OUT = os.path.join(ROOT, "research", "props", "firm_rules.json")
 MFFU = os.path.join(ROOT, "research", "lit", "mffu_rules.json")
 PROP = os.path.join(ROOT, "research", "lit", "prop_firms.json")
 HUB = os.path.join(ROOT, "research", "props", "firms.json")
-BUILT = "2026-10-30"
+RESEARCH = os.path.join(ROOT, "research", "props", "firm_research.json")
+BUILT = "2026-11-14"
 FIRMS_WANTED = {"MyFundedFutures": "mffu", "Lucid Trading": "lucid", "FundedNext Futures": "fundednext",
                 "Apex Trader Funding": "apex", "Topstep": "topstep", "Take Profit Trader": "tpt", "Alpha Futures": "alpha"}
 FIRM_NAMES = {"mffu": "MyFundedFutures (MFFU)", "lucid": "Lucid Trading", "fundednext": "FundedNext Futures",
@@ -328,8 +332,43 @@ def mffu_overlay(prof: dict, M: dict, plan: str):
         prof["owner"] = {"has": "ATLAS eval (account B) since 2026-10-26; BLITZ's 25K (account C) next week"}
 
 
+def _value(x) -> dict:
+    """A research value -> the stored shape (verified only with a value; src / n kept)."""
+    out = {"v": x.get("v"), "verified": bool(x.get("verified")) and x.get("v") is not None, "date": x.get("date") or SEARCH_DATE}
+    if x.get("src"):
+        out["src"] = list(x["src"])
+    if x.get("n"):
+        out["n"] = x["n"]
+    return out
+
+
+def research_overlay(plans: dict, firms: dict, R: dict):
+    """research/props/firm_research.json (the newest re-read of the firms' own pages) replaces the older values, field by
+    field; new fields (e.g. payout cycle_min / max_after_first, funded max_micros_by_profit, firm inactivity_days / hold)
+    are added. Prices stay null here (CLAUDE.md: only the owner's real prices are values): a price block keeps v null."""
+    for pid, blocks in (R.get("plans") or {}).items():
+        prof = plans.get(pid)
+        if prof is None:
+            continue
+        for b in ("eval", "funded", "payout"):
+            for k, x in (blocks.get(b) or {}).items():
+                prof[b][k] = _value(x)
+        if blocks.get("price"):
+            prof["price"] = {**_value(blocks["price"]), "v": None, "verified": False}
+        if blocks.get("notes"):
+            prof["notes"] = list(blocks["notes"])
+    for fid, fr in (R.get("firms") or {}).items():
+        if fid not in firms:
+            continue
+        for k, x in fr.items():
+            firms[fid][k] = _value(x)
+        plist = firms[fid].pop("plans")
+        firms[fid]["plans"] = plist                      # "plans" stays the last key
+
+
 def build() -> dict:
     M, P, H = _load(MFFU), _load(PROP), _load(HUB)
+    R = _load(RESEARCH) if os.path.exists(RESEARCH) else {}
     plans = {}
     for p in P["plans"]:
         if p["firm"] not in FIRMS_WANTED:
@@ -348,12 +387,15 @@ def build() -> dict:
     for fid, rules in FIRM_RULES.items():
         firms[fid] = {"name": FIRM_NAMES[fid], **{k: F(v, ok, s, d, n) for k, (v, ok, s, d, n) in rules.items()},
                       "plans": sorted(k for k, x in plans.items() if x["firm"] == fid)}
-    hub_src = H.get("sources") or {}
+    research_overlay(plans, firms, R)
+    hub_src = {**(H.get("sources") or {}), **(R.get("sources") or {})}      # the newest research wins a shared key
     used = sorted({s for pr in plans.values() for blk in ("eval", "funded", "payout") for x in pr[blk].values() for s in x.get("src") or []}
+                  | {s for pr in plans.values() for s in (pr.get("price") or {}).get("src") or []}
                   | {s for f in firms.values() for k, x in f.items() if isinstance(x, dict) for s in x.get("src") or []})
     return {"v": 1, "built": BUILT, "title": "Firm rule profiles for the fleet layer (engine/firms.py)",
             "how_to_read": __doc__.split("Every value is", 1)[1].split("python tools", 1)[0].strip().replace("\n", " "),
-            "inputs": ["research/lit/mffu_rules.json", "research/lit/prop_firms.json", "research/props/firms.json"],
+            "inputs": ["research/lit/mffu_rules.json", "research/lit/prop_firms.json", "research/props/firms.json"]
+                      + (["research/props/firm_research.json"] if R else []),
             "source_urls": {k: hub_src[k] for k in used if k in hub_src},
             "firms": firms, "plans": plans}
 

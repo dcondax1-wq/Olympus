@@ -65,13 +65,19 @@ def load_profiles(path: str | None = None) -> dict:
 
 
 def base_profile(plan: str, stage: str = "eval", overrides: dict | None = None) -> dict | None:
-    """The firm's plan (firm_rules.json first), else a placeholder plan of copy_profiles.json. None = unknown plan."""
+    """The firm's plan (firm_rules.json first), else a plan of copy_profiles.json: a placeholder ("placeholder": true, the
+    default) or a plan filled from the firm research ("placeholder": false, e.g. Bulenox 2026-11-14). None = unknown plan."""
     P = firms.profile(plan, stage, overrides=overrides)
-    if P is None and plan in (load_profiles().get("plans") or {}):
+    pl = (load_profiles().get("plans") or {}).get(plan)
+    if P is None and pl is not None:
         P = firms.profile(plan, stage, overrides=overrides, path=PROFILES_PATH)
-        if P is not None:
+        if P is not None and pl.get("placeholder", True) is not False:
             P["placeholder"] = True
             P["warn"] = ["placeholder plan: its rules are not filled yet (it never trades until the max loss is known)"] + list(P.get("warn") or [])
+        elif P is not None:
+            P["filled"] = True
+            P["warn"] = ["filled from the firm research (research/props/copy_profiles.json): values marked unverified are third-party "
+                         "readings, check them before buying"] + list(P.get("warn") or [])
     return P
 
 
@@ -163,6 +169,8 @@ def tighten(plan: str, stage: str, rules: dict | None = None, own: dict | None =
         P["warn"] = [f"owner value refused: {r}" for r in refused] + list(P.get("warn") or [])
     if base.get("placeholder"):
         P["placeholder"] = True
+    if base.get("filled"):
+        P["filled"] = True
     return P
 
 

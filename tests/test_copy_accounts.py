@@ -80,20 +80,56 @@ def profile_checks():
     check("copy_profiles.json documents every plan field, the firm fields, the own limits and the switches",
           all(k in flds["plan (eval / funded block)"] for k in ("dd_type", "dd_amount", "lock", "dll", "max_micros", "consistency", "max_active"))
           and any("own" in k for k in flds) and "accounts.max_funded_total" in flds["firm"])
-    ph = CA.base_profile("bulenox_eod_50k", "eval")
-    check("placeholder plan (Bulenox) loads from copy_profiles.json, marked placeholder, max loss unknown",
+    ph = CA.base_profile("new_firm_50k", "eval")
+    check("placeholder plan (the new-firm template) loads from copy_profiles.json, marked placeholder, max loss unknown",
           ph is not None and ph.get("placeholder") and ph.get("dd_amount") is None and "placeholder" in ph["warn"][0], ph)
     chk = FM.check(ph, FM.book(50000.0, [], DAY), {"sym": "NQ", "side": "buy", "qty": 1, "entry": 20000.0, "stop": 19980.0, "target": 20100.0})
     check("a placeholder plan never trades (no room assumed until the max loss is filled)", chk["ok"] is False and chk["max_qty"] == 0
           and any("max loss amount unknown" in x for x in chk["block"]), chk)
+    bx = CA.base_profile("bulenox_eod_50k", "eval")
+    check("Bulenox EOD 50K is filled (team A4, 2026-11-14), not a placeholder: $2,000 max loss (the smaller reading, unverified), "
+          "$1,100 soft daily, 70 micros at the top of a profit scaling",
+          bx is not None and not bx.get("placeholder") and bx.get("filled") and bx["dd_amount"] == 2000.0 and bx["verified"]["dd_amount"] is False
+          and bx["dll"] == 1100.0 and bx["max_micros"] == 70 and bx["max_micros_by_profit"] == [[0, 20], [1500, 40], [4000, 70]]
+          and "filled" in bx["warn"][0], bx)
     check("firm_rules.json wins over a placeholder of the same id (none collide today)",
           not set(d["plans"]) & set((FM.load().get("plans") or {})))
     uf = dict(CA.unfilled())
     check("--unfilled lists the placeholder fields still to fill (from the firm research)", "dd_amount" in uf.get("new_firm_50k", [])
           and "accounts.max_funded_total" in uf.get("firm mffu", []), uf)
-    check("firm account limits: Lucid 5 (the smaller reading), MFFU firm total unknown, Bulenox 3",
-          CA.firm_limits("lucid")["max_funded_total"] == 5 and CA.firm_limits("mffu")["max_funded_total"] is None
-          and CA.firm_limits("bulenox")["max_funded_total"] == 3)
+    check("firm account limits: Lucid 5 funded + 10 evals (verified 2026-11-14), FundedNext 5 (verified), MFFU firm total unknown, "
+          "Bulenox 3 (the smaller reading)",
+          CA.firm_limits("lucid")["max_funded_total"] == 5 and CA.firm_limits("lucid")["verified"]["max_funded_total"] is True
+          and CA.firm_limits("lucid")["max_eval_active"] == 10 and CA.firm_limits("fundednext")["max_funded_total"] == 5
+          and CA.firm_limits("mffu")["max_funded_total"] is None and CA.firm_limits("bulenox")["max_funded_total"] == 3)
+    lp, lf = CA.tighten("lucid_pro_50k", "eval"), CA.tighten("lucid_pro_50k", "funded")
+    check("LucidPro 50K eval from Lucid's own help center (verified 2026-11-14): $3,000 target, $2,000 EOD locking at +$100, $1,200 soft "
+          "daily (the daily-loss-on version), 40 micros, no consistency, 1 day, news allowed",
+          (lp["target"], lp["dd_type"], lp["dd_amount"], lp["lock"], lp["dll"], lp["dll_type"], FM.max_micros(lp), lp["consistency"],
+           lp["min_days"], lp["news"]) == (3000.0, "eod", 2000.0, 100.0, 1200.0, "soft", 40, "none", 1, "none")
+          and all(lp["verified"][k] is True for k in ("target", "dd_type", "dd_amount", "lock", "dll", "dll_type", "max_micros", "consistency")), lp)
+    po = lf["payout"]
+    check("LucidPro 50K payouts (verified): $52,100 buffer, $500-$2,000 then $2,500, $500 profit a cycle, 40% best day, 90%, 5 payouts",
+          (po["buffer"], po["min"], po["max"], po["max_after_first"], po["cycle_min"], po["consistency"], po["split"], po["max_payouts"])
+          == (2100.0, 500.0, 2000.0, 2500.0, 500.0, 0.4, 0.9, 5) and lf["verified"]["payout.max_after_first"] is True, po)
+    check("Lucid firm rules (verified): bots and copiers allowed, no hedging across accounts / firms, flat by 16:45, NinjaTrader",
+          (lp["bots"], lp["copy_trading"], lp["hedging"], lp["flat_by"], lp["ninjatrader"]) == ("allowed", "allowed", "banned_all_accounts", "16:45", True)
+          and all(lp["verified"][k] for k in ("bots", "copy_trading", "hedging", "flat_by")), lp)
+    fx = CA.tighten("lucid_flex_50k", "funded")
+    check("LucidFlex 50K: 40% eval best-day rule; funded contract scaling 20 / 30 / 40 micros at $0 / $1,000 / $2,000 profit (verified)",
+          CA.tighten("lucid_flex_50k", "eval")["consistency"] == 0.4 and fx["max_micros_by_profit"] == [[0, 20], [1000, 30], [2000, 40]]
+          and fx["verified"]["max_micros_by_profit"] is True and fx["payout"]["win_days"] == 5 and fx["payout"]["win_day_min"] == 150.0, fx)
+    fn = CA.tighten("fn_rapid_daily_50k", "funded")
+    D = FM.load()
+    check("FundedNext Rapid Daily 50K: $1,000 soft daily (verified), the $1,200 payout cap NOT verified (sources conflict), flat by 16:10; "
+          "Lucid / FundedNext inactivity 30 days and FundedNext's written-yes hold in the data",
+          fn["dll"] == 1000.0 and fn["dll_type"] == "soft" and fn["verified"]["dll_type"] is True and fn["payout"]["max"] == 1200.0
+          and fn["verified"]["payout.max"] is False and fn["flat_by"] == "16:10"
+          and D["firms"]["lucid"]["inactivity_days"]["v"] == 30 and D["firms"]["fundednext"]["inactivity_days"]["v"] == 30
+          and "in writing" in D["firms"]["fundednext"]["hold"]["v"] and "hold" not in D["firms"]["lucid"], fn)
+    pr = {pid: p["price"]["v"] for pid, p in (D.get("plans") or {}).items() if p["price"]["v"] is not None}
+    check("prices stay null outside the owner's MFFU receipts (the Lucid / FundedNext price notes carry the codes)",
+          set(pr) == {"mffu_builder_50k", "mffu_builder_25k"} and "30%" in D["plans"]["lucid_pro_50k"]["price"]["n"], pr)
     check("CLI --show prints a plan with the own limits", CA.main(["--show", "mffu_builder_25k", "--own", "day_stop_usd=250,max_micros=6"]) == 0
           and CA.main(["--show", "no_such_plan"]) == 1 and CA.main(["--show", "mffu_builder_25k", "--own", "day_stop_usd=-1"]) == 1)
 
