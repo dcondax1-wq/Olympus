@@ -866,7 +866,9 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     snap = gather(now, root=root, env=env, http=http, port=port, feed_problem=feed_problem)
     last = read_json(os.path.join(work, "last.json"), {}) or {}
     rec = {"t": snap["t"], "ok": True, "hb_t": snap.get("hb_t"), "server": snap.get("server"), "problems": sorted(conditions(snap)),
-           "status_t": last.get("status_t"), "alerts_last": last.get("alerts_last"), "errors": []}
+           "status_t": last.get("status_t"), "alerts_last": last.get("alerts_last"), "errors": [],
+           # the Launch card (tools/launch_card.report_state) reads only this file: whether alerts go out, never the topic itself
+           "alerts_on": bool(cfg["topic"]) and bool(cfg["on"])}
     status = lite(snap)
     write_json(os.path.join(work, "status.json"), status, compact=True)
     if snap.get("live"):

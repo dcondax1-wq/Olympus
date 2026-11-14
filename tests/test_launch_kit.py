@@ -605,35 +605,56 @@ def report():
     now = at(2026, 11, 16, 1, 45)
     d = tempfile.mkdtemp(prefix="lkr_", dir=os.environ.get("LE_TEST_TMP") or None)
     try:
-        work, home = os.path.join(d, "work"), os.path.join(d, "home")
+        work = os.path.join(d, "work")
         os.makedirs(work)
-        env = {"OLYMPUS_HOME": home}
-        r = LC.report_state(work, env, now)
-        check("3. report: no alert topic on this PC -> 'Phone alerts are not set up on this PC.' + BOTS_BACK.bat", r["level"] == "warn"
-              and r["text"] == "Phone alerts are not set up on this PC." and "BOTS_BACK.bat" in r["fix"], r)
-        os.makedirs(home)
-        with open(os.path.join(home, "ntfy.json"), "w", encoding="utf-8") as fh:
-            json.dump({"topic": "nq-amber-falcon-river-7291", "ntfy": "https://ntfy.sh"}, fh)
-        r = LC.report_state(work, env, now)
-        check("3. report: a topic but the report never ran -> 'has not run on this PC yet'", "has not run" in r["text"], r)
+        r = LC.report_state(work, None, now)
+        check("3. report: the 15-minute report never ran on this PC -> warn 'has not run on this PC yet' + BOTS_BACK.bat", r["level"] == "warn"
+              and "has not run on this PC yet" in r["text"] and "BOTS_BACK.bat" in r["fix"], r)
 
         def last(**kw):
             with open(os.path.join(work, "last.json"), "w", encoding="utf-8") as fh:
-                json.dump({"t": now - 240, "ok": True, "errors": [], "sent": 1, "alerts_last": {"t": now - 7200, "title": "x"}, **kw}, fh)
+                json.dump({"t": now - 240, "ok": True, "errors": [], "sent": 1, "alerts_last": {"t": now - 7200, "title": "x"}, "alerts_on": True, **kw}, fh)
         last(t=now - 3000)
-        r = LC.report_state(work, env, now)
+        r = LC.report_state(work, None, now)
         check("3. report: last run 50 min ago -> warn 'last ran 50 min ago'", r["level"] == "warn" and "last ran 50 min ago" in r["text"], r)
+        last(alerts_on=False)
+        r = LC.report_state(work, None, now)
+        check("3. report: it runs but no alert topic is set -> 'Phone alerts are not set up on this PC.'", r["level"] == "warn"
+              and r["text"] == "Phone alerts are not set up on this PC.", r)
         last(errors=["alert: ntfy.sh rate limit (too many messages today): next run tries again"], ok=False)
-        r = LC.report_state(work, env, now)
+        r = LC.report_state(work, None, now)
         check("3. report: the last run could not send -> warn with ntfy's reason", r["level"] == "warn" and "rate limit" in r["text"], r)
         last()
-        r = LC.report_state(work, env, now)
+        r = LC.report_state(work, None, now)
         check("3. report: fresh -> 'Phone alerts on: last check 4 min ago, last push 2 h ago.'", r["level"] == "ok"
               and r["text"] == "Phone alerts on: last check 4 min ago, last push 2 h ago.", r)
-        card = LC.build(live_of(now), [], r, now)
-        check("3. the private alert topic is never in the card", "amber-falcon" not in json.dumps(card) and "amber-falcon" not in json.dumps(r), r)
+        with open(os.path.join(work, "last.json"), "w", encoding="utf-8") as fh:
+            json.dump({"t": now - 240, "ok": True, "errors": []}, fh)
+        r = LC.report_state(work, None, now)
+        check("3. report: a last.json from before this update (no alerts_on): fine, 'Phone report: last check 4 min ago.'", r["level"] == "ok"
+              and r["text"] == "Phone report: last check 4 min ago.", r)
     finally:
         shutil.rmtree(d, ignore_errors=True)
+    # through the real report: last.json says whether alerts go out, never which topic
+    from tests.test_bots_back import Box, FakeHTTP
+    from tests.test_live_publish import hb_payload
+    b = Box()
+    try:
+        b.hb(hb_payload(now - 60, position=False))
+        b.run(FakeHTTP(), now)
+        l0 = json.load(open(os.path.join(b.work, "last.json"), encoding="utf-8"))
+        cfg = b.topic()
+        b.run(FakeHTTP(), now + 900)
+        l1 = json.load(open(os.path.join(b.work, "last.json"), encoding="utf-8"))
+        r = LC.report_state(b.work, None, now + 960)
+        check("3. pc_report writes alerts_on (false without a topic, true with one) and never the topic; the card's report says 'Phone alerts on'",
+              l0.get("alerts_on") is False and l1.get("alerts_on") is True and cfg["topic"] not in json.dumps(l1) and cfg["topic"] not in json.dumps(r)
+              and r["text"].startswith("Phone alerts on: last check"), (l0.get("alerts_on"), l1.get("alerts_on"), r))
+    finally:
+        b.cleanup()
+    body = open(os.path.join(ROOT, "tools", "launch_card.py"), encoding="utf-8").read().split('"""', 2)[-1]
+    check("3. launch_card.py never reads the private ntfy settings (no ntfy.json, no load_cfg): the server only sees the report's last.json",
+          "ntfy.json" not in body and "load_cfg" not in body)
 
 
 def route():

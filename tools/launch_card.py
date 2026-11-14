@@ -260,31 +260,34 @@ def global_flags(live: dict | None, now: int | None = None) -> list:
 
 # ------------------------------------------------------------------------------------------------ the phone report
 def report_state(work: str | None = None, env=None, now=None) -> dict:
-    """Is the 15-minute phone report (tools/pc_report.py, task OlympusPCReport) running and sending? Never the topic itself."""
+    """Is the 15-minute phone report (tools/pc_report.py, task OlympusPCReport) running and sending? From its own last run only
+    (data/pc_report/last.json, "alerts_on" = an alert topic is set and on): the bot server never reads the private ntfy settings."""
     now = int(now or time.time())
     work = work or WORK_DEFAULT
     try:
-        from tools import pc_report
-        last = pc_report.read_json(os.path.join(work, "last.json"), {}) or {}
-        cfg = pc_report.load_cfg(env)
+        import json as _json
+        with open(os.path.join(work, "last.json"), "r", encoding="utf-8") as fh:
+            last = _json.load(fh)
+        last = last if isinstance(last, dict) else {}
     except Exception:
-        last, cfg = {}, {}
+        last = {}
     t = _f(last.get("t"))
-    out = {"t": int(t) if t else None, "age_s": (now - int(t)) if t else None, "ok": last.get("ok"), "alerts": bool(cfg.get("topic")) and cfg.get("on", True) is not False,
-           "tested": bool(_d(cfg.get("tested")).get("t")), "last_push_t": _d(last.get("alerts_last")).get("t"), "status_t": last.get("status_t"),
+    alerts = last.get("alerts_on") if isinstance(last.get("alerts_on"), bool) else None     # None: a report from before 2026-11-14
+    out = {"t": int(t) if t else None, "age_s": (now - int(t)) if t else None, "ok": last.get("ok"), "alerts": alerts,
+           "last_push_t": _d(last.get("alerts_last")).get("t"), "status_t": last.get("status_t"),
            "errors": [str(e)[:140] for e in _l(last.get("errors"))][:2]}
-    if not out["alerts"]:
-        out.update(level="warn", text="Phone alerts are not set up on this PC.", fix=FIX["report"])
-    elif t is None:
+    if t is None:
         out.update(level="warn", text="The 15-minute phone report has not run on this PC yet.", fix=FIX["report"])
     elif now - int(t) > REPORT_LATE_S:
         out.update(level="warn", text=f"The phone report last ran {span(now - int(t))} ago (it runs every 15 minutes).", fix=FIX["report"])
+    elif alerts is False:
+        out.update(level="warn", text="Phone alerts are not set up on this PC.", fix=FIX["report"])
     elif out["errors"]:
         out.update(level="warn", text=f"The last phone report could not send everything: {out['errors'][0]}", fix=FIX["report"])
     else:
         lp = _f(out["last_push_t"])
-        out.update(level="ok", text=f"Phone alerts on: last check {span(now - int(t))} ago" + (f", last push {span(now - int(lp))} ago" if lp else "") + ".",
-                   fix="")
+        out.update(level="ok", text=("Phone alerts on" if alerts else "Phone report") + f": last check {span(now - int(t))} ago"
+                   + (f", last push {span(now - int(lp))} ago" if lp else "") + ".", fix="")
     return out
 
 
