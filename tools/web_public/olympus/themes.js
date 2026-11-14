@@ -113,9 +113,9 @@
   /** a style theme: o = { id, name, tag, scheme, c: colours, s: style, stage: dark colours for the pages that stay dark (light themes only) } */
   function look(o) {
     var c = o.c, L = o.scheme === 'light', s = o.s, R = rampFrom(c, L), n = R.n, acc = c.accent;
-    // the cards as they show over each colour of the page's gradient (Glass Aurora's teal and violet light, Sunset's ember ...): the ink floor
+    // each colour of the page's gradient and the cards as they show over it (Glass Aurora's teal and violet light, Sunset's ember ...): the ink floor
     // keeps every text slot readable on all of them, not only on the plain page colour (slots())
-    R.surf = []; (String(s.page || '').match(/#[0-9a-fA-F]{6}/g) || []).forEach(function (st) { R.surf.push(solidCard(s.card || c.card, st)); });
+    R.surf = []; (String(s.page || '').match(/#[0-9a-fA-F]{6}/g) || []).forEach(function (st) { R.surf.push(st, solidCard(s.card || c.card, st)); });
     var dark2 = L ? mix(acc, '#000000', 0.25) : mix(acc, c.bg, 0.35), c3 = L ? mix(acc, '#000000', 0.2) : R.a.hi;
     var t = mk({ id: o.id, name: o.name, tag: o.tag, scheme: o.scheme, group: o.group, light: L, ramp: R, stage: o.stage ? rampFrom(o.stage, false) : null,
       feel: { radius: s.radius, radiusS: s.radiusS || s.radius, radiusL: s.radiusL || s.radius, display: s.title, num: s.num || null },

@@ -489,7 +489,7 @@ def qa_page(p, origin, key, path, raw, look, agora, focus=True, first_dash=True,
                "top": "#%02x%02x%02x" % tuple(top), "selection": rep["selection"], "scrollbar": rep["scrollbar"], "nTexts": rep["nTexts"], "checkedPx": checked,
                "lowPx": fails[:25], "nLowPx": len(fails), "lowBelow": below[:15], "nLowBelow": len(below), "left": rep["left"], "money": rep["money"],
                "placeholders": [x for x in rep["placeholders"] if x["ratio"] < 4.5], "first": first, "flash": flash, "focus": rings, "sx": rep["sx"],
-               "errors": errs[:4], "slow": slow, "shot": shot, "overlays": ov}
+               "errors": errs[:4], "slow": slow, "shot": shot, "overlays": ov, "canvases": rep.get("canvases") or []}
         res["verdict"] = {
             "text": not fails and not below,
             "left": not rep["left"],
@@ -690,15 +690,27 @@ def look_issues(r, base=None):
     if r.get("error"):
         return {"load": [r["error"][:100]]}
 
+    def real(t, cv):
+        """a failure on the pixels counts unless the page's own layers already settle it with room to spare (all of them >= 1.5 x the need, nothing
+        unsure) and no canvas / video sits under the text: then the pixels saw a frame mid-shift (async content), not the text on its background"""
+        if t.get("unsure") or t.get("ratio", 0) < 1.5 * t.get("need", 4.5):
+            return True
+        x, y, w, h = t["box"]
+        return any(x < cx + cw and cx < x + w and y < cy + ch and cy < y + h for cx, cy, cw, ch in cv)
+
     def fps(x):
         out = {}
         vw, vh = (1440, 900) if x.get("view") == "desk" else (390, 844)
-        for t in [t for t in (x.get("lowPx") or []) if mostly_on(t["box"], vw, vh)] + (x.get("lowBelow") or []):
+        cv = x.get("canvases") or []
+        for t in [t for t in (x.get("lowPx") or []) if mostly_on(t["box"], vw, vh) and real(t, cv)] + (x.get("lowBelow") or []):
             out.setdefault("text", {})[(t["sel"], t["text"])] = f"{t['sel'][-40:]} '{t['text'][:20]}' {t['fg']} on {t.get('pxbg', t['bg'])} {t.get('px', t['ratio'])}:1"
         for t in x.get("left") or []:
             if not any(a in t["sel"] for a in ART_SEL) and not KEEP_RX.search(str(t["value"])):
                 out.setdefault("left", {})[(t["sel"], t["prop"])] = f"{t['sel'][-40:]} {t['prop']}={str(t['value'])[:40]}"
         for t in (x.get("money") or {}).get("wrong") or []:
+            c = _hexrgb(t["color"])
+            if max(c) - min(c) < 64:                         # a warm or cool neutral (Sunset's peach text, a grey): no gain / loss colour at all
+                continue
             out.setdefault("money", {})[(t["sel"], t["text"])] = f"'{t['text']}' in {t['color']}"
         for t in x.get("focus") or []:
             if not t["ok"]:
