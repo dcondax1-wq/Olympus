@@ -35,8 +35,8 @@ Netlify emails you their website. Run one line, then email them the PDF:
 `python agency/storefront/grade.py theirsite.com --name "Their Business" --pdf --open`
 
 The report shows a score out of 100, a grade, their top 3 fixes in plain words, everything checked, and which of your plans
-fixes it. It also works on a whole list: `--batch data/agency/clients.json` (the shared client records; a client with no
-website is marked "a perfect lead for a free demo").
+fixes it. It also works on a whole list: `--batch <file>` (the shared client records, or one address per line; a client with no
+website is marked "a perfect lead for a free demo", and a site whose robots.txt asks tools to stay away is skipped).
 
 ## Honest limits
 
@@ -69,7 +69,7 @@ website is marked "a perfect lead for a free demo").
 | `examples/` | `examples.json` (the three fictional businesses in the shared client record shape + before/after notes), `barber/`, `plumber/`, `restaurant/` (each `index.html` + `style.css`), `demo.js` (open-now badge, demo forms that send nothing, `?shot` screenshot mode, `?now=` clock). |
 | `mockups/` | The made-up "before" pages (desktop-only, dated), used only for the before screenshots, never deployed. |
 | `grade.py` | The real grader (below). |
-| `shots.py` | `flock -w 2400 /tmp/olympus_browser.lock python agency/storefront/shots.py [--examples|--review]`: example pictures + share pictures, and the review shots in `docs/shots/agency_storefront/`. Rerun `--examples` only when a demo site changes, then `build.py`. |
+| `shots.py` | `flock -w 2400 /tmp/olympus_browser.lock python agency/storefront/shots.py [--examples|--review]`: example pictures + share pictures, and the review shots in `docs/shots/agency_storefront/`. Rerun `--examples` only when a demo site changes. Claude runs it in the cloud, never the PC (it rewrites tracked pictures). |
 | `fixtures/grade/` | Offline pages for the grader tests (healthy, dated, noindex, hostile). |
 
 ### The shared agency file (one edit for the storefront, the pitches and the demo sites)
@@ -93,7 +93,10 @@ appended to the stylesheet; no inline style, CSP-safe).
 `python agency/storefront/grade.py URL [--name] [--city] [--pdf] [--open] [--page-only] [--out DIR]`, or `--batch FILE`
 (JSON list / `{"clients": [...]}` of shared client records, or one address per line). Writes
 `data/agency/reports/<date>-<host>.html` + `.json` (the folder writes its own `.gitignore` with `*`), plus `.pdf` with
-`--pdf` (headless Edge / Chrome / Chromium, one Letter page) and `grades.json` for a batch. Exit 0 graded, 2 the site did
+`--pdf` (headless Edge / Chrome / Chromium, one Letter page) and `grades.json` for a batch (1 s between sites, robots.txt
+obeyed for cold leads; a single check is for a business that asked). Reads at most 5 MB (gzip capped too) and weighs files
+for 40 s at most. Overlaps team B1's `agency/audit.py` (bulk lead audit, 30-day cache): this one writes the client-facing
+one-page report. Exit 0 graded, 2 the site did
 not open (an honest report is still written), 3 bad input. 14 weighted checks (100 points): padlock 14, phone layout 14,
 tap-to-call 14, speed 10, weight 8, call/book/quote button 8, Google profile link 8, title 7, description 5, allowed on
 Google 4 (a `noindex` is always fix number 1), H1 3, schema 2, up to date 2, alt text 1. Grades A 90+, B 75+, C 60+,
@@ -107,7 +110,7 @@ c: Chromium, under `flock -w 2400 /tmp/olympus_browser.lock`; `AS_NO_BROWSER=1` 
 ### Wiring needed (the lead)
 
 - `tests/run_gate.py`: the suite is not named `test_*_page.py`, so add `"agency_storefront"` to `KNOWN_APPS` (or an `add(...)` line) if it should be in the release gate.
-- `docs/CLAUDE_REFERENCE.md` "One chat" table: a row for the agency storefront (files above, ships as a zip on Netlify Drop, not via the OLYMPUS site build).
+- `docs/CLAUDE_REFERENCE.md` "One chat" table: a row for the agency storefront (files above, ships as the `dist/site` folder on Netlify Drop, built on the PC, not via the OLYMPUS site build).
 - B1's `agency/config.json` + `config.example.json` are read automatically (tested with B1's example format); nothing to change when merging. B1's `.gitignore` entry for `agency/config.json` is what lets the first build make the owner's copy.
 - Optional: publish `dist/storefront.zip` on the OLYMPUS site (for example next to B1's CRM page) so the owner can download it on the iPhone; that needs `build_web_dashboard.py`, which is yours.
 - Not an OLYMPUS app: no `apps.js`, `olympus.js`, `sw.js` or `build_web_dashboard.py` change.
