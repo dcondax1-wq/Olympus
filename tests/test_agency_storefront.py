@@ -122,7 +122,7 @@ class Doc(HTMLParser):
 
     def find(self, tag=None, **want):
         out = []
-        for t, a, line in self.tags:
+        for t, a, _line in self.tags:
             if tag and t != tag:
                 continue
             if all((a.get(k) == v) if v is not True else (k in a) for k, v in want.items()):
@@ -272,7 +272,7 @@ def part_a(tmp: Path):
     for f, text in docs.items():
         d = parse(text)
         base = urllib.parse.urljoin("http://site.test/", f)
-        for t, a, line in d.tags:
+        for t, a, _line in d.tags:
             for attr in ("href", "src", "action"):
                 v = a.get(attr)
                 if not v or v.startswith(("tel:", "sms:", "mailto:", "data:")):
