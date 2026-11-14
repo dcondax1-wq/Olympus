@@ -63,7 +63,7 @@ monitoring dashboard.
 - **Phone first**: full screen on phones, sized to the visible screen above the keyboard, 16 px inputs (no iPhone zoom), 44 px
   targets, safe-area insets, reduced motion respected, Escape closes, screen-reader labels and a live log. In a shadow root, so the
   client's CSS and ours can't clash. Brand colour in, readable text colour worked out (WCAG AA).
-- **Size**: the shipped files are 24.0-24.9 KB for the three demos (10.6-10.9 KB as Netlify sends them, gzipped); the runtime
+- **Size**: the shipped files are 24.0-24.8 KB for the three demos (10.5-10.8 KB as Netlify sends them, gzipped); the runtime
   alone is 18.9 KB. If a client's facts would push the file past 25,000 bytes, the build leaves out the last optional FAQs and says
   which; quick-button answers are never dropped.
 
@@ -144,7 +144,7 @@ monthly_usd, notes`) plus two sections. Real files live in `data/agency/clients/
   but many client sites on one free account will need watching.
 - **Google's wording on review gating has moved over time** (a 2022 report says a line was dropped from one page, while Google's
   report form still lists it); we follow the stricter reading. Not legal advice.
-- **Size headroom is small** for data-heavy clients (the plumber demo is 24.9 KB of 25): the build then leaves optional FAQs out and says so.
+- **Size headroom is small** for data-heavy clients (the plumber demo is 24.8 KB of 25): the build then leaves optional FAQs out and says so.
 
 ## Wiring needed (the lead)
 - `.gitignore`: add `data/agency/` (real client files and builds are written there by default; not ignored in this base).
