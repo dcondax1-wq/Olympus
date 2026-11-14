@@ -3389,12 +3389,23 @@ function applyLook() { const r = document.documentElement; r.dataset.accent = st
   r.dataset.theme = store.get('theme', 'dark'); r.dataset.compact = store.get('compact', false) ? 'on' : 'off'; FX?.retheme(); }
 
 // ===================================================================== data loading
-let timer = null;
+let timer = null, dataTag = '';
+// perf v2 (2026-11-14, docs/OLYMPUS_PERF.md): data.json is ~8.7 MB; the minute's refresh (and a return to the app) downloaded and parsed it
+// every time: one long main-thread task (the parse) and ~1 MB on the line each minute, though the cloud publishes every 15 minutes. Now a HEAD
+// (a few hundred bytes) asks first: when the file's ETag / Last-Modified and length are the ones already shown, nothing more is done.
+// The first load, a tap on refresh and a pull always fetch; a host without those headers (or a failed HEAD) fetches as before.
+const tagOf = (r) => { const h = r && r.headers, e = h ? (h.get('etag') || h.get('last-modified') || '') : ''; return e ? e + '|' + (h.get('content-length') || '') : ''; };
 async function load(manual = false) {
-  const b = $('#refresh'); b.classList.add('spin');
+  const b = $('#refresh');
+  if (D && manual === false && dataTag) {
+    const h = await fetch('data.json', { method: 'HEAD', cache: 'no-store' }).catch(() => null);
+    if (h && h.ok && tagOf(h) === dataTag) return;
+  }
+  b.classList.add('spin');
   try {
     const r = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
+    dataTag = r.headers.get('x-le-cache') ? '' : tagOf(r);       // a copy from the saved cache (offline) never stands for the live file
     const nd = await r.json(), changed = !D || nd.built !== D.built, first = !D;
     D = nd; if (window.LIVE) window.LIVE.apply(D);   // the PC's live.json (live.js) over the cloud's data.json
     status(); actBadge(); if (pushSupport() && Notification.permission === 'granted') pushEnsure(false).catch(() => null);
