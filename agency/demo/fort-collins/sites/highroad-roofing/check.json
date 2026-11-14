@@ -8,30 +8,30 @@
  },
  "hard_fails": [],
  "to_fix": [],
- "bytes_total": 80328,
+ "bytes_total": 80364,
  "sizes": {
-  "404.html": 19695,
+  "404.html": 19707,
   "_headers": 411,
   "favicon.svg": 259,
-  "index.html": 36848,
+  "index.html": 36860,
   "robots.txt": 26,
   "site.js": 3378,
-  "thanks.html": 19711
+  "thanks.html": 19723
  },
  "pages": [
   {
    "page": "404.html",
-   "bytes": 19695,
+   "bytes": 19707,
    "failed": []
   },
   {
    "page": "index.html",
-   "bytes": 36848,
+   "bytes": 36860,
    "failed": []
   },
   {
    "page": "thanks.html",
-   "bytes": 19711,
+   "bytes": 19723,
    "failed": []
   }
  ],
@@ -68,7 +68,7 @@
   "title 41 characters (10-70)",
   "utf-8 declared",
   "valid HTML: every tag closed in order",
-  "whole site 78.4 KB (budget 200 KB)"
+  "whole site 78.5 KB (budget 200 KB)"
  ],
  "mode": "demo"
 }

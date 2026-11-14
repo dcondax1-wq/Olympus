@@ -8,30 +8,30 @@
  },
  "hard_fails": [],
  "to_fix": [],
- "bytes_total": 78298,
+ "bytes_total": 78334,
  "sizes": {
-  "404.html": 19231,
+  "404.html": 19243,
   "_headers": 411,
   "favicon.svg": 259,
-  "index.html": 35736,
+  "index.html": 35748,
   "robots.txt": 26,
   "site.js": 3378,
-  "thanks.html": 19257
+  "thanks.html": 19269
  },
  "pages": [
   {
    "page": "404.html",
-   "bytes": 19231,
+   "bytes": 19243,
    "failed": []
   },
   {
    "page": "index.html",
-   "bytes": 35736,
+   "bytes": 35748,
    "failed": []
   },
   {
    "page": "thanks.html",
-   "bytes": 19257,
+   "bytes": 19269,
    "failed": []
   }
  ],
