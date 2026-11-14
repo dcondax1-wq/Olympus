@@ -211,7 +211,7 @@ function Find-Python {
 function Zip-Places {
     $up = Home-Dir
     $p = New-Object System.Collections.Generic.List[string]
-    foreach ($x in @($script:Root, (J2 $up 'Downloads'), (J2 $up 'Desktop'), (JP $up 'OneDrive\Downloads'), (JP $up 'OneDrive\Desktop'))) { $p.Add($x) }
+    foreach ($x in @($script:Root, $BatDir, (J2 $up 'Downloads'), (J2 $up 'Desktop'), (JP $up 'OneDrive\Downloads'), (JP $up 'OneDrive\Desktop'))) { if ($x) { $p.Add($x) } }
     try { $d = [Environment]::GetFolderPath('Desktop'); if ($d) { $p.Add($d) } } catch { }
     if (OnWindows) {
         try { $dl = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path; if ($dl) { $p.Add($dl) } } catch { }
@@ -536,6 +536,7 @@ if ($AfterUpdate) {
             $script:S1 = 'NOT done: not the right zip'
             Done 1
         }
+        Say '..' 'checking the zip against the bot folder (a big zip can take a minute)...'
         & $py -I -X utf8 $tool $zipPath --folder $Root --check
         $rc = $LASTEXITCODE
         if ($rc -eq 0) {
@@ -597,6 +598,7 @@ if ($AfterUpdate) {
             }
             $ua = @('-I', '-X', 'utf8', $tool, $zipPath, '--folder', $Root, '--pip', '--port', "$Port", '--next', 'this window goes on with step 2 by itself.') + $nowArgs
             if ($okMarket) { $ua += '--allow-market-open' }
+            Say '..' 'updating the bot folder (a big zip can take a few minutes; do not close this window)...'
             & $py @ua
             $rc = $LASTEXITCODE
             if ($rc -eq 12) {                               # the updater's own clock says open (a clock edge): ask as UPDATE_FROM_ZIP.bat does

@@ -423,7 +423,8 @@ class Box:
     """A PC: a home folder (Downloads, .olympus), the bot folder at %USERPROFILE%\\nq-liquidity-engine, %TEMP% with the script as the .bat's
     zip bootstrap leaves it, the zip's own temp folder (only SETUP_EVERYTHING.bat in it), a fake tailscale, a fake bot server."""
 
-    def __init__(self, bot_files=None, zip_files=None, zip_name="OLYMPUS_BACKUP_2026-11-14_abc1234.zip", sha="good", with_zip=True, bot_home=True):
+    def __init__(self, bot_files=None, zip_files=None, zip_name="OLYMPUS_BACKUP_2026-11-14_abc1234.zip", sha="good", with_zip=True, bot_home=True,
+                 zip_by_bat=False):
         self.dir = tempfile.mkdtemp(prefix="se_ps_")
         self.home = os.path.join(self.dir, "home")
         self.tmp = os.path.join(self.dir, "tmp")
@@ -443,6 +444,10 @@ class Box:
         wr(self.script, self.se)
         self.zipdir = os.path.join(self.tmp, "Temp1_" + zip_name)
         wr(os.path.join(self.zipdir, "SETUP_EVERYTHING.bat"), rb("SETUP_EVERYTHING.bat"))
+        if zip_by_bat and self.zip:                                 # the zip (+ .sha256.txt) next to the .bat, none in Downloads
+            for n in (zip_name, zip_name[:-4] + ".sha256.txt"):
+                shutil.move(os.path.join(os.path.dirname(self.zip), n), os.path.join(self.zipdir, n))
+            self.zip = os.path.join(self.zipdir, zip_name)
         self.ts = os.path.join(self.dir, "tailscale")
         wr(self.ts, FAKE_TS)
         os.chmod(self.ts, 0o755)
@@ -780,6 +785,14 @@ def flows(pwsh):
         rc, out = b.run(pwsh, tasks="OlympusLiveSite")
         check("an OLDER zip than the folder's last update: step 1 skipped, never put back over the newer code",
               rc == 0 and "Skipped: this zip is older than the code already on this PC." in out and tree(b.bot) == before, out[-1500:])
+    finally:
+        b.cleanup()
+
+    b = Box(zip_by_bat=True)
+    try:
+        rc, out = b.run(pwsh, tasks="OlympusLiveSite")
+        check("the zip next to the .bat (none in Downloads): found there and applied",
+              rc == 0 and f"Code zip:    {b.zip}" in out and open(os.path.join(b.bot, "engine", "lit.py")).read() == "VERSION = 'new'\n", out[-1500:])
     finally:
         b.cleanup()
 
