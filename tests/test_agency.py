@@ -366,10 +366,62 @@ def test_sites():
           len(real) == 20 and all(l["name"] and l["category"] and l["why"] and l["osm_url"].startswith("https://www.openstreetmap.org/") for l in real))
 
 
+# ================================================================================================ c. the pitch kit
+def test_pitch():
+    from agency import money as M
+    from agency import pitch as P
+    from agency import sitecheck as SC
+    cfg = CFG.load()
+    lead = dict(lead_fixture(), **L.score(lead_fixture()))
+    k = P.kit(lead, cfg, "https://joes-barber-co-demo.netlify.app")
+    check("c. the 30-second opener: at most 80 words, says who calls, the business, the city, the problem and the free preview, and asks one question",
+          k["opener_words"] <= 80 and "YOUR NAME" in k["opener"] and "Joe's" in k["opener"] and "Fort Collins" in k["opener"] and "free preview" in k["opener"]
+          and k["opener"].rstrip().endswith("?"), (k["opener_words"], k["opener"]))
+    e = k["email"]
+    check("c. the email with placeholders is marked NOT READY TO SEND (CAN-SPAM needs a real sender and postal address)", e.startswith("NOT READY TO SEND") and not k["ready"])
+    check("c. the email: honest subject, the demo link, the price from the settings file, an ad line, the postal address, an opt-out",
+          "Subject: A free website preview for Joe's" in e and "https://joes-barber-co-demo.netlify.app" in e and "$499 to set it up" in e and "$49 a month" in e
+          and "This is a one-time offer of web design services" in e and "YOUR STREET ADDRESS" in e and 'Reply "no thanks"' in e)
+    filled = json.load(open(CFG.EXAMPLE, encoding="utf-8"))
+    filled["agency"].update(name="Pine Street Web", your_name="Sam Rivera", phone="(970) 555-0177", email="sam@pinestreetweb.example", postal_address="12 Pine St, Fort Collins, CO 80521")
+    filled["packages"][0]["setup"] = 599
+    json.dump(filled, open(os.environ["AGENCY_CONFIG"], "w", encoding="utf-8"))
+    cfg2 = CFG.load()
+    k2 = P.kit(lead, cfg2, "https://joes-barber-co-demo.netlify.app")
+    check("c. after the owner fills the ONE settings file: ready, From = his name and email, his postal address, his new price ($599), no placeholder left",
+          k2["ready"] and "From: Sam Rivera <sam@pinestreetweb.example>" in k2["email"] and "12 Pine St, Fort Collins, CO 80521" in k2["email"] and "$599 to set it up" in k2["email"]
+          and not re.search(r"YOUR (NAME|AGENCY|STREET)", k2["email"] + k2["phone_script"] + k2["html"]), k2["email"][:300])
+    ph = k2["phone_script"]
+    check("c. the phone sheet: dial by hand (no auto-dialer), a voicemail line, four answers (have a site / price / send me / not interested -> Do not contact)",
+          "never an auto-dialer" in ph and "VOICEMAIL" in ph and all(q in ph for q in ('"We already have a website."', '"How much?"', '"Send me something."', '"Not interested."'))
+          and "Do not contact" in ph and "(970) 555-0177" in ph)
+    pg = SC.Page()
+    pg.feed(k2["html"])
+    pg.close()
+    check("c. the one-pager is valid, self-contained HTML (no hotlink): what customers find today, the demo link, 3 packages with the best fit marked, next steps",
+          not pg.errors and not pg.stack and not HOTLINK.search(k2["html"]) and "What customers find today" in k2["html"] and "joes-barber-co-demo.netlify.app" in k2["html"]
+          and k2["html"].count("<tr class=") == 3 and k2["html"].count("Best fit") == 1 and "Next step" in k2["html"], (pg.errors, pg.stack))
+    roof = dict(lead_fixture(name="Highroad Roofing", category="roofer", slug="highroad-roofing", website="https://highroadroofing.example/"))
+    roof.update(L.score(roof, {"issues": [A.issue("site_down", 55, "Their website does not open (error 500)")]}))
+    kr = P.kit(roof, cfg2, "https://highroad-roofing-demo.netlify.app")
+    check("c. a roofer with a broken site: the Growth package ($999 + $79), the email names the problem (did not open), the one-pager lists it",
+          kr["package"] == "growth" and kr["setup"] == 999 and kr["monthly"] == 79 and "did not open" in kr["email"] and "The site did not open" in kr["html"], (kr["package"], kr["problem"]))
+    plan = M.plan(CFG.load(CFG.EXAMPLE), M.load_pricing())
+    four = next(r for r in plan["rows"] if r["new_per_month"] == 4)
+    check("c. the money math: average sale $799 + $66 a month; 4 new clients a month passes $5,000 a month in month 8 (128 calls a month, about 6 a day)",
+          (plan["avg_setup"], plan["avg_monthly"]) == (799.0, 66.0) and four["months_to_goal"] == 8 and plan["pace"]["new_per_month"] == 4 and plan["pace"]["dials"] == 128
+          and plan["care_clients_for_goal_alone"] == 76, (plan["avg_setup"], plan["avg_monthly"], four, plan["pace"]))
+    pr = M.load_pricing()
+    check("c. the pricing research lists its sources with links and the date it was read", pr["checked"] == "2026-11-14" and len(pr["market"]) >= 8
+          and all(x["url"].startswith("https://") and x["source"] for x in pr["market"] + pr["hosting"] + pr["rules"]))
+    os.remove(os.environ["AGENCY_CONFIG"])
+
+
 if __name__ == "__main__":
     try:
         test_leads()
         test_sites()
+        test_pitch()
     finally:
         shutil.rmtree(TMP, ignore_errors=True)
     AK.finish()
