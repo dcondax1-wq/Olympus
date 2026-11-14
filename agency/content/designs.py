@@ -497,8 +497,8 @@ background:var(--acc);color:var(--onacc);display:flex;align-items:center;justify
 .L-split .b .sub{{color:var(--pink2)}}
 .L-split .foot{{color:var(--pink)}}"""
     body = (f'<div class="top"></div><div class="bot"></div><div class="band"></div>'
-            f'<div class="t" data-box><span class="label" style="color:var(--accd)">{esc(p["label"])}</span>'
-            f'{_hl(p["headline"], int((230 if st else 168) * s), 4 if st else 3)}</div>'
+            f'<div class="t"><span class="label" style="color:var(--accd)">{esc(p["label"])}</span>'
+            f'{_hl(p["headline"], int((230 if st else 168) * s), 3 if st else 2)}</div>'
             f'<div class="disc">{icon(p["icon"], stroke=3)}</div>'
             f'<div class="b">{_sub(p.get("sub_long") or p["sub"], 46 if st else 36, 5 if st else 3)}'
             f'{"<div class=go>" + esc(p["go"]) + "</div>" if p.get("go") else ""}</div>{foot(b, web=False, fmt=fmt)}')
