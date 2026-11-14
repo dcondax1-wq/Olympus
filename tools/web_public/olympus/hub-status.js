@@ -3,6 +3,7 @@
  * Sources (all published, same origin, read only): home.json through olympus/truth.js (accounts, data age; a light copy of its rules when truth.js
  * does not load), kalshi.json (the Kalshi bot's feed copy), money/scoreboard.json (cash in / out, tools/money_scoreboard.py), each app's jarvis.json
  * (its status card), and on this phone only the Planner's summary for Jarvis, localStorage 'planner.today.v1' (read, never written).
+ * The Me hub (2026-11-14, docs/ME_HUB.md): me/me.json (tools/me_hub.py), served ONLY by the PC's private link: meOf() -> its tiles' short words.
  * A missing source gives a plain line ("No Kalshi numbers yet"), never an invented number. Paper P&L is never called cash. */
 (function (g) {
   'use strict';
@@ -91,6 +92,15 @@
     if (bal == null && num(x.total_pnl) == null) return { has: false };
     return { has: true, balance: bal, today: num(x.today_pnl), week: num(x.week_pnl), running: typeof x.running === 'boolean' ? x.running : null, open: arr(x.positions).length, t: tt, age: tt == null ? null : Math.max(0, Math.floor(t - tt)) };
   }
+  /** the Me hub's file (me/me.json, tools/me_hub.py; the PC's private link only) -> its 4 tiles, or { has: false } (the public site never has it) */
+  function meOf(doc, t) {
+    var d = obj(doc), tt = toS(d.t);
+    if (d.kind !== 'olympus-me' || !(d.tiles instanceof Array)) return { has: false };
+    var tiles = d.tiles.filter(function (x) { return x && typeof x === 'object' && !x.empty && x.short; }).map(function (x) {
+      return { id: String(x.id || ''), short: String(x.short).slice(0, 28), lvl: x.lvl === 'ok' || x.lvl === 'warn' || x.lvl === 'bad' ? x.lvl : '' };
+    });
+    return { has: true, tiles: tiles, t: tt, age: tt == null ? null : Math.max(0, Math.floor(t - tt)) };
+  }
   function moneyOf(sb) {
     var tot = obj(obj(sb).totals), m = obj(tot.month), a = obj(tot.all), w = obj(tot.week);
     if (num(m.net) == null && num(a.net) == null) return { has: false };
@@ -161,6 +171,13 @@
         return { text: bits.length ? bits.join(' · ') : 'Nothing else planned today', lvl: '' };
       case 'research':
         return kpiLine(cards.hephaestus, 2) || card('archive') || { text: 'Backtests, edges and write-ups', lvl: '' };
+      case 'me':
+        var ME = c.ME || { has: false };
+        if (!ME.has || !ME.tiles.length) return { text: 'Money, cards, health, home: on your PC link', lvl: '' };
+        var rank = { bad: 3, warn: 2, ok: 1 }, worst = '';
+        ME.tiles.forEach(function (x) { if ((rank[x.lvl] || 0) > (rank[worst] || 0)) worst = x.lvl; });
+        return { text: ME.tiles.slice(0, 3).map(function (x) { return x.short; }).join(' · ') + (ME.age != null && ME.age > 36 * 3600 ? ' (' + shortAge(ME.age) + ')' : ''),
+          lvl: ME.age != null && ME.age > 36 * 3600 ? 'warn' : worst };
       case 'jarvis':
         return { text: 'Ask anything · your AI team', lvl: '' };
       case 'worlds':
@@ -199,7 +216,7 @@
   }
 
   var out = { v: 1, STALE_S: STALE_S, FRESH_S: FRESH_S, num: num, money: money, moneyS: moneyS, ageWords: ageWords, shortAge: shortAge, inWords: inWords, etNow: etNow,
-    nextWindow: nextWindow, windowLine: windowLine, summarize: summarize, botState: botState, kalshiOf: kalshiOf, moneyOf: moneyOf, planOf: planOf, shiftLine: shiftLine,
+    nextWindow: nextWindow, windowLine: windowLine, summarize: summarize, botState: botState, kalshiOf: kalshiOf, moneyOf: moneyOf, meOf: meOf, planOf: planOf, shiftLine: shiftLine,
     cardLine: cardLine, kpiLine: kpiLine, hubLine: hubLine, getJSON: getJSON, getTruth: getTruth, plannerToday: plannerToday, themeName: themeName };
   g.OLYMPUS_HUB_STATUS = out;
   if (typeof module !== 'undefined' && module.exports) module.exports = out;

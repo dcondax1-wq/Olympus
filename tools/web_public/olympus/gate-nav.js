@@ -5,7 +5,7 @@
  *   home (gate/); then the app's hub (a link to hub/?h=<hub>&t=<its tab>) and the app's plain name. A page with no back link gets a slim row (crumbs on the
  *   left, Go to on the right) above its header: in the page flow, never floating over its content. On a hub page (hub/?h=...): Home > Hub.
  * - "Go to" sits on the right of the same top row (and as a 44 px icon in the compact bar that appears on scroll): a sheet with a search box (name, purpose,
- *   plain words: olympus/gate-catalog.js), then THE NINE HUBS first, the last apps opened and Home. Nothing near Jarvis's orb corner.
+ *   plain words: olympus/gate-catalog.js), then THE HUBS first (the nine + Me), the last apps opened and Home. Nothing near Jarvis's orb corner.
  * - Remembers this app as opened (localStorage 'gate.recent.v1', the Gate's Recent row), in try / catch. Inside Jarvis (framed) it only remembers.
  * Classic script, ES5, no markup from data (textContent / createElementNS), same-origin files only, no other storage, no network but the catalog file. */
 (function () {
@@ -169,7 +169,7 @@
     if (w.OLYMPUS_GATE && w.OLYMPUS_GATE.hubs) { S.cat = w.OLYMPUS_GATE; if (then) then(); return; }
     if (S.catTried) { if (then) then(); return; }
     S.catTried = true;
-    var s = el('script'); s.src = root + 'olympus/gate-catalog.js?v=ag1'; s.async = true;
+    var s = el('script'); s.src = root + 'olympus/gate-catalog.js?v=me1'; s.async = true;
     s.onload = function () { S.cat = w.OLYMPUS_GATE || null; if (then) then(); else refresh(); };
     s.onerror = function () {
       var s2 = el('script'); s2.src = root + 'olympus/apps-list.js'; s2.async = true;
@@ -232,7 +232,7 @@
       if (hits.length) { var l = el('div', 'gn-list'); hits.forEach(function (a) { l.appendChild(item(a)); }); body.appendChild(l); }
       else body.appendChild(el('p', 'gn-empty', C ? 'Nothing found for "' + q + '". Try a plain word like money, risk or news.' : 'The app list did not load. Home below has every hub.'));
     }
-    var home = function () { var g = el('div', 'gn-list'); g.style.marginTop = '12px'; g.appendChild(item({ id: 'gate', path: 'gate/', label: 'Home', name: '', line: 'Right now, and your nine hubs' }, 'gn-gate')); body.appendChild(g); };
+    var home = function () { var g = el('div', 'gn-list'); g.style.marginTop = '12px'; g.appendChild(item({ id: 'gate', path: 'gate/', label: 'Home', name: '', line: 'Right now, and your hubs' }, 'gn-gate')); body.appendChild(g); };
     if (q) { home(); return; }
     var here = appId === 'hub' ? hubParam() : (C && C.hubOf && C.hubOf(appId) ? C.hubOf(appId).id : '');
     var hubs = C && C.hubs ? C.hubs : [];
@@ -242,7 +242,7 @@
       hubs.forEach(function (h) {
         var a = el('a', 'gn-dist' + (h.id === here ? ' gn-here' : ''), h.name); a.href = root + 'hub/index.html?h=' + h.id; a.setAttribute('data-hub', h.id);
         if (h.id === here) a.setAttribute('aria-current', 'page');
-        a.appendChild(el('small', '', h.count + ' apps'));
+        a.appendChild(el('small', '', h.size || (h.count + ' apps')));
         a.addEventListener('click', closeSheet);
         ds.appendChild(a);
       });

@@ -29,8 +29,8 @@ H = os.path.join(AK.WEB, "hub")
 CAT = os.path.join(AK.WEB, "olympus", "gate-catalog.js")
 HSJ = os.path.join(AK.WEB, "olympus", "hub-status.js")
 NAV = os.path.join(AK.WEB, "olympus", "gate-nav.js")
-HUBS = ["today", "bots", "kalshi", "money", "plan", "research", "jarvis", "worlds", "settings"]
-NAMES = ["Today", "Bots & Evals", "Kalshi", "My Money", "Plan & Day", "Research", "Jarvis", "Worlds", "Settings & Help"]
+HUBS = ["today", "me", "bots", "kalshi", "money", "plan", "research", "jarvis", "worlds", "settings"]     # + Me (2026-11-14, a page hub: tests/test_me_hub.py)
+NAMES = ["Today", "Me", "Bots & Evals", "Kalshi", "My Money", "Plan & Day", "Research", "Jarvis", "Worlds", "Settings & Help"]
 NOW = "2026-11-12T15:00:00Z"            # Thursday 10:00 New York: the LIT window is open
 NOW_S = int(datetime(2026, 11, 12, 15, 0, tzinfo=timezone.utc).timestamp())
 
@@ -53,10 +53,10 @@ def test_static():
     check("a. the files: hub/index.html, hub.js, hub.css, icon.svg, olympus/hub-status.js, docs/OLYMPUS_IA_V2.md",
           all(os.path.isfile(os.path.join(H, n)) for n in names) and os.path.isfile(HSJ) and os.path.isfile(os.path.join(AK.ROOT, "docs", "OLYMPUS_IA_V2.md")))
     html, js, css, hs, nav, cat = (AK.read(p) for p in (os.path.join(H, "index.html"), os.path.join(H, "hub.js"), os.path.join(H, "hub.css"), HSJ, NAV, CAT))
-    order = ["../olympus/agora.css?v=a3", "hub.css?v=h1", "../olympus/themes.js?v=o5", "../olympus/gate-catalog.js?v=g2", "../olympus/hub-status.js?v=h1",
-             '../olympus/gate-nav.js?v=g3" data-app="hub" defer', "hub.js?v=h1"]
+    order = ["../olympus/agora.css?v=a3", "hub.css?v=h1", "me.css?v=m1", "../olympus/themes.js?v=o5", "../olympus/gate-catalog.js?v=g3", "../olympus/hub-status.js?v=h2",
+             '../olympus/gate-nav.js?v=g3" data-app="hub" defer', "me.js?v=m1", "hub.js?v=h2"]
     pos = [html.find(x) for x in order]
-    check("a. the page loads agora.css, hub.css, the theme engine, the catalog, hub-status, gate-nav (data-app=hub, deferred) and hub.js, in that order, all in <head>",
+    check("a. the page loads agora.css, hub.css, me.css, the theme engine, the catalog, hub-status, gate-nav (data-app=hub, deferred), me.js (the Me hub) and hub.js, in that order, all in <head>",
           all(p >= 0 for p in pos) and pos == sorted(pos) and max(pos) < html.index("</head>"), dict(zip(order, pos)))
     check("a. the page: AGORA theme, viewport-fit=cover, ONE h1, a polite live strip, a tablist + tabpanel, the hub list as plain links (works without the script), Home",
           '<html lang="en" data-theme="agora">' in html and "viewport-fit=cover" in html and html.count("<h1") == 1 and 'aria-live="polite"' in html
@@ -147,7 +147,7 @@ def test_node():
         check("b. the catalog and hub-status run in node", False, O["_error"])
         return
     hubs, apps, lay = O["hubs"], O["apps"], O["lay"]
-    check("b. nine hubs in the home's order, named after the owner's jobs, each with its question", [h["id"] for h in hubs] == HUBS and [h["name"] for h in hubs] == NAMES
+    check("b. the hubs in the home's order (the nine + Me, a page hub), named after the owner's jobs, each with its question", [h["id"] for h in hubs] == HUBS and [h["name"] for h in hubs] == NAMES
           and all(h["q"].endswith(("?", ")")) for h in hubs), [h["name"] for h in hubs])
     check("b. 82 apps, each in exactly one hub (district = hub, so the theme's mix follows it); the counts add up",
           len(apps) == 82 and all(a["hub"] in HUBS and a["district"] == a["hub"] for a in apps) and sum(h["count"] for h in hubs) == 82, [h["count"] for h in hubs])
@@ -238,6 +238,8 @@ def test_page():
         with AK.browser() as br:
             reached = set()
             for hid, name in zip(HUBS, NAMES):
+                if hid == "me":                # a page hub (tiles and areas, no app tabs): tests/test_me_hub.py
+                    continue
                 ctx, p, errs, seen, off = AK.page(br, origin, storage={"planner.today.v1": PLAN})
                 open_hub(p, origin, f"?h={hid}")
                 r = p.evaluate(STATE)
@@ -311,7 +313,7 @@ def test_page():
             check("c. Settings & Help > Help lists every app A to Z (82), each with its hub", len(az) == 82 and len(set(az)) == 82, len(az))
             open_hub(p, origin, "?h=nope")
             r = p.evaluate("() => [document.querySelector('#indexH').textContent, [...document.querySelectorAll('a.hb-hubrow')].map((a) => a.dataset.hub), document.querySelector('#tabs').hidden]")
-            check("c. an unknown hub (?h=nope) shows 'Pick a hub' and the nine hubs", r == ["Pick a hub", HUBS, True], r)
+            check("c. an unknown hub (?h=nope) shows 'Pick a hub' and every hub", r == ["Pick a hub", HUBS, True], r)
             ctx.close()
 
             # gate-nav arrives by itself on an AGORA app without its own tag (Compass), and on a hub page Go to marks the hub

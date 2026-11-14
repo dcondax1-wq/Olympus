@@ -4,7 +4,8 @@
  *   the job in one line; the BEST app as a big card (its own status card line when it says something real, "Open" and "Show it here" =
  *   the app in a frame below); the other apps for the job as rows; the duplicates under "Other views of the same" (a <details>, closed).
  * A strip of live facts for the hubs that have numbers (Today, Bots & Evals, Kalshi, My Money, Plan & Day, Research). Settings & Help also lists
- * every app A to Z. No ?h (or an unknown one): the list of hubs. Text only through textContent / createElementNS; storage: read 'planner.today.v1' only. */
+ * every app A to Z. No ?h (or an unknown one): the list of hubs. Text only through textContent / createElementNS; storage: read 'planner.today.v1' only.
+ * A PAGE hub (Me, page: 'me' in the catalog, docs/ME_HUB.md) has no tabs: hub/me.js (window.OLYMPUS_ME_PAGE) draws it into the panel. */
 (function () {
   'use strict';
   var d = document, w = window, C = w.OLYMPUS_GATE || null, HS = w.OLYMPUS_HUB_STATUS || null, NS = 'http://www.w3.org/2000/svg';
@@ -12,6 +13,7 @@
   var Q = (function () { var o = {}, s = (w.location.search || '').replace(/^\?/, ''); if (!s) return o; s.split('&').forEach(function (kv) { var p = kv.split('='); if (p[0]) { try { o[decodeURIComponent(p[0])] = decodeURIComponent((p[1] || '').replace(/\+/g, ' ')); } catch (e) { /* skip */ } } }); return o; })();
   var ICONS = {
     sun: ['M8 27a12 12 0 0 1 24 0', 'M20 7v4M8.5 12.5l2.8 2.8M31.5 12.5l-2.8 2.8M3 27h34M7 32h26'],
+    me: ['M20 6.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 1 0 0-13z', 'M7 34c.8-7.4 6.2-12 13-12s12.2 4.6 13 12'],
     bots: ['M7 15h26M9 33h22M11 15v18M20 15v18M29 15v18', 'M11 6c-2 2 0 3.5-1.2 6h2.4c-.8-2.3.8-3.4-1.2-6zM20 4.5c-2.2 2.2 0 4-1.4 7.5h2.8c-.9-2.8.9-4.1-1.4-7.5zM29 6c-2 2 0 3.5-1.2 6h2.4c-.8-2.3.8-3.4-1.2-6z'],
     kalshi: ['M20 5v30M9 12h22', 'M9 12 4 23a5 5 0 0 0 10 0zM31 12l-5 11a5 5 0 0 0 10 0z', 'M13 35h14'],
     money: ['M20 6a14 14 0 1 0 0 28a14 14 0 1 0 0-28z', 'M20 13.5v13M23 16.8c-.3-1.2-1.5-1.9-3-1.9-1.7 0-3 .9-3 2.3 0 3.2 6 1.9 6 5.1 0 1.4-1.3 2.4-3 2.4-1.6 0-2.8-.7-3.1-1.9'],
@@ -262,6 +264,14 @@
     var title = $('hubName'); clear(title); title.appendChild(hubIcon(H.icon, 'hb-ticon')); title.appendChild(d.createTextNode(H.name));
     $('hubQ').textContent = H.q;
     $('indexH').textContent = 'Other hubs';
+    if (H.page) {   // a page hub (Me, docs/ME_HUB.md): no app tabs; hub/me.js draws its tiles and areas from the PC's private me/me.json
+      $('tabs').hidden = true;
+      drawSee(H);
+      var MP = w.OLYMPUS_ME_PAGE, panel = $('panel');
+      if (!MP || !MP.mount) { clear(panel); panel.appendChild(el('p', 'hb-blurb', 'This hub did not load. Open it again in a moment.')); panel.hidden = false; S.done = true; return; }
+      MP.mount(panel, { base: base, now: nowS, hub: H, done: function () { S.done = true; } });
+      return;
+    }
     var L = C.layout(H.id);
     drawTabs(H, L);
     pick(Q.t, false);
