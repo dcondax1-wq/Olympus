@@ -2,14 +2,14 @@
 
 The website prospects open when you call them: what you do, before/after examples, your three plans and prices, a FAQ,
 a free-demo request form, tap-to-call, and a free **Website Grader** that turns visitors into leads. It is plain static
-files (no CDN, no tracking, no secrets), so it hosts free on Netlify by dropping one zip.
+files (no CDN, no tracking, no secrets), so it hosts free on Netlify by dropping one folder (a zip of it is made too).
 
 ## Your 3 steps (on the PC)
 
 1. Put your agency name, city, phone, email and prices in `agency/config.json` (the same file the pitches and demo sites use), save, and run:
    `python agency/storefront/build.py`
-2. Open app.netlify.com/drop, sign up free, and drop the `agency/storefront/dist/site` folder on it. In the new site open
-   **Forms**, click **Enable form detection**, add an **email notification** to your email, then drop the folder once more on the **Deploys** page.
+2. Open app.netlify.com/drop, sign up free, drop the `agency/storefront/dist/site` folder on it and press **Publish** (new projects
+   start private). Then in **Forms** click **Enable form detection**, add an **email notification** to your email, and drop the folder once more on **Deploys**.
 3. Later, when you buy a domain: Netlify **Domain management** > **Add a domain** (the padlock is free).
 
 ## What you get
@@ -23,8 +23,9 @@ files (no CDN, no tracking, no secrets), so it hosts free on Netlify by dropping
 | Contact | Free-demo form (lands in Netlify, emailed to you), tap-to-call, text, email, a booking link once you add one |
 | Free Website Grader | A 2-minute self-check (10 questions, instant score + top 3 fixes), then "email me my full report": a lead with their website |
 | Real grader for you | `grade.py` checks their site for real and writes a one-page report with your name and prices on it |
-| Speed | Every page under 100 KB (plus the example pictures); the demos under 60 KB |
+| Speed | Every page 49-73 KB with its style and script (13-18 KB as actually sent, compressed), plus the example pictures (13-38 KB each); the demos about 26 KB |
 | Colours | 3 presets (coral, ocean, forest) or any colour you like; preview a preset by adding `?preset=ocean` to a page address |
+| Safety | Strict security headers (the site can only load its own files), forms with a hidden spam trap, no cookies or tracking, text readable for low vision (WCAG AA contrast) |
 | Legal | Privacy and terms pages, plain templates, marked "edit before going live" until you set `legal_reviewed` to true |
 
 ## When someone asks for a free report
