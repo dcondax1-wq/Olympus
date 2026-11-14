@@ -22,6 +22,7 @@ import csv
 import datetime as dt
 import json
 import os
+import random
 import re
 import sys
 import zlib
@@ -250,29 +251,28 @@ def _candidates(pack: dict, year: int, month: int, flags: str, reviews) -> dict:
     pos = (month - SEASON_START[season]) % 12                          # 0, 1 or 2 inside the season
     rot = year * 12 + month
     seasonal = [f for j, it in enumerate(pack["tips"].get(season) or []) if j % 3 == pos for f in _pool([it], month, flags)]
-    ever = _pool(pack["tips"]["any"], month, flags)
-    tip_step = max(1, len(ever) // 2)                                  # halves: months take turns
     hooks = _pool(pack["season"].get(season), month, flags)
     first = lambda f: min(f["months"] & set(_season_months(season)), key=lambda mm: (mm - SEASON_START[season]) % 12)  # noqa: E731
     tagged = [f for f in hooks if f["months"] and month == first(f)]
     plain = [f for f in hooks if not f["months"]]
-    services = _pool(pack["services"], month, flags)
-    svc_step = max(1, min(3, len(services) // 2))
     offers = _pool(pack["offers"], month, flags)
     # a timed offer runs in its months; one with a long window (a battery test Oct-Feb) runs every other month
     timed = [f for f in offers if f["months"] and (len(f["months"]) <= 2 or (rot + crc(f["headline"])) % 2 == 0)]
     checklists = [{"headline": c[0], "body": "", "items": c[1], "check": "", "months": (c[2] if len(c) > 2 else None)}
                   for c in pack["checklists"] if (len(c) < 3 or c[2] is None or month in c[2])]
 
-    def half(raw):
-        """odd and even months draw from the two halves of a pool (by position in the pack), so two neighbouring months can
-        never share an item; inside its half each month turns one step"""
-        mine = [f for j, it in enumerate(raw or []) if j % 2 == rot % 2 for f in _pool([it], month, flags)]
+    def half(raw, parity=None):
+        """odd and even months draw from the two halves of a pool (by position in the pack, so a month filter never shifts
+        them): two neighbouring months can never share an item; inside its half each month turns one step"""
+        par = rot % 2 if parity is None else parity
+        mine = [f for j, it in enumerate(raw or []) if j % 2 == par for f in _pool([it], month, flags)]
         return _rotate(mine, rot // 2)
 
+    tips_mine, tips_other = half(pack["tips"]["any"]), half(pack["tips"]["any"], 1 - rot % 2)
+    svc_mine, svc_other = half(pack["services"]), half(pack["services"], 1 - rot % 2)
     return {
-        "tip": seasonal + _rotate(ever, rot * tip_step), "tip_fresh": len(seasonal) + tip_step,
-        "service": _rotate(services, rot * svc_step), "service_fresh": svc_step,
+        "tip": seasonal + tips_mine + tips_other, "tip_fresh": len(seasonal) + len(tips_mine),
+        "service": svc_mine + svc_other, "service_fresh": min(3, len(svc_mine)),
         "offer_timed": _rotate(timed, rot), "offer_ever": half([o for o in pack["offers"] if _split_item(o)["months"] is None]),
         "season": tagged or ([plain[pos]] if pos < len(plain) else []),
         "bts": half(pack["bts"]), "team": half(P.TEAM), "review": half(P.REVIEW_ASK), "faq": half(pack["faq"]),
@@ -357,8 +357,8 @@ def plan_month(client: dict, year: int, month: int, n_posts: int | None = None, 
             h["post_date"] -= dt.timedelta(days=1)
         taken.add(h["post_date"])
 
-    # the content pools: fresh every month. A season's own items are spread over its three months, the evergreen pools turn by
-    # as many items as a month uses, and whatever last month led with is skipped (no repeats from one month to the next)
+    # the content pools, fresh every month (_candidates): a season's own items are spread over its three months, tips and
+    # services take turns by halves, and the small pools give odd and even months different halves (no repeats month to month)
     cur = _candidates(pack, year, month, flags, reviews)
     nxt = _candidates(pack, ny, nm, flags, reviews)
 
@@ -403,7 +403,6 @@ def plan_month(client: dict, year: int, month: int, n_posts: int | None = None, 
     free_dates = [d for d in dates if d not in hol_by_date]
 
     # order the non-holiday kinds across the month: early season/booking/offers, reviews later, no kind twice in a row
-    import random
     rnd = random.Random(seed)
     bag = [kk for kk, c in mix.items() for _ in range(c)]
     pref = {"season": lambda f: 1.2 - f, "booking": lambda f: 1.0 - f, "offer": lambda f: 0.85 - 0.5 * f, "review": lambda f: 0.3 + 0.6 * f}
@@ -651,8 +650,6 @@ def write_captions(plan: dict, path: str) -> None:
 
 def client_message(plan: dict) -> str:
     name = plan["brand"]["name"]
-    first = ""
-    who = (plan["client"].get("name") or "").strip()
     n = len(plan["posts"])
     text = [f"Hi! Here is the {plan['label']} social plan for {name}: {n} posts, each with a matching story, scheduled at the best times "
             f"for your customers. The preview picture is attached."]
@@ -723,7 +720,7 @@ def write_outputs(plan: dict, out_dir: str, render: bool = True, renderer=None, 
     with open(os.path.join(out_dir, "HOW_TO_POST.txt"), "w", encoding="utf-8") as fh:
         fh.write(HOW_TO.format(label=plan["label"], name=plan["brand"]["name"]))
     with open(os.path.join(out_dir, "contact_sheet.html"), "w", encoding="utf-8") as fh:
-        fh.write(SH.contact_sheet(plan, brand))
+        fh.write(SH.contact_sheet(plan, brand, images=made["images"] > 0, html_pages=render and made["images"] == 0))
     if render and made["images"]:
         r = renderer or R.Renderer()
         try:

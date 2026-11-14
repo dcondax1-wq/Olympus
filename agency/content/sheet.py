@@ -10,7 +10,6 @@ from __future__ import annotations
 import calendar
 import datetime as dt
 import html
-import json
 import math
 
 from agency.content import designs as D
@@ -145,7 +144,8 @@ def _css(plan: dict, brand: dict) -> str:
                   "tt": "text-transform:uppercase;" if up else ""}
 
 
-def contact_sheet(plan: dict, brand: dict) -> str:
+def contact_sheet(plan: dict, brand: dict, images: bool = True, html_pages: bool = False) -> str:
+    """images=False: no browser drew the PNGs, so each card shows the headline (and links the image's HTML page when it was kept)"""
     posts = plan["posts"]
     n = len(posts)
     kinds = []
@@ -162,8 +162,14 @@ def contact_sheet(plan: dict, brand: dict) -> str:
     for p in posts:
         k = KIND_COLOR.get(p["kind"], "#555")
         full = p["caption"] + "\n\n" + " ".join(p["hashtags"])
-        img = (f'<img class="sq" src="{esc(p["square"])}" alt="{esc(p["alt"])}" loading="lazy" width="1080" height="1080">'
-               f'<a href="{esc(p["story"])}" title="Story image"><img class="st" src="{esc(p["story"])}" alt="Story version" loading="lazy" width="1080" height="1920"></a>')
+        if images:
+            img = (f'<img class="sq" src="{esc(p["square"])}" alt="{esc(p["alt"])}" loading="lazy" width="1080" height="1080">'
+                   f'<a href="{esc(p["story"])}" title="Story image"><img class="st" src="{esc(p["story"])}" alt="Story version" loading="lazy" width="1080" height="1920"></a>')
+        elif html_pages:
+            img = (f'<a class="ph" href="{esc(p["square"].replace(".png", ".html"))}">{esc(p["headline"].replace("*", ""))}</a>'
+                   f'<a class="ph" href="{esc(p["story"].replace(".png", ".html"))}" style="aspect-ratio:9/16;font-size:12px">Story</a>')
+        else:
+            img = f'<div class="ph">{esc(p["headline"].replace("*", ""))}</div><div></div>'
         flags = ""
         if p["check"]:
             flags += f'<div class="flag q"><b>Check first:</b> {esc(p["check"])}</div>'

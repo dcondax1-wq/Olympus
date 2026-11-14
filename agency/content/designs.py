@@ -642,7 +642,7 @@ transform:rotate(-3.2deg);box-shadow:0 40px 70px -30px rgba(0,0,0,.45),0 2px 6px
 flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:{26 if st else 16}px}}
 .L-frame .wrap .label{{color:var(--accp)}}"""
     body = (f'<div class="pat"></div><div class="pol"><div class="tape"></div><div class="ph"><div class="pt"></div><div class="mono">{esc(b["initials"])}</div>'
-            f'{icon(p["icon"], stroke=2.6)}</div><p class="cap" data-max="{104 if st else 84}" data-min="34" data-lines="1">{esc(p["headline"].replace("*", ""))}</p></div>'
+            f'{icon(p["icon"], stroke=2.6)}</div><p class="cap" data-max="{(104 if st else 84) if len(p["headline"]) < 26 else (76 if st else 58)}" data-min="30" data-lines="{1 if len(p["headline"]) < 26 else 2}">{esc(p["headline"].replace("*", ""))}</p></div>'
             f'<div class="wrap"><span class="label">{esc(p["label"])}</span>{_sub(p["sub"], 42 if st else 31, 3 if st else 2)}</div>{foot(b)}')
     return css, body, "light"
 

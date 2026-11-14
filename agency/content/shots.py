@@ -19,7 +19,6 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from agency.content import client_report as C  # noqa: E402
-from agency.content import designs as D  # noqa: E402
 from agency.content import make_posts as M  # noqa: E402
 from agency.content import render as R  # noqa: E402
 

@@ -111,7 +111,7 @@ def part_a():
 
 # ============================================================================================================== b. plans
 def part_b():
-    bad, dupes, outside, layouts, times, holi, sells, tags, length, ph, counts = [], [], [], [], [], [], [], [], [], [], []
+    dupes, outside, layouts, times, holi, sells, tags, length, ph, counts = [], [], [], [], [], [], [], [], [], []
     for trade, client in BY_TRADE.items():
         pack = P.PACKS[trade]
         for y, m in [(2026, 12)] + [(2027, k) for k in range(1, 12)]:
@@ -246,6 +246,23 @@ def part_d():
           [r[1] for r in body] == [p["date"] for p in plan["posts"]] and [r[2] for r in body] == [p["time"] for p in plan["posts"]]
           and [r[7] for r in body] == [p["caption"] for p in plan["posts"]] and all(r[10].endswith("_square.png") and r[11].endswith("_story.png") for r in body))
     check("d. captions.txt: every caption with its date, time and image file, ready to copy from a phone", all(p["caption"] in cap and p["square"] in cap for p in plan["posts"]))
+    with tempfile.TemporaryDirectory() as td:
+        rc = M.main([os.path.join(FIX, "clients_demo.json"), "--id", "nonna-rosa", "--month", "2027-02", "--no-images", "--out", td, "--quiet"])
+        files = sorted(os.listdir(td))
+        sheet = open(os.path.join(td, "contact_sheet.html"), encoding="utf-8").read()
+        plan = json.load(open(os.path.join(td, "posts.json"), encoding="utf-8"))
+    check("d. the command line, no images: exit 0, the month folder (posts.csv, captions.txt, contact_sheet.html, client_message.txt, posts.json, "
+          "HOW_TO_POST.txt) and a sheet that shows each headline instead of broken images", rc == 0 and
+          {"posts.csv", "captions.txt", "contact_sheet.html", "client_message.txt", "posts.json", "HOW_TO_POST.txt"} <= set(files)
+          and "<img" not in sheet and sheet.count('class="ph"') == len(plan["posts"]) and plan["month"] == "2027-02", files)
+    try:
+        M.main([os.path.join(FIX, "clients_demo.json"), "--month", "2027-02", "--no-images", "--quiet"])
+        refused = False
+    except SystemExit as e:
+        refused = "--id" in str(e)
+    check("d. a file with several clients and no --id / --all is refused with the list of ids (never a guess)", refused)
+    paying = M.choose_clients(CLIENTS, None, True)
+    check("d. --all takes the paying clients only (the lead in the demo file is skipped)", len(paying) == 8 and all(c["status"] == "active" for c in paying))
     # the two double-click helpers for the owner's PC (the same static rules as the repo's Windows scripts; cmd.exe is not run here)
     bad = {}
     for name in ("MAKE_POSTS.bat", "CLIENT_REPORT.bat"):

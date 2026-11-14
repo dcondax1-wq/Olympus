@@ -79,7 +79,7 @@ ENGAGE = [
 
 # holiday words for every trade (a trade's own `holiday` entry wins). Respect days never sell.
 HOLIDAY = {
-    "new_year": [("Happy New *Year*", "Thank you for an amazing {last_year}, {city}. Here is to a healthy, happy year ahead. We can not wait "
+    "new_year": [("Happy New *Year*", "Thank you for an amazing {last_year}, {city}. Here is to a healthy, happy year ahead. We cannot wait "
                   "to see you soon.")],
     "mlk": [("Honoring *Dr. King*", "Today we honor the life and legacy of Dr. Martin Luther King Jr. and the work of building a fairer "
              "community for all of us.")],
@@ -391,8 +391,8 @@ PACKS["plumber"] = {
         ("Water heater *service*", "No hot water, rusty water or strange noises? We repair and replace water heaters.", "", "p"),
         ("Drain *cleaning*", "Slow drains and clogs cleared properly, not just pushed further down the pipe.", "", "p"),
         ("Leak *repair*", "A small drip today is a big bill tomorrow. We find and fix leaks fast.", "", "p"),
-        ("Furnace *tune-up*", "A tune-up before the cold keeps your heat running when you need it most.", "", "h"),
-        ("AC *check*", "Get your AC checked before the heat arrives, not during the first heat wave.", "", "h"),
+        ("Furnace *tune-up*", "A tune-up before the cold keeps your heat running when you need it most.", "", "h", {8, 9, 10, 11, 12, 1, 2}),
+        ("AC *check*", "Get your AC checked before the heat arrives, not during the first heat wave.", "", "h", {3, 4, 5, 6, 7}),
         ("Fixture *installs*", "New faucet, toilet or garbage disposal? We install it right the first time.", "", "p"),
     ],
     "tips": {
