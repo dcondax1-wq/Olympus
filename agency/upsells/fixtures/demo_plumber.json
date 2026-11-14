@@ -34,7 +34,7 @@
       {"name": "Yearly tune-up", "price": "$99", "keys": ["tune up", "maintenance visit"]}
     ],
     "area": {"text": "Brandon, Tampa, Riverview, Valrico and nearby",
-             "towns": ["Brandon", "Tampa", "Riverview", "Valrico", "Seffner", "Plant City"],
+             "towns": ["Brandon", "Tampa", "Riverview", "Valrico"],
              "zips": ["33510", "33511", "33569", "33578", "33594", "33619"]},
     "facts": {
       "license": "Yes: licensed (FL #CFC0000000, demo number) and insured; every tech is background-checked.",

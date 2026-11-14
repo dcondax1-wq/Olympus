@@ -637,6 +637,8 @@ def part_browser(shots: bool):
             last = p.locator(W + " >> .m:not(.u)").last
             check("g. plumber at 10:30 pm: shut-off advice and an 'Emergency line' button to the 24/7 number",
                   "main water valve" in last.inner_text() and last.locator("a[href='tel:+18135550178']").count() == 1, last.inner_text())
+            labels = [x.strip() for x in last.locator(".bt").all_inner_texts()]
+            check("g. buttons inside answers keep their full labels (the short ones are only for the bottom bar)", labels == ["Emergency line", "Leave my number"], labels)
             snap(p, "chat-08-plumber-emergency.png")
             ctx.close()
             ctx, p, errs = phone(when=iso(2026, 11, 14, 18, 15))

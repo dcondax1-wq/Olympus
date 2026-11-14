@@ -253,7 +253,7 @@ var CSS = ":host{all:initial}*{box-sizing:border-box;margin:0;padding:0;font:inh
   ".hs{font-size:13px;display:flex;align-items:center;gap:6px}.hs i{width:8px;height:8px;border-radius:50%;background:#cbd2d9}" +
   ".x{margin-left:auto;width:44px;height:44px;background:none}" +
   ".lg{flex:1;overflow-y:auto;padding:16px 14px 10px;display:flex;flex-direction:column;gap:10px}" +
-  ".m,.fm{animation:fdcf .25s}@keyframes fdcf{from{opacity:0;transform:translateY(6px)}}" +
+  ".m,.fm{animation:fdcf .25s}@keyframes fdcf{from{opacity:0}}" +
   ".m{max-width:88%;padding:10px 13px;border-radius:18px 18px 18px 6px;background:#f1f3f5;align-self:flex-start;overflow-wrap:anywhere}" +
   ".u{background:var(--f);color:var(--i);border-radius:18px 18px 6px;align-self:flex-end}.m>*+*{margin-top:6px}.m ul{padding-left:18px}" +
   ".ac,.ch{display:flex;flex-wrap:wrap;gap:8px}.ac{margin-top:10px}" +
@@ -313,7 +313,7 @@ function user(t) { add("<div class='m u'>" + esc(t) + "</div>"); }
 function reply(list) {
   var lead, chips;
   list.forEach(function (a) {
-    var h = "", ul = 0, acts = (a.a || []).map(btn).join("");
+    var h = "", ul = 0, acts = (a.a || []).map(function (n) { return btn(n); }).join("");   // not .map(btn): the index would read as "bar"
     a.t.split("\n").forEach(function (ln) {
       var li = !ln.indexOf("• ");
       h += (li && !ul ? "<ul>" : !li && ul ? "</ul>" : "") + (li ? "<li>" + esc(ln.slice(2)) + "</li>" : "<p>" + esc(ln) + "</p>");
