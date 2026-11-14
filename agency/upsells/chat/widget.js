@@ -259,7 +259,7 @@ var CSS = ":host{all:initial}*{box-sizing:border-box;margin:0;padding:0;font:inh
   ".cp{border:1.5px solid var(--a);background:#fff;color:var(--a)}" +
   ".bar{display:flex;gap:8px;padding:10px 12px 0;border-top:1px solid #dfe3e8}.bar .bt{flex:1;justify-content:center;padding:8px 6px;background:var(--s);color:var(--a)}" +
   ".in{display:flex;gap:8px;padding:10px 12px 6px}" +
-  "input,textarea{width:100%;min-width:0;height:48px;padding:0 15px;border:1.5px solid #dfe3e8;border-radius:16px;background:#fff;color:#1f2430;font-size:16px;font-weight:400}" +
+  "input,textarea{width:100%;min-width:0;height:48px;padding:0 15px;border:1.5px solid #8a94a0;border-radius:16px;background:#fff;color:#1f2430;font-size:16px;font-weight:400}" +
   "input:focus,textarea:focus{border-color:var(--a);outline:none}.go{width:48px;height:48px;background:var(--f);color:var(--i)}" +
   ".ft,small{font-size:12px;color:#5c6573}.ft{text-align:center;padding:2px 14px calc(10px + env(safe-area-inset-bottom))}" +
   ".fm{display:grid;gap:11px;border:1.5px solid #dfe3e8;border-radius:18px;padding:14px}.fm b{font-weight:700}.fm label{display:grid;gap:5px;font-size:13.5px;font-weight:600;color:#5c6573}" +
