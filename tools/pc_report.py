@@ -13,7 +13,10 @@ the repo's own engine code (read-only use: engine/live_publish.build, engine/go.
               stop / target, $ risk at the stop and its share of the drawdown left; exit: how it ended, +/- $ and R, drawdown
               left, today's $; a trade that opened and closed between two runs gets one push with both), FEED STALE, bot down,
               NinjaTrader closed, and "back to normal". Once per event; a problem repeats at most every 3 hours. The first run
-              only records what is already there.
+              only records what is already there. The fill check (tools/fill_check.py, read-only: the bots' own state files):
+              each NinjaTrader trade's real fill against the live loop's plan; a flag (wrong size, no stop at NinjaTrader,
+              slippage over 2 ticks, bracket price off, costs above plan, an entry that never filled) is one high-priority
+              push at any hour, and the trade's own push ends with "Fill check OK" or the flags.
 Nothing here starts, stops, arms or routes anything; no order, no live_model*.json, no engine/ file is changed. Every failure is
 soft (logged, exit 0). Tests: tests/test_bots_back.py (fake http, fake files, never the real network).
 
@@ -375,6 +378,12 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         except Exception as e:
             snap["live_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
     snap["alerts_pc"] = _telegram_on(root)
+    try:                                    # real fills vs the live loop's plan (tools/fill_check.py, read-only: the bots' own files)
+        from tools import fill_check
+        snap["fills"] = fill_check.reviews(root, now)
+    except Exception as e:
+        snap["fills"] = []
+        snap["fills_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
     return snap
 
 
@@ -603,6 +612,18 @@ def _close_event(acct, t, snap=None, card=None) -> dict:
             "both": " ".join(both.split())}
 
 
+def _fill_note(review) -> str:
+    """The fill check in one sentence for a trade push ('Fill check OK: 6 of 6 filled, 1 tick worse than the plan, stop in
+    place.'); '' for a paper trade or before the check knows the fill."""
+    if not isinstance(review, dict):
+        return ""
+    try:
+        from tools import fill_check
+        return fill_check.short(review)
+    except Exception:
+        return ""
+
+
 def _trade_events(snap: dict) -> list:
     """[{key, t, title, body, ...}] for every trade of each account the PC knows: opens (board.<bot>.position, open trades) and
     closes, each close after its own open (events() sends one push with both when the trade opened and closed between two
@@ -637,6 +658,8 @@ def events(state: dict, snap: dict) -> tuple:
           "seeded": bool(state.get("seeded"))}
     now = snap["t"]
     msgs = []
+    revs = [r for r in snap.get("fills") or [] if isinstance(r, dict) and r.get("acct") and r.get("entry_t")]
+    rv_of = {(r["acct"], int(r["entry_t"])): r for r in revs}
     evs = _trade_events(snap)
     closing = {e["pair"] for e in evs if e.get("pair") and e["key"] not in st["seen"]}
     for ev in evs:
@@ -648,9 +671,30 @@ def events(state: dict, snap: dict) -> tuple:
             continue                    # closed before (no late "opened"), or closing in this run: its close push says both
         if st["seeded"] and now - t <= OLD_EVENT_S:
             both = bool(ev.get("pair")) and ev["pair"] in closing and st["seen"].get(ev["pair"]) == now
+            note = _fill_note(rv_of.get((ev.get("acct"), ev.get("entry_t"))))
             msgs.append({"key": key, "keys": [key] + ([ev["pair"]] if both else []), "title": ev["title"],
-                         "body": ev["both"] if both else ev["body"], "priority": "high" if key.startswith("open") else "default",
+                         "body": ((ev["both"] if both else ev["body"]) + (" " + note if note else "")).strip(),
+                         "priority": "high" if key.startswith("open") else "default",
                          "tags": "chart_with_upwards_trend" if key.startswith("open") else "checkered_flag"})
+    # real fill vs plan (tools/fill_check.py): every flag of a NinjaTrader trade, once, high priority at any hour
+    for r in revs:
+        by = {}
+        for f in r.get("flags") or []:
+            by.setdefault(f.get("code") or "flag", []).append(f)
+        for code, fs in by.items():
+            key = f"fill:{r['acct']}:{int(r['entry_t'])}:{code}"
+            if key in st["seen"]:
+                continue
+            st["seen"][key] = now
+            last_t = max(int(r["entry_t"]), int(num(_d(r.get("real")).get("exit_t")) or 0))
+            if not st["seeded"] or now - last_t > OLD_EVENT_S:
+                continue
+            try:
+                from tools import fill_check
+                title, body = fill_check.push_text(r, {**fs[0], "text": " ".join(x["text"] for x in fs)})
+            except Exception:
+                title, body = f"{r.get('label') or r['acct']} fill check: {code}", " ".join(x.get("text", "") for x in fs)
+            msgs.append({"key": key, "title": title, "body": body, "priority": "high", "tags": "rotating_light"})
     cond = conditions(snap)
     for code, text in cond.items():
         c = st["cond"].get(code)
@@ -854,7 +898,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
         else:
             rec["errors"].append("alert: " + why)
             # not sent: forget it so the next run tries again (conditions keep their state; a trade key is retried)
-            if m["key"].startswith(("open:", "close:")):
+            if m["key"].startswith(("open:", "close:", "fill:")):
                 for k in m.get("keys") or [m["key"]]:
                     new_state["seen"].pop(k, None)
             elif m["key"].startswith("guard:"):
