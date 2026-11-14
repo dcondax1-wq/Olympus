@@ -44,6 +44,11 @@ def scale(label: str, n: int = 5) -> str:
     return f'<div class="scale"><b>{label}</b>' + "".join(f"<i>{i}</i>" for i in range(1, n + 1)) + "</div>"
 
 
+def notes(label: str = "Notes") -> str:
+    """Lined space that fills the rest of the page (as many lines as fit)."""
+    return f'<div class="notes"><span>{label}</span>' + rows(30) + "</div>"
+
+
 def checks(items: list, cls: str = "ck") -> str:
     return f'<ul class="{cls}">' + "".join(f"<li>{x}</li>" for x in items) + "</ul>"
 
@@ -83,7 +88,7 @@ make anyone profitable. Trading involves substantial risk of loss and is not sui
 <h2>My setups (the only trades I take)</h2>
 <div class="grid3">{''.join(f'<div class="card"><span class="tag">Setup {i}</span><span>Name</span>{rows(1)}<span>Conditions</span>{rows(2)}<span>Entry</span>{rows(1)}<span>Stop</span>{rows(1)}<span>Exit</span>{rows(1)}</div>' for i in (1, 2, 3))}</div>
 <h2>My limits</h2>{boxrow(["Risk per trade", "Max loss per day", "Max trades per day", "I stop trading at (time)"])}
-<div class="grid2"><div class="fld"><span>I stop for the day when...</span>{rows(3)}</div><div class="fld"><span>I never...</span>{rows(3)}</div></div>"""))
+<div class="grid2"><div class="fld"><span>I stop for the day when...</span>{rows(3)}</div><div class="fld"><span>I never...</span>{rows(3)}</div></div>{notes()}"""))
     P.append(("My rules", f"""<h1>My rules</h1><p class="sub">Short, clear and checkable. Re-read them before every session.</p>
 <table class="tb rules"><colgroup><col style="width:6%"><col style="width:56%"><col style="width:38%"></colgroup><tr><th>#</th><th>Rule</th><th>Why it matters to me</th></tr>
 {''.join(f'<tr><td class="n">{i}</td><td></td><td></td></tr>' for i in range(1, 11))}</table>
@@ -95,15 +100,15 @@ make anyone profitable. Trading involves substantial risk of loss and is not sui
 <h2>Checklist</h2>{checks(["Read my rules (page: My rules)", "Checked today's scheduled news and events", "Marked my key levels", "Wrote the daily plan and if-then scenarios",
     "Set today's max loss and max trades", "Checked my platform, data and order settings", "Phone away, notifications off", "Two minutes of slow breathing",
     "I accept today's risk of: $ __________", "I know when I will stop: ______"])}
-<h2>Three things I am watching (not predicting)</h2><div class="nums">{''.join(f'<div><b>{i}</b>{rows(1)}</div>' for i in (1, 2, 3))}</div>"""))
+<h2>Three things I am watching (not predicting)</h2><div class="nums">{''.join(f'<div><b>{i}</b>{rows(1)}</div>' for i in (1, 2, 3))}</div>{notes()}"""))
     P.append(("Daily plan", f"""<h1>Daily plan</h1><div class="meta"><span>Date</span><span>Session</span><span>Market(s)</span></div>
 <div class="fld"><span>Context: what is the market doing, in plain words?</span>{rows(3)}</div>
 <h2>Key levels</h2>{table(["Level", "Why it matters", "What I will do there"], 5, [18, 41, 41])}
 <h2>If-then scenarios</h2><div class="ifs">{''.join('<div><b>If</b><div class="ln"></div><b>then I</b><div class="ln"></div></div>' for _ in range(3))}</div>
 <h2>Today's limits</h2>{boxrow(["Max loss today", "Max trades", "Stop time", "Risk per trade"])}
-<div class="fld"><span>One process goal for today (for example: "only A+ setups", "wait for my entry signal")</span>{rows(2)}</div>"""))
+<div class="fld"><span>One process goal for today (for example: "only A+ setups", "wait for my entry signal")</span>{rows(2)}</div>{notes()}"""))
     P.append(("Trade log", f"""<h1>Trade log</h1><div class="meta"><span>Date</span><span>Session</span><span>Account</span></div>
-{table(["#", "Time", "Market", "Setup", "L / S", "Entry", "Stop", "Target", "Size", "Result", "Plan?", "Note"], 14, [4, 7, 8, 11, 5, 8, 8, 8, 6, 8, 6, 21], "tb log")}
+{table(["#", "Time", "Market", "Setup", "L / S", "Entry", "Stop", "Target", "Size", "Result", "Plan?", "Note"], 17, [4, 7, 8, 11, 5, 8, 8, 8, 6, 8, 6, 21], "tb log")}
 <p class="small">Plan? = Y if the trade met every condition of a written setup and every rule; N if not. Result in your own units (R, points or money): it is your record, not a score.</p>
 {boxrow(["Trades", "Plan followed (Y)", "Plan broken (N)", "Rules broken"])}"""))
     P.append(("Daily review", f"""<h1>Daily review</h1><div class="meta"><span>Date</span><span>Process grade (A-F)</span><span>Routine done? Y / N</span></div>
@@ -111,27 +116,27 @@ make anyone profitable. Trading involves substantial risk of loss and is not sui
 <h2>Rules kept today</h2><div class="rk">{''.join(f'<span><i></i>{i}</span>' for i in range(1, 11))}</div>
 <h2>How I felt</h2>{scale("Before the session")}{scale("During the session")}{scale("After the session")}
 <div class="fld"><span>The moment I felt the most pressure, and what I did</span>{rows(2)}</div>
-<div class="grid2"><div class="fld"><span>One lesson</span>{rows(2)}</div><div class="fld"><span>Tomorrow's focus</span>{rows(2)}</div></div>"""))
+<div class="grid2"><div class="fld"><span>One lesson</span>{rows(2)}</div><div class="fld"><span>Tomorrow's focus</span>{rows(2)}</div></div>{notes()}"""))
     P.append(("Weekly review", f"""<h1>Weekly review</h1><div class="meta"><span>Week of</span><span>Days traded</span><span>Routine days</span></div>
 {table(["Day", "Trades", "Plan followed", "Rules broken", "Grade", "Note"], 5, [14, 11, 15, 14, 10, 36])}
 <div class="grid2"><div class="fld"><span>Best decision this week</span>{rows(3)}</div><div class="fld"><span>Worst decision this week</span>{rows(3)}</div></div>
 <div class="fld"><span>A pattern I noticed (time of day, setup, mood, after wins or losses)</span>{rows(3)}</div>
-<div class="grid2"><div class="fld"><span>One rule to focus on next week</span>{rows(2)}</div><div class="fld"><span>One process goal for next week</span>{rows(2)}</div></div>"""))
+<div class="grid2"><div class="fld"><span>One rule to focus on next week</span>{rows(2)}</div><div class="fld"><span>One process goal for next week</span>{rows(2)}</div></div>{notes()}"""))
     P.append(("Monthly review", f"""<h1>Monthly review</h1><div class="meta"><span>Month</span><span>Days traded</span><span>Average grade</span></div>
 <div class="cal">{''.join(f'<div><b>{d}</b><i></i></div>' for d in range(1, 32))}<div class="key">Write each day's process grade (A-F) in its box.</div></div>
 <div class="grid2"><div class="fld"><span>Top 3 lessons</span>{rows(3)}</div><div class="fld"><span>Rules to add, change or remove</span>{rows(3)}</div></div>
-<div class="grid2"><div class="fld"><span>What I will keep doing</span>{rows(2)}</div><div class="fld"><span>Process goals for next month</span>{rows(2)}</div></div>"""))
-    habits = "".join(f'<tr><td class="hn"></td>{"<td></td>" * 31}</tr>' for _ in range(10))
+<div class="grid2"><div class="fld"><span>What I will keep doing</span>{rows(2)}</div><div class="fld"><span>Process goals for next month</span>{rows(2)}</div></div>{notes()}"""))
+    habits = "".join(f'<tr><td class="hn"></td>{"<td></td>" * 31}</tr>' for _ in range(12))
     P.append(("Habit tracker", f"""<h1>Habit tracker</h1><p class="sub">Month: ______________ Tick a box each day you keep the habit. Examples: routine done, rules read, journal written,
 stopped at my limit, slept 7 hours, no trading after my stop time.</p>
 <table class="hab"><tr><th class="hn">Habit</th>{''.join(f'<th>{d}</th>' for d in range(1, 32))}</tr>{habits}</table>"""))
     P.append(("Mistake log", f"""<h1>Mistake log</h1><p class="sub">Mistakes are data. Write them down without judging, then write the fix.</p>
-{table(["Date", "What happened", "Trigger", "Rule", "Fix for next time"], 17, [11, 29, 18, 9, 33])}"""))
+{table(["Date", "What happened", "Trigger", "Rule", "Fix for next time"], 20, [11, 29, 18, 9, 33])}"""))
     examples = [("I lose two trades in a row", "stop for 15 minutes and re-read my rules"), ("I feel the urge to win it back", "stand up, step away, and log the feeling"),
                 ("price moves without me", "let it go and wait for my next setup"), ("I reach my max loss for the day", "close the platform and do my review")]
     ifs = "".join(f'<div class="ex"><b>If</b> {a} <b>then I</b> {b}</div>' for a, b in examples)
     P.append(("If-then plans", f"""<h1>If-then plans</h1><p class="sub">Decide now what you will do in the moments that are hard to think clearly. Examples, then your own.</p>
-{ifs}<h2>My if-then plans</h2><div class="ifs">{''.join('<div><b>If</b><div class="ln"></div><b>then I</b><div class="ln"></div></div>' for _ in range(8))}</div>"""))
+{ifs}<h2>My if-then plans</h2><div class="ifs">{''.join('<div><b>If</b><div class="ln"></div><b>then I</b><div class="ln"></div></div>' for _ in range(8))}</div>{notes()}"""))
     P.append(("Setup playbook", f"""<h1>Setup playbook</h1><div class="meta"><span>Setup name</span><span>Market(s)</span><span>Time window</span></div>
 <div class="grid2"><div class="fld"><span>Conditions (all must be true)</span>{checks(["", "", "", "", ""], "ck blank")}</div><div class="fld"><span>Entry trigger</span>{rows(2)}<span>Stop placement</span>{rows(2)}<span>Exit plan</span>{rows(2)}</div></div>
 <h2>Sketch</h2><div class="sketch"></div>
@@ -142,7 +147,7 @@ stopped at my limit, slept 7 hours, no trading after my stop time.</p>
 {scale("How strong (1 = barely, 5 = very)")}
 <div class="grid2"><div class="fld"><span>What triggered it</span>{rows(3)}</div><div class="fld"><span>Where I feel it in my body</span>{rows(3)}</div></div>
 <h2>My reset options</h2>{checks(["Step away for 10 minutes", "Slow breathing for 2 minutes", "Re-read my rules", "Stop trading for today", "Write it down and move on"])}
-<div class="fld"><span>What I chose, and how it went</span>{rows(3)}</div>"""))
+<div class="fld"><span>What I chose, and how it went</span>{rows(3)}</div>{notes()}"""))
     P.append(("Notes", """<h1>Notes</h1><div class="dots"></div>"""))
     return P
 
@@ -189,19 +194,20 @@ table.tb{{width:100%;border-collapse:collapse;table-layout:fixed}}.tb th{{backgr
 .cal b{{font-size:8pt;color:{MUTED}}}.cal i{{position:absolute;right:1.6mm;bottom:1.6mm;width:6mm;height:6mm;border:0.3mm solid {ACC};border-radius:1mm}}
 .cal .key{{grid-column:span 4;border:0!important;font-size:8pt;color:{MUTED};display:flex;align-items:center}}
 table.hab{{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7pt}}.hab th,.hab td{{border:0.25mm solid {LINE};text-align:center;padding:0}}
-.hab th{{background:{SOFTF};height:6mm}}.hab td{{height:12mm}}.hab .hn{{width:24%;text-align:left;padding-left:1.5mm}}
+.hab th{{background:{SOFTF};height:6mm}}.hab td{{height:13.5mm}}.hab .hn{{width:24%;text-align:left;padding-left:1.5mm}}
 .sketch{{flex:1;min-height:60mm;border:0.3mm solid {LINE};border-radius:2mm;background-image:linear-gradient({SOFTF} 0.3mm,transparent 0.3mm),linear-gradient(90deg,{SOFTF} 0.3mm,transparent 0.3mm);background-size:5mm 5mm}}
+.notes{{flex:1 1 0;min-height:0;overflow:hidden;display:flex;flex-direction:column}}.notes>span{{font-size:8.2pt;font-weight:700;color:{MUTED};margin-top:1.2mm}}
 .dots{{flex:1;background-image:radial-gradient(circle,{LINE} 0.35mm,transparent 0.4mm);background-size:5mm 5mm;border-radius:2mm}}
 .box{{background:{SOFTF};border-left:1.2mm solid {ACC};border-radius:1.5mm;padding:2.4mm 3.2mm;font-size:9pt}}
 .loop{{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}}.loop>div{{border:0.3mm solid {LINE};border-radius:3mm;padding:3mm}}.loop b{{display:inline-grid;place-items:center;width:8mm;height:8mm;border-radius:50%;background:{ACC};color:#fff;margin-bottom:1.5mm}}
 .sign{{display:grid;grid-template-columns:2fr 1fr 1fr;gap:6mm;margin-top:auto}}.sign div{{border-top:0.3mm solid {INK};padding-top:1mm;font-size:8pt;color:{MUTED};margin-top:10mm}}
 .foot{{display:flex;justify-content:space-between;gap:4mm;font-size:7pt;color:{MUTED};border-top:0.25mm solid {LINE};padding-top:1.2mm;margin-top:2mm}}
-.cover{{flex:1;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;background:#14110e;color:#f3ece0;border-radius:3mm;padding:16mm 14mm 10mm}}
-.cover .ring{{position:absolute;right:-40mm;top:-30mm;width:150mm;height:150mm;border-radius:50%;border:12mm solid rgba(200,162,74,.16);box-shadow:0 0 0 14mm rgba(200,162,74,.06)}}
-.cover .ct{{position:relative}}.cover .kick{{color:#c8a24a;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:9pt}}
-.cover h1{{font-size:38pt;color:#f3ece0;margin-top:3mm}}.cover .rule{{width:22mm;height:1.6mm;background:#c8a24a;border-radius:1mm;margin:5mm 0}}
-.cover .lead{{font-size:14pt;color:#cfc4b2}}.cover .fields{{display:grid;gap:4mm;margin-top:22mm;max-width:120mm}}
-.cover .fields div{{border-bottom:0.3mm solid #6b6254;padding-top:7mm}}.cover .fields span{{font-size:8.5pt;color:#a89c88;font-weight:700}}.cover .note{{position:relative;font-size:8pt;color:#a89c88}}
+.cover{{flex:1;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;background:#fff;color:{INK};border:0.6mm solid {INK};border-radius:3mm;padding:16mm 14mm 10mm;box-shadow:inset 0 0 0 2.2mm #fff,inset 0 0 0 2.6mm {ACC}}}
+.cover .ring{{position:absolute;right:-42mm;top:-34mm;width:150mm;height:150mm;border-radius:50%;border:10mm solid {SOFTF};box-shadow:0 0 0 12mm #f6f9f8}}
+.cover .ct{{position:relative}}.cover .kick{{color:{ACC};font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:9pt}}
+.cover h1{{font-size:38pt;color:{INK};margin-top:3mm}}.cover .rule{{width:22mm;height:1.6mm;background:{ACC};border-radius:1mm;margin:5mm 0}}
+.cover .lead{{font-size:14pt;color:{MUTED}}}.cover .fields{{display:grid;gap:4mm;margin-top:22mm;max-width:120mm}}
+.cover .fields div{{border-bottom:0.3mm solid {INK};padding-top:7mm}}.cover .fields span{{font-size:8.5pt;color:{MUTED};font-weight:700}}.cover .note{{position:relative;font-size:8pt;color:{MUTED}}}
 </style></head><body>{''.join(out)}</body></html>"""
 
 
@@ -493,7 +499,7 @@ ul.checks li{{font-size:{int((28 if sq else 22) * k)}px;margin:{int(11 * k)}px 0
                 pos = [(830, 640, 8, 358), (650, 665, 2, 358), (470, 695, -4, 358), (290, 725, -10, 358)]
                 body = f'<div class="pad">{text}</div>'
             else:
-                pos = [(965, 120, 9, 290), (855, 150, 3, 290), (745, 190, -3, 290), (650, 235, -9, 290)]
+                pos = [(925, 120, 9, 285), (818, 150, 3, 285), (711, 190, -3, 285), (617, 235, -9, 285)]
                 body = f'<div class="pad" style="width:{int(600 * k)}px">{text}</div>'
             body += "".join(f'<img class="pg" src="{u(pngs[i])}" style="left:{int(x * k)}px;top:{int(y * k)}px;width:{int(pw * k)}px;transform:rotate({r}deg)">'
                             for i, (x, y, r, pw) in zip(fan_idx, pos))

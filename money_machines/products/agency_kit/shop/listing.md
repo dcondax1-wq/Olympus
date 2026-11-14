@@ -47,6 +47,7 @@ Digital download: files can't be returned, but if something does not work as des
 
 `first_clients_agency_kit_v1.0.zip` unpacks to one folder `First-Clients-Agency-Starter-Kit/`:
 
+- 00_Start_Here.pdf
 - 01_Outreach_Scripts.docx
 - 02_Discovery_Call.docx
 - 03_Proposal_Template.docx

@@ -145,7 +145,8 @@ a{color:var(--accent-text);text-underline-offset:3px}
 .about img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius)}
 
 /* gallery */
-.gallery{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fill,minmax(min(100%,14rem),1fr));list-style:none;margin:0;padding:0}
+.gallery{display:grid;gap:.75rem;grid-template-columns:repeat(2,1fr);list-style:none;margin:0;padding:0}
+@media (min-width:760px){.gallery{grid-template-columns:repeat(3,1fr)}}
 .gallery img,.gallery .ph{width:100%;aspect-ratio:1;object-fit:cover;border-radius:calc(var(--radius) * .7)}
 .gallery .ph{display:grid;place-items:center;color:var(--muted);font-weight:700;font-size:.9rem;background:repeating-linear-gradient(-45deg,var(--surface) 0 14px,var(--bg) 14px 28px);border:2px dashed var(--line)}
 
@@ -289,7 +290,7 @@ input:focus,textarea:focus{outline:3px solid var(--accent);outline-offset:1px;bo
 <!-- ===== PHOTOS ===== -->
 <section class="section" id="photos"><div class="wrap">
 <span class="kicker">Photos</span><h2>Recent work</h2>
-<ul class="gallery"><li><div class="ph">Your photo here</div></li><li><div class="ph">Your photo here</div></li><li><div class="ph">Your photo here</div></li><li><div class="ph">Your photo here</div></li></ul>
+<ul class="gallery"><li><div class="ph">Your photo here</div></li><li><div class="ph">Your photo here</div></li><li><div class="ph">Your photo here</div></li><li><div class="ph">Your photo here</div></li><li><div class="ph">Your photo here</div></li><li><div class="ph">Your photo here</div></li></ul>
 </div></section>
 <!-- ===== REVIEWS: paste real reviews from real customers only, with their permission ===== -->
 <section class="section alt" id="reviews"><div class="wrap">

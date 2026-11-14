@@ -113,7 +113,9 @@
  "files": [
   "LICENSE.txt",
   "README.txt",
-  "Trader_Journal.xlsx"
+  "Trader_Journal.xlsx",
+  "Trader_Planner_A4.pdf",
+  "Trader_Planner_Letter.pdf"
  ],
  "net_per_sale_usd": {
   "Payhip (free plan)": 12.59,

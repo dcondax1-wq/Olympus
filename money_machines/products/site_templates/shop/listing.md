@@ -48,6 +48,7 @@ Digital download: files can't be returned, but if something does not work as des
 
 `local_business_website_templates_v1.0.zip` unpacks to one folder `Local-Business-Website-Templates/`:
 
+- Guide.pdf
 - LICENSE.txt
 - README.txt
 - Site_Editor.html

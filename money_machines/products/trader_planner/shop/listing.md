@@ -48,6 +48,8 @@ Digital download: files can't be returned, but if something does not work as des
 - LICENSE.txt
 - README.txt
 - Trader_Journal.xlsx
+- Trader_Planner_A4.pdf
+- Trader_Planner_Letter.pdf
 
 ## Pictures (shop/)
 

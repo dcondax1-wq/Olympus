@@ -388,7 +388,7 @@ border-bottom:{max(2, int(3 * k))}px solid {accent};transform:translateY(-{int(4
 .shadow{{box-shadow:0 {int(18 * k)}px {int(48 * k)}px rgba(0,0,0,.45)}}
 .phone{{position:relative;background:#1b1916;border-radius:14%/7%;padding:3.2%;box-shadow:0 {int(22 * k)}px {int(50 * k)}px rgba(0,0,0,.38),inset 0 0 0 2px #3b3631}}
 .phone img{{display:block;width:100%;border-radius:10%/5%}}
-.phone:after{{content:"";position:absolute;top:4.6%;left:50%;width:26%;height:2.6%;margin-left:-13%;background:#1b1916;border-radius:99px}}
+.phone:after{{content:"";position:absolute;top:.4%;left:50%;width:1.8%;aspect-ratio:1;margin-left:-.9%;background:#4a443d;border-radius:50%}}
 .win{{background:#fbfaf7;border-radius:{max(8, int(14 * k))}px;overflow:hidden;box-shadow:0 {int(24 * k)}px {int(56 * k)}px rgba(0,0,0,.35);border:1px solid rgba(0,0,0,.12)}}
 .win .tb{{display:flex;gap:{max(4, int(8 * k))}px;align-items:center;height:{max(18, int(34 * k))}px;padding:0 {int(14 * k)}px;background:#ece7de;border-bottom:1px solid rgba(0,0,0,.08)}}
 .win .tb i{{width:{max(6, int(11 * k))}px;height:{max(6, int(11 * k))}px;border-radius:50%;background:#cfc6b6}}

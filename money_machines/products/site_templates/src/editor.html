@@ -341,7 +341,7 @@ details.grp[open]>summary::after{content:"\2212"}
     if (d.photos.gallery.length || demo) {
       h.push("<!-- ===== PHOTOS ===== -->", open("photos"), sectionHead("Photos", "Recent work", ""), '<ul class="gallery">' +
         (d.photos.gallery.length ? d.photos.gallery.map(function (src, i) { return '<li><img src="' + src + '" alt="' + esc(name) + " photo " + (i + 1) + '" loading="lazy"></li>'; }).join("")
-          : [1, 2, 3, 4].map(function () { return '<li><div class="ph">Your photo here</div></li>'; }).join("")) + "</ul>", "</div></section>");
+          : [1, 2, 3, 4, 5, 6].map(function () { return '<li><div class="ph">Your photo here</div></li>'; }).join("")) + "</ul>", "</div></section>");
     }
 
     /* reviews: real ones only */

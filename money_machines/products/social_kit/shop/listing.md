@@ -46,7 +46,11 @@ Digital download: files can't be returned, but if something does not work as des
 `local_social_media_kit_v1.0.zip` unpacks to one folder `30-Day-Local-Social-Media-Kit/`:
 
 - 30_Day_Plan.csv
+- 30_Day_Plan.pdf
+- All_30_Designs.jpg
+- Caption_Bank.pdf
 - Caption_Bank.txt
+- How_to_use.pdf
 - LICENSE.txt
 - Post_Maker.html
 - README.txt

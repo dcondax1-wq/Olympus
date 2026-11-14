@@ -194,7 +194,7 @@ automatically and saved inside the site file. Use only photos you took or have t
 <div class="box"><b>Colour.</b> Each look has a tested colour scheme. In the Colour group you can pick your own main colour: the editor
 tells you if button text would be hard to read and darkens link colours automatically so they stay readable.</div>
 
-<h2 class="pb">3. Put it online for free</h2>
+<h2>3. Put it online for free</h2>
 <p>Your site is one file, <code>index.html</code>. Any web host that serves plain files (often called <b>static hosting</b>) can put it
 online, and several well-known hosts have a free plan where you simply drag a folder into the browser. The steps are nearly the same everywhere:</p>
 <ol><li>Make a new folder on your computer, for example <code>my-site</code>, and put <code>index.html</code> in it (keep that name).</li>
@@ -220,7 +220,7 @@ day or two to work everywhere. Turn on HTTPS (the padlock) in the host's setting
 <li>It reads well on a small phone and on a computer; nothing is cut off.</li>
 <li>The page title and description (in "Search engines and the footer") say what you do and where.</li></ul>
 
-<h2 class="pb">5. Help local customers find you (no promises, just good basics)</h2>
+<h2>5. Help local customers find you (no promises, just good basics)</h2>
 <p>Nobody can promise a position in search results. These steps help search engines and people understand your business:</p>
 <ol><li><b>Same details everywhere.</b> Use exactly the same business name, address and phone number on your site, your free business
 profiles on the big search and map sites, and your social pages.</li>
@@ -240,7 +240,7 @@ reviews and buying them, with large fines. The review section only appears when 
 <li><b>Privacy:</b> the site stores nothing and uses no cookies, so it needs no cookie banner as it is. If you add analytics, a booking
 widget, a chat or a form service later, add a short privacy notice that says what they collect.</li></ul>
 
-<h2 class="pb">7. Editing by hand (optional)</h2>
+<h2>7. Editing by hand (optional)</h2>
 <p>Open <code>index.html</code> in a plain text editor (the one that comes with your computer works). Then:</p>
 <ul><li><b>Colours and fonts</b> are the first lines inside <code>&lt;style&gt;</code>: <code>--accent</code> is the main colour,
 <code>--bg</code> the page background, <code>--ink</code> the text colour. Change the colour codes (like <code>#c2410c</code>) and save.</li>
@@ -355,7 +355,7 @@ ul.checks li{{font-size:{int((27 if sq else 22) * k)}px;margin:{int(11 * k)}px 0
 .foot{{position:absolute;left:{int(60 * k)}px;bottom:{int(26 * k)}px;font-size:{int((19 if sq else 16) * k)}px;color:#7a6f60}}
 .lbl{{font-weight:800;font-size:{int((24 if sq else 18) * k)}px;text-align:center;margin-top:{int(12 * k)}px}}
 .lbl small{{display:block;font-weight:500;font-size:{int((17 if sq else 13) * k)}px;color:{soft};line-height:1.3;margin-top:{int(4 * k)}px}}
-.band{{position:absolute;left:0;right:0;bottom:0;height:{int((300 if sq else 160) * k)}px;background:#e9e1d2}}"""
+.band{{position:absolute;left:0;right:0;bottom:0;height:{int((300 if sq else 120) * k)}px;background:#e9e1d2}}"""
         n = name.split("_")[1][0]
         if n == "1":
             text = (f'<span class="chip kick">5 templates + a no-code editor</span><h1>One-Page Website Templates for Local Businesses</h1><div class="rule" style="margin-top:{int(22 * k)}px"></div>'
@@ -364,9 +364,9 @@ ul.checks li{{font-size:{int((27 if sq else 22) * k)}px;margin:{int(11 * k)}px 0
                     f'<li>No code, no subscription, works offline</li><li>Guide: put it online for free</li></ul>')
             if sq:
                 body = (f'<div class="pad">{text}</div><div class="band"></div>'
-                        f'<div style="position:absolute;left:{int(60 * k)}px;top:{int(680 * k)}px">{K.window(u[("trades", "desk")], int(830 * k))}</div>'
-                        f'<div style="position:absolute;right:{int(45 * k)}px;top:{int(755 * k)}px">{K.phone(u[("salon", "phone")], int(210 * k))}</div>'
-                        f'<div style="position:absolute;right:{int(270 * k)}px;top:{int(835 * k)}px">{K.phone(u[("barber", "phone")], int(185 * k))}</div>')
+                        f'<div style="position:absolute;left:{int(60 * k)}px;top:{int(580 * k)}px">{K.window(u[("trades", "desk")], int(830 * k))}</div>'
+                        f'<div style="position:absolute;right:{int(45 * k)}px;top:{int(640 * k)}px">{K.phone(u[("salon", "phone")], int(210 * k))}</div>'
+                        f'<div style="position:absolute;right:{int(270 * k)}px;top:{int(720 * k)}px">{K.phone(u[("barber", "phone")], int(185 * k))}</div>')
             else:
                 body = (f'<div class="pad" style="width:{int(600 * k)}px">{text}</div><div class="band"></div>'
                         f'<div style="position:absolute;left:{int(640 * k)}px;top:{int(80 * k)}px">{K.window(u[("trades", "desk")], int(600 * k))}</div>'
@@ -378,8 +378,8 @@ ul.checks li{{font-size:{int((27 if sq else 22) * k)}px;margin:{int(11 * k)}px 0
             if sq:
                 pw = 340
                 ph = lambda t, l, f: f'<div style="width:{pw}px">{K.phone(u[(t, "phone")], pw)}<div class="lbl">{l}<small>{f}</small></div></div>'
-                body = (f'<div class="pad" style="text-align:center;padding-top:300px"><h1>5 looks, one for each kind of local business</h1><div class="rule" style="margin:{int(22 * k)}px auto 0"></div></div>'
-                        f'<div style="position:absolute;top:640px;left:0;right:0;display:flex;justify-content:center;gap:34px">{"".join(ph(*x) for x in labels)}</div>')
+                body = (f'<div class="band"></div><div class="pad" style="text-align:center;padding-top:330px"><h1>5 looks, one for each kind of local business</h1><div class="rule" style="margin:{int(22 * k)}px auto 0"></div></div>'
+                        f'<div style="position:absolute;top:700px;left:0;right:0;display:flex;justify-content:center;gap:34px">{"".join(ph(*x) for x in labels)}</div>')
             else:
                 pw = int(196 * k)
                 body = (f'<div class="pad" style="padding-bottom:0"><h1 style="font-size:{int(44 * k)}px">5 looks, one for each kind of local business</h1>'
@@ -397,7 +397,7 @@ ul.checks li{{font-size:{int((27 if sq else 22) * k)}px;margin:{int(11 * k)}px 0
             text = (f'<span class="chip kick">Included: the Site Editor</span><h1>Edit your site without code</h1><div class="rule" style="margin-top:{int(22 * k)}px"></div>{steps}')
             if sq:
                 body = (f'<div class="pad">{text}</div><div class="band"></div>'
-                        f'<div style="position:absolute;left:{int(160 * k)}px;top:{int(627 * k)}px">{K.window(u[("editor", "desk")], int(960 * k))}</div>')
+                        f'<div style="position:absolute;left:{int(160 * k)}px;top:{int(520 * k)}px">{K.window(u[("editor", "desk")], int(960 * k))}</div>')
             else:
                 body = (f'<div class="pad" style="width:{int(520 * k)}px">{text}</div><div class="band"></div>'
                         f'<div style="position:absolute;left:{int(560 * k)}px;top:{int(92 * k)}px">{K.window(u[("editor", "desk")], int(670 * k))}</div>')

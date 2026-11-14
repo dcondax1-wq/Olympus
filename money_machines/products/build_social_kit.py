@@ -191,7 +191,7 @@ def howto_html(shot: str) -> str:
 <li>Designs with a photo frame say "Add your photo": choose a photo from your device. It stays on your device.</li>
 <li>Press <b>Download this post</b> for a PNG, or <b>Download all 30</b> for a zip with every post and a captions sheet (captions.csv).</li>
 <li>Your work is saved in this browser as you go. To move it to another computer, press <b>Save my work</b> and open the file there with <b>Open saved work</b>. To start a post again, press "Reset this post".</li></ol>
-<h2 class="pb">3. Post or schedule</h2>
+<h2>3. Post or schedule</h2>
 <ul><li>Copy the caption from the Post Maker (your name is filled in), change the [bracket] words, and paste it into your post.</li>
 <li>Add the <b>alt text</b> (the description for people who use screen readers) in your app's accessibility or alt-text setting.</li>
 <li>Most platforms have a free scheduler for business accounts: make a week of posts in one sitting and schedule them.</li>
@@ -256,7 +256,7 @@ font-family:Inter,Arial,sans-serif;padding:{pad}px}}h1{{font:700 34px/1.1 {K.SER
 def covers(br, pg, app_shot: bytes) -> list:
     done = []
     # five posts in different looks for the fan; the 30-grid; the same post in four looks
-    fan = [(0, "ivory"), (2, "navy"), (9, "blush"), (18, "sage"), (11, "night")]
+    fan = [(0, "ivory"), (2, "navy"), (9, "blush"), (18, "sage"), (28, "night")]
     fan_u = [K.b64(draw(pg, i, k=0.6, palette=p)) for i, p in fan]
     grid_u = [K.b64(draw(pg, i, k=0.25)) for i in range(30)]
     looks = [K.b64(draw(pg, 27, k=0.42, palette=p)) for p in ("ivory", "tomato", "teal", "slate")]
@@ -301,8 +301,8 @@ ul.checks li{{font-size:{int((28 if sq else 22) * k)}px;margin:{int(11 * k)}px 0
             lw = 300 if sq else 135
             row = "".join(f'<img src="{u}" style="width:{lw}px;border-radius:{max(5, int(10 * k))}px;box-shadow:0 {int(10 * k)}px {int(24 * k)}px rgba(0,0,0,.2)">' for u in looks)
             if sq:
-                body = (f'<div class="pad">{text}</div><div style="position:absolute;left:94px;top:1010px">{K.window(app_u, 1150)}</div>'
-                        f'<div style="position:absolute;right:94px;top:1010px;display:grid;grid-template-columns:300px 300px;gap:28px">{row}</div>')
+                body = (f'<div class="pad">{text}</div><div style="position:absolute;left:94px;top:820px">{K.window(app_u, 1150)}</div>'
+                        f'<div style="position:absolute;right:94px;top:820px;display:grid;grid-template-columns:300px 300px;gap:28px">{row}</div>')
             else:
                 body = (f'<div class="pad" style="width:{int(560 * k)}px">{text}</div>'
                         f'<div style="position:absolute;left:{int(600 * k)}px;top:{int(70 * k)}px">{K.window(app_u, int(640 * k))}</div>'
