@@ -23,6 +23,9 @@ What it reads (every one optional; a missing one is LISTED as missing, never inv
              exports): this month's money in / out, runway, subscriptions, leaks, net worth, prop-firm fees vs payouts as the BANK saw them.
              Shown apart (never added to the cash totals, which come from the ledger + the eval prices). PRIVATE like the ledger: in a
              written file only with --private.
+  agency     money_out/agency.json (agency/billing, 2026-11-14; --agency FILE): the website agency's client payments as daily cash in /
+             out (+ MRR and churn in its row). Real cash, PRIVATE like the ledger: counted only with --private or "publish": true in
+             the file; a sample file is never counted; when your own ledger has entries for acct "agency" those win (no double count).
   ledger     data/money_ledger.json (gitignored, owner-editable): eval purchases, resets, payouts, Kalshi deposits, expenses. The
              same format as the Ledger app's Export JSON ({"entries": [{"kind", "amount", "date", "acct", "note"}]}), so an export
              saved there works as is. PRIVATE by default: it is counted in a written file only with --private or "publish": true
@@ -51,6 +54,8 @@ HOUSEHOLD = os.path.join(ROOT, "money_out", "household.json")
 PC_LIVE = os.path.join(ROOT, "data", "pc_report", "live.json")
 RULES = os.path.join(WEB, "ledger", "rules.json")
 PLANS = os.path.join(WEB, "plutus", "plans.json")
+AGENCY = os.path.join(ROOT, "money_out", "agency.json")      # agency/billing's summary (python -m agency.billing summary)
+AGENCY_STALE_S = 35 * 86400                                  # the kit rewrites it on every change; a month without one is old
 VERSION = 1
 MILESTONES = (10_000, 100_000, 1_000_000)
 MIN_DAYS_FOR_RATE = 28            # a cash run-rate needs four weeks of data
@@ -437,6 +442,39 @@ def kalshi_in(k: dict, start: str, end: str, which: str):
     return r2(v) if v is not None and fd and start <= fd <= end else 0.0
 
 
+# ------------------------------------------------------------------------------------------------ the website agency (agency/billing)
+def agency_part(ag, include: bool, own: list, today: str, now: float) -> tuple[list, dict | None, dict]:
+    """-> (entries, info for its row, its source line). The kit's daily [date, cash in, cash out] rows become income / expense entries of
+    acct "agency" (cash out = refunds + processor fees). Counted only when the ledger would be (include) or the file says publish;
+    a sample file never; the owner's own ledger entries for acct "agency" win over the kit's."""
+    ag = ag if isinstance(ag, dict) and ag.get("kind") == "olympus-agency-income" else None
+    src = {"sid": "agency", "name": "Website agency (client payments)", "kind": "cash", "state": "off", "t": None, "now": now, "file": None,
+           "note": "Not started: python -m agency.billing (agency/billing/PAYMENTS.md)."}
+    if not ag:
+        return [], None, src
+    t = to_s(ag.get("built")) or num(ag.get("t"))
+    mrr = obj(ag.get("mrr"))
+    info = {"mrr": num(mrr.get("now")), "clients": int(num(mrr.get("clients")) or 0), "text": text(ag.get("text"), 240), "t": t}
+    src.update(t=t, file="money_out/agency.json", note=f"MRR {money(info['mrr'])} from {info['clients']} client{'' if info['clients'] == 1 else 's'}")
+    if ag.get("status") == "sample":
+        src.update(state="sample", note="SAMPLE numbers: never counted as cash")
+        return [], None, src
+    if not (include or ag.get("publish") is True):
+        src.update(state="private", note="kept private (run with --private, or python -m agency.billing setup --publish yes)")
+        return [], None, src
+    if any(e["acct"] == "agency" for e in own):
+        src.update(state="ok", note=src["note"] + "; your ledger has agency entries, those are counted instead (no double count)")
+        return [], info, src
+    out = []
+    for d in arr(ag.get("days")):
+        if isinstance(d, list) and len(d) >= 3 and is_date(d[0]) and d[0] <= today:
+            for kind, v in (("income", num(d[1])), ("expense", num(d[2]))):
+                if v is not None and 0 < v < 1e9:
+                    out.append({"kind": kind, "amount": r2(v), "date": d[0], "acct": "agency", "agency": True})
+    src.update(state="stale" if t is not None and now - t > AGENCY_STALE_S else "ok", note=src["note"] + f"; {len(out)} cash rows")
+    return out, info, src
+
+
 # ------------------------------------------------------------------------------------------------ the sums
 def sums(entries: list, start: str = "0000-01-01", end: str = "9999-12-31") -> dict:
     s = {k: 0.0 for k in KINDS}
@@ -515,6 +553,8 @@ def build(inputs: dict, now: float, include_ledger: bool = True) -> dict:
     entries, auto_shown = merge(own, led["hidden"] if use_led else [], auto)
     pays = bot_payouts(home, own, today)
     entries += pays
+    ag_entries, ag_info, ag_src = agency_part(inputs.get("agency"), include_ledger, own, today, now)
+    entries += ag_entries
     feed = inputs.get("kalshi")
     feed = feed if isinstance(feed, dict) and (feed.get("kind") in (None, "kalshi")) and (num(feed.get("balance")) is not None or num(feed.get("total_pnl")) is not None or feed.get("days")) else None
     k = kalshi_result(entries, feed)
@@ -527,7 +567,7 @@ def build(inputs: dict, now: float, include_ledger: bool = True) -> dict:
     # ---- by source: each eval / funded account, Kalshi, general, then the paper-only ones
     ids = []
     for e in entries:
-        if e["acct"] not in ids and e["acct"] not in ("kalshi", "general"):
+        if e["acct"] not in ids and e["acct"] not in ("kalshi", "general", "agency"):
             ids.append(e["acct"])
     names = {a["acct"]: a["name"] for a in auto + pays}
     for aid, a in obj(obj(rules).get("accounts")).items():
@@ -565,6 +605,13 @@ def build(inputs: dict, now: float, include_ledger: bool = True) -> dict:
         rows.append({"id": "general", "name": "General (expenses, other income)", "kind": "general", "group": "cash", "cash_in": s["cash_in"],
                      "cash_out": s["cash_out"], "net": r2(s["cash_in"] - s["cash_out"]),
                      "week": net_in(gen, wk, today), "month": net_in(gen, mo, today), "t": None})
+    agx = [e for e in entries if e["acct"] == "agency"]
+    if agx or ag_info:
+        s = sums(agx)
+        rows.append({"id": "agency", "name": "Website agency (client payments)", "kind": "agency", "group": "cash", "cash_in": s["cash_in"],
+                     "cash_out": s["cash_out"], "net": r2(s["cash_in"] - s["cash_out"]), "week": net_in(agx, wk, today), "month": net_in(agx, mo, today),
+                     "mrr": (ag_info or {}).get("mrr"), "clients": (ag_info or {}).get("clients"), "text": (ag_info or {}).get("text", ""),
+                     "t": (ag_info or {}).get("t")})
 
     paper = []
     for key, acc in A.items():
@@ -665,7 +712,8 @@ def build(inputs: dict, now: float, include_ledger: bool = True) -> dict:
                            to_s(hh.get("built")) if hh else None, now, inputs.get("household_file") if hh else None,
                            (household["text"] if household else "kept private (run with --private to show it here)") if hh else
                            "Not connected: drop your bank exports in the money inbox and run tools/money_import.py (docs/CONNECT_MONEY.md)."))
-    missing = [{"id": s["id"], "name": s["name"], "why": s["note"]} for s in sources if s["status"] in ("missing", "bad")]
+    sources.append(_source(**ag_src))
+    missing =[{"id": s["id"], "name": s["name"], "why": s["note"]} for s in sources if s["status"] in ("missing", "bad")]
 
     words = []
     if not use_led:
@@ -717,7 +765,8 @@ def _household_default():
     return os.path.join(d, "money", "household.json")
 
 
-def gather(site: str | None = None, ledger_path: str | None = None, kalshi_path: str | None = None, keep_notes=False, household_path: str | None = None) -> dict:
+def gather(site: str | None = None, ledger_path: str | None = None, kalshi_path: str | None = None, keep_notes=False, household_path: str | None = None,
+           agency_path: str | None = None) -> dict:
     """Load every source that exists. Never raises."""
     site = site or WEB
     home = home_file = home_kind = None
@@ -747,9 +796,11 @@ def gather(site: str | None = None, ledger_path: str | None = None, kalshi_path:
         if isinstance(j, dict) and j.get("kind") == "olympus-household":
             hh, hh_file = j, ("money_out/household.json" if p == HOUSEHOLD else "household.json (private folder)")
             break
+    ag = read_json(agency_path or AGENCY)
+    ag = ag if isinstance(ag, dict) and ag.get("kind") == "olympus-agency-income" else None
     return {"home": home, "home_file": home_file, "home_kind": home_kind, "kalshi": kal, "kalshi_file": kal_file, "machines": mach,
             "machines_file": mach_file, "rules": rules if isinstance(rules, dict) else None, "plans": plans if isinstance(plans, dict) else None,
-            "ledger": load_ledger(ledger_path or DEFAULT_LEDGER, keep_notes), "household": hh, "household_file": hh_file}
+            "ledger": load_ledger(ledger_path or DEFAULT_LEDGER, keep_notes), "household": hh, "household_file": hh_file, "agency": ag}
 
 
 def write(sb: dict, path: str) -> str:
@@ -794,13 +845,14 @@ def main(argv=None) -> int:
     ap.add_argument("--ledger", default=DEFAULT_LEDGER)
     ap.add_argument("--kalshi")
     ap.add_argument("--household", help="a household.json from tools/money_import.py (default money_out/, then the private folder)")
+    ap.add_argument("--agency", help="the website agency's summary (default money_out/agency.json, python -m agency.billing summary)")
     ap.add_argument("--private", action="store_true", help="count your ledger in the written file even without \"publish\": true")
     ap.add_argument("--print", dest="show", action="store_true")
     ap.add_argument("--now", type=float)
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
     now = a.now if a.now is not None else time.time()
-    sb = build(gather(a.site, a.ledger, a.kalshi, household_path=a.household), now, include_ledger=a.private or a.show)
+    sb = build(gather(a.site, a.ledger, a.kalshi, household_path=a.household, agency_path=a.agency), now, include_ledger=a.private or a.show)
     if a.show:
         print(table(sb))
         return 0

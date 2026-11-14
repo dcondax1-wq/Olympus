@@ -1,0 +1,66 @@
+{
+  "v": 1,
+  "note": "Default website plans for the agency (team B6, 2026-11-14). $0 setup, a monthly plan, month to month with 30 days notice. A client record's own setup_usd / monthly_usd always win over these prices. Change the wording here; the proposal, agreement and invoice read it.",
+  "packages": [
+    {
+      "id": "starter",
+      "name": "Starter",
+      "setup_usd": 0,
+      "monthly_usd": 99,
+      "tagline": "A clean one-page site that makes the phone ring.",
+      "includes": [
+        "One-page mobile site: services, reviews, service area, contact",
+        "Tap-to-call and tap-to-text buttons",
+        "Contact form sent straight to your email",
+        "Link to your Google Business Profile and reviews",
+        "Hosting, security certificate (https) and backups",
+        "1 small edit a month (text, photos, hours)"
+      ],
+      "edits_per_month": 1,
+      "live_days": 7,
+      "support_days": 2,
+      "min_term_months": 0,
+      "notice_days": 30
+    },
+    {
+      "id": "growth",
+      "name": "Growth",
+      "setup_usd": 0,
+      "monthly_usd": 149,
+      "tagline": "Up to five pages built to turn local searches into quote requests.",
+      "includes": [
+        "Up to 5 pages: home, services, about, reviews, contact",
+        "Quote request form sent to your email",
+        "Your Google reviews shown on the site",
+        "Local search basics: page titles, map, service-area wording",
+        "Hosting, security certificate (https) and backups",
+        "2 small edits a month"
+      ],
+      "edits_per_month": 2,
+      "live_days": 7,
+      "support_days": 2,
+      "min_term_months": 0,
+      "notice_days": 30
+    },
+    {
+      "id": "pro",
+      "name": "Pro",
+      "setup_usd": 0,
+      "monthly_usd": 249,
+      "tagline": "A full site for a busy company, with a page for every service and town.",
+      "includes": [
+        "Up to 10 pages, with a page for each main service or town",
+        "Quote request form with photo upload",
+        "Monthly content update (a project, an offer or a seasonal tip)",
+        "Local search basics on every page",
+        "Hosting, security certificate (https) and backups",
+        "Priority edits (within 1 business day) and a quarterly review call"
+      ],
+      "edits_per_month": 4,
+      "live_days": 10,
+      "support_days": 1,
+      "min_term_months": 0,
+      "notice_days": 30
+    }
+  ]
+}

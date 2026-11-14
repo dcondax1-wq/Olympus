@@ -179,6 +179,8 @@ data/money_rules.json
 data/money_rules.json.tmp
 tools/web_public/money/
 docs/reports/money_week_*.md
+# website agency billing (agency/billing, 2026-11-14): the real clients, invoices, payments and business profile, never committed
+data/agency/
 
 # your day (tools/calendar_sync.py, docs/CONNECT_DAY.md): calendars, shifts and the phone inbox are PRIVATE
 data/day/

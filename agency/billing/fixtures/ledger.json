@@ -1,0 +1,33 @@
+{
+  "v": 1,
+  "kind": "agency-ledger",
+  "note": "FIXTURE ledger (made up) for the MRR / churn tests. 'end' is the LAST day of service (inclusive); null = still running. Fees are 2.9% + $0.30 + 0.7% (a Stripe Payment Link subscription), rounded to cents.",
+  "plans": [
+    {"client_id": "c_demo_greenway", "monthly_usd": 99, "start": "2026-09-05", "end": "2026-12-31", "package": "starter"},
+    {"client_id": "c_demo_brightline", "monthly_usd": 149, "start": "2026-09-20", "end": "2026-10-31", "package": "growth"},
+    {"client_id": "c_demo_brightline", "monthly_usd": 99, "start": "2026-12-05", "end": null, "package": "starter"},
+    {"client_id": "c_demo_rivera", "monthly_usd": 149, "start": "2026-10-03", "end": "2026-11-09", "package": "growth"},
+    {"client_id": "c_demo_rivera", "monthly_usd": 249, "start": "2026-11-10", "end": null, "package": "pro"},
+    {"client_id": "c_demo_summit", "monthly_usd": 99, "start": "2026-10-15", "end": "2026-10-25", "package": "starter"},
+    {"client_id": "c_demo_northside", "monthly_usd": 249, "start": "2026-11-01", "end": "2026-11-30", "package": "pro"},
+    {"client_id": "c_demo_northside", "monthly_usd": 149, "start": "2026-12-01", "end": null, "package": "growth"},
+    {"client_id": "c_demo_oak", "monthly_usd": 99, "start": "2026-12-20", "end": null, "package": "starter"}
+  ],
+  "payments": [
+    {"id": "p_0001", "date": "2026-09-05", "client_id": "c_demo_greenway", "amount_usd": 99, "fee_usd": 3.86, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0002", "date": "2026-09-20", "client_id": "c_demo_brightline", "amount_usd": 149, "fee_usd": 5.66, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0003", "date": "2026-10-03", "client_id": "c_demo_rivera", "amount_usd": 149, "fee_usd": 5.66, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0004", "date": "2026-10-05", "client_id": "c_demo_greenway", "amount_usd": 99, "fee_usd": 3.86, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0005", "date": "2026-10-15", "client_id": "c_demo_summit", "amount_usd": 99, "fee_usd": 3.86, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0006", "date": "2026-10-20", "client_id": "c_demo_brightline", "amount_usd": 149, "fee_usd": 5.66, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0007", "date": "2026-10-25", "client_id": "c_demo_summit", "amount_usd": 50, "fee_usd": 0, "kind": "refund", "method": "stripe"},
+    {"id": "p_0008", "date": "2026-11-01", "client_id": "c_demo_northside", "amount_usd": 249, "fee_usd": 9.26, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0009", "date": "2026-11-03", "client_id": "c_demo_rivera", "amount_usd": 149, "fee_usd": 5.66, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0010", "date": "2026-11-05", "client_id": "c_demo_greenway", "amount_usd": 99, "fee_usd": 3.86, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0011", "date": "2026-11-10", "client_id": "c_demo_rivera", "amount_usd": 100, "fee_usd": 3.90, "kind": "one_time", "method": "stripe", "note": "upgrade difference"},
+    {"id": "p_0012", "date": "2026-12-01", "client_id": "c_demo_northside", "amount_usd": 149, "fee_usd": 5.66, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0013", "date": "2026-12-03", "client_id": "c_demo_rivera", "amount_usd": 249, "fee_usd": 9.26, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0014", "date": "2026-12-05", "client_id": "c_demo_greenway", "amount_usd": 99, "fee_usd": 3.86, "kind": "monthly", "method": "stripe"},
+    {"id": "p_0015", "date": "2026-12-05", "client_id": "c_demo_brightline", "amount_usd": 99, "fee_usd": 3.86, "kind": "monthly", "method": "stripe"}
+  ]
+}
