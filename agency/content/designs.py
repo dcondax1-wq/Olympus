@@ -446,11 +446,11 @@ def _scale(brand) -> float:
 def lay_bold(p, b, fmt):
     st = fmt == "story"
     s = _scale(b)
-    top, bot = (330, 470) if st else (170, 190)
+    top, bot = (400, 470) if st else (170, 190)
     css = f""".L-bold .wm{{position:absolute;right:-150px;bottom:{-40 if st else -150}px;width:{900 if st else 760}px;height:{900 if st else 760}px;
 color:var(--ink);opacity:.075;transform:rotate(-14deg)}}
 .L-bold .wrap{{position:absolute;left:var(--m);right:var(--m);top:{top}px;bottom:{bot}px;display:flex;flex-direction:column;justify-content:center;gap:{40 if st else 32}px}}
-.L-bold .lab{{position:absolute;left:var(--m);top:{230 if st else 78}px}}
+.L-bold .lab{{position:absolute;left:var(--m);top:{300 if st else 78}px}}
 .L-bold .pat{{background:{trade_pattern(b['motif'], b['vars']['line_d'], 1)};opacity:.45;-webkit-mask:linear-gradient(90deg,#000,transparent 55%);mask:linear-gradient(90deg,#000,transparent 55%)}}"""
     body = (f'<div class="pat"></div><div class="wm">{icon(p["icon"], stroke=2.4)}</div>'
             f'<div class="lab"><span class="label chip">{esc(p["label"])}</span></div>'
@@ -490,7 +490,7 @@ def lay_tip(p, b, fmt):
     s = _scale(b)
     num = f'{p.get("number", 1):02d}'
     band = 150 if st else 132
-    css = f""".L-tip .num{{position:absolute;left:{70 if st else 62}px;top:{250 if st else 26}px;font-family:var(--fd);font-weight:var(--fdw);
+    css = f""".L-tip .num{{position:absolute;left:{70 if st else 62}px;top:{290 if st else 26}px;font-family:var(--fd);font-weight:var(--fdw);
 font-size:{int((560 if st else 400) * min(1.0, s + .12))}px;line-height:.82;color:var(--accp);letter-spacing:-.02em}}
 .L-tip .lab{{position:absolute;right:var(--m);top:{300 if st else 92}px}}
 .L-tip .wrap{{position:absolute;left:var(--m);right:var(--m);top:{820 if st else 420}px;bottom:{band + (330 if st else 70)}px;display:flex;flex-direction:column;justify-content:center;gap:{30 if st else 24}px}}
@@ -507,7 +507,7 @@ def lay_quote(p, b, fmt):
     st = fmt == "story"
     q = p.get("quote")
     stars = "".join(f'<svg viewBox="0 0 64 64" class="st"><path d="{_star()}" fill="currentColor"/></svg>' for _ in range(5))
-    css = f""".L-quote .qm{{position:absolute;left:{70 if st else 62}px;top:{250 if st else 52}px;width:{230 if st else 190}px;height:{230 if st else 190}px;color:var(--accd);opacity:.95}}
+    css = f""".L-quote .qm{{position:absolute;left:{70 if st else 62}px;top:{290 if st else 52}px;width:{230 if st else 190}px;height:{230 if st else 190}px;color:var(--accd);opacity:.95}}
 .L-quote .wrap{{position:absolute;left:var(--m);right:var(--m);top:{560 if st else 280}px;bottom:{520 if st else 190}px;display:flex;flex-direction:column;justify-content:center;gap:{40 if st else 30}px}}
 .L-quote .stars{{display:flex;gap:{14 if st else 12}px;color:var(--accd)}}
 .L-quote .st{{width:{60 if st else 50}px;height:{60 if st else 50}px}}
