@@ -273,6 +273,18 @@ and on the `storage` event, so an app framed in Jarvis changes live and the othe
 - **Adding a theme**: one entry in `THEMES` with every token (+ `jarvis`, + `stage` if light). The test lists any token
   missing and checks WCAG AA (4.5:1) for the text of every theme on its page and glass (the light one everywhere it is read).
 
+### Reach audit (2026-11-14, before the theme reach work; `docs/shots/themes/audit-before.jpg`, `tools/theme_shots.py`)
+Every theme at 390 x 844 on the Gate, the dashboard, Jarvis, NQ, Kalshi, Helios and Polis. What followed the theme: Jarvis's
+cards and bars (its own palette), Kalshi's background a little (its `--bg` blend) and the 3D apps' scenes. What did **not**:
+- **The Gate** (`gate/gate.css`, 31 hard-coded colours): it never loads `themes.js`; AGORA in every theme.
+- **The dashboard** (root `index.html` style block 246 colours, `zenith_agora.css` 1207, `zenith.css` 160, `polish.css` 113):
+  only `--page` / `--surface*` / `--line` / `--ink` were blended, and almost every card, bar, hero and label is a literal warm brown
+  or gold, so it looked AGORA in every theme.
+- **The AGORA kit pages** (NQ, Helios, Polis and the other ~65 apps on `agora.css`): `agora.css` defines `--ag-*` as literals
+  (91 colours) that no theme touched; each app's own sheet adds more (NQ 38, Helios 30, Polis 49 + 79 in `olympus/polis.css`).
+- **Jarvis**: its header pillars / sky (`home3d.css`) and the Look sheet stay AGORA bronze.
+- **Light theme (Athena)**: light only inside Jarvis; every other page stayed dark.
+
 ## Oracle and Odeon overhaul (2026-11-04, owner: "apps look Play-Doh / blank, a ton of features and effects")
 
 Both apps already ran on the render core (ACES, environment light, bloom, MSAA) with marble, gold and neon from `materials.js`. This pass adds
