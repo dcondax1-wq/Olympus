@@ -14,7 +14,7 @@
 //     device pixel ratio up to 3 on Auto and on Ultra 4K (true retina / 4K crispness), the budget itself on a chosen High or Battery.
 //     Ultra 4K starts AT the ceiling; Auto starts at the budget and climbs toward the ceiling only while every frame keeps full rate.
 //   - one shared level q for the page: q < 0 renders under the budget (x 0.84 per step, -30% pixels), q > 0 above it (x 1.19 per step).
-//   - slow frames (a mean over 30 frames slower than 24 ms, or than the kit's deliberate gap + 33%) step DOWN one level: smooth, 1.2 s apart.
+//   - slow frames (the median of a 30-frame or 1.5 s window over 24 ms, or over the kit's deliberate gap + 33%) step DOWN one level: smooth, 1.2 s apart.
 //     Frames slowed by the page's own JavaScript (the frame's CPU work is most of the interval) never lower the resolution: that would only blur.
 //   - full-rate frames (a mean <= 17.5 ms, uncapped) for 2.5 s step UP one level, toward the ceiling (or back to where it was).
 //   - never thrash: an up-step followed by a down-step within 4 s marks that level as failed; the wait before trying it again doubles
@@ -48,7 +48,7 @@ export function range(o) {
   if (!soft && !x.software && !x.saver && (tier === 'ultra' || (tier === 'high' && !x.chosen))) ceil = Math.min(dev, CAPS.ultra);
   if (tier === 'ultra' && !soft && !x.software && !x.saver) budget = ceil;              // Ultra 4K: start crisp
   if (x.saver) { budget = Math.min(budget, 1.5); ceil = Math.min(ceil, 1.5); }
-  // the floor: half the budget on Auto, two thirds of it on a level the owner chose (Ultra 4K never falls under 2x), never under 1 pixel per
+  // the floor: half the budget on Auto, two thirds of it on a level the owner chose (Ultra 4K on a 3x iPhone never falls under 2x), never under 1 pixel per
   // CSS pixel; a 1x screen (a budget of 1 or less) may go to 3/4 of it
   const floor = budget <= 1 ? budget * 0.75 : Math.min(budget, Math.max(1, budget * (x.chosen ? 0.67 : 0.5)));
   return { floor: r2(floor), budget: r2(budget), ceil: r2(Math.max(budget, ceil)) };
