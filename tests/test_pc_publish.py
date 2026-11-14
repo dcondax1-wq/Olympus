@@ -103,8 +103,13 @@ def main() -> int:
         check("nogithub: a running bot that stopped writing 20 min ago is 'silent'", nogithub.read_local(now=1000 + 1200, src=hbd)["silent"])
         env_on = {"LE_NO_GITHUB": "1", "LE_HEARTBEAT": "1", "LE_LIVE_PUBLISH": "1", "LE_REMOTE": "1"}
         from engine import live_publish, remote_ctl, autoupdate, heartbeat
-        check("GitHub-free mode switches the phone live push, the remote control and the auto-update off (they would need GitHub)",
-              not live_publish.enabled(env_on) and not remote_ctl.enabled(env_on) and not autoupdate.is_enabled({"enabled": True}, env_on))
+        check("GitHub-free mode switches the phone live push, the remote control and the auto-update FROM ORIGIN off (they would need the old account)",
+              not live_publish.enabled(env_on) and not remote_ctl.enabled(env_on)
+              and not autoupdate.is_enabled({"enabled": True}, env_on, root=tmp))
+        # 2026-11-14 (owner: "keep it on GitHub in case we get banned ... I'm not updating the files every time"): with the
+        # backup repo in update_source.json the auto-update runs in GitHub-free mode too (tests/test_autoupdate_source.py)
+        check("GitHub-free mode keeps the auto-update ON when the code names the backup repo (update_source.json)",
+              autoupdate.is_enabled({"enabled": True}, env_on) and autoupdate.source()["remote"] != "origin")
         check("... and changes nothing when the mode is off (old behaviour)",
               live_publish.enabled({"LE_HEARTBEAT": "1"}) and remote_ctl.enabled({"LE_REMOTE": "1"})
               and autoupdate.is_enabled({"enabled": True}, {}))

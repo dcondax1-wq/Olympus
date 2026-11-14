@@ -1,0 +1,3 @@
+# the owner's call lists, opt-outs and Do Not Call downloads stay on the PC (business phones + outcomes): never committed
+out/
+*.dnc.txt
