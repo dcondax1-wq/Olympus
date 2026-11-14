@@ -1,0 +1,50 @@
+{
+  "id": "demo-blueline",
+  "name": "BlueLine Plumbing & Air",
+  "trade": "plumber",
+  "city": "Brandon, FL",
+  "phone": "(813) 555-0177",
+  "email": "office@blueline.example",
+  "site_url": "https://blueline.example",
+  "demo_url": "",
+  "status": "demo",
+  "package": "site + chat",
+  "setup_usd": 0,
+  "monthly_usd": 0,
+  "notes": "FAKE client for the B4 demos and tests (fixtures only, 555 numbers, .example domain).",
+  "chat": {
+    "preset": "plumber_hvac",
+    "brand_color": "#1d4ed8",
+    "timezone": "America/New_York",
+    "hours": {"weekdays": "7:30-18:00", "sat": "8:00-14:00", "sun": "closed"},
+    "closed_dates": {"2026-11-26": "Thanksgiving", "2026-12-25": "Christmas Day"},
+    "emergency_phone": "(813) 555-0178",
+    "booking_url": "https://blueline.example/book",
+    "booking_label": "Book a visit",
+    "payments": ["all major cards", "cash", "check", "financing"],
+    "services": [
+      {"name": "Service call / diagnostic", "price": "$89 (waived if we do the repair)", "keys": ["trip charge"]},
+      {"name": "Drain cleaning", "price": "from $149", "keys": ["drain", "clog", "unclog", "snake"]},
+      {"name": "Water heater repair & install", "price": "from $199; new tank from $1,450 installed", "keys": ["water heater", "tankless", "hot water"]},
+      {"name": "Leak repair", "price": "from $175", "keys": ["fix a leak", "pipe repair", "repipe"]},
+      {"name": "Toilet & faucet repair", "price": "from $129", "keys": ["toilet", "faucet", "sink", "disposal"]},
+      {"name": "AC repair", "price": "from $129 + parts", "keys": ["ac", "air conditioner", "hvac", "compressor", "freon"]},
+      {"name": "Furnace & heat pump repair", "price": "from $129 + parts", "keys": ["furnace", "heat pump", "heater", "heating", "thermostat"]},
+      {"name": "New AC / heat pump system", "price": "free in-home quote", "keys": ["new system", "new ac", "new unit", "replacement"]},
+      {"name": "Yearly tune-up", "price": "$99", "keys": ["tune up", "maintenance visit"]}
+    ],
+    "area": {"text": "Brandon, Tampa, Riverview, Valrico and nearby",
+             "towns": ["Brandon", "Tampa", "Riverview", "Valrico", "Seffner", "Plant City", "Apollo Beach", "Lutz"],
+             "zips": ["33510", "33511", "33569", "33578", "33579", "33594", "33584", "33619"]},
+    "facts": {
+      "license": "Yes: fully licensed (FL #CFC0000000, a demo number) and insured. Every tech is background-checked.",
+      "warranty": "Repairs carry a 1-year parts and labor warranty; new systems add the maker's 10-year parts warranty.",
+      "financing": "Yes, on new systems, with monthly payments. Leave your number and we'll go over the options."
+    }
+  },
+  "review": {
+    "google_review_url": "https://search.google.com/local/writereview?placeid=DEMO_BLUELINE_PLACE_ID",
+    "page_url": "https://blueline.example/review/",
+    "owner_name": "Dana"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "preset": "restaurant",
+  "label": "Restaurant / cafe",
+  "trades": ["restaurant", "cafe", "café", "diner", "bistro", "pizzeria", "pizza", "taqueria", "bar and grill", "grill", "eatery", "bakery", "coffee shop", "brewery"],
+  "chips": ["hours", "menu", "book", "takeout", "dietary", "dir"],
+  "off": ["area", "services"],
+  "greeting": "Hi! I'm the virtual host for {name}. Ask me about hours, the menu, reservations or takeout, or tap a question below.",
+  "after_hours": "We're closed right now and open {next_open}. You can still book a table or look at the menu, or leave your name and number and we'll call you back.",
+  "book": {"chip": "Reserve a table", "keys": ["table", "table for", "party of", "reserve a table", "opentable", "resy", "seat", "group of", "people:0.5",
+                                               "for two", "for four"]},
+  "facts": {
+    "menu_text": "Here's our full menu with prices.",
+    "takeout": "Yes, we do takeout. Call {phone} to order ahead and we'll have it ready.",
+    "dietary": "Tell your server about any allergy or diet and the kitchen will tell you what's safe for you. Questions before you come? Call {phone}.",
+    "kids": "Families are welcome! Ask for a high chair or a booster seat when you arrive.",
+    "events": "We'd love to host you! Tell me the date, how many guests and what you have in mind, and we'll get back to you.",
+    "wait": "Walk-ins are welcome. On busy nights there can be a wait, so booking ahead is the surest way to get a table.",
+    "gift_cards": "Ask us about gift cards: call {phone} or ask your server."
+  },
+  "intents": [
+    {"id": "menu", "chip": "Menu", "a": "{menu_text}", "act": ["menu"],
+     "keys": ["menu", "food", "dish", "eat", "what do you serve", "cuisine", "special:0.6", "drink", "wine", "beer", "cocktail", "dessert", "breakfast",
+              "lunch", "dinner", "brunch", "appetizer", "entree", "pizza", "taco", "burger", "seafood", "steak", "pasta", "coffee"]},
+    {"id": "takeout", "chip": "Takeout", "a": "{takeout}", "act": ["call", "menu"],
+     "keys": ["takeout", "take out", "to go", "pick up", "order online", "carry out", "order ahead", "call in an order", "order"]},
+    {"id": "delivery", "a": "{delivery}", "act": ["call"], "keys": ["deliver", "delivery", "doordash", "uber eats", "grubhub", "postmates"]},
+    {"id": "dietary", "chip": "Vegan / gluten-free", "a": "{dietary}", "act": ["menu", "call"],
+     "keys": ["vegan", "vegetarian", "veggie", "plant based", "gluten", "gluten free", "celiac", "allergy", "allergic", "nut", "peanut", "dairy", "lactose", "halal",
+              "kosher", "keto", "diet", "dietary", "shellfish"]},
+    {"id": "kids", "a": "{kids}",
+     "keys": ["kid", "kids menu", "children", "child", "high chair", "highchair", "booster", "family friendly", "stroller", "baby", "family"]},
+    {"id": "happyhour", "a": "{happy_hour}", "keys": ["happy hour", "drink special", "deal", "discount", "half off", "half price"]},
+    {"id": "events", "chip": "Private events", "a": "{events}", "act": ["lead"],
+     "keys": ["private", "private event", "party:0.6", "event", "birthday", "rehearsal", "catering", "cater", "large group", "big group", "private room",
+              "corporate", "anniversary"]},
+    {"id": "wait", "a": "{wait}", "act": ["book"],
+     "keys": ["wait", "how long is the wait", "busy", "line", "walk in", "walk ins", "walkin", "no reservation", "without a reservation", "just show up"]},
+    {"id": "outdoor", "a": "{outdoor}", "keys": ["outdoor", "outside", "patio", "terrace", "rooftop", "dog", "pet", "sit outside"]},
+    {"id": "dress", "a": "{dress_code}", "keys": ["dress code", "dress", "attire", "what to wear", "wear", "formal", "jeans"]},
+    {"id": "gift", "a": "{gift_cards}", "act": ["call"], "keys": ["gift card", "gift certificate", "voucher", "gift"]}
+  ],
+  "sample": {
+    "brand_color": "#b45309",
+    "timezone": "America/New_York",
+    "hours": {"mon": "closed", "tue": "11:30-14:30, 17:00-22:00", "wed": "11:30-14:30, 17:00-22:00", "thu": "11:30-14:30, 17:00-22:00",
+              "fri": "11:30-14:30, 17:00-23:00", "sat": "10:00-23:00", "sun": "10:00-21:00"},
+    "payments": ["all major cards", "cash", "Apple Pay", "Google Pay"],
+    "booking_label": "Reserve a table"
+  }
+}
