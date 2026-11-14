@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="agora">
+<html lang="en" data-theme="agora" data-oly-page="gate">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -20,15 +20,26 @@
      Works at gate/ AND copied to the site root as olympus-live.html: the line below finds the site root (GATE_BASE) and every link is built from it.
      Read only: it reads ../home.json (and olympus/truth.js) and sends nothing; when they 404 it says so in plain words.
      Served from the PC (/site/, LIVE_LINK.bat) it also reads the bot's /api/site/live.json through ../pc_feed.js, every minute. -->
-<style>html, body { background: #14110e; color: #f3ece0; margin: 0; }</style>
+<style>html, body { background: var(--oly-th-n3, #14110e); color: var(--oly-th-n37, #f3ece0); margin: 0; }</style>
+<script>(function () {   /* the OLYMPUS theme from the first paint: the copy olympus/themes.js keeps of what it painted here ('olympus.theme.paint.page.gate') */
+  try {
+    var d = document.documentElement, ls = window.localStorage, p = JSON.parse(ls.getItem('olympus.theme.paint.page.gate') || 'null'), on = [];
+    if (p && p.vars && p.id && p.id !== 'agora' && (ls.getItem('olympus.theme') || ls.getItem('olympus.themeMix'))) {
+      for (var k in p.vars) { d.style.setProperty(k, p.vars[k]); on.push(k); }
+      d.setAttribute('data-oly-theme', p.id); d.setAttribute('data-oly-scheme', p.scheme === 'light' ? 'light' : 'dark'); window.__olyPaint = on;
+      if (p.style) d.setAttribute('data-oly-style', p.style);
+      var m = document.querySelector('meta[name="theme-color"]'); if (m && p.meta) m.setAttribute('content', p.meta);
+    }
+  } catch (e) { /* the default look */ }
+})();</script>
 <script>(function () {
   var p = location.pathname || '', b = /\/gate\/(index\.html)?$/.test(p) ? '../' : '';
   window.GATE_BASE = b;
   var d = document, h = d.head || d.getElementsByTagName('head')[0];
   try { if (window.top !== window) d.documentElement.className += ' framed'; } catch (e) { d.documentElement.className += ' framed'; }
-  var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = b + 'gate/gate.css?v=g1'; h.appendChild(l);
+  var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = b + 'gate/gate.css?v=g2'; h.appendChild(l);
   var i = d.createElement('link'); i.rel = 'icon'; i.href = b + 'gate/icon.svg'; h.appendChild(i);
-  ['pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g2'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
+  ['olympus/themes.js?v=o5', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g3'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
 })();</script>
 </head>
 <body>
@@ -76,6 +87,14 @@
       <input id="q" type="search" placeholder="money, risk, kalshi, journal..." autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-controls="results" aria-describedby="findHint"></div>
     <p class="g-hint" id="findHint">Search by name or by what it does.</p>
     <div class="g-list" id="results" aria-live="polite"></div>
+  </section>
+
+  <section class="g-look" id="lookSec" aria-labelledby="lookH" hidden>
+    <h2 class="g-h2" id="lookH">Look</h2>
+    <div class="g-tabs" role="tablist" aria-label="How to pick the look"><button type="button" role="tab" id="lookTab1" aria-selected="true">One look</button><button type="button" role="tab" id="lookTab2" aria-selected="false">Mix</button></div>
+    <p class="g-hint" id="lookHint">One tap changes the colours and the style everywhere: here, Jarvis and every app. Every word and number stays the same.</p>
+    <div class="g-swatches" id="looks" role="radiogroup" aria-labelledby="lookH"></div>
+    <div class="g-mix" id="lookMix" hidden></div>
   </section>
 
   <footer class="g-foot">

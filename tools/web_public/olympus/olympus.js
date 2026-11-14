@@ -1,7 +1,7 @@
 /* OLYMPUS kit (tools/web_public/olympus/, 2026-11-03; docs/OLYMPUS_DESIGN.md): the small shared layer that makes the nine 3D
  * apps one product. A classic script, loaded in <head> BEFORE the app's modules:
- *   <script src="../olympus/themes.js?v=o4"></script>  (the OLYMPUS themes: optional, just before)
- *   <script src="../olympus/olympus.js?v=o5" data-app="mind"></script>
+ *   <script src="../olympus/themes.js?v=o5"></script>  (the OLYMPUS themes: optional, just before)
+ *   <script src="../olympus/olympus.js?v=o6" data-app="mind"></script>
  * It never throws and every app still works when it is missing (each call site reads window.OLYMPUS defensively).
  *
  *   quality  ONE setting for every app and Jarvis: localStorage 'jfx' = ultra | high | low | off (Jarvis's own 3D-effects key,
@@ -119,7 +119,10 @@
     return out;
   }
   var rootStyle0 = root.getAttribute('style') || '';          // before any theme paints (restoreRoot)
-  var theme = TH ? TH.apply('stage', { meta: function (t) { return TH.mix(ownBg, t.bg, t.mix); }, extra: appVars }) : null;
+  // where: a page checked in light (<html data-oly-light>, its sheets tokenized: the Gate, NQ, Helios, Polis) takes the full palette, a light
+  // theme light; every other app the 'stage' palette (a light theme's dark variant), so a sheet with dark literals of its own stays readable
+  var where = root.hasAttribute('data-oly-light') ? 'page' : 'stage';
+  var theme = TH ? TH.apply(where, { meta: function (t) { return where === 'page' || !APP_VARS[id] ? t.themeColor : TH.mix(ownBg, t.bg, t.mix); }, extra: appVars }) : null;
   accent(theme);
 
   function emit() { for (var i = 0; i < subs.length; i++) { try { subs[i](level); } catch (e) { /* one listener never stops the rest */ } } }

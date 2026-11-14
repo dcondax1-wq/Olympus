@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="agora" data-fx="high" data-mode="jarvis" data-state="idle">
+<html lang="en" data-theme="agora" data-fx="high" data-mode="jarvis" data-state="idle" data-oly-page="jarvis">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -25,9 +25,10 @@
   // keeps of what it painted ('olympus.theme.paint'); the engine loads after the start (async, never waited on) and repaints
   try {
     var ot = g('olympus.theme'), op = JSON.parse(g('olympus.theme.paint') || 'null'), on = [];
-    if (ot && ot !== 'agora' && op && op.id === ot && op.vars) {
+    if ((ot || g('olympus.themeMix')) && op && op.id && op.id !== 'agora' && op.vars) {     /* the look this page got last time (a mix may give Jarvis its own) */
       for (var vk in op.vars) { d.style.setProperty(vk, op.vars[vk]); on.push(vk); }
-      d.setAttribute('data-oly-theme', ot); d.setAttribute('data-oly-scheme', op.scheme === 'light' ? 'light' : 'dark'); window.__olyPaint = on;
+      d.setAttribute('data-oly-theme', op.id); d.setAttribute('data-oly-scheme', op.scheme === 'light' ? 'light' : 'dark'); window.__olyPaint = on;
+      if (op.style) d.setAttribute('data-oly-style', op.style);
     }
   } catch (e) { /* the default look */ }
   var fx = g('jfx');
@@ -93,14 +94,14 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j16">
-<link rel="stylesheet" id="jhome" href="home3d.css?v=h3">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j17">
+<link rel="stylesheet" id="jhome" href="home3d.css?v=h4">
 <!-- quiet-net: data-fresh = Jarvis shows the Kalshi bot, so it asks the Kalshi feed afresh once per load (data.js: "opening Jarvis again
      asks once more: that is how a newly linked bot shows up"); without it a 404 earlier in the session kept it "not connected".
      async: the file lives in ../olympus/, outside Jarvis's worker, so its saved copy cannot answer for it; a blocking tag made a slow
      network hold the whole start one more round trip (6-12 s). A fetch before it arrives is just one real try, as before quiet-net. -->
 <script src="../olympus/quiet-net.js?v=q6a" data-fresh="raw:kalshi-feed,api:kalshi-feed,site:kalshi.json" async></script>
-<script src="../olympus/themes.js?v=o4" id="olyThemesJs" async></script>
+<script src="../olympus/themes.js?v=o5" id="olyThemesJs" async></script>
 <script src="../olympus/sfx.js?v=s4" id="olySfxJs" async></script>
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */

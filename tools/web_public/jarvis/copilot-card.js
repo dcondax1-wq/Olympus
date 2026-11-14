@@ -24,7 +24,7 @@ export const DEMO = { slot: '01:45', kind: 'morning', title: 'Morning plan', kic
 function style() {
   if ($('cpStyle')) return;
   const s = document.createElement('style'); s.id = 'cpStyle';
-  s.textContent = '.cp-card .cp-k{margin:0 0 6px;color:#b9ae9b;font:500 13.5px/1.4 var(--fb)}'
+  s.textContent = '.cp-card .cp-k{margin:0 0 6px;color:var(--oly-th-n27, #b9ae9b);font:500 13.5px/1.4 var(--fb)}'
     + '.cp-chip{margin-left:auto;padding:2px 10px;border-radius:999px;font:600 13px/1.5 var(--fm);border:1px solid var(--dim2);color:var(--txt)}'
     + '.cp-chip.ok{border-color:var(--ok);color:var(--ok)}.cp-chip.warn{border-color:var(--warn);color:var(--warn)}.cp-chip.bad{border-color:var(--bad);color:var(--bad)}'
     + '.cp-card .hc-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}.cp-card .hc-age{margin-top:6px}';

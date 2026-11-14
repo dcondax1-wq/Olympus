@@ -1951,6 +1951,9 @@ The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" 
   **Kit test PERF table** (`tests/test_olympus_kit.py` `PERF = {...}`, 23 apps today): per app `(page query, draw-call budget, triangle budget)`, the budget
   = the measure + 25% (three.js `renderer.info`, portable; fps is never judged); calls 0 = no scene (heap only). **A new 3D app adds a row** (measure
   it on the test box first); an app without a scene (ledger, inbox, journal, settings, bridge) has none.
+- **Themes (2026-11-14)**: 32 looks on the Gate's Look row (One look / Mix), keys `olympus.theme` + `olympus.themeMix`; colours reach a
+  sheet through theme slots: `python tools/theme_tokenize.py --apply <sheet>` (default unchanged by construction), check with
+  `python tools/theme_shots.py --site <built site> --themes midnight --leftovers` (also `--mix trader`). Details: `docs/OLYMPUS_DESIGN.md` "Themes".
 - **Sound** (`olympus/sfx.js`, `docs/OLYMPUS_SFX.md`): 14 synthesised ambient beds (WebAudio, no files); the app -> bed table is `AMBIENT` in `olympus.js`
   (`test_olympus_sfx` needs an entry for every app: **a new app = one `AMBIENT` entry**). `OLYMPUS.sound(true | false | null)` is the Sound switch (null =
   automatic: silent in LITE / reduced motion / battery saver; Settings and Jarvis Settings have it), `OLYMPUS.cue('open' | 'close' | 'success' | 'warning' |

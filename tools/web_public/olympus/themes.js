@@ -29,6 +29,84 @@
   // Jarvis's own palette names (jarvis.css :root[data-theme]): a theme that is not the default paints them too
   var JARVIS = ['bg', 'bg2', 'pr', 'txt', 'mut', 'dim', 'dim2', 'dim3', 'c', 'c2', 'c3', 'cr', 'cr2', 'cr3', 'tint', 'neb1', 'neb2', 'neb3', 'grid', 'scan'];
 
+  /* ------------------------------------------------------------------ the reach ramp (2026-11-14, team T1 "themes")
+   * The AGORA stylesheets (agora.css, gate.css, the dashboard's sheets, Jarvis's, NQ / Helios / Polis) wrote their colours as literals.
+   * tools/theme_tokenize.py rewrote each literal as var(--oly-th-<slot>, <the literal>): the literal stays the fallback, and no stylesheet
+   * defines --oly-th-*, so the default theme (which paints nothing) is byte for byte today's look. A slot is the literal's family and
+   * its HSL lightness on a fixed grid: n = the warm neutrals (page, panels, lines, text), a = the golds / bronzes, g = the olive greens
+   * (gains), r = the terracottas (losses), warn = AGORA's sun. A theme gives, for each family, the colour each AGORA reference colour
+   * becomes (REF); every grid step is the blend between the two references around it, so the whole hierarchy (page < panel < raised
+   * panel < line < muted < soft < text) follows, inverted for a light theme. Each slot is painted as #rrggbb and as 'r, g, b'
+   * (--oly-th-<slot>-rgb, for rgba(var(...), a)). tests/test_olympus_themes.py checks that this grid equals the tool's. */
+  var GRID = { n: [0, 100, 2.5], a: [15, 90, 5], g: [15, 90, 5], r: [15, 90, 5] };
+  var REF = {
+    n: [['deep', '#000000'], ['bg', '#14110e'], ['panel', '#1d1914'], ['lift', '#26211b'], ['line', '#3a3228'], ['muted', '#a89c88'], ['soft', '#cfc4b2'], ['text', '#f3ece0'], ['peak', '#ffffff']],
+    a: [['deep', '#3b2c1e'], ['bronze', '#9c6b3c'], ['accent', '#c8a24a'], ['hi', '#dcbd6e'], ['pale', '#f5e6c4']],
+    g: [['deep', '#3a4022'], ['fill', '#7f8a52'], ['text', '#a0ac6e'], ['pale', '#d4dcb0']],
+    r: [['deep', '#4a2418'], ['fill', '#c96a4a'], ['text', '#e08a6b'], ['pale', '#f2c4b4']]
+  };
+  // the feel of a theme besides colour: corner radius and the heading / number fonts (agora.css, gate.css and the dashboard read them)
+  var FEEL = { radius: '--oly-th-radius', radiusS: '--oly-th-radius-s', radiusL: '--oly-th-radius-l', display: '--oly-th-display', num: '--oly-th-num' };
+  var SANS = "-apple-system, 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif";
+  /** a theme from its ramp: the --oly-* tokens follow from it (page = n.bg, panels = n.panel / lift, text = n.text, dim = n.soft ...) */
+  function mk(o) {
+    var R = o.ramp, n = R.n, a = R.a, rgbs = function (c, al) { var x = rgbOf(c); return 'rgba(' + x[0] + ', ' + x[1] + ', ' + x[2] + ', ' + al + ')'; };
+    var tk = { bg: n.bg, bg2: n.panel, glass: rgbs(n.panel, o.light ? '.92' : '.9'), glass2: rgbs(n.lift, '.97'), line: n.line, edge: rgbs(a.accent, '.42'),
+      text: n.text, dim: n.soft, accent: a.accent, accent2: a.hi, glow: a.hi, ok: R.g.text, bad: R.r.text, warn: R.warn,
+      shadow: o.light ? '0 6px 18px rgba(60, 45, 20, .12)' : '0 6px 18px rgba(0, 0, 0, .4)', scheme: o.scheme, themeColor: n.bg };
+    for (var k in o.scene) tk[k] = o.scene[k];
+    var t = { id: o.id, name: o.name, greek: o.greek || '', tag: o.tag, scheme: o.scheme, tokens: tk, ramp: R, feel: o.feel || null, jarvis: o.jarvis, plain: true, group: o.group || null };
+    if (o.stage) {
+      var S = o.stage, sn = S.n, sa = S.a;
+      t.stageRamp = S;
+      t.stage = { bg: sn.bg, bg2: sn.panel, glass: rgbs(sn.panel, '.9'), glass2: rgbs(sn.lift, '.97'), line: sn.line, edge: rgbs(sa.accent, '.42'), text: sn.text,
+        dim: sn.soft, accent: sa.accent, accent2: sa.hi, glow: sa.hi, ok: S.g.text, bad: S.r.text, warn: S.warn, shadow: '0 6px 18px rgba(0, 0, 0, .4)', scheme: 'dark', themeColor: sn.bg };
+    }
+    return t;
+  }
+
+  /* STYLE (2026-11-14, owner via the lead: "more themes ... I know you're better than this"): beyond colour a theme can carry its page
+   * background (a gradient or a pattern), its cards (background, border, shadow, backdrop blur), its titles (font, weight, case, tracking,
+   * italic), its body and number fonts and its primary button. Painted as --oly-th-<name> with <html data-oly-style="<id>">; the style
+   * layers (the end of agora.css, gate.css, zenith_agora.css, jarvis.css) read them only under that attribute, so the default and the
+   * colour-only themes are untouched. Fonts are system fonts only (no download): SF Pro / New York / SF Mono / Avenir Next / Didot on iPhone. */
+  var STYLE = { page: 'page-bg', card: 'card-bg', border: 'card-border', shadow: 'card-shadow', blur: 'card-blur', weight: 'title-weight', tcase: 'title-case',
+    track: 'title-track', italic: 'title-style', body: 'body', btn: 'btn-bg', btnFg: 'btn-fg', btnBorder: 'btn-border' };
+  var MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace", SERIF = "'New York', ui-serif, 'Iowan Old Style', Georgia, serif",
+    AVENIR = "'Avenir Next', Avenir, -apple-system, system-ui, sans-serif", HELV = "'Helvetica Neue', Helvetica, Arial, -apple-system, system-ui, sans-serif",
+    MINCHO = "'Hiragino Mincho ProN', 'Yu Mincho', 'New York', ui-serif, Georgia, serif", DIDOT = "Didot, 'Bodoni 72', 'Bodoni MT', ui-serif, Georgia, serif",
+    BODY = "-apple-system, 'SF Pro Text', system-ui, 'Helvetica Neue', Arial, sans-serif";
+  function hex3(c) { return rgbOf(c).join(','); }
+  /** a ramp from a compact colour spec { bg, card, line, text, soft, muted, accent, up, down, warn } (light = a light page) */
+  function rampFrom(c, L) {
+    var panel = solid(c.card, c.bg), acc = c.accent;
+    // a light page: raised panels are whiter, and the ramp's line (AGORA's line is also a surface step) is a soft rule even when the cards' border is black
+    return { n: { deep: L ? c.bg : mix(c.bg, '#000000', 0.45), bg: c.bg, panel: panel, lift: L ? mix(panel, '#ffffff', 0.5) : mix(panel, c.text, 0.045),
+      line: L ? (c.rule || mix(panel, c.text, 0.14)) : solid(c.line, c.bg), muted: c.muted,
+      soft: c.soft, text: c.text, peak: L ? '#000000' : '#ffffff' },
+      a: { deep: mix(acc, c.bg, 0.8), bronze: mix(acc, c.bg, 0.42), accent: acc, hi: L ? mix(acc, '#000000', 0.12) : mix(acc, '#ffffff', 0.18), pale: mix(acc, c.text, 0.55) },
+      g: { deep: mix(c.up, c.bg, 0.78), fill: c.up, text: c.up, pale: mix(c.up, c.text, 0.5) },
+      r: { deep: mix(c.down, c.bg, 0.78), fill: c.down, text: c.down, pale: mix(c.down, c.text, 0.5) }, warn: c.warn || acc };
+  }
+  /** a style theme: o = { id, name, tag, scheme, c: colours, s: style, stage: dark colours for the pages that stay dark (light themes only) } */
+  function look(o) {
+    var c = o.c, L = o.scheme === 'light', s = o.s, R = rampFrom(c, L), n = R.n, acc = c.accent;
+    var dark2 = L ? mix(acc, '#000000', 0.25) : mix(acc, c.bg, 0.35), c3 = L ? mix(acc, '#000000', 0.2) : R.a.hi;
+    var t = mk({ id: o.id, name: o.name, tag: o.tag, scheme: o.scheme, group: o.group, light: L, ramp: R, stage: o.stage ? rampFrom(o.stage, false) : null,
+      feel: { radius: s.radius, radiusS: s.radiusS || s.radius, radiusL: s.radiusL || s.radius, display: s.title, num: s.num || null },
+      scene: { fog: L ? mix(acc, '#141414', 0.85) : mix(c.bg, '#000000', 0.2), sky: L ? mix(acc, '#1c1c1c', 0.78) : mix(c.bg, acc, 0.14),
+        emissive: L ? mix(acc, '#ffffff', 0.25) : acc, bloom: mix(acc, '#ffffff', 0.6), mix: 0.55, harmony: 0.3 },
+      jarvis: { bg: c.bg, bg2: n.panel, pr: hex3(n.panel), txt: c.text, mut: c.muted, dim: n.lift, dim2: n.line, dim3: mix(n.line, acc, 0.4),
+        c: acc, c2: dark2, c3: c3, cr: hex3(acc), cr2: hex3(dark2), cr3: hex3(L ? mix(acc, '#000000', 0.3) : R.a.pale), tint: mix(c.text, acc, 0.1),
+        neb1: hex3(mix(acc, c.bg, 0.6)), neb2: hex3(mix(acc, c.bg, 0.75)), neb3: hex3(mix(c.up, c.bg, 0.7)), grid: '.03', scan: '0' } });
+    t.style = { page: s.page || ('linear-gradient(' + c.bg + ', ' + c.bg + ')'), card: s.card || c.card, border: s.border || ('1px solid ' + c.line), shadow: s.shadow || 'none', blur: s.blur || 'none',
+      weight: s.weight || '600', tcase: s.tcase || 'none', track: s.track || 'normal', italic: s.italic || 'normal', body: s.body || BODY,
+      btn: s.btn || acc, btnFg: s.btnFg || c.bg, btnBorder: s.btnBorder || '1px solid transparent' };
+    t.kind = 'style';
+    t.group = o.group || (L ? 'light' : 'dark');
+    return t;
+  }
+
   /* ------------------------------------------------------------------ the themes (data only) */
   var THEMES = [
     { id: 'agora', name: 'Agora', greek: 'ΑΓΟΡΑ', tag: 'Marble · bronze · gold · default', scheme: 'dark',
@@ -39,6 +117,172 @@
         ok: '#7f8a52', bad: '#c96a4a', warn: '#e0b060', shadow: '0 6px 18px rgba(0, 0, 0, .35)', scheme: 'dark', themeColor: '#14110e',
         fog: '#2a2118', sky: '#3a2a1c', emissive: '#e0b060', bloom: '#f0d9a0', mix: 0, harmony: 0 },
       jarvis: null },
+    /* the five plain looks (2026-11-14, owner: "a different theme but keep everything the same, stuff-wise ... multiple theme options. Make it good").
+       Only colour, surface, heading / number type and corner radius change; every word and number stays. Every text colour is >= 4.5:1 on the
+       page, the panels and the raised panels (WCAG AA, tests/test_olympus_themes.py); gains are green and losses red in every one. No glow. */
+    mk({ id: 'ivory', group: 'light', name: 'Ivory', tag: 'Warm paper white · ink · gold · for daylight', scheme: 'light', light: true,
+      ramp: { n: { deep: '#f7f4ee', bg: '#f7f4ee', panel: '#fffdf9', lift: '#ffffff', line: '#d9d0c1', muted: '#6b6152', soft: '#4a4237', text: '#1c1813', peak: '#0f0c08' },
+        a: { deep: '#efe4cc', bronze: '#c9a96a', accent: '#7a5810', hi: '#6e500f', pale: '#5c420b' },
+        g: { deep: '#dde8d3', fill: '#3f7a3a', text: '#2e6b2c', pale: '#1f4d1e' }, r: { deep: '#f4d9d3', fill: '#c0392b', text: '#b0301f', pale: '#7d2216' }, warn: '#7a4d00' },
+      // the 3D apps, Kalshi and every page not yet checked in light: a warm graphite night with the same ink-gold (light fog would wash the scenes out)
+      stage: { n: { deep: '#0d0c0a', bg: '#15130f', panel: '#1e1b16', lift: '#26231d', line: '#3a352c', muted: '#a39b8c', soft: '#d3cbbd', text: '#f7f3ea', peak: '#ffffff' },
+        a: { deep: '#3a2e18', bronze: '#8f7440', accent: '#c9a45c', hi: '#dcc088', pale: '#f3e6c8' },
+        g: { deep: '#26391f', fill: '#5fa055', text: '#7cc370', pale: '#c8e8c0' }, r: { deep: '#4a1f18', fill: '#e86a58', text: '#f07a6a', pale: '#f8c8c0' }, warn: '#e8b45a' },
+      feel: { radius: '18px', radiusS: '13px', radiusL: '24px' },
+      scene: { fog: '#2f2a22', sky: '#3d362b', emissive: '#e2c88a', bloom: '#f6ecd4', mix: 0.5, harmony: 0.25 },
+      jarvis: { bg: '#f7f4ee', bg2: '#ffffff', pr: '255,253,249', txt: '#1c1813', mut: '#5f5648', dim: '#e6dfd2', dim2: '#cfc4b0', dim3: '#a8916a',
+        c: '#8a6514', c2: '#6e500f', c3: '#6e500f', cr: '138,101,20', cr2: '110,80,15', cr3: '92,66,11', tint: '#fffdf8',
+        neb1: '201,169,106', neb2: '230,214,180', neb3: '180,196,210', grid: '.04', scan: '0' } }),
+    mk({ id: 'midnight', group: 'dark', name: 'Midnight', tag: 'Deep navy glass · soft blue · iPhone calm', scheme: 'dark',
+      ramp: { n: { deep: '#05080f', bg: '#0b1220', panel: '#111a2c', lift: '#172237', line: '#283650', muted: '#94a0b8', soft: '#c5cddb', text: '#f2f5fa', peak: '#ffffff' },
+        a: { deep: '#0f2a4d', bronze: '#2f6fc4', accent: '#4c9dff', hi: '#7ab6ff', pale: '#cfe3ff' },
+        g: { deep: '#123a26', fill: '#30c26a', text: '#4ade80', pale: '#c2f5d6' }, r: { deep: '#4a1820', fill: '#f25c66', text: '#ff7a82', pale: '#ffd0d3' }, warn: '#ffc857' },
+      feel: { radius: '20px', radiusS: '14px', radiusL: '26px', display: SANS, num: SANS },
+      scene: { fog: '#0a1424', sky: '#0f1d36', emissive: '#6aa8ff', bloom: '#d6e6ff', mix: 0.55, harmony: 0.3 },
+      jarvis: { bg: '#0b1220', bg2: '#111a2c', pr: '17,26,44', txt: '#f2f5fa', mut: '#94a0b8', dim: '#172237', dim2: '#283650', dim3: '#3b5378',
+        c: '#4c9dff', c2: '#2f6fc4', c3: '#7ab6ff', cr: '76,157,255', cr2: '47,111,196', cr3: '207,227,255', tint: '#e6f0ff',
+        neb1: '47,111,196', neb2: '90,140,220', neb3: '120,170,230', grid: '.04', scan: '0' } }),
+    mk({ id: 'terminal', group: 'dark', name: 'Terminal', tag: 'Black · one green · square and exact', scheme: 'dark',
+      ramp: { n: { deep: '#000000', bg: '#060707', panel: '#0d0f0e', lift: '#131614', line: '#242a27', muted: '#8a948e', soft: '#b9c2bc', text: '#e9eeea', peak: '#ffffff' },
+        a: { deep: '#0f2e1d', bronze: '#1f8a4f', accent: '#2ecc71', hi: '#5ee69a', pale: '#c6f6d9' },
+        g: { deep: '#0f2e1d', fill: '#2ecc71', text: '#3ddc84', pale: '#c6f6d9' }, r: { deep: '#3d1414', fill: '#ff5a52', text: '#ff6b63', pale: '#ffd2cf' }, warn: '#e6c15c' },
+      feel: { radius: '8px', radiusS: '6px', radiusL: '10px', display: SANS, num: SANS },
+      scene: { fog: '#050806', sky: '#08100b', emissive: '#3ddc84', bloom: '#c6f6d9', mix: 0.6, harmony: 0.3 },
+      jarvis: { bg: '#060707', bg2: '#0d0f0e', pr: '13,15,14', txt: '#e9eeea', mut: '#8a948e', dim: '#131614', dim2: '#242a27', dim3: '#2f5a40',
+        c: '#2ecc71', c2: '#1f8a4f', c3: '#5ee69a', cr: '46,204,113', cr2: '31,138,79', cr3: '198,246,217', tint: '#e6fff0',
+        neb1: '20,60,40', neb2: '31,138,79', neb3: '40,80,60', grid: '.03', scan: '0' } }),
+    mk({ id: 'carbon', group: 'dark', name: 'Carbon', tag: 'Graphite greys · one orange', scheme: 'dark',
+      ramp: { n: { deep: '#08090a', bg: '#121314', panel: '#191a1c', lift: '#202224', line: '#33363a', muted: '#9a9fa6', soft: '#c9ccd1', text: '#f4f5f6', peak: '#ffffff' },
+        a: { deep: '#3d2508', bronze: '#b86e12', accent: '#ff9f0a', hi: '#ffb84d', pale: '#ffe2b8' },
+        g: { deep: '#133a1d', fill: '#30d158', text: '#4cd964', pale: '#c6f5d0' }, r: { deep: '#4a1512', fill: '#ff453a', text: '#ff6961', pale: '#ffd0cc' }, warn: '#ffd60a' },
+      feel: { radius: '12px', radiusS: '9px', radiusL: '16px', display: "'Helvetica Neue', -apple-system, 'SF Pro Display', system-ui, Arial, sans-serif", num: SANS },
+      scene: { fog: '#121314', sky: '#1b1c1e', emissive: '#ffb84d', bloom: '#ffe2b8', mix: 0.6, harmony: 0.25 },
+      jarvis: { bg: '#121314', bg2: '#191a1c', pr: '25,26,28', txt: '#f4f5f6', mut: '#9a9fa6', dim: '#202224', dim2: '#33363a', dim3: '#55595f',
+        c: '#ff9f0a', c2: '#b86e12', c3: '#ffb84d', cr: '255,159,10', cr2: '184,110,18', cr3: '255,226,184', tint: '#fff3e0',
+        neb1: '60,62,66', neb2: '90,92,96', neb3: '184,110,18', grid: '.03', scan: '0' } }),
+    mk({ id: 'royal', group: 'luxury', name: 'Royal', tag: 'Navy · gold · classic', scheme: 'dark',
+      ramp: { n: { deep: '#060b18', bg: '#0c1428', panel: '#121c35', lift: '#182442', line: '#2b3a5f', muted: '#9ba6c0', soft: '#cdd3e2', text: '#f6f2e7', peak: '#ffffff' },
+        a: { deep: '#3a2e0e', bronze: '#9c7a26', accent: '#d4af37', hi: '#e8c860', pale: '#f6e6b0' },
+        g: { deep: '#123a2a', fill: '#3fbf86', text: '#5fd39a', pale: '#c8f2dc' }, r: { deep: '#4a1a22', fill: '#f2606a', text: '#ff8086', pale: '#ffd3d6' }, warn: '#f2c14e' },
+      feel: { radius: '14px', radiusS: '10px', radiusL: '20px', display: "Didot, 'Bodoni 72', 'Iowan Old Style', Georgia, serif" },
+      scene: { fog: '#0b1530', sky: '#13204a', emissive: '#e8c860', bloom: '#f6e6b0', mix: 0.55, harmony: 0.3 },
+      jarvis: { bg: '#0c1428', bg2: '#121c35', pr: '18,28,53', txt: '#f6f2e7', mut: '#9ba6c0', dim: '#182442', dim2: '#2b3a5f', dim3: '#4a5a85',
+        c: '#d4af37', c2: '#9c7a26', c3: '#e8c860', cr: '212,175,55', cr2: '156,122,38', cr3: '246,230,176', tint: '#fff6dc',
+        neb1: '40,60,120', neb2: '156,122,38', neb3: '60,90,160', grid: '.04', scan: '0' } }),
+    /* the twelve style looks (2026-11-14, the lead's specs; contrast fixed where it failed AA: Amber's muted, Stocks Light's blue / green,
+       Neo Brutal's pink text on yellow (pink stays the button), Carbon Red's red text, Sunset's lower sky darkened) */
+    look({ id: 'aurora', group: 'dark', name: 'Glass Aurora', tag: 'Frosted glass · violet and teal light', scheme: 'dark',
+      c: { bg: '#0d1020', card: 'rgba(255, 255, 255, .07)', line: 'rgba(255, 255, 255, .16)', text: '#f5f6ff', soft: '#dcdff2', muted: '#c3c7e2', accent: '#9ad8ff', up: '#3ccf7a', down: '#ff7b72' },
+      s: { page: 'radial-gradient(120% 60% at 10% 0%, #33256a 0%, transparent 60%), radial-gradient(100% 60% at 100% 30%, #0b4f55 0%, transparent 55%), linear-gradient(180deg, #0b0b1a, #0d1020)',
+        border: '1px solid rgba(255, 255, 255, .16)', radius: '24px', radiusS: '18px', radiusL: '28px', shadow: '0 10px 30px rgba(0, 0, 0, .35)', blur: 'blur(18px) saturate(140%)',
+        title: SANS, weight: '700', btn: 'linear-gradient(90deg, #7c6cff, #3fd1d1)', btnFg: '#0b0b1a' } }),
+    look({ id: 'amber', group: 'bold', name: 'Amber', tag: 'Amber on black · a trading screen · all caps', scheme: 'dark',
+      c: { bg: '#000000', card: '#0a0a0a', line: '#2a2000', text: '#ffb000', soft: '#e0a100', muted: '#b88600', accent: '#ffb000', up: '#3ccf7a', down: '#ff5a4f', warn: '#ffd166' },
+      s: { border: '1px solid #3a2a00', radius: '2px', title: MONO, num: MONO, body: MONO, weight: '700', tcase: 'uppercase', track: '.06em', btn: '#ffb000', btnFg: '#000000' } }),
+    look({ id: 'lime', group: 'bold', name: 'Lime', tag: 'Black · one electric lime · bold', scheme: 'dark',
+      c: { bg: '#000000', card: '#101010', line: '#222222', text: '#ffffff', soft: '#c9c9c9', muted: '#8e8e8e', accent: '#c3f53c', up: '#3ccf7a', down: '#ff5a4f' },
+      s: { border: '1px solid #1f1f1f', radius: '20px', radiusS: '14px', radiusL: '24px', title: SANS, num: SANS, weight: '800', track: '-.02em', btn: '#c3f53c', btnFg: '#000000' } }),
+    look({ id: 'stocks', group: 'light', name: 'Stocks Light', tag: 'White · iPhone Stocks blue · light', scheme: 'light',
+      c: { bg: '#ffffff', card: '#f2f2f7', line: '#e5e5ea', text: '#000000', soft: '#3c3c43', muted: '#5f5f63', accent: '#0059c2', up: '#0f6e35', down: '#b51c1c', warn: '#7d5100' },
+      s: { border: '1px solid #e5e5ea', radius: '14px', radiusS: '10px', radiusL: '18px', title: SANS, num: SANS, weight: '700', track: '-.01em', btn: '#0062d1', btnFg: '#ffffff' },
+      stage: { bg: '#0b0d12', card: '#15181f', line: '#2a2f3a', text: '#f5f7fa', soft: '#c8ced8', muted: '#97a0ae', accent: '#4c9dff', up: '#4ade80', down: '#ff6b6b' } }),
+    look({ id: 'editorial', group: 'light', name: 'Editorial', tag: 'Newspaper cream · black rules · serif', scheme: 'light',
+      c: { bg: '#f3eee3', card: '#f3eee3', line: '#1b1b1b', text: '#111111', soft: '#333333', muted: '#555555', accent: '#b3261e', up: '#1e6b34', down: '#b3261e', warn: '#7a4a00' },
+      s: { border: '1px solid #1b1b1b', radius: '0px', title: SERIF, num: SERIF, body: SERIF, weight: '700', btn: '#111111', btnFg: '#f3eee3' },
+      stage: { bg: '#141210', card: '#1d1a17', line: '#3a3530', text: '#f3eee3', soft: '#d6cfc2', muted: '#a59d90', accent: '#ff7b6e', up: '#6fcf8a', down: '#ff7b6e' } }),
+    look({ id: 'brutal', group: 'bold', name: 'Neo Brutal', tag: 'Yellow · white cards · thick black lines', scheme: 'light',
+      c: { bg: '#ffe14d', card: '#ffffff', line: '#000000', text: '#000000', soft: '#222222', muted: '#444444', accent: '#b0124e', up: '#006633', down: '#b0001a', warn: '#6a4a00' },
+      s: { border: '2px solid #000000', radius: '8px', shadow: '4px 4px 0 #000000', title: SANS, num: SANS, weight: '900', btn: '#ff3d7f', btnFg: '#000000', btnBorder: '2px solid #000000' },
+      stage: { bg: '#0d0d0d', card: '#181818', line: '#333333', text: '#ffffff', soft: '#d4d4d4', muted: '#a0a0a0', accent: '#ffe14d', up: '#4ade80', down: '#ff6b81' } }),
+    look({ id: 'noir', group: 'luxury', name: 'Noir Gold', tag: 'Black · fine gold lines · spaced capitals', scheme: 'dark',
+      c: { bg: '#000000', card: '#050505', line: 'rgba(216, 192, 138, .25)', text: '#f2ead8', soft: '#cfc3a6', muted: '#9c917a', accent: '#d8c08a', up: '#7fd19a', down: '#ff7a6b' },
+      s: { border: '1px solid rgba(216, 192, 138, .45)', radius: '0px', title: DIDOT, weight: '400', tcase: 'uppercase', track: '.18em', btn: 'transparent', btnFg: '#d8c08a',
+        btnBorder: '1px solid #d8c08a' } }),
+    look({ id: 'sunset', group: 'bold', name: 'Sunset', tag: 'Plum to ember sky · warm glass', scheme: 'dark',
+      c: { bg: '#2a0f3d', card: 'rgba(20, 8, 24, .45)', line: 'rgba(255, 200, 170, .25)', text: '#fff4ec', soft: '#f5d3c2', muted: '#e0b5a2', accent: '#ffb38a', up: '#6fe0a0', down: '#ff8a80' },
+      s: { page: 'linear-gradient(170deg, #2a0f3d 0%, #5a1a48 50%, #7a2e22 100%)', border: '1px solid rgba(255, 200, 170, .25)', radius: '22px', radiusS: '16px', radiusL: '26px',
+        shadow: '0 10px 28px rgba(0, 0, 0, .3)', blur: 'blur(16px) saturate(130%)', title: AVENIR, weight: '700', btn: 'linear-gradient(90deg, #ff7a59, #ffb36b)', btnFg: '#2a0f12' } }),
+    look({ id: 'ocean', group: 'dark', name: 'Ocean', tag: 'Deep sea teal · calm', scheme: 'dark',
+      c: { bg: '#03141c', card: 'rgba(4, 32, 40, .72)', line: 'rgba(80, 220, 220, .22)', text: '#e9fbff', soft: '#b9e3ea', muted: '#86b9c2', accent: '#4fe0d6', up: '#5ee6a0', down: '#ff7f7f' },
+      s: { page: 'linear-gradient(180deg, #03141c 0%, #06303b 60%, #0a4a52 100%)', border: '1px solid rgba(80, 220, 220, .22)', radius: '18px', radiusS: '13px', radiusL: '22px',
+        shadow: '0 8px 24px rgba(0, 0, 0, .35)', title: AVENIR, weight: '700', btn: '#4fe0d6', btnFg: '#03141c' } }),
+    look({ id: 'carbonred', group: 'bold', name: 'Carbon Red', tag: 'Carbon weave · racing red · italic', scheme: 'dark',
+      c: { bg: '#121212', card: '#161616', line: '#2a2a2a', text: '#ffffff', soft: '#cfcfcf', muted: '#9a9a9a', accent: '#ff5247', up: '#3ccf7a', down: '#ff7066', warn: '#ffcc33' },
+      s: { page: 'repeating-linear-gradient(45deg, #121212 0 6px, #171717 6px 12px)', border: '1px solid #2a2a2a', radius: '4px', shadow: '0 6px 18px rgba(0, 0, 0, .5)',
+        title: SANS, weight: '900', italic: 'italic', track: '-.02em', btn: '#e10600', btnFg: '#ffffff' } }),
+    look({ id: 'forest', group: 'luxury', name: 'Forest', tag: 'Deep green · brass · serif', scheme: 'dark',
+      c: { bg: '#0c1712', card: '#15261d', line: '#2a4234', text: '#eef5ee', soft: '#c6d6c8', muted: '#94aa98', accent: '#d9b45a', up: '#5fd38a', down: '#ff7a6b' },
+      s: { page: 'linear-gradient(180deg, #0c1712, #122219)', border: '1px solid #2a4234', radius: '18px', radiusS: '13px', radiusL: '22px', shadow: '0 6px 18px rgba(0, 0, 0, .35)',
+        title: SERIF, weight: '700', btn: '#d9b45a', btnFg: '#132017' } }),
+    look({ id: 'rosegold', group: 'luxury', name: 'Rose Gold', tag: 'Plum night · rose gold · serif', scheme: 'dark',
+      c: { bg: '#1c1116', card: '#2a1820', line: '#3a2630', text: '#fbefea', soft: '#e9cfc6', muted: '#bf9f95', accent: '#e8b4a0', up: '#6fd39a', down: '#ff8a80' },
+      s: { page: 'linear-gradient(180deg, #1c1116, #26161d)', border: '1px solid rgba(232, 180, 160, .35)', radius: '20px', radiusS: '14px', radiusL: '24px',
+        shadow: '0 8px 22px rgba(0, 0, 0, .35)', title: SERIF, weight: '600', btn: 'linear-gradient(90deg, #e8b4a0, #f5d0bd)', btnFg: '#2a1418' } }),
+    /* fourteen more (2026-11-14, owner via the lead: "I want more like that ... tons more"): the same calibre, each its own background, cards,
+       borders, radius, shadow or blur, title type, number font and button; AA everywhere (tests/test_olympus_themes.py) */
+    look({ id: 'swiss', name: 'Swiss', tag: 'White · red · strict grid · Helvetica', scheme: 'light', group: 'light',
+      c: { bg: '#ffffff', card: '#ffffff', line: '#111111', rule: '#d6d6d6', text: '#111111', soft: '#2e2e2e', muted: '#575757', accent: '#c8001b', up: '#0a7339', down: '#b30018', warn: '#7a4f00' },
+      s: { page: 'repeating-linear-gradient(90deg, rgba(0, 0, 0, .045) 0 1px, transparent 1px 24px), repeating-linear-gradient(0deg, rgba(0, 0, 0, .045) 0 1px, transparent 1px 24px), linear-gradient(#ffffff, #ffffff)',
+        border: '2px solid #111111', radius: '0px', title: HELV, num: HELV, body: HELV, weight: '700', track: '-.02em', btn: '#c8001b', btnFg: '#ffffff' },
+      stage: { bg: '#0b0b0b', card: '#151515', line: '#2e2e2e', text: '#ffffff', soft: '#d2d2d2', muted: '#a2a2a2', accent: '#ff4d5e', up: '#4ade80', down: '#ff6b6b', warn: '#ffcc4d' } }),
+    look({ id: 'paperdark', name: 'Paper Dark', tag: 'Warm charcoal paper · serif · calm', scheme: 'dark', group: 'dark',
+      c: { bg: '#1e1b18', card: '#26221e', line: '#3a342d', text: '#efe8dc', soft: '#d2c9b9', muted: '#aaa190', accent: '#e3ad72', up: '#8fd18a', down: '#ff8f7a' },
+      s: { page: 'radial-gradient(120% 80% at 50% 0%, #2a2520 0%, #1e1b18 60%), linear-gradient(#1e1b18, #1e1b18)', radius: '10px', radiusS: '8px', radiusL: '14px',
+        shadow: '0 1px 0 rgba(255, 240, 220, .04) inset, 0 6px 16px rgba(0, 0, 0, .3)', title: SERIF, num: SERIF, weight: '600', btn: '#e3ad72', btnFg: '#1e1b18' } }),
+    look({ id: 'solarized', name: 'Solarized', tag: 'Deep teal · warm yellow · code', scheme: 'dark', group: 'dark',
+      c: { bg: '#002b36', card: '#073642', line: '#164c58', text: '#fdf6e3', soft: '#eee8d5', muted: '#a7b4b4', accent: '#e0ae24', up: '#a9c22a', down: '#ff9a8f' },
+      s: { radius: '8px', radiusS: '6px', radiusL: '10px', title: SANS, num: MONO, weight: '700', btn: '#e0ae24', btnFg: '#002b36' } }),
+    look({ id: 'nord', name: 'Nord', tag: 'Arctic blue-grey · frost', scheme: 'dark', group: 'dark',
+      c: { bg: '#2e3440', card: '#3b4252', line: '#434c5e', text: '#eceff4', soft: '#dde3ec', muted: '#c3cad7', accent: '#a3d3e0', up: '#bcd8a6', down: '#f7b7bd' },
+      s: { page: 'linear-gradient(180deg, #2e3440, #272c36)', radius: '12px', radiusS: '9px', radiusL: '16px', shadow: '0 4px 14px rgba(0, 0, 0, .25)', title: SANS, num: SANS, weight: '600',
+        btn: '#88c0d0', btnFg: '#242933' } }),
+    look({ id: 'cyber', name: 'Cyber Minimal', tag: 'Black · thin cyan lines · no glow', scheme: 'dark', group: 'bold',
+      c: { bg: '#05070a', card: '#0a0e13', line: 'rgba(43, 212, 232, .28)', text: '#e6f7fb', soft: '#b9d6de', muted: '#8aa9b2', accent: '#2bd4e8', up: '#3ee08f', down: '#ff6d80' },
+      s: { page: 'linear-gradient(180deg, #05070a, #070b10)', border: '1px solid rgba(43, 212, 232, .45)', radius: '2px', title: MONO, num: MONO, weight: '500', tcase: 'uppercase',
+        track: '.12em', btn: 'transparent', btnFg: '#2bd4e8', btnBorder: '1px solid #2bd4e8' } }),
+    look({ id: 'deco', name: 'Art Deco', tag: 'Black · gold fans and double lines', scheme: 'dark', group: 'luxury',
+      c: { bg: '#0b0b0b', card: '#111111', line: 'rgba(212, 175, 55, .35)', text: '#f5ecd6', soft: '#dccfae', muted: '#b7a989', accent: '#d4af37', up: '#7fd19a', down: '#ff8778' },
+      s: { page: 'repeating-linear-gradient(135deg, rgba(212, 175, 55, .07) 0 1px, transparent 1px 18px), repeating-linear-gradient(45deg, rgba(212, 175, 55, .07) 0 1px, transparent 1px 18px), linear-gradient(#0b0b0b, #0b0b0b)',
+        border: '1px solid rgba(212, 175, 55, .6)', shadow: 'inset 0 0 0 3px #111111, inset 0 0 0 4px rgba(212, 175, 55, .35)', radius: '0px', title: DIDOT, weight: '500', tcase: 'uppercase',
+        track: '.14em', btn: 'linear-gradient(90deg, #b8912a, #f0d27a, #b8912a)', btnFg: '#111111' } }),
+    look({ id: 'zen', name: 'Zen', tag: 'Washi paper · sumi ink · a red seal', scheme: 'light', group: 'light',
+      c: { bg: '#f4efe6', card: '#fbf8f2', line: '#e2d9c8', text: '#1d1b19', soft: '#3e3a35', muted: '#5c564e', accent: '#a8232a', up: '#2b6436', down: '#9c1f1d', warn: '#7a4f00' },
+      s: { page: 'radial-gradient(140% 90% at 80% 0%, #faf6ee 0%, #f4efe6 55%, #efe8db 100%)', border: '1px solid #e2d9c8', shadow: '0 1px 0 #e2d9c8', radius: '4px',
+        title: MINCHO, num: SERIF, weight: '600', track: '.04em', btn: '#1d1b19', btnFg: '#f4efe6' },
+      stage: { bg: '#141311', card: '#1d1b19', line: '#34312c', text: '#f4efe6', soft: '#d6cfc3', muted: '#a59e92', accent: '#ff6b62', up: '#6fcf8a', down: '#ff7b70' } }),
+    look({ id: 'desert', name: 'Desert', tag: 'Sand · terracotta · sun-baked', scheme: 'light', group: 'light',
+      c: { bg: '#efe2cc', card: '#f7eedf', line: '#dcc7a6', text: '#2b1d12', soft: '#4a3828', muted: '#65503d', accent: '#9a3f1c', up: '#2a632b', down: '#9c2418', warn: '#6e4800' },
+      s: { page: 'linear-gradient(180deg, #f3e7d3, #e8d6b8)', border: '1px solid #dcc7a6', shadow: '0 6px 16px rgba(120, 80, 40, .12)', radius: '16px', radiusS: '12px', radiusL: '20px',
+        title: AVENIR, num: AVENIR, weight: '700', btn: '#a8481f', btnFg: '#fff7ec' },
+      stage: { bg: '#1c140e', card: '#261b13', line: '#3f2f22', text: '#f6ead8', soft: '#dccab2', muted: '#ad9a80', accent: '#f08a5d', up: '#7fd18a', down: '#ff8a70' } }),
+    look({ id: 'monoblack', name: 'Mono Black', tag: 'Pure black and white · gains stay green', scheme: 'dark', group: 'bold',
+      c: { bg: '#000000', card: '#000000', line: '#3a3a3a', text: '#ffffff', soft: '#d6d6d6', muted: '#a6a6a6', accent: '#ffffff', up: '#4ade80', down: '#ff6b6b', warn: '#ffffff' },
+      s: { border: '1px solid #ffffff', radius: '0px', title: SANS, num: SANS, weight: '800', tcase: 'uppercase', track: '.04em', btn: '#ffffff', btnFg: '#000000' } }),
+    look({ id: 'monowhite', name: 'Mono White', tag: 'Pure white and black · gains stay green', scheme: 'light', group: 'light',
+      c: { bg: '#ffffff', card: '#ffffff', line: '#000000', rule: '#cfcfcf', text: '#000000', soft: '#222222', muted: '#4a4a4a', accent: '#000000', up: '#08662f', down: '#b30018', warn: '#000000' },
+      s: { border: '1px solid #000000', radius: '0px', title: SANS, num: SANS, weight: '800', tcase: 'uppercase', track: '.04em', btn: '#000000', btnFg: '#ffffff' },
+      stage: { bg: '#000000', card: '#0d0d0d', line: '#333333', text: '#ffffff', soft: '#d6d6d6', muted: '#a6a6a6', accent: '#ffffff', up: '#4ade80', down: '#ff6b6b' } }),
+    look({ id: 'vapor', name: 'Vapor Soft', tag: 'Pastel pink to sky · soft glass · readable', scheme: 'light', group: 'bold',
+      c: { bg: '#efe0f5', card: 'rgba(255, 255, 255, .78)', line: '#d6c6ea', text: '#241a36', soft: '#40345a', muted: '#564b70', accent: '#6c25a6', up: '#0c6b40', down: '#a3104f', warn: '#6e4a00' },
+      s: { page: 'linear-gradient(160deg, #ffd6e8 0%, #e3d7ff 50%, #c9f1ff 100%)', border: '1px solid rgba(255, 255, 255, .9)', shadow: '0 8px 24px rgba(90, 60, 140, .15)', blur: 'blur(14px)',
+        radius: '22px', radiusS: '16px', radiusL: '26px', title: AVENIR, num: AVENIR, weight: '800', track: '.02em', btn: 'linear-gradient(90deg, #ff9ad2, #a99cff)', btnFg: '#1d1530' },
+      stage: { bg: '#17122a', card: '#211a3a', line: '#3a3058', text: '#f6f0ff', soft: '#d9cff0', muted: '#ab9fcc', accent: '#ff9ad2', up: '#5ee6a0', down: '#ff8aa8' } }),
+    look({ id: 'bullion', name: 'Gold Bullion', tag: 'Dark vault · metallic gold bars', scheme: 'dark', group: 'luxury',
+      c: { bg: '#0e0c08', card: '#18140d', line: '#3d3220', text: '#fbf3dc', soft: '#e6d6ad', muted: '#b6a47a', accent: '#e6c35c', up: '#8fd18a', down: '#ff8a70' },
+      s: { page: 'radial-gradient(120% 70% at 50% -10%, #2a2212 0%, #0e0c08 60%), linear-gradient(#0e0c08, #0e0c08)', card: 'linear-gradient(160deg, #221c12 0%, #14110b 100%)',
+        border: '1px solid #8a6d2c', shadow: '0 1px 0 rgba(255, 230, 160, .12) inset, 0 10px 26px rgba(0, 0, 0, .5)', radius: '10px', title: DIDOT, weight: '600', tcase: 'uppercase',
+        track: '.08em', btn: 'linear-gradient(180deg, #f7e08a 0%, #d4a93c 45%, #a8801f 100%)', btnFg: '#1a1306' } }),
+    look({ id: 'wallstreet', name: 'Wall Street', tag: 'Banknote green · engraved lines', scheme: 'dark', group: 'luxury',
+      c: { bg: '#0f1d16', card: '#16281e', line: '#2b4535', text: '#eef5e9', soft: '#cfdec8', muted: '#a3b99f', accent: '#cddba6', up: '#8ff0a4', down: '#ff8c7a' },
+      s: { page: 'repeating-linear-gradient(0deg, rgba(200, 230, 190, .035) 0 1px, transparent 1px 6px), linear-gradient(180deg, #0f1d16, #0b1610)', border: '1px solid #3d5c48',
+        shadow: 'inset 0 0 0 4px #16281e, inset 0 0 0 5px #2b4535', radius: '6px', title: SERIF, weight: '700', tcase: 'uppercase', track: '.06em', btn: '#cddba6', btnFg: '#0f1d16' } }),
+    look({ id: 'marble', name: 'Marble White', tag: 'White marble veins · gold', scheme: 'light', group: 'luxury',
+      c: { bg: '#f5f3ef', card: 'rgba(255, 255, 255, .84)', line: '#dcd6cc', text: '#1e1c19', soft: '#3d3934', muted: '#5a554d', accent: '#7d621a', up: '#2a663a', down: '#9e271d', warn: '#6e4800' },
+      s: { page: 'linear-gradient(115deg, transparent 0 40%, rgba(150, 140, 128, .12) 41%, transparent 43% 100%), linear-gradient(35deg, transparent 0 62%, rgba(150, 140, 128, .10) 63%, transparent 65% 100%), radial-gradient(120% 80% at 20% 10%, #ffffff 0%, #f1eee8 60%, #e9e5de 100%)',
+        border: '1px solid #e2ddd4', shadow: '0 8px 24px rgba(80, 70, 60, .10)', radius: '14px', radiusS: '10px', radiusL: '18px', title: DIDOT, weight: '500', track: '.04em',
+        btn: 'linear-gradient(180deg, #e2c983, #b8953a)', btnFg: '#1e1608' },
+      stage: { bg: '#15130f', card: '#1e1b16', line: '#3a352c', text: '#f7f3ea', soft: '#d3cbbd', muted: '#a39b8c', accent: '#d9b866', up: '#7cc370', down: '#f07a6a' } }),
+    /* the earlier looks (2026-11-03), kept selectable in Jarvis's Look sheet and Settings; the Gate shows Agora + the 31 above, in groups */
     { id: 'olympus', name: 'Olympus Night', greek: 'ΟΛΥΜΠΟΣ', tag: 'Violet + gold · the old look', scheme: 'dark',
       tokens: { bg: '#04050c', bg2: '#0d0620', glass: 'rgba(9, 11, 22, .74)', glass2: 'rgba(14, 8, 30, .92)', line: 'rgba(255, 255, 255, .12)',
         edge: 'rgba(168, 85, 247, .38)', text: '#f3f5fb', dim: 'rgba(214, 220, 236, .66)', accent: '#a855f7', accent2: '#ffc94a', glow: '#a95cff',
@@ -140,10 +384,67 @@
     return fromHsl((a[0] + turn + 360) % 360, a[1], a[2]);
   }
   function theme(id) { return by[id] || by[DEFAULT]; }
+
+  /* ------------------------------------------------------------------ the reach ramp: slots from a theme */
+  function lOf(c) { var x = rgbOf(c); return (Math.max(x[0], x[1], x[2]) + Math.min(x[0], x[1], x[2])) / 5.1; }     // HSL lightness, 0..100
+  var REFL = {}, fam;
+  for (fam in REF) { REFL[fam] = []; for (i = 0; i < REF[fam].length; i++) REFL[fam].push(lOf(REF[fam][i][1])); }
+  function solid(c, bg) {                                    // an 'rgba(...)' token as the colour it shows over the page
+    var m = /rgba?\(([^)]*)\)/.exec(String(c));
+    if (!m) return c;
+    var p = m[1].split(','), al = p.length > 3 ? parseFloat(p[3]) : 1, b = rgbOf(bg), n = 0;
+    for (var k = 0; k < 3; k++) n = n * 256 + Math.round(parseFloat(p[k]) * al + b[k] * (1 - al));
+    return '#' + ('000000' + n.toString(16)).slice(-6);
+  }
+  // the earlier themes (no ramp of their own): one from their tokens, so they reach the same pages
+  function derive(k) {
+    var light = k.scheme === 'light', bg = k.bg, txt = k.text, line = solid(k.line, bg), dim = solid(k.dim, bg), x = k.accent, ink = light ? '#000000' : '#ffffff';
+    return { n: { deep: light ? bg : mix(bg, '#000000', 0.5), bg: bg, panel: solid(k.bg2, bg), lift: mix(solid(k.bg2, bg), txt, 0.05), line: line, muted: mix(dim, bg, 0.22),
+      soft: dim, text: txt, peak: ink }, a: { deep: mix(x, bg, 0.75), bronze: mix(x, bg, 0.35), accent: x, hi: mix(x, ink, 0.22), pale: mix(x, txt, 0.6) },
+      g: { deep: mix(k.ok, bg, 0.7), fill: k.ok, text: k.ok, pale: mix(k.ok, txt, 0.6) }, r: { deep: mix(k.bad, bg, 0.7), fill: k.bad, text: k.bad, pale: mix(k.bad, txt, 0.6) },
+      warn: k.warn };
+  }
+  function rampOf(t, w) {
+    if (t.ramp) return w === 'stage' && t.stageRamp ? t.stageRamp : t.ramp;
+    return derive(tokens(t.id, w));
+  }
+  function at(spec, f, L) {
+    var refs = REF[f], Ls = REFL[f], last = refs.length - 1;
+    if (L <= Ls[0]) return spec[refs[0][0]];
+    if (L >= Ls[last]) return spec[refs[last][0]];
+    for (var k = 0; k < last; k++) if (L < Ls[k + 1]) return mix(spec[refs[k][0]], spec[refs[k + 1][0]], (L - Ls[k]) / (Ls[k + 1] - Ls[k]));
+    return spec[refs[last][0]];
+  }
+  /** every slot of a ramp: { n0: '#rrggbb', ..., a0, g0, r0 ..., warn } */
+  function slots(R) {
+    var out = {}, f, g, n, s;
+    for (f in GRID) { g = GRID[f]; n = Math.round((g[1] - g[0]) / g[2]); for (s = 0; s <= n; s++) out[f + s] = at(R[f], f, g[0] + s * g[2]); }
+    out.warn = R.warn;
+    return out;
+  }
   // A choice saved before AGORA (2026-11-09) may be 'olympus' only because that used to be the default (Jarvis wrote it when a Jarvis colour
   // was picked): it reads as the default (AGORA) until the owner picks a theme again; every pick after that is marked (VKEY) and wins.
   var VKEY = 'olympus.theme.v';
   function stored() { var v = get(KEY); if (v === 'olympus' && get(VKEY) !== '2') return DEFAULT; return by[v] ? v : DEFAULT; }
+  /* MIX (2026-11-14, owner via the lead: "a combined type of thing where some dashboards have others"): besides one look for everything
+   * ('olympus.theme'), 'olympus.themeMix' = { district: { trading: 'amber', money: 'stocks', life: 'forest', worlds: 'aurora' },
+   * app: { nq: 'terminal', gate: 'aurora' }, of: { nq: 'trading', helios: 'trading', ... } } gives a district or one app its own look:
+   * app beats district beats the global look. 'of' (app -> district) is written by the Gate from olympus/gate-catalog.js when the mix is
+   * saved, so no page has to load the catalog. This page's id: <html data-oly-page>, else its kit tag (data-app), else its folder. */
+  var MIXKEY = 'olympus.themeMix';
+  function readMix() { try { var m = JSON.parse(get(MIXKEY) || 'null'); return m && typeof m === 'object' ? m : null; } catch (e) { return null; } }
+  function pageId() {
+    var a = root.getAttribute('data-oly-page'); if (a) return a;
+    var sc = d.querySelector('script[data-app]'); if (sc && sc.getAttribute('data-app')) return sc.getAttribute('data-app');
+    var p = String(location.pathname || '').replace(/index\.html$/, ''), m = /\/([^\/]+)\/$/.exec(p);
+    return /olympus-live\.html$/.test(p) ? 'gate' : m ? m[1] : 'today';
+  }
+  function lookFor(p, m, g) {
+    if (!m) return g;
+    var a = m.app && m.app[p], dd = (m.of && m.of[p]) || (p === 'today' ? 'trading' : ''), ds = dd && m.district && m.district[dd];
+    return by[a] ? a : by[ds] ? ds : g;
+  }
+  function effective() { return lookFor(pageId(), readMix(), stored()); }
   function tokens(id, where) {
     var t = theme(id), out = {}, k;
     for (k in t.tokens) out[k] = t.tokens[k];
@@ -158,7 +459,7 @@
   /** paints <html>: the default theme writes nothing (the stylesheets' own values = today's look) */
   function apply(w, opts) {
     where = w || where || 'stage';
-    var id = stored(), t = tokens(id, where), st = root.style, k, j = theme(id).jarvis;
+    var id = effective(), t = tokens(id, where), st = root.style, k, j = theme(id).jarvis, styled = false;
     for (k = 0; k < painted.length; k++) st.removeProperty(painted[k]);
     painted = [];
     var paint = function (name, v) { st.setProperty(name, v); painted.push(name); };
@@ -167,9 +468,23 @@
       paint('--oly-tone-rgb', rgbOf(t.accent).join(', '));
       paint('--oly-glow-rgb', rgbOf(t.glow).join(', '));
       paint('color-scheme', t.scheme);
+      // the reach ramp (every tokenized stylesheet) and the feel (radius, heading / number fonts); opts.ramp = false keeps a page's own look
+      if (!opts || opts.ramp === undefined || (typeof opts.ramp === 'function' ? opts.ramp(t, id) : opts.ramp)) {
+        var sl = slots(rampOf(theme(id), where)), fe = theme(id).feel;
+        for (k in sl) { paint('--oly-th-' + k, sl[k]); paint('--oly-th-' + k + '-rgb', rgbOf(sl[k]).join(', ')); }
+        if (fe) for (k in FEEL) if (fe[k]) paint(FEEL[k], fe[k]);
+        // a style theme's surfaces, titles and button (not on a light theme's dark stage: those pages keep the kit's own shapes)
+        var sty = theme(id).style;
+        if (sty && !(where === 'stage' && theme(id).stageRamp)) { for (k in STYLE) paint('--oly-th-' + STYLE[k], sty[k]); styled = true; }
+      }
+      // a copy of the shared part, for a page's <head> to paint before this script arrives (the Gate, the dashboard: 'olympus.theme.paint.<where>')
+      var gen = {};
+      for (k = 0; k < painted.length; k++) gen[painted[k]] = st.getPropertyValue(painted[k]);
+      put(PAINT_KEY + '.' + where + '.' + pageId(), JSON.stringify({ id: id, scheme: t.scheme, meta: t.themeColor, style: styled ? id : '', vars: gen }));
       if (opts && opts.jarvis && j && where === 'page') for (k = 0; k < JARVIS.length; k++) paint('--' + JARVIS[k], j[JARVIS[k]]);
       if (opts && typeof opts.extra === 'function') { var x = opts.extra(t, id) || {}; for (k in x) if (x[k] != null) paint(k, String(x[k])); }
-    }
+    } else { del(PAINT_KEY + '.' + where + '.' + pageId()); }
+    if (styled) root.setAttribute('data-oly-style', id); else root.removeAttribute('data-oly-style');
     root.setAttribute('data-oly-theme', id);
     root.setAttribute('data-oly-scheme', t.scheme);
     if (opts && opts.meta && id !== DEFAULT) {
@@ -183,7 +498,7 @@
     if (opts && opts.cache) {
       var vars = {};
       for (k = 0; k < painted.length; k++) vars[painted[k]] = st.getPropertyValue(painted[k]);
-      if (id === DEFAULT) del(PAINT_KEY); else put(PAINT_KEY, JSON.stringify({ id: id, scheme: t.scheme, meta: t.themeColor, vars: vars }));
+      if (id === DEFAULT) del(PAINT_KEY); else put(PAINT_KEY, JSON.stringify({ id: id, scheme: t.scheme, meta: t.themeColor, style: styled ? id : '', vars: vars }));
     }
     cur = id;
     return t;
@@ -213,22 +528,46 @@
   if (d.body) grain(); else d.addEventListener('DOMContentLoaded', grain);
 
   var API = {
-    KEY: KEY, DEFAULT: DEFAULT, TOKENS: TOKENS, JARVIS: JARVIS,
+    KEY: KEY, DEFAULT: DEFAULT, TOKENS: TOKENS, JARVIS: JARVIS, GRID: GRID, REF: REF,
+    /** the reach ramp's slots for a theme: { n0: '#rrggbb' ... warn } (where = 'page' | 'stage') */
+    slots: function (id, w) { var t = theme(id === undefined ? effective() : id); return slots(rampOf(t, w || where || 'stage')); },
+    STYLE: STYLE,
+    /** the picker's groups: [{ id: 'dark' | 'light' | 'bold' | 'luxury', name, themes: [...] }] (the default first, on its own) */
+    groups: function () {
+      var G = [['dark', 'Dark'], ['light', 'Light'], ['bold', 'Bold'], ['luxury', 'Luxury']], out = [];
+      for (var q = 0; q < G.length; q++) { var l = []; for (var r = 0; r < THEMES.length; r++) if (THEMES[r].plain && THEMES[r].group === G[q][0]) l.push(THEMES[r]); out.push({ id: G[q][0], name: G[q][1], themes: l }); }
+      return out;
+    },
+    /** the looks the Gate shows: the default, the five colour looks and the style looks */
+    plain: function () { var o = []; for (var q = 0; q < THEMES.length; q++) if (THEMES[q].id === DEFAULT || THEMES[q].plain) o.push(THEMES[q]); return o; },
     list: function () { return THEMES.slice(); },
     get: function (id) { return theme(id); },
-    id: stored,
-    tokens: function (id, w) { return tokens(id === undefined ? stored() : id, w || where || 'stage'); },
+    /** this page's look (the mix applied); global() = the one look for everything; page() = this page's id */
+    id: effective,
+    global: stored,
+    page: pageId,
+    tokens: function (id, w) { return tokens(id === undefined ? effective() : id, w || where || 'stage'); },
     mix: mix,
     harmonise: harmonise,
     rgb: rgbOf,
     /** paint <html> for this page and keep it painted: where = 'page' | 'stage'; opts = { jarvis, cache, meta: true | fn(tokens), extra: fn(tokens, id) -> { '--app-var': value } } */
     apply: function (w, opts) { if (opts) applyOpts = opts; var t = apply(w, applyOpts); return t; },
+    /** one look for everything: the global look, and the mix cleared */
     set: function (id) {
       if (!by[id]) id = DEFAULT;
-      put(KEY, id); put(VKEY, '2');
-      if (id !== cur) { apply(where, applyOpts); emit(); }
+      put(KEY, id); put(VKEY, '2'); del(MIXKEY);
+      if (effective() !== cur && where) { apply(where, applyOpts); emit(); }
       return id;
     },
+    /** the mix: getMix() = { district, app, of } or null; setMix(m) stores it (null clears it) and repaints this page if its look changed */
+    getMix: readMix,
+    setMix: function (m) {
+      if (m && typeof m === 'object') put(MIXKEY, JSON.stringify({ district: m.district || {}, app: m.app || {}, of: m.of || {} })); else del(MIXKEY);
+      if (effective() !== cur && where) { apply(where, applyOpts); emit(); }
+      return readMix();
+    },
+    /** the look a page would get: lookFor('nq') with the stored mix and global look */
+    lookFor: function (p, m) { return lookFor(p, m === undefined ? readMix() : m, stored()); },
     on: function (cb) { if (typeof cb === 'function') subs.push(cb); },
     /** the scanline + grain layer: grain() = on?, grain(true | false) = set it (stored for every app) */
     grain: function (v) { if (v !== undefined) { put(GRAIN_KEY, v ? '1' : '0'); grain(); } return get(GRAIN_KEY) === '1'; },
@@ -237,7 +576,7 @@
   // another tab or the Jarvis frame around this app changed the theme
   window.addEventListener('storage', function (e) {
     if (e.key === GRAIN_KEY || e.key === null) grain();
-    if (e.key !== KEY && e.key !== null) return;
-    if (stored() !== cur && where) { apply(where, applyOpts); emit(); }
+    if (e.key !== KEY && e.key !== MIXKEY && e.key !== null) return;
+    if (effective() !== cur && where) { apply(where, applyOpts); emit(); }
   });
 })();
