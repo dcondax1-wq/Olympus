@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data: blob:; form-action 'none'; base-uri 'none'">
+<title>Prop Eval Tracker</title>
+<style>
+:root{--bg:#14110e;--s1:#1d1914;--s2:#26211b;--line:#3a3228;--ink:#f3ece0;--soft:#cfc4b2;--muted:#a89c88;--gold:#c8a24a;--ok:#a9b57a;--warn:#e0b060;--bad:#e08a6e;--info:#7fa7c4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,'Segoe UI',Inter,system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:18px 16px 60px}
+h1{font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;font-size:1.7rem;margin:.2em 0 .1em}
+h2{font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;font-size:1.15rem;margin:0 0 .6em;padding-bottom:6px;border-bottom:2px solid var(--gold)}
+.sub{color:var(--soft);margin:0 0 14px}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 14px}
+label{display:block;font-size:13px;color:var(--soft)}
+input,select{width:100%;margin-top:4px;padding:10px 11px;border-radius:12px;border:1px solid var(--line);background:var(--s2);color:var(--ink);font:inherit;min-height:44px}
+button{min-height:44px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--s2);color:var(--ink);font:inherit;cursor:pointer}
+button.primary{background:var(--gold);color:#1a1408;border-color:var(--gold);font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--s2);border-radius:14px;padding:12px}
+.stat .k{font-size:12.5px;color:var(--muted)}
+.stat .v{font-size:1.5rem;font-variant-numeric:tabular-nums;font-weight:600}
+.stat.big .v{font-size:2.1rem;color:var(--gold)}
+.badge{display:inline-block;padding:4px 12px;border-radius:999px;font-weight:600;font-size:13px;background:var(--s2);border:1px solid var(--line)}
+.b-OK{color:var(--ok)}.b-CAREFUL,.b-DAILY{color:var(--warn)}.b-BREACHED{color:var(--bad)}.b-TARGET{color:var(--info)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px}
+th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:500;font-size:12.5px}
+.scroll{overflow-x:auto}
+.note{color:var(--muted);font-size:13px}
+.neg{color:var(--bad)}.pos{color:var(--ok)}
+svg text{fill:var(--muted);font-size:11px}
+.x{background:none;border:none;color:var(--muted);min-height:32px;padding:2px 8px}
+footer{color:var(--muted);font-size:12.5px;margin-top:22px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Prop Eval Tracker</h1>
+  <p class="sub">Drawdown left, daily limit, consistency and position size for a futures prop-firm evaluation. Works offline; your data stays in this browser.</p>
+
+  <section class="card" id="status-card">
+    <h2>Where you stand <span id="status" class="badge">OK</span></h2>
+    <div class="hero">
+      <div class="stat big"><div class="k">Drawdown left</div><div class="v" id="s-dd">-</div></div>
+      <div class="stat"><div class="k">Balance</div><div class="v" id="s-bal">-</div></div>
+      <div class="stat"><div class="k">Max-loss level</div><div class="v" id="s-floor">-</div></div>
+      <div class="stat"><div class="k">Profit target left</div><div class="v" id="s-target">-</div></div>
+      <div class="stat"><div class="k">Days logged</div><div class="v" id="s-days">-</div></div>
+      <div class="stat"><div class="k">Best day share</div><div class="v" id="s-cons">-</div></div>
+    </div>
+    <p class="note" id="s-msg"></p>
+    <svg id="chart" viewBox="0 0 640 200" width="100%" height="200" role="img" aria-label="Balance and max-loss level by day"></svg>
+  </section>
+
+  <section class="card">
+    <h2>Your firm's rules</h2>
+    <div class="grid">
+      <label>Example to start from<select id="r-preset">
+        <option value="">Custom</option>
+        <option value="eod50">Example: 50K, $2,000 EOD trailing, stops at start + $100</option>
+        <option value="static25">Example: 25K, $1,000 static</option>
+        <option value="intra100">Example: 100K, $3,000 intraday trailing</option>
+      </select></label>
+      <label>Start balance ($)<input id="r-start" type="number" step="0.01" inputmode="decimal"></label>
+      <label>Profit target ($)<input id="r-target" type="number" step="0.01" inputmode="decimal"></label>
+      <label>Max loss ($)<input id="r-max" type="number" step="0.01" inputmode="decimal"></label>
+      <label>How the max loss moves<select id="r-type"><option>EOD trailing</option><option>Intraday trailing</option><option>Static</option></select></label>
+      <label>Trail stops at start + ($, blank = never)<input id="r-lock" type="number" step="0.01" inputmode="decimal"></label>
+      <label>Daily loss limit ($, blank = none)<input id="r-daily" type="number" step="0.01" inputmode="decimal"></label>
+      <label>Consistency: best day max % of profit (blank = none)<input id="r-cons" type="number" step="1" inputmode="decimal"></label>
+      <label>Minimum trading days<input id="r-min" type="number" step="1" inputmode="numeric"></label>
+    </div>
+    <p class="note">Copy these from your firm's own rules page. Firms word them differently and change them: check before you trade.</p>
+  </section>
+
+  <section class="card">
+    <h2>Log a day</h2>
+    <div class="grid">
+      <label>Date<input id="d-date" type="date"></label>
+      <label>Net P&amp;L after fees ($)<input id="d-pnl" type="number" step="0.01" inputmode="decimal"></label>
+      <label>Lowest balance today (optional)<input id="d-low" type="number" step="0.01" inputmode="decimal"></label>
+      <label>Highest balance today (optional)<input id="d-high" type="number" step="0.01" inputmode="decimal"></label>
+      <label>Trades<input id="d-trades" type="number" step="1" inputmode="numeric"></label>
+      <label>Note<input id="d-note" type="text" maxlength="120"></label>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="primary" id="d-add">Add day</button><span class="note" id="d-err"></span></div>
+    <div class="scroll" style="margin-top:12px"><table id="log"><thead><tr><th>Date</th><th>P&amp;L</th><th>Balance</th><th>Level in effect</th><th>Level after close</th><th>Drawdown left</th><th>Day loss</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="card">
+    <h2>Position size (size follows the stop)</h2>
+    <div class="grid">
+      <label>Contract<select id="z-inst"></select></label>
+      <label>Stop (points)<input id="z-stop" type="number" step="0.25" inputmode="decimal"></label>
+      <label>Risk per trade, % of drawdown left<input id="z-pct" type="number" step="0.5" inputmode="decimal"></label>
+      <label>Or a fixed risk ($, blank = use %)<input id="z-fixed" type="number" step="1" inputmode="decimal"></label>
+      <label>Costs per contract, round trip ($)<input id="z-cost" type="number" step="0.01" inputmode="decimal"></label>
+    </div>
+    <div class="hero" style="margin-top:12px">
+      <div class="stat big"><div class="k">Contracts</div><div class="v" id="z-n">-</div></div>
+      <div class="stat"><div class="k">Risk for this trade</div><div class="v" id="z-risk">-</div></div>
+      <div class="stat"><div class="k">Loss if stopped</div><div class="v" id="z-loss">-</div></div>
+      <div class="stat"><div class="k">Losses in a row to the level</div><div class="v" id="z-streak">-</div></div>
+    </div>
+    <p class="note">A wider stop means fewer contracts. Never widen a stop to fit a size. Zero contracts means the stop is too wide for your risk.</p>
+  </section>
+
+  <section class="card">
+    <h2>Save and move</h2>
+    <div class="row"><button id="x-csv">Download log (CSV)</button><button id="x-json">Download backup</button>
+      <label style="min-width:200px">Restore a backup<input id="x-file" type="file" accept=".json,application/json"></label>
+      <button id="x-clear">Clear everything</button></div>
+    <p class="note">Your data is saved in this browser only (not on any server). Download a backup now and then.</p>
+  </section>
+
+  <footer>A tracker for your own rules. It does not predict results, give advice, or connect to any broker or prop firm, and it is not
+  affiliated with any of them. Always check your firm's official rules and dashboard: they decide, not this page. Futures trading involves
+  substantial risk of loss and is not suitable for everyone. &copy; Prop Eval Tracker v1.0</footer>
+</main>
+<script>
+(function () {
+  "use strict";
+  var TYPES = ["EOD trailing", "Intraday trailing", "Static"];
+  var INSTRUMENTS = [["MNQ (Micro Nasdaq-100)", 2], ["NQ (E-mini Nasdaq-100)", 20], ["MES (Micro S&P 500)", 5], ["ES (E-mini S&P 500)", 50],
+    ["M2K (Micro Russell 2000)", 5], ["RTY (E-mini Russell 2000)", 50], ["MYM (Micro Dow)", 0.5], ["YM (E-mini Dow)", 5],
+    ["MGC (Micro Gold)", 10], ["GC (Gold)", 100], ["MCL (Micro Crude Oil)", 100], ["CL (Crude Oil)", 1000]];
+  var PRESETS = {
+    eod50: {start: 50000, target: 3000, max_loss: 2000, type: "EOD trailing", lock: 100, daily_limit: "", consistency: "", min_days: 1},
+    static25: {start: 25000, target: 1500, max_loss: 1000, type: "Static", lock: "", daily_limit: 500, consistency: "", min_days: 1},
+    intra100: {start: 100000, target: 6000, max_loss: 3000, type: "Intraday trailing", lock: 0, daily_limit: "", consistency: 40, min_days: 5}
+  };
+  var KEY = "propEvalTracker.v1";
+  function r2(x) { return Math.round(x * 100) / 100; }
+  function blank(v) { return v === null || v === undefined || v === ""; }
+
+  // The same math as the spreadsheet and money_machines/products/eval_math.py
+  function compute(rules, days) {
+    var start = +rules.start, maxLoss = +rules.max_loss, kind = rules.type || "EOD trailing";
+    var lock = blank(rules.lock) ? Infinity : start + (+rules.lock);
+    var daily = blank(rules.daily_limit) ? null : +rules.daily_limit;
+    var target = +rules.target || 0;
+    var cons = blank(rules.consistency) ? null : (+rules.consistency) / 100;
+    var minDays = +rules.min_days || 0;
+    var bal = start, hwm = start, floor = start - maxLoss, rows = [], breached = null, best = 0;
+    days.forEach(function (d, i) {
+      var pnl = +d.pnl, end = bal + pnl;
+      var low = blank(d.low) ? end : Math.min(end, +d.low);
+      var high = blank(d.high) ? end : Math.max(end, +d.high);
+      var inEffect = kind === "Intraday trailing" ? Math.max(floor, Math.min(Math.max(hwm, high) - maxLoss, lock)) : floor;
+      var dayLoss = Math.max(0, bal - low);
+      var hit = low <= inEffect + 1e-9;
+      if (kind === "EOD trailing") hwm = Math.max(hwm, end);
+      else if (kind === "Intraday trailing") hwm = Math.max(hwm, end, high);
+      var newFloor = kind === "Static" ? inEffect : Math.max(inEffect, Math.min(hwm - maxLoss, lock));
+      var status = hit ? "BREACHED" : (daily !== null && dayLoss >= daily - 1e-9 ? "DAILY LIMIT" : (end - newFloor <= 0.25 * maxLoss + 1e-9 ? "CAREFUL" : "OK"));
+      if (hit && breached === null) breached = d.date || (i + 1);
+      best = Math.max(best, pnl);
+      rows.push({date: d.date, pnl: pnl, end: r2(end), hwm: r2(hwm), floor_in_effect: r2(inEffect), floor_after: r2(newFloor), dd_left: r2(end - newFloor), day_loss: r2(dayLoss), status: status});
+      bal = end; floor = newFloor;
+    });
+    var profit = bal - start, share = profit > 0 ? best / profit : null;
+    var consOk = cons === null ? true : (share !== null && share <= cons + 1e-9);
+    var n = days.length, st;
+    if (breached !== null) st = "BREACHED";
+    else if (target && profit >= target - 1e-9 && n >= minDays && consOk) st = "TARGET MET";
+    else if (bal - floor <= 0.25 * maxLoss + 1e-9) st = "CAREFUL";
+    else st = "OK";
+    var need = (cons !== null && profit > 0 && !consOk) ? r2(best / cons - profit) : null;
+    return {balance: r2(bal), floor: r2(floor), dd_left: r2(bal - floor), profit: r2(profit), target_left: r2(Math.max(0, target - profit)), days: n,
+      best_day: r2(best), best_share: share === null ? null : Math.round(share * 10000) / 10000, consistency_ok: consOk, more_profit_needed: need,
+      breached: breached, status: st, rows: rows};
+  }
+  function size(ddLeft, stop, perPoint, riskFraction, cost, riskDollars) {
+    var risk = riskDollars ? +riskDollars : Math.max(0, +ddLeft) * (+riskFraction);
+    var per = (+stop) * (+perPoint) + (+cost || 0);
+    var n = per > 0 ? Math.floor(risk / per + 1e-9) : 0;
+    var loss = n * per;
+    return {risk: r2(risk), per_contract: r2(per), contracts: n, loss_if_stopped: r2(loss), losses_in_a_row: loss > 0 ? Math.floor(ddLeft / loss + 1e-9) : null};
+  }
+  window.EvalTracker = {compute: compute, size: size, INSTRUMENTS: INSTRUMENTS, TYPES: TYPES};
+
+  var state = {rules: PRESETS.eod50, days: [], size: {inst: INSTRUMENTS[0][0], stop: 20, pct: 10, fixed: "", cost: 1}};
+  try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved && saved.rules && Array.isArray(saved.days)) state = saved; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function $(id) { return document.getElementById(id); }
+  function money(x) { if (x === null || x === undefined) return "-"; var s = Math.abs(x).toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 2}); return (x < 0 ? "-$" : "$") + s; }
+  var RULE_FIELDS = {start: "r-start", target: "r-target", max_loss: "r-max", type: "r-type", lock: "r-lock", daily_limit: "r-daily", consistency: "r-cons", min_days: "r-min"};
+  function readRules() { var r = {}; for (var k in RULE_FIELDS) { var v = $(RULE_FIELDS[k]).value; r[k] = (k === "type") ? v : (v === "" ? "" : +v); } return r; }
+  function writeRules(r) { for (var k in RULE_FIELDS) { $(RULE_FIELDS[k]).value = blank(r[k]) ? "" : r[k]; } }
+
+  function chart(res, rules) {
+    var svg = $("chart"), W = 640, H = 200, P = 34;
+    var pts = [{b: +rules.start, f: +rules.start - +rules.max_loss}].concat(res.rows.map(function (x) { return {b: x.end, f: x.floor_after}; }));
+    var vals = []; pts.forEach(function (p) { vals.push(p.b, p.f); });
+    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals); if (hi - lo < 1) { hi += 1; lo -= 1; }
+    var pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+    function X(i) { return P + (W - P - 8) * (pts.length > 1 ? i / (pts.length - 1) : 0.5); }
+    function Y(v) { return 8 + (H - 30) * (1 - (v - lo) / (hi - lo)); }
+    function line(key, color, dash) { return "<polyline fill='none' stroke='" + color + "' stroke-width='2.5'" + (dash ? " stroke-dasharray='6 5'" : "") + " points='" + pts.map(function (p, i) { return X(i).toFixed(1) + "," + Y(p[key]).toFixed(1); }).join(" ") + "'/>"; }
+    var grid = [lo + (hi - lo) * 0.15, (lo + hi) / 2, hi - (hi - lo) * 0.15].map(function (v) { return "<line x1='" + P + "' x2='" + (W - 8) + "' y1='" + Y(v).toFixed(1) + "' y2='" + Y(v).toFixed(1) + "' stroke='#3a3228'/><text x='2' y='" + (Y(v) + 4).toFixed(1) + "'>" + Math.round(v / 100) / 10 + "k</text>"; }).join("");
+    svg.innerHTML = grid + line("f", "#e08a6e", true) + line("b", "#c8a24a") + "<text x='" + P + "' y='" + (H - 4) + "'>Start</text><text x='" + (W - 70) + "' y='" + (H - 4) + "'>Day " + res.days + "</text>";
+  }
+
+  function render() {
+    state.rules = readRules();
+    var res = compute(state.rules, state.days);
+    var st = $("status"); st.textContent = res.status; st.className = "badge b-" + res.status.split(" ")[0];
+    $("s-dd").textContent = money(res.dd_left); $("s-bal").textContent = money(res.balance); $("s-floor").textContent = money(res.floor);
+    $("s-target").textContent = money(res.target_left); $("s-days").textContent = res.days + (state.rules.min_days ? " (min " + state.rules.min_days + ")" : "");
+    $("s-cons").textContent = res.best_share === null ? "-" : Math.round(res.best_share * 100) + "%";
+    var msg = res.status === "BREACHED" ? "The max-loss level was reached on " + res.breached + ". Check your firm's dashboard." :
+      res.status === "TARGET MET" ? "The target and the rules you entered are met. Your firm's dashboard has the final word." :
+      res.status === "CAREFUL" ? "Less than a quarter of the max loss is left. Smaller size or a break." : "";
+    if (res.more_profit_needed !== null) msg += (msg ? " " : "") + "Consistency: about " + money(res.more_profit_needed) + " more profit is needed before the best day fits the rule.";
+    $("s-msg").textContent = msg;
+    var tb = $("log").tBodies[0]; tb.innerHTML = "";
+    res.rows.forEach(function (x, i) {
+      var tr = document.createElement("tr");
+      [x.date || ("Day " + (i + 1)), money(x.pnl), money(x.end), money(x.floor_in_effect), money(x.floor_after), money(x.dd_left), money(x.day_loss)].forEach(function (t, j) {
+        var td = document.createElement("td"); td.textContent = t; if (j === 1) td.className = x.pnl < 0 ? "neg" : "pos"; tr.appendChild(td); });
+      var s = document.createElement("td"); s.innerHTML = "<span class='badge b-" + x.status.split(" ")[0] + "'></span>"; s.firstChild.textContent = x.status; tr.appendChild(s);
+      var del = document.createElement("td"); var b = document.createElement("button"); b.className = "x"; b.textContent = "remove"; b.setAttribute("aria-label", "Remove day " + (i + 1));
+      b.onclick = function () { state.days.splice(i, 1); save(); render(); }; del.appendChild(b); tr.appendChild(del); tb.appendChild(tr);
+    });
+    chart(res, state.rules);
+    var inst = $("z-inst").value; var pp = 2; INSTRUMENTS.forEach(function (x) { if (x[0] === inst) pp = x[1]; });
+    state.size = {inst: inst, stop: $("z-stop").value, pct: $("z-pct").value, fixed: $("z-fixed").value, cost: $("z-cost").value};
+    var z = size(res.dd_left, +state.size.stop || 0, pp, (+state.size.pct || 0) / 100, +state.size.cost || 0, state.size.fixed === "" ? null : +state.size.fixed);
+    $("z-n").textContent = z.contracts; $("z-risk").textContent = money(z.risk); $("z-loss").textContent = money(z.loss_if_stopped);
+    $("z-streak").textContent = z.losses_in_a_row === null ? "-" : z.losses_in_a_row;
+    save();
+    return res;
+  }
+
+  INSTRUMENTS.forEach(function (x) { var o = document.createElement("option"); o.textContent = x[0]; $("z-inst").appendChild(o); });
+  writeRules(state.rules);
+  $("z-inst").value = state.size.inst; $("z-stop").value = state.size.stop; $("z-pct").value = state.size.pct; $("z-fixed").value = state.size.fixed; $("z-cost").value = state.size.cost;
+  $("d-date").value = new Date().toISOString().slice(0, 10);
+  $("r-preset").onchange = function () { var p = PRESETS[this.value]; if (p) { writeRules(p); render(); } };
+  Array.prototype.forEach.call(document.querySelectorAll("#r-start,#r-target,#r-max,#r-type,#r-lock,#r-daily,#r-cons,#r-min,#z-inst,#z-stop,#z-pct,#z-fixed,#z-cost"), function (el) { el.oninput = render; el.onchange = render; });
+  $("d-add").onclick = function () {
+    var pnl = $("d-pnl").value; if (pnl === "") { $("d-err").textContent = "Type the day's net P&L first."; return; }
+    $("d-err").textContent = "";
+    state.days.push({date: $("d-date").value, pnl: +pnl, low: $("d-low").value === "" ? "" : +$("d-low").value, high: $("d-high").value === "" ? "" : +$("d-high").value,
+      trades: $("d-trades").value === "" ? "" : +$("d-trades").value, note: $("d-note").value});
+    state.days.sort(function (a, b) { return (a.date || "").localeCompare(b.date || ""); });
+    ["d-pnl", "d-low", "d-high", "d-trades", "d-note"].forEach(function (id) { $(id).value = ""; });
+    render();
+  };
+  function download(name, text, type) { var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], {type: type})); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+  $("x-csv").onclick = function () {
+    var res = compute(state.rules, state.days);
+    var lines = ["date,net_pnl,lowest_balance,highest_balance,trades,note,end_balance,level_in_effect,level_after_close,drawdown_left,day_loss,status"];
+    state.days.forEach(function (d, i) { var x = res.rows[i]; lines.push([d.date, d.pnl, d.low, d.high, d.trades, '"' + String(d.note || "").replace(/"/g, '""') + '"', x.end, x.floor_in_effect, x.floor_after, x.dd_left, x.day_loss, x.status].join(",")); });
+    download("eval_log.csv", lines.join("\n") + "\n", "text/csv");
+  };
+  $("x-json").onclick = function () { download("eval_tracker_backup.json", JSON.stringify(state, null, 1), "application/json"); };
+  $("x-file").onchange = function () {
+    var f = this.files && this.files[0]; if (!f) return; var rd = new FileReader();
+    rd.onload = function () { try { var s = JSON.parse(rd.result); if (!s.rules || !Array.isArray(s.days)) throw 0; state = s; writeRules(s.rules); render(); } catch (e) { alert("That file is not a tracker backup."); } };
+    rd.readAsText(f);
+  };
+  $("x-clear").onclick = function () { if (confirm("Delete every logged day and reset the rules?")) { state = {rules: PRESETS.eod50, days: [], size: state.size}; writeRules(state.rules); render(); } };
+  render();
+})();
+</script>
+</body>
+</html>

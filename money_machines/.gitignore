@@ -1,0 +1,7 @@
+# client orders, rendered post images, zips and the posting ledger stay on the PC
+out/
+# never commit an Instagram / Meta token (ig_post refuses token files inside the repo anyway)
+*token*.json
+private/
+.env*
+__pycache__/

@@ -1,0 +1,1025 @@
+{
+ "v": 1,
+ "kind": "gig-pack",
+ "asof": "2026-11-14",
+ "currency": "USD",
+ "price_note": "Launch prices for a new seller (no reviews yet), set inside the ranges competing gigs showed on 2026-11-14 (docs/MONEY_MACHINES.md, Sources). Raise each tier about 30% after 5 five-star reviews. Fiverr keeps 20% of every order; the buyer also pays Fiverr a service fee on top.",
+ "revision_policy": "A revision is a change inside the original brief (words, colours, photos, order of sections). New pages, new features or a new direction are a new order (custom offer). Send all changes for one round in one message. I answer revision requests within 2 business days. Fiverr marks a delivered order complete if the buyer does nothing for 3 days (check the Help Center for the current rule).",
+ "ai_line": "I use AI-assisted tools for first drafts and code; I check and finish every deliverable myself before you see it. If you don't want any AI used on your project, tell me before you order and I'll work without it.",
+ "stays_human": [
+  "The account: one account per person, in the owner's real name, ID and selfie verified by him. Never shared, rented, sold or run for someone else.",
+  "Every message to a client: AI may draft it, the owner reads, edits and sends it himself. No auto-replies beyond the platform's own saved replies.",
+  "Saying yes to an order, the price and any custom offer.",
+  "The final review of every deliverable on his own phone before he presses Deliver (names, phone, address, prices, spelling, no claims the client did not give).",
+  "Honesty about AI: answer truthfully when asked, follow the client's no-AI request, and never present raw AI output as finished work.",
+  "Payments only through the platform; no outside payment before an order exists."
+ ],
+ "never_build": [
+  "Auto-bidding or auto-proposal bots (Upwork bans unapproved automation and proposal spam even with an API key).",
+  "Scrapers of job lists, profiles or messages (Upwork Terms 3.5, Fiverr Terms 8.8).",
+  "Mass-message or auto-DM bots (Fiverr Community Standards).",
+  "Fake reviews, review swaps, paid or incentivised reviews, review gating (Fiverr, Google and the FTC rule of 2024-10-21).",
+  "A second account, a borrowed identity, a VPN to hide location, or 'agency' accounts run by bots.",
+  "Anything that promises rankings, sales or other results nobody controls."
+ ],
+ "daily_routine": {
+  "morning_min": 20,
+  "evening_min": 35,
+  "steps": [
+   {
+    "when": "Morning, before work (10 min)",
+    "do": "Fiverr and Upwork inboxes: answer every new message (Fiverr shows your response time to buyers). Accept or ask a question on new orders."
+   },
+   {
+    "when": "Morning (10 min)",
+    "do": "Upwork, by hand: open your 2 saved searches (posted in the last 24 h, payment verified, fixed price, US/UK/CA/AU). Pick at most 2 jobs that match a gig below. Send at most 2 proposals from the templates, each with 2 sentences written only for that client."
+   },
+   {
+    "when": "Evening (25 min)",
+    "do": "Deliver what is due in the next 48 h: run the gig's tool, review on your phone with the checklist, deliver with a short note."
+   },
+   {
+    "when": "Evening (10 min)",
+    "do": "Revisions and follow-ups. Log each order in the money ledger (amount after the platform's cut)."
+   },
+   {
+    "when": "Sunday (30 min)",
+    "do": "Look at the gig stats (impressions, clicks, orders). Change ONE thing on the weakest gig (first picture, title or price). Add one finished job to your portfolio if the client said yes."
+   }
+  ],
+  "limits": [
+   "Upwork: 1-2 proposals per weekday at most. Each costs Connects ($0.15 each, a proposal usually 6-16 Connects). The free plan gives about 10 Connects a month; Freelancer Plus is $19.99 a month for 100. Start on Fiverr (free to list) and add Upwork Plus only after your first 3 Fiverr reviews.",
+   "Fiverr: a new seller can only have a few gigs live (4 to 7 depending on the source): start with the 4 marked 'start here'.",
+   "Contra: list the same 4 services there too (no commission on client work); put the Contra link in the Instagram bio.",
+   "Freelancer.com: skip at the start (about 6 free bids a month, a 10% or $5 fee); try it later if the others are slow."
+  ]
+ },
+ "gigs": [
+  {
+   "id": "local-website",
+   "start_here": true,
+   "title": "I will build a fast mobile website for your local business",
+   "category": "Programming & Tech > Website Development (business website)",
+   "tags": [
+    "business website",
+    "small business",
+    "local business",
+    "mobile website",
+    "website design"
+   ],
+   "description": "Your customers search on their phone. If your business has no website, or one that is slow and hard to use on a phone, they call the next company on Google.\n\nI build fast, clean websites for local businesses: plumbers, salons, cafes, dentists, landscapers and more.\n\nEvery site includes:\n- A design that works on phones first\n- Tap-to-call button, opening hours and a map\n- A contact form that sends to your email\n- Your services, area and photos\n- Google basics: page titles, description, fast loading, padlock (https)\n\nYou own everything: the files and the hosting account (free plan on your own Netlify account). Your domain stays yours.\n\nHow it works: order, answer the short questions, get a preview in a few days, ask for changes, go live.\n\nNot a fit: online shops with many products, or sites that must be WordPress.\n\nI use AI-assisted tools for first drafts and code; I check and finish every page myself.",
+   "packages": [
+    {
+     "name": "One page",
+     "price": 120,
+     "days": 3,
+     "revisions": 1,
+     "minutes": 35,
+     "includes": [
+      "1 page: services, hours, map, tap-to-call, contact form",
+      "Mobile-first, fast, https",
+      "Page title and Google description",
+      "Set-up on your own free hosting account"
+     ]
+    },
+    {
+     "name": "Up to 4 pages",
+     "price": 260,
+     "days": 5,
+     "revisions": 2,
+     "minutes": 55,
+     "includes": [
+      "Everything in One page",
+      "Up to 4 pages (a page per main service)",
+      "Photo gallery and a quote or booking form",
+      "Link to your Google profile and your review link"
+     ]
+    },
+    {
+     "name": "Up to 7 pages + words",
+     "price": 480,
+     "days": 7,
+     "revisions": 3,
+     "minutes": 90,
+     "includes": [
+      "Everything in 4 pages",
+      "Up to 7 pages, the words written for you",
+      "FAQ page, local business details for Google (schema), sitemap",
+      "30 days of small edits after launch"
+     ]
+    }
+   ],
+   "requirements": [
+    "Business name exactly as customers see it",
+    "Trade and the towns you serve",
+    "Phone, email for the form, address (or service area only)",
+    "Opening hours",
+    "Your services and starting prices (if you show them)",
+    "Your logo and photos (or say if free stock photos are fine)",
+    "Do you own a domain name? Which one?"
+   ],
+   "faq": [
+    {
+     "q": "Do I pay for hosting?",
+     "a": "No monthly fee from me. The site goes on a free hosting plan in your own account. A domain name costs about $10-15 a year, paid by you to the domain company, so it is always yours."
+    },
+    {
+     "q": "Who owns the website?",
+     "a": "You do: the files, the hosting account and the domain. I hand everything over at delivery."
+    },
+    {
+     "q": "Do you use AI?",
+     "a": "Yes, for first drafts and code. I check and finish every page by hand. If you don't want AI used, tell me before ordering."
+    },
+    {
+     "q": "Can you put me first on Google?",
+     "a": "Nobody can promise that. I set up the basics properly (speed, phone layout, titles, your Google profile link) so Google can understand your business."
+    },
+    {
+     "q": "Can you build it in WordPress?",
+     "a": "No. I build fast static sites that need no plugins or updates. If you need WordPress, this gig is not the right fit."
+    },
+    {
+     "q": "Can I make changes later?",
+     "a": "Yes. Small edits are included for 30 days in the top package; after that I send a custom offer for each change."
+    }
+   ],
+   "tool": {
+    "what": "Agency site generator (team B1): a lead file in, a finished phone-first site folder + zip out (no web fonts, no trackers).",
+    "module": "agency.build_site",
+    "status": "B1 (agency/build_site.py)",
+    "steps": [
+     "python -m money_machines.gig_pack order --gig local-website --name \"<business>\" --category <trade> --city \"<city, ST>\" --phone \"<phone>\" --email <email>",
+     "python -m agency.build_site --leads money_machines/out/orders/<slug>/lead.json --id <slug> --pages 3   (leave out --pages for the one-page package)",
+     "edit the site.json it writes (their words, services, hours), then: python -m agency.build_site --site <out>/<slug>/site.json --final",
+     "python -m money_machines.brand_kit --name \"<business>\" --industry <trade> --out money_machines/out/orders/<slug>/brand   (only if they have no logo)"
+    ]
+   },
+   "delivery_checklist": [
+    "Read the answers; ask one question if anything is missing (5 min)",
+    "Make the order file and build the site with the tool (5 min)",
+    "Swap in their photos, logo and words; delete every placeholder (15 min)",
+    "Phone check at 375 px: tap-to-call dials the right number, the form sends a test email, the map shows the right place (5 min)",
+    "Read every word once: name, phone, address, hours, prices, spelling. Remove any claim they did not give you (licensed, insured, years, 'best') (5 min)",
+    "Zip it, upload a preview, write the delivery note with the 3 steps to go live (5 min)"
+   ],
+   "stays_human": [
+    "Choosing photos the client has the right to use",
+    "The final read of every claim on the page",
+    "Explaining how to go live, in your own words"
+   ],
+   "never": [
+    "Copying another company's site, logo or photos",
+    "Fake reviews or testimonials on the page",
+    "Claims the client did not give (licences, awards, years in business)"
+   ]
+  },
+  {
+   "id": "logo-brand-kit",
+   "start_here": true,
+   "title": "I will design a simple modern logo and brand kit for your small business",
+   "category": "Graphics & Design > Logo Design (minimalist)",
+   "tags": [
+    "logo design",
+    "brand kit",
+    "minimalist logo",
+    "small business logo",
+    "brand identity"
+   ],
+   "description": "A clean, simple logo that looks good on a sign, a van, a website and an Instagram profile picture.\n\nYou get 3 concepts to choose from. Each one is built from original shapes and clear letters, in colours that pass readability checks (good contrast on screens and print).\n\nThe brand kit includes:\n- Your logo in 4 layouts (wide, stacked, symbol only, name only)\n- Dark and light versions for any background\n- Colour palette with hex and RGB codes\n- Free font names for your website\n- Favicon, profile picture and banner sizes\n- A one-page brand guide\n\nFiles: SVG (sharp at any size) and PNG.\n\nGood for: trades, salons, cafes, clinics, shops and new businesses that need a professional look fast.\n\nNot a fit: hand-drawn illustrations, mascots or complex artwork.\n\nThe logos are drawn by code from simple shapes, not by an image AI. I check every concept myself.",
+   "packages": [
+    {
+     "name": "3 concepts",
+     "price": 25,
+     "days": 2,
+     "revisions": 1,
+     "minutes": 20,
+     "includes": [
+      "3 logo concepts on one board",
+      "Your chosen logo as SVG and PNG",
+      "Colour codes"
+     ]
+    },
+    {
+     "name": "Logo + brand kit",
+     "price": 55,
+     "days": 3,
+     "revisions": 2,
+     "minutes": 35,
+     "includes": [
+      "Everything in 3 concepts",
+      "4 layouts + dark and light versions",
+      "Favicon, profile picture, banner",
+      "One-page brand guide (colours, fonts, rules)"
+     ]
+    },
+    {
+     "name": "Full kit + print",
+     "price": 95,
+     "days": 4,
+     "revisions": 3,
+     "minutes": 50,
+     "includes": [
+      "Everything in Logo + brand kit",
+      "Business card front and back (print size)",
+      "2 extra colour versions",
+      "Source SVG files for every piece"
+     ]
+    }
+   ],
+   "requirements": [
+    "Business name exactly as it should read",
+    "Tagline (optional)",
+    "Your trade",
+    "Colours you like or must use (a hex code if you have one)",
+    "Logos you like (for the feel, not to copy)",
+    "For business cards: name, phone, email, website"
+   ],
+   "faq": [
+    {
+     "q": "Do I own the logo?",
+     "a": "Yes. When the order is complete you own the logo and can use it anywhere."
+    },
+    {
+     "q": "Is this made with AI?",
+     "a": "The logos are drawn by code from simple original shapes, not by an image AI. I choose and check every concept."
+    },
+    {
+     "q": "Can you trademark it for me?",
+     "a": "No. I don't do legal searches. Search your state's business register and the USPTO trademark search before you print."
+    },
+    {
+     "q": "Which files will I get?",
+     "a": "SVG files (sharp at any size, for printers and sign makers) and PNG files for the web and social media."
+    },
+    {
+     "q": "Can you copy a logo I like?",
+     "a": "No, but send it: I use it to understand the style you like and make something original."
+    }
+   ],
+   "tool": {
+    "what": "Brand kit generator (this folder).",
+    "module": "money_machines.brand_kit",
+    "status": "built here (money_machines/brand_kit.py)",
+    "steps": [
+     "python -m money_machines.brand_kit --name \"<business>\" --tagline \"<tagline>\" --industry <trade> --out money_machines/out/orders/<slug>/brand --png",
+     "Send concepts.svg (as PNG) and ask the client to pick 1, 2 or 3",
+     "python -m money_machines.brand_kit --name \"<business>\" --industry <trade> --concept <n> [--primary #hex] --phone ... --email ... --out .../final --png"
+    ]
+   },
+   "delivery_checklist": [
+    "Run the tool with their name and trade (2 min)",
+    "Look at the 3 concepts on your phone; re-run with --palette/--mark if one looks off (8 min)",
+    "Send the concepts board; wait for their pick (0 min of your time)",
+    "Run the final kit with their choice and contact details (3 min)",
+    "Open brand_guide.html: spelling of the name, colours, business card details (5 min)",
+    "Zip the folder and deliver with one line on which file to use where (5 min)"
+   ],
+   "stays_human": [
+    "Judging that a concept is not too close to a famous logo",
+    "Spelling and the client's contact details"
+   ],
+   "never": [
+    "Copying or tracing another logo",
+    "Promising a trademark",
+    "Using an image AI and calling it hand-made"
+   ]
+  },
+  {
+   "id": "gbp-setup",
+   "start_here": true,
+   "title": "I will set up and optimize your Google Business Profile with a full checklist",
+   "category": "Digital Marketing > Local SEO",
+   "tags": [
+    "google business",
+    "local seo",
+    "google maps",
+    "business profile",
+    "gmb optimization"
+   ],
+   "description": "When people search 'plumber near me' or 'best cafe in town', Google shows the map first. Your Google Business Profile decides if they see you, and whether they call.\n\nI check every part of your profile and fix what holds it back:\n- The right main and extra categories\n- Services, service area and hours (holiday hours too)\n- A clear description in plain words\n- Photos: what to add and in what order\n- Your review link, ready to share\n- Posts: what to post each week\n\nYou get a scored checklist showing what was wrong, what I fixed and what is left for you.\n\nAll work follows Google's guidelines: your real business name (no keyword stuffing), your real address or service area, and honest reviews only. Breaking those rules can get a profile suspended, so I never do it.\n\nNo one can guarantee a ranking. I set up the profile the way Google asks so it can show you to the right people.\n\nI use AI-assisted tools for first drafts; I check and finish everything myself.",
+   "packages": [
+    {
+     "name": "Audit + checklist",
+     "price": 35,
+     "days": 2,
+     "revisions": 1,
+     "minutes": 25,
+     "includes": [
+      "Full review of your profile",
+      "Scored checklist with every fix in plain words",
+      "Your review link"
+     ]
+    },
+    {
+     "name": "Done for you",
+     "price": 75,
+     "days": 3,
+     "revisions": 2,
+     "minutes": 50,
+     "includes": [
+      "Everything in Audit",
+      "I make the fixes (you add me as a manager)",
+      "Description, services, categories, hours, attributes",
+      "4 ready-to-post Google updates"
+     ]
+    },
+    {
+     "name": "Done + review kit",
+     "price": 140,
+     "days": 5,
+     "revisions": 3,
+     "minutes": 75,
+     "includes": [
+      "Everything in Done for you",
+      "Printable review QR card",
+      "12 weeks of post ideas",
+      "List of free directories to claim"
+     ]
+    }
+   ],
+   "requirements": [
+    "Link to your Google Business Profile (or the business name and town)",
+    "For Done for you: add me as a Manager (not Owner) in Business Profile settings > Managers",
+    "Your services and the area you serve",
+    "Your real opening hours, including holidays",
+    "Photos you own (outside, inside, team, work)"
+   ],
+   "faq": [
+    {
+     "q": "Will this put me in the top 3 on Google Maps?",
+     "a": "No one can promise that. Distance, reviews and competition matter. I make your profile complete and correct, which is what Google asks for."
+    },
+    {
+     "q": "Do you need my password?",
+     "a": "No. You add me as a Manager in your profile settings and remove me when we are done."
+    },
+    {
+     "q": "Can you add keywords to my business name?",
+     "a": "No. Google wants your real-world name; extra keywords can get a profile suspended."
+    },
+    {
+     "q": "Can you get me reviews?",
+     "a": "I set up an easy way to ask every customer. I never write, buy or swap reviews."
+    },
+    {
+     "q": "I don't have a profile yet. Can you make one?",
+     "a": "Yes, in Done for you. Google sends the verification to you (postcard, call or video), so you finish that step."
+    }
+   ],
+   "tool": {
+    "what": "Google Business Profile checklist (this folder) + the review kit from team B4.",
+    "module": "money_machines.gig_pack",
+    "status": "built here (gig_pack.py checklist)",
+    "steps": [
+     "python -m money_machines.gig_pack checklist --gig gbp-setup --business \"<business>\" --out money_machines/out/orders/<slug>",
+     "Work through the checklist in the profile (Manager access); tick each line in the file",
+     "Done + review kit: the review booster (python agency/upsells/make_review.py ..., team B4)"
+    ]
+   },
+   "delivery_checklist": [
+    "Make the checklist file (1 min)",
+    "Open their profile as Manager and score each line (15 min)",
+    "Make the fixes for Done for you (20 min)",
+    "Write 4 posts and the review link (10 min)",
+    "Re-read the name, phone, address and hours against their website (3 min)",
+    "Deliver the checklist with what was fixed and what is left for them (5 min)"
+   ],
+   "stays_human": [
+    "Every change inside the client's Google account",
+    "Choosing the categories that are true for the business"
+   ],
+   "never": [
+    "Keyword-stuffed names, fake addresses or virtual offices",
+    "Writing, buying or swapping reviews",
+    "Promising rankings"
+   ]
+  },
+  {
+   "id": "review-booster",
+   "start_here": true,
+   "title": "I will set up an honest Google review system with QR cards and message scripts",
+   "category": "Digital Marketing > Local SEO (reviews)",
+   "tags": [
+    "google reviews",
+    "review qr code",
+    "review cards",
+    "reputation",
+    "local business"
+   ],
+   "description": "Most happy customers never leave a review because nobody asked at the right moment, or the link was hard to find.\n\nI set up a simple, honest system that makes asking easy:\n- Your direct Google review link (one tap, no searching)\n- A print-ready QR card for the counter, receipts or the van\n- Short email and text messages to send after each job\n- Replies you can copy for good and bad reviews\n\nIt follows Google's rules and the FTC's 2024 rule on reviews:\n- Ask every customer, not only the happy ones\n- No discounts or gifts in exchange for reviews\n- No fake, bought or swapped reviews, ever\n\nThat keeps your profile safe and your reviews real.\n\nGood for: trades, salons, restaurants, clinics, shops.\n\nI use AI-assisted tools for first drafts; I check and finish everything myself.",
+   "packages": [
+    {
+     "name": "Link + QR card",
+     "price": 30,
+     "days": 2,
+     "revisions": 1,
+     "minutes": 15,
+     "includes": [
+      "Your direct review link",
+      "Print-ready QR card in your colours (SVG + PNG)"
+     ]
+    },
+    {
+     "name": "Card + scripts",
+     "price": 60,
+     "days": 3,
+     "revisions": 2,
+     "minutes": 30,
+     "includes": [
+      "Everything in Link + QR",
+      "Email and text request messages",
+      "Counter sign",
+      "10 reply templates for good and bad reviews"
+     ]
+    },
+    {
+     "name": "Full system",
+     "price": 110,
+     "days": 5,
+     "revisions": 3,
+     "minutes": 50,
+     "includes": [
+      "Everything in Card + scripts",
+      "A 'Leave us a review' page for your website",
+      "A 30-second script for your staff",
+      "A check-in after 30 days"
+     ]
+    }
+   ],
+   "requirements": [
+    "Link to your Google Business Profile",
+    "Your logo and colours (or say 'use simple colours')",
+    "How you usually reach customers after a job (email, text, in person)",
+    "For the website page: access to your site or your web person's email"
+   ],
+   "faq": [
+    {
+     "q": "Can I offer a discount for a review?",
+     "a": "No. Google does not allow incentives for reviews, and the FTC's 2024 rule bans rewards tied to a positive review. Just ask, every time."
+    },
+    {
+     "q": "Can it send only happy customers to Google?",
+     "a": "No. Filtering out unhappy customers (review gating) breaks Google's rules. The system asks everyone; reply to every review, good or bad."
+    },
+    {
+     "q": "Will you write reviews for me?",
+     "a": "Never. Fake reviews can get your profile restricted and break the law."
+    },
+    {
+     "q": "Do you send the messages for me?",
+     "a": "No. You or your staff send them; I give you the words and the timing."
+    }
+   ],
+   "tool": {
+    "what": "Review booster (team B4): review page, vector QR, print-ready cards, request messages; Google's and the FTC's rules built in.",
+    "path": "agency/upsells/make_review.py",
+    "status": "B4 (agency/upsells/make_review.py)",
+    "steps": [
+     "python -m money_machines.gig_pack order --gig review-booster --name \"<business>\" --category <trade> --city \"<city, ST>\" --review-url <their Google review link>",
+     "python agency/upsells/make_review.py money_machines/out/orders/<slug>/client.json --out money_machines/out/orders/<slug>/reviews",
+     "scan the printed QR with your own phone before you deliver"
+    ]
+   },
+   "delivery_checklist": [
+    "Get the review link from their profile (Ask for reviews > Share link) and open it once to test (3 min)",
+    "Make the QR card and scan it with your own phone (5 min)",
+    "Fill the message and reply templates with their name and trade (10 min)",
+    "Check that nothing offers a reward or filters unhappy customers (2 min)",
+    "Deliver with a one-line 'how to use it' (5 min)"
+   ],
+   "stays_human": [
+    "Scanning the printed QR yourself before delivery",
+    "Telling the client the rules (no incentives, ask everyone)"
+   ],
+   "never": [
+    "Fake, bought or swapped reviews",
+    "Review gating (happy customers to Google, unhappy ones elsewhere)",
+    "Rewards for reviews"
+   ]
+  },
+  {
+   "id": "speed-seo-report",
+   "start_here": false,
+   "title": "I will audit your website speed and SEO and send a clear fix report",
+   "category": "Programming & Tech > Website Maintenance > Speed Optimization",
+   "tags": [
+    "website audit",
+    "page speed",
+    "seo audit",
+    "core web vitals",
+    "website speed"
+   ],
+   "description": "Is your website slow on phones, hard to use, or missing from Google? I check it and tell you exactly what to fix, in plain words, ranked by how much each fix matters.\n\nThe report covers:\n- Speed on a phone (Google PageSpeed Insights, mobile)\n- Phone layout, tap-to-call and the contact form\n- Padlock (https) and broken pages\n- Page titles and Google descriptions\n- Your Google Business Profile link and reviews\n- The 10 fixes that matter most, easiest first\n\nEvery number shows the date it was measured, so you can re-test after the fixes.\n\nIn the top package I also make the fixes on simple HTML sites, or give you step-by-step instructions for WordPress, Wix or Squarespace.\n\nNo one can promise a ranking or a perfect score. I report what I measured and what will help.\n\nI use AI-assisted tools to draft the report; I run the checks and write the advice myself.",
+   "packages": [
+    {
+     "name": "Home page report",
+     "price": 35,
+     "days": 2,
+     "revisions": 1,
+     "minutes": 25,
+     "includes": [
+      "Speed + on-page check of your home page",
+      "Top 10 fixes in plain words",
+      "HTML report you can forward"
+     ]
+    },
+    {
+     "name": "5-page report",
+     "price": 70,
+     "days": 3,
+     "revisions": 2,
+     "minutes": 45,
+     "includes": [
+      "Everything in Home page",
+      "Up to 5 pages",
+      "Phone layout and contact form test",
+      "Fix plan by priority"
+     ]
+    },
+    {
+     "name": "Report + fixes",
+     "price": 140,
+     "days": 5,
+     "revisions": 2,
+     "minutes": 90,
+     "includes": [
+      "Everything in 5-page report",
+      "I apply the fixes on simple HTML sites, or write step-by-step guides for WordPress, Wix or Squarespace",
+      "Re-test with before and after"
+     ]
+    }
+   ],
+   "requirements": [
+    "Your website address",
+    "Which pages matter most (home, services, contact...)",
+    "Your platform if you know it (WordPress, Wix, Squarespace, custom)",
+    "For Report + fixes: access for the fixes (a site user, or your web person's email)"
+   ],
+   "faq": [
+    {
+     "q": "Will my score be 100 after this?",
+     "a": "Maybe not, and it does not need to be. I focus on what makes the site faster and easier for real customers on phones."
+    },
+    {
+     "q": "Do you need my password?",
+     "a": "Not for the reports. For fixes, add me as a user and remove me after."
+    },
+    {
+     "q": "Do you do WordPress plugins?",
+     "a": "I recommend and explain what to change. On simple HTML sites I make the fixes myself."
+    },
+    {
+     "q": "Will this get me to the top of Google?",
+     "a": "No one can promise rankings. A fast, clear site with correct titles helps Google and customers understand you."
+    }
+   ],
+   "tool": {
+    "what": "Website grader (team B3): one polite visit, a one-page report (https, phone layout, tap-to-call, button, Google profile link, speed, weight, title, schema) + PageSpeed Insights by hand.",
+    "path": "agency/storefront/grade.py",
+    "status": "B3 (agency/storefront/grade.py)",
+    "steps": [
+     "python agency/storefront/grade.py <their site> --name \"<business>\" --city <city> --pdf",
+     "open pagespeed.web.dev with the site, Mobile tab: add the 4 scores and the top 3 'opportunities' with today's date to your delivery note",
+     "put the fixes in order for this business (easiest and biggest first)"
+    ]
+   },
+   "delivery_checklist": [
+    "Run the report tool (3 min)",
+    "Run PageSpeed Insights on mobile and paste the numbers with today's date (5 min)",
+    "Open the site on your phone: tap-to-call, the form, the menu (5 min)",
+    "Put the 10 fixes in order, easiest and biggest first (7 min)",
+    "Deliver the HTML report with a 3-line summary (5 min)"
+   ],
+   "stays_human": [
+    "The order of the fixes and the plain-words advice",
+    "Checking the site on a real phone"
+   ],
+   "never": [
+    "Crawling a site that blocks robots",
+    "Promising scores or rankings",
+    "Buying links or 'traffic'"
+   ]
+  },
+  {
+   "id": "landing-page",
+   "start_here": false,
+   "title": "I will build a fast landing page for your offer, event or local service",
+   "category": "Programming & Tech > Website Development > Landing Pages",
+   "tags": [
+    "landing page",
+    "sales page",
+    "one page website",
+    "lead generation",
+    "event page"
+   ],
+   "description": "One page, one goal: calls, bookings, sign-ups or quote requests.\n\nI build a fast landing page that works on phones and makes the next step obvious:\n- A clear headline and one main button\n- Your offer and why it is worth it\n- Real reviews or photos of your work (only real ones)\n- Questions customers ask, answered\n- A form that sends to your email, or tap-to-call\n\nIt loads fast, has the padlock (https), and goes on a free hosting plan in your own account. Your domain stays yours.\n\nGood for: a seasonal offer, an event, a new service, an ad campaign, or a business that needs one good page now.\n\nNot a fit: online shops or pages that must be built inside WordPress or Shopify.\n\nI use AI-assisted tools for first drafts and code; I check and finish every page myself.",
+   "packages": [
+    {
+     "name": "Simple page",
+     "price": 70,
+     "days": 2,
+     "revisions": 1,
+     "minutes": 25,
+     "includes": [
+      "One section page from your words",
+      "Button to call or a form",
+      "Mobile-first, https, set up on your free hosting"
+     ]
+    },
+    {
+     "name": "Full landing page",
+     "price": 140,
+     "days": 3,
+     "revisions": 2,
+     "minutes": 45,
+     "includes": [
+      "Headline, benefits, proof, FAQ, form",
+      "Tap-to-call and map if local",
+      "Share picture and Google description"
+     ]
+    },
+    {
+     "name": "Page + words",
+     "price": 250,
+     "days": 5,
+     "revisions": 3,
+     "minutes": 75,
+     "includes": [
+      "Everything in Full landing page",
+      "The words written for you",
+      "2 headline versions to test",
+      "Your analytics code added (you provide it)"
+     ]
+    }
+   ],
+   "requirements": [
+    "What the page is for (one goal)",
+    "Your offer, price and deadline if any",
+    "Business name, phone, email for the form",
+    "Real reviews or photos you can use",
+    "Colours and logo (or order the logo gig)",
+    "Your domain, if you have one"
+   ],
+   "faq": [
+    {
+     "q": "Do I pay for hosting?",
+     "a": "No. It goes on a free plan in your own account. A domain costs about $10-15 a year if you want your own address."
+    },
+    {
+     "q": "Can you write the words?",
+     "a": "Yes, in Page + words. In the other packages you send the words and I shape them."
+    },
+    {
+     "q": "Can you add fake reviews to look busy?",
+     "a": "No. Only real reviews from real customers, with their permission."
+    },
+    {
+     "q": "Do you use AI?",
+     "a": "Yes, for first drafts and code. I check and finish every page myself."
+    }
+   ],
+   "tool": {
+    "what": "Agency site generator (team B1), one page.",
+    "module": "agency.build_site",
+    "status": "B1 (agency/build_site.py)",
+    "steps": [
+     "python -m money_machines.gig_pack order --gig landing-page --name \"<business>\" --category <trade> --city \"<city, ST>\" --phone \"<phone>\" --email <email>",
+     "python -m agency.build_site --leads money_machines/out/orders/<slug>/lead.json --id <slug>",
+     "edit site.json (headline, offer, FAQ, real reviews), then: python -m agency.build_site --site <out>/<slug>/site.json --final"
+    ]
+   },
+   "delivery_checklist": [
+    "Read the goal; write the headline first (5 min)",
+    "Build with the tool (3 min)",
+    "Put in their words, offer, reviews and photos (12 min)",
+    "Phone check at 375 px: the button, the form test, the phone number (5 min)",
+    "Read every claim against what they gave you (3 min)",
+    "Deliver with the 3 steps to go live (5 min)"
+   ],
+   "stays_human": [
+    "The headline and the offer wording",
+    "Checking every review and claim is real"
+   ],
+   "never": [
+    "Fake reviews, fake countdowns or fake scarcity",
+    "Claims the client did not give"
+   ]
+  },
+  {
+   "id": "social-month",
+   "start_here": false,
+   "title": "I will create a month of social media posts with images for your local business",
+   "category": "Digital Marketing > Social Media Marketing (content)",
+   "tags": [
+    "social media posts",
+    "instagram posts",
+    "content calendar",
+    "facebook posts",
+    "social media"
+   ],
+   "description": "Posting every week is hard when you are running a business. I make a month of posts for you (12 or 20), ready to schedule.\n\nEach post has:\n- A designed image in your colours (square for the feed, plus a story version)\n- A short caption in your voice, with a clear next step (call, book, visit)\n- A few useful hashtags (no spam lists)\n- The date to post it\n\nThe mix: tips your customers care about, your services, behind the scenes, offers, seasonal days, and reviews you already have (with permission).\n\nIn the top package I schedule the posts for you in your free Meta Business Suite (Facebook and Instagram).\n\nNo fake claims, no stock photos pretending to be your team, no bought followers.\n\nI use AI-assisted tools for first drafts; every caption is read, edited and approved by me before you see it.",
+   "packages": [
+    {
+     "name": "12 posts",
+     "price": 45,
+     "days": 3,
+     "revisions": 1,
+     "minutes": 30,
+     "includes": [
+      "12 posts (3 a week) with designed images",
+      "Captions with a few hashtags",
+      "Posting calendar and schedule sheet"
+     ]
+    },
+    {
+     "name": "20 posts + stories",
+     "price": 85,
+     "days": 4,
+     "revisions": 2,
+     "minutes": 45,
+     "includes": [
+      "20 posts with designed images",
+      "A story version of every post",
+      "Captions, calendar and schedule sheet"
+     ]
+    },
+    {
+     "name": "20 posts scheduled",
+     "price": 140,
+     "days": 5,
+     "revisions": 2,
+     "minutes": 70,
+     "includes": [
+      "Everything in 20 posts + stories",
+      "I schedule them in your Meta Business Suite (you give me access)",
+      "An approval message so nothing posts without your OK"
+     ]
+    }
+   ],
+   "requirements": [
+    "Business name, trade, town",
+    "Logo and colours",
+    "Your services and any offers this month",
+    "Photos you own (work, team, place)",
+    "3 things customers always ask you",
+    "For scheduling: add me to your Meta Business Suite (Settings > People / Partners)"
+   ],
+   "faq": [
+    {
+     "q": "Which platforms?",
+     "a": "Instagram and Facebook (the same posts fit both). Square or 4:5 images."
+    },
+    {
+     "q": "Do you use AI?",
+     "a": "Yes, for first drafts. I edit every caption and design every image myself; nothing is posted without your OK."
+    },
+    {
+     "q": "Will this get me followers?",
+     "a": "I can't promise numbers. Regular, useful posts give people a reason to follow and to call you."
+    },
+    {
+     "q": "Do you post for me?",
+     "a": "In the top package I schedule them in your Meta Business Suite. You stay the owner of your accounts."
+    }
+   ],
+   "tool": {
+    "what": "Social post machine (team B5): designed square + story images from code (no AI images), captions, schedule sheet, approval message.",
+    "path": "agency/content/make_posts.py",
+    "status": "B5 (agency/content/make_posts.py)",
+    "steps": [
+     "python -m money_machines.gig_pack order --gig social-month --name \"<business>\" --category <trade> --city \"<city, ST>\" --phone ... --email ...",
+     "python agency/content/make_posts.py money_machines/out/orders/<slug>/client.json --month next --posts 12   (20 for the bigger packages; --colors \"#hex,#hex\" for their brand)",
+     "send client_message.txt for their OK, then schedule by hand in their Meta Business Suite > Planner (free) or hand over posts.csv"
+    ]
+   },
+   "delivery_checklist": [
+    "Fill the client brief (name, trade, offers, colours) (5 min)",
+    "Run the social-post machine (5 min)",
+    "Read all captions: no claims they did not give, no prices you are not sure of, spelling (15 min)",
+    "Look at every image on your phone (5 min)",
+    "Deliver the images, captions sheet and calendar (5 min)"
+   ],
+   "stays_human": [
+    "Reading every caption before delivery",
+    "Using only photos the client owns"
+   ],
+   "never": [
+    "Bought followers or engagement",
+    "Fake reviews or testimonials in posts",
+    "Stock people presented as the client's team"
+   ]
+  },
+  {
+   "id": "chat-widget",
+   "start_here": false,
+   "title": "I will install a free live chat widget on your website and set it up",
+   "category": "Programming & Tech > Website Development > Customization (chat)",
+   "tags": [
+    "live chat",
+    "chat widget",
+    "website chat",
+    "tawk to",
+    "customer support"
+   ],
+   "description": "Some customers will never call, but they will type a quick question. A chat box on your website catches those leads.\n\nI install a free chat widget on your site and set it up so it is useful from day one:\n- The chat box in your colours, on every page\n- A friendly greeting and your opening hours\n- Saved answers to the questions you get most\n- Alerts on your phone when someone writes\n- An offline form that sends the message to your email\n\nThe chat account is yours (a free plan of a well-known chat service, or our own light widget in the top package). No monthly fee from me.\n\nWorks with most sites: HTML, WordPress, Wix, Squarespace, Shopify.\n\nI never ask for your passwords: you create the chat account and invite me, or paste one line of code with my instructions.\n\nI use AI-assisted tools for first drafts; I check and finish everything myself.",
+   "packages": [
+    {
+     "name": "Install",
+     "price": 25,
+     "days": 1,
+     "revisions": 1,
+     "minutes": 15,
+     "includes": [
+      "Free chat widget on your site (your account)",
+      "Your colours and position",
+      "Phone app alerts set up"
+     ]
+    },
+    {
+     "name": "Install + answers",
+     "price": 55,
+     "days": 2,
+     "revisions": 2,
+     "minutes": 35,
+     "includes": [
+      "Everything in Install",
+      "Greeting and opening hours",
+      "10 saved answers from your FAQ",
+      "Offline messages to your email"
+     ]
+    },
+    {
+     "name": "FAQ widget",
+     "price": 95,
+     "days": 3,
+     "revisions": 2,
+     "minutes": 55,
+     "includes": [
+      "Everything in Install + answers",
+      "Our light FAQ answer widget with your answers (no monthly fee)",
+      "A lead form that emails you"
+     ]
+    }
+   ],
+   "requirements": [
+    "Your website address and platform",
+    "The 10 questions customers ask most, with your answers",
+    "Your opening hours",
+    "The email and phone that should get alerts",
+    "Site access, or a person who can paste one line of code"
+   ],
+   "faq": [
+    {
+     "q": "Is there a monthly fee?",
+     "a": "Not from me. The chat services I use have free plans; their paid extras are optional and your choice."
+    },
+    {
+     "q": "Will a robot answer my customers?",
+     "a": "Only with your own saved answers. Real conversations go to you on your phone."
+    },
+    {
+     "q": "Do you need my password?",
+     "a": "No. You create the chat account and invite me, or paste one line of code I send you."
+    },
+    {
+     "q": "Does it slow my site down?",
+     "a": "Slightly. I load it after the page so your site stays fast; the FAQ widget is very light."
+    }
+   ],
+   "tool": {
+    "what": "Front-desk chat (team B4): one script tag, answers only from the client's facts; or a free chat service installed by hand.",
+    "path": "agency/upsells/make_chat.py",
+    "status": "B4 (agency/upsells/make_chat.py)",
+    "steps": [
+     "Install / Install + answers: the client opens a free account at a chat service (for example tawk.to or crisp.chat) and invites you; paste its snippet before </body>",
+     "FAQ widget: python -m money_machines.gig_pack order --gig chat-widget --name \"<business>\" --category <trade> --city \"<city, ST>\" --phone ... --email ...",
+     "python agency/upsells/make_chat.py money_machines/out/orders/<slug>/client.json --out money_machines/out/orders/<slug>/chat   (fill the facts it lists under 'check with the client')"
+    ]
+   },
+   "delivery_checklist": [
+    "Get the invite or the site access (2 min)",
+    "Paste the snippet, set colours and greeting (10 min)",
+    "Add the saved answers and hours (15 min)",
+    "Send a test chat from your phone; check the alert arrives (3 min)",
+    "Deliver with how to answer from the phone app (5 min)"
+   ],
+   "stays_human": [
+    "The answers in the widget (the client approves every one)",
+    "The test chat from your own phone"
+   ],
+   "never": [
+    "Storing the client's passwords",
+    "A bot that pretends to be a person",
+    "Collecting data the client did not ask for"
+   ]
+  }
+ ],
+ "upwork": {
+  "rules": "Write 2 sentences only for this client in every proposal (what they asked, one detail from their post). Never paste the same text twice. Send by hand. One proposal per job.",
+  "templates": {
+   "local-website": "Hi {name},\n\nYou need {their need in their words} for {their business}, and {one detail from their post}. That is exactly what I build: fast, phone-first websites for local businesses, live in days, on hosting you own.\n\nFor you I would do:\n1. A home page with your services, hours, map and a tap-to-call button\n2. {their extra: booking form / service pages / gallery}\n3. The Google basics: titles, description, your Google profile and review link\n\nExample: {link to a sample site}\nTimeline: {days} days. Fixed price: ${price}, with {revisions} rounds of changes.\n\nOne question: {a real question about their post}?\n\n{your first name}\n\nI use AI-assisted tools for first drafts and code and finish every page myself. If you prefer no AI on your project, tell me and I will work without it.",
+   "logo-brand-kit": "Hi {name},\n\nA clean logo for {their business} that works on {where they will use it: van, sign, Instagram}. I make simple, modern logos from original shapes, with a brand kit so everything matches.\n\nYou would get 3 concepts first, then the full kit for the one you pick: dark and light versions, colours with codes, favicon, profile picture and a one-page guide. SVG and PNG files.\n\nExample: {link to a concepts board}\nTimeline: {days} days. Fixed price: ${price}, with {revisions} rounds of changes.\n\nQuick question: {colours or style they mentioned}?\n\n{your first name}\n\nThe logos are drawn by code from simple shapes, not by an image AI; I choose and check every concept.",
+   "gbp-setup": "Hi {name},\n\nYour Google Business Profile for {their business} {their problem: not showing on Maps / missing info / no reviews}. I set up profiles the way Google's guidelines ask: real name, right categories, services, hours, photos and posts.\n\nPlan:\n1. Audit every field and score it (you get the checklist)\n2. Fix it with Manager access (no password needed)\n3. Your review link and 4 ready posts\n\nI don't promise rankings and I never touch reviews except to help you ask for them.\n\nTimeline: {days} days. Fixed price: ${price}.\n\nIs the profile already verified?\n\n{your first name}\n\nI use AI-assisted tools for drafts and do every change in your profile myself.",
+   "review-booster": "Hi {name},\n\nYou want more Google reviews for {their business}. The honest way works: ask every customer at the right moment with a one-tap link.\n\nI set up your review link, a print-ready QR card in your colours, short email and text messages, and replies for good and bad reviews. It follows Google's rules and the FTC's 2024 review rule: no incentives, no filtering of unhappy customers, no fake reviews.\n\nTimeline: {days} days. Fixed price: ${price}.\n\nHow do you usually contact customers after a job?\n\n{your first name}\n\nI use AI-assisted tools for first drafts and finish everything myself.",
+   "speed-seo-report": "Hi {name},\n\nYou said {their site} is {their problem: slow / not on Google / not getting calls}. I can check it today and send a report in plain words: speed on phones (PageSpeed Insights), phone layout, https, titles, the contact form and your Google profile, with the 10 fixes that matter most, easiest first.\n\n{if they asked for fixes: I can also make the fixes on simple HTML sites, or give step-by-step guides for WordPress/Wix/Squarespace.}\n\nTimeline: {days} days. Fixed price: ${price}.\n\nWhich pages bring you the most customers?\n\n{your first name}\n\nI use AI-assisted tools to draft the report; I run the checks and write the advice myself.",
+   "landing-page": "Hi {name},\n\nOne page, one goal: {their goal: bookings / sign-ups / calls} for {their offer}. I build fast landing pages that work on phones: headline, benefits, real proof, FAQ and a form or tap-to-call.\n\nExample: {link}\nTimeline: {days} days. Fixed price: ${price}, with {revisions} rounds of changes.\n\nDo you have the words, or should I write them?\n\n{your first name}\n\nI use AI-assisted tools for first drafts and code and finish every page myself. If you prefer no AI, tell me.",
+   "social-month": "Hi {name},\n\nA month of posts for {their business}, so you don't have to think about it every week. Each post gets a designed image in your colours, a short caption in your voice with a clear next step, and a posting date. In the top package I schedule them in your Meta Business Suite.\n\nExample posts: {link}\nTimeline: {days} days. Fixed price: ${price}.\n\nAny offers or events this month I should plan around?\n\n{your first name}\n\nI use AI-assisted tools for first drafts; I edit every caption and design every image myself.",
+   "chat-widget": "Hi {name},\n\nA chat box on {their site} so customers who won't call can still reach you. I install a free chat widget (your account), set your greeting, hours and saved answers, and make sure alerts reach your phone.\n\nNo passwords needed: you create the account and invite me, or paste one line of code.\n\nTimeline: {days} days. Fixed price: ${price}.\n\nWhat platform is your site on?\n\n{your first name}\n\nI use AI-assisted tools for drafts and finish everything myself."
+  }
+ },
+ "checklists": {
+  "gbp-setup": [
+   {
+    "area": "Name",
+    "check": "The name matches the sign, website and receipts exactly: no city or keywords added",
+    "why": "Google's guidelines; extra words can get a profile suspended"
+   },
+   {
+    "area": "Category",
+    "check": "Main category is the most specific true one (e.g. 'Emergency plumber' only if they offer it)",
+    "why": "The main category matters most for which searches show you"
+   },
+   {
+    "area": "Category",
+    "check": "Up to 9 extra categories, each one true for the business",
+    "why": "Each one can show you for more searches"
+   },
+   {
+    "area": "Address",
+    "check": "A real place where they meet customers, or a hidden address with a service area",
+    "why": "Virtual offices and mail boxes are not allowed"
+   },
+   {
+    "area": "Service area",
+    "check": "Towns or zip codes they really serve (not a whole state)",
+    "why": "Matches what customers expect"
+   },
+   {
+    "area": "Hours",
+    "check": "Opening hours correct, plus holiday hours for the next 2 holidays",
+    "why": "Wrong hours are the top customer complaint"
+   },
+   {
+    "area": "Phone",
+    "check": "A local number that is answered; the same number as the website",
+    "why": "Consistent details build trust"
+   },
+   {
+    "area": "Website",
+    "check": "Links to the right page of the website (https)",
+    "why": "Sends searchers to the right place"
+   },
+   {
+    "area": "Description",
+    "check": "750 characters or less, plain words: what they do, where, why choose them; no links or offers",
+    "why": "The first thing many people read"
+   },
+   {
+    "area": "Services",
+    "check": "Each main service listed with a short description (and a price if they share it)",
+    "why": "Helps Google match searches"
+   },
+   {
+    "area": "Attributes",
+    "check": "The true attributes set (e.g. wheelchair access, women-owned, online appointments)",
+    "why": "Shown in search and Maps"
+   },
+   {
+    "area": "Photos",
+    "check": "Logo, cover, outside (so people find the door), inside, team, 5+ work photos; all owned by the business",
+    "why": "Profiles with real photos get more clicks and calls"
+   },
+   {
+    "area": "Reviews",
+    "check": "Review link copied and shared; every review from the last 90 days has a reply",
+    "why": "Replies show you care; the link makes asking easy"
+   },
+   {
+    "area": "Posts",
+    "check": "A post in the last 7 days (offer, update or tip) with a photo and a button",
+    "why": "Shows the business is active"
+   },
+   {
+    "area": "Booking/quote",
+    "check": "Booking or quote link set if they take online bookings",
+    "why": "One tap from search to booked"
+   },
+   {
+    "area": "Duplicates",
+    "check": "Search Maps for the name: no duplicate or old listing",
+    "why": "Duplicates split reviews and confuse Google"
+   },
+   {
+    "area": "Consistency",
+    "check": "Name, address and phone are the same on Facebook, Yelp, Apple Maps, Bing Places",
+    "why": "Consistent details across the web"
+   },
+   {
+    "area": "Access",
+    "check": "The owner is the Owner; helpers (us) are Managers, removed when done",
+    "why": "The business keeps control"
+   }
+  ]
+ }
+}

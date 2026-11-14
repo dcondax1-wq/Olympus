@@ -1,0 +1,823 @@
+{
+ "v": 1,
+ "kind": "ig-content-plan",
+ "account": "eval_journal",
+ "title": "The Eval Journal",
+ "bio": "Rules, routines and risk math for futures prop-firm evaluations. Education only. No signals. No results shown or promised.",
+ "handle_ideas": [
+  "@the.eval.journal",
+  "@evaljournal.daily",
+  "@rules.before.results"
+ ],
+ "purpose": "Education for traders in prop-firm evaluations (rules, drawdown math, routines, journaling). Sells the eval tracker (money_machines/products/eval_tracker) and, later, disclosed affiliate links. Never shows or promises results.",
+ "start": "2026-11-16",
+ "days": 30,
+ "tz": "America/New_York",
+ "posts": [
+  {
+   "day": 1,
+   "date": "2026-11-16",
+   "weekday": "Mon",
+   "time": "07:30",
+   "pillar": "Rules",
+   "special": "",
+   "example": false,
+   "headline": "Read your eval rules like a contract",
+   "points": [
+    "How the max loss moves (EOD, intraday, static)",
+    "The daily loss limit",
+    "Any consistency rule",
+    "News and holiday rules",
+    "Write them on one card"
+   ],
+   "caption": "Read your eval rules like a contract\n\nMost failed evaluations break a rule, not the market. Every firm writes its rules differently. Read yours line by line before the first trade, and keep a one-card summary next to your screen.\n\n1. How the max loss moves (EOD, intraday, static)\n2. The daily loss limit\n3. Any consistency rule\n4. News and holiday rules\n5. Write them on one card\n\nSave this for your next session.\n\n#futurestrading #propfirm #riskmanagement #tradingjournal #daytrading\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#futurestrading",
+    "#propfirm",
+    "#riskmanagement",
+    "#tradingjournal",
+    "#daytrading"
+   ],
+   "alt_text": "Text card from The Eval Journal: Read your eval rules like a contract. How the max loss moves (EOD, intraday, static); The daily loss limit; Any consistency rule; News and holiday rules; Write them on one card.",
+   "image": "eval_journal/day01.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 2,
+   "date": "2026-11-17",
+   "weekday": "Tue",
+   "time": "07:30",
+   "pillar": "Risk math",
+   "special": "",
+   "example": true,
+   "headline": "Drawdown left is the number that matters",
+   "points": [
+    "Drawdown left = balance minus the max-loss level",
+    "A trailing level moves up, never down",
+    "Check it before every session"
+   ],
+   "caption": "Drawdown left is the number that matters\n\nExample only: a $50,000 account with a $2,000 max loss starts with the max-loss level at $48,000, so drawdown left is $2,000. Every plan for the day starts from that number, not from the balance.\n\n1. Drawdown left = balance minus the max-loss level\n2. A trailing level moves up, never down\n3. Check it before every session\n\nShare it with a friend who is in an evaluation.\n\n#propfirmchallenge #futurestrading #tradingpsychology #riskmanagement #tradingrules\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#propfirmchallenge",
+    "#futurestrading",
+    "#tradingpsychology",
+    "#riskmanagement",
+    "#tradingrules"
+   ],
+   "alt_text": "Text card from The Eval Journal: Drawdown left is the number that matters. Drawdown left = balance minus the max-loss level; A trailing level moves up, never down; Check it before every session.",
+   "image": "eval_journal/day02.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 3,
+   "date": "2026-11-18",
+   "weekday": "Wed",
+   "time": "07:30",
+   "pillar": "Risk math",
+   "special": "",
+   "example": true,
+   "headline": "How end-of-day trailing drawdown works",
+   "points": [
+    "The level follows your best end-of-day balance",
+    "Dips during the day still count",
+    "Many firms stop the trail at a set level",
+    "Read your firm's exact rule"
+   ],
+   "caption": "How end-of-day trailing drawdown works\n\nExample only: if the account closes a day at $50,600 with a $2,000 trailing max loss, the level moves to $48,600 and stays there until a higher close. Some firms stop trailing once it reaches the starting balance or a set amount above it.\n\n1. The level follows your best end-of-day balance\n2. Dips during the day still count\n3. Many firms stop the trail at a set level\n4. Read your firm's exact rule\n\nMy eval tracker (drawdown left, daily limit, size helper) is in the bio. It is my own product.\n\n#tradingjournal #propfirm #tradingdiscipline #futurestrading #daytrader\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#tradingjournal",
+    "#propfirm",
+    "#tradingdiscipline",
+    "#futurestrading",
+    "#daytrader"
+   ],
+   "alt_text": "Text card from The Eval Journal: How end-of-day trailing drawdown works. The level follows your best end-of-day balance; Dips during the day still count; Many firms stop the trail at a set level; Read your firm's exact rule.",
+   "image": "eval_journal/day03.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 4,
+   "date": "2026-11-19",
+   "weekday": "Thu",
+   "time": "07:30",
+   "pillar": "Risk math",
+   "special": "",
+   "example": true,
+   "headline": "Size follows the stop",
+   "points": [
+    "Risk in $ / (stop in points x $ per point)",
+    "Wide stop, fewer contracts",
+    "Never widen a stop to fit the size"
+   ],
+   "caption": "Size follows the stop\n\nExample only: risking $200 with a 20-point stop on a micro Nasdaq contract ($2 a point) is $40 a contract, so 5 contracts. A 40-point stop means 2 contracts. The stop decides the size, never the other way round.\n\n1. Risk in $ / (stop in points x $ per point)\n2. Wide stop, fewer contracts\n3. Never widen a stop to fit the size\n\nWhat is your rule for this? Tell me in the comments.\n\n#futurestrading #propfirm #riskmanagement #tradingjournal #daytrading\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#futurestrading",
+    "#propfirm",
+    "#riskmanagement",
+    "#tradingjournal",
+    "#daytrading"
+   ],
+   "alt_text": "Text card from The Eval Journal: Size follows the stop. Risk in $ / (stop in points x $ per point); Wide stop, fewer contracts; Never widen a stop to fit the size.",
+   "image": "eval_journal/day04.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 5,
+   "date": "2026-11-20",
+   "weekday": "Fri",
+   "time": "07:30",
+   "pillar": "Routine",
+   "special": "",
+   "example": false,
+   "headline": "A 5-minute pre-market checklist",
+   "points": [
+    "News calendar for today",
+    "Drawdown left",
+    "Max trades today",
+    "Stop size and position size",
+    "Your walk-away rule"
+   ],
+   "caption": "A 5-minute pre-market checklist\n\nFive minutes before the open saves a lot of pain after it. Same list, every day, written down.\n\n1. News calendar for today\n2. Drawdown left\n3. Max trades today\n4. Stop size and position size\n5. Your walk-away rule\n\nFollow for one rule or routine a day.\n\n#propfirmchallenge #futurestrading #tradingpsychology #riskmanagement #tradingrules\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#propfirmchallenge",
+    "#futurestrading",
+    "#tradingpsychology",
+    "#riskmanagement",
+    "#tradingrules"
+   ],
+   "alt_text": "Text card from The Eval Journal: A 5-minute pre-market checklist. News calendar for today; Drawdown left; Max trades today; Stop size and position size; Your walk-away rule.",
+   "image": "eval_journal/day05.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 6,
+   "date": "2026-11-21",
+   "weekday": "Sat",
+   "time": "07:30",
+   "pillar": "Discipline",
+   "special": "",
+   "example": false,
+   "headline": "The walk-away rule",
+   "points": [
+    "Decide before the open when you stop",
+    "After X losses or a set amount",
+    "Write it down",
+    "Follow it. Tomorrow exists."
+   ],
+   "caption": "The walk-away rule\n\nThe worst trades happen after the plan is already broken. A walk-away rule decided in a calm moment protects you from the tilted version of you.\n\n1. Decide before the open when you stop\n2. After X losses or a set amount\n3. Write it down\n4. Follow it. Tomorrow exists.\n\nSave this for your next session.\n\n#tradingjournal #propfirm #tradingdiscipline #futurestrading #daytrader\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#tradingjournal",
+    "#propfirm",
+    "#tradingdiscipline",
+    "#futurestrading",
+    "#daytrader"
+   ],
+   "alt_text": "Text card from The Eval Journal: The walk-away rule. Decide before the open when you stop; After X losses or a set amount; Write it down; Follow it. Tomorrow exists..",
+   "image": "eval_journal/day06.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 7,
+   "date": "2026-11-22",
+   "weekday": "Sun",
+   "time": "07:30",
+   "pillar": "Journal",
+   "special": "",
+   "example": false,
+   "headline": "What to write in a trade journal",
+   "points": [
+    "Setup and reason",
+    "Stop and size",
+    "Result in R",
+    "Emotion, 1 to 5",
+    "Rules followed: yes or no"
+   ],
+   "caption": "What to write in a trade journal\n\nA journal is not a diary of wins and losses. It is data about your decisions. The 'rules followed' column is the most important one.\n\n1. Setup and reason\n2. Stop and size\n3. Result in R\n4. Emotion, 1 to 5\n5. Rules followed: yes or no\n\nShare it with a friend who is in an evaluation.\n\n#futurestrading #propfirm #riskmanagement #tradingjournal #daytrading\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#futurestrading",
+    "#propfirm",
+    "#riskmanagement",
+    "#tradingjournal",
+    "#daytrading"
+   ],
+   "alt_text": "Text card from The Eval Journal: What to write in a trade journal. Setup and reason; Stop and size; Result in R; Emotion, 1 to 5; Rules followed: yes or no.",
+   "image": "eval_journal/day07.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 8,
+   "date": "2026-11-23",
+   "weekday": "Mon",
+   "time": "07:30",
+   "pillar": "Rules",
+   "special": "thanksgiving_week",
+   "example": false,
+   "headline": "Holiday week: check the trading hours",
+   "points": [
+    "Markets can close early around holidays",
+    "Your firm may have its own holiday rules",
+    "Thin markets move strangely: smaller or flat"
+   ],
+   "caption": "Holiday week: check the trading hours\n\nBefore a holiday week, look up the exchange's holiday schedule and your firm's rules. If you are not sure, sit it out.\n\n1. Markets can close early around holidays\n2. Your firm may have its own holiday rules\n3. Thin markets move strangely: smaller or flat\n\nMy eval tracker (drawdown left, daily limit, size helper) is in the bio. It is my own product.\n\n#propfirmchallenge #futurestrading #tradingpsychology #riskmanagement #tradingrules\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#propfirmchallenge",
+    "#futurestrading",
+    "#tradingpsychology",
+    "#riskmanagement",
+    "#tradingrules"
+   ],
+   "alt_text": "Text card from The Eval Journal: Holiday week: check the trading hours. Markets can close early around holidays; Your firm may have its own holiday rules; Thin markets move strangely: smaller or flat.",
+   "image": "eval_journal/day08.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 9,
+   "date": "2026-11-24",
+   "weekday": "Tue",
+   "time": "07:30",
+   "pillar": "Myths",
+   "special": "",
+   "example": false,
+   "headline": "Myth: 'Passing fast is the goal'",
+   "points": [
+    "The goal is not breaking rules",
+    "Rushing usually means oversizing",
+    "Consistency rules punish one big day"
+   ],
+   "caption": "Myth: 'Passing fast is the goal'\n\nAn evaluation is a test of following rules. Trying to finish in two days usually means risking too much on each trade.\n\n1. The goal is not breaking rules\n2. Rushing usually means oversizing\n3. Consistency rules punish one big day\n\nWhat is your rule for this? Tell me in the comments.\n\n#tradingjournal #propfirm #tradingdiscipline #futurestrading #daytrader\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#tradingjournal",
+    "#propfirm",
+    "#tradingdiscipline",
+    "#futurestrading",
+    "#daytrader"
+   ],
+   "alt_text": "Text card from The Eval Journal: Myth: 'Passing fast is the goal'. The goal is not breaking rules; Rushing usually means oversizing; Consistency rules punish one big day.",
+   "image": "eval_journal/day09.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 10,
+   "date": "2026-11-25",
+   "weekday": "Wed",
+   "time": "07:30",
+   "pillar": "Risk math",
+   "special": "",
+   "example": true,
+   "headline": "The consistency rule, explained",
+   "points": [
+    "Some firms cap your best day as a share of total profit",
+    "It is checked before a pass or payout",
+    "Plan for many average days"
+   ],
+   "caption": "The consistency rule, explained\n\nExample only: with a 40% rule, a $1,000 best day needs at least $2,500 of total profit before it counts. Read your firm's version: some apply it in the evaluation, some only for payouts.\n\n1. Some firms cap your best day as a share of total profit\n2. It is checked before a pass or payout\n3. Plan for many average days\n\nFollow for one rule or routine a day.\n\n#futurestrading #propfirm #riskmanagement #tradingjournal #daytrading\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#futurestrading",
+    "#propfirm",
+    "#riskmanagement",
+    "#tradingjournal",
+    "#daytrading"
+   ],
+   "alt_text": "Text card from The Eval Journal: The consistency rule, explained. Some firms cap your best day as a share of total profit; It is checked before a pass or payout; Plan for many average days.",
+   "image": "eval_journal/day10.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 11,
+   "date": "2026-11-26",
+   "weekday": "Thu",
+   "time": "07:30",
+   "pillar": "Rules",
+   "special": "",
+   "example": false,
+   "headline": "Daily loss limit vs. max loss",
+   "points": [
+    "Daily limit resets each day",
+    "Max loss is the account's life",
+    "Know both numbers",
+    "Make your own daily stop smaller"
+   ],
+   "caption": "Daily loss limit vs. max loss\n\nTwo different lines, two different jobs. Breaking either one can end the account, so your personal daily stop should sit well inside both.\n\n1. Daily limit resets each day\n2. Max loss is the account's life\n3. Know both numbers\n4. Make your own daily stop smaller\n\nSave this for your next session.\n\n#propfirmchallenge #futurestrading #tradingpsychology #riskmanagement #tradingrules\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#propfirmchallenge",
+    "#futurestrading",
+    "#tradingpsychology",
+    "#riskmanagement",
+    "#tradingrules"
+   ],
+   "alt_text": "Text card from The Eval Journal: Daily loss limit vs. max loss. Daily limit resets each day; Max loss is the account's life; Know both numbers; Make your own daily stop smaller.",
+   "image": "eval_journal/day11.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 12,
+   "date": "2026-11-27",
+   "weekday": "Fri",
+   "time": "07:30",
+   "pillar": "Routine",
+   "special": "",
+   "example": false,
+   "headline": "Trade less, review more",
+   "points": [
+    "A few planned trades a day",
+    "Review each one",
+    "Quality over quantity"
+   ],
+   "caption": "Trade less, review more\n\nMore trades means more costs and more chances to break a rule. A short list of planned setups, reviewed properly, is a better habit.\n\n1. A few planned trades a day\n2. Review each one\n3. Quality over quantity\n\nShare it with a friend who is in an evaluation.\n\n#tradingjournal #propfirm #tradingdiscipline #futurestrading #daytrader\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#tradingjournal",
+    "#propfirm",
+    "#tradingdiscipline",
+    "#futurestrading",
+    "#daytrader"
+   ],
+   "alt_text": "Text card from The Eval Journal: Trade less, review more. A few planned trades a day; Review each one; Quality over quantity.",
+   "image": "eval_journal/day12.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 13,
+   "date": "2026-11-28",
+   "weekday": "Sat",
+   "time": "07:30",
+   "pillar": "Risk math",
+   "special": "",
+   "example": true,
+   "headline": "Risk a share of drawdown left, not of the balance",
+   "points": [
+    "Pick a share, e.g. 10% of drawdown left",
+    "Recalculate every day",
+    "Less room means smaller trades"
+   ],
+   "caption": "Risk a share of drawdown left, not of the balance\n\nExample only: with $2,000 of drawdown left, 10% is $200 a trade. If drawdown left falls to $1,000, the same rule gives $100. Size shrinks automatically when the account is under pressure.\n\n1. Pick a share, e.g. 10% of drawdown left\n2. Recalculate every day\n3. Less room means smaller trades\n\nMy eval tracker (drawdown left, daily limit, size helper) is in the bio. It is my own product.\n\n#futurestrading #propfirm #riskmanagement #tradingjournal #daytrading\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#futurestrading",
+    "#propfirm",
+    "#riskmanagement",
+    "#tradingjournal",
+    "#daytrading"
+   ],
+   "alt_text": "Text card from The Eval Journal: Risk a share of drawdown left, not of the balance. Pick a share, e.g. 10% of drawdown left; Recalculate every day; Less room means smaller trades.",
+   "image": "eval_journal/day13.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 14,
+   "date": "2026-11-29",
+   "weekday": "Sun",
+   "time": "07:30",
+   "pillar": "Discipline",
+   "special": "",
+   "example": false,
+   "headline": "How to spot revenge trading",
+   "points": [
+    "Bigger size after a loss",
+    "No setup, just 'getting it back'",
+    "Trading outside your hours",
+    "The fix: your walk-away rule"
+   ],
+   "caption": "How to spot revenge trading\n\nEveryone feels it. The difference is noticing it early. If you catch one of these signs, stand up and step away for ten minutes.\n\n1. Bigger size after a loss\n2. No setup, just 'getting it back'\n3. Trading outside your hours\n4. The fix: your walk-away rule\n\nWhat is your rule for this? Tell me in the comments.\n\n#propfirmchallenge #futurestrading #tradingpsychology #riskmanagement #tradingrules\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#propfirmchallenge",
+    "#futurestrading",
+    "#tradingpsychology",
+    "#riskmanagement",
+    "#tradingrules"
+   ],
+   "alt_text": "Text card from The Eval Journal: How to spot revenge trading. Bigger size after a loss; No setup, just 'getting it back'; Trading outside your hours; The fix: your walk-away rule.",
+   "image": "eval_journal/day14.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 15,
+   "date": "2026-11-30",
+   "weekday": "Mon",
+   "time": "07:30",
+   "pillar": "Journal",
+   "special": "",
+   "example": false,
+   "headline": "Rate your rules, not your P&L",
+   "points": [
+    "Score each day: plan followed, yes or no",
+    "A red day with rules followed is a good day",
+    "A green day with rules broken is a warning"
+   ],
+   "caption": "Rate your rules, not your P&L\n\nOutcomes are noisy over a few days. Process is what you control. Grade the process.\n\n1. Score each day: plan followed, yes or no\n2. A red day with rules followed is a good day\n3. A green day with rules broken is a warning\n\nFollow for one rule or routine a day.\n\n#tradingjournal #propfirm #tradingdiscipline #futurestrading #daytrader\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#tradingjournal",
+    "#propfirm",
+    "#tradingdiscipline",
+    "#futurestrading",
+    "#daytrader"
+   ],
+   "alt_text": "Text card from The Eval Journal: Rate your rules, not your P&L. Score each day: plan followed, yes or no; A red day with rules followed is a good day; A green day with rules broken is a warning.",
+   "image": "eval_journal/day15.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 16,
+   "date": "2026-12-01",
+   "weekday": "Tue",
+   "time": "07:30",
+   "pillar": "Rules",
+   "special": "",
+   "example": false,
+   "headline": "News days: read the rules first",
+   "points": [
+    "Some firms limit trading around big news",
+    "Check the economic calendar each morning",
+    "When unsure, be flat before the release"
+   ],
+   "caption": "News days: read the rules first\n\nRules about news differ between firms and plans, and they change. Look them up in your firm's help pages, not in a chat group.\n\n1. Some firms limit trading around big news\n2. Check the economic calendar each morning\n3. When unsure, be flat before the release\n\nSave this for your next session.\n\n#futurestrading #propfirm #riskmanagement #tradingjournal #daytrading\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#futurestrading",
+    "#propfirm",
+    "#riskmanagement",
+    "#tradingjournal",
+    "#daytrading"
+   ],
+   "alt_text": "Text card from The Eval Journal: News days: read the rules first. Some firms limit trading around big news; Check the economic calendar each morning; When unsure, be flat before the release.",
+   "image": "eval_journal/day16.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 17,
+   "date": "2026-12-02",
+   "weekday": "Wed",
+   "time": "07:30",
+   "pillar": "Risk math",
+   "special": "",
+   "example": false,
+   "headline": "Costs eat small targets",
+   "points": [
+    "Commissions and fees on every round trip",
+    "Slippage on entries and stops",
+    "On micros, costs are a big share of a small target"
+   ],
+   "caption": "Costs eat small targets\n\nAdd costs to every plan. A setup that looks fine before costs can be flat or negative after them, especially with tight targets.\n\n1. Commissions and fees on every round trip\n2. Slippage on entries and stops\n3. On micros, costs are a big share of a small target\n\nShare it with a friend who is in an evaluation.\n\n#propfirmchallenge #futurestrading #tradingpsychology #riskmanagement #tradingrules\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#propfirmchallenge",
+    "#futurestrading",
+    "#tradingpsychology",
+    "#riskmanagement",
+    "#tradingrules"
+   ],
+   "alt_text": "Text card from The Eval Journal: Costs eat small targets. Commissions and fees on every round trip; Slippage on entries and stops; On micros, costs are a big share of a small target.",
+   "image": "eval_journal/day17.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 18,
+   "date": "2026-12-03",
+   "weekday": "Thu",
+   "time": "07:30",
+   "pillar": "Routine",
+   "special": "",
+   "example": false,
+   "headline": "The end-of-day routine",
+   "points": [
+    "Screenshot your trades",
+    "Fill in the journal",
+    "Update drawdown left",
+    "Set tomorrow's max loss",
+    "Close the platform"
+   ],
+   "caption": "The end-of-day routine\n\nTen minutes at the end of the day turns a session into lessons. Closing the platform is part of the routine.\n\n1. Screenshot your trades\n2. Fill in the journal\n3. Update drawdown left\n4. Set tomorrow's max loss\n5. Close the platform\n\nMy eval tracker (drawdown left, daily limit, size helper) is in the bio. It is my own product.\n\n#tradingjournal #propfirm #tradingdiscipline #futurestrading #daytrader\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#tradingjournal",
+    "#propfirm",
+    "#tradingdiscipline",
+    "#futurestrading",
+    "#daytrader"
+   ],
+   "alt_text": "Text card from The Eval Journal: The end-of-day routine. Screenshot your trades; Fill in the journal; Update drawdown left; Set tomorrow's max loss; Close the platform.",
+   "image": "eval_journal/day18.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 19,
+   "date": "2026-12-04",
+   "weekday": "Fri",
+   "time": "07:30",
+   "pillar": "Myths",
+   "special": "",
+   "example": false,
+   "headline": "Myth: 'More accounts means more safety'",
+   "points": [
+    "The same trades mean the same losses",
+    "Copied accounts often fail together",
+    "Size each one as if it were the only one"
+   ],
+   "caption": "Myth: 'More accounts means more safety'\n\nRunning the same trades on several accounts multiplies results in both directions. It is not diversification.\n\n1. The same trades mean the same losses\n2. Copied accounts often fail together\n3. Size each one as if it were the only one\n\nWhat is your rule for this? Tell me in the comments.\n\n#futurestrading #propfirm #riskmanagement #tradingjournal #daytrading\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#futurestrading",
+    "#propfirm",
+    "#riskmanagement",
+    "#tradingjournal",
+    "#daytrading"
+   ],
+   "alt_text": "Text card from The Eval Journal: Myth: 'More accounts means more safety'. The same trades mean the same losses; Copied accounts often fail together; Size each one as if it were the only one.",
+   "image": "eval_journal/day19.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 20,
+   "date": "2026-12-05",
+   "weekday": "Sat",
+   "time": "07:30",
+   "pillar": "Discipline",
+   "special": "",
+   "example": false,
+   "headline": "Boredom is part of the job",
+   "points": [
+    "No setup, no trade",
+    "Waiting is a decision",
+    "Set alerts and walk away"
+   ],
+   "caption": "Boredom is part of the job\n\nMany rule breaks start with boredom. Plan what you do while waiting: alerts on, screen off, journal open.\n\n1. No setup, no trade\n2. Waiting is a decision\n3. Set alerts and walk away\n\nFollow for one rule or routine a day.\n\n#propfirmchallenge #futurestrading #tradingpsychology #riskmanagement #tradingrules\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#propfirmchallenge",
+    "#futurestrading",
+    "#tradingpsychology",
+    "#riskmanagement",
+    "#tradingrules"
+   ],
+   "alt_text": "Text card from The Eval Journal: Boredom is part of the job. No setup, no trade; Waiting is a decision; Set alerts and walk away.",
+   "image": "eval_journal/day20.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 21,
+   "date": "2026-12-06",
+   "weekday": "Sun",
+   "time": "07:30",
+   "pillar": "Risk math",
+   "special": "",
+   "example": true,
+   "headline": "Win rate means nothing without R",
+   "points": [
+    "R = what you make vs. what you risk",
+    "A high win rate with tiny wins can still lose",
+    "A low win rate with big wins can still work"
+   ],
+   "caption": "Win rate means nothing without R\n\nExample only: winning 70% of trades at 0.3R while losing 1R on the rest averages a loss per trade. Track both numbers together.\n\n1. R = what you make vs. what you risk\n2. A high win rate with tiny wins can still lose\n3. A low win rate with big wins can still work\n\nSave this for your next session.\n\n#tradingjournal #propfirm #tradingdiscipline #futurestrading #daytrader\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#tradingjournal",
+    "#propfirm",
+    "#tradingdiscipline",
+    "#futurestrading",
+    "#daytrader"
+   ],
+   "alt_text": "Text card from The Eval Journal: Win rate means nothing without R. R = what you make vs. what you risk; A high win rate with tiny wins can still lose; A low win rate with big wins can still work.",
+   "image": "eval_journal/day21.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 22,
+   "date": "2026-12-07",
+   "weekday": "Mon",
+   "time": "07:30",
+   "pillar": "Rules",
+   "special": "",
+   "example": false,
+   "headline": "Inactivity rules exist",
+   "points": [
+    "Some firms close idle accounts",
+    "Know your firm's limit",
+    "Put a reminder in your calendar"
+   ],
+   "caption": "Inactivity rules exist\n\nNot trading can also break a rule. If you take a break, check your firm's inactivity rule first.\n\n1. Some firms close idle accounts\n2. Know your firm's limit\n3. Put a reminder in your calendar\n\nShare it with a friend who is in an evaluation.\n\n#futurestrading #propfirm #riskmanagement #tradingjournal #daytrading\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#futurestrading",
+    "#propfirm",
+    "#riskmanagement",
+    "#tradingjournal",
+    "#daytrading"
+   ],
+   "alt_text": "Text card from The Eval Journal: Inactivity rules exist. Some firms close idle accounts; Know your firm's limit; Put a reminder in your calendar.",
+   "image": "eval_journal/day22.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 23,
+   "date": "2026-12-08",
+   "weekday": "Tue",
+   "time": "07:30",
+   "pillar": "Journal",
+   "special": "",
+   "example": false,
+   "headline": "Tag your mistakes",
+   "points": [
+    "Early entry",
+    "Moved stop",
+    "Oversized",
+    "No setup",
+    "Chased the move"
+   ],
+   "caption": "Tag your mistakes\n\nCount your tags each week. Fix the most common one first. One fixed habit is worth more than ten new indicators.\n\n1. Early entry\n2. Moved stop\n3. Oversized\n4. No setup\n5. Chased the move\n\nMy eval tracker (drawdown left, daily limit, size helper) is in the bio. It is my own product.\n\n#propfirmchallenge #futurestrading #tradingpsychology #riskmanagement #tradingrules\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#propfirmchallenge",
+    "#futurestrading",
+    "#tradingpsychology",
+    "#riskmanagement",
+    "#tradingrules"
+   ],
+   "alt_text": "Text card from The Eval Journal: Tag your mistakes. Early entry; Moved stop; Oversized; No setup; Chased the move.",
+   "image": "eval_journal/day23.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 24,
+   "date": "2026-12-09",
+   "weekday": "Wed",
+   "time": "07:30",
+   "pillar": "Routine",
+   "special": "",
+   "example": false,
+   "headline": "Your trading hours are a rule",
+   "points": [
+    "Pick a window and write it down",
+    "Trade only inside it",
+    "Many mistakes happen outside it"
+   ],
+   "caption": "Your trading hours are a rule\n\nA fixed window keeps you rested and selective. Outside the window, the platform stays closed.\n\n1. Pick a window and write it down\n2. Trade only inside it\n3. Many mistakes happen outside it\n\nWhat is your rule for this? Tell me in the comments.\n\n#tradingjournal #propfirm #tradingdiscipline #futurestrading #daytrader\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#tradingjournal",
+    "#propfirm",
+    "#tradingdiscipline",
+    "#futurestrading",
+    "#daytrader"
+   ],
+   "alt_text": "Text card from The Eval Journal: Your trading hours are a rule. Pick a window and write it down; Trade only inside it; Many mistakes happen outside it.",
+   "image": "eval_journal/day24.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 25,
+   "date": "2026-12-10",
+   "weekday": "Thu",
+   "time": "07:30",
+   "pillar": "Risk math",
+   "special": "",
+   "example": true,
+   "headline": "How many losses in a row can you take?",
+   "points": [
+    "Drawdown left / risk per trade",
+    "Plan for streaks, they happen",
+    "Smaller risk = more room for mistakes"
+   ],
+   "caption": "How many losses in a row can you take?\n\nExample only: $2,000 of drawdown left and $200 risk per trade means 10 losses in a row reach the max-loss level. Losing streaks are normal; the plan must survive one.\n\n1. Drawdown left / risk per trade\n2. Plan for streaks, they happen\n3. Smaller risk = more room for mistakes\n\nFollow for one rule or routine a day.\n\n#futurestrading #propfirm #riskmanagement #tradingjournal #daytrading\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#futurestrading",
+    "#propfirm",
+    "#riskmanagement",
+    "#tradingjournal",
+    "#daytrading"
+   ],
+   "alt_text": "Text card from The Eval Journal: How many losses in a row can you take?. Drawdown left / risk per trade; Plan for streaks, they happen; Smaller risk = more room for mistakes.",
+   "image": "eval_journal/day25.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 26,
+   "date": "2026-12-11",
+   "weekday": "Fri",
+   "time": "07:30",
+   "pillar": "Discipline",
+   "special": "",
+   "example": false,
+   "headline": "One trade does not define you",
+   "points": [
+    "Think in sets of 20 trades",
+    "A loss is information",
+    "Follow the process"
+   ],
+   "caption": "One trade does not define you\n\nJudging yourself trade by trade leads to changing rules all the time. Judge a block of trades against your plan instead.\n\n1. Think in sets of 20 trades\n2. A loss is information\n3. Follow the process\n\nSave this for your next session.\n\n#propfirmchallenge #futurestrading #tradingpsychology #riskmanagement #tradingrules\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#propfirmchallenge",
+    "#futurestrading",
+    "#tradingpsychology",
+    "#riskmanagement",
+    "#tradingrules"
+   ],
+   "alt_text": "Text card from The Eval Journal: One trade does not define you. Think in sets of 20 trades; A loss is information; Follow the process.",
+   "image": "eval_journal/day26.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 27,
+   "date": "2026-12-12",
+   "weekday": "Sat",
+   "time": "07:30",
+   "pillar": "Rules",
+   "special": "",
+   "example": false,
+   "headline": "Read the payout rules before you start",
+   "points": [
+    "Minimum trading days",
+    "Required buffer",
+    "Maximum payout",
+    "Any consistency rule"
+   ],
+   "caption": "Read the payout rules before you start\n\nPayout rules shape how you should trade from day one. Read them at the start, not when you think you are done.\n\n1. Minimum trading days\n2. Required buffer\n3. Maximum payout\n4. Any consistency rule\n\nShare it with a friend who is in an evaluation.\n\n#tradingjournal #propfirm #tradingdiscipline #futurestrading #daytrader\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#tradingjournal",
+    "#propfirm",
+    "#tradingdiscipline",
+    "#futurestrading",
+    "#daytrader"
+   ],
+   "alt_text": "Text card from The Eval Journal: Read the payout rules before you start. Minimum trading days; Required buffer; Maximum payout; Any consistency rule.",
+   "image": "eval_journal/day27.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 28,
+   "date": "2026-12-13",
+   "weekday": "Sun",
+   "time": "07:30",
+   "pillar": "Myths",
+   "special": "",
+   "example": false,
+   "headline": "Myth: 'A bigger account is easier'",
+   "points": [
+    "Bigger price, same rules in %",
+    "More room means more room to oversize",
+    "Prove the habits on a small one first"
+   ],
+   "caption": "Myth: 'A bigger account is easier'\n\nA bigger account doesn't fix a process problem. It makes the same mistake cost more.\n\n1. Bigger price, same rules in %\n2. More room means more room to oversize\n3. Prove the habits on a small one first\n\nMy eval tracker (drawdown left, daily limit, size helper) is in the bio. It is my own product.\n\n#futurestrading #propfirm #riskmanagement #tradingjournal #daytrading\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#futurestrading",
+    "#propfirm",
+    "#riskmanagement",
+    "#tradingjournal",
+    "#daytrading"
+   ],
+   "alt_text": "Text card from The Eval Journal: Myth: 'A bigger account is easier'. Bigger price, same rules in %; More room means more room to oversize; Prove the habits on a small one first.",
+   "image": "eval_journal/day28.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 29,
+   "date": "2026-12-14",
+   "weekday": "Mon",
+   "time": "07:30",
+   "pillar": "Routine",
+   "special": "",
+   "example": false,
+   "headline": "A weekly review in 15 minutes",
+   "points": [
+    "Rules followed, in %",
+    "Mistakes tagged and counted",
+    "Best setup of the week",
+    "One change for next week"
+   ],
+   "caption": "A weekly review in 15 minutes\n\nSame time every week, same questions. Small changes, kept, add up.\n\n1. Rules followed, in %\n2. Mistakes tagged and counted\n3. Best setup of the week\n4. One change for next week\n\nWhat is your rule for this? Tell me in the comments.\n\n#propfirmchallenge #futurestrading #tradingpsychology #riskmanagement #tradingrules\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#propfirmchallenge",
+    "#futurestrading",
+    "#tradingpsychology",
+    "#riskmanagement",
+    "#tradingrules"
+   ],
+   "alt_text": "Text card from The Eval Journal: A weekly review in 15 minutes. Rules followed, in %; Mistakes tagged and counted; Best setup of the week; One change for next week.",
+   "image": "eval_journal/day29.jpg",
+   "format": "image 1080x1350 (4:5)"
+  },
+  {
+   "day": 30,
+   "date": "2026-12-15",
+   "weekday": "Tue",
+   "time": "07:30",
+   "pillar": "Journal",
+   "special": "",
+   "example": false,
+   "headline": "Screenshot every trade",
+   "points": [
+    "Entry, stop and target visible",
+    "Write the reason on it",
+    "Review them every weekend"
+   ],
+   "caption": "Screenshot every trade\n\nMemory flatters us. Screenshots don't. A folder of marked charts is the best teacher you will ever pay nothing for.\n\n1. Entry, stop and target visible\n2. Write the reason on it\n3. Review them every weekend\n\nFollow for one rule or routine a day.\n\n#tradingjournal #propfirm #tradingdiscipline #futurestrading #daytrader\n\nEducation only, not financial advice. Futures trading involves substantial risk of loss and is not for everyone. No results are shown or promised.",
+   "hashtags": [
+    "#tradingjournal",
+    "#propfirm",
+    "#tradingdiscipline",
+    "#futurestrading",
+    "#daytrader"
+   ],
+   "alt_text": "Text card from The Eval Journal: Screenshot every trade. Entry, stop and target visible; Write the reason on it; Review them every weekend.",
+   "image": "eval_journal/day30.jpg",
+   "format": "image 1080x1350 (4:5)"
+  }
+ ],
+ "rules": [
+  "Post from the owner's own account; schedule in Meta Business Suite (free) or ig_post.py with his own token.",
+  "At most 5 hashtags; captions under 2200 characters; alt text on every image.",
+  "No bought followers, likes or comments; no follow/unfollow or auto-DM tools (Instagram bans automated engagement).",
+  "Education only. Never show or claim results, profits, income, passes or payouts; no signals; no 'copy my trades'.",
+  "Every caption ends with the risk line. Numbers appear only in posts labelled 'Example only'.",
+  "A paid or affiliate link: start the caption with 'Ad' or 'Affiliate link' before anything else (FTC: disclose before 'more').",
+  "Own product: say it is your own product in the caption."
+ ]
+}
