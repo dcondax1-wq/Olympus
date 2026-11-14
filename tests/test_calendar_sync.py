@@ -8,6 +8,7 @@ calendar, never the real %USERPROFILE%\\.olympus, never data/day/.
 from __future__ import annotations
 
 import datetime as dt
+import re
 import json
 import os
 import shutil
@@ -722,7 +723,108 @@ def test_feeds():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-EXTRA = {"i": test_feeds, "k": test_node}
+# ------------------------------------------------------------------------------------------------ j. the phone inbox (POST /inbox/{kind}): appends a line, nothing else
+def test_inbox():
+    from engine import day_inbox as DI
+    from engine import live_site as LS
+    tmp = tempfile.mkdtemp()
+    env = {"LE_INBOX_DIR": os.path.join(tmp, "inbox"), "LE_DAY_DIR": os.path.join(tmp, "day")}
+    H = {"X-Olympus-Inbox": "1", "X-Forwarded-For": "100.64.0.2", "Tailscale-User-Login": "me@example.com"}
+    DI._HITS.clear()
+    try:
+        st, out = DI.accept("day", json.dumps({"text": "Call the bank <b>today</b>", "type": "task"}).encode(), "application/json", H, now_s=MON_0800, env=env)
+        lines = open(os.path.join(env["LE_INBOX_DIR"], "day.jsonl"), encoding="utf-8").read().splitlines()
+        rec = json.loads(lines[-1])
+        check("j. a task: 200, one line appended (markup stripped, due today in New York), the reply in plain words", st == 200 and out["ok"] and out["said"] == "Added to your day: Call the bank b today /b"
+              and rec["type"] == "task" and rec["due"] == "2026-11-16" and len(lines) == 1, (st, out, rec))
+        st2, _ = DI.accept("day", b"Buy milk", "text/plain", H, now_s=MON_0800 + 1, env=env)
+        st3, _ = DI.accept("day", json.dumps({"text": "Idea: size down on CPI", "type": "note", "due": "tomorrow"}).encode(), "application/json", H, now_s=MON_0800 + 2, env=env)
+        snap = json.load(open(os.path.join(env["LE_DAY_DIR"], "inbox.json"), encoding="utf-8"))
+        check("j. plain text = a task; a note for tomorrow; the Planner's snapshot day/inbox.json has all three", st2 == 200 and st3 == 200 and snap["kind"] == "olympus-inbox"
+              and [(x["type"], x["due"]) for x in snap["items"]] == [("task", "2026-11-16"), ("task", "2026-11-16"), ("note", "2026-11-17")], snap)
+        bad = [DI.accept("day", b'{"text":"x"}', "application/json", {"X-Forwarded-For": "1"}, now_s=MON_0800, env=env)[0],
+               DI.accept("day", b'{"text":"x"}', "application/json", {**H, "Tailscale-Funnel-Request": "1"}, now_s=MON_0800, env=env)[0],
+               DI.accept("day", b"x" * 3000, "text/plain", H, now_s=MON_0800, env=env)[0],
+               DI.accept("day", b"{not json", "application/json", H, now_s=MON_0800, env=env)[0],
+               DI.accept("day", b'{"text":"   "}', "application/json", H, now_s=MON_0800, env=env)[0],
+               DI.accept("trading", b'{"text":"buy 10 NQ"}', "application/json", H, now_s=MON_0800, env=env)[0]]
+        check("j. refused: no X-Olympus-Inbox header 403, Funnel 403, over 2 KB 413, bad JSON 400, empty 400, an unknown kind ('trading') 404", bad == [403, 403, 413, 400, 400, 404], bad)
+        DI._HITS.clear()
+        codes = [DI.accept("day", b"spam", "text/plain", H, now_s=MON_0800 + 100 + i, env=env)[0] for i in range(31)]
+        check("j. 30 a 10 minutes, then 429", codes[:30] == [200] * 30 and codes[30] == 429, codes[-3:])
+        DI._HITS.clear()
+        old_max = DI.MAX_LINES
+        DI.MAX_LINES = 5
+        try:
+            check("j. a full file (5,000 lines; 5 here) is refused with 507", DI.accept("day", b"one more", "text/plain", H, now_s=MON_0800 + 2000, env=env)[0] == 507)
+        finally:
+            DI.MAX_LINES = old_max
+        files = sorted(os.path.relpath(os.path.join(dp, f), tmp) for dp, _dn, fn in os.walk(tmp) for f in fn)
+        check("j. the only files it ever writes: inbox/day.jsonl and day/inbox.json", files == ["day/inbox.json", "inbox/day.jsonl"], files)
+        DI.register("money", lambda body, now: ({"type": str(body.get("type") or ""), "usd": float(body.get("usd") or 0), "date": str(body.get("date") or "")}, "") if isinstance(body, dict) else (None, "json"))
+        DI._HITS.clear()
+        stm, _ = DI.accept("money", json.dumps({"type": "paycheck", "usd": 1400, "date": "2026-11-13"}).encode(), "application/json", H, now_s=MON_0800, env=env)
+        check("j. the same shape for team X1's money inbox: POST /inbox/money -> inbox/money.jsonl, and calendar_sync reads its paychecks",
+              stm == 200 and CS.paychecks(os.path.join(tmp, "nope.json"), os.path.join(env["LE_INBOX_DIR"], "money.jsonl")) == [("2026-11-13", 1400.0)])
+        # the read-only guard: closed until install(), then ONLY POST /inbox/<kind>
+        LS.POST_ALLOW.clear()
+        DI._S["installed"] = False
+        H = {k.lower(): v for k, v in H.items()}          # Starlette's headers are case-insensitive; the guard reads lower case
+        before = LS.guard("POST", "/inbox/day", H)
+        LS.allow_post(DI.allowed)
+        DI._S["installed"] = True
+        g = {p: (LS.guard(m, p, h) or (200, None))[0] for m, p, h in [("POST", "/inbox/day", H)]}
+        rest = [LS.guard("POST", "/api/live/stop", H), LS.guard("POST", "/inbox/trading", H), LS.guard("PUT", "/inbox/day", H), LS.guard("DELETE", "/inbox/day", H),
+                LS.guard("POST", "/inbox/day", {**H, "tailscale-funnel-request": "1"}), LS.guard("POST", "/inbox/day/../../api/live/arm", H), LS.guard("POST", "/site/day/day.json", H)]
+        check("j. the guard: before install() a proxied POST /inbox/day is refused; after it, only POST /inbox/<kind> passes",
+              before and before[0] == 403 and g["/inbox/day"] == 200 and all(r and r[0] == 403 for r in rest), (before, g, rest))
+        try:
+            from fastapi import FastAPI
+            from fastapi.testclient import TestClient
+            old = {k: os.environ.get(k) for k in env}
+            os.environ.update(env)
+            try:
+                app = FastAPI()
+                LS.install(app)
+
+                @app.post("/api/live/stop")
+                def _stop():
+                    return {"stopped": True}
+                DI.install(app)
+                cl = TestClient(app)
+                DI._HITS.clear()
+                r = cl.post("/inbox/day", json={"text": "From the Shortcut", "type": "task"}, headers=H)
+                r2 = cl.get("/site/day/inbox.json", headers=H)
+                r3 = cl.post("/api/live/stop", headers=H)
+                r4 = cl.options("/inbox/day", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "x-olympus-inbox"})
+                r5 = cl.post("/inbox/day", content=b"no header", headers={"X-Forwarded-For": "100.64.0.2", "Content-Type": "text/plain"})
+                check("j. the real routes: the Shortcut's POST 200, /site/day/inbox.json serves it, a stop over the link is still 403, a cross-site pre-flight gets no CORS allow, no header 403",
+                      r.status_code == 200 and r.json()["said"] == "Added to your day: From the Shortcut" and r2.status_code == 200 and r2.json()["items"][-1]["text"] == "From the Shortcut"
+                      and r3.status_code == 403 and "access-control-allow-origin" not in {k.lower() for k in r4.headers} and r5.status_code == 403,
+                      (r.status_code, r.text[:200], r2.status_code, r3.status_code, dict(r4.headers), r5.status_code))
+            finally:
+                for k, v in old.items():
+                    if v is None:
+                        os.environ.pop(k, None)
+                    else:
+                        os.environ[k] = v
+        except ImportError as e:
+            check("j. fastapi test client available", False, e)
+    finally:
+        LS.POST_ALLOW.clear()
+        DI._S["installed"] = False
+        DI.KINDS.pop("money", None)
+        DI._HITS.clear()
+        shutil.rmtree(tmp, ignore_errors=True)
+    src = open(os.path.join(ROOT, "engine", "day_inbox.py"), encoding="utf-8").read()
+    imports = sorted(set(re.findall(r"^\s*(?:from|import) ([\w.]+)", src, re.M)))
+    check("j. day_inbox imports nothing of the bots (only the stdlib, fastapi and live_site)", all(m in ("__future__", "datetime", "hashlib", "json", "os", "re", "threading", "time", "fastapi", "fastapi.responses", "zoneinfo", "engine") for m in imports)
+          and "live_site" in src and not re.search(r"\b(ninjatrader|lit_live|live_model|arm|order)\w*\(", src), imports)
+    srv = open(os.path.join(ROOT, "server.py"), encoding="utf-8").read()
+    check("j. (wiring for the lead) server.py does not call day_inbox.install yet: the endpoint is off until the lead adds one line", "day_inbox" not in srv)
+
+
+EXTRA = {"i": test_feeds, "j": test_inbox, "k": test_node}
 
 
 def main():

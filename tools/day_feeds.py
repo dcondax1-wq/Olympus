@@ -153,8 +153,9 @@ def weather(city: dict, now_s: float, state: dict, opener=None) -> dict:
     for x in (fc.get("periods") or [])[:4]:
         if not isinstance(x, dict):
             continue
-        periods.append({"name": _clean(x.get("name"), 24), "temp": _num(x.get("temperature")), "unit": _clean(x.get("temperatureUnit"), 2) or "F",
-                        "short": _clean(x.get("shortForecast"), 80), "rain": _num((x.get("probabilityOfPrecipitation") or {}).get("value")),
+        t = _num(x.get("temperature"))
+        periods.append({"name": _clean(x.get("name"), 24), "temp": int(round(t)) if t is not None else None, "unit": _clean(x.get("temperatureUnit"), 2) or "F",
+                        "short": _clean(x.get("shortForecast"), 80), "rain": (lambda r: int(round(r)) if r is not None else None)(_num((x.get("probabilityOfPrecipitation") or {}).get("value"))),
                         "wind": _clean(x.get("windSpeed"), 24), "day": x.get("isDaytime") is True})
     alerts = []
     try:

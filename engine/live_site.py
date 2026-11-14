@@ -21,7 +21,8 @@ into a proxy to http://127.0.0.1:8766, inside the owner's tailnet only, never Fu
   GET /api/site/status   what this serves: which site folder and how old, live on / off, the Kalshi and money sources
 
 READ ONLY over the link: a request that came through any proxy (X-Forwarded-For / X-Forwarded-Host / Tailscale-User-Login ...)
-may only GET / HEAD / OPTIONS; every POST, PUT, PATCH, DELETE is refused with 403 before it reaches a route (so nothing can start,
+may only GET / HEAD / OPTIONS (one exception, only once engine/day_inbox.install ran: POST /inbox/<kind>, which appends a line to
+the phone inbox file and nothing else; docs/CONNECT_DAY.md); every other POST, PUT, PATCH, DELETE is refused with 403 before it reaches a route (so nothing can start,
 stop, arm or route the bot from the phone link), a Tailscale Funnel request (internet) is refused outright, and the TradingView
 webhook key page is hidden. Requests from the PC itself (no proxy headers) are unchanged. Nothing here writes a file, places an
 order or reads a secret. Tests: tests/test_live_link.py.
@@ -44,7 +45,8 @@ WEB_PUBLIC = os.path.join(ROOT, "tools", "web_public")
 SITE_CANDIDATES = (os.path.join(ROOT, "data", "pc_publish", "site"), os.path.join(ROOT, "data", "live_site", "site"))
 MONEY_OUT = os.path.join(ROOT, "money_out")
 DAY_DIR = os.path.join(ROOT, "data", "day")     # tools/calendar_sync.py OUT_DEFAULT (LE_DAY_DIR overrides, as there)
-DAY_FILES = ("day.json",)                       # private: served from DAY_DIR only, never looked up in a site folder
+DAY_FILES = ("day.json", "inbox.json")         # private: served from DAY_DIR only, never looked up in a site folder (inbox.json: engine/day_inbox.py)
+POST_ALLOW: list = []                           # the only POSTs the phone link may make: engine/day_inbox.allowed (POST /inbox/<kind>), added by its install()
 PREFIX = "/site"
 GATE = PREFIX + "/gate/"
 LIVE_TTL_S = 15
@@ -81,11 +83,24 @@ def guard(method: str, path: str, headers) -> tuple | None:
         return None
     if headers.get("tailscale-funnel-request"):
         return 403, {"ok": False, "error": "this dashboard is private: open it from your own devices on Tailscale, not the internet"}
-    if (method or "").upper() not in SAFE_METHODS:
+    if (method or "").upper() not in SAFE_METHODS and not any(_post_ok(f, method, path) for f in POST_ALLOW):
         return 403, {"ok": False, "error": "read only over the phone link: start, stop, arm and settings are done on the PC itself"}
     if path in HIDDEN_OVER_LINK:
         return 403, {"ok": False, "error": "shown on the PC only"}
     return None
+
+
+def _post_ok(f, method, path) -> bool:
+    try:
+        return bool(f(method, path))
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def allow_post(f) -> None:
+    """engine/day_inbox.install: let ONE kind of POST through the link (f(method, path) -> bool; only /inbox/<kind>)"""
+    if f not in POST_ALLOW:
+        POST_ALLOW.append(f)
 
 
 # ------------------------------------------------------------------------------------------------ where the site is
