@@ -536,29 +536,31 @@ def b_jsonld(cfg, url: str) -> str:
 
 # ------------------------------------------------------------------------------------------------ the build
 def minify_css(css: str) -> str:
-    """comments out, whitespace squeezed; quoted strings (the data: icon) are left exactly as written"""
-    out, i, n = [], 0, len(css)
+    """comments out, whitespace squeezed; quoted strings (the data: icon, font names) are copied exactly as written"""
+    def squeeze(seg: str) -> str:
+        seg = re.sub(r"\s+", " ", seg)
+        seg = re.sub(r" ?([{};,>]) ?", r"\1", seg)
+        return re.sub(r": ", ":", seg)            # only AFTER a colon: '.a :focus' keeps the space it needs before one
+    out, buf, i, n = [], [], 0, len(css)
     while i < n:
         ch = css[i]
         if ch in "\"'":
             j = i + 1
             while j < n and css[j] != ch:
                 j += 2 if css[j] == "\\" else 1
+            out.append(squeeze("".join(buf)))
+            buf = []
             out.append(css[i:j + 1])
             i = j + 1
         elif css.startswith("/*", i):
             j = css.find("*/", i + 2)
             i = n if j < 0 else j + 2
-        elif ch.isspace():
-            while i < n and css[i].isspace():
-                i += 1
-            out.append(" ")
+            buf.append(" ")
         else:
-            out.append(ch)
+            buf.append(ch)
             i += 1
-    s = "".join(out)
-    s = re.sub(r" ?([{};,>]) ?", r"\1", s)        # never around ':' (descendant pseudo-classes need their space)
-    return s.replace(";}", "}").strip() + "\n"
+    out.append(squeeze("".join(buf)))
+    return "".join(out).replace(";}", "}").strip() + "\n"
 
 
 def hashed(name: str, data: bytes) -> str:
