@@ -417,11 +417,202 @@ def test_pitch():
     os.remove(os.environ["AGENCY_CONFIG"])
 
 
+# ================================================================================================ d. the CRM page (tools/web_public/agency/)
+APP = "agency"
+CORE_HARNESS = r"""
+import(process.argv[2]).then((C) => {
+  const fs = require('fs'), o = {}, T = '2026-11-14';
+  const data = C.normData(JSON.parse(fs.readFileSync(process.argv[3], 'utf8')));
+  const fx = C.normData(JSON.parse(fs.readFileSync(process.argv[4], 'utf8')));
+  o.data = [data.leads.length, data.sample, data.demo, data.city, data.agency.ready, data.packages.map((p) => p.id).join(','), fx.demo, fx.leads.length];
+  const junk = C.normData({ leads: [{ id: 'bad id!', name: 'x' }, { id: 'ok1', name: '<b>A</b>', score: 250, phone_e164: '12345', website: 'javascript:alert(1)', map_url: 'http://x.example' }, { id: 'ok1', name: 'dup' }] });
+  o.junk = [junk.leads.length, junk.leads[0].score, junk.leads[0].tel, junk.leads[0].website, junk.leads[0].map, C.normData({ leads: [] }), C.normData('x')];
+  o.links = [C.telHref('+19705550142'), C.telHref('970'), C.safeUrl('https://a.example/x'), C.safeUrl('http://a.example'), C.safeUrl('https://a b'), C.mailHref('x@y.com', 'Hi there', 'Body & more').startsWith('mailto:x@y.com?subject=Hi%20there&body=Body%20%26%20more'), C.mailHref('nope', 'a', 'b')];
+  const id0 = data.leads[0].id, id1 = data.leads[1].id, built = data.leads.find((l) => l.demo_built);
+  let s = C.emptyState();
+  const v0 = C.views(data, s);
+  o.defaults = [C.stageOf(data.leads.find((l) => !l.demo_built), s), built ? C.stageOf(built, s) : 'none', v0.filter((v) => v.stage === 'demo').length];
+  s = C.update(s, id0, { called: true }, T);
+  s = C.update(s, id0, { stage: 'callback', callback: '2026-11-13' }, T);
+  s = C.update(s, id1, { stage: 'won', price: 1200, monthly: 99 }, T);
+  s = C.update(s, id1, { notes: 'Owner is Sam. Wants a gallery.' }, T);
+  const e0 = C.entry(s, id0), e1 = C.entry(s, id1);
+  o.update = [e0.stage, e0.calls, e0.last_call, e0.callback, e1.stage, e1.won, e1.price, e1.monthly, e1.notes, s.log.length];
+  const vs = C.views(data, s), p = C.pipeline(vs, T, 5000);
+  o.pipe = [p.won, p.won_setup_month, p.mrr, p.month_total, Math.round(p.goal_frac * 1000), p.calls_week, p.by.won, p.by.callback, p.open > 0, p.weighted < p.open, p.active];
+  const today = C.callToday(vs, T, 5);
+  o.today = [today.length, today[0].id === id0, today.every((v) => v.tel), today.filter((v) => v.stage === 'won').length];
+  o.filter = [C.filterSort(vs, { stage: 'won' }).length, C.filterSort(vs, { q: 'gallery' }).length, C.filterSort(vs, { stage: 'all', sort: 'name' })[0].name <= C.filterSort(vs, { stage: 'all', sort: 'name' })[1].name,
+    C.filterSort(vs, { sort: 'value' })[0].id === id1, C.trades(vs).length > 3, C.filterSort(vs, { trade: 'Dentist' }).every((v) => v.trade === 'Dentist')];
+  const ex = C.exportJson(s, T), back = C.parseImport(ex);
+  o.io = [JSON.parse(ex).kind, back.ok, back.count, C.entry(back.state, id1).price, C.parseImport('{nope').ok, C.parseImport('{nope').error.includes('not valid JSON'), C.parseImport('{"kind":"other"}').ok, C.parseImport('{}').ok, C.parseImport('').ok];
+  const csv = C.toCSV(vs);
+  const Q = String.fromCharCode(34);
+  o.csv = [csv.split('\r\n')[0].startsWith('name,trade,stage,score'), csv.split('\r\n').length - 2, csv.includes('Won'), C.toCSV([{ ...vs[0], name: '=SUM(A1)' }]).includes(Q + "'=SUM(A1)" + Q),
+    C.toCSV([{ ...vs[0], notes: 'a, ' + Q + 'b' + Q }]).includes(Q + 'a, ' + Q + Q + 'b' + Q + Q + Q)];
+  const s2 = C.update(s, id1, { stage: 'lost' }, T);
+  o.lost = [C.entry(s2, id1).won, C.update(s2, id0, { stage: 'dnc' }, T).leads[id0].callback, C.money(1234.5), C.money(-3), C.weekStart('2026-11-14'), C.addDays('2026-12-31', 1)];
+  o.words = [C.heroLine(C.pipeline(C.views(data, C.emptyState()), T, 5000)).startsWith('No client yet'), C.heroLine(p).startsWith('1 client: $1,200 in setup fees this month + $99 a month'), C.planRows(data.plan).length];
+  console.log(JSON.stringify(o));
+});
+"""
+
+
+def test_crm_static():
+    AK.static_kit(APP, "Agency", reads=("./leads.json",), storage=True)
+    d = os.path.join(AK.WEB, APP)
+    js = AK.read(os.path.join(d, "agency.js")) + AK.read(os.path.join(d, "agencycore.js"))
+    check("d. the only thing kept in the browser is the owner's own notes (one key, try / catch); no sessionStorage / indexedDB / cookies",
+          len(re.findall(r"localStorage\.", js)) == 2 and "agency.crm.v1" in js and not re.search(r"sessionStorage|indexedDB|document\.cookie", js))
+    check("d. it never sends or dials by itself: no fetch other than the two files, tel: / mailto: only as links the owner taps, no SMS, no form post",
+          js.count("fetch(") == 1 and "sms:" not in js and not re.search(r"method:\s*['\"]POST|navigator\.sendBeacon|\.submit\(\)", js) and "telHref" in js and "mailHref" in js)
+    css = AK.read(os.path.join(d, "agency.css"))
+    raw_colours = [c for c in re.findall(r"#[0-9a-fA-F]{3,8}\b", css)]
+    check("d. themes reach it: every colour in agency.css is an --ag-* / --oly-* token (no raw hex)", not raw_colours and css.count("var(--ag-") > 60, raw_colours[:5])
+    html = AK.read(os.path.join(d, "index.html"))
+    check("d. page order: this month ($ and the goal), call today, the pipeline (stages, search, list), the lead, the plan, your notes (export / CSV / import)",
+          html.index('id="heroNum"') < html.index('id="today"') < html.index('id="stages"') < html.index('id="list"') < html.index('id="detail"') < html.index('id="planTable"') < html.index('id="exportBtn"')
+          and all(x in html for x in ('id="csvBtn"', 'id="importBtn"', 'id="ioText"', 'id="copyOpener"', 'id="copyEmail"', 'id="mailBtn"')))
+    data = json.load(open(os.path.join(d, "leads.json"), encoding="utf-8"))
+    fx = json.load(open(os.path.join(d, "fixture.json"), encoding="utf-8"))
+    check("d. the published data: the 20 Fort Collins leads (marked sample city), 3 demo sites built, the attribution, no owner data (placeholders only), every opener under 80 words",
+          len(data["leads"]) == 20 and data["sample"] is True and sum(l["demo_built"] for l in data["leads"]) == 3 and "OpenStreetMap" in data["attribution"]
+          and data["agency"] == {"name": "YOUR AGENCY", "ready": False} and all(len(l["opener"].split()) <= 80 for l in data["leads"]) and data["plan"]["pace"]["new_per_month"] == 4)
+    check("d. the DEMO fixture: invented businesses in an invented town with 555-01xx numbers, labelled 'EXAMPLE ... not real'",
+          fx["demo"] is True and "not real" in fx["note"] and all(l["phone"].startswith("(555) 555-01") for l in fx["leads"]) and all("Maple Falls" in l["address_line"] for l in fx["leads"]))
+    out = AK.node(APP, CORE_HARNESS, os.path.join(d, "leads.json"), os.path.join(d, "fixture.json"))
+    if out is None:
+        check("d. node is not installed: core skipped", True)
+        return
+    check("d. node: no error in the harness", "_error" not in out, out.get("_error"))
+    if "_error" in out:
+        return
+    o = out
+    check("d. core: the data reads 20 leads, sample city, Fort Collins, CO, the three packages; the fixture is DEMO with 8 leads",
+          o["data"] == [20, True, False, "Fort Collins, CO", False, "starter,growth,pro", True, 8], o["data"])
+    check("d. core: junk is dropped or neutralised: bad ids, duplicates, a 250 score -> 100, a bad phone -> no tel link, javascript: and http:// links -> empty; no leads -> null",
+          o["junk"] == [1, 100, "", "", "", None, None], o["junk"])
+    check("d. core: only safe links: tel:+1..., https:// only, mailto with the subject and body encoded", o["links"] == ["tel:+19705550142", "", "https://a.example/x", "", "", True, ""], o["links"])
+    check("d. core: a lead starts as New lead, a built demo as Demo built (3 of them)", o["defaults"] == ["new", "demo", 3], o["defaults"])
+    check("d. core: Call marks it contacted (1 call, today); a call-back day keeps the date; Won keeps the day, the price $1,200 + $99, the note; every stage change is logged",
+          o["update"] == ["callback", 2, "2026-11-14", "2026-11-13", "won", "2026-11-14", 1200, 99, "Owner is Sam. Wants a gallery.", 3], o["update"])
+    check("d. core: the money: 1 won = $1,200 setup this month + $99 care = $1,299 (26% of $5,000), 1 called this week, the open deals and a smaller weighted figure",
+          o["pipe"][:9] == [1, 1200, 99, 1299, 260, 1, 1, 1, True] and o["pipe"][9] is True and o["pipe"][10] == 19, o["pipe"])
+    check("d. core: Call today = the due call-back first, then new leads with a phone, never a won one", o["today"] == [5, True, True, 0], o["today"])
+    check("d. core: filters by stage, search in the notes, sort by name / value, trade filter", all(x is True or x == 1 for x in o["filter"]), o["filter"])
+    check("d. core: export -> import gives the same notes back; broken JSON, another kind, an empty object and empty text are refused in plain words",
+          o["io"] == ["agency-crm", True, 2, 1200, False, True, False, False, False], o["io"])
+    check("d. core: CSV with a header and one row per lead, stage names, formula injection blocked ('=SUM -> '\\'=SUM), quotes escaped", o["csv"] == [True, 20, True, True, True], o["csv"])
+    check("d. core: Lost clears the won day, Do not contact clears the call-back; money and day maths", o["lost"] == [None, None, "$1,235", "-$3", "2026-11-09", "2027-01-01"], o["lost"])
+    check("d. core: plain words for the hero and the plan rows from the published plan", o["words"] == [True, True, 6], o["words"])
+
+
+def test_crm_page():
+    try:
+        import playwright  # noqa: F401
+    except ImportError:
+        check("d. page tests skipped: no Playwright", True)
+        return
+    srv, origin = AK.serve()
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, APP, "?demo=1", hook="AGENCY")
+            d = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, note: document.querySelector('#sampleNote').textContent, rows: document.querySelectorAll('#list .lrow').length,
+              today: document.querySelectorAll('#today .lrow').length, chips: document.querySelectorAll('#stages .chip').length, hero: document.querySelector('#heroNum').textContent,
+              font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor, status: document.querySelector('#status').textContent })""")
+            check("d. DEMO (?demo=1): the chip and the EXAMPLE note, 8 invented leads, 5 to call today, 8 stage chips, $0 this month, AGORA serif title, warm dark page",
+                  d["demo"] and "EXAMPLE" in d["note"] and d["rows"] == 8 and d["today"] == 5 and d["chips"] == 8 and d["hero"] == "$0"
+                  and any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and "Maple Falls" in d["status"], d)
+            ctx.close()
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            p.context.grant_permissions(["clipboard-read", "clipboard-write"], origin=origin)
+            AK.open_app(p, origin, APP, "", hook="AGENCY")
+            r = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, sample: !document.querySelector('#sample').hidden, note: document.querySelector('#sampleNote').textContent,
+              rows: document.querySelectorAll('#list .lrow').length, first: document.querySelector('#today .lrow b').textContent, tel: document.querySelector('#today .lrow a.call').getAttribute('href'),
+              plan: document.querySelectorAll('#planTable tbody tr').length, pace: document.querySelectorAll('#planTable tr.pace').length, lead: document.querySelector('#planLead').textContent })""")
+            check("d. the real published data: no DEMO chip, SAMPLE CITY chip and note, 20 leads, a tel: Call button on the call list, the plan table with the pace row",
+                  not r["demo"] and r["sample"] and "Fort Collins" in r["note"] and r["rows"] == 20 and r["tel"].startswith("tel:+1970") and r["plan"] == 6 and r["pace"] == 1
+                  and "4 new clients a month" in r["lead"], r)
+            AK.shot(p, "agency-crm")
+            p.locator("#list .leadbtn").first.click()
+            p.wait_for_timeout(250)
+            det = p.evaluate("""() => ({ shown: !document.querySelector('#detail').hidden, name: document.querySelector('#detName').textContent, opener: document.querySelector('#detOpenerText').textContent,
+              email: document.querySelector('#detEmailText').textContent, ready: document.querySelector('#detReady').textContent, mail: document.querySelector('#mailBtn').hidden,
+              acts: [...document.querySelectorAll('#detActions a')].map((a) => a.textContent), stages: document.querySelectorAll('#detStages .chip').length })""")
+            check("d. tap a lead: its card opens with the opener, the email (NOT READY until the settings file is filled, so no Open-in-Mail button), Call / Demo / Map links, 7 stages",
+                  det["shown"] and det["name"] and det["name"] in det["opener"] and "NOT READY TO SEND" in det["email"] and "Not ready to send" in det["ready"] and det["mail"]
+                  and det["acts"][0].startswith("Call (970)") and "Demo site" in det["acts"] and det["stages"] == 7, det)
+            name = det["name"]
+            p.locator("#detStages .chip", has_text="Won").click()
+            p.wait_for_timeout(200)
+            p.fill("#detNotes", "Owner said yes on the phone.")
+            p.locator("#detNotes").dispatch_event("change")
+            p.wait_for_timeout(200)
+            w = p.evaluate("() => ({ store: localStorage.getItem('agency.crm.v1'), hero: document.querySelector('#heroNum').textContent, won: document.querySelector('#stages .chip[data-stage=won]').textContent, msg: document.querySelector('#detMsg').textContent })")
+            check("d. mark it Won and add a note: saved in this browser, the hero shows this month's money, the Won chip counts 1",
+                  '"stage":"won"' in w["store"] and "Owner said yes" in w["store"] and w["hero"] not in ("$0", "") and w["won"] == "Won 1" and "Notes saved" in w["msg"], w)
+            p.reload()
+            p.wait_for_function("window.AGENCY && window.AGENCY.ready()", timeout=60000)
+            p.wait_for_timeout(300)
+            check("d. it survives a reload (this browser only)", p.evaluate("() => document.querySelector('#stages .chip[data-stage=won]').textContent") == "Won 1")
+            p.locator("#stages .chip[data-stage=won]").click()
+            p.wait_for_timeout(150)
+            check("d. the Won chip filters the list to that one lead", p.evaluate("() => [...document.querySelectorAll('#list .lrow b')].map((b) => b.textContent)") == [name])
+            p.locator("#stages .chip[data-stage=all]").click()
+            p.fill("#q", "dental")
+            p.wait_for_timeout(150)
+            check("d. search finds the dentists", 1 <= p.evaluate("() => document.querySelectorAll('#list .lrow').length") <= 3)
+            p.fill("#q", "")
+            with p.expect_download() as dl:
+                p.locator("#csvBtn").click()
+            path = dl.value.path()
+            text = open(path, encoding="utf-8").read()
+            check("d. Download CSV gives every lead with its stage (Won for the one we marked)", text.startswith("name,trade,stage") and text.count("\r\n") == 21 and ",Won," in text, text[:200])
+            p.locator("#exportBtn").click()
+            ex = p.evaluate("() => [document.querySelector('#ioText').value, document.querySelector('#ioMsg').textContent]")
+            check("d. Export puts the notes as JSON in the box and says how many leads", '"kind": "agency-crm"' in ex[0] and "Owner said yes" in ex[0] and "1 leads" in ex[1], ex[1])
+            p.evaluate("() => { window.confirm = () => true; }")
+            p.locator("#clearBtn").click()
+            p.wait_for_timeout(150)
+            cleared = p.evaluate("() => document.querySelector('#stages .chip[data-stage=won]').textContent")
+            p.fill("#ioText", ex[0])
+            p.locator("#importBtn").click()
+            p.wait_for_timeout(150)
+            back = p.evaluate("() => [document.querySelector('#stages .chip[data-stage=won]').textContent, document.querySelector('#ioMsg').textContent]")
+            check("d. Start over clears the notes; Import brings them back", cleared == "Won 0" and back[0] == "Won 1" and "Imported your notes on 1 lead" in back[1], (cleared, back))
+            p.fill("#ioText", "{ nope")
+            p.locator("#importBtn").click()
+            check("d. a broken import changes nothing and says why", "not valid JSON" in p.evaluate("() => document.querySelector('#ioMsg').textContent"))
+            t = AK.taps(p)
+            check("d. every tap target is at least 44 x 44 px (leads, Call, chips, fields, buttons)", not t, t[:6])
+            check("d. no sideways scroll at 390 px; the orb's corner is free; no console error; nothing loaded from another site", AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (AK.corner(p)[:3], errs[:3], off[:3]))
+            ctx.close()
+            ctx, p, errs, seen, off = AK.page(br, origin, w=375, h=667, reduced=True, lite=True)
+            AK.open_app(p, origin, APP, "?lead=" + json.load(open(os.path.join(AK.WEB, APP, "leads.json"), encoding="utf-8"))["leads"][2]["id"], hook="AGENCY")
+            sm = p.evaluate("() => [!document.querySelector('#detail').hidden, document.documentElement.scrollWidth <= innerWidth + 1]")
+            check("d. 375 x 667, LITE, reduced motion: ?lead= opens that lead, no sideways scroll, taps >= 44 px, no error", sm == [True, True] and not AK.taps(p) and not errs, (sm, AK.taps(p)[:3], errs[:2]))
+            ctx.close()
+            ctx = br.new_context(viewport={"width": 1280, "height": 900})
+            p = ctx.new_page()
+            p.goto(f"{origin}/{APP}/")
+            p.wait_for_function("window.AGENCY && window.AGENCY.ready()", timeout=60000)
+            cols = p.evaluate("() => getComputedStyle(document.querySelector('#app')).gridTemplateColumns.split(' ').length")
+            check("d. desktop (1280 px): two columns", cols == 2, cols)
+            ctx.close()
+    finally:
+        srv.shutdown()
+
+
 if __name__ == "__main__":
+    fast = "--fast" in sys.argv
     try:
         test_leads()
         test_sites()
         test_pitch()
+        test_crm_static()
+        if not fast:
+            test_crm_page()
     finally:
         shutil.rmtree(TMP, ignore_errors=True)
     AK.finish()

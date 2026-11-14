@@ -1,0 +1,28 @@
+NOT READY TO SEND: put your real name, agency, email and postal address in agency/config.json, then build the kit again.
+(US law, CAN-SPAM: a true sender, your postal address and an opt-out in every sales email.)
+
+To: (find their email on their Facebook page or ask on the phone)
+From: YOUR NAME <you@example.com>
+Subject: A free website preview for Rocky Mountain Dental Care
+
+Hi,
+
+I'm YOUR NAME with YOUR AGENCY, a small web studio here in Fort Collins. I looked for Rocky Mountain Dental Care online and couldn't find a website, so people searching for a dentist in Fort Collins on their phone find other places first.
+
+So I built Rocky Mountain Dental Care a free preview of a new website. It's live right now:
+https://rocky-mountain-dental-care-demo.netlify.app
+
+It works on any phone: tap-to-call, your hours, directions and a contact form that sends messages straight to you.
+
+If you'd like to keep it, it's $999 to set it up with your own logo, photos and web address, then $79 a month for hosting, security and small changes. Month to month: cancel any time. If not, no problem at all.
+
+Want me to switch it on for you? Just reply, or call me at (555) 555-0100.
+
+Thanks,
+YOUR NAME
+YOUR AGENCY
+(555) 555-0100
+
+--
+This is a one-time offer of web design services from YOUR AGENCY, YOUR STREET ADDRESS, YOUR CITY, ST 00000.
+Not interested? Reply "no thanks" and I won't email you again.

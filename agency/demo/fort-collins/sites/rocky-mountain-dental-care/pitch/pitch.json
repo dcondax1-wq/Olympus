@@ -1,0 +1,15 @@
+{
+ "ready": false,
+ "subject": "A free website preview for Rocky Mountain Dental Care",
+ "opener": "Hi, is this the owner of Rocky Mountain Dental Care? Great. My name is YOUR NAME, I make websites for local businesses here in Fort Collins. I noticed your business doesn't have a website I could find, so I built you a free preview of a new website. It's already online, with your hours, tap-to-call and directions. Could I email or text you the link so you can take a look?",
+ "opener_words": 71,
+ "voicemail": "Hi, this is YOUR NAME with YOUR AGENCY. I made a free preview of a new website for Rocky Mountain Dental Care. You can see it at rocky-mountain-dental-care-demo.netlify.app. If you like it, call me back at (555) 555-0100. Thanks!",
+ "package": "growth",
+ "setup": 999.0,
+ "monthly": 79.0,
+ "problem": "no_site",
+ "problem_short": "your business doesn't have a website I could find",
+ "lead_id": "n14099844353",
+ "name": "Rocky Mountain Dental Care",
+ "demo_url": "https://rocky-mountain-dental-care-demo.netlify.app"
+}

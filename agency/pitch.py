@@ -26,7 +26,7 @@ from . import categories as C
 from . import config as CFG
 
 PROBLEM = {   # reason code -> (short spoken phrase, one sentence for the email)
-    "no_site": ("{name} doesn't have a website I could find", "I looked for {name} online and couldn't find a website, so people searching for a {trade} in {city} on their phone find other places first."),
+    "no_site": ("your business doesn't have a website I could find", "I looked for {name} online and couldn't find a website, so people searching for a {trade} in {city} on their phone find other places first."),
     "dead_domain": ("your website address doesn't open any more", "The website address listed for {name} no longer opens, so anyone who clicks it gets an error."),
     "site_down": ("your website wasn't loading when I checked", "When I checked, the {name} website did not open, so people who click it see an error."),
     "parked": ("your web address shows a parked page", "The web address listed for {name} shows a parked 'coming soon' page instead of your business."),
@@ -99,7 +99,7 @@ def voicemail(ctx: dict) -> str:
 
 
 def words(text: str) -> int:
-    return len(re.findall(r"[A-Za-z0-9'$.,-]+", text))
+    return len(text.split())
 
 
 def subject(ctx: dict) -> str:

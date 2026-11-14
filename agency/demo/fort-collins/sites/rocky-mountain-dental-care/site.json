@@ -1,0 +1,140 @@
+{
+ "v": 1,
+ "slug": "rocky-mountain-dental-care",
+ "theme": "clinic",
+ "made": "2026-11-14",
+ "business": {
+  "name": "Rocky Mountain Dental Care",
+  "trade": "dentist",
+  "trade_label": "Dentist",
+  "schema": "Dentist",
+  "city": "Fort Collins",
+  "state": "CO",
+  "street_line": "1025 Robertson Street",
+  "address_line": "1025 Robertson Street, Fort Collins, CO",
+  "postcode": "",
+  "phone": "(970) 493-4313",
+  "phone_e164": "+19704934313",
+  "email": "",
+  "old_website": "",
+  "facebook": "",
+  "instagram": "",
+  "lat": 40.573324,
+  "lon": -105.060331,
+  "tz": "America/Denver",
+  "cuisine": ""
+ },
+ "hours": {
+  "raw": "Mo-Tu 08:00-17:00; We 08:30-17:00; Th 08:00-12:00",
+  "ok": true,
+  "week": [
+   [
+    [
+     480,
+     1020
+    ]
+   ],
+   [
+    [
+     480,
+     1020
+    ]
+   ],
+   [
+    [
+     510,
+     1020
+    ]
+   ],
+   [
+    [
+     480,
+     720
+    ]
+   ],
+   [],
+   [],
+   []
+  ]
+ },
+ "copy": {
+  "headline": "Your dentist in Fort Collins",
+  "sub": "Check-ups, cleanings and care for the whole family at Rocky Mountain Dental Care. Call to book a visit.",
+  "about": "Rocky Mountain Dental Care is a dental practice on Robertson Street in Fort Collins.",
+  "cta": "Book a visit",
+  "cta_kind": "book",
+  "form_title": "Request an appointment",
+  "form_need": "What is the visit for?",
+  "kicker": "Dentist in Fort Collins",
+  "services": [
+   {
+    "title": "Check-ups and cleanings",
+    "line": "Regular visits to keep your smile healthy.",
+    "icon": "tooth"
+   },
+   {
+    "title": "Fillings",
+    "line": "Repairing cavities.",
+    "icon": "check"
+   },
+   {
+    "title": "Whitening",
+    "line": "A brighter smile.",
+    "icon": "sparkle"
+   },
+   {
+    "title": "Crowns and bridges",
+    "line": "Restoring damaged or missing teeth.",
+    "icon": "shield"
+   },
+   {
+    "title": "Children's dentistry",
+    "line": "Gentle care for kids.",
+    "icon": "smile"
+   },
+   {
+    "title": "Urgent visits",
+    "line": "Toothache? Call us.",
+    "icon": "phone"
+   }
+  ],
+  "why": [
+   {
+    "title": "Right here in Fort Collins",
+    "line": "1025 Robertson Street",
+    "icon": "pin"
+   },
+   {
+    "title": "Open 4 days a week",
+    "line": "See today's hours below.",
+    "icon": "clock"
+   },
+   {
+    "title": "Talk to a real person",
+    "line": "Call (970) 493-4313.",
+    "icon": "phone"
+   },
+   {
+    "title": "Easy to reach",
+    "line": "Send a message with the form below.",
+    "icon": "chat"
+   }
+  ]
+ },
+ "agency": {
+  "name": "YOUR AGENCY",
+  "your_name": "YOUR NAME",
+  "phone": "(555) 555-0100",
+  "email": "you@example.com",
+  "website": ""
+ },
+ "form": "netlify",
+ "pages": 1,
+ "demo_url": "https://rocky-mountain-dental-care-demo.netlify.app",
+ "live_url": "",
+ "source": {
+  "osm_url": "https://www.openstreetmap.org/node/14099844353",
+  "lead_id": "n14099844353",
+  "attribution": "Business data (c) OpenStreetMap contributors, ODbL 1.0 (openstreetmap.org/copyright)"
+ }
+}

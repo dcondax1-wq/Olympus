@@ -14,7 +14,7 @@
   "osm_base": "2026-11-13T21:22:20Z",
   "cache": {
    "hit": true,
-   "age_h": 0.2
+   "age_h": 0.9
   },
   "attribution": "Business data (c) OpenStreetMap contributors, ODbL 1.0 (openstreetmap.org/copyright)",
   "place": {
@@ -64,7 +64,7 @@
    "gym",
    "tattoo"
   ],
-  "audited": 40,
+  "audited": 30,
   "coverage": {
    "n": 501,
    "phone": 0.511,
@@ -73,7 +73,7 @@
    "street_address": 0.758,
    "email": 0.12
   },
-  "made": "2026-11-14T19:40:53"
+  "made": "2026-11-14T20:23:27"
  },
  "leads": [
   {
@@ -1132,6 +1132,66 @@
    "hours": []
   },
   {
+   "id": "n13368234801",
+   "osm": "node/13368234801",
+   "osm_url": "https://www.openstreetmap.org/node/13368234801",
+   "name": "The Fox Den: No Waste Cafe & Roastery",
+   "slug": "the-fox-den-no-waste-cafe-and-roastery",
+   "category": "cafe",
+   "category_label": "Cafe",
+   "template": "table",
+   "lat": 40.5894,
+   "lon": -105.107078,
+   "distance_km": 2.55,
+   "address": {
+    "housenumber": "1680",
+    "street": "Laporte Avenue",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80521",
+    "city_guess": true,
+    "line": "1680 Laporte Avenue, Fort Collins, CO 80521",
+    "street_line": "1680 Laporte Avenue",
+    "has_street": true
+   },
+   "phone": "(970) 286-2310",
+   "phone_e164": "+19702862310",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "Mo-Su 07:00-19:00",
+   "cuisine": "american",
+   "description": "",
+   "tag_count": 9,
+   "source": "overpass",
+   "check_date": "",
+   "score": 94,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 4,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'coffee Fort Collins' on their phone find a competitor first.",
+   "hours": [
+    [
+     "Mon - Sun",
+     "7 AM - 7 PM"
+    ]
+   ]
+  },
+  {
    "id": "n11279579528",
    "osm": "node/11279579528",
    "osm_url": "https://www.openstreetmap.org/node/11279579528",
@@ -1292,96 +1352,6 @@
     },
     "note": "",
     "final_url": "https://www.autotrendservice.com"
-   }
-  },
-  {
-   "id": "w183384987",
-   "osm": "way/183384987",
-   "osm_url": "https://www.openstreetmap.org/way/183384987",
-   "name": "Cleaver Electrical Services",
-   "slug": "cleaver-electrical-services",
-   "category": "electrician",
-   "category_label": "Electrician",
-   "template": "pro",
-   "lat": 40.588715,
-   "lon": -105.044322,
-   "distance_km": 2.77,
-   "address": {
-    "housenumber": "144",
-    "street": "Racquette Drive",
-    "unit": "",
-    "city": "Fort Collins",
-    "state": "CO",
-    "postcode": "80524",
-    "city_guess": false,
-    "line": "144 Racquette Drive, Fort Collins, CO 80524",
-    "street_line": "144 Racquette Drive",
-    "has_street": true
-   },
-   "phone": "(970) 224-5646",
-   "phone_e164": "+19702245646",
-   "email": "",
-   "website": "http://cleaverelectric.com",
-   "facebook": "",
-   "instagram": "",
-   "opening_hours": "",
-   "cuisine": "",
-   "description": "",
-   "tag_count": 11,
-   "source": "overpass",
-   "check_date": "",
-   "score": 75,
-   "tier": "B",
-   "need": 46,
-   "reach": 20,
-   "value": 9,
-   "site_status": "bad",
-   "issues": [
-    {
-     "code": "no_viewport",
-     "weight": 25,
-     "text": "Not built for phones: on a phone it shows a tiny desktop page you have to pinch and zoom"
-    },
-    {
-     "code": "no_tel",
-     "weight": 10,
-     "text": "No phone number on the home page"
-    },
-    {
-     "code": "no_cta",
-     "weight": 8,
-     "text": "No clear button to call, book or get a quote"
-    },
-    {
-     "code": "no_description",
-     "weight": 3,
-     "text": "No description for Google's search results"
-    }
-   ],
-   "reasons": [
-    "Not built for phones: on a phone it shows a tiny desktop page you have to pinch and zoom",
-    "No phone number on the home page",
-    "No clear button to call, book or get a quote",
-    "No description for Google's search results"
-   ],
-   "why": "Not built for phones: on a phone it shows a tiny desktop page you have to pinch and zoom; no phone number on the home page.",
-   "hours": [],
-   "audit": {
-    "checked": "2026-11-14",
-    "fetched": true,
-    "facts": {
-     "https": true,
-     "viewport": false,
-     "tel": false,
-     "cta": false,
-     "title": "Cleaver Electrical Services - Fort Collins, Colorado",
-     "copyright_year": null,
-     "generator": "",
-     "elapsed_s": 0.9,
-     "bytes": 2680
-    },
-    "note": "",
-    "final_url": "https://cleaverelectric.com"
    }
   }
  ]

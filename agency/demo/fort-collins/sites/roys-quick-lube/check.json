@@ -1,0 +1,74 @@
+{
+ "ok": true,
+ "scores": {
+  "performance": 100,
+  "accessibility": 100,
+  "best_practices": 100,
+  "seo": 100
+ },
+ "hard_fails": [],
+ "to_fix": [],
+ "bytes_total": 80944,
+ "sizes": {
+  "404.html": 19826,
+  "_headers": 411,
+  "favicon.svg": 259,
+  "index.html": 37197,
+  "robots.txt": 26,
+  "site.js": 3378,
+  "thanks.html": 19847
+ },
+ "pages": [
+  {
+   "page": "404.html",
+   "bytes": 19826,
+   "failed": []
+  },
+  {
+   "page": "index.html",
+   "bytes": 37197,
+   "failed": []
+  },
+  {
+   "page": "thanks.html",
+   "bytes": 19847,
+   "failed": []
+  }
+ ],
+ "passed": [
+  "404, thank-you page, icon and robots.txt present",
+  "<!doctype html> first",
+  "<html lang=\"en\">",
+  "a preview is kept out of Google (noindex)",
+  "colour contrast: all 9 text pairs pass WCAG AA",
+  "description 99 characters (50-160)",
+  "every <img> has alt text",
+  "every form field has a label",
+  "every link has words",
+  "every picture is named or hidden from screen readers",
+  "few files to load (the CSS is inline)",
+  "focus ring and a skip link",
+  "headings in order (no level skipped)",
+  "home page 36.3 KB (budget 60 KB)",
+  "ids are unique",
+  "new-tab links have rel=noopener",
+  "no inline onclick= / javascript: links (works with the strict security header)",
+  "no web fonts (system fonts show instantly)",
+  "nothing loaded from another site (no hotlinked photo, font, script or stylesheet)",
+  "one h1 (1 found)",
+  "outside links use https",
+  "phone links are in +1XXXXXXXXXX form",
+  "phone viewport (width=device-width)",
+  "reduced motion respected",
+  "scripts are deferred (the page shows before they run)",
+  "security headers file (_headers) for Netlify / Cloudflare",
+  "structured data (schema.org LocalBusiness) parses",
+  "tap targets at least 44 px (buttons, links, fields, menu)",
+  "title 28 characters (10-70)",
+  "title 46 characters (10-70)",
+  "utf-8 declared",
+  "valid HTML: every tag closed in order",
+  "whole site 79.0 KB (budget 200 KB)"
+ ],
+ "mode": "demo"
+}
