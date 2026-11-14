@@ -702,7 +702,9 @@ def look_issues(r, base=None):
         out = {}
         vw, vh = (1440, 900) if x.get("view") == "desk" else (390, 844)
         cv = x.get("canvases") or []
-        for t in [t for t in (x.get("lowPx") or []) if mostly_on(t["box"], vw, vh) and real(t, cv)] + (x.get("lowBelow") or []):
+        # below the measured screens only a text on one certain background counts (over a gradient the worst stop may be nowhere near it)
+        below = [t for t in (x.get("lowBelow") or []) if t.get("cands", 1) <= 1]
+        for t in [t for t in (x.get("lowPx") or []) if mostly_on(t["box"], vw, vh) and real(t, cv)] + below:
             out.setdefault("text", {})[(t["sel"], t["text"])] = f"{t['sel'][-40:]} '{t['text'][:20]}' {t['fg']} on {t.get('pxbg', t['bg'])} {t.get('px', t['ratio'])}:1"
         for t in x.get("left") or []:
             if not any(a in t["sel"] for a in ART_SEL) and not KEEP_RX.search(str(t["value"])):
