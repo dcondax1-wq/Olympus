@@ -1,0 +1,4 @@
+# the unzipped build (python agency/storefront/build.py): only dist/storefront.zip is kept in git
+dist/site/
+dist/*.tmp
+__pycache__/

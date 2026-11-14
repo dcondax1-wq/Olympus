@@ -1,0 +1,142 @@
+<!--page {"nav": "home", "body": "home", "title": "{agency}: websites that make local businesses' phones ring", "description": "Fast, mobile-first websites for local businesses in {city}. See a free demo first, live in {launch_days} days, from {from_setup}. Hosting, edits and Google help included."} -->
+{{> head}}
+<body class="{{page.body_class}}">
+{{> header}}
+<main id="main">
+  <section class="hero" aria-labelledby="hero-h">
+    <div class="wrap hero-in">
+      <div class="hero-copy">
+        <p class="eyebrow">Websites for local businesses in {{a.city}}</p>
+        <h1 id="hero-h" class="display">{{{offer.headline_html}}}</h1>
+        <p class="lede">{{offer.subline}}</p>
+        <div class="cta-row">
+          <a class="btn btn-primary btn-lg" href="contact.html#quote">Get my free demo {{{icons.arrow}}}</a>
+          <a class="btn btn-ghost btn-lg" href="grader.html">{{{icons.search}}}Grade my website</a>
+        </div>
+        <p class="hero-call">Or call <a href="tel:{{a.tel}}">{{a.phone}}</a><span aria-hidden="true"> · </span><span>{{a.hours}}</span></p>
+        {{{blocks.promises}}}
+      </div>
+      <div class="hero-art">{{{blocks.hero_phones}}}</div>
+    </div>
+  </section>
+
+  <section class="trades" aria-label="Who we build for">
+    <div class="wrap trades-in">
+      <p>Built for</p>
+      <ul role="list">
+        <li>Barbers &amp; salons</li><li>Plumbers</li><li>Electricians</li><li>Heating &amp; air</li><li>Restaurants &amp; cafes</li><li>Cleaners</li><li>Landscapers</li><li>Auto shops</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="why" aria-labelledby="why-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow"><span class="num">01</span>Why it matters</p>
+        <h2 id="why-h">Your next customer is choosing on their phone. Right now.</h2>
+        <p class="lede">They search, tap the first good-looking result and call. If your site is slow, tiny or out of date, they call someone else, and you never know it happened.</p>
+      </header>
+      <ol class="problems" role="list">
+        <li><span class="p-ico">{{{icons.phone}}}</span><h3>They can't tap to call</h3><p>A number you have to copy by hand is a call you don't get.</p></li>
+        <li><span class="p-ico">{{{icons.clock}}}</span><h3>It looks closed</h3><p>Old prices, old hours and &ldquo;&copy; 2016&rdquo; at the bottom tell people you might be gone.</p></li>
+        <li><span class="p-ico">{{{icons.pin}}}</span><h3>Google can't place you</h3><p>No town, no services, no link to your Google profile: no spot on the map.</p></li>
+      </ol>
+      <p class="fixline">{{{icons.check}}}<span>We fix all three, then keep them fixed every month.</span></p>
+    </div>
+  </section>
+
+  <section class="sec sec-tint" id="work" aria-labelledby="work-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow"><span class="num">02</span>Before and after</p>
+        <h2 id="work-h">Same business. A website that works.</h2>
+        <p class="lede">Three example demos we built to show the work. Every business we talk to gets a free one like these, with its own name, services and photos.</p>
+      </header>
+      {{{blocks.examples_home}}}
+      <p class="center"><a class="btn btn-ghost" href="work.html">See all three up close {{{icons.arrow}}}</a></p>
+    </div>
+  </section>
+
+  <section class="sec" id="included" aria-labelledby="inc-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow"><span class="num">03</span>What you get</p>
+        <h2 id="inc-h">Everything a local business needs. Nothing it doesn't.</h2>
+      </header>
+      <ul class="features" role="list">
+        <li><span class="f-ico">{{{icons.phone}}}</span><h3>Made for phones first</h3><p>Big text, big buttons and tap-to-call, on every phone.</p></li>
+        <li><span class="f-ico">{{{icons.calendar}}}</span><h3>Bookings and quotes</h3><p>Customers book or ask for a quote day or night, and it lands in your email.</p></li>
+        <li><span class="f-ico">{{{icons.server}}}</span><h3>Hosting, padlock, backups</h3><p>Fast hosting, the SSL padlock and daily backups. All included.</p></li>
+        <li><span class="f-ico">{{{icons.pencil}}}</span><h3>Edits every month</h3><p>New prices, new photos, holiday hours: send a text and it's done.</p></li>
+        <li><span class="f-ico">{{{icons.pin}}}</span><h3>Google profile help</h3><p>Your Google Business Profile linked, filled in and kept fresh.</p></li>
+        <li><span class="f-ico">{{{icons.bolt}}}</span><h3>Fast, and easy to find</h3><p>Light pages that open in a blink, with the local basics Google looks for.</p></li>
+      </ul>
+      <div class="upsell">
+        <p><strong>Add when you're ready:</strong> review booster, website chat, business email and more.</p>
+        <a class="link-arrow" href="pricing.html#addons">See the add-ons {{{icons.arrow}}}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec-dark" id="how" aria-labelledby="how-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow"><span class="num">04</span>How it works</p>
+        <h2 id="how-h">Live in {{offer.launch_days}} days. Three easy steps.</h2>
+      </header>
+      <ol class="steps" role="list">
+        <li><span class="step-n">1</span><h3>We build your free demo</h3><p>A 15-minute chat, or just your Google listing, and we make a real demo of your new site within {{offer.demo_days}} days.</p></li>
+        <li><span class="step-n">2</span><h3>You tell us what to change</h3><p>Love it? Pick a plan. Want changes? We tweak it until it feels like your business.</p></li>
+        <li><span class="step-n">3</span><h3>We launch it and look after it</h3><p>Hosting, updates, backups and your monthly edits are on us. You get back to work.</p></li>
+      </ol>
+      <div class="guarantee">{{{icons.shield}}}<p>{{offer.guarantee}}</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="pricing" aria-labelledby="price-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow"><span class="num">05</span>Simple prices</p>
+        <h2 id="price-h">One setup fee. One flat monthly.</h2>
+        <p class="lede">Hosting, security, backups and edits are in every plan. No hidden fees, no long contract.</p>
+      </header>
+      {{{blocks.plans_short}}}
+      <p class="center"><a class="btn btn-ghost" href="pricing.html">Compare plans and add-ons {{{icons.arrow}}}</a></p>
+    </div>
+  </section>
+
+  {{{blocks.testimonials}}}
+
+  <section class="sec sec-tint" id="check" aria-labelledby="check-h">
+    <div class="wrap grader-band">
+      <div class="grader-band-copy">
+        <p class="eyebrow">Free tool</p>
+        <h2 id="check-h">How does your website score?</h2>
+        <p>{{blocks.quiz_count}} quick questions, two minutes, and you'll know what is costing you calls. Want the real scan? We'll email you a one-page report, free.</p>
+        <a class="btn btn-primary btn-lg" href="grader.html">Start the free check {{{icons.arrow}}}</a>
+      </div>
+      <div class="score-demo" aria-hidden="true">
+        <svg viewBox="0 0 120 120" class="ring"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fg ring-demo" cx="60" cy="60" r="52"/></svg>
+        <p class="score-demo-num">64<span>/100</span></p>
+        <p class="score-demo-grade">C</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="faq" aria-labelledby="faq-h">
+    <div class="wrap narrow">
+      <header class="sec-head">
+        <p class="eyebrow"><span class="num">06</span>Questions</p>
+        <h2 id="faq-h">Straight answers.</h2>
+      </header>
+      {{{blocks.faq_top}}}
+      <p class="center"><a class="link-arrow" href="faq.html">All questions {{{icons.arrow}}}</a></p>
+    </div>
+  </section>
+
+  {{> cta}}
+</main>
+{{> footer}}
+{{> dock}}
+</body>
+</html>

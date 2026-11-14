@@ -1,0 +1,73 @@
+{
+  "_read_me": "The three example demo sites shown on the storefront (fictional businesses, made up to show the work). Records use the shared agency client shape; 'show' holds the before/after notes for the storefront only.",
+  "clients": [
+    {
+      "id": "demo-barber",
+      "name": "Lather & Line Barber Co.",
+      "trade": "barber",
+      "city": "Example town",
+      "phone": "(555) 555-0142",
+      "email": "hello@latherandline.example",
+      "site_url": "",
+      "demo_url": "examples/barber/index.html",
+      "status": "example",
+      "package": "growth",
+      "setup_usd": 999,
+      "monthly_usd": 79,
+      "notes": "Fictional business, made up to show the work."
+    },
+    {
+      "id": "demo-plumber",
+      "name": "Steadyflow Plumbing & Drain",
+      "trade": "plumber",
+      "city": "Example town",
+      "phone": "(555) 555-0187",
+      "email": "help@steadyflow.example",
+      "site_url": "",
+      "demo_url": "examples/plumber/index.html",
+      "status": "example",
+      "package": "pro",
+      "setup_usd": 1999,
+      "monthly_usd": 129,
+      "notes": "Fictional business, made up to show the work."
+    },
+    {
+      "id": "demo-restaurant",
+      "name": "Ember & Fig",
+      "trade": "restaurant",
+      "city": "Example town",
+      "phone": "(555) 555-0163",
+      "email": "table@emberandfig.example",
+      "site_url": "",
+      "demo_url": "examples/restaurant/index.html",
+      "status": "example",
+      "package": "growth",
+      "setup_usd": 999,
+      "monthly_usd": 79,
+      "notes": "Fictional business, made up to show the work."
+    }
+  ],
+  "show": {
+    "demo-barber": {
+      "trade_label": "Barbershop",
+      "domain": "latherandline.example",
+      "before": ["Tiny text, made for a desktop", "Phone number you can't tap", "No way to book a chair"],
+      "after": ["Book a chair in two taps", "Prices up front", "Tap to call, open hours today"],
+      "changed": ["Booking button on every screen", "Price list with times", "Hours, map and directions in one place", "Sample review cards ready for real Google reviews"]
+    },
+    "demo-plumber": {
+      "trade_label": "Plumber",
+      "domain": "steadyflow.example",
+      "before": ["Not secure warning", "Emergency number buried", "No quote form"],
+      "after": ["24/7 call button always on screen", "Free quote form", "Licence, warranty and towns served"],
+      "changed": ["Emergency bar at the top", "Six services with starting prices", "Quote form with 'how urgent'", "Service-area list for local search"]
+    },
+    "demo-restaurant": {
+      "trade_label": "Restaurant",
+      "domain": "emberandfig.example",
+      "before": ["Menu is a blurry photo", "Hours out of date", "No booking or pickup"],
+      "after": ["Real menu with prices", "'Open now' with tonight's hours", "Book a table or order pickup"],
+      "changed": ["Readable menu with dietary tags", "Live 'open now' badge", "Book, order and call buttons", "Private dining and catering section"]
+    }
+  }
+}

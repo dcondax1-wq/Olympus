@@ -1,0 +1,49 @@
+<!--page {"nav": "", "title": "Privacy policy | {agency}", "description": "How {agency} handles the details you send through this website."} -->
+{{> head}}
+<body>
+{{> header}}
+<main id="main">
+  <section class="page-hero page-hero-sm" aria-labelledby="ph-h">
+    <div class="wrap narrow">
+      <p class="eyebrow">Legal</p>
+      <h1 id="ph-h">Privacy policy</h1>
+      <p class="muted">Last updated: [DATE]</p>
+    </div>
+  </section>
+  <section class="sec sec-tight" aria-label="Policy">
+    <div class="wrap narrow prose">
+      {{{blocks.legal_note}}}
+      <h2>Who we are</h2>
+      <p>This website belongs to {{a.legal_name}} ("we", "us"), a website studio based in {{a.city}}, {{a.state}}. You can reach us at <a href="mailto:{{a.email}}">{{a.email}}</a> or <a href="tel:{{a.tel}}">{{a.phone}}</a>.</p>
+      <h2>What we collect</h2>
+      <p>We only collect what you choose to send us:</p>
+      <ul>
+        <li><strong>The demo request form:</strong> your name, business name, phone, and if you add them, your email, website, the plan you are curious about, the best time to call and your message.</li>
+        <li><strong>The free website check:</strong> your website address, your answers to the questions, your name and email, and if you add them, your business name and phone.</li>
+        <li><strong>Calls, texts and emails</strong> you send us.</li>
+      </ul>
+      <p>This website does not use advertising cookies, tracking pixels or analytics scripts.</p>
+      <h2>How we use it</h2>
+      <ul>
+        <li>To reply to you, build your free demo and send the report you asked for.</li>
+        <li>To run a one-time check of the public website address you gave us (we open your homepage once, like a visitor would).</li>
+        <li>To keep a simple record of our conversation if you become a client.</li>
+      </ul>
+      <p>We never sell your details. We do not send marketing emails unless you ask us to.</p>
+      <h2>Who else sees it</h2>
+      <p>Our website is hosted by Netlify, which receives and stores the forms you send so we can read them. [ADD any other tools you use, for example your email provider or booking calendar.]</p>
+      <h2>How long we keep it</h2>
+      <p>If you do not become a client, we delete your details within [12 months]. Client records are kept for as long as we work together and as long as the law requires afterwards.</p>
+      <h2>Your choices</h2>
+      <p>You can ask us at any time what we hold about you, to correct it or to delete it. Email <a href="mailto:{{a.email}}">{{a.email}}</a> and we will do it within [30 days].</p>
+      <h2>Children</h2>
+      <p>This website is for business owners and is not meant for children under 16.</p>
+      <h2>Changes</h2>
+      <p>If we change this policy, we will update the date at the top of this page.</p>
+    </div>
+  </section>
+</main>
+{{> footer}}
+{{> dock}}
+</body>
+</html>

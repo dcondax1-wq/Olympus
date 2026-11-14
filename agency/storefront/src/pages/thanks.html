@@ -1,0 +1,20 @@
+<!--page {"nav": "", "title": "Thank you | {agency}", "description": "We got your message."} -->
+{{> head}}
+<body>
+{{> header}}
+<main id="main">
+  <section class="page-hero thanks" aria-labelledby="ph-h">
+    <div class="wrap narrow">
+      <p class="thanks-ico">{{{icons.check}}}</p>
+      <h1 id="ph-h">Got it. Thank you!</h1>
+      <p class="lede">Your message is with us. We reply {{offer.reply_time}}. If you asked for the free website check, your one-page report comes by email.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary btn-lg" href="tel:{{a.tel}}">{{{icons.phone}}}In a hurry? Call {{a.phone}}</a>
+        <a class="btn btn-ghost btn-lg" href="work.html">See example websites</a>
+      </div>
+    </div>
+  </section>
+</main>
+{{> footer}}
+</body>
+</html>

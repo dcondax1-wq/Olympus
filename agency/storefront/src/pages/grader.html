@@ -1,0 +1,85 @@
+<!--page {"nav": "grader", "body": "grader-page", "title": "Free website check for local businesses | {agency}", "description": "Is your website costing you calls? Take the free 2-minute check, get your score and top fixes, and a free one-page report by email."} -->
+{{> head}}
+<body class="{{page.body_class}}">
+{{> header}}
+<main id="main">
+  <section class="page-hero" aria-labelledby="ph-h">
+    <div class="wrap narrow">
+      <p class="eyebrow">Free website check</p>
+      <h1 id="ph-h">Is your website costing you calls?</h1>
+      <p class="lede">{{blocks.quiz_count}} yes-or-no questions, about two minutes. You get a score and your top fixes right away, plus a free one-page report from us if you want one.</p>
+    </div>
+  </section>
+
+  <section class="sec sec-tight" aria-label="The check">
+    <div class="wrap narrow">
+      <form class="grader" id="grader" name="grader" method="POST" action="/thanks.html" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="grader">
+        <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+        <input type="hidden" name="score" id="g-score-in" value="">
+        <input type="hidden" name="grade" id="g-grade-in" value="">
+
+        <div class="card step" id="step-site">
+          <h2><span class="step-dot">1</span>Your website</h2>
+          <p class="field"><label for="g-site">Website address</label>
+            <input id="g-site" name="website" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="yourbusiness.com" aria-describedby="g-site-help"></p>
+          <p class="help" id="g-site-help">Type it the way you would in a browser, for example <span class="mono">joesplumbing.com</span>.</p>
+          <label class="check"><input type="checkbox" id="g-nosite" name="no_website" value="yes"><span>I don't have a website yet</span></label>
+          <p class="step-go"><a class="btn btn-primary btn-lg" href="#quiz" id="g-start">Start the check {{{icons.arrow}}}</a></p>
+          <p class="note">{{{icons.shield}}}<span><strong>Honest note:</strong> your browser can't look inside another website (that is a privacy rule), so this quick check uses your answers. The full report is a real scan that we run for you.</span></p>
+        </div>
+
+        <div class="card nosite" id="g-nosite-box" hidden>
+          <h2>No website yet? That's the easy fix.</h2>
+          <p>People who search on their phone pick from what they can see. Without a site, the calls go to the business that has one. We'll build you a free demo first, so you can see it before you pay.</p>
+          <p><a class="btn btn-primary" href="contact.html#quote">Get my free demo {{{icons.arrow}}}</a></p>
+        </div>
+
+        <div class="card step" id="quiz">
+          <h2><span class="step-dot">2</span>{{blocks.quiz_count}} quick questions</h2>
+          <p class="quiz-for" id="g-for" hidden>Checking <strong id="g-host"></strong><a id="g-open" href="#quiz" target="_blank" rel="noopener noreferrer">Open it in a new tab {{{icons.arrow}}}</a></p>
+          <div class="progress" aria-hidden="true"><span id="g-bar"></span></div>
+          {{{blocks.quiz}}}
+        </div>
+
+        <div class="card result" id="result" hidden>
+          <div class="result-top" aria-live="polite">
+            <div class="ring-box">
+              <svg viewBox="0 0 120 120" class="ring" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fg" id="g-ring" cx="60" cy="60" r="52"/></svg>
+              <p class="ring-num"><span id="g-score">0</span><span class="ring-of">/100</span></p>
+            </div>
+            <div>
+              <p class="grade-badge" id="g-grade">?</p>
+              <h2 id="g-head">Answer the questions to see your score</h2>
+              <p id="g-sub" class="muted"></p>
+            </div>
+          </div>
+          <div class="fixes" id="g-fixes-box" hidden>
+            <h3>Your top fixes</h3>
+            <ol id="g-fixes" role="list"></ol>
+          </div>
+        </div>
+
+        <div class="card step" id="report">
+          <h2><span class="step-dot">3</span>Get your full report, free</h2>
+          <p>We run a real check of your website (speed, phone layout, padlock, tap-to-call, Google profile and more) and email you a one-page report {{offer.reply_time}}. No obligation.</p>
+          <div class="row2">
+            <p class="field"><label for="g-name">Your name</label><input id="g-name" name="name" type="text" autocomplete="name" required></p>
+            <p class="field"><label for="g-email">Email</label><input id="g-email" name="email" type="email" autocomplete="email" required></p>
+          </div>
+          <div class="row2">
+            <p class="field"><label for="g-biz">Business name <span class="opt">(optional)</span></label><input id="g-biz" name="business" type="text" autocomplete="organization"></p>
+            <p class="field"><label for="g-phone">Phone <span class="opt">(optional)</span></label><input id="g-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel"></p>
+          </div>
+          <p class="form-error" id="g-err" role="alert" hidden></p>
+          <button class="btn btn-primary btn-lg btn-block" type="submit">Email me my free report {{{icons.arrow}}}</button>
+          <p class="fine">Free, no spam. We only use your details to send your report. <a href="privacy.html">Privacy</a></p>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+{{> footer}}
+{{> dock}}
+</body>
+</html>

@@ -1,0 +1,35 @@
+/* The dated look of a typical old small-business site (screenshots only). Fixed 960px table, no phone layout. */
+body { margin: 0; padding: 18px 0; font-family: "Times New Roman", Times, serif; font-size: 13px; color: #222; background: #D9D2C3; }
+.page { width: 960px; margin: 0 auto; background: #FFFDF5; border: 3px double #6B5B3E; }
+.banner { height: 150px; text-align: center; background: linear-gradient(#7C1F1F, #3A0E0E); color: #FFE9A8; position: relative; }
+.banner h1 { margin: 18px 0 2px; font-size: 40px; font-family: "Times New Roman", serif; text-shadow: 2px 2px 0 #000; letter-spacing: 2px; }
+.slogan { margin: 0; font-style: italic; font-size: 16px; }
+.logo-box { width: 120px; height: 40px; margin: 14px auto 0; border: 1px dashed #FFE9A8; font: 11px Arial, sans-serif; line-height: 40px; color: #FFE9A8; }
+.navrow { padding: 6px; text-align: center; background: #E8DFC6; border-block: 1px solid #6B5B3E; font: bold 12px Arial, sans-serif; }
+.navrow a { color: #0000EE; }
+.side { width: 170px; vertical-align: top; padding: 12px; background: #F2ECD9; border-right: 1px solid #CFC2A0; font-size: 12px; }
+.side:last-child { border-right: 0; border-left: 1px solid #CFC2A0; }
+.side h3 { margin: 6px 0; font-size: 14px; color: #7C1F1F; text-decoration: underline; }
+.side ul { padding-left: 18px; margin: 0 0 10px; }
+.side a { color: #0000EE; }
+.main { vertical-align: top; padding: 14px 18px; font-size: 13px; line-height: 1.35; }
+.main h2 { color: #7C1F1F; font-size: 22px; margin: 4px 0 10px; }
+.scan { height: 240px; margin: 12px 0 4px; background: repeating-linear-gradient(45deg, #ddd 0 6px, #cfcfcf 6px 12px); border: 1px solid #999; display: flex; align-items: center; justify-content: center; font: 12px Arial, sans-serif; color: #555; }
+.small { font-size: 10px; color: #555; }
+.counter, .badge { margin-top: 18px; padding: 6px; border: 1px inset #999; background: #000; color: #0F0; font: 11px "Courier New", monospace; text-align: center; }
+.badge { background: #fff; color: #333; }
+marquee { display: block; margin-top: 10px; color: #C00; font-weight: bold; }
+.foot { padding: 8px; text-align: center; font-size: 10px; background: #E8DFC6; border-top: 1px solid #6B5B3E; color: #444; }
+.plumber .banner { background: linear-gradient(#1D3E8A, #0B1E46); color: #FFFFFF; }
+.plumber .banner h1 { font-family: Arial, sans-serif; font-style: italic; }
+.plumber .main h2, .plumber .side h3 { color: #1D3E8A; }
+.restaurant { background: #1E1612; }
+.restaurant .page { background: #2C211A; color: #E8DCC8; border-color: #8A6A3A; }
+.restaurant .banner { background: linear-gradient(#3B2A1E, #1E1612); color: #E9C46A; }
+.restaurant .banner h1 { font-family: Papyrus, "Comic Sans MS", cursive; font-size: 46px; }
+.restaurant .navrow, .restaurant .foot { background: #3B2A1E; border-color: #8A6A3A; color: #E8DCC8; }
+.restaurant .navrow a, .restaurant .side a { color: #9FC5FF; }
+.restaurant .side { background: #251B15; border-color: #5A4430; }
+.restaurant .main h2, .restaurant .side h3 { color: #E9C46A; }
+.restaurant .scan { background: repeating-linear-gradient(45deg, #4A3A2E 0 6px, #3E3026 6px 12px); color: #C8B89E; border-color: #5A4430; }
+.restaurant .small { color: #B5A68E; }
