@@ -198,7 +198,7 @@
        Neo Brutal's pink text on yellow (pink stays the button), Carbon Red's red text, Sunset's lower sky darkened) */
     look({ id: 'aurora', group: 'dark', name: 'Glass Aurora', tag: 'Frosted glass · violet and teal light', scheme: 'dark',
       c: { bg: '#0d1020', card: 'rgba(255, 255, 255, .07)', line: 'rgba(255, 255, 255, .16)', text: '#f5f6ff', soft: '#dcdff2', muted: '#c3c7e2', accent: '#9ad8ff', up: '#3ccf7a', down: '#ff7b72' },
-      s: { page: 'radial-gradient(120% 60% at 10% 0%, #33256a 0%, transparent 60%), radial-gradient(100% 60% at 100% 30%, #0b4f55 0%, transparent 55%), linear-gradient(180deg, #0b0b1a, #0d1020)',
+      s: { page: 'radial-gradient(120% 60% at 10% 0%, #2c2060 0%, transparent 60%), radial-gradient(100% 60% at 100% 30%, #0a424a 0%, transparent 55%), linear-gradient(180deg, #0b0b1a, #0d1020)',
         border: '1px solid rgba(255, 255, 255, .16)', radius: '24px', radiusS: '18px', radiusL: '28px', shadow: '0 10px 30px rgba(0, 0, 0, .35)', blur: 'blur(18px) saturate(140%)',
         title: SANS, weight: '700', btn: 'linear-gradient(90deg, #7c6cff, #3fd1d1)', btnFg: '#0b0b1a' } }),
     look({ id: 'amber', group: 'bold', name: 'Amber', tag: 'Amber on black · a trading screen · all caps', scheme: 'dark',
@@ -446,17 +446,18 @@
     for (f in GRID) { g = GRID[f]; n = Math.round((g[1] - g[0]) / g[2]); for (s = 0; s <= n; s++) out[f + s] = at(R[f], f, g[0] + s * g[2]); }
     out.warn = R.warn;
     /* the ink floor (2026-11-14, team T2 "lock down the looks"): every slot AGORA writes text in (n20 and up: muted, soft, text; a8 and up: the
-     * golds; g8 and up: gains; r9 and up: losses; warn) stays AA (4.5:1) on the look's page, panels and raised panels. A blend between two
-     * reference colours can fall a little short on a light look (AGORA's #9a8f7d sits just under its muted, so on Ivory it lands just above it):
-     * such a slot is nudged darker (or lighter on a dark look), its hue kept, until it reads. A slot that already reads is left as it is. */
-    var page = [out.n3, out.n4, out.n5, out.n7].concat(R.surf || []), two = [out.n3, out.n4].concat(R.surf || []);
+     * golds; g7 and up: gains; r8 and up: losses; warn) stays AA (4.5:1) on the look's page, panels and raised panels, on its gradient's
+     * colours (a style look's cards over each stop) and on the gold-tinted cards; and those tinted surfaces (a0-a4: the gold-tinted cards and
+     * headers, g0-g3 / r0-r3: the gain / loss chips) stay far enough from the muted text to carry it. A blend between two reference colours can
+     * fall a little short on a light look (AGORA's #9a8f7d sits just under its muted, so on Ivory it lands just above it) and a monochrome look
+     * (Amber: its text IS its accent) tints its cards too bright: such a slot is nudged (its hue kept) until it reads. One that reads is left. */
+    var page = [out.n3, out.n4, out.n5, out.n7].concat(R.surf || []);
     for (s = 20; s <= 40; s++) out['n' + s] = readable(out['n' + s], page, 4.5);
-    for (s = 8; s <= 15; s++) { out['a' + s] = readable(out['a' + s], two, 4.5); out['g' + s] = readable(out['g' + s], two, 4.5); if (s >= 9) out['r' + s] = readable(out['r' + s], two, 4.5); }
+    var muted = [out.n24];
+    for (s = 0; s <= 4; s++) { out['a' + s] = readable(out['a' + s], muted, 4.5); if (s <= 3) { out['g' + s] = readable(out['g' + s], muted, 4.5); out['r' + s] = readable(out['r' + s], muted, 4.5); } }
+    var two = [out.n3, out.n4, out.a1, out.a3].concat(R.surf || []);
+    for (s = 7; s <= 15; s++) { if (s >= 8) out['a' + s] = readable(out['a' + s], two, 4.5); out['g' + s] = readable(out['g' + s], two, 4.5); out['r' + (s + 1 > 15 ? 15 : s + 1)] = readable(out['r' + (s + 1 > 15 ? 15 : s + 1)], two, 4.5); }
     out.warn = readable(out.warn, two, 4.5);
-    // ... and the tinted surfaces under that text (a0-a4: the gold-tinted cards and headers, g0-g3 / r0-r3: the gain / loss chips) stay far
-    // enough from the soft text to carry it (4.5:1): a monochrome look (Amber: its text IS its accent) would otherwise tint them too bright
-    var soft = [out.n30];
-    for (s = 0; s <= 4; s++) { out['a' + s] = readable(out['a' + s], soft, 4.5); if (s <= 3) { out['g' + s] = readable(out['g' + s], soft, 4.5); out['r' + s] = readable(out['r' + s], soft, 4.5); } }
     return out;
   }
   function relLum(c) { var x = rgbOf(c), s = 0, wt = [0.2126, 0.7152, 0.0722]; for (var q = 0; q < 3; q++) { var v = x[q] / 255; s += wt[q] * (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); } return s; }
@@ -477,8 +478,8 @@
    * and the keyboard focus ring (--oly-th-ring: the look's own accent, >= 3:1 on its page and panels). Every value is checked against the look's
    * own surfaces here, so a look can never get an unreadable info line or an invisible ring. */
   function extras(R, t, sl) {
-    var light = relLum(sl.n3) > 0.35, o = {}, surf = [sl.n3, sl.n4, sl.n5, sl.n7];
-    var it = readable(light ? '#2b5f86' : '#7fa7c2', surf, 4.6), fi = readable(light ? '#3d78a4' : '#4b7a99', [sl.n3, sl.n4], 3);
+    var light = relLum(sl.n3) > 0.35, o = {}, surf = [sl.n3, sl.n4, sl.n5, sl.n7].concat(R.surf || []);
+    var it = readable(light ? '#2b5f86' : '#7fa7c2', surf, 4.6), fi = readable(light ? '#3d78a4' : '#4b7a99', [sl.n3, sl.n4].concat(R.surf || []), 3);
     o['--oly-th-info'] = fi; o['--oly-th-info-rgb'] = rgbOf(fi).join(', ');
     o['--oly-th-infot'] = it; o['--oly-th-infot-rgb'] = rgbOf(it).join(', ');
     o['--oly-th-ring'] = readable(sl.a8, [sl.n3, sl.n4, sl.n5], 3);

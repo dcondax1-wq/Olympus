@@ -245,10 +245,14 @@ def agora_palette():
             txt = open(fp, encoding="utf-8").read()
         except (OSError, UnicodeDecodeError):
             continue
-        for m in rx_hex.finditer(txt):
-            out.add(rgb(m.group(1)))
+        for m in rx_hex.finditer(txt):                       # a fallback the tokenizer itself would give a slot (a hand-written slot over another
+            c = rgb(m.group(1))                              # app's own colour, e.g. the Holodeck's sky blue behind --oly-th-infot, is not AGORA's)
+            if TOK.slot(*c):
+                out.add(c)
         for m in rx_tri.finditer(txt):
-            out.add(tuple(int(m.group(i)) for i in (1, 2, 3)))
+            c = tuple(int(m.group(i)) for i in (1, 2, 3))
+            if max(c) <= 255 and TOK.slot(*c):
+                out.add(c)
         if fp.endswith(".css"):                                   # app sheets not tokenized yet: their warm browns / golds are AGORA's too
             body = TOK.untokenize(txt)
             for m in hexes.finditer(re.sub(r"/\*.*?\*/", "", body, flags=re.S)):
@@ -675,7 +679,7 @@ def mix_check(br, origin, log=print):
 
 SHORT = {"text": "contrast", "left": "AGORA leftover", "money": "+$/-$", "frame": "status bar", "first": "flash", "focus": "focus ring", "overlay": "sheet/toast",
          "load": "load"}
-ART_SEL = ("svg.s2d", "pp-portrait", "svg.pl-", "a.ship > svg")                         # scene art: its own colours, like a 3D canvas (not a leftover)
+ART_SEL = ("svg.s2d", "pp-portrait", "svg.pl-", "a.ship > svg", "a.dl > i", "span.og-ic")                         # scene art: its own colours, like a 3D canvas (not a leftover)
 KEEP_RX = re.compile(r"\b(255, 154, 61|255, 106, 26)\b")      # the bots' identity colours (ATLAS orange): never a look's to repaint
 
 

@@ -599,6 +599,7 @@ html[data-fx="off"] .hub-gate, html[data-fx="off"] .hub-gate-primary, html[data-
 .og-v { max-width: 100%; font: 700 13px/1.15 var(--fh); letter-spacing: .02em; color: var(--ac); text-shadow: none;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
 .og-v.up { color: var(--ok); } .og-v.dn { color: var(--bad); }
+html[data-oly-theme]:not([data-oly-theme="agora"]) .og-v.m:not(.up):not(.dn) { color: var(--oly-th-n37, var(--c3)); }   /* T2: a look's accent may be red: a +$ stays neutral */
 .og-s { max-width: 100%; color: var(--mut); font: 500 12px/1.25 var(--fb); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .og-d { display: inline-block; width: 6px; height: 6px; margin: 0 5px 1px 0; border-radius: 50%; background: var(--oly-th-n12, #524e4a); vertical-align: middle; }
 .og-d.ok { background: var(--ok); box-shadow: 0 4px 14px rgba(var(--oly-th-n3-rgb, 21,20,17),.32); } .og-d.warn { background: var(--warn); box-shadow: 0 4px 14px rgba(var(--oly-th-n3-rgb, 21,20,17),.32); } .og-d.bad { background: var(--bad); box-shadow: 0 4px 14px rgba(var(--oly-th-n3-rgb, 21,20,17),.32); }
@@ -621,7 +622,7 @@ html[data-oly-scheme="light"] { color-scheme: light; --ok: var(--oly-th-g8, #166
 html[data-oly-scheme="light"] body { background: radial-gradient(ellipse at 50% 30%, var(--bg2) 0%, var(--bg) 70%) var(--bg); }
 html[data-oly-scheme="light"] .bar { background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(var(--pr), .86)); box-shadow: 0 8px 24px rgba(var(--oly-th-n37-rgb, 60,58,40),.12); }
 html[data-oly-scheme="light"] .pm[aria-current="page"], html[data-oly-scheme="light"] .btn.solid, html[data-oly-scheme="light"] .seg3 button[aria-pressed="true"] {
-  color: #fbf6ea; background: linear-gradient(180deg, var(--c), var(--c2)); text-shadow: none; }
+  color: var(--oly-th-n3, #fbf6ea); background: linear-gradient(180deg, var(--c), var(--c2)); text-shadow: none; }
 html[data-oly-scheme="light"] .title { text-shadow: none; }
 html[data-oly-scheme="light"] .says, html[data-oly-scheme="light"] .msg.j, html[data-oly-scheme="light"] .qt { color: var(--txt); }
 html[data-oly-scheme="light"] .pline.ok { color: var(--oly-th-g8, #166534); } html[data-oly-scheme="light"] .pline.warn { color: var(--oly-th-warn, #854d0e); } html[data-oly-scheme="light"] .pline.bad { color: var(--oly-th-r10, #9f1239); }

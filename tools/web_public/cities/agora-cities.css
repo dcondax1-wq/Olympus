@@ -22,7 +22,7 @@ body[data-mode=city] .chip:first-child{border-color:rgba(var(--oly-th-a8-rgb, 20
 .network-bar{background:linear-gradient(180deg,rgba(var(--oly-th-n4-rgb, 33,28,22),.95),rgba(var(--oly-th-n3-rgb, 25,21,16),.9));border:1px solid var(--oly-th-n8, #3a3228);box-shadow:0 6px 18px rgba(0,0,0,.38);border-radius:16px}
 .network-key,.network-apps,.network-strip button{font:600 14px/1 var(--ag-sans);letter-spacing:0;text-transform:none;color:var(--oly-th-n33, #e3d8c4);border:1px solid var(--oly-th-n8, #3a3228);background:rgba(var(--oly-th-n37-rgb, 243,236,224),.05);border-radius:12px}
 .network-key{color:var(--oly-th-a12, #e8cf8e);border-color:rgba(var(--oly-th-a8-rgb, 200,162,74),.55);background:rgba(var(--oly-th-a8-rgb, 200,162,74),.1)}
-.network-apps{color:#9cc0d8}
+.network-apps{color:var(--oly-th-infot, #9cc0d8)}
 .network-bar button[aria-pressed=true]{color:var(--oly-th-n3, #1b1610);background:var(--oly-th-a8, #c8a24a);border-color:var(--oly-th-a11, #e2c47a);box-shadow:none}
 .network-bar button:focus-visible{outline:2px solid var(--oly-th-warn, #e0b060)}
 @media(max-width:600px){.network-strip button{font-size:14px;letter-spacing:0;padding:0 12px}.network-key{width:46px}.network-apps{width:56px}}

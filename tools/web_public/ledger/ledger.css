@@ -16,6 +16,8 @@ button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-v
 html[data-noscene] #vault { display: none; }
 #app { position: relative; z-index: 1; padding: calc(var(--st) + 10px) calc(var(--sr) + 16px) calc(var(--sb) + 190px) calc(var(--sl) + 16px); max-width: 640px; margin: 0 auto; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; }
+/* a light look (2026-11-14, T2): the title sits over the vault, a dark 3D scene by design: a backing in the page colour so the ink reads */
+html[data-oly-scheme="light"] .top { padding: 6px 10px; border-radius: 14px; background: rgba(var(--oly-th-n3-rgb, 21, 18, 15), .9); }
 .brand h1 { margin: 0; font: 800 18px/1 var(--oly-display, sans-serif); letter-spacing: .01em; color: var(--g-gold);  }
 .brand .sub { margin: 3px 0 0; font-size: var(--oly-t-micro, 10.5px); letter-spacing: .01em; text-transform: none; color: var(--oly-dim); }
 .tags { display: flex; gap: 6px; }

@@ -257,7 +257,7 @@ def tokenize_js(src, families="nagrwi"):
 UN_HEX = re.compile(r"var\(--oly-th-[\w-]+, (#[0-9a-fA-F]{3,6})\)")
 UN_TRI = re.compile(r"var\(--oly-th-[\w-]+-rgb, ([^()]*)\)")
 # the feel (fonts, radius) and the T2 slots written by hand (2026-11-14: the focus ring, the shadows): a fallback with up to two levels of parentheses
-UN_FEEL = re.compile(r"var\(--oly-th-(?:display|num|body|radius|radius-s|radius-l|ring|shadow|e1|e2|e3), ((?:[^()]|\((?:[^()]|\([^()]*\))*\))*)\)")
+UN_FEEL = re.compile(r"var\(--oly-th-[\w-]+, ((?:[^()]|\((?:[^()]|\([^()]*\))*\))*)\)")
 
 
 def untokenize(text):
