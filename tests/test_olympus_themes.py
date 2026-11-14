@@ -973,7 +973,7 @@ def test_look_qa(br, origin):
         ctx.close()
 
 
-SHOT_TMP = os.path.join(os.environ.get("TMPDIR", "/tmp"), "olympus_t2_qa")
+SHOT_TMP = os.environ.get("OLY_QA_TMP") or os.path.join(__import__("tempfile").gettempdir(), "olympus_t2_qa")   # (a long TMPDIR breaks Chromium's sockets: never set TMPDIR for it)
 
 
 def main():
