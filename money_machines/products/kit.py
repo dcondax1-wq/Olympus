@@ -394,3 +394,57 @@ def phone(src: str, width: int, extra: str = "") -> str:
 def window(src: str, width: int, extra: str = "") -> str:
     """A plain browser-window frame (no address text) around a screenshot."""
     return f'<div class="win" style="width:{width}px;{extra}"><div class="tb"><i></i><i></i><i></i><b></b></div><img src="{src}" alt=""></div>'
+
+
+# ------------------------------------------------------------------------------------------------ office files: neutral metadata
+APP_XML = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/'
+           'extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application></Application>'
+           '<DocSecurity>0</DocSecurity></Properties>')
+
+
+def core_xml(title: str) -> str:
+    from xml.sax.saxutils import escape
+    return ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/'
+            'metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" '
+            'xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+            f'<dc:title>{escape(title)}</dc:title><dc:creator>Independent maker</dc:creator><cp:lastModifiedBy>Independent maker</cp:lastModifiedBy>'
+            '<dcterms:created xsi:type="dcterms:W3CDTF">2026-11-14T00:00:00Z</dcterms:created>'
+            '<dcterms:modified xsi:type="dcterms:W3CDTF">2026-11-14T00:00:00Z</dcterms:modified></cp:coreProperties>')
+
+
+def clean_ooxml(path: str, title: str) -> str:
+    """Rewrite a .docx/.xlsx with neutral properties (no tool or app names, fixed dates) and fixed zip time stamps."""
+    with zipfile.ZipFile(path) as z:
+        items = [(i, z.read(i.filename)) for i in z.infolist()]
+    tmp = path + ".tmp"
+    with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zo:
+        for info, data in items:
+            if info.filename == "docProps/app.xml":
+                data = APP_XML.encode()
+            elif info.filename == "docProps/core.xml":
+                data = core_xml(title).encode()
+            zi = zipfile.ZipInfo(info.filename, date_time=ZIP_DATE)
+            zi.compress_type = zipfile.ZIP_DEFLATED
+            zo.writestr(zi, data)
+    os.replace(tmp, path)
+    return path
+
+
+def recalc_xlsx(path: str) -> str:
+    """Store formula results in the file (LibreOffice through the xlsx skill's recalc.py, when present) so file previews show numbers;
+    the spreadsheet apps recompute on open either way."""
+    import subprocess
+    import sys
+    cands = [os.environ.get("XLSX_RECALC", "")] + sorted(glob.glob("/mnt/skills/public/xlsx/scripts/recalc.py")) + \
+        sorted(glob.glob(os.path.expanduser("~/.claude/skills/**/xlsx/scripts/recalc.py"), recursive=True))
+    script = next((c for c in cands if c and os.path.exists(c)), None)
+    if not script:
+        return "note: results not cached (no recalc script)"
+    r = subprocess.run([sys.executable, script, path, "120"], capture_output=True, text=True, timeout=300, cwd=os.path.dirname(script))
+    try:
+        res = json.loads(r.stdout)
+    except ValueError:
+        return f"note: recalc did not run ({(r.stderr or r.stdout)[:200]})"
+    if res.get("status") != "success":
+        raise SystemExit(f"{path}: formula errors: {res}")
+    return f"recalculated {os.path.basename(path)}: {res.get('total_formulas')} formulas, {res.get('total_errors')} errors"
