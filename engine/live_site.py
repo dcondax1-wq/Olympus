@@ -61,7 +61,7 @@ HIDDEN_OVER_LINK = ("/api/tv/status",)  # shows the TradingView webhook key: the
 MONEY_KEEP = ("index", "chrysos", "mercury", "sibyl", "oikos", "arbiter", "sibyl_forward")   # tools/money_publish.KEEP
 # + the household summary (tools/money_import.py, 2026-11-14): served over this PRIVATE link only, never in money_publish.KEEP
 # (the public site never gets it); no account numbers, no merchant names unless the owner turns them on
-MONEY_KEEP = MONEY_KEEP + ("household",)
+MONEY_KEEP = MONEY_KEEP + ("household", "agency")   # agency = the billing kit's totals (money_out/agency.json), private link only
 TYPES = {".html": "text/html; charset=utf-8", ".htm": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
          ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json",
          ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg",
