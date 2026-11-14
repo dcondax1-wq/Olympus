@@ -10,7 +10,7 @@ here plugs into it instead of rebuilding it.
 | **1. Freelance gigs** (Fiverr first, then Upwork and Contra; 8 gigs in `docs/GIG_PACK.md`) | $0 (Upwork Plus $19.99/mo optional later) | 6-10 | $0-400 | $500-2,000 | Low money risk. Account ban if a platform rule is broken. Slow start (new sellers wait weeks for the first order). | 1. Fiverr seller account in your real name, finish the ID check. 2. Publish the logo and Google-profile gigs today (their tools are ready). 3. Answer every message the same day; deliver with the checklist. |
 | **2. Instagram: local business growth tips** (feeds the agency) | $0 | 3 | $0-100 | $100-600 (agency clients it brings, not Instagram pay) | Low. Slow growth; posting alone does not sell. | 1. New Instagram, switch to a Professional account. 2. Schedule the 30-day plan in Meta Business Suite (free). 3. Send interested owners to the free website check. |
 | **3. Instagram: the eval journal** (trading routines, no results) | $0 | 2-3 | $0-30 | $50-400 (tracker sales + disclosed affiliate links) | Medium: strict rules (no profit claims, #ad on every paid link). | 1. Second Instagram, Professional account. 2. Schedule the 30-day plan. 3. Link the eval tracker in the bio. |
-| **4. Digital products** (eval tracker built; 4 more listed) | $0 (Payhip/Gumroad free plans; Etsy $0.20 a listing) | 1-2 | $0-100 | $50-500 | Low. Most listings sell little without an audience. | 1. Free Payhip or Gumroad account. 2. Upload the eval tracker zip, cover and listing text ($17). 3. Put the link in the eval journal bio. |
+| **4. Digital products** (5 built: eval tracker $17, website templates $24, social media kit $14, agency starter kit $19, trader planner $14) | $0 (Payhip/Gumroad free plans; Etsy $0.20 a listing) | 1-2 | $0-100 | $50-500 | Low. Most listings sell little without an audience (more listings do not change that, so the estimate stays). | 1. Free Payhip account. 2. `python -m money_machines.products.build_all --zip` makes the 5 upload zips; upload each with its covers and the text in its `shop/listing.md`. 3. Link the trading two from the eval journal bio, the other three from the local-growth bio. |
 | **5. Rank-and-rent sites** (research and plan only) | about $12 a year per domain + $1.15/mo per call-tracking number (your choice) | 3-5 per site | $0 | $0-750 per rented site | Medium-high: 3-12 months to rank, maybe no tenant, legal care needed. | 1. Decide if one $12 domain is worth a 6-month test. 2. Pick one trade + small town with weak competition. 3. Build the site with the agency tool and wait. |
 
 **All together, honestly:** about 15-20 hours a week could make **$0-600 a month after 3 months** and **roughly $700-4,000 a month after
@@ -169,17 +169,41 @@ pictures (`cover.jpg` 1280 x 720, `cover_square.jpg` 2000 x 2000, `app_screensho
 **List it (owner, about 20 minutes):** 1. Free Payhip account. 2. New product > Digital download: upload the zip, paste the title and
 description from `listing.md`, add `cover.jpg` and `app_screenshot.jpg`, price $17. 3. Put the link in the Eval Journal bio.
 
-### Four more (planned; `money_machines/products/catalog.json`)
+### Built: four more (team D2, 2026-11-14; `money_machines/products/catalog.json`, tests `tests.test_digital_products`)
 
-| Product | Price | Effort | Made from | Honest note |
+| Product | Price | You keep per sale (Payhip / Gumroad / Etsy) | What the buyer gets | Upload zip |
 |---|---|---|---|---|
-| 5 one-page website templates for local trades (HTML) | $24 | 5 h | the agency demo-site themes (B1) | buyers often want Canva/Wix; add a "put it online free" guide |
-| 60 Instagram post templates + 120 captions for local businesses | $14 | 4 h | the content-plan cards (+ B5's style) | crowded; most buyers expect Canva links |
-| Google Business Profile checklist + 52 weekly post prompts | $9 | 2.5 h | the GBP gig checklist | low risk; keep Google's rules in it |
-| Honest review request kit (QR cards, scripts, replies) | $11 | 2 h | B4's review booster + the gig scripts | must teach: ask everyone, no rewards, no gating |
+| **Website templates** for local businesses (`site_templates/`) | $24 | $21.80 / $20.10 / $21.27 | 5 one-page sites (trades, home & garden, cafe with a menu board, salon and barber with price lists), the offline **Site Editor** (fill in a form, add photos and a colour, download `index.html`), an 8-page guide (free hosting, own domain, launch check, review rules) | `python -m money_machines.products.build_site_templates --zip` |
+| **30-day social media kit** for local businesses (`social_kit/`) | $14 | $12.59 / $11.39 / $12.22 | the offline **Post Maker** (30 editable designs in 12 layouts, 8 colour looks or own brand colours, logo and photo upload, 4:5 / 1:1 / story sizes, PNG or a zip of all 30 + captions sheet), 150 captions in 13 groups with the name filled in, the 30-day plan (PDF + CSV), a how-to guide | `python -m money_machines.products.build_social_kit --zip` |
+| **First clients agency starter kit** (`agency_kit/`) | $19 | $17.20 / $15.75 / $16.75 | a 30-day plan PDF, 7 editable .docx (outreach scripts with the CAN-SPAM lines, discovery call, proposal, service agreement **marked NOT LEGAL ADVICE**, onboarding, honest reviews and referrals, service checklists), an agency tracker (prospects with DUE follow-ups, dashboard, pricing calculator, invoice log) and an invoice + quote spreadsheet | `python -m money_machines.products.build_agency_kit --zip` |
+| **Trader's daily routine planner** (`trader_planner/`) | $14 | $12.59 / $11.39 / $12.22 | 16 undated printable pages in US Letter and A4 (plan, rules, pre-market routine, daily plan, trade log, reviews, habit tracker, mistake log, if-then plans, playbook, emotion check-in) + a spreadsheet journal with a process dashboard; process only, no signals, no results | `python -m money_machines.products.build_trader_planner --zip` |
 
-Expect **0-10 sales a month per product** until the Instagram accounts or search send buyers; comparable listings: an Etsy prop-firm
-challenge tracker about $16.68 (on sale from $22.24), trading journals $9.90-35, 100-template Canva packs about $10-15.
+All five zips at once: `python -m money_machines.products.build_all --zip` (plain Python; writes `money_machines/out/products/`). Each product folder
+holds `buyer/` (exactly the zip's content), `shop/listing.md` (title, description, 13 tags, FAQ, refund line, the price reasoning with the
+comparables, the fee table, the listing rules) and 6 covers (`cover_1..3.jpg` 1280 x 720 for Gumroad / Payhip, `cover_1..3_square.jpg`
+2000 x 2000 for Etsy). Rebuilding the files (not needed to sell) needs openpyxl, python-docx, LibreOffice and Chromium.
+
+**Why these four (the catalogue's plan, judged):** the website templates and the social kit stayed, upgraded: an editor turns HTML templates
+into something a non-coder can use, and the Post Maker replaces "Canva links" (which need the owner's own Canva work) with designs that
+work without any account. The $9 Google-profile checklist and the $11 review kit were the weakest: thin content that the platforms' own help
+pages give away, a price where the fixed fees take about 10%, and (for reviews) the most misuse risk. Both are now documents inside the
+$19 agency kit (`07_Service_Checklists.docx`, `06_Reviews_and_Referrals.docx`). The trader planner takes the fourth place: it pairs with
+the $17 eval tracker for the Eval Journal audience (a $25 bundle later).
+
+**Honest rules built in (and tested):** no outside links in any buyer file (`kit.SHOP_HOSTS` is empty until there is a shop), no
+third-party brand names (81 names checked in every file and the listing text, so the listings say "spreadsheet" and "social media", never an
+app name), no income, result, ranking or pass promises, neutral file metadata, the "made with the help of AI tools" line (Etsy), real reviews
+only, "Ad" disclosure taught, the agreement marked NOT LEGAL ADVICE in the file, the licence and the listing, the trading risk line.
+
+**List them (owner, about 15 minutes each):** 1. Run the zip command above. 2. On Payhip: New product > Digital download, upload the zip,
+paste title, description and FAQ from `shop/listing.md`, add the 3 `cover_*.jpg`, set the price. 3. Add the shop link to the right
+Instagram bio. For Etsy use the `*_square.jpg` covers and the 13 tags; choose "I did" and "digital".
+
+**Honest limits.** Expect **0-10 sales a month per product** until the Instagram accounts or search send buyers. No brand names means no
+"Canva" or "Instagram" in tags, which costs search traffic on Etsy. The website templates are plain HTML: hosting and a domain are the
+buyer's job (the guide shows the free way). The Post Maker uses the device's own fonts, so a post can look slightly different on another
+computer. The agency kit is written for the US first. Nothing here was tested by a real buyer yet; the files were checked on Linux
+(LibreOffice for the spreadsheets and documents, Chromium for the pages), not opened in the desktop office apps.
 
 ---
 
@@ -275,6 +299,7 @@ Digital product platforms
 - Etsy fees: [craftybase guide](https://app.craftybase.com/blog/the-complete-guide-to-etsy-fees), [checkoutpage](https://checkoutpage.com/blog/etsy-fees); creativity standards and AI disclosure: [Etsy house rules](https://www.etsy.com/legal/creativity), [listadum summary](https://www.listadum.com/blog/etsy-creativity-standards)
 - Payhip plans 5% / 2% / 0%: [sellfy summary](https://sellfy.com/blog/payhip-pricing/), [passivekit](https://passivekit.com/payhip-pricing/)
 - Comparable products: [Etsy prop firm challenge tracker](https://www.etsy.com/listing/4606983180), [Etsy trading journal](https://www.etsy.com/listing/4601752496), [Etsy 100 Instagram templates](https://www.etsy.com/listing/900701313/100-instagram-post-templates-instagram?pro=1), [Etsy HTML website template](https://www.etsy.com/listing/4442821091/responsive-website-template-html-css)
+- Team D2 comparables (search-engine reading, 2026-11-14; the listing pages could not be opened from the sandbox): website templates: [BrightPixel $1](https://webstercompany.gumroad.com/l/brightpixel), [small business landing page $12](https://adelinamiron.gumroad.com/l/small-business-landing-page), [Getly landing theme $19.99](https://www.getly.store/product/nova-landing-theme-muhcrtdd), [Etsy plumber templates about $6-97](https://www.etsy.com/listing/4455941773); social kits: [Getly 30-day kit $9](https://www.getly.store/product/30-day-small-business-social-media-content-kit), [Gumroad calendars $12](https://milidoesthis.gumroad.com/l/fxeko), [Gumroad content system $15](https://kacieturley.gumroad.com/l/vpeffy), [Payhip calendar bundle $19.50](https://payhip.com/b/xyjkC), [Etsy trade post packs about $5-15](https://www.etsy.com/listing/1472114060); agency kits: [Etsy web developer bundle $7.49](https://www.etsy.com/ca/listing/4511821405/web-developer-contract-bundle-full-stack), [Etsy developer bundle $9.99](https://www.etsy.com/listing/4509314444/wordpress-developer-contract-template), [Etsy onboarding kit $14.25](https://www.etsy.com/listing/4521034282/), [Payhip onboarding kit $17](https://payhip.com/b/6WXB8), [contract pack $89](https://www.proposalkit.com/htm/web-freelancer-legal-contract-pack.htm); trader planners: [Gumroad 1-page journal $9.89](https://phoenixreverie.gumroad.com/l/kstdk), [Payhip workbook $29.99](https://payhip.com/b/3sMFc), [Whop checklist CHF 7](https://whop.com/dawinchy/dawinchy-daily-trading-checklist/), [Etsy journal spreadsheets mostly $9-25](https://www.etsy.com/listing/1461681856)
 - Contract values ($ per point) in the tracker: the exchanges' contract specifications (MNQ $2, NQ $20, MES $5, ES $50, M2K $5, RTY $50, MYM $0.50, YM $5, MGC $10, GC $100, MCL $100, CL $1,000 per 1.00)
 
 Rank-and-rent

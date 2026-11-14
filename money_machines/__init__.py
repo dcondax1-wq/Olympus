@@ -10,8 +10,10 @@ fakes a review, and nothing reaches the network unless the owner runs a live com
     python -m money_machines.content_plan --account local_growth --render        30-day Instagram plan: captions + images
     python -m money_machines.ig_post --plan money_machines/plans/local_growth_30d.json --image-base-url URL   dry run (default)
     python -m money_machines.products.build_eval_tracker --zip                    the eval tracker upload zip (digital product)
+    python -m money_machines.products.build_all --zip                             all 5 product zips (tracker, site templates, social kit, agency kit, trader planner)
 
 Tests: python -X utf8 -m tests.test_money_machines   (no network; the image and product renders are skipped without Chromium)
+       python -X utf8 -m tests.test_digital_products  (the 4 team-D2 products: files, zips, covers, links, brand names, promises)
 """
 from __future__ import annotations
 
