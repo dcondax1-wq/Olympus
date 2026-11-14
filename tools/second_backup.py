@@ -300,8 +300,8 @@ def make_zip(root: str, out_dir: str, ref: str, say=print) -> dict:
     old = make_backup.ROOT
     make_backup.ROOT = root
     try:
-        with contextlib.redirect_stdout(buf):
-            make_backup.main(["--out", out_dir, "--ref", ref])
+        with contextlib.redirect_stdout(buf):                  # the PC's own files: its version list is the one its last code zip brought
+            make_backup.main(["--out", out_dir, "--ref", ref, "--no-model-check"])
     finally:
         make_backup.ROOT = old
     zips = sorted((n for n in os.listdir(out_dir) if re.fullmatch(r"OLYMPUS_BACKUP_\d{4}-\d{2}-\d{2}_[0-9a-f]+\.zip", n)),

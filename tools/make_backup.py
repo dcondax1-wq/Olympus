@@ -5,10 +5,31 @@
     python tools/make_backup.py --out <folder> --dry-run                                 # only say what it would do
 Run it weekly (Windows Task Scheduler). Stdlib only; needs git on the PATH. Never includes untracked/ignored files (keys, .env, alerts).
 Keep the output on a device or drive that is NOT the machine itself and NOT the same company as the code host. See docs/DISASTER_RECOVERY.md.
+REFUSES (exit 1, nothing written, also with --dry-run) when the ref's committed tools/model_versions.json is stale (it misses an older
+version of a live_model*.json): a PC with that version would keep it as if the owner had made it (tools/update_from_zip.py). Fix:
+python tools/model_versions.py, commit it, run this again. --no-model-check skips it (tools/second_backup.py: the PC's own weekly
+zip of the files it runs, whose list is the one its last code zip brought).
 """
 import argparse, datetime, hashlib, os, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def model_list_problem(ref):
+    """None when a zip of `ref` carries a current tools/model_versions.json, else the words why not (tools/model_versions.py)."""
+    try:
+        from tools import model_versions as mv
+    except ImportError:                                  # run as python tools/make_backup.py: tools/ is on the path, the repo is not
+        import model_versions as mv
+    try:
+        miss = mv.missing(ROOT, ref)
+    except mv.GitError as e:
+        return f"tools/model_versions.json could not be checked at {ref} ({e}). Nothing was written."
+    if not miss:
+        return None
+    files = ", ".join(sorted({n for n, _s in miss}))
+    return (f"tools/model_versions.json at {ref} misses {len(miss)} older version{'s' if len(miss) != 1 else ''} of {files}: a PC with one of "
+            f"them would keep it as if the owner had made it. Run python tools/model_versions.py, commit it, then run this again. Nothing was written.")
 
 
 def sha256(path):
@@ -32,6 +53,7 @@ def main(argv=None):
     ap.add_argument("--ref", default="HEAD", help="what to archive (default HEAD)")
     ap.add_argument("--bundle", action="store_true", help="also write a full-history git bundle (can be 400+ MB)")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--no-model-check", action="store_true", help="skip the tools/model_versions.json check (the PC's own weekly zip)")
     a = ap.parse_args(argv)
     stamp = datetime.date.today().isoformat()
     commit = run(["git", "rev-parse", "--short", a.ref])
@@ -40,6 +62,11 @@ def main(argv=None):
     if a.bundle:
         plan.append(f"full-history bundle -> {os.path.join(a.out, f'OLYMPUS_HISTORY_{stamp}_{commit}.bundle')}")
     print("backup plan:\n  " + "\n  ".join(plan))
+    if not a.no_model_check:
+        why = model_list_problem(a.ref)
+        if why:
+            print("[STOP] " + why)
+            return 1
     if a.dry_run:
         return 0
     os.makedirs(a.out, exist_ok=True)

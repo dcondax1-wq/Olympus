@@ -27,6 +27,7 @@ On the phone, the **NQ** app shows each bot's status with the exact age of the l
 | Checks the zip's SHA-256 against the `.sha256.txt` next to it | Run while the bot is running (it says: stop the bot first) |
 | Asks before updating while the market is open | Overwrite local-only files: alerts, TradingView, autostart, bot state, memory, `.env`, NinjaTrader bars, logs |
 | Saves the old files in `backups\update_from_zip\` first | Replace a `live_model*.json` you changed: yours is kept and it says so |
+| Gives an OLDER copy of `live_model*.json` (a version the repo itself had; nothing on the PC writes these files) the new values, and says so | Touch a file changed on the PC after that same zip went in |
 | Shows six lines: zip, folder, changed, kept, backup, next | Start, stop or arm the bot, or delete a file |
 
 ## What runs where
