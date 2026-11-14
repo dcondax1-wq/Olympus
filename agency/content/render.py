@@ -24,6 +24,15 @@ MAC_BROWSERS = ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", 
                 "/Applications/Chromium.app/Contents/MacOS/Chromium"]
 
 
+def short_tmp() -> str:
+    """Chromium puts a socket in the temp folder and a Unix socket path must stay under 108 characters: with a very long TMPDIR
+    (some sandboxes) the browser cannot start, so use /tmp then. Windows and normal Linux / macOS temp folders are untouched."""
+    base = tempfile.gettempdir()
+    if os.name != "nt" and len(base) > 40 and os.path.isdir("/tmp") and os.access("/tmp", os.W_OK):
+        return "/tmp"
+    return base
+
+
 def pw_chromium() -> str | None:
     for pat in ("/opt/pw-browsers/chromium-*/chrome-linux/chrome", "/opt/pw-browsers/chromium/chrome-linux/chrome"):
         hit = sorted(glob.glob(pat))
@@ -56,6 +65,9 @@ class Renderer:
         self.kind, self.detail = "none", ""
         self._pw = self._br = self._page = None
         self._tmp = None
+        if short_tmp() != tempfile.gettempdir():                       # see short_tmp(): the browser's own temp files
+            os.environ["TMPDIR"] = short_tmp()
+            tempfile.tempdir = None
         if prefer in ("auto", "playwright"):
             try:
                 from playwright.sync_api import sync_playwright
@@ -141,7 +153,12 @@ class Renderer:
             src = os.path.join(self._tmp, f"p{time.time_ns()}.html")
             with open(src, "w", encoding="utf-8") as fh:
                 fh.write(html_text)
-            self._cli(["--screenshot=" + os.path.abspath(out), f"--window-size={w},{h}"], src)
+            for _ in range(2):                                         # a stale file must never pass for a new one; one retry
+                if os.path.exists(out):
+                    os.remove(out)
+                self._cli(["--screenshot=" + os.path.abspath(out), f"--window-size={w},{h}"], src)
+                if os.path.isfile(out):
+                    break
             os.remove(src)
             if not os.path.isfile(out):
                 raise RuntimeError(f"the browser made no image ({self.detail})")
@@ -172,6 +189,8 @@ class Renderer:
                 with open(src, "w", encoding="utf-8") as fh:
                     fh.write(path_or_html)
             h = min(max_h, h_hint)
+            if os.path.exists(out):
+                os.remove(out)
             self._cli(["--screenshot=" + os.path.abspath(out), f"--window-size={w},{h}"], src)
             return
         raise RuntimeError("no browser")
@@ -192,6 +211,8 @@ class Renderer:
             src = os.path.join(self._tmp, f"r{time.time_ns()}.html")
             with open(src, "w", encoding="utf-8") as fh:
                 fh.write(html_text)
+            if os.path.exists(out):
+                os.remove(out)
             self._cli(["--print-to-pdf=" + os.path.abspath(out), "--no-pdf-header-footer", "--print-to-pdf-no-header"], src)
             return
         raise RuntimeError("no browser")
