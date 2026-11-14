@@ -192,7 +192,7 @@ PACKS["barber"] = {
     ],
     "faq": [
         ("How often should I get a *cut*?", "Fades and short styles: every 2-3 weeks. Longer styles: every 4-6 weeks."),
-        ("Do I need to *book*?", "Booking guarantees your chair. Walk in when you like and we will fit you in if we can."),
+        ("Do I need to *book*?", "Booking guarantees your chair. Walk in when you like and we will fit you in if we can.", "Do you take walk-ins?"),
         ("Can you fix a *bad cut*?", "Usually, yes. Come in, show us what happened, and we will tell you honestly what we can do."),
     ],
     "engage": [("Fade or *taper*?", "Settle it in the comments: skin fade or classic taper? Wrong answers only... just kidding, tell us yours.")],
@@ -353,9 +353,9 @@ PACKS["restaurant"] = {
         ("Fresh from the *pass*", "This is the moment a plate leaves the kitchen. Hot, fresh, and on its way to you.", "a plate at the pass, close-up"),
     ],
     "faq": [
-        ("Do you take *reservations*?", "Call us and we will hold a table for you. Walk-ins are welcome too."),
+        ("Do you take *reservations*?", "Call us and we will hold a table for you. Walk-ins are welcome too.", "Do you take reservations and walk-ins?"),
         ("Is there *parking*?", "Ask us when you call and we will point you to the easiest spot nearby."),
-        ("Can you do *gluten-free*?", "Tell your server and we will show you the options. Please mention any allergy when you order."),
+        ("Can you do *gluten-free*?", "Tell your server and we will show you the options. Please mention any allergy when you order.", "Do you have gluten-free options?"),
     ],
     "engage": [("Sweet or *savory*?", "Settle it: are you a dessert-first or a second-appetizer person? Tell us below.")],
     "booking": [("Book the *holiday table*", "Holiday nights fill up fast. Call now to reserve your table for the holidays.", {11, 12}),
@@ -608,7 +608,7 @@ PACKS["auto"] = {
     ],
     "faq": [
         ("How often do I need an *oil change*?", "It depends on your car and oil. Check your owner's manual, or ask us and we will look it up."),
-        ("Can I *wait*?", "For quick jobs, yes. Call ahead and we will tell you how long it should take."),
+        ("Can I *wait*?", "For quick jobs, yes. Call ahead and we will tell you how long it should take.", "Can customers wait on site for quick jobs?"),
         ("Why is my car *pulling*?", "Usually alignment or tire pressure. Bring it in and we will check both."),
     ],
     "engage": [("First car *story*", "What was your first car? Best (or worst) answer wins our respect.")],
@@ -688,7 +688,7 @@ PACKS["gym"] = {
         ("The *community*", "The best part of {name}? The people. Tag your training partner.", "a group photo after a class (with OK)"),
     ],
     "faq": [
-        ("I am *out of shape*. Can I join?", "Yes. Every workout can be scaled. Our coaches will meet you where you are."),
+        ("I am *out of shape*. Can I join?", "Yes. Every workout can be scaled. Our coaches will meet you where you are.", "Do you have coaches or trainers on staff?"),
         ("How often should I *train*?", "Two to four times a week is a great start. Consistency matters more than the number."),
         ("What should I *eat*?", "Simple: protein, vegetables, water, and not too much junk. Ask a coach for the basics."),
     ],
