@@ -285,6 +285,40 @@ cards and bars (its own palette), Kalshi's background a little (its `--bg` blend
 - **Jarvis**: its header pillars / sky (`home3d.css`) and the Look sheet stay AGORA bronze.
 - **Light theme (Athena)**: light only inside Jarvis; every other page stayed dark.
 
+### The reach, 32 looks and the mix (2026-11-14, team T1; contact sheets `docs/shots/themes/`)
+- **Slots, not literals.** `tools/theme_tokenize.py --apply <files>` rewrites each AGORA colour literal as
+  `var(--oly-th-<slot>, <the literal>)` (hex) or `rgba(var(--oly-th-<slot>-rgb, r,g,b as written), a)`, AGORA's heading serif stack
+  as `var(--oly-th-display, <stack>)`. A slot = family (`n` neutrals, `a` golds, `g` greens = gains, `r` reds = losses, `warn`) + HSL
+  lightness on `themes.js` `GRID`. No stylesheet defines `--oly-th-*`; only `themes.js` paints them, for a theme that is not the
+  default, so **the default is byte for byte today's look** (test c: every element's computed style vs the same page served
+  untokenized). Applied to: `agora.css`, `agora-apps.css`, `gate.css` + the Gate head, root `index.html` style, `zenith.css`,
+  `zenith_agora.css`, `polish.css`, `launcher.js`, `jarvis.css`, `home3d.css`, `switcher.js`, `copilot-card.js`, `kalshi.css`,
+  NQ / Helios / Polis sheets, `gate-nav.js`, `polis-life.js`. Run it again after a merge (idempotent); `untokenize()` gives the
+  plain file back. Another app: run the tool on its sheet, then check it with `tools/theme_shots.py --leftovers`.
+- **Ramp.** A theme says what each AGORA reference colour becomes (`REF`: page, panel, raised, line, muted, soft, text; gold;
+  olive; terracotta); every grid step is the blend between its two neighbours, so the whole hierarchy follows (inverted for light).
+  The 2026-11-03 themes get a ramp derived from their tokens.
+- **Page or stage.** `olympus.js` gives the full palette to a page marked `<html data-oly-light>` (NQ, Helios; the Gate, Jarvis and
+  the dashboard ask for it themselves) and the `stage` palette to every other app: a light look's dark variant there, so an
+  unchecked sheet with dark literals stays readable.
+- **Style looks** (`look()` in `themes.js`): besides colour, the page background (gradient / pattern), cards (background,
+  border, radius, shadow, blur), titles (font, weight, case, tracking, italic), body / number fonts and the primary button. Painted
+  as `--oly-th-*` with `<html data-oly-style>`; the style layers at the end of `agora.css`, `gate.css`, `zenith_agora.css` and
+  `jarvis.css` match only under that attribute. System fonts only (SF Pro, New York, SF Mono, Avenir Next, Didot, Hiragino Mincho).
+- **The looks** (Gate order: Default, then groups). Dark: Midnight, Terminal, Carbon, Glass Aurora, Ocean, Paper Dark, Solarized,
+  Nord. Light: Ivory, Stocks Light, Editorial, Swiss, Zen, Desert, Mono White. Bold: Amber (the lead's "Bloomberg", renamed: a
+  trademark), Lime, Neo Brutal, Sunset, Carbon Red, Cyber Minimal (no glow), Mono Black, Vapor Soft. Luxury: Royal, Noir Gold,
+  Forest, Rose Gold, Art Deco, Gold Bullion, Wall Street, Marble White. Every text colour >= 4.5:1 on the page, panels, raised
+  panels and cards, and the button text on the button (test b); gains green and losses red in every look (Mono too).
+- **Mix** (`'olympus.themeMix'` = `{ district, app, of }`): a look per district (or hub) and per app; app beats district beats the
+  one look (`'olympus.theme'`). `of` (app -> district) is saved by the Gate from `gate-catalog.js` (an app's `hub` wins when the
+  catalog gets one; the mix rows are `C.hubs || C.districts`). This page's id: `<html data-oly-page>` (gate, today, jarvis), else
+  the kit tag's `data-app`, else its folder. One look clears the mix. API: `id()` (this page), `global()`, `getMix()`,
+  `setMix()`, `lookFor(page)`, `groups()`, `plain()`.
+- **Picker**: the Gate's Look row (near the bottom): One look (grouped swatches: a tiny card in the look's page, card, accent,
+  +$ green, -$ red) and Mix (Trader / Luxury / Clean combos, a row per district and This Gate). Jarvis's Look sheet and Settings
+  list every theme from the same data and write the same keys.
+
 ## Oracle and Odeon overhaul (2026-11-04, owner: "apps look Play-Doh / blank, a ton of features and effects")
 
 Both apps already ran on the render core (ACES, environment light, bloom, MSAA) with marble, gold and neon from `materials.js`. This pass adds
