@@ -857,6 +857,16 @@ def page_browser():
                   and r["foot"].startswith("Live from your PC"), r)
             check("5. phone rules: taps >= 44 px, no sideways scroll, no console error, nothing off the origin", not AK.taps(p) and AK.no_sideways(p) and not errs and not off,
                   (AK.taps(p)[:4], errs[:3], off[:3]))
+            ck = p.evaluate("() => { const c = document.querySelector('#launchDay'); if (!c) return null; return { after: c.previousElementSibling && c.previousElementSibling.id,"
+                            " title: c.querySelector('h2').textContent, steps: c.querySelectorAll('.lk-steps li').length,"
+                            " secs: [...c.querySelectorAll('details')].map((x) => [x.querySelector('summary').textContent, x.open, x.querySelectorAll('.lk-item').length]),"
+                            " stop: (c.querySelector('.lk-stop') || {}).textContent }; }")
+            check("5. the first-day checklist card right under the Launch card: its 3 steps, 3 sections (01:45 open first), every row, the stop line",
+                  ck and ck["after"] == "launch" and ck["title"] == "Launch day: Monday Nov 16" and ck["steps"] == 3
+                  and [s[0] for s in ck["secs"]] == ["01:45 ET: what to look for", "What each push means", "Fill check flags (after a real trade)"]
+                  and [s[1] for s in ck["secs"]] == [True, False, False] and [s[2] for s in ck["secs"]] == [6, 13, 6] and ck["stop"].startswith("Stop everything"), ck)
+            p.click("#launchDay details[data-sec='fills'] summary")
+            check("5. a tap opens a section", p.evaluate("() => document.querySelector(\"#launchDay details[data-sec='fills']\").open"))
             AK.shot(p, "launch-ready")
             # ---- not ready: the bot stopped + a fill-check flag on Zlarior
             box["live"] = live_of(now, running=False)
@@ -913,6 +923,7 @@ def main() -> int:
     route()
     ready()
     ready_report()
+    checklist()
     page_static()
     page_browser()
     n, ok = len(RES), sum(RES)
