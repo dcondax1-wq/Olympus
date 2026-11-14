@@ -9,12 +9,13 @@
    "no_name_or_closed": 1,
    "chain": 101,
    "other_trade": 0,
-   "duplicate": 6
+   "duplicate": 6,
+   "do_not_contact": 0
   },
   "osm_base": "2026-11-13T21:22:20Z",
   "cache": {
    "hit": true,
-   "age_h": 1.0
+   "age_h": 1.2
   },
   "attribution": "Business data (c) OpenStreetMap contributors, ODbL 1.0 (openstreetmap.org/copyright)",
   "place": {
@@ -73,7 +74,7 @@
    "street_address": 0.758,
    "email": 0.12
   },
-  "made": "2026-11-14T20:29:21"
+  "made": "2026-11-14T20:37:55"
  },
  "leads": [
   {
