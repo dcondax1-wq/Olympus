@@ -100,3 +100,4 @@ there, not here.
 - `python tools/export_backtest.py`: the live-settings replay -> `research/lab/backtest_live.json`.
 - `python -m engine.ninjatrader --selftest`: NinjaTrader route self-test.
 - `python tools/cloud_monitor.py --out <tmpdir>`: dry run of the PC-off monitor.
+- **Ship to the PC (2026-11-14):** push the tested release to the backup repo `dcondax1-wq/olympus` branch `pc` (add_repo with push first); the PC installs it by itself when flat (`docs/AUTO_UPDATE.md`).

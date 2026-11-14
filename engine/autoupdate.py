@@ -36,6 +36,17 @@ Rules (never broken):
   * success: the server restarts (exit code RESTART_CODE; run_bot.ps1 starts it again at once). Paper / Sim bots resume
     by themselves; a real-account bot only with the owner's auto-resume opt-in (engine/autoresume.py), otherwise the
     phone gets "Updated to <sha>: bot is stopped on your eval, type the start command to resume".
+Update source (owner 2026-11-14: "keep it on GitHub in case we get banned ... I'm not updating the files every time"):
+  the first GitHub account is gone, so the PC updates from the PRIVATE backup repo on the owner's second account.
+  update_source.json at the repo root names it (remote "olympus", branch "pc"; without the file: origin/main as before).
+  The PC joins it ONCE with `python -m engine.autoupdate --connect` (SETUP_EVERYTHING.bat runs it; a GitHub sign-in window
+  opens the first time, the owner signs in as the account the file names): the folder, however it got its code (code
+  zips, an old clone, a copied folder), becomes exactly the backup's newest commit. Before that, every file the move can
+  touch goes into a snapshot commit (refs/olympus/before-connect) and a file that is no version the repo ever had is also
+  copied to logs/connect-<stamp>/; after it pip + the quick self-tests run, and any failure puts the folder back exactly as
+  it was (bot server stopped, no trade open, or it refuses). Then the rules above apply to <remote>/<branch> instead of
+  origin/main. GitHub-free mode (engine/nogithub.py) only blocks origin. A real-account bot without auto-resume updates
+  only in FRIDAY's halt check (an update never leaves an eval stopped in the middle of the week).
 Every step is logged to logs/update-YYYYMMDD.log; the last result is in the heartbeat health block (version + update).
 """
 from __future__ import annotations
@@ -43,6 +54,10 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
+import re
+import shutil
+import socket
+import subprocess
 import sys
 import threading
 import time
@@ -72,6 +87,66 @@ SELFTEST = ["-X", "utf8", "-m", "engine.pc_selftest", "--mode", "update", "--bas
 SELFTEST_TIMEOUT_S = 600
 HOLD_MARK = "SELFTEST-HOLD:"
 
+# 2026-11-14: where updates come from (update_source.json at the repo root; see the docstring)
+SOURCE_FILE = "update_source.json"
+LIVE_UPDATE_DAY = 4                       # Friday: a real-account bot without auto-resume updates only in Friday's halt
+_NAME_OK = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,40}$")
+_BRANCH_OK = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,80}$")
+CONNECT_OK, CONNECT_FAIL, CONNECT_UNREACHABLE, CONNECT_NOT_NOW, CONNECT_NO_GIT = 0, 1, 20, 21, 22
+SNAPSHOT_REF = "refs/olympus/before-connect"
+
+
+def _repo_words(url: str | None) -> str:
+    """'dcondax1-wq/olympus' from https://user@github.com/dcondax1-wq/olympus.git (no user part, no secrets)."""
+    u = str(url or "").split("://", 1)[-1].split("@", 1)[-1]
+    parts = [p for p in u.split("/") if p]
+    tail = "/".join(parts[-2:]) if len(parts) >= 3 else (parts[-1] if parts else "?")
+    return tail[:-4] if tail.endswith(".git") else tail
+
+
+def source(root: str = ROOT, env=None) -> dict:
+    """Where the update comes from: {"remote", "url", "branch", "account", "label"}. update_source.json at the root of the
+    checkout names a remote other than origin (the backup repo); without it, or with LE_UPDATE_SOURCE=origin, it is
+    origin/<BRANCH> as before. Only https:// URLs (tests: LE_AUTOUPDATE_LOCAL_OK=1 also allows a local path). Never raises."""
+    env = os.environ if env is None else env
+    dflt = {"remote": "origin", "url": None, "branch": BRANCH, "account": None, "label": f"origin/{BRANCH}"}
+    if env.get("LE_UPDATE_SOURCE") == "origin":
+        return dflt
+    try:
+        with open(os.path.join(root, SOURCE_FILE), encoding="utf-8") as f:
+            s = json.load(f)
+        remote, url, br = str(s.get("remote") or ""), str(s.get("url") or ""), str(s.get("branch") or "")
+        url_ok = (url.startswith("https://") or (env.get("LE_AUTOUPDATE_LOCAL_OK") == "1" and bool(url))) \
+            and not any(ch.isspace() for ch in url)
+        if remote != "origin" and _NAME_OK.match(remote) and _BRANCH_OK.match(br) and ".." not in br and url_ok:
+            return {"remote": remote, "url": url, "branch": br, "account": (str(s.get("account") or "") or None),
+                    "label": f"{_repo_words(url)} ({br})"}
+    except Exception:
+        pass
+    return dflt
+
+
+def ensure_remote(sh, src: dict) -> tuple:
+    """The source's remote exists with the source's URL (added, or re-pointed). (ok, words). origin is never touched."""
+    if src.get("remote") in (None, "", "origin") or not src.get("url"):
+        return True, "origin"
+    c, out = sh.git("remote", "get-url", src["remote"])
+    if c == 0 and out.strip() == src["url"]:
+        return True, "remote ok"
+    c, out = (sh.git("remote", "set-url", src["remote"], src["url"]) if c == 0
+              else sh.git("remote", "add", src["remote"], src["url"]))
+    return c == 0, (out.strip()[-160:] or ("remote set" if c == 0 else "git remote failed"))
+
+
+def live_wait_reason(now, restart_reason: str | None) -> str | None:
+    """The daily check on a bot whose restart is not safe (a real account without auto-resume: restart_safe_reason) runs
+    only on Friday (LIVE_UPDATE_DAY): the restart after an update leaves it stopped until the owner starts it again, so
+    an update never stops an eval in the middle of the week. None = go on."""
+    if restart_reason and _et(now).weekday() != LIVE_UPDATE_DAY:
+        return ("a real-account bot without auto-resume: the update waits for Friday's 17:02 ET halt (a restart now would "
+                "leave the eval stopped until you start it again)")
+    return None
+
 
 # ---------------------------------------------------------------------- state file
 def load_state(path: str = STATE_PATH) -> dict:
@@ -92,14 +167,14 @@ def save_state(s: dict, path: str = STATE_PATH):
     _fs_replace(tmp, path)
 
 
-def is_enabled(state: dict | None = None, env=None) -> bool:
+def is_enabled(state: dict | None = None, env=None, root: str = ROOT) -> bool:
     env = os.environ if env is None else env
     if env.get("LE_AUTOUPDATE") == "0":
         return False
     try:
         from . import nogithub
-        if nogithub.active(env):         # GitHub-free mode (engine/nogithub.py)
-            return False
+        if nogithub.active(env) and source(root, env)["remote"] == "origin":
+            return False         # GitHub-free mode (engine/nogithub.py): the old account (origin) is gone; the backup still updates
     except Exception:
         pass
     return bool((state if state is not None else load_state()).get("enabled"))
@@ -227,7 +302,7 @@ class Shell:
     def __init__(self, cwd: str = ROOT, python: str = sys.executable, log=None):
         self.cwd, self.python, self.log = cwd, python, log or (lambda t: None)
 
-    def run(self, args, timeout=120):
+    def run(self, args, timeout=120, env=None):
         """(returncode, output). Through heartbeat.run_cmd (2026-11-03): on Windows subprocess.run(timeout=) waits without
         a limit for its pipes while git-remote-https / the credential manager hang (the heartbeat's 2026 fix); run_cmd
         uses temp files and kills the whole process tree at the timeout. Git never prompts (GIT_TERMINAL_PROMPT=0)."""
@@ -235,7 +310,7 @@ class Shell:
             from .heartbeat import run_cmd
             r = run_cmd(args, cwd=self.cwd, timeout=timeout,
                         env={**os.environ, "PYTHONIOENCODING": "utf-8", "LE_HEARTBEAT": "0", "LE_NO_AUTOSTART": "1",
-                             "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"})
+                             "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never", **(env or {})})
             if r.timed_out:
                 return 124, f"timed out after {timeout} s"
             if r.returncode == -1:                       # could not start
@@ -245,8 +320,8 @@ class Shell:
         except Exception as e:
             return 127, f"{e.__class__.__name__}: {e}"
 
-    def git(self, *args, timeout=120):
-        return self.run([generated_files.git_exe(), *args], timeout=timeout)
+    def git(self, *args, timeout=120, env=None):
+        return self.run([generated_files.git_exe(), *args], timeout=timeout, **({"env": env} if env else {}))
 
     def py(self, args, timeout=600):
         return self.run([self.python, *args], timeout=timeout)
@@ -272,7 +347,7 @@ def _dirty(sh) -> tuple:
     return c, out, generated_files.porcelain_paths(out) if c == 0 else []
 
 
-def is_ancestor(sh, old, new, log=None, branch: str = BRANCH) -> bool:
+def is_ancestor(sh, old, new, log=None, branch: str = BRANCH, remote: str = "origin") -> bool:
     """old is in new's history. A SHALLOW checkout may not show it (the owner's Surface, 2026-10-25 22:33: "refusing to
     merge unrelated histories" for 94e232d..e20e268 although 94e232d is e20e268's grandparent): deepen, then unshallow."""
     log = log or (lambda t: None)
@@ -281,7 +356,7 @@ def is_ancestor(sh, old, new, log=None, branch: str = BRANCH) -> bool:
     c, out = sh.git("rev-parse", "--is-shallow-repository")
     if c != 0 or out.strip() != "true":
         return False
-    for args in (("fetch", "-q", "--deepen=300", "origin", branch), ("fetch", "-q", "--unshallow", "origin", branch)):
+    for args in (("fetch", "-q", "--deepen=300", remote, branch), ("fetch", "-q", "--unshallow", remote, branch)):
         c, out = sh.git(*args, timeout=900)
         log(f"shallow history: git {' '.join(args[1:3])} -> {c}" + (f" ({out.strip()[-120:]})" if c else ""))
         if sh.git("merge-base", "--is-ancestor", old, new)[0] == 0:
@@ -318,7 +393,7 @@ def from_main(sh, path: str, old: str, new: str) -> str | None:
     return blobs.get(work) or blobs.get(idx)
 
 
-def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None) -> dict:
+def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None, src: dict | None = None) -> dict:
     """Move the checkout to origin/<branch> (fast-forward only), the one way every update runs: the auto-update, the
     phone's "update", UPDATE.bat and START BOT (`python -m engine.autoupdate --pull`), the dashboard's Start page.
     Before the dirty check: ATLAS's account block an older version wrote into second_model.json goes to
@@ -329,6 +404,8 @@ def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None
     Returns {"status": up_to_date | updated | skipped | failed, "reason", "old", "new", "changed", "restore"
     ({path: commit} of the hand-checked-out files, put back on a rollback), "alert"}."""
     log = log or sh.log
+    src = src or source(getattr(sh, "cwd", ROOT) or ROOT)
+    remote, rbranch, where = src["remote"], src["branch"], f"{src['remote']}/{src['branch']}"
     res = {"status": "skipped", "reason": "", "old": None, "new": None, "changed": [], "restore": {}, "alert": False}
 
     def done(status, reason, alert=False, **kw):
@@ -349,20 +426,24 @@ def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None
         log(f"second_model.json: {m.get('say')}")
         c, st, paths = _dirty(sh)
     gen_dirty, other = generated_files.split_dirty(st)
-    c, out = sh.git("fetch", "-q", "origin", branch, timeout=180)
+    if remote != "origin":
+        ok, why = ensure_remote(sh, src)
+        if not ok:
+            return done("failed", f"the update source {src['label']} could not be set: {why}", alert=True)
+    c, out = sh.git("fetch", "-q", remote, rbranch, timeout=180)
     if c != 0:
         return done("skipped", f"git fetch failed: {out.strip()[-200:]}")
-    c, new = sh.git("rev-parse", f"origin/{branch}")
+    c, new = sh.git("rev-parse", where)
     new = new.strip() if c == 0 else None
     res["new"] = new
     if not new:
-        return done("failed", f"origin/{branch} unknown", alert=True)
+        return done("failed", f"{where} unknown", alert=True)
     if new == old:
         return done("up_to_date", f"at {old[:7]}")
     if skip_sha and skip_sha == new:
         return done("skipped", f"{new[:7]} failed its tests before; waiting for a newer main")
-    if not is_ancestor(sh, old, new, log, branch):
-        return done("skipped", f"origin/{branch} {new[:7]} is not a fast-forward of {old[:7]} (local commits?): not touched", alert=True)
+    if not is_ancestor(sh, old, new, log, rbranch, remote):
+        return done("skipped", f"{where} {new[:7]} is not a fast-forward of {old[:7]} (local commits?): not touched", alert=True)
     known = {}
     for p in other:
         if p == TRACKED_LOCAL:
@@ -406,6 +487,306 @@ def put_back(sh, restore: dict):
         sh.git("checkout", k, "--", p)
 
 
+# ---------------------------------------------------------------------- the one-time connect to the update source (2026-11-14)
+_LS_TREE = re.compile(r"^(\d{6}) (blob|commit|tree) ([0-9a-f]{40})\t(.+)$", re.S)
+_LS_FILES = re.compile(r"^(\d{6}) ([0-9a-f]{40}) (\d)\t(.+)$", re.S)
+_WHO = {"GIT_AUTHOR_NAME": "olympus-updater", "GIT_AUTHOR_EMAIL": "updater@localhost",
+        "GIT_COMMITTER_NAME": "olympus-updater", "GIT_COMMITTER_EMAIL": "updater@localhost"}
+
+
+def port_open(port: int, host: str = "127.0.0.1", timeout: float = 0.5) -> bool:
+    try:
+        with socket.create_connection((host, int(port)), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def fetch_interactive(sh, src: dict, timeout: float = 900) -> tuple:
+    """git fetch <remote> <branch> WITH the console: the first time Git Credential Manager opens its GitHub sign-in window
+    (the URL carries the account name, so it asks for that account, not another one saved on this PC). (code, words)."""
+    env = {k: v for k, v in os.environ.items() if k not in ("GIT_TERMINAL_PROMPT", "GCM_INTERACTIVE")}
+    env.update({"PYTHONIOENCODING": "utf-8", "LE_HEARTBEAT": "0", "LE_NO_AUTOSTART": "1"})
+    try:
+        r = subprocess.run([generated_files.git_exe(), "fetch", src["remote"], src["branch"]], cwd=sh.cwd, env=env,
+                           timeout=timeout)
+        return r.returncode, ""
+    except subprocess.TimeoutExpired:
+        return 124, f"no answer in {int(timeout)} s"
+    except Exception as e:
+        return 127, f"{e.__class__.__name__}: {e}"
+
+
+def _blobs(sh, rev: str | None = None, env=None) -> dict:
+    """{path: blob sha}: of a commit (ls-tree -r), else of the index (ls-files -s; env picks a temp index)."""
+    c, out = (sh.git("ls-tree", "-r", "-z", rev, timeout=300) if rev
+              else sh.git("ls-files", "-s", "-z", timeout=300, **({"env": env} if env else {})))
+    d = {}
+    if c != 0:
+        return d
+    for ch in out.split("\0"):
+        ch = ch.strip("\n")
+        if rev:
+            m = _LS_TREE.match(ch)
+            if m and m.group(2) == "blob":
+                d[m.group(4)] = m.group(3)
+        else:
+            m = _LS_FILES.match(ch)
+            if m:
+                d[m.group(4)] = m.group(2)
+    return d
+
+
+def _known_objects(sh, rev: str) -> set:
+    """Every object in rev's history: a working file whose blob is in it is a version the repo once had (a code zip, an
+    old clone), never the owner's own edit."""
+    c, out = sh.git("rev-list", "--objects", rev, timeout=900)
+    return {ln[:40] for ln in out.splitlines() if len(ln) >= 40} if c == 0 else set()
+
+
+def snapshot(sh, paths, log=None) -> str | None:
+    """A commit (kept at SNAPSHOT_REF) of the files at `paths` exactly as they are on disk now: everything the connect
+    can change, so a failure puts each one back. Built in a temp index: nothing else in the repo changes. None = failed."""
+    log = log or sh.log
+    idx = os.path.join(sh.cwd, ".git", "olympus-connect.idx")
+    try:
+        os.remove(idx)
+    except OSError:
+        pass
+    env = {"GIT_INDEX_FILE": idx}
+    files = [p for p in paths if os.path.isfile(os.path.join(sh.cwd, p)) and not os.path.islink(os.path.join(sh.cwd, p))]
+    for i in range(0, len(files), 120):                 # 120 paths a call: well inside Windows' command-line limit
+        c, out = sh.git("update-index", "--add", "--", *files[i:i + 120], timeout=900, env=env)
+        if c != 0:
+            log(f"snapshot: git update-index failed: {out.strip()[-200:]}")
+            return None
+    c, out = sh.git("write-tree", timeout=300, env=env)
+    tree = _sha(out) if c == 0 else None
+    try:
+        os.remove(idx)
+    except OSError:
+        pass
+    if not tree:
+        log(f"snapshot: git write-tree failed: {out.strip()[-200:]}")
+        return None
+    c, out = sh.git("commit-tree", tree, "-m", "OLYMPUS: the bot folder before the connect", timeout=120, env=_WHO)
+    commit = _sha(out) if c == 0 else None
+    if not commit or sh.git("update-ref", SNAPSHOT_REF, commit)[0] != 0:
+        log(f"snapshot: git commit-tree / update-ref failed: {out.strip()[-200:]}")
+        return None
+    return commit
+
+
+def _rmtree(path: str) -> bool:
+    def _ro(fn, p, _exc):                 # Windows: git's pack files are read-only
+        try:
+            os.chmod(p, 0o700)
+            fn(p)
+        except Exception:
+            pass
+    try:
+        shutil.rmtree(path, onerror=_ro)
+    except Exception:
+        pass
+    return not os.path.exists(path)
+
+
+def restore(sh, snap: str, old_head: str | None, old_ref: str | None, created_git: bool, log=None) -> bool:
+    """Put the folder back exactly as it was before the connect: the snapshot's files into the work tree (a file the new
+    code added is removed again), then the branch and index as they were (or the .git folder this connect made goes)."""
+    log = log or sh.log
+    c, out = sh.git("read-tree", "-u", "--reset", snap, timeout=900)
+    ok = c == 0
+    if not ok:
+        log(f"restore: git read-tree failed: {out.strip()[-200:]}")
+    if created_git:
+        return _rmtree(os.path.join(sh.cwd, ".git")) and ok
+    if old_head:
+        if old_ref:
+            ok = sh.git("update-ref", old_ref, old_head)[0] == 0 and ok
+            ok = sh.git("symbolic-ref", "HEAD", old_ref)[0] == 0 and ok
+        else:
+            ok = sh.git("update-ref", "--no-deref", "HEAD", old_head)[0] == 0 and ok
+        ok = sh.git("read-tree", old_head, timeout=300)[0] == 0 and ok      # index as before (the files keep their content)
+    else:
+        sh.git("update-ref", "-d", f"refs/heads/{BRANCH}")
+        ok = sh.git("read-tree", "--empty")[0] == 0 and ok
+    log(f"restore: {'done' if ok else 'INCOMPLETE'} (snapshot {snap[:7]})")
+    return ok
+
+
+def _say(kind: str, text: str):
+    print(f"  [{kind}]{' ' * max(1, 6 - len(kind))}{text}", flush=True)
+
+
+def connect(sh=None, src: dict | None = None, fetch=None, tests=TESTS, port: int = 8766, now=None,
+            state_path: str = STATE_PATH, say=None, pip: bool = True) -> int:
+    """The one-time move of this folder onto the update source (`python -m engine.autoupdate --connect`, the auto-update
+    step of SETUP_EVERYTHING.bat). Returns CONNECT_OK (0: on; the folder is the source's newest commit) | CONNECT_UNREACHABLE
+    (20: sign-in / internet / repo not ready) | CONNECT_NOT_NOW (21: server running, trade open) | CONNECT_NO_GIT (22) |
+    CONNECT_FAIL (1: put back as it was). Every code but 0 leaves the folder as it was. Plain [OK]/[FIX]/[SKIP] lines."""
+    sh = sh or Shell(log=file_log)
+    say = say or _say
+    log = sh.log
+    now = time.time() if now is None else now
+    src = src or source(sh.cwd)
+    if src["remote"] == "origin":
+        say("SKIP", "This version names no backup repo to update from (update_source.json): nothing changed.")
+        return CONNECT_FAIL
+    if sh.run([generated_files.git_exe(), "--version"], timeout=60)[0] != 0:
+        say("SKIP", "Git is not installed on this PC, so it cannot update itself. Nothing changed (the code zip way still works).")
+        return CONNECT_NO_GIT
+    if port and port_open(port):
+        say("SKIP", f"The bot server is running (port {port}): it has to be stopped first. Nothing changed.")
+        return CONNECT_NOT_NOW
+    fl = files_flat_reason(sh.cwd, now)
+    if fl:
+        say("SKIP", f"Not now: {fl}. Nothing changed.")
+        return CONNECT_NOT_NOW
+    gitdir = os.path.join(sh.cwd, ".git")
+    created = not os.path.isdir(gitdir)
+    if created:
+        c, out = sh.git("init", "-q")
+        if c != 0:
+            say("FIX", f"git could not start here ({out.strip()[-120:]}). Nothing changed.")
+            _rmtree(gitdir)
+            return CONNECT_FAIL
+        sh.git("symbolic-ref", "HEAD", f"refs/heads/{BRANCH}")
+    c, had = sh.git("remote", "get-url", src["remote"])
+    had = had.strip() if c == 0 else None
+
+    def undo_remote():
+        if created:
+            _rmtree(gitdir)
+        elif had is None:
+            sh.git("remote", "remove", src["remote"])
+        elif had != src["url"]:
+            sh.git("remote", "set-url", src["remote"], had)
+
+    ok, why = ensure_remote(sh, src)
+    if not ok:
+        undo_remote()
+        say("FIX", f"The backup repo could not be added ({why}). Nothing changed.")
+        return CONNECT_FAIL
+    acct = src.get("account")
+    say("..", f"Getting the newest code from {src['label']}"
+        + (f" (if a GitHub window opens, sign in as {acct})" if acct else "") + "...")
+    log(f"connect: fetch {src['remote']} {src['branch']} ({src['label']})")
+    c, why = (fetch or fetch_interactive)(sh, src)
+    where = f"{src['remote']}/{src['branch']}"
+    c2, out = sh.git("rev-parse", "--verify", "-q", where + "^{commit}") if c == 0 else (1, "")
+    target = _sha(out) if c2 == 0 else None
+    if c != 0 or not target:
+        undo_remote()
+        say("SKIP", f"Could not reach the backup {src['label']}" + (f" ({why})" if why else "")
+            + (f": sign in as {acct} when the GitHub window opens, or check the internet." if acct else ".")
+            + " Nothing changed (the code zip way still works).")
+        log(f"connect: unreachable (fetch {c}{', ' + why if why else ''})")
+        return CONNECT_UNREACHABLE
+    old_head = None if created else git_head(sh)
+    c, ref = sh.git("symbolic-ref", "-q", "HEAD")
+    old_ref = ref.strip() if c == 0 and ref.strip().startswith("refs/heads/") else None
+
+    def turn_on(old, copies=None):
+        s = load_state(state_path)
+        s["enabled"] = True
+        s["changed_at"] = int(now)
+        s["connected"] = {"t": int(now), "url": src["url"], "label": src["label"], "sha": target, "from": old,
+                          **({"copies": copies} if copies else {})}
+        s["last"] = {"t": int(now), "mode": "connect", "status": "updated" if old != target else "up_to_date",
+                     "reason": f"{(old or 'zip code')[:9]} -> {target[:7]}", "old": old, "new": target}
+        s.pop("bad_sha", None)
+        save_state(s, state_path)
+
+    c, st = sh.git("status", "--porcelain", "--untracked-files=no")
+    if old_head == target and c == 0 and not generated_files.split_dirty(st)[1]:
+        sh.git("branch", "-q", f"--set-upstream-to={where}", BRANCH)
+        turn_on(old_head)
+        say("OK", f"Auto-update is ON: this PC already runs the newest code ({target[:7]}) and from now on gets new code by itself.")
+        return CONNECT_OK
+    if not created:
+        try:                                   # ATLAS's account block an older version wrote into second_model.json
+            from . import account_b
+            log(f"second_model.json: {account_b.migrate_local(root=sh.cwd, git=sh.git).get('say')}")
+        except Exception as e:
+            log(f"second_model.json: not checked ({e.__class__.__name__})")
+    tgt = _blobs(sh, target)
+    if not tgt:
+        undo_remote() if created else None
+        say("FIX", "The backup's newest code could not be read. Nothing changed.")
+        return CONNECT_FAIL
+    paths = sorted(set(tgt) | (set() if created else set(_blobs(sh))))
+    say("..", "Saving a copy of every file the move can change (a minute on a big folder)...")
+    snap = snapshot(sh, paths, log)
+    if not snap:
+        if created:
+            _rmtree(gitdir)
+        say("FIX", "The safety copy could not be made, so nothing was changed. Send a photo of this window.")
+        return CONNECT_FAIL
+    known = _known_objects(sh, target)
+    unknown = [p for p, b in _blobs(sh, snap).items()
+               if b != tgt.get(p) and b not in known and not generated_files.is_generated(p)]
+    copies = None
+    if unknown:
+        copies = os.path.join("logs", f"connect-{time.strftime('%Y%m%d-%H%M%S', time.localtime(now))}")
+        for p in unknown:
+            try:
+                dst = os.path.join(sh.cwd, copies, p.replace("/", os.sep))
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copy2(os.path.join(sh.cwd, p.replace("/", os.sep)), dst)
+            except Exception as e:
+                log(f"copy of {p} failed ({e.__class__.__name__}); the snapshot still has it")
+        log(f"connect: {len(unknown)} file(s) are no version the repo ever had, copied to {copies}: {', '.join(unknown[:8])}")
+    c, out = sh.git("checkout", "-q", "-f", "-B", BRANCH, target, timeout=900)
+    if c != 0 or git_head(sh) != target:
+        back = restore(sh, snap, old_head, old_ref, created, log)
+        say("FIX", f"The move to the new code did not go through ({out.strip()[-160:]}): "
+            + ("everything is back as it was." if back else "PUT BACK FAILED: send a photo of this window."))
+        return CONNECT_FAIL
+    sh.git("branch", "-q", f"--set-upstream-to={where}", BRANCH)
+    log(f"connect: {(old_head or 'no git')[:9]} -> {target[:7]} (snapshot {snap[:7]})")
+
+    def fail(why):
+        back = restore(sh, snap, old_head, old_ref, created, log)
+        say("FIX", f"{why}: " + ("everything is back as it was. Send a photo of this window." if back
+                                 else "PUT BACK FAILED: send a photo of this window."))
+        return CONNECT_FAIL
+
+    if pip and sh.git("diff", "--quiet", snap, target, "--", "requirements.txt")[0] != 0:
+        c, out = sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt", "--disable-pip-version-check"], timeout=900)
+        log(f"connect: pip install -> {c}")
+        if c != 0:
+            return fail(f"pip install failed ({out.strip()[-120:]})")
+    for t in tests:
+        c, out = sh.py(list(t), timeout=900)
+        log(f"connect: test {' '.join(t)} -> {c}")
+        if c != 0:
+            return fail(f"the self-test {' '.join(t[-2:])} failed on the new code")
+    turn_on(old_head, copies)
+    if unknown:
+        say("OK", f"{len(unknown)} file(s) here were not any version of the repo (e.g. {', '.join(unknown[:3])}): "
+            f"a copy of each is in {copies}.")
+    say("OK", f"Auto-update is ON: this PC now runs the newest code ({target[:7]}) and from now on gets new code by "
+        "itself (only when no trade is open, never during trading hours).")
+    return CONNECT_OK
+
+
+def source_status(root: str = ROOT, sh=None, state=None, env=None) -> tuple:
+    """Read only, no network: (0, words) when this folder is connected to the update source (its remote has the source's
+    URL, auto-update is on, the connect record names that URL), else (10, words)."""
+    src = source(root, env)
+    if src["remote"] == "origin":
+        return 10, "This version names no backup repo (update_source.json)."
+    sh = sh or Shell(root)
+    c, out = sh.git("remote", "get-url", src["remote"], timeout=30)
+    s = load_state() if state is None else state
+    con = s.get("connected") or {}
+    if c == 0 and out.strip() == src["url"] and s.get("enabled") and con.get("url") == src["url"]:
+        day = dt.datetime.fromtimestamp(float(con.get("t") or 0), ET).date().isoformat()
+        return 0, f"Auto-update is ON from {src['label']} (connected {day}): the PC gets new code by itself."
+    return 10, f"Auto-update from {src['label']} is not connected yet."
+
+
 # ---------------------------------------------------------------------- the update itself
 def selftest_step(sh, old: str | None, args=None, timeout: float = SELFTEST_TIMEOUT_S) -> dict | None:
     """The PC self-test on the new checkout (engine/pc_selftest.py, mode update). None when the checkout has no
@@ -440,7 +821,7 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
         sh.log(f"{status}: {reason}")
         return res
 
-    if not is_enabled(state, env):
+    if not is_enabled(state, env, getattr(sh, "cwd", ROOT) or ROOT):
         return done("off", "auto-update is off (python -m engine.autoupdate --enable)")
     w = window_reason(now, mode, state.get("last_check_day"), state.get("last_hourly"), all_hours=all_hours)
     if w:
@@ -598,7 +979,7 @@ def version(cwd: str = ROOT) -> dict:
             _VER.update(t=time.time(), sha=h[:7] if h else None, branch=b.strip() if c == 0 else None)
         except Exception:
             _VER.update(t=time.time())
-    return {"sha": _VER["sha"], "branch": _VER["branch"]}
+    return {"sha": _VER["sha"], "branch": _VER["branch"], "source": source(cwd)["label"]}
 
 
 def status(path: str = STATE_PATH) -> dict:
@@ -676,6 +1057,10 @@ class DailyUpdater:
             why = restart_safe_reason(self.bot, optin)
             if why:
                 return {"status": "skipped", "mode": mode, "reason": why}
+        else:                                          # daily: an eval without auto-resume updates on Friday only
+            why = live_wait_reason(now, restart_safe_reason(self.bot, optin))
+            if why:
+                return {"status": "skipped", "mode": mode, "reason": why}
         self.busy = True
         try:
             file_log(f"{mode} check (server)")
@@ -723,7 +1108,18 @@ def main(argv=None) -> int:
     g.add_argument("--check", action="store_true", help="one check now (outside trading hours, when flat)")
     g.add_argument("--pull", action="store_true", help="UPDATE.bat / START BOT: the update now (bot stopped), the same "
                                                       "fast-forward as the auto-update; exit 1 when not updated")
+    g.add_argument("--connect", action="store_true", help="once (SETUP_EVERYTHING.bat): move this folder onto the backup "
+                                                         "repo in update_source.json and turn auto-update on (bot server "
+                                                         "stopped; a GitHub sign-in window may open)")
+    g.add_argument("--source-status", action="store_true", help="read only: exit 0 when connected to the backup repo, else 10")
+    ap.add_argument("--port", type=int, default=int(os.environ.get("PORT") or 8766), help="the bot server's port (--connect)")
     a = ap.parse_args(argv)
+    if a.connect:
+        return connect(port=a.port)
+    if a.source_status:
+        code, words = source_status()
+        print(f"  [{'OK' if code == 0 else '..'}]    {words}")
+        return code
     if a.pull:
         r = pull()
         print(f"  [{'OK' if r['status'] in ('updated', 'up_to_date') else 'FIX'}]  {r['say']}")

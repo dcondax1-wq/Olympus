@@ -1,0 +1,8 @@
+{
+ "v": 1,
+ "note": "Where the PC gets new code (owner 2026-11-14: the first GitHub account is gone): the private backup repo on his second account. engine/autoupdate.py, docs/AUTO_UPDATE.md. Lead: push the tested head to branch pc.",
+ "remote": "olympus",
+ "url": "https://dcondax1-wq@github.com/dcondax1-wq/olympus.git",
+ "branch": "pc",
+ "account": "dcondax1-wq"
+}
