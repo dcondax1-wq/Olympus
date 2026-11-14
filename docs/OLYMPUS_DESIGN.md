@@ -340,9 +340,10 @@ cards and bars (its own palette), Kalshi's background a little (its `--bg` blend
   Polis, Cities, Symposium join NQ and Helios) and Kalshi takes the page palette, so Ivory or Stocks Light no longer leaves half the apps
   AGORA-dark. Their sheets are tokenized (`aegis.css`, `mint.css`, `oikos.css`, `ledger.css`, `planner.css`, `cities/world.css`,
   `cities/agora-cities.css`, `symposium.css`, `olympus/people.css`, `settings.css`, `olympus.css` past its tokens), and so is the CSS the
-  dashboard injects from scripts (`statuscore.js`, `realcore.js`, `blitzcore.js`, `missioncore.js`, `zenithcore.js`, `sessioncore.js`,
-  `moneynowcore.js`, `boardcore.js`, `liveview.js/.css`, `holo.css`, `mission.css`, `more.js`, `hub.js`, `goals.js`, `features.js`) and
-  Jarvis's `assist-ui.js`; Jarvis's light-scheme rules (written for Athena) read the light look's slots.
+  dashboard injects from scripts (`statuscore.js`, `realcore.js`, `blitzcore.js`, `zenithcore.js`, `sessioncore.js`, `deckcore.js`,
+  `mindcore.js`, `moneynowcore.js`, `boardcore.js`, `liveview.js/.css`, `holo.css`, `mission.css`, `more.js`, `hub.js`, `goals.js`,
+  `features.js`) and Jarvis's `assist-ui.js`; Jarvis's light-scheme rules (written for Athena) read the light look's slots. ATLAS's orange is
+  its identity, like a bot's colour: never tokenized (`KEEP` in the tokenizer), never a leftover.
 - **New slots, every look.** AGORA's aegean blue is a family of its own (`info` #4b7a99 / `infot` #7fa7c2, `tools/theme_tokenize.py`):
   each look paints them readable on its own page. `--oly-th-ring` is the keyboard focus ring (the look's accent, >= 3:1 on its page and
   panels; `olympus.css`, `a11y.css`, the Gate, the hubs). A light look's shadows are soft and ink-tinted (`--oly-th-shadow`, `-e1..e3` behind

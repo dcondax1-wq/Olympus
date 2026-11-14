@@ -17,7 +17,8 @@ picked the owner's way (OLYMPUS_THEMES.set on a page of the site), in ONE browse
 another look was its last (the stale copy a page keeps). Per page (tools/theme_qa.js, evaluated in the page):
   text      every visible text node vs its real background (the layers under it composited, gradient stops, translucency, the parents'
             opacity): WCAG AA (4.5:1, large text 3:1); the ones on screen are measured again on the screenshot's own pixels and only a
-            failure there counts (canvas, images and blur are what the eye sees)
+            failure there counts (canvas, images and blur are what the eye sees). The page is measured, then shot, then its texts' boxes
+            read again: a text that moved meanwhile (async content) is left out of that screenshot (measure())
   left      leftovers: a visible element (or ::before / ::after) still in one of AGORA's literal colours (every fallback of a theme slot,
             and every warm brown / gold literal not yet tokenized) while the look should repaint it
   money     +$ green and -$ red: the right hue and readable
