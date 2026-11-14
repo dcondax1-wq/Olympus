@@ -99,6 +99,11 @@ def colours(accent) -> dict:
             "deep": mix(a, (0, 0, 0), 0.35) if not light else mix(a, (0, 0, 0), 0.6)}
 
 
+def plural(n, word: str) -> str:
+    k = int(C.dec(n) or 0)
+    return f"{k} {word}{'' if k == 1 else 's'}"
+
+
 def monogram(name) -> str:
     words = [w for w in re.findall(r"[A-Za-z0-9]+", name or "") if w.lower() not in ("the", "and", "of", "co", "llc", "inc", "sample")]
     return esc("".join(w[0] for w in words[:2]).upper() or "W")
@@ -170,9 +175,11 @@ table.lines .r{text-align:right;white-space:nowrap}
 .pay{margin-top:18px;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .pay .btn{display:inline-block;font-weight:700;font-size:15px;color:var(--on);background:var(--accent);text-decoration:none;border-radius:9px;padding:11px 20px;white-space:nowrap}
 .pay .url{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;overflow-wrap:anywhere}
-.stamp{position:absolute;right:46px;top:150px;transform:rotate(-12deg);border:3px solid currentColor;border-radius:8px;padding:4px 14px;font:700 26px/1.1 Georgia,serif;letter-spacing:.12em;opacity:.8}
+.sum{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.stampbox{flex:1;display:flex;justify-content:center}
+.stamp{display:inline-block;transform:rotate(-10deg);border:3px solid currentColor;border-radius:8px;padding:4px 16px;font:700 30px/1.1 Georgia,serif;letter-spacing:.14em;opacity:.85}
 .stamp.paid{color:#1d7a46}.stamp.void{color:#a12a2a}
-.rel{position:relative}
+.nw{white-space:nowrap}
 .banner{background:#fff6db;border:1px solid #e8c766;color:#5b4300;border-radius:10px;padding:10px 14px;font-size:13.5px;margin:0 0 16px}
 .banner b{color:#3d2d00}
 .warn{background:#fdecec;border:1px solid #e9a6a6;color:#6b1a1a;border-radius:10px;padding:10px 14px;font-size:13.5px;margin:0 0 14px}
@@ -181,11 +188,11 @@ table.lines .r{text-align:right;white-space:nowrap}
 .legal ul{margin:4px 0 8px;padding-left:20px}
 .legal li{margin:2px 0}
 .blank{display:inline-block;min-width:150px;border-bottom:1px solid #9aa3ae}
-.pfoot{display:none}
 @media (max-width:640px){
   .band{padding:20px 16px}.body{padding:18px 16px}.foot{padding:12px 16px}.sheet{margin:10px 0 18px;border-radius:0}
   .grid,.parties{grid-template-columns:1fr}.steps{grid-template-columns:1fr}.checks{columns:1}.facts{grid-template-columns:1fr 1fr}
-  .top{flex-direction:column}.meta{text-align:left}.band h1{font-size:25px}.sign{grid-template-columns:1fr}.stamp{top:110px;right:20px;font-size:20px}
+  .top{flex-direction:column}.meta{text-align:left}.band h1{font-size:25px}.sign{grid-template-columns:1fr}.stamp{font-size:22px}
+  .sum{flex-direction:column-reverse;align-items:stretch}.totals{width:100%%}
 }
 @page{size:Letter;margin:.45in}
 @media print{
@@ -201,8 +208,6 @@ table.lines .r{text-align:right;white-space:nowrap}
   .price .n{font-size:28px}.need{font-size:12.5px}.sign{margin-top:14px}
   .card,.pay,.steps li,.totals,.legal h2,.sign{break-inside:avoid}
   .legal h2{break-after:avoid}
-  .pfoot{display:block;position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:9.5px;color:#7a5a00}
-  .legal{padding-bottom:14px}
 }
 """
 
@@ -316,12 +321,12 @@ def agreement_html(client: dict, pkg: dict, biz: dict, today: str) -> str:
     sections = [
         ("1. Who this agreement is between",
          f"<p>{esc(b)} (\"we\", \"us\"), run by {esc(owner)}, and {esc(name)}, a {esc(trade)}" + (f" in {esc(city)}" if city else "")
-         + f" (\"you\"). It starts on the date you sign it or pay the first invoice, whichever comes first: {blank}.</p>"),
+         + f" (\"you\"). It starts on the date you sign it or pay the first invoice, whichever comes first: <span class=\"nw\">{blank}.</span></p>"),
         ("2. What we will do",
          f"<p>Build, host and look after your website on the <b>{esc(pkg.get('name') or 'Website')}</b> plan:</p><ul>{inc}</ul>"
-         f"<ul><li>Keep the site online on a reputable host, with a security certificate (https) and regular backups.</li>"
-         f"<li>Make up to {int(pkg.get('edits_per_month') or 1)} small content edit(s) a month (text, photos, hours, prices). Bigger changes, such as new pages or a redesign, are quoted first and only done if you agree.</li>"
-         f"<li>Answer support requests within {int(pkg.get('support_days') or 2)} business day(s).</li>"
+         f"<p>We will also:</p><ul><li>Keep the site online on a reputable host, with a security certificate (https) and regular backups.</li>"
+         f"<li>Make up to {plural(pkg.get('edits_per_month') or 1, 'small content edit')} a month (text, photos, hours, prices). Bigger changes, such as new pages or a redesign, are quoted first and only done if you agree.</li>"
+         f"<li>Answer support requests within {plural(pkg.get('support_days') or 2, 'business day')}.</li>"
          f"<li>Put the first version live within about {int(pkg.get('live_days') or 7)} business days after we receive what we need from you (section 3).</li></ul>"),
         ("3. What you will do",
          "<ul><li>Send your logo, photos, services and business details, and approve the site before it goes live.</li>"
@@ -365,9 +370,11 @@ def agreement_html(client: dict, pkg: dict, biz: dict, today: str) -> str:
             "licensed in your state before you use it. Rules on automatic renewals, cancellations and sales tax differ by state.</div>"
             f"{secs}<h2>Signatures</h2><div class=\"sign\"><div>{esc(name)}: name, title and signature</div><div>Date</div><div></div></div>"
             f"<div class=\"sign\"><div>{esc(b)}: {esc(owner)}, signature</div><div>Date</div><div></div></div>"
-            f"</div><footer class=\"foot\"><span>{contact_line(biz)}</span><span>{esc(TEMPLATE_NOTE)}</span></footer>"
-            f"<div class=\"pfoot\">{esc(TEMPLATE_NOTE)}</div></main>")
-    return page(f"Website service agreement (template): {name}", body, biz.get("accent"))
+            f"</div><footer class=\"foot\"><span>{contact_line(biz)}</span><span>{esc(TEMPLATE_NOTE)}</span></footer></main>")
+    # the note on EVERY printed page, in the page's bottom margin (it can never sit on top of the text)
+    margin_note = ("<style>@page{margin:.45in .45in .7in;@bottom-center{content:\"" + TEMPLATE_NOTE + "\";font:8pt -apple-system,'Segoe UI',Arial,"
+                   "sans-serif;color:#7a5a00}}</style>")
+    return page(f"Website service agreement (template): {name}", body, biz.get("accent"), extra_head=margin_note)
 
 
 # ------------------------------------------------------------------------------------------------ (c) the invoice
@@ -420,14 +427,14 @@ def invoice_html(inv: dict, client: dict, biz: dict) -> str:
     terms = int(C.dec(biz.get("terms_days")) or 7)
     note = (f"Payment is due within {terms} days. If it stays unpaid {int(C.dec(biz.get('late_days')) or 10)} days after the due date the site may be paused "
             "until it is paid. Thank you for your business.")
-    body = (f"<main class=\"sheet rel\"><header class=\"band\"><div class=\"top\">{brand(biz)}<div class=\"meta\"><span class=\"kicker\">Invoice</span><br>"
-            f"<b style=\"font-size:17px\">{no}</b></div></div></header>{stamp}"
+    body = (f"<main class=\"sheet\"><header class=\"band\"><div class=\"top\">{brand(biz)}<div class=\"meta\"><span class=\"kicker\">Invoice</span><br>"
+            f"<b style=\"font-size:17px\">{no}</b></div></div></header>"
             f"<div class=\"body\">{setup_warning(biz)}<div class=\"facts\"><div><span>Issued</span><b>{esc(C.nice_date(inv['issued'])) if C.is_date(inv.get('issued')) else '-'}</b></div>"
             f"<div><span>Due</span><b>{esc(due)}</b></div><div><span>For</span><b>{esc(period)}</b></div>"
             f"<div><span>Status</span><b>{esc({'paid': 'Paid', 'void': 'Void'}.get(status, 'Open'))}</b></div></div>"
             f"<div class=\"parties\"><div><p class=\"label\">Bill to</p><p>{'<br>'.join(bill)}</p></div><div><p class=\"label\">From</p><p>{'<br>'.join(frm)}</p></div></div>"
             f"<table class=\"lines\"><thead><tr><th>Description</th><th class=\"r\">Qty</th><th class=\"r\">Price</th><th class=\"r\">Amount</th></tr></thead>"
-            f"<tbody>{rows}</tbody></table><div class=\"totals\">{''.join(tot)}</div>{pay}"
+            f"<tbody>{rows}</tbody></table><div class=\"sum\"><div class=\"stampbox\">{stamp}</div><div class=\"totals\">{''.join(tot)}</div></div>{pay}"
             f"<p class=\"need\" style=\"margin-top:16px;color:var(--muted);font-size:12.5px\">{esc(note)}</p></div>"
             f"<footer class=\"foot\"><span>{contact_line(biz)}</span><span>Invoice {no}</span></footer></main>")
     return page(f"Invoice {inv.get('no') or 'draft'}: {client.get('name') or ''}", body, biz.get("accent"))

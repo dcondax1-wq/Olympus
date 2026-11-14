@@ -196,14 +196,19 @@ def part_c():
     c, pkg, d = docs_for("c_demo_northside")
     allh = "".join(d.values())
     check("c. offline: no script / image / font / stylesheet from the network, no @import, no url(), no web font, all CSS inline",
-          not EXTERNAL.search(allh) and "@import" not in allh and "url(" not in allh and "@font-face" not in allh and allh.count("<style>") == 3, EXTERNAL.findall(allh)[:3])
+          not EXTERNAL.search(allh) and "@import" not in allh and "url(" not in allh and "@font-face" not in allh and "<link" not in allh
+          and allh.count("<style>") >= 3, EXTERNAL.findall(allh)[:3])
     check("c. the proposal: client name (escaped &amp;), the plan, $0 setup + $249 a month, every item, the demo link, 3 steps, valid 14 days, sign line",
           "More calls for Northside Heating &amp; Air (sample)" in d["proposal"] and "Pro plan" in d["proposal"] and ">$0<" in d["proposal"] and ">$249<" in d["proposal"]
           and all(R.esc(x) in d["proposal"] for x in pkg["includes"]) and 'href="https://demo.example.com/northside-hvac"' in d["proposal"]
           and d["proposal"].count("<li><b>") == 3 and "Valid until November 28, 2026" in d["proposal"] and "Accepted for" in d["proposal"])
     ag = d["agreement"]
-    check("c. the agreement is marked template + not legal advice on screen, in the footer and on every printed page (fixed print footer)",
-          "Template, not legal advice." in ag and ag.count(R.TEMPLATE_NOTE) >= 2 and 'class="pfoot"' in ag and ".pfoot{display:block;position:fixed" in ag)
+    check("c. the agreement is marked template + not legal advice on screen, in the footer and on every printed page (in the page's bottom margin)",
+          "Template, not legal advice." in ag and ag.count(R.TEMPLATE_NOTE) >= 2 and '@bottom-center{content:"' + R.TEMPLATE_NOTE + '"' in ag
+          and "@bottom-center" not in d["proposal"] + d["invoice"])
+    check("c. plain words: '2 small content edits', '1 business day' (no 'edit(s)'), and a blank date line that keeps its period",
+          "2 small content edits a month" in docs_for("c_demo_rivera")[2]["agreement"] and "1 business day." in ag and "(s)" not in ag.split("<body>")[1]
+          and '<span class="nw"><span class="blank">' in ag)
     check("c. the agreement covers scope, the monthly plan, payment, cancellation, ownership of the site AND the domain, liability limits, governing law",
           all(x in ag for x in ("What we will do", "Price and payment", "Term and cancellation", "Who owns what", "Your domain name", "Limits of liability",
                                 "$249 a month", "30 days notice", "3 months before the claim", "Buyout", "The laws of the State of")))
@@ -476,6 +481,17 @@ def part_g():
           "2026-11-14" in pm and all(x in pm for x in ("Stripe", "Square", "PayPal", "ACH", "payout", "## Your 3 steps", "## Where the link goes on the invoice",
                                                          "Pay online in a minute", "## Sources")) and "Pay online in a minute" in d["invoice"]
           and len(re.findall(r"^\d\. ", pm.split("## Your 3 steps")[1].split("##")[0], re.M)) == 3)
+    bp = os.path.join(ROOT, "docs", "AGENCY_BUSINESS_SETUP.md")
+    bs = open(bp, encoding="utf-8").read() if os.path.isfile(bp) else ""
+    plan = bs.split("## 8.")[1] if "## 8." in bs else ""
+    check("g. docs/AGENCY_BUSINESS_SETUP.md: not legal / tax advice, dated, sole proprietor vs LLC (varies by state), free EIN, separate bank, sales tax "
+          "(how to check), self-employment tax (15.3%, the 2026 wage base, quarterly dates), 25-30% aside, bookkeeping, sources",
+          "**Not legal or tax advice.**" in bs and "2026-11-14" in bs and all(x in bs for x in (
+              "Sole proprietor or LLC", "varies a lot by state", "IRS.gov/EIN", "separate bank account", "How to check yours", "15.3%", "$184,500",
+              "April 15, June 15, September 15, 2026 and January 15, 2027", "25-30%", "bookkeeping", "agency/billing/PAYMENTS.md", "## Sources")))
+    check("g. ... and a 30-day plan with daily numbers (leads, dials, talks, demos, closes) adding up to the first $1,000 MRR, its assumptions said out loud",
+          all(x in plan for x in ("Leads added", "Dials", "Owner talks", "Demo links sent", "New clients", "**Total**", "7 x $149", "$1,043", "assumptions, not facts"))
+          and 7 * 149 >= 1000)
     fx = json.dumps([load("clients.json"), load("business.json"), load("ledger.json")])
     check("g. the fixtures are made up: example.com / .example addresses and 555 phone numbers only",
           all(e.endswith(".example") or e.endswith("example.com") for e in re.findall(r"[\w.+-]+@([\w.-]+)", fx)) and all("555" in ph for ph in re.findall(r"\(\d{3}\) \d{3}-\d{4}", fx)))
