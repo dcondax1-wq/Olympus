@@ -126,12 +126,12 @@ make anyone profitable. Trading involves substantial risk of loss and is not sui
 stopped at my limit, slept 7 hours, no trading after my stop time.</p>
 <table class="hab"><tr><th class="hn">Habit</th>{''.join(f'<th>{d}</th>' for d in range(1, 32))}</tr>{habits}</table>"""))
     P.append(("Mistake log", f"""<h1>Mistake log</h1><p class="sub">Mistakes are data. Write them down without judging, then write the fix.</p>
-{table(["Date", "What happened", "Trigger", "Rule", "Fix for next time"], 11, [11, 29, 18, 9, 33])}"""))
+{table(["Date", "What happened", "Trigger", "Rule", "Fix for next time"], 17, [11, 29, 18, 9, 33])}"""))
     examples = [("I lose two trades in a row", "stop for 15 minutes and re-read my rules"), ("I feel the urge to win it back", "stand up, step away, and log the feeling"),
                 ("price moves without me", "let it go and wait for my next setup"), ("I reach my max loss for the day", "close the platform and do my review")]
     ifs = "".join(f'<div class="ex"><b>If</b> {a} <b>then I</b> {b}</div>' for a, b in examples)
     P.append(("If-then plans", f"""<h1>If-then plans</h1><p class="sub">Decide now what you will do in the moments that are hard to think clearly. Examples, then your own.</p>
-{ifs}<h2>My if-then plans</h2><div class="ifs">{''.join('<div><b>If</b><div class="ln"></div><b>then I</b><div class="ln"></div></div>' for _ in range(6))}</div>"""))
+{ifs}<h2>My if-then plans</h2><div class="ifs">{''.join('<div><b>If</b><div class="ln"></div><b>then I</b><div class="ln"></div></div>' for _ in range(8))}</div>"""))
     P.append(("Setup playbook", f"""<h1>Setup playbook</h1><div class="meta"><span>Setup name</span><span>Market(s)</span><span>Time window</span></div>
 <div class="grid2"><div class="fld"><span>Conditions (all must be true)</span>{checks(["", "", "", "", ""], "ck blank")}</div><div class="fld"><span>Entry trigger</span>{rows(2)}<span>Stop placement</span>{rows(2)}<span>Exit plan</span>{rows(2)}</div></div>
 <h2>Sketch</h2><div class="sketch"></div>
