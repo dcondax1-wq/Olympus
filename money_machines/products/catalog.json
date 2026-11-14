@@ -1,0 +1,29 @@
+{
+ "v": 1,
+ "kind": "digital-products",
+ "asof": "2026-11-14",
+ "note": "Prices are inside what similar listings showed on 2026-11-14 (docs/MONEY_MACHINES.md section 3). Sales estimates are guesses for a shop with no audience yet: most listings sell little until a social account or search traffic sends buyers.",
+ "products": [
+  {"id": "prop-eval-tracker", "status": "built", "name": "Prop Eval Tracker (Excel + Google Sheets + offline web app)", "price_usd": 17,
+   "platforms": ["Payhip", "Gumroad", "Etsy"], "effort_h": 0, "files": "money_machines/products/eval_tracker/",
+   "build": "python -m money_machines.products.build_eval_tracker --zip", "sales_month_est": "0-10",
+   "comparables": "Etsy prop-firm challenge tracker about $16.68 (sale from $22.24); trading journals $9.90-35; a journal + prop tracker bundle EUR 39",
+   "risk": "Trading niche: no performance claims, no firm names; Gumroad reviews trading content more closely."},
+  {"id": "local-site-templates", "status": "planned", "name": "5 one-page website templates for local trades (plain HTML/CSS, phone-first, fast)", "price_usd": 24,
+   "platforms": ["Etsy", "Gumroad"], "effort_h": 5, "source": "the agency demo-site themes (team B1, agency/templates) exported with placeholder text",
+   "sales_month_est": "0-8", "comparables": "HTML landing templates on Etsy mostly under $20-25; Canva/Wix/Squarespace kits $7-99",
+   "risk": "Buyers often want Canva, Wix or Squarespace instead of HTML; include a 'how to put it online free' guide."},
+  {"id": "social-post-pack", "status": "planned", "name": "60 Instagram post templates for local businesses + 120 caption ideas", "price_usd": 14,
+   "platforms": ["Etsy", "Gumroad"], "effort_h": 4, "source": "content_plan.py card design + the local-growth topics (and team B5's style when merged)",
+   "sales_month_est": "0-10", "comparables": "100-template Canva packs about $10-15 on Etsy, many on sale",
+   "risk": "Crowded; most buyers expect Canva links. A Canva version needs the owner's free Canva account (manual work)."},
+  {"id": "gbp-checklist-kit", "status": "planned", "name": "Google Business Profile checklist + 52 weekly post prompts (PDF + sheet)", "price_usd": 9,
+   "platforms": ["Payhip", "Etsy"], "effort_h": 2.5, "source": "gig_pack.json checklists.gbp-setup + the local-growth Google posts",
+   "sales_month_est": "0-8", "comparables": "Google profile gigs sell setup for up to $50; checklists are a cheaper self-serve version",
+   "risk": "Low; keep Google's guidelines (real name, no keyword stuffing) in the text."},
+  {"id": "review-request-kit", "status": "planned", "name": "Honest review request kit: QR card templates, email/text scripts, reply templates", "price_usd": 11,
+   "platforms": ["Payhip", "Etsy"], "effort_h": 2, "source": "team B4's review booster (agency/upsells: QR maker) + the review-booster gig's scripts",
+   "sales_month_est": "0-8", "comparables": "review QR card gigs from $25; template packs usually $5-15",
+   "risk": "Must teach the rules: ask everyone, no rewards, no gating (Google + the FTC's 2024 rule)."}
+ ]
+}

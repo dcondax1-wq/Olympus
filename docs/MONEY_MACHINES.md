@@ -131,6 +131,53 @@ Make the images (Chromium, about 10 seconds for 30): `python -m money_machines.c
 
 ---
 
+## 3. Digital products (passive once listed)
+
+### Where to sell them (fees and rules, searched 2026-11-14)
+
+| | Payhip (free plan) | Gumroad | Etsy |
+|---|---|---|---|
+| Fees | 5% a sale + Stripe/PayPal fees; Plus $29/mo = 2%, Pro $99/mo = 0% | 10% + $0.50 a sale (30% on sales its Discover page brings); card fees on top in third-party 2026 guides | $0.20 a listing (4 months) + 6.5% + 3% + $0.25 processing (US); Offsite Ads 12-15% only on sales they bring |
+| You keep from $17 | about **$15.36** | about **$14.01** | about **$14.94** |
+| Paid out | straight to your PayPal / Stripe | to your bank; a 2026 newsletter reports a $100 minimum until you verify identity ($10 after) | Etsy Payments to your bank |
+| Rules that matter here | sells digital files; tax handling not confirmed in the search | lists "prohibited investments" and reviews online-trading and stock-market products more closely | digital files must be your own work (no resold templates); AI-made items are "designed by" and disclosed in the description |
+| Best for | the first store (lowest fee, no monthly cost) | a second store (its Discover page can bring buyers) | search traffic for templates and planners |
+
+### Built end to end: the Prop Eval Tracker ($17)
+
+`money_machines/products/eval_tracker/`: **`Prop_Eval_Tracker.xlsx`** (Rules, Log, Dashboard, Size; works in Excel and Google Sheets;
+1,424 formulas, recalculated with LibreOffice: 0 errors), **`prop_eval_tracker.html`** (the same tracker as an offline web page with a
+chart, CSV export and backups; a Content-Security-Policy blocks every network call), **`How_to_use.pdf`** (2 pages), `LICENSE.txt`,
+`README.txt`, the listing copy (`listing.md` / `listing.json`: title, description, 13 Etsy tags, FAQ, fee table, rules), and the
+pictures (`cover.jpg` 1280 x 720, `cover_square.jpg` 2000 x 2000, `app_screenshot.jpg`).
+
+- It tracks **the buyer's own rules**: EOD trailing, intraday trailing or static max loss, where the trail stops, daily loss limit,
+  consistency rule, minimum days; per day the net P&L and, if known, the day's low and high. It shows drawdown left, the max-loss
+  level, target left, the consistency check and a status (OK / CAREFUL / DAILY LIMIT / BREACHED / TARGET MET), and sizes the next
+  trade with our "size follows the stop" rule (contracts = risk / (stop x $ per point + costs)).
+- One math in three places: `eval_math.py` (Python), the spreadsheet formulas and the web page's JavaScript. LibreOffice recomputes the
+  spreadsheet in 3 scenarios and Chromium runs the JavaScript: both equal the Python (`--verify`, `tests.test_money_machines e`).
+- It names no prop firm, shows no results, promises nothing and says it is not affiliated with anyone; the description says AI coding
+  tools helped (Etsy's rule).
+- Rebuild: `python -m money_machines.products.build_eval_tracker --zip` writes the upload zip to `money_machines/out/products/`.
+
+**List it (owner, about 20 minutes):** 1. Free Payhip account. 2. New product > Digital download: upload the zip, paste the title and
+description from `listing.md`, add `cover.jpg` and `app_screenshot.jpg`, price $17. 3. Put the link in the Eval Journal bio.
+
+### Four more (planned; `money_machines/products/catalog.json`)
+
+| Product | Price | Effort | Made from | Honest note |
+|---|---|---|---|---|
+| 5 one-page website templates for local trades (HTML) | $24 | 5 h | the agency demo-site themes (B1) | buyers often want Canva/Wix; add a "put it online free" guide |
+| 60 Instagram post templates + 120 captions for local businesses | $14 | 4 h | the content-plan cards (+ B5's style) | crowded; most buyers expect Canva links |
+| Google Business Profile checklist + 52 weekly post prompts | $9 | 2.5 h | the GBP gig checklist | low risk; keep Google's rules in it |
+| Honest review request kit (QR cards, scripts, replies) | $11 | 2 h | B4's review booster + the gig scripts | must teach: ask everyone, no rewards, no gating |
+
+Expect **0-10 sales a month per product** until the Instagram accounts or search send buyers; comparable listings: an Etsy prop-firm
+challenge tracker about $16.68 (on sale from $22.24), trading journals $9.90-35, 100-template Canva packs about $10-15.
+
+---
+
 ## Sources (web search on 2026-11-14; the official pages could not be opened from this sandbox, so each line is the search engine's reading of the page: re-check before relying on a number)
 
 Freelance platforms
@@ -161,3 +208,10 @@ Instagram and Meta
 - Automation and lawsuits: [Meta newsroom](https://about.fb.com/news/2020/06/automation-software-lawsuits/); 5 hashtags: [Later](https://later.com/blog/instagram-hashtags/amp), [InstantDM](https://instantdm.com/blog/instagram-hashtags), [Circleboom (still 30)](https://circleboom.com/blog/how-many-hashtags-should-you-use-on-instagram-in-2026/)
 - Growth: [Buffer benchmarks](https://buffer.com/insights/instagram-benchmarks), [Socialinsider 2026](https://www.socialinsider.io/blog/instagram-benchmarks/?RewriteStatus=1); rates: [Influencer Marketing Hub](https://influencermarketinghub.com/instagram-influencer-rates/), [Later 2026 benchmarks](https://later.com/blog/influencer-pricing-benchmarks-the-complete-2026-guide/), [influee](https://influee.co/blog/instagram-influencer-pricing); pay features: [influencermarketinghub](https://influencermarketinghub.com/instagram-subscriptions-gifts/)
 - FTC disclosures: [Endorsement Guides FAQ](https://www.ftc.gov/business-guidance/resources/ftcs-endorsement-guides-what-people-are-asking), [Disclosures 101](https://www.ftc.gov/business-guidance/resources/disclosures-101-social-media-influencers); earnings claims: [FTC 2025 proposal](https://www.ftc.gov/business-guidance/blog/2025/01/concerned-about-deceptive-earnings-claims-sos-ftc-we-want-your-feedback); CFTC Rule 4.41: [Federal Register 2007](https://www.federalregister.gov/documents/2007/02/23/E7-3122/advertising-by-commodity-pool-operators-commodity-trading-advisors-and-the-principals-thereof)
+
+Digital product platforms
+- Gumroad 10% + $0.50, Discover 30%, card fees extra: [checkoutpage 2026](https://checkoutpage.com/blog/gumroad-fees), [dodopayments](https://dodopayments.com/blogs/gumroad-fees-explained); payout minimum change (single source): [roo newsletter](https://roo.beehiiv.com/p/gumroad-fees-2026); prohibited products: [gumroad.com/prohibited](https://gumroad.com/prohibited), [help: things not allowed](https://help.gumroad.com/article/155-things-you-cant-sell-on-gumroad)
+- Etsy fees: [craftybase guide](https://app.craftybase.com/blog/the-complete-guide-to-etsy-fees), [checkoutpage](https://checkoutpage.com/blog/etsy-fees); creativity standards and AI disclosure: [Etsy house rules](https://www.etsy.com/legal/creativity), [listadum summary](https://www.listadum.com/blog/etsy-creativity-standards)
+- Payhip plans 5% / 2% / 0%: [sellfy summary](https://sellfy.com/blog/payhip-pricing/), [passivekit](https://passivekit.com/payhip-pricing/)
+- Comparable products: [Etsy prop firm challenge tracker](https://www.etsy.com/listing/4606983180), [Etsy trading journal](https://www.etsy.com/listing/4601752496), [Etsy 100 Instagram templates](https://www.etsy.com/listing/900701313/100-instagram-post-templates-instagram?pro=1), [Etsy HTML website template](https://www.etsy.com/listing/4442821091/responsive-website-template-html-css)
+- Contract values ($ per point) in the tracker: the exchanges' contract specifications (MNQ $2, NQ $20, MES $5, ES $50, M2K $5, RTY $50, MYM $0.50, YM $5, MGC $10, GC $100, MCL $100, CL $1,000 per 1.00)

@@ -344,7 +344,105 @@ def part_d():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-PARTS = {"a": part_a, "b": part_b, "c": part_c, "d": part_d}
+# ------------------------------------------------------------------------------------------------ e. digital product
+def part_e():
+    from money_machines.products import build_eval_tracker as B
+    from money_machines.products import eval_math as M
+    prod = os.path.join(ROOT, "money_machines", "products", "eval_tracker")
+    need = ["Prop_Eval_Tracker.xlsx", "prop_eval_tracker.html", "How_to_use.pdf", "LICENSE.txt", "README.txt", "listing.md", "listing.json",
+            "cover.jpg", "cover_square.jpg", "app_screenshot.jpg"]
+    missing = [f for f in need if not os.path.exists(os.path.join(prod, f)) or os.path.getsize(os.path.join(prod, f)) < 300]
+    check("e. the eval tracker product files are all present (xlsx, web app, PDF, licence, readme, listing, covers, screenshot)", not missing, missing)
+    check("e. covers have the platform sizes (1280 x 720 Gumroad/Payhip, 2000 x 2000 Etsy)",
+          jpeg_size(os.path.join(prod, "cover.jpg")) == (1280, 720) and jpeg_size(os.path.join(prod, "cover_square.jpg")) == (2000, 2000))
+    pdf = open(os.path.join(prod, "How_to_use.pdf"), "rb").read()
+    check("e. the how-to is a real PDF", pdf[:5] == b"%PDF-" and b"%%EOF" in pdf[-1024:])
+    lst = json.load(open(os.path.join(prod, "listing.json"), encoding="utf-8"))
+    text = (lst["title"] + " " + lst["short"] + " " + " ".join(lst["description"]) + " " + json.dumps(lst["faq"])).lower()
+    bad = [p for p in (r"guarantee", r"pass your (?:eval|challenge)", r"get funded", r"\bprofitable\b", r"make money", r"win rate", r"passive income")
+           if re.search(p, text)]
+    check("e. the listing: price $17, title <= 140 chars, 13 Etsy tags <= 20 chars, no performance promise, 'not affiliated' + risk line",
+          lst["price_usd"] == 17 and len(lst["title"]) <= 140 and len(lst["tags_etsy"]) == 13 and max(map(len, lst["tags_etsy"])) <= 20 and not bad
+          and "not affiliated" in text and "substantial risk of loss" in text, bad)
+    net = B.fees(17)
+    hand = {"Payhip (free plan)": 17 - 0.85 - (0.493 + 0.30), "Gumroad": 17 - 1.70 - 0.50 - (0.493 + 0.30), "Etsy": 17 - 0.20 - 1.105 - (0.51 + 0.25)}
+    check("e. net per $17 sale by hand: Payhip about $15.36, Gumroad $14.01, Etsy $14.94 (card fees 2.9% + $0.30)",
+          set(net) == set(hand) and all(abs(net[k] - hand[k]) < 0.006 for k in hand), net)
+    app = open(os.path.join(prod, "prop_eval_tracker.html"), encoding="utf-8").read()
+    netw = [w for w in ("http://", "https://", "fetch(", "XMLHttpRequest", "WebSocket", "sendBeacon", "<script src", "<link", "import(", "@import")
+            if w in app]
+    check("e. the web app is offline: a CSP of default-src 'none' and no fetch, script src, link or URL anywhere", not netw
+          and "default-src 'none'" in app, netw)
+    r = M.compute({"start": 50000, "target": 3000, "max_loss": 2000, "type": "EOD trailing", "lock": 100},
+                  [{"pnl": 600}, {"pnl": 1600}, {"pnl": -300, "low": 51000}])
+    check("e. the math by hand: EOD level 48,600 after +600, stops at 50,100 (start + 100), drawdown left 51,900 - 50,100 = 1,800",
+          [x["floor_after"] for x in r["rows"]] == [48600, 50100, 50100] and r["dd_left"] == 1800 and r["status"] == "OK", r["rows"])
+    st = M.compute({"start": 25000, "target": 1500, "max_loss": 1000, "type": "Static", "daily_limit": 500}, [{"pnl": -520, "low": 24400}, {"pnl": -500}])
+    check("e. static: a daily-limit day, then a close at the level is a breach (at or below counts)",
+          [x["status"] for x in st["rows"]] == ["DAILY LIMIT", "BREACHED"] and st["status"] == "BREACHED", st["rows"])
+    z = M.size(2000, 20, 2.0, 0.10, 0.0)
+    check("e. size follows the stop: $2,000 left, 10%, 20 points on MNQ = 5 contracts, 10 losses in a row", z["contracts"] == 5 and z["losses_in_a_row"] == 10
+          and M.size(2000, 40, 2.0, 0.10)["contracts"] == 2, z)
+    from openpyxl import load_workbook
+    xl = os.path.join(prod, "Prop_Eval_Tracker.xlsx")
+    wf, wv = load_workbook(xl), load_workbook(xl, data_only=True)
+    check("e. the spreadsheet keeps formulas (Log, Dashboard, Size) and the drop-down for the drawdown type",
+          str(wf["Log"]["J7"].value).startswith("=") and str(wf["Dashboard"]["B15"].value).startswith("=") and str(wf["Size"]["B13"].value).startswith("=")
+          and any("B6" in str(dv.sqref) for dv in wf["Rules"].data_validations.dataValidation)
+          and wf.sheetnames == ["Start here", "Dashboard", "Rules", "Log", "Size", "Lists"], wf.sheetnames)
+    ex = M.compute(B.EXAMPLE_RULES | {"consistency": ""}, [B.EXAMPLE_DAY])
+    lv, dv = wv["Log"], wv["Dashboard"]
+    check("e. the shipped example row was computed (cached values) and equals the math: balance, level, drawdown left, status",
+          lv["G7"].value == ex["rows"][0]["end"] and lv["J7"].value == ex["rows"][0]["floor_after"] and lv["K7"].value == ex["dd_left"]
+          and lv["M7"].value == "OK" and dv["B15"].value == ex["status"] and wv["Size"]["B13"].value == 4,
+          (lv["G7"].value, lv["J7"].value, lv["K7"].value, dv["B15"].value))
+    if os.environ.get("MM_VERIFY_XLSX"):
+        probs = B.verify(log=lambda *a: None)
+        check("e. (MM_VERIFY_XLSX) LibreOffice recomputes 3 scenarios = eval_math", not probs, probs)
+    try:
+        from playwright.sync_api import sync_playwright
+        exe = __import__("glob").glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome")
+    except Exception:
+        exe = None
+    if exe is not None:
+        with sync_playwright() as pw:
+            br = pw.chromium.launch(args=["--no-sandbox"], **({"executable_path": sorted(exe)[0]} if exe else {}))
+            pg = br.new_page()
+            pg.set_content(app)
+            diffs = []
+            for name, rules, days in B.SCENARIOS:
+                js = pg.evaluate("([r, d]) => EvalTracker.compute(r, d)", [rules, days])
+                py = M.compute(dict(rules, consistency=(rules["consistency"] / 100 if rules["consistency"] != "" else "")), days)
+                for k in ("balance", "floor", "dd_left", "profit", "status", "best_share", "consistency_ok", "more_profit_needed"):
+                    if js[k] != py[k] and not (isinstance(py[k], float) and abs((js[k] or 0) - py[k]) < 0.005):
+                        diffs.append((name, k, js[k], py[k]))
+                if [x["status"] for x in js["rows"]] != [x["status"] for x in py["rows"]]:
+                    diffs.append((name, "row statuses"))
+            zs = pg.evaluate("() => EvalTracker.size(2000, 20, 2, 0.1, 1, null)")
+            br.close()
+        check("e. the web app's JavaScript gives the same numbers as eval_math in all 3 scenarios (and the size helper)",
+              not diffs and zs["contracts"] == M.size(2000, 20, 2.0, 0.10, 1.0)["contracts"] == 4, diffs)
+    else:
+        print("[SKIP] e. web app math in Chromium: no playwright here")
+    cat = json.load(open(os.path.join(ROOT, "money_machines", "products", "catalog.json"), encoding="utf-8"))
+    pr = cat["products"]
+    check("e. the catalogue: the built tracker + 4 more products, each with price, effort, platforms and a source",
+          len(pr) == 5 and pr[0]["status"] == "built" and sum(p["status"] == "planned" for p in pr) == 4
+          and all(p["price_usd"] > 0 and p["platforms"] and "effort_h" in p and (p.get("source") or p.get("files")) for p in pr))
+    tmp = tempfile.mkdtemp(prefix="mm_zip_")
+    try:
+        old = B.OUT
+        B.OUT = tmp
+        zp = B.make_zip()
+        import zipfile
+        names = zipfile.ZipFile(zp).namelist()
+        check("e. the upload zip holds the 5 buyer files and nothing else", sorted(names) == sorted(B.LISTING["files"]), names)
+    finally:
+        B.OUT = old
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+PARTS = {"a": part_a, "b": part_b, "c": part_c, "d": part_d, "e": part_e}
 
 
 def main(argv=None):
