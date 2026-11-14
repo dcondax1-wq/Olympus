@@ -262,9 +262,114 @@ def _raises(fn, text):
     return False
 
 
+# ================================================================================================ b. the site generator
+DEMO_LEADS = os.path.join(ROOT, "agency", "demo", "fort-collins", "leads.json")
+CLAIMS = re.compile(r"\blicen[cs]ed\b|\binsured\b|24/7|free estimate|since (19|20)\d\d|\bbest in\b|#1\b|award", re.I)
+HOTLINK = re.compile(r"""(?:src|srcset|poster|data)\s*=\s*["']?\s*(?:https?:)?//|<link[^>]+href=["']?(?:https?:)?//|url\(\s*["']?(?:https?:)?//|@import""", re.I)
+
+
+def lead_fixture(**over):
+    d = {"id": "n1", "slug": "joes-barber-co", "name": "Joe's <b>\"Best\"</b> Barber & Co", "category": "barber", "template": "studio", "lat": 40.58, "lon": -105.08,
+         "address": {"housenumber": "120", "street": "West Olive Street", "unit": "", "city": "Fort Collins", "state": "CO", "postcode": "80524", "city_guess": False,
+                     "line": "120 West Olive Street, Fort Collins, CO 80524", "street_line": "120 West Olive Street", "has_street": True},
+         "phone": "(970) 555-0142", "phone_e164": "+19705550142", "email": "", "website": "", "facebook": "", "instagram": "",
+         "opening_hours": "Tu-Fr 09:00-18:00; Sa 08:00-15:00", "cuisine": "", "osm_url": "https://www.openstreetmap.org/node/1", "issues": [], "reasons": []}
+    d.update(over)
+    return d
+
+
+def test_sites():
+    from agency import build_site as B
+    from agency import sitecheck as SC
+    cfg = CFG.load()
+    out = os.path.join(TMP, "sites")
+    check("b. 8 templates (5+ asked), each with its own look file, picture, palette and fonts; every trade maps to one",
+          len(B.TEMPLATE_IDS) == 8 and all(os.path.isfile(os.path.join(ROOT, "agency", "templates", d, f"{t}.{e}")) for t in B.TEMPLATE_IDS for d, e in (("themes", "css"), ("art", "svg")))
+          and set(c.template for c in C.CATEGORIES) <= set(B.TEMPLATE_IDS) and len({B.THEMES[t]["palette"]["accent"] for t in B.TEMPLATE_IDS}) == 8
+          and len({B.THEMES[t]["display"] for t in B.TEMPLATE_IDS}) >= 5)
+    css_all = " ".join(open(os.path.join(ROOT, "agency", "templates", "themes", f"{t}.css"), encoding="utf-8").read() for t in B.TEMPLATE_IDS)
+    lic = open(os.path.join(ROOT, "agency", "templates", "themes.json"), encoding="utf-8").read()
+    check("b. original art only: CSS + inline SVG, no photo files, CC0 stated", "CC0" in lic and not [f for f in os.listdir(os.path.join(ROOT, "agency", "templates", "art")) if not f.endswith(".svg")]
+          and "url(http" not in css_all)
+    built = {}
+    for t in B.TEMPLATE_IDS:
+        s = B.site_from_lead(lead_fixture(), cfg, t)
+        s["slug"] = f"joes-{t}"
+        built[t] = B.write_site(s, out)
+    oks = {t: (r["check"]["ok"], r["check"]["scores"], r["check"]["hard_fails"]) for t, r in built.items()}
+    check("b. every template builds a site that passes the self-check: valid HTML, no hotlink, viewport, contrast, labels, one h1 (all 8)",
+          all(v[0] for v in oks.values()) and all(min(v[1].values()) >= 90 for v in oks.values()), {t: v for t, v in oks.items() if not v[0] or min(v[1].values()) < 90})
+    idx = {t: open(os.path.join(r["site_dir"], "index.html"), encoding="utf-8").read() for t, r in built.items()}
+    check("b. no external hotlinks in any file (no remote img / script / stylesheet / font / css url): only links people tap (maps, tel)",
+          not any(HOTLINK.search(h) for h in idx.values()) and all("https://www.google.com/maps/search/?api=1&amp;query=" in h for h in idx.values()), [t for t, h in idx.items() if HOTLINK.search(h)])
+    h = idx["studio"]
+    check("b. the name is escaped everywhere (no markup from data): Joe&#x27;s &lt;b&gt;&quot;Best&quot;&lt;/b&gt;",
+          "<b>\"Best\"</b>" not in h and "Joe&#x27;s &lt;b&gt;&quot;Best&quot;&lt;/b&gt; Barber &amp; Co" in h)
+    check("b. a demo: the preview bar names the agency from the ONE settings file, not indexed (noindex + robots.txt), the form does not post (data-preview)",
+          'class="demo"' in h and "by YOUR AGENCY" in h and 'content="noindex, nofollow"' in h and "data-preview" in h
+          and open(os.path.join(built["studio"]["site_dir"], "robots.txt")).read() == "User-agent: *\nDisallow: /\n")
+    check("b. the contact form: Netlify Forms attributes, the hidden form-name, a honeypot, labels, a thank-you page; tel: link in E.164; Apple + Google maps",
+          'data-netlify="true"' in h and 'netlify-honeypot="company"' in h and 'name="form-name" value="contact"' in h and '<label for="f-phone">' in h
+          and 'href="tel:+19705550142"' in h and "maps.apple.com" in h and os.path.isfile(os.path.join(built["studio"]["site_dir"], "thanks.html")))
+    check("b. reviews are clearly marked samples (a 'Sample' tag on each, 'not real ones' above them)", h.count('<span class="tag">Sample</span>') == 3 and "These are sample reviews, not real ones." in h)
+    check("b. no invented claims (licensed, insured, 24/7, free estimates, since 19xx, best in town) in any template", not any(CLAIMS.search(re.sub(r"<[^>]+>", " ", x)) for x in idx.values()))
+    check("b. hours: a table grouped by day with today marked by the script; schema.org JSON-LD with the opening hours and the phone",
+          '<tr data-days="1,2,3,4"><th scope="row">Tue - Fri</th><td>9 AM - 6 PM</td></tr>' in h and '"openingHoursSpecification"' in h and '"telephone": "+19705550142"' in h)
+    sizes = {t: r["check"]["sizes"]["index.html"] for t, r in built.items()}
+    check("b. fast: every home page under 60 KB with the CSS and pictures inline, 3 small files besides the pages", max(sizes.values()) < 60_000 and all(len([n for n in r["check"]["sizes"] if not n.endswith((".html", ".txt", "_headers"))]) <= 3 for r in built.values()), sizes)
+    js = open(os.path.join(built["studio"]["site_dir"], "site.js"), encoding="utf-8").read()
+    check("b. the one script is the site's own (same folder, deferred), fetches nothing, no web address in it", 'src="site.js" defer' in h and not re.search(r"fetch\(|XMLHttpRequest|https?://", js))
+    hdr = open(os.path.join(built["studio"]["site_dir"], "_headers"), encoding="utf-8").read()
+    check("b. security headers for Netlify / Cloudflare: a strict Content-Security-Policy (scripts only from the site itself), nosniff, frame and referrer rules",
+          "script-src 'self';" in hdr and "X-Content-Type-Options: nosniff" in hdr and "frame-ancestors 'self'" in hdr)
+    import zipfile as Z
+    with Z.ZipFile(built["studio"]["zip"]) as z:
+        names = z.namelist()
+    check("b. the zip has index.html at the top (Cloudflare Pages drag and drop takes it as is; Netlify Drop takes the folder next to it)",
+          "index.html" in names and all("/" not in n for n in names) and {"site.js", "favicon.svg", "404.html", "_headers"} <= set(names), names)
+    nf = open(os.path.join(built["studio"]["site_dir"], "404.html"), encoding="utf-8").read()
+    check("b. the 404 page works at any depth (root links: /site.js, /favicon.svg, /)", 'src="/site.js"' in nf and 'href="/favicon.svg"' in nf and 'href="/"' in nf)
+    # the self-check really catches problems
+    bad_dir = os.path.join(TMP, "bad")
+    shutil.copytree(built["pro"]["site_dir"], bad_dir)
+    with open(os.path.join(bad_dir, "index.html"), "r+", encoding="utf-8") as fh:
+        t = fh.read().replace("<main id=\"main\">", "<main id=\"main\"><div><img src=\"https://stock.example.com/plumber.jpg\" alt=\"\">", 1)
+        fh.seek(0)
+        fh.write(t)
+        fh.truncate()
+    rb = SC.check_dir(bad_dir, B.THEMES["pro"]["palette"], B.CONTRAST)
+    low = dict(B.THEMES["pro"]["palette"], muted="#b9c2cc")
+    rc = SC.check_dir(built["pro"]["site_dir"], low, B.CONTRAST)
+    check("b. the self-check catches a hotlinked stock photo and a <div> left open (hard fails), and grey-on-white text below 4.5:1",
+          not rb["ok"] and any("another site" in f for f in rb["hard_fails"]) and any("not closed" in f or "never closed" in f for f in rb["hard_fails"])
+          and not rc["ok"] and any("low contrast" in f for f in rc["hard_fails"]), (rb["hard_fails"], rc["hard_fails"]))
+    # no phone, no hours, 3 pages, final mode
+    s2 = B.site_from_lead(lead_fixture(phone="", phone_e164="", opening_hours="", name="Green Leaf Lawn", category="landscaper", slug="green-leaf"), cfg)
+    r2 = B.write_site(s2, out, pages=3)
+    h2 = open(os.path.join(r2["site_dir"], "index.html"), encoding="utf-8").read()
+    check("b. no phone and no hours: 'Send a message' and 'Call us for today's hours' instead of a dead button; 3 pages link to each other",
+          r2["check"]["ok"] and "tel:+1970" not in h2 and "Send a message" in h2 and "Call us for today" in h2 and 'href="services.html#services"' in h2
+          and all(os.path.isfile(os.path.join(r2["site_dir"], f)) for f in ("services.html", "contact.html")) and s2["theme"] == "fresh", r2["check"]["hard_fails"])
+    s3 = B.site_from_lead(lead_fixture(), cfg)
+    s3["copy"]["headline"] = "Fresh fades on Olive Street"
+    sj = os.path.join(TMP, "edited-site.json")
+    json.dump(s3, open(sj, "w", encoding="utf-8"))
+    rc3 = B.main(["--site", sj, "--final", "--url", "https://joesbarber.example", "--out", out])
+    live = os.path.join(out, "joes-barber-co-live", "site")
+    h3 = open(os.path.join(live, "index.html"), encoding="utf-8").read()
+    check("b. an owner-edited site.json rebuilds as the LIVE site: the new headline, no preview bar, indexable, the form posts, canonical + sitemap",
+          rc3 == 0 and "Fresh fades on Olive Street" in h3 and 'class="demo"' not in h3 and 'content="index, follow"' in h3 and "data-preview" not in h3
+          and '<link rel="canonical" href="https://joesbarber.example/">' in h3 and os.path.isfile(os.path.join(live, "sitemap.xml")))
+    check("b. the demo address follows the settings file's pattern ({slug}-demo.netlify.app)", s3["demo_url"] == "https://joes-barber-co-demo.netlify.app")
+    real = json.load(open(DEMO_LEADS, encoding="utf-8"))["leads"]
+    check("b. the committed demo: 20 real Fort Collins leads, every one with a name, trade, score, why line and an OpenStreetMap link",
+          len(real) == 20 and all(l["name"] and l["category"] and l["why"] and l["osm_url"].startswith("https://www.openstreetmap.org/") for l in real))
+
+
 if __name__ == "__main__":
     try:
         test_leads()
+        test_sites()
     finally:
         shutil.rmtree(TMP, ignore_errors=True)
     AK.finish()

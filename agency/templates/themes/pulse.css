@@ -1,0 +1,16 @@
+/* Pulse: black and ember. High energy: slanted bands, heavy italic capitals, a heartbeat line. */
+:root{--btn-radius:6px;--mark-radius:6px;--ic-radius:6px}
+.top{background:#0b0b0d}
+.brand{text-transform:uppercase;font-style:italic;font-weight:800}
+.hero::before{content:"";position:absolute;left:-10%;right:-10%;top:58%;height:120px;background:var(--accent);opacity:.12;transform:skewY(-8deg)}
+.hero h1{text-transform:uppercase;font-style:italic;font-weight:900;letter-spacing:-.02em;font-size:clamp(2.6rem,9.5vw,5.2rem);line-height:.95}
+.hero h1 em{color:var(--accent-text);font-style:italic}
+.eyebrow{color:var(--accent-text);letter-spacing:.16em}
+.btn{text-transform:uppercase;font-style:italic;letter-spacing:.04em}
+.section h2{text-transform:uppercase;font-style:italic;font-weight:900;letter-spacing:-.01em}
+.alt{background:var(--surface);clip-path:polygon(0 28px,100% 0,100% calc(100% - 28px),0 100%)}
+.card{border:0;border-left:4px solid var(--accent);background:var(--surface)}
+.alt .card,.alt .panel,.alt .form,.alt .sample{background:var(--bg)}
+.card .ic{background:var(--accent);color:var(--accent-ink)}
+.sample{border-color:#3a3a44}
+.foot{background:#0b0b0d}
