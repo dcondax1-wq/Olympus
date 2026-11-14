@@ -6,7 +6,7 @@
 1. finds today's leads (OpenStreetMap, the polite site check)  -> <out>/leads.json, leads.csv, all_leads.csv
 2. builds a demo site for the best few (sites_per_day)          -> <out>/sites/<slug>/site/ (drop this FOLDER on app.netlify.com/drop) + <slug>.zip
 3. writes each one's pitch kit                                  -> <out>/sites/<slug>/pitch/ (pitch.html, email.txt, phone.txt)
-4. refreshes the Agency page's data                             -> tools/web_public/agency/leads.json (+ jarvis.json)
+4. refreshes the Agency page's data                             -> tools/web_public/agency/my_leads.json (gitignored; the page reads it first)
 Nothing is sent and nobody is called: the Agency page has the call list, the opener and the email; you dial and press send.
 """
 from __future__ import annotations
@@ -88,7 +88,9 @@ def main(argv=None):
         built.append(l["id"])
         rows.append((l, site, r, k))
     data = PUB.crm_data({"meta": res["meta"], "leads": leads}, cfg, built, sample=args.sample)
-    crm = PUB.write(data, args.crm_out)
+    # the owner's batch goes to my_leads.json (gitignored: a tracked file edited on the PC would block the bot's auto-update);
+    # only the committed sample city (--sample) writes the tracked leads.json and its Jarvis card
+    crm = PUB.write(data, args.crm_out, "leads.json" if args.sample else "my_leads.json", card=args.sample)
     summary = {"made": dt.datetime.now().isoformat(timespec="seconds"), "city": data["meta"]["city"], "leads": len(leads), "all": res["meta"]["coverage"]["n"],
                "coverage": res["meta"]["coverage"], "sites": [{"name": l["name"], "template": s["theme"], "folder": os.path.relpath(r["site_dir"], out), "zip": os.path.relpath(r["zip"], out),
                                                               "demo_url": s["demo_url"], "scores": r["check"]["scores"], "ok": r["check"]["ok"], "kb": round(r["check"]["bytes_total"] / 1024, 1),

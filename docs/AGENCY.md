@@ -109,6 +109,6 @@ Every line with its link is in `agency/pricing.json`.
 | Pitch kit | `agency/pitch.py`, `agency/templates/pitch/` | `python -m agency.pitch --leads FILE --id ID` |
 | Money | `agency/pricing.json` (research + funnel guesses), `agency/money.py` | `python -m agency.money` |
 | The day's batch | `agency/run.py`, `RUN_AGENCY.bat` | `python -m agency.run` |
-| Agency page | `tools/web_public/agency/` (reads its `leads.json`, falls back to `fixture.json`; notes in `localStorage['agency.crm.v1']`); data by `agency/publish.py` (`--fixture` rebuilds the DEMO) | wiring: docs/NEW_APPS_WIRING.md "Wiring AGENCY" |
+| Agency page | `tools/web_public/agency/` (reads `my_leads.json` = your batch, gitignored, then the committed sample `leads.json`, then `fixture.json` = DEMO; notes in `localStorage['agency.crm.v1']`); data by `agency/publish.py` (`--fixture` rebuilds the DEMO) | wiring: docs/NEW_APPS_WIRING.md "Wiring AGENCY" |
 | Demo batch | `agency/demo/fort-collins/` (leads, all_leads.csv, 3 sites + zips + pitch kits, run.json) | screenshots `docs/shots/agency/` |
 | Tests | `tests/test_agency.py` (lead scoring, every template's HTML, no hotlinks, the self-check, pitch text, the money math, the CRM page) | `python -X utf8 -m tests.test_agency` (`--fast` = no browser) |

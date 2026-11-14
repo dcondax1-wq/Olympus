@@ -480,7 +480,7 @@ import(process.argv[2]).then((C) => {
 
 
 def test_crm_static():
-    AK.static_kit(APP, "Agency", reads=("./leads.json",), storage=True)
+    AK.static_kit(APP, "Agency", reads=("./my_leads.json", "./leads.json"), storage=True)
     d = os.path.join(AK.WEB, APP)
     js = AK.read(os.path.join(d, "agency.js")) + AK.read(os.path.join(d, "agencycore.js"))
     check("d. the only thing kept in the browser is the owner's own notes (one key, try / catch); no sessionStorage / indexedDB / cookies",
@@ -495,6 +495,10 @@ def test_crm_static():
           html.index('id="heroNum"') < html.index('id="today"') < html.index('id="stages"') < html.index('id="list"') < html.index('id="detail"') < html.index('id="planTable"') < html.index('id="exportBtn"')
           and all(x in html for x in ('id="csvBtn"', 'id="importBtn"', 'id="ioText"', 'id="copyOpener"', 'id="copyEmail"', 'id="mailBtn"')))
     data = json.load(open(os.path.join(d, "leads.json"), encoding="utf-8"))
+    run_src = open(os.path.join(ROOT, "agency", "run.py"), encoding="utf-8").read() + open(os.path.join(ROOT, "agency", "publish.py"), encoding="utf-8").read()
+    check("d. the owner's own batch goes to my_leads.json (gitignored, read first by the page); only the committed sample writes the tracked leads.json + jarvis.json (an edited tracked file would stop the bot's auto-update)",
+          run_src.count('"leads.json" if args.sample else "my_leads.json", card=args.sample') == 2 and "tools/web_public/agency/my_leads.json" in open(os.path.join(ROOT, ".gitignore"), encoding="utf-8").read()
+          and AK.read(os.path.join(d, "agency.js")).index("getJSON('./my_leads.json')") < AK.read(os.path.join(d, "agency.js")).index("getJSON('./leads.json')"))
     fx = json.load(open(os.path.join(d, "fixture.json"), encoding="utf-8"))
     check("d. the published data: the 20 Fort Collins leads (marked sample city), 3 demo sites built, the attribution, no owner data (placeholders only), every opener under 80 words",
           len(data["leads"]) == 20 and data["sample"] is True and sum(l["demo_built"] for l in data["leads"]) == 3 and "OpenStreetMap" in data["attribution"]

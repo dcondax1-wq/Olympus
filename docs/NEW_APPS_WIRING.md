@@ -684,13 +684,13 @@ No new app. Wiring the lead does:
 # Wiring AGENCY, the website machine's CRM (team B1, 2026-11-14)
 
 App `agency` in `tools/web_public/agency/` (index.html, agency.css, agency.js, agencycore.js, leads.json, fixture.json, jarvis.json, manifest, icon.svg). It reads only
-its own `./leads.json` (written by `python -m agency.run` / `agency/publish.py`; today the Fort Collins, CO demo batch, marked "sample city") and falls back to
+its own `./my_leads.json` (the owner's batch, written on his PC by `RUN_AGENCY.bat`, gitignored) or the committed `./leads.json` (the Fort Collins, CO demo batch, marked "sample city") and falls back to
 `fixture.json` (DEMO, invented businesses). The owner's stages / notes / prices stay in `localStorage['agency.crm.v1']`. Test `python -X utf8 -m tests.test_agency`
 (`--fast` = no browser). The machine itself is `agency/` (docs/AGENCY.md). Not touched: `sw.js`, `build_web_dashboard.py`, `jarvis/apps.js`, the `olympus.js` APPS table,
 `intro-app.js`, `transitions.js`, `olympus/gate-catalog.js`. The entry is in `tools/new_apps.json`, so steps 1-4 and 6 are `python tools/wire_new_apps.py --dry-run` / `--apply`.
 1. `jarvis/apps.js` BUILT_INS: `app('agency', 'Agency', 'money', '#d08c4a', 'Website agency: leads, demo sites, calls and the $ pipeline', { glyph: 'Ε' }),`
 2. `olympus/olympus.js` APPS: `agency: ['Agency', 'Ε', '#d08c4a'],` AMBIENT: `agency: 'agora',`
-3. `tools/build_web_dashboard.py` app tuple: add `"agency"` (the folder is copied whole: leads.json and jarvis.json go with it).
+3. `tools/build_web_dashboard.py` app tuple: add `"agency"` (the folder is copied whole: on the PC build the owner's my_leads.json goes with it).
 4. `tools/web_public/sw.js` OTHER_APPS: add `'agency/'`, bump `CACHE`; update the pinned strings in `tests/test_zenith_mode.py`, `test_jarvis_hub.py`, `test_zenith_shell.py`, `test_phone_e2e.py`.
 5. `python tools/apps_list_build.py` then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js`.
 6. `olympus/intro-app.js` FLAVOUR: `agency: ['columns', 'Open the shop', 'tap'],` `jarvis/transitions.js` REGISTRY: `agency: { kind: 'tiles', ms: 800 },`

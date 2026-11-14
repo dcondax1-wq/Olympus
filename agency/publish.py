@@ -128,7 +128,8 @@ def main(argv=None):
         ap.error("give --leads FILE (or --fixture)")
     with open(args.leads, encoding="utf-8") as fh:
         doc = json.load(fh)
-    p = write(crm_data(doc, CFG.load(), args.built, sample=args.sample), args.out)
+    # the owner's own data is my_leads.json (gitignored, read first by the page); only --sample writes the tracked leads.json + card
+    p = write(crm_data(doc, CFG.load(), args.built, sample=args.sample), args.out, "leads.json" if args.sample else "my_leads.json", card=args.sample)
     print(f"Agency page data: {p}")
     return 0
 
