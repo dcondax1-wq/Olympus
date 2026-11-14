@@ -392,6 +392,13 @@ def test_sites():
           rc3 == 0 and "Fresh fades on Olive Street" in h3 and 'class="demo"' not in h3 and 'content="index, follow"' in h3 and "data-preview" not in h3
           and '<link rel="canonical" href="https://joesbarber.example/">' in h3 and os.path.isfile(os.path.join(live, "sitemap.xml")))
     check("b. the demo address follows the settings file's pattern ({slug}-demo.netlify.app)", s3["demo_url"] == "https://joes-barber-co-demo.netlify.app")
+    heroes = {}
+    for cat, theme in (("roofer", "pro"), ("auto_repair", "garage"), ("barber", "studio")):
+        sx = B.site_from_lead(lead_fixture(category=cat, slug=f"hero-{cat}", name=f"Hero {cat}"), cfg)
+        hx = B.render(sx)["index.html"]
+        heroes[cat] = (sx["theme"], hx.split('<section class="hero"')[1].split("</section>")[0].count("(970) 555-0142"))
+    check("b. the business's number shows once in the hero, not three times (pro: the big number; garage: the call button; studio: the facts line)",
+          heroes == {"roofer": ("pro", 1), "auto_repair": ("garage", 1), "barber": ("studio", 1)}, heroes)
     real = json.load(open(DEMO_LEADS, encoding="utf-8"))["leads"]
     check("b. the committed demo: 20 real Fort Collins leads, every one with a name, trade, score, why line and an OpenStreetMap link",
           len(real) == 20 and all(l["name"] and l["category"] and l["why"] and l["osm_url"].startswith("https://www.openstreetmap.org/") for l in real))

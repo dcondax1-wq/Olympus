@@ -220,9 +220,10 @@ def page_parts(site: dict, mode: str, pages: int, page: str = "index"):
                    else f'<a class="btn primary small call" href="{href("contact", "contact")}">{icon("chat")}<span class="lbl">Message</span></a>')
     to_form = href("contact", "contact")
     directions = f'<a class="btn ghost" href="{esc(google)}" rel="noopener">{icon("directions")}Directions</a>'
+    big = bool(tel) and site["theme"] == "pro"         # the trades look shows the number once, big
     if c["cta_kind"] == "quote":                       # trades: the form is the main ask, the phone right next to it
         primary = f'<a class="btn primary" href="{to_form}">{icon("calendar")}Ask for a quote</a>'
-        second = f'<a class="btn ghost" href="{tel}">{icon("phone")}Call {esc(b["phone"])}</a>' if tel else directions
+        second = f'<a class="btn ghost" href="{tel}">{icon("phone")}Call {esc(b["phone"])}</a>' if tel and not big else directions
     elif tel:                                          # call / book / order: one tap to call
         primary = f'<a class="btn primary" href="{tel}">{icon("phone")}{esc(c["cta"])}</a>'
         second = directions
@@ -234,10 +235,10 @@ def page_parts(site: dict, mode: str, pages: int, page: str = "index"):
         facts.append(f'<li><span data-open class="state">See today\'s hours</span></li>')
     if b.get("street_line"):
         facts.append(f'<li>{icon("pin")}{esc(b["street_line"])}</li>')
-    if b.get("phone"):
+    if tel and not big and c["cta_kind"] != "quote":   # the number is shown once in the hero, never three times
         facts.append(f'<li>{icon("phone")}<a class="factlink" href="{tel}">{esc(b["phone"])}</a></li>')
     art = _read("art", site["theme"] + ".svg").strip().replace("<svg ", f'<svg role="img" aria-label="{esc(b["trade_label"])} illustration" ', 1)
-    bigphone = (f'<a class="bigphone" href="{tel}"><small>Call us</small>{esc(b["phone"])}</a>' if tel and site["theme"] == "pro" else "")
+    bigphone = f'<a class="bigphone" href="{tel}"><small>Call us</small>{esc(b["phone"])}</a>' if big else ""
     headline = esc(c["headline"])
     hero = f"""<section class="hero" aria-labelledby="h-title"><div class="wrap">
 <div class="copy"><p class="eyebrow">{esc(c['kicker'])}</p><h1 id="h-title">{headline}</h1><p class="lead">{esc(c['sub'])}</p>
