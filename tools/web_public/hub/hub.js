@@ -268,6 +268,7 @@
       $('tabs').hidden = true;
       drawSee(H);
       var MP = w.OLYMPUS_ME_PAGE, panel = $('panel');
+      panel.removeAttribute('role');   // no tabs here, so the panel is not a tab panel
       if (!MP || !MP.mount) { clear(panel); panel.appendChild(el('p', 'hb-blurb', 'This hub did not load. Open it again in a moment.')); panel.hidden = false; S.done = true; return; }
       MP.mount(panel, { base: base, now: nowS, hub: H, done: function () { S.done = true; } });
       return;
