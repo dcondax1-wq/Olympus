@@ -330,6 +330,8 @@ function ask(text) {
   reply(answer(text));
 }
 function leadForm(need) {
+  var old = logEl.querySelector(".fm");
+  if (old) old.remove();                                           // one form at a time, at the bottom
   add("<form class=fm aria-label='Leave your details' novalidate><b>We'll call or text you back</b><label>Your name<input name=name autocomplete=name></label><label>Phone number<input name=phone type=tel autocomplete=tel></label>" +
     "<label>What do you need?<textarea name=need></textarea></label><input class=hp name=bot-field tabindex=-1 aria-hidden=true><p class=er role=alert></p><button class=bt>Send</button><small>Only " + esc(C.n) +
     " gets your name, number and this chat, to reply to you.</small></form>");
