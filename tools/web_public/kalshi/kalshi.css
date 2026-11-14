@@ -6,7 +6,7 @@
      The old variable names stay (the page and the scripts read them) but they now hold the AGORA colours. */
   --bg: var(--oly-th-n3, #14110e); --bg2: var(--oly-th-n4, #1d1914); --pr: var(--oly-th-n4-rgb, 29,25,20); --txt: var(--oly-th-n37, #f3ece0); --mut: var(--oly-th-n23, #a39883); --dim: var(--oly-th-n5, #26211b); --dim2: var(--oly-th-n8, #3a3228); --dim3: var(--oly-th-n12, #5a4d3a);
   --c: var(--oly-th-a8, #c8a24a); --c2: var(--oly-th-a5, #9c6b3c); --c3: var(--oly-th-a11, #e0c27a); --cr: var(--oly-th-a8-rgb, 200,162,74); --cr2: var(--oly-th-a5-rgb, 156,107,60); --tint: var(--oly-th-a14, #f3e3b8);
-  --cy: #4b7a99; --cy-rgb: 75,122,153;
+  --cy: var(--oly-th-info, #4b7a99); --cy-rgb: var(--oly-th-info-rgb, 75,122,153);
   --ok: var(--oly-th-g7, #9aa664); --bad: var(--oly-th-r9, #d97a58); --warn: var(--oly-th-warn, #e0b060); --ok-rgb: var(--oly-th-g6-rgb, 127,138,82); --bad-rgb: var(--oly-th-r8-rgb, 201,106,74); --warn-rgb: var(--oly-th-warn-rgb, 224,176,96);
   --glow: radial-gradient(120% 70% at 50% -10%, var(--oly-th-n5, #2a2118) 0%, var(--oly-th-n3, #14110e) 62%), var(--oly-th-n3, #14110e);
   --fh: "SF Pro Rounded", -apple-system, system-ui, sans-serif;   /* numbers and small labels; headings use --fs */
@@ -53,7 +53,7 @@ html.framed main { padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px)
   .refresh svg { width: 18px; height: 18px; }
 }
 .aurora { position: fixed; left: -20%; right: -20%; top: -30vh; height: 70vh; pointer-events: none; z-index: 0; opacity: .55;
-  background: radial-gradient(ellipse at 30% 50%, rgba(var(--oly-th-g6-rgb, 127,138,82),.22), transparent 60%), radial-gradient(ellipse at 70% 40%, rgba(75,122,153,.16), transparent 55%);
+  background: radial-gradient(ellipse at 30% 50%, rgba(var(--oly-th-g6-rgb, 127,138,82),.22), transparent 60%), radial-gradient(ellipse at 70% 40%, rgba(var(--oly-th-info-rgb, 75,122,153),.16), transparent 55%);
   -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent); }
 /* ---- the ticker tape: open bets and the latest results under the header */
 .tape { position: relative; overflow: hidden; height: 30px; margin-top: 2px; border-top: 1px solid rgba(var(--cr), .22); border-bottom: 1px solid rgba(var(--cr), .22);

@@ -307,7 +307,7 @@
 .zn-lit{transition:transform .18s var(--zn-out);will-change:transform}
 .zn-ticking{font-variant-numeric:tabular-nums}
 .zn-rib{position:relative;height:96px;border-radius:var(--zn-r);overflow:hidden;isolation:isolate;
-  background:linear-gradient(180deg,rgba(var(--zn-accent-rgb),.10),rgba(8,10,20,.0) 70%),radial-gradient(120% 90% at 85% 0%,rgba(46,229,157,.10),transparent 60%)}
+  background:linear-gradient(180deg,rgba(var(--zn-accent-rgb),.10),rgba(var(--oly-th-n2-rgb, 8,10,20),.0) 70%),radial-gradient(120% 90% at 85% 0%,rgba(var(--oly-th-g8-rgb, 46,229,157),.10),transparent 60%)}
 .zn-rib-cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
 :root.zn-still .zn-lit{transition:none}
 @media (prefers-reduced-motion: reduce){.zn-glint{transition:none}.zn-lit{transition:none}}

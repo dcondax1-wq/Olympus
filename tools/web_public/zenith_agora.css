@@ -606,7 +606,7 @@ html .oly-l .oly-g, html .oly-l .oly-chip i { animation: none !important; filter
 @media (prefers-reduced-motion: reduce) { :root :is(.mn-row, .su-acct, .zh-bot, .iconbtn, .pl-now a, .tabs a, .tabs button) { transition: none; } :root :is(.mn-row, .su-acct, .pl-now a, .iconbtn, .tabs a, .tabs button):active { scale: 1; } }
 /* the three bots keep one identity colour each, on the AGORA palette (the shared scripts paint electric blue / orange / violet inline):
    Zlarior aegean, ATLAS sun gold, BLITZ (paper) stone */
-:root:not([data-theme="light"]) :is([data-bot="lit"], [data-mn="lit"], [data-zh="lit"]) { --c: #7fa7c2 !important; }
+:root:not([data-theme="light"]) :is([data-bot="lit"], [data-mn="lit"], [data-zh="lit"]) { --c: var(--oly-th-infot, #7fa7c2) !important; }
 :root:not([data-theme="light"]) :is([data-bot="atlas"], [data-mn="atlas"], [data-zh="atlas"]) { --c: var(--oly-th-warn, #e0b060) !important; }
 :root:not([data-theme="light"]) :is([data-bot="blitz"], [data-mn="blitz"], [data-zh="blitz"]) { --c: var(--oly-th-n25, #b5a68e) !important; }
 :root:not([data-theme="light"]) .su-acct.trading::before { box-shadow: inset 0 0 0 1.5px var(--c) !important; }

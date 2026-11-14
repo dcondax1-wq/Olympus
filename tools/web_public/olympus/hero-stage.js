@@ -33,6 +33,20 @@ export const PALETTES = Object.freeze({
 
 const isLiteTier = (t) => t === 'low' || t === 'off';
 const C = (h) => new THREE.Color(h);
+/** the OLYMPUS look's tokens on this page (null on the default AGORA: the kit's theme() says so) */
+function lookNow() { try { const O = window.OLYMPUS; return O && typeof O.theme === 'function' ? O.theme() : null; } catch (e) { return null; } }
+/** a sky leaned toward a look (2026-11-14, team T2): the sky and the far colours toward its sky / fog, the light toward its bloom, the rim toward
+ *  its accent, each by the look's 'mix' (0: the palette itself, so the default and a look without a tint change nothing) */
+export function lean(pal, t) {
+  if (!pal || !t || !(t.mix > 0)) return pal;
+  const TH = window.OLYMPUS_THEMES, m = (c, to, k) => (c && to ? (TH && TH.mix ? TH.mix(c, to, k) : '#' + C(c).lerp(C(to), k).getHexString()) : c), k = Math.min(1, t.mix);
+  const q = Object.assign({}, pal);
+  for (const n of ['top', 'mid']) q[n] = m(q[n], t.sky, k);
+  for (const n of ['horizon', 'hills', 'hills2', 'fog', 'hemiBot', 'sea']) q[n] = m(q[n], t.fog, k * 0.85);
+  for (const n of ['glow', 'key', 'hemiTop']) q[n] = m(q[n], t.bloom, k * 0.5);
+  q.rim = m(q.rim, t.emissive, k * 0.5);
+  return q;
+}
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function webgl() { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } }
 export function prefersReduced() { try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } }
@@ -197,7 +211,10 @@ export function flameMesh(o) {
 export function dress(opts) {
   const o = opts || {}, scene = o.scene, renderer = o.renderer || (o.rc && o.rc.renderer);
   const tier = o.tier || (o.rc && o.rc.quality ? o.rc.quality() : tierNow()), lite = isLiteTier(tier);
-  let P = typeof o.palette === 'object' && o.palette ? o.palette : PALETTES[o.palette] || PALETTES.dusk;
+  // the app's own sky; the OLYMPUS look (olympus/themes.js, 2026-11-14 team T2) leans it toward the look's sky, fog and light by the look's 'mix'
+  // (the default AGORA: mix 0, the sky untouched), at start and on every change of look
+  let appSky = typeof o.palette === 'object' && o.palette ? o.palette : PALETTES[o.palette] || PALETTES.dusk;
+  let P = lean(appSky, lookNow());
   let D = null;
   const kit = envKit(Object.assign({ scene, tier, envI: o.envI ?? 0.75 }, o.rc ? { rc: o.rc } : { renderer }));
   const soft = kit.soft, own = [];
@@ -225,13 +242,22 @@ export function dress(opts) {
   };
   scene.fog = new THREE.Fog(C(P.fog), o.fogNear ?? 14, o.fogFar ?? 34);
   /** another sky (a palette name or object): repaints the backdrop, the fog and the light colours (the HDRI stays) */
-  const setSky = (name, so) => {
-    const NP = typeof name === 'object' && name ? name : PALETTES[name]; if (!NP || NP === P) return;
+  const paintPal = (NP, so) => {
+    if (!NP || NP === P) return;
     P = NP; if (so) o.sky = Object.assign({}, o.sky || {}, so);
     scene.fog.color.set(P.fog); hemi.color.set(P.hemiTop); hemi.groundColor.set(P.hemiBot); key.color.set(P.key); rim.color.set(P.rim);
     if (bgTex) { bgTex.dispose(); bgTex = null; const w = bgW, h = bgH; bgW = bgH = 0; backdrop(w, h); }
     if (D) D.P = P;
   };
+  const setSky = (name, so) => {
+    const NP = typeof name === 'object' && name ? name : PALETTES[name]; if (!NP || NP === appSky) return;
+    appSky = NP; paintPal(lean(appSky, lookNow()), so);
+  };
+  try {                                                // a new look (the Gate, Jarvis, another tab): the same sky, leaned toward it
+    const O = window.OLYMPUS;
+    if (O && typeof O.onTheme === 'function') O.onTheme((t) => paintPal(lean(appSky, t)));
+    window.addEventListener('olympus:theme-default', () => paintPal(appSky));
+  } catch (e) { /* no kit: the app's own sky */ }
   // ---- the HDRI
   const envReady = kit.env(lite ? 'gradient' : o.hdri || 'golden', { sunDir, top: P.top, horizon: P.horizon, ground: P.hemiBot, gain: lite ? 1.1 : o.gain || 1, tint: o.envTint || P.envTint || '#ffd9a8' });
   const B = kit.builder();

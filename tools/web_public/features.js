@@ -530,7 +530,7 @@
 .ft-i{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
 .ft-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.ft-t b{font-size:15px;font-weight:650;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.ft-t em{font-style:normal;font-size:12.5px;color:var(--ink-2);line-height:1.4}
 .ft-go{flex:none;color:var(--muted);width:16px;height:16px}
-.ft-new{font:750 9.5px var(--sans);font-style:normal;letter-spacing:.06em;padding:2px 6px;border-radius:6px;background:var(--good);color:#06100b}
+.ft-new{font:750 9.5px var(--sans);font-style:normal;letter-spacing:.06em;padding:2px 6px;border-radius:6px;background:var(--good);color:var(--oly-th-n2, #06100b)}
 .ft-tab{font:600 10px var(--sans);font-style:normal;padding:2px 6px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
 .ft-wn{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;padding:14px;margin:0 0 18px;border-radius:var(--r);cursor:pointer;border:1px solid color-mix(in srgb,var(--good) 40%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--good) 12%,var(--surface)),var(--surface))}
 .ft-wn .ft-i{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}

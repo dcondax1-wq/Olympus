@@ -12,7 +12,7 @@ html[data-oly-text="big"] :where(.oly-chip) { min-height: 36px; }
 /* ---------------------------------------------------------------- focus: a ring that shows on dark glass AND on light marble, for the keyboard / VoiceOver only
    (!important: several apps set outline: none on their buttons; an element that must not have it says data-oly-skip) */
 html body :where(a, button, input, select, textarea, summary, [tabindex], [role="button"], [role="tab"], [role="link"], [role="switch"], [role="checkbox"]):focus-visible:not([data-oly-skip]):not([data-oly-skip] *) {
-  outline: 3px solid var(--oly-accent, #9c6b3c) !important; outline-offset: 2px !important;
+  outline: 3px solid var(--oly-th-ring, var(--oly-accent, #9c6b3c)) !important; outline-offset: 2px !important;
   box-shadow: 0 0 0 5px var(--oly-bg, #04050c) !important; border-radius: max(var(--oly-focus-r, 0px), 4px); }
 :where(a, button, [role="button"], summary):focus:not(:focus-visible) { outline-width: 0; }
 

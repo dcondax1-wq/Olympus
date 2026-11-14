@@ -547,13 +547,13 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
     VIEWS.today = w;
   }
   const hs = document.createElement('style');
-  hs.textContent = `.lv-home{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;margin:0 0 12px;border-radius:18px;cursor:pointer;color:#e8eefc;
-    border:1px solid rgba(139,92,246,.45);background:radial-gradient(420px 160px at 0% 0%,rgba(56,189,248,.28),transparent 70%),radial-gradient(420px 160px at 100% 100%,rgba(139,92,246,.30),transparent 70%),linear-gradient(135deg,#0b1430,#050816);
+  hs.textContent = `.lv-home{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;margin:0 0 12px;border-radius:18px;cursor:pointer;color:var(--oly-th-n38, #e8eefc);
+    border:1px solid rgba(139,92,246,.45);background:radial-gradient(420px 160px at 0% 0%,rgba(56,189,248,.28),transparent 70%),radial-gradient(420px 160px at 100% 100%,rgba(139,92,246,.30),transparent 70%),linear-gradient(135deg,var(--oly-th-n5, #0b1430),var(--oly-th-n2, #050816));
     box-shadow:0 14px 34px -14px rgba(139,92,246,.75),inset 0 1px 0 rgba(255,255,255,.08);font:inherit}
   .lv-home-i{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#0ea5e9,#8b5cf6);box-shadow:0 0 18px -4px #8b5cf6;flex:none}
   .lv-home-i svg{width:24px;height:24px;stroke:#fff}
   .lv-home-t{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}.lv-home-t b{font-size:16px;background:linear-gradient(90deg,#7dd3fc,#a78bfa 60%,#f0abfc);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .lv-home-t em{font-style:normal;font-size:12.5px;color:#b8c4dc}.lv-home-go{font-weight:700;font-size:13px;color:#7dd3fc;white-space:nowrap}`;
+  .lv-home-t em{font-style:normal;font-size:12.5px;color:var(--oly-th-n32, #b8c4dc)}.lv-home-go{font-weight:700;font-size:13px;color:#7dd3fc;white-space:nowrap}`;
   document.head.appendChild(hs);
 
   if (typeof nav === 'function') { nav(); if (typeof route === 'function' && /^#\/(liveview|live_view|lv|fullscreen|bigchart)\b/.test(location.hash)) route(); }

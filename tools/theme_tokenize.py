@@ -8,7 +8,8 @@ Every colour literal in a declaration value becomes var(--oly-th-<slot>, <the li
 (rgb / rgba), AGORA's heading serif stack ('Iowan Old Style', ... serif) becomes var(--oly-th-display, <the stack>), and a custom property that is a bare 'r, g, b' triplet becomes var(--oly-th-<slot>-rgb, r, g, b). No stylesheet defines --oly-th-*: only olympus/themes.js paints them, and only for a theme that is not the default, so on
 the default (AGORA) every value computes exactly as before (the literal is the fallback). The slot = the family + the HSL lightness on
 themes.js's GRID: n = warm neutrals (chroma <= 40: pages, panels, lines, text), a = golds / bronzes (hue 20-62), g = greens (62-170, the
-gains), r = reds / terracottas (< 20 or >= 335, the losses), warn = AGORA's sun. Pure black / white, blues and violets (an app's own
+gains), r = reds / terracottas (< 20 or >= 335, the losses), warn = AGORA's sun, info / infot = AGORA's aegean blue #4b7a99 / #7fa7c2
+(2026-11-14). Pure black / white, other blues and violets (an app's own
 identity colours) and 4 / 8 digit hex are left as they are. Never touched: selectors, comments, strings, url(...), a value already
 inside var(--oly-th-...), and every rule scoped to a light look of its own ([data-theme="light"], [data-oly-scheme="light"],
 prefers-color-scheme: light; a :not(...) of them is the dark look and is read). In an .html file only the <style> blocks are read; in a
@@ -24,6 +25,8 @@ import sys
 
 GRID = {"n": (0, 100, 2.5), "a": (15, 90, 5), "g": (15, 90, 5), "r": (15, 90, 5)}      # = olympus/themes.js GRID (the test checks it)
 WARN = {(224, 176, 96), (220, 174, 106)}                                               # AGORA's sun (--ag-sun, Zenith's --warn)
+# AGORA's aegean blue (2026-11-14, team T2): the information colour, a fill and a text ink; every look paints them readable on its own page
+INFO = {(75, 122, 153): "info", (127, 167, 194): "infot"}
 LIGHT = re.compile(r"data-theme\s*=\s*[\"']?light|data-oly-scheme\s*=\s*[\"']?light|prefers-color-scheme\s*:\s*light", re.I)
 NOT = re.compile(r":not\((?:[^()]|\([^()]*\))*\)")
 
@@ -51,12 +54,14 @@ def lightness(r, g, b):
     return (max(r, g, b) + min(r, g, b)) / 5.1
 
 
-def slot(r, g, b, families="nagrw"):
+def slot(r, g, b, families="nagrwi"):
     """the theme slot of one colour, or None (left as it is)"""
     if (r, g, b) in ((0, 0, 0), (255, 255, 255)):
         return None
     if (r, g, b) in WARN:
         return "warn" if "w" in families else None
+    if (r, g, b) in INFO:
+        return INFO[(r, g, b)] if "i" in families else None
     c = max(r, g, b) - min(r, g, b)
     if c <= 40:
         f = "n"
@@ -126,7 +131,7 @@ def _colours(s, families, counts):
     return RGB.sub(rg, HEX.sub(hx, s))
 
 
-def tokenize_css(css, families="nagrw"):
+def tokenize_css(css, families="nagrwi"):
     """(new css, number of literals rewritten)"""
     out, i, n = [], 0, len(css)
     stack = []                    # one entry per open block: (kind 'rules' | 'decl', skip)
@@ -208,7 +213,7 @@ def tokenize_css(css, families="nagrw"):
     return "".join(res), counts[0]
 
 
-def tokenize_file(path, families="nagrw"):
+def tokenize_file(path, families="nagrwi"):
     src = open(path, encoding="utf-8").read()
     if path.endswith((".html", ".htm")):
         total = [0]
@@ -229,7 +234,7 @@ JS_DECL = re.compile(r"(?<![\w$.])((?:color|background(?:-color|-image)?|border(
                      r"text-shadow|caret-color|text-decoration-color|font(?:-family)?|--[\w-]+)\s*:\s*)([^;{}'\"`\n]+)")
 
 
-def tokenize_js(src, families="nagrw"):
+def tokenize_js(src, families="nagrwi"):
     """(new source, count): the CSS a script writes into a <style> (or cssText): only the values of colour properties inside its strings
     ('.x{background:#1d1914;color:var(--ag-text,#f3ece0)}'); a colour that is a string of its own (a canvas fillStyle, a three.js colour) is
     never touched. Lines that scope a light look of their own are skipped. Review the diff: it is a text rewrite, not a JS parser."""
@@ -249,7 +254,8 @@ def tokenize_js(src, families="nagrw"):
 
 UN_HEX = re.compile(r"var\(--oly-th-[\w-]+, (#[0-9a-fA-F]{3,6})\)")
 UN_TRI = re.compile(r"var\(--oly-th-[\w-]+-rgb, ([^()]*)\)")
-UN_FEEL = re.compile(r"var\(--oly-th-(?:display|num|body|radius|radius-s|radius-l), ((?:[^()]|\([^()]*\))*)\)")
+# the feel (fonts, radius) and the T2 slots written by hand (2026-11-14: the focus ring, the shadows): a fallback with up to two levels of parentheses
+UN_FEEL = re.compile(r"var\(--oly-th-(?:display|num|body|radius|radius-s|radius-l|ring|shadow|e1|e2|e3), ((?:[^()]|\((?:[^()]|\([^()]*\))*\))*)\)")
 
 
 def untokenize(text):
@@ -263,7 +269,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("files", nargs="+")
     ap.add_argument("--apply", action="store_true")
-    ap.add_argument("--families", default="nagrw", help="any of n a g r w (w = warn); default all")
+    ap.add_argument("--families", default="nagrwi", help="any of n a g r w i (w = warn, i = AGORA's aegean info blue); default all")
     a = ap.parse_args(argv)
     fam = a.families.replace("warn", "w")
     for f in a.files:

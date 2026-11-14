@@ -57,8 +57,8 @@
   // the style and the tap bubble
   var st = d.createElement('style');
   st.textContent = 'abbr.oly-gl{text-decoration:underline dotted;-webkit-text-decoration:underline dotted;text-underline-offset:2px;cursor:help}' +
-    '.oly-gl-tip{position:fixed;z-index:2147483000;max-width:min(300px,calc(100vw - 24px));padding:10px 12px;border-radius:12px;font:500 13px/1.35 -apple-system,system-ui,sans-serif;color:#eef1f8;' +
-    'background:rgba(12,14,26,.96);border:1px solid rgba(156,107,60,.55);box-shadow:0 10px 30px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);pointer-events:none}';
+    '.oly-gl-tip{position:fixed;z-index:2147483000;max-width:min(300px,calc(100vw - 24px));padding:10px 12px;border-radius:12px;font:500 13px/1.35 -apple-system,system-ui,sans-serif;color:var(--oly-th-n38, #eef1f8);' +
+    'background:rgba(var(--oly-th-n3-rgb, 12,14,26),.96);border:1px solid rgba(var(--oly-th-a5-rgb, 156,107,60),.55);box-shadow:0 10px 30px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);pointer-events:none}';
   (d.head || d.documentElement).appendChild(st);
   var tip = null, tipT = 0;
   function hide() { if (tip && tip.parentNode) tip.parentNode.removeChild(tip); tip = null; clearTimeout(tipT); }

@@ -333,7 +333,62 @@
       for (j = 0; j < P.length; j++) { k = P[j][0]; if (!out[k] && k !== 'gate' && dist[legacyOf(k)] && !ok[legacyOf(k)]) out[k] = dist[legacyOf(k)]; }
       return { district: out, app: m.app || {}, of: m.of || {} };
     }
-    function setOne(id) { T.set(id); draw(); }
+    function setOne(id) { endPreview(); T.set(id); draw(); }
+    /* PICKER v2 (2026-11-14, team T2 "lock down the looks"): the look on now in a card at the top (its swatch, name and mood; Surprise me), a search
+       by name or mood, a Favourites row (a star on the preview bar keeps a look there: 'olympus.theme.fav', this phone), the groups. A long press
+       (or a mouse hover) on a swatch shows that look on this page only (OLYMPUS_THEMES.preview), with a bar at the bottom: Use it, the star,
+       Cancel; nothing is stored until Use it. Every target is 44 px+, the bar sits at the bottom where a thumb reaches, one hand at 375 px. */
+    var LS_FAV = 'olympus.theme.fav', prev = { id: null, pinned: false, surprise: false }, query = '';
+    function favs() { var f = lsGet(LS_FAV); return f instanceof Array ? f.filter(function (x) { return typeof x === 'string' && T.get(x).id === x; }) : []; }
+    function toggleFav(id) { var f = favs(), i = f.indexOf(id); if (i >= 0) f.splice(i, 1); else f.unshift(id); lsSet(LS_FAV, f.slice(0, 12)); }
+    function preview(id, pinned, surprise) {
+      if (!T.preview) return;
+      prev.id = id; prev.pinned = !!pinned; prev.surprise = !!surprise;
+      T.preview(id);
+      if (pinned) bar(); else hideBar();
+    }
+    function endPreview() { if (prev.id && T.preview) T.preview(null); prev.id = null; prev.pinned = false; prev.surprise = false; hideBar(); }
+    function hideBar() { var b = $('lookBar'); if (b) b.hidden = true; }
+    function bar() {
+      var b = $('lookBar'), t = T.get(prev.id), isFav = favs().indexOf(prev.id) >= 0;
+      if (!b) { b = el('div', 'g-lkbar'); b.id = 'lookBar'; b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Look preview'); d.body.appendChild(b); }
+      clear(b);
+      var txt = el('p', 'g-lkbar-t'); txt.setAttribute('aria-live', 'polite');
+      txt.appendChild(el('b', '', (prev.surprise ? 'Surprise: ' : 'Preview: ') + t.name)); txt.appendChild(el('small', '', (t.tag || '').split(' · ')[0] + '. Only this page, until you use it.'));
+      var row = el('div', 'g-lkbar-b');
+      var use = el('button', 'g-btn primary', 'Use it'); use.type = 'button'; use.id = 'lookUse';
+      use.addEventListener('click', function () { setOne(t.id); });
+      var star = el('button', 'g-btn g-lkstar', isFav ? '★ Saved' : '☆ Favourite'); star.type = 'button'; star.setAttribute('aria-pressed', String(isFav));
+      star.addEventListener('click', function () { toggleFav(t.id); bar(); drawOne(); });
+      row.appendChild(use); row.appendChild(star);
+      if (prev.surprise) { var again = el('button', 'g-btn', 'Another'); again.type = 'button'; again.addEventListener('click', surprise); row.appendChild(again); }
+      var no = el('button', 'g-btn', 'Cancel'); no.type = 'button'; no.addEventListener('click', function () { endPreview(); drawOne(); });
+      row.appendChild(no);
+      b.appendChild(txt); b.appendChild(row); b.hidden = false;
+    }
+    function surprise() {
+      var all = T.plain(), cur = T.global(), pool = all.filter(function (x) { return x.id !== cur && x.id !== prev.id; });
+      if (!pool.length) return;
+      preview(pool[Math.floor(Math.random() * pool.length)].id, true, true);
+    }
+    function nowCard() {
+      var mixed = !!T.getMix(), t = T.get(mixed ? T.id() : T.global()), box = el('div', 'g-lknow');
+      box.id = 'lookNow';
+      var sw = swatch(T, t); sw.className += ' g-lknow-sw';
+      var tx = el('p', 'g-lknow-t');
+      tx.appendChild(el('small', '', mixed ? 'On now: a mix (this page wears)' : 'On now'));
+      tx.appendChild(el('b', '', t.name)); tx.appendChild(el('span', '', t.tag || ''));
+      var sb = el('button', 'g-btn g-surprise', 'Surprise me'); sb.type = 'button'; sb.id = 'lookSurprise';
+      sb.setAttribute('aria-label', 'Surprise me: preview a look picked at random');
+      sb.addEventListener('click', surprise);
+      box.appendChild(sw); box.appendChild(tx); box.appendChild(sb);
+      return box;
+    }
+    function matches(t) {
+      if (!query) return true;
+      var q = query.toLowerCase(), hay = (t.name + ' ' + (t.tag || '') + ' ' + (t.group || '') + ' ' + t.id).toLowerCase();
+      return q.split(/\s+/).every(function (w2) { return hay.indexOf(w2) >= 0; });
+    }
     function setPart(part, id) {
       var m = current(), o = { district: m.district || {}, app: m.app || {}, of: ofMap() };
       if (part === 'gate') { if (id) o.app.gate = id; else delete o.app.gate; } else if (id) o.district[part] = id; else delete o.district[part];
@@ -341,21 +396,67 @@
     }
     function useCombo(c) { var m = current(); T.setMix({ district: comboOf(c), app: m.app || {}, of: ofMap() }); draw(); }
     function drawOne() {
-      var cur = T.getMix() ? '' : T.global(), gs = ordered();
-      clear(host);
-      for (var g = 0; g < gs.length; g++) {
-        var head = el('p', 'g-lookg', gs[g].name), strip = el('div', 'g-swrow');
-        host.appendChild(head); host.appendChild(strip);
-        for (var i = 0; i < gs[g].themes.length; i++) drawSw(gs[g].themes[i], strip, cur);
+      var cur = T.getMix() ? '' : T.global(), gs = ordered(), fv = favs(), shown = 0;
+      // the top part (the look on now, the search) is drawn once and kept, so typing in the search never loses its focus
+      var top = $('lookTop');
+      if (!top) {
+        top = el('div', 'g-lktop'); top.id = 'lookTop';
+        host.parentNode.insertBefore(top, host);
+        var sr = el('div', 'g-search g-lksearch'), q = el('input');
+        sr.appendChild(searchIcon());
+        q.id = 'lookQ'; q.type = 'search'; q.placeholder = 'Find a look: name or mood (navy, light, gold...)'; q.autocomplete = 'off'; q.setAttribute('autocapitalize', 'off');
+        q.setAttribute('spellcheck', 'false'); q.setAttribute('aria-label', 'Find a look by name or mood'); q.setAttribute('aria-controls', 'looks'); q.setAttribute('enterkeyhint', 'search');
+        q.addEventListener('input', function () { query = q.value.trim(); drawOne(); });
+        sr.appendChild(q);
+        top.appendChild(el('div', 'g-lknow-slot'));
+        top.appendChild(sr);
       }
+      var slot = top.querySelector('.g-lknow-slot'); clear(slot); slot.appendChild(nowCard());
+      top.hidden = mode !== 'one';
+      clear(host);
+      var groups = (fv.length ? [{ id: 'fav', name: 'Favourites', themes: fv.map(function (x) { return T.get(x); }) }] : []).concat(gs);
+      for (var g = 0; g < groups.length; g++) {
+        var list = groups[g].themes.filter(matches);
+        if (!list.length) continue;
+        var head = el('p', 'g-lookg', groups[g].name), strip = el('div', 'g-swrow');
+        if (groups[g].id === 'fav') head.className += ' g-lkfav';
+        host.appendChild(head); host.appendChild(strip);
+        for (var i = 0; i < list.length; i++) { drawSw(list[i], strip, cur, fv); if (groups[g].id !== 'fav') shown++; }
+      }
+      if (!shown) {
+        var none = el('p', 'g-hint g-lknone', 'No look matches "' + query + '". Try a colour (blue, green, gold), light or dark.');
+        host.appendChild(none);
+      }
+      if (!fv.length && !query) host.appendChild(el('p', 'g-hint g-lktip', 'Tip: press and hold a look to try it on this page first, then Use it or keep it as a favourite.'));
     }
-    function drawSw(t, strip, cur) {
+    function searchIcon() { var s = sv('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true' }); s.appendChild(sv('circle', { cx: '10.5', cy: '10.5', r: '6.5' })); s.appendChild(sv('path', { d: 'M15.5 15.5 21 21' })); return s; }
+    function drawSw(t, strip, cur, fv) {
       (function (t) {
-        var b = el('button', 'g-sw');
+        var b = el('button', 'g-sw'), held = false, timer = 0, hover = 0;
         b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(t.id === cur)); b.setAttribute('data-theme-id', t.id);
-        b.setAttribute('aria-label', t.name + ': ' + (t.tag || ''));
+        b.setAttribute('aria-label', t.name + ': ' + (t.tag || '') + (t.id === cur ? ' (on now)' : '') + '. Press and hold to preview.');
         b.appendChild(swatch(T, t)); b.appendChild(el('b', '', t.name)); b.appendChild(el('small', '', (t.tag || '').split(' · ')[0]));
-        b.addEventListener('click', function () { setOne(t.id); });
+        if (fv && fv.indexOf(t.id) >= 0) { var st = el('i', 'g-swfav', '★'); st.setAttribute('aria-hidden', 'true'); b.appendChild(st); }
+        if (t.id === cur) { var on = el('i', 'g-swon', 'On'); on.setAttribute('aria-hidden', 'true'); b.appendChild(on); }
+        b.addEventListener('click', function (e) { clearTimeout(hover); clearTimeout(timer); if (held) { held = false; e.preventDefault(); return; } setOne(t.id); });
+        // a long press: preview it here, with the bar (Use it / Favourite / Cancel)
+        b.addEventListener('pointerdown', function (e) {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          held = false; clearTimeout(timer);
+          timer = setTimeout(function () { held = true; preview(t.id, true, false); }, 420);
+        });
+        var cancel = function () { clearTimeout(timer); };
+        b.addEventListener('pointerup', cancel); b.addEventListener('pointercancel', cancel); b.addEventListener('pointerleave', cancel);
+        b.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+        // a mouse hover: the look on this page while the pointer rests there (gone when it leaves, unless the bar is open)
+        b.addEventListener('pointerenter', function (e) {
+          if (e.pointerType !== 'mouse' || prev.pinned) return;
+          clearTimeout(hover); hover = setTimeout(function () { preview(t.id, false, false); }, 160);
+        });
+        b.addEventListener('pointerleave', function (e) {
+          clearTimeout(hover);
+          if (e.pointerType === 'mouse' && !prev.pinned && prev.id === t.id) endPreview();
+        });
         strip.appendChild(b);
       })(t);
     }
@@ -398,13 +499,17 @@
     function draw() {
       tabs[0].setAttribute('aria-selected', String(mode === 'one')); tabs[1].setAttribute('aria-selected', String(mode === 'mix'));
       host.hidden = mode !== 'one'; mixHost.hidden = mode !== 'mix';
+      if ($('lookTop')) $('lookTop').hidden = mode !== 'one';
+      if (mode !== 'one') endPreview();
       $('lookHint').textContent = mode === 'one' ? 'One tap changes the colours and the style everywhere: here, Jarvis and every app. Every word and number stays the same.'
         : 'Give each part its own look. A part left on Same follows the one look. One look clears the mix.';
       if (mode === 'one') drawOne(); else drawMix();
     }
     tabs[0].addEventListener('click', function () { mode = 'one'; draw(); });
     tabs[1].addEventListener('click', function () { mode = 'mix'; draw(); });
-    T.on(function () { draw(); });
+    // a new look (here, Jarvis, another tab) redraws the picker; a preview on this page never does (the finger stays on its swatch)
+    T.on(function () { if (prev.id || (T.previewing && T.previewing())) return; draw(); });
+    d.addEventListener('keydown', function (e) { if (e.key === 'Escape' && prev.id) { endPreview(); } });
     draw();
     sec.hidden = false;
     return true;
