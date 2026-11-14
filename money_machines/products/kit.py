@@ -313,6 +313,16 @@ def shoot(br, html: str, w: int, h: int, path: str, quality: int = 82, scale: fl
     pg = br.new_page(viewport={"width": w, "height": h}, device_scale_factor=scale)
     pg.set_content(html, wait_until="load")
     pg.wait_for_timeout(wait_ms)
+    qa = os.environ.get("D2_QA_LOG")
+    if qa:                                    # layout check for the build machine: anything that sticks out of the picture
+        out = pg.evaluate("""() => { const W = innerWidth, H = innerHeight, out = [];
+          for (const el of document.querySelectorAll('body *')) { const r = el.getBoundingClientRect();
+            if (!r.width || !r.height) continue;
+            if (r.right > W + 4 || r.bottom > H + 4 || r.left < -4 || r.top < -4)
+              out.push(el.tagName + '.' + (el.className || '') + ' [' + [r.left, r.top, r.right, r.bottom].map(Math.round).join(',') + ']'); }
+          return out.slice(0, 8); }""")
+        with open(qa, "a", encoding="utf-8") as fh:
+            fh.write(f"{os.path.basename(path)} {w}x{h}: {'OK' if not out else 'OUTSIDE ' + '; '.join(out)}\n")
     png = pg.screenshot(type="png", full_page=False)
     pg.close()
     return save_jpeg(png, path, quality)
