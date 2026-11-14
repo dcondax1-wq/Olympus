@@ -394,6 +394,11 @@ def new_client(preset: str, cid: str, name: str, path: str | None = None) -> str
         raise K.ClientError(f"no preset {preset!r} (have: {', '.join(preset_names())})")
     pre = K.load_json(pre_path)
     sample = json.loads(json.dumps(pre.get("sample", {})))
+    # the preset's sample hours and prices are only examples: each one says FILL until someone confirmed it with the client
+    sample["hours"] = {d: "FILL: " + v for d, v in sample.get("hours", {}).items()}
+    for s in sample.get("services", []):
+        s["price"] = "FILL: " + s["price"]
+    sample["payments"] = ["FILL: " + p for p in sample.get("payments", [])]
     client = {"id": cid, "name": name, "trade": preset.split("_")[0], "city": "FILL: City, ST", "phone": "FILL: (555) 555-0100", "email": "",
               "site_url": "https://FILL.example", "demo_url": "", "status": "lead", "package": "", "setup_usd": 0, "monthly_usd": 0, "notes": "",
               "chat": dict({"preset": preset}, **sample, booking_url="", address="", maps_url="", facts={}),

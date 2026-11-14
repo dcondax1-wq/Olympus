@@ -263,6 +263,16 @@ def part_answers():
         except K.ClientError:
             bad += 1
     check("c. unreadable hours are refused with a plain message (not guessed)", bad == 2)
+    sp = os.path.join(TMP, "starter.json")
+    MC.new_client("barber", "test-starter", "Test Cuts", path=sp)
+    try:
+        MC.build(sp, out=os.path.join(TMP, "starter"), quiet=True)
+        starter = "built"
+    except K.ClientError as e:
+        starter = str(e)
+    todo = K.unfilled(K.load_json(sp))
+    check("c. a starter file (the preset's sample hours and prices) is refused until every FILL is replaced: no sample fact goes live",
+          "still say FILL" in starter and "chat.hours.mon" in starter and {"chat.services[0].price", "chat.payments[0]", "review.google_review_url"} <= set(todo), (starter, todo))
 
 
 # ---------------------------------------------------------------------------------------------------------------- d. no network

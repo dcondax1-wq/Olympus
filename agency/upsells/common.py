@@ -43,7 +43,19 @@ def load_client(path: str) -> dict:
         raise ClientError(f"the client file needs {', '.join(missing)}")
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,48}", c["id"]):
         raise ClientError(f"id {c['id']!r}: use lowercase letters, digits and dashes only (like 'joes-barbers')")
+    todo = unfilled(c)
+    if todo:
+        raise ClientError("fill these in first (they still say FILL): " + ", ".join(todo[:10]) + (f" and {len(todo) - 10} more" if len(todo) > 10 else ""))
     return c
+
+
+def unfilled(value, path: str = "") -> list:
+    """every field that still holds a FILL placeholder (a starter file's sample facts must be confirmed, never shipped)"""
+    if isinstance(value, dict):
+        return [p for k, v in value.items() for p in unfilled(v, f"{path}.{k}" if path else str(k))]
+    if isinstance(value, list):
+        return [p for i, v in enumerate(value) for p in unfilled(v, f"{path}[{i}]")]
+    return [path] if isinstance(value, str) and "FILL" in value else []
 
 
 def default_out(client: dict) -> str:
