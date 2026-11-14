@@ -588,6 +588,10 @@ details.grp[open]>summary::after{content:"\2212"}
     f.textContent = "";
     f.appendChild(el("p", {"class": "help", text: "1. Pick a look. 2. Fill in the groups (empty fields and lists are left out of the site). 3. Download my site: you get one file, index.html."}));
     f.appendChild(picker());
+    f.appendChild(el("div", {"style": "display:flex;gap:.5rem;flex-wrap:wrap;margin:-.4rem 0 .9rem"}, [
+      el("button", {type: "button", "class": "btn small", text: "Clear all the sample text", on: {click: function () {
+        if (!confirm("Empty every field so you can type your own details from scratch? (The look stays. Your answers in this browser will be replaced.)")) return;
+        var id = state.template; state = SK.normalize(SK.blank()); state.template = id; state.schema = KIT.themes[id].schema; build(); preview(); persist(); }}})]));
     f.appendChild(group("Your business", "top", [
       field("Business name", "name", {ph: "e.g. Riverton Plumbing"}), field("What you do, in a few words", "trade", {ph: "e.g. Plumbing and heating"}),
       field("Town or city", "town", {ph: "e.g. Riverton"}), field("Area you serve (optional)", "area", {ph: "e.g. Riverton and 20 miles around"}),
