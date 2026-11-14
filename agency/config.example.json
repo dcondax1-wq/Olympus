@@ -1,0 +1,54 @@
+{
+  "_read_me": "YOUR AGENCY IN ONE FILE. The first run copies this to agency/config.json (kept on this PC only, never uploaded: a tracked file edited on the PC would block the bot's auto-update). Change every YOUR ... word in agency/config.json, save, run RUN_AGENCY.bat again. The pitches, emails and demo sites read their names, numbers and prices from it.",
+  "agency": {
+    "name": "YOUR AGENCY",
+    "your_name": "YOUR NAME",
+    "phone": "(555) 555-0100",
+    "email": "you@example.com",
+    "postal_address": "YOUR STREET ADDRESS, YOUR CITY, ST 00000",
+    "website": "",
+    "tagline": "Websites for local businesses, ready the same day"
+  },
+  "search": {
+    "city": "YOUR CITY, ST",
+    "radius_km": 8,
+    "categories": "all",
+    "top": 20,
+    "per_category": 2,
+    "redesign_share": 0.25,
+    "audit_max": 30,
+    "sites_per_day": 3
+  },
+  "demo_sites": {
+    "url_pattern": "https://{slug}-demo.netlify.app",
+    "form": "netlify",
+    "pages": 1
+  },
+  "packages": [
+    {
+      "id": "starter",
+      "name": "Starter",
+      "setup": 499,
+      "monthly": 49,
+      "pitch": "The site you saw, made yours: your photos and logo, your domain, the contact form, tap-to-call, hosting and small edits every month.",
+      "includes": ["The one-page site you saw, with your logo and photos", "Your own domain with the padlock (https)", "Contact form to your email, tap-to-call, map, hours", "Google Business Profile tidy-up", "Hosting, backups and one small edit a month"]
+    },
+    {
+      "id": "growth",
+      "name": "Growth",
+      "setup": 999,
+      "monthly": 79,
+      "pitch": "Everything in Starter plus up to 5 pages (one per service), online booking or quote requests, and local Google basics.",
+      "includes": ["Everything in Starter", "Up to 5 pages: a page for each main service", "Booking or quote-request form", "Local Google basics: titles, map listing, review link", "Two edits a month and a short monthly report"]
+    },
+    {
+      "id": "pro",
+      "name": "Pro",
+      "setup": 1999,
+      "monthly": 129,
+      "pitch": "A full custom site: up to 10 pages, the words written for you, a photo or menu section, and priority edits.",
+      "includes": ["Everything in Growth", "Up to 10 pages, the words written for you", "Gallery, menu or before-and-after section", "Review widget and a 'leave us a review' page", "Priority edits within one business day"]
+    }
+  ],
+  "goal_per_month": 5000
+}

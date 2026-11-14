@@ -1,0 +1,1388 @@
+{
+ "v": 1,
+ "kind": "agency-leads",
+ "meta": {
+  "endpoint": "https://ovp.dresel.systems/api-na/interpreter",
+  "elements": 609,
+  "kept": 501,
+  "skipped": {
+   "no_name_or_closed": 1,
+   "chain": 101,
+   "other_trade": 0,
+   "duplicate": 6
+  },
+  "osm_base": "2026-11-13T21:22:20Z",
+  "cache": {
+   "hit": true,
+   "age_h": 0.2
+  },
+  "attribution": "Business data (c) OpenStreetMap contributors, ODbL 1.0 (openstreetmap.org/copyright)",
+  "place": {
+   "query": "Fort Collins, CO",
+   "lat": 40.5871782,
+   "lon": -105.0770113,
+   "name": "Fort Collins, Larimer County, Colorado, United States",
+   "city": "Fort Collins",
+   "state": "Colorado",
+   "state_code": "CO",
+   "country_code": "us",
+   "bbox": [
+    40.4726063,
+    40.639352,
+    -105.1573564,
+    -104.9820005
+   ],
+   "source": "nominatim",
+   "t": 1794684418
+  },
+  "radius_km": 8.0,
+  "categories": [
+   "restaurant",
+   "cafe",
+   "bakery",
+   "barber",
+   "salon",
+   "beauty",
+   "plumber",
+   "hvac",
+   "electrician",
+   "roofer",
+   "painter",
+   "builder",
+   "locksmith",
+   "landscaper",
+   "cleaner",
+   "florist",
+   "pet_grooming",
+   "auto_repair",
+   "car_wash",
+   "dentist",
+   "chiropractor",
+   "physio",
+   "vet",
+   "massage",
+   "gym",
+   "tattoo"
+  ],
+  "audited": 40,
+  "coverage": {
+   "n": 501,
+   "phone": 0.511,
+   "website": 0.629,
+   "hours": 0.491,
+   "street_address": 0.758,
+   "email": 0.12
+  },
+  "made": "2026-11-14T19:40:53"
+ },
+ "leads": [
+  {
+   "id": "w248410324",
+   "osm": "way/248410324",
+   "osm_url": "https://www.openstreetmap.org/way/248410324",
+   "name": "Roy's Quick Lube",
+   "slug": "roys-quick-lube",
+   "category": "auto_repair",
+   "category_label": "Auto repair",
+   "template": "garage",
+   "lat": 40.598572,
+   "lon": -105.076986,
+   "distance_km": 1.27,
+   "address": {
+    "housenumber": "825",
+    "street": "North College Avenue",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524",
+    "city_guess": false,
+    "line": "825 North College Avenue, Fort Collins, CO 80524",
+    "street_line": "825 North College Avenue",
+    "has_street": true
+   },
+   "phone": "(970) 493-5823",
+   "phone_e164": "+19704935823",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "Mo-Tu 10:00-17:00; We-Fr 08:00-17:00; Sa 09:00-16:00",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 11,
+   "source": "overpass",
+   "check_date": "",
+   "score": 99,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 9,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'auto repair Fort Collins' on their phone find a competitor first.",
+   "hours": [
+    [
+     "Mon - Tue",
+     "10 AM - 5 PM"
+    ],
+    [
+     "Wed - Fri",
+     "8 AM - 5 PM"
+    ],
+    [
+     "Sat",
+     "9 AM - 4 PM"
+    ],
+    [
+     "Sun",
+     "Closed"
+    ]
+   ]
+  },
+  {
+   "id": "w172542548",
+   "osm": "way/172542548",
+   "osm_url": "https://www.openstreetmap.org/way/172542548",
+   "name": "Western Auto Repair",
+   "slug": "western-auto-repair",
+   "category": "auto_repair",
+   "category_label": "Auto repair",
+   "template": "garage",
+   "lat": 40.601568,
+   "lon": -105.077106,
+   "distance_km": 1.6,
+   "address": {
+    "housenumber": "1113",
+    "street": "North College Avenue",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524",
+    "city_guess": false,
+    "line": "1113 North College Avenue, Fort Collins, CO 80524",
+    "street_line": "1113 North College Avenue",
+    "has_street": true
+   },
+   "phone": "(970) 482-1144",
+   "phone_e164": "+19704821144",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 9,
+   "source": "overpass",
+   "check_date": "",
+   "score": 99,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 9,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'auto repair Fort Collins' on their phone find a competitor first.",
+   "hours": []
+  },
+  {
+   "id": "n14099844353",
+   "osm": "node/14099844353",
+   "osm_url": "https://www.openstreetmap.org/node/14099844353",
+   "name": "Rocky Mountain Dental Care",
+   "slug": "rocky-mountain-dental-care",
+   "category": "dentist",
+   "category_label": "Dentist",
+   "template": "clinic",
+   "lat": 40.573324,
+   "lon": -105.060331,
+   "distance_km": 2.09,
+   "address": {
+    "housenumber": "1025",
+    "street": "Robertson Street",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "",
+    "city_guess": true,
+    "line": "1025 Robertson Street, Fort Collins, CO",
+    "street_line": "1025 Robertson Street",
+    "has_street": true
+   },
+   "phone": "(970) 493-4313",
+   "phone_e164": "+19704934313",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "Mo-Tu 08:00-17:00; We 08:30-17:00; Th 08:00-12:00",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 10,
+   "source": "overpass",
+   "check_date": "2026-08-16",
+   "score": 99,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 9,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'dentist Fort Collins' on their phone find a competitor first.",
+   "hours": [
+    [
+     "Mon - Tue",
+     "8 AM - 5 PM"
+    ],
+    [
+     "Wed",
+     "8:30 AM - 5 PM"
+    ],
+    [
+     "Thu",
+     "8 AM - noon"
+    ],
+    [
+     "Fri - Sun",
+     "Closed"
+    ]
+   ]
+  },
+  {
+   "id": "w340524103",
+   "osm": "way/340524103",
+   "osm_url": "https://www.openstreetmap.org/way/340524103",
+   "name": "South Shields Dental",
+   "slug": "south-shields-dental",
+   "category": "dentist",
+   "category_label": "Dentist",
+   "template": "clinic",
+   "lat": 40.573137,
+   "lon": -105.096424,
+   "distance_km": 2.26,
+   "address": {
+    "housenumber": "1103",
+    "street": "South Shields Street",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80521",
+    "city_guess": false,
+    "line": "1103 South Shields Street, Fort Collins, CO 80521",
+    "street_line": "1103 South Shields Street",
+    "has_street": true
+   },
+   "phone": "(970) 484-3213",
+   "phone_e164": "+19704843213",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 10,
+   "source": "overpass",
+   "check_date": "",
+   "score": 99,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 9,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'dentist Fort Collins' on their phone find a competitor first.",
+   "hours": []
+  },
+  {
+   "id": "n2805006398",
+   "osm": "node/2805006398",
+   "osm_url": "https://www.openstreetmap.org/node/2805006398",
+   "name": "Irwin Family Chiropractic",
+   "slug": "irwin-family-chiropractic",
+   "category": "chiropractor",
+   "category_label": "Chiropractor",
+   "template": "clinic",
+   "lat": 40.554517,
+   "lon": -105.097962,
+   "distance_km": 4.04,
+   "address": {
+    "housenumber": "2531",
+    "street": "South Shields Street",
+    "unit": "2J",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80526-1886",
+    "city_guess": false,
+    "line": "2531 South Shields Street, Suite 2J, Fort Collins, CO 80526",
+    "street_line": "2531 South Shields Street, Suite 2J",
+    "has_street": true
+   },
+   "phone": "(970) 472-8333",
+   "phone_e164": "+19704728333",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "Mo-Th 08:00-18:00; Fr 08:00-13:00",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 11,
+   "source": "overpass",
+   "check_date": "",
+   "score": 98,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 8,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'chiropractor Fort Collins' on their phone find a competitor first.",
+   "hours": [
+    [
+     "Mon - Thu",
+     "8 AM - 6 PM"
+    ],
+    [
+     "Fri",
+     "8 AM - 1 PM"
+    ],
+    [
+     "Sat - Sun",
+     "Closed"
+    ]
+   ]
+  },
+  {
+   "id": "n3386914066",
+   "osm": "node/3386914066",
+   "osm_url": "https://www.openstreetmap.org/node/3386914066",
+   "name": "1st Nails",
+   "slug": "1st-nails",
+   "category": "beauty",
+   "category_label": "Beauty salon",
+   "template": "bloom",
+   "lat": 40.576786,
+   "lon": -105.059537,
+   "distance_km": 1.87,
+   "address": {
+    "housenumber": "737",
+    "street": "South Lemay Avenue",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524",
+    "city_guess": false,
+    "line": "737 South Lemay Avenue, Fort Collins, CO 80524",
+    "street_line": "737 South Lemay Avenue",
+    "has_street": true
+   },
+   "phone": "(970) 482-2295",
+   "phone_e164": "+19704822295",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 9,
+   "source": "overpass",
+   "check_date": "",
+   "score": 96,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 6,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'nail salon Fort Collins' on their phone find a competitor first.",
+   "hours": []
+  },
+  {
+   "id": "n5590813810",
+   "osm": "node/5590813810",
+   "osm_url": "https://www.openstreetmap.org/node/5590813810",
+   "name": "Sky Nails",
+   "slug": "sky-nails",
+   "category": "beauty",
+   "category_label": "Beauty salon",
+   "template": "bloom",
+   "lat": 40.609074,
+   "lon": -105.074194,
+   "distance_km": 2.45,
+   "address": {
+    "housenumber": "1612",
+    "street": "North College Avenue",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524",
+    "city_guess": false,
+    "line": "1612 North College Avenue, Fort Collins, CO 80524",
+    "street_line": "1612 North College Avenue",
+    "has_street": true
+   },
+   "phone": "(970) 482-2950",
+   "phone_e164": "+19704822950",
+   "email": "",
+   "website": "",
+   "facebook": "https://www.facebook.com/pages/Sky-Nails/588725564489648",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 9,
+   "source": "overpass",
+   "check_date": "",
+   "score": 96,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 6,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'nail salon Fort Collins' on their phone find a competitor first.",
+   "hours": []
+  },
+  {
+   "id": "n12212932147",
+   "osm": "node/12212932147",
+   "osm_url": "https://www.openstreetmap.org/node/12212932147",
+   "name": "Cinco Brothers",
+   "slug": "cinco-brothers",
+   "category": "barber",
+   "category_label": "Barbershop",
+   "template": "studio",
+   "lat": 40.612788,
+   "lon": -105.07469,
+   "distance_km": 2.85,
+   "address": {
+    "housenumber": "1880",
+    "street": "North College Avenue",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524",
+    "city_guess": false,
+    "line": "1880 North College Avenue, Fort Collins, CO 80524",
+    "street_line": "1880 North College Avenue",
+    "has_street": true
+   },
+   "phone": "(970) 694-2949",
+   "phone_e164": "+19706942949",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "Mo-Fr 09:00-18:30, Sa 09:00-17:00",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 10,
+   "source": "overpass",
+   "check_date": "",
+   "score": 96,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 6,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'barber Fort Collins' on their phone find a competitor first.",
+   "hours": [
+    [
+     "Mon - Fri",
+     "9 AM - 6:30 PM"
+    ],
+    [
+     "Sat",
+     "9 AM - 5 PM"
+    ],
+    [
+     "Sun",
+     "Closed"
+    ]
+   ]
+  },
+  {
+   "id": "n1870798826",
+   "osm": "node/1870798826",
+   "osm_url": "https://www.openstreetmap.org/node/1870798826",
+   "name": "Colorado Cutz",
+   "slug": "colorado-cutz",
+   "category": "salon",
+   "category_label": "Hair salon",
+   "template": "bloom",
+   "lat": 40.552433,
+   "lon": -105.097264,
+   "distance_km": 4.23,
+   "address": {
+    "housenumber": "1101",
+    "street": "West Drake Road",
+    "unit": "A3",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80526-6048",
+    "city_guess": false,
+    "line": "1101 West Drake Road, Suite A3, Fort Collins, CO 80526",
+    "street_line": "1101 West Drake Road, Suite A3",
+    "has_street": true
+   },
+   "phone": "(970) 889-8323",
+   "phone_e164": "+19708898323",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "Mo-Sa 09:00-20:00; Su 09:00-18:00",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 10,
+   "source": "overpass",
+   "check_date": "",
+   "score": 96,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 6,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'hair salon Fort Collins' on their phone find a competitor first.",
+   "hours": [
+    [
+     "Mon - Sat",
+     "9 AM - 8 PM"
+    ],
+    [
+     "Sun",
+     "9 AM - 6 PM"
+    ]
+   ]
+  },
+  {
+   "id": "n2536837088",
+   "osm": "node/2536837088",
+   "osm_url": "https://www.openstreetmap.org/node/2536837088",
+   "name": "Wild Mane Salon",
+   "slug": "wild-mane-salon",
+   "category": "salon",
+   "category_label": "Hair salon",
+   "template": "bloom",
+   "lat": 40.529004,
+   "lon": -105.075553,
+   "distance_km": 6.47,
+   "address": {
+    "housenumber": "4212",
+    "street": "South College Avenue",
+    "unit": "104",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80525",
+    "city_guess": false,
+    "line": "4212 South College Avenue, Suite 104, Fort Collins, CO 80525",
+    "street_line": "4212 South College Avenue, Suite 104",
+    "has_street": true
+   },
+   "phone": "(970) 226-1104",
+   "phone_e164": "+19702261104",
+   "email": "",
+   "website": "",
+   "facebook": "http://www.facebook.com/WildManeSalonLtd",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 10,
+   "source": "overpass",
+   "check_date": "",
+   "score": 96,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 6,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'hair salon Fort Collins' on their phone find a competitor first.",
+   "hours": []
+  },
+  {
+   "id": "n13508159747",
+   "osm": "node/13508159747",
+   "osm_url": "https://www.openstreetmap.org/node/13508159747",
+   "name": "Babalu's Cuban Cafe",
+   "slug": "babalus-cuban-cafe",
+   "category": "restaurant",
+   "category_label": "Restaurant",
+   "template": "table",
+   "lat": 40.58583,
+   "lon": -105.078093,
+   "distance_km": 0.18,
+   "address": {
+    "housenumber": "140",
+    "street": "West Oak Street",
+    "unit": "120",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524",
+    "city_guess": false,
+    "line": "140 West Oak Street, Suite 120, Fort Collins, CO 80524",
+    "street_line": "140 West Oak Street, Suite 120",
+    "has_street": true
+   },
+   "phone": "(970) 657-2111",
+   "phone_e164": "+19706572111",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "Tu-Sa 09:30-15:00",
+   "cuisine": "cuban",
+   "description": "",
+   "tag_count": 12,
+   "source": "overpass",
+   "check_date": "2026-07-23",
+   "score": 95,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 5,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'restaurant Fort Collins' on their phone find a competitor first.",
+   "hours": [
+    [
+     "Mon",
+     "Closed"
+    ],
+    [
+     "Tue - Sat",
+     "9:30 AM - 3 PM"
+    ],
+    [
+     "Sun",
+     "Closed"
+    ]
+   ]
+  },
+  {
+   "id": "n1737959898",
+   "osm": "node/1737959898",
+   "osm_url": "https://www.openstreetmap.org/node/1737959898",
+   "name": "El Burrito",
+   "slug": "el-burrito",
+   "category": "restaurant",
+   "category_label": "Restaurant",
+   "template": "table",
+   "lat": 40.590233,
+   "lon": -105.072444,
+   "distance_km": 0.51,
+   "address": {
+    "housenumber": "404",
+    "street": "Linden Street",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524",
+    "city_guess": true,
+    "line": "404 Linden Street, Fort Collins, CO 80524",
+    "street_line": "404 Linden Street",
+    "has_street": true
+   },
+   "phone": "(970) 484-1102",
+   "phone_e164": "+19704841102",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "mexican",
+   "description": "",
+   "tag_count": 8,
+   "source": "overpass",
+   "check_date": "2025-09-03",
+   "score": 95,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 5,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'restaurant Fort Collins' on their phone find a competitor first.",
+   "hours": []
+  },
+  {
+   "id": "w340511862",
+   "osm": "way/340511862",
+   "osm_url": "https://www.openstreetmap.org/way/340511862",
+   "name": "Magnetic Tattoo",
+   "slug": "magnetic-tattoo",
+   "category": "tattoo",
+   "category_label": "Tattoo studio",
+   "template": "studio",
+   "lat": 40.57989,
+   "lon": -105.079226,
+   "distance_km": 0.83,
+   "address": {
+    "housenumber": "203",
+    "street": "West Myrtle Street",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80521",
+    "city_guess": false,
+    "line": "203 West Myrtle Street, Fort Collins, CO 80521",
+    "street_line": "203 West Myrtle Street",
+    "has_street": true
+   },
+   "phone": "(970) 484-1305",
+   "phone_e164": "+19704841305",
+   "email": "",
+   "website": "",
+   "facebook": "https://www.facebook.com/pages/Magnetic/363655457178460",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 11,
+   "source": "overpass",
+   "check_date": "",
+   "score": 95,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 5,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'tattoo Fort Collins' on their phone find a competitor first.",
+   "hours": []
+  },
+  {
+   "id": "n3386912914",
+   "osm": "node/3386912914",
+   "osm_url": "https://www.openstreetmap.org/node/3386912914",
+   "name": "Touch of Heaven Relaxation Center",
+   "slug": "touch-of-heaven-relaxation-center",
+   "category": "massage",
+   "category_label": "Massage",
+   "template": "clinic",
+   "lat": 40.576167,
+   "lon": -105.059504,
+   "distance_km": 1.92,
+   "address": {
+    "housenumber": "749",
+    "street": "South Lemay Avenue",
+    "unit": "A2",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "",
+    "city_guess": true,
+    "line": "749 South Lemay Avenue, Suite A2, Fort Collins, CO",
+    "street_line": "749 South Lemay Avenue, Suite A2",
+    "has_street": true
+   },
+   "phone": "(970) 797-2196",
+   "phone_e164": "+19707972196",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 6,
+   "source": "overpass",
+   "check_date": "",
+   "score": 95,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 5,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'massage Fort Collins' on their phone find a competitor first.",
+   "hours": []
+  },
+  {
+   "id": "n2805036506",
+   "osm": "node/2805036506",
+   "osm_url": "https://www.openstreetmap.org/node/2805036506",
+   "name": "Yimi Massage",
+   "slug": "yimi-massage",
+   "category": "massage",
+   "category_label": "Massage",
+   "template": "clinic",
+   "lat": 40.554796,
+   "lon": -105.097593,
+   "distance_km": 4.0,
+   "address": {
+    "housenumber": "2519",
+    "street": "South Shields Street",
+    "unit": "1L",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80526-1855",
+    "city_guess": false,
+    "line": "2519 South Shields Street, Suite 1L, Fort Collins, CO 80526",
+    "street_line": "2519 South Shields Street, Suite 1L",
+    "has_street": true
+   },
+   "phone": "(970) 472-4108",
+   "phone_e164": "+19704724108",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 9,
+   "source": "overpass",
+   "check_date": "",
+   "score": 95,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 5,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'massage Fort Collins' on their phone find a competitor first.",
+   "hours": []
+  },
+  {
+   "id": "w338010925",
+   "osm": "way/338010925",
+   "osm_url": "https://www.openstreetmap.org/way/338010925",
+   "name": "Kool Rides Custom Detailing",
+   "slug": "kool-rides-custom-detailing",
+   "category": "auto_repair",
+   "category_label": "Auto repair",
+   "template": "garage",
+   "lat": 40.581691,
+   "lon": -105.064118,
+   "distance_km": 1.25,
+   "address": {
+    "housenumber": "808",
+    "street": "East Mulberry Street",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524",
+    "city_guess": false,
+    "line": "808 East Mulberry Street, Fort Collins, CO 80524",
+    "street_line": "808 East Mulberry Street",
+    "has_street": true
+   },
+   "phone": "(970) 482-5668",
+   "phone_e164": "+19704825668",
+   "email": "mnelson@koolridesdetailing.com",
+   "website": "http://www.koolridesdetailing.com/",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "Mo-Fr 08:00-17:00",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 12,
+   "source": "overpass",
+   "check_date": "",
+   "score": 94,
+   "tier": "A",
+   "need": 65,
+   "reach": 20,
+   "value": 9,
+   "site_status": "bad",
+   "issues": [
+    {
+     "code": "parked",
+     "weight": 55,
+     "text": "Their address shows a parked or 'coming soon' page, not a real website"
+    },
+    {
+     "code": "no_tel",
+     "weight": 10,
+     "text": "No phone number on the home page"
+    },
+    {
+     "code": "no_cta",
+     "weight": 8,
+     "text": "No clear button to call, book or get a quote"
+    }
+   ],
+   "reasons": [
+    "Their address shows a parked or 'coming soon' page, not a real website",
+    "No phone number on the home page",
+    "No clear button to call, book or get a quote"
+   ],
+   "why": "Their address shows a parked or 'coming soon' page, not a real website; no phone number on the home page.",
+   "hours": [
+    [
+     "Mon - Fri",
+     "8 AM - 5 PM"
+    ],
+    [
+     "Sat - Sun",
+     "Closed"
+    ]
+   ],
+   "audit": {
+    "checked": "2026-11-14",
+    "fetched": true,
+    "facts": {
+     "https": true,
+     "viewport": true,
+     "tel": false,
+     "cta": false,
+     "title": "koolridesdetailing.com",
+     "copyright_year": null,
+     "generator": "",
+     "elapsed_s": 0.44,
+     "bytes": 1045
+    },
+    "note": "",
+    "final_url": "https://www.koolridesdetailing.com/"
+   }
+  },
+  {
+   "id": "w670333181",
+   "osm": "way/670333181",
+   "osm_url": "https://www.openstreetmap.org/way/670333181",
+   "name": "Firehouse Xpress",
+   "slug": "firehouse-xpress",
+   "category": "car_wash",
+   "category_label": "Car wash",
+   "template": "garage",
+   "lat": 40.608494,
+   "lon": -105.075062,
+   "distance_km": 2.38,
+   "address": {
+    "housenumber": "1606",
+    "street": "North College Avenue",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524",
+    "city_guess": false,
+    "line": "1606 North College Avenue, Fort Collins, CO 80524",
+    "street_line": "1606 North College Avenue",
+    "has_street": true
+   },
+   "phone": "(970) 427-9274",
+   "phone_e164": "+19704279274",
+   "email": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 10,
+   "source": "overpass",
+   "check_date": "",
+   "score": 94,
+   "tier": "A",
+   "need": 70,
+   "reach": 20,
+   "value": 4,
+   "site_status": "none",
+   "issues": [
+    {
+     "code": "no_site",
+     "weight": 70,
+     "text": "No website listed on OpenStreetMap (search the name on Google before you call)"
+    }
+   ],
+   "reasons": [
+    "No website listed on OpenStreetMap (search the name on Google before you call)"
+   ],
+   "why": "No website found: people who search 'car wash Fort Collins' on their phone find a competitor first.",
+   "hours": []
+  },
+  {
+   "id": "n11279579528",
+   "osm": "node/11279579528",
+   "osm_url": "https://www.openstreetmap.org/node/11279579528",
+   "name": "Highroad Roofing",
+   "slug": "highroad-roofing",
+   "category": "roofer",
+   "category_label": "Roofer",
+   "template": "pro",
+   "lat": 40.541977,
+   "lon": -105.07855,
+   "distance_km": 5.03,
+   "address": {
+    "housenumber": "3307",
+    "street": "South College Avenue",
+    "unit": "#200-11",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80525",
+    "city_guess": false,
+    "line": "3307 South College Avenue, #200-11, Fort Collins, CO 80525",
+    "street_line": "3307 South College Avenue, #200-11",
+    "has_street": true
+   },
+   "phone": "(970) 568-7663",
+   "phone_e164": "+19705687663",
+   "email": "info@highroadroofing.com",
+   "website": "https://highroadroofing.com/",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "Mo-Sa 08:00-17:00",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 12,
+   "source": "overpass",
+   "check_date": "",
+   "score": 85,
+   "tier": "A",
+   "need": 55,
+   "reach": 20,
+   "value": 10,
+   "site_status": "bad",
+   "issues": [
+    {
+     "code": "site_down",
+     "weight": 55,
+     "text": "Their website does not open (error 500)"
+    }
+   ],
+   "reasons": [
+    "Their website does not open (error 500)"
+   ],
+   "why": "Their website does not open (error 500).",
+   "hours": [
+    [
+     "Mon - Sat",
+     "8 AM - 5 PM"
+    ],
+    [
+     "Sun",
+     "Closed"
+    ]
+   ],
+   "audit": {
+    "checked": "2026-11-14",
+    "fetched": true,
+    "facts": {
+     "status": 500
+    },
+    "note": "",
+    "final_url": "https://highroadroofing.com/"
+   }
+  },
+  {
+   "id": "w172542550",
+   "osm": "way/172542550",
+   "osm_url": "https://www.openstreetmap.org/way/172542550",
+   "name": "Auto Trends",
+   "slug": "auto-trends",
+   "category": "auto_repair",
+   "category_label": "Auto repair",
+   "template": "garage",
+   "lat": 40.604137,
+   "lon": -105.077158,
+   "distance_km": 1.89,
+   "address": {
+    "housenumber": "1235",
+    "street": "North College Avenue",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524-1231",
+    "city_guess": false,
+    "line": "1235 North College Avenue, Fort Collins, CO 80524",
+    "street_line": "1235 North College Avenue",
+    "has_street": true
+   },
+   "phone": "(970) 224-2824",
+   "phone_e164": "+19702242824",
+   "email": "",
+   "website": "http://www.autotrendservice.com",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 10,
+   "source": "overpass",
+   "check_date": "",
+   "score": 77,
+   "tier": "B",
+   "need": 48,
+   "reach": 20,
+   "value": 9,
+   "site_status": "bad",
+   "issues": [
+    {
+     "code": "no_viewport",
+     "weight": 25,
+     "text": "Not built for phones: on a phone it shows a tiny desktop page you have to pinch and zoom"
+    },
+    {
+     "code": "no_tel",
+     "weight": 10,
+     "text": "No phone number on the home page"
+    },
+    {
+     "code": "no_cta",
+     "weight": 8,
+     "text": "No clear button to call, book or get a quote"
+    },
+    {
+     "code": "no_title",
+     "weight": 5,
+     "text": "No page title, so Google shows a blank or random headline"
+    }
+   ],
+   "reasons": [
+    "Not built for phones: on a phone it shows a tiny desktop page you have to pinch and zoom",
+    "No phone number on the home page",
+    "No clear button to call, book or get a quote",
+    "No page title, so Google shows a blank or random headline"
+   ],
+   "why": "Not built for phones: on a phone it shows a tiny desktop page you have to pinch and zoom; no phone number on the home page.",
+   "hours": [],
+   "audit": {
+    "checked": "2026-11-14",
+    "fetched": true,
+    "facts": {
+     "https": true,
+     "viewport": false,
+     "tel": false,
+     "cta": false,
+     "title": "",
+     "copyright_year": null,
+     "generator": "",
+     "elapsed_s": 0.25,
+     "bytes": 114
+    },
+    "note": "",
+    "final_url": "https://www.autotrendservice.com"
+   }
+  },
+  {
+   "id": "w183384987",
+   "osm": "way/183384987",
+   "osm_url": "https://www.openstreetmap.org/way/183384987",
+   "name": "Cleaver Electrical Services",
+   "slug": "cleaver-electrical-services",
+   "category": "electrician",
+   "category_label": "Electrician",
+   "template": "pro",
+   "lat": 40.588715,
+   "lon": -105.044322,
+   "distance_km": 2.77,
+   "address": {
+    "housenumber": "144",
+    "street": "Racquette Drive",
+    "unit": "",
+    "city": "Fort Collins",
+    "state": "CO",
+    "postcode": "80524",
+    "city_guess": false,
+    "line": "144 Racquette Drive, Fort Collins, CO 80524",
+    "street_line": "144 Racquette Drive",
+    "has_street": true
+   },
+   "phone": "(970) 224-5646",
+   "phone_e164": "+19702245646",
+   "email": "",
+   "website": "http://cleaverelectric.com",
+   "facebook": "",
+   "instagram": "",
+   "opening_hours": "",
+   "cuisine": "",
+   "description": "",
+   "tag_count": 11,
+   "source": "overpass",
+   "check_date": "",
+   "score": 75,
+   "tier": "B",
+   "need": 46,
+   "reach": 20,
+   "value": 9,
+   "site_status": "bad",
+   "issues": [
+    {
+     "code": "no_viewport",
+     "weight": 25,
+     "text": "Not built for phones: on a phone it shows a tiny desktop page you have to pinch and zoom"
+    },
+    {
+     "code": "no_tel",
+     "weight": 10,
+     "text": "No phone number on the home page"
+    },
+    {
+     "code": "no_cta",
+     "weight": 8,
+     "text": "No clear button to call, book or get a quote"
+    },
+    {
+     "code": "no_description",
+     "weight": 3,
+     "text": "No description for Google's search results"
+    }
+   ],
+   "reasons": [
+    "Not built for phones: on a phone it shows a tiny desktop page you have to pinch and zoom",
+    "No phone number on the home page",
+    "No clear button to call, book or get a quote",
+    "No description for Google's search results"
+   ],
+   "why": "Not built for phones: on a phone it shows a tiny desktop page you have to pinch and zoom; no phone number on the home page.",
+   "hours": [],
+   "audit": {
+    "checked": "2026-11-14",
+    "fetched": true,
+    "facts": {
+     "https": true,
+     "viewport": false,
+     "tel": false,
+     "cta": false,
+     "title": "Cleaver Electrical Services - Fort Collins, Colorado",
+     "copyright_year": null,
+     "generator": "",
+     "elapsed_s": 0.9,
+     "bytes": 2680
+    },
+    "note": "",
+    "final_url": "https://cleaverelectric.com"
+   }
+  }
+ ]
+}
