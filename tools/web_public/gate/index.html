@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Olympus</title>
-<meta name="description" content="The OLYMPUS Gate: one front door. Right now in plain words, the three places you need most in one tap, every other app in two taps, and a search.">
+<meta name="description" content="OLYMPUS home: your command center. Right now in plain words (bots on, drawdown left, today's money, Kalshi, the next trade window, your shift), then nine hubs named after your jobs, then a search.">
 <meta name="theme-color" content="#14110e">
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,12 +13,14 @@
 <meta name="apple-mobile-web-app-title" content="Olympus">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<!-- THE GATE (OLYMPUS, AGORA look, 2026-11-12). Owner: "When I click the dashboard link there's just a shit ton of buttons ... make something that's very easy
-     on how to get to things." One front door: a "Right now" card (bots on / off and how old the numbers are, drawdown left, today's $, the next trade window),
-     three big Start-here tiles (Today, Bots, Jarvis: 1 tap), four district doors (Trading, Money, Life, Worlds) that open a short sheet, most useful first
-     (2 taps to any app), a search by name / purpose / plain words, the last 4 apps opened, and the labs under a small Workshop link.
-     Works at gate/ AND copied to the site root as olympus-live.html: the line below finds the site root (GATE_BASE) and every link is built from it.
-     Read only: it reads ../home.json (and olympus/truth.js) and sends nothing; when they 404 it says so in plain words.
+<!-- OLYMPUS HOME v2 (the Gate, AGORA look, 2026-11-14, docs/OLYMPUS_IA_V2.md). Owner: "Make it very organized ... it always looks the same: 'Trading', 'Money',
+     'Life' subcategories. I want something more organized. Lock in." A list of 70 apps was the problem, not the labels. So the home is a command center:
+     1. Right now: the bots on / quiet / old numbers with the exact age, drawdown left per eval, today's $, Kalshi, the next trade window, your shift (each a tap to its app);
+     2. nine HUBS named after the owner's jobs, each with a live one-line status (Today, Bots & Evals, Kalshi, My Money, Plan & Day, Research, Jarvis, Worlds, Settings & Help);
+     3. a search by name / purpose / plain words; Recent (the last 4 apps opened, this phone only).
+     A hub page (hub/?h=<id>) has one tab per job; each tab shows the best app for it first, the others below, duplicates folded under "Other views of the same".
+     Every old app URL still works. Works at gate/ AND copied to the site root as olympus-live.html: the line below finds the site root (GATE_BASE).
+     Read only: it reads home.json (through olympus/truth.js), kalshi.json, money/scoreboard.json, two status cards and the Planner's summary on this phone; it sends nothing.
      Served from the PC (/site/, LIVE_LINK.bat) it also reads the bot's /api/site/live.json through ../pc_feed.js, every minute. -->
 <style>html, body { background: var(--oly-th-n3, #14110e); color: var(--oly-th-n37, #f3ece0); margin: 0; }</style>
 <script>(function () {   /* the OLYMPUS theme from the first paint: the copy olympus/themes.js keeps of what it painted here ('olympus.theme.paint.page.gate') */
@@ -37,48 +39,41 @@
   window.GATE_BASE = b;
   var d = document, h = d.head || d.getElementsByTagName('head')[0];
   try { if (window.top !== window) d.documentElement.className += ' framed'; } catch (e) { d.documentElement.className += ' framed'; }
-  var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = b + 'gate/gate.css?v=g2'; h.appendChild(l);
+  var k = d.createElement('link'); k.rel = 'stylesheet'; k.href = b + 'olympus/agora.css?v=a3'; h.appendChild(k);
+  var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = b + 'gate/gate.css?v=g4'; h.appendChild(l);
   var i = d.createElement('link'); i.rel = 'icon'; i.href = b + 'gate/icon.svg'; h.appendChild(i);
-  ['olympus/themes.js?v=o5', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g3'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
+  ['olympus/themes.js?v=o5', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=g2', 'olympus/hub-status.js?v=h1', 'gate/gate.js?v=g4'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
 })();</script>
 </head>
 <body>
 <main id="gate" class="g-main">
   <header class="g-head">
     <h1 class="g-title">Olympus</h1>
-    <p class="g-sub">Everything in two taps.</p>
+    <p class="g-sub">Your command center: right now, then your hubs.</p>
   </header>
 
   <section class="g-card g-now" id="now" aria-labelledby="nowH" data-state="loading">
     <div class="g-nowhead"><h2 id="nowH">Right now</h2><span class="g-badge" id="nowBadge">Checking</span></div>
     <p class="g-nowline" id="nowLine" role="status" aria-live="polite">Looking for the bots' numbers...</p>
-    <dl class="g-facts" id="nowFacts" hidden></dl>
+    <div class="g-facts" id="nowFacts" hidden></div>
     <a class="g-btn primary" id="bringBack" data-to="nq/index.html?howto=1" href="nq/index.html?howto=1" hidden>Bring the bots back</a>
     <p class="g-nowfoot" id="nowFoot"></p>
   </section>
 
-  <section class="g-start" aria-labelledby="startH">
-    <h2 class="g-h2" id="startH">Start here</h2>
-    <div class="g-tiles">
-      <a class="g-tile" id="tile-today" data-app="today" data-to="index.html" href="index.html"><svg class="g-ticon" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 27a12 12 0 0 1 24 0"/><path d="M20 7v4M8.5 12.5l2.8 2.8M31.5 12.5l-2.8 2.8M3 27h34M7 32h26"/></svg><b>Today</b><small>The full dashboard</small></a>
-      <a class="g-tile" id="tile-nq" data-app="nq" data-to="nq/index.html" href="nq/index.html"><svg class="g-ticon" viewBox="0 0 40 40" aria-hidden="true"><path d="M7 15h26M9 33h22M11 15v18M20 15v18M29 15v18"/><path d="M11 6c-2 2 0 3.5-1.2 6h2.4c-.8-2.3.8-3.4-1.2-6zM20 4.5c-2.2 2.2 0 4-1.4 7.5h2.8c-.9-2.8.9-4.1-1.4-7.5zM29 6c-2 2 0 3.5-1.2 6h2.4c-.8-2.3.8-3.4-1.2-6z"/></svg><b>Bots</b><small>On or off, drawdown</small></a>
-      <a class="g-tile" id="tile-jarvis" data-app="jarvis" data-to="jarvis/index.html" href="jarvis/index.html"><svg class="g-ticon" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="6"/><path d="M20 3v3M20 34v3M3 20h3M34 20h3"/></svg><b>Jarvis</b><small>Ask anything</small></a>
-    </div>
-  </section>
-
-  <section class="g-recent" id="recentSec" aria-labelledby="recentH" hidden>
-    <h2 class="g-h2" id="recentH">Recent</h2>
-    <div class="g-chips" id="recent"></div>
-  </section>
-
-  <section class="g-districts" aria-labelledby="distH">
-    <h2 class="g-h2" id="distH">Everything else</h2>
-    <div class="g-doors" id="doors">
-      <a class="g-door" data-district="trading" data-to="atlas/index.html" href="atlas/index.html"><svg class="g-dicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M10 7v26M20 4v32M30 9v22"/><rect x="7" y="12" width="6" height="13" rx="1"/><rect x="17" y="9" width="6" height="17" rx="1"/><rect x="27" y="14" width="6" height="10" rx="1"/></svg><b>Trading</b><small>Bots, risk, the day, research</small></a>
-      <a class="g-door" data-district="money" data-to="atlas/index.html" href="atlas/index.html"><svg class="g-dicon" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="9.5"/><path d="M20 13.5v13M23 16.8c-.3-1.2-1.5-1.9-3-1.9-1.7 0-3 .9-3 2.3 0 3.2 6 1.9 6 5.1 0 1.4-1.3 2.4-3 2.4-1.6 0-2.8-.7-3.1-1.9"/></svg><b>Money</b><small>Real money, plans, Kalshi</small></a>
-      <a class="g-door" data-district="life" data-to="atlas/index.html" href="atlas/index.html"><svg class="g-dicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 35V9"/><path d="M20 15c-4-.6-6.5-3.3-6.5-7.2 4.2.3 6.5 3 6.5 7.2zM20 15c4-.6 6.5-3.3 6.5-7.2-4.2.3-6.5 3-6.5 7.2zM20 24c-5-.6-8.3-3.8-8.3-8.4 5.2.3 8.3 3.6 8.3 8.4zM20 24c5-.6 8.3-3.8 8.3-8.4-5.2.3-8.3 3.6-8.3 8.4z"/></svg><b>Life</b><small>Plan, inbox, paper, settings</small></a>
-      <a class="g-door" data-district="worlds" data-to="atlas/index.html" href="atlas/index.html"><svg class="g-dicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M5 14 20 6l15 8zM7 14h26M9.5 17.5v12M16 17.5v12M24 17.5v12M30.5 17.5v12M6 30h28M4 34h32"/></svg><b>Worlds</b><small>The 3D city, workers, duels</small></a>
-    </div>
+  <section class="g-hubs" aria-labelledby="hubsH">
+    <h2 class="g-h2" id="hubsH">Your hubs</h2>
+    <p class="g-hint" id="hubsHint">Each hub is one of your jobs. Everything else lives inside them.</p>
+    <nav class="g-hubgrid" id="hubs" aria-labelledby="hubsH">
+      <a class="g-hub g-wide" data-hub="today" data-to="hub/index.html?h=today" href="hub/index.html?h=today"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 27a12 12 0 0 1 24 0"/><path d="M20 7v4M8.5 12.5l2.8 2.8M31.5 12.5l-2.8 2.8M3 27h34M7 32h26"/></svg><span class="g-htxt"><b>Today</b><small class="g-hline" id="hl-today">Do now, the morning brief, the news</small></span><em class="g-hcount"></em></a>
+      <a class="g-hub" data-hub="bots" data-to="hub/index.html?h=bots" href="hub/index.html?h=bots"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M7 15h26M9 33h22M11 15v18M20 15v18M29 15v18"/><path d="M11 6c-2 2 0 3.5-1.2 6h2.4c-.8-2.3.8-3.4-1.2-6zM20 4.5c-2.2 2.2 0 4-1.4 7.5h2.8c-.9-2.8.9-4.1-1.4-7.5zM29 6c-2 2 0 3.5-1.2 6h2.4c-.8-2.3.8-3.4-1.2-6z"/></svg><span class="g-htxt"><b>Bots &amp; Evals</b><small class="g-hline" id="hl-bots">Each account: drawdown, trades, pass odds</small></span><em class="g-hcount"></em></a>
+      <a class="g-hub" data-hub="kalshi" data-to="hub/index.html?h=kalshi" href="hub/index.html?h=kalshi"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5v30M9 12h22"/><path d="M9 12 4 23a5 5 0 0 0 10 0zM31 12l-5 11a5 5 0 0 0 10 0z"/><path d="M13 35h14"/></svg><span class="g-htxt"><b>Kalshi</b><small class="g-hline" id="hl-kalshi">The Kalshi bot, its bets and edges</small></span><em class="g-hcount"></em></a>
+      <a class="g-hub" data-hub="money" data-to="hub/index.html?h=money" href="hub/index.html?h=money"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="9.5"/><path d="M20 13.5v13M23 16.8c-.3-1.2-1.5-1.9-3-1.9-1.7 0-3 .9-3 2.3 0 3.2 6 1.9 6 5.1 0 1.4-1.3 2.4-3 2.4-1.6 0-2.8-.7-3.1-1.9"/></svg><span class="g-htxt"><b>My Money</b><small class="g-hline" id="hl-money">Cash, payouts, plans and net worth</small></span><em class="g-hcount"></em></a>
+      <a class="g-hub" data-hub="plan" data-to="hub/index.html?h=plan" href="hub/index.html?h=plan"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="9" width="28" height="25" rx="3"/><path d="M6 16h28M13 5v7M27 5v7M12 22h4M18 22h4M24 22h4M12 28h4M18 28h4"/></svg><span class="g-htxt"><b>Plan &amp; Day</b><small class="g-hline" id="hl-plan">Calendar, shifts, tasks and habits</small></span><em class="g-hcount"></em></a>
+      <a class="g-hub" data-hub="research" data-to="hub/index.html?h=research" href="hub/index.html?h=research"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 8h9a4 4 0 0 1 3 1.5A4 4 0 0 1 23 8h9v24h-9a4 4 0 0 0-3 1.5A4 4 0 0 0 17 32H8z"/><path d="M20 9.5v24"/></svg><span class="g-htxt"><b>Research</b><small class="g-hline" id="hl-research">Backtests, edges and write-ups</small></span><em class="g-hcount"></em></a>
+      <a class="g-hub" data-hub="jarvis" data-to="hub/index.html?h=jarvis" href="hub/index.html?h=jarvis"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="6"/><path d="M20 3v3M20 34v3M3 20h3M34 20h3"/></svg><span class="g-htxt"><b>Jarvis</b><small class="g-hline" id="hl-jarvis">Ask anything · your AI team</small></span><em class="g-hcount"></em></a>
+      <a class="g-hub" data-hub="worlds" data-to="hub/index.html?h=worlds" href="hub/index.html?h=worlds"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M5 14 20 6l15 8zM7 14h26M9.5 17.5v12M16 17.5v12M24 17.5v12M30.5 17.5v12M6 30h28M4 34h32"/></svg><span class="g-htxt"><b>Worlds</b><small class="g-hline" id="hl-worlds">The 3D places (optional)</small></span><em class="g-hcount"></em></a>
+      <a class="g-hub" data-hub="settings" data-to="hub/index.html?h=settings" href="hub/index.html?h=settings"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="5"/><path d="M20 4v5M20 31v5M4 20h5M31 20h5M8.7 8.7l3.5 3.5M27.8 27.8l3.5 3.5M8.7 31.3l3.5-3.5M27.8 12.2l3.5-3.5"/></svg><span class="g-htxt"><b>Settings &amp; Help</b><small class="g-hline" id="hl-settings">Look, the PC, every app</small></span><em class="g-hcount"></em></a>
+    </nav>
   </section>
 
   <section class="g-find" aria-labelledby="findH">
@@ -87,6 +82,11 @@
       <input id="q" type="search" placeholder="money, risk, kalshi, journal..." autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-controls="results" aria-describedby="findHint"></div>
     <p class="g-hint" id="findHint">Search by name or by what it does.</p>
     <div class="g-list" id="results" aria-live="polite"></div>
+  </section>
+
+  <section class="g-recent" id="recentSec" aria-labelledby="recentH" hidden>
+    <h2 class="g-h2" id="recentH">Recent</h2>
+    <div class="g-chips" id="recent"></div>
   </section>
 
   <section class="g-look" id="lookSec" aria-labelledby="lookH" hidden>
@@ -98,17 +98,10 @@
   </section>
 
   <footer class="g-foot">
-    <button type="button" class="g-quiet" id="workshopBtn" data-district="workshop">Workshop (labs and test pages)</button>
+    <a class="g-quiet" id="workshopLink" data-to="hub/index.html?h=settings&amp;t=workshop" href="hub/index.html?h=settings&amp;t=workshop">Workshop (labs and test pages)</a>
     <p>Read only: nothing here can trade or change a bot.</p>
   </footer>
 </main>
-
-<div class="g-scrim" id="scrim" hidden></div>
-<section class="g-sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetH" hidden>
-  <div class="g-grab" aria-hidden="true"></div>
-  <div class="g-sheethead"><div><h2 id="sheetH">Trading</h2><p class="g-sheetsub" id="sheetSub"></p></div><button type="button" class="g-close" id="sheetClose" aria-label="Close">Close</button></div>
-  <div class="g-sheetbody" id="sheetBody"></div>
-</section>
 <script>(function () { var b = window.GATE_BASE || '', a = document.querySelectorAll('[data-to]'), i;
   for (i = 0; i < a.length; i++) a[i].setAttribute('href', b + a[i].getAttribute('data-to'));
 })();</script>

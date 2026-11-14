@@ -81,6 +81,6 @@ Owner: "When I click the dashboard link there's just a shit ton of buttons ... m
   site root as `olympus-live.html` (one base-path line; every link is built from `GATE_BASE`), and when `home.json` is missing.
 - **The list** is `olympus/gate-catalog.js` (plain label, Greek name, one-line purpose, district, synonyms). A new app = one row there (`tests.test_gate_page` fails when an app
   folder or an `apps-list.js` row is missing from it).
-- **gate-nav** (`olympus/gate-nav.js`): one line in an app's `<head>`, after `agora-ui.js`: `<script src="../olympus/gate-nav.js?v=g1" defer></script>`. The back link becomes
+- **gate-nav** (`olympus/gate-nav.js`): one line in an app's `<head>`, after `agora-ui.js`: `<script src="../olympus/gate-nav.js?v=g3" defer></script>`. The back link becomes
   "< Gate", and "Go to" (a search sheet: the Gate, Recent, Start here, the districts) sits on the right of the same top row and in the compact bar. In the page flow, never over
   content, never in the orb's corner; nothing when framed inside Jarvis. In: nq, helios, aegis, mint, polis, symposium, ergasterion, cities, kalshi, herald.

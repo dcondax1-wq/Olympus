@@ -505,7 +505,7 @@ import theme_tokenize as TOK  # noqa: E402
 
 TOKENIZED = ["olympus/agora.css", "olympus/agora-apps.css", "gate/gate.css", "gate/index.html", "index.html", "zenith.css", "zenith_agora.css", "polish.css",
              "nq/nq.css", "helios/helios.css", "polis/polis.css", "olympus/polis.css", "jarvis/jarvis.css", "jarvis/home3d.css", "kalshi/kalshi.css",
-             "olympus/gate-nav.js", "launcher.js", "olympus/polis-life.js", "jarvis/switcher.js", "jarvis/copilot-card.js"]
+             "olympus/gate-nav.js", "launcher.js", "olympus/polis-life.js", "jarvis/switcher.js", "jarvis/copilot-card.js", "hub/hub.css", "hub/index.html"]
 LAYER = "style themes (olympus/themes.js 'style', 2026-11-14)"
 
 
@@ -603,6 +603,10 @@ def gate_ready(p):
     p.wait_for_timeout(300)
 
 
+MIX_ROWS = ["Today", "Bots & Evals", "Kalshi", "My Money", "Plan & Day", "Research", "Jarvis", "Worlds", "Settings & Help", "This Gate"]
+TRADER_HUBS = {"today": "amber", "bots": "amber", "kalshi": "stocks", "money": "stocks", "plan": "forest", "research": "amber", "jarvis": "forest", "worlds": "aurora", "settings": "forest"}
+
+
 def test_gate_look(br, origin):
     ctx, p, errs = ctx_page(br, origin, None)
     p.goto(origin + "/gate/" + GATE_Q)
@@ -633,16 +637,17 @@ def test_gate_look(br, origin):
     mx = p.evaluate("""() => ({ combos: [...document.querySelectorAll('.g-combo')].map((b) => b.dataset.combo), rows: [...document.querySelectorAll('.g-mixrow .g-mixh b')].map((b) => b.textContent),
         minis: document.querySelectorAll('.g-mixrow')[0].querySelectorAll('.g-mini').length, one: document.getElementById('looks').hidden,
         h: Math.min(...[...document.querySelectorAll('.g-mini, .g-combo, #lookTab1, #lookTab2')].map((b) => b.getBoundingClientRect().height)) })""")
-    check(f"g. Mix: three ready-made combos (Trader, Luxury, Clean), a row per catalog district (Trading, Money, Life, Worlds) and this Gate, each with 'Same' + the {len(PLAIN + STYLED)} looks; targets 44 px+",
-          mx["combos"] == ["trader", "luxury", "clean"] and mx["rows"] == ["Trading", "Money", "Life", "Worlds", "This Gate"] and mx["minis"] == 1 + len(PLAIN + STYLED) and mx["one"] and mx["h"] >= 44, mx)
+    check(f"g. Mix: three ready-made combos (Trader, Luxury, Clean), a row per hub (IA v2: the nine hubs) and this Gate, each with 'Same' + the {len(PLAIN + STYLED)} looks; targets 44 px+",
+          mx["combos"] == ["trader", "luxury", "clean"] and mx["rows"] == MIX_ROWS and mx["minis"] == 1 + len(PLAIN + STYLED) and mx["one"] and mx["h"] >= 44, mx)
     p.click('.g-combo[data-combo="trader"]')
     p.wait_for_timeout(250)
     m = p.evaluate("() => [JSON.parse(localStorage.getItem('olympus.themeMix') || 'null'), document.documentElement.dataset.olyTheme, document.querySelector('.g-combo[data-combo=\"trader\"]').getAttribute('aria-pressed')]")
-    check("g. the Trader combo: Trading = Amber, Money = Stocks Light, Life = Forest, Worlds = Glass Aurora, the app -> district map from the catalog saved with it; the Gate keeps the one look",
-          m[0] and m[0]["district"] == {"trading": "amber", "money": "stocks", "life": "forest", "worlds": "aurora"} and m[0]["of"].get("nq") == "trading"
-          and m[0]["of"].get("mint") == "money" and m[0]["of"].get("today") == "trading" and m[1] == "aurora" and m[2] == "true", m)
+    check("g. the Trader combo, per hub through its v1 district (Today / Bots / Research = Amber, Kalshi / Money = Stocks Light, Plan / Jarvis / Settings = Forest,"
+          " Worlds = Glass Aurora), the app -> hub map (+ each hub page) from the catalog saved with it; the Gate keeps the one look",
+          m[0] and m[0]["district"] == TRADER_HUBS and m[0]["of"].get("nq") == "bots" and m[0]["of"].get("mint") == "money" and m[0]["of"].get("hub-plan") == "plan"
+          and m[1] == "aurora" and m[2] == "true", m)
     rows = p.locator(".g-mixrow")
-    rows.nth(4).locator('.g-mini[data-theme-id="forest"]').click()
+    rows.nth(len(MIX_ROWS) - 1).locator('.g-mini[data-theme-id="forest"]').click()
     p.wait_for_timeout(250)
     gf = p.evaluate("() => [document.documentElement.dataset.olyTheme, JSON.parse(localStorage.getItem('olympus.themeMix')).app]")
     check("g. This Gate's own look (Forest) repaints the Gate at once and is kept as an app override", gf[0] == "forest" and gf[1].get("gate") == "forest", gf)
@@ -653,8 +658,15 @@ def test_gate_look(br, origin):
         p2.wait_for_function("() => document.documentElement.hasAttribute('data-oly-theme')", timeout=30000)
         p2.wait_for_timeout(400)
         looks[app] = p2.evaluate("() => [document.documentElement.dataset.olyTheme, document.documentElement.dataset.olyStyle || null, getComputedStyle(document.querySelector('h1')).textTransform]")
-    check("g. the mix reaches the apps: NQ and Helios (Trading) open in Amber (its capitals), Mint (Money) in Stocks Light",
+    check("g. the mix reaches the apps: NQ (Bots & Evals) and Helios (Today) open in Amber (its capitals), Mint (My Money) in Stocks Light",
           looks["nq"][:2] == ["amber", "amber"] and looks["nq"][2] == "uppercase" and looks["helios"][0] == "amber" and looks["mint"][0] == "stocks", looks)
+    hubs = {}
+    for hid in ("bots", "money", "plan", "worlds"):
+        p2.goto(f"{origin}/hub/index.html?h={hid}")
+        p2.wait_for_function("() => window.HUB && window.HUB.ready() && document.documentElement.hasAttribute('data-oly-theme')", timeout=30000)
+        hubs[hid] = p2.evaluate("() => [document.documentElement.dataset.olyTheme, document.documentElement.dataset.olyPage, getComputedStyle(document.body).color]")
+    check("g. ... and the hub pages (hub-<id>): Bots & Evals in Amber, My Money in Stocks Light, Plan & Day in Forest, Worlds in Glass Aurora",
+          [hubs[h][0] for h in ("bots", "money", "plan", "worlds")] == ["amber", "stocks", "forest", "aurora"] and hubs["bots"][1] == "hub-bots", hubs)
     p.click("#lookTab1")
     p.click('#looks [data-theme-id="agora"]')
     p.wait_for_timeout(300)

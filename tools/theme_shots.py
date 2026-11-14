@@ -30,12 +30,29 @@ MIXES = {"trader": {"trading": "amber", "money": "stocks", "life": "forest", "wo
          "clean": {"trading": "stocks", "money": "ivory", "life": "ivory", "worlds": "midnight"}}
 
 
-def of_map():
-    """app -> district, from olympus/gate-catalog.js (what the Gate saves with a mix)"""
-    js = ("const g={};require('vm').runInNewContext(require('fs').readFileSync(process.argv[1],'utf8'),{window:g,module:{}});const C=g.OLYMPUS_GATE,o={today:'trading'};"
-          "C.apps.forEach(a=>{const d=a.hub||a.district;if(!/^(start|workshop)$/.test(d))o[a.id]=d;});process.stdout.write(JSON.stringify(o))")
+def _catalog():
+    js = ("const g={};require('vm').runInNewContext(require('fs').readFileSync(process.argv[1],'utf8'),{window:g,module:{}});const C=g.OLYMPUS_GATE;"
+          "process.stdout.write(JSON.stringify({apps:C.apps.map(a=>[a.id,a.hub||a.district]),hubs:(C.hubs||[]).map(h=>[h.id,h.legacy||''])}))")
     out = subprocess.run(["node", "-e", js, os.path.join(WEB, "olympus", "gate-catalog.js")], capture_output=True, text=True, timeout=30)
     return json.loads(out.stdout)
+
+
+def of_map():
+    """app -> district (the hub, IA v2), from olympus/gate-catalog.js (what the Gate saves with a mix), + each hub page ('hub-<id>')"""
+    c = _catalog()
+    o = {"today": c["hubs"][0][0] if c["hubs"] else "trading"}
+    for aid, d in c["apps"]:
+        if d not in ("start", "workshop"):
+            o[aid] = d
+    for hid, _ in c["hubs"]:
+        o["hub-" + hid] = hid
+    return o
+
+
+def mix_districts(combo):
+    """a combo written per v1 district, as the Gate saves it: each hub takes its legacy district's look (gate.js comboOf)"""
+    c = _catalog()
+    return {hid: combo.get(hid) or combo.get(leg) for hid, leg in c["hubs"] if combo.get(hid) or combo.get(leg)} if c["hubs"] else dict(combo)
 
 
 def theme_ids():
@@ -157,7 +174,7 @@ def main():
         want = a.themes.split(",")
         themes = [t for t in themes if t[0] in want]
     pages = [p for p in PAGES if (p[0] != "mint" or a.mix or "mint" in a.pages) and (not a.pages or p[0] in a.pages.split(","))]
-    mix = {"district": MIXES[a.mix], "app": {}, "of": of_map()} if a.mix else None
+    mix = {"district": mix_districts(MIXES[a.mix]), "app": {}, "of": of_map()} if a.mix else None
     if mix:
         themes = [("agora", f"Mix: {a.mix.title()} (" + ", ".join(f"{k} = {v}" for k, v in MIXES[a.mix].items()) + ")")]
     os.makedirs(a.out, exist_ok=True)
