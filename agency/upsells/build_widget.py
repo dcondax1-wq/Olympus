@@ -27,7 +27,7 @@ def src_hash() -> str:
 
 
 def stamp() -> str:
-    return f"/*! Front-desk chat by agency/upsells: no tracking, no cookies, no storage; one request, the lead form post. src {src_hash()} */"
+    return f"/*! Front-desk chat (agency/upsells): no tracking, cookies or storage. src {src_hash()} */"
 
 
 def built_hash() -> str:

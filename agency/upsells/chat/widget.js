@@ -18,8 +18,8 @@ var STOP = {}, SYN = {};
 
 function norm(s) {
   s = String(s || "").toLowerCase();
-  if (s.normalize) s = s.normalize("NFD").replace(/[̀-ͯ]/g, "");
-  return s.replace(/['’`]/g, "").replace(/&/g, " and ").replace(/\$/g, " dollar ").replace(/[^a-z0-9]+/g, " ").trim();
+  if (s.normalize) s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return s.replace(/['\u2019\x60]/g, "").replace(/&/g, " and ").replace(/\$/g, " dollar ").replace(/[^a-z0-9]+/g, " ").trim();
 }
 function stem(w) {
   if (w.length > 4 && w.slice(-3) == "ies") return w.slice(0, -3) + "y";
@@ -214,7 +214,7 @@ function greeting(dt) {
   return st.open ? {t: fill(C.g, st), chips: 1} : {t: fill(C.ah, st), chips: 1, a: C.em ? ["emergency", "lead"] : ["lead"]};
 }
 
-var API = W.FrontDeskChat = {id: C.id, understand: understand, answer: answer, greeting: greeting, state: state};
+var API = W.FrontDeskChat = {id: C.id, understand: understand, answer: answer, greeting: greeting, state: state, words: words};
 if (!D || !D.documentElement.attachShadow) return;
 
 // ---------------------------------------------------------------- the widget, in a shadow root (the site's CSS can't touch it, it can't touch the site)
@@ -288,7 +288,7 @@ function build() {
   $(".l").onclick = function () { opened ? close() : open(); };
   $(".x").onclick = close;
   $("form").onsubmit = function (e) { e.preventDefault(); var v = input.value; input.value = ""; ask(v); };
-  wrap.onkeydown = function (e) { if (e.key == "Escape") close(); };
+  D.addEventListener("keydown", function (e) { if (e.key == "Escape") close(); });
   wrap.onclick = function (e) {                                   // the suggested questions and every "leave my number" button
     var b = e.target.closest("[data-q],[data-a]"), it = b && (BY[b.getAttribute("data-q")] || {kind: "lead", chip: LBL.lead});
     if (!it) return;
@@ -307,7 +307,9 @@ function status() {
 }
 function add(h) { logEl.insertAdjacentHTML("beforeend", h); logEl.scrollTop = logEl.scrollHeight; }
 function user(t) { add("<div class='m u'>" + esc(t) + "</div>"); }
+// the answers first, then (once) the lead form and the suggested questions they asked for
 function reply(list) {
+  var lead, chips;
   list.forEach(function (a) {
     var h = "", ul = 0, acts = (a.a || []).map(btn).join("");
     a.t.split("\n").forEach(function (ln) {
@@ -316,9 +318,10 @@ function reply(list) {
       ul = li;
     });
     add("<div class=m>" + h + (ul ? "</ul>" : "") + (acts ? "<div class=ac>" + acts + "</div>" : "") + "</div>");
-    if (a.lead) leadForm(said[said.length - 1] || "");
-    if (a.chips) add("<div class=ch role=group aria-label='Suggested questions'>" + C.ch.map(function (id) { return "<button class=cp type=button data-q=" + id + ">" + esc(BY[id].chip) + "</button>"; }).join("") + "</div>");
+    lead = lead || a.lead; chips = chips || a.chips;
   });
+  if (lead) leadForm(said[said.length - 1] || "");
+  if (chips) add("<div class=ch role=group aria-label='Suggested questions'>" + C.ch.map(function (id) { return "<button class=cp type=button data-q=" + id + ">" + esc(BY[id].chip) + "</button>"; }).join("") + "</div>");
 }
 function ask(text) {
   text = String(text || "").trim();
@@ -330,7 +333,7 @@ function leadForm(need) {
   add("<form class=fm aria-label='Leave your details' novalidate><b>We'll call or text you back</b><label>Your name<input name=name autocomplete=name></label><label>Phone number<input name=phone type=tel autocomplete=tel></label>" +
     "<label>What do you need?<textarea name=need></textarea></label><input class=hp name=bot-field tabindex=-1 aria-hidden=true><p class=er role=alert></p><button class=bt>Send</button><small>Only " + esc(C.n) +
     " gets your name, number and this chat, to reply to you.</small></form>");
-  var f = logEl.lastElementChild, E = f.elements, t0 = Date.now();
+  var f = logEl.lastElementChild, E = f.elements;
   if (need.split(" ").length > 2 && understand(need).ids.join() != "lead") E.need.value = need;
   f.onsubmit = function (e) {
     e.preventDefault();
@@ -340,7 +343,7 @@ function leadForm(need) {
     er.textContent = ""; b.disabled = true; b.textContent = "Sending…";
     var data = {"form-name": C.f.n, name: name, phone: phone, need: E.need.value.trim().slice(0, 1000), page: W.location.origin + W.location.pathname, chat: said.slice(-6).join(" | ").slice(0, 600), "bot-field": E["bot-field"].value};
     var done = function () { var st = state(); f.remove(); reply([{t: "Thanks, " + name.split(" ")[0] + "! " + C.n + " will get back to you at " + phone + (st.open ? " shortly." : " " + when(st.next) + ".")}]); };
-    if (data["bot-field"] || Date.now() - t0 < 1500) return done();
+    if (data["bot-field"]) return done();                          // a bot filled the hidden field: say thanks, send nothing
     send(data).then(done, function () { b.disabled = false; b.textContent = "Try again"; er.textContent = "That didn't go through. Please try again, or call us at " + C.phl + "."; });
   };
   if (!COARSE) E.name.focus();

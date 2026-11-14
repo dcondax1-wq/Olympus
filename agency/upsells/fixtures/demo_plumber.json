@@ -34,10 +34,10 @@
       {"name": "Yearly tune-up", "price": "$99", "keys": ["tune up", "maintenance visit"]}
     ],
     "area": {"text": "Brandon, Tampa, Riverview, Valrico and nearby",
-             "towns": ["Brandon", "Tampa", "Riverview", "Valrico", "Seffner", "Plant City", "Apollo Beach", "Lutz"],
-             "zips": ["33510", "33511", "33569", "33578", "33579", "33594", "33584", "33619"]},
+             "towns": ["Brandon", "Tampa", "Riverview", "Valrico", "Seffner", "Plant City"],
+             "zips": ["33510", "33511", "33569", "33578", "33594", "33619"]},
     "facts": {
-      "license": "Yes: fully licensed (FL #CFC0000000, a demo number) and insured. Every tech is background-checked.",
+      "license": "Yes: licensed (FL #CFC0000000, demo number) and insured; every tech is background-checked.",
       "warranty": "Repairs carry a 1-year parts and labor warranty; new systems add the maker's 10-year parts warranty.",
       "financing": "Yes, on new systems, with monthly payments. Leave your number and we'll go over the options."
     }
