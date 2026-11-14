@@ -623,7 +623,7 @@ display:flex;flex-direction:column;gap:12px;min-width:0;color:var(--rc-ink)}
   // ATLAS orange, Strategy 3 purple), the gauges as glowing 3D tubes, the health score as a glowing ring, the equity curve
   // floating over a perspective floor. Dark first; the light theme keeps the same depth with soft shadows and no glow on text.
   const DEPTH = `
-.rc-wrap{--rc-e:cubic-bezier(.2,.8,.2,1);--rc-n-lit:#4da3ff;--rc-n-atlas:var(--oly-th-a9, #ff9a3d);--rc-n-s3:#b47cff;--rc-neon:var(--rc-acc);
+.rc-wrap{--rc-e:cubic-bezier(.2,.8,.2,1);--rc-n-lit:#4da3ff;--rc-n-atlas:#ff9a3d;--rc-n-s3:#b47cff;--rc-neon:var(--rc-acc);
 --rc-g1:color-mix(in srgb,var(--surface,var(--oly-th-n3, #10131a)) 76%,transparent);--rc-g2:color-mix(in srgb,var(--surface,var(--oly-th-n3, #10131a)) 52%,transparent);
 --rc-hi:rgba(255,255,255,.09);--rc-well:rgba(0,0,0,.34);--rc-wellhi:rgba(255,255,255,.05);--rc-tile:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.012));
 --rc-sh:0 1px 0 rgba(0,0,0,.35),0 22px 44px -24px rgba(0,0,0,.85),0 46px 90px -52px rgba(0,0,0,.7);--rc-tsh:inset 0 1px 0 rgba(255,255,255,.06),0 8px 18px -12px rgba(0,0,0,.75)}

@@ -27,6 +27,8 @@ GRID = {"n": (0, 100, 2.5), "a": (15, 90, 5), "g": (15, 90, 5), "r": (15, 90, 5)
 WARN = {(224, 176, 96), (220, 174, 106)}                                               # AGORA's sun (--ag-sun, Zenith's --warn)
 # AGORA's aegean blue (2026-11-14, team T2): the information colour, a fill and a text ink; every look paints them readable on its own page
 INFO = {(75, 122, 153): "info", (127, 167, 194): "infot"}
+# the bots' identity colours (2026-11-14, team T2): a look never repaints them (Zlarior's blue and BLITZ's violet are not warm, ATLAS's orange is)
+KEEP = {(255, 154, 61), (255, 106, 26)}
 LIGHT = re.compile(r"data-theme\s*=\s*[\"']?light|data-oly-scheme\s*=\s*[\"']?light|prefers-color-scheme\s*:\s*light", re.I)
 NOT = re.compile(r":not\((?:[^()]|\([^()]*\))*\)")
 
@@ -56,7 +58,7 @@ def lightness(r, g, b):
 
 def slot(r, g, b, families="nagrwi"):
     """the theme slot of one colour, or None (left as it is)"""
-    if (r, g, b) in ((0, 0, 0), (255, 255, 255)):
+    if (r, g, b) in ((0, 0, 0), (255, 255, 255)) or (r, g, b) in KEEP:
         return None
     if (r, g, b) in WARN:
         return "warn" if "w" in families else None

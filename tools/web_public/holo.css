@@ -15,7 +15,7 @@
   border-bottom: 1px solid var(--hd-line); background: linear-gradient(180deg, rgba(var(--oly-th-n5-rgb, 14,20,48),.85), rgba(var(--oly-th-n3-rgb, 6,10,28),.6)); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); z-index: 5; }
 .hd-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .hd-brand b { font-size: 16px; letter-spacing: .22em; background: linear-gradient(90deg, #7dd3fc, #a78bfa 55%, #f0abfc); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.hd-logo { width: 22px; height: 22px; border-radius: 7px; background: conic-gradient(from 210deg, #4f9bff, #b388ff, var(--oly-th-a9, #ff9a3d), #4f9bff); box-shadow: 0 0 18px -2px #8b5cf6; transform: rotate(45deg) scale(.8); }
+.hd-logo { width: 22px; height: 22px; border-radius: 7px; background: conic-gradient(from 210deg, #4f9bff, #b388ff, #ff9a3d, #4f9bff); box-shadow: 0 0 18px -2px #8b5cf6; transform: rotate(45deg) scale(.8); }
 .hd-day { color: var(--hd-ink2); font-family: var(--hd-mono); font-size: 12px; }
 .hd-mode { font-size: 11px; font-weight: 800; letter-spacing: .08em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--hd-line2); color: var(--hd-ink2); }
 .hd-mode.live { color: var(--oly-th-n2, #04140c); background: var(--hd-up); border-color: transparent; box-shadow: 0 0 14px -2px var(--hd-up); animation: hdPulse 1.6s ease-in-out infinite; }
@@ -114,7 +114,7 @@
 .hd-bot em { font-style: normal; font-size: 9.5px; color: var(--hd-mut); }
 .hd-bot[aria-pressed="false"] { opacity: .4; } .hd-bot[aria-pressed="false"] i { background: transparent; border: 1px solid var(--c); box-shadow: none; }
 .hd-key { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--hd-mut); padding: 3px 8px; border-radius: 999px; background: rgba(var(--oly-th-n2-rgb, 5,9,26),.55); }
-.hd-key i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; } .hd-key i.solid { background: #4f9bff; box-shadow: 0 0 8px #4f9bff; } .hd-key i.hollow { border: 1.5px dashed var(--oly-th-a9, #ff9a3d); margin-left: 6px; }
+.hd-key i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; } .hd-key i.solid { background: #4f9bff; box-shadow: 0 0 8px #4f9bff; } .hd-key i.hollow { border: 1.5px dashed #ff9a3d; margin-left: 6px; }
 .hd-note { position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%); z-index: 6; padding: 12px 16px; border-radius: 14px; background: var(--hd-glass2); border: 1px solid var(--hd-line2); color: var(--hd-ink2); max-width: 80%; text-align: center; }
 .hd-note[hidden] { display: none; }
 .hd-card { position: absolute; right: 12px; top: 56px; z-index: 8; width: min(360px, calc(100% - 24px)); max-height: calc(100% - 120px); overflow: auto; padding: 12px 14px; border-radius: 16px;
@@ -234,9 +234,9 @@ html.hd-lock, html.hd-lock body { overflow: hidden; }
 /* Home / Live View entry button (phone + PC) */
 .hd-home { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 14px 16px; margin: 0 0 12px; border-radius: 18px; cursor: pointer; color: var(--oly-th-n38, #e8eefc);
   border: 1px solid rgba(56,189,248,.45); font: inherit;
-  background: radial-gradient(420px 160px at 0% 0%, rgba(79,155,255,.30), transparent 70%), radial-gradient(420px 160px at 100% 100%, rgba(var(--oly-th-a9-rgb, 255,154,61),.22), transparent 70%), linear-gradient(135deg, #0a1236, var(--oly-th-n2, #050816));
+  background: radial-gradient(420px 160px at 0% 0%, rgba(79,155,255,.30), transparent 70%), radial-gradient(420px 160px at 100% 100%, rgba(255,154,61,.22), transparent 70%), linear-gradient(135deg, #0a1236, var(--oly-th-n2, #050816));
   box-shadow: 0 14px 34px -14px rgba(56,189,248,.75), inset 0 1px 0 rgba(255,255,255,.08); }
-.hd-home-i { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; flex: none; background: conic-gradient(from 200deg, #4f9bff, #b388ff, var(--oly-th-a9, #ff9a3d), #4f9bff); box-shadow: 0 0 18px -4px #4f9bff; font-weight: 900; color: #fff; font-size: 13px; letter-spacing: .04em; }
+.hd-home-i { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; flex: none; background: conic-gradient(from 200deg, #4f9bff, #b388ff, #ff9a3d, #4f9bff); box-shadow: 0 0 18px -4px #4f9bff; font-weight: 900; color: #fff; font-size: 13px; letter-spacing: .04em; }
 .hd-home-t { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .hd-home-t b { font-size: 16px; background: linear-gradient(90deg, #7dd3fc, #a78bfa 60%, var(--oly-th-a11, #fdba74)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .hd-home-t em { font-style: normal; font-size: 12.5px; color: var(--oly-th-n32, #b8c4dc); } .hd-home-go { font-weight: 700; font-size: 13px; color: var(--oly-th-infot, #7dd3fc); white-space: nowrap; }

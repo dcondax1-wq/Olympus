@@ -35,6 +35,7 @@ import functools
 import http.server
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -306,6 +307,13 @@ def _hexrgb(h):
     return [int(h[i:i + 2], 16) for i in (0, 2, 4)]
 
 
+def mostly_on(box, W, H):
+    """at least 60 % of a text box (both ways) is on the screenshot"""
+    x, y, w, h = box
+    vis_w, vis_h = min(W, x + w) - max(0, x), min(H, y + h) - max(0, y)
+    return w > 0 and h > 0 and vis_w >= 0.6 * w and vis_h >= 0.6 * h
+
+
 def pixel_check(png, rows, vw, vh):
     """the text rows on screen, measured on the screenshot: (fails, checked). A row passes when its ink over the background its box
     mostly shows reaches its need; covered rows (top == False) are skipped."""
@@ -319,8 +327,8 @@ def pixel_check(png, rows, vw, vh):
             continue
         x, y, w, h = r["box"]
         x0, y0, x1, y1 = max(0, x), max(0, y), min(W, x + w), min(H, y + h)
-        if x1 - x0 < 2 or y1 - y0 < 2:
-            continue
+        if x1 - x0 < 2 or y1 - y0 < 2 or not mostly_on(r["box"], W, H):
+            continue                                              # cut by the screen's edge: measured on the next screen
         fg = _hexrgb(r["fg"])
         box = im[y0:y1, x0:x1].reshape(-1, 3)
         # the background is what the box shows besides the ink: pixels near the text colour (the glyphs) are left out first, so a bold
@@ -667,7 +675,8 @@ def mix_check(br, origin, log=print):
 
 SHORT = {"text": "contrast", "left": "AGORA leftover", "money": "+$/-$", "frame": "status bar", "first": "flash", "focus": "focus ring", "overlay": "sheet/toast",
          "load": "load"}
-ART_SEL = ("svg.s2d", "pp-portrait")                         # scene art: its own colours, like a 3D canvas (not a leftover)
+ART_SEL = ("svg.s2d", "pp-portrait", "svg.pl-", "a.ship > svg")                         # scene art: its own colours, like a 3D canvas (not a leftover)
+KEEP_RX = re.compile(r"\b(255, 154, 61|255, 106, 26)\b")      # the bots' identity colours (ATLAS orange): never a look's to repaint
 
 
 def look_issues(r, base=None):
@@ -679,10 +688,11 @@ def look_issues(r, base=None):
 
     def fps(x):
         out = {}
-        for t in (x.get("lowPx") or []) + (x.get("lowBelow") or []):
+        vw, vh = (1440, 900) if x.get("view") == "desk" else (390, 844)
+        for t in [t for t in (x.get("lowPx") or []) if mostly_on(t["box"], vw, vh)] + (x.get("lowBelow") or []):
             out.setdefault("text", {})[(t["sel"], t["text"])] = f"{t['sel'][-40:]} '{t['text'][:20]}' {t['fg']} on {t.get('pxbg', t['bg'])} {t.get('px', t['ratio'])}:1"
         for t in x.get("left") or []:
-            if not any(a in t["sel"] for a in ART_SEL):
+            if not any(a in t["sel"] for a in ART_SEL) and not KEEP_RX.search(str(t["value"])):
                 out.setdefault("left", {})[(t["sel"], t["prop"])] = f"{t['sel'][-40:]} {t['prop']}={str(t['value'])[:40]}"
         for t in (x.get("money") or {}).get("wrong") or []:
             out.setdefault("money", {})[(t["sel"], t["text"])] = f"'{t['text']}' in {t['color']}"

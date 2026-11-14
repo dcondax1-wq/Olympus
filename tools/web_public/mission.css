@@ -18,7 +18,7 @@
 .up { color: var(--mc-good, var(--oly-th-g8, #2ee59d)); } .dn { color: var(--mc-bad, var(--oly-th-r11, #ff5a7a)); }
 
 /* ------------------------------------------------------------------ Home strip */
-.mc-strip { position: relative; margin: 0 0 14px; padding: 14px 14px 12px; border-radius: 20px; background: var(--mc-glass) padding-box, linear-gradient(135deg, rgba(79,155,255,.5), rgba(179,136,255,.25) 50%, rgba(var(--oly-th-a9-rgb, 255,154,61),.35)) border-box;
+.mc-strip { position: relative; margin: 0 0 14px; padding: 14px 14px 12px; border-radius: 20px; background: var(--mc-glass) padding-box, linear-gradient(135deg, rgba(79,155,255,.5), rgba(179,136,255,.25) 50%, rgba(255,154,61,.35)) border-box;
   border: 1px solid transparent; box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 22px 50px -22px rgba(30,60,180,.6); overflow: hidden; }
 .mc-strip::before { content: ""; position: absolute; inset: -40% -10% auto auto; width: 70%; height: 120%; background: radial-gradient(closest-side, rgba(79,155,255,.16), transparent); pointer-events: none; }
 .mc-strip > header { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }

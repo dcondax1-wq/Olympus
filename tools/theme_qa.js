@@ -14,8 +14,9 @@
     opts = opts || {};
     const W = innerWidth, H = innerHeight, max = opts.max || 60, d = document, root = d.documentElement;
     const SKIP = '.g-swatches, .g-sw, .g-mini, .g-combo, #looks, #lookMix, #lookTop, #lookBar, .othemes, #themes, #olyThemes, .lk-pick, [data-oly-qa-skip], .oly-grain';
-    // scene art keeps its own colours like a 3D canvas does (the 2D fallback scenes, the people's painted portraits): never a leftover
-    const ART = 'svg.s2d, .pp-portrait, canvas, video, img';
+    // scene art keeps its own colours like a 3D canvas does (the 2D fallback scenes, the people's painted portraits, Polis's painted clay,
+    // bronze and wood: polis-life.js): never a leftover
+    const ART = 'svg.s2d, .pp-portrait, canvas, video, img, svg[class*="pl-"], a.ship svg';
     // ---------------------------------------------------------------- colours: any CSS colour -> [r, g, b, a] (0-255, a 0-1)
     const cx = d.createElement('canvas'); cx.width = cx.height = 1; const g2 = cx.getContext('2d', { willReadFrequently: true }); const cache = new Map();
     function col(v) {

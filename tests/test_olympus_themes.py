@@ -524,7 +524,7 @@ TOKENIZED = ["olympus/agora.css", "olympus/agora-apps.css", "gate/gate.css", "ga
              # T2 (2026-11-14, "lock down the looks"): every app on the QA matrix, the dashboard's injected sheets, the kit's own
              "aegis/aegis.css", "mint/mint.css", "oikos/oikos.css", "ledger/ledger.css", "planner/planner.css", "cities/world.css", "cities/agora-cities.css",
              "symposium/symposium.css", "olympus/people.css", "settings/settings.css", "olympus/olympus.css", "holo.css", "mission.css", "liveview.css",
-             "statuscore.js", "realcore.js", "blitzcore.js", "missioncore.js", "zenithcore.js", "sessioncore.js", "moneynowcore.js", "boardcore.js",
+             "statuscore.js", "realcore.js", "blitzcore.js", "zenithcore.js", "sessioncore.js", "moneynowcore.js", "boardcore.js",
              "liveview.js", "jarvis/assist-ui.js", "goals.js", "features.js", "more.js", "hub.js", "olympus/glossary-lite.js"]
 LAYER = "style themes (olympus/themes.js 'style', 2026-11-14)"
 

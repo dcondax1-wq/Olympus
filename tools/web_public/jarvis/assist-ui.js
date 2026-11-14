@@ -42,6 +42,7 @@ function style() {
 .jx-plan[hidden]{display:none}
 .jx-plan .h{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:13px;letter-spacing: .02em;text-transform: none;opacity:.8}
 .jx-plan .h span{flex:1}.jx-plan .h button{font:inherit;font-size:16px;line-height:1;color:inherit;background:none;border:0;opacity:.7;padding:2px 4px;min-width:44px;min-height:44px;cursor:pointer}
+html[data-oly-theme]:not([data-oly-theme="agora"]) .jx-plan .h button{opacity:1}
 .jx-plan ol{margin:0;padding:0;list-style:none;counter-reset:jp}
 .jx-plan li{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid rgba(var(--oly-th-n37-rgb, 239,238,235),.07);font-size:14px;line-height:1.35}
 .jx-plan li:first-child{border-top:0}
