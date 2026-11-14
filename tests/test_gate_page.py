@@ -63,8 +63,8 @@ def test_static():
           '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g4'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=g2', 'olympus/hub-status.js?v=h1', 'gate/gate.js?v=g4']" in html and "s.async = false" in html)
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g5'" in html and "b + 'olympus/agora.css" in html
+          and "['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=g2', 'olympus/hub-status.js?v=h1', 'gate/gate.js?v=g5']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the nine hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order: Today (wide) first ... Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="today"' in html and html.count('class="g-hline"') == 9)
