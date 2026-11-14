@@ -416,13 +416,15 @@ def conditions(snap: dict) -> dict:
     """{code: plain sentence} of what is wrong right now (only what matters at this hour)."""
     out = {}
     mo, hb_age = snap.get("market_open"), snap.get("hb_age")
+    # a real eval is never resumed by BOTS_BACK.bat (paper / Sim only): GO_LIVE_EVAL.bat brings it back and you type the phrase
+    back = ("Double-click GO_LIVE_EVAL.bat on the PC (it brings the bot back; you type the phrase)." if snap.get("mode") == "LIVE"
+            else "Double-click BOTS_BACK.bat on the PC.")
     if mo and not snap.get("server"):
-        out["bot_down"] = "The bot server on the PC is not answering. Double-click BOTS_BACK.bat on the PC."
+        out["bot_down"] = "The bot server on the PC is not answering. " + back
     elif mo and (hb_age is None or hb_age > HB_STALE_S):
-        out["bot_down"] = ("The bot has not reported for " + (span(hb_age) if hb_age is not None else "a long time")
-                           + ". Double-click BOTS_BACK.bat on the PC.")
+        out["bot_down"] = ("The bot has not reported for " + (span(hb_age) if hb_age is not None else "a long time") + ". " + back)
     elif snap.get("entry_hours") and snap.get("hb") is not None and not _d(snap["hb"]).get("running"):
-        out["bot_stopped"] = "The bot server runs but the bot is stopped in entry hours. Double-click BOTS_BACK.bat on the PC."
+        out["bot_stopped"] = "The bot server runs but the bot is stopped in entry hours. " + back
     if mo and snap.get("nt") is False:
         out["nt_down"] = "NinjaTrader is not running on the PC: open it and log in."
     elif mo and "bot_down" not in out and (snap.get("feed_flag") or (snap.get("bar_age") is not None and snap["bar_age"] > BAR_STALE_S)):
@@ -694,7 +696,8 @@ def events(state: dict, snap: dict) -> tuple:
                 title, body = fill_check.push_text(r, {**fs[0], "text": " ".join(x["text"] for x in fs)})
             except Exception:
                 title, body = f"{r.get('label') or r['acct']} fill check: {code}", " ".join(x.get("text", "") for x in fs)
-            msgs.append({"key": key, "title": title, "body": body, "priority": "high", "tags": "rotating_light"})
+            msgs.append({"key": key, "title": title, "body": body, "priority": "high" if r.get("kind") == "LIVE" else "default",
+                         "tags": "rotating_light"})
     cond = conditions(snap)
     for code, text in cond.items():
         c = st["cond"].get(code)
@@ -715,7 +718,7 @@ def events(state: dict, snap: dict) -> tuple:
     if st["seeded"]:
         try:
             from tools import pc_guard
-            st["guard"], gm = pc_guard.guard(st["guard"], snap)
+            st["guard"], gm = pc_guard.guard(st["guard"], {**snap, "cond": cond})    # cond: the 01:45 ready push names them
             msgs += gm
         except Exception:
             pass

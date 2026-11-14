@@ -514,7 +514,7 @@ def short(r: dict | None) -> str:
     se = _d(r.get("slip")).get("entry_ticks")
     return (f"Fill check OK: {R['filled']} of {P.get('qty')} filled"
             + (f", {ticks_text(abs(se))} {'worse' if se > 0 else 'better'} than the plan" if se else ", at the plan's price" if se == 0 else "")
-            + ", stop in place.")
+            + (", the stop was in place." if R.get("closed") else ", stop in place."))
 
 
 def main(argv=None) -> int:

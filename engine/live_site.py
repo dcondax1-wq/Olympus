@@ -20,6 +20,8 @@ into a proxy to http://127.0.0.1:8766, inside the owner's tailnet only, never Fu
   GET /api/site/live.json  the bot's live.json (engine/live_publish.build of the running bot: kind "le-live", pc, pc_verdict,
                          board, accounts), at most 15 s old; the Gate's "Right now" card reads it
   GET /api/site/status   what this serves: which site folder and how old, live on / off, the Kalshi and money sources
+  GET /api/site/launch.json  the Gate's Launch card (tools/launch_card.py): per bot armed? feed fresh? trades, $, drawdown left,
+                         flags incl. the real-fill check (tools/fill_check.py), and whether the 15-minute phone report runs
 
 READ ONLY over the link: a request that came through any proxy (X-Forwarded-For / X-Forwarded-Host / Tailscale-User-Login ...)
 may only GET / HEAD / OPTIONS (one exception, only once engine/day_inbox.install ran: POST /inbox/<kind>, which appends a line to
@@ -395,6 +397,17 @@ def r_status():
     return _J({"ok": True, "t": int(time.time()), "site": {"built": bool(d), "dir": os.path.relpath(d, ROOT).replace("\\", "/") if d else None,
                                                          "built_t": built_t, "fallback": "tools/web_public"},
                "live": _live() is not None, "kalshi": ksrc, "money": "money_out" if m else ("site" if d else None), "home": GATE})
+
+
+@router.get("/api/site/launch.json")
+def r_launch():
+    """The Launch card (tools/launch_card.py, Monday launch kit 2026-11-14): per bot armed? feed fresh? trades, $, drawdown left,
+    flags (the fill check, tools/fill_check.py); is the phone report running. Read-only, like everything here."""
+    try:
+        from tools import launch_card
+        return _J(launch_card.payload(_live()))
+    except Exception as e:
+        return _J({"ok": False, "error": f"the launch card could not be built ({e.__class__.__name__})"}, 503)
 
 
 @router.api_route(PREFIX, methods=["GET", "HEAD"])

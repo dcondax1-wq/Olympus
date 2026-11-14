@@ -56,7 +56,7 @@ def ascii_ok(s) -> bool:
 # ============================================================================================== fakes
 def lit_card(**kw):
     c = {"id": "lit", "name": "Zlarior", "plan": "MFFU Builder 50K", "badge": "LIVE", "status": "open", "balance": 49145.0, "floor": 48000.0,
-         "room": 1145.0, "mll": 2000.0, "today_pnl": 0.0, "dll": 1000.0, "trades_today": 0, "eval_start": "2026-11-02", "position": None,
+         "room": 1145.0, "mll": 2000.0, "today_pnl": 0.0, "dll": 1000.0, "trades_today": 0, "max_day": 1, "eval_start": "2026-11-02", "position": None,
          "configured": True}
     c.update(kw)
     return c
@@ -64,7 +64,7 @@ def lit_card(**kw):
 
 def atlas_card(**kw):
     c = {"id": "atlas", "name": "ATLAS", "plan": "MFFU Builder 25K", "badge": "LIVE", "configured": True, "status": "open", "balance": 24822.0,
-         "floor": 24000.0, "room": 822.0, "mll": 1000.0, "today_pnl": 0.0, "dll": 600.0, "trades_today": 0, "position": None}
+         "floor": 24000.0, "room": 822.0, "mll": 1000.0, "today_pnl": 0.0, "dll": 600.0, "trades_today": 0, "max_day": 2, "position": None}
     c.update(kw)
     return c
 
@@ -297,8 +297,8 @@ def fills():
         check("2. costs: plan $2.40 a micro (1 tick + $1.90), real $2.40 (1 tick entry + $1.90); execution $ = real fills - booked",
               r["costs"]["plan_micro"] == 2.4 and r["costs"]["real_micro"] == 2.4 and r["costs"]["exec_usd"] == round(6 * ((24980.0 - 25099.75) * -1 * 2 - 1.9) - 1427.4, 2),
               r.get("costs"))
-        check("2. push note for the trade: 'Fill check OK: 6 of 6 filled, 1 tick worse than the plan, stop in place.'",
-              F.short(r) == "Fill check OK: 6 of 6 filled, 1 tick worse than the plan, stop in place.", F.short(r))
+        check("2. push note for the (closed) trade: 'Fill check OK: 6 of 6 filled, 1 tick worse than the plan, the stop was in place.'",
+              F.short(r) == "Fill check OK: 6 of 6 filled, 1 tick worse than the plan, the stop was in place.", F.short(r))
         # ---- wrong size, the stop covering fewer micros, a 3-tick entry, an UNPROTECTED leg
         e2 = now - 1200
         led = json.load(open(os.path.join(rt.dir, "data", "live_state.json"), encoding="utf-8"))
@@ -495,6 +495,412 @@ def fills_report():
               [c["h"] for c in h.posts(cfg["topic"])])
     finally:
         b.cleanup()
+    now = at(2026, 11, 16, 11, 0)
+    rv = {"acct": "blitz", "label": "BLITZ 25K", "entry_t": now - 300, "side": "LONG", "kind": "SIM", "plan": {"qty": 4}, "real": {},
+          "flags": [{"code": "size", "level": "bad", "text": "NinjaTrader filled 2 micros, the bot sent 4.", "fix": "x"}]}
+    _s, m = R.events({"seen": {}, "cond": {}, "seeded": True}, snap_of(now, {"lit": lit_card(), "trades": []}, fills=[rv]))
+    fm = [x for x in m if x["key"].startswith("fill:")]
+    check("2. a Sim account's flag (BLITZ on Sim) is pushed at default priority; a real account's is high", [x["priority"] for x in fm] == ["default"]
+          and [x["priority"] for x in R.events({"seen": {}, "cond": {}, "seeded": True}, snap_of(now, {"lit": lit_card(), "trades": []}, fills=[{**rv, "kind": "LIVE"}]))[1]
+               if x["key"].startswith("fill:")] == ["high"], fm)
+
+
+# ============================================================================================== 3 launch card + the 01:45 push
+def live_of(now, lit=None, atlas=None, blitz=None, running=True, feed=None, account=None, facts=None, blocks=None, nt=True):
+    """A live.json (engine/live_publish.build shape) with the parts the Launch card reads."""
+    pc = {"running": running, "adapter": "ninjatrader", "present": True, "t": now - 10,
+          "health": {"account": {"name": "MFFUEVAL50K1", "adapter": "ninjatrader", "is_live": True, "label": "LIVE", "armed": True, "enabled": True,
+                                 "disabled": None, **(account or {})},
+                     "feed": {"age_1m_s": 20, "age_5m_s": 80, "stale": False, "market_open": True, "entries_blocked": False, "block": None, **(feed or {})},
+                     "nt": {"connected": nt}},
+          "launch": {"facts": facts if facts is not None else {"lit_armed": True, "b": {"configured": True, "account": "MFFUEVAL25K1", "armed": True}}}}
+    board = {"t": now - 10, "lit": lit or lit_card(), "atlas": atlas or atlas_card(), "blocks": blocks or [], "trades": []}
+    if blitz:
+        board["blitz"] = blitz
+    return {"v": 1, "kind": "le-live", "t": now - 10, "pc": pc, "board": board,
+            "pc_verdict": {"code": "TRADING", "label": "TRADING YOUR EVAL", "level": "ok", "reason": "LIT watching"}}
+
+
+def launch():
+    from tools import launch_card as LC
+    now = at(2026, 11, 16, 1, 45)
+    good = LC.build(live_of(now), [], {"level": "ok", "text": "Phone alerts on: last check 4 min ago."}, now)
+    rows = {r["id"]: r for r in good["bots"]}
+    check("3. all well: level ok, 'Zlarior and ATLAS armed; feed fresh (1-minute bar 20 s old); no flags.'",
+          good["level"] == "ok" and good["headline"] == "Zlarior and ATLAS armed; feed fresh (1-minute bar 20 s old); no flags." and not good["global"], good)
+    z = rows.get("lit", {})
+    check("3. Zlarior's row: LIVE, armed, running, feed fresh, 0 of 1 trades, $0 today, $1,145 of $2,000 left (43% used), no flag",
+          z.get("state") == "LIVE, armed" and z.get("running") is True and z["feed"]["ok"] and z["trades"] == 0 and z["today"] == 0.0
+          and z["room"] == 1145.0 and z["mll"] == 2000.0 and round(z["used"], 3) == 0.427 and z["flags"] == [] and z["label"] == "Zlarior 50K", z)
+    check("3. ATLAS's row: 'ATLAS 25K' LIVE, armed, $822 of $1,000", rows["atlas"]["state"] == "LIVE, armed" and rows["atlas"]["room"] == 822.0
+          and rows["atlas"]["label"] == "ATLAS 25K", rows["atlas"])
+    check("3. the card says where the checklist is and the report line; the whole card is small (< 8 KB)",
+          good["checklist"] == "gate/launch_day.json" and good["report"]["level"] == "ok" and len(json.dumps(good)) < 8000, len(json.dumps(good)))
+    # ---- what stops every account: said once, on top, with the one action
+    c = LC.build(live_of(now, running=False), [], {}, now)
+    check("3. the bot stopped: one global flag (not one per bot), level bad, the headline, the GO_LIVE_EVAL.bat action",
+          [g["code"] for g in c["global"]] == ["stopped"] and c["level"] == "bad" and c["headline"].startswith("The bot is stopped on the PC")
+          and "GO_LIVE_EVAL.bat" in c["global"][0]["fix"] and all(not [f for f in r["flags"] if f["code"] == "stopped"] for r in c["bots"]), c)
+    c = LC.build(live_of(now, feed={"stale": True, "entries_blocked": True, "block": "FEED STALE: 1m bar 7 min old", "age_1m_s": 420}), [], {}, now)
+    check("3. FEED STALE: a global flag with the LE_BarFeed action; each bot's Feed fact says STALE",
+          c["global"] and c["global"][0]["code"] == "feed" and "LE_BarFeed" in c["global"][0]["fix"] and all(r["feed"]["ok"] is False for r in c["bots"]), c["global"])
+    c = LC.build(live_of(now, nt=False), [], {}, now)
+    check("3. NinjaTrader not connected: a global flag", [g["code"] for g in c["global"]] == ["nt"], c["global"])
+    c = LC.build(live_of(now, blocks=[{"text": "Kill switch used today: no orders until the next session", "kind": "kill", "fix": "Kill switch used today"}]), [], {}, now)
+    check("3. the board's own global blocks (kill switch ...) come through with their fix", [g["code"] for g in c["global"]] == ["kill"]
+          and c["global"][0]["fix"], c["global"])
+    c = LC.build(live_of(now, running=False, blocks=[{"text": "The bot is stopped: no new entries", "kind": "stopped", "fix": "x"}]), [], {}, now)
+    check("3. ... never twice (the board's 'stopped' block and ours)", [g["code"] for g in c["global"]] == ["stopped"], c["global"])
+    # ---- per bot
+    c = LC.build(live_of(now, account={"armed": False}, facts={"lit_armed": False, "b": {"armed": True}}), [], {}, now)
+    z = c["bots"][0]
+    check("3. Zlarior on its real account but not armed: 'real account, NOT armed', a bad flag with the arm-it-yourself action",
+          z["state"] == "real account, NOT armed" and [f["code"] for f in z["flags"]] == ["armed"] and "GO_LIVE_EVAL.bat" in z["flags"][0]["fix"]
+          and c["level"] == "bad", z)
+    c = LC.build(live_of(now, atlas=atlas_card(badge="SIM")), [], {}, now)
+    check("3. ATLAS on Sim: 'Sim', no flag; the headline says it", c["bots"][1]["state"] == "Sim" and not c["bots"][1]["flags"]
+          and "ATLAS Sim" in c["headline"], (c["bots"][1], c["headline"]))
+    c = LC.build(live_of(now, facts={"lit_armed": True, "b": {"armed": False}}), [], {}, now)
+    check("3. ATLAS's 25K real but account B not armed: NOT armed (bad)", c["bots"][1]["state"] == "real account, NOT armed" and c["level"] == "bad", c["bots"][1])
+    c = LC.build(live_of(now, atlas=atlas_card(configured=False, badge=None, status="not set up", room=None,
+                                                blocks=[{"text": "ATLAS account (account B) is not set up on the PC", "kind": "account", "fix": "Start & Accounts page"}])), [], {}, now)
+    a = c["bots"][1]
+    check("3. ATLAS not set up: 'not set up', its block a note (warn, not an alarm); the headline names it",
+          a["state"] == "not set up" and a["level"] == "warn" and a["flags"][0]["level"] == "warn" and c["level"] == "warn"
+          and "ATLAS not set up" in c["headline"], (a, c["headline"]))
+    c = LC.build(live_of(now, lit=lit_card(room=900.0)), [], {}, now)
+    check("3. 55% of the drawdown used: a warn flag; 80%: bad", [f["level"] for f in c["bots"][0]["flags"]] == ["warn"]
+          and [f["level"] for f in LC.build(live_of(now, lit=lit_card(room=400.0)), [], {}, now)["bots"][0]["flags"]] == ["bad"], c["bots"][0]["flags"])
+    c = LC.build(live_of(now, lit=lit_card(today_pnl=-760.0)), [], {}, now)
+    check("3. down $760 of the $1,000 daily loss limit: a bad 'dll' flag", [f["code"] for f in c["bots"][0]["flags"]] == ["dll"], c["bots"][0]["flags"])
+    pos = {"entry_t": now - 60, "side": "LONG", "qty": 20, "entry": 25000.0, "stop": 24970.0, "target": 25100.0}
+    c = LC.build(live_of(now, lit=lit_card(room=1100.0, position=pos)), [], {}, now)
+    z = c["bots"][0]
+    check("3. an open trade whose stop would cost more than the drawdown left (20 x 30 pts x $2 + costs = $1,238 > $1,100): bad 'risk'",
+          z["position"]["risk_usd"] == 1238.0 and "risk" in [f["code"] for f in z["flags"]], z)
+    c = LC.build(live_of(now, lit=lit_card(position={**pos, "qty": 2, "stop": None})), [], {}, now)
+    check("3. an open trade with no stop in the report: bad 'nostop'", "nostop" in [f["code"] for f in c["bots"][0]["flags"]], c["bots"][0]["flags"])
+    revs = [{"acct": "lit", "entry_t": now - 1200, "line": "Zlarior 50K LONG Mon 01:25 ET: filled 3 of 5 ...", "flags": [
+        {"code": "size", "level": "bad", "text": "NinjaTrader filled 3 micros, the bot sent 5.", "fix": "Open NinjaTrader > Positions"}]},
+            {"acct": "lit", "entry_t": now - 30 * 3600, "line": "old", "flags": [{"code": "slip_entry", "level": "warn", "text": "old one", "fix": ""}]}]
+    c = LC.build(live_of(now), revs, {}, now)
+    z = c["bots"][0]
+    check("3. today's fill-check flag on Zlarior's row ('Fill check: ...', its action); yesterday's not; its line kept",
+          [f["text"] for f in z["flags"]] == ["Fill check: NinjaTrader filled 3 micros, the bot sent 5."] and z["flags"][0]["fix"] == "Open NinjaTrader > Positions"
+          and z["fills"][0].startswith("Zlarior 50K LONG") and c["level"] == "bad", z)
+    c = LC.build(live_of(now, blitz=blitz_card()), [], {}, now)
+    check("3. BLITZ on its own account (Sim): a third row; an 'off' BLITZ card: no row", [r["id"] for r in c["bots"]] == ["lit", "atlas", "blitz"]
+          and [r["id"] for r in LC.build(live_of(now, blitz={"id": "blitz", "off": True}), [], {}, now)["bots"]] == ["lit", "atlas"], [r["id"] for r in c["bots"]])
+    c = LC.build(None, [], {}, now)
+    check("3. no live numbers from the bot: live false, level bad, says so", c["live"] is False and c["level"] == "bad" and "not available" in c["headline"], c)
+    check("3. junk never raises", all(isinstance(LC.build(x, "y", 5, now), dict) for x in ({"kind": "le-live", "pc": 3, "board": {"lit": "x", "atlas": [1]}}, "x", 7)))
+    check("3. a phone-report warning shows on top (warn), never as an alarm",
+          LC.build(live_of(now), [], {"level": "warn", "text": "The phone report last ran 50 min ago.", "fix": "BOTS_BACK"}, now)["level"] == "warn")
+
+
+def report():
+    import shutil
+    import tempfile
+    from tools import launch_card as LC
+    now = at(2026, 11, 16, 1, 45)
+    d = tempfile.mkdtemp(prefix="lkr_", dir=os.environ.get("LE_TEST_TMP") or None)
+    try:
+        work, home = os.path.join(d, "work"), os.path.join(d, "home")
+        os.makedirs(work)
+        env = {"OLYMPUS_HOME": home}
+        r = LC.report_state(work, env, now)
+        check("3. report: no alert topic on this PC -> 'Phone alerts are not set up on this PC.' + BOTS_BACK.bat", r["level"] == "warn"
+              and r["text"] == "Phone alerts are not set up on this PC." and "BOTS_BACK.bat" in r["fix"], r)
+        os.makedirs(home)
+        with open(os.path.join(home, "ntfy.json"), "w", encoding="utf-8") as fh:
+            json.dump({"topic": "nq-amber-falcon-river-7291", "ntfy": "https://ntfy.sh"}, fh)
+        r = LC.report_state(work, env, now)
+        check("3. report: a topic but the report never ran -> 'has not run on this PC yet'", "has not run" in r["text"], r)
+
+        def last(**kw):
+            with open(os.path.join(work, "last.json"), "w", encoding="utf-8") as fh:
+                json.dump({"t": now - 240, "ok": True, "errors": [], "sent": 1, "alerts_last": {"t": now - 7200, "title": "x"}, **kw}, fh)
+        last(t=now - 3000)
+        r = LC.report_state(work, env, now)
+        check("3. report: last run 50 min ago -> warn 'last ran 50 min ago'", r["level"] == "warn" and "last ran 50 min ago" in r["text"], r)
+        last(errors=["alert: ntfy.sh rate limit (too many messages today): next run tries again"], ok=False)
+        r = LC.report_state(work, env, now)
+        check("3. report: the last run could not send -> warn with ntfy's reason", r["level"] == "warn" and "rate limit" in r["text"], r)
+        last()
+        r = LC.report_state(work, env, now)
+        check("3. report: fresh -> 'Phone alerts on: last check 4 min ago, last push 2 h ago.'", r["level"] == "ok"
+              and r["text"] == "Phone alerts on: last check 4 min ago, last push 2 h ago.", r)
+        card = LC.build(live_of(now), [], r, now)
+        check("3. the private alert topic is never in the card", "amber-falcon" not in json.dumps(card) and "amber-falcon" not in json.dumps(r), r)
+    finally:
+        shutil.rmtree(d, ignore_errors=True)
+
+
+def route():
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from engine import live_site as LS
+    from tools import launch_card as LC
+    now = int(dt.datetime.now().timestamp())
+    real = (LC.cached_reviews, LC.report_state)
+    LC.cached_reviews = lambda now=None, root=None, ttl=None: []
+    LC.report_state = lambda work=None, env=None, now=None: {"level": "ok", "text": "Phone alerts on: last check 4 min ago."}
+    try:
+        app = FastAPI()
+        box = {"live": live_of(now)}
+        LS.install(app, live=lambda: box["live"], kalshi_cfg={})
+        LS._S["live"].ttl = 0
+        cl = TestClient(app)
+        r = cl.get("/api/site/launch.json")
+        j = r.json()
+        check("3. GET /api/site/launch.json: 200, kind le-launch, the two bots, no-store", r.status_code == 200 and j.get("kind") == "le-launch"
+              and [b["id"] for b in j["bots"]] == ["lit", "atlas"] and r.headers.get("cache-control") == "no-store", (r.status_code, j))
+        link = {"X-Forwarded-For": "100.101.102.103", "Tailscale-User-Login": "owner@example.com"}
+        check("3. over the phone link: GET allowed, POST refused (403) before any route", cl.get("/api/site/launch.json", headers=link).status_code == 200
+              and cl.post("/api/site/launch.json", headers=link).status_code == 403)
+        box["live"] = None
+        j = cl.get("/api/site/launch.json").json()
+        check("3. the bot's live numbers not available: still 200 with live false and the plain sentence", j.get("live") is False and "not available" in j.get("headline", ""), j)
+        LC.payload, real_payload = (lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom"))), LC.payload
+        try:
+            r = cl.get("/api/site/launch.json")
+            check("3. a failure inside: 503 with a plain error, never a crash", r.status_code == 503 and r.json().get("ok") is False, r.text)
+        finally:
+            LC.payload = real_payload
+    finally:
+        LC.cached_reviews, LC.report_state = real
+    src = open(os.path.join(ROOT, "engine", "live_site.py"), encoding="utf-8").read().split('"""', 2)[-1]
+    check("3. live_site.py stays read only (no POST route, no file write, no live_model)", "router.post" not in src and "live_model" not in src
+          and not re.search(r"open\([^)]*['\"][wa]b?['\"]", src))
+    for rel in ("tools/launch_card.py",):
+        body = open(os.path.join(ROOT, *rel.split("/")), encoding="utf-8").read().split('"""', 2)[-1]
+        check(f"3. {rel}: read only (no file write, no order line, no HTTP, no live_model, no arming)",
+              not re.search(r"open\([^)]*['\"][wa]b?['\"]|PLACE;|place_line|CLOSEPOSITION|urllib|requests\.|live_model|LIVE_PHRASE|/api/live/", body)
+              and "json.dump(" not in body, rel)
+
+
+def ready():
+    from tools import launch_card as LC
+    from tools import pc_guard as G
+    mon = at(2026, 11, 16, 1, 45)
+
+    def snap(now, live, **kw):
+        s = {"t": now, "hb": {"running": True}, "hb_age": 60, "server": True, "nt": True, "mode": "LIVE", "live": live, "cond": {}, "fills": []}
+        s.update(kw)
+        return s
+    st, m = G.guard({}, snap(mon, live_of(mon)), roll_state={})
+    rd = [x for x in m if x["key"].startswith("guard:ready:")]
+    check("3. 01:45 ET Monday, all well: one silent push 'Ready for 02:00 ET: Zlarior LIVE armed, ATLAS LIVE armed', through the quiet hours",
+          len(rd) == 1 and rd[0]["key"] == "guard:ready:2026-11-16" and rd[0]["title"] == "Ready for 02:00 ET: Zlarior LIVE armed, ATLAS LIVE armed"
+          and rd[0]["priority"] == "low" and G.quiet(mon), rd)
+    body = rd[0]["body"] if rd else ""
+    check("3. its body: each account's state and drawdown left, the bot, NinjaTrader, the feed, 'Entries from 02:00 ET.'",
+          "Zlarior 50K: LIVE, armed, drawdown left $1,145 of $2,000" in body and "ATLAS 25K: LIVE, armed, drawdown left $822 of $1,000" in body
+          and "Bot running, NinjaTrader on, feed fresh" in body and body.endswith("Entries from 02:00 ET."), body)
+    _s, m = G.guard(st, snap(mon + 600, live_of(mon + 600)), roll_state={})
+    check("3. once a day", not [x for x in m if x["key"].startswith("guard:ready:")], m)
+    for label, t in (("01:20 ET", at(2026, 11, 16, 1, 20)), ("02:05 ET", at(2026, 11, 16, 2, 5)), ("Saturday", at(2026, 11, 21, 1, 45)),
+                     ("Christmas Day", at(2026, 12, 25, 1, 45))):
+        _s, m = G.guard({}, snap(t, live_of(t)), roll_state={})
+        check(f"3. no ready push at {label}", not [x for x in m if x["key"].startswith("guard:ready:")], (label, m))
+    _s, m = G.guard({}, snap(mon, live_of(mon), cond={"bot_down": "The bot server on the PC is not answering. Double-click GO_LIVE_EVAL.bat on the PC."}), roll_state={})
+    rd = [x for x in m if x["key"].startswith("guard:ready:")]
+    check("3. the bot server down: 'NOT ready for 02:00 ET: The bot server on the PC is not answering', high, with the fix",
+          rd and rd[0]["title"].startswith("NOT ready for 02:00 ET: The bot server on the PC is not answering") and rd[0]["priority"] == "high"
+          and "Fix: The bot server on the PC is not answering. Double-click GO_LIVE_EVAL.bat" in rd[0]["body"], rd)
+    _s, m = G.guard({}, snap(mon, live_of(mon, running=False), hb={"running": False}), roll_state={})
+    rd = [x for x in m if x["key"].startswith("guard:ready:")]
+    check("3. the bot stopped at 01:45 (before the report's own 01:50 'stopped' alert): NOT ready, GO_LIVE_EVAL.bat",
+          rd and rd[0]["priority"] == "high" and "The bot is stopped on the PC" in rd[0]["title"] and "GO_LIVE_EVAL.bat" in rd[0]["body"], rd)
+    _s, m = G.guard({}, snap(mon, live_of(mon, account={"armed": False}, facts={"lit_armed": False, "b": {"armed": True}})), roll_state={})
+    rd = [x for x in m if x["key"].startswith("guard:ready:")]
+    check("3. Zlarior not armed: NOT ready, 'Zlarior LIVE NOT armed' is not in a Ready title, the arm-it-yourself action",
+          rd and rd[0]["title"].startswith("NOT ready") and "Arm it yourself at the PC" in rd[0]["body"], rd)
+    _s, m = G.guard({}, snap(mon, live_of(mon), hb_age=3600), roll_state={})
+    rd = [x for x in m if x["key"].startswith("guard:ready:")]
+    check("3. the last report an hour old: NOT ready, 'The bot has not reported for 60 min'", rd and "The bot has not reported for 60 min" in rd[0]["title"], rd)
+    _s, m = G.guard({}, snap(mon, live_of(mon, lit=lit_card(room=300.0))), roll_state={})
+    rd = [x for x in m if x["key"].startswith("guard:ready:")]
+    check("3. 85% of the drawdown used is not 'NOT ready' (it has its own push): still Ready", rd and rd[0]["title"].startswith("Ready"), rd)
+    check("3. ready titles are ASCII and short", all(ascii_ok(x["title"]) and len(x["title"]) <= 118 for x in LC.ready_push(snap(mon, live_of(mon)), mon)))
+
+
+def ready_report():
+    """Through pc_report.run_once at 01:45 ET Monday (Box, the real board of the test heartbeat): the ready push goes out silent."""
+    from tests.test_bots_back import Box, FakeHTTP
+    from tests.test_live_publish import hb_payload
+    from engine import roll_watch
+    real_fact = roll_watch.fact
+    roll_watch.fact = lambda *a, **k: {}
+    b = Box()
+    try:
+        cfg = b.topic()
+        t0 = at(2026, 11, 16, 1, 15)
+        b.hb(hb_payload(t0 - 60, position=False))
+        b.run(FakeHTTP(), t0)
+        now = at(2026, 11, 16, 1, 45)
+        b.hb(hb_payload(now - 60, position=False))
+        h = FakeHTTP()
+        b.run(h, now)
+        rd = [c for c in h.posts(cfg["topic"]) if c["h"].get("Title", "").startswith(("Ready for", "NOT ready"))]
+        check("3. reporter at 01:45 ET: 'Ready for 02:00 ET: Zlarior LIVE armed, ATLAS not set up', sent with ntfy priority low",
+              len(rd) == 1 and rd[0]["h"]["Title"] == "Ready for 02:00 ET: Zlarior LIVE armed, ATLAS not set up" and rd[0]["h"].get("Priority") == "low",
+              [c["h"] for c in h.posts(cfg["topic"])])
+    finally:
+        roll_watch.fact = real_fact
+        b.cleanup()
+
+
+# ============================================================================================== 4 the first-day checklist
+def checklist():
+    from tools import launch_day as LD
+    check("4. docs/LAUNCH_DAY.md and gate/launch_day.json are in sync with tools/launch_day.py (--check)", LD.main(["--check"]) == 0)
+    doc = open(LD.MD, encoding="utf-8").read()
+    js = json.load(open(LD.JS, encoding="utf-8"))
+    steps = re.search(r"## Your 3 steps\n(.*?)\n## ", doc, re.S)
+    n = len(re.findall(r"^\d\. ", steps.group(1), re.M)) if steps else 0
+    cmds = re.findall(r"`(python [^`]*|powershell [^`]*|pwsh [^`]*)`", steps.group(1)) if steps else []
+    check("4. the page: the owner's steps on top (01:45 first), at most 3, no copy-paste command, no code block",
+          steps is not None and doc.index("## Your 3 steps") < doc.index("## 01:45 ET") and 1 <= n <= 3 and not cmds and "```" not in doc and "01:45" in steps.group(1), (n, cmds))
+    check("4. the page: what to look for at 01:45, what each push means, the fill check flags, each as a table (what / means / do)",
+          all(h in doc for h in ("## 01:45 ET: what to look for", "## What each push means", "## Fill check flags")) and doc.count("|---|---|---|") == 3)
+    for word, why in (("FEED STALE", "feed"), ("Bot down", "bot down"), ("NO STOP at NinjaTrader", "missing stop"), ("wrong size", "size"),
+                      ("LE_BarFeed", "the feed fix"), ("GO_LIVE_EVAL.bat", "bring back / arm"), ("STOP_BOT.bat", "stop everything"), ("Flatten", "flatten by hand")):
+        check(f"4. the page names {why} ({word})", word in doc)
+    rows = [r for s in js["sections"] for r in s["rows"]]
+    check("4. every row has a one-line action (no line break, never empty) and the card has the same 3 sections, 3 steps and the stop line as the page",
+          all(len(r) == 3 and r[2] and "\n" not in r[2] for r in rows) and len(js["sections"]) == 3 and js["steps"] == LD.STEPS and js["stop"] in doc
+          and all(s["title"] in doc for s in js["sections"]) and all(r[0] in doc for r in rows), js["sections"][0]["rows"][:2])
+    check("4. the checklist never says Claude arms or trades: you arm at the PC, the phone only reads",
+          "You arm them yourself" in doc and "nothing on the phone can trade" in doc and not re.search(r"Claude (arms|types the phrase|places)", doc))
+    check("4. the card file is small (< 12 KB) and has no secret-looking field", len(json.dumps(js)) < 12000 and not re.search(r"token|secret|password|nq-[a-z]+-[a-z]+-[a-z]+-\d{4}", json.dumps(js)))
+
+
+# ============================================================================================== 5 the page
+def page_static():
+    js = open(os.path.join(ROOT, "tools", "web_public", "gate", "launch.js"), encoding="utf-8").read()
+    css = open(os.path.join(ROOT, "tools", "web_public", "gate", "launch.css"), encoding="utf-8").read()
+    html = open(os.path.join(ROOT, "tools", "web_public", "gate", "index.html"), encoding="utf-8").read()
+    code = re.sub(r"/\*.*?\*/", "", js, flags=re.S)
+    code = "\n".join(ln.split("//")[0] if "://" not in ln else ln for ln in code.splitlines())
+    es6 = [p for p in (r"=>", r"\blet\s", r"\bconst\s", r"`", r"\bclass\s+\w+\s*[{e]", r"\.\.\.\w") if re.search(p, code)]
+    check("5. launch.js: ES5 classic script (no arrow, let, const, template string, class, spread)", not es6, es6)
+    check("5. launch.js: no markup from data (textContent only), no POST / XHR / storage / cookies / web address",
+          not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\s*\(|new Function|XMLHttpRequest|sendBeacon|method:\s*['\"]POST|"
+                        r"localStorage|sessionStorage|indexedDB|document\.cookie|https?://", js) and "textContent" in js)
+    check("5. launch.js: reads only /api/site/launch.json and gate/launch_day.json; draws only when the page path starts with /site/",
+          "API = '/api/site/launch.json'" in js and "base + 'gate/launch_day.json'" in js and "ON_PC = /^\\/site\\//.test(" in js and "if (!ON_PC) return;" in js)
+    check("5. gate/index.html loads launch.js only under /site/ (any other copy never downloads it), after gate.js",
+          "if (!/^\\/site\\//.test(location.pathname || '')) return;" in html and html.index("'gate/gate.js?v=g4'") < html.index("gate/launch.js?v=l1"))
+    check("5. launch.css: colours only through the AGORA tokens (no literal colour), tabular numbers, 44 px summaries",
+          not re.search(r"#[0-9a-fA-F]{3,6}\b|rgb\(\s*\d", css) and "tabular-nums" in css and "min-height: 44px" in css)
+
+
+def page_browser():
+    """Chromium (iPhone size) on the real engine/live_site.py routes in-process (uvicorn), the real Gate from tools/web_public: the Launch
+    card under Right now when the PC serves the site, not anywhere else. Fake bot numbers, the report and the fill check stubbed."""
+    if FAST:
+        print("[SKIP] 5. --fast: no browser")
+        return
+    try:
+        import threading
+        import time as _t
+        import uvicorn
+        from fastapi import FastAPI
+        from playwright.sync_api import sync_playwright  # noqa: F401
+        from tests import agora_kit as AK
+        from engine import live_site as LS
+        from tools import launch_card as LC
+    except Exception as e:
+        print(f"[SKIP] 5. no browser kit ({e.__class__.__name__}): the Chromium run was skipped")
+        return
+    now = int(_t.time())
+    box = {"live": live_of(now), "revs": []}
+    real = (LC.cached_reviews, LC.report_state)
+    LC.cached_reviews = lambda now=None, root=None, ttl=None: box["revs"]
+    LC.report_state = lambda work=None, env=None, now=None: {"level": "ok", "text": "Phone alerts on: last check 4 min ago."}
+    old_dir = os.environ.get("LE_SITE_DIR")
+    os.environ["LE_SITE_DIR"] = os.path.join(ROOT, "data", "no_such_site_for_tests")      # no built site: the real files of tools/web_public
+    app = FastAPI()
+    LS.install(app, live=lambda: box["live"], kalshi_cfg={})
+    LS._S["live"].ttl = 0
+    srv = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=0, log_level="warning"))
+    th = threading.Thread(target=srv.run, daemon=True)
+    th.start()
+    for _ in range(100):
+        if srv.started:
+            break
+        _t.sleep(0.1)
+    origin = f"http://127.0.0.1:{srv.servers[0].sockets[0].getsockname()[1]}"
+    CARD = ("() => { const c = document.querySelector('#launch'); if (!c) return null; const prev = c.previousElementSibling;"
+            " return { after: prev && prev.id, level: c.dataset.level, badge: document.querySelector('#launchBadge').textContent, line: document.querySelector('#launchLine').textContent,"
+            " bots: [...c.querySelectorAll('.lk-bot')].map((b) => ({ id: b.dataset.bot, name: b.querySelector('.lk-name').textContent, pill: b.querySelector('.lk-pill').textContent,"
+            " facts: [...b.querySelectorAll('.lk-f')].map((f) => f.textContent), flags: [...b.querySelectorAll('.lk-flag')].map((f) => f.textContent) })),"
+            " global: [...document.querySelectorAll('#launchGlobal .lk-flag')].map((f) => f.textContent), report: document.querySelector('#launchReport').textContent,"
+            " foot: document.querySelector('#launchFoot').textContent }; }")
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            p.goto(origin + "/site/gate/")
+            p.wait_for_function("window.GATE && window.GATE.ready() && window.GATE_LAUNCH && window.GATE_LAUNCH.ready()", timeout=60000, polling=200)
+            p.wait_for_timeout(300)
+            r = p.evaluate(CARD)
+            check("5. served by the PC (/site/gate/): the Launch card right under Right now, 'Ready', the headline",
+                  r and r["after"] == "now" and r["badge"] == "Ready" and r["level"] == "ok"
+                  and r["line"] == "Zlarior and ATLAS armed; feed fresh (1-minute bar 20 s old); no flags.", r)
+            z = (r or {}).get("bots", [{}])[0]
+            check("5. Zlarior's row: name, 'LIVE, armed', Feed Fresh, Trades today 0 of 1, Today $0, Drawdown left $1,145 of $2,000 (43% used)",
+                  z.get("name") == "Zlarior 50K" and z.get("pill") == "LIVE, armed" and z.get("facts", [""])[0].startswith("FeedFresh")
+                  and "Trades today0 of 1" in z.get("facts", []) and "Today$0" in z.get("facts", [])
+                  and "Drawdown left$1,145of $2,000 (43% used)" in z.get("facts", []), z)
+            check("5. ATLAS's row and the phone-report line; 'Live from your PC'", r and r["bots"][1]["name"] == "ATLAS 25K" and r["report"] == "Phone alerts on: last check 4 min ago."
+                  and r["foot"].startswith("Live from your PC"), r)
+            check("5. phone rules: taps >= 44 px, no sideways scroll, no console error, nothing off the origin", not AK.taps(p) and AK.no_sideways(p) and not errs and not off,
+                  (AK.taps(p)[:4], errs[:3], off[:3]))
+            AK.shot(p, "launch-ready")
+            # ---- not ready: the bot stopped + a fill-check flag on Zlarior
+            box["live"] = live_of(now, running=False)
+            box["revs"] = [{"acct": "lit", "entry_t": now - 600, "line": "Zlarior 50K SHORT: filled 3 of 5.", "flags": [
+                {"code": "size", "level": "bad", "text": "NinjaTrader filled 3 micros, the bot sent 5.", "fix": "Open NinjaTrader > Positions."}]}]
+            p.reload()
+            p.wait_for_function("window.GATE_LAUNCH && window.GATE_LAUNCH.ready() && document.querySelector('#launch').dataset.level === 'bad'", timeout=60000, polling=200)
+            r = p.evaluate(CARD)
+            check("5. not ready: 'Fix now', the bot stopped on top with 'Do: ... GO_LIVE_EVAL.bat'", r["badge"] == "Fix now" and r["global"]
+                  and r["global"][0].startswith("The bot is stopped on the PC") and "Do: On the PC double-click GO_LIVE_EVAL.bat" in r["global"][0], r)
+            check("5. ... and the fill check's flag on Zlarior's row with its action", any("Fill check: NinjaTrader filled 3 micros, the bot sent 5." in f
+                                                                                         and "Do: Open NinjaTrader > Positions." in f for f in r["bots"][0]["flags"]), r["bots"][0])
+            check("5. no sideways scroll with the long flag texts, no console error", AK.no_sideways(p) and not errs, errs[:3])
+            AK.shot(p, "launch-fix")
+            ctx.close()
+            # ---- a bot server started before this code: the route is missing (404)
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            ctx.route("**/api/site/launch.json*", lambda rt: rt.fulfill(status=404, content_type="application/json", body='{"detail":"Not Found"}'))
+            p.goto(origin + "/site/gate/")
+            p.wait_for_function("window.GATE_LAUNCH && window.GATE_LAUNCH.ready()", timeout=60000, polling=200)
+            r = p.evaluate(CARD)
+            check("5. an older bot server (no launch route): 'Not available' and the one restart sentence, no error", r["badge"] == "Not available"
+                  and "runs an older version" in r["line"] and "STOP_BOT.bat, then GO_LIVE_EVAL.bat" in r["line"] and not errs, (r, errs[:3]))
+            ctx.close()
+        # ---- any other copy of the site (not under /site/): no card, launch.js never loaded
+        srv2, origin2 = AK.serve({"/home.json": json.dumps({"live": {"pc": {"t": now - 60, "running": True}}, "board": {"t": now - 60}})})
+        try:
+            with AK.browser() as br:
+                ctx, p, errs, seen, off = AK.page(br, origin2)
+                p.goto(origin2 + "/gate/")
+                p.wait_for_function("window.GATE && window.GATE.ready()", timeout=60000, polling=200)
+                p.wait_for_timeout(500)
+                r = p.evaluate("() => ({ card: !!document.querySelector('#launch'), js: typeof window.GATE_LAUNCH, asked: performance.getEntriesByType('resource').some((e) => /launch/.test(e.name)) })")
+                check("5. the public copy (not served by the PC): no Launch card, launch.js not even downloaded", r == {"card": False, "js": "undefined", "asked": False}, r)
+                ctx.close()
+        finally:
+            srv2.shutdown()
+    finally:
+        srv.should_exit = True
+        LC.cached_reviews, LC.report_state = real
+        if old_dir is None:
+            os.environ.pop("LE_SITE_DIR", None)
+        else:
+            os.environ["LE_SITE_DIR"] = old_dir
 
 
 def main() -> int:
@@ -502,6 +908,13 @@ def main() -> int:
     alerts_retry()
     fills()
     fills_report()
+    launch()
+    report()
+    route()
+    ready()
+    ready_report()
+    page_static()
+    page_browser()
     n, ok = len(RES), sum(RES)
     print(f"\n{ok}/{n} passed")
     return 0 if ok == n else 1
