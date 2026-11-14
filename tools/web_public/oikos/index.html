@@ -60,6 +60,19 @@
     </details>
   </section>
 
+  <section class="ag-card card" id="hhCard" aria-labelledby="hhH" hidden>
+    <div class="row"><h2 id="hhH">Your bank money</h2><span class="pill" id="hhPill">...</span></div>
+    <div id="hhLines"></div>
+    <dl class="kv" id="hhKv"></dl>
+    <h3 class="note" id="hhCatsH" hidden>Where it went this month</h3>
+    <ul class="leaks" id="hhCats"></ul>
+    <h3 class="note" id="hhSubsH" hidden>Subscriptions and bills</h3>
+    <ul class="leaks" id="hhSubs"></ul>
+    <h3 class="note" id="hhLeaksH" hidden>Money leaks in your bank data</h3>
+    <ul class="leaks" id="hhLeaks"></ul>
+    <p class="note" id="hhNote"></p>
+  </section>
+
   <section class="ag-card card" aria-labelledby="leakH">
     <div class="row"><h2 id="leakH">Where it leaks</h2><span class="pill" id="leakPill">...</span></div>
     <p class="note">Sorted worst first. Each line is an estimate from what you recorded. Every dollar is shown; the score is 0 (fine) to 100 (act now).</p>
@@ -116,5 +129,6 @@
   <p class="foot" id="foot">Oikos reads the Ledger's export and sends nothing. It is a planning tool: it never places an order, moves money or changes the bot. Every figure is an estimate from the entries you recorded; the projector is not a promise and a bad month can cut every account at once. The tax line is a generic percentage and is not tax advice. Your own sliders and an imported ledger stay on this phone.</p>
 </main>
 <script type="module" src="oikos.js?v=a1"></script>
+<script type="module" src="household.js?v=h1"></script>
 </body>
 </html>

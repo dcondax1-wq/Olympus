@@ -1,0 +1,4 @@
+Transaction Date,Clearing Date,Description,Merchant,Category,Type,Amount (USD),Purchased By
+10/22/2026,10/23/2026,"APPLE.COM/BILL ONE APPLE PARK WAY 866-712-7753 95014 CA USA",Apple Services,Other,Purchase,2.99,Pat Owner
+10/21/2026,10/22/2026,"ACH DEPOSIT INTERNET TRANSFER FROM ACCOUNT ENDING IN 1234",Ach Deposit Internet Transfer From Account Ending In 1234,Payment,Payment,-150.00,Pat Owner
+10/20/2026,10/21/2026,"WHOLEFDS MKT 10234 AUSTIN TX",Whole Foods,Grocery,Purchase,62.40,Pat Owner

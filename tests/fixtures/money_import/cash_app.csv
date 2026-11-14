@@ -1,0 +1,6 @@
+Transaction ID,Date,Transaction Type,Currency,Amount,Fee,Net Amount,Asset Type,Asset Price,Asset Amount,Status,Notes,Name of sender/receiver,Account
+rmgsrz,2026-10-23 18:22:11 EDT,Cash Card Debit,USD,-$8.75,$0,-$8.75,,,,CARD CHARGED,,Starbucks,Visa Debit 5544
+x1y2z3,2026-10-22 10:01:00 EDT,P2P,USD,-$40.00,$0,-$40.00,,,,PAYMENT SENT,for pizza,Jane Doe,Visa Debit 5544
+q9w8e7,2026-10-21 09:00:00 EDT,Cash out,USD,-$100.00,$0,-$100.00,,,,TRANSFER SENT,,,Visa Debit 5544
+z5z5z5,2026-10-20 09:00:00 EDT,P2P,USD,$25.00,$0,$25.00,,,,PAYMENT DEPOSITED,lunch back,Sam Roe,Visa Debit 5544
+f4f4f4,2026-10-19 09:00:00 EDT,P2P,USD,-$5.00,$0,-$5.00,,,,FAILED,,Sam Roe,Visa Debit 5544

@@ -8,6 +8,9 @@ setlocal EnableExtensions
 cd /d "%~dp0"
 where python >nul 2>&1
 if errorlevel 1 goto :nopy
+rem Your own bank / card exports (CSV / OFX / QFX you download yourself, dropped in %USERPROFILE%\.olympus\money_inbox\): a private ledger
+rem outside this folder + money_out\household.json for the phone (private link only). Nothing logs in to a bank. docs\CONNECT_MONEY.md
+python -X utf8 tools\money_import.py --out money_out --quiet >> money_out_log.txt 2>&1
 python -X utf8 tools\money_engine.py --out money_out --timeout 60 >> money_out_log.txt 2>&1
 rem Sibyl's own paper record (paper only). money_keep\sibyl_forward.json is the MEMORY (frozen start day): keep that folder, it is not synced anywhere.
 if not exist money_keep mkdir money_keep
