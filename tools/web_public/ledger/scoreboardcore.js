@@ -25,7 +25,7 @@ export function ageWords(sec) {
   const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600); return pl(d, 'day') + (h ? ' ' + pl(h, 'hour') : '');
 }
 export const ok = (sb) => isObj(sb) && sb.kind === KIND && isObj(sb.totals) && isObj(sb.totals.all);
-const STATUS = { ok: ['ok', 'ok'], stale: ['old', 'warn'], missing: ['missing', 'bad'], bad: ['broken', 'bad'], private: ['private', 'info'], sample: ['sample', 'warn'], none: ['none yet', 'info'] };
+const STATUS = { ok: ['ok', 'ok'], stale: ['old', 'warn'], missing: ['missing', 'bad'], bad: ['broken', 'bad'], private: ['private', 'info'], sample: ['sample', 'warn'], none: ['none yet', 'info'], off: ['not connected', 'info'] };
 
 /** -> { ok: false, text } when there is no good file; else the card's rows. nowS = the phone's clock (epoch seconds) */
 export function view(sb, nowS) {
