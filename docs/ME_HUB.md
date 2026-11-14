@@ -85,7 +85,7 @@ The fields the PC accepts (anything else is refused with a plain reason): `date`
 - **The one write from the phone** is the Shortcut's `POST /inbox/health`: strict (known fields, numbers in human ranges, a date in the last 10 days, 2 KB),
   the `X-Olympus-Inbox: 1` header, refused from the internet, and it only appends one line to `data/inbox/health.jsonl`.
 - **What goes out from the PC:** two tiny connection checks (Microsoft's and Cloudflare's), a light speed test to speed.cloudflare.com every 4 hours
-  (2-25 MB down, 1-4 MB up, a generic User-Agent, no name), and one empty UDP packet to each address of your own home network so devices answer.
+  (1-15 MB down, 0.5-2 MB up, 24 MB at most, a generic User-Agent, no name), and one empty UDP packet to each address of your own home network so devices answer.
 
 ## Honest limits
 - **PC off = no fresh numbers.** The phone shows the last file with its age; after 36 hours it says the PC may be off.

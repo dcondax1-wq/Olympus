@@ -247,7 +247,7 @@ def home_part(HM, today: str) -> tuple:
     c_net = {"id": "internet", "title": "Internet", "value": ("Down" if on is False else f"{_n(last.get('down_mbps'))} Mbps" if last else "Up" if on else "-"),
              "sub": (f"down · {_n(last.get('up_mbps'))} up · ping {_n(last.get('ping_ms'))} ms" + (f" · usual {_n(avg.get('down_mbps'))}" if avg.get("down_mbps") else "") if last and on is not False else
                      "no speed test yet (every 4 hours)" if on else "the PC cannot reach the internet"),
-             "lvl": "bad" if on is False else "", "rows": trows, "note": "A light test against Cloudflare's free speed endpoints every 4 hours (2-25 MB): often a bit below a full speed test on a fast line."}
+             "lvl": "bad" if on is False else "", "rows": trows, "note": "A light test against Cloudflare's free speed endpoints every 4 hours (24 MB at most): often a bit below a full speed test on a fast line."}
     orows = [{"k": M.ny_dt(o["from"]).strftime("%a %b %d %H:%M"), "v": ("still down" if o.get("open") else "a short drop" if o.get("blip") else f"about {o.get('mins')} min"),
               "s": ("since then" if o.get("open") else "back " + M.ny_dt(o["to"]).strftime("%H:%M")), "lvl": "bad" if o.get("open") else "warn"} for o in M.arr(outs.get("list"))[:12]]
     c_out = {"id": "outages", "title": "Outages", "value": f"{outs.get('today', 0)} today", "sub": f"{outs.get('week', 0)} in the last 7 days", "lvl": "warn" if (outs.get("today") or 0) else "",

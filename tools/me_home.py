@@ -5,8 +5,8 @@ minutes, through tools/me_hub.maybe_run); free, no account, no key.
   every run   is the internet up (two tiny GETs: Microsoft's own connection test and Cloudflare's), the outage log; the devices on
               your network (one empty UDP packet to each address of your /24 so they answer, then Windows' own `arp -a`; vendors from an
               offline IEEE table, tools/me_oui.json; names you set); this PC: disk, uptime, memory, CPU temperature when Windows gives it
-  every 4 h   a light speed test against speed.cloudflare.com (Cloudflare's own free speed endpoints: 6 pings, 2-25 MB down grown
-              until one takes a second, 1-4 MB up)
+  every 4 h   a light speed test against speed.cloudflare.com (Cloudflare's own free speed endpoints: 6 pings, 1-15 MB down grown
+              until one takes 0.75 s, 0.5-2 MB up: about 6 MB on a slow line, 24 MB at most)
   pushes      (tools/me_hub.py sends them through the PC report's private ntfy topic) a new device joined, the internet is back after
               an outage of 15+ minutes, the disk is almost full
 
@@ -53,9 +53,9 @@ SPEED_HOST = "speed.cloudflare.com"
 SPEED_EVERY_S = 4 * 3600
 TEMP_EVERY_S = 3600
 CHECK_URLS = ("https://www.msftconnecttest.com/connecttest.txt", "https://speed.cloudflare.com/__down?bytes=0")
-DOWN_SIZES = (2_000_000, 10_000_000, 25_000_000)
-UP_SIZES = (1_000_000, 4_000_000)
-GROW_UNTIL_S = 1.0
+DOWN_SIZES = (1_000_000, 5_000_000, 15_000_000)     # grown until one transfer takes GROW_UNTIL_S: about 6 MB on a slow line, 21 MB at most
+UP_SIZES = (500_000, 2_000_000)
+GROW_UNTIL_S = 0.75
 OUTAGE_MIN_S = 15 * 60
 NEW_FOR_S = 24 * 3600
 DISK_LOW_PCT = 10.0

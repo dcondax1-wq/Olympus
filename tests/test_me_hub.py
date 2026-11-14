@@ -501,8 +501,8 @@ def test_home():
           == {"ok": True, "ping_ms": 20, "jitter_ms": 2.8, "down_mbps": 74.2, "up_mbps": 16.7, "colo": "EWR", "mb_used": 13.0})
     clock = [0.0]
     res = HM.speed_test(lambda: FakeConn(clock), clock=lambda: clock[0])
-    check("f. a fake speed test (100 Mbps down, 20 up, 20 ms): about 100 / 20 Mbps, ping 20 ms, sizes grown until one took a second (2 + 10 + 25 MB down, 1 + 4 MB up)",
-          res["ok"] and 95 <= res["down_mbps"] <= 101 and 19 <= res["up_mbps"] <= 21 and res["ping_ms"] == 19.5 and res["colo"] == "EWR" and res["mb_used"] == 42.0, res)
+    check("f. a fake speed test (100 Mbps down, 20 up, 20 ms): about 100 / 20 Mbps, ping 20 ms, sizes grown until one took 0.75 s (1 + 5 + 15 MB down, 0.5 + 2 MB up)",
+          res["ok"] and 95 <= res["down_mbps"] <= 101 and 19 <= res["up_mbps"] <= 21 and res["ping_ms"] == 19.5 and res["colo"] == "EWR" and res["mb_used"] == 23.5, res)
 
     class Boom:
         def request(self, *a, **k):
