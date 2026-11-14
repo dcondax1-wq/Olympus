@@ -53,10 +53,15 @@ def shoot(br, url: str, out: str, w: int, h: int, full: bool = False, scroll_to:
     pg = ctx.new_page()
     pg.goto(url, wait_until="load")
     pg.wait_for_function("document.documentElement.getAttribute('data-ready') === '1'", timeout=30000)
-    pg.wait_for_function("Array.from(document.images).every(i => i.complete)", timeout=30000)
+    if full:                                                          # lazy images: walk the page once so every one loads
+        pg.evaluate("async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { scrollTo(0, y); "
+                    "await new Promise(r => setTimeout(r, 40)); } scrollTo(0, 0); }")
     if scroll_to:
         pg.evaluate(f"document.querySelector({scroll_to!r}).scrollIntoView({{block: 'start'}})")
-        pg.wait_for_timeout(200)
+    seen = ("Array.from(document.images).filter(i => { const r = i.getBoundingClientRect(); return " +
+            ("true" if full else "r.bottom > 0 && r.top < innerHeight") + "; }).every(i => i.complete && i.naturalWidth > 0)")
+    pg.wait_for_function(seen, timeout=30000)
+    pg.wait_for_timeout(150)
     pg.screenshot(path=out, full_page=full)
     ctx.close()
     print("  shot", os.path.relpath(out, ROOT), flush=True)

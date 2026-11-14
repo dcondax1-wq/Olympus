@@ -87,6 +87,16 @@ def first_sentence(t: str, limit: int = 118) -> str:
     return s
 
 
+def sub_line(t: str, limit: int = 118) -> str:
+    """the image's small line: the first sentence, or the first two when the first is very short ('Yes.', 'Busy season?')"""
+    s = first_sentence(t, limit)
+    if len(s) < 45:
+        two = lead_text(t, limit)
+        if len(two) <= limit:
+            return two
+    return s
+
+
 def lead_text(t: str, limit: int = 170) -> str:
     """as many whole sentences as fit in `limit` characters (at least the first, shortened if it must be)"""
     parts = re.findall(r"[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$", (t or "").strip())
@@ -491,19 +501,21 @@ def compose(kind, it, h, d, pack, trade, brand, ctx, seed, emoji, i, prev_layout
         words = (pack.get("holiday", {}).get(key) or P.HOLIDAY.get(key) or [(h["name"], "")])
         if key in P.OBSERVANCE_TRADES and not pack.get("holiday", {}).get(key):
             words = [(h["name"], "")]
-        hl, body = words[seed % len(words)][:2]
+        pick = words[seed % len(words)]
+        hl, body = pick[0], pick[1]
         ctx2 = dict(ctx, year_of_date=h["date"].year)
         hl, body = fill(hl, ctx2), fill(body, ctx2)
-        p.update(headline=hl, holiday=h["name"], holiday_key=key, motif=h["motif"], icon=h["icon"] if h["icon"] in D.ICONS else icons[0])
+        p.update(headline=hl, holiday=h["name"], holiday_key=key, motif=h["motif"], icon=h["icon"] if h["icon"] in D.ICONS else icons[0],
+                 check=pick[2] if len(pick) > 2 else "")             # holiday words that assume a service ask the client too
         tile = {"mon": h["date"].strftime("%b").upper(), "day": str(h["date"].day), "dow": h["date"].strftime("%A"), "event": h["name"]}
         if h["respect"]:
-            p.update(layout="minimal", label=h["name"], sub=first_sentence(body, 120))
+            p.update(layout="minimal", label=h["name"], sub=sub_line(body, 120))
             cap = f"{hl.replace('*', '')}\n\n{body}"
         elif h["post_date"] != h["date"] or h["kind"] == "observance":
-            p.update(layout="date", label=("Coming up" if h["post_date"] != h["date"] else "This month"), sub=first_sentence(body), tile=tile)
+            p.update(layout="date", label=("Coming up" if h["post_date"] != h["date"] else "This month"), sub=sub_line(body), tile=tile)
             cap = f"{e(HOLIDAY_EMOJI.get(key, '📅'))}{strip_stars(hl)}\n\n{body}\n\n{cta}"
         else:
-            p.update(layout="holiday", label=_holiday_label(h), sub=first_sentence(body))
+            p.update(layout="holiday", label=_holiday_label(h), sub=sub_line(body))
             cap = f"{e(HOLIDAY_EMOJI.get(key, '✨'))}{strip_stars(hl)}\n\n{body}"
         p["caption"] = cap
         return p
@@ -513,26 +525,26 @@ def compose(kind, it, h, d, pack, trade, brand, ctx, seed, emoji, i, prev_layout
     p["sub_long"] = lead_text(body, 170)
     p["go"] = _cta(pack, ctx, brand, 0).rstrip(".")
     if kind == "tip":
-        p.update(layout="tip", label=["Quick tip", "Pro tip", "Good to know"][seed % 3], headline=hl, sub=first_sentence(body))
+        p.update(layout="tip", label=["Quick tip", "Pro tip", "Good to know"][seed % 3], headline=hl, sub=sub_line(body))
         opener = [f"{e('💡')}{strip_stars(hl)}", f"{e('💡')}Quick tip from your {city} {pack['pro']}: {strip_stars(hl)[0].lower() + strip_stars(hl)[1:]}"][seed % 2]
         p["caption"] = f"{opener}\n\n{body}\n\nSave this for later. {cta}"
     elif kind == "service":
         lay = "split" if prev_layout != "split" else "bold"
-        p.update(layout=lay, label="Service spotlight", headline=hl, sub=first_sentence(body))
+        p.update(layout=lay, label="Service spotlight", headline=hl, sub=sub_line(body))
         p["caption"] = f"{e(TRADE_EMOJI.get(trade, '⭐'))}Spotlight: {strip_stars(hl)}\n\n{body}\n\n{cta}"
     elif kind == "offer":
         gift = "gift" in (hl + body).lower()
-        p.update(layout="offer", label="Gift idea" if gift else "This month", headline=hl, sub=first_sentence(body), icon="gift" if gift else icons[0],
+        p.update(layout="offer", label="Gift idea" if gift else "This month", headline=hl, sub=sub_line(body), icon="gift" if gift else icons[0],
                  cta_short=(brand["phone"] or brand["site"] or ""))
         lead = {11: "Holiday shopping starts here. ", 12: "Still shopping? "}.get(d.month, "") if gift else ""
         p["caption"] = f"{e('🎁' if gift else '⭐')}{strip_stars(hl)}\n\n{lead}{body}\n\n{cta}"
     elif kind == "season":
         lay = "bold" if prev_layout != "bold" else "split"
-        p.update(layout=lay, label=f"{ctx['season'].title()} in {city}", headline=hl, sub=first_sentence(body),
+        p.update(layout=lay, label=f"{ctx['season'].title()} in {city}", headline=hl, sub=sub_line(body),
                  icon={"winter": "snowflake", "spring": "flower", "summer": "sun", "fall": "leaf"}.get(ctx["season"], icons[0]))
         p["caption"] = f"{e(SEASON_EMOJI.get(ctx['season'], ''))}{strip_stars(hl)}\n\n{body}\n\n{cta}"
     elif kind in ("bts", "team"):
-        p.update(layout="frame", label="Behind the scenes" if kind == "bts" else "Meet the team", headline=hl, sub=first_sentence(body))
+        p.update(layout="frame", label="Behind the scenes" if kind == "bts" else "Meet the team", headline=hl, sub=sub_line(body))
         idea = (it.get("check") or "a photo of the team at work") if kind == "bts" else "a team photo (with everyone's OK)"
         p["check"] = ""                                                # a BTS tuple's third field is the photo idea, not a question
         p["photo_idea"] = "Better with a real photo: " + idea
@@ -544,21 +556,21 @@ def compose(kind, it, h, d, pack, trade, brand, ctx, seed, emoji, i, prev_layout
             p.update(layout="quote", label="Customer love", headline="What our customers say", sub="", quote={"text": txt, "who": real["who"] + ", Google review"})
             p["caption"] = (f"{e('⭐')}What our customers say\n\n\"{real['text']}\" - {real['who']}\n\nThank you! Reviews like this make our whole week.\n\n{cta}")
         else:
-            p.update(layout="quote", label="Thank you", headline=hl, sub=first_sentence(body))
+            p.update(layout="quote", label="Thank you", headline=hl, sub=sub_line(body))
             p["caption"] = f"{e('⭐')}{strip_stars(hl)}\n\n{body}"
             p["check"] = ""
     elif kind == "faq":
-        p.update(layout="qa", label="You asked", headline=hl, sub=first_sentence(body, 150))
+        p.update(layout="qa", label="You asked", headline=hl, sub=sub_line(body, 150))
         p["caption"] = f"{e('❓')}{strip_stars(hl)}\n\n{body}\n\nGot a question? Ask it in the comments and we will answer.\n\n{cta}"
     elif kind == "local":
-        p.update(layout="minimal", label=f"Proudly {city}", headline=hl, sub=first_sentence(body), icon="pin")
+        p.update(layout="minimal", label=f"Proudly {city}", headline=hl, sub=sub_line(body), icon="pin")
         p["caption"] = f"{e('📍')}{strip_stars(hl)}\n\n{body}"
     elif kind == "engage":
         lay = "minimal" if prev_layout != "minimal" else "bold"
-        p.update(layout=lay, label="Your turn", headline=hl, sub=first_sentence(body))
+        p.update(layout=lay, label="Your turn", headline=hl, sub=sub_line(body))
         p["caption"] = f"{e('💬')}{strip_stars(hl)}\n\n{body}"
     elif kind == "booking":
-        p.update(layout="bold", label=f"{d.strftime('%B')} bookings", headline=hl, sub=first_sentence(body), icon="calendar")
+        p.update(layout="bold", label=f"{d.strftime('%B')} bookings", headline=hl, sub=sub_line(body), icon="calendar")
         p["caption"] = f"{e('📅')}{strip_stars(hl)}\n\n{body}\n\n{cta}"
     elif kind == "checklist":
         items = [fill(x, ctx) for x in it["items"]]

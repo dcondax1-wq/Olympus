@@ -187,6 +187,9 @@ def part_b():
     offers = [p for t, c in BY_TRADE.items() for p in M.plan_month(c, 2026, 12, 20)["posts"] if p["kind"] == "offer"]
     unq = [p["headline"] for p in offers if not p["check"] and re.search(r"gift card|discount|free|deal", p["caption"], re.I)]
     check("b. an offer that assumes a service (gift cards, discounts, free tests) always carries a yes/no question for the client", offers and not unq, unq)
+    gift = [(t, y, m, p["kind"], p["headline"]) for t, c in BY_TRADE.items() for y, m in [(2026, 11), (2026, 12), (2027, 5), (2027, 6)]
+            for p in M.plan_month(c, y, m, 20)["posts"] if re.search(r"gift card|gift certificate|gift membership", p["caption"], re.I) and not p["check"]]
+    check("b. every post that mentions gift cards (offers and holiday posts alike) asks the client first", not gift, gift[:3])
     ph_plan = M.plan_month(BY_TRADE["plumber"], 2027, 1, 16)
     winter = " ".join(p["caption"] for p in M.plan_month(dict(BY_TRADE["plumber"], city="Tampa, FL"), 2027, 1, 16)["posts"]).lower()
     check("b. the climate shows: a Denver plumber in January talks freezes, a Tampa one is never told about snow and ice",
@@ -476,6 +479,9 @@ def part_f():
             pg.goto("file://" + os.path.join(out, "contact_sheet.html"), wait_until="load")
             pg.wait_for_function("document.documentElement.getAttribute('data-ready') === '1'", timeout=20000)
             sw = pg.evaluate("document.documentElement.scrollWidth")
+            pg.evaluate("async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { scrollTo(0, y); "
+                        "await new Promise(r => setTimeout(r, 40)); } scrollTo(0, 0); }")      # the images load lazily (phone memory)
+            pg.wait_for_function("Array.from(document.images).every(i => i.complete)", timeout=30000)
             loaded = pg.evaluate("Array.from(document.images).filter(i => i.complete && i.naturalWidth > 0).length")
             tap = pg.evaluate("Array.from(document.querySelectorAll('button.copy')).every(b => b.getBoundingClientRect().height >= 44)")
             check("f. the contact sheet at 390 px: no sideways scroll, all 24 images load, Copy buttons are 44 px tall", sw <= 390 and loaded == 24 and tap, (sw, loaded, tap))

@@ -289,7 +289,7 @@ PACKS["salon"] = {
     },
     "holiday": {
         "nye": [("New Year's Eve *glam*", "Last chance for New Year's Eve hair! Book a blowout or updo and ring in {next_year} looking your best.")],
-        "mothers_day": [("Treat *mom*", "Happy Mother's Day! A salon gift card is the gift moms actually use. Ask us in the salon.")],
+        "mothers_day": [("Treat *mom*", "Happy Mother's Day! A salon gift card is the gift moms actually use. Ask us in the salon.", "Do you sell gift cards?")],
         "valentines": [("Date night *hair*", "Valentine's plans? Book a blowout and feel amazing all night.")],
         "christmas_eve": [("Last-minute *gift*?", "A salon visit is a gift anyone would love. Stop by before Christmas.")],
     },
@@ -370,7 +370,7 @@ PACKS["restaurant"] = {
         "valentines": [("Valentine's *dinner*", "Skip the dishes, bring your favorite person. Book your Valentine's table now.")],
         "mothers_day": [("Take *mom* to dinner", "Mother's Day is one of our busiest days. Reserve now so mom gets the best table.")],
         "thanksgiving": [("Thankful for *you*", "Happy Thanksgiving from our kitchen to your table. Thank you for every meal you shared with us this year.")],
-        "christmas_eve": [("Holiday *gift* idea", "Still shopping? A {name} gift card is the gift of a night off. Ask at the counter.")],
+        "christmas_eve": [("Holiday *gift* idea", "Still shopping? A {name} gift card is the gift of a night off. Ask at the counter.", "Do you sell gift cards?")],
     },
 }
 
