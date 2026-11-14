@@ -372,6 +372,13 @@ def part_a(tmp: Path):
            if build.contrast(pres[p][a], pres[p][b]) < 4.5]
     check("a. the three presets (coral, ocean, forest) are all in the stylesheet and every text / background pair passes WCAG AA (4.5:1)",
           set(build.PRESETS) <= set(pres) and not low, low)
+    ring = [(p, bg, round(build.contrast(pres[p]["--brand"], pres[p][bg]), 2)) for p in build.PRESETS for bg in ("--bg", "--bg-2", "--card")
+            if build.contrast(pres[p]["--brand"], pres[p][bg]) < 3]
+    ring += [(p, "dark", round(build.contrast(pres[p]["--brand-on-dark"], pres[p][d]), 2)) for p in build.PRESETS for d in ("--dark", "--dark-2")
+             if build.contrast(pres[p]["--brand-on-dark"], pres[p][d]) < 3]
+    css_src = (SF / "src" / "assets" / "site.css").read_text()
+    check("a. the keyboard focus ring shows everywhere (3:1): the brand colour on light sections, the on-dark brand colour on dark ones",
+          not ring and ".sec-dark :focus-visible, .cta-final :focus-visible, .foot :focus-visible { outline-color: var(--brand-on-dark); }" in css_src, ring)
     lowc = []
     for hx in ("#FFD400", "#7C3AED", "#00A3A3", "#E11D48", "#111111", "#F5F5F5", "#3B82F6"):
         b = build.parse_brand(hx)

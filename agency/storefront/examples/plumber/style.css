@@ -11,7 +11,8 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1.0625rem/
 img, svg { display: block; max-width: 100%; }
 [hidden] { display: none !important; }
 a { color: var(--navy); }
-:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; }
+.sec-navy :focus-visible, .sos :focus-visible, .ftr :focus-visible { outline-color: var(--orange-2); }
 h1, h2, h3 { font-family: var(--display); line-height: 1.05; letter-spacing: -.03em; margin: 0 0 .45em; font-weight: 850; }
 h1 { font-size: clamp(2.4rem, 7.2vw, 4.4rem); }
 h1 em { font-style: normal; color: var(--navy); background: linear-gradient(transparent 62%, rgba(244, 122, 42, .35) 62%); }

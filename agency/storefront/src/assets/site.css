@@ -51,6 +51,7 @@ img { height: auto; }
 a { color: var(--brand-text); text-decoration-thickness: .08em; text-underline-offset: .18em; }
 a:hover { color: var(--brand-hover); }
 :focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; border-radius: 6px; }
+.sec-dark :focus-visible, .cta-final :focus-visible, .foot :focus-visible { outline-color: var(--brand-on-dark); }
 ::selection { background: var(--brand-soft); color: var(--ink); }
 h1, h2, h3 { font-family: var(--display); color: var(--ink); line-height: 1.1; letter-spacing: -.022em; margin: 0 0 .5em; font-weight: 800; }
 h1 { font-size: clamp(2.35rem, 6.2vw + .5rem, 4.6rem); letter-spacing: -.038em; line-height: 1.02; }
