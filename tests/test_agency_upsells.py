@@ -20,7 +20,7 @@
      every state, 4-5 stars open Google, 1-3 show the form AND Google, the private message posts, no-JS still offers both;
      the cards print at A6, 3.5 x 2 in and Letter
     python -X utf8 -m tests.test_agency_upsells                  (all)
-    python -X utf8 -m tests.test_agency_upsells --no-browser     (a-f)
+    python -X utf8 -m tests.test_agency_upsells --no-browser     (a-f)      --browser-only (g)
     flock -w 2400 /tmp/olympus_browser.lock python -X utf8 -m tests.test_agency_upsells --shots    (+ docs/shots/agency_upsells/)
 """
 from __future__ import annotations
@@ -748,12 +748,13 @@ def part_browser(shots: bool):
 
 def main():
     try:
-        part_build()
-        part_matching()
-        part_answers()
-        part_network()
-        part_qr()
-        part_review_static()
+        if "--browser-only" not in sys.argv:                       # the static parts need no browser: run them outside the lock
+            part_build()
+            part_matching()
+            part_answers()
+            part_network()
+            part_qr()
+            part_review_static()
         if "--no-browser" not in sys.argv:
             part_browser("--shots" in sys.argv)
     finally:
