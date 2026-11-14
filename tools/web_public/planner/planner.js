@@ -4,6 +4,7 @@
 // Text only through textContent / a value (no markup is built from data). window.PLANNER is the test hook.
 import * as C from './plannercore.js';
 import * as Scene from './plannerscene.js';
+import * as Day from '../olympus/day.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -13,7 +14,9 @@ const TABS = ['today', 'calendar', 'tasks', 'projects', 'habits', 'goals', 'note
 const S = {
   state: null, demo: false, forced: false, fixture: null, day: '', today: '', tab: 'today', fixedNow: null, saveOk: null, savedAt: 0, arm: '', ready: false, from: [],
   cal: { view: 'month', day: '' }, lane: 'today', proj: '', kind: 'auto', market: null, marketDemo: false, home: null, argo: null, argoReal: false, focus: null, scene: null, sheet: null,
+  day0: null, inbox: [], inboxAdded: 0,   // your calendars (../day/day.json, the PC's own link only) and the iPhone inbox (../day/inbox.json), read only
 };
+const INBOX_KEY = 'planner.inbox.v1';     // { ids: [...] } the iPhone inbox items already added to this plan (so each is added once)
 let armTimer = 0, noteTimer = 0, reviewTimer = 0, tickTimer = 0;
 
 async function getJSON(url, ms) {
@@ -323,6 +326,48 @@ function tradingCard(day) {
   det.appendChild(au); c.appendChild(det);
   return c;
 }
+// your work day from your own calendars (tools/calendar_sync.py on the PC, olympus/day.js): the shift over the bot's windows, read only
+function workCard(day) {
+  const D = S.day0, isToday = day === S.today;
+  if (!D) return null;
+  const v = isToday ? Day.today(D, nowDate().getTime()) : null, d = D.days[day] || null;
+  const c = card('Your work day' + (D.demo ? ' (example)' : ''), 'workday'); c.id = 'workCard';
+  const text = v ? v.text : d ? d.text : 'This day is not in your calendar file.';
+  const lead = h('p', 'lead', text); lead.id = 'workLead'; c.appendChild(lead);
+  const notes = v ? v.notes : d ? d.notes : [];
+  if (notes.length) { const ul = h('ul', 'rows worknotes'); for (const n of notes) ul.appendChild(h('li', 'note', n)); c.appendChild(ul); }
+  const evs = Day.eventsOn(D, day);
+  const mu = h('ul', 'rows'); mu.setAttribute('aria-label', 'From your calendars');
+  if (!evs.length) empty(mu, 'Nothing in your calendars this day.');
+  for (const e of evs.slice(0, 12)) {
+    const li = h('li', 'mrow'); li.appendChild(h('span', 'slot', e.allDay ? 'All day' : e.start + '-' + e.end));
+    const t = h('span', 'txt', e.title); t.appendChild(h('small', '', ' · ' + e.cal + (e.work ? ' · work' : '') + (!e.busy && !e.allDay ? ' · free' : ''))); li.appendChild(t);
+    if (e.work) li.appendChild(h('span', 'pill warn', 'work'));
+    mu.appendChild(li);
+  }
+  c.appendChild(h('b', '', 'From your calendars')); c.appendChild(mu);
+  const free = d ? d.free : [];
+  if (free.length) c.appendChild(h('p', 'note', 'Free: ' + free.slice(0, 4).map((f) => f.start + '-' + f.end).join(', ') + '.'));
+  if (D.week.line && (isToday || C.weekStart(day) === C.weekStart(S.today))) { const w = h('p', 'note', D.week.line); w.id = 'workWeek'; c.appendChild(w); }
+  const bad = D.calendars.filter((x) => !x.ok && !D.demo);
+  const age = v && v.age ? `Read from your calendars ${v.age}.` : '';
+  c.appendChild(h('p', 'note', [age, bad.length ? `${bad.map((x) => x.name).join(', ')}: ${bad[0].error || 'could not be read'}${bad[0].cached ? ' (last good copy shown)' : ''}.` : ''].filter(Boolean).join(' ') || 'Read only: change shifts in your own calendar app.'));
+  return c;
+}
+// what you sent from the iPhone ("Add to my day" Shortcut -> the PC's inbox): added once each to this plan, never in the DEMO
+function importInbox() {
+  if (S.demo || !S.inbox.length) return 0;
+  let seen = []; try { const j = JSON.parse(lsGet(INBOX_KEY) || 'null'); seen = j && Array.isArray(j.ids) ? j.ids : []; } catch (_) { seen = []; }
+  const fresh = S.inbox.filter((x) => !seen.includes(x.id)); if (!fresh.length) return 0;
+  let n = 0;
+  for (const x of fresh) {
+    const ok = x.kind === 'note' ? C.addNote(S.state, { text: x.text, tags: ['inbox'], day: x.due || S.today, at: x.t * 1000 }) : C.addTask(S.state, { text: x.text, day: x.due || S.today, lane: 'today' }, S.today);
+    if (ok) n++; seen.push(x.id);
+  }
+  lsSet(INBOX_KEY, JSON.stringify({ ids: seen.slice(-500) }));
+  if (n) save();
+  return n;
+}
 function phaseClass(ph, ses) { ph.className = 'pill ' + (ses.id === 'entries' ? 'ok' : ses.id === 'winddown' || ses.id === 'flat' ? 'warn' : ses.id === 'closed' ? '' : 'info'); }
 function renderClock() {
   const el = $('clkTime'); if (!el) return;
@@ -409,7 +454,7 @@ function noteCard(day) {
 function renderToday() {
   const d = S.day, v = C.dayView(S.state, d), box = $('v-today'); clear(box);
   $('dayTitle').textContent = C.dayLabel(d); $('daySub').textContent = d === S.today ? 'Today' : d < S.today ? 'A past day' : 'A day ahead'; $('dayToday').hidden = d === S.today;
-  box.appendChild(tradingCard(d)); box.appendChild(agendaCard(d)); box.appendChild(checklistCard(d, v)); box.appendChild(todayTasksCard(d)); box.appendChild(habitsTodayCard(d, v)); box.appendChild(reviewCard(d, v)); box.appendChild(noteCard(d));
+  box.appendChild(tradingCard(d)); const wc = workCard(d); if (wc) box.appendChild(wc); box.appendChild(agendaCard(d)); box.appendChild(checklistCard(d, v)); box.appendChild(todayTasksCard(d)); box.appendChild(habitsTodayCard(d, v)); box.appendChild(reviewCard(d, v)); box.appendChild(noteCard(d));
 }
 
 // ------------------------------------------------------------------------------------------------ Calendar
@@ -783,8 +828,11 @@ async function boot() {
   const at = q.get('at'); if (at) { const d = new Date(at); if (Number.isFinite(d.getTime())) S.fixedNow = d; }
   S.today = C.etParts(nowDate()).day; S.day = S.today; S.cal.day = S.today;
   const saved = S.forced ? { state: null, from: [] } : loadSaved();
-  const [ev, home] = await Promise.all([S.forced ? null : getJSON('../pythia/events.json'), S.forced ? null : getJSON('../home.json')]);
+  const [ev, home, dayf, inb] = await Promise.all([S.forced ? null : getJSON('../pythia/events.json'), S.forced ? null : getJSON('../home.json'),
+    S.forced ? null : getJSON('../day/day.json'), S.forced ? null : getJSON('../day/inbox.json')]);
   S.home = home;
+  S.day0 = S.forced ? Day.norm(Day.demo(nowDate().getTime())) : Day.norm(dayf);
+  S.inbox = Day.inboxItems(inb);
   if (saved.state) { S.state = saved.state; S.demo = false; S.from = saved.from; if (!saved.from.includes('v2')) save(); }
   else { S.fixture = await getJSON('./fixture.json'); S.state = C.buildDemo(S.fixture, S.today); S.demo = true; $('demoNote').textContent = (S.fixture && S.fixture.note) || 'Example plan, not real. Tap Start my plan to begin with your own.'; }
   if (!S.fixture && !C.botsView(S.home, null).real) S.fixture = await getJSON('./fixture.json');
@@ -796,6 +844,8 @@ async function boot() {
   try { const raw = lsGet(C.ARGO_KEY); S.argo = raw ? C.argoGoals(JSON.parse(raw)) : null; } catch (_) { S.argo = null; }
   S.argoReal = !!S.argo; if (!S.argo) S.argo = C.argoGoals(C.ARGO_STARTERS);
   try { S.focus = C.cleanFocus(JSON.parse(lsGet(C.FOCUS_KEY) || 'null')); } catch (_) { S.focus = null; }
+  S.inboxAdded = importInbox();
+  if (S.inboxAdded) say(`${S.inboxAdded} item${S.inboxAdded === 1 ? '' : 's'} from your iPhone added to today.`);
   wire();
   try { S.scene = Scene.mount($('scene'), { lite: !!(O && O.lite && O.lite()), reduced: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches, now: nowDate, hoursOf: (d) => { const p = C.etParts(d); return p.hh + p.mm / 60; } }); } catch (_) { S.scene = null; }
   render();

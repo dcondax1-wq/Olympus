@@ -5,7 +5,7 @@
 // Every number comes from copilot.js over the published files (window.JARVIS_API.skills.card() when the brain's skills are up, else its own
 // read of the same files through jdata.js); the card's foot names each file and how old it is. A tap on a line asks Jarvis the full question
 // (data-say: the shell's own handler). ?demo=1 shows example numbers, labelled. Read only: nothing here trades, arms or sends.
-//   window.__jarvisCopilot = { render(), refresh(), card() }        (tests)
+//   window.__jarvisCopilot = { render(), refresh(), card(), model(), sources() }        (tests; sources() also feeds briefing.js's day lines)
 // Safari 16: plain ES2020 module, no optional chaining.
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -83,6 +83,6 @@ function start() {
   setInterval(() => { if (visible()) refresh(Date.now() - lastAt > 5 * 60e3 ? { force: true } : {}); }, 60000);   // the slot follows the clock
   document.addEventListener('visibilitychange', () => { if (visible()) refresh({ force: Date.now() - lastAt > 5 * 60e3 }); });
   document.addEventListener('click', (e) => { const t = e.target.closest && e.target.closest('[data-hc="refresh"]'); if (t) refresh({ force: true }); });
-  window.__jarvisCopilot = { render: () => last && render(last), refresh, card, model: () => last };
+  window.__jarvisCopilot = { render: () => last && render(last), refresh, card, model: () => last, sources };   // sources(): the briefing's Work / weather / headlines lines read S.day
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();

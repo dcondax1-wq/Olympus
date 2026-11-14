@@ -28,7 +28,7 @@ D = os.path.join(AK.WEB, APP)
 
 
 def test_static():
-    AK.static_kit(APP, NAME, reads=("../pythia/events.json", "../home.json"), storage="own")
+    AK.static_kit(APP, NAME, reads=("../pythia/events.json", "../home.json", "../day/day.json", "../day/inbox.json"), storage="own")   # day/: your calendars, the PC's own link only (tests.test_calendar_sync)
     html, js, core, css, scene = (AK.read(os.path.join(D, n)) for n in ("index.html", "planner.js", "plannercore.js", "planner.css", "plannerscene.js"))
     order = ["demoBar", "qForm", "tabs", "p-today", "p-calendar", "p-tasks", "p-projects", "p-habits", "p-goals", "p-notes", "p-focus", "p-find", "p-data"]
     idx = [html.index(f'id="{i}"') for i in order]

@@ -6,7 +6,9 @@
 //
 //   import { createCopilot, match, verdict, lossBudget, pnlReport, passClose, changed, kalshiDay, cardFor, morningCard, dayCard } from './copilot.js';
 //   const cp = createCopilot({ storage?, now? });
-//   cp.match(text)            -> 'trade_today' | 'loss_budget' | 'pnl_report' | 'pass_close' | 'changed' | 'kalshi_day' | null
+//   cp.match(text)            -> 'trade_today' | 'loss_budget' | 'pnl_report' | 'pass_close' | 'changed' | 'kalshi_day' | 'my_day' | null
+//   my_day (team X2 2026-11-14): your work shift over the bot's windows + hours worked vs $ made trading, from S.day (../day/day.json, the PC's own
+//   link only; olympus/day.js). The 01:45 / 10:45 plan cards and the 16:05 summary carry a Work line when the file is there.
 //   cp.answer(id, S, now?)    -> reply { text, speak, intent: 'copilot_<id>', sources: ['home.json, 6 min ago', ...], app? (opened only on "open it", never by itself), verdict?, missing? }
 //   cp.ask(text, S, now?)     -> reply | null           (match + answer; also keeps today's snapshot for "what changed")
 //   cp.remember(S, now?)      keeps this ET day's snapshot on this phone ('jarvis.copilot.v1': the last 5 days) for "what changed"
@@ -16,6 +18,7 @@
 
 import { isObj, num, str, usd, etParts, srcTag, agoText, DOW } from './jdata.js';
 import { accountsOf, agesOf } from '../olympus/truth.js';
+import * as Day from '../olympus/day.js';
 
 export const STORE_KEY = 'jarvis.copilot.v1';
 export const SLOTS = [{ id: '01:45', mod: 105 }, { id: '10:45', mod: 645 }, { id: '16:05', mod: 965 }];
@@ -46,8 +49,10 @@ const RX = {
   changed: [/\bwhat(?: has| have| is|'s|s)? (?:changed|moved|different|new|happened)\b.*\b(?:since|overnight|yesterday|last night|today|this morning)\b/, /\bsince yesterday\b|\bovernight\b.*\b(?:happen|change|new|move)/,
     /^(?:what(?: has|'s|s)? changed|what(?:'s|s| is) new|anything new|any changes|what did i miss overnight)$/],
   kalshi_day: [/\bkalshi\b.*\b(?:exposure|at risk|risk today|bets? today|today'?s bets|day report|copilot|bets and|open risk)\b/, /\b(?:exposure|at risk|open risk)\b.*\bkalshi\b/, /^kalshi (?:day|today in full|full day)$/],
+  my_day: [/^(?:what(?: is|'s|s)? )?my day(?: today| look like| looking like)?$/, /\bwhat(?: is|'s|s)? my (?:work )?(?:day|schedule|shift)s?(?: today| this week| look like)?\b/, /\bwhen (?:do|am) i (?:work|working|start work|finish work|off work)\b/,
+    /\bdo i (?:work|have work|have a shift) today\b/, /\bhours worked\b|\bwork(?:ing)? (?:vs|versus|against|compared to) trad|\btrading vs (?:work|my job|the job)\b|\bquit (?:my|the) job\b|\bpath to quit/],
 };
-const ORDER = ['kalshi_day', 'pass_close', 'loss_budget', 'changed', 'trade_today', 'pnl_report'];
+const ORDER = ['kalshi_day', 'pass_close', 'loss_budget', 'changed', 'my_day', 'trade_today', 'pnl_report'];
 const VETO = { trade_today: /\b(?:how many|micros?|contracts?|minis?|what size|how big|explain|why)\b/, loss_budget: /\bkalshi\b/, pnl_report: /\bkalshi\b|\bweekday\b/, pass_close: /\bkalshi\b|\bquiz\b/ };
 const normQ = (s) => String(s == null ? '' : s).toLowerCase().replace(/[’‘`]/g, "'").replace(/&/g, ' and ').replace(/[?!.,]+/g, ' ').replace(/\bp ?n ?l\b|\bp and l\b|\bp\/l\b/g, 'p and l').replace(/^(?:hey |ok |okay |so |jarvis |please )+/g, '').replace(/\s+/g, ' ').trim();
 export function match(text) {
@@ -358,6 +363,19 @@ function kalshiReply(S, now) {
   return done(S, now, kNames(S), lines, { intent: 'copilot_kalshi_day', app: 'kalshicity', speak: lines.slice(0, 2).join(' ') });
 }
 
+// ------------------------------------------------------------------------------------------------ 7. my day: the work shift over the bot's windows, hours worked vs trading
+function dayReply(S, now) {
+  const v = Day.today(S && S.day, now);
+  if (v.state === 'missing') return null;            // no calendar file (the public site): the older skills answer (the Planner's own day)
+  const lines = [v.text].concat((v.notes || []).slice(0, 3));
+  if (v.free && v.free.length) lines.push('Free: ' + v.free.slice(0, 3).map((f) => `${Day.said(f.start)}-${Day.said(f.end)}`).join(', ') + '.');
+  if (v.week) lines.push(v.week);
+  const bad = (v.calendars || []).filter((c) => !c.ok);
+  if (bad.length && !v.demo) lines.push(`${bad.map((c) => c.name).join(', ')} could not be read this time${bad[0].cached ? ' (the last good copy is used)' : ''}.`);
+  lines.push('Read only: change shifts in your own calendar app.');
+  return done(S, now, ['day'], lines, { intent: 'copilot_my_day', app: 'planner', speak: lines.slice(0, 2).join(' ') });
+}
+
 // ------------------------------------------------------------------------------------------------ the home cards: 01:45 / 10:45 morning plan, 16:05 day summary
 export function slotAt(nowIn) {
   const p = etParts(nowOf(nowIn)), wk = p.dow >= 1 && p.dow <= 5;
@@ -369,13 +387,15 @@ export function slotAt(nowIn) {
 }
 const TONE = { GO: 'ok', CAREFUL: 'warn', 'SIT OUT': 'bad' };
 function mindPlans(S) {
-  const pl = obj(obj(obj(obj(homeOf(S)).live).pc).mind).plans;
+  const pl = obj(obj(obj(obj(obj(homeOf(S)).live).pc).mind).plans);      // no plans published yet: none (was a TypeError that blanked the card)
   return ['lit', 'atlas', 'blitz'].map((k) => (isObj(pl[k]) ? { key: k, text: str(pl[k].headline, 140), t: num(pl[k].t) } : null)).filter((x) => x && x.text);
 }
 export function morningCard(S, nowIn, slot) {
   const now = nowOf(nowIn), V = verdict(S, now), L = lossBudget(S, now).filter((x) => !x.paper), rows = [];
   const hot = V.per.find((x) => !x.paper && x.level !== 'GO'), alarm = V.why.find((w) => /^News|^The PC|^The bot's|^No report|^I do not|^home\.json/.test(w));
   rows.push({ text: V.verdict + ' · ' + (V.global || alarm || (hot ? `${hot.name}: ${hot.short}` : 'a normal day: the bot trades its plan')).replace(/\.$/, '') + '.', tone: TONE[V.verdict], say: 'Should I trade today?' });
+  const work = Day.copilotRow(S && S.day, now, slot);
+  if (work) rows.push(work);
   for (const x of L.slice(0, 2)) if (x.today != null) rows.push({ text: `${x.name}: can lose ${usd(x.today)} today; ${x.room != null ? usd(x.room) + ' before the eval fails' : 'no drawdown number'}${x.losses != null ? ` (${x.losses} full ${x.losses === 1 ? 'loss' : 'losses'})` : ''}.`, tone: x.room != null && x.mll && x.room / x.mll < 0.25 ? 'warn' : 'ok', say: 'How much can I lose today?' });
   const plans = mindPlans(S).filter((m) => (slot === '10:45' ? m.key === 'blitz' || m.key === 'lit' : m.key !== 'blitz'));
   if (plans.length) rows.push({ text: plans[0].text, tone: 'info', say: 'What is the game plan?' });
@@ -383,7 +403,7 @@ export function morningCard(S, nowIn, slot) {
   rows.push(ev.length ? { text: `News: ${ev.slice(0, 2).map((e) => e.title + (e.time ? ' ' + e.time : '')).join('; ')} ET.`, tone: ev.some((e) => e.impact === 'high') ? 'warn' : 'info', say: 'Is there any news today?' } : { text: isObj(S && S.pythia) ? 'No big news on the calendar today.' : 'No risk calendar loaded (pythia/events.json).', tone: 'info', say: 'Is there any news today?' });
   const k = kalshiSnap(S, now);
   rows.push(k ? { text: `Kalshi: ${k.today != null ? usd(k.today, true) + ' today' : 'no P&L yet'}${k.positions.length ? `, ${plural(k.positions.length, 'open bet')}${k.exposure != null ? ' (' + usd(k.exposure) + ' at risk)' : ''}` : ', nothing open'}${k.live ? '' : ' (engine copy)'}.`, tone: k.paused ? 'warn' : 'info', say: 'Kalshi exposure today' } : { text: 'Kalshi: no feed loaded, so no Kalshi numbers.', tone: 'off', say: 'Kalshi exposure today' });
-  return { slot, kind: 'morning', title: slot === '10:45' ? 'Midday plan' : 'Morning plan', kicker: `Money copilot · ${slot} ET`, verdict: V.verdict, tone: TONE[V.verdict], rows: rows.slice(0, 6), foot: srcLine(S, ['home', 'pythia'].concat(k ? kNames(S) : []), now).line, asof: now };
+  return { slot, kind: 'morning', title: slot === '10:45' ? 'Midday plan' : 'Morning plan', kicker: `Money copilot · ${slot} ET`, verdict: V.verdict, tone: TONE[V.verdict], rows: rows.slice(0, work ? 7 : 6), foot: srcLine(S, ['home', 'pythia'].concat(k ? kNames(S) : []).concat(work ? ['day'] : []), now).line, asof: now };
 }
 export function dayCard(S, nowIn, day) {
   const now = nowOf(nowIn), d = day || etParts(now).day, acc = accounts(S), rows = [], all = allTrades(S), mine = all.filter((t) => t.day === d);
@@ -395,7 +415,9 @@ export function dayCard(S, nowIn, day) {
   const tm = isToday ? nextDay(d) : etParts(now).day, ev = dayEvents(S, tm).filter((e) => e.impact === 'high' || e.closed || e.early);
   if (ev.length) rows.push({ text: `${isToday ? 'Tomorrow' : 'Today'}: ${ev.map((e) => e.title + (e.time ? ' ' + e.time + ' ET' : '')).join('; ')}.`, tone: 'warn', say: 'Should I trade today?' });
   const sum = acc.filter((x) => !x.paper).reduce((s, a) => s + (a.today || 0), 0);
-  return { slot: '16:05', kind: 'summary', title: isToday ? 'Day summary' : 'Last session', kicker: `Money copilot · ${isToday ? '16:05 ET' : d}`, tone: isToday ? (sum > 0 ? 'ok' : sum < 0 ? 'warn' : 'info') : 'info', total: isToday ? sum : null, rows: rows.slice(0, 5), foot: srcLine(S, ['home', 'odeon'].concat(k ? kNames(S) : []), now).line, asof: now };
+  const work = isToday ? Day.copilotRow(S && S.day, now, '16:05') : null;
+  if (work) rows.push(work);
+  return { slot: '16:05', kind: 'summary', title: isToday ? 'Day summary' : 'Last session', kicker: `Money copilot · ${isToday ? '16:05 ET' : d}`, tone: isToday ? (sum > 0 ? 'ok' : sum < 0 ? 'warn' : 'info') : 'info', total: isToday ? sum : null, rows: work ? rows.filter((r) => r !== work).slice(0, 5).concat([work]) : rows.slice(0, 5), foot: srcLine(S, ['home', 'odeon'].concat(k ? kNames(S) : []).concat(work ? ['day'] : []), now).line, asof: now };
 }
 export function cardFor(S, nowIn) {
   const now = nowOf(nowIn), s = slotAt(now);
@@ -406,7 +428,7 @@ export function cardFor(S, nowIn) {
 // ------------------------------------------------------------------------------------------------ the copilot
 export function createCopilot(opts) {
   const o = isObj(opts) ? opts : {}, storage = o.storage || null, clock = () => nowOf(typeof o.now === 'function' ? o.now() : Date.now());
-  const ANS = { trade_today: (S, n) => tradeToday(S, n), loss_budget: (S, n) => lossReply(S, n), pnl_report: (S, n) => pnlReply(S, n), pass_close: (S, n) => passReply(S, n), changed: (S, n) => changedReply(S, n, storage), kalshi_day: (S, n) => kalshiReply(S, n) };
+  const ANS = { trade_today: (S, n) => tradeToday(S, n), loss_budget: (S, n) => lossReply(S, n), pnl_report: (S, n) => pnlReply(S, n), pass_close: (S, n) => passReply(S, n), changed: (S, n) => changedReply(S, n, storage), kalshi_day: (S, n) => kalshiReply(S, n), my_day: (S, n) => dayReply(S, n) };
   function answer(id, S, now) {
     const n = now != null ? nowOf(now) : clock(), f = ANS[id];
     if (!f) return null;
@@ -419,5 +441,5 @@ export function createCopilot(opts) {
     card: (S, now) => { try { const n = now != null ? nowOf(now) : clock(); const c = cardFor(isObj(S) ? S : { at: {} }, n); if (isObj(S)) saveSnap(storage, S, n); return c; } catch (_) { return null; } },
   };
 }
-export const HELP = { id: 'copilot', label: 'Money copilot', ex: ['should I trade today', 'how much can I lose today', 'how close am I to passing', 'what changed since yesterday', 'best and worst trade', 'kalshi exposure today'] };
+export const HELP = { id: 'copilot', label: 'Money copilot', ex: ['should I trade today', 'how much can I lose today', 'how close am I to passing', 'what changed since yesterday', 'best and worst trade', 'kalshi exposure today', "what's my day"] };
 export default createCopilot;

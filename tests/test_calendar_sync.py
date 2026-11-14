@@ -459,7 +459,177 @@ def test_route():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-EXTRA = {}
+# ------------------------------------------------------------------------------------------------ k. the phone side in node: olympus/day.js, the copilot's Work line, the briefing
+def fixture_day(now_s, extras=None):
+    return CS.build(all_cals(), now_s, {"wage": {"hourly": 18.5}}, pythia={"events": [{"date": "2026-11-18", "time": "14:00", "title": "Fed minutes", "impact": "med", "kind": "fomc"}]},
+                    trade={"ok": True, "cash_week": 0.0, "eval_week": 120.0, "cash_per_month": None, "plan_per_month": 1290.0}, extras=extras)
+
+
+WEATHER = {"weather": {"src": "api.weather.gov", "place": "Columbus, OH", "t": int(MON_0800) - 1800, "periods": [{"name": "Today", "temp": 51, "unit": "F", "short": "Chance Rain Showers", "rain": 40}],
+                       "alerts": [{"event": "Wind Advisory", "headline": "Wind Advisory until 6 PM"}]},
+           "headlines": {"t": int(MON_0800) - 1800, "items": [{"title": "Federal Reserve issues FOMC statement", "source": "federalreserve.gov", "t": int(MON_0800) - 7200, "tags": ["fed"]},
+                                                              {"title": "Consumer Price Index news release", "source": "bls.gov", "t": int(MON_0800) - 3600, "tags": ["cpi"]}]}}
+
+
+def test_node():
+    import subprocess
+    tmp = tempfile.mkdtemp()
+    try:
+        now_ms = int((MON_0800 - 6 * 3600 + 600) * 1000)            # Monday 02:10 ET
+        dp, ip = os.path.join(tmp, "day.json"), os.path.join(tmp, "inbox.json")
+        json.dump(fixture_day(now_ms / 1000, WEATHER), open(dp, "w"))
+        json.dump({"kind": "olympus-inbox", "items": [{"id": "i1", "type": "task", "text": "Call the bank", "t": 1}, {"id": "i2", "type": "note", "text": "Idea: size down on CPI days", "due": "2026-11-17", "t": 2}]}, open(ip, "w"))
+        r = subprocess.run(["node", os.path.join(ROOT, "tests", "connect_day_harness.mjs"), dp, ip, str(now_ms)], capture_output=True, text=True, timeout=120)
+        if r.returncode != 0:
+            check("k. node harness runs", False, r.stderr[-1500:])
+            return
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("k. norm: the file is read, junk files are refused", o["norm"] == 22 and o["normBad"], o["norm"])
+    t = o["today"]
+    check("k. today(): ok, the day's sentence, the shift, the lunch break check", t["state"] == "ok" and t["text"] == "You work 9-5 today: the bot trades alone; check on your break 12:15."
+          and t["work"] == [{"start": "09:00", "end": "17:00", "mins": 480}] and t["checkAt"] == "12:15", t)
+    check("k. no file (the public site): 'missing' and how to connect, nothing invented", o["missing"]["state"] == "missing" and "CONNECT_DAY.bat" in o["missing"]["text"] and not o["missing"]["work"])
+    check("k. a file 40 h old is 'old' (the PC may be off); 2 h old says its age", o["old"] == "old" and o["late"]["state"] == "late" and "2 h ago" in o["late"]["note"], (o["old"], o["late"].get("note")))
+    rw = o["rows"]
+    check("k. copilot rows: 01:45 the sentence, 10:45 'at work until 5 pm; check at 12:15', 16:05 hours today + the week line, none without a file",
+          rw["a"]["text"].startswith("Work: You work 9-5 today") and rw["b"]["text"].startswith("Work: at work until 5 pm; check at 12:15") and rw["c"]["text"].startswith("Work: 8 h at work today. This week: ")
+          and rw["none"] is None and rw["a"]["say"] == "What's my day?", rw)
+    check("k. time words: 5 pm, 12:30, noon, 9:30 am, midnight, midnight, ''", o["said"] == ["5 pm", "12:30", "noon", "9:30 am", "midnight", "midnight", ""], o["said"])
+    br = o["brief"]
+    check("k. the briefing lines: Work, Weather (Columbus 51°F, rain 40%, the wind advisory), Headlines (Fed, CPI)", [x["k"] for x in br] == ["work", "weather", "news"]
+          and o["weather"] == "Columbus, OH: Today 51°F, chance rain showers, 40% rain. Alert: Wind Advisory." and "Federal Reserve issues FOMC statement (federalreserve.gov)" in br[2]["text"], br)
+    check("k. the inbox: a task and a note with its day; junk dropped, markup stripped", [(x["id"], x["kind"], x["due"]) for x in o["inbox"]] == [("i1", "task", ""), ("i2", "note", "2026-11-17")]
+          and o["inboxBad"][0] == 0 and [x["text"] for x in o["inboxBad"][1]] == ["b hi /b"], o["inboxBad"])
+    ev = o["evil"]
+    check("k. hostile day text: no markup survives, a bad shift time is dropped, an unknown tone becomes info", "<" not in ev["text"] and "<" not in "".join(ev["notes"]) and ev["work"] == [] and ev["tone"] == "info", ev)
+    check("k. a two-day all-day entry shows on its second day too (the weekend trip on Saturday)", "Weekend trip" in o["eventsAllDay"], o["eventsAllDay"])
+    m = [x["text"] for x in o["morning"]["rows"]]
+    check("k. Jarvis 01:45 Morning plan: the Work line is the second line, the foot names day/day.json", len(m) >= 3 and m[1].startswith("Work: You work 9-5 today")
+          and "day/day.json (your calendars)" in o["morning"]["foot"], (m, o["morning"]["foot"]))
+    check("k. 10:45 Midday plan: 'at work until 5 pm; check at 12:15'", any(x["text"].startswith("Work: at work until 5 pm") for x in o["midday"]["rows"]), [x["text"] for x in o["midday"]["rows"]])
+    sm = [x["text"] for x in o["summary"]["rows"]]
+    check("k. 16:05 Day summary: the last line is hours worked + the week line (hours vs $ trading)", sm and sm[-1].startswith("Work: 8 h at work today. This week: ") and "To quit" in sm[-1], sm)
+    check("k. without a day file the cards are exactly as before (no Work line)", not any(x["text"].startswith("Work:") for x in o["noDay"]["rows"]) and len(o["noDay"]["rows"]) <= 6)
+    check("k. 'what's my day', 'what is my schedule today', 'do i work today', 'hours worked vs trading', 'when do i work' -> my_day; 'should i trade today' stays trade_today",
+          o["match"] == ["my_day"] * 5 + ["trade_today"], o["match"])
+    a = o["answer"]
+    check("k. the answer: the sentence, the notes, free time, the week line, read only, opens nothing by itself", a and a["intent"] == "copilot_my_day" and a["text"].startswith("You work 9-5 today")
+          and "Free: 7 am-9 am" in a["text"] and "This week:" in a["text"] and "Read only" in a["text"] and a.get("app") == "planner", a)
+    check("k. no day file: my_day hands over to the older skills (null), never a made-up day", o["answerMissing"] is None, o["answerMissing"])
+    bl = [x["k"] for x in o["brf"]["lines"]]
+    check("k. the morning briefing carries Work, Weather and Headlines after Today's plan; without them it is unchanged",
+          bl[:6] == ["bots", "drawdown", "today", "work", "weather", "news"] and [x["k"] for x in o["brfNone"]["lines"]] == ["bots", "drawdown", "today", "kalshi", "todos"], bl)
+
+
+# ------------------------------------------------------------------------------------------------ l. Chromium: the Planner's work card + inbox, Jarvis's card (under flock /tmp/olympus_browser.lock)
+PLAN = json.dumps({"v": 2, "events": [], "tasks": [], "projects": [], "goals": [], "notes": [], "habits": [], "habitLog": {}, "checklist": [], "checks": {}, "postlist": [], "postChecks": {}, "post": {}, "focus": {}, "prefs": {}})
+INBOX = {"kind": "olympus-inbox", "items": [{"id": "i1", "type": "task", "text": "Call the bank about the card", "t": 1}, {"id": "i2", "type": "note", "text": "Idea from the iPhone", "t": 2}]}
+
+
+def test_planner_browser():
+    from tests import agora_kit as AK
+    day = fixture_day(MON_0800 + 2 * 3600, WEATHER)
+    srv, origin = AK.serve({"/day/day.json": json.dumps(day), "/day/inbox.json": json.dumps(INBOX)})
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin, storage={"planner.agora.v2": PLAN})
+            AK.open_app(p, origin, "planner", "?at=2026-11-16T15:00:00Z")
+            p.wait_for_selector("#workCard", timeout=30000)
+            w = p.evaluate("(() => { const c = document.getElementById('workCard'); return { h: c.querySelector('h2').innerText, lead: c.querySelector('#workLead').innerText,"
+                           " rows: [...c.querySelectorAll('.mrow')].map((r) => r.innerText.replace(/\\s+/g, ' ')), week: (c.querySelector('#workWeek') || {}).innerText || '',"
+                           " order: [...document.getElementById('v-today').children].map((s) => s.id || s.className).slice(0, 3) }; })()")
+            check("l. Planner Today: 'Your work day' after the trading day, the sentence, the shifts from the calendars, the week line",
+                  w["h"] == "Your work day" and w["lead"] == "You work 9-5 today: the bot trades alone; check on your break 12:15."
+                  and any("Cashier at Main Street Store" in r and "work" in r for r in w["rows"]) and w["week"].startswith("This week: ") and w["order"][1] == "workCard", w)
+            st = p.evaluate("JSON.parse(localStorage.getItem('planner.agora.v2'))")
+            ids = p.evaluate("JSON.parse(localStorage.getItem('planner.inbox.v1'))")
+            check("l. the iPhone inbox: the task is in today's tasks, the note in the notes (tag inbox), each remembered once",
+                  any(t["text"] == "Call the bank about the card" and t["day"] == "2026-11-16" for t in st["tasks"])
+                  and any(n["text"] == "Idea from the iPhone" and "inbox" in n["tags"] for n in st["notes"]) and ids["ids"] == ["i1", "i2"], (st["tasks"], st["notes"], ids))
+            p.reload()
+            p.wait_for_selector("#workCard", timeout=30000)
+            st2 = p.evaluate("JSON.parse(localStorage.getItem('planner.agora.v2'))")
+            check("l. reload (the test resets the plan on every load): the inbox items are remembered, so they are not added again",
+                  not [t for t in st2["tasks"] if t["text"] == "Call the bank about the card"] and not st2["notes"], st2["tasks"])
+            check("l. 390 px: no sideways scroll, no console error, nothing off the page's origin", AK.no_sideways(p) and not errs and not off, (errs[:3], off[:3]))
+            ctx.close()
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, "planner", "?demo=1&at=2026-11-16T15:00:00Z")
+            p.wait_for_selector("#workCard", timeout=30000)
+            check("l. ?demo=1: the work card is the labelled example, nothing from the inbox is added",
+                  "(example)" in p.inner_text("#workCard h2") and p.evaluate("localStorage.getItem('planner.inbox.v1')") is None)
+            ctx.close()
+    finally:
+        srv.shutdown()
+    srv, origin = AK.serve()
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin, storage={"planner.agora.v2": PLAN})
+            AK.open_app(p, origin, "planner", "?at=2026-11-16T15:00:00Z")
+            p.wait_for_function("window.PLANNER && window.PLANNER.ready()", timeout=30000)
+            check("l. the public site (no day file): no work card, the Planner as before, no error", p.evaluate("!document.getElementById('workCard')") and not errs, errs[:3])
+            ctx.close()
+    finally:
+        srv.shutdown()
+
+
+def test_jarvis_browser():
+    import functools
+    import http.server
+    import re as _re
+    import threading
+    from playwright.sync_api import sync_playwright
+    from tests import browser_kit as BK
+    from tests import test_jarvis_copilot as TJ
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(TJ.Quiet, directory=TJ.WP))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    url = f"http://127.0.0.1:{srv.server_address[1]}/"
+    at = dt.datetime(2026, 11, 16, 2, 10, tzinfo=NY)
+    day = json.dumps(fixture_day(at.timestamp(), WEATHER))
+    try:
+        with sync_playwright() as pw:
+            br = BK.launch(pw)
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, service_workers="block")
+            ctx.route(_re.compile(r"^https?://(?!127\.0\.0\.1[:/])"), lambda r: r.abort())
+            ctx.route(_re.compile(r"/home\.json(\?.*)?$"), lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(TJ.fixture_home(at.timestamp()))))
+            ctx.route(_re.compile(r"/day/day\.json(\?.*)?$"), lambda r: r.fulfill(status=200, content_type="application/json", body=day))
+            ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.speak', 'off'); } catch (e) {}")
+            ctx.clock.set_fixed_time(at)
+            p = ctx.new_page()
+            errs = []
+            p.on("pageerror", lambda e: errs.append(str(e)))
+            p.goto(url + "jarvis/")
+            p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=60000, polling=200)
+            p.wait_for_function("(() => { const c = document.getElementById('hcCopilot'); return c && [...c.querySelectorAll('.hc-row')].some((b) => b.innerText.startsWith('Work:')); })()", timeout=60000, polling=250)
+            rows = p.evaluate("[...document.querySelectorAll('#hcCopilot .hc-row')].map((b) => [b.innerText, b.dataset.say])")
+            check("l. Jarvis 02:10 ET: the Morning plan card has 'Work: You work 9-5 today: the bot trades alone; check on your break 12:15.', a tap asks \"What's my day?\"",
+                  any(r[0].startswith("Work: You work 9-5 today: the bot trades alone; check on your break 12:15.") and r[1] == "What's my day?" for r in rows), rows)
+            p.evaluate("document.getElementById('talk').innerHTML = ''")
+            p.fill("#q", "what's my day")
+            p.press("#q", "Enter")
+            p.wait_for_function("document.querySelectorAll('.msg.j').length > 0", timeout=20000)
+            ans = p.locator(".msg.j").first.inner_text()
+            check("l. Jarvis: \"what's my day\" answers with the shift, the free time and the week line", "You work 9-5 today" in ans and "This week:" in ans, ans[:400])
+            check("l. Jarvis: no page error", not errs, errs[:3])
+            ctx.close()
+    finally:
+        srv.shutdown()
+
+
+def test_browser():
+    try:
+        test_planner_browser()
+    except Exception as e:  # noqa: BLE001
+        check("l. Planner in Chromium ran", False, f"{e.__class__.__name__}: {e}")
+    try:
+        test_jarvis_browser()
+    except Exception as e:  # noqa: BLE001
+        check("l. Jarvis in Chromium ran", False, f"{e.__class__.__name__}: {e}")
+
+
+EXTRA = {"k": test_node}
 
 
 def main():
@@ -482,6 +652,8 @@ def main():
     for k, fn in EXTRA.items():
         if part(k):
             fn()
+    if ONLY is not None and "l" in ONLY:          # Chromium: only when asked, under flock -w 2400 /tmp/olympus_browser.lock
+        test_browser()
     n, ok = len(RES), sum(RES)
     print(f"\n{ok}/{n} checks passed" + ("" if ok == n else f"  ({n - ok} FAILED)"))
     return 0 if ok == n else 1

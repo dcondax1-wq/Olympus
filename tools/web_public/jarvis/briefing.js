@@ -7,7 +7,9 @@
 //
 //   buildBrief(D, opt) -> { day, title, lines: [{ k, label, text, say }], one: { text, say, action? }, speak, note }
 //     D    = the brain's digest (brain.js digest(): accounts, window, market, kalshi, plan, todos, reminders, priorities, live ...)
-//     opt  = { now (ms), facts (data.js getFacts(): system view), one (an item from modes.think), hide (hide balances) }
+//     opt  = { now (ms), facts (data.js getFacts(): system view), one (an item from modes.think), hide (hide balances),
+//              day (team X2 2026-11-14: [{ k, label, text, speak }] from ../olympus/day.js briefLine: your work shift over the bot's windows,
+//              the weather (api.weather.gov) and NQ / Fed / CPI headlines, all fetched by the PC: tools/calendar_sync.py + tools/day_feeds.py) }
 //   alertsCfg(storage) / saveAlerts(storage, cfg) / inQuiet(cfg, min) / mayTalk(cfg, min)     'jarvis.alerts.v1'
 //   briefPlan(state, nowMs, cfg) -> { card, speak, day }      what to do right now (once per ET day each)
 //
@@ -117,6 +119,9 @@ export function buildBrief(D, opt) {
   const todayTxt = [win ? win.replace(/\.$/, '') : '', evTxt.length ? `Planner: ${evTxt.join('; ')}${evs.length > 3 ? '…' : ''}` : plan ? 'Nothing in your Planner today' : ''].filter(Boolean).join('. ') + '.';
   add('today', "Today's plan", todayTxt, said([win.replace(/\.$/, ''), evTxt.length ? `You have ${plural(evs.length, 'event')}, first ${evTxt[0]}` : plan ? 'Nothing in your Planner today' : ''].filter(Boolean).join('. ') + '.'));
 
+  // 3b. your day from the PC (only when the PC's own link serves ../day/day.json): the work shift, the weather, the headlines
+  for (const l of arr(o.day).filter((x) => isObj(x) && str(x.text, 300)).slice(0, 3)) add(str(l.k, 12) || 'work', str(l.label, 20) || 'Work', str(l.text, 300), said(str(l.speak, 300) || str(l.text, 300)));
+
   // 4. Kalshi
   const k = isObj(d.kalshi) ? d.kalshi : { state: 'missing' };
   if (k.state === 'ok') {
@@ -174,7 +179,12 @@ function mount() {
     let one = null;
     try { const t = j && typeof j.think === 'function' ? await j.think() : null; one = t && arr(t.items)[0] ? t.items[0] : null; } catch (_) { one = null; }
     const facts = j && typeof j.facts === 'function' ? (() => { try { return j.facts(); } catch (_) { return null; } })() : null;
-    return buildBrief(D, { now: Date.now(), facts, one: one ? { text: one.text, say: one.say, action: one.action } : null, hide: !!(j && typeof j.hidden === 'function' && j.hidden()) });
+    let day = null;                                    // your day (the PC's own link only; on the public site the file is missing and nothing changes)
+    try {
+      const cpw = W.__jarvisCopilot, S = cpw && typeof cpw.sources === 'function' ? await cpw.sources() : null;   // copilot-card.js's read of the published files
+      if (S && S.day) { const m = await import('../olympus/day.js'); day = m.briefLine(S.day, Date.now()); }
+    } catch (_) { day = null; }
+    return buildBrief(D, { now: Date.now(), facts, day, one: one ? { text: one.text, say: one.say, action: one.action } : null, hide: !!(j && typeof j.hidden === 'function' && j.hidden()) });
   }
   function cardEl(b, scroll) {
     const talk = document.getElementById('talk');

@@ -10,7 +10,9 @@
 //                           rating is one of plan | hesitated | interfered and mood one of calm | fomo | revenge | bored | tired: the SAME words as the Journal (journal.v1) and Epilogue / Lyceum,
 //                           so a day's review can sit next to a trade's rating. Last 90 days only. Rewritten from the plan on every save.
 //   planner.focus.v1        the running focus timer { phase, endsAt, mins, task, round } so a reload keeps it.
-// READ ONLY from other apps: argo.goals.v1 (Argo's goals: { id, name, type, target }), ../pythia/events.json, ../home.json (the bots' state line and the accounts' drawdown). Nothing is ever written to them.
+//   planner.inbox.v1        { ids } the iPhone inbox items ("Add to my day", ../day/inbox.json on the PC's own link) already added to the plan, so each is added once.
+// READ ONLY from other apps: argo.goals.v1 (Argo's goals: { id, name, type, target }), ../pythia/events.json, ../home.json (the bots' state line and the accounts' drawdown),
+// ../day/day.json + ../day/inbox.json (your calendars and the iPhone inbox, made by the PC: tools/calendar_sync.py, engine/day_inbox.py; read through ../olympus/day.js). Nothing is ever written to them.
 //
 // STATE v2: { v:2, events, projects, tasks, goals, notes, habits, habitLog, checklist, checks, postlist, postChecks, post, focus, prefs, from, updated }
 // Days are 'YYYY-MM-DD' in NEW YORK time (the bots' clock); times 'HH:MM' are New York wall-clock times. Repeats follow the wall clock, so a 09:00 event stays at 09:00 through the clock change.

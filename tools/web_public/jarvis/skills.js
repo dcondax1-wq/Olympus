@@ -33,7 +33,7 @@ export const EXAMPLES = [
   'explain this trade', 'what should I do next', 'show me Athens', 'open Kronos', 'start the quiz', 'set my goal for today to stay flat before 10',
   'remember that I trade best before 10', 'what did I say about mornings', 'export my data', 'copy the briefing',
 ];
-const COPILOT_EX = ['should I trade today', 'how much can I lose today', 'how close am I to passing', 'best and worst trade', 'what changed since yesterday', 'kalshi exposure today'];   // copilot.js HELP
+const COPILOT_EX = ['should I trade today', 'how much can I lose today', 'how close am I to passing', 'best and worst trade', 'what changed since yesterday', 'kalshi exposure today', "what's my day"];   // copilot.js HELP
 const ZONES = { market: ['zenith', 'oracle', 'ares', 'forum', 'chronos', 'cities', 'odeon', 'pantheon', 'delphi', 'kronos'], research: ['datacity', 'observatory', 'tree', 'prometheus', 'hephaestus', 'nemesis', 'clio', 'fates', 'moirai'],
   risk: ['ledger', 'hera', 'plutus', 'pnyx', 'demeter', 'labyrinth', 'kalshi', 'kalshicity', 'tyche', 'dionysus', 'hermes', 'mint', 'mintcity', 'mercury', 'chrysos', 'sibyl'], command: ['hestia', 'inbox', 'argus', 'bridge', 'settings', 'atlas', 'stoa', 'kratos', 'argo'],
   life: ['planner', 'mind', 'arena', 'journal', 'athena', 'apollo', 'lyceum', 'nike', 'epilogue', 'gallery'] };       // atlas/atlas.js `zones` (checked by the tests)
