@@ -286,8 +286,41 @@
     });
   }
 
+  /* ------------------------------------------------------------------------------------------ Look: the OLYMPUS theme (olympus/themes.js, key 'olympus.theme')
+     Six plain looks as swatches (a tiny card in the theme's own page, panel, accent, gain green and loss red); one tap applies it here at once and
+     everywhere else (Jarvis's Look sheet shows the same key; another tab follows through the storage event). Hidden when the engine is not served. */
+  function look() {
+    var T = w.OLYMPUS_THEMES;
+    if (!T || !T.plain) return;
+    T.apply('page', { meta: true });
+    var host = $('looks'), sec = $('lookSec');
+    function draw() {
+      var cur = T.id(), list = T.plain();
+      clear(host);
+      for (var i = 0; i < list.length; i++) (function (t) {
+        var k = t.tokens, b = el('button', 'g-sw'), p = el('span', 'g-swp'), bar = el('i', 'g-swbar'), up = el('i', 'g-swup', '+$'), dn = el('i', 'g-swdn', '\u2212$');
+        b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(t.id === cur)); b.setAttribute('data-theme-id', t.id);
+        b.setAttribute('aria-label', t.name + ': ' + (t.tag || ''));
+        p.setAttribute('aria-hidden', 'true');
+        p.style.background = k.bg; p.style.borderColor = k.line; bar.style.background = k.bg2; bar.style.borderColor = k.accent; bar.style.color = k.text;
+        up.style.color = k.ok; dn.style.color = k.bad;
+        var dot = el('i', 'g-swdot'); dot.style.background = k.accent;
+        bar.appendChild(dot); p.appendChild(bar); p.appendChild(up); p.appendChild(dn);
+        b.appendChild(p); b.appendChild(el('b', '', t.name)); b.appendChild(el('small', '', (t.tag || '').split(' \u00b7 ')[0]));
+        b.addEventListener('click', function () { T.set(t.id); draw(); });
+        host.appendChild(b);
+      })(list[i]);
+      var now = T.get(cur), extra = $('lookHint');
+      if (extra && now && !now.plain && now.id !== T.DEFAULT) extra.textContent = 'Now: ' + now.name + ' (picked in Jarvis). One tap below changes it everywhere.';
+    }
+    T.on(draw);
+    draw();
+    sec.hidden = false;
+  }
+
   /* ------------------------------------------------------------------------------------------ start */
   function boot() {
+    look();
     var tiles = d.querySelectorAll('.g-tile[data-app]');
     for (var i = 0; i < tiles.length; i++) (function (t) { t.addEventListener('click', function () { remember(t.getAttribute('data-app')); }); })(tiles[i]);
     if (C) {
