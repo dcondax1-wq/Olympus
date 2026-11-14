@@ -250,7 +250,7 @@ details.grp[open]>summary::after{content:"\2212"}
     var desc = clean(d.seoDescription) || (clean(d.intro) || (name + (town ? " in " + town : ""))).slice(0, 158);
     var ld = {"@context": "https://schema.org", "@type": clean(d.schema) || T.schema, "name": name};
     if (has(d.intro)) ld.description = clean(d.intro).slice(0, 300);
-    if (tel) ld.telephone = tel;
+    if (tel) ld.telephone = clean(d.phone);
     if (email) ld.email = email;
     if (address) ld.address = {"@type": "PostalAddress", "streetAddress": clean(d.street), "addressLocality": town, "addressRegion": clean(d.region), "postalCode": clean(d.postcode)};
     if (has(d.area)) ld.areaServed = clean(d.area);

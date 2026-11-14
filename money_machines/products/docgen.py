@@ -75,7 +75,8 @@ def to_html(doc: dict, css_extra: str = "") -> str:
             tag = "ol" if k == "ol" else "ul"
             out.append(f"<{tag}{' class=check' if k == 'check' else ''}>" + "".join(f"<li>{inline_html(x)}</li>" for x in b[1]) + f"</{tag}>")
         elif k == "table":
-            out.append("<table><tr>" + "".join(f"<th>{inline_html(h)}</th>" for h in b[1]) + "</tr>" +
+            cols = "".join(f'<col style="width:{100 * w / sum(b[3]):.0f}%">' for w in b[3]) if len(b) > 3 else ""
+            out.append(f"<table><colgroup>{cols}</colgroup><tr>" + "".join(f"<th>{inline_html(h)}</th>" for h in b[1]) + "</tr>" +
                        "".join("<tr>" + "".join(f"<td>{inline_html(str(c))}</td>" for c in r) + "</tr>" for r in b[2]) + "</table>")
         elif k in ("note", "warn"):
             out.append(f"<div class='{k}'>{inline_html(b[1])}</div>")
@@ -214,16 +215,28 @@ def to_docx(doc: dict, path: str) -> str:
         elif k == "table":
             t = d.add_table(rows=1, cols=len(b[1]))
             borders(t)
+            widths = b[3] if len(b) > 3 else None
+            if widths:
+                t.autofit = False
+            hdr = t.rows[0]._tr.get_or_add_trPr()
+            hdr.append(OxmlElement("w:tblHeader"))          # the header row repeats when a table runs onto the next page
             for j, h in enumerate(b[1]):
                 c = t.rows[0].cells[j]
                 c.paragraphs[0].text = ""
                 add_runs(c.paragraphs[0], h, bold=True)
                 shade(c, "F1ECE2")
             for row in b[2]:
-                cells = t.add_row().cells
+                r = t.add_row()
+                r._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
                 for j, v in enumerate(row):
-                    cells[j].paragraphs[0].text = ""
-                    add_runs(cells[j].paragraphs[0], str(v))
+                    r.cells[j].paragraphs[0].text = ""
+                    add_runs(r.cells[j].paragraphs[0], str(v))
+            if widths:
+                for j, w in enumerate(widths):
+                    t.columns[j].width = Inches(w)               # the grid (what most apps read)
+                for r in t.rows:
+                    for j, w in enumerate(widths):
+                        r.cells[j].width = Inches(w)             # and each cell (what the others read)
             d.add_paragraph().paragraph_format.space_after = Pt(2)
         elif k in ("note", "warn"):
             box(SOFT if k == "note" else WARN, lambda c, t=b[1]: add_runs(c.paragraphs[0], t))

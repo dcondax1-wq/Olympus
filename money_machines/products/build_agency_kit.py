@@ -369,11 +369,24 @@ def soffice_pdf(src: str, out_dir: str) -> str:
     return os.path.join(out_dir, os.path.splitext(os.path.basename(src))[0] + ".pdf")
 
 
+def soffice_pdfs(srcs: list, out_dir: str) -> list:
+    """Several files to PDF in one LibreOffice run (much faster than one run each)."""
+    exe = shutil.which("soffice") or shutil.which("libreoffice")
+    prof = tempfile.mkdtemp(prefix="d2_lo_")
+    try:
+        subprocess.run([exe, f"-env:UserInstallation=file://{prof}/profile", "--headless", "--convert-to", "pdf", "--outdir", out_dir] + list(srcs),
+                       capture_output=True, timeout=600, check=True)
+    finally:
+        shutil.rmtree(prof, ignore_errors=True)
+    return [os.path.join(out_dir, os.path.splitext(os.path.basename(x))[0] + ".pdf") for x in srcs]
+
+
 def page_pictures(tmp: str) -> dict:
     """First pages of the real files (LibreOffice -> PDF -> PNG): {file name: [png bytes, ...]}"""
     out = {}
-    for name in [d[0] for d in A.DOCS] + ["Agency_Tracker.xlsx", "Invoice_Template.xlsx"]:
-        pdf = soffice_pdf(os.path.join(BUYER, name), tmp)
+    names = [d[0] for d in A.DOCS] + ["Agency_Tracker.xlsx", "Invoice_Template.xlsx"]
+    pdfs = soffice_pdfs([os.path.join(BUYER, n) for n in names], tmp)
+    for name, pdf in zip(names, pdfs):
         pngs = K.pdf_pages_png(pdf, os.path.join(tmp, name.split(".")[0]), dpi=80)
         out[name] = [open(p, "rb").read() for p in pngs[:3]]
     pngs = K.pdf_pages_png(os.path.join(BUYER, "00_Start_Here.pdf"), os.path.join(tmp, "start"), dpi=80)
