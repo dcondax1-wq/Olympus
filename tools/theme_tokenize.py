@@ -4,7 +4,7 @@
     python tools/theme_tokenize.py --apply <files> ...                    rewrite in place (idempotent: run it again after a merge)
     python tools/theme_tokenize.py --apply --families n <files>           only the neutrals (an app that keeps its own accent, e.g. Kalshi)
 
-Every colour literal in a declaration value becomes var(--oly-th-<slot>, <the literal>) (hex) or rgba(var(--oly-th-<slot>-rgb, r, g, b), a)
+Every colour literal in a declaration value becomes var(--oly-th-<slot>, <the literal>) (hex) or rgba(var(--oly-th-<slot>-rgb, r,g,b as written), a)
 (rgb / rgba), AGORA's heading serif stack ('Iowan Old Style', ... serif) becomes var(--oly-th-display, <the stack>), and a custom property that is a bare 'r, g, b' triplet becomes var(--oly-th-<slot>-rgb, r, g, b). No stylesheet defines --oly-th-*: only olympus/themes.js paints them, and only for a theme that is not the default, so on
 the default (AGORA) every value computes exactly as before (the literal is the fallback). The slot = the family + the HSL lightness on
 themes.js's GRID: n = warm neutrals (chroma <= 40: pages, panels, lines, text), a = golds / bronzes (hue 20-62), g = greens (62-170, the
@@ -42,8 +42,9 @@ def is_light(prelude):
 RULE_BLOCKS = re.compile(r"^\s*@(media|supports|layer|container|document|keyframes|-webkit-keyframes)\b", re.I)
 HEX = re.compile(r"#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})(?![0-9a-fA-F\w-])")
 SERIF = re.compile(r"([\"']Iowan Old Style[\"']\s*,[^;{}()]*?(?<![\w-])(?:sans-serif|serif))(?![\w-])")      # AGORA's heading serif: a theme's heading font
-TRIPLET = re.compile(r"^(\s*)(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(\s*)$")
-RGB = re.compile(r"(rgba?)\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*([\d.]+%?)\s*)?\)", re.I)
+TRIPLET = re.compile(r"^(\s*)((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3}))(\s*)$")
+# rgb() / rgba(): the three numbers are kept exactly as written (the fallback), so a custom property holding one computes to the same text
+RGB = re.compile(r"(rgba?\(\s*)((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3}))(\s*(?:,\s*[\d.]+%?\s*)?\))", re.I)
 
 
 def lightness(r, g, b):
@@ -116,13 +117,12 @@ def _colours(s, families, counts):
         return f"var(--oly-th-{sl}, {m.group(0)})"
 
     def rg(m):
-        r, g, b = int(m.group(2)), int(m.group(3)), int(m.group(4))
+        r, g, b = int(m.group(3)), int(m.group(4)), int(m.group(5))
         sl = slot(r, g, b, families) if max(r, g, b) <= 255 else None
         if not sl:
             return m.group(0)
         counts[0] += 1
-        a = m.group(5)
-        return f"{m.group(1)}(var(--oly-th-{sl}-rgb, {r}, {g}, {b})" + (f", {a})" if a is not None else ")")
+        return f"{m.group(1)}var(--oly-th-{sl}-rgb, {m.group(2)}){m.group(6)}"
     return RGB.sub(rg, HEX.sub(hx, s))
 
 
@@ -185,10 +185,10 @@ def tokenize_css(css, families="nagrw"):
                 name, val = re.sub(r"/\*.*?\*/", "", css[buf_start:i], flags=re.S).strip(), css[i + 1:j]
                 tri = TRIPLET.match(val) if name.startswith("--") else None
                 if tri:                                          # '--x-rgb: 200, 162, 74' (read as rgba(var(--x-rgb), a))
-                    sl = slot(*(int(tri.group(k)) for k in (2, 3, 4)), families)
+                    sl = slot(*(int(tri.group(k)) for k in (3, 4, 5)), families)
                     if sl:
                         counts[0] += 1
-                        val = f"{tri.group(1)}var(--oly-th-{sl}-rgb, {tri.group(2)}, {tri.group(3)}, {tri.group(4)}){tri.group(5)}"
+                        val = f"{tri.group(1)}var(--oly-th-{sl}-rgb, {tri.group(2)}){tri.group(6)}"
                     out.append((i + 1, j, val))
                 else:
                     out.append((i + 1, j, _value(val, families, counts)))
@@ -245,6 +245,18 @@ def tokenize_js(src, families="nagrw"):
             counts[0] += k
         out.append(new)
     return "".join(out), counts[0]
+
+
+UN_HEX = re.compile(r"var\(--oly-th-[\w-]+, (#[0-9a-fA-F]{3,6})\)")
+UN_TRI = re.compile(r"var\(--oly-th-[\w-]+-rgb, ([^()]*)\)")
+UN_FEEL = re.compile(r"var\(--oly-th-(?:display|num|radius|radius-s|radius-l), ((?:[^()]|\([^()]*\))*)\)")
+
+
+def untokenize(text):
+    """the text with every theme slot replaced by its fallback: what the file was before (the default theme's look, by construction)"""
+    text = UN_TRI.sub(r"\1", text)
+    text = UN_HEX.sub(r"\1", text)
+    return UN_FEEL.sub(r"\1", text)
 
 
 def main(argv=None):

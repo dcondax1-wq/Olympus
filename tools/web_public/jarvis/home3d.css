@@ -7,7 +7,7 @@
 /* ---------------------------------------------------------------- live status badges on the orbs */
 .sat { overflow: visible; } .sat i { position: relative; overflow: visible; }
 .sat i .sb { position: absolute; right: -7px; top: -7px; min-width: 13px; height: 13px; padding: 0 2px; box-sizing: border-box; border-radius: 7px; font: 700 12px/11px var(--fh); text-align: center;
-  background: var(--oly-th-n2, #110e0c); border: 1px solid var(--ok); color: var(--ok); pointer-events: none; box-shadow: 0 4px 14px rgba(var(--oly-th-n3-rgb, 21, 20, 17), .32); }
+  background: var(--oly-th-n2, #110e0c); border: 1px solid var(--ok); color: var(--ok); pointer-events: none; box-shadow: 0 4px 14px rgba(var(--oly-th-n3-rgb, 21,20,17),.32); }
 .sat.warn i .sb { border-color: var(--warn); color: var(--warn); }
 .sat.bad i .sb { border-color: var(--bad); color: var(--oly-th-n37, #efeeeb); background: var(--bad); }
 .sat.off i .sb { border-color: var(--oly-th-n18, #78726c); color: var(--oly-th-n26, #aaa59c); }
@@ -27,12 +27,12 @@ html:not([data-fx-set]) .sat::after { animation: none !important; }
 
 /* ---------------------------------------------------------------- Settings → Jarvis: quiet hours */
 .qh { display: flex; gap: 8px; }
-.qh input[type="time"] { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid rgba(var(--cr), .4); background: rgba(var(--oly-th-n3-rgb, 21, 20, 17), .35); color: var(--txt); font: 600 16px var(--fm); }
+.qh input[type="time"] { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid rgba(var(--cr), .4); background: rgba(var(--oly-th-n3-rgb, 21,20,17),.35); color: var(--txt); font: 600 16px var(--fm); }
 #setQuietRow[hidden] { display: none; }
 
 /* ---------------------------------------------------------------- the morning briefing card (briefing.js) */
 .jbrief { position: relative; width: 100%; box-sizing: border-box; margin: 6px 0; padding: 12px 14px 12px; white-space: normal; border: 1px solid rgba(var(--cr), .45); border-radius: 14px;
-  background: linear-gradient(180deg, rgba(var(--cr2), .16), rgba(var(--pr), .6)); box-shadow: 0 4px 14px rgba(var(--oly-th-n3-rgb, 21, 20, 17), .32); color: var(--oly-th-n37, #f3ece0); }
+  background: linear-gradient(180deg, rgba(var(--cr2), .16), rgba(var(--pr), .6)); box-shadow: 0 4px 14px rgba(var(--oly-th-n3-rgb, 21,20,17),.32); color: var(--oly-th-n37, #f3ece0); }
 .jbrief::before { content: "Morning briefing"; display: block; margin-bottom: 3px; font: 600 12px var(--fh); letter-spacing: .02em; color: var(--c); }
 .bf-h { margin: 0 0 6px; display: flex; flex-direction: column; gap: 2px; }
 .bf-h b { font: 600 17px var(--fh); letter-spacing: 0; color: var(--oly-th-n37, #efeeeb); }

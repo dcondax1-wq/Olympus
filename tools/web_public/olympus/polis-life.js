@@ -1,7 +1,7 @@
 /* POLIS life (OLYMPUS, docs/POLIS_25.md section B, items 11-18, 2026-11-11): the civic life of the city drawn from olympus/polis.json
  * (built by tools/polis_build.py). A classic ES5 script, no dependencies, nothing fetched but the JSON you point it at.
  *
- *   <script src="../olympus/polis-life.js?v=pl1"></script>
+ *   <script src="../olympus/polis-life.js?v=pl3"></script>
  *   OLYMPUS_POLIS_LIFE.load('../olympus/polis.json', function (doc) { OLYMPUS_POLIS_LIFE.herald(el, doc); });
  *   OLYMPUS_POLIS_LIFE.render(el, 'grove', doc)      one piece into el: herald | oracle | festivals | torch | grove | amphorae | statues | stoic
  *   OLYMPUS_POLIS_LIFE.all(el, doc)                  every piece, in order
@@ -1024,7 +1024,7 @@
       '.pl-fest-strip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:2px 2px 8px;margin:0 -2px}',
       '.pl-fest{flex:0 0 152px;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:44px;padding:12px 10px 12px;border-radius:14px;border:1px solid var(--oly-th-n8, #3a3228);',
       'background:linear-gradient(180deg,var(--oly-th-n6, #2c251d),var(--oly-th-n4, #211b15));color:var(--oly-th-n37, #f3ece0);text-align:center;cursor:pointer;font-family:var(--pl-sans);touch-action:manipulation}',
-      '.pl-fest.pl-soon{border-color:var(--oly-th-a8, #c8a24a);box-shadow:inset 0 0 0 1px rgba(var(--oly-th-a8-rgb, 200, 162, 74), .35)}.pl-glyph{width:64px;height:64px;margin-bottom:4px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}',
+      '.pl-fest.pl-soon{border-color:var(--oly-th-a8, #c8a24a);box-shadow:inset 0 0 0 1px rgba(var(--oly-th-a8-rgb, 200,162,74),.35)}.pl-glyph{width:64px;height:64px;margin-bottom:4px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}',
       '.pl-fest-name{font:600 17px/1.15 var(--pl-serif);color:var(--oly-th-a12, #f1d58a)}.pl-fest-ev{font-size:12.5px;color:var(--oly-th-n30, #cfc4b2);line-height:1.3;min-height:32px}.pl-fest-date{font-size:12.5px;color:var(--oly-th-n24, #a89c88)}',
       '.pl-fest-cd{margin-top:4px;font-family:var(--pl-num);font-size:13px;color:var(--oly-th-n30, #cfc4b2)}.pl-fest-cd b{font-size:24px;color:var(--oly-th-n37, #f3ece0);font-weight:600;font-variant-numeric:tabular-nums}',
       '.pl-fest-mean{font-size:12.5px;line-height:1.35;color:var(--oly-th-n30, #cfc4b2);margin-top:6px;text-align:left}',
@@ -1036,7 +1036,7 @@
       '.pl-lamps{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px 4px;margin-top:12px;justify-items:center}.pl-lamp{width:100%;max-width:30px;height:auto}.pl-lamp.pl-out{opacity:.7}',
       /* grove */
       '.pl-grove{background:linear-gradient(180deg,var(--oly-th-n7, #2a2530) 0%,var(--oly-th-n8, #3a2f2d) 30%,var(--oly-th-n11, #5a4232) 52%,var(--oly-th-n6, #2c251d) 72%,var(--oly-th-n4, #1d1914) 100%)}',
-      '.pl-grove-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pl-tree-card{margin:0;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(var(--oly-th-n8-rgb, 60, 48, 58), .55),rgba(var(--oly-th-a4-rgb, 122, 86, 56), .35) 55%,rgba(var(--oly-th-n4-rgb, 29, 25, 20), .9) 78%);border:1px solid rgba(var(--oly-th-a15-rgb, 255, 240, 210), .08)}',
+      '.pl-grove-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pl-tree-card{margin:0;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(var(--oly-th-n8-rgb, 60,48,58),.55),rgba(var(--oly-th-a4-rgb, 122,86,56),.35) 55%,rgba(var(--oly-th-n4-rgb, 29,25,20),.9) 78%);border:1px solid rgba(var(--oly-th-a15-rgb, 255,240,210),.08)}',
       '.pl-tree{display:block;width:100%;height:auto}.pl-tree-card figcaption{padding:2px 10px 10px}.pl-tree-top{display:flex;justify-content:space-between;align-items:center;gap:6px}',
       '.pl-tree-name{font:600 15px/1.2 var(--pl-serif);color:var(--oly-th-n37, #f3ece0)}.pl-tree-bal{margin:4px 0 0;font-size:13.5px;color:var(--oly-th-n37, #f3ece0)}.pl-tree-line{margin:3px 0 0;font-size:12.5px;color:var(--oly-th-n30, #cfc4b2);line-height:1.35}',
       '.pl-tree-dd{margin:3px 0 0;font-size:12px;color:var(--oly-th-n24, #a89c88);line-height:1.35}.pl-tree-meta{display:flex;gap:6px;align-items:center;margin-top:6px;font-size:12px;color:var(--oly-th-n30, #cfc4b2)}.pl-rings{width:24px;height:24px;flex:0 0 24px}',
@@ -1055,13 +1055,13 @@
       /* stoic */
       '.pl-stoic{background:linear-gradient(180deg,var(--oly-th-n5, #26211b),var(--oly-th-n4, #1d1914))}',
       '.pl-tablet{margin:0;padding:18px 18px 14px;border-radius:12px;color:var(--oly-th-n8, #3b342c);background:radial-gradient(140% 120% at 20% 10%,var(--oly-th-n36, #efe9de) 0%,var(--oly-th-n34, #e2dacd) 45%,var(--oly-th-n31, #cfc6b6) 100%);',
-      'box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 6px rgba(var(--oly-th-n9-rgb, 80, 60, 40), .25),0 6px 18px rgba(0,0,0,.35);position:relative;overflow:hidden}',
-      '.pl-tablet:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(115deg,transparent 30%,rgba(var(--oly-th-n17-rgb, 120, 108, 92), .16) 31%,transparent 33%,transparent 62%,rgba(var(--oly-th-n17-rgb, 120, 108, 92), .12) 63%,transparent 64.5%);pointer-events:none}',
-      '.pl-inscr{margin:0;font:500 18px/1.45 var(--pl-serif);font-variant:small-caps;letter-spacing:.04em;color:var(--oly-th-n8, #3b342c);text-shadow:0 1px 0 rgba(255,255,255,.55),0 -1px 0 rgba(var(--oly-th-n7-rgb, 60, 45, 30), .25)}',
+      'box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 6px rgba(var(--oly-th-n9-rgb, 80,60,40),.25),0 6px 18px rgba(0,0,0,.35);position:relative;overflow:hidden}',
+      '.pl-tablet:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(115deg,transparent 30%,rgba(var(--oly-th-n17-rgb, 120,108,92),.16) 31%,transparent 33%,transparent 62%,rgba(var(--oly-th-n17-rgb, 120,108,92),.12) 63%,transparent 64.5%);pointer-events:none}',
+      '.pl-inscr{margin:0;font:500 18px/1.45 var(--pl-serif);font-variant:small-caps;letter-spacing:.04em;color:var(--oly-th-n8, #3b342c);text-shadow:0 1px 0 rgba(255,255,255,.55),0 -1px 0 rgba(var(--oly-th-n7-rgb, 60,45,30),.25)}',
       '.pl-tablet figcaption{margin-top:10px;font:italic 14px/1.35 var(--pl-serif);color:var(--oly-th-n10, #4a4238)}.pl-tr{font-style:normal;font-size:12px;color:var(--oly-th-n13, #5c5246)}',
       /* placed in an app (data-polis-life): one of the page's AGORA v2 cards, same radius, edge, shadow and title size as its neighbours */
-      '.pl-placed{margin:0;border-radius:20px;border-color:rgba(var(--oly-th-n37-rgb, 243, 236, 224), .075);box-shadow:var(--ag-e2,0 6px 18px rgba(0,0,0,.35));padding:16px 16px 14px}',
-      '.pl-placed.pl-herald{border-color:rgba(var(--oly-th-a8-rgb, 200, 162, 74), .32)}.pl-placed .pl-title{font-size:var(--ag-fs-h3,18px)}.pl-placed .pl-head{margin-bottom:12px}',
+      '.pl-placed{margin:0;border-radius:20px;border-color:rgba(var(--oly-th-n37-rgb, 243,236,224),.075);box-shadow:var(--ag-e2,0 6px 18px rgba(0,0,0,.35));padding:16px 16px 14px}',
+      '.pl-placed.pl-herald{border-color:rgba(var(--oly-th-a8-rgb, 200,162,74),.32)}.pl-placed .pl-title{font-size:var(--ag-fs-h3,18px)}.pl-placed .pl-head{margin-bottom:12px}',
       '.pl-placed.pl-stoic{padding:12px}.pl-placed .pl-demo{color:var(--oly-th-warn, #e0b060);margin-top:10px}',
       '@media (max-width:360px){.pl-hall{grid-template-columns:repeat(2,minmax(0,1fr))}}',
       '@media (prefers-reduced-motion:reduce){.pl-piece *{animation:none!important;transition:none!important}}',

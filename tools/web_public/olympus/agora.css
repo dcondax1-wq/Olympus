@@ -36,9 +36,9 @@
   --ag-radius: var(--oly-th-radius, 16px); --ag-radius-s: var(--oly-th-radius-s, 12px); --ag-radius-l: var(--oly-th-radius-l, 22px); --ag-radius-xs: 8px;
   /* elevation: layered, warm-dark, never a glow */
   --ag-shadow: 0 6px 18px rgba(0,0,0,.35);
-  --ag-e1: 0 1px 0 rgba(var(--oly-th-a15-rgb, 255, 240, 214), .04) inset, 0 1px 2px rgba(0,0,0,.30), 0 2px 6px rgba(0,0,0,.18);
-  --ag-e2: 0 1px 0 rgba(var(--oly-th-a15-rgb, 255, 240, 214), .05) inset, 0 1px 2px rgba(0,0,0,.32), 0 6px 16px rgba(0,0,0,.26), 0 14px 32px rgba(0,0,0,.18);
-  --ag-e3: 0 1px 0 rgba(var(--oly-th-a15-rgb, 255, 240, 214), .06) inset, 0 2px 4px rgba(0,0,0,.34), 0 12px 28px rgba(0,0,0,.34), 0 28px 60px rgba(0,0,0,.30);
+  --ag-e1: 0 1px 0 rgba(var(--oly-th-a15-rgb, 255,240,214),.04) inset, 0 1px 2px rgba(0,0,0,.30), 0 2px 6px rgba(0,0,0,.18);
+  --ag-e2: 0 1px 0 rgba(var(--oly-th-a15-rgb, 255,240,214),.05) inset, 0 1px 2px rgba(0,0,0,.32), 0 6px 16px rgba(0,0,0,.26), 0 14px 32px rgba(0,0,0,.18);
+  --ag-e3: 0 1px 0 rgba(var(--oly-th-a15-rgb, 255,240,214),.06) inset, 0 2px 4px rgba(0,0,0,.34), 0 12px 28px rgba(0,0,0,.34), 0 28px 60px rgba(0,0,0,.30);
   /* motion: one curve, three speeds (200-350 ms) */
   --ag-ease: cubic-bezier(.2,.8,.2,1); --ag-ease-io: cubic-bezier(.65,0,.35,1);
   --ag-d1: 200ms; --ag-d2: 260ms; --ag-d3: 340ms; --ag-stagger: 45ms;
@@ -127,7 +127,7 @@ html[data-theme="agora"] ::selection { background: rgba(var(--ag-gold-rgb), .35)
   border: 1px solid var(--ag-line); background: linear-gradient(180deg, var(--ag-s4), var(--ag-s3)); color: var(--ag-text); font: 600 var(--ag-fs-body)/1.2 var(--ag-sans); text-decoration: none; cursor: pointer;
   box-shadow: var(--ag-e1); touch-action: manipulation; -webkit-user-select: none; user-select: none;
   transition: scale var(--ag-d1) var(--ag-ease), background-color var(--ag-d1) var(--ag-ease), border-color var(--ag-d1) var(--ag-ease), color var(--ag-d1) var(--ag-ease), filter var(--ag-d1) var(--ag-ease); }
-.ag-btn.primary { background: linear-gradient(180deg, var(--oly-th-a9, #d9b764), var(--ag-gold)); color: var(--ag-on-gold); border-color: var(--oly-th-a11, #e2c47a); box-shadow: 0 1px 0 rgba(var(--oly-th-n37-rgb, 255, 246, 220), .35) inset, 0 1px 2px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.25); }
+.ag-btn.primary { background: linear-gradient(180deg, var(--oly-th-a9, #d9b764), var(--ag-gold)); color: var(--ag-on-gold); border-color: var(--oly-th-a11, #e2c47a); box-shadow: 0 1px 0 rgba(var(--oly-th-n37-rgb, 255,246,220),.35) inset, 0 1px 2px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.25); }
 .ag-btn.ghost { background: transparent; box-shadow: none; color: var(--ag-gold); border-color: transparent; }
 .ag-btn.quiet { background: var(--ag-s2); box-shadow: none; }
 .ag-btn.danger { color: var(--ag-terra-text); border-color: rgba(var(--ag-terra-rgb), .45); }
@@ -322,7 +322,7 @@ main#app:where(:has(> header.top .ag-title)) .btn { border-radius: 13px; font-we
   transition: scale var(--ag-d1) var(--ag-ease), background-color var(--ag-d1) var(--ag-ease), border-color var(--ag-d1) var(--ag-ease), color var(--ag-d1) var(--ag-ease), filter var(--ag-d1) var(--ag-ease); }
 main#app:where(:has(> header.top .ag-title)) .btn:not(.primary):not(.gold) { background: linear-gradient(180deg, var(--ag-s4), var(--ag-s3)); border-color: rgba(var(--oly-th-n37-rgb, 243, 236, 224), .1); box-shadow: var(--ag-e1); }
 /* .gold is an app's own name for its primary button (Colosseum): it gets the primary look, never dark text on the dark default */
-main#app:where(:has(> header.top .ag-title)) :is(.btn.primary, .btn.gold) { background: linear-gradient(180deg, var(--oly-th-a9, #d9b764), var(--ag-gold)); color: var(--ag-on-gold); border-color: var(--oly-th-a11, #e2c47a); box-shadow: 0 1px 0 rgba(var(--oly-th-n37-rgb, 255, 246, 220), .35) inset, 0 1px 2px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.22); }
+main#app:where(:has(> header.top .ag-title)) :is(.btn.primary, .btn.gold) { background: linear-gradient(180deg, var(--oly-th-a9, #d9b764), var(--ag-gold)); color: var(--ag-on-gold); border-color: var(--oly-th-a11, #e2c47a); box-shadow: 0 1px 0 rgba(var(--oly-th-n37-rgb, 255,246,220),.35) inset, 0 1px 2px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.22); }
 main#app:where(:has(> header.top .ag-title)) :is(.btn, .chip, .ag-chip, .ag-tab, .seg button, .tab, .filters button):active { scale: .97; }
 main#app:where(:has(> header.top .ag-title)) :is(.btn.primary, .btn.gold):active { filter: brightness(.94); }
 main#app:where(:has(> header.top .ag-title)) .kv dd, main#app:where(:has(> header.top .ag-title)) .ag-num { font-variant-numeric: tabular-nums; }

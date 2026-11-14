@@ -1,5 +1,5 @@
 /* OLYMPUS gate-nav (2026-11-12): the way back to the Gate and a "Go to..." search sheet, on any app. One line in the app's <head>, after agora-ui.js:
- *     <script src="../olympus/gate-nav.js?v=g1" defer></script>
+ *     <script src="../olympus/gate-nav.js?v=g2" defer></script>
  * - The app's existing back link ("< Olympus" from the AGORA shell, or an own "Olympus" link) becomes "< Gate" and opens the Gate (gate/). A page with no
  *   back link gets a slim row (Gate on the left, Go to on the right) above its header: in the page flow, never floating over its content.
  * - "Go to" sits on the right of the same top row (and as a 44 px icon in the compact bar that appears on scroll): a sheet with a search box (name, purpose,
@@ -40,15 +40,15 @@
     '.gn-row.gn-own{padding:calc(env(safe-area-inset-top,0px) + 4px) calc(env(safe-area-inset-right,0px) + 12px) 0 calc(env(safe-area-inset-left,0px) + 12px)}',
     '.gn-back{display:inline-flex;align-items:center;gap:2px;min-height:44px;min-width:44px;padding:0 10px 0 2px;border-radius:12px;color:var(--ag-gold,var(--oly-th-a8, #c8a24a));font:600 1.0625rem/1 var(--ag-sans,-apple-system,system-ui,sans-serif);text-decoration:none;-webkit-touch-callout:none}',
     '.gn-ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}',
-    '.gn-go{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;min-width:44px;padding:0 14px;border-radius:999px;border:1px solid var(--ag-line,var(--oly-th-n8, #3a3228));background:rgba(var(--oly-th-n4-rgb, 29, 25, 20), .82);color:var(--ag-text,var(--oly-th-n37, #f3ece0));font:600 .9375rem/1 var(--ag-sans,-apple-system,system-ui,sans-serif);cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap}',
+    '.gn-go{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;min-width:44px;padding:0 14px;border-radius:999px;border:1px solid var(--ag-line,var(--oly-th-n8, #3a3228));background:rgba(var(--oly-th-n4-rgb, 29,25,20),.82);color:var(--ag-text,var(--oly-th-n37, #f3ece0));font:600 .9375rem/1 var(--ag-sans,-apple-system,system-ui,sans-serif);cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap}',
     '.gn-go .gn-ic{width:17px;height:17px;stroke:var(--ag-gold,var(--oly-th-a8, #c8a24a))}',
     '.gn-go.gn-icon{padding:0;width:44px;border-color:transparent;background:transparent}',
     '.tags .gn-go,.gn-slot .gn-go{margin-left:2px}',
     'main#app>header.top.ag-hasnav>.gn-slot{grid-column:2;grid-row:1;align-self:center;display:flex;gap:6px}',
-    '.gn-scrim{position:fixed;inset:0;z-index:9500;background:rgba(var(--oly-th-n1-rgb, 10, 8, 6), .62)}',
+    '.gn-scrim{position:fixed;inset:0;z-index:9500;background:rgba(var(--oly-th-n1-rgb, 10,8,6),.62)}',
     '.gn-scrim[hidden],.gn-sheet[hidden]{display:none}',
     '.gn-sheet{position:fixed;z-index:9501;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;max-height:calc(100% - env(safe-area-inset-top,0px) - 24px);display:flex;flex-direction:column;box-sizing:border-box;',
-    '  border:1px solid var(--ag-line-gold,rgba(var(--oly-th-a8-rgb, 200, 162, 74), .42));border-bottom:0;border-radius:22px 22px 0 0;background:var(--ag-s1,var(--oly-th-n4, #1d1914));color:var(--ag-text,var(--oly-th-n37, #f3ece0));box-shadow:0 -10px 30px rgba(0,0,0,.45);',
+    '  border:1px solid var(--ag-line-gold,rgba(var(--oly-th-a8-rgb, 200,162,74),.42));border-bottom:0;border-radius:22px 22px 0 0;background:var(--ag-s1,var(--oly-th-n4, #1d1914));color:var(--ag-text,var(--oly-th-n37, #f3ece0));box-shadow:0 -10px 30px rgba(0,0,0,.45);',
     '  padding:8px calc(env(safe-area-inset-right,0px) + 16px) 0 calc(env(safe-area-inset-left,0px) + 16px);font:400 1rem/1.4 var(--ag-sans,-apple-system,system-ui,sans-serif);text-align:left}',
     '.gn-sheet *{box-sizing:border-box}',
     '.gn-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 0 10px}',
@@ -62,7 +62,7 @@
     '.gn-body{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 0 calc(env(safe-area-inset-bottom,0px) + 20px)}',
     '.gn-sec{margin:14px 0 6px;color:var(--ag-gold,var(--oly-th-a8, #c8a24a));font:600 .9375rem/1.2 var(--ag-serif,var(--oly-th-display, "Iowan Old Style",Palatino,Georgia,serif))}',
     '.gn-list{display:flex;flex-direction:column;border:1px solid var(--ag-line,var(--oly-th-n8, #3a3228));border-radius:16px;background:var(--ag-s0,var(--oly-th-n3, #14110e));overflow:hidden}',
-    '.gn-item{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;color:var(--ag-text,var(--oly-th-n37, #f3ece0));text-decoration:none;border-top:1px solid rgba(var(--oly-th-n8-rgb, 58, 50, 40), .7)}',
+    '.gn-item{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;color:var(--ag-text,var(--oly-th-n37, #f3ece0));text-decoration:none;border-top:1px solid rgba(var(--oly-th-n8-rgb, 58,50,40),.7)}',
     '.gn-item:first-child{border-top:0}',
     '.gn-item b{display:block;font:600 1rem/1.25 inherit}',
     '.gn-item small{display:block;color:var(--ag-muted,var(--oly-th-n24, #a89c88));font-size:.8125rem;line-height:1.3}',

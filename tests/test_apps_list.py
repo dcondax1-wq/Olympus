@@ -77,7 +77,7 @@ def test_static():
     check("b. launcher.js is byte-identical in tools/web_public and web_next/js/next", read(WEB, "launcher.js", mode="rb") == read(NEXT, "js", "next", "launcher.js", mode="rb"))
     ph, pc = read(WEB, "index.html"), read(NEXT, "index.html")
     check("b. the phone dashboard has ONE tag, launcher.js (deferred); the list is loaded by the launcher, async, so a slow site never holds Zenith back",
-          '<script src="launcher.js?v=l5" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l2" in read(WEB, "launcher.js"))
+          '<script src="launcher.js?v=l6" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l2" in read(WEB, "launcher.js"))
     check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l5" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l2" in read(NEXT, "js", "next", "launcher.js"))
     sw = read(NEXT, "sw.js")
     v = re.search(r"const SHELL = 'le-shell-next-v(\d+)'", sw)

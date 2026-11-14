@@ -61,7 +61,11 @@ def test_static():
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' in html and 'aria-modal="true"' in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; gate.css, the catalog and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css" in html
-          and "'olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g2'" in html and "s.async = false" in html)
+          and "['olympus/themes.js?v=o5', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=g1', 'gate/gate.js?v=g3']" in html and "s.async = false" in html)
+    check("a. the Look row (2026-11-14, themes): near the bottom (after the search, before the footer), a radio group filled by gate.js from OLYMPUS_THEMES.plain();"
+          " the theme engine loads first, and the <head> paints the engine's copy ('olympus.theme.paint.page') before the first frame",
+          html.index('id="q"') < html.index('id="lookSec"') < html.index('class="g-foot"') and 'role="radiogroup"' in html and "T.plain()" in js and "T.set(t.id)" in js
+          and "T.apply('page', { meta: true })" in js and "'olympus.theme.paint.page'" in html and ".g-swatches" in css)
     check("a. the three Start-here tiles are plain links in the page (they work even if gate.js fails): Today = the dashboard, Bots = nq/, Jarvis = jarvis/",
           all(f'data-to="{p}"' in html for p in ("index.html", "nq/index.html", "jarvis/index.html")) and html.count('class="g-tile"') == 3)
     check("a. four district doors (Trading, Money, Life, Worlds) and the Workshop link at the bottom; no lab is linked from the page itself",
@@ -85,8 +89,8 @@ def test_static():
           "olympus/truth.js?v=q6a" in js and "T.agesOf(home, t)" in js and "T.accountsOf(home)" in js and "lightAges" in js and "STALE_S = 6 * 3600" in js and "FRESH_S = 20 * 60" in js)
     check("a. the words: 'Drawdown left' with 'of $X max loss', 'Bring the bots back' -> nq/ with its 5 steps (?howto=1), 'Old numbers', 'Not hearing from your PC for'",
           "'Drawdown left'" in js and "' max loss, '" in js and 'data-to="nq/index.html?howto=1"' in html and ">Bring the bots back<" in html and "'Old numbers'" in js and "'Not hearing from your PC for '" in js)
-    check("a. the AGORA look: its tokens (night #14110e, gold #c8a24a, serif titles, tabular numbers), no neon / glow / techno font in the Gate or gate-nav",
-          "#14110e" in css and "#c8a24a" in css and "--ag-serif" in css and "tabular-nums" in css and not AK.BANNED_LOOK.search(css + js + nav + html.split("-->")[-1]))
+    check("a. the AGORA look: its tokens (night #14110e, gold #c8a24a, serif titles, tabular numbers; each one a theme slot's fallback), no neon / glow / techno font in the Gate or gate-nav",
+          "var(--oly-th-n3, #14110e)" in css and "var(--oly-th-a8, #c8a24a)" in css and "--ag-serif" in css and "tabular-nums" in css and not AK.BANNED_LOOK.search(css + js + nav + html.split("-->")[-1]))
     check("a. phone rules in the CSS: taps >= 44 px, safe areas, 176 px clear of Jarvis's corner at the end, reduced motion, LITE, no sideways scroll",
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Gate link + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
@@ -94,7 +98,7 @@ def test_static():
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))
-        tagged[app] = h.count('<script src="../olympus/gate-nav.js?v=g1" defer></script>') == 1 and ("agora-ui.js" not in h or h.index("agora-ui.js") < h.index("gate-nav.js")) and h.index("gate-nav.js") < h.index("</head>")
+        tagged[app] = h.count('<script src="../olympus/gate-nav.js?v=g2" defer></script>') == 1 and ("agora-ui.js" not in h or h.index("agora-ui.js") < h.index("gate-nav.js")) and h.index("gate-nav.js") < h.index("</head>")
     check("a. the gate-nav tag (once, deferred, in <head>, after agora-ui.js) in the 10 busiest apps: " + ", ".join(TEN), all(tagged.values()), tagged)
 
 
