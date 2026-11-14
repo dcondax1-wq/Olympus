@@ -236,7 +236,7 @@ machine-readable summary of your business: name, phone, address, hours) that sea
 never pay or reward people for reviews, and never hide the honest negative ones. In the US the FTC's rule on consumer reviews bans fake
 reviews and buying them, with large fines. The review section only appears when you tick the "real reviews" box.</li>
 <li><b>Photos and words:</b> use your own photos and your own text, or ones you have permission to use.</li>
-<li><b>Claims:</b> only state licences, insurance, guarantees and prices that are true.</li>
+<li><b>Claims:</b> only state licences, insurance, warranties and prices that are true.</li>
 <li><b>Privacy:</b> the site stores nothing and uses no cookies, so it needs no cookie banner as it is. If you add analytics, a booking
 widget, a chat or a form service later, add a short privacy notice that says what they collect.</li></ul>
 

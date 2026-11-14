@@ -203,10 +203,10 @@ def trademark_hits(text: str) -> list:
 
 def promise_hits(text: str) -> list:
     hits = []
-    low = text.lower()
+    low = re.sub(r"\s+", " ", text.lower())   # PDF and document text breaks lines mid-sentence
     for pat in PROMISES:
         for m in re.finditer(r"(?<![a-z])" + pat, low):
-            before = re.split(r"[.!?;:\n]", low[max(0, m.start() - 40):m.start()])[-1]      # the same sentence only
+            before = re.split(r"[.!?;:]", low[max(0, m.start() - 40):m.start()])[-1]      # the same sentence only
             if any(n in " " + before for n in NEGATIONS) or low[m.end():m.end() + 9].startswith(NEGATED_AFTER):
                 continue
             hits.append(low[max(0, m.start() - 30):m.end() + 20].replace("\n", " "))
