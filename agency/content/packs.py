@@ -148,8 +148,8 @@ PACKS["barber"] = {
     "services": [
         ("Skin *fade*", "Clean, sharp and blended down to the skin. Tell us how high you want it and we will take it from there.", ""),
         ("Beard *trim*", "Shape, line and condition. A good beard trim changes your whole face, and it only takes a few minutes in the chair.", ""),
-        ("Hot towel *shave*", "Old-school straight razor shave with a hot towel. The most relaxing half hour in {city}.", "Do they offer hot towel shaves?"),
-        ("Kids' *cuts*", "Patient barbers, quick cuts, no tears (well, fewer tears). Bring the little ones in.", "Do they cut kids' hair?"),
+        ("Hot towel *shave*", "Old-school straight razor shave with a hot towel. The most relaxing half hour in {city}.", "Do you offer hot towel shaves?"),
+        ("Kids' *cuts*", "Patient barbers, quick cuts, no tears (well, fewer tears). Bring the little ones in.", "Do you cut kids' hair?"),
         ("The classic *taper*", "Timeless, tidy, works in the office and on the weekend. Ask for it by name.", ""),
         ("Line-up & *edge*", "In between cuts? A quick line-up keeps your look sharp for days.", ""),
     ],
@@ -180,9 +180,9 @@ PACKS["barber"] = {
     },
     "checklists": [("Fresh cut *checklist*", ["Book every 2-3 weeks", "Bring a photo", "Oil your beard daily", "Ask about products"])],
     "offers": [
-        ("Gift a fresh *cut*", "Gift cards make the easiest present for the guy who has everything. Ask at the shop.", "Do they sell gift cards?", {11, 12}),
-        ("Bring a *friend*", "Refer a friend and you both get a little something off your next cut. Ask us how.", "Do they want a refer-a-friend deal? What is it?", None),
-        ("Father & son *day*", "Book two chairs side by side for you and the kid. Best hour of the month.", "Do they cut kids' hair?", None),
+        ("Gift a fresh *cut*", "Gift cards make the easiest present for the guy who has everything. Ask at the shop.", "Do you sell gift cards?", {11, 12}),
+        ("Bring a *friend*", "Refer a friend and you both get a little something off your next cut. Ask us how.", "Do you want a refer-a-friend deal? What is it?", None),
+        ("Father & son *day*", "Book two chairs side by side for you and the kid. Best hour of the month.", "Do you cut kids' hair?", None),
         ("New here? *Welcome*", "First visit to {name}? Tell your barber, we will make sure you leave happy.", "", None),
     ],
     "bts": [
@@ -228,12 +228,12 @@ PACKS["salon"] = {
     "times": {1: "10:00", 2: "19:00", 3: "10:00", 4: "12:00", 5: "09:00"},
     "times_note": "Tue & Thu 10 am, Wed 7 pm (evening scrolling), Fri noon, Sat 9 am",
     "services": [
-        ("Balayage", "Soft, hand-painted color that grows out beautifully. Low maintenance, high impact.", "Do they do balayage?"),
+        ("Balayage", "Soft, hand-painted color that grows out beautifully. Low maintenance, high impact.", "Do you do balayage?"),
         ("The perfect *blowout*", "Smooth, bouncy and lasts for days. Perfect before an event, a trip or just because.", ""),
-        ("Gloss & *shine*", "A gloss treatment refreshes your color and adds serious shine between appointments.", "Do they offer gloss treatments?"),
+        ("Gloss & *shine*", "A gloss treatment refreshes your color and adds serious shine between appointments.", "Do you offer gloss treatments?"),
         ("Precision *cut*", "A great cut is the base of every great hair day. Tell us how you style it and we will cut for your real life.", ""),
         ("Color *refresh*", "Roots showing? A quick color refresh gets you back to your best shade.", ""),
-        ("Deep *treatment*", "A repairing treatment for hair that is dry, colored or heat-styled. Your ends will thank you.", "Do they offer deep conditioning treatments?"),
+        ("Deep *treatment*", "A repairing treatment for hair that is dry, colored or heat-styled. Your ends will thank you.", "Do you offer deep conditioning treatments?"),
     ],
     "tips": {
         "any": [
@@ -263,7 +263,7 @@ PACKS["salon"] = {
     },
     "checklists": [("Healthy hair *routine*", ["Heat protectant every time", "Trim every 8-12 weeks", "Weekly hydrating mask", "Silk pillowcase"])],
     "offers": [
-        ("Give the gift of *glow*", "Gift cards for every budget. The easiest present for anyone who loves a salon day.", "Do they sell gift cards?", {11, 12}),
+        ("Give the gift of *glow*", "Gift cards for every budget. The easiest present for anyone who loves a salon day.", "Do you sell gift cards?", {11, 12}),
         ("Bring a *friend*", "Book together and make it a salon date. Ask us about booking side-by-side appointments.", "", None),
         ("Treat *yourself*", "Add a treatment to any appointment this month. Ask your stylist which one is right for you.", "Any treatment add-on to promote this month?", None),
         ("New client? *Welcome*", "First time at {name}? Mention this post when you book and tell us what you love about your hair.", "", None),
@@ -312,7 +312,7 @@ PACKS["restaurant"] = {
         ("Date *night*", "Good food, good company, no dishes to wash. Bring someone you like.", ""),
         ("Lunch, *sorted*", "Need a lunch break that feels like a break? We have you covered.", ""),
         ("Family *table*", "Big table, big appetites, everyone happy. Bring the whole crew.", ""),
-        ("Takeout *night*", "Not in the mood to cook? Call ahead and pick it up hot.", "Do they do takeout?"),
+        ("Takeout *night*", "Not in the mood to cook? Call ahead and pick it up hot.", "Do you do takeout?"),
         ("Celebrate *here*", "Birthdays, anniversaries, promotions: let us do the cooking. Call ahead for groups.", ""),
     ],
     "tips": {
@@ -335,16 +335,16 @@ PACKS["restaurant"] = {
             ("Tag *us*", "Love your plate? Tag {name} in your photos, we share our favorites."),
         ],
         "winter": [("Comfort food *season*", "With {weather} outside, warm plates and a cozy table are the best plan for the evening.")],
-        "spring": [("Patio *season*", "The first warm evenings are here. Ask for a table outside when the weather is nice.", "Do they have outdoor seating?")],
+        "spring": [("Patio *season*", "The first warm evenings are here. Ask for a table outside when the weather is nice.", "Do you have outdoor seating?")],
         "summer": [("Cool down *here*", "Escape {weather} with something cold and a seat in the shade or the A/C.")],
         "fall": [("Cozy *season*", "Cooler nights call for warm, hearty dishes. Come in and warm up.")],
     },
     "checklists": [("Party of *six* or more?", ["Call ahead", "Tell us about allergies", "Ask about the specials", "Save room for dessert"])],
     "offers": [
-        ("Gift *dinner*", "Restaurant gift cards: the present that everyone actually uses. Ask at the counter.", "Do they sell gift cards?", {11, 12}),
-        ("Holiday *parties*", "Office party or family get-together? Ask us about booking a big table this season.", "Do they host holiday parties or large groups?", {11, 12}),
+        ("Gift *dinner*", "Restaurant gift cards: the present that everyone actually uses. Ask at the counter.", "Do you sell gift cards?", {11, 12}),
+        ("Holiday *parties*", "Office party or family get-together? Ask us about booking a big table this season.", "Do you host holiday parties or large groups?", {11, 12}),
         ("Midweek *treat*", "Make Wednesday the best night of the week. Come in for dinner midweek.", "Any midweek special to promote?", None),
-        ("Catering for your *event*", "Feeding a crowd? Ask us about catering for your next party or meeting.", "Do they cater?", None),
+        ("Catering for your *event*", "Feeding a crowd? Ask us about catering for your next party or meeting.", "Do you cater?", None),
     ],
     "bts": [
         ("Before the *doors open*", "Prep starts long before you sit down. A peek at the kitchen before service at {name}.", "the kitchen during prep"),
@@ -428,9 +428,9 @@ PACKS["plumber"] = {
                    ("Before you call *us*", ["Is the breaker on?", "Is the valve open?", "Any water on the floor?", "Snap a photo for us"], None)],
     "offers": [
         ("Book your *tune-up*", "Book a seasonal tune-up this month and get ahead of the busy season.", "Any tune-up deal this month? (or keep it as a plain reminder)", None),
-        ("Ask about a *second opinion*", "Got a big quote somewhere else? We are happy to take a look and give you an honest second opinion.", "Do they do second opinions?", None),
-        ("Senior & veteran *thanks*", "We offer a thank-you discount for seniors and veterans. Just ask when you call.", "Do they give a senior/veteran discount?", None),
-        ("Peace of mind *plan*", "Ask about our yearly maintenance visit: one call, and we keep an eye on everything.", "Do they offer a maintenance plan?", None),
+        ("Ask about a *second opinion*", "Got a big quote somewhere else? We are happy to take a look and give you an honest second opinion.", "Do you do second opinions?", None),
+        ("Senior & veteran *thanks*", "We offer a thank-you discount for seniors and veterans. Just ask when you call.", "Do you give a senior/veteran discount?", None),
+        ("Peace of mind *plan*", "Ask about our yearly maintenance visit: one call, and we keep an eye on everything.", "Do you offer a maintenance plan?", None),
     ],
     "bts": [
         ("On the *job*", "Clean boots, covered floors, tidy work. This is how we treat every home in {city}.", "the tech on a job (with the homeowner's OK)"),
@@ -476,7 +476,7 @@ PACKS["landscaper"] = {
         ("Weekly *mowing*", "Crisp lines and a clean cut every week, so your weekends are yours again.", ""),
         ("Mulch & *beds*", "Fresh mulch and tidy beds make the whole house look cared for.", ""),
         ("Spring *clean-up*", "Leaves out, beds edged, lawn ready to grow. The fastest way to curb appeal.", ""),
-        ("Planting & *design*", "New beds, shrubs and trees that suit your yard and the {city} climate.", "Do they do planting/design?"),
+        ("Planting & *design*", "New beds, shrubs and trees that suit your yard and the {city} climate.", "Do you do planting/design?"),
         ("Leaf *removal*", "We clear the leaves so your lawn can breathe before winter.", ""),
         ("Hedge & shrub *trimming*", "Neat shapes, healthy growth, no ladder for you.", ""),
     ],
@@ -510,9 +510,9 @@ PACKS["landscaper"] = {
                    ("Fall yard *checklist*", ["Clear the leaves", "Last low mow", "Plant trees and shrubs", "Drain hoses"], {9, 10, 11})],
     "offers": [
         ("Book spring *early*", "Our spring schedule fills up fast. Get on the list now and be first in line.", "", {1, 2, 3}),
-        ("Free *estimate*", "Tell us about your yard and we will send you a clear, honest quote.", "Do they give free estimates?", None),
-        ("Neighbor *deal*", "Get your neighbor to sign up too and we will both save on the visit. Ask us how.", "Do they want a neighbor discount? What is it?", None),
-        ("Gift a *clean yard*", "A clean-up for mom or dad is a gift they will see every day.", "Do they sell gift certificates?", {11, 12}),
+        ("Free *estimate*", "Tell us about your yard and we will send you a clear, honest quote.", "Do you give free estimates?", None),
+        ("Neighbor *deal*", "Get your neighbor to sign up too and we will both save on the visit. Ask us how.", "Do you want a neighbor discount? What is it?", None),
+        ("Gift a *clean yard*", "A clean-up for mom or dad is a gift they will see every day.", "Do you sell gift certificates?", {11, 12}),
     ],
     "bts": [
         ("Crew at *work*", "Early start, clean finish. Our crew takes pride in every yard in {city}.", "the crew working (with the homeowner's OK)"),
@@ -557,7 +557,7 @@ PACKS["auto"] = {
         ("Brake *check*", "Squeaks, grinding or a soft pedal? Brakes are not something to wait on. We check them fast.", ""),
         ("Oil *change*", "Fresh oil, a quick look over the car, and you are back on the road.", ""),
         ("Check engine *light*", "We read the code, find the real cause, and explain it in plain English.", ""),
-        ("Tires & *alignment*", "Even wear, straight steering, better mileage. Ask us to check yours.", "Do they do tires/alignment?"),
+        ("Tires & *alignment*", "Even wear, straight steering, better mileage. Ask us to check yours.", "Do you do tires/alignment?"),
         ("Battery *test*", "A quick test tells you if your battery will make it through the season.", ""),
         ("Pre-trip *inspection*", "Road trip coming? We check the essentials before you go.", ""),
     ],
@@ -590,12 +590,12 @@ PACKS["auto"] = {
     "checklists": [("Winter car *checklist*", ["Battery test", "Tire pressure & tread", "New wiper blades", "Emergency kit in the trunk"], {10, 11, 12, 1, 2}),
                    ("Road trip *checklist*", ["Tire pressure & tread", "Oil level", "Lights & wipers", "Coolant & A/C"], {4, 5, 6, 7, 8, 11, 12})],
     "offers": [
-        ("Free battery *test*", "Stop by and we will test your battery while you wait. No appointment needed.", "Do they offer a free battery test?", {10, 11, 12, 1, 2}),
+        ("Free battery *test*", "Stop by and we will test your battery while you wait. No appointment needed.", "Do you offer a free battery test?", {10, 11, 12, 1, 2}),
         ("Holiday road trip *check*", "Driving to family this month? Book a quick pre-trip check before you go.", "", {11, 12}),
-        ("Second opinion? *Sure*", "Got a big quote somewhere else? Bring it in and we will take an honest look.", "Do they do second opinions?", None),
-        ("Ask about our *warranty*", "Ask us how our repairs are covered, so you know exactly where you stand before we start.", "Do they offer a warranty on repairs? How long?", None),
-        ("Send us a *friend*", "Know someone looking for an honest mechanic? Send them our way, and ask us about our thank-you for referrals.", "Do they want a referral thank-you? What is it?", None),
-        ("Gift a *service*", "An oil change gift card is the gift that keeps the car running.", "Do they sell gift cards?", {11, 12}),
+        ("Second opinion? *Sure*", "Got a big quote somewhere else? Bring it in and we will take an honest look.", "Do you do second opinions?", None),
+        ("Ask about our *warranty*", "Ask us how our repairs are covered, so you know exactly where you stand before we start.", "Do you offer a warranty on repairs? How long?", None),
+        ("Send us a *friend*", "Know someone looking for an honest mechanic? Send them our way, and ask us about our thank-you for referrals.", "Do you want a referral thank-you? What is it?", None),
+        ("Gift a *service*", "An oil change gift card is the gift that keeps the car running.", "Do you sell gift cards?", {11, 12}),
     ],
     "bts": [
         ("In the *bay*", "Lifts up, tools out. This is where the work happens at {name}.", "a car up on the lift"),
@@ -638,7 +638,7 @@ PACKS["gym"] = {
     "times": {0: "06:00", 1: "17:00", 2: "06:00", 3: "17:00", 4: "06:00", 5: "08:00", 6: "17:00"},
     "times_note": "6 am (before the workout) and 5 pm (after work), Sat 8 am, Sun 5 pm (planning the week)",
     "services": [
-        ("Personal *training*", "A plan built for you, a coach in your corner, and real progress.", "Do they offer personal training?"),
+        ("Personal *training*", "A plan built for you, a coach in your corner, and real progress.", "Do you offer personal training?"),
         ("Group *classes*", "More energy, more fun, and someone to notice when you skip. Find your class.", ""),
         ("Strength *basics*", "New to lifting? Learn the basics safely with a coach.", ""),
         ("Open *gym*", "Train your way on your schedule. All the equipment you need.", ""),
@@ -672,9 +672,9 @@ PACKS["gym"] = {
     },
     "checklists": [("Gym bag *checklist*", ["Water bottle", "Towel", "Good shoes", "A plan for today"])],
     "offers": [
-        ("Gift a *membership*", "Give someone the gift of feeling great. Ask us about gift memberships.", "Do they sell gift memberships/cards?", {11, 12}),
+        ("Gift a *membership*", "Give someone the gift of feeling great. Ask us about gift memberships.", "Do you sell gift memberships/cards?", {11, 12}),
         ("Bring a *friend*", "Train with a friend this week. Bring them along and show them around.", "Can members bring a friend for free?", None),
-        ("Try a *class*", "Curious? Come try a class and see if it is for you.", "Do they offer a free/intro class?", None),
+        ("Try a *class*", "Curious? Come try a class and see if it is for you.", "Do you offer a free/intro class?", None),
         ("Start before *January*", "Beat the New Year rush. Start now and you will be a regular by January.", "", {11, 12}),
     ],
     "bts": [
@@ -719,11 +719,11 @@ PACKS["dentist"] = {
     "times_note": "Weekday lunch 12:15 pm, Tue & Thu 7 pm, Sun 7 pm (planning the week)",
     "services": [
         ("Cleaning & *checkup*", "A fresh, clean feeling and a chance to catch small problems before they grow.", ""),
-        ("Teeth *whitening*", "A brighter smile, safely, with a dentist who knows your teeth.", "Do they offer whitening?"),
-        ("Family *dentistry*", "Kids, parents, grandparents. One friendly office for the whole family.", "Do they see kids?"),
+        ("Teeth *whitening*", "A brighter smile, safely, with a dentist who knows your teeth.", "Do you offer whitening?"),
+        ("Family *dentistry*", "Kids, parents, grandparents. One friendly office for the whole family.", "Do you see kids?"),
         ("Gentle *care*", "Nervous about the dentist? Tell us. We go at your pace and explain every step.", ""),
-        ("Emergency *visits*", "Toothache or a broken tooth? Call us and we will do our best to see you quickly.", "Do they take emergency visits?"),
-        ("Night *guards*", "Waking up with a sore jaw? Grinding may be the reason. Ask us about a night guard.", "Do they make night guards?"),
+        ("Emergency *visits*", "Toothache or a broken tooth? Call us and we will do our best to see you quickly.", "Do you take emergency visits?"),
+        ("Night *guards*", "Waking up with a sore jaw? Grinding may be the reason. Ask us about a night guard.", "Do you make night guards?"),
     ],
     "tips": {
         "any": [
@@ -754,9 +754,9 @@ PACKS["dentist"] = {
     "checklists": [("Healthy smile *checklist*", ["Brush 2 minutes, twice a day", "Floss once a day", "New brush every 3 months", "Checkups on schedule"])],
     "offers": [
         ("Use your *benefits*", "Many dental plans reset on January 1. If you have unused benefits, book before the year ends.", "", {10, 11, 12}),
-        ("New patients *welcome*", "Looking for a dentist in {city}? We are welcoming new patients. Call to book your first visit.", "Are they taking new patients?", None),
+        ("New patients *welcome*", "Looking for a dentist in {city}? We are welcoming new patients. Call to book your first visit.", "Are you taking new patients?", None),
         ("Refer a *friend*", "The best compliment we get is a referral. Thank you for sending friends and family our way.", "", None),
-        ("Gift a *smile*", "Ask us about whitening gift certificates.", "Do they offer whitening gift certificates?", None),
+        ("Gift a *smile*", "Ask us about whitening gift certificates.", "Do you offer whitening gift certificates?", None),
     ],
     "bts": [
         ("Behind the *mask*", "Meet the team that takes care of your smile. Next visit, say hi!", "the team in the office (with their OK)"),
