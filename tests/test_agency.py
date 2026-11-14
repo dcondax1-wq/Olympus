@@ -11,6 +11,7 @@ Read only for the repo: every write goes to a temp folder (AGENCY_CACHE / AGENCY
 """
 from __future__ import annotations
 
+import atexit
 import json
 import os
 import re
@@ -624,15 +625,18 @@ def test_crm_page():
         srv.shutdown()
 
 
+def test_static():
+    """Everything without a browser (tests/run_gate.py --fast runs this through tests.gate_static)."""
+    test_leads()
+    test_sites()
+    test_pitch()
+    test_crm_static()
+
+
+atexit.register(shutil.rmtree, TMP, True)
+
 if __name__ == "__main__":
-    fast = "--fast" in sys.argv
-    try:
-        test_leads()
-        test_sites()
-        test_pitch()
-        test_crm_static()
-        if not fast:
-            test_crm_page()
-    finally:
-        shutil.rmtree(TMP, ignore_errors=True)
+    test_static()
+    if "--fast" not in sys.argv:
+        test_crm_page()
     AK.finish()
