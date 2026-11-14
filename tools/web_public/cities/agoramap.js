@@ -115,6 +115,7 @@ export class AgoraMap {
     this.cam.s = this.fit; this.cam.x = (WORLD.x0 + WORLD.x1) / 2; this.cam.y = (WORLD.y0 + WORLD.y1) / 2;
   }
   _build(c) {
+    this.ver = (this.ver || 0) + 1;                       // perf v2: the cached still layer is out of date
     const r = rng(hash32('tw:' + c.id)), big = c.hq ? 1.55 : c.capital ? 1.25 : 1;
     const sizeF = c.n ? clamp(Math.log10(c.n + 1) / 4.2, 0.15, 1) : 0.35 + r() * 0.3;
     const count = c.hq ? 8 : c.capital ? 6 : 3 + Math.floor(r() * 3);
@@ -240,8 +241,8 @@ export class AgoraMap {
   }
   flyHome(secs = 1.0) { return this.flyTo((WORLD.x0 + WORLD.x1) / 2, (WORLD.y0 + WORLD.y1) / 2, this.fit, secs); }
   select(i) { this.sel = i; this.dirty = true; }
-  setDim(a) { this.dim = a; this.dirty = true; }
-  setSeen(set, star) { this.seen = set; this.star = star || null; this.dirty = true; }
+  setDim(a) { this.dim = a; this.ver = (this.ver || 0) + 1; this.dirty = true; }
+  setSeen(set, star) { this.seen = set; this.star = star || null; this.ver = (this.ver || 0) + 1; this.dirty = true; }
   setLift(on) { this.lift = !!on; }
   setCaption() { /* the page owns captions */ }
 
@@ -331,12 +332,28 @@ export class AgoraMap {
     g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     this._sky(g, W, H);
     this._sea(g, W, H);
-    this._land(g);
-    this._network(g);
-    this._props(g);
-    this._cityLayer(g);
+    this._still(g);                // perf v2: land, roads, trees, houses, every city's plaza and towers: one cached layer while the view rests
+    this._props(g, 'live');        // the sea's glints, the lighthouses
+    this._cityLayer(g, 'live');    // the pennants, and the selected city whole (its ring pulses)
     this._life(g);
     this._labels(g, W, H);
+  }
+  // perf v2 (2026-11-14, docs/OLYMPUS_PERF.md): the map repainted ~6,400 canvas operations 33 times a second (every window of every tower) while
+  // only the sea, the ships, the birds and the pennants move. The parts that do not move are painted once per view (camera, size, data, the
+  // selection) into an offscreen layer and copied with one drawImage; panning, zooming or a fly repaints it every frame, as before.
+  _still(g) {
+    const c = this.cam, key = [c.x, c.y, c.s, this.W, this.H, this.dpr, this.ver || 0, this.sel, this.low ? 1 : 0].join('|');
+    const C = this.stillCv || (this.stillCv = document.createElement('canvas'));
+    if (C.width !== this.cv.width || C.height !== this.cv.height) { C.width = this.cv.width; C.height = this.cv.height; this.stillKey = ''; }
+    if (key !== this.stillKey) {
+      const k = C.getContext('2d');
+      k.setTransform(1, 0, 0, 1, 0, 0); k.clearRect(0, 0, C.width, C.height);
+      k.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      this._land(k); this._network(k); this._props(k, 'still'); this._cityLayer(k, 'still');
+      this.stillKey = key; this.stillPaints = (this.stillPaints || 0) + 1;
+    }
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.drawImage(C, 0, 0); g.restore();
+    g.lineJoin = 'round'; g.lineCap = 'round';               // the stroke state the land and the roads used to leave for the layers above
   }
 
   // ---------------------------------------------------------------- painting
@@ -448,15 +465,16 @@ export class AgoraMap {
     const k = Math.max(0.7, s * 1.5);
     for (const r of this.main) { this._curve(g, r, 6.5 * k, 'rgba(18,14,10,.7)'); this._curve(g, r, 4.4 * k, '#b6a37c'); this._curve(g, r, 1.1 * k, 'rgba(236,204,120,.9)'); }
   }
-  _props(g) {
+  /** mode: 'still' = the trees and houses (cached), 'live' = the glints and the lighthouses (every frame), none = all of it */
+  _props(g, mode) {
     const s = this.cam.s, W = this.W, H = this.H;
-    for (const t of this.trees) {
+    if (mode !== 'live') for (const t of this.trees) {
       const [x, y] = this.toScreen(t.x, t.y); if (x < -10 || x > W + 10 || y < 0 || y > H + 10) continue;
       const r = Math.max(1.1, 3.1 * s * t.s);
       if (t.k) { g.fillStyle = '#2f3b2c'; g.beginPath(); g.ellipse(x, y - r * 0.9, r * 0.5, r * 1.5, 0, 0, TAU); g.fill(); }
       else { g.fillStyle = '#53603a'; g.beginPath(); g.arc(x, y - r * 0.4, r, 0, TAU); g.fill(); g.fillStyle = 'rgba(30,40,20,.35)'; g.beginPath(); g.arc(x + r * 0.2, y - r * 0.2, r * 0.7, 0, TAU); g.fill(); }
     }
-    for (const h of this.houses) {
+    if (mode !== 'live') for (const h of this.houses) {
       const [x, y] = this.toScreen(h.x, h.y); if (x < -6 || x > W + 6 || y < 0 || y > H + 6) continue;
       const w = Math.max(1.4, h.w * s * 1.1);
       g.fillStyle = '#9a8970'; g.fillRect(x - w / 2, y - w * 0.8, w, w * 0.8);
@@ -464,9 +482,9 @@ export class AgoraMap {
       if (h.lit) { g.fillStyle = 'rgba(255,208,130,.95)'; g.fillRect(x - w * 0.12, y - w * 0.55, Math.max(0.8, w * 0.26), Math.max(0.8, w * 0.3)); }
     }
     // sea sparkle: tiny warm glints that wake and fade (cheap: a few dots)
-    if (!this.reduced) { const n = this.low ? 14 : 34; g.fillStyle = 'rgba(255,236,190,.8)'; for (let k = 0; k < n; k++) { const ph = (this.t * 0.35 + k * 0.618) % 1, a = Math.sin(ph * Math.PI); if (a < 0.2) continue; const gx = ((k * 97.3) % W), gy = this.hz + 14 + ((k * 61.7) % (H - this.hz - 150)); g.globalAlpha = a * (0.25 + 0.45 * (this.pal ? 1 - this.pal.star * 0.3 : 1)); g.fillRect(gx, gy, 1.6, 1.6); } g.globalAlpha = 1; }
+    if (mode !== 'still' && !this.reduced) { const n = this.low ? 14 : 34; g.fillStyle = 'rgba(255,236,190,.8)'; for (let k = 0; k < n; k++) { const ph = (this.t * 0.35 + k * 0.618) % 1, a = Math.sin(ph * Math.PI); if (a < 0.2) continue; const gx = ((k * 97.3) % W), gy = this.hz + 14 + ((k * 61.7) % (H - this.hz - 150)); g.globalAlpha = a * (0.25 + 0.45 * (this.pal ? 1 - this.pal.star * 0.3 : 1)); g.fillRect(gx, gy, 1.6, 1.6); } g.globalAlpha = 1; }
     // lighthouses
-    for (const l of this.lights) {
+    if (mode !== 'still') for (const l of this.lights) {
       const [x, y] = this.toScreen(l.x, l.y); if (x < -20 || x > W + 20 || y < 0 || y > H + 20) continue;
       const k = Math.max(0.8, s * 2.2), gl = g.createRadialGradient(x, y - 17 * k, 1, x, y - 17 * k, 16 * k);
       gl.addColorStop(0, 'rgba(255,205,120,.5)'); gl.addColorStop(1, 'rgba(255,205,120,0)');
@@ -506,7 +524,7 @@ export class AgoraMap {
       }
     }
   }
-  _cityLayer(g) {
+  _cityLayer(g, mode) {
     const s = this.cam.s, W = this.W, H = this.H, t = this.t, sc = Math.max(0.5, s);   // sc: world unit -> pixels
     const order = this.cities.map((c, i) => i).sort((a, b) => this.cities[a].wy - this.cities[b].wy);
     const zoom = this.zoomLevel();
@@ -514,8 +532,13 @@ export class AgoraMap {
       const c = this.cities[i], [x, y] = this.toScreen(c.wx, c.wy);
       if (x < -50 || x > W + 50 || y < -20 || y > H + 70) continue;
       const dimmed = this.dim && this.dim[i], sel = i === this.sel;
+      // mode (perf v2): 'still' = the plaza and towers of every city but the selected one (the cached layer), 'live' = the pennants and
+      // the selected city whole (its ring pulses), none = everything in one pass (as before)
+      const body = !mode || (mode === 'still' ? !sel : sel), flag = mode !== 'still';
+      if (!body && !flag) continue;
       g.globalAlpha = dimmed ? 0.22 : 1;
       const R = c.rad * s, look = LOOK[c.cont] || LOOK.trading;
+      if (body) {
       // plaza: a pale marble disc under the towers, district-tinted
       g.fillStyle = 'rgba(20,14,10,.35)'; g.beginPath(); g.ellipse(x + 1, y + R * 0.18, R * 1.12, R * 0.58, 0, 0, TAU); g.fill();
       g.fillStyle = rgba(look.tint, c.hq ? 0.55 : 0.38); g.beginPath(); g.ellipse(x, y, R * 1.05, R * 0.52, 0, 0, TAU); g.fill();
@@ -529,6 +552,8 @@ export class AgoraMap {
       }
       const lit = c.live ? 0.8 : 0.5;
       for (const b of c.bl) this._tower(g, x + b.x * s, y + b.y * s, b, sc, lit, 1);
+      }
+      if (!flag) { g.globalAlpha = 1; continue; }
       // a pennant on the tallest roof, in the district colour (plain flag; a gold star for the saved ones)
       const tb = c.bl.reduce((m, b) => (b.h > m.h ? b : m), c.bl[0]), fx = x + tb.x * s, fy = y + tb.y * s - tb.h * sc - tb.w * sc * 0.6;
       g.strokeStyle = '#d8c7a4'; g.lineWidth = 1; g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx, fy - 6 * Math.max(0.8, sc * 1.4)); g.stroke();

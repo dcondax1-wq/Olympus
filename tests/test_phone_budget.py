@@ -153,6 +153,7 @@ out.heavy = run(auto, (d) => vs(40 * (d / 2) ** 2), 120);
 out.holds = run(auto, (d) => vs(16 * Math.max(1, (d / 2.4) ** 2)), 120);
 out.cpu = run(auto, () => 40, 30, { work: (ms) => ms * 0.9 });
 out.slowGpu = run(out.ranges.ultraPhone, (d) => 300 * (d / 3) ** 2, 40);
+out.crawl = run(out.ranges.ultra4k, () => 1500, 120);      // over 1 s a frame (4K on a software GPU): frames, not pauses
 out.capped = run(auto, () => 33.33, 30, { gap: 33 });
 const hitch = []; for (let k = 0; k < 4000; k++) hitch.push(k % 400 === 200 ? 600 : 16.667);
 out.hitch = run(RQ.range({ tier: 'high', chosen: true, maxDpr: 2, device: 2 }), () => 16.667, 60, { at: hitch });
@@ -223,7 +224,8 @@ def test_perf_static():
         check("f. a GPU that holds 2.4x settles at 2.38x after at most 3 failed tries of 2.83x (back-off), then stays", abs(Hd["dpr"] - 2.38) < 0.01 and Hd["steps"] <= 8 and Hd["locked"] == [2], Hd)
         check("f. frames slowed by the page's own JavaScript keep the resolution (a smaller buffer would only blur); a capped idle (30 fps) changes nothing; one 600 ms hitch a few seconds never lowers it",
               r["cpu"]["steps"] == 0 and r["capped"]["steps"] == 0 and r["hitch"]["steps"] == 0, [r["cpu"], r["capped"], r["hitch"]])
-        check("f. a very slow GPU (300 ms frames at 3x) still steps down (windows by time, not only by 30 frames)", r["slowGpu"]["q"] <= -2 and r["slowGpu"]["dpr"] <= 2.2, r["slowGpu"])
+        check("f. a very slow GPU (300 ms frames at 3x) still steps down (windows by time, not only by 30 frames); frames over 1 s twice in a row are frames, not a pause (1.5 s frames at 4K reach the floor)",
+              r["slowGpu"]["q"] <= -2 and r["slowGpu"]["dpr"] <= 2.2 and r["crawl"]["dpr"] == 1 and r["crawl"]["steps"] >= 3, [r["slowGpu"], r["crawl"]])
 
     rnd, hs, rs = (read(os.path.join(WEB, "olympus", f)) for f in ("render.js", "hero-stage.js", "render-scale.js"))
     check("f. render.js: the governor sizes every core canvas (Ultra 4K = 3x), no MSAA over 2x, off screen = no frame (IntersectionObserver), the CSS box from a ResizeObserver, shaders compiled in the background",

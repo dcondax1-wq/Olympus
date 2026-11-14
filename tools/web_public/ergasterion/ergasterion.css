@@ -36,6 +36,9 @@ svg text { font-family: var(--ag-sans); }
 /* ERGASTERION: the workshop floor (3D, first person) or its flat plan; cards for every worker. Only layout and the app's own parts live here. */
 .hero { border-color: #4a3d28; } .hero[data-level="bad"] { border-color: #6e3424; } .hero[data-level="warn"] { border-color: #6e5424; }
 .big { margin: 0; font: 700 clamp(24px, 7.4vw, 32px)/1.15 var(--ag-serif); color: var(--ag-gold); }
+/* perf v2 (2026-11-14): the hero holds the room its words take when they arrive (the title on two lines, the line under it on two), so the floor
+   card below does not jump (CLS 0.66 on a phone: the hero grew 77 px at 3.6 s) */
+@media (max-width: 600px) { #hero #heroTitle { min-height: 2.3em; } #hero #heroLine:empty { min-height: 2.9em; } }
 .stage { position: relative; width: 100%; height: min(64vh, 480px); min-height: 320px; border-radius: var(--ag-radius-s, 12px); overflow: hidden; background: linear-gradient(180deg, #3b2c1e, #1d1914); border: 1px solid var(--ag-line); }
 .stage canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; touch-action: none; outline: none; }
 .plan { width: 100%; height: auto; display: block; background: #26211b; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); }

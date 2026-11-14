@@ -72,7 +72,7 @@ const clearWin = (s) => { s.win.length = 0; s.work = 0; s.tWin = 0; };
  * the policy as a pure function: one frame sample -> the next state (tests drive it with synthetic frames).
  *   s: state (mutated and returned); t: the frame's time (ms); ms: the interval since the last drawn frame; gap: the deliberate frame gap (ms, 0 = none);
  *   work: CPU ms of the frame (its JavaScript + the draw submission); maxQ / minQ: how far up / down the canvases on the page can go.
- * A window is 30 frames, or 1.5 s with at least 6 frames (a slow GPU at 4 fps is judged as fast as a quick one). Slowness is judged on the
+ * A window is 30 frames, or 1.5 s with at least 4 frames (a slow GPU at 4 fps is judged as fast as a quick one). Slowness is judged on the
  * window's MEDIAN (one GC hitch never lowers the resolution), a climb needs the MEAN at full rate (any hitch blocks it). An interval over
  * 1 s is a pause (a tab switch, a sheet, the debugger), not a frame: the window starts again.
  */
@@ -80,7 +80,11 @@ export function step(s, t, ms, gap, work, maxQ, minQ) {
   const P = POLICY;
   if (maxQ !== undefined) s.maxQ = maxQ;
   if (minQ !== undefined) s.minQ = minQ;
-  if (!(ms > 0) || ms > 1000) { clearWin(s); s.warm = Math.max(s.warm, 5); s.tWarm = 0; return s; }          // the first frame, or a pause
+  // the first frame, or a pause (a tab switch, a sheet): over 1 s once is a pause; over 1 s twice in a row is a GPU that slow (4K on a weak
+  // or software GPU): those are frames, counted as 1 s each, so the resolution still comes down
+  if (ms > 1000) s.long = (s.long || 0) + 1; else s.long = 0;
+  if (!(ms > 0) || (ms > 1000 && s.long < 2)) { clearWin(s); s.warm = Math.max(s.warm, 5); s.tWarm = 0; return s; }
+  if (ms > 1000) { ms = 1000; s.warm = 0; }
   if ((gap || 0) !== s.gap) { s.gap = gap || 0; clearWin(s); s.warm = Math.max(s.warm, 10); s.tWarm = 0; return s; }   // a new deliberate cap
   if (s.warm > 0) {                                                                            // warm-up: 20 frames or 1 s, whichever is first
     if (!s.tWarm) s.tWarm = t;
@@ -89,7 +93,7 @@ export function step(s, t, ms, gap, work, maxQ, minQ) {
   }
   if (!s.tWin) s.tWin = t - ms;
   s.win.push(ms); s.work += Math.max(0, work || 0);
-  if (s.win.length < P.window && !(s.win.length >= 6 && t - s.tWin >= 1500)) return s;
+  if (s.win.length < P.window && !(s.win.length >= 4 && t - s.tWin >= 1500)) return s;
   const n = s.win.length, med = median(s.win), avg = s.win.reduce((x, y) => x + y, 0) / n, cpu = s.work / n;
   s.fps = Math.round(1000 / avg); clearWin(s);
   if (t - s.tChange < P.cooldownMs) return s;
