@@ -4,17 +4,17 @@ Netlify, tools/pc_publish.py) and the public ntfy status topic (tools/pc_report.
 tools/site_privacy.py holds the detectors and the scrub the build runs last.
 
   a. detectors   each detector finds its planted value in a fake site (card number by Luhn, bank account number, email, phone, street
-                 address, state + ZIP, the owner's name / email canaries, API keys and tokens, the private ntfy alert topic, a broker
+                 address, state + ZIP, an age / birthday, the owner's name / email canaries, API keys and tokens, the private ntfy alert topic, a broker
                  account, a personal folder C:\\Users\\<name>, a tailnet name, a Tailscale IP, household / day / inbox / health / cards /
                  agency / calendar / key files by name or content); a clean fake site (prices, epoch times, shas, Sim101, Kalshi
                  tickers, versions, colors, the docstring's example topic) has none
-  b. scrub       broker ids keep the last 4 digits, a personal folder becomes <you>, a commit author goes, an email is masked, a
-                 private file is removed; JSON stays valid; numbers, code (.js) and clean files are untouched
+  b. scrub       broker ids keep the last 4 digits, a personal folder becomes <you>, a commit author goes, an email is masked, an
+                 age goes, a private file is removed; JSON stays valid; numbers, code (.js) and clean files are untouched
   c. sources     the build copies no private folder (money_out, data/day, data/agency, data/inbox, .olympus) and runs the scrub last;
                  money_publish.KEEP has no household / agency; pc_publish scrubs the Kalshi feed it adds; the research write-ups
                  carry no personal folder and no full broker account id
   d. planted     a state.json with planted private values (broker ids in the heartbeat, notices, verdict and launch lines, a commit
-                 author, a personal folder, an email) through the REAL build: none of them in the site, the masked ids are
+                 author, a personal folder, an email, an age) through the REAL build: none of them in the site, the masked ids are
                  (they reached the page and were cut), data.json / home.json still load
   e. ntfy        the public status (pc_report.lite) has no PC name, no broker id, no personal folder, no email; the eval numbers stay
   f. real build  (skipped with --fast) the full site from --state (default data/pc_publish/dash/state.json, else none) into a temp
@@ -112,6 +112,7 @@ def detectors(tmp):
         "tailnet name": ("link.md", f"open https://{F['tailnet']}/site/"),
         "tailscale IP": ("ip.md", f"phone at {F['tsip']}"),
         "canary": ("about.md", "made by " + F["name"].replace(" ", ".")),
+        "age / birthday": ("goal.md", "a 2024 Stingray 3LT before I " + "turn 19 (Feb 22, 2027)"),
     }
     for kind, (rel, text) in plant.items():
         write(bad, "plant/" + rel, text)
@@ -157,7 +158,8 @@ def scrub(tmp):
     s = os.path.join(tmp, "scrub")
     doc = {"accounts": [{"broker_account": F["broker"], "balance": 49313.54}], "notice": f"LONG · {F['broker']} entered 2 MNQ",
            "log": F["path"], "rule_changes": [{"commit": {"sha": "abc123", "who": "planted-user", "when": "2026-11-03", "why": "merge"}}],
-           "learnings": [{"who": "dev", "text": "kept"}], "contact": f"mail {F['email']}", "n": 1794000386, "id_num": 123456789012}
+           "learnings": [{"who": "dev", "text": "kept"}], "contact": f"mail {F['email']}", "n": 1794000386, "id_num": 123456789012,
+           "goal": "2024 Stingray 3LT before I " + "turn 19 (Feb 22, 2027)"}
     write(s, "data.json", json.dumps(doc, separators=(",", ":")))
     write(s, "writeups/x.md", f"The 25K eval ({F['broker']}) under {F['path']}.")
     write(s, "app.js", f"const id = '{F['broker']}';")
@@ -176,6 +178,7 @@ def scrub(tmp):
     check("b. any other email keeps only its first letter (j***@gmail.com)", SP.clean_string("mail " + "bob.jones" + "@" + "gmail.com") == "mail b***@gmail.com"
           and SP.clean_string("you@example.com") == "you@example.com")
     check("b. a card number in a text keeps only its last 4 digits", SP.clean_string("card " + F["card"]) == "card " + SP.MASK + "1111")
+    check("b. an age goes, the goal stays ('2024 Stingray 3LT (Feb 22, 2027)')", d["goal"] == "2024 Stingray 3LT (Feb 22, 2027)", d["goal"])
     check("b. numbers are untouched (epoch time, a long integer, a balance)", d["n"] == 1794000386 and d["id_num"] == 123456789012 and d["accounts"][0]["balance"] == 49313.54)
     md = open(os.path.join(s, "writeups", "x.md"), encoding="utf-8").read()
     check("b. a write-up (.md) is masked the same way", F["broker"] not in md and mid in md and "<you>" in md, md)
@@ -232,7 +235,8 @@ def planted_state(t):
                "health": {"v": 1, "t": t, "account": acct, "auto": {"resume": {"on": True, "account": b1}}, "log": F["path"]},
                "launch": {"facts": {"lit_account": b1}, "items": [{"key": "allow", "detail": f"{b1} and {b2} may receive orders"}]},
                "ai": {"rule_changes": [{"t": t, "changes": [], "commit": {"sha": "abc123", "who": "planted-git-user", "when": "2026-11-03", "why": "merge"}}]}},
-        "notices": [{"t": t, "account": b1, "title": f"LONG · {b1}", "src": f"pc:{b1}", "body": f"mail {F['email']}"}],
+        "notices": [{"t": t, "account": b1, "title": f"LONG · {b1}", "src": f"pc:{b1}", "body": f"mail {F['email']}"},
+                    {"t": t, "title": "Goal", "body": "a 2024 Stingray 3LT before I " + "turn 19 (Feb 22, 2027)"}],
         "pc_verdict": {"code": "TRADING", "reason": f"Trading on {b1}", "checks": [[f"account {b1}", True]]},
     }
 
