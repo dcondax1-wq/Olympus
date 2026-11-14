@@ -223,6 +223,12 @@ def main() -> int:
     check("connect: no copies when every file was a known repo version", not st["connected"].get("copies")
           and not os.path.exists(os.path.join(pc, "logs")), st["connected"])
     check("connect: says ON in plain words", any(k == "OK" and "Auto-update is ON" in t for k, t in said), said)
+    has_gcm = subprocess.run(["git", "credential-manager", "--version"], capture_output=True).returncode == 0
+    pc_wide = subprocess.run(["git", "config", "--get", "credential.helper"], cwd=tmp, capture_output=True, text=True).stdout.strip()
+    local = subprocess.run(["git", "config", "--local", "--get", "credential.helper"], cwd=pc, capture_output=True, text=True).stdout.strip()
+    check("connect: a sign-in helper set for the whole PC is used as it is; none set + Git Credential Manager installed -> "
+          "this folder gets 'manager'; neither -> untouched",
+          local == ("" if pc_wide else ("manager" if has_gcm else "")), (pc_wide, has_gcm, local))
     check("source_status after connect: 0", au.source_status(pc, au.Shell(pc), st, env={"LE_AUTOUPDATE_LOCAL_OK": "1"})[0] == 0)
     rc = connect(pc)
     check("connect again: exit 0, 'already runs the newest code', nothing moved",

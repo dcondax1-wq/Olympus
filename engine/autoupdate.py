@@ -517,6 +517,21 @@ def fetch_interactive(sh, src: dict, timeout: float = 900) -> tuple:
         return 127, f"{e.__class__.__name__}: {e}"
 
 
+def ensure_helper(sh, log=None) -> str | None:
+    """The sign-in helper for the backup: Git for Windows sets credential.helper=manager (Git Credential Manager) for the
+    whole PC. When nothing is set but GCM is installed, this folder gets it, so the one-time sign-in window opens AND the
+    later background checks find the saved sign-in. Returns the helper in use (None = none; git then asks in the console)."""
+    log = log or sh.log
+    c, out = sh.git("config", "--get", "credential.helper", timeout=30)
+    if c == 0 and out.strip():
+        return out.strip().splitlines()[-1]
+    if sh.git("credential-manager", "--version", timeout=60)[0] == 0 and \
+            sh.git("config", "credential.helper", "manager", timeout=30)[0] == 0:
+        log("connect: credential.helper=manager set for this folder (Git Credential Manager)")
+        return "manager"
+    return None
+
+
 def _blobs(sh, rev: str | None = None, env=None) -> dict:
     """{path: blob sha}: of a commit (ls-tree -r), else of the index (ls-files -s; env picks a temp index)."""
     c, out = (sh.git("ls-tree", "-r", "-z", rev, timeout=300) if rev
@@ -668,6 +683,8 @@ def connect(sh=None, src: dict | None = None, fetch=None, tests=TESTS, port: int
         undo_remote()
         say("FIX", f"The backup repo could not be added ({why}). Nothing changed.")
         return CONNECT_FAIL
+    helper = ensure_helper(sh, log)
+    log(f"connect: sign-in helper {helper or 'none (git asks in this window)'}")
     acct = src.get("account")
     say("..", f"Getting the newest code from {src['label']}"
         + (f" (if a GitHub window opens, sign in as {acct})" if acct else "") + "...")
