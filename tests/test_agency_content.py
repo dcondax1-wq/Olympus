@@ -246,6 +246,35 @@ def part_d():
           [r[1] for r in body] == [p["date"] for p in plan["posts"]] and [r[2] for r in body] == [p["time"] for p in plan["posts"]]
           and [r[7] for r in body] == [p["caption"] for p in plan["posts"]] and all(r[10].endswith("_square.png") and r[11].endswith("_story.png") for r in body))
     check("d. captions.txt: every caption with its date, time and image file, ready to copy from a phone", all(p["caption"] in cap and p["square"] in cap for p in plan["posts"]))
+    # the two double-click helpers for the owner's PC (the same static rules as the repo's Windows scripts; cmd.exe is not run here)
+    bad = {}
+    for name in ("MAKE_POSTS.bat", "CLIENT_REPORT.bat"):
+        raw = open(os.path.join(ROOT, "agency", "content", name), "rb").read()
+        probs = []
+        if b"\n" in raw.replace(b"\r\n", b"") or not raw.endswith(b"\r\n"):
+            probs.append("not CRLF")
+        try:
+            txt = raw.decode("ascii")
+        except UnicodeDecodeError:
+            probs.append("non-ASCII")
+            txt = raw.decode("utf-8", "replace")
+        lines = txt.split("\r\n")
+        labels = {ln.strip()[1:].split()[0].lower() for ln in lines if ln.strip().startswith(":") and not ln.strip().startswith("::")} | {"eof"}
+        for ln in lines:
+            s = ln.strip()
+            if s.lower().startswith("rem"):
+                continue
+            probs += [f"no :{m}" for m in re.findall(r"(?i)\bgoto\s+:([A-Za-z0-9_]+)", s) if m.lower() not in labels]
+            if s.count("(") != s.count(")") and not s.lower().startswith("echo"):
+                probs.append(f"parentheses: {s[:40]}")
+            for m in re.findall(r"agency\\content\\([A-Za-z_]+\.py)", s):
+                if not os.path.isfile(os.path.join(ROOT, "agency", "content", m)):
+                    probs.append(f"missing {m}")
+        if "cd /d \"%~dp0..\\..\"" not in txt or "where python" not in txt:
+            probs.append("does not start from the repo root / check python")
+        if probs:
+            bad[name] = probs
+    check("d. MAKE_POSTS.bat / CLIENT_REPORT.bat: CRLF, ASCII, every goto has its label, balanced, run from the repo root, the scripts they call exist", not bad, bad)
 
 
 # ============================================================================================================ e. report
