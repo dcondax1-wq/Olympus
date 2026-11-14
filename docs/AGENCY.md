@@ -14,6 +14,11 @@ email, places a call or texts anyone: it prepares the words, you dial and press 
 | Prices | Starter $499 + $49 a month, Growth $999 + $79, Pro $1,999 + $129 |
 | The math | 4 new clients a month passes $5,000 a month in month 8 (about 6 calls a working day) |
 
+Pictures (`docs/shots/agency/`): `templates-8-looks-390.png` (the 8 looks on real Fort Collins businesses), `site-<name>-390.png` /
+`-390-full.png` / `-desktop.png` (the 3 demo sites), `crm-390.png`, `crm-390-lead.png`, `crm-desktop.png` (the Agency page),
+`pitch-onepager-highroad-roofing.png` (a one-page pitch). Screenshots come from Chromium on Linux, so the fonts are the fallbacks:
+on an iPhone the serif headings use Iowan Old Style / Didot and the garage look DIN Condensed.
+
 ## Your 3 steps
 1. Double-click **`RUN_AGENCY.bat`**. The first time Notepad opens your settings file: put in your agency name, your name, phone,
    email, postal address and your city, save, and double-click it again. Each run makes today's leads, 3 demo sites and their pitches.
