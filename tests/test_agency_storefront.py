@@ -414,20 +414,56 @@ def part_a(tmp: Path):
           all("Example website by <a href=\"../../index.html\">YOUR AGENCY</a>" in docs[f] for f in DEMOS)
           and all(".shot .demo-ribbon { display: none; }" in (SF / "examples" / t / "style.css").read_text() for t in build.TRADES))
 
-    # the shared agency file, texts_ok, own colour, legal reviewed
+    # the shared agency file (flat names, or team B1's nested format), texts_ok, own colour, legal reviewed
+    nope = tmp / "nope.json"
     shared = tmp / "shared.json"
-    shared.write_text(json.dumps({"agency_name": "Brightside Web Co", "city": "Tampa", "phone": "(813) 555-0199", "email": "hi@brightside.example",
+    shared.write_text(json.dumps({"agency_name": "Brightside Web Co", "city": "Tampa", "phone": "(813) 555-0199", "email": "hi@brightside.co",
                                   "brand_colour": "#7C3AED", "other_team_key": 1}))
-    cfg = build.load_config(shared_path=shared)
+    cfg = build.load_config(shared_path=shared, example_path=nope)
     r2 = build.build(tmp / "site2", cfg=cfg)
     idx = (tmp / "site2" / "index.html").read_text()
     css2 = (tmp / "site2" / next(f for f in r2["files"] if f.endswith(".css"))).read_text()
-    check("a. when agency/config.json exists, its agency_name / city / phone / email / brand colour win (one edit updates the storefront)",
-          "Brightside Web Co" in idx and "Tampa" in idx and 'tel:+18135550199' in idx and "hi@brightside.example" in (tmp / "site2" / "contact.html").read_text()
-          and cfg["shared_from"] == str(shared), r2["shared_from"])
+    check("a. agency/config.json (the owner's PC copy) with the flat names: agency_name / city / phone / email / brand colour win",
+          "Brightside Web Co" in idx and "Tampa" in idx and 'tel:+18135550199' in idx and "hi@brightside.co" in (tmp / "site2" / "contact.html").read_text()
+          and cfg["shared_from"] == str(shared), cfg["shared_from"])
     check("a. ... an own brand colour (#7C3AED) becomes readable shades on top of the nearest preset (class brand-custom, no inline style)",
           'class="brand-custom"' in idx and ".brand-custom[data-preset]{--brand:#7C3AED" in css2 and "style=" not in idx, css2[-300:])
-    check("a. ... and without that file the storefront's own config.json is used", build.load_config(shared_path=tmp / "nope.json")["agency"]["name"] == "YOUR AGENCY")
+    example = tmp / "config.example.json"                     # team B1's committed file, in its own (nested) format
+    example.write_text(json.dumps({"agency": {"name": "YOUR AGENCY", "your_name": "YOUR NAME", "phone": "(555) 555-0100", "email": "you@example.com",
+                                              "website": ""}, "search": {"city": "YOUR CITY, ST"},
+                                   "packages": [{"id": "starter", "name": "Starter", "setup": 499, "monthly": 49, "includes": ["The one-page site you saw", "Hosting"]},
+                                                {"id": "growth", "name": "Growth", "setup": 999, "monthly": 79, "includes": ["Everything in Starter", "5 pages"]}]}))
+    owner = tmp / "owner.json"
+    owner.write_text(json.dumps({"agency": {"name": "Peak Sites", "your_name": "Dee", "phone": "(970) 555-0123", "email": "dee@peaksites.co",
+                                            "website": "peaksites.co"}, "search": {"city": "Fort Collins, CO"},
+                                 "packages": [{"id": "starter", "name": "Starter", "setup": 399, "monthly": 39, "includes": ["The one-page site you saw", "Hosting"]},
+                                              {"id": "growth", "name": "Growth", "setup": 899, "monthly": 69, "includes": ["Everything in Starter", "5 pages"]}],
+                                 "storefront": {"booking_url": "https://cal.com/peak/15", "legal_reviewed": True}}))
+    c5 = build.load_config(shared_path=owner, example_path=example)
+    build.build(tmp / "site5", cfg=c5)
+    i5, p5, t5 = ((tmp / "site5" / f).read_text() for f in ("index.html", "pricing.html", "terms.html"))
+    check("a. team B1's nested format works too: agency.name, agency.phone, agency.email, search.city, agency.website, packages setup/monthly",
+          "Peak Sites" in i5 and "Fort Collins, CO" in i5 and "tel:+19705550123" in i5 and "$399" in p5 and "$69" in p5 and "$1,999" not in p5
+          and c5["agency"]["site_url"] == "https://peaksites.co" and 'rel="canonical" href="https://peaksites.co/"' in i5, c5["sources"])
+    check("a. ... its plan bullets are used as they are (one source with the pitches; no contradicting page / edit line); a removed plan drops out",
+          "The one-page site you saw" in p5 and "30 min of edits" not in p5 and 'id="plan-pro"' not in p5 and "Free with Growth" in p5, re.findall(r"Free with [^<]+", p5))
+    check("a. ... the state comes from 'Fort Collins, CO', the 'storefront' block overrides storefront keys (booking link, legal reviewed)",
+          "laws of CO" in t5 and "https://cal.com/peak/15" in i5 + p5 + (tmp / "site5" / "contact.html").read_text() and "Template: edit before going live" not in t5)
+    c6 = build.load_config(shared_path=nope, example_path=example)
+    check("a. a placeholder never hides a real value: B1's example ('YOUR AGENCY', you@example.com) leaves the storefront's own values; without any shared file the storefront config is used",
+          c6["agency"]["name"] == "YOUR AGENCY" and c6["agency"]["email"] == "hello@your-agency.example" and c6["sources"]["packages"] == "agency/config.example.json"
+          and build.load_config(shared_path=nope, example_path=nope)["agency"]["name"] == "YOUR AGENCY", c6["sources"])
+    plain = SF / "owner-copy-test.json"                       # not ignored by git: must not be made
+    ignored = SF / "dist" / "owner-copy-test.json"            # dist/ is ignored: may be made
+    made_plain = build.ensure_owner_copy(plain, example)
+    ignored.parent.mkdir(exist_ok=True)
+    made_ignored = build.ensure_owner_copy(ignored, example)
+    ok_copy = not made_plain and not plain.exists() and made_ignored and json.loads(ignored.read_text())["agency"]["name"] == "YOUR AGENCY"
+    for p in (plain, ignored):
+        if p.exists():
+            p.unlink()
+    check("a. the owner's copy (agency/config.json, from B1's example) is only ever made where git ignores it: a tracked file edited "
+          "on the PC would stop the bot's auto-update", ok_copy, (made_plain, made_ignored))
     cfg3 = build.load_config(shared_path=None)
     cfg3["agency"]["texts_ok"] = False
     cfg3["agency"]["legal_reviewed"] = True
@@ -455,16 +491,19 @@ def part_a(tmp: Path):
     check("a. a missing comma in config.json is reported with its line number, in plain words", "line 4" in said and "commas" in said, said)
 
     # the zip
-    rc = build.main(["--check"])
-    check("a. the committed dist/storefront.zip matches the sources (build.py --check)", rc == 0)
-    z = zipfile.ZipFile(build.ZIP_PATH)
-    names = z.namelist()
+    check("a. build.py --check says the config builds (and writes nothing)", build.main(["--check"]) == 0)
+    z1, z2 = tmp / "a.zip", tmp / "b.zip"
+    build.make_zip(site, z1)
+    build.build(tmp / "again")
+    build.make_zip(tmp / "again", z2)
+    names = zipfile.ZipFile(z1).namelist()
     check("a. the zip has index.html at its root (Netlify Drop serves the root), every page, no build folders, under 1.5 MB",
           "index.html" in names and set(PAGES) <= set(names) and not any(n.startswith(("dist/", "site/", "_mockups")) for n in names)
-          and build.ZIP_PATH.stat().st_size < 1_500_000, (names[:5], build.ZIP_PATH.stat().st_size))
-    m1 = build.dir_manifest(site)
-    build.build(tmp / "again")
-    check("a. two builds give the same files byte for byte (the zip only changes when a source does)", build.dir_manifest(tmp / "again") == m1)
+          and z1.stat().st_size < 1_500_000, (names[:5], z1.stat().st_size))
+    check("a. two builds give the same zip byte for byte (fixed dates, sorted names)", z1.read_bytes() == z2.read_bytes())
+    tracked = os.popen(f"git -C {ROOT} ls-files agency/storefront/dist").read().split()
+    check("a. dist/ (the site folder and the zip) is never tracked, so a build on the PC changes no tracked file",
+          not tracked and build.git_ignored(SF / "dist" / "storefront.zip") is True, tracked)
 
 
 # ------------------------------------------------------------------------------------------------ b. grade.py
@@ -589,9 +628,8 @@ def part_b(tmp: Path):
               (d / ".gitignore").read_text().strip().endswith("*"))
     finally:
         grade.REPORTS = old
-    gi = (ROOT / ".gitignore").read_text() + (SF / ".gitignore").read_text()
-    check("b. nothing private is tracked: no report, prospect data or unzipped build in git",
-          "dist/site/" in gi and not [p for p in os.popen(f"git -C {ROOT} ls-files data/agency agency/storefront/dist").read().split() if not p.endswith("storefront.zip")])
+    check("b. nothing private is tracked: no report or prospect data in git",
+          not os.popen(f"git -C {ROOT} ls-files data/agency").read().split())
 
 
 # ------------------------------------------------------------------------------------------------ c. the browser

@@ -1,4 +1,4 @@
-# the unzipped build (python agency/storefront/build.py): only dist/storefront.zip is kept in git
-dist/site/
-dist/*.tmp
+# the build output (python agency/storefront/build.py): made on the PC, never committed, so a build there never
+# leaves a changed tracked file behind (that would stop the bot auto-update)
+dist/
 __pycache__/

@@ -6,9 +6,13 @@ no CDN, no tracking, no secrets. Standard library only, so it runs on the PC's p
 
     python agency/storefront/build.py               build the site + the zip, then list what is still a placeholder
     python agency/storefront/build.py --serve       build, then preview at http://localhost:8790 (forms print to the console)
-    python agency/storefront/build.py --check       exit 1 when dist/storefront.zip is not what the sources make
+    python agency/storefront/build.py --check       does the config build? (writes nothing; exit 2 with the reason if not)
     python agency/storefront/build.py --preset ocean    build with another colour preset (coral | ocean | forest)
     python agency/storefront/build.py --out DIR     build the site folder into DIR only (no zip; tests and screenshots)
+
+The owner's details (agency name, city, phone, email, prices) come from agency/config.json, the agency-wide file the PC keeps
+to itself (gitignored), so the storefront, the pitches and the demo sites share one edit. dist/ is gitignored too: building on
+the PC never leaves a changed tracked file behind (that would stop the trading bot's auto-update).
 """
 from __future__ import annotations
 
@@ -32,9 +36,21 @@ SRC = HERE / "src"
 EXAMPLES = HERE / "examples"
 DIST = HERE / "dist"
 ZIP_PATH = DIST / "storefront.zip"
-CONFIG = HERE / "config.json"
-SHARED_CONFIG = HERE.parent / "config.json"     # agency/config.json (the agency-wide file), when it exists
+CONFIG = HERE / "config.json"                   # the storefront's own words + fallbacks (tracked: Claude edits it, never the PC)
+SHARED_CONFIG = HERE.parent / "config.json"     # agency/config.json: the owner's own copy, kept on the PC only (gitignored by team B1)
+SHARED_EXAMPLE = HERE.parent / "config.example.json"   # agency/config.example.json: team B1's committed placeholders
 SHARED_KEYS = ("agency_name", "city", "phone", "email", "brand_color")
+# where each shared value can sit: the flat names first, then team B1's nested ones
+SHARED_PATHS = {
+    "agency_name": ("agency_name", "agency.agency_name", "agency.name"),
+    "owner_name": ("owner_name", "agency.owner_name", "agency.your_name"),
+    "city": ("city", "agency.city", "search.city"),
+    "phone": ("phone", "agency.phone"),
+    "email": ("email", "agency.email"),
+    "brand_color": ("brand_color", "brand_colour", "agency.brand_color", "agency.brand_colour"),
+    "site_url": ("site_url", "agency.site_url", "agency.website"),
+}
+PLACEHOLDER = re.compile(r"\bYOUR\b|@example\.(com|org|net)\b|\.example\b|\b555\D{0,3}555\D{0,2}01\d\d\b|\b00000\b")
 PRESETS = ("coral", "ocean", "forest")           # their colours live in src/assets/site.css only (css_presets reads them)
 TRADES = ("barber", "plumber", "restaurant")
 FIXED_TIME = (2026, 1, 1, 0, 0, 0)          # zip entry dates: the same bytes in, the same zip out
@@ -193,37 +209,127 @@ def parse_brand(value) -> dict:
 
 
 # ------------------------------------------------------------------------------------------------ the config (+ the shared agency file)
-def shared_values(path: Path = SHARED_CONFIG) -> dict:
-    """agency_name / city / phone / email / brand_color from agency/config.json, when that file exists"""
-    if not path.exists():
-        return {}
-    data = load_json(path, "agency/config.json")
-    out = {}
-    for k in SHARED_KEYS + ("brand_colour",):
-        v = data.get(k)
-        if v in (None, "") and isinstance(data.get("agency"), dict):
-            v = data["agency"].get(k)
-        if v not in (None, ""):
-            out["brand_color" if k == "brand_colour" else k] = v
-    return out
+def is_placeholder(v) -> bool:
+    return v in (None, "") or (isinstance(v, str) and bool(PLACEHOLDER.search(v)))
 
 
-def normalize(c: dict, shared_from: str = "") -> dict:
+def dig(d: dict, *paths):
+    """the first value found at one of the dotted paths ('agency.name')"""
+    for p in paths:
+        cur = d
+        for part in p.split("."):
+            cur = cur.get(part) if isinstance(cur, dict) else None
+        if cur not in (None, ""):
+            return cur
+    return None
+
+
+def merge_packages(own: list, shared: list) -> list:
+    """the shared file's plans (names, prices, what is included) win; the storefront adds its short lines by id"""
+    mine = {p.get("id"): p for p in own or []}
+    out = []
+    for s in shared:
+        if not isinstance(s, dict) or not s.get("id"):
+            continue
+        base = dict(mine.get(s["id"]) or {"id": s["id"], "for": "", "pages": "", "edits": "", "popular": False, "features": []})
+        if s.get("name"):
+            base["name"] = s["name"]
+        for k_own, k_shared in (("setup_usd", "setup"), ("monthly_usd", "monthly")):
+            v = s.get(k_shared, s.get(k_own))
+            if isinstance(v, (int, float)):
+                base[k_own] = v
+        inc = s.get("includes") or s.get("features")
+        if isinstance(inc, list) and inc:
+            base["features"] = [str(x) for x in inc]
+            base["shared_features"] = True              # the pitch's own bullets: the storefront's page / edit lines would contradict them
+        out.append(base)
+    return out or list(own or [])
+
+
+def normalize(c: dict, shared_from: str = "", sources: dict | None = None) -> dict:
     """the flat file the owner edits -> the shape the build uses"""
-    a = {"name": c.get("agency_name", ""), "owner": c.get("owner_name", ""), "city": c.get("city", ""), "state": c.get("state", ""),
-         "service_area": c.get("service_area") or c.get("city", ""), "phone": c.get("phone", ""), "texts_ok": c.get("texts_ok", True) is not False,
+    city = c.get("city", "")
+    state = c.get("state", "")
+    m = re.search(r",\s*([A-Z]{2})\s*$", city or "")
+    if is_placeholder(state) and m and not is_placeholder(city):
+        state = m.group(1)                                  # "Fort Collins, CO" gives the state for the legal pages
+    site = (c.get("site_url") or "").strip()
+    if site and not re.match(r"^https?://", site, re.I):
+        site = "https://" + site                            # "youragency.com" is fine too
+    a = {"name": c.get("agency_name", ""), "owner": c.get("owner_name", ""), "city": city, "state": state,
+         "service_area": c.get("service_area") or city, "phone": c.get("phone", ""), "texts_ok": c.get("texts_ok", True) is not False,
          "email": c.get("email", ""), "hours": c.get("hours", ""), "booking_url": (c.get("booking_url") or "").strip(),
-         "site_url": (c.get("site_url") or "").strip(), "legal_name": c.get("legal_name") or c.get("agency_name", ""),
+         "site_url": site.rstrip("/"), "legal_name": c.get("legal_name") or c.get("agency_name", ""),
          "founded": c.get("founded") or 2026, "legal_reviewed": bool(c.get("legal_reviewed"))}
+    if "YOUR" in a["service_area"] and not is_placeholder(city):
+        a["service_area"] = f"{city} and the towns around it"
+    if "YOUR" in a["legal_name"] and not is_placeholder(a["name"]):
+        a["legal_name"] = a["name"]
     return {"agency": a, "brand_color": c.get("brand_color", "coral"), "offer": c.get("offer") or {}, "packages": c.get("packages"),
-            "addons": c.get("addons") or [], "faq": c.get("faq") or [], "testimonials": c.get("testimonials") or [], "shared_from": shared_from}
+            "addons": c.get("addons") or [], "faq": c.get("faq") or [], "testimonials": c.get("testimonials") or [],
+            "shared_from": shared_from, "sources": sources or {}}
 
 
-def load_config(path: Path = CONFIG, shared_path: Path | None = SHARED_CONFIG) -> dict:
+def load_config(path: Path = CONFIG, shared_path: Path | None = SHARED_CONFIG, example_path: Path | None = SHARED_EXAMPLE) -> dict:
+    """the storefront config, with the agency-wide values on top.
+
+    For each shared value (agency_name, owner_name, city, phone, email, brand_color, site_url) the first REAL value wins, in
+    this order: agency/config.json (the owner's PC copy) > agency/storefront/config.json > agency/config.example.json; a
+    placeholder never hides a real value. Flat names (agency_name ...) and team B1's nested ones (agency.name, search.city,
+    agency.website ...) both count. Plans (names, prices, what is included) come from the owner's copy or B1's example when
+    they have any. A "storefront": {...} block in the owner's copy overrides any storefront key (booking_url, legal_reviewed ...)."""
     raw = load_json(path, "config.json")
-    shared = shared_values(shared_path) if shared_path else {}
-    raw.update(shared)
-    return normalize(raw, str(shared_path) if shared else "")
+    owner = load_json(shared_path, "agency/config.json") if shared_path and Path(shared_path).exists() else {}
+    example = load_json(example_path, "agency/config.example.json") if example_path and Path(example_path).exists() else {}
+    for k, v in (owner.get("storefront") or {}).items():
+        raw[k] = {**raw[k], **v} if isinstance(v, dict) and isinstance(raw.get(k), dict) else v
+    sources = {}
+    for key, paths in SHARED_PATHS.items():
+        cands = [("agency/config.json", dig(owner, *paths)), ("storefront config.json", raw.get(key)),
+                 ("agency/config.example.json", dig(example, *paths))]
+        present = [(n, v) for n, v in cands if v not in (None, "")]
+        real = [(n, v) for n, v in present if not is_placeholder(v)]
+        if real or present:
+            src, val = (real or present)[0]
+            raw[key] = val
+            sources[key] = src
+    for name, d in (("agency/config.json", owner), ("agency/config.example.json", example)):
+        if isinstance(d.get("packages"), list) and d["packages"]:
+            raw["packages"] = merge_packages(raw.get("packages") or [], d["packages"])
+            sources["packages"] = name
+            break
+    files = {"agency/config.json": shared_path, "agency/config.example.json": example_path}
+    used = sorted({v for v in sources.values() if v in files})
+    return normalize(raw, ", ".join(str(files[u]) for u in used), sources)
+
+
+def git_ignored(p: Path):
+    """True / False = git does / does not ignore p; None = not in a git checkout (or no git)"""
+    import subprocess
+    try:
+        r = subprocess.run(["git", "-C", str(p.parent), "check-ignore", "-q", p.name], capture_output=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return True if r.returncode == 0 else False if r.returncode == 1 else None
+
+
+def ensure_owner_copy(path: Path = SHARED_CONFIG, example: Path = SHARED_EXAMPLE) -> bool:
+    """the first build on the PC makes agency/config.json (the owner's one file), like the agency tools do. True = made now.
+    Only where git ignores that path: a tracked file edited on the PC would stop the bot's auto-update."""
+    if path.exists() or git_ignored(path) is False:
+        return False
+    if example.exists():
+        shutil.copyfile(example, path)
+    else:
+        own = load_json(CONFIG, "config.json")
+        path.write_text(json.dumps({
+            "_read_me": "YOUR AGENCY IN ONE FILE (kept on this PC only). Change every YOUR ... value, save, then run: python agency/storefront/build.py",
+            "agency": {"name": own.get("agency_name", "YOUR AGENCY"), "your_name": own.get("owner_name", "YOUR NAME"),
+                       "phone": own.get("phone", ""), "email": own.get("email", ""), "website": own.get("site_url", "")},
+            "search": {"city": own.get("city", "YOUR CITY")},
+            "brand_color": own.get("brand_color", "coral"),
+            "storefront": {"booking_url": own.get("booking_url", ""), "legal_reviewed": False}}, indent=2) + "\n", encoding="utf-8")
+    return True
 
 
 # ------------------------------------------------------------------------------------------------ icons (own simple strokes)
@@ -288,7 +394,7 @@ def validate(cfg: dict) -> list[str]:
         pk = []
     ids = set()
     for i, p in enumerate(pk, 1):
-        for k in ("id", "name", "for", "pages", "edits"):
+        for k in ("id", "name"):
             if not str(p.get(k, "")).strip():
                 bad.append(f"package {i}: {k} is empty")
         for k in ("setup_usd", "monthly_usd"):
@@ -303,9 +409,7 @@ def validate(cfg: dict) -> list[str]:
         for k in ("name", "price", "what"):
             if not str(ad.get(k, "")).strip():
                 bad.append(f"add-on {ad.get('name') or '?'}: {k} is empty")
-        for pid in ad.get("included_in") or []:
-            if pid not in ids:
-                bad.append(f"add-on {ad.get('name')}: included_in names a plan that does not exist ({pid})")
+        ad["included_in"] = [pid for pid in ad.get("included_in") or [] if pid in ids]   # a plan the owner removed just drops out
     for f in cfg.get("faq") or []:
         if not str(f.get("q", "")).strip() or not str(f.get("a", "")).strip():
             bad.append("a FAQ entry needs both q and a")
@@ -387,13 +491,14 @@ def b_plans(cfg, tok, full: bool) -> str:
         more = "" if full or len(p["features"]) <= 4 else f'<li class="more"><a href="pricing.html#plan-{esc(p["id"])}">+ {len(p["features"]) - 4} more</a></li>'
         badge = '<p class="plan-badge">Most popular</p>' if pop else ""
         cta = f'contact.html?plan={urllib.parse.quote(p["id"])}#quote'
+        line = f'<p class="plan-for">{esc(fill(p["for"], tok))}</p>' if p.get("for") else ""
+        meta = " · ".join(esc(p[k]) for k in ("pages", "edits") if p.get(k) and not p.get("shared_features"))
         cards.append(
             f'<article class="plan{" plan-pop" if pop else ""}" id="plan-{esc(p["id"])}" aria-labelledby="pl-{esc(p["id"])}">'
-            f'{badge}<h3 class="plan-name" id="pl-{esc(p["id"])}">{esc(p["name"])}</h3>'
-            f'<p class="plan-for">{esc(fill(p["for"], tok))}</p>'
+            f'{badge}<h3 class="plan-name" id="pl-{esc(p["id"])}">{esc(p["name"])}</h3>{line}'
             f'<p class="plan-price"><span class="amt">{money(p["setup_usd"])}</span><span class="per">setup</span></p>'
             f'<p class="plan-monthly">+ <strong>{money(p["monthly_usd"])}</strong> a month</p>'
-            f'<p class="plan-meta">{esc(p["pages"])} · {esc(p["edits"])}</p>'
+            + (f'<p class="plan-meta">{meta}</p>' if meta else '<p class="plan-meta plan-meta-empty"></p>') +
             f'<ul class="ticks" role="list">{li}{more}</ul>'
             f'<a class="btn {"btn-primary" if pop else "btn-ghost"} btn-block" href="{cta}">Start with {esc(p["name"])}</a>'
             "</article>")
@@ -404,10 +509,10 @@ def b_compare(cfg) -> str:
     pk = cfg["packages"]
     head = "".join(f'<th scope="col">{esc(p["name"])}</th>' for p in pk)
     rows = [("Setup, once", [money(p["setup_usd"]) for p in pk]),
-            ("Monthly", [money(p["monthly_usd"]) for p in pk]),
-            ("Pages", [esc(p["pages"]) for p in pk]),
-            ("Edits", [esc(p["edits"]).replace(" a month", "") for p in pk]),
-            ("Hosting, padlock, backups", [icon("check", "i ok") + '<span class="sr">Included</span>'] * len(pk)),
+            ("Monthly", [money(p["monthly_usd"]) for p in pk])]
+    if all(p.get("pages") and p.get("edits") and not p.get("shared_features") for p in pk):
+        rows += [("Pages", [esc(p["pages"]) for p in pk]), ("Edits", [esc(p["edits"]).replace(" a month", "") for p in pk])]
+    rows += [("Hosting, padlock, backups", [icon("check", "i ok") + '<span class="sr">Included</span>'] * len(pk)),
             ("Tap-to-call, map and hours", [icon("check", "i ok") + '<span class="sr">Included</span>'] * len(pk))]
     for ad in cfg.get("addons") or []:
         if not ad.get("included_in"):
@@ -783,36 +888,32 @@ def main(argv=None) -> int:
     ap.add_argument("--port", type=int, default=8790)
     args = ap.parse_args(argv)
     try:
-        if args.check:
+        if args.check:                          # build in a temp folder: are the config and the sources fine? (writes nothing)
             import tempfile
             with tempfile.TemporaryDirectory() as td:
-                build(Path(td) / "site", args.preset)
-                fresh = dir_manifest(Path(td) / "site")
-            if not ZIP_PATH.exists():
-                print("NOT BUILT: dist/storefront.zip is missing. Run: python agency/storefront/build.py")
-                return 1
-            old = zip_manifest(ZIP_PATH)
-            diff = sorted(k for k in set(old) | set(fresh) if old.get(k) != fresh.get(k))
-            if diff:
-                print("STALE: dist/storefront.zip differs from the sources in " + ", ".join(diff[:12]) + ("..." if len(diff) > 12 else ""))
-                print("Run: python agency/storefront/build.py")
-                return 1
-            print(f"OK: dist/storefront.zip matches the sources ({len(fresh)} files)")
+                res = build(Path(td) / "site", args.preset)
+            print(f"OK: {len(res['files'])} files build" + (f"; {len(res['warnings'])} warning(s)" if res["warnings"] else ""))
+            for w in res["warnings"]:
+                print("  ! " + w)
             return 0
+        made = False if args.out else ensure_owner_copy()
         out = Path(args.out).resolve() if args.out else DIST / "site"
         res = build(out, args.preset)
         if not args.out:
             make_zip(out, ZIP_PATH)
         pages = [f for f in res["files"] if f.endswith(".html")]
         print(f"Built {len(res['files'])} files ({len(pages)} pages, colour {res['brand']}) in {out}")
-        if res["shared_from"]:
-            print(f"agency_name, city, phone, email and brand_color come from {res['shared_from']} (the shared file wins)")
         if not args.out:
             print(f"Zip for Netlify Drop: {ZIP_PATH}  ({ZIP_PATH.stat().st_size // 1024} KB)")
+        if made:
+            print(f"Made {SHARED_CONFIG}: put your details in it (agency name, phone, email, city, prices), save, then run this again.")
+        elif res["shared_from"]:
+            print(f"Your details come from {res['shared_from']}")
         for w in res["warnings"]:
             print("  ! " + w)
         if res["placeholders"]:
-            print("Still placeholders (edit agency/storefront/config.json):")
+            where = SHARED_CONFIG if SHARED_CONFIG.exists() else CONFIG
+            print(f"Still placeholders (edit {where}):")
             for p in res["placeholders"]:
                 print("  - " + p)
         if args.serve:
