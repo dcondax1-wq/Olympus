@@ -168,6 +168,9 @@ def _profile_warn(P: dict) -> list:
         w.append(f"{P['firm']}: copying between your own accounts is not confirmed: ask support in writing first")
     if on_hold(P):
         w.append(f"{P['firm']}: ON HOLD, no new entry until you clear it (rules {{\"hold\": \"none\"}}): {P['hold']}")
+    if P.get("dd_type") == "intraday" and P.get("kind") != "live":
+        w.append("intraday trailing floor: the room is read from closed trades (an earlier trade's best open profit is not "
+                 "recorded), so it can be overstated: prefer an end-of-day plan for a copy")
     for k, txt in (("dd_amount", "max loss amount"), ("dd_type", "drawdown type"), ("target", "profit target"),
                    ("max_micros", "max contracts"), ("dll", "daily loss"), ("lock", "where the trailing floor locks"),
                    ("news", "news rule"), ("consistency", "best-day rule")):
