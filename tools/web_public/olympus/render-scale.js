@@ -48,8 +48,9 @@ export function range(o) {
   if (!soft && !x.software && !x.saver && (tier === 'ultra' || (tier === 'high' && !x.chosen))) ceil = Math.min(dev, CAPS.ultra);
   if (tier === 'ultra' && !soft && !x.software && !x.saver) budget = ceil;              // Ultra 4K: start crisp
   if (x.saver) { budget = Math.min(budget, 1.5); ceil = Math.min(ceil, 1.5); }
-  // the floor: half the budget, never under 1 pixel per CSS pixel; a 1x screen (a budget of 1 or less) may go to 3/4 of it
-  const floor = budget <= 1 ? budget * 0.75 : Math.min(budget, Math.max(1, budget * 0.5));
+  // the floor: half the budget on Auto, two thirds of it on a level the owner chose (Ultra 4K never falls under 2x), never under 1 pixel per
+  // CSS pixel; a 1x screen (a budget of 1 or less) may go to 3/4 of it
+  const floor = budget <= 1 ? budget * 0.75 : Math.min(budget, Math.max(1, budget * (x.chosen ? 0.67 : 0.5)));
   return { floor: r2(floor), budget: r2(budget), ceil: r2(Math.max(budget, ceil)) };
 }
 

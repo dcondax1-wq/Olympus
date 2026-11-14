@@ -210,8 +210,8 @@ def test_perf_static():
         check("f. node runs olympus/render-scale.js", False, r["error"])
     else:
         g = r["ranges"]
-        check("f. render scale: Auto on an iPhone = budget 2x, may climb to the full 3x; a chosen High holds 2x; Ultra 4K starts at the full 3x (app caps >= 1.5 lifted)",
-              g["autoPhone"] == {"floor": 1, "budget": 2, "ceil": 3} and g["highChosen"]["ceil"] == 2 and g["ultraPhone"] == {"floor": 1.5, "budget": 3, "ceil": 3}, g)
+        check("f. render scale: Auto on an iPhone = budget 2x, may climb to the full 3x; a chosen High holds 2x; Ultra 4K starts at the full 3x (app caps >= 1.5 lifted) and never falls under 2x",
+              g["autoPhone"] == {"floor": 1, "budget": 2, "ceil": 3} and g["highChosen"]["ceil"] == 2 and g["ultraPhone"] == {"floor": 2.01, "budget": 3, "ceil": 3}, g)
         check("f. render scale: Ultra 4K on a 4K screen (2x) = 2x; Battery = 1.5x; a soft backdrop (maxDpr < 1.5) and software GL never climb; battery saver <= 1.5x",
               g["ultra4k"]["budget"] == 2 == g["ultra4k"]["ceil"] and g["battery"]["ceil"] == 1.5 and g["soft"]["ceil"] == 1.25 and g["software"]["ceil"] == g["software"]["budget"]
               and g["saver"]["ceil"] <= 1.5, g)
@@ -225,7 +225,7 @@ def test_perf_static():
         check("f. frames slowed by the page's own JavaScript keep the resolution (a smaller buffer would only blur); a capped idle (30 fps) changes nothing; one 600 ms hitch a few seconds never lowers it",
               r["cpu"]["steps"] == 0 and r["capped"]["steps"] == 0 and r["hitch"]["steps"] == 0, [r["cpu"], r["capped"], r["hitch"]])
         check("f. a very slow GPU (300 ms frames at 3x) still steps down (windows by time, not only by 30 frames); frames over 1 s twice in a row are frames, not a pause (1.5 s frames at 4K reach the floor)",
-              r["slowGpu"]["q"] <= -2 and r["slowGpu"]["dpr"] <= 2.2 and r["crawl"]["dpr"] == 1 and r["crawl"]["steps"] >= 3, [r["slowGpu"], r["crawl"]])
+              r["slowGpu"]["q"] <= -2 and r["slowGpu"]["dpr"] <= 2.2 and r["crawl"]["dpr"] == r["ranges"]["ultra4k"]["floor"] and r["crawl"]["steps"] >= 2, [r["slowGpu"], r["crawl"]])
 
     rnd, hs, rs = (read(os.path.join(WEB, "olympus", f)) for f in ("render.js", "hero-stage.js", "render-scale.js"))
     check("f. render.js: the governor sizes every core canvas (Ultra 4K = 3x), no MSAA over 2x, off screen = no frame (IntersectionObserver), the CSS box from a ResizeObserver, shaders compiled in the background",
