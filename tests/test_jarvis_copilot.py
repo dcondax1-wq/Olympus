@@ -60,7 +60,7 @@ def part_a():
         check(f"a. {name}: no key, no absolute URL, no order / arming words", not re.search(r"gsk_[A-Za-z0-9]{8}|AIza[A-Za-z0-9]{8}|github_pat_|sk-ant-|https?://", code(src))
               and not re.search(r"place_?order|submitOrder|armLive|go_live|\.arm\(", src))
     imports = re.findall(r"^import [^;]* from '([^']+)';", cp, re.M)
-    check("a. copilot.js imports only ./jdata.js and ../olympus/truth.js (the one source of account numbers)", sorted(imports) == ["../olympus/truth.js", "./jdata.js"], imports)
+    check("a. copilot.js imports only ./jdata.js, ../olympus/truth.js (the one source of account numbers) and ../olympus/day.js (your calendars, no account numbers)", sorted(imports) == ["../olympus/day.js", "../olympus/truth.js", "./jdata.js"], imports)
     check("a. copilot.js: no DOM, no fetch, no eval", not re.search(r"\bdocument\.|\bwindow\.|\bfetch\(|\beval\(|new Function", code(cp)))
     check("a. copilot.js reads the accounts through truth.js accountsOf / agesOf", "accountsOf(h)" in cp and "agesOf(h, now / 1000)" in cp)
     check("a. copilot-card.js fetches only through jdata.js loadSources (relative files) and asks the brain's skills first",

@@ -13,12 +13,16 @@ into a proxy to http://127.0.0.1:8766, inside the owner's tailnet only, never Fu
   /site/kalshi.json      the Kalshi feed fresh from the owner's setting (publish.json "kalshi_file" or "kalshi_feed_url", the same
                          keys tools/pc_publish.add_kalshi reads), else the site's copy, else 404 (the page says so)
   /site/money/<id>.json  the money machines' newest output (money_out/, RUN_MONEY.bat) instead of the build's sample copy
+  /site/day/day.json     your day from your own calendars (tools/calendar_sync.py -> data/day/day.json, docs/CONNECT_DAY.md):
+                         PRIVATE, so it lives only in data/day/ and only this route serves it (never a site folder, never
+                         PUBLISH_NQ / Netlify / GitHub Pages); 404 with a plain reason until a calendar is connected
   GET /api/site/live.json  the bot's live.json (engine/live_publish.build of the running bot: kind "le-live", pc, pc_verdict,
                          board, accounts), at most 15 s old; the Gate's "Right now" card reads it
   GET /api/site/status   what this serves: which site folder and how old, live on / off, the Kalshi and money sources
 
 READ ONLY over the link: a request that came through any proxy (X-Forwarded-For / X-Forwarded-Host / Tailscale-User-Login ...)
-may only GET / HEAD / OPTIONS; every POST, PUT, PATCH, DELETE is refused with 403 before it reaches a route (so nothing can start,
+may only GET / HEAD / OPTIONS (one exception, only once engine/day_inbox.install ran: POST /inbox/<kind>, which appends a line to
+the phone inbox file and nothing else; docs/CONNECT_DAY.md); every other POST, PUT, PATCH, DELETE is refused with 403 before it reaches a route (so nothing can start,
 stop, arm or route the bot from the phone link), a Tailscale Funnel request (internet) is refused outright, and the TradingView
 webhook key page is hidden. Requests from the PC itself (no proxy headers) are unchanged. Nothing here writes a file, places an
 order or reads a secret. Tests: tests/test_live_link.py.
@@ -40,6 +44,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_PUBLIC = os.path.join(ROOT, "tools", "web_public")
 SITE_CANDIDATES = (os.path.join(ROOT, "data", "pc_publish", "site"), os.path.join(ROOT, "data", "live_site", "site"))
 MONEY_OUT = os.path.join(ROOT, "money_out")
+DAY_DIR = os.path.join(ROOT, "data", "day")     # tools/calendar_sync.py OUT_DEFAULT (LE_DAY_DIR overrides, as there)
+DAY_FILES = ("day.json", "inbox.json")         # private: served from DAY_DIR only, never looked up in a site folder (inbox.json: engine/day_inbox.py)
+POST_ALLOW: list = []                           # the only POSTs the phone link may make: engine/day_inbox.allowed (POST /inbox/<kind>), added by its install()
 PREFIX = "/site"
 GATE = PREFIX + "/gate/"
 LIVE_TTL_S = 15
@@ -76,11 +83,24 @@ def guard(method: str, path: str, headers) -> tuple | None:
         return None
     if headers.get("tailscale-funnel-request"):
         return 403, {"ok": False, "error": "this dashboard is private: open it from your own devices on Tailscale, not the internet"}
-    if (method or "").upper() not in SAFE_METHODS:
+    if (method or "").upper() not in SAFE_METHODS and not any(_post_ok(f, method, path) for f in POST_ALLOW):
         return 403, {"ok": False, "error": "read only over the phone link: start, stop, arm and settings are done on the PC itself"}
     if path in HIDDEN_OVER_LINK:
         return 403, {"ok": False, "error": "shown on the PC only"}
     return None
+
+
+def _post_ok(f, method, path) -> bool:
+    try:
+        return bool(f(method, path))
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def allow_post(f) -> None:
+    """engine/day_inbox.install: let ONE kind of POST through the link (f(method, path) -> bool; only /inbox/<kind>)"""
+    if f not in POST_ALLOW:
+        POST_ALLOW.append(f)
 
 
 # ------------------------------------------------------------------------------------------------ where the site is
@@ -325,6 +345,15 @@ def money_file(name: str, src: str | None = None):
     return p if os.path.isfile(p) and read_json(p) is not None else None
 
 
+def day_file(name: str, env=None):
+    """data/day/<name> (your calendars' day, tools/calendar_sync.py) when it is a known file with valid JSON, else None"""
+    env = os.environ if env is None else env
+    if name not in DAY_FILES:
+        return None
+    p = os.path.join(env.get("LE_DAY_DIR") or DAY_DIR, name)
+    return p if os.path.isfile(p) and read_json(p) is not None else None
+
+
 # ------------------------------------------------------------------------------------------------ the routes
 router = APIRouter()
 
@@ -389,6 +418,14 @@ def r_site(rel: str, request: Request):
         p = money_file(rel[len("money/"):])
         if p:
             return FileResponse(p, media_type="application/json", headers={"Cache-Control": "no-cache", "X-Olympus-Source": "money_out"})
+    if rel.startswith("day/"):
+        name = rel[len("day/"):]
+        p = day_file(name)
+        if p:
+            return FileResponse(p, media_type="application/json", headers={"Cache-Control": "no-store", "X-Olympus-Source": "calendar_sync"})
+        if name in DAY_FILES:
+            return _J({"ok": False, "error": "no calendar connected on this PC yet (CONNECT_DAY.bat, docs/CONNECT_DAY.md)"}, 404)
+        return _J({"ok": False, "error": "not found"}, 404)
     kind, path = resolve(rel, dirs)
     if kind == "file":
         return FileResponse(path, media_type=ctype(path), headers={"Cache-Control": "no-cache"})

@@ -175,3 +175,7 @@ data/money_ledger.json
 data/money_report/
 tools/web_public/money/
 docs/reports/money_week_*.md
+
+# your day (tools/calendar_sync.py, docs/CONNECT_DAY.md): calendars, shifts and the phone inbox are PRIVATE
+data/day/
+data/inbox/
