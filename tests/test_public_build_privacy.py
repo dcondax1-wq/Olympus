@@ -362,6 +362,7 @@ def main() -> int:
         sources()
         planted_build(tmp)
         shutil.rmtree(os.path.join(tmp, "planted"), ignore_errors=True)
+        ntfy()
         if FAST and not arg("--site"):
             print("[SKIP] --fast: the full build (f) was skipped")
         else:

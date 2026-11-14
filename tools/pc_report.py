@@ -6,7 +6,8 @@ the repo's own engine code (read-only use: engine/live_publish.build, engine/go.
               in logs/heartbeat_last.json), whether the bot server answers (http://127.0.0.1:8766), NinjaTrader and the bar feed.
   2. status   the live.json the phone already reads (engine/live_publish.build: kind "le-live", pc, pc_verdict, board.lit /
               atlas / blitz, accounts), cut to a LITE copy under 4 KB, posted to the public ntfy status topic of
-              tools/web_public/status_feed.json (the site reads it with tools/web_public/pc_feed.js). Its "t" is the bot's own
+              tools/web_public/status_feed.json (the site reads it with tools/web_public/pc_feed.js). PUBLIC: no PC name, no login,
+              broker account ids cut to the last 4 digits, no folder, no email (public(), tools/site_privacy.py, docs/PRIVACY.md). Its "t" is the bot's own
               heartbeat time (never "now"), so an old report always looks old; "reporter" says what this PC saw just now.
   3. alerts   phone pushes on YOUR private ntfy topic (made here once, kept in %USERPROFILE%\\.olympus\\ntfy.json, never in the
               repo): trade opened and trade closed per account (Zlarior 50K, ATLAS 25K, BLITZ 25K; entry: side, micros, entry /
@@ -449,7 +450,8 @@ def verdict_now(snap: dict, base: dict | None) -> dict | None:
 def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
     """The live.json the site reads (tools/web_public/live.js LIVE.apply, board.js, truth.js), cut to under max_bytes:
     kind "le-live", lite True, t = the bot's own heartbeat time (None when the PC bot never reported), pc, pc_verdict,
-    board.lit / atlas / blitz cards + the last trades, accounts (no trade lists), reporter (what this PC saw at reporter.t)."""
+    board.lit / atlas / blitz cards + the last trades, accounts (no trade lists), reporter (what this PC saw at reporter.t).
+    It goes to a PUBLIC topic: public() takes out the PC name, logins, broker account ids and folders (tests.test_public_build_privacy e)."""
     L = snap.get("live") if isinstance(snap.get("live"), dict) else {}
     pc = _d(L.get("pc"))
     bd = _d(L.get("board"))
@@ -501,7 +503,17 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
                "board": {"t": bb.get("t"), "data_t": bb.get("data_t"),
                          **{k: {x: _d(bb.get(k)).get(x) for x in ("id", "name", "room", "mll", "balance", "today_pnl", "status")}
                             for k in ("lit", "atlas", "blitz") if bb.get(k)}}}
-    return out
+    return public(out)
+
+
+def public(out: dict) -> dict:
+    """The PUBLIC topic's privacy pass (tools/site_privacy.public_status, docs/PRIVACY.md): no PC name, no login, no broker account
+    id (last 4 digits only), no personal folder, no email. If it cannot run, only the bare status goes out, never the raw cut."""
+    try:
+        from tools import site_privacy
+        return site_privacy.public_status(out)
+    except Exception:  # noqa: BLE001
+        return {k: out[k] for k in ("v", "kind", "lite", "src", "t", "every_s", "trimmed") if k in out}
 
 
 # ------------------------------------------------------------------------------------------------ alerts (events)
