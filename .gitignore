@@ -194,3 +194,22 @@ agency/demos.json
 agency/suppress.txt
 agency/crm_export*.json
 tools/web_public/agency/my_leads.json
+# PRIVACY audit (team Q2, 2026-11-14, docs/PRIVACY.md): outputs and drops that hold private data, never committed
+# the build's default folders (tools/build_web_dashboard.py --state dash/state.json --out site) and the phone link's own build
+/dash/
+/site/
+data/live_site/
+# Apple Health / the card tracker (team ME1), Sibyl's local paper memory (RUN_MONEY.bat), a money inbox or calendar list saved here
+data/health/
+data/cards/
+money_keep/
+money_inbox/
+cash.jsonl
+calendars.json
+# key files (Kalshi's RSA key, SSH keys, certificates)
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*

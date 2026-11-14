@@ -1369,6 +1369,11 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         print(f"  pinakes: catalog rc={r4.returncode}")
     except Exception as e:  # noqa: BLE001
         print(f"  pinakes: skipped ({e})")
+    # PRIVACY (team Q2, docs/PRIVACY.md): the last step, after every writer: broker account ids cut to their last 4 digits, personal
+    # folders / emails / commit authors masked, a private file removed (tools/site_privacy.py). Not optional: if it cannot run, the
+    # build fails and pc_publish keeps the last good site.
+    from tools import site_privacy as _privacy
+    _privacy.scrub(out, _privacy.canaries(state_path), log=print)
     open(os.path.join(out, ".nojekyll"), "w").close()
     kb = os.path.getsize(os.path.join(out, "data.json")) // 1024
     print(f"site -> {out}: data.json {kb} KB, {len(ledger)} paper trades, {len(data['trades'])} replay trades, "

@@ -607,6 +607,9 @@ def run_once(args, env=None, say=print) -> dict:
         note = add_kalshi(site, cfg)
         if note:
             rec["state_text"] += "; " + note
+        if os.path.isfile(os.path.join(site, "kalshi.json")):      # the feed added after the build: the same privacy pass (docs/PRIVACY.md)
+            from tools import site_privacy
+            site_privacy.scrub(site, only=("kalshi.json",))
         files = site_files(site)
         if not files:
             raise ProviderError("the site folder is empty")
