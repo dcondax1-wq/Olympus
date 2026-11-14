@@ -27,6 +27,7 @@ A bot that runs on paper (or not armed) when you type YES is stopped first, so S
 - **The zip unpacked somewhere** (Extract all): the same; an unpacked zip is never taken for the bot folder.
 
 ## Honest limits
+- **Not run on a Windows PC yet.** Tested with PowerShell 7 on Linux, a Windows PowerShell 5.1 syntax lint and fakes for the Windows-only parts (Explorer's zip temp folder, Task Scheduler, the clipboard, NinjaTrader, Tailscale, the bot). This weekend's run is the first real one: if anything looks wrong, send a photo of the window.
 - **Windows may warn the first time** ("Are you sure you want to run this software?", or SmartScreen's "More info > Run anyway"): the file came from the internet. Click Run.
 - **Step 2 needs you on the Tailscale pages** the first time (install, sign in with the same account as the iPhone, Enable HTTPS). The window waits for your Enter; it cannot click for you.
 - **The phone link shows the dashboard only while the bot server runs.** If the server was not running before, it starts in step 3 (Sunday).
