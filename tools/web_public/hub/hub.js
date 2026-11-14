@@ -251,7 +251,7 @@
     if (!C || !H) {   // the list of hubs
       if (C) {
         clear($('hubChips'));
-        C.hubs.forEach(function (h) { var a = el('a', 'hb-hubrow'); a.href = 'index.html?h=' + h.id; a.setAttribute('data-hub', h.id); a.appendChild(hubIcon(h.icon)); var t = el('span', 'hb-txt'); t.appendChild(el('b', '', h.name)); t.appendChild(el('small', '', h.line + ' · ' + h.count + ' apps')); a.appendChild(t); a.appendChild(chevron()); $('hubChips').appendChild(a); });
+        C.hubs.forEach(function (h) { var a = el('a', 'hb-hubrow'); a.href = 'index.html?h=' + h.id; a.setAttribute('data-hub', h.id); a.appendChild(hubIcon(h.icon)); var t = el('span', 'hb-txt'); t.appendChild(el('b', '', h.name)); t.appendChild(el('small', '', h.line + ' · ' + (h.size || h.count + ' apps'))); a.appendChild(t); a.appendChild(chevron()); $('hubChips').appendChild(a); });
         $('hubChips').className = 'hb-list';
         var home = el('a', 'hb-chip hb-home', 'Home'); home.href = base + 'gate/index.html'; $('hubIndex').appendChild(home);
       }
