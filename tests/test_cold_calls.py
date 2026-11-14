@@ -313,6 +313,13 @@ const d1 = C.logDial(st, id, t0); const o1 = C.applyOutcome(st, id, 'noanswer', 
 F.attach = [d1.o, o1.dial === t0, C.attemptTimes(st.log, id).length, C.funnel(st.log, 0, Infinity).dials, (C.blockOf(L, st, t0 + 120000, R) || {}).code];
 C.applyOutcome(st, id, 'voicemail', t0 + 90000);
 F.vmSame = [C.attemptTimes(st.log, id).length, C.funnel(st.log, 0, Infinity).dials, d1.o];
+// dialed from the phone's recents (no Call tap): two outcome taps within 10 minutes are still one call; a tap 20 minutes later is a new call
+const sr = C.emptyState(); sr.leads.push(C.normLead({ name: 'Recents', phone: '813-555-0123', city: 'Tampa', state: 'FL' }, R, 0));
+const rid = sr.leads[0].id;
+C.applyOutcome(sr, rid, 'noanswer', t0); C.applyOutcome(sr, rid, 'callback', t0 + 120000, { at: t0 + 7200000 }); C.applyOutcome(sr, rid, 'interested', t0 + 240000);
+const one = [C.attemptTimes(sr.log, rid).length, C.funnel(sr.log, 0, Infinity).dials, C.funnel(sr.log, 0, Infinity).conversations];
+C.applyOutcome(sr, rid, 'voicemail', t0 + 1440000);
+F.recents = one.concat([C.attemptTimes(sr.log, rid).length]);
 F.cad1 = C.cadence(L, st, t0 + 100000, R).next;
 const e1 = C.emailFor(L, 'e1', st.settings, R, S, t0);
 st.settings.address = 'PO Box 100, Tampa, FL 33601';
@@ -476,6 +483,8 @@ def test_node():
     check("c. an unchecked number needs the one-time 'business line' confirmation; after it, no more questions", F["needs"] is True and F["confirmed"] == [False, "business"], (F["needs"], F["confirmed"]))
     check("c. Call + No answer = ONE attempt (the outcome joins the dial): 1 dial in the funnel, then 'called today'", F["attach"] == ["noanswer", True, 1, 1, "today"], F["attach"])
     check("c. a second tap for the same call (No answer, then Voicemail) is still one attempt", F["vmSame"] == [1, 1, "voicemail"], F["vmSame"])
+    check("c. dialed from the phone's recents (no Call tap): outcome taps within 10 minutes are one call (1 dial, 1 conversation); 20 minutes later is a second call",
+          F["recents"] == [1, 1, 1, 2], F["recents"])
     check("c. after call 1 the plan says day 2: call again", F["cad1"]["day"] == 2 and F["cad1"]["kind"] == "call", F["cad1"])
     check("c. CAN-SPAM gate: no email until your postal address is set; then a mailto: link with the subject, your address and the opt-out line",
           F["email"][0] is False and "postal address" in F["email"][1] and F["email"][2:6] == [True, True, True, True] and F["email"][6] == "Preview of a new website for Taco Town, Inc", F["email"])

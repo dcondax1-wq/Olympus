@@ -84,7 +84,8 @@ function renderHero(Q) {
     if (pct) svg.appendChild(sv('text', { x: 292, y: y + 16 }, pct));
   });
   svg.setAttribute('aria-label', 'This week: ' + rows.map((r) => r[1] + ' ' + r[0].toLowerCase()).join(', '));
-  $('funnelNote').textContent = 'This week: ' + w.dials + ' dials, ' + w.conversations + ' conversations (' + w.rates.talk + '% of dials), ' + w.interested + ' interested, ' + w.demos + ' demos, ' + w.closes + ' closes. Voicemails ' + w.voicemails + ', no answer ' + w.noanswer + '.';
+  const n = (x, one, many) => x + ' ' + (x === 1 ? one : many);
+  $('funnelNote').textContent = 'This week: ' + n(w.dials, 'dial', 'dials') + ', ' + n(w.conversations, 'conversation', 'conversations') + ' (' + w.rates.talk + '% of dials), ' + w.interested + ' interested, ' + n(w.demos, 'demo', 'demos') + ', ' + n(w.closes, 'close', 'closes') + '. Voicemails ' + w.voicemails + ', no answer ' + w.noanswer + '.';
   $('startBtn').disabled = !callable.length;
   $('startBtn').textContent = callable.length ? 'Start calling: ' + callable[0].lead.name : 'Nobody to call right now';
 }
@@ -124,7 +125,8 @@ function renderQueue(Q) {
 }
 function renderFollow(Q) {
   const ul = $('follow'); clear(ul);
-  const due = Q.filter((q) => !q.block && q.plan && q.plan.next && (q.plan.next.kind === 'demo' || q.plan.next.now));
+  // follow-ups = leads already in the plan (called at least once) whose next step is due, and the interested ones; never-called leads are the queue's job
+  const due = Q.filter((q) => !q.block && q.plan && q.plan.next && (q.plan.next.kind === 'demo' || (q.plan.next.now && C.attemptTimes(S.st.log, q.lead.id).length > 0)));
   if (!due.length) { ul.appendChild(h('li', 'note', 'Nothing due today.')); return; }
   for (const q of due.slice(0, 60)) { const li = h('li'); li.appendChild(leadButton(q, () => openCall(q.lead.id, 'next'), (q.plan.next.overdue ? 'Late: ' : 'Due: ') + q.plan.next.label)); ul.appendChild(li); }
 }

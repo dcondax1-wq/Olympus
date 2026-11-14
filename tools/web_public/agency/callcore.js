@@ -332,7 +332,7 @@ export function dncState(lead, nowMs, rules) {
 export function needsConfirm(lead, nowMs, rules) { return dncState(lead, nowMs, rules) !== 'clear' && !lead.lineConfirmed; }
 export function attemptTimes(log, id) {
   const out = [];
-  for (const e of log || []) if (e.id === id && (e.k === 'dial' || (CALL_KINDS.indexOf(e.k) >= 0 && !e.dial))) out.push(e.t);
+  for (const e of log || []) if (e.id === id && (e.k === 'dial' || (CALL_KINDS.indexOf(e.k) >= 0 && !e.dial && !e.same))) out.push(e.t);
   return out.sort((a, b) => a - b);
 }
 function lastOf(log, id, k) { let x = null; for (const e of log || []) if (e.id === id && e.k === k && (!x || e.t > x.t)) x = e; return x; }
@@ -434,6 +434,8 @@ export function applyOutcome(st, id, kind, nowMs, extra) {
   if (CALL_KINDS.indexOf(kind) >= 0) {
     // the outcome joins the latest Call tap for this lead in the last 3 hours (a second tap, e.g. No answer then Voicemail, is the same call)
     for (let i = st.log.length - 1; i >= 0; i--) { const d = st.log[i]; if (d.id === id && d.k === 'dial' && nowMs - d.t < 3 * HOUR && nowMs >= d.t) { d.o = kind; e.dial = d.t; break; } }
+    // no Call tap (dialed from the phone's own recents): taps within 10 minutes of the last outcome are still that one call
+    if (!e.dial) for (let i = st.log.length - 1; i >= 0; i--) { const d = st.log[i]; if (d.id === id && CALL_KINDS.indexOf(d.k) >= 0 && !d.dial && nowMs - d.t < 10 * 60000 && nowMs >= d.t) { e.same = d.same || d.t; break; } }
   }
   if (x.note) { e.note = str(x.note).slice(0, 300); L.notes = (L.notes ? L.notes + ' | ' : '') + e.note; }
   if (kind === 'callback') { e.at = +x.at || 0; L.callbackAt = e.at; L.stage = 'callback'; }
@@ -483,8 +485,8 @@ export function funnel(log, fromMs, toMs) {
   for (const e of log || []) {
     if (e.t < fromMs || e.t >= toMs) continue;
     if (e.k === 'dial') att['d' + e.id + '|' + e.t] = 1;
-    if (CALL_KINDS.indexOf(e.k) >= 0 && !e.dial) att['o' + e.id + '|' + e.t] = 1;
-    if (TALK_KINDS.indexOf(e.k) >= 0) talk[e.dial ? 'd' + e.id + '|' + e.dial : 'o' + e.id + '|' + e.t] = 1;
+    if (CALL_KINDS.indexOf(e.k) >= 0 && !e.dial && !e.same) att['o' + e.id + '|' + e.t] = 1;
+    if (TALK_KINDS.indexOf(e.k) >= 0) talk[e.dial ? 'd' + e.id + '|' + e.dial : 'o' + e.id + '|' + (e.same || e.t)] = 1;
     if (e.k === 'interested') n.interested++;
     if (e.k === 'demo') n.demos++;
     if (e.k === 'won') n.closes++;

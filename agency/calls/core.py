@@ -507,7 +507,7 @@ def needs_confirm(lead: dict, now_ms: int, rules: dict) -> bool:
 
 
 def attempt_times(log: list, lead_id: str) -> list:
-    return sorted(e["t"] for e in (log or []) if e.get("id") == lead_id and (e.get("k") == "dial" or (e.get("k") in CALL_KINDS and not e.get("dial"))))
+    return sorted(e["t"] for e in (log or []) if e.get("id") == lead_id and (e.get("k") == "dial" or (e.get("k") in CALL_KINDS and not e.get("dial") and not e.get("same"))))
 
 
 def callback_due(lead: dict, now_ms: int) -> bool:
