@@ -34,6 +34,9 @@ def read_leads(path: Path) -> list:
     data = json.loads(text)
     if isinstance(data, list):
         return data
+    if isinstance(data, dict) and (data.get("demo") is True or data.get("sample") is True):
+        print(f"skip {path}: it is marked demo / sample (example data, not your leads)", file=sys.stderr)
+        return []
     if isinstance(data, dict):
         for k in ("leads", "items", "rows", "results"):
             if isinstance(data.get(k), list):

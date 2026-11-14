@@ -256,6 +256,10 @@ def test_python():
         check("b. B1's published CRM record: the state comes from address_line (CO), its demo_url and its own package price ('$999 to set up, then $79 a month') win over yours",
               roy["state"] == "CO" and roy["city"] == "Fort Collins" and roy["demo"].endswith("netlify.app") and roy["price"] == "$999 to set up, then $79 a month"
               and any("For Roy's Quick Lube it is $999 to set up, then $79 a month." in x for o in rs["objections"] for x in o["lines"]), (roy["state"], roy["price"]))
+        sample = os.path.join(tmp, "sample.json")
+        with open(sample, "w", encoding="utf-8") as fh:
+            json.dump({"v": 1, "kind": "agency-crm-data", "demo": False, "sample": True, "leads": b1}, fh)
+        check("b. B1's sample / demo files are never read as your leads (the page skips them too)", PB.read_leads(__import__("pathlib").Path(sample)) == [])
         b1keys = ["restaurant", "cafe", "bakery", "barber", "salon", "beauty", "plumber", "hvac", "electrician", "roofer", "painter", "builder", "locksmith", "landscaper", "cleaner",
                   "florist", "pet_grooming", "auto_repair", "car_wash", "dentist", "chiropractor", "physio", "vet", "massage", "gym", "tattoo"]
         got_t = [PC.trade_of({"category": k}, R) for k in b1keys]
