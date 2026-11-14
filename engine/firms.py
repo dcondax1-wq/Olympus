@@ -21,6 +21,17 @@ guessed), "none" = the rule does not exist on that plan.
                                  "day_left", "risk_usd"}
   status(profile, st)            eval: running | passed | failed; funded: running | failed (+ payout readiness)
 
+Added 2026-11-14 (team A4, account #4), each active ONLY where the data or the owner sets it (absent = as before):
+  max_micros_at(profile, st)     the firm's contract scaling by profit (max_micros_by_profit: LucidFlex funded, Bulenox
+                                 Option 2) instead of the flat max; check() caps with it
+  on_hold(profile)               a firm "hold" (FundedNext, Bulenox: a written yes to one signal on two accounts is still
+                                 missing) blocks every new entry until the owner clears it per account (rules {"hold": "none"})
+  payout guard                   owner switch rules {"payout_guard": true} on a funded account: the payout best-day rule
+                                 (Lucid 40% of the cycle) as a soft cap on today's winner (payout_cycle(): the cycle's goal)
+  status()                       + the cycle's profit goal (cycle_min), profitable days (win_days / win_day_min), the next
+                                 payout's cap (max_after_first), a share-of-profit cap (share); inactivity() vs the firm's
+                                 inactivity_days (Lucid / FundedNext 30)
+
   python -X utf8 -m engine.firms --list | --show <plan> [--stage funded]
 """
 from __future__ import annotations
@@ -40,6 +51,9 @@ SLIP_PTS = 0.5                             # a full stop-out assumes 2 ticks of 
 COMM = 1.90                                # $ a micro round trip (engine/sizing.LIVE_COMM)
 BEST_DAY_MARGIN = 0.95                     # a best-day rule is met with 5% to spare (engine/multi_account.BEST_DAY_MARGIN)
 FLAT_MARGIN_MIN = 5                        # no new entry this close to the firm's flat time
+OPTIONAL_FIRM_KEYS = ("inactivity_days", "hold")   # firm rules copied into a profile only when the data has them (2026-11-14)
+INACTIVITY_WARN_DAYS = 7                   # the status warns this many days before a firm's inactivity limit
+HOLD_CLEARED = ("none", "off", "cleared", "")
 LIVE_DEFAULTS = {"max_risk_usd": 150.0, "daily_stop_usd": 300.0, "weekly_stop_usd": 600.0, "max_micros": 5, "start": None}
 _CACHE: dict = {"key": None, "d": None}
 _MX = threading.Lock()
@@ -113,6 +127,10 @@ def profile(plan_id: str, stage: str = "eval", overrides: dict | None = None, pa
         ver[k] = bool(isinstance(x, dict) and x.get("verified"))
         if out[k] is None:
             unknown.append(k)
+    for k in OPTIONAL_FIRM_KEYS:                       # only where the data has them (absent = the profile is as before)
+        if k in firm and _val(firm[k]) is not None:
+            out[k] = _val(firm[k])
+            ver[k] = bool(isinstance(firm[k], dict) and firm[k].get("verified"))
     po = {}
     for k, x in (p.get("payout") or {}).items():
         po[k] = _val(x)
@@ -148,6 +166,8 @@ def _profile_warn(P: dict) -> list:
         w.append(f"{P['firm']}: bot rule unknown: ask the firm before automating")
     if P.get("copy_trading") is None:
         w.append(f"{P['firm']}: copying between your own accounts is not confirmed: ask support in writing first")
+    if on_hold(P):
+        w.append(f"{P['firm']}: ON HOLD, no new entry until you clear it (rules {{\"hold\": \"none\"}}): {P['hold']}")
     for k, txt in (("dd_amount", "max loss amount"), ("dd_type", "drawdown type"), ("target", "profit target"),
                    ("max_micros", "max contracts"), ("dll", "daily loss"), ("lock", "where the trailing floor locks"),
                    ("news", "news rule"), ("consistency", "best-day rule")):
@@ -177,6 +197,63 @@ def max_micros(P: dict) -> int | None:
         return int(m)
     mi = _num(P.get("max_minis"))
     return int(mi * 10) if mi is not None else None
+
+
+def _tiers(P: dict):
+    """max_micros_by_profit [[profit_from, micros], ...] sorted; None = no contract scaling; [] = unreadable (blocks)."""
+    t = P.get("max_micros_by_profit")
+    if t in (None, "none"):
+        return None
+    try:
+        out = sorted((float(a), int(m)) for a, m in t)
+        return out if out and all(m >= 0 for _, m in out) else []
+    except (TypeError, ValueError):
+        return []
+
+
+def max_micros_at(P: dict, st: dict | None = None) -> int | None:
+    """The most micros NOW: the flat max_micros, or the firm's contract scaling by profit (max_micros_by_profit: LucidFlex
+    funded 20 / 30 / 40 micros at $0 / $1,000 / $2,000, Bulenox Option 2) at the account's profit at the last close
+    (balance - today's closed P&L - start), never above the flat max. No scaling in the data = max_micros(P), exactly as
+    before. Unreadable scaling = 0 (a broken input blocks)."""
+    mx = max_micros(P)
+    T = _tiers(P)
+    if T is None or st is None:
+        return mx
+    if not T:
+        return 0
+    start = float(_num(st.get("start"), _num(P.get("start"), 0.0)) or 0.0)
+    prof = float(_num(st.get("balance"), start)) - float(_num(st.get("day_pnl"), 0.0)) - start
+    q = T[0][1]
+    for a, m in T:
+        if prof >= a - 1e-9:
+            q = m
+    return min(q, mx) if mx is not None else q
+
+
+def on_hold(P: dict) -> bool:
+    """The firm's (or plan's) "hold": a reason string = no new entry until the owner clears it (rules {"hold": "none"})."""
+    h = P.get("hold")
+    return isinstance(h, str) and h.strip().lower() not in HOLD_CLEARED
+
+
+def payout_cycle(P: dict, st: dict) -> dict:
+    """The funded payout cycle from the book: {"n" payouts so far, "prev" (the cycle's closed profit before today), "day"
+    (today's closed P&L), "start_bal" (balance above start when the cycle began), "cap" (the next payout's max: payout.max,
+    then payout.max_after_first), "goal" (the cycle profit a full next payout needs: buffer + cap - start_bal)}."""
+    po = P.get("payout") or {}
+    n = int(_num(st.get("payouts_n"), 0) or 0)
+    lp, today = st.get("last_payout"), st.get("today") or ""
+    days = st.get("days") or {}
+    prev = sum(v for d, v in days.items() if (not lp or d > lp) and d < today) + (float(st.get("prior") or 0.0) if not lp else 0.0)
+    day = float(_num(st.get("day_pnl"), 0.0))
+    start = float(_num(st.get("start"), _num(P.get("start"), 0.0)) or 0.0)
+    start_bal = float(_num(st.get("balance"), start)) - start - prev - day
+    cap = _num(po.get("max_after_first")) if n > 0 and _has(po.get("max_after_first")) else _num(po.get("max"))
+    buf = _num(po.get("buffer"), 0.0) or 0.0
+    goal = (buf + cap - start_bal) if cap is not None else None
+    return {"n": n, "prev": round(prev, 2), "day": round(day, 2), "start_bal": round(start_bal, 2), "cap": cap,
+            "goal": round(goal, 2) if goal is not None else None}
 
 
 def underlying(sym) -> str:
@@ -239,7 +316,7 @@ def book(start: float, closes, today: str, prior: float = 0.0, payouts: dict | N
             "open_pnl": round(float(open_pnl or 0.0), 2), "open_micros": int(open_micros or 0),
             "days_traded": sum(1 for d, v in days.items() if abs(v) > 1e-9 and d < today) + (1 if abs(day_pnl) > 1e-9 else 0),
             "best_day": round(max(won), 2) if won else 0.0, "days": days, "payouts": round(sum(pays.values()), 2), "today": today,
-            "last_payout": max(pays) if pays else None, "prior": round(float(prior or 0.0), 2)}
+            "last_payout": max(pays) if pays else None, "prior": round(float(prior or 0.0), 2), "payouts_n": len(pays)}
 
 
 def floor_room(P: dict, st: dict) -> dict:
@@ -365,13 +442,17 @@ def _check(P, st, order, positions, now, releases, slip_pts, comm):
     caps = []                                          # (max micros, why)
     risk = _risk_pts(order)
     loss1 = (risk + slip_pts) * pv + comm if risk else None
-    # 1. contracts
-    mx = max_micros(P)
+    # 0. the owner's hold for this firm (a written yes still missing): no new entry until it is cleared
+    if on_hold(P):
+        blocks.append(f"on hold ({P.get('firm')}): {P['hold']}")
+    # 1. contracts (the flat max, or the firm's contract scaling by profit when the data has one)
+    mx = max_micros_at(P, st)
     held = int(_num(st.get("open_micros"), 0) or 0)
     if mx is None:
         warns.append("firm max contracts unknown: the bot's own cap applies")
     else:
-        caps.append((mx - held, f"max {mx} micros ({mx // 10} minis) on this plan" + (f", {held} open" if held else "")))
+        sc = "" if mx == max_micros(P) else " now (the firm's contract scaling at this profit)"
+        caps.append((mx - held, f"max {mx} micros ({mx // 10} minis) on this plan{sc}" + (f", {held} open" if held else "")))
     # 2. the max-loss floor at the stop
     if P.get("kind") != "live":
         room = fr.get("room")
@@ -412,6 +493,19 @@ def _check(P, st, order, positions, now, releases, slip_pts, comm):
             warns.append(f"best-day rule {cons * 100:.0f}%: target distance unknown")
     elif P.get("consistency") is None and P.get("stage") == "eval":
         warns.append("best-day rule unknown")
+    # 4b. OFF by default (owner switch "payout_guard": true): the funded payout best-day rule (Lucid 40% of the cycle) as a
+    #     SOFT cap: today may pay at most max(share x the cycle's goal, share/(1-share) x the cycle's earlier profit) x 0.95
+    #     (engine/sizing.funded_qty cons_aware, the same formula); never below 1 micro (a big day only delays a payout)
+    pc = _num((P.get("payout") or {}).get("consistency"))
+    if P.get("payout_guard") is True and pc and 0 < pc < 1 and P.get("stage") == "funded":
+        cy = payout_cycle(P, st)
+        if cy["goal"] is not None and tgt and tgt * pv - comm > 0:
+            day_max = max(pc * max(0.0, cy["goal"]), pc / (1.0 - pc) * max(0.0, cy["prev"])) * BEST_DAY_MARGIN
+            cap_usd = day_max - max(0.0, cy["day"])
+            caps.append((max(1, math.floor(cap_usd / (tgt * pv - comm))),
+                         f"payout best-day rule {pc * 100:.0f}%: today <= ${day_max:,.0f} (cycle goal ${cy['goal']:,.0f})"))
+        else:
+            warns.append(f"payout best-day rule {pc * 100:.0f}%: cycle goal or target distance unknown")
     # 5. news window, flat time
     r = news_window(P, now, releases)
     if r is not None:
@@ -489,12 +583,54 @@ def status(P: dict, st: dict) -> dict:
                        f"(rule {cons * 100:.0f}%): trade more days")
         if days_ok is False:
             why.append(f"{int(need_d)} traded days a cycle needed")
+        # 2026-11-14 (only where the data has them; absent = as before): the cycle's own profit goal (Lucid / FundedNext
+        # $500), the profitable-day count (LucidFlex 5 days >= $150), the next payout's cap (Lucid $2,000 then $2,500) and a
+        # share-of-profit cap on the request (LucidFlex 50%)
+        cmin = _num(po.get("cycle_min"))
+        cyc_ok = None if cmin is None else c_prof >= cmin - 1e-9
+        if cyc_ok is False:
+            why.append(f"the cycle made ${c_prof:,.0f} of the ${cmin:,.0f} it needs")
+        wd, wmin = _num(po.get("win_days")), _num(po.get("win_day_min"), 0.01)
+        win_ok = None if not wd else sum(1 for v in cyc.values() if v >= wmin - 1e-9) >= wd
+        if win_ok is False:
+            why.append(f"{int(wd)} days of at least ${wmin:,.0f} a cycle needed ({sum(1 for v in cyc.values() if v >= wmin - 1e-9)} so far)")
+        cap_next = payout_cycle(P, st)["cap"]
+        max_req = None
+        if above is not None and cap_next is not None:
+            max_req = min(cap_next, max(0.0, above))
+            sh = _num(po.get("share"))
+            if sh:
+                max_req = min(max_req, sh * max(0.0, c_prof))
+            max_req = round(max_req, 2)
         out["payout"] = {"above_buffer": round(above, 2) if above is not None else None, "buffer": buf, "min": mn,
                          "max": _num(po.get("max")), "split": _num(po.get("split")), "cycle_profit": c_prof, "best_day": round(c_best, 2),
                          "consistency_ok": cons_ok, "days_ok": days_ok,
-                         "ready": bool(money_ok and cons_ok is not False and days_ok is not False), "why": why,
+                         "ready": bool(money_ok and cons_ok is not False and days_ok is not False and cyc_ok is not False
+                                       and win_ok is not False), "why": why,
                          "unknown": [k for k in ("buffer", "min", "max", "split", "consistency") if po.get(k) is None]}
+        if cmin is not None or wd or _has(po.get("max_after_first")) or _num(po.get("share")):
+            out["payout"].update(cycle_ok=cyc_ok, win_days_ok=win_ok, next_cap=cap_next, max_request=max_req,
+                                 payouts_n=int(_num(st.get("payouts_n"), 0) or 0), max_payouts=_num(po.get("max_payouts")))
+    ina = inactivity(P, st)
+    if ina is not None:
+        out["inactivity"] = ina
     return out
+
+
+def inactivity(P: dict, st: dict) -> dict | None:
+    """Days since the last traded day vs the firm's inactivity limit (Lucid / FundedNext 30 calendar days: the account is
+    deleted / breached). None when the firm has no such rule in the data or nothing was traded yet."""
+    lim = _num(P.get("inactivity_days"))
+    days = [d for d, v in (st.get("days") or {}).items() if abs(v) > 1e-9]
+    if lim is None or not days or not st.get("today"):
+        return None
+    try:
+        idle = (_dt.date.fromisoformat(str(st["today"])) - _dt.date.fromisoformat(max(days))).days
+    except ValueError:
+        return None
+    warn = idle >= lim - INACTIVITY_WARN_DAYS
+    return {"days_idle": idle, "limit": int(lim), "warn": warn,
+            "why": (f"no trade for {idle} days: {P.get('firm')} deletes an account after {int(lim)} days without one" if warn else None)}
 
 
 def describe(P: dict) -> list:
@@ -521,6 +657,9 @@ def describe(P: dict) -> list:
                + ("the account fails)" if P.get("dll_type") == "hard" else "trading pauses for the day)"))
     mx = max_micros(P)
     out.append(f"Max {mx} micros ({mx // 10} minis)" if mx else "Max contracts unknown")
+    T = _tiers(P)
+    if T:
+        out.append("Contracts scale with the profit: " + ", ".join(f"{m} micros from ${a:,.0f}" for a, m in T))
     nw = P.get("news")
     out.append("News: no restriction" if nw == "none" else ("News: flat 2 min before to 2 min after Tier-1 releases"
                                                             if isinstance(nw, dict) else "News rule unknown"))
@@ -533,6 +672,23 @@ def describe(P: dict) -> list:
         out.append(f"Payouts: buffer {m(po.get('buffer'))}, ${_num(po.get('min'), 0) or 0:,.0f}-{m(po.get('max'))} a request, "
                    f"split {(_num(po.get('split')) or 0) * 100:.0f}%" + (f", best day <= {float(po['consistency']) * 100:.0f}% of the cycle"
                                                                         if _num(po.get('consistency')) else ""))
+        extra = []
+        if _has(po.get("max_after_first")):
+            extra.append(f"then up to {m(po.get('max_after_first'))} a request")
+        if _num(po.get("cycle_min")):
+            extra.append(f"the cycle must make {m(po.get('cycle_min'))}")
+        if _num(po.get("win_days")):
+            extra.append(f"{int(_num(po['win_days']))} days of {m(po.get('win_day_min') or 0.01)}+ a cycle")
+        if _num(po.get("share")):
+            extra.append(f"a request <= {float(po['share']) * 100:.0f}% of the cycle's profit")
+        if extra and _num(po.get("max_payouts")):       # (plans without the 2026-11-14 payout fields read as before)
+            extra.append(f"{int(_num(po['max_payouts']))} payouts, then the firm's live review")
+        if extra:
+            out.append("Payout rules: " + "; ".join(extra))
+    if _num(P.get("inactivity_days")):
+        out.append(f"No trade for {int(_num(P['inactivity_days']))} days = the firm deletes the account")
+    if on_hold(P):
+        out.append(f"ON HOLD (no new entry): {P['hold']}")
     return out
 
 

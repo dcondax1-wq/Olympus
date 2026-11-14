@@ -12,6 +12,12 @@ the owner's stop-for-today switch; arming needs the phrase typed for THAT accoun
 not armed; a hand-set "armed": true or a changed Name is refused by the live gate); a simulated session with 3 accounts at
 different rooms (different micros on the same signal, one account stopping for the day on its own day stop while the
 other two keep copying) for Zlarior (LIT) and ATLAS.
+Account #4 (team A4, 2026-11-14): the firm profiles re-read from the firms' own pages (LucidPro / LucidFlex 50K, FundedNext
+Rapid Daily 50K, Bulenox EOD 50K filled); the new guards, each OFF unless the data / the owner sets it: the contract scaling
+by profit (LucidFlex 20 / 30 / 40 micros, Bulenox), the firm hold (FundedNext, Bulenox: no copy until the written yes, the
+owner clears it per account), the payout best-day guard (owner switch, Lucid 40%), payout readiness (cycle profit goal,
+profitable days, the next cap, share cap) and the inactivity warning; MFFU profiles byte-for-byte as before; a fleet session
+where the held FundedNext copy skips and the cleared one copies.
 """
 from __future__ import annotations
 
@@ -162,6 +168,106 @@ def tighten_checks():
     P = CA.tighten("mffu_builder_25k", "eval", rules={"max_micros": 400})
     c = FM.check(P, st, {"sym": "NQ", "side": "buy", "qty": 400, "entry": 20000.0, "stop": 19999.0, "target": 20003.0})
     check("never more contracts than the firm allows: 400 asked on a 25K (owner tried 400) -> at most 20", c["max_qty"] <= 20, c)
+
+
+def guard_checks(tmp):
+    """The 2026-11-14 guards: each one acts only where the data or the owner sets it."""
+    o40 = {"sym": "NQ", "side": "buy", "qty": 40, "entry": 20000.0, "stop": 19985.0, "target": 20100.0}
+    # OFF by default: an MFFU profile carries none of the new keys and reads exactly as before
+    for plan in ("mffu_builder_50k", "mffu_builder_25k"):
+        for stg in ("eval", "funded"):
+            P = CA.tighten(plan, stg)
+            st = FM.book(P["start"], [("2026-10-19", 1, 600.0), ("2026-10-20", 2, -200.0)], DAY)
+            if not check(f"OFF: {plan} {stg} has no hold / inactivity / contract scaling; max_micros_at == max_micros; no new payout keys",
+                         not FM.on_hold(P) and "hold" not in P and "inactivity_days" not in P and "max_micros_by_profit" not in P
+                         and FM.max_micros_at(P, st) == FM.max_micros(P) and "inactivity" not in FM.status(P, st)
+                         and "next_cap" not in (FM.status(P, st).get("payout") or {}), P):
+                break
+    P = CA.tighten("mffu_builder_50k", "funded")
+    c0 = FM.check(P, FM.book(50000.0, [], DAY), o40)
+    c1 = FM.check(dict(P, payout_guard=False), FM.book(50000.0, [], DAY), o40)
+    check("OFF: the payout best-day guard needs the owner's switch (no switch = the same answer as payout_guard false)",
+          c0["max_qty"] == c1["max_qty"] and not any("payout best-day" in w for w in c0["warn"]), (c0, c1))
+    # contract scaling by profit (LucidFlex funded)
+    fx = CA.tighten("lucid_flex_50k", "funded")
+    got = []
+    for prof in (0.0, 999.0, 1000.0, 2500.0):
+        st = FM.book(50000.0, [("2026-10-20", 1, prof)] if prof else [], DAY)
+        got.append((FM.max_micros_at(fx, st), FM.check(fx, st, o40)["max_qty"]))
+    check("LucidFlex funded contract scaling: 20 micros up to $999 profit, 30 from $1,000, 40 from $2,000 (the copy is capped there)",
+          got == [(20, 20), (20, 20), (30, 30), (40, 40)], got)
+    st = FM.book(50000.0, [("2026-10-20", 1, 1200.0)], DAY, open_micros=0)
+    st_today = FM.book(50000.0, [("2026-10-20", 1, 900.0), (DAY, 1, 300.0)], DAY)
+    check("... read at the LAST CLOSE: today's +$300 on top of $900 does not lift the tier yet (still 20)",
+          FM.max_micros_at(fx, st_today) == 20 and FM.max_micros_at(fx, st) == 30, (FM.max_micros_at(fx, st_today), FM.max_micros_at(fx, st)))
+    check("... an unreadable scaling blocks (0 micros), a profile without one keeps its flat max",
+          FM.max_micros_at(dict(fx, max_micros_by_profit=[["x", 1]]), st) == 0
+          and FM.max_micros_at(CA.tighten("lucid_pro_50k", "funded"), st) == 40)
+    bx = CA.tighten("bulenox_eod_50k", "eval", {"hold": "none"})
+    check("Bulenox Option 2 scaling: 20 micros until +$1,500, 40 until +$4,000, 70 after",
+          [FM.max_micros_at(bx, FM.book(50000.0, [("2026-10-20", 1, p)], DAY)) for p in (100.0, 1600.0, 4100.0)] == [20, 40, 70])
+    # the firm hold (a written yes is missing): blocks until the owner clears it per account
+    for plan in ("fn_rapid_daily_50k", "bulenox_eod_50k"):
+        P = CA.tighten(plan, "eval")
+        c = FM.check(P, FM.book(50000.0, [], DAY), o40)
+        cl = CA.tighten(plan, "eval", {"hold": "none"})
+        c2 = FM.check(cl, FM.book(50000.0, [], DAY), o40)
+        if not check(f"{plan}: on hold = no copy (blocked, the reason named); rules {{\"hold\": \"none\"}} clears it (it trades)",
+                     FM.on_hold(P) and c["ok"] is False and c["max_qty"] == 0 and "on hold" in c["block"][0] and any("ON HOLD" in w for w in P["warn"])
+                     and not FM.on_hold(cl) and c2["ok"] and c2["max_qty"] > 0 and not any("ON HOLD" in w for w in cl["warn"]), (c, c2)):
+            break
+    lp = CA.tighten("lucid_pro_50k", "eval")
+    check("Lucid has no hold (bots and copiers allowed in its help center): the copy trades",
+          not FM.on_hold(lp) and FM.check(lp, FM.book(50000.0, [], DAY), o40)["ok"])
+    # the payout best-day guard (owner switch) on a Lucid funded copy
+    lf = CA.tighten("lucid_pro_50k", "funded", {"payout_guard": True})
+    st0 = FM.book(50000.0, [], DAY)
+    c = FM.check(lf, st0, o40)
+    win1 = 100 * 2.0 - FM.COMM
+    check("payout guard ON, a fresh Lucid funded account: the cycle goal is $2,100 + $2,000 = $4,100, so today pays <= 40% x $4,100 "
+          "x 0.95 = $1,558: a 100-pt target -> 7 micros", c["max_qty"] == int(1558.0 // win1) == 7 and any("cycle goal $4,100" in w for w in c["warn"]), c)
+    stp = FM.book(50000.0, [("2026-10-01", 1, 2500.0), ("2026-10-02", 1, 1700.0)], DAY, payouts={"2026-10-02": 2000.0})
+    cy = FM.payout_cycle(lf, stp)
+    check("... after the first $2,000 payout: the next cap is $2,500, the cycle restarts at +$2,200 (goal $2,400)",
+          (cy["n"], cy["cap"], cy["start_bal"], cy["goal"]) == (1, 2500.0, 2200.0, 2400.0), cy)
+    stq = FM.book(50000.0, [("2026-10-20", 1, 1000.0), ("2026-10-21", 2, 1500.0)], DAY)
+    cq = FM.check(lf, stq, {**o40, "qty": 5})
+    check("... soft: a day already over its share still copies 1 micro (a big day only delays a payout, it is no breach)", cq["max_qty"] == 1, cq)
+    # payout readiness: the cycle profit goal, the next cap, LucidFlex's profitable days and share cap
+    P = CA.tighten("lucid_pro_50k", "funded")
+    s1 = FM.status(P, FM.book(50000.0, [("2026-10-15", 1, 1000.0), ("2026-10-16", 1, 900.0), ("2026-10-19", 1, 800.0)], DAY))["payout"]
+    check("Lucid: $2,700 in 3 days (best day 37%) -> ready, $600 above the $52,100 buffer = the largest request",
+          s1["ready"] and s1["cycle_ok"] and s1["max_request"] == 600.0 and s1["next_cap"] == 2000.0, s1)
+    s2 = FM.status(P, FM.book(50000.0, [("2026-10-01", 1, 1500.0), ("2026-10-02", 1, 1500.0), ("2026-10-05", 1, 1500.0),
+                                        ("2026-10-19", 1, 400.0)], DAY, payouts={"2026-10-05": 1800.0}))["payout"]
+    check("Lucid: $500 above the buffer again but the new cycle made only $400 of its $500 goal -> not ready; next cap $2,500",
+          not s2["ready"] and s2["cycle_ok"] is False and any("$500 it needs" in w for w in s2["why"]) and s2["next_cap"] == 2500.0, s2)
+    fxs = CA.tighten("lucid_flex_50k", "funded")
+    four = [(f"2026-10-{d:02d}", 1, 200.0) for d in (13, 14, 15, 16)]
+    s3 = FM.status(fxs, FM.book(50000.0, four, DAY))["payout"]
+    s4 = FM.status(fxs, FM.book(50000.0, four + [("2026-10-17", 1, 150.0)], DAY))["payout"]
+    check("LucidFlex: 4 days of $150+ -> not ready (5 needed); the 5th -> ready, the request capped at 50% of the $950 profit",
+          not s3["ready"] and s3["win_days_ok"] is False and s4["ready"] and s4["max_request"] == 475.0, (s3, s4))
+    # inactivity (Lucid / FundedNext 30 days)
+    ia = FM.status(P, FM.book(50000.0, [("2026-09-26", 1, 300.0)], DAY)).get("inactivity")
+    ib = FM.status(P, FM.book(50000.0, [("2026-10-14", 1, 300.0)], DAY)).get("inactivity")
+    check("inactivity: 25 days without a trade at Lucid warns (30-day limit, 7 days ahead); 7 days does not",
+          ia and ia["days_idle"] == 25 and ia["warn"] and "30 days" in ia["why"] and ib and not ib["warn"], (ia, ib))
+    check("describe(): contract scaling, the payout rules, inactivity and the hold in plain words",
+          any("scale with the profit" in x for x in FM.describe(fxs)) and any("then up to $2,500" in x for x in FM.describe(P))
+          and any("30 days" in x for x in FM.describe(P)) and any("ON HOLD" in x for x in FM.describe(CA.tighten("fn_rapid_daily_50k", "eval"))))
+    # a fleet session: the held FundedNext copy skips, the cleared one and the Lucid copy take the lead's entry
+    now = ts(DAY, 9, 40)
+    acc = [{"id": "fnh", "lead": "zlarior", "plan": "fn_rapid_daily_50k", "start": DAY},
+           {"id": "fnc", "lead": "zlarior", "plan": "fn_rapid_daily_50k", "start": DAY, "rules": {"hold": "none"}},
+           {"id": "luc", "lead": "zlarior", "plan": "lucid_pro_50k", "start": DAY}]
+    b, fl, ads, notes = make(os.path.join(tmp, "hold"), acc, now)
+    b.lit_enter(1, 20000.0, 19985.0, 20090.0, qty=20)
+    b.t = now + 3
+    fl.tick("NQ", b.t)
+    check("fleet: the FundedNext copy on hold skips (reason 'on hold'), the cleared one and the Lucid copy take the entry",
+          not ents(ads["fnh"]) and "on hold" in fol(fl, "fnh").skips[-1]["why"] and len(ents(ads["fnc"])) == 1 and len(ents(ads["luc"])) == 1,
+          [fol(fl, "fnh").skips[-1:], ents(ads["fnc"]), ents(ads["luc"])])
 
 
 def slot_checks(tmp):
@@ -367,6 +473,7 @@ def main() -> int:
         off_checks(tmp)
         profile_checks()
         tighten_checks()
+        guard_checks(tmp)
         slot_checks(tmp)
         switch_checks(tmp)
         arm_checks(tmp)
