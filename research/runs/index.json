@@ -1,7 +1,7 @@
 {
- "built": "2026-11-14 19:04",
+ "built": "2026-11-14 20:51",
  "baseline": "baseline",
- "count": 2317,
+ "count": 2319,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -7874,6 +7874,115 @@
      "slow_pass": 28.8,
      "pass_med": 11.0,
      "b2b": "39/76"
+    }
+   }
+  },
+  {
+   "id": "acct4_lucid_copy",
+   "title": "Account #4: LIT copied to a LucidPro 50K (Lucid's own rules)",
+   "family": "risk",
+   "question": "Account #4: what does a LucidPro 50K copy of LIT add next to the MFFU 50K, and how should each be sized?",
+   "status": "adopt-candidate",
+   "verdict": "LucidPro 50K copy (eval live40, funded fleet_default__ask_cap): 2-week pass / fail H1 47.5 / 0.8, H2 47.3 / 0.2 (pass_med 9.0); $ per eval H1 $4,364 / H2 $4,454. Pair (MFFU 50K funded after its first payout + a new LucidPro 50K eval, same LIT signal, 6 months): H1 $1,759 / H2 $1,750 a month net of fees (2021-25 $65); daily correlation 0.94, worst pair day $-1,690. ",
+   "writeup": "account-4-2026-11-14",
+   "tags": [
+    "lit",
+    "fleet",
+    "lucid",
+    "account4"
+   ],
+   "params": {
+    "plans": [
+     "mffu_builder_50k",
+     "lucid_pro_50k"
+    ],
+    "strategy": "lit"
+   },
+   "sizing": {
+    "a": {
+     "eval": "live two_week 40%",
+     "funded": {
+      "pct": 0.6,
+      "pct_min_usd": 100,
+      "pct_max_usd": 1500,
+      "ref": 20,
+      "wk": true,
+      "room_f": null,
+      "max_win": 2000,
+      "slip_ticks": 2,
+      "skip_breach": true
+     }
+    },
+    "b": {
+     "eval": "live40",
+     "funded": {
+      "pct": 0.6,
+      "pct_min_usd": 100,
+      "pct_max_usd": 1500,
+      "ref": 20,
+      "wk": true,
+      "room_f": null,
+      "max_win": 2000,
+      "slip_ticks": 2,
+      "skip_breach": true
+     },
+     "ask": "cap"
+    }
+   },
+   "built": "2026-11-14 20:51",
+   "spans": {
+    "2026": {
+     "n": 118,
+     "tpw": 2.86,
+     "wk2": 86,
+     "win": 55.9,
+     "pf": 2.8,
+     "net": 24129,
+     "dd": -2857,
+     "avg_r": 0.774,
+     "stop": 45.8,
+     "worst_day": -845,
+     "risk": 265.0,
+     "half": 12,
+     "per_month": 2460,
+     "p10": 22.3,
+     "f10": 0.0,
+     "p15": 32.0,
+     "f15": 0.5,
+     "p20": 41.3,
+     "f20": 2.9,
+     "dec10": 22.3,
+     "slow_pass": 58.2,
+     "pass_med": 19.0,
+     "b2b": "7/1"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 118,
+     "tpw": 2.86,
+     "wk2": 86,
+     "win": 55.9,
+     "pf": 2.8,
+     "net": 24129,
+     "dd": -2857,
+     "avg_r": 0.774,
+     "stop": 45.8,
+     "worst_day": -845,
+     "risk": 265.0,
+     "half": 12,
+     "per_month": 2460,
+     "p10": 22.3,
+     "f10": 0.0,
+     "p15": 32.0,
+     "f15": 0.5,
+     "p20": 41.3,
+     "f20": 2.9,
+     "dec10": 22.3,
+     "slow_pass": 58.2,
+     "pass_med": 19.0,
+     "b2b": "7/1"
     }
    }
   },
@@ -319930,6 +320039,115 @@
      "slow_pass": 72.5,
      "pass_med": 31.0,
      "b2b": "9/14"
+    }
+   }
+  },
+  {
+   "id": "acct4_pair",
+   "title": "Account #4: the MFFU 50K + LucidPro 50K pair on one LIT signal",
+   "family": "risk",
+   "question": "Account #4: what does a LucidPro 50K copy of LIT add next to the MFFU 50K, and how should each be sized?",
+   "status": "info",
+   "verdict": "Pair (MFFU 50K funded after its first payout + a new LucidPro 50K eval, same LIT signal, 6 months): H1 $1,759 / H2 $1,750 a month net of fees (2021-25 $65); daily correlation 0.94, worst pair day $-1,690. LucidPro 50K copy (eval live40, funded fleet_default__ask_cap): 2-week pass / fail H1 47.5 / 0.8, H2 47.3 / 0.2 (pass_med 9.0); $ per eval H1 $4,364 / H2 $4,454. MFFU 50K: $ per eval H1 $4,229 / H2 $4,091.",
+   "writeup": "account-4-2026-11-14",
+   "tags": [
+    "lit",
+    "fleet",
+    "lucid",
+    "account4"
+   ],
+   "params": {
+    "plans": [
+     "mffu_builder_50k",
+     "lucid_pro_50k"
+    ],
+    "strategy": "lit"
+   },
+   "sizing": {
+    "a": {
+     "eval": "live two_week 40%",
+     "funded": {
+      "pct": 0.6,
+      "pct_min_usd": 100,
+      "pct_max_usd": 1500,
+      "ref": 20,
+      "wk": true,
+      "room_f": null,
+      "max_win": 2000,
+      "slip_ticks": 2,
+      "skip_breach": true
+     }
+    },
+    "b": {
+     "eval": "live40",
+     "funded": {
+      "pct": 0.6,
+      "pct_min_usd": 100,
+      "pct_max_usd": 1500,
+      "ref": 20,
+      "wk": true,
+      "room_f": null,
+      "max_win": 2000,
+      "slip_ticks": 2,
+      "skip_breach": true
+     },
+     "ask": "cap"
+    }
+   },
+   "built": "2026-11-14 20:51",
+   "spans": {
+    "2026": {
+     "n": 236,
+     "tpw": 5.73,
+     "wk2": 100,
+     "win": 55.9,
+     "pf": 2.75,
+     "net": 46914,
+     "dd": -5714,
+     "avg_r": 0.774,
+     "stop": 45.8,
+     "worst_day": -1690,
+     "risk": 262.0,
+     "half": 24,
+     "per_month": 4783,
+     "p10": 44.7,
+     "f10": 16.0,
+     "p15": 54.4,
+     "f15": 23.3,
+     "p20": 57.3,
+     "f20": 29.6,
+     "dec10": 60.7,
+     "slow_pass": 8.9,
+     "pass_med": 6.0,
+     "b2b": "14/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 236,
+     "tpw": 5.73,
+     "wk2": 100,
+     "win": 55.9,
+     "pf": 2.75,
+     "net": 46914,
+     "dd": -5714,
+     "avg_r": 0.774,
+     "stop": 45.8,
+     "worst_day": -1690,
+     "risk": 262.0,
+     "half": 24,
+     "per_month": 4783,
+     "p10": 44.7,
+     "f10": 16.0,
+     "p15": 54.4,
+     "f15": 23.3,
+     "p20": 57.3,
+     "f20": 29.6,
+     "dec10": 60.7,
+     "slow_pass": 8.9,
+     "pass_med": 6.0,
+     "b2b": "14/5"
     }
    }
   },

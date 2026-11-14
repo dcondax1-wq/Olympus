@@ -1528,7 +1528,7 @@ def _parser():
     ap.add_argument("--lead", choices=list(LEADS))
     ap.add_argument("--plan", help="a plan id (python -X utf8 -m engine.firms --list) or live")
     ap.add_argument("--account", help="the account Name in NinjaTrader (Sim101 etc. for a Sim test; omit = paper)")
-    ap.add_argument("--start", help="first session (yyyy-mm-dd)")
+    ap.add_argument("--start", help="first session (yyyy-mm-dd, or today); --add ... --arm <the same id> asks the phrase right after adding")
     ap.add_argument("--balance", type=float, help="start balance (live account; a prop plan defaults to its size)")
     ap.add_argument("--stagger-ms", type=int)
     ap.add_argument("--risk-usd", type=float, help="fixed $ risk a trade (sizing fixed)")
@@ -1546,6 +1546,8 @@ def run(argv=None, inp=None) -> tuple:
     a = _parser().parse_args(argv)
     lines = []
     say = lines.append
+    if a.start == "today":                        # 2026-11-14: --start today = this session (the owner's one-line add)
+        a.start = trading_day(time.time() if a.now is None else a.now)
     d = load_file(a.file)
     rows = d.setdefault("accounts", [])
     find = lambda i: next((r for r in rows if r.get("id") == i), None)
@@ -1599,8 +1601,12 @@ def run(argv=None, inp=None) -> tuple:
         P = profile_of(n) or {}
         for w in P.get("warn") or []:
             say("  ! " + w)
-        return saved(f"saved {a.id}: {n['label']} follows {LEAD_NAMES[n['lead']]} on {P.get('label')} ({n['stage']}), "
-                     f"{'NOT armed' if n['label'] in ('REAL', 'LIVE') else 'no arming needed'}.")
+        msg = (f"saved {a.id}: {n['label']} follows {LEAD_NAMES[n['lead']]} on {P.get('label')} ({n['stage']}), "
+               f"{'NOT armed' if n['label'] in ('REAL', 'LIVE') else 'no arming needed'}.")
+        if a.arm != a.id:
+            return saved(msg)
+        save_file(d, a.file)                      # --add ... --arm <the same id> (2026-11-14): saved, then the arming
+        say(msg)                                  # prompt below for THIS account (the phrase typed, never stored)
     for flag, fn in (("remove", None), ("on", True), ("off", False)):
         i = getattr(a, flag)
         if i:

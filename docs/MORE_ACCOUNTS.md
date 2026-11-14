@@ -32,7 +32,12 @@ python -X utf8 -m engine.fleet --add --id b25a --lead zlarior --plan mffu_builde
 | Plan | State |
 |---|---|
 | MFFU Builder 25K / 50K (`mffu_builder_25k`, `mffu_builder_50k`) | verified rules (firm_rules.json) |
-| Tradeify Growth 50K, Bulenox EOD 50K, a new firm 50K | **placeholders**: they never trade until the max loss is filled in |
+| LucidPro 50K (`lucid_pro_50k`), LucidFlex 50K (`lucid_flex_50k`) | verified from Lucid's own help center, 2026-11-14 (`research/props/firm_research.json`) |
+| FundedNext Rapid Daily 50K (`fn_rapid_daily_50k`) | verified except the payout cap; **on hold** until FundedNext says yes in writing to one signal on two accounts |
+| Bulenox EOD 50K (`bulenox_eod_50k`) | filled 2026-11-14, mostly third-party (unverified); **on hold** until Bulenox approves the bot in writing |
+| Tradeify Growth 50K, a new firm 50K | **placeholders**: they never trade until the max loss is filled in (Tradeify is ruled out) |
+
+Account #4 (the LucidPro 50K, when to buy it and the 3 steps): `docs/ACCOUNT_4.md`.
 
 See a profile: `python -X utf8 -m engine.copy_accounts --show mffu_builder_50k` (`--stage funded`).
 What is still missing: `python -X utf8 -m engine.copy_accounts --unfilled`.
@@ -40,6 +45,8 @@ What is still missing: `python -X utf8 -m engine.copy_accounts --unfilled`.
 ## Honest limits
 
 - MFFU has not confirmed in writing that copying between your own accounts is allowed: ask support first.
+- Lucid allows bots and trade copiers in its help center; it bans opposite positions across your accounts AND other
+  firms' accounts (the bot never does that).
 - How many funded accounts MFFU allows in total is not verified (per plan: 1 Builder 50K, 2 Builder 25K).
 - Copies are tested on replays and Sim, not yet on a real second account.
 - Long on one account and short on another is never allowed (MFFU rule across all your accounts).
