@@ -286,7 +286,7 @@ def session_atlas(tmp):
     now = ts(DAY, 9, 40)
     acc = [{"id": "a50", "name": "50K fresh", "lead": "atlas", "plan": "mffu_builder_50k", "start": "2026-10-19"},
            {"id": "b50", "name": "50K near floor", "lead": "atlas", "plan": "mffu_builder_50k", "start": "2026-10-19", "prior_pnl": -1500.0},
-           {"id": "c25", "name": "25K own $220 day", "lead": "atlas", "plan": "mffu_builder_25k", "start": "2026-10-19", "own": {"day_stop_usd": 220}}]
+           {"id": "c25", "name": "25K own $250 day", "lead": "atlas", "plan": "mffu_builder_25k", "start": "2026-10-19", "own": {"day_stop_usd": 250}}]
     b, fl, ads, notes = make(os.path.join(tmp, "s_atlas"), acc, now)
     b.acct_b = Lead("Sim102")
     b.acct_b.enter(now, 1, 3, 20000.0, 19985.0, 20090.0)
@@ -305,7 +305,7 @@ def session_atlas(tmp):
     c = fol(fl, "c25")
     print(f"      ATLAS signal 1 micros {q1}; day P&L after its stop-out {day}; signal 2 micros {q2}")
     print(f"      c25 skip: {c.skips[-1]['why'] if c.skips else None}")
-    check("ATLAS signal 2: the 25K stopped for the day (its own $220 day stop has less than one micro's stop-out left)",
+    check("ATLAS signal 2: the 25K stopped for the day (its own $250 day stop has less than one micro's stop-out left)",
           q2["c25"] == 0 and c.skips and "own day stop" in c.skips[-1]["why"], c.skips[-1:])
     check("... while both 50Ks keep copying", q2["a50"] > 0 and q2["b50"] > 0, q2)
     check("... the 50K near its floor sizes signal 2 from the room left after the loss (fewer micros than signal 1)",
