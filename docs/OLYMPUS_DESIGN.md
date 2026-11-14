@@ -312,7 +312,7 @@ cards and bars (its own palette), Kalshi's background a little (its `--bg` blend
   panels and cards, and the button text on the button (test b); gains green and losses red in every look (Mono too).
 - **Mix** (`'olympus.themeMix'` = `{ district, app, of }`): a look per district (or hub) and per app; app beats district beats the
   one look (`'olympus.theme'`). `of` (app -> district) is saved by the Gate from `gate-catalog.js` (an app's `hub` wins when the
-  catalog gets one; the mix rows are `C.hubs || C.districts`). This page's id: `<html data-oly-page>` (gate, today, jarvis), else
+  catalog gets one; the mix rows are `C.hubs || C.districts`; since IA v2 they are the nine hubs, and each hub page is `hub-<id>` in `of`). This page's id: `<html data-oly-page>` (gate, today, jarvis), else
   the kit tag's `data-app`, else its folder. One look clears the mix. API: `id()` (this page), `global()`, `getMix()`,
   `setMix()`, `lookFor(page)`, `groups()`, `plain()`.
 - **Picker**: the Gate's Look row (near the bottom): One look (grouped swatches: a tiny card in the look's page, card, accent,

@@ -1,17 +1,22 @@
-/* THE GATE (OLYMPUS front door, 2026-11-12). Classic script, ES5, no build step, no network but the site's own files.
+/* OLYMPUS HOME v2 (the Gate, 2026-11-14, docs/OLYMPUS_IA_V2.md). Classic script, ES5, no build step, no network but the site's own files.
  * - "Right now": ../home.json through olympus/truth.js (the one source every app uses for drawdown and data age); a light copy of its rules when truth.js
- *   does not load. Bots on / quiet / old numbers with the exact age, drawdown left, today's $, the next trade window. Older than 6 h: one button "Bring the bots back".
- * - Start here (1 tap), the four district doors (a sheet, most useful first: 2 taps), the search (name, purpose, plain words), Recent (last 4 opened, this phone only).
+ *   does not load. Bots on / quiet / old numbers with the exact age, then the facts, each a tap to its app: drawdown left per account (Aegis), today's $ (NQ),
+ *   the next trade window (Kairos), the Kalshi bot (kalshi.json -> Kalshi), my shift / next on the plan (the Planner's summary on this phone -> Planner).
+ *   Older than 6 h: one button "Bring the bots back".
+ * - The nine hubs (olympus/gate-catalog.js HUBS): static links in the page (they work without this script); this script adds each hub's live line
+ *   (olympus/hub-status.js) and its app count. Then the search (name, purpose, plain words) and Recent (last 4 apps opened, this phone only).
+ * - Old links: gate/?d=<v1 district or hub> opens that hub page (trading -> Bots & Evals, money -> My Money, life -> Plan & Day, worlds, workshop).
  * - GATE_BASE ('' at the site root as olympus-live.html, '../' at gate/) prefixes every link. Apps missing from a partial copy are marked "not in this link".
  * - Served from the PC (/site/, the private Tailscale link, docs/LIVE_DASHBOARD.md): "Right now" reads the bot's own /api/site/live.json
  *   over home.json (pc_feed.js overlayHome) and refreshes every minute. Any other copy never asks it.
- * Text only through textContent / createElementNS. Storage: 'gate.recent.v1' (ids) and 'gate.now.v1' (the last numbers seen), both in try / catch. */
+ * Text only through textContent / createElementNS. Storage: 'gate.recent.v1' (ids) and 'gate.now.v1' (the last numbers seen), both in try / catch;
+ * 'planner.today.v1' is read only (the Planner writes it). */
 (function () {
   'use strict';
   var d = document, w = window, C = w.OLYMPUS_GATE || null, base = w.GATE_BASE || '';
-  var LS_RECENT = 'gate.recent.v1', LS_NOW = 'gate.now.v1', STALE_S = 6 * 3600, FRESH_S = 20 * 60;
+  var LS_RECENT = 'gate.recent.v1', LS_NOW = 'gate.now.v1', LS_PLAN = 'planner.today.v1', STALE_S = 6 * 3600, FRESH_S = 20 * 60;
   var NS = 'http://www.w3.org/2000/svg';
-  var S = { list: !!C, now: null, nowDone: false, sheet: null, opener: null, probe: {}, probes: 0 };
+  var S = { list: !!C, now: null, nowDone: false, probe: {}, probes: 0, extra: null, hubs: {} };
   var Q = (function () { var o = {}, s = (w.location.search || '').replace(/^\?/, ''); if (!s) return o; s.split('&').forEach(function (kv) { var p = kv.split('='); if (p[0]) { try { o[decodeURIComponent(p[0])] = decodeURIComponent((p[1] || '').replace(/\+/g, ' ')); } catch (e) { /* skip */ } } }); return o; })();
 
   function $(id) { return d.getElementById(id); }
@@ -50,12 +55,15 @@
     img.onerror = function () { if (img.parentNode) img.parentNode.removeChild(img); box.textContent = glyph; };
     img.src = src; box.appendChild(img); return box;
   }
+  function hubName(a) { var h = C && C.hubOf ? C.hubOf(a.id) : null; return h ? h.name : ''; }
   function row(a) {
     var r = el('a', 'g-row'); r.href = hrefOf(a); r.setAttribute('data-app', a.id);
-    var t = el('span', 'g-txt'), sm = el('small');
+    var t = el('span', 'g-txt'), sm = el('small'), hn = hubName(a);
     t.appendChild(el('b', '', a.label));
-    if (a.name && a.name !== a.label) { sm.appendChild(el('i', '', a.name)); sm.appendChild(d.createTextNode(' · ' + a.line)); } else { sm.appendChild(el('i', '', '')); sm.appendChild(d.createTextNode(a.line)); }
+    sm.appendChild(el('i', '', a.name && a.name !== a.label ? a.name : ''));
+    sm.appendChild(d.createTextNode((a.name && a.name !== a.label ? ' · ' : '') + a.line));
     t.appendChild(sm);
+    if (hn) t.appendChild(el('span', 'g-where', 'in ' + hn));
     r.appendChild(icon(a)); r.appendChild(t); r.appendChild(chevron());
     r.addEventListener('click', function () { remember(a.id); });
     probe(a);
@@ -78,58 +86,15 @@
   function drawRecent() {
     var box = $('recent'), sec = $('recentSec'); if (!box || !sec || !C) return;
     clear(box);
-    var list = recentIds().map(C.byId).filter(function (a) { return a && a.district !== 'workshop'; }).slice(0, 4);
+    var list = recentIds().map(C.byId).filter(function (a) { return a && a.section !== 'workshop'; }).slice(0, 4);
     sec.hidden = !list.length;
     list.forEach(function (a) {
       var c = el('a', 'g-chip'); c.href = hrefOf(a); c.setAttribute('data-app', a.id);
-      var ic = icon(a); ic.style.width = ic.style.height = '32px'; ic.style.flexBasis = '32px'; ic.style.borderRadius = '50%'; ic.style.fontSize = '.9375rem';
+      var ic = icon(a); ic.className += ' g-chipico';
       c.appendChild(ic); c.appendChild(el('span', '', a.label));
       c.addEventListener('click', function () { remember(a.id); });
       box.appendChild(c);
     });
-  }
-
-  /* ------------------------------------------------------------------------------------------ the sheet */
-  function districtOf(id) { if (!C) return null; for (var i = 0; i < C.districts.length; i++) if (C.districts[i].id === id) return C.districts[i]; return null; }
-  function appsIn(did, sec) { return C.apps.filter(function (a) { return a.district === did && (!sec || a.section === sec); }); }
-  function openSheet(did, opener) {
-    var D = districtOf(did); if (!D) return false;
-    var body = $('sheetBody'), sheet = $('sheet'), scrim = $('scrim');
-    $('sheetH').textContent = D.name;
-    $('sheetSub').textContent = D.line + ' · ' + appsIn(did).length + ' apps';
-    clear(body);
-    D.sections.forEach(function (sec) {
-      var list = appsIn(did, sec[0]); if (!list.length) return;
-      body.appendChild(el('h3', 'g-sec', sec[1]));
-      var box = el('div', 'g-list' + (sec[0] === 'top' ? ' g-top' : ''));
-      list.forEach(function (a) { box.appendChild(row(a)); });
-      body.appendChild(box);
-    });
-    S.sheet = did; S.opener = opener || null;
-    scrim.hidden = false; sheet.hidden = false; body.scrollTop = 0;
-    scrim.className = 'g-scrim g-in'; sheet.className = 'g-sheet g-in';
-    d.documentElement.className += ' g-locked';
-    try { $('sheetClose').focus({ preventScroll: true }); } catch (e) { $('sheetClose').focus(); }
-    return true;
-  }
-  function closeSheet() {
-    if (!S.sheet) return;
-    $('sheet').hidden = true; $('scrim').hidden = true; S.sheet = null;
-    d.documentElement.className = d.documentElement.className.replace(/\s*g-locked/g, '');
-    if (S.opener && S.opener.focus) { try { S.opener.focus({ preventScroll: true }); } catch (e) { S.opener.focus(); } }
-  }
-  function trap(e) {
-    if (!S.sheet) return;
-    if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); closeSheet(); return; }
-    if (e.key !== 'Tab') return;
-    var f = $('sheet').querySelectorAll('a[href], button'); if (!f.length) return;
-    var first = f[0], last = f[f.length - 1];
-    if (e.shiftKey && d.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && d.activeElement === last) { e.preventDefault(); first.focus(); }
-  }
-  function swipe() {   // pull the sheet down by its head to close it
-    var head = $('sheet'), y0 = null;
-    head.addEventListener('touchstart', function (e) { var t = e.target; y0 = (t.closest && t.closest('.g-sheetbody')) ? null : e.touches[0].clientY; }, { passive: true });
-    head.addEventListener('touchmove', function (e) { if (y0 != null && e.touches[0].clientY - y0 > 70) { y0 = null; closeSheet(); } }, { passive: true });
   }
 
   /* ------------------------------------------------------------------------------------------ search */
@@ -208,13 +173,15 @@
       accts.push({ key: k, name: a.name + ' ' + a.size, room: num(a.room), mll: num(a.mll) });
       today += num(a.today) || 0;
     });
-    return { t: t, pcT: ages.pc.t, pcAge: ages.pc.age, cloudAge: ages.cloud ? ages.cloud.age : null, running: running, accts: accts, today: today, win: nextWindow(home, t), truth: !!T };
+    return { t: t, pcT: ages.pc.t, pcAge: ages.pc.age, cloudAge: ages.cloud ? ages.cloud.age : null, running: running, accts: accts, today: today, win: nextWindow(home, t), truth: !!T, has: true };
   }
-  function fact(dl, label, value, sub, cls) {   // one cell of the 2 x 2 grid: label, the number, one small line
-    var cell = el('div', 'g-fact'), dd = el('dd', cls || '', value);
-    cell.appendChild(el('dt', '', label)); cell.appendChild(dd);
-    if (sub) cell.appendChild(el('dd', 'g-fsub', sub));
-    dl.appendChild(cell);
+  /* one fact of the grid: a label, the number, one small line; a tap opens the app that holds the detail */
+  function fact(box, label, value, sub, cls, to, key) {
+    var cell = el(to ? 'a' : 'div', 'g-fact');
+    if (to) { cell.href = base + to; cell.setAttribute('data-go', key || ''); }
+    cell.appendChild(el('span', 'g-fl', label)); cell.appendChild(el('span', 'g-fv' + (cls ? ' ' + cls : ''), value));
+    if (sub) cell.appendChild(el('span', 'g-fsub', sub));
+    box.appendChild(cell);
   }
   function drawNow(N, from) {
     var card = $('now'), badge = $('nowBadge'), line = $('nowLine'), dl = $('nowFacts'), btn = $('bringBack'), foot = $('nowFoot');
@@ -231,19 +198,29 @@
     clear(dl);
     var old = st[0] === 'stale' || from === 'cache';
     if (from !== 'none') {
-      N.accts.forEach(function (a) { fact(dl, 'Drawdown left', money(a.room), 'of ' + money(a.mll) + ' max loss, ' + a.name); });
-      if (!N.accts.length) fact(dl, 'Drawdown left', 'Not in the report', '');
-      fact(dl, old ? 'Last report day' : 'Today', moneyS(N.today), N.accts.length > 1 ? 'both eval accounts' : 'the eval account', N.today > 0.5 ? 'up' : N.today < -0.5 ? 'down' : '');
+      N.accts.forEach(function (a) { fact(dl, 'Drawdown left', money(a.room), 'of ' + money(a.mll) + ' max loss, ' + a.name, '', 'aegis/index.html', 'aegis'); });
+      if (!N.accts.length) fact(dl, 'Drawdown left', 'Not in the report', '', '', 'nq/index.html', 'nq');
+      fact(dl, old ? 'Last report day' : 'Today', moneyS(N.today), N.accts.length > 1 ? 'both eval accounts' : 'the eval account', N.today > 0.5 ? 'up' : N.today < -0.5 ? 'down' : '', 'nq/index.html', 'nq');
     }
     var W = N.win || nextWindow({}, nowS());
-    fact(dl, 'Trade window', W.open ? 'Open now' : W.label.replace(/ 02:00-15:30 ET$/, ' 02:00 ET'), W.open ? 'until 15:30 ET' : inWords(W.inS));
+    fact(dl, 'Trade window', W.open ? 'Open now' : W.label.replace(/ 02:00-15:30 ET$/, ' 02:00 ET'), W.open ? 'until 15:30 ET' : inWords(W.inS), '', 'kairos/index.html', 'kairos');
+    drawExtra(dl);
     dl.hidden = false;
     btn.hidden = !(st[0] === 'stale');
-    if (from === 'none') foot.textContent = 'This copy of the site has no live numbers. Bots shows the full status where it can.';
+    if (from === 'none') foot.textContent = 'This copy of the site has no live numbers. Bots & Evals shows the full status where it can.';
     else if (from === 'cache') foot.textContent = 'Saved on this phone ' + ageWords(nowS() - (N.saved || nowS())) + ' ago.';
     else if (from === 'pc') foot.textContent = 'Live from your PC. Updates every minute.';
     else foot.textContent = old ? '' : (N.cloudAge != null ? 'Cloud copy ' + ageWords(N.cloudAge) + ' old.' : '');
     S.now = { state: st[0], label: st[2], from: from || 'live', truth: !!N.truth };
+    S.N = N;
+  }
+  /* Kalshi and the plan: only when they have something real (kalshi.json reached the page; the Planner's summary is today's) */
+  function drawExtra(box) {
+    var X = S.extra, HS = w.OLYMPUS_HUB_STATUS; if (!X || !HS) return;
+    var K = X.K, P = X.P;
+    if (K && K.has) fact(box, 'Kalshi', K.balance != null ? money(K.balance) : 'Bot on', K.today != null ? 'today ' + moneyS(K.today) : (K.age != null ? 'updated ' + HS.shortAge(K.age) : ''), K.today != null ? (K.today > 0.5 ? 'up' : K.today < -0.5 ? 'down' : '') : '', 'kalshi/index.html', 'kalshi');
+    if (P && P.has && P.shift) fact(box, 'My shift', P.shift.now ? 'Now' + (P.shift.end ? ' to ' + P.shift.end : '') : P.shift.start + (P.shift.end ? '-' + P.shift.end : ''), P.shift.title, '', 'planner/index.html', 'planner');
+    else if (P && P.has && P.next) fact(box, 'Next on your plan', P.next.start, P.next.title, '', 'planner/index.html', 'planner');
   }
   /* served by the PC's own bot server through the private Tailscale link (engine/live_site.py serves the site at /site/): the bot's live
      numbers from /api/site/live.json, laid over home.json with pc_feed.js (the same rules as every app), refreshed every minute */
@@ -262,11 +239,24 @@
     if (live.board && !live.board.error) out.board = live.board;
     return out;
   }
+  /* the other sources of the home: Kalshi's feed copy, the money scoreboard, two status cards; the Planner's summary from this phone */
+  function loadExtra(then) {
+    var HS = w.OLYMPUS_HUB_STATUS;
+    if (!HS) { then(); return; }
+    var got = { k: null, sb: null, cards: {} }, left = 4;
+    var one = function () { left--; if (left > 0) return; var t = nowS(); S.extra = { K: HS.kalshiOf(got.k, t), M: HS.moneyOf(got.sb), P: HS.planOf(lsGet(LS_PLAN), t), cards: got.cards }; then(); };
+    getJSON(base + 'kalshi.json').then(function (j) { got.k = j; one(); });
+    getJSON(base + 'money/scoreboard.json').then(function (j) { got.sb = j; one(); });
+    getJSON(base + 'hephaestus/jarvis.json').then(function (j) { got.cards.hephaestus = j; one(); });
+    getJSON(base + 'plutus/jarvis.json').then(function (j) { got.cards.plutus = j; one(); });
+  }
   function loadNow() {
-    var liveP = ON_PC ? getJSON(LIVE_API) : null;
+    var liveP = ON_PC ? getJSON(LIVE_API) : null, extraDone = false, homeArgs = null;
+    var go = function () { if (extraDone && homeArgs) show(homeArgs[0], homeArgs[1]); };
+    loadExtra(function () { extraDone = true; go(); });
     getJSON(base + 'home.json').then(function (home) {
-      if (!liveP) return show(home, null);
-      liveP.then(function (live) { show(home, live); });
+      if (!liveP) { homeArgs = [home, null]; go(); return; }
+      liveP.then(function (live) { homeArgs = [home, live]; go(); });
     });
   }
   function show(home, live) {
@@ -274,12 +264,14 @@
     if (over) home = over;
     if (!home || typeof home !== 'object' || home instanceof Array) {
       var c = lsGet(LS_NOW);
-      if (c && c.N) { c.N.saved = c.saved; c.N.win = null; drawNow(c.N, 'cache'); } else drawNow({ accts: [], today: 0, pcT: null, pcAge: null }, 'none');
+      if (c && c.N) { c.N.saved = c.saved; c.N.win = null; c.N.has = true; drawNow(c.N, 'cache'); } else drawNow({ accts: [], today: 0, pcT: null, pcAge: null, has: false }, 'none');
+      drawHubs(S.now && S.now.from === 'cache' ? c.N : { has: false, accts: [], win: null }, true);
       S.nowDone = true; return;
     }
     getTruth(function (T) {
       var N = summarize(home, T);
       drawNow(N, over ? 'pc' : 'live');
+      drawHubs(N, true);
       var keep = { pcT: N.pcT, pcAge: N.pcAge, running: N.running, accts: N.accts, today: N.today };
       lsSet(LS_NOW, { saved: nowS(), N: keep });
       S.nowDone = true;
@@ -287,9 +279,9 @@
   }
 
   /* ------------------------------------------------------------------------------------------ Look: the OLYMPUS theme (olympus/themes.js)
-     Two tabs. "One look": Agora + the 17 looks as swatches (a tiny card in the theme's own page, card, accent, gain green and loss red); a tap is
-     one look for everything ('olympus.theme', and the mix cleared). "Mix": each district (Trading, Money, Life, Worlds) and this Gate get their
-     own look ('olympus.themeMix' = { district, app, of }; app beats district beats the one look), or one of three ready-made combos. Jarvis's Look
+     Two tabs. "One look": Agora + the 32 looks in four groups as swatches (a tiny card in the theme's own page, card, accent, gain green and loss
+     red); a tap is one look for everything ('olympus.theme', and the mix cleared). "Mix": each of the nine hubs (gate-catalog.js HUBS: the hub page
+     hub/?h=<id> and every app filed in it) and this Gate get their own look ('olympus.themeMix' = { district, app, of }; app beats district beats the one look), or one of three ready-made combos. Jarvis's Look
      sheet writes the same keys, so both stay in sync; other tabs follow through the storage event. Hidden when the engine is not served. */
   // the parts a mix can colour: the catalog's own districts (or its hubs, when it has them), never the start row or the workshop, + this Gate
   function parts() {
@@ -298,6 +290,9 @@
     o.push(['gate', 'This Gate']);
     return o;
   }
+  // the combos are written per v1 district; a hub takes its district's look (gate-catalog.js HUBS legacy: Today, Bots, Research -> trading ...)
+  function legacyOf(id) { var h = C && C.hub ? C.hub(id) : null; return h && h.legacy ? h.legacy : id; }
+  function comboOf(c) { var o = {}, P = parts(); for (var j = 0; j < P.length; j++) { var k = P[j][0], v = c[k] || c[legacyOf(k)]; if (k !== 'gate' && v) o[k] = v; } return o; }
   var COMBOS = [['Trader', 'A trading screen for trading, a clean bank for money', { trading: 'amber', money: 'stocks', life: 'forest', worlds: 'aurora' }],
     ['Luxury', 'Black and gold, navy, rose gold, a sunset', { trading: 'noir', money: 'royal', life: 'rosegold', worlds: 'sunset' }],
     ['Clean', 'Light and calm, a navy night for the worlds', { trading: 'stocks', money: 'ivory', life: 'ivory', worlds: 'midnight' }]];
@@ -314,7 +309,7 @@
   }
   function look() {
     var T = w.OLYMPUS_THEMES;
-    if (!T || !T.plain) return;
+    if (!T || !T.plain) return false;
     T.apply('page', { meta: true });
     var host = $('looks'), mixHost = $('lookMix'), sec = $('lookSec'), tabs = [$('lookTab1'), $('lookTab2')];
     var mode = T.getMix && T.getMix() ? 'mix' : 'one';
@@ -323,20 +318,28 @@
       for (var j = 0; j < P.length; j++) ok[P[j][0]] = 1;
       if (first) o.today = first;
       if (C) for (var i = 0; i < C.apps.length; i++) { var a = C.apps[i], dd = a.hub || a.district; if (ok[dd] && dd !== 'gate') o[a.id] = dd; }
+      for (var q = 0; q < P.length; q++) if (P[q][0] !== 'gate') o['hub-' + P[q][0]] = P[q][0];   // the hub page itself (hub/?h=<id>: <html data-oly-page="hub-<id>">)
       return o;
     }
     function ordered() {   // Agora, then the groups (Dark, Light, Bold, Luxury)
       var gs = T.groups ? T.groups() : [{ id: 'all', name: 'Looks', themes: T.plain().slice(1) }], o = [{ id: 'default', name: 'Default', themes: [T.get(T.DEFAULT)] }];
       return o.concat(gs);
     }
-    function current() { var m = T.getMix(); return m || { district: {}, app: {}, of: {} }; }
+    function current() {   // a mix saved per v1 district (trading / money / life) reads as the hubs that replaced them
+      var m = T.getMix(); if (!m) return { district: {}, app: {}, of: {} };
+      var dist = m.district || {}, P = parts(), ok = {}, out = {}, k, j;
+      for (j = 0; j < P.length; j++) ok[P[j][0]] = 1;
+      for (k in dist) if (ok[k]) out[k] = dist[k];
+      for (j = 0; j < P.length; j++) { k = P[j][0]; if (!out[k] && k !== 'gate' && dist[legacyOf(k)] && !ok[legacyOf(k)]) out[k] = dist[legacyOf(k)]; }
+      return { district: out, app: m.app || {}, of: m.of || {} };
+    }
     function setOne(id) { T.set(id); draw(); }
     function setPart(part, id) {
       var m = current(), o = { district: m.district || {}, app: m.app || {}, of: ofMap() };
       if (part === 'gate') { if (id) o.app.gate = id; else delete o.app.gate; } else if (id) o.district[part] = id; else delete o.district[part];
       T.setMix(o); draw();
     }
-    function useCombo(c) { var m = current(), o = { district: {}, app: m.app || {}, of: ofMap() }, P = parts(); for (var j = 0; j < P.length; j++) if (c[P[j][0]]) o.district[P[j][0]] = c[P[j][0]]; T.setMix(o); draw(); }
+    function useCombo(c) { var m = current(); T.setMix({ district: comboOf(c), app: m.app || {}, of: ofMap() }); draw(); }
     function drawOne() {
       var cur = T.getMix() ? '' : T.global(), gs = ordered();
       clear(host);
@@ -362,8 +365,9 @@
       clear(mixHost);
       var cs = el('div', 'g-combos');
       for (var c = 0; c < COMBOS.length; c++) (function (cb) {
-        var b = el('button', 'g-combo'), on = true, dots = el('span', 'g-cdots');
-        for (var k in cb[2]) { if (!P.some(function (x) { return x[0] === k; })) continue; if ((m.district || {})[k] !== cb[2][k]) on = false; var dt = el('i'), th = T.get(cb[2][k]); dt.style.background = th.style ? th.style.page : th.tokens.bg; dt.style.borderColor = th.tokens.accent; dots.appendChild(dt); }
+        var b = el('button', 'g-combo'), on = true, dots = el('span', 'g-cdots'), want = comboOf(cb[2]), k;
+        for (k in want) if ((m.district || {})[k] !== want[k]) on = false;
+        for (k in cb[2]) { var dt = el('i'), th = T.get(cb[2][k]); dt.style.background = th.style ? th.style.page : th.tokens.bg; dt.style.borderColor = th.tokens.accent; dots.appendChild(dt); }
         b.type = 'button'; b.setAttribute('aria-pressed', String(on)); b.setAttribute('data-combo', cb[0].toLowerCase());
         b.appendChild(dots); b.appendChild(el('b', '', cb[0])); b.appendChild(el('small', '', cb[1]));
         b.addEventListener('click', function () { useCombo(cb[2]); });
@@ -403,20 +407,35 @@
     T.on(function () { draw(); });
     draw();
     sec.hidden = false;
+    return true;
+  }
+
+  /* ------------------------------------------------------------------------------------------ the hubs: one live line each */
+  function drawHubs(N, live) {
+    var HS = w.OLYMPUS_HUB_STATUS, X = S.extra || {};
+    var tiles = d.querySelectorAll('.g-hub[data-hub]');
+    for (var i = 0; i < tiles.length; i++) {
+      var t = tiles[i], hid = t.getAttribute('data-hub'), H = C && C.hub ? C.hub(hid) : null;
+      var cnt = t.querySelector('.g-hcount'); if (cnt && H) cnt.textContent = plural(H.count, 'app');
+      if (!HS || !live) continue;
+      var M = N ? N : null; if (M && !M.win) M.win = nextWindow({}, nowS());
+      var L = HS.hubLine(hid, { N: M, K: X.K, M: X.M, P: X.P, cards: X.cards || {}, theme: HS.themeName() });
+      var line = t.querySelector('.g-hline');
+      if (line && L && L.text) { line.textContent = L.text; line.className = 'g-hline' + (L.lvl ? ' ' + L.lvl : ''); }
+      S.hubs[hid] = L ? L.text : '';
+    }
   }
 
   /* ------------------------------------------------------------------------------------------ start */
+  var OLD_D = { trading: 'bots', money: 'money', life: 'plan', worlds: 'worlds', workshop: 'settings', start: 'today' };
   function boot() {
-    look();
-    var tiles = d.querySelectorAll('.g-tile[data-app]');
-    for (var i = 0; i < tiles.length; i++) (function (t) { t.addEventListener('click', function () { remember(t.getAttribute('data-app')); }); })(tiles[i]);
+    if (Q.d) {   // an old "Go to > district" link: the hub that replaced it
+      var hid = OLD_D[Q.d] || (C && C.hub && C.hub(Q.d) ? Q.d : '');
+      if (hid) { try { w.location.replace(base + 'hub/index.html?h=' + hid + (Q.d === 'workshop' ? '&t=workshop' : '')); return; } catch (e) { /* stay here */ } }
+    }
+    var looked = false; try { looked = look(); } catch (e) { /* the page works without the picker */ }
+    if (!looked) try { if (w.OLYMPUS_THEMES && w.OLYMPUS_THEMES.apply) w.OLYMPUS_THEMES.apply('page', { meta: true }); } catch (e) { /* the default look */ }
     if (C) {
-      var doors = d.querySelectorAll('[data-district]');
-      for (var j = 0; j < doors.length; j++) (function (b) {
-        var did = b.getAttribute('data-district'), sm = b.querySelector('small');
-        if (sm && did !== 'workshop') sm.appendChild(el('em', '', ' · ' + appsIn(did).length + ' apps'));
-        b.addEventListener('click', function (e) { if (openSheet(did, b)) e.preventDefault(); });
-      })(doors[j]);
       $('q').addEventListener('input', drawResults);
       $('q').addEventListener('keydown', function (e) {
         if (e.key !== 'Enter') return;
@@ -425,20 +444,16 @@
       });
       if (Q.q) { $('q').value = Q.q; drawResults(); }
       drawRecent();
+      drawHubs(null, false);
     } else {
-      $('findHint').textContent = 'The app list did not load. The doors below open the map of every app.';
+      $('findHint').textContent = 'The app list did not load. The hubs above still open every app.';
       $('q').disabled = true;
     }
-    $('sheetClose').addEventListener('click', closeSheet);
-    $('scrim').addEventListener('click', closeSheet);
-    d.addEventListener('keydown', trap);
-    swipe();
-    w.addEventListener('pageshow', function (e) { if (e.persisted) { drawRecent(); closeSheet(); } });
+    w.addEventListener('pageshow', function (e) { if (e.persisted) drawRecent(); });
     loadNow();
-    if (ON_PC && w.setInterval) w.setInterval(function () { if (d.visibilityState !== 'hidden' && !S.sheet) loadNow(); }, LIVE_EVERY_MS);
-    if (Q.d && C) openSheet(Q.d, null);
+    if (ON_PC && w.setInterval) w.setInterval(function () { if (d.visibilityState !== 'hidden') loadNow(); }, LIVE_EVERY_MS);
   }
 
-  w.GATE = { ready: function () { return S.nowDone; }, state: S, open: openSheet, close: closeSheet, hrefOf: hrefOf, base: base };
+  w.GATE = { ready: function () { return S.nowDone; }, state: S, hrefOf: hrefOf, base: base };
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', boot); else boot();
 })();
