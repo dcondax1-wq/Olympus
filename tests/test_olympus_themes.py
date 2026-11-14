@@ -936,12 +936,12 @@ def test_picker(br, origin):
 
 QA_SAMPLE = [("gate", "/gate/" + GATE_Q), ("hub-money", "/hub/index.html?h=money"), ("nq", "/nq/?demo=1"), ("mint", "/mint/?demo=1"), ("ledger", "/ledger/?demo=1"), ("kalshi", "/kalshi/")]
 QA_LOOKS = ["midnight", "ivory", "aurora", "brutal"]
-QA_SKIP_ART = re.compile(r"\.s2d|pp-portrait|#scene")
 
 
 def test_look_qa(br, origin):
-    """tools/theme_qa.js on a sample (6 pages x 4 looks, against the default): no AGORA colour left, no text under AA that the default does not
-    have too, +$ green / -$ red, a keyboard ring that shows. The whole matrix: tools/theme_shots.py --qa (docs/shots/themes_v2/qa.md)."""
+    """tools/theme_qa.js on a sample (6 pages x 4 looks, against the default), judged exactly as the matrix's table (theme_shots.look_issues): no
+    AGORA colour left, no text under AA that the default does not have too, +$ green / -$ red, the status bar, a keyboard ring that shows.
+    The whole matrix: tools/theme_shots.py --qa (docs/shots/themes_v2/qa.md)."""
     sys.path.insert(0, os.path.join(ROOT, "tools"))
     import theme_shots as TS
     src = read(ROOT, "tools", "theme_qa.js")
@@ -958,17 +958,16 @@ def test_look_qa(br, origin):
                 p.screenshot(path=shot)
                 rep = p.evaluate("(a) => (" + src + ")(a)", {"agora": ag if look != "agora" else [], "max": 20})
                 fails, _ = TS.pixel_check(shot, rep["texts"], 390, 844)
-                txt = {(x["sel"], x["text"]) for x in fails}
-                if look == "agora":
-                    base[name] = txt
-                    continue
-                own = sorted(txt - base.get(name, set()))
-                left = [x for x in rep["left"] if not QA_SKIP_ART.search(x["sel"])]
                 p.keyboard.press("Tab")
                 ring = p.evaluate("() => window.__olyQA.focus()")
-                check(f"t2. {look} on {name}: no AGORA colour left, no text under AA the default does not have too, +$ / -$ in green / red, the focus ring shows (3:1)",
-                      rep["theme"] == look and not left and not own and not rep["money"]["wrong"] and (ring is None or ring["ok"]),
-                      {"left": [f"{x['sel'][-40:]} {x['prop']}={x['value'][:40]}" for x in left[:3]], "text": own[:3], "money": rep["money"]["wrong"][:2], "ring": ring})
+                res = {"view": "phone", "lowPx": fails, "lowBelow": [r for r in rep["low"] if r.get("top") is None and r["box"][1] >= 844 and not r.get("unsure")],
+                       "left": rep["left"], "money": rep["money"], "focus": [ring] if ring else [], "canvases": rep.get("canvases") or [], "meta": rep["meta"], "sx": rep["sx"]}
+                if look == "agora":
+                    base[name] = res
+                    continue
+                iss = TS.look_issues(res, base.get(name, {}))
+                check(f"t2. {look} on {name}: no AGORA colour left, no text under AA the default does not have too, +$ / -$ in green / red, the status bar follows, the focus ring shows (3:1)",
+                      rep["theme"] == look and not iss, iss)
             except Exception as e:
                 check(f"t2. {look} on {name}: QA", False, e)
         ctx.close()
