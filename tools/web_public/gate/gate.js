@@ -509,7 +509,7 @@
     tabs[1].addEventListener('click', function () { mode = 'mix'; draw(); });
     // a new look (here, Jarvis, another tab) redraws the picker; a preview on this page never does (the finger stays on its swatch)
     T.on(function () { if (prev.id || (T.previewing && T.previewing())) return; draw(); });
-    d.addEventListener('keydown', function (e) { if (e.key === 'Escape' && prev.id) { endPreview(); } });
+    d.addEventListener('keydown', function (e) { if (e.key === 'Escape' && prev.id) { endPreview(); draw(); } });
     draw();
     sec.hidden = false;
     return true;

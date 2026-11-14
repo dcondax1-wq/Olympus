@@ -367,9 +367,11 @@ html[data-oly-lite="1"] .ag-appbar, html[data-oly-lite="1"] .ag-tabbar { -webkit
    colour-only themes never set the attribute, so nothing here applies to them. */
 html[data-oly-style] { background: var(--oly-th-page-bg) fixed var(--oly-th-n3); }
 html[data-oly-style] body, html[data-oly-style] body.agora { background: transparent !important; }
-html[data-oly-style] :is(.ag-card, .ag-stat) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
+html[data-oly-style] :is(.ag-card, .ag-stat, main#app :is(.card, .hero):not(.ag-card)) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
   border-radius: var(--oly-th-radius) !important;
   -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
 html[data-oly-style] :is(h1, h2, h3, .ag-title, .ag-display, .ag-h2, .ag-h3) { font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case); letter-spacing: var(--oly-th-title-track) !important;
   font-style: var(--oly-th-title-style); }
 html[data-oly-style] .ag-btn.primary { background: var(--oly-th-btn-bg) !important; color: var(--oly-th-btn-fg) !important; border: var(--oly-th-btn-border) !important; box-shadow: none !important; }
+html[data-oly-style] .ag-sheet { border-radius: var(--oly-th-radius-l, var(--oly-th-radius)) var(--oly-th-radius-l, var(--oly-th-radius)) 0 0; }
+html[data-oly-style] .ag-toast { border-radius: var(--oly-th-radius-s, var(--oly-th-radius)); }

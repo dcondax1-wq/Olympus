@@ -24,6 +24,8 @@ export function createHall(canvas, opts) {
     rc = createRenderer({ canvas, scene, camera, maxDpr: 2, tint: '#c8a24a', env: 'night', theme: { sky: '#6a4526', fog: '#3b2a1c', emissive: '#c8a24a', bloom: '#e0b060', accent: '#c8a24a' }, bloom: { strength: 0.16, radius: 0.5, threshold: 1.0 } });
     const q = rc.quality();
     if (q === 'low' || q === 'off') { rc.dispose(); return { ok: false, reason: 'quality ' + q }; }
+    // the OLYMPUS look (2026-11-14, team T2): the hall's dusk and fog lean toward the look's (by its mix; the default AGORA: untouched)
+    try { const K = window.OLYMPUS; if (K && K.themeScene) K.themeScene({ scene, renderer: rc.renderer }); } catch (e) { /* the hall's own colours */ }
     return build(rc, scene, camera, canvas, o);
   } catch (e) {
     try { if (rc) rc.dispose(); } catch (_) { /* nothing */ }

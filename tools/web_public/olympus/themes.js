@@ -442,6 +442,18 @@
     var out = {}, f, g, n, s;
     for (f in GRID) { g = GRID[f]; n = Math.round((g[1] - g[0]) / g[2]); for (s = 0; s <= n; s++) out[f + s] = at(R[f], f, g[0] + s * g[2]); }
     out.warn = R.warn;
+    /* the ink floor (2026-11-14, team T2 "lock down the looks"): every slot AGORA writes text in (n20 and up: muted, soft, text; a8 and up: the
+     * golds; g8 and up: gains; r9 and up: losses; warn) stays AA (4.5:1) on the look's page, panels and raised panels. A blend between two
+     * reference colours can fall a little short on a light look (AGORA's #9a8f7d sits just under its muted, so on Ivory it lands just above it):
+     * such a slot is nudged darker (or lighter on a dark look), its hue kept, until it reads. A slot that already reads is left as it is. */
+    var page = [out.n3, out.n4, out.n5, out.n7], two = [out.n3, out.n4];
+    for (s = 20; s <= 40; s++) out['n' + s] = readable(out['n' + s], page, 4.5);
+    for (s = 8; s <= 15; s++) { out['a' + s] = readable(out['a' + s], two, 4.5); out['g' + s] = readable(out['g' + s], two, 4.5); if (s >= 9) out['r' + s] = readable(out['r' + s], two, 4.5); }
+    out.warn = readable(out.warn, two, 4.5);
+    // ... and the tinted surfaces under that text (a0-a4: the gold-tinted cards and headers, g0-g3 / r0-r3: the gain / loss chips) stay far
+    // enough from the soft text to carry it (4.5:1): a monochrome look (Amber: its text IS its accent) would otherwise tint them too bright
+    var soft = [out.n30];
+    for (s = 0; s <= 4; s++) { out['a' + s] = readable(out['a' + s], soft, 4.5); if (s <= 3) { out['g' + s] = readable(out['g' + s], soft, 4.5); out['r' + s] = readable(out['r' + s], soft, 4.5); } }
     return out;
   }
   function relLum(c) { var x = rgbOf(c), s = 0, wt = [0.2126, 0.7152, 0.0722]; for (var q = 0; q < 3; q++) { var v = x[q] / 255; s += wt[q] * (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); } return s; }

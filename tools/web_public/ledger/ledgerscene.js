@@ -27,6 +27,8 @@ export function createVault(canvas, { O = null } = {}) {
   const rc = createRenderer({ canvas, scene, camera, env: 'night', theme: AG_THEME, tint: GOLD, exposure: 0.95, maxDpr: 1.6, bloom: { strength: 0.22, radius: 0.5, threshold: 1.0 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; applyTier(); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
+  // the OLYMPUS look (2026-11-14, team T2): the vault's night and fog lean toward the look's (by its mix; the default AGORA: untouched)
+  try { if (O && O.themeScene) O.themeScene({ scene, renderer: rc.renderer, redraw: () => { dirty = true; } }); } catch (e) { /* the vault's own colours */ }
 
   scene.add(new THREE.HemisphereLight('#e0b060', '#3a2c1e', 0.8));
   const key = new THREE.DirectionalLight('#e0b060', 0.9); key.position.set(-6, 10, 8); scene.add(key);

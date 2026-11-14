@@ -617,29 +617,29 @@ html[data-fx="off"] .og-t, html[data-fx="off"] .og-ic, html[data-fx="off"] .og-v
 /* ---------------------------------------------------------------- OLYMPUS light themes (Athena; ../olympus/themes.js scheme 'light')
    The palette itself comes from the theme (painted on <html>); these are the few places the dark HUD hard-codes black or white:
    a marble page, white glass panels, ink text, soft shadows. The text pairs are WCAG AA (tests/test_olympus_themes.py). */
-html[data-oly-scheme="light"] { color-scheme: light; --ok: #166534; --warn: #92400e; --bad: #be123c; }
+html[data-oly-scheme="light"] { color-scheme: light; --ok: var(--oly-th-g8, #166534); --warn: var(--oly-th-warn, #92400e); --bad: var(--oly-th-r10, #be123c); }
 html[data-oly-scheme="light"] body { background: radial-gradient(ellipse at 50% 30%, var(--bg2) 0%, var(--bg) 70%) var(--bg); }
-html[data-oly-scheme="light"] .bar { background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(var(--pr), .86)); box-shadow: 0 8px 24px rgba(60,58,40,.12); }
+html[data-oly-scheme="light"] .bar { background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(var(--pr), .86)); box-shadow: 0 8px 24px rgba(var(--oly-th-n37-rgb, 60,58,40),.12); }
 html[data-oly-scheme="light"] .pm[aria-current="page"], html[data-oly-scheme="light"] .btn.solid, html[data-oly-scheme="light"] .seg3 button[aria-pressed="true"] {
   color: #fbf6ea; background: linear-gradient(180deg, var(--c), var(--c2)); text-shadow: none; }
 html[data-oly-scheme="light"] .title { text-shadow: none; }
 html[data-oly-scheme="light"] .says, html[data-oly-scheme="light"] .msg.j, html[data-oly-scheme="light"] .qt { color: var(--txt); }
-html[data-oly-scheme="light"] .pline.ok { color: #166534; } html[data-oly-scheme="light"] .pline.warn { color: #854d0e; } html[data-oly-scheme="light"] .pline.bad { color: #9f1239; }
+html[data-oly-scheme="light"] .pline.ok { color: var(--oly-th-g8, #166534); } html[data-oly-scheme="light"] .pline.warn { color: var(--oly-th-warn, #854d0e); } html[data-oly-scheme="light"] .pline.bad { color: var(--oly-th-r10, #9f1239); }
 html[data-oly-scheme="light"] .kv div, html[data-oly-scheme="light"] .pill, html[data-oly-scheme="light"] .link-f input,
 html[data-oly-scheme="light"] .sheet-in input[type="text"], html[data-oly-scheme="light"] .sheet-in input[type="url"], html[data-oly-scheme="light"] .sheet-in input[type="password"],
-html[data-oly-scheme="light"] .sheet-in input[type="search"], html[data-oly-scheme="light"] .sheet-in select, html[data-oly-scheme="light"] .row-t input[type="checkbox"] { background: rgba(52,58,42,.07); }
+html[data-oly-scheme="light"] .sheet-in input[type="search"], html[data-oly-scheme="light"] .sheet-in select, html[data-oly-scheme="light"] .row-t input[type="checkbox"] { background: rgba(var(--oly-th-n37-rgb, 52,58,42),.07); }
 html[data-oly-scheme="light"] .sysbar, html[data-oly-scheme="light"] .stodo, html[data-oly-scheme="light"] .srow { background: rgba(255,255,255,.72); }
-html[data-oly-scheme="light"] .sysdots i.off { background: #d6d8cb; color: #4f5648; } html[data-oly-scheme="light"] .sysdots i { color: #fbf6ea; }
-html[data-oly-scheme="light"] .stodo.warn { color: #854d0e; } html[data-oly-scheme="light"] .stodo.bad { color: #9f1239; background: rgba(255,228,232,.8); }
-html[data-oly-scheme="light"] .key, html[data-oly-scheme="light"] .btn { box-shadow: 0 2px 0 rgba(var(--cr2), .25), 0 6px 14px rgba(60,58,40,.14), inset 0 1px 0 rgba(255,255,255,.8); }
+html[data-oly-scheme="light"] .sysdots i.off { background: var(--oly-th-n8, #d6d8cb); color: var(--oly-th-n24, #4f5648); } html[data-oly-scheme="light"] .sysdots i { color: var(--oly-th-n3, #fbf6ea); }
+html[data-oly-scheme="light"] .stodo.warn { color: var(--oly-th-warn, #854d0e); } html[data-oly-scheme="light"] .stodo.bad { color: var(--oly-th-r10, #9f1239); background: rgba(var(--oly-th-r1-rgb, 255,228,232),.8); }
+html[data-oly-scheme="light"] .key, html[data-oly-scheme="light"] .btn { box-shadow: 0 2px 0 rgba(var(--cr2), .25), 0 6px 14px rgba(var(--oly-th-n37-rgb, 60,58,40),.14), inset 0 1px 0 rgba(255,255,255,.8); }
 html[data-oly-scheme="light"] .dock { box-shadow: 0 4px 14px rgba(0,0,0,.32); }
-html[data-oly-scheme="light"] .ask input { background: rgba(52,58,42,.07); box-shadow: 0 4px 14px rgba(0,0,0,.32); }
-html[data-oly-scheme="light"] .nextchip { background: rgba(255,255,255,.88); box-shadow: 0 6px 16px rgba(60,58,40,.14); }
+html[data-oly-scheme="light"] .ask input { background: rgba(var(--oly-th-n37-rgb, 52,58,42),.07); box-shadow: 0 4px 14px rgba(0,0,0,.32); }
+html[data-oly-scheme="light"] .nextchip { background: rgba(255,255,255,.88); box-shadow: 0 6px 16px rgba(var(--oly-th-n37-rgb, 60,58,40),.14); }
 html[data-oly-scheme="light"] .fab { box-shadow: 0 4px 14px rgba(0,0,0,.32); }
-html[data-oly-scheme="light"] .dockfade { background: linear-gradient(rgba(243,241,234,0), rgba(243,241,234,.86)); }
-html[data-oly-scheme="light"] .sheet { background: rgba(40,44,32,.32); }
-html[data-oly-scheme="light"] .sheet-in, html[data-oly-scheme="light"] .toast { background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(var(--pr), .97)); box-shadow: 0 -10px 40px rgba(60,58,40,.16); }
-html[data-oly-scheme="light"] .hpanel, html[data-oly-scheme="light"] .kbox { box-shadow: 0 6px 18px rgba(60,58,40,.08); }
+html[data-oly-scheme="light"] .dockfade { background: linear-gradient(rgba(var(--oly-th-n3-rgb, 243,241,234),0), rgba(var(--oly-th-n3-rgb, 243,241,234),.86)); }
+html[data-oly-scheme="light"] .sheet { background: rgba(var(--oly-th-n37-rgb, 40,44,32),.32); }
+html[data-oly-scheme="light"] .sheet-in, html[data-oly-scheme="light"] .toast { background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(var(--pr), .97)); box-shadow: 0 -10px 40px rgba(var(--oly-th-n37-rgb, 60,58,40),.16); }
+html[data-oly-scheme="light"] .hpanel, html[data-oly-scheme="light"] .kbox { box-shadow: 0 6px 18px rgba(var(--oly-th-n37-rgb, 60,58,40),.08); }
 html[data-oly-scheme="light"] .tl-now { background: var(--c); box-shadow: 0 4px 14px rgba(0,0,0,.32); }
 /* the reactor reads as a dark lens set into the marble: its glow needs a dark ground */
 html[data-oly-scheme="light"] .core-slot { border-radius: 50%; background: radial-gradient(circle, rgba(24,28,20,.94) 0 44%, rgba(24,28,20,.55) 56%, rgba(24,28,20,0) 69%); }

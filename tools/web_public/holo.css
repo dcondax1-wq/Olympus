@@ -239,4 +239,4 @@ html.hd-lock, html.hd-lock body { overflow: hidden; }
 .hd-home-i { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; flex: none; background: conic-gradient(from 200deg, #4f9bff, #b388ff, var(--oly-th-a9, #ff9a3d), #4f9bff); box-shadow: 0 0 18px -4px #4f9bff; font-weight: 900; color: #fff; font-size: 13px; letter-spacing: .04em; }
 .hd-home-t { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .hd-home-t b { font-size: 16px; background: linear-gradient(90deg, #7dd3fc, #a78bfa 60%, var(--oly-th-a11, #fdba74)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.hd-home-t em { font-style: normal; font-size: 12.5px; color: var(--oly-th-n32, #b8c4dc); } .hd-home-go { font-weight: 700; font-size: 13px; color: #7dd3fc; white-space: nowrap; }
+.hd-home-t em { font-style: normal; font-size: 12.5px; color: var(--oly-th-n32, #b8c4dc); } .hd-home-go { font-weight: 700; font-size: 13px; color: var(--oly-th-infot, #7dd3fc); white-space: nowrap; }

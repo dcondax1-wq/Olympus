@@ -321,10 +321,14 @@ def pixel_check(png, rows, vw, vh):
         x0, y0, x1, y1 = max(0, x), max(0, y), min(W, x + w), min(H, y + h)
         if x1 - x0 < 2 or y1 - y0 < 2:
             continue
-        bg = dominant(im[y0:y1, x0:x1])
+        fg = _hexrgb(r["fg"])
+        box = im[y0:y1, x0:x1].reshape(-1, 3)
+        # the background is what the box shows besides the ink: pixels near the text colour (the glyphs) are left out first, so a bold
+        # title on a textured or gradient card is not read as text on itself; a box that is ALL ink-coloured (truly invisible text) stays
+        far = box[((box - np.array(fg)) ** 2).sum(axis=1) > 30 ** 2]
+        bg = dominant(far if len(far) >= 0.1 * len(box) else box)
         if bg is None:
             continue
-        fg = _hexrgb(r["fg"])
         a = r.get("a", 1)
         ink = [fg[i] * a + bg[i] * (1 - a) for i in range(3)]
         v = _ratio(ink, bg)
@@ -374,6 +378,39 @@ def set_look(p, origin, look, mix=None):
     p.evaluate("([id, mix]) => { const T = window.OLYMPUS_THEMES; T.set(id); if (mix) T.setMix(mix); }", [look, mix])
 
 
+# the overlays a page can open (name, open, the scope to check, close): the gate-nav "Go to" sheet, an AGORA toast, an AGORA sheet
+OVERLAYS = [
+    ("goto-sheet", "() => { if (window.OLYMPUS_GATE_NAV) OLYMPUS_GATE_NAV.open(); }", ".gn-sheet", "() => { if (window.OLYMPUS_GATE_NAV) OLYMPUS_GATE_NAV.close(); }"),
+    ("toast", "() => { if (window.AGORA && AGORA.toast) AGORA.toast('Saved. +$312 won, -$60 lost today.', { kind: 'ok', ms: 6000 }); }", ".ag-toast", ""),
+    ("sheet", "() => { if (!window.AGORA || !AGORA.sheet) return; const b = document.createElement('p'); b.textContent = 'Drawdown left $1,420 of $2,000. +$312 won, -$60 lost.';"
+     " window.__qaSheet = AGORA.sheet({ title: 'A sheet', body: b }); }", ".ag-sheet", "() => { if (window.__qaSheet) window.__qaSheet.close(); }"),
+]
+OVERLAY_PAGES = ("nq", "mint", "hub-money")
+
+
+def overlays(p, src, raw, look, key, agora):
+    """open each overlay, check what is inside it (its text on its own pixels, AGORA leftovers), close it: { name: {...} }"""
+    out = {}
+    for name, opener, scope, closer in OVERLAYS:
+        try:
+            p.evaluate(opener)
+            p.wait_for_timeout(450)
+            if not p.evaluate("(s) => !!document.querySelector(s)", scope):
+                continue
+            shot = os.path.join(raw, f"{look}-{key}-{name}.png")
+            p.screenshot(path=shot)
+            rep = p.evaluate("(a) => (" + src + ")(a)", {"agora": agora if look != "agora" else [], "max": 12, "scope": scope + ", " + scope + " *"})
+            fails, n = pixel_check(shot, rep["texts"], 390, 844)
+            out[name] = {"n": n, "lowPx": fails[:6], "left": rep["left"][:6], "ok": not fails and not rep["left"]}
+            if closer:
+                p.evaluate(closer)
+            p.wait_for_timeout(300)
+            os.remove(shot)
+        except Exception as e:
+            out[name] = {"ok": False, "error": str(e)[:160]}
+    return out
+
+
 def qa_page(p, origin, key, path, raw, look, agora, focus=True, first_dash=True, screens=2):
     errs: list = []
     on_err = lambda e: errs.append(str(e)[:200])        # noqa: E731
@@ -390,7 +427,7 @@ def qa_page(p, origin, key, path, raw, look, agora, focus=True, first_dash=True,
         vw, vh = p.viewport_size["width"], p.viewport_size["height"]
         shot = os.path.join(raw, f"{look}-{key}.png")
         p.screenshot(path=shot)
-        rep = p.evaluate("(a) => (" + src + ")(a)", {"agora": agora, "max": 40})
+        rep = p.evaluate("(a) => (" + src + ")(a)", {"agora": agora if look != "agora" else [], "max": 40})          # the default: AGORA is its own colour
         fails, checked = pixel_check(shot, rep["texts"], vw, vh)
         below = [r for r in rep["low"] if r.get("top") is None and r["box"][1] >= vh and not r.get("unsure")]
         for s in range(1, screens):                               # the next screen down: measured on its own pixels too
@@ -419,6 +456,7 @@ def qa_page(p, origin, key, path, raw, look, agora, focus=True, first_dash=True,
                 if f:
                     rings.append(f)
             p.evaluate("() => { try { document.activeElement && document.activeElement.blur(); } catch (e) {} window.scrollTo(0, 0); }")
+        ov = overlays(p, src, raw, look, key, agora) if key in OVERLAY_PAGES else {}
         top = top_colour(shot)
         rep.pop("texts", None)
         first = rep.get("first") or {}
@@ -439,14 +477,15 @@ def qa_page(p, origin, key, path, raw, look, agora, focus=True, first_dash=True,
                "top": "#%02x%02x%02x" % tuple(top), "selection": rep["selection"], "scrollbar": rep["scrollbar"], "nTexts": rep["nTexts"], "checkedPx": checked,
                "lowPx": fails[:25], "nLowPx": len(fails), "lowBelow": below[:15], "nLowBelow": len(below), "left": rep["left"], "money": rep["money"],
                "placeholders": [x for x in rep["placeholders"] if x["ratio"] < 4.5], "first": first, "flash": flash, "focus": rings, "sx": rep["sx"],
-               "errors": errs[:4], "slow": slow, "shot": shot}
+               "errors": errs[:4], "slow": slow, "shot": shot, "overlays": ov}
         res["verdict"] = {
             "text": not fails and not below,
             "left": not rep["left"],
-            "money": not rep["money"]["wrong"] and not rep["money"]["low"],
+            "money": not rep["money"]["wrong"],                  # +$ in green, -$ in red (their readability is the text check)
             "frame": meta_ok and rep["sx"] <= 0,
             "first": not flash,
             "focus": all(f["ok"] for f in rings) if rings else True,
+            "overlay": all(x.get("ok") for x in ov.values()),
         }
         return res
     except Exception as e:
@@ -512,6 +551,9 @@ def _why(r):
     if not r.get("verdict", {}).get("focus", True):
         f = [x for x in r.get("focus", []) if not x["ok"]][0]
         bits.append(f"focus {f['sel'][-30:]} {f['kind']} {f['color']} {f['ratio']}")
+    for n, o in (r.get("overlays") or {}).items():
+        if not o.get("ok"):
+            bits.append(f"overlay {n}: " + str((o.get("lowPx") or o.get("left") or [o.get("error")])[0])[:120])
     return "  (" + "; ".join(bits) + ")"
 
 
@@ -623,11 +665,53 @@ def mix_check(br, origin, log=print):
     return out
 
 
-SHORT = {"text": "contrast", "left": "AGORA leftover", "money": "+$/-$", "frame": "status bar", "first": "flash", "focus": "focus ring", "load": "load"}
+SHORT = {"text": "contrast", "left": "AGORA leftover", "money": "+$/-$", "frame": "status bar", "first": "flash", "focus": "focus ring", "overlay": "sheet/toast",
+         "load": "load"}
+ART_SEL = ("svg.s2d", "pp-portrait")                         # scene art: its own colours, like a 3D canvas (not a leftover)
+
+
+def look_issues(r, base=None):
+    """the issues of one page under one look that the default (AGORA) does not have on the same page: {check: [what]} (empty = pass)"""
+    if not r:
+        return None
+    if r.get("error"):
+        return {"load": [r["error"][:100]]}
+
+    def fps(x):
+        out = {}
+        for t in (x.get("lowPx") or []) + (x.get("lowBelow") or []):
+            out.setdefault("text", {})[(t["sel"], t["text"])] = f"{t['sel'][-40:]} '{t['text'][:20]}' {t['fg']} on {t.get('pxbg', t['bg'])} {t.get('px', t['ratio'])}:1"
+        for t in x.get("left") or []:
+            if not any(a in t["sel"] for a in ART_SEL):
+                out.setdefault("left", {})[(t["sel"], t["prop"])] = f"{t['sel'][-40:]} {t['prop']}={str(t['value'])[:40]}"
+        for t in (x.get("money") or {}).get("wrong") or []:
+            out.setdefault("money", {})[(t["sel"], t["text"])] = f"'{t['text']}' in {t['color']}"
+        for t in x.get("focus") or []:
+            if not t["ok"]:
+                out.setdefault("focus", {})[(t["sel"],)] = f"{t['sel'][-40:]} {t['kind'] or 'no ring'} {t['color']} {t['ratio']}:1"
+        for n, o in (x.get("overlays") or {}).items():
+            if not o.get("ok"):
+                out.setdefault("overlay", {})[(n,)] = n + ": " + "; ".join([f"'{t['text'][:16]}' {t.get('px')}:1" for t in o.get("lowPx", [])[:2]]
+                                                                      + [f"{t['prop']}={str(t['value'])[:30]}" for t in o.get("left", [])[:2]] + [o.get("error", "")]).strip("; ")
+        return out
+    mine, theirs = fps(r), fps(base or {})
+    out = {}
+    for k, v in mine.items():
+        new = [w for key, w in v.items() if key not in theirs.get(k, {})]
+        if new:
+            out[k] = new
+    if r.get("flash"):
+        out["first"] = [r["flash"]]
+    # the frame: the status bar follows the look (not AGORA's #14110e under another look) and nothing scrolls sideways
+    meta = str(r.get("meta") or "").lower()
+    if base is not None and (meta in ("", "#14110e") or r.get("sx", 0) > 0):
+        out["frame"] = [f"status bar {meta or 'missing'} (page top {r.get('top')})" + (f", {r.get('sx')} px sideways" if r.get("sx", 0) > 0 else "")]
+    return out
 
 
 def qa_table(before_dir, after_dir, out_md):
-    """the QA table: look x page, pass / fixed / known issue (from two --qa runs)"""
+    """the QA table: look x page, pass / fixed / known issue (from two --qa runs; an issue the default AGORA has too on that page is the
+    default's own, listed once at the end, not counted against a look: the default stays byte for byte as it is)"""
     def load(dd):
         o = {}
         if dd and os.path.isdir(dd):
@@ -639,33 +723,48 @@ def qa_table(before_dir, after_dir, out_md):
     B, A = load(before_dir), load(after_dir)
     looks = [t for t, _ in theme_ids() if t in A or t in B]
     keys = [k for k, *_ in MATRIX]
+    labels = {k: lab for k, _, lab, _ in MATRIX}
 
-    def issues(j, k):
-        r = (j or {}).get("pages", {}).get(k)
-        if not r:
-            return None
-        return [x for x, ok in r.get("verdict", {}).items() if not ok]
+    def page(j, k):
+        return (j or {}).get("pages", {}).get(k)
     lines = ["| Look | " + " | ".join(keys) + " |", "|---|" + "---|" * len(keys)]
     tally = {"pass": 0, "fixed": 0, "known": 0, "n/a": 0}
-    notes = []
+    notes, per_check = [], {}
     for t in looks:
         row = []
         for k in keys:
-            b, a = issues(B.get(t), k), issues(A.get(t), k)
-            if a is None:
+            bi = look_issues(page(B.get(t), k), page(B.get("agora"), k) if t != "agora" else None)
+            ai = look_issues(page(A.get(t), k), page(A.get("agora"), k) if t != "agora" else None)
+            if t == "agora":                                  # the default: only what the theme work could have broken (the flash, the frame)
+                ai = {c: v for c, v in (ai or {}).items() if c in ("first", "frame", "load")} if ai is not None else None
+                bi = {c: v for c, v in (bi or {}).items() if c in ("first", "frame", "load")} if bi is not None else None
+            if ai is None:
                 row.append("n/a")
                 tally["n/a"] += 1
-            elif not a:
-                row.append("fixed" if b else "pass")
-                tally["fixed" if b else "pass"] += 1
+            elif not ai:
+                row.append("fixed" if bi else "pass")
+                tally["fixed" if bi else "pass"] += 1
             else:
-                row.append("known: " + "/".join(SHORT.get(x, x) for x in a))
+                row.append("known: " + "/".join(SHORT.get(x, x) for x in ai))
                 tally["known"] += 1
-                notes.append(f"- {t} / {k}: " + _why(A[t]["pages"][k]).strip(" ()"))
+                for c, v in ai.items():
+                    per_check[c] = per_check.get(c, 0) + 1
+                notes.append(f"- **{t} / {labels.get(k, k)}**: " + "; ".join(f"{SHORT.get(c, c)}: {v[0]}" + (f" (+{len(v) - 1} more)" if len(v) > 1 else "") for c, v in ai.items()))
         lines.append(f"| {t} | " + " | ".join(row) + " |")
-    head = (f"Look QA matrix ({len(looks)} looks x {len(keys)} pages): {tally['pass']} pass, {tally['fixed']} fixed, {tally['known']} known issue"
-            + (f", {tally['n/a']} not run" if tally["n/a"] else "") + ".")
-    md = "# " + head + "\n\n" + "\n".join(lines) + "\n\n## Known issues\n\n" + ("\n".join(notes) if notes else "None.") + "\n"
+    own = []
+    for k in keys:                                           # the default's own issues (not the looks'): kept, the default is byte for byte as before
+        ai = look_issues(page(A.get("agora"), k))
+        if ai:
+            own.append(f"- **{labels.get(k, k)}**: " + "; ".join(f"{SHORT.get(c, c)}: {v[0]}" + (f" (+{len(v) - 1})" if len(v) > 1 else "") for c, v in ai.items() if c not in ("left",)))
+    head = (f"Look QA matrix ({len(looks)} looks x {len(keys)} pages = {len(looks) * len(keys)} cells): {tally['pass']} pass, {tally['fixed']} fixed, "
+            f"{tally['known']} known issue" + (f", {tally['n/a']} not run" if tally["n/a"] else "") + ".")
+    md = ("# " + head + "\n\nEach cell is one look on one page (390 x 844; `-desk` = 1440 x 900), measured by `tools/theme_shots.py --qa` (`tools/theme_qa.js`): "
+          "text contrast on the page's real pixels (AA), AGORA colours left, +$ green / -$ red, the status bar, the first frame (no flash), the keyboard focus ring, "
+          "and on NQ / Mint / My Money the Go to sheet, a toast and a sheet. pass = clean before and after, fixed = an issue before, clean now, "
+          "known = still open (listed below). An issue the default (Agora) has on the same page is the default's own (listed last), not a look's.\n\n"
+          + "\n".join(lines) + "\n\n## Known issues (" + ", ".join(f"{SHORT.get(c, c)} {n}" for c, n in sorted(per_check.items(), key=lambda x: -x[1])) + ")\n\n"
+          + ("\n".join(notes) if notes else "None.") + "\n\n## The default's own issues (Agora, kept byte for byte; not part of the look work)\n\n"
+          + ("\n".join(own) if own else "None.") + "\n")
     open(out_md, "w", encoding="utf-8").write(md)
     return head
 

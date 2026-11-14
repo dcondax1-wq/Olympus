@@ -13,7 +13,9 @@
   return function (opts) {
     opts = opts || {};
     const W = innerWidth, H = innerHeight, max = opts.max || 60, d = document, root = d.documentElement;
-    const SKIP = '.g-swatches, .g-sw, .g-mini, .g-combo, #looks, #lookMix, .othemes, #themes, #olyThemes, .lk-pick, [data-oly-qa-skip], .oly-grain';
+    const SKIP = '.g-swatches, .g-sw, .g-mini, .g-combo, #looks, #lookMix, #lookTop, #lookBar, .othemes, #themes, #olyThemes, .lk-pick, [data-oly-qa-skip], .oly-grain';
+    // scene art keeps its own colours like a 3D canvas does (the 2D fallback scenes, the people's painted portraits): never a leftover
+    const ART = 'svg.s2d, .pp-portrait, canvas, video, img';
     // ---------------------------------------------------------------- colours: any CSS colour -> [r, g, b, a] (0-255, a 0-1)
     const cx = d.createElement('canvas'); cx.width = cx.height = 1; const g2 = cx.getContext('2d', { willReadFrequently: true }); const cache = new Map();
     function col(v) {
@@ -107,7 +109,8 @@
 
     // ---------------------------------------------------------------- 1. text contrast
     const texts = [], low = [];
-    const all = d.querySelectorAll('body *');
+    // opts.scope: only what sits inside it (a sheet, a toast: theme_shots.py's overlay check)
+    const all = opts.scope ? [...d.querySelectorAll('body *')].filter((e) => e.closest(opts.scope)) : d.querySelectorAll('body *');
     const until = opts.screens ? opts.screens * H : Infinity;
     for (let i = 0; i < all.length; i++) {
       const e = all[i];
@@ -171,7 +174,7 @@
     }
     for (let i = 0; i < all.length && left.length < max; i++) {
       const e = all[i];
-      if (e.closest(SKIP)) continue;
+      if (e.closest(SKIP) || e.closest(ART)) continue;
       const r = e.getBoundingClientRect();
       if (r.width < 1 || r.height < 1) continue;
       const cs = getComputedStyle(e);
@@ -183,7 +186,8 @@
         scanStyle(e, pc, ps);
       }
     }
-    for (const [name, c] of [['html background', rcs.backgroundColor], ['body background', bcs && bcs.backgroundColor], ['html scrollbar', rcs.scrollbarColor]]) {
+    const selBg = (() => { try { return d.body ? getComputedStyle(d.body, '::selection').backgroundColor : ''; } catch (e) { return ''; } })();
+    for (const [name, c] of (opts.scope ? [] : [['html background', rcs.backgroundColor], ['body background', bcs && bcs.backgroundColor], ['html scrollbar', rcs.scrollbarColor], ['::selection', selBg]])) {
       const hit = (String(c || '').match(COLRE) || []).map(col).find(isAg);
       if (hit) left.push({ sel: name, prop: name, value: c, text: '' });
     }
