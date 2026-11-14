@@ -679,7 +679,7 @@ def mix_check(br, origin, log=print):
 
 SHORT = {"text": "contrast", "left": "AGORA leftover", "money": "+$/-$", "frame": "status bar", "first": "flash", "focus": "focus ring", "overlay": "sheet/toast",
          "load": "load"}
-ART_SEL = ("svg.s2d", "pp-portrait", "svg.pl-", "a.ship > svg", "a.dl > i", "span.og-ic")                         # scene art: its own colours, like a 3D canvas (not a leftover)
+ART_SEL = ("svg.s2d", "pp-portrait", "svg.pl-", "a.ship > svg", "a.dl > i", "span.og-ic", "pl-tablet")                         # scene art: its own colours, like a 3D canvas (not a leftover)
 KEEP_RX = re.compile(r"\b(255, 154, 61|255, 106, 26)\b")      # the bots' identity colours (ATLAS orange): never a look's to repaint
 
 

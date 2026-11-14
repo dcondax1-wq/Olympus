@@ -1054,11 +1054,11 @@
       '.pl-plaque b{font:600 13px/1.2 var(--pl-serif);color:var(--oly-th-n37, #f3ece0)}.pl-plaque-usd{font-size:12.5px;font-weight:600}.pl-record .pl-plaque{border-color:var(--oly-th-a4, #8d6c25)}.pl-plaque .pl-chip{align-self:center;margin-bottom:2px}',
       /* stoic */
       '.pl-stoic{background:linear-gradient(180deg,var(--oly-th-n5, #26211b),var(--oly-th-n4, #1d1914))}',
-      '.pl-tablet{margin:0;padding:18px 18px 14px;border-radius:12px;color:var(--oly-th-n8, #3b342c);background:radial-gradient(140% 120% at 20% 10%,var(--oly-th-n36, #efe9de) 0%,var(--oly-th-n34, #e2dacd) 45%,var(--oly-th-n31, #cfc6b6) 100%);',
-      'box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 6px rgba(var(--oly-th-n9-rgb, 80,60,40),.25),0 6px 18px rgba(0,0,0,.35);position:relative;overflow:hidden}',
-      '.pl-tablet:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(115deg,transparent 30%,rgba(var(--oly-th-n17-rgb, 120,108,92),.16) 31%,transparent 33%,transparent 62%,rgba(var(--oly-th-n17-rgb, 120,108,92),.12) 63%,transparent 64.5%);pointer-events:none}',
-      '.pl-inscr{margin:0;font:500 18px/1.45 var(--pl-serif);font-variant:small-caps;letter-spacing:.04em;color:var(--oly-th-n8, #3b342c);text-shadow:0 1px 0 rgba(255,255,255,.55),0 -1px 0 rgba(var(--oly-th-n7-rgb, 60,45,30),.25)}',
-      '.pl-tablet figcaption{margin-top:10px;font:italic 14px/1.35 var(--pl-serif);color:var(--oly-th-n10, #4a4238)}.pl-tr{font-style:normal;font-size:12px;color:var(--oly-th-n13, #5c5246)}',
+      '.pl-tablet{margin:0;padding:18px 18px 14px;border-radius:12px;color:#3b342c;background:radial-gradient(140% 120% at 20% 10%,#efe9de 0%,#e2dacd 45%,#cfc6b6 100%);',
+      'box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 6px rgba(80,60,40,.25),0 6px 18px rgba(0,0,0,.35);position:relative;overflow:hidden}',
+      '.pl-tablet:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(115deg,transparent 30%,rgba(120,108,92,.16) 31%,transparent 33%,transparent 62%,rgba(120,108,92,.12) 63%,transparent 64.5%);pointer-events:none}',
+      '.pl-inscr{margin:0;font:500 18px/1.45 var(--pl-serif);font-variant:small-caps;letter-spacing:.04em;color:#3b342c;text-shadow:0 1px 0 rgba(255,255,255,.55),0 -1px 0 rgba(60,45,30,.25)}',
+      '.pl-tablet figcaption{margin-top:10px;font:italic 14px/1.35 var(--pl-serif);color:#4a4238}.pl-tr{font-style:normal;font-size:12px;color:#5c5246}',
       /* placed in an app (data-polis-life): one of the page's AGORA v2 cards, same radius, edge, shadow and title size as its neighbours */
       '.pl-placed{margin:0;border-radius:20px;border-color:rgba(var(--oly-th-n37-rgb, 243,236,224),.075);box-shadow:var(--ag-e2,0 6px 18px rgba(0,0,0,.35));padding:16px 16px 14px}',
       '.pl-placed.pl-herald{border-color:rgba(var(--oly-th-a8-rgb, 200,162,74),.32)}.pl-placed .pl-title{font-size:var(--ag-fs-h3,18px)}.pl-placed .pl-head{margin-bottom:12px}',
