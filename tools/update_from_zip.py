@@ -10,6 +10,7 @@ the PC and double-clicks UPDATE_FROM_ZIP.bat; UNDO_UPDATE.bat puts the old files
     python tools/update_from_zip.py --undo               put back what the last update replaced, remove what it added
     python tools/update_from_zip.py --force              also while the bot is running or the market is open (not advised)
     python tools/update_from_zip.py --allow-market-open  the bot is stopped, the market is open, go on (the .bat asks first)
+    python tools/update_from_zip.py --check              read only, no guards (SETUP_EVERYTHING.bat step 1): is an update due?
     --folder DIR   the bot folder (default: the folder this script is in)      --port N   the bot server's port (default 8766)
 
 What it guarantees:
@@ -23,6 +24,9 @@ What it guarantees:
   - BACKS UP first: backups/update_from_zip/<stamp>/ holds the folder's state list (state_before.txt), a copy of every file
     it replaces and a manifest; a failed write rolls everything back.
   - Prints a SIX-LINE summary. Exit codes: 0 done, 2 nothing to do / not found, 3 bad zip, 11 bot running, 12 market open, 1 failed.
+    --check prints one line instead: 0 the folder already has this zip's code (this very zip was applied and not undone: later
+    fixes on the PC are never reverted; else every file the same), 10 an update is due, 13 the zip is OLDER than the folder's last
+    update (applied before a newer one, or dated before it: never put back over newer code), 2 / 3 as above. It changes nothing.
 Stdlib only, no zoneinfo (Windows has no time-zone database without the tzdata package).
 """
 from __future__ import annotations
@@ -54,6 +58,8 @@ KEEP_IF_CHANGED = ("live_model*.json",)                              # root leve
 EOL_STRICT = (".bat", ".cmd", ".ps1")                                # their line endings matter to Windows: never "the same but for line ends"
 STATE_SKIP_DIRS = {".git", "logs", "backups", "__pycache__", "node_modules", "nt_bars", "pc_publish", ".claude"}
 EXIT_OK, EXIT_FAIL, EXIT_NOTHING, EXIT_BADZIP, EXIT_RUNNING, EXIT_MARKET = 0, 1, 2, 3, 11, 12
+EXIT_DUE, EXIT_OLDER = 10, 13                                        # --check only
+NEXT_WORDS = "next double-click SETUP_EVERYTHING.bat (or GO_LIVE_EVAL.bat to go live)."
 
 
 def say(tag: str, text: str) -> None:
@@ -492,7 +498,7 @@ def update(a) -> int:
         pip_words = " requirements.txt changed: run ONE_TIME_SETUP.bat once."
     six([line1, line2, ("Changed", line3_words), ("Kept", "; ".join(kept_words)),
          ("Backup", f"{os.path.join(BACKUP_REL, stamp)}  ({len(man['replaced'])} old files saved; UNDO_UPDATE.bat puts them back)"),
-         ("Next", "done. The bot was NOT started: start it yourself with START_BOT.bat when you are ready." + pip_words)])
+         ("Next", "done. The bot was NOT started: " + (a.next or NEXT_WORDS) + pip_words)])
     return EXIT_OK
 
 
@@ -534,8 +540,76 @@ def undo(a) -> int:
     n_back, n_gone = len(man.get("replaced", [])), len(man.get("added", []))
     six([("Undo", f"the update of {pick} ({man.get('zip')})"), ("Folder", folder), ("Changed", f"{n_back} files put back, {n_gone - sum(1 for x in left if 'kept' in x)} new files removed"),
          ("Kept", (f"could not undo: {short(left)}" if left else "your local-only files and live_model*.json were not touched")), ("Backup", f"{os.path.join(BACKUP_REL, pick)} (kept)"),
-         ("Next", "done. The bot was NOT started: start it yourself with START_BOT.bat when you are ready.")])
+         ("Next", "done. The bot was NOT started: start it yourself with GO_LIVE_EVAL.bat when you are ready.")])
     return EXIT_FAIL if any("kept" not in x for x in left) else EXIT_OK
+
+
+# ------------------------------------------------------------------------------------------------ check (SETUP_EVERYTHING step 1)
+def zip_day(name: str | None) -> str | None:
+    """The YYYY-MM-DD in an OLYMPUS_BACKUP_<date>_<commit>.zip name (tools/make_backup.py, tools/second_backup.py), else None."""
+    m = re.search(r"OLYMPUS_BACKUP_(\d{4}-\d{2}-\d{2})", os.path.basename(str(name or "")))
+    return m.group(1) if m else None
+
+
+def applied_updates(folder: str) -> list:
+    """The folder's finished updates that were not undone, oldest first: [(stamp, manifest)] (backups/update_from_zip/<stamp>/)."""
+    broot = os.path.join(folder, BACKUP_REL)
+    try:
+        stamps = sorted(d for d in os.listdir(broot) if os.path.isfile(os.path.join(broot, d, "manifest.json")))
+    except OSError:
+        return []
+    out = []
+    for st in stamps:
+        try:
+            with open(os.path.join(broot, st, "manifest.json"), encoding="utf-8") as fh:
+                m = json.load(fh)
+        except (OSError, ValueError):
+            continue
+        if isinstance(m, dict) and m.get("done") and not m.get("undone"):
+            out.append((st, m))
+    return out
+
+
+def check(a) -> int:
+    """Read only, no bot / market guard: does the folder already have this zip's code? One line, the exit code says it."""
+    folder = os.path.abspath(a.folder)
+    if not looks_like_bot(folder):
+        say("FIX", f"{folder} is not the bot folder (no {MARKERS[0]} / {MARKERS[1]} in it).")
+        return EXIT_NOTHING
+    zip_path = find_zip(folder, a.zip)
+    if not zip_path:
+        say("FIX", (f"{a.zip} was not found." if a.zip else f"No {ZIP_GLOB} in the bot folder, Downloads or Desktop.") + " Download the code zip to the PC first.")
+        return EXIT_NOTHING
+    zip_path = os.path.abspath(zip_path)
+    name, done = os.path.basename(zip_path), applied_updates(folder)
+    if done:                                                  # this very zip applied before (fast: no unpacking at all)
+        try:
+            sha = sha256_file(zip_path)
+        except OSError:
+            sha = None
+        hits = [i for i, (_st, m) in enumerate(done) if sha and m.get("zip_sha256") == sha]
+        if hits and hits[-1] == len(done) - 1:
+            say("OK", f"{name}: the bot folder already has this code (applied {done[-1][0]}, not undone).")
+            return EXIT_OK
+        if hits:
+            say("OK", f"{name} was applied on {done[hits[-1]][0]}, then the newer {done[-1][1].get('zip')}: it is not put back over it.")
+            return EXIT_OLDER
+    state, sha_words, why = check_zip(zip_path)
+    if state != "ok":
+        say("STOP", why + " Nothing was changed.")
+        return EXIT_BADZIP
+    last = str(done[-1][1].get("zip") or "") if done else None
+    if zip_day(last) and zip_day(name) and zip_day(name) < zip_day(last):
+        say("OK", f"{name} is older than the code this folder already took from {last}: it is not put back over it.")
+        return EXIT_OLDER
+    with zipfile.ZipFile(zip_path) as z:
+        plan = make_plan(folder, z)
+    n_rep, n_add = len(plan["replace"]), len(plan["add"])
+    if n_rep or n_add:
+        say("..", f"{name}: an update is due ({n_rep} updated, {n_add} new; {sha_words}).")
+        return EXIT_DUE
+    say("OK", f"{name}: the bot folder already has this code ({plan['same']} files the same; {sha_words}).")
+    return EXIT_OK
 
 
 def main(argv=None) -> int:
@@ -548,6 +622,8 @@ def main(argv=None) -> int:
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--undo", action="store_true")
     ap.add_argument("--pip", action="store_true", help="install requirements.txt when the update changed it")
+    ap.add_argument("--check", action="store_true", help="read only: is an update due? (exit 0 no, 10 yes, 13 the zip is older)")
+    ap.add_argument("--next", default=None, help=argparse.SUPPRESS)                     # SETUP_EVERYTHING: its own words for line 6
     ap.add_argument("--now", type=float, default=None, help=argparse.SUPPRESS)          # tests: the clock
     a = ap.parse_args(argv)
     if a.zip is not None and not a.zip.strip():
@@ -558,6 +634,8 @@ def main(argv=None) -> int:
         except ValueError:
             a.port = 8766
     try:
+        if a.check:
+            return check(a)
         return undo(a) if a.undo else update(a)
     except KeyboardInterrupt:
         say("STOP", "Stopped by you.")

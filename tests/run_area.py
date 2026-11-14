@@ -41,7 +41,7 @@ AREAS = {
     "cities": ["cities_page", "kalshicity_page", "datacity"],
     "nq": ["lit_live", "no_yahoo", "risk_invariants", "mffu_rules", "guards", "sizing_caps", "second", "eval_lifecycle", "live_board", "live_publish", "heartbeat",
            "lit_scale_in", "lit_learn"],
-    "pc": ["bots_back", "calendar_sync", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "pc_command_center", "one_time_setup"],
+    "pc": ["bots_back", "setup_everything", "calendar_sync", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "pc_command_center", "one_time_setup"],
     "agency": ["agency_billing"],
     "money": ["money_machines"],
 }
