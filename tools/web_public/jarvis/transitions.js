@@ -76,6 +76,7 @@ export const REGISTRY = {
   herald:     { kind: 'tiles',         ms: 800 },
   polis:      { kind: 'skyline',       ms: 1000 },
   agency:     { kind: 'tiles',         ms: 800 },
+  business:   { kind: 'columns',       ms: 1000, n: 5 },
   clio:       { kind: 'scroll',        ms: 600 },
   atlas:      { kind: 'sunburst',      ms: 900 },
   observatory:{ kind: 'sunburst',      ms: 950 },

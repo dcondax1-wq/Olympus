@@ -32,7 +32,7 @@ NAV = os.path.join(AK.WEB, "olympus", "gate-nav.js")
 HUBS = ["today", "me", "bots", "kalshi", "money", "plan", "research", "jarvis", "worlds", "settings"]     # + Me (2026-11-14, a page hub: tests/test_me_hub.py)
 NAMES = ["Today", "Me", "Bots & Evals", "Kalshi", "My Money", "Plan & Day", "Research", "Jarvis", "Worlds", "Settings & Help"]
 NOW = "2026-11-12T15:00:00Z"            # Thursday 10:00 New York: the LIT window is open
-N_APPS = 83                              # 82 + Agency (agency/, wired 2026-11-14)
+N_APPS = 84                              # 82 + Agency (2026-11-14) + Business (2026-11-15)
 NOW_S = int(datetime(2026, 11, 12, 15, 0, tzinfo=timezone.utc).timestamp())
 
 

@@ -63,6 +63,7 @@
     ['mercury', 'mercury/', 'Mercury', 'Deals and codes', 'Sales, discount codes, free resets', 'money', 'ideas', 'discount coupon promo code sale deal reset price', ''],
     ['arbiter', 'arbiter/', 'Arbiter', 'Spreads and funding', 'Paper-only spreads: net yearly return', 'money', 'ideas', 'spreads funding arbitrage crypto yield', ''],
     ['agency', 'agency/', 'Agency', 'Website agency', 'Local-business leads, demo sites and calls', 'money', 'ideas', 'website websites agency web design clients leads crm pipeline calls cold call call list script side business', ''],
+    ['business', 'business/', 'Business', 'All my businesses', 'Every side business: next step, money, 7-day launch', 'money', 'ideas', 'business businesses side hustle agency products gigs instagram income launch checklist next step money plan', ''],
     // ---- Plan & Day: calendar, shifts, tasks, habits
     ['planner', 'planner/', 'Planner', 'Day and week plan', 'Sessions, shifts, tasks, habits and notes', 'plan', 'plan', 'calendar tasks todo habits schedule plan focus shift work', ''],
     ['mind', 'mind/', 'Mind', 'Your notes as a brain', 'Your vault as a living 3D brain', 'plan', 'plan', 'obsidian notes vault memory brain', ''],

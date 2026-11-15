@@ -192,7 +192,7 @@ def nav_checks(p, origin):
     az = p.evaluate("() => ({ open: !document.querySelector('#azSheet').hidden, rows: document.querySelectorAll('#azList a.g-row').length, letters: [...document.querySelectorAll('#azList .g-azl')].map((h) => h.textContent),"
                     " first: (document.querySelector('#azList a.g-row') || {}).dataset, h: Math.round(document.querySelector('#azList a.g-row').getBoundingClientRect().height) })")
     check("c. the A-Z button opens All apps A to Z: every app (83) in big rows (>= 56 px) under a letter each, the labs at the end under Workshop",
-          az["open"] and az["rows"] == 83 and az["letters"][0] in ("1", "#", "A") and az["letters"][-1] == "Workshop" and az["h"] >= 56, az)
+          az["open"] and az["rows"] == 84 and az["letters"][0] in ("1", "#", "A") and az["letters"][-1] == "Workshop" and az["h"] >= 56, az)
     t = AK.taps(p)
     check("c. the A to Z sheet: every tap >= 44 px, no sideways scroll", not t and AK.no_sideways(p), t[:4])
     AK.shot(p, "nav-az")
@@ -297,9 +297,9 @@ def test_page():
             check("c. each fact is a tap to the app with the detail: drawdown -> Aegis, today -> NQ, the window -> Kairos",
                   go == ["/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
             tiles = p.evaluate("() => [...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.href.replace(location.origin, ''), a.querySelector('.g-hline').textContent, a.querySelector('.g-hcount').textContent])")
-            check("c. the hub tiles open hub/?h=<hub> (1 tap) with their app counts (15 + 16 + 3 + 12 + 5 + 8 + 4 + 8 + 12 = 83, Agency included; Me: its 8 areas)",
+            check("c. the hub tiles open hub/?h=<hub> (1 tap) with their app counts (15 + 16 + 3 + 13 + 5 + 8 + 4 + 8 + 12 = 84, Agency + Business included; Me: its 8 areas)",
                   [t[0] for t in tiles] == HUBS and all(t[1] == f"/hub/index.html?h={t[0]}" for t in tiles)
-                  and sum(int(t[3].split()[0]) for t in tiles if t[0] != "me") == 83 and tiles[0][3] == "15 apps" and tiles[1][3] == "8 areas", tiles)
+                  and sum(int(t[3].split()[0]) for t in tiles if t[0] != "me") == 84 and tiles[0][3] == "15 apps" and tiles[1][3] == "8 areas", tiles)
             lines = {t[0]: t[2] for t in tiles}
             check("c. live hub lines: Bots & Evals '2 evals active, $1,420 / $900 left', Today 'Trade window open until 15:30 ET', Kalshi 'No Kalshi numbers yet' (no feed here)",
                   lines["bots"] == "2 evals active, $1,420 / $900 left" and lines["today"].startswith("Trade window open until 15:30 ET") and lines["kalshi"] == "No Kalshi numbers yet", lines)
