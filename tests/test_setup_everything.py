@@ -124,8 +124,8 @@ def static():
     check("setup_everything.ps1: GO_LIVE_EVAL's part 1 = scripts\\bots_back.ps1 -NoResume (no paper resume before the phrase)",
           bbl == ["& $script:PsExe -NoProfile -ExecutionPolicy Bypass -File $bb -NoResume -Python $py"], bbl)
     reads = [ln.strip() for ln in code if "Read-Host" in ln]
-    check("setup_everything.ps1: one Read-Host (the Ask helper for Y / YES / Enter); its answers go nowhere but an if",
-          reads == ["$a = Read-Host $Prompt"], reads)
+    check("setup_everything.ps1: two Read-Host lines: the Ask helper (Y / YES / Enter; its answers go nowhere but an if) and the ONE hidden key prompt",
+          reads == ["$a = Read-Host $Prompt", "$s = Read-Host -AsSecureString $Prompt"], reads)
     check("setup_everything.ps1: the pause screen asks exactly the owner's question", f"'   {GATE}'" in ps)
     i1, i2, i3 = joined.find("Header 'STEP 1 of 3'"), joined.find("Header 'STEP 2 of 3'"), joined.find("Header 'STEP 3 of 3'")
     check("setup_everything.ps1: the steps in order: new code, phone link, go live", 0 < i1 < i2 < i3, (i1, i2, i3))
@@ -153,6 +153,25 @@ def static():
     check("1b: the sign-in names the account in update_source.json (read only), skipped when the folder's code has no auto-update yet",
           "'update_source.json'" in ps and "P $j 'account'" in ps and "This code has no auto-update yet (a newer code zip brings it). The zip way still works." in au)
     check("the .bat's header names the new step", "1b AUTO-UPDATE" in bat, bat[:900])
+    i1c = joined.find("Header 'STEP 1c of 3'")
+    st1c = joined[i1c:i2]
+    check("1c dashboard: its own step between 1b and step 2, on the intro and in the summary; the site name in ONE place",
+          0 < i1b < i1c < i2 and "'   1c Your dashboard site updates itself" in ps and '"   1c Dashboard     {0}" -f $script:S1c' in ps
+          and ps.count("moonlit-scone-08afe5") == 1 and "$NetlifySite = 'moonlit-scone-08afe5'" in ps, (i1b, i1c, i2))
+    keyl = [ln.strip() for ln in code if "$key" in ln]
+    check("1c: ONE hidden prompt; the key goes only into pc_publish's stdin (never shown, logged, stored or put on a command line), then forgotten",
+          keyl == ["$key = Ask-Secret '   Paste your Netlify key, or press Enter to skip'", "if (-not $key) {",
+                   "$key | & $py -X utf8 $pubTool --setup netlify --site-name $NetlifySite --token-stdin", "$key = $null"]
+          and joined.count("Ask-Secret '") == 1, keyl)
+    check("1c: the two how-to lines (where the key is made) above the prompt",
+          "'   The key: app.netlify.com > your picture > User settings > Applications > New access token > Generate > copy.'" in st1c
+          and st1c.find("The key: app.netlify.com") < st1c.find("Ask-Secret"), st1c[:500])
+    sched = [ln for ln in code if re.search(r"Register-ScheduledTask|New-ScheduledTask|schtasks", ln, re.I)]
+    check("1c: the publish task is the PUBLISH_NQ.bat one (scripts\\publish_nq.ps1 reused as is), never a second copy of it here",
+          "$pubTask = JP $Root 'scripts\\publish_nq.ps1'" in st1c and "& $script:PsExe -NoProfile -ExecutionPolicy Bypass -File $pubTask -Python $py" in st1c and not sched, sched)
+    check("1c: never a stop (no Done / exit in it); skipped when the key is saved and the task is there; each setup answer has its line (0 3 4 5 other)",
+          "Done " not in st1c and not re.search(r"\bexit\b", st1c) and "(Netlify-Saved) -and (Task-Exists 'OlympusPublishNQ')" in st1c
+          and all(f"$prc -eq {c}" in st1c for c in (0, 3, 4, 5)) and "The key was not saved (code $prc" in st1c, st1c[-500:])
     aus = rb("engine/autoupdate.py").decode("utf-8")
     usrc = json.loads(rb("update_source.json").decode("utf-8"))
     check("1b against the REAL CLI: engine/autoupdate.py has --source-status / --connect / --port and the exit codes step 1b reads (0 1 20 21 22; 10); "
@@ -518,7 +537,7 @@ class Box:
         self.fake = FakeBot(self.dir)
         wr(os.path.join(self.tsdir, "serve_on.json"), json.dumps(
             {"TCP": {"443": {"HTTPS": True}}, "Web": {f"{DNS}:443": {"Handlers": {"/": {"Proxy": f"http://127.0.0.1:{self.fake.port}"}}}}}))
-        self.calls, self.winlog, self.pylog, self.aulog = (os.path.join(self.dir, n) for n in ("calls.log", "win.log", "py.log", "au.log"))
+        self.calls, self.winlog, self.pylog, self.aulog, self.pplog = (os.path.join(self.dir, n) for n in ("calls.log", "win.log", "py.log", "au.log", "pp.log"))
 
     @staticmethod
     def zip_code():
@@ -543,6 +562,7 @@ class Box:
     def run(self, pwsh, args=(), stdin="", now=SAT, tasks="", script=None, batdir=None, go_rc=0, go_arms=1, bb_rc=0, extra_env=None):
         env = {**os.environ, "HOME": self.home, "USERPROFILE": self.home, "TEMP": self.tmp, "OLYMPUS_HOME": os.path.join(self.home, ".olympus"),
                "LE_SE_T_LOG": self.winlog, "LE_SE_T_TASKS": tasks, "LE_SE_T_NOW": str(now), "SE_T_CALLS": self.calls, "SE_T_DIR": self.dir, "SE_T_AULOG": self.aulog,
+               "SE_T_PPLOG": self.pplog,
                "SE_T_PORT": str(self.fake.port), "SE_T_REALPY": sys.executable, "SE_T_PYLOG": self.pylog, "SE_T_DNS": DNS, "FAKE_TS_DIR": self.tsdir,
                "FAKE_GO_RC": str(go_rc), "FAKE_GO_ARMS": str(go_arms), "FAKE_BB_RC": str(bb_rc), "NO_PROXY": "127.0.0.1,localhost", "no_proxy": "127.0.0.1,localhost",
                "DOTNET_CLI_TELEMETRY_OPTOUT": "1", "POWERSHELL_TELEMETRY_OPTOUT": "1", "POWERSHELL_UPDATECHECK": "Off", **(extra_env or {})}
@@ -560,7 +580,7 @@ class Box:
             return []
 
     def clear(self):
-        for p in (self.calls, self.winlog, self.pylog, self.aulog):
+        for p in (self.calls, self.winlog, self.pylog, self.aulog, self.pplog):
             open(p, "w").close()
         self.fake.starts = 0                                        # the START SERVER count starts again with the emptied log
 
@@ -677,6 +697,9 @@ def flows(pwsh):
               GATE in out and "It is not Sunday 6 PM New York time yet" in out and "Stopped here. Nothing is armed." in out and not [c for c in calls if c.startswith(("bots_back", "engine.go"))], (calls, out[-1500:]))
         check("first run: the summary says what happened to each step", re.search(r"1  New code\s+done: the new code is in", out)
               and re.search(r"2  Phone link\s+on: " + re.escape(URL), out) and re.search(r"3  Go live\s+not yet", out), out[-800:])
+        check("first run, code without the dashboard setup yet: step 1c says so in one SKIP line and goes on, no prompt",
+              "[SKIP] This code cannot set up the dashboard site yet (a newer code zip brings it)." in out and "Paste your Netlify key" not in out
+              and re.search(r"1c Dashboard\s+skipped: this code cannot do it yet", out), out[-1500:])
         check("first run, code without auto-update yet: step 1b says so in one SKIP line and goes on (no probe, no connect), the summary names it",
               "[SKIP] This code has no auto-update yet (a newer code zip brings it). The zip way still works." in out and not b.lines(b.aulog)
               and re.search(r"1b Auto-update\s+skipped: this code has no auto-update yet", out) and order(out, "STEP 1b of 3", "STEP 2 of 3"), out[-1500:])
@@ -1070,6 +1093,110 @@ def au_flows(pwsh):
         b.cleanup()
 
 
+# ============================================================================================== 3 pwsh: step 1c, the dashboard site
+KEY = "nfp_OwnerKey0123456789abcdefABCDEFxyz"
+# tools/pc_publish.py stand-in (the window runs it on the real python): records its arguments and the LENGTH of the key it got on
+# stdin and whether it was the typed one (never the key itself); FAKE_PP_RC answers; 0 saves a netlify.json without the key
+FAKE_PP = r'''# fake tools/pc_publish.py --setup netlify --site-name NAME --token-stdin (tests/test_setup_everything.py)
+import json, os, sys
+key = sys.stdin.readline().strip()
+with open(os.environ["SE_T_PPLOG"], "a") as fh:
+    fh.write(json.dumps({"args": sys.argv[1:], "key_len": len(key), "key_ok": key == os.environ.get("SE_T_KEY")}) + "\n")
+rc = int(os.environ.get("FAKE_PP_RC") or 0)
+if rc == 0:
+    d = os.environ["OLYMPUS_HOME"]
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, "netlify.json"), "w") as fh:
+        json.dump({"site_id": "6a1f0c2e-1111-4222-8333-944455556666", "token": "saved-by-the-fake", "site_name": "moonlit-scone-08afe5"}, fh)
+    print("[OK] publisher set to netlify. Site: https://moonlit-scone-08afe5.netlify.app. (fake)")
+else:
+    print("[FIX] the fake setup said no (%d)" % rc)
+sys.exit(rc)
+'''
+FAKE_PUB = r"""Add-Content -LiteralPath $env:SE_T_CALLS -Value ("publish_nq.ps1 " + ($args -join ' '))
+Write-Host '[OK]  task OlympusPublishNQ: publishes every 15 minutes while you are signed in (fake)'
+if ($env:FAKE_PUB_RC) { exit [int]$env:FAKE_PUB_RC }
+exit 0
+"""
+SITE_FILES = {"tools/pc_publish.py": FAKE_PP, "scripts/publish_nq.ps1": FAKE_PUB}
+
+
+def pp_calls(b):
+    return [json.loads(ln) for ln in b.lines(b.pplog)]
+
+
+def pub_calls(b):
+    return [c for c in b.lines(b.calls) if c.startswith("publish_nq.ps1")]
+
+
+def text_anywhere(folder, needle: str):
+    hits = []
+    for root, _dirs, files in os.walk(folder):
+        for f in files:
+            try:
+                with open(os.path.join(root, f), "rb") as fh:
+                    if needle.encode() in fh.read():
+                        hits.append(os.path.relpath(os.path.join(root, f), folder))
+            except OSError:
+                pass
+    return hits
+
+
+def site_flows(pwsh):
+    zf = {**Box.zip_code(), **SITE_FILES}
+    with_key = {"SE_T_KEY": KEY}
+    b = Box(zip_files=zf)
+    try:
+        rc, out = b.run(pwsh, stdin=KEY + "\n", extra_env=with_key)
+        pp = pp_calls(b)
+        check("1c first run: the two how-to lines, ONE hidden prompt, then pc_publish --setup netlify --site-name moonlit-scone-08afe5 --token-stdin, the key on its stdin",
+              rc == 0 and "The key: app.netlify.com > your picture > User settings > Applications > New access token > Generate > copy." in out
+              and "Paste your Netlify key, or press Enter to skip" in out and len(pp) == 1
+              and pp[0]["args"] == ["--setup", "netlify", "--site-name", "moonlit-scone-08afe5", "--token-stdin"] and pp[0]["key_ok"] and pp[0]["key_len"] == len(KEY)
+              and order(out, "STEP 1b of 3", "STEP 1c of 3", "Paste your Netlify key", "STEP 2 of 3"), (pp, out[-2500:]))
+        check("1c first run: then the PUBLISH_NQ task (scripts\\publish_nq.ps1 -Python <python>, reused as is), '[OK] Your dashboard site updates itself now', the summary says on",
+              pub_calls(b) == [f"publish_nq.ps1 -Python {b.py}"] and "[OK] Your dashboard site updates itself now: moonlit-scone-08afe5.netlify.app" in out
+              and re.search(r"1c Dashboard\s+on: the dashboard site updates itself", out) and order(out, "Netlify key saved", "the publish task of PUBLISH_NQ.bat"), (b.lines(b.calls), out[-1500:]))
+        logs = b.lines(b.pylog) + b.lines(b.calls) + b.lines(b.winlog) + b.lines(b.aulog)
+        check("1c: the key is NOWHERE: not on screen, not in any command line (python / child-script logs), not in any file of the whole PC folder",
+              KEY not in out and not [ln for ln in logs if KEY in ln] and not text_anywhere(b.dir, KEY), text_anywhere(b.dir, KEY))
+        b.clear()
+        rc, out = b.run(pwsh, tasks="OlympusLiveSite,OlympusPublishNQ")
+        check("1c second run: the key saved and the task there -> 'Already on', no prompt, no setup, no task call",
+              rc == 0 and "[OK] Already on: this PC puts your dashboard site on Netlify by itself" in out and "Paste your Netlify key" not in out
+              and not pp_calls(b) and not pub_calls(b) and re.search(r"1c Dashboard\s+already on", out), out[-1500:])
+        b.clear()
+        rc, out = b.run(pwsh, tasks="OlympusLiveSite")
+        check("1c: the key saved but the PUBLISH_NQ task missing: no prompt, only the task (publish_nq.ps1)",
+              rc == 0 and "Paste your Netlify key" not in out and not pp_calls(b) and pub_calls(b) == [f"publish_nq.ps1 -Python {b.py}"]
+              and "[OK] Your dashboard site updates itself now" in out, out[-1500:])
+    finally:
+        b.cleanup()
+
+    b = Box(zip_files=zf)
+    try:
+        rc, out = b.run(pwsh, stdin="\n", tasks="OlympusLiveSite")
+        check("1c: Enter (no key) -> one SKIP line, nothing saved, no setup, no task; the window goes on",
+              rc == 0 and "[SKIP] No key pasted: the dashboard site does not update itself yet" in out and not pp_calls(b) and not pub_calls(b)
+              and "STEP 3 of 3" in out and re.search(r"1c Dashboard\s+skipped: no key pasted", out), out[-1500:])
+        for code, line, summ in (("3", "Netlify refused that key", "not on: Netlify refused the key"),
+                                 ("4", "has no site called moonlit-scone-08afe5", "not on: no site moonlit-scone-08afe5 on that Netlify account"),
+                                 ("5", "Could not reach Netlify (check the internet)", "not on: Netlify could not be reached"),
+                                 ("9", "The key was not saved (code 9", "not on: the key was not saved (code 9)")):
+            b.clear()
+            rc, out = b.run(pwsh, stdin=KEY + "\n", tasks="OlympusLiveSite", extra_env={**with_key, "FAKE_PP_RC": code})
+            check(f"1c: pc_publish --setup exit {code}: one SKIP line ('{line}'), no task set up, the window goes on, the key not on screen",
+                  rc == 0 and line in out and len(pp_calls(b)) == 1 and not pub_calls(b) and "STEP 3 of 3" in out and KEY not in out
+                  and re.search(r"1c Dashboard\s+" + re.escape(summ), out), out[-1500:])
+        b.clear()
+        rc, out = b.run(pwsh, stdin=KEY + "\n", tasks="OlympusLiveSite", extra_env={**with_key, "FAKE_PUB_RC": "1"})
+        check("1c: the key saved but the task could not be set up: one SKIP line (PUBLISH_NQ.bat once), the window goes on",
+              rc == 0 and "[SKIP] The publish task was not set up" in out and "STEP 3 of 3" in out
+              and re.search(r"1c Dashboard\s+not on yet: the publish task was not set up", out), out[-1500:])
+    finally:
+        b.cleanup()
+
+
 def main() -> int:
     static()
     check_mode()
@@ -1078,6 +1205,7 @@ def main() -> int:
         bootstrap(pwsh)
         flows(pwsh)
         au_flows(pwsh)
+        site_flows(pwsh)
     else:
         print("[SKIP] pwsh not found: the PowerShell runs were skipped")
     bad = RES.count(False)

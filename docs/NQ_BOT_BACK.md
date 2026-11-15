@@ -13,11 +13,11 @@ The bots (LIT / ATLAS / BLITZ) never needed GitHub to trade. Only their reportin
 2. **Double-click `BOTS_BACK.bat`** in the bot folder. It checks NinjaTrader and its bars, starts the bots on Sim / paper (never a real account), turns the GitHub pushes off and ends with six lines. Note the phone alert topic it shows.
 3. **iPhone:** install the free **ntfy** app, tap **+**, type that topic, tap **Subscribe**. A test push arrives; after that every trade, a stale feed or a stopped bot pushes to your phone, and this site shows the PC's status every 15 minutes.
 
-Optional, for the whole site from the PC once a day: make a free Netlify site and token, then `python tools\pc_publish.py --setup netlify --site-id YOUR_SITE_ID --token-stdin` and double-click `PUBLISH_NQ.bat`.
+Optional, your dashboard site updates itself (at most once a day): `SETUP_EVERYTHING.bat` asks for your Netlify key once (step 1c; Enter skips) and does the rest. Only the lite site leaves the PC (no trade pictures, replay charts, write-ups, Data City or the Mind vault: those stay on your Tailscale link), and never a private file.
 
 Undo: `UNDO_UPDATE.bat` puts the old files back; `UNDO_PUBLISH_NQ.bat` removes the publish task.
 
-Notes: the token goes to `%USERPROFILE%\.olympus\netlify.json`, outside the repo. No Netlify? In step 3 use `--setup folder --folder "C:\path\to\a synced folder"` instead.
+Notes: the key goes to `%USERPROFILE%\.olympus\netlify.json`, outside the repo (for Claude: `python tools\pc_publish.py --setup netlify --site-name moonlit-scone-08afe5 --token-stdin` finds the site id with the key; `--site-id` still works). No Netlify? In step 3 use `--setup folder --folder "C:\path\to\a synced folder"` instead.
 On the phone, the **NQ** app shows each bot's status with the exact age of the last report, and these same five steps.
 
 ## Updating the bot later (no GitHub)

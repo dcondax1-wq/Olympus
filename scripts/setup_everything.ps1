@@ -18,6 +18,13 @@ ONE window, in order, each one checked first and skipped when it is already done
                 stopped is still stopped; it is started again right after. Every code but 0 (20 backup not reachable, 21 not
                 now, 22 no git, 1 failed and put back) is one [SKIP] line, never a stop: steps 2 and 3 always go on. Skipped
                 when the folder's code has no auto-update yet. A connect that brings another copy of this script hands over.
+  1c DASHBOARD  (2026-11-15, optional) the dashboard site on Netlify ($NetlifySite, its one place) updates itself from this PC.
+                Skipped when %USERPROFILE%\.olympus\netlify.json has a key and a site id and the PUBLISH_NQ task is there. Else
+                ONE hidden prompt for the Netlify key (Enter skips; how to make one in two lines), tools\pc_publish.py --setup
+                netlify --site-name finds the site with it (the key only on its stdin: never shown, logged, stored here or put
+                on a command line), then scripts\publish_nq.ps1 (the PUBLISH_NQ.bat task, reused as is) sets up the 15-minute
+                task and publishes once. Only the lite set leaves the PC, never a private file (pc_publish.deploy_set). A key
+                already saved with the task missing: only the task. Every problem is one [SKIP] line, never a stop.
   2 PHONE LINK  the private Tailscale link to the dashboard (scripts\live_link.ps1); skipped when "tailscale serve" already points
                 at the bot server and the site task is there. A failure says what to do, Enter tries again, LATER skips it.
                 The link is shown big and put on the clipboard.
@@ -57,6 +64,8 @@ trap {
     Write-Host ("  [FIX] Something unexpected stopped this window ({0}). Double-click SETUP_EVERYTHING.bat again; if it stops here again, send a photo of this window to Claude." -f $_.Exception.Message) -ForegroundColor Red
     exit 1
 }
+# the owner's dashboard site on Netlify (step 1c: tools\pc_publish.py looks its id up with the key): its one place
+$NetlifySite = 'moonlit-scone-08afe5'
 
 # ------------------------------------------------------------------------------------------------ small helpers
 function J2([string]$A, [string]$B) { return [System.IO.Path]::Combine($A, $B) }
@@ -100,6 +109,22 @@ function Ask([string]$Prompt) {
     $a = Read-Host $Prompt
     if ($null -eq $a) { return '' }
     return ([string]$a).Trim()
+}
+function Ask-Secret([string]$Prompt) {
+    # ONE hidden line (nothing shows while you paste). The answer is never shown, written, logged or put on a command line: the
+    # caller pipes it to tools\pc_publish.py's stdin and forgets it. A redirected input (a pipe, the tests) has no console to
+    # hide it on: there the line is read as it comes (nothing is echoed there either).
+    Write-Host ''
+    if ([Console]::IsInputRedirected) {
+        Write-Host ($Prompt + ': ') -NoNewline
+        $t = [Console]::In.ReadLine()
+        Write-Host ''
+        if ($null -eq $t) { return '' }
+        return ([string]$t).Trim()
+    }
+    $s = Read-Host -AsSecureString $Prompt
+    if ($null -eq $s -or $s.Length -eq 0) { return '' }
+    try { return ([string](New-Object System.Net.NetworkCredential('', $s)).Password).Trim() } catch { return '' }
 }
 function File-Sha([string]$Path) {
     try { return (Get-FileHash -LiteralPath $Path -Algorithm SHA256 -ErrorAction Stop).Hash } catch { return '' }
@@ -385,6 +410,24 @@ function Au-Account {
     } catch { }
     return ''
 }
+# ------------------------------------------------------------------------------------------------ the dashboard site (step 1c)
+function Netlify-Saved {
+    # %USERPROFILE%\.olympus\netlify.json (tools\pc_publish.py --setup netlify) holds a key and a site id (the key is never shown)
+    $h = $env:OLYMPUS_HOME
+    if (-not $h) { $h = J2 (Home-Dir) '.olympus' }
+    try {
+        $j = Get-Content -LiteralPath (J2 $h 'netlify.json') -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+        $t = ([string](P $j 'token')).Trim()
+        $i = ([string](P $j 'site_id')).Trim()
+        return ($t.Length -gt 0 -and $i.Length -gt 0)
+    } catch { return $false }
+}
+function Site-Ready {
+    # this code can do it: tools\pc_publish.py knows --site-name and scripts\publish_nq.ps1 (the PUBLISH_NQ.bat task) is there
+    $pp = JP $script:Root 'tools\pc_publish.py'
+    if (-not (Test-Path -LiteralPath $pp) -or -not (Test-Path -LiteralPath (JP $script:Root 'scripts\publish_nq.ps1'))) { return $false }
+    try { return [bool](Select-String -LiteralPath $pp -SimpleMatch -Pattern 'site-name' -Quiet) } catch { return $false }
+}
 function Hand-Over([string]$Why) {
     # the rest always runs on the bot folder's own copy of this script: when it differs from this one (an update or the connect
     # brought a newer one, or the folder already had another), it goes on and this copy stops here. A server this window stopped
@@ -497,6 +540,7 @@ function Show-Link([string]$Url) {
 # ------------------------------------------------------------------------------------------------ summary and exit
 $script:S1 = 'not checked'
 $script:S1b = 'not checked'
+$script:S1c = 'not checked'
 $script:S2 = 'not checked'
 $script:S3 = 'not checked'
 $script:ServerDown = $false          # step 1 stopped the bot server: started again after step 1b (one stop for both)
@@ -506,6 +550,7 @@ function Summary {
     Write-Host ('  ' + ('=' * 26) + ' SUMMARY ' + ('=' * 26)) -ForegroundColor Cyan
     Write-Host ("   1  New code      {0}" -f $script:S1)
     Write-Host ("   1b Auto-update   {0}" -f $script:S1b)
+    Write-Host ("   1c Dashboard     {0}" -f $script:S1c)
     Write-Host ("   2  Phone link    {0}" -f $script:S2)
     Write-Host ("   3  Go live       {0}" -f $script:S3)
     Write-Host ''
@@ -531,6 +576,7 @@ if (-not $Step1) {
     Write-Host ('  ' + ('#' * 72)) -ForegroundColor Cyan
     Write-Host '   1  New code from the zip'
     Write-Host '   1b Auto-update: from then on the PC gets new code by itself (a GitHub sign-in the first time)'
+    Write-Host '   1c Your dashboard site updates itself (paste a Netlify key once, or press Enter to skip)'
     Write-Host '   2  Your phone dashboard (private link)'
     Write-Host '   3  Go live on the evals (Sunday after 6 PM New York time: you type YES, then the live phrase yourself)'
     Write-Host '   A step that is already done is skipped. Safe to double-click again any time.'
@@ -794,6 +840,64 @@ if (-not (Au-Ready)) {
 if ($auStopped) { $script:ServerDown = $true }
 if ($connected) { Hand-Over 'Auto-update brought a newer version of this window: it goes on from here.' }
 if ($script:ServerDown) { Start-Server; $script:ServerDown = $false }
+
+# ================================================================================================ 1c the dashboard site updates itself
+# optional: the Netlify key once (ONE hidden prompt), then tools\pc_publish.py --setup netlify --site-name finds the site with it, and
+# the PUBLISH_NQ.bat task (scripts\publish_nq.ps1, reused as is) puts the lite, private-free site there by itself. Never a stop.
+Header 'STEP 1c of 3' 'Your dashboard site updates itself'
+$pubTool = JP $Root 'tools\pc_publish.py'
+$pubTask = JP $Root 'scripts\publish_nq.ps1'
+if (-not (Site-Ready)) {
+    Say 'SKIP' 'This code cannot set up the dashboard site yet (a newer code zip brings it).'
+    $script:S1c = 'skipped: this code cannot do it yet'
+} elseif ((Netlify-Saved) -and (Task-Exists 'OlympusPublishNQ')) {
+    Say 'OK' 'Already on: this PC puts your dashboard site on Netlify by itself (at most once a day).'
+    $script:S1c = 'already on: the dashboard site updates itself'
+} else {
+    $saved = Netlify-Saved
+    if (-not $saved) {
+        Write-Host "   Your dashboard site ($NetlifySite.netlify.app) can update itself from this PC: no more zips to upload by hand."
+        Write-Host '   The key: app.netlify.com > your picture > User settings > Applications > New access token > Generate > copy.'
+        $key = Ask-Secret '   Paste your Netlify key, or press Enter to skip'
+        if (-not $key) {
+            Say 'SKIP' 'No key pasted: the dashboard site does not update itself yet (double-click SETUP_EVERYTHING.bat again to add the key).'
+            $script:S1c = 'skipped: no key pasted'
+        } else {
+            Set-Location -LiteralPath $Root
+            $key | & $py -X utf8 $pubTool --setup netlify --site-name $NetlifySite --token-stdin
+            $prc = $LASTEXITCODE
+            $key = $null
+            if ($prc -eq 0) {
+                Say 'OK' "Netlify key saved (outside the bot folder, never shown); your site $NetlifySite was found."
+                $saved = $true
+            } elseif ($prc -eq 3) {
+                Say 'SKIP' 'Netlify refused that key (make a new one as the line above says); nothing was saved. Double-click SETUP_EVERYTHING.bat again to paste it.'
+                $script:S1c = 'not on: Netlify refused the key'
+            } elseif ($prc -eq 4) {
+                Say 'SKIP' "That key's Netlify account has no site called $NetlifySite (make the key while signed in to the account the site is on); nothing was saved."
+                $script:S1c = "not on: no site $NetlifySite on that Netlify account"
+            } elseif ($prc -eq 5) {
+                Say 'SKIP' 'Could not reach Netlify (check the internet); nothing was saved. Double-click SETUP_EVERYTHING.bat again later.'
+                $script:S1c = 'not on: Netlify could not be reached'
+            } else {
+                Say 'SKIP' "The key was not saved (code $prc; the line above says why)."
+                $script:S1c = "not on: the key was not saved (code $prc)"
+            }
+        }
+    }
+    if ($saved) {
+        Write-Host ''
+        Write-Host '   ----- the publish task of PUBLISH_NQ.bat: every 15 minutes, at most one Netlify upload a day; the first one now -----' -ForegroundColor Cyan
+        & $script:PsExe -NoProfile -ExecutionPolicy Bypass -File $pubTask -Python $py
+        if ($LASTEXITCODE -eq 0) {
+            Say 'OK' "Your dashboard site updates itself now: $NetlifySite.netlify.app gets this PC's newest numbers (at most once a day)."
+            $script:S1c = 'on: the dashboard site updates itself'
+        } else {
+            Say 'SKIP' 'The publish task was not set up (the lines above say why): double-click PUBLISH_NQ.bat once, or SETUP_EVERYTHING.bat again.'
+            $script:S1c = 'not on yet: the publish task was not set up'
+        }
+    }
+}
 
 # ================================================================================================ 2 the phone link
 Header 'STEP 2 of 3' 'Your phone dashboard (private link)'

@@ -31,7 +31,10 @@ What private data the system holds, where it lives and who can see it. Three set
 The site the build makes (the zip / folder for Netlify) and the public ntfy status topic never hold: card or account numbers, emails, phone
 numbers, street addresses, your name, email or age, keys or tokens, the alert topic, full broker account ids, personal folders
 (`C:\Users\<you>\`), household / day / inbox / health / cards / agency / calendar files. The build's last step (`tools/site_privacy.py`)
-masks or removes them; `tests/test_public_build_privacy.py` fails a build that still has one.
+masks or removes them; `tests/test_public_build_privacy.py` fails a build that still has one. What PUBLISH_NQ / SETUP_EVERYTHING step 1c
+send to Netlify (`tools/pc_publish.deploy_set`, 2026-11-15) is checked again file by file with the same rule (a private file is kept
+out and named; if the check cannot run, nothing is sent), and is only the lite set: the trade pictures, replay charts, write-ups, Data
+City and the Mind vault stay on the PC and your Tailscale link.
 
 ## The audit (team Q2, 2026-11-14)
 | Risk | Found? | Fixed? | Test |

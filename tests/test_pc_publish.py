@@ -37,9 +37,11 @@ TOKEN = "nfp_SECRETTOKEN1234567890abcdef"
 
 
 class Netlify(http.server.BaseHTTPRequestHandler):
-    """A tiny stand-in for api.netlify.com: records calls, answers the digest and zip deploys."""
+    """A tiny stand-in for api.netlify.com: records calls, answers the digest and zip deploys, and GET /sites (the account's
+    sites: Netlify's name filter matches a part of the name; without it, pages of per_page)."""
     calls: list = []
     fail_with = None
+    sites: list = []
 
     def log_message(self, *a):
         pass
@@ -66,6 +68,13 @@ class Netlify(http.server.BaseHTTPRequestHandler):
             return self._reply(200, {"id": "dd1", "required": sorted(set(files.values()))[:3], "ssl_url": "https://stub.example"})
         if self.command == "PUT":
             return self._reply(200, {})
+        if self.command == "GET" and self.path.startswith("/api/v1/sites"):
+            import urllib.parse
+            q = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
+            if "name" in q:
+                return self._reply(200, [s for s in Netlify.sites if q["name"][0] in str(s.get("name"))])
+            page, per = int(q.get("page", ["1"])[0]), int(q.get("per_page", ["100"])[0])
+            return self._reply(200, Netlify.sites[(page - 1) * per:page * per])
         if self.command == "GET":
             return self._reply(200, {"id": "dd1", "state": "ready", "ssl_url": "https://stub.example"})
         return self._reply(404, {})
@@ -366,6 +375,138 @@ def main() -> int:
         nf = os.path.join(tmp, "cfg2", "netlify.json")
         check("--setup netlify: writes netlify.json + publish.json + the no_github marker outside the repo, token never printed",
               rc == 0 and json.load(open(nf))["token"] == TOKEN and TOKEN not in buf.getvalue() and os.path.exists(os.path.join(tmp, "cfg2", "no_github")), buf.getvalue())
+
+        # ------------------------------------------------------------------ 2026-11-15: --setup netlify --site-name (the id looked up with the key)
+        import subprocess
+        owner_site = {"id": "6a1f0c2e-1111-4222-8333-944455556666", "name": "moonlit-scone-08afe5", "url": "http://moonlit-scone-08afe5.netlify.app",
+                      "ssl_url": "https://moonlit-scone-08afe5.netlify.app", "account_name": "Owner Fullname", "account_slug": "owner-slug",
+                      "user_id": "u-123", "capabilities": {"email": "owner@example.com"}}
+        near = {"id": "7b2f0c2e-1111-4222-8333-944455550000", "name": "moonlit-scone-08afe5-old", "ssl_url": "https://moonlit-scone-08afe5-old.netlify.app"}
+        check("site name forms: the bare name, the *.netlify.app address, the https link with a slash all mean the same site; an own domain stays a domain",
+              {PP.site_key(x) for x in ("moonlit-scone-08afe5", "Moonlit-Scone-08afe5.netlify.app", "https://moonlit-scone-08afe5.netlify.app/", " http://moonlit-scone-08afe5.netlify.app/x?y ")}
+              == {"moonlit-scone-08afe5"} and PP.site_key("https://dash.example.com/") == "dash.example.com")
+        Netlify.sites = [near, owner_site]
+        Netlify.calls.clear()
+        hit = PP.find_site("moonlit-scone-08afe5", TOKEN, env)
+        check("find_site: Netlify's name filter, then the EXACT name (not the similar 'moonlit-scone-08afe5-old'); only id / name / url kept (no account data)",
+              hit == {"id": owner_site["id"], "name": "moonlit-scone-08afe5", "url": "https://moonlit-scone-08afe5.netlify.app"} and len(Netlify.calls) == 1
+              and Netlify.calls[0]["auth"] == "Bearer " + TOKEN and "name=moonlit-scone-08afe5" in Netlify.calls[0]["path"], (hit, Netlify.calls[:1]))
+        others = [{"id": f"{i:08d}-aaaa-4bbb-8ccc-dddddddddddd", "name": f"site-{i}"} for i in range(150)]
+        own_dom = {"id": "9c3f0c2e-1111-4222-8333-944455557777", "name": "random-words-123", "custom_domain": "dash.example.com", "ssl_url": "https://dash.example.com"}
+        Netlify.sites = others[:120] + [own_dom] + others[120:]
+        Netlify.calls.clear()
+        hit2 = PP.find_site("https://dash.example.com/", TOKEN, env)
+        check("find_site: a site under its own domain (the name filter misses it) is found on page 2 of the account's sites (100 a page)",
+              hit2 and hit2["id"] == own_dom["id"] and len(Netlify.calls) == 3 and "page=2" in Netlify.calls[2]["path"], (hit2, [c["path"] for c in Netlify.calls]))
+        Netlify.sites = [near]
+        check("find_site: no such site -> None (a similar name never counts)", PP.find_site("moonlit-scone-08afe5", TOKEN, env) is None)
+
+        def setup_run(stdin, *args, api_url=None, home=None):
+            e = {**os.environ, "OLYMPUS_HOME": home or os.path.join(tmp, "cfg_sn"), "OLYMPUS_NETLIFY_API": api_url or api, "PYTHONIOENCODING": "utf-8"}
+            r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "tools", "pc_publish.py"), "--setup", "netlify", *args, "--token-stdin"],
+                               input=stdin, capture_output=True, text=True, env=e, timeout=120)
+            return r.returncode, r.stdout + r.stderr
+
+        Netlify.sites = [near, owner_site]
+        Netlify.calls.clear()
+        rc, out = setup_run(TOKEN + "\n", "--site-name", "moonlit-scone-08afe5")
+        saved = json.load(open(os.path.join(tmp, "cfg_sn", "netlify.json")))
+        check("--setup netlify --site-name: ONE paste -> exit 0, netlify.json holds the looked-up site id + the key + name / address (nothing else), the key never printed",
+              rc == 0 and saved == {"site_id": owner_site["id"], "token": TOKEN, "site_name": "moonlit-scone-08afe5", "site_url": "https://moonlit-scone-08afe5.netlify.app"}
+              and TOKEN not in out and "Site: https://moonlit-scone-08afe5.netlify.app" in out and json.load(open(os.path.join(tmp, "cfg_sn", "publish.json")))["provider"] == "netlify", (rc, out))
+        check("...the key went only in the Authorization header (never in a URL), and nothing of the account (name, email) was stored",
+              Netlify.calls and all(TOKEN not in c["path"] for c in Netlify.calls) and all(c["auth"] == "Bearer " + TOKEN for c in Netlify.calls)
+              and "Owner Fullname" not in json.dumps(saved) and "owner@example.com" not in json.dumps(saved), [c["path"] for c in Netlify.calls])
+        rc, out = setup_run(TOKEN + "\n", "--site-name", "https://moonlit-scone-08afe5.netlify.app/", home=os.path.join(tmp, "cfg_sn2"))
+        check("--setup: the site's https address works as well as its name", rc == 0 and json.load(open(os.path.join(tmp, "cfg_sn2", "netlify.json")))["site_id"] == owner_site["id"], out)
+        Netlify.fail_with = 401
+        rc, out = setup_run(TOKEN + "\n", "--site-name", "moonlit-scone-08afe5", home=os.path.join(tmp, "cfg_ref"))
+        Netlify.fail_with = None
+        check("--setup: a refused key -> exit 3, one line (make a new one: where), nothing saved, the key not printed (the server echoed it back)",
+              rc == 3 and "[FIX] Netlify refused that key" in out and "New access token" in out and TOKEN not in out and not os.path.exists(os.path.join(tmp, "cfg_ref", "netlify.json")), (rc, out))
+        Netlify.sites = [near]
+        rc, out = setup_run(TOKEN + "\n", "--site-name", "moonlit-scone-08afe5", home=os.path.join(tmp, "cfg_none"))
+        check("--setup: the key's account has no such site -> exit 4, one line, nothing saved", rc == 4 and "has no site called moonlit-scone-08afe5" in out
+              and not os.path.exists(os.path.join(tmp, "cfg_none", "netlify.json")), (rc, out))
+        rc, out = setup_run(TOKEN + "\n", "--site-name", "moonlit-scone-08afe5", api_url="http://127.0.0.1:9/api/v1", home=os.path.join(tmp, "cfg_down"))
+        check("--setup: Netlify not reachable -> exit 5, one line, nothing saved, the key not printed", rc == 5 and "could not be reached" in out and TOKEN not in out
+              and not os.path.exists(os.path.join(tmp, "cfg_down", "netlify.json")), (rc, out))
+        rc, out = setup_run("\n", "--site-name", "moonlit-scone-08afe5", home=os.path.join(tmp, "cfg_empty"))
+        check("--setup: no key pasted (empty line) -> exit 2, nothing saved", rc == 2 and not os.path.exists(os.path.join(tmp, "cfg_empty", "netlify.json")), (rc, out))
+        Netlify.sites = []
+
+        # ------------------------------------------------------------------ 2026-11-15: what leaves this PC (the lite set, never a private file)
+        dsite = os.path.join(tmp, "dsite")
+        for rel, data in {"index.html": "<html></html>", "data.json": '{"t": 1}', "runs/a.json": "{}", "charts/c.png": "png", "replays/r.json": "{}",
+                          "writeups/w.md": "# w", "datacity/d.js": "1", "mind/m.json": "{}", "money/household.json": '{"month": 1}', "day/day.json": "{}",
+                          "hub/me.json": '{"kind": "olympus-health", "steps": 1}', "hub/ok.json": '{"kind": "olympus-hub-public"}',
+                          "jarvis/x.json": '{"telegram_token": "123456789:AAfake"}', "money/index.json": '{"machines": 5}'}.items():
+            os.makedirs(os.path.dirname(os.path.join(dsite, rel)), exist_ok=True)
+            open(os.path.join(dsite, rel), "w").write(data)
+        dfiles = PP.site_files(dsite)
+        out_set, kept = PP.deploy_set(dsite, dfiles, {})
+        check("deploy set (lite): the 5 heavy folders stay on the PC (charts, replays, writeups, datacity, mind); private files never leave "
+              "(household by name, day.json by name, a health 'kind', a key in a JSON); the rest goes",
+              sorted(out_set) == ["data.json", "hub/ok.json", "index.html", "money/index.json", "runs/a.json"] and kept["lite"] == 5
+              and kept["private"] == ["day/day.json", "hub/me.json", "jarvis/x.json", "money/household.json"], (sorted(out_set), kept))
+        full_set, kept_f = PP.deploy_set(dsite, dfiles, {"site_set": "full"})
+        check("publish.json site_set 'full': the heavy folders go too, private files still never", kept_f["lite"] == 0 and "charts/c.png" in full_set and "mind/m.json" in full_set
+              and not set(kept_f["private"]) & set(full_set) and len(kept_f["private"]) == 4, (sorted(full_set), kept_f))
+        import tools as _tools_pkg
+        had = getattr(_tools_pkg, "site_privacy", None)
+        saved_mod = sys.modules.get("tools.site_privacy")
+        try:
+            if had is not None:
+                delattr(_tools_pkg, "site_privacy")
+            sys.modules["tools.site_privacy"] = None
+            try:
+                PP.deploy_set(dsite, dfiles, {})
+                msg = "no error"
+            except PP.ProviderError as e:
+                msg = str(e)
+        finally:
+            if saved_mod is not None:
+                sys.modules["tools.site_privacy"] = saved_mod
+            else:
+                sys.modules.pop("tools.site_privacy", None)
+            if had is not None:
+                _tools_pkg.site_privacy = had
+        check("deploy set: when the privacy check cannot run, NOTHING is sent (fails closed, one plain sentence)", "privacy check could not run" in msg and "nothing sent" in msg, msg)
+
+        # run_once sends exactly that set (the digest file list), counts and hashes it, says what stayed home
+        PP.step_state, PP.step_site = (lambda w: (True, "ok")), None
+
+        def site_with_heavy(w):
+            s = os.path.join(w, "site")
+            shutil.rmtree(s, ignore_errors=True)
+            shutil.copytree(dsite, s)
+            return True, "ok"
+
+        PP.step_site = site_with_heavy
+        try:
+            class A2:
+                work = os.path.join(tmp, "work_lite")
+                provider = None
+                folder = None
+                dry_run = False
+                force = False
+                skip_build = False
+                min_interval = 0.0
+
+            Netlify.calls.clear()
+            rec_l = PP.run_once(A2(), env={"OLYMPUS_HOME": cd, "OLYMPUS_NETLIFY_API": api}, say=lambda m: None)
+            posted = [json.loads(c["body"])["files"] for c in Netlify.calls if c["m"] == "POST"]
+            check("run_once: the Netlify digest lists only the lite, private-free set (5 files); 5 heavy files stay home, 4 private kept out and said so",
+                  rec_l["ok"] and posted and sorted(posted[0]) == ["/data.json", "/hub/ok.json", "/index.html", "/money/index.json", "/runs/a.json"]
+                  and rec_l["files"] == 5 and rec_l["kept_lite"] == 5 and rec_l["kept_private"] == 4 and "4 private file(s) kept out of the upload" in rec_l["state_text"], (rec_l, posted))
+            check("status line 4 says the heavy files stay on this PC", "(lite: 5 heavy files stay on this PC)" in PP.status_lines(rec_l)[3], PP.status_lines(rec_l)[3])
+            check("the PC's own site folder keeps everything (the Tailscale link still has the charts, the city, the vault)",
+                  os.path.exists(os.path.join(A2.work, "site", "charts", "c.png")) and os.path.exists(os.path.join(A2.work, "site", "mind", "m.json")))
+        finally:
+            PP.step_state, PP.step_site = real_state, real_site
+        src_pp = open(os.path.join(ROOT, "tools", "pc_publish.py"), encoding="utf-8").read()
+        check("pc_publish: the privacy order holds (the Kalshi feed added, scrubbed, then hashed, then the deploy set before anything is sent)",
+              src_pp.find("add_kalshi(site, cfg)") < src_pp.find("scrub(site") < src_pp.find("site_files(site)") < src_pp.find("deploy_set(site, files, cfg)") < src_pp.find("PROVIDERS[cfg[\"provider\"]](site, files"))
 
         # ------------------------------------------------------------------ the main entry never raises on a soft failure
         rc = PP.main(["--work", os.path.join(tmp, "w2"), "--provider", "folder", "--skip-build"])
