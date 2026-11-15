@@ -8,6 +8,8 @@ ONE window, in order, each one checked first and skipped when it is already done
                 after you type Y (scripts\stop_bot.ps1, the STOP_BOT.bat stop; never with an open trade) and started again after
                 step 1b (one stop for both; the bot itself stays stopped). Then the bot folder's own copy of this script goes on
                 (when it differs from the one running: the update brought a newer one, or the folder has a newer one than the zip).
+                Skipped with one OK line when the folder already updates itself from the backup (--source-status 0): a zip
+                would make its code differ from the backup and stop every auto-update (UPDATE.bat takes the newest code).
   1b AUTO-UPDATE (2026-11-14, docs\AUTO_UPDATE.md) the PC gets new code from the private backup repo by itself from then on:
                 python -m engine.autoupdate --source-status first (read only: 0 already on -> skipped, 10 -> the connect; any
                 other answer is a SKIP with its line), then --connect --port N, attached to this window (a GitHub sign-in window
@@ -367,6 +369,13 @@ function Au-Ready {
     if (-not (Test-Path -LiteralPath $au) -or -not (Test-Path -LiteralPath (JP $script:Root 'update_source.json'))) { return $false }
     try { return [bool](Select-String -LiteralPath $au -SimpleMatch -Pattern 'source-status' -Quiet) } catch { return $false }
 }
+function Au-On {
+    # the folder already updates itself from the backup: its own --source-status (read only, no network) exits 0
+    if (-not (Au-Ready)) { return $false }
+    Set-Location -LiteralPath $script:Root
+    $null = @(& $script:Py -X utf8 -m engine.autoupdate --source-status 2>&1)
+    return ($LASTEXITCODE -eq 0)
+}
 function Au-Account {
     # update_source.json "account": the GitHub account the private backup repo lives on (the one to sign in as)
     try {
@@ -552,8 +561,15 @@ if ($Step1) {
     Say 'OK' ("Step 1 (above): {0}." -f $Step1)
     $script:S1 = $Step1
 } else {
-    $zipPath = Find-Zip
-    if (-not $zipPath) {
+    # a folder the auto-update already runs (--source-status 0) never takes a zip again: it would make the code differ from the
+    # backup and stop every auto-update (UPDATE.bat takes the newest code from the backup)
+    $selfUpdating = Au-On
+    $zipPath = $null
+    if (-not $selfUpdating) { $zipPath = Find-Zip }
+    if ($selfUpdating) {
+        Say 'OK' 'This PC updates itself from the backup; no zip needed.'
+        $script:S1 = 'skipped: this PC updates itself from the backup (no zip needed)'
+    } elseif (-not $zipPath) {
         if ($Zip) {
             Fix "The zip $Zip was not found" 'Drag the code zip from Downloads onto SETUP_EVERYTHING.bat, or just double-click SETUP_EVERYTHING.bat'
             Done 1

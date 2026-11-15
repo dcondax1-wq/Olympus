@@ -664,11 +664,113 @@ def test_models():
         shutil.rmtree(base, ignore_errors=True)
 
 
+# ============================================================================================== 5. a folder that updates itself
+SRC_URL = "https://dcondax1-wq@github.com/dcondax1-wq/olympus.git"
+
+
+def git_cfg(remote="olympus", url=SRC_URL, extra=""):
+    return ('[core]\n\trepositoryformatversion = 0\n[remote "origin"]\n\turl = https://github.com/old-account/nq-liquidity-engine.git\n'
+            f'[remote "{remote}"]\n\turl = {url}{extra}\n\tfetch = +refs/heads/*:refs/remotes/{remote}/*\n[branch "pc"]\n\tremote = {remote}\n')
+
+
+def connect_files(bot, remote="olympus", url=SRC_URL, enabled=True, state_url=None, cfg=None):
+    """What engine/autoupdate.py --connect leaves: update_source.json (the repo's), data/autoupdate.json (on + the connect record),
+    the backup remote in the git config."""
+    wr(os.path.join(bot, "update_source.json"), json.dumps({"v": 1, "remote": remote, "url": url, "branch": "pc", "account": "dcondax1-wq"}))
+    wr(os.path.join(bot, "data", "autoupdate.json"), json.dumps({"enabled": enabled, "connected": {"t": 1794600000, "url": state_url or url, "sha": "abc"}}))
+    wr(os.path.join(bot, ".git", "config"), cfg if cfg is not None else git_cfg(remote, url))
+
+
+def test_self_updating():
+    base = tempfile.mkdtemp(prefix="upd-self-")
+    home = os.path.join(base, "home")
+    os.makedirs(home)
+    port = free_port()
+    try:
+        # ---- the rule, read from the files (no git run)
+        d = os.path.join(base, "rule")
+        bot = model_bot(d, LIT_NEW)
+        check("5. not connected (no update_source.json, no autoupdate record, no git config) -> the zip way as before", U.updates_itself(bot) is None)
+        connect_files(bot)
+        check("5. connected: update_source.json names the backup, the git config has that remote with that URL, auto-update on and connected to it",
+              U.updates_itself(bot) == "dcondax1-wq/olympus", U.updates_itself(bot))
+        cases = {
+            "auto-update off": dict(enabled=False), "the connect record names another URL": dict(state_url="https://github.com/x/y.git"),
+            "the git remote has another URL": dict(cfg=git_cfg(url="https://github.com/someone/else.git")),
+            "the git config has no such remote": dict(cfg=git_cfg(remote="other")), "update_source.json names origin": dict(remote="origin"),
+            "an http:// (not https) URL": dict(url="http://github.com/dcondax1-wq/olympus.git")}
+        bad = []
+        for label, kw in cases.items():
+            connect_files(bot, **kw)
+            if U.updates_itself(bot) is not None:
+                bad.append(label)
+        connect_files(bot)
+        check("5. NOT connected when any part is missing (" + ", ".join(cases) + ")", not bad, bad)
+        check("5. LE_UPDATE_SOURCE=origin (the old updates) -> not connected, as engine/autoupdate.source reads it",
+              U.updates_itself(bot, env={"LE_UPDATE_SOURCE": "origin"}) is None and U.updates_itself(bot, env={}) is not None)
+        connect_files(bot, cfg=git_cfg(url=f'"{SRC_URL}"', extra="  # the backup"))
+        q = U.updates_itself(bot)
+        shutil.rmtree(os.path.join(bot, ".git"))
+        wr(os.path.join(d, "elsewhere", "config"), git_cfg())
+        wr(os.path.join(bot, ".git"), "gitdir: ../elsewhere\n")
+        check("5. the git config as git writes it: a quoted URL with a comment, and a .git FILE (gitdir: ...) that points elsewhere",
+              q is not None and U.updates_itself(bot) is not None, q)
+
+        # ---- the same answer as the real --source-status (engine/autoupdate.source_status, real git) on a real repo
+        d = os.path.join(base, "real")
+        rbot = model_bot(d, LIT_NEW)
+        git_t(rbot, "init", "-q")
+        git_t(rbot, "remote", "add", "olympus", SRC_URL)
+        from engine import autoupdate as AU
+        st = {"enabled": True, "connected": {"t": 1794600000, "url": SRC_URL}}
+        wr(os.path.join(rbot, "update_source.json"), json.dumps({"v": 1, "remote": "olympus", "url": SRC_URL, "branch": "pc", "account": "dcondax1-wq"}))
+        wr(os.path.join(rbot, "data", "autoupdate.json"), json.dumps(st))
+        same = [(AU.source_status(root=rbot, state=st, env={})[0] == 0, U.updates_itself(rbot, env={}) is not None)]
+        git_t(rbot, "remote", "set-url", "olympus", "https://github.com/someone/else.git")
+        same.append((AU.source_status(root=rbot, state=st, env={})[0] == 0, U.updates_itself(rbot, env={}) is not None))
+        git_t(rbot, "remote", "set-url", "olympus", SRC_URL)
+        st_off = {**st, "enabled": False}
+        wr(os.path.join(rbot, "data", "autoupdate.json"), json.dumps(st_off))
+        same.append((AU.source_status(root=rbot, state=st_off, env={})[0] == 0, U.updates_itself(rbot, env={}) is not None))
+        check("5. the same answer as the real engine/autoupdate.py --source-status (real git) on a real repo: connected, another URL, auto-update off",
+              same == [(True, True), (False, False), (False, False)], same)
+
+        # ---- the updater in a connected folder
+        d = os.path.join(base, "flow")
+        zp = make_zip(d, files=dict(MZIP))
+        bot = model_bot(d, LIT_OLD)
+        connect_files(bot)
+        before = tree(bot)
+        rc, out = run([zp, "--folder", bot], home, port)
+        check("5. UPDATE_FROM_ZIP in a PC that updates itself: refused (exit 14) with the plain line (the PC updates itself; UPDATE.bat for the newest code), nothing changed",
+              rc == 14 and "This PC updates itself from the backup (auto-update is on), so a zip is not used here" in out and "double-click UPDATE.bat" in out
+              and tree(bot) == before and not os.path.exists(os.path.join(bot, "backups")), out)
+        rc, out = run([zp, "--folder", bot, "--dry-run"], home, port)
+        check("5. ...a dry run says the same (exit 14)", rc == 14 and "updates itself from the backup" in out and tree(bot) == before, out)
+        rc, out = run([zp, "--folder", bot, "--check"], home, port)
+        check("5. --check there: exit 0 'Not needed: this PC updates itself from the backup' (an older SETUP_EVERYTHING copy then simply goes on)",
+              rc == 0 and "Not needed: this PC updates itself from the backup" in out and tree(bot) == before, out)
+        rc, out = run([zp, "--folder", bot, "--force"], home, port)
+        check("5. --force still puts the zip in, and says the auto-update will wait", rc == 0 and rb(os.path.join(bot, "engine", "lit.py")) == b"VERSION = 'new'\n"
+              and "--force: this PC updates itself from the backup; the zip goes in anyway" in out, out)
+        d = os.path.join(base, "off")
+        zp = make_zip(d, files=dict(MZIP))
+        bot = model_bot(d, LIT_OLD)
+        connect_files(bot, enabled=False)
+        rc, out = run([zp, "--folder", bot], home, port)
+        check("5. the same folder with auto-update OFF: the zip goes in as before", rc == 0 and rb(os.path.join(bot, "engine", "lit.py")) == b"VERSION = 'new'\n", out)
+        src = rb(TOOL).decode("utf-8")
+        check("5. the connected check runs no git and imports nothing new (the stdlib rule holds)", "updates_itself" in src and "subprocess" not in src[src.index("def git_remote_url"):src.index("def connected_words")])
+    finally:
+        shutil.rmtree(base, ignore_errors=True)
+
+
 if __name__ == "__main__":
     test_static()
     test_units()
     test_flows()
     test_models()
+    test_self_updating()
     bad = RES.count(False)
     print(f"\n{len(RES) - bad}/{len(RES)} passed")
     sys.exit(1 if bad else 0)

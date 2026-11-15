@@ -28,6 +28,7 @@ On the phone, the **NQ** app shows each bot's status with the exact age of the l
 | Asks before updating while the market is open | Overwrite local-only files: alerts, TradingView, autostart, bot state, memory, `.env`, NinjaTrader bars, logs |
 | Saves the old files in `backups\update_from_zip\` first | Replace a `live_model*.json` you changed: yours is kept and it says so |
 | Gives an OLDER copy of `live_model*.json` (a version the repo itself had; nothing on the PC writes these files) the new values, and says so | Touch a file changed on the PC after that same zip went in |
+| Says so when this PC updates itself from the backup (auto-update on): no zip needed, UPDATE.bat takes the newest code | Put a zip into a PC that updates itself (it would stop every auto-update; only `--force`, when Claude asks) |
 | Shows six lines: zip, folder, changed, kept, backup, next | Start, stop or arm the bot, or delete a file |
 
 ## What runs where

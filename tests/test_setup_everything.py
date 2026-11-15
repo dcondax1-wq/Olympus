@@ -137,8 +137,13 @@ def static():
     check("1b: --connect is called once, bare and attached to this window (no pipe, capture or redirect: a GitHub sign-in may need the owner), with this port",
           conn == ["& $py -X utf8 -m engine.autoupdate --connect --port $Port"], conn)
     stat = [ln.strip() for ln in code if "engine.autoupdate" in ln and "--source-status" in ln]
-    check("1b: the read-only --source-status probe first (its line kept for a SKIP), only then the connect",
-          len(stat) == 1 and stat[0].startswith("$probe = @(& $py -X utf8 -m engine.autoupdate --source-status 2>&1") and 0 < au.find("--source-status") < au.find("--connect"), stat)
+    check("1b: the read-only --source-status probe first (its line kept for a SKIP), only then the connect; step 1 asks the same probe (Au-On)",
+          len(stat) == 2 and "$probe = @(& $py -X utf8 -m engine.autoupdate --source-status 2>&1 | ForEach-Object { ([string]$_).Trim() } | Where-Object { $_ })" in stat
+          and "$null = @(& $script:Py -X utf8 -m engine.autoupdate --source-status 2>&1)" in stat and 0 < au.find("--source-status") < au.find("--connect"), stat)
+    s1 = joined[i1:i1b]
+    check("step 1: a PC that already updates itself (--source-status 0) never takes a zip again: one OK line, no zip looked for",
+          "$selfUpdating = Au-On" in s1 and "if (-not $selfUpdating) { $zipPath = Find-Zip }" in s1 and s1.find("Au-On") < s1.find("Find-Zip")
+          and "Say 'OK' 'This PC updates itself from the backup; no zip needed.'" in s1, s1[:600])
     check("1b: never a stop: no Done or exit in it; every code has its own one line (0 on, 20 unreachable, 21 not now, 22 no git, 1 put back, any other)",
           "Done " not in au and not re.search(r"\bexit\b", au) and all(f"$crc -eq {c}" in au for c in (0, 20, 21, 22, 1)) and "Auto-update stopped (code $crc" in au
           and "Could not reach the backup ($signIn in the window that opens, or check the internet). The zip way still works." in au, au[:300])
@@ -941,8 +946,22 @@ def au_flows(pwsh):
         b.clear()
         rc, out = b.run(pwsh, tasks="OlympusLiveSite")
         check("1b second run: --source-status says 0 -> 'Already on: the PC updates itself', no connect, nothing stopped, nothing asked",
-              rc == 0 and "[OK] Already on: the PC updates itself" in out and [a for a, _u, _c in au_calls(b)] == [AU_STATUS] and "Type Y then Enter to stop" not in out
+              rc == 0 and "[OK] Already on: the PC updates itself" in out and [a for a, _u, _c in au_calls(b)] == [AU_STATUS, AU_STATUS] and "Type Y then Enter to stop" not in out
               and not [c for c in b.lines(b.calls) if c.startswith("stop_bot")] and re.search(r"1b Auto-update\s+already on", out), (au_calls(b), out[-1500:]))
+        check("... and step 1 there: 'This PC updates itself from the backup; no zip needed.' (no zip check, no update, no new backup)",
+              "[OK] This PC updates itself from the backup; no zip needed." in out and not b.lines(b.pylog) and len(b.manifests()) == 1
+              and re.search(r"1  New code\s+skipped: this PC updates itself from the backup \(no zip needed\)", out), (b.lines(b.pylog), out[-1500:]))
+        time.sleep(0.05)
+        newer = os.path.join(b.home, "Downloads", "OLYMPUS_BACKUP_2026-11-15_def5678.zip")
+        with zipfile.ZipFile(newer, "w") as z:
+            for rel, data in {**zf, "engine/lit.py": "VERSION = 'newer, from a later zip'\n"}.items():
+                z.writestr(rel, data)
+        before = tree(b.bot)
+        b.clear()
+        rc, out = b.run(pwsh, tasks="OlympusLiveSite")
+        check("a NEWER zip in Downloads on a PC that updates itself: still skipped (it would stop every auto-update), the folder unchanged",
+              rc == 0 and "This PC updates itself from the backup; no zip needed." in out and tree(b.bot) == before and not b.lines(b.pylog)
+              and "STEP 3 of 3" in out, out[-1500:])
     finally:
         b.cleanup()
 
