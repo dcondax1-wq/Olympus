@@ -1,4 +1,4 @@
-﻿source: C:\Users\Demetri Condax\AppData\Local\Temp\ict_study\clean_snap2.csv
+﻿source: C:\Users\<you>\AppData\Local\Temp\ict_study\clean_snap2.csv
 range: 2021-11-08 .. end
 sessions 1278, weeks 258, folds 62 (train0 13 wk, block 4 wk)
 

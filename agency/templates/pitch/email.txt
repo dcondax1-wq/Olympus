@@ -1,0 +1,26 @@
+$ready_line
+To: $to
+From: $your_name <$from_email>
+Subject: $subject
+
+Hi,
+
+I'm $your_name with $agency, a small web studio here in $agency_city. $problem_sentence
+
+So I built $name a free preview of a new website. It's live right now:
+$demo_url
+
+It works on any phone: tap-to-call, your hours, directions and a contact form that sends messages straight to you.
+
+If you'd like to keep it, it's $$$setup to set it up with your own logo, photos and web address, then $$$monthly a month for hosting, security and small changes. $terms If not, no problem at all.
+
+Want me to switch it on for you? Just reply, or call me at $phone.
+
+Thanks,
+$your_name
+$agency
+$phone
+
+--
+This is a one-time offer of web design services from $agency, $postal_address.
+Not interested? Reply "no thanks" and I won't email you again.

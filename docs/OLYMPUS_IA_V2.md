@@ -135,6 +135,7 @@ Also shown here (they live in another hub): Kalshi City (`kalshicity`), Fortune 
 | Ideas and deals | Money machine (Mint, `mint`) | **best** | Five money streams, one honest estimate | `fixture.json`, `../money/index.json` |
 |  | Deals and codes (Mercury, `mercury`) | also | Sales, discount codes, free resets | `fixture.json`, `../money/mercury.json` |
 |  | Spreads and funding (Arbiter, `arbiter`) | also | Paper-only spreads: net yearly return | `fixture.json`, `../money/arbiter.json` |
+|  | Website agency (Agency, `agency`; 2026-11-14) | also | Local-business leads, demo sites and calls (Call mode) | `my_leads.json` (the owner's batch, PC only), `leads.json`, `fixture.json` |
 
 Also shown here (they live in another hub): Kalshi bot (`kalshi`), Mint City (`mintcity`).
 

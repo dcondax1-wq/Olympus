@@ -1221,7 +1221,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # 2026-11-03: the OLYMPUS apps Jarvis opens full screen: Data City, Mind (the Obsidian brain), the strategy tree ...;
     # olympus/ is their shared kit (tokens, fonts, the loading veil, the one 3D-quality setting: docs/OLYMPUS_DESIGN.md)
     # assets/ (Round 5, 2026-11-11): the CC0 art every scene shares (audio, the rigged cast, PBR surfaces, HDRIs, props; docs/ASSETS_LICENSES.md)
-    for app in ("jarvis", "gate", "hub", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "assets", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "atlascity", "pc", "delphi", "pnyx", "planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos", "compass", "pheme", "harmonia", "helios", "ergasterion", "archive", "pinakes", "colosseum", "nq", "symposium", "herald", "polis"):
+    for app in ("jarvis", "gate", "hub", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "assets", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "atlascity", "pc", "delphi", "pnyx", "planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos", "compass", "pheme", "harmonia", "helios", "ergasterion", "archive", "pinakes", "colosseum", "nq", "symposium", "herald", "polis", "agency"):
         src_dir = os.path.join(WEB, app)
         if os.path.isdir(src_dir):
             os.makedirs(os.path.join(out, app), exist_ok=True)
@@ -1369,6 +1369,11 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         print(f"  pinakes: catalog rc={r4.returncode}")
     except Exception as e:  # noqa: BLE001
         print(f"  pinakes: skipped ({e})")
+    # PRIVACY (team Q2, docs/PRIVACY.md): the last step, after every writer: broker account ids cut to their last 4 digits, personal
+    # folders / emails / commit authors masked, a private file removed (tools/site_privacy.py). Not optional: if it cannot run, the
+    # build fails and pc_publish keeps the last good site.
+    from tools import site_privacy as _privacy
+    _privacy.scrub(out, _privacy.canaries(state_path), log=print)
     open(os.path.join(out, ".nojekyll"), "w").close()
     kb = os.path.getsize(os.path.join(out, "data.json")) // 1024
     print(f"site -> {out}: data.json {kb} KB, {len(ledger)} paper trades, {len(data['trades'])} replay trades, "

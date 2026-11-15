@@ -1,0 +1,23 @@
+<!--page {"nav": "faq", "title": "Questions about our websites | {agency}", "description": "Straight answers about price, timing, ownership, edits and Google for local business websites from {agency}."} -->
+{{> head}}
+<body>
+{{> header}}
+<main id="main">
+  <section class="page-hero" aria-labelledby="ph-h">
+    <div class="wrap narrow">
+      <p class="eyebrow">Questions</p>
+      <h1 id="ph-h">Straight answers.</h1>
+      <p class="lede">Can't find yours? Call <a href="tel:{{a.tel}}">{{a.phone}}</a> or <a href="mailto:{{a.email}}">email us</a>. A real person answers.</p>
+    </div>
+  </section>
+  <section class="sec sec-tight" aria-label="All questions">
+    <div class="wrap narrow">
+      {{{blocks.faq_all}}}
+    </div>
+  </section>
+  {{> cta}}
+</main>
+{{> footer}}
+{{> dock}}
+</body>
+</html>

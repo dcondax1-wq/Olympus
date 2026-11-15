@@ -8,7 +8,7 @@ updating the files every time we make changes, so do it now."
 | Backup | A **private** copy of everything on your second GitHub account: repo `dcondax1-wq/olympus`. The code the PC runs is on its branch `pc`. |
 | New code reaches the PC | By itself. The PC checks the backup once a day in the 17:02 ET pause and once an hour outside trading time. |
 | When it never updates | During trading hours (01:50-16:00 ET on weekdays), with a trade open, or with a LIT entry waiting. |
-| Your evals | An eval bot without auto-resume only updates in **Friday's** 17:02 ET pause, so an update never stops it in the middle of the week. If it does update, your phone says so; start it again before Sunday 6 PM ET. |
+| Your evals | An eval bot without auto-resume only updates at the weekend (the **Friday or Saturday** 17:02 ET pause), so an update never stops it in the middle of the week. If it does update, your phone says so; start it again before Sunday 6 PM ET. Starting the bot yourself (START BOT) always takes the newest code first. |
 | Safety | After each update it runs its quick self-tests. If one fails, it goes back to the code it had and your phone tells you. |
 | If GitHub ever bans that account too | Nothing breaks: the bot keeps running the code it has, and the code zips (`SETUP_EVERYTHING.bat`) still work. |
 

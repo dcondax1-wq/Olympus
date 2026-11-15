@@ -377,7 +377,7 @@ Per-day table for the research window, current files vs clean set. Columns:
 ## Files
 
 The tools and outputs below sit under the project root
-`C:\Users\Demetri Condax\AppData\Roaming\Claude\scratch-workspaces\70db7b8c-199a-421c-a714-e2c2b5e695d0\6871d521-939b-4b97-a32d-cbe1d3df7863\scratch-2026-10-15-bb0e63\nqbot`.
+`C:\Users\<you>\AppData\Roaming\Claude\scratch-workspaces\70db7b8c-199a-421c-a714-e2c2b5e695d0\6871d521-939b-4b97-a32d-cbe1d3df7863\scratch-2026-10-15-bb0e63\nqbot`.
 
 Tools:
 

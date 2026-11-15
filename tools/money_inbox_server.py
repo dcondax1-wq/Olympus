@@ -17,6 +17,8 @@ Routes (everything else is 404 / 405):
 Checks: a body of at most 2 KB, an amount above 0 and at most $1,000,000, short plain text (4+ digit runs masked: no card numbers), at most
 30 posts a minute and 500 a day. Through Tailscale the request must carry Tailscale's signed-in user (Tailscale-User-Login); an optional
 allow-list <home>/money/inbox.json {"allow": ["you@example.com"]} limits it to your own login. Nothing here is a secret or needs a key.
+Team Q2 (2026-11-14): the Host must be this PC (127.0.0.1 / localhost) or your <pc>.<tailnet>.ts.net name, so a web page that renames
+itself to 127.0.0.1 (DNS rebinding) cannot post; a client that stalls is dropped after 15 s.
 Test: python -X utf8 -m tests.test_money_inbox
 """
 from __future__ import annotations
@@ -128,6 +130,10 @@ class Inbox:
         if h.get("tailscale-funnel-request"):
             return 403, "this inbox is private: only your own devices on Tailscale, never the internet"
         proxied = any(h.get(k) for k in PROXY)
+        host = str(h.get("host") or "").strip().lower()
+        host = host[1:].split("]", 1)[0] if host.startswith("[") else (host.rsplit(":", 1)[0] if host.count(":") == 1 else host)
+        if host not in ("127.0.0.1", "localhost", "::1") and not (proxied and host.endswith(".ts.net")):
+            return 403, "this inbox answers only on this PC (127.0.0.1) or at your Tailscale address"
         login = (h.get("tailscale-user-login") or "").strip().lower()
         if proxied and not login:
             return 403, "only a signed-in Tailscale device can post here"
@@ -161,6 +167,7 @@ def make_handler(inbox: Inbox):
     class H(BaseHTTPRequestHandler):
         server_version = "OlympusMoneyInbox/1"
         sys_version = ""
+        timeout = 15                       # a client that stalls (sends less than its Content-Length) is dropped
 
         def log_message(self, *a):  # quiet: never log bodies
             pass

@@ -66,13 +66,20 @@ def _git(args, cwd=ROOT, timeout=20) -> str | None:
         return None
 
 
+def role(name: str) -> str:
+    """who changed a rule, as a role: "Claude" for Claude's commits, "owner" for everyone else. The git author name itself is never
+    kept (team Q2 privacy, docs/PRIVACY.md: it reached the heartbeat, the phone site and this committed log)."""
+    n = str(name or "").strip().lower()
+    return "Claude" if n.startswith("claude") or n.endswith("[bot]") or n in ("github", "github actions") else "owner"
+
+
 def head_commit(cwd=ROOT) -> dict | None:
-    """{"sha", "who", "when", "why"} of HEAD (None outside a git checkout)."""
+    """{"sha", "who" (a role, never the git name), "when", "why"} of HEAD (None outside a git checkout)."""
     s = _git(["log", "-1", "--format=%H%x1f%an%x1f%aI%x1f%s"], cwd=cwd)
     if not s or "\x1f" not in s:
         return None
     sha, who, when, why = s.strip().split("\x1f", 3)
-    return {"sha": sha, "who": who, "when": when, "why": why}
+    return {"sha": sha, "who": role(who), "when": when, "why": why}
 
 
 def _load_at(sha: str, path: str, cwd=ROOT):
@@ -102,7 +109,7 @@ def history(n: int = 40, cwd=ROOT, files=FILES) -> list:
             if ch:
                 per[f] = ch[:60]
         if per:
-            out.append({"sha": sha[:10], "who": who, "when": when, "why": why[:200], "files": per, "n": sum(len(v) for v in per.values())})
+            out.append({"sha": sha[:10], "who": role(who), "when": when, "why": why[:200], "files": per, "n": sum(len(v) for v in per.values())})
     return out
 
 

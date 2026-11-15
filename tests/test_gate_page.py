@@ -221,9 +221,9 @@ def test_page():
             check("c. each fact is a tap to the app with the detail: drawdown -> Aegis, today -> NQ, the window -> Kairos",
                   go == ["/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
             tiles = p.evaluate("() => [...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.href.replace(location.origin, ''), a.querySelector('.g-hline').textContent, a.querySelector('.g-hcount').textContent])")
-            check("c. the nine hub tiles open hub/?h=<hub> (1 tap) with their app counts (15 + 16 + 3 + 11 + 5 + 8 + 4 + 8 + 12 = 82)",
+            check("c. the nine hub tiles open hub/?h=<hub> (1 tap) with their app counts (15 + 16 + 3 + 12 + 5 + 8 + 4 + 8 + 12 = 83; Agency joined My Money 2026-11-14)",
                   [t[0] for t in tiles] == HUBS and all(t[1] == f"/hub/index.html?h={t[0]}" for t in tiles)
-                  and sum(int(t[3].split()[0]) for t in tiles) == 82 and tiles[0][3] == "15 apps", tiles)
+                  and sum(int(t[3].split()[0]) for t in tiles) == 83 and tiles[0][3] == "15 apps", tiles)
             lines = {t[0]: t[2] for t in tiles}
             check("c. live hub lines: Bots & Evals '2 evals active, $1,420 / $900 left', Today 'Trade window open until 15:30 ET', Kalshi 'No Kalshi numbers yet' (no feed here)",
                   lines["bots"] == "2 evals active, $1,420 / $900 left" and lines["today"].startswith("Trade window open until 15:30 ET") and lines["kalshi"] == "No Kalshi numbers yet", lines)

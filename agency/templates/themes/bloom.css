@@ -1,0 +1,21 @@
+/* Bloom: blush and plum. Soft and elegant: arches, petals, italic serif, pill buttons. */
+:root{--btn-radius:999px;--mark-radius:50% 50% 12px 12px;--ic-radius:50%}
+.mark{font-family:var(--display);font-style:italic;font-size:1.15rem}
+.hero{background:linear-gradient(180deg,var(--hero-bg) 0,var(--bg) 100%)}
+.hero::before{content:"";position:absolute;width:420px;height:420px;right:-120px;top:-140px;border-radius:50%;background:radial-gradient(circle,rgba(166,61,98,.12),transparent 70%)}
+.hero h1{font-weight:400;font-style:italic;font-size:clamp(2.5rem,7.5vw,4.6rem);letter-spacing:-.02em}
+.hero h1 em{color:var(--accent-text)}
+.eyebrow{letter-spacing:.12em;color:var(--accent-text)}
+.art{max-width:420px}
+.btn{font-weight:700}
+.btn.primary{box-shadow:0 10px 24px rgba(166,61,98,.28)}
+.section h2{font-weight:400;font-style:italic;font-size:clamp(2rem,5vw,3rem)}
+.kicker{letter-spacing:.14em}
+.card{border:0;border-radius:var(--radius);box-shadow:0 10px 30px rgba(43,27,36,.07)}
+.card .ic{background:#f6e3e2;color:var(--accent-text)}
+.panel,.form,.sample{border:0;box-shadow:0 10px 30px rgba(43,27,36,.07)}
+.sample{outline:2px dashed var(--line);outline-offset:-10px}
+.alt{background:#fff}
+.why .ico{color:var(--accent-text)}
+.notice{border-left-color:var(--accent)}
+.foot{background:#f6ece9}

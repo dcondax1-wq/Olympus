@@ -1,0 +1,17 @@
+PHONE OPENER for Roy's Quick Lube (Auto repair, Fort Collins)        call (970) 493-5823
+You dial it yourself (never an auto-dialer or a recording). Business hours only. If they say stop, mark "Do not contact".
+
+30 SECONDS (70 words, about 28 seconds out loud)
+Hi, is this the owner of Roy's Quick Lube? Great. My name is YOUR NAME, I make websites for local businesses here in Fort Collins. I noticed your business doesn't have a website I could find, so I built you a free preview of a new website. It's already online, with your hours, tap-to-call and directions. Could I email or text you the link so you can take a look?
+
+IF YOU GET THE VOICEMAIL (about 15 seconds)
+Hi, this is YOUR NAME with YOUR AGENCY. I made a free preview of a new website for Roy's Quick Lube. You can see it at roys-quick-lube-demo.netlify.app. If you like it, call me back at (555) 555-0100. Thanks!
+
+IF THEY SAY ...
+"We already have a website."  Fair enough. The preview is free either way: keep the link, and if your site ever lets you down you have my number.
+"How much?"                   $999 to set it up, then $79 a month for hosting, security and small changes. Month to month: cancel any time.
+"Send me something."          Sure. What's the best email? I'll send the link and one page with the price.
+"Not interested."             No problem at all, thanks for your time. I'll take you off my list. (Then mark it 'Do not contact'.)
+
+AFTER THE CALL
+Mark the result on the Agency page: Contacted, Call back (with the day), Won or Lost.

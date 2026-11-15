@@ -208,7 +208,7 @@ from tools.lab_models import atm
 from tools.strategy_lab import bars
 from tools.lab_atm_run import load_1m_stitched
 
-CSV = r"C:\Users\Demetri Condax\Downloads\ATM_Model_-_NQ.csv"   # the export
+CSV = r"C:\Users\<you>\Downloads\ATM_Model_-_NQ.csv"   # the export
 A, Z = "2026-08-24", "2026-10-16"                               # first / last trading day in the export
 ENGINE = "5m"                                                   # chart timeframe: "5m" or "1m"
 PARAMS = {}                                                     # chart inputs changed from default, atm.py names

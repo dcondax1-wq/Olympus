@@ -1,0 +1,90 @@
+<!--page {"nav": "contact", "title": "Get a free website demo | {agency}", "description": "Tell us about your business and we'll build a free demo of your new website within {demo_days} days. Or call {phone}."} -->
+{{> head}}
+<body>
+{{> header}}
+<main id="main">
+  <section class="page-hero" aria-labelledby="ph-h">
+    <div class="wrap">
+      <p class="eyebrow">Contact</p>
+      <h1 id="ph-h">Let's build your free demo.</h1>
+      <p class="lede">Tell us a little about your business. We reply {{offer.reply_time}}, and your demo is usually ready within {{offer.demo_days}} days.</p>
+    </div>
+  </section>
+
+  <section class="sec sec-tight" aria-label="Contact options">
+    <div class="wrap contact-grid">
+      <form class="card form" id="quote" name="quote" method="POST" action="/thanks.html" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="quote">
+        <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+        <h2>Get my free demo</h2>
+        <div class="row2">
+          <p class="field"><label for="q-name">Your name</label><input id="q-name" name="name" type="text" autocomplete="name" required></p>
+          <p class="field"><label for="q-biz">Business name</label><input id="q-biz" name="business" type="text" autocomplete="organization" required></p>
+        </div>
+        <div class="row2">
+          <p class="field"><label for="q-phone">Phone</label><input id="q-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required></p>
+          <p class="field"><label for="q-email">Email <span class="opt">(optional)</span></label><input id="q-email" name="email" type="email" autocomplete="email"></p>
+        </div>
+        <div class="row2">
+          <p class="field"><label for="q-trade">Type of business</label>
+            <select id="q-trade" name="trade">
+              <option value="">Choose one</option>
+              <option value="barber">Barber or salon</option>
+              <option value="plumber">Plumber</option>
+              <option value="electrician">Electrician</option>
+              <option value="hvac">Heating and air</option>
+              <option value="restaurant">Restaurant or cafe</option>
+              <option value="cleaner">Cleaner</option>
+              <option value="landscaper">Landscaper</option>
+              <option value="auto">Auto shop</option>
+              <option value="other">Something else</option>
+            </select></p>
+          <p class="field"><label for="q-site">Your website now <span class="opt">(if you have one)</span></label><input id="q-site" name="website" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="yourbusiness.com"></p>
+        </div>
+        <fieldset class="field choice">
+          <legend>Which plan are you curious about?</legend>
+          <div class="chips">
+            <label><input type="radio" name="plan" value="starter"><span>Starter</span></label>
+            <label><input type="radio" name="plan" value="growth"><span>Growth</span></label>
+            <label><input type="radio" name="plan" value="pro"><span>Pro</span></label>
+            <label><input type="radio" name="plan" value="not sure" checked><span>Not sure yet</span></label>
+          </div>
+        </fieldset>
+        <p class="field"><label for="q-time">Best time to call</label>
+          <select id="q-time" name="best_time">
+            <option value="any">Any time</option>
+            <option value="morning">Morning</option>
+            <option value="afternoon">Afternoon</option>
+            <option value="evening">Evening</option>
+          </select></p>
+        <p class="field"><label for="q-msg">Anything we should know? <span class="opt">(optional)</span></label><textarea id="q-msg" name="message" rows="4" placeholder="What you do, the towns you serve, what you'd love your website to do."></textarea></p>
+        <button class="btn btn-primary btn-lg btn-block" type="submit">Send, and build my demo {{{icons.arrow}}}</button>
+        <p class="fine">No spam and no obligation. We only use your details to reply. <a href="privacy.html">Privacy</a></p>
+      </form>
+
+      <aside class="contact-side" aria-label="Other ways to reach us">
+        <div class="card ways">
+          <h2>Rather talk?</h2>
+          <a class="way" href="tel:{{a.tel}}"><span class="way-ico">{{{icons.phone}}}</span><span><strong>Call</strong><span>{{a.phone}}</span></span></a>
+          {{{blocks.sms_way}}}
+          <a class="way" href="mailto:{{a.email}}"><span class="way-ico">{{{icons.mail}}}</span><span><strong>Email</strong><span>{{a.email}}</span></span></a>
+          <a class="way" href="{{book.href}}"{{{book.attrs}}}><span class="way-ico">{{{icons.calendar}}}</span><span><strong>{{book.label}}</strong><span>Pick a time that suits you</span></span></a>
+          <p class="ways-hours">{{{icons.clock}}}<span>{{a.hours}}</span></p>
+        </div>
+        <div class="card next">
+          <h2>What happens next</h2>
+          <ol role="list">
+            <li><strong>We reply {{offer.reply_time}}</strong> with two or three quick questions.</li>
+            <li><strong>Your demo in {{offer.demo_days}} days</strong>, built with your name and services.</li>
+            <li><strong>You decide.</strong> Love it and we launch in {{offer.launch_days}} days. If not, you pay nothing.</li>
+          </ol>
+          <p class="area">{{{icons.pin}}}<span>Serving {{a.service_area}}</span></p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+{{> footer}}
+{{> dock}}
+</body>
+</html>

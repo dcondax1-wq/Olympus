@@ -1,5 +1,5 @@
-// Road to $10K / Stingray 3LT renderer (2026-10-26, owner: "a $10K month by February 2027, a 2024 Stingray 3LT before I
-// turn 19"). Shared by the phone app (tools/web_public/goals.js: the bottom of the Home Goals card and of #/goals) and the PC
+// Road to $10K / Stingray 3LT renderer (2026-10-26, owner: "a $10K month by February 2027, a 2024 Stingray 3LT by
+// February 2027"). Shared by the phone app (tools/web_public/goals.js: the bottom of the Home Goals card and of #/goals) and the PC
 // dashboard (web_next/js/next/money.js: the bottom of the Goals page, with the local-only form); web_next/js/next/moneycore.js
 // is a byte-identical copy (tests/test_money_goal.py checks it). Data: engine/money_goal.py (PC GET /api/next/money, phone
 // data.json / home.json "goals.money" or live.json "money", whichever is newer). Read-only to trading: the only write is the

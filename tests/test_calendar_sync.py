@@ -436,7 +436,7 @@ def test_route():
         os.environ["LE_SITE_DIR"] = site
         app = FastAPI()
         LS.install(app)
-        cl = TestClient(app)
+        cl = TestClient(app, client=("127.0.0.1", 50000), base_url="http://localhost")   # the PC itself / tailscale serve (loopback)
         r = cl.get("/site/day/day.json")
         check("h. before a sync: 404 with a plain reason, and a day.json in a site folder is NEVER served", r.status_code == 404 and "no calendar connected" in r.json()["error"], (r.status_code, r.text))
         os.makedirs(os.environ["LE_DAY_DIR"])
@@ -791,7 +791,7 @@ def test_inbox():
                 def _stop():
                     return {"stopped": True}
                 DI.install(app)
-                cl = TestClient(app)
+                cl = TestClient(app, client=("127.0.0.1", 50000), base_url="http://localhost")   # tailscale serve proxies from loopback
                 DI._HITS.clear()
                 r = cl.post("/inbox/day", json={"text": "From the Shortcut", "type": "task"}, headers=H)
                 r2 = cl.get("/site/day/inbox.json", headers=H)

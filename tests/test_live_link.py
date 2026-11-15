@@ -141,7 +141,9 @@ class Site:
             return {"started": True}
 
         LS.install(app, live=live, kalshi_cfg=kalshi_cfg if kalshi_cfg is not None else {})
-        return TestClient(app, follow_redirects=False)
+        # the PC's own browser (loopback, Host localhost): money_out / day files are served only to it or through the Tailscale
+        # link, never to another device on the WiFi (live_site.private_why, tests/test_private_link.py)
+        return TestClient(app, follow_redirects=False, client=("127.0.0.1", 50000), base_url="http://localhost")
 
     def cleanup(self):
         shutil.rmtree(self.dir, ignore_errors=True)

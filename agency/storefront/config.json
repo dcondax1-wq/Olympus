@@ -1,0 +1,207 @@
+{
+  "_read_me": "The ONE file to edit. Change only the text between the quotes (keep the quotes and the commas), then run: python agency/storefront/build.py . The first five keys (agency_name, city, phone, email, brand_color) are the shared ones: when agency/config.json exists, its values win, so one edit there updates the storefront, the pitches and the demo sites.",
+  "agency_name": "YOUR AGENCY",
+  "city": "YOUR CITY",
+  "phone": "(555) 555-0100",
+  "email": "hello@your-agency.example",
+  "brand_color": "coral",
+  "_brand_color": "coral (warm red), ocean (blue), forest (green), or your own color like #1E6B47. Preview a preset by adding ?preset=ocean to a page address.",
+  "owner_name": "YOUR NAME",
+  "state": "YOUR STATE",
+  "service_area": "YOUR CITY and the towns around it",
+  "hours": "Mon to Fri, 9am to 6pm",
+  "texts_ok": true,
+  "booking_url": "",
+  "_booking_url": "Your free Cal.com or Calendly link, for example https://cal.com/yourname/15min . Empty = the Book buttons open the contact form.",
+  "site_url": "",
+  "_site_url": "Your web address once you have one, for example https://youragency.com (share previews and the sitemap use it).",
+  "legal_name": "YOUR AGENCY LLC",
+  "founded": 2026,
+  "legal_reviewed": false,
+  "offer": {
+    "headline": "Websites that make your phone *ring*.",
+    "subline": "Fast, good-looking websites for barbers, plumbers, restaurants and every local trade in {city}. See a free demo of yours first. Live in {launch_days} days, from {from_setup}.",
+    "demo_days": 2,
+    "launch_days": 7,
+    "reply_time": "within 1 business day",
+    "promises": [
+      "Free demo before you pay",
+      "Live in {launch_days} days",
+      "Hosting, edits and Google help included",
+      "Month to month, cancel anytime"
+    ],
+    "guarantee": "We build a free demo of your new website first. If you don't love it, you pay nothing."
+  },
+  "packages": [
+    {
+      "id": "starter",
+      "name": "Starter",
+      "setup_usd": 499,
+      "monthly_usd": 49,
+      "popular": false,
+      "for": "Get found and get calls.",
+      "pages": "1 page",
+      "edits": "30 min of edits a month",
+      "features": [
+        "One-page website, made for phones first",
+        "Tap-to-call button, map, hours and services",
+        "Quote form that lands in your email",
+        "Hosting, padlock (SSL) and daily backups",
+        "30 minutes of edits every month",
+        "Linked to your Google Business Profile"
+      ]
+    },
+    {
+      "id": "growth",
+      "name": "Growth",
+      "setup_usd": 999,
+      "monthly_usd": 79,
+      "popular": true,
+      "for": "Win more of the calls.",
+      "pages": "Up to 5 pages",
+      "edits": "1 hour of edits a month",
+      "features": [
+        "Everything in Starter",
+        "Up to 5 pages: services, about, gallery, contact",
+        "Online booking or quote requests",
+        "Google Business Profile set up and tuned",
+        "Review booster: QR card and one-tap review link",
+        "1 hour of edits every month"
+      ]
+    },
+    {
+      "id": "pro",
+      "name": "Pro",
+      "setup_usd": 1999,
+      "monthly_usd": 129,
+      "popular": false,
+      "for": "Run it on autopilot.",
+      "pages": "Up to 10 pages",
+      "edits": "2 hours of edits a month",
+      "features": [
+        "Everything in Growth",
+        "Up to 10 pages, with a page for each town you serve",
+        "Website chat that answers questions and takes messages",
+        "Monthly Google profile posts and photo updates",
+        "2 hours of edits a month, same day when urgent",
+        "A short monthly report: visits, calls and leads"
+      ]
+    }
+  ],
+  "addons": [
+    {
+      "id": "reviews",
+      "name": "Review booster",
+      "price": "$29 a month",
+      "included_in": [
+        "growth",
+        "pro"
+      ],
+      "what": "Ask every happy customer for a Google review with one text or a QR card on the counter."
+    },
+    {
+      "id": "chat",
+      "name": "Website chat",
+      "price": "$19 a month",
+      "included_in": [
+        "pro"
+      ],
+      "what": "A small chat bubble that answers the common questions and sends you every message."
+    },
+    {
+      "id": "google",
+      "name": "Google profile tune-up",
+      "price": "$149 once",
+      "included_in": [
+        "growth",
+        "pro"
+      ],
+      "what": "Categories, services, photos, hours and posts filled in properly, so you show up on the map."
+    },
+    {
+      "id": "edits",
+      "name": "Extra edits",
+      "price": "$40 per 30 minutes",
+      "included_in": [],
+      "what": "Busy month? New menu, new prices, a new page: just ask."
+    },
+    {
+      "id": "email",
+      "name": "Business email",
+      "price": "$49 once",
+      "included_in": [],
+      "what": "you@yourbusiness.com, working in the email app you already use."
+    },
+    {
+      "id": "logo",
+      "name": "Logo refresh",
+      "price": "$199 once",
+      "included_in": [],
+      "what": "A clean, modern logo that looks sharp on your van, your sign and your phone."
+    }
+  ],
+  "faq": [
+    {
+      "q": "How much does a website cost?",
+      "a": "Plans start at {from_setup} to build, then {from_monthly} a month for hosting, security, backups and your edits. No hidden fees.",
+      "top": true
+    },
+    {
+      "q": "Can I see my website before I pay?",
+      "a": "Yes. We build a free demo of your new site first, usually within {demo_days} days. If you don't love it, you pay nothing.",
+      "top": true
+    },
+    {
+      "q": "How long until my site is live?",
+      "a": "Most sites go live within {launch_days} days of your OK on the demo.",
+      "top": false
+    },
+    {
+      "q": "I already have a website. Can you redo it?",
+      "a": "Yes. We keep what works (your domain, your good photos, your reviews) and rebuild the rest so it loads fast and works on phones.",
+      "top": true
+    },
+    {
+      "q": "What does the monthly fee cover?",
+      "a": "Hosting, the padlock (SSL), daily backups, security updates, uptime checks and the edits in your plan. If something breaks, we fix it.",
+      "top": false
+    },
+    {
+      "q": "Do I own my website and my domain?",
+      "a": "Your domain is registered in your name, and your words and photos are yours. If you ever leave, we hand you a copy of your site.",
+      "top": false
+    },
+    {
+      "q": "Is there a contract?",
+      "a": "No long contract. After launch your plan is month to month, and you can cancel with 30 days' notice.",
+      "top": false
+    },
+    {
+      "q": "Will I show up first on Google?",
+      "a": "We set up everything Google looks for: fast pages, the right titles, your town and your services, and a properly filled-in Google Business Profile. Nobody can honestly promise the number one spot, so we won't.",
+      "top": true
+    },
+    {
+      "q": "Do I have to write the text or take photos?",
+      "a": "No. We write the words with you on a short call. Photos from your phone are perfect, and we tell you exactly what to snap.",
+      "top": false
+    },
+    {
+      "q": "How do edits work?",
+      "a": "Text or email us what to change. Small edits are usually done {reply_time}.",
+      "top": false
+    },
+    {
+      "q": "What kinds of businesses do you work with?",
+      "a": "Local businesses that live on calls and bookings: barbers and salons, plumbers, electricians, heating and air, cleaners, landscapers, auto shops, restaurants and cafes.",
+      "top": false
+    },
+    {
+      "q": "Where are you based?",
+      "a": "In {city}. We meet in person or on a quick call, whichever is easier for you.",
+      "top": false
+    }
+  ],
+  "testimonials": [],
+  "_testimonials": "Only real reviews, with the customer's OK: {\"quote\": \"...\", \"name\": \"Maria G.\", \"business\": \"Maria's Bakery\"}. Empty = the section stays hidden."
+}

@@ -7,7 +7,7 @@ tools/web_public/hub/ (hub/?h=<hub>&t=<tab>); breadcrumbs + Go to are olympus/ga
   b. node: every app in exactly one hub and tab, each tab has one best app, every fold points at the best of its own tab, the breadcrumb of every app,
      the hub lines (bots fresh / old / missing, Kalshi, money, my shift, research), demo cards never shown as live
   c. Chromium 390 x 844: every hub page (title, tabs, best card, folded duplicates, breadcrumb Home > Hub), every app reachable home -> hub -> app (2 taps),
-     ?t= deep links, "Show it here" embeds the app, the live strip of Bots & Evals / Kalshi / My Money / Plan & Day, Settings & Help lists all 82 apps,
+     ?t= deep links, "Show it here" embeds the app, the live strip of Bots & Evals / Kalshi / My Money / Plan & Day, Settings & Help lists all 83 apps,
      an unknown hub = the list of hubs, gate-nav on an AGORA app without its own tag, 375 x 667 reduced motion; taps >= 44 px, no sideways scroll
     python -X utf8 -m tests.test_hubs            (--static: parts a and b only; screenshots with AGORA_SHOTS=<dir>)
 """
@@ -88,8 +88,8 @@ def test_static():
     check("a. gate-nav: breadcrumb (nav aria-label=Breadcrumb, aria-current on the last crumb), 'Home' instead of 'Gate', the nine hubs first in Go to",
           "'Breadcrumb'" in nav and "'aria-current', 'page'" in nav and "label.textContent = 'Home'" in nav and "'Hubs'" in nav and "hub/index.html?h=" in nav and "'gate.recent.v1'" in nav)
     doc = AK.read(os.path.join(AK.ROOT, "docs", "OLYMPUS_IA_V2.md"))
-    check("a. docs/OLYMPUS_IA_V2.md: the nine hubs, the duplicates folded, every app (82 rows), the wiring for the lead",
-          all(n in doc for n in NAMES) and "Duplicates folded" in doc and doc.count("| **best** |") + doc.count("| also |") + doc.count("| folded into ") == 82
+    check("a. docs/OLYMPUS_IA_V2.md: the nine hubs, the duplicates folded, every app (83 rows), the wiring for the lead",
+          all(n in doc for n in NAMES) and "Duplicates folded" in doc and doc.count("| **best** |") + doc.count("| also |") + doc.count("| folded into ") == 83
           and "OTHER_APPS" in doc and "build_web_dashboard.py" in doc)
 
 
@@ -149,8 +149,8 @@ def test_node():
     hubs, apps, lay = O["hubs"], O["apps"], O["lay"]
     check("b. nine hubs in the home's order, named after the owner's jobs, each with its question", [h["id"] for h in hubs] == HUBS and [h["name"] for h in hubs] == NAMES
           and all(h["q"].endswith(("?", ")")) for h in hubs), [h["name"] for h in hubs])
-    check("b. 82 apps, each in exactly one hub (district = hub, so the theme's mix follows it); the counts add up",
-          len(apps) == 82 and all(a["hub"] in HUBS and a["district"] == a["hub"] for a in apps) and sum(h["count"] for h in hubs) == 82, [h["count"] for h in hubs])
+    check("b. 83 apps (Agency joined My Money 2026-11-14), each in exactly one hub (district = hub, so the theme's mix follows it); the counts add up",
+          len(apps) == 83 and all(a["hub"] in HUBS and a["district"] == a["hub"] for a in apps) and sum(h["count"] for h in hubs) == 83, [h["count"] for h in hubs])
     seen = {}
     for h in HUBS:
         for s in lay[h]:
@@ -308,7 +308,7 @@ def test_page():
             check("c. inside the frame the app knows it is framed and adds no second breadcrumb", "framed" in inner[0] and not inner[1], inner)
             open_hub(p, origin, "?h=settings&t=help")
             az = p.evaluate("() => [...document.querySelectorAll('#panel .hb-az a.hb-row')].map((a) => a.dataset.app)")
-            check("c. Settings & Help > Help lists every app A to Z (82), each with its hub", len(az) == 82 and len(set(az)) == 82, len(az))
+            check("c. Settings & Help > Help lists every app A to Z (83), each with its hub", len(az) == 83 and len(set(az)) == 83, len(az))
             open_hub(p, origin, "?h=nope")
             r = p.evaluate("() => [document.querySelector('#indexH').textContent, [...document.querySelectorAll('a.hb-hubrow')].map((a) => a.dataset.hub), document.querySelector('#tabs').hidden]")
             check("c. an unknown hub (?h=nope) shows 'Pick a hub' and the nine hubs", r == ["Pick a hub", HUBS, True], r)

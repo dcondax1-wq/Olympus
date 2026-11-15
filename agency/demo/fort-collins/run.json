@@ -1,0 +1,73 @@
+{
+ "made": "2026-11-14T22:17:30",
+ "city": "Fort Collins, CO",
+ "leads": 20,
+ "all": 501,
+ "coverage": {
+  "n": 501,
+  "phone": 0.511,
+  "website": 0.629,
+  "hours": 0.491,
+  "street_address": 0.758,
+  "email": 0.12
+ },
+ "sites": [
+  {
+   "name": "Roy's Quick Lube",
+   "template": "garage",
+   "folder": "sites/roys-quick-lube/site",
+   "zip": "sites/roys-quick-lube/roys-quick-lube.zip",
+   "demo_url": "https://roys-quick-lube-demo.netlify.app",
+   "scores": {
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100
+   },
+   "ok": true,
+   "kb": 79.3,
+   "package": "growth",
+   "setup": 999.0,
+   "monthly": 79.0
+  },
+  {
+   "name": "Highroad Roofing",
+   "template": "pro",
+   "folder": "sites/highroad-roofing/site",
+   "zip": "sites/highroad-roofing/highroad-roofing.zip",
+   "demo_url": "https://highroad-roofing-demo.netlify.app",
+   "scores": {
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100
+   },
+   "ok": true,
+   "kb": 78.8,
+   "package": "growth",
+   "setup": 999.0,
+   "monthly": 79.0
+  },
+  {
+   "name": "Rocky Mountain Dental Care",
+   "template": "clinic",
+   "folder": "sites/rocky-mountain-dental-care/site",
+   "zip": "sites/rocky-mountain-dental-care/rocky-mountain-dental-care.zip",
+   "demo_url": "https://rocky-mountain-dental-care-demo.netlify.app",
+   "scores": {
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100
+   },
+   "ok": true,
+   "kb": 77.1,
+   "package": "growth",
+   "setup": 999.0,
+   "monthly": 79.0
+  }
+ ],
+ "crm": "tools/web_public/agency/leads.json",
+ "sender_ready": false,
+ "attribution": "Business data (c) OpenStreetMap contributors, ODbL 1.0 (openstreetmap.org/copyright)"
+}
