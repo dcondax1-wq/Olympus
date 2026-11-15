@@ -1,0 +1,15 @@
+<!doctype html>
+<!-- grade.py test fixture: hostile text in every field the report repeats (it must come out escaped, never run) -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>"><script>alert('t')</script><img src=x onerror=alert(1)></title>
+<meta name="description" content="<b onmouseover=alert(2)>hi</b>">
+</head>
+<body>
+<h1><script>document.title='x'</script>Evil &lt;h1&gt; <img src=x onerror=alert(3)></h1>
+<a href="tel:<script>alert(4)</script>">call</a>
+<a href="javascript:alert(5)">Book now</a>
+<p>Unclosed <div><span>tags <table><tr><td>everywhere
+</body>

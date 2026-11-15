@@ -1,0 +1,15 @@
+{
+  "_read_me": "The 10 questions of the free self-check on grader.html. Weights (w) add up to 100. 'Not sure' counts half.",
+  "questions": [
+    {"id": "tap_call", "w": 14, "q": "On your phone, is there a tap-to-call button near the top?", "how": "Open your site on your phone and tap the phone number.", "fix": "Put a big tap-to-call button at the top. It is the number one way local customers reach you."},
+    {"id": "readable", "w": 12, "q": "Can you read the text on your phone without pinching to zoom?", "how": "Open your site on your phone.", "fix": "Make the site mobile-first. Most local customers look you up on a phone."},
+    {"id": "https", "w": 12, "q": "Does the address bar show a padlock, with no 'Not secure' warning?", "how": "Look just left of your web address.", "fix": "Turn on HTTPS. Without it, browsers warn 'Not secure' and many people leave."},
+    {"id": "fast", "w": 10, "q": "Does it open in about 3 seconds or less on mobile data?", "how": "Turn off Wi-Fi, then open your site.", "fix": "Shrink big photos and remove heavy add-ons so the page opens fast."},
+    {"id": "what_where", "w": 10, "q": "Does the first screen say what you do and which town you serve?", "how": "Read only what shows before you scroll.", "fix": "Put your trade and your town in the first headline, for example 'Plumber in {city}'."},
+    {"id": "google", "w": 10, "q": "Search your trade and your town on Google. Does your business show on the map?", "how": "Search, for example, 'barber {city}' on your phone.", "fix": "Claim and fill in your Google Business Profile, then link it to your site."},
+    {"id": "cta", "w": 8, "q": "Is there one clear button like 'Call now', 'Book' or 'Get a quote'?", "how": "Look at the first screen again.", "fix": "Pick one main action and make it a big, bright button."},
+    {"id": "reviews", "w": 8, "q": "Did you get new Google reviews in the last 3 months?", "how": "Open your Google Business Profile.", "fix": "Ask every happy customer for a review with a one-tap link or a QR card."},
+    {"id": "fresh", "w": 8, "q": "Are your prices, hours and the year at the bottom up to date?", "how": "Scroll to the very bottom of your site.", "fix": "Update hours, prices and the year. An old date makes people think you closed."},
+    {"id": "book_online", "w": 8, "q": "Can customers book or ask for a quote online, any time of day?", "how": "Try it the way a customer would.", "fix": "Add a simple booking or quote form so leads come in after hours too."}
+  ]
+}

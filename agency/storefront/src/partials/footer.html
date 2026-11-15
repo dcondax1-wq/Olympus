@@ -1,0 +1,31 @@
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <p class="logo logo-foot"><span class="mark" aria-hidden="true">{{a.initials}}</span><span class="word">{{a.name}}</span></p>
+      <p>Websites that bring local businesses more calls, bookings and reviews. Based in {{a.city}}, serving {{a.service_area}}.</p>
+    </div>
+    <div class="foot-col">
+      <h2>Talk to us</h2>
+      <ul role="list">
+        <li><a href="tel:{{a.tel}}">{{{icons.phone}}}{{a.phone}}</a></li>
+        {{{blocks.sms_foot}}}
+        <li><a href="mailto:{{a.email}}">{{{icons.mail}}}{{a.email}}</a></li>
+        <li class="foot-hours">{{{icons.clock}}}{{a.hours}}</li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h2>Explore</h2>
+      <ul role="list">
+        <li><a href="{{root}}work.html">Example websites</a></li>
+        <li><a href="{{root}}pricing.html">Pricing and add-ons</a></li>
+        <li><a href="{{root}}grader.html">Free website check</a></li>
+        <li><a href="{{root}}faq.html">Questions</a></li>
+        <li><a href="{{root}}contact.html">Get a free demo</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap foot-base">
+    <p>&copy; <span data-year>{{a.founded}}</span> {{a.legal_name}}</p>
+    <p><a href="{{root}}privacy.html">Privacy</a><a href="{{root}}terms.html">Terms</a></p>
+  </div>
+</footer>

@@ -1,0 +1,71 @@
+<!--page {"nav": "pricing", "title": "Website prices for local businesses | {agency}", "description": "Simple website plans from {from_setup} setup and {from_monthly} a month: hosting, backups, edits and Google profile help included. Free demo first."} -->
+{{> head}}
+<body>
+{{> header}}
+<main id="main">
+  <section class="page-hero" aria-labelledby="ph-h">
+    <div class="wrap">
+      <p class="eyebrow">Pricing</p>
+      <h1 id="ph-h">Simple prices. No surprises.</h1>
+      <p class="lede">One setup fee to build it, then one flat monthly to host it, protect it and keep it up to date. Every plan starts with a free demo.</p>
+    </div>
+  </section>
+
+  <section class="sec sec-tight" aria-label="Plans">
+    <div class="wrap">
+      {{{blocks.plans_full}}}
+      <p class="fine center">Prices in US dollars. You pay the setup once, after you approve your demo. The monthly starts the day your site goes live.</p>
+    </div>
+  </section>
+
+  <section class="sec sec-tint" id="included" aria-labelledby="inc-h">
+    <div class="wrap">
+      <header class="sec-head"><p class="eyebrow">In every plan</p><h2 id="inc-h">What the monthly covers</h2></header>
+      <ul class="incl" role="list">
+        <li>{{{icons.server}}}<span><strong>Hosting</strong> on fast servers, no extra bill</span></li>
+        <li>{{{icons.shield}}}<span><strong>The padlock (SSL)</strong> and security updates</span></li>
+        <li>{{{icons.check}}}<span><strong>Daily backups</strong> and uptime checks</span></li>
+        <li>{{{icons.pencil}}}<span><strong>Edits every month</strong>: prices, photos, hours, new text</span></li>
+        <li>{{{icons.pin}}}<span><strong>Google profile help</strong>: linked and kept in sync</span></li>
+        <li>{{{icons.phone}}}<span><strong>Real support</strong> by phone, text or email</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="compare" aria-labelledby="cmp-h">
+    <div class="wrap">
+      <header class="sec-head"><p class="eyebrow">Side by side</p><h2 id="cmp-h">Compare the plans</h2></header>
+      {{{blocks.compare}}}
+    </div>
+  </section>
+
+  <section class="sec sec-tint" id="addons" aria-labelledby="add-h">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="eyebrow">Add-ons</p>
+        <h2 id="add-h">Grow when you're ready.</h2>
+        <p class="lede">Add any of these to any plan, any time. Some come free with the bigger plans.</p>
+      </header>
+      {{{blocks.addons}}}
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="g-h">
+    <div class="wrap narrow">
+      <div class="guarantee guarantee-light">{{{icons.shield}}}<div><h2 id="g-h">The free-demo promise</h2><p>{{offer.guarantee}}</p></div></div>
+    </div>
+  </section>
+
+  <section class="sec sec-top0" id="faq" aria-labelledby="faq-h">
+    <div class="wrap narrow">
+      <header class="sec-head"><h2 id="faq-h">Pricing questions</h2></header>
+      {{{blocks.faq_pricing}}}
+      <p class="center"><a class="link-arrow" href="faq.html">All questions {{{icons.arrow}}}</a></p>
+    </div>
+  </section>
+  {{> cta}}
+</main>
+{{> footer}}
+{{> dock}}
+</body>
+</html>

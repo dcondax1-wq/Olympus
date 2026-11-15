@@ -1,0 +1,53 @@
+<!--page {"nav": "", "title": "Terms of service | {agency}", "description": "The plain-language terms for website plans from {agency}."} -->
+{{> head}}
+<body>
+{{> header}}
+<main id="main">
+  <section class="page-hero page-hero-sm" aria-labelledby="ph-h">
+    <div class="wrap narrow">
+      <p class="eyebrow">Legal</p>
+      <h1 id="ph-h">Terms of service</h1>
+      <p class="muted">Last updated: [DATE]</p>
+    </div>
+  </section>
+  <section class="sec sec-tight" aria-label="Terms">
+    <div class="wrap narrow prose">
+      {{{blocks.legal_note}}}
+      <h2>1. Who these terms are between</h2>
+      <p>These terms are between {{a.legal_name}} ("we") and the business that orders a website plan ("you").</p>
+      <h2>2. The free demo</h2>
+      <p>We may build a free demo of your website before you buy. It costs you nothing and you are not obliged to buy. If you do not go ahead, we take the demo down.</p>
+      <h2>3. Plans and payment</h2>
+      <ul>
+        <li>Each plan has a one-time setup fee and a monthly fee, as shown on our <a href="pricing.html">pricing page</a> on the day you order.</li>
+        <li>The setup fee is due when you approve your demo, before we launch. The monthly fee starts on your launch day and is billed [monthly in advance].</li>
+        <li>Add-ons are billed as shown when you add them.</li>
+        <li>If a payment is more than [14 days] late, we may pause your website until it is paid.</li>
+      </ul>
+      <h2>4. Cancelling</h2>
+      <p>After launch, plans are month to month. You can cancel with [30 days'] notice by email. The setup fee is not refundable once your site is live.</p>
+      <h2>5. Your content and who owns what</h2>
+      <ul>
+        <li>Your business name, logo, words and photos stay yours. You confirm you have the right to use anything you send us.</li>
+        <li>Your domain is registered in your name. If you cancel, we hand you a copy of your website files [and help you move it].</li>
+        <li>Our own templates, code and tools stay ours; you may keep using your website's files after you leave.</li>
+      </ul>
+      <h2>6. Edits and support</h2>
+      <p>Each plan includes the edit time shown on the pricing page. Unused time does not roll over. Bigger changes (a new section, a redesign) are quoted first.</p>
+      <h2>7. Hosting and third parties</h2>
+      <p>We host your site with a reputable provider and keep backups, but no service is online 100% of the time. Google, booking tools and other third-party services have their own terms, and we cannot control their changes or rankings.</p>
+      <h2>8. No ranking promises</h2>
+      <p>We build your site the way search engines like, but we do not promise any position on Google or any number of calls.</p>
+      <h2>9. Liability</h2>
+      <p>To the extent the law allows, our total liability is limited to the fees you paid us in the [3 months] before the claim. We are not liable for lost profits or indirect losses.</p>
+      <h2>10. The law that applies</h2>
+      <p>These terms are governed by the laws of {{a.state}}.</p>
+      <h2>11. Contact</h2>
+      <p>Questions about these terms: <a href="mailto:{{a.email}}">{{a.email}}</a> or <a href="tel:{{a.tel}}">{{a.phone}}</a>.</p>
+    </div>
+  </section>
+</main>
+{{> footer}}
+{{> dock}}
+</body>
+</html>
