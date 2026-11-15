@@ -12,16 +12,27 @@
                         (the whole site zipped with the files at the zip root, Content-Type application/zip) is the fallback.
                scp      your own Linux server over ssh (Oracle VM + Caddy / nginx): only changed files, no deploy limits
                none     build only
-Unchanged content (sha256 of the whole site) is not uploaded again. Every failure is soft: it is logged, the last good site
+What leaves this PC (2026-11-15): the LITE set, the one the owner's Netlify Drop zip carried: the built site without the 5 heavy
+folders (charts/ trade pictures, replays/ trade charts, writeups/ the research reader, datacity/ the 3D city, mind/ the vault),
+and never a private file (tools/site_privacy.private_file, by name and by JSON content: household, day, inbox, agency, health,
+cards, keys ...; the build's own last step, site_privacy.scrub, already masks ids / emails / names / ages in what stays). The PC's
+own copy (data/pc_publish/site, served to your devices over Tailscale by engine/live_site.py) keeps everything.
+publish.json "site_set": "full" sends the heavy folders too. The hash, the deploy budget and the six lines count what is sent.
+Unchanged content (sha256 of what is sent) is not uploaded again. Every failure is soft: it is logged, the last good site
 stays up, the exit code is 0 unless --strict. Nothing here touches the trading bot, live_model*.json or any order.
 
   python tools/pc_publish.py                 one full run (state, site, publish) and a six-line status
   python tools/pc_publish.py --status        only print the six lines of the last run
   python tools/pc_publish.py --setup folder --folder "C:\\Users\\me\\iCloudDrive\\olympus"     write publish.json
   python tools/pc_publish.py --setup netlify --site-id <id> --token-stdin                      write netlify.json (token not echoed)
+  python tools/pc_publish.py --setup netlify --site-name <name> --token-stdin    the same, the site id looked up with the key
+                             (Netlify API GET /sites?name=, else every page of the account's sites: its name, *.netlify.app
+                             address or own domain). Exit 0 saved, 2 no key / no site given, 3 the key was refused, 4 no such
+                             site on that account, 5 Netlify not reachable. The key is never printed, logged or put in a URL.
   python tools/pc_publish.py --dry-run       build, hash and say what would be sent; sends nothing
 Config (all outside the repo, in %USERPROFILE%\\.olympus\\ or $OLYMPUS_HOME): publish.json {"provider", "folder", "method",
-"min_interval_min"}, netlify.json {"site_id", "token"}. Local files: data/pc_publish/ (last.json, publish_log.jsonl, site/, dash/).
+"min_interval_min", "site_set"}, netlify.json {"site_id", "token", "site_name", "site_url"}. Local files: data/pc_publish/
+(last.json, publish_log.jsonl, site/, dash/).
 """
 from __future__ import annotations
 
@@ -31,6 +42,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -56,6 +68,11 @@ UA = "olympus-pc-publish/1"
 # 2026-11-10, netlify.com/pricing); at zero the site pauses. Older accounts have no such cap. The guard keeps 2 in reserve.
 DEPLOYS_PER_MONTH_DEFAULT = 18
 SECRET_KEYS = ("token", "access_token", "authorization", "password", "secret")
+# the heavy folders the owner's Netlify Drop zip left out (the upload was too big); they stay on the PC (and its Tailscale link)
+LITE_EXCLUDE = ("charts/", "replays/", "writeups/", "datacity/", "mind/")
+# the folders of the Tailscale link's PRIVATE routes (engine/live_site.py: /site/day/, /site/me/): never sent, whatever lands there
+PRIVATE_DIRS = ("day/", "me/")
+SETUP_OK, SETUP_INPUT, SETUP_REFUSED, SETUP_NO_SITE, SETUP_UNREACHABLE = 0, 2, 3, 4, 5       # --setup netlify exit codes
 
 
 # ------------------------------------------------------------------------------------------------ small helpers
@@ -141,6 +158,7 @@ def load_config(env=None, cdir: str | None = None) -> dict:
             "scp_target": pub.get("scp_target"), "scp_dir": pub.get("scp_dir"), "scp_key": pub.get("scp_key"),
             "scp_port": pub.get("scp_port"), "scp_url": pub.get("scp_url"),
             "max_deploys_per_month": int(pub.get("max_deploys_per_month") or DEPLOYS_PER_MONTH_DEFAULT),
+            "site_set": str(pub.get("site_set") or "lite").lower(),
             "netlify": {"site_id": str(net.get("site_id") or net.get("siteId") or "").strip(),
                         "token": str(net.get("token") or net.get("access_token") or "").strip()}}
 
@@ -174,6 +192,34 @@ def site_hash(files: dict) -> str:
     for k in sorted(files):
         h.update(f"{k}\0{files[k]}\n".encode("utf-8"))
     return h.hexdigest()
+
+
+def deploy_set(site: str, files: dict, cfg: dict) -> tuple[dict, dict]:
+    """(the files that leave this PC, {"lite": n heavy files kept on the PC, "private": [paths kept out]}). The lite set (unless
+    publish.json "site_set" is "full") and never a private file: tools/site_privacy.private_file by name, and by content for JSON.
+    Fails closed: when the privacy check cannot run, nothing is sent (ProviderError)."""
+    try:
+        from tools import site_privacy
+    except Exception as e:                             # never send a site that was not checked
+        raise ProviderError(f"the privacy check could not run ({e.__class__.__name__}): nothing sent")
+    lite = str(cfg.get("site_set") or "lite").lower() != "full"
+    out, n_lite, private = {}, 0, []
+    for rel, h in files.items():
+        if lite and rel.startswith(LITE_EXCLUDE):
+            n_lite += 1
+            continue
+        raw = None
+        if rel.lower().endswith(".json"):
+            try:
+                with open(os.path.join(site, rel.replace("/", os.sep)), "rb") as fh:
+                    raw = fh.read()
+            except OSError:
+                raw = None
+        if rel.startswith(PRIVATE_DIRS) or site_privacy.private_file(rel, raw):
+            private.append(rel)
+            continue
+        out[rel] = h
+    return out, {"lite": n_lite, "private": sorted(private)}
 
 
 def make_zip(site: str, files: dict) -> bytes:
@@ -227,6 +273,51 @@ def _http(method, url, token, data=None, ctype=None, timeout=HTTP_TIMEOUT_S, tri
 def api_base(env=None) -> str:
     env = os.environ if env is None else env
     return (env.get("OLYMPUS_NETLIFY_API") or NETLIFY_API).rstrip("/")
+
+
+def site_key(s) -> str:
+    """'moonlit-scone-08afe5', 'moonlit-scone-08afe5.netlify.app' or 'https://moonlit-scone-08afe5.netlify.app/' -> the bare name
+    (a custom domain stays a domain)."""
+    s = str(s or "").strip().lower()
+    s = re.sub(r"^[a-z]+://", "", s).split("/")[0].split("?")[0]
+    return s[:-len(".netlify.app")] if s.endswith(".netlify.app") else s
+
+
+SITE_ID_RX = re.compile(r"^[A-Za-z0-9][A-Za-z0-9-]{7,63}$")
+
+
+def find_site(name: str, token: str, env=None) -> dict | None:
+    """{"id", "name", "url"} of the site called `name` on the Netlify account the key belongs to, else None. Netlify's own filter
+    first (GET /sites?name=), then every page of the account's sites; a site matches by its name, its *.netlify.app address, its
+    own domain or an alias. Only these three fields are kept (never the rest of the account's data). Raises ProviderError
+    (redacted: 'refused the token' for a 401 / 403)."""
+    want = site_key(name)
+    if not want:
+        return None
+    base = api_base(env)
+
+    def keys(s):
+        vals = [s.get(k) for k in ("name", "url", "ssl_url", "custom_domain")] + list(s.get("domain_aliases") or [])
+        return {site_key(v) for v in vals if isinstance(v, str) and v}
+
+    def pick(rows):
+        for s in rows if isinstance(rows, list) else []:
+            if isinstance(s, dict) and want in keys(s):
+                sid = str(s.get("id") or s.get("site_id") or "")
+                if SITE_ID_RX.match(sid):
+                    return {"id": sid, "name": str(s.get("name") or want), "url": str(s.get("ssl_url") or s.get("url") or "")}
+        return None
+
+    _st, rows = _http("GET", f"{base}/sites?name={urllib.parse.quote(want)}&filter=all", token)
+    hit = pick(rows)
+    for page in range(1, 21):                          # up to 2,000 sites: the filter missed it (an own domain, an alias)
+        if hit:
+            break
+        _st, rows = _http("GET", f"{base}/sites?filter=all&page={page}&per_page=100", token)
+        hit = pick(rows)
+        if not isinstance(rows, list) or len(rows) < 100:
+            break
+    return hit
 
 
 def publish_netlify(site: str, files: dict, cfg: dict, env=None, log=print, **_k) -> dict:
@@ -562,7 +653,8 @@ def status_lines(last: dict, now=None) -> list[str]:
         + (f"  {last.get('url')}" if last.get("url") else ""),
         f"PUBLISH 3/6 state: {last.get('state_text') or '-'}",
         f"PUBLISH 4/6 site: {last.get('files', 0)} files, {size_h(last.get('site_bytes'))}, "
-        + ("changed" if last.get("changed") else "unchanged") + f", built {ago(last.get('built_t'), now)}",
+        + ("changed" if last.get("changed") else "unchanged") + f", built {ago(last.get('built_t'), now)}"
+        + (f" (lite: {last.get('kept_lite')} heavy files stay on this PC)" if last.get("kept_lite") else ""),
         f"PUBLISH 5/6 sent: {size_h(last.get('bytes'))} in {last.get('uploaded', 0)} files" + (f", took {last.get('took_s')} s" if last.get("took_s") is not None else ""),
         "PUBLISH 6/6 " + ("next: nothing to do." if ok else f"problem: {last.get('error') or 'see data/pc_publish/publish_log.jsonl'}"),
     ]
@@ -613,14 +705,21 @@ def run_once(args, env=None, say=print) -> dict:
         files = site_files(site)
         if not files:
             raise ProviderError("the site folder is empty")
+        files, kept = deploy_set(site, files, cfg)        # what leaves this PC: the lite set, never a private file
+        if not files:
+            raise ProviderError("nothing left to send after the lite / privacy pass")
+        if kept["private"]:
+            rec["state_text"] += f"; {len(kept['private'])} private file(s) kept out of the upload: " + ", ".join(kept["private"][:5])
         total = sum(os.path.getsize(os.path.join(site, k.replace("/", os.sep))) for k in files)
         sh = site_hash(files)
-        rec.update(files=len(files), site_bytes=total, built_t=now_s(), site_hash=sh, changed=sh != prev.get("site_hash"))
+        rec.update(files=len(files), site_bytes=total, built_t=now_s(), site_hash=sh, changed=sh != prev.get("site_hash"),
+                   kept_lite=kept["lite"], kept_private=len(kept["private"]))
         if cfg["provider"] == "none":
             rec.update(ok=True, state_text=rec["state_text"] + " (provider none: built only)")
             return rec
         if args.dry_run:
-            rec.update(ok=True, state_text=f"dry run: would send {len(files)} files via {cfg['provider']}", dry=True)
+            rec.update(ok=True, state_text=f"dry run: would send {len(files)} files via {cfg['provider']} ({kept['lite']} heavy files stay "
+                                           f"on this PC, {len(kept['private'])} private kept out)", dry=True)
             return rec
         if not rec["changed"] and prev.get("ok") and prev.get("provider") == cfg["provider"] and not args.force:
             rec.update(ok=True, uploaded=0, bytes=0, url=prev.get("url"), skipped_same=True)
@@ -672,10 +771,30 @@ def setup(args, env=None) -> int:
             pub["scp_url"] = args.scp_url
     elif args.setup == "netlify":
         tok = sys.stdin.readline().strip() if args.token_stdin else (args.token or "")
-        if not (args.site_id and tok):
-            print("[FIX] needs --site-id <id> and the token (--token-stdin, then paste it and press Enter)")
-            return 2
-        write_json(os.path.join(d, "netlify.json"), {"site_id": args.site_id, "token": tok})
+        sid = str(getattr(args, "site_id", None) or "").strip()
+        name = str(getattr(args, "site_name", None) or "").strip()
+        if not tok or not (sid or name):
+            print("[FIX] needs the key (--token-stdin, then paste it and press Enter) and --site-name <name> or --site-id <id>")
+            return SETUP_INPUT
+        extra = {}
+        if not sid:                                   # the site id looked up with the key (it never goes into a URL or a log)
+            try:
+                hit = find_site(name, tok, env)
+            except Exception as e:
+                msg = redact(e, [tok])
+                if "refused the token" in msg:
+                    print("[FIX] Netlify refused that key: make a new one (app.netlify.com > your picture > User settings > Applications > "
+                          "New access token > Generate). Nothing was saved.")
+                    return SETUP_REFUSED
+                print(f"[FIX] Netlify could not be reached ({msg[:160]}): check the internet. Nothing was saved.")
+                return SETUP_UNREACHABLE
+            if not hit:
+                print(f"[FIX] The Netlify account of that key has no site called {site_key(name)}: make the key while signed in to the account "
+                      "the site is on. Nothing was saved.")
+                return SETUP_NO_SITE
+            sid = hit["id"]
+            extra = {"site_name": hit["name"], "site_url": hit["url"]}
+        write_json(os.path.join(d, "netlify.json"), {"site_id": sid, "token": tok, **extra})
         try:
             os.chmod(os.path.join(d, "netlify.json"), 0o600)
         except OSError:
@@ -688,8 +807,11 @@ def setup(args, env=None) -> int:
         open(os.path.join(d, nogithub.MARKER), "w").close()
     except OSError:
         pass
-    print(f"[OK] publisher set to {args.setup}. Config folder: {d} (outside the repo; the token is never shown)")
-    return 0
+    where = ""
+    if args.setup == "netlify":
+        where = f" Site: {extra.get('site_url') or extra.get('site_name') or 'id ' + sid}." if extra else f" Site id {sid}."
+    print(f"[OK] publisher set to {args.setup}.{where} Config folder: {d} (outside the repo; the token is never shown)")
+    return SETUP_OK
 
 
 def main(argv=None) -> int:
@@ -709,6 +831,7 @@ def main(argv=None) -> int:
     ap.add_argument("--scp-key")
     ap.add_argument("--scp-url")
     ap.add_argument("--site-id")
+    ap.add_argument("--site-name", help="--setup netlify: the site's name (or its *.netlify.app address); its id is looked up with the key")
     ap.add_argument("--token")
     ap.add_argument("--token-stdin", action="store_true")
     ap.add_argument("--inner-monitor", metavar="OUT", help=argparse.SUPPRESS)
@@ -725,7 +848,8 @@ def main(argv=None) -> int:
     if not rec.get("skipped") or rec.get("ok"):
         if not rec.get("skipped"):
             write_json(os.path.join(work, "last.json"), rec)
-    log_line(work, {k: rec.get(k) for k in ("t", "ok", "provider", "method", "files", "bytes", "uploaded", "changed", "took_s", "error", "state_text", "url")})
+    log_line(work, {k: rec.get(k) for k in ("t", "ok", "provider", "method", "files", "bytes", "uploaded", "changed", "took_s", "error", "state_text", "url",
+                                            "kept_lite", "kept_private")})
     print("\n".join(status_lines(rec)))
     return 1 if (a.strict and not rec.get("ok")) else 0
 
