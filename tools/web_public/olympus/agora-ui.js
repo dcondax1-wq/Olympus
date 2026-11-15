@@ -302,7 +302,7 @@
      already has its own tag or runs inside Jarvis's frame. A failed load leaves the shell's own back link. */
   function gateNav() {
     if (framed || window.OLYMPUS_GATE_NAV || !meSrc || root.hasAttribute('data-ag-nonav') || d.querySelector('script[src*="gate-nav.js"]')) return;
-    var s = el('script', ''); s.src = new URL('gate-nav.js?v=g3', meSrc).href; s.async = true; (d.head || d.documentElement).appendChild(s);
+    var s = el('script', ''); s.src = new URL('gate-nav.js?v=g4', meSrc).href; s.async = true; (d.head || d.documentElement).appendChild(s);
   }
   var boot = function () { try { shell(); } catch (e) { /* the page works without the shell */ } try { hydrateIcons(d); } catch (e) { /* plain labels stay */ } try { gateNav(); } catch (e) { /* the shell's back link stays */ } };
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', boot); else boot();

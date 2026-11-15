@@ -200,6 +200,51 @@
       return !!h.page;          // app hubs are found through their apps; a page hub has no app of its own to find
     });
   }
+  /* NAV v3 (2026-11-15, team NAV, docs/OLYMPUS_NAV.md). Owner: "the little categories are too hard to find everything, there's gotta be a better way".
+     One search for EVERYTHING: apps (find), the hub tabs ("Bots & Evals > Risk") and a few plain ACTIONS (things he does, not apps).
+     ACTIONS row: [id, label, one line, path from the site root, extra search words]. Read only: none of them can trade or change a bot. */
+  var ACTIONS = [
+    ['act-bringback', 'Bring the bots back', 'The 5 steps when the PC went quiet', 'nq/index.html?howto=1', 'restart start bots off stopped quiet old offline pc fix back'],
+    ['act-az', 'All apps A to Z', 'Every app in one list, with pins', 'gate/index.html#az', 'all apps list every directory a z index pin pins favourites favorites'],
+    ['act-look', 'Change the look', 'Colours and style, everywhere', 'gate/index.html#lookSec', 'theme themes colour color colors dark light look style skin'],
+    ['act-pnl', "Today's P&L", 'Zlarior and ATLAS today, from the bots', 'nq/index.html', 'pnl p&l profit today money made lost zlarior atlas'],
+    ['act-dd', 'Drawdown left', 'How much room each eval has', 'aegis/index.html', 'drawdown room left max loss mll trailing zlarior atlas'],
+    ['act-window', 'Next trade window', 'When the bots may trade next', 'kairos/index.html', 'window when trade next session hours open close'],
+    ['act-micros', 'How many micros for a stop', 'Stop size to contracts', 'pnyx/index.html', 'micros contracts how many stop size calculator mnq'],
+    ['act-payout', 'Payouts and fees so far', 'What came in, what went out', 'ledger/index.html', 'payout payouts paid withdraw fees cost profit cash'],
+    ['act-pc', 'Start the bot on the PC', 'The steps on your Windows PC', 'pc/index.html', 'start pc windows ninjatrader setup install launch'],
+    ['act-workshop', 'Workshop (labs)', 'Test pages for building', 'hub/index.html?h=settings&t=workshop', 'labs lab workshop test build']
+  ].map(function (r) { return Object.freeze({ kind: 'action', id: r[0], label: r[1], line: r[2], path: r[3], words: r[4] }); });
+  function allWords(text, toks, min) { for (var i = 0; i < toks.length; i++) { if (toks[i].length < (min || 1) || !wordStarts(text, toks[i])) return false; } return toks.length > 0; }
+  function toksOf(q) { return norm(q).split(' ').filter(function (t) { return t.length > 0; }); }
+  /** the plain actions a search names: every word typed starts a word of the label or its words */
+  function findActions(q, n) {
+    var toks = toksOf(q); if (!toks.length) return [];
+    var hits = ACTIONS.filter(function (a) { return allWords(norm(a.label + ' ' + a.words), toks); });
+    hits.sort(function (x, y) { return (norm(y.label).indexOf(toks[0]) === 0) - (norm(x.label).indexOf(toks[0]) === 0); });
+    return hits.slice(0, n || 3);
+  }
+  /** the hub TABS a search names ("risk" -> Bots & Evals > Risk): every word starts a word of the hub name, the tab's title or its blurb */
+  function findTabs(q, n) {
+    var toks = toksOf(q), out = []; if (!toks.length) return out;
+    HUBS.forEach(function (h) {
+      h.sections.forEach(function (s) {
+        if (allWords(norm(h.name + ' ' + s[1] + ' ' + s[2]), toks, 2)) out.push({ kind: 'tab', id: h.id + '/' + s[0], hub: h.id, label: h.name + ' › ' + s[1], line: s[2], path: 'hub/index.html?h=' + h.id + '&t=' + s[0] });
+      });
+    });
+    return out.slice(0, n || 4);
+  }
+  /** one search for everything: { hubs: [page hub], actions: [action], apps: [app], tabs: [tab] } (each list already short) */
+  function findAll(q, n) { return { hubs: findHubs(q), actions: findActions(q, 3), apps: find(q, n || 8), tabs: findTabs(q, 4) }; }
+  /** every app A to Z by its plain label (the Workshop labs at the end) */
+  function az() {
+    return apps.slice().sort(function (x, y) {
+      var wx = x.section === 'workshop' ? 1 : 0, wy = y.section === 'workshop' ? 1 : 0;
+      return wx - wy || (norm(x.label) < norm(y.label) ? -1 : norm(x.label) > norm(y.label) ? 1 : 0);
+    });
+  }
+  /* the six he uses most, one tap from the home (owner: Zlarior / ATLAS status, money, today): [app id, short title] */
+  var QUICK = [['nq', 'Zlarior · ATLAS'], ['compass', 'Today'], ['ledger', 'Money'], ['aegis', 'Drawdown'], ['planner', 'My day'], ['kalshi', 'Kalshi']];
   function byId(id) { return BY[id] || null; }
   function hubOf(id) { var a = BY[id]; return a ? HB[a.hub] : null; }      // the hub an APP lives in
   function hub(id) { return HB[id] || null; }                               // a hub by its own id
@@ -218,8 +263,8 @@
     var sec = null; for (var i = 0; i < h.sections.length; i++) if (h.sections[i][0] === a.section) sec = h.sections[i];
     return { hub: h.id, hubName: h.name, section: a.section, sectionName: sec ? sec[1] : '', path: 'hub/index.html?h=' + h.id + '&t=' + a.section, app: a.label };
   }
-  var out = Object.freeze({ v: 2, apps: Object.freeze(apps), districts: HUBS, hubs: HUBS, start: ['nq', 'today', 'jarvis'],
-    find: find, findHubs: findHubs, byId: byId, norm: norm, hub: hub, hubOf: hubOf, layout: layout, crumbOf: crumbOf, isBest: isBest, mixOf: function (id) { var h = hubOf(id); return h ? h.id : ''; } });
+  var out = Object.freeze({ v: 3, apps: Object.freeze(apps), districts: HUBS, hubs: HUBS, start: ['nq', 'today', 'jarvis'], actions: Object.freeze(ACTIONS), quick: QUICK,
+    find: find, findHubs: findHubs, findActions: findActions, findTabs: findTabs, findAll: findAll, az: az, byId: byId, norm: norm, hub: hub, hubOf: hubOf, layout: layout, crumbOf: crumbOf, isBest: isBest, mixOf: function (id) { var h = hubOf(id); return h ? h.id : ''; } });
   g.OLYMPUS_GATE = out;
   if (typeof module !== 'undefined' && module.exports) module.exports = out;
 }(typeof window !== 'undefined' ? window : globalThis));

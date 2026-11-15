@@ -19,6 +19,8 @@
      2. the HUBS named after the owner's jobs, each with a live one-line status (Today, Me, Bots & Evals, Kalshi, My Money, Plan & Day, Research, Jarvis, Worlds, Settings & Help;
         Me = the personal hub, docs/ME_HUB.md: its line comes from the PC's private me/me.json, so only through the PC's own link);
      3. a search by name / purpose / plain words; Recent (the last 4 apps opened, this phone only).
+     NAV v3 (2026-11-15, docs/OLYMPUS_NAV.md): the big search is FIRST (apps, hub tabs and plain actions), then Pinned (his favourites), Right now, Your six (one tap),
+     Recent (last 6), the hubs, and one All apps A to Z sheet (gate/#az, big rows, a star to pin).
      A hub page (hub/?h=<id>) has one tab per job; each tab shows the best app for it first, the others below, duplicates folded under "Other views of the same".
      Every old app URL still works. Works at gate/ AND copied to the site root as olympus-live.html: the line below finds the site root (GATE_BASE).
      Read only: it reads home.json (through olympus/truth.js), kalshi.json, money/scoreboard.json, two status cards and the Planner's summary on this phone; it sends nothing.
@@ -45,9 +47,9 @@
   /* perf v2: blocking=render keeps the first paint for the two sheets (a script-inserted sheet does not block it in Chromium: the page painted
      unstyled and then jumped, CLS 0.27 on the phone) */
   var k = d.createElement('link'); k.rel = 'stylesheet'; k.setAttribute('blocking', 'render'); k.href = b + 'olympus/agora.css?v=a4'; h.appendChild(k);
-  var l = d.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('blocking', 'render'); l.href = b + 'gate/gate.css?v=g5'; h.appendChild(l);
+  var l = d.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('blocking', 'render'); l.href = b + 'gate/gate.css?v=g6'; h.appendChild(l);
   var i = d.createElement('link'); i.rel = 'icon'; i.href = b + 'gate/icon.svg'; h.appendChild(i);
-  ['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=me1', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g5'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
+  ['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv1', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g6'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
 })();</script>
 <script>(function () {   /* the Launch card + first-day checklist (gate/launch.js, docs/LAUNCH_DAY.md): only when the PC serves the site (/site/) */
   if (!/^\/site\//.test(location.pathname || '')) return;
@@ -58,8 +60,24 @@
 <main id="gate" class="g-main">
   <header class="g-head">
     <h1 class="g-title">Olympus</h1>
-    <p class="g-sub">Your command center: right now, then your hubs.</p>
+    <p class="g-sub">Type what you want, or tap one of your six.</p>
   </header>
+
+  <section class="g-find" aria-labelledby="findH">
+    <h2 class="g-h2 g-vh" id="findH"><label for="q">Find anything</label></h2>
+    <div class="g-findrow">
+      <div class="g-search g-big"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+        <input id="q" type="search" placeholder="Find anything: money, drawdown, news..." autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-controls="results" aria-describedby="findHint"></div>
+      <a class="g-azbtn" id="azBtn" data-to="gate/index.html#az" href="gate/index.html#az" aria-label="All apps A to Z">A–Z</a>
+    </div>
+    <p class="g-hint" id="findHint">Apps, hub tabs and things to do, in plain words.</p>
+    <div class="g-list" id="results" aria-live="polite"></div>
+  </section>
+
+  <section class="g-pins" id="pinSec" aria-labelledby="pinH" hidden>
+    <h2 class="g-h2" id="pinH">Pinned</h2>
+    <div class="g-chips" id="pins"></div>
+  </section>
 
   <section class="g-card g-now" id="now" aria-labelledby="nowH" data-state="loading">
     <div class="g-nowhead"><h2 id="nowH">Right now</h2><span class="g-badge" id="nowBadge">Checking</span></div>
@@ -67,6 +85,23 @@
     <div class="g-facts" id="nowFacts" aria-hidden="true"><i class="g-fact g-skel"></i><i class="g-fact g-skel"></i><i class="g-fact g-skel"></i><i class="g-fact g-skel"></i></div><!-- perf v2: four calm placeholder tiles hold the space the facts take, so the hubs below never jump when the numbers arrive (CLS) -->
     <a class="g-btn primary" id="bringBack" data-to="nq/index.html?howto=1" href="nq/index.html?howto=1" hidden>Bring the bots back</a>
     <p class="g-nowfoot" id="nowFoot"></p>
+  </section>
+
+  <section class="g-quick" aria-labelledby="quickH">
+    <h2 class="g-h2" id="quickH">Your six</h2>
+    <nav class="g-qgrid" id="quick" aria-labelledby="quickH">
+      <a class="g-q" data-app="nq" data-to="nq/index.html" href="nq/index.html"><b>Zlarior · ATLAS</b><small class="g-qline">Bots right now</small></a>
+      <a class="g-q" data-app="compass" data-to="compass/index.html" href="compass/index.html"><b>Today</b><small class="g-qline">What to do next</small></a>
+      <a class="g-q" data-app="ledger" data-to="ledger/index.html" href="ledger/index.html"><b>Money</b><small class="g-qline">Your real money</small></a>
+      <a class="g-q" data-app="aegis" data-to="aegis/index.html" href="aegis/index.html"><b>Drawdown</b><small class="g-qline">Risk guard</small></a>
+      <a class="g-q" data-app="planner" data-to="planner/index.html" href="planner/index.html"><b>My day</b><small class="g-qline">Day and week plan</small></a>
+      <a class="g-q" data-app="kalshi" data-to="kalshi/index.html" href="kalshi/index.html"><b>Kalshi</b><small class="g-qline">Kalshi bot</small></a>
+    </nav>
+  </section>
+
+  <section class="g-recent" id="recentSec" aria-labelledby="recentH" hidden>
+    <h2 class="g-h2" id="recentH">Recent</h2>
+    <div class="g-chips" id="recent"></div>
   </section>
 
   <section class="g-hubs" aria-labelledby="hubsH">
@@ -84,19 +119,7 @@
       <a class="g-hub" data-hub="worlds" data-to="hub/index.html?h=worlds" href="hub/index.html?h=worlds"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><path d="M5 14 20 6l15 8zM7 14h26M9.5 17.5v12M16 17.5v12M24 17.5v12M30.5 17.5v12M6 30h28M4 34h32"/></svg><span class="g-htxt"><b>Worlds</b><small class="g-hline" id="hl-worlds">The 3D places (optional)</small></span><em class="g-hcount"></em></a>
       <a class="g-hub" data-hub="settings" data-to="hub/index.html?h=settings" href="hub/index.html?h=settings"><svg class="g-hicon" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="5"/><path d="M20 4v5M20 31v5M4 20h5M31 20h5M8.7 8.7l3.5 3.5M27.8 27.8l3.5 3.5M8.7 31.3l3.5-3.5M27.8 12.2l3.5-3.5"/></svg><span class="g-htxt"><b>Settings &amp; Help</b><small class="g-hline" id="hl-settings">Look, the PC, every app</small></span><em class="g-hcount"></em></a>
     </nav>
-  </section>
-
-  <section class="g-find" aria-labelledby="findH">
-    <h2 class="g-h2" id="findH"><label for="q">Find an app</label></h2>
-    <div class="g-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
-      <input id="q" type="search" placeholder="money, risk, kalshi, journal..." autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-controls="results" aria-describedby="findHint"></div>
-    <p class="g-hint" id="findHint">Search by name or by what it does.</p>
-    <div class="g-list" id="results" aria-live="polite"></div>
-  </section>
-
-  <section class="g-recent" id="recentSec" aria-labelledby="recentH" hidden>
-    <h2 class="g-h2" id="recentH">Recent</h2>
-    <div class="g-chips" id="recent"></div>
+    <a class="g-btn g-azwide" id="azWide" data-to="gate/index.html#az" href="gate/index.html#az">All apps A to Z</a>
   </section>
 
   <section class="g-look" id="lookSec" aria-labelledby="lookH" hidden>
