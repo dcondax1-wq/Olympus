@@ -142,7 +142,7 @@
   /* ------------------------------------------------------------------------------------------ Your six: one tap, one live line each */
   function drawQuick() {
     var HS = w.OLYMPUS_HUB_STATUS, N = S.N, X = S.extra || {}, set = function (id, text, lvl) {
-      var a = d.querySelector('#quick .g-q[data-app="' + id + '"] .g-qline'); if (!a || !text) return; a.textContent = text; a.className = 'g-qline' + (lvl ? ' ' + lvl : '');
+      var a = d.querySelector ? d.querySelector('#quick .g-q[data-app="' + id + '"] .g-qline') : null; if (!a || !text) return; a.textContent = text; a.className = 'g-qline' + (lvl ? ' ' + lvl : '');
     };
     if (S.now && S.now.state === 'none') set('nq', 'No bot numbers here', 'bad');
     else if (N && S.now) {
