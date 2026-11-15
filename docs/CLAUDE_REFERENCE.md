@@ -1957,7 +1957,7 @@ The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" 
   `python tools/theme_shots.py --site <built site> --themes midnight --leftovers` (also `--mix trader`). Details: `docs/OLYMPUS_DESIGN.md` "Themes".
   **Locked down (2026-11-14, team T2)**: the QA matrix `python -X utf8 tools/theme_shots.py --qa --site <built site> --out <dir> [--themes a,b] [--pages
   home,nq] [--live --mixcheck]` (every look x home, 9 hubs, 6 dashboard tabs, 12 apps; text AA on real pixels, AGORA leftovers, +$/-$, status bar, no flash,
-  focus ring, sheets / toasts; `tools/theme_qa.js`), `--table <before> <after>` writes `qa.md` (results: `docs/shots/themes_v2/`). A page whose
+  focus ring, sheets / toasts; `tools/theme_qa.js`), `--table <before> <after>` writes `qa.md` (results: `docs/shots/themes_v2/`, 960 / 960 cells clean on 2026-11-15). A page whose
   engine loads after its first frame carries themes.js's FIRST PAINT copy in its `<head>` (letter for letter, the test checks it); a kit app that is
   checked in light says `<html data-oly-light>`. P2's cheap path for the frosted looks: `OLYMPUS_THEMES.noblur(true)` (or `<html data-oly-noblur>`).
 - **Sound** (`olympus/sfx.js`, `docs/OLYMPUS_SFX.md`): 14 synthesised ambient beds (WebAudio, no files); the app -> bed table is `AMBIENT` in `olympus.js`

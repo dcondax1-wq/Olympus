@@ -362,6 +362,24 @@ cards and bars (its own palette), Kalshi's background a little (its `--bg` blend
 - **For P2 (speed): no blur.** The frosted looks (Glass Aurora, Sunset, Vapor Soft) blur behind every card. `OLYMPUS_THEMES.noblur(true)`
   (stored for every page: `localStorage['olympus.theme.noblur'] = '1'`, or `<html data-oly-noblur>` before the engine applies) paints the
   same cards as one solid colour, the card's glass composited once over the page: the look stays, the blur pass goes. Off by default.
+- **What the after run found, fixed.** Light looks: the paper-shadow account cards keep full ink (their .88 dimming took the muted ink under
+  AA), BLITZ's muted labels take one step stronger ink, the Money tab's cards cast soft ink shadows (the space theme's black ones shaded the
+  next title out of AA), the space sky's black title halo is dropped, Polis's district buttons stay solid over the 3D scene. Every look:
+  Kalshi's chosen chip in full ink; the deep fills (g4 / r4) carry the ink laid on them (Nord's and Wall Street's calendar days); the
+  dashboard's Zenith core (`zenithcore.js`) leaves a look the engine paints to its slots: Glass Aurora, Marble White and Ocean share their
+  names with old kit themes whose token sets covered the look's accent (Marble's focus rings and crumbs were 1.4:1). The picker's hover
+  preview needs a real hover (after a pick, the redraw put another swatch under the resting mouse and previewed it).
+- **Shared renderers stay twins.** The dashboard scripts tokenized here (`blitzcore`, `boardcore`, `deckcore`, `mindcore`, `moneynowcore`,
+  `realcore`, `statuscore`, `zenithcore`, `liveview.css`, `mission.css`) are copied byte for byte to `web_next` (the PC app paints no slot,
+  so every one shows its old literal there), their PC references bumped.
+- **The numbers (2026-11-15, `docs/shots/themes_v2/qa.md`).** 32 looks x 30 pages = 960 cells. Before: 218 clean (a first frame in the
+  wrong look 404, AGORA colours left 376, text under AA 107, no visible focus ring 27, +$ / -$ in the wrong colour 7). After: 960 clean
+  (218 pass, 742 fixed, 0 known). The live switch repaints 23 / 23 open pages, the mix reaches 18 / 18 hub pages and apps. The default's
+  own issues stay (it is byte for byte as before) and are listed apart: the dashboard's 3D badge, ATLAS's PAPER pill, BLITZ's NOT RUNNING
+  chip, the Money tab's muted labels, the Kalshi City link, the More tab's search field ring. How it measures: the page is measured, shot,
+  then measured again (a text that moved meanwhile is left out of that screenshot); below the two measured screens only a text on one
+  certain background counts; a look's own painted colours (also inside its gradients) are never leftovers; art (3D, portraits, Polis's clay)
+  and identity colours (ATLAS's orange, the bots' colours) are left alone.
 
 ## Oracle and Odeon overhaul (2026-11-04, owner: "apps look Play-Doh / blank, a ton of features and effects")
 
