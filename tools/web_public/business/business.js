@@ -3,6 +3,8 @@ import * as C from './businesscore.js';
 
 const $ = (id) => document.getElementById(id);
 const KEY = 'business.week.v1';
+let READY = false;
+window.BUSINESS = { ready: () => READY };   // for the tests (tests/agora_kit.open_app)
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
 async function getJSON(url) {
@@ -73,6 +75,7 @@ function render(doc) {
 (async function main() {
   const own = C.clean(await getJSON('./business.json'));
   const doc = own || C.clean(await getJSON('./fixture.json'));
-  if (!doc) { $('status').textContent = 'No business data yet: run python tools/biz_publish.py on the PC.'; return; }
+  if (!doc) { $('status').textContent = 'No business data yet: run python tools/biz_publish.py on the PC.'; READY = true; return; }
   render(doc);
+  READY = true;
 })();

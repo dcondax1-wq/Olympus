@@ -48,8 +48,12 @@ svg text { font-family: var(--ag-sans); }
 .model.paused { opacity: .7; }
 .week ol { margin: 0; padding: 0; display: grid; gap: 6px; list-style: none; }
 .week h3 { margin: 8px 0 2px; font-size: 15px; }
-.chk { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; font-size: 14px; }
-.chk input { width: 22px; height: 22px; margin: 2px 0 0; flex: none; accent-color: var(--ag-gold); }
+.chk { position: relative; display: block; min-height: 44px; padding: 11px 0 0 36px; font-size: 14px; }
+.chk input { position: absolute; left: -11px; top: 0; width: 44px; height: 44px; margin: 0; opacity: 0; cursor: pointer; }
+.chk span::before { content: ""; position: absolute; left: 0; top: 11px; width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--ag-line); box-sizing: border-box; }
+.chk input:checked + span::before { background: var(--ag-gold); border-color: var(--ag-gold); }
+.chk input:focus-visible + span::before { outline: 2px solid var(--ag-gold); outline-offset: 2px; }
 .chk input:checked + span { text-decoration: line-through; color: var(--ag-muted); }
+#app .week { overflow: visible; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }

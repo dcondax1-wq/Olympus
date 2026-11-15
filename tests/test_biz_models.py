@@ -7,6 +7,7 @@
   d. tools/biz_publish.py: every model, the totals are the sums of the models that are not paused, docs/BUSINESS.md shows the same numbers,
      the local state is counts only, the 7-day plan
   e. the listing kit: all 5 catalog products, every cover on disk, the doc is up to date, zip names = the product builders'
+  c. Chromium (skipped with --static): DEMO, the PC's own file, ticks kept, taps, no sideways scroll
   f. agency.day on the committed demo batch (no network): the call list, TODAY.txt (prices, demo sites, rules), AGENCY_DAY.bat
     python -X utf8 -m tests.test_biz_models
 Read only for the repo: writes go to temp folders. No network, no browser.
@@ -197,6 +198,42 @@ def test_day():
           and 'copy /y "agency\\config.example.json" "agency\\config.json"' in txt and "python -X utf8 -m agency.day %*" in txt and not re.search(r"curl|Invoke-WebRequest|powershell", txt, re.I))
 
 
+def test_browser():
+    """c. Chromium 390 x 844: the DEMO fixture, then the PC's own business.json (mocked), the 7-day ticks kept, taps, no sideways scroll"""
+    try:
+        import playwright  # noqa: F401
+    except ImportError:
+        print("  (playwright not installed: browser part skipped)")
+        return
+    import biz_publish as BP
+    own = BP.build(sample=False)
+    own["total"]["real_usd_month"] = 49.0
+    srv, origin = AK.serve()
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, APP)
+            check("c. DEMO: the tag, the month-3 range, 7 model cards, 7 table rows, 21 ticks, the 3 prices",
+                  p.is_visible("#demo") and p.inner_text("#heroM3") == "$0-2,630 a month" and p.locator("#models > section").count() == 7
+                  and p.locator("#tbl tbody tr").count() == 7 and p.locator("#week input").count() == 21 and "Starter" in p.inner_text("#prices"), p.inner_text("#status"))
+            p.locator("#week input").first.scroll_into_view_if_needed()
+            p.locator("#week input").first.dispatch_event("click")   # the AGORA app bar can sit over the row while scrolling
+            p.reload()
+            AK.open_app(p, origin, APP)
+            check("c. a tick stays after a reload (this browser only)", p.locator("#week input").first.is_checked() and p.inner_text("#weekPill") == "1 done")
+            check("c. taps >= 44 px, no sideways scroll at 390 px, nothing fetched off the site, no console error",
+                  not AK.taps(p) and AK.no_sideways(p) and not off and not errs, (AK.taps(p)[:4], off[:3], errs[:3]))
+            AK.shot(p, "business-390")
+            ctx.close()
+            ctx, p, errs, seen, off = AK.page(br, origin, w=375, h=667, mock={"/business/business.json": json.dumps(own)})
+            AK.open_app(p, origin, APP)
+            check("c. the PC's own business.json wins over the fixture: no DEMO tag, real $49 shown",
+                  not p.is_visible("#demo") and "$49 a month" in p.inner_text("#heroKv") and AK.no_sideways(p) and not errs, errs[:3])
+            ctx.close()
+    finally:
+        srv.shutdown()
+
+
 def main():
     try:
         test_page()
@@ -205,6 +242,8 @@ def main():
         test_publish()
         test_listing_kit()
         test_day()
+        if "--static" not in sys.argv:
+            test_browser()
     finally:
         shutil.rmtree(TMP, ignore_errors=True)
     return AK.finish()
