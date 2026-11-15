@@ -1,0 +1,90 @@
+{
+  "v": 1,
+  "about": "Pre-registered experiments for the nightly learning loop (engine/learn_loop.py, docs/LEARN_LOOP.md). Each is written BEFORE its first run, with its cut points picked on 2026 Jan-Jun only (h1_q = a quantile of the 2026 H1 trades). None is in docs/CLAUDE_REFERENCE.md 'Tested and rejected'. The loop runs one or two a night and NEVER adopts anything: a candidate goes to the owner + Claude. Add a row to queue a new idea; a changed rule is re-run from scratch.",
+  "gates": {
+    "lit_tilt": "LIT (CLAUDE.md LIT exception): tools/lit_edge.gate = more net $ in 2026 Jan-Jun (pick) AND Jul-Oct (check) at the LIT size AND on the live two_week eval path, 2-week fails not up in either half; 2-4 trades a week; at least 5 / 3 trades changed in the two halves; the same multipliers shuffled at random beat it in at most 20% of 200 draws per half. Costs in. 2021-25 is a reference line, never a gate. Eval speed (p10/f10, dec10, p15/f15, slow_pass, pass_med) stored with the $.",
+    "atlas_tilt": "ATLAS: tools/atlas_v2.verdict = better in 2026 Jan-Jun AND Jul-Oct (2-week pass not down, dead evals not up, eval-path $ up) AND 2025 + 2021-24 not losing (tier A) or not worse than today (tier B); 2+ signals a week in every span; at least 5 / 3 trades changed. Costs in, the owner's $43 25K price."
+  },
+  "experiments": [
+    {
+      "id": "lit_gex_low_x1.25",
+      "bot": "lit",
+      "kind": "lit_tilt",
+      "registered": "2026-11-15",
+      "title": "Zlarior x1.25 when dealer gamma is low (GEX bottom third)",
+      "hypothesis": "With low / negative dealer gamma, dealers hedge with the move instead of against it, so a sweep-and-reverse travels further and the VIX-band target is reached more often. GEX has not been tested as a LIT size input.",
+      "rule": [{"feature": "gex_pct", "op": "<=", "h1_q": 0.3333, "mult": 1.25}],
+      "judged_by": "lit_tilt"
+    },
+    {
+      "id": "lit_vix_rising_x0.75",
+      "bot": "lit",
+      "kind": "lit_tilt",
+      "registered": "2026-11-15",
+      "title": "Zlarior x0.75 the day after VIX jumped (VIX change top third)",
+      "hypothesis": "A VIX jump the day before means a nervous tape: sweeps keep running instead of reversing. The VIX LEVEL was tested (rejected); the CHANGE was not.",
+      "rule": [{"feature": "vix_chg", "op": ">=", "h1_q": 0.6667, "mult": 0.75}],
+      "judged_by": "lit_tilt"
+    },
+    {
+      "id": "lit_asia_tight_x1.25",
+      "bot": "lit",
+      "kind": "lit_tilt",
+      "registered": "2026-11-15",
+      "title": "Zlarior x1.25 after a tight Asia session (Asia range bottom third, in VIX moves)",
+      "hypothesis": "A compressed Asia range stores liquidity on both sides; the London / NY sweep of it tends to start the day's expansion, so the reversal has room to run.",
+      "rule": [{"feature": "asia_rng", "op": "<=", "h1_q": 0.3333, "mult": 1.25}],
+      "judged_by": "lit_tilt"
+    },
+    {
+      "id": "lit_level_touched_x1.25",
+      "bot": "lit",
+      "kind": "lit_tilt",
+      "registered": "2026-11-15",
+      "title": "Zlarior x1.25 when the swept level was touched many times (touches top third)",
+      "hypothesis": "A level that held many times collects more resting stops; its sweep is a cleaner stop run and a stronger turning point.",
+      "rule": [{"feature": "lvl_touches", "op": ">=", "h1_q": 0.6667, "mult": 1.25}],
+      "judged_by": "lit_tilt"
+    },
+    {
+      "id": "lit_level_old_x1.25",
+      "bot": "lit",
+      "kind": "lit_tilt",
+      "registered": "2026-11-15",
+      "title": "Zlarior x1.25 when the swept level is old (level age top third)",
+      "hypothesis": "Old, untaken liquidity (days-old highs / lows) is the pool the big players aim for; taking it should mark a more important turn than a fresh intraday level.",
+      "rule": [{"feature": "lvl_age_h", "op": ">=", "h1_q": 0.6667, "mult": 1.25}],
+      "judged_by": "lit_tilt"
+    },
+    {
+      "id": "lit_fast_fill_x1.25",
+      "bot": "lit",
+      "kind": "lit_tilt",
+      "registered": "2026-11-15",
+      "title": "Zlarior x1.25 when the entry fills fast after the CISD (wait bottom third)",
+      "hypothesis": "A limit that fills within minutes of the change of character means price came straight back into the zone with force: the reversal is decisive. A slow fill is a drifting market.",
+      "rule": [{"feature": "wait_min", "op": "<=", "h1_q": 0.3333, "mult": 1.25}],
+      "judged_by": "lit_tilt"
+    },
+    {
+      "id": "atlas_after_lit_opp_stop_x1.25",
+      "bot": "atlas",
+      "kind": "atlas_tilt",
+      "registered": "2026-11-15",
+      "title": "ATLAS x1.25 after Zlarior was stopped out on the other side today",
+      "hypothesis": "Zlarior's stop-out shows the move ran through its sweep level: an ATLAS trend entry in that direction rides confirmed flow. (The tested ideas were LIT winning the other side and same-side losses, not this.)",
+      "rule": [{"feature": "lit_opp_lost", "op": "true", "mult": 1.25}],
+      "judged_by": "atlas_tilt"
+    },
+    {
+      "id": "atlas_chop_day_x0.5",
+      "bot": "atlas",
+      "kind": "atlas_tilt",
+      "registered": "2026-11-15",
+      "title": "ATLAS x0.5 when a member already traded the other side today (two-way day)",
+      "hypothesis": "Signals on both sides the same day mark a two-way, choppy session where trend entries give back; half size there protects the eval room. (The tested ideas were same-side retries and one signal per side, not this.)",
+      "rule": [{"feature": "mem_opp_done", "op": "true", "mult": 0.5}],
+      "judged_by": "atlas_tilt"
+    }
+  ]
+}

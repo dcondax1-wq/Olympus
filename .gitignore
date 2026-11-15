@@ -219,3 +219,6 @@ data/me/
 
 # Business page (tools/biz_publish.py, 2026-11-15): the owner's own progress; fixture.json is the committed DEMO
 tools/web_public/business/business.json
+
+# the nightly learning loop's machine-local output (engine/learn_loop.py, docs/LEARN_LOOP.md): the PC's auto-update needs a clean tree
+research/learn/
