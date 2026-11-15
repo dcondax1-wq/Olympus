@@ -13,7 +13,7 @@ import { fxBots, fxShoot, fxPnl, fxReady } from './fx3d.js';
 import { depth } from './depth.js';
 
 (function ensure() {
-  for (const [href, v] of [['/css/mission.css', 1]]) {
+  for (const [href, v] of [['/css/mission.css', 2]]) {
     if (!document.querySelector(`link[href^="${href}"]`)) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = `${href}?v=${v}`; document.head.appendChild(l); }
   }
   if (!document.getElementById('page-mission')) {

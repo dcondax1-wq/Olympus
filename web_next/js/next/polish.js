@@ -12,7 +12,7 @@ import { loadMissionCore } from './mission.js';
 import { BOTS } from './routes.js';
 import { addPaletteItems } from '../palette.js';
 
-const V = 1;
+const V = 2;
 let SP = null;
 function loadStatusCore() {
   if (window.StatusUI) return Promise.resolve();
