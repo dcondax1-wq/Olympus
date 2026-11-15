@@ -672,6 +672,46 @@
     }
   }
 
+  /* ------------------------------------------------------------------------------------------ 3D touch (team FX, 2026-11-15)
+     The hub tiles are small slabs of stone: on a fresh open (not a reload or a Back) they rise into place in a short stagger (tilted back, then flat),
+     and a finger (or a mouse) on a tile tips it toward the touch with a soft gold light where it is pressed. CSS transforms only (no WebGL,
+     no frame loop): nothing under reduced motion, 3D Off / Low (LITE), or Battery quality; a scroll cancels the tilt at once. */
+  function tilt3d() {
+    var root = d.documentElement, grid = $('hubs'); if (!grid) return;
+    var lvl = ''; try { lvl = String(JSON.parse(localStorage.getItem('jfx') || '""')); } catch (e) { try { lvl = String(localStorage.getItem('jfx') || ''); } catch (e2) { lvl = ''; } }
+    var rm = false; try { rm = !!(w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { rm = false; }
+    var saver = ''; try { saver = String(localStorage.getItem('olympus.saver') || ''); } catch (e) { saver = ''; }
+    if (rm || /on/.test(saver) || lvl === 'off' || lvl === 'low' || root.getAttribute('data-oly-lite') === '1' || /[?&]q=(off|battery|still)(&|$)/.test(w.location.search || '')) return;
+    root.setAttribute('data-g3d', '1');
+    // the rise plays on a fresh open only: not on a reload, not on Back from a hub or an app (no storage needed)
+    var seen = false; try { var nv = w.performance && performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null; seen = !!(nv && nv.type !== 'navigate') || (d.referrer || '').indexOf(w.location.host) >= 0; } catch (e) { seen = false; }
+    if (!seen && !navigator.webdriver) {
+      var tiles = grid.querySelectorAll('.g-hub'), i;
+      for (i = 0; i < tiles.length; i++) tiles[i].style.setProperty('--g-rise', (i * 45) + 'ms');
+      grid.classList.add('g-rise');
+      w.setTimeout(function () { grid.classList.remove('g-rise'); }, 1100);
+    }
+    var cur = null;
+    function off() { if (cur) { cur.classList.remove('g-tilt'); cur.style.removeProperty('--rx'); cur.style.removeProperty('--ry'); cur = null; } }
+    function aim(t, x, y) {
+      var r = t.getBoundingClientRect(); if (!r.width || !r.height) return;
+      var u = Math.max(0, Math.min(1, (x - r.left) / r.width)), v = Math.max(0, Math.min(1, (y - r.top) / r.height)), k = r.width > 260 ? 3 : 6;   // the wide tiles tip less
+      t.style.setProperty('--rx', ((0.5 - v) * k * 1.4).toFixed(2) + 'deg'); t.style.setProperty('--ry', ((u - 0.5) * k).toFixed(2) + 'deg');
+      t.style.setProperty('--mx', (u * 100).toFixed(1) + '%'); t.style.setProperty('--my', (v * 100).toFixed(1) + '%');
+    }
+    grid.addEventListener('pointerdown', function (e) {
+      var t = e.target && e.target.closest ? e.target.closest('.g-hub') : null; if (!t) return;
+      off(); cur = t; aim(t, e.clientX, e.clientY); t.classList.add('g-tilt');
+    }, { passive: true });
+    grid.addEventListener('pointermove', function (e) {
+      if (e.pointerType === 'mouse' && !cur) { var h = e.target && e.target.closest ? e.target.closest('.g-hub') : null; if (h) { aim(h, e.clientX, e.clientY); h.classList.add('g-hover'); } return; }
+      if (cur) aim(cur, e.clientX, e.clientY);
+    }, { passive: true });
+    grid.addEventListener('pointerout', function (e) { var h = e.target && e.target.closest ? e.target.closest('.g-hub') : null; if (h && !h.contains(e.relatedTarget)) { h.classList.remove('g-hover'); if (h === cur) off(); } }, { passive: true });
+    ['pointerup', 'pointercancel'].forEach(function (n) { w.addEventListener(n, off, { passive: true }); });
+    w.addEventListener('scroll', off, { passive: true });
+  }
+
   /* ------------------------------------------------------------------------------------------ start */
   var OLD_D = { trading: 'bots', money: 'money', life: 'plan', worlds: 'worlds', workshop: 'settings', start: 'today' };
   function boot() {
@@ -701,6 +741,7 @@
       $('q').disabled = true;
     }
     w.addEventListener('pageshow', function (e) { if (e.persisted) { drawRecent(); drawPins(); } });
+    try { tilt3d(); } catch (e) { /* the tiles work flat */ }
     loadNow();
     if (ON_PC && w.setInterval) w.setInterval(function () { if (d.visibilityState !== 'hidden') loadNow(); }, LIVE_EVERY_MS);
   }

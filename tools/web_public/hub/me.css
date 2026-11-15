@@ -76,3 +76,11 @@ html[data-oly-style] :is(.me-tile, .me-stack, .me-empty, .me-chip) { background:
   -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
 html[data-oly-style] :is(.me-tile, .me-stack, .me-empty) { border-radius: var(--oly-th-radius) !important; }
 html[data-oly-style] .me-h2 { font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case); letter-spacing: var(--oly-th-title-track) !important; font-style: var(--oly-th-title-style); }
+
+/* 3D touch (team FX 2026-11-15, hub.js mark3d): the four status tiles rise into place, tilted back then flat, once per launch */
+@keyframes me-rise { from { opacity: 0; transform: perspective(700px) translateY(12px) rotateX(18deg); } to { opacity: 1; transform: none; } }
+html[data-g3d] .me-tiles .me-tile { transform-origin: 50% 100%; animation: me-rise .5s cubic-bezier(.2, .8, .2, 1) both; }
+html[data-g3d] .me-tiles .me-tile:nth-child(2) { animation-delay: 60ms; }
+html[data-g3d] .me-tiles .me-tile:nth-child(3) { animation-delay: 120ms; }
+html[data-g3d] .me-tiles .me-tile:nth-child(4) { animation-delay: 180ms; }
+@media (prefers-reduced-motion: reduce) { html[data-g3d] .me-tiles .me-tile { animation: none !important; } }

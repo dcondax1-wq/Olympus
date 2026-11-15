@@ -56,7 +56,9 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     if (n) {
       const picks = L.buildings.filter((b) => !b.lab && !b.e.small && b.e.status !== 'DEAD').sort((a, b) => b.fullH - a.fullH).slice(0, n);
       L.buildings.filter((b) => !b.lab && b.e.status === 'DEAD' && !b.e.small).sort((a, b) => b.e.n - a.e.n).slice(0, 3).forEach((b) => picks.push(b));
-      picks.forEach((b, i) => {
+      // one sign per word, and never the district's own floating name again (two copies of OTHER / BITCOIN read as a double image)
+      const used = new Set((L.districts || []).map((d) => String(d.key === 'Downtown' ? 'MARKET HQ' : d.name || '').toUpperCase().slice(0, 14)));
+      picks.filter((b) => { if (b.e.status === 'DEAD') return true; const k = short(b.e); if (used.has(k)) return false; used.add(k); return true; }).forEach((b, i) => {
         const dead = b.e.status === 'DEAD', col = dead ? '#ca785c' : STATUS_COLOR[b.e.status];
         const map = signTexture(dead ? 'STOP' : short(b.e), col, dead || b.e.status === 'DECAYING');
         const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map, color: hdr('#ffffff', 1.5), transparent: true, depthWrite: false, fog: true }));

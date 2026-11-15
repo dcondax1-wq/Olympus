@@ -240,3 +240,18 @@ html[data-oly-style] :is(.g-title, .g-h2, .g-hub b, .g-nowhead h2) { font-weight
 html[data-oly-style] .g-btn.primary { background: var(--oly-th-btn-bg) !important; color: var(--oly-th-btn-fg) !important; border: var(--oly-th-btn-border) !important; box-shadow: none !important; }
 html[data-oly-style] :is(.g-sw[aria-checked="true"], .g-mini[aria-checked="true"], .g-combo[aria-pressed="true"]) { border-color: var(--oly-th-ring) !important; box-shadow: 0 0 0 2px var(--oly-th-ring) inset !important; }
 html[data-oly-style] :is(.g-q, .g-azbtn) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; border-radius: var(--oly-th-radius) !important; }
+
+/* ------------------------------------------------------------------ 3D touch (team FX 2026-11-15, gate.js tilt3d): only with html[data-g3d] (never reduced motion / LITE / Battery) */
+html[data-g3d] .g-hubgrid { perspective: 900px; }
+html[data-g3d] .g-hub { position: relative; transform-style: preserve-3d; will-change: auto; }
+html[data-g3d] .g-hub::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  background: radial-gradient(160px circle at var(--mx, 50%) var(--my, 30%), rgba(var(--oly-th-a8-rgb, 211,181,121), .16), transparent 70%);
+  transition: opacity .22s ease; }
+html[data-g3d] .g-hub.g-tilt, html[data-g3d] .g-hub.g-hover { transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(.985); transition: transform .12s ease-out; }
+html[data-g3d] .g-hub.g-hover { transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
+html[data-g3d] .g-hub.g-tilt::after, html[data-g3d] .g-hub.g-hover::after { opacity: 1; }
+html[data-g3d] .g-hub.g-tilt .g-hicon, html[data-g3d] .g-hub.g-hover .g-hicon { transform: translateZ(14px); }
+html[data-g3d] .g-hicon { transition: transform .18s ease-out; }
+@keyframes g-rise { from { opacity: 0; transform: translateY(14px) rotateX(16deg); } to { opacity: 1; transform: none; } }
+html[data-g3d] .g-hubgrid.g-rise .g-hub { transform-origin: 50% 100%; animation: g-rise .52s cubic-bezier(.2, .8, .2, 1) both; animation-delay: var(--g-rise, 0ms); }
+@media (prefers-reduced-motion: reduce) { html[data-g3d] .g-hub, html[data-g3d] .g-hub.g-tilt, html[data-g3d] .g-hub.g-hover { transform: none !important; } html[data-g3d] .g-hub::after { display: none; } }

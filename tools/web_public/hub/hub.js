@@ -243,6 +243,19 @@
   }
 
   /* ------------------------------------------------------------------------------------------ start */
+  /* 3D touch (team FX, 2026-11-15): html[data-g3d] lets hub.css / me.css play two small CSS-only entrances (the best app's icon turns in
+     like a coin, the Me hub's four tiles rise into place), on a fresh open (not a reload or a Back); never under reduced motion,
+     3D Off / Low (LITE), Battery quality or the battery saver, or in an automated browser. Nothing loops after the entrance. */
+  function mark3d(hid) {
+    var root = d.documentElement, lvl = '', saver = '', rm = false;
+    try { lvl = String(JSON.parse(localStorage.getItem('jfx') || '""')); } catch (e) { try { lvl = String(localStorage.getItem('jfx') || ''); } catch (e2) { lvl = ''; } }
+    try { saver = String(localStorage.getItem('olympus.saver') || ''); } catch (e) { saver = ''; }
+    try { rm = !!(w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { rm = false; }
+    if (rm || /on/.test(saver) || lvl === 'off' || lvl === 'low' || root.getAttribute('data-oly-lite') === '1' || navigator.webdriver) return;
+    try { var nv = w.performance && performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null; if (nv && nv.type !== 'navigate') return; } catch (e) { /* it plays */ }   // not on a reload or a Back
+    root.setAttribute('data-g3d', '1');
+    w.setTimeout(function () { root.removeAttribute('data-g3d'); }, 2400);
+  }
   function boot() {
     try { if (w.OLYMPUS_THEMES && w.OLYMPUS_THEMES.apply) w.OLYMPUS_THEMES.apply('page', { meta: true }); } catch (e) { /* the default look (the hub's own page id 'hub-<id>' lets a Mix give it its hub's look) */ }
     var H = C && Q.h ? (function () { for (var i = 0; i < C.hubs.length; i++) if (C.hubs[i].id === Q.h) return C.hubs[i]; return null; })() : null;
@@ -259,6 +272,7 @@
       S.done = true; return;
     }
     S.hub = H;
+    try { mark3d(H.id); } catch (e) { /* flat */ }
     d.title = H.name + ' · Olympus';
     d.documentElement.setAttribute('data-oly-district', H.id);
     var title = $('hubName'); clear(title); title.appendChild(hubIcon(H.icon, 'hb-ticon')); title.appendChild(d.createTextNode(H.name));

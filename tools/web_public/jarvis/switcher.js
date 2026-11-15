@@ -331,8 +331,10 @@ export function mountSwitcher(opts = {}) {
   wake();
 
   const isDocked = () => htmlEl.getAttribute('data-orb-dock') === '1';
-  const tipOff = () => { tip.classList.remove('on'); htmlEl.removeAttribute('data-orb-tip'); };
+  // the chip and the search button come back only once the hint has faded out (.18 s): no frame shows both texts on top of each other
+  const tipOff = () => { tip.classList.remove('on'); clearTimeout(tipOff.t); tipOff.t = setTimeout(() => { if (!tip.classList.contains('on')) htmlEl.removeAttribute('data-orb-tip'); }, 200); };
   function showTip(html, ms = 1100) {
+    clearTimeout(tipOff.t);
     tip.innerHTML = html;
     const r = orb.getBoundingClientRect(), W = win.innerWidth, row = isDocked();
     tip.classList.toggle('row', row);
