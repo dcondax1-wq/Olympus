@@ -20,8 +20,8 @@ Updated 2026-11-15 ~16:30 ET.
 - Account #4: buy after the first MFFU payout (docs/ACCOUNT_4.md; another MFFU 50K = easiest, LucidPro 50K = second firm).
 - Business: fill agency/config.json (name, city, phone, address), then AGENCY_DAY.bat; list the 5 products (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
 
-## In progress
-- Team LEARN: nightly self-learning loop on the PC (engine/learn_loop.py, research/learn_queue.json), proposals only.
+## Built, waiting for the PC
+- Nightly self-learning loop is built (engine/learn_loop.py, research/learn_queue.json, docs/LEARN_LOOP.md): starts on the PC by itself after tonight; first cloud run rejected all 8 seed ideas.
 
 ## Recent findings (don't redo)
 - LIT: no new edge (S2 sizing tilts, E-LIT 16 skip rules + missed setups). H2 weaker = lower VIX + wider stops, not a broken edge.
