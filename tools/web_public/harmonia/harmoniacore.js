@@ -7,7 +7,10 @@ export const ACCOUNTS = {
   atlas: { key: 'atlas', name: 'ATLAS', bot: 'ATLAS', size: '25K', mll: 1000, risk: 150 },
   blitz: { key: 'blitz', name: 'BLITZ', bot: 'BLITZ', size: '25K', mll: 1000, risk: 120 },
 };
-export const ORDER = ['zlarior', 'atlas', 'blitz'];
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the site keeps the last published list in
+// localStorage oly.hiddenBots (same origin for every app; nothing known in a browser = ['blitz'], none outside one)
+const HIDDEN_BOTS = (() => { if (typeof localStorage === 'undefined') return []; try { const s = localStorage.getItem('oly.hiddenBots'); const a = s ? JSON.parse(s) : null; return Array.isArray(a) ? a.map(String) : ['blitz']; } catch (e) { return ['blitz']; } })();
+export const ORDER = ['zlarior', 'atlas', 'blitz'].filter((k) => !HIDDEN_BOTS.includes(k));
 // what each money machine's dollars depend on. 'nq' = the NQ bots' signals (prop-firm payouts are only paid when the NQ strategies make money).
 export const STREAMS = {
   chrysos: { id: 'chrysos', name: 'Chrysos', role: 'Prop-firm eval and payouts', depends: 'nq', why: 'Payouts only come if the NQ bots keep making money.' },

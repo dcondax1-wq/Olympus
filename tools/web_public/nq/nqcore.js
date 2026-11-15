@@ -186,10 +186,15 @@ export function banner(st) {
 }
 
 // ------------------------------------------------------------------------------------------------ all of it
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the published file says "hidden_bots" (top or board),
+// the Zenith page's window.OLY_HIDDEN when there; a hidden BLITZ is left out
+const hiddenOf = (h) => { const o = h && typeof h === 'object' ? h : {}, b = o.board && typeof o.board === 'object' ? o.board : {};
+  const L = Array.isArray(o.hidden_bots) ? o.hidden_bots : Array.isArray(b.hidden_bots) ? b.hidden_bots : null;
+  return (k) => (L ? L.map(String).includes(k) : !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has(k))); };
 export function hasData(home) { const h = obj(home); return isObj(h.board) || isObj(obj(h.live).pc) || (Array.isArray(h.accounts) && h.accounts.length > 0); }
 export function build(home, nowMs) {
   const nowS = Math.floor((num(nowMs) || 0) / 1000), h = obj(home), trades = lastTrades(h, 10);
-  const bots = ORDER.map((k) => botView(k, h, nowS, trades));
+  const hid = hiddenOf(h), bots = ORDER.filter((k) => !(k === 'blitz' && hid('blitz'))).map((k) => botView(k, h, nowS, trades));
   const pcT = first(obj(obj(h.live).pc).t, obj(h.board).data_t), pc = status(pcT, null, nowS);
   const lit = bots[0], burning = bots.filter((b) => b.status.flame).length;
   const tight = bots.filter((b) => b.has && b.roomFrac != null).sort((a, b) => a.roomFrac - b.roomFrac)[0] || null;

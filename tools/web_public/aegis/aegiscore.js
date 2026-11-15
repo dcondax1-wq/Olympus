@@ -8,7 +8,10 @@ export const PLANS = {
   atlas: { key: 'atlas', name: 'ATLAS', bot: 'ATLAS', size: '25K', label: 'MFFU Builder 25K', plan: 'builder_25k', risk: 150 },
   blitz: { key: 'blitz', name: 'BLITZ', bot: 'BLITZ', size: '25K', label: 'MFFU Builder 25K', plan: 'builder_25k', risk: 120 },
 };
-export const ORDER = ['zlarior', 'atlas', 'blitz'];
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the site keeps the last published list in
+// localStorage oly.hiddenBots (same origin for every app; nothing known in a browser = ['blitz'], none outside one)
+const HIDDEN_BOTS = (() => { if (typeof localStorage === 'undefined') return []; try { const s = localStorage.getItem('oly.hiddenBots'); const a = s ? JSON.parse(s) : null; return Array.isArray(a) ? a.map(String) : ['blitz']; } catch (e) { return ['blitz']; } })();
+export const ORDER = ['zlarior', 'atlas', 'blitz'].filter((k) => !HIDDEN_BOTS.includes(k));
 // the same numbers as research/lit/mffu_rules.json 2026-10-18 (a test keeps them equal); ledger/rules.json overrides good values only
 const DEFAULT_LIMITS = {
   builder_50k: { target: 3000, mll: 2000, lock: 100, dll: 1000, max_micros: 40, flat_by_mod: 970, buffer: 2100, pay_min: 500, pay_max: 2000, split: 0.8, cons: 0.5, inactivity_days: 7 },

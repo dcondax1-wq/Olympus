@@ -82,10 +82,16 @@ export function accountView(key, a) {
   return { ...base, has: true, mll, room: room == null ? null : Math.max(0, Math.min(mll, room)), dll: num(ev.dll), dllUsed: Math.max(0, num(ev.dll_used) != null ? num(ev.dll_used) : num(a.dllUsed) || 0),
     today: num(pnl.today) != null ? num(pnl.today) : num(ev.today) != null ? num(ev.today) : num(a.today), risk: loss ? Math.abs(loss) : P.risk, est: !loss, connected: typeof conn.connected === 'boolean' ? conn.connected : typeof a.connected === 'boolean' ? a.connected : null, paused: !!a.paused };
 }
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the published file says "hidden_bots" (top or board),
+// the Zenith page's window.OLY_HIDDEN when there; a hidden BLITZ is left out
+const hiddenOf = (h) => { const o = h && typeof h === 'object' ? h : {}, b = o.board && typeof o.board === 'object' ? o.board : {};
+  const L = Array.isArray(o.hidden_bots) ? o.hidden_bots : Array.isArray(b.hidden_bots) ? b.hidden_bots : null;
+  return (k) => (L ? L.map(String).includes(k) : !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has(k))); };
 export function buildAccounts(home) {
   const list = isObj(home) && Array.isArray(home.accounts) ? home.accounts : [], found = {};
   for (const a of list) { const k = matchKey(a); if (k && !found[k] && !a.error) found[k] = a; }
-  return { have: isObj(home) && Array.isArray(home.accounts), accounts: ORDER.map((k) => accountView(k, found[k])) };
+  const hid = hiddenOf(home);
+  return { have: isObj(home) && Array.isArray(home.accounts), accounts: ORDER.filter((k) => !(k === 'blitz' && hid('blitz'))).map((k) => accountView(k, found[k])) };
 }
 export function health(a) {
   if (!a.has || a.room == null) return 'off';

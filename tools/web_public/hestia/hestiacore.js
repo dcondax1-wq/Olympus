@@ -7,7 +7,10 @@ export const PLANS = {
   atlas: { key: 'atlas', name: 'ATLAS', bot: 'ATLAS', size: '25K', label: 'MFFU Builder 25K', mll: 1000, target: 1500, risk: 150 },
   blitz: { key: 'blitz', name: 'BLITZ', bot: 'BLITZ', size: '25K', label: 'MFFU Builder 25K', mll: 1000, target: 1500, risk: 120 },
 };
-export const ORDER = ['zlarior', 'atlas', 'blitz'];
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the site keeps the last published list in
+// localStorage oly.hiddenBots (same origin for every app; nothing known in a browser = ['blitz'], none outside one)
+const HIDDEN_BOTS = (() => { if (typeof localStorage === 'undefined') return []; try { const s = localStorage.getItem('oly.hiddenBots'); const a = s ? JSON.parse(s) : null; return Array.isArray(a) ? a.map(String) : ['blitz']; } catch (e) { return ['blitz']; } })();
+export const ORDER = ['zlarior', 'atlas', 'blitz'].filter((k) => !HIDDEN_BOTS.includes(k));
 
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
 export const num = (v) => { const x = typeof v === 'string' ? parseFloat(v.replace(/[$,\s]/g, '')) : v; return typeof x === 'number' && Number.isFinite(x) ? x : null; };

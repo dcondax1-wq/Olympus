@@ -805,6 +805,11 @@ def gather(site: str | None = None, ledger_path: str | None = None, kalshi_path:
 
 def write(sb: dict, path: str) -> str:
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    try:                                   # hidden bots (engine/hidden_bots.py, dashboard_view.json; owner 2026-11-15: BLITZ off the pages)
+        from engine import hidden_bots
+        sb = hidden_bots.publish(sb)
+    except Exception:
+        pass
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(sb, fh, separators=(",", ":"), ensure_ascii=False)
