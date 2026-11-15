@@ -216,7 +216,11 @@ def acctb_cases():
     check("account B 50K safe $300: 150-pt stop ($302.40) -> skip", r["qty"] == 0, r)
     S = specs[("builder50k", "need")]
     r = AB.qty(S, {"risk_pts": 88.0, "tgt_pts": 200.0}, st_of(profit=-1750.0, room=250.0, session=3), base=LSZ)
-    check("account B 50K need: room $250, 88-pt stop (60% = $150 < $178.40) -> skip", r["qty"] == 0, r)
+    check("account B 50K need: room $250, 88-pt stop (60% = $150 < $178.40) -> the need size skips; the zombie-eval last shot "
+          "(owner 'Fix atlas' 2026-11-15: $178.40 fits 80% of $250) takes 1 micro, never more", r["qty"] == 1, r)
+    Soff = {**S, "last_bullet": None}
+    r0 = AB.qty(Soff, {"risk_pts": 88.0, "tgt_pts": 200.0}, st_of(profit=-1750.0, room=250.0, session=3), base=LSZ)
+    check("account B 50K need, last shot off: the same trade -> skip", r0["qty"] == 0, r0)
     rnd = random.Random(11)
     bad = []
     for _ in range(4000):
