@@ -97,7 +97,7 @@ SNAPSHOT_REF = "refs/olympus/before-connect"
 
 
 def _repo_words(url: str | None) -> str:
-    """'dcondax1-wq/olympus' from https://user@github.com/dcondax1-wq/olympus.git (no user part, no secrets)."""
+    """'account/olympus' from https://account@github.com/account/olympus.git (no user part, no secrets)."""
     u = str(url or "").split("://", 1)[-1].split("@", 1)[-1]
     parts = [p for p in u.split("/") if p]
     tail = "/".join(parts[-2:]) if len(parts) >= 3 else (parts[-1] if parts else "?")

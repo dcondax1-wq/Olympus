@@ -14,6 +14,7 @@ teams added is gitignored. docs/PRIVACY.md is the plain table; tools/site_privac
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -85,6 +86,20 @@ def texts(files):
         yield rel, raw.decode("utf-8", "replace")
 
 
+# 2026-11-14 (docs/AUTO_UPDATE.md): the PC updates from the private backup repo, so update_source.json has to name the GitHub
+# account it lives on (a handle, not the owner's name), and the docs that tell the owner / the lead where it is repeat it.
+# Only that handle, only in these files.
+HANDLE_FILES_OK = ("update_source.json", "docs/AUTO_UPDATE.md", "docs/CLAUDE_REFERENCE.md", "CLAUDE.md")
+
+
+def backup_handle() -> str | None:
+    try:
+        with open(os.path.join(ROOT, "update_source.json"), encoding="utf-8") as f:
+            return (json.load(f).get("account") or "").lower() or None
+    except Exception:
+        return None
+
+
 def scan_tree(files, can_names, can_ids):
     keys, names, folders, ids_where, web_ids, ages = [], [], [], {}, [], []
     low_names = [(lb, v.lower()) for lb, v in can_names]
@@ -99,7 +114,7 @@ def scan_tree(files, can_names, can_ids):
                 keys += [f"{rel}: a key / password assignment" for _m in SP.KEY_ASSIGN_RX.finditer(t)]
             if "sers" in t or "/home/" in t:
                 folders += [f"{rel}: {SP.masked(m.group(0))}" for m in SP.USER_PATH_RX.finditer(t) if not SP._user_ok(m.group(2) or m.group(4) or "")]
-        names += [f"{rel}: {lb}" for lb, v in low_names if v in low]
+        names += [f"{rel}: {lb}" for lb, v in low_names if v in low and not (v == backup_handle() and rel in HANDLE_FILES_OK)]
         for _lb, v in can_ids:
             if v in t:
                 ids_where.setdefault(rel, 0)

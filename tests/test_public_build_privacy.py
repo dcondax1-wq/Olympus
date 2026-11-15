@@ -282,7 +282,14 @@ def planted_build(tmp):
 
 # reviewed, harmless matches in the real site: third-party contacts in vendored licences / libraries, the Kalshi kit's generic SSH
 # user and its own fake git author. Anything else fails.
+AGENCY_DEMO = ("agency/fixture.json", "agency/call_fixture.json", "agency/leads.json")   # B1 / B2's committed demo data
+
+
 def allow_reviewed(f):
+    # the agency's committed demo files list BUSINESSES (invented ones, and the public OpenStreetMap sample city), never the owner:
+    # their street addresses / ZIPs / phones are the product's sample. The owner's own batch (agency/my_leads.json) is NOT allowed.
+    if f["file"] in AGENCY_DEMO and f["kind"] in ("street address", "state + ZIP", "phone"):
+        return True
     if f["kind"] == "email":
         if re.search(r"(^|/)(OFL|LICENSE|NOTICE|COPYING)[^/]*$", f["file"]) or f["file"].startswith(("olympus/three-addons/", "assets/")):
             return True
