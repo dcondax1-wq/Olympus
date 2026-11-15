@@ -55,7 +55,7 @@ there, not here.
   5m CISD -> limit 30 min, then 1m CISD; stop 1 tick beyond the sweep extreme; target 18:00 open +/- 1 VIX day move, banked
   at 8R; BE at 1R (+1.25 pts costs), 15-minute cut, flat 15:55, 1 trade/day, entries 02:00-15:30. Sizing `lit_sizing.mode`
   two_week. **Scale-in is built but OFF** until the owner's Sim roundtrip passes. Change both `live_model.json` and
-  `live_model_lit.json`, then rerun `python tools/lit_losses.py live`.
+  `live_model_lit.json`, then rerun `python tools/lit_losses.py live` and `python tools/model_versions.py` (commit its list too).
 - **Headline (run `lit_live`, costs in):** 2026 PF 4.19, +$43,820; **quote the H2 check rate: PF 2.91, +$9,919 (~$2,670/mo)** (cisd1m 22 since 2026-10-24).
   **Uprisk (owner 2026-10-25, `uprisk.md`):** eval two_week room_f 0.4 kept past session 10 (owner "yes 40%" 2026-11-14, `eval-guard-2026-11-13.md`; was 0.8), no eval weekly stop (2-week pass/fail H2 58.6/20.9,
   was 53.7/2.2); funded 60% of room, <= $1,500, winner <= $2,000 (~$915/mo H2 to the owner, 0% lost).
