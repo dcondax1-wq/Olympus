@@ -147,16 +147,41 @@ def fill(t: str, ctx: dict) -> str:
 
 
 # ------------------------------------------------------------------------------------------------------------- the client
+CRM_NAMES = ("clients.json", "crm.json", "leads.json")              # the same CRM files the billing kit reads
+
+
+def data_root() -> str:
+    return os.environ.get("AGENCY_DATA_DIR") or os.path.join(ROOT, "data", "agency")
+
+
+def default_client_file() -> str:
+    for name in CRM_NAMES:
+        p = os.path.join(data_root(), name)
+        if os.path.isfile(p):
+            return p
+    return os.path.join(data_root(), CRM_NAMES[0])
+
+
 def load_clients(path: str) -> list[dict]:
+    """one record, a list, {"clients" | "leads" | "records" | "items": [...]} or {id: record} (the shapes the CRM writes)"""
     with open(path, encoding="utf-8-sig") as fh:
         data = json.load(fh)
-    if isinstance(data, dict) and isinstance(data.get("clients"), list):
-        return data["clients"]
+    rows = None
     if isinstance(data, list):
-        return data
-    if isinstance(data, dict):
-        return [data]
-    raise ValueError(f"{path}: expected a client record, a list of them, or {{\"clients\": [...]}}")
+        rows = data
+    elif isinstance(data, dict):
+        for k in ("clients", "leads", "records", "items"):
+            if isinstance(data.get(k), list):
+                rows = data[k]
+                break
+        else:
+            if any(k in data for k in ("id", "name", "trade")):
+                rows = [data]
+            else:
+                rows = [dict(v, id=v.get("id") or k) for k, v in data.items() if isinstance(v, dict)]
+    if rows is None:
+        raise ValueError(f"{path}: expected a client record, a list of them, or {{\"clients\": [...]}}")
+    return [r for r in rows if isinstance(r, dict)]
 
 
 def choose_clients(clients: list[dict], cid: str | None, all_: bool) -> list[dict]:
@@ -801,12 +826,12 @@ def client_slug(client: dict) -> str:
 
 
 def default_out(client: dict, month: str) -> str:
-    return os.path.join(ROOT, "data", "agency", "content", client_slug(client), month)
+    return os.path.join(data_root(), "content", client_slug(client), month)
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Make a month of social posts for a local business client.")
-    ap.add_argument("client", nargs="?", default=os.path.join(ROOT, "data", "agency", "clients.json"), help="client JSON (one, a list, or {clients: [...]})")
+    ap.add_argument("client", nargs="?", default=None, help="the client JSON: one record, a list, or {clients: [...]} (default: the CRM file in data/agency/)")
     ap.add_argument("--month", default="next", help="YYYY-MM, or next / this (default next)")
     ap.add_argument("--id", dest="cid")
     ap.add_argument("--all", action="store_true", help="every paying client whose package has social posts")
@@ -819,8 +844,10 @@ def main(argv=None) -> int:
     ap.add_argument("--no-emoji", action="store_true")
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
+    a.client = a.client or default_client_file()
     if not os.path.isfile(a.client):
-        print(f"client file not found: {a.client}\n  make one like agency/content/fixtures/client_barber.json", file=sys.stderr)
+        print(f"No client list found ({a.client}). Save the CRM file as data/agency/clients.json (or crm.json / leads.json), "
+              "or give a file: see agency/content/fixtures/client_barber.json", file=sys.stderr)
         return 2
     y, m = S.parse_month(a.month)
     clients = choose_clients(load_clients(a.client), a.cid, a.all)

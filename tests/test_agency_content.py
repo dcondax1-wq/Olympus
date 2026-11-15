@@ -284,6 +284,28 @@ def part_d():
     except SystemExit as e:
         refused = "--id" in str(e)
     check("d. a file with several clients and no --id / --all is refused with the list of ids (never a guess)", refused)
+    rec = {"id": "x1", "name": "Shop", "trade": "barber"}
+    with tempfile.TemporaryDirectory() as td:
+        shapes = {}
+        for name, doc in (("list", [rec]), ("leads", {"leads": [rec]}), ("records", {"records": [rec]}), ("byid", {"x1": {"name": "Shop", "trade": "barber"}}),
+                          ("one", rec)):
+            f = os.path.join(td, name + ".json")
+            with open(f, "w", encoding="utf-8") as fh:
+                json.dump(doc, fh)
+            shapes[name] = [(c.get("id"), c.get("name")) for c in M.load_clients(f)]
+        old_env = os.environ.get("AGENCY_DATA_DIR")
+        os.environ["AGENCY_DATA_DIR"] = td
+        try:
+            with open(os.path.join(td, "crm.json"), "w", encoding="utf-8") as fh:
+                json.dump([rec], fh)
+            found = os.path.basename(M.default_client_file())
+        finally:
+            if old_env is None:
+                os.environ.pop("AGENCY_DATA_DIR", None)
+            else:
+                os.environ["AGENCY_DATA_DIR"] = old_env
+    check("d. the client list in every shape the CRM writes (list, leads / records, {id: record}, one record), found as clients.json, crm.json "
+          "or leads.json in data/agency (or AGENCY_DATA_DIR)", all(v == [("x1", "Shop")] for v in shapes.values()) and found == "crm.json", (shapes, found))
     paying = M.choose_clients(CLIENTS, None, True)
     check("d. --all takes the paying clients only (the lead in the demo file is skipped)", len(paying) == 8 and all(c["status"] == "active" for c in paying))
     mixed = [dict(BY_TRADE["barber"], id="b1", status="won", package="growth + social basic"),

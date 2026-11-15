@@ -515,7 +515,7 @@ def _plan_for(client: dict, year: int, month: int, path: str | None) -> dict | N
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Build the monthly one-page report + email for a client.")
-    ap.add_argument("client", nargs="?", default=os.path.join(ROOT, "data", "agency", "clients.json"))
+    ap.add_argument("client", nargs="?", default=None, help="the client JSON (default: the CRM file in data/agency/)")
     ap.add_argument("--id", dest="cid")
     ap.add_argument("--month", default="last", help="YYYY-MM, or last / this (default last)")
     ap.add_argument("--leads", help="the form submissions CSV exported from the site's form tool")
@@ -531,8 +531,9 @@ def main(argv=None) -> int:
     ap.add_argument("--out")
     ap.add_argument("--no-pdf", action="store_true")
     a = ap.parse_args(argv)
+    a.client = a.client or M.default_client_file()
     if not os.path.isfile(a.client):
-        print(f"client file not found: {a.client}", file=sys.stderr)
+        print(f"No client list found ({a.client}). Save the CRM file as data/agency/clients.json (or crm.json / leads.json).", file=sys.stderr)
         return 2
     y, m = S.parse_month(a.month)
     client = M.choose_clients(M.load_clients(a.client), a.cid, False)[0]
@@ -549,7 +550,7 @@ def main(argv=None) -> int:
             next_plan = None
     rep = build_report(client, y, m, leads, site, a.reviews, a.reviews_before, a.rating, a.did, a.plan, this_plan, next_plan,
                        load_agency(a.agency_name), a.uptime)
-    out = a.out or os.path.join(ROOT, "data", "agency", "reports", M.client_slug(client), f"{y}-{m:02d}")
+    out = a.out or os.path.join(M.data_root(), "reports", M.client_slug(client), f"{y}-{m:02d}")
     os.makedirs(out, exist_ok=True)
     _guard(out)
     with open(os.path.join(out, "report.html"), "w", encoding="utf-8") as fh:
