@@ -251,7 +251,14 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   `research/second/atlas_v2_scorecard.json` (`python -m engine.atlas_v2 build`; hunts: decide after 20+ hunt trades).
   Pushes kind `second` "ATLAS v2 PAPER ...", OFF by default (`second_model.json` `"atlas_v2": {"push": false}`). Card: ATLAS
   page (secondcore.js v8 `atlasV2Card`, data.json second.atlas_v2, /api/next/second atlas_v2; phone sw le-public-v31).
-  `account_b` keys `"weights"` / `"min_room"` are built but OFF (absent = today's sizing / $100 stuck). Test `python -X utf8
+  `account_b` keys `"weights"` / `"min_room"` are built but OFF (absent = today's sizing / $100 stuck).
+  **Zombie-eval rule (2026-11-15, `2026-11-15-atlas-deep.md`, `tools/atlas_deep.py`, runs `atlas_deep_*`), built, OFF,
+  adopt-candidate (owner decides):** `account_b` `"eval_min_room": 200` (the EVAL's stuck line only; funded keeps
+  `min_room` / $100) + `"last_bullet": 0.8` (need size 0 on a low room -> 1 micro when its full stop-out fits 80% of the
+  room, then dll_guard; `engine/account_b.last_bullet`). Half of ATLAS's 2026 signals were never traded (idle low-room
+  evals: 2.1 / 1.6 trades a week); with the rule 4.0 / 3.0, owner slot $639 / $459 / $16 a month vs $579 / $394 / $11
+  ($43 evals), 2-week pass 67.2 / 43.5 vs 65.5 / 43.5. Test `python -X utf8 -m tests.test_atlas_deep` (16 checks, parity
+  with the research sizer). Test `python -X utf8
   -m tests.test_atlas_v2_shadow [--no-cloud]` (2026 replay = the research executor exactly; the stored run file was scored
   on an older unit cache: 206/207 trades identical, $ within 0.1%).
 - **BLITZ, the scalper (strategy 3) PAPER SHADOW (2026-10-28, `engine/blitz.py`, `research/writeups/scalp-na-mffu.md`):**
@@ -724,6 +731,15 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   +$38.7k / +$24.9k vs +$34.8k / +$16.3k, 2-week pass/fail 60.5/1.7 and 58.0/5.8 vs 57.1/1.7 and 52.2/5.8, sessions 2-6 and
   +4 ticks an add all hold; owner $/slot $827 / $815 vs $827 / $804 a month). Needs new code first: `lit_sizing`
   `scale_in_from_session` / `scale_in_funded` in `engine/live.py _add_qty` + `cloud_monitor.lit_add_usd` (not built).
+
+- **ATLAS deep edge (2026-11-15, `2026-11-15-atlas-deep.md`, `tools/atlas_deep.py`, 29 variants, slot $ at $43):** loser
+  autopsy (member, side, hour, stop pts / ATR / vs the member's median, target R, daily trend, VIX, LIT's day, the members'
+  paper day) finds no trade bucket that loses in all spans except the known 06:00 / 11:00 hours. Rejected (16 variants):
+  skip / halve after LIT won the other side (slot +$19 / +$29, but 4 H2 trades worth -0.05R; random same-size skips pass
+  the 2026 test 6.7% of draws = chance), same-side retry skip (retries are the best bucket) or x1.25 / x1.5, skip while LIT
+  holds / after LIT won the same side, stop > 1.6x / 2x the member's median, first trades at x0.5 / x0.75 until green, eval
+  weekly brake $400 / $600, daily-trend skip / halve, one signal per side a day. The one keeper is the zombie-eval rule
+  (Second strategies above).
 
 - **DAPHNE strategy-tree search (2026-11-03, `2026-11-03-strategy-tree.md`, `tools/strategytree/`, runs `strategytree_top1` /
   `_top5`, page `tools/web_public/tree/`):** 80 plain level roots (PDH/PDL, overnight, Asia, London, opening-range high/low;
