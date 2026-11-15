@@ -1,0 +1,25 @@
+/* BARBER (brass and ink): a dark old-school shop. Poster capitals, brass rules, a barber-pole stripe, a price board. */
+:root{--btn-radius:2px;--mark-radius:50%;--ic-radius:50%;--foot-bg:#0f0d0b}
+.top{background:rgba(20,18,16,.97)}
+.mark{background:transparent;color:var(--accent-text);border:1.5px solid var(--accent);font-family:var(--display);font-size:1.05rem}
+.hero{background:radial-gradient(120% 90% at 85% 10%,#2a231b 0,var(--hero-bg) 60%)}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:10px;background:repeating-linear-gradient(-45deg,var(--art3) 0 14px,var(--art2) 14px 28px,var(--art1) 28px 42px)}
+.hero h1{font-weight:700;text-transform:uppercase;letter-spacing:.01em;font-size:clamp(2.3rem,7.6vw,4.7rem)}
+.eyebrow{color:var(--accent-text)}
+.eyebrow::before,.eyebrow::after{content:"";width:28px;height:1px;background:var(--accent)}
+.badges .ico{color:var(--accent-text)}
+.btn{text-transform:uppercase;letter-spacing:.08em;font-size:.92rem}
+.btn.primary{box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.section h2{font-weight:700;letter-spacing:.01em;text-transform:uppercase}
+.section h2::after{content:"";display:block;width:56px;height:2px;margin-top:.85rem;background:var(--accent)}
+.kicker{color:var(--accent-text);letter-spacing:.14em}
+.cards{gap:0;border:1px solid var(--line)}
+.cards .card{background:transparent;border:0;border-radius:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
+.card .ic{margin-inline:auto;background:transparent;color:var(--accent-text);border:1.5px solid var(--accent)}
+.alt{background:var(--surface)}
+.alt .card{background:transparent}
+.pricelist{border-color:var(--accent);border-width:1.5px;outline:1px solid var(--line);outline-offset:6px;padding:1.5rem 1.75rem}
+.items .row b{text-transform:uppercase;letter-spacing:.04em;font-size:.98rem}
+.items .row i{border-bottom-color:#5a4f40}
+.review.ph{border-style:solid}
+.cta{background:#0f0d0b}

@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; base-uri 'none'; form-action 'none'">
+<meta name="robots" content="noindex">
+<title>Post Maker: 30-day local social kit</title>
+<style>
+:root{--bg:#f6f2ea;--panel:#fffdf9;--ink:#1d1a16;--muted:#5f574b;--line:#ded5c5;--accent:#8a5a1c;--accent-ink:#fff;--soft:#efe8db;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+header.bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;padding:.7rem 1rem;background:var(--panel);border-bottom:1px solid var(--line)}
+header.bar b{font:700 1.3rem/1.1 var(--serif)}
+header.bar span{color:var(--muted);font-size:.88rem}
+.tools{display:flex;flex-wrap:wrap;gap:.5rem;margin-left:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:44px;padding:.5rem 1rem;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);font-weight:700;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{min-height:38px;padding:.3rem .75rem;font-size:.88rem;border-radius:10px}
+.btn input[type=file]{display:none}
+.tabs{display:flex;gap:.4rem;padding:.6rem 1rem 0}
+.tabs button{min-height:42px;padding:.3rem 1.1rem;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);font-weight:700;cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.page{display:grid;grid-template-columns:300px minmax(0,1fr) 360px;gap:1rem;padding:1rem;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1rem}
+.card h2{font:700 1.08rem/1.25 var(--serif);margin:0 0 .7rem}
+.f{display:grid;gap:.25rem;margin-bottom:.7rem}
+.f>span{font-weight:700;font-size:.86rem}
+.f input[type=text],.f textarea,.f select{width:100%;min-height:42px;padding:.5rem .65rem;border:1.5px solid var(--line);border-radius:10px;background:#fff}
+.f textarea{min-height:80px;resize:vertical}
+.help{color:var(--muted);font-size:.84rem;margin:.1rem 0 .6rem}
+.sws{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-bottom:.7rem}
+.sws button{height:48px;border-radius:10px;border:1.5px solid var(--line);cursor:pointer;display:flex;overflow:hidden;padding:0}
+.sws button i{flex:1}
+.sws button[aria-pressed=true]{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:.7rem}
+.seg button{flex:1;min-height:42px;border:0;background:var(--panel);font-weight:700;cursor:pointer;font-size:.86rem}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--panel)}
+.stage{display:grid;gap:.75rem;justify-items:center}
+.canvasbox{width:100%;display:flex;justify-content:center}
+#main{max-width:100%;height:auto;border-radius:12px;box-shadow:0 18px 44px rgba(29,26,22,.2);background:#fff}
+.nav{display:flex;gap:.5rem;align-items:center;justify-content:center;flex-wrap:wrap}
+.nav b{min-width:12rem;text-align:center;font:700 1rem/1.3 var(--serif)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:.6rem;padding:0 1rem 2rem}
+.grid button{position:relative;padding:0;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;background:#fff}
+.grid button[aria-pressed=true]{outline:3px solid var(--accent);outline-offset:2px}
+.grid canvas{display:block;width:100%;height:auto}
+.grid span{position:absolute;left:4px;top:4px;background:rgba(29,26,22,.78);color:#fff;font-size:.72rem;font-weight:800;border-radius:6px;padding:1px 6px}
+.row{display:flex;gap:.5rem;flex-wrap:wrap}
+.note{border-left:4px solid var(--accent);background:var(--soft);border-radius:8px;padding:.5rem .7rem;font-size:.86rem;margin:.2rem 0 .8rem}
+.thumb{width:64px;height:64px;object-fit:cover;border-radius:50%;border:1px solid var(--line)}
+#bank .cats{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem}
+#bank .cats button{min-height:38px;padding:.25rem .8rem;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);cursor:pointer;font-weight:700;font-size:.85rem}
+#bank .cats button[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+#bank ol{margin:0;padding:0;list-style:none;display:grid;gap:.6rem}
+#bank li{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.75rem .9rem;display:grid;gap:.4rem}
+#bank li small{color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:.72rem}
+#bank li p{margin:0;white-space:pre-wrap}
+.hidden{display:none!important}
+@media (max-width:1100px){.page{grid-template-columns:1fr}.stage{order:-1}}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div><b>Post Maker</b><br><span>30 editable post designs for a local business. Works offline; nothing you type leaves this computer.</span></div>
+  <div class="tools">
+    <button class="btn primary" id="dl1" type="button">Download this post</button>
+    <button class="btn" id="dlall" type="button">Download all 30 (.zip)</button>
+    <button class="btn" id="savework" type="button">Save my work</button>
+    <label class="btn">Open saved work<input type="file" id="openwork" accept=".json,application/json"></label>
+  </div>
+</header>
+<div class="tabs" role="tablist"><button type="button" role="tab" id="t-make" aria-selected="true">Make posts</button><button type="button" role="tab" id="t-bank" aria-selected="false">Caption bank</button></div>
+
+<div id="make">
+<div class="page">
+  <section class="card" aria-label="Your brand">
+    <h2>1. Your business</h2>
+    <label class="f"><span>Business name</span><input type="text" id="b-name" maxlength="60"></label>
+    <label class="f"><span>Town or neighbourhood</span><input type="text" id="b-town" maxlength="40"></label>
+    <label class="f"><span>Contact line (website, phone or handle)</span><input type="text" id="b-contact" maxlength="60"></label>
+    <div class="f"><span>Logo (optional, shown in a circle)</span><div class="row" style="align-items:center"><img id="b-logo-img" class="thumb hidden" alt="Your logo"><label class="btn small">Choose a logo<input type="file" id="b-logo" accept="image/*"></label><button class="btn small hidden" id="b-logo-rm" type="button">Remove</button></div></div>
+    <h2 style="margin-top:1rem">2. Your look</h2>
+    <div class="sws" id="b-pal" role="group" aria-label="Colours"></div>
+    <label class="f"><span>Fonts</span><select id="b-font"></select></label>
+    <details><summary style="cursor:pointer;font-weight:700;font-size:.9rem;margin-bottom:.5rem">Use my own brand colours</summary>
+      <div class="row"><label class="f"><span>Background</span><input type="color" id="c-bg"></label><label class="f"><span>Text</span><input type="color" id="c-ink"></label><label class="f"><span>Accent</span><input type="color" id="c-acc"></label></div>
+      <div class="row"><button class="btn small" id="c-use" type="button">Use these colours</button></div><p class="help" id="c-msg"></p>
+    </details>
+    <h2 style="margin-top:1rem">3. Size</h2>
+    <div class="seg" id="b-size" role="group" aria-label="Size"></div>
+    <p class="help">Portrait 4:5 (1080 x 1350) fills the most space in a feed. 1:1 is 1080 x 1080. Story is 1080 x 1920 (text stays clear of the top and bottom bars).</p>
+  </section>
+
+  <section class="stage" aria-label="Preview">
+    <div class="canvasbox"><canvas id="main" width="1080" height="1350" role="img" aria-label="Post preview"></canvas></div>
+    <div class="nav"><button class="btn small" id="prev" type="button" aria-label="Previous day">&larr; Previous</button><b id="daylabel">Day 1</b><button class="btn small" id="next" type="button" aria-label="Next day">Next &rarr;</button></div>
+  </section>
+
+  <section class="card" aria-label="Edit this post">
+    <h2 id="edit-title">4. Edit this post</h2>
+    <label class="f"><span>Design</span><select id="e-layout"></select></label>
+    <label class="f"><span id="l-kicker">Small line at the top</span><input type="text" id="e-kicker" maxlength="60"></label>
+    <label class="f"><span id="l-headline">Headline</span><textarea id="e-headline" rows="2" maxlength="140"></textarea></label>
+    <label class="f"><span id="l-body">Text</span><textarea id="e-body" rows="4" maxlength="400"></textarea></label>
+    <label class="f"><span id="l-small">Small print</span><input type="text" id="e-small" maxlength="90"></label>
+    <div class="f"><span>Photo for this post (designs with a photo frame)</span><div class="row"><label class="btn small">Choose a photo<input type="file" id="e-photo" accept="image/*"></label><button class="btn small" id="e-photo-rm" type="button">Remove photo</button></div></div>
+    <label class="f"><span>Colours for this post</span><select id="e-pal"></select></label>
+    <div class="row" style="margin-bottom:.9rem"><button class="btn small" id="e-reset" type="button">Reset this post</button></div>
+    <div class="note" id="e-rule"></div>
+    <label class="f"><span>Caption (edit, then copy)</span><textarea id="e-caption" rows="7"></textarea></label>
+    <div class="row" style="margin-bottom:.8rem"><button class="btn small" id="e-copy" type="button">Copy caption</button></div>
+    <label class="f"><span>Alt text (describe the image for screen readers)</span><textarea id="e-alt" rows="3"></textarea></label>
+    <div class="row"><button class="btn small" id="e-copyalt" type="button">Copy alt text</button></div>
+    <p class="help" id="e-tip"></p>
+  </section>
+</div>
+<h2 style="font:700 1.1rem var(--serif);margin:0 1rem .6rem">All 30 days <span class="help" style="font:400 .85rem var(--sans)">(tap one to edit it)</span></h2>
+<div class="grid" id="grid"></div>
+</div>
+
+<div id="bank" class="hidden" style="padding:1rem">
+  <p class="help">Every caption below already has your business name and town filled in. Tap <b>Copy</b> and paste it into your post. Change the words in [brackets] to your own.</p>
+  <label class="f" style="max-width:420px"><span>Search</span><input type="text" id="bank-q" placeholder="e.g. holiday, thank you, new"></label>
+  <div class="cats" id="bank-cats"></div>
+  <ol id="bank-list"></ol>
+</div>
+
+<script id="postkit">
+/* PostKit: draws the 30 post designs on a canvas (no libraries, nothing loaded from the internet). */
+(function (root) {
+  "use strict";
+  var KIT = /*KIT*/{"version":"1.0","palettes":[{"id":"ivory","label":"Ivory and brass","bg":"#f6f1e7","surface":"#fffdf8","ink":"#1f1a14","muted":"#5c5246","accent":"#94661f","accent_ink":"#ffffff","soft":"#e9dfcc"},{"id":"night","label":"Night and gold","bg":"#17130f","surface":"#231d17","ink":"#f4ede1","muted":"#c9bca6","accent":"#d4ad4b","accent_ink":"#17130f","soft":"#2e2620"},{"id":"navy","label":"Navy and orange","bg":"#0f2a44","surface":"#163a5c","ink":"#ffffff","muted":"#c9d6e3","accent":"#f97316","accent_ink":"#0f2238","soft":"#1d4a73"},{"id":"sage","label":"Sage and forest","bg":"#eef3e6","surface":"#ffffff","ink":"#1c3324","muted":"#4d6353","accent":"#2e6b34","accent_ink":"#ffffff","soft":"#dbe7cd"},{"id":"blush","label":"Blush and plum","bg":"#f8ebe7","surface":"#fffaf8","ink":"#2b1b24","muted":"#6b5560","accent":"#a63d62","accent_ink":"#ffffff","soft":"#f0d9d4"},{"id":"tomato","label":"Cream and tomato","bg":"#fff5e6","surface":"#fffdf8","ink":"#2a1a12","muted":"#6b5446","accent":"#a8261d","accent_ink":"#ffffff","soft":"#f8e2c2"},{"id":"teal","label":"Mint and teal","bg":"#e8f4f2","surface":"#ffffff","ink":"#0d3236","muted":"#4b6668","accent":"#0f766e","accent_ink":"#ffffff","soft":"#cfe7e3"},{"id":"slate","label":"Slate and yellow","bg":"#1d2127","surface":"#272c33","ink":"#eef1f4","muted":"#aab3bd","accent":"#f2c200","accent_ink":"#15181c","soft":"#323842"}],"fonts":{"classic":{"label":"Classic (serif headlines)","head":"'Iowan Old Style','Palatino Linotype',Palatino,Georgia,Caladea,serif","headWeight":700,"body":"-apple-system,'Segoe UI',Roboto,Inter,'Helvetica Neue',Arial,sans-serif"},"modern":{"label":"Modern (bold sans)","head":"'Avenir Next','Segoe UI',Inter,Roboto,'Helvetica Neue',Arial,sans-serif","headWeight":800,"body":"-apple-system,'Segoe UI',Roboto,Inter,'Helvetica Neue',Arial,sans-serif"},"friendly":{"label":"Friendly (rounded)","head":"ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Trebuchet MS',Verdana,'DejaVu Sans',sans-serif","headWeight":700,"body":"'Trebuchet MS',Verdana,'DejaVu Sans',-apple-system,'Segoe UI',sans-serif"}},"layouts":{"bigtype":{"label":"Big words","fields":{"kicker":"Small line at the top","headline":"Big headline","body":"A sentence or two","small":"(not used)"}},"photo":{"label":"Photo + words","fields":{"kicker":"Label on the photo","headline":"Headline","body":"A sentence or two","small":"(not used)"}},"list":{"label":"Numbered tips","fields":{"kicker":"Small line at the top","headline":"Headline","body":"One tip per line (up to 5)","small":"(not used)"}},"quote":{"label":"Quote","fields":{"kicker":"Small line at the top","headline":"The quote","body":"(not used)","small":"Who said it"}},"offer":{"label":"Offer or news","fields":{"kicker":"Word in the circle","headline":"Headline","body":"The details","small":"Terms (dates, limits)"}},"hours":{"label":"Opening hours","fields":{"kicker":"Small line at the top","headline":"Headline","body":"One line per day: Day: hours","small":"A note under the hours"}},"faq":{"label":"Question and answer","fields":{"kicker":"Small line next to the Q","headline":"The question","body":"The answer","small":"(not used)"}},"steps":{"label":"Steps","fields":{"kicker":"Small line at the top","headline":"Headline","body":"One step per line (up to 4)","small":"(not used)"}},"split":{"label":"Two sides (myth / fact)","fields":{"kicker":"The two labels, split by | (e.g. Myth|Fact)","headline":"Small title at the top","body":"Line 1: the first side. Line 2: the second side","small":"(not used)"}},"meet":{"label":"Meet someone","fields":{"kicker":"Small line under the photo","headline":"Name or title","body":"A line about them","small":"(not used)"}},"event":{"label":"Event or date","fields":{"kicker":"Month|day for the calendar tile (e.g. June|14)","headline":"What is happening","body":"One line each: when, where, what","small":"(not used)"}},"thanks":{"label":"Thank you","fields":{"kicker":"Small line at the top","headline":"Headline","body":"A sentence","small":"(not used)"}}},"days":[{"theme":"Say hello","layout":"bigtype","kicker":"Hello, {town}","headline":"We're {name}.","body":"Here is who we are, what we do and how to find us. Follow along this month for a look behind the scenes.","small":"","caption":"Hello, {town}! We're {name}. [One sentence about what you do and who you do it for.] This month we're sharing a look behind the scenes, answers to your questions and a few tips from the job. Say hi in the comments: we'd love to meet you.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A text post that says: Hello, {town}. We're {name}.","tip":"Pin this post to the top of your profile so new visitors meet you first.","rule":"","palette":"brand"},{"theme":"Meet the owner","layout":"meet","kicker":"Meet the owner","headline":"The person behind {name}","body":"Why I started, what I care about, and what you can expect when you come to us.","small":"","caption":"Hi, I'm [your first name], and I started {name} because [your reason, in one or two honest sentences]. What I care about most: [one thing, e.g. doing the job right the first time]. When I'm not working you'll find me [a small personal detail]. Come and say hello!\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A round portrait of the owner of {name} with the words: The person behind {name}.","tip":"Use a real, friendly photo of yourself: faces get more attention than logos.","rule":"","palette":"brand"},{"theme":"A quick tip","layout":"list","kicker":"Quick tip","headline":"3 things to know before your first visit","body":"Book ahead for busy days\nTell us what you need: photos help\nAsk us anything, there are no silly questions","small":"","caption":"First time with us? Three things that make it easy: book ahead for busy days, tell us what you need (photos help a lot), and ask anything. There are no silly questions. Save this post for later, or send it to a friend who's been meaning to call us.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A numbered list: 3 things to know before your first visit.","tip":"Tip posts are the ones people save. Ask readers to save it.","rule":"","palette":"brand"},{"theme":"Behind the scenes","layout":"photo","kicker":"Behind the scenes","headline":"Before the doors open","body":"The part you never see: setting up, checking everything twice, and the first coffee of the day.","small":"","caption":"This is what happens before you arrive: [describe your morning routine in two sentences]. It's not glamorous, but it's why everything runs smoothly when you get here. What would you like to see behind the scenes next?\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A photo of the business getting ready in the morning, with the words: Before the doors open.","tip":"Behind-the-scenes photos don't need to be perfect. Real beats polished.","rule":"Use your own photos, or ones you have permission to use. Ask customers before you show them or their home or work.","palette":"brand"},{"theme":"Question of the week","layout":"faq","kicker":"You asked","headline":"Do I need to book ahead?","body":"Booking ahead means we can save you a time. Walk-ins are welcome when we have space: call us to check.","small":"","caption":"One of the questions we hear most: do I need to book ahead? Booking means we can save you a time that suits you. Walk-ins are welcome when we have space, so give us a quick call to check. Got a question? Ask it in the comments and we'll answer it in a post.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A question and answer post: Do I need to book ahead?","tip":"Keep a note of the questions customers ask: each one is a future post.","rule":"","palette":"brand"},{"theme":"Service spotlight","layout":"photo","kicker":"Spotlight","headline":"Our most popular service","body":"What it is, who it's for, and how long it takes. Ask us if it's right for you.","small":"","caption":"Our most popular service is [name of the service]. It's ideal for [who it suits] and takes about [time]. [One sentence about what makes yours good.] Questions? Message us or call {contact}.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A photo of our most popular service with the words: Our most popular service.","tip":"Show the service being done, not just the result.","rule":"Use your own photos, or ones you have permission to use. Ask customers before you show them or their home or work.","palette":"brand"},{"theme":"Our hours","layout":"hours","kicker":"Opening hours","headline":"When to find us","body":"Monday: Closed\nTuesday - Friday: 9 am - 6 pm\nSaturday: 9 am - 4 pm\nSunday: Closed","small":"Holiday hours are posted here first.","caption":"Here's when you can find us: [paste your hours]. Holiday hours are always posted here first, so follow along. Want to book? Call or message us: {contact}.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"Our opening hours for the week, day by day.","tip":"Update your hours everywhere at once: your profile, your website and your map listing.","rule":"","palette":"brand"},{"theme":"How it works","layout":"steps","kicker":"How it works","headline":"Booking with us is easy","body":"Call, text or message us\nWe confirm the time and the price\nYou come in, or we come to you\nYou leave happy, or tell us why","small":"","caption":"Booking with {name} takes about a minute: 1. Call, text or message us. 2. We confirm the time and the price. 3. You come in (or we come to you). 4. You leave happy, or you tell us why, so we can make it right. Ready? {contact}\n\n#shoplocal #smallbusiness #[yourtown]","alt":"Four numbered steps explaining how booking works.","tip":"Make your booking steps match what really happens, so nobody is surprised.","rule":"","palette":"brand"},{"theme":"Myth or fact","layout":"split","kicker":"Myth|Fact","headline":"Myth or fact?","body":"You have to spend a lot to get good work.\nGood work is about care and skill. We always tell you the price first.","small":"","caption":"Myth: good work always costs a lot. Fact: good work comes from care and skill, and you should always know the price before anything starts. That's how we do it at {name}. What other myths have you heard? Tell us below.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A two-part post. Myth: You have to spend a lot to get good work. Fact: Good work is about care and skill.","tip":"Myth posts start conversations. Reply to every comment the same day.","rule":"","palette":"brand"},{"theme":"Customer words","layout":"quote","kicker":"From a customer","headline":"Paste a real review here, in your customer's own words.","body":"","small":"First name, with permission","caption":"We love hearing from you. \"[Paste a short part of a real review, word for word.]\" Thank you, [first name]! If you've visited us, an honest review helps other people in {town} find us.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A customer quote card with a large quotation mark.","tip":"Ask the customer before you share their review, and copy their words exactly.","rule":"Only real reviews from real customers, in their words, with their permission. Never write, buy or reward reviews (in the US, the FTC's rule bans it).","palette":"brand"},{"theme":"Local love","layout":"bigtype","kicker":"Local love","headline":"Our favourite thing about {town}","body":"Tell us yours in the comments. We'll share our favourite answers.","small":"","caption":"One of our favourite things about {town}: [your answer, e.g. the Saturday market, the river walk, the neighbours]. What's yours? Tell us in the comments and we'll share our favourites next week.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A text post: Our favourite thing about {town}.","tip":"Local posts are easy to share. Mention a place, not a person, unless they agree.","rule":"","palette":"brand"},{"theme":"A little offer","layout":"offer","kicker":"This week","headline":"A thank-you for new customers","body":"[What the offer is and who it is for.]","small":"Valid until [date]. One per customer.","caption":"New to {name}? This week we're saying thank you with [your offer]. It's for [who can use it] and runs until [date]. Just mention this post when you book: {contact}.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"An offer post with a badge that says This week and the words: A thank-you for new customers.","tip":"Always put the end date and any limits in the post itself.","rule":"Say clearly what the offer is, who it is for and when it ends. Keep the terms honest and simple.","palette":"brand"},{"theme":"Tips list","layout":"list","kicker":"Save this","headline":"How to get the most from your visit","body":"Arrive a few minutes early\nBring photos or notes of what you want\nAsk about aftercare or next steps\nBook your next visit before you leave","small":"","caption":"Four small things that make a big difference: arrive a few minutes early, bring photos or notes of what you want, ask about aftercare or next steps, and book your next visit before you leave. Save this for your next appointment!\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A numbered list: How to get the most from your visit.","tip":"Add one tip from your own experience to make it yours.","rule":"","palette":"brand"},{"theme":"Meet the team","layout":"meet","kicker":"Meet the team","headline":"Say hi to the team","body":"The friendly faces who make {name} what it is.","small":"","caption":"Meet the team! [Name] has been with us for [time] and is the person to ask about [specialty]. [One fun fact.] Say hi next time you're in.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A round team photo with the words: Say hi to the team.","tip":"Ask each person before you post their photo or name.","rule":"Use your own photos, or ones you have permission to use. Ask customers before you show them or their home or work.","palette":"brand"},{"theme":"Before and after","layout":"photo","kicker":"Before and after","headline":"What a difference a visit makes","body":"A recent job we're proud of, shared with our customer's permission.","small":"","caption":"Before and after: [describe the job in one sentence]. It took [time] and we're really happy with how it turned out. Shared with our customer's permission. Want something similar? {contact}\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A before-and-after photo of a recent job with the words: What a difference a visit makes.","tip":"Show real results only: no filters that change the result.","rule":"Use your own photos, or ones you have permission to use. Ask customers before you show them or their home or work.","palette":"brand"},{"theme":"Your opinion","layout":"bigtype","kicker":"Quick question","headline":"Which do you prefer: A or B?","body":"Tell us in the comments. We read every one.","small":"","caption":"Quick question for you: [option A] or [option B]? Tell us in the comments. We read every single one, and the answers help us plan what to offer next.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A text post asking: Which do you prefer, A or B?","tip":"Questions with two easy choices get the most answers.","rule":"","palette":"brand"},{"theme":"Question of the week","layout":"faq","kicker":"You asked","headline":"How can I pay?","body":"Card, cash or [your other options]. You get a receipt every time.","small":"","caption":"How can I pay? We take card, cash and [your other options], and you get a receipt every time. Paying ahead for a gift? Just ask. Any other questions? Drop them below.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A question and answer post: How can I pay?","tip":"Short, practical answers build trust.","rule":"","palette":"brand"},{"theme":"Thank you","layout":"thanks","kicker":"Thank you","headline":"Thank you, {town}!","body":"For every visit, kind word and recommendation this month.","small":"","caption":"A big thank you, {town}! For every visit, every kind word and every friend you've sent our way this month. Small businesses run on people like you, and we don't take it for granted.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A thank-you card with a ring of dots: Thank you, {town}!","tip":"Thank-you posts work best when you mean something specific.","rule":"","palette":"brand"},{"theme":"Save the date","layout":"event","kicker":"June|14","headline":"Open day at {name}","body":"Saturday, 10 am - 2 pm\nCome and meet the team\nTreats and a look behind the scenes","small":"","caption":"Save the date! We're having an open day on [day, date], [time]. Come and meet the team, have a look behind the scenes and enjoy a few treats. Everyone's welcome, no booking needed. See you there!\n\n#shoplocal #smallbusiness #[yourtown]","alt":"An event post with a calendar tile: Open day at {name}.","tip":"Post an event twice: once a week before and once the day before.","rule":"","palette":"brand"},{"theme":"Checklist","layout":"list","kicker":"Checklist","headline":"Getting ready for the season","body":"Book early for busy weeks\nCheck what's new this season\nAsk us about seasonal services","small":"","caption":"Our seasonal checklist: book early for the busy weeks, check what's new this season and ask us about [seasonal service]. Spaces go fast at this time of year, so message us to plan ahead: {contact}.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A checklist post: Getting ready for the season.","tip":"Tie this post to the real season where you are.","rule":"","palette":"brand"},{"theme":"New this month","layout":"photo","kicker":"New","headline":"New this month at {name}","body":"Something new to try: ask us about it next time you're in.","small":"","caption":"Something new at {name}: [what it is]. We added it because [the reason, e.g. you kept asking]. Ask us about it next time you're in, or message us for details.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A photo of something new with the words: New this month at {name}.","tip":"Close-up photos of one thing work better than busy scenes.","rule":"Use your own photos, or ones you have permission to use. Ask customers before you show them or their home or work.","palette":"brand"},{"theme":"Holiday hours","layout":"hours","kicker":"Holiday hours","headline":"Planning ahead","body":"[Holiday]: Closed\n[Day before]: 9 am - 2 pm\nBack to normal: [date]","small":"Book early: holiday weeks fill up fast.","caption":"Planning ahead for the holidays: [list your holiday hours]. Holiday weeks fill up fast, so book early if you need us. Thank you, and happy holidays from all of us at {name}.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"Our holiday opening hours.","tip":"Post holiday hours at least a week ahead, then again the day before.","rule":"","palette":"brand"},{"theme":"First visit","layout":"steps","kicker":"Your first visit","headline":"What to expect","body":"A warm welcome and a quick chat\nWe explain the options and the price\nWe get to work, carefully\nYou leave with tips to make it last","small":"","caption":"Coming to us for the first time? Here's what to expect: a warm welcome and a quick chat, a clear explanation of your options and the price, careful work, and a few tips to make it last. Any questions before your visit? Just ask.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"Four steps: What to expect on your first visit.","tip":"This post answers the worries new customers have before they call.","rule":"","palette":"brand"},{"theme":"Tools of the trade","layout":"photo","kicker":"Tools of the trade","headline":"The tools we can't live without","body":"Every good job starts with the right tools. Here are our favourites.","small":"","caption":"Every good job starts with the right tools. These are the ones we reach for every day: [name two or three, in your own words]. Which one surprised you?\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A photo of our favourite tools with the words: The tools we can't live without.","tip":"Lay the tools out on a plain surface in daylight.","rule":"Use your own photos, or ones you have permission to use. Ask customers before you show them or their home or work.","palette":"brand"},{"theme":"Honest reviews","layout":"bigtype","kicker":"Small favour","headline":"Enjoyed your visit?","body":"An honest review helps a small business more than you might think. Good or bad, we read every one and reply.","small":"Link in our profile.","caption":"If you've visited {name}, would you leave us an honest review? It helps other people in {town} find a business they can trust. Good or bad, we read every review and reply. The link is in our profile. Thank you!\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A text post: Enjoyed your visit? An honest review helps a small business.","tip":"Ask every customer, not only the happy ones, and never offer anything in return.","rule":"Only real reviews from real customers, in their words, with their permission. Never write, buy or reward reviews (in the US, the FTC's rule bans it).","palette":"brand"},{"theme":"Myth or fact 2","layout":"split","kicker":"Myth|Fact","headline":"Myth or fact?","body":"Small local businesses can't compete on service.\nWe know your name, your preferences and your neighbourhood.","small":"","caption":"Myth: small local businesses can't compete on service. Fact: we know your name, how you like things done and the neighbourhood you live in. That's the difference you get at {name}. Agree?\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A two-part post. Myth: Small local businesses can't compete on service. Fact: We know your name.","tip":"Keep the fact honest: say what you really do differently.","rule":"","palette":"brand"},{"theme":"Our motto","layout":"quote","kicker":"What we believe","headline":"Good work takes the time it takes.","body":"","small":"{name}","caption":"A motto we live by at {name}: good work takes the time it takes. We'd rather do it right than do it fast, and we'll always tell you how long it will take before we start.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A quote card: Good work takes the time it takes.","tip":"Swap in a motto you actually say at work.","rule":"","palette":"brand"},{"theme":"Community","layout":"thanks","kicker":"Neighbours","headline":"Proud to be part of {town}","body":"A shout-out to the local businesses we love. Who should we feature next?","small":"","caption":"Proud to be part of {town}. A shout-out to [a neighbouring business you love] for [a reason]. Who should we feature next? Tag a local business you love in the comments.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A community post: Proud to be part of {town}.","tip":"Tag other businesses only with kind, true words; they often share it.","rule":"","palette":"brand"},{"theme":"Gift idea","layout":"offer","kicker":"Gift idea","headline":"Gift cards are here","body":"Any amount, any service. The easy present for someone who has everything.","small":"Ask in store or message us.","caption":"Looking for an easy present? {name} gift cards come in any amount and work for any service. Ask in store or message us and we'll have one ready for you.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"An offer post with a badge that says Gift idea: Gift cards are here.","tip":"Gift posts do best a few weeks before holidays and birthdays.","rule":"Say clearly what the offer is, who it is for and when it ends. Keep the terms honest and simple.","palette":"brand"},{"theme":"Your turn","layout":"bigtype","kicker":"Your turn","headline":"What should we post next?","body":"Questions, ideas, requests: tell us in the comments and we'll make next month's posts about them.","small":"","caption":"That's 30 days of posts! Thank you for following along. Now it's your turn: what should we post about next month? Questions, ideas, requests: tell us in the comments and we'll make posts about them.\n\n#shoplocal #smallbusiness #[yourtown]","alt":"A text post: What should we post next?","tip":"Use the answers to plan next month: the Post Maker starts again from day 1.","rule":"","palette":"brand"}],"bank":[{"cat":"30-day plan","text":"Hello, {town}! We're {name}. [One sentence about what you do and who you do it for.] This month we're sharing a look behind the scenes, answers to your questions and a few tips from the job. Say hi in the comments: we'd love to meet you.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Hi, I'm [your first name], and I started {name} because [your reason, in one or two honest sentences]. What I care about most: [one thing, e.g. doing the job right the first time]. When I'm not working you'll find me [a small personal detail]. Come and say hello!\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"First time with us? Three things that make it easy: book ahead for busy days, tell us what you need (photos help a lot), and ask anything. There are no silly questions. Save this post for later, or send it to a friend who's been meaning to call us.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"This is what happens before you arrive: [describe your morning routine in two sentences]. It's not glamorous, but it's why everything runs smoothly when you get here. What would you like to see behind the scenes next?\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"One of the questions we hear most: do I need to book ahead? Booking means we can save you a time that suits you. Walk-ins are welcome when we have space, so give us a quick call to check. Got a question? Ask it in the comments and we'll answer it in a post.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Our most popular service is [name of the service]. It's ideal for [who it suits] and takes about [time]. [One sentence about what makes yours good.] Questions? Message us or call {contact}.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Here's when you can find us: [paste your hours]. Holiday hours are always posted here first, so follow along. Want to book? Call or message us: {contact}.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Booking with {name} takes about a minute: 1. Call, text or message us. 2. We confirm the time and the price. 3. You come in (or we come to you). 4. You leave happy, or you tell us why, so we can make it right. Ready? {contact}\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Myth: good work always costs a lot. Fact: good work comes from care and skill, and you should always know the price before anything starts. That's how we do it at {name}. What other myths have you heard? Tell us below.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"We love hearing from you. \"[Paste a short part of a real review, word for word.]\" Thank you, [first name]! If you've visited us, an honest review helps other people in {town} find us.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"One of our favourite things about {town}: [your answer, e.g. the Saturday market, the river walk, the neighbours]. What's yours? Tell us in the comments and we'll share our favourites next week.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"New to {name}? This week we're saying thank you with [your offer]. It's for [who can use it] and runs until [date]. Just mention this post when you book: {contact}.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Four small things that make a big difference: arrive a few minutes early, bring photos or notes of what you want, ask about aftercare or next steps, and book your next visit before you leave. Save this for your next appointment!\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Meet the team! [Name] has been with us for [time] and is the person to ask about [specialty]. [One fun fact.] Say hi next time you're in.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Before and after: [describe the job in one sentence]. It took [time] and we're really happy with how it turned out. Shared with our customer's permission. Want something similar? {contact}\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Quick question for you: [option A] or [option B]? Tell us in the comments. We read every single one, and the answers help us plan what to offer next.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"How can I pay? We take card, cash and [your other options], and you get a receipt every time. Paying ahead for a gift? Just ask. Any other questions? Drop them below.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"A big thank you, {town}! For every visit, every kind word and every friend you've sent our way this month. Small businesses run on people like you, and we don't take it for granted.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Save the date! We're having an open day on [day, date], [time]. Come and meet the team, have a look behind the scenes and enjoy a few treats. Everyone's welcome, no booking needed. See you there!\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Our seasonal checklist: book early for the busy weeks, check what's new this season and ask us about [seasonal service]. Spaces go fast at this time of year, so message us to plan ahead: {contact}.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Something new at {name}: [what it is]. We added it because [the reason, e.g. you kept asking]. Ask us about it next time you're in, or message us for details.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Planning ahead for the holidays: [list your holiday hours]. Holiday weeks fill up fast, so book early if you need us. Thank you, and happy holidays from all of us at {name}.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Coming to us for the first time? Here's what to expect: a warm welcome and a quick chat, a clear explanation of your options and the price, careful work, and a few tips to make it last. Any questions before your visit? Just ask.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Every good job starts with the right tools. These are the ones we reach for every day: [name two or three, in your own words]. Which one surprised you?\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"If you've visited {name}, would you leave us an honest review? It helps other people in {town} find a business they can trust. Good or bad, we read every review and reply. The link is in our profile. Thank you!\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Myth: small local businesses can't compete on service. Fact: we know your name, how you like things done and the neighbourhood you live in. That's the difference you get at {name}. Agree?\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"A motto we live by at {name}: good work takes the time it takes. We'd rather do it right than do it fast, and we'll always tell you how long it will take before we start.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Proud to be part of {town}. A shout-out to [a neighbouring business you love] for [a reason]. Who should we feature next? Tag a local business you love in the comments.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"Looking for an easy present? {name} gift cards come in any amount and work for any service. Ask in store or message us and we'll have one ready for you.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"30-day plan","text":"That's 30 days of posts! Thank you for following along. Now it's your turn: what should we post about next month? Questions, ideas, requests: tell us in the comments and we'll make posts about them.\n\n#shoplocal #smallbusiness #[yourtown]"},{"cat":"Introductions","text":"New here? Hi! We're {name}, a [what you are] in {town}. We help [who you help] with [what you do]. Have a look around and say hello in the comments."},{"cat":"Introductions","text":"Three things to know about {name}: 1. We're based in {town}. 2. We [your main service]. 3. We always tell you the price before we start. Questions? Just ask."},{"cat":"Introductions","text":"Behind every small business is a person with a reason. Mine: [your reason]. That's why {name} exists, and it's why we care about getting it right for you."},{"cat":"Introductions","text":"If you're new to {name}: welcome! The easiest way to reach us is {contact}. We usually reply within [time]."},{"cat":"Introductions","text":"We've been part of {town} since [year]. A lot has changed, but not this: [something you still do the same way]."},{"cat":"Introductions","text":"How we work, in one sentence: [one honest sentence about how you work]. That's how we've done things from day one."},{"cat":"Introductions","text":"What we do, in one sentence: [your sentence]. What we don't do: [something you don't offer]. Saves everyone time!"},{"cat":"Introductions","text":"Say hello to {name}! We're the [what you are] on [your street or area]. Follow along for tips, behind the scenes and what's new."},{"cat":"Introductions","text":"A little about us: [team size] people, [years] years, one goal: [your goal]. Come and see us."},{"cat":"Introductions","text":"Here's what a normal day looks like at {name}: [three short sentences]. No two days are the same, and we like it that way."},{"cat":"Behind the scenes","text":"A peek behind the scenes: this is where [what happens there] happens. Tidy? Mostly. Busy? Always."},{"cat":"Behind the scenes","text":"What you don't see: [a task customers never see]. It takes [time] and it's the reason [the good result]."},{"cat":"Behind the scenes","text":"First thing every morning: [your routine]. Small habits, big difference."},{"cat":"Behind the scenes","text":"Our favourite part of the job: [what you love]. Our least favourite: [something funny or honest]."},{"cat":"Behind the scenes","text":"Here's a job in progress. Guess what it is in the comments! Answer tomorrow."},{"cat":"Behind the scenes","text":"Getting ready for a busy [day of the week]: [what you prepare]. Book early to get your favourite time."},{"cat":"Behind the scenes","text":"The tools we use most this week: [tools]. Which one would you like to know more about?"},{"cat":"Behind the scenes","text":"Late finish tonight: [what you were working on]. Worth it when we see the result."},{"cat":"Behind the scenes","text":"Every [time period] we [a maintenance task] so everything works perfectly when you need it."},{"cat":"Behind the scenes","text":"Training day! The team is learning [new skill] so we can offer you [the benefit]."},{"cat":"Tips and how-to","text":"Tip of the week: [your tip]. It takes [time] and saves you [benefit]. Save this post for later."},{"cat":"Tips and how-to","text":"The most common mistake we see: [mistake]. How to avoid it: [simple fix]."},{"cat":"Tips and how-to","text":"Three signs it's time to call a professional: 1. [sign] 2. [sign] 3. [sign]. Not sure? Send us a photo."},{"cat":"Tips and how-to","text":"How to make your [result] last longer: [tip one], [tip two], [tip three]."},{"cat":"Tips and how-to","text":"A question we get a lot: [question]. The honest answer: [answer]."},{"cat":"Tips and how-to","text":"Do this once a [week / month] and you'll thank yourself later: [tip]."},{"cat":"Tips and how-to","text":"Before you call any [your trade], have these ready: [item], [item], [item]. It makes the visit quicker and cheaper."},{"cat":"Tips and how-to","text":"Quick fix you can do at home: [fix]. If that doesn't work, it's time to call us: {contact}."},{"cat":"Tips and how-to","text":"Seasonal reminder: [seasonal task]. Now is the best time because [reason]."},{"cat":"Tips and how-to","text":"What we'd tell a friend: [an honest piece of advice]. No sales pitch, just good advice."},{"cat":"Services and products","text":"Spotlight on [service]: what it is, who it's for and how long it takes. [Two sentences.] Questions? {contact}"},{"cat":"Services and products","text":"Did you know we also do [less-known service]? It's perfect for [who it suits]."},{"cat":"Services and products","text":"Our most asked-for service this month: [service]. Here's why people love it: [reason]."},{"cat":"Services and products","text":"New: [product or service]. We added it because [reason]. Ask us about it next time."},{"cat":"Services and products","text":"What's included in [service]: [list]. What's not: [list]. No surprises."},{"cat":"Services and products","text":"Price check: [service] starts at [price]. We always confirm the final price before we start."},{"cat":"Services and products","text":"Small job? We still want to hear from you. [Examples of small jobs you take.]"},{"cat":"Services and products","text":"A closer look at [product or service]. Swipe to see [details]."},{"cat":"Services and products","text":"Which of our services should we explain next? Tell us in the comments."},{"cat":"Services and products","text":"Ready when you are: [service] is available [days or times]. Book at {contact}."},{"cat":"Offers and news","text":"News: [your news]. From [date], [what changes]. Thank you for your patience while we [reason]."},{"cat":"Offers and news","text":"This week only: [offer]. Ends [date]. [Any limits.] Mention this post when you book."},{"cat":"Offers and news","text":"We've updated our hours: [new hours]. See you soon!"},{"cat":"Offers and news","text":"We're growing! [Your news, e.g. new room, new service, new team member.]"},{"cat":"Offers and news","text":"Spaces left this week: [days or times]. Message us to grab one."},{"cat":"Offers and news","text":"Back in stock: [product]. It went fast last time."},{"cat":"Offers and news","text":"A thank-you for regulars: [offer]. Valid until [date] for [who]."},{"cat":"Offers and news","text":"Heads up: we're closed on [date] for [reason]. Normal hours from [date]."},{"cat":"Offers and news","text":"Booking for [busy period] is now open. The best times go first."},{"cat":"Offers and news","text":"Price update: from [date], [service] is [new price]. Here's why: [honest reason]."},{"cat":"Seasons and holidays","text":"Happy new year from {name}! Thank you for your support last year. This year we're looking forward to [plan]."},{"cat":"Seasons and holidays","text":"Spring is here, and so is [seasonal service]. Book early: spring weeks fill up fast."},{"cat":"Seasons and holidays","text":"Summer hours start [date]: [hours]. Stay cool, {town}!"},{"cat":"Seasons and holidays","text":"Back to school, back to routine: [your seasonal offer or tip]."},{"cat":"Seasons and holidays","text":"Fall checklist: [item], [item], [item]. We can help with all three."},{"cat":"Seasons and holidays","text":"Getting ready for the holidays? Here are our holiday hours: [hours]."},{"cat":"Seasons and holidays","text":"Looking for a gift? Gift cards from {name} come in any amount."},{"cat":"Seasons and holidays","text":"Happy holidays from all of us at {name}. We're closed [dates] and back on [date]."},{"cat":"Seasons and holidays","text":"Thank you for a wonderful year, {town}. Here's to the next one!"},{"cat":"Seasons and holidays","text":"Celebrating [local event or holiday] this week? So are we! [How you're joining in.]"},{"cat":"Community and local","text":"We love being part of {town}. Our favourite local spot this month: [place]."},{"cat":"Community and local","text":"Shout-out to [a local business] for [a reason]. Support local!"},{"cat":"Community and local","text":"Proud to support [local cause or team] this year. [What you're doing.]"},{"cat":"Community and local","text":"See you at [local event] on [date]! Come and say hi at our [stand or table]."},{"cat":"Community and local","text":"Did you know {name} [a local fact about your business]? Small business, big heart."},{"cat":"Community and local","text":"Neighbours, we need your help: [a local question or request]."},{"cat":"Community and local","text":"Thank you to everyone who came to [event]. Here are a few photos (shared with permission)."},{"cat":"Community and local","text":"{town} tip: [a local tip, e.g. best parking near us, quiet times]."},{"cat":"Community and local","text":"We buy from local suppliers where we can, like [supplier]. Here's why it matters to us."},{"cat":"Community and local","text":"Tag a local business you love in the comments. Let's spread the word!"},{"cat":"Team","text":"Meet [name], our [role]. Ask them about [specialty]! Fun fact: [fact]."},{"cat":"Team","text":"Five years ago [name] joined {name}. Happy work anniversary! Thank you for [something specific]."},{"cat":"Team","text":"What the team is reading, watching or learning this month: [answers]."},{"cat":"Team","text":"Our team's favourite [service or product] and why: [answers]."},{"cat":"Team","text":"Welcome to the team, [name]! You'll meet them next time you visit."},{"cat":"Team","text":"A day in the life of [name]: [three short sentences]."},{"cat":"Team","text":"We asked the team: what's the best advice you've ever had? [Answers.]"},{"cat":"Team","text":"Small team, big effort: thank you to [name] for [something specific] this week."},{"cat":"Team","text":"Team lunch! Our go-to order from [local place, with permission]: [order]."},{"cat":"Team","text":"Behind every great job is a great team. Here's ours. (Shared with everyone's permission.)"},{"cat":"Reviews and thanks","text":"Thank you for every honest review this month! We read every single one and reply to all of them, good and bad."},{"cat":"Reviews and thanks","text":"If you've visited us, an honest review helps other people in {town} find us. The link is in our profile. Thank you!"},{"cat":"Reviews and thanks","text":"\"[Short part of a real review, word for word.]\" Thank you, [first name]! (Shared with permission.)"},{"cat":"Reviews and thanks","text":"We got some helpful feedback this week about [topic]. Here's what we're changing: [change]. Thank you for telling us."},{"cat":"Reviews and thanks","text":"To everyone who recommends us to friends and family: thank you. Word of mouth means the world to a small business."},{"cat":"Reviews and thanks","text":"Every review gets a reply from us, even the tough ones. Here's what we learned this month: [lesson]."},{"cat":"Reviews and thanks","text":"Thank you to our regulars! Some of you have been with us since [year]."},{"cat":"Reviews and thanks","text":"What should we keep doing, and what should we do better? Tell us: we're listening."},{"cat":"Reviews and thanks","text":"A thank-you note to {town}: [your words]."},{"cat":"Reviews and thanks","text":"Honest feedback makes us better. If something wasn't right, message us first: we'll make it right if we can."},{"cat":"Questions and polls","text":"Quick poll: [option A] or [option B]? Vote in the comments!"},{"cat":"Questions and polls","text":"Fill in the blank: the best thing about {town} is ______."},{"cat":"Questions and polls","text":"What should our next post be about? A) [topic] B) [topic] C) [topic]"},{"cat":"Questions and polls","text":"Morning person or night owl? We're open [hours] for both."},{"cat":"Questions and polls","text":"What's one question you've always wanted to ask a [your trade]? Ask away!"},{"cat":"Questions and polls","text":"Which do you prefer: [style A] or [style B]? We'll share the results Friday."},{"cat":"Questions and polls","text":"Rate your week from 1 to 10. Ours is a [number] because [reason]."},{"cat":"Questions and polls","text":"If you could add one thing to our menu or services, what would it be?"},{"cat":"Questions and polls","text":"True or false: [statement about your trade]? Answer tomorrow."},{"cat":"Questions and polls","text":"Caption this photo! Best caption gets a shout-out in our stories."},{"cat":"Hiring and events","text":"We're hiring! We're looking for a [role] who [qualities]. Message us or call {contact} to find out more."},{"cat":"Hiring and events","text":"Join us on [date] for [event]. [Time and place.] Everyone's welcome."},{"cat":"Hiring and events","text":"Workshop: learn [skill] with us on [date]. Spaces are limited: book at {contact}."},{"cat":"Hiring and events","text":"Open day at {name} on [date]! Meet the team and see behind the scenes."},{"cat":"Hiring and events","text":"We're at [market or fair] this weekend. Come and find our [stand]!"},{"cat":"Hiring and events","text":"Thank you to everyone who applied for our [role]. We'll be in touch by [date]."},{"cat":"Hiring and events","text":"Event recap: [event] was a success! Photos shared with permission."},{"cat":"Hiring and events","text":"Save the date: [event], [date]. More details soon."},{"cat":"Hiring and events","text":"Want to work in [your trade]? Here's what a first week with us looks like: [description]."},{"cat":"Hiring and events","text":"Our [event] is back on [date]. Last time [a true detail]. See you there!"},{"cat":"Map listing and website posts","text":"New photos added to our profile and website: [what they show]. Take a look!"},{"cat":"Map listing and website posts","text":"Our hours have changed: [new hours]. They're updated on our profile and website too."},{"cat":"Map listing and website posts","text":"Now offering [service]. Details on our website: {contact}."},{"cat":"Map listing and website posts","text":"Find us at [address]. Parking: [where to park]. See you soon!"},{"cat":"Map listing and website posts","text":"This week's update: [news in one sentence]. Questions? Call us."},{"cat":"Map listing and website posts","text":"Booking is easier than ever: [how to book]."},{"cat":"Map listing and website posts","text":"We've added answers to common questions on our website. Have a read!"},{"cat":"Map listing and website posts","text":"Holiday hours: [hours]. Thank you and happy holidays!"},{"cat":"Map listing and website posts","text":"Serving {town} and [nearby areas]. Not sure if we cover you? Ask!"},{"cat":"Map listing and website posts","text":"Thank you for the honest reviews this month: we replied to every one."}]}/*END*/;
+  var SIZES = {portrait: [1080, 1350], square: [1080, 1080], story: [1080, 1920]};
+
+  function str(v) { return v == null ? "" : String(v); }
+  function fill(t, b) {
+    return str(t).replace(/\{name\}/g, b.name || "Your Business").replace(/\{town\}/g, b.town || "your town").replace(/\{contact\}/g, b.contact || "");
+  }
+  function initials(n) { var w = str(n).replace(/[^A-Za-z0-9\s]/g, " ").split(/\s+/).filter(function (x) { return x && !/^(and|of|the)$/i.test(x); }); return (w.slice(0, 2).map(function (x) { return x[0].toUpperCase(); }).join("") || "YB"); }
+  function rgb(h) { h = str(h).replace("#", ""); var n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function lum(h) { return rgb(h).map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }).reduce(function (a, v, i) { return a + v * [0.2126, 0.7152, 0.0722][i]; }, 0); }
+  function contrast(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function mix(a, b, t) { var x = rgb(a), y = rgb(b); return "#" + x.map(function (v, i) { var s = Math.round(v + (y[i] - v) * t).toString(16); return s.length < 2 ? "0" + s : s; }).join(""); }
+  function customPalette(bg, ink, acc) {
+    var dark = lum(bg) < 0.25;
+    return {id: "custom", label: "My colours", bg: bg, surface: mix(bg, dark ? "#ffffff" : "#ffffff", dark ? 0.06 : 0.6), ink: ink, muted: mix(ink, bg, 0.3),
+      accent: acc, accent_ink: contrast(acc, "#ffffff") >= contrast(acc, "#141210") ? "#ffffff" : "#141210", soft: mix(bg, acc, 0.14)};
+  }
+
+  /* text: wrap words into lines that fit a width, shrink until the block fits its box */
+  function wrap(ctx, text, w) {
+    var out = [];
+    str(text).split("\n").forEach(function (para) {
+      var words = para.split(/\s+/).filter(Boolean), line = "";
+      words.forEach(function (word) {
+        var test = line ? line + " " + word : word;
+        if (!line || ctx.measureText(test).width <= w) line = test; else { out.push(line); line = word; }
+      });
+      out.push(line);
+    });
+    return out;
+  }
+  function fit(ctx, text, box, o) {
+    var size = o.max, lines;
+    for (; size > o.min; size = Math.floor(size * 0.95)) {
+      ctx.font = o.font(size);
+      lines = wrap(ctx, text, box.w);
+      if (lines.length * size * o.lh <= box.h && lines.every(function (l) { return ctx.measureText(l).width <= box.w; }) && (!o.maxLines || lines.length <= o.maxLines)) return {size: size, lines: lines};
+    }
+    ctx.font = o.font(o.min);
+    return {size: o.min, lines: wrap(ctx, text, box.w)};
+  }
+  function put(ctx, res, box, o) {
+    ctx.font = o.font(res.size); ctx.fillStyle = o.color; ctx.textBaseline = "alphabetic";
+    var lh = res.size * o.lh, total = (res.lines.length - 1) * lh + res.size;
+    var y = box.y + (o.valign === "middle" ? (box.h - total) / 2 : o.valign === "bottom" ? box.h - total : 0) + res.size * 0.82;
+    res.lines.forEach(function (line) {
+      var x = o.align === "center" ? box.x + box.w / 2 : o.align === "right" ? box.x + box.w : box.x;
+      ctx.textAlign = o.align || "left";
+      ctx.fillText(line, x, y);
+      y += lh;
+    });
+    ctx.textAlign = "left";
+    return y - lh + res.size * 0.25;
+  }
+  function text(ctx, t, box, o) { if (!str(t).trim()) return box.y; var r = fit(ctx, t, box, o); return put(ctx, r, box, o); }
+  function spaced(ctx, s) { try { ctx.letterSpacing = s; } catch (e) { /* older browsers: no letter spacing */ } }
+  function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function circle(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.closePath(); }
+  function photo(ctx, img, x, y, w, h, r, P, label) {
+    ctx.save(); rr(ctx, x, y, w, h, r); ctx.clip();
+    if (img && img.naturalWidth) {
+      var k = Math.max(w / img.naturalWidth, h / img.naturalHeight), iw = img.naturalWidth * k, ih = img.naturalHeight * k;
+      ctx.drawImage(img, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih);
+    } else {
+      ctx.fillStyle = P.soft; ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = P.surface; ctx.lineWidth = 18;
+      for (var i = -h; i < w + h; i += 52) { ctx.beginPath(); ctx.moveTo(x + i, y); ctx.lineTo(x + i - h, y + h); ctx.stroke(); }
+      var cx = x + w / 2, cy = y + h / 2 - 20;
+      ctx.fillStyle = P.muted; rr(ctx, cx - 62, cy - 40, 124, 88, 16); ctx.fill();
+      ctx.fillStyle = P.soft; circle(ctx, cx, cy + 4, 26); ctx.fill(); ctx.fillStyle = P.muted; circle(ctx, cx, cy + 4, 16); ctx.fill();
+      ctx.fillStyle = P.muted; rr(ctx, cx - 26, cy - 54, 52, 18, 6); ctx.fill();
+      ctx.font = "700 34px " + KIT.fonts.modern.body; ctx.textAlign = "center"; ctx.fillStyle = P.muted;
+      ctx.fillText(label || "Add your photo", cx, cy + 100); ctx.textAlign = "left";
+    }
+    ctx.restore();
+  }
+  function F(fonts, kind, weight, italic) { var f = KIT.fonts[fonts] || KIT.fonts.classic; return function (s) { return (italic ? "italic " : "") + (weight || (kind === "head" ? f.headWeight : 400)) + " " + s + "px " + (kind === "head" ? f.head : f.body); }; }
+
+  function kicker(ctx, t, x, y, P, fonts, align, color) {
+    if (!str(t).trim()) return y;
+    ctx.font = F(fonts, "body", 800)(30); spaced(ctx, "3px"); ctx.fillStyle = color || P.accent; ctx.textAlign = align || "left";
+    ctx.fillText(str(t).toUpperCase(), x, y + 28); spaced(ctx, "0px"); ctx.textAlign = "left";
+    return y + 56;
+  }
+  function footer(ctx, W, H, safe, d, P, fonts, imgs, onAccent) {
+    var m = 70, y = H - safe.bottom - 60, name = d.brand.name || "Your Business", ink = onAccent ? P.accent_ink : P.ink, mut = onAccent ? P.accent_ink : P.muted;
+    var r = 30, x = m;
+    if (imgs.logo && imgs.logo.naturalWidth) {
+      ctx.save(); circle(ctx, x + r, y, r); ctx.clip();
+      var k = Math.max(2 * r / imgs.logo.naturalWidth, 2 * r / imgs.logo.naturalHeight);
+      ctx.drawImage(imgs.logo, x + r - imgs.logo.naturalWidth * k / 2, y - imgs.logo.naturalHeight * k / 2, imgs.logo.naturalWidth * k, imgs.logo.naturalHeight * k);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = onAccent ? P.accent_ink : P.accent; circle(ctx, x + r, y, r); ctx.fill();
+      ctx.fillStyle = onAccent ? P.accent : P.accent_ink; ctx.font = F(fonts, "body", 800)(24); ctx.textAlign = "center"; ctx.fillText(initials(name), x + r, y + 9); ctx.textAlign = "left";
+    }
+    ctx.fillStyle = ink; ctx.font = F(fonts, "body", 800)(30);
+    var nx = x + 2 * r + 18; ctx.fillText(fitLine(ctx, name, W - nx - m - (d.brand.contact ? 360 : 0)), nx, y + 10);
+    if (d.brand.contact) { ctx.fillStyle = mut; ctx.font = F(fonts, "body", 500)(26); ctx.textAlign = "right"; ctx.fillText(fitLine(ctx, d.brand.contact, 380), W - m, y + 10); ctx.textAlign = "left"; }
+  }
+  function fitLine(ctx, t, w) { t = str(t); if (ctx.measureText(t).width <= w) return t; while (t.length > 1 && ctx.measureText(t + "…").width > w) t = t.slice(0, -1); return t + "…"; }
+  function points(t) { return str(t).split("\n").map(function (s) { return s.trim(); }).filter(Boolean); }
+
+  /* the 12 designs. Each draws on W x H (1080 wide); safe = the top/bottom space kept clear (stories) */
+  var L = {};
+  L.bigtype = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = P.soft; circle(ctx, W * 0.92, H * 0.86, W * 0.42); ctx.fill();
+    ctx.fillStyle = P.accent; circle(ctx, W * 0.86, s.top + 150, 34); ctx.fill();
+    ctx.fillStyle = P.accent; rr(ctx, 70, s.top + 110, 120, 12, 6); ctx.fill();
+    var y = kicker(ctx, d.kicker, 70, s.top + 150, P, fo);
+    var bottom = text(ctx, d.headline, {x: 70, y: y + 10, w: W - 160, h: (H - s.top - s.bottom) * 0.46}, {font: F(fo, "head"), max: 150, min: 56, lh: 1.04, color: P.ink});
+    text(ctx, d.body, {x: 70, y: bottom + 40, w: W - 220, h: H - s.bottom - 190 - bottom - 40}, {font: F(fo, "body", 500), max: 46, min: 28, lh: 1.32, color: P.muted});
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+  L.photo = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    var ph = (H - s.top - s.bottom) * 0.54;
+    photo(ctx, im.photo, 40, s.top + 40, W - 80, ph, 34, P);
+    ctx.fillStyle = P.accent; rr(ctx, 70, s.top + 40 + ph - 28, 220, 56, 28); ctx.fill();
+    ctx.fillStyle = P.accent_ink; ctx.font = F(fo, "body", 800)(26); spaced(ctx, "2px"); ctx.textAlign = "center";
+    ctx.fillText(fitLine(ctx, str(d.kicker).toUpperCase() || "TODAY", 200), 180, s.top + 40 + ph + 9); ctx.textAlign = "left"; spaced(ctx, "0px");
+    var top = s.top + 40 + ph + 70;
+    var b = text(ctx, d.headline, {x: 70, y: top, w: W - 140, h: (H - s.bottom - 150 - top) * 0.6}, {font: F(fo, "head"), max: 96, min: 46, lh: 1.06, color: P.ink});
+    text(ctx, d.body, {x: 70, y: b + 26, w: W - 140, h: H - s.bottom - 150 - b - 26}, {font: F(fo, "body", 500), max: 40, min: 26, lh: 1.3, color: P.muted});
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+  L.list = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = P.surface; rr(ctx, 40, s.top + 40, W - 80, H - s.top - s.bottom - 200, 34); ctx.fill();
+    var y = kicker(ctx, d.kicker, 100, s.top + 100, P, fo);
+    var b = text(ctx, d.headline, {x: 100, y: y + 6, w: W - 200, h: (H - s.top - s.bottom) * 0.22}, {font: F(fo, "head"), max: 92, min: 46, lh: 1.05, color: P.ink});
+    var pts = points(d.body).slice(0, 5), avail = H - s.bottom - 220 - (b + 40), each = Math.min(190, avail / Math.max(1, pts.length));
+    pts.forEach(function (p, i) {
+      var yy = b + 40 + i * each;
+      ctx.fillStyle = P.accent; circle(ctx, 140, yy + 38, 36); ctx.fill();
+      ctx.fillStyle = P.accent_ink; ctx.font = F(fo, "body", 800)(36); ctx.textAlign = "center"; ctx.fillText(String(i + 1), 140, yy + 51); ctx.textAlign = "left";
+      text(ctx, p, {x: 200, y: yy + 2, w: W - 300, h: each - 22}, {font: F(fo, "body", 600), max: 42, min: 26, lh: 1.25, color: P.ink, valign: "top"});
+    });
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+  L.quote = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.soft; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = P.bg; rr(ctx, 50, s.top + 50, W - 100, H - s.top - s.bottom - 210, 40); ctx.fill();
+    ctx.fillStyle = P.accent; ctx.font = F(fo, "head", 700)(300); ctx.fillText("“", 90, s.top + 330);
+    var y = s.top + 300;
+    var b = text(ctx, d.headline, {x: 120, y: y, w: W - 240, h: (H - s.top - s.bottom) * 0.42}, {font: F(fo, "head", 500, true), max: 74, min: 38, lh: 1.2, color: P.ink});
+    if (str(d.small).trim()) { ctx.fillStyle = P.accent; rr(ctx, 120, b + 42, 70, 8, 4); ctx.fill(); ctx.fillStyle = P.muted; ctx.font = F(fo, "body", 700)(32); ctx.fillText(fitLine(ctx, d.small, W - 360), 210, b + 56); }
+    kicker(ctx, d.kicker, 120, s.top + 110, P, fo);
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+  L.offer = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.accent; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = P.accent_ink; ctx.globalAlpha = 0.18; ctx.lineWidth = 3;
+    for (var i = 0; i < 6; i++) { circle(ctx, W * 0.82, s.top + 260, 120 + i * 70); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = P.bg; circle(ctx, W * 0.80, s.top + 250, 150); ctx.fill();
+    ctx.fillStyle = P.ink; text(ctx, str(d.kicker).toUpperCase() || "NEW", {x: W * 0.80 - 115, y: s.top + 170, w: 230, h: 160}, {font: F(fo, "body", 800), max: 48, min: 24, lh: 1.05, color: P.ink, align: "center", valign: "middle"});
+    var b = text(ctx, d.headline, {x: 70, y: s.top + 460, w: W - 140, h: (H - s.top - s.bottom) * 0.34}, {font: F(fo, "head"), max: 130, min: 54, lh: 1.03, color: P.accent_ink});
+    var c = text(ctx, d.body, {x: 70, y: b + 34, w: W - 200, h: (H - s.bottom - 260) - (b + 34)}, {font: F(fo, "body", 500), max: 44, min: 26, lh: 1.3, color: P.accent_ink});
+    if (str(d.small).trim()) { ctx.globalAlpha = 0.85; ctx.fillStyle = P.accent_ink; ctx.font = F(fo, "body", 500)(26); ctx.fillText(fitLine(ctx, d.small, W - 140), 70, H - s.bottom - 150); ctx.globalAlpha = 1; }
+    footer(ctx, W, H, s, d, P, fo, im, true);
+  };
+  L.hours = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = P.accent; ctx.fillRect(0, 0, W, s.top + 24);
+    var y = kicker(ctx, d.kicker, 70, s.top + 90, P, fo);
+    var b = text(ctx, d.headline, {x: 70, y: y + 6, w: W - 140, h: 230}, {font: F(fo, "head"), max: 104, min: 50, lh: 1.04, color: P.ink});
+    var rows = points(d.body).slice(0, 8), top = b + 50, avail = H - s.bottom - 270 - top, each = Math.min(110, avail / Math.max(1, rows.length));
+    ctx.fillStyle = P.surface; rr(ctx, 50, top - 20, W - 100, each * rows.length + 40, 28); ctx.fill();
+    rows.forEach(function (r, i) {
+      var cut = r.indexOf(": "), left = cut < 0 ? r : r.slice(0, cut), right = cut < 0 ? "" : r.slice(cut + 2), yy = top + i * each + each / 2 + 14;
+      var fs = Math.min(42, each * 0.42);
+      ctx.font = F(fo, "body", 700)(fs); ctx.fillStyle = P.ink; ctx.fillText(fitLine(ctx, left, 430), 90, yy);
+      ctx.font = F(fo, "body", 500)(fs); ctx.fillStyle = right.toLowerCase() === "closed" ? P.accent : P.muted; ctx.textAlign = "right"; ctx.fillText(fitLine(ctx, right, 480), W - 90, yy); ctx.textAlign = "left";
+      if (i < rows.length - 1) { ctx.fillStyle = P.soft; ctx.fillRect(90, top + (i + 1) * each - 1, W - 180, 2); }
+    });
+    if (str(d.small).trim()) { ctx.fillStyle = P.muted; ctx.font = F(fo, "body", 500)(28); ctx.fillText(fitLine(ctx, d.small, W - 140), 70, H - s.bottom - 160); }
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+  L.faq = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = P.accent; circle(ctx, 150, s.top + 170, 80); ctx.fill();
+    ctx.fillStyle = P.accent_ink; ctx.font = F(fo, "head", 700)(100); ctx.textAlign = "center"; ctx.fillText("Q", 150, s.top + 206); ctx.textAlign = "left";
+    kicker(ctx, d.kicker || "You asked", 260, s.top + 140, P, fo);
+    var b = text(ctx, d.headline, {x: 70, y: s.top + 290, w: W - 140, h: (H - s.top - s.bottom) * 0.3}, {font: F(fo, "head"), max: 100, min: 46, lh: 1.06, color: P.ink});
+    ctx.fillStyle = P.surface; rr(ctx, 50, b + 40, W - 100, H - s.bottom - 210 - (b + 40), 30); ctx.fill();
+    ctx.fillStyle = P.accent; ctx.font = F(fo, "head", 700)(64); ctx.fillText("A", 90, b + 130);
+    text(ctx, d.body, {x: 170, y: b + 80, w: W - 270, h: H - s.bottom - 260 - (b + 80)}, {font: F(fo, "body", 500), max: 44, min: 26, lh: 1.32, color: P.ink});
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+  L.steps = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    var y = kicker(ctx, d.kicker, 70, s.top + 90, P, fo);
+    var b = text(ctx, d.headline, {x: 70, y: y + 6, w: W - 140, h: 260}, {font: F(fo, "head"), max: 100, min: 48, lh: 1.04, color: P.ink});
+    var st = points(d.body).slice(0, 4), top = b + 60, avail = H - s.bottom - 230 - top, each = avail / Math.max(1, st.length);
+    ctx.fillStyle = P.soft; ctx.fillRect(126, top + 40, 8, Math.max(0, each * (st.length - 1)));
+    st.forEach(function (t, i) {
+      var yy = top + i * each;
+      ctx.fillStyle = P.accent; circle(ctx, 130, yy + 40, 44); ctx.fill();
+      ctx.fillStyle = P.accent_ink; ctx.font = F(fo, "body", 800)(40); ctx.textAlign = "center"; ctx.fillText(String(i + 1), 130, yy + 54); ctx.textAlign = "left";
+      text(ctx, t, {x: 210, y: yy + 6, w: W - 290, h: each - 20}, {font: F(fo, "body", 600), max: 44, min: 26, lh: 1.25, color: P.ink});
+    });
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+  L.split = function (ctx, W, H, s, d, P, fo, im) {
+    var labels = str(d.kicker || "Myth|Fact").split("|"), parts = points(d.body), half = (H - s.top - s.bottom - 160) / 2;
+    ctx.fillStyle = P.soft; ctx.fillRect(0, 0, W, s.top + 80 + half);
+    ctx.fillStyle = P.bg; ctx.fillRect(0, s.top + 80 + half, W, H);
+    text(ctx, d.headline, {x: 70, y: s.top + 40, w: W - 140, h: 70}, {font: F(fo, "body", 800), max: 40, min: 26, lh: 1.1, color: P.muted});
+    [[labels[0] || "Before", parts[0] || "", P.muted, P.ink, s.top + 110], [labels[1] || "After", parts.slice(1).join(" ") || "", P.accent, P.ink, s.top + 120 + half]].forEach(function (x) {
+      ctx.fillStyle = x[2]; rr(ctx, 70, x[4], 250, 64, 32); ctx.fill();
+      ctx.fillStyle = x[2] === P.accent ? P.accent_ink : P.bg; ctx.font = F(fo, "body", 800)(30); ctx.textAlign = "center"; ctx.fillText(fitLine(ctx, x[0].toUpperCase(), 230), 195, x[4] + 43); ctx.textAlign = "left";
+      text(ctx, x[1], {x: 70, y: x[4] + 100, w: W - 140, h: half - 150}, {font: F(fo, "head"), max: 76, min: 36, lh: 1.12, color: x[3]});
+    });
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+  L.meet = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = P.soft; ctx.fillRect(0, 0, W, s.top + 360);
+    var r = 230, cx = W / 2, cy = s.top + 360;
+    ctx.fillStyle = P.accent; circle(ctx, cx, cy, r + 16); ctx.fill();
+    ctx.save(); circle(ctx, cx, cy, r); ctx.clip(); photo(ctx, im.photo, cx - r, cy - r, 2 * r, 2 * r, 0, P, "Your photo"); ctx.restore();
+    kicker(ctx, d.kicker, W / 2, cy + r + 50, P, fo, "center");
+    var b = text(ctx, d.headline, {x: 90, y: cy + r + 120, w: W - 180, h: 220}, {font: F(fo, "head"), max: 92, min: 44, lh: 1.05, color: P.ink, align: "center"});
+    text(ctx, d.body, {x: 110, y: b + 30, w: W - 220, h: H - s.bottom - 190 - b - 30}, {font: F(fo, "body", 500), max: 40, min: 26, lh: 1.32, color: P.muted, align: "center"});
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+  L.event = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = P.surface; rr(ctx, 70, s.top + 90, 360, 360, 36); ctx.fill();
+    ctx.fillStyle = P.accent; rr(ctx, 70, s.top + 90, 360, 110, 36); ctx.fill(); ctx.fillRect(70, s.top + 160, 360, 40);
+    var parts = str(d.kicker || "Save the date").split("|");
+    ctx.fillStyle = P.accent_ink; ctx.font = F(fo, "body", 800)(34); ctx.textAlign = "center"; spaced(ctx, "3px");
+    ctx.fillText(fitLine(ctx, (parts[0] || "").toUpperCase(), 320), 250, s.top + 162); spaced(ctx, "0px");
+    text(ctx, parts[1] || "★", {x: 90, y: s.top + 220, w: 320, h: 210}, {font: F(fo, "head", 700), max: 150, min: 40, lh: 1, color: P.ink, align: "center", valign: "middle"});
+    ctx.textAlign = "left";
+    ctx.strokeStyle = P.accent; ctx.lineWidth = 6; ctx.setLineDash([2, 18]); ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(480, s.top + 270); ctx.lineTo(W - 70, s.top + 270); ctx.stroke(); ctx.setLineDash([]);
+    var b = text(ctx, d.headline, {x: 70, y: s.top + 520, w: W - 140, h: (H - s.top - s.bottom) * 0.26}, {font: F(fo, "head"), max: 110, min: 50, lh: 1.04, color: P.ink});
+    var lines = points(d.body).slice(0, 4), yy = b + 50;
+    lines.forEach(function (t) {
+      ctx.fillStyle = P.accent; circle(ctx, 88, yy + 18, 12); ctx.fill();
+      var e = text(ctx, t, {x: 120, y: yy - 6, w: W - 200, h: 110}, {font: F(fo, "body", 600), max: 42, min: 26, lh: 1.25, color: P.ink});
+      yy = Math.max(yy + 70, e + 30);
+    });
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+  L.thanks = function (ctx, W, H, s, d, P, fo, im) {
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    var cx = W / 2, cy = s.top + (H - s.top - s.bottom) * 0.42;
+    for (var i = 0; i < 36; i++) {
+      var a = i / 36 * Math.PI * 2, rad = 430 + (i % 2) * 26;
+      ctx.fillStyle = i % 3 ? P.soft : P.accent; circle(ctx, cx + Math.cos(a) * rad, cy + Math.sin(a) * rad * 0.92, i % 3 ? 14 : 9); ctx.fill();
+    }
+    kicker(ctx, d.kicker, cx, cy - 260, P, fo, "center");
+    var b = text(ctx, d.headline, {x: 140, y: cy - 190, w: W - 280, h: 300}, {font: F(fo, "head"), max: 128, min: 50, lh: 1.03, color: P.ink, align: "center", valign: "middle"});
+    text(ctx, d.body, {x: 170, y: b + 30, w: W - 340, h: 220}, {font: F(fo, "body", 500), max: 40, min: 26, lh: 1.32, color: P.muted, align: "center"});
+    footer(ctx, W, H, s, d, P, fo, im);
+  };
+
+  function palette(id, brand) {
+    if (id === "custom" && brand.custom) return customPalette(brand.custom.bg, brand.custom.ink, brand.custom.accent);
+    return KIT.palettes.filter(function (p) { return p.id === id; })[0] || KIT.palettes[0];
+  }
+  function post(i, edits) {
+    var p = KIT.days[i], e = (edits && edits[i]) || {}, out = {};
+    ["layout", "kicker", "headline", "body", "small", "caption", "alt", "palette"].forEach(function (k) { out[k] = e[k] != null ? e[k] : p[k]; });
+    out.theme = p.theme; out.tip = p.tip; out.rule = p.rule || "";
+    return out;
+  }
+  /* draw day i at the given size onto ctx at scale k (1 = full size) */
+  function draw(ctx, i, state, imgs, k, sizeOverride) {
+    var size = SIZES[sizeOverride || state.size] || SIZES.portrait, W = size[0], H = size[1];
+    var safe = (sizeOverride || state.size) === "story" ? {top: 250, bottom: 250} : {top: 0, bottom: 0};
+    var p = post(i, state.edits), b = state.brand;
+    var d = {kicker: fill(p.kicker, b), headline: fill(p.headline, b), body: fill(p.body, b), small: fill(p.small, b), brand: b};
+    var P = palette(p.palette && p.palette !== "brand" ? p.palette : b.palette, b);
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    (L[p.layout] || L.bigtype)(ctx, W, H, safe, d, P, b.fonts || "classic", {photo: imgs.photos[i], logo: imgs.logo});
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    return [W, H];
+  }
+  function caption(i, state) { var p = post(i, state.edits); return fill(p.caption, state.brand); }
+  function alt(i, state) { var p = post(i, state.edits); return fill(p.alt, state.brand); }
+  function defaults() { return {brand: {name: "", town: "", contact: "", palette: KIT.palettes[0].id, fonts: "classic", logo: "", custom: null}, size: "portrait", current: 0, edits: {}}; }
+
+  /* a small zip writer (stored, no compression: the pictures are already compressed) */
+  var CRC = (function () { var t = [], c, n, k; for (n = 0; n < 256; n++) { c = n; for (k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u8) { var c = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    var parts = [], central = [], offset = 0, enc = new TextEncoder();
+    function u16(v) { return [v & 255, (v >>> 8) & 255]; }
+    function u32(v) { return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; }
+    files.forEach(function (f) {
+      var name = enc.encode(f.name), crc = crc32(f.data), size = f.data.length;
+      var head = [].concat(u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0x5821), u32(crc), u32(size), u32(size), u16(name.length), u16(0));
+      parts.push(new Uint8Array(head), name, f.data);
+      central.push(new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0x5821), u32(crc), u32(size), u32(size), u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset))), name);
+      offset += head.length + name.length + size;
+    });
+    var csize = central.reduce(function (a, c) { return a + c.length; }, 0);
+    var end = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length), u32(csize), u32(offset), u16(0)));
+    return new Blob(parts.concat(central, [end]), {type: "application/zip"});
+  }
+  root.PostKit = {KIT: KIT, SIZES: SIZES, draw: draw, post: post, caption: caption, alt: alt, fill: fill, defaults: defaults, palette: palette, contrast: contrast, customPalette: customPalette, zip: zip, crc32: crc32, initials: initials};
+})(typeof globalThis !== "undefined" ? globalThis : this);
+</script>
+
+<script id="maker-ui">
+(function () {
+  "use strict";
+  var PK = window.PostKit, KIT = PK.KIT, STORE = "postMaker.v1";
+  var $ = function (id) { return document.getElementById(id); };
+  var state, imgs = {photos: {}, logo: null}, timer = 0;
+
+  function load() {
+    var s = PK.defaults();
+    try { var raw = localStorage.getItem(STORE); if (raw) { var o = JSON.parse(raw); s.brand = Object.assign(s.brand, o.brand || {}); s.size = o.size || s.size; s.current = o.current || 0; s.edits = o.edits || {}; } } catch (e) { /* storage blocked: start fresh */ }
+    return s;
+  }
+  function persist() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* too big or blocked: the session still works */ } }
+  function image(src, done) { if (!src) { done(null); return; } var im = new Image(); im.onload = function () { done(im); }; im.onerror = function () { done(null); }; im.src = src; }
+  function resize(file, max, done) {
+    var r = new FileReader();
+    r.onload = function () { image(r.result, function (im) { if (!im) { alert("That file could not be opened as a picture."); return; }
+      var k = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas"); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); done(c.toDataURL("image/jpeg", 0.85)); }); };
+    r.readAsDataURL(file);
+  }
+  function edit(i) { state.edits[i] = state.edits[i] || {}; return state.edits[i]; }
+  function later() { clearTimeout(timer); timer = setTimeout(function () { drawMain(); drawThumb(state.current); persist(); }, 120); }
+
+  /* brand panel */
+  function swatches() {
+    var box = $("b-pal"); box.textContent = "";
+    KIT.palettes.concat(state.brand.custom ? [PK.palette("custom", state.brand)] : []).forEach(function (p) {
+      var b = document.createElement("button"); b.type = "button"; b.title = p.label; b.setAttribute("aria-label", p.label); b.setAttribute("aria-pressed", state.brand.palette === p.id);
+      [p.bg, p.accent, p.ink].forEach(function (c) { var i = document.createElement("i"); i.style.background = c; b.appendChild(i); });
+      b.addEventListener("click", function () { state.brand.palette = p.id; swatches(); drawAll(); persist(); });
+      box.appendChild(b);
+    });
+  }
+  function sizes() {
+    var box = $("b-size"); box.textContent = "";
+    [["portrait", "Portrait 4:5"], ["square", "1:1"], ["story", "Story 9:16"]].forEach(function (x) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = x[1]; b.setAttribute("aria-pressed", state.size === x[0]);
+      b.addEventListener("click", function () { state.size = x[0]; sizes(); drawAll(); persist(); });
+      box.appendChild(b);
+    });
+  }
+  function bindBrand() {
+    [["b-name", "name"], ["b-town", "town"], ["b-contact", "contact"]].forEach(function (x) {
+      var el = $(x[0]); el.value = state.brand[x[1]] || ""; el.placeholder = {name: "e.g. Corner Table Cafe", town: "e.g. Oak Hill", contact: "e.g. cornertable.com"}[x[1]];
+      el.addEventListener("input", function () { state.brand[x[1]] = el.value; clearTimeout(timer); timer = setTimeout(function () { drawAll(); fillEdit(); persist(); }, 200); });
+    });
+    var fs = $("b-font"); Object.keys(KIT.fonts).forEach(function (k) { var o = document.createElement("option"); o.value = k; o.textContent = KIT.fonts[k].label; fs.appendChild(o); });
+    fs.value = state.brand.fonts; fs.addEventListener("change", function () { state.brand.fonts = fs.value; drawAll(); persist(); });
+    var c = state.brand.custom || {bg: "#f6f1e7", ink: "#1f1a14", accent: "#a0772c"};
+    $("c-bg").value = c.bg; $("c-ink").value = c.ink; $("c-acc").value = c.accent;
+    $("c-use").addEventListener("click", function () {
+      var bg = $("c-bg").value, ink = $("c-ink").value, acc = $("c-acc").value, p = PK.customPalette(bg, ink, acc);
+      var t = PK.contrast(ink, bg), a = PK.contrast(p.accent_ink, acc);
+      $("c-msg").textContent = "Text on background " + t.toFixed(1) + ":1, text on accent " + a.toFixed(1) + ":1. " + (t >= 4.5 && a >= 3 ? "Readable." : "Hard to read on a phone: aim for 4.5:1 or more.");
+      state.brand.custom = {bg: bg, ink: ink, accent: acc}; state.brand.palette = "custom"; swatches(); drawAll(); persist();
+    });
+    $("b-logo").addEventListener("change", function () { var f = this.files[0]; if (!f) return; resize(f, 400, function (data) { state.brand.logo = data; image(data, function (im) { imgs.logo = im; logoUi(); drawAll(); persist(); }); }); this.value = ""; });
+    $("b-logo-rm").addEventListener("click", function () { state.brand.logo = ""; imgs.logo = null; logoUi(); drawAll(); persist(); });
+  }
+  function logoUi() { var has = !!state.brand.logo; $("b-logo-img").classList.toggle("hidden", !has); $("b-logo-rm").classList.toggle("hidden", !has); if (has) $("b-logo-img").src = state.brand.logo; }
+
+  /* the edit panel */
+  var FIELDS = ["kicker", "headline", "body", "small"];
+  function fillEdit() {
+    var i = state.current, p = PK.post(i, state.edits), lay = KIT.layouts[p.layout] || {};
+    $("edit-title").textContent = "4. Edit day " + (i + 1) + ": " + p.theme;
+    $("daylabel").textContent = "Day " + (i + 1) + " of 30: " + p.theme;
+    $("e-layout").value = p.layout;
+    FIELDS.forEach(function (k) { $("e-" + k).value = p[k] || ""; var h = (lay.fields || {})[k]; $("l-" + k).textContent = h || {kicker: "Small line at the top", headline: "Headline", body: "Text", small: "Small print"}[k]; });
+    $("e-pal").value = p.palette || "brand";
+    $("e-caption").value = PK.caption(i, state);
+    $("e-alt").value = PK.alt(i, state);
+    $("e-tip").textContent = p.tip ? "Tip: " + p.tip : "";
+    $("e-rule").textContent = p.rule || "Use your own photos (or ones you have permission to use) and only true claims.";
+    $("e-rule").classList.toggle("hidden", false);
+    document.querySelectorAll("#grid button").forEach(function (b, j) { b.setAttribute("aria-pressed", j === i); });
+  }
+  function bindEdit() {
+    var ls = $("e-layout"); Object.keys(KIT.layouts).forEach(function (k) { var o = document.createElement("option"); o.value = k; o.textContent = KIT.layouts[k].label; ls.appendChild(o); });
+    ls.addEventListener("change", function () { edit(state.current).layout = ls.value; fillEdit(); later(); });
+    FIELDS.forEach(function (k) { $("e-" + k).addEventListener("input", function () { edit(state.current)[k] = this.value; later(); }); });
+    var ps = $("e-pal"), o0 = document.createElement("option"); o0.value = "brand"; o0.textContent = "My look (step 2)"; ps.appendChild(o0);
+    KIT.palettes.forEach(function (p) { var o = document.createElement("option"); o.value = p.id; o.textContent = p.label; ps.appendChild(o); });
+    ps.addEventListener("change", function () { edit(state.current).palette = ps.value; later(); });
+    $("e-caption").addEventListener("input", function () { edit(state.current).caption = this.value; persist(); });
+    $("e-alt").addEventListener("input", function () { edit(state.current).alt = this.value; persist(); });
+    $("e-photo").addEventListener("change", function () { var f = this.files[0], i = state.current; if (!f) return;
+      resize(f, 1600, function (data) { edit(i).photo = data; image(data, function (im) { imgs.photos[i] = im; drawMain(); drawThumb(i); persist(); }); }); this.value = ""; });
+    $("e-photo-rm").addEventListener("click", function () { var i = state.current; delete edit(i).photo; imgs.photos[i] = null; drawMain(); drawThumb(i); persist(); });
+    $("e-reset").addEventListener("click", function () { if (!confirm("Reset day " + (state.current + 1) + " to the original design and text?")) return; delete state.edits[state.current]; imgs.photos[state.current] = null; fillEdit(); drawMain(); drawThumb(state.current); persist(); });
+    $("e-copy").addEventListener("click", function () { copy($("e-caption").value, this); });
+    $("e-copyalt").addEventListener("click", function () { copy($("e-alt").value, this); });
+    $("prev").addEventListener("click", function () { go((state.current + 29) % 30); });
+    $("next").addEventListener("click", function () { go((state.current + 1) % 30); });
+  }
+  function copy(t, btn) {
+    function ok() { var o = btn.textContent; btn.textContent = "Copied"; setTimeout(function () { btn.textContent = o; }, 1200); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, fallback); else fallback();
+    function fallback() { var ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); ok(); } catch (e) { alert("Select the text and copy it."); } ta.remove(); }
+  }
+  function go(i) { state.current = i; fillEdit(); drawMain(); persist(); }
+
+  /* drawing */
+  function drawMain() { var c = $("main"), s = PK.SIZES[state.size]; c.width = s[0]; c.height = s[1]; c.style.maxHeight = "78vh"; PK.draw(c.getContext("2d"), state.current, state, imgs, 1); c.setAttribute("aria-label", PK.alt(state.current, state)); }
+  function drawThumb(i) { var c = document.querySelectorAll("#grid canvas")[i]; if (!c) return; var s = PK.SIZES[state.size], k = 200 / s[0]; c.width = 200; c.height = Math.round(s[1] * k); PK.draw(c.getContext("2d"), i, state, imgs, k); }
+  function grid() {
+    var g = $("grid"); g.textContent = "";
+    for (var i = 0; i < 30; i++) (function (i) {
+      var b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-label", "Day " + (i + 1) + ": " + KIT.days[i].theme);
+      var c = document.createElement("canvas"), sp = document.createElement("span"); sp.textContent = i + 1;
+      b.appendChild(c); b.appendChild(sp); b.addEventListener("click", function () { go(i); window.scrollTo({top: 0, behavior: "smooth"}); });
+      g.appendChild(b);
+    })(i);
+  }
+  function drawAll() { drawMain(); for (var i = 0; i < 30; i++) drawThumb(i); }
+
+  /* downloads */
+  function slug() { return (state.brand.name || "my-business").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "posts"; }
+  function render(i) { var s = PK.SIZES[state.size], c = document.createElement("canvas"); c.width = s[0]; c.height = s[1]; PK.draw(c.getContext("2d"), i, state, imgs, 1); return c; }
+  function save(blob, name) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  $("dl1").addEventListener("click", function () { render(state.current).toBlob(function (b) { save(b, slug() + "-day" + pad(state.current + 1) + ".png"); }, "image/png"); });
+  $("dlall").addEventListener("click", function () {
+    var btn = this, files = [], i = 0, enc = new TextEncoder(), sheet = ["Day,Theme,File,Caption,Alt text"];
+    btn.disabled = true;
+    (function next() {
+      if (i === 30) {
+        files.push({name: "captions.csv", data: enc.encode("﻿" + sheet.join("\r\n") + "\r\n")});
+        save(PK.zip(files), slug() + "-30-posts.zip"); btn.disabled = false; btn.textContent = "Download all 30 (.zip)"; return;
+      }
+      btn.textContent = "Making " + (i + 1) + " of 30...";
+      render(i).toBlob(function (b) {
+        b.arrayBuffer().then(function (buf) {
+          var name = "day" + pad(i + 1) + ".png";
+          files.push({name: name, data: new Uint8Array(buf)});
+          var q = function (t) { return '"' + String(t).replace(/"/g, '""') + '"'; };
+          sheet.push([i + 1, q(KIT.days[i].theme), name, q(PK.caption(i, state)), q(PK.alt(i, state))].join(","));
+          i++; setTimeout(next, 0);
+        });
+      }, "image/png");
+    })();
+  });
+
+  /* save and open your work (a .json file: moves your posts, logo and photos to another computer) */
+  $("savework").addEventListener("click", function () { save(new Blob([JSON.stringify(state)], {type: "application/json"}), slug() + "-posts.json"); });
+  $("openwork").addEventListener("change", function () {
+    var f = this.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var o = JSON.parse(r.result), s = PK.defaults();
+        s.brand = Object.assign(s.brand, o.brand || {}); s.size = PK.SIZES[o.size] ? o.size : "portrait"; s.current = +o.current || 0; s.edits = o.edits || {};
+        state = s; imgs = {photos: {}, logo: null};
+        ["b-name", "b-town", "b-contact"].forEach(function (id, j) { $(id).value = state.brand[["name", "town", "contact"][j]] || ""; });
+        $("b-font").value = state.brand.fonts || "classic";
+        swatches(); sizes(); logoUi(); fillEdit(); drawAll(); persist();
+        image(state.brand.logo, function (im) { imgs.logo = im; drawAll(); });
+        Object.keys(state.edits).forEach(function (k) { if (state.edits[k].photo) image(state.edits[k].photo, function (im) { imgs.photos[k] = im; drawThumb(+k); if (+k === state.current) drawMain(); }); });
+      } catch (e) { alert("That file is not a saved Post Maker file."); }
+    };
+    r.readAsText(f); this.value = "";
+  });
+
+  /* caption bank */
+  var cat = "All";
+  function bank() {
+    var cats = ["All"].concat(KIT.bank.map(function (b) { return b.cat; }).filter(function (c, j, a) { return a.indexOf(c) === j; }));
+    var box = $("bank-cats"); box.textContent = "";
+    cats.forEach(function (c) { var b = document.createElement("button"); b.type = "button"; b.textContent = c; b.setAttribute("aria-pressed", c === cat); b.addEventListener("click", function () { cat = c; bank(); }); box.appendChild(b); });
+    var q = $("bank-q").value.toLowerCase(), ol = $("bank-list"); ol.textContent = "";
+    KIT.bank.forEach(function (b, j) {
+      var t = PK.fill(b.text, state.brand);
+      if ((cat !== "All" && b.cat !== cat) || (q && t.toLowerCase().indexOf(q) < 0)) return;
+      var li = document.createElement("li"), sm = document.createElement("small"), p = document.createElement("p"), bt = document.createElement("button");
+      sm.textContent = (j + 1) + " · " + b.cat; p.textContent = t; bt.type = "button"; bt.className = "btn small"; bt.textContent = "Copy"; bt.style.justifySelf = "start";
+      bt.addEventListener("click", function () { copy(t, bt); });
+      li.appendChild(sm); li.appendChild(p); li.appendChild(bt); ol.appendChild(li);
+    });
+  }
+  $("bank-q").addEventListener("input", bank);
+  function tab(which) { $("make").classList.toggle("hidden", which !== "make"); $("bank").classList.toggle("hidden", which === "make"); $("t-make").setAttribute("aria-selected", which === "make"); $("t-bank").setAttribute("aria-selected", which !== "make"); if (which !== "make") bank(); }
+  $("t-make").addEventListener("click", function () { tab("make"); });
+  $("t-bank").addEventListener("click", function () { tab("bank"); });
+
+  state = load();
+  bindBrand(); bindEdit(); swatches(); sizes(); grid(); logoUi(); fillEdit();
+  image(state.brand.logo, function (im) { imgs.logo = im; drawAll(); });
+  Object.keys(state.edits).forEach(function (k) { if (state.edits[k].photo) image(state.edits[k].photo, function (im) { imgs.photos[k] = im; drawThumb(+k); if (+k === state.current) drawMain(); }); });
+  drawAll();
+})();
+</script>
+</body>
+</html>
