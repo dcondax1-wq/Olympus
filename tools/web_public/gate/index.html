@@ -40,8 +40,10 @@
   window.GATE_BASE = b;
   var d = document, h = d.head || d.getElementsByTagName('head')[0];
   try { if (window.top !== window) d.documentElement.className += ' framed'; } catch (e) { d.documentElement.className += ' framed'; }
-  var k = d.createElement('link'); k.rel = 'stylesheet'; k.href = b + 'olympus/agora.css?v=a3'; h.appendChild(k);
-  var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = b + 'gate/gate.css?v=g4'; h.appendChild(l);
+  /* perf v2: blocking=render keeps the first paint for the two sheets (a script-inserted sheet does not block it in Chromium: the page painted
+     unstyled and then jumped, CLS 0.27 on the phone) */
+  var k = d.createElement('link'); k.rel = 'stylesheet'; k.setAttribute('blocking', 'render'); k.href = b + 'olympus/agora.css?v=a4'; h.appendChild(k);
+  var l = d.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('blocking', 'render'); l.href = b + 'gate/gate.css?v=g5'; h.appendChild(l);
   var i = d.createElement('link'); i.rel = 'icon'; i.href = b + 'gate/icon.svg'; h.appendChild(i);
   ['olympus/themes.js?v=o5', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=me1', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g5'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
 })();</script>
@@ -60,7 +62,7 @@
   <section class="g-card g-now" id="now" aria-labelledby="nowH" data-state="loading">
     <div class="g-nowhead"><h2 id="nowH">Right now</h2><span class="g-badge" id="nowBadge">Checking</span></div>
     <p class="g-nowline" id="nowLine" role="status" aria-live="polite">Looking for the bots' numbers...</p>
-    <div class="g-facts" id="nowFacts" hidden></div>
+    <div class="g-facts" id="nowFacts" aria-hidden="true"><i class="g-fact g-skel"></i><i class="g-fact g-skel"></i><i class="g-fact g-skel"></i><i class="g-fact g-skel"></i></div><!-- perf v2: four calm placeholder tiles hold the space the facts take, so the hubs below never jump when the numbers arrive (CLS) -->
     <a class="g-btn primary" id="bringBack" data-to="nq/index.html?howto=1" href="nq/index.html?howto=1" hidden>Bring the bots back</a>
     <p class="g-nowfoot" id="nowFoot"></p>
   </section>

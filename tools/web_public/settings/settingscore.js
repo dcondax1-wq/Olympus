@@ -157,13 +157,16 @@ export function vaultStatus(st) {
 // ------------------------------------------------------------------------------------------------ Olympus' own settings
 export const KEYS = { fx: 'jfx', theme: 'olympus.theme', grain: 'olympus.grain', intro: 'oly.intro', sfx: 'olympus.sfx', trans: 'olympus.transitions',
   haptics: 'olympus.haptics', ambient: 'olympus.ambient', saver: 'olympus.saver', tour: 'olympus.tour.done' };
-export const FX_LEVELS = [['ultra', 'Ultra', 'Everything: glow, reflections, the most particles (a PC or a new iPhone)'], ['high', 'High', 'The full look (the usual choice)'],
-  ['low', 'LITE', 'Lighter: fewer effects, easier on the battery'], ['off', 'Still', 'Nothing moves']];
+// The Quality picker (perf v2, 2026-11-14): Auto / Battery / High / Ultra 4K (+ Still), all in the ONE 3D-quality key 'jfx' (Auto = no key);
+// the render-scale governor (olympus/render-scale.js) does the sharpness: Ultra 4K draws at the screen's full resolution, Auto climbs toward it
+// while every frame stays smooth, High holds 2x, Battery 1.5x; a scene that cannot keep up gets a slightly lower resolution, never a slideshow.
+export const FX_LEVELS = [['low', 'Battery', 'Lighter: fewer effects, 1.5x pixels, easiest on the battery'], ['high', 'High', 'The full look at up to 2x pixels'],
+  ['ultra', 'Ultra 4K', 'Everything, at your screen\'s full resolution (3x on an iPhone, 4K on a PC)'], ['off', 'Still', 'Nothing moves']];
 /** the quality levels explained: [id, name, what you see, what it costs, who it is for] */
 export const FX_EXPLAIN = [
-  ['ultra', 'Ultra', 'Glow and bloom, reflections, rain, the most particles and the thickest skyline', 'Uses the most battery and warms the phone; can stutter on older iPhones', 'A PC or a new iPhone plugged in'],
-  ['high', 'High', 'The full look: glow, reflections and effects, a lighter skyline', 'Normal battery use for a 3D app', 'The usual choice'],
-  ['low', 'LITE', 'The same scenes with fewer effects: no glow pass, fewer particles and cars, a thinner skyline', 'Light on the battery; stays smooth on older phones', 'Old phones, battery saver, hot days'],
+  ['low', 'Battery (LITE)', 'The same scenes with fewer effects: no glow pass, fewer particles and cars, a thinner skyline, drawn at 1.5x pixels', 'Light on the battery; stays smooth on older phones', 'Old phones, a long day away from a charger, hot days'],
+  ['high', 'High', 'The full look: glow, reflections and effects, drawn at up to 2x pixels', 'Normal battery use for a 3D app', 'The usual choice'],
+  ['ultra', 'Ultra 4K', 'Glow and bloom, reflections, rain, the most particles, drawn at your screen\'s full resolution: 3x on an iPhone, true 4K on a 4K screen', 'Uses the most battery and warms the phone; if a scene cannot keep up, Olympus lowers its resolution a little instead of stuttering', 'A PC with a 4K screen, or a new iPhone plugged in'],
   ['off', 'Still', 'Nothing moves: every scene is drawn once and redrawn only when you touch it', 'Almost no battery use', 'Motion sickness, or when you only want to read the numbers'],
 ];
 /** why the phone is on the level it is on now, in one plain sentence. flags: { saver, reduced, chosen (the saved level or null), level (the level in use) } */
@@ -172,7 +175,7 @@ export function fxWhy(flags) {
   if (f.saver) return 'You are on ' + name + ' because Battery saver is on. Turn it off to get your old choice back.';
   if (f.reduced && f.level !== 'ultra' && f.level !== 'high') return 'You are on ' + name + ' because your phone asks for less motion, and Olympus follows it.';
   if (f.chosen) return 'You are on ' + name + ' because you chose it. Pick Auto and Olympus decides for you.';
-  return 'You are on ' + name + ' because Auto picked it. A phone that draws 3D slowly is held to LITE so the apps stay smooth.';
+  return 'You are on ' + name + ' because Auto picked it. Auto sharpens each scene up to your screen\'s full resolution while it stays smooth; a phone that draws 3D slowly is held to LITE so the apps stay smooth.';
 }
 export const fxGet = (st) => { try { const v = st.getItem(KEYS.fx); return FX_LEVELS.some((l) => l[0] === v) ? v : null; } catch (_) { return null; } };
 /** the Sound switch (OLYMPUS.sound): 'auto' (the stored key 's' absent: on, silent in LITE / reduced motion / saver), 'on' (true) or 'off' (false) */

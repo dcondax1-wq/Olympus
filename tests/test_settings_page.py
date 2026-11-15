@@ -140,8 +140,8 @@ def part_b2():
         check("b. node runs the quality explainer and clear-all (settingscore.js)", False, r["error"])
         return
     w = r["why"]
-    check("b. the quality explainer: four levels (Ultra, High, LITE, Still) in the same order as the picker, each with what you see, what it costs and who it is for",
-          [l[0] for l in r["levels"]] == r["keep"] == ["ultra", "high", "low", "off"] and all(l[1] == 5 and l[2] for l in r["levels"]), r["levels"])
+    check("b. the quality explainer: four levels (Battery, High, Ultra 4K, Still: perf v2) in the same order as the picker, each with what you see, what it costs and who it is for",
+          [l[0] for l in r["levels"]] == r["keep"] == ["low", "high", "ultra", "off"] and all(l[1] == 5 and l[2] for l in r["levels"]), r["levels"])
     check("b. 'why this level now' in one plain sentence: battery saver first, then the phone's less-motion setting, then your own choice, else Auto (and Auto explains the slow-phone hold to LITE)",
           "Battery saver" in w[0] and "less motion" in w[1] and "you chose it" in w[2] and "Auto picked it" in w[3] and "LITE" in w[3] and "Auto picked it" in w[4] and "you chose it" in w[5], w)
     removed, kept, left, smart, vault, mind, tok = r["clear"]
@@ -202,7 +202,10 @@ def part_c():
             # ---- Look
             check("c. four tabs, Look first, each panel never blank", p.locator("#tabs [role=tab]").count() == 4 and p.get_attribute("#t-look", "aria-selected") == "true"
                   and p.locator("#p-look .card").count() == 5)
-            check("c. 3D quality: Auto / Ultra / High / LITE / Still; picking LITE writes jfx=low (the one key) and shows LITE",
+            names = p.evaluate("[...document.querySelectorAll('#fxSeg [role=radio]')].map((b) => [b.getAttribute('data-v'), b.textContent])")
+            check("c. the Quality picker (perf v2): Auto / Battery / High / Ultra 4K / Still, all in the one 3D-quality key jfx (Auto = no key)",
+                  names == [["auto", "Auto"], ["low", "Battery"], ["high", "High"], ["ultra", "Ultra 4K"], ["off", "Still"]], names)
+            check("c. 3D quality: picking Battery writes jfx=low (the one key) and shows LITE",
                   p.locator("#fxSeg [role=radio]").count() == 5 and (p.click("#fxSeg [data-v=low]") or True) and p.evaluate("localStorage.getItem('jfx')") == "low"
                   and p.get_attribute("#fxSeg [data-v=low]", "aria-checked") == "true" and not p.is_hidden("#lite") and "LITE" in p.inner_text("#fxTag").upper())
             p.click("#fxSeg [data-v=ultra]")

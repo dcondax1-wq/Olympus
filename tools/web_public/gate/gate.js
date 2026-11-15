@@ -213,7 +213,7 @@
     var W = N.win || nextWindow({}, nowS());
     fact(dl, 'Trade window', W.open ? 'Open now' : W.label.replace(/ 02:00-15:30 ET$/, ' 02:00 ET'), W.open ? 'until 15:30 ET' : inWords(W.inS), '', 'kairos/index.html', 'kairos');
     drawExtra(dl);
-    dl.hidden = false;
+    dl.hidden = false; dl.removeAttribute('aria-hidden');
     btn.hidden = !(st[0] === 'stale');
     if (from === 'none') foot.textContent = 'This copy of the site has no live numbers. Bots & Evals shows the full status where it can.';
     else if (from === 'cache') foot.textContent = 'Saved on this phone ' + ageWords(nowS() - (N.saved || nowS())) + ' ago.';
