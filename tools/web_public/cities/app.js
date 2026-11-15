@@ -14,7 +14,7 @@ import { cityResultPage, planCityNetwork } from './network-layout.js?v=n1';
 import { openDistrictWorld } from './district-world.js?v=d2';
 import { insight } from './insight.js';
 import { randomSpec, seedDataset, newSeed, cleanSeed } from './procedural.js';
-import { AgoraMap } from './agoramap.js?v=g4';
+import { AgoraMap } from './agoramap.js?v=g5';
 // Do not load/compile the 3D pipeline until this device has a usable context.
 let Stage, TIERS, BUDGETS, Rig, makePath, safeFlight, warmHex = (h) => h;
 
@@ -1085,7 +1085,7 @@ async function boot() {
   let importTimer;
   try {
     const modules = await Promise.race([
-      Promise.all([import('./scene.js?v=g5'), import('./rig.js?v=r2')]),
+      Promise.all([import('./scene.js?v=g6'), import('./rig.js?v=r2')]),
       new Promise((_, reject) => { importTimer = setTimeout(() => reject(Error('3D startup timed out')), 8000); }),
     ]);
     ({ Stage, TIERS, BUDGETS, warmHex } = modules[0]); ({ Rig, makePath, safeFlight } = modules[1]);

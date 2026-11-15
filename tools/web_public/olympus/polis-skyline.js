@@ -633,20 +633,60 @@
       st.pan = clamp(st.pan, 0, st.panMax);
       bake();
     }
-    function makeLayer(name, factor, worldW, res, painter) {
-      var Wl = worldW, tiles = [], tileW = 1024, kp = view.k * res, nT = Math.ceil(Wl * view.k / tileW);
-      for (var i = 0; i < nT; i++) {
-        var t = doc.createElement('canvas'), cssW = Math.min(tileW, Wl * view.k - i * tileW);
-        t.width = Math.max(1, Math.ceil(cssW * res)); t.height = Math.ceil(view.h * res);
+    // out: the layer set to fill (the live one, or the next one of a sliced re-bake); jobs: when given, each tile becomes one job (painted later)
+    function makeLayer(name, factor, worldW, res, painter, out, jobs) {
+      var Wl = worldW, tiles = [], tileW = 1024, vk = view.k, vh = view.h, kp = vk * res, nT = Math.ceil(Wl * vk / tileW);
+      function tile(i) {
+        var t = doc.createElement('canvas'), cssW = Math.min(tileW, Wl * vk - i * tileW);
+        t.width = Math.max(1, Math.ceil(cssW * res)); t.height = Math.ceil(vh * res);
         var c = t.getContext('2d'); c.setTransform(kp, 0, 0, kp, -i * tileW * res, PAD * kp);
-        var x0 = i * tileW / view.k, x1 = x0 + cssW / view.k;
+        var x0 = i * tileW / vk, x1 = x0 + cssW / vk;
         painter(c, Wl, x0, x1);
         if (grain && name !== 'far') { c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-atop'; c.globalAlpha = name === 'main' ? 0.07 : 0.05; c.fillStyle = c.createPattern(grain, 'repeat'); c.fillRect(0, 0, t.width, t.height); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
         tiles.push({ cv: t, x: i * tileW, w: cssW });
       }
-      lay[name] = { factor: factor, tiles: tiles, Wl: Wl };
+      for (var i = 0; i < nT; i++) { if (jobs) jobs.push(tile.bind(null, i)); else tile(i); }
+      (out || lay)[name] = { factor: factor, tiles: tiles, Wl: Wl };
+    }
+    // perf v2 (2026-11-14, docs/OLYMPUS_PERF.md): the light follows the clock, so the city is baked again every 2 minutes; that bake painted every
+    // layer in one task (seconds on a phone, 8 s on a software GPU): the page froze every 2 minutes. The clock's re-bake now paints one tile per
+    // task (about 12 ms of work before it yields) into a NEW layer set; the old one stays on screen until the new set is complete, then both swap
+    // in one frame: the same picture, without the freeze. A resize, setTime and setWeather still bake at once (and drop a re-bake in flight).
+    var slice = null;
+    function bakeSliced() {
+      if (slice) return;
+      var t0 = Date.now(), ms = nowMs(), A = lightAt(ms), nL = A.P, nF = faces(nL), next = {}, jobs = [], nSky = null, nClouds = [];
+      st.lastBake = ms;
+      var vwD = view.w / view.k, panD = st.panMax / view.k, res = view.dpr, lowRes = st.quality === 'low' ? 0.5 : 0.6, ppd = view.ppd, vk = view.k;
+      makeLayer('far', 0.5, vwD + panD * 0.5 + 40, Math.max(0.5, res * lowRes), function (c, Wl) { paintFar(c, Wl, nL, nF, st.seed); }, next, jobs);
+      makeLayer('mid', 0.7, vwD + panD * 0.7 + 40, Math.max(0.6, res * 0.75), function (c, Wl) { paintMid(c, Wl, nL, nF, st.seed); }, next, jobs);
+      makeLayer('main', 1, M.W, Math.min(res, 2), function (c, Wl, x0, x1) { paintMain(c, M, nL, nF, st.seed, x0, x1); }, next, jobs);
+      makeLayer('fore', 1.25, vwD + panD * 1.25 + 40, Math.min(res, 1.5), function (c, Wl) { paintFore(c, Wl, nL, nF, st.seed); }, next, jobs);
+      jobs.push(function () {
+        var sw = Math.ceil(360 * ppd), shz = Math.round((HORIZON + PAD) * vk);
+        nSky = doc.createElement('canvas'); nSky.width = Math.ceil(sw * 0.5); nSky.height = Math.ceil((shz + 2) * 0.5);
+        var sc = nSky.getContext('2d'); sc.scale(0.5, 0.5); paintSkyStrip(sc, 360, ppd, shz, nL, A.s);
+        var r = rng(st.seed + 51), nC = Math.round(3 + st.weather.cloud * 12 + (nL.night > 0.6 ? 1 : 3));
+        for (var i = 0; i < nC; i++) {
+          var cw = (110 + r() * 170) * vk, ch = cw * (0.3 + r() * 0.1), spr = doc.createElement('canvas'); spr.width = Math.ceil(cw * 0.35); spr.height = Math.ceil(ch * 0.35);
+          var c2 = spr.getContext('2d'); c2.scale(0.35, 0.35); makeCloud(c2, cw, ch, st.seed + i * 17, nL, nL.sunSx < 0 ? -1 : 1);
+          nClouds.push({ cv: spr, w: cw, h: ch, az: r() * 360, alt: 6 + r() * (st.weather.cloud > 0.5 ? 20 : 34), speed: (0.4 + r() * 0.8) * (r() < 0.5 ? 1 : 1) });
+        }
+      });
+      jobs.push(function () {                          // the swap: one frame shows the new light everywhere
+        L = nL; F = nF; sunNow = A.s; moonNow = A.m; st.phase = A.ph.name; st.bakes++; lay = next; sky = nSky; clouds = nClouds;
+        project(ms); st.bakeMs = Date.now() - t0; st.slicedBakes = (st.slicedBakes || 0) + 1; st.dirty = true; kick();
+      });
+      var me = slice = { w: view.w, h: view.h, dpr: view.dpr };
+      (function run() {
+        if (slice !== me) return;                      // a synchronous bake (resize, setTime, setWeather) replaced it
+        var s0 = Date.now();
+        do { jobs.shift()(); } while (jobs.length && Date.now() - s0 < 12);
+        if (jobs.length) win.setTimeout(run, 0); else slice = null;
+      })();
     }
     function bake() {
+      slice = null;
       var t0 = Date.now(), ms = nowMs(), A = lightAt(ms); L = A.P; F = faces(L); sunNow = A.s; moonNow = A.m; st.phase = A.ph.name; st.lastBake = ms; st.bakes++;
       if (!grain) grain = paperGrain(st.seed);
       var vwD = view.w / view.k, panD = st.panMax / view.k, res = view.dpr, lowRes = st.quality === 'low' ? 0.5 : 0.6;
@@ -936,7 +976,7 @@
     function loop(tms) {
       raf = 0; if (!st.running) return;
       var t0 = (win.performance && win.performance.now) ? win.performance.now() : Date.now();
-      if (!st.timeFixed && Date.now() - st.lastBake > 120000) bake();
+      if (!st.timeFixed && Date.now() - st.lastBake > 120000) bakeSliced();      // perf v2: the clock's re-bake, one tile per task
       else if (Date.now() - (st.projectedAt || 0) > 10000) { project(nowMs()); st.projectedAt = Date.now(); }
       frame(tms);
       var t1 = (win.performance && win.performance.now) ? win.performance.now() : Date.now(); st.frameMs = st.frameMs * 0.9 + (t1 - t0) * 0.1;
@@ -980,7 +1020,7 @@
         up: stars ? stars.up : [], azCentre: azCentre(), view: { w: view.w, h: view.h, k: view.k, ppd: view.ppd, pad: PAD }, pan: st.pan, panMax: st.panMax, frames: st.frames, fps: st.fps, frameMs: Math.round(st.frameMs * 10) / 10, bakeMs: st.bakeMs, bakes: st.bakes,
         onScreen: stars ? stars.list.filter(function (c) { var p = skyXY(c.mid.alt, c.mid.az); return c.mid.alt > 3 && p[0] > 0 && p[0] < view.w; }).map(function (c) { return c.name; }) : [] }; },
       onScroll: onScroll,
-      destroy: function () { api.stop(); if (cv.parentNode) cv.parentNode.removeChild(cv); lay = {}; }
+      destroy: function () { api.stop(); slice = null; if (cv.parentNode) cv.parentNode.removeChild(cv); lay = {}; }
     };
     if (scroller) scroller.addEventListener('scroll', onScroll, { passive: true });
     return api;

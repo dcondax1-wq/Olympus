@@ -11,14 +11,24 @@
      request; with no audio files at all the synth plays, at most 2 failed requests, no console error, no page error
   e. Jarvis app switching: 10 switches between 3D apps, then home: no AudioContext / WebGL context / canvas of a closed app is still
      alive after GC (WeakRef registry across frames), one app frame at most, JS heap growth bounded
-    python -X utf8 -m tests.test_phone_budget            (--static: only a.)
+  f. perf v2 (2026-11-14, team P2 "fast and crisp", docs/OLYMPUS_PERF.md "Perf v2"), static: tools/perf_probe.py arithmetic (frame stats, TBT,
+     the trace breakdown, canvas rows, the table), the render-scale governor's policy in node (olympus/render-scale.js: ranges per Quality,
+     climbing to the full pixel ratio when frames allow, smooth step-downs, CPU-bound frames keep the resolution, failed climbs back off and
+     lock: never thrash), and the contracts (render.js / hero-stage.js use the governor, pause off screen, size from a ResizeObserver,
+     compile shaders in the background, no MSAA over 2x; the Quality picker in the one jfx key; the cheap paths)
+  g. perf v2 in Chromium, the 4K desktop profile (1920 x 1080 at 2x = 3840 x 2160) and the iPhone (390 x 844 at 3x): a canvas renders at the
+     full device pixel ratio when its frames allow (Ultra 4K at once; Auto climbs to 3x on the iPhone), slow frames step it down one level
+     at a time; the main pages idle at ~0 CPU (and a 3D page scrolled off screen draws nothing); no long task over 200 ms after load
+    python -X utf8 -m tests.test_phone_budget            (--static: only a. and f.; or name sections: lite lazy ctx audio switch perf)
 Browser parts run under `flock -w 2400 /tmp/olympus_browser.lock` (one browser on the machine).
 """
 from __future__ import annotations
 
 import http.server
+import json
 import os
 import re
+import subprocess
 import sys
 import threading
 import time
@@ -28,6 +38,7 @@ sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 WEB = os.path.join(ROOT, "tools", "web_public")
 import phone_budget as PB  # noqa: E402
+import perf_probe as PP  # noqa: E402
 
 RES: list = []
 LAZY = {"nq": ("nqscene.js", "nq3d"), "mint": ("mintscene.js", "mint3d"), "helios": ("sunload.js", "helios-sun"), "aegis": ("shieldload.js", "aegis-shield"),
@@ -73,8 +84,11 @@ def test_static():
         if "error" in row or row["block_kb"] > kb or row["block_n"] > n:
             bad.append((p, row.get("block_kb"), row.get("block_n")))
     check(f"a. every page's render-blocking files stay within budget (<= {BLOCK_KB} kB raw / {BLOCK_N} files; root / jarvis held at today's size)", not bad, bad)
-    check("a. Polis: the POLIS libraries are deferred (the page + <= 6 blocking files, was 13: ~380 kB of script before the first paint)",
-          rows["polis"]["block_n"] <= 7 and rows["polis"]["block_kb"] < 160, rows["polis"])
+    # 2026-11-14 (perf v2): the AGORA kit head (olympus.css, agora.css, polis.css, quiet-net, themes, olympus.js + the page sheet) is 7 files
+    # and ~210 kB raw since the 32 looks (themes.js 61 kB): the POLIS libraries themselves stay deferred, which is what this guards
+    blk = [os.path.basename(x) for x in PB.eager_files(WEB, os.path.join(WEB, "polis", "index.html"))["blocking"]]
+    check("a. Polis: the POLIS libraries are deferred (none of them blocks the first paint; the page + the 7-file kit head, was 13 files / ~380 kB of script)",
+          rows["polis"]["block_n"] <= 8 and not [b for b in blk if b.endswith(".js") and b.startswith(("polis", "poliscore"))], [rows["polis"]["block_n"], blk])
     eager3 = [p for p in LAZY if rows[p]["three"]]
     check("a. three.js is never in the eager graph of the lazy 3D pages (" + ", ".join(LAZY) + ")", not eager3, eager3)
     tags = []
@@ -105,6 +119,157 @@ def test_static():
           all(k in sfx for k in ("smpDead", "!smpDead", "text\\/html", "if (!fmtUsed) smpDead = true;", "dead: smpDead")))
     check("a. lazy3d.js: no probe context (WebGL checked without one), after the first paint, never while hidden, skip on LITE (loads on HD)",
           all(k in lz for k in ("WebGLRenderingContext", "requestAnimationFrame", "D.hidden", "O.lite()", "O.onFx", "import(url)", "IntersectionObserver")))
+
+
+# ------------------------------------------------------------------------------------------------ f. perf v2, static
+RQ_NODE = r"""
+const RQ = await import(process.argv[1]);
+const out = {};
+const R = (o) => RQ.range(o);
+out.ranges = {
+  autoPhone: R({ tier: 'high', chosen: false, maxDpr: 2, device: 3 }), highChosen: R({ tier: 'high', chosen: true, maxDpr: 2, device: 3 }),
+  ultraPhone: R({ tier: 'ultra', chosen: true, maxDpr: 1.75, device: 3 }), ultra4k: R({ tier: 'ultra', chosen: true, maxDpr: 2, device: 2 }),
+  battery: R({ tier: 'low', chosen: true, maxDpr: 2, device: 3 }), soft: R({ tier: 'ultra', chosen: true, maxDpr: 1.25, device: 3 }),
+  saver: R({ tier: 'high', chosen: false, maxDpr: 2, device: 3, saver: true }), software: R({ tier: 'low', software: true, maxDpr: 2, device: 3 }),
+};
+// a GPU-bound scene: frame ms = cost at dpr 2, scaled by the pixels, quantised to the 60 Hz vsync
+const vs = (ms) => Math.ceil(ms / 16.667 - 1e-9) * 16.667;
+function run(rg, cost, secs, o) {
+  const s = RQ.initial(), x = o || {}, log = [];
+  let up = 0; while (up < 6 && RQ.dprAt(rg, up + 1) > RQ.dprAt(rg, up)) up++;
+  let dn = 0; while (dn > -4 && RQ.dprAt(rg, dn - 1) < RQ.dprAt(rg, dn)) dn--;
+  let t = 0, q0 = 0, i = 0;
+  while (t < secs * 1000) {
+    const d = RQ.dprAt(rg, s.q), ms = x.at && x.at[i] ? x.at[i] : cost(d);
+    t += ms; i++;
+    RQ.step(s, t, ms, x.gap || 0, x.work ? x.work(ms) : 0.5, up, dn);
+    if (s.q !== q0) { log.push([Math.round(t), s.q, RQ.dprAt(rg, s.q)]); q0 = s.q; }
+  }
+  return { q: s.q, dpr: RQ.dprAt(rg, s.q), log, locked: Object.keys(s.locked).map(Number), steps: s.steps };
+}
+const auto = out.ranges.autoPhone;
+out.light = run(auto, () => 16.667, 60);
+out.heavy = run(auto, (d) => vs(40 * (d / 2) ** 2), 120);
+out.holds = run(auto, (d) => vs(16 * Math.max(1, (d / 2.4) ** 2)), 120);
+out.cpu = run(auto, () => 40, 30, { work: (ms) => ms * 0.9 });
+out.slowGpu = run(out.ranges.ultraPhone, (d) => 300 * (d / 3) ** 2, 40);
+out.crawl = run(out.ranges.ultra4k, () => 1500, 120);      // over 1 s a frame (4K on a software GPU): frames, not pauses
+out.capped = run(auto, () => 33.33, 30, { gap: 33 });
+const hitch = []; for (let k = 0; k < 4000; k++) hitch.push(k % 400 === 200 ? 600 : 16.667);
+out.hitch = run(RQ.range({ tier: 'high', chosen: true, maxDpr: 2, device: 2 }), () => 16.667, 60, { at: hitch });
+// compileQuietly with a fake renderer: programs that turn ready, one deleted meanwhile (counts as done), one never ready (gives up at maxMs)
+const mk = (n) => { let k = 0; return { program: {}, isReady: () => (++k >= n) }; };
+const mats = ['a', 'b', 'c'], progs = { a: mk(3), b: { program: undefined, isReady: () => null }, c: mk(2) };
+const fake = (pp) => ({ compile: () => new Set(mats), extensions: { get: () => ({}) }, properties: { get: (m) => ({ currentProgram: pp[m] }) } });
+const t0 = Date.now(); out.cqOk = await RQ.compileQuietly(fake(progs), {}, {}, 2000); out.cqMs = Date.now() - t0;
+const stuck = { a: { program: {}, isReady: () => null } }; const t1 = Date.now();
+out.cqStuck = await RQ.compileQuietly({ compile: () => new Set(['a']), extensions: { get: () => ({}) }, properties: { get: (m) => ({ currentProgram: stuck[m] }) } }, {}, {}, 300);
+out.cqStuckMs = Date.now() - t1;
+out.cqNoExt = await RQ.compileQuietly({ compile: () => new Set(['a']), extensions: { get: () => null }, properties: { get: () => ({}) } }, {}, {}, 300);
+// a software GL (SwiftShader): no compile up front at all (its GPU process compiles in order: the first status query would hold the page anyway)
+let swN = 0;
+const sw = { compile: () => { swN++; return new Set(['a']); }, extensions: { has: () => true }, properties: { get: () => ({}) },
+  getContext: () => ({ getExtension: () => ({ UNMASKED_RENDERER_WEBGL: 37446 }), getParameter: () => 'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)))' }) };
+out.cqSoft = await RQ.compileQuietly(sw, {}, {}, 300); out.cqSoftN = swN; out.pcSoft = RQ.parallelCompile(sw);
+console.log('@@' + JSON.stringify(out));
+"""
+
+
+def node_rq():
+    mod = os.path.join(WEB, "olympus", "render-scale.js")
+    p = subprocess.run(["node", "--input-type=module", "-e", RQ_NODE, "file://" + mod], capture_output=True, text=True, timeout=120)
+    m = [ln for ln in p.stdout.splitlines() if ln.startswith("@@")]
+    return json.loads(m[-1][2:]) if m else {"error": (p.stderr or p.stdout)[-600:]}
+
+
+def test_perf_static():
+    fs = PP.frame_stats([16.7] * 50 + [50.0, 100.0])
+    check("f. perf_probe.frame_stats: fps from the frame deltas, the 95th percentile, jank = frames over two vsyncs",
+          fs["n"] == 52 and 50 < fs["fps"] < 57 and fs["p50"] == 16.7 and fs["p95"] == 16.7 and fs["jank"] == round(100 * 2 / 52, 1) and PP.frame_stats([])["fps"] == 0, fs)
+    lt = [[100, 80], [900, 300], [2000, 40], [5000, 260]]
+    check("f. TBT = the part over 50 ms of each long task from the first paint on; the longest task after load + 1 s",
+          PP.tbt(lt, 500) == 250 + 210 and PP.tbt(lt, 0, 1000) == 30 + 250 and PP.longest_after(lt, 3000) == 260 and PP.longest_after(lt, 6000) == 0,
+          [PP.tbt(lt, 500), PP.tbt(lt, 0, 1000), PP.longest_after(lt, 3000)])
+    ev = [{"ph": "M", "name": "thread_name", "pid": 1, "tid": 2, "args": {"name": "CrRendererMain"}},
+          {"ph": "M", "name": "thread_name", "pid": 9, "tid": 9, "args": {"name": "CrRendererMain"}},
+          {"ph": "X", "name": "RunTask", "pid": 1, "tid": 2, "ts": 0, "dur": 10000},
+          {"ph": "X", "name": "FunctionCall", "pid": 1, "tid": 2, "ts": 1000, "dur": 4000},
+          {"ph": "X", "name": "Layout", "pid": 1, "tid": 2, "ts": 2000, "dur": 1000},           # a layout forced by the script: layout, not script
+          {"ph": "B", "name": "UpdateLayoutTree", "pid": 1, "tid": 2, "ts": 6000}, {"ph": "E", "name": "UpdateLayoutTree", "pid": 1, "tid": 2, "ts": 7000},
+          {"ph": "X", "name": "Paint", "pid": 1, "tid": 2, "ts": 8000, "dur": 500},
+          {"ph": "X", "name": "RunTask", "pid": 9, "tid": 9, "ts": 0, "dur": 900},              # another renderer with less work: not the page
+          {"ph": "X", "name": "Paint", "pid": 3, "tid": 3, "ts": 0, "dur": 9000}]               # not a main thread
+    bd = PP.trace_breakdown(ev, 1.0)
+    check("f. trace breakdown: self time per second on the page's main thread (script 3, layout 1, style 1, paint 0.5, other 4.5, tasks 10 ms/s)",
+          bd["script"] == 3.0 and bd["layout"] == 1.0 and bd["style"] == 1.0 and bd["paint"] == 0.5 and bd["other"] == 4.5 and bd["task"] == 10.0, bd)
+    c0 = [{"n": "#a", "kind": "webgl2", "w": 780, "h": 400, "cw": 390, "ch": 200, "on": True, "live": True, "calls": 10, "frames": 2, "path": "/x/"}]
+    c1 = [dict(c0[0], calls=310, frames=62), {"n": "b", "kind": "2d", "w": 10, "h": 10, "cw": 0, "ch": 0, "on": False, "live": True, "calls": 5, "frames": 5, "path": "/x/"}]
+    cr = PP.canvas_rows(c0, c1, 2.0, 3)
+    check("f. canvas rows: draws per second, calls per frame, render scale = backing / (CSS x devicePixelRatio), megapixels",
+          cr[0]["fps"] == 30.0 and cr[0]["cpf"] == 5.0 and cr[0]["scale"] == 0.67 and cr[0]["mp"] == 0.31 and cr[0]["kind"] == "gl" and cr[1]["kind"] == "2d" and cr[1]["fps"] == 2.5, cr)
+    raw = {"snap": {"fcp": 400, "lcp": 900, "cls": 0.01, "load": 1000, "lt": [[600, 120], [2500, 210]], "heap": 8 * 1048576, "nodes": 300},
+           "idle": {"task_ms_s": 3.2}, "fps_idle": {"fps": 60.0}, "fps_scroll": {"fps": 58.0, "p95": 18.0, "jank": 1.0},
+           "cv_idle": [dict(cr[0], fps=0.0)], "cv_scroll": cr, "trace": {"script": 2.0, "style": 1.0, "layout": 0.5, "paint": 3.0, "task": 20.0}, "trace_t0": 2400, "trace_t1": 3000}
+    row = PP.summarize(raw)
+    check("f. summarize: a page row (TBT, longest task after load without the ones the trace caused, idle CPU, fps, canvases, render scale)",
+          row["tbt"] == 70 + 160 and row["lt_max"] == 210 and row["lt_after"] == 0 and row["idle_ms"] == 3.2 and row["fps_scroll"] == 58.0 and row["gl"] == 1
+          and row["gl_scale"] == 0.67 and row["heap_mb"] == 8.0 and row["paint"] == 3.0, row)
+    t = PP.table_lines([("nq", row), ("x", {"error": "boom"})])
+    check("f. the perf table: a header, a row per page (14 columns) and the error row", len(t) == 4 and t[2].startswith("| nq | 400 / 900 |") and t[2].count("|") == 15 and "error: boom" in t[3], t)
+    check("f. page_url: the hubs, the root, an app, ?gpu=1", PP.page_url("http://h", "hub-today") == "http://h/hub/?h=today&" + PP.QUERY
+          and PP.page_url("http://h", "root") == "http://h/?" + PP.QUERY and PP.page_url("http://h", "nq", True) == "http://h/nq/?" + PP.QUERY + "&gpu=1")
+
+    r = node_rq()
+    if r.get("error"):
+        check("f. node runs olympus/render-scale.js", False, r["error"])
+    else:
+        g = r["ranges"]
+        check("f. render scale: Auto on an iPhone = budget 2x, may climb to the full 3x; a chosen High holds 2x; Ultra 4K starts at the full 3x (app caps >= 1.5 lifted) and never falls under 2x",
+              g["autoPhone"] == {"floor": 1, "budget": 2, "ceil": 3} and g["highChosen"]["ceil"] == 2 and g["ultraPhone"] == {"floor": 2.01, "budget": 3, "ceil": 3}, g)
+        check("f. render scale: Ultra 4K on a 4K screen (2x) = 2x; Battery = 1.5x; a soft backdrop (maxDpr < 1.5) and software GL never climb; battery saver <= 1.5x",
+              g["ultra4k"]["budget"] == 2 == g["ultra4k"]["ceil"] and g["battery"]["ceil"] == 1.5 and g["soft"]["ceil"] == 1.25 and g["software"]["ceil"] == g["software"]["budget"]
+              and g["saver"]["ceil"] <= 1.5, g)
+        L, H, Hd = r["light"], r["heavy"], r["holds"]
+        gaps = [b[0] - a[0] for a, b in zip(H["log"], H["log"][1:])]
+        check("f. a light scene climbs to the full 3x (one level at a time, >= 2.5 s apart), never down", L["dpr"] == 3 and len(L["log"]) == 3
+              and all(x[1] > 0 for x in L["log"]) and all(b[0] - a[0] >= 2500 for a, b in zip(L["log"], L["log"][1:])), L)
+        check("f. a heavy scene steps DOWN smoothly (one level per step, >= 1.2 s apart) to where it keeps full rate (1.19x), and the failed climb is locked (bounded changes: never thrash)",
+              abs(H["dpr"] - 1.19) < 0.01 and all(g2 >= 1200 for g2 in gaps) and all(abs(b[1] - a[1]) == 1 for a, b in zip(H["log"], H["log"][1:])) and H["locked"] and H["steps"] <= 12, H)
+        check("f. a GPU that holds 2.4x settles at 2.38x after at most 3 failed tries of 2.83x (back-off), then stays", abs(Hd["dpr"] - 2.38) < 0.01 and Hd["steps"] <= 8 and Hd["locked"] == [2], Hd)
+        check("f. frames slowed by the page's own JavaScript keep the resolution (a smaller buffer would only blur); a capped idle (30 fps) changes nothing; one 600 ms hitch a few seconds never lowers it",
+              r["cpu"]["steps"] == 0 and r["capped"]["steps"] == 0 and r["hitch"]["steps"] == 0, [r["cpu"], r["capped"], r["hitch"]])
+        check("f. a very slow GPU (300 ms frames at 3x) still steps down (windows by time, not only by 30 frames); frames over 1 s twice in a row are frames, not a pause (1.5 s frames at 4K reach the floor)",
+              r["slowGpu"]["q"] <= -2 and r["slowGpu"]["dpr"] <= 2.2 and r["crawl"]["dpr"] == r["ranges"]["ultra4k"]["floor"] and r["crawl"]["steps"] >= 2, [r["slowGpu"], r["crawl"]])
+
+        check("f. compileQuietly: programs that turn ready resolve it (a program deleted meanwhile counts as done), one that never does gives up at maxMs (three's compileAsync polled for ever), no parallel-compile extension = at once",
+              r.get("cqOk") is True and r.get("cqMs", 9999) < 1000 and r.get("cqStuck") is False and 250 <= r.get("cqStuckMs", 0) < 1500 and r.get("cqNoExt") is True,
+              {k: r.get(k) for k in ("cqOk", "cqMs", "cqStuck", "cqStuckMs", "cqNoExt")})
+        check("f. compileQuietly on a software GL (SwiftShader): nothing compiled up front (the first frame compiles what it draws, as before), parallelCompile() false",
+              r.get("cqSoft") is True and r.get("cqSoftN") == 0 and r.get("pcSoft") is False, {k: r.get(k) for k in ("cqSoft", "cqSoftN", "pcSoft")})
+
+    rnd, hs, rs = (read(os.path.join(WEB, "olympus", f)) for f in ("render.js", "hero-stage.js", "render-scale.js"))
+    check("f. render.js: the governor sizes every core canvas (Ultra 4K = 3x), no MSAA over 2x, off screen = no frame per vsync, a quiet picture a second (IntersectionObserver; the app's loop keeps its clock at 10 Hz), the CSS box from a ResizeObserver, shaders compiled in the background",
+          all(k in rnd for k in ("from './render-scale.js'", "ultra: { dpr: 3,", "RQ.dpr(myRange())", "RQ.frame(ft", "hiDpr", "new IntersectionObserver", "offScreen()",
+                                 "new ResizeObserver", "compileQuietly(renderer, scene, camera, 8000)", "warm() {", "onScreen: !offScreen()", "function offTick()",
+                                 "const OFF_MS = 100, OFF_DRAW_MS = 1000;", "if (!quiet) { perf.work += work; RQ.frame(ft", "draw() { if (dead || asleep || lost) return false;",
+                                 "&& parallelCompile(renderer);", "cpu > avg * 0.7"))
+          and "canvas.clientWidth || canvas.width || 1" not in rnd and "if (off && tDraw && performance.now() - tDraw < OFF_DRAW_MS) return false;" in rnd)
+    check("f. hero-stage.js: the same governor, sleeps while hidden / covered (OLYMPUS.hidden), off screen one picture a second on a timer (no rAF spin, no governor sample), keeps the kit's idle frame cap, compiles in the background",
+          all(k in hs for k in ("from './render-scale.js'", "RQ.dpr(myRange())", "O.hidden", "O.frameGap", "compileQuietly(renderer, scene, camera, 8000)", "if (!off) RQ.frame(now", "!parallelCompile(renderer)",
+                                "offDue = true; schedule();")) and "draw about once a second" not in hs
+          and "renderer.compileAsync(" not in hs and "renderer.compileAsync(" not in rnd)
+    check("f. render-scale.js: no three.js, no DOM needed, one governor per page (window.OLYMPUS_RQ), ?rs= pins a ratio for screenshots",
+          not re.search(r"^\s*import\b", rs, re.M) and "document." not in rs and "OLYMPUS_RQ" in rs and "get('rs')" in rs)
+    sc = read(os.path.join(WEB, "settings", "settingscore.js"))
+    check("f. the Quality picker: Auto / Battery / High / Ultra 4K (+ Still) in the one 3D-quality key jfx (no new key)",
+          "['low', 'Battery'" in sc and "['high', 'High'" in sc and "['ultra', 'Ultra 4K'" in sc and "['off', 'Still'" in sc and "fx: 'jfx'" in sc and "olympus.quality" not in sc)
+    jv, ag, st = read(os.path.join(WEB, "jarvis", "index.html")), read(os.path.join(WEB, "olympus", "agora.css")), read(os.path.join(WEB, "settings", "settings.css"))
+    # AGORA's sky: html has no background of its own, so body's fixed sky is propagated to the root (one still layer, no repaint per scroll frame);
+    # body keeps it in its computed style (the apps' tests read body's background colour)
+    check("f. cheap paths: Jarvis' 2D stars stop behind the 3D sky; AGORA's sky is the root's background (html none, body's sky propagated: no full repaint per scroll frame); Settings' cards drop the live blur",
+          "const behind3d = () => root.dataset.bg3d === 'on'" in jv and 'html[data-theme="agora"] { background: none; }' in ag
+          and 'html[data-theme="agora"] body { background: transparent; }' not in ag and "ag-night) 62%) fixed, var(--ag-night);" in ag
+          and "backdrop-filter: blur(var(--oly-blur, 14px)) saturate(1.3)" not in st)
 
 
 # ------------------------------------------------------------------------------------------------ the browser
@@ -362,8 +527,107 @@ def test_switch_memory(br, origin):
     return {"alive": alive, "heap_growth_mb": grow}
 
 
+# ------------------------------------------------------------------------------------------------ g. perf v2 in Chromium (4K desktop + iPhone)
+K4 = {"viewport": {"width": 1920, "height": 1080}, "device_scale_factor": 2}
+PHONE = {"viewport": {"width": 390, "height": 844}, "device_scale_factor": 3, "is_mobile": True, "has_touch": True}
+# a small, cheap scene on the render core (the frames always keep full rate, even on software GL): what a canvas does when its budget allows
+SMALL = """async (o) => {
+  const { createRenderer } = await import('./render.js'), T = await import('../jarvis/three.module.min.js');
+  if (window.__lab && window.__lab.rc) { window.__lab.rc.dispose(); document.getElementById('lab').style.display = 'none'; }
+  const cv = document.createElement('canvas'); cv.id = 'small'; cv.style.cssText = 'position:absolute;left:0;top:0;width:160px;height:90px;inset:auto';
+  document.body.appendChild(cv);
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(50, 16 / 9, 0.1, 10); cam.position.z = 3;
+  scene.add(new T.Mesh(new T.BoxGeometry(1, 1, 1), new T.MeshStandardMaterial({ color: '#c8a24a', roughness: 0.4 })));
+  scene.add(new T.HemisphereLight('#fff', '#333', 2));
+  const rc = createRenderer({ canvas: cv, scene, camera: cam, maxDpr: 2, env: 'none' });
+  let frames = 0; const tick = () => { frames++; }; rc.start(tick);
+  window.__small = { rc, cv, tick, frames: () => frames };
+  await new Promise((r) => setTimeout(r, o.wait));
+  const s = rc.stats();
+  return { backing: [cv.width, cv.height], css: [cv.clientWidth, cv.clientHeight], dpr: s.dpr, range: s.range, q: s.quality, rq: s.rq, frames, compiled: s.compiled, samples: s.samples };
+}"""
+
+
+def idle_task_ms(p, cdp, ms=4000):
+    cdp.send("Performance.enable")
+    m = lambda: {x["name"]: x["value"] for x in cdp.send("Performance.getMetrics")["metrics"]}
+    a = m()
+    p.wait_for_timeout(ms)
+    b = m()
+    return round((b["TaskDuration"] - a["TaskDuration"]) * 1000.0 / max(0.001, b["Timestamp"] - a["Timestamp"]), 1)
+
+
+LONG = """(() => { window.__lt = []; try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__lt.push([Math.round(e.startTime), Math.round(e.duration)]); })
+  .observe({ type: 'longtask', buffered: true }); } catch (e) {} })();"""
+
+
+def test_perf_4k(br, origin):
+    # 1. Ultra 4K on a 4K screen: a canvas whose frames allow it renders at the full device pixel ratio from its first frames, and keeps it
+    ctx = br.new_context(service_workers="block", **K4)
+    ctx.add_init_script("try { localStorage.setItem('jfx', 'ultra'); } catch (e) {}")
+    p = ctx.new_page()
+    p.goto(origin + "/olympus/render-lab.html?still=1&gpu=1")
+    p.wait_for_function("window.__lab && window.__lab.rc", timeout=60000)
+    r = p.evaluate(SMALL, {"wait": 3500})
+    check("g. 4K (1920 x 1080 at 2x), Ultra 4K: a canvas whose frames allow it renders at the full pixel ratio (160 x 90 CSS -> 320 x 180), the range is 2x..2x, it drew",
+          r["backing"] == [320, 180] and r["dpr"] == 2 and r["range"]["ceil"] == 2 and r["range"]["budget"] == 2 and r["frames"] > 20 and r["compiled"] is True, r)
+    # 2. slow frames step it down one level at a time (the governor fed 40 ms frames), never more than one level per window, and back up on full-rate frames
+    r2 = p.evaluate("""async () => { const s = window.__small; s.rc.stop();
+      const a = OLYMPUS_RQ.simulate(new Array(40).fill(40)); s.rc.render(); await new Promise((r) => setTimeout(r, 50)); const b1 = [s.cv.width, s.cv.height];
+      const b = OLYMPUS_RQ.simulate(new Array(40).fill(40)); s.rc.render(); await new Promise((r) => setTimeout(r, 50)); const b2 = [s.cv.width, s.cv.height];
+      const c = OLYMPUS_RQ.simulate(new Array(400).fill(16.67)); s.rc.render(); await new Promise((r) => setTimeout(r, 50));
+      return { a: a.q, b: b.q, c: c.q, b1, b2, back: [s.cv.width, s.cv.height], downs: c.downs, ups: c.ups }; }""")
+    check("g. 4K: slow frames step the canvas down ONE level per window (2x -> 1.68x -> 1.41x: 320 -> 268 -> 225 px), full-rate frames bring it back to 2x",
+          r2["a"] == -1 and r2["b"] == -2 and r2["b1"][0] == 268 and r2["b2"][0] == 225 and r2["c"] == 0 and r2["back"] == [320, 180], r2)
+    # 3. off screen: the canvas scrolled out of view gets no frame per vsync (IntersectionObserver): a quiet picture about once a second, while
+    #    the app's loop keeps its clock at 10 Hz; back on screen it draws every frame again. Draws = the core's own count (stats().draws)
+    r3 = p.evaluate("""async () => { const s = window.__small, draws = () => s.rc.stats().draws; s.rc.start(s.tick);
+      const sp = document.createElement('div'); sp.style.cssText = 'position:absolute;left:0;top:0;width:10px;height:6000px'; document.body.appendChild(sp);
+      for (const el of [document.documentElement, document.body]) { el.style.height = 'auto'; el.style.overflow = 'visible'; }   // the lab page itself never scrolls
+      await new Promise((r) => setTimeout(r, 600)); window.scrollTo(0, 4000); await new Promise((r) => setTimeout(r, 900));
+      const down = window.scrollY, d0 = draws(), f0 = s.frames(); await new Promise((r) => setTimeout(r, 1500));
+      const d1 = draws(), calls = s.frames() - f0, off = s.rc.stats().onScreen;
+      window.scrollTo(0, 0); await new Promise((r) => setTimeout(r, 1200)); const d2 = draws();
+      return { down, d0, d1, d2, calls, off }; }""")
+    check("g. a canvas scrolled off screen gets no frame per vsync: at most 2 quiet pictures in 1.5 s (one a second, onScreen false) while its app's loop keeps time at ~10 Hz; scrolled back, it draws every frame again",
+          r3["down"] >= 3000 and r3["d1"] - r3["d0"] <= 2 and 5 <= r3["calls"] <= 20 and r3["off"] is False and r3["d2"] - r3["d1"] >= 5, r3)
+    ctx.close()
+
+    # 4. the iPhone (3x), Auto: the same canvas climbs from its 2x budget to the full 3x while frames keep full rate (the governor fed 60 fps)
+    ctx = br.new_context(service_workers="block", **PHONE)
+    p = ctx.new_page()
+    p.goto(origin + "/olympus/render-lab.html?still=1&gpu=1")
+    p.wait_for_function("window.__lab && window.__lab.rc", timeout=60000)
+    r4 = p.evaluate(SMALL, {"wait": 1500})
+    r5 = p.evaluate("""async () => { const s = window.__small; s.rc.stop(); OLYMPUS_RQ.reset(true);
+      const st = OLYMPUS_RQ.simulate(new Array(700).fill(16.67)); s.rc.render(); await new Promise((r) => setTimeout(r, 50));
+      return { q: st.q, ups: st.ups, backing: [s.cv.width, s.cv.height], range: s.rc.stats().range }; }""")
+    check("g. iPhone (3x), Auto: the budget is 2x (320 x 180 at first), and full-rate frames climb it to the full 3x (480 x 270), one level per 2.5 s",
+          r4["range"] == {"floor": 1, "budget": 2, "ceil": 3} and r4["backing"][0] in (320, 268, 225) and r5["backing"] == [480, 270] and r5["ups"] == 3, [r4, r5])
+    ctx.close()
+
+    # 5. the main pages idle at ~0 CPU and run no long task over 200 ms after load (4K profile)
+    rows = {}
+    for name, path in (("gate", "/gate/"), ("hub", "/hub/?h=today&"), ("settings", "/settings/"), ("root", "/")):
+        ctx = br.new_context(service_workers="block", **K4)
+        ctx.add_init_script(LONG)
+        p = ctx.new_page()
+        cdp = ctx.new_cdp_session(p)
+        p.goto(origin + path + ("" if path.endswith("&") else "?") + "welcome=0&intro=0", wait_until="load", timeout=60000)
+        load = p.evaluate("performance.getEntriesByType('navigation')[0].loadEventEnd")
+        p.wait_for_timeout(9000)                                   # past the Settings preview's 8 s of motion after the start
+        idle = idle_task_ms(p, cdp, 4000)
+        lt = p.evaluate("window.__lt")
+        rows[name] = {"idle_ms_s": idle, "lt_after": max([d for s, d in lt if s >= load + 1000] or [0]), "lt": lt[-6:]}
+        ctx.close()
+    check("g. 4K: the home, a hub, Settings and the root dashboard idle at ~0 CPU (main thread busy < 25 ms per second while nobody touches them)",
+          all(r["idle_ms_s"] < 25 for r in rows.values()), rows)
+    check("g. 4K: no long task over 200 ms after load on the home, a hub, Settings and the root dashboard", all(r["lt_after"] <= 200 for r in rows.values()), rows)
+
+
 def main():
     test_static()
+    test_perf_static()
     if "--static" in sys.argv:
         return
     from playwright.sync_api import sync_playwright
@@ -379,7 +643,7 @@ def main():
                                  "--autoplay-policy=user-gesture-required"])
         for name, fn in (("lite", lambda: test_auto_lite(br, origin)), ("lazy", lambda: test_lazy_hd(br, origin)),
                          ("ctx", lambda: test_context_loss(br, origin, shots)), ("audio", lambda: test_audio(br, origin)),
-                         ("switch", lambda: print(test_switch_memory(br, origin)))):
+                         ("switch", lambda: print(test_switch_memory(br, origin))), ("perf", lambda: test_perf_4k(br, origin))):
             if only and name not in only:
                 continue
             try:

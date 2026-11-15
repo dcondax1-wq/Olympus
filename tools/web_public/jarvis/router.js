@@ -77,6 +77,11 @@ export const INTENTS = [
   { id: 'household_subs', group: 'money', g: [W('subscription|subscriptions|recurring|recurring charges|memberships|monthly bills|my bills'), W('what|which|have|list|how much|my|all|cost|pay|show|any')], need: 2, not: W('cancel the bot|kalshi'), prio: 5 },
   { id: 'household_runway', group: 'money', g: [W('how long can i live|how long can i last|how long will my savings|how long will my money last|how long would my savings|savings runway|runway on savings|months of savings|live on my savings|live off my savings|how many months can i|emergency fund last|without income|without a paycheck')], prio: 6 },
   { id: 'household_networth', group: 'money', g: [W('net worth|networth|total worth|how much am i worth|everything i own|all my money together')], prio: 5 },
+  // --- your health (the Apple Watch days: me/health.json, tools/me_health.py; the Me hub, the PC's private link only)
+  { id: 'health_sleep', group: 'health', g: [W('how did i sleep|how well did i sleep|how much did i sleep|how long did i sleep|how was my sleep|my sleep|sleep last night|last nights sleep|did i sleep|hours of sleep|how much sleep|slept')], not: W('mode|screen|timer|kalshi|bot|bots'), prio: 6 },
+  { id: 'health_steps', group: 'health', g: [W('steps|step count|walked|walking'), W('this week|week|today|so far|how many|count|daily|average|yesterday|did i|have i|total')], need: 2,
+    not: W('next step|next steps|the steps|steps to|step by step|first step|start|setup|set up|install|connect|shortcut|bot|bots|trade|eval|guide|how do i'), prio: 6 },
+  { id: 'health_recovered', group: 'health', g: [W('am i recovered|recovered|recovery|am i rested|ready to train|work out today|workout today|train today|hrv|heart rate variability|resting heart rate|resting hr|readiness|how is my body')], not: W('kalshi|bot|bots|trade|trades|eval|drawdown|account|password|data|file|files'), prio: 6 },
   { id: 'weekday_worst', group: 'stats', g: [W('worst|weakest|bad|losing|lose|losses|least profitable|poorest|terrible'), W('weekday|day of the week|day|days|monday|tuesday|wednesday|thursday|friday')], need: 2, not: W('hour|time of day|deal'), prio: 3 },
   { id: 'weekday_best', group: 'stats', g: [W('best|strongest|good|winning|win|most profitable|top|greatest|luckiest'), W('weekday|day of the week|day|days|monday|tuesday|wednesday|thursday|friday')], need: 2, not: W('hour|time of day|deal|next step|thing to do'), prio: 3 },
   { id: 'win_rate', group: 'stats', g: [W('win rate|winrate|win percentage|hit rate|percent of trades|how often do i win|how many do i win|profit factor|expectancy|average r|avg r|average trade'), W('trade|trades|win|rate|my|factor|expectancy|average|often')], need: 1, prio: 2 },
@@ -319,8 +324,8 @@ export default route;
 // ------------------------------------------------------------------------------------------------ what Jarvis can do (the help skill)
 // One label and three example phrases per intent. helpTable() groups them from INTENTS' own `group`, so the help can only list intents
 // that exist; the tests route every example back to its intent and fail when an intent has no entry (it can never drift).
-export const GROUP_NAMES = { risk: 'Risk and drawdown', money: 'Money', stats: 'My trades', calendar: 'Calendar', rules: 'Rules', plan: 'What to do', action: 'Do things', memory: 'Memory', kalshi: 'Kalshi', system: 'System', life: 'Journal', meta: 'Help' };
-export const GROUP_ORDER = ['risk', 'money', 'stats', 'calendar', 'rules', 'plan', 'kalshi', 'action', 'memory', 'system', 'life', 'meta'];
+export const GROUP_NAMES = { risk: 'Risk and drawdown', money: 'Money', stats: 'My trades', calendar: 'Calendar', rules: 'Rules', plan: 'What to do', action: 'Do things', memory: 'Memory', kalshi: 'Kalshi', system: 'System', health: 'Health', life: 'Journal', meta: 'Help' };
+export const GROUP_ORDER = ['risk', 'money', 'stats', 'calendar', 'rules', 'plan', 'kalshi', 'action', 'memory', 'system', 'health', 'life', 'meta'];
 export const INFO = {
   drawdown_left: { label: 'Drawdown left', ex: ['how much drawdown do I have left', 'how much can I still lose', 'whats my max loss buffer'] },
   daily_loss_left: { label: 'Daily loss left', ex: ['how much daily loss do I have left', 'whats my dll', 'how close am I to the daily limit'] },
@@ -332,6 +337,9 @@ export const INFO = {
   household_subs: { label: 'Subscriptions (bank)', ex: ['what subscriptions do I have', 'list my recurring charges', 'how much are my subscriptions'] },
   household_runway: { label: 'How long savings last', ex: ['how long can I live on my savings', 'how long will my savings last', 'how many months can I last without income'] },
   household_networth: { label: 'Net worth', ex: ['whats my net worth', 'how much am I worth', 'what is my net worth now'] },
+  health_sleep: { label: 'Sleep (Apple Watch)', ex: ['how did I sleep', 'how much did I sleep last night', 'how was my sleep this week'] },
+  health_steps: { label: 'Steps (Apple Watch)', ex: ['how many steps this week', 'steps today', 'how many steps did I walk'] },
+  health_recovered: { label: 'Recovered? (Apple Watch)', ex: ['am I recovered', 'should I work out today', 'how is my resting heart rate'] },
   weekday_worst: { label: 'Worst weekday', ex: ['what is my worst weekday', 'which day of the week do I lose the most', 'my worst day'] },
   weekday_best: { label: 'Best weekday', ex: ['what is my best weekday', 'which day of the week do I win the most', 'best day for me'] },
   win_rate: { label: 'Win rate and profit factor', ex: ['whats my win rate', 'what is my profit factor', 'how often do I win'] },

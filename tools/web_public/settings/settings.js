@@ -1,7 +1,7 @@
 // OLYMPUS SETTINGS page (ES module): the controls over this phone's Olympus keys (settingscore.js has the rules), the storage manager,
 // the health shortcuts and the first-run tour. Text only through textContent; no network at all (a settings page must work offline);
 // keys and tokens are never read for display, exported, imported or cleared. window.SETTINGS is the test hook.
-import * as C from './settingscore.js';
+import * as C from './settingscore.js?v=s4';
 
 const O = window.OLYMPUS || null, T = window.OLYMPUS_THEMES || null;
 const $ = (id) => document.getElementById(id);
@@ -61,11 +61,22 @@ function radios(host, items, current, onPick) {
 const preview = (() => {
   const cv = $('fxCanvas'), g = cv.getContext && cv.getContext('2d');
   const N = { ultra: 90, high: 56, low: 22, off: 0 };
-  let raf = 0, t0 = 0, last = 0;
+  let raf = 0, t0 = 0, last = 0, k = 1, cssW = 300, cssH = 96, rgb = '183, 155, 255';
   const dots = Array.from({ length: 90 }, (_, i) => ({ a: (i * 2.399963) % 6.2832, r: 0.15 + ((i * 37) % 100) / 130, s: 0.3 + ((i * 53) % 100) / 160, z: 0.4 + ((i * 29) % 100) / 100 }));
+  // perf v2: the backing store follows the CSS box x the screen's pixel ratio (it was 300 x 96 stretched: blurry on a 3x phone and at 4K),
+  // measured on a resize only; the accent colour is read once per repaint request, not with a style read every frame
+  function fit() {
+    const b = cv.getBoundingClientRect(); if (!b.width || !b.height) return;
+    cssW = b.width; cssH = b.height; k = Math.min(3, window.devicePixelRatio || 1);
+    const W = Math.round(cssW * k), H = Math.round(cssH * k);
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    rgb = getComputedStyle(root).getPropertyValue('--oly-accent-rgb').trim() || '183, 155, 255';
+  }
+  if (typeof ResizeObserver === 'function') new ResizeObserver(() => { fit(); draw((performance.now() - (t0 || performance.now())) / 1000); }).observe(cv);
   function draw(t) {
     if (!g) return;
-    const lv = fxNow(), n = N[lv] == null ? N.high : N[lv], w = cv.width, hgt = cv.height, rgb = getComputedStyle(root).getPropertyValue('--oly-accent-rgb').trim() || '183, 155, 255';
+    const lv = fxNow(), n = N[lv] == null ? N.high : N[lv], w = cssW, hgt = cssH;
+    g.setTransform(k, 0, 0, k, 0, 0);
     g.clearRect(0, 0, w, hgt);
     if (lv === 'ultra' || lv === 'high') { const gr = g.createRadialGradient(w / 2, hgt / 2, 4, w / 2, hgt / 2, w / 2.2); gr.addColorStop(0, 'rgba(' + rgb + ',.35)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)'); g.fillStyle = gr; g.fillRect(0, 0, w, hgt); }
     g.fillStyle = 'rgba(' + rgb + ',.9)';
@@ -77,18 +88,26 @@ const preview = (() => {
     }
     g.globalAlpha = 1;
     if (lv === 'off') { g.fillStyle = 'rgba(255,255,255,.55)'; g.font = '600 12px sans-serif'; g.textAlign = 'center'; g.fillText('Still: nothing moves', w / 2, hgt / 2 + 4); }
-    $('fxTag').textContent = (lv === 'low' ? 'LITE' : lv === 'off' ? 'STILL' : lv.toUpperCase()) + ' · ' + n + ' motes';
+    const tag = (lv === 'low' ? 'BATTERY · LITE' : lv === 'off' ? 'STILL' : lv === 'ultra' ? 'ULTRA 4K' : lv.toUpperCase()) + ' · ' + n + ' motes';
+    if ($('fxTag').textContent !== tag) $('fxTag').textContent = tag;      // perf v2: a DOM write only when it changes (it ran 30 times a second)
   }
+  // perf v2 (2026-11-14): the preview moves only while it is on screen and someone is using the page (a touch, a key, a scroll, or the first
+  // 8 s after a change); then it holds a still frame (0 draws, the page idles at ~0 CPU) and wakes on the next touch.
+  let onScreen = true, wakeTo = performance.now() + 8000;
+  const active = (now) => now < wakeTo || !(O && O.idle && O.idle());
   function frame(now) {
     raf = 0;
-    if (document.hidden || $('p-look').hidden) return;
+    if (document.hidden || $('p-look').hidden || !onScreen) return;
     const lv = fxNow(), gap = lv === 'low' ? 66 : 33;
     if (!t0) t0 = now;
     if (now - last >= gap) { last = now; draw((now - t0) / 1000); }
-    if (lv !== 'off' && !mq('(prefers-reduced-motion: reduce)')) raf = requestAnimationFrame(frame);
+    if (lv !== 'off' && !mq('(prefers-reduced-motion: reduce)') && active(now)) raf = requestAnimationFrame(frame);
   }
-  function sync() { draw((performance.now() - (t0 || performance.now())) / 1000); if (!raf && !$('p-look').hidden) raf = requestAnimationFrame(frame); }
+  function sync() { wakeTo = Math.max(wakeTo, performance.now() + 8000); fit(); draw((performance.now() - (t0 || performance.now())) / 1000); if (!raf && !$('p-look').hidden && onScreen) raf = requestAnimationFrame(frame); }
   document.addEventListener('visibilitychange', sync);
+  const wake = () => { if (!raf && !document.hidden && onScreen && !$('p-look').hidden) { wakeTo = Math.max(wakeTo, performance.now() + 4000); raf = requestAnimationFrame(frame); } };
+  ['pointerdown', 'keydown', 'wheel', 'scroll', 'touchstart'].forEach((e) => window.addEventListener(e, wake, { passive: true, capture: true }));
+  if (typeof IntersectionObserver === 'function') new IntersectionObserver((es) => { onScreen = es[es.length - 1].isIntersecting; if (onScreen) wake(); }).observe(cv);
   return { sync, draw };
 })();
 
@@ -103,7 +122,7 @@ function renderLook() {
   const cur = C.fxGet(LS), level = fxNow();
   radios($('fxSeg'), [['auto', 'Auto']].concat(C.FX_LEVELS.map((l) => [l[0], l[1], l[2]])), cur || 'auto', setFx);
   const d = C.FX_LEVELS.find((l) => l[0] === level);
-  $('fxNote').textContent = (cur ? '' : 'Auto picks High (LITE if your phone asks for less motion). ') + (d ? d[2] + '.' : '');
+  $('fxNote').textContent = (cur ? '' : 'Auto picks High and sharpens to your screen\'s full resolution while it stays smooth (Battery if your phone asks for less motion). ') + (d ? d[2] + '.' : '');
   paintLite(); preview.sync(); renderWhy(level, cur); renderRead();
   // themes
   const list = T && T.list ? T.list() : [], now = T && T.id ? (T.id() || 'agora') : 'olympus', host = $('themes');

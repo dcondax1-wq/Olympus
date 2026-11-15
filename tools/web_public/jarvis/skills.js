@@ -56,6 +56,11 @@ export function createSkills(opts) {
   const hh = (S) => (isObj(S.household) && S.household.kind === 'olympus-household' && S.household.status === 'ok' ? S.household : null);
   const HH_MISSING = () => MISSING('your bank money', 'money/household.json (your bank exports, on the PC\'s private link)');
   const household = (S, now, lines, id) => withSrc(S, ['household'], now, lines.concat(['From your own bank exports; no account numbers.']), { intent: id, open: undefined });
+  // your health: me/health.json (tools/me_health.py: the Apple Watch Shortcut + the Health export; the Me hub, the PC's private link only).
+  // The lines are made on the PC (health.json "jarvis"): read as they are, with the source and its age, never filled in.
+  const hj = (S) => (isObj(S.health) && S.health.kind === 'olympus-health' && S.health.status === 'ok' ? S.health : null);
+  const HJ_MISSING = () => MISSING('your Apple Watch days', 'me/health.json (the Shortcut "Health to PC", on the PC\'s private link)');
+  const healthLine = (S, now, key, id) => { const H = hj(S); if (!H) return HJ_MISSING(); return withSrc(S, ['health'], now, [str(isObj(H.jarvis) ? H.jarvis[key] : '', 400) || 'I have no number for that yet.'], { intent: id, open: undefined }); };
   const HH_CATS = [[/\b(food|groceries|grocery|eating out|restaurants?|takeout|take out|delivery|doordash)\b/, 'food'], [/\b(gas|fuel)\b/, 'gas'], [/\brent\b/, 'rent'],
     [/\bsubscriptions?\b/, 'subscriptions'], [/\bshopping\b/, 'shopping'], [/\b(bills|utilities|phone|internet)\b/, 'utilities'], [/\b(car|rides|uber)\b/, 'transport'],
     [/\b(health|gym)\b/, 'health'], [/\bbank fees\b/, 'bank_fees'], [/\b(atm|cash)\b/, 'cash']];
@@ -239,6 +244,9 @@ export function createSkills(opts) {
       const H = hh(S); if (!H) return HH_MISSING();
       return household(S, now, [str(isObj(H.jarvis) ? H.jarvis.networth : '', 300) || 'No balances entered yet.'], 'household_networth');
     },
+    health_sleep(S, now) { return healthLine(S, now, 'sleep', 'health_sleep'); },
+    health_steps(S, now) { return healthLine(S, now, 'steps_week', 'health_steps'); },
+    health_recovered(S, now) { return healthLine(S, now, 'recovered', 'health_recovered'); },
     feeds(S, now) {
       const f = J.feedHealth(S, now), bad = f.filter((x) => x.missing || x.stale);
       const age = (x) => (x.missing ? 'missing' : x.ageH == null ? 'age unknown' : x.ageH < 1.5 ? 'fresh' : x.ageH < 48 ? Math.round(x.ageH) + ' h old' : Math.round(x.ageH / 24) + ' days old');

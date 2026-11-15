@@ -3,8 +3,10 @@
  *   does not load. Bots on / quiet / old numbers with the exact age, then the facts, each a tap to its app: drawdown left per account (Aegis), today's $ (NQ),
  *   the next trade window (Kairos), the Kalshi bot (kalshi.json -> Kalshi), my shift / next on the plan (the Planner's summary on this phone -> Planner).
  *   Older than 6 h: one button "Bring the bots back".
- * - The nine hubs (olympus/gate-catalog.js HUBS): static links in the page (they work without this script); this script adds each hub's live line
+ * - The hubs (olympus/gate-catalog.js HUBS): static links in the page (they work without this script); this script adds each hub's live line
  *   (olympus/hub-status.js) and its app count. Then the search (name, purpose, plain words) and Recent (last 4 apps opened, this phone only).
+ *   Me (2026-11-14, docs/ME_HUB.md): its line reads the PC's private me/me.json (a 404 on any other copy: then the plain line stays);
+ *   the search also finds it by its words (C.findHubs: health, wifi, cards ...).
  * - Old links: gate/?d=<v1 district or hub> opens that hub page (trading -> Bots & Evals, money -> My Money, life -> Plan & Day, worlds, workshop).
  * - GATE_BASE ('' at the site root as olympus-live.html, '../' at gate/) prefixes every link. Apps missing from a partial copy are marked "not in this link".
  * - Served from the PC (/site/, the private Tailscale link, docs/LIVE_DASHBOARD.md): "Right now" reads the bot's own /api/site/live.json
@@ -101,8 +103,14 @@
   function drawResults() {
     var box = $('results'), q = ($('q').value || '').replace(/^\s+|\s+$/g, ''); clear(box);
     if (!q || !C) return;
-    var hits = C.find(q, 8);
-    if (!hits.length) { box.appendChild(el('p', 'g-empty', 'Nothing found for "' + q + '". Try a plain word like money, risk or news.')); return; }
+    var hits = C.find(q, 8), hubs = C.findHubs ? C.findHubs(q) : [];
+    if (!hits.length && !hubs.length) { box.appendChild(el('p', 'g-empty', 'Nothing found for "' + q + '". Try a plain word like money, risk or news.')); return; }
+    hubs.forEach(function (h) {   // a page hub (Me) has no app of its own: "health", "wifi", "cards" find the hub itself
+      var r = el('a', 'g-row'); r.href = base + 'hub/index.html?h=' + h.id; r.setAttribute('data-hub', h.id);
+      var t = el('span', 'g-txt'), ic = el('span', 'g-ico', h.name.charAt(0)); ic.setAttribute('aria-hidden', 'true');
+      t.appendChild(el('b', '', h.name)); t.appendChild(el('small', '', h.line)); t.appendChild(el('span', 'g-where', 'a hub'));
+      r.appendChild(ic); r.appendChild(t); r.appendChild(chevron()); box.appendChild(r);
+    });
     hits.forEach(function (a) { box.appendChild(row(a)); });
   }
 
@@ -205,7 +213,7 @@
     var W = N.win || nextWindow({}, nowS());
     fact(dl, 'Trade window', W.open ? 'Open now' : W.label.replace(/ 02:00-15:30 ET$/, ' 02:00 ET'), W.open ? 'until 15:30 ET' : inWords(W.inS), '', 'kairos/index.html', 'kairos');
     drawExtra(dl);
-    dl.hidden = false;
+    dl.hidden = false; dl.removeAttribute('aria-hidden');
     btn.hidden = !(st[0] === 'stale');
     if (from === 'none') foot.textContent = 'This copy of the site has no live numbers. Bots & Evals shows the full status where it can.';
     else if (from === 'cache') foot.textContent = 'Saved on this phone ' + ageWords(nowS() - (N.saved || nowS())) + ' ago.';
@@ -243,9 +251,10 @@
   function loadExtra(then) {
     var HS = w.OLYMPUS_HUB_STATUS;
     if (!HS) { then(); return; }
-    var got = { k: null, sb: null, cards: {} }, left = 4;
-    var one = function () { left--; if (left > 0) return; var t = nowS(); S.extra = { K: HS.kalshiOf(got.k, t), M: HS.moneyOf(got.sb), P: HS.planOf(lsGet(LS_PLAN), t), cards: got.cards }; then(); };
+    var got = { k: null, sb: null, me: null, cards: {} }, left = 5;
+    var one = function () { left--; if (left > 0) return; var t = nowS(); S.extra = { K: HS.kalshiOf(got.k, t), M: HS.moneyOf(got.sb), P: HS.planOf(lsGet(LS_PLAN), t), ME: HS.meOf ? HS.meOf(got.me, t) : null, cards: got.cards }; then(); };
     getJSON(base + 'kalshi.json').then(function (j) { got.k = j; one(); });
+    getJSON(base + 'me/me.json').then(function (j) { got.me = j; one(); });   // the Me hub's tiles: only the PC's own link serves it (a 404 elsewhere)
     getJSON(base + 'money/scoreboard.json').then(function (j) { got.sb = j; one(); });
     getJSON(base + 'hephaestus/jarvis.json').then(function (j) { got.cards.hephaestus = j; one(); });
     getJSON(base + 'plutus/jarvis.json').then(function (j) { got.cards.plutus = j; one(); });
@@ -416,10 +425,10 @@
     var tiles = d.querySelectorAll('.g-hub[data-hub]');
     for (var i = 0; i < tiles.length; i++) {
       var t = tiles[i], hid = t.getAttribute('data-hub'), H = C && C.hub ? C.hub(hid) : null;
-      var cnt = t.querySelector('.g-hcount'); if (cnt && H) cnt.textContent = plural(H.count, 'app');
+      var cnt = t.querySelector('.g-hcount'); if (cnt && H) cnt.textContent = H.size || plural(H.count, 'app');
       if (!HS || !live) continue;
       var M = N ? N : null; if (M && !M.win) M.win = nextWindow({}, nowS());
-      var L = HS.hubLine(hid, { N: M, K: X.K, M: X.M, P: X.P, cards: X.cards || {}, theme: HS.themeName() });
+      var L = HS.hubLine(hid, { N: M, K: X.K, M: X.M, P: X.P, ME: X.ME, cards: X.cards || {}, theme: HS.themeName() });
       var line = t.querySelector('.g-hline');
       if (line && L && L.text) { line.textContent = L.text; line.className = 'g-hline' + (L.lvl ? ' ' + L.lvl : ''); }
       S.hubs[hid] = L ? L.text : '';
@@ -440,7 +449,7 @@
       $('q').addEventListener('keydown', function (e) {
         if (e.key !== 'Enter') return;
         var first = $('results').querySelector('a.g-row'); if (!first) return;
-        e.preventDefault(); remember(first.getAttribute('data-app')); w.location.href = first.href;
+        e.preventDefault(); if (first.getAttribute('data-app')) remember(first.getAttribute('data-app')); w.location.href = first.href;
       });
       if (Q.q) { $('q').value = Q.q; drawResults(); }
       drawRecent();

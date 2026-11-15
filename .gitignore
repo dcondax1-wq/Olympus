@@ -213,3 +213,6 @@ calendars.json
 *.pfx
 id_rsa*
 id_ed25519*
+# the Me hub (tools/me_hub.py, docs/ME_HUB.md): money, cards, health, home and dates for the phone are PRIVATE (served only by the PC's own link);
+# the typed inputs (cards, car, dates, device names) live outside the repo in %USERPROFILE%\.olympus\me\
+data/me/

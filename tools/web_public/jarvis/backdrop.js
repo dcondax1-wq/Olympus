@@ -173,7 +173,8 @@ async function mount() {
   probe.addEventListener('webglcontextlost', (e) => { e.preventDefault(); delete root.dataset.bg3d; state.state = 'lost'; if (raf) cancelAnimationFrame(raf); raf = 0; });
   state.quality = rc.quality(); state.passes = rc.stats().passes; state.stats = () => rc.stats();
   kick();
-  import('./home3d.js').then((m) => { m.attach(ext); state.extra = 'on'; kick(); }).catch((e) => { state.extra = 'off'; state.extError = String((e && e.stack) || e); });
+  // the living home's objects compile in the background (perf v2: rc.warm()) instead of holding the home on their first frame
+  import('./home3d.js').then((m) => { m.attach(ext); if (rc.warm) rc.warm(); state.extra = 'on'; kick(); }).catch((e) => { state.extra = 'off'; state.extError = String((e && e.stack) || e); });
 }
 
 // once Jarvis has booted (the boot log or the OLYMPUS intro gone) and the page is idle: compiling the shaders and the

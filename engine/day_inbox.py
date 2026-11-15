@@ -9,7 +9,8 @@ and this ONLY appends one line to data/inbox/<kind>.jsonl (gitignored; LE_INBOX_
 data/day/inbox.json that the Planner reads at /site/day/inbox.json (it adds each item to your plan once). Nothing else: it never
 starts, stops, arms, sizes or routes a bot, never touches a setting, never reads or sends a secret, never calls out. Shared shape
 with the money inbox (team X1): POST /inbox/{kind}; a kind is one entry of KINDS (register() adds one, e.g. "money"), every kind
-writes only its own file.
+writes only its own file. Built in: "day" (above) and "health" (team ME1, docs/ME_HUB.md: the iPhone Shortcut "Health to PC" posts
+one evening summary of Apple Health; validate_health is strict: known fields, numbers in human ranges, a date in the last 10 days).
 
 Safety: the read-only guard of engine/live_site.py lets a proxied POST through ONLY for /inbox/<a registered kind>, and only once
 install() ran; a Tailscale Funnel (internet) request is still refused; the route takes a post only from the PC itself or through the
@@ -83,14 +84,187 @@ def validate_day(body, now_s: float) -> tuple[dict | None, str]:
     return {"type": typ, "text": text, "due": due}, ""
 
 
-KINDS = {"day": validate_day}
+# ------------------------------------------------------------------------------------------------ the "health" kind (team ME1, 2026-11-14)
+# The iPhone Shortcut "Health to PC" (docs/ME_HUB.md, no app to install) posts one evening summary of Apple Health:
+#   POST /inbox/health   header X-Olympus-Inbox: 1
+#   {"date": "2026-11-14", "steps": 8432, "active_kcal": 512, "exercise_min": 34, "stand_h": 11, "rhr": 58, "hrv_ms": 46,
+#    "sleep_h": 7.2, "weight_lb": 182.4, "workouts": "Running 32 min; Walking 45 min"}
+# STRICT: a JSON object only; known fields only (any letter case, a few plain aliases); every value a number in a human range, or empty
+# (= not sent); the date within the last 10 days (empty = today, New York); at least one number. tools/me_health.py turns the lines of
+# data/inbox/health.jsonl into the Me hub's me/health.json. Nothing here reads, sends or changes anything else.
+HEALTH_FIELDS = {   # field: (lowest, highest, decimals kept)
+    "steps": (0, 150000, 0), "active_kcal": (0, 15000, 0), "exercise_min": (0, 1440, 0), "stand_h": (0, 24, 0),
+    "rhr": (25, 220, 1), "hrv_ms": (1, 400, 1), "sleep_h": (0, 24, 2), "sleep_deep_h": (0, 24, 2), "sleep_rem_h": (0, 24, 2),
+    "weight_lb": (40, 1000, 1),
+}
+HEALTH_ALIASES = {"active_energy": "active_kcal", "move": "active_kcal", "move_kcal": "active_kcal", "exercise": "exercise_min",
+                  "stand": "stand_h", "stand_hours": "stand_h", "resting_hr": "rhr", "resting_heart_rate": "rhr", "hrv": "hrv_ms",
+                  "sleep": "sleep_h", "weight": "weight_lb"}
+HEALTH_CONVERT = {"sleep_min": ("sleep_h", 1 / 60.0), "sleep_s": ("sleep_h", 1 / 3600.0), "weight_kg": ("weight_lb", 2.20462), "active_kj": ("active_kcal", 0.239006)}
+# a unit mix-up is refused, not stored: a night in seconds or minutes is either 0 (no sleep sent) or at least 10 minutes long
+HEALTH_UNIT_FLOOR = {"sleep_s": 600, "sleep_min": 10}
+WORKOUT_KEYS = {"type": None, "min": (0, 1440), "kcal": (0, 5000), "km": (0, 500), "mi": (0, 320)}
+NUM_RX = re.compile(r"^-?(\d{1,3}(,\d{3})+|\d+)(\.\d+)?$")
+DECIMAL_COMMA_RX = re.compile(r"^\d+,\d{1,2}$")
+CLOCK_RX = re.compile(r"^(\d{1,2}):([0-5]\d)(:([0-5]\d))?$")
 
 
-def register(kind: str, validate) -> None:
-    """another inbox (team X1's "money"): validate(body, now_s) -> (record, why). It gets its own file data/inbox/<kind>.jsonl."""
+def _hnum(key: str, v):
+    """-> (number or None when empty, why). A number, or a string the Shortcuts app made of one: "8432", "8,432", "7.25", "7,25",
+    and for the sleep fields a clock-style duration "7:12" / "7:12:30" (hours). Anything else is refused, never guessed."""
+    if v is None:
+        return None, ""
+    if isinstance(v, bool):
+        return None, f"{key}: true / false is not a number"
+    if isinstance(v, (int, float)):
+        x = float(v)
+    elif isinstance(v, str):
+        s = v.strip()
+        if s == "":
+            return None, ""
+        m = CLOCK_RX.match(s)
+        if m and key.startswith("sleep"):
+            x = int(m.group(1)) + int(m.group(2)) / 60.0 + int(m.group(4) or 0) / 3600.0
+        elif DECIMAL_COMMA_RX.match(s):
+            x = float(s.replace(",", "."))
+        elif NUM_RX.match(s):
+            x = float(s.replace(",", ""))
+        else:
+            return None, f"{key}: '{_clean(s, 24)}' is not a number"
+    else:
+        return None, f"{key}: send a number"
+    if x != x or x in (float("inf"), float("-inf")):
+        return None, f"{key}: not a number"
+    return x, ""
+
+
+def _ranged(key: str, x: float, lo: float, hi: float, dec: int):
+    if x < lo or x > hi:
+        return None, f"{key}: {x:g} is outside {lo:g}-{hi:g}"
+    return (int(round(x)) if dec == 0 else round(x, dec)), ""
+
+
+def _workouts(v):
+    """the workouts: a short text ("Running 32 min; Walking 45 min") or a list of at most 12 {type, min, kcal, km | mi}"""
+    if isinstance(v, str):
+        t = _clean(v, 300)
+        return ({"workouts_text": t} if t else {}), ""
+    if not isinstance(v, list):
+        return None, "workouts: a text or a list"
+    if len(v) > 12:
+        return None, "workouts: 12 at most"
+    out = []
+    for w in v:
+        if not isinstance(w, dict):
+            return None, "workouts: each one is {\"type\", \"min\", \"kcal\", \"km\"}"
+        row = {}
+        for k0, val in w.items():
+            k = str(k0).strip().lower()
+            if k not in WORKOUT_KEYS:
+                return None, f"workouts: unknown field '{_clean(k, 16)}'"
+            if k == "type":
+                row["type"] = re.sub(r"[^A-Za-z /&+-]", "", _clean(val, 40)).strip() or "Workout"
+                continue
+            x, why = _hnum("workouts " + k, val)
+            if why:
+                return None, why
+            if x is None:
+                continue
+            lo, hi = WORKOUT_KEYS[k]
+            x, why = _ranged("workouts " + k, x, lo, hi, 1)
+            if why:
+                return None, why
+            if k == "mi":
+                row["km"] = round(x * 1.609344, 1)
+            else:
+                row[k] = x
+        out.append({"type": row.pop("type", "Workout"), **row})
+    return ({"workouts": out} if out else {}), ""
+
+
+def validate_health(body, now_s: float) -> tuple[dict | None, str]:
+    """the "health" kind: one day of Apple Health numbers from the Shortcut. -> (record, '') or (None, why)"""
+    if not isinstance(body, dict):
+        return None, "send a JSON object: {\"date\": \"2026-11-14\", \"steps\": 8432, ...} (docs/ME_HUB.md)"
+    rec, nums = {}, 0
+    for k0, v in body.items():
+        k = str(k0).strip().lower().replace(" ", "_").replace("-", "_")
+        k = HEALTH_ALIASES.get(k, k)
+        if k == "date":
+            s = str(v or "").strip()[:10]
+            if s == "":
+                continue
+            if not DAY_RX.match(s):
+                return None, "date: use yyyy-MM-dd (Format Date, Custom) or leave it out for today"
+            if not (_ny_day(now_s, -10) <= s <= _ny_day(now_s, 1)):
+                return None, f"date: {s} is not in the last 10 days"
+            rec["date"] = s
+            continue
+        if k == "workouts":
+            w, why = _workouts(v)
+            if w is None:
+                return None, why
+            rec.update(w)
+            continue
+        if k in HEALTH_CONVERT:
+            to, f = HEALTH_CONVERT[k]
+            x, why = _hnum(k, v)
+            if why:
+                return None, why
+            if x is None:
+                continue
+            if 0 < x < HEALTH_UNIT_FLOOR.get(k, 0):
+                return None, f"{k}: {x:g} is too short for a night (send {'seconds' if k == 'sleep_s' else 'minutes'}, or sleep_h in hours)"
+            k, v = to, x * f
+        if k not in HEALTH_FIELDS:
+            return None, f"unknown field '{_clean(k, 24)}': the fields are date, " + ", ".join(sorted(HEALTH_FIELDS)) + ", workouts"
+        x, why = _hnum(k, v)
+        if why:
+            return None, why
+        if x is None:
+            continue
+        lo, hi, dec = HEALTH_FIELDS[k]
+        x, why = _ranged(k, x, lo, hi, dec)
+        if why:
+            return None, why
+        if k in rec:
+            return None, f"{k} sent twice (under two names): send it once"
+        rec[k] = x
+        nums += 1
+    if not nums and not rec.get("workouts") and not rec.get("workouts_text"):
+        return None, "nothing to save: send at least one number (steps, active_kcal, exercise_min, sleep_h, rhr, hrv_ms ...)"
+    rec.setdefault("date", _ny_day(now_s))
+    return rec, ""
+
+
+def say_health(rec: dict) -> str:
+    """the Shortcut's notification: what the PC kept"""
+    bits = []
+    if rec.get("steps") is not None:
+        bits.append(f"{rec['steps']:,} steps")
+    if rec.get("sleep_h") is not None:
+        bits.append(f"slept {rec['sleep_h']:.1f} h")
+    if rec.get("exercise_min") is not None:
+        bits.append(f"{rec['exercise_min']} min exercise")
+    if rec.get("rhr") is not None:
+        bits.append(f"resting HR {rec['rhr']:g}")
+    n = len([k for k in rec if k in HEALTH_FIELDS])
+    head = ", ".join(bits[:3]) if bits else f"{n} numbers"
+    return f"Saved your health for {rec.get('date')}: {head}. The Me hub updates within 15 minutes."
+
+
+KINDS = {"day": validate_day, "health": validate_health}
+SAYS = {"health": say_health}
+
+
+def register(kind: str, validate, say=None) -> None:
+    """another inbox (team X1's "money"): validate(body, now_s) -> (record, why). It gets its own file data/inbox/<kind>.jsonl.
+    say(record) -> the reply line (optional)."""
     if not PATH_RX.match("/inbox/" + str(kind)):
         raise ValueError("a kind is 2-16 lowercase letters / digits")
     KINDS[kind] = validate
+    if say is not None:
+        SAYS[kind] = say
 
 
 def allowed(method: str, path: str) -> bool:
@@ -201,7 +375,11 @@ def accept(kind: str, raw: bytes, content_type: str = "", headers=None, now_s: f
         except OSError:
             pass
     what = rec.get("text") or ""
-    return 200, {"ok": True, "id": rid, "kind": kind, "said": (f"Added to your day: {what}" if kind == "day" else f"Saved in your {kind} inbox.")[:240]}
+    try:
+        said = SAYS[kind](rec) if kind in SAYS else (f"Added to your day: {what}" if kind == "day" else f"Saved in your {kind} inbox.")
+    except Exception:  # noqa: BLE001
+        said = f"Saved in your {kind} inbox."
+    return 200, {"ok": True, "id": rid, "kind": kind, "said": said[:240]}
 
 
 def install(app) -> dict:

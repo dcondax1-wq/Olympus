@@ -1143,8 +1143,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <div class="themes" id="themes"></div>
     <label hidden>Custom hue<input id="hue" type="range" min="0" max="359" step="1" value="275"></label>
     <h3>3D effects</h3>
-    <div class="seg3" id="fxSeg"><button type="button" data-fx="ultra">Ultra</button><button type="button" data-fx="high">High</button><button type="button" data-fx="low">Low</button><button type="button" data-fx="off">Off</button></div>
-    <p class="note" id="fxNote">High is the phone default. Low keeps the glass and stops the motion; Off is fully static.</p>
+    <div class="seg3" id="fxSeg"><button type="button" data-fx="ultra">Ultra 4K</button><button type="button" data-fx="high">High</button><button type="button" data-fx="low">Battery</button><button type="button" data-fx="off">Off</button></div>
+    <p class="note" id="fxNote">High is the phone default (sharper up to the full resolution of your screen while it stays smooth). Ultra 4K draws at full resolution; Battery keeps the glass and stops the motion; Off is fully static.</p>
     <h3>Core</h3>
     <div class="seg3" id="coreSeg"></div>
     <h3>Extras</h3>
@@ -2890,7 +2890,7 @@ function renderLook() {
     if (!available) $('#setOlySoundNote').textContent = 'Audio controls are unavailable. Reload when connected.';
     else if ($('#setOlySoundNote').textContent.startsWith('Audio controls are unavailable.')) $('#setOlySoundNote').textContent = sm === false ? 'Sound is Off: the test cue will be silent' : sm === true ? 'Sound is On: tap Play a test sound to check it' : 'Auto: app cues are quiet in LITE, reduced motion and battery saver. Jarvis preview may still play';
     $('#setOlySaver').checked = (() => { try { return localStorage.getItem('olympus.saver') === 'on'; } catch (_) { return false; } })(); });
-  $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default. Low keeps the glass and stops the motion; Off is fully static.';
+  $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default (sharper up to the full resolution of your screen while it stays smooth). Ultra 4K draws at full resolution; Battery keeps the glass and stops the motion; Off is fully static.';
 }
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
 $('#lookX').addEventListener('click', () => { $('#look').hidden = true; });
@@ -3052,9 +3052,12 @@ const fx = (() => {
       g.fillRect(s.x * w, s.y * h, s.r * dprS, s.r * dprS);
     }
   }
+  // perf v2 (2026-11-14): the 3D backdrop hides this canvas (html[data-bg3d=on]); it then draws nothing and gives its backing store back
+  // (3840 x 2160 on a 4K screen: 33 MB redrawn 30 times a second behind the 3D sky). The loop comes back when the 3D backdrop goes (lost / off).
+  const behind3d = () => root.dataset.bg3d === 'on' || !starC.getClientRects().length;
   function frame(t) {
     raf = 0;
-    if (active !== 'home' || !visible() || level() === 'off') return;
+    if (active !== 'home' || !visible() || level() === 'off' || behind3d()) return;
     // 3 s after the start, 2.5 s of frames: a phone that cannot keep up gets the static look (not while the 3D core runs:
     // it steps itself down, and loading it would read as a slow phone)
     if (probe && !core && performance.now() > 3000) {
@@ -3073,6 +3076,7 @@ const fx = (() => {
   function restart() {
     cancelAnimationFrame(raf); raf = 0;
     if (level() === 'off') { const g = starC.getContext('2d'); if (g) g.clearRect(0, 0, starC.width, starC.height); return; }
+    if (root.dataset.bg3d === 'on') { if (starC.width > 1) { starC.width = 1; starC.height = 1; } return; }
     if (active !== 'home' || !visible()) return;
     dprS = sizeCanvas(starC);
     if (stars.length !== nStars()) makeStars();
@@ -3105,6 +3109,7 @@ const fx = (() => {
   const unpress = () => { for (const p of document.querySelectorAll('.pressed')) p.classList.remove('pressed'); };
   document.addEventListener('pointerup', unpress, { passive: true }); document.addEventListener('pointercancel', unpress, { passive: true });
   window.addEventListener('resize', () => restart(), { passive: true });
+  try { new MutationObserver(() => restart()).observe(root, { attributes: true, attributeFilter: ['data-bg3d'] }); } catch (_) { /* old browser: the next restart() */ }
   return { restart, adopt };
 })();
 function readColors() { const cs = getComputedStyle(root); COL = { cr: cs.getPropertyValue('--cr').trim() || '200,162,74', cr3: cs.getPropertyValue('--cr3').trim() || '240,217,160' }; fx.restart(); }
@@ -3421,7 +3426,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <!-- the home backdrop and the portal jump on the OLYMPUS render core (docs/OLYMPUS_RENDER.md): each self-contained, each optional -->
-<script type="module" src="./backdrop.js?v=b3"></script>
+<script type="module" src="./backdrop.js?v=b4"></script>
 <script type="module" src="./portal.js?v=p2"></script>
 <script src="./welcome.js?v=w1" defer></script>
 <script type="module" src="./transitions.js?v=t3"></script>

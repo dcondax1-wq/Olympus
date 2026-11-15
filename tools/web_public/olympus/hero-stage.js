@@ -16,9 +16,14 @@
 //   H.plinth({...}) / H.ground({...}) / H.band({...}) / H.motes({...}) / H.label(text, {...}) ...; H.B.build(H.root)
 //   H.start((dt, t) => { ... return movingBool })  H.poke()  H.stats() -> { draws, tris, tier }  H.dispose()
 // With an existing OLYMPUS render core (olympus/render.js) the dressing works the same: dress({ rc, scene, camera, tier }) -> the same helpers.
+// Perf v2 (2026-11-14, team P2, docs/OLYMPUS_PERF.md): the pixel ratio comes from the page's render-scale governor (./render-scale.js: full device
+// ratio up to 3 on Ultra 4K, climbing toward it on Auto while frames keep full rate, stepped down smoothly when they do not); the loop sleeps while
+// the scene is off screen, the tab hidden or a sheet covers it (OLYMPUS.hidden()), keeps the kit's idle frame cap (OLYMPUS.frameGap()), and the
+// shaders compile in the background before the first frame (compileAsync) instead of holding the page.
 import * as THREE from '../jarvis/three.module.min.js';
 import { envKit, mat4, latheGeo, boxGeo, ringGeo, discGeo, bandGeo, shaftGeo, measure } from './env-kit.js';
 import { mergeGeometries } from './three-addons/BufferGeometryUtils.js';
+import { governor, range as rqRange, compileQuietly, parallelCompile } from './render-scale.js';
 
 export const VERSION = 'hero-stage 1 (2026-11-11)';
 
@@ -401,7 +406,10 @@ export function createStage(box, opts) {
   try { renderer = new THREE.WebGLRenderer(Object.assign({ antialias: true, alpha: false, powerPreference: 'low-power' }, own ? {} : { canvas: o.canvas })); } catch (e) { return null; }
   if (!renderer.getContext || !renderer.getContext()) return null;
   const tier = o.tier || tierNow(), lite = isLiteTier(tier), reduce = o.reduce ?? prefersReduced();
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lite ? 1.5 : 2));
+  const RQ = governor(), K = () => window.OLYMPUS || null;
+  const myRange = () => { const O = K(); return rqRange({ tier: ['ultra', 'high', 'low', 'off'].indexOf(tier) >= 0 ? tier : 'high', maxDpr: o.maxDpr || (lite ? 1.5 : 2),
+    chosen: !!(O && O.chosen && O.chosen()) || !!o.tier, saver: !!(O && O.saver && O.saver()), software: lite }); };
+  renderer.setPixelRatio(RQ.dpr(myRange()));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   const P = typeof o.palette === 'object' && o.palette ? o.palette : PALETTES[o.palette] || PALETTES.dusk;
@@ -425,35 +433,65 @@ export function createStage(box, opts) {
     const asp = camera.aspect, k = asp < 1.45 ? 1 + (1.45 - asp) * H.aspectK : 1;           // narrower boxes step back so the subject fits
     camera.position.set(target.x + Math.sin(a) * H.dist * k, target.y + H.height * k, target.z + Math.cos(a) * H.dist * k); camera.lookAt(target);
   };
-  const size = () => {
-    const w = Math.max(o.minW ?? 160, box.clientWidth || 320), h = Math.max(o.minH ?? 90, box.clientHeight || 180);
-    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); D.backdrop(w, h); need = true;
+  let cssW = 0, cssH = 0;
+  const size = (measure) => {
+    if (measure !== false || !cssW) { cssW = Math.max(o.minW ?? 160, box.clientWidth || 320); cssH = Math.max(o.minH ?? 90, box.clientHeight || 180); }
+    const w = cssW, h = cssH, d = RQ.dpr(myRange());
+    // one resize of the drawing buffer (setPixelRatio + setSize reset the canvas twice, each a wait for the GPU); none when the size is the same
+    const cv = renderer.domElement, bw = Math.floor(w * d), bh = Math.floor(h * d);
+    if (cv.width !== bw || cv.height !== bh || renderer.getPixelRatio() !== d) renderer.setDrawingBufferSize(w, h, d); else renderer.setViewport(0, 0, w, h);
+    camera.aspect = w / h; camera.updateProjectionMatrix(); D.backdrop(w, h); need = true;
   };
-  let lastDraw = 0;
+  const leaveRQ = RQ.join({ range: myRange });
+  const offRQ = RQ.on(() => { if (!dead && renderer.getPixelRatio() !== RQ.dpr(myRange())) { size(false); H.poke(200); } });
+  const hidden = () => { const O = K(); try { return O && O.hidden ? O.hidden() : document.hidden; } catch (e) { return document.hidden; } };
+  const gapNow = () => { const O = K(); try { return O && O.frameGap ? O.frameGap() : 0; } catch (e) { return 0; } };
+  // the shaders compile in the background before the first frame (the first draw would compile them all synchronously)
+  let compiled = typeof renderer.compile !== 'function' || !renderer.properties || !parallelCompile(renderer), compiling = false;   // a real GPU's parallel compile only
+  const warm = () => {
+    if (compiled || compiling || dead) return;
+    compiling = true;
+    const done = () => { compiled = true; compiling = false; if (!dead) schedule(); };
+    try { compileQuietly(renderer, scene, camera, 8000).then(done, done); } catch (e) { done(); }      // bounded: three's compileAsync could poll for ever
+    setTimeout(() => { if (!compiled) done(); }, 8000);
+  };
+  let lastDraw = 0, offT = 0, offDue = false;
   const frame = (now) => {
     raf = 0; if (dead) return;
-    // off screen: keep the clock but draw about once a second (cheap, and the frame counter still moves)
-    if (!onScreen && now - lastDraw < 1000) { if (!reduce || now < wakeUntil) schedule(); return; }
+    // hidden or covered (a sheet, an app over the page: OLYMPUS.hidden): nothing is drawn and no frame is asked for (visibility / the kit wake it)
+    if (H.frames > 0 && hidden()) return;
+    // off screen: no frame per vsync (it spun 60 rAF a second for one picture); about one picture a second on a timer, as before (the clock
+    // and the frame counter still move), never a governor sample; the IntersectionObserver brings the frames back
+    const off = H.frames > 0 && !onScreen;
+    if (off && !offDue) { if (!offT) offT = setTimeout(() => { offT = 0; offDue = true; schedule(); }, Math.max(0, 1000 - (performance.now() - lastDraw))); return; }
+    offDue = false;
+    if (!compiled) { warm(); return; }
+    const g = gapNow();                                 // the kit's idle cap (30 fps idle on high, battery saver): skip the frame, no JS, no draw
+    if (!off && g && lastDraw && now - lastDraw < g - 3 && now >= wakeUntil) { schedule(); return; }
     const t = (now - t0) / 1000, dt = Math.min(0.1, (now - tPrev) / 1000); tPrev = now; lastDraw = now;
     let moving = false; if (loop) { try { moving = !!loop(dt, t); } catch (e) { moving = false; } }
     place(t); renderer.render(scene, camera); H.frames++; need = false;
+    if (!off) RQ.frame(now, { gap: g, work: Math.max(0, performance.now() - now) });
     if (!reduce || moving || now < wakeUntil) schedule();
   };
   const schedule = () => { if (!raf && !dead && !document.hidden) raf = requestAnimationFrame(frame); };
   H.poke = (ms) => { wakeUntil = Math.max(wakeUntil, performance.now() + (ms ?? 600)); need = true; schedule(); };
   H.start = (fn) => { loop = fn || null; D.tune(); size(); H.poke(reduce ? 1200 : 0); schedule(); return H; };
+  H.rq = () => ({ dpr: renderer.getPixelRatio(), range: myRange(), onScreen, compiled, state: RQ.state() });
   H.renderNow = () => { if (dead) return; place((performance.now() - t0) / 1000); renderer.render(scene, camera); H.frames++; };
   const vis = () => { if (document.hidden) { cancelAnimationFrame(raf); raf = 0; } else { tPrev = performance.now(); H.poke(300); } };
   document.addEventListener('visibilitychange', vis);
   if (typeof ResizeObserver === 'function') { ro = new ResizeObserver(() => { size(); H.poke(200); }); ro.observe(box); }
   if (typeof IntersectionObserver === 'function') { io = new IntersectionObserver((es) => { onScreen = es.some((e) => e.isIntersecting); if (onScreen) { tPrev = performance.now(); H.poke(300); } }); io.observe(box); }
   // textures and the HDRI arrive later: draw again when they do (reduced motion draws on demand only)
-  D.envReady.then(() => H.poke(400)); setTimeout(() => H.poke(500), 1500); setTimeout(() => H.poke(500), 4000);
+  // the HDRI changes every material's program (an environment map): those compile in the background too before the next frame
+  D.envReady.then(() => { if (!compiling && typeof renderer.compile === 'function' && renderer.properties && parallelCompile(renderer)) compiled = false; H.poke(400); });
+  setTimeout(() => H.poke(500), 1500); setTimeout(() => H.poke(500), 4000);
   const baseStats = D.stats;
   H.stats = () => Object.assign(baseStats(), { frames: H.frames, calls: renderer.info.render.calls });
   H.dispose = () => {
-    if (dead) return; dead = true; cancelAnimationFrame(raf);
-    try { document.removeEventListener('visibilitychange', vis); if (ro) ro.disconnect(); if (io) io.disconnect(); } catch (e) { /* nothing */ }
+    if (dead) return; dead = true; cancelAnimationFrame(raf); if (offT) { clearTimeout(offT); offT = 0; }
+    try { document.removeEventListener('visibilitychange', vis); if (ro) ro.disconnect(); if (io) io.disconnect(); leaveRQ(); offRQ(); } catch (e) { /* nothing */ }
     try { scene.traverse((x) => { if (x.geometry) x.geometry.dispose(); }); D.dispose(); renderer.dispose(); if (own && renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement); } catch (e) { /* nothing */ }
   };
   size();

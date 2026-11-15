@@ -4,7 +4,8 @@
      three.module.min.js' or each other; render.js / materials.js import only relative paths; no external URL anywhere
   b. the pipeline builds in Chromium (WebGL2 through SwiftShader) on every tier, with the pass budget per tier:
      ultra / high = scene + bloom + finish (3, 4x MSAA, HDR), low = scene + finish with FXAA (2, no bloom), off = 1 (direct);
-     pixel ratio <= 2 (<= 1.5 on low, 1 when off); the frame is not black; no console error; no request off the site
+     pixel ratio <= 2 on high (<= 1.5 on low, 1 when off), up to 3 on ultra (perf v2: Ultra 4K = the full device ratio, and over 2x the scene
+     buffer is not multisampled: FXAA instead); the frame is not black; no console error; no request off the site
   c. the tiers switch live: setQuality(), and OLYMPUS.setFx() (Jarvis's 'jfx' key) when the app did not force a level;
      prefers-reduced-motion with no choice starts on low
   d. slow frames step the quality down (ultra -> high -> low), never stored in 'jfx'
@@ -37,7 +38,7 @@ ADDONS = os.path.join(KIT, "three-addons")
 LAB = "/olympus/render-lab.html"
 # tier -> (passes, pass names, MSAA samples, bloom, fxaa, max pixel ratio)
 TIERS = {
-    "ultra": (3, ["scene", "bloom", "finish"], 4, True, False, 2),
+    "ultra": (3, ["scene", "bloom", "finish"], 4, True, False, 3),      # perf v2: up to the device ratio (3 here); over 2x: MSAA 0 + FXAA (below)
     "high": (3, ["scene", "bloom", "finish"], 4, True, False, 2),
     "low": (2, ["scene", "finish"], 0, False, True, 1.5),
     "off": (1, ["direct"], 0, False, False, 1),
@@ -115,6 +116,8 @@ def test_tiers(br, origin):
         ctx, p, errs, off = lab(br, origin, f"?q={tier}")
         s = p.evaluate("() => __lab.rc.stats()")
         check(f"b. {tier}: {n} pass(es) {names}", s["passes"] == n and s["names"] == names, s)
+        if tier == "ultra" and s["dpr"] > 2.05:          # perf v2: over 2 pixels per CSS pixel the scene buffer is not multisampled (FXAA in the finish)
+            samples, fxaa = 0, True
         check(f"b. {tier}: MSAA {samples}, bloom {bloom}, FXAA {fxaa}", (s["samples"], s["bloom"], s["fxaa"]) == (samples, bloom, fxaa), s)
         check(f"b. {tier}: pixel ratio {s['dpr']} <= {dpr}", 0 < s["dpr"] <= dpr, s)
         if tier != "off":
@@ -127,12 +130,15 @@ def test_tiers(br, origin):
 
 def test_switch(br, origin):
     ctx, p, errs, _ = lab(br, origin, "?gpu=1", fx="high")
-    got = p.evaluate("""() => { const rc = __lab.rc, out = [rc.quality(), rc.stats().passes];
-      rc.setQuality('low'); out.push(rc.quality(), rc.stats().passes, rc.render());
-      rc.setQuality('off'); out.push(rc.stats().passes, rc.render());
-      OLYMPUS.setFx('ultra'); out.push(rc.quality(), rc.stats().passes, rc.stats().samples, rc.render()); return out; }""")
-    check("c. setQuality high -> low -> off and OLYMPUS.setFx('ultra') rebuild the pipeline (3 -> 2 -> 1 -> 3 passes)",
-          got == ["high", 3, "low", 2, True, 1, True, "ultra", 3, 4, True], got)
+    # a touch before each draw: the kit's idle frame cap (30 fps after 4 s without input) would skip a second draw within 33 ms
+    got = p.evaluate("""() => { const rc = __lab.rc, out = [rc.quality(), rc.stats().passes], touch = () => window.dispatchEvent(new Event('pointermove'));
+      rc.setQuality('low'); touch(); out.push(rc.quality(), rc.stats().passes, rc.render());
+      rc.setQuality('off'); touch(); out.push(rc.stats().passes, rc.render());
+      OLYMPUS.setFx('ultra'); touch(); out.push(rc.quality(), rc.stats().passes, rc.stats().samples, rc.render(), rc.stats().dpr); return out; }""")
+    # Ultra 4K on this 3x phone renders at the full 3x: no MSAA buffer over 2x (FXAA), 4 samples at 2x or less
+    msaa = 0 if got[-1] > 2.05 else 4
+    check("c. setQuality high -> low -> off and OLYMPUS.setFx('ultra') rebuild the pipeline (3 -> 2 -> 1 -> 3 passes; ultra over 2x: FXAA, no MSAA)",
+          got[:-1] == ["high", 3, "low", 2, True, 1, True, "ultra", 3, msaa, True], got)
     check("c. no console error while switching tiers", not errs, errs)
     ctx.close()
     ctx, p, errs, _ = lab(br, origin, "?gpu=1", reduced=True)
@@ -162,10 +168,12 @@ def test_adapt(br, origin):
       const { createRenderer } = await import('./render.js'), T = await import('../jarvis/three.module.min.js');
       const L = window.__lab, seen = [];
       L.rc.dispose();
-      // an empty scene: the 32 ms busy loop is the whole cost of a frame (SwiftShader draws the lab at ~8 fps)
+      // an empty scene: the 48 ms busy loop is the whole cost of a frame (SwiftShader draws the lab at ~8 fps). 48, not 32: once the kit is idle
+      // (4 s without a touch) it caps frames at 30 fps, and a 33 ms frame is then full rate, not slow; the frames are slow for the page's own
+      // JavaScript, so the core steps the tier (a smaller buffer would not help: perf v2)
       const rc = createRenderer({ canvas: document.getElementById('lab'), scene: new T.Scene(), camera: new T.PerspectiveCamera(),
         quality: 'ultra', adapt: 'always', onQuality: (q) => seen.push(q), maxDpr: 0.25 });
-      rc.start(() => { const t = performance.now(); while (performance.now() - t < 32) {} });
+      rc.start(() => { const t = performance.now(); while (performance.now() - t < 48) {} });
       for (let i = 0; i < 60 && seen.length < 2; i++) await new Promise((r) => setTimeout(r, 500));   // <= 30 s
       await new Promise((r) => setTimeout(r, 4000));                                                 // and it stays on low
       rc.stop();
