@@ -338,7 +338,7 @@
        by name or mood, a Favourites row (a star on the preview bar keeps a look there: 'olympus.theme.fav', this phone), the groups. A long press
        (or a mouse hover) on a swatch shows that look on this page only (OLYMPUS_THEMES.preview), with a bar at the bottom: Use it, the star,
        Cancel; nothing is stored until Use it. Every target is 44 px+, the bar sits at the bottom where a thumb reaches, one hand at 375 px. */
-    var LS_FAV = 'olympus.theme.fav', prev = { id: null, pinned: false, surprise: false }, query = '';
+    var LS_FAV = 'olympus.theme.fav', prev = { id: null, pinned: false, surprise: false }, query = '', rest = null;
     function favs() { var f = lsGet(LS_FAV); return f instanceof Array ? f.filter(function (x) { return typeof x === 'string' && T.get(x).id === x; }) : []; }
     function toggleFav(id) { var f = favs(), i = f.indexOf(id); if (i >= 0) f.splice(i, 1); else f.unshift(id); lsSet(LS_FAV, f.slice(0, 12)); }
     function preview(id, pinned, surprise) {
@@ -438,7 +438,7 @@
         b.appendChild(swatch(T, t)); b.appendChild(el('b', '', t.name)); b.appendChild(el('small', '', (t.tag || '').split(' · ')[0]));
         if (fv && fv.indexOf(t.id) >= 0) { var st = el('i', 'g-swfav', '★'); st.setAttribute('aria-hidden', 'true'); b.appendChild(st); }
         if (t.id === cur) { var on = el('i', 'g-swon', 'On'); on.setAttribute('aria-hidden', 'true'); b.appendChild(on); }
-        b.addEventListener('click', function (e) { clearTimeout(hover); clearTimeout(timer); if (held) { held = false; e.preventDefault(); return; } setOne(t.id); });
+        b.addEventListener('click', function (e) { clearTimeout(hover); clearTimeout(timer); if (held) { held = false; e.preventDefault(); return; } rest = [e.clientX, e.clientY]; setOne(t.id); });
         // a long press: preview it here, with the bar (Use it / Favourite / Cancel)
         b.addEventListener('pointerdown', function (e) {
           if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -451,6 +451,9 @@
         // a mouse hover: the look on this page while the pointer rests there (gone when it leaves, unless the bar is open)
         b.addEventListener('pointerenter', function (e) {
           if (e.pointerType !== 'mouse' || prev.pinned) return;
+          // the redraw after a pick puts another swatch under the resting mouse: that is no hover (it would preview a look nobody pointed at)
+          if (rest && Math.abs(e.clientX - rest[0]) < 3 && Math.abs(e.clientY - rest[1]) < 3) return;
+          rest = null;
           clearTimeout(hover); hover = setTimeout(function () { preview(t.id, false, false); }, 160);
         });
         b.addEventListener('pointerleave', function (e) {
