@@ -22,7 +22,11 @@
   const money = (v) => (okN(v) ? (v < 0 ? '−' : '') + '$' + Math.abs(Math.round(v)).toLocaleString('en-US') : '—');
   const smoney = (v) => (okN(v) ? (v > 0 ? '+' : v < 0 ? '−' : '') + '$' + Math.abs(Math.round(v)).toLocaleString('en-US') : '—');
   const nowS = () => Date.now() / 1000;
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN); the accounts come from missioncore (BLITZ dropped there)
+  const HIDB = () => !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
   const COLOR = { lit: '#4f9bff', atlas: '#ff9a3d', blitz: '#b388ff' };
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): a hidden BLITZ is not drawn
+  const BOTK = () => ['lit', 'atlas'].concat(HIDB() ? [] : ['blitz']);
   const NAME = { lit: 'Zlarior', atlas: 'ATLAS', blitz: 'BLITZ' };
   const PAGE = { phone: { lit: 'lit', atlas: 'atlas', blitz: 'blitz' }, pc: { lit: 'zlarior', atlas: 'atlas', blitz: 'blitz' } };
   const RANK = { bad: 3, warn: 2, good: 1, idle: 0 };
@@ -117,7 +121,7 @@
     const feed = I.age_1m_s || I.age_5m_s;
     if (!open) out.push({ k: 'feed', label: 'Feed', value: 'market closed', lvl: 'idle', detail: `CME reopens ${when(nextReopen(now) || now, now)}.` });
     else if (feed) out.push({ k: 'feed', label: 'Feed', value: feed.value || '—', lvl: lvH(feed), detail: feed.detail || '', fix: feed.fix || '' });
-    for (const k of ['lit', 'atlas', 'blitz']) {
+    for (const k of BOTK()) {
       const A = As[k]; if (!A) continue;
       const L = oneLine(A, M);
       const st = A.placeholder ? 'paper' : A.state === 'trade' ? 'in a trade' : A.armed ? 'armed' : A.state === 'off' ? 'off' : (A.win && A.win.open ? 'watching' : 'waiting');
@@ -225,7 +229,7 @@
       <ul class="su-first">
         ${line('lit', fl ? `First entries ${t(fl)} (the Sunday evening session is watch-only)` : 'First entries Mon 02:00 ET')}
         ${line('atlas', fa ? `First window ${t(fa)}${fa.label ? ' · ' + String(fa.label).replace(/^ATLAS\s*/, '').split(' ')[0] : ''}` : 'First window Mon 02:00 ET')}
-        ${line('blitz', bzOn ? (fb ? `First check ${t(fb)}` : 'First check Mon 11:00 ET') : 'Off until its own 25K is bought and armed · paper shadow only')}
+        ${HIDB() ? '' : line('blitz', bzOn ? (fb ? `First check ${t(fb)}` : 'First check Mon 11:00 ET') : 'Off until its own 25K is bought and armed · paper shadow only')}
       </ul>
       <ul class="su-ready">${ready.map(([l, v, s]) => `<li class="${v}">${dot(v)}<span>${esc(l)}</span><em>${esc(s)}</em></li>`).join('')}</ul></section>`;
   }
@@ -274,7 +278,7 @@
   }
   function accounts(M, o) {
     o = o || {}; M = obj(M);
-    const As = accts(M), out = ['lit', 'atlas', 'blitz'].map((k) => As[k]).filter(Boolean).map((A) => acctCard(A, M, o)).join('');
+    const As = accts(M), out = BOTK().map((k) => As[k]).filter(Boolean).map((A) => acctCard(A, M, o)).join('');
     return out ? `<section class="su-accts" aria-label="The three accounts">${out}</section>` : '';
   }
 
@@ -283,7 +287,7 @@
   function week(M, o) {
     M = obj(M); o = o || {};
     const P = obj(obj(M.board).progress), rows = [];
-    for (const k of ['lit', 'atlas', 'blitz']) {
+    for (const k of BOTK()) {
       const w = obj(obj(P[k]).week); if (!Array.isArray(w.days) || !w.days.length) continue;
       const n = num(w.n) || 0, lo = num(w.lo), hi = num(w.hi), usd = num(w.usd);
       const goal = lo != null && hi != null ? `${lo}-${hi}` : '';

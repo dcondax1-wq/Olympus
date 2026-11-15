@@ -292,6 +292,7 @@ def part_c(F, tmp, shots):
 
     def page(br, errs, w=390, h=844, motion="no-preference", init=""):
         ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=True, has_touch=True, reduced_motion=motion, timezone_id="America/New_York")
+        ctx.add_init_script("try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15: tests.test_hidden_bots / test_blitz_tab)
         ctx.clock.install(time=F["T"])
         if init:
             ctx.add_init_script(init)
@@ -540,6 +541,8 @@ def part_d(F, shots):
         os.environ[k] = v
     import uvicorn
     import server
+    from engine import hidden_bots as _hbz   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15)
+    _hbz.FORCE = ()
     from engine import board_api
     board_api.board_view = lambda bot, now=None: copy.deepcopy(F["board"])
     port = free_port()
@@ -555,11 +558,12 @@ def part_d(F, shots):
     with sync_playwright() as p:
         br = BK.launch(p)
         ctx = br.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=1)
+        ctx.add_init_script("try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15: tests.test_hidden_bots / test_blitz_tab)
         ctx.clock.install(time=F["T"])
         pg = ctx.new_page()
         errs = []
         pg.on("pageerror", lambda e: errs.append(f"pc pageerror: {str(e)[:240]}"))
-        pg.add_init_script("localStorage.setItem('page', 'cc');")
+        pg.add_init_script("localStorage.setItem('page', 'cc'); localStorage.setItem('oly.hiddenBots', '[]');")
         pg.goto(base + "/?fxoff", wait_until="domcontentloaded")
         pg.wait_for_function("() => window.LE && window.LE.go", timeout=60000)
         ok = False

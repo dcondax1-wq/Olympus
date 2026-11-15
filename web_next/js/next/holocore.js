@@ -7,6 +7,9 @@
 //   const H = mountHolodeck(hostEl, env)   env = { platform: 'pc' | 'phone', loadFX(), loadChart(), getDay(day|null) -> holo
 //     json (null = today / latest), getDays() -> [{ day, trades, usd }], every (live poll s), store: { get, set }, onFull(on) }
 //   H.load(day) H.state H.view (the 3D view or null) H.dispose()
+// hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): a hidden BLITZ is not drawn
+const HIDB = () => !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
+const BOTK = () => ['lit', 'atlas'].concat(HIDB() ? [] : ['blitz']);
 const BOTC = { lit: '#4f9bff', atlas: '#ff9a3d', blitz: '#b388ff', scalp: '#b388ff', sys: '#94a3b8' };
 const BOTN = { lit: 'Zlarior', atlas: 'ATLAS', blitz: 'BLITZ', scalp: 'BLITZ', sys: 'Bot' };
 const SPEEDS = [1, 5, 15, 30, 60, 120];
@@ -206,7 +209,7 @@ export function mountHolodeck(host, env) {
     const b = bars(), i = b.findLastIndex ? b.findLastIndex((x) => x[0] <= T) : b.length - 1, last = b[Math.max(0, i)];
     $('#hdHud').innerHTML = `<div class="hd-px"><span>NQ</span><b class="mono">${px(last?.[4])}</b><em>${esc(etHM(T))} ET</em></div>`
       + Object.keys(by).map((k) => `<div class="hd-pnl" style="--c:${BOTC[k]}"><i></i><b>${esc(B[k]?.name || BOTN[k])}</b><span class="${by[k].usd >= 0 ? 'up' : 'dn'}">${usd(by[k].usd)}</span><em>${by[k].n} trade${by[k].n === 1 ? '' : 's'} · ${by[k].tag}</em></div>`).join('');
-    $('#hdLeg').innerHTML = ['lit', 'atlas', 'blitz'].map((k) => `<button type="button" class="hd-bot" data-bot="${k}" aria-pressed="${S.bots[k] !== false}" style="--c:${BOTC[k]}"><i></i>${esc(B[k]?.name || BOTN[k])}${B[k] ? ` <em>${botTag(B[k])}</em>` : ''}</button>`).join('')
+    $('#hdLeg').innerHTML = BOTK().map((k) => `<button type="button" class="hd-bot" data-bot="${k}" aria-pressed="${S.bots[k] !== false}" style="--c:${BOTC[k]}"><i></i>${esc(B[k]?.name || BOTN[k])}${B[k] ? ` <em>${botTag(B[k])}</em>` : ''}</button>`).join('')
       + `<span class="hd-key"><i class="solid"></i>real fill <i class="hollow"></i>paper / model</span>`;
     reserve();
   }
@@ -254,8 +257,8 @@ export function mountHolodeck(host, env) {
         ${b?.plan ? `<p class="hd-mut sm">${esc(b.plan)}</p>` : ''}</article>`;
     };
     const f = S.thF, list = TH.filter((x) => f === 'all' || bk(x.bot) === f).slice(-40).reverse();
-    P.innerHTML = `<div class="hd-minds">${['lit', 'atlas', 'blitz'].map(card).join('')}</div>
-      <div class="hd-thf" role="group" aria-label="Thoughts of">${[['all', 'All'], ['lit', B.lit?.name || 'Zlarior'], ['atlas', 'ATLAS'], ['blitz', 'BLITZ'], ['sys', 'Bot']].map(([k, l]) => `<button type="button" data-thf="${k}" aria-pressed="${f === k}" style="--c:${BOTC[k] || '#cbd5e1'}">${esc(l)}</button>`).join('')}</div>
+    P.innerHTML = `<div class="hd-minds">${BOTK().map(card).join('')}</div>
+      <div class="hd-thf" role="group" aria-label="Thoughts of">${[['all', 'All'], ['lit', B.lit?.name || 'Zlarior'], ['atlas', 'ATLAS'], ['blitz', 'BLITZ'], ['sys', 'Bot']].filter(([k]) => !(k === 'blitz' && HIDB())).map(([k, l]) => `<button type="button" data-thf="${k}" aria-pressed="${f === k}" style="--c:${BOTC[k] || '#cbd5e1'}">${esc(l)}</button>`).join('')}</div>
       <ol class="hd-tl">${list.map((x, i) => { const b = bk(x.bot), k = (S.d.thoughts || []).indexOf(x); return `<li><button type="button" data-jump="thought" data-id="th${sortedIdx(x)}" style="--c:${BOTC[b]}" class="lv-${esc(x.level || 'info')} ${i === 0 ? 'newest' : ''}" data-k="${k}">
         <span class="mono">${etHMS(x.t)}</span><b>${esc(B[b]?.name || BOTN[b])} · ${esc(x.title || x.stage || '')}</b><em>${esc(x.text || '')}</em></button></li>`; }).join('') || '<li class="hd-mut">No thoughts yet at this time.</li>'}</ol>`;
   }

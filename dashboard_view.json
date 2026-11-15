@@ -1,0 +1,4 @@
+{
+ "_note": "Dashboard view switch (owner 2026-11-15: Zlarior and ATLAS only for now). hidden_bots: bots kept off every page, push and published file while their engine keeps running on paper (engine/hidden_bots.py). [] = show BLITZ again.",
+ "hidden_bots": ["blitz"]
+}

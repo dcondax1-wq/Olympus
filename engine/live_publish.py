@@ -212,6 +212,11 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
     if ph is not None:
         out["pc_health"] = ph
     out = scrub(out, _phrases())
+    try:                                # hidden bots (engine/hidden_bots.py, dashboard_view.json; default ["blitz"]): off the phone
+        from . import hidden_bots
+        out = hidden_bots.publish(out)
+    except Exception:
+        pass
     return fit(out)
 
 
@@ -492,6 +497,12 @@ class Publisher:
         except Exception:
             pass
         self.extra_ms = ms
+        try:                            # hidden bots (engine/hidden_bots.py): off the Live View / Holodeck files too
+            from . import hidden_bots
+            hide = hidden_bots.hidden()
+            out = {k: hidden_bots.publish(v, hide) for k, v in out.items()}
+        except Exception:
+            pass
         return out
 
     def publish(self, force: bool = False) -> dict:

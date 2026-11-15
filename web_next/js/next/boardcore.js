@@ -40,7 +40,9 @@
   const LV = (o) => (o === true ? 'good' : o === false ? 'bad' : 'idle');
   const chip = (t, k) => `<span class="bd-chip ${k || ''}">${esc(t)}</span>`;
   const NAMES = { lit: 'Zlarior', atlas: 'ATLAS', blitz: 'BLITZ' };   // blitz: account C (engine/account_c.py), drawn only when the board has it (2026-10-29)
-  const hasBz = (B) => !!(B && B.blitz && typeof B.blitz === 'object' && !B.blitz.error);
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): a hidden BLITZ draws no card, row or filter
+  const HIDB = () => !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
+  const hasBz = (B) => !HIDB() && !!(B && B.blitz && typeof B.blitz === 'object' && !B.blitz.error);
   const KIND = { TARGET: 'target', STOP: 'stop', BE: 'breakeven', EOD: 'flat 15:55', FLAT: 'flat', CUT_T15: '15-min cut', CUT: '15-min cut', T15: '15-min cut', OPEN: 'open' };
 
   // ---------------------------------------------------------------- countdowns (one ticker for every page)
@@ -244,7 +246,7 @@
   const paperTag = (rows, r) => r.src !== 'live' ? ` <em class="bd-paper">paper</em> <em class="bd-real">${esc(realTwin(rows, r))}</em>` : '';
   const F = { acct: 'all', src: 'live' };
   function filt(rows) {
-    return rows.filter((r) => (F.acct === 'all' || r.acct === F.acct) && (F.src === 'all' || r.src === F.src));
+    return rows.filter((r) => !(HIDB() && r.acct === 'blitz') && (F.acct === 'all' || r.acct === F.acct) && (F.src === 'all' || r.src === F.src));
   }
   function tradesHtml(B, opts) {
     const rows = Array.isArray(B.trades) ? B.trades : [];
@@ -270,7 +272,7 @@
           <span>${esc(r.open ? 'open' : KIND[String(r.exit || '').toUpperCase()] || r.exit || '')}</span><span class="mono ${cl(r.r)}">${fR(r.r)}</span>
           ${pi.has(i) && g ? `<button type="button" class="bd-pic" data-tp="${g}" data-tp-i="${pi.get(i)}">View</button>` : ''}</div></div>`).join('')}</div>`
       : `<p class="bd-note">No ${F.src === 'live' ? 'live ' : ''}trade${F.acct !== 'all' ? ' for ' + esc(NAMES[F.acct]) : ''} yet. The first one shows here when the bot closes it.</p>`;
-    const bzT = hasBz(B) || (Array.isArray(B.trades) && B.trades.some((t) => t && t.acct === 'blitz'));
+    const bzT = hasBz(B) || (!HIDB() && Array.isArray(B.trades) && B.trades.some((t) => t && t.acct === 'blitz'));
     return `<div class="bd-tf">${seg('acct', [['all', bzT ? 'All' : 'Both'], ['lit', 'Zlarior'], ['atlas', 'ATLAS']].concat(bzT ? [['blitz', 'BLITZ']] : []))}${seg('src', [['live', 'Live'], ['paper', 'Paper'], ['all', 'All']])}
         <button type="button" class="bd-btn" data-bd-csv="1">Export CSV</button></div>
       <div class="bd-sum"><span><b>${R.length}</b> trades</span><span>net <b class="${cl(net)}">${susd(net)}</b></span><span>win <b>${closed.length ? pct(100 * w.length / closed.length) : '—'}</b></span><span>PF <b>${gl ? (gw / gl).toFixed(2) : w.length ? '∞' : '—'}</b></span></div>
@@ -318,7 +320,7 @@
       ${H2('Right now', hasBz(B) ? 'all three accounts' : 'both accounts')}<div class="bd-two">${acctCard(B, B.lit, opts)}${acctCard(B, B.atlas, opts)}${hasBz(B) ? acctCard(B, B.blitz, opts) : ''}</div>
       ${H2('Bot health', (B.health && B.health.text) || '')}${healthHtml(B)}
       ${H2("Today's map", 'Zlarior levels, VIX objective, 18:00 open')}<section class="bd-card">${mapHtml(B)}</section>
-      ${H2('Week and eval', 'trades vs the goal, odds, $ a month')}<div class="bd-two">${progCard('Zlarior · 50K', (B.progress || {}).lit)}${progCard('ATLAS · 25K', (B.progress || {}).atlas)}${(B.progress || {}).blitz ? progCard('BLITZ · 25K', B.progress.blitz) : ''}</div>
+      ${H2('Week and eval', 'trades vs the goal, odds, $ a month')}<div class="bd-two">${progCard('Zlarior · 50K', (B.progress || {}).lit)}${progCard('ATLAS · 25K', (B.progress || {}).atlas)}${(B.progress || {}).blitz && !HIDB() ? progCard('BLITZ · 25K', B.progress.blitz) : ''}</div>
       ${H2('Trade log', 'both accounts, with pictures')}<section class="bd-card bd-trades">${tradesHtml(B, opts)}</section>
       <p class="bd-src">engine/live_board.py · ${esc(B.where === 'pc' ? 'from the running PC bot' : B.where === 'live' ? 'from the PC live feed' : 'from the PC heartbeat (cloud copy)')}${B.brain_src ? ' · map from the ' + esc(B.brain_src) : ''} · read-only</p></div>`;
   }

@@ -289,6 +289,7 @@ def site_with(tmp, board, lvd, now):
 def phone_page(br, base, lvp, w, h, url, errs, reduced=False):
     ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True,
                          reduced_motion="reduce" if reduced else "no-preference")
+    ctx.add_init_script("try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15)
     pg = ctx.new_page()
     pg.on("pageerror", lambda e: errs.append(f"{w}x{h} pageerror: {str(e)[:240]}"))
     pg.route("**/api.github.com/**", lambda r: r.fulfill(path=lvp, content_type="application/json") if "liveview.json" in r.request.url else r.fulfill(status=404, body="{}"))
@@ -500,6 +501,8 @@ def part_d(b3, lvd, now, shots, perf):
     try:
         import uvicorn
         import server
+        from engine import hidden_bots as _hbz   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15)
+        _hbz.FORCE = ()
         from engine import board_api, liveview_api
         board_api.board_view = lambda bot, now=None: copy.deepcopy(b3)
         lv_pc = {**copy.deepcopy(lvd), "tf": "5m", "bars": lvd.get("bars5") or lvd.get("bars")}
@@ -517,10 +520,11 @@ def part_d(b3, lvd, now, shots, perf):
         with sync_playwright() as p:
             br = launch(p, GPU_ARGS)
             ctx = br.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=1)
+            ctx.add_init_script("try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15: tests.test_hidden_bots / test_blitz_tab)
             pg = ctx.new_page()
             errs = []
             pg.on("pageerror", lambda e: errs.append(f"pc pageerror: {str(e)[:240]}"))
-            pg.add_init_script("localStorage.setItem('page', 'cc');")
+            pg.add_init_script("localStorage.setItem('page', 'cc'); localStorage.setItem('oly.hiddenBots', '[]');")
             pg.goto(base + "/?fx=max" + ("&fxfixed&fxbake=1024" if shots else ""), wait_until="domcontentloaded")
             ok = wait_space(pg, 90000)
             check("d. PC 1440x900: the deep-space scene mounts behind the dashboard", ok, errs[-3:])

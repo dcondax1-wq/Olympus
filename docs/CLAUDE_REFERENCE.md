@@ -261,6 +261,15 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   with the research sizer). Test `python -X utf8
   -m tests.test_atlas_v2_shadow [--no-cloud]` (2026 replay = the research executor exactly; the stored run file was scored
   on an older unit cache: 206/207 trades identical, $ within 0.1%).
+- **BLITZ HIDDEN on every dashboard (owner 2026-11-15: "Zlarior and ATLAS only for now ... just know it's still there"):**
+  one switch, `dashboard_view.json` `"hidden_bots": ["blitz"]` (default; `[]` = back), `engine/hidden_bots.py`. Its engine,
+  paper ledgers, cloud state and heartbeat blocks run as before (paper, never routed). Hidden = scrubbed out of data.json /
+  home.json (`live_board.site_block`, the build's last helper, in place), live.json / liveview / holo files (`live_publish`),
+  the PC's GET /api/* answers (`ScrubMiddleware`, server.py; `/api/next/blitz*` untouched); every file says `hidden_bots`;
+  pages ask `window.OLY_HIDDEN.has('blitz')` (inline in the phone, Jarvis and web_next index.html); no tab, cards, orbit,
+  feed tab, Start card; `#/blitz` says "hidden, still on paper". Pushes: BLITZ paper / Sim silent (`blitz.push_on`, narrator,
+  `AccountC._send`); the Sunday readiness push drops its line. Real money is never hidden (account C armed -> shown).
+  Test `python -X utf8 -m tests.test_hidden_bots`.
 - **BLITZ, the scalper (strategy 3) PAPER SHADOW (2026-10-28, `engine/blitz.py`, `research/writeups/scalp-na-mffu.md`):**
   the noise-area 1m scalp + the prior-day range filter (`prng>=0.8`: trade a day only if yesterday's 09:30-16:00 range >=
   0.8 x the mean of the last 14 such ranges, yesterday's included, as `tools/scalp_na_lib._day_ctx`); band = 09:30 open x

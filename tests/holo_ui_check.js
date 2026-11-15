@@ -153,6 +153,7 @@ async function frames(p, tag) {
     // ---------------------------------------------------------------- phone portrait
     {
       const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+      await ctx.addInitScript(() => { try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {} });   // BLITZ shown for these pinned checks (hidden by default since 2026-11-15)
       const p = await ctx.newPage(); p.on('pageerror', (e) => errors.push('phone: ' + e.message.slice(0, 200)));
       const hits = []; await ghRoutes(p, hits);
       await p.goto(`${PH}/?fxfixed#/today`);
@@ -197,6 +198,7 @@ async function frames(p, tag) {
     // ---------------------------------------------------------------- PC 1440x900
     {
       const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+      await ctx.addInitScript(() => { try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {} });   // BLITZ shown for these pinned checks (hidden by default since 2026-11-15)
       const p = await ctx.newPage(); p.on('pageerror', (e) => errors.push('pc: ' + e.message.slice(0, 200)));
       await p.goto(`${PC}/?fxfixed`);
       await p.waitForFunction(() => window.LE && typeof window.LE.go === 'function', null, { timeout: 20000 }).catch(() => null);
@@ -256,6 +258,7 @@ async function frames(p, tag) {
     // ---------------------------------------------------------------- the PC has not sent holo.json yet: a plain note, no error
     {
       const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+      await ctx.addInitScript(() => { try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {} });   // BLITZ shown for these pinned checks (hidden by default since 2026-11-15)
       const p = await ctx.newPage(); p.on('pageerror', (e) => errors.push('nodata: ' + e.message.slice(0, 200)));
       await p.route('https://api.github.com/**', (r) => r.fulfill({ status: 404, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"message":"Not Found"}' }));
       await p.route('https://raw.githubusercontent.com/**', (r) => r.fulfill({ status: 404, body: 'nf' }));
@@ -267,6 +270,7 @@ async function frames(p, tag) {
     // ---------------------------------------------------------------- WebGL off: the 2D fallback
     {
       const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+      await ctx.addInitScript(() => { try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {} });   // BLITZ shown for these pinned checks (hidden by default since 2026-11-15)
       await ctx.addInitScript(() => { const g = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function (k, o) { return /webgl/i.test(k) ? null : g.call(this, k, o); }; });
       const p = await ctx.newPage(); p.on('pageerror', (e) => errors.push('2d: ' + e.message.slice(0, 200)));
       await ghRoutes(p);

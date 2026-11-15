@@ -610,6 +610,7 @@ class Phone:
         opts.update(kw)
         self.dev = dev
         self.ctx = br.new_context(**opts)
+        self.ctx.add_init_script("try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15: tests.test_hidden_bots / test_blitz_tab)
         self.ctx.add_init_script(RAF_COUNT)
         self.ctx.add_init_script(READY_INIT)     # window.__qaReady: when the Jarvis screen can be used
         self.errs = []                # (kind, text, where)

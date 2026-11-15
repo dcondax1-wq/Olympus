@@ -36,6 +36,8 @@
     light: { lit: '#2563eb', atlas: '#ea580c', scalp: '#7c3aed', sys: '#475569', structure: '#334155' },
   };
   const NAMES = { lit: 'Zlarior', atlas: 'ATLAS', scalp: 'BLITZ', sys: 'Bot', structure: 'Structure' };
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): a hidden BLITZ has no layer switch, legend, card or feed tab
+  const HIDB = () => !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
   const col = (k) => (PAL[L.theme][k] || PAL[L.theme].sys);
   const okN = (v) => typeof v === 'number' && Number.isFinite(v);
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -169,7 +171,7 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
         <div class="lv-ctrls">
           <button type="button" class="lv-btn lv-fs" id="lvFs" title="Full screen">⛶ <span>Full screen</span></button>
           <div class="lv-seg" id="lvTf" role="group" aria-label="Timeframe">${['1m', '5m'].map((t) => `<button type="button" data-v="${t}" aria-pressed="${L.tf === t}">${t}</button>`).join('')}</div>
-          <div class="lv-sws" role="group" aria-label="Strategies">${sw('lit')}${sw('atlas')}${sw('scalp')}${sw('structure')}</div>
+          <div class="lv-sws" role="group" aria-label="Strategies">${sw('lit')}${sw('atlas')}${HIDB() ? '' : sw('scalp')}${sw('structure')}</div>
           <button type="button" class="lv-btn" id="lvThinkB" aria-pressed="${L.think}" title="What the bot is thinking">🧠 Thinking</button>
           <button type="button" class="lv-btn" id="lvFeedB" aria-pressed="${L.feed}" title="The bot's running feed">Feed</button>
           <button type="button" class="lv-btn" id="lvTheme" title="Dark / light"></button>
@@ -186,7 +188,7 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
       <section class="lv-feed" id="lvFeed" ${L.feed ? '' : 'hidden'} aria-label="Bot feed">
         <div class="lv-ticker" id="lvTicker" aria-hidden="true"><div class="lv-ticker-r" id="lvTickR"></div></div>
         <div class="lv-feed-h"><b>What the bot says</b>
-          <div class="lv-seg sm" id="lvFF">${[['all', 'All'], ['lit', 'Zlarior'], ['atlas', 'ATLAS'], ['scalp', 'BLITZ'], ['sys', 'Bot']].map(([k, l]) => `<button type="button" data-v="${k}" aria-pressed="${L.feedF === k}">${l}</button>`).join('')}</div>
+          <div class="lv-seg sm" id="lvFF">${[['all', 'All'], ['lit', 'Zlarior'], ['atlas', 'ATLAS'], ['scalp', 'BLITZ'], ['sys', 'Bot']].filter(([k]) => !(k === 'scalp' && HIDB())).map(([k, l]) => `<button type="button" data-v="${k}" aria-pressed="${L.feedF === k}">${l}</button>`).join('')}</div>
           <label class="lv-chk"><input type="checkbox" id="lvImp" ${L.important ? 'checked' : ''}> important only</label>
           <span class="lv-muted" id="lvPushes"></span></div>
         <ol class="lv-feed-l" id="lvFeedL"></ol>
@@ -346,7 +348,7 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
     const view = L.view.n ? L.view : { ...L.view, n: defN() };
     L.geo = drawChart(cv, d, { on: L.on, view, tf: L.tf, theme: L.theme, fast: L.fast });
     L.root.querySelectorAll('[data-lv-on="structure"]').forEach((b) => { b.hidden = !d.structure; });
-    q('#lvLeg').innerHTML = ['lit', 'atlas', 'scalp'].filter((k) => L.on[k]).map((k) => {
+    q('#lvLeg').innerHTML = ['lit', 'atlas', 'scalp'].filter((k) => L.on[k] && !(k === 'scalp' && HIDB())).map((k) => {
       const s = (d.strategies || {})[k] || {};
       const what = k === 'lit' ? 'levels · setup · position' : k === 'atlas' ? 'EMA 21 / 50 · S/R · plans · position' : (s.placeholder ? 'not running yet' : 'band · signals · PAPER position');
       return `<span style="--c:${col(k)}"><i></i>${esc(k === 'scalp' ? 'BLITZ (paper)' : s.name || NAMES[k])} <em>${esc(what)}</em></span>`;
@@ -437,7 +439,7 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
       </article>`);
     }
     const sc = S.scalp;
-    if (sc && L.on.scalp) {
+    if (sc && L.on.scalp && !HIDB()) {
       const th = sc.thinking || {};
       const pp = (p) => (p ? `<div><b>${esc(p.ledger)}</b>: ${esc(p.side)} ${p.qty ? `${p.qty} MNQ` : '(no size)'} @ ${fmtPx(p.entry)} · now <b class="${(p.unrealized_usd || 0) >= 0 ? 'lv-ok' : 'lv-no'}">${fmtUsd(p.unrealized_usd)}</b> · stop ${fmtPx(p.stop)} = <b class="${(p.stop_usd || 0) >= 0 ? 'lv-ok' : 'lv-no'}">${fmtUsd(p.stop_usd)}</b></div>` : '');
       const p1 = sc.position, p2 = sc.position50 && (!p1 || sc.position50.ledger !== p1.ledger) ? sc.position50 : null;

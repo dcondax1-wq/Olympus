@@ -338,6 +338,7 @@ def utc_ms(y, mo, d, h, mi):
 
 def page(br, origin, fx="high", at_et=(7, 30), extra="", tilt=False, said=True, live=True, alerts=None):
     ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True)
+    ctx.add_init_script("try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15: tests.test_hidden_bots / test_blitz_tab)
     ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
     off = utc_ms(2026, 11, 4, at_et[0] + 5, at_et[1])
     ll = json.loads(json.dumps(LAST_LIVE))

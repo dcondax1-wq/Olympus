@@ -268,6 +268,7 @@ def launch(p):
 
 def new_page(br, w, h, errs, tag, origin=None):
     ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True)
+    ctx.add_init_script("try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15: tests.test_hidden_bots / test_blitz_tab)
     if origin:
         ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=origin)
     ctx.route("**/api.github.com/**", lambda r: r.fulfill(status=404, body="{}"))          # the live feeds: not published here

@@ -140,6 +140,8 @@ def serve(sandbox, clock_path, port):
     from engine import dash_data
     dash_data.JOBS_MGR.submit = lambda spec, force=False: False   # the dashboards' 5-year backtests: not part of trading
     import server
+    from engine import hidden_bots as _hbz   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15)
+    _hbz.FORCE = ()
     import uvicorn
     server.HEARTBEAT.every_s = 5.0
     uvicorn.run(server.app, host="127.0.0.1", port=int(port), log_level="warning")

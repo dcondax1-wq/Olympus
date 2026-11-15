@@ -26,6 +26,7 @@ const srv = http.createServer((q, s) => {
   const b = await chromium.launch();
   try {
     const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+    await ctx.addInitScript(() => { try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {} });   // BLITZ shown for these pinned checks (hidden by default since 2026-11-15)
     const p = await ctx.newPage();
     p.on('pageerror', (e) => errors.push(e.message.slice(0, 200)));
     let lvHits = 0;

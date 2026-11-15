@@ -1525,6 +1525,15 @@ class AccountC:
     # ---- pushes (the real bot only: LiveBot._push_send)
     def _send(self, p):
         try:
+            # hidden on the dashboard (engine/hidden_bots.py, dashboard_view.json, owner 2026-11-15): paper / Sim pushes are
+            # logged only; a REAL account's push (only if the owner ever arms account C) still reaches the phone
+            from . import hidden_bots
+            if hidden_bots.is_hidden("blitz") and self.kind() != "LIVE":
+                self.log("push", f"(hidden, not pushed) {(p or {}).get('title') if isinstance(p, dict) else ''}")
+                return
+        except Exception:
+            pass
+        try:
             self.bot._push_send(p)
         except Exception:
             pass

@@ -81,9 +81,31 @@ def account_c_block(now):
             "days": {str(mon - _dt.timedelta(days=3)): 999.0, str(mon): 184.5, str(d0): 125.5}, "closed": [], "routed": [], "t": int(now)}
 
 
+def hidden_checks(now, lm):
+    """Hidden bots (owner 2026-11-15, dashboard_view.json, default ["blitz"]): live.json carries no BLITZ card, no account C,
+    no BLITZ trade, and says "hidden_bots" so the pages know; the heartbeat payload itself is not changed."""
+    import copy
+    from engine import hidden_bots
+    hb = hb_payload(now)
+    hb["account_c"] = account_c_block(now)
+    hb["blitz"] = {"label": "BLITZ (paper shadow)", "eval": {"room": 900}}
+    before = copy.deepcopy(hb)
+    hidden_bots.FORCE = ("blitz",)
+    try:
+        p = lp.build(hb, now, lm=lm, hb_last={"at": int(now) - 30, "ok": True}, every_s=60)
+    finally:
+        hidden_bots.FORCE = None
+    blob = json.dumps({k: v for k, v in p.items() if k != "hidden_bots"}).lower()
+    check("hidden: BLITZ hidden by default (the committed dashboard_view.json)", hidden_bots.hidden() == ("blitz",), hidden_bots.hidden())
+    check("hidden: live.json has no blitz / account_c anywhere and says hidden_bots",
+          "blitz" not in blob and "account_c" not in blob and p.get("hidden_bots") == ["blitz"]
+          and "lit" in (p.get("board") or {}) and "atlas" in (p.get("board") or {}), [k for k in p if "blitz" in k.lower()])
+    check("hidden: read-only (the heartbeat payload keeps BLITZ: the engine and ledgers are untouched)", hb == before)
+
+
 def blitz_checks(now, lm, p_off):
     """BLITZ (account C) on the phone feed: an "off" card while account C is off, the board's card shape while on,
-    read-only, None (never an exception) when it cannot be built."""
+    read-only, None (never an exception) when it cannot be built. Run with BLITZ shown (dashboard_view.json "hidden_bots": [])."""
     import copy
     from engine import live_board
     bz = p_off.get("blitz") or {}
@@ -181,7 +203,13 @@ def main(argv=None) -> int:
         check("secrets: scrub() drops credential keys at any depth and keeps eval words like 'passed'",
               lp.scrub({"a": {"password": 1, "api_key": 2, "passed": 3, "list": [{"webhook": "u", "ok": 1}]}})
               == {"a": {"passed": 3, "list": [{"ok": 1}]}})
-        blitz_checks(now, lm, p)
+        hidden_checks(now, lm)
+        from engine import hidden_bots as _hbz
+        _hbz.FORCE = ()                       # BLITZ shown: its own contract (the switch set to [])
+        try:
+            blitz_checks(now, lm, lp.build(hb_payload(now), now, lm=lm, hb_last={"at": int(now) - 30, "ok": True}, every_s=60))
+        finally:
+            _hbz.FORCE = None
         pc_health_checks(now, lm, p)
         big =lp.build(hb_payload(now, n_trades=60), now, lm=lm)
         sz = len(json.dumps(big, separators=(",", ":")))

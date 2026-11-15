@@ -98,7 +98,7 @@
     const row = (n) => {
       const gross = n * rate, net = steady != null ? n * steady : null;
       const sa3 = ST.plans && ST.plans.strategy && ST.plans.strategy.three_accounts;
-      const meas = n === 3 && sa3 && sa3.range ? ` · your 3 strategies (LIT + ATLAS + BLITZ) measured $${sa3.range.low.toLocaleString('en-US')}-${sa3.range.high.toLocaleString('en-US')} (first 6 months)`
+      const meas = n === 3 && sa3 && sa3.range && !(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has("blitz")) ? ` · your 3 strategies (LIT + ATLAS + BLITZ) measured $${sa3.range.low.toLocaleString('en-US')}-${sa3.range.high.toLocaleString('en-US')} (first 6 months)`
         : n === 3 && trio ? ` · the study measured ${usd(trio.net_per_month)} (first 6 months)` : '';
       return `<div class="zm-r ${gross >= X ? 'hit' : ''}"><span class="zm-n">${n} accounts</span><span class="zm-g"><b data-zn-num="zm-g${n}">${usd(gross)}</b><small>the bot's trading</small></span>
         <span class="zm-g"><b>${net != null ? usd(net) : '—'}</b><small>after payout rules${esc(meas)}</small></span></div>`;

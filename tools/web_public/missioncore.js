@@ -47,6 +47,8 @@
     atlas: { name: 'ATLAS', size: '25K', color: '#ff9a3d', sat: 'atlas', method: 'EMA · MACD · S/R', hours: [[180, 570], [120, 300], [570, 720]] },
     blitz: { name: 'BLITZ', size: '25K', color: '#b388ff', sat: 'scalp', method: 'scalper · 09:30 noise band', hours: [[570, 955]] },
   };
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): a hidden BLITZ is no orbit, card or placeholder
+  const HIDB = () => !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
   const keyOf = (k, a) => {
     const s = String((a && (a.id || a.key)) || k || '').toLowerCase();
     if (/^(lit|zlarior)/.test(s)) return 'lit';
@@ -68,8 +70,8 @@
     for (const [k, v] of Object.entries(B)) if (!NOT_ACCT.has(k)) take(k, v);
     const order = ['lit', 'atlas', 'blitz'];
     const keys = [...seen.keys()].sort((a, b) => (order.indexOf(a) < 0 ? 9 : order.indexOf(a)) - (order.indexOf(b) < 0 ? 9 : order.indexOf(b)));
-    const out = keys.map((k) => norm(k, seen.get(k), M));
-    if (!seen.has('blitz')) out.push(norm('blitz', null, M));
+    const out = keys.filter((k) => !(k === 'blitz' && HIDB())).map((k) => norm(k, seen.get(k), M));
+    if (!seen.has('blitz') && !HIDB()) out.push(norm('blitz', null, M));
     return out;
   }
   function lvOf(M, sat) { const s = obj(M && M.lv && M.lv.strategies); return s[sat] && typeof s[sat] === 'object' ? s[sat] : null; }
@@ -123,13 +125,13 @@
     const o = { lit: 'idle', atlas: 'idle', scalp: 'off' };
     for (const A of accounts(M)) if (BOT[A.key]) o[A.sat] = A.state;
     const L = lvOf(M, 'scalp');
-    if (o.scalp === 'off' && L && !L.placeholder) o.scalp = L.position || L.position50 ? 'trade' : 'idle';
+    if (o.scalp === 'off' && L && !L.placeholder && !HIDB()) o.scalp = L.position || L.position50 ? 'trade' : 'idle';
     return o;
   }
   // closed trades, newest first, each with a stable id (for the shooting stars: one per new close)
   function closed(M) {
     M = obj(M);
-    const T = arr(M && M.board && M.board.trades).filter((t) => t && t.open === false && (okN(+t.exit_t) || t.exit));
+    const T = arr(M && M.board && M.board.trades).filter((t) => t && !(t.acct === 'blitz' && HIDB()) && t.open === false && (okN(+t.exit_t) || t.exit));
     return T.map((t) => ({ id: `${t.acct}|${t.entry_t}|${t.exit_t || ''}`, acct: t.acct, usd: num(t.usd), r: num(t.r), t: num(t.exit_t) || num(t.entry_t) || 0, src: t.src }))
       .sort((a, b) => b.t - a.t);
   }
@@ -392,8 +394,8 @@
     M = obj(M);
     const As = accounts(M);
     return `<div class="mc-page">
-      <header class="mc-hero"><div><span class="mc-eye">Mission Control · read-only</span><h2>Three bots in orbit</h2>${sessionCountdown(M)}${telemetry(M)}
-        <p class="mc-skykey">In the sky behind: each bot is a satellite around the Earth (<span class="mc-lg" style="--c:#4f9bff"></span>Zlarior <span class="mc-lg" style="--c:#ff9a3d"></span>ATLAS <span class="mc-lg" style="--c:#b388ff"></span>BLITZ). It glows when armed, pulses with a beam to the ground while in a trade; a shooting star is a closed trade (green win, red loss); the aurora turns green or red with today's P&amp;L.</p></div></header>
+      <header class="mc-hero"><div><span class="mc-eye">Mission Control · read-only</span><h2>${HIDB() ? 'Two bots' : 'Three bots'} in orbit</h2>${sessionCountdown(M)}${telemetry(M)}
+        <p class="mc-skykey">In the sky behind: each bot is a satellite around the Earth (<span class="mc-lg" style="--c:#4f9bff"></span>Zlarior <span class="mc-lg" style="--c:#ff9a3d"></span>ATLAS${HIDB() ? '' : ' <span class="mc-lg" style="--c:#b388ff"></span>BLITZ'}). It glows when armed, pulses with a beam to the ground while in a trade; a shooting star is a closed trade (green win, red loss); the aurora turns green or red with today's P&amp;L.</p></div></header>
       <div class="mc-orbits">${As.map((A) => orbitCard(A, M, true, opts)).join('')}</div>
       <section class="card mc-card" data-mc-f="today"><header><h3>Today's mission</h3><p>What each bot is waiting for, right now</p></header>${missionList(M, As)}</section>
       <div class="mc-grid">${fStop(M, As)}${fWhy(M, As)}${fTimeline(M, As)}${fAlerts(M, As)}${fHealth(M)}${fRunway(M, As)}${fStreak(M, As)}${fLimits(M, As)}${fNews(M)}</div>
