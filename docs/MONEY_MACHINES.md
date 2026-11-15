@@ -195,6 +195,8 @@ third-party brand names (81 names checked in every file and the listing text, so
 app name), no income, result, ranking or pass promises, neutral file metadata, the "made with the help of AI tools" line (Etsy), real reviews
 only, "Ad" disclosure taught, the agreement marked NOT LEGAL ADVICE in the file, the licence and the listing, the trading risk line.
 
+**One upload sheet for all five:** `docs/BUSINESS_LISTING_KIT.md` (`python -m money_machines.products.listing_kit`; status of every model: `docs/BUSINESS.md`).
+
 **List them (owner, about 15 minutes each):** 1. Run the zip command above. 2. On Payhip: New product > Digital download, upload the zip,
 paste title, description and FAQ from `shop/listing.md`, add the 3 `cover_*.jpg`, set the price. 3. Add the shop link to the right
 Instagram bio. For Etsy use the `*_square.jpg` covers and the 13 tags; choose "I did" and "digital".

@@ -216,3 +216,6 @@ id_ed25519*
 # the Me hub (tools/me_hub.py, docs/ME_HUB.md): money, cards, health, home and dates for the phone are PRIVATE (served only by the PC's own link);
 # the typed inputs (cards, car, dates, device names) live outside the repo in %USERPROFILE%\.olympus\me\
 data/me/
+
+# Business page (tools/biz_publish.py, 2026-11-15): the owner's own progress; fixture.json is the committed DEMO
+tools/web_public/business/business.json
