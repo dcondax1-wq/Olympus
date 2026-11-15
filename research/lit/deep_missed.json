@@ -1,0 +1,344 @@
+{
+ "cap": {
+  "desc": "blocked by the 1-trade-a-day cap (a 2nd / 3rd setup of the day, one at a time)",
+  "override": {
+   "max_per_day": 3
+  },
+  "H1": {
+   "new": {
+    "n": 24,
+    "win": 12.5,
+    "mean_r": 0.009,
+    "sum_r": 0.23,
+    "pf": 1.03
+   },
+   "new_usd": -1477,
+   "new_exits": {
+    "STOP": 6,
+    "BE": 10,
+    "EOD": 3,
+    "CUT_T15": 4,
+    "TARGET": 1
+   },
+   "displaced": 0,
+   "displaced_usd": 0
+  },
+  "H2": {
+   "new": {
+    "n": 12,
+    "win": 33.3,
+    "mean_r": 0.364,
+    "sum_r": 4.37,
+    "pf": 1.85
+   },
+   "new_usd": 3555,
+   "new_exits": {
+    "STOP": 5,
+    "TARGET": 1,
+    "EOD": 3,
+    "BE": 3
+   },
+   "displaced": 0,
+   "displaced_usd": 0
+  },
+  "REF": {
+   "new": {
+    "n": 102,
+    "win": 22.5,
+    "mean_r": -0.104,
+    "sum_r": -10.62,
+    "pf": 0.8
+   },
+   "new_usd": -4799,
+   "new_exits": {
+    "EOD": 27,
+    "BE": 22,
+    "STOP": 48,
+    "TARGET": 5
+   },
+   "displaced": 0,
+   "displaced_usd": 0
+  }
+ },
+ "wait": {
+  "desc": "limit not tapped in 30 min or no 1m CISD in 22 bars (window doubled)",
+  "override": {
+   "wait": 12,
+   "cisd1m": 44
+  },
+  "H1": {
+   "new": {
+    "n": 6,
+    "win": 0.0,
+    "mean_r": -0.298,
+    "sum_r": -1.79,
+    "pf": 0.02
+   },
+   "new_usd": -345,
+   "new_exits": {
+    "BE": 3,
+    "STOP": 1,
+    "CUT_T15": 2
+   },
+   "displaced": 3,
+   "displaced_usd": -462
+  },
+  "H2": {
+   "new": {
+    "n": 7,
+    "win": 28.6,
+    "mean_r": -0.218,
+    "sum_r": -1.53,
+    "pf": 0.5
+   },
+   "new_usd": -691,
+   "new_exits": {
+    "BE": 2,
+    "STOP": 3,
+    "EOD": 2
+   },
+   "displaced": 3,
+   "displaced_usd": 2432
+  },
+  "REF": {
+   "new": {
+    "n": 187,
+    "win": 11.2,
+    "mean_r": -0.156,
+    "sum_r": -29.17,
+    "pf": 0.7
+   },
+   "new_usd": -12411,
+   "new_exits": {
+    "STOP": 93,
+    "BE": 68,
+    "EOD": 11,
+    "TARGET": 15
+   },
+   "displaced": 56,
+   "displaced_usd": -5236
+  }
+ },
+ "window": {
+  "desc": "outside the 02:00-15:30 entry window (00:00-02:00 and 15:30-15:55)",
+  "override": {
+   "window": [
+    [
+     0,
+     955
+    ]
+   ]
+  },
+  "H1": {
+   "new": {
+    "n": 13,
+    "win": 7.7,
+    "mean_r": -0.134,
+    "sum_r": -1.75,
+    "pf": 0.65
+   },
+   "new_usd": -1623,
+   "new_exits": {
+    "BE": 5,
+    "STOP": 3,
+    "CUT_T15": 4,
+    "EOD": 1
+   },
+   "displaced": 10,
+   "displaced_usd": 3791
+  },
+  "H2": {
+   "new": {
+    "n": 9,
+    "win": 22.2,
+    "mean_r": -0.025,
+    "sum_r": -0.22,
+    "pf": 0.95
+   },
+   "new_usd": 172,
+   "new_exits": {
+    "EOD": 2,
+    "STOP": 3,
+    "BE": 1,
+    "CUT_T15": 2,
+    "TARGET": 1
+   },
+   "displaced": 3,
+   "displaced_usd": -733
+  },
+  "REF": {
+   "new": {
+    "n": 63,
+    "win": 6.3,
+    "mean_r": -0.237,
+    "sum_r": -14.91,
+    "pf": 0.56
+   },
+   "new_usd": -10195,
+   "new_exits": {
+    "BE": 23,
+    "STOP": 31,
+    "TARGET": 4,
+    "EOD": 4,
+    "CUT_T15": 1
+   },
+   "displaced": 32,
+   "displaced_usd": -890
+  }
+ },
+ "min_rr": {
+  "desc": "target under 1.5R (1.0-1.5R)",
+  "override": {
+   "min_rr": 1.0
+  },
+  "H1": {
+   "new": {
+    "n": 1,
+    "win": 100.0,
+    "mean_r": 1.277,
+    "sum_r": 1.28,
+    "pf": null
+   },
+   "new_usd": 315,
+   "new_exits": {
+    "TARGET": 1
+   },
+   "displaced": 0,
+   "displaced_usd": 0
+  },
+  "H2": {
+   "new": {
+    "n": 0
+   },
+   "new_usd": 0,
+   "new_exits": {},
+   "displaced": 0,
+   "displaced_usd": 0
+  },
+  "REF": {
+   "new": {
+    "n": 13,
+    "win": 61.5,
+    "mean_r": 0.653,
+    "sum_r": 8.48,
+    "pf": 4.97
+   },
+   "new_usd": 1481,
+   "new_exits": {
+    "STOP": 2,
+    "TARGET": 8,
+    "EOD": 2,
+    "BE": 1
+   },
+   "displaced": 1,
+   "displaced_usd": -134
+  }
+ },
+ "stop": {
+  "desc": "stop under 8 or over 80 pts",
+  "override": {
+   "min_stop": 4.0,
+   "max_stop": 120.0
+  },
+  "H1": {
+   "new": {
+    "n": 4,
+    "win": 25.0,
+    "mean_r": -0.415,
+    "sum_r": -1.66,
+    "pf": 0.32
+   },
+   "new_usd": -292,
+   "new_exits": {
+    "EOD": 1,
+    "CUT_T15": 1,
+    "STOP": 2
+   },
+   "displaced": 1,
+   "displaced_usd": -133
+  },
+  "H2": {
+   "new": {
+    "n": 0
+   },
+   "new_usd": 0,
+   "new_exits": {},
+   "displaced": 0,
+   "displaced_usd": 0
+  },
+  "REF": {
+   "new": {
+    "n": 23,
+    "win": 17.4,
+    "mean_r": -0.101,
+    "sum_r": -2.32,
+    "pf": 0.81
+   },
+   "new_usd": -1144,
+   "new_exits": {
+    "STOP": 11,
+    "EOD": 2,
+    "TARGET": 3,
+    "BE": 7
+   },
+   "displaced": 9,
+   "displaced_usd": 2853
+  }
+ },
+ "monday": {
+  "desc": "blocked by the Monday rule",
+  "override": {
+   "monday": false
+  },
+  "H1": {
+   "new": {
+    "n": 8,
+    "win": 0.0,
+    "mean_r": -0.601,
+    "sum_r": -4.81,
+    "pf": 0.0
+   },
+   "new_usd": -903,
+   "new_exits": {
+    "BE": 3,
+    "STOP": 4,
+    "CUT_T15": 1
+   },
+   "displaced": 3,
+   "displaced_usd": 1594
+  },
+  "H2": {
+   "new": {
+    "n": 2,
+    "win": 0.0,
+    "mean_r": -1.012,
+    "sum_r": -2.02,
+    "pf": 0.0
+   },
+   "new_usd": -304,
+   "new_exits": {
+    "STOP": 2
+   },
+   "displaced": 0,
+   "displaced_usd": 0
+  },
+  "REF": {
+   "new": {
+    "n": 32,
+    "win": 31.2,
+    "mean_r": 0.238,
+    "sum_r": 7.63,
+    "pf": 1.53
+   },
+   "new_usd": 1750,
+   "new_exits": {
+    "STOP": 14,
+    "BE": 8,
+    "EOD": 6,
+    "TARGET": 4
+   },
+   "displaced": 8,
+   "displaced_usd": -2008
+  }
+ }
+}

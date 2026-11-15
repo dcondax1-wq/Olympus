@@ -759,6 +759,16 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   15:55))) easiest third x1.25: LIT +$4,079 / +$1,021, eval +$2,724 / +$660, 2-week pass/fail unchanged, funded +$12 /
   +$19/mo, shuffle p 0.067 / 0.093; but easy trades without a tight stop add nothing (= the Nov 4 stop-ATR lead, which at
   room 0.4 loses $538 of H2 eval money).
+- **E-LIT deep edge (2026-11-15, `2026-11-15-lit-deep.md`, `tools/lit_deep.py`, runs `lit_deep_*`, grid
+  `research/lit/deep_grid.json`; eval two_week room_f 0.4 to session 80):** structural SKIP rules (engine `skip_keys`, the day
+  left free for a later setup), Jan-Jun tercile and q80 cuts, 16 versions: target > 333 / 431 pts, target > 1.05 / 1.22 VIX
+  day-moves, day range so far > 0.80 / 0.92 VIX moves, stop > 0.152 / 0.175 VIX moves, stop > 2.51 / 2.81 x 5m ATR, an
+  opposing level within 0.97R / 0.61R, planned target < 7.46R / 6.13R, deep sweep + big displacement ("breakout"): none
+  passes (best: target > 1.22 VIX moves LIT +$1,602 / +$81 but eval H1 -$2,872); the skipped trades still make +0.3-0.9R
+  and a later setup rarely replaces them; trades fall to 1.2-2.4 a week in H2. Missed-setup census (cap 3 a day, limit / 1m
+  CISD window doubled, 00:00-15:55, min target 1.0R, stop 4-120, Monday rule off): none adds money in H1. Loser structure:
+  no single-fact bin loses in both halves; 425 two-fact H1 loser cells -> 88 lose again in H2 vs 95 by chance. H2 vs H1 =
+  18% fewer trades/mo, 12% less R a trade (lower VIX, wider stops), 18% less $ per R; low-VIX trades +0.77R in both halves.
 
 ## Key commands (run from the repo root)
 - **Numbers audit (2026-11-04):** `python tools/numbers_audit.py` (`--check` exits 1 on any 'wrong'; `--all` shows skipped history; `--json`; test `tests.test_numbers_audit`).
