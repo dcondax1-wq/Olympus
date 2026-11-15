@@ -45,7 +45,7 @@ TO_RX = re.compile(r"TimeoutError|Timeout \d+ms exceeded|Target (?:page, context
 
 # per-app suites that are not named test_*_page.py but are an app's own test
 KNOWN_APPS = ["arena", "fates", "hermes", "pantheon", "prometheus", "datacity", "app_intro", "olympus_fx", "oracle_odeon_fx", "ui_polish", "jarvis_bots",
-              "jarvis_kalshi", "space_ui", "atlas_ui", "blitz_tab", "agency"]
+              "jarvis_kalshi", "space_ui", "atlas_ui", "blitz_tab", "agency", "me_hub"]
 HUB = [("static", 120), ("a", 900), ("b", 900), ("missing", 1200), ("c", 1500), ("look", 1200), ("switcher", 1200), ("olympus", 1200), ("system", 900), ("intro", 1500)]
 
 

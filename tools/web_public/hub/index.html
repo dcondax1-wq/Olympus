@@ -11,7 +11,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="icon.svg">
-<!-- OLYMPUS HUB PAGE (2026-11-14, docs/OLYMPUS_IA_V2.md). hub/?h=<hub>&t=<tab>: today | bots | kalshi | money | plan | research | jarvis | worlds | settings.
+<!-- OLYMPUS HUB PAGE (2026-11-14, docs/OLYMPUS_IA_V2.md). hub/?h=<hub>&t=<tab>: today | me | bots | kalshi | money | plan | research | jarvis | worlds | settings.
+     me = the Me hub (docs/ME_HUB.md), a PAGE hub: me.js draws its 4 status tiles and 8 areas from the PC's private me/me.json instead of tabs.
      The hubs and their tabs are DATA in olympus/gate-catalog.js (HUBS + each app's hub / section / fold); the live lines come from olympus/hub-status.js.
      Each tab: the job in one line, the BEST app for it as a big card (its live status from its jarvis.json, "Open", and "Show it here" = the app embedded
      in a frame), the other apps for that job as rows, and the duplicates folded under "Other views of the same" (nothing removed: every old app URL works).
@@ -35,12 +36,14 @@
 })();</script>
 <link rel="stylesheet" href="../olympus/agora.css?v=a3">
 <link rel="stylesheet" href="hub.css?v=h1">
+<link rel="stylesheet" href="me.css?v=m1">
 <script src="../olympus/themes.js?v=o5"></script>
 <script src="../olympus/a11y.js" defer></script>
-<script src="../olympus/gate-catalog.js?v=g2"></script>
-<script src="../olympus/hub-status.js?v=h1"></script>
+<script src="../olympus/gate-catalog.js?v=me1"></script>
+<script src="../olympus/hub-status.js?v=h2"></script>
 <script src="../olympus/gate-nav.js?v=g3" data-app="hub" defer></script>
-<script src="hub.js?v=h1" defer></script>
+<script src="me.js?v=m2" defer></script>
+<script src="hub.js?v=h2" defer></script>
 </head>
 <body>
 <main id="hub" class="hb-main">
@@ -66,6 +69,7 @@
     <h2 class="hb-h2" id="indexH">All hubs</h2>
     <div class="hb-chips" id="hubChips">
       <a class="hb-chip" data-hub="today" href="index.html?h=today">Today</a>
+      <a class="hb-chip" data-hub="me" href="index.html?h=me">Me</a>
       <a class="hb-chip" data-hub="bots" href="index.html?h=bots">Bots &amp; Evals</a>
       <a class="hb-chip" data-hub="kalshi" href="index.html?h=kalshi">Kalshi</a>
       <a class="hb-chip" data-hub="money" href="index.html?h=money">My Money</a>

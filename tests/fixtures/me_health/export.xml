@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HealthData [
+<!-- HealthKit Export Version: 13 (a tiny made-up export for tests/test_me_hub.py: the real file's shape, fake numbers) -->
+<!ELEMENT HealthData (ExportDate,Me,(Record|Correlation|Workout|ActivitySummary|ClinicalRecord|Audiogram|VisionPrescription)*)>
+<!ATTLIST HealthData
+  locale CDATA #REQUIRED
+>
+<!ELEMENT ExportDate EMPTY>
+<!ATTLIST ExportDate
+  value CDATA #REQUIRED
+>
+<!ELEMENT Me EMPTY>
+<!ATTLIST Me
+  HKCharacteristicTypeIdentifierDateOfBirth         CDATA #REQUIRED
+  HKCharacteristicTypeIdentifierBiologicalSex       CDATA #REQUIRED
+>
+<!ELEMENT Record ((MetadataEntry|HeartRateVariabilityMetadataList)*)>
+<!ATTLIST Record
+  type          CDATA #REQUIRED
+  unit          CDATA #IMPLIED
+  value         CDATA #IMPLIED
+  sourceName    CDATA #REQUIRED
+  sourceVersion CDATA #IMPLIED
+  device        CDATA #IMPLIED
+  creationDate  CDATA #IMPLIED
+  startDate     CDATA #REQUIRED
+  endDate       CDATA #REQUIRED
+>
+<!ELEMENT MetadataEntry EMPTY>
+<!ATTLIST MetadataEntry
+  key   CDATA #REQUIRED
+  value CDATA #REQUIRED
+>
+<!ELEMENT Workout ((MetadataEntry|WorkoutEvent|WorkoutRoute|WorkoutStatistics)*)>
+<!ATTLIST Workout
+  workoutActivityType   CDATA #REQUIRED
+  duration              CDATA #IMPLIED
+  durationUnit          CDATA #IMPLIED
+  totalDistance         CDATA #IMPLIED
+  totalDistanceUnit     CDATA #IMPLIED
+  totalEnergyBurned     CDATA #IMPLIED
+  totalEnergyBurnedUnit CDATA #IMPLIED
+  sourceName            CDATA #REQUIRED
+  startDate             CDATA #REQUIRED
+  endDate               CDATA #REQUIRED
+>
+<!ELEMENT WorkoutStatistics EMPTY>
+<!ATTLIST WorkoutStatistics
+  type      CDATA #REQUIRED
+  startDate CDATA #REQUIRED
+  endDate   CDATA #REQUIRED
+  sum       CDATA #IMPLIED
+  unit      CDATA #IMPLIED
+>
+<!ELEMENT ActivitySummary EMPTY>
+<!ATTLIST ActivitySummary
+  dateComponents           CDATA #IMPLIED
+  activeEnergyBurned       CDATA #IMPLIED
+  activeEnergyBurnedGoal   CDATA #IMPLIED
+  activeEnergyBurnedUnit   CDATA #IMPLIED
+  appleExerciseTime        CDATA #IMPLIED
+  appleExerciseTimeGoal    CDATA #IMPLIED
+  appleStandHours          CDATA #IMPLIED
+  appleStandHoursGoal      CDATA #IMPLIED
+>
+]>
+<HealthData locale="en_US">
+ <ExportDate value="2026-11-14 08:00:00 -0500"/>
+ <Me HKCharacteristicTypeIdentifierDateOfBirth="" HKCharacteristicTypeIdentifierBiologicalSex="HKBiologicalSexNotSet"/>
+ <Record type="HKQuantityTypeIdentifierStepCount" sourceName="Test iPhone" sourceVersion="17.1" unit="count" creationDate="2026-11-10 08:10:00 -0500" startDate="2026-11-10 08:00:00 -0500" endDate="2026-11-10 08:10:00 -0500" value="1200"/>
+ <Record type="HKQuantityTypeIdentifierStepCount" sourceName="Test iPhone" sourceVersion="17.1" unit="count" creationDate="2026-11-10 18:10:00 -0500" startDate="2026-11-10 18:00:00 -0500" endDate="2026-11-10 18:10:00 -0500" value="3000"/>
+ <Record type="HKQuantityTypeIdentifierStepCount" sourceName="Test Watch" sourceVersion="10.1" unit="count" creationDate="2026-11-10 08:10:00 -0500" startDate="2026-11-10 08:00:00 -0500" endDate="2026-11-10 08:10:00 -0500" value="1000">
+  <MetadataEntry key="HKMetadataKeySyncVersion" value="2"/>
+ </Record>
+ <Record type="HKQuantityTypeIdentifierStepCount" sourceName="Test Watch" sourceVersion="10.1" unit="count" creationDate="2026-11-10 18:10:00 -0500" startDate="2026-11-10 18:00:00 -0500" endDate="2026-11-10 18:10:00 -0500" value="4000"/>
+ <Record type="HKQuantityTypeIdentifierStepCount" sourceName="Test Watch" sourceVersion="10.1" unit="count" creationDate="2026-11-11 12:10:00 -0500" startDate="2026-11-11 12:00:00 -0500" endDate="2026-11-11 12:10:00 -0500" value="6100"/>
+ <Record type="HKQuantityTypeIdentifierStepCount" sourceName="Test Watch" sourceVersion="10.1" unit="count" creationDate="2024-01-01 12:10:00 -0500" startDate="2024-01-01 12:00:00 -0500" endDate="2024-01-01 12:10:00 -0500" value="99999"/>
+ <Record type="HKQuantityTypeIdentifierActiveEnergyBurned" sourceName="Test Watch" sourceVersion="10.1" unit="Cal" creationDate="2026-11-10 12:00:00 -0500" startDate="2026-11-10 11:00:00 -0500" endDate="2026-11-10 12:00:00 -0500" value="498"/>
+ <Record type="HKQuantityTypeIdentifierActiveEnergyBurned" sourceName="Test Watch" sourceVersion="10.1" unit="kJ" creationDate="2026-11-11 12:00:00 -0500" startDate="2026-11-11 11:00:00 -0500" endDate="2026-11-11 12:00:00 -0500" value="1000"/>
+ <Record type="HKQuantityTypeIdentifierAppleExerciseTime" sourceName="Test Watch" sourceVersion="10.1" unit="min" creationDate="2026-11-11 12:00:00 -0500" startDate="2026-11-11 11:00:00 -0500" endDate="2026-11-11 11:22:00 -0500" value="22"/>
+ <Record type="HKCategoryTypeIdentifierAppleStandHour" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-11 09:00:00 -0500" startDate="2026-11-11 08:00:00 -0500" endDate="2026-11-11 09:00:00 -0500" value="HKCategoryValueAppleStandHourStood"/>
+ <Record type="HKCategoryTypeIdentifierAppleStandHour" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-11 10:00:00 -0500" startDate="2026-11-11 09:00:00 -0500" endDate="2026-11-11 10:00:00 -0500" value="HKCategoryValueAppleStandHourStood"/>
+ <Record type="HKCategoryTypeIdentifierAppleStandHour" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-11 11:00:00 -0500" startDate="2026-11-11 10:00:00 -0500" endDate="2026-11-11 11:00:00 -0500" value="HKCategoryValueAppleStandHourIdle"/>
+ <Record type="HKCategoryTypeIdentifierAppleStandHour" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-11 12:00:00 -0500" startDate="2026-11-11 11:00:00 -0500" endDate="2026-11-11 12:00:00 -0500" value="HKCategoryValueAppleStandHourStood"/>
+ <Record type="HKQuantityTypeIdentifierRestingHeartRate" sourceName="Test Watch" sourceVersion="10.1" unit="count/min" creationDate="2026-11-10 20:00:00 -0500" startDate="2026-11-10 00:00:00 -0500" endDate="2026-11-10 20:00:00 -0500" value="58"/>
+ <Record type="HKQuantityTypeIdentifierRestingHeartRate" sourceName="Test Watch" sourceVersion="10.1" unit="count/min" creationDate="2026-11-11 20:00:00 -0500" startDate="2026-11-11 00:00:00 -0500" endDate="2026-11-11 20:00:00 -0500" value="60"/>
+ <Record type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN" sourceName="Test Watch" sourceVersion="10.1" unit="ms" creationDate="2026-11-10 03:00:00 -0500" startDate="2026-11-10 03:00:00 -0500" endDate="2026-11-10 03:01:00 -0500" value="40"/>
+ <Record type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN" sourceName="Test Watch" sourceVersion="10.1" unit="ms" creationDate="2026-11-10 05:00:00 -0500" startDate="2026-11-10 05:00:00 -0500" endDate="2026-11-10 05:01:00 -0500" value="50"/>
+ <Record type="HKQuantityTypeIdentifierBodyMass" sourceName="Test Scale" sourceVersion="2" unit="kg" creationDate="2026-11-12 07:00:00 -0500" startDate="2026-11-12 07:00:00 -0500" endDate="2026-11-12 07:00:00 -0500" value="82"/>
+ <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-11 07:00:00 -0500" startDate="2026-11-10 22:45:00 -0500" endDate="2026-11-11 07:00:00 -0500" value="HKCategoryValueSleepAnalysisInBed"/>
+ <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-11 07:00:00 -0500" startDate="2026-11-10 23:00:00 -0500" endDate="2026-11-11 01:00:00 -0500" value="HKCategoryValueSleepAnalysisAsleepCore"/>
+ <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-11 07:00:00 -0500" startDate="2026-11-11 01:00:00 -0500" endDate="2026-11-11 02:00:00 -0500" value="HKCategoryValueSleepAnalysisAsleepDeep"/>
+ <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-11 07:00:00 -0500" startDate="2026-11-11 02:00:00 -0500" endDate="2026-11-11 03:00:00 -0500" value="HKCategoryValueSleepAnalysisAsleepREM"/>
+ <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-11 07:00:00 -0500" startDate="2026-11-11 03:00:00 -0500" endDate="2026-11-11 06:30:00 -0500" value="HKCategoryValueSleepAnalysisAsleepCore"/>
+ <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-11 07:00:00 -0500" startDate="2026-11-11 06:30:00 -0500" endDate="2026-11-11 06:45:00 -0500" value="HKCategoryValueSleepAnalysisAwake"/>
+ <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Sleep App" sourceVersion="3" creationDate="2026-11-11 07:00:00 -0500" startDate="2026-11-10 23:30:00 -0500" endDate="2026-11-11 06:00:00 -0500" value="HKCategoryValueSleepAnalysisAsleepUnspecified"/>
+ <Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="32.5" durationUnit="min" sourceName="Test Watch" sourceVersion="10.1" creationDate="2026-11-12 18:40:00 -0500" startDate="2026-11-12 18:05:00 -0500" endDate="2026-11-12 18:37:30 -0500">
+  <MetadataEntry key="HKIndoorWorkout" value="0"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2026-11-12 18:05:00 -0500" endDate="2026-11-12 18:37:30 -0500" sum="310" unit="Cal"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierDistanceWalkingRunning" startDate="2026-11-12 18:05:00 -0500" endDate="2026-11-12 18:37:30 -0500" sum="3.1" unit="mi"/>
+ </Workout>
+ <ActivitySummary dateComponents="2026-11-10" activeEnergyBurned="512" activeEnergyBurnedGoal="600" activeEnergyBurnedUnit="Cal" appleExerciseTime="34" appleExerciseTimeGoal="30" appleStandHours="11" appleStandHoursGoal="12"/>
+</HealthData>

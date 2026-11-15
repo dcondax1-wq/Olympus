@@ -2,6 +2,8 @@
  * Owner: "Make it very organized. I keep saying this but it always looks the same: 'Trading', 'Money', 'Life' subcategories. I want something more organized."
  * v1 had 82 rows in 4 districts (Trading 33 / Money 16 / Life 12 / Worlds 11) + a Workshop. v2: the districts ARE the hubs (so the theme engine's
  * per-district "mix" follows the hubs): Today, Bots & Evals, Kalshi, My Money, Plan & Day, Research, Jarvis, Worlds, Settings & Help.
+ * + Me (2026-11-14, team ME1, docs/ME_HUB.md): a PAGE hub (page: 'me', no apps, no tabs): its areas are drawn by hub/me.js from the PC's private
+ *   me/me.json; it has its own look in Mix like any hub; findHubs(q) lets the Gate's search find it ("health", "wifi", "cards").
  * Inside a hub, a section = one job. The FIRST app of a section is its best version ("best"); an app whose 9th column names another app is a duplicate
  * folded into that one (shown under "Other views of the same", never removed). Every old app URL stays: hubs only link / embed them.
  * One row per app: [id, path from the site root ('' = the dashboard), Greek name, plain label (what the owner reads first), one-line purpose,
@@ -110,6 +112,17 @@
     { id: 'today', name: 'Today', q: 'What is happening, and what do I do now?', line: 'Do now, the morning brief, news and the clock', icon: 'sun', legacy: 'trading',
       sections: [['now', 'Do now', 'The few things that need you today'], ['brief', 'Morning brief', 'How today looks, in one read'], ['market', 'News and market', 'News days, the clock and the market mood']],
       see: ['nq', 'aegis', 'planner'] },
+    /* the Me hub (team ME1, 2026-11-14, docs/ME_HUB.md): a PAGE hub. No app tabs: hub/me.js draws 4 status tiles and the areas below, each a short
+       card stack, from the PC's private me/me.json (tools/me_hub.py; the PC's own link only, empty on the public site). area = [id, title, blurb] */
+    { id: 'me', name: 'Me', q: 'How am I doing — money, health, home?', line: 'Money, cards, health, home and dates, in one place', icon: 'me', legacy: 'life', page: 'me',
+      words: 'me personal life private health watch apple fitness sleep steps heart hrv recovered workouts weight wifi wi-fi internet speed outage router network devices ' +
+        'cards credit card utilization due bills subscriptions spending budget net worth birthday birthdays dates anniversary car oil registration insurance freedom quit job paycheck streaks',
+      sections: [],
+      areas: [['money', 'Money', 'Spending this month vs last, subscriptions, bills due, net worth'], ['cards', 'Cards', 'Use per card, due dates, interest if carried'],
+        ['health', 'Health', 'Today, last night, the week, resting heart rate and HRV'], ['home', 'Home & WiFi', 'Internet speed, outages, devices, this PC'],
+        ['freedom', 'Freedom', 'Side income against your paycheck, months to quit'], ['dates', 'Dates', 'Birthdays and important days'],
+        ['car', 'Car', 'Oil change, registration, mileage'], ['streaks', 'Streaks', 'Days in a row, counted for you']],
+      see: ['oikos', 'planner', 'argo'] },
     { id: 'bots', name: 'Bots & Evals', q: 'Are my bots on, and how is each eval doing?', line: 'Each account: drawdown, trades, pass odds', icon: 'bots', legacy: 'trading',
       sections: [['bots', 'Bots now', 'On or off, the last report, what to fix'], ['risk', 'Risk', 'Drawdown left, when to stop, how big to trade'], ['odds', 'Pass odds', 'The odds each eval passes, and how fast'],
         ['trades', 'Trades', 'Every trade, the losers, the P&L by day'], ['review', 'Review', 'The weekly review, the journal, discipline']],
@@ -142,7 +155,11 @@
   });
   var BY = {}, HB = {}, BEST = {};
   apps.forEach(function (a) { BY[a.id] = a; var k = a.hub + '/' + a.section; if (!BEST[k] && !a.fold) BEST[k] = a.id; });
-  HUBS.forEach(function (h) { HB[h.id] = h; h.count = apps.filter(function (a) { return a.hub === h.id; }).length; Object.freeze(h); });
+  HUBS.forEach(function (h) {
+    HB[h.id] = h; h.count = apps.filter(function (a) { return a.hub === h.id; }).length;
+    h.size = h.page ? (h.areas || []).length + ' areas' : h.count + ' app' + (h.count === 1 ? '' : 's');   // what the home tile and Go to say under the name
+    Object.freeze(h);
+  });
   var DNAME = {};
   HUBS.forEach(function (h) { DNAME[h.id] = h.name.toLowerCase(); });
   function norm(s) { return String(s || '').toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9&$]+/g, ' ').replace(/^\s+|\s+$/g, ''); }
@@ -173,6 +190,16 @@
     hits.sort(function (x, y) { return y.s - x.s || x.a.rank - y.a.rank; });
     return hits.slice(0, n || 8).map(function (h) { return h.a; });
   }
+  /** the hubs a search names: every word typed starts a word of the hub's name, line, question, own words or areas (the Me hub: "health", "wifi") */
+  function findHubs(q) {
+    var toks = norm(q).split(' ').filter(function (t) { return t.length > 1; });
+    if (!toks.length) return [];
+    return HUBS.filter(function (h) {
+      var text = norm([h.name, h.line, h.q, h.words || ''].concat((h.areas || []).map(function (a) { return a[1] + ' ' + a[2]; })).join(' '));
+      for (var i = 0; i < toks.length; i++) if (!wordStarts(text, toks[i])) return false;
+      return !!h.page;          // app hubs are found through their apps; a page hub has no app of its own to find
+    });
+  }
   function byId(id) { return BY[id] || null; }
   function hubOf(id) { var a = BY[id]; return a ? HB[a.hub] : null; }      // the hub an APP lives in
   function hub(id) { return HB[id] || null; }                               // a hub by its own id
@@ -192,7 +219,7 @@
     return { hub: h.id, hubName: h.name, section: a.section, sectionName: sec ? sec[1] : '', path: 'hub/index.html?h=' + h.id + '&t=' + a.section, app: a.label };
   }
   var out = Object.freeze({ v: 2, apps: Object.freeze(apps), districts: HUBS, hubs: HUBS, start: ['nq', 'today', 'jarvis'],
-    find: find, byId: byId, norm: norm, hub: hub, hubOf: hubOf, layout: layout, crumbOf: crumbOf, isBest: isBest, mixOf: function (id) { var h = hubOf(id); return h ? h.id : ''; } });
+    find: find, findHubs: findHubs, byId: byId, norm: norm, hub: hub, hubOf: hubOf, layout: layout, crumbOf: crumbOf, isBest: isBest, mixOf: function (id) { var h = hubOf(id); return h ? h.id : ''; } });
   g.OLYMPUS_GATE = out;
   if (typeof module !== 'undefined' && module.exports) module.exports = out;
 }(typeof window !== 'undefined' ? window : globalThis));

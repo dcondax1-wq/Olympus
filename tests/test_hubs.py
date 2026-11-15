@@ -7,7 +7,7 @@ tools/web_public/hub/ (hub/?h=<hub>&t=<tab>); breadcrumbs + Go to are olympus/ga
   b. node: every app in exactly one hub and tab, each tab has one best app, every fold points at the best of its own tab, the breadcrumb of every app,
      the hub lines (bots fresh / old / missing, Kalshi, money, my shift, research), demo cards never shown as live
   c. Chromium 390 x 844: every hub page (title, tabs, best card, folded duplicates, breadcrumb Home > Hub), every app reachable home -> hub -> app (2 taps),
-     ?t= deep links, "Show it here" embeds the app, the live strip of Bots & Evals / Kalshi / My Money / Plan & Day, Settings & Help lists all 83 apps,
+     ?t= deep links, "Show it here" embeds the app, the live strip of Bots & Evals / Kalshi / My Money / Plan & Day, Settings & Help lists every app (83),
      an unknown hub = the list of hubs, gate-nav on an AGORA app without its own tag, 375 x 667 reduced motion; taps >= 44 px, no sideways scroll
     python -X utf8 -m tests.test_hubs            (--static: parts a and b only; screenshots with AGORA_SHOTS=<dir>)
 """
@@ -29,9 +29,10 @@ H = os.path.join(AK.WEB, "hub")
 CAT = os.path.join(AK.WEB, "olympus", "gate-catalog.js")
 HSJ = os.path.join(AK.WEB, "olympus", "hub-status.js")
 NAV = os.path.join(AK.WEB, "olympus", "gate-nav.js")
-HUBS = ["today", "bots", "kalshi", "money", "plan", "research", "jarvis", "worlds", "settings"]
-NAMES = ["Today", "Bots & Evals", "Kalshi", "My Money", "Plan & Day", "Research", "Jarvis", "Worlds", "Settings & Help"]
+HUBS = ["today", "me", "bots", "kalshi", "money", "plan", "research", "jarvis", "worlds", "settings"]     # + Me (2026-11-14, a page hub: tests/test_me_hub.py)
+NAMES = ["Today", "Me", "Bots & Evals", "Kalshi", "My Money", "Plan & Day", "Research", "Jarvis", "Worlds", "Settings & Help"]
 NOW = "2026-11-12T15:00:00Z"            # Thursday 10:00 New York: the LIT window is open
+N_APPS = 83                              # 82 + Agency (agency/, wired 2026-11-14)
 NOW_S = int(datetime(2026, 11, 12, 15, 0, tzinfo=timezone.utc).timestamp())
 
 
@@ -53,10 +54,10 @@ def test_static():
     check("a. the files: hub/index.html, hub.js, hub.css, icon.svg, olympus/hub-status.js, docs/OLYMPUS_IA_V2.md",
           all(os.path.isfile(os.path.join(H, n)) for n in names) and os.path.isfile(HSJ) and os.path.isfile(os.path.join(AK.ROOT, "docs", "OLYMPUS_IA_V2.md")))
     html, js, css, hs, nav, cat = (AK.read(p) for p in (os.path.join(H, "index.html"), os.path.join(H, "hub.js"), os.path.join(H, "hub.css"), HSJ, NAV, CAT))
-    order = ["../olympus/agora.css?v=a3", "hub.css?v=h1", "../olympus/themes.js?v=o5", "../olympus/gate-catalog.js?v=g2", "../olympus/hub-status.js?v=h1",
-             '../olympus/gate-nav.js?v=g3" data-app="hub" defer', "hub.js?v=h1"]
+    order = ["../olympus/agora.css?v=a3", "hub.css?v=h1", "me.css?v=m1", "../olympus/themes.js?v=o5", "../olympus/gate-catalog.js?v=me1", "../olympus/hub-status.js?v=h2",
+             '../olympus/gate-nav.js?v=g3" data-app="hub" defer', "me.js?v=m2", "hub.js?v=h2"]
     pos = [html.find(x) for x in order]
-    check("a. the page loads agora.css, hub.css, the theme engine, the catalog, hub-status, gate-nav (data-app=hub, deferred) and hub.js, in that order, all in <head>",
+    check("a. the page loads agora.css, hub.css, me.css, the theme engine, the catalog, hub-status, gate-nav (data-app=hub, deferred), me.js (the Me hub) and hub.js, in that order, all in <head>",
           all(p >= 0 for p in pos) and pos == sorted(pos) and max(pos) < html.index("</head>"), dict(zip(order, pos)))
     check("a. the page: AGORA theme, viewport-fit=cover, ONE h1, a polite live strip, a tablist + tabpanel, the hub list as plain links (works without the script), Home",
           '<html lang="en" data-theme="agora">' in html and "viewport-fit=cover" in html and html.count("<h1") == 1 and 'aria-live="polite"' in html
@@ -88,8 +89,8 @@ def test_static():
     check("a. gate-nav: breadcrumb (nav aria-label=Breadcrumb, aria-current on the last crumb), 'Home' instead of 'Gate', the nine hubs first in Go to",
           "'Breadcrumb'" in nav and "'aria-current', 'page'" in nav and "label.textContent = 'Home'" in nav and "'Hubs'" in nav and "hub/index.html?h=" in nav and "'gate.recent.v1'" in nav)
     doc = AK.read(os.path.join(AK.ROOT, "docs", "OLYMPUS_IA_V2.md"))
-    check("a. docs/OLYMPUS_IA_V2.md: the nine hubs, the duplicates folded, every app (83 rows), the wiring for the lead",
-          all(n in doc for n in NAMES) and "Duplicates folded" in doc and doc.count("| **best** |") + doc.count("| also |") + doc.count("| folded into ") == 83
+    check(f"a. docs/OLYMPUS_IA_V2.md: the nine hubs, the duplicates folded, every app ({N_APPS} rows), the wiring for the lead",
+          all(n in doc for n in NAMES) and "Duplicates folded" in doc and doc.count("| **best** |") + doc.count("| also |") + doc.count("| folded into ") == N_APPS
           and "OTHER_APPS" in doc and "build_web_dashboard.py" in doc)
 
 
@@ -147,10 +148,10 @@ def test_node():
         check("b. the catalog and hub-status run in node", False, O["_error"])
         return
     hubs, apps, lay = O["hubs"], O["apps"], O["lay"]
-    check("b. nine hubs in the home's order, named after the owner's jobs, each with its question", [h["id"] for h in hubs] == HUBS and [h["name"] for h in hubs] == NAMES
+    check("b. the hubs in the home's order (the nine + Me, a page hub), named after the owner's jobs, each with its question", [h["id"] for h in hubs] == HUBS and [h["name"] for h in hubs] == NAMES
           and all(h["q"].endswith(("?", ")")) for h in hubs), [h["name"] for h in hubs])
-    check("b. 83 apps (Agency joined My Money 2026-11-14), each in exactly one hub (district = hub, so the theme's mix follows it); the counts add up",
-          len(apps) == 83 and all(a["hub"] in HUBS and a["district"] == a["hub"] for a in apps) and sum(h["count"] for h in hubs) == 83, [h["count"] for h in hubs])
+    check(f"b. {N_APPS} apps, each in exactly one hub (district = hub, so the theme's mix follows it); the counts add up",
+          len(apps) == N_APPS and all(a["hub"] in HUBS and a["district"] == a["hub"] for a in apps) and sum(h["count"] for h in hubs) == N_APPS, [h["count"] for h in hubs])
     seen = {}
     for h in HUBS:
         for s in lay[h]:
@@ -238,6 +239,8 @@ def test_page():
         with AK.browser() as br:
             reached = set()
             for hid, name in zip(HUBS, NAMES):
+                if hid == "me":                # a page hub (tiles and areas, no app tabs): tests/test_me_hub.py
+                    continue
                 ctx, p, errs, seen, off = AK.page(br, origin, storage={"planner.today.v1": PLAN})
                 open_hub(p, origin, f"?h={hid}")
                 r = p.evaluate(STATE)
@@ -308,10 +311,10 @@ def test_page():
             check("c. inside the frame the app knows it is framed and adds no second breadcrumb", "framed" in inner[0] and not inner[1], inner)
             open_hub(p, origin, "?h=settings&t=help")
             az = p.evaluate("() => [...document.querySelectorAll('#panel .hb-az a.hb-row')].map((a) => a.dataset.app)")
-            check("c. Settings & Help > Help lists every app A to Z (83), each with its hub", len(az) == 83 and len(set(az)) == 83, len(az))
+            check(f"c. Settings & Help > Help lists every app A to Z ({N_APPS}), each with its hub", len(az) == N_APPS and len(set(az)) == N_APPS, len(az))
             open_hub(p, origin, "?h=nope")
             r = p.evaluate("() => [document.querySelector('#indexH').textContent, [...document.querySelectorAll('a.hb-hubrow')].map((a) => a.dataset.hub), document.querySelector('#tabs').hidden]")
-            check("c. an unknown hub (?h=nope) shows 'Pick a hub' and the nine hubs", r == ["Pick a hub", HUBS, True], r)
+            check("c. an unknown hub (?h=nope) shows 'Pick a hub' and every hub", r == ["Pick a hub", HUBS, True], r)
             ctx.close()
 
             # gate-nav arrives by itself on an AGORA app without its own tag (Compass), and on a hub page Go to marks the hub

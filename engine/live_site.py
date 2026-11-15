@@ -17,6 +17,10 @@ into a proxy to http://127.0.0.1:8766, inside the owner's tailnet only, never Fu
                          PRIVATE, so it lives only in data/day/ and only this route serves it (never a site folder, never
                          PUBLISH_NQ / Netlify / GitHub Pages); 404 with a plain reason until a calendar is connected
                          (+ money/household.json: your bank exports' summary, tools/money_import.py; on this link only)
+  /site/me/<file>.json   the Me hub (hub/?h=me, docs/ME_HUB.md): me.json (tools/me_hub.py: money, cards, health, home, dates),
+                         health.json (tools/me_health.py: the Apple Watch Shortcut + the Health export), home.json (tools/me_home.py:
+                         WiFi speed, outages, devices, this PC). PRIVATE like day/: only data/me/ (LE_ME_DIR), only this route,
+                         never a site folder, never PUBLISH_NQ / Netlify / GitHub Pages; 404 with a plain reason until it is made
   GET /api/site/live.json  the bot's live.json (engine/live_publish.build of the running bot: kind "le-live", pc, pc_verdict,
                          board, accounts), at most 15 s old; the Gate's "Right now" card reads it
   GET /api/site/status   what this serves: which site folder and how old, live on / off, the Kalshi and money sources
@@ -58,6 +62,8 @@ SITE_CANDIDATES = (os.path.join(ROOT, "data", "pc_publish", "site"), os.path.joi
 MONEY_OUT = os.path.join(ROOT, "money_out")
 DAY_DIR = os.path.join(ROOT, "data", "day")     # tools/calendar_sync.py OUT_DEFAULT (LE_DAY_DIR overrides, as there)
 DAY_FILES = ("day.json", "inbox.json")         # private: served from DAY_DIR only, never looked up in a site folder (inbox.json: engine/day_inbox.py)
+ME_DIR = os.path.join(ROOT, "data", "me")       # tools/me_hub.py OUT_DEFAULT (LE_ME_DIR overrides, as there): the Me hub's phone files
+ME_FILES = ("me.json", "health.json", "home.json")   # private: served from ME_DIR only, never looked up in a site folder
 POST_ALLOW: list = []                           # the only POSTs the phone link may make: engine/day_inbox.allowed (POST /inbox/<kind>), added by its install()
 PREFIX = "/site"
 GATE = PREFIX + "/gate/"
@@ -426,6 +432,15 @@ def day_file(name: str, env=None):
     return p if os.path.isfile(p) and read_json(p) is not None else None
 
 
+def me_file(name: str, env=None):
+    """data/me/<name> (the Me hub: tools/me_hub.py, me_health.py, me_home.py) when it is a known file with valid JSON, else None"""
+    env = os.environ if env is None else env
+    if name not in ME_FILES:
+        return None
+    p = os.path.join(env.get("LE_ME_DIR") or ME_DIR, name)
+    return p if os.path.isfile(p) and read_json(p) is not None else None
+
+
 # ------------------------------------------------------------------------------------------------ the routes
 router = APIRouter()
 
@@ -462,7 +477,8 @@ def r_status():
     m = money_file("index.json")
     return _J({"ok": True, "t": int(time.time()), "site": {"built": bool(d), "dir": os.path.relpath(d, ROOT).replace("\\", "/") if d else None,
                                                          "built_t": built_t, "fallback": "tools/web_public"},
-               "live": _live() is not None, "kalshi": ksrc, "money": "money_out" if m else ("site" if d else None), "home": GATE})
+               "live": _live() is not None, "kalshi": ksrc, "money": "money_out" if m else ("site" if d else None), "home": GATE,
+               "me": bool(me_file("me.json"))})
 
 
 @router.get("/api/site/launch.json")
@@ -515,6 +531,14 @@ def r_site(rel: str, request: Request):
             return FileResponse(p, media_type="application/json", headers={"Cache-Control": "no-store", "X-Olympus-Source": "calendar_sync"})
         if name in DAY_FILES:
             return _J({"ok": False, "error": "no calendar connected on this PC yet (CONNECT_DAY.bat, docs/CONNECT_DAY.md)"}, 404)
+        return _J({"ok": False, "error": "not found"}, 404)
+    if rel.startswith("me/"):
+        name = rel[len("me/"):]
+        p = me_file(name)
+        if p:
+            return FileResponse(p, media_type="application/json", headers={"Cache-Control": "no-store", "X-Olympus-Source": "me_hub"})
+        if name in ME_FILES:
+            return _J({"ok": False, "error": "the Me hub has not been made on this PC yet (it runs with the PC report; docs/ME_HUB.md)"}, 404)
         return _J({"ok": False, "error": "not found"}, 404)
     kind, path = resolve(rel, dirs)
     if kind == "file":
