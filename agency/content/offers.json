@@ -1,0 +1,13 @@
+{
+  "note": "What the monthly report may suggest next (one suggestion per report). Prices: the content service is ours (docs/AGENCY_CONTENT.md); a null price prints 'ask us' until the shared price list (billing team) sets it. Edit freely.",
+  "offers": [
+    {"id": "social_basic", "name": "Social posts: Basic", "price": "$149/mo", "has": ["social"],
+     "what": "12 ready-made posts a month, each with a story, written for your trade and your town and scheduled for you."},
+    {"id": "social_pro", "name": "Social posts: Pro", "price": "$299/mo", "has": ["social pro", "pro"],
+     "what": "20 posts and stories a month, review shout-outs, seasonal offers and this monthly report."},
+    {"id": "review_booster", "name": "Review booster", "price": null, "has": ["review"],
+     "what": "a friendly text after each visit asking happy customers for a Google review, so new reviews keep coming in."},
+    {"id": "chat_widget", "name": "Website chat", "price": null, "has": ["chat"],
+     "what": "a chat bubble on your website that answers common questions right away and collects the visitor's details."}
+  ]
+}
