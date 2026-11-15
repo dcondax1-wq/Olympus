@@ -1,0 +1,176 @@
+{
+ "pairs": 528,
+ "cells_tested": 4752,
+ "h1_loser_cells": 425,
+ "still_negative_h2": 88,
+ "chance_expected": 95.2,
+ "best": [
+  {
+   "a": "depth_atr",
+   "ia": 2,
+   "b": "stop_vix",
+   "ib": 1,
+   "n1": 8,
+   "r1": -0.506,
+   "n2": 3,
+   "r2": -1.023,
+   "usd2": null
+  },
+  {
+   "a": "disp",
+   "ia": 2,
+   "b": "ext_to_fill_min",
+   "ib": 0,
+   "n1": 8,
+   "r1": -0.449,
+   "n2": 4,
+   "r2": -1.021,
+   "usd2": null
+  },
+  {
+   "a": "day_rng",
+   "ia": 2,
+   "b": "lvl_touches",
+   "ib": 1,
+   "n1": 8,
+   "r1": -0.51,
+   "n2": 3,
+   "r2": -1.021,
+   "usd2": null
+  },
+  {
+   "a": "tgt_vix",
+   "ia": 1,
+   "b": "ext_to_fill_min",
+   "ib": 2,
+   "n1": 7,
+   "r1": -0.538,
+   "n2": 4,
+   "r2": -1.02,
+   "usd2": null
+  },
+  {
+   "a": "stop_atr",
+   "ia": 2,
+   "b": "tgt_vix",
+   "ib": 1,
+   "n1": 8,
+   "r1": -0.003,
+   "n2": 5,
+   "r2": -1.017,
+   "usd2": null
+  },
+  {
+   "a": "tgt_vix",
+   "ia": 1,
+   "b": "used_vix",
+   "ib": 2,
+   "n1": 13,
+   "r1": -0.058,
+   "n2": 5,
+   "r2": -1.017,
+   "usd2": null
+  },
+  {
+   "a": "tgt_pts",
+   "ia": 1,
+   "b": "wait_min",
+   "ib": 1,
+   "n1": 8,
+   "r1": -0.163,
+   "n2": 5,
+   "r2": -1.015,
+   "usd2": null
+  },
+  {
+   "a": "tgt_vix",
+   "ia": 1,
+   "b": "wait_min",
+   "ib": 1,
+   "n1": 8,
+   "r1": -0.519,
+   "n2": 4,
+   "r2": -1.015,
+   "usd2": null
+  },
+  {
+   "a": "depth_atr",
+   "ia": 2,
+   "b": "asia_rng",
+   "ib": 1,
+   "n1": 6,
+   "r1": -0.58,
+   "n2": 3,
+   "r2": -1.014,
+   "usd2": null
+  },
+  {
+   "a": "rr",
+   "ia": 0,
+   "b": "lvl_touches",
+   "ib": 1,
+   "n1": 6,
+   "r1": -0.696,
+   "n2": 6,
+   "r2": -0.954,
+   "usd2": null
+  }
+ ],
+ "worst_carry": [
+  {
+   "a": "sweep_bars",
+   "ia": 0,
+   "b": "prev_week_s",
+   "ib": 2,
+   "n1": 10,
+   "r1": -0.046,
+   "n2": 4,
+   "r2": 3.409,
+   "usd2": null
+  },
+  {
+   "a": "wait_min",
+   "ia": 0,
+   "b": "asia_rng",
+   "ib": 0,
+   "n1": 6,
+   "r1": -0.143,
+   "n2": 3,
+   "r2": 3.367,
+   "usd2": null
+  },
+  {
+   "a": "depth_atr",
+   "ia": 2,
+   "b": "gap_s",
+   "ib": 0,
+   "n1": 8,
+   "r1": -0.693,
+   "n2": 3,
+   "r2": 3.12,
+   "usd2": null
+  },
+  {
+   "a": "idm_dist",
+   "ia": 2,
+   "b": "stop_pts",
+   "ib": 1,
+   "n1": 11,
+   "r1": -0.015,
+   "n2": 4,
+   "r2": 3.115,
+   "usd2": null
+  },
+  {
+   "a": "stop_pts",
+   "ia": 1,
+   "b": "entry_min",
+   "ib": 0,
+   "n1": 6,
+   "r1": -0.507,
+   "n2": 4,
+   "r2": 3.115,
+   "usd2": null
+  }
+ ]
+}
