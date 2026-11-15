@@ -807,7 +807,7 @@ def qa_table(before_dir, after_dir, out_md):
           "text contrast on the page's real pixels (AA), AGORA colours left, +$ green / -$ red, the status bar, the first frame (no flash), the keyboard focus ring, "
           "and on NQ / Mint / My Money the Go to sheet, a toast and a sheet. pass = clean before and after, fixed = an issue before, clean now, "
           "known = still open (listed below). An issue the default (Agora) has on the same page is the default's own (listed last), not a look's.\n\n"
-          + "\n".join(lines) + "\n\n## Known issues (" + ", ".join(f"{SHORT.get(c, c)} {n}" for c, n in sorted(per_check.items(), key=lambda x: -x[1])) + ")\n\n"
+          + "\n".join(lines) + "\n\n## Known issues (" + (", ".join(f"{SHORT.get(c, c)} {n}" for c, n in sorted(per_check.items(), key=lambda x: -x[1])) or "none") + ")\n\n"
           + ("\n".join(notes) if notes else "None.") + "\n\n## The default's own issues (Agora, kept byte for byte; not part of the look work)\n\n"
           + ("\n".join(own) if own else "None.") + "\n")
     open(out_md, "w", encoding="utf-8").write(md)
