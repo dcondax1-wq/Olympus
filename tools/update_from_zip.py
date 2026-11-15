@@ -26,11 +26,17 @@ What it guarantees:
     the owner's own values: KEPT, and the summary says so. With no list in the zip or the folder every differing copy is kept.
   - The zip ALREADY IN (this very zip is the folder's last update, not undone): only the live_model*.json that update kept are
     looked at again (an older updater kept every differing one); every other file stays as it is now (later fixes are kept).
+  - REFUSES in a folder that UPDATES ITSELF from the backup repo (2026-11-15: engine/autoupdate.py --connect ran; the same rule as
+    its --source-status, read from the files: update_source.json, data/autoupdate.json, .git/config; git itself is never run): a
+    zip there would make the code differ from the backup and stop every auto-update. UPDATE.bat takes the newest code instead.
+    --force still puts the zip in (only when Claude asks).
   - NEVER deletes a file, never starts / stops / arms the bot, never touches NinjaTrader, never needs the network.
   - BACKS UP first: backups/update_from_zip/<stamp>/ holds the folder's state list (state_before.txt), a copy of every file
     it replaces and a manifest; a failed write rolls everything back.
-  - Prints a SIX-LINE summary. Exit codes: 0 done, 2 nothing to do / not found, 3 bad zip, 11 bot running, 12 market open, 1 failed.
-    --check prints one line instead: 0 the folder already has this zip's code (this very zip was applied and not undone: later
+  - Prints a SIX-LINE summary. Exit codes: 0 done, 2 nothing to do / not found, 3 bad zip, 11 bot running, 12 market open, 1 failed,
+    14 this folder updates itself from the backup (no zip).
+    --check prints one line instead: 0 the folder already has this zip's code (also: it updates itself from the backup, so no zip
+    is needed) (this very zip was applied and not undone: later
     fixes on the PC are never reverted; else every file the same), 10 an update is due (also: this zip is in, but a live_model*.json
     it kept is an older repo version), 13 the zip is OLDER than the folder's last update (applied before a newer one, or dated
     before it: never put back over newer code), 2 / 3 as above. It changes nothing.
@@ -67,6 +73,8 @@ EOL_STRICT = (".bat", ".cmd", ".ps1")                                # their lin
 STATE_SKIP_DIRS = {".git", "logs", "backups", "__pycache__", "node_modules", "nt_bars", "pc_publish", ".claude"}
 EXIT_OK, EXIT_FAIL, EXIT_NOTHING, EXIT_BADZIP, EXIT_RUNNING, EXIT_MARKET = 0, 1, 2, 3, 11, 12
 EXIT_DUE, EXIT_OLDER = 10, 13                                        # --check only
+EXIT_CONNECTED = 14                                                  # the folder updates itself from the backup repo
+SOURCE_FILE, AUTOUPDATE_STATE = "update_source.json", os.path.join("data", "autoupdate.json")      # engine/autoupdate.py's files
 NEXT_WORDS = "next double-click SETUP_EVERYTHING.bat (or GO_LIVE_EVAL.bat to go live)."
 
 
@@ -117,6 +125,72 @@ def bot_running(port: int) -> bool:
             return True
     except OSError:
         return False
+
+
+# ------------------------------------------------------------------------------------------------ a folder that updates itself
+def _read(path: str) -> str:
+    try:
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            return fh.read()
+    except OSError:
+        return ""
+
+
+def git_remote_url(folder: str, remote: str) -> str | None:
+    """The url of [remote "<remote>"] in the folder's git config, read as a file (what `git remote get-url` prints for a plain
+    config; git itself is never run here). A .git FILE (gitdir: ...) and a worktree's commondir are followed. None when absent."""
+    g = os.path.join(folder, ".git")
+    if os.path.isfile(g):
+        line = _read(g).strip()
+        if not line.startswith("gitdir:"):
+            return None
+        g = os.path.normpath(os.path.join(folder, line[len("gitdir:"):].strip()))
+    cfgs = [os.path.join(g, "config")]
+    common = _read(os.path.join(g, "commondir")).strip()
+    if common:
+        cfgs.insert(0, os.path.join(os.path.normpath(os.path.join(g, common)), "config"))
+    for path in cfgs:
+        sect = None
+        for ln in _read(path).splitlines():
+            s = ln.strip()
+            if s.startswith("["):
+                m = re.match(r'^\[\s*remote\s+"((?:[^"\\]|\\.)*)"\s*\]', s)
+                sect = m.group(1) if m else None
+                continue
+            if sect == remote:
+                m = re.match(r"(?i)^url\s*=\s*(.*?)\s*$", s)
+                if m:
+                    v = re.split(r"\s+[#;]", m.group(1), 1)[0].strip()       # a trailing comment, then the quotes
+                    if v.startswith('"') and v.endswith('"') and len(v) >= 2:
+                        v = v[1:-1]
+                    return v or None
+    return None
+
+
+def updates_itself(folder: str, env=None) -> str | None:
+    """The backup repo this folder updates itself from, else None: engine/autoupdate.source_status's rule read from the files
+    (update_source.json names a remote other than origin with an https URL, the git config has that remote with that URL, and
+    data/autoupdate.json says auto-update is on and connected to it). Stdlib only, never raises, never runs git."""
+    env = os.environ if env is None else env
+    if env.get("LE_UPDATE_SOURCE") == "origin":
+        return None
+    try:
+        src = json.loads(_read(os.path.join(folder, SOURCE_FILE)) or "{}")
+        st = json.loads(_read(os.path.join(folder, AUTOUPDATE_STATE)) or "{}")
+        remote, url = str(src.get("remote") or ""), str(src.get("url") or "")
+        if remote in ("", "origin") or not url.startswith("https://") or any(ch.isspace() for ch in url):
+            return None
+        if not st.get("enabled") or (st.get("connected") or {}).get("url") != url or git_remote_url(folder, remote) != url:
+            return None
+        return re.sub(r"^https://(?:[^@/]+@)?github\.com/", "", url).removesuffix(".git")
+    except Exception:
+        return None
+
+
+def connected_words() -> tuple[str, str]:
+    return ("This PC updates itself from the backup (auto-update is on), so a zip is not used here: it would make the code differ "
+            "from the backup and stop every auto-update. Nothing was changed.",
+            "For the newest code right now, double-click UPDATE.bat (it takes it from the backup). Only if Claude asks: add --force.")
 
 
 # ------------------------------------------------------------------------------------------------ what is local-only
@@ -529,6 +603,14 @@ def update(a) -> int:
     if not looks_like_bot(folder):
         say("FIX", f"{folder} is not the bot folder (no {MARKERS[0]} / {MARKERS[1]} in it). Put UPDATE_FROM_ZIP.bat in the bot folder.")
         return EXIT_NOTHING
+    if updates_itself(folder):
+        if not a.force:
+            w1, w2 = connected_words()
+            say("STOP", w1)
+            say("FIX", w2)
+            return EXIT_CONNECTED
+        say("..", "--force: this PC updates itself from the backup; the zip goes in anyway, so the auto-update waits until the code "
+                  "matches the backup again.")
     zip_path = find_zip(folder, a.zip)
     if not zip_path:
         say("FIX", (f"{a.zip} was not found." if a.zip else f"No {ZIP_GLOB} in the bot folder, Downloads or Desktop.") + " Download the code zip to the PC first (or drag it onto UPDATE_FROM_ZIP.bat).")
@@ -712,6 +794,9 @@ def check(a) -> int:
     if not looks_like_bot(folder):
         say("FIX", f"{folder} is not the bot folder (no {MARKERS[0]} / {MARKERS[1]} in it).")
         return EXIT_NOTHING
+    if not a.force and updates_itself(folder):              # exit 0, so an older SETUP_EVERYTHING copy simply goes on
+        say("OK", "Not needed: this PC updates itself from the backup (auto-update is on), so no zip is put in.")
+        return EXIT_OK
     zip_path = find_zip(folder, a.zip)
     if not zip_path:
         say("FIX", (f"{a.zip} was not found." if a.zip else f"No {ZIP_GLOB} in the bot folder, Downloads or Desktop.") + " Download the code zip to the PC first.")
