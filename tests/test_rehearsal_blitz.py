@@ -301,6 +301,10 @@ class Rehearsal:
         self.base = tempfile.mkdtemp(prefix="le_rh_blitz_")
         print(f"sandbox {self.base}", flush=True)
         self.repo = TR.build_sandbox(self.base)
+        # BLITZ shown in the sandbox (hidden on the dashboards by default since 2026-11-15, dashboard_view.json): this rehearsal
+        # reads BLITZ's own blocks from the server's GET answers
+        with open(os.path.join(self.repo, "dashboard_view.json"), "w", encoding="utf-8") as fh:
+            json.dump({"hidden_bots": []}, fh)
         self.nt_folder = os.path.join(self.base, "NinjaTrader 8")
         self.clock_path = os.path.join(self.base, "clock.bin")
         self.vc = TR.VClock(self.clock_path, create=True)
