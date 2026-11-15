@@ -1,5 +1,5 @@
 """ATLAS zombie-eval rule (2026-11-15, research/writeups/2026-11-15-atlas-deep.md): account_b "eval_min_room" and
-"last_bullet", BUILT BUT OFF.
+"last_bullet", ON since the owner's "Fix atlas" (2026-11-15); null in the block turns each off.
 
  a. without the keys: normalize() adds no key, min_room() = $100 (or "min_room"), qty() is today's
  b. "eval_min_room" 200: the eval's stuck line is $200, a FUNDED spec keeps min_room / $100; bad values are refused
@@ -33,11 +33,17 @@ def check(name, ok, detail=None):
     print(("  ok   " if ok else "  FAIL ") + name + ("" if ok or detail is None else f"   {detail!r}"[:400]), flush=True)
 
 
+OFF = {"eval_min_room": None, "last_bullet": None}
+
+
 def part_a():
-    s0 = AB.normalize(BLK)
-    check("a. normalize() without the keys: no eval_min_room / last_bullet key, no problem, min_room $100",
+    son = AB.normalize(BLK)
+    check("a. normalize() without the keys: the rule is ON (owner 'Fix atlas' 2026-11-15): eval_min_room $200, last_bullet 0.8",
+          son["problem"] is None and son.get("eval_min_room") == 200.0 and son.get("last_bullet") == 0.8 and AB.min_room(son) == 200.0)
+    s0 = AB.normalize({**BLK, **OFF})
+    check("a. both keys null: the old behaviour (no rule, min_room $100)",
           s0["problem"] is None and "eval_min_room" not in s0 and "last_bullet" not in s0 and AB.min_room(s0) == 100.0)
-    s1 = AB.normalize({**BLK, "min_room": 150})
+    s1 = AB.normalize({**BLK, **OFF, "min_room": 150})
     check("a. min_room alone keeps its meaning (eval and funded): $150", AB.min_room(s1) == 150.0)
     st = {"profit": -400.0, "cum": 0.0, "room": 180.0, "session": 12, "n_today": 0}
     q = AB.qty(s0, {"risk_pts": 40.0, "tgt_pts": 120.0}, st)
@@ -68,7 +74,7 @@ def part_c():
     q3 = AB.qty(s, {"risk_pts": 40.0, "tgt_pts": 120.0}, st3)
     check(f"c. $40 left of the $600 soft daily loss -> the day guard still says 0 ({q3['qty']})", q3["qty"] == 0, q3)
     stf = {"profit": 0.0, "cum": 0.0, "room": 1000.0, "session": 1, "n_today": 0}
-    a, b = AB.qty(AB.normalize(BLK), {"risk_pts": 30.0, "tgt_pts": 90.0}, stf), AB.qty(s, {"risk_pts": 30.0, "tgt_pts": 90.0}, stf)
+    a, b = AB.qty(AB.normalize({**BLK, **OFF}), {"risk_pts": 30.0, "tgt_pts": 90.0}, stf), AB.qty(s, {"risk_pts": 30.0, "tgt_pts": 90.0}, stf)
     check(f"c. a normal room: last_bullet changes nothing ({a['qty']} = {b['qty']})", a == b, (a, b))
     bad = [AB.normalize({**BLK, "last_bullet": 0})["problem"], AB.normalize({**BLK, "last_bullet": 1.5})["problem"],
            AB.normalize({**BLK, "last_bullet": "x"})["problem"]]
@@ -93,7 +99,7 @@ def part_d():
                 return {s: SAB.score(U, "atlas", s, pl.safe_rule)[1] for s in ("H1", "H2")}
         finally:
             A.q_variant = keep
-    for blk, deep in (({}, {}), ({"last_bullet": 0.8}, {"last_bullet": 0.8})):
+    for blk, deep in ((OFF, {}), ({"eval_min_room": None, "last_bullet": 0.8}, {"last_bullet": 0.8})):
         sp = AB.normalize({**BLK, **blk})
         sp = {**sp, "rules": A.spec()["rules"]}
         V = D.V_of(deep)
@@ -101,7 +107,7 @@ def part_d():
         eng = path(lambda t, st, V_: AB.qty(sp, {"risk_pts": t["risk"], "tgt_pts": t["tgt"]}, dict(st), key=KEY_OF.get(t["src"]))["qty"], V)
         n = sum(len(v) for v in ref.values())
         same = all([key(x) for x in ref[s]] == [key(x) for x in eng[s]] for s in ref)
-        check(f"d. 2026 H1 + H2 ATLAS eval path, engine qty {blk or '(no keys)'} = research sizer ({n} trades identical)",
+        check(f"d. 2026 H1 + H2 ATLAS eval path, engine qty {blk} = research sizer ({n} trades identical)",
               same and n > 50, n)
 
 

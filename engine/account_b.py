@@ -11,7 +11,8 @@ The block: "account_b": null (default = off, the bot is exactly today's) or
                              (= tools/atlas.q_variant); a member not listed trades at 1.0
     "min_room": 200          stuck = room under this many $ (replaces MIN_ROOM = $100 for this account): no new trade,
                              push "buy a new one"
-  optional (zombie-eval rule, research/writeups/2026-11-15-atlas-deep.md, BUILT BUT OFF: absent = exactly today's):
+  zombie-eval rule (research/writeups/2026-11-15-atlas-deep.md; ON since the owner's "Fix atlas" 2026-11-15: absent = ON at
+  the values below; "eval_min_room": null / "last_bullet": null in the block turns each off = the old behaviour):
     "eval_min_room": 200     the EVAL stage's stuck line only (the funded stage keeps min_room / $100): an eval with
                              less room than this is given up ("buy a new one", $43) instead of idling for weeks
     "last_bullet": 0.8       eval "need" size says 0 micros because one micro's stop-out does not fit its share of a
@@ -94,6 +95,7 @@ SIZINGS = ("need", "safe")
 MAX_PER_DAY = 2
 MAX_AGE_S = 45                  # a 5m open seen later than this is not probed (the research fills at the open)
 MIN_ROOM = 100.0
+ZOMBIE_ON = {"eval_min_room": 200.0, "last_bullet": 0.8}      # owner "Fix atlas" 2026-11-15 (atlas-deep.md)
 CLOSE_RETRY_S = 10              # an unconfirmed close of B's position is re-sent at most this often (pre-launch audit A4)
 TICK, PV, COMM = 0.25, 2.0, 1.90
 ADAPTER_FACTORY = None          # tests: (spec, adapter cfg) -> adapter; None = engine/live.ADAPTERS
@@ -256,13 +258,19 @@ def normalize(ab: dict | None, scfg: dict | None = None, lit_account: str | None
             out["problem"] = out["problem"] or f"min_room {ab.get('min_room')!r} must be a number of $ (0-1000)"
         else:
             out["min_room"] = float(mr)
-    if "eval_min_room" in ab:
+    if "eval_min_room" not in ab:
+        out["eval_min_room"] = ZOMBIE_ON["eval_min_room"]        # owner "Fix atlas" 2026-11-15: ON unless the block says null
+    elif ab.get("eval_min_room") is None or ab.get("eval_min_room") is False:
+        pass
+    else:
         mr = _num(ab.get("eval_min_room"))
         if mr is None or not 0.0 <= mr <= 1000.0:
             out["problem"] = out["problem"] or f"eval_min_room {ab.get('eval_min_room')!r} must be a number of $ (0-1000)"
         else:
             out["eval_min_room"] = float(mr)
-    if ab.get("last_bullet") is not None:
+    if "last_bullet" not in ab:
+        out["last_bullet"] = ZOMBIE_ON["last_bullet"]
+    elif ab.get("last_bullet") is not None and ab.get("last_bullet") is not False:
         lb = _num(ab.get("last_bullet"))
         if lb is None or not 0.0 < lb <= 1.0:
             out["problem"] = out["problem"] or f"last_bullet {ab.get('last_bullet')!r} must be a share of the room in (0, 1]"
@@ -418,6 +426,12 @@ def last_bullet(r: dict, risk: float, share: float, state: dict) -> dict:
     from . import sizing as SZ
     room = _num(state.get("room"))
     if room is None or room <= 0:
+        return r
+    # only when the 0 came from the room share (the "skip: ... room" line), never over a deliberate stop: a passed eval's
+    # target-reached / pass lock, a lock, the daily loss (found by the funded-account test, 2026-11-15)
+    why = [str(x) for x in (r.get("reasons") or [])]
+    if r.get("lock") or not any("skip:" in x and "room" in x for x in why) or \
+            any("already reached" in x or "lock" in x for x in why):
         return r
     loss1 = (float(risk) + SZ.TW_DLL_SLIP) * SZ.TW_PV + SZ.TW_COMM
     if loss1 > float(share) * float(room):
