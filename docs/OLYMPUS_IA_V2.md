@@ -30,21 +30,21 @@ briefs, three "what do I do now" pages, three risk views, three money plans, two
 | **Today** | What is happening, and what do I do now? | Do now · Morning brief · News and market | 15 | the trade window + my shift |
 | **Bots & Evals** | Are my bots on, and how is each eval doing? | Bots now · Risk · Pass odds · Trades · Review | 16 | "2 evals active, $1,145 / $822 left" (+ "Quiet / Old numbers" with the age) |
 | **Kalshi** | How is the Kalshi bot doing, and where is an edge? | The bot · Edges | 3 | balance, today, open bets (`kalshi.json`) |
-| **My Money** | What have I really made and spent, and what is next? | Real money · Plan and payouts · Household · Ideas and deals | 11 | this month / all time, cash only (`money/scoreboard.json`) |
+| **My Money** | What have I really made and spent, and what is next? | Real money · Plan and payouts · Household · Ideas and deals | 12 | this month / all time, cash only (`money/scoreboard.json`) |
 | **Plan & Day** | What is on my calendar and my list? | Calendar and tasks · Habits and progress | 5 | shift, next event, tasks done (the Planner's `planner.today.v1`, this phone) |
 | **Research** | What have we tested, and what works? | Library · Strategy search · Data | 8 | the live LIT numbers from Hephaestus's card |
 | **Jarvis** | Ask anything. Who works for me? | Ask · Your AI team | 4 | "Ask anything · your AI team" |
 | **Worlds** | The 3D places (optional, for fun) | Most visited · Numbers as places | 8 | (static) |
-| **Settings & Help** | Change the look, start the PC, find any app | Settings · Help and every app (A to Z list of all 82) · Workshop | 12 | the current theme |
+| **Settings & Help** | Change the look, start the PC, find any app | Settings · Help and every app (A to Z list of all 83) · Workshop | 12 | the current theme |
 
-82 entries, each in exactly one hub (checked by `tests/test_hubs.py`). A few also appear as "Also useful here, from other hubs" (for example Kalshi City
+83 entries (82 + the Agency app, 2026-11-14), each in exactly one hub (checked by `tests/test_hubs.py`). A few also appear as "Also useful here, from other hubs" (for example Kalshi City
 and Tyche on the Kalshi hub, Aegis and NQ on Today), so the 3D views and cross-job tools are one tap from where you need them.
 
 ## The tenth hub: Me (2026-11-14, team ME1, docs/ME_HUB.md)
 
 Owner: *"get a certain dashboard or area for personal stuff. Make everything very organized, easy to access: connecting to my finances, cards,
 spending, WiFi, health, Apple Watch. Find more."* **Me** (`hub/?h=me`, the second tile on the home, wide, under Today) answers *How am I doing — money,
-health, home?* It is a PAGE hub: no app tabs and no apps of its own (so the 82 entries above stay as they are), drawn by `hub/me.js` from the PC's private
+health, home?* It is a PAGE hub: no app tabs and no apps of its own (so the entries above stay as they are), drawn by `hub/me.js` from the PC's private
 `me/me.json` (`tools/me_hub.py`): 4 status tiles (Money left this month, Health today, Home, Next important date; each with its source and age), then 8
 areas (Money, Cards, Health, Home & WiFi, Freedom, Dates, Car, Streaks), each a short card stack with one-tap detail. Also useful there: Oikos, the
 Planner, Argo. Its own look in Mix like any hub (`data-oly-page="hub-me"`, legacy `life`); the home's search finds it by its words (health, wifi, cards).
@@ -144,6 +144,7 @@ Also shown here (they live in another hub): Kalshi City (`kalshicity`), Fortune 
 | Ideas and deals | Money machine (Mint, `mint`) | **best** | Five money streams, one honest estimate | `fixture.json`, `../money/index.json` |
 |  | Deals and codes (Mercury, `mercury`) | also | Sales, discount codes, free resets | `fixture.json`, `../money/mercury.json` |
 |  | Spreads and funding (Arbiter, `arbiter`) | also | Paper-only spreads: net yearly return | `fixture.json`, `../money/arbiter.json` |
+|  | Website agency (Agency, `agency`) | also | Local-business leads, demo sites and calls | its own files (docs/AGENCY.md) |
 
 Also shown here (they live in another hub): Kalshi bot (`kalshi`), Mint City (`mintcity`).
 

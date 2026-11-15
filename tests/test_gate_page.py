@@ -64,7 +64,7 @@ def test_static():
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g4'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o5', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=g3', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g5']" in html and "s.async = false" in html)
+          and "['olympus/themes.js?v=o5', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=me1', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g5']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order: Today (wide) first, Me (wide) second ... Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="today"' in html and 'class="g-hub g-wide" data-hub="me"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -102,7 +102,7 @@ def test_static():
     check("a. phone rules in the CSS: taps >= 44 px, safe areas, 176 px clear of Jarvis's corner at the end, reduced motion, LITE, no sideways scroll",
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
-          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=g3" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
+          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=me1" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))
@@ -221,9 +221,9 @@ def test_page():
             check("c. each fact is a tap to the app with the detail: drawdown -> Aegis, today -> NQ, the window -> Kairos",
                   go == ["/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
             tiles = p.evaluate("() => [...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.href.replace(location.origin, ''), a.querySelector('.g-hline').textContent, a.querySelector('.g-hcount').textContent])")
-            check("c. the hub tiles open hub/?h=<hub> (1 tap) with their app counts (15 + 16 + 3 + 11 + 5 + 8 + 4 + 8 + 12 = 82; Me: its 8 areas)",
+            check("c. the hub tiles open hub/?h=<hub> (1 tap) with their app counts (15 + 16 + 3 + 12 + 5 + 8 + 4 + 8 + 12 = 83, Agency included; Me: its 8 areas)",
                   [t[0] for t in tiles] == HUBS and all(t[1] == f"/hub/index.html?h={t[0]}" for t in tiles)
-                  and sum(int(t[3].split()[0]) for t in tiles if t[0] != "me") == 82 and tiles[0][3] == "15 apps" and tiles[1][3] == "8 areas", tiles)
+                  and sum(int(t[3].split()[0]) for t in tiles if t[0] != "me") == 83 and tiles[0][3] == "15 apps" and tiles[1][3] == "8 areas", tiles)
             lines = {t[0]: t[2] for t in tiles}
             check("c. live hub lines: Bots & Evals '2 evals active, $1,420 / $900 left', Today 'Trade window open until 15:30 ET', Kalshi 'No Kalshi numbers yet' (no feed here)",
                   lines["bots"] == "2 evals active, $1,420 / $900 left" and lines["today"].startswith("Trade window open until 15:30 ET") and lines["kalshi"] == "No Kalshi numbers yet", lines)

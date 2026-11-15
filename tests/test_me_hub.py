@@ -172,7 +172,7 @@ def test_static():
     check("a. the home: the Me tile (wide, second, a plain link to hub/?h=me), its line from the private me/me.json, its size ('8 areas') and the search finds page hubs",
           gate_html.index('data-hub="today"') < gate_html.index('class="g-hub g-wide" data-hub="me" data-to="hub/index.html?h=me"') < gate_html.index('data-hub="bots"')
           and "getJSON(base + 'me/me.json')" in gate_js and "H.size || plural(H.count, 'app')" in gate_js and "C.findHubs ? C.findHubs(q) : []" in gate_js and "ME: X.ME" in gate_js)
-    check("a. gate-nav: Go to shows a hub's size (the Me hub: its areas, not '0 apps') and loads the catalog ?v=g3", "h.size || (h.count + ' apps')" in nav and "gate-catalog.js?v=g3" in nav)
+    check("a. gate-nav: Go to shows a hub's size (the Me hub: its areas, not '0 apps') and loads the catalog ?v=me1", "h.size || (h.count + ' apps')" in nav and "gate-catalog.js?v=me1" in nav)
     pr = AK.read(os.path.join(ROOT, "tools", "pc_report.py"))
     hook = pr[pr.index("def main("):]
     check("a. the PC report's 15-minute task calls me_hub.maybe_run softly (after calendar_sync, never on --dry-run, inside try)",
