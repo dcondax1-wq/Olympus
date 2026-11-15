@@ -5,9 +5,17 @@ ONE window, in order, each one checked first and skipped when it is already done
   1 NEW CODE    the newest OLYMPUS_BACKUP_*.zip (+ its .sha256.txt) in Downloads / on the Desktop (or the zip dragged onto the
                 .bat) into the bot folder with tools\update_from_zip.py, taken out of that zip: --check first (skipped when the
                 folder already has that code, or the zip is older), then the update. A running bot server is stopped first only
-                after you type Y (scripts\stop_bot.ps1, the STOP_BOT.bat stop; never with an open trade) and started again right
-                after (the bot itself stays stopped). Then the bot folder's own copy of this script runs steps 2 and 3 (when it
-                differs from the one running: the update brought a newer one, or the folder has a newer one than the zip).
+                after you type Y (scripts\stop_bot.ps1, the STOP_BOT.bat stop; never with an open trade) and started again after
+                step 1b (one stop for both; the bot itself stays stopped). Then the bot folder's own copy of this script goes on
+                (when it differs from the one running: the update brought a newer one, or the folder has a newer one than the zip).
+  1b AUTO-UPDATE (2026-11-14, docs\AUTO_UPDATE.md) the PC gets new code from the private backup repo by itself from then on:
+                python -m engine.autoupdate --source-status first (read only: 0 already on -> skipped, 10 -> the connect; any
+                other answer is a SKIP with its line), then --connect --port N, attached to this window (a GitHub sign-in window
+                may open the first time: the "account" in update_source.json). The bot server is stopped for it (--connect
+                refuses while it answers): never with an open trade, while the market is open only after a Y, a server step 1
+                stopped is still stopped; it is started again right after. Every code but 0 (20 backup not reachable, 21 not
+                now, 22 no git, 1 failed and put back) is one [SKIP] line, never a stop: steps 2 and 3 always go on. Skipped
+                when the folder's code has no auto-update yet. A connect that brings another copy of this script hands over.
   2 PHONE LINK  the private Tailscale link to the dashboard (scripts\live_link.ps1); skipped when "tailscale serve" already points
                 at the bot server and the site task is there. A failure says what to do, Enter tries again, LATER skips it.
                 The link is shown big and put on the clipboard.
@@ -16,15 +24,16 @@ ONE window, in order, each one checked first and skipped when it is already done
                 Sunday 18:00 ET is refused by the clock). Only then GO_LIVE_EVAL's flow: scripts\bots_back.ps1 -NoResume, then
                 python -m engine.go, where YOU type the live phrase yourself. This script never types, reads, passes or stores
                 the phrase and never arms anything by itself (a bot that runs unarmed is stopped first, after the YES).
-  then a three-line summary.
+  then the summary (one line per step).
 
   -BatDir DIR   the folder the .bat was double-clicked in (it may be the zip's temp folder)        -Zip FILE   this code zip
   -BotDir DIR   the bot folder (default: found: the .bat's folder, LE_BOT_DIR, the bot's tasks and Startup shortcut,
                 %USERPROFILE%\nq-liquidity-engine, the Desktop, Documents ...)
   -Step1 WORDS  (internal) the copy of this script that ran first did step 1 (its result): steps 2 and 3 only
   -ServerWait / -ArmWait  seconds to wait for the bot server to answer again / for both evals to show armed (tests: short)
-It never edits live_model*.json or engine\, never places an order, never touches NinjaTrader settings.
-Tests: tests\test_setup_everything.py (pwsh; fakes for engine.go, the child scripts, tailscale and the bot server;
+This script itself never edits live_model*.json or engine\ (the updater and the auto-update do, by their own rules), never
+places an order, never touches NinjaTrader settings.
+Tests: tests\test_setup_everything.py (pwsh; fakes for engine.go, engine.autoupdate, the child scripts, tailscale and the bot server;
 LE_SE_T_LOG / LE_SE_T_TASKS / LE_SE_T_NOW stand in for the Windows-only steps and the clock).
 #>
 param(
@@ -351,6 +360,37 @@ function GitHub-Free {
     return (Test-Path -LiteralPath (J2 $h 'no_github'))
 }
 
+# ------------------------------------------------------------------------------------------------ auto-update (engine\autoupdate.py)
+function Au-Ready {
+    # the folder's code can do it: engine\autoupdate.py knows --source-status and update_source.json names the backup repo
+    $au = JP $script:Root 'engine\autoupdate.py'
+    if (-not (Test-Path -LiteralPath $au) -or -not (Test-Path -LiteralPath (JP $script:Root 'update_source.json'))) { return $false }
+    try { return [bool](Select-String -LiteralPath $au -SimpleMatch -Pattern 'source-status' -Quiet) } catch { return $false }
+}
+function Au-Account {
+    # update_source.json "account": the GitHub account the private backup repo lives on (the one to sign in as)
+    try {
+        $j = Get-Content -LiteralPath (JP $script:Root 'update_source.json') -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+        $a = ([string](P $j 'account')).Trim()
+        if ($a -match '^[A-Za-z0-9][A-Za-z0-9._@+-]{0,79}$') { return $a }
+    } catch { }
+    return ''
+}
+function Hand-Over([string]$Why) {
+    # the rest always runs on the bot folder's own copy of this script: when it differs from this one (an update or the connect
+    # brought a newer one, or the folder already had another), it goes on and this copy stops here. A server this window stopped
+    # is started first (the other copy does not know it was stopped).
+    $new = JP $script:Root 'scripts\setup_everything.ps1'
+    if (-not (Test-Path -LiteralPath $new) -or (File-Sha $new) -eq $SelfSha) { return }
+    if ($script:ServerDown) { Start-Server; $script:ServerDown = $false }
+    Say 'OK' $Why
+    $na = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $new, '-Step1', $script:S1, '-BotDir', $script:Root, '-Port', "$Port", '-Python', $script:Py,
+            '-ServerWait', "$ServerWait", '-ArmWait', "$ArmWait")
+    if ($Tailscale) { $na += @('-Tailscale', $Tailscale) }
+    & $script:PsExe @na
+    exit $LASTEXITCODE
+}
+
 # ------------------------------------------------------------------------------------------------ the phone link (read only checks)
 function Find-Tailscale {
     if ($Tailscale) { if (Test-Path -LiteralPath $Tailscale) { return $Tailscale }; return $null }
@@ -447,12 +487,16 @@ function Show-Link([string]$Url) {
 
 # ------------------------------------------------------------------------------------------------ summary and exit
 $script:S1 = 'not checked'
+$script:S1b = 'not checked'
 $script:S2 = 'not checked'
 $script:S3 = 'not checked'
+$script:ServerDown = $false          # step 1 stopped the bot server: started again after step 1b (one stop for both)
+$script:MarketOk = $false            # you said Y to changing code while the market is open (step 1): step 1b does not ask again
 function Summary {
     Write-Host ''
     Write-Host ('  ' + ('=' * 26) + ' SUMMARY ' + ('=' * 26)) -ForegroundColor Cyan
     Write-Host ("   1  New code      {0}" -f $script:S1)
+    Write-Host ("   1b Auto-update   {0}" -f $script:S1b)
     Write-Host ("   2  Phone link    {0}" -f $script:S2)
     Write-Host ("   3  Go live       {0}" -f $script:S3)
     Write-Host ''
@@ -477,6 +521,7 @@ if (-not $Step1) {
     Band '     OLYMPUS: SETUP EVERYTHING  -  one window, three steps, in order'
     Write-Host ('  ' + ('#' * 72)) -ForegroundColor Cyan
     Write-Host '   1  New code from the zip'
+    Write-Host '   1b Auto-update: from then on the PC gets new code by itself (a GitHub sign-in the first time)'
     Write-Host '   2  Your phone dashboard (private link)'
     Write-Host '   3  Go live on the evals (Sunday after 6 PM New York time: you type YES, then the live phrase yourself)'
     Write-Host '   A step that is already done is skipped. Safe to double-click again any time.'
@@ -598,7 +643,7 @@ if ($Step1) {
                 }
                 $okMarket = $true
             }
-            $ua = @('-I', '-X', 'utf8', $tool, $zipPath, '--folder', $Root, '--pip', '--port', "$Port", '--next', 'this window goes on with step 2 by itself.') + $nowArgs
+            $ua = @('-I', '-X', 'utf8', $tool, $zipPath, '--folder', $Root, '--pip', '--port', "$Port", '--next', 'this window goes on with the next step by itself.') + $nowArgs
             if ($okMarket) { $ua += '--allow-market-open' }
             Say '..' 'updating the bot folder (a big zip can take a few minutes; do not close this window)...'
             & $py @ua
@@ -623,22 +668,116 @@ if ($Step1) {
             }
             $script:S1 = 'done: the new code is in'
             $updated = $true
-            if ($stopped) { Start-Server }
+            $script:ServerDown = $stopped              # started again after step 1b (one stop for both), or before a hand-over
+            $script:MarketOk = $okMarket
         }
     }
-    # steps 2 and 3 always run on the bot folder's own copy of this script: when it differs from this one (the update just brought
-    # a newer one, or the folder already had a newer one than the zip), it goes on from step 2 and this copy stops here
-    $new = JP $Root 'scripts\setup_everything.ps1'
-    if ((Test-Path -LiteralPath $new) -and (File-Sha $new) -ne $SelfSha) {
-        if ($updated) { Say 'OK' 'The update brought a newer version of this window: it goes on with step 2.' }
-        else { Say 'OK' 'The bot folder has its own copy of this window: it goes on with step 2.' }
-        $na = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $new, '-Step1', $script:S1, '-BotDir', $Root, '-Port', "$Port", '-Python', $py,
-                '-ServerWait', "$ServerWait", '-ArmWait', "$ArmWait")
-        if ($Tailscale) { $na += @('-Tailscale', $Tailscale) }
-        & $script:PsExe @na
-        exit $LASTEXITCODE
+    # the rest always runs on the bot folder's own copy of this script (the update just brought a newer one, or the folder
+    # already had a newer one than the zip): it goes on from step 1b and this copy stops here
+    if ($updated) { Hand-Over 'The update brought a newer version of this window: it goes on from here.' }
+    else { Hand-Over 'The bot folder has its own copy of this window: it goes on from here.' }
+}
+
+# ================================================================================================ 1b auto-update
+Header 'STEP 1b of 3' 'Auto-update: new code by itself from now on'
+$acct = Au-Account
+$signIn = "sign in as $acct"
+if (-not $acct) { $signIn = 'sign in with the backup repo''s GitHub account' }
+$auStopped = $false
+$connected = $false
+Set-Location -LiteralPath $Root
+if (-not (Au-Ready)) {
+    Say 'SKIP' 'This code has no auto-update yet (a newer code zip brings it). The zip way still works.'
+    $script:S1b = 'skipped: this code has no auto-update yet'
+} else {
+    $probe = @(& $py -X utf8 -m engine.autoupdate --source-status 2>&1 | ForEach-Object { ([string]$_).Trim() } | Where-Object { $_ })
+    $prc = $LASTEXITCODE
+    $pline = ''
+    if ($probe.Count) { $pline = ($probe[-1] -replace '^\[[A-Za-z.]+\]\s*', '') }
+    if ($prc -eq 0) {
+        Say 'OK' 'Already on: the PC updates itself (only when no trade is open, never during trading hours).'
+        $script:S1b = 'already on: the PC updates itself'
+    } elseif ($prc -ne 10) {
+        if (-not $pline) { $pline = "the check stopped (code $prc)" }
+        if ($pline -notmatch '[.!?]$') { $pline += '.' }
+        Say 'SKIP' ("Auto-update not checked: {0} The zip way still works." -f $pline)
+        $script:S1b = 'skipped: it could not be checked'
+    } else {
+        # the connect is due. It needs the bot server stopped (--connect refuses while it answers): never with an open trade, while
+        # the market is open only after a Y (as step 1). A server step 1 stopped is still stopped here; started again below, once.
+        $go = $true
+        $mOpen = Market-Open (Et-Now)
+        if (Port-Open $Port) {
+            $ls = Launch-State
+            if ($ls.open) {
+                Say 'SKIP' 'A bot has an open trade right now, so the bot is not stopped: auto-update waits (double-click SETUP_EVERYTHING.bat again when the trade is closed). The zip way still works.'
+                $script:S1b = 'not yet: a trade was open'
+                $go = $false
+            } else {
+                Write-Host ''
+                Write-Host '   The bot server is running. Auto-update can only be turned on while it is stopped (a minute or two).' -ForegroundColor Yellow
+                if ($ls.words) { Write-Host "   Now: $($ls.words)" -ForegroundColor Yellow }
+                Write-Host '   It is started again right after; the bot itself stays stopped until step 3.' -ForegroundColor Yellow
+                if ($mOpen) {
+                    Write-Host ("   The market is open now ({0} in New York): the bot misses trades until step 3 starts it again." -f (Et-Words (Et-Now))) -ForegroundColor Yellow
+                    $a = Ask '   Type Y then Enter to stop the bot and turn on auto-update now anyway (anything else: skipped, nothing is changed)'
+                } else {
+                    $a = Ask '   Type Y then Enter to stop the bot now (anything else: skipped, nothing is changed)'
+                }
+                if ($a.ToUpper() -ne 'Y') {
+                    Say 'SKIP' 'Auto-update is not turned on: you kept the bot running. Double-click SETUP_EVERYTHING.bat again when you are ready. The zip way still works.'
+                    $script:S1b = 'not yet: you kept the bot running'
+                    $go = $false
+                } elseif (-not (Stop-Bot)) {
+                    Say 'SKIP' 'The bot server did not stop, so auto-update waits (restart the PC, then double-click SETUP_EVERYTHING.bat again). The zip way still works.'
+                    $script:S1b = 'not yet: the bot server did not stop'
+                    $go = $false
+                } else {
+                    Say 'OK' 'The bot is stopped.'
+                    $auStopped = $true
+                    if ($mOpen) { $script:MarketOk = $true }
+                }
+            }
+        }
+        if ($go -and $mOpen -and -not $script:MarketOk) {
+            $a = Ask '   The market is open now and the bot is stopped. Turn on auto-update anyway? Type Y then Enter'
+            if ($a.ToUpper() -ne 'Y') {
+                Say 'SKIP' 'Auto-update is not turned on: the market is open. Double-click SETUP_EVERYTHING.bat again after 17:00 ET or at the weekend. The zip way still works.'
+                $script:S1b = 'not yet: the market was open'
+                $go = $false
+            }
+        }
+        if ($go) {
+            Say '..' "turning on auto-update (the first time a GitHub window may open: $signIn; do not close this window)..."
+            Set-Location -LiteralPath $Root
+            & $py -X utf8 -m engine.autoupdate --connect --port $Port
+            $crc = $LASTEXITCODE
+            if ($crc -eq 0) {
+                Say 'OK' 'Auto-update is ON: from now on the PC gets new code by itself (only when no trade is open, never during trading hours).'
+                $script:S1b = 'ON: the PC gets new code by itself'
+                $connected = $true
+            } elseif ($crc -eq 20) {
+                Say 'SKIP' "Could not reach the backup ($signIn in the window that opens, or check the internet). The zip way still works."
+                $script:S1b = 'not on yet: the backup could not be reached (double-click SETUP_EVERYTHING.bat again to try again)'
+            } elseif ($crc -eq 21) {
+                Say 'SKIP' 'Not now: the bot server is running or a trade is open. Nothing was changed; double-click SETUP_EVERYTHING.bat again later. The zip way still works.'
+                $script:S1b = 'not now: the bot server was running or a trade was open'
+            } elseif ($crc -eq 22) {
+                Say 'SKIP' 'Git is not installed on this PC, so it cannot update itself: install Git for Windows (free, git-scm.com), then double-click SETUP_EVERYTHING.bat again. Nothing was changed; the zip way still works.'
+                $script:S1b = 'not on: Git is not installed'
+            } elseif ($crc -eq 1) {
+                Say 'SKIP' 'Auto-update could not be turned on, so everything was put back as it was (the lines above say why). The zip way still works.'
+                $script:S1b = 'not on: it failed and everything was put back'
+            } else {
+                Say 'SKIP' "Auto-update stopped (code $crc; the lines above say why). The zip way still works."
+                $script:S1b = "not on: it stopped (code $crc)"
+            }
+        }
     }
 }
+if ($auStopped) { $script:ServerDown = $true }
+if ($connected) { Hand-Over 'Auto-update brought a newer version of this window: it goes on from here.' }
+if ($script:ServerDown) { Start-Server; $script:ServerDown = $false }
 
 # ================================================================================================ 2 the phone link
 Header 'STEP 2 of 3' 'Your phone dashboard (private link)'

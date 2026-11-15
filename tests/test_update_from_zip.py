@@ -9,6 +9,12 @@ temp folder, with a fake clock (--now) and a fake "bot is running" (a socket on 
   2. units    New York time and market hours without a tz database, the .gitignore matcher, safe paths, same-content, the .sha256.txt line
   3. flows    dry run, market open, bot running, bad SHA-256, the update itself (local-only files, live_model*.json kept, six lines,
               the backup), run twice, undo, undo after an edit, a failed write rolls back, wrong folder, no zip, the zip found in Downloads
+  4. models   (2026-11-14) live_model*.json 3-way with tools/model_versions.json: an older repo version is replaced (also as a CRLF or
+              BOM copy; dry run, --check, undo), the owner's own values are kept, a zip without the list keeps (as before) unless the
+              folder has one, a broken list counts as none; the zip already in (an older updater kept the model): --check says due,
+              the update touches only that file, a later PC fix stays; the REAL list is current (else: python tools/model_versions.py)
+              and the owner's real 2026-11-14 sizing change reaches a Windows copy; tools/model_versions.py on a temp git repo
+              (build, CRLF, stale only when an OLDER version is missing, the working copy, keeps entries); make_backup refuses a stale ref
 
 Nothing touches the real repo, the real bot or the network.   python -X utf8 -m tests.test_update_from_zip
 """
@@ -28,7 +34,9 @@ import zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from tools import update_from_zip as U  # noqa: E402
-from tests.test_win_scripts import lint_bat  # noqa: E402
+from tools import model_versions as MV  # noqa: E402
+from tools import make_backup as MB  # noqa: E402
+from tests.test_win_scripts import lint_bat  # noqa: E402  (a pure function: importing it runs nothing)
 
 TOOL = os.path.join(ROOT, "tools", "update_from_zip.py")
 RES = []
@@ -217,6 +225,21 @@ def test_units():
     check("2. live_model*.json is compared by VALUE (spacing and line ends do not count); only root-level live_model*.json is a model file",
           U.same_json(MODEL_SAME_LOCAL.encode(), MODEL_SAME_ZIP.encode()) and not U.same_json(MODEL_LIT_LOCAL.encode(), MODEL_LIT_ZIP.encode()) and not U.same_json(b"{", b"{")
           and U.is_model("live_model.json") and U.is_model("live_model_lit.json") and not U.is_model("research/live_model.json") and not U.is_model("second_model.json"))
+    lf = b'{"a": 1,\n "b": 2}\n'
+    check("2. a model version's SHA-256: the same with Windows line ends or a UTF-8 BOM (a Windows checkout, a Notepad save), another for a real change",
+          U.model_sha(lf) == U.model_sha(lf.replace(b"\n", b"\r\n")) == U.model_sha(b"\xef\xbb\xbf" + lf.replace(b"\n", b"\r\n")) == hashlib.sha256(lf).hexdigest()
+          and U.model_sha(lf) != U.model_sha(lf.replace(b"2", b"3")))
+    good = {"v": 1, "files": {"Live_Model.json": ["A" * 64, "not-a-sha", 7], "x": "no list"}}
+    check("2. the version list: format 1 only (names in lower case, bad entries dropped); not JSON, another format or nothing -> no list",
+          U.parse_versions(json.dumps(good).encode()) == {"live_model.json": {"a" * 64}} and U.parse_versions(b"not json") is None
+          and U.parse_versions(json.dumps({**good, "v": 2}).encode()) is None and U.parse_versions(b"") is None and U.parse_versions(None) is None
+          and U.parse_versions(b"\xef\xbb\xbf" + json.dumps(good).encode()) is not None)
+    old, new, own = b'{"room_f": 0.8}\n', b'{"room_f": 0.4}\n', b'{"room_f": 0.6}\n'
+    known = {"live_model_lit.json": {U.model_sha(old)}}
+    check("2. the 3-way rule: same values -> same; an older repo version (also CRLF) -> replace; other values -> keep; no list -> keep",
+          U.model_action("live_model_lit.json", b'{"room_f":0.4}', new, known) == "same" and U.model_action("live_model_lit.json", old, new, known) == "replace"
+          and U.model_action("LIVE_MODEL_LIT.json", old.replace(b"\n", b"\r\n"), new, known) == "replace" and U.model_action("live_model_lit.json", own, new, known) == "keep"
+          and U.model_action("live_model_lit.json", old, new, None) == "keep" and U.model_action("live_model.json", old, new, known) == "keep")
 
 
 # ============================================================================================== 3. flows
@@ -389,10 +412,263 @@ def test_flows():
         shutil.rmtree(base, ignore_errors=True)
 
 
+# ============================================================================================== 4. live_model*.json, 3-way
+LIT_OLD = '{\n  "lit_sizing": {\n    "mode": "two_week",\n    "two_week": {"room_f": 0.8},\n    "two_week_until": 10\n  }\n}\n'    # an older repo version
+LIT_NEW = '{\n  "lit_sizing": {\n    "mode": "two_week",\n    "two_week": {"room_f": 0.4},\n    "two_week_until": 80\n  }\n}\n'    # the zip's (the owner's yes)
+LIT_OWN = '{\n  "lit_sizing": {\n    "mode": "two_week",\n    "two_week": {"room_f": 0.6},\n    "two_week_until": 10\n  }\n}\n'    # the owner's own edit
+MZIP = {"engine/lit.py": "VERSION = 'new'\n", "server.py": "print('server')\n", "engine/live.py": "LIVE = 2\n", "live_model.json": MODEL_SAME_ZIP,
+        "live_model_lit.json": LIT_NEW, ".gitignore": GITIGNORE}
+
+
+def versions_json(*texts, name="live_model_lit.json", v=1) -> str:
+    """A tools/model_versions.json that lists these versions of `name` (the zip's own version is never needed in it)."""
+    return json.dumps({"v": v, "files": {name: sorted(U.model_sha(t.encode() if isinstance(t, str) else t) for t in texts)}})
+
+
+def model_bot(base, lit, **extra):
+    bot = os.path.join(base, "bot")
+    files = {"engine/lit.py": "VERSION = 'old'\n", "server.py": "print('server')\n", "engine/live.py": "LIVE = 1\n", "live_model.json": MODEL_SAME_LOCAL,
+             "live_model_lit.json": lit, ".gitignore": GITIGNORE, "data/alerts.json": '{"telegram_token": "LOCAL-SECRET"}', **extra}
+    for rel, data in files.items():
+        wr(os.path.join(bot, rel.replace("/", os.sep)), data)
+    return bot
+
+
+def lit_of(bot):
+    return rb(os.path.join(bot, "live_model_lit.json"))
+
+
+def last_manifest(bot):
+    d = os.path.join(bot, "backups", "update_from_zip")
+    return json.loads(rb(os.path.join(d, sorted(os.listdir(d))[-1], "manifest.json")))
+
+
+def git_t(repo, *args, data=None):
+    r = subprocess.run(["git", "-c", "user.name=Test", "-c", "user.email=test@example.com", "-c", "commit.gpgsign=false", "-c", "core.autocrlf=false", *args],
+                       cwd=repo, input=data, capture_output=True)
+    if r.returncode:
+        raise RuntimeError(f"git {args[:2]}: {r.stderr.decode(errors='replace')[-300:]}")
+    return r.stdout
+
+
+def commit_files(repo, msg, **files):
+    for rel, data in files.items():
+        wr(os.path.join(repo, rel.replace("/", os.sep)), data)
+    git_t(repo, "add", "-A")
+    git_t(repo, "commit", "-q", "-m", msg)
+
+
+def test_models():
+    base = tempfile.mkdtemp(prefix="upd-model-")
+    home = os.path.join(base, "home")
+    os.makedirs(home)
+    port = free_port()
+    vj = versions_json(LIT_OLD, '{"lit_sizing": {"mode": "eval"}}\n')
+    case = iter(range(100))
+
+    def fresh():
+        d = os.path.join(base, f"case{next(case)}")
+        os.makedirs(d)
+        return d
+
+    try:
+        # ---- an older repo version: replaced (dry run first, then the update, the record, the undo)
+        d = fresh()
+        zp = make_zip(d, files={**MZIP, "tools/model_versions.json": vj})
+        bot = model_bot(d, LIT_OLD)
+        rc, out = run([zp, "--folder", bot, "--dry-run"], home, port)
+        check("4. dry run: an older repo version of live_model_lit.json 'would get the new values (yours is an older version)', nothing changed",
+              rc == 0 and "live_model_lit.json: would get the new values (yours is an older version)" in out and lit_of(bot) == LIT_OLD.encode(), out)
+        rc, out = run([zp, "--folder", bot, "--check"], home, port)
+        check("4. --check: an update is due and the line names the model file ('live_model_lit.json: the new values (yours is an older version)')",
+              rc == 10 and "live_model_lit.json: the new values (yours is an older version)" in out, (rc, out))
+        rc, out = run([zp, "--folder", bot], home, port)
+        lines = six_lines(out)
+        man = last_manifest(bot)
+        check("4. THE FIX: live_model_lit.json is an OLDER repo version (in the zip's tools/model_versions.json) -> it gets the zip's values (room_f 0.8 -> 0.4)",
+              rc == 0 and lit_of(bot) == LIT_NEW.encode() and json.loads(lit_of(bot))["lit_sizing"]["two_week"]["room_f"] == 0.4, out)
+        check("4. ...line 3 says 'live_model_lit.json: updated to the new values (yours was an older version)', nothing says YOURS kept",
+              len(lines) == 6 and "live_model_lit.json: updated to the new values (yours was an older version)" in lines[2] and "YOURS kept" not in out, lines)
+        bdir = os.path.join(bot, "backups", "update_from_zip", sorted(os.listdir(os.path.join(bot, "backups", "update_from_zip")))[-1])
+        check("4. ...the old copy is backed up like any replaced file, the record names it (replaced, model_updated, the list came from the zip)",
+              "live_model_lit.json" in man["replaced"] and man["model_updated"] == ["live_model_lit.json"] and man["kept_model"] == [] and man["versions_from"] == "zip"
+              and rb(os.path.join(bdir, "files", "live_model_lit.json")) == LIT_OLD.encode(), man)
+        check("4. ...live_model.json (the same values, other spacing and CRLF) is still not touched", rb(os.path.join(bot, "live_model.json")) == MODEL_SAME_LOCAL.encode())
+        rc, out = run(["--undo", "--folder", bot], home, port)
+        check("4. ...UNDO puts the older copy back and says so ('live_model_lit.json back to the values before the update')",
+              rc == 0 and lit_of(bot) == LIT_OLD.encode() and "live_model_lit.json back to the values before the update" in out, out)
+
+        # ---- the owner's own values: kept, and said so
+        d = fresh()
+        zp = make_zip(d, files={**MZIP, "tools/model_versions.json": vj})
+        bot = model_bot(d, LIT_OWN)
+        rc, out = run([zp, "--folder", bot], home, port)
+        lines = six_lines(out)
+        check("4. the owner's OWN values (no version the repo ever had): KEPT byte for byte; line 4 says 'your own values (no version the repo ever had), YOURS kept'",
+              rc == 0 and lit_of(bot) == LIT_OWN.encode() and "live_model_lit.json: your own values (no version the repo ever had), YOURS kept" in lines[3]
+              and last_manifest(bot)["kept_model"] == ["live_model_lit.json"] and rb(os.path.join(bot, "engine", "lit.py")) == b"VERSION = 'new'\n", lines)
+
+        # ---- the same older version as a Windows copy: CRLF, and CRLF with a UTF-8 BOM (a Notepad save)
+        for label, data in (("CRLF (a Windows git checkout)", LIT_OLD.replace("\n", "\r\n").encode()),
+                            ("CRLF + UTF-8 BOM (a Notepad save)", b"\xef\xbb\xbf" + LIT_OLD.replace("\n", "\r\n").encode())):
+            d = fresh()
+            zp = make_zip(d, files={**MZIP, "tools/model_versions.json": vj})
+            bot = model_bot(d, data)
+            rc, out = run([zp, "--folder", bot], home, port)
+            check(f"4. an older repo version as a {label} copy: still that version -> replaced with the zip's bytes",
+                  rc == 0 and lit_of(bot) == LIT_NEW.encode() and "updated to the new values" in out, out)
+
+        # ---- no list anywhere: exactly as before; the folder's own list as the fallback; a broken list is no list
+        d = fresh()
+        zp = make_zip(d, files=dict(MZIP))
+        bot = model_bot(d, LIT_OLD)
+        rc, out = run([zp, "--folder", bot], home, port)
+        check("4. a zip WITHOUT tools/model_versions.json (and none in the folder): as before, the differing copy is kept ('your values differ from the zip, YOURS kept')",
+              rc == 0 and lit_of(bot) == LIT_OLD.encode() and "live_model_lit.json: your values differ from the zip, YOURS kept" in six_lines(out)[3]
+              and last_manifest(bot)["versions_from"] is None, out)
+        d = fresh()
+        zp = make_zip(d, files=dict(MZIP))
+        bot = model_bot(d, LIT_OLD, **{"tools/model_versions.json": vj})
+        rc, out = run([zp, "--folder", bot], home, port)
+        check("4. a zip without the list, the bot folder has its own tools/model_versions.json: that one is used (the fallback) -> replaced",
+              rc == 0 and lit_of(bot) == LIT_NEW.encode() and last_manifest(bot)["versions_from"] == "folder", out)
+        for label, raw in (("not JSON", "{ this is not json"), ("another format (v 2)", versions_json(LIT_OLD, v=2))):
+            d = fresh()
+            zp = make_zip(d, files={**MZIP, "tools/model_versions.json": raw})
+            bot = model_bot(d, LIT_OLD)
+            rc, out = run([zp, "--folder", bot], home, port)
+            check(f"4. a broken list in the zip ({label}) counts as no list: kept, as before", rc == 0 and lit_of(bot) == LIT_OLD.encode() and "YOURS kept" in out, out)
+
+        # ---- the zip already in: an older updater applied it and kept the model file (the 2026-11-14 change would never land)
+        d = fresh()
+        zp = make_zip(d, files={**MZIP, "tools/model_versions.json": vj})
+        fix = "LIVE = 3  # fixed on the PC after the update\n"
+        bot = model_bot(d, LIT_OLD, **{"engine/lit.py": "VERSION = 'new'\n", "engine/live.py": fix, "tools/model_versions.json": vj})
+        wr(os.path.join(bot, "backups", "update_from_zip", "2026-01-01_090000", "manifest.json"), json.dumps(
+            {"v": 1, "stamp": "2026-01-01_090000", "zip": os.path.basename(zp), "zip_sha256": hashlib.sha256(rb(zp)).hexdigest(), "replaced": ["engine/lit.py"],
+             "added": [], "written": {}, "kept_model": ["live_model_lit.json"], "done": True, "undone": False}))
+        before = tree(bot)
+        rc, out = run([zp, "--folder", bot, "--check"], home, port)
+        check("4. the zip already in, but an older updater kept live_model_lit.json (an older repo version): --check says an update is due (exit 10), nothing changed",
+              rc == 10 and "live_model_lit.json is an older version of the repo's: an update is due" in out and tree(bot) == before, (rc, out))
+        rc, out = run([zp, "--folder", bot], home, port)
+        lines = six_lines(out)
+        check("4. ...the update then touches ONLY that file: the new values in, the fix made on the PC after the update stays (engine/live.py)",
+              rc == 0 and lit_of(bot) == LIT_NEW.encode() and rb(os.path.join(bot, "engine", "live.py")) == fix.encode()
+              and "1 updated, 0 new (this zip is already in" in lines[2] and "anything changed on the PC since stays as it is" in lines[3]
+              and {k for k in set(tree(bot)) ^ set(before)} == set() and [k for k in before if before[k] != tree(bot)[k]] == ["live_model_lit.json"], (lines, out))
+        rc, out = run([zp, "--folder", bot, "--check"], home, port)
+        check("4. ...and --check is then 'already has this code' (exit 0)", rc == 0 and "already has this code" in out, (rc, out))
+        rc, out = run(["--undo", "--folder", bot], home, port)
+        rc2, out2 = run([zp, "--folder", bot, "--check"], home, port)
+        check("4. ...UNDO puts only the older copy back (the PC fix stays); --check says due again",
+              rc == 0 and lit_of(bot) == LIT_OLD.encode() and rb(os.path.join(bot, "engine", "live.py")) == fix.encode() and rc2 == 10, (out, out2))
+        wr(os.path.join(bot, "live_model_lit.json"), LIT_OWN)
+        rc, out = run([zp, "--folder", bot, "--check"], home, port)
+        rc2, out2 = run([zp, "--folder", bot], home, port)
+        check("4. the zip already in and the kept file is the owner's own values: --check 0 (nothing due), the update changes nothing",
+              rc == 0 and "already has this code" in out and rc2 == 0 and "nothing to do: 0 updated, 0 new" in out2 and lit_of(bot) == LIT_OWN.encode()
+              and "YOURS kept" in out2, (out, out2))
+
+        # ---- the REAL list: current, and the owner's real sizing change reaches a Windows copy of the files before it
+        miss = MV.missing(ROOT)
+        check("4. tools/model_versions.json is current: every committed version of each root live_model*.json older than the current one is listed "
+              "(if not: python tools/model_versions.py, then commit it)", not miss, miss[:5])
+        r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "tools", "model_versions.py"), "--check"], capture_output=True, text=True, cwd=ROOT)
+        check("4. python tools/model_versions.py --check says so too (exit 0)", r.returncode == 0 and "[OK]" in r.stdout, r.stdout + r.stderr)
+        listed = MV.listed(ROOT) or {}
+        check("4. the list covers live_model.json, live_model_lit.json and live_model_engine.json (the updater's is_model files), not second_model.json",
+              set(listed) == {n.lower() for n in MV.model_names(ROOT)} == {"live_model.json", "live_model_lit.json", "live_model_engine.json"}, sorted(listed))
+        have = subprocess.run(["git", "cat-file", "-e", "f62e5dc^:live_model_lit.json"], cwd=ROOT, capture_output=True).returncode == 0
+        if have:
+            d = fresh()
+            old = {n: subprocess.run(["git", "show", f"f62e5dc^:{n}"], cwd=ROOT, capture_output=True).stdout for n in ("live_model.json", "live_model_lit.json")}
+            cur = {n: rb(os.path.join(ROOT, n)) for n in ("live_model.json", "live_model_lit.json")}
+            zp = make_zip(d, files={**MZIP, **cur, "tools/model_versions.json": rb(os.path.join(ROOT, "tools", "model_versions.json"))})
+            bot = model_bot(d, LIT_OLD, **{n: v.replace(b"\n", b"\r\n") for n, v in old.items()})
+            rc, out = run([zp, "--folder", bot], home, port)
+            tw = lambda b: json.loads(b)["lit_sizing"]["two_week"]["room_f"]  # noqa: E731
+            un = lambda b: json.loads(b)["lit_sizing"]["two_week_until"]  # noqa: E731
+            got = {n: rb(os.path.join(bot, n)) for n in cur}
+            check(f"4. the REAL case: a Windows copy (CRLF) of both files before commit f62e5dc (room_f {tw(old['live_model_lit.json'])}, two_week_until "
+                  f"{un(old['live_model_lit.json'])}) gets the repo's current values (room_f {tw(cur['live_model_lit.json'])}, two_week_until {un(cur['live_model_lit.json'])}) from a zip of HEAD",
+                  rc == 0 and got == cur and "live_model.json, live_model_lit.json: updated to the new values (yours were older versions)" in out, out)
+        else:
+            check("4. commit f62e5dc is not in this clone: the real-case replay is skipped", True)
+
+        # ---- tools/model_versions.py on a temp git repo; tools/make_backup.py refuses a stale ref
+        repo = os.path.join(base, "repo")
+        os.makedirs(repo)
+        git_t(repo, "init", "-q")
+        v = [f'{{"strategy": "lit", "n": {i}}}\n' for i in range(8)]
+        commit_files(repo, "v0", **{"live_model.json": v[0], "live_model_lit.json": LIT_OLD, "second_model.json": "{}\n", "docs/live_model.json": "{}\n"})
+        commit_files(repo, "v1", **{"live_model.json": v[1]})
+        commit_files(repo, "v1 crlf", **{"live_model.json": v[1].replace("\n", "\r\n")})
+        commit_files(repo, "v2", **{"live_model.json": v[2], "live_model_lit.json": LIT_NEW})
+        os.makedirs(os.path.join(repo, "tools"), exist_ok=True)
+        rc = MV.main(["--root", repo])
+        lst = MV.listed(repo) or {}
+        sha = lambda t: U.model_sha(t.encode())  # noqa: E731
+        check("4. model_versions.py: every committed version (the CRLF commit is the same version), only root live_model*.json (not second_model.json, not docs/)",
+              rc == 0 and lst == {"live_model.json": {sha(v[0]), sha(v[1]), sha(v[2])}, "live_model_lit.json": {sha(LIT_OLD), sha(LIT_NEW)}}, lst)
+        txt = rb(os.path.join(repo, "tools", "model_versions.json")).decode()
+        check("4. ...the file: {\"v\": 1, ...\"files\": ...} sorted, LF, small; a second build changes nothing",
+              json.loads(txt)["v"] == 1 and "\r" not in txt and len(txt) < 2000 and MV.write(repo, MV.build(repo)) is False, txt[:300])
+        commit_files(repo, "the list")
+        commit_files(repo, "v3 (no new list)", **{"live_model.json": v[3]})
+        check("4. ...one change committed WITHOUT a new list: not stale (the zip carries the new version; the one before it is listed)", MV.missing(repo) == [], MV.missing(repo))
+        commit_files(repo, "v4 (still no new list)", **{"live_model.json": v[4]})
+        r = subprocess.run([sys.executable, "-X", "utf8", os.path.join(ROOT, "tools", "model_versions.py"), "--check", "--root", repo], capture_output=True, text=True)
+        check("4. ...a SECOND change without a new list: STALE (v3, older than the current one, is missing) -> --check exit 1, the fix named",
+              MV.missing(repo) == [("live_model.json", sha(v[3]))] and r.returncode == 1 and "[STALE]" in r.stdout and "python tools/model_versions.py" in r.stdout, r.stdout)
+        out_dir = os.path.join(base, "zips")
+        old_root = MB.ROOT
+        MB.ROOT = repo
+        try:
+            import contextlib
+            import io
+
+            def mb(*args):
+                buf = io.StringIO()
+                with contextlib.redirect_stdout(buf):
+                    code = MB.main(["--out", out_dir, *args])
+                return code, buf.getvalue()
+
+            rc1, o1 = mb("--dry-run")
+            rc2, o2 = mb()
+            check("4. make_backup.py on a stale ref: REFUSED (exit 1, also the dry run), the one line says what to run, nothing written",
+                  rc1 == 1 and rc2 == 1 and "[STOP]" in o2 and "python tools/model_versions.py" in o2 and not os.path.exists(out_dir), (o1, o2))
+            rc3, o3 = mb("--no-model-check", "--dry-run")
+            check("4. ...--no-model-check (tools/second_backup.py: the PC's own weekly zip) goes on", rc3 == 0, o3)
+            MV.main(["--root", repo])
+            commit_files(repo, "the list again")
+            rc4, o4 = mb()
+            zips = [n for n in os.listdir(out_dir) if n.endswith(".zip")] if os.path.isdir(out_dir) else []
+            zl = U.parse_versions(zipfile.ZipFile(os.path.join(out_dir, zips[0])).read("tools/model_versions.json")) if zips else {}
+            check("4. ...after python tools/model_versions.py + a commit: the zip is made and carries a list with every older version (v0..v3)",
+                  rc4 == 0 and len(zips) == 1 and {sha(x) for x in v[:4]} <= zl.get("live_model.json", set()), (o4, zips))
+        finally:
+            MB.ROOT = old_root
+        wr(os.path.join(repo, "live_model.json"), v[5])
+        check("4. ...an UNCOMMITTED edit (the next commit): the list must hold the version at HEAD, which it does", MV.missing(repo) == [], MV.missing(repo))
+        commit_files(repo, "v5 (no new list)")
+        wr(os.path.join(repo, "live_model.json"), v[6])
+        check("4. ...committed without a new list and edited again: the version at HEAD (v5) is missing -> stale", MV.missing(repo) == [("live_model.json", sha(v[5]))], MV.missing(repo))
+        data = json.loads(rb(os.path.join(repo, "tools", "model_versions.json")))
+        data["files"]["live_model.json"].append("f" * 64)
+        wr(os.path.join(repo, "tools", "model_versions.json"), json.dumps(data))
+        MV.main(["--root", repo])
+        check("4. ...a rebuild KEEPS the entries the list already has (a shallow clone cannot see old commits) and adds the new ones",
+              {"f" * 64, sha(v[5])} <= (MV.listed(repo) or {}).get("live_model.json", set()) and MV.missing(repo) == [], MV.listed(repo))
+    finally:
+        shutil.rmtree(base, ignore_errors=True)
+
+
 if __name__ == "__main__":
     test_static()
     test_units()
     test_flows()
+    test_models()
     bad = RES.count(False)
     print(f"\n{len(RES) - bad}/{len(RES)} passed")
     sys.exit(1 if bad else 0)

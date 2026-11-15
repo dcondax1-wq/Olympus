@@ -129,6 +129,35 @@ def static():
     check("setup_everything.ps1: the pause screen asks exactly the owner's question", f"'   {GATE}'" in ps)
     i1, i2, i3 = joined.find("Header 'STEP 1 of 3'"), joined.find("Header 'STEP 2 of 3'"), joined.find("Header 'STEP 3 of 3'")
     check("setup_everything.ps1: the steps in order: new code, phone link, go live", 0 < i1 < i2 < i3, (i1, i2, i3))
+    i1b = joined.find("Header 'STEP 1b of 3'")
+    au = joined[i1b:i2]
+    check("1b auto-update: its own step between step 1 (new code) and step 2 (phone link), listed on the intro and in the summary",
+          0 < i1 < i1b < i2 and "'   1b Auto-update: from then on the PC gets new code by itself" in ps and '"   1b Auto-update   {0}" -f $script:S1b' in ps, (i1, i1b, i2))
+    conn = [ln.strip() for ln in code if "engine.autoupdate" in ln and "--connect" in ln]
+    check("1b: --connect is called once, bare and attached to this window (no pipe, capture or redirect: a GitHub sign-in may need the owner), with this port",
+          conn == ["& $py -X utf8 -m engine.autoupdate --connect --port $Port"], conn)
+    stat = [ln.strip() for ln in code if "engine.autoupdate" in ln and "--source-status" in ln]
+    check("1b: the read-only --source-status probe first (its line kept for a SKIP), only then the connect",
+          len(stat) == 1 and stat[0].startswith("$probe = @(& $py -X utf8 -m engine.autoupdate --source-status 2>&1") and 0 < au.find("--source-status") < au.find("--connect"), stat)
+    check("1b: never a stop: no Done or exit in it; every code has its own one line (0 on, 20 unreachable, 21 not now, 22 no git, 1 put back, any other)",
+          "Done " not in au and not re.search(r"\bexit\b", au) and all(f"$crc -eq {c}" in au for c in (0, 20, 21, 22, 1)) and "Auto-update stopped (code $crc" in au
+          and "Could not reach the backup ($signIn in the window that opens, or check the internet). The zip way still works." in au, au[:300])
+    check("1b: step 1's stop rules: never with an open trade, while the market is open only after a Y; Stop-Bot / Start-Server reused, the server started once after",
+          "$ls.open" in au and "Market-Open (Et-Now)" in au and "(-not (Stop-Bot))" in au and "Ask '   The market is open now and the bot is stopped. Turn on auto-update anyway?" in au
+          and "if ($script:ServerDown) { Start-Server; $script:ServerDown = $false }" in au and "$script:ServerDown = $stopped" in joined, au[-400:])
+    check("1b: the sign-in names the account in update_source.json (read only), skipped when the folder's code has no auto-update yet",
+          "'update_source.json'" in ps and "P $j 'account'" in ps and "This code has no auto-update yet (a newer code zip brings it). The zip way still works." in au)
+    check("the .bat's header names the new step", "1b AUTO-UPDATE" in bat, bat[:900])
+    aus = rb("engine/autoupdate.py").decode("utf-8")
+    usrc = json.loads(rb("update_source.json").decode("utf-8"))
+    check("1b against the REAL CLI: engine/autoupdate.py has --source-status / --connect / --port and the exit codes step 1b reads (0 1 20 21 22; 10); "
+          "update_source.json names the account step 1b shows",
+          all(f'"--{x}"' in aus for x in ("source-status", "connect", "port")) and "CONNECT_OK, CONNECT_FAIL, CONNECT_UNREACHABLE, CONNECT_NOT_NOW, CONNECT_NO_GIT = 0, 1, 20, 21, 22" in aus
+          and "return 10," in aus and re.match(r"^[A-Za-z0-9][A-Za-z0-9._@+-]{0,79}$", str(usrc.get("account") or "")), usrc.get("account"))
+    r = subprocess.run([sys.executable, "-X", "utf8", "-m", "engine.autoupdate", "--source-status"], cwd=ROOT, capture_output=True, text=True, timeout=120,
+                       env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+    check("1b against the REAL CLI: its read-only --source-status answers 0 or 10 with one [OK] / [..] line (here, in this repo)",
+          r.returncode in (0, 10) and re.search(r"^\s*\[(OK|\.\.)\]\s+\S", r.stdout, re.M), (r.returncode, r.stdout[-300:], r.stderr[-300:]))
     fixes = [ln.strip() for ln in code if ln.strip().startswith("Fix ")]
     check("setup_everything.ps1: every failure is the one-line Fix (what + exact fix + photo), each with both parts",
           len(fixes) >= 12 and all(re.match(r"^Fix (['\"]).+\1 (['\"]).+\2$", f) for f in fixes)
@@ -255,9 +284,35 @@ esac
 exit 0
 """
 
-# python: `-m engine.go` is the fake START BOT (records its arguments, how much it read on stdin, a confirm variable: never the text);
-# everything else (tools/update_from_zip.py) runs on the real python
+# python: `-m engine.autoupdate` is the fake auto-update CLI (its own log, so the PY / calls counts stay as they were): --source-status
+# answers 0 once a --connect worked (else FAKE_AU_STATUS, default 0), --connect refuses with 21 while the server port answers (as the
+# real one) and records the port state, its folder and (FAKE_AU_READ=1) how much it read on stdin; `-m engine.go` is the fake START
+# BOT (records its arguments, how much it read on stdin, a confirm variable: never the text); everything else
+# (tools/update_from_zip.py) runs on the real python
 FAKE_PY = r"""#!/bin/sh
+case "$*" in
+  *"-m engine.autoupdate"*)
+    up=0
+    "$SE_T_REALPY" -c "import socket,sys; s=socket.socket(); s.settimeout(1); sys.exit(0 if s.connect_ex(('127.0.0.1', int(sys.argv[1]))) == 0 else 1)" "$SE_T_PORT" && up=1
+    echo "AU $* up=$up cwd=$(pwd)" >> "$SE_T_AULOG"
+    case "$*" in
+      *--source-status*)
+        if [ -f "$SE_T_DIR/au_on" ]; then echo "  [OK]    Auto-update is ON from dcondax1-wq/olympus (fake): the PC gets new code by itself."; exit 0; fi
+        st="${FAKE_AU_STATUS:-0}"
+        if [ -n "$FAKE_AU_LINE" ]; then echo "$FAKE_AU_LINE"
+        elif [ "$st" = "0" ]; then echo "  [OK]    Auto-update is ON (fake)."
+        else echo "  [..]    Auto-update from dcondax1-wq/olympus is not connected yet (fake)."; fi
+        exit "$st";;
+      *--connect*)
+        if [ "$up" = "1" ]; then echo "  [SKIP] The bot server is running (fake): it has to be stopped first. Nothing changed."; exit 21; fi
+        if [ "${FAKE_AU_READ:-0}" = "1" ]; then line=""; IFS= read -r line || true; echo "AU stdin_len=${#line}" >> "$SE_T_AULOG"; fi
+        echo "  [..] fake connect: if a GitHub window opens, sign in as dcondax1-wq..."
+        rc="${FAKE_AU_CONNECT:-0}"
+        if [ "$rc" = "0" ]; then : > "$SE_T_DIR/au_on"; if [ -n "$FAKE_AU_NEWSE" ]; then cp "$FAKE_AU_NEWSE" scripts/setup_everything.ps1; fi; fi
+        exit "$rc";;
+    esac
+    exit 2;;
+esac
 echo "PY $*" >> "$SE_T_PYLOG"
 case "$*" in
   *"-m engine.go"*)
@@ -458,7 +513,7 @@ class Box:
         self.fake = FakeBot(self.dir)
         wr(os.path.join(self.tsdir, "serve_on.json"), json.dumps(
             {"TCP": {"443": {"HTTPS": True}}, "Web": {f"{DNS}:443": {"Handlers": {"/": {"Proxy": f"http://127.0.0.1:{self.fake.port}"}}}}}))
-        self.calls, self.winlog, self.pylog = (os.path.join(self.dir, n) for n in ("calls.log", "win.log", "py.log"))
+        self.calls, self.winlog, self.pylog, self.aulog = (os.path.join(self.dir, n) for n in ("calls.log", "win.log", "py.log", "au.log"))
 
     @staticmethod
     def zip_code():
@@ -482,7 +537,7 @@ class Box:
 
     def run(self, pwsh, args=(), stdin="", now=SAT, tasks="", script=None, batdir=None, go_rc=0, go_arms=1, bb_rc=0, extra_env=None):
         env = {**os.environ, "HOME": self.home, "USERPROFILE": self.home, "TEMP": self.tmp, "OLYMPUS_HOME": os.path.join(self.home, ".olympus"),
-               "LE_SE_T_LOG": self.winlog, "LE_SE_T_TASKS": tasks, "LE_SE_T_NOW": str(now), "SE_T_CALLS": self.calls, "SE_T_DIR": self.dir,
+               "LE_SE_T_LOG": self.winlog, "LE_SE_T_TASKS": tasks, "LE_SE_T_NOW": str(now), "SE_T_CALLS": self.calls, "SE_T_DIR": self.dir, "SE_T_AULOG": self.aulog,
                "SE_T_PORT": str(self.fake.port), "SE_T_REALPY": sys.executable, "SE_T_PYLOG": self.pylog, "SE_T_DNS": DNS, "FAKE_TS_DIR": self.tsdir,
                "FAKE_GO_RC": str(go_rc), "FAKE_GO_ARMS": str(go_arms), "FAKE_BB_RC": str(bb_rc), "NO_PROXY": "127.0.0.1,localhost", "no_proxy": "127.0.0.1,localhost",
                "DOTNET_CLI_TELEMETRY_OPTOUT": "1", "POWERSHELL_TELEMETRY_OPTOUT": "1", "POWERSHELL_UPDATECHECK": "Off", **(extra_env or {})}
@@ -500,7 +555,7 @@ class Box:
             return []
 
     def clear(self):
-        for p in (self.calls, self.winlog, self.pylog):
+        for p in (self.calls, self.winlog, self.pylog, self.aulog):
             open(p, "w").close()
         self.fake.starts = 0                                        # the START SERVER count starts again with the emptied log
 
@@ -599,7 +654,7 @@ def flows(pwsh):
               "Type Y then Enter to stop the bot now" in out and calls and calls[0].startswith("stop_bot.ps1")
               and order(out, "The bot is stopped.", "1. Zip"), (calls, out[-2500:]))
         check("first run: --check, then the update with the zip's own updater (python -I, --pip, this window's own last line)",
-              len(py) == 2 and "--check" in py[0] and "-I -X utf8" in py[1] and "--pip" in py[1] and "this window goes on with step 2 by itself." in out
+              len(py) == 2 and "--check" in py[0] and "-I -X utf8" in py[1] and "--pip" in py[1] and "this window goes on with the next step by itself." in out
               and open(os.path.join(b.bot, "engine", "lit.py")).read() == "VERSION = 'new'\n" and len(b.manifests()) == 1, (py, out[-2500:]))
         check("first run: the local-only files stay (logs, data\\start_bot.json), the new scripts arrived (live_link, bots_back, this script)",
               before["data/start_bot.json"] == tree(b.bot)["data/start_bot.json"] and all(os.path.exists(os.path.join(b.bot, "scripts", n))
@@ -617,6 +672,9 @@ def flows(pwsh):
               GATE in out and "It is not Sunday 6 PM New York time yet" in out and "Stopped here. Nothing is armed." in out and not [c for c in calls if c.startswith(("bots_back", "engine.go"))], (calls, out[-1500:]))
         check("first run: the summary says what happened to each step", re.search(r"1  New code\s+done: the new code is in", out)
               and re.search(r"2  Phone link\s+on: " + re.escape(URL), out) and re.search(r"3  Go live\s+not yet", out), out[-800:])
+        check("first run, code without auto-update yet: step 1b says so in one SKIP line and goes on (no probe, no connect), the summary names it",
+              "[SKIP] This code has no auto-update yet (a newer code zip brings it). The zip way still works." in out and not b.lines(b.aulog)
+              and re.search(r"1b Auto-update\s+skipped: this code has no auto-update yet", out) and order(out, "STEP 1b of 3", "STEP 2 of 3"), out[-1500:])
 
         # ---- the second run: everything done is skipped, nothing is asked
         b.clear()
@@ -789,7 +847,7 @@ def flows(pwsh):
         wr(os.path.join(b.bot, "scripts", "setup_everything.ps1"), newer)
         rc, out = b.run(pwsh, tasks="OlympusLiveSite")
         check("... and the bot folder has its own (newer) copy of this script: that copy runs steps 2 and 3, told what step 1 found",
-              rc == 0 and "The bot folder has its own copy of this window: it goes on with step 2." in out
+              rc == 0 and "The bot folder has its own copy of this window: it goes on from here." in out
               and "Step 1 (above): skipped: the zip is older than the code on this PC." in out and out.count("STEP 2 of 3") == 1
               and re.search(r"1  New code\s+skipped: the zip is older", out), out[-2000:])
     finally:
@@ -834,6 +892,165 @@ def flows(pwsh):
         b.cleanup()
 
 
+# ============================================================================================== 3 pwsh: step 1b, auto-update
+AU_FILES = {"engine/autoupdate.py": "# fake engine.autoupdate: the tests' fake python answers --source-status / --connect\n",
+            "update_source.json": json.dumps({"v": 1, "remote": "olympus", "url": "https://dcondax1-wq@github.com/dcondax1-wq/olympus.git",
+                                              "branch": "pc", "account": "dcondax1-wq"}) + "\n"}
+AU_ON = "[OK] Auto-update is ON: from now on the PC gets new code by itself (only when no trade is open, never during trading hours)."
+AU_STATUS = "-X utf8 -m engine.autoupdate --source-status"
+
+
+def au_calls(b):
+    """[(arguments, server port answered, folder)] of the fake engine.autoupdate calls."""
+    out = []
+    for ln in b.lines(b.aulog):
+        m = re.match(r"AU (.*) up=(\d) cwd=(.*)$", ln)
+        if m:
+            out.append((m.group(1), m.group(2) == "1", os.path.realpath(m.group(3))))
+    return out
+
+
+def connects(b):
+    return [c for c in au_calls(b) if "--connect" in c[0]]
+
+
+def starts(b):
+    return [w for w in b.lines(b.winlog) if w.startswith("START SERVER")]
+
+
+def au_flows(pwsh):
+    zf = {**Box.zip_code(), **AU_FILES}
+    due = {"FAKE_AU_STATUS": "10"}
+    # ---- the first run, Saturday, a paper bot running, auto-update due: ONE Y stops the server for the update AND the connect
+    b = Box(zip_files=zf)
+    try:
+        b.fake.up()
+        b.fake.running = True
+        rc, out = b.run(pwsh, stdin="Y\n", extra_env=due)
+        au = au_calls(b)
+        check("1b first run: --source-status, then --connect --port N in the bot folder while the server is DOWN (step 1's stop reused: one Y in all)",
+              rc == 0 and [a for a, _u, _c in au] == [AU_STATUS, f"-X utf8 -m engine.autoupdate --connect --port {b.fake.port}"]
+              and not au[1][1] and au[1][2] == os.path.realpath(b.bot) and out.count("Type Y then Enter") == 1, (au, out[-2500:]))
+        check("1b first run: the connect's own lines show in this window (attached), then '[OK] Auto-update is ON: from now on the PC gets new code by itself...'",
+              "fake connect: if a GitHub window opens, sign in as dcondax1-wq" in out and AU_ON in out and "the first time a GitHub window may open: sign in as dcondax1-wq" in out
+              and order(out, "STEP 1 of 3", "1. Zip", "STEP 1b of 3", "fake connect", AU_ON, "STEP 2 of 3"), out[-2500:])
+        check("1b first run: the server is started again ONCE, after the connect (the bot itself stays stopped)",
+              len(starts(b)) == 1 and order(out, "fake connect", "Starting the bot server again") and not b.fake.running and b.fake.srv is not None, (b.lines(b.winlog), out[-2000:]))
+        check("1b first run: the summary lists the new step ('1b Auto-update   ON: the PC gets new code by itself'), between 1 and 2",
+              re.search(r"1b Auto-update\s+ON: the PC gets new code by itself", out) and order(out[out.rfind("SUMMARY"):], "1  New code", "1b Auto-update", "2  Phone link"), out[-900:])
+        b.clear()
+        rc, out = b.run(pwsh, tasks="OlympusLiveSite")
+        check("1b second run: --source-status says 0 -> 'Already on: the PC updates itself', no connect, nothing stopped, nothing asked",
+              rc == 0 and "[OK] Already on: the PC updates itself" in out and [a for a, _u, _c in au_calls(b)] == [AU_STATUS] and "Type Y then Enter to stop" not in out
+              and not [c for c in b.lines(b.calls) if c.startswith("stop_bot")] and re.search(r"1b Auto-update\s+already on", out), (au_calls(b), out[-1500:]))
+    finally:
+        b.cleanup()
+
+    # ---- every other answer of --connect: ONE [SKIP] line, never a stop (the server is down and it is Saturday: nothing to ask)
+    b = Box(zip_files=zf)
+    try:
+        words = {"20": ("[SKIP] Could not reach the backup (sign in as dcondax1-wq in the window that opens, or check the internet). The zip way still works.",
+                        "not on yet: the backup could not be reached"),
+                 "21": ("[SKIP] Not now: the bot server is running or a trade is open. Nothing was changed;", "not now: the bot server was running"),
+                 "22": ("[SKIP] Git is not installed on this PC, so it cannot update itself: install Git for Windows (free, git-scm.com)", "not on: Git is not installed"),
+                 "1": ("[SKIP] Auto-update could not be turned on, so everything was put back as it was (the lines above say why). The zip way still works.",
+                       "not on: it failed and everything was put back"),
+                 "7": ("[SKIP] Auto-update stopped (code 7; the lines above say why). The zip way still works.", "not on: it stopped (code 7)")}
+        for code, (line, summ) in words.items():
+            b.clear()
+            rc, out = b.run(pwsh, tasks="OlympusLiveSite", extra_env={**due, "FAKE_AU_CONNECT": code})
+            check(f"1b --connect exit {code}: one line ('{line[7:62]}...'), the window goes on with steps 2 and 3, the summary says it",
+                  rc == 0 and line in out and order(out, line, "STEP 2 of 3", "STEP 3 of 3") and AU_ON not in out and len(connects(b)) == 1
+                  and re.search(r"1b Auto-update\s+" + re.escape(summ), out), out[-1800:])
+        b.clear()
+        rc, out = b.run(pwsh, tasks="OlympusLiveSite", extra_env={"FAKE_AU_STATUS": "3", "FAKE_AU_LINE": "  [FIX]  Something odd (fake)"})
+        check("1b: --source-status answers something else (3): one SKIP with its line, no connect, the window goes on",
+              rc == 0 and "[SKIP] Auto-update not checked: Something odd (fake). The zip way still works." in out and not connects(b) and "STEP 3 of 3" in out, out[-1500:])
+
+        # ---- the bot running, step 1 already done: step 1b asks its own Y (market closed); n -> skipped; Y -> stopped, connected, started
+        b.fake.up()
+        b.fake.running = True
+        b.clear()
+        rc, out = b.run(pwsh, stdin="n\n", tasks="OlympusLiveSite", extra_env=due)
+        check("1b, the bot running and step 1 already done: ONE question ('Type Y then Enter to stop the bot now'); n -> skipped, nothing stopped, no connect",
+              rc == 0 and out.count("Type Y then Enter to stop the bot now (anything else: skipped, nothing is changed)") == 1 and "you kept the bot running" in out
+              and not connects(b) and not [c for c in b.lines(b.calls) if c.startswith("stop_bot")] and b.fake.srv is not None and b.fake.running, out[-1800:])
+        b.clear()
+        rc, out = b.run(pwsh, stdin="Y\n", tasks="OlympusLiveSite", extra_env=due)
+        check("1b ... Y -> stopped (scripts\\stop_bot.ps1), --connect with the server down, the server started again once, auto-update ON",
+              rc == 0 and [c for c in b.lines(b.calls) if c.startswith("stop_bot")] and len(connects(b)) == 1 and not connects(b)[0][1] and len(starts(b)) == 1 and AU_ON in out
+              and order(out, "The bot is stopped.", "fake connect", "Starting the bot server again"), (au_calls(b), out[-2000:]))
+    finally:
+        b.cleanup()
+
+    # ---- an open trade: never stopped; the market open: asked first
+    b = Box(zip_files=zf)
+    try:
+        b.run(pwsh, tasks="OlympusLiveSite", extra_env={**due, "FAKE_AU_CONNECT": "20"})        # the zip goes in first (server down)
+        b.fake.up()
+        b.fake.running, b.fake.mode, b.fake.position = True, "LIVE", True
+        b.clear()
+        rc, out = b.run(pwsh, tasks="OlympusLiveSite", extra_env=due)
+        check("1b with an open trade: the bot is never stopped, no connect, one SKIP line, the window goes on",
+              rc == 0 and "A bot has an open trade right now, so the bot is not stopped: auto-update waits" in out and not connects(b)
+              and not [c for c in b.lines(b.calls) if c.startswith("stop_bot")] and re.search(r"1b Auto-update\s+not yet: a trade was open", out) and "STEP 3 of 3" in out, out[-1500:])
+        b.fake.position = False
+        b.fake.down()
+        b.clear()
+        rc, out = b.run(pwsh, stdin="\n", now=WED, tasks="OlympusLiveSite", extra_env=due)
+        check("1b, the market open (Wed 10:00 ET) and the bot stopped: 'Turn on auto-update anyway?' first; no Y -> skipped, no connect",
+              rc == 0 and "The market is open now and the bot is stopped. Turn on auto-update anyway? Type Y then Enter" in out
+              and "Auto-update is not turned on: the market is open." in out and not connects(b), out[-1500:])
+        b.clear()
+        rc, out = b.run(pwsh, stdin="Y\n", now=WED, tasks="OlympusLiveSite", extra_env=due)
+        check("1b ... Y -> connected; a server that was not running is not started (left as found)", rc == 0 and AU_ON in out and len(connects(b)) == 1 and not starts(b), out[-1500:])
+    finally:
+        b.cleanup()
+    b = Box(zip_files=zf)
+    try:
+        b.fake.up()
+        b.fake.running = True
+        rc, out = b.run(pwsh, stdin="Y\n", now=WED, extra_env=due)
+        check("1b, the market open and the bot running on the first run: step 1's ONE question covers both (no second question), stopped once, connected, started once",
+              rc == 0 and out.count("Type Y then Enter") == 1 and "Turn on auto-update anyway?" not in out and AU_ON in out and len(starts(b)) == 1
+              and len([c for c in b.lines(b.calls) if c.startswith("stop_bot")]) == 1, out[-2000:])
+        b.fake.down()
+        b.clear()
+        os.remove(os.path.join(b.dir, "au_on"))
+        b.fake.up()
+        b.fake.running = True
+        rc, out = b.run(pwsh, stdin="Y\n", now=WED, tasks="OlympusLiveSite", extra_env=due)
+        check("1b, the market open and the bot running, step 1 already done: ONE question ('...stop the bot and turn on auto-update now anyway'), Y -> no second question",
+              rc == 0 and out.count("Type Y then Enter to stop the bot and turn on auto-update now anyway") == 1 and "Turn on auto-update anyway?" not in out
+              and AU_ON in out and len(starts(b)) == 1, out[-2000:])
+    finally:
+        b.cleanup()
+
+    # ---- the connect brought another copy of this script: the server first, then that copy goes on
+    b = Box(zip_files=zf)
+    try:
+        newer = os.path.join(b.dir, "newer_setup_everything.ps1")
+        wr(newer, b.se.replace(b"$ErrorActionPreference = 'Continue'", b"$ErrorActionPreference = 'Continue'\n# NEWER COPY (the backup's)", 1))
+        b.fake.up()
+        b.fake.running = True
+        rc, out = b.run(pwsh, stdin="Y\n", extra_env={**due, "FAKE_AU_NEWSE": newer})
+        check("1b: the connect brought another copy of this script: the server started first, then that copy goes on (it says already on; steps 2 and 3 once)",
+              rc == 0 and "Auto-update brought a newer version of this window: it goes on from here." in out and out.count("STEP 2 of 3") == 1 and out.count("STEP 1b of 3") == 2
+              and "Step 1 (above): done: the new code is in." in out and "[OK] Already on: the PC updates itself" in out and len(starts(b)) == 1
+              and order(out, "fake connect", "Starting the bot server again", "Auto-update brought a newer version") and re.search(r"1b Auto-update\s+already on", out), out[-2500:])
+    finally:
+        b.cleanup()
+
+    # ---- attached to this window: what the owner types reaches --connect (Git's sign-in may ask in the console)
+    b = Box(zip_files=zf)
+    try:
+        rc, out = b.run(pwsh, stdin="typed-by-the-owner\n", tasks="OlympusLiveSite", extra_env={**due, "FAKE_AU_READ": "1"})
+        lens = [ln for ln in b.lines(b.aulog) if ln.startswith("AU stdin_len=")]
+        check("1b: --connect reads this window's keyboard (attached, not piped): it got the line typed for it", rc == 0 and lens == ["AU stdin_len=18"], (lens, out[-1500:]))
+    finally:
+        b.cleanup()
+
+
 def main() -> int:
     static()
     check_mode()
@@ -841,6 +1058,7 @@ def main() -> int:
     if pwsh:
         bootstrap(pwsh)
         flows(pwsh)
+        au_flows(pwsh)
     else:
         print("[SKIP] pwsh not found: the PowerShell runs were skipped")
     bad = RES.count(False)

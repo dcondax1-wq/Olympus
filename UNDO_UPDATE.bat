@@ -1,7 +1,8 @@
 @echo off
 rem Liquidity Engine: UNDO UPDATE (double-click). Puts back the files the last UPDATE_FROM_ZIP replaced and removes
 rem the files it added (from backups\update_from_zip\). It refuses while the bot is running. Your local-only files
-rem and live_model*.json are not touched. It never starts, stops or arms the bot. docs\NQ_BOT_BACK.md
+rem are not touched (a live_model*.json goes back only when that update gave it new values). It never
+rem starts, stops or arms the bot. docs\NQ_BOT_BACK.md
 setlocal EnableExtensions
 rem the undo can remove or rewrite this very file: run from a copy in %TEMP% (see UPDATE_FROM_ZIP.bat)
 if /i "%~1"=="--from-temp" goto :main

@@ -19,14 +19,21 @@ What it guarantees:
     .sha256.txt next to it when that file is there. A wrong SHA-256 is never forced.
   - NEVER overwrites a local-only file: the hard list below (alerts, TradingView, autostart, bot state, memory, .env, NinjaTrader
     bars, logs, backups) and anything the folder's or the zip's .gitignore names. A hard-list path is never written at all.
-  - NEVER replaces a live_model*.json whose VALUES differ from the zip's: the local one is kept and the summary says so.
+  - A root live_model*.json whose VALUES differ from the zip's (2026-11-14, 3-way): nothing on the PC writes these files (only the
+    repo does), so a copy that is byte for byte one of the REPO'S OWN older versions (its SHA-256, UTF-8 BOM and line ends aside, is
+    in tools/model_versions.json: the zip's copy, else the folder's own; tools/model_versions.py builds it from git) is REPLACED
+    with the zip's values and the summary says "updated to the new values (yours was an older version)". Any other content is
+    the owner's own values: KEPT, and the summary says so. With no list in the zip or the folder every differing copy is kept.
+  - The zip ALREADY IN (this very zip is the folder's last update, not undone): only the live_model*.json that update kept are
+    looked at again (an older updater kept every differing one); every other file stays as it is now (later fixes are kept).
   - NEVER deletes a file, never starts / stops / arms the bot, never touches NinjaTrader, never needs the network.
   - BACKS UP first: backups/update_from_zip/<stamp>/ holds the folder's state list (state_before.txt), a copy of every file
     it replaces and a manifest; a failed write rolls everything back.
   - Prints a SIX-LINE summary. Exit codes: 0 done, 2 nothing to do / not found, 3 bad zip, 11 bot running, 12 market open, 1 failed.
     --check prints one line instead: 0 the folder already has this zip's code (this very zip was applied and not undone: later
-    fixes on the PC are never reverted; else every file the same), 10 an update is due, 13 the zip is OLDER than the folder's last
-    update (applied before a newer one, or dated before it: never put back over newer code), 2 / 3 as above. It changes nothing.
+    fixes on the PC are never reverted; else every file the same), 10 an update is due (also: this zip is in, but a live_model*.json
+    it kept is an older repo version), 13 the zip is OLDER than the folder's last update (applied before a newer one, or dated
+    before it: never put back over newer code), 2 / 3 as above. It changes nothing.
 Stdlib only, no zoneinfo (Windows has no time-zone database without the tzdata package).
 """
 from __future__ import annotations
@@ -55,6 +62,7 @@ HARD_LOCAL = ("data/alerts.json", "data/tv.json", "data/tv_device.json", "data/a
               "data/memory.db", "data/memory.db-*", ".env", ".env.*", "*.env", "data/nt_bars/", "logs/", "backups/", ".git/", "data/pc_publish/",
               "data/account_b.json", "data/account_c.json", "data/fleet.json", "data/eval_anchor.json", "data/push.json", "netlify.json", ".olympus/")
 KEEP_IF_CHANGED = ("live_model*.json",)                              # root level: the owner's own values win
+VERSIONS_REL = "tools/model_versions.json"                          # the repo's own versions of them (tools/model_versions.py)
 EOL_STRICT = (".bat", ".cmd", ".ps1")                                # their line endings matter to Windows: never "the same but for line ends"
 STATE_SKIP_DIRS = {".git", "logs", "backups", "__pycache__", "node_modules", "nt_bars", "pc_publish", ".claude"}
 EXIT_OK, EXIT_FAIL, EXIT_NOTHING, EXIT_BADZIP, EXIT_RUNNING, EXIT_MARKET = 0, 1, 2, 3, 11, 12
@@ -206,6 +214,56 @@ def same_json(a: bytes, b: bytes) -> bool:
         return False
 
 
+# ------------------------------------------------------------------------------------------------ live_model*.json: the repo's own versions
+def model_sha(data: bytes) -> str:
+    """The SHA-256 tools/model_versions.json lists for a live_model*.json: the bytes without a UTF-8 BOM and with Windows line ends
+    as LF (a Windows checkout, or an editor's save, of the same file is the same version). tools/model_versions.py uses this too."""
+    if data[:3] == b"\xef\xbb\xbf":
+        data = data[3:]
+    return hashlib.sha256(data.replace(b"\r\n", b"\n")).hexdigest()
+
+
+def parse_versions(raw) -> dict | None:
+    """tools/model_versions.json -> {file name in lower case: {sha256, ...}}; None when it is missing, not JSON or not format 1."""
+    try:
+        d = json.loads(raw.decode("utf-8-sig")) if raw else None
+    except Exception:
+        return None
+    if not isinstance(d, dict) or d.get("v") != 1 or not isinstance(d.get("files"), dict):
+        return None
+    out = {}
+    for name, shas in d["files"].items():
+        if isinstance(name, str) and isinstance(shas, list):
+            out[name.lower()] = {s.lower() for s in shas if isinstance(s, str) and re.fullmatch(r"[0-9a-fA-F]{64}", s)}
+    return out
+
+
+def known_versions(folder: str, z: zipfile.ZipFile) -> tuple[dict | None, str | None]:
+    """(versions, 'zip' | 'folder'): the zip's tools/model_versions.json, else the bot folder's own copy; (None, None) without one."""
+    try:
+        v = parse_versions(z.read(VERSIONS_REL))
+    except Exception:                                                   # not in the zip (KeyError) or unreadable
+        v = None
+    if v is not None:
+        return v, "zip"
+    try:
+        with open(os.path.join(folder, *VERSIONS_REL.split("/")), "rb") as fh:
+            v = parse_versions(fh.read())
+    except OSError:
+        v = None
+    return (v, "folder") if v is not None else (None, None)
+
+
+def model_action(rel: str, old: bytes, new: bytes, known: dict | None) -> str:
+    """A root live_model*.json: 'same' (the same values), 'replace' (one of the repo's own older versions: nothing on the PC writes
+    these files, so it is an un-updated copy, never the owner's edit) or 'keep' (other values: the owner's own; or no list to tell)."""
+    if old == new or same_json(old, new):
+        return "same"
+    if known and model_sha(old) in known.get(rel.lower(), ()):
+        return "replace"
+    return "keep"
+
+
 # ------------------------------------------------------------------------------------------------ the zip
 def find_zip(folder: str, given: str | None) -> str | None:
     if given:
@@ -274,7 +332,8 @@ def make_plan(folder: str, z: zipfile.ZipFile) -> dict:
         pass
     zip_ignore = z.read(".gitignore").decode("utf-8", "replace") if ".gitignore" in z.namelist() else ""
     soft = ignore_patterns(local_ignore, zip_ignore)
-    plan = {"add": [], "replace": [], "same": 0, "kept_local": [], "kept_model": [], "skipped": []}
+    known, src = known_versions(folder, z)
+    plan = {"add": [], "replace": [], "same": 0, "kept_local": [], "kept_model": [], "skipped": [], "model_updated": [], "versions_from": src}
     for info in z.infolist():
         if info.is_dir():
             continue
@@ -300,16 +359,70 @@ def make_plan(folder: str, z: zipfile.ZipFile) -> dict:
         with open(dest, "rb") as fh:
             old = fh.read()
         if is_model(rel):
-            if old == new or same_json(old, new):
+            act = model_action(rel, old, new, known)
+            if act == "same":
                 plan["same"] += 1
+            elif act == "replace":
+                plan["replace"].append(rel)                     # an older repo version: the zip's values (backed up like any file)
+                plan["model_updated"].append(rel)
             else:
-                plan["kept_model"].append(rel)                  # the owner changed it: keep, and say so
+                plan["kept_model"].append(rel)                  # the owner's own values (or no list to tell): keep, and say so
             continue
         if same_content(rel, old, new):
             plan["same"] += 1
         else:
             plan["replace"].append(rel)
     return plan
+
+
+def models_plan(folder: str, z: zipfile.ZipFile, rels) -> dict:
+    """This zip is already in (it is the folder's last update, not undone): only the root live_model*.json that update kept are
+    looked at again (an older updater kept every differing one); every other file stays as it is now, so a later fix is kept."""
+    known, src = known_versions(folder, z)
+    plan = {"add": [], "replace": [], "same": 0, "kept_local": [], "kept_model": [], "skipped": [], "model_updated": [], "versions_from": src}
+    names = set(z.namelist())
+    for rel in dict.fromkeys(r for r in (rels or []) if isinstance(r, str)):
+        dest = os.path.join(folder, rel.replace("/", os.sep))
+        if not is_model(rel) or rel not in names or not os.path.isfile(dest) or os.path.islink(dest):
+            continue
+        try:
+            with open(dest, "rb") as fh:
+                old = fh.read()
+            new = z.read(rel)
+        except Exception:
+            continue
+        act = model_action(rel, old, new, known)
+        if act == "replace":
+            plan["replace"].append(rel)
+            plan["model_updated"].append(rel)
+        elif act == "keep":
+            plan["kept_model"].append(rel)
+        else:
+            plan["same"] += 1
+    return plan
+
+
+def last_applied(folder: str, zip_sha: str | None):
+    """(stamp, manifest) of this very zip when it is the folder's last finished update that was not undone, else None."""
+    done = applied_updates(folder)
+    if done and zip_sha and done[-1][1].get("zip_sha256") == zip_sha:
+        return done[-1]
+    return None
+
+
+def model_words(plan: dict, dry: bool = False) -> tuple[str, str]:
+    """(the words for line 3 after the counts, the words for line 4) about the root live_model*.json files."""
+    up, kept = plan.get("model_updated") or [], plan.get("kept_model") or []
+    changed = ""
+    if up:
+        older = "yours is an older version" if len(up) == 1 else "yours are older versions"
+        changed = f"; {short(up)}: " + (f"would get the new values ({older})" if dry else
+                                         f"updated to the new values ({'yours was an older version' if len(up) == 1 else 'yours were older versions'})")
+    if not kept:
+        return changed, ""
+    if plan.get("versions_from"):
+        return changed, f"{short(kept)}: your own values (no version the repo ever had), YOURS kept"
+    return changed, f"{short(kept)}: your values differ from the zip, YOURS kept"
 
 
 def state_list(folder: str, out_path: str) -> int:
@@ -430,20 +543,27 @@ def update(a) -> int:
     if rc:
         return rc
     with zipfile.ZipFile(zip_path) as z:
-        plan = make_plan(folder, z)
+        zip_sha = sha256_file(zip_path)
+        prev = last_applied(folder, zip_sha)                     # this very zip is already in: only its kept live_model*.json again
+        plan = models_plan(folder, z, prev[1].get("kept_model")) if prev else make_plan(folder, z)
         n_change = len(plan["add"]) + len(plan["replace"])
-        kept_words = []
-        if plan["kept_model"]:
-            kept_words.append(f"{short(plan['kept_model'])}: your values differ from the zip, YOURS kept")
+        model_changed, model_kept = model_words(plan, dry=a.dry_run)
+        kept_words = [model_kept] if model_kept else []
+        if prev:
+            kept_words.append(f"the rest of this zip went in on {prev[0]}: anything changed on the PC since stays as it is")
         kept_words.append(f"{len(plan['kept_local'])} local-only file{'s' if len(plan['kept_local']) != 1 else ''} in the zip left alone" if plan["kept_local"] else "your local-only files untouched")
         if plan["skipped"]:
             kept_words.append(f"{len(plan['skipped'])} odd path{'s' if len(plan['skipped']) != 1 else ''} skipped")
         line1 = ("Zip", f"{os.path.basename(zip_path)}  ({sha_words})")
         line2 = ("Folder", folder)
-        line3_words = f"{len(plan['replace'])} updated, {len(plan['add'])} new, {plan['same']} already the same"
+        if prev:
+            line3_words = f"{len(plan['replace'])} updated, 0 new (this zip is already in: only its live_model*.json are looked at again)" + model_changed
+        else:
+            line3_words = f"{len(plan['replace'])} updated, {len(plan['add'])} new, {plan['same']} already the same" + model_changed
         if a.dry_run or not n_change:
             six([line1, line2, ("Changed", ("would be: " if n_change else "nothing to do: ") + line3_words), ("Kept", "; ".join(kept_words)),
-                 ("Backup", "none (nothing was changed)"), ("Next", "dry run: run it without --dry-run to update" if n_change else "the folder already matches the zip")])
+                 ("Backup", "none (nothing was changed)"), ("Next", "dry run: run it without --dry-run to update" if n_change else
+                                                             ("the folder already has this zip's code" if prev else "the folder already matches the zip"))])
             return EXIT_OK
         need = sum(os.path.getsize(os.path.join(folder, r.replace("/", os.sep))) for r in plan["replace"]) + sum(z.getinfo(r).file_size for r in plan["add"] + plan["replace"])
         try:
@@ -458,8 +578,10 @@ def update(a) -> int:
         bdir = os.path.join(broot, stamp)
         os.makedirs(os.path.join(bdir, "files"), exist_ok=True)
         n_state = state_list(folder, os.path.join(bdir, "state_before.txt"))
-        man = {"v": 1, "stamp": stamp, "zip": os.path.basename(zip_path), "zip_sha256": sha256_file(zip_path), "sha_check": sha_words, "folder": folder, "state_files": n_state,
-               "replaced": [], "added": [], "written": {}, "before": {}, "kept_model": plan["kept_model"], "kept_local": plan["kept_local"][:500], "skipped": plan["skipped"][:100], "undone": False, "done": False}
+        man = {"v": 1, "stamp": stamp, "zip": os.path.basename(zip_path), "zip_sha256": zip_sha, "sha_check": sha_words, "folder": folder, "state_files": n_state,
+               "replaced": [], "added": [], "written": {}, "before": {}, "kept_model": plan["kept_model"], "model_updated": plan["model_updated"],
+               "versions_from": plan["versions_from"], "only_models": bool(prev), "kept_local": plan["kept_local"][:500], "skipped": plan["skipped"][:100],
+               "undone": False, "done": False}
 
         def save_man():
             with open(os.path.join(bdir, "manifest.json"), "w", encoding="utf-8") as fh:
@@ -528,9 +650,11 @@ def undo(a) -> int:
         say("FIX", "Double-click STOP_BOT.bat first, then run UNDO_UPDATE.bat again.")
         return EXIT_RUNNING
     bdir = os.path.join(broot, pick)
+    models_back = [r for r in man.get("replaced", []) if isinstance(r, str) and is_model(r)]      # the update gave them the new values
     if a.dry_run:
         six([("Undo", f"the update of {pick} ({man.get('zip')})"), ("Folder", folder), ("Changed", f"would put back {len(man.get('replaced', []))} files and remove {len(man.get('added', []))} new ones"),
-             ("Kept", "your local-only files and live_model*.json are not touched"), ("Backup", os.path.join(BACKUP_REL, pick)), ("Next", "dry run: run it without --dry-run to undo")])
+             ("Kept", f"your local-only files are not touched; {short(models_back)} would go back to the values before the update" if models_back else
+              "your local-only files and live_model*.json are not touched"), ("Backup", os.path.join(BACKUP_REL, pick)), ("Next", "dry run: run it without --dry-run to undo")])
         return EXIT_OK
     left = rollback(folder, bdir, man)
     man["undone"] = True
@@ -539,7 +663,8 @@ def undo(a) -> int:
         json.dump(man, fh, indent=1)
     n_back, n_gone = len(man.get("replaced", [])), len(man.get("added", []))
     six([("Undo", f"the update of {pick} ({man.get('zip')})"), ("Folder", folder), ("Changed", f"{n_back} files put back, {n_gone - sum(1 for x in left if 'kept' in x)} new files removed"),
-         ("Kept", (f"could not undo: {short(left)}" if left else "your local-only files and live_model*.json were not touched")), ("Backup", f"{os.path.join(BACKUP_REL, pick)} (kept)"),
+         ("Kept", (f"could not undo: {short(left)}" if left else f"your local-only files were not touched; {short(models_back)} back to the values before the update" if models_back
+                   else "your local-only files and live_model*.json were not touched")), ("Backup", f"{os.path.join(BACKUP_REL, pick)} (kept)"),
          ("Next", "done. The bot was NOT started: start it yourself with GO_LIVE_EVAL.bat when you are ready.")])
     return EXIT_FAIL if any("kept" not in x for x in left) else EXIT_OK
 
@@ -570,6 +695,17 @@ def applied_updates(folder: str) -> list:
     return out
 
 
+def kept_models_due(folder: str, zip_path: str, rels) -> list:
+    """The live_model*.json an earlier update of this very zip kept that the list now shows are older repo versions ([] if none)."""
+    if not rels:
+        return []
+    try:
+        with zipfile.ZipFile(zip_path) as z:
+            return models_plan(folder, z, rels)["model_updated"]
+    except Exception:
+        return []
+
+
 def check(a) -> int:
     """Read only, no bot / market guard: does the folder already have this zip's code? One line, the exit code says it."""
     folder = os.path.abspath(a.folder)
@@ -589,6 +725,11 @@ def check(a) -> int:
             sha = None
         hits = [i for i, (_st, m) in enumerate(done) if sha and m.get("zip_sha256") == sha]
         if hits and hits[-1] == len(done) - 1:
+            due = kept_models_due(folder, zip_path, done[-1][1].get("kept_model"))
+            if due:                                           # an older updater kept them; the zip's list says they are old repo versions
+                say("..", f"{name}: this code is in (applied {done[-1][0]}), but {short(due)} {'is an older version' if len(due) == 1 else 'are older versions'}"
+                          " of the repo's: an update is due (the new values; nothing else is changed).")
+                return EXIT_DUE
             say("OK", f"{name}: the bot folder already has this code (applied {done[-1][0]}, not undone).")
             return EXIT_OK
         if hits:
@@ -606,7 +747,9 @@ def check(a) -> int:
         plan = make_plan(folder, z)
     n_rep, n_add = len(plan["replace"]), len(plan["add"])
     if n_rep or n_add:
-        say("..", f"{name}: an update is due ({n_rep} updated, {n_add} new; {sha_words}).")
+        up = plan["model_updated"]
+        extra = f"; {short(up)}: the new values (yours {'is an older version' if len(up) == 1 else 'are older versions'})" if up else ""
+        say("..", f"{name}: an update is due ({n_rep} updated, {n_add} new{extra}; {sha_words}).")
         return EXIT_DUE
     say("OK", f"{name}: the bot folder already has this code ({plan['same']} files the same; {sha_words}).")
     return EXIT_OK
