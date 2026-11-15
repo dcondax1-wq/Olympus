@@ -397,7 +397,7 @@ def part_a():
           and "@media (prefers-reduced-motion: no-preference)" in css and "animation:" not in pre)
     agora = css
     check("a. its own look (AGORA 2026-11-09): marble / bronze / gold tokens, olive gains, terracotta losses, no neon, no HUD clip, no glow tick",
-          ':root, :root[data-theme="kalshi"]' in css and "--bg: var(--oly-th-n3, #14110e);" in css and "--c: var(--oly-th-a8, #c8a24a);" in css and "--cy: #4b7a99;" in css
+          ':root, :root[data-theme="kalshi"]' in css and "--bg: var(--oly-th-n3, #14110e);" in css and "--c: var(--oly-th-a8, #c8a24a);" in css and "--cy: var(--oly-th-info, #4b7a99);" in css
           and "#1fe5a6" not in css + agora and "#38e1ff" not in css + agora and "clip-path" not in css + agora and "text-shadow: 0" not in css
           and "AGORA layer" in css)
     check("a. its own top colour = its background (Jarvis's status-bar strip takes it); the theme set before paint, never Jarvis's 'jtheme'",
