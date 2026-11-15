@@ -450,7 +450,8 @@
      * colours (a style look's cards over each stop) and on the gold-tinted cards; and those tinted surfaces (a0-a4: the gold-tinted cards and
      * headers, g0-g3 / r0-r3: the gain / loss chips) stay far enough from the muted text to carry it. A blend between two reference colours can
      * fall a little short on a light look (AGORA's #9a8f7d sits just under its muted, so on Ivory it lands just above it) and a monochrome look
-     * (Amber: its text IS its accent) tints its cards too bright: such a slot is nudged (its hue kept) until it reads. One that reads is left. */
+     * (Amber: its text IS its accent) tints its cards too bright: such a slot is nudged (its hue kept) until it reads. One that reads is left.
+     * The deep fills (g4 / r4) carry the full ink written on them the same way. */
     // INK: 4.5:1 and a little headroom, for the tints a card or a chip lays over these surfaces (a warn row, a gain chip, a glass card)
     var INK = 4.75, page = [out.n3, out.n4, out.n5, out.n7].concat(R.surf || []);
     for (s = 20; s <= 40; s++) out['n' + s] = readable(out['n' + s], page, INK);
@@ -459,6 +460,19 @@
     var two = [out.n3, out.n4, out.a1, out.a3].concat(R.surf || []);
     for (s = 7; s <= 15; s++) { out['g' + s] = readable(out['g' + s], two, INK); if (s >= 8) { out['a' + s] = readable(out['a' + s], two, INK); out['r' + s] = readable(out['r' + s], two, INK); } }
     out.warn = readable(out.warn, two, INK);
+    // the deep fills (g4 / r4: a Kalshi calendar day laid at .58 over a panel, its number in full ink) carry that ink (Nord's pale sage did not)
+    out.g4 = carries(out.g4, out.n37, out.n4, 0.58, INK);
+    out.r4 = carries(out.r4, out.n37, out.n4, 0.58, INK);
+    return out;
+  }
+  /** a fill c laid at alpha a over 'under', with 'ink' written on it: c made darker (light ink) or lighter (dark ink), its hue kept, in small
+   * steps until the ink reads min:1 on the blend. One that carries it is left. */
+  function carries(c, ink, under, a, min) {
+    var h = hsl(c), down = relLum(ink) > 0.4, l = h[2], out = c;
+    for (var step = 0; step < 44 && contrastOf(ink, mix(under, out, a)) < min; step++) {
+      l = down ? Math.max(0, l - 0.025) : Math.min(1, l + 0.025);
+      out = fromHsl(h[0], h[1], l);
+    }
     return out;
   }
   function relLum(c) { var x = rgbOf(c), s = 0, wt = [0.2126, 0.7152, 0.0722]; for (var q = 0; q < 3; q++) { var v = x[q] / 255; s += wt[q] * (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); } return s; }

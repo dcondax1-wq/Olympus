@@ -144,9 +144,10 @@
     // ---------------------------------------------------------------- 2. leftovers: AGORA's own literal colours still on screen
     const own = {};
     const st = root.style;
-    for (let q = 0; q < st.length; q++) {                                        // the look's own painted colours are never leftovers
-      const v = st.getPropertyValue(st[q]).trim(), c = /^#[0-9a-f]{6}$/i.test(v) ? col(v) : /^\d{1,3},\s*\d{1,3},\s*\d{1,3}$/.test(v) ? v.split(',').map(Number) : null;
-      if (c) own[c.slice(0, 3).join(',')] = 1;
+    for (let q = 0; q < st.length; q++) {                                        // the look's own painted colours are never leftovers,
+      const v = st.getPropertyValue(st[q]).trim();                               // also each colour inside a painted gradient, shadow or border
+      if (/^\d{1,3},\s*\d{1,3},\s*\d{1,3}$/.test(v)) own[v.split(',').map(Number).join(',')] = 1;
+      for (const m of v.match(/#[0-9a-f]{6}\b|rgba?\([^()]*\)/gi) || []) { const c = col(m); if (c) own[c.slice(0, 3).join(',')] = 1; }
     }
     const AG = {}; (opts.agora || []).forEach((k) => { if (!own[k]) AG[k] = 1; });
     const isAg = (c) => c && c[3] >= (opts.minAlpha || 0.12) && AG[c.slice(0, 3).join(',')];

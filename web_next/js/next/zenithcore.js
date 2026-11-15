@@ -87,16 +87,25 @@
     surface: 'surface', panel: 'surface', glass: 'surface2', surface2: 'surface2', text: 'ink', ink: 'ink', dim: 'ink2', muted: 'ink2', line: 'line', border: 'line',
     good: 'good', up: 'good', bad: 'bad', down: 'bad', warn: 'warn', edge: 'edge', glow: 'glow' };
   let olyCur = undefined;
+  // a look the OLYMPUS themes engine paints (olympus/themes.js, 2026-11-14) owns the page's colours through its slots, even where an old kit
+  // theme has the same name (Glass Aurora 'aurora', Marble White 'marble', Ocean 'ocean'): the old token set would cover the look's own accent
+  function owned(id) {
+    try {
+      const T = window.OLYMPUS_THEMES;
+      if (T && typeof T.get === 'function') return T.get(id).id === id;
+      return R.getAttribute('data-oly-theme') === id;
+    } catch (e) { return false; }
+  }
   function olympus(theme) {
     let t = theme;
     if (typeof t === 'string') { try { const j = JSON.parse(t); if (j && typeof j === 'object') t = j; } catch (e) { /* a plain id */ } }
     let set = null, id = '';
-    if (typeof t === 'string') { id = t.toLowerCase(); set = OLY[id] || null; }
+    if (typeof t === 'string') { id = t.toLowerCase(); set = owned(id) ? null : (OLY[id] || null); }
     else if (t && typeof t === 'object') {
       id = String(t.id || t.name || '').toLowerCase();
       const src = t.tokens || t.colors || t.vars || t; set = {};
       Object.keys(src).forEach((k) => { const m = OLY_KEYS[k] || OLY_KEYS[k.replace(/^--(oly-)?/, '')]; if (m && typeof src[k] === 'string') set[m] = src[k]; });
-      if (!Object.keys(set).length) set = OLY[id] || null;
+      if (!Object.keys(set).length) set = owned(id) ? null : (OLY[id] || null);
     }
     const key = id + JSON.stringify(set);
     if (key === olyCur) return set;
@@ -110,7 +119,10 @@
   function followOlympus() {
     const O = window.Olympus;
     const read = () => { try { return localStorage.getItem('olympus.theme'); } catch (e) { return null; } };
-    try { if (O && typeof O.theme === 'function') olympus(O.theme()); else { const v = read(); if (v) olympus(v); } } catch (e) { /* the app's own look */ }
+    const follow = () => { try { if (O && typeof O.theme === 'function') olympus(O.theme()); else { const v = read(); if (v) olympus(v); } } catch (e) { /* the app's own look */ } };
+    follow();
+    // the themes engine may arrive after this (an async script): once the page has loaded, a look it paints is its own (owned())
+    if (document.readyState !== 'complete') addEventListener('load', follow, { once: true });
     try { if (O && typeof O.onTheme === 'function') O.onTheme((t) => { try { olympus(t); } catch (e) { /* ignore */ } }); } catch (e) { /* no hook */ }
     addEventListener('storage', (e) => {
       if (e.key === 'olympus.theme') { try { olympus(e.newValue || 'default'); } catch (x) { /* ignore */ } }
