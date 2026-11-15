@@ -998,6 +998,13 @@ def main(argv=None) -> int:
             _me.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
+        # nightly learning (engine/learn_loop.py, docs/LEARN_LOOP.md): after 17:00 ET on weekdays and at the weekend, once a day, only
+        # when flat; a detached below-normal child that backtests + runs queued experiments. Research only, never a live setting; soft
+        try:
+            from engine import learn_loop as _ll
+            _ll.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
     return 0
 
 

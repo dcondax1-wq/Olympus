@@ -795,7 +795,18 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   no single-fact bin loses in both halves; 425 two-fact H1 loser cells -> 88 lose again in H2 vs 95 by chance. H2 vs H1 =
   18% fewer trades/mo, 12% less R a trade (lower VIX, wider stops), 18% less $ per R; low-VIX trades +0.77R in both halves.
 
+- **Learn loop first night (2026-11-15, `docs/LEARN_LOOP.md`, queue `research/learn_queue.json`):** Zlarior size x1.25 on low dealer
+  gamma / after a tight Asia range / on a many-times-touched or an old swept level / on a fast fill after the CISD, x0.75 the day after
+  a VIX jump; ATLAS x1.25 after Zlarior was stopped on the other side, x0.5 on a two-way day: all 8 rejected (best: old level +$138 /
+  +$125 a month at the LIT size but eval path Jul-Oct -$34). The loop re-checks them on new bars.
+
 ## Key commands (run from the repo root)
+- **Nightly learning (2026-11-15, `engine/learn_loop.py`, `docs/LEARN_LOOP.md`, test `tests.test_learn_loop`, area nq):** free on the PC
+  via `tools/pc_report.py`'s 15-min hook (weekdays >= 17:00 ET, Sat, Sun < 17:00 ET, once a day, skipped while not flat, detached
+  below-normal child): refresh LIT (`tools/lit_edge.evaluate`) + ATLAS (`tools/atlas_deep.score`) + the live-loop twin on exports + `data/nt_bars`,
+  drift from `engine/live_learning` reviews, then 2 queued experiments of `research/learn_queue.json` (LIT: `lit_edge.gate` + 2-4/wk +
+  placebo; ATLAS: `atlas_v2.verdict`). Output `research/learn/` (gitignored); phone line only for a NEW candidate. Never writes a live
+  file (hashed before/after) nor `research/runs/` (a candidate is re-run with `rl.save` by Claude). `python -X utf8 -m engine.learn_loop status|run --force|guard`.
 - **Numbers audit (2026-11-04):** `python tools/numbers_audit.py` (`--check` exits 1 on any 'wrong'; `--all` shows skipped history; `--json`; test `tests.test_numbers_audit`).
   Read-only. Builds the facts from CLAUDE.md, `research/lit/mffu_rules.json`, `research/props/roadmap.json`, `research/lit/funded_firms.json`, `plutus/plans.json`, then scans
   every published file (tools/web_public, web_next, handoff, owner docs, hub snapshot, STRATEGY.md) for list prices, old funded figures (the trio: $2,147 a month on Jul-Oct,
