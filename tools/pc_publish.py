@@ -70,6 +70,8 @@ DEPLOYS_PER_MONTH_DEFAULT = 18
 SECRET_KEYS = ("token", "access_token", "authorization", "password", "secret")
 # the heavy folders the owner's Netlify Drop zip left out (the upload was too big); they stay on the PC (and its Tailscale link)
 LITE_EXCLUDE = ("charts/", "replays/", "writeups/", "datacity/", "mind/")
+# the folders of the Tailscale link's PRIVATE routes (engine/live_site.py: /site/day/, /site/me/): never sent, whatever lands there
+PRIVATE_DIRS = ("day/", "me/")
 SETUP_OK, SETUP_INPUT, SETUP_REFUSED, SETUP_NO_SITE, SETUP_UNREACHABLE = 0, 2, 3, 4, 5       # --setup netlify exit codes
 
 
@@ -213,7 +215,7 @@ def deploy_set(site: str, files: dict, cfg: dict) -> tuple[dict, dict]:
                     raw = fh.read()
             except OSError:
                 raw = None
-        if site_privacy.private_file(rel, raw):
+        if rel.startswith(PRIVATE_DIRS) or site_privacy.private_file(rel, raw):
             private.append(rel)
             continue
         out[rel] = h

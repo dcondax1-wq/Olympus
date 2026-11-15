@@ -440,18 +440,23 @@ def main() -> int:
         for rel, data in {"index.html": "<html></html>", "data.json": '{"t": 1}', "runs/a.json": "{}", "charts/c.png": "png", "replays/r.json": "{}",
                           "writeups/w.md": "# w", "datacity/d.js": "1", "mind/m.json": "{}", "money/household.json": '{"month": 1}', "day/day.json": "{}",
                           "hub/me.json": '{"kind": "olympus-health", "steps": 1}', "hub/ok.json": '{"kind": "olympus-hub-public"}',
-                          "jarvis/x.json": '{"telegram_token": "123456789:AAfake"}', "money/index.json": '{"machines": 5}'}.items():
+                          "jarvis/x.json": '{"telegram_token": "123456789:AAfake"}', "money/index.json": '{"machines": 5}',
+                          "home.json": '{"t": 1, "live": {}}', "me/me.json": '{"kind": "olympus-me"}', "me/notes.txt": "the Me hub folder",
+                          "hub/cards2.json": '{"kind": "olympus-me-cards", "cards": []}', "x/home.json": '{"kind": "olympus-home", "wifi": 1}'}.items():
             os.makedirs(os.path.dirname(os.path.join(dsite, rel)), exist_ok=True)
             open(os.path.join(dsite, rel), "w").write(data)
         dfiles = PP.site_files(dsite)
         out_set, kept = PP.deploy_set(dsite, dfiles, {})
         check("deploy set (lite): the 5 heavy folders stay on the PC (charts, replays, writeups, datacity, mind); private files never leave "
-              "(household by name, day.json by name, a health 'kind', a key in a JSON); the rest goes",
-              sorted(out_set) == ["data.json", "hub/ok.json", "index.html", "money/index.json", "runs/a.json"] and kept["lite"] == 5
-              and kept["private"] == ["day/day.json", "hub/me.json", "jarvis/x.json", "money/household.json"], (sorted(out_set), kept))
+              "(household / day.json / me.json by name, a health / Me hub / cards / home-check 'kind', a key in a JSON, the me/ and day/ folders); the rest goes",
+              sorted(out_set) == ["data.json", "home.json", "hub/ok.json", "index.html", "money/index.json", "runs/a.json"] and kept["lite"] == 5
+              and kept["private"] == ["day/day.json", "hub/cards2.json", "hub/me.json", "jarvis/x.json", "me/me.json", "me/notes.txt", "money/household.json", "x/home.json"],
+              (sorted(out_set), kept))
+        check("...the dashboard's own home.json (no private kind) still goes: only the Me hub's home-check file (kind olympus-home) is kept out",
+              "home.json" in out_set and "x/home.json" not in out_set)
         full_set, kept_f = PP.deploy_set(dsite, dfiles, {"site_set": "full"})
         check("publish.json site_set 'full': the heavy folders go too, private files still never", kept_f["lite"] == 0 and "charts/c.png" in full_set and "mind/m.json" in full_set
-              and not set(kept_f["private"]) & set(full_set) and len(kept_f["private"]) == 4, (sorted(full_set), kept_f))
+              and not set(kept_f["private"]) & set(full_set) and len(kept_f["private"]) == 8, (sorted(full_set), kept_f))
         import tools as _tools_pkg
         had = getattr(_tools_pkg, "site_privacy", None)
         saved_mod = sys.modules.get("tools.site_privacy")
@@ -496,9 +501,9 @@ def main() -> int:
             Netlify.calls.clear()
             rec_l = PP.run_once(A2(), env={"OLYMPUS_HOME": cd, "OLYMPUS_NETLIFY_API": api}, say=lambda m: None)
             posted = [json.loads(c["body"])["files"] for c in Netlify.calls if c["m"] == "POST"]
-            check("run_once: the Netlify digest lists only the lite, private-free set (5 files); 5 heavy files stay home, 4 private kept out and said so",
-                  rec_l["ok"] and posted and sorted(posted[0]) == ["/data.json", "/hub/ok.json", "/index.html", "/money/index.json", "/runs/a.json"]
-                  and rec_l["files"] == 5 and rec_l["kept_lite"] == 5 and rec_l["kept_private"] == 4 and "4 private file(s) kept out of the upload" in rec_l["state_text"], (rec_l, posted))
+            check("run_once: the Netlify digest lists only the lite, private-free set (6 files); 5 heavy files stay home, 8 private kept out and said so",
+                  rec_l["ok"] and posted and sorted(posted[0]) == ["/data.json", "/home.json", "/hub/ok.json", "/index.html", "/money/index.json", "/runs/a.json"]
+                  and rec_l["files"] == 6 and rec_l["kept_lite"] == 5 and rec_l["kept_private"] == 8 and "8 private file(s) kept out of the upload" in rec_l["state_text"], (rec_l, posted))
             check("status line 4 says the heavy files stay on this PC", "(lite: 5 heavy files stay on this PC)" in PP.status_lines(rec_l)[3], PP.status_lines(rec_l)[3])
             check("the PC's own site folder keeps everything (the Tailscale link still has the charts, the city, the vault)",
                   os.path.exists(os.path.join(A2.work, "site", "charts", "c.png")) and os.path.exists(os.path.join(A2.work, "site", "mind", "m.json")))
