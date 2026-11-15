@@ -1,34 +1,34 @@
-/* OLYMPUS app intro (tools/web_public/olympus/intro-app.js, 2026-11-04, JOB 33a): the 2.4 s cinematic entrance every app plays when it opens.
- * One classic deferred script, loaded by ONE line in each app's index.html, right after olympus.js:
- *   <script src="../olympus/intro-app.js?v=i5" defer></script>
- * It reads the kit (window.OLYMPUS: the app's name, glyph and colour, the same table the loading veil uses), paints one full-screen
- * 2D canvas over the page (z-index 70, above the veil) and takes itself away. It carries its own CSS (nothing to link).
- *
- *   film     0.0  the app's own flavour scene starts (Oracle smoke + light shafts, Tyche coins + water, Prometheus embers igniting, Mind neurons
- *                 lighting, Data City skyline rising, Arena torches + crowd roar, ... see FLAVOUR) and the app's glyph forms from particles
- *            0.95 the name appears letter by letter in "Iowan Old Style","Palatino Linotype",Palatino,Georgia with a light sweep across it, then a one-line tagline
- *            2.1  the whole overlay fades out onto the app (2.4 s in all: the same film, played 8% faster)
- *   once     the full film plays at most once per app per launch (sessionStorage 'oly.intro.<app>'); after that a 400 ms version (the
- *            formed glyph + name, a quick fade). LITE (3D Low) = no intro at all (2026-11-04: LITE and reduced motion play nothing).
- *   never    under LITE (3D Low), prefers-reduced-motion, 3D effects Off, ?q=off, ?intro=0, localStorage 'oly.intro' = 'off', or an automated browser
- *            (navigator.webdriver) unless the page asks (?intro=1): so no app test ever waits for it or loses a tap to it.
- *   skip     a tap, Esc, Enter or Space: gone in 70 ms (the overlay stays, invisible, until the finger is up so the tap never lands on the
- *            app). It never blocks the app: the app loads underneath, a timer ends the film whatever happens, a hidden tab ends it, any
- *            error removes it.
- *   sound    OLYMPUS.sfx (the kit's sfx.js: nothing before a first gesture, quiet while Jarvis talks) and only while the kit's Sound switch allows
- *            it (OLYMPUS.sound(): Auto / On; Off, mute, battery saver silence the film).
- *   state    window.__olyAppIntro = { app, mode: full | short | lite | none, state: playing | done | skipped | off | failed, frames, ms, err, why }
- * ES5 only (Safari 16). It never throws.
+/* OLYMPUS app intro (olympus/intro-app.js, JOB 33a; docs/CLAUDE_REFERENCE.md "App intros"): the 2.4 s entrance every app plays when it opens.
+ * One deferred line in each app's index.html after olympus.js: <script src="../olympus/intro-app.js?v=i5" defer></script>
+ * Pages WITHOUT the kit name themselves on the tag (data-app / data-name / data-glyph / data-color; Bridge, Kalshi).
+ *   film   the app's flavour scene (FLAVOUR) + its glyph from particles; the name letter by letter with a light sweep, a tagline; fade out
+ *   once   full film once per app per launch (sessionStorage 'oly.intro.<app>'), then a 400 ms version
+ *   never  LITE (3D Low), reduced motion, 3D Off, ?q=off, ?intro=0, localStorage 'oly.intro' = 'off', automation (navigator.webdriver) unless ?intro=1
+ *   skip   a tap, Esc, Enter or Space; it never blocks the app (a timer ends it, a hidden tab ends it, any error removes it)
+ *   sound  OLYMPUS.sfx, only while the kit's Sound switch allows it
+ *   state  window.__olyAppIntro = { app, mode, state, frames, ms, err, why }.  ES5 only (Safari 16). It never throws.
  */
 (function () {
   'use strict';
   var W = window, d = document, root = d.documentElement, O = W.OLYMPUS;
+  // no kit: the tag names the app; the kit's quality key 'jfx' (low = LITE, off = 3D Off) and reduced motion still apply
+  if (!O) {
+    var me = d.currentScript || d.querySelector('script[src*="intro-app.js"][data-app]');
+    var at = function (k) { return (me && me.getAttribute(k)) || ''; };
+    if (!at('data-app')) return;
+    var lvl = (function () { try { var v = localStorage.getItem('jfx'); return v ? String(JSON.parse(v)) : ''; } catch (e) { try { return String(localStorage.getItem('jfx') || ''); } catch (e2) { return ''; } } })();
+    var rm = function () { try { return !!(W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } };
+    O = { app: at('data-app'), name: at('data-name') || at('data-app'), glyph: at('data-glyph') || '\u039f', color: at('data-color') || '#c8a24a',
+          fx: function () { return lvl === 'ultra' ? 'ultra' : 'high'; }, lite: function () { return lvl === 'low'; },
+          reduced: function () { return lvl === 'off' || rm(); },
+          sfx: function (n) { var k = W.OLYMPUS_SFX; if (k && k.play) k.play(n); } };
+  }
   if (!O || W.__olyAppIntro) return;
   var st = W.__olyAppIntro = { app: O.app || '', mode: 'none', state: 'idle', frames: 0, ms: 0, err: '', why: '', scene: '', len: 0 };
   // Do not play over the kit's failed-load Retry UI.
   if (O.state && O.state() === 'failed') { st.state = 'off'; st.why = 'app failed'; return; }
 
-  // ------------------------------------------------------------------ the per-app flavour: [scene, tagline, first sound]
+  // --- the per-app flavour: [scene, tagline, first sound]
   var FLAVOUR = {
     agency: ['columns', 'Open the shop', 'tap'],
     polis: ['skyline', 'Enter the city', 'tap'],
@@ -74,12 +74,12 @@
     journal: ['neurons', 'Remember every trade', 'tick'], observatory: ['rings', 'Evidence comes into focus', 'tick'],
     hestia: ['embers', 'Keep the hearth warm', 'portal'], demeter: ['leaves', 'Reap what you sow', 'portal'], apollo: ['rings', 'Light on the numbers', 'portal'],
     delphi: ['rings', 'Read the omens', 'tick'], pnyx: ['columns', 'Count the risk', 'tap'], planner: ['rings', 'Plan the day', 'tick'], hera: ['columns', 'Order, held steady', 'portal'], dionysus: ['coins', 'Celebrate the wins', 'tap'], clio: ['threads', 'The story, in order', 'tick'],
-    atlas: ['stars', 'Find your arena', 'portal']
+    atlas: ['stars', 'Find your arena', 'portal'], kalshi: ['coins', 'Read the odds, keep the edge', 'tick']
   };
   var FL = FLAVOUR[O.app] || ['stars', 'Welcome to Olympus', 'portal'];
   st.scene = FL[0];
 
-  // ------------------------------------------------------------------ whether and how it plays
+  // --- whether and how it plays
   var search = location.search || '';
   var ls = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var ss = function (k, v) {
@@ -100,10 +100,10 @@
   var LEN = { full: 2.4, short: 0.4, lite: 0.7 };      // (lite is kept for old callers: LITE now plays nothing)
   var LEN_S = LEN[mode];
   st.mode = mode; st.len = LEN_S;
-  // film clock tt: the full film runs 0 -> 2.6; the short ones play its last part faster (the glyph and the name already formed)
+  // film clock tt runs 0 -> 2.6; short plays its end
   var tt0 = mode === 'full' ? 0 : mode === 'short' ? 1.55 : 1.75, ttK = (2.6 - tt0) / LEN_S;                      // the film's own clock runs to 2.6; full plays it in 2.4 s
 
-  // ------------------------------------------------------------------ small helpers
+  // --- small helpers
   var cl = function (x) { return x < 0 ? 0 : x > 1 ? 1 : x; };
   var ramp = function (t, a, b) { return cl((t - a) / (b - a)); };
   var ease = function (x) { return 1 - Math.pow(1 - x, 3); };
@@ -119,7 +119,7 @@
   COL = [Math.round(COL[0] * 0.45 + 200 * 0.55), Math.round(COL[1] * 0.45 + 162 * 0.55), Math.round(COL[2] * 0.45 + 74 * 0.55)];
   var DISPLAY = '"Iowan Old Style","Palatino Linotype",Palatino,Georgia, -apple-system, system-ui, sans-serif', UI = '-apple-system, system-ui, sans-serif';
 
-  // ------------------------------------------------------------------ the overlay
+  // --- the overlay
   var el = null, cv = null, c = null, raf = 0, killT = 0, t0 = 0, done = false, skipping = false, holdUp = false;
   var VW = 0, VH = 0, DPR = 1, scene = null, parts = null, glyphPx = 0, cx = 0, cy = 0, soundsAt = {}, motionQuery = null, motionListener = null;
   function addCss() {
@@ -186,7 +186,7 @@
     cx = VW / 2; cy = VH * 0.4;
   }
 
-  // ------------------------------------------------------------------ the glyph, formed from particles (sampled from the glyph drawn in a small canvas)
+  // --- the glyph, formed from particles
   function makeParts() {
     var n = O.fx() === 'ultra' ? 1100 : 760, S = 120, g = d.createElement('canvas'); g.width = S; g.height = S;
     var x = g.getContext('2d'); if (!x) return [];
@@ -208,7 +208,7 @@
     return out;
   }
 
-  // ------------------------------------------------------------------ the flavour scenes: every one is { init(), draw(t, a) } (t = film seconds, a = its intensity 0..1)
+  // --- flavour scenes: { init(), draw(t = film s, a = 0..1) }
   var SC = {};
   function glow(x, y, r, col, a) {
     var g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0));
@@ -241,7 +241,7 @@
       var s = this, i, p, y, wy = VH * 0.74, age, g, k, X;
       g = c.createLinearGradient(0, wy, 0, VH); g.addColorStop(0, rgba(COL, 0.28 * a)); g.addColorStop(1, rgba(COL, 0.04 * a));
       c.fillStyle = g; c.beginPath(); c.moveTo(0, VH);
-      for (X = 0; X <= VW; X += 12) c.lineTo(X, wy + Math.sin(X * 0.03 + t * 3) * 3);
+      for (X = 0; X < VW + 12; X += 12) c.lineTo(Math.min(X, VW), wy + Math.sin(Math.min(X, VW) * 0.03 + t * 3) * 3);   // ends ON the right edge
       c.lineTo(VW, VH); c.closePath(); c.fill();
       for (i = 0; i < s.c.length; i++) {
         p = s.c[i]; age = t - p[1]; if (age < 0) continue;
@@ -314,7 +314,7 @@
       c.beginPath(); c.moveTo(cx, horizon); c.lineTo(VW * 0.68, VH); c.lineTo(VW * 0.32, VH); c.closePath(); c.fill();
       c.strokeStyle = rgba(mixc(COL, WHITE, 0.55), 0.34 * a * reveal); c.lineWidth = 1.5;
       c.beginPath(); c.moveTo(cx, horizon); c.lineTo(VW * 0.32, VH); c.moveTo(cx, horizon); c.lineTo(VW * 0.68, VH); c.stroke();
-      // Far towers first. Their roof planes and side faces move at different speeds as the camera advances.
+      // far towers first; roofs and sides move at different speeds
       for (i = s.b.length - 1; i >= 0; i--) {
         b = s.b[i]; z = b.z - travel; if (z < 0.25) z += 2.75;
         sc = 1 / (z + 0.55); by = horizon + 245 * sc;
@@ -464,7 +464,7 @@
     }
   };
 
-  // ------------------------------------------------------------------ the frame
+  // --- the frame
   var TRACK = 0.3;                                              // letter spacing of the name, in em
   function spaced(text, midX, y, fs, track, alphaOf, litOf) {  // a line of letters one by one (a light sweep and a stagger need them apart)
     var i, w = [], tw = 0;
@@ -515,10 +515,17 @@
         c.fillText(O.glyph || 'Ο', cx, cy + glyphPx * 0.03);
         c.restore();
       }
-      // the name in "Iowan Old Style","Palatino Linotype",Palatino,Georgia: letters in one by one, a light sweep across them
+      // the name: letters one by one, a light sweep
       var fs = Math.min(30, VW * 0.84 / ((O.name || '').length * 0.95 + (O.name || '').length * TRACK)), name = String(O.name || 'OLYMPUS').toUpperCase(), ny = cy + glyphPx * 0.5 + 44;
       c.font = '700 ' + fs + 'px ' + DISPLAY;
       var sweep = ramp(tt, 1.25, 1.95), sweepX;
+      // a dark pool under the words: no streak crosses them (FX)
+      var pa = ramp(tt, 0.7, 1.1), pr = Math.min(VW * 0.62, 260);
+      if (pa > 0.001) {
+        c.save(); c.translate(VW / 2, ny + fs * 0.7); c.scale(1, 0.42);
+        var pg = c.createRadialGradient(0, 0, 0, 0, 0, pr); pg.addColorStop(0, 'rgba(9,8,7,' + (0.78 * pa).toFixed(3) + ')'); pg.addColorStop(0.6, 'rgba(9,8,7,' + (0.5 * pa).toFixed(3) + ')'); pg.addColorStop(1, 'rgba(9,8,7,0)');
+        c.fillStyle = pg; c.fillRect(-pr, -pr, pr * 2, pr * 2); c.restore();
+      }
       c.save(); c.textAlign = 'center'; c.textBaseline = 'middle';
       c.font = '600 11px ' + DISPLAY; c.fillStyle = rgba(WHITE, 0.5 * ramp(tt, 0.6, 1.0)); c.fillText('OLYMPUS', VW / 2, ny - fs * 1.15);
       c.font = '700 ' + fs + 'px ' + DISPLAY;
@@ -543,7 +550,7 @@
     } catch (err) { fail(err); }
   }
 
-  // ------------------------------------------------------------------ start
+  // --- start
   function start() {
     t0 = now();
     st.state = 'playing';
