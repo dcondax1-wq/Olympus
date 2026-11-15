@@ -716,6 +716,17 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   best rules hold out of sample vs 25 / 28 with shuffled conditions = chance. Every rule trades 0.1-0.5 a week. Nothing
   adopted; the page is a research lens, paper only.
 
+- **S2 edge (2026-11-15, `2026-11-15-s2-edge.md`, `tools/lit_s2_edge.py` 28 versions, runs `lit_s2_*`, grid
+  `research/lit/s2_edge_grid.json`; eval path at two_week room_f 0.4 kept past session 10):** "what other bots have":
+  holiday-thin days (holiday Globex sessions, the day before / after, early closes, Dec 24 - Jan 2; x0.5 / x0.75 / skip),
+  the contract roll window (5 sessions before the switch to the last trading day; x0.75 / x0.5 / skip), OpEx week / OpEx
+  Friday / quad-witching week / turn of the month, NQ-vs-ES strength from the 18:00 open (lead x1.25 / lag x0.75),
+  sweep of the day's or week's own extreme (x1.25, interior x0.75): none passes (calendar ones lose a half; ES strength
+  and day-extreme are chance in Jul-Oct). Lead, not switched: target reachability (target pts / (5m ATR x sqrt(bars to
+  15:55))) easiest third x1.25: LIT +$4,079 / +$1,021, eval +$2,724 / +$660, 2-week pass/fail unchanged, funded +$12 /
+  +$19/mo, shuffle p 0.067 / 0.093; but easy trades without a tight stop add nothing (= the Nov 4 stop-ATR lead, which at
+  room 0.4 loses $538 of H2 eval money).
+
 ## Key commands (run from the repo root)
 - **Numbers audit (2026-11-04):** `python tools/numbers_audit.py` (`--check` exits 1 on any 'wrong'; `--all` shows skipped history; `--json`; test `tests.test_numbers_audit`).
   Read-only. Builds the facts from CLAUDE.md, `research/lit/mffu_rules.json`, `research/props/roadmap.json`, `research/lit/funded_firms.json`, `plutus/plans.json`, then scans
