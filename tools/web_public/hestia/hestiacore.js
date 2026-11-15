@@ -7,10 +7,7 @@ export const PLANS = {
   atlas: { key: 'atlas', name: 'ATLAS', bot: 'ATLAS', size: '25K', label: 'MFFU Builder 25K', mll: 1000, target: 1500, risk: 150 },
   blitz: { key: 'blitz', name: 'BLITZ', bot: 'BLITZ', size: '25K', label: 'MFFU Builder 25K', mll: 1000, target: 1500, risk: 120 },
 };
-// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the site keeps the last published list in
-// localStorage oly.hiddenBots (same origin for every app; nothing known in a browser = ['blitz'], none outside one)
-const HIDDEN_BOTS = (() => { if (typeof localStorage === 'undefined') return []; try { const s = localStorage.getItem('oly.hiddenBots'); const a = s ? JSON.parse(s) : null; return Array.isArray(a) ? a.map(String) : ['blitz']; } catch (e) { return ['blitz']; } })();
-export const ORDER = ['zlarior', 'atlas', 'blitz'].filter((k) => !HIDDEN_BOTS.includes(k));
+export const ORDER = ['zlarior', 'atlas', 'blitz'];
 
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
 export const num = (v) => { const x = typeof v === 'string' ? parseFloat(v.replace(/[$,\s]/g, '')) : v; return typeof x === 'number' && Number.isFinite(x) ? x : null; };
@@ -58,13 +55,18 @@ export function accountView(key, a) {
 }
 
 /** the three cards, in order. Real accounts first; demo = true when none of the three was found (the fixture's numbers are used, labelled). */
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the real home.json says "hidden_bots" (top or
+// board); a hidden BLITZ has no card (the DEMO keeps its three)
+const hiddenIn = (h, k) => { const o = h && typeof h === 'object' ? h : {}, b = o.board && typeof o.board === 'object' ? o.board : {};
+  const L = Array.isArray(o.hidden_bots) ? o.hidden_bots : Array.isArray(b.hidden_bots) ? b.hidden_bots : [];
+  return L.map(String).includes(k); };
 export function buildAccounts(home, fixture) {
   const list = isObj(home) && Array.isArray(home.accounts) ? home.accounts : [];
   const found = {};
   for (const a of list) { const k = matchKey(a); if (k && !found[k] && !a.error) found[k] = a; }
   const real = Object.keys(found).length > 0;
   const fx = isObj(fixture) && Array.isArray(fixture.accounts) ? fixture.accounts : [];
-  return { demo: !real, accounts: ORDER.map((k) => {
+  return { demo: !real, accounts: ORDER.filter((k) => !(real && k === 'blitz' && hiddenIn(home, 'blitz'))).map((k) => {
     if (real) return accountView(k, found[k]);
     const f = fx.find((x) => x.key === k); return f ? { ...accountView(k, null), ...f, has: true, demo: true } : accountView(k, null);
   }) };

@@ -8,10 +8,7 @@ export const ACCOUNTS = {
   atlas: { key: 'atlas', name: 'ATLAS', size: '25K', plan: 'builder_25k', road: 'atlas25', bot: 'ATLAS', risk: 150, win: 210 },
   blitz: { key: 'blitz', name: 'BLITZ', size: '25K', plan: 'builder_25k', road: 'blitz25', bot: 'BLITZ', risk: 120, win: 150 },
 };
-// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the site keeps the last published list in
-// localStorage oly.hiddenBots (same origin for every app; nothing known in a browser = ['blitz'], none outside one)
-const HIDDEN_BOTS = (() => { if (typeof localStorage === 'undefined') return []; try { const s = localStorage.getItem('oly.hiddenBots'); const a = s ? JSON.parse(s) : null; return Array.isArray(a) ? a.map(String) : ['blitz']; } catch (e) { return ['blitz']; } })();
-export const ORDER = ['zlarior', 'atlas', 'blitz'].filter((k) => !HIDDEN_BOTS.includes(k));
+export const ORDER = ['zlarior', 'atlas', 'blitz'];
 export const MULTS = [0.5, 0.75, 1, 1.5, 2];
 const DEFAULT_LIMITS = {
   builder_50k: { target: 3000, mll: 2000, lock: 100, dll: 1000, max_micros: 40, buffer: 2100, pay_min: 500, pay_max: 2000, split: 0.8, cons: 0.5, cycle_days: 2, max_payouts: 5, inactivity_days: 7 },
@@ -72,11 +69,16 @@ export function accountView(key, a, rules) {
     locked: !!ev.locked, today: num(pnl.today) != null ? num(pnl.today) : num(ev.today) || 0, week: num(pnl.week) || 0, progress: Math.max(0, Math.min(1, num(ev.progress) || 0)), toTarget: num(ev.to_target),
     dll: num(ev.dll) || L.dll, dllUsed: num(ev.dll_used) || 0, risk: loss ? Math.abs(loss) : P.risk, win: win ? Math.abs(win) : P.win, est: !loss, status: str(ev.clock_text || ev.status, 140) };
 }
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the real home.json says "hidden_bots" (top or
+// board); a hidden BLITZ has no card (the DEMO keeps its three)
+const hiddenIn = (h, k) => { const o = h && typeof h === 'object' ? h : {}, b = o.board && typeof o.board === 'object' ? o.board : {};
+  const L = Array.isArray(o.hidden_bots) ? o.hidden_bots : Array.isArray(b.hidden_bots) ? b.hidden_bots : [];
+  return L.map(String).includes(k); };
 export function buildAccounts(home, rules, fixture) {
   const list = isObj(home) && Array.isArray(home.accounts) ? home.accounts : [], found = {};
   for (const a of list) { const k = matchKey(a); if (k && !found[k] && !a.error) found[k] = a; }
   const real = Object.keys(found).length > 0, fx = isObj(fixture) && Array.isArray(fixture.accounts) ? fixture.accounts : [];
-  return { demo: !real, accounts: ORDER.map((k) => {
+  return { demo: !real, accounts: ORDER.filter((k) => !(real && k === 'blitz' && hiddenIn(home, 'blitz'))).map((k) => {
     if (real) return accountView(k, found[k], rules);
     const f = fx.find((x) => x.key === k); return f ? { ...accountView(k, null, rules), ...f, has: true, demo: true } : accountView(k, null, rules);
   }) };

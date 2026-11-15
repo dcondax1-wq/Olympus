@@ -160,6 +160,27 @@ def weekday_10am_et():
 
 
 # ============================================================================================== 2 pc_report
+def hidden_reporter():
+    """BLITZ hidden (dashboard_view.json, owner 2026-11-15): the ntfy status post carries no BLITZ card or account C."""
+    from engine import hidden_bots
+    now = weekday_10am_et()
+    b = Box()
+    hidden_bots.FORCE = ("blitz",)
+    try:
+        b.topic()
+        hb = hb_payload(now - 120)
+        hb["account_c"] = account_c_block(now)
+        b.hb(hb)
+        b.run(FakeHTTP(), now)
+        st = json.load(open(os.path.join(b.work, "status.json"), encoding="utf-8"))
+        blob = json.dumps({k: v for k, v in st.items() if k != "hidden_bots"}).lower()
+        check("hidden: the status post has Zlarior's card and no BLITZ / account C anywhere",
+              "blitz" not in blob and "account_c" not in blob and isinstance(st.get("board", {}).get("lit"), dict), list((st.get("board") or {}).keys()))
+    finally:
+        hidden_bots.FORCE = None
+        shutil.rmtree(b.dir, ignore_errors=True)
+
+
 def reporter():
     now = weekday_10am_et()
     feed = R.status_feed()
@@ -599,7 +620,15 @@ def go_live_static():
 def main() -> int:
     go_live_static()
     static()
-    reporter()
+    # the report's own BLITZ contract (its card, its trade pushes) runs with BLITZ shown; hidden (the default since 2026-11-15)
+    # live_publish.build drops it first, so the report never sees it (tests.test_hidden_bots / test_live_publish)
+    from engine import hidden_bots
+    hidden_bots.FORCE = ()
+    try:
+        reporter()
+    finally:
+        hidden_bots.FORCE = None
+    hidden_reporter()
     helpers()
     pwsh = find_pwsh()
     if pwsh:

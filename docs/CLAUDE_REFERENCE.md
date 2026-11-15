@@ -266,7 +266,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   paper ledgers, cloud state and heartbeat blocks run as before (paper, never routed). Hidden = scrubbed out of data.json /
   home.json (`live_board.site_block`, the build's last helper, in place), live.json / liveview / holo files (`live_publish`),
   the PC's GET /api/* answers (`ScrubMiddleware`, server.py; `/api/next/blitz*` untouched); every file says `hidden_bots`;
-  pages ask `window.OLY_HIDDEN.has('blitz')` (inline in the phone, Jarvis and web_next index.html); no tab, cards, orbit,
+  pages ask `window.OLY_HIDDEN.has('blitz')` (defined at the top of main.js, jarvis/data.js + brain.js, web_next routes.js; the other apps read localStorage oly.hiddenBots or home.json's hidden_bots); no tab, cards, orbit,
   feed tab, Start card; `#/blitz` says "hidden, still on paper". Pushes: BLITZ paper / Sim silent (`blitz.push_on`, narrator,
   `AccountC._send`); the Sunday readiness push drops its line. Real money is never hidden (account C armed -> shown).
   Test `python -X utf8 -m tests.test_hidden_bots`.

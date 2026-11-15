@@ -7,10 +7,7 @@ export const PLANS = {
   atlas: { key: 'atlas', name: 'ATLAS 25K', bot: 'ATLAS', mll: 1000, risk: 150, dll: 600 },
   blitz: { key: 'blitz', name: 'BLITZ 25K', bot: 'BLITZ', mll: 1000, risk: 120, dll: 600 },
 };
-// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the site keeps the last published list in
-// localStorage oly.hiddenBots (same origin for every app; nothing known in a browser = ['blitz'], none outside one)
-const HIDDEN_BOTS = (() => { if (typeof localStorage === 'undefined') return []; try { const s = localStorage.getItem('oly.hiddenBots'); const a = s ? JSON.parse(s) : null; return Array.isArray(a) ? a.map(String) : ['blitz']; } catch (e) { return ['blitz']; } })();
-export const ORDER = ['zlarior', 'atlas', 'blitz'].filter((k) => !HIDDEN_BOTS.includes(k));
+export const ORDER = ['zlarior', 'atlas', 'blitz'];
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
 export const num = (v) => { const x = typeof v === 'string' ? parseFloat(v.replace(/[$,\s]/g, '')) : v; return typeof x === 'number' && Number.isFinite(x) ? x : null; };
 const r2 = (x) => Math.round(x * 100) / 100;
@@ -53,11 +50,16 @@ export function accountView(key, a) {
     weekHome: wk, risk: loss ? Math.abs(loss) : P.risk, est: !loss };
 }
 
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the real home.json says "hidden_bots" (top or
+// board); a hidden BLITZ has no card (the DEMO keeps its three)
+const hiddenIn = (h, k) => { const o = h && typeof h === 'object' ? h : {}, b = o.board && typeof o.board === 'object' ? o.board : {};
+  const L = Array.isArray(o.hidden_bots) ? o.hidden_bots : Array.isArray(b.hidden_bots) ? b.hidden_bots : [];
+  return L.map(String).includes(k); };
 export function buildAccounts(home, fxAccounts) {
   const list = isObj(home) && Array.isArray(home.accounts) ? home.accounts : [], found = {};
   for (const a of list) { const k = matchKey(a); if (k && !found[k] && !a.error) found[k] = a; }
   const real = Object.keys(found).length > 0;
-  return { demo: !real, accounts: ORDER.map((k) => (real ? accountView(k, found[k]) : accountView(k, (Array.isArray(fxAccounts) ? fxAccounts : []).find((x) => x && x.key === k) || null))) };
+  return { demo: !real, accounts: ORDER.filter((k) => !(real && k === 'blitz' && hiddenIn(home, 'blitz'))).map((k) => (real ? accountView(k, found[k]) : accountView(k, (Array.isArray(fxAccounts) ? fxAccounts : []).find((x) => x && x.key === k) || null))) };
 }
 
 export function normTrades(raw) {

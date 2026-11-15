@@ -10,7 +10,7 @@ What hiding does (read-only; nothing here touches an engine, a ledger, an order 
   * published JSON is scrubbed: data.json / home.json (engine/live_board.site_block, the last helper the site build calls
     before it writes them), the PC's live.json / liveview.json / holo.json / holo_hist.json (engine/live_publish), and the PC
     dashboard's GET /api/* answers (ScrubMiddleware in server.py). Every file carries "hidden_bots" so the pages know.
-  * the pages hide what is left (window.OLY_HIDDEN in tools/web_public/index.html, jarvis/index.html, web_next/index.html).
+  * the pages hide what is left (window.OLY_HIDDEN, defined at the top of main.js, jarvis/data.js, jarvis/brain.js, web_next routes.js).
   * phone pushes stop: BLITZ PAPER notices are recorded only (engine/blitz.push_on), account C's paper / Sim pushes are
     logged only (engine/account_c); a REAL-money push of account C (only if the owner ever arms it) is never silenced.
 Real money is never hidden: when this PC has account C armed (data/account_c.json "armed": true), BLITZ shows whatever the
