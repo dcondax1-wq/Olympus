@@ -167,8 +167,23 @@ class Store:
 
     @staticmethod
     def packages() -> dict:
+        """the plans: the wording from packages.json, the PRICES from the one source (agency.config.prices(): agency/config.json
+        over agency/config.example.json), so the pitch, storefront, Agency page and these documents always quote the same price"""
         doc, _ = read_json(PACKAGES)
-        return C.packages_from(doc or {})
+        try:
+            from agency import config as CFG
+            pr = CFG.prices()
+        except Exception:                                   # a broken settings file must not stop an invoice: wording only
+            pr = {}
+        plans = []
+        for p in (doc or {}).get("packages") or []:
+            if isinstance(p, dict):
+                q, src = dict(p), pr.get(str(p.get("id"))) or {}
+                for k_doc, k_src in (("setup_usd", "setup"), ("monthly_usd", "monthly")):
+                    if k_src in src:
+                        q[k_doc] = src[k_src]
+                plans.append(q)
+        return C.packages_from({"packages": plans})
 
     def clients(self, path: str | None = None, demo: bool = False) -> tuple[list, str]:
         """(records, where from). --clients FILE, else the CRM files in data/agency/, else nothing (or the fixtures with demo)."""

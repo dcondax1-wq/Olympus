@@ -1,6 +1,6 @@
 """AGENCY BILLING render (team B6, 2026-11-14): the three client documents as ONE self-contained HTML file each.
 
-  proposal_html    one page (US Letter when printed): what they get, the price ($0 setup + monthly), the demo link, 3 steps, sign line
+  proposal_html    one page (US Letter when printed): what they get, the price (setup + monthly, from agency.config.prices()), the demo link, 3 steps, sign line
   agreement_html   a plain-English service agreement TEMPLATE (scope, plan, payment, cancellation, who owns the site and the domain,
                    liability limits). Marked on screen and on every printed page: template, have it reviewed, not legal advice.
   invoice_html     a numbered invoice (one page): lines, tax, total, paid, balance, and the "Pay online" box with your payment link

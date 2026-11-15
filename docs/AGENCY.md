@@ -37,7 +37,9 @@ on an iPhone the serif headings use Iowan Old Style / Didot and the garage look 
 | Someone says stop | Mark "Do not contact" at once. On the PC, put their number (or name) on a line of `agency/suppress.txt`, or save your page export as `agency/crm_export.json`: the machine never lists them again. |
 | Sunday, 5 min | Agency page > Your notes > Export (keep the file, and save it as `agency/crm_export.json` on the PC) and look at the plan: calls this week, clients this month. |
 
-## Prices (owner-editable: `packages` in agency/config.json)
+## Prices (owner-editable: `packages` in agency/config.json, the ONE source since 2026-11-15)
+The pitch, storefront, Agency page, money math and the billing kit's proposal / agreement / invoice all read these prices through `agency.config.prices()` (`agency/billing/packages.json` holds only the wording). The whole day in one double-click: `AGENCY_DAY.bat` (`docs/BUSINESS.md`).
+
 | Package | To start | Each month | What they get |
 |---|---|---|---|
 | Starter | $499 | $49 | the site they saw, with their logo and photos, their own domain with the padlock, the contact form, tap-to-call, map and hours, a Google Business Profile tidy-up, hosting, backups and one small edit a month |

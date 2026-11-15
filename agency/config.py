@@ -75,6 +75,20 @@ def sender_ready(cfg: dict) -> bool:
     return not ph & {"agency.name", "agency.your_name", "agency.email", "agency.postal_address"}
 
 
+def prices(cfg: dict | None = None) -> dict:
+    """THE ONE SOURCE of the plan prices (2026-11-15): {id: {"name", "setup", "monthly"}} from `packages` here (the owner's
+    agency/config.json over the example). The pitch, storefront, Agency page, money math, billing kit and Business page read it."""
+    cfg = cfg if cfg is not None else load()
+    out = {}
+    for p in cfg.get("packages") or []:
+        if isinstance(p, dict) and p.get("id"):
+            try:
+                out[str(p["id"])] = {"name": str(p.get("name") or p["id"]), "setup": float(p.get("setup") or 0), "monthly": float(p.get("monthly") or 0)}
+            except (TypeError, ValueError):
+                continue
+    return out
+
+
 def package(cfg: dict, pid: str) -> dict:
     for p in cfg.get("packages") or []:
         if p.get("id") == pid:

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en" data-theme="agora" data-oly-light>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Business</title>
+<meta name="description" content="OLYMPUS BUSINESS: every money model beside the trading: its next action, what is missing before the first dollar, and an honest monthly ESTIMATE.">
+<meta name="theme-color" content="#14110e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Business">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<!-- BUSINESS (OLYMPUS, AGORA look, team BIZ 2026-11-15): reads ./business.json (tools/biz_publish.py on the PC, gitignored), else fixture.json (DEMO, never blank).
+     Read only: it sends nothing, posts nothing, calls nobody. Text only through textContent. businesscore.js = pure helpers (node-tested); business.js = the page.
+     The 7-day checklist ticks stay in this browser only (localStorage, wrapped in try/catch). -->
+<script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
+<link rel="stylesheet" href="../olympus/olympus.css?v=o6">
+<link rel="stylesheet" href="../olympus/agora.css?v=a4">
+<script src="../olympus/themes.js?v=o6"></script>
+<script src="../olympus/olympus.js?v=o7" data-app="business"></script>
+<script src="../olympus/intro-app.js?v=i5" defer></script>
+<script src="../olympus/a11y.js" defer></script>
+<script src="../olympus/agora-ui.js?v=2" defer></script>
+<script src="../olympus/gate-nav.js?v=g3" defer></script>
+<script src="../olympus/sfx.js?v=s4" defer></script>
+<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
+<link rel="stylesheet" href="business.css?v=1">
+</head>
+<body>
+<main id="app">
+  <header class="top">
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Business</h1><p class="sub">Every money model: next step and money</p></div></div>
+    <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span></div>
+  </header>
+  <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
+
+  <section class="ag-card card" id="hero" aria-labelledby="heroH">
+    <div class="row"><h2 id="heroH">All models together</h2><span class="pill warn">ESTIMATE</span></div>
+    <p class="big ag-num" id="heroM3">-</p>
+    <p class="lead" id="heroText"></p>
+    <dl class="kv" id="heroKv"></dl>
+    <p class="note">An estimate is not income. "Real" is only money your billing ledger recorded.</p>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="tblH">
+    <h2 id="tblH">Status</h2>
+    <table class="tbl" id="tbl"><thead><tr><th>Model</th><th class="n">Month 1</th><th class="n">Month 3</th><th class="n">Hours / week</th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="models" aria-label="The models"></section>
+
+  <section class="ag-card card" aria-labelledby="priceH">
+    <h2 id="priceH">Website prices (one source: agency/config.json)</h2>
+    <dl class="kv" id="prices"></dl>
+  </section>
+
+  <section class="ag-card card week" aria-labelledby="weekH">
+    <div class="row"><h2 id="weekH">7-day launch</h2><span class="pill" id="weekPill">0 done</span></div>
+    <div id="week"></div>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="rulesH">
+    <h2 id="rulesH">House rules</h2>
+    <ul id="rules" class="note"></ul>
+  </section>
+
+  <p class="foot">Business reads one published file and sends nothing. Paper only: it never trades, posts, emails or calls.</p>
+</main>
+<script type="module" src="business.js?v=1"></script>
+</body>
+</html>

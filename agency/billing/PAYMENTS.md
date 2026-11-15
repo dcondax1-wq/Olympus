@@ -7,9 +7,9 @@ given.
 
 ## The answer
 
-**Use Stripe Payment Links: one link per plan** (Starter $99, Growth $149, Pro $249 a month). The client taps the link, types a card
+**Use Stripe Payment Links: one link per plan** (the prices come from ONE place, `packages` in agency/config.json: by default Starter $499 + $49 a month, Growth $999 + $79, Pro $1,999 + $129; Stripe can add the one-time setup fee to the first charge of the monthly link). The client taps the link, types a card
 or bank account once, and Stripe charges the same amount every month by itself, emails the receipt, and lets the client update the
-card or cancel from a link you switch on once. "$0 setup" simply means the first charge is the first month.
+card or cancel from a link you switch on once. With a setup fee the first charge is the setup + the first month; set a setup to 0 in agency/config.json and the first charge is just the first month.
 
 Square is a fine second choice if you want your money the next business day. Use PayPal only when a client insists on it.
 
@@ -53,7 +53,7 @@ docs/AGENCY_BUSINESS_SETUP.md).
 ## Your 3 steps
 
 1. Make a free Stripe account at stripe.com: business type **Individual / sole proprietor**, your SSN, your bank account.
-2. In Stripe, Product catalog: add **Starter $99, Growth $149, Pro $249, "Recurring, monthly"**, and press **Create payment
+2. In Stripe, Product catalog: add **Starter $49, Growth $79, Pro $129, "Recurring, monthly"** (or your own prices from agency/config.json; add the setup fee as a one-time item on the same link), and press **Create payment
    link** on each (copy the three links). Then Settings > Billing > Customer portal > **Activate link**.
 3. Paste the links into the kit (one line, from the bot folder):
 

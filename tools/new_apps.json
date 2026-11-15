@@ -624,6 +624,25 @@
         "kind": "tiles",
         "ms": 800
       }
+    },
+    {
+      "id": "business",
+      "name": "Business",
+      "group": "money",
+      "accent": "#c8a24a",
+      "description": "Every money model: next step, what is missing, $ estimate",
+      "glyph": "B",
+      "ambient": "coins",
+      "flavour": [
+        "columns",
+        "Count the ventures",
+        "tap"
+      ],
+      "transition": {
+        "kind": "columns",
+        "ms": 1000,
+        "n": 5
+      }
     }
   ],
   "pending": [],

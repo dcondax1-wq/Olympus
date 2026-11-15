@@ -1,0 +1,20 @@
+{
+  "name": "Business",
+  "short_name": "Business",
+  "description": "OLYMPUS BUSINESS: every money model beside the trading: its next action, what is missing before the first dollar, and an honest monthly ESTIMATE.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14110e",
+  "theme_color": "#14110e",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

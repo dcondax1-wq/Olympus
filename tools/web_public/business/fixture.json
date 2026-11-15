@@ -1,0 +1,349 @@
+{
+ "v": 1,
+ "kind": "business",
+ "asof": "2026-11-15T12:00:00+00:00",
+ "label": "ESTIMATE",
+ "sample": true,
+ "demo": true,
+ "note": "EXAMPLE, not real: the plan with no progress from the PC yet (DEMO).",
+ "total": {
+  "usd_m1": [
+   0,
+   700
+  ],
+  "usd_m3": [
+   0,
+   2630
+  ],
+  "hours": [
+   16,
+   25
+  ],
+  "real_usd_month": 0.0
+ },
+ "models": [
+  {
+   "id": "agency",
+   "name": "Website agency",
+   "rank": 1,
+   "what": "Find local shops with no website, build each a demo site, call them, sell a site + a monthly plan.",
+   "built": [
+    "Lead finder (free map data)",
+    "Demo sites (8 looks)",
+    "Pitch kit: opener, email, one-pager",
+    "Call list with do-not-call rules",
+    "Agency page (pipeline on the phone)",
+    "Storefront site",
+    "Proposal, agreement, invoice, payment links",
+    "Upsells: reviews, chat, social posts"
+   ],
+   "first_dollar": [
+    "Your name, phone, email, postal address and city in agency/config.json",
+    "Free Netlify account (to put demo sites online)",
+    "Free Stripe account + one payment link per plan",
+    "About 60 calls by hand to find the first yes"
+   ],
+   "usd_m1": [
+    0,
+    550
+   ],
+   "usd_m3": [
+    0,
+    2000
+   ],
+   "hours": [
+    5,
+    7
+   ],
+   "why": "One Starter sale is $499 + $49 a month. Month 3 assumes 0-2 sales a month (the docs' plan of 4 a month needs 6 calls a working day).",
+   "doc": "docs/AGENCY.md",
+   "paused": false,
+   "next": "Double-click AGENCY_DAY.bat and fill in agency/config.json (name, phone, email, address, city).",
+   "real_usd_month": 0.0
+  },
+  {
+   "id": "gigs",
+   "name": "Freelance gigs",
+   "rank": 2,
+   "what": "8 ready gigs (websites, logos, Google profile, reviews, posts...) on Fiverr first; the tools make the work, you deliver.",
+   "built": [
+    "8 gig texts with prices, tags, FAQ",
+    "Logo + brand kit maker",
+    "Google profile checklist",
+    "Order -> agency tools in one line"
+   ],
+   "first_dollar": [
+    "Fiverr seller account in your real name + ID check",
+    "Publish the logo and Google-profile gigs (text in docs/GIG_PACK.md)",
+    "Answer every message the same day"
+   ],
+   "usd_m1": [
+    0,
+    100
+   ],
+   "usd_m3": [
+    0,
+    400
+   ],
+   "hours": [
+    6,
+    10
+   ],
+   "why": "New sellers often wait weeks for the first order. Fiverr keeps 20% ($120 order pays $96).",
+   "doc": "docs/GIG_PACK.md",
+   "paused": false,
+   "next": "Fiverr seller account in your real name + ID check",
+   "real_usd_month": 0.0
+  },
+  {
+   "id": "products",
+   "name": "Digital products",
+   "rank": 3,
+   "what": "5 finished downloads (eval tracker $17, site templates $24, social kit $14, agency kit $19, trader planner $14).",
+   "built": [
+    "All 5 products, upload zips, 6 covers each",
+    "Title, description, tags, FAQ per product",
+    "One listing kit for every shop"
+   ],
+   "first_dollar": [
+    "Free Payhip account (lowest fee)",
+    "Upload the 5 zips with their covers (about 15 min each)",
+    "A link to the shop from an Instagram bio"
+   ],
+   "usd_m1": [
+    0,
+    50
+   ],
+   "usd_m3": [
+    0,
+    100
+   ],
+   "hours": [
+    1,
+    2
+   ],
+   "why": "Expect 0-10 sales a month per product until a social account or search sends buyers.",
+   "doc": "docs/BUSINESS_LISTING_KIT.md",
+   "paused": false,
+   "next": "Make the 5 zips (python -m money_machines.products.build_all --zip), then upload them to Payhip.",
+   "real_usd_month": 0.0
+  },
+  {
+   "id": "insta_local",
+   "name": "Instagram: local business tips",
+   "rank": 4,
+   "what": "A tips account for local owners that sends them to the agency's free website check.",
+   "built": [
+    "30-day plan with captions and images",
+    "Posting sheet for the free Meta scheduler",
+    "Optional API poster (dry run by default)"
+   ],
+   "first_dollar": [
+    "New Instagram, switched to Professional",
+    "Schedule the 30 posts in Meta Business Suite (free, about 15 min a week)",
+    "It pays only through agency clients it brings"
+   ],
+   "usd_m1": [
+    0,
+    0
+   ],
+   "usd_m3": [
+    0,
+    100
+   ],
+   "hours": [
+    2,
+    3
+   ],
+   "why": "Plan for 100-1,000 followers in 3 months; the money is the agency clients it brings.",
+   "doc": "docs/MONEY_MACHINES.md",
+   "paused": false,
+   "next": "New Instagram, switched to Professional",
+   "real_usd_month": 0.0
+  },
+  {
+   "id": "insta_eval",
+   "name": "Instagram: the eval journal",
+   "rank": 5,
+   "what": "Trading routines (never results) that link the eval tracker; later disclosed affiliate links.",
+   "built": [
+    "30-day plan with captions and images",
+    "The risk line and Ad rules built in"
+   ],
+   "first_dollar": [
+    "Second Instagram, Professional account",
+    "Schedule the 30 posts",
+    "The eval tracker link in the bio"
+   ],
+   "usd_m1": [
+    0,
+    0
+   ],
+   "usd_m3": [
+    0,
+    30
+   ],
+   "hours": [
+    2,
+    3
+   ],
+   "why": "Strict rules: no profits, passes or signals; every paid link starts with Ad.",
+   "doc": "docs/MONEY_MACHINES.md",
+   "paused": false,
+   "next": "Second Instagram, Professional account",
+   "real_usd_month": 0.0
+  },
+  {
+   "id": "rank_rent",
+   "name": "Rank-and-rent sites",
+   "rank": 6,
+   "what": "A site for one trade in one town, ranked, then rented to a local business.",
+   "built": [
+    "Research and a 6-month plan only"
+   ],
+   "first_dollar": [
+    "A $12 domain (not free: your call)",
+    "3-12 months to rank",
+    "A tenant"
+   ],
+   "usd_m1": [
+    0,
+    0
+   ],
+   "usd_m3": [
+    0,
+    0
+   ],
+   "hours": [
+    0,
+    0
+   ],
+   "why": "The slowest machine: start only once the agency and gigs run.",
+   "doc": "docs/MONEY_MACHINES.md",
+   "paused": true,
+   "next": "Nothing: paused.",
+   "real_usd_month": 0.0
+  },
+  {
+   "id": "kalshi",
+   "name": "Kalshi",
+   "rank": 7,
+   "what": "Prediction-market bot.",
+   "built": [
+    "Bot, Kalshi City page, edge research"
+   ],
+   "first_dollar": [
+    "Paused: no proven edge"
+   ],
+   "usd_m1": [
+    0,
+    0
+   ],
+   "usd_m3": [
+    0,
+    0
+   ],
+   "hours": [
+    0,
+    0
+   ],
+   "why": "Paused until research shows an edge. Nothing to do.",
+   "doc": "docs/KALSHI_STOP_LIST.md",
+   "paused": true,
+   "next": "Nothing: paused.",
+   "real_usd_month": 0.0
+  }
+ ],
+ "progress": {},
+ "prices": [
+  {
+   "id": "starter",
+   "name": "Starter",
+   "setup": 499.0,
+   "monthly": 49.0
+  },
+  {
+   "id": "growth",
+   "name": "Growth",
+   "setup": 999.0,
+   "monthly": 79.0
+  },
+  {
+   "id": "pro",
+   "name": "Pro",
+   "setup": 1999.0,
+   "monthly": 129.0
+  }
+ ],
+ "week": [
+  {
+   "day": 1,
+   "title": "Set up (about 1 hour)",
+   "tasks": [
+    "Double-click AGENCY_DAY.bat: Notepad opens agency/config.json; put in your name, phone, email, postal address, city; save",
+    "Make the free accounts: Netlify, Stripe, Payhip, Fiverr (real name, finish the ID check)",
+    "Double-click AGENCY_DAY.bat again: 3 demo sites, the call list and TODAY.txt"
+   ]
+  },
+  {
+   "day": 2,
+   "title": "First calls (1 hour)",
+   "tasks": [
+    "Drop the 3 site folders on app.netlify.com/drop, press Publish",
+    "Call 10 owners from Call today, by hand, 10:00-12:00 or 14:00-16:00",
+    "Mark every call on the card (Contacted, Call back, Do not contact)"
+   ]
+  },
+  {
+   "day": 3,
+   "title": "Shop + gigs (1 hour)",
+   "tasks": [
+    "Payhip: upload the 5 products with docs/BUSINESS_LISTING_KIT.md (zips: RUN_MONEY or python -m money_machines.products.build_all --zip)",
+    "Fiverr: publish the logo and Google-profile gigs (docs/GIG_PACK.md)",
+    "Make one Stripe payment link per plan, paste them in the billing kit"
+   ]
+  },
+  {
+   "day": 4,
+   "title": "Calls + Instagram (1 hour)",
+   "tasks": [
+    "AGENCY_DAY.bat, then 10 more calls",
+    "New Instagram (Professional); schedule the first week in Meta Business Suite",
+    "Put the shop link in the bio"
+   ]
+  },
+  {
+   "day": 5,
+   "title": "Follow up (1 hour)",
+   "tasks": [
+    "Call back everyone who asked; send the demo link only to those who said send it",
+    "10 new calls",
+    "Answer every Fiverr message the same day"
+   ]
+  },
+  {
+   "day": 6,
+   "title": "Close (1 hour)",
+   "tasks": [
+    "A yes: python -m agency.billing kit for their proposal + invoice with your payment link",
+    "Tell Claude 'Agency: <business> said yes' to build the live site",
+    "10 calls"
+   ]
+  },
+  {
+   "day": 7,
+   "title": "Count (15 min)",
+   "tasks": [
+    "Agency page > Export; count calls, talks, demos, yeses",
+    "Business page: what moved, what to drop",
+    "Tell Claude your counts: it replaces the guessed call rates with yours"
+   ]
+  }
+ ],
+ "rules": [
+  "Nothing here sends, posts or calls: you press every button.",
+  "Calls by hand, business hours, never a robot or a recording; stop means Do not contact.",
+  "Emails need your real name, email and postal address (CAN-SPAM).",
+  "Every $ is an ESTIMATE range from the teams' docs, not a promise; 'real' is only what the ledger recorded."
+ ]
+}
