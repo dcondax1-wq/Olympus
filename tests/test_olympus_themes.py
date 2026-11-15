@@ -757,7 +757,8 @@ def test_same_as_before(br):
     o_raw, o_now = (f"http://127.0.0.1:{s.server_address[1]}" for s in (raw, norm))
     DUMPS = """() => { const P = ['color', 'background-color', 'background-image', 'border-top-color', 'border-bottom-color', 'border-top-left-radius', 'box-shadow', 'font-family', 'font-weight', 'text-transform', 'letter-spacing', 'outline-color', 'fill', 'stroke'];
         const out = []; for (const e of [document.documentElement, ...document.querySelectorAll('body, body *')]) { if (e.closest('svg') && e.tagName !== 'svg') continue; const cs = getComputedStyle(e);
-          out.push(e.tagName + '.' + (typeof e.className === 'string' ? e.className : '') + '|' + P.map((k) => cs.getPropertyValue(k)).join('|')); } return out; }"""
+          const own = [...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.nodeValue).join('').trim().replace(/\\s+/g, ' ').replace(/[|]/g, '/').slice(0, 24);
+          out.push(e.tagName + '.' + (typeof e.className === 'string' ? e.className : '') + '\\u0001' + own + '|' + P.map((k) => cs.getPropertyValue(k)).join('|')); } return out; }"""
     for name, path in (("gate", "/gate/" + GATE_Q), ("nq", "/nq/?demo=1"), ("helios", "/helios/?demo=1"), ("polis", "/polis/?demo=1"), ("kalshi", "/kalshi/"), ("dashboard", "/"), ("jarvis", "/jarvis/"),
                        ("hub", "/hub/index.html?h=money"), ("aegis", "/aegis/?demo=1"), ("mint", "/mint/?demo=1"), ("oikos", "/oikos/?demo=1"), ("ledger", "/ledger/?demo=1"),
                        ("planner", "/planner/?demo=1"), ("cities", "/cities/?demo=1"), ("symposium", "/symposium/?demo=1"), ("settings", "/settings/")):
@@ -775,17 +776,21 @@ def test_same_as_before(br):
             except Exception as e:
                 res.append(["error: " + str(e)[:200]])
             ctx.close()
-        def group(rows):                         # element kind (tag.class) -> the set of computed looks it has (a page that loads cards late may differ in count)
+        def group(rows, own):                    # element kind (tag.class) [+ its own text] -> the set of computed looks it has
             g = {}
             for r in rows:
                 k, _, v = r.partition("|")
-                g.setdefault(k, set()).add(v)
+                kind, _, txt = k.partition("\x01")
+                g.setdefault((kind, txt) if own else kind, set()).add(v)
             return g
-        ga, gb = group(res[0]), group(res[1])
-        both = [k for k in ga if k in gb]
-        diff = {k: (sorted(ga[k] - gb[k])[:1], sorted(gb[k] - ga[k])[:1]) for k in both if ga[k] != gb[k]}
+        ka, kb = group(res[0], False), group(res[1], False)
+        both = [k for k in ka if k in kb]
+        # each element against the same element on the other page (its kind and its own text): a card that arrives late on one page only (a page
+        # that loads cards late differs in count) is no difference; elements without text of their own are compared by kind, as before
+        ga, gb = group(res[0], True), group(res[1], True)
+        diff = {k[0] + (" '" + k[1] + "'" if k[1] else ""): (sorted(ga[k] - gb[k])[:1], sorted(gb[k] - ga[k])[:1]) for k in ga if k in gb and ga[k] != gb[k]}
         check(f"c. {name}: on the default, every kind of element computes the same colours / borders / shadows / fonts / radius as the page with every slot replaced by its AGORA literal ({len(both)} kinds, {len(res[1])} elements)",
-              len(both) > 20 and len(both) >= 0.9 * max(len(ga), len(gb)) and not diff, {"kinds": (len(ga), len(gb), len(both)), "diff": dict(list(diff.items())[:2])})
+              len(both) > 20 and len(both) >= 0.9 * max(len(ka), len(kb)) and not diff, {"kinds": (len(ka), len(kb), len(both)), "diff": dict(list(diff.items())[:2])})
     raw.shutdown()
     norm.shutdown()
 
